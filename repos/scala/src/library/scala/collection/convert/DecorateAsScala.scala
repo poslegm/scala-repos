@@ -34,7 +34,8 @@ trait DecorateAsScala {
     *         `Iterator` view of the argument.
     */
   implicit def asScalaIteratorConverter[A](
-      i: ju.Iterator[A]): AsScala[Iterator[A]] =
+      i: ju.Iterator[A]
+  ): AsScala[Iterator[A]] =
     new AsScala(asScalaIterator(i))
 
   /**
@@ -54,7 +55,8 @@ trait DecorateAsScala {
     *         `Iterator` view of the argument.
     */
   implicit def enumerationAsScalaIteratorConverter[A](
-      i: ju.Enumeration[A]): AsScala[Iterator[A]] =
+      i: ju.Enumeration[A]
+  ): AsScala[Iterator[A]] =
     new AsScala(enumerationAsScalaIterator(i))
 
   /**
@@ -74,7 +76,8 @@ trait DecorateAsScala {
     *         view of the argument.
     */
   implicit def iterableAsScalaIterableConverter[A](
-      i: jl.Iterable[A]): AsScala[Iterable[A]] =
+      i: jl.Iterable[A]
+  ): AsScala[Iterable[A]] =
     new AsScala(iterableAsScalaIterable(i))
 
   /**
@@ -90,7 +93,8 @@ trait DecorateAsScala {
     *        `SizedIterable` view of the argument.
     */
   implicit def collectionAsScalaIterableConverter[A](
-      i: ju.Collection[A]): AsScala[Iterable[A]] =
+      i: ju.Collection[A]
+  ): AsScala[Iterable[A]] =
     new AsScala(collectionAsScalaIterable(i))
 
   /**
@@ -110,7 +114,8 @@ trait DecorateAsScala {
     *        `Buffer` view of the argument.
     */
   implicit def asScalaBufferConverter[A](
-      l: ju.List[A]): AsScala[mutable.Buffer[A]] =
+      l: ju.List[A]
+  ): AsScala[mutable.Buffer[A]] =
     new AsScala(asScalaBuffer(l))
 
   /**
@@ -141,9 +146,9 @@ trait DecorateAsScala {
     * If the Java `Map` was previously obtained from an implicit or explicit
     * call of `asMap(scala.collection.mutable.Map)` then the original
     * Scala `Map` will be returned.
-    * 
+    *
     * If the wrapped map is synchronized (e.g. from `java.util.Collections.synchronizedMap`),
-    * it is your responsibility to wrap all 
+    * it is your responsibility to wrap all
     * non-atomic operations with `underlying.synchronized`.
     * This includes `get`, as `java.util.Map`'s API does not allow for an
     * atomic `get` when `null` values may be present.
@@ -153,7 +158,8 @@ trait DecorateAsScala {
     *         `Map` view of the argument.
     */
   implicit def mapAsScalaMapConverter[A, B](
-      m: ju.Map[A, B]): AsScala[mutable.Map[A, B]] =
+      m: ju.Map[A, B]
+  ): AsScala[mutable.Map[A, B]] =
     new AsScala(mapAsScalaMap(m))
 
   /**
@@ -172,7 +178,8 @@ trait DecorateAsScala {
     *         `concurrent.Map` view of the argument.
     */
   implicit def mapAsScalaConcurrentMapConverter[A, B](
-      m: juc.ConcurrentMap[A, B]): AsScala[concurrent.Map[A, B]] =
+      m: juc.ConcurrentMap[A, B]
+  ): AsScala[concurrent.Map[A, B]] =
     new AsScala(mapAsScalaConcurrentMap(m))
 
   /**
@@ -187,7 +194,8 @@ trait DecorateAsScala {
     *          `Map[String, String]` view of the argument.
     */
   implicit def dictionaryAsScalaMapConverter[A, B](
-      p: ju.Dictionary[A, B]): AsScala[mutable.Map[A, B]] =
+      p: ju.Dictionary[A, B]
+  ): AsScala[mutable.Map[A, B]] =
     new AsScala(dictionaryAsScalaMap(p))
 
   /**
@@ -202,6 +210,7 @@ trait DecorateAsScala {
     *          `Map[String, String]` view of the argument.
     */
   implicit def propertiesAsScalaMapConverter(
-      p: ju.Properties): AsScala[mutable.Map[String, String]] =
+      p: ju.Properties
+  ): AsScala[mutable.Map[String, String]] =
     new AsScala(propertiesAsScalaMap(p))
 }

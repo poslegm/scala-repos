@@ -89,9 +89,7 @@ trait PolymorphicEqualityFacet extends ProductISOFacet {
     def equals(c: C, other: Any): Boolean =
       (c.asInstanceOf[AnyRef] eq other.asInstanceOf[AnyRef]) || typ
         .cast(other)
-        .map { that =>
-          (toProduct(c) == toProduct(that)) && canEqual(that, c)
-        }
+        .map { that => (toProduct(c) == toProduct(that)) && canEqual(that, c) }
         .getOrElse(false)
 
     def hashCode(c: C): Int = toProduct(c).hashCode
@@ -138,20 +136,26 @@ trait ToStringFacet extends ProductFacet {
 }
 
 trait DefaultCaseClassDefns
-    extends ApplyUnapplyFacet with ProductFacet with PolymorphicEqualityFacet
-    with CopyFacet with ToStringFacet {
+    extends ApplyUnapplyFacet
+    with ProductFacet
+    with PolymorphicEqualityFacet
+    with CopyFacet
+    with ToStringFacet {
 
   trait CaseClassOps
-      extends ApplyUnapplyOps with ProductOps with PolymorphicEqualityOps
-      with CopyOps with ToStringOps
+      extends ApplyUnapplyOps
+      with ProductOps
+      with PolymorphicEqualityOps
+      with CopyOps
+      with ToStringOps
 
   trait CaseClassCompanion extends ApplyUnapplyCompanion
 
   trait CaseClass
-      extends ProductMethods with PolymorphicEqualityMethods with CopyMethods
-      with ToStringMethods {
-    self: C =>
-  }
+      extends ProductMethods
+      with PolymorphicEqualityMethods
+      with CopyMethods
+      with ToStringMethods { self: C => }
 
   val ops: CaseClassOps
 
@@ -163,7 +167,8 @@ trait DefaultCaseClassDefns
       tup: Tupler.Aux[Repr0, P0],
       pgen0: Generic.Aux[P0, Repr0],
       typ0: Typeable[C],
-      tag0: ClassTag[C]) =
+      tag0: ClassTag[C]
+  ) =
     new CaseClassOps {
       type Repr = Repr0
       type LRepr = LRepr0

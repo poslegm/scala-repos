@@ -6,8 +6,9 @@ import org.apache.thrift.TProcessorFactory
 import org.apache.thrift.protocol.TProtocolFactory
 
 private[thrift] class ThriftProcessorHandler(
-    processorFactory: TProcessorFactory, protocolFactory: TProtocolFactory)
-    extends SimpleChannelUpstreamHandler {
+    processorFactory: TProcessorFactory,
+    protocolFactory: TProtocolFactory
+) extends SimpleChannelUpstreamHandler {
   private def process(input: ChannelBuffer, output: ChannelBuffer) {
     val transport = new DuplexChannelBufferTransport(input, output)
     val protocol = protocolFactory.getProtocol(transport)

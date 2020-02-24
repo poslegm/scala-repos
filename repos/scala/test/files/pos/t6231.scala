@@ -1,9 +1,7 @@
 object Bug {
   def bar(ev: Any) = {
     trait X {
-      def qux = { () =>
-        ev
-      }
+      def qux = { () => ev }
     }
     new X {}.qux()
 
@@ -11,9 +9,7 @@ object Bug {
     trait Y {
       val ev2 =
         ev // manually capture `ev` so that `ev2` is added to the trait interface.
-      def qux = { () =>
-        ev2
-      }
+      def qux = { () => ev2 }
     }
   }
 }

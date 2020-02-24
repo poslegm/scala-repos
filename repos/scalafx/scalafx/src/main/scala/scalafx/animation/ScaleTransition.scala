@@ -50,7 +50,8 @@ object ScaleTransition extends AnimationStatics {
     * @return JavaFX $ST extracted from `v`.
     */
   implicit def sfxScaleTransition2jfx(
-      v: ScaleTransition): jfxa.ScaleTransition =
+      v: ScaleTransition
+  ): jfxa.ScaleTransition =
     if (v != null) v.delegate else null
 }
 
@@ -66,8 +67,9 @@ object ScaleTransition extends AnimationStatics {
   * @define DV Default value:
   */
 class ScaleTransition(
-    override val delegate: jfxa.ScaleTransition = new jfxa.ScaleTransition)
-    extends Transition(delegate) with SFXDelegate[jfxa.ScaleTransition] {
+    override val delegate: jfxa.ScaleTransition = new jfxa.ScaleTransition
+) extends Transition(delegate)
+    with SFXDelegate[jfxa.ScaleTransition] {
 
   // CONSTRUCTORS
 

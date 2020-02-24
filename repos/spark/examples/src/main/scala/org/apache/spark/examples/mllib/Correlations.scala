@@ -35,8 +35,8 @@ import org.apache.spark.mllib.util.MLUtils
 object Correlations {
 
   case class Params(
-      input: String = "data/mllib/sample_linear_regression_data.txt")
-      extends AbstractParams[Params]
+      input: String = "data/mllib/sample_linear_regression_data.txt"
+  ) extends AbstractParams[Params]
 
   def main(args: Array[String]) {
 
@@ -46,15 +46,18 @@ object Correlations {
       head("Correlations: an example app for computing correlations")
       opt[String]("input")
         .text(
-            s"Input path to labeled examples in LIBSVM format, default: ${defaultParams.input}")
+          s"Input path to labeled examples in LIBSVM format, default: ${defaultParams.input}"
+        )
         .action((x, c) => c.copy(input = x))
-      note("""
+      note(
+        """
         |For example, the following command runs this app on a synthetic dataset:
         |
         | bin/spark-submit --class org.apache.spark.examples.mllib.Correlations \
         |  examples/target/scala-*/spark-examples-*.jar \
         |  --input data/mllib/sample_linear_regression_data.txt
-        """.stripMargin)
+        """.stripMargin
+      )
     }
 
     parser.parse(args, defaultParams).map { params =>

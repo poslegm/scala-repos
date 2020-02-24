@@ -80,11 +80,16 @@ import java.io.{ObjectOutputStream, ObjectInputStream}
   *  @define mayNotTerminateInf
   *  @define willNotTerminateInf
   */
-@SerialVersionUID(-6084104484083858598L) // value computed by serialver for 2.11.2, annotation added in 2.11.4
+@SerialVersionUID(
+  -6084104484083858598L
+) // value computed by serialver for 2.11.2, annotation added in 2.11.4
 sealed abstract class List[+A]
-    extends AbstractSeq[A] with LinearSeq[A] with Product
+    extends AbstractSeq[A]
+    with LinearSeq[A]
+    with Product
     with GenericTraversableTemplate[A, List]
-    with LinearSeqOptimized[A, List[A]] with scala.Serializable {
+    with LinearSeqOptimized[A, List[A]]
+    with scala.Serializable {
   override def companion: GenericCompanion[List] = List
 
   def isEmpty: Boolean
@@ -160,7 +165,10 @@ sealed abstract class List[+A]
     // If any successful optimization attempts or other changes are made, please rehash them there too.
     @tailrec
     def loop(
-        mapped: ListBuffer[B], unchanged: List[A], pending: List[A]): List[B] =
+        mapped: ListBuffer[B],
+        unchanged: List[A],
+        pending: List[A]
+    ): List[B] =
       if (pending.isEmpty) {
         if (mapped eq null) unchanged
         else mapped.prependToList(unchanged)
@@ -187,15 +195,17 @@ sealed abstract class List[+A]
 
   // Overridden methods from IterableLike and SeqLike or overloaded variants of such methods
 
-  override def ++[B >: A, That](that: GenTraversableOnce[B])(
-      implicit bf: CanBuildFrom[List[A], B, That]): That =
+  override def ++[B >: A, That](
+      that: GenTraversableOnce[B]
+  )(implicit bf: CanBuildFrom[List[A], B, That]): That =
     if (bf eq List.ReusableCBF) (this ::: that.seq.toList).asInstanceOf[That]
     else super.++(that)
 
-  override def +:[B >: A, That](elem: B)(
-      implicit bf: CanBuildFrom[List[A], B, That]): That = bf match {
+  override def +:[B >: A, That](
+      elem: B
+  )(implicit bf: CanBuildFrom[List[A], B, That]): That = bf match {
     case _: List.GenericCanBuildFrom[_] => (elem :: this).asInstanceOf[That]
-    case _ => super.+:(elem)(bf)
+    case _                              => super.+:(elem)(bf)
   }
 
   override def toList: List[A] = this
@@ -246,7 +256,7 @@ sealed abstract class List[+A]
   override def takeRight(n: Int): List[A] = {
     @tailrec
     def loop(lead: List[A], lag: List[A]): List[A] = lead match {
-      case Nil => lag
+      case Nil       => lag
       case _ :: tail => loop(tail, lag.tail)
     }
     loop(drop(n), this)
@@ -266,8 +276,9 @@ sealed abstract class List[+A]
     (b.toList, these)
   }
 
-  final override def map[B, That](f: A => B)(
-      implicit bf: CanBuildFrom[List[A], B, That]): That = {
+  final override def map[B, That](
+      f: A => B
+  )(implicit bf: CanBuildFrom[List[A], B, That]): That = {
     if (bf eq List.ReusableCBF) {
       if (this eq Nil) Nil.asInstanceOf[That]
       else {
@@ -285,8 +296,9 @@ sealed abstract class List[+A]
     } else super.map(f)
   }
 
-  final override def collect[B, That](pf: PartialFunction[A, B])(
-      implicit bf: CanBuildFrom[List[A], B, That]): That = {
+  final override def collect[B, That](
+      pf: PartialFunction[A, B]
+  )(implicit bf: CanBuildFrom[List[A], B, That]): That = {
     if (bf eq List.ReusableCBF) {
       if (this eq Nil) Nil.asInstanceOf[That]
       else {
@@ -317,8 +329,9 @@ sealed abstract class List[+A]
     } else super.collect(pf)
   }
 
-  final override def flatMap[B, That](f: A => GenTraversableOnce[B])(
-      implicit bf: CanBuildFrom[List[A], B, That]): That = {
+  final override def flatMap[B, That](
+      f: A => GenTraversableOnce[B]
+  )(implicit bf: CanBuildFrom[List[A], B, That]): That = {
     if (bf eq List.ReusableCBF) {
       if (this eq Nil) Nil.asInstanceOf[That]
       else {
@@ -425,7 +438,7 @@ case object Nil extends List[Nothing] {
   // Removal of equals method here might lead to an infinite recursion similar to IntMap.equals.
   override def equals(that: Any) = that match {
     case that1: scala.collection.GenSeq[_] => that1.isEmpty
-    case _ => false
+    case _                                 => false
   }
 }
 
@@ -437,7 +450,9 @@ case object Nil extends List[Nothing] {
   *  @version 1.0, 15/07/2003
   *  @since   2.8
   */
-@SerialVersionUID(509929039250432923L) // value computed by serialver for 2.11.2, annotation added in 2.11.4
+@SerialVersionUID(
+  509929039250432923L
+) // value computed by serialver for 2.11.2, annotation added in 2.11.4
 final case class ::[B](override val head: B, private[scala] var tl: List[B])
     extends List[B] {
   override def tail: List[B] = tl

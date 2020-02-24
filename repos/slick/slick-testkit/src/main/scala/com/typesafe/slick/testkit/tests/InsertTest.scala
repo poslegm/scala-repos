@@ -27,26 +27,26 @@ class InsertTest extends AsyncTest[JdbcTestDB] {
     val dst3comp = Compiled { dst3 }
 
     DBIO.sequence(
-        Seq(
-            (src1.schema ++ dst1.schema ++ dst2.schema ++ dst3.schema).create,
-            src1 += (1, "A"),
-            src1.map(_.ins) ++= Seq((2, "B"), (3, "C")),
-            dst1.forceInsertQuery(src1),
-            dst1
-              .to[Set]
-              .result
-              .map(_ shouldBe Set((1, "A"), (2, "B"), (3, "C"))),
-            dst2.forceInsertQuery(q2),
-            dst2.to[Set].result.map(_ shouldBe Set((1, "A"), (2, "B"))),
-            dst2.forceInsertExpr(q3),
-            dst2
-              .to[Set]
-              .result
-              .map(_ shouldBe Set((1, "A"), (2, "B"), (42, "X"))),
-            dst3comp.forceInsertQuery(q4comp),
-            dst3comp.result.map(
-                v => v.to[Set] shouldBe Set((1, "A"), (2, "B")))
-        ))
+      Seq(
+        (src1.schema ++ dst1.schema ++ dst2.schema ++ dst3.schema).create,
+        src1 += (1, "A"),
+        src1.map(_.ins) ++= Seq((2, "B"), (3, "C")),
+        dst1.forceInsertQuery(src1),
+        dst1
+          .to[Set]
+          .result
+          .map(_ shouldBe Set((1, "A"), (2, "B"), (3, "C"))),
+        dst2.forceInsertQuery(q2),
+        dst2.to[Set].result.map(_ shouldBe Set((1, "A"), (2, "B"))),
+        dst2.forceInsertExpr(q3),
+        dst2
+          .to[Set]
+          .result
+          .map(_ shouldBe Set((1, "A"), (2, "B"), (42, "X"))),
+        dst3comp.forceInsertQuery(q4comp),
+        dst3comp.result.map(v => v.to[Set] shouldBe Set((1, "A"), (2, "B")))
+      )
+    )
   }
 
   def testEmptyInsert = {
@@ -57,9 +57,9 @@ class InsertTest extends AsyncTest[JdbcTestDB] {
     val as = TableQuery[A]
 
     DBIO.seq(
-        as.schema.create,
-        as += 42,
-        as.result.map(_ shouldBe Seq(1))
+      as.schema.create,
+      as += 42,
+      as.result.map(_ shouldBe Seq(1))
     )
   }
 
@@ -75,23 +75,17 @@ class InsertTest extends AsyncTest[JdbcTestDB] {
     def ins2 = as.map(a => (a.s1, a.s2)) returning as.map(a => (a.id, a.s1))
     def ins3 =
       as.map(a => (a.s1, a.s2)) returning as.map(_.id) into
-      ((v, i) => (i, v._1, v._2))
+        ((v, i) => (i, v._1, v._2))
     def ins4 = as.map(a => (a.s1, a.s2)) returning as.map(a => a)
 
     (for {
       _ <- as.schema.create
-      _ <- (ins1 += ("a", "b")) map { id1: Int =>
-        id1 shouldBe 1
-      }
+      _ <- (ins1 += ("a", "b")) map { id1: Int => id1 shouldBe 1 }
       _ <- ifCap(jcap.returnInsertOther) {
-        (ins2 += ("c", "d")) map { id2: (Int, String) =>
-          id2 shouldBe (2, "c")
-        }
+        (ins2 += ("c", "d")) map { id2: (Int, String) => id2 shouldBe (2, "c") }
       }
       _ <- ifNotCap(jcap.returnInsertOther) {
-        (ins1 += ("c", "d")) map { id2: Int =>
-          id2 shouldBe 2
-        }
+        (ins1 += ("c", "d")) map { id2: Int => id2 shouldBe 2 }
       }
       _ <- (ins1 ++= Seq(("e", "f"), ("g", "h"))) map (_ shouldBe Seq(3, 4))
       _ <- (ins3 += ("i", "j")) map (_ shouldBe (5, "i", "j"))
@@ -100,14 +94,15 @@ class InsertTest extends AsyncTest[JdbcTestDB] {
           id5 shouldBe (6, "k", "l")
         }
       }
-    } yield
-      ()).withPinnedSession // Some database servers (e.g. DB2) preallocate ID blocks per session
+    } yield ()).withPinnedSession // Some database servers (e.g. DB2) preallocate ID blocks per session
   }
 
   def testForced = {
     class T(tname: String)(tag: Tag)
         extends Table[(Int, String, Int, Boolean, String, String, Int)](
-            tag, tname) {
+          tag,
+          tname
+        ) {
       def id = column[Int]("id", O.AutoInc, O.PrimaryKey)
       def name = column[String]("name")
       def i1 = column[Int]("i1")
@@ -123,30 +118,37 @@ class InsertTest extends AsyncTest[JdbcTestDB] {
     val src = TableQuery(new T("src_forced")(_))
 
     seq(
-        (ts.schema ++ src.schema).create,
-        ts += (101, "A", 1, false, "S1", "S2", 0),
-        ts.map(_.ins) ++= Seq((102, "B", 1, false, "S1", "S2", 0),
-                              (103, "C", 1, false, "S1", "S2", 0)),
-        ts.filter(_.id > 100).length.result.map(_ shouldBe 0),
-        ifCap(jcap.forceInsert)(
-            seq(
-                ts.forceInsert(104, "A", 1, false, "S1", "S2", 0),
-                ts.map(_.ins)
-                  .forceInsertAll(Seq((105, "B", 1, false, "S1", "S2", 0),
-                                      (106, "C", 1, false, "S1", "S2", 0))),
-                ts.filter(_.id > 100).length.result.map(_ shouldBe 3),
-                ts.map(_.ins)
-                  .forceInsertAll(Seq((111, "D", 1, false, "S1", "S2", 0))),
-                ts.filter(_.id > 100).length.result.map(_ shouldBe 4),
-                src.forceInsert(90, "X", 1, false, "S1", "S2", 0),
-                mark("forceInsertQuery", ts.forceInsertQuery(src))
-                  .map(_ shouldBe 1),
-                ts.filter(_.id.between(90, 99))
-                  .result
-                  .headOption
-                  .map(_ shouldBe Some((90, "X", 1, false, "S1", "S2", 0)))
-              ))
+      (ts.schema ++ src.schema).create,
+      ts += (101, "A", 1, false, "S1", "S2", 0),
+      ts.map(_.ins) ++= Seq(
+        (102, "B", 1, false, "S1", "S2", 0),
+        (103, "C", 1, false, "S1", "S2", 0)
+      ),
+      ts.filter(_.id > 100).length.result.map(_ shouldBe 0),
+      ifCap(jcap.forceInsert)(
+        seq(
+          ts.forceInsert(104, "A", 1, false, "S1", "S2", 0),
+          ts.map(_.ins)
+            .forceInsertAll(
+              Seq(
+                (105, "B", 1, false, "S1", "S2", 0),
+                (106, "C", 1, false, "S1", "S2", 0)
+              )
+            ),
+          ts.filter(_.id > 100).length.result.map(_ shouldBe 3),
+          ts.map(_.ins)
+            .forceInsertAll(Seq((111, "D", 1, false, "S1", "S2", 0))),
+          ts.filter(_.id > 100).length.result.map(_ shouldBe 4),
+          src.forceInsert(90, "X", 1, false, "S1", "S2", 0),
+          mark("forceInsertQuery", ts.forceInsertQuery(src))
+            .map(_ shouldBe 1),
+          ts.filter(_.id.between(90, 99))
+            .result
+            .headOption
+            .map(_ shouldBe Some((90, "X", 1, false, "S1", "S2", 0)))
+        )
       )
+    )
   }
 
   def testInsertOrUpdatePlain = {

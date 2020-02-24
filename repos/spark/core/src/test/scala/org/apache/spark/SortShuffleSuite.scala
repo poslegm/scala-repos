@@ -56,12 +56,14 @@ class SortShuffleSuite extends ShuffleSuite with BeforeAndAfterAll {
   }
 
   test(
-      "SortShuffleManager properly cleans up files for shuffles that use the serialized path") {
+    "SortShuffleManager properly cleans up files for shuffles that use the serialized path"
+  ) {
     sc = new SparkContext("local", "test", conf)
     // Create a shuffled RDD and verify that it actually uses the new serialized map output path
     val rdd = sc.parallelize(1 to 10, 1).map(x => (x, x))
-    val shuffledRdd = new ShuffledRDD[Int, Int, Int](
-        rdd, new HashPartitioner(4)).setSerializer(new KryoSerializer(conf))
+    val shuffledRdd =
+      new ShuffledRDD[Int, Int, Int](rdd, new HashPartitioner(4))
+        .setSerializer(new KryoSerializer(conf))
     val shuffleDep =
       shuffledRdd.dependencies.head.asInstanceOf[ShuffleDependency[_, _, _]]
     assert(SortShuffleManager.canUseSerializedShuffle(shuffleDep))
@@ -69,12 +71,14 @@ class SortShuffleSuite extends ShuffleSuite with BeforeAndAfterAll {
   }
 
   test(
-      "SortShuffleManager properly cleans up files for shuffles that use the deserialized path") {
+    "SortShuffleManager properly cleans up files for shuffles that use the deserialized path"
+  ) {
     sc = new SparkContext("local", "test", conf)
     // Create a shuffled RDD and verify that it actually uses the old deserialized map output path
     val rdd = sc.parallelize(1 to 10, 1).map(x => (x, x))
-    val shuffledRdd = new ShuffledRDD[Int, Int, Int](
-        rdd, new HashPartitioner(4)).setSerializer(new JavaSerializer(conf))
+    val shuffledRdd =
+      new ShuffledRDD[Int, Int, Int](rdd, new HashPartitioner(4))
+        .setSerializer(new JavaSerializer(conf))
     val shuffleDep =
       shuffledRdd.dependencies.head.asInstanceOf[ShuffleDependency[_, _, _]]
     assert(!SortShuffleManager.canUseSerializedShuffle(shuffleDep))
@@ -82,7 +86,8 @@ class SortShuffleSuite extends ShuffleSuite with BeforeAndAfterAll {
   }
 
   private def ensureFilesAreCleanedUp(
-      shuffledRdd: ShuffledRDD[_, _, _]): Unit = {
+      shuffledRdd: ShuffledRDD[_, _, _]
+  ): Unit = {
     def getAllFiles: Set[File] =
       FileUtils
         .listFiles(tempDir, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE)

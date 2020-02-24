@@ -17,7 +17,9 @@ class RouteDirectivesExamplesSpec extends RoutingSpec {
         complete(HttpResponse(entity = "foo"))
       } ~ path("b") {
         complete((StatusCodes.Created, "bar"))
-      } ~ (path("c") & complete("baz")) // `&` also works with `complete` as the 2nd argument
+      } ~ (path("c") & complete(
+        "baz"
+      )) // `&` also works with `complete` as the 2nd argument
 
     // tests:
     Get("/a") ~> route ~> check {
@@ -79,8 +81,9 @@ class RouteDirectivesExamplesSpec extends RoutingSpec {
   }
 
   "failwith-examples" in EventFilter[RuntimeException](
-      start = "Error during processing of request",
-      occurrences = 1).intercept {
+    start = "Error during processing of request",
+    occurrences = 1
+  ).intercept {
     val route = path("foo") {
       failWith(new RuntimeException("Oops."))
     }

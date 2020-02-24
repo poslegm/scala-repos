@@ -54,7 +54,8 @@ object TextFieldTreeCell {
     * @return JavaFX $TFTC
     */
   implicit def sfxTextFieldTreeCell2jfx[T](
-      cell: TextFieldTreeCell[T]): jfxsc.cell.TextFieldTreeCell[T] =
+      cell: TextFieldTreeCell[T]
+  ): jfxsc.cell.TextFieldTreeCell[T] =
     if (cell != null) cell.delegate else null
 
   /**
@@ -79,15 +80,15 @@ object TextFieldTreeCell {
     * @return $FLVRET
     */
   def forTreeView[T](
-      converter: StringConverter[T]): (TreeView[T] => TreeCell[T]) =
+      converter: StringConverter[T]
+  ): (TreeView[T] => TreeCell[T]) =
     (view: TreeView[T]) =>
       jfxscc.TextFieldTreeCell.forTreeView[T](converter).call(view)
 
   /**
     * Added to satisfy Spec tests.
     */
-  @deprecated(
-      message = "Use forTreeView[T](StringConverter[T])", since = "1.0")
+  @deprecated(message = "Use forTreeView[T](StringConverter[T])", since = "1.0")
   def forTreeView[T](converter: jfxu.StringConverter[T]) =
     jfxscc.TextFieldTreeCell.forTreeView[T](converter)
 }
@@ -102,15 +103,15 @@ object TextFieldTreeCell {
   * @define TFTC `TextFieldTreeCell`
   */
 class TextFieldTreeCell[T](
-    override val delegate: jfxscc.TextFieldTreeCell[T] = new jfxscc.TextFieldTreeCell[
-          T])
-    extends TreeCell[T](delegate)
+    override val delegate: jfxscc.TextFieldTreeCell[T] =
+      new jfxscc.TextFieldTreeCell[T]
+) extends TreeCell[T](delegate)
     with ConvertableCell[jfxscc.TextFieldTreeCell[T], T, T]
     with UpdatableCell[jfxscc.TextFieldTreeCell[T], T]
     with SFXDelegate[jfxscc.TextFieldTreeCell[T]] {
 
   /**
-    * Creates a `TextFieldTreeCell` that provides a `TextField` when put into editing mode that allows editing of the 
+    * Creates a `TextFieldTreeCell` that provides a `TextField` when put into editing mode that allows editing of the
     * cell content.
     *
     * @param converter A `converter` that can convert the given String (from what the user typed in) into an instance of type T.

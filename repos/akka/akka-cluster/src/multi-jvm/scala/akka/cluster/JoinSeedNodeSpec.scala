@@ -20,7 +20,8 @@ object JoinSeedNodeMultiJvmSpec extends MultiNodeConfig {
   val ordinary2 = role("ordinary2")
 
   commonConfig(
-      debugConfig(on = false).withFallback(MultiNodeClusterSpec.clusterConfig))
+    debugConfig(on = false).withFallback(MultiNodeClusterSpec.clusterConfig)
+  )
 }
 
 class JoinSeedNodeMultiJvmNode1 extends JoinSeedNodeSpec
@@ -30,7 +31,8 @@ class JoinSeedNodeMultiJvmNode4 extends JoinSeedNodeSpec
 class JoinSeedNodeMultiJvmNode5 extends JoinSeedNodeSpec
 
 abstract class JoinSeedNodeSpec
-    extends MultiNodeSpec(JoinSeedNodeMultiJvmSpec) with MultiNodeClusterSpec {
+    extends MultiNodeSpec(JoinSeedNodeMultiJvmSpec)
+    with MultiNodeClusterSpec {
 
   import JoinSeedNodeMultiJvmSpec._
 

@@ -69,8 +69,8 @@ object ComboBoxTreeTableCell {
     * @return $JFX $CBTC
     */
   implicit def sfxComboBoxTreeTableCell2jfx[S, T](
-      cell: ComboBoxTreeTableCell[S, T])
-    : jfxsc.cell.ComboBoxTreeTableCell[S, T] =
+      cell: ComboBoxTreeTableCell[S, T]
+  ): jfxsc.cell.ComboBoxTreeTableCell[S, T] =
     if (cell != null) cell.delegate else null
 
   /**
@@ -80,16 +80,19 @@ object ComboBoxTreeTableCell {
     * @param items $ITEMSPARAM
     * @return $RET
     */
-  def forTreeTableColumn[S, T](items: ObservableBuffer[T])
-    : (jfxsc.TreeTableColumn[S, T] => TreeTableCell[S, T]) =
+  def forTreeTableColumn[S, T](
+      items: ObservableBuffer[T]
+  ): (jfxsc.TreeTableColumn[S, T] => TreeTableCell[S, T]) =
     (view: jfxsc.TreeTableColumn[S, T]) =>
       jfxscc.ComboBoxTreeTableCell.forTreeTableColumn[S, T](items).call(view)
 
   /**
     * $SATISFY
     */
-  @deprecated(message = "Use forTreeTableColumn[S, T](ObservableBuffer[S, T])",
-              since = "8.0")
+  @deprecated(
+    message = "Use forTreeTableColumn[S, T](ObservableBuffer[S, T])",
+    since = "8.0"
+  )
   def forTreeTableColumn[S, T](items: jfxc.ObservableList[T]) =
     jfxscc.ComboBoxTreeTableCell.forTreeTableColumn[S, T](items)
 
@@ -102,8 +105,9 @@ object ComboBoxTreeTableCell {
     * @return $RET
     */
   def forTreeTableColumn[S, T](
-      converter: StringConverter[T], items: ObservableBuffer[T])
-    : (jfxsc.TreeTableColumn[S, T] => TreeTableCell[S, T]) =
+      converter: StringConverter[T],
+      items: ObservableBuffer[T]
+  ): (jfxsc.TreeTableColumn[S, T] => TreeTableCell[S, T]) =
     (view: jfxsc.TreeTableColumn[S, T]) =>
       jfxscc.ComboBoxTreeTableCell
         .forTreeTableColumn[S, T](converter, items)
@@ -113,10 +117,14 @@ object ComboBoxTreeTableCell {
     * $SATISFY
     */
   @deprecated(
-      message = "Use forTreeTableColumn[S, T](StringConverter[S, T], ObservableBuffer[S, T])",
-      since = "8.0")
+    message =
+      "Use forTreeTableColumn[S, T](StringConverter[S, T], ObservableBuffer[S, T])",
+    since = "8.0"
+  )
   def forTreeTableColumn[S, T](
-      converter: jfxu.StringConverter[T], items: jfxc.ObservableList[T]) =
+      converter: jfxu.StringConverter[T],
+      items: jfxc.ObservableList[T]
+  ) =
     jfxscc.ComboBoxTreeTableCell.forTreeTableColumn[S, T](converter, items)
 
   /**
@@ -129,7 +137,8 @@ object ComboBoxTreeTableCell {
     */
   def forTreeTableColumn[S, T](
       converter: StringConverter[T],
-      items: T*): (jfxsc.TreeTableColumn[S, T] => TreeTableCell[S, T]) =
+      items: T*
+  ): (jfxsc.TreeTableColumn[S, T] => TreeTableCell[S, T]) =
     (view: jfxsc.TreeTableColumn[S, T]) =>
       jfxscc.ComboBoxTreeTableCell
         .forTreeTableColumn[S, T](converter, items: _*)
@@ -139,8 +148,9 @@ object ComboBoxTreeTableCell {
     * $SATISFY
     */
   @deprecated(
-      message = "Use forTreeTableColumn[S, T](StringConverter[S, T], T*)",
-      since = "8.0")
+    message = "Use forTreeTableColumn[S, T](StringConverter[S, T], T*)",
+    since = "8.0"
+  )
   def forTreeTableColumn[S, T](converter: jfxu.StringConverter[T], items: T*) =
     jfxscc.ComboBoxTreeTableCell.forTreeTableColumn[S, T](converter, items: _*)
 
@@ -152,7 +162,8 @@ object ComboBoxTreeTableCell {
     * @return $RET
     */
   def forTreeTableColumn[S, T](
-      items: T*): (jfxsc.TreeTableColumn[S, T] => TreeTableCell[S, T]) =
+      items: T*
+  ): (jfxsc.TreeTableColumn[S, T] => TreeTableCell[S, T]) =
     (view: jfxsc.TreeTableColumn[S, T]) =>
       jfxscc.ComboBoxTreeTableCell
         .forTreeTableColumn[S, T](items: _*)
@@ -182,9 +193,10 @@ object ComboBoxTreeTableCell {
   * @define CONVPARAM A $STCV that can convert an item of type T into a user-readable string so that it may then be shown in the $CMBX popup menu.
   * @define ITEMSPARAM The items to show in the $CMBX popup menu when selected by the user.
   */
-class ComboBoxTreeTableCell[S, T](override val delegate: jfxscc.ComboBoxTreeTableCell[
-        S, T] = new jfxscc.ComboBoxTreeTableCell[S, T])
-    extends TreeTableCell[S, T](delegate)
+class ComboBoxTreeTableCell[S, T](
+    override val delegate: jfxscc.ComboBoxTreeTableCell[S, T] =
+      new jfxscc.ComboBoxTreeTableCell[S, T]
+) extends TreeTableCell[S, T](delegate)
     with ConvertableCell[jfxscc.ComboBoxTreeTableCell[S, T], T, T]
     with ComboBoxEditableCell[jfxscc.ComboBoxTreeTableCell[S, T], T]
     with UpdatableCell[jfxscc.ComboBoxTreeTableCell[S, T], T]

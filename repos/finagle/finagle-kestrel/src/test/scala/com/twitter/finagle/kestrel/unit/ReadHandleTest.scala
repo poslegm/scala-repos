@@ -53,21 +53,16 @@ class ReadHandleTest extends FunSuite {
     }
   }
 
-  test(
-      "ReadHandle.buffered should not synchronize on send when buffer is full") {
+  test("ReadHandle.buffered should not synchronize on send when buffer is full") {
     new BufferedReadHandle {
-      0 until N foreach { _ =>
-        assert((messages ! msg(0)).isDefined == true)
-      }
+      0 until N foreach { _ => assert((messages ! msg(0)).isDefined == true) }
       assert((messages ! msg(0)).isDefined == false)
     }
   }
 
   test("ReadHandle.buffered should keep the buffer full") {
     new BufferedReadHandle {
-      0 until N foreach { _ =>
-        messages ! msg(0)
-      }
+      0 until N foreach { _ => messages ! msg(0) }
       val sent = messages ! msg(0)
       assert(sent.isDefined == false)
       val recvd = (buffered.messages ?)
@@ -79,9 +74,7 @@ class ReadHandleTest extends FunSuite {
 
   test("ReadHandle.buffered should preserve FIFO order") {
     new BufferedReadHandle {
-      0 until N foreach { i =>
-        messages ! msg(i)
-      }
+      0 until N foreach { i => messages ! msg(i) }
 
       0 until N foreach { i =>
         val recvd = (buffered.messages ?)
@@ -114,7 +107,8 @@ class ReadHandleTest extends FunSuite {
   }
 
   test(
-      "ReadHandle.buffered should when closed wait for outstanding acks before closing underlying") {
+    "ReadHandle.buffered should when closed wait for outstanding acks before closing underlying"
+  ) {
     new BufferedReadHandle {
       val closed = (close ?)
       assert(closed.isDefined == false)
@@ -136,9 +130,7 @@ class ReadHandleTest extends FunSuite {
   test("ReadHandle.merged should") {
     new MergedReadHandle {
       var count = 0
-      merged.messages.foreach { _ =>
-        count += 1
-      }
+      merged.messages.foreach { _ => count += 1 }
       assert(count == 0)
 
       messages0 ! msg(0)
@@ -150,12 +142,11 @@ class ReadHandleTest extends FunSuite {
   }
 
   test(
-      "ReadHandle.merged should provide a merged stream of errors provide a merged stream of messages") {
+    "ReadHandle.merged should provide a merged stream of errors provide a merged stream of messages"
+  ) {
     new MergedReadHandle {
       var count = 0
-      merged.error.foreach { _ =>
-        count += 1
-      }
+      merged.error.foreach { _ => count += 1 }
       assert(count == 0)
 
       error0 ! new Exception("sad panda")

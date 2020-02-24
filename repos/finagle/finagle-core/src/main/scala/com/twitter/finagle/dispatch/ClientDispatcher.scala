@@ -14,8 +14,9 @@ import java.net.InetSocketAddress
   * @param statsReceiver typically scoped to `clientName/dispatcher`
   */
 abstract class GenSerialClientDispatcher[Req, Rep, In, Out](
-    trans: Transport[In, Out], statsReceiver: StatsReceiver)
-    extends Service[Req, Rep] {
+    trans: Transport[In, Out],
+    statsReceiver: StatsReceiver
+) extends Service[Req, Rep] {
 
   def this(trans: Transport[In, Out]) =
     this(trans, NullStatsReceiver)
@@ -30,14 +31,14 @@ abstract class GenSerialClientDispatcher[Req, Rep, In, Out](
   private[this] val localAddress: InetSocketAddress =
     trans.localAddress match {
       case ia: InetSocketAddress => ia
-      case _ => new InetSocketAddress(0)
+      case _                     => new InetSocketAddress(0)
     }
 
   // satisfy pending requests on transport close
   trans.onClose.respond { res =>
     val exc = res match {
       case Return(exc) => exc
-      case Throw(exc) => exc
+      case Throw(exc)  => exc
     }
 
     semaphore.fail(exc)
@@ -110,8 +111,9 @@ object GenSerialClientDispatcher {
   * @param statsReceiver typically scoped to `clientName/dispatcher`
   */
 class SerialClientDispatcher[Req, Rep](
-    trans: Transport[Req, Rep], statsReceiver: StatsReceiver)
-    extends GenSerialClientDispatcher[Req, Rep, Req, Rep](trans, statsReceiver) {
+    trans: Transport[Req, Rep],
+    statsReceiver: StatsReceiver
+) extends GenSerialClientDispatcher[Req, Rep, Req, Rep](trans, statsReceiver) {
 
   import GenSerialClientDispatcher.wrapWriteException
 

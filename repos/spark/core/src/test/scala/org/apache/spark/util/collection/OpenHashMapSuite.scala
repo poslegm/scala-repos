@@ -44,7 +44,9 @@ class OpenHashMapSuite extends SparkFunSuite with Matchers {
     val goodMap3 = new OpenHashMap[String, String](256)
     assert(goodMap3.size === 0)
     intercept[IllegalArgumentException] {
-      new OpenHashMap[String, Int](1 << 30 + 1) // Invalid map size: bigger than 2^30
+      new OpenHashMap[String, Int](
+        1 << 30 + 1
+      ) // Invalid map size: bigger than 2^30
     }
     intercept[IllegalArgumentException] {
       new OpenHashMap[String, Int](-1)
@@ -109,7 +111,7 @@ class OpenHashMapSuite extends SparkFunSuite with Matchers {
     }
     val expected =
       (1 to 1000).map(_.toString).map(x => (x, x)) :+
-      (null.asInstanceOf[String], "-1")
+        (null.asInstanceOf[String], "-1")
     assert(set === expected.toSet)
   }
 
@@ -146,12 +148,10 @@ class OpenHashMapSuite extends SparkFunSuite with Matchers {
     }
     assert(map.size === 100)
     for (i <- 1 to 100) {
-      val res = map.changeValue(i.toString, { assert(false); "" },
-                                v =>
-                                  {
-                                    assert(v === i.toString)
-                                    v + "!"
-                                })
+      val res = map.changeValue(i.toString, { assert(false); "" }, v => {
+        assert(v === i.toString)
+        v + "!"
+      })
       assert(res === i + "!")
     }
     // Iterate from 101 to 400 to make sure the map grows a couple of times, because we had a
@@ -165,12 +165,10 @@ class OpenHashMapSuite extends SparkFunSuite with Matchers {
     assert(map(null) === null)
     map.changeValue(null, { "null!" }, v => { assert(false); v })
     assert(map.size === 401)
-    map.changeValue(null, { assert(false); "" },
-                    v =>
-                      {
-                        assert(v === "null!")
-                        "null!!"
-                    })
+    map.changeValue(null, { assert(false); "" }, v => {
+      assert(v === "null!")
+      "null!!"
+    })
     assert(map.size === 401)
   }
 

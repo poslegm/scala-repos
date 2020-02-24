@@ -4,10 +4,12 @@ import lila.message.{ThreadRepo, Api => MessageApi}
 import lila.user.UserRepo
 import org.joda.time.DateTime
 
-private[blog] final class Notifier(blogApi: BlogApi,
-                                   messageApi: MessageApi,
-                                   lastPostCache: LastPostCache,
-                                   lichessUserId: String) {
+private[blog] final class Notifier(
+    blogApi: BlogApi,
+    messageApi: MessageApi,
+    lastPostCache: LastPostCache,
+    lichessUserId: String
+) {
 
   def apply {
     blogApi.prismicApi foreach { prismicApi =>
@@ -16,7 +18,9 @@ private[blog] final class Notifier(blogApi: BlogApi,
       } foreach {
         _ ?? { post =>
           ThreadRepo.visibleByUserContainingExists(
-              user = lichessUserId, containing = post.id) foreach {
+            user = lichessUserId,
+            containing = post.id
+          ) foreach {
             case true => funit
             case false =>
               UserRepo recentlySeenNotKidIds DateTime.now.minusWeeks(2) foreach {
@@ -38,10 +42,11 @@ private[blog] final class Notifier(blogApi: BlogApi,
 
   private def makeThread(doc: io.prismic.Document) =
     lila.hub.actorApi.message.LichessThread(
-        from = lichessUserId,
-        to = "",
-        subject = s"New blog post: ${~doc.getText("blog.title")}",
-        message = s"""${~doc.getText("blog.shortlede")}
+      from = lichessUserId,
+      to = "",
+      subject = s"New blog post: ${~doc.getText("blog.title")}",
+      message = s"""${~doc.getText("blog.shortlede")}
 
-Continue reading this post on http://lichess.org/blog/${doc.id}/${doc.slug}""")
+Continue reading this post on http://lichess.org/blog/${doc.id}/${doc.slug}"""
+    )
 }

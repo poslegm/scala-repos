@@ -27,10 +27,10 @@ case class EnsimeConfig(
     disableSourceMonitoring: Boolean = false,
     disableClassMonitoring: Boolean = false
 ) {
-  (rootDir :: cacheDir :: javaHome :: referenceSourceRoots ::: javaLibs).foreach {
-    f =>
+  (rootDir :: cacheDir :: javaHome :: referenceSourceRoots ::: javaLibs)
+    .foreach { f =>
       require(f.exists, "" + f + " is required but does not exist")
-  }
+    }
 
   /* Proposed alternatives to the legacy wire format field names */
   def root = rootDir
@@ -39,9 +39,7 @@ case class EnsimeConfig(
     (referenceSourceRoots ++ subprojects.flatMap(_.referenceSourceRoots)).toSet
 
   // some marshalling libs (e.g. spray-json) might not like extra vals
-  val modules = subprojects.map { module =>
-    (module.name, module)
-  }.toMap
+  val modules = subprojects.map { module => (module.name, module) }.toMap
 
   def runtimeClasspath: Set[File] =
     compileClasspath ++ modules.values.flatMap(_.runtimeDeps) ++ targetClasspath
@@ -52,14 +50,11 @@ case class EnsimeConfig(
     } ++ (if (sourceMode) List.empty else targetClasspath)
 
   def targetClasspath: Set[File] = modules.values.toSet.flatMap {
-    m: EnsimeModule =>
-      m.targetDirs ++ m.testTargetDirs
+    m: EnsimeModule => m.targetDirs ++ m.testTargetDirs
   }
 
   def allJars: Set[File] = {
-    modules.values.flatMap { m =>
-      m.compileDeps ::: m.testDeps
-    }.toSet
+    modules.values.flatMap { m => m.compileDeps ::: m.testDeps }.toSet
   } ++ javaLibs
 
   def allDocJars: Set[File] = modules.values.flatMap(_.docJars).toSet
@@ -85,8 +80,7 @@ case class EnsimeModule(
 ) {
   // only check the files, not the directories, see below
   (compileDeps ::: runtimeDeps ::: testDeps ::: referenceSourceRoots).foreach {
-    f =>
-      require(f.exists, "" + f + " is required but does not exist")
+    f => require(f.exists, "" + f + " is required but does not exist")
   }
 
   /*

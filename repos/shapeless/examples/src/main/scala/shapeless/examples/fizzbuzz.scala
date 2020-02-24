@@ -50,14 +50,16 @@ object FizzBuzzExample {
 
   sealed trait NatToFizzBuzInstances0 extends NatToFizzBuzzInstances1 {
     implicit def fizz[N <: Nat](
-        implicit ev: Mod.Aux[N, _3, _0]): Aux[N, Fizz.type] =
+        implicit ev: Mod.Aux[N, _3, _0]
+    ): Aux[N, Fizz.type] =
       new NatToFizzBuzz[N] {
         type Out = Fizz.type
         def apply = Fizz
       }
 
     implicit def buzz[N <: Nat](
-        implicit ev: Mod.Aux[N, _5, _0]): Aux[N, Buzz.type] =
+        implicit ev: Mod.Aux[N, _5, _0]
+    ): Aux[N, Buzz.type] =
       new NatToFizzBuzz[N] {
         type Out = Buzz.type
         def apply = Buzz
@@ -72,7 +74,8 @@ object FizzBuzzExample {
   object NatToFizzBuzz extends NatToFizzBuzInstances0 {
     implicit def fizzAndBuzz[N <: Nat](
         implicit fizz: Aux[N, Fizz.type],
-        buzz: Aux[N, Buzz.type]): Aux[N, FizzAndBuzz.type] =
+        buzz: Aux[N, Buzz.type]
+    ): Aux[N, FizzAndBuzz.type] =
       new NatToFizzBuzz[N] {
         type Out = FizzAndBuzz.type
         def apply = FizzAndBuzz
@@ -95,7 +98,8 @@ object FizzBuzzExample {
 
     implicit def succRevFizzBuzz[N <: Nat](
         implicit f: RevFizzBuzz[N],
-        n: NatToFizzBuzz[Succ[N]]): Aux[Succ[N], n.Out :: f.Out] =
+        n: NatToFizzBuzz[Succ[N]]
+    ): Aux[Succ[N], n.Out :: f.Out] =
       new RevFizzBuzz[Succ[N]] {
         type Out = n.Out :: f.Out
         def apply = n.apply :: f.apply
@@ -112,7 +116,9 @@ object FizzBuzzExample {
     type Aux[N <: Nat, L <: HList] = FizzBuzzResult[N] { type Out = L }
 
     implicit def fizzBuzzResult[N <: Nat, L <: HList](
-        implicit rfb: RevFizzBuzz.Aux[N, L], r: Reverse[L]): Aux[N, r.Out] =
+        implicit rfb: RevFizzBuzz.Aux[N, L],
+        r: Reverse[L]
+    ): Aux[N, r.Out] =
       new FizzBuzzResult[N] {
         type Out = r.Out
         def apply() = r(rfb())

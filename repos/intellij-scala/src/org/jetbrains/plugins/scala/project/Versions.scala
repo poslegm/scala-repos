@@ -22,15 +22,17 @@ object Versions extends Versions {
 
   private object Scala
       extends Entity(
-          "http://repo1.maven.org/maven2/org/scala-lang/scala-compiler/",
-          Version("2.8.0"),
-          Seq("2.8.2", "2.9.3", "2.10.4", "2.11.5"))
+        "http://repo1.maven.org/maven2/org/scala-lang/scala-compiler/",
+        Version("2.8.0"),
+        Seq("2.8.2", "2.9.3", "2.10.4", "2.11.5")
+      )
 
   private object Sbt
       extends Entity(
-          "http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/launcher/",
-          Version("0.12.0"),
-          Seq("0.12.4", "0.13.7"))
+        "http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/launcher/",
+        Version("0.12.0"),
+        Seq("0.12.4", "0.13.7")
+      )
 }
 
 trait Versions {
@@ -49,10 +51,9 @@ trait Versions {
 
   protected def loadVersionsFrom(
       url: String,
-      filter: PartialFunction[String, String]): Try[Seq[String]] = {
-    loadLinesFrom(url).map { lines =>
-      lines.collect(filter)
-    }
+      filter: PartialFunction[String, String]
+  ): Try[Seq[String]] = {
+    loadLinesFrom(url).map { lines => lines.collect(filter) }
   }
 
   private def loadLinesFrom(url: String): Try[Seq[String]] = {
@@ -67,7 +68,10 @@ trait Versions {
   }
 
   protected case class Entity(
-      url: String, minVersion: Version, hardcodedVersions: Seq[String]) {
+      url: String,
+      minVersion: Version,
+      hardcodedVersions: Seq[String]
+  ) {
     def defaultVersion: String = hardcodedVersions.last
   }
 }

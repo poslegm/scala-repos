@@ -69,9 +69,7 @@ class FlashMap extends MutableMapWithIndifferentAccess[Any] with Serializable {
     * Removes all flagged entries.
     */
   def sweep(): Unit = {
-    flagged foreach { key =>
-      m -= key
-    }
+    flagged foreach { key => m -= key }
   }
 
   /**
@@ -143,7 +141,9 @@ trait FlashMapSupport extends Handler {
   import org.scalatra.FlashMapSupport._
 
   abstract override def handle(
-      req: HttpServletRequest, res: HttpServletResponse): Unit = {
+      req: HttpServletRequest,
+      res: HttpServletResponse
+  ): Unit = {
     withRequest(req) {
       val f = flash
       val isOutermost = !request.contains(LockKey)

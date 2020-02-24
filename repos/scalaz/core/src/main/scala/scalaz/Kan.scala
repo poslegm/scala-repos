@@ -27,8 +27,9 @@ object Ran {
     * natural transformation `toRan` exists from `K` to `Ran[G,H,_]` such that
     * for all `k`, `gran(toRan(k)) = s(k)`.
     */
-  def toRan[G[_], H[_], K[_]: Functor, B](k: K[B])(
-      s: λ[α => K[G[α]]] ~> H): Ran[G, H, B] =
+  def toRan[G[_], H[_], K[_]: Functor, B](
+      k: K[B]
+  )(s: λ[α => K[G[α]]] ~> H): Ran[G, H, B] =
     new Ran[G, H, B] {
       def apply[C](f: B => G[C]) = s(Functor[K].map(k)(f))
     }
@@ -40,17 +41,20 @@ object Ran {
     s(k)(x => x)
 
   def adjointToRan[F[_], G[_], A](
-      f: F[A])(implicit A: Adjunction[F, G]): Ran[G, Id, A] =
+      f: F[A]
+  )(implicit A: Adjunction[F, G]): Ran[G, Id, A] =
     new Ran[G, Id, A] {
       def apply[B](a: A => G[B]) = A.rightAdjunct(f)(a)
     }
 
-  def ranToAdjoint[F[_], G[_], A](r: Ran[G, Id, A])(
-      implicit A: Adjunction[F, G]): F[A] =
+  def ranToAdjoint[F[_], G[_], A](
+      r: Ran[G, Id, A]
+  )(implicit A: Adjunction[F, G]): F[A] =
     r(a => A.unit(a))
 
   def composedAdjointToRan[F[_], G[_], H[_], A](
-      h: H[F[A]])(implicit A: Adjunction[F, G], H: Functor[H]): Ran[G, H, A] =
+      h: H[F[A]]
+  )(implicit A: Adjunction[F, G], H: Functor[H]): Ran[G, H, A] =
     new Ran[G, H, A] {
       def apply[B](f: A => G[B]) = H.map(h)(A.rightAdjunct(_)(f))
     }
@@ -93,8 +97,8 @@ trait Lan[G[_], H[_], A] { lan =>
 object Lan extends LanInstances {
   import Id._
 
-  implicit def lanApplicative[G[_]: Functor, H[_]: Applicative]: Applicative[
-      Lan[G, H, ?]] =
+  implicit def lanApplicative[G[_]: Functor, H[_]: Applicative]
+      : Applicative[Lan[G, H, ?]] =
     new Applicative[Lan[G, H, ?]] with LanApply[G, H] {
       def G = implicitly
       def H = implicitly
@@ -120,19 +124,22 @@ object Lan extends LanInstances {
     }
 
   def adjointToLan[F[_], G[_], A](
-      ga: G[A])(implicit A: Adjunction[F, G]): Lan[F, Id, A] =
+      ga: G[A]
+  )(implicit A: Adjunction[F, G]): Lan[F, Id, A] =
     new Lan[F, Id, A] {
       type I = G[A]
       lazy val v = ga
       def f(gi: F[I]) = A.counit(gi)
     }
 
-  def lanToAdjoint[F[_], G[_], A](lan: Lan[F, Id, A])(
-      implicit A: Adjunction[F, G]): G[A] =
+  def lanToAdjoint[F[_], G[_], A](
+      lan: Lan[F, Id, A]
+  )(implicit A: Adjunction[F, G]): G[A] =
     A.leftAdjunct(lan.v)(lan.f)
 
-  def composedAdjointToLan[F[_], G[_], H[_], A](h: H[G[A]])(
-      implicit A: Adjunction[F, G]): Lan[F, H, A] = new Lan[F, H, A] {
+  def composedAdjointToLan[F[_], G[_], H[_], A](
+      h: H[G[A]]
+  )(implicit A: Adjunction[F, G]): Lan[F, H, A] = new Lan[F, H, A] {
     type I = G[A]
     val v = h
     def f(fi: F[I]) = A.counit(fi)
@@ -157,7 +164,8 @@ private trait LanFunctor[G[_], H[_]] extends Functor[Lan[G, H, ?]] {
 }
 
 private trait LanApply[G[_], H[_]]
-    extends Apply[Lan[G, H, ?]] with LanFunctor[G, H] {
+    extends Apply[Lan[G, H, ?]]
+    with LanFunctor[G, H] {
   def G: Functor[G]
   def H: Apply[H]
 

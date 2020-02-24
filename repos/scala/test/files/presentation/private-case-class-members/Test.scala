@@ -9,7 +9,8 @@ object Test extends InteractiveTest {
   }
 
   private def loadSourceAndWaitUntilTypechecked(
-      sourceName: String): SourceFile = {
+      sourceName: String
+  ): SourceFile = {
     val sourceFile = sourceFiles.find(_.file.name == sourceName).head
     compiler.askToDoFirst(sourceFile)
     val res = new Response[Unit]

@@ -11,7 +11,8 @@ class SwankProtocol extends FramedStringProtocol {
   import SwankFormats._
 
   override def decode(
-      bytes: ByteString): (Option[RpcRequestEnvelope], ByteString) = {
+      bytes: ByteString
+  ): (Option[RpcRequestEnvelope], ByteString) = {
     tryReadString(bytes) match {
       case (Some(message), remainder) =>
         val parsedMessage = message.parseSexp.convertTo[RpcRequestEnvelope]

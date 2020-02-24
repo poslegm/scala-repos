@@ -18,7 +18,8 @@ trait UrlGeneratorSupport {
     * determined.  This may occur outside of an HTTP request's lifecycle.
     */
   def url(route: Route, params: Tuple2[String, String]*)(
-      implicit req: HttpServletRequest): String =
+      implicit req: HttpServletRequest
+  ): String =
     url(route, params.toMap, Seq.empty)
 
   /**
@@ -33,7 +34,8 @@ trait UrlGeneratorSupport {
     * determined.  This may occur outside of an HTTP request's lifecycle.
     */
   def url(route: Route, splat: String, moreSplats: String*)(
-      implicit req: HttpServletRequest): String =
+      implicit req: HttpServletRequest
+  ): String =
     url(route, Map[String, String](), splat +: moreSplats)
 
   /**
@@ -48,7 +50,8 @@ trait UrlGeneratorSupport {
     * determined.  This may occur outside of an HTTP request's lifecycle.
     */
   def url(route: Route, params: Map[String, String], splats: Iterable[String])(
-      implicit req: HttpServletRequest): String =
+      implicit req: HttpServletRequest
+  ): String =
     route.reversibleMatcher match {
       case Some(matcher: ReversibleRouteMatcher) =>
         route.contextPath(req) + matcher.reverse(params, splats.toList)

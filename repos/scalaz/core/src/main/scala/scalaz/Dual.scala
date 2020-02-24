@@ -6,7 +6,8 @@ object Dual extends DualInstances {
 
 sealed abstract class DualInstances0 {
   implicit def dualSemigroup[F](
-      implicit F0: Semigroup[F]): Semigroup[F @@ Tags.Dual] =
+      implicit F0: Semigroup[F]
+  ): Semigroup[F @@ Tags.Dual] =
     new DualSemigroup[F] {
       implicit def F = F0
     }
@@ -29,7 +30,8 @@ private trait DualSemigroup[F] extends Semigroup[F @@ Tags.Dual] {
 }
 
 private trait DualMonoid[F]
-    extends Monoid[F @@ Tags.Dual] with DualSemigroup[F] {
+    extends Monoid[F @@ Tags.Dual]
+    with DualSemigroup[F] {
   implicit def F: Monoid[F]
   def zero = Tag(F.zero)
 }

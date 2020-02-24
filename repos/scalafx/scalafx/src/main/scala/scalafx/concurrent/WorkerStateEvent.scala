@@ -36,7 +36,8 @@ import scalafx.event.{Event, EventType}
 
 object WorkerStateEvent {
   implicit def sfxWorkerStateEvent2jfx(
-      w: WorkerStateEvent): jfxc.WorkerStateEvent =
+      w: WorkerStateEvent
+  ): jfxc.WorkerStateEvent =
     if (w != null) w.delegate else null
 
   /**
@@ -51,8 +52,9 @@ object WorkerStateEvent {
   val WorkerStateCancelled: EventType[jfxc.WorkerStateEvent] =
     jfxc.WorkerStateEvent.WORKER_STATE_CANCELLED
   @deprecated(
-      "Use WorkerStateCancelled; WORKER_STATE_CANCELLED will be removed in a future release",
-      "8.0.60-R10")
+    "Use WorkerStateCancelled; WORKER_STATE_CANCELLED will be removed in a future release",
+    "8.0.60-R10"
+  )
   val WORKER_STATE_CANCELLED = WorkerStateCancelled
 
   /**
@@ -62,8 +64,9 @@ object WorkerStateEvent {
   val WorkerStateFailed: EventType[jfxc.WorkerStateEvent] =
     jfxc.WorkerStateEvent.WORKER_STATE_FAILED
   @deprecated(
-      "Use WorkerStateFailed; WORKER_STATE_FAILED will be removed in a future release",
-      "8.0.60-R10")
+    "Use WorkerStateFailed; WORKER_STATE_FAILED will be removed in a future release",
+    "8.0.60-R10"
+  )
   val WORKER_STATE_FAILED = WorkerStateFailed
 
   /**
@@ -73,8 +76,9 @@ object WorkerStateEvent {
   val WorkerStateReady: EventType[jfxc.WorkerStateEvent] =
     jfxc.WorkerStateEvent.WORKER_STATE_READY
   @deprecated(
-      "Use WorkerStateReady; WORKER_STATE_READY will be removed in a future release",
-      "8.0.60-R10")
+    "Use WorkerStateReady; WORKER_STATE_READY will be removed in a future release",
+    "8.0.60-R10"
+  )
   val WORKER_STATE_READY = WorkerStateReady
 
   /**
@@ -84,8 +88,9 @@ object WorkerStateEvent {
   val WorkerStateRunning: EventType[jfxc.WorkerStateEvent] =
     jfxc.WorkerStateEvent.WORKER_STATE_RUNNING
   @deprecated(
-      "Use WorkerStateRunning; WORKER_STATE_RUNNING will be removed in a future release",
-      "8.0.60-R10")
+    "Use WorkerStateRunning; WORKER_STATE_RUNNING will be removed in a future release",
+    "8.0.60-R10"
+  )
   val WORKER_STATE_RUNNING = WorkerStateRunning
 
   /**
@@ -95,8 +100,9 @@ object WorkerStateEvent {
   val WorkerStateScheduled: EventType[jfxc.WorkerStateEvent] =
     jfxc.WorkerStateEvent.WORKER_STATE_SCHEDULED
   @deprecated(
-      "Use WorkerStateScheduled; WORKER_STATE_SCHEDULED will be removed in a future release",
-      "8.0.60-R10")
+    "Use WorkerStateScheduled; WORKER_STATE_SCHEDULED will be removed in a future release",
+    "8.0.60-R10"
+  )
   val WORKER_STATE_SCHEDULED = WorkerStateScheduled
 
   /**
@@ -106,8 +112,9 @@ object WorkerStateEvent {
   val WorkerStateSucceeded: EventType[jfxc.WorkerStateEvent] =
     jfxc.WorkerStateEvent.WORKER_STATE_SUCCEEDED
   @deprecated(
-      "Use WorkerStateSucceeded; WORKER_STATE_SUCCEEDED will be removed in a future release",
-      "8.0.60-R10")
+    "Use WorkerStateSucceeded; WORKER_STATE_SUCCEEDED will be removed in a future release",
+    "8.0.60-R10"
+  )
   val WORKER_STATE_SUCCEEDED = WorkerStateSucceeded
 }
 
@@ -115,7 +122,8 @@ object WorkerStateEvent {
   * Wrapper trait for [[http://docs.oracle.com/javase/8/javafx/api/javafx/concurrent/WorkerStateEvent.html WorkerStateEvent]] Class.
   */
 class WorkerStateEvent(override val delegate: jfxc.WorkerStateEvent)
-    extends Event(delegate) with SFXDelegate[jfxc.WorkerStateEvent] {
+    extends Event(delegate)
+    with SFXDelegate[jfxc.WorkerStateEvent] {
 
   /**
     * Create a new WorkerStateEvent.
@@ -125,6 +133,8 @@ class WorkerStateEvent(override val delegate: jfxc.WorkerStateEvent)
     * @param eventType The type of event. This should not be null.
     */
   def this(
-      worker: Worker[_], eventType: EventType[_ <: jfxc.WorkerStateEvent]) =
+      worker: Worker[_],
+      eventType: EventType[_ <: jfxc.WorkerStateEvent]
+  ) =
     this(new jfxc.WorkerStateEvent(worker, eventType))
 }

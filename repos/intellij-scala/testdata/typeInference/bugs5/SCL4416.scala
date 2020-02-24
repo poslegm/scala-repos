@@ -11,7 +11,8 @@ object SCL4416 {
     type HasY = { def y: String }
 
     def doX[T <: Key with ({ def x: String }) with Mey with HasY](
-        p: T): String = {
+        p: T
+    ): String = {
       /*start*/
       (p.x, p.y) /*end*/
       p.y

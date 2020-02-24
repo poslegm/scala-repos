@@ -16,7 +16,8 @@ trait Gaussian[@sp(Float, Double) A] extends Any {
 
 object Gaussian extends GaussianInstances {
   @inline final def apply[@sp(Float, Double) A](
-      implicit g: Gaussian[A]): Gaussian[A] = g
+      implicit g: Gaussian[A]
+  ): Gaussian[A] = g
 
   def apply[@sp A](mean: A, stdDev: A)(implicit g: Gaussian[A]): Dist[A] =
     g(mean, stdDev)
@@ -37,7 +38,8 @@ trait GaussianInstances {
   }
 
   implicit def bigDecimal(
-      implicit mc: MathContext = defaultMathContext): Gaussian[BigDecimal] =
+      implicit mc: MathContext = defaultMathContext
+  ): Gaussian[BigDecimal] =
     new MarsagliaGaussian[BigDecimal]
 }
 
@@ -45,8 +47,8 @@ trait GaussianInstances {
   * An implementation of `Gaussian` that uses the Marsaglia algorithm.
   */
 final class MarsagliaGaussian[
-    @sp(Float, Double) A : Field : NRoot : Trig : Order : Uniform]
-    extends Gaussian[A] {
+    @sp(Float, Double) A: Field: NRoot: Trig: Order: Uniform
+] extends Gaussian[A] {
   import spire.syntax.field._
   import spire.syntax.nroot._
   import spire.syntax.trig._

@@ -21,17 +21,20 @@ sealed abstract class Leibniz[-L, +H >: L, A >: L <: H, B >: L <: H] {
   def apply(a: A): B = subst[Id](a)
   def subst[F[_ >: L <: H]](p: F[A]): F[B]
   def compose[L2 <: L, H2 >: H, C >: L2 <: H2](
-      that: Leibniz[L2, H2, C, A]): Leibniz[L2, H2, C, B] =
+      that: Leibniz[L2, H2, C, A]
+  ): Leibniz[L2, H2, C, B] =
     Leibniz.trans[L2, H2, C, A, B](this, that)
   def andThen[L2 <: L, H2 >: H, C >: L2 <: H2](
-      that: Leibniz[L2, H2, B, C]): Leibniz[L2, H2, A, C] =
+      that: Leibniz[L2, H2, B, C]
+  ): Leibniz[L2, H2, A, C] =
     Leibniz.trans[L2, H2, A, B, C](that, this)
 
   def onF[X](fa: X => A): X => B = subst[X => ?](fa)
   def onCov[FA](fa: FA)(implicit U: Unapply.AuxA[Functor, FA, A]): U.M[B] =
     subst(U(fa))
-  def onContra[FA](fa: FA)(
-      implicit U: Unapply.AuxA[Contravariant, FA, A]): U.M[B] =
+  def onContra[FA](
+      fa: FA
+  )(implicit U: Unapply.AuxA[Contravariant, FA, A]): U.M[B] =
     subst(U(fa))
 }
 
@@ -89,7 +92,9 @@ object Leibniz extends LeibnizInstances {
       f: Leibniz[L, H, B, C],
       g: Leibniz[L, H, A, B]
   ): Leibniz[L, H, A, C] =
-    f.subst[λ[`X >: L <: H` => Leibniz[L, H, A, X]]](g) // note kind-projector 0.5.2 cannot do super/subtype bounds
+    f.subst[λ[`X >: L <: H` => Leibniz[L, H, A, X]]](
+      g
+    ) // note kind-projector 0.5.2 cannot do super/subtype bounds
 
   /** Equality is symmetric */
   def symm[L, H >: L, A >: L <: H, B >: L <: H](
@@ -129,7 +134,8 @@ object Leibniz extends LeibnizInstances {
       b: Leibniz[LB, HB, B, B2]
   ): Leibniz[LT, HT, T[A, B], T[A2, B2]] =
     b.subst[λ[`X >: LB <: HB` => Leibniz[LT, HT, T[A, B], T[A2, X]]]](
-        a.subst[λ[`X >: LA <: HA` => Leibniz[LT, HT, T[A, B], T[X, B]]]](refl))
+      a.subst[λ[`X >: LA <: HA` => Leibniz[LT, HT, T[A, B], T[X, B]]]](refl)
+    )
 
   /** We can lift equality into any type constructor */
   def lift3[
@@ -154,12 +160,12 @@ object Leibniz extends LeibnizInstances {
       c: Leibniz[LC, HC, C, C2]
   ): Leibniz[LT, HT, T[A, B, C], T[A2, B2, C2]] =
     c.subst[λ[`X >: LC <: HC` => Leibniz[LT, HT, T[A, B, C], T[A2, B2, X]]]](
-        b.subst[
-            λ[`X >: LB <: HB` => Leibniz[LT, HT, T[A, B, C], T[A2, X, C]]]](
-            a.subst[λ[`X >: LA <: HA` => Leibniz[LT,
-                                                 HT,
-                                                 T[A, B, C],
-                                                 T[X, B, C]]]](refl)))
+      b.subst[λ[`X >: LB <: HB` => Leibniz[LT, HT, T[A, B, C], T[A2, X, C]]]](
+        a.subst[λ[`X >: LA <: HA` => Leibniz[LT, HT, T[A, B, C], T[X, B, C]]]](
+          refl
+        )
+      )
+    )
 
   /**
     * Unsafe coercion between types. force abuses asInstanceOf to explicitly coerce types.

@@ -44,8 +44,9 @@ class CountMinSketchSuite extends FunSuite {
     assert(sketch === deserialized)
   }
 
-  def testAccuracy[T : ClassTag](typeName: String)(
-      itemGenerator: Random => T): Unit = {
+  def testAccuracy[T: ClassTag](
+      typeName: String
+  )(itemGenerator: Random => T): Unit = {
     test(s"accuracy - $typeName") {
       // Uses fixed seed to ensure reproducible test execution
       val r = new Random(31)
@@ -75,18 +76,19 @@ class CountMinSketchSuite extends FunSuite {
           if (ratio > epsOfTotalCount) 1 else 0
         }.sum
 
-        1D - numErrors.toDouble / numAllItems
+        1d - numErrors.toDouble / numAllItems
       }
 
       assert(
-          probCorrect > confidence,
-          s"Confidence not reached: required $confidence, reached $probCorrect"
+        probCorrect > confidence,
+        s"Confidence not reached: required $confidence, reached $probCorrect"
       )
     }
   }
 
-  def testMergeInPlace[T : ClassTag](typeName: String)(
-      itemGenerator: Random => T): Unit = {
+  def testMergeInPlace[T: ClassTag](
+      typeName: String
+  )(itemGenerator: Random => T): Unit = {
     test(s"mergeInPlace - $typeName") {
       // Uses fixed seed to ensure reproducible test execution
       val r = new Random(31)
@@ -118,15 +120,18 @@ class CountMinSketchSuite extends FunSuite {
 
       perSketchItems.foreach {
         _.foreach { item =>
-          assert(mergedSketch.estimateCount(item) === expectedSketch
-                .estimateCount(item))
+          assert(
+            mergedSketch.estimateCount(item) === expectedSketch
+              .estimateCount(item)
+          )
         }
       }
     }
   }
 
-  def testItemType[T : ClassTag](typeName: String)(
-      itemGenerator: Random => T): Unit = {
+  def testItemType[T: ClassTag](
+      typeName: String
+  )(itemGenerator: Random => T): Unit = {
     testAccuracy[T](typeName)(itemGenerator)
     testMergeInPlace[T](typeName)(itemGenerator)
   }
@@ -139,9 +144,7 @@ class CountMinSketchSuite extends FunSuite {
 
   testItemType[Long]("Long") { _.nextLong() }
 
-  testItemType[String]("String") { r =>
-    r.nextString(r.nextInt(20))
-  }
+  testItemType[String]("String") { r => r.nextString(r.nextInt(20)) }
 
   test("incompatible merge") {
     intercept[IncompatibleMergeException] {

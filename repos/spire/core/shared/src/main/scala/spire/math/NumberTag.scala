@@ -47,8 +47,13 @@ object NumberTag {
   }
 
   abstract class BuiltinFloatTag[A](
-      zero: A, min: A, max: A, nan: A, posInf: A, negInf: A)
-      extends NumberTag[A] {
+      zero: A,
+      min: A,
+      max: A,
+      nan: A,
+      posInf: A,
+      negInf: A
+  ) extends NumberTag[A] {
     def resolution: Resolution = Approximate
 
     val hasZero: Option[A] = Some(zero)
@@ -79,13 +84,14 @@ object NumberTag {
     def isNaN(a: A): Boolean = false
   }
 
-  class CustomTag[A](val resolution: Resolution,
-                     val hasZero: Option[A],
-                     val hasMinValue: Option[A],
-                     val hasMaxValue: Option[A],
-                     val overflows: Boolean,
-                     val isSigned: Boolean)
-      extends NumberTag[A] {
+  class CustomTag[A](
+      val resolution: Resolution,
+      val hasZero: Option[A],
+      val hasMinValue: Option[A],
+      val hasMaxValue: Option[A],
+      val overflows: Boolean,
+      val isSigned: Boolean
+  ) extends NumberTag[A] {
     def hasNaN: Option[A] = None
     def hasPositiveInfinity: Option[A] = None
     def hasNegativeInfinity: Option[A] = None

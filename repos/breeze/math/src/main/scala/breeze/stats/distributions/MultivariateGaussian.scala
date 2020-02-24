@@ -28,7 +28,8 @@ import scala.runtime.ScalaRunTime
   */
 case class MultivariateGaussian(
     mean: DenseVector[Double],
-    covariance: DenseMatrix[Double])(implicit rand: RandBasis = Rand)
+    covariance: DenseMatrix[Double]
+)(implicit rand: RandBasis = Rand)
     extends ContinuousDistr[DenseVector[Double]]
     with Moments[DenseVector[Double], DenseMatrix[Double]] {
   def draw() = {

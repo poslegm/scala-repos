@@ -24,8 +24,10 @@ import java.io.InputStream
   *  @param length Length in bytes in [[buffer]]
   */
 class ArrayBufferInputStream(
-    val buffer: ArrayBuffer, val offset: Int, val length: Int)
-    extends InputStream {
+    val buffer: ArrayBuffer,
+    val offset: Int,
+    val length: Int
+) extends InputStream {
 
   /** Convenience constructor. Strictly equivalent to
     *  {{new ArrayBufferInputStream(buffer, 0, buffer.byteLength)}

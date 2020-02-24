@@ -25,13 +25,13 @@ class Formatting(indent: Int) {
     *  This way, compiler error messages read better.
     */
   def indentCode(code: String) =
-    stringFromWriter(
-        str =>
-          for (line <- code.lines) {
+    stringFromWriter(str =>
+      for (line <- code.lines) {
         if (indenting(code)) str print indentation
         str println line
         str.flush()
-    })
+      }
+    )
 }
 object Formatting {
   def forPrompt(prompt: String) =

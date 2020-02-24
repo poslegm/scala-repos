@@ -36,7 +36,8 @@ import scala.collection.breakOut
   * encode in scala.
   */
 trait TupleConverter[@specialized(Int, Long, Float, Double) T]
-    extends java.io.Serializable with TupleArity { self =>
+    extends java.io.Serializable
+    with TupleArity { self =>
   def apply(te: TupleEntry): T
   def andThen[U](fn: T => U): TupleConverter[U] = new TupleConverter[U] {
     def apply(te: TupleEntry) = fn(self(te))
@@ -46,7 +47,8 @@ trait TupleConverter[@specialized(Int, Long, Float, Double) T]
 
 trait LowPriorityTupleConverters extends java.io.Serializable {
   implicit def singleConverter[@specialized(Int, Long, Float, Double) A](
-      implicit g: TupleGetter[A]) =
+      implicit g: TupleGetter[A]
+  ) =
     new TupleConverter[A] {
       def apply(tup: TupleEntry) = g.get(tup.getTuple, 0)
       def arity = 1
@@ -103,7 +105,7 @@ object TupleConverter extends GeneratedTupleConverters {
       def wrap(tup: CTuple): Product = new Product {
         def canEqual(that: Any) = that match {
           case p: Product => true
-          case _ => false
+          case _          => false
         }
         def productArity = tup.size
         def productElement(idx: Int) = tup.getObject(idx)

@@ -35,7 +35,8 @@ import scalafx.event.EventType
 
 object MouseDragEvent {
   implicit def sfxMouseDragEvent2jfx(
-      mde: MouseDragEvent): jfxsi.MouseDragEvent =
+      mde: MouseDragEvent
+  ): jfxsi.MouseDragEvent =
     if (mde != null) mde.delegate else null
 
   /**
@@ -81,7 +82,8 @@ object MouseDragEvent {
 }
 
 class MouseDragEvent(override val delegate: jfxsi.MouseDragEvent)
-    extends MouseEvent(delegate) with SFXDelegate[jfxsi.MouseDragEvent] {
+    extends MouseEvent(delegate)
+    with SFXDelegate[jfxsi.MouseDragEvent] {
 
   /**
     * Returns the source object of the ongoing gesture.

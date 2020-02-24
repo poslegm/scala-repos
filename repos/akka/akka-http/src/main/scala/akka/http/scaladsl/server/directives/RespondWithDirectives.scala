@@ -30,7 +30,8 @@ trait RespondWithDirectives {
     * Unconditionally adds the given response headers to all HTTP responses of its inner Route.
     */
   def respondWithHeaders(
-      responseHeaders: immutable.Seq[HttpHeader]): Directive0 =
+      responseHeaders: immutable.Seq[HttpHeader]
+  ): Directive0 =
     mapResponseHeaders(responseHeaders ++ _)
 
   /**
@@ -44,7 +45,8 @@ trait RespondWithDirectives {
    * if a header already exists it is not added again.
    */
   def respondWithDefaultHeaders(
-      responseHeaders: immutable.Seq[HttpHeader]): Directive0 =
+      responseHeaders: immutable.Seq[HttpHeader]
+  ): Directive0 =
     mapResponse(_.withDefaultHeaders(responseHeaders))
 }
 

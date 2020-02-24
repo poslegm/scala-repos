@@ -20,7 +20,11 @@ package org.apache.spark.sql.execution
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.expressions._
-import org.apache.spark.sql.catalyst.expressions.codegen.{GenerateSafeProjection, GenerateUnsafeProjection, GenerateUnsafeRowJoiner}
+import org.apache.spark.sql.catalyst.expressions.codegen.{
+  GenerateSafeProjection,
+  GenerateUnsafeProjection,
+  GenerateUnsafeRowJoiner
+}
 import org.apache.spark.sql.catalyst.plans.physical._
 import org.apache.spark.sql.types.ObjectType
 
@@ -29,11 +33,12 @@ import org.apache.spark.sql.types.ObjectType
   */
 trait ObjectOperator extends SparkPlan {
   def generateToObject(
-      objExpr: Expression, inputSchema: Seq[Attribute]): InternalRow => Any = {
+      objExpr: Expression,
+      inputSchema: Seq[Attribute]
+  ): InternalRow => Any = {
     val objectProjection =
       GenerateSafeProjection.generate(objExpr :: Nil, inputSchema)
-    (i: InternalRow) =>
-      objectProjection(i).get(0, objExpr.dataType)
+    (i: InternalRow) => objectProjection(i).get(0, objExpr.dataType)
   }
 
   def generateToRow(serializer: Seq[Expression]): Any => InternalRow = {
@@ -47,22 +52,23 @@ trait ObjectOperator extends SparkPlan {
       case b: BoundReference => b.dataType
     }.head
     val outputRow = new SpecificMutableRow(inputType :: Nil)
-    (o: Any) =>
-      {
-        outputRow(0) = o
-        outputProjection(outputRow)
-      }
+    (o: Any) => {
+      outputRow(0) = o
+      outputProjection(outputRow)
+    }
   }
 }
 
 /**
   * Applies the given function to each input row and encodes the result.
   */
-case class MapPartitions(func: Iterator[Any] => Iterator[Any],
-                         deserializer: Expression,
-                         serializer: Seq[NamedExpression],
-                         child: SparkPlan)
-    extends UnaryNode with ObjectOperator {
+case class MapPartitions(
+    func: Iterator[Any] => Iterator[Any],
+    deserializer: Expression,
+    serializer: Seq[NamedExpression],
+    child: SparkPlan
+) extends UnaryNode
+    with ObjectOperator {
   override def output: Seq[Attribute] = serializer.map(_.toAttribute)
 
   override protected def doExecute(): RDD[InternalRow] = {
@@ -77,11 +83,13 @@ case class MapPartitions(func: Iterator[Any] => Iterator[Any],
 /**
   * Applies the given function to each input row, appending the encoded result at the end of the row.
   */
-case class AppendColumns(func: Any => Any,
-                         deserializer: Expression,
-                         serializer: Seq[NamedExpression],
-                         child: SparkPlan)
-    extends UnaryNode with ObjectOperator {
+case class AppendColumns(
+    func: Any => Any,
+    deserializer: Expression,
+    serializer: Seq[NamedExpression],
+    child: SparkPlan
+) extends UnaryNode
+    with ObjectOperator {
 
   override def output: Seq[Attribute] =
     child.output ++ serializer.map(_.toAttribute)
@@ -99,8 +107,10 @@ case class AppendColumns(func: Any => Any,
         val newColumns = outputObject(func(getObject(row)))
 
         // This operates on the assumption that we always serialize the result...
-        combiner.join(row.asInstanceOf[UnsafeRow],
-                      newColumns.asInstanceOf[UnsafeRow]): InternalRow
+        combiner.join(
+          row.asInstanceOf[UnsafeRow],
+          newColumns.asInstanceOf[UnsafeRow]
+        ): InternalRow
       }
     }
   }
@@ -111,14 +121,16 @@ case class AppendColumns(func: Any => Any,
   * all elements in the group.  The result of this function is encoded and flattened before
   * being output.
   */
-case class MapGroups(func: (Any, Iterator[Any]) => TraversableOnce[Any],
-                     keyDeserializer: Expression,
-                     valueDeserializer: Expression,
-                     serializer: Seq[NamedExpression],
-                     groupingAttributes: Seq[Attribute],
-                     dataAttributes: Seq[Attribute],
-                     child: SparkPlan)
-    extends UnaryNode with ObjectOperator {
+case class MapGroups(
+    func: (Any, Iterator[Any]) => TraversableOnce[Any],
+    keyDeserializer: Expression,
+    valueDeserializer: Expression,
+    serializer: Seq[NamedExpression],
+    groupingAttributes: Seq[Attribute],
+    dataAttributes: Seq[Attribute],
+    child: SparkPlan
+) extends UnaryNode
+    with ObjectOperator {
 
   override def output: Seq[Attribute] = serializer.map(_.toAttribute)
 
@@ -161,8 +173,9 @@ case class CoGroup(
     leftAttr: Seq[Attribute],
     rightAttr: Seq[Attribute],
     left: SparkPlan,
-    right: SparkPlan)
-    extends BinaryNode with ObjectOperator {
+    right: SparkPlan
+) extends BinaryNode
+    with ObjectOperator {
 
   override def output: Seq[Attribute] = serializer.map(_.toAttribute)
 
@@ -171,7 +184,8 @@ case class CoGroup(
 
   override def requiredChildOrdering: Seq[Seq[SortOrder]] =
     leftGroup.map(SortOrder(_, Ascending)) :: rightGroup.map(
-        SortOrder(_, Ascending)) :: Nil
+      SortOrder(_, Ascending)
+    ) :: Nil
 
   override protected def doExecute(): RDD[InternalRow] = {
     left.execute().zipPartitions(right.execute()) { (leftData, rightData) =>
@@ -185,9 +199,11 @@ case class CoGroup(
 
       new CoGroupedIterator(leftGrouped, rightGrouped, leftGroup).flatMap {
         case (key, leftResult, rightResult) =>
-          val result = func(getKey(key),
-                            leftResult.map(getLeft),
-                            rightResult.map(getRight))
+          val result = func(
+            getKey(key),
+            leftResult.map(getLeft),
+            rightResult.map(getRight)
+          )
           result.map(outputObject)
       }
     }

@@ -119,7 +119,8 @@ trait UtilIncludes {
     * @return ScalaFX StringConverter
     */
   implicit def jfxStringConverter2sfx[T](
-      c: jfxu.StringConverter[T]): StringConverter[T] =
+      c: jfxu.StringConverter[T]
+  ): StringConverter[T] =
     new StringConverter[T] {
       def fromString(string: String): T = c.fromString(string)
       def toString(t: T): String = c.toString(t)

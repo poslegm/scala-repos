@@ -15,7 +15,8 @@ object EvaluationSuite {
   class Metric0 extends Metric[EvalInfo, Query, Prediction, Actual, Int] {
     def calculate(
         sc: SparkContext,
-        evalDataSet: Seq[(EvalInfo, RDD[(Query, Prediction, Actual)])]): Int =
+        evalDataSet: Seq[(EvalInfo, RDD[(Query, Prediction, Actual)])]
+    ): Int =
       1
   }
 
@@ -36,8 +37,9 @@ class EvaluationSuite extends FunSuite with Inside with SharedSparkContext {
 
   test("Load from class path") {
     val r = io.prediction.workflow.WorkflowUtils.getEvaluation(
-        "io.prediction.controller.EvaluationSuite.Evaluation0",
-        getClass.getClassLoader)
+      "io.prediction.controller.EvaluationSuite.Evaluation0",
+      getClass.getClassLoader
+    )
 
     r._2 shouldBe EvaluationSuite.Evaluation0
   }

@@ -67,7 +67,8 @@ object Local {
   def let[U](ctx: Context)(f: => U): U = {
     val saved = save()
     restore(ctx)
-    try f finally restore(saved)
+    try f
+    finally restore(saved)
   }
 
   /**
@@ -83,12 +84,12 @@ object Local {
     */
   def closed[R](fn: () => R): () => R = {
     val closure = Local.save()
-    () =>
-      {
-        val save = Local.save()
-        Local.restore(closure)
-        try fn() finally Local.restore(save)
-      }
+    () => {
+      val save = Local.save()
+      Local.restore(closure)
+      try fn()
+      finally Local.restore(save)
+    }
   }
 }
 
@@ -137,7 +138,8 @@ final class Local[T] {
   def let[U](value: T)(f: => U): U = {
     val saved = apply()
     set(Some(value))
-    try f finally set(saved)
+    try f
+    finally set(saved)
   }
 
   /**
@@ -147,7 +149,8 @@ final class Local[T] {
   def letClear[U](f: => U): U = {
     val saved = apply()
     clear()
-    try f finally set(saved)
+    try f
+    finally set(saved)
   }
 
   /**

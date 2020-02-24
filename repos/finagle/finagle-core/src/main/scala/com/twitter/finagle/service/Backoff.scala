@@ -15,7 +15,9 @@ import scala.collection.JavaConverters._
   */
 object Backoff {
   private[this] def durations(
-      next: Duration, f: Duration => Duration): Stream[Duration] =
+      next: Duration,
+      f: Duration => Duration
+  ): Stream[Duration] =
     next #:: durations(f(next), f)
 
   def apply(next: Duration)(f: Duration => Duration): Stream[Duration] =
@@ -35,10 +37,11 @@ object Backoff {
     * @see [[exponentialJittered]] for a version that incorporates jitter.
     */
   def exponential(
-      start: Duration, multiplier: Int, maximum: Duration): Stream[Duration] =
-    Backoff(start) { prev =>
-      maximum.min(prev * multiplier)
-    }
+      start: Duration,
+      multiplier: Int,
+      maximum: Duration
+  ): Stream[Duration] =
+    Backoff(start) { prev => maximum.min(prev * multiplier) }
 
   /**
     * Create backoffs that grow exponentially by 2, capped at `maximum`,
@@ -50,7 +53,9 @@ object Backoff {
     * @see [[decorrelatedJittered]] and [[equalJittered]] for alternative jittered approaches.
     */
   def exponentialJittered(
-      start: Duration, maximum: Duration): Stream[Duration] =
+      start: Duration,
+      maximum: Duration
+  ): Stream[Duration] =
     exponentialJittered(start, maximum, Rng.threadLocal)
 
   private[this] val MinJitter = Duration.fromMilliseconds(1)
@@ -86,7 +91,9 @@ object Backoff {
     * @see [[exponentialJittered]] and [[equalJittered]] for alternative jittered approaches.
     */
   def decorrelatedJittered(
-      start: Duration, maximum: Duration): Stream[Duration] =
+      start: Duration,
+      maximum: Duration
+  ): Stream[Duration] =
     decorrelatedJittered(start, maximum, Rng.threadLocal)
 
   /** Exposed for testing */
@@ -135,8 +142,10 @@ object Backoff {
     def next(attempt: Int): Stream[Duration] = {
       val shift = math.min(attempt - 1, MaxBitShift)
       val halfExp = start * (1L << shift)
-      val backoff = maximum.min(halfExp +
-          Duration.fromNanoseconds(rng.nextLong(halfExp.inNanoseconds)))
+      val backoff = maximum.min(
+        halfExp +
+          Duration.fromNanoseconds(rng.nextLong(halfExp.inNanoseconds))
+      )
       backoff #:: next(attempt + 1)
     }
     start #:: next(1)
@@ -152,10 +161,11 @@ object Backoff {
     * Create backoffs that grow linear by `offset`, capped at `maximum`.
     */
   def linear(
-      start: Duration, offset: Duration, maximum: Duration): Stream[Duration] =
-    Backoff(start) { prev =>
-      maximum.min(prev + offset)
-    }
+      start: Duration,
+      offset: Duration,
+      maximum: Duration
+  ): Stream[Duration] =
+    Backoff(start) { prev => maximum.min(prev + offset) }
 
   /** Alias for [[const]], which is a reserved word in Java */
   def constant(start: Duration): Stream[Duration] = const(start)
@@ -177,7 +187,9 @@ object Backoff {
   /**
     * Convert a [[Stream]] of [[Duration Durations]] into a Java-friendly representation.
     */
-  def toJava(backoffs: Stream[Duration]): juc.Callable[ju.Iterator[Duration]] = {
+  def toJava(
+      backoffs: Stream[Duration]
+  ): juc.Callable[ju.Iterator[Duration]] = {
     new ju.concurrent.Callable[ju.Iterator[Duration]] {
       def call(): ju.Iterator[Duration] = backoffs.toIterator.asJava
     }

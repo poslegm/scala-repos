@@ -85,11 +85,12 @@ object Simul extends LilaController {
     NoEngine {
       implicit val req = ctx.body
       env.forms.create.bindFromRequest.fold(
-          err => BadRequest(html.simul.form(err, env.forms)).fuccess,
-          setup =>
-            env.api.create(setup, me) map { simul =>
-              Redirect(routes.Simul.show(simul.id))
-          })
+        err => BadRequest(html.simul.form(err, env.forms)).fuccess,
+        setup =>
+          env.api.create(setup, me) map { simul =>
+            Redirect(routes.Simul.show(simul.id))
+          }
+      )
     }
   }
 
@@ -113,9 +114,7 @@ object Simul extends LilaController {
 
   def websocket(id: String, apiVersion: Int) = SocketOption[JsValue] {
     implicit ctx =>
-      get("sri") ?? { uid =>
-        env.socketHandler.join(id, uid, ctx.me)
-      }
+      get("sri") ?? { uid => env.socketHandler.join(id, uid, ctx.me) }
   }
 
   private def chatOf(sim: Sim)(implicit ctx: Context) =
@@ -123,8 +122,9 @@ object Simul extends LilaController {
       Env.chat.api.userChat find sim.id map (_.forUser(ctx.me).some)
     }
 
-  private def AsHost(simulId: Sim.ID)(
-      f: Sim => Result)(implicit ctx: Context): Fu[Result] =
+  private def AsHost(
+      simulId: Sim.ID
+  )(f: Sim => Result)(implicit ctx: Context): Fu[Result] =
     env.repo.find(simulId) flatMap {
       case None => notFound
       case Some(simul) if ctx.userId.exists(simul.hostId ==) =>

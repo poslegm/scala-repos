@@ -35,8 +35,10 @@ trait UpgradeToWebSocket extends jm.ws.UpgradeToWebSocket {
     *
     * Optionally, a subprotocol out of the ones requested by the client can be chosen.
     */
-  def handleMessages(handlerFlow: Graph[FlowShape[Message, Message], Any],
-                     subprotocol: Option[String] = None): HttpResponse
+  def handleMessages(
+      handlerFlow: Graph[FlowShape[Message, Message], Any],
+      subprotocol: Option[String] = None
+  ): HttpResponse
 
   /**
     * The high-level interface to create a WebSocket server based on "messages".
@@ -51,9 +53,12 @@ trait UpgradeToWebSocket extends jm.ws.UpgradeToWebSocket {
   def handleMessagesWithSinkSource(
       inSink: Graph[SinkShape[Message], Any],
       outSource: Graph[SourceShape[Message], Any],
-      subprotocol: Option[String] = None): HttpResponse =
+      subprotocol: Option[String] = None
+  ): HttpResponse =
     handleMessages(
-        scaladsl.Flow.fromSinkAndSource(inSink, outSource), subprotocol)
+      scaladsl.Flow.fromSinkAndSource(inSink, outSource),
+      subprotocol
+    )
 
   import scala.collection.JavaConverters._
 
@@ -66,8 +71,8 @@ trait UpgradeToWebSocket extends jm.ws.UpgradeToWebSocket {
     * Java API
     */
   def handleMessagesWith(
-      handlerFlow: Graph[FlowShape[jm.ws.Message, jm.ws.Message], _ <: Any])
-    : HttpResponse =
+      handlerFlow: Graph[FlowShape[jm.ws.Message, jm.ws.Message], _ <: Any]
+  ): HttpResponse =
     handleMessages(JavaMapping.toScala(handlerFlow))
 
   /**
@@ -75,16 +80,20 @@ trait UpgradeToWebSocket extends jm.ws.UpgradeToWebSocket {
     */
   def handleMessagesWith(
       handlerFlow: Graph[FlowShape[jm.ws.Message, jm.ws.Message], _ <: Any],
-      subprotocol: String): HttpResponse =
+      subprotocol: String
+  ): HttpResponse =
     handleMessages(
-        JavaMapping.toScala(handlerFlow), subprotocol = Some(subprotocol))
+      JavaMapping.toScala(handlerFlow),
+      subprotocol = Some(subprotocol)
+    )
 
   /**
     * Java API
     */
   def handleMessagesWith(
       inSink: Graph[SinkShape[jm.ws.Message], _ <: Any],
-      outSource: Graph[SourceShape[jm.ws.Message], _ <: Any]): HttpResponse =
+      outSource: Graph[SourceShape[jm.ws.Message], _ <: Any]
+  ): HttpResponse =
     handleMessages(createScalaFlow(inSink, outSource))
 
   /**
@@ -93,15 +102,22 @@ trait UpgradeToWebSocket extends jm.ws.UpgradeToWebSocket {
   def handleMessagesWith(
       inSink: Graph[SinkShape[jm.ws.Message], _ <: Any],
       outSource: Graph[SourceShape[jm.ws.Message], _ <: Any],
-      subprotocol: String): HttpResponse =
+      subprotocol: String
+  ): HttpResponse =
     handleMessages(
-        createScalaFlow(inSink, outSource), subprotocol = Some(subprotocol))
+      createScalaFlow(inSink, outSource),
+      subprotocol = Some(subprotocol)
+    )
 
   private[this] def createScalaFlow(
       inSink: Graph[SinkShape[jm.ws.Message], _ <: Any],
-      outSource: Graph[SourceShape[jm.ws.Message], _ <: Any])
-    : Graph[FlowShape[Message, Message], NotUsed] =
-    JavaMapping.toScala(scaladsl.Flow.fromSinkAndSourceMat(inSink, outSource)(
-            scaladsl.Keep.none): Graph[
-            FlowShape[jm.ws.Message, jm.ws.Message], NotUsed])
+      outSource: Graph[SourceShape[jm.ws.Message], _ <: Any]
+  ): Graph[FlowShape[Message, Message], NotUsed] =
+    JavaMapping.toScala(
+      scaladsl.Flow
+        .fromSinkAndSourceMat(inSink, outSource)(scaladsl.Keep.none): Graph[
+        FlowShape[jm.ws.Message, jm.ws.Message],
+        NotUsed
+      ]
+    )
 }

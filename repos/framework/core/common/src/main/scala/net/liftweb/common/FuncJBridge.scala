@@ -58,7 +58,8 @@ class FuncJBridge {
     }
 
   implicit def lift[A, B, C, D, Z](
-      f: Func4[A, B, C, D, Z]): Function4[A, B, C, D, Z] =
+      f: Func4[A, B, C, D, Z]
+  ): Function4[A, B, C, D, Z] =
     new Function4[A, B, C, D, Z] {
       def apply(a: A, b: B, c: C, d: D): Z = f.apply(a, b, c, d)
     }

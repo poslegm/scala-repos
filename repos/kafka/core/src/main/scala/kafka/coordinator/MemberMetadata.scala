@@ -22,11 +22,13 @@ import kafka.utils.nonthreadsafe
 
 import scala.collection.Map
 
-case class MemberSummary(memberId: String,
-                         clientId: String,
-                         clientHost: String,
-                         metadata: Array[Byte],
-                         assignment: Array[Byte])
+case class MemberSummary(
+    memberId: String,
+    clientId: String,
+    clientHost: String,
+    metadata: Array[Byte],
+    assignment: Array[Byte]
+)
 
 /**
   * Member metadata contains the following metadata:
@@ -55,7 +57,8 @@ private[coordinator] class MemberMetadata(
     val clientId: String,
     val clientHost: String,
     val sessionTimeoutMs: Int,
-    var supportedProtocols: List[(String, Array[Byte])]) {
+    var supportedProtocols: List[(String, Array[Byte])]
+) {
 
   var assignment: Array[Byte] = Array.empty[Byte]
   var awaitingJoinCallback: JoinGroupResult => Unit = null
@@ -92,12 +95,22 @@ private[coordinator] class MemberMetadata(
 
   def summary(protocol: String): MemberSummary = {
     MemberSummary(
-        memberId, clientId, clientHost, metadata(protocol), assignment)
+      memberId,
+      clientId,
+      clientHost,
+      metadata(protocol),
+      assignment
+    )
   }
 
   def summaryNoMetadata(): MemberSummary = {
     MemberSummary(
-        memberId, clientId, clientHost, Array.empty[Byte], Array.empty[Byte])
+      memberId,
+      clientId,
+      clientHost,
+      Array.empty[Byte],
+      Array.empty[Byte]
+    )
   }
 
   /**
@@ -111,7 +124,8 @@ private[coordinator] class MemberMetadata(
       case Some((protocol, _)) => protocol
       case None =>
         throw new IllegalArgumentException(
-            "Member does not support any of the candidate protocols")
+          "Member does not support any of the candidate protocols"
+        )
     }
   }
 

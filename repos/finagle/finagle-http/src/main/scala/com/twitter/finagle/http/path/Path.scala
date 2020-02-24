@@ -116,7 +116,7 @@ case object Root extends Path {
 object /: {
   def unapply(path: Path): Option[(String, Path)] = {
     path.toList match {
-      case Nil => None
+      case Nil          => None
       case head :: tail => Some((head, Path(tail)))
     }
   }
@@ -132,7 +132,8 @@ protected class Numeric[A <: AnyVal](cast: String => A) {
       } catch {
         case _: NumberFormatException =>
           None
-      } else None
+      }
+    else None
   }
 }
 

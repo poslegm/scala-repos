@@ -196,7 +196,8 @@ class WatermarkPoolTest extends FunSpec with MockitoSugar {
   }
 
   describe(
-      "WatermarkPool (lowWatermark = 1, highWatermark = 1, maxWaiters = 2)") {
+    "WatermarkPool (lowWatermark = 1, highWatermark = 1, maxWaiters = 2)"
+  ) {
     val factory = mock[ServiceFactory[Int, Int]]
     when(factory.close(any[Time])).thenReturn(Future.Done)
     val service0 = mock[Service[Int, Int]]
@@ -210,7 +211,9 @@ class WatermarkPoolTest extends FunSpec with MockitoSugar {
     def numWaited() = statsRecv.counter("pool_num_waited")()
     def numTooManyWaiters() = statsRecv.counter("pool_num_too_many_waiters")()
 
-    it("should throw TooManyWaitersException when the number of waiters exceeds 2") {
+    it(
+      "should throw TooManyWaitersException when the number of waiters exceeds 2"
+    ) {
       assert(0 == numWaited())
       assert(0 == numTooManyWaiters())
       val f0 = pool()
@@ -283,17 +286,11 @@ class WatermarkPoolTest extends FunSpec with MockitoSugar {
     it("should return the cached connections for the next 100 apply calls") {
       // We can now fetch them again, incurring no additional object
       // creation.
-      0 until 100 foreach { _ =>
-        Await.result(pool())
-      }
-      mocks foreach { service =>
-        verify(service, times(2)).status
-      }
+      0 until 100 foreach { _ => Await.result(pool()) }
+      mocks foreach { service => verify(service, times(2)).status }
 
       verify(factory, times(100))()
-      mocks foreach { service =>
-        verify(service, never()).close(any[Time])
-      }
+      mocks foreach { service => verify(service, never()).close(any[Time]) }
     }
   }
 
@@ -390,20 +387,20 @@ class WatermarkPoolTest extends FunSpec with MockitoSugar {
       val highWatermark = 10
       val maxWaiters = 3
       val pool = new WatermarkPool(
-          factory, lowWatermark, highWatermark, maxWaiters = maxWaiters)
+        factory,
+        lowWatermark,
+        highWatermark,
+        maxWaiters = maxWaiters
+      )
 
       val services =
-        0 until highWatermark map { _ =>
-          new Promise[Service[Int, Int]]
-        }
+        0 until highWatermark map { _ => new Promise[Service[Int, Int]] }
       val wrappedServices =
         services map { s =>
           when(factory()).thenReturn(s)
           pool()
         }
-      0 until maxWaiters map { _ =>
-        pool()
-      }
+      0 until maxWaiters map { _ => pool() }
       val f = pool()
       assert(f.isDefined)
       intercept[TooManyWaitersException] { Await.result(f) }

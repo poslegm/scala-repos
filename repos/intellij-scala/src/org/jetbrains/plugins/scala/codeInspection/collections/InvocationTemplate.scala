@@ -31,7 +31,8 @@ class InvocationTemplate(nameCondition: String => Boolean) {
   }
 
   def unapplySeq(
-      expr: ScExpression): Option[(ScExpression, Seq[ScExpression])] = {
+      expr: ScExpression
+  ): Option[(ScExpression, Seq[ScExpression])] = {
     stripped(expr) match {
       case (mc: ScMethodCall) childOf (parentCall: ScMethodCall)
           if !parentCall.isApplyOrUpdateCall =>
@@ -41,23 +42,25 @@ class InvocationTemplate(nameCondition: String => Boolean) {
         Some(qualOpt.orNull, args)
       case MethodRepr(call: ScMethodCall, Some(qual), None, args)
           if nameCondition("apply") && call.isApplyOrUpdateCall &&
-          !call.isUpdateCall =>
+            !call.isUpdateCall =>
         val text = qual match {
           case _: ScReferenceExpression | _: ScMethodCall | _: ScGenericCall =>
             s"${qual.getText}.apply"
           case _ => s"(${qual.getText}).apply"
         }
         val ref = Try(
-            ScalaPsiElementFactory
-              .createExpressionFromText(text, call)
-              .asInstanceOf[ScReferenceExpression]).toOption
+          ScalaPsiElementFactory
+            .createExpressionFromText(text, call)
+            .asInstanceOf[ScReferenceExpression]
+        ).toOption
         if (ref.isDefined && refCondition(ref.get)) Some(qual, args)
         else None
-      case MethodRepr(_,
-                      Some(MethodRepr(_, qualOpt, Some(ref), firstArgs)),
-                      None,
-                      secondArgs)
-          if nameCondition(ref.refName) && refCondition(ref) =>
+      case MethodRepr(
+          _,
+          Some(MethodRepr(_, qualOpt, Some(ref), firstArgs)),
+          None,
+          secondArgs
+          ) if nameCondition(ref.refName) && refCondition(ref) =>
         Some(qualOpt.orNull, firstArgs ++ secondArgs)
       case _ => None
     }

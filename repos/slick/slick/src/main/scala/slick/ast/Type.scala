@@ -37,10 +37,11 @@ trait Type extends Dumpable {
   def classTag: ClassTag[_]
   def getDumpInfo =
     DumpInfo(
-        DumpInfo.simpleNameFor(getClass),
-        toString,
-        "",
-        children.zipWithIndex.map { case (ch, i) => (i.toString, ch) }.toSeq)
+      DumpInfo.simpleNameFor(getClass),
+      toString,
+      "",
+      children.zipWithIndex.map { case (ch, i) => (i.toString, ch) }.toSeq
+    )
 }
 
 object Type {
@@ -65,7 +66,7 @@ final case class StructType(elements: ConstArray[(TermSymbol, Type)])
     extends Type {
   override def toString =
     "{" +
-    elements.iterator.map { case (s, t) => s + ": " + t }.mkString(", ") + "}"
+      elements.iterator.map { case (s, t) => s + ": " + t }.mkString(", ") + "}"
   lazy val symbolToIndex: Map[TermSymbol, Int] = elements.zipWithIndex.map {
     case ((sym, _), idx) => (sym, idx)
   }.toMap
@@ -95,7 +96,7 @@ trait OptionType extends Type {
   override def hashCode = elementType.hashCode() + 100
   override def equals(o: Any) = o match {
     case OptionType(elem) if elementType == elem => true
-    case _ => false
+    case _                                       => false
   }
   override final def childrenForeach[R](f: Type => R): Unit = f(elementType)
 }
@@ -119,8 +120,7 @@ object OptionType {
   /** An extractor for a non-nested Option type of a single column */
   object Primitive {
     def unapply(tpe: Type): Option[Type] = tpe.structural match {
-      case o: OptionType
-          if o.elementType.structural.isInstanceOf[AtomicType] =>
+      case o: OptionType if o.elementType.structural.isInstanceOf[AtomicType] =>
         Some(o.elementType)
       case _ => None
     }
@@ -145,15 +145,16 @@ final case class ProductType(elements: ConstArray[Type]) extends Type {
   }
   override def select(sym: TermSymbol) = sym match {
     case ElementSymbol(i) if i <= elements.length => elements(i - 1)
-    case _ => super.select(sym)
+    case _                                        => super.select(sym)
   }
   def children: ConstArray[Type] = elements
   def classTag = TupleSupport.classTagForArity(elements.length)
 }
 
 final case class CollectionType(
-    cons: CollectionTypeConstructor, elementType: Type)
-    extends Type {
+    cons: CollectionTypeConstructor,
+    elementType: Type
+) extends Type {
   override def toString = cons + "[" + elementType + "]"
   def mapChildren(f: Type => Type): CollectionType = {
     val e2 = f(elementType)
@@ -181,7 +182,7 @@ trait CollectionTypeConstructor {
   def isUnique: Boolean
 
   /** Create a `Builder` for the collection type, given a ClassTag for the element type */
-  def createBuilder[E : ClassTag]: Builder[E, Any]
+  def createBuilder[E: ClassTag]: Builder[E, Any]
 
   /** Return a CollectionTypeConstructor which builds a subtype of Iterable
     * but has the same properties otherwise. */
@@ -192,31 +193,33 @@ trait CollectionTypeConstructor {
 }
 
 @implicitNotFound(
-    "Cannot use collection in a query\n            collection type: ${C}[_]\n  requires implicit of type: slick.ast.TypedCollectionTypeConstructor[${C}]")
+  "Cannot use collection in a query\n            collection type: ${C}[_]\n  requires implicit of type: slick.ast.TypedCollectionTypeConstructor[${C}]"
+)
 abstract class TypedCollectionTypeConstructor[C[_]](
-    val classTag: ClassTag[C[_]])
-    extends CollectionTypeConstructor {
+    val classTag: ClassTag[C[_]]
+) extends CollectionTypeConstructor {
   override def toString =
     classTag.runtimeClass.getName
       .replaceFirst("^scala.collection.immutable.", "")
       .replaceFirst("^scala.collection.mutable.", "m.")
       .replaceFirst("^scala.collection.generic.", "g.")
-  def createBuilder[E : ClassTag]: Builder[E, C[E]]
+  def createBuilder[E: ClassTag]: Builder[E, C[E]]
   override def hashCode = classTag.hashCode() * 10
   override def equals(o: Any) = o match {
     case o: TypedCollectionTypeConstructor[_] => classTag == o.classTag
-    case _ => false
+    case _                                    => false
   }
 }
 
 class ErasedCollectionTypeConstructor[C[_]](
-    canBuildFrom: CanBuild[Any, C[Any]], classTag: ClassTag[C[_]])
-    extends TypedCollectionTypeConstructor[C](classTag) {
+    canBuildFrom: CanBuild[Any, C[Any]],
+    classTag: ClassTag[C[_]]
+) extends TypedCollectionTypeConstructor[C](classTag) {
   val isSequential =
     classOf[scala.collection.Seq[_]].isAssignableFrom(classTag.runtimeClass)
   val isUnique =
     classOf[scala.collection.Set[_]].isAssignableFrom(classTag.runtimeClass)
-  def createBuilder[E : ClassTag] =
+  def createBuilder[E: ClassTag] =
     canBuildFrom().asInstanceOf[Builder[E, C[E]]]
 }
 
@@ -232,7 +235,8 @@ object TypedCollectionTypeConstructor {
   /** Get a TypedCollectionTypeConstructor for an Iterable type */
   implicit def forColl[C[X] <: Iterable[X]](
       implicit cbf: CanBuild[Any, C[Any]],
-      tag: ClassTag[C[_]]): TypedCollectionTypeConstructor[C] =
+      tag: ClassTag[C[_]]
+  ): TypedCollectionTypeConstructor[C] =
     new ErasedCollectionTypeConstructor[C](cbf, tag)
 
   /** Get a TypedCollectionTypeConstructor for an Array type */
@@ -240,15 +244,16 @@ object TypedCollectionTypeConstructor {
     new TypedCollectionTypeConstructor[Array](arrayClassTag) {
       def isSequential = true
       def isUnique = false
-      def createBuilder[E : ClassTag]: Builder[E, Array[E]] =
+      def createBuilder[E: ClassTag]: Builder[E, Array[E]] =
         ArrayBuilder.make[E]
     }
 }
 
-final class MappedScalaType(val baseType: Type,
-                            val mapper: MappedScalaType.Mapper,
-                            val classTag: ClassTag[_])
-    extends Type {
+final class MappedScalaType(
+    val baseType: Type,
+    val mapper: MappedScalaType.Mapper,
+    val classTag: ClassTag[_]
+) extends Type {
   override def toString = s"Mapped[$baseType]"
   def mapChildren(f: Type => Type): MappedScalaType = {
     val e2 = f(baseType)
@@ -269,7 +274,10 @@ final class MappedScalaType(val baseType: Type,
 
 object MappedScalaType {
   case class Mapper(
-      toBase: Any => Any, toMapped: Any => Any, fastPath: Option[Any => Any])
+      toBase: Any => Any,
+      toMapped: Any => Any,
+      fastPath: Option[Any => Any]
+  )
 }
 
 /** The standard type for freshly constructed nodes without an explicit type. */
@@ -300,7 +308,7 @@ final case class NominalType(sym: TypeSymbol, structuralView: Type)
   def children: ConstArray[Type] = ConstArray(structuralView)
   def sourceNominalType: NominalType = structuralView match {
     case n: NominalType => n.sourceNominalType
-    case _ => this
+    case _              => this
   }
   def classTag = structuralView.classTag
 }
@@ -330,7 +338,8 @@ trait NumericTypedType
 
 object TypedType {
   @inline implicit def typedTypeToOptionTypedType[T](
-      implicit t: TypedType[T]): OptionTypedType[T] = t.optionType
+      implicit t: TypedType[T]
+  ): OptionTypedType[T] = t.optionType
 }
 
 class TypeUtil(val tpe: Type) extends AnyVal {
@@ -343,13 +352,16 @@ class TypeUtil(val tpe: Type) extends AnyVal {
   }
   def asOptionType: OptionType = tpe match {
     case o: OptionType => o
-    case _ => throw new SlickException("Expected an option type, found " + tpe)
+    case _             => throw new SlickException("Expected an option type, found " + tpe)
   }
 
   def replace(f: PartialFunction[Type, Type]): Type =
     f.applyOrElse(
-        tpe, { case t: Type => t.mapChildren(_.replace(f)) }: PartialFunction[
-            Type, Type])
+      tpe, { case t: Type => t.mapChildren(_.replace(f)) }: PartialFunction[
+        Type,
+        Type
+      ]
+    )
 
   def collect[T](pf: PartialFunction[Type, T]): ConstArray[T] = {
     val retNull: (Type => T) = (_ => null.asInstanceOf[T])
@@ -368,7 +380,7 @@ class TypeUtil(val tpe: Type) extends AnyVal {
     else
       tpe match {
         case t: AtomicType => false
-        case t => t.children.exists(_.existsType(f))
+        case t             => t.children.exists(_.existsType(f))
       }
 
   def containsSymbol(tss: scala.collection.Set[TypeSymbol]): Boolean =
@@ -378,7 +390,7 @@ class TypeUtil(val tpe: Type) extends AnyVal {
         case NominalType(ts, exp) =>
           tss.contains(ts) || exp.containsSymbol(tss)
         case t: AtomicType => false
-        case t => t.children.exists(_.containsSymbol(tss))
+        case t             => t.children.exists(_.containsSymbol(tss))
       }
 }
 
@@ -409,8 +421,10 @@ trait ScalaType[T] extends TypedType[T] {
 }
 
 class ScalaBaseType[T](
-    implicit val classTag: ClassTag[T], val ordering: scala.math.Ordering[T])
-    extends ScalaType[T] with BaseTypedType[T] {
+    implicit val classTag: ClassTag[T],
+    val ordering: scala.math.Ordering[T]
+) extends ScalaType[T]
+    with BaseTypedType[T] {
   override def toString = classTag.toString.replaceFirst("^java.lang.", "")
   def nullable = false
   def ordered = ordering ne null
@@ -433,13 +447,14 @@ class ScalaBaseType[T](
   override def hashCode = classTag.hashCode
   override def equals(o: Any) = o match {
     case t: ScalaBaseType[_] => classTag == t.classTag
-    case _ => false
+    case _                   => false
   }
 }
 
 class ErasedScalaBaseType[T, E](
-    implicit val erasure: ScalaBaseType[E], val ct: ClassTag[T])
-    extends ScalaBaseType[T]()(ct, null) {
+    implicit val erasure: ScalaBaseType[E],
+    val ct: ClassTag[T]
+) extends ScalaBaseType[T]()(ct, null) {
   override def toString =
     classTag.toString.replaceFirst("^slick.ast.", "") + "/" + erasure
 }
@@ -460,21 +475,25 @@ object ScalaBaseType {
   implicit val optionDiscType = new ErasedScalaBaseType[OptionDisc, Int]
 
   private[this] val all: Map[ClassTag[_], ScalaBaseType[_]] =
-    Seq(booleanType,
-        bigDecimalType,
-        byteType,
-        charType,
-        doubleType,
-        floatType,
-        intType,
-        longType,
-        nullType,
-        shortType,
-        stringType,
-        optionDiscType).map(s => (s.classTag, s)).toMap
+    Seq(
+      booleanType,
+      bigDecimalType,
+      byteType,
+      charType,
+      doubleType,
+      floatType,
+      intType,
+      longType,
+      nullType,
+      shortType,
+      stringType,
+      optionDiscType
+    ).map(s => (s.classTag, s)).toMap
 
-  def apply[T](implicit classTag: ClassTag[T],
-               ordering: scala.math.Ordering[T] = null): ScalaBaseType[T] =
+  def apply[T](
+      implicit classTag: ClassTag[T],
+      ordering: scala.math.Ordering[T] = null
+  ): ScalaBaseType[T] =
     all
       .getOrElse(classTag, new ScalaBaseType[T])
       .asInstanceOf[ScalaBaseType[T]]
@@ -486,13 +505,16 @@ object ScalaBaseType {
 sealed trait OptionDisc
 
 class ScalaNumericType[T](val fromDouble: Double => T)(
-    implicit tag: ClassTag[T], val numeric: Numeric[T])
-    extends ScalaBaseType[T]()(tag, numeric) with NumericTypedType {
+    implicit tag: ClassTag[T],
+    val numeric: Numeric[T]
+) extends ScalaBaseType[T]()(tag, numeric)
+    with NumericTypedType {
   def toDouble(v: T) = numeric.toDouble(v)
 }
 
 class ScalaOptionType[T](val elementType: ScalaType[T])
-    extends ScalaType[Option[T]] with OptionTypedType[T] {
+    extends ScalaType[Option[T]]
+    with OptionTypedType[T] {
   override def toString = "SOption[" + elementType + "]"
   def nullable = true
   def ordered = elementType.ordered

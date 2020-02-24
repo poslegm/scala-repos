@@ -9,7 +9,9 @@ import org.scalatest.{FreeSpec, Inside}
 import akka.http.scaladsl.unmarshalling.Unmarshaller._
 
 class ParameterDirectivesSpec
-    extends FreeSpec with GenericRoutingSpec with Inside {
+    extends FreeSpec
+    with GenericRoutingSpec
+    with Inside {
   "when used with 'as[Int]' the parameter directive should" - {
     "extract a parameter value as Int" in {
       Get("/?amount=123") ~> {
@@ -24,7 +26,8 @@ class ParameterDirectivesSpec
           case MalformedQueryParamRejection(
               "amount",
               "'1x3' is not a valid 32-bit signed integer value",
-              Some(_)) ⇒
+              Some(_)
+              ) ⇒
         }
       }
     }
@@ -52,7 +55,8 @@ class ParameterDirectivesSpec
             case MalformedQueryParamRejection(
                 "amount",
                 "'x' is not a valid 32-bit signed integer value",
-                Some(_)) ⇒
+                Some(_)
+                ) ⇒
           }
         }
       }
@@ -90,7 +94,8 @@ class ParameterDirectivesSpec
           case MalformedQueryParamRejection(
               "amount",
               "'1x3' is not a valid 32-bit hexadecimal integer value",
-              Some(_)) ⇒
+              Some(_)
+              ) ⇒
         }
       }
     }
@@ -118,7 +123,8 @@ class ParameterDirectivesSpec
             case MalformedQueryParamRejection(
                 "amount",
                 "'x' is not a valid 32-bit hexadecimal integer value",
-                Some(_)) ⇒
+                Some(_)
+                ) ⇒
           }
         }
       }
@@ -145,7 +151,10 @@ class ParameterDirectivesSpec
       } ~> check {
         inside(rejection) {
           case MalformedQueryParamRejection(
-              "really", "'absolutely' is not a valid Boolean value", None) ⇒
+              "really",
+              "'absolutely' is not a valid Boolean value",
+              None
+              ) ⇒
         }
       }
     }
@@ -186,8 +195,7 @@ class ParameterDirectivesSpec
     "supply the default value if an optional parameter is missing" in {
       Get("/?name=Parsons&FirstName=Ellen") ~> {
         parameters("name".?, 'FirstName, 'age ? "29", 'eyes.?) {
-          (name, firstName, age, eyes) ⇒
-            complete(firstName + name + age + eyes)
+          (name, firstName, age, eyes) ⇒ complete(firstName + name + age + eyes)
         }
       } ~> check { responseAs[String] shouldEqual "EllenSome(Parsons)29None" }
     }
@@ -250,7 +258,8 @@ class ParameterDirectivesSpec
     val completeAsList = parameterSeq { params ⇒
       val sorted = params.sorted
       complete(
-          s"${sorted.size}: [${sorted.map(e ⇒ e._1 + " -> " + e._2).mkString(", ")}]")
+        s"${sorted.size}: [${sorted.map(e ⇒ e._1 + " -> " + e._2).mkString(", ")}]"
+      )
     }
 
     "extract parameters with different keys" in {

@@ -9,7 +9,8 @@ case class EventSubscribers(urls: Set[String] = Set.empty[String])
     extends MarathonState[Protos.EventSubscribers, EventSubscribers] {
 
   override def mergeFromProto(
-      message: Protos.EventSubscribers): EventSubscribers =
+      message: Protos.EventSubscribers
+  ): EventSubscribers =
     EventSubscribers(Set(message.getCallbackUrlsList: _*))
 
   override def mergeFromProto(bytes: Array[Byte]): EventSubscribers = {

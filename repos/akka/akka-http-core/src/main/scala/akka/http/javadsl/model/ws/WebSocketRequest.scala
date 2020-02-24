@@ -57,7 +57,8 @@ object WebSocketRequest {
       def asScala: ScalaWebSocketRequest = scalaRequest
 
       def transform(
-          f: ScalaWebSocketRequest ⇒ ScalaWebSocketRequest): WebSocketRequest =
+          f: ScalaWebSocketRequest ⇒ ScalaWebSocketRequest
+      ): WebSocketRequest =
         wrap(f(asScala))
     }
 }

@@ -13,7 +13,8 @@ object UidClashTest {
 
   class TerminatedForNonWatchedActor
       extends Exception(
-          "Received Terminated for actor that was not actually watched")
+        "Received Terminated for actor that was not actually watched"
+      )
       with NoStackTrace
 
   @volatile var oldActor: ActorRef = _
@@ -21,20 +22,23 @@ object UidClashTest {
   private[akka] class EvilCollidingActorRef(
       override val provider: ActorRefProvider,
       override val path: ActorPath,
-      val eventStream: EventStream)
-      extends MinimalActorRef {
+      val eventStream: EventStream
+  ) extends MinimalActorRef {
 
     //Ignore everything
     override def isTerminated: Boolean = true
     override def sendSystemMessage(message: SystemMessage): Unit = ()
     override def !(message: Any)(
-        implicit sender: ActorRef = Actor.noSender): Unit = ()
+        implicit sender: ActorRef = Actor.noSender
+    ): Unit = ()
   }
 
   def createCollidingRef(system: ActorSystem): ActorRef =
-    new EvilCollidingActorRef(system.asInstanceOf[ActorSystemImpl].provider,
-                              oldActor.path,
-                              system.eventStream)
+    new EvilCollidingActorRef(
+      system.asInstanceOf[ActorSystemImpl].provider,
+      oldActor.path,
+      system.eventStream
+    )
 
   case object PleaseRestart
   case object PingMyself

@@ -27,11 +27,13 @@ object SqlCapabilities {
   val other = Capability("sql.other")
 
   /** All SQL capabilities */
-  val all = Set(other,
-                sequence,
-                sequenceCurr,
-                sequenceCycle,
-                sequenceLimited,
-                sequenceMax,
-                sequenceMin)
+  val all = Set(
+    other,
+    sequence,
+    sequenceCurr,
+    sequenceCycle,
+    sequenceLimited,
+    sequenceMax,
+    sequenceMin
+  )
 }

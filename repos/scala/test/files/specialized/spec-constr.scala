@@ -4,9 +4,7 @@ object Test {
 
     println("hello?")
     if (f == null)
-      f = { _ =>
-        false
-      }
+      f = { _ => false }
   }
 
   def main(args: Array[String]) {

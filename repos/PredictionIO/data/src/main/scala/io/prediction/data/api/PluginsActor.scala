@@ -37,13 +37,16 @@ class PluginsActor() extends Actor {
       }
     case _ =>
       log.error(
-          "Unknown message sent to Event Server input sniffer plugin host.")
+        "Unknown message sent to Event Server input sniffer plugin host."
+      )
   }
 }
 
 object PluginsActor {
-  case class HandleREST(pluginName: String,
-                        appId: Int,
-                        channelId: Option[Int],
-                        pluginArgs: Seq[String])
+  case class HandleREST(
+      pluginName: String,
+      appId: Int,
+      channelId: Option[Int],
+      pluginArgs: Seq[String]
+  )
 }

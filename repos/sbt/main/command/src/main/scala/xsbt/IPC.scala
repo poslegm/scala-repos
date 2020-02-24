@@ -3,7 +3,14 @@
  */
 package xsbt
 
-import java.io.{BufferedReader, BufferedWriter, InputStream, InputStreamReader, OutputStreamWriter, OutputStream}
+import java.io.{
+  BufferedReader,
+  BufferedWriter,
+  InputStream,
+  InputStreamReader,
+  OutputStreamWriter,
+  OutputStream
+}
 import java.net.{InetAddress, ServerSocket, Socket}
 
 object IPC {
@@ -16,7 +23,8 @@ object IPC {
 
   def pullServer[T](f: Server => T): T = {
     val server = makeServer
-    try { f(new Server(server)) } finally { server.close() }
+    try { f(new Server(server)) }
+    finally { server.close() }
   }
   def unmanagedServer: Server = new Server(makeServer)
   def makeServer: ServerSocket = {
@@ -24,9 +32,11 @@ object IPC {
     def nextPort = random.nextInt(portMax - portMin + 1) + portMin
     def createServer(attempts: Int): ServerSocket =
       if (attempts > 0)
-        try { new ServerSocket(nextPort, 1, loopback) } catch {
+        try { new ServerSocket(nextPort, 1, loopback) }
+        catch {
           case _: Exception => createServer(attempts - 1)
-        } else
+        }
+      else
         sys.error("Could not connect to socket: maximum attempts exceeded")
     createServer(10)
   }
@@ -37,16 +47,18 @@ object IPC {
     def listen(): T = {
       ipc(server.accept())(f) match {
         case Some(done) => done
-        case None => listen()
+        case None       => listen()
       }
     }
 
-    try { listen() } finally { server.close() }
+    try { listen() }
+    finally { server.close() }
   }
   private def ipc[T](s: Socket)(f: IPC => T): T =
-    try { f(new IPC(s)) } finally { s.close() }
+    try { f(new IPC(s)) }
+    finally { s.close() }
 
-  final class Server private[IPC](s: ServerSocket) extends NotNull {
+  final class Server private[IPC] (s: ServerSocket) extends NotNull {
     def port = s.getLocalPort
     def close() = s.close()
     def isClosed: Boolean = s.isClosed
@@ -57,7 +69,8 @@ final class IPC private (s: Socket) extends NotNull {
   def port = s.getLocalPort
   private val in = new BufferedReader(new InputStreamReader(s.getInputStream))
   private val out = new BufferedWriter(
-      new OutputStreamWriter(s.getOutputStream))
+    new OutputStreamWriter(s.getOutputStream)
+  )
 
   def send(s: String) = { out.write(s); out.newLine(); out.flush() }
   def receive: String = in.readLine()

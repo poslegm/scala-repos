@@ -25,8 +25,9 @@ import PoolFlow._
 
 private object PoolInterfaceActor {
   final case class PoolRequest(
-      request: HttpRequest, responsePromise: Promise[HttpResponse])
-      extends NoSerializationVerificationNeeded
+      request: HttpRequest,
+      responsePromise: Promise[HttpResponse]
+  ) extends NoSerializationVerificationNeeded
 
   case object Shutdown extends DeadLetterSuppression
 
@@ -50,8 +51,10 @@ private object PoolInterfaceActor {
 private class PoolInterfaceActor(
     hcps: HostConnectionPoolSetup,
     shutdownCompletedPromise: Promise[Done],
-    gateway: PoolGateway)(implicit fm: Materializer)
-    extends ActorSubscriber with ActorPublisher[RequestContext]
+    gateway: PoolGateway
+)(implicit fm: Materializer)
+    extends ActorSubscriber
+    with ActorPublisher[RequestContext]
     with ActorLogging {
   import PoolInterfaceActor._
 
@@ -59,8 +62,7 @@ private class PoolInterfaceActor(
     Buffer[PoolRequest](hcps.setup.settings.maxOpenRequests, fm)
   private[this] var activeIdleTimeout: Option[Cancellable] = None
 
-  log.debug(
-      "(Re-)starting host connection pool to {}:{}", hcps.host, hcps.port)
+  log.debug("(Re-)starting host connection pool to {}:{}", hcps.host, hcps.port)
 
   initConnectionFlow()
 
@@ -72,22 +74,31 @@ private class PoolInterfaceActor(
 
     val connectionFlow = connectionContext match {
       case httpsContext: HttpsConnectionContext ⇒
-        Http().outgoingConnectionHttps(host,
-                                       port,
-                                       httpsContext,
-                                       None,
-                                       settings.connectionSettings,
-                                       setup.log)
+        Http().outgoingConnectionHttps(
+          host,
+          port,
+          httpsContext,
+          None,
+          settings.connectionSettings,
+          setup.log
+        )
       case _ ⇒
         Http().outgoingConnection(
-            host, port, None, settings.connectionSettings, setup.log)
+          host,
+          port,
+          None,
+          settings.connectionSettings,
+          setup.log
+        )
     }
 
     val poolFlow =
-      PoolFlow(Flow[HttpRequest].viaMat(connectionFlow)(Keep.right),
-               new InetSocketAddress(host, port),
-               settings,
-               setup.log).named("PoolFlow")
+      PoolFlow(
+        Flow[HttpRequest].viaMat(connectionFlow)(Keep.right),
+        new InetSocketAddress(host, port),
+        settings,
+        setup.log
+      ).named("PoolFlow")
 
     Source
       .fromPublisher(ActorPublisher(self))
@@ -117,17 +128,21 @@ private class PoolInterfaceActor(
       activateIdleTimeoutIfNecessary()
 
     case OnComplete ⇒ // the pool shut down
-      log.debug("Host connection pool to {}:{} has completed orderly shutdown",
-                hcps.host,
-                hcps.port)
+      log.debug(
+        "Host connection pool to {}:{} has completed orderly shutdown",
+        hcps.host,
+        hcps.port
+      )
       shutdownCompletedPromise.success(Done)
       self ! PoisonPill // give potentially queued requests another chance to be forwarded back to the gateway
 
     case OnError(e) ⇒ // the pool shut down
-      log.debug("Host connection pool to {}:{} has shut down with error {}",
-                hcps.host,
-                hcps.port,
-                e)
+      log.debug(
+        "Host connection pool to {}:{} has shut down with error {}",
+        hcps.host,
+        hcps.port,
+        e
+      )
       shutdownCompletedPromise.failure(e)
       self ! PoisonPill // give potentially queued requests another chance to be forwarded back to the gateway
 
@@ -141,11 +156,16 @@ private class PoolInterfaceActor(
       if (totalDemand == 0) {
         // if we can't dispatch right now we buffer and dispatch when demand from the pool arrives
         if (inputBuffer.isFull) {
-          x.responsePromise.failure(new BufferOverflowException(
-                  s"Exceeded configured max-open-requests value of [${inputBuffer.capacity}]"))
+          x.responsePromise.failure(
+            new BufferOverflowException(
+              s"Exceeded configured max-open-requests value of [${inputBuffer.capacity}]"
+            )
+          )
         } else inputBuffer.enqueue(x)
       } else dispatchRequest(x) // if we can dispatch right now, do it
-      request(1) // for every incoming request we demand one response from the pool
+      request(
+        1
+      ) // for every incoming request we demand one response from the pool
 
     case PoolRequest(request, responsePromise) ⇒
       // we have already started shutting down, i.e. this pool is not usable anymore
@@ -158,7 +178,10 @@ private class PoolInterfaceActor(
 
     case Shutdown ⇒ // signal coming in from gateway
       log.debug(
-          "Shutting down host connection pool to {}:{}", hcps.host, hcps.port)
+        "Shutting down host connection pool to {}:{}",
+        hcps.host,
+        hcps.port
+      )
       onComplete()
       while (!inputBuffer.isEmpty) {
         val PoolRequest(request, responsePromise) = inputBuffer.dequeue()
@@ -190,6 +213,7 @@ private class PoolInterfaceActor(
       val timeout =
         hcps.setup.settings.idleTimeout.asInstanceOf[FiniteDuration]
       activeIdleTimeout = Some(
-          context.system.scheduler.scheduleOnce(timeout)(gateway.shutdown()))
+        context.system.scheduler.scheduleOnce(timeout)(gateway.shutdown())
+      )
     }
 }

@@ -17,19 +17,21 @@ private[testadapter] object ComUtils {
 
   @tailrec
   def receiveLoop[T](com: ComJSRunner, timeout: Duration)(
-      handler: LoopHandler[T]): T = {
+      handler: LoopHandler[T]
+  ): T = {
     receiveResponse(com, timeout)(handler) match {
       case Some(v) => v
-      case None => receiveLoop(com, timeout)(handler)
+      case None    => receiveLoop(com, timeout)(handler)
     }
   }
 
   @tailrec
   def receiveLoop[T](com: ComJSRunner, deadline: Deadline)(
-      handler: LoopHandler[T]): T = {
+      handler: LoopHandler[T]
+  ): T = {
     receiveResponse(com, deadline.timeLeft)(handler) match {
       case Some(v) => v
-      case None => receiveLoop(com, deadline)(handler)
+      case None    => receiveLoop(com, deadline)(handler)
     }
   }
 
@@ -37,9 +39,11 @@ private[testadapter] object ComUtils {
     receiveResponse(com, Duration.Inf)(handler)
 
   def receiveResponse[T](com: ComJSRunner, timeout: Duration)(
-      handler: Handler[T]): T = {
+      handler: Handler[T]
+  ): T = {
     val resp = {
-      try com.receive(timeout) catch {
+      try com.receive(timeout)
+      catch {
         case t: ComJSEnv.ComClosedException =>
           // Check if runner failed. If it did, throw that exception instead
           if (!com.isRunning()) com.await() // Will throw if runner failed
@@ -50,7 +54,9 @@ private[testadapter] object ComUtils {
 
     def badResponse(cause: Throwable = null) = {
       throw new AssertionError(
-          s"JS test interface sent bad reply: $resp", cause)
+        s"JS test interface sent bad reply: $resp",
+        cause
+      )
     }
 
     val pos = resp.indexOf(':')
@@ -61,7 +67,8 @@ private[testadapter] object ComUtils {
     val data = resp.substring(pos + 1)
 
     def throwable = {
-      try fromJSON[RemoteException](readJSON(data)) catch {
+      try fromJSON[RemoteException](readJSON(data))
+      catch {
         case t: Throwable => badResponse(t)
       }
     }
@@ -71,13 +78,16 @@ private[testadapter] object ComUtils {
         throw throwable
       case "bad" =>
         throw new AssertionError(
-            s"JS test interface rejected command.", throwable)
+          s"JS test interface rejected command.",
+          throwable
+        )
       case _ =>
         badResponse()
     }
 
     val result = {
-      try handler.lift((status, data)) catch {
+      try handler.lift((status, data))
+      catch {
         case t: Throwable => badResponse(t)
       }
     }

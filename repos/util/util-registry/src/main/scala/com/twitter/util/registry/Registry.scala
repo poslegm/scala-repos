@@ -90,9 +90,7 @@ class SimpleRegistry extends Registry {
   }
 
   private[this] def sanitize(key: String): String =
-    key.filter { char =>
-      char > 31 && char < 127
-    }
+    key.filter { char => char > 31 && char < 127 }
 }
 
 /**
@@ -108,7 +106,7 @@ object GlobalRegistry {
     * registry, useful for writing isolated tests.
     */
   def get: Registry = localRegistry() match {
-    case None => registry
+    case None        => registry
     case Some(local) => local
   }
 

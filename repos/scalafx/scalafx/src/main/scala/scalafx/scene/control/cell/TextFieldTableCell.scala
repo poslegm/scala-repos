@@ -53,7 +53,8 @@ object TextFieldTableCell {
     * @return JavaFX $TFTC
     */
   implicit def sfxTextFieldTableCell2jfx[S, T](
-      cell: TextFieldTableCell[S, T]): jfxscc.TextFieldTableCell[S, T] =
+      cell: TextFieldTableCell[S, T]
+  ): jfxscc.TextFieldTableCell[S, T] =
     if (cell != null) cell.delegate else null
 
   /**
@@ -72,7 +73,8 @@ object TextFieldTableCell {
     * @return $FLVRET
     */
   def forTableColumn[S, T](
-      converter: StringConverter[T]): (TableColumn[S, T] => TableCell[S, T]) =
+      converter: StringConverter[T]
+  ): (TableColumn[S, T] => TableCell[S, T]) =
     (view: TableColumn[S, T]) =>
       jfxscc.TextFieldTableCell.forTableColumn[S, T](converter).call(view)
 
@@ -80,7 +82,9 @@ object TextFieldTableCell {
     * Added to satisfy Spec Texts.
     */
   @deprecated(
-      message = "Use forTableColumn[S, T](StringConverter[T])", since = "1.0")
+    message = "Use forTableColumn[S, T](StringConverter[T])",
+    since = "1.0"
+  )
   def forTableColumn[S, T](converter: jfxu.StringConverter[T]) =
     jfxscc.TextFieldTableCell.forTableColumn[S, T](converter)
 }
@@ -94,9 +98,10 @@ object TextFieldTableCell {
   *
   * @define TFTC `TextFieldTableCell`
   */
-class TextFieldTableCell[S, T](override val delegate: jfxscc.TextFieldTableCell[
-        S, T] = new jfxscc.TextFieldTableCell[S, T])
-    extends TableCell[S, T](delegate)
+class TextFieldTableCell[S, T](
+    override val delegate: jfxscc.TextFieldTableCell[S, T] =
+      new jfxscc.TextFieldTableCell[S, T]
+) extends TableCell[S, T](delegate)
     with ConvertableCell[jfxscc.TextFieldTableCell[S, T], T, T]
     with UpdatableCell[jfxscc.TextFieldTableCell[S, T], T]
     with SFXDelegate[jfxscc.TextFieldTableCell[S, T]] {

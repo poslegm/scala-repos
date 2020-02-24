@@ -32,9 +32,11 @@ object LambdaDeserializer {
     *                    member of the anonymous class created by `LambdaMetaFactory`.
     * @return            An instance of the functional interface
     */
-  def deserializeLambda(lookup: MethodHandles.Lookup,
-                        cache: java.util.Map[String, MethodHandle],
-                        serialized: SerializedLambda): AnyRef = {
+  def deserializeLambda(
+      lookup: MethodHandles.Lookup,
+      cache: java.util.Map[String, MethodHandle],
+      serialized: SerializedLambda
+  ): AnyRef = {
     def slashDot(name: String) = name.replaceAll("/", ".")
     val loader = lookup.lookupClass().getClassLoader
     val implClass = loader.loadClass(slashDot(serialized.getImplClass))
@@ -45,7 +47,8 @@ object LambdaDeserializer {
         MethodType.fromMethodDescriptorString(s, loader)
 
       val funcInterfaceSignature = parseDescriptor(
-          getFunctionalInterfaceMethodSignature)
+        getFunctionalInterfaceMethodSignature
+      )
       val instantiated = parseDescriptor(getInstantiatedMethodType)
       val functionalInterfaceClass =
         loader.loadClass(slashDot(getFunctionalInterfaceClass))
@@ -76,36 +79,42 @@ object LambdaDeserializer {
       }
 
       // Lookup the implementation method
-      val implMethod: MethodHandle = try {
-        findMember(lookup,
-                   getImplMethodKind,
-                   implClass,
-                   getImplMethodName,
-                   implMethodSig)
-      } catch {
-        case e: ReflectiveOperationException =>
-          throw new IllegalArgumentException(
-              "Illegal lambda deserialization", e)
-      }
+      val implMethod: MethodHandle =
+        try {
+          findMember(
+            lookup,
+            getImplMethodKind,
+            implClass,
+            getImplMethodName,
+            implMethodSig
+          )
+        } catch {
+          case e: ReflectiveOperationException =>
+            throw new IllegalArgumentException(
+              "Illegal lambda deserialization",
+              e
+            )
+        }
 
       val flags: Int =
         LambdaMetafactory.FLAG_SERIALIZABLE | LambdaMetafactory.FLAG_MARKERS
       val isScalaFunction =
         functionalInterfaceClass.getName.startsWith("scala.Function")
       val markerInterface: Class[_] = loader.loadClass(
-          if (isScalaFunction) ScalaSerializable else JavaIOSerializable)
+        if (isScalaFunction) ScalaSerializable else JavaIOSerializable
+      )
 
       LambdaMetafactory.altMetafactory(
-          lookup,
-          getFunctionalInterfaceMethodName,
-          invokedType,
-          /* samMethodType          = */ funcInterfaceSignature,
-          /* implMethod             = */ implMethod,
-          /* instantiatedMethodType = */ instantiated,
-          /* flags                  = */ flags.asInstanceOf[AnyRef],
-          /* markerInterfaceCount   = */ 1.asInstanceOf[AnyRef],
-          /* markerInterfaces[0]    = */ markerInterface,
-          /* bridgeCount            = */ 0.asInstanceOf[AnyRef]
+        lookup,
+        getFunctionalInterfaceMethodName,
+        invokedType,
+        /* samMethodType          = */ funcInterfaceSignature,
+        /* implMethod             = */ implMethod,
+        /* instantiatedMethodType = */ instantiated,
+        /* flags                  = */ flags.asInstanceOf[AnyRef],
+        /* markerInterfaceCount   = */ 1.asInstanceOf[AnyRef],
+        /* markerInterfaces[0]    = */ markerInterface,
+        /* bridgeCount            = */ 0.asInstanceOf[AnyRef]
       )
     }
 
@@ -124,8 +133,9 @@ object LambdaDeserializer {
           case target => target
         }
 
-    val captures = Array.tabulate(serialized.getCapturedArgCount)(
-        n => serialized.getCapturedArg(n))
+    val captures = Array.tabulate(serialized.getCapturedArgCount)(n =>
+      serialized.getCapturedArg(n)
+    )
     factory.invokeWithArguments(captures: _*)
   }
 
@@ -138,11 +148,13 @@ object LambdaDeserializer {
     "java.io.Serializable"
   }
 
-  private def findMember(lookup: MethodHandles.Lookup,
-                         kind: Int,
-                         owner: Class[_],
-                         name: String,
-                         signature: MethodType): MethodHandle = {
+  private def findMember(
+      lookup: MethodHandles.Lookup,
+      kind: Int,
+      owner: Class[_],
+      name: String,
+      signature: MethodType
+  ): MethodHandle = {
     kind match {
       case MethodHandleInfo.REF_invokeStatic =>
         lookup.findStatic(owner, name, signature)

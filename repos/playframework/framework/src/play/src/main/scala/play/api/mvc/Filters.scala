@@ -43,7 +43,8 @@ trait Filter extends EssentialFilter { self =>
     * @param rh The RequestHeader.
     */
   def apply(f: RequestHeader => Future[Result])(
-      rh: RequestHeader): Future[Result]
+      rh: RequestHeader
+  ): Future[Result]
 
   def apply(next: EssentialAction): EssentialAction = {
     new EssentialAction {
@@ -68,23 +69,25 @@ trait Filter extends EssentialFilter { self =>
           // Therefore, as a fallback, we try to redeem the bodyAccumulator Promise here with an iteratee that consumes
           // the request body.
           bodyAccumulator.tryComplete(
-              resultTry.map(simpleResult => Accumulator.done(simpleResult)))
+            resultTry.map(simpleResult => Accumulator.done(simpleResult))
+          )
         })
 
         Accumulator.flatten(bodyAccumulator.future.map { it =>
           it.mapFuture { simpleResult =>
-            // When the iteratee is done, we can redeem the promised result that was returned to the filter
-            promisedResult.success(simpleResult)
-            result
-          }.recoverWith {
-            case t: Throwable =>
-              // If the iteratee finishes with an error, fail the promised result that was returned to the
-              // filter with the same error. Note, we MUST use tryFailure here as it's possible that a)
-              // promisedResult was already completed successfully in the mapM method above but b) calculating
-              // the result in that method caused an error, so we ended up in this recover block anyway.
-              promisedResult.tryFailure(t)
+              // When the iteratee is done, we can redeem the promised result that was returned to the filter
+              promisedResult.success(simpleResult)
               result
-          }
+            }
+            .recoverWith {
+              case t: Throwable =>
+                // If the iteratee finishes with an error, fail the promised result that was returned to the
+                // filter with the same error. Note, we MUST use tryFailure here as it's possible that a)
+                // promisedResult was already completed successfully in the mapM method above but b) calculating
+                // the result in that method caused an error, so we ended up in this recover block anyway.
+                promisedResult.tryFailure(t)
+                result
+            }
         })
       }
     }
@@ -92,12 +95,13 @@ trait Filter extends EssentialFilter { self =>
 }
 
 object Filter {
-  def apply(filter: (RequestHeader => Future[Result],
-            RequestHeader) => Future[Result])(
-      implicit m: Materializer): Filter = new Filter {
+  def apply(
+      filter: (RequestHeader => Future[Result], RequestHeader) => Future[Result]
+  )(implicit m: Materializer): Filter = new Filter {
     implicit def mat = m
     def apply(f: RequestHeader => Future[Result])(
-        rh: RequestHeader): Future[Result] = filter(f, rh)
+        rh: RequestHeader
+    ): Future[Result] = filter(f, rh)
   }
 }
 
@@ -107,7 +111,7 @@ object Filter {
 object Filters {
   def apply(h: EssentialAction, filters: EssentialFilter*) = h match {
     case a: EssentialAction => FilterChain(a, filters.toList)
-    case h => h
+    case h                  => h
   }
 }
 
@@ -124,11 +128,10 @@ class WithFilters(filters: EssentialFilter*) extends GlobalSettings {
 object FilterChain {
   def apply[A](
       action: EssentialAction,
-      filters: List[EssentialFilter]): EssentialAction = new EssentialAction {
+      filters: List[EssentialFilter]
+  ): EssentialAction = new EssentialAction {
     def apply(rh: RequestHeader): Accumulator[ByteString, Result] = {
-      val chain = filters.reverse.foldLeft(action) { (a, i) =>
-        i(a)
-      }
+      val chain = filters.reverse.foldLeft(action) { (a, i) => i(a) }
       chain(rh)
     }
   }

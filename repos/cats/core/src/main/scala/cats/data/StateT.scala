@@ -10,16 +10,17 @@ package data
 final class StateT[F[_], S, A](val runF: F[S => F[(S, A)]])
     extends Serializable {
 
-  def flatMap[B](fas: A => StateT[F, S, B])(
-      implicit F: Monad[F]): StateT[F, S, B] =
-    StateT(
-        s =>
-          F.flatMap(runF) { fsf =>
+  def flatMap[B](
+      fas: A => StateT[F, S, B]
+  )(implicit F: Monad[F]): StateT[F, S, B] =
+    StateT(s =>
+      F.flatMap(runF) { fsf =>
         F.flatMap(fsf(s)) {
           case (s, a) =>
             fas(a).run(s)
         }
-    })
+      }
+    )
 
   def map[B](f: A => B)(implicit F: Monad[F]): StateT[F, S, B] =
     transform { case (s, a) => (s, f(a)) }
@@ -62,17 +63,15 @@ final class StateT[F[_], S, A](val runF: F[S => F[(S, A)]])
   /**
     * Like [[map]], but also allows the state (`S`) value to be modified.
     */
-  def transform[B](f: (S, A) => (S, B))(
-      implicit F: Monad[F]): StateT[F, S, B] =
-    transformF { fsa =>
-      F.map(fsa) { case (s, a) => f(s, a) }
-    }
+  def transform[B](f: (S, A) => (S, B))(implicit F: Monad[F]): StateT[F, S, B] =
+    transformF { fsa => F.map(fsa) { case (s, a) => f(s, a) } }
 
   /**
     * Like [[transform]], but allows the context to change from `F` to `G`.
     */
-  def transformF[G[_], B](f: F[(S, A)] => G[(S, B)])(
-      implicit F: FlatMap[F], G: Applicative[G]): StateT[G, S, B] =
+  def transformF[G[_], B](
+      f: F[(S, A)] => G[(S, B)]
+  )(implicit F: FlatMap[F], G: Applicative[G]): StateT[G, S, B] =
     StateT(s => f(run(s)))
 
   /**
@@ -93,8 +92,9 @@ final class StateT[F[_], S, A](val runF: F[S => F[(S, A)]])
     * res1: Option[(GlobalEnv, Double)] = Some(((6,hello),5.0))
     * }}}
     */
-  def transformS[R](
-      f: R => S, g: (R, S) => R)(implicit F: Monad[F]): StateT[F, R, A] =
+  def transformS[R](f: R => S, g: (R, S) => R)(
+      implicit F: Monad[F]
+  ): StateT[F, R, A] =
     StateT { r =>
       F.flatMap(runF) { ff =>
         val s = f(r)
@@ -123,8 +123,9 @@ final class StateT[F[_], S, A](val runF: F[S => F[(S, A)]])
 }
 
 object StateT extends StateTInstances {
-  def apply[F[_], S, A](f: S => F[(S, A)])(
-      implicit F: Applicative[F]): StateT[F, S, A] =
+  def apply[F[_], S, A](
+      f: S => F[(S, A)]
+  )(implicit F: Applicative[F]): StateT[F, S, A] =
     new StateT(F.pure(f))
 
   def applyF[F[_], S, A](runF: F[S => F[(S, A)]]): StateT[F, S, A] =
@@ -136,13 +137,15 @@ object StateT extends StateTInstances {
 
 private[data] sealed abstract class StateTInstances {
   implicit def stateTMonadState[F[_], S](
-      implicit F: Monad[F]): MonadState[StateT[F, S, ?], S] =
+      implicit F: Monad[F]
+  ): MonadState[StateT[F, S, ?], S] =
     new MonadState[StateT[F, S, ?], S] {
       def pure[A](a: A): StateT[F, S, A] =
         StateT.pure(a)
 
-      def flatMap[A, B](fa: StateT[F, S, A])(
-          f: A => StateT[F, S, B]): StateT[F, S, B] =
+      def flatMap[A, B](
+          fa: StateT[F, S, A]
+      )(f: A => StateT[F, S, B]): StateT[F, S, B] =
         fa.flatMap(f)
 
       val get: StateT[F, S, S] = StateT(a => F.pure((a, a)))
@@ -153,8 +156,9 @@ private[data] sealed abstract class StateTInstances {
         fa.map(f)
     }
 
-  implicit def stateTLift[M[_], S](implicit M: Applicative[M])
-    : TransLift[({ type λ[α[_], β] = StateT[α, S, β] })#λ, M] =
+  implicit def stateTLift[M[_], S](
+      implicit M: Applicative[M]
+  ): TransLift[({ type λ[α[_], β] = StateT[α, S, β] })#λ, M] =
     new TransLift[({ type λ[α[_], β] = StateT[α, S, β] })#λ, M] {
       def liftT[A](ma: M[A]): StateT[M, S, A] = StateT(s => M.map(ma)(s -> _))
     }

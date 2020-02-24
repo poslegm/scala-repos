@@ -86,7 +86,8 @@ object DDataClusterShardingFailureSpecConfig
 
 class PersistentClusterShardingFailureSpec
     extends ClusterShardingFailureSpec(
-        PersistentClusterShardingFailureSpecConfig)
+      PersistentClusterShardingFailureSpecConfig
+    )
 class DDataClusterShardingFailureSpec
     extends ClusterShardingFailureSpec(DDataClusterShardingFailureSpecConfig)
 
@@ -105,30 +106,35 @@ class DDataClusterShardingFailureMultiJvmNode3
     extends DDataClusterShardingFailureSpec
 
 abstract class ClusterShardingFailureSpec(
-    config: ClusterShardingFailureSpecConfig)
-    extends MultiNodeSpec(config) with STMultiNodeSpec with ImplicitSender {
+    config: ClusterShardingFailureSpecConfig
+) extends MultiNodeSpec(config)
+    with STMultiNodeSpec
+    with ImplicitSender {
   import ClusterShardingFailureSpec._
   import config._
 
   override def initialParticipants = roles.size
 
   val storageLocations =
-    List("akka.persistence.journal.leveldb.dir",
-         "akka.persistence.journal.leveldb-shared.store.dir",
-         "akka.persistence.snapshot-store.local.dir").map(
-        s ⇒ new File(system.settings.config.getString(s)))
+    List(
+      "akka.persistence.journal.leveldb.dir",
+      "akka.persistence.journal.leveldb-shared.store.dir",
+      "akka.persistence.snapshot-store.local.dir"
+    ).map(s ⇒ new File(system.settings.config.getString(s)))
 
   override protected def atStartup() {
     runOn(controller) {
-      storageLocations.foreach(
-          dir ⇒ if (dir.exists) FileUtils.deleteDirectory(dir))
+      storageLocations.foreach(dir ⇒
+        if (dir.exists) FileUtils.deleteDirectory(dir)
+      )
     }
   }
 
   override protected def afterTermination() {
     runOn(controller) {
-      storageLocations.foreach(
-          dir ⇒ if (dir.exists) FileUtils.deleteDirectory(dir))
+      storageLocations.foreach(dir ⇒
+        if (dir.exists) FileUtils.deleteDirectory(dir)
+      )
     }
   }
 
@@ -142,11 +148,12 @@ abstract class ClusterShardingFailureSpec(
 
   def startSharding(): Unit = {
     ClusterSharding(system).start(
-        typeName = "Entity",
-        entityProps = Props[Entity],
-        settings = ClusterShardingSettings(system).withRememberEntities(true),
-        extractEntityId = extractEntityId,
-        extractShardId = extractShardId)
+      typeName = "Entity",
+      entityProps = Props[Entity],
+      settings = ClusterShardingSettings(system).withRememberEntities(true),
+      extractEntityId = extractEntityId,
+      extractShardId = extractShardId
+    )
   }
 
   lazy val region = ClusterSharding(system).shardRegion("Entity")
@@ -163,7 +170,8 @@ abstract class ClusterShardingFailureSpec(
 
       runOn(first, second) {
         system.actorSelection(node(controller) / "user" / "store") ! Identify(
-            None)
+          None
+        )
         val sharedStore = expectMsgType[ActorIdentity].ref.get
         SharedLeveldbJournal.setStore(sharedStore, system)
       }

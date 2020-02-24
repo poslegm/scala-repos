@@ -13,5 +13,5 @@ import akka.http.scaladsl.marshalling
   */
 // FIXME: too lenient visibility, currently used to implement Java marshallers, needs proper API, see #16439
 case class MarshallerImpl[T](
-    scalaMarshaller: ExecutionContext ⇒ marshalling.ToResponseMarshaller[T])
-    extends Marshaller[T]
+    scalaMarshaller: ExecutionContext ⇒ marshalling.ToResponseMarshaller[T]
+) extends Marshaller[T]

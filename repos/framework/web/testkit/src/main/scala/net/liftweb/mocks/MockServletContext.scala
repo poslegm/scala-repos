@@ -111,9 +111,12 @@ class MockServletContext(var target: String) extends ServletContext {
 
   def addFilter(
       x$1: String,
-      x$2: Class[_ <: javax.servlet.Filter]): FilterRegistration.Dynamic = null
+      x$2: Class[_ <: javax.servlet.Filter]
+  ): FilterRegistration.Dynamic = null
   def addFilter(
-      x$1: String, x$2: javax.servlet.Filter): FilterRegistration.Dynamic =
+      x$1: String,
+      x$2: javax.servlet.Filter
+  ): FilterRegistration.Dynamic =
     null
   def addFilter(x$1: String, x$2: String): FilterRegistration.Dynamic = null
 
@@ -123,13 +126,18 @@ class MockServletContext(var target: String) extends ServletContext {
   def addListener(listenerClass: String): Unit = ()
 
   def addServlet(
-      servletNAme: String, servletClass: Class[_ <: javax.servlet.Servlet])
-    : ServletRegistration.Dynamic = null
-  def addServlet(servletName: String,
-                 servlet: javax.servlet.Servlet): ServletRegistration.Dynamic =
+      servletNAme: String,
+      servletClass: Class[_ <: javax.servlet.Servlet]
+  ): ServletRegistration.Dynamic = null
+  def addServlet(
+      servletName: String,
+      servlet: javax.servlet.Servlet
+  ): ServletRegistration.Dynamic =
     null
   def addServlet(
-      servletName: String, servletClass: String): ServletRegistration.Dynamic =
+      servletName: String,
+      servletClass: String
+  ): ServletRegistration.Dynamic =
     null
 
   // This remain unimplemented since we can't provide a Null here due toe type restrictions.
@@ -160,7 +168,8 @@ class MockServletContext(var target: String) extends ServletContext {
   def getSessionCookieConfig(): javax.servlet.SessionCookieConfig = null
   def setInitParameter(key: String, value: String): Boolean = true
   def setSessionTrackingModes(
-      trackingModes: java.util.Set[javax.servlet.SessionTrackingMode]): Unit =
+      trackingModes: java.util.Set[javax.servlet.SessionTrackingMode]
+  ): Unit =
     ()
   def getVirtualServerName(): String = null
 }
@@ -232,13 +241,13 @@ class MockHttpSession extends HttpSession {
   def invalidate {}
   def getValue(key: String): Object = values.get(key) match {
     case Some(v) => v
-    case None => null
+    case None    => null
   }
   def removeValue(key: String): Unit = values -= key
   def putValue(key: String, value: Object): Unit = values += (key -> value)
   def getAttribute(key: String): Object = attr.get(key) match {
     case Some(v) => v
-    case None => null
+    case None    => null
   }
   def removeAttribute(key: String): Unit = attr -= key
   def setAttribute(key: String, value: Object): Unit = attr += (key -> value)

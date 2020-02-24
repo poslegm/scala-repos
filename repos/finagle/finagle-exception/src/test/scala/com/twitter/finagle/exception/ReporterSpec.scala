@@ -45,9 +45,10 @@ class ClientReporterTest extends FunSuite with MockitoSugar {
   val reporter = Reporter(logger, "service16").withClient()
 
   val tse = new TestServiceException(
-      "service16",
-      "my cool message",
-      clientAddress = Some(InetAddress.getLoopbackAddress.getHostAddress))
+    "service16",
+    "my cool message",
+    clientAddress = Some(InetAddress.getLoopbackAddress.getHostAddress)
+  )
 
   test("log entries to a client once upon receive") {
     reporter.handle(tse.throwable)
@@ -73,10 +74,11 @@ class SourceClientReporterTest extends FunSuite with MockitoSugar {
   val reporter = Reporter(logger, "service16").withSource(socket).withClient()
 
   val tse = new TestServiceException(
-      "service16",
-      "my cool message",
-      clientAddress = Some(InetAddress.getLoopbackAddress.getHostAddress),
-      sourceAddress = Some(socket.getAddress.getHostName))
+    "service16",
+    "my cool message",
+    clientAddress = Some(InetAddress.getLoopbackAddress.getHostAddress),
+    sourceAddress = Some(socket.getAddress.getHostName)
+  )
 
   test("log entries to a client once upon receive") {
     reporter.handle(tse.throwable)
@@ -111,9 +113,10 @@ class ExceptionReporterTest extends FunSuite with MockitoSugar {
     val captor = ArgumentCaptor.forClass(classOf[Seq[LogEntry]])
     val socket = new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
     val tse = new TestServiceException(
-        "service",
-        "my cool message",
-        clientAddress = Some(socket.getAddress.getHostName))
+      "service",
+      "my cool message",
+      clientAddress = Some(socket.getAddress.getHostName)
+    )
 
     val reporter = new ExceptionReporter().apply("service", Some(socket))
     reporter.copy(client = logger).handle(tse.throwable)

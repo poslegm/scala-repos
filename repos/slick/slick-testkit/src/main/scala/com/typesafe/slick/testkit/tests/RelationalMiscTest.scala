@@ -69,10 +69,12 @@ class RelationalMiscTest extends AsyncTest[RelationalTestDB] {
     val t1s = TableQuery[T1]
 
     implicit class TupledQueryExtensionMethods[E1, E2, U1, U2, C[_]](
-        q: Query[(E1, E2), (U1, U2), C]) {
+        q: Query[(E1, E2), (U1, U2), C]
+    ) {
       def sortedValues(
           implicit ordered: (E1 => Ordered),
-          shape: Shape[FlatShapeLevel, E2, U2, E2]): Query[E2, U2, C] =
+          shape: Shape[FlatShapeLevel, E2, U2, E2]
+      ): Query[E2, U2, C] =
         q.sortBy(_._1).map(_._2)
     }
 
@@ -101,17 +103,13 @@ class RelationalMiscTest extends AsyncTest[RelationalTestDB] {
       _ <- t1s.schema.create
       _ <- t1s ++= Seq((1, Some(11)), (2, None), (3, Some(33)), (4, None))
 
-      q1 = t1s.map { t1 =>
-        (t1.a, Case.If(t1.a < 3) Then 1 Else 0)
-      }
+      q1 = t1s.map { t1 => (t1.a, Case.If(t1.a < 3) Then 1 Else 0) }
       _ <- q1
         .to[Set]
         .result
         .map(_ shouldBe Set((1, 1), (2, 1), (3, 0), (4, 0)))
 
-      q2 = t1s.map { t1 =>
-        (t1.a, Case.If(t1.a < 3) Then 1)
-      }
+      q2 = t1s.map { t1 => (t1.a, Case.If(t1.a < 3) Then 1) }
       _ <- q2
         .to[Set]
         .result
@@ -125,9 +123,7 @@ class RelationalMiscTest extends AsyncTest[RelationalTestDB] {
         .result
         .map(_ shouldBe Set((1, 1), (2, 1), (3, 2), (4, 0)))
 
-      q4 = t1s.map { t1 =>
-        Case.If(t1.a < 3) Then t1.b Else t1.a.?
-      }.to[Set]
+      q4 = t1s.map { t1 => Case.If(t1.a < 3) Then t1.b Else t1.a.? }.to[Set]
       _ <- mark("q4", q4.result)
         .map(_ shouldBe Set(Some(11), None, Some(3), Some(4)))
     } yield ()
@@ -205,18 +201,20 @@ class RelationalMiscTest extends AsyncTest[RelationalTestDB] {
     } catch {
       case t: NullPointerException
           if (t.getMessage ne null) &&
-          (t.getMessage contains "initialization order") =>
+            (t.getMessage contains "initialization order") =>
       // This is the expected error message from RelationalTableComponent.Table.column
     }
 
     try {
       MappedColumnType.base[Id, Int](_.toInt, Id)(
-          implicitly, null.asInstanceOf[BaseColumnType[Int]])
+        implicitly,
+        null.asInstanceOf[BaseColumnType[Int]]
+      )
       ???
     } catch {
       case t: NullPointerException
           if (t.getMessage ne null) &&
-          (t.getMessage contains "initialization order") =>
+            (t.getMessage contains "initialization order") =>
       // This is the expected error message from RelationalTypesComponent.MappedColumnTypeFactory.assertNonNullType
     }
 

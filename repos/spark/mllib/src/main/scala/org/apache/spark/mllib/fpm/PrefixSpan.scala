@@ -52,10 +52,12 @@ import org.apache.spark.storage.StorageLevel
   */
 @Experimental
 @Since("1.5.0")
-class PrefixSpan private (private var minSupport: Double,
-                          private var maxPatternLength: Int,
-                          private var maxLocalProjDBSize: Long)
-    extends Logging with Serializable {
+class PrefixSpan private (
+    private var minSupport: Double,
+    private var maxPatternLength: Int,
+    private var maxLocalProjDBSize: Long
+) extends Logging
+    with Serializable {
   import PrefixSpan._
 
   /**
@@ -78,8 +80,9 @@ class PrefixSpan private (private var minSupport: Double,
   @Since("1.5.0")
   def setMinSupport(minSupport: Double): this.type = {
     require(
-        minSupport >= 0 && minSupport <= 1,
-        s"The minimum support value must be in [0, 1], but got $minSupport.")
+      minSupport >= 0 && minSupport <= 1,
+      s"The minimum support value must be in [0, 1], but got $minSupport."
+    )
     this.minSupport = minSupport
     this
   }
@@ -97,8 +100,9 @@ class PrefixSpan private (private var minSupport: Double,
   def setMaxPatternLength(maxPatternLength: Int): this.type = {
     // TODO: support unbounded pattern length when maxPatternLength = 0
     require(
-        maxPatternLength >= 1,
-        s"The maximum pattern length value must be greater than 0, but got $maxPatternLength.")
+      maxPatternLength >= 1,
+      s"The maximum pattern length value must be greater than 0, but got $maxPatternLength."
+    )
     this.maxPatternLength = maxPatternLength
     this
   }
@@ -116,8 +120,9 @@ class PrefixSpan private (private var minSupport: Double,
   @Since("1.5.0")
   def setMaxLocalProjDBSize(maxLocalProjDBSize: Long): this.type = {
     require(
-        maxLocalProjDBSize >= 0L,
-        s"The maximum local projected database size must be nonnegative, but got $maxLocalProjDBSize")
+      maxLocalProjDBSize >= 0L,
+      s"The maximum local projected database size must be nonnegative, but got $maxLocalProjDBSize"
+    )
     this.maxLocalProjDBSize = maxLocalProjDBSize
     this
   }
@@ -128,8 +133,9 @@ class PrefixSpan private (private var minSupport: Double,
     * @return a [[PrefixSpanModel]] that contains the frequent patterns
     */
   @Since("1.5.0")
-  def run[Item : ClassTag](
-      data: RDD[Array[Array[Item]]]): PrefixSpanModel[Item] = {
+  def run[Item: ClassTag](
+      data: RDD[Array[Array[Item]]]
+  ): PrefixSpanModel[Item] = {
     if (data.getStorageLevel == StorageLevel.NONE) {
       logWarning("Input data is not cached.")
     }
@@ -140,15 +146,15 @@ class PrefixSpan private (private var minSupport: Double,
     logInfo(s"minimum count for a frequent pattern: $minCount")
 
     // Find frequent items.
-    val freqItemAndCounts = data.flatMap { itemsets =>
-      val uniqItems = mutable.Set.empty[Item]
-      itemsets.foreach {
-        _.foreach { item =>
-          uniqItems += item
+    val freqItemAndCounts = data
+      .flatMap { itemsets =>
+        val uniqItems = mutable.Set.empty[Item]
+        itemsets.foreach {
+          _.foreach { item => uniqItems += item }
         }
+        uniqItems.toIterator.map((_, 1L))
       }
-      uniqItems.toIterator.map((_, 1L))
-    }.reduceByKey(_ + _)
+      .reduceByKey(_ + _)
       .filter {
         case (_, count) =>
           count >= minCount
@@ -159,33 +165,39 @@ class PrefixSpan private (private var minSupport: Double,
 
     // Keep only frequent items from input sequences and convert them to internal storage.
     val itemToInt = freqItems.zipWithIndex.toMap
-    val dataInternalRepr = data.flatMap { itemsets =>
-      val allItems = mutable.ArrayBuilder.make[Int]
-      var containsFreqItems = false
-      allItems += 0
-      itemsets.foreach { itemsets =>
-        val items = mutable.ArrayBuilder.make[Int]
-        itemsets.foreach { item =>
-          if (itemToInt.contains(item)) {
-            items += itemToInt(item) + 1 // using 1-indexing in internal format
-          }
-        }
-        val result = items.result()
-        if (result.nonEmpty) {
-          containsFreqItems = true
-          allItems ++= result.sorted
-        }
+    val dataInternalRepr = data
+      .flatMap { itemsets =>
+        val allItems = mutable.ArrayBuilder.make[Int]
+        var containsFreqItems = false
         allItems += 0
+        itemsets.foreach { itemsets =>
+          val items = mutable.ArrayBuilder.make[Int]
+          itemsets.foreach { item =>
+            if (itemToInt.contains(item)) {
+              items += itemToInt(item) + 1 // using 1-indexing in internal format
+            }
+          }
+          val result = items.result()
+          if (result.nonEmpty) {
+            containsFreqItems = true
+            allItems ++= result.sorted
+          }
+          allItems += 0
+        }
+        if (containsFreqItems) {
+          Iterator.single(allItems.result())
+        } else {
+          Iterator.empty
+        }
       }
-      if (containsFreqItems) {
-        Iterator.single(allItems.result())
-      } else {
-        Iterator.empty
-      }
-    }.persist(StorageLevel.MEMORY_AND_DISK)
+      .persist(StorageLevel.MEMORY_AND_DISK)
 
     val results = genFreqPatterns(
-        dataInternalRepr, minCount, maxPatternLength, maxLocalProjDBSize)
+      dataInternalRepr,
+      minCount,
+      maxPatternLength,
+      maxLocalProjDBSize
+    )
 
     def toPublicRepr(pattern: Array[Int]): Array[Array[Item]] = {
       val sequenceBuilder = mutable.ArrayBuilder.make[Array[Item]]
@@ -198,7 +210,9 @@ class PrefixSpan private (private var minSupport: Double,
           sequenceBuilder += itemsetBuilder.result()
           itemsetBuilder.clear()
         } else {
-          itemsetBuilder += freqItems(x - 1) // using 1-indexing in internal format
+          itemsetBuilder += freqItems(
+            x - 1
+          ) // using 1-indexing in internal format
         }
         i += 1
       }
@@ -222,9 +236,9 @@ class PrefixSpan private (private var minSupport: Double,
     * @return a [[PrefixSpanModel]] that contains the frequent sequential patterns
     */
   @Since("1.5.0")
-  def run[
-      Item, Itemset <: jl.Iterable[Item], Sequence <: jl.Iterable[Itemset]](
-      data: JavaRDD[Sequence]): PrefixSpanModel[Item] = {
+  def run[Item, Itemset <: jl.Iterable[Item], Sequence <: jl.Iterable[Itemset]](
+      data: JavaRDD[Sequence]
+  ): PrefixSpanModel[Item] = {
     implicit val tag = fakeClassTag[Item]
     run(data.rdd.map(_.asScala.map(_.asScala.toArray).toArray))
   }
@@ -247,7 +261,8 @@ object PrefixSpan extends Logging {
       data: RDD[Array[Int]],
       minCount: Long,
       maxPatternLength: Int,
-      maxLocalProjDBSize: Long): RDD[(Array[Int], Long)] = {
+      maxLocalProjDBSize: Long
+  ): RDD[(Array[Int], Long)] = {
     val sc = data.sparkContext
 
     if (data.getStorageLevel == StorageLevel.NONE) {
@@ -277,17 +292,21 @@ object PrefixSpan extends Logging {
       logInfo(s"number of small prefixes: ${smallPrefixes.size}")
       logInfo(s"number of large prefixes: ${largePrefixes.size}")
       val largePrefixArray = largePrefixes.values.toArray
-      val freqPrefixes = postfixes.flatMap { postfix =>
-        largePrefixArray.flatMap { prefix =>
-          postfix.project(prefix).genPrefixItems.map {
-            case (item, postfixSize) =>
-              ((prefix.id, item), (1L, postfixSize))
+      val freqPrefixes = postfixes
+        .flatMap { postfix =>
+          largePrefixArray.flatMap { prefix =>
+            postfix.project(prefix).genPrefixItems.map {
+              case (item, postfixSize) =>
+                ((prefix.id, item), (1L, postfixSize))
+            }
           }
         }
-      }.reduceByKey {
-        case ((c0, s0), (c1, s1)) =>
-          (c0 + c1, s0 + s1)
-      }.filter { case (_, (c, _)) => c >= minCount }.collect()
+        .reduceByKey {
+          case ((c0, s0), (c1, s1)) =>
+            (c0 + c1, s0 + s1)
+        }
+        .filter { case (_, (c, _)) => c >= minCount }
+        .collect()
       val newLargePrefixes = mutable.Map.empty[Int, Prefix]
       freqPrefixes.foreach {
         case ((id, item), (count, projDBSize)) =>
@@ -307,27 +326,29 @@ object PrefixSpan extends Logging {
     var freqPatterns = sc.parallelize(localFreqPatterns, 1)
 
     val numSmallPrefixes = smallPrefixes.size
-    logInfo(
-        s"number of small prefixes for local processing: $numSmallPrefixes")
+    logInfo(s"number of small prefixes for local processing: $numSmallPrefixes")
     if (numSmallPrefixes > 0) {
       // Switch to local processing.
       val bcSmallPrefixes = sc.broadcast(smallPrefixes)
-      val distributedFreqPattern = postfixes.flatMap { postfix =>
-        bcSmallPrefixes.value.values.map { prefix =>
-          (prefix.id, postfix.project(prefix).compressed)
-        }.filter(_._2.nonEmpty)
-      }.groupByKey().flatMap {
-        case (id, projPostfixes) =>
-          val prefix = bcSmallPrefixes.value(id)
-          val localPrefixSpan =
-            new LocalPrefixSpan(minCount, maxPatternLength - prefix.length)
-          // TODO: We collect projected postfixes into memory. We should also compare the performance
-          // TODO: of keeping them on shuffle files.
-          localPrefixSpan.run(projPostfixes.toArray).map {
-            case (pattern, count) =>
-              (prefix.items ++ pattern, count)
-          }
-      }
+      val distributedFreqPattern = postfixes
+        .flatMap { postfix =>
+          bcSmallPrefixes.value.values
+            .map { prefix => (prefix.id, postfix.project(prefix).compressed) }
+            .filter(_._2.nonEmpty)
+        }
+        .groupByKey()
+        .flatMap {
+          case (id, projPostfixes) =>
+            val prefix = bcSmallPrefixes.value(id)
+            val localPrefixSpan =
+              new LocalPrefixSpan(minCount, maxPatternLength - prefix.length)
+            // TODO: We collect projected postfixes into memory. We should also compare the performance
+            // TODO: of keeping them on shuffle files.
+            localPrefixSpan.run(projPostfixes.toArray).map {
+              case (pattern, count) =>
+                (prefix.items ++ pattern, count)
+            }
+        }
       // Union local frequent patterns and distributed ones.
       freqPatterns = freqPatterns ++ distributedFreqPattern
     }
@@ -390,18 +411,22 @@ object PrefixSpan extends Logging {
     * @param start the start index of this postfix in items
     * @param partialStarts start indices of possible partial projections, strictly increasing
     */
-  private[fpm] class Postfix(val items: Array[Int],
-                             val start: Int = 0,
-                             val partialStarts: Array[Int] = Array.empty)
-      extends Serializable {
+  private[fpm] class Postfix(
+      val items: Array[Int],
+      val start: Int = 0,
+      val partialStarts: Array[Int] = Array.empty
+  ) extends Serializable {
 
-    require(items.last == 0,
-            s"The last item in a postfix must be zero, but got ${items.last}.")
+    require(
+      items.last == 0,
+      s"The last item in a postfix must be zero, but got ${items.last}."
+    )
     if (partialStarts.nonEmpty) {
       require(
-          partialStarts.head >= start,
-          "The first partial start cannot be smaller than the start index," +
-          s"but got partialStarts.head = ${partialStarts.head} < start = $start.")
+        partialStarts.head >= start,
+        "The first partial start cannot be smaller than the start index," +
+          s"but got partialStarts.head = ${partialStarts.head} < start = $start."
+      )
     }
 
     /**
@@ -553,7 +578,10 @@ object PrefixSpan extends Logging {
     def compressed: Postfix = {
       if (start > 0) {
         new Postfix(
-            items.slice(start, items.length), 0, partialStarts.map(_ - start))
+          items.slice(start, items.length),
+          0,
+          partialStarts.map(_ - start)
+        )
       } else {
         this
       }
@@ -567,10 +595,10 @@ object PrefixSpan extends Logging {
     * @tparam Item item type
     */
   @Since("1.5.0")
-  class FreqSequence[Item] @Since("1.5.0")(
+  class FreqSequence[Item] @Since("1.5.0") (
       @Since("1.5.0") val sequence: Array[Array[Item]],
-      @Since("1.5.0") val freq: Long)
-      extends Serializable {
+      @Since("1.5.0") val freq: Long
+  ) extends Serializable {
 
     /**
       * Returns sequence as a Java List of lists for Java users.
@@ -587,6 +615,6 @@ object PrefixSpan extends Logging {
   * @tparam Item item type
   */
 @Since("1.5.0")
-class PrefixSpanModel[Item] @Since("1.5.0")(
-    @Since("1.5.0") val freqSequences: RDD[PrefixSpan.FreqSequence[Item]])
-    extends Serializable
+class PrefixSpanModel[Item] @Since("1.5.0") (
+    @Since("1.5.0") val freqSequences: RDD[PrefixSpan.FreqSequence[Item]]
+) extends Serializable

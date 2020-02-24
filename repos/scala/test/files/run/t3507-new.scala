@@ -13,7 +13,9 @@ object Test extends App {
   val c /*: object _1.b.c forSome { val _1: A } */ =
     a.m // widening using existential
 
-  def mani[T : TypeTag](x: T) = println(typeOf[T])
-  mani /*[object _1.b.c]*/ (c) // kaboom in manifestOfType / TreeGen.mkAttributedQualifier
+  def mani[T: TypeTag](x: T) = println(typeOf[T])
+  mani /*[object _1.b.c]*/ (
+    c
+  ) // kaboom in manifestOfType / TreeGen.mkAttributedQualifier
   // --> _1 is not in scope here
 }

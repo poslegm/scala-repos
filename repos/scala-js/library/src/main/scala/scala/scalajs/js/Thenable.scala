@@ -30,13 +30,13 @@ import scala.concurrent.Future
 trait Thenable[+A] extends js.Object {
   def `then`[B](
       onFulfilled: js.Function1[A, B | Thenable[B]],
-      onRejected: js.UndefOr[js.Function1[scala.Any, B | Thenable[B]]])
-    : Thenable[B]
+      onRejected: js.UndefOr[js.Function1[scala.Any, B | Thenable[B]]]
+  ): Thenable[B]
 
   def `then`[B >: A](
       onFulfilled: Unit,
-      onRejected: js.UndefOr[js.Function1[scala.Any, B | Thenable[B]]])
-    : Thenable[B]
+      onRejected: js.UndefOr[js.Function1[scala.Any, B | Thenable[B]]]
+  ): Thenable[B]
 }
 
 object Thenable {
@@ -53,16 +53,19 @@ object Thenable {
       def defined[A](x: A): js.UndefOr[A] = x
 
       val p2 = scala.concurrent.Promise[A]()
-      p.`then`[Unit]({ (v: A) =>
-        p2.success(v)
-        (): Unit | Thenable[Unit]
-      }, defined { (e: scala.Any) =>
-        p2.failure(e match {
-          case th: Throwable => th
-          case _ => JavaScriptException(e)
-        })
-        (): Unit | Thenable[Unit]
-      })
+      p.`then`[Unit](
+        { (v: A) =>
+          p2.success(v)
+          (): Unit | Thenable[Unit]
+        },
+        defined { (e: scala.Any) =>
+          p2.failure(e match {
+            case th: Throwable => th
+            case _             => JavaScriptException(e)
+          })
+          (): Unit | Thenable[Unit]
+        }
+      )
       p2.future
     }
   }

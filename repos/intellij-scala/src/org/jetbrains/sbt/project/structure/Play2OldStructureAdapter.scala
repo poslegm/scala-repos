@@ -25,13 +25,16 @@ object Play2OldStructureAdapter {
       .mapValues(_.map({ case (id, _, v) => (id, v) }))
 
     new Play2ProjectData(
-        SbtProjectSystem.Id, avoidSL7005Bug(oldData.mapValues(_.toMap)))
+      SbtProjectSystem.Id,
+      avoidSL7005Bug(oldData.mapValues(_.toMap))
+    )
   }
 
   private def extractProjectKeyValue(
       id: ProjectId,
       baseDir: File,
-      data: Play2Data): Seq[(ProjectId, String, ParsedValue[_])] = {
+      data: Play2Data
+  ): Seq[(ProjectId, String, ParsedValue[_])] = {
     val playVersion =
       data.playVersion.map(v => (PLAY_VERSION, new StringParsedValue(v))).toSeq
     val confDirectory = data.confDirectory
@@ -40,12 +43,16 @@ object Play2OldStructureAdapter {
 
     val keyValues =
       playVersion ++ confDirectory ++ Seq(
-          (TEMPLATES_IMPORT, new SeqStringParsedValue(data.templatesImports)),
-          (ROUTES_IMPORT, new SeqStringParsedValue(data.routesImports)),
-          (SOURCE_DIR,
-           new StringParsedValue(data.sourceDirectory.getCanonicalPath)),
-          (PROJECT_URI,
-           new StringParsedValue(baseDir.getCanonicalFile.toURI.toString))
+        (TEMPLATES_IMPORT, new SeqStringParsedValue(data.templatesImports)),
+        (ROUTES_IMPORT, new SeqStringParsedValue(data.routesImports)),
+        (
+          SOURCE_DIR,
+          new StringParsedValue(data.sourceDirectory.getCanonicalPath)
+        ),
+        (
+          PROJECT_URI,
+          new StringParsedValue(baseDir.getCanonicalFile.toURI.toString)
+        )
       )
 
     keyValues.map({ case (k, v) => (id, k.name, v) })

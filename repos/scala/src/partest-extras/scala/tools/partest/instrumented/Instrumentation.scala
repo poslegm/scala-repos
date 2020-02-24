@@ -8,7 +8,10 @@ package scala.tools.partest.instrumented
 import scala.collection.JavaConverters._
 
 case class MethodCallTrace(
-    className: String, methodName: String, methodDescriptor: String) {
+    className: String,
+    methodName: String,
+    methodDescriptor: String
+) {
   override def toString(): String =
     className + "." + methodName + methodDescriptor
 }
@@ -66,9 +69,11 @@ object Instrumentation {
     }
     val stats = Profiler.getStatistics().asScala.toSeq.map {
       case (trace, count) =>
-        MethodCallTrace(trace.className,
-                        trace.methodName,
-                        trace.methodDescriptor) -> count.intValue
+        MethodCallTrace(
+          trace.className,
+          trace.methodName,
+          trace.methodDescriptor
+        ) -> count.intValue
     }
     val res = Map(stats: _*)
     if (isProfiling) {
@@ -77,10 +82,9 @@ object Instrumentation {
     res
   }
 
-  val standardFilter: MethodCallTrace => Boolean = t =>
-    {
-      // ignore all calls to Console trigger by printing
-      t.className != "scala/Console$" &&
+  val standardFilter: MethodCallTrace => Boolean = t => {
+    // ignore all calls to Console trigger by printing
+    t.className != "scala/Console$" &&
       // console accesses DynamicVariable, let's discard it too
       !t.className.startsWith("scala/util/DynamicVariable")
   }
@@ -88,7 +92,8 @@ object Instrumentation {
   // Used in tests.
   def printStatistics(
       stats: Statistics = getStatistics,
-      filter: MethodCallTrace => Boolean = standardFilter): Unit = {
+      filter: MethodCallTrace => Boolean = standardFilter
+  ): Unit = {
     val stats = getStatistics
     println("Method call statistics:")
     val toBePrinted = stats.toSeq.filter(p => filter(p._1)).sortBy(_._1)

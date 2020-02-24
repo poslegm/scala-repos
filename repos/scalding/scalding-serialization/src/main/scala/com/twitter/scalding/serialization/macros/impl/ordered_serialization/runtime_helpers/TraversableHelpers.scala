@@ -22,7 +22,8 @@ object TraversableHelpers {
   import com.twitter.scalding.serialization.JavaStreamEnrichments._
 
   final def rawCompare(inputStreamA: InputStream, inputStreamB: InputStream)(
-      consume: (InputStream, InputStream) => Int): Int = {
+      consume: (InputStream, InputStream) => Int
+  ): Int = {
     val lenA = inputStreamA.readPosVarInt
     val lenB = inputStreamB.readPosVarInt
 
@@ -39,7 +40,8 @@ object TraversableHelpers {
   }
 
   final def iteratorCompare[T](iteratorA: Iterator[T], iteratorB: Iterator[T])(
-      implicit ord: Ordering[T]): Int = {
+      implicit ord: Ordering[T]
+  ): Int = {
     @annotation.tailrec
     def result: Int =
       if (iteratorA.isEmpty) {
@@ -58,7 +60,8 @@ object TraversableHelpers {
   }
 
   final def iteratorEquiv[T](iteratorA: Iterator[T], iteratorB: Iterator[T])(
-      implicit eq: Equiv[T]): Boolean = {
+      implicit eq: Equiv[T]
+  ): Boolean = {
     @annotation.tailrec
     def result: Boolean =
       if (iteratorA.isEmpty) iteratorB.isEmpty
@@ -79,24 +82,29 @@ object TraversableHelpers {
     * sort case
     */
   final def sortedCompare[T](travA: Iterable[T], travB: Iterable[T])(
-      implicit ord: Ordering[T]): Int = {
-    def compare(startA: Int,
-                endA: Int,
-                a: Buffer[T],
-                startB: Int,
-                endB: Int,
-                b: Buffer[T]): Int =
+      implicit ord: Ordering[T]
+  ): Int = {
+    def compare(
+        startA: Int,
+        endA: Int,
+        a: Buffer[T],
+        startB: Int,
+        endB: Int,
+        b: Buffer[T]
+    ): Int =
       if (startA == endA) {
         if (startB == endB) 0 // both empty
         else -1 // empty is smaller than non-empty
       } else if (startB == endB) 1 // non-empty is bigger than empty
       else {
         @annotation.tailrec
-        def partition(pivot: T,
-                      pivotStart: Int,
-                      pivotEnd: Int,
-                      endX: Int,
-                      x: Buffer[T]): (Int, Int) = {
+        def partition(
+            pivot: T,
+            pivotStart: Int,
+            pivotEnd: Int,
+            endX: Int,
+            x: Buffer[T]
+        ): (Int, Int) = {
           if (pivotEnd >= endX) (pivotStart, pivotEnd)
           else {
             val t = x(pivotEnd)
@@ -139,24 +147,28 @@ object TraversableHelpers {
              * We can safely recurse because startA does not hold pivot, so we won't
              * do the same algorithm
              */
-            compare(startA,
-                    extend(startA, endA),
-                    a,
-                    startB,
-                    extend(startB, endB),
-                    b)
+            compare(
+              startA,
+              extend(startA, endA),
+              a,
+              startB,
+              extend(startB, endB),
+              b
+            )
           } else {
             /*
              * We know that startB does not have the pivot, because if it did, bsublen == 0
              * and both are equal, which is not true in this branch.
              * we can reverse the recursion to ensure we get a different pivot
              */
-            -compare(startB,
-                     extend(startB, endB),
-                     b,
-                     startA,
-                     extend(startA, endA),
-                     a)
+            -compare(
+              startB,
+              extend(startB, endB),
+              b,
+              startA,
+              extend(startA, endA),
+              a
+            )
           }
         } else {
           // the prefixes are the same size

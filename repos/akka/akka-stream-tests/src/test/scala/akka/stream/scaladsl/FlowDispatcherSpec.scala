@@ -13,8 +13,10 @@ class FlowDispatcherSpec
 
   val defaultSettings = ActorMaterializerSettings(system)
 
-  def testDispatcher(settings: ActorMaterializerSettings = defaultSettings,
-                     dispatcher: String = "akka.test.stream-dispatcher") = {
+  def testDispatcher(
+      settings: ActorMaterializerSettings = defaultSettings,
+      dispatcher: String = "akka.test.stream-dispatcher"
+  ) = {
 
     implicit val materializer = ActorMaterializer(settings)
 
@@ -32,6 +34,8 @@ class FlowDispatcherSpec
     "use the default dispatcher" in testDispatcher()
 
     "use custom dispatcher" in testDispatcher(
-        defaultSettings.withDispatcher("my-dispatcher"), "my-dispatcher")
+      defaultSettings.withDispatcher("my-dispatcher"),
+      "my-dispatcher"
+    )
   }
 }

@@ -17,8 +17,9 @@ case class Open(val queueName: Buf, val timeout: Option[Duration] = None)
 case class Close(val queueName: Buf, val timeout: Option[Duration] = None)
     extends GetCommand("Close")
 case class CloseAndOpen(
-    val queueName: Buf, val timeout: Option[Duration] = None)
-    extends GetCommand("CloseAndOpen")
+    val queueName: Buf,
+    val timeout: Option[Duration] = None
+) extends GetCommand("CloseAndOpen")
 case class Abort(val queueName: Buf, val timeout: Option[Duration] = None)
     extends GetCommand("Abort")
 case class Peek(val queueName: Buf, val timeout: Option[Duration] = None)

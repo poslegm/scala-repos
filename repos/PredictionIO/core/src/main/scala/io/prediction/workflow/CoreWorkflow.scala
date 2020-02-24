@@ -43,7 +43,8 @@ object CoreWorkflow {
       engineParams: EngineParams,
       engineInstance: EngineInstance,
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
-      params: WorkflowParams = WorkflowParams()) {
+      params: WorkflowParams = WorkflowParams()
+  ) {
     logger.debug("Starting SparkContext")
     val mode = "training"
     WorkflowUtils.checkUpgrade(mode, engineInstance.engineFactory)
@@ -59,10 +60,10 @@ object CoreWorkflow {
     try {
 
       val models: Seq[Any] = engine.train(
-          sc = sc,
-          engineParams = engineParams,
-          engineInstanceId = engineInstance.id,
-          params = params
+        sc = sc,
+        engineParams = engineParams,
+        engineInstanceId = engineInstance.id,
+        params = params
       )
 
       val instanceId = Storage.getMetaDataEngineInstances
@@ -71,22 +72,24 @@ object CoreWorkflow {
 
       logger.info("Inserting persistent model")
       Storage.getModelDataModels.insert(
-          Model(id = engineInstance.id, models = kryo(models)))
+        Model(id = engineInstance.id, models = kryo(models))
+      )
 
       logger.info("Updating engine instance")
       val engineInstances = Storage.getMetaDataEngineInstances
       engineInstances.update(
-          engineInstance.copy(
-              status = "COMPLETED",
-              endTime = DateTime.now
-          ))
+        engineInstance.copy(
+          status = "COMPLETED",
+          endTime = DateTime.now
+        )
+      )
 
       logger.info("Training completed successfully.")
     } catch {
       case e @ (_: StopAfterReadInterruption |
           _: StopAfterPrepareInterruption) => {
-          logger.info(s"Training interrupted by $e.")
-        }
+        logger.info(s"Training interrupted by $e.")
+      }
     } finally {
       logger.debug("Stopping SparkContext")
       sc.stop()
@@ -100,7 +103,8 @@ object CoreWorkflow {
       evaluationInstance: EvaluationInstance,
       evaluator: BaseEvaluator[EI, Q, P, A, R],
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
-      params: WorkflowParams = WorkflowParams()) {
+      params: WorkflowParams = WorkflowParams()
+  ) {
     logger.info("runEvaluation started")
     logger.debug("Start SparkContext")
 
@@ -120,28 +124,30 @@ object CoreWorkflow {
     logger.info(s"Starting evaluation instance ID: $evaluationInstanceId")
 
     val evaluatorResult: BaseEvaluatorResult =
-      EvaluationWorkflow.runEvaluation(sc,
-                                       evaluation,
-                                       engine,
-                                       engineParamsList,
-                                       evaluator,
-                                       params)
+      EvaluationWorkflow.runEvaluation(
+        sc,
+        evaluation,
+        engine,
+        engineParamsList,
+        evaluator,
+        params
+      )
 
     if (evaluatorResult.noSave) {
       logger.info(
-          s"This evaluation result is not inserted into database: $evaluatorResult")
+        s"This evaluation result is not inserted into database: $evaluatorResult"
+      )
     } else {
       val evaluatedEvaluationInstance = evaluationInstance.copy(
-          status = "EVALCOMPLETED",
-          id = evaluationInstanceId,
-          endTime = DateTime.now,
-          evaluatorResults = evaluatorResult.toOneLiner,
-          evaluatorResultsHTML = evaluatorResult.toHTML,
-          evaluatorResultsJSON = evaluatorResult.toJSON
+        status = "EVALCOMPLETED",
+        id = evaluationInstanceId,
+        endTime = DateTime.now,
+        evaluatorResults = evaluatorResult.toOneLiner,
+        evaluatorResultsHTML = evaluatorResult.toHTML,
+        evaluatorResultsJSON = evaluatorResult.toJSON
       )
 
-      logger.info(
-          s"Updating evaluation instance with result: $evaluatorResult")
+      logger.info(s"Updating evaluation instance with result: $evaluatorResult")
 
       evaluationInstances.update(evaluatedEvaluationInstance)
     }

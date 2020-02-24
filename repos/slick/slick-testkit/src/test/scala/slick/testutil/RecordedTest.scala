@@ -28,7 +28,8 @@ abstract class RecordedTest {
       val logA = log.toByteArray
       Console.out.write(logA)
       val r = new BufferedReader(
-          new InputStreamReader(new ByteArrayInputStream(logA)))
+        new InputStreamReader(new ByteArrayInputStream(logA))
+      )
       val masked = new StringWriter()
       val w = new BufferedWriter(masked)
       var line: String = null
@@ -58,7 +59,8 @@ abstract class RecordedTest {
       val matched = logData == checkData
       if (!matched)
         Assert.fail(
-            "Output does not match: See " + basename + "(.check,-run.log)")
+          "Output does not match: See " + basename + "(.check,-run.log)"
+        )
     }
   }
 

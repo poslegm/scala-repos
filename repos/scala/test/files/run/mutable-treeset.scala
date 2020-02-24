@@ -10,9 +10,7 @@ object Test extends App {
   val max = list.max
   val nonlist = ((min - 10) until (max + 20) filterNot list.contains).toList
   val sublist =
-    list filter { x =>
-      x >= (min + 1) && x < max
-    }
+    list filter { x => x >= (min + 1) && x < max }
   val distinctSublist = sublist.distinct
   val subnonlist = min :: max :: nonlist
   val subsorted = distinctSublist.sorted
@@ -21,17 +19,17 @@ object Test extends App {
   val almostmin = sublist.min
   val almostmax = sublist.max
   val subsublist =
-    sublist filter { x =>
-      x >= (almostmin + 1) && x < almostmax
-    }
+    sublist filter { x => x >= (almostmin + 1) && x < almostmax }
   val distinctSubsublist = subsublist.distinct
   val subsubnonlist = almostmin :: almostmax :: subnonlist
   val subsubsorted = distinctSubsublist.sorted
 
   def testSize {
     def check(set: TreeSet[Int], list: List[Int]) {
-      assert(set.size == list.size,
-             s"$set had size ${set.size} while $list had size ${list.size}")
+      assert(
+        set.size == list.size,
+        s"$set had size ${set.size} while $list had size ${list.size}"
+      )
     }
 
     check(TreeSet[Int](), List[Int]())
@@ -50,14 +48,22 @@ object Test extends App {
 
   def testContains {
     def check(set: TreeSet[Int], list: List[Int], nonlist: List[Int]) {
-      assert(list forall set.apply,
-             s"$set did not contain all elements of $list using apply")
-      assert(list forall set.contains,
-             s"$set did not contain all elements of $list using contains")
-      assert(!(nonlist exists set.apply),
-             s"$set had an element from $nonlist using apply")
-      assert(!(nonlist exists set.contains),
-             s"$set had an element from $nonlist using contains")
+      assert(
+        list forall set.apply,
+        s"$set did not contain all elements of $list using apply"
+      )
+      assert(
+        list forall set.contains,
+        s"$set did not contain all elements of $list using contains"
+      )
+      assert(
+        !(nonlist exists set.apply),
+        s"$set had an element from $nonlist using apply"
+      )
+      assert(
+        !(nonlist exists set.contains),
+        s"$set had an element from $nonlist using contains"
+      )
     }
 
     val set = TreeSet(list: _*)
@@ -79,16 +85,23 @@ object Test extends App {
       for (x <- list) {
         set += x
         builtList = (builtList :+ x).distinct.sorted filterNot nonlist.contains
-        assert(builtList forall set.apply,
-               s"$set did not contain all elements of $builtList using apply")
         assert(
-            builtList.size == set.size,
-            s"$set had size ${set.size} while $builtList had size ${builtList.size}")
+          builtList forall set.apply,
+          s"$set did not contain all elements of $builtList using apply"
+        )
+        assert(
+          builtList.size == set.size,
+          s"$set had size ${set.size} while $builtList had size ${builtList.size}"
+        )
       }
-      assert(!(nonlist exists set.apply),
-             s"$set had an element from $nonlist using apply")
-      assert(!(nonlist exists set.contains),
-             s"$set had an element from $nonlist using contains")
+      assert(
+        !(nonlist exists set.apply),
+        s"$set had an element from $nonlist using apply"
+      )
+      assert(
+        !(nonlist exists set.contains),
+        s"$set had an element from $nonlist using contains"
+      )
     }
 
     val set = TreeSet[Int]()
@@ -114,11 +127,14 @@ object Test extends App {
       for (x <- list) {
         set remove x
         builtList = builtList filterNot (_ == x)
-        assert(builtList forall set.apply,
-               s"$set did not contain all elements of $builtList using apply")
         assert(
-            builtList.size == set.size,
-            s"$set had size $set.size while $builtList had size $builtList.size")
+          builtList forall set.apply,
+          s"$set did not contain all elements of $builtList using apply"
+        )
+        assert(
+          builtList.size == set.size,
+          s"$set had size $set.size while $builtList had size $builtList.size"
+        )
       }
     }
     val set = TreeSet(list: _*)

@@ -32,7 +32,8 @@ private[ui] class StoragePage(parent: StorageTab) extends WebUIPage("") {
   def render(request: HttpServletRequest): Seq[Node] = {
     val content =
       rddTable(listener.rddInfoList) ++ receiverBlockTables(
-          listener.allExecutorStreamBlockStatus.sortBy(_.executorId))
+        listener.allExecutorStreamBlockStatus.sortBy(_.executorId)
+      )
     UIUtils.headerSparkPage("Storage", content, parent)
   }
 
@@ -43,25 +44,39 @@ private[ui] class StoragePage(parent: StorageTab) extends WebUIPage("") {
     } else {
       <div>
         <h4>RDDs</h4>
-        {UIUtils.listingTable(rddHeader, rddRow, rdds, id = Some("storage-by-rdd-table"))}
+        {
+        UIUtils.listingTable(
+          rddHeader,
+          rddRow,
+          rdds,
+          id = Some("storage-by-rdd-table")
+        )
+      }
       </div>
     }
   }
 
   /** Header fields for the RDD table */
-  private val rddHeader = Seq("RDD Name",
-                              "Storage Level",
-                              "Cached Partitions",
-                              "Fraction Cached",
-                              "Size in Memory",
-                              "Size on Disk")
+  private val rddHeader = Seq(
+    "RDD Name",
+    "Storage Level",
+    "Cached Partitions",
+    "Fraction Cached",
+    "Size in Memory",
+    "Size on Disk"
+  )
 
   /** Render an HTML row representing an RDD */
   private def rddRow(rdd: RDDInfo): Seq[Node] = {
     // scalastyle:off
     <tr>
       <td>
-        <a href={"%s/storage/rdd?id=%s".format(UIUtils.prependBaseUri(parent.basePath), rdd.id)}>
+        <a href={
+      "%s/storage/rdd?id=%s".format(
+        UIUtils.prependBaseUri(parent.basePath),
+        rdd.id
+      )
+    }>
           {rdd.name}
         </a>
       </td>
@@ -69,14 +84,19 @@ private[ui] class StoragePage(parent: StorageTab) extends WebUIPage("") {
       </td>
       <td>{rdd.numCachedPartitions.toString}</td>
       <td>{"%.0f%%".format(rdd.numCachedPartitions * 100.0 / rdd.numPartitions)}</td>
-      <td sorttable_customkey={rdd.memSize.toString}>{Utils.bytesToString(rdd.memSize)}</td>
-      <td sorttable_customkey={rdd.diskSize.toString} >{Utils.bytesToString(rdd.diskSize)}</td>
+      <td sorttable_customkey={rdd.memSize.toString}>{
+      Utils.bytesToString(rdd.memSize)
+    }</td>
+      <td sorttable_customkey={rdd.diskSize.toString} >{
+      Utils.bytesToString(rdd.diskSize)
+    }</td>
     </tr>
     // scalastyle:on
   }
 
   private[storage] def receiverBlockTables(
-      statuses: Seq[ExecutorStreamBlockStatus]): Seq[Node] = {
+      statuses: Seq[ExecutorStreamBlockStatus]
+  ): Seq[Node] = {
     if (statuses.map(_.numStreamBlocks).sum == 0) {
       // Don't show the tables if there is no stream block
       Nil
@@ -96,22 +116,32 @@ private[ui] class StoragePage(parent: StorageTab) extends WebUIPage("") {
   }
 
   private def executorMetricsTable(
-      statuses: Seq[ExecutorStreamBlockStatus]): Seq[Node] = {
+      statuses: Seq[ExecutorStreamBlockStatus]
+  ): Seq[Node] = {
     <div>
       <h5>Aggregated Block Metrics by Executor</h5>
-      {UIUtils.listingTable(executorMetricsTableHeader, executorMetricsTableRow, statuses,
-        id = Some("storage-by-executor-stream-blocks"))}
+      {
+      UIUtils.listingTable(
+        executorMetricsTableHeader,
+        executorMetricsTableRow,
+        statuses,
+        id = Some("storage-by-executor-stream-blocks")
+      )
+    }
     </div>
   }
 
-  private val executorMetricsTableHeader = Seq("Executor ID",
-                                               "Address",
-                                               "Total Size in Memory",
-                                               "Total Size on Disk",
-                                               "Stream Blocks")
+  private val executorMetricsTableHeader = Seq(
+    "Executor ID",
+    "Address",
+    "Total Size in Memory",
+    "Total Size on Disk",
+    "Stream Blocks"
+  )
 
   private def executorMetricsTableRow(
-      status: ExecutorStreamBlockStatus): Seq[Node] = {
+      status: ExecutorStreamBlockStatus
+  ): Seq[Node] = {
     <tr>
       <td>
         {status.executorId}
@@ -132,62 +162,75 @@ private[ui] class StoragePage(parent: StorageTab) extends WebUIPage("") {
   }
 
   private def streamBlockTable(
-      blocks: Seq[(BlockId, Seq[BlockUIData])]): Seq[Node] = {
+      blocks: Seq[(BlockId, Seq[BlockUIData])]
+  ): Seq[Node] = {
     if (blocks.isEmpty) {
       Nil
     } else {
       <div>
         <h5>Blocks</h5>
-        {UIUtils.listingTable(
+        {
+        UIUtils.listingTable(
           streamBlockTableHeader,
           streamBlockTableRow,
           blocks,
           id = Some("storage-by-block-table"),
-          sortable = false)}
+          sortable = false
+        )
+      }
       </div>
     }
   }
 
-  private val streamBlockTableHeader = Seq("Block ID",
-                                           "Replication Level",
-                                           "Location",
-                                           "Storage Level",
-                                           "Size")
+  private val streamBlockTableHeader =
+    Seq("Block ID", "Replication Level", "Location", "Storage Level", "Size")
 
   /** Render a stream block */
   private def streamBlockTableRow(
-      block: (BlockId, Seq[BlockUIData])): Seq[Node] = {
+      block: (BlockId, Seq[BlockUIData])
+  ): Seq[Node] = {
     val replications = block._2
-    assert(replications.size > 0) // This must be true because it's the result of "groupBy"
+    assert(
+      replications.size > 0
+    ) // This must be true because it's the result of "groupBy"
     if (replications.size == 1) {
       streamBlockTableSubrow(
-          block._1, replications.head, replications.size, true)
+        block._1,
+        replications.head,
+        replications.size,
+        true
+      )
     } else {
-      streamBlockTableSubrow(block._1,
-                             replications.head,
-                             replications.size,
-                             true) ++ replications.tail.flatMap(
-          streamBlockTableSubrow(block._1, _, replications.size, false))
+      streamBlockTableSubrow(
+        block._1,
+        replications.head,
+        replications.size,
+        true
+      ) ++ replications.tail.flatMap(
+        streamBlockTableSubrow(block._1, _, replications.size, false)
+      )
     }
   }
 
-  private def streamBlockTableSubrow(blockId: BlockId,
-                                     block: BlockUIData,
-                                     replication: Int,
-                                     firstSubrow: Boolean): Seq[Node] = {
+  private def streamBlockTableSubrow(
+      blockId: BlockId,
+      block: BlockUIData,
+      replication: Int,
+      firstSubrow: Boolean
+  ): Seq[Node] = {
     val (storageLevel, size) = streamBlockStorageLevelDescriptionAndSize(block)
 
     <tr>
       {
-        if (firstSubrow) {
-          <td rowspan={replication.toString}>
+      if (firstSubrow) {
+        <td rowspan={replication.toString}>
             {block.blockId.toString}
           </td>
           <td rowspan={replication.toString}>
             {replication.toString}
           </td>
-        }
       }
+    }
       <td>{block.location}</td>
       <td>{storageLevel}</td>
       <td>{Utils.bytesToString(size)}</td>
@@ -195,7 +238,8 @@ private[ui] class StoragePage(parent: StorageTab) extends WebUIPage("") {
   }
 
   private[storage] def streamBlockStorageLevelDescriptionAndSize(
-      block: BlockUIData): (String, Long) = {
+      block: BlockUIData
+  ): (String, Long) = {
     if (block.storageLevel.useDisk) {
       ("Disk", block.diskSize)
     } else if (block.storageLevel.useMemory &&
@@ -206,7 +250,8 @@ private[ui] class StoragePage(parent: StorageTab) extends WebUIPage("") {
       ("Memory Serialized", block.memSize)
     } else {
       throw new IllegalStateException(
-          s"Invalid Storage Level: ${block.storageLevel}")
+        s"Invalid Storage Level: ${block.storageLevel}"
+      )
     }
   }
 }

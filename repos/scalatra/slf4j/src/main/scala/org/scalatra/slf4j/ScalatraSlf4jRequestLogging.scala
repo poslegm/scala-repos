@@ -27,11 +27,11 @@ trait ScalatraSlf4jRequestLogging extends ScalatraBase with Handler {
   import org.scalatra.slf4j.ScalatraSlf4jRequestLogging._
 
   abstract override def handle(
-      req: HttpServletRequest, res: HttpServletResponse) {
+      req: HttpServletRequest,
+      res: HttpServletResponse
+  ) {
     val realMultiParams =
-      req.getParameterMap.asScala.toMap transform { (k, v) ⇒
-        v: Seq[String]
-      }
+      req.getParameterMap.asScala.toMap transform { (k, v) ⇒ v: Seq[String] }
     withRequest(req) {
       request(MultiParamsKey) = MultiMap(Map() ++ realMultiParams)
       request(CgiParamsKey) = readCgiParams(req)
@@ -42,20 +42,23 @@ trait ScalatraSlf4jRequestLogging extends ScalatraBase with Handler {
   }
 
   protected def logRequest() {
-    logger.info(MDC.getCopyOfContextMap.asScala
-          .map(kv => kv._1.toString + ": " + kv._2.toString)
-          .mkString("{", ", ", " }"))
+    logger.info(
+      MDC.getCopyOfContextMap.asScala
+        .map(kv => kv._1.toString + ": " + kv._2.toString)
+        .mkString("{", ", ", " }")
+    )
   }
 
   override protected[scalatra] def withRouteMultiParams[S](
-      matchedRoute: Option[MatchedRoute])(thunk: ⇒ S)(
-      implicit request: HttpServletRequest): S = {
+      matchedRoute: Option[MatchedRoute]
+  )(thunk: ⇒ S)(implicit request: HttpServletRequest): S = {
     val originalParams = multiParams
     request(MultiParamsKey) = originalParams ++ matchedRoute
       .map(_.multiParams)
       .getOrElse(Map.empty)
     fillMdc()
-    try { thunk } finally { request(MultiParamsKey) = originalParams }
+    try { thunk }
+    finally { request(MultiParamsKey) = originalParams }
   }
 
   private[this] def fillMdc() {
@@ -83,23 +86,26 @@ trait ScalatraSlf4jRequestLogging extends ScalatraBase with Handler {
     request get CgiParamsKey map (_.asInstanceOf[Map[String, String]]) getOrElse Map.empty
 
   private[this] def readCgiParams(req: HttpServletRequest) =
-    Map("AUTH_TYPE" -> req.getAuthType,
-        "CONTENT_LENGTH" -> req.getContentLength.toString,
-        "CONTENT_TYPE" -> req.getContentType,
-        "DOCUMENT_ROOT" -> servletContext.getRealPath(
-            servletContext.getContextPath),
-        "PATH_INFO" -> req.getPathInfo,
-        "PATH_TRANSLATED" -> req.getPathTranslated,
-        "QUERY_STRING" -> req.getQueryString,
-        "REMOTE_ADDR" -> req.getRemoteAddr,
-        "REMOTE_HOST" -> req.getRemoteHost,
-        "REMOTE_USER" -> req.getRemoteUser,
-        "REQUEST_METHOD" -> req.getMethod,
-        "SCRIPT_NAME" -> req.getServletPath,
-        "SERVER_NAME" -> req.getServerName,
-        "SERVER_PORT" -> req.getServerPort.toString,
-        "SERVER_PROTOCOL" -> req.getProtocol,
-        "SERVER_SOFTWARE" -> servletContext.getServerInfo)
+    Map(
+      "AUTH_TYPE" -> req.getAuthType,
+      "CONTENT_LENGTH" -> req.getContentLength.toString,
+      "CONTENT_TYPE" -> req.getContentType,
+      "DOCUMENT_ROOT" -> servletContext.getRealPath(
+        servletContext.getContextPath
+      ),
+      "PATH_INFO" -> req.getPathInfo,
+      "PATH_TRANSLATED" -> req.getPathTranslated,
+      "QUERY_STRING" -> req.getQueryString,
+      "REMOTE_ADDR" -> req.getRemoteAddr,
+      "REMOTE_HOST" -> req.getRemoteHost,
+      "REMOTE_USER" -> req.getRemoteUser,
+      "REQUEST_METHOD" -> req.getMethod,
+      "SCRIPT_NAME" -> req.getServletPath,
+      "SERVER_NAME" -> req.getServerName,
+      "SERVER_PORT" -> req.getServerPort.toString,
+      "SERVER_PROTOCOL" -> req.getProtocol,
+      "SERVER_SOFTWARE" -> servletContext.getServerInfo
+    )
 
   private def %-(s: String) = s.blankOption map (_.urlEncode) getOrElse ""
 
@@ -119,15 +125,18 @@ trait ScalatraSlf4jRequestLogging extends ScalatraBase with Handler {
   override protected def addRoute(
       method: HttpMethod,
       transformers: Seq[_root_.org.scalatra.RouteTransformer],
-      action: => Any): Route = {
-    val newAction = () =>
-      {
-        try { logRequest() } catch { case _: Throwable => }
-        action
+      action: => Any
+  ): Route = {
+    val newAction = () => {
+      try { logRequest() }
+      catch { case _: Throwable => }
+      action
     }
-    val route = Route(transformers,
-                      newAction,
-                      (req: HttpServletRequest) => routeBasePath(req))
+    val route = Route(
+      transformers,
+      newAction,
+      (req: HttpServletRequest) => routeBasePath(req)
+    )
     routes.prependRoute(method, route)
     route
   }

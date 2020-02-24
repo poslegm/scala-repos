@@ -34,8 +34,9 @@ class AnyValSubtractBenchmarks extends MyBenchmark {
     doubles = init(size)(nextDouble)
   }
 
-  def subtractGeneric[@sp(Int, Long, Float, Double) A : Ring](
-      data: Array[A]): A = {
+  def subtractGeneric[@sp(Int, Long, Float, Double) A: Ring](
+      data: Array[A]
+  ): A = {
     var total = Ring[A].zero
     var i = 0
     val len = data.length
@@ -76,7 +77,7 @@ class AnyValSubtractBenchmarks extends MyBenchmark {
   }
 
   def subtractFloatsDirect(data: Array[Float]): Float = {
-    var total = 0.0F
+    var total = 0.0f
     var i = 0
     val len = data.length
     while (i < len) { total = (data(i) - total); i += 1 }

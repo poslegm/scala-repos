@@ -15,7 +15,12 @@ object HoconTestUtils {
     PsiFileFactory
       .getInstance(project)
       .createFileFromText(
-          tempFile, fileType, text, LocalTimeCounter.currentTime(), true)
+        tempFile,
+        fileType,
+        text,
+        LocalTimeCounter.currentTime(),
+        true
+      )
       .asInstanceOf[HoconPsiFile]
   }
 

@@ -77,7 +77,8 @@ trait TextIncludes {
     * @return $SFX $FS
     */
   implicit def jfxFontSmoothingType2sfx(
-      e: jfxst.FontSmoothingType): FontSmoothingType =
+      e: jfxst.FontSmoothingType
+  ): FontSmoothingType =
     FontSmoothingType.jfxEnum2sfx(e)
 
   /**

@@ -76,8 +76,9 @@ package MonoidAux {
   }
 
   object MonoidSyntax {
-    implicit def monoidSyntax[T](a: T)(
-        implicit mt: Monoid[T]): MonoidSyntax[T] = new MonoidSyntax[T] {
+    implicit def monoidSyntax[T](
+        a: T
+    )(implicit mt: Monoid[T]): MonoidSyntax[T] = new MonoidSyntax[T] {
       def |+|(b: T) = mt.append(a, b)
     }
   }

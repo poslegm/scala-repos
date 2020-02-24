@@ -123,17 +123,19 @@ object InfoSerializers {
         val accessedModules = readStrings()
         val usedInstanceTests = readStrings()
         val accessedClassData = readStrings()
-        MethodInfo(encodedName,
-                   isStatic,
-                   isAbstract,
-                   isExported,
-                   methodsCalled,
-                   methodsCalledStatically,
-                   staticMethodsCalled,
-                   instantiatedClasses,
-                   accessedModules,
-                   usedInstanceTests,
-                   accessedClassData)
+        MethodInfo(
+          encodedName,
+          isStatic,
+          isAbstract,
+          isExported,
+          methodsCalled,
+          methodsCalledStatically,
+          staticMethodsCalled,
+          instantiatedClasses,
+          accessedModules,
+          usedInstanceTests,
+          accessedClassData
+        )
       }
 
       val methods0 = readList(readMethod())
@@ -145,7 +147,13 @@ object InfoSerializers {
         }
 
       val info = ClassInfo(
-          encodedName, isExported, kind, superClass, interfaces, methods)
+        encodedName,
+        isExported,
+        kind,
+        superClass,
+        interfaces,
+        methods
+      )
 
       (version, info)
     }
@@ -163,10 +171,11 @@ object InfoSerializers {
       val supported = ScalaJSVersions.binarySupported
       if (!supported.contains(version)) {
         throw new IRVersionNotSupportedException(
-            version,
-            supported,
-            s"This version ($version) of Scala.js IR is not supported. " +
-            s"Supported versions are: ${supported.mkString(", ")}")
+          version,
+          supported,
+          s"This version ($version) of Scala.js IR is not supported. " +
+            s"Supported versions are: ${supported.mkString(", ")}"
+        )
       }
 
       version

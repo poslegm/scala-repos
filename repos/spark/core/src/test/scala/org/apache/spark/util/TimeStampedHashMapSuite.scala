@@ -54,7 +54,9 @@ class TimeStampedHashMapSuite extends SparkFunSuite {
     Thread.sleep(10)
     val threshTime1 = System.currentTimeMillis
     Thread.sleep(10)
-    assert(map1("k2") === "v2") // access k2 to update its access time to > threshTime
+    assert(
+      map1("k2") === "v2"
+    ) // access k2 to update its access time to > threshTime
     assert(map1.getTimestamp("k1").isDefined)
     assert(map1.getTimestamp("k1").get < threshTime1)
     assert(map1.getTimestamp("k2").isDefined)
@@ -105,7 +107,7 @@ class TimeStampedHashMapSuite extends SparkFunSuite {
 
       // filter
       val filtered = testMap2.filter { case (_, v) => v.toInt % 2 == 0 }
-      val evenPairs = pairs.filter { case (_, v) => v.toInt % 2 == 0 }
+      val evenPairs = pairs.filter { case (_, v)   => v.toInt % 2 == 0 }
       assert(filtered.iterator.toSet === evenPairs.toSet)
 
       // foreach
@@ -153,7 +155,7 @@ class TimeStampedHashMapSuite extends SparkFunSuite {
 
     val threads =
       (1 to 25).map(i =>
-            new Thread() {
+        new Thread() {
           override def run() {
             try {
               for (j <- 1 to 1000) {
@@ -174,7 +176,8 @@ class TimeStampedHashMapSuite extends SparkFunSuite {
                 throw t
             }
           }
-      })
+        }
+      )
 
     test(name + " - threading safety test") {
       threads.map(_.start)

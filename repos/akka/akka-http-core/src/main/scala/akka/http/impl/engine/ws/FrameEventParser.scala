@@ -73,13 +73,15 @@ private[http] object FrameEventParser extends ByteStringParser[FrameEvent] {
           else None
 
         def isFlagSet(mask: Int): Boolean = (flags & mask) != 0
-        val header = FrameHeader(Opcode.forCode(op.toByte),
-                                 mask,
-                                 length,
-                                 fin = isFlagSet(FIN_MASK),
-                                 rsv1 = isFlagSet(RSV1_MASK),
-                                 rsv2 = isFlagSet(RSV2_MASK),
-                                 rsv3 = isFlagSet(RSV3_MASK))
+        val header = FrameHeader(
+          Opcode.forCode(op.toByte),
+          mask,
+          length,
+          fin = isFlagSet(FIN_MASK),
+          rsv1 = isFlagSet(RSV1_MASK),
+          rsv2 = isFlagSet(RSV2_MASK),
+          rsv3 = isFlagSet(RSV3_MASK)
+        )
 
         val takeNow = (header.length min reader.remainingSize).toInt
         val thisFrameData = reader.take(takeNow)
@@ -90,7 +92,10 @@ private[http] object FrameEventParser extends ByteStringParser[FrameEvent] {
           else new ReadData(length - thisFrameData.length)
 
         ParseResult(
-            Some(FrameStart(header, thisFrameData.compact)), nextState, true)
+          Some(FrameStart(header, thisFrameData.compact)),
+          nextState,
+          true
+        )
       }
     }
 
@@ -101,12 +106,16 @@ private[http] object FrameEventParser extends ByteStringParser[FrameEvent] {
         if (reader.remainingSize < remaining) {
           remaining -= reader.remainingSize
           ParseResult(
-              Some(FrameData(reader.takeAll(), lastPart = false)), this, true)
+            Some(FrameData(reader.takeAll(), lastPart = false)),
+            this,
+            true
+          )
         } else {
           ParseResult(
-              Some(FrameData(reader.take(remaining.toInt), lastPart = true)),
-              ReadFrameHeader,
-              true)
+            Some(FrameData(reader.take(remaining.toInt), lastPart = true)),
+            ReadFrameHeader,
+            true
+          )
         }
     }
   }
@@ -135,8 +144,11 @@ private[http] object FrameEventParser extends ByteStringParser[FrameEvent] {
   def parseCloseCode(data: ByteString): Option[(Int, String)] = {
     def invalid(reason: String) =
       Some(
-          (Protocol.CloseCodes.ProtocolError,
-           s"Peer sent illegal close frame ($reason)."))
+        (
+          Protocol.CloseCodes.ProtocolError,
+          s"Peer sent illegal close frame ($reason)."
+        )
+      )
 
     if (data.length >= 2) {
       val code = ((data(0) & 0xff) << 8) | (data(1) & 0xff)
@@ -147,7 +159,9 @@ private[http] object FrameEventParser extends ByteStringParser[FrameEvent] {
         invalid("close reason message is invalid UTF8")
       else Some((code, message.get))
     } else if (data.length == 1)
-      invalid("close code must be length 2 but was 1") // must be >= length 2 if not empty
+      invalid(
+        "close code must be length 2 but was 1"
+      ) // must be >= length 2 if not empty
     else None
   }
 

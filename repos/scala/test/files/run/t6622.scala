@@ -38,7 +38,8 @@ object O4 {
 object Test extends App {
   def check(desc: String, clazz: Class[_]) {
     println(
-        s" $desc isMemberClass = ${clazz.isMemberClass}, ${clazz.getEnclosingMethod}")
+      s" $desc isMemberClass = ${clazz.isMemberClass}, ${clazz.getEnclosingMethod}"
+    )
     println(reflect.runtime.currentMirror.classSymbol(clazz))
   }
 

@@ -34,9 +34,10 @@ import org.saddle.util.Concat.Promoter
   * @param times An Index[Long], where each element is a millisecond timestamp
   * @param tzone Optional time zone containing localization info
   */
-class IndexTime(val times: Index[Long],
-                val tzone: DateTimeZone = ISO_CHRONO.getZone)
-    extends Index[DateTime] {
+class IndexTime(
+    val times: Index[Long],
+    val tzone: DateTimeZone = ISO_CHRONO.getZone
+) extends Index[DateTime] {
 
   @transient lazy val scalarTag = ScalarTagTime
 
@@ -93,8 +94,9 @@ class IndexTime(val times: Index[Long],
     il2it(Index(util.Concat.append(times.toArray, x.times.toArray)))
 
   // general concatenation
-  def concat[B, C](x: Index[B])(
-      implicit wd: Promoter[DateTime, B, C], mc: ST[C], oc: ORD[C]) =
+  def concat[B, C](
+      x: Index[B]
+  )(implicit wd: Promoter[DateTime, B, C], mc: ST[C], oc: ORD[C]) =
     Index(util.Concat.append[DateTime, B, C](toArray, x.toArray))
 
   // find the first location whereby an insertion would maintain a sorted index
@@ -136,7 +138,7 @@ class IndexTime(val times: Index[Long],
 
   private def getTimes(other: Index[DateTime]): Index[Long] = other match {
     case ts: IndexTime => ts.times
-    case _ => other.map(t2l)
+    case _             => other.map(t2l)
   }
 
   override def getIndexer(other: Index[DateTime]): Option[Array[Int]] = {
@@ -148,7 +150,7 @@ class IndexTime(val times: Index[Long],
 
   // maps
 
-  def map[@spec(Boolean, Int, Long, Double) B : ST : ORD](f: DateTime => B) =
+  def map[@spec(Boolean, Int, Long, Double) B: ST: ORD](f: DateTime => B) =
     times.map(v => f(new DateTime(v, chrono)))
 
   private[saddle] def toArray = {
@@ -174,8 +176,10 @@ object IndexTime {
   /**
     * Create a new IndexTime from a Vec of times, with an attached timezone
     */
-  def apply(times: Vec[DateTime],
-            tzone: DateTimeZone = ISO_CHRONO.getZone): IndexTime = {
+  def apply(
+      times: Vec[DateTime],
+      tzone: DateTimeZone = ISO_CHRONO.getZone
+  ): IndexTime = {
     val millis = array.empty[Long](times.length)
     var i = 0
     while (i < millis.length) {

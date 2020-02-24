@@ -23,7 +23,9 @@ object PerformanceSpec extends MultiNodeConfig {
   val n4 = role("n4")
   val n5 = role("n5")
 
-  commonConfig(ConfigFactory.parseString("""
+  commonConfig(
+    ConfigFactory
+      .parseString("""
     akka.loglevel = ERROR
     akka.stdout-loglevel = ERROR
     akka.actor.provider = "akka.cluster.ClusterActorRefProvider"
@@ -34,7 +36,8 @@ object PerformanceSpec extends MultiNodeConfig {
     akka.testconductor.barrier-timeout = 60 s
     akka.cluster.distributed-data.gossip-interval = 1 s
     akka.actor.serialize-messages = off
-    """))
+    """)
+  )
 
   def countDownProps(latch: TestLatch): Props =
     Props(new CountDown(latch)).withDeploy(Deploy.local)
@@ -55,7 +58,8 @@ class PerformanceSpecMultiJvmNode4 extends PerformanceSpec
 class PerformanceSpecMultiJvmNode5 extends PerformanceSpec
 
 class PerformanceSpec
-    extends MultiNodeSpec(PerformanceSpec) with STMultiNodeSpec
+    extends MultiNodeSpec(PerformanceSpec)
+    with STMultiNodeSpec
     with ImplicitSender {
   import PerformanceSpec._
   import Replicator._
@@ -75,12 +79,15 @@ class PerformanceSpec
     enterBarrier(from.name + "-joined")
   }
 
-  def repeat(description: String,
-             keys: Iterable[ORSetKey[Int]],
-             n: Int,
-             expectedAfterReplication: Option[Set[Int]] = None)(
+  def repeat(
+      description: String,
+      keys: Iterable[ORSetKey[Int]],
+      n: Int,
+      expectedAfterReplication: Option[Set[Int]] = None
+  )(
       block: (ORSetKey[Int], Int, ActorRef) ⇒ Unit,
-      afterEachKey: ORSetKey[Int] ⇒ Unit = _ ⇒ ()): Unit = {
+      afterEachKey: ORSetKey[Int] ⇒ Unit = _ ⇒ ()
+  ): Unit = {
 
     keys.foreach { key ⇒
       val startTime = System.nanoTime()
@@ -113,10 +120,10 @@ class PerformanceSpec
   }
 
   def awaitReplicated(
-      keys: Iterable[ORSetKey[Int]], expectedData: Set[Int]): Unit =
-    keys.foreach { key ⇒
-      awaitReplicated(key, expectedData)
-    }
+      keys: Iterable[ORSetKey[Int]],
+      expectedData: Set[Int]
+  ): Unit =
+    keys.foreach { key ⇒ awaitReplicated(key, expectedData) }
 
   def awaitReplicated(key: ORSetKey[Int], expectedData: Set[Int]): Unit = {
     within(20.seconds) {
@@ -206,8 +213,8 @@ class PerformanceSpec
       runOn(n1, n2, n3) {
         val latch = TestLatch(n)
         val replyTo = system.actorOf(countDownProps(latch))
-        for (_ ← 0 until n) replicator.tell(
-            Update(key, GCounter(), WriteLocal)(_ + 1), replyTo)
+        for (_ ← 0 until n)
+          replicator.tell(Update(key, GCounter(), WriteLocal)(_ + 1), replyTo)
         Await.ready(latch, 5.seconds + (1.second * factor))
         enterBarrier("update-done-6")
         runOn(n1) {
@@ -236,8 +243,7 @@ class PerformanceSpec
         val endTime = System.nanoTime()
         val durationMs = (endTime - startTime).nanos.toMillis
         val tps = (n * 1000.0 / durationMs).toInt
-        println(
-            s"## $n GCounter Update + gossip took $durationMs ms, $tps TPS")
+        println(s"## $n GCounter Update + gossip took $durationMs ms, $tps TPS")
       }
 
       enterBarrier("after-6")

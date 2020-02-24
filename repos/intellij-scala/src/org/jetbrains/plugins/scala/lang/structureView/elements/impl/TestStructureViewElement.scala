@@ -14,8 +14,8 @@ class TestStructureViewElement(
     override protected val myElement: PsiElement,
     protected val testName: String,
     protected val myChildren: Array[TreeElement] = Array[TreeElement](),
-    val testStatus: Int = TestStructureViewElement.normalStatusId)
-    extends ScalaStructureViewElement(myElement, false) {
+    val testStatus: Int = TestStructureViewElement.normalStatusId
+) extends ScalaStructureViewElement(myElement, false) {
 
   override def getChildren: Array[TreeElement] = myChildren
 

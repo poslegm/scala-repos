@@ -31,7 +31,9 @@ import scala.math._
   * @param b the number of pseudo-observations for false
   */
 class Beta(a: Double, b: Double)(implicit rand: RandBasis = Rand)
-    extends ContinuousDistr[Double] with Moments[Double, Double] with HasCdf {
+    extends ContinuousDistr[Double]
+    with Moments[Double, Double]
+    with HasCdf {
   require(a > 0.0)
   require(b > 0.0)
 
@@ -46,11 +48,15 @@ class Beta(a: Double, b: Double)(implicit rand: RandBasis = Rand)
     require(x <= 1)
     x match {
       case 0.0 =>
-        if (a > 1) { 0 } else if (a == 1) { normalizer } else {
+        if (a > 1) { 0 }
+        else if (a == 1) { normalizer }
+        else {
           Double.PositiveInfinity
         }
       case 1.0 =>
-        if (b > 1) { 0 } else if (b == 1) { normalizer } else {
+        if (b > 1) { 0 }
+        else if (b == 1) { normalizer }
+        else {
           Double.PositiveInfinity
         }
       case x => math.exp(logPdf(x))
@@ -118,7 +124,8 @@ class Beta(a: Double, b: Double)(implicit rand: RandBasis = Rand)
   def mode = (a - 1) / (a + b - 2)
   def entropy =
     logNormalizer - (a - 1) * digamma(a) - (b - 1) * digamma(b) + (a + b - 2) * digamma(
-        a + b)
+      a + b
+    )
 
   // Probability that x < a <= Y
   override def cdf(x: Double): Double = {
@@ -160,7 +167,8 @@ object Beta
   def distribution(ab: Parameter) = new Beta(ab._1, ab._2)
 
   def likelihoodFunction(
-      stats: SufficientStatistic): DiffFunction[(Double, Double)] =
+      stats: SufficientStatistic
+  ): DiffFunction[(Double, Double)] =
     new DiffFunction[(Double, Double)] {
       import stats.n
       def calculate(x: (Double, Double)) = {
@@ -169,7 +177,7 @@ object Beta
         else {
           val obj =
             n *
-            (lgamma(a) + lgamma(b) - lgamma(a + b) - (a - 1) * stats.meanLog -
+              (lgamma(a) + lgamma(b) - lgamma(a + b) - (a - 1) * stats.meanLog -
                 (b - 1) * stats.meanLog1M)
           val gradA = n * (digamma(a) - digamma(a + b) - stats.meanLog)
           val gradB = n * (digamma(b) - digamma(a + b) - stats.meanLog1M)

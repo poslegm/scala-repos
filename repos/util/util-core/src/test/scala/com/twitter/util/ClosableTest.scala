@@ -25,11 +25,11 @@ class ClosableTest extends FunSuite with Eventually with IntegrationPatience {
   test("Closable.closeOnCollect") {
     @volatile var closed = false
     Closable.closeOnCollect(
-        Closable.make { t =>
-          closed = true
-          Future.Done
-        },
-        new Object {}
+      Closable.make { t =>
+        closed = true
+        Future.Done
+      },
+      new Object {}
     )
     System.gc()
     eventually { assert(closed) }
@@ -84,15 +84,22 @@ class ClosableTest extends FunSuite with Eventually with IntegrationPatience {
 
   test("Closable.all,sequence are eager") {
     assert(
-        (Future
+      (
+        Future
           .value(1)
           .map(_ =>
-                Closable.sequence(Closable.nop, Closable.nop).close().isDone))
-          .poll == Some(Return(true)))
+            Closable.sequence(Closable.nop, Closable.nop).close().isDone
+          )
+        )
+        .poll == Some(Return(true))
+    )
     assert(
-        (Future
+      (
+        Future
           .value(1)
-          .map(_ => Closable.all(Closable.nop, Closable.nop).close().isDone))
-          .poll == Some(Return(true)))
+          .map(_ => Closable.all(Closable.nop, Closable.nop).close().isDone)
+        )
+        .poll == Some(Return(true))
+    )
   }
 }

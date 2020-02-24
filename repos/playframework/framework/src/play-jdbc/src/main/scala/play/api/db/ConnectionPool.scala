@@ -22,9 +22,11 @@ trait ConnectionPool {
     * @param configuration the data source configuration
     * @return a data source backed by a connection pool
     */
-  def create(name: String,
-             dbConfig: DatabaseConfig,
-             configuration: Config): DataSource
+  def create(
+      name: String,
+      dbConfig: DatabaseConfig,
+      configuration: Config
+  ): DataSource
 
   /**
     * Close the given data source.
@@ -39,17 +41,20 @@ object ConnectionPool {
   /**
     * Load a connection pool from a configured connection pool
     */
-  def fromConfig(config: String,
-                 injector: Injector,
-                 environment: Environment,
-                 default: ConnectionPool): ConnectionPool = {
+  def fromConfig(
+      config: String,
+      injector: Injector,
+      environment: Environment,
+      default: ConnectionPool
+  ): ConnectionPool = {
     config match {
-      case "default" => default
-      case "bonecp" => new BoneConnectionPool(environment)
+      case "default"  => default
+      case "bonecp"   => new BoneConnectionPool(environment)
       case "hikaricp" => new HikariCPConnectionPool(environment)
       case fqcn =>
         injector.instanceOf(
-            Reflect.getClass[ConnectionPool](fqcn, environment.classLoader))
+          Reflect.getClass[ConnectionPool](fqcn, environment.classLoader)
+        )
     }
   }
 
@@ -67,7 +72,8 @@ object ConnectionPool {
     */
   def extractUrl(
       maybeUrl: Option[String],
-      mode: Mode.Mode): (Option[String], Option[(String, String)]) = {
+      mode: Mode.Mode
+  ): (Option[String], Option[(String, String)]) = {
 
     maybeUrl match {
       case Some(PostgresFullUrl(username, password, host, dbname)) =>
@@ -81,7 +87,8 @@ object ConnectionPool {
           .map(_ => "")
           .getOrElse(defaultProperties)
         Some(s"jdbc:mysql://$host/${dbname + addDefaultPropertiesIfNeeded}") -> Some(
-            username -> password)
+          username -> password
+        )
 
       case Some(url @ H2DefaultUrl())
           if !url.contains("DB_CLOSE_DELAY") && mode == Mode.Dev =>

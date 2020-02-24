@@ -45,7 +45,8 @@ object ChoiceDialog {
     * @return JavaFX ChoiceDialog
     */
   implicit def sfxChoiceDialog2jfx[T](
-      v: ChoiceDialog[T]): jfxsc.ChoiceDialog[T] =
+      v: ChoiceDialog[T]
+  ): jfxsc.ChoiceDialog[T] =
     if (v != null) v.delegate else null
 }
 
@@ -68,8 +69,9 @@ object ChoiceDialog {
   * @define ORIGINALDOC Original Documentation]].
   */
 class ChoiceDialog[T](
-    override val delegate: jfxsc.ChoiceDialog[T] = new jfxsc.ChoiceDialog[T]())
-    extends Dialog[T](delegate) with SFXDelegate[jfxsc.ChoiceDialog[T]] {
+    override val delegate: jfxsc.ChoiceDialog[T] = new jfxsc.ChoiceDialog[T]()
+) extends Dialog[T](delegate)
+    with SFXDelegate[jfxsc.ChoiceDialog[T]] {
 
   /**
     * Creates a new ChoiceDialog instance with the first argument specifying the

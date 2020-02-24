@@ -41,7 +41,8 @@ object ObservableBufferBase {
     * @return JavaFX ObservableListBase
     */
   implicit def sfxObservableListBase2jfx[E](
-      v: ObservableBufferBase[E]): jfxc.ObservableListBase[E] =
+      v: ObservableBufferBase[E]
+  ): jfxc.ObservableListBase[E] =
     if (v != null) v.delegate else null
 }
 
@@ -65,6 +66,6 @@ object ObservableBufferBase {
   * @define ORIGINALDOC Original Documentation]].
   */
 abstract class ObservableBufferBase[E](
-    override val delegate: jfxc.ObservableListBase[E])
-    extends ObservableBuffer[E](delegate)
+    override val delegate: jfxc.ObservableListBase[E]
+) extends ObservableBuffer[E](delegate)
     with SFXDelegate[jfxc.ObservableListBase[E]]

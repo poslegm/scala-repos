@@ -22,8 +22,7 @@ class Bug120A(x: Int) {
 trait Bug120B {
   println("B")
 }
-class Bug120C(x: Int)
-    extends Bug120A(Bug120Test.print("one", 1)) with Bug120B {
+class Bug120C(x: Int) extends Bug120A(Bug120Test.print("one", 1)) with Bug120B {
   println("C")
 }
 object Bug120Test {
@@ -403,9 +402,7 @@ class Bug316MyIterator extends Iterator[Int] {
 
 object Bug316Test {
   def test(args: Array[String]): Unit =
-    (new Bug316MyIterator) filter { x: Int =>
-      x == 1
-    };
+    (new Bug316MyIterator) filter { x: Int => x == 1 };
 }
 
 //############################################################################
@@ -435,7 +432,7 @@ trait Bug396C extends Bug396A {
   }
 }
 object Bug396Test extends Bug396B with Bug396C {
-  class I2 extends super [Bug396B].I with super [Bug396C].I;
+  class I2 extends super[Bug396B].I with super[Bug396C].I;
   def test(args: Array[String]): Unit = (new I2).run
 }
 
@@ -467,8 +464,10 @@ object Test {
       test;
     } catch {
       case exception: Throwable =>
-        Console.print("Exception in thread \"" + Thread.currentThread + "\" " +
-            exception);
+        Console.print(
+          "Exception in thread \"" + Thread.currentThread + "\" " +
+            exception
+        );
         Console.println;
         errors += 1
     }

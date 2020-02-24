@@ -4,7 +4,10 @@ import com.twitter.conversions.time._
 import com.twitter.finagle._
 import com.twitter.finagle.addr.WeightedAddress
 import com.twitter.finagle.client.StringClient
-import com.twitter.finagle.loadbalancer.{DefaultBalancerFactory, ConcurrentLoadBalancerFactory}
+import com.twitter.finagle.loadbalancer.{
+  DefaultBalancerFactory,
+  ConcurrentLoadBalancerFactory
+}
 import com.twitter.finagle.server.StringServer
 import com.twitter.finagle.stats._
 import com.twitter.finagle.util.Rng
@@ -33,7 +36,7 @@ private object TrafficDistributorTest {
   val weightClass: (Double, Int) => Set[Address] = (w, size) =>
     (0 until size).toSet.map { i: Int =>
       WeightedAddress(WeightedTestAddr(i, w), w)
-  }
+    }
 
   val busyWeight = 2.0
   case class AddressFactory(addr: Address) extends ServiceFactory[Int, Int] {
@@ -44,7 +47,7 @@ private object TrafficDistributorTest {
     override def status: Status =
       addr match {
         case WeightedTestAddr(_, weight) if weight == busyWeight => Status.Busy
-        case _ => Status.Open
+        case _                                                   => Status.Open
       }
   }
 
@@ -86,8 +89,9 @@ private object TrafficDistributorTest {
 
     var newBalancerCalls = 0
     var balancers: Set[Balancer] = Set.empty
-    def newBalancer(eps: Activity[Set[ServiceFactory[Int, Int]]])
-      : ServiceFactory[Int, Int] = {
+    def newBalancer(
+        eps: Activity[Set[ServiceFactory[Int, Int]]]
+    ): ServiceFactory[Int, Int] = {
       newBalancerCalls += 1
       val b = Balancer(eps)
       balancers += b
@@ -100,12 +104,12 @@ private object TrafficDistributorTest {
         statsReceiver: StatsReceiver = NullStatsReceiver
     ): ServiceFactory[Int, Int] = {
       new TrafficDistributor[Int, Int](
-          dest = Activity(dest),
-          newEndpoint = newEndpoint,
-          newBalancer = newBalancer,
-          eagerEviction = eagerEviction,
-          statsReceiver = statsReceiver,
-          rng = Rng("seed".hashCode)
+        dest = Activity(dest),
+        newEndpoint = newEndpoint,
+        newBalancer = newBalancer,
+        eagerEviction = eagerEviction,
+        statsReceiver = statsReceiver,
+        rng = Rng("seed".hashCode)
       )
     }
 
@@ -219,9 +223,9 @@ class TrafficDistributorTest extends FunSuite {
     resetCounters()
     val existingWeight = 3.0
     val newAddrs = Set(
-        WeightedAddress(Address(6), existingWeight),
-        WeightedAddress(Address(7), existingWeight),
-        WeightedAddress(Address(8), existingWeight)
+      WeightedAddress(Address(6), existingWeight),
+      WeightedAddress(Address(7), existingWeight),
+      WeightedAddress(Address(8), existingWeight)
     )
     val update: Set[Address] = init ++ newAddrs
     dest() = Activity.Ok(update)
@@ -301,9 +305,11 @@ class TrafficDistributorTest extends FunSuite {
     dest() = Activity.Ok(Set(1).map(Address(_)))
     val (first, _) = Await.result(q, 1.second)
     assert(first.isReturn)
-    assert(balancers.head.endpoints.sample() == Set(1)
-          .map(Address(_))
-          .map(AddressFactory))
+    assert(
+      balancers.head.endpoints.sample() == Set(1)
+        .map(Address(_))
+        .map(AddressFactory)
+    )
 
     // initial resolution
     val resolved: Set[Address] = Set(1, 2, 3).map(Address(_))
@@ -349,13 +355,16 @@ class TrafficDistributorTest extends FunSuite {
     val classes = weightClasses.flatMap(weightClass.tupled).toSet
     val dest = Var(Activity.Ok(classes))
     val dist = new TrafficDistributor[Int, Int](
-        dest = Activity(dest),
-        newEndpoint = newEndpoint,
-        newBalancer = DefaultBalancerFactory.newBalancer(
-              _, NullStatsReceiver, new NoBrokersAvailableException("test")),
-        eagerEviction = true,
-        statsReceiver = NullStatsReceiver,
-        rng = Rng("seed".hashCode)
+      dest = Activity(dest),
+      newEndpoint = newEndpoint,
+      newBalancer = DefaultBalancerFactory.newBalancer(
+        _,
+        NullStatsReceiver,
+        new NoBrokersAvailableException("test")
+      ),
+      eagerEviction = true,
+      statsReceiver = NullStatsReceiver,
+      rng = Rng("seed".hashCode)
     )
 
     assert(dist.status == Status.Open)
@@ -381,9 +390,11 @@ class TrafficDistributorTest extends FunSuite {
     assert(newBalancerCalls == 0)
 
     assert(balancers.head.endpoints.sample().size == 16)
-    assert(balancers.head.endpoints.sample() == update
-          .flatMap(ConcurrentLoadBalancerFactory.replicate(4))
-          .map(AddressFactory))
+    assert(
+      balancers.head.endpoints.sample() == update
+        .flatMap(ConcurrentLoadBalancerFactory.replicate(4))
+        .map(AddressFactory)
+    )
   })
 
   // todo: move this to util-stats?
@@ -428,8 +439,9 @@ class TrafficDistributorTest extends FunSuite {
     // redline a shard.
     for (i <- 1 to 10) withClue(s"for i=$i:") {
       val addr = WeightedAddress(
-          Address(server.boundAddress.asInstanceOf[InetSocketAddress]),
-          i.toDouble)
+        Address(server.boundAddress.asInstanceOf[InetSocketAddress]),
+        i.toDouble
+      )
       va() = Addr.Bound(addr)
       assert(Await.result(client("hello")) == "hello".reverse)
       assert(sr.counters(Seq("test", "requests")) == i)

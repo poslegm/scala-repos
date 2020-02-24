@@ -7,11 +7,15 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 case class Tabby(
-    width: Int = 80, isAcross: Boolean = false, marginSize: Int = 3)
-    extends Tabulator
+    width: Int = 80,
+    isAcross: Boolean = false,
+    marginSize: Int = 3
+) extends Tabulator
 case class VTabby(
-    width: Int = 80, isAcross: Boolean = false, marginSize: Int = 3)
-    extends VariColumnTabulator
+    width: Int = 80,
+    isAcross: Boolean = false,
+    marginSize: Int = 3
+) extends VariColumnTabulator
 
 @RunWith(classOf[JUnit4])
 class TabulatorTest {
@@ -55,43 +59,49 @@ class TabulatorTest {
   }
   @Test def sys() = {
     val sut = VTabby(width = 40)
-    val items = List("BooleanProp",
-                     "PropImpl",
-                     "addShutdownHook",
-                     "error",
-                     "process",
-                     "CreatorImpl",
-                     "ShutdownHookThread",
-                     "allThreads",
-                     "exit",
-                     "props",
-                     "Prop",
-                     "SystemProperties",
-                     "env",
-                     "package",
-                     "runtime")
+    val items = List(
+      "BooleanProp",
+      "PropImpl",
+      "addShutdownHook",
+      "error",
+      "process",
+      "CreatorImpl",
+      "ShutdownHookThread",
+      "allThreads",
+      "exit",
+      "props",
+      "Prop",
+      "SystemProperties",
+      "env",
+      "package",
+      "runtime"
+    )
     val rows = sut tabulate items
     assert(rows.size == 8)
     assert(rows(0).size == 2)
-    assert(rows(0)(0).size == "ShutdownHookThread".length + sut.marginSize) // 21
+    assert(
+      rows(0)(0).size == "ShutdownHookThread".length + sut.marginSize
+    ) // 21
   }
   @Test def syswide() = {
     val sut = VTabby(width = 120)
-    val items = List("BooleanProp",
-                     "PropImpl",
-                     "addShutdownHook",
-                     "error",
-                     "process",
-                     "CreatorImpl",
-                     "ShutdownHookThread",
-                     "allThreads",
-                     "exit",
-                     "props",
-                     "Prop",
-                     "SystemProperties",
-                     "env",
-                     "package",
-                     "runtime")
+    val items = List(
+      "BooleanProp",
+      "PropImpl",
+      "addShutdownHook",
+      "error",
+      "process",
+      "CreatorImpl",
+      "ShutdownHookThread",
+      "allThreads",
+      "exit",
+      "props",
+      "Prop",
+      "SystemProperties",
+      "env",
+      "package",
+      "runtime"
+    )
     val rows = sut tabulate items
     assert(rows.size == 2)
     assert(rows(0).size == 8)
@@ -118,31 +128,31 @@ class TabulatorTest {
   @Test def badFitter() = {
     val sut = VTabby(isAcross = true)
     val items = List(
-        "%",
-        "&",
-        "*",
-        "+",
-        "-",
-        "/",
-        ">",
-        ">=",
-        ">>",
-        ">>>",
-        "^",
-        "asInstanceOf",
-        "isInstanceOf",
-        "toByte",
-        "toChar",
-        "toDouble",
-        "toFloat",
-        "toInt",
-        "toLong",
-        "toShort",
-        "toString",
-        "unary_+",
-        "unary_-",
-        "unary_~",
-        "|"
+      "%",
+      "&",
+      "*",
+      "+",
+      "-",
+      "/",
+      ">",
+      ">=",
+      ">>",
+      ">>>",
+      "^",
+      "asInstanceOf",
+      "isInstanceOf",
+      "toByte",
+      "toChar",
+      "toDouble",
+      "toFloat",
+      "toInt",
+      "toLong",
+      "toShort",
+      "toString",
+      "unary_+",
+      "unary_-",
+      "unary_~",
+      "|"
     )
     val rows = sut tabulate items
     assert(rows.size == 4)

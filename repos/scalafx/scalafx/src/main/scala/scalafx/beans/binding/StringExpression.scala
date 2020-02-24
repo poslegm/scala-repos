@@ -33,7 +33,8 @@ import scala.language.implicitConversions
 
 object StringExpression {
   implicit def sfxStringExpression2jfx(
-      se: StringExpression): jfxbb.StringExpression =
+      se: StringExpression
+  ): jfxbb.StringExpression =
     if (se != null) se.delegate else null
 }
 

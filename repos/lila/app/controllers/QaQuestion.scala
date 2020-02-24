@@ -21,7 +21,8 @@ object QaQuestion extends QaController {
     if (query.isEmpty)
       fuccess {
         Redirect(routes.QaQuestion.index())
-      } else
+      }
+    else
       Env.qa search query zip fetchPopular map {
         case (questions, popular) =>
           Ok(html.qa.search(query, questions, popular))
@@ -41,7 +42,8 @@ object QaQuestion extends QaController {
   }
 
   private def renderAsk(form: Form[_], status: Results.Status)(
-      implicit ctx: Context) =
+      implicit ctx: Context
+  ) =
     fetchPopular zip api.tag.all zip forms.anyCaptcha map {
       case ((popular, tags), captcha) =>
         status(html.qa.ask(form, tags, popular, captcha))
@@ -56,10 +58,10 @@ object QaQuestion extends QaController {
     if (QaAuth.canAsk) {
       implicit val req = ctx.body
       forms.question.bindFromRequest.fold(
-          err => renderAsk(err, Results.BadRequest),
-          data =>
-            api.question.create(data, me) map { q =>
-              Redirect(routes.QaQuestion.show(q.id, q.slug))
+        err => renderAsk(err, Results.BadRequest),
+        data =>
+          api.question.create(data, me) map { q =>
+            Redirect(routes.QaQuestion.show(q.id, q.slug))
           }
       )
     } else renderN00b
@@ -75,18 +77,19 @@ object QaQuestion extends QaController {
     WithOwnQuestion(id) { q =>
       implicit val req = ctx.body
       forms.question.bindFromRequest.fold(
-          err => renderEdit(err, q, Results.BadRequest),
-          data =>
-            api.question.edit(data, q.id) map {
-              case None => NotFound
-              case Some(q2) => Redirect(routes.QaQuestion.show(q2.id, q2.slug))
+        err => renderEdit(err, q, Results.BadRequest),
+        data =>
+          api.question.edit(data, q.id) map {
+            case None     => NotFound
+            case Some(q2) => Redirect(routes.QaQuestion.show(q2.id, q2.slug))
           }
       )
     }
   }
 
   private def renderEdit(form: Form[_], q: Question, status: Results.Status)(
-      implicit ctx: Context) =
+      implicit ctx: Context
+  ) =
     fetchPopular zip api.tag.all zip forms.anyCaptcha map {
       case ((popular, tags), captcha) =>
         status(html.qa.edit(form, q, tags, popular, captcha))
@@ -95,12 +98,12 @@ object QaQuestion extends QaController {
   def vote(id: QuestionId) = AuthBody { implicit ctx => me =>
     implicit val req = ctx.body
     forms.vote.bindFromRequest.fold(
-        err => fuccess(BadRequest),
-        v =>
-          api.question.vote(id, me, v == 1) map {
-            case Some(vote) =>
-              Ok(html.qa.vote(routes.QaQuestion.vote(id).url, vote))
-            case None => NotFound
+      err => fuccess(BadRequest),
+      v =>
+        api.question.vote(id, me, v == 1) map {
+          case Some(vote) =>
+            Ok(html.qa.vote(routes.QaQuestion.vote(id).url, vote))
+          case None => NotFound
         }
     )
   }
@@ -110,7 +113,8 @@ object QaQuestion extends QaController {
       WithQuestion(questionId) { q =>
         (api.question remove q.id) >> Env.mod.logApi
           .deleteQaQuestion(me.id, q.userId, q.title) inject Redirect(
-            routes.QaQuestion.index())
+          routes.QaQuestion.index()
+        )
       }
   }
 }

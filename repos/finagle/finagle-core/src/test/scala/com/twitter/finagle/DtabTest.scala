@@ -10,9 +10,9 @@ class DtabTest extends FunSuite with AssertionsForJUnit {
   def pathTree(t: String) =
     NameTree.read(t).map(Name(_))
 
-  def assertEquiv[T : Equiv](left: T, right: T) = assert(
-      if (Equiv[T].equiv(left, right)) None
-      else Some(left + "!=" + right)
+  def assertEquiv[T: Equiv](left: T, right: T) = assert(
+    if (Equiv[T].equiv(left, right)) None
+    else Some(left + "!=" + right)
   )
 
   test("d1 ++ d2") {
@@ -39,8 +39,10 @@ class DtabTest extends FunSuite with AssertionsForJUnit {
     assert(d1.stripPrefix(d1).isEmpty)
     assert(d1.stripPrefix(d2).isEmpty)
 
-    assertEquiv((d1 + Dentry.read("/foo => /123")).stripPrefix(d1),
-                Dtab.read("/foo=>/123"))
+    assertEquiv(
+      (d1 + Dentry.read("/foo => /123")).stripPrefix(d1),
+      Dtab.read("/foo=>/123")
+    )
 
     assertEquiv(d1.stripPrefix(d1 + Dentry.read("/s => /b")), d1)
     assert(Dtab.empty.stripPrefix(d1).isEmpty)
@@ -68,12 +70,13 @@ class DtabTest extends FunSuite with AssertionsForJUnit {
   }
 
   test("Allows trailing semicolon") {
-    val dtab = try {
-      Dtab.read("""
+    val dtab =
+      try {
+        Dtab.read("""
           /b => /c;
           /a => /b;
           """)
-    } catch { case _: IllegalArgumentException => Dtab.empty }
+      } catch { case _: IllegalArgumentException => Dtab.empty }
     assert(dtab.length == 2)
   }
 }

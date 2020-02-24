@@ -19,10 +19,12 @@ class DoubleNegationInspectionTest
   }
 
   private def testFix(text: String, result: String) {
-    testQuickFix(text.replace("\r", ""),
-                 result.replace("\r", ""),
-                 hint,
-                 classOf[DoubleNegationInspection])
+    testQuickFix(
+      text.replace("\r", ""),
+      result.replace("\r", ""),
+      hint,
+      classOf[DoubleNegationInspection]
+    )
   }
 
   def test_NotNotTrue() {

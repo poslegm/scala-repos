@@ -25,10 +25,12 @@ object ScalaExtendingPlay extends Specification {
     override def apply(key: String, args: Any*)(implicit lang: Lang): String =
       ???
     override def apply(keys: Seq[String], args: Any*)(
-        implicit lang: Lang): String = ???
+        implicit lang: Lang
+    ): String = ???
     override def isDefinedAt(key: String)(implicit lang: Lang): Boolean = ???
     override def translate(key: String, args: Seq[Any])(
-        implicit lang: Lang): Option[String] = ???
+        implicit lang: Lang
+    ): Option[String] = ???
   }
 
   // #module-definition
@@ -47,8 +49,8 @@ object ScalaExtendingPlay extends Specification {
   class MyI18nModule extends play.api.inject.Module {
     def bindings(environment: Environment, configuration: Configuration) = {
       Seq(
-          bind[Langs].to[DefaultLangs],
-          bind[MessagesApi].to[MyMessagesApi]
+        bind[Langs].to[DefaultLangs],
+        bind[MessagesApi].to[MyMessagesApi]
       )
     }
   }

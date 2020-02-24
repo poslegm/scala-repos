@@ -3,7 +3,10 @@ package lila.playban
 import org.joda.time.DateTime
 
 case class UserRecord(
-    _id: String, o: Option[List[Outcome]], b: Option[List[TempBan]]) {
+    _id: String,
+    o: Option[List[Outcome]],
+    b: Option[List[TempBan]]
+) {
 
   def userId = _id
   def outcomes: List[Outcome] = ~o
@@ -59,9 +62,7 @@ object Outcome {
 
   val all = List(Good, Abort, NoPlay, RageQuit)
 
-  val byId = all map { v =>
-    (v.id, v)
-  } toMap
+  val byId = all map { v => (v.id, v) } toMap
 
   def apply(id: Int): Option[Outcome] = byId get id
 }

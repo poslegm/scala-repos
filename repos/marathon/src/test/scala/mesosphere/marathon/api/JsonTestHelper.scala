@@ -2,13 +2,22 @@ package mesosphere.marathon.api
 
 import gnieh.diffson.{Operation, JsonDiff, Add, Copy}
 import org.scalatest.{Matchers, Assertions}
-import play.api.libs.json.{JsArray, JsObject, JsNull, JsValue, Format, Json, Writes}
+import play.api.libs.json.{
+  JsArray,
+  JsObject,
+  JsNull,
+  JsValue,
+  Format,
+  Json,
+  Writes
+}
 
 import scala.collection.Map
 
 object JsonTestHelper extends Assertions with Matchers {
-  def assertSerializationRoundtripWorks[T](value: T)(
-      implicit format: Format[T]): Unit = {
+  def assertSerializationRoundtripWorks[T](
+      value: T
+  )(implicit format: Format[T]): Unit = {
     val json = Json.toJson(value)
     val reread = Json.fromJson(json)
     withClue(s"for json:\n${Json.prettyPrint(json)}\n") {
@@ -17,8 +26,9 @@ object JsonTestHelper extends Assertions with Matchers {
     }
   }
 
-  def assertThatJsonOf[T](value: T)(
-      implicit writes: Writes[T]): AssertThatJsonString = {
+  def assertThatJsonOf[T](
+      value: T
+  )(implicit writes: Writes[T]): AssertThatJsonString = {
     AssertThatJsonString(Json.prettyPrint(Json.toJson(value)))
   }
 
@@ -30,7 +40,7 @@ object JsonTestHelper extends Assertions with Matchers {
     case JsObject(fields) =>
       val withoutNullValues: Map[String, JsValue] = fields.filter {
         case (_, JsNull) => false
-        case _ => true
+        case _           => true
       }
       val filterSubValues = withoutNullValues.mapValues {
         case v => removeNullFieldValues(v)
@@ -45,30 +55,35 @@ object JsonTestHelper extends Assertions with Matchers {
   case class AssertThatJsonString(actual: String) {
     private[this] def isAddition(op: Operation): Boolean = op match {
       case _: Add | _: Copy => true
-      case _: Operation => false
+      case _: Operation     => false
     }
 
     def containsEverythingInJsonString(expected: String): Unit = {
       val diff = JsonDiff.diff(expected, actual)
       require(
-          diff.ops.forall(isAddition),
-          s"unexpected differences in actual json:\n$actual\nexpected:\n$expected\n${diff.ops
-            .filter(!isAddition(_))}")
+        diff.ops.forall(isAddition),
+        s"unexpected differences in actual json:\n$actual\nexpected:\n$expected\n${diff.ops
+          .filter(!isAddition(_))}"
+      )
     }
 
-    def containsEverythingInJsonOf[T](expected: T)(
-        implicit writes: Writes[T]): Unit = {
+    def containsEverythingInJsonOf[T](
+        expected: T
+    )(implicit writes: Writes[T]): Unit = {
       correspondsToJsonString(Json.prettyPrint(Json.toJson(expected)))
     }
 
     def correspondsToJsonString(expected: String): Unit = {
       val diff = JsonDiff.diff(expected, actual)
       require(
-          diff.ops.isEmpty,
-          s"unexpected differences in actual json:\n$actual\nexpected:\n$expected\n$diff")
+        diff.ops.isEmpty,
+        s"unexpected differences in actual json:\n$actual\nexpected:\n$expected\n$diff"
+      )
     }
 
-    def correspondsToJsonOf[T](expected: T)(implicit writes: Writes[T]): Unit = {
+    def correspondsToJsonOf[T](
+        expected: T
+    )(implicit writes: Writes[T]): Unit = {
       correspondsToJsonString(Json.prettyPrint(Json.toJson(expected)))
     }
   }

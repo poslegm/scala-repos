@@ -54,7 +54,8 @@ object LowPriorityTests {
 
     object Extra {
       implicit def extraTC[T](
-          implicit ev: LowPriority.Ignoring[Witness.`"anyTC"`.T]): TC[T] =
+          implicit ev: LowPriority.Ignoring[Witness.`"anyTC"`.T]
+      ): TC[T] =
         new TC[T] { def prop = Some(false) }
     }
   }

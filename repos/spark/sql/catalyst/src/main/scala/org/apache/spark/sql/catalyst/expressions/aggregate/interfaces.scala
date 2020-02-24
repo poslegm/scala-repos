@@ -73,8 +73,9 @@ private[sql] case object NoOp extends Expression with Unevaluable {
 private[sql] case class AggregateExpression(
     aggregateFunction: AggregateFunction,
     mode: AggregateMode,
-    isDistinct: Boolean)
-    extends Expression with Unevaluable {
+    isDistinct: Boolean
+) extends Expression
+    with Unevaluable {
 
   override def children: Seq[Expression] = aggregateFunction :: Nil
   override def dataType: DataType = aggregateFunction.dataType
@@ -83,7 +84,7 @@ private[sql] case class AggregateExpression(
 
   override def references: AttributeSet = {
     val childReferences = mode match {
-      case Partial | Complete => aggregateFunction.references.toSeq
+      case Partial | Complete   => aggregateFunction.references.toSeq
       case PartialMerge | Final => aggregateFunction.aggBufferAttributes
     }
 
@@ -114,7 +115,8 @@ private[sql] case class AggregateExpression(
   * aggregate functions.
   */
 sealed abstract class AggregateFunction
-    extends Expression with ImplicitCastInputTypes {
+    extends Expression
+    with ImplicitCastInputTypes {
 
   /** An aggregate function is not foldable. */
   final override def foldable: Boolean = false
@@ -164,7 +166,10 @@ sealed abstract class AggregateFunction
     */
   def toAggregateExpression(isDistinct: Boolean): AggregateExpression = {
     AggregateExpression(
-        aggregateFunction = this, mode = Complete, isDistinct = isDistinct)
+      aggregateFunction = this,
+      mode = Complete,
+      isDistinct = isDistinct
+    )
   }
 
   def sql(isDistinct: Boolean): String = {
@@ -192,7 +197,8 @@ sealed abstract class AggregateFunction
   * and `inputAggBufferAttributes`.
   */
 abstract class ImperativeAggregate
-    extends AggregateFunction with CodegenFallback {
+    extends AggregateFunction
+    with CodegenFallback {
 
   /**
     * The offset of this function's first buffer value in the underlying shared mutable aggregation
@@ -220,7 +226,8 @@ abstract class ImperativeAggregate
     * This new copy's attributes may have different ids than the original.
     */
   def withNewMutableAggBufferOffset(
-      newMutableAggBufferOffset: Int): ImperativeAggregate
+      newMutableAggBufferOffset: Int
+  ): ImperativeAggregate
 
   /**
     * The offset of this function's start buffer value in the underlying shared input aggregation
@@ -254,7 +261,8 @@ abstract class ImperativeAggregate
     * This new copy's attributes may have different ids than the original.
     */
   def withNewInputAggBufferOffset(
-      newInputAggBufferOffset: Int): ImperativeAggregate
+      newInputAggBufferOffset: Int
+  ): ImperativeAggregate
 
   // Note: although all subclasses implement inputAggBufferAttributes by simply cloning
   // aggBufferAttributes, that common clone code cannot be placed here in the abstract
@@ -298,7 +306,9 @@ abstract class ImperativeAggregate
   * those fields `lazy val`s.
   */
 abstract class DeclarativeAggregate
-    extends AggregateFunction with Serializable with Unevaluable {
+    extends AggregateFunction
+    with Serializable
+    with Unevaluable {
 
   /**
     * Expressions for initializing empty aggregation buffers.

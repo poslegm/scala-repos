@@ -44,11 +44,14 @@ import org.saddle._
   * whose implementation in turn relies on BinOp[Multiply, Int, Int, Int].
   */
 @implicitNotFound(
-    msg = "No BinOp ${O} instance available to operate on values of type ${X} and ${Y}")
-trait BinOp[O <: OpType,
-            @spec(Boolean, Int, Long, Double) -X,
-            @spec(Boolean, Int, Long, Double) -Y,
-            @spec(Boolean, Int, Long, Double) +Z] {
+  msg = "No BinOp ${O} instance available to operate on values of type ${X} and ${Y}"
+)
+trait BinOp[
+    O <: OpType,
+    @spec(Boolean, Int, Long, Double) -X,
+    @spec(Boolean, Int, Long, Double) -Y,
+    @spec(Boolean, Int, Long, Double) +Z
+] {
   def apply(a: X, b: Y): Z
 }
 
@@ -62,8 +65,9 @@ trait BinOp[O <: OpType,
   */
 object BinOp {
   private final class BinOpImpl[
-      O <: OpType, @spec(Int, Long, Double) Q : ST, @spec(Int, Long, Double) R : ST, @spec(Boolean, Int, Long, Double) S : ST](
-      f: (Q, R) => S)
+      O <: OpType, @spec(Int, Long, Double) Q: ST,
+      @spec(Int, Long, Double) R: ST, @spec(Boolean, Int, Long, Double) S: ST
+  ](f: (Q, R) => S)
       extends BinOp[O, Q, R, S] {
     val sq = implicitly[ST[Q]]
     val sr = implicitly[ST[R]]
@@ -72,16 +76,16 @@ object BinOp {
       if (sq.isMissing(a) || sr.isMissing(b)) ss.missing else f(a, b)
   }
 
-  private final class BinOpImplDL[O <: OpType, @spec(Int, Long) R : ST](
-      f: (Double, R) => Double)
-      extends BinOp[O, Double, R, Double] {
+  private final class BinOpImplDL[O <: OpType, @spec(Int, Long) R: ST](
+      f: (Double, R) => Double
+  ) extends BinOp[O, Double, R, Double] {
     val sc = implicitly[ST[R]]
     def apply(a: Double, b: R) = if (sc.isMissing(b)) Double.NaN else f(a, b)
   }
 
-  private final class BinOpImplLD[O <: OpType, @spec(Int, Long) Q : ST](
-      f: (Q, Double) => Double)
-      extends BinOp[O, Q, Double, Double] {
+  private final class BinOpImplLD[O <: OpType, @spec(Int, Long) Q: ST](
+      f: (Q, Double) => Double
+  ) extends BinOp[O, Q, Double, Double] {
     val sc = implicitly[ST[Q]]
     def apply(a: Q, b: Double) = if (sc.isMissing(a)) Double.NaN else f(a, b)
   }

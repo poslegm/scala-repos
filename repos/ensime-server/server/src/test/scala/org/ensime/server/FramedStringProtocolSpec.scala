@@ -11,7 +11,8 @@ class FramedStringProtocolSpec extends EnsimeSpec {
   // subclassed FramedStringProtocol so we can get access we want to test
   trait Proto extends FramedStringProtocol {
     override def decode(
-        bytes: ByteString): (Option[RpcRequestEnvelope], ByteString) = ???
+        bytes: ByteString
+    ): (Option[RpcRequestEnvelope], ByteString) = ???
     override def encode(msg: RpcResponseEnvelope): ByteString = ???
   }
 

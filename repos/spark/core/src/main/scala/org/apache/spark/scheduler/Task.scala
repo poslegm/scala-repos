@@ -27,7 +27,11 @@ import org.apache.spark.executor.TaskMetrics
 import org.apache.spark.memory.TaskMemoryManager
 import org.apache.spark.metrics.MetricsSystem
 import org.apache.spark.serializer.SerializerInstance
-import org.apache.spark.util.{ByteBufferInputStream, ByteBufferOutputStream, Utils}
+import org.apache.spark.util.{
+  ByteBufferInputStream,
+  ByteBufferOutputStream,
+  Utils
+}
 
 /**
   * A unit of execution. We have two kinds of Task's in Spark:
@@ -51,8 +55,8 @@ private[spark] abstract class Task[T](
     val stageId: Int,
     val stageAttemptId: Int,
     val partitionId: Int,
-    val initialAccumulators: Seq[Accumulator[_]])
-    extends Serializable {
+    val initialAccumulators: Seq[Accumulator[_]]
+) extends Serializable {
 
   /**
     * Called by [[org.apache.spark.executor.Executor]] to run this task.
@@ -61,17 +65,21 @@ private[spark] abstract class Task[T](
     * @param attemptNumber how many times this task has been attempted (0 for the first attempt)
     * @return the result of the task along with updates of Accumulators.
     */
-  final def run(taskAttemptId: Long,
-                attemptNumber: Int,
-                metricsSystem: MetricsSystem): T = {
+  final def run(
+      taskAttemptId: Long,
+      attemptNumber: Int,
+      metricsSystem: MetricsSystem
+  ): T = {
     SparkEnv.get.blockManager.registerTask(taskAttemptId)
-    context = new TaskContextImpl(stageId,
-                                  partitionId,
-                                  taskAttemptId,
-                                  attemptNumber,
-                                  taskMemoryManager,
-                                  metricsSystem,
-                                  initialAccumulators)
+    context = new TaskContextImpl(
+      stageId,
+      partitionId,
+      taskAttemptId,
+      attemptNumber,
+      taskMemoryManager,
+      metricsSystem,
+      initialAccumulators
+    )
     TaskContext.setTaskContext(context)
     taskThread = Thread.currentThread()
     if (_killed) {
@@ -148,7 +156,8 @@ private[spark] abstract class Task[T](
     * filter out the accumulators whose values should not be included on failures.
     */
   def collectAccumulatorUpdates(
-      taskFailed: Boolean = false): Seq[AccumulableInfo] = {
+      taskFailed: Boolean = false
+  ): Seq[AccumulableInfo] = {
     if (context != null) {
       context.taskMetrics.accumulatorUpdates().filter { a =>
         !taskFailed || a.countFailedValues
@@ -187,10 +196,12 @@ private[spark] object Task {
   /**
     * Serialize a task and the current app dependencies (files and JARs added to the SparkContext)
     */
-  def serializeWithDependencies(task: Task[_],
-                                currentFiles: HashMap[String, Long],
-                                currentJars: HashMap[String, Long],
-                                serializer: SerializerInstance): ByteBuffer = {
+  def serializeWithDependencies(
+      task: Task[_],
+      currentFiles: HashMap[String, Long],
+      currentJars: HashMap[String, Long],
+      serializer: SerializerInstance
+  ): ByteBuffer = {
 
     val out = new ByteBufferOutputStream(4096)
     val dataOut = new DataOutputStream(out)
@@ -223,8 +234,9 @@ private[spark] object Task {
     *
     * @return (taskFiles, taskJars, taskBytes)
     */
-  def deserializeWithDependencies(serializedTask: ByteBuffer)
-    : (HashMap[String, Long], HashMap[String, Long], ByteBuffer) = {
+  def deserializeWithDependencies(
+      serializedTask: ByteBuffer
+  ): (HashMap[String, Long], HashMap[String, Long], ByteBuffer) = {
 
     val in = new ByteBufferInputStream(serializedTask)
     val dataIn = new DataInputStream(in)
@@ -245,7 +257,8 @@ private[spark] object Task {
 
     // Create a sub-buffer for the rest of the data, which is the serialized Task object
     val subBuffer =
-      serializedTask.slice() // ByteBufferInputStream will have read just up to task
+      serializedTask
+        .slice() // ByteBufferInputStream will have read just up to task
     (taskFiles, taskJars, subBuffer)
   }
 }

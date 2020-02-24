@@ -40,14 +40,15 @@ object RouterExample extends App {
       override def toString = s"(${self.toString}|${that.toString})"
     }
 
-    def :+:[B](that: Router[B])(
-        implicit adjoin: Adjoin[B :+: A :+: CNil]): Router[adjoin.Out] =
+    def :+:[B](
+        that: Router[B]
+    )(implicit adjoin: Adjoin[B :+: A :+: CNil]): Router[adjoin.Out] =
       new Router[adjoin.Out] {
         def apply(path: String) =
           that(path)
             .map(b => adjoin(Inl(b)))
             .orElse(
-                self(path).map(a => adjoin(Inr(Inl(a))))
+              self(path).map(a => adjoin(Inr(Inl(a))))
             )
       }
   }

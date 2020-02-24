@@ -22,7 +22,9 @@ object currenttype2 {
 
   trait Rules[G <: GameDomain] {
     def simulate(
-        state: G#State, agentActions: List[(G#Agent, G#Action)]): G#State
+        state: G#State,
+        agentActions: List[(G#Agent, G#Action)]
+    ): G#State
   }
 
   trait AgentSimulation[G <: GameDomain] {
@@ -45,8 +47,8 @@ object currenttype2 {
       state: G#State,
       rewards: Map[G#Agent, G#Rewards],
       rules: Rules[G],
-      pastHistory: List[G#State] = Nil)
-      extends AgentSimulation {
+      pastHistory: List[G#State] = Nil
+  ) extends AgentSimulation {
     lazy val step: LearningSimulation = {
       val updatedAgents: List[G#Agent] =
         agents map { agent =>
@@ -54,9 +56,11 @@ object currenttype2 {
           val r = rewards(agent).r(s, a, s2)
           agent.learn(s, a, s2, r): G#Agent
         }
-      copy(agents = updatedAgents,
-           state = nextState,
-           pastHistory = currentHistory)
+      copy(
+        agents = updatedAgents,
+        state = nextState,
+        pastHistory = currentHistory
+      )
     }
   }
 

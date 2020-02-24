@@ -35,7 +35,8 @@ import scalafx.delegate.SFXDelegate
 
 object SkinBase {
   implicit def sfxSkinBase2jfx[C <: jfxsc.Control](
-      v: SkinBase[C]): jfxsc.SkinBase[C] = if (v != null) v.delegate else null
+      v: SkinBase[C]
+  ): jfxsc.SkinBase[C] = if (v != null) v.delegate else null
 
   def classCssMetaData = jfxsc.SkinBase.getClassCssMetaData
 }
@@ -44,8 +45,8 @@ object SkinBase {
   * Wraps [[http://docs.oracle.com/javase/8/javafx/api/javafx/scene/control/SkinBase.html]].
   */
 abstract class SkinBase[C <: jfxsc.Control] protected (
-    override val delegate: jfxsc.SkinBase[C])
-    extends SFXDelegate[jfxsc.SkinBase[C]] {
+    override val delegate: jfxsc.SkinBase[C]
+) extends SFXDelegate[jfxsc.SkinBase[C]] {
 
   /**
     * Called by a `Skinnable` when the `Skin` is replaced on the `Skinnable`.

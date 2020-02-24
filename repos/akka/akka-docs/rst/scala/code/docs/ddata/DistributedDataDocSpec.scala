@@ -121,7 +121,8 @@ class DistributedDataDocSpec extends AkkaSpec(DistributedDataDocSpec.config) {
 
     val writeMajority = WriteMajority(timeout = 5.seconds)
     replicator ! Update(Set2Key, ORSet.empty[String], writeMajority)(
-        _ + "hello")
+      _ + "hello"
+    )
 
     val writeAll = WriteAll(timeout = 5.seconds)
     replicator ! Update(ActiveFlagKey, Flag.empty, writeAll)(_.switchOn)
@@ -141,7 +142,7 @@ class DistributedDataDocSpec extends AkkaSpec(DistributedDataDocSpec.config) {
       // write to 3 nodes failed within 1.second
       //#update-response2
       case UpdateSuccess(Set2Key, None) =>
-      case unexpected => fail("Unexpected response: " + unexpected)
+      case unexpected                   => fail("Unexpected response: " + unexpected)
     }
   }
 
@@ -160,10 +161,10 @@ class DistributedDataDocSpec extends AkkaSpec(DistributedDataDocSpec.config) {
     def receive: Receive = {
       case "increment" =>
         // incoming command to increase the counter
-        val upd = Update(Counter1Key,
-                         PNCounter(),
-                         writeTwo,
-                         request = Some(sender()))(_ + 1)
+        val upd =
+          Update(Counter1Key, PNCounter(), writeTwo, request = Some(sender()))(
+            _ + 1
+          )
         replicator ! upd
 
       case UpdateSuccess(Counter1Key, Some(replyTo: ActorRef)) =>

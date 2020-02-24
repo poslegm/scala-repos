@@ -9,7 +9,8 @@ import com.twitter.finagle.service.PendingRequestFilter
   * @tparam A a [[Stack.Parameterized]] client to configure
   */
 class ClientAdmissionControlParams[A <: Stack.Parameterized[A]](
-    self: Stack.Parameterized[A]) {
+    self: Stack.Parameterized[A]
+) {
 
   /**
     * Configures a limit on the maximum number of outstanding requests per

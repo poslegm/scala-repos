@@ -12,6 +12,9 @@ import com.twitter.util.{Duration, TimeoutException}
   * @see [[MinimumThroughput]]
   */
 case class BelowThroughputException(
-    elapsed: Duration, currentBps: Double, expectedBps: Double)
-    extends TimeoutException(
-        s"current bps $currentBps below minimum $expectedBps")
+    elapsed: Duration,
+    currentBps: Double,
+    expectedBps: Double
+) extends TimeoutException(
+      s"current bps $currentBps below minimum $expectedBps"
+    )

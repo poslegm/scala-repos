@@ -61,7 +61,7 @@ object Double {
   @inline def valueOf(s: String): Double = valueOf(parseDouble(s))
 
   private[this] lazy val doubleStrPat = new js.RegExp(
-      "^" + "[\\x00-\\x20]*" + // optional whitespace
+    "^" + "[\\x00-\\x20]*" + // optional whitespace
       "[+-]?" + // optional sign
       "(NaN|Infinity|" + // special cases
       "(\\d+\\.?\\d*|" + // literal w/  leading digit
@@ -69,7 +69,8 @@ object Double {
       "([eE][+-]?\\d+)?" + // optional exponent
       ")[fFdD]?" + // optional float / double specifier (ignored)
       "[\\x00-\\x20]*" + // optional whitespace
-      "$")
+      "$"
+  )
 
   def parseDouble(s: String): scala.Double = {
     if (doubleStrPat.test(s))

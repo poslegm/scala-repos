@@ -34,7 +34,8 @@ import scalafx.delegate.SFXDelegate
 
 object InputMethodTextRun {
   implicit def sfxInputMethodTextRun2jfx(
-      imtr: InputMethodTextRun): jfxsi.InputMethodTextRun =
+      imtr: InputMethodTextRun
+  ): jfxsi.InputMethodTextRun =
     if (imtr != null) imtr.delegate else null
 }
 

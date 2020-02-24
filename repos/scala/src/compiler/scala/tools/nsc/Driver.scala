@@ -16,12 +16,15 @@ abstract class Driver {
   /** Forward errors to the (current) reporter. */
   protected def scalacError(msg: String): Unit = {
     reporter.error(
-        FakePos("scalac"), msg + "\n  scalac -help  gives more information")
+      FakePos("scalac"),
+      msg + "\n  scalac -help  gives more information"
+    )
   }
 
   /** True to continue compilation. */
   protected def processSettingsHook(): Boolean = {
-    if (settings.version) { reporter echo versionMsg; false } else
+    if (settings.version) { reporter echo versionMsg; false }
+    else
       !reporter.hasErrors
   }
 
@@ -57,7 +60,7 @@ abstract class Driver {
           compiler.reportThrowable(ex)
           ex match {
             case FatalError(msg) => // signals that we should fail compilation.
-            case _ => throw ex // unexpected error, tell the outside world.
+            case _               => throw ex // unexpected error, tell the outside world.
           }
       }
     } else if (reporter.hasErrors) reporter.flush()

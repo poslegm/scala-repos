@@ -8,7 +8,7 @@ class JsonListTNewTest extends FunSuite {
     val pickle = List(1, 2, 3).pickle
     // NOTE - Previously lists would encode as hd/tl lists, which was dramatically less efficient.
     assert(
-        pickle.toString === """
+      pickle.toString === """
       |JSONPickle({
       |  "$type": "scala.collection.immutable.List[scala.Int]",
       |  "elems": [
@@ -17,7 +17,8 @@ class JsonListTNewTest extends FunSuite {
       |    3
       |  ]
       |})
-    """.stripMargin.trim)
+    """.stripMargin.trim
+    )
     assert(pickle.unpickle[List[Int]] === List(1, 2, 3))
   }
 }

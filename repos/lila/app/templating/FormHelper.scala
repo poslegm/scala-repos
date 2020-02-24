@@ -7,9 +7,11 @@ import play.twirl.api.Html
 
 trait FormHelper { self: I18nHelper =>
 
-  private val errNames = Map("error.minLength" -> trans.textIsTooShort,
-                             "error.maxLength" -> trans.textIsTooLong,
-                             "captcha.fail" -> trans.notACheckmate)
+  private val errNames = Map(
+    "error.minLength" -> trans.textIsTooShort,
+    "error.maxLength" -> trans.textIsTooLong,
+    "captcha.fail" -> trans.notACheckmate
+  )
 
   def errMsg(form: Field)(implicit ctx: Context): Html = errMsg(form.errors)
 

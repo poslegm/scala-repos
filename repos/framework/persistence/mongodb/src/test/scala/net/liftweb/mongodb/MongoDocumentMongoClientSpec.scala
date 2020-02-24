@@ -31,8 +31,11 @@ import json._
 
 package mongoclienttestdocs {
   case class SessCollection(
-      _id: ObjectId, name: String, dbtype: String, count: Int)
-      extends MongoDocument[SessCollection] {
+      _id: ObjectId,
+      name: String,
+      dbtype: String,
+      count: Int
+  ) extends MongoDocument[SessCollection] {
 
     def meta = SessCollection
   }

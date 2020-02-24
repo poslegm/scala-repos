@@ -20,8 +20,7 @@ trait Internals extends scala.tools.nsc.transform.TypingTransformers {
       override def transform(tree: Tree): Tree = hof(tree, api)
     }
 
-    def transform(tree: Tree)(
-        transformer: (Tree, TransformApi) => Tree): Tree =
+    def transform(tree: Tree)(transformer: (Tree, TransformApi) => Tree): Tree =
       new HofTransformer(transformer).transform(tree)
 
     class HofTypingTransformer(hof: (Tree, TypingTransformApi) => Tree)
@@ -29,7 +28,8 @@ trait Internals extends scala.tools.nsc.transform.TypingTransformers {
       currentOwner = callsiteTyper.context.owner
       curTree = EmptyTree
       localTyper = global.analyzer.newTyper(
-          callsiteTyper.context.make(unit = callsiteTyper.context.unit))
+        callsiteTyper.context.make(unit = callsiteTyper.context.unit)
+      )
 
       val api = new TypingTransformApi {
         def recur(tree: Tree): Tree = hof(tree, this)
@@ -44,12 +44,14 @@ trait Internals extends scala.tools.nsc.transform.TypingTransformers {
       override def transform(tree: Tree): Tree = hof(tree, api)
     }
 
-    def typingTransform(tree: Tree)(
-        transformer: (Tree, TypingTransformApi) => Tree): Tree =
+    def typingTransform(
+        tree: Tree
+    )(transformer: (Tree, TypingTransformApi) => Tree): Tree =
       new HofTypingTransformer(transformer).transform(tree)
 
     def typingTransform(tree: Tree, owner: Symbol)(
-        transformer: (Tree, TypingTransformApi) => Tree): Tree = {
+        transformer: (Tree, TypingTransformApi) => Tree
+    ): Tree = {
       val trans = new HofTypingTransformer(transformer)
       trans.atOwner(owner)(trans.transform(tree))
     }

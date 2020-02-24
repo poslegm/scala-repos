@@ -30,8 +30,10 @@ import reflect.Manifest
 import net.liftweb.http.js.JsExp
 
 class MongoCaseClassField[OwnerType <: Record[OwnerType], CaseType](
-    rec: OwnerType)(implicit mf: Manifest[CaseType])
-    extends Field[CaseType, OwnerType] with MandatoryTypedField[CaseType]
+    rec: OwnerType
+)(implicit mf: Manifest[CaseType])
+    extends Field[CaseType, OwnerType]
+    with MandatoryTypedField[CaseType]
     with MongoFieldFlavor[CaseType] {
 
   // override this for custom formats
@@ -54,7 +56,7 @@ class MongoCaseClassField[OwnerType <: Record[OwnerType], CaseType](
 
   def setFromJValue(jvalue: JValue): Box[CaseType] = jvalue match {
     case JNothing | JNull => setBox(Empty)
-    case s => setBox(Helpers.tryo[CaseType] { s.extract[CaseType] })
+    case s                => setBox(Helpers.tryo[CaseType] { s.extract[CaseType] })
   }
 
   def asDBObject: DBObject = {
@@ -77,13 +79,14 @@ class MongoCaseClassField[OwnerType <: Record[OwnerType], CaseType](
     case Full(c) if mf.runtimeClass.isInstance(c) =>
       setBox(Full(c.asInstanceOf[CaseType]))
     case null | None | Empty => setBox(defaultValueBox)
-    case (failure: Failure) => setBox(failure)
-    case _ => setBox(defaultValueBox)
+    case (failure: Failure)  => setBox(failure)
+    case _                   => setBox(defaultValueBox)
   }
 }
 
 class MongoCaseClassListField[OwnerType <: Record[OwnerType], CaseType](
-    rec: OwnerType)(implicit mf: Manifest[CaseType])
+    rec: OwnerType
+)(implicit mf: Manifest[CaseType])
     extends Field[List[CaseType], OwnerType]
     with MandatoryTypedField[List[CaseType]]
     with MongoFieldFlavor[List[CaseType]] {
@@ -108,8 +111,10 @@ class MongoCaseClassListField[OwnerType <: Record[OwnerType], CaseType](
   def setFromJValue(jvalue: JValue): Box[MyType] = jvalue match {
     case JArray(contents) =>
       setBox(
-          Full(contents.flatMap(
-                  s => Helpers.tryo[CaseType] { s.extract[CaseType] })))
+        Full(
+          contents.flatMap(s => Helpers.tryo[CaseType] { s.extract[CaseType] })
+        )
+      )
     case _ => setBox(Empty)
   }
 
@@ -118,8 +123,7 @@ class MongoCaseClassListField[OwnerType <: Record[OwnerType], CaseType](
 
     asJValue match {
       case JArray(list) =>
-        list.foreach(
-            v => dbl.add(JObjectParser.parse(v.asInstanceOf[JObject])))
+        list.foreach(v => dbl.add(JObjectParser.parse(v.asInstanceOf[JObject])))
       case _ =>
     }
 

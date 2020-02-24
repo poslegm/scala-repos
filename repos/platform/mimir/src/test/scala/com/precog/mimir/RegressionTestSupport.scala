@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -28,7 +28,7 @@ import com.precog.yggdrasil.util.CPathUtils._
 
 import blueeyes.json._
 
-trait RegressionTestSupport[M[+ _]] {
+trait RegressionTestSupport[M[+_]] {
   def makeTBounded: Double = {
     val theta = Random.nextGaussian * 10
     // we omit values of theta close to zero
@@ -48,9 +48,11 @@ trait RegressionTestSupport[M[+ _]] {
     seq.toArray
   }
 
-  def jvalues(samples: Seq[(Array[Double], Double)],
-              cpaths: Seq[CPath],
-              mod: Int = 1): Seq[JValue] = samples.zipWithIndex map {
+  def jvalues(
+      samples: Seq[(Array[Double], Double)],
+      cpaths: Seq[CPath],
+      mod: Int = 1
+  ): Seq[JValue] = samples.zipWithIndex map {
     case ((xs, y), idx) =>
       val cvalues =
         xs.map { x =>
@@ -75,9 +77,7 @@ trait RegressionTestSupport[M[+ _]] {
   def stdDevMean(values: List[Double]): (Double, Double) = {
     val count = values.size
     val sum = values.sum
-    val sumsq = values map { x =>
-      math.pow(x, 2)
-    } sum
+    val sumsq = values map { x => math.pow(x, 2) } sum
 
     val stdDev = math.sqrt(count * sumsq - sum * sum) / count
     val mean = sum / count
@@ -106,9 +106,7 @@ trait RegressionTestSupport[M[+ _]] {
     val median = computeMedian(values)
 
     val diffs =
-      values map { v =>
-        math.abs(v - median)
-      }
+      values map { v => math.abs(v - median) }
     val mad = computeMedian(diffs) / constant
 
     (mad, median)
@@ -129,7 +127,7 @@ trait RegressionTestSupport[M[+ _]] {
   def isOk(actual: Double, computed: List[Double]): Boolean = {
     val (mad, median) = madMedian(computed)
     val diff = math.abs(median - actual)
-    val numStdDev = 4D
+    val numStdDev = 4d
 
     diff < mad * numStdDev
   }

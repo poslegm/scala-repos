@@ -16,7 +16,8 @@ class DatabaseUrlDataSource extends DriverDataSource(null) {
 
   override def init: Unit = if (!initialized) {
     val (jdbcUrl, userAndPass) = extractUrl(
-        Some(if (url == null) defaultUrl else url))
+      Some(if (url == null) defaultUrl else url)
+    )
     url = jdbcUrl.orNull
     user = userAndPass.map(_._1).getOrElse(user)
     password = userAndPass.map(_._2).getOrElse(password)
@@ -24,8 +25,9 @@ class DatabaseUrlDataSource extends DriverDataSource(null) {
     super.init
   }
 
-  private[this] def extractUrl(databaseUrl: Option[String])
-    : (Option[String], Option[(String, String)]) = {
+  private[this] def extractUrl(
+      databaseUrl: Option[String]
+  ): (Option[String], Option[(String, String)]) = {
     databaseUrl match {
       case Some(PostgresFullUrl(username, password, host, dbname)) =>
         Some(s"jdbc:postgresql://$host/$dbname") -> Some(username -> password)
@@ -38,7 +40,8 @@ class DatabaseUrlDataSource extends DriverDataSource(null) {
           .map(_ => "")
           .getOrElse(defaultProperties)
         Some(s"jdbc:mysql://$host/${dbname + addDefaultPropertiesIfNeeded}") -> Some(
-            username -> password)
+          username -> password
+        )
 
       case Some(url) =>
         Some(url) -> None

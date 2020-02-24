@@ -42,7 +42,8 @@ object TextInputDialog {
     * @return JavaFX TextInputDialog
     */
   implicit def sfxTextInputDialog2jfx(
-      v: TextInputDialog): jfxsc.TextInputDialog =
+      v: TextInputDialog
+  ): jfxsc.TextInputDialog =
     if (v != null) v.delegate else null
 }
 
@@ -59,8 +60,9 @@ object TextInputDialog {
   * @define ORIGINALDOC Original Documentation]].
   */
 class TextInputDialog(
-    override val delegate: jfxsc.TextInputDialog = new jfxsc.TextInputDialog())
-    extends Dialog[String](delegate) with SFXDelegate[jfxsc.TextInputDialog] {
+    override val delegate: jfxsc.TextInputDialog = new jfxsc.TextInputDialog()
+) extends Dialog[String](delegate)
+    with SFXDelegate[jfxsc.TextInputDialog] {
 
   /**
     * Creates a new TextInputDialog with the default value entered into the

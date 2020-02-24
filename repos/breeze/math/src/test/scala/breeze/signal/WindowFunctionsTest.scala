@@ -20,17 +20,13 @@ import WindowFunctions.hammingWindow
 @RunWith(classOf[JUnitRunner])
 class WindowFunctionsTest extends FunSuite {
 
-  val testThreshold = 1.0E-15
+  val testThreshold = 1.0e-15
 
   // <editor-fold desc="hammingWindow">
 
   test("hammingWindow without parameters") {
-    val windowEven = DenseVector(0.0800,
-                                 0.3978521825875242,
-                                 0.9121478174124757,
-                                 0.9121478174124757,
-                                 0.3978521825875242,
-                                 0.0800)
+    val windowEven = DenseVector(0.0800, 0.3978521825875242, 0.9121478174124757,
+      0.9121478174124757, 0.3978521825875242, 0.0800)
     assert(norm(hammingWindow(6) - windowEven) < testThreshold)
     val windowOdd = DenseVector(0.0800, 0.54, 1, 0.54, 0.0800)
     assert(norm(hammingWindow(5) - windowOdd) < testThreshold)

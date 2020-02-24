@@ -43,7 +43,8 @@ object SceneAntialiasing {
     * Convert a ScalaFX scene antialiasing value to a JavaFX scene-antialiasing value.
     */
   implicit def sfxSceneAntialiasing2jfx(
-      v: SceneAntialiasing): jfxs.SceneAntialiasing =
+      v: SceneAntialiasing
+  ): jfxs.SceneAntialiasing =
     if (v != null) v.delegate else null
 
   /**
@@ -63,5 +64,5 @@ object SceneAntialiasing {
 }
 
 sealed case class SceneAntialiasing(
-    override val delegate: jfxs.SceneAntialiasing)
-    extends SFXDelegate[jfxs.SceneAntialiasing]
+    override val delegate: jfxs.SceneAntialiasing
+) extends SFXDelegate[jfxs.SceneAntialiasing]

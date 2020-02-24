@@ -26,7 +26,9 @@ private[spark] trait SparkListenerBus
     extends ListenerBus[SparkListener, SparkListenerEvent] {
 
   protected override def doPostEvent(
-      listener: SparkListener, event: SparkListenerEvent): Unit = {
+      listener: SparkListener,
+      event: SparkListenerEvent
+  ): Unit = {
     event match {
       case stageSubmitted: SparkListenerStageSubmitted =>
         listener.onStageSubmitted(stageSubmitted)
@@ -63,7 +65,7 @@ private[spark] trait SparkListenerBus
       case blockUpdated: SparkListenerBlockUpdated =>
         listener.onBlockUpdated(blockUpdated)
       case logStart: SparkListenerLogStart => // ignore event log metadata
-      case _ => listener.onOtherEvent(event)
+      case _                               => listener.onOtherEvent(event)
     }
   }
 }

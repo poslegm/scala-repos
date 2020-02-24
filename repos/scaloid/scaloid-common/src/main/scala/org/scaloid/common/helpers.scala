@@ -57,8 +57,10 @@ trait AppHelpers {
     */
   @inline
   def alert(
-      title: CharSequence, text: CharSequence, clickCallback: => Unit = {})(
-      implicit context: Context) {
+      title: CharSequence,
+      text: CharSequence,
+      clickCallback: => Unit = {}
+  )(implicit context: Context) {
     new AlertDialogBuilder(title, text) {
       neutralButton(android.R.string.ok, clickCallback)
     }.show()
@@ -77,14 +79,16 @@ trait AppHelpers {
   }
 
   @inline def pendingService(intent: Intent, flags: Int = 0)(
-      implicit context: Context) =
+      implicit context: Context
+  ) =
     PendingIntent.getService(context, 0, intent, flags)
 
   @inline def pendingService[T](implicit context: Context, ct: ClassTag[T]) =
     PendingIntent.getService(context, 0, SIntent[T], 0)
 
   @inline def pendingActivity(intent: Intent, flags: Int = 0)(
-      implicit context: Context) =
+      implicit context: Context
+  ) =
     PendingIntent.getActivity(context, 0, intent, flags)
 
   @inline def pendingActivity[T](implicit context: Context, ct: ClassTag[T]) =
@@ -112,9 +116,9 @@ trait ContentHelpers {
     * }
     * }}}
     */
-  def broadcastReceiver(
-      filter: IntentFilter)(onReceiveBody: (Context, Intent) => Any)(
-      implicit ctx: Context, reg: Registerable) {
+  def broadcastReceiver(filter: IntentFilter)(
+      onReceiveBody: (Context, Intent) => Any
+  )(implicit ctx: Context, reg: Registerable) {
     val receiver = new BroadcastReceiver {
       def onReceive(context: Context, intent: Intent) {
         onReceiveBody(context, intent)
@@ -138,8 +142,9 @@ trait ContentHelpers {
     * }
     * }}}
     */
-  def broadcastReceiver(filterString: String)(
-      onReceiveBody: => Any)(implicit ctx: Context, reg: Registerable) {
+  def broadcastReceiver(
+      filterString: String
+  )(onReceiveBody: => Any)(implicit ctx: Context, reg: Registerable) {
     val receiver = new BroadcastReceiver {
       def onReceive(context: Context, intent: Intent) {
         onReceiveBody
@@ -207,15 +212,17 @@ trait PreferenceHelpers {
     * Returns DefaultSharedPreferences object for given implicit context.
     */
   @inline implicit def defaultSharedPreferences(
-      implicit context: Context): SharedPreferences =
+      implicit context: Context
+  ): SharedPreferences =
     PreferenceManager.getDefaultSharedPreferences(context)
 
   @inline def preferenceVar[T](key: String, defaultVal: T): PreferenceVar[T] =
     defaultVal match {
       case v: String =>
         new PreferenceVar[String](key, v) {
-          override def apply(value: String)(
-              implicit pref: SharedPreferences): String =
+          override def apply(
+              value: String
+          )(implicit pref: SharedPreferences): String =
             pref.getString(key, value)
 
           def put(value: String, editor: SharedPreferences.Editor): Unit =
@@ -225,8 +232,9 @@ trait PreferenceHelpers {
         new PreferenceVar[Set[String]](key, v) {
           import scala.collection.JavaConversions._
           import scala.collection.JavaConverters._
-          override def apply(value: Set[String])(
-              implicit pref: SharedPreferences): Set[String] =
+          override def apply(
+              value: Set[String]
+          )(implicit pref: SharedPreferences): Set[String] =
             pref.getStringSet(key, value).asScala.toSet
 
           def put(value: Set[String], editor: SharedPreferences.Editor): Unit =
@@ -235,15 +243,17 @@ trait PreferenceHelpers {
       case v: Int =>
         new PreferenceVar[Int](key, v) {
           override def apply(value: Int)(
-              implicit pref: SharedPreferences): Int = pref.getInt(key, value)
+              implicit pref: SharedPreferences
+          ): Int = pref.getInt(key, value)
 
           def put(value: Int, editor: SharedPreferences.Editor): Unit =
             editor.putInt(key, value)
         }.asInstanceOf[PreferenceVar[T]]
       case v: Long =>
         new PreferenceVar[Long](key, v) {
-          override def apply(value: Long)(
-              implicit pref: SharedPreferences): Long =
+          override def apply(
+              value: Long
+          )(implicit pref: SharedPreferences): Long =
             pref.getLong(key, value)
 
           def put(value: Long, editor: SharedPreferences.Editor): Unit =
@@ -251,8 +261,9 @@ trait PreferenceHelpers {
         }.asInstanceOf[PreferenceVar[T]]
       case v: Float =>
         new PreferenceVar[Float](key, v) {
-          override def apply(value: Float)(
-              implicit pref: SharedPreferences): Float =
+          override def apply(
+              value: Float
+          )(implicit pref: SharedPreferences): Float =
             pref.getFloat(key, value)
 
           def put(value: Float, editor: SharedPreferences.Editor): Unit =
@@ -260,8 +271,9 @@ trait PreferenceHelpers {
         }.asInstanceOf[PreferenceVar[T]]
       case v: Boolean =>
         new PreferenceVar[Boolean](key, v) {
-          override def apply(value: Boolean)(
-              implicit pref: SharedPreferences): Boolean =
+          override def apply(
+              value: Boolean
+          )(implicit pref: SharedPreferences): Boolean =
             pref.getBoolean(key, value)
 
           def put(value: Boolean, editor: SharedPreferences.Editor): Unit =
@@ -272,8 +284,9 @@ trait PreferenceHelpers {
 
   import scala.language.experimental.macros
 
-  def preferenceVar[T](defaultVal: T): PreferenceVar[T] = macro PreferenceHelpers
-    .preferenceVarImpl[T]
+  def preferenceVar[T](defaultVal: T): PreferenceVar[T] =
+    macro PreferenceHelpers
+      .preferenceVarImpl[T]
 }
 
 object PreferenceHelpers extends PreferenceHelpers {
@@ -285,8 +298,9 @@ object PreferenceHelpers extends PreferenceHelpers {
     if (pos < 0) str else str.substring(pos + 1)
   }
 
-  def preferenceVarImpl[T](c: Context)(
-      defaultVal: c.Expr[T]): c.Expr[PreferenceVar[T]] = {
+  def preferenceVarImpl[T](
+      c: Context
+  )(defaultVal: c.Expr[T]): c.Expr[PreferenceVar[T]] = {
     import c.universe._
 
     val enclosingName = getShortName(c.internal.enclosingOwner.fullName)
@@ -302,8 +316,11 @@ object PreferenceHelpers extends PreferenceHelpers {
   */
 trait WidgetHelpers {
   @inline private[this] def _toast(
-      message: CharSequence, duration: Int, gravity: Int, view: View)(
-      implicit context: Context) {
+      message: CharSequence,
+      duration: Int,
+      gravity: Int,
+      view: View
+  )(implicit context: Context) {
     runOnUiThread {
       val toast = Toast.makeText(context, message, duration)
       toast.setGravity(gravity, 0, 0)
@@ -316,8 +333,11 @@ trait WidgetHelpers {
     * Displays a toast message.
     * This method can be called from any threads.
     */
-  @inline def toast(message: CharSequence, gravity: Int = Gravity.BOTTOM, view: View = null)(
-      implicit context: Context) {
+  @inline def toast(
+      message: CharSequence,
+      gravity: Int = Gravity.BOTTOM,
+      view: View = null
+  )(implicit context: Context) {
     _toast(message, Toast.LENGTH_SHORT, gravity, view)
   }
 
@@ -325,8 +345,11 @@ trait WidgetHelpers {
     * Displays a toast message for a longer time.
     * This method can be called from any threads.
     */
-  @inline def longToast(message: CharSequence, gravity: Int = Gravity.BOTTOM, view: View = null)(
-      implicit context: Context) {
+  @inline def longToast(
+      message: CharSequence,
+      gravity: Int = Gravity.BOTTOM,
+      view: View = null
+  )(implicit context: Context) {
     _toast(message, Toast.LENGTH_LONG, gravity, view)
   }
 
@@ -336,7 +359,8 @@ trait WidgetHelpers {
     */
   @inline
   def spinnerDialog(title: CharSequence, message: CharSequence)(
-      implicit context: Context): Future[ProgressDialog] =
+      implicit context: Context
+  ): Future[ProgressDialog] =
     evalOnUiThread(ProgressDialog.show(context, title, message, true))
 }
 
@@ -349,8 +373,11 @@ object WidgetHelpers extends WidgetHelpers
   * Aggregate trait for helpers.
   */
 trait Helpers
-    extends AppHelpers with ContentHelpers with MediaHelpers
-    with PreferenceHelpers with WidgetHelpers
+    extends AppHelpers
+    with ContentHelpers
+    with MediaHelpers
+    with PreferenceHelpers
+    with WidgetHelpers
 
 /**
   * Aggregate object for helpers.

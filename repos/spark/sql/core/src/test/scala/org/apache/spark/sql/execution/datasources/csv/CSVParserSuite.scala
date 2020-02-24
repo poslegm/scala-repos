@@ -81,11 +81,13 @@ class CSVParserSuite extends SparkFunSuite {
   }
 
   test("Regular case") {
-    val input = List("This is a string",
-                     "This is another string",
-                     "Small",
-                     "",
-                     "\"quoted\"")
+    val input = List(
+      "This is a string",
+      "This is another string",
+      "Small",
+      "",
+      "\"quoted\""
+    )
     val read = readAll(input.toIterator)
     assert(read === input.mkString("\n") ++ ("\n"))
   }
@@ -97,21 +99,25 @@ class CSVParserSuite extends SparkFunSuite {
   }
 
   test("Embedded new line") {
-    val input = List("This is a string",
-                     "This is another string",
-                     "Small\n",
-                     "",
-                     "\"quoted\"")
+    val input = List(
+      "This is a string",
+      "This is another string",
+      "Small\n",
+      "",
+      "\"quoted\""
+    )
     val read = readAll(input.toIterator)
     assert(read === input.mkString("\n") ++ ("\n"))
   }
 
   test("Buffer Regular case") {
-    val input = List("This is a string",
-                     "This is another string",
-                     "Small",
-                     "",
-                     "\"quoted\"")
+    val input = List(
+      "This is a string",
+      "This is another string",
+      "Small",
+      "",
+      "\"quoted\""
+    )
     val output = input.mkString("\n") ++ ("\n")
     for (i <- 1 to output.length + 5) {
       val read = readBufAll(input.toIterator, i)
@@ -129,11 +135,13 @@ class CSVParserSuite extends SparkFunSuite {
   }
 
   test("Buffer Embedded new line") {
-    val input = List("This is a string",
-                     "This is another string",
-                     "Small\n",
-                     "",
-                     "\"quoted\"")
+    val input = List(
+      "This is a string",
+      "This is another string",
+      "Small\n",
+      "",
+      "\"quoted\""
+    )
     val output = input.mkString("\n") ++ ("\n")
     for (i <- 1 to output.length + 5) {
       val read = readBufAll(input.toIterator, 1)

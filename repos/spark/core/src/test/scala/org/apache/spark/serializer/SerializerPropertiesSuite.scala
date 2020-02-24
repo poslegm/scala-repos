@@ -46,17 +46,20 @@ class SerializerPropertiesSuite extends SparkFunSuite {
   test("KryoSerializer supports relocation when auto-reset is enabled") {
     val ser = new KryoSerializer(new SparkConf)
     assert(
-        ser.newInstance().asInstanceOf[KryoSerializerInstance].getAutoReset())
+      ser.newInstance().asInstanceOf[KryoSerializerInstance].getAutoReset()
+    )
     testSupportsRelocationOfSerializedObjects(ser, generateRandomItem)
   }
 
-  test(
-      "KryoSerializer does not support relocation when auto-reset is disabled") {
+  test("KryoSerializer does not support relocation when auto-reset is disabled") {
     val conf = new SparkConf().set(
-        "spark.kryo.registrator", classOf[RegistratorWithoutAutoReset].getName)
+      "spark.kryo.registrator",
+      classOf[RegistratorWithoutAutoReset].getName
+    )
     val ser = new KryoSerializer(conf)
     assert(
-        !ser.newInstance().asInstanceOf[KryoSerializerInstance].getAutoReset())
+      !ser.newInstance().asInstanceOf[KryoSerializerInstance].getAutoReset()
+    )
     testSupportsRelocationOfSerializedObjects(ser, generateRandomItem)
   }
 }
@@ -65,24 +68,25 @@ object SerializerPropertiesSuite extends Assertions {
 
   def generateRandomItem(rand: Random): Any = {
     val randomFunctions: Seq[() => Any] = Seq(
-        () => rand.nextInt(),
-        () => rand.nextString(rand.nextInt(10)),
-        () => rand.nextDouble(),
-        () => rand.nextBoolean(),
-        () => (rand.nextInt(), rand.nextString(rand.nextInt(10))),
-        () => MyCaseClass(rand.nextInt(), rand.nextString(rand.nextInt(10))),
-        () =>
-          {
-            val x =
-              MyCaseClass(rand.nextInt(), rand.nextString(rand.nextInt(10)))
-            (x, x)
-        }
+      () => rand.nextInt(),
+      () => rand.nextString(rand.nextInt(10)),
+      () => rand.nextDouble(),
+      () => rand.nextBoolean(),
+      () => (rand.nextInt(), rand.nextString(rand.nextInt(10))),
+      () => MyCaseClass(rand.nextInt(), rand.nextString(rand.nextInt(10))),
+      () => {
+        val x =
+          MyCaseClass(rand.nextInt(), rand.nextString(rand.nextInt(10)))
+        (x, x)
+      }
     )
     randomFunctions(rand.nextInt(randomFunctions.size)).apply()
   }
 
   def testSupportsRelocationOfSerializedObjects(
-      serializer: Serializer, generateRandomItem: Random => Any): Unit = {
+      serializer: Serializer,
+      generateRandomItem: Random => Any
+  ): Unit = {
     if (!serializer.supportsRelocationOfSerializedObjects) {
       return
     }
@@ -104,9 +108,7 @@ object SerializerPropertiesSuite extends Assertions {
         baos.toByteArray.slice(itemStartOffset, itemEndOffset).clone()
       }
       val itemsAndSerializedItems: Seq[(Any, Array[Byte])] = {
-        val serItems = items.map { item =>
-          (item, serializeItem(item))
-        }
+        val serItems = items.map { item => (item, serializeItem(item)) }
         serStream.close()
         rand.shuffle(serItems)
       }
@@ -116,8 +118,9 @@ object SerializerPropertiesSuite extends Assertions {
         .newInstance()
         .deserializeStream(new ByteArrayInputStream(reorderedSerializedData))
       assert(
-          deserializedItemsStream.asIterator.toSeq === itemsAndSerializedItems
-            .map(_._1))
+        deserializedItemsStream.asIterator.toSeq === itemsAndSerializedItems
+          .map(_._1)
+      )
       deserializedItemsStream.close()
     }
   }

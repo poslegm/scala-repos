@@ -19,7 +19,9 @@ object RedisClientPipelineFactory extends ChannelPipelineFactory {
     val replyCodec = new ReplyCodec
 
     pipeline.addLast(
-        "codec", new NaggatiCodec(replyCodec.decode, commandCodec.encode))
+      "codec",
+      new NaggatiCodec(replyCodec.decode, commandCodec.encode)
+    )
 
     pipeline
   }
@@ -37,8 +39,9 @@ class Redis extends CodecFactory[Command, Reply] {
             val replyCodec = new ReplyCodec
 
             pipeline.addLast(
-                "codec",
-                new NaggatiCodec(commandCodec.decode, replyCodec.encode))
+              "codec",
+              new NaggatiCodec(commandCodec.decode, replyCodec.encode)
+            )
 
             pipeline
           }
@@ -53,7 +56,8 @@ class Redis extends CodecFactory[Command, Reply] {
 
         override def prepareConnFactory(
             underlying: ServiceFactory[Command, Reply],
-            params: Stack.Params) = {
+            params: Stack.Params
+        ) = {
           new RedisTracingFilter()
             .andThen(new RedisLoggingFilter(params[param.Stats].statsReceiver))
             .andThen(underlying)
@@ -92,7 +96,7 @@ private class RedisLoggingFilter(stats: StatsReceiver)
             EmptyMBulkReply() =>
           succ.counter(command.command).incr()
         case ErrorReply(message) => error.counter(command.command).incr()
-        case _ => error.counter(command.command).incr()
+        case _                   => error.counter(command.command).incr()
       }
       response
     }

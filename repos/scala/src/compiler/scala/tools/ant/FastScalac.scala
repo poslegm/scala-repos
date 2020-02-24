@@ -97,50 +97,50 @@ class FastScalac extends Scalac {
 
     val stringSettings =
       List(
-          /*scalac*/
-          s.bootclasspath,
-          s.classpath,
-          s.extdirs,
-          s.dependencyfile,
-          s.encoding,
-          s.outdir,
-          s.sourcepath,
-          /*fsc*/
-          s.server
+        /*scalac*/
+        s.bootclasspath,
+        s.classpath,
+        s.extdirs,
+        s.dependencyfile,
+        s.encoding,
+        s.outdir,
+        s.sourcepath,
+        /*fsc*/
+        s.server
       ) filter (_.value != "") flatMap (x => List(x.name, x.value))
 
     val choiceSettings =
       List(
-          /*scalac*/
-          s.debuginfo,
-          s.target
+        /*scalac*/
+        s.debuginfo,
+        s.target
       ) filter (x => x.value != x.default) map
-      (x => "%s:%s".format(x.name, x.value))
+        (x => "%s:%s".format(x.name, x.value))
 
     val booleanSettings =
       List(
-          /*scalac*/
-          s.debug,
-          s.deprecation,
-          s.explaintypes,
-          s.nospecialization,
-          s.nowarn,
-          s.optimise,
-          s.unchecked,
-          s.usejavacp,
-          s.verbose,
-          /*fsc*/
-          s.preferIPv4,
-          s.reset,
-          s.shutdown
+        /*scalac*/
+        s.debug,
+        s.deprecation,
+        s.explaintypes,
+        s.nospecialization,
+        s.nowarn,
+        s.optimise,
+        s.unchecked,
+        s.usejavacp,
+        s.verbose,
+        /*fsc*/
+        s.preferIPv4,
+        s.reset,
+        s.shutdown
       ) filter (_.value) map (_.name)
 
     val intSettings =
       List(
-          /*fsc*/
-          s.idleMins
+        /*fsc*/
+        s.idleMins
       ) filter (x => x.value != x.default) flatMap
-      (x => List(x.name, x.value.toString))
+        (x => List(x.name, x.value.toString))
 
     val phaseSetting = {
       val s = settings.log
@@ -165,23 +165,26 @@ class FastScalac extends Scalac {
             path add new Path(getProject, cl.getClasspath)
           case _ =>
             buildError(
-                "Compilation failed because of an internal compiler error;" +
-                " see the error output for details.")
+              "Compilation failed because of an internal compiler error;" +
+                " see the error output for details."
+            )
         }
       path
     }
     java.createJvmarg() setValue ("-Xbootclasspath/a:" + scalacPath)
     s.jvmargs.value foreach (java.createJvmarg() setValue _)
 
-    val scalaHome: String = try {
-      val url = ScalaClassLoader.originOfClass(classOf[FastScalac]).get
-      File(url.getFile).jfile.getParentFile.getParentFile.getAbsolutePath
-    } catch {
-      case _: Throwable =>
-        buildError(
+    val scalaHome: String =
+      try {
+        val url = ScalaClassLoader.originOfClass(classOf[FastScalac]).get
+        File(url.getFile).jfile.getParentFile.getParentFile.getAbsolutePath
+      } catch {
+        case _: Throwable =>
+          buildError(
             "Compilation failed because of an internal compiler error;" +
-            " couldn't determine value for -Dscala.home=<value>")
-    }
+              " couldn't determine value for -Dscala.home=<value>"
+          )
+      }
     java.createJvmarg() setValue "-Dscala.usejavacp=true"
     java.createJvmarg() setValue ("-Dscala.home=" + scalaHome)
     s.defines.value foreach (java.createJvmarg() setValue _)
@@ -194,7 +197,7 @@ class FastScalac extends Scalac {
       t map { s =>
         if (s.find(c => c <= ' ' || "\"'\\".contains(c)).isDefined)
           "\"" +
-          s.flatMap(c => (if (c == '"' || c == '\\') "\\" else "") + c) + "\""
+            s.flatMap(c => (if (c == '"' || c == '\\') "\\" else "") + c) + "\""
         else s
       } mkString "\n"
 
@@ -209,7 +212,8 @@ class FastScalac extends Scalac {
 
     if (failonerror && res != 0)
       buildError(
-          "Compilation failed because of an internal compiler error;" +
-          " see the error output for details.")
+        "Compilation failed because of an internal compiler error;" +
+          " see the error output for details."
+      )
   }
 }

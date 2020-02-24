@@ -4,7 +4,13 @@ import com.twitter.finagle._
 import com.twitter.finagle.client.{StackClient, StdStackClient, DefaultPool}
 import com.twitter.finagle.exp.mysql._
 import com.twitter.finagle.exp.mysql.transport.{MysqlTransporter, Packet}
-import com.twitter.finagle.param.{Monitor => _, ResponseClassifier => _, ExceptionStatsHandler => _, Tracer => _, _}
+import com.twitter.finagle.param.{
+  Monitor => _,
+  ResponseClassifier => _,
+  ExceptionStatsHandler => _,
+  Tracer => _,
+  _
+}
 import com.twitter.finagle.service.{ResponseClassifier, RetryBudget}
 import com.twitter.finagle.stats.{ExceptionStatsHandler, StatsReceiver}
 import com.twitter.finagle.tracing._
@@ -23,7 +29,9 @@ trait MysqlRichClient { self: com.twitter.finagle.Client[Request, Result] =>
     * `label`. The `label` is used to scope client stats.
     */
   def newRichClient(
-      dest: Name, label: String): mysql.Client with mysql.Transactions =
+      dest: Name,
+      label: String
+  ): mysql.Client with mysql.Transactions =
     mysql.Client(newClient(dest, label))
 
   /**
@@ -43,7 +51,10 @@ object MySqlClientTracingFilter {
       val param.Label(label) = _label
       // TODO(jeff): should be able to get this directly from ClientTracingFilter
       val annotations = new AnnotatingTracingFilter[Request, Result](
-          label, Annotation.ClientSend(), Annotation.ClientRecv())
+        label,
+        Annotation.ClientSend(),
+        Annotation.ClientRecv()
+      )
       annotations andThen TracingFilter andThen next
     }
   }
@@ -61,7 +72,8 @@ object MySqlClientTracingFilter {
             Trace.recordBinary("mysql.execute", id)
           case _ =>
             Trace.record(
-                "mysql." + request.getClass.getSimpleName.replace("$", ""))
+              "mysql." + request.getClass.getSimpleName.replace("$", "")
+            )
         }
       }
       service(request)
@@ -78,7 +90,8 @@ object MySqlClientTracingFilter {
   * }}}
   */
 object Mysql
-    extends com.twitter.finagle.Client[Request, Result] with MysqlRichClient {
+    extends com.twitter.finagle.Client[Request, Result]
+    with MysqlRichClient {
 
   /**
     * Implements a mysql client in terms of a
@@ -91,16 +104,17 @@ object Mysql
     */
   case class Client(
       stack: Stack[ServiceFactory[Request, Result]] = StackClient.newStack
-          .replace(
-            ClientTracingFilter.role, MySqlClientTracingFilter.Stackable),
+        .replace(ClientTracingFilter.role, MySqlClientTracingFilter.Stackable),
       params: Stack.Params = StackClient.defaultParams + DefaultPool.Param(
-            low = 0,
-            high = 1,
-            bufferSize = 0,
-            idleTime = Duration.Top,
-            maxWaiters = Int.MaxValue) + ProtocolLibrary("mysql"))
-      extends StdStackClient[Request, Result, Client]
-      with WithSessionPool[Client] with WithDefaultLoadBalancer[Client]
+        low = 0,
+        high = 1,
+        bufferSize = 0,
+        idleTime = Duration.Top,
+        maxWaiters = Int.MaxValue
+      ) + ProtocolLibrary("mysql")
+  ) extends StdStackClient[Request, Result, Client]
+      with WithSessionPool[Client]
+      with WithDefaultLoadBalancer[Client]
       with MysqlRichClient {
 
     protected def copy1(
@@ -112,7 +126,8 @@ object Mysql
     protected type Out = Packet
     protected def newTransporter() = MysqlTransporter(params)
     protected def newDispatcher(
-        transport: Transport[Packet, Packet]): Service[Request, Result] =
+        transport: Transport[Packet, Packet]
+    ): Service[Request, Result] =
       mysql.ClientDispatcher(transport, Handshake(params))
 
     /**
@@ -155,12 +170,14 @@ object Mysql
       super.withMonitor(monitor)
     override def withTracer(tracer: Tracer): Client = super.withTracer(tracer)
     override def withExceptionStatsHandler(
-        exceptionStatsHandler: ExceptionStatsHandler): Client =
+        exceptionStatsHandler: ExceptionStatsHandler
+    ): Client =
       super.withExceptionStatsHandler(exceptionStatsHandler)
     override def withRequestTimeout(timeout: Duration): Client =
       super.withRequestTimeout(timeout)
     override def withResponseClassifier(
-        responseClassifier: ResponseClassifier): Client =
+        responseClassifier: ResponseClassifier
+    ): Client =
       super.withResponseClassifier(responseClassifier)
     override def withRetryBudget(budget: RetryBudget): Client =
       super.withRetryBudget(budget)
@@ -170,7 +187,8 @@ object Mysql
     override def configured[P](psp: (P, Stack.Param[P])): Client =
       super.configured(psp)
     override def filtered(
-        filter: Filter[Request, Result, Request, Result]): Client =
+        filter: Filter[Request, Result, Request, Result]
+    ): Client =
       super.filtered(filter)
   }
 
@@ -208,6 +226,6 @@ object Mysql
     * A client configured with parameter p.
     */
   @deprecated("Use client.configured", "6.22.0")
-  def configured[P : Stack.Param](p: P): Client =
+  def configured[P: Stack.Param](p: P): Client =
     client.configured(p)
 }

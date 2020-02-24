@@ -23,6 +23,7 @@ trait ScFunctionExpr extends ScExpression with ScControlFlowOwner {
 
 object ScFunctionExpr {
   def unapply(
-      it: ScFunctionExpr): Some[(Seq[ScParameter], Option[ScExpression])] =
+      it: ScFunctionExpr
+  ): Some[(Seq[ScParameter], Option[ScExpression])] =
     Some(it.parameters, it.result)
 }

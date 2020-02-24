@@ -209,10 +209,12 @@ object M8 {
 //############################################################################
 
 object M9 {
-  def accumulate[t](combiner: (t, t) => t,
-                    nullValue: t,
-                    f: Int => t,
-                    next: Int => Int)(a: Int, b: Int): t =
+  def accumulate[t](
+      combiner: (t, t) => t,
+      nullValue: t,
+      f: Int => t,
+      next: Int => Int
+  )(a: Int, b: Int): t =
     if (a > b) nullValue
     else combiner(f(a), accumulate(combiner, nullValue, f, next)(next(a), b))
 
@@ -236,8 +238,9 @@ object M9 {
   }
 
   val pi =
-    2 * product(x => 2 * x * 2 * x)(1, 20) / product(
-        x => (2 * x - 1) * (2 * x - 1))(1, 20) / 40
+    2 * product(x => 2 * x * 2 * x)(1, 20) / product(x =>
+      (2 * x - 1) * (2 * x - 1)
+    )(1, 20) / 40
 
   Console.println(sumInts(1, 4))
   Console.println(sumCubes(1, 4))
@@ -334,7 +337,8 @@ object MC {
 
 object MD {
   def reduce(op: (Double, Double) => Double, zero: Double)(
-      f: Int => Double)(a: Int, b: Int): Double = {
+      f: Int => Double
+  )(a: Int, b: Int): Double = {
     def iter(a: Int, result: Double): Double = {
       if (a > b) result
       else iter(a + 1, op(result, f(a)))
@@ -370,7 +374,8 @@ object MD {
 
 object ME {
   def reduce(op: (Double, Double) => Double, zero: Double)(
-      f: Int => Double)(a: Int, b: Int): Double = {
+      f: Int => Double
+  )(a: Int, b: Int): Double = {
     def iter(a: Int, result: Double): Double = {
       if (a > b) result
       else iter(a + 1, op(result, f(a)))

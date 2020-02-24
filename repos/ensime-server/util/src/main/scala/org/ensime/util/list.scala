@@ -14,7 +14,7 @@ package object list {
       */
     def initLast: (List[T], T) = list.reverse match {
       case head :: tail => (tail.reverse, head)
-      case _ => throw new IllegalArgumentException("list was empty")
+      case _            => throw new IllegalArgumentException("list was empty")
     }
   }
 
@@ -27,7 +27,7 @@ package object list {
     def toMultiMapSet: Map[K, Set[V]] = {
       import collection.mutable
       val builder = new mutable.HashMap[K, mutable.Set[V]]
-      with mutable.MultiMap[K, V]
+        with mutable.MultiMap[K, V]
 
       list.foreach {
         case (k, v) => builder.addBinding(k, v)

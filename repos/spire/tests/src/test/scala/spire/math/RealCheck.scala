@@ -17,7 +17,9 @@ import ArbitrarySupport._
 import Ordinal._
 
 class RealCheck
-    extends PropSpec with Matchers with GeneratorDrivenPropertyChecks {
+    extends PropSpec
+    with Matchers
+    with GeneratorDrivenPropertyChecks {
 
   val pi200 =
     "3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196"
@@ -33,9 +35,7 @@ class RealCheck
   property("sqrt(2)") { Real(2).sqrt.getString(200) shouldBe sqrtTwo200 }
 
   property("Rational(n) = Real(n).toRational") {
-    forAll { (n: BigInt) =>
-      Rational(n) shouldBe Real(n).toRational
-    }
+    forAll { (n: BigInt) => Rational(n) shouldBe Real(n).toRational }
   }
 
   property("Real(n)/Real(d) = Real(n/d)") {
@@ -45,69 +45,47 @@ class RealCheck
   }
 
   property("x + 0 = x") {
-    forAll { (x: Real) =>
-      x + Real.zero shouldBe x
-    }
+    forAll { (x: Real) => x + Real.zero shouldBe x }
   }
 
   property("x * 0 = 0") {
-    forAll { (x: Real) =>
-      x * Real.zero shouldBe Real.zero
-    }
+    forAll { (x: Real) => x * Real.zero shouldBe Real.zero }
   }
 
   property("x * 1 = x") {
-    forAll { (x: Real) =>
-      x + Real.zero shouldBe x
-    }
+    forAll { (x: Real) => x + Real.zero shouldBe x }
   }
 
   property("x + y = y + x") {
-    forAll { (x: Real, y: Real) =>
-      x + y shouldBe y + x
-    }
+    forAll { (x: Real, y: Real) => x + y shouldBe y + x }
   }
 
   property("x + (-x) = 0") {
-    forAll { (x: Real) =>
-      x + (-x) shouldBe Real.zero
-    }
+    forAll { (x: Real) => x + (-x) shouldBe Real.zero }
   }
 
   property("x / x = 1") {
-    forAll { (x: Real) =>
-      if (x != 0) x / x shouldBe Real.one
-    }
+    forAll { (x: Real) => if (x != 0) x / x shouldBe Real.one }
   }
 
   property("x * y = y * x") {
-    forAll { (x: Real, y: Real) =>
-      x * y shouldBe y * x
-    }
+    forAll { (x: Real, y: Real) => x * y shouldBe y * x }
   }
 
   property("x + x = 2x") {
-    forAll { (x: Real) =>
-      x + x shouldBe x * Real(2)
-    }
+    forAll { (x: Real) => x + x shouldBe x * Real(2) }
   }
 
   property("x * (y + z) = xy + xz") {
-    forAll { (x: Real, y: Real, z: Real) =>
-      x * (y + z) shouldBe x * y + x * z
-    }
+    forAll { (x: Real, y: Real, z: Real) => x * (y + z) shouldBe x * y + x * z }
   }
 
   property("x.pow(2) = x * x") {
-    forAll { (x: Real) =>
-      x.pow(2) shouldBe x * x
-    }
+    forAll { (x: Real) => x.pow(2) shouldBe x * x }
   }
 
   property("x.pow(3) = x * x * x") {
-    forAll { (x: Real) =>
-      x.pow(2) shouldBe x * x
-    }
+    forAll { (x: Real) => x.pow(2) shouldBe x * x }
   }
 
   property("x.pow(k).nroot(k) = x") {
@@ -207,8 +185,9 @@ class RealCheck
   // sample1("sample1 sqrt")(_.sqrt)
   // sample1("sample1 pow(2)")(_.pow(2))
 
-  def arcSample(f: Rational => Rational)(
-      g: Double => Double, h: Real => Real): String =
+  def arcSample(
+      f: Rational => Rational
+  )(g: Double => Double, h: Real => Real): String =
     (-8 to 8).map { i =>
       val x = Real(f(Rational(i)))
       if ((g(x.toDouble) - h(x).toDouble).abs < 0.00001) "." else "!"

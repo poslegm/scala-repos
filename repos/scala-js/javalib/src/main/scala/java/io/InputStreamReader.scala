@@ -5,9 +5,10 @@ import scala.annotation.tailrec
 import java.nio._
 import java.nio.charset._
 
-class InputStreamReader(private[this] var in: InputStream,
-                        private[this] var decoder: CharsetDecoder)
-    extends Reader {
+class InputStreamReader(
+    private[this] var in: InputStream,
+    private[this] var decoder: CharsetDecoder
+) extends Reader {
 
   private[this] var closed: Boolean = false
 
@@ -36,10 +37,12 @@ class InputStreamReader(private[this] var in: InputStream,
     InputStreamReader.CommonEmptyCharBuffer
 
   def this(in: InputStream, charset: Charset) =
-    this(in,
-         charset.newDecoder
-           .onMalformedInput(CodingErrorAction.REPLACE)
-           .onUnmappableCharacter(CodingErrorAction.REPLACE))
+    this(
+      in,
+      charset.newDecoder
+        .onMalformedInput(CodingErrorAction.REPLACE)
+        .onUnmappableCharacter(CodingErrorAction.REPLACE)
+    )
 
   def this(in: InputStream) =
     this(in, Charset.defaultCharset)
@@ -100,7 +103,10 @@ class InputStreamReader(private[this] var in: InputStream,
 
   // In a separate method because this is (hopefully) not a common case
   private def readMoreThroughOutBuf(
-      cbuf: Array[Char], off: Int, len: Int): Int = {
+      cbuf: Array[Char],
+      off: Int,
+      len: Int
+  ): Int = {
     // Return outBuf to its full capacity
     outBuf.limit(outBuf.capacity)
     outBuf.position(0)
@@ -145,10 +151,11 @@ class InputStreamReader(private[this] var in: InputStream,
     } else if (result.isUnderflow) {
       if (endOfInput) {
         assert(
-            !inBuf.hasRemaining,
-            "CharsetDecoder.decode() should not have returned UNDERFLOW when " +
+          !inBuf.hasRemaining,
+          "CharsetDecoder.decode() should not have returned UNDERFLOW when " +
             "both endOfInput and inBuf.hasRemaining are true. It should have " +
-            "returned a MalformedInput error instead.")
+            "returned a MalformedInput error instead."
+        )
         // Flush
         if (decoder.flush(out).isOverflow) {
           InputStreamReader.Overflow
@@ -163,10 +170,11 @@ class InputStreamReader(private[this] var in: InputStream,
           inBuf.compact()
           if (!inBuf.hasRemaining) {
             throw new AssertionError(
-                "Scala.js implementation restriction: " +
+              "Scala.js implementation restriction: " +
                 inBuf.capacity + " bytes do not seem to be enough for " +
                 getEncoding + " to decode a single code point. " +
-                "Please report this as a bug.")
+                "Please report this as a bug."
+            )
           }
           inBuf.limit(inBuf.position)
           inBuf.position(0)

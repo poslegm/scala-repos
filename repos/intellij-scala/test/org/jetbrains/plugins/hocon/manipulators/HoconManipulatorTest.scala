@@ -10,9 +10,9 @@ import scala.reflect.ClassTag
 /**
   * @author ghik
   */
-abstract class HoconManipulatorTest[T <: HoconPsiElement : ClassTag](
-    name: String)
-    extends HoconFileSetTestCase("manipulators/" + name) {
+abstract class HoconManipulatorTest[T <: HoconPsiElement: ClassTag](
+    name: String
+) extends HoconFileSetTestCase("manipulators/" + name) {
 
   protected def transform(data: Seq[String]): String = {
     val Seq(inputCaret, newContentInBrackets) = data

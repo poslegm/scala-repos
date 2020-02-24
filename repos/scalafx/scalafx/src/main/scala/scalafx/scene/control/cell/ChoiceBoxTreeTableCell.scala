@@ -69,8 +69,8 @@ object ChoiceBoxTreeTableCell {
     * @return JavaFX $CBTTC
     */
   implicit def sfxChoiceBoxTreeTableCell2jfx[S, T](
-      cell: ChoiceBoxTreeTableCell[S, T])
-    : jfxsc.cell.ChoiceBoxTreeTableCell[S, T] =
+      cell: ChoiceBoxTreeTableCell[S, T]
+  ): jfxsc.cell.ChoiceBoxTreeTableCell[S, T] =
     if (cell != null) cell.delegate else null
 
   /**
@@ -81,16 +81,19 @@ object ChoiceBoxTreeTableCell {
     * @return $RETFTTC
     * @see $URL0#ChoiceBoxTreeTableCell-javafx.collections.ObservableList- $ORIGINALDOC
     */
-  def forTreeTableColumn[S, T](items: ObservableBuffer[T])
-    : (jfxsc.TreeTableColumn[S, T] => TreeTableCell[S, T]) =
+  def forTreeTableColumn[S, T](
+      items: ObservableBuffer[T]
+  ): (jfxsc.TreeTableColumn[S, T] => TreeTableCell[S, T]) =
     (view: jfxsc.TreeTableColumn[S, T]) =>
       jfxscc.ChoiceBoxTreeTableCell.forTreeTableColumn[S, T](items).call(view)
 
   /**
     * $SATISFY
     */
-  @deprecated(message = "Use forTreeTableColumn[S, T](ObservableBuffer[T])",
-              since = "1.0")
+  @deprecated(
+    message = "Use forTreeTableColumn[S, T](ObservableBuffer[T])",
+    since = "1.0"
+  )
   def forTreeTableColumn[S, T](items: jfxc.ObservableList[T]) =
     jfxscc.ChoiceBoxTreeTableCell.forTreeTableColumn[S, T](items)
 
@@ -104,8 +107,9 @@ object ChoiceBoxTreeTableCell {
     * @see $URL0#ChoiceBoxTreeTableCell-javafx.util.StringConverter-javafx.collections.ObservableList- $ORIGINALDOC
     */
   def forTreeTableColumn[S, T](
-      converter: StringConverter[T], items: ObservableBuffer[T])
-    : (jfxsc.TreeTableColumn[S, T] => TreeTableCell[S, T]) =
+      converter: StringConverter[T],
+      items: ObservableBuffer[T]
+  ): (jfxsc.TreeTableColumn[S, T] => TreeTableCell[S, T]) =
     (view: jfxsc.TreeTableColumn[S, T]) =>
       jfxscc.ChoiceBoxTreeTableCell
         .forTreeTableColumn[S, T](converter, items)
@@ -115,10 +119,14 @@ object ChoiceBoxTreeTableCell {
     * $SATISFY
     */
   @deprecated(
-      message = "Use forTreeTableColumn[S, T](StringConverter[T], ObservableBuffer[T])",
-      since = "1.0")
+    message =
+      "Use forTreeTableColumn[S, T](StringConverter[T], ObservableBuffer[T])",
+    since = "1.0"
+  )
   def forTreeTableColumn[S, T](
-      converter: jfxu.StringConverter[T], items: jfxc.ObservableList[T]) =
+      converter: jfxu.StringConverter[T],
+      items: jfxc.ObservableList[T]
+  ) =
     jfxscc.ChoiceBoxTreeTableCell.forTreeTableColumn[S, T](converter, items)
 
   /**
@@ -132,7 +140,8 @@ object ChoiceBoxTreeTableCell {
     */
   def forTreeTableColumn[S, T](
       converter: StringConverter[T],
-      items: T*): (jfxsc.TreeTableColumn[S, T] => TreeTableCell[S, T]) =
+      items: T*
+  ): (jfxsc.TreeTableColumn[S, T] => TreeTableCell[S, T]) =
     (view: jfxsc.TreeTableColumn[S, T]) =>
       jfxscc.ChoiceBoxTreeTableCell
         .forTreeTableColumn[S, T](converter, items: _*)
@@ -141,8 +150,10 @@ object ChoiceBoxTreeTableCell {
   /**
     * $SATISFY
     */
-  @deprecated(message = "Use forTreeTableColumn[S, T](StringConverter[T], T*)",
-              since = "1.0")
+  @deprecated(
+    message = "Use forTreeTableColumn[S, T](StringConverter[T], T*)",
+    since = "1.0"
+  )
   def forTreeTableColumn[S, T](converter: jfxu.StringConverter[T], items: T*) =
     jfxscc.ChoiceBoxTreeTableCell
       .forTreeTableColumn[S, T](converter, items: _*)
@@ -156,7 +167,8 @@ object ChoiceBoxTreeTableCell {
     * @see $URL0#ChoiceBoxTreeTableCell-T...- $ORIGINALDOC
     */
   def forTreeTableColumn[S, T](
-      items: T*): (jfxsc.TreeTableColumn[S, T] => TreeTableCell[S, T]) =
+      items: T*
+  ): (jfxsc.TreeTableColumn[S, T] => TreeTableCell[S, T]) =
     (view: jfxsc.TreeTableColumn[S, T]) =>
       jfxscc.ChoiceBoxTreeTableCell
         .forTreeTableColumn[S, T](items: _*)
@@ -192,9 +204,10 @@ object ChoiceBoxTreeTableCell {
   * @define URL0 [[http://docs.oracle.com/javase/8/javafx/api/javafx/scene/control/cell/ChoiceBoxTreeTableCell.html
   * @define ORIGINALDOC Original Documentation]].
   */
-class ChoiceBoxTreeTableCell[S, T](override val delegate: jfxscc.ChoiceBoxTreeTableCell[
-        S, T] = new jfxscc.ChoiceBoxTreeTableCell[S, T])
-    extends TreeTableCell[S, T](delegate)
+class ChoiceBoxTreeTableCell[S, T](
+    override val delegate: jfxscc.ChoiceBoxTreeTableCell[S, T] =
+      new jfxscc.ChoiceBoxTreeTableCell[S, T]
+) extends TreeTableCell[S, T](delegate)
     with ConvertableCell[jfxscc.ChoiceBoxTreeTableCell[S, T], T, T]
     with UpdatableCell[jfxscc.ChoiceBoxTreeTableCell[S, T], T]
     with ItemableCell[jfxscc.ChoiceBoxTreeTableCell[S, T], T]

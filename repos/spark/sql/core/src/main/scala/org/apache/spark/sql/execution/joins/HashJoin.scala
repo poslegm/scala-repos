@@ -49,17 +49,18 @@ trait HashJoin { self: SparkPlan =>
         left.output
       case x =>
         throw new IllegalArgumentException(
-            s"HashJoin should not take $x as the JoinType")
+          s"HashJoin should not take $x as the JoinType"
+        )
     }
   }
 
   protected lazy val (buildPlan, streamedPlan) = buildSide match {
-    case BuildLeft => (left, right)
+    case BuildLeft  => (left, right)
     case BuildRight => (right, left)
   }
 
   protected lazy val (buildKeys, streamedKeys) = buildSide match {
-    case BuildLeft => (leftKeys, rightKeys)
+    case BuildLeft  => (leftKeys, rightKeys)
     case BuildRight => (rightKeys, leftKeys)
   }
 
@@ -89,14 +90,17 @@ trait HashJoin { self: SparkPlan =>
             val rotated =
               if (e.dataType == IntegerType) {
                 // (e >>> 15) | (e << 17)
-                BitwiseOr(ShiftRightUnsigned(e, Literal(15)),
-                          ShiftLeft(e, Literal(17)))
+                BitwiseOr(
+                  ShiftRightUnsigned(e, Literal(15)),
+                  ShiftLeft(e, Literal(17))
+                )
               } else {
                 e
               }
             keyExpr = BitwiseOr(
-                ShiftLeft(keyExpr, Literal(bits)),
-                BitwiseAnd(Cast(rotated, LongType), Literal((1L << bits) - 1)))
+              ShiftLeft(keyExpr, Literal(bits)),
+              BitwiseAnd(Cast(rotated, LongType), Literal((1L << bits) - 1))
+            )
             width -= bits
           }
         // TODO: support BooleanType, DateType and TimestampType
@@ -122,10 +126,10 @@ trait HashJoin { self: SparkPlan =>
   @transient private[this] lazy val boundCondition =
     if (condition.isDefined) {
       newPredicate(
-          condition.getOrElse(Literal(true)), left.output ++ right.output)
-    } else { (r: InternalRow) =>
-      true
-    }
+        condition.getOrElse(Literal(true)),
+        left.output ++ right.output
+      )
+    } else { (r: InternalRow) => true }
 
   protected def createResultProjection: (InternalRow) => InternalRow =
     UnsafeProjection.create(self.schema)
@@ -133,7 +137,8 @@ trait HashJoin { self: SparkPlan =>
   protected def hashJoin(
       streamIter: Iterator[InternalRow],
       hashedRelation: HashedRelation,
-      numOutputRows: LongSQLMetric): Iterator[InternalRow] = {
+      numOutputRows: LongSQLMetric
+  ): Iterator[InternalRow] = {
     new Iterator[InternalRow] {
       private[this] var currentStreamedRow: InternalRow = _
       private[this] var currentHashMatches: Seq[InternalRow] = _
@@ -173,10 +178,14 @@ trait HashJoin { self: SparkPlan =>
           buildSide match {
             case BuildRight =>
               joinRow(
-                  currentStreamedRow, currentHashMatches(currentMatchPosition))
+                currentStreamedRow,
+                currentHashMatches(currentMatchPosition)
+              )
             case BuildLeft =>
               joinRow(
-                  currentHashMatches(currentMatchPosition), currentStreamedRow)
+                currentHashMatches(currentMatchPosition),
+                currentStreamedRow
+              )
           }
           if (boundCondition(joinRow)) {
             return true
@@ -203,25 +212,28 @@ trait HashJoin { self: SparkPlan =>
   @transient protected[this] lazy val EMPTY_LIST = CompactBuffer[InternalRow]()
 
   @transient private[this] lazy val leftNullRow = new GenericInternalRow(
-      left.output.length)
+    left.output.length
+  )
   @transient private[this] lazy val rightNullRow = new GenericInternalRow(
-      right.output.length)
+    right.output.length
+  )
 
   protected[this] def leftOuterIterator(
       key: InternalRow,
       joinedRow: JoinedRow,
       rightIter: Iterable[InternalRow],
       resultProjection: InternalRow => InternalRow,
-      numOutputRows: LongSQLMetric): Iterator[InternalRow] = {
+      numOutputRows: LongSQLMetric
+  ): Iterator[InternalRow] = {
     val ret: Iterable[InternalRow] = {
       if (!key.anyNull) {
         val temp =
           if (rightIter != null) {
             rightIter.collect {
               case r if boundCondition(joinedRow.withRight(r)) => {
-                  numOutputRows += 1
-                  resultProjection(joinedRow).copy()
-                }
+                numOutputRows += 1
+                resultProjection(joinedRow).copy()
+              }
             }
           } else {
             List.empty
@@ -245,16 +257,17 @@ trait HashJoin { self: SparkPlan =>
       leftIter: Iterable[InternalRow],
       joinedRow: JoinedRow,
       resultProjection: InternalRow => InternalRow,
-      numOutputRows: LongSQLMetric): Iterator[InternalRow] = {
+      numOutputRows: LongSQLMetric
+  ): Iterator[InternalRow] = {
     val ret: Iterable[InternalRow] = {
       if (!key.anyNull) {
         val temp =
           if (leftIter != null) {
             leftIter.collect {
               case l if boundCondition(joinedRow.withLeft(l)) => {
-                  numOutputRows += 1
-                  resultProjection(joinedRow).copy()
-                }
+                numOutputRows += 1
+                resultProjection(joinedRow).copy()
+              }
             }
           } else {
             List.empty
@@ -276,7 +289,8 @@ trait HashJoin { self: SparkPlan =>
   protected def hashSemiJoin(
       streamIter: Iterator[InternalRow],
       hashedRelation: HashedRelation,
-      numOutputRows: LongSQLMetric): Iterator[InternalRow] = {
+      numOutputRows: LongSQLMetric
+  ): Iterator[InternalRow] = {
     val joinKeys = streamSideKeyGenerator
     val joinedRow = new JoinedRow
     streamIter.filter { current =>
@@ -284,9 +298,9 @@ trait HashJoin { self: SparkPlan =>
       lazy val rowBuffer = hashedRelation.get(key)
       val r =
         !key.anyNull && rowBuffer != null &&
-        (condition.isEmpty || rowBuffer.exists { (row: InternalRow) =>
-              boundCondition(joinedRow(current, row))
-            })
+          (condition.isEmpty || rowBuffer.exists { (row: InternalRow) =>
+            boundCondition(joinedRow(current, row))
+          })
       if (r) numOutputRows += 1
       r
     }

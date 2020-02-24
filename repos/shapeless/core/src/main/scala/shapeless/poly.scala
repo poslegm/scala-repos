@@ -50,11 +50,13 @@ object PolyDefns extends Cases {
       val value = v
     }
 
-    implicit def materializeFromValue1[P, F[_], T]: Case[P, F[T] :: HNil] = macro PolyMacros
-      .materializeFromValueImpl[P, F[T], T]
+    implicit def materializeFromValue1[P, F[_], T]: Case[P, F[T] :: HNil] =
+      macro PolyMacros
+        .materializeFromValueImpl[P, F[T], T]
 
-    implicit def materializeFromValue2[P, T]: Case[P, T :: HNil] = macro PolyMacros
-      .materializeFromValueImpl[P, T, T]
+    implicit def materializeFromValue2[P, T]: Case[P, T :: HNil] =
+      macro PolyMacros
+        .materializeFromValueImpl[P, T, T]
   }
 
   type Case0[P] = Case[P, HNil]
@@ -77,7 +79,8 @@ object PolyDefns extends Cases {
     implicit def composeCase[C, F <: Poly, G <: Poly, T, U, V](
         implicit unpack: Unpack2[C, Compose, F, G],
         cG: Case1.Aux[G, T, U],
-        cF: Case1.Aux[F, U, V]) = new Case[C, T :: HNil] {
+        cF: Case1.Aux[F, U, V]
+    ) = new Case[C, T :: HNil] {
       type Result = V
       val value = (t: T :: HNil) => cF(cG.value(t))
     }
@@ -92,10 +95,17 @@ object PolyDefns extends Cases {
 
   object RotateLeft {
     implicit def rotateLeftCase[
-        C, P <: Poly, N <: Nat, L <: HList, LOut, RL <: HList](
+        C,
+        P <: Poly,
+        N <: Nat,
+        L <: HList,
+        LOut,
+        RL <: HList
+    ](
         implicit unpack: Unpack2[C, RotateLeft, P, N],
         cP: Case.Aux[P, L, LOut],
-        rotateRight: hl.RotateRight.Aux[RL, N, L]): Case.Aux[C, RL, LOut] =
+        rotateRight: hl.RotateRight.Aux[RL, N, L]
+    ): Case.Aux[C, RL, LOut] =
       new Case[C, RL] {
         type Result = LOut
 
@@ -112,10 +122,17 @@ object PolyDefns extends Cases {
 
   object RotateRight {
     implicit def rotateLeftCase[
-        C, P <: Poly, N <: Nat, L <: HList, LOut, RL <: HList](
+        C,
+        P <: Poly,
+        N <: Nat,
+        L <: HList,
+        LOut,
+        RL <: HList
+    ](
         implicit unpack: Unpack2[C, RotateRight, P, N],
         cP: Case.Aux[P, L, LOut],
-        rotateLeft: hl.RotateLeft.Aux[RL, N, L]): Case.Aux[C, RL, LOut] =
+        rotateLeft: hl.RotateLeft.Aux[RL, N, L]
+    ): Case.Aux[C, RL, LOut] =
       new Case[C, RL] {
         type Result = LOut
 
@@ -239,8 +256,8 @@ trait Poly extends PolyApply with Serializable {
   object CaseBuilder extends LowPriorityCaseBuilder {
     import ops.function.FnToProduct
     implicit def fnCaseBuilder[F, H, T <: HList, Result](
-        implicit fntp: FnToProduct.Aux[F, ((H :: T) => Result)])
-      : CaseBuilder[F, H :: T, Result] =
+        implicit fntp: FnToProduct.Aux[F, ((H :: T) => Result)]
+    ): CaseBuilder[F, H :: T, Result] =
       new CaseBuilder[F, H :: T, Result] {
         def apply(f: F) = ProductCase((l: H :: T) => fntp(f)(l))
       }
@@ -280,8 +297,8 @@ class PolyMacros(val c: whitebox.Context) {
 
   import PolyDefns.Case
 
-  def materializeFromValueImpl[
-      P : WeakTypeTag, FT : WeakTypeTag, T : WeakTypeTag]: Tree = {
+  def materializeFromValueImpl[P: WeakTypeTag, FT: WeakTypeTag, T: WeakTypeTag]
+      : Tree = {
     val pTpe = weakTypeOf[P]
     val ftTpe = weakTypeOf[FT]
     val tTpe = weakTypeOf[T]
@@ -289,14 +306,17 @@ class PolyMacros(val c: whitebox.Context) {
     val recTpe = weakTypeOf[Case[P, FT :: HNil]]
     if (c.openImplicits.tail.exists(_.pt =:= recTpe))
       c.abort(
-          c.enclosingPosition,
-          s"Diverging implicit expansion for Case.Aux[$pTpe, $ftTpe :: HNil]")
+        c.enclosingPosition,
+        s"Diverging implicit expansion for Case.Aux[$pTpe, $ftTpe :: HNil]"
+      )
 
     val value = pTpe match {
       case SingleType(_, f) => f
       case other =>
-        c.abort(c.enclosingPosition,
-                "Can only materialize cases from singleton values")
+        c.abort(
+          c.enclosingPosition,
+          "Can only materialize cases from singleton values"
+        )
     }
 
     q""" $value.caseUniv[$tTpe] """

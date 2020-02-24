@@ -8,12 +8,13 @@ import reactivemongo.bson._
 object $primitive {
   import play.modules.reactivemongo.json._
 
-  def apply[A : InColl, B](query: JsObject,
-                           field: String,
-                           modifier: QueryBuilder => QueryBuilder = identity,
-                           max: Option[Int] = None,
-                           hint: BSONDocument = BSONDocument())(
-      extract: JsValue => Option[B]): Fu[List[B]] =
+  def apply[A: InColl, B](
+      query: JsObject,
+      field: String,
+      modifier: QueryBuilder => QueryBuilder = identity,
+      max: Option[Int] = None,
+      hint: BSONDocument = BSONDocument()
+  )(extract: JsValue => Option[B]): Fu[List[B]] =
     modifier {
       implicitly[InColl[A]].coll.genericQueryBuilder
         .query(query)
@@ -23,10 +24,11 @@ object $primitive {
       extract(JsObjectReader.read(obj) \ field get)
     } map (_.flatten)
 
-  def one[A : InColl, B](query: JsObject,
-                         field: String,
-                         modifier: QueryBuilder => QueryBuilder = identity)(
-      extract: JsValue => Option[B]): Fu[Option[B]] =
+  def one[A: InColl, B](
+      query: JsObject,
+      field: String,
+      modifier: QueryBuilder => QueryBuilder = identity
+  )(extract: JsValue => Option[B]): Fu[Option[B]] =
     modifier {
       implicitly[InColl[A]].coll.genericQueryBuilder
         .query(query)

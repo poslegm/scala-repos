@@ -67,7 +67,8 @@ class Memcached extends CodecFactory[Command, Response] {
       // pass every request through a filter to create trace data
       override def prepareConnFactory(
           underlying: ServiceFactory[Command, Response],
-          params: Stack.Params) =
+          params: Stack.Params
+      ) =
         new MemcachedLoggingFilter(params[param.Stats].statsReceiver)
           .andThen(underlying)
 
@@ -103,9 +104,7 @@ private class MemcachedTracingFilter extends SimpleFilter[Command, Response] {
                   keyStr
               }
               val misses: immutable.Set[String] = keys -- hits
-              misses foreach { k: String =>
-                Trace.recordBinary(k, "Miss")
-              }
+              misses foreach { k: String => Trace.recordBinary(k, "Miss") }
             case _ =>
           }
         case _ =>
@@ -132,7 +131,7 @@ private class MemcachedLoggingFilter(stats: StatsReceiver)
             NoOp() | Info(_, _) | InfoLines(_) | Values(_) | Number(_) =>
           succ.counter(command.name).incr()
         case Error(_) => error.counter(command.name).incr()
-        case _ => error.counter(command.name).incr()
+        case _        => error.counter(command.name).incr()
       }
       response
     }

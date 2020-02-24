@@ -28,7 +28,8 @@ class ScImplicitFunctionListCellRenderer(actual: PsiNamedElement)
       value: Any,
       index: Int,
       isSelected: Boolean,
-      cellHasFocus: Boolean) = {
+      cellHasFocus: Boolean
+  ) = {
     val attrFirstPart = EditorColorsManager
       .getInstance()
       .getGlobalScheme
@@ -50,7 +51,12 @@ class ScImplicitFunctionListCellRenderer(actual: PsiNamedElement)
     val firstPart = tuple.getFirstPart
     val secondPart = tuple.getSecondPart
     val comp = getSuperListCellRendererComponent(
-        containter.getList, item, index, isSelected, cellHasFocus)
+      containter.getList,
+      item,
+      index,
+      isSelected,
+      cellHasFocus
+    )
     comp match {
       case container: Container =>
         val colored =
@@ -58,38 +64,49 @@ class ScImplicitFunctionListCellRenderer(actual: PsiNamedElement)
         if (item == actual) {
           colored.clear()
           colored.setIcon(actual.getIcon(0))
-          colored.append(getElementText(actual),
-                         SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+          colored.append(
+            getElementText(actual),
+            SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES
+          )
         }
 
         if (firstPart.contains(item)) {
-          colored.setBackground(if (isSelected)
-                UIUtil.getListSelectionBackground else implicitFirstPart)
+          colored.setBackground(
+            if (isSelected)
+              UIUtil.getListSelectionBackground
+            else implicitFirstPart
+          )
         } else if (secondPart.contains(item)) {
-          colored.setBackground(if (isSelected)
-                UIUtil.getListSelectionBackground else implicitSecondPart)
+          colored.setBackground(
+            if (isSelected)
+              UIUtil.getListSelectionBackground
+            else implicitSecondPart
+          )
         } else {
           throw new RuntimeException(
-              "Implicit conversions list contains unknown value: " + item)
+            "Implicit conversions list contains unknown value: " + item
+          )
         }
 
         val rightRenderer: DefaultListCellRenderer = getRightCellRenderer(item)
         if (rightRenderer != null) {
           val rightCellRendererComponent: Component =
             DefaultListCellRendererAdapter.getListCellRendererComponent(
-                rightRenderer,
-                containter.getList,
-                item,
-                index,
-                isSelected,
-                cellHasFocus)
+              rightRenderer,
+              containter.getList,
+              item,
+              index,
+              isSelected,
+              cellHasFocus
+            )
           val color: Color = isSelected match {
-            case true => UIUtil.getListSelectionBackground
-            case false if firstPart.contains(item) => implicitFirstPart
+            case true                               => UIUtil.getListSelectionBackground
+            case false if firstPart.contains(item)  => implicitFirstPart
             case false if secondPart.contains(item) => implicitSecondPart
             case _ =>
               throw new RuntimeException(
-                  "Implicit conversions list contains unknown value: " + item)
+                "Implicit conversions list contains unknown value: " + item
+              )
           }
           rightCellRendererComponent.setBackground(color)
           add(rightCellRendererComponent, BorderLayout.EAST)
@@ -107,11 +124,12 @@ class ScImplicitFunctionListCellRenderer(actual: PsiNamedElement)
     element match {
       case method: ScFunction =>
         method.name +
-        PresentationUtil.presentationString(method.paramClauses) + ": " +
-        PresentationUtil.presentationString(method.returnType.getOrAny)
+          PresentationUtil.presentationString(method.paramClauses) + ": " +
+          PresentationUtil.presentationString(method.returnType.getOrAny)
       case b: ScBindingPattern =>
         b.name + ": " + PresentationUtil.presentationString(
-            b.getType(TypingContext.empty).getOrAny)
+          b.getType(TypingContext.empty).getOrAny
+        )
       case _ => element.name
     }
   }

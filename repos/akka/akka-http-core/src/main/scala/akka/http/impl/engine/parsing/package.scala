@@ -32,9 +32,14 @@ package object parsing {
     if (ix < input.length) input(ix) else throw NotEnoughDataException
 
   private[http] def asciiString(
-      input: ByteString, start: Int, end: Int): String = {
-    @tailrec def build(ix: Int = start, sb: JStringBuilder = new JStringBuilder(end - start))
-      : String =
+      input: ByteString,
+      start: Int,
+      end: Int
+  ): String = {
+    @tailrec def build(
+        ix: Int = start,
+        sb: JStringBuilder = new JStringBuilder(end - start)
+    ): String =
       if (ix == end) sb.toString
       else build(ix + 1, sb.append(input(ix).toChar))
     if (start == end) "" else build()
@@ -43,7 +48,8 @@ package object parsing {
   private[http] def logParsingError(
       info: ErrorInfo,
       log: LoggingAdapter,
-      setting: ParserSettings.ErrorLoggingVerbosity): Unit =
+      setting: ParserSettings.ErrorLoggingVerbosity
+  ): Unit =
     setting match {
       case ParserSettings.ErrorLoggingVerbosity.Off ⇒ // nothing to do
       case ParserSettings.ErrorLoggingVerbosity.Simple ⇒
@@ -58,12 +64,15 @@ package parsing {
   /**
     * INTERNAL API
     */
-  private[parsing] class ParsingException(val status: StatusCode,
-                                          val info: ErrorInfo)
-      extends RuntimeException(info.formatPretty) {
+  private[parsing] class ParsingException(
+      val status: StatusCode,
+      val info: ErrorInfo
+  ) extends RuntimeException(info.formatPretty) {
     def this(status: StatusCode, summary: String = "") =
-      this(status,
-           ErrorInfo(if (summary.isEmpty) status.defaultMessage else summary))
+      this(
+        status,
+        ErrorInfo(if (summary.isEmpty) status.defaultMessage else summary)
+      )
     def this(summary: String) =
       this(StatusCodes.BadRequest, ErrorInfo(summary))
   }

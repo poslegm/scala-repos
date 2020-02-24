@@ -51,7 +51,7 @@ import org.apache.spark.graphx._
   */
 object TriangleCount {
 
-  def run[VD : ClassTag, ED : ClassTag](graph: Graph[VD, ED]): Graph[Int, ED] = {
+  def run[VD: ClassTag, ED: ClassTag](graph: Graph[VD, ED]): Graph[Int, ED] = {
     // Transform the edge data something cheap to shuffle and then canonicalize
     val canonicalGraph =
       graph.mapEdges(e => true).removeSelfEdges().convertToCanonicalEdges()
@@ -63,8 +63,9 @@ object TriangleCount {
     }
   }
 
-  def runPreCanonicalized[VD : ClassTag, ED : ClassTag](
-      graph: Graph[VD, ED]): Graph[Int, ED] = {
+  def runPreCanonicalized[VD: ClassTag, ED: ClassTag](
+      graph: Graph[VD, ED]
+  ): Graph[Int, ED] = {
     // Construct set representations of the neighborhoods
     val nbrSets: VertexRDD[VertexSet] =
       graph.collectNeighborIds(EdgeDirection.Either).mapValues { (vid, nbrs) =>
@@ -82,8 +83,7 @@ object TriangleCount {
 
     // join the sets with the graph
     val setGraph: Graph[VertexSet, ED] = graph.outerJoinVertices(nbrSets) {
-      (vid, _, optSet) =>
-        optSet.getOrElse(null)
+      (vid, _, optSet) => optSet.getOrElse(null)
     }
 
     // Edge function computes intersection of smaller vertex with larger vertex
@@ -112,8 +112,10 @@ object TriangleCount {
     graph.outerJoinVertices(counters) { (_, _, optCounter: Option[Int]) =>
       val dblCount = optCounter.getOrElse(0)
       // This algorithm double counts each triangle so the final count should be even
-      require(dblCount % 2 == 0,
-              "Triangle count resulted in an invalid number of triangles.")
+      require(
+        dblCount % 2 == 0,
+        "Triangle count resulted in an invalid number of triangles."
+      )
       dblCount / 2
     }
   }

@@ -42,8 +42,9 @@ object QuadCurveTo {
 }
 
 class QuadCurveTo(
-    override val delegate: jfxss.QuadCurveTo = new jfxss.QuadCurveTo())
-    extends PathElement(delegate) with PositionDelegate[jfxss.QuadCurveTo]
+    override val delegate: jfxss.QuadCurveTo = new jfxss.QuadCurveTo()
+) extends PathElement(delegate)
+    with PositionDelegate[jfxss.QuadCurveTo]
     with SFXDelegate[jfxss.QuadCurveTo] {
 
   def controlX: DoubleProperty = delegate.controlXProperty

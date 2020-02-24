@@ -17,7 +17,7 @@ object Blog extends LilaController {
     blogApi context ref flatMap { implicit prismic =>
       blogApi.recent(prismic.api, ref, 50) flatMap {
         case Some(response) => fuccess(Ok(views.html.blog.index(response)))
-        case _ => notFound
+        case _              => notFound
       }
     }
   }
@@ -42,16 +42,14 @@ object Blog extends LilaController {
     blogApi context ref flatMap { implicit prismic =>
       blogApi.recent(prismic.api, ref, 50) map {
         _ ?? (_.results)
-      } map { docs =>
-        Ok(views.xml.blog.atom(docs)) as XML
-      }
+      } map { docs => Ok(views.xml.blog.atom(docs)) as XML }
     }
   }
 
   // -- Helper: Check if the slug is valid and redirect to the most recent version id needed
   private def checkSlug(document: Option[Document], slug: String)(
-      callback: Either[String, Document] => Result)(
-      implicit ctx: lila.api.Context) =
+      callback: Either[String, Document] => Result
+  )(implicit ctx: lila.api.Context) =
     document.collect {
       case document if document.slug == slug =>
         fuccess(callback(Right(document)))

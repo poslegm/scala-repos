@@ -34,7 +34,8 @@ class ConfigDocSpec extends WordSpec with Matchers {
 
   "deployment section" in {
     val conf =
-      ConfigFactory.parseString("""
+      ConfigFactory.parseString(
+        """
   #//#deployment-section
   akka.actor.deployment {
   
@@ -68,7 +69,8 @@ class ConfigDocSpec extends WordSpec with Matchers {
     mailbox-type = "a.b.MyPrioMailbox"
   }
   #//#deployment-section
-  """)
+  """
+      )
     val system = ActorSystem("MySystem", conf)
     TestKit.shutdownActorSystem(system)
   }

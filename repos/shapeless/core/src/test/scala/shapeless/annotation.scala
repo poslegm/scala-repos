@@ -70,10 +70,14 @@ class AnnotationTests {
 
   @Test
   def invalidAnnotation {
-    illTyped(" Annotation[Other, Dummy] ",
-             "could not find implicit value for parameter annotation: .*")
-    illTyped(" Annotation[Dummy, CC] ",
-             "could not find implicit value for parameter annotation: .*")
+    illTyped(
+      " Annotation[Other, Dummy] ",
+      "could not find implicit value for parameter annotation: .*"
+    )
+    illTyped(
+      " Annotation[Dummy, CC] ",
+      "could not find implicit value for parameter annotation: .*"
+    )
   }
 
   @Test
@@ -120,11 +124,17 @@ class AnnotationTests {
 
   @Test
   def invalidAnnotations {
-    illTyped(" Annotations[Dummy, CC] ",
-             "could not find implicit value for parameter annotations: .*")
-    illTyped(" Annotations[Dummy, Base] ",
-             "could not find implicit value for parameter annotations: .*")
-    illTyped(" Annotations[Second, Dummy] ",
-             "could not find implicit value for parameter annotations: .*")
+    illTyped(
+      " Annotations[Dummy, CC] ",
+      "could not find implicit value for parameter annotations: .*"
+    )
+    illTyped(
+      " Annotations[Dummy, Base] ",
+      "could not find implicit value for parameter annotations: .*"
+    )
+    illTyped(
+      " Annotations[Second, Dummy] ",
+      "could not find implicit value for parameter annotations: .*"
+    )
   }
 }

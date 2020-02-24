@@ -5,7 +5,12 @@ package api
 package base
 
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.plugins.scala.lang.psi.api.base.types.{ScParameterizedTypeElement, ScSimpleTypeElement, ScTypeArgs, ScTypeElement}
+import org.jetbrains.plugins.scala.lang.psi.api.base.types.{
+  ScParameterizedTypeElement,
+  ScSimpleTypeElement,
+  ScTypeArgs,
+  ScTypeElement
+}
 import org.jetbrains.plugins.scala.lang.psi.api.expr._
 import org.jetbrains.plugins.scala.lang.psi.types.ScType
 import org.jetbrains.plugins.scala.lang.psi.types.nonvalue.Parameter
@@ -24,7 +29,7 @@ trait ScConstructor extends ScalaPsiElement {
 
   def typeArgList: Option[ScTypeArgs] = typeElement match {
     case x: ScParameterizedTypeElement => Some(x.typeArgList)
-    case _ => None
+    case _                             => None
   }
 
   def args = findChild(classOf[ScArgumentExprList])
@@ -49,16 +54,17 @@ trait ScConstructor extends ScalaPsiElement {
 
 object ScConstructor {
   def unapply(
-      c: ScConstructor): Option[(ScTypeElement, Seq[ScArgumentExprList])] = {
+      c: ScConstructor
+  ): Option[(ScTypeElement, Seq[ScArgumentExprList])] = {
     Option(c).map(it => (it.typeElement, it.arguments))
   }
 
   object byReference {
     def unapply(ref: ScReferenceElement): Option[ScConstructor] = {
       PsiTreeUtil.getParentOfType(ref, classOf[ScConstructor]) match {
-        case null => None
+        case null                           => None
         case c if c.reference.contains(ref) => Some(c)
-        case _ => None
+        case _                              => None
       }
     }
   }

@@ -26,8 +26,7 @@ object MetricDevSuite {
     def calculate(q: Int, p: Int, a: Int): Int = q
   }
 
-  class QDoubleSumMetric
-      extends SumMetric[EmptyParams, Int, Int, Int, Double] {
+  class QDoubleSumMetric extends SumMetric[EmptyParams, Int, Int, Int, Double] {
     def calculate(q: Int, p: Int, a: Int): Double = q.toDouble
   }
 
@@ -38,7 +37,8 @@ object MetricDevSuite {
   class QOptionAverageMetric
       extends OptionAverageMetric[EmptyParams, Int, Int, Int] {
     def calculate(q: Int, p: Int, a: Int): Option[Double] = {
-      if (q < 0) { None } else { Some(q.toDouble) }
+      if (q < 0) { None }
+      else { Some(q.toDouble) }
     }
   }
 
@@ -49,7 +49,8 @@ object MetricDevSuite {
   class QOptionStdevMetric
       extends OptionStdevMetric[EmptyParams, Int, Int, Int] {
     def calculate(q: Int, p: Int, a: Int): Option[Double] = {
-      if (q < 0) { None } else { Some(q.toDouble) }
+      if (q < 0) { None }
+      else { Some(q.toDouble) }
     }
   }
 }
@@ -61,8 +62,10 @@ class MetricDevSuite extends FunSuite with Inside with SharedSparkContext {
     val qpaSeq0 = Seq((1, 0, 0), (2, 0, 0), (3, 0, 0))
     val qpaSeq1 = Seq((4, 0, 0), (5, 0, 0), (6, 0, 0))
 
-    val evalDataSet = Seq((EmptyParams(), sc.parallelize(qpaSeq0)),
-                          (EmptyParams(), sc.parallelize(qpaSeq1)))
+    val evalDataSet = Seq(
+      (EmptyParams(), sc.parallelize(qpaSeq0)),
+      (EmptyParams(), sc.parallelize(qpaSeq1))
+    )
 
     val m = new MetricDevSuite.QAverageMetric()
     val result = m.calculate(sc, evalDataSet)
@@ -74,8 +77,10 @@ class MetricDevSuite extends FunSuite with Inside with SharedSparkContext {
     val qpaSeq0 = Seq((1, 0, 0), (2, 0, 0), (3, 0, 0))
     val qpaSeq1 = Seq((-4, 0, 0), (-5, 0, 0), (6, 0, 0))
 
-    val evalDataSet = Seq((EmptyParams(), sc.parallelize(qpaSeq0)),
-                          (EmptyParams(), sc.parallelize(qpaSeq1)))
+    val evalDataSet = Seq(
+      (EmptyParams(), sc.parallelize(qpaSeq0)),
+      (EmptyParams(), sc.parallelize(qpaSeq1))
+    )
 
     val m = new MetricDevSuite.QOptionAverageMetric()
     val result = m.calculate(sc, evalDataSet)
@@ -87,8 +92,10 @@ class MetricDevSuite extends FunSuite with Inside with SharedSparkContext {
     val qpaSeq0 = Seq((1, 0, 0), (1, 0, 0), (1, 0, 0), (1, 0, 0))
     val qpaSeq1 = Seq((5, 0, 0), (5, 0, 0), (5, 0, 0), (5, 0, 0))
 
-    val evalDataSet = Seq((EmptyParams(), sc.parallelize(qpaSeq0)),
-                          (EmptyParams(), sc.parallelize(qpaSeq1)))
+    val evalDataSet = Seq(
+      (EmptyParams(), sc.parallelize(qpaSeq0)),
+      (EmptyParams(), sc.parallelize(qpaSeq1))
+    )
 
     val m = new MetricDevSuite.QStdevMetric()
     val result = m.calculate(sc, evalDataSet)
@@ -100,8 +107,10 @@ class MetricDevSuite extends FunSuite with Inside with SharedSparkContext {
     val qpaSeq0 = Seq((1, 0, 0), (1, 0, 0), (1, 0, 0), (1, 0, 0))
     val qpaSeq1 = Seq((5, 0, 0), (5, 0, 0), (5, 0, 0), (5, 0, 0), (-5, 0, 0))
 
-    val evalDataSet = Seq((EmptyParams(), sc.parallelize(qpaSeq0)),
-                          (EmptyParams(), sc.parallelize(qpaSeq1)))
+    val evalDataSet = Seq(
+      (EmptyParams(), sc.parallelize(qpaSeq0)),
+      (EmptyParams(), sc.parallelize(qpaSeq1))
+    )
 
     val m = new MetricDevSuite.QOptionStdevMetric()
     val result = m.calculate(sc, evalDataSet)
@@ -113,8 +122,10 @@ class MetricDevSuite extends FunSuite with Inside with SharedSparkContext {
     val qpaSeq0 = Seq((1, 0, 0), (2, 0, 0), (3, 0, 0))
     val qpaSeq1 = Seq((4, 0, 0), (5, 0, 0), (6, 0, 0))
 
-    val evalDataSet = Seq((EmptyParams(), sc.parallelize(qpaSeq0)),
-                          (EmptyParams(), sc.parallelize(qpaSeq1)))
+    val evalDataSet = Seq(
+      (EmptyParams(), sc.parallelize(qpaSeq0)),
+      (EmptyParams(), sc.parallelize(qpaSeq1))
+    )
 
     val m = new MetricDevSuite.QIntSumMetric()
     val result = m.calculate(sc, evalDataSet)
@@ -126,8 +137,10 @@ class MetricDevSuite extends FunSuite with Inside with SharedSparkContext {
     val qpaSeq0 = Seq((1, 0, 0), (2, 0, 0), (3, 0, 0))
     val qpaSeq1 = Seq((4, 0, 0), (5, 0, 0), (6, 0, 0))
 
-    val evalDataSet = Seq((EmptyParams(), sc.parallelize(qpaSeq0)),
-                          (EmptyParams(), sc.parallelize(qpaSeq1)))
+    val evalDataSet = Seq(
+      (EmptyParams(), sc.parallelize(qpaSeq0)),
+      (EmptyParams(), sc.parallelize(qpaSeq1))
+    )
 
     val m = new MetricDevSuite.QDoubleSumMetric()
     val result = m.calculate(sc, evalDataSet)

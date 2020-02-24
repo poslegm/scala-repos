@@ -86,8 +86,9 @@ object TimeTest {
 
   def testRun(markdown: String, iterations: Int) {
     println("Running Actuarius " + iterations + " times...")
-    println("... took " +(executionTime(
-            () => runActuarius(markdown, iterations)))._1 + "ms")
+    println(
+      "... took " + (executionTime(() => runActuarius(markdown, iterations)))._1 + "ms"
+    )
   }
 
   object testParser extends BaseParsers {
@@ -117,16 +118,20 @@ object TimeTest {
     val iterations = 100000
     println("Running ws...")
     println(
-        "...took " + executionTime(() =>
-              testParser.runParser(wsString, testParser.ws, iterations))._1 +
-        "ms")
+      "...took " + executionTime(() =>
+        testParser.runParser(wsString, testParser.ws, iterations)
+      )._1 +
+        "ms"
+    )
     //println("Running ws1...")
     //println("...took " + executionTime (() => testParser.runParser(wsString, testParser.ws, iterations)))
     println("Running ws2...")
     println(
-        "...took " + executionTime(() =>
-              testParser.runParser(wsString, testParser.ws2, iterations))._1 +
-        "ms")
+      "...took " + executionTime(() =>
+        testParser.runParser(wsString, testParser.ws2, iterations)
+      )._1 +
+        "ms"
+    )
   }
 
   def main(args: Array[String]) {

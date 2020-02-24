@@ -15,8 +15,9 @@ class PoolingReadRepairClient(
     readRepairProbability: Float,
     readRepairCount: Int = 1,
     futurePool: FuturePool = new ExecutorServiceFuturePool(
-          Executors.newCachedThreadPool()))
-    extends Client {
+      Executors.newCachedThreadPool()
+    )
+) extends Client {
 
   val rand = new Random()
 
@@ -52,9 +53,7 @@ class PoolingReadRepairClient(
         // Read-repair clients that had partial values
         results.zip(clients).map { tuple =>
           val missing = canon.hits -- tuple._1.hits.keys
-          missing.map { hit =>
-            set(hit._1, hit._2.value)
-          }
+          missing.map { hit => set(hit._1, hit._2.value) }
         }
       }
 
@@ -88,7 +87,12 @@ class PoolingReadRepairClient(
   def decr(key: String, delta: Long) = unsupported
   def incr(key: String, delta: Long) = unsupported
   def checkAndSet(
-      key: String, flags: Int, expiry: Time, value: Buf, casUnique: Buf) =
+      key: String,
+      flags: Int,
+      expiry: Time,
+      value: Buf,
+      casUnique: Buf
+  ) =
     unsupported
   def replace(key: String, flags: Int, expiry: Time, value: Buf) = unsupported
   def prepend(key: String, flags: Int, expiry: Time, value: Buf) = unsupported

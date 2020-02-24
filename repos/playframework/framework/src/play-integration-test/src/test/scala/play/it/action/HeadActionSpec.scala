@@ -23,16 +23,21 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import org.asynchttpclient.netty.NettyResponse
 
 object NettyHeadActionSpec
-    extends HeadActionSpec with NettyIntegrationSpecification
+    extends HeadActionSpec
+    with NettyIntegrationSpecification
 object AkkaHttpHeadActionSpec
-    extends HeadActionSpec with AkkaHttpIntegrationSpecification
+    extends HeadActionSpec
+    with AkkaHttpIntegrationSpecification
 
 trait HeadActionSpec
-    extends Specification with FutureAwaits with DefaultAwaitTimeout
+    extends Specification
+    with FutureAwaits
+    with DefaultAwaitTimeout
     with ServerIntegrationSpecification {
 
   private def route(verb: String, path: String)(
-      handler: EssentialAction): PartialFunction[(String, String), Handler] = {
+      handler: EssentialAction
+  ): PartialFunction[(String, String), Handler] = {
     case (v, p) if v == verb && p == path => handler
   }
   sequential
@@ -41,9 +46,7 @@ trait HeadActionSpec
 
     val chunkedResponse: Routes = {
       case GET(p"/chunked") =>
-        Action { request =>
-          Results.Ok.chunked(Source(List("a", "b", "c")))
-        }
+        Action { request => Results.Ok.chunked(Source(List("a", "b", "c"))) }
     }
 
     val routes = get // GET /get
@@ -62,7 +65,9 @@ trait HeadActionSpec
       }
     }
 
-    def serverWithAction[T](action: EssentialAction)(block: WSClient => T): T = {
+    def serverWithAction[T](
+        action: EssentialAction
+    )(block: WSClient => T): T = {
       Server.withRouter() {
         case _ => action
       } { implicit port =>
@@ -131,15 +136,17 @@ trait HeadActionSpec
     }
 
     "tag request with DefaultHttpRequestHandler" in serverWithAction(
-        new RequestTaggingHandler with EssentialAction {
-      def tagRequest(request: RequestHeader) =
-        request.copy(tags = Map(RouteComments -> "some comment"))
-      def apply(rh: RequestHeader) =
-        Action {
-          Results.Ok.withHeaders(
-              rh.tags.get(RouteComments).map(RouteComments -> _).toSeq: _*)
-        }(rh)
-    }) { client =>
+      new RequestTaggingHandler with EssentialAction {
+        def tagRequest(request: RequestHeader) =
+          request.copy(tags = Map(RouteComments -> "some comment"))
+        def apply(rh: RequestHeader) =
+          Action {
+            Results.Ok.withHeaders(
+              rh.tags.get(RouteComments).map(RouteComments -> _).toSeq: _*
+            )
+          }(rh)
+      }
+    ) { client =>
       val result = await(client.url("/get").head())
       result.status must_== OK
       result.header(RouteComments) must beSome("some comment")

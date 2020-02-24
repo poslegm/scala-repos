@@ -42,5 +42,7 @@ import scalafx.testutil.{RunOnApplicationThread, SimpleSFXDelegateSpec}
 @RunWith(classOf[JUnitRunner])
 class IndexedCellSpec[T]
     extends SimpleSFXDelegateSpec[jfxsc.IndexedCell[T], IndexedCell[T]](
-        classOf[jfxsc.IndexedCell[T]], classOf[IndexedCell[T]])
+      classOf[jfxsc.IndexedCell[T]],
+      classOf[IndexedCell[T]]
+    )
     with RunOnApplicationThread

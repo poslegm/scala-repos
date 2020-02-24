@@ -22,7 +22,7 @@ import scala.collection.JavaConverters._
 /**
   * Public API but not intended for subclassing
   */
-abstract class ClientConnectionSettings private[akka]()
+abstract class ClientConnectionSettings private[akka] ()
     extends akka.http.javadsl.settings.ClientConnectionSettings {
   self: ClientConnectionSettingsImpl ⇒
   def userAgentHeader: Option[`User-Agent`]
@@ -52,23 +52,28 @@ abstract class ClientConnectionSettings private[akka]()
 
   // overrides for more specific return type
   override def withConnectingTimeout(
-      newValue: FiniteDuration): ClientConnectionSettings =
+      newValue: FiniteDuration
+  ): ClientConnectionSettings =
     self.copy(connectingTimeout = newValue)
   override def withIdleTimeout(newValue: Duration): ClientConnectionSettings =
     self.copy(idleTimeout = newValue)
   override def withRequestHeaderSizeHint(
-      newValue: Int): ClientConnectionSettings =
+      newValue: Int
+  ): ClientConnectionSettings =
     self.copy(requestHeaderSizeHint = newValue)
 
   // overloads for idiomatic Scala use
   def withWebsocketRandomFactory(
-      newValue: () ⇒ Random): ClientConnectionSettings =
+      newValue: () ⇒ Random
+  ): ClientConnectionSettings =
     self.copy(websocketRandomFactory = newValue)
   def withUserAgentHeader(
-      newValue: Option[`User-Agent`]): ClientConnectionSettings =
+      newValue: Option[`User-Agent`]
+  ): ClientConnectionSettings =
     self.copy(userAgentHeader = newValue)
   def withSocketOptions(
-      newValue: immutable.Seq[SocketOption]): ClientConnectionSettings =
+      newValue: immutable.Seq[SocketOption]
+  ): ClientConnectionSettings =
     self.copy(socketOptions = newValue)
   def withParserSettings(newValue: ParserSettings): ClientConnectionSettings =
     self.copy(parserSettings = newValue)

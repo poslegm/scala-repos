@@ -61,8 +61,9 @@ trait PlayRunners extends HttpVerbs {
     }
   }
 
-  def running[T](builder: GuiceApplicationBuilder => GuiceApplicationBuilder)(
-      block: Application => T): T = {
+  def running[T](
+      builder: GuiceApplicationBuilder => GuiceApplicationBuilder
+  )(block: Application => T): T = {
     val app = builder(baseApplicationBuilder).build()
     running(app)(block(app))
   }
@@ -85,8 +86,9 @@ trait PlayRunners extends HttpVerbs {
     * Executes a block of code in a running server, with a test browser.
     */
   def running[T, WEBDRIVER <: WebDriver](
-      testServer: TestServer, webDriver: Class[WEBDRIVER])(
-      block: TestBrowser => T): T = {
+      testServer: TestServer,
+      webDriver: Class[WEBDRIVER]
+  )(block: TestBrowser => T): T = {
     running(testServer, WebDriverFactory(webDriver))(block)
   }
 
@@ -94,7 +96,8 @@ trait PlayRunners extends HttpVerbs {
     * Executes a block of code in a running server, with a test browser.
     */
   def running[T](testServer: TestServer, webDriver: WebDriver)(
-      block: TestBrowser => T): T = {
+      block: TestBrowser => T
+  ): T = {
     var browser: TestBrowser = null
     PlayRunners.mutex.synchronized {
       try {
@@ -120,17 +123,20 @@ trait PlayRunners extends HttpVerbs {
   /**
     * Constructs a in-memory (h2) database configuration to add to a FakeApplication.
     */
-  def inMemoryDatabase(name: String = "default",
-                       options: Map[String, String] = Map
-                           .empty[String, String]): Map[String, String] = {
-    val optionsForDbUrl = options.map { case (k, v) => k + "=" + v }
+  def inMemoryDatabase(
+      name: String = "default",
+      options: Map[String, String] = Map
+        .empty[String, String]
+  ): Map[String, String] = {
+    val optionsForDbUrl = options
+      .map { case (k, v) => k + "=" + v }
       .mkString(";", ";", "")
 
     Map(
-        ("db." + name + ".driver") -> "org.h2.Driver",
-        ("db." + name + ".url") ->
+      ("db." + name + ".driver") -> "org.h2.Driver",
+      ("db." + name + ".url") ->
         ("jdbc:h2:mem:play-test-" + scala.util.Random.nextInt +
-            optionsForDbUrl)
+          optionsForDbUrl)
     )
   }
 }
@@ -145,26 +151,31 @@ object PlayRunners {
 
 trait Writeables {
   implicit def writeableOf_AnyContentAsJson(
-      implicit codec: Codec): Writeable[AnyContentAsJson] =
+      implicit codec: Codec
+  ): Writeable[AnyContentAsJson] =
     Writeable.writeableOf_JsValue.map(c => c.json)
 
   implicit def writeableOf_AnyContentAsXml(
-      implicit codec: Codec): Writeable[AnyContentAsXml] =
+      implicit codec: Codec
+  ): Writeable[AnyContentAsXml] =
     Writeable.writeableOf_NodeSeq.map(c => c.xml)
 
   implicit def writeableOf_AnyContentAsFormUrlEncoded(
-      implicit code: Codec): Writeable[AnyContentAsFormUrlEncoded] =
+      implicit code: Codec
+  ): Writeable[AnyContentAsFormUrlEncoded] =
     Writeable.writeableOf_urlEncodedForm.map(c => c.data)
 
   implicit def writeableOf_AnyContentAsRaw: Writeable[AnyContentAsRaw] =
     Writeable.wBytes.map(c => c.raw.initialData)
 
   implicit def writeableOf_AnyContentAsText(
-      implicit code: Codec): Writeable[AnyContentAsText] =
+      implicit code: Codec
+  ): Writeable[AnyContentAsText] =
     Writeable.wString.map(c => c.txt)
 
   implicit def writeableOf_AnyContentAsEmpty(
-      implicit code: Codec): Writeable[AnyContentAsEmpty.type] =
+      implicit code: Codec
+  ): Writeable[AnyContentAsEmpty.type] =
     Writeable(_ => ByteString.empty, None)
 }
 
@@ -218,8 +229,10 @@ trait EssentialActionCaller { self: Writeables =>
     *
     * The body is serialised using the implicit writable, so that the action body parser can deserialise it.
     */
-  def call[T](action: EssentialAction, req: Request[T])(
-      implicit w: Writeable[T], mat: Materializer): Future[Result] =
+  def call[T](
+      action: EssentialAction,
+      req: Request[T]
+  )(implicit w: Writeable[T], mat: Materializer): Future[Result] =
     call(action, req, req.body)
 
   /**
@@ -228,13 +241,15 @@ trait EssentialActionCaller { self: Writeables =>
     * The body is serialised using the implicit writable, so that the action body parser can deserialise it.
     */
   def call[T](action: EssentialAction, rh: RequestHeader, body: T)(
-      implicit w: Writeable[T], mat: Materializer): Future[Result] = {
+      implicit w: Writeable[T],
+      mat: Materializer
+  ): Future[Result] = {
     import play.api.http.HeaderNames._
     val newContentType =
       rh.headers.get(CONTENT_TYPE).fold(w.contentType)(_ => None)
-    val rhWithCt = newContentType.map { ct =>
-      rh.copy(headers = rh.headers.replace(CONTENT_TYPE -> ct))
-    }.getOrElse(rh)
+    val rhWithCt = newContentType
+      .map { ct => rh.copy(headers = rh.headers.replace(CONTENT_TYPE -> ct)) }
+      .getOrElse(rh)
 
     val requestBody = Source.single(w.transform(body))
     action(rhWithCt).run(requestBody)
@@ -244,9 +259,11 @@ trait EssentialActionCaller { self: Writeables =>
 trait RouteInvokers extends EssentialActionCaller { self: Writeables =>
 
   // Java compatibility
-  def jRoute[T](app: Application,
-                r: RequestHeader,
-                body: RequestBody): Option[Future[Result]] = {
+  def jRoute[T](
+      app: Application,
+      r: RequestHeader,
+      body: RequestBody
+  ): Option[Future[Result]] = {
     route(app, r, body.asBytes())
   }
 
@@ -256,7 +273,8 @@ trait RouteInvokers extends EssentialActionCaller { self: Writeables =>
     * The body is serialised using the implicit writable, so that the action body parser can deserialise it.
     */
   def route[T](app: Application, rh: RequestHeader, body: T)(
-      implicit w: Writeable[T]): Option[Future[Result]] = {
+      implicit w: Writeable[T]
+  ): Option[Future[Result]] = {
     val (taggedRh, handler) = app.requestHandler.handlerForRequest(rh)
     import app.materializer
     handler match {
@@ -275,7 +293,8 @@ trait RouteInvokers extends EssentialActionCaller { self: Writeables =>
     */
   @deprecated("Use the version that takes an application", "2.5.0")
   def route[T](rh: RequestHeader, body: T)(
-      implicit w: Writeable[T]): Option[Future[Result]] =
+      implicit w: Writeable[T]
+  ): Option[Future[Result]] =
     route(Play.current, rh, body)
 
   /**
@@ -284,7 +303,8 @@ trait RouteInvokers extends EssentialActionCaller { self: Writeables =>
     * The body is serialised using the implicit writable, so that the action body parser can deserialise it.
     */
   def route[T](app: Application, req: Request[T])(
-      implicit w: Writeable[T]): Option[Future[Result]] =
+      implicit w: Writeable[T]
+  ): Option[Future[Result]] =
     route(app, req, req.body)
 
   /**
@@ -295,8 +315,9 @@ trait RouteInvokers extends EssentialActionCaller { self: Writeables =>
     * @deprecated Use the version that takes an application, since 2.5.0
     */
   @deprecated("Use the version that takes an application", "2.5.0")
-  def route[T](req: Request[T])(
-      implicit w: Writeable[T]): Option[Future[Result]] =
+  def route[T](
+      req: Request[T]
+  )(implicit w: Writeable[T]): Option[Future[Result]] =
     route(Play.current, req)
 }
 
@@ -328,8 +349,9 @@ trait ResultExtractors { self: HeaderNames with Status =>
   /**
     * Extracts the Content-Type of this Result value.
     */
-  def contentType(of: Future[Result])(
-      implicit timeout: Timeout): Option[String] = {
+  def contentType(
+      of: Future[Result]
+  )(implicit timeout: Timeout): Option[String] = {
     Await
       .result(of, timeout.duration)
       .body
@@ -351,8 +373,9 @@ trait ResultExtractors { self: HeaderNames with Status =>
   /**
     * Extracts the content as String.
     */
-  def contentAsString(of: Future[Result])(
-      implicit timeout: Timeout, mat: Materializer = NoMaterializer): String =
+  def contentAsString(
+      of: Future[Result]
+  )(implicit timeout: Timeout, mat: Materializer = NoMaterializer): String =
     contentAsBytes(of).decodeString(charset(of).getOrElse("utf-8"))
 
   /**
@@ -360,7 +383,8 @@ trait ResultExtractors { self: HeaderNames with Status =>
     */
   def contentAsBytes(of: Future[Result])(
       implicit timeout: Timeout,
-      mat: Materializer = NoMaterializer): ByteString = {
+      mat: Materializer = NoMaterializer
+  ): ByteString = {
     val result = Await.result(of, timeout.duration)
     Await.result(result.body.consumeData, timeout.duration)
   }
@@ -368,8 +392,9 @@ trait ResultExtractors { self: HeaderNames with Status =>
   /**
     * Extracts the content as Json.
     */
-  def contentAsJson(of: Future[Result])(
-      implicit timeout: Timeout, mat: Materializer = NoMaterializer): JsValue =
+  def contentAsJson(
+      of: Future[Result]
+  )(implicit timeout: Timeout, mat: Materializer = NoMaterializer): JsValue =
     Json.parse(contentAsString(of))
 
   /**
@@ -401,9 +426,10 @@ trait ResultExtractors { self: HeaderNames with Status =>
     * Extracts the Location header of this Result value if this Result is a Redirect.
     */
   def redirectLocation(
-      of: Future[Result])(implicit timeout: Timeout): Option[String] =
+      of: Future[Result]
+  )(implicit timeout: Timeout): Option[String] =
     Await.result(of, timeout.duration).header match {
-      case ResponseHeader(FOUND, headers, _) => headers.get(LOCATION)
+      case ResponseHeader(FOUND, headers, _)     => headers.get(LOCATION)
       case ResponseHeader(SEE_OTHER, headers, _) => headers.get(LOCATION)
       case ResponseHeader(TEMPORARY_REDIRECT, headers, _) =>
         headers.get(LOCATION)
@@ -416,20 +442,29 @@ trait ResultExtractors { self: HeaderNames with Status =>
     * Extracts an Header value of this Result value.
     */
   def header(header: String, of: Future[Result])(
-      implicit timeout: Timeout): Option[String] = headers(of).get(header)
+      implicit timeout: Timeout
+  ): Option[String] = headers(of).get(header)
 
   /**
     * Extracts all Headers of this Result value.
     */
-  def headers(of: Future[Result])(
-      implicit timeout: Timeout): Map[String, String] =
+  def headers(
+      of: Future[Result]
+  )(implicit timeout: Timeout): Map[String, String] =
     Await.result(of, timeout.duration).header.headers
 }
 
 object Helpers
-    extends PlayRunners with HeaderNames with Status with MimeTypes
-    with HttpProtocol with DefaultAwaitTimeout with ResultExtractors
-    with Writeables with EssentialActionCaller with RouteInvokers
+    extends PlayRunners
+    with HeaderNames
+    with Status
+    with MimeTypes
+    with HttpProtocol
+    with DefaultAwaitTimeout
+    with ResultExtractors
+    with Writeables
+    with EssentialActionCaller
+    with RouteInvokers
     with FutureAwaits
 
 /**
@@ -442,17 +477,25 @@ private[play] object NoMaterializer extends Materializer {
     throw new UnsupportedOperationException("NoMaterializer cannot be named")
   implicit def executionContext =
     throw new UnsupportedOperationException(
-        "NoMaterializer does not have an execution context")
+      "NoMaterializer does not have an execution context"
+    )
   def materialize[Mat](runnable: Graph[ClosedShape, Mat]) =
     throw new UnsupportedOperationException(
-        "No materializer was provided, probably when attempting to extract a response body, but that body is a streamed body and so requires a materializer to extract it.")
+      "No materializer was provided, probably when attempting to extract a response body, but that body is a streamed body and so requires a materializer to extract it."
+    )
   override def scheduleOnce(
-      delay: FiniteDuration, task: Runnable): Cancellable =
+      delay: FiniteDuration,
+      task: Runnable
+  ): Cancellable =
     throw new UnsupportedOperationException(
-        "NoMaterializer can't schedule tasks")
-  override def schedulePeriodically(initialDelay: FiniteDuration,
-                                    interval: FiniteDuration,
-                                    task: Runnable): Cancellable =
+      "NoMaterializer can't schedule tasks"
+    )
+  override def schedulePeriodically(
+      initialDelay: FiniteDuration,
+      interval: FiniteDuration,
+      task: Runnable
+  ): Cancellable =
     throw new UnsupportedOperationException(
-        "NoMaterializer can't schedule tasks")
+      "NoMaterializer can't schedule tasks"
+    )
 }

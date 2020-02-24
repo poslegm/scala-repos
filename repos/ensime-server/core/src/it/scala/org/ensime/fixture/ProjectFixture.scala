@@ -21,9 +21,9 @@ object ProjectFixture extends Matchers {
     probe.ignoreMsg {
       // these are too noisy for tests
       case e: SendBackgroundMessageEvent => true
-      case e: DebugOutputEvent => true
-      case ClearAllScalaNotesEvent => true
-      case ClearAllJavaNotesEvent => true
+      case e: DebugOutputEvent           => true
+      case ClearAllScalaNotesEvent       => true
+      case ClearAllJavaNotesEvent        => true
     }
 
     val project = TestActorRef[Project](Project(probe.ref), "project")
@@ -33,13 +33,13 @@ object ProjectFixture extends Matchers {
 
     if (config.scalaLibrary.isEmpty)
       probe.receiveN(2, 2.minutes.dilated) should contain only
-      (Broadcaster.Persist(AnalyzerReadyEvent),
-          Broadcaster.Persist(IndexerReadyEvent))
+        (Broadcaster.Persist(AnalyzerReadyEvent),
+        Broadcaster.Persist(IndexerReadyEvent))
     else
       probe.receiveN(3, 2.minutes.dilated) should contain only
-      (Broadcaster.Persist(AnalyzerReadyEvent),
-          Broadcaster.Persist(FullTypeCheckCompleteEvent),
-          Broadcaster.Persist(IndexerReadyEvent))
+        (Broadcaster.Persist(AnalyzerReadyEvent),
+        Broadcaster.Persist(FullTypeCheckCompleteEvent),
+        Broadcaster.Persist(IndexerReadyEvent))
     (project, probe)
   }
 }
@@ -59,15 +59,16 @@ trait ProjectFixture {
 
 trait IsolatedProjectFixture extends ProjectFixture {
   override def withProject(
-      testCode: (TestActorRef[Project], TestProbe) => Any)(
-      implicit testkit: TestKitFix, config: EnsimeConfig): Any = {
+      testCode: (TestActorRef[Project], TestProbe) => Any
+  )(implicit testkit: TestKitFix, config: EnsimeConfig): Any = {
     val (project, probe) = ProjectFixture.startup
     testCode(project, probe)
   }
 }
 
 trait SharedProjectFixture
-    extends ProjectFixture with SharedEnsimeConfigFixture
+    extends ProjectFixture
+    with SharedEnsimeConfigFixture
     with SharedTestKitFixture {
 
   private var _project: TestActorRef[Project] = _
@@ -83,7 +84,7 @@ trait SharedProjectFixture
   }
 
   override def withProject(
-      testCode: (TestActorRef[Project], TestProbe) => Any)(
-      implicit testkit: TestKitFix, config: EnsimeConfig): Any =
+      testCode: (TestActorRef[Project], TestProbe) => Any
+  )(implicit testkit: TestKitFix, config: EnsimeConfig): Any =
     testCode(_project, _probe)
 }

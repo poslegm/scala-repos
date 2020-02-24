@@ -22,13 +22,13 @@ class RouteConcurrencyServlet extends ScalatraServlet {
     route <- postRoutes.take(250)
     x = Future { post(false) {}; post(false) {} } // add some more routes while we're removing
     y = Future {
-      route.foreach { route =>
-        removeRoute("POST", route)
-      }
+      route.foreach { route => removeRoute("POST", route) }
     }
   } yield (x, y)
   Await.result(
-      Future.sequence(b map (kv => kv._1.flatMap(_ => kv._2))), 5.seconds)
+    Future.sequence(b map (kv => kv._1.flatMap(_ => kv._2))),
+    5.seconds
+  )
 
   get("/count/:method") {
     routes(HttpMethod(params("method"))).size.toString
@@ -41,7 +41,9 @@ class RouteConcurrencySpec extends ScalatraWordSpec {
   "A scalatra kernel " should {
     "support adding routes concurrently" in {
       get("/count/get") {
-        body should equal("251") // the 500 we added in the future, plus this count route
+        body should equal(
+          "251"
+        ) // the 500 we added in the future, plus this count route
       }
     }
 

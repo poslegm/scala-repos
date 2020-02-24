@@ -47,15 +47,16 @@ import org.apache.spark.TaskContext
   * you can use `rdd1`'s partitioner/partition size and not worry about running
   * out of memory because of the size of `rdd2`.
   */
-private[spark] class SubtractedRDD[K : ClassTag, V : ClassTag, W : ClassTag](
+private[spark] class SubtractedRDD[K: ClassTag, V: ClassTag, W: ClassTag](
     @transient var rdd1: RDD[_ <: Product2[K, V]],
     @transient var rdd2: RDD[_ <: Product2[K, W]],
-    part: Partitioner)
-    extends RDD[(K, V)](rdd1.context, Nil) {
+    part: Partitioner
+) extends RDD[(K, V)](rdd1.context, Nil) {
 
   override def getDependencies: Seq[Dependency[_]] = {
-    def rddDependency[T1 : ClassTag, T2 : ClassTag](
-        rdd: RDD[_ <: Product2[T1, T2]]): Dependency[_] = {
+    def rddDependency[T1: ClassTag, T2: ClassTag](
+        rdd: RDD[_ <: Product2[T1, T2]]
+    ): Dependency[_] = {
       if (rdd.partitioner == Some(part)) {
         logDebug("Adding one-to-one dependency with " + rdd)
         new OneToOneDependency(rdd)
@@ -110,10 +111,12 @@ private[spark] class SubtractedRDD[K : ClassTag, V : ClassTag, W : ClassTag](
 
         case shuffleDependency: ShuffleDependency[_, _, _] =>
           val iter = SparkEnv.get.shuffleManager
-            .getReader(shuffleDependency.shuffleHandle,
-                       partition.index,
-                       partition.index + 1,
-                       context)
+            .getReader(
+              shuffleDependency.shuffleHandle,
+              partition.index,
+              partition.index + 1,
+              context
+            )
             .read()
           iter.foreach(op)
       }

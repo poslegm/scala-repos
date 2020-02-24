@@ -26,7 +26,8 @@ import org.apache.spark.storage.StorageLevel
 import org.apache.spark.util.Utils
 
 class PeriodicRDDCheckpointerSuite
-    extends SparkFunSuite with MLlibTestSparkContext {
+    extends SparkFunSuite
+    with MLlibTestSparkContext {
 
   import PeriodicRDDCheckpointerSuite._
 
@@ -57,8 +58,8 @@ class PeriodicRDDCheckpointerSuite
     var rddsToCheck = Seq.empty[RDDToCheck]
     sc.setCheckpointDir(path)
     val rdd1 = createRDD(sc)
-    val checkpointer = new PeriodicRDDCheckpointer[Double](
-        checkpointInterval, rdd1.sparkContext)
+    val checkpointer =
+      new PeriodicRDDCheckpointer[Double](checkpointInterval, rdd1.sparkContext)
     checkpointer.update(rdd1)
     rdd1.count()
     rddsToCheck = rddsToCheck :+ RDDToCheck(rdd1, 1)
@@ -75,9 +76,7 @@ class PeriodicRDDCheckpointerSuite
     }
 
     checkpointer.deleteAllCheckpoints()
-    rddsToCheck.foreach { rdd =>
-      confirmCheckpointRemoved(rdd.rdd)
-    }
+    rddsToCheck.foreach { rdd => confirmCheckpointRemoved(rdd.rdd) }
 
     Utils.deleteRecursively(tempDir)
   }
@@ -92,9 +91,7 @@ private object PeriodicRDDCheckpointerSuite {
   }
 
   def checkPersistence(rdds: Seq[RDDToCheck], iteration: Int): Unit = {
-    rdds.foreach { g =>
-      checkPersistence(g.rdd, g.gIndex, iteration)
-    }
+    rdds.foreach { g => checkPersistence(g.rdd, g.gIndex, iteration) }
   }
 
   /**
@@ -112,14 +109,18 @@ private object PeriodicRDDCheckpointerSuite {
     } catch {
       case _: AssertionError =>
         throw new Exception(
-            s"PeriodicRDDCheckpointerSuite.checkPersistence failed with:\n" +
+          s"PeriodicRDDCheckpointerSuite.checkPersistence failed with:\n" +
             s"\t gIndex = $gIndex\n" + s"\t iteration = $iteration\n" +
-            s"\t rdd.getStorageLevel = ${rdd.getStorageLevel}\n")
+            s"\t rdd.getStorageLevel = ${rdd.getStorageLevel}\n"
+        )
     }
   }
 
   def checkCheckpoint(
-      rdds: Seq[RDDToCheck], iteration: Int, checkpointInterval: Int): Unit = {
+      rdds: Seq[RDDToCheck],
+      iteration: Int,
+      checkpointInterval: Int
+  ): Unit = {
     rdds.reverse.foreach { g =>
       checkCheckpoint(g.rdd, g.gIndex, iteration, checkpointInterval)
     }
@@ -132,8 +133,10 @@ private object PeriodicRDDCheckpointerSuite {
     //       is fixed (though it can then be simplified and not look for the files).
     val fs = FileSystem.get(rdd.sparkContext.hadoopConfiguration)
     rdd.getCheckpointFile.foreach { checkpointFile =>
-      assert(!fs.exists(new Path(checkpointFile)),
-             "RDD checkpoint file should have been removed")
+      assert(
+        !fs.exists(new Path(checkpointFile)),
+        "RDD checkpoint file should have been removed"
+      )
     }
   }
 
@@ -142,10 +145,12 @@ private object PeriodicRDDCheckpointerSuite {
     * @param gIndex  Index of rdd in order inserted into checkpointer (from 1).
     * @param iteration  Total number of rdds inserted into checkpointer.
     */
-  def checkCheckpoint(rdd: RDD[_],
-                      gIndex: Int,
-                      iteration: Int,
-                      checkpointInterval: Int): Unit = {
+  def checkCheckpoint(
+      rdd: RDD[_],
+      gIndex: Int,
+      iteration: Int,
+      checkpointInterval: Int
+  ): Unit = {
     try {
       if (gIndex % checkpointInterval == 0) {
         // We allow 2 checkpoint intervals since we perform an action (checkpointing a second rdd)
@@ -153,26 +158,31 @@ private object PeriodicRDDCheckpointerSuite {
         if (iteration - 2 * checkpointInterval < gIndex &&
             gIndex <= iteration) {
           assert(rdd.isCheckpointed, "RDD should be checkpointed")
-          assert(rdd.getCheckpointFile.nonEmpty,
-                 "RDD should have 2 checkpoint files")
+          assert(
+            rdd.getCheckpointFile.nonEmpty,
+            "RDD should have 2 checkpoint files"
+          )
         } else {
           confirmCheckpointRemoved(rdd)
         }
       } else {
         // RDD should never be checkpointed
         assert(!rdd.isCheckpointed, "RDD should never have been checkpointed")
-        assert(rdd.getCheckpointFile.isEmpty,
-               "RDD should not have any checkpoint files")
+        assert(
+          rdd.getCheckpointFile.isEmpty,
+          "RDD should not have any checkpoint files"
+        )
       }
     } catch {
       case e: AssertionError =>
         throw new Exception(
-            s"PeriodicRDDCheckpointerSuite.checkCheckpoint failed with:\n" +
+          s"PeriodicRDDCheckpointerSuite.checkCheckpoint failed with:\n" +
             s"\t gIndex = $gIndex\n" + s"\t iteration = $iteration\n" +
             s"\t checkpointInterval = $checkpointInterval\n" +
             s"\t rdd.isCheckpointed = ${rdd.isCheckpointed}\n" +
             s"\t rdd.getCheckpointFile = ${rdd.getCheckpointFile.mkString(", ")}\n" +
-            s"  AssertionError message: ${e.getMessage}")
+            s"  AssertionError message: ${e.getMessage}"
+        )
     }
   }
 }

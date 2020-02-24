@@ -16,8 +16,9 @@ private[play] final class SerializableResult(constructorResult: Result)
     extends Externalizable {
 
   assert(
-      Option(constructorResult).forall(_.body.isInstanceOf[HttpEntity.Strict]),
-      "Only strict entities can be cached, streamed entities cannot be cached")
+    Option(constructorResult).forall(_.body.isInstanceOf[HttpEntity.Strict]),
+    "Only strict entities can be cached, streamed entities cannot be cached"
+  )
 
   /**
     * Create an empty object. Must call `readExternal` after calling
@@ -34,13 +35,16 @@ private[play] final class SerializableResult(constructorResult: Result)
 
   def result: Result = {
     assert(
-        cachedResult != null,
-        "Result should have been provided in constructor or when deserializing")
+      cachedResult != null,
+      "Result should have been provided in constructor or when deserializing"
+    )
     cachedResult
   }
   override def readExternal(in: ObjectInput): Unit = {
-    assert(in.readByte() == SerializableResult.encodingVersion,
-           "Result was serialised from a different version of Play")
+    assert(
+      in.readByte() == SerializableResult.encodingVersion,
+      "Result was serialised from a different version of Play"
+    )
 
     val status = in.readInt()
 
@@ -77,8 +81,8 @@ private[play] final class SerializableResult(constructorResult: Result)
     }
 
     cachedResult = Result(
-        header = ResponseHeader(status, headerMap),
-        body = body
+      header = ResponseHeader(status, headerMap),
+      body = body
     )
   }
   override def writeExternal(out: ObjectOutput): Unit = {
@@ -97,14 +101,13 @@ private[play] final class SerializableResult(constructorResult: Result)
 
     {
       out.writeBoolean(cachedResult.body.contentType.nonEmpty)
-      cachedResult.body.contentType.foreach { ct =>
-        out.writeUTF(ct)
-      }
+      cachedResult.body.contentType.foreach { ct => out.writeUTF(ct) }
       val body = cachedResult.body match {
         case HttpEntity.Strict(data, _) => data
         case other =>
           throw new IllegalStateException(
-              "Non strict body cannot be materialized")
+            "Non strict body cannot be materialized"
+          )
       }
       out.writeInt(body.length)
       out.write(body.toArray)

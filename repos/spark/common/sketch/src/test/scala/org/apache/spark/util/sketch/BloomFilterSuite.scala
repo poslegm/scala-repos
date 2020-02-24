@@ -42,8 +42,9 @@ class BloomFilterSuite extends FunSuite {
     assert(filter == deserialized)
   }
 
-  def testAccuracy[T : ClassTag](typeName: String, numItems: Int)(
-      itemGen: Random => T): Unit = {
+  def testAccuracy[T: ClassTag](typeName: String, numItems: Int)(
+      itemGen: Random => T
+  ): Unit = {
     test(s"accuracy - $typeName") {
       // use a fixed seed to make the test predictable.
       val r = new Random(37)
@@ -74,8 +75,9 @@ class BloomFilterSuite extends FunSuite {
     }
   }
 
-  def testMergeInPlace[T : ClassTag](typeName: String, numItems: Int)(
-      itemGen: Random => T): Unit = {
+  def testMergeInPlace[T: ClassTag](typeName: String, numItems: Int)(
+      itemGen: Random => T
+  ): Unit = {
     test(s"mergeInPlace - $typeName") {
       // use a fixed seed to make the test predictable.
       val r = new Random(37)
@@ -102,8 +104,9 @@ class BloomFilterSuite extends FunSuite {
     }
   }
 
-  def testItemType[T : ClassTag](typeName: String, numItems: Int)(
-      itemGen: Random => T): Unit = {
+  def testItemType[T: ClassTag](typeName: String, numItems: Int)(
+      itemGen: Random => T
+  ): Unit = {
     testAccuracy[T](typeName, numItems)(itemGen)
     testMergeInPlace[T](typeName, numItems)(itemGen)
   }
@@ -116,9 +119,7 @@ class BloomFilterSuite extends FunSuite {
 
   testItemType[Long]("Long", 100000) { _.nextLong() }
 
-  testItemType[String]("String", 100000) { r =>
-    r.nextString(r.nextInt(512))
-  }
+  testItemType[String]("String", 100000) { r => r.nextString(r.nextInt(512)) }
 
   test("incompatible merge") {
     intercept[IncompatibleMergeException] {

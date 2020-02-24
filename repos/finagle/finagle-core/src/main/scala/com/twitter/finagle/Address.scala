@@ -48,7 +48,8 @@ package exp {
 
     /** Create a new [[Address]] with the given [[com.twitter.finagle.ServiceFactory]]. */
     def apply[Req, Rep](
-        factory: com.twitter.finagle.ServiceFactory[Req, Rep]): Address =
+        factory: com.twitter.finagle.ServiceFactory[Req, Rep]
+    ): Address =
       Address.ServiceFactory(factory, Addr.Metadata.empty)
 
     /**
@@ -57,8 +58,8 @@ package exp {
       */
     case class ServiceFactory[Req, Rep](
         factory: com.twitter.finagle.ServiceFactory[Req, Rep],
-        metadata: Addr.Metadata)
-        extends Address
+        metadata: Addr.Metadata
+    ) extends Address
   }
 }
 
@@ -77,7 +78,9 @@ object Addresses {
     * @see com.twitter.finagle.Address.Inet
     */
   def newInetAddress(
-      ia: InetSocketAddress, metadata: JMap[String, Any]): Address =
+      ia: InetSocketAddress,
+      metadata: JMap[String, Any]
+  ): Address =
     Address.Inet(ia, metadata.asScala.toMap)
 
   /**

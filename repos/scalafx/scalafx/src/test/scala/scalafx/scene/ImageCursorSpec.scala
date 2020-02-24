@@ -43,4 +43,6 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class ImageCursorSpec
     extends SimpleSFXDelegateSpec[jfxs.ImageCursor, ImageCursor](
-        classOf[jfxs.ImageCursor], classOf[ImageCursor])
+      classOf[jfxs.ImageCursor],
+      classOf[ImageCursor]
+    )

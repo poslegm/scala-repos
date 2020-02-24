@@ -18,7 +18,8 @@ object ResourceUtil {
       role: String,
       name: String,
       reservation: Option[ReservationInfo],
-      disk: Option[DiskInfo])
+      disk: Option[DiskInfo]
+  )
   private[this] object ResourceMatchKey {
     def apply(resource: MesosProtos.Resource): ResourceMatchKey = {
       val reservation =
@@ -35,7 +36,8 @@ object ResourceUtil {
   //scalastyle:off cyclomatic.complexity method.length
   def consumeResource(
       resource: MesosProtos.Resource,
-      usedResource: MesosProtos.Resource): Option[MesosProtos.Resource] = {
+      usedResource: MesosProtos.Resource
+  ): Option[MesosProtos.Resource] = {
     require(resource.getType == usedResource.getType)
 
     def consumeScalarResource: Option[MesosProtos.Resource] = {
@@ -45,16 +47,17 @@ object ResourceUtil {
         None
       } else {
         Some(
-            resource.toBuilder
-              .setScalar(
-                  MesosProtos.Value.Scalar.newBuilder().setValue(leftOver))
-              .build())
+          resource.toBuilder
+            .setScalar(MesosProtos.Value.Scalar.newBuilder().setValue(leftOver))
+            .build()
+        )
       }
     }
 
     def deductRange(
         baseRange: MesosProtos.Value.Range,
-        usedRange: MesosProtos.Value.Range): Seq[MesosProtos.Value.Range] = {
+        usedRange: MesosProtos.Value.Range
+    ): Seq[MesosProtos.Value.Range] = {
       if (baseRange.getEnd < usedRange.getBegin) {
         // baseRange completely before usedRange
         Seq(baseRange)
@@ -101,30 +104,36 @@ object ResourceUtil {
       val baseSet: Set[String] = resource.getSet.getItemList.asScala.toSet
       val consumedSet: Set[String] =
         usedResource.getSet.getItemList.asScala.toSet
-      require(consumedSet subsetOf baseSet,
-              s"$consumedSet must be subset of $baseSet")
+      require(
+        consumedSet subsetOf baseSet,
+        s"$consumedSet must be subset of $baseSet"
+      )
 
       val resultSet: Set[String] = baseSet -- consumedSet
 
       if (resultSet.nonEmpty)
         Some(
-            resource.toBuilder
-              .setSet(MesosProtos.Value.Set
-                    .newBuilder()
-                    .addAllItem(resultSet.asJava))
-              .build()
-          )
+          resource.toBuilder
+            .setSet(
+              MesosProtos.Value.Set
+                .newBuilder()
+                .addAllItem(resultSet.asJava)
+            )
+            .build()
+        )
       else None
     }
 
     resource.getType match {
       case MesosProtos.Value.Type.SCALAR => consumeScalarResource
       case MesosProtos.Value.Type.RANGES => consumeRangeResource
-      case MesosProtos.Value.Type.SET => consumeSetResource
+      case MesosProtos.Value.Type.SET    => consumeSetResource
 
       case unexpectedResourceType: MesosProtos.Value.Type =>
-        log.warn("unexpected resourceType {} for resource {}",
-                 Seq(unexpectedResourceType, resource.getName): _*)
+        log.warn(
+          "unexpected resourceType {} for resource {}",
+          Seq(unexpectedResourceType, resource.getName): _*
+        )
         // we don't know the resource, thus we consume it completely
         None
     }
@@ -133,9 +142,10 @@ object ResourceUtil {
   /**
     * Deduct usedResources from resources by matching them by name and role.
     */
-  def consumeResources(resources: Iterable[MesosProtos.Resource],
-                       usedResources: Iterable[MesosProtos.Resource])
-    : Iterable[MesosProtos.Resource] = {
+  def consumeResources(
+      resources: Iterable[MesosProtos.Resource],
+      usedResources: Iterable[MesosProtos.Resource]
+  ): Iterable[MesosProtos.Resource] = {
     val usedResourceMap: Map[ResourceMatchKey, Seq[MesosProtos.Resource]] =
       usedResources.groupBy(ResourceMatchKey(_)).mapValues(_.to[Seq])
 
@@ -144,24 +154,29 @@ object ResourceUtil {
         case Some(usedResources: Seq[MesosProtos.Resource]) =>
           usedResources
             .foldLeft(Some(resource): Option[MesosProtos.Resource]) {
-            case (Some(resource), usedResource) =>
-              if (resource.getType != usedResource.getType) {
-                log.warn("Different resource types for resource {}: {} and {}",
-                         resource.getName,
-                         resource.getType,
-                         usedResource.getType)
-                None
-              } else
-                try ResourceUtil.consumeResource(resource, usedResource) catch {
-                  case NonFatal(e) =>
-                    log.warn("while consuming {} of type {}",
-                             resource.getName,
-                             resource.getType,
-                             e)
-                    None
-                }
-            case (None, _) => None
-          }
+              case (Some(resource), usedResource) =>
+                if (resource.getType != usedResource.getType) {
+                  log.warn(
+                    "Different resource types for resource {}: {} and {}",
+                    resource.getName,
+                    resource.getType,
+                    usedResource.getType
+                  )
+                  None
+                } else
+                  try ResourceUtil.consumeResource(resource, usedResource)
+                  catch {
+                    case NonFatal(e) =>
+                      log.warn(
+                        "while consuming {} of type {}",
+                        resource.getName,
+                        resource.getType,
+                        e
+                      )
+                      None
+                  }
+              case (None, _) => None
+            }
         case None => // if the resource isn't used, we keep it
           Some(resource)
       }
@@ -173,7 +188,8 @@ object ResourceUtil {
     */
   def consumeResourcesFromOffer(
       offer: MesosProtos.Offer,
-      usedResources: Iterable[MesosProtos.Resource]): MesosProtos.Offer = {
+      usedResources: Iterable[MesosProtos.Resource]
+  ): MesosProtos.Offer = {
     import scala.collection.JavaConverters._
     val offerResources: Seq[MesosProtos.Resource] =
       offer.getResourcesList.asScala
@@ -185,11 +201,14 @@ object ResourceUtil {
       .build()
   }
 
-  def displayResource(resource: MesosProtos.Resource, maxRanges: Int): String = {
+  def displayResource(
+      resource: MesosProtos.Resource,
+      maxRanges: Int
+  ): String = {
     def rangesToString(ranges: Seq[MesosProtos.Value.Range]): String = {
-      ranges.map { range =>
-        s"${range.getBegin}->${range.getEnd}"
-      }.mkString(",")
+      ranges
+        .map { range => s"${range.getBegin}->${range.getEnd}" }
+        .mkString(",")
     }
 
     lazy val resourceName = {
@@ -220,7 +239,9 @@ object ResourceUtil {
   }
 
   def displayResources(
-      resources: Iterable[MesosProtos.Resource], maxRanges: Int): String = {
+      resources: Iterable[MesosProtos.Resource],
+      maxRanges: Int
+  ): String = {
     resources.map(displayResource(_, maxRanges)).mkString("; ")
   }
 }

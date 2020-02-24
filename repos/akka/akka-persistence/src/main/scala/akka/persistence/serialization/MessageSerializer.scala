@@ -56,7 +56,8 @@ class MessageSerializer(val system: ExtendedActorSystem)
     case s: StateChangeEvent ⇒ stateChangeBuilder(s).build.toByteArray
     case _ ⇒
       throw new IllegalArgumentException(
-          s"Can't serialize object of type ${o.getClass}")
+        s"Can't serialize object of type ${o.getClass}"
+      )
   }
 
   /**
@@ -75,12 +76,14 @@ class MessageSerializer(val system: ExtendedActorSystem)
           case AtomicWriteClass ⇒ atomicWrite(mf.AtomicWrite.parseFrom(bytes))
           case AtLeastOnceDeliverySnapshotClass ⇒
             atLeastOnceDeliverySnapshot(
-                mf.AtLeastOnceDeliverySnapshot.parseFrom(bytes))
+              mf.AtLeastOnceDeliverySnapshot.parseFrom(bytes)
+            )
           case PersistentStateChangeEventClass ⇒
             stateChange(mf.PersistentStateChangeEvent.parseFrom(bytes))
           case _ ⇒
             throw new IllegalArgumentException(
-                s"Can't deserialize object of type ${c}")
+              s"Can't deserialize object of type ${c}"
+            )
         }
     }
 
@@ -88,8 +91,9 @@ class MessageSerializer(val system: ExtendedActorSystem)
   // toBinary helpers
   //
 
-  def atLeastOnceDeliverySnapshotBuilder(snap: AtLeastOnceDeliverySnapshot)
-    : mf.AtLeastOnceDeliverySnapshot.Builder = {
+  def atLeastOnceDeliverySnapshotBuilder(
+      snap: AtLeastOnceDeliverySnapshot
+  ): mf.AtLeastOnceDeliverySnapshot.Builder = {
     val builder = mf.AtLeastOnceDeliverySnapshot.newBuilder
     builder.setCurrentDeliveryId(snap.currentDeliveryId)
     snap.unconfirmedDeliveries.foreach { unconfirmed ⇒
@@ -97,15 +101,17 @@ class MessageSerializer(val system: ExtendedActorSystem)
         mf.AtLeastOnceDeliverySnapshot.UnconfirmedDelivery.newBuilder
           .setDeliveryId(unconfirmed.deliveryId)
           .setDestination(unconfirmed.destination.toString)
-          .setPayload(persistentPayloadBuilder(
-                  unconfirmed.message.asInstanceOf[AnyRef]))
+          .setPayload(
+            persistentPayloadBuilder(unconfirmed.message.asInstanceOf[AnyRef])
+          )
       builder.addUnconfirmedDeliveries(unconfirmedBuilder)
     }
     builder
   }
 
   private[persistence] def stateChangeBuilder(
-      stateChange: StateChangeEvent): mf.PersistentStateChangeEvent.Builder = {
+      stateChange: StateChangeEvent
+  ): mf.PersistentStateChangeEvent.Builder = {
     val builder = mf.PersistentStateChangeEvent.newBuilder
       .setStateIdentifier(stateChange.stateIdentifier)
     stateChange.timeout match {
@@ -115,8 +121,8 @@ class MessageSerializer(val system: ExtendedActorSystem)
   }
 
   def atLeastOnceDeliverySnapshot(
-      atLeastOnceDeliverySnapshot: mf.AtLeastOnceDeliverySnapshot)
-    : AtLeastOnceDeliverySnapshot = {
+      atLeastOnceDeliverySnapshot: mf.AtLeastOnceDeliverySnapshot
+  ): AtLeastOnceDeliverySnapshot = {
     import scala.collection.JavaConverters._
     val unconfirmedDeliveries = new VectorBuilder[UnconfirmedDelivery]()
     atLeastOnceDeliverySnapshot
@@ -124,29 +130,36 @@ class MessageSerializer(val system: ExtendedActorSystem)
       .iterator()
       .asScala foreach { next ⇒
       unconfirmedDeliveries +=
-        UnconfirmedDelivery(next.getDeliveryId,
-                            ActorPath.fromString(next.getDestination),
-                            payload(next.getPayload))
+        UnconfirmedDelivery(
+          next.getDeliveryId,
+          ActorPath.fromString(next.getDestination),
+          payload(next.getPayload)
+        )
     }
 
     AtLeastOnceDeliverySnapshot(
-        atLeastOnceDeliverySnapshot.getCurrentDeliveryId,
-        unconfirmedDeliveries.result())
+      atLeastOnceDeliverySnapshot.getCurrentDeliveryId,
+      unconfirmedDeliveries.result()
+    )
   }
 
-  def stateChange(persistentStateChange: mf.PersistentStateChangeEvent)
-    : StateChangeEvent = {
-    StateChangeEvent(persistentStateChange.getStateIdentifier,
-                     if (persistentStateChange.hasTimeout)
-                       Some(Duration(persistentStateChange.getTimeout)
-                             .asInstanceOf[duration.FiniteDuration]) else None)
+  def stateChange(
+      persistentStateChange: mf.PersistentStateChangeEvent
+  ): StateChangeEvent = {
+    StateChangeEvent(
+      persistentStateChange.getStateIdentifier,
+      if (persistentStateChange.hasTimeout)
+        Some(
+          Duration(persistentStateChange.getTimeout)
+            .asInstanceOf[duration.FiniteDuration]
+        )
+      else None
+    )
   }
 
   private def atomicWriteBuilder(a: AtomicWrite) = {
     val builder = mf.AtomicWrite.newBuilder
-    a.payload.foreach { p ⇒
-      builder.addPayload(persistentMessageBuilder(p))
-    }
+    a.payload.foreach { p ⇒ builder.addPayload(persistentMessageBuilder(p)) }
     builder
   }
 
@@ -161,7 +174,8 @@ class MessageSerializer(val system: ExtendedActorSystem)
       builder.setManifest(persistent.manifest)
 
     builder.setPayload(
-        persistentPayloadBuilder(persistent.payload.asInstanceOf[AnyRef]))
+      persistentPayloadBuilder(persistent.payload.asInstanceOf[AnyRef])
+    )
     builder.setSequenceNr(persistent.sequenceNr)
     // deleted is not used in new records from 2.4
     if (persistent.writerUuid != Undefined)
@@ -182,7 +196,8 @@ class MessageSerializer(val system: ExtendedActorSystem)
         case _ ⇒
           if (serializer.includeManifest)
             builder.setPayloadManifest(
-                ByteString.copyFromUtf8(payload.getClass.getName))
+              ByteString.copyFromUtf8(payload.getClass.getName)
+            )
       }
 
       builder.setPayload(ByteString.copyFrom(serializer.toBinary(payload)))
@@ -205,39 +220,48 @@ class MessageSerializer(val system: ExtendedActorSystem)
   //
 
   private def persistent(
-      persistentMessage: mf.PersistentMessage): PersistentRepr = {
+      persistentMessage: mf.PersistentMessage
+  ): PersistentRepr = {
     PersistentRepr(
-        payload(persistentMessage.getPayload),
-        persistentMessage.getSequenceNr,
-        if (persistentMessage.hasPersistenceId)
-          persistentMessage.getPersistenceId else Undefined,
-        if (persistentMessage.hasManifest)
-          persistentMessage.getManifest else Undefined,
-        if (persistentMessage.hasDeleted)
-          persistentMessage.getDeleted else false,
-        if (persistentMessage.hasSender)
-          system.provider.resolveActorRef(persistentMessage.getSender)
-        else Actor.noSender,
-        if (persistentMessage.hasWriterUuid) persistentMessage.getWriterUuid
-        else Undefined)
+      payload(persistentMessage.getPayload),
+      persistentMessage.getSequenceNr,
+      if (persistentMessage.hasPersistenceId)
+        persistentMessage.getPersistenceId
+      else Undefined,
+      if (persistentMessage.hasManifest)
+        persistentMessage.getManifest
+      else Undefined,
+      if (persistentMessage.hasDeleted)
+        persistentMessage.getDeleted
+      else false,
+      if (persistentMessage.hasSender)
+        system.provider.resolveActorRef(persistentMessage.getSender)
+      else Actor.noSender,
+      if (persistentMessage.hasWriterUuid) persistentMessage.getWriterUuid
+      else Undefined
+    )
   }
 
   private def atomicWrite(atomicWrite: mf.AtomicWrite): AtomicWrite = {
     import scala.collection.JavaConverters._
     AtomicWrite(
-        atomicWrite.getPayloadList.asScala
-          .map(persistent)(collection.breakOut))
+      atomicWrite.getPayloadList.asScala
+        .map(persistent)(collection.breakOut)
+    )
   }
 
   private def payload(persistentPayload: mf.PersistentPayload): Any = {
     val manifest =
       if (persistentPayload.hasPayloadManifest)
-        persistentPayload.getPayloadManifest.toStringUtf8 else ""
+        persistentPayload.getPayloadManifest.toStringUtf8
+      else ""
 
     serialization
-      .deserialize(persistentPayload.getPayload.toByteArray,
-                   persistentPayload.getSerializerId,
-                   manifest)
+      .deserialize(
+        persistentPayload.getPayload.toByteArray,
+        persistentPayload.getSerializerId,
+        manifest
+      )
       .get
   }
 }

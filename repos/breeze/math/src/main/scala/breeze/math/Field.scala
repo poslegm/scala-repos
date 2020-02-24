@@ -75,8 +75,8 @@ object Field {
   /** Not a field, but whatever. */
   @SerialVersionUID(1L)
   implicit object fieldLong extends Field[Long] with Serializable {
-    def zero = 0l
-    def one = 1l
+    def zero = 0L
+    def one = 1L
     def ==(a: Long, b: Long) = a == b
     def !=(a: Long, b: Long) = a != b
     def +(a: Long, b: Long) = a + b
@@ -95,8 +95,8 @@ object Field {
   /** Not a field, but whatever. */
   @SerialVersionUID(1L)
   implicit object fieldBigInt extends Field[BigInt] with Serializable {
-    def zero = 0l
-    def one = 1l
+    def zero = 0L
+    def one = 1L
     def ==(a: BigInt, b: BigInt) = a == b
     def !=(a: BigInt, b: BigInt) = a != b
     def +(a: BigInt, b: BigInt) = a + b
@@ -114,8 +114,8 @@ object Field {
 
   @SerialVersionUID(1L)
   implicit object fieldBigDecimal extends Field[BigDecimal] with Serializable {
-    def zero = 0l
-    def one = 1l
+    def zero = 0L
+    def one = 1L
     def ==(a: BigDecimal, b: BigDecimal) = a == b
     def !=(a: BigDecimal, b: BigDecimal) = a != b
     def +(a: BigDecimal, b: BigDecimal) = a + b
@@ -126,7 +126,10 @@ object Field {
     def pow(a: BigDecimal, b: BigDecimal): BigDecimal = a.pow(b.toInt)
 
     override def close(
-        a: BigDecimal, b: BigDecimal, tolerance: Double): Boolean = {
+        a: BigDecimal,
+        b: BigDecimal,
+        tolerance: Double
+    ): Boolean = {
       (a - b).abs <= tolerance * (a.abs max b.abs)
     }
 

@@ -23,7 +23,7 @@ object TestkitDocSpec {
 
   class MyActor extends Actor {
     def receive = {
-      case Say42 => sender() ! 42
+      case Say42       => sender() ! 42
       case "some work" => sender() ! "some result"
     }
   }
@@ -153,8 +153,7 @@ class TestkitDocSpec extends AkkaSpec with DefaultTimeout with ImplicitSender {
     //#test-expecting-exceptions
     import akka.testkit.TestActorRef
 
-    val actorRef = TestActorRef(
-        new Actor {
+    val actorRef = TestActorRef(new Actor {
       def receive = {
         case "hello" => throw new IllegalArgumentException("boom")
       }
@@ -240,7 +239,10 @@ class TestkitDocSpec extends AkkaSpec with DefaultTimeout with ImplicitSender {
     //#test-probe-reply
     val probe = TestProbe()
     val future = probe.ref ? "hello"
-    probe.expectMsg(0 millis, "hello") // TestActor runs on CallingThreadDispatcher
+    probe.expectMsg(
+      0 millis,
+      "hello"
+    ) // TestActor runs on CallingThreadDispatcher
     probe.reply("world")
     assert(future.isCompleted && future.value == Some(Success("world")))
     //#test-probe-reply
@@ -273,10 +275,13 @@ class TestkitDocSpec extends AkkaSpec with DefaultTimeout with ImplicitSender {
     import com.typesafe.config.ConfigFactory
 
     implicit val system = ActorSystem(
-        "testsystem",
-        ConfigFactory.parseString("""
+      "testsystem",
+      ConfigFactory.parseString(
+        """
       akka.loggers = ["akka.testkit.TestEventListener"]
-      """))
+      """
+      )
+    )
     try {
       val actor = system.actorOf(Props.empty)
       EventFilter[ActorKilledException](occurrences = 1) intercept {
@@ -298,7 +303,8 @@ class TestkitDocSpec extends AkkaSpec with DefaultTimeout with ImplicitSender {
       //#put-your-test-code-here
       val probe = TestProbe()
       probe.send(testActor, "hello")
-      try expectMsg("hello") catch {
+      try expectMsg("hello")
+      catch {
         case NonFatal(e) => system.terminate(); throw e
       }
       //#put-your-test-code-here

@@ -22,13 +22,15 @@ import scala.util.control.NonFatal
   * with a fully functional one, transfer all messages from dummy to real queue
   * and swap out the cell ref.
   */
-private[akka] class RepointableActorRef(val system: ActorSystemImpl,
-                                        val props: Props,
-                                        val dispatcher: MessageDispatcher,
-                                        val mailboxType: MailboxType,
-                                        val supervisor: InternalActorRef,
-                                        val path: ActorPath)
-    extends ActorRefWithCell with RepointableRef {
+private[akka] class RepointableActorRef(
+    val system: ActorSystemImpl,
+    val props: Props,
+    val dispatcher: MessageDispatcher,
+    val mailboxType: MailboxType,
+    val supervisor: InternalActorRef,
+    val path: ActorPath
+) extends ActorRefWithCell
+    with RepointableRef {
 
   import AbstractActorRef.{cellOffset, lookupOffset}
 
@@ -59,7 +61,8 @@ private[akka] class RepointableActorRef(val system: ActorSystemImpl,
   @tailrec final def swapLookup(next: Cell): Cell = {
     val old = lookup
     if (Unsafe.instance.compareAndSwapObject(this, lookupOffset, old, next))
-      old else swapLookup(next)
+      old
+    else swapLookup(next)
   }
 
   /**
@@ -92,12 +95,14 @@ private[akka] class RepointableActorRef(val system: ActorSystemImpl,
   def point(catchFailures: Boolean): this.type =
     underlying match {
       case u: UnstartedCell ⇒
-        val cell = try newCell(u) catch {
-          case NonFatal(ex) if catchFailures ⇒
-            val safeDispatcher = system.dispatchers.defaultGlobalDispatcher
-            new ActorCell(system, this, props, safeDispatcher, supervisor)
-              .initWithFailure(ex)
-        }
+        val cell =
+          try newCell(u)
+          catch {
+            case NonFatal(ex) if catchFailures ⇒
+              val safeDispatcher = system.dispatchers.defaultGlobalDispatcher
+              new ActorCell(system, this, props, safeDispatcher, supervisor)
+                .initWithFailure(ex)
+          }
         /*
          * The problem here was that if the real actor (which will start running
          * at cell.start()) creates children in its constructor, then this may
@@ -188,11 +193,12 @@ private[akka] class RepointableActorRef(val system: ActorSystemImpl,
   protected def writeReplace(): AnyRef = SerializedActorRef(this)
 }
 
-private[akka] class UnstartedCell(val systemImpl: ActorSystemImpl,
-                                  val self: RepointableActorRef,
-                                  val props: Props,
-                                  val supervisor: InternalActorRef)
-    extends Cell {
+private[akka] class UnstartedCell(
+    val systemImpl: ActorSystemImpl,
+    val self: RepointableActorRef,
+    val props: Props,
+    val supervisor: InternalActorRef
+) extends Cell {
 
   /*
    * This lock protects all accesses to this cell’s queues. It also ensures
@@ -262,23 +268,29 @@ private[akka] class UnstartedCell(val systemImpl: ActorSystemImpl,
           cell.sendMessage(msg)
         } else if (!queue.offer(msg)) {
           system.eventStream.publish(
-              Warning(self.path.toString,
-                      getClass,
-                      "dropping message of type " + msg.message.getClass +
-                      " due to enqueue failure"))
-          system.deadLetters.tell(
-              DeadLetter(msg.message, msg.sender, self), msg.sender)
+            Warning(
+              self.path.toString,
+              getClass,
+              "dropping message of type " + msg.message.getClass +
+                " due to enqueue failure"
+            )
+          )
+          system.deadLetters
+            .tell(DeadLetter(msg.message, msg.sender, self), msg.sender)
         } else if (Mailbox.debug)
           println(s"$self temp queueing ${msg.message} from ${msg.sender}")
       } finally lock.unlock()
     } else {
       system.eventStream.publish(
-          Warning(self.path.toString,
-                  getClass,
-                  "dropping message of type" + msg.message.getClass +
-                  " due to lock timeout"))
-      system.deadLetters.tell(
-          DeadLetter(msg.message, msg.sender, self), msg.sender)
+        Warning(
+          self.path.toString,
+          getClass,
+          "dropping message of type" + msg.message.getClass +
+            " due to lock timeout"
+        )
+      )
+      system.deadLetters
+        .tell(DeadLetter(msg.message, msg.sender, self), msg.sender)
     }
   }
 
@@ -311,6 +323,7 @@ private[akka] class UnstartedCell(val systemImpl: ActorSystemImpl,
 
   private[this] final def locked[T](body: ⇒ T): T = {
     lock.lock()
-    try body finally lock.unlock()
+    try body
+    finally lock.unlock()
   }
 }

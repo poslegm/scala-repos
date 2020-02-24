@@ -22,7 +22,12 @@ import com.twitter.bijection.Injection
 import com.twitter.scalding.commons.source.VersionedKeyValSource
 import com.twitter.scalding.{Mode, TypedPipe, Hdfs => HdfsMode, TupleSetter}
 import com.twitter.summingbird.batch.store.HDFSMetadata
-import com.twitter.summingbird.batch.{BatchID, Batcher, Timestamp, OrderedFromOrderingExt}
+import com.twitter.summingbird.batch.{
+  BatchID,
+  Batcher,
+  Timestamp,
+  OrderedFromOrderingExt
+}
 import com.twitter.summingbird.scalding._
 import com.twitter.summingbird.scalding.batch.BatchedStore
 import com.twitter.summingbird.scalding.{Try, FlowProducer, Scalding}
@@ -39,10 +44,12 @@ import scala.util.{Try => ScalaTry}
   */
 object VersionedBatchStore {
   def apply[K, V, K2, V2](rootPath: String, versionsToKeep: Int)(
-      pack: (BatchID, (K, V)) => (K2, V2))(unpack: ((K2, V2)) => (K, V))(
+      pack: (BatchID, (K, V)) => (K2, V2)
+  )(unpack: ((K2, V2)) => (K, V))(
       implicit batcher: Batcher,
       injection: Injection[(K2, V2), (Array[Byte], Array[Byte])],
-      ordering: Ordering[K]): VersionedBatchStore[K, V, K2, V2] =
+      ordering: Ordering[K]
+  ): VersionedBatchStore[K, V, K2, V2] =
     new VersionedBatchStore(rootPath, versionsToKeep, batcher)(pack)(unpack)
 }
 
@@ -65,17 +72,25 @@ abstract class VersionedBatchStoreBase[K, V](val rootPath: String)
     */
   override def readLast(
       exclusiveUB: BatchID,
-      mode: Mode): Try[(BatchID, FlowProducer[TypedPipe[(K, V)]])] = {
+      mode: Mode
+  ): Try[(BatchID, FlowProducer[TypedPipe[(K, V)]])] = {
     mode match {
       case hdfs: HdfsMode =>
         lastBatch(exclusiveUB, hdfs).map { Right(_) }.getOrElse {
-          Left(List("No last batch available < %s for VersionedBatchStore(%s)"
-                    .format(exclusiveUB, rootPath)))
+          Left(
+            List(
+              "No last batch available < %s for VersionedBatchStore(%s)"
+                .format(exclusiveUB, rootPath)
+            )
+          )
         }
       case _ =>
         Left(
-            List("Mode: %s not supported for VersionedBatchStore(%s)".format(
-                    mode, rootPath)))
+          List(
+            "Mode: %s not supported for VersionedBatchStore(%s)"
+              .format(mode, rootPath)
+          )
+        )
     }
   }
 
@@ -95,13 +110,13 @@ abstract class VersionedBatchStoreBase[K, V](val rootPath: String)
 
   protected def lastBatch(
       exclusiveUB: BatchID,
-      mode: HdfsMode): Option[(BatchID, FlowProducer[TypedPipe[(K, V)]])] = {
+      mode: HdfsMode
+  ): Option[(BatchID, FlowProducer[TypedPipe[(K, V)]])] = {
     val meta = HDFSMetadata(mode.conf, rootPath)
-    meta.versions.map { ver =>
-      (versionToBatchID(ver), readVersion(ver))
-    }.filter { _._1 < exclusiveUB }.reduceOption { (a, b) =>
-      if (a._1 > b._1) a else b
-    }
+    meta.versions
+      .map { ver => (versionToBatchID(ver), readVersion(ver)) }
+      .filter { _._1 < exclusiveUB }
+      .reduceOption { (a, b) => if (a._1 > b._1) a else b }
   }
 
   protected def readVersion(v: Long): FlowProducer[TypedPipe[(K, V)]]
@@ -116,12 +131,16 @@ abstract class VersionedBatchStoreBase[K, V](val rootPath: String)
  * the hadoop Configuration object when running the storm job.
  */
 class VersionedBatchStore[K, V, K2, V2](
-    rootPath: String, versionsToKeep: Int, override val batcher: Batcher)(
-    pack: (BatchID, (K, V)) => (K2, V2))(unpack: ((K2, V2)) => (K, V))(
+    rootPath: String,
+    versionsToKeep: Int,
+    override val batcher: Batcher
+)(pack: (BatchID, (K, V)) => (K2, V2))(unpack: ((K2, V2)) => (K, V))(
     implicit @transient injection: Injection[
-        (K2, V2), (Array[Byte], Array[Byte])],
-    override val ordering: Ordering[K])
-    extends VersionedBatchStoreBase[K, V](rootPath) {
+      (K2, V2),
+      (Array[Byte], Array[Byte])
+    ],
+    override val ordering: Ordering[K]
+) extends VersionedBatchStoreBase[K, V](rootPath) {
   @transient private val logger =
     LoggerFactory.getLogger(classOf[VersionedBatchStore[_, _, _, _]])
 
@@ -145,22 +164,28 @@ class VersionedBatchStore[K, V, K2, V2](
     * into a VersionedStore directory whose tagged version is the
     * EXCLUSIVE upper bound on batchID, or "batchID.next".
     */
-  override def writeLast(batchID: BatchID, lastVals: TypedPipe[(K, V)])(
-      implicit flowDef: FlowDef, mode: Mode): Unit = {
+  override def writeLast(
+      batchID: BatchID,
+      lastVals: TypedPipe[(K, V)]
+  )(implicit flowDef: FlowDef, mode: Mode): Unit = {
     val newVersion = batchIDToVersion(batchID)
-    val target = VersionedKeyValSource[K2, V2](rootPath,
-                                               sourceVersion = None,
-                                               sinkVersion = Some(newVersion),
-                                               maxFailures = 0,
-                                               versionsToKeep = versionsToKeep)
+    val target = VersionedKeyValSource[K2, V2](
+      rootPath,
+      sourceVersion = None,
+      sinkVersion = Some(newVersion),
+      maxFailures = 0,
+      versionsToKeep = versionsToKeep
+    )
 
     if (!target.sinkExists(mode)) {
       logger.info(
-          s"Versioned batched store version for $this @ $newVersion doesn't exist. Will write out.")
+        s"Versioned batched store version for $this @ $newVersion doesn't exist. Will write out."
+      )
       lastVals.map(pack(batchID, _)).write(target)
     } else {
       logger.warn(
-          s"Versioned batched store version for $this @ $newVersion already exists! Will skip adding to plan.")
+        s"Versioned batched store version for $this @ $newVersion already exists! Will skip adding to plan."
+      )
     }
   }
 

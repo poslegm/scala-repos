@@ -2,11 +2,11 @@
 object Test {
   def it = (1 to 10).iterator
   def assertThat[T](expectedLength: Int, expectedLast: Seq[T])(
-      it: Iterator[Seq[T]]) {
+      it: Iterator[Seq[T]]
+  ) {
     val xs = it.toList
     def fail(msg: String) = "assertion failed on %s: %s".format(xs, msg)
-    assert(
-        xs.size == expectedLength, fail("expected length " + expectedLength))
+    assert(xs.size == expectedLength, fail("expected length " + expectedLength))
     assert(xs.last == expectedLast, fail("expected last " + expectedLast))
   }
 
@@ -40,15 +40,16 @@ object Test {
     assertThat(3, List(9, 10)) { it.sliding(2, 4) }
 
     // make sure it throws past the end
-    val thrown = try {
-      val it = List(1, 2, 3).sliding(2)
-      it.next
-      it.next
-      it.next
-      false
-    } catch {
-      case _: NoSuchElementException => true
-    }
+    val thrown =
+      try {
+        val it = List(1, 2, 3).sliding(2)
+        it.next
+        it.next
+        it.next
+        false
+      } catch {
+        case _: NoSuchElementException => true
+      }
     assert(thrown)
   }
 }

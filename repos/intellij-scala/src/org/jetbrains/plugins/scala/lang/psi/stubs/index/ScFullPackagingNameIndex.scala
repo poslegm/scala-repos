@@ -19,7 +19,8 @@ class ScFullPackagingNameIndex
   override def get(
       int: java.lang.Integer,
       project: Project,
-      scope: GlobalSearchScope): java.util.Collection[ScPackageContainer] =
+      scope: GlobalSearchScope
+  ): java.util.Collection[ScPackageContainer] =
     super.get(int, project, new ScalaSourceFilterScope(scope, project))
 
   def getKey = ScFullPackagingNameIndex.KEY

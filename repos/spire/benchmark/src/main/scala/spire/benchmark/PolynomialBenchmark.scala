@@ -36,15 +36,16 @@ class PolynomialBenchmarks extends MyBenchmark {
 
     spireDenseRationalPolys = coeffs.map(cs => Polynomial.dense(cs))
     spireSparseRationalPolys = spireDenseRationalPolys.map(_.toSparse)
-    spireDenseDoublePolys = coeffs.map(
-        cs => Polynomial.dense(cs.map(_.toDouble)))
+    spireDenseDoublePolys =
+      coeffs.map(cs => Polynomial.dense(cs.map(_.toDouble)))
     spireSparseDoublePolys = spireDenseDoublePolys.map(_.toSparse)
-    commonsDoublePolys = coeffs.map(
-        cs => new PolynomialFunction(cs.map(_.toDouble)))
+    commonsDoublePolys =
+      coeffs.map(cs => new PolynomialFunction(cs.map(_.toDouble)))
   }
 
   def addSpireRationalPolynomials(
-      data: Array[Polynomial[Rational]]): Polynomial[Rational] = {
+      data: Array[Polynomial[Rational]]
+  ): Polynomial[Rational] = {
     var total: Polynomial[Rational] = null
     var i = 0
     val len = data.length
@@ -53,7 +54,8 @@ class PolynomialBenchmarks extends MyBenchmark {
   }
 
   def addSpireDoublePolynomials(
-      data: Array[Polynomial[Double]]): Polynomial[Double] = {
+      data: Array[Polynomial[Double]]
+  ): Polynomial[Double] = {
     var total: Polynomial[Double] = null
     var i = 0
     val len = data.length
@@ -62,7 +64,8 @@ class PolynomialBenchmarks extends MyBenchmark {
   }
 
   def addCommonsDoublePolynomials(
-      data: Array[PolynomialFunction]): PolynomialFunction = {
+      data: Array[PolynomialFunction]
+  ): PolynomialFunction = {
     var total: PolynomialFunction = null
     var i = 0
     val len = data.length
@@ -71,7 +74,8 @@ class PolynomialBenchmarks extends MyBenchmark {
   }
 
   def multiplySpireRationalPolynomials(
-      data: Array[Polynomial[Rational]]): Polynomial[Rational] = {
+      data: Array[Polynomial[Rational]]
+  ): Polynomial[Rational] = {
     var total: Polynomial[Rational] = null
     var i = 0
     val len = data.length
@@ -80,7 +84,8 @@ class PolynomialBenchmarks extends MyBenchmark {
   }
 
   def multiplySpireDoublePolynomials(
-      data: Array[Polynomial[Double]]): Polynomial[Double] = {
+      data: Array[Polynomial[Double]]
+  ): Polynomial[Double] = {
     var total: Polynomial[Double] = null
     var i = 0
     val len = data.length
@@ -89,7 +94,8 @@ class PolynomialBenchmarks extends MyBenchmark {
   }
 
   def multiplyCommonsDoublePolynomials(
-      data: Array[PolynomialFunction]): PolynomialFunction = {
+      data: Array[PolynomialFunction]
+  ): PolynomialFunction = {
     var total: PolynomialFunction = null
     var i = 0
     val len = data.length
@@ -98,7 +104,8 @@ class PolynomialBenchmarks extends MyBenchmark {
   }
 
   def derivativeSpireRationalPolynomials(
-      data: Array[Polynomial[Rational]]): Polynomial[Rational] = {
+      data: Array[Polynomial[Rational]]
+  ): Polynomial[Rational] = {
     var total: Polynomial[Rational] = null
     var i = 0
     val len = data.length
@@ -107,7 +114,8 @@ class PolynomialBenchmarks extends MyBenchmark {
   }
 
   def derivativeSpireDoublePolynomials(
-      data: Array[Polynomial[Double]]): Polynomial[Double] = {
+      data: Array[Polynomial[Double]]
+  ): Polynomial[Double] = {
     var total: Polynomial[Double] = null
     var i = 0
     val len = data.length
@@ -116,7 +124,8 @@ class PolynomialBenchmarks extends MyBenchmark {
   }
 
   def derivativeCommonsDoublePolynomials(
-      data: Array[PolynomialFunction]): PolynomialFunction = {
+      data: Array[PolynomialFunction]
+  ): PolynomialFunction = {
     var total: PolynomialFunction = null
     var i = 0
     val len = data.length
@@ -125,7 +134,8 @@ class PolynomialBenchmarks extends MyBenchmark {
   }
 
   def evaluateSpireRationalPolynomials(
-      data: Array[Polynomial[Rational]]): Rational = {
+      data: Array[Polynomial[Rational]]
+  ): Rational = {
     val testVariable = Rational(2, 1)
     var total: Rational = Rational(1, 1)
     var i = 0
@@ -134,7 +144,9 @@ class PolynomialBenchmarks extends MyBenchmark {
     total
   }
 
-  def evaluateSpireDoublePolynomials(data: Array[Polynomial[Double]]): Double = {
+  def evaluateSpireDoublePolynomials(
+      data: Array[Polynomial[Double]]
+  ): Double = {
     val testVariable = 2.0
     var total: Double = 0.0
     var i = 0
@@ -144,7 +156,8 @@ class PolynomialBenchmarks extends MyBenchmark {
   }
 
   def evaluateCommonsDoublePolynomials(
-      data: Array[PolynomialFunction]): Double = {
+      data: Array[PolynomialFunction]
+  ): Double = {
     val testVariable = 2.0
     var total: Double = 0.0
     var i = 0
@@ -153,8 +166,9 @@ class PolynomialBenchmarks extends MyBenchmark {
     total
   }
 
-  def quotModSpireRationalPolynomials(data: Array[Polynomial[Rational]])
-    : (Polynomial[Rational], Polynomial[Rational]) = {
+  def quotModSpireRationalPolynomials(
+      data: Array[Polynomial[Rational]]
+  ): (Polynomial[Rational], Polynomial[Rational]) = {
     var total: (Polynomial[Rational], Polynomial[Rational]) = null
     var i = 0
     val len = data.length
@@ -162,8 +176,9 @@ class PolynomialBenchmarks extends MyBenchmark {
     total
   }
 
-  def quotModSpireDoublePolynomials(data: Array[Polynomial[Double]])
-    : (Polynomial[Double], Polynomial[Double]) = {
+  def quotModSpireDoublePolynomials(
+      data: Array[Polynomial[Double]]
+  ): (Polynomial[Double], Polynomial[Double]) = {
     var total: (Polynomial[Double], Polynomial[Double]) = null
     var i = 0
     val len = data.length

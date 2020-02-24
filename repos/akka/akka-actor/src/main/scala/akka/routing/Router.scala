@@ -97,7 +97,8 @@ final case class SeveralRoutees(routees: immutable.IndexedSeq[Routee])
   */
 final case class Router(
     val logic: RoutingLogic,
-    val routees: immutable.IndexedSeq[Routee] = Vector.empty) {
+    val routees: immutable.IndexedSeq[Routee] = Vector.empty
+) {
 
   /**
     * Java API

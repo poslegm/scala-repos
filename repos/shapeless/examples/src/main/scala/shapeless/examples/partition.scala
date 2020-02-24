@@ -68,14 +68,15 @@ object ADTPartitionExample extends App {
     }
 
     implicit def cpPartitioner[K, H, T <: Coproduct, OutT <: HList](
-        implicit cp: Aux[T, OutT])
-      : Aux[FieldType[K, H] :+: T, FieldType[K, List[H]] :: OutT] =
+        implicit cp: Aux[T, OutT]
+    ): Aux[FieldType[K, H] :+: T, FieldType[K, List[H]] :: OutT] =
       new Partitioner[FieldType[K, H] :+: T] {
         type Out = FieldType[K, List[H]] :: OutT
 
         def apply(c: List[FieldType[K, H] :+: T]): Out =
-          field[K](c.collect { case Inl(h) => h: H }) :: cp(
-              c.collect { case Inr(t) => t })
+          field[K](c.collect { case Inl(h) => h: H }) :: cp(c.collect {
+            case Inr(t)                    => t
+          })
       }
   }
 
@@ -85,31 +86,33 @@ object ADTPartitionExample extends App {
   def partitionTuple[A, C <: Coproduct, Out <: HList](as: List[A])(
       implicit gen: LabelledGeneric.Aux[A, C],
       partitioner: Partitioner.Aux[C, Out],
-      tupler: Tupler[Out]) = tupler(partitioner(as.map(gen.to)))
+      tupler: Tupler[Out]
+  ) = tupler(partitioner(as.map(gen.to)))
 
   /**
     * Partition a list into a record of lists for each constructor.
     */
   def partitionRecord[A, C <: Coproduct, Out <: HList](as: List[A])(
       implicit gen: LabelledGeneric.Aux[A, C],
-      partitioner: Partitioner.Aux[C, Out]): Out =
+      partitioner: Partitioner.Aux[C, Out]
+  ): Out =
     partitioner(as.map(gen.to))
 
   import ADTPartitionExampleTypes._
 
   // Some example data.
   val fruits: List[Fruit] = List(
-      Apple(1, 10),
-      Pear(2, "red"),
-      Pear(3, "green"),
-      Apple(4, 6),
-      Pear(5, "purple")
+    Apple(1, 10),
+    Pear(2, "red"),
+    Pear(3, "green"),
+    Apple(4, 6),
+    Pear(5, "purple")
   )
 
   // The expected partition.
   val expectedApples: List[Apple] = List(Apple(1, 10), Apple(4, 6))
-  val expectedPears: List[Pear] = List(
-      Pear(2, "red"), Pear(3, "green"), Pear(5, "purple"))
+  val expectedPears: List[Pear] =
+    List(Pear(2, "red"), Pear(3, "green"), Pear(5, "purple"))
 
   // Partition the list into a tuple of lists.
   val (apples, pears) = partitionTuple(fruits)

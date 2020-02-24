@@ -17,12 +17,16 @@ import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class Netty4ChannelInitializerTest
-    extends FunSuite with Eventually with IntegrationPatience {
+    extends FunSuite
+    with Eventually
+    with IntegrationPatience {
 
   val writeDiscardHandler = new ChannelOutboundHandlerAdapter {
-    override def write(ctx: ChannelHandlerContext,
-                       msg: scala.Any,
-                       promise: ChannelPromise): Unit = ()
+    override def write(
+        ctx: ChannelHandlerContext,
+        msg: scala.Any,
+        promise: ChannelPromise
+    ): Unit = ()
   }
 
   val nop = new ChannelHandler {
@@ -44,15 +48,19 @@ class Netty4ChannelInitializerTest
     new Ctx {
       val params =
         baseParams + Transport.Liveness(
-            readTimeout = Duration.Top,
-            writeTimeout = Duration.fromMilliseconds(1),
-            keepAlive = None)
+          readTimeout = Duration.Top,
+          writeTimeout = Duration.fromMilliseconds(1),
+          keepAlive = None
+        )
 
       val init = new Netty4ChannelInitializer(_ => (), params, () => nop)
       init.initChannel(srv)
 
       srv.pipeline.addBefore(
-          "writeCompletionTimeout", "writeDiscardHandler", writeDiscardHandler)
+        "writeCompletionTimeout",
+        "writeDiscardHandler",
+        writeDiscardHandler
+      )
 
       // WriteCompletionTimeoutHandler throws a WriteTimeOutException after the message is lost.
       srv.writeAndFlush("hi")
@@ -68,16 +76,19 @@ class Netty4ChannelInitializerTest
     new Ctx {
       val params =
         baseParams + Transport.Liveness(
-            readTimeout = Duration.fromMilliseconds(1),
-            writeTimeout = Duration.Top,
-            keepAlive = None)
+          readTimeout = Duration.fromMilliseconds(1),
+          writeTimeout = Duration.Top,
+          keepAlive = None
+        )
 
       val init = new Netty4ChannelInitializer(_ => (), params, () => nop)
       init.initChannel(srv)
 
       srv.pipeline.fireChannelActive()
       srv.pipeline.fireChannelRead(Unpooled.EMPTY_BUFFER)
-      Thread.sleep(10) // We need at least one ms to elapse between read and readComplete.
+      Thread.sleep(
+        10
+      ) // We need at least one ms to elapse between read and readComplete.
       // Netty's read timeout handler uses System.nanoTime
       // to mark time so we're stuck sleeping.
       srv.pipeline.fireChannelReadComplete()

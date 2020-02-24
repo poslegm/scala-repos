@@ -48,21 +48,31 @@ object ReflectSpec extends Specification {
 
       "throw an exception if a configured class doesn't implement either of the interfaces" in {
         doQuack(bindings[CustomDuck](classOf[NotADuck].getName)) must throwA[
-            PlayException]
+          PlayException
+        ]
       }
     }
   }
 
-  def bindings(configured: String, defaultClassName: String): Seq[Binding[_]] = {
+  def bindings(
+      configured: String,
+      defaultClassName: String
+  ): Seq[Binding[_]] = {
     Reflect.bindingsFromConfiguration[
-        Duck, JavaDuck, JavaDuckAdapter, JavaDuckDelegate, DefaultDuck](
-        Environment.simple(),
-        PlayConfig(Configuration.from(Map("duck" -> configured))),
-        "duck",
-        defaultClassName)
+      Duck,
+      JavaDuck,
+      JavaDuckAdapter,
+      JavaDuckDelegate,
+      DefaultDuck
+    ](
+      Environment.simple(),
+      PlayConfig(Configuration.from(Map("duck" -> configured))),
+      "duck",
+      defaultClassName
+    )
   }
 
-  def bindings[Default : ClassTag](configured: String): Seq[Binding[_]] = {
+  def bindings[Default: ClassTag](configured: String): Seq[Binding[_]] = {
     bindings(configured, implicitly[ClassTag[Default]].runtimeClass.getName)
   }
 
@@ -74,7 +84,7 @@ object ReflectSpec extends Specification {
     def getQuack: String
   }
 
-  class JavaDuckAdapter @Inject()(underlying: JavaDuck) extends Duck {
+  class JavaDuckAdapter @Inject() (underlying: JavaDuck) extends Duck {
     def quack = underlying.getQuack
   }
 
@@ -90,7 +100,7 @@ object ReflectSpec extends Specification {
     def getQuack = "java quack"
   }
 
-  class JavaDuckDelegate @Inject()(delegate: Duck) extends JavaDuck {
+  class JavaDuckDelegate @Inject() (delegate: Duck) extends JavaDuck {
     def getQuack = delegate.quack
   }
 

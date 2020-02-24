@@ -14,7 +14,8 @@ import lila.hub.actorApi.{Deploy, GetUids, SocketUids}
 import lila.memo.ExpireSetMemo
 
 abstract class SocketActor[M <: SocketMember](uidTtl: Duration)
-    extends Socket with Actor {
+    extends Socket
+    with Actor {
 
   val members = scala.collection.mutable.Map.empty[String, M]
   val aliveUids = new ExpireSetMemo(uidTtl)
@@ -31,7 +32,8 @@ abstract class SocketActor[M <: SocketMember](uidTtl: Duration)
     if (startsOnApplicationBoot)
       context.system.scheduler.scheduleOnce(1 second) {
         lilaBus.publish(lila.socket.SocketHub.Open(self), 'socket)
-      } else lilaBus.publish(lila.socket.SocketHub.Open(self), 'socket)
+      }
+    else lilaBus.publish(lila.socket.SocketHub.Open(self), 'socket)
   }
 
   override def postStop() {
@@ -61,7 +63,7 @@ abstract class SocketActor[M <: SocketMember](uidTtl: Duration)
 
   def receive = receiveSpecific orElse receiveGeneric
 
-  def notifyAll[A : Writes](t: String, data: A) {
+  def notifyAll[A: Writes](t: String, data: A) {
     notifyAll(makeMessage(t, data))
   }
 
@@ -73,7 +75,7 @@ abstract class SocketActor[M <: SocketMember](uidTtl: Duration)
     members.values.foreach(_ push msg)
   }
 
-  def notifyAllAsync[A : Writes](t: String, data: A) = Future {
+  def notifyAllAsync[A: Writes](t: String, data: A) = Future {
     notifyAll(t, data)
   }
 
@@ -85,7 +87,7 @@ abstract class SocketActor[M <: SocketMember](uidTtl: Duration)
     notifyAll(msg)
   }
 
-  def notifyMember[A : Writes](t: String, data: A)(member: M) {
+  def notifyMember[A: Writes](t: String, data: A)(member: M) {
     member push makeMessage(t, data)
   }
 
@@ -95,9 +97,7 @@ abstract class SocketActor[M <: SocketMember](uidTtl: Duration)
   }
 
   def broom {
-    members.keys foreach { uid =>
-      if (!aliveUids.get(uid)) eject(uid)
-    }
+    members.keys foreach { uid => if (!aliveUids.get(uid)) eject(uid) }
   }
 
   def eject(uid: String) {
@@ -152,8 +152,9 @@ abstract class SocketActor[M <: SocketMember](uidTtl: Duration)
 
   val maxSpectatorUsers = 10
 
-  def showSpectators(lightUser: String => Option[LightUser])(
-      watchers: Iterable[SocketMember]): JsValue = {
+  def showSpectators(
+      lightUser: String => Option[LightUser]
+  )(watchers: Iterable[SocketMember]): JsValue = {
 
     val (total, anons, userIds) =
       watchers.foldLeft((0, 0, Set.empty[String])) {
@@ -163,16 +164,18 @@ abstract class SocketActor[M <: SocketMember](uidTtl: Duration)
                 if !userIds(userId) && userIds.size < maxSpectatorUsers =>
               (total + 1, anons, userIds + userId)
             case Some(_) => (total + 1, anons, userIds)
-            case _ => (total + 1, anons + 1, userIds)
+            case _       => (total + 1, anons + 1, userIds)
           }
       }
 
     if (total == 0) JsNull
     else if (userIds.size >= maxSpectatorUsers) Json.obj("nb" -> total)
     else
-      Json.obj("nb" -> total,
-               "users" -> userIds.flatMap { lightUser(_) }.map(_.titleName),
-               "anons" -> anons)
+      Json.obj(
+        "nb" -> total,
+        "users" -> userIds.flatMap { lightUser(_) }.map(_.titleName),
+        "anons" -> anons
+      )
   }
 
   def withMember(uid: String)(f: M => Unit) {

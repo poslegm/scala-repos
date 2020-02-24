@@ -88,15 +88,14 @@ class JvmTest extends WordSpec with TestLogging {
         assert(b(3) == gc1.copy(count = 1))
       }
 
-      "Complain when sampling rate is too low, every 30 minutes" in Time.withCurrentTimeFrozen {
-        tc =>
+      "Complain when sampling rate is too low, every 30 minutes" in Time
+        .withCurrentTimeFrozen { tc =>
           val h = new JvmHelper
           import h._
 
           traceLogger(Level.DEBUG)
 
-          jvm foreachGc { _ => /*ignore*/
-          }
+          jvm foreachGc { _ => /*ignore*/ }
           assert(jvm.executor.schedules.size == 1)
           val Seq((r, _, _, _)) = jvm.executor.schedules
           val gc = Gc(0, "pcopy", Time.now, 1.millisecond)
@@ -105,29 +104,34 @@ class JvmTest extends WordSpec with TestLogging {
           r.run()
           jvm.pushGc(gc.copy(count = 2))
           r.run()
-          assert(logLines() == Seq(
-                  "Missed 1 collections for pcopy due to sampling"))
+          assert(
+            logLines() == Seq("Missed 1 collections for pcopy due to sampling")
+          )
           jvm.pushGc(gc.copy(count = 10))
-          assert(logLines() == Seq(
-                  "Missed 1 collections for pcopy due to sampling"))
+          assert(
+            logLines() == Seq("Missed 1 collections for pcopy due to sampling")
+          )
           r.run()
           tc.advance(29.minutes)
           r.run()
-          assert(logLines() == Seq(
-                  "Missed 1 collections for pcopy due to sampling"))
+          assert(
+            logLines() == Seq("Missed 1 collections for pcopy due to sampling")
+          )
           tc.advance(2.minutes)
           jvm.pushGc(gc.copy(count = 12))
           r.run()
-          assert(logLines() == Seq(
-                  "Missed 1 collections for pcopy due to sampling",
-                  "Missed 8 collections for pcopy due to sampling"
-              ))
-      }
+          assert(
+            logLines() == Seq(
+              "Missed 1 collections for pcopy due to sampling",
+              "Missed 8 collections for pcopy due to sampling"
+            )
+          )
+        }
     }
 
     "monitorsGcs" should {
-      "queries gcs in range, in reverse chronological order" in Time.withCurrentTimeFrozen {
-        tc =>
+      "queries gcs in range, in reverse chronological order" in Time
+        .withCurrentTimeFrozen { tc =>
           val h = new JvmHelper
           import h._
 
@@ -149,7 +153,7 @@ class JvmTest extends WordSpec with TestLogging {
           jvm.pushGc(gc3)
           r.run()
           assert(query(10.seconds.ago) == Seq(gc3, gc2))
-      }
+        }
     }
 
     "safepoint" should {

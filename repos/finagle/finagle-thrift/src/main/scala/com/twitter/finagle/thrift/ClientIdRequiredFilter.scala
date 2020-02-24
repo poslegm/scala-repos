@@ -16,8 +16,8 @@ class NoClientIdSpecifiedException extends RequestException
   * requests specify a [[com.twitter.finagle.thrift.ClientId]].
   */
 class ClientIdRequiredFilter[Req, Rep](
-    statsReceiver: StatsReceiver = NullStatsReceiver)
-    extends SimpleFilter[Req, Rep] {
+    statsReceiver: StatsReceiver = NullStatsReceiver
+) extends SimpleFilter[Req, Rep] {
   private[this] val noClientIdSpecifiedEx = new NoClientIdSpecifiedException
   private[this] val filterCounter =
     statsReceiver.counter("no_client_id_specified")

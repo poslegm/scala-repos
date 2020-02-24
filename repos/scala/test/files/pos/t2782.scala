@@ -7,7 +7,8 @@ object Test {
   implicit def MapFoo[A, B, M[A, B] <: sc.Map[A, B]](
       implicit aFoo: Foo[A],
       bFoo: Foo[B],
-      cb: sc.generic.CanBuild[(A, B), M[A, B]]) = new Foo[M[A, B]] {}
+      cb: sc.generic.CanBuild[(A, B), M[A, B]]
+  ) = new Foo[M[A, B]] {}
   implicit object Tuple2IntIntFoo extends Foo[(Int, Int)] // no difference if this line is uncommented
   implicit def Tuple2Foo[A, B] = new Foo[(A, B)] {} // nor this one
 

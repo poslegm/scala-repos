@@ -95,7 +95,8 @@ trait SystemServices {
   }
 
   @inline implicit def richClipboardManager(
-      cm: android.text.ClipboardManager): RichClipboardManager =
+      cm: android.text.ClipboardManager
+  ): RichClipboardManager =
     new RichClipboardManager(cm)
 
   @inline def connectivityManager(implicit context: Context) =
@@ -160,8 +161,9 @@ trait SystemServices {
       .getSystemService(Context.TELEPHONY_SERVICE)
       .asInstanceOf[android.telephony.TelephonyManager]
 
-  def onCallForwardingIndicatorChanged(fun: Boolean => Any)(
-      implicit ctx: Context, reg: Registerable) {
+  def onCallForwardingIndicatorChanged(
+      fun: Boolean => Any
+  )(implicit ctx: Context, reg: Registerable) {
     val callStateListener = new PhoneStateListener() {
       override def onCallForwardingIndicatorChanged(cfi: Boolean) {
         fun(cfi)
@@ -169,17 +171,18 @@ trait SystemServices {
     }
     reg.onRegister {
       telephonyManager.listen(
-          callStateListener,
-          PhoneStateListener.LISTEN_CALL_FORWARDING_INDICATOR)
+        callStateListener,
+        PhoneStateListener.LISTEN_CALL_FORWARDING_INDICATOR
+      )
     }
     reg.onUnregister {
-      telephonyManager.listen(
-          callStateListener, PhoneStateListener.LISTEN_NONE)
+      telephonyManager.listen(callStateListener, PhoneStateListener.LISTEN_NONE)
     }
   }
 
-  def onCallStateChanged(fun: (Int, String) => Any)(
-      implicit ctx: Context, reg: Registerable) {
+  def onCallStateChanged(
+      fun: (Int, String) => Any
+  )(implicit ctx: Context, reg: Registerable) {
     val callStateListener = new PhoneStateListener() {
       override def onCallStateChanged(state: Int, incomingNumber: String) {
         fun(state, incomingNumber)
@@ -187,16 +190,18 @@ trait SystemServices {
     }
     reg.onRegister {
       telephonyManager.listen(
-          callStateListener, PhoneStateListener.LISTEN_CALL_STATE)
+        callStateListener,
+        PhoneStateListener.LISTEN_CALL_STATE
+      )
     }
     reg.onUnregister {
-      telephonyManager.listen(
-          callStateListener, PhoneStateListener.LISTEN_NONE)
+      telephonyManager.listen(callStateListener, PhoneStateListener.LISTEN_NONE)
     }
   }
 
-  def onCellLocationChanged(fun: CellLocation => Any)(
-      implicit ctx: Context, reg: Registerable) {
+  def onCellLocationChanged(
+      fun: CellLocation => Any
+  )(implicit ctx: Context, reg: Registerable) {
     val callStateListener = new PhoneStateListener() {
       override def onCellLocationChanged(cellLocation: CellLocation) {
         fun(cellLocation)
@@ -204,11 +209,12 @@ trait SystemServices {
     }
     reg.onRegister {
       telephonyManager.listen(
-          callStateListener, PhoneStateListener.LISTEN_CELL_LOCATION)
+        callStateListener,
+        PhoneStateListener.LISTEN_CELL_LOCATION
+      )
     }
     reg.onUnregister {
-      telephonyManager.listen(
-          callStateListener, PhoneStateListener.LISTEN_NONE)
+      telephonyManager.listen(callStateListener, PhoneStateListener.LISTEN_NONE)
     }
   }
 

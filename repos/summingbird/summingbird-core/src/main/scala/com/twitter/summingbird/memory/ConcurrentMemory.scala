@@ -25,11 +25,16 @@ import com.twitter.summingbird._
 import com.twitter.summingbird.option.JobId
 import scala.collection.mutable.Buffer
 import scala.concurrent.{ExecutionContext, Future}
-import java.util.concurrent.{BlockingQueue, LinkedBlockingQueue, ConcurrentHashMap}
+import java.util.concurrent.{
+  BlockingQueue,
+  LinkedBlockingQueue,
+  ConcurrentHashMap
+}
 
 object ConcurrentMemory {
   implicit def toSource[T](
-      traversable: TraversableOnce[T]): Producer[ConcurrentMemory, T] =
+      traversable: TraversableOnce[T]
+  ): Producer[ConcurrentMemory, T] =
     Producer.source[ConcurrentMemory, T](traversable)
 }
 
@@ -63,12 +68,11 @@ sealed trait PhysicalNode[-I] {
 
 object PhysicalNode {
   case class SourceNode[O](data: TraversableOnce[O], next: PhysicalNode[O])
-      extends ConcurrentMemoryPlan with PhysicalNode[Nothing] {
+      extends ConcurrentMemoryPlan
+      with PhysicalNode[Nothing] {
     def run(implicit ec: ExecutionContext): Future[Unit] =
       Future
-        .sequence(data.map { o =>
-          next.push(o)
-        })
+        .sequence(data.map { o => next.push(o) })
         .map(_ => ())
 
     def push(item: Nothing)(implicit ec: ExecutionContext) =
@@ -97,26 +101,27 @@ object PhysicalNode {
     * This is the PhysicalNode that implements flatMap and sends it on to the next
     * Node.
     */
-  case class FlatMap[I, O](
-      fn: I => TraversableOnce[O], target: PhysicalNode[O])
+  case class FlatMap[I, O](fn: I => TraversableOnce[O], target: PhysicalNode[O])
       extends PhysicalNode[I] {
 
     def push(item: I)(implicit ec: ExecutionContext) =
       Future.sequence(fn(item).map(target.push(_))).map(_ => ())
   }
   case class Join[K, V, W](
-      service: K => Option[W], target: PhysicalNode[(K, (V, Option[W]))])
-      extends PhysicalNode[(K, V)] {
+      service: K => Option[W],
+      target: PhysicalNode[(K, (V, Option[W]))]
+  ) extends PhysicalNode[(K, V)] {
     def push(item: (K, V))(implicit ec: ExecutionContext) = {
       val (k, v) = item
       val toPush = (k, (v, service(k)))
       target.push(toPush)
     }
   }
-  case class Sum[K, V](store: ConcurrentHashMap[K, V],
-                       sg: Semigroup[V],
-                       target: PhysicalNode[(K, (Option[V], V))])
-      extends PhysicalNode[(K, V)] {
+  case class Sum[K, V](
+      store: ConcurrentHashMap[K, V],
+      sg: Semigroup[V],
+      target: PhysicalNode[(K, (Option[V], V))]
+  ) extends PhysicalNode[(K, V)] {
     def push(item: (K, V))(implicit ec: ExecutionContext) = {
       val (k, v) = item
       @annotation.tailrec
@@ -148,8 +153,9 @@ object PhysicalNode {
 }
 
 class ConcurrentMemory(
-    implicit jobID: JobId = JobId("default.concurrent.memory.jobId"))
-    extends Platform[ConcurrentMemory] with DagOptimizer[ConcurrentMemory] {
+    implicit jobID: JobId = JobId("default.concurrent.memory.jobId")
+) extends Platform[ConcurrentMemory]
+    with DagOptimizer[ConcurrentMemory] {
 
   type Source[T] = TraversableOnce[T]
   type Store[K, V] = ConcurrentHashMap[K, V]
@@ -174,13 +180,14 @@ class ConcurrentMemory(
   private def toPhys[T](
       deps: Dependants[ConcurrentMemory],
       planned0: HMap[ProdCons, PhysicalNode],
-      that: Prod[Any]): (HMap[ProdCons, PhysicalNode], PhysicalNode[T]) =
+      that: Prod[Any]
+  ): (HMap[ProdCons, PhysicalNode], PhysicalNode[T]) =
     planned0.get(that) match {
       case Some(s) => (planned0, s)
       case None =>
         def maybeFanout[U]: (HMap[ProdCons, PhysicalNode], PhysicalNode[U]) =
           deps.dependantsAfterMerge(that) match {
-            case Nil => (planned0, NullTarget)
+            case Nil           => (planned0, NullTarget)
             case single :: Nil => toPhys[U](deps, planned0, single)
             case many =>
               val res =
@@ -189,12 +196,14 @@ class ConcurrentMemory(
                     val (post, phys) = toPhys[U](deps, hm._1, p)
                     (post, Some(phys))
                 }
-              (res.last._1,
-               FanOut[U](res.collect { case (_, Some(phys)) => phys }))
+              (res.last._1, FanOut[U](res.collect {
+                case (_, Some(phys)) => phys
+              }))
           }
 
-        def cast[A](out: (HMap[ProdCons, PhysicalNode], PhysicalNode[A]))
-          : (HMap[ProdCons, PhysicalNode], PhysicalNode[T]) = {
+        def cast[A](
+            out: (HMap[ProdCons, PhysicalNode], PhysicalNode[A])
+        ): (HMap[ProdCons, PhysicalNode], PhysicalNode[T]) = {
           out.asInstanceOf[(HMap[ProdCons, PhysicalNode], PhysicalNode[T])]
         }
 
@@ -233,19 +242,23 @@ class ConcurrentMemory(
             cast(go(prod, service))
 
           case Summer(producer, store, sg) => {
-              def go[K, V](
-                  in: Prod[(K, V)], str: Store[K, V], semi: Semigroup[V]) = {
-                val (planned, targets) = maybeFanout[(K, (Option[V], V))]
-                val phys = Sum(str, semi, targets)
-                (planned + (that -> phys), phys)
-              }
-              cast(go(producer, store, sg))
+            def go[K, V](
+                in: Prod[(K, V)],
+                str: Store[K, V],
+                semi: Semigroup[V]
+            ) = {
+              val (planned, targets) = maybeFanout[(K, (Option[V], V))]
+              val phys = Sum(str, semi, targets)
+              (planned + (that -> phys), phys)
             }
+            cast(go(producer, store, sg))
+          }
 
           case other =>
             sys.error(
-                "%s encountered, which should have been optimized away".format(
-                    other))
+              "%s encountered, which should have been optimized away"
+                .format(other)
+            )
         }
     }
 
@@ -275,8 +288,9 @@ class ConcurrentMemory(
     val deps = Dependants(optimize(prod, ourRule))
     val heads = deps.nodes.collect { case s @ Source(_) => s }
     heads
-      .foldLeft((HMap.empty[ProdCons, PhysicalNode],
-                 NullPlan: ConcurrentMemoryPlan)) {
+      .foldLeft(
+        (HMap.empty[ProdCons, PhysicalNode], NullPlan: ConcurrentMemoryPlan)
+      ) {
         case ((hm, plan), head) =>
           val (nextHm, plannedSource) = toPhys(deps, hm, head)
           // All sources should be planned to source nodes

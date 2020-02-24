@@ -12,25 +12,29 @@ import scalaz.syntax.validation._
 
 trait CommandExecutors {
 
-  implicit def syncExecutor[T <: Command, S](handler: T => ModelValidation[S])
-    : CommandExecutor[T, ModelValidation[S]] =
+  implicit def syncExecutor[T <: Command, S](
+      handler: T => ModelValidation[S]
+  ): CommandExecutor[T, ModelValidation[S]] =
     new BlockingCommandExecutor(handler)
 
   implicit def syncModelExecutor[T <: Command <% S, S](
-      handler: S => ModelValidation[S])
-    : CommandExecutor[T, ModelValidation[S]] =
+      handler: S => ModelValidation[S]
+  ): CommandExecutor[T, ModelValidation[S]] =
     new BlockingModelExecutor[T, S](handler)
 
   implicit def asyncExecutor[T <: Command, S](
-      handler: T => Future[ModelValidation[S]])(
-      implicit executionContext: ExecutionContext)
-    : CommandExecutor[T, Future[ModelValidation[S]]] =
+      handler: T => Future[ModelValidation[S]]
+  )(
+      implicit executionContext: ExecutionContext
+  ): CommandExecutor[T, Future[ModelValidation[S]]] =
     new AsyncCommandExecutor(handler)
 
   implicit def asyncModelExecutor[T <: Command, S](
-      handler: S => Future[ModelValidation[S]])(
+      handler: S => Future[ModelValidation[S]]
+  )(
       implicit executionContext: ExecutionContext,
-      vw: T => S): CommandExecutor[T, Future[ModelValidation[S]]] =
+      vw: T => S
+  ): CommandExecutor[T, Future[ModelValidation[S]]] =
     new AsyncModelExecutor[T, S](handler)
 }
 
@@ -45,15 +49,15 @@ object CommandExecutors extends CommandExecutors
   * @tparam S The result type of executing the command
   */
 @implicitNotFound(
-    "Couldn't find an executor for command of type ${T} and result of type ${S}. Did you import org.scalatra.commands.CommandExecutors._ ? You can also implement your own org.scalatra.CommandExecutor."
+  "Couldn't find an executor for command of type ${T} and result of type ${S}. Did you import org.scalatra.commands.CommandExecutors._ ? You can also implement your own org.scalatra.CommandExecutor."
 )
 abstract class CommandExecutor[T <: Command, S](handler: T => S) {
   def execute(command: T): S
 }
 
 abstract class BlockingExecutor[T <: Command, S](
-    handle: T => ModelValidation[S])
-    extends CommandExecutor[T, ModelValidation[S]](handle) {
+    handle: T => ModelValidation[S]
+) extends CommandExecutor[T, ModelValidation[S]](handle) {
   @transient private[this] val logger = Logger(getClass)
 
   def execute(cmd: T): ModelValidation[S] = {
@@ -66,17 +70,15 @@ abstract class BlockingExecutor[T <: Command, S](
           def plur(count: Int) = if (count == 1) "failure" else "failures"
           val resultLog = r.fold({ failures ⇒
             s"with ${failures.size} ${plur(failures.size)}\n${failures.list}"
-          }, { _ ⇒
-            "successfully"
-          })
-          logger.debug(
-              s"Command [${cmd.getClass.getName}] executed $resultLog")
+          }, { _ ⇒ "successfully" })
+          logger.debug(s"Command [${cmd.getClass.getName}] executed $resultLog")
           r
         case Fail(t) ⇒
           logger.error(s"Command [${cmd.getClass.getName}] failed.", t)
           ValidationError(
-              s"Failed to execute ${cmd.getClass.getSimpleName.underscore.humanize}",
-              UnknownError).failureNel[S]
+            s"Failed to execute ${cmd.getClass.getSimpleName.underscore.humanize}",
+            UnknownError
+          ).failureNel[S]
       }
     } else {
       val f =
@@ -85,7 +87,8 @@ abstract class BlockingExecutor[T <: Command, S](
         }
       def failures = if (f.size == 1) "failure" else "failures"
       logger.debug(
-          s"Command [${cmd.getClass.getName}}] executed with ${f.size} $failures.\n${f.toList}")
+        s"Command [${cmd.getClass.getName}}] executed with ${f.size} $failures.\n${f.toList}"
+      )
       NonEmptyList(f.head, f.tail: _*).failure
     }
   }
@@ -116,12 +119,12 @@ class BlockingCommandExecutor[T <: Command, S](handle: T => ModelValidation[S])
   * @tparam S The success result type
   */
 class BlockingModelExecutor[T <: Command <% S, S](
-    handle: S => ModelValidation[S])
-    extends BlockingExecutor[T, S](handle(_))
+    handle: S => ModelValidation[S]
+) extends BlockingExecutor[T, S](handle(_))
 
 abstract class AsyncExecutor[T <: Command, S](
-    handle: T => Future[ModelValidation[S]])(
-    implicit executionContext: ExecutionContext)
+    handle: T => Future[ModelValidation[S]]
+)(implicit executionContext: ExecutionContext)
     extends CommandExecutor[T, Future[ModelValidation[S]]](handle) {
   @transient private[this] val logger = Logger(getClass)
   def execute(cmd: T): Future[ModelValidation[S]] = {
@@ -134,19 +137,17 @@ abstract class AsyncExecutor[T <: Command, S](
           def plur(count: Int) = if (count == 1) "failure" else "failures"
           val resultLog = r.fold({ failures ⇒
             s"with ${failures.size} ${plur(failures.size)}.\n${failures.list}"
-          }, { _ ⇒
-            "successfully"
-          })
-          logger.debug(
-              s"Command [${cmd.getClass.getName}] executed $resultLog")
+          }, { _ ⇒ "successfully" })
+          logger.debug(s"Command [${cmd.getClass.getName}] executed $resultLog")
       }
 
       res recover {
         case t: Throwable =>
           logger.error(s"Command [${cmd.getClass.getName}] failed.", t)
           ValidationError(
-              s"Failed to execute ${cmd.getClass.getSimpleName.underscore.humanize}",
-              UnknownError).failureNel[S]
+            s"Failed to execute ${cmd.getClass.getSimpleName.underscore.humanize}",
+            UnknownError
+          ).failureNel[S]
       }
     } else {
       val f =
@@ -155,7 +156,8 @@ abstract class AsyncExecutor[T <: Command, S](
         }
       def failures = if (f.size == 1) "failure" else "failures"
       logger.debug(
-          s"Command [${cmd.getClass.getName}] executed with ${f.size} $failures.\n${f.toList}")
+        s"Command [${cmd.getClass.getName}] executed with ${f.size} $failures.\n${f.toList}"
+      )
       Future.successful(NonEmptyList(f.head, f.tail: _*).failure)
     }
   }
@@ -171,8 +173,8 @@ abstract class AsyncExecutor[T <: Command, S](
   * @tparam S The success result type
   */
 class AsyncCommandExecutor[T <: Command, S](
-    handle: T => Future[ModelValidation[S]])(
-    implicit executionContext: ExecutionContext)
+    handle: T => Future[ModelValidation[S]]
+)(implicit executionContext: ExecutionContext)
     extends AsyncExecutor[T, S](handle)(executionContext)
 
 /**
@@ -188,6 +190,6 @@ class AsyncCommandExecutor[T <: Command, S](
   * @tparam S The success result type
   */
 class AsyncModelExecutor[T <: Command, S](
-    handle: S => Future[ModelValidation[S]])(
-    implicit executionContext: ExecutionContext, vw: T => S)
+    handle: S => Future[ModelValidation[S]]
+)(implicit executionContext: ExecutionContext, vw: T => S)
     extends AsyncExecutor[T, S](handle(_))(executionContext)

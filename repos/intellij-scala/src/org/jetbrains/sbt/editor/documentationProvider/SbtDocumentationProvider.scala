@@ -5,7 +5,12 @@ import com.intellij.lang.documentation.AbstractDocumentationProvider
 import com.intellij.psi.PsiElement
 import org.jetbrains.plugins.scala.editor.documentationProvider.ScalaDocumentationProvider
 import org.jetbrains.plugins.scala.lang.psi.api.base.ScLiteral
-import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScExpression, ScInfixExpr, ScMethodCall, ScReferenceExpression}
+import org.jetbrains.plugins.scala.lang.psi.api.expr.{
+  ScExpression,
+  ScInfixExpr,
+  ScMethodCall,
+  ScReferenceExpression
+}
 import org.jetbrains.plugins.scala.lang.psi.api.statements.ScPatternDefinition
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.ScNamedElement
 import org.jetbrains.plugins.scala.lang.psi.impl.base.ScLiteralImpl
@@ -20,21 +25,23 @@ class SbtDocumentationProvider extends AbstractDocumentationProvider {
   private val scalaDocProvider = new ScalaDocumentationProvider
 
   override def getQuickNavigateInfo(
-      element: PsiElement, originalElement: PsiElement): String = {
+      element: PsiElement,
+      originalElement: PsiElement
+  ): String = {
     val scalaDoc = Option(
-        scalaDocProvider.getQuickNavigateInfo(element, originalElement))
-    scalaDoc.map { doc =>
-      appendToScalaDoc(doc, extractDoc(element))
-    }.orNull
+      scalaDocProvider.getQuickNavigateInfo(element, originalElement)
+    )
+    scalaDoc.map { doc => appendToScalaDoc(doc, extractDoc(element)) }.orNull
   }
 
   override def generateDoc(
-      element: PsiElement, originalElement: PsiElement): String = {
+      element: PsiElement,
+      originalElement: PsiElement
+  ): String = {
     val scalaDoc = Option(
-        scalaDocProvider.generateDoc(element, originalElement))
-    scalaDoc.map { doc =>
-      appendToScalaDoc(doc, extractDoc(element))
-    }.orNull
+      scalaDocProvider.generateDoc(element, originalElement)
+    )
+    scalaDoc.map { doc => appendToScalaDoc(doc, extractDoc(element)) }.orNull
   }
 
   private def appendToScalaDoc(scalaDoc: String, sbtDoc: String): String =
@@ -69,17 +76,19 @@ class SbtDocumentationProvider extends AbstractDocumentationProvider {
   }
 
   private def findSettingKeyDefinition(
-      settingKey: ScNamedElement): Option[ScPatternDefinition] =
+      settingKey: ScNamedElement
+  ): Option[ScPatternDefinition] =
     Option(settingKey.getNavigationElement)
       .safeMap(_.getParent)
       .safeMap(_.getParent)
       .collect { case s: ScPatternDefinition => s }
 
   private def getKeyDefinitionArgs(
-      keyDefinition: ScPatternDefinition): Seq[ScExpression] =
+      keyDefinition: ScPatternDefinition
+  ): Seq[ScExpression] =
     keyDefinition.lastChild match {
       case Some(call: ScMethodCall) => call.argumentExpressions
-      case _ => Seq.empty
+      case _                        => Seq.empty
     }
 
   private def argToString(arg: ScExpression): Option[String] = arg match {

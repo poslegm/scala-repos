@@ -20,7 +20,8 @@ import java.nio._
   *  elements in the buffer.
   */
 final class TypedArrayBufferOps[ // scalastyle:ignore
-    TypedArrayType <: TypedArray[_, TypedArrayType]](val buffer: Buffer)
+    TypedArrayType <: TypedArray[_, TypedArrayType]
+](val buffer: Buffer)
     extends AnyVal {
 
   /** Tests whether this buffer has a valid associated [[ArrayBuffer]].
@@ -90,34 +91,40 @@ final class TypedArrayBufferOps[ // scalastyle:ignore
   */
 object TypedArrayBufferOps {
   implicit def bufferOps(
-      buffer: Buffer): TypedArrayBufferOps[_ <: TypedArray[_, _]] =
+      buffer: Buffer
+  ): TypedArrayBufferOps[_ <: TypedArray[_, _]] =
     new TypedArrayBufferOps(buffer)
 
   implicit def byteBufferOps(
-      buffer: ByteBuffer): TypedArrayBufferOps[Int8Array] =
+      buffer: ByteBuffer
+  ): TypedArrayBufferOps[Int8Array] =
     new TypedArrayBufferOps(buffer)
 
   implicit def charBufferOps(
-      buffer: CharBuffer): TypedArrayBufferOps[Uint16Array] =
+      buffer: CharBuffer
+  ): TypedArrayBufferOps[Uint16Array] =
     new TypedArrayBufferOps(buffer)
 
   implicit def shortBufferOps(
-      buffer: ShortBuffer): TypedArrayBufferOps[Int16Array] =
+      buffer: ShortBuffer
+  ): TypedArrayBufferOps[Int16Array] =
     new TypedArrayBufferOps(buffer)
 
   implicit def intBufferOps(
-      buffer: IntBuffer): TypedArrayBufferOps[Int32Array] =
+      buffer: IntBuffer
+  ): TypedArrayBufferOps[Int32Array] =
     new TypedArrayBufferOps(buffer)
 
-  implicit def longBufferOps(
-      buffer: LongBuffer): TypedArrayBufferOps[Nothing] =
+  implicit def longBufferOps(buffer: LongBuffer): TypedArrayBufferOps[Nothing] =
     new TypedArrayBufferOps(buffer)
 
   implicit def floatBufferOps(
-      buffer: FloatBuffer): TypedArrayBufferOps[Float32Array] =
+      buffer: FloatBuffer
+  ): TypedArrayBufferOps[Float32Array] =
     new TypedArrayBufferOps(buffer)
 
   implicit def doubleBufferOps(
-      buffer: DoubleBuffer): TypedArrayBufferOps[Float64Array] =
+      buffer: DoubleBuffer
+  ): TypedArrayBufferOps[Float64Array] =
     new TypedArrayBufferOps(buffer)
 }

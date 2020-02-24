@@ -79,12 +79,15 @@ import akka.japi.Util.immutableSeq
 import com.typesafe.config.Config
 
 final case class RedundancyGroup(
-    routeePaths: immutable.Iterable[String], nbrCopies: Int)
-    extends Group {
+    routeePaths: immutable.Iterable[String],
+    nbrCopies: Int
+) extends Group {
 
   def this(config: Config) =
-    this(routeePaths = immutableSeq(config.getStringList("routees.paths")),
-         nbrCopies = config.getInt("nbr-copies"))
+    this(
+      routeePaths = immutableSeq(config.getStringList("routees.paths")),
+      nbrCopies = config.getInt("nbr-copies")
+    )
 
   override def paths(system: ActorSystem): immutable.Iterable[String] =
     routeePaths
@@ -97,7 +100,8 @@ final case class RedundancyGroup(
 //#group
 
 class CustomRouterDocSpec
-    extends AkkaSpec(CustomRouterDocSpec.config) with ImplicitSender {
+    extends AkkaSpec(CustomRouterDocSpec.config)
+    with ImplicitSender {
 
   import CustomRouterDocSpec._
   import akka.routing.SeveralRoutees
@@ -110,15 +114,18 @@ class CustomRouterDocSpec
 
     val r1 = logic.select("msg", routees)
     r1.asInstanceOf[SeveralRoutees].routees should be(
-        Vector(TestRoutee(1), TestRoutee(2), TestRoutee(3)))
+      Vector(TestRoutee(1), TestRoutee(2), TestRoutee(3))
+    )
 
     val r2 = logic.select("msg", routees)
     r2.asInstanceOf[SeveralRoutees].routees should be(
-        Vector(TestRoutee(4), TestRoutee(5), TestRoutee(6)))
+      Vector(TestRoutee(4), TestRoutee(5), TestRoutee(6))
+    )
 
     val r3 = logic.select("msg", routees)
     r3.asInstanceOf[SeveralRoutees].routees should be(
-        Vector(TestRoutee(7), TestRoutee(1), TestRoutee(2)))
+      Vector(TestRoutee(7), TestRoutee(1), TestRoutee(2))
+    )
     //#unit-test-logic
   }
 
@@ -128,7 +135,9 @@ class CustomRouterDocSpec
 
     val paths = for (n <- 1 to 10) yield ("/user/s" + n)
     val redundancy1: ActorRef = system.actorOf(
-        RedundancyGroup(paths, nbrCopies = 3).props(), name = "redundancy1")
+      RedundancyGroup(paths, nbrCopies = 3).props(),
+      name = "redundancy1"
+    )
     redundancy1 ! "important"
     //#usage-1
 

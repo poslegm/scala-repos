@@ -36,7 +36,7 @@ object CollectionIncludes extends CollectionIncludes
 //trait CollectionIncludes extends TransformationIncludes with LowerPriorityIncludes
 
 /**
-  * Contains implicit methods to convert from 
+  * Contains implicit methods to convert from
   * [[http://docs.oracle.com/javase/8/javafx/api/javafx/collections/package-summary.html `javafx.collections`]]
   * Classes to their ScalaFX counterparts.
   */
@@ -51,7 +51,8 @@ trait CollectionIncludes extends TransformationIncludes {
     * @return ScalaFX ObservableBuffer
     */
   implicit def observableList2ObservableBuffer[T](
-      ol: jfxc.ObservableList[T]): ObservableBuffer[T] =
+      ol: jfxc.ObservableList[T]
+  ): ObservableBuffer[T] =
     if (ol != null) new ObservableBuffer[T](ol)
     else null
 
@@ -65,11 +66,13 @@ trait CollectionIncludes extends TransformationIncludes {
     * @return ScalaFX ObservableMap
     */
   implicit def jfxObservableMap2sfxObservableMap[K, V](
-      om: jfxc.ObservableMap[K, V]): ObservableMap[K, V] =
+      om: jfxc.ObservableMap[K, V]
+  ): ObservableMap[K, V] =
     if (om != null)
       new ObservableMap[K, V] {
         override val delegate = om
-      } else null
+      }
+    else null
 
   /**
     * Converts a JavaFX [[http://docs.oracle.com/javase/8/javafx/api/javafx/collections/ObservableSet.html `ObservableSet`]]
@@ -80,11 +83,13 @@ trait CollectionIncludes extends TransformationIncludes {
     * @return ScalaFX ObservableSet
     */
   implicit def jfxObservableSet2sfxObservableSet[T](
-      os: jfxc.ObservableSet[T]): ObservableHashSet[T] =
+      os: jfxc.ObservableSet[T]
+  ): ObservableHashSet[T] =
     if (os != null)
       new ObservableHashSet[T] {
         override val delegate = os
-      } else null
+      }
+    else null
 
   /**
     * Converts a JavaFX [[http://docs.oracle.com/javase/8/javafx/api/javafx/collections/ObservableFloatArray.html]] `ObservableFloatArray` to a ScalaFX [[scalafx.collections.ObservableFloatArray]].
@@ -93,7 +98,8 @@ trait CollectionIncludes extends TransformationIncludes {
     * @return ScalaFX ObservableFloatArray
     */
   implicit def jfxObservableFloatArray2sfxObservableFloatArray(
-      ofa: jfxc.ObservableFloatArray): ObservableFloatArray =
+      ofa: jfxc.ObservableFloatArray
+  ): ObservableFloatArray =
     if (ofa != null) new ObservableFloatArray(ofa) else null
 
   /**
@@ -103,6 +109,7 @@ trait CollectionIncludes extends TransformationIncludes {
     * @return ScalaFX ObservableIntegerArray
     */
   implicit def jfxObservableIntegerArray2sfxObservableIntegerArray(
-      oia: jfxc.ObservableIntegerArray): ObservableIntegerArray =
+      oia: jfxc.ObservableIntegerArray
+  ): ObservableIntegerArray =
     if (oia != null) new ObservableIntegerArray(oia) else null
 }

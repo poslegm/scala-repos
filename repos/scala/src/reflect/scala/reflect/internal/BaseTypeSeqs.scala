@@ -37,9 +37,10 @@ trait BaseTypeSeqs {
     *  This is necessary because when run from reflection every base type sequence needs to have a
     *  SynchronizedBaseTypeSeq as mixin.
     */
-  class BaseTypeSeq protected[reflect](
+  class BaseTypeSeq protected[reflect] (
       private[BaseTypeSeqs] val parents: List[Type],
-      private[BaseTypeSeqs] val elems: Array[Type]) { self =>
+      private[BaseTypeSeqs] val elems: Array[Type]
+  ) { self =>
     if (Statistics.canEnable) Statistics.incCounter(baseTypeSeqCount)
     if (Statistics.canEnable)
       Statistics.incCounter(baseTypeSeqLenTotal, elems.length)
@@ -67,11 +68,15 @@ trait BaseTypeSeqs {
             pending += i
             try {
               mergePrefixAndArgs(
-                  variants, Variance.Contravariant, lubDepth(variants)) match {
+                variants,
+                Variance.Contravariant,
+                lubDepth(variants)
+              ) match {
                 case NoType =>
                   typeError(
-                      "no common type instance of base types " +
-                      (variants mkString ", and ") + " exists.")
+                    "no common type instance of base types " +
+                      (variants mkString ", and ") + " exists."
+                  )
                 case tp0 =>
                   pending(i) = false
                   elems(i) = tp0
@@ -80,8 +85,9 @@ trait BaseTypeSeqs {
             } catch {
               case CyclicInheritance =>
                 typeError(
-                    "computing the common type instance of base types " +
-                    (variants mkString ", and ") + " leads to a cycle.")
+                  "computing the common type instance of base types " +
+                    (variants mkString ", and ") + " leads to a cycle."
+                )
             }
           case tp =>
             tp
@@ -95,7 +101,7 @@ trait BaseTypeSeqs {
     def typeSymbol(i: Int): Symbol = {
       elems(i) match {
         case RefinedType(v :: vs, _) => v.typeSymbol
-        case tp => tp.typeSymbol
+        case tp                      => tp.typeSymbol
       }
     }
 
@@ -145,8 +151,9 @@ trait BaseTypeSeqs {
 
     private def typeError(msg: String): Nothing =
       throw new TypeError(
-          "the type intersection " + (parents mkString " with ") +
-          " is malformed" + "\n --- because ---\n" + msg)
+        "the type intersection " + (parents mkString " with ") +
+          " is malformed" + "\n --- because ---\n" + msg
+      )
   }
 
   /** A marker object for a base type sequence that's no yet computed.
@@ -173,8 +180,9 @@ trait BaseTypeSeqs {
       var i = 0
       for (p <- parents) {
         val parentBts = p.dealias.baseTypeSeq // dealias need for SI-8046.
-        pbtss(i) = if (parentBts eq undetBaseTypeSeq) AnyClass.info.baseTypeSeq
-        else parentBts
+        pbtss(i) =
+          if (parentBts eq undetBaseTypeSeq) AnyClass.info.baseTypeSeq
+          else parentBts
         index(i) = 0
         i += 1
       }
@@ -201,7 +209,7 @@ trait BaseTypeSeqs {
         def alreadyInMinTypes(tp: Type): Boolean = {
           @annotation.tailrec
           def loop(tps: List[Type]): Boolean = tps match {
-            case Nil => false
+            case Nil     => false
             case x :: xs => (tp =:= x) || loop(xs)
           }
           loop(minTypes)
@@ -212,8 +220,9 @@ trait BaseTypeSeqs {
           if (nextTypeSymbol(i) == minSym) {
             nextRawElem(i) match {
               case RefinedType(variants, decls) =>
-                for (tp <- variants) if (!alreadyInMinTypes(tp))
-                  minTypes ::= tp
+                for (tp <- variants)
+                  if (!alreadyInMinTypes(tp))
+                    minTypes ::= tp
               case tp =>
                 if (!alreadyInMinTypes(tp)) minTypes ::= tp
             }

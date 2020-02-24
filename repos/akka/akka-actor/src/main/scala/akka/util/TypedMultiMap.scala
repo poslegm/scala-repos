@@ -31,7 +31,8 @@ import language.higherKinds
   * as type member `Type`.
   */
 class TypedMultiMap[T <: AnyRef, K[_ <: T]] private (
-    private val map: Map[T, Set[Any]]) {
+    private val map: Map[T, Set[Any]]
+) {
 
   /**
     * Return the set of keys which are mapped to non-empty value sets.

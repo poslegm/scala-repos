@@ -10,7 +10,8 @@ sealed trait PathNode {
   def toJsonString: String
 
   private[json] def splitChildren(
-      json: JsValue): List[Either[(PathNode, JsValue), (PathNode, JsValue)]]
+      json: JsValue
+  ): List[Either[(PathNode, JsValue), (PathNode, JsValue)]]
   def set(json: JsValue, transform: JsValue => JsValue): JsValue
 
   private[json] def toJsonField(value: JsValue): JsValue = value
@@ -19,8 +20,8 @@ sealed trait PathNode {
 case class RecursiveSearch(key: String) extends PathNode {
   def apply(json: JsValue): List[JsValue] = json match {
     case obj: JsObject => (json \\ key).toList
-    case arr: JsArray => (json \\ key).toList
-    case _ => Nil
+    case arr: JsArray  => (json \\ key).toList
+    case _             => Nil
   }
   override def toString = "//" + key
   def toJsonString = "*" + key
@@ -31,8 +32,7 @@ case class RecursiveSearch(key: String) extends PathNode {
   def set(json: JsValue, transform: JsValue => JsValue): JsValue = json match {
     case obj: JsObject =>
       var found = false
-      val o = JsObject(
-          obj.fields.map {
+      val o = JsObject(obj.fields.map {
         case (k, v) =>
           if (k == this.key) {
             found = true
@@ -64,7 +64,7 @@ case class KeyPathNode(key: String) extends PathNode {
 
   def apply(json: JsValue): List[JsValue] = json match {
     case obj: JsObject => List(json \ key).flatMap(_.toOption)
-    case _ => List()
+    case _             => List()
   }
 
   override def toString = "/" + key
@@ -73,8 +73,7 @@ case class KeyPathNode(key: String) extends PathNode {
   def set(json: JsValue, transform: JsValue => JsValue): JsValue = json match {
     case obj: JsObject =>
       var found = false
-      val o = JsObject(
-          obj.fields.map {
+      val o = JsObject(obj.fields.map {
         case (k, v) =>
           if (k == this.key) {
             found = true
@@ -103,7 +102,7 @@ case class KeyPathNode(key: String) extends PathNode {
 case class IdxPathNode(idx: Int) extends PathNode {
   def apply(json: JsValue): List[JsValue] = json match {
     case arr: JsArray => List(arr(idx)).flatMap(_.toOption)
-    case _ => List()
+    case _            => List()
   }
 
   override def toString = "(%d)".format(idx)
@@ -111,8 +110,7 @@ case class IdxPathNode(idx: Int) extends PathNode {
 
   def set(json: JsValue, transform: JsValue => JsValue): JsValue = json match {
     case arr: JsArray =>
-      JsArray(
-          arr.value.zipWithIndex.map {
+      JsArray(arr.value.zipWithIndex.map {
         case (js, j) => if (j == idx) transform(js) else js
       })
     case _ => transform(json)
@@ -144,17 +142,18 @@ object JsPath extends JsPath(List.empty) {
               case obj: JsObject => obj
               case _ =>
                 throw new RuntimeException(
-                    "when empty JsPath, expecting JsObject")
+                  "when empty JsPath, expecting JsObject"
+                )
             }
           case List(p) =>
             p match {
               case KeyPathNode(key) => Json.obj(key -> value)
-              case _ => throw new RuntimeException("expected KeyPathNode")
+              case _                => throw new RuntimeException("expected KeyPathNode")
             }
           case head :: tail =>
             head match {
               case KeyPathNode(key) => Json.obj(key -> step(tail, value))
-              case _ => throw new RuntimeException("expected KeyPathNode")
+              case _                => throw new RuntimeException("expected KeyPathNode")
             }
         }
       }
@@ -192,35 +191,45 @@ case class JsPath(path: List[PathNode] = List()) {
   }
 
   def asSingleJson(json: JsValue): JsLookupResult = this(json) match {
-    case Nil => JsUndefined("error.path.missing")
+    case Nil      => JsUndefined("error.path.missing")
     case List(js) => JsDefined(js)
-    case _ :: _ => JsUndefined("error.path.result.multiple")
+    case _ :: _   => JsUndefined("error.path.result.multiple")
   }
 
   def applyTillLast(json: JsValue): Either[JsError, JsResult[JsValue]] = {
-    def step(path: List[PathNode],
-             json: JsValue): Either[JsError, JsResult[JsValue]] = path match {
+    def step(
+        path: List[PathNode],
+        json: JsValue
+    ): Either[JsError, JsResult[JsValue]] = path match {
       case Nil =>
         Left(JsError(Seq(this -> Seq(ValidationError("error.path.empty")))))
       case List(node) =>
         node(json) match {
           case Nil =>
-            Right(JsError(
-                    Seq(this -> Seq(ValidationError("error.path.missing")))))
+            Right(
+              JsError(Seq(this -> Seq(ValidationError("error.path.missing"))))
+            )
           case List(js) => Right(JsSuccess(js))
           case _ :: _ =>
-            Right(JsError(Seq(this -> Seq(
-                            ValidationError("error.path.result.multiple")))))
+            Right(
+              JsError(
+                Seq(this -> Seq(ValidationError("error.path.result.multiple")))
+              )
+            )
         }
       case head :: tail =>
         head(json) match {
           case Nil =>
-            Left(JsError(
-                    Seq(this -> Seq(ValidationError("error.path.missing")))))
+            Left(
+              JsError(Seq(this -> Seq(ValidationError("error.path.missing"))))
+            )
           case List(js) => step(tail, js)
           case _ :: _ =>
-            Left(JsError(Seq(this -> Seq(
-                            ValidationError("error.path.result.multiple")))))
+            Left(
+              JsError(
+                Seq(this -> Seq(ValidationError("error.path.result.multiple")))
+              )
+            )
         }
     }
 
@@ -246,12 +255,16 @@ case class JsPath(path: List[PathNode] = List()) {
     }
 
     def filterPathNode(
-        json: JsObject, node: PathNode, value: JsValue): JsResult[JsObject] = {
+        json: JsObject,
+        node: PathNode,
+        value: JsValue
+    ): JsResult[JsObject] = {
       node match {
         case KeyPathNode(key) =>
           JsSuccess(
-              JsObject(json.fields.filterNot(_._1 == key)) ++ Json.obj(
-                  key -> value))
+            JsObject(json.fields.filterNot(_._1 == key)) ++ Json
+              .obj(key -> value)
+          )
         case _ =>
           JsError(JsPath(), ValidationError("error.expected.keypathnode"))
       }
@@ -259,7 +272,7 @@ case class JsPath(path: List[PathNode] = List()) {
 
     def step(json: JsObject, lpath: JsPath): JsResult[JsObject] = {
       lpath.path match {
-        case Nil => JsSuccess(json)
+        case Nil     => JsSuccess(json)
         case List(p) => stepNode(json, p).repath(lpath)
         case head :: tail =>
           head(json) match {
@@ -283,7 +296,7 @@ case class JsPath(path: List[PathNode] = List()) {
       case o: JsObject =>
         step(o, this) match {
           case s: JsSuccess[JsObject] => s.copy(path = this)
-          case e => e
+          case e                      => e
         }
       case _ =>
         JsError(this, ValidationError("error.expected.jsobject"))
@@ -461,7 +474,9 @@ case class JsPath(path: List[PathNode] = List()) {
     * @see JsPath.lazyWriteNullable to see behavior in writes
     */
   def lazyFormatNullable[T](
-      r: => Reads[T], w: => Writes[T]): OFormat[Option[T]] =
+      r: => Reads[T],
+      w: => Writes[T]
+  ): OFormat[Option[T]] =
     OFormat[Option[T]](lazyReadNullable(r), lazyWriteNullable(w))
 
   private val self = this

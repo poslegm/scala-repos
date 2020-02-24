@@ -47,10 +47,14 @@ class AsyncSemaphore protected (initialPermits: Int, maxWaiters: Option[Int]) {
   def this(initialPermits: Int, maxWaiters: Int) =
     this(initialPermits, Some(maxWaiters))
 
-  require(maxWaiters.getOrElse(0) >= 0,
-          s"maxWaiters must be non-negative: $maxWaiters")
   require(
-      initialPermits > 0, s"initialPermits must be positive: $initialPermits")
+    maxWaiters.getOrElse(0) >= 0,
+    s"maxWaiters must be non-negative: $maxWaiters"
+  )
+  require(
+    initialPermits > 0,
+    s"initialPermits must be positive: $initialPermits"
+  )
 
   // access to `closed`, `waitq`, and `availablePermits` is synchronized
   // by locking on `self`
@@ -137,13 +141,15 @@ class AsyncSemaphore protected (initialPermits: Int, maxWaiters: Option[Int]) {
     */
   def acquireAndRun[T](func: => Future[T]): Future[T] = {
     acquire() flatMap { permit =>
-      val f = try func catch {
-        case NonFatal(e) =>
-          Future.exception(e)
-        case e: Throwable =>
-          permit.release()
-          throw e
-      }
+      val f =
+        try func
+        catch {
+          case NonFatal(e) =>
+            Future.exception(e)
+          case e: Throwable =>
+            permit.release()
+            throw e
+        }
       f ensure {
         permit.release()
       }

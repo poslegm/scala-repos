@@ -64,7 +64,8 @@ private[scalaz] trait ApplicativeBuilder[M[_], A, B] {
           val ff: M[F]
 
           def apply[G](f: (A, B, C, D, E, F) => G)(
-              implicit ap: Apply[M]): M[G] = ap.apply6(a, b, c, d, e, ff)(f)
+              implicit ap: Apply[M]
+          ): M[G] = ap.apply6(a, b, c, d, e, ff)(f)
 
           def tupled(implicit ap: Apply[M]): M[(A, B, C, D, E, F)] =
             apply(Tuple6.apply)
@@ -78,8 +79,9 @@ private[scalaz] trait ApplicativeBuilder[M[_], A, B] {
           sealed abstract class ApplicativeBuilder7[G] {
             val g: M[G]
 
-            def apply[H](f: (A, B, C, D, E, F, G) => H)(
-                implicit ap: Apply[M]): M[H] =
+            def apply[H](
+                f: (A, B, C, D, E, F, G) => H
+            )(implicit ap: Apply[M]): M[H] =
               ap.apply7(a, b, c, d, e, ff, g)(f)
 
             def tupled(implicit ap: Apply[M]): M[(A, B, C, D, E, F, G)] =
@@ -94,8 +96,9 @@ private[scalaz] trait ApplicativeBuilder[M[_], A, B] {
             sealed abstract class ApplicativeBuilder8[H] {
               val h: M[H]
 
-              def apply[I](f: (A, B, C, D, E, F, G, H) => I)(
-                  implicit ap: Apply[M]): M[I] =
+              def apply[I](
+                  f: (A, B, C, D, E, F, G, H) => I
+              )(implicit ap: Apply[M]): M[I] =
                 ap.apply8(a, b, c, d, e, ff, g, h)(f)
 
               def tupled(implicit ap: Apply[M]): M[(A, B, C, D, E, F, G, H)] =
@@ -110,12 +113,14 @@ private[scalaz] trait ApplicativeBuilder[M[_], A, B] {
               sealed abstract class ApplicativeBuilder9[I] {
                 val i: M[I]
 
-                def apply[J](f: (A, B, C, D, E, F, G, H, I) => J)(
-                    implicit ap: Apply[M]): M[J] =
+                def apply[J](
+                    f: (A, B, C, D, E, F, G, H, I) => J
+                )(implicit ap: Apply[M]): M[J] =
                   ap.apply9(a, b, c, d, e, ff, g, h, i)(f)
 
                 def tupled(
-                    implicit ap: Apply[M]): M[(A, B, C, D, E, F, G, H, I)] =
+                    implicit ap: Apply[M]
+                ): M[(A, B, C, D, E, F, G, H, I)] =
                   apply(Tuple9.apply)
 
                 def ⊛[J](jj: M[J]) = new ApplicativeBuilder10[J] {
@@ -127,12 +132,14 @@ private[scalaz] trait ApplicativeBuilder[M[_], A, B] {
                 sealed abstract class ApplicativeBuilder10[J] {
                   val j: M[J]
 
-                  def apply[K](f: (A, B, C, D, E, F, G, H, I, J) => K)(
-                      implicit ap: Apply[M]): M[K] =
+                  def apply[K](
+                      f: (A, B, C, D, E, F, G, H, I, J) => K
+                  )(implicit ap: Apply[M]): M[K] =
                     ap.apply10(a, b, c, d, e, ff, g, h, i, j)(f)
 
-                  def tupled(implicit ap: Apply[M])
-                    : M[(A, B, C, D, E, F, G, H, I, J)] = apply(Tuple10.apply)
+                  def tupled(
+                      implicit ap: Apply[M]
+                  ): M[(A, B, C, D, E, F, G, H, I, J)] = apply(Tuple10.apply)
 
                   def ⊛[K](kk: M[K]) = new ApplicativeBuilder11[K] {
                     val k = kk
@@ -143,12 +150,14 @@ private[scalaz] trait ApplicativeBuilder[M[_], A, B] {
                   sealed abstract class ApplicativeBuilder11[K] {
                     val k: M[K]
 
-                    def apply[L](f: (A, B, C, D, E, F, G, H, I, J, K) => L)(
-                        implicit ap: Apply[M]): M[L] =
+                    def apply[L](
+                        f: (A, B, C, D, E, F, G, H, I, J, K) => L
+                    )(implicit ap: Apply[M]): M[L] =
                       ap.apply11(a, b, c, d, e, ff, g, h, i, j, k)(f)
 
-                    def tupled(implicit ap: Apply[M])
-                      : M[(A, B, C, D, E, F, G, H, I, J, K)] =
+                    def tupled(
+                        implicit ap: Apply[M]
+                    ): M[(A, B, C, D, E, F, G, H, I, J, K)] =
                       apply(Tuple11.apply)
 
                     def ⊛[L](ll: M[L]) = new ApplicativeBuilder12[L] {
@@ -161,12 +170,13 @@ private[scalaz] trait ApplicativeBuilder[M[_], A, B] {
                       val l: M[L]
 
                       def apply[MM](
-                          f: (A, B, C, D, E, F, G, H, I, J, K, L) => MM)(
-                          implicit ap: Apply[M]): M[MM] =
+                          f: (A, B, C, D, E, F, G, H, I, J, K, L) => MM
+                      )(implicit ap: Apply[M]): M[MM] =
                         ap.apply12(a, b, c, d, e, ff, g, h, i, j, k, l)(f)
 
-                      def tupled(implicit ap: Apply[M])
-                        : M[(A, B, C, D, E, F, G, H, I, J, K, L)] =
+                      def tupled(
+                          implicit ap: Apply[M]
+                      ): M[(A, B, C, D, E, F, G, H, I, J, K, L)] =
                         apply(Tuple12.apply)
                     }
                   }

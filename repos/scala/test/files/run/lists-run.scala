@@ -61,21 +61,28 @@ object Test_multiset {
       def sort(zs: List[Int]) = zs sortWith (_ > _)
       sort(xs intersect ys) == sort(ys intersect xs)
     }, "be symmetric after sorting")
-    assert({
-      def cardinality[A](zs: List[A], e: A): Int = zs count (e == _)
-      val intersection = xs intersect ys
-      xs forall
-      (e =>
+    assert(
+      {
+        def cardinality[A](zs: List[A], e: A): Int = zs count (e == _)
+        val intersection = xs intersect ys
+        xs forall
+          (e =>
             cardinality(intersection, e) ==
-            (cardinality(xs, e) min cardinality(ys, e)))
-    }, "obey min cardinality")
-    assert({
-      val intersection = xs intersect ys
-      val unconsumed = xs.foldLeft(intersection) { (rest, e) =>
-        if (!rest.isEmpty && e == rest.head) rest.tail else rest
-      }
-      unconsumed.isEmpty
-    }, "maintain order")
+              (cardinality(xs, e) min cardinality(ys, e))
+          )
+      },
+      "obey min cardinality"
+    )
+    assert(
+      {
+        val intersection = xs intersect ys
+        val unconsumed = xs.foldLeft(intersection) { (rest, e) =>
+          if (!rest.isEmpty && e == rest.head) rest.tail else rest
+        }
+        unconsumed.isEmpty
+      },
+      "maintain order"
+    )
     assert(xs == (xs intersect xs), "has the list as again intersection")
   }
 }
@@ -90,35 +97,23 @@ object Test1 {
 
     {
       val n1 =
-        xs1 count { e =>
-          e % 2 != 0
-        }
+        xs1 count { e => e % 2 != 0 }
       val n2 =
-        xs4 count { e =>
-          e < 5
-        }
+        xs4 count { e => e < 5 }
       assert(4 == (n1 + n2), "check_count")
     }
     {
       val b1 =
-        xs1 exists { e =>
-          e % 2 == 0
-        }
+        xs1 exists { e => e % 2 == 0 }
       val b2 =
-        xs4 exists { e =>
-          e == 5
-        }
+        xs4 exists { e => e == 5 }
       assert(!(b1 & b2), "check_exists")
     }
     {
       val ys1 =
-        xs1 filter { e =>
-          e % 2 == 0
-        }
+        xs1 filter { e => e % 2 == 0 }
       val ys2 =
-        xs4 filter { e =>
-          e < 5
-        }
+        xs4 filter { e => e < 5 }
       assert(3 == ys1.length + ys2.length, "check_filter")
     }
     {
@@ -128,24 +123,16 @@ object Test1 {
     }
     {
       val b1 =
-        xs1 forall { e =>
-          e < 10
-        }
+        xs1 forall { e => e < 10 }
       val b2 =
-        xs4 forall { e =>
-          e % 2 == 0
-        }
+        xs4 forall { e => e % 2 == 0 }
       assert(b1 & b2, "check_forall")
     }
     {
       val ys1 =
-        xs1 filterNot { e =>
-          e % 2 != 0
-        }
+        xs1 filterNot { e => e % 2 != 0 }
       val ys2 =
-        xs4 filterNot { e =>
-          e < 5
-        }
+        xs4 filterNot { e => e < 5 }
       assert(3 == ys1.length + ys2.length, "check_remove")
     }
     {
@@ -186,7 +173,7 @@ object Test3 {
       List.range(1, 10, 0)
     } catch {
       case e: IllegalArgumentException => ()
-      case _: Throwable => throw new Error("List.range(1, 10, 0)")
+      case _: Throwable                => throw new Error("List.range(1, 10, 0)")
     }
     assert(List.range(10, 0, -2) == List(10, 8, 6, 4, 2))
   }
@@ -207,8 +194,8 @@ object Test4 {
 object Test5 {
   def show(xs: List[String]) = xs match {
     case "foo" :: args => args.toString
-    case List(x) => x.toString
-    case Nil => "Nil"
+    case List(x)       => x.toString
+    case Nil           => "Nil"
   }
   def run() {
     assert(show(List()) == "Nil")

@@ -47,7 +47,7 @@ class TypeableTests {
     val cl = l.cast[Long]
     assertTrue(cl.isDefined)
 
-    val f: Any = 23.0F
+    val f: Any = 23.0f
     val cf = f.cast[Float]
     assertTrue(cf.isDefined)
 
@@ -86,7 +86,7 @@ class TypeableTests {
     val cl = l.cast[jl.Long]
     assertTrue(cl.isDefined)
 
-    val f: Any = 23.0F
+    val f: Any = 23.0f
     val cf = f.cast[jl.Float]
     assertTrue(cf.isDefined)
 
@@ -416,19 +416,19 @@ class TypeableTests {
   def testTypeCase {
     import HList.ListCompat._
 
-    def typeCase[T : Typeable](t: Any): Option[T] = {
+    def typeCase[T: Typeable](t: Any): Option[T] = {
       val T = TypeCase[T]
       val `List[T]` = TypeCase[List[T]]
       val `(String, T)` = TypeCase[(String, T)]
       val `List[(String, T)]` = TypeCase[List[(String, T)]]
 
       t match {
-        case T(t) => Some(t)
-        case `List[T]`(lt) => lt.headOption
-        case `(String, T)`(s, t) => typed[String](s); Some(t)
+        case T(t)                             => Some(t)
+        case `List[T]`(lt)                    => lt.headOption
+        case `(String, T)`(s, t)              => typed[String](s); Some(t)
         case `List[(String, T)]`((s, t) :: _) => typed[String](s); Some(t)
-        case `List[(String, T)]`(lst) => assertTrue(lst.isEmpty); None
-        case _ => None
+        case `List[(String, T)]`(lst)         => assertTrue(lst.isEmpty); None
+        case _                                => None
       }
     }
 
@@ -533,12 +533,12 @@ class TypeableTests {
     assertEquals("Typeable[A with B]", typeableString(i1))
     assertEquals("Typeable[A]", typeableString(new A {}))
 
-    val o: Option[Long] = Some(4l)
+    val o: Option[Long] = Some(4L)
     assertEquals("Typeable[Option[Long]]", typeableString(o))
 
     val e: Either[Long, String] = Right("")
     assertEquals("Typeable[Either[Long, String]]", typeableString(e))
-    assertEquals("Typeable[Right[Long]]", typeableString(Right(3l)))
+    assertEquals("Typeable[Right[Long]]", typeableString(Right(3L)))
 
     val l: List[Int] = List(1, 2)
     assertEquals("Typeable[List[Int]]", typeableString(l))

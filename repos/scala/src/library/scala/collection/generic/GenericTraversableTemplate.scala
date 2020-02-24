@@ -123,7 +123,8 @@ trait GenericTraversableTemplate[+A, +CC[X] <: GenTraversable[X]]
     *                   third member of each element triple of this $coll.
     */
   def unzip3[A1, A2, A3](
-      implicit asTriple: A => (A1, A2, A3)): (CC[A1], CC[A2], CC[A3]) = {
+      implicit asTriple: A => (A1, A2, A3)
+  ): (CC[A1], CC[A2], CC[A3]) = {
     val b1 = genericBuilder[A1]
     val b2 = genericBuilder[A2]
     val b3 = genericBuilder[A3]
@@ -168,7 +169,8 @@ trait GenericTraversableTemplate[+A, +CC[X] <: GenTraversable[X]]
     *    }}}
     */
   def flatten[B](
-      implicit asTraversable: A => /*<:<!!!*/ GenTraversableOnce[B]): CC[B] = {
+      implicit asTraversable: A => /*<:<!!!*/ GenTraversableOnce[B]
+  ): CC[B] = {
     val b = genericBuilder[B]
     for (xs <- sequential) b ++= asTraversable(xs).seq
     b.result()
@@ -207,16 +209,18 @@ trait GenericTraversableTemplate[+A, +CC[X] <: GenTraversable[X]]
     *          are not of the same size.
     */
   @migration(
-      "`transpose` throws an `IllegalArgumentException` if collections are not uniformly sized.",
-      "2.9.0")
+    "`transpose` throws an `IllegalArgumentException` if collections are not uniformly sized.",
+    "2.9.0"
+  )
   def transpose[B](
-      implicit asTraversable: A => /*<:<!!!*/ GenTraversableOnce[B])
-    : CC[CC[B] @uncheckedVariance] = {
+      implicit asTraversable: A => /*<:<!!!*/ GenTraversableOnce[B]
+  ): CC[CC[B] @uncheckedVariance] = {
     if (isEmpty) return genericBuilder[CC[B]].result()
 
     def fail =
       throw new IllegalArgumentException(
-          "transpose requires all collections have the same size")
+        "transpose requires all collections have the same size"
+      )
 
     val headSize = asTraversable(head).size
     val bs: IndexedSeq[Builder[B, CC[B]]] =

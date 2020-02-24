@@ -7,7 +7,9 @@ import scala.math.Ordering
 import scala.collection.JavaConversions._
 
 class TreeSet[E](_comparator: Comparator[_ >: E])
-    extends AbstractSet[E] with NavigableSet[E] with Cloneable
+    extends AbstractSet[E]
+    with NavigableSet[E]
+    with Cloneable
     with Serializable {
   self =>
 
@@ -127,15 +129,17 @@ class TreeSet[E](_comparator: Comparator[_ >: E])
   override def removeAll(c: Collection[_]): Boolean = {
     val iter = c.iterator()
     var changed = false
-    while (iter.hasNext) changed = inner.remove(
-        Box(iter.next).asInstanceOf[Box[E]]) || changed
+    while (iter.hasNext)
+      changed = inner.remove(Box(iter.next).asInstanceOf[Box[E]]) || changed
     changed
   }
 
-  def subSet(fromElement: E,
-             fromInclusive: Boolean,
-             toElement: E,
-             toInclusive: Boolean): NavigableSet[E] = {
+  def subSet(
+      fromElement: E,
+      fromInclusive: Boolean,
+      toElement: E,
+      toInclusive: Boolean
+  ): NavigableSet[E] = {
     val boxedFrom = Box(fromElement)
     val boxedTo = Box(toElement)
     val subSetFun = { () =>
@@ -149,12 +153,14 @@ class TreeSet[E](_comparator: Comparator[_ >: E])
       base
     }
 
-    new NavigableView(this,
-                      subSetFun,
-                      Some(fromElement),
-                      fromInclusive,
-                      Some(toElement),
-                      toInclusive)
+    new NavigableView(
+      this,
+      subSetFun,
+      Some(fromElement),
+      fromInclusive,
+      Some(toElement),
+      toInclusive
+    )
   }
 
   def headSet(toElement: E, inclusive: Boolean): NavigableSet[E] = {
@@ -183,7 +189,13 @@ class TreeSet[E](_comparator: Comparator[_ >: E])
     }
 
     new NavigableView(
-        this, tailSetFun, Some(fromElement), inclusive, None, true)
+      this,
+      tailSetFun,
+      Some(fromElement),
+      inclusive,
+      None,
+      true
+    )
   }
 
   def subSet(fromElement: E, toElement: E): SortedSet[E] =

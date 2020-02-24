@@ -80,23 +80,22 @@ class FunctionFlatMapOperation[T, U](@transient fm: T => TraversableOnce[U])
 }
 
 class GenericFlatMapOperation[T, U](
-    @transient fm: T => Future[TraversableOnce[U]])
-    extends FlatMapOperation[T, U] {
+    @transient fm: T => Future[TraversableOnce[U]]
+) extends FlatMapOperation[T, U] {
   val boxed = Externalizer(fm)
   def apply(t: T) = boxed.get(t)
 }
 
 class FunctionKeyFlatMapOperation[K1, K2, V](
-    @transient fm: K1 => TraversableOnce[K2])
-    extends FlatMapOperation[(K1, V), (K2, V)] {
+    @transient fm: K1 => TraversableOnce[K2]
+) extends FlatMapOperation[(K1, V), (K2, V)] {
   val boxed = Externalizer(fm)
   def apply(t: (K1, V)) = {
     Future.value(
-        boxed
-          .get(t._1)
-          .map { newK =>
-        (newK, t._2)
-      })
+      boxed
+        .get(t._1)
+        .map { newK => (newK, t._2) }
+    )
   }
 }
 
@@ -105,8 +104,8 @@ class IdentityFlatMapOperation[T] extends FlatMapOperation[T, T] {
   def apply(t: T): Future[TraversableOnce[T]] = Future.value(Some(t))
 
   // But if we are composed with something else, just become it
-  override def andThen[V](
-      fmo: FlatMapOperation[T, V]): FlatMapOperation[T, V] = fmo
+  override def andThen[V](fmo: FlatMapOperation[T, V]): FlatMapOperation[T, V] =
+    fmo
 }
 
 object FlatMapOperation {
@@ -116,17 +115,19 @@ object FlatMapOperation {
     new FunctionFlatMapOperation(fm)
 
   def generic[T, U](
-      fm: T => Future[TraversableOnce[U]]): FlatMapOperation[T, U] =
+      fm: T => Future[TraversableOnce[U]]
+  ): FlatMapOperation[T, U] =
     new GenericFlatMapOperation(fm)
 
   def keyFlatMap[K1, K2, V](
-      fm: K1 => TraversableOnce[K2]): FlatMapOperation[(K1, V), (K2, V)] =
+      fm: K1 => TraversableOnce[K2]
+  ): FlatMapOperation[(K1, V), (K2, V)] =
     new FunctionKeyFlatMapOperation(fm)
 
   def combine[T, K, V, JoinedV](
       fmSupplier: => FlatMapOperation[T, (K, V)],
-      storeSupplier: OnlineServiceFactory[K, JoinedV])
-    : FlatMapOperation[T, (K, (V, Option[JoinedV]))] =
+      storeSupplier: OnlineServiceFactory[K, JoinedV]
+  ): FlatMapOperation[T, (K, (V, Option[JoinedV]))] =
     new FlatMapOperation[T, (K, (V, Option[JoinedV]))] {
       lazy val fm = fmSupplier
       lazy val store = storeSupplier.serviceStore()
@@ -159,7 +160,5 @@ object FlatMapOperation {
 class WriteOperation[T](sinkSupplier: () => (T => Future[Unit]))
     extends FlatMapOperation[T, T] {
   lazy val sink = sinkSupplier()
-  override def apply(t: T) = sink(t).map { _ =>
-    Some(t)
-  }
+  override def apply(t: T) = sink(t).map { _ => Some(t) }
 }

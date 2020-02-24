@@ -93,7 +93,8 @@ package object collection {
     *  irrespective of the original collection (`From').
     */
   def breakOut[From, T, To](
-      implicit b: CanBuildFrom[Nothing, T, To]): CanBuildFrom[From, T, To] =
+      implicit b: CanBuildFrom[Nothing, T, To]
+  ): CanBuildFrom[From, T, To] =
     // can't just return b because the argument to apply could be cast to From in b
     new CanBuildFrom[From, T, To] {
       def apply(from: From) = b.apply()
@@ -122,7 +123,7 @@ package collection {
     def arrayString[T](array: Array[T], from: Int, until: Int): String = {
       array.slice(from, until) map {
         case null => "n/a"
-        case x => "" + x
+        case x    => "" + x
       } mkString " | "
     }
   }

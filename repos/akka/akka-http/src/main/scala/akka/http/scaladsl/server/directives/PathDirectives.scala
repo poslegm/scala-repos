@@ -10,7 +10,8 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.Uri.Path
 
 trait PathDirectives
-    extends PathMatchers with ImplicitPathMatcherConstruction
+    extends PathMatchers
+    with ImplicitPathMatcherConstruction
     with ToNameReceptacleEnhancements {
   import BasicDirectives._
   import RouteDirectives._
@@ -145,7 +146,8 @@ trait PathDirectives
     * '''Caveat''': [[path]] without trailing slash and [[pathEnd]] directives will not match inside of this directive.
     */
   def redirectToTrailingSlashIfMissing(
-      redirectionType: StatusCodes.Redirection): Directive0 =
+      redirectionType: StatusCodes.Redirection
+  ): Directive0 =
     extractUri.flatMap { uri ⇒
       if (uri.path.endsWithSlash) pass
       else {
@@ -161,7 +163,8 @@ trait PathDirectives
     * '''Caveat''': [[pathSingleSlash]] directive will not match inside of this directive.
     */
   def redirectToNoTrailingSlashIfPresent(
-      redirectionType: StatusCodes.Redirection): Directive0 =
+      redirectionType: StatusCodes.Redirection
+  ): Directive0 =
     extractUri.flatMap { uri ⇒
       if (uri.path.endsWithSlash) {
         val newPath = uri.path.reverse.tail.reverse

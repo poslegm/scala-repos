@@ -72,6 +72,7 @@ import scala.language.implicitConversions
   */
 package object exp {
   implicit def gcMxBeanToGc(
-      coll: GarbageCollectorMXBean): GarbageCollectorAddable =
+      coll: GarbageCollectorMXBean
+  ): GarbageCollectorAddable =
     new GarbageCollectorAddable(coll)
 }

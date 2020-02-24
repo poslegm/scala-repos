@@ -6,8 +6,8 @@ private[nio] final class TypedArrayFloatBuffer private (
     override private[nio] val _typedArray: Float32Array,
     _initialPosition: Int,
     _initialLimit: Int,
-    _readOnly: Boolean)
-    extends FloatBuffer(_typedArray.length, null, -1) {
+    _readOnly: Boolean
+) extends FloatBuffer(_typedArray.length, null, -1) {
 
   position(_initialPosition)
   limit(_initialLimit)
@@ -86,12 +86,20 @@ private[nio] final class TypedArrayFloatBuffer private (
 
   @inline
   override private[nio] def load(
-      startIndex: Int, dst: Array[Float], offset: Int, length: Int): Unit =
+      startIndex: Int,
+      dst: Array[Float],
+      offset: Int,
+      length: Int
+  ): Unit =
     GenBuffer(this).generic_load(startIndex, dst, offset, length)
 
   @inline
   override private[nio] def store(
-      startIndex: Int, src: Array[Float], offset: Int, length: Int): Unit =
+      startIndex: Int,
+      src: Array[Float],
+      offset: Int,
+      length: Int
+  ): Unit =
     GenBuffer(this).generic_store(startIndex, src, offset, length)
 }
 
@@ -100,17 +108,26 @@ private[nio] object TypedArrayFloatBuffer {
       extends GenTypedArrayBuffer.NewTypedArrayBuffer[FloatBuffer] {
     def bytesPerElem: Int = 4
 
-    def apply(typedArray: Float32Array,
-              initialPosition: Int,
-              initialLimit: Int,
-              readOnly: Boolean): TypedArrayFloatBuffer = {
+    def apply(
+        typedArray: Float32Array,
+        initialPosition: Int,
+        initialLimit: Int,
+        readOnly: Boolean
+    ): TypedArrayFloatBuffer = {
       new TypedArrayFloatBuffer(
-          typedArray, initialPosition, initialLimit, readOnly)
+        typedArray,
+        initialPosition,
+        initialLimit,
+        readOnly
+      )
     }
 
     @inline
     def newTypedArray(
-        buffer: ArrayBuffer, byteOffset: Int, length: Int): Float32Array = {
+        buffer: ArrayBuffer,
+        byteOffset: Int,
+        length: Int
+    ): Float32Array = {
       new Float32Array(buffer, byteOffset, length)
     }
   }

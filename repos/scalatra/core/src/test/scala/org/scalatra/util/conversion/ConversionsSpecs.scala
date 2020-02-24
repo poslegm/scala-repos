@@ -53,7 +53,8 @@ class ConversionsSpecs extends Specification {
     object Impl extends DefaultImplicitConversions {
 
       def testFor[T](source: String, expected: Option[T])(
-          implicit t: TypeConverter[String, T]) = {
+          implicit t: TypeConverter[String, T]
+      ) = {
         t(source) must_== expected
       }
     }
@@ -88,10 +89,14 @@ class ConversionsSpecs extends Specification {
 
       import Impl._
 
-      def testConversion[T](args: (String, Seq[T]))(
-          implicit mf: Manifest[T], t: TypeConverter[String, T]) = {
+      def testConversion[T](
+          args: (String, Seq[T])
+      )(implicit mf: Manifest[T], t: TypeConverter[String, T]) = {
         val (source, expected) = args
-        Impl.stringToSeq(t).apply(source).get must containAllOf(expected).inOrder
+        Impl
+          .stringToSeq(t)
+          .apply(source)
+          .get must containAllOf(expected).inOrder
       }
 
       testConversion("1,2,3" -> List(1, 2, 3))

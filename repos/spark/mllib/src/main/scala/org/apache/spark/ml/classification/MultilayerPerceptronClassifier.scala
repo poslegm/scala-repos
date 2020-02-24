@@ -22,7 +22,12 @@ import scala.collection.JavaConverters._
 import org.apache.spark.annotation.{Experimental, Since}
 import org.apache.spark.ml.{PredictionModel, Predictor, PredictorParams}
 import org.apache.spark.ml.ann.{FeedForwardTopology, FeedForwardTrainer}
-import org.apache.spark.ml.param.{IntArrayParam, IntParam, ParamMap, ParamValidators}
+import org.apache.spark.ml.param.{
+  IntArrayParam,
+  IntParam,
+  ParamMap,
+  ParamValidators
+}
 import org.apache.spark.ml.param.shared.{HasMaxIter, HasSeed, HasTol}
 import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.mllib.linalg.{Vector, Vectors}
@@ -31,7 +36,10 @@ import org.apache.spark.sql.DataFrame
 
 /** Params for Multilayer Perceptron. */
 private[ml] trait MultilayerPerceptronParams
-    extends PredictorParams with HasSeed with HasMaxIter with HasTol {
+    extends PredictorParams
+    with HasSeed
+    with HasMaxIter
+    with HasTol {
 
   /**
     * Layer sizes including input size and output size.
@@ -39,13 +47,14 @@ private[ml] trait MultilayerPerceptronParams
     * @group param
     */
   final val layers: IntArrayParam = new IntArrayParam(
-      this,
-      "layers",
-      "Sizes of layers from input layer to output layer" +
+    this,
+    "layers",
+    "Sizes of layers from input layer to output layer" +
       " E.g., Array(780, 100, 10) means 780 inputs, " +
       "one hidden layer with 100 neurons and output layer of 10 neurons.",
-      // TODO: how to check ALSO that all elements are greater than 0?
-      ParamValidators.arrayLengthGt(1))
+    // TODO: how to check ALSO that all elements are greater than 0?
+    ParamValidators.arrayLengthGt(1)
+  )
 
   /** @group getParam */
   final def getLayers: Array[Int] = $(layers)
@@ -59,18 +68,23 @@ private[ml] trait MultilayerPerceptronParams
     * @group expertParam
     */
   final val blockSize: IntParam = new IntParam(
-      this,
-      "blockSize",
-      "Block size for stacking input data in matrices. Data is stacked within partitions." +
+    this,
+    "blockSize",
+    "Block size for stacking input data in matrices. Data is stacked within partitions." +
       " If block size is more than remaining data in a partition then " +
       "it is adjusted to the size of this data. Recommended size is between 10 and 1000",
-      ParamValidators.gt(0))
+    ParamValidators.gt(0)
+  )
 
   /** @group getParam */
   final def getBlockSize: Int = $(blockSize)
 
   setDefault(
-      maxIter -> 100, tol -> 1e-4, layers -> Array(1, 1), blockSize -> 128)
+    maxIter -> 100,
+    tol -> 1e-4,
+    layers -> Array(1, 1),
+    blockSize -> 128
+  )
 }
 
 /** Label to vector converter. */
@@ -86,7 +100,9 @@ private object LabelConverter {
     * @return pair of features and vector encoding of a label
     */
   def encodeLabeledPoint(
-      labeledPoint: LabeledPoint, labelCount: Int): (Vector, Vector) = {
+      labeledPoint: LabeledPoint,
+      labelCount: Int
+  ): (Vector, Vector) = {
     val output = Array.fill(labelCount)(0.0)
     output(labeledPoint.label.toInt) = 1.0
     (labeledPoint.features, Vectors.dense(output))
@@ -113,11 +129,13 @@ private object LabelConverter {
   */
 @Since("1.5.0")
 @Experimental
-class MultilayerPerceptronClassifier @Since("1.5.0")(
-    @Since("1.5.0") override val uid: String)
-    extends Predictor[Vector,
-                      MultilayerPerceptronClassifier,
-                      MultilayerPerceptronClassificationModel]
+class MultilayerPerceptronClassifier @Since("1.5.0") (
+    @Since("1.5.0") override val uid: String
+) extends Predictor[
+      Vector,
+      MultilayerPerceptronClassifier,
+      MultilayerPerceptronClassificationModel
+    ]
     with MultilayerPerceptronParams {
 
   @Since("1.5.0")
@@ -168,21 +186,25 @@ class MultilayerPerceptronClassifier @Since("1.5.0")(
     * @return Fitted model
     */
   override protected def train(
-      dataset: DataFrame): MultilayerPerceptronClassificationModel = {
+      dataset: DataFrame
+  ): MultilayerPerceptronClassificationModel = {
     val myLayers = $(layers)
     val labels = myLayers.last
     val lpData = extractLabeledPoints(dataset)
     val data = lpData.map(lp => LabelConverter.encodeLabeledPoint(lp, labels))
     val topology = FeedForwardTopology.multiLayerPerceptron(myLayers, true)
-    val FeedForwardTrainer = new FeedForwardTrainer(
-        topology, myLayers(0), myLayers.last)
+    val FeedForwardTrainer =
+      new FeedForwardTrainer(topology, myLayers(0), myLayers.last)
     FeedForwardTrainer.LBFGSOptimizer
       .setConvergenceTol($(tol))
       .setNumIterations($(maxIter))
     FeedForwardTrainer.setStackSize($(blockSize))
     val mlpModel = FeedForwardTrainer.train(data)
     new MultilayerPerceptronClassificationModel(
-        uid, myLayers, mlpModel.weights())
+      uid,
+      myLayers,
+      mlpModel.weights()
+    )
   }
 }
 
@@ -197,11 +219,11 @@ class MultilayerPerceptronClassifier @Since("1.5.0")(
   */
 @Since("1.5.0")
 @Experimental
-class MultilayerPerceptronClassificationModel private[ml](
+class MultilayerPerceptronClassificationModel private[ml] (
     @Since("1.5.0") override val uid: String,
     @Since("1.5.0") val layers: Array[Int],
-    @Since("1.5.0") val weights: Vector)
-    extends PredictionModel[Vector, MultilayerPerceptronClassificationModel]
+    @Since("1.5.0") val weights: Vector
+) extends PredictionModel[Vector, MultilayerPerceptronClassificationModel]
     with Serializable {
 
   @Since("1.6.0")
@@ -226,9 +248,12 @@ class MultilayerPerceptronClassificationModel private[ml](
   }
 
   @Since("1.5.0")
-  override def copy(extra: ParamMap): MultilayerPerceptronClassificationModel = {
+  override def copy(
+      extra: ParamMap
+  ): MultilayerPerceptronClassificationModel = {
     copyValues(
-        new MultilayerPerceptronClassificationModel(uid, layers, weights),
-        extra)
+      new MultilayerPerceptronClassificationModel(uid, layers, weights),
+      extra
+    )
   }
 }

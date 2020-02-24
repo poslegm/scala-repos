@@ -33,8 +33,9 @@ private[spark] class TaskContextImpl(
     override val attemptNumber: Int,
     override val taskMemoryManager: TaskMemoryManager,
     @transient private val metricsSystem: MetricsSystem,
-    initialAccumulators: Seq[Accumulator[_]] = InternalAccumulator.createAll())
-    extends TaskContext with Logging {
+    initialAccumulators: Seq[Accumulator[_]] = InternalAccumulator.createAll()
+) extends TaskContext
+    with Logging {
 
   /**
     * Metrics associated with this task.
@@ -59,13 +60,15 @@ private[spark] class TaskContextImpl(
   @volatile private var failed: Boolean = false
 
   override def addTaskCompletionListener(
-      listener: TaskCompletionListener): this.type = {
+      listener: TaskCompletionListener
+  ): this.type = {
     onCompleteCallbacks += listener
     this
   }
 
   override def addTaskFailureListener(
-      listener: TaskFailureListener): this.type = {
+      listener: TaskFailureListener
+  ): this.type = {
     onFailureCallbacks += listener
     this
   }
@@ -124,7 +127,9 @@ private[spark] class TaskContextImpl(
   override def getMetricsSources(sourceName: String): Seq[Source] =
     metricsSystem.getSourcesByName(sourceName)
 
-  private[spark] override def registerAccumulator(a: Accumulable[_, _]): Unit = {
+  private[spark] override def registerAccumulator(
+      a: Accumulable[_, _]
+  ): Unit = {
     taskMetrics.registerAccumulator(a)
   }
 }

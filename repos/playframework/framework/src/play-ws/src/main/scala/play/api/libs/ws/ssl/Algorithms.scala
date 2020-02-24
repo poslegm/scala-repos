@@ -93,7 +93,8 @@ object Algorithms {
         } catch {
           case _: Throwable =>
             throw new IllegalStateException(
-                s"unknown key ${key.getClass.getName}")
+              s"unknown key ${key.getClass.getName}"
+            )
         }
       // None
     }
@@ -107,20 +108,20 @@ object Algorithms {
   def translateKey(pubk: Key): Key = {
     val keyAlgName = getKeyAlgorithmName(pubk)
     foldVersion(
-        run16 = {
-          keyAlgName match {
-            case "EC" =>
-              // If we are on 1.6, then we can't use the EC factory and have to pull it directly.
-              translateECKey(pubk)
-            case _ =>
-              val keyFactory = KeyFactory.getInstance(keyAlgName)
-              keyFactory.translateKey(pubk)
-          }
-        },
-        runHigher = {
-          val keyFactory = KeyFactory.getInstance(keyAlgName)
-          keyFactory.translateKey(pubk)
+      run16 = {
+        keyAlgName match {
+          case "EC" =>
+            // If we are on 1.6, then we can't use the EC factory and have to pull it directly.
+            translateECKey(pubk)
+          case _ =>
+            val keyFactory = KeyFactory.getInstance(keyAlgName)
+            keyFactory.translateKey(pubk)
         }
+      },
+      runHigher = {
+        val keyFactory = KeyFactory.getInstance(keyAlgName)
+        keyFactory.translateKey(pubk)
+      }
     )
   }
 
@@ -212,7 +213,9 @@ case class MoreThanOrEqual(x: Int) extends ExpressionSymbol {
 }
 
 case class AlgorithmConstraint(
-    algorithm: String, constraint: Option[ExpressionSymbol] = None) {
+    algorithm: String,
+    constraint: Option[ExpressionSymbol] = None
+) {
 
   /**
     * Returns true only if the algorithm matches.  Useful for signature algorithms where we don't care about key size.
@@ -258,7 +261,8 @@ object AlgorithmConstraintsParser extends RegexParsers {
         result
       case NoSuccess(message, _) =>
         throw new IllegalArgumentException(
-            s"Cannot parse string $input: $message")
+          s"Cannot parse string $input: $message"
+        )
     }
 
   def expression: Parser[AlgorithmConstraint] =
@@ -293,11 +297,7 @@ object AlgorithmConstraintsParser extends RegexParsers {
 
   def operator: Parser[String] = "<=" | "<" | "==" | "!=" | ">=" | ">"
 
-  def decimalInteger: Parser[Int] = """\d+""".r ^^ { f =>
-    f.toInt
-  }
+  def decimalInteger: Parser[Int] = """\d+""".r ^^ { f => f.toInt }
 
-  def algorithm: Parser[String] = """\w+""".r ^^ { f =>
-    f.toString
-  }
+  def algorithm: Parser[String] = """\w+""".r ^^ { f => f.toString }
 }

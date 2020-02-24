@@ -4,7 +4,12 @@
 
 package akka.http.scaladsl.coding
 
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse, ResponseEntity, RequestEntity}
+import akka.http.scaladsl.model.{
+  HttpRequest,
+  HttpResponse,
+  ResponseEntity,
+  RequestEntity
+}
 import akka.util.ByteString
 import akka.stream.scaladsl.Flow
 
@@ -17,14 +22,16 @@ object DataMapper {
     new DataMapper[RequestEntity] {
       def transformDataBytes(
           t: RequestEntity,
-          transformer: Flow[ByteString, ByteString, _]): RequestEntity =
+          transformer: Flow[ByteString, ByteString, _]
+      ): RequestEntity =
         t.transformDataBytes(transformer)
     }
   implicit val mapResponseEntity: DataMapper[ResponseEntity] =
     new DataMapper[ResponseEntity] {
       def transformDataBytes(
           t: ResponseEntity,
-          transformer: Flow[ByteString, ByteString, _]): ResponseEntity =
+          transformer: Flow[ByteString, ByteString, _]
+      ): ResponseEntity =
         t.transformDataBytes(transformer)
     }
 
@@ -34,10 +41,13 @@ object DataMapper {
     mapMessage(mapResponseEntity)((m, f) ⇒ m.withEntity(f(m.entity)))
 
   def mapMessage[T, E](
-      entityMapper: DataMapper[E])(mapEntity: (T, E ⇒ E) ⇒ T): DataMapper[T] =
+      entityMapper: DataMapper[E]
+  )(mapEntity: (T, E ⇒ E) ⇒ T): DataMapper[T] =
     new DataMapper[T] {
       def transformDataBytes(
-          t: T, transformer: Flow[ByteString, ByteString, _]): T =
+          t: T,
+          transformer: Flow[ByteString, ByteString, _]
+      ): T =
         mapEntity(t, entityMapper.transformDataBytes(_, transformer))
     }
 }

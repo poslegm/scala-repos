@@ -19,7 +19,12 @@ package org.apache.spark.scheduler
 
 import java.util.Properties
 
-import org.apache.spark.{LocalSparkContext, SparkConf, SparkContext, SparkFunSuite}
+import org.apache.spark.{
+  LocalSparkContext,
+  SparkConf,
+  SparkContext,
+  SparkFunSuite
+}
 
 /**
   * Tests that pools and the associated scheduling algorithms for FIFO and fair scheduling work
@@ -30,16 +35,21 @@ class PoolSuite extends SparkFunSuite with LocalSparkContext {
   def createTaskSetManager(
       stageId: Int,
       numTasks: Int,
-      taskScheduler: TaskSchedulerImpl): TaskSetManager = {
-    val tasks = Array.tabulate[Task[_]](numTasks) { i =>
-      new FakeTask(i, Nil)
-    }
+      taskScheduler: TaskSchedulerImpl
+  ): TaskSetManager = {
+    val tasks = Array.tabulate[Task[_]](numTasks) { i => new FakeTask(i, Nil) }
     new TaskSetManager(
-        taskScheduler, new TaskSet(tasks, stageId, 0, 0, null), 0)
+      taskScheduler,
+      new TaskSet(tasks, stageId, 0, 0, null),
+      0
+    )
   }
 
   def scheduleTaskAndVerifyId(
-      taskId: Int, rootPool: Pool, expectedStageId: Int) {
+      taskId: Int,
+      rootPool: Pool,
+      expectedStageId: Int
+  ) {
     val taskSetQueue = rootPool.getSortedTaskSetQueue
     val nextTaskSetToSchedule =
       taskSetQueue.find(t => (t.runningTasks + t.tasksSuccessful) < t.numTasks)

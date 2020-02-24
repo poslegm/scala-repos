@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -38,16 +38,16 @@ class CodecSpec extends Specification with ScalaCheck {
   import ByteBufferPool._
 
   implicit lazy val arbBigDecimal: Arbitrary[BigDecimal] = Arbitrary(
-      Gen.chooseNum(Double.MinValue / 2, Double.MaxValue / 2) map
-      (BigDecimal(_)))
+    Gen.chooseNum(Double.MinValue / 2, Double.MaxValue / 2) map
+      (BigDecimal(_))
+  )
 
   //implicit def arbBitSet = Arbitrary(Gen.listOf(Gen.choose(0, 500)) map (BitSet(_: _*)))
   implicit def arbBitSet =
     Arbitrary(Gen.listOf(Gen.choose(0, 500)) map BitSetUtil.create)
 
   implicit def arbSparseBitSet: Arbitrary[(Codec[BitSet], BitSet)] = {
-    Arbitrary(
-        Gen.chooseNum(0, 500) flatMap { size =>
+    Arbitrary(Gen.chooseNum(0, 500) flatMap { size =>
       val codec = Codec.SparseBitSetCodec(size)
       if (size > 0) {
         Gen.listOf(Gen.choose(0, size - 1)) map { bits =>
@@ -61,8 +61,7 @@ class CodecSpec extends Specification with ScalaCheck {
   }
 
   implicit def arbSparseRawBitSet: Arbitrary[(Codec[RawBitSet], RawBitSet)] = {
-    Arbitrary(
-        Gen.chooseNum(0, 500) flatMap { size =>
+    Arbitrary(Gen.chooseNum(0, 500) flatMap { size =>
       val codec = Codec.SparseRawBitSetCodec(size)
       if (size > 0) {
         Gen.listOf(Gen.choose(0, size - 1)) map { bits =>
@@ -78,12 +77,12 @@ class CodecSpec extends Specification with ScalaCheck {
   }
 
   implicit def arbIndexedSeq[A](
-      implicit a: Arbitrary[A]): Arbitrary[IndexedSeq[A]] =
+      implicit a: Arbitrary[A]
+  ): Arbitrary[IndexedSeq[A]] =
     Arbitrary(Gen.listOf(a.arbitrary) map (Vector(_: _*)))
 
-  implicit def arbArray[A : Manifest : Gen]: Arbitrary[Array[A]] =
-    Arbitrary(
-        for {
+  implicit def arbArray[A: Manifest: Gen]: Arbitrary[Array[A]] =
+    Arbitrary(for {
       values <- Gen.listOf(implicitly[Gen[A]])
     } yield {
       val array: Array[A] = values.toArray
@@ -101,8 +100,7 @@ class CodecSpec extends Specification with ScalaCheck {
   }
 
   def surviveHardRoundTrip[A](a: A)(implicit codec: Codec[A]) = {
-    val bytes = smallPool.run(
-        for {
+    val bytes = smallPool.run(for {
       _ <- codec.write(a)
       bytes <- flipBytes
       _ <- release
@@ -120,17 +118,14 @@ class CodecSpec extends Specification with ScalaCheck {
     }
   }
 
-  def surviveRoundTrip[A](codec: Codec[A])(
-      implicit a: Arbitrary[A], s: Shrink[A]) = "survive round-trip" in {
+  def surviveRoundTrip[A](
+      codec: Codec[A]
+  )(implicit a: Arbitrary[A], s: Shrink[A]) = "survive round-trip" in {
     "with large buffers" in {
-      check { (a: A) =>
-        surviveEasyRoundTrip(a)(codec)
-      }
+      check { (a: A) => surviveEasyRoundTrip(a)(codec) }
     }
     "with small buffers" in {
-      check { (a: A) =>
-        surviveHardRoundTrip(a)(codec)
-      }
+      check { (a: A) => surviveHardRoundTrip(a)(codec) }
     }
   }
 
@@ -140,7 +135,9 @@ class CodecSpec extends Specification with ScalaCheck {
   "DoubleCodec" should surviveRoundTrip(Codec.DoubleCodec)
   "Utf8Codec" should surviveRoundTrip(Codec.Utf8Codec)
   "BigDecimalCodec" should surviveRoundTrip(Codec.BigDecimalCodec)(
-      arbBigDecimal, implicitly)
+    arbBigDecimal,
+    implicitly
+  )
   "BitSetCodec" should surviveRoundTrip(Codec.BitSetCodec)
   "SparseBitSet" should {
     "survive round-trip" in {
@@ -173,52 +170,28 @@ class CodecSpec extends Specification with ScalaCheck {
   "IndexedSeqCodec" should {
     "survive round-trip" in {
       "with large buffers" in {
-        check { (xs: IndexedSeq[Long]) =>
-          surviveEasyRoundTrip(xs)
-        }
-        check { (xs: IndexedSeq[IndexedSeq[Long]]) =>
-          surviveEasyRoundTrip(xs)
-        }
-        check { (xs: IndexedSeq[String]) =>
-          surviveEasyRoundTrip(xs)
-        }
+        check { (xs: IndexedSeq[Long]) => surviveEasyRoundTrip(xs) }
+        check { (xs: IndexedSeq[IndexedSeq[Long]]) => surviveEasyRoundTrip(xs) }
+        check { (xs: IndexedSeq[String]) => surviveEasyRoundTrip(xs) }
       }
       "with small buffers" in {
-        check { (xs: IndexedSeq[Long]) =>
-          surviveHardRoundTrip(xs)
-        }
-        check { (xs: IndexedSeq[IndexedSeq[Long]]) =>
-          surviveHardRoundTrip(xs)
-        }
-        check { (xs: IndexedSeq[String]) =>
-          surviveHardRoundTrip(xs)
-        }
+        check { (xs: IndexedSeq[Long]) => surviveHardRoundTrip(xs) }
+        check { (xs: IndexedSeq[IndexedSeq[Long]]) => surviveHardRoundTrip(xs) }
+        check { (xs: IndexedSeq[String]) => surviveHardRoundTrip(xs) }
       }
     }
   }
   "ArrayCodec" should {
     "survive round-trip" in {
       "with large buffers" in {
-        check { (xs: Array[Long]) =>
-          surviveEasyRoundTrip(xs)
-        }
-        check { (xs: Array[Array[Long]]) =>
-          surviveEasyRoundTrip(xs)
-        }
-        check { (xs: Array[String]) =>
-          surviveEasyRoundTrip(xs)
-        }
+        check { (xs: Array[Long]) => surviveEasyRoundTrip(xs) }
+        check { (xs: Array[Array[Long]]) => surviveEasyRoundTrip(xs) }
+        check { (xs: Array[String]) => surviveEasyRoundTrip(xs) }
       }
       "with small buffers" in {
-        check { (xs: Array[Long]) =>
-          surviveHardRoundTrip(xs)
-        }
-        check { (xs: Array[Array[Long]]) =>
-          surviveHardRoundTrip(xs)
-        }
-        check { (xs: Array[String]) =>
-          surviveHardRoundTrip(xs)
-        }
+        check { (xs: Array[Long]) => surviveHardRoundTrip(xs) }
+        check { (xs: Array[Array[Long]]) => surviveHardRoundTrip(xs) }
+        check { (xs: Array[String]) => surviveHardRoundTrip(xs) }
       }
     }
   }

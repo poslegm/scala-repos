@@ -15,8 +15,9 @@ import akka.cluster.client.protobuf.msg.{ClusterClientMessages ⇒ cm}
   * INTERNAL API: Serializer of ClusterClient messages.
   */
 private[akka] class ClusterClientMessageSerializer(
-    val system: ExtendedActorSystem)
-    extends SerializerWithStringManifest with BaseSerializer {
+    val system: ExtendedActorSystem
+) extends SerializerWithStringManifest
+    with BaseSerializer {
   import ClusterReceptionist.Internal._
 
   private lazy val serialization = SerializationExtension(system)
@@ -30,13 +31,11 @@ private[akka] class ClusterClientMessageSerializer(
 
   private val fromBinaryMap =
     collection.immutable.HashMap[String, Array[Byte] ⇒ AnyRef](
-        ContactsManifest -> contactsFromBinary, GetContactsManifest -> { _ ⇒
-      GetContacts
-    }, HeartbeatManifest -> { _ ⇒
-      Heartbeat
-    }, HeartbeatRspManifest -> { _ ⇒
-      HeartbeatRsp
-    })
+      ContactsManifest -> contactsFromBinary,
+      GetContactsManifest -> { _ ⇒ GetContacts },
+      HeartbeatManifest -> { _ ⇒ Heartbeat },
+      HeartbeatRspManifest -> { _ ⇒ HeartbeatRsp }
+    )
 
   override def manifest(obj: AnyRef): String = obj match {
     case _: Contacts ⇒ ContactsManifest
@@ -45,7 +44,8 @@ private[akka] class ClusterClientMessageSerializer(
     case HeartbeatRsp ⇒ HeartbeatRspManifest
     case _ ⇒
       throw new IllegalArgumentException(
-          s"Can't serialize object of type ${obj.getClass} in [${getClass.getName}]")
+        s"Can't serialize object of type ${obj.getClass} in [${getClass.getName}]"
+      )
   }
 
   override def toBinary(obj: AnyRef): Array[Byte] = obj match {
@@ -55,7 +55,8 @@ private[akka] class ClusterClientMessageSerializer(
     case HeartbeatRsp ⇒ emptyByteArray
     case _ ⇒
       throw new IllegalArgumentException(
-          s"Can't serialize object of type ${obj.getClass} in [${getClass.getName}]")
+        s"Can't serialize object of type ${obj.getClass} in [${getClass.getName}]"
+      )
   }
 
   override def fromBinary(bytes: Array[Byte], manifest: String): AnyRef =
@@ -63,7 +64,8 @@ private[akka] class ClusterClientMessageSerializer(
       case Some(f) ⇒ f(bytes)
       case None ⇒
         throw new IllegalArgumentException(
-            s"Unimplemented deserialization of message with manifest [$manifest] in [${getClass.getName}]")
+          s"Unimplemented deserialization of message with manifest [$manifest] in [${getClass.getName}]"
+        )
     }
 
   private def contactsToProto(m: Contacts): cm.Contacts =

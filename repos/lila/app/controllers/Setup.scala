@@ -25,9 +25,11 @@ object Setup extends LilaController with TheftPrevention {
   def aiForm = Open { implicit ctx =>
     if (HTTPRequest isXhr ctx.req) {
       env.forms aiFilled get("fen") map { form =>
-        html.setup.ai(form,
-                      Env.fishnet.aiPerfApi.intRatings,
-                      form("fen").value flatMap ValidFen(getBool("strict")))
+        html.setup.ai(
+          form,
+          Env.fishnet.aiPerfApi.intRatings,
+          form("fen").value flatMap ValidFen(getBool("strict"))
+        )
       }
     } else
       fuccess {
@@ -65,39 +67,42 @@ object Setup extends LilaController with TheftPrevention {
           .friend(ctx)
           .bindFromRequest
           .fold(
-              f =>
-                negotiate(
-                    html = Lobby.renderHome(Results.BadRequest),
-                    api = _ => fuccess(BadRequest(errorsAsJson(f)))
+            f =>
+              negotiate(
+                html = Lobby.renderHome(Results.BadRequest),
+                api = _ => fuccess(BadRequest(errorsAsJson(f)))
               ), {
-                case config =>
-                  userId ?? UserRepo.byId flatMap {
-                    destUser =>
-                      import lila.challenge.Challenge._
-                      val challenge = lila.challenge.Challenge.make(
-                          variant = config.variant,
-                          initialFen = config.fen,
-                          timeControl = config.makeClock map { c =>
-                            TimeControl.Clock(c.limit, c.increment)
-                          } orElse config.makeDaysPerTurn.map {
-                            TimeControl.Correspondence.apply
-                          } getOrElse TimeControl.Unlimited,
-                          mode = config.mode,
-                          color = config.color.name,
-                          challenger = (ctx.me, HTTPRequest sid req) match {
-                            case (Some(user), _) => Right(user)
-                            case (_, Some(sid)) => Left(sid)
-                            case _ => Left("no_sid")
-                          },
-                          destUser = destUser,
-                          rematchOf = none)
-                      env.processor.saveFriendConfig(config) >>
+              case config =>
+                userId ?? UserRepo.byId flatMap {
+                  destUser =>
+                    import lila.challenge.Challenge._
+                    val challenge = lila.challenge.Challenge.make(
+                      variant = config.variant,
+                      initialFen = config.fen,
+                      timeControl = config.makeClock map { c =>
+                        TimeControl.Clock(c.limit, c.increment)
+                      } orElse config.makeDaysPerTurn.map {
+                        TimeControl.Correspondence.apply
+                      } getOrElse TimeControl.Unlimited,
+                      mode = config.mode,
+                      color = config.color.name,
+                      challenger = (ctx.me, HTTPRequest sid req) match {
+                        case (Some(user), _) => Right(user)
+                        case (_, Some(sid))  => Left(sid)
+                        case _               => Left("no_sid")
+                      },
+                      destUser = destUser,
+                      rematchOf = none
+                    )
+                    env.processor.saveFriendConfig(config) >>
                       (Env.challenge.api create challenge) >> negotiate(
-                          html = fuccess(Redirect(routes.Round.watcher(
-                                        challenge.id, "white"))),
-                          api = _ => Challenge showChallenge challenge)
-                  }
-              }
+                      html = fuccess(
+                        Redirect(routes.Round.watcher(challenge.id, "white"))
+                      ),
+                      api = _ => Challenge showChallenge challenge
+                    )
+                }
+            }
           )
       }
     }
@@ -108,7 +113,8 @@ object Setup extends LilaController with TheftPrevention {
         env.forms.hookFilled(timeModeString = get("time")) map {
           html.setup.hook(_)
         }
-      } else
+      }
+    else
       fuccess {
         Redirect(routes.Lobby.home + "#hook")
       }
@@ -125,20 +131,19 @@ object Setup extends LilaController with TheftPrevention {
           .hook(ctx)
           .bindFromRequest
           .fold(
-              err =>
-                negotiate(
-                    html = BadRequest(errorsAsJson(err).toString).fuccess,
-                    api = _ => BadRequest(errorsAsJson(err)).fuccess),
-              config =>
-                (ctx.userId ?? Env.relation.api.fetchBlocking) flatMap {
-                  blocking =>
-                    env.processor.hook(config,
-                                       uid,
-                                       HTTPRequest sid req,
-                                       blocking) map hookResponse recover {
-                      case e: IllegalArgumentException =>
-                        BadRequest(jsonError(e.getMessage)) as JSON
-                    }
+            err =>
+              negotiate(
+                html = BadRequest(errorsAsJson(err).toString).fuccess,
+                api = _ => BadRequest(errorsAsJson(err)).fuccess
+              ),
+            config =>
+              (ctx.userId ?? Env.relation.api.fetchBlocking) flatMap {
+                blocking =>
+                  env.processor
+                    .hook(config, uid, HTTPRequest sid req, blocking) map hookResponse recover {
+                    case e: IllegalArgumentException =>
+                      BadRequest(jsonError(e.getMessage)) as JSON
+                  }
               }
           )
       }
@@ -152,15 +157,12 @@ object Setup extends LilaController with TheftPrevention {
           GameRepo game gameId map {
             _.fold(config)(config.updateFrom)
           } flatMap { config =>
-            (ctx.userId ?? Env.relation.api.fetchBlocking) flatMap {
-              blocking =>
-                env.processor.hook(config,
-                                   uid,
-                                   HTTPRequest sid ctx.req,
-                                   blocking) map hookResponse recover {
-                  case e: IllegalArgumentException =>
-                    BadRequest(jsonError(e.getMessage)) as JSON
-                }
+            (ctx.userId ?? Env.relation.api.fetchBlocking) flatMap { blocking =>
+              env.processor
+                .hook(config, uid, HTTPRequest sid ctx.req, blocking) map hookResponse recover {
+                case e: IllegalArgumentException =>
+                  BadRequest(jsonError(e.getMessage)) as JSON
+              }
             }
           }
         }
@@ -180,42 +182,42 @@ object Setup extends LilaController with TheftPrevention {
       .filter(ctx)
       .bindFromRequest
       .fold[Fu[Result]](
-          f =>
-            {
-              logger.branch("setup").warn(f.errors.toString)
-              BadRequest(()).fuccess
-          },
-          config => JsonOk(env.processor filter config inject config.render)
+        f => {
+          logger.branch("setup").warn(f.errors.toString)
+          BadRequest(()).fuccess
+        },
+        config => JsonOk(env.processor filter config inject config.render)
       )
   }
 
   def validateFen = Open { implicit ctx =>
     get("fen") flatMap ValidFen(getBool("strict")) match {
-      case None => BadRequest.fuccess
+      case None    => BadRequest.fuccess
       case Some(v) => Ok(html.game.miniBoard(v.fen, v.color.name)).fuccess
     }
   }
 
-  private def process[A](form: Context => Form[A])(
-      op: A => BodyContext[_] => Fu[Pov]) =
+  private def process[A](
+      form: Context => Form[A]
+  )(op: A => BodyContext[_] => Fu[Pov]) =
     OpenBody { implicit ctx =>
       PostRateLimit(ctx.req.remoteAddress) {
         implicit val req = ctx.body
         form(ctx).bindFromRequest.fold(
-            f =>
-              negotiate(
-                  html = Lobby.renderHome(Results.BadRequest),
-                  api = _ => fuccess(BadRequest(errorsAsJson(f)))
+          f =>
+            negotiate(
+              html = Lobby.renderHome(Results.BadRequest),
+              api = _ => fuccess(BadRequest(errorsAsJson(f)))
             ),
-            config =>
-              op(config)(ctx) flatMap { pov =>
-                negotiate(
-                    html = fuccess(redirectPov(pov)),
-                    api = apiVersion =>
-                        Env.api.roundApi.player(pov, apiVersion) map { data =>
-                        Created(data) as JSON
-                    }
-                )
+          config =>
+            op(config)(ctx) flatMap { pov =>
+              negotiate(
+                html = fuccess(redirectPov(pov)),
+                api = apiVersion =>
+                  Env.api.roundApi.player(pov, apiVersion) map { data =>
+                    Created(data) as JSON
+                  }
+              )
             }
         )
       }
@@ -226,9 +228,11 @@ object Setup extends LilaController with TheftPrevention {
     val redir = Redirect(routes.Round.watcher(pov.game.id, "white"))
     if (ctx.isAuth) redir
     else
-      redir withCookies LilaCookie.cookie(AnonCookie.name,
-                                          pov.playerId,
-                                          maxAge = AnonCookie.maxAge.some,
-                                          httpOnly = false.some)
+      redir withCookies LilaCookie.cookie(
+        AnonCookie.name,
+        pov.playerId,
+        maxAge = AnonCookie.maxAge.some,
+        httpOnly = false.some
+      )
   }
 }

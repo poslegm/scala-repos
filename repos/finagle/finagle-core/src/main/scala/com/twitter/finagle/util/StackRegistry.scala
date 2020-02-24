@@ -16,9 +16,7 @@ object StackRegistry {
     // reflection of params to case classes.
     // TODO: we might be able to make this avoid reflection with Showable
     val modules: Seq[Module] = stack.tails.map { node =>
-      val raw = node.head.parameters.map { p =>
-        params(p)
-      }
+      val raw = node.head.parameters.map { p => params(p) }
       val reflected = raw.foldLeft(Seq.empty[(String, String)]) {
         case (seq, p: Product) =>
           // TODO: many case classes have a $outer field because they close over an outside scope.
@@ -40,7 +38,10 @@ object StackRegistry {
     * The module describing a given Param for a Stack element.
     */
   case class Module(
-      name: String, description: String, fields: Seq[(String, String)])
+      name: String,
+      description: String,
+      fields: Seq[(String, String)]
+  )
 }
 
 /**
@@ -79,7 +80,7 @@ trait StackRegistry {
       if (registry.contains(entry.name)) {
         val updated = duplicates.get(entry.name) match {
           case Some(values) => values :+ entry
-          case None => Seq(entry)
+          case None         => Seq(entry)
         }
         duplicates += entry.name -> updated
       }
@@ -112,12 +113,14 @@ trait StackRegistry {
       case Module(paramName, _, reflected) =>
         reflected.foreach {
           case (field, value) =>
-            val key = Seq(registryName,
-                          entry.protocolLibrary,
-                          entry.name,
-                          entry.addr,
-                          paramName,
-                          field)
+            val key = Seq(
+              registryName,
+              entry.protocolLibrary,
+              entry.name,
+              entry.addr,
+              paramName,
+              field
+            )
             if (gRegistry.put(key, value).isEmpty) numEntries.incrementAndGet()
         }
     }
@@ -130,12 +133,14 @@ trait StackRegistry {
       case Module(paramName, _, reflected) =>
         reflected.foreach {
           case (field, value) =>
-            val key = Seq(registryName,
-                          entry.protocolLibrary,
-                          name,
-                          entry.addr,
-                          paramName,
-                          field)
+            val key = Seq(
+              registryName,
+              entry.protocolLibrary,
+              name,
+              entry.addr,
+              paramName,
+              field
+            )
             if (gRegistry.remove(key).isDefined) numEntries.decrementAndGet()
         }
     }

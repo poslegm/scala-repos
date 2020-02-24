@@ -35,15 +35,18 @@ object ControlledShutdownResponse {
       partitionsRemaining += new TopicAndPartition(topic, partition)
     }
     new ControlledShutdownResponse(
-        correlationId, errorCode, partitionsRemaining)
+      correlationId,
+      errorCode,
+      partitionsRemaining
+    )
   }
 }
 
 case class ControlledShutdownResponse(
     correlationId: Int,
     errorCode: Short = Errors.NONE.code,
-    partitionsRemaining: Set[TopicAndPartition])
-    extends RequestOrResponse() {
+    partitionsRemaining: Set[TopicAndPartition]
+) extends RequestOrResponse() {
   def sizeInBytes(): Int = {
     var size =
       4 /* correlation id */ + 2 /* error code */ + 4 /* number of responses */

@@ -20,7 +20,9 @@ object BroadcastRoutingLogic {
 @SerialVersionUID(1L)
 final class BroadcastRoutingLogic extends RoutingLogic {
   override def select(
-      message: Any, routees: immutable.IndexedSeq[Routee]): Routee =
+      message: Any,
+      routees: immutable.IndexedSeq[Routee]
+  ): Routee =
     if (routees.isEmpty) NoRoutee
     else SeveralRoutees(routees)
 }
@@ -59,15 +61,19 @@ final class BroadcastRoutingLogic extends RoutingLogic {
 final case class BroadcastPool(
     override val nrOfInstances: Int,
     override val resizer: Option[Resizer] = None,
-    override val supervisorStrategy: SupervisorStrategy = Pool.defaultSupervisorStrategy,
+    override val supervisorStrategy: SupervisorStrategy =
+      Pool.defaultSupervisorStrategy,
     override val routerDispatcher: String = Dispatchers.DefaultDispatcherId,
-    override val usePoolDispatcher: Boolean = false)
-    extends Pool with PoolOverrideUnsetConfig[BroadcastPool] {
+    override val usePoolDispatcher: Boolean = false
+) extends Pool
+    with PoolOverrideUnsetConfig[BroadcastPool] {
 
   def this(config: Config) =
-    this(nrOfInstances = config.getInt("nr-of-instances"),
-         resizer = Resizer.fromConfig(config),
-         usePoolDispatcher = config.hasPath("pool-dispatcher"))
+    this(
+      nrOfInstances = config.getInt("nr-of-instances"),
+      resizer = Resizer.fromConfig(config),
+      usePoolDispatcher = config.hasPath("pool-dispatcher")
+    )
 
   /**
     * Java API
@@ -124,8 +130,8 @@ final case class BroadcastPool(
 @SerialVersionUID(1L)
 final case class BroadcastGroup(
     override val paths: immutable.Iterable[String],
-    override val routerDispatcher: String = Dispatchers.DefaultDispatcherId)
-    extends Group {
+    override val routerDispatcher: String = Dispatchers.DefaultDispatcherId
+) extends Group {
 
   def this(config: Config) =
     this(paths = immutableSeq(config.getStringList("routees.paths")))

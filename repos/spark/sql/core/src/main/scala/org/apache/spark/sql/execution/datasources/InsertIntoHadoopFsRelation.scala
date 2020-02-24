@@ -64,8 +64,8 @@ private[sql] case class InsertIntoHadoopFsRelation(
     refreshFunction: () => Unit,
     options: Map[String, String],
     @transient query: LogicalPlan,
-    mode: SaveMode)
-    extends RunnableCommand {
+    mode: SaveMode
+) extends RunnableCommand {
 
   override def children: Seq[LogicalPlan] = query :: Nil
 
@@ -79,8 +79,9 @@ private[sql] case class InsertIntoHadoopFsRelation(
         }
         .mkString(", ")
       throw new AnalysisException(
-          s"Duplicate column(s) : $duplicateColumns found, " +
-          s"cannot save to file.")
+        s"Duplicate column(s) : $duplicateColumns found, " +
+          s"cannot save to file."
+      )
     }
 
     val hadoopConf = sqlContext.sparkContext.hadoopConfiguration
@@ -92,12 +93,15 @@ private[sql] case class InsertIntoHadoopFsRelation(
     val doInsertion = (mode, pathExists) match {
       case (SaveMode.ErrorIfExists, true) =>
         throw new AnalysisException(
-            s"path $qualifiedOutputPath already exists.")
+          s"path $qualifiedOutputPath already exists."
+        )
       case (SaveMode.Overwrite, true) =>
         Utils.tryOrIOException {
           if (!fs.delete(qualifiedOutputPath, true /* recursively */ )) {
-            throw new IOException(s"Unable to clear output " +
-                s"directory $qualifiedOutputPath prior to writing to it")
+            throw new IOException(
+              s"Unable to clear output " +
+                s"directory $qualifiedOutputPath prior to writing to it"
+            )
           }
         }
         true
@@ -125,26 +129,29 @@ private[sql] case class InsertIntoHadoopFsRelation(
         Dataset.newDataFrame(sqlContext, query).queryExecution
       SQLExecution.withNewExecutionId(sqlContext, queryExecution) {
         val relation =
-          WriteRelation(sqlContext,
-                        dataColumns.toStructType,
-                        qualifiedOutputPath.toString,
-                        fileFormat.prepareWrite(
-                            sqlContext, _, options, dataColumns.toStructType),
-                        bucketSpec)
+          WriteRelation(
+            sqlContext,
+            dataColumns.toStructType,
+            qualifiedOutputPath.toString,
+            fileFormat
+              .prepareWrite(sqlContext, _, options, dataColumns.toStructType),
+            bucketSpec
+          )
 
         val writerContainer =
           if (partitionColumns.isEmpty && bucketSpec.isEmpty) {
             new DefaultWriterContainer(relation, job, isAppend)
           } else {
             new DynamicPartitionWriterContainer(
-                relation,
-                job,
-                partitionColumns = partitionColumns,
-                dataColumns = dataColumns,
-                inputSchema = query.output,
-                PartitioningUtils.DEFAULT_PARTITION_NAME,
-                sqlContext.conf.getConf(SQLConf.PARTITION_MAX_FILES),
-                isAppend)
+              relation,
+              job,
+              partitionColumns = partitionColumns,
+              dataColumns = dataColumns,
+              inputSchema = query.output,
+              PartitioningUtils.DEFAULT_PARTITION_NAME,
+              sqlContext.conf.getConf(SQLConf.PARTITION_MAX_FILES),
+              isAppend
+            )
           }
 
         // This call shouldn't be put into the `try` block below because it only initializes and
@@ -152,8 +159,8 @@ private[sql] case class InsertIntoHadoopFsRelation(
         writerContainer.driverSideSetup()
 
         try {
-          sqlContext.sparkContext.runJob(
-              queryExecution.toRdd, writerContainer.writeRows _)
+          sqlContext.sparkContext
+            .runJob(queryExecution.toRdd, writerContainer.writeRows _)
           writerContainer.commitJob()
           refreshFunction()
         } catch {

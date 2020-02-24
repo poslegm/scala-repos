@@ -22,7 +22,11 @@ import com.twitter.summingbird.option.JobId
 import org.scalacheck.{Arbitrary, _}
 import org.scalatest.WordSpec
 
-import scala.collection.mutable.{HashMap => MutableHashMap, ListBuffer, Map => MutableMap}
+import scala.collection.mutable.{
+  HashMap => MutableHashMap,
+  ListBuffer,
+  Map => MutableMap
+}
 
 /**
   * Tests for Summingbird's in-memory planner.
@@ -38,76 +42,84 @@ class MemoryLaws extends WordSpec {
     def apply(t: T) = buf += t
   }
 
-  def sample[T : Arbitrary]: T = Arbitrary.arbitrary[T].sample.get
+  def sample[T: Arbitrary]: T = Arbitrary.arbitrary[T].sample.get
 
-  def testGraph[T : Manifest : Arbitrary,
-                K : Arbitrary,
-                V : Monoid : Arbitrary : Equiv] =
+  def testGraph[
+      T: Manifest: Arbitrary,
+      K: Arbitrary,
+      V: Monoid: Arbitrary: Equiv
+  ] =
     new TestGraphs[Memory, T, K, V](new Memory)(() => MutableMap.empty[K, V])(
-        () => new BufferFunc[T])(Memory.toSource(_))(s => { s.get(_) })({
-      (f, items) =>
-        f.asInstanceOf[BufferFunc[T]].buf.toList == items
-    })({ (p: Memory, plan: Memory#Plan[_]) =>
-      p.run(plan)
-    })
+      () => new BufferFunc[T]
+    )(Memory.toSource(_))(s => { s.get(_) })({ (f, items) =>
+      f.asInstanceOf[BufferFunc[T]].buf.toList == items
+    })({ (p: Memory, plan: Memory#Plan[_]) => p.run(plan) })
 
   /**
     * Tests the in-memory planner against a job with a single flatMap
     * operation.
     */
-  def singleStepLaw[T : Manifest : Arbitrary,
-                    K : Arbitrary,
-                    V : Monoid : Arbitrary : Equiv] =
-    testGraph[T, K, V].singleStepChecker(
-        sample[List[T]], sample[T => List[(K, V)]])
+  def singleStepLaw[
+      T: Manifest: Arbitrary,
+      K: Arbitrary,
+      V: Monoid: Arbitrary: Equiv
+  ] =
+    testGraph[T, K, V]
+      .singleStepChecker(sample[List[T]], sample[T => List[(K, V)]])
 
   /**
     * Tests the in-memory planner against a job with a single flatMap
     * operation.
     */
-  def diamondLaw[T : Manifest : Arbitrary,
-                 K : Arbitrary,
-                 V : Monoid : Arbitrary : Equiv] =
+  def diamondLaw[
+      T: Manifest: Arbitrary,
+      K: Arbitrary,
+      V: Monoid: Arbitrary: Equiv
+  ] =
     testGraph[T, K, V].diamondChecker(
-        sample[List[T]], sample[T => List[(K, V)]], sample[T => List[(K, V)]])
+      sample[List[T]],
+      sample[T => List[(K, V)]],
+      sample[T => List[(K, V)]]
+    )
 
   /**
     * Tests the in-memory planner by generating arbitrary flatMap and
     * service functions.
     */
-  def leftJoinLaw[T : Manifest : Arbitrary,
-                  K : Arbitrary,
-                  U : Arbitrary,
-                  JoinedU : Arbitrary,
-                  V : Monoid : Arbitrary : Equiv] = {
+  def leftJoinLaw[
+      T: Manifest: Arbitrary,
+      K: Arbitrary,
+      U: Arbitrary,
+      JoinedU: Arbitrary,
+      V: Monoid: Arbitrary: Equiv
+  ] = {
     import MemoryArbitraries._
     val serviceFn: MemoryService[K, JoinedU] =
       Arbitrary.arbitrary[MemoryService[K, JoinedU]].sample.get
     testGraph[T, K, V].leftJoinChecker[U, JoinedU](
-        serviceFn, { svc =>
-          { (k: K) =>
-            svc.get(k)
-          }
-        },
-        sample[List[T]],
-        sample[T => List[(K, U)]],
-        sample[((K, (U, Option[JoinedU]))) => List[(K, V)]])
+      serviceFn, { svc => { (k: K) => svc.get(k) } },
+      sample[List[T]],
+      sample[T => List[(K, U)]],
+      sample[((K, (U, Option[JoinedU]))) => List[(K, V)]]
+    )
   }
 
   /**
     * Tests the in-memory planner by generating arbitrary flatMap and
     * service functions and joining against a store (independent of the join).
     */
-  def leftJoinAgainstStoreChecker[T : Manifest : Arbitrary,
-                                  K : Arbitrary,
-                                  U : Arbitrary,
-                                  JoinedU : Monoid : Arbitrary,
-                                  V : Monoid : Arbitrary : Equiv] = {
+  def leftJoinAgainstStoreChecker[
+      T: Manifest: Arbitrary,
+      K: Arbitrary,
+      U: Arbitrary,
+      JoinedU: Monoid: Arbitrary,
+      V: Monoid: Arbitrary: Equiv
+  ] = {
     val platform = new Memory
     val finalStore: Memory#Store[K, V] = MutableMap.empty[K, V]
-    val storeAndService: Memory#Store[K, JoinedU] with Memory#Service[
-        K, JoinedU] = new MutableHashMap[K, JoinedU]()
-    with MemoryService[K, JoinedU]
+    val storeAndService
+        : Memory#Store[K, JoinedU] with Memory#Service[K, JoinedU] =
+      new MutableHashMap[K, JoinedU]() with MemoryService[K, JoinedU]
     val sourceMaker = Memory.toSource[T](_)
     val items1 = sample[List[T]]
     val items2 = sample[List[T]]
@@ -118,10 +130,11 @@ class MemoryLaws extends WordSpec {
 
     val plan = platform.plan {
       TestGraphs.leftJoinWithStoreJob[Memory, T, T, U, K, JoinedU, V](
-          sourceMaker(items1),
-          sourceMaker(items2),
-          storeAndService,
-          finalStore)(fnA)(fnB)(postJoinFn)
+        sourceMaker(items1),
+        sourceMaker(items2),
+        storeAndService,
+        finalStore
+      )(fnA)(fnB)(postJoinFn)
     }
     platform.run(plan)
     val serviceFn = storeAndService.get(_)
@@ -129,7 +142,7 @@ class MemoryLaws extends WordSpec {
 
     val storeAndServiceMatches = MapAlgebra
       .sumByKey(
-          items1.flatMap(fnA)
+        items1.flatMap(fnA)
       )
       .forall {
         case (k, v) =>
@@ -139,11 +152,11 @@ class MemoryLaws extends WordSpec {
 
     val finalStoreMatches = MapAlgebra
       .sumByKey(
-          items2
-            .flatMap(fnB)
-            .map { case (k, u) => (k, (u, serviceFn(k))) }
-            .flatMap(postJoinFn)
-        )
+        items2
+          .flatMap(fnB)
+          .map { case (k, u) => (k, (u, serviceFn(k))) }
+          .flatMap(postJoinFn)
+      )
       .forall {
         case (k, v) =>
           val lv = lookupFn(k).getOrElse(Monoid.zero[V])
@@ -153,10 +166,12 @@ class MemoryLaws extends WordSpec {
     storeAndServiceMatches && finalStoreMatches
   }
 
-  def mapKeysChecker[T : Manifest : Arbitrary,
-                     K1 : Arbitrary,
-                     K2 : Arbitrary,
-                     V : Monoid : Arbitrary : Equiv](): Boolean = {
+  def mapKeysChecker[
+      T: Manifest: Arbitrary,
+      K1: Arbitrary,
+      K2: Arbitrary,
+      V: Monoid: Arbitrary: Equiv
+  ](): Boolean = {
     val platform = new Memory
     val currentStore: Memory#Store[K2, V] = MutableMap.empty[K2, V]
     val sourceMaker = Memory.toSource[T](_)
@@ -168,7 +183,9 @@ class MemoryLaws extends WordSpec {
     // supplied store.
     val plan = platform.plan {
       TestGraphs.singleStepMapKeysJob[Memory, T, K1, K2, V](
-          sourceMaker(original), currentStore)(fnA, fnB)
+        sourceMaker(original),
+        currentStore
+      )(fnA, fnB)
     }
     platform.run(plan)
     val lookupFn = currentStore.get(_)
@@ -179,8 +196,8 @@ class MemoryLaws extends WordSpec {
     }
   }
 
-  def lookupCollectChecker[
-      T : Arbitrary : Equiv : Manifest, U : Arbitrary : Equiv]: Boolean = {
+  def lookupCollectChecker[T: Arbitrary: Equiv: Manifest, U: Arbitrary: Equiv]
+      : Boolean = {
     import MemoryArbitraries._
     val mem = new Memory
     val input = sample[List[T]]
@@ -188,24 +205,25 @@ class MemoryLaws extends WordSpec {
     var buffer = Vector[(T, U)]() // closure to mutate this
     val prod =
       TestGraphs.lookupJob[Memory, T, U](Memory.toSource(input), srv, {
-        tu: (T, U) =>
-          buffer = buffer :+ tu
+        tu: (T, U) => buffer = buffer :+ tu
       })
     mem.run(mem.plan(prod))
     // check it out:
     Equiv[List[(T, U)]]
       .equiv((buffer.toList), TestGraphs.lookupJobInScala(input, { (t: T) =>
-      srv.get(t)
-    }))
+        srv.get(t)
+      }))
   }
 
   /**
     * Tests the in-memory planner against a job with a single flatMap
     * operation and some test counters
     */
-  def counterChecker[T : Manifest : Arbitrary,
-                     K : Arbitrary,
-                     V : Monoid : Arbitrary : Equiv]: Boolean = {
+  def counterChecker[
+      T: Manifest: Arbitrary,
+      K: Arbitrary,
+      V: Monoid: Arbitrary: Equiv
+  ]: Boolean = {
     implicit val jobID: JobId = new JobId("memory.job.testJobId")
     val mem = new Memory
     val fn = sample[(T) => List[(K, V)]]
@@ -214,8 +232,8 @@ class MemoryLaws extends WordSpec {
     val source = sourceMaker(original)
     val store: Memory#Store[K, V] = MutableMap.empty[K, V]
 
-    val prod = TestGraphs.jobWithStats[Memory, T, K, V](jobID, source, store)(
-        t => fn(t))
+    val prod =
+      TestGraphs.jobWithStats[Memory, T, K, V](jobID, source, store)(t => fn(t))
     mem.run(mem.plan(prod))
 
     val origCounter =
@@ -225,7 +243,7 @@ class MemoryLaws extends WordSpec {
       .counter(Group("counter.test"), Name("fltr_counter"))
       .get
 
-      (origCounter == original.size) &&
+    (origCounter == original.size) &&
     (fmCounter == (original.flatMap(fn).size * 2)) &&
     (fltrCounter == (original.flatMap(fn).size))
   }
@@ -290,17 +308,15 @@ class MemoryLaws extends WordSpec {
       val source = Memory.toSource(List(1, 2))
       val store: Memory#Store[Int, Int] =
         collection.mutable.Map.empty[Int, Int]
-      val sink: Memory#Sink[Int] = { x: Int =>
-        sinkBuffer += x
-      }
+      val sink: Memory#Sink[Int] = { x: Int => sinkBuffer += x }
 
-      val summed = source.map { v =>
-        (v, v)
-      }.sumByKey(store).map {
+      val summed = source.map { v => (v, v) }.sumByKey(store).map {
         case (_, (existingEventOpt, currentEvent)) =>
-          existingEventOpt.map { existingEvent =>
-            Semigroup.plus(existingEvent, currentEvent)
-          }.getOrElse(currentEvent)
+          existingEventOpt
+            .map { existingEvent =>
+              Semigroup.plus(existingEvent, currentEvent)
+            }
+            .getOrElse(currentEvent)
       }
 
       val write1 = summed.write(sink)

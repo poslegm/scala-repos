@@ -9,7 +9,8 @@ object Test extends InteractiveTest {
   }
 
   private def loadSourceAndWaitUntilTypechecked(
-      sourceName: String): SourceFile = {
+      sourceName: String
+  ): SourceFile = {
     val sourceFile = sourceFiles.find(_.file.name == sourceName).head
     askLoadedTyped(sourceFile).get
     /* The response to `askLoadedType` may return before `interactive.Global.waitLoadedType`
@@ -24,8 +25,10 @@ object Test extends InteractiveTest {
   private def checkPresent(source: SourceFile): Unit =
     compiler.getUnitOf(source) match {
       case Some(unit) =>
-        reporter.println("Compilation Unit for " + source.file.name +
-            " still loaded after askLoadedTyped")
+        reporter.println(
+          "Compilation Unit for " + source.file.name +
+            " still loaded after askLoadedTyped"
+        )
 
       case None => reporter.println("Test OK")
     }

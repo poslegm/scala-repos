@@ -41,8 +41,10 @@ class Tokenizer(override val uid: String)
   }
 
   override protected def validateInputType(inputType: DataType): Unit = {
-    require(inputType == StringType,
-            s"Input type must be string type but got $inputType.")
+    require(
+      inputType == StringType,
+      s"Input type must be string type but got $inputType."
+    )
   }
 
   override protected def outputDataType: DataType =
@@ -77,10 +79,12 @@ class RegexTokenizer(override val uid: String)
     * Default: 1, to avoid returning empty strings
     * @group param
     */
-  val minTokenLength: IntParam = new IntParam(this,
-                                              "minTokenLength",
-                                              "minimum token length (>= 0)",
-                                              ParamValidators.gtEq(0))
+  val minTokenLength: IntParam = new IntParam(
+    this,
+    "minTokenLength",
+    "minimum token length (>= 0)",
+    ParamValidators.gtEq(0)
+  )
 
   /** @group setParam */
   def setMinTokenLength(value: Int): this.type = set(minTokenLength, value)
@@ -93,8 +97,8 @@ class RegexTokenizer(override val uid: String)
     * Default: true
     * @group param
     */
-  val gaps: BooleanParam = new BooleanParam(
-      this, "gaps", "Set regex to match gaps or tokens")
+  val gaps: BooleanParam =
+    new BooleanParam(this, "gaps", "Set regex to match gaps or tokens")
 
   /** @group setParam */
   def setGaps(value: Boolean): this.type = set(gaps, value)
@@ -107,8 +111,8 @@ class RegexTokenizer(override val uid: String)
     * Default: `"\\s+"`
     * @group param
     */
-  val pattern: Param[String] = new Param(
-      this, "pattern", "regex pattern used for tokenizing")
+  val pattern: Param[String] =
+    new Param(this, "pattern", "regex pattern used for tokenizing")
 
   /** @group setParam */
   def setPattern(value: String): this.type = set(pattern, value)
@@ -122,9 +126,10 @@ class RegexTokenizer(override val uid: String)
     * @group param
     */
   final val toLowercase: BooleanParam = new BooleanParam(
-      this,
-      "toLowercase",
-      "whether to convert all characters to lowercase before tokenizing.")
+    this,
+    "toLowercase",
+    "whether to convert all characters to lowercase before tokenizing."
+  )
 
   /** @group setParam */
   def setToLowercase(value: Boolean): this.type = set(toLowercase, value)
@@ -132,10 +137,12 @@ class RegexTokenizer(override val uid: String)
   /** @group getParam */
   def getToLowercase: Boolean = $(toLowercase)
 
-  setDefault(minTokenLength -> 1,
-             gaps -> true,
-             pattern -> "\\s+",
-             toLowercase -> true)
+  setDefault(
+    minTokenLength -> 1,
+    gaps -> true,
+    pattern -> "\\s+",
+    toLowercase -> true
+  )
 
   override protected def createTransformFunc: String => Seq[String] = {
     originStr =>
@@ -148,8 +155,10 @@ class RegexTokenizer(override val uid: String)
   }
 
   override protected def validateInputType(inputType: DataType): Unit = {
-    require(inputType == StringType,
-            s"Input type must be string type but got $inputType.")
+    require(
+      inputType == StringType,
+      s"Input type must be string type but got $inputType."
+    )
   }
 
   override protected def outputDataType: DataType =

@@ -21,7 +21,7 @@ trait PackageObject extends Steroids with WithFuture {
   def nowTenths: Long = nowMillis / 100
   def nowSeconds: Int = (nowMillis / 1000).toInt
 
-  implicit final def runOptionT[F[+ _], A](ot: OptionT[F, A]): F[Option[A]] =
+  implicit final def runOptionT[F[+_], A](ot: OptionT[F, A]): F[Option[A]] =
     ot.run
 
   // from scalaz. We don't want to import all OptionTFunctions, because of the clash with `some`
@@ -44,8 +44,8 @@ trait PackageObject extends Steroids with WithFuture {
 
     def fold[B](fe: Exception => B, fa: A => B): B = v match {
       case scala.util.Failure(e: Exception) => fe(e)
-      case scala.util.Failure(e) => throw e
-      case scala.util.Success(a) => fa(a)
+      case scala.util.Failure(e)            => throw e
+      case scala.util.Success(a)            => fa(a)
     }
 
     def future: Fu[A] = fold(Future.failed, fuccess)
@@ -103,14 +103,16 @@ trait WithPlay { self: PackageObject =>
     def bind[A, B](fa: Fu[A])(f: A => Fu[B]) = fa flatMap f
   }
 
-  implicit def LilaFuMonoid[A : Monoid]: Monoid[Fu[A]] =
-    Monoid.instance((x, y) =>
-                      x zip y map {
-                        case (a, b) => a ⊹ b
-                    },
-                    fuccess(∅[A]))
+  implicit def LilaFuMonoid[A: Monoid]: Monoid[Fu[A]] =
+    Monoid.instance(
+      (x, y) =>
+        x zip y map {
+          case (a, b) => a ⊹ b
+        },
+      fuccess(∅[A])
+    )
 
-  implicit def LilaFuZero[A : Zero]: Zero[Fu[A]] =
+  implicit def LilaFuZero[A: Zero]: Zero[Fu[A]] =
     Zero.instance(fuccess(zero[A]))
 
   implicit val LilaJsObjectZero: Zero[JsObject] =
@@ -120,10 +122,12 @@ trait WithPlay { self: PackageObject =>
     Zero.instance(JsError(Seq.empty))
 
   implicit final class LilaTraversableFuture[A, M[X] <: TraversableOnce[X]](
-      t: M[Fu[A]]) {
+      t: M[Fu[A]]
+  ) {
 
-    def sequenceFu(implicit cbf: scala.collection.generic.CanBuildFrom[
-            M[Fu[A]], A, M[A]]) =
+    def sequenceFu(
+        implicit cbf: scala.collection.generic.CanBuildFrom[M[Fu[A]], A, M[A]]
+    ) =
       Future sequence t
   }
 
@@ -144,8 +148,8 @@ trait WithPlay { self: PackageObject =>
     def effectFold(fail: Exception => Unit, succ: A => Unit) {
       fua onComplete {
         case scala.util.Failure(e: Exception) => fail(e)
-        case scala.util.Failure(e) => throw e // Throwables
-        case scala.util.Success(e) => succ(e)
+        case scala.util.Failure(e)            => throw e // Throwables
+        case scala.util.Success(e)            => succ(e)
       }
     }
 
@@ -164,10 +168,10 @@ trait WithPlay { self: PackageObject =>
       fua flatMap succ recoverWith { case e: Exception => fail(e) }
 
     def logFailure(
-        logger: => lila.log.Logger, msg: Exception => String): Fu[A] =
-      addFailureEffect { e =>
-        logger.warn(msg(e), e)
-      }
+        logger: => lila.log.Logger,
+        msg: Exception => String
+    ): Fu[A] =
+      addFailureEffect { e => logger.warn(msg(e), e) }
     def logFailure(logger: => lila.log.Logger): Fu[A] =
       logFailure(logger, _.toString)
 
@@ -175,15 +179,15 @@ trait WithPlay { self: PackageObject =>
 
     def addFailureEffect(effect: Exception => Unit) =
       fua ~
-      (_ onFailure {
-            case e: Exception => effect(e)
-          })
+        (_ onFailure {
+          case e: Exception => effect(e)
+        })
 
     def addEffects(fail: Exception => Unit, succ: A => Unit): Fu[A] =
       fua andThen {
         case scala.util.Failure(e: Exception) => fail(e)
-        case scala.util.Failure(e) => throw e // Throwables
-        case scala.util.Success(e) => succ(e)
+        case scala.util.Failure(e)            => throw e // Throwables
+        case scala.util.Success(e)            => succ(e)
       }
 
     def mapFailure(f: Exception => Exception) = fua recover {
@@ -196,15 +200,15 @@ trait WithPlay { self: PackageObject =>
 
     def thenPp: Fu[A] = fua ~ {
       _.effectFold(
-          e => println("[failure] " + e),
-          a => println("[success] " + a)
+        e => println("[failure] " + e),
+        a => println("[success] " + a)
       )
     }
 
     def thenPp(msg: String): Fu[A] = fua ~ {
       _.effectFold(
-          e => println(s"[$msg] [failure] $e"),
-          a => println(s"[$msg] [success] $a")
+        e => println(s"[$msg] [failure] $e"),
+        a => println(s"[$msg] [success] $a")
       )
     }
 
@@ -214,9 +218,12 @@ trait WithPlay { self: PackageObject =>
     }
 
     def withTimeout(duration: FiniteDuration, error: => Throwable)(
-        implicit system: akka.actor.ActorSystem): Fu[A] = {
+        implicit system: akka.actor.ActorSystem
+    ): Fu[A] = {
       Future firstCompletedOf Seq(
-          fua, akka.pattern.after(duration, system.scheduler)(fufail(error)))
+        fua,
+        akka.pattern.after(duration, system.scheduler)(fufail(error))
+      )
     }
 
     def chronometer = lila.common.Chronometer(fua)
@@ -224,10 +231,10 @@ trait WithPlay { self: PackageObject =>
     def mon(path: lila.mon.RecPath) = chronometer.mon(path).result
   }
 
-  implicit final class LilaPimpedFutureZero[A : Zero](fua: Fu[A]) {
+  implicit final class LilaPimpedFutureZero[A: Zero](fua: Fu[A]) {
 
     def nevermind: Fu[A] = fua recover {
-      case e: lila.common.LilaException => zero[A]
+      case e: lila.common.LilaException             => zero[A]
       case e: java.util.concurrent.TimeoutException => zero[A]
     }
   }
@@ -239,9 +246,7 @@ trait WithPlay { self: PackageObject =>
     }
 
     def orElse(other: => Fu[Option[A]]): Fu[Option[A]] = fua flatMap {
-      _.fold(other) { x =>
-        fuccess(x.some)
-      }
+      _.fold(other) { x => fuccess(x.some) }
     }
 
     def getOrElse(other: => Fu[A]): Fu[A] = fua flatMap {

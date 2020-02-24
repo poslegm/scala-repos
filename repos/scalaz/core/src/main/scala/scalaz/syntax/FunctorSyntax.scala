@@ -2,21 +2,25 @@ package scalaz
 package syntax
 
 /** Wraps a value `self` and provides methods related to `Functor` */
-final class FunctorOps[F[_], A] private[syntax](val self: F[A])(
-    implicit val F: Functor[F])
-    extends Ops[F[A]] {
+final class FunctorOps[F[_], A] private[syntax] (val self: F[A])(
+    implicit val F: Functor[F]
+) extends Ops[F[A]] {
   ////
   import Leibniz.===
   import Liskov.<~<
 
   final def map[B](f: A => B): F[B] = F.map(self)(f)
   final def distribute[G[_], B](f: A => G[B])(
-      implicit D: Distributive[G]): G[F[B]] = D.distribute(self)(f)
+      implicit D: Distributive[G]
+  ): G[F[B]] = D.distribute(self)(f)
   final def cosequence[G[_], B](
-      implicit ev: A === G[B], D: Distributive[G]): G[F[B]] =
+      implicit ev: A === G[B],
+      D: Distributive[G]
+  ): G[F[B]] =
     D.distribute(self)(ev(_))
-  final def cotraverse[G[_], B, C](f: F[B] => C)(
-      implicit ev: A === G[B], D: Distributive[G]): G[C] = D.map(cosequence)(f)
+  final def cotraverse[G[_], B, C](
+      f: F[B] => C
+  )(implicit ev: A === G[B], D: Distributive[G]): G[C] = D.map(cosequence)(f)
   final def ∘[B](f: A => B): F[B] = F.map(self)(f)
   final def strengthL[B](b: B): F[(B, A)] = F.strengthL(b, self)
   final def strengthR[B](b: B): F[(A, B)] = F.strengthR(self, b)
@@ -32,8 +36,9 @@ final class FunctorOps[F[_], A] private[syntax](val self: F[A])(
 }
 
 sealed trait ToFunctorOps0 {
-  implicit def ToFunctorOpsUnapply[FA](v: FA)(
-      implicit F0: Unapply[Functor, FA]) =
+  implicit def ToFunctorOpsUnapply[FA](
+      v: FA
+  )(implicit F0: Unapply[Functor, FA]) =
     new FunctorOps[F0.M, F0.A](F0(v))(F0.TC)
 }
 

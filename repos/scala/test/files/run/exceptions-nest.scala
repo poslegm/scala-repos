@@ -5,9 +5,11 @@ object Test extends App {
   println(test3)
   println(test4)
   println(test5)
-  try { println(test6) } catch { case _: Throwable => println("OK") }
+  try { println(test6) }
+  catch { case _: Throwable => println("OK") }
   println(test7)
-  try { println(test8) } catch { case _: Throwable => println("OK") }
+  try { println(test8) }
+  catch { case _: Throwable => println("OK") }
   println(test9)
   println(test10)
   println(test11)
@@ -19,7 +21,7 @@ object Test extends App {
       x = 2
     } catch {
       case _: NullPointerException => x = 3
-      case _: Throwable => x = 4
+      case _: Throwable            => x = 4
     }
     x
   }
@@ -36,7 +38,7 @@ object Test extends App {
       x = 23
     } catch {
       case _: NullPointerException => x = 3
-      case _: Throwable => x = 4
+      case _: Throwable            => x = 4
     }
     x
   }
@@ -44,10 +46,11 @@ object Test extends App {
   def test3 = {
     var x = 1
     try {
-      try { x = 2 } catch { case _: Throwable => x = 4 }
+      try { x = 2 }
+      catch { case _: Throwable => x = 4 }
     } catch {
       case _: NullPointerException => x = 3
-      case _: Throwable => x = 4
+      case _: Throwable            => x = 4
     }
     x
   }
@@ -58,7 +61,7 @@ object Test extends App {
       x = 2
     } catch {
       case _: NullPointerException => x = 3
-      case _: Throwable => x = 4
+      case _: Throwable            => x = 4
     }
     try {
       x = 5
@@ -74,9 +77,12 @@ object Test extends App {
       x = 2
     } catch {
       case _: NullPointerException =>
-        try { x = 3 } catch { case f: Throwable => throw f }
+        try { x = 3 }
+        catch { case f: Throwable => throw f }
       case _: Throwable =>
-        x = 4; try { x = 41 } catch { case _: Exception => x = 42 }; x = 43
+        x = 4;
+        try { x = 41 }
+        catch { case _: Exception => x = 42 }; x = 43
     }
     x
   }
@@ -133,11 +139,13 @@ object Test extends App {
 
   var x10 = 1
   def test10: Int = {
-    try { 1 } catch { case e if (x10 == 1) => 1 }
+    try { 1 }
+    catch { case e if (x10 == 1) => 1 }
   }
 
   def test11 {
-    try { () } catch { case e: Throwable => () }
+    try { () }
+    catch { case e: Throwable => () }
   }
 
   class E1 extends Exception
@@ -154,5 +162,5 @@ object Test extends App {
     }
   def test12 =
     test12_impl(1) + test12_impl(throw new E1) + test12_impl(throw new E2) +
-    test12_impl(throw new E3)
+      test12_impl(throw new E3)
 }

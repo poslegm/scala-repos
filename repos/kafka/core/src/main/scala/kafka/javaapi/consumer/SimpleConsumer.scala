@@ -24,14 +24,21 @@ import kafka.javaapi.OffsetRequest
   * A consumer of kafka messages
   */
 @threadsafe
-class SimpleConsumer(val host: String,
-                     val port: Int,
-                     val soTimeout: Int,
-                     val bufferSize: Int,
-                     val clientId: String) {
+class SimpleConsumer(
+    val host: String,
+    val port: Int,
+    val soTimeout: Int,
+    val bufferSize: Int,
+    val clientId: String
+) {
 
   private val underlying = new kafka.consumer.SimpleConsumer(
-      host, port, soTimeout, bufferSize, clientId)
+    host,
+    port,
+    soTimeout,
+    bufferSize,
+    clientId
+  )
 
   /**
     *  Fetch a set of messages from a topic. This version of the fetch method
@@ -59,12 +66,13 @@ class SimpleConsumer(val host: String,
 
   /**
     *  Fetch metadata for a sequence of topics.
-    *  
+    *
     *  @param request specifies the versionId, clientId, sequence of topics.
     *  @return metadata for each topic in the request.
     */
-  def send(request: kafka.javaapi.TopicMetadataRequest)
-    : kafka.javaapi.TopicMetadataResponse = {
+  def send(
+      request: kafka.javaapi.TopicMetadataRequest
+  ): kafka.javaapi.TopicMetadataResponse = {
     import kafka.javaapi.Implicits._
     underlying.send(request.underlying)
   }
@@ -85,8 +93,9 @@ class SimpleConsumer(val host: String,
     * @param request a [[kafka.javaapi.OffsetCommitRequest]] object.
     * @return a [[kafka.javaapi.OffsetCommitResponse]] object.
     */
-  def commitOffsets(request: kafka.javaapi.OffsetCommitRequest)
-    : kafka.javaapi.OffsetCommitResponse = {
+  def commitOffsets(
+      request: kafka.javaapi.OffsetCommitRequest
+  ): kafka.javaapi.OffsetCommitResponse = {
     import kafka.javaapi.Implicits._
     underlying.commitOffsets(request.underlying)
   }
@@ -96,8 +105,9 @@ class SimpleConsumer(val host: String,
     * @param request a [[kafka.javaapi.OffsetFetchRequest]] object.
     * @return a [[kafka.javaapi.OffsetFetchResponse]] object.
     */
-  def fetchOffsets(request: kafka.javaapi.OffsetFetchRequest)
-    : kafka.javaapi.OffsetFetchResponse = {
+  def fetchOffsets(
+      request: kafka.javaapi.OffsetFetchRequest
+  ): kafka.javaapi.OffsetFetchResponse = {
     import kafka.javaapi.Implicits._
     underlying.fetchOffsets(request.underlying)
   }

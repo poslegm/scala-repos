@@ -25,7 +25,8 @@ object DebugBuilderSpec extends Specification {
       val actual = builder.build()
 
       actual.trim.split("\\s+").toSeq must containTheSameElementsAs(
-          Seq("certpath"))
+        Seq("certpath")
+      )
     }
 
     "match certpath + ocsp" in {
@@ -34,7 +35,8 @@ object DebugBuilderSpec extends Specification {
       val actual = builder.build()
 
       actual.trim.split("\\s+").toSeq must containTheSameElementsAs(
-          Seq("certpath", "ocsp"))
+        Seq("certpath", "ocsp")
+      )
     }
   }
 
@@ -57,14 +59,17 @@ object DebugBuilderSpec extends Specification {
 
     "match some random combinations" in {
       val config =
-        SSLDebugConfig(ssl = true,
-                       defaultctx = true,
-                       handshake = Some(SSLDebugHandshakeOptions(data = true)))
+        SSLDebugConfig(
+          ssl = true,
+          defaultctx = true,
+          handshake = Some(SSLDebugHandshakeOptions(data = true))
+        )
       val builder = new JavaxNetDebugBuilder(config)
       val actual: String = builder.build()
 
       actual.trim.split("\\s+").toSeq must containTheSameElementsAs(
-          Seq("ssl", "defaultctx", "handshake", "data"))
+        Seq("ssl", "defaultctx", "handshake", "data")
+      )
     }
   }
 }

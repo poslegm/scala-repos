@@ -45,10 +45,13 @@ object FileIO {
     * @param f The file to write to
     * @param options File open options
     */
-  def toFile(f: File, options: util.Set[StandardOpenOption])
-    : javadsl.Sink[ByteString, CompletionStage[IOResult]] =
+  def toFile(
+      f: File,
+      options: util.Set[StandardOpenOption]
+  ): javadsl.Sink[ByteString, CompletionStage[IOResult]] =
     new Sink(
-        scaladsl.FileIO.toFile(f, options.asScala.toSet).toCompletionStage())
+      scaladsl.FileIO.toFile(f, options.asScala.toSet).toCompletionStage()
+    )
 
   /**
     * Creates a Source from a Files contents.
@@ -61,8 +64,7 @@ object FileIO {
     * It materializes a [[java.util.concurrent.CompletionStage]] of [[IOResult]] containing the number of bytes read from the source file upon completion,
     * and a possible exception if IO operation was not completed successfully.
     */
-  def fromFile(
-      f: File): javadsl.Source[ByteString, CompletionStage[IOResult]] =
+  def fromFile(f: File): javadsl.Source[ByteString, CompletionStage[IOResult]] =
     fromFile(f, 8192)
 
   /**
@@ -78,6 +80,7 @@ object FileIO {
     */
   def fromFile(
       f: File,
-      chunkSize: Int): javadsl.Source[ByteString, CompletionStage[IOResult]] =
+      chunkSize: Int
+  ): javadsl.Source[ByteString, CompletionStage[IOResult]] =
     new Source(scaladsl.FileIO.fromFile(f, chunkSize).toCompletionStage())
 }

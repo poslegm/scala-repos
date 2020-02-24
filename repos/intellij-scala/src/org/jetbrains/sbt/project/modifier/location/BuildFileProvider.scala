@@ -16,20 +16,24 @@ import scala.collection.mutable
   * @since 17.03.2015.
   */
 trait BuildFileProvider {
-  def findBuildFile(module: IJModule,
-                    elementType: BuildFileElementType,
-                    vfsFileToCopy: mutable.Map[VirtualFile, LightVirtualFile])
-    : Option[BuildFileEntry[PsiFile]] = {
+  def findBuildFile(
+      module: IJModule,
+      elementType: BuildFileElementType,
+      vfsFileToCopy: mutable.Map[VirtualFile, LightVirtualFile]
+  ): Option[BuildFileEntry[PsiFile]] = {
 
     def findVirtualFile(file: File) =
       Option(VfsUtil.findFileByIoFile(file, true))
 
     def toLightVirtualFile(origFile: VirtualFile) =
       vfsFileToCopy.getOrElseUpdate(
+        origFile,
+        new LightVirtualFile(
           origFile,
-          new LightVirtualFile(origFile,
-                               VfsUtilCore.loadText(origFile),
-                               LocalTimeCounter.currentTime))
+          VfsUtilCore.loadText(origFile),
+          LocalTimeCounter.currentTime
+        )
+      )
 
     def toPsiFile(vFile: VirtualFile) =
       Option(PsiManager.getInstance(module.getProject).findFile(vFile))
@@ -45,7 +49,8 @@ trait BuildFileProvider {
 
   def findIoFile(
       module: IJModule,
-      elementType: BuildFileElementType): Option[BuildFileEntry[File]]
+      elementType: BuildFileElementType
+  ): Option[BuildFileEntry[File]]
 }
 
 case class BuildFileEntry[T](file: T, isModuleLocal: Boolean)

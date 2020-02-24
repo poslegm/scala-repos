@@ -29,8 +29,7 @@ import scala.collection.generic.Sizing
   *  @author Aleksandar Prokopec
   *  @since 2.9
   */
-trait Combiner[-Elem, +To]
-    extends Builder[Elem, To] with Sizing with Parallel {
+trait Combiner[-Elem, +To] extends Builder[Elem, To] with Sizing with Parallel {
 
   @transient
   @volatile
@@ -72,7 +71,8 @@ trait Combiner[-Elem, +To]
     *  @return        the parallel builder containing both the elements of this and the `other` builder
     */
   def combine[N <: Elem, NewTo >: To](
-      other: Combiner[N, NewTo]): Combiner[N, NewTo]
+      other: Combiner[N, NewTo]
+  ): Combiner[N, NewTo]
 
   /** Returns `true` if this combiner has a thread-safe `+=` and is meant to be shared
     *  across several threads constructing the collection.

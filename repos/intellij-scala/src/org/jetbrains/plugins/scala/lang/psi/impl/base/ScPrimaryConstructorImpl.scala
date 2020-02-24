@@ -29,8 +29,8 @@ import org.jetbrains.plugins.scala.lang.psi.stubs.ScPrimaryConstructorStub
 class ScPrimaryConstructorImpl private (
     stub: StubElement[ScPrimaryConstructor],
     nodeType: IElementType,
-    node: ASTNode)
-    extends ScalaStubBasedElementImpl(stub, nodeType, node)
+    node: ASTNode
+) extends ScalaStubBasedElementImpl(stub, nodeType, node)
     with ScPrimaryConstructor {
   def this(node: ASTNode) = { this(null, null, node) }
   def this(stub: ScPrimaryConstructorStub) = {

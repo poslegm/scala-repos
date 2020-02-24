@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -51,8 +51,9 @@ import scalaz.syntax.std.boolean._
 
 import TableModule._
 
-trait StatsLibModule[M[+ _]]
-    extends ColumnarTableLibModule[M] with ReductionLibModule[M] {
+trait StatsLibModule[M[+_]]
+    extends ColumnarTableLibModule[M]
+    with ReductionLibModule[M] {
   //import library._
   import trans._
   import constants._
@@ -66,14 +67,22 @@ trait StatsLibModule[M[+ _]]
 
     override def _libMorphism1 =
       super._libMorphism1 ++ Set(
-          Median, Mode, Rank, DenseRank, IndexedRank, Dummy)
+        Median,
+        Mode,
+        Rank,
+        DenseRank,
+        IndexedRank,
+        Dummy
+      )
     override def _libMorphism2 =
-      super._libMorphism2 ++ Set(Covariance,
-                                 LinearCorrelation,
-                                 LinearRegression,
-                                 LogarithmicRegression,
-                                 SimpleExponentialSmoothing,
-                                 DoubleExponentialSmoothing)
+      super._libMorphism2 ++ Set(
+        Covariance,
+        LinearCorrelation,
+        LinearRegression,
+        LogarithmicRegression,
+        SimpleExponentialSmoothing,
+        DoubleExponentialSmoothing
+      )
 
     object Median extends Morphism1(EmptyNamespace, "median") {
       import Mean._
@@ -82,9 +91,12 @@ trait StatsLibModule[M[+ _]]
 
       def apply(table: Table, ctx: MorphContext) = {
         //TODO write tests for the empty table case
-        val compactedTable = table.compact(WrapObject(
-                Typed(DerefObjectStatic(Leaf(Source), paths.Value), JNumberT),
-                paths.Value.name))
+        val compactedTable = table.compact(
+          WrapObject(
+            Typed(DerefObjectStatic(Leaf(Source), paths.Value), JNumberT),
+            paths.Value.name
+          )
+        )
 
         val sortKey = DerefObjectStatic(Leaf(Source), paths.Value)
 
@@ -92,29 +104,30 @@ trait StatsLibModule[M[+ _]]
           sortedTable <- compactedTable.sort(sortKey, SortAscending)
           count <- sortedTable.reduce(Count.reducer(ctx))
           median <- if (count % 2 == 0) {
-                     val middleValues =
-                       sortedTable.takeRange((count.toLong / 2) - 1, 2)
-                     val transformedTable =
-                       middleValues.transform(trans.DerefObjectStatic(
-                               Leaf(Source),
-                               paths.Value)) //todo make function for this
-                     Mean(transformedTable, ctx)
-                   } else {
-                     val middleValue =
-                       M.point(sortedTable.takeRange((count.toLong / 2), 1))
-                     middleValue map {
-                       _.transform(
-                           trans.DerefObjectStatic(Leaf(Source), paths.Value))
-                     }
-                   }
+            val middleValues =
+              sortedTable.takeRange((count.toLong / 2) - 1, 2)
+            val transformedTable =
+              middleValues.transform(
+                trans.DerefObjectStatic(Leaf(Source), paths.Value)
+              ) //todo make function for this
+            Mean(transformedTable, ctx)
+          } else {
+            val middleValue =
+              M.point(sortedTable.takeRange((count.toLong / 2), 1))
+            middleValue map {
+              _.transform(trans.DerefObjectStatic(Leaf(Source), paths.Value))
+            }
+          }
         } yield {
           val keyTable = Table.constEmptyArray.transform(
-              trans.WrapObject(Leaf(Source), paths.Key.name))
+            trans.WrapObject(Leaf(Source), paths.Key.name)
+          )
           val valueTable =
             median.transform(trans.WrapObject(Leaf(Source), paths.Value.name))
 
           valueTable.cross(keyTable)(
-              InnerObjectConcat(Leaf(SourceLeft), Leaf(SourceRight)))
+            InnerObjectConcat(Leaf(SourceLeft), Leaf(SourceRight))
+          )
         }
       }
     }
@@ -142,36 +155,36 @@ trait StatsLibModule[M[+ _]]
           schema.columns(JNumberT) flatMap {
             case col: LongColumn =>
               val mapped =
-                range filter col.isDefinedAt map { x =>
-                  col(x)
-                }
+                range filter col.isDefinedAt map { x => col(x) }
               if (mapped.isEmpty) {
                 Set.empty[BigDecimal]
               } else {
-                val foldedMapped: (Option[BigDecimal], BigDecimal,
-                Set[BigDecimal],
-                BigDecimal) = mapped.foldLeft(Option.empty[BigDecimal],
-                                              BigDecimal(0),
-                                              Set.empty[BigDecimal],
-                                              BigDecimal(0)) {
+                val foldedMapped: (
+                    Option[BigDecimal],
+                    BigDecimal,
+                    Set[BigDecimal],
+                    BigDecimal
+                ) = mapped.foldLeft(
+                  Option.empty[BigDecimal],
+                  BigDecimal(0),
+                  Set.empty[BigDecimal],
+                  BigDecimal(0)
+                ) {
                   case ((None, count, modes, maxCount), sv) =>
                     ((Some(sv), count + 1, Set(sv), maxCount + 1))
                   case ((Some(currentRun), count, modes, maxCount), sv) => {
-                      if (currentRun == sv) {
-                        if (count >= maxCount)
-                          (Some(sv), count + 1, Set(sv), maxCount + 1)
-                        else if (count + 1 == maxCount)
-                          (Some(sv),
-                           count + 1,
-                           modes + BigDecimal(sv),
-                           maxCount)
-                        else (Some(sv), count + 1, modes, maxCount)
-                      } else {
-                        if (maxCount == 1)
-                          (Some(sv), 1, modes + BigDecimal(sv), maxCount)
-                        else (Some(sv), 1, modes, maxCount)
-                      }
+                    if (currentRun == sv) {
+                      if (count >= maxCount)
+                        (Some(sv), count + 1, Set(sv), maxCount + 1)
+                      else if (count + 1 == maxCount)
+                        (Some(sv), count + 1, modes + BigDecimal(sv), maxCount)
+                      else (Some(sv), count + 1, modes, maxCount)
+                    } else {
+                      if (maxCount == 1)
+                        (Some(sv), 1, modes + BigDecimal(sv), maxCount)
+                      else (Some(sv), 1, modes, maxCount)
                     }
+                  }
                 }
 
                 val (_, _, result, _) = foldedMapped
@@ -227,18 +240,26 @@ trait StatsLibModule[M[+ _]]
 
       val keySpec = DerefObjectStatic(TransSpec1.Id, paths.Key)
       val sortSpec = DerefObjectStatic(
-          DerefArrayStatic(
-              DerefObjectStatic(TransSpec1.Id, paths.Value), CPathIndex(0)),
-          CPathField(smoother))
+        DerefArrayStatic(
+          DerefObjectStatic(TransSpec1.Id, paths.Value),
+          CPathIndex(0)
+        ),
+        CPathField(smoother)
+      )
       val valueSpec = DerefObjectStatic(
-          DerefArrayStatic(
-              DerefObjectStatic(TransSpec1.Id, paths.Value), CPathIndex(0)),
-          CPathField(smoothee))
+        DerefArrayStatic(
+          DerefObjectStatic(TransSpec1.Id, paths.Value),
+          CPathIndex(0)
+        ),
+        CPathField(smoothee)
+      )
 
       def smoothSpec: TransSpec1
       def spec =
-        InnerObjectConcat(WrapObject(keySpec, paths.Key.name),
-                          WrapObject(smoothSpec, paths.Value.name))
+        InnerObjectConcat(
+          WrapObject(keySpec, paths.Key.name),
+          WrapObject(smoothSpec, paths.Value.name)
+        )
 
       private val morph1 = new Morph1Apply {
         def apply(table: Table, ctx: MorphContext): M[Table] =
@@ -254,17 +275,21 @@ trait StatsLibModule[M[+ _]]
       private val AlphaPath = CPath(CPathIndex(1))
 
       val tpe = BinaryOperationType(
-          JObjectFixedT(
-              Map(smoother -> JType.JUniverseT, smoothee -> JNumberT)),
-          JNumberT,
-          JNumberT)
+        JObjectFixedT(Map(smoother -> JType.JUniverseT, smoothee -> JNumberT)),
+        JNumberT,
+        JNumberT
+      )
 
       object ExpSmoothingScanner extends CScanner {
         type A = Option[BigDecimal]
         def init = None
 
         @tailrec
-        def findFirst(col: NumColumn, row: Int, end: Int): Option[BigDecimal] = {
+        def findFirst(
+            col: NumColumn,
+            row: Int,
+            end: Int
+        ): Option[BigDecimal] = {
           if (row < end) {
             if (col.isDefinedAt(row)) Some(col(row))
             else findFirst(col, row + 1, end)
@@ -276,11 +301,14 @@ trait StatsLibModule[M[+ _]]
         def scan(
             init: Option[BigDecimal],
             cols: Map[ColumnRef, Column],
-            range: Range): (Option[BigDecimal], Map[ColumnRef, Column]) = {
-          val values = unifyNumColumns(
-              cols.collect { case (ColumnRef(ValuePath, _), col) => col })
-          val alphas = unifyNumColumns(
-              cols.collect { case (ColumnRef(AlphaPath, _), col) => col })
+            range: Range
+        ): (Option[BigDecimal], Map[ColumnRef, Column]) = {
+          val values = unifyNumColumns(cols.collect {
+            case (ColumnRef(ValuePath, _), col) => col
+          })
+          val alphas = unifyNumColumns(cols.collect {
+            case (ColumnRef(AlphaPath, _), col) => col
+          })
 
           init orElse findFirst(values, range.start, range.end) map { init0 =>
             val smoothed = new Array[BigDecimal](range.end)
@@ -298,9 +326,15 @@ trait StatsLibModule[M[+ _]]
               row += 1
             }
 
-            (Some(s),
-             Map(ColumnRef(CPath.Identity, CNum) -> ArrayNumColumn(defined,
-                                                                   smoothed)))
+            (
+              Some(s),
+              Map(
+                ColumnRef(CPath.Identity, CNum) -> ArrayNumColumn(
+                  defined,
+                  smoothed
+                )
+              )
+            )
           } getOrElse {
             (None, Map.empty)
           }
@@ -308,10 +342,14 @@ trait StatsLibModule[M[+ _]]
       }
 
       val alphaSpec = DerefArrayStatic(
-          DerefObjectStatic(TransSpec1.Id, paths.Value), CPathIndex(1))
+        DerefObjectStatic(TransSpec1.Id, paths.Value),
+        CPathIndex(1)
+      )
       def smoothSpec =
-        Scan(InnerArrayConcat(WrapArray(valueSpec), WrapArray(alphaSpec)),
-             ExpSmoothingScanner)
+        Scan(
+          InnerArrayConcat(WrapArray(valueSpec), WrapArray(alphaSpec)),
+          ExpSmoothingScanner
+        )
     }
 
     object DoubleExponentialSmoothing extends Smoothing("doubleExpSmoothing") {
@@ -322,17 +360,19 @@ trait StatsLibModule[M[+ _]]
       private val beta = "beta"
 
       val tpe = BinaryOperationType(
-          JObjectFixedT(
-              Map(smoother -> JType.JUniverseT, smoothee -> JNumberT)),
-          JObjectFixedT(Map(alpha -> JNumberT, beta -> JNumberT)),
-          JNumberT)
+        JObjectFixedT(Map(smoother -> JType.JUniverseT, smoothee -> JNumberT)),
+        JObjectFixedT(Map(alpha -> JNumberT, beta -> JNumberT)),
+        JNumberT
+      )
 
       private sealed trait ScannerState
       private case object FindFirst extends ScannerState
       private case class FindSecond(x0: BigDecimal) extends ScannerState
       private case class Continue(
-          s0: BigDecimal, b0: BigDecimal, first: Boolean = false)
-          extends ScannerState
+          s0: BigDecimal,
+          b0: BigDecimal,
+          first: Boolean = false
+      ) extends ScannerState
 
       private object DoubleExpSmoothingScanner extends CScanner {
         type A = ScannerState
@@ -340,7 +380,10 @@ trait StatsLibModule[M[+ _]]
 
         @tailrec
         def findFirst(
-            col: NumColumn, row: Int, end: Int): Option[(Int, BigDecimal)] = {
+            col: NumColumn,
+            row: Int,
+            end: Int
+        ): Option[(Int, BigDecimal)] = {
           if (row < end) {
             if (col.isDefinedAt(row)) Some(row -> col(row))
             else findFirst(col, row + 1, end)
@@ -349,15 +392,20 @@ trait StatsLibModule[M[+ _]]
           }
         }
 
-        def scan(state0: ScannerState,
-                 cols: Map[ColumnRef, Column],
-                 range: Range): (ScannerState, Map[ColumnRef, Column]) = {
-          val values = unifyNumColumns(
-              cols.collect { case (ColumnRef(ValuePath, _), col) => col })
-          val alphas = unifyNumColumns(
-              cols.collect { case (ColumnRef(AlphaPath, _), col) => col })
-          val betas = unifyNumColumns(
-              cols.collect { case (ColumnRef(BetaPath, _), col) => col })
+        def scan(
+            state0: ScannerState,
+            cols: Map[ColumnRef, Column],
+            range: Range
+        ): (ScannerState, Map[ColumnRef, Column]) = {
+          val values = unifyNumColumns(cols.collect {
+            case (ColumnRef(ValuePath, _), col) => col
+          })
+          val alphas = unifyNumColumns(cols.collect {
+            case (ColumnRef(AlphaPath, _), col) => col
+          })
+          val betas = unifyNumColumns(cols.collect {
+            case (ColumnRef(BetaPath, _), col) => col
+          })
 
           // This is a bit messy, but it's because we need the first 2 values
           // in order to initialize s_1 and b_1. Since a slice may have 0 or
@@ -368,13 +416,15 @@ trait StatsLibModule[M[+ _]]
           // in any subsequent slices.
 
           @tailrec
-          def loop(state: ScannerState,
-                   rowM: Option[Int]): (ScannerState, Map[ColumnRef, Column]) =
+          def loop(
+              state: ScannerState,
+              rowM: Option[Int]
+          ): (ScannerState, Map[ColumnRef, Column]) =
             state match {
               case FindFirst =>
                 findFirst(values, range.start, range.end) match {
                   case Some((row, x0)) => loop(FindSecond(x0), Some(row + 1))
-                  case None => (FindFirst, Map.empty)
+                  case None            => (FindFirst, Map.empty)
                 }
 
               case FindSecond(x0) =>
@@ -390,9 +440,15 @@ trait StatsLibModule[M[+ _]]
                       val smoothed = new Array[BigDecimal](range.end)
                       defined.set(row)
                       smoothed(row) = x0
-                      (FindSecond(x0),
-                       Map(ColumnRef(CPath.Identity, CNum) -> ArrayNumColumn(
-                               defined, smoothed)))
+                      (
+                        FindSecond(x0),
+                        Map(
+                          ColumnRef(CPath.Identity, CNum) -> ArrayNumColumn(
+                            defined,
+                            smoothed
+                          )
+                        )
+                      )
                     } getOrElse {
                       (FindSecond(x0), Map.empty)
                     }
@@ -426,9 +482,15 @@ trait StatsLibModule[M[+ _]]
                   }
                   row += 1
                 }
-                (Continue(s0, b0),
-                 Map(ColumnRef(CPath.Identity, CNum) -> ArrayNumColumn(
-                         defined, smoothed)))
+                (
+                  Continue(s0, b0),
+                  Map(
+                    ColumnRef(CPath.Identity, CNum) -> ArrayNumColumn(
+                      defined,
+                      smoothed
+                    )
+                  )
+                )
             }
 
           loop(state0, None)
@@ -436,18 +498,28 @@ trait StatsLibModule[M[+ _]]
       }
 
       val alphaSpec = DerefObjectStatic(
-          DerefArrayStatic(
-              DerefObjectStatic(TransSpec1.Id, paths.Value), CPathIndex(1)),
-          CPathField(alpha))
+        DerefArrayStatic(
+          DerefObjectStatic(TransSpec1.Id, paths.Value),
+          CPathIndex(1)
+        ),
+        CPathField(alpha)
+      )
       val betaSpec = DerefObjectStatic(
-          DerefArrayStatic(
-              DerefObjectStatic(TransSpec1.Id, paths.Value), CPathIndex(1)),
-          CPathField(beta))
+        DerefArrayStatic(
+          DerefObjectStatic(TransSpec1.Id, paths.Value),
+          CPathIndex(1)
+        ),
+        CPathField(beta)
+      )
       def smoothSpec =
-        Scan(InnerArrayConcat(WrapArray(valueSpec),
-                              WrapArray(alphaSpec),
-                              WrapArray(betaSpec)),
-             DoubleExpSmoothingScanner)
+        Scan(
+          InnerArrayConcat(
+            WrapArray(valueSpec),
+            WrapArray(alphaSpec),
+            WrapArray(betaSpec)
+          ),
+          DoubleExpSmoothingScanner
+        )
     }
 
     object LinearCorrelation extends Morphism2(StatsNamespace, "corr") {
@@ -455,11 +527,17 @@ trait StatsLibModule[M[+ _]]
 
       lazy val alignment = MorphismAlignment.Match(M.point(morph1))
 
-      type InitialResult = (BigDecimal, BigDecimal, BigDecimal, BigDecimal,
-      BigDecimal,
-      BigDecimal) // (count, sum1, sum2, sumsq1, sumsq2, productSum)
+      type InitialResult = (
+          BigDecimal,
+          BigDecimal,
+          BigDecimal,
+          BigDecimal,
+          BigDecimal,
+          BigDecimal
+      ) // (count, sum1, sum2, sumsq1, sumsq2, productSum)
       type Result = Option[
-          (BigDecimal, BigDecimal, BigDecimal, BigDecimal, BigDecimal, BigDecimal)]
+        (BigDecimal, BigDecimal, BigDecimal, BigDecimal, BigDecimal, BigDecimal)
+      ]
 
       implicit def monoid = implicitly[Monoid[Result]]
 
@@ -476,27 +554,32 @@ trait StatsLibModule[M[+ _]]
                 val mapped =
                   range filter { r =>
                     c1.isDefinedAt(r) && c2.isDefinedAt(r)
-                  } map { i =>
-                    (c1(i), c2(i))
-                  }
+                  } map { i => (c1(i), c2(i)) }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
-                    case ((count, sum1, sum2, sumsq1, sumsq2, productSum),
-                          (v1, v2)) =>
-                      (count + 1,
-                       sum1 + v1,
-                       sum2 + v2,
-                       sumsq1 + (v1 * v1),
-                       sumsq2 + (v2 * v2),
-                       productSum + (v1 * v2))
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
+                    case (
+                        (count, sum1, sum2, sumsq1, sumsq2, productSum),
+                        (v1, v2)
+                        ) =>
+                      (
+                        count + 1,
+                        sum1 + v1,
+                        sum2 + v2,
+                        sumsq1 + (v1 * v1),
+                        sumsq2 + (v2 * v2),
+                        productSum + (v1 * v2)
+                      )
                   }
 
                   Some(foldedMapped)
@@ -505,27 +588,32 @@ trait StatsLibModule[M[+ _]]
                 val mapped =
                   range filter { r =>
                     c1.isDefinedAt(r) && c2.isDefinedAt(r)
-                  } map { i =>
-                    (c1(i), c2(i))
-                  }
+                  } map { i => (c1(i), c2(i)) }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
-                    case ((count, sum1, sum2, sumsq1, sumsq2, productSum),
-                          (v1, v2)) =>
-                      (count + 1,
-                       sum1 + v1,
-                       sum2 + v2,
-                       sumsq1 + (v1 * v1),
-                       sumsq2 + (v2 * v2),
-                       productSum + (v1 * v2))
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
+                    case (
+                        (count, sum1, sum2, sumsq1, sumsq2, productSum),
+                        (v1, v2)
+                        ) =>
+                      (
+                        count + 1,
+                        sum1 + v1,
+                        sum2 + v2,
+                        sumsq1 + (v1 * v1),
+                        sumsq2 + (v2 * v2),
+                        productSum + (v1 * v2)
+                      )
                   }
 
                   Some(foldedMapped)
@@ -534,27 +622,32 @@ trait StatsLibModule[M[+ _]]
                 val mapped =
                   range filter { r =>
                     c1.isDefinedAt(r) && c2.isDefinedAt(r)
-                  } map { i =>
-                    (c1(i), c2(i))
-                  }
+                  } map { i => (c1(i), c2(i)) }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
-                    case ((count, sum1, sum2, sumsq1, sumsq2, productSum),
-                          (v1, v2)) =>
-                      (count + 1,
-                       sum1 + v1,
-                       sum2 + v2,
-                       sumsq1 + (v1 * v1),
-                       sumsq2 + (v2 * v2),
-                       productSum + (v1 * v2))
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
+                    case (
+                        (count, sum1, sum2, sumsq1, sumsq2, productSum),
+                        (v1, v2)
+                        ) =>
+                      (
+                        count + 1,
+                        sum1 + v1,
+                        sum2 + v2,
+                        sumsq1 + (v1 * v1),
+                        sumsq2 + (v2 * v2),
+                        productSum + (v1 * v2)
+                      )
                   }
 
                   Some(foldedMapped)
@@ -563,27 +656,32 @@ trait StatsLibModule[M[+ _]]
                 val mapped =
                   range filter { r =>
                     c1.isDefinedAt(r) && c2.isDefinedAt(r)
-                  } map { i =>
-                    (c1(i), c2(i))
-                  }
+                  } map { i => (c1(i), c2(i)) }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
-                    case ((count, sum1, sum2, sumsq1, sumsq2, productSum),
-                          (v1, v2)) =>
-                      (count + 1,
-                       sum1 + v1,
-                       sum2 + v2,
-                       sumsq1 + (v1 * v1),
-                       sumsq2 + (v2 * v2),
-                       productSum + (v1 * v2))
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
+                    case (
+                        (count, sum1, sum2, sumsq1, sumsq2, productSum),
+                        (v1, v2)
+                        ) =>
+                      (
+                        count + 1,
+                        sum1 + v1,
+                        sum2 + v2,
+                        sumsq1 + (v1 * v1),
+                        sumsq2 + (v2 * v2),
+                        productSum + (v1 * v2)
+                      )
                   }
 
                   Some(foldedMapped)
@@ -592,27 +690,32 @@ trait StatsLibModule[M[+ _]]
                 val mapped =
                   range filter { r =>
                     c1.isDefinedAt(r) && c2.isDefinedAt(r)
-                  } map { i =>
-                    (c1(i), c2(i))
-                  }
+                  } map { i => (c1(i), c2(i)) }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
-                    case ((count, sum1, sum2, sumsq1, sumsq2, productSum),
-                          (v1, v2)) =>
-                      (count + 1,
-                       sum1 + v1,
-                       sum2 + v2,
-                       sumsq1 + (v1 * v1),
-                       sumsq2 + (v2 * v2),
-                       productSum + (v1 * v2))
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
+                    case (
+                        (count, sum1, sum2, sumsq1, sumsq2, productSum),
+                        (v1, v2)
+                        ) =>
+                      (
+                        count + 1,
+                        sum1 + v1,
+                        sum2 + v2,
+                        sumsq1 + (v1 * v1),
+                        sumsq2 + (v2 * v2),
+                        productSum + (v1 * v2)
+                      )
                   }
 
                   Some(foldedMapped)
@@ -621,27 +724,32 @@ trait StatsLibModule[M[+ _]]
                 val mapped =
                   range filter { r =>
                     c1.isDefinedAt(r) && c2.isDefinedAt(r)
-                  } map { i =>
-                    (c1(i), c2(i))
-                  }
+                  } map { i => (c1(i), c2(i)) }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
-                    case ((count, sum1, sum2, sumsq1, sumsq2, productSum),
-                          (v1, v2)) =>
-                      (count + 1,
-                       sum1 + v1,
-                       sum2 + v2,
-                       sumsq1 + (v1 * v1),
-                       sumsq2 + (v2 * v2),
-                       productSum + (v1 * v2))
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
+                    case (
+                        (count, sum1, sum2, sumsq1, sumsq2, productSum),
+                        (v1, v2)
+                        ) =>
+                      (
+                        count + 1,
+                        sum1 + v1,
+                        sum2 + v2,
+                        sumsq1 + (v1 * v1),
+                        sumsq2 + (v2 * v2),
+                        productSum + (v1 * v2)
+                      )
                   }
 
                   Some(foldedMapped)
@@ -650,27 +758,32 @@ trait StatsLibModule[M[+ _]]
                 val mapped =
                   range filter { r =>
                     c1.isDefinedAt(r) && c2.isDefinedAt(r)
-                  } map { i =>
-                    (c1(i), c2(i))
-                  }
+                  } map { i => (c1(i), c2(i)) }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
-                    case ((count, sum1, sum2, sumsq1, sumsq2, productSum),
-                          (v1, v2)) =>
-                      (count + 1,
-                       sum1 + v1,
-                       sum2 + v2,
-                       sumsq1 + (v1 * v1),
-                       sumsq2 + (v2 * v2),
-                       productSum + (v1 * v2))
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
+                    case (
+                        (count, sum1, sum2, sumsq1, sumsq2, productSum),
+                        (v1, v2)
+                        ) =>
+                      (
+                        count + 1,
+                        sum1 + v1,
+                        sum2 + v2,
+                        sumsq1 + (v1 * v1),
+                        sumsq2 + (v2 * v2),
+                        productSum + (v1 * v2)
+                      )
                   }
 
                   Some(foldedMapped)
@@ -679,27 +792,32 @@ trait StatsLibModule[M[+ _]]
                 val mapped =
                   range filter { r =>
                     c1.isDefinedAt(r) && c2.isDefinedAt(r)
-                  } map { i =>
-                    (c1(i), c2(i))
-                  }
+                  } map { i => (c1(i), c2(i)) }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
-                    case ((count, sum1, sum2, sumsq1, sumsq2, productSum),
-                          (v1, v2)) =>
-                      (count + 1,
-                       sum1 + v1,
-                       sum2 + v2,
-                       sumsq1 + (v1 * v1),
-                       sumsq2 + (v2 * v2),
-                       productSum + (v1 * v2))
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
+                    case (
+                        (count, sum1, sum2, sumsq1, sumsq2, productSum),
+                        (v1, v2)
+                        ) =>
+                      (
+                        count + 1,
+                        sum1 + v1,
+                        sum2 + v2,
+                        sumsq1 + (v1 * v1),
+                        sumsq2 + (v2 * v2),
+                        productSum + (v1 * v2)
+                      )
                   }
 
                   Some(foldedMapped)
@@ -708,27 +826,32 @@ trait StatsLibModule[M[+ _]]
                 val mapped =
                   range filter { r =>
                     c1.isDefinedAt(r) && c2.isDefinedAt(r)
-                  } map { i =>
-                    (c1(i), c2(i))
-                  }
+                  } map { i => (c1(i), c2(i)) }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
-                    case ((count, sum1, sum2, sumsq1, sumsq2, productSum),
-                          (v1, v2)) =>
-                      (count + 1,
-                       sum1 + v1,
-                       sum2 + v2,
-                       sumsq1 + (v1 * v1),
-                       sumsq2 + (v2 * v2),
-                       productSum + (v1 * v2))
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
+                    case (
+                        (count, sum1, sum2, sumsq1, sumsq2, productSum),
+                        (v1, v2)
+                        ) =>
+                      (
+                        count + 1,
+                        sum1 + v1,
+                        sum2 + v2,
+                        sumsq1 + (v1 * v1),
+                        sumsq2 + (v2 * v2),
+                        productSum + (v1 * v2)
+                      )
                   }
 
                   Some(foldedMapped)
@@ -753,14 +876,19 @@ trait StatsLibModule[M[+ _]]
               val correlation = cov / (stdDev1 * stdDev2)
 
               val resultTable =
-                Table.constDecimal(Set(correlation)) //TODO the following lines are used throughout. refactor!
+                Table.constDecimal(
+                  Set(correlation)
+                ) //TODO the following lines are used throughout. refactor!
               val valueTable = resultTable.transform(
-                  trans.WrapObject(Leaf(Source), paths.Value.name))
+                trans.WrapObject(Leaf(Source), paths.Value.name)
+              )
               val keyTable = Table.constEmptyArray.transform(
-                  trans.WrapObject(Leaf(Source), paths.Key.name))
+                trans.WrapObject(Leaf(Source), paths.Key.name)
+              )
 
               valueTable.cross(keyTable)(
-                  InnerObjectConcat(Leaf(SourceLeft), Leaf(SourceRight)))
+                InnerObjectConcat(Leaf(SourceLeft), Leaf(SourceRight))
+              )
             } else {
               Table.empty
             }
@@ -780,8 +908,7 @@ trait StatsLibModule[M[+ _]]
 
       lazy val alignment = MorphismAlignment.Match(M.point(morph1))
 
-      type InitialResult = (BigDecimal, BigDecimal, BigDecimal,
-      BigDecimal) // (count, sum1, sum2, productSum)
+      type InitialResult = (BigDecimal, BigDecimal, BigDecimal, BigDecimal) // (count, sum1, sum2, productSum)
       type Result = Option[(BigDecimal, BigDecimal, BigDecimal, BigDecimal)]
 
       implicit def monoid = implicitly[Monoid[Result]]
@@ -799,17 +926,14 @@ trait StatsLibModule[M[+ _]]
               case (c1: LongColumn, c2: LongColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
+                    (BigDecimal(0), BigDecimal(0), BigDecimal(0), BigDecimal(0))
+                  ) {
                     case ((count, sum1, sum2, productSum), (v1, v2)) =>
                       (count + 1, sum1 + v1, sum2 + v2, productSum + (v1 * v2))
                   }
@@ -819,17 +943,14 @@ trait StatsLibModule[M[+ _]]
               case (c1: NumColumn, c2: NumColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
+                    (BigDecimal(0), BigDecimal(0), BigDecimal(0), BigDecimal(0))
+                  ) {
                     case ((count, sum1, sum2, productSum), (v1, v2)) =>
                       (count + 1, sum1 + v1, sum2 + v2, productSum + (v1 * v2))
                   }
@@ -839,17 +960,14 @@ trait StatsLibModule[M[+ _]]
               case (c1: DoubleColumn, c2: DoubleColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
+                    (BigDecimal(0), BigDecimal(0), BigDecimal(0), BigDecimal(0))
+                  ) {
                     case ((count, sum1, sum2, productSum), (v1, v2)) =>
                       (count + 1, sum1 + v1, sum2 + v2, productSum + (v1 * v2))
                   }
@@ -859,17 +977,14 @@ trait StatsLibModule[M[+ _]]
               case (c1: LongColumn, c2: DoubleColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
+                    (BigDecimal(0), BigDecimal(0), BigDecimal(0), BigDecimal(0))
+                  ) {
                     case ((count, sum1, sum2, productSum), (v1, v2)) =>
                       (count + 1, sum1 + v1, sum2 + v2, productSum + (v1 * v2))
                   }
@@ -879,17 +994,14 @@ trait StatsLibModule[M[+ _]]
               case (c1: LongColumn, c2: NumColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
+                    (BigDecimal(0), BigDecimal(0), BigDecimal(0), BigDecimal(0))
+                  ) {
                     case ((count, sum1, sum2, productSum), (v1, v2)) =>
                       (count + 1, sum1 + v1, sum2 + v2, productSum + (v1 * v2))
                   }
@@ -899,17 +1011,14 @@ trait StatsLibModule[M[+ _]]
               case (c1: NumColumn, c2: LongColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
+                    (BigDecimal(0), BigDecimal(0), BigDecimal(0), BigDecimal(0))
+                  ) {
                     case ((count, sum1, sum2, productSum), (v1, v2)) =>
                       (count + 1, sum1 + v1, sum2 + v2, productSum + (v1 * v2))
                   }
@@ -919,17 +1028,14 @@ trait StatsLibModule[M[+ _]]
               case (c1: NumColumn, c2: DoubleColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
+                    (BigDecimal(0), BigDecimal(0), BigDecimal(0), BigDecimal(0))
+                  ) {
                     case ((count, sum1, sum2, productSum), (v1, v2)) =>
                       (count + 1, sum1 + v1, sum2 + v2, productSum + (v1 * v2))
                   }
@@ -939,17 +1045,14 @@ trait StatsLibModule[M[+ _]]
               case (c1: DoubleColumn, c2: LongColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
+                    (BigDecimal(0), BigDecimal(0), BigDecimal(0), BigDecimal(0))
+                  ) {
                     case ((count, sum1, sum2, productSum), (v1, v2)) =>
                       (count + 1, sum1 + v1, sum2 + v2, productSum + (v1 * v2))
                   }
@@ -959,17 +1062,14 @@ trait StatsLibModule[M[+ _]]
               case (c1: DoubleColumn, c2: NumColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
+                    (BigDecimal(0), BigDecimal(0), BigDecimal(0), BigDecimal(0))
+                  ) {
                     case ((count, sum1, sum2, productSum), (v1, v2)) =>
                       (count + 1, sum1 + v1, sum2 + v2, productSum + (v1 * v2))
                   }
@@ -993,17 +1093,20 @@ trait StatsLibModule[M[+ _]]
 
         res2 map {
           case (count, sum1, sum2, productSum) => {
-              val cov = (productSum - ((sum1 * sum2) / count)) / count
+            val cov = (productSum - ((sum1 * sum2) / count)) / count
 
-              val resultTable = Table.constDecimal(Set(cov))
-              val valueTable = resultTable.transform(
-                  trans.WrapObject(Leaf(Source), paths.Value.name))
-              val keyTable = Table.constEmptyArray.transform(
-                  trans.WrapObject(Leaf(Source), paths.Key.name))
+            val resultTable = Table.constDecimal(Set(cov))
+            val valueTable = resultTable.transform(
+              trans.WrapObject(Leaf(Source), paths.Value.name)
+            )
+            val keyTable = Table.constEmptyArray.transform(
+              trans.WrapObject(Leaf(Source), paths.Key.name)
+            )
 
-              valueTable.cross(keyTable)(
-                  InnerObjectConcat(Leaf(SourceLeft), Leaf(SourceRight)))
-            }
+            valueTable.cross(keyTable)(
+              InnerObjectConcat(Leaf(SourceLeft), Leaf(SourceRight))
+            )
+          }
         } getOrElse Table.empty
       }
 
@@ -1020,10 +1123,15 @@ trait StatsLibModule[M[+ _]]
 
       lazy val alignment = MorphismAlignment.Match(M.point(morph1))
 
-      type InitialResult = (BigDecimal, BigDecimal, BigDecimal, BigDecimal,
-      BigDecimal) // (count, sum1, sum2, sumsq1, productSum)
-      type Result = Option[
-          (BigDecimal, BigDecimal, BigDecimal, BigDecimal, BigDecimal)]
+      type InitialResult = (
+          BigDecimal,
+          BigDecimal,
+          BigDecimal,
+          BigDecimal,
+          BigDecimal
+      ) // (count, sum1, sum2, sumsq1, productSum)
+      type Result =
+        Option[(BigDecimal, BigDecimal, BigDecimal, BigDecimal, BigDecimal)]
 
       implicit def monoid = implicitly[Monoid[Result]]
 
@@ -1040,24 +1148,28 @@ trait StatsLibModule[M[+ _]]
               case (c1: LongColumn, c2: LongColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
                     case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) =>
-                      (count + 1,
-                       sum1 + v1,
-                       sum2 + v2,
-                       sumsq1 + (v1 * v1),
-                       productSum + (v1 * v2))
+                      (
+                        count + 1,
+                        sum1 + v1,
+                        sum2 + v2,
+                        sumsq1 + (v1 * v1),
+                        productSum + (v1 * v2)
+                      )
                   }
 
                   Some(foldedMapped)
@@ -1065,24 +1177,28 @@ trait StatsLibModule[M[+ _]]
               case (c1: NumColumn, c2: NumColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
                     case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) =>
-                      (count + 1,
-                       sum1 + v1,
-                       sum2 + v2,
-                       sumsq1 + (v1 * v1),
-                       productSum + (v1 * v2))
+                      (
+                        count + 1,
+                        sum1 + v1,
+                        sum2 + v2,
+                        sumsq1 + (v1 * v1),
+                        productSum + (v1 * v2)
+                      )
                   }
 
                   Some(foldedMapped)
@@ -1090,24 +1206,28 @@ trait StatsLibModule[M[+ _]]
               case (c1: DoubleColumn, c2: DoubleColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
                     case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) =>
-                      (count + 1,
-                       sum1 + v1,
-                       sum2 + v2,
-                       sumsq1 + (v1 * v1),
-                       productSum + (v1 * v2))
+                      (
+                        count + 1,
+                        sum1 + v1,
+                        sum2 + v2,
+                        sumsq1 + (v1 * v1),
+                        productSum + (v1 * v2)
+                      )
                   }
 
                   Some(foldedMapped)
@@ -1115,24 +1235,28 @@ trait StatsLibModule[M[+ _]]
               case (c1: LongColumn, c2: DoubleColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
                     case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) =>
-                      (count + 1,
-                       sum1 + v1,
-                       sum2 + v2,
-                       sumsq1 + (v1 * v1),
-                       productSum + (v1 * v2))
+                      (
+                        count + 1,
+                        sum1 + v1,
+                        sum2 + v2,
+                        sumsq1 + (v1 * v1),
+                        productSum + (v1 * v2)
+                      )
                   }
 
                   Some(foldedMapped)
@@ -1140,24 +1264,28 @@ trait StatsLibModule[M[+ _]]
               case (c1: LongColumn, c2: NumColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
                     case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) =>
-                      (count + 1,
-                       sum1 + v1,
-                       sum2 + v2,
-                       sumsq1 + (v1 * v1),
-                       productSum + (v1 * v2))
+                      (
+                        count + 1,
+                        sum1 + v1,
+                        sum2 + v2,
+                        sumsq1 + (v1 * v1),
+                        productSum + (v1 * v2)
+                      )
                   }
 
                   Some(foldedMapped)
@@ -1165,24 +1293,28 @@ trait StatsLibModule[M[+ _]]
               case (c1: DoubleColumn, c2: LongColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
                     case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) =>
-                      (count + 1,
-                       sum1 + v1,
-                       sum2 + v2,
-                       sumsq1 + (v1 * v1),
-                       productSum + (v1 * v2))
+                      (
+                        count + 1,
+                        sum1 + v1,
+                        sum2 + v2,
+                        sumsq1 + (v1 * v1),
+                        productSum + (v1 * v2)
+                      )
                   }
 
                   Some(foldedMapped)
@@ -1190,24 +1322,28 @@ trait StatsLibModule[M[+ _]]
               case (c1: DoubleColumn, c2: NumColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
                     case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) =>
-                      (count + 1,
-                       sum1 + v1,
-                       sum2 + v2,
-                       sumsq1 + (v1 * v1),
-                       productSum + (v1 * v2))
+                      (
+                        count + 1,
+                        sum1 + v1,
+                        sum2 + v2,
+                        sumsq1 + (v1 * v1),
+                        productSum + (v1 * v2)
+                      )
                   }
 
                   Some(foldedMapped)
@@ -1215,24 +1351,28 @@ trait StatsLibModule[M[+ _]]
               case (c1: NumColumn, c2: LongColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
                     case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) =>
-                      (count + 1,
-                       sum1 + v1,
-                       sum2 + v2,
-                       sumsq1 + (v1 * v1),
-                       productSum + (v1 * v2))
+                      (
+                        count + 1,
+                        sum1 + v1,
+                        sum2 + v2,
+                        sumsq1 + (v1 * v1),
+                        productSum + (v1 * v2)
+                      )
                   }
 
                   Some(foldedMapped)
@@ -1240,24 +1380,28 @@ trait StatsLibModule[M[+ _]]
               case (c1: NumColumn, c2: DoubleColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
                     case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) =>
-                      (count + 1,
-                       sum1 + v1,
-                       sum2 + v2,
-                       sumsq1 + (v1 * v1),
-                       productSum + (v1 * v2))
+                      (
+                        count + 1,
+                        sum1 + v1,
+                        sum2 + v2,
+                        sumsq1 + (v1 * v1),
+                        productSum + (v1 * v2)
+                      )
                   }
 
                   Some(foldedMapped)
@@ -1279,27 +1423,30 @@ trait StatsLibModule[M[+ _]]
 
         res2 map {
           case (count, sum1, sum2, sumsq1, productSum) => {
-              val cov = (productSum - ((sum1 * sum2) / count)) / count
-              val vari = (sumsq1 - (sum1 * (sum1 / count))) / count
+            val cov = (productSum - ((sum1 * sum2) / count)) / count
+            val vari = (sumsq1 - (sum1 * (sum1 / count))) / count
 
-              val slope = cov / vari
-              val yint = (sum2 / count) - (slope * (sum1 / count))
+            val slope = cov / vari
+            val yint = (sum2 / count) - (slope * (sum1 / count))
 
-              val constSlope = Table.constDecimal(Set(slope))
-              val constIntercept = Table.constDecimal(Set(yint))
+            val constSlope = Table.constDecimal(Set(slope))
+            val constIntercept = Table.constDecimal(Set(yint))
 
-              val slopeSpec = trans.WrapObject(Leaf(SourceLeft), "slope")
-              val yintSpec = trans.WrapObject(Leaf(SourceRight), "intercept")
-              val concatSpec = trans.InnerObjectConcat(slopeSpec, yintSpec)
+            val slopeSpec = trans.WrapObject(Leaf(SourceLeft), "slope")
+            val yintSpec = trans.WrapObject(Leaf(SourceRight), "intercept")
+            val concatSpec = trans.InnerObjectConcat(slopeSpec, yintSpec)
 
-              val valueTable = constSlope.cross(constIntercept)(
-                  trans.WrapObject(concatSpec, paths.Value.name))
-              val keyTable = Table.constEmptyArray.transform(
-                  trans.WrapObject(Leaf(Source), paths.Key.name))
+            val valueTable = constSlope.cross(constIntercept)(
+              trans.WrapObject(concatSpec, paths.Value.name)
+            )
+            val keyTable = Table.constEmptyArray.transform(
+              trans.WrapObject(Leaf(Source), paths.Key.name)
+            )
 
-              valueTable.cross(keyTable)(
-                  InnerObjectConcat(Leaf(SourceLeft), Leaf(SourceRight)))
-            }
+            valueTable.cross(keyTable)(
+              InnerObjectConcat(Leaf(SourceLeft), Leaf(SourceRight))
+            )
+          }
         } getOrElse Table.empty
       }
 
@@ -1316,10 +1463,15 @@ trait StatsLibModule[M[+ _]]
 
       lazy val alignment = MorphismAlignment.Match(M.point(morph1))
 
-      type InitialResult = (BigDecimal, BigDecimal, BigDecimal, BigDecimal,
-      BigDecimal) // (count, sum1, sum2, sumsq1, productSum)
-      type Result = Option[
-          (BigDecimal, BigDecimal, BigDecimal, BigDecimal, BigDecimal)]
+      type InitialResult = (
+          BigDecimal,
+          BigDecimal,
+          BigDecimal,
+          BigDecimal,
+          BigDecimal
+      ) // (count, sum1, sum2, sumsq1, productSum)
+      type Result =
+        Option[(BigDecimal, BigDecimal, BigDecimal, BigDecimal, BigDecimal)]
 
       implicit def monoid = implicitly[Monoid[Result]]
 
@@ -1336,279 +1488,306 @@ trait StatsLibModule[M[+ _]]
               case (c1: LongColumn, c2: LongColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
-                    case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) =>
-                      {
-                        if (v1 > 0) {
-                          (count + 1,
-                           sum1 + math.log(v1.toDouble),
-                           sum2 + v2,
-                           sumsq1 +
-                           (math.log(v1.toDouble) * math.log(v1.toDouble)),
-                           productSum + (math.log(v1.toDouble) * v2))
-                        } else {
-                          (count, sum1, sum2, sumsq1, productSum)
-                        }
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
+                    case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) => {
+                      if (v1 > 0) {
+                        (
+                          count + 1,
+                          sum1 + math.log(v1.toDouble),
+                          sum2 + v2,
+                          sumsq1 +
+                            (math.log(v1.toDouble) * math.log(v1.toDouble)),
+                          productSum + (math.log(v1.toDouble) * v2)
+                        )
+                      } else {
+                        (count, sum1, sum2, sumsq1, productSum)
                       }
+                    }
                   }
                   Some(foldedMapped)
                 }
               case (c1: NumColumn, c2: NumColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
-                    case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) =>
-                      {
-                        if (v1 > 0) {
-                          (count + 1,
-                           sum1 + math.log(v1.toDouble),
-                           sum2 + v2,
-                           sumsq1 +
-                           (math.log(v1.toDouble) * math.log(v1.toDouble)),
-                           productSum + (math.log(v1.toDouble) * v2))
-                        } else {
-                          (count, sum1, sum2, sumsq1, productSum)
-                        }
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
+                    case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) => {
+                      if (v1 > 0) {
+                        (
+                          count + 1,
+                          sum1 + math.log(v1.toDouble),
+                          sum2 + v2,
+                          sumsq1 +
+                            (math.log(v1.toDouble) * math.log(v1.toDouble)),
+                          productSum + (math.log(v1.toDouble) * v2)
+                        )
+                      } else {
+                        (count, sum1, sum2, sumsq1, productSum)
                       }
+                    }
                   }
                   Some(foldedMapped)
                 }
               case (c1: DoubleColumn, c2: DoubleColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
-                    case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) =>
-                      {
-                        if (v1 > 0) {
-                          (count + 1,
-                           sum1 + math.log(v1.toDouble),
-                           sum2 + v2,
-                           sumsq1 +
-                           (math.log(v1.toDouble) * math.log(v1.toDouble)),
-                           productSum + (math.log(v1.toDouble) * v2))
-                        } else {
-                          (count, sum1, sum2, sumsq1, productSum)
-                        }
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
+                    case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) => {
+                      if (v1 > 0) {
+                        (
+                          count + 1,
+                          sum1 + math.log(v1.toDouble),
+                          sum2 + v2,
+                          sumsq1 +
+                            (math.log(v1.toDouble) * math.log(v1.toDouble)),
+                          productSum + (math.log(v1.toDouble) * v2)
+                        )
+                      } else {
+                        (count, sum1, sum2, sumsq1, productSum)
                       }
+                    }
                   }
                   Some(foldedMapped)
                 }
               case (c1: LongColumn, c2: DoubleColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
-                    case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) =>
-                      {
-                        if (v1 > 0) {
-                          (count + 1,
-                           sum1 + math.log(v1.toDouble),
-                           sum2 + v2,
-                           sumsq1 +
-                           (math.log(v1.toDouble) * math.log(v1.toDouble)),
-                           productSum + (math.log(v1.toDouble) * v2))
-                        } else {
-                          (count, sum1, sum2, sumsq1, productSum)
-                        }
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
+                    case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) => {
+                      if (v1 > 0) {
+                        (
+                          count + 1,
+                          sum1 + math.log(v1.toDouble),
+                          sum2 + v2,
+                          sumsq1 +
+                            (math.log(v1.toDouble) * math.log(v1.toDouble)),
+                          productSum + (math.log(v1.toDouble) * v2)
+                        )
+                      } else {
+                        (count, sum1, sum2, sumsq1, productSum)
                       }
+                    }
                   }
                   Some(foldedMapped)
                 }
               case (c1: LongColumn, c2: NumColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
-                    case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) =>
-                      {
-                        if (v1 > 0) {
-                          (count + 1,
-                           sum1 + math.log(v1.toDouble),
-                           sum2 + v2,
-                           sumsq1 +
-                           (math.log(v1.toDouble) * math.log(v1.toDouble)),
-                           productSum + (math.log(v1.toDouble) * v2))
-                        } else {
-                          (count, sum1, sum2, sumsq1, productSum)
-                        }
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
+                    case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) => {
+                      if (v1 > 0) {
+                        (
+                          count + 1,
+                          sum1 + math.log(v1.toDouble),
+                          sum2 + v2,
+                          sumsq1 +
+                            (math.log(v1.toDouble) * math.log(v1.toDouble)),
+                          productSum + (math.log(v1.toDouble) * v2)
+                        )
+                      } else {
+                        (count, sum1, sum2, sumsq1, productSum)
                       }
+                    }
                   }
                   Some(foldedMapped)
                 }
               case (c1: DoubleColumn, c2: LongColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
-                    case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) =>
-                      {
-                        if (v1 > 0) {
-                          (count + 1,
-                           sum1 + math.log(v1.toDouble),
-                           sum2 + v2,
-                           sumsq1 +
-                           (math.log(v1.toDouble) * math.log(v1.toDouble)),
-                           productSum + (math.log(v1.toDouble) * v2))
-                        } else {
-                          (count, sum1, sum2, sumsq1, productSum)
-                        }
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
+                    case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) => {
+                      if (v1 > 0) {
+                        (
+                          count + 1,
+                          sum1 + math.log(v1.toDouble),
+                          sum2 + v2,
+                          sumsq1 +
+                            (math.log(v1.toDouble) * math.log(v1.toDouble)),
+                          productSum + (math.log(v1.toDouble) * v2)
+                        )
+                      } else {
+                        (count, sum1, sum2, sumsq1, productSum)
                       }
+                    }
                   }
                   Some(foldedMapped)
                 }
               case (c1: DoubleColumn, c2: NumColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
-                    case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) =>
-                      {
-                        if (v1 > 0) {
-                          (count + 1,
-                           sum1 + math.log(v1.toDouble),
-                           sum2 + v2,
-                           sumsq1 +
-                           (math.log(v1.toDouble) * math.log(v1.toDouble)),
-                           productSum + (math.log(v1.toDouble) * v2))
-                        } else {
-                          (count, sum1, sum2, sumsq1, productSum)
-                        }
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
+                    case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) => {
+                      if (v1 > 0) {
+                        (
+                          count + 1,
+                          sum1 + math.log(v1.toDouble),
+                          sum2 + v2,
+                          sumsq1 +
+                            (math.log(v1.toDouble) * math.log(v1.toDouble)),
+                          productSum + (math.log(v1.toDouble) * v2)
+                        )
+                      } else {
+                        (count, sum1, sum2, sumsq1, productSum)
                       }
+                    }
                   }
                   Some(foldedMapped)
                 }
               case (c1: NumColumn, c2: LongColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
-                    case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) =>
-                      {
-                        if (v1 > 0) {
-                          (count + 1,
-                           sum1 + math.log(v1.toDouble),
-                           sum2 + v2,
-                           sumsq1 +
-                           (math.log(v1.toDouble) * math.log(v1.toDouble)),
-                           productSum + (math.log(v1.toDouble) * v2))
-                        } else {
-                          (count, sum1, sum2, sumsq1, productSum)
-                        }
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
+                    case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) => {
+                      if (v1 > 0) {
+                        (
+                          count + 1,
+                          sum1 + math.log(v1.toDouble),
+                          sum2 + v2,
+                          sumsq1 +
+                            (math.log(v1.toDouble) * math.log(v1.toDouble)),
+                          productSum + (math.log(v1.toDouble) * v2)
+                        )
+                      } else {
+                        (count, sum1, sum2, sumsq1, productSum)
                       }
+                    }
                   }
                   Some(foldedMapped)
                 }
               case (c1: NumColumn, c2: DoubleColumn) =>
                 val mapped =
                   range filter (r => c1.isDefinedAt(r) && c2.isDefinedAt(r)) map {
-                    i =>
-                      (c1(i), c2(i))
+                    i => (c1(i), c2(i))
                   }
                 if (mapped.isEmpty) {
                   None
                 } else {
                   val foldedMapped: InitialResult = mapped.foldLeft(
-                      (BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0),
-                       BigDecimal(0))) {
-                    case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) =>
-                      {
-                        if (v1 > 0) {
-                          (count + 1,
-                           sum1 + math.log(v1.toDouble),
-                           sum2 + v2,
-                           sumsq1 +
-                           (math.log(v1.toDouble) * math.log(v1.toDouble)),
-                           productSum + (math.log(v1.toDouble) * v2))
-                        } else {
-                          (count, sum1, sum2, sumsq1, productSum)
-                        }
+                    (
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0),
+                      BigDecimal(0)
+                    )
+                  ) {
+                    case ((count, sum1, sum2, sumsq1, productSum), (v1, v2)) => {
+                      if (v1 > 0) {
+                        (
+                          count + 1,
+                          sum1 + math.log(v1.toDouble),
+                          sum2 + v2,
+                          sumsq1 +
+                            (math.log(v1.toDouble) * math.log(v1.toDouble)),
+                          productSum + (math.log(v1.toDouble) * v2)
+                        )
+                      } else {
+                        (count, sum1, sum2, sumsq1, productSum)
                       }
+                    }
                   }
                   Some(foldedMapped)
                 }
@@ -1629,27 +1808,30 @@ trait StatsLibModule[M[+ _]]
 
         res2 map {
           case (count, sum1, sum2, sumsq1, productSum) => {
-              val cov = (productSum - ((sum1 * sum2) / count)) / count
-              val vari = (sumsq1 - (sum1 * (sum1 / count))) / count
+            val cov = (productSum - ((sum1 * sum2) / count)) / count
+            val vari = (sumsq1 - (sum1 * (sum1 / count))) / count
 
-              val slope = cov / vari
-              val yint = (sum2 / count) - (slope * (sum1 / count))
+            val slope = cov / vari
+            val yint = (sum2 / count) - (slope * (sum1 / count))
 
-              val constSlope = Table.constDecimal(Set(slope))
-              val constIntercept = Table.constDecimal(Set(yint))
+            val constSlope = Table.constDecimal(Set(slope))
+            val constIntercept = Table.constDecimal(Set(yint))
 
-              val slopeSpec = trans.WrapObject(Leaf(SourceLeft), "slope")
-              val yintSpec = trans.WrapObject(Leaf(SourceRight), "intercept")
-              val concatSpec = trans.InnerObjectConcat(slopeSpec, yintSpec)
+            val slopeSpec = trans.WrapObject(Leaf(SourceLeft), "slope")
+            val yintSpec = trans.WrapObject(Leaf(SourceRight), "intercept")
+            val concatSpec = trans.InnerObjectConcat(slopeSpec, yintSpec)
 
-              val valueTable = constSlope.cross(constIntercept)(
-                  trans.WrapObject(concatSpec, paths.Value.name))
-              val keyTable = Table.constEmptyArray.transform(
-                  trans.WrapObject(Leaf(Source), paths.Key.name))
+            val valueTable = constSlope.cross(constIntercept)(
+              trans.WrapObject(concatSpec, paths.Value.name)
+            )
+            val keyTable = Table.constEmptyArray.transform(
+              trans.WrapObject(Leaf(Source), paths.Key.name)
+            )
 
-              valueTable.cross(keyTable)(
-                  InnerObjectConcat(Leaf(SourceLeft), Leaf(SourceRight)))
-            }
+            valueTable.cross(keyTable)(
+              InnerObjectConcat(Leaf(SourceLeft), Leaf(SourceRight))
+            )
+          }
         } getOrElse Table.empty
       }
 
@@ -1675,7 +1857,9 @@ trait StatsLibModule[M[+ _]]
       // decimals are going to be a significant performance problem for rank
       // (compared to sorting) and this simplifies the algorithm a lot.
       protected def decimalize(
-          m: Map[ColumnRef, Column], r: Range): Map[ColumnRef, Column] = {
+          m: Map[ColumnRef, Column],
+          r: Range
+      ): Map[ColumnRef, Column] = {
         val m2 = mutable.Map.empty[ColumnRef, Column]
         val nums = mutable.Map.empty[CPath, List[Column]]
 
@@ -1699,25 +1883,28 @@ trait StatsLibModule[M[+ _]]
             cols.foreach {
               case col: LongColumn =>
                 val bs2 = col.definedAt(start, end)
-                Loop.range(0, len)(
-                    j => if (bs2.get(j)) arr(j) = BigDecimal(col(j + start)))
+                Loop.range(0, len)(j =>
+                  if (bs2.get(j)) arr(j) = BigDecimal(col(j + start))
+                )
                 bs.or(bs2)
               case col: DoubleColumn =>
                 val bs2 = col.definedAt(start, end)
-                Loop.range(0, len)(
-                    j => if (bs2.get(j)) arr(j) = BigDecimal(col(j + start)))
+                Loop.range(0, len)(j =>
+                  if (bs2.get(j)) arr(j) = BigDecimal(col(j + start))
+                )
                 bs.or(bs2)
               case col: NumColumn =>
                 val bs2 = col.definedAt(start, end)
-                Loop.range(0, r.size)(
-                    j => if (bs2.get(j)) arr(j) = col(j + start))
+                Loop.range(0, r.size)(j =>
+                  if (bs2.get(j)) arr(j) = col(j + start)
+                )
                 bs.or(bs2)
               case col =>
                 sys.error("unexpected column found: %s" format col)
             }
 
-            m2(ColumnRef(path, CNum)) = shiftColumn(
-                ArrayNumColumn(bs, arr), start)
+            m2(ColumnRef(path, CNum)) =
+              shiftColumn(ArrayNumColumn(bs, arr), start)
         }
         m2.toMap
       }
@@ -1730,7 +1917,10 @@ trait StatsLibModule[M[+ _]]
         * will only be empty when we haven't started).
         */
       case class RankContext(
-          curr: Long, next: Long, items: Iterable[(ColumnRef, CValue)])
+          curr: Long,
+          next: Long,
+          items: Iterable[(ColumnRef, CValue)]
+      )
 
       type A = RankContext
 
@@ -1771,15 +1961,19 @@ trait StatsLibModule[M[+ _]]
         row
       }
 
-      def buildRankContext(m: Map[ColumnRef, Column],
-                           lastRow: Int,
-                           curr: Long,
-                           next: Long): RankContext = {
-        val items = m.filter {
-          case (k, v) => v.isDefinedAt(lastRow)
-        }.map {
-          case (k, v) => (k, v.cValue(lastRow))
-        }
+      def buildRankContext(
+          m: Map[ColumnRef, Column],
+          lastRow: Int,
+          curr: Long,
+          next: Long
+      ): RankContext = {
+        val items = m
+          .filter {
+            case (k, v) => v.isDefinedAt(lastRow)
+          }
+          .map {
+            case (k, v) => (k, v.cValue(lastRow))
+          }
         RankContext(curr, next, items)
       }
 
@@ -1797,7 +1991,8 @@ trait StatsLibModule[M[+ _]]
       def buildRankArrayIndexed(
           defined: BitSet,
           r: Range,
-          ctxt: RankContext): (Array[Long], Long, Int) = {
+          ctxt: RankContext
+      ): (Array[Long], Long, Int) = {
         var curr = ctxt.next
 
         val start = r.start
@@ -1822,9 +2017,11 @@ trait StatsLibModule[M[+ _]]
       /**
         *
         */
-      def scan(ctxt: RankContext,
-               _m: Map[ColumnRef, Column],
-               range: Range): (RankContext, Map[ColumnRef, Column]) = {
+      def scan(
+          ctxt: RankContext,
+          _m: Map[ColumnRef, Column],
+          range: Range
+      ): (RankContext, Map[ColumnRef, Column]) = {
 
         val m = decimalize(_m, range)
 
@@ -1850,15 +2047,15 @@ trait StatsLibModule[M[+ _]]
             (ctxt, Map.empty[ColumnRef, Column])
           } else {
             // build the actual rank array
-            val (values, curr, lastRow) = buildRankArrayIndexed(
-                defined, range, ctxt)
+            val (values, curr, lastRow) =
+              buildRankArrayIndexed(defined, range, ctxt)
 
             // build the context to be used for the next slice
             val ctxt2 = buildRankContext(m, lastRow, curr, curr + 1L)
 
             // construct the column ref and column to return
-            val col2: Column = shiftColumn(
-                ArrayLongColumn(defined, values), start)
+            val col2: Column =
+              shiftColumn(ArrayLongColumn(defined, values), start)
             val data = Map(ColumnRef(CPath.Identity, CLong) -> col2)
 
             (ctxt2, data)
@@ -1886,11 +2083,13 @@ trait StatsLibModule[M[+ _]]
         * true then we can return false, since the rows are not duplicates.
         */
       @tailrec
-      private def isDuplicate(cols: Array[Column],
-                              definedCols: Array[BitSet],
-                              lastRow: Int,
-                              row: Int,
-                              index: Int): Boolean = {
+      private def isDuplicate(
+          cols: Array[Column],
+          definedCols: Array[BitSet],
+          lastRow: Int,
+          row: Int,
+          index: Int
+      ): Boolean = {
         if (index >= cols.length) {
           true
         } else {
@@ -1921,10 +2120,12 @@ trait StatsLibModule[M[+ _]]
         * all the map's values were accounted for by this row). Otherwise we
         * return false.
         */
-      def isDuplicateFromContext(ctxt: RankContext,
-                                 refs: Array[ColumnRef],
-                                 cols: Array[Column],
-                                 row: Int): Boolean = {
+      def isDuplicateFromContext(
+          ctxt: RankContext,
+          refs: Array[ColumnRef],
+          cols: Array[Column],
+          row: Int
+      ): Boolean = {
         val m = mutable.Map.empty[ColumnRef, CValue]
         ctxt.items.foreach { case (ref, cvalue) => m(ref) = cvalue }
         var i = 0
@@ -1939,11 +2140,13 @@ trait StatsLibModule[M[+ _]]
         m.isEmpty
       }
 
-      def findDuplicates(defined: BitSet,
-                         definedCols: Array[BitSet],
-                         cols: Array[Column],
-                         r: Range,
-                         _row: Int): (BitSet, Int) = {
+      def findDuplicates(
+          defined: BitSet,
+          definedCols: Array[BitSet],
+          cols: Array[Column],
+          r: Range,
+          _row: Int
+      ): (BitSet, Int) = {
         val start = r.start
         val end = r.end
         val len = end - start
@@ -1971,17 +2174,21 @@ trait StatsLibModule[M[+ _]]
         (duplicateRows, lastRow)
       }
 
-      def buildRankArrayUnique(defined: BitSet,
-                               duplicateRows: BitSet,
-                               r: Range,
-                               ctxt: RankContext): (Array[Long], Long, Long)
+      def buildRankArrayUnique(
+          defined: BitSet,
+          duplicateRows: BitSet,
+          r: Range,
+          ctxt: RankContext
+      ): (Array[Long], Long, Long)
 
       /**
         *
         */
-      def scan(ctxt: RankContext,
-               _m: Map[ColumnRef, Column],
-               range: Range): (RankContext, Map[ColumnRef, Column]) = {
+      def scan(
+          ctxt: RankContext,
+          _m: Map[ColumnRef, Column],
+          range: Range
+      ): (RankContext, Map[ColumnRef, Column]) = {
         val m = decimalize(_m, range)
 
         val start = range.start
@@ -2006,12 +2213,12 @@ trait StatsLibModule[M[+ _]]
             (ctxt, Map.empty[ColumnRef, Column])
           } else {
             // find a bitset of duplicate rows and the last defined row
-            val (duplicateRows, lastRow) = findDuplicates(
-                defined, definedCols, cols, range, row)
+            val (duplicateRows, lastRow) =
+              findDuplicates(defined, definedCols, cols, range, row)
 
             // build the actual rank array
-            val (values, curr, next) = buildRankArrayUnique(
-                defined, duplicateRows, range, ctxt)
+            val (values, curr, next) =
+              buildRankArrayUnique(defined, duplicateRows, range, ctxt)
 
             // build the context to be used for the next slice
             val ctxt2 = buildRankContext(m, lastRow, curr, next)
@@ -2032,7 +2239,8 @@ trait StatsLibModule[M[+ _]]
           defined: BitSet,
           duplicateRows: BitSet,
           r: Range,
-          ctxt: RankContext): (Array[Long], Long, Long) = {
+          ctxt: RankContext
+      ): (Array[Long], Long, Long) = {
         var curr = ctxt.curr
         var next = ctxt.next
 
@@ -2060,7 +2268,8 @@ trait StatsLibModule[M[+ _]]
           defined: BitSet,
           duplicateRows: BitSet,
           r: Range,
-          ctxt: RankContext): (Array[Long], Long, Long) = {
+          ctxt: RankContext
+      ): (Array[Long], Long, Long) = {
         var curr = ctxt.curr
 
         val start = r.start
@@ -2085,9 +2294,11 @@ trait StatsLibModule[M[+ _]]
       type A = Long
       def init: A = 0L
 
-      def scan(a: A,
-               cols: Map[ColumnRef, Column],
-               range: Range): (A, Map[ColumnRef, Column]) = {
+      def scan(
+          a: A,
+          cols: Map[ColumnRef, Column],
+          range: Range
+      ): (A, Map[ColumnRef, Column]) = {
         val defined = cols.values.foldLeft(BitSetUtil.create()) {
           (bitset, col) =>
             bitset.or(col.definedAt(range.start, range.end))
@@ -2138,7 +2349,7 @@ trait StatsLibModule[M[+ _]]
       def apply(table: Table, ctx: MorphContext): M[Table] = {
         def count(tbl: Table): M[Long] = tbl.size match {
           case ExactSize(n) => M.point(n)
-          case _ => table.reduce(Count.reducer(ctx))
+          case _            => table.reduce(Count.reducer(ctx))
         }
 
         for {

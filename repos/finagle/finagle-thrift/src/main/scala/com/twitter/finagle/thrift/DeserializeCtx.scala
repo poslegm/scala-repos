@@ -20,7 +20,9 @@ import com.twitter.util.Try
   * to be seen by [[deserialize]].
   */
 class DeserializeCtx[Rep](
-    val request: ThriftStruct, replyDeserializer: Array[Byte] => Try[Rep]) {
+    val request: ThriftStruct,
+    replyDeserializer: Array[Byte] => Try[Rep]
+) {
 
   // thread safety provided via synchronization on this
   private var deserialized: Try[Rep] = null

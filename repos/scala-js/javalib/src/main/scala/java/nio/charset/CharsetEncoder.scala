@@ -8,12 +8,16 @@ abstract class CharsetEncoder protected (
     cs: Charset,
     _averageBytesPerChar: Float,
     _maxBytesPerChar: Float,
-    private[this] var _replacement: Array[Byte]) {
+    private[this] var _replacement: Array[Byte]
+) {
 
   import CharsetEncoder._
 
   protected def this(
-      cs: Charset, _averageBytesPerChar: Float, _maxBytesPerChar: Float) =
+      cs: Charset,
+      _averageBytesPerChar: Float,
+      _maxBytesPerChar: Float
+  ) =
     this(cs, _averageBytesPerChar, _averageBytesPerChar, Array('?'.toByte))
 
   // Config
@@ -80,7 +84,8 @@ abstract class CharsetEncoder protected (
     _unmappableCharacterAction
 
   final def onUnmappableCharacter(
-      newAction: CodingErrorAction): CharsetEncoder = {
+      newAction: CodingErrorAction
+  ): CharsetEncoder = {
     if (newAction == null)
       throw new IllegalArgumentException("null CodingErrorAction")
     _unmappableCharacterAction = newAction
@@ -95,7 +100,10 @@ abstract class CharsetEncoder protected (
   final def maxBytesPerChar(): Float = _maxBytesPerChar
 
   final def encode(
-      in: CharBuffer, out: ByteBuffer, endOfInput: Boolean): CoderResult = {
+      in: CharBuffer,
+      out: ByteBuffer,
+      endOfInput: Boolean
+  ): CoderResult = {
 
     if (status == FLUSHED || (!endOfInput && status == END))
       throw new IllegalStateException
@@ -105,14 +113,15 @@ abstract class CharsetEncoder protected (
     @inline
     @tailrec
     def loop(): CoderResult = {
-      val result1 = try {
-        encodeLoop(in, out)
-      } catch {
-        case ex: BufferOverflowException =>
-          throw new CoderMalfunctionError(ex)
-        case ex: BufferUnderflowException =>
-          throw new CoderMalfunctionError(ex)
-      }
+      val result1 =
+        try {
+          encodeLoop(in, out)
+        } catch {
+          case ex: BufferOverflowException =>
+            throw new CoderMalfunctionError(ex)
+          case ex: BufferUnderflowException =>
+            throw new CoderMalfunctionError(ex)
+        }
 
       val result2 =
         if (result1.isUnderflow) {

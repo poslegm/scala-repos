@@ -2,17 +2,17 @@ package scalaz
 package syntax
 
 /** Wraps a value `self` and provides methods related to `Foldable` */
-final class FoldableOps[F[_], A] private[syntax](
-    val self: F[A])(implicit val F: Foldable[F])
-    extends Ops[F[A]] {
+final class FoldableOps[F[_], A] private[syntax] (val self: F[A])(
+    implicit val F: Foldable[F]
+) extends Ops[F[A]] {
   ////
   import collection.generic.CanBuildFrom
   import Leibniz.===
   import Liskov.<~<
 
-  final def foldMap[B : Monoid](f: A => B = (a: A) => a): B =
+  final def foldMap[B: Monoid](f: A => B = (a: A) => a): B =
     F.foldMap(self)(f)
-  final def foldMap1Opt[B : Semigroup](f: A => B = (a: A) => a): Option[B] =
+  final def foldMap1Opt[B: Semigroup](f: A => B = (a: A) => a): Option[B] =
     F.foldMap1Opt(self)(f)
   final def foldRight[B](z: => B)(f: (A, => B) => B): B =
     F.foldRight(self, z)(f)
@@ -25,10 +25,12 @@ final class FoldableOps[F[_], A] private[syntax](
     F.foldMapLeft1Opt(self)(z)(f)
   final def foldLeft1Opt(f: (A, A) => A): Option[A] = F.foldLeft1Opt(self)(f)
   final def foldRightM[G[_], B](z: => B)(f: (A, => B) => G[B])(
-      implicit M: Monad[G]): G[B] = F.foldRightM(self, z)(f)
+      implicit M: Monad[G]
+  ): G[B] = F.foldRightM(self, z)(f)
   final def foldLeftM[G[_], B](z: B)(f: (B, A) => G[B])(
-      implicit M: Monad[G]): G[B] = F.foldLeftM(self, z)(f)
-  final def foldMapM[G[_]: Monad, B : Monoid](f: A => G[B]): G[B] =
+      implicit M: Monad[G]
+  ): G[B] = F.foldLeftM(self, z)(f)
+  final def foldMapM[G[_]: Monad, B: Monoid](f: A => G[B]): G[B] =
     F.foldMapM(self)(f)
   final def findMapM[G[_]: Monad, B](f: A => G[Option[B]]): G[Option[B]] =
     F.findMapM(self)(f)
@@ -40,9 +42,11 @@ final class FoldableOps[F[_], A] private[syntax](
   final def foldl[B](z: B)(f: B => A => B): B = F.foldl(self, z)(f)
   final def foldl1Opt(f: A => A => A): Option[A] = F.foldl1Opt(self)(f)
   final def foldrM[G[_], B](z: => B)(f: A => (=> B) => G[B])(
-      implicit M: Monad[G]): G[B] = F.foldrM(self, z)(f)
+      implicit M: Monad[G]
+  ): G[B] = F.foldrM(self, z)(f)
   final def foldlM[G[_], B](z: B)(f: B => A => G[B])(
-      implicit M: Monad[G]): G[B] = F.foldlM(self, z)(f)
+      implicit M: Monad[G]
+  ): G[B] = F.foldlM(self, z)(f)
   final def length: Int = F.length(self)
   final def index(n: Int): Option[A] = F.index(self, n)
   final def indexOr(default: => A, n: Int): A = F.indexOr(self, default, n)
@@ -67,11 +71,11 @@ final class FoldableOps[F[_], A] private[syntax](
   final def filterLength(p: A => Boolean): Int = F.filterLength(self)(p)
   final def count: Int = F.count(self)
   final def maximum(implicit A: Order[A]): Option[A] = F.maximum(self)
-  final def maximumOf[B : Order](f: A => B): Option[B] = F.maximumOf(self)(f)
-  final def maximumBy[B : Order](f: A => B): Option[A] = F.maximumBy(self)(f)
+  final def maximumOf[B: Order](f: A => B): Option[B] = F.maximumOf(self)(f)
+  final def maximumBy[B: Order](f: A => B): Option[A] = F.maximumBy(self)(f)
   final def minimum(implicit A: Order[A]): Option[A] = F.minimum(self)
-  final def minimumOf[B : Order](f: A => B): Option[B] = F.minimumOf(self)(f)
-  final def minimumBy[B : Order](f: A => B): Option[A] = F.minimumBy(self)(f)
+  final def minimumOf[B: Order](f: A => B): Option[B] = F.minimumOf(self)(f)
+  final def minimumBy[B: Order](f: A => B): Option[A] = F.minimumBy(self)(f)
   final def distinct(implicit A: Order[A]): IList[A] = F.distinct(self)
   final def distinctE(implicit A: Equal[A]): IList[A] = F.distinctE(self)
   final def longDigits(implicit d: A <:< Digit): Long = F.longDigits(self)
@@ -88,13 +92,16 @@ final class FoldableOps[F[_], A] private[syntax](
     F.intercalate(self, a)
   final def traverse_[M[_]: Applicative](f: A => M[Unit]): M[Unit] =
     F.traverse_(self)(f)
-  final def traverseU_[GB](f: A => GB)(
-      implicit G: Unapply[Applicative, GB]): G.M[Unit] =
+  final def traverseU_[GB](
+      f: A => GB
+  )(implicit G: Unapply[Applicative, GB]): G.M[Unit] =
     F.traverseU_[A, GB](self)(f)(G)
   final def traverseS_[S, B](f: A => State[S, B]): State[S, Unit] =
     F.traverseS_(self)(f)
   final def sequence_[G[_], B](
-      implicit ev: A === G[B], G: Applicative[G]): G[Unit] =
+      implicit ev: A === G[B],
+      G: Applicative[G]
+  ): G[Unit] =
     F.sequence_(ev.subst[F](self))(G)
   final def sequenceS_[S, B](implicit ev: A === State[S, B]): State[S, Unit] =
     F.sequenceS_(ev.subst[F](self))
@@ -106,8 +113,9 @@ final class FoldableOps[F[_], A] private[syntax](
 }
 
 sealed trait ToFoldableOps0 {
-  implicit def ToFoldableOpsUnapply[FA](v: FA)(
-      implicit F0: Unapply[Foldable, FA]) =
+  implicit def ToFoldableOpsUnapply[FA](
+      v: FA
+  )(implicit F0: Unapply[Foldable, FA]) =
     new FoldableOps[F0.M, F0.A](F0(v))(F0.TC)
 }
 

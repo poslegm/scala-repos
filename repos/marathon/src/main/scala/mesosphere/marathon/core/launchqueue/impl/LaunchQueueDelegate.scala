@@ -13,10 +13,11 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
 
-private[launchqueue] class LaunchQueueDelegate(config: LaunchQueueConfig,
-                                               actorRef: ActorRef,
-                                               rateLimiterRef: ActorRef)
-    extends LaunchQueue {
+private[launchqueue] class LaunchQueueDelegate(
+    config: LaunchQueueConfig,
+    actorRef: ActorRef,
+    rateLimiterRef: ActorRef
+) extends LaunchQueue {
 
   override def list: Seq[QueuedTaskInfo] = {
     askQueueActor("list")(LaunchQueueDelegate.List)
@@ -28,7 +29,8 @@ private[launchqueue] class LaunchQueueDelegate(config: LaunchQueueConfig,
       .asInstanceOf[Option[QueuedTaskInfo]]
 
   override def notifyOfTaskUpdate(
-      update: TaskStatusUpdate): Future[Option[QueuedTaskInfo]] =
+      update: TaskStatusUpdate
+  ): Future[Option[QueuedTaskInfo]] =
     askQueueActorFuture("notifyOfTaskUpdate")(update)
       .mapTo[Option[QueuedTaskInfo]]
 
@@ -47,8 +49,9 @@ private[launchqueue] class LaunchQueueDelegate(config: LaunchQueueConfig,
     Await.result(answerFuture, config.launchQueueRequestTimeout().milliseconds)
   }
 
-  private[this] def askQueueActorFuture[T](method: String)(
-      message: T): Future[Any] = {
+  private[this] def askQueueActorFuture[T](
+      method: String
+  )(message: T): Future[Any] = {
     implicit val timeout: Timeout = 1.second
     val answerFuture = actorRef ? message
     import scala.concurrent.ExecutionContext.Implicits.global

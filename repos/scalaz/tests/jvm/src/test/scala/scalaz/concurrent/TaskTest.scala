@@ -19,7 +19,9 @@ object TaskTest extends SpecLite {
   // standard worst case scenario for trampolining -
   // huge series of left associated binds
   def leftAssociatedBinds(
-      seed: (=> Int) => Task[Int], cur: (=> Int) => Task[Int]): Task[Int] =
+      seed: (=> Int) => Task[Int],
+      cur: (=> Int) => Task[Int]
+  ): Task[Int] =
     (0 to N).map(cur(_)).foldLeft(seed(0))(Task.taskInstance.lift2(_ + _))
 
   val options =
@@ -74,13 +76,15 @@ object TaskTest extends SpecLite {
   }
 
   "catches exceptions in a mapped function, created by delay" ! {
-    Task.delay { Thread.sleep(10); 42 }
+    Task
+      .delay { Thread.sleep(10); 42 }
       .map(_ => throw FailWhale)
       .unsafePerformSyncAttempt == -\/(FailWhale)
   }
 
   "catches exceptions in a mapped function, created with now" ! {
-    Task.now { Thread.sleep(10); 42 }
+    Task
+      .now { Thread.sleep(10); 42 }
       .map(_ => throw FailWhale)
       .unsafePerformSyncAttempt == -\/(FailWhale)
   }
@@ -92,13 +96,15 @@ object TaskTest extends SpecLite {
   }
 
   "catches exceptions in a flatMapped function, created with delay" ! {
-    Task.delay { Thread.sleep(10); 42 }
+    Task
+      .delay { Thread.sleep(10); 42 }
       .flatMap(_ => throw FailWhale)
       .unsafePerformSyncAttempt == -\/(FailWhale)
   }
 
   "catches exceptions in a flatMapped function, created with now" ! {
-    Task.now { Thread.sleep(10); 42 }
+    Task
+      .now { Thread.sleep(10); 42 }
       .flatMap(_ => throw FailWhale)
       .unsafePerformSyncAttempt == -\/(FailWhale)
   }
@@ -106,8 +112,7 @@ object TaskTest extends SpecLite {
   "catches exceptions in parallel execution" ! forAll { (x: Int, y: Int) =>
     val t1 = Task { Thread.sleep(10); throw FailWhale; 42 }
     val t2 = Task { 43 }
-    Nondeterminism[Task].both(t1, t2).unsafePerformSyncAttempt == -\/(
-        FailWhale)
+    Nondeterminism[Task].both(t1, t2).unsafePerformSyncAttempt == -\/(FailWhale)
   }
 
   "handles exceptions in handle" ! {
@@ -148,9 +153,9 @@ object TaskTest extends SpecLite {
   }
 
   "catches exceptions thrown by onFinish argument function" ! {
-    Task { Thread.sleep(10); 42 }.onFinish { _ =>
-      throw SadTrombone; Task.now(())
-    }.unsafePerformSyncAttemptFor(1000) == -\/(SadTrombone)
+    Task { Thread.sleep(10); 42 }
+      .onFinish { _ => throw SadTrombone; Task.now(()) }
+      .unsafePerformSyncAttemptFor(1000) == -\/(SadTrombone)
   }
 
   "evaluates Monad[Task].point lazily" in {
@@ -198,16 +203,13 @@ object TaskTest extends SpecLite {
       val es3 = Executors.newFixedThreadPool(3)
 
       // NB: Task can only be interrupted in between steps (before the `map`)
-      val t1 = fork { sleep(1000); now(()) }.map { _ =>
-        t1v.set(1)
-      }
+      val t1 = fork { sleep(1000); now(()) }.map { _ => t1v.set(1) }
       val t2 = fork { now(throw ex) }
-      val t3 = fork { sleep(1000); now(()) }.map { _ =>
-        t3v.set(3)
-      }
+      val t3 = fork { sleep(1000); now(()) }.map { _ => t3v.set(3) }
 
       val t = fork(
-          Task.gatherUnordered(Seq(t1, t2, t3), exceptionCancels = true))(es3)
+        Task.gatherUnordered(Seq(t1, t2, t3), exceptionCancels = true)
+      )(es3)
 
       t.unsafePerformSyncAttempt mustMatch {
         case -\/(e) => e must_== ex; true
@@ -227,16 +229,13 @@ object TaskTest extends SpecLite {
       implicit val es3 = Executors.newFixedThreadPool(3)
 
       // NB: Task can only be interrupted in between steps (before the `map`)
-      val t1 = fork { sleep(1000); now(()) }.map { _ =>
-        t1v.set(1)
-      }
+      val t1 = fork { sleep(1000); now(()) }.map { _ => t1v.set(1) }
       val t2 = fork { sleep(100); now(throw ex) }
-      val t3 = fork { sleep(1000); now(()) }.map { _ =>
-        t3v.set(3)
-      }
+      val t3 = fork { sleep(1000); now(()) }.map { _ => t3v.set(3) }
 
       val t = fork(
-          Task.gatherUnordered(Seq(t1, t2, t3), exceptionCancels = true))(es3)
+        Task.gatherUnordered(Seq(t1, t2, t3), exceptionCancels = true)
+      )(es3)
 
       t.unsafePerformSyncAttempt mustMatch {
         case -\/(e) => e must_== ex; true
@@ -259,17 +258,17 @@ object TaskTest extends SpecLite {
 
       val seenThreadNames = scala.collection.JavaConversions
         .asScalaSet(ju.Collections.synchronizedSet(new ju.HashSet[String]()))
-      val t = for (i <- 0 to 5) yield
-        fork {
-          seenThreadNames += currentThread().getName()
-          //Prevent the execution scheduler from reusing threads. This will only
-          //proceed after all 6 threads reached this point.
-          barrier.await(1, TimeUnit.SECONDS)
-          now(('a' + i).toChar)
-        }
+      val t = for (i <- 0 to 5) yield fork {
+        seenThreadNames += currentThread().getName()
+        //Prevent the execution scheduler from reusing threads. This will only
+        //proceed after all 6 threads reached this point.
+        barrier.await(1, TimeUnit.SECONDS)
+        now(('a' + i).toChar)
+      }
 
       val r = Nondeterminism[Task].nmap6(t(0), t(1), t(2), t(3), t(4), t(5))(
-          List(_, _, _, _, _, _))
+        List(_, _, _, _, _, _)
+      )
       val chars = List('a', 'b', 'c', 'd', 'e', 'f')
       r.unsafePerformSync must_== chars
       //Ensure we saw 6 distinct threads.
@@ -311,7 +310,8 @@ object TaskTest extends SpecLite {
   "retries a retriable task n times" ! forAll { xs: List[Byte] =>
     import scala.concurrent.duration._
     var x = 0
-    Task.delay { x += 1; sys.error("oops") }
+    Task
+      .delay { x += 1; sys.error("oops") }
       .unsafePerformRetry(xs.map(_ => 0.milliseconds))
       .attempt
       .unsafePerformSync

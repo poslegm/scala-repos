@@ -5,7 +5,12 @@ import java.io._
 import java.util.Properties
 
 import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.util.io.{PersistentEnumeratorBase, DataExternalizer, EnumeratorStringDescriptor, PersistentHashMap}
+import com.intellij.util.io.{
+  PersistentEnumeratorBase,
+  DataExternalizer,
+  EnumeratorStringDescriptor,
+  PersistentHashMap
+}
 import org.apache.maven.index.ArtifactInfo
 
 import scala.collection.JavaConversions._
@@ -16,19 +21,24 @@ import scala.language.reflectiveCalls
   * @author Nikolay Obedin
   * @since 7/25/14.
   */
-class SbtResolverIndex private (val kind: SbtResolver.Kind.Value,
-                                val root: String,
-                                var timestamp: Long,
-                                val indexDir: File) {
+class SbtResolverIndex private (
+    val kind: SbtResolver.Kind.Value,
+    val root: String,
+    var timestamp: Long,
+    val indexDir: File
+) {
   import org.jetbrains.sbt.resolvers.SbtResolverIndex._
 
   ensureIndexDir()
   private val artifactToGroupMap = createPersistentMap(
-      indexDir / Paths.ARTIFACT_TO_GROUP_FILE)
+    indexDir / Paths.ARTIFACT_TO_GROUP_FILE
+  )
   private val groupToArtifactMap = createPersistentMap(
-      indexDir / Paths.GROUP_TO_ARTIFACT_FILE)
+    indexDir / Paths.GROUP_TO_ARTIFACT_FILE
+  )
   private val groupArtifactToVersionMap = createPersistentMap(
-      indexDir / Paths.GROUP_ARTIFACT_TO_VERSION_FILE)
+    indexDir / Paths.GROUP_ARTIFACT_TO_VERSION_FILE
+  )
 
   def update(progressIndicator: Option[ProgressIndicator] = None) {
     val agMap = mutable.HashMap.empty[String, mutable.Set[String]]
@@ -40,7 +50,9 @@ class SbtResolverIndex private (val kind: SbtResolver.Kind.Value,
       gaMap.getOrElseUpdate(artifact.getGroupId, mutable.Set.empty) +=
         artifact.getArtifactId
       gavMap.getOrElseUpdate(
-          SbtResolverUtils.joinGroupArtifact(artifact), mutable.Set.empty) +=
+        SbtResolverUtils.joinGroupArtifact(artifact),
+        mutable.Set.empty
+      ) +=
         artifact.getVersion
     }
 
@@ -48,7 +60,8 @@ class SbtResolverIndex private (val kind: SbtResolver.Kind.Value,
       using(SbtMavenRepoIndexer(root, indexDir)) { indexer =>
         indexer.update(progressIndicator)
         indexer.foreach(processArtifact, progressIndicator)
-      } else
+      }
+    else
       new SbtIvyCacheIndexer(new File(root)).artifacts.foreach(processArtifact)
 
     progressIndicator foreach { _.checkCanceled() }
@@ -104,7 +117,8 @@ class SbtResolverIndex private (val kind: SbtResolver.Kind.Value,
 
   def versions(group: String, artifact: String) =
     groupArtifactToVersionMap.getOrEmpty(
-        SbtResolverUtils.joinGroupArtifact(group, artifact))
+      SbtResolverUtils.joinGroupArtifact(group, artifact)
+    )
 
   def isLocal: Boolean =
     kind == SbtResolver.Kind.Ivy || root.startsWith("file:")
@@ -117,7 +131,10 @@ class SbtResolverIndex private (val kind: SbtResolver.Kind.Value,
 
   private def createPersistentMap(file: File) =
     new PersistentHashMap[String, Set[String]](
-        file, new EnumeratorStringDescriptor, new SetDescriptor) {
+      file,
+      new EnumeratorStringDescriptor,
+      new SetDescriptor
+    ) {
       def getOrEmpty(key: String): Set[String] =
         try {
           Option(get(key)).getOrElse(Set.empty)

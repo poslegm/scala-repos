@@ -51,8 +51,8 @@ private[spark] class DecisionTreeMetadata(
     val minInstancesPerNode: Int,
     val minInfoGain: Double,
     val numTrees: Int,
-    val numFeaturesPerNode: Int)
-    extends Serializable {
+    val numFeaturesPerNode: Int
+) extends Serializable {
 
   def isUnordered(featureIndex: Int): Boolean =
     unorderedFeatures.contains(featureIndex)
@@ -87,8 +87,10 @@ private[spark] class DecisionTreeMetadata(
     * For a continuous feature, number of bins is number of splits plus 1.
     */
   def setNumSplits(featureIndex: Int, numSplits: Int) {
-    require(isContinuous(featureIndex),
-            s"Only number of bin for a continuous feature can be set.")
+    require(
+      isContinuous(featureIndex),
+      s"Only number of bin for a continuous feature can be set."
+    )
     numBins(featureIndex) = numSplits + 1
   }
 
@@ -105,27 +107,31 @@ private[spark] object DecisionTreeMetadata extends Logging {
     * This computes which categorical features will be ordered vs. unordered,
     * as well as the number of splits and bins for each feature.
     */
-  def buildMetadata(input: RDD[LabeledPoint],
-                    strategy: Strategy,
-                    numTrees: Int,
-                    featureSubsetStrategy: String): DecisionTreeMetadata = {
+  def buildMetadata(
+      input: RDD[LabeledPoint],
+      strategy: Strategy,
+      numTrees: Int,
+      featureSubsetStrategy: String
+  ): DecisionTreeMetadata = {
 
     val numFeatures = input.map(_.features.size).take(1).headOption.getOrElse {
       throw new IllegalArgumentException(
-          s"DecisionTree requires size of input RDD > 0, " +
-          s"but was given by empty one.")
+        s"DecisionTree requires size of input RDD > 0, " +
+          s"but was given by empty one."
+      )
     }
     val numExamples = input.count()
     val numClasses = strategy.algo match {
       case Classification => strategy.numClasses
-      case Regression => 0
+      case Regression     => 0
     }
 
     val maxPossibleBins = math.min(strategy.maxBins, numExamples).toInt
     if (maxPossibleBins < strategy.maxBins) {
       logWarning(
-          s"DecisionTree reducing maxBins from ${strategy.maxBins} to $maxPossibleBins" +
-          s" (= number of training instances)")
+        s"DecisionTree reducing maxBins from ${strategy.maxBins} to $maxPossibleBins" +
+          s" (= number of training instances)"
+      )
     }
 
     // We check the number of bins here against maxPossibleBins.
@@ -138,11 +144,12 @@ private[spark] object DecisionTreeMetadata extends Logging {
         .get
         ._1
       require(
-          maxCategoriesPerFeature <= maxPossibleBins,
-          s"DecisionTree requires maxBins (= $maxPossibleBins) to be at least as large as the " +
+        maxCategoriesPerFeature <= maxPossibleBins,
+        s"DecisionTree requires maxBins (= $maxPossibleBins) to be at least as large as the " +
           s"number of values in each categorical feature, but categorical feature $maxCategory " +
           s"has $maxCategoriesPerFeature values. Considering remove this and other categorical " +
-          "features with a large number of values, or add more training examples.")
+          "features with a large number of values, or add more training examples."
+      )
     }
 
     val unorderedFeatures = new mutable.HashSet[Int]()
@@ -194,34 +201,38 @@ private[spark] object DecisionTreeMetadata extends Logging {
       case _ => featureSubsetStrategy
     }
     val numFeaturesPerNode: Int = _featureSubsetStrategy match {
-      case "all" => numFeatures
+      case "all"  => numFeatures
       case "sqrt" => math.sqrt(numFeatures).ceil.toInt
       case "log2" =>
         math.max(1, (math.log(numFeatures) / math.log(2)).ceil.toInt)
       case "onethird" => (numFeatures / 3.0).ceil.toInt
     }
 
-    new DecisionTreeMetadata(numFeatures,
-                             numExamples,
-                             numClasses,
-                             numBins.max,
-                             strategy.categoricalFeaturesInfo,
-                             unorderedFeatures.toSet,
-                             numBins,
-                             strategy.impurity,
-                             strategy.quantileCalculationStrategy,
-                             strategy.maxDepth,
-                             strategy.minInstancesPerNode,
-                             strategy.minInfoGain,
-                             numTrees,
-                             numFeaturesPerNode)
+    new DecisionTreeMetadata(
+      numFeatures,
+      numExamples,
+      numClasses,
+      numBins.max,
+      strategy.categoricalFeaturesInfo,
+      unorderedFeatures.toSet,
+      numBins,
+      strategy.impurity,
+      strategy.quantileCalculationStrategy,
+      strategy.maxDepth,
+      strategy.minInstancesPerNode,
+      strategy.minInfoGain,
+      numTrees,
+      numFeaturesPerNode
+    )
   }
 
   /**
     * Version of [[DecisionTreeMetadata#buildMetadata]] for DecisionTree.
     */
   def buildMetadata(
-      input: RDD[LabeledPoint], strategy: Strategy): DecisionTreeMetadata = {
+      input: RDD[LabeledPoint],
+      strategy: Strategy
+  ): DecisionTreeMetadata = {
     buildMetadata(input, strategy, numTrees = 1, featureSubsetStrategy = "all")
   }
 

@@ -11,7 +11,8 @@ object UFunc {
   class UImpl[A, B, C]
   implicit def implicitDoubleUTag[Tag, V, VR](
       implicit conv: V => Double,
-      impl: UImpl[Tag, Double, VR]): UImpl[Tag, V, VR] = ???
+      impl: UImpl[Tag, Double, VR]
+  ): UImpl[Tag, V, VR] = ???
 }
 
 object Test {

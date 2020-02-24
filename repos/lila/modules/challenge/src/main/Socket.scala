@@ -9,12 +9,13 @@ import lila.hub.TimeBomb
 import lila.socket.actorApi.{Connected => _, _}
 import lila.socket.{SocketActor, History, Historical}
 
-private final class Socket(challengeId: String,
-                           val history: History[Unit],
-                           getChallenge: Challenge.ID => Fu[Option[Challenge]],
-                           uidTimeout: Duration,
-                           socketTimeout: Duration)
-    extends SocketActor[Socket.Member](uidTimeout)
+private final class Socket(
+    challengeId: String,
+    val history: History[Unit],
+    getChallenge: Challenge.ID => Fu[Option[Challenge]],
+    uidTimeout: Duration,
+    socketTimeout: Duration
+) extends SocketActor[Socket.Member](uidTimeout)
     with Historical[Socket.Member, Unit] {
 
   private val timeBomb = new TimeBomb(socketTimeout)
@@ -23,23 +24,21 @@ private final class Socket(challengeId: String,
 
     case Socket.Reload =>
       getChallenge(challengeId) foreach {
-        _ foreach { challenge =>
-          notifyVersion("reload", JsNull, ())
-        }
+        _ foreach { challenge => notifyVersion("reload", JsNull, ()) }
       }
 
     case PingVersion(uid, v) => {
-        ping(uid)
-        timeBomb.delay
-        withMember(uid) { m =>
-          history.since(v).fold(resync(m))(_ foreach sendMessage(m))
-        }
+      ping(uid)
+      timeBomb.delay
+      withMember(uid) { m =>
+        history.since(v).fold(resync(m))(_ foreach sendMessage(m))
       }
+    }
 
     case Broom => {
-        broom
-        if (timeBomb.boom) self ! PoisonPill
-      }
+      broom
+      if (timeBomb.boom) self ! PoisonPill
+    }
 
     case GetVersion => sender ! history.version
 

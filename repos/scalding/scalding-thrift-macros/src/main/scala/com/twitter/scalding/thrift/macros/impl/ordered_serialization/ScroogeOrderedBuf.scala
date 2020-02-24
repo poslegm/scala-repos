@@ -30,14 +30,14 @@ import scala.reflect.macros.Context
  */
 object ScroogeOrderedBuf {
   def dispatch(c: Context)(
-      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]])
-    : PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]
+  ): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     import c.universe._
 
     val pf: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
       case tpe
           if tpe <:< typeOf[ThriftStruct] && !(tpe =:= typeOf[ThriftStruct]) &&
-          !(tpe <:< typeOf[ThriftUnion]) =>
+            !(tpe <:< typeOf[ThriftUnion]) =>
         ScroogeOrderedBuf(c)(buildDispatcher, tpe)
     }
     pf
@@ -45,7 +45,8 @@ object ScroogeOrderedBuf {
 
   def apply(c: Context)(
       buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
-      outerType: c.Type): TreeOrderedBuf[c.type] = {
+      outerType: c.Type
+  ): TreeOrderedBuf[c.type] = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
 
@@ -61,17 +62,23 @@ object ScroogeOrderedBuf {
         .filter(_.isVal)
         .map { t =>
           val decodedName = t.name.decoded // Looks like "MethodNameField "
-          decodedName.dropRight(6).toLowerCase //  These things end in "Field " , yes there is a space in there
+          decodedName
+            .dropRight(6)
+            .toLowerCase //  These things end in "Field " , yes there is a space in there
         }
         .toList
 
     val elementData: List[(c.universe.Type, TermName, TreeOrderedBuf[c.type])] =
-      outerType.declarations.collect { case m: MethodSymbol => m }
-        .filter(
-            m => fieldNames.contains(m.name.toTermName.toString.toLowerCase))
+      outerType.declarations
+        .collect { case m: MethodSymbol => m }
+        .filter(m =>
+          fieldNames.contains(m.name.toTermName.toString.toLowerCase)
+        )
         .map { accessorMethod =>
           val fieldType = accessorMethod.returnType.asSeenFrom(
-              outerType, outerType.typeSymbol.asClass)
+            outerType,
+            outerType.typeSymbol.asClass
+          )
           val b: TreeOrderedBuf[c.type] = dispatcher(fieldType)
           (fieldType, accessorMethod.name.toTermName, b)
         }
@@ -81,7 +88,9 @@ object ScroogeOrderedBuf {
       override val ctx: c.type = c
       override val tpe = outerType
       override def compareBinary(
-          inputStreamA: ctx.TermName, inputStreamB: ctx.TermName) =
+          inputStreamA: ctx.TermName,
+          inputStreamB: ctx.TermName
+      ) =
         ProductLike.compareBinary(c)(inputStreamA, inputStreamB)(elementData)
 
       override def hash(element: ctx.TermName): ctx.Tree =
@@ -108,7 +117,9 @@ object ScroogeOrderedBuf {
         """
       }
       override def compare(
-          elementA: ctx.TermName, elementB: ctx.TermName): ctx.Tree =
+          elementA: ctx.TermName,
+          elementB: ctx.TermName
+      ): ctx.Tree =
         ProductLike.compare(c)(elementA, elementB)(elementData)
 
       override val lazyOuterVariables: Map[String, ctx.Tree] = elementData

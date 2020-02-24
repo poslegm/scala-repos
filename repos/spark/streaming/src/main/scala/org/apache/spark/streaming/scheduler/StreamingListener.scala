@@ -43,13 +43,13 @@ case class StreamingListenerBatchStarted(batchInfo: BatchInfo)
 
 @DeveloperApi
 case class StreamingListenerOutputOperationStarted(
-    outputOperationInfo: OutputOperationInfo)
-    extends StreamingListenerEvent
+    outputOperationInfo: OutputOperationInfo
+) extends StreamingListenerEvent
 
 @DeveloperApi
 case class StreamingListenerOutputOperationCompleted(
-    outputOperationInfo: OutputOperationInfo)
-    extends StreamingListenerEvent
+    outputOperationInfo: OutputOperationInfo
+) extends StreamingListenerEvent
 
 @DeveloperApi
 case class StreamingListenerReceiverStarted(receiverInfo: ReceiverInfo)
@@ -91,11 +91,13 @@ trait StreamingListener {
 
   /** Called when processing of a job of a batch has started. */
   def onOutputOperationStarted(
-      outputOperationStarted: StreamingListenerOutputOperationStarted) {}
+      outputOperationStarted: StreamingListenerOutputOperationStarted
+  ) {}
 
   /** Called when processing of a job of a batch has completed. */
   def onOutputOperationCompleted(
-      outputOperationCompleted: StreamingListenerOutputOperationCompleted) {}
+      outputOperationCompleted: StreamingListenerOutputOperationCompleted
+  ) {}
 }
 
 /**
@@ -108,8 +110,7 @@ class StatsReportListener(numBatchInfos: Int = 10) extends StreamingListener {
   // Queue containing latest completed batches
   val batchInfos = new Queue[BatchInfo]()
 
-  override def onBatchCompleted(
-      batchStarted: StreamingListenerBatchCompleted) {
+  override def onBatchCompleted(batchStarted: StreamingListenerBatchCompleted) {
     batchInfos.enqueue(batchStarted.batchInfo)
     if (batchInfos.size > numBatchInfos) batchInfos.dequeue()
     printStats()
@@ -121,13 +122,16 @@ class StatsReportListener(numBatchInfos: Int = 10) extends StreamingListener {
   }
 
   def showMillisDistribution(
-      heading: String, getMetric: BatchInfo => Option[Long]) {
+      heading: String,
+      getMetric: BatchInfo => Option[Long]
+  ) {
     org.apache.spark.scheduler.StatsReportListener
       .showMillisDistribution(heading, extractDistribution(getMetric))
   }
 
   def extractDistribution(
-      getMetric: BatchInfo => Option[Long]): Option[Distribution] = {
+      getMetric: BatchInfo => Option[Long]
+  ): Option[Distribution] = {
     Distribution(batchInfos.flatMap(getMetric(_)).map(_.toDouble))
   }
 }

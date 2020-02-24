@@ -16,8 +16,9 @@ private[util] trait StackTracing extends Any {
     *  @param e the exception
     *  @param p the predicate to select the prefix
     */
-  def stackTracePrefixString(e: Throwable)(
-      p: StackTraceElement => Boolean): String = {
+  def stackTracePrefixString(
+      e: Throwable
+  )(p: StackTraceElement => Boolean): String = {
     import collection.mutable.{ArrayBuffer, ListBuffer}
     import compat.Platform.EOL
     import util.Properties.isJavaAtLeast
@@ -53,10 +54,12 @@ private[util] trait StackTracing extends Any {
       interesting
     }
 
-    def print(e: Throwable,
-              r: TraceRelation,
-              share: Array[StackTraceElement],
-              indents: Int): Unit = if (unseen(e)) {
+    def print(
+        e: Throwable,
+        r: TraceRelation,
+        share: Array[StackTraceElement],
+        indents: Int
+    ): Unit = if (unseen(e)) {
       val trace = e.getStackTrace
       val frames =
         (if (share.nonEmpty) {
@@ -78,8 +81,8 @@ private[util] trait StackTracing extends Any {
       if (suppressable) {
         import scala.language.reflectiveCalls
         type Suppressing = { def getSuppressed(): Array[Throwable] }
-        for (s <- e.asInstanceOf[Suppressing].getSuppressed) print(
-            s, Suppressed, frames, indents + 1)
+        for (s <- e.asInstanceOf[Suppressing].getSuppressed)
+          print(s, Suppressed, frames, indents + 1)
       }
     }
     print(e, Self, share = Array.empty, indents = 0)
