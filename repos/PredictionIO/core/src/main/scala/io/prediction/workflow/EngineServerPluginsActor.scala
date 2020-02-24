@@ -40,7 +40,8 @@ class PluginsActor(engineVariant: String) extends Actor {
       }
     case _ =>
       log.error(
-          "Unknown message sent to the Engine Server output sniffer plugin host.")
+        "Unknown message sent to the Engine Server output sniffer plugin host."
+      )
   }
 }
 

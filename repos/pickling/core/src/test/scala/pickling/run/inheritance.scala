@@ -22,38 +22,41 @@ class InheritanceTest extends FunSuite {
 
     val pickleF = (f: Firefighter).pickle
     assert(
-        pickleF.value === """
+      pickleF.value === """
       |{
       |  "$type": "scala.pickling.inheritance.Firefighter",
       |  "name": "Josephine",
       |  "age": 48,
       |  "salary": 40000
       |}
-    """.trim.stripMargin)
+    """.trim.stripMargin
+    )
     assert(pickleF.unpickle[Firefighter] === f)
 
     val pickleP = (f: Person).pickle
     assert(
-        pickleP.value === """
+      pickleP.value === """
       |{
       |  "$type": "scala.pickling.inheritance.Firefighter",
       |  "name": "Josephine",
       |  "age": 48,
       |  "salary": 40000
       |}
-    """.trim.stripMargin)
+    """.trim.stripMargin
+    )
     assert(pickleP.unpickle[Person] === f)
 
     val pickleC = (f: Creature).pickle
     assert(
-        pickleC.value === """
+      pickleC.value === """
       |{
       |  "$type": "scala.pickling.inheritance.Firefighter",
       |  "name": "Josephine",
       |  "age": 48,
       |  "salary": 40000
       |}
-    """.trim.stripMargin)
+    """.trim.stripMargin
+    )
     assert(pickleC.unpickle[Creature] === f)
   }
 }

@@ -11,15 +11,13 @@ import org.jetbrains.plugins.scala.lang.psi.api.expr.ScExpression
 class SimplifiableFoldOrReduceInspection
     extends OperationOnCollectionInspection {
   val foldSum = new FoldSimplificationType(this, "fold.sum", "0", "+", "sum")
-  val foldProduct = new FoldSimplificationType(
-      this, "fold.product", "1", "*", "product")
+  val foldProduct =
+    new FoldSimplificationType(this, "fold.product", "1", "*", "product")
   val reduceSum = new ReduceSimplificationType(this, "reduce.sum", "+", "sum")
-  val reduceProduct = new ReduceSimplificationType(
-      this, "reduce.product", "*", "product")
-  val reduceMin = new ReduceSimplificationType(
-      this, "reduce.min", "min", "min")
-  val reduceMax = new ReduceSimplificationType(
-      this, "reduce.max", "max", "max")
+  val reduceProduct =
+    new ReduceSimplificationType(this, "reduce.product", "*", "product")
+  val reduceMin = new ReduceSimplificationType(this, "reduce.min", "min", "min")
+  val reduceMax = new ReduceSimplificationType(this, "reduce.max", "max", "max")
 
   override def possibleSimplificationTypes: Array[SimplificationType] =
     Array(foldSum, foldProduct, reduceSum, reduceProduct, reduceMax, reduceMin)
@@ -27,12 +25,13 @@ class SimplifiableFoldOrReduceInspection
 
 object SimplifiableFoldOrReduceInspection {}
 
-class FoldSimplificationType(inspection: OperationOnCollectionInspection,
-                             keyPrefix: String,
-                             startElem: String,
-                             opName: String,
-                             methodName: String)
-    extends SimplificationType() {
+class FoldSimplificationType(
+    inspection: OperationOnCollectionInspection,
+    keyPrefix: String,
+    startElem: String,
+    opName: String,
+    methodName: String
+) extends SimplificationType() {
 
   override def hint = InspectionBundle.message(keyPrefix + ".hint")
   override def description = InspectionBundle.message(keyPrefix + ".short")
@@ -50,11 +49,12 @@ class FoldSimplificationType(inspection: OperationOnCollectionInspection,
   }
 }
 
-class ReduceSimplificationType(inspection: OperationOnCollectionInspection,
-                               keyPrefix: String,
-                               opName: String,
-                               methodName: String)
-    extends SimplificationType() {
+class ReduceSimplificationType(
+    inspection: OperationOnCollectionInspection,
+    keyPrefix: String,
+    opName: String,
+    methodName: String
+) extends SimplificationType() {
 
   override def hint = InspectionBundle.message(keyPrefix + ".hint")
   override def description = InspectionBundle.message(keyPrefix + ".short")

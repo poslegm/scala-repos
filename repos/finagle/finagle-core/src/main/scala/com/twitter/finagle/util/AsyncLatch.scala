@@ -29,9 +29,7 @@ class AsyncLatch(initialCount: Int = 0) {
   def await(f: => Unit): Unit = synchronized {
     if (count == 0) f
     else
-      waiters += { () =>
-        f
-      }
+      waiters += { () => f }
   }
 
   /**
@@ -63,7 +61,7 @@ class AsyncLatch(initialCount: Int = 0) {
 
     pendingTasks match {
       case Left(tasks) =>
-        tasks foreach { _ () }; 0
+        tasks foreach { _() }; 0
       case Right(count) =>
         count
     }

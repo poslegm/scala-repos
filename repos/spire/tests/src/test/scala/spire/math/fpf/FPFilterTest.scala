@@ -23,8 +23,7 @@ class FpFilterTest extends FunSuite with Checkers {
   // operations are always performed with Doubles only and never fall back to
   // the exact case, since it'll fail with an Evaluated excetion.
   sealed trait Bad
-  implicit object BadField
-      extends Field[Bad] with IsReal[Bad] with NRoot[Bad] {
+  implicit object BadField extends Field[Bad] with IsReal[Bad] with NRoot[Bad] {
     def zero: Bad = evaluated
     def one: Bad = evaluated
     def negate(a: Bad): Bad = evaluated
@@ -49,8 +48,8 @@ class FpFilterTest extends FunSuite with Checkers {
   }
 
   test("FpFilter doesn't evaluated for easy problems") {
-    val x = FpFilter.exact[Bad](1D)
-    val y = FpFilter.exact[Bad](1.2D)
+    val x = FpFilter.exact[Bad](1d)
+    val y = FpFilter.exact[Bad](1.2d)
     assert((x + y).signum == 1)
     assert((x - y).signum == -1)
     assert((x * y).signum == 1)
@@ -158,8 +157,8 @@ class FpFilterTest extends FunSuite with Checkers {
     Sign(signExact(s)) == Sign(signFpFilter(s))
   }))
 
-  test("Orientation test for degenerate case")(
-      check(forAll { (s: Degenerate[Simplex]) =>
-    Sign(signExact(s.value)) == Sign(signFpFilter(s.value))
+  test("Orientation test for degenerate case")(check(forAll {
+    (s: Degenerate[Simplex]) =>
+      Sign(signExact(s.value)) == Sign(signFpFilter(s.value))
   }))
 }

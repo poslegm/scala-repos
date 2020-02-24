@@ -42,7 +42,9 @@ import scalafx.testutil.{RunOnApplicationThread, SimpleSFXDelegateSpec}
 @RunWith(classOf[JUnitRunner])
 class ValueAxisSpec[T <: Number]
     extends SimpleSFXDelegateSpec[jfxsc.ValueAxis[T], ValueAxis[T]](
-        classOf[jfxsc.ValueAxis[T]], classOf[ValueAxis[T]])
+      classOf[jfxsc.ValueAxis[T]],
+      classOf[ValueAxis[T]]
+    )
     with RunOnApplicationThread {
 
   override def getScalaClassInstance =

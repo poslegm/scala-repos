@@ -6,11 +6,13 @@ import com.roundeights.hasher.{Hasher, Algo}
 import play.api.libs.ws.{WS, WSAuthScheme}
 import play.api.Play.current
 
-final class PasswordReset(apiUrl: String,
-                          apiKey: String,
-                          sender: String,
-                          baseUrl: String,
-                          secret: String) {
+final class PasswordReset(
+    apiUrl: String,
+    apiKey: String,
+    sender: String,
+    baseUrl: String,
+    secret: String
+) {
 
   def send(user: User, email: String): Funit = tokener make user flatMap {
     token =>
@@ -18,10 +20,12 @@ final class PasswordReset(apiUrl: String,
       val url = s"$baseUrl/password/reset/confirm/$token"
       WS.url(s"$apiUrl/messages")
         .withAuth("api", apiKey, WSAuthScheme.BASIC)
-        .post(Map("from" -> Seq(sender),
-                  "to" -> Seq(email),
-                  "subject" -> Seq("Reset your lichess.org password"),
-                  "text" -> Seq(s"""
+        .post(
+          Map(
+            "from" -> Seq(sender),
+            "to" -> Seq(email),
+            "subject" -> Seq("Reset your lichess.org password"),
+            "text" -> Seq(s"""
 We received a request to reset the password for your account, ${user.username}.
 
 If you made this request, click the link below. If you didn't make this request, you can ignore this email.
@@ -30,7 +34,9 @@ $url
 
 
 Please do not reply to this message; it was sent from an unmonitored email address. This message is a service email related to your use of lichess.org.
-""")))
+""")
+          )
+        )
         .void
   }
 
@@ -42,9 +48,7 @@ Please do not reply to this message; it was sent from an unmonitored email addre
 
     private def makeHash(msg: String) = Algo.hmac(secret).sha1(msg).hex take 14
     private def getPasswd(userId: User.ID) =
-      UserRepo getPasswordHash userId map { p =>
-        makeHash(~p) take 6
-      }
+      UserRepo getPasswordHash userId map { p => makeHash(~p) take 6 }
     private def makePayload(userId: String, passwd: String) =
       s"$userId$separator$passwd"
 

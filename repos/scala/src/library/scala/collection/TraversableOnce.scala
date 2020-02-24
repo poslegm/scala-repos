@@ -276,7 +276,7 @@ trait TraversableOnce[+A] extends Any with GenTraversableOnce[A] { self =>
   def copyToArray[B >: A](xs: Array[B]): Unit =
     copyToArray(xs, 0, xs.length)
 
-  def toArray[B >: A : ClassTag]: Array[B] = {
+  def toArray[B >: A: ClassTag]: Array[B] = {
     if (isTraversableAgain) {
       val result = new Array[B](size)
       copyToArray(result, 0)
@@ -303,7 +303,8 @@ trait TraversableOnce[+A] extends Any with GenTraversableOnce[A] { self =>
   def toVector: Vector[A] = to[Vector]
 
   def to[Col[_]](
-      implicit cbf: CanBuildFrom[Nothing, A, Col[A @uV]]): Col[A @uV] = {
+      implicit cbf: CanBuildFrom[Nothing, A, Col[A @uV]]
+  ): Col[A @uV] = {
     val b = cbf()
     b ++= seq
     b.result()
@@ -347,10 +348,12 @@ trait TraversableOnce[+A] extends Any with GenTraversableOnce[A] { self =>
     *  @param end   the ending string.
     *  @return      the string builder `b` to which elements were appended.
     */
-  def addString(b: StringBuilder,
-                start: String,
-                sep: String,
-                end: String): StringBuilder = {
+  def addString(
+      b: StringBuilder,
+      start: String,
+      sep: String,
+      end: String
+  ): StringBuilder = {
     var first = true
 
     b append start
@@ -418,14 +421,15 @@ trait TraversableOnce[+A] extends Any with GenTraversableOnce[A] { self =>
 object TraversableOnce {
   implicit def alternateImplicit[A](trav: TraversableOnce[A]) =
     new ForceImplicitAmbiguity
-  implicit def flattenTraversableOnce[A, CC[_]](travs: TraversableOnce[CC[A]])(
-      implicit ev: CC[A] => TraversableOnce[A]) =
+  implicit def flattenTraversableOnce[A, CC[_]](
+      travs: TraversableOnce[CC[A]]
+  )(implicit ev: CC[A] => TraversableOnce[A]) =
     new FlattenOps[A](travs map ev)
 
   /* Functionality reused in Iterator.CanBuildFrom */
-  private[collection] abstract class BufferedCanBuildFrom[
-      A, CC[X] <: TraversableOnce[X]]
-      extends generic.CanBuildFrom[CC[_], A, CC[A]] {
+  private[collection] abstract class BufferedCanBuildFrom[A, CC[X] <: TraversableOnce[
+    X
+  ]] extends generic.CanBuildFrom[CC[_], A, CC[A]] {
     def bufferToColl[B](buff: ArrayBuffer[B]): CC[B]
     def traversableToColl[B](t: GenTraversable[B]): CC[B]
 

@@ -14,10 +14,13 @@ class RecipeByteStrings extends RecipeSpec {
 
     "have a working chunker" in {
       val rawBytes = Source(
-          List(ByteString(1, 2),
-               ByteString(3),
-               ByteString(4, 5, 6),
-               ByteString(7, 8, 9)))
+        List(
+          ByteString(1, 2),
+          ByteString(3),
+          ByteString(4, 5, 6),
+          ByteString(7, 8, 9)
+        )
+      )
       val ChunkLimit = 2
 
       //#bytestring-chunker
@@ -30,7 +33,8 @@ class RecipeByteStrings extends RecipeSpec {
         override val shape = FlowShape.of(in, out)
 
         override def createLogic(
-            inheritedAttributes: Attributes): GraphStageLogic =
+            inheritedAttributes: Attributes
+        ): GraphStageLogic =
           new GraphStageLogic(shape) {
             private var buffer = ByteString.empty
 
@@ -40,19 +44,22 @@ class RecipeByteStrings extends RecipeSpec {
                 else pull(in)
               }
             })
-            setHandler(in, new InHandler {
-              override def onPush(): Unit = {
-                val elem = grab(in)
-                buffer ++= elem
-                emitChunk()
-              }
+            setHandler(
+              in,
+              new InHandler {
+                override def onPush(): Unit = {
+                  val elem = grab(in)
+                  buffer ++= elem
+                  emitChunk()
+                }
 
-              override def onUpstreamFinish(): Unit = {
-                if (buffer.isEmpty) completeStage()
-                // elements left in buffer, keep accepting downstream pulls
-                // and push from buffer until buffer is emitted
+                override def onUpstreamFinish(): Unit = {
+                  if (buffer.isEmpty) completeStage()
+                  // elements left in buffer, keep accepting downstream pulls
+                  // and push from buffer until buffer is emitted
+                }
               }
-            })
+            )
 
             private def emitChunk(): Unit = {
               if (buffer.isEmpty) {
@@ -76,7 +83,8 @@ class RecipeByteStrings extends RecipeSpec {
 
       chunks.forall(_.size <= 2) should be(true)
       chunks.fold(ByteString())(_ ++ _) should be(
-          ByteString(1, 2, 3, 4, 5, 6, 7, 8, 9))
+        ByteString(1, 2, 3, 4, 5, 6, 7, 8, 9)
+      )
     }
 
     "have a working bytes limiter" in {
@@ -91,24 +99,29 @@ class RecipeByteStrings extends RecipeSpec {
         override val shape = FlowShape.of(in, out)
 
         override def createLogic(
-            inheritedAttributes: Attributes): GraphStageLogic =
+            inheritedAttributes: Attributes
+        ): GraphStageLogic =
           new GraphStageLogic(shape) {
             private var count = 0
 
-            setHandlers(in, out, new InHandler with OutHandler {
+            setHandlers(
+              in,
+              out,
+              new InHandler with OutHandler {
 
-              override def onPull(): Unit = {
-                pull(in)
-              }
+                override def onPull(): Unit = {
+                  pull(in)
+                }
 
-              override def onPush(): Unit = {
-                val chunk = grab(in)
-                count += chunk.size
-                if (count > maximumBytes)
-                  failStage(new IllegalStateException("Too much bytes"))
-                else push(out, chunk)
+                override def onPush(): Unit = {
+                  val chunk = grab(in)
+                  count += chunk.size
+                  if (count > maximumBytes)
+                    failStage(new IllegalStateException("Too much bytes"))
+                  else push(out, chunk)
+                }
               }
-            })
+            )
           }
       }
 
@@ -116,34 +129,43 @@ class RecipeByteStrings extends RecipeSpec {
       //#bytes-limiter
 
       val bytes1 = Source(
-          List(ByteString(1, 2),
-               ByteString(3),
-               ByteString(4, 5, 6),
-               ByteString(7, 8, 9)))
+        List(
+          ByteString(1, 2),
+          ByteString(3),
+          ByteString(4, 5, 6),
+          ByteString(7, 8, 9)
+        )
+      )
       val bytes2 = Source(
-          List(ByteString(1, 2),
-               ByteString(3),
-               ByteString(4, 5, 6),
-               ByteString(7, 8, 9, 10)))
+        List(
+          ByteString(1, 2),
+          ByteString(3),
+          ByteString(4, 5, 6),
+          ByteString(7, 8, 9, 10)
+        )
+      )
 
       Await
         .result(bytes1.via(limiter).limit(10).runWith(Sink.seq), 3.seconds)
         .fold(ByteString())(_ ++ _) should be(
-          ByteString(1, 2, 3, 4, 5, 6, 7, 8, 9))
+        ByteString(1, 2, 3, 4, 5, 6, 7, 8, 9)
+      )
 
       an[IllegalStateException] must be thrownBy {
-        Await.result(bytes2.via(limiter).limit(10).runWith(Sink.seq),
-                     3.seconds)
+        Await.result(bytes2.via(limiter).limit(10).runWith(Sink.seq), 3.seconds)
       }
     }
 
     "demonstrate compacting" in {
 
       val data = Source(
-          List(ByteString(1, 2),
-               ByteString(3),
-               ByteString(4, 5, 6),
-               ByteString(7, 8, 9)))
+        List(
+          ByteString(1, 2),
+          ByteString(3),
+          ByteString(4, 5, 6),
+          ByteString(7, 8, 9)
+        )
+      )
 
       //#compacting-bytestrings
       val compacted: Source[ByteString, NotUsed] = data.map(_.compact)

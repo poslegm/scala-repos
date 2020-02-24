@@ -42,9 +42,11 @@ private[twitter] object Init {
       }
     } catch {
       case NonFatal(exc) =>
-        log.log(Level.WARNING,
-                s"Exception while loading Finagle's build.properties: $path",
-                exc)
+        log.log(
+          Level.WARNING,
+          s"Exception while loading Finagle's build.properties: $path",
+          exc
+        )
         None
     }
   }
@@ -52,14 +54,12 @@ private[twitter] object Init {
   // package protected for testing
   private[finagle] def loadBuildProperties: Option[Properties] = {
     val candidates = Seq(
-        "finagle-core",
-        "finagle-core_2.10",
-        "finagle-core_2.11",
-        "finagle-core_2.12"
+      "finagle-core",
+      "finagle-core_2.10",
+      "finagle-core_2.11",
+      "finagle-core_2.12"
     )
-    candidates.flatMap { c =>
-      tryProps(s"/com/twitter/$c/build.properties")
-    }.headOption
+    candidates.flatMap { c => tryProps(s"/com/twitter/$c/build.properties") }.headOption
   }
 
   private[this] val once = Once {
@@ -71,11 +71,12 @@ private[twitter] object Init {
     _finagleBuildRevision.set(p.getProperty("build_revision", unknownVersion))
 
     log.info(
-        "Finagle version %s (rev=%s) built at %s".format(
-            finagleVersion,
-            finagleBuildRevision,
-            p.getProperty("build_name", "?")
-        ))
+      "Finagle version %s (rev=%s) built at %s".format(
+        finagleVersion,
+        finagleBuildRevision,
+        p.getProperty("build_name", "?")
+      )
+    )
   }
 
   /**

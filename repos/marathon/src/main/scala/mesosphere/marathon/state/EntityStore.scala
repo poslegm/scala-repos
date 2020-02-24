@@ -17,7 +17,8 @@ trait EntityStore[T] {
   def store(key: String, value: T): Future[T] = modify(key)(_ => value)
 
   def modify(key: String, onSuccess: (T) => Unit = _ => ())(
-      update: Update): Future[T]
+      update: Update
+  ): Future[T]
 
   /**
     * Delete entity with given id.

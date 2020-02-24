@@ -23,9 +23,7 @@ class PersistentService[Req, Rep](factory: ServiceFactory[Req, Rep])
 
   def apply(req: Req) =
     currentService flatMap { service =>
-      service(req) onFailure { _ =>
-        currentService = factory()
-      }
+      service(req) onFailure { _ => currentService = factory() }
     }
 }
 
@@ -57,13 +55,15 @@ object MemcacheStress extends App {
 
     if (config.nworkers() > 0)
       builder = builder.channelFactory(
-          new NioClientSocketChannelFactory(
-              Executors.newCachedThreadPool(
-                  new NamedPoolThreadFactory("memcacheboss")),
-              Executors.newCachedThreadPool(
-                  new NamedPoolThreadFactory("memcacheIO")),
-              config.nworkers()
-          )
+        new NioClientSocketChannelFactory(
+          Executors.newCachedThreadPool(
+            new NamedPoolThreadFactory("memcacheboss")
+          ),
+          Executors.newCachedThreadPool(
+            new NamedPoolThreadFactory("memcacheIO")
+          ),
+          config.nworkers()
+        )
       )
 
     if (config.stats()) builder = builder.reportTo(new OstrichStatsReceiver)

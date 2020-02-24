@@ -49,7 +49,9 @@ trait ContinuousDistr[T] extends Density[T] with Rand[T] {
   def unnormalizedLogPdf(x: T): Double
   def logNormalizer: Double
   lazy val normalizer: Double =
-    math.exp(-logNormalizer) //Needs to be lazy to ensure that it is computed after logNormalizer. Suboptimal I guess.
+    math.exp(
+      -logNormalizer
+    ) //Needs to be lazy to ensure that it is computed after logNormalizer. Suboptimal I guess.
 
   def apply(x: T) = unnormalizedPdf(x)
   override def logApply(x: T) = unnormalizedLogPdf(x)
@@ -65,13 +67,15 @@ trait HasInverseCdf {
 }
 
 trait PdfIsUFunc[U <: UFunc, T, P <: PdfIsUFunc[U, T, P]] { self: P =>
-  final def pdf[@specialized(Int, Double, Float) V,
-                @specialized(Int, Double, Float) VR](v: V)(
-      implicit impl: UFunc.UImpl2[U, P, V, VR]): VR = impl(self, v)
+  final def pdf[
+      @specialized(Int, Double, Float) V,
+      @specialized(Int, Double, Float) VR
+  ](v: V)(implicit impl: UFunc.UImpl2[U, P, V, VR]): VR = impl(self, v)
 }
 
 trait ContinuousDistributionUFuncProvider[T, D <: ContinuousDistr[T]]
-    extends UFunc with MappingUFunc { self: UFunc =>
+    extends UFunc
+    with MappingUFunc { self: UFunc =>
   implicit object basicImpl
       extends Impl2[ContinuousDistrUFuncWrapper, T, Double] {
     def apply(w: ContinuousDistrUFuncWrapper, v: T) = w.dist.pdf(v)

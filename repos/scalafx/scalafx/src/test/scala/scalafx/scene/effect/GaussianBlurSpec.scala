@@ -42,7 +42,9 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class GaussianBlurSpec
     extends SimpleSFXDelegateSpec[jfxse.GaussianBlur, GaussianBlur](
-        classOf[jfxse.GaussianBlur], classOf[GaussianBlur])
+      classOf[jfxse.GaussianBlur],
+      classOf[GaussianBlur]
+    )
     with InputDelegateSpec[GaussianBlur] {
 
   val inputDelegate = getScalaClassInstance

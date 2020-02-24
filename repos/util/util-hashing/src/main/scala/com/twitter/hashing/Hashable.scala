@@ -16,16 +16,13 @@ trait Hashable[-T, +R] extends (T => R) { self =>
 trait LowPriorityHashable {
   // XOR the high 32 bits into the low to get a int:
   implicit def toInt[T](implicit h: Hashable[T, Long]): Hashable[T, Int] =
-    h.andThen { long =>
-      (long >> 32).toInt ^ long.toInt
-    }
+    h.andThen { long => (long >> 32).toInt ^ long.toInt }
 
   // Get the UTF-8 bytes of a string to hash it
   implicit def fromString[T](
-      implicit h: Hashable[Array[Byte], T]): Hashable[String, T] =
-    h.compose { s: String =>
-      s.getBytes
-    }
+      implicit h: Hashable[Array[Byte], T]
+  ): Hashable[String, T] =
+    h.compose { s: String => s.getBytes }
 }
 
 object Hashable extends LowPriorityHashable {
@@ -56,7 +53,7 @@ object Hashable extends LowPriorityHashable {
       val PRIME: Int = 16777619
       var i = 0
       val len = key.length
-      var rv: Long = 0x811c9dc5L
+      var rv: Long = 0x811C9DC5L
       while (i < len) {
         rv = (rv * PRIME) ^ (key(i) & 0xff)
         i += 1
@@ -76,7 +73,7 @@ object Hashable extends LowPriorityHashable {
       val PRIME: Int = 16777619
       var i = 0
       val len = key.length
-      var rv: Long = 0x811c9dc5L
+      var rv: Long = 0x811C9DC5L
       while (i < len) {
         rv = (rv ^ (key(i) & 0xff)) * PRIME
         i += 1
@@ -96,7 +93,7 @@ object Hashable extends LowPriorityHashable {
       val PRIME: Long = 1099511628211L
       var i = 0
       val len = key.length
-      var rv: Long = 0xcbf29ce484222325L
+      var rv: Long = 0xCBF29CE484222325L
       while (i < len) {
         rv = (rv * PRIME) ^ (key(i) & 0xff)
         i += 1
@@ -116,7 +113,7 @@ object Hashable extends LowPriorityHashable {
       val PRIME: Long = 1099511628211L
       var i = 0
       val len = key.length
-      var rv: Long = 0xcbf29ce484222325L
+      var rv: Long = 0xCBF29CE484222325L
       while (i < len) {
         rv = (rv ^ (key(i) & 0xff)) * PRIME
         i += 1
@@ -130,13 +127,14 @@ object Hashable extends LowPriorityHashable {
   // the idea here of cloning the MessageDigest is from Google's Guava.
   // it shaves off a significant amount of clock time and object allocations
   private[this] val MessageDigestMd5 = MessageDigest.getInstance("MD5")
-  private[this] val Md5SupportsClone: Boolean = try {
-    MessageDigestMd5.clone()
-    true
-  } catch {
-    case _: CloneNotSupportedException =>
-      false
-  }
+  private[this] val Md5SupportsClone: Boolean =
+    try {
+      MessageDigestMd5.clone()
+      true
+    } catch {
+      case _: CloneNotSupportedException =>
+        false
+    }
   private[this] def newMd5MessageDigest(): MessageDigest = {
     if (Md5SupportsClone) MessageDigestMd5.clone().asInstanceOf[MessageDigest]
     else MessageDigest.getInstance("MD5")
@@ -153,7 +151,7 @@ object Hashable extends LowPriorityHashable {
 
       val d = hasher.digest()
       (d(0) & 0xff) | ((d(1) & 0xff) << 8) | ((d(2) & 0xff) << 16) |
-      ((d(3) & 0xff) << 24)
+        ((d(3) & 0xff) << 24)
     }
 
     override def toString() = "Ketama"
@@ -172,7 +170,7 @@ object Hashable extends LowPriorityHashable {
         var j = 0
         while (j < 8) {
           if ((rv & 1) != 0) {
-            rv = (rv >> 1) ^ 0xedb88320L
+            rv = (rv >> 1) ^ 0xEDB88320L
           } else {
             rv >>= 1
           }

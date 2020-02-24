@@ -6,8 +6,9 @@ trait PresentationCompilerTestDef {
 
   private[tests] def runTest(): Unit
 
-  protected def withResponseDelimiter(block: => Unit)(
-      implicit reporter: Reporter) {
+  protected def withResponseDelimiter(
+      block: => Unit
+  )(implicit reporter: Reporter) {
     def printDelimiter() = reporter.println("=" * 80)
     printDelimiter()
     block

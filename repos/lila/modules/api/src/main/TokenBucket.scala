@@ -80,8 +80,9 @@ object TokenBucket {
 
   final class Consumer(actor: ActorRef) {
 
-    def apply(key: Any)(
-        implicit timeout: Timeout = defaultTimeout): Future[Int] =
+    def apply(
+        key: Any
+    )(implicit timeout: Timeout = defaultTimeout): Future[Int] =
       consume(actor, key)
   }
 
@@ -95,9 +96,13 @@ object TokenBucket {
     * @return actorRef, needed to call consume later.
     */
   def create(
-      system: ActorSystem, size: Int, rate: Float, clock: Clock = new Clock {
-    override def now: Long = System.currentTimeMillis
-  })(implicit context: ExecutionContext): Consumer = {
+      system: ActorSystem,
+      size: Int,
+      rate: Float,
+      clock: Clock = new Clock {
+        override def now: Long = System.currentTimeMillis
+      }
+  )(implicit context: ExecutionContext): Consumer = {
     require(size > 0)
     require(size <= 1000)
     require(rate >= 0.000001f)
@@ -113,6 +118,7 @@ object TokenBucket {
     * @return (remainingTokens - 1), if negative no tokens are consumed.
     */
   def consume(actor: ActorRef, key: Any)(
-      implicit timeout: Timeout = defaultTimeout): Future[Int] =
+      implicit timeout: Timeout = defaultTimeout
+  ): Future[Int] =
     (actor ? TokenRequest(key)).mapTo[Int]
 }

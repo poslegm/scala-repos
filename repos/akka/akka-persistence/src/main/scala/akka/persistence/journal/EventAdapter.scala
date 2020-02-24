@@ -122,8 +122,8 @@ final case object IdentityEventAdapter extends EventAdapter {
 
 /** INTERNAL API */
 private[akka] case class NoopWriteEventAdapter(
-    private val readEventAdapter: ReadEventAdapter)
-    extends EventAdapter {
+    private val readEventAdapter: ReadEventAdapter
+) extends EventAdapter {
   // pass-through read
   override def fromJournal(event: Any, manifest: String): EventSeq =
     readEventAdapter.fromJournal(event, manifest)
@@ -135,8 +135,8 @@ private[akka] case class NoopWriteEventAdapter(
 
 /** INTERNAL API */
 private[akka] case class NoopReadEventAdapter(
-    private val writeEventAdapter: WriteEventAdapter)
-    extends EventAdapter {
+    private val writeEventAdapter: WriteEventAdapter
+) extends EventAdapter {
   // pass-through write
   override def manifest(event: Any): String = writeEventAdapter.manifest(event)
   override def toJournal(event: Any): Any = writeEventAdapter.toJournal(event)

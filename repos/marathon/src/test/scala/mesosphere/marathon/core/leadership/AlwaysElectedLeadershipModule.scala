@@ -1,7 +1,11 @@
 package mesosphere.marathon.core.leadership
 
 import akka.actor.{ActorRef, ActorSystem, Props}
-import mesosphere.marathon.core.base.{ActorsModule, ShutdownHooks, TestShutdownHooks}
+import mesosphere.marathon.core.base.{
+  ActorsModule,
+  ShutdownHooks,
+  TestShutdownHooks
+}
 import mesosphere.marathon.test.Mockito
 
 /**
@@ -28,8 +32,8 @@ object AlwaysElectedLeadershipModule extends Mockito {
   }
 
   private[this] def forActorsModule(
-      actorsModule: ActorsModule = new ActorsModule(ShutdownHooks()))
-    : LeadershipModule = {
+      actorsModule: ActorsModule = new ActorsModule(ShutdownHooks())
+  ): LeadershipModule = {
     new AlwaysElectedLeadershipModule(actorsModule)
   }
 }

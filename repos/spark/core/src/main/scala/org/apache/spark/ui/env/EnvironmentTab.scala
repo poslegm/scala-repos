@@ -39,7 +39,8 @@ class EnvironmentListener extends SparkListener {
   var classpathEntries = Seq[(String, String)]()
 
   override def onEnvironmentUpdate(
-      environmentUpdate: SparkListenerEnvironmentUpdate) {
+      environmentUpdate: SparkListenerEnvironmentUpdate
+  ) {
     synchronized {
       val environmentDetails = environmentUpdate.environmentDetails
       jvmInformation = environmentDetails("JVM Information")

@@ -3,7 +3,11 @@
   */
 package akka.stream.testkit
 
-import akka.actor.{ActorSystem, DeadLetterSuppression, NoSerializationVerificationNeeded}
+import akka.actor.{
+  ActorSystem,
+  DeadLetterSuppression,
+  NoSerializationVerificationNeeded
+}
 import akka.stream._
 import akka.stream.impl.StreamLayout.Module
 import akka.stream.impl._
@@ -24,7 +28,8 @@ object TestPublisher {
   import StreamTestKit._
 
   trait PublisherEvent
-      extends DeadLetterSuppression with NoSerializationVerificationNeeded
+      extends DeadLetterSuppression
+      with NoSerializationVerificationNeeded
   final case class Subscribe(subscription: Subscription) extends PublisherEvent
   final case class CancelSubscription(subscription: Subscription)
       extends PublisherEvent
@@ -61,15 +66,17 @@ object TestPublisher {
   /**
     * Probe that implements [[org.reactivestreams.Publisher]] interface.
     */
-  def manualProbe[T](autoOnSubscribe: Boolean = true)(
-      implicit system: ActorSystem): ManualProbe[T] =
+  def manualProbe[T](
+      autoOnSubscribe: Boolean = true
+  )(implicit system: ActorSystem): ManualProbe[T] =
     new ManualProbe(autoOnSubscribe)
 
   /**
     * Probe that implements [[org.reactivestreams.Publisher]] interface and tracks demand.
     */
-  def probe[T](initialPendingRequests: Long = 0)(
-      implicit system: ActorSystem): Probe[T] =
+  def probe[T](
+      initialPendingRequests: Long = 0
+  )(implicit system: ActorSystem): Probe[T] =
     new Probe(initialPendingRequests)
 
   /**
@@ -77,9 +84,9 @@ object TestPublisher {
     * This probe does not track demand. Therefore you need to expect demand before sending
     * elements downstream.
     */
-  class ManualProbe[I] private[TestPublisher](autoOnSubscribe: Boolean = true)(
-      implicit system: ActorSystem)
-      extends Publisher[I] {
+  class ManualProbe[I] private[TestPublisher] (autoOnSubscribe: Boolean = true)(
+      implicit system: ActorSystem
+  ) extends Publisher[I] {
 
     type Self <: ManualProbe[I]
 
@@ -133,12 +140,14 @@ object TestPublisher {
     /**
       * Receive messages for a given duration or until one does not match a given partial function.
       */
-    def receiveWhile[T](max: Duration = Duration.Undefined,
-                        idle: Duration = Duration.Inf,
-                        messages: Int = Int.MaxValue)(
-        f: PartialFunction[PublisherEvent, T]): immutable.Seq[T] =
+    def receiveWhile[T](
+        max: Duration = Duration.Undefined,
+        idle: Duration = Duration.Inf,
+        messages: Int = Int.MaxValue
+    )(f: PartialFunction[PublisherEvent, T]): immutable.Seq[T] =
       probe.receiveWhile(max, idle, messages)(
-          f.asInstanceOf[PartialFunction[AnyRef, T]])
+        f.asInstanceOf[PartialFunction[AnyRef, T]]
+      )
 
     def expectEventPF[T](f: PartialFunction[PublisherEvent, T]): T =
       probe.expectMsgPF[T]()(f.asInstanceOf[PartialFunction[Any, T]])
@@ -149,9 +158,9 @@ object TestPublisher {
   /**
     * Single subscription and demand tracking for [[TestPublisher.ManualProbe]].
     */
-  class Probe[T] private[TestPublisher](initialPendingRequests: Long)(
-      implicit system: ActorSystem)
-      extends ManualProbe[T] {
+  class Probe[T] private[TestPublisher] (initialPendingRequests: Long)(
+      implicit system: ActorSystem
+  ) extends ManualProbe[T] {
 
     type Self = Probe[T]
 
@@ -200,7 +209,8 @@ object TestPublisher {
 object TestSubscriber {
 
   trait SubscriberEvent
-      extends DeadLetterSuppression with NoSerializationVerificationNeeded
+      extends DeadLetterSuppression
+      with NoSerializationVerificationNeeded
   final case class OnSubscribe(subscription: Subscription)
       extends SubscriberEvent
   final case class OnNext[I](element: I) extends SubscriberEvent
@@ -229,7 +239,7 @@ object TestSubscriber {
     *
     * All timeouts are dilated automatically, for more details about time dilation refer to [[akka.testkit.TestKit]].
     */
-  class ManualProbe[I] private[TestSubscriber]()(implicit system: ActorSystem)
+  class ManualProbe[I] private[TestSubscriber] ()(implicit system: ActorSystem)
       extends Subscriber[I] {
     import akka.testkit._
 
@@ -276,11 +286,13 @@ object TestSubscriber {
       */
     def expectNext(): I = {
       val t = probe.remainingOr(
-          probe.testKitSettings.SingleExpectDefaultTimeout.dilated)
+        probe.testKitSettings.SingleExpectDefaultTimeout.dilated
+      )
       probe.receiveOne(t) match {
         case null ⇒
           throw new AssertionError(
-              s"Expected OnNext(_), yet no element signaled during $t")
+            s"Expected OnNext(_), yet no element signaled during $t"
+          )
         case OnNext(elem) ⇒ elem.asInstanceOf[I]
         case other ⇒
           throw new AssertionError("expected OnNext, found " + other)
@@ -360,7 +372,9 @@ object TestSubscriber {
         case list ⇒
           val next = expectNext()
           assert(
-              all.contains(next), s"expected one of $all, but received $next")
+            all.contains(next),
+            s"expected one of $all, but received $next"
+          )
           expectOneOf(all.diff(Seq(next)))
       }
 
@@ -439,7 +453,9 @@ object TestSubscriber {
       * See also [[#expectSubscriptionAndError(cause: Throwable)]].
       */
     def expectSubscriptionAndError(
-        cause: Throwable, signalDemand: Boolean): Self = {
+        cause: Throwable,
+        signalDemand: Boolean
+    ): Self = {
       val sub = expectSubscription()
       if (signalDemand) sub.request(1)
       expectError(cause)
@@ -493,9 +509,13 @@ object TestSubscriber {
       * Fluent DSL
       * Expect given next element or error signal.
       */
-    def expectNextOrError(element: I, cause: Throwable): Either[Throwable, I] = {
+    def expectNextOrError(
+        element: I,
+        cause: Throwable
+    ): Either[Throwable, I] = {
       probe.fishForMessage(
-          hint = s"OnNext($element) or ${cause.getClass.getName}") {
+        hint = s"OnNext($element) or ${cause.getClass.getName}"
+      ) {
         case OnNext(`element`) ⇒ true
         case OnError(`cause`) ⇒ true
       } match {
@@ -564,18 +584,22 @@ object TestSubscriber {
     /**
       * Receive messages for a given duration or until one does not match a given partial function.
       */
-    def receiveWhile[T](max: Duration = Duration.Undefined,
-                        idle: Duration = Duration.Inf,
-                        messages: Int = Int.MaxValue)(
-        f: PartialFunction[SubscriberEvent, T]): immutable.Seq[T] =
+    def receiveWhile[T](
+        max: Duration = Duration.Undefined,
+        idle: Duration = Duration.Inf,
+        messages: Int = Int.MaxValue
+    )(f: PartialFunction[SubscriberEvent, T]): immutable.Seq[T] =
       probe.receiveWhile(max, idle, messages)(
-          f.asInstanceOf[PartialFunction[AnyRef, T]])
+        f.asInstanceOf[PartialFunction[AnyRef, T]]
+      )
 
     /**
       * Drains a given number of messages
       */
     def receiveWithin(
-        max: FiniteDuration, messages: Int = Int.MaxValue): immutable.Seq[I] =
+        max: FiniteDuration,
+        messages: Int = Int.MaxValue
+    ): immutable.Seq[I] =
       probe
         .receiveWhile(max, max, messages) {
           case OnNext(i) ⇒ Some(i.asInstanceOf[I])
@@ -596,8 +620,9 @@ object TestSubscriber {
         self.expectEvent(deadline.timeLeft) match {
           case OnError(ex) ⇒
             throw new AssertionError(
-                s"toStrict received OnError while draining stream! Accumulated elements: ${b.result()}",
-                ex)
+              s"toStrict received OnError while draining stream! Accumulated elements: ${b.result()}",
+              ex
+            )
           case OnComplete ⇒
             b.result()
           case OnNext(i: I @unchecked) ⇒
@@ -625,7 +650,7 @@ object TestSubscriber {
   /**
     * Single subscription tracking for [[ManualProbe]].
     */
-  class Probe[T] private[TestSubscriber]()(implicit system: ActorSystem)
+  class Probe[T] private[TestSubscriber] ()(implicit system: ActorSystem)
       extends ManualProbe[T] {
 
     override type Self = Probe[T]
@@ -674,15 +699,17 @@ private[testkit] object StreamTestKit {
   }
 
   final case class FailedSubscription[T](
-      subscriber: Subscriber[T], cause: Throwable)
-      extends Subscription {
+      subscriber: Subscriber[T],
+      cause: Throwable
+  ) extends Subscription {
     override def request(elements: Long): Unit = subscriber.onError(cause)
     override def cancel(): Unit = ()
   }
 
   final case class PublisherProbeSubscription[I](
-      subscriber: Subscriber[_ >: I], publisherProbe: TestProbe)
-      extends Subscription {
+      subscriber: Subscriber[_ >: I],
+      publisherProbe: TestProbe
+  ) extends Subscription {
     def request(elements: Long): Unit =
       publisherProbe.ref ! RequestMore(this, elements)
     def cancel(): Unit = publisherProbe.ref ! CancelSubscription(this)
@@ -705,30 +732,31 @@ private[testkit] object StreamTestKit {
     def sendOnSubscribe(): Unit = subscriber.onSubscribe(this)
   }
 
-  final class ProbeSource[T](
-      val attributes: Attributes, shape: SourceShape[T])(
-      implicit system: ActorSystem)
-      extends SourceModule[T, TestPublisher.Probe[T]](shape) {
+  final class ProbeSource[T](val attributes: Attributes, shape: SourceShape[T])(
+      implicit system: ActorSystem
+  ) extends SourceModule[T, TestPublisher.Probe[T]](shape) {
     override def create(context: MaterializationContext) = {
       val probe = TestPublisher.probe[T]()
       (probe, probe)
     }
     override protected def newInstance(
-        shape: SourceShape[T]): SourceModule[T, TestPublisher.Probe[T]] =
+        shape: SourceShape[T]
+    ): SourceModule[T, TestPublisher.Probe[T]] =
       new ProbeSource[T](attributes, shape)
     override def withAttributes(attr: Attributes): Module =
       new ProbeSource[T](attr, amendShape(attr))
   }
 
   final class ProbeSink[T](val attributes: Attributes, shape: SinkShape[T])(
-      implicit system: ActorSystem)
-      extends SinkModule[T, TestSubscriber.Probe[T]](shape) {
+      implicit system: ActorSystem
+  ) extends SinkModule[T, TestSubscriber.Probe[T]](shape) {
     override def create(context: MaterializationContext) = {
       val probe = TestSubscriber.probe[T]()
       (probe, probe)
     }
     override protected def newInstance(
-        shape: SinkShape[T]): SinkModule[T, TestSubscriber.Probe[T]] =
+        shape: SinkShape[T]
+    ): SinkModule[T, TestSubscriber.Probe[T]] =
       new ProbeSink[T](attributes, shape)
     override def withAttributes(attr: Attributes): Module =
       new ProbeSink[T](attr, amendShape(attr))

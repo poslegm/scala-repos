@@ -20,7 +20,9 @@ class FilterBenchmark extends StdBenchAnnotations {
   def createSvc(): Unit = {
     val filter = new SimpleFilter[Mutable, Mutable] {
       def apply(
-          req: Mutable, next: Service[Mutable, Mutable]): Future[Mutable] = {
+          req: Mutable,
+          next: Service[Mutable, Mutable]
+      ): Future[Mutable] = {
         req.count += 1
         next(req)
       }

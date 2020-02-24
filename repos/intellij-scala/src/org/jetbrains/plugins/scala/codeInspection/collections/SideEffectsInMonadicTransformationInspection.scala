@@ -11,14 +11,16 @@ class SideEffectsInMonadicTransformationInspection
     extends OperationOnCollectionInspection {
 
   override def actionFor(
-      holder: ProblemsHolder): PartialFunction[PsiElement, Any] = {
+      holder: ProblemsHolder
+  ): PartialFunction[PsiElement, Any] = {
     case qual `.monadicMethod` (arg) =>
       exprsWithSideEffects(arg).foreach {
         case expr =>
           holder.registerProblem(
-              expr,
-              InspectionBundle.message("side.effects.in.monadic"),
-              highlightType)
+            expr,
+            InspectionBundle.message("side.effects.in.monadic"),
+            highlightType
+          )
       }
   }
 

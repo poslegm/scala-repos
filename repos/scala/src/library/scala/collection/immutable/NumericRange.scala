@@ -37,9 +37,14 @@ package immutable
   *  @define willNotTerminateInf
   */
 abstract class NumericRange[T](
-    val start: T, val end: T, val step: T, val isInclusive: Boolean)(
-    implicit num: Integral[T])
-    extends AbstractSeq[T] with IndexedSeq[T] with Serializable {
+    val start: T,
+    val end: T,
+    val step: T,
+    val isInclusive: Boolean
+)(implicit num: Integral[T])
+    extends AbstractSeq[T]
+    with IndexedSeq[T]
+    with Serializable {
 
   /** Note that NumericRange must be invariant so that constructs
     *  such as "1L to 10 by 5" do not infer the range type as AnyVal.
@@ -83,7 +88,7 @@ abstract class NumericRange[T](
   // whether it is a member of the sequence (i.e. when step > 1.)
   private def isWithinBoundaries(elem: T) =
     !isEmpty &&
-    ((step > zero && start <= elem && elem <= last) ||
+      ((step > zero && start <= elem && elem <= last) ||
         (step < zero && last <= elem && elem <= start))
   // Methods like apply throw exceptions on invalid n, but methods like take/drop
   // are forgiving: therefore the checks are with the methods.
@@ -147,8 +152,9 @@ abstract class NumericRange[T](
   //
   //   (0.1 to 0.3 by 0.1 contains 0.3) == true
   //
-  private[immutable] def mapRange[A](fm: T => A)(
-      implicit unum: Integral[A]): NumericRange[A] = {
+  private[immutable] def mapRange[A](
+      fm: T => A
+  )(implicit unum: Integral[A]): NumericRange[A] = {
     val self = this
 
     // XXX This may be incomplete.
@@ -173,7 +179,8 @@ abstract class NumericRange[T](
     isWithinBoundaries(x) && (((x - start) % step) == zero)
 
   override def contains[A1 >: T](x: A1): Boolean =
-    try containsTyped(x.asInstanceOf[T]) catch {
+    try containsTyped(x.asInstanceOf[T])
+    catch {
       case _: ClassCastException => false
     }
 
@@ -248,10 +255,10 @@ abstract class NumericRange[T](
   override def equals(other: Any) = other match {
     case x: NumericRange[_] =>
       (x canEqual this) && (length == x.length) &&
-      ((length == 0) || // all empty sequences are equal
+        ((length == 0) || // all empty sequences are equal
           (start == x.start &&
-              last == x.last) // same length and same endpoints implies equality
-          )
+            last == x.last) // same length and same endpoints implies equality
+        )
     case _ =>
       super.equals(other)
   }
@@ -271,7 +278,8 @@ object NumericRange {
     *  the number of elements exceeds the maximum Int.
     */
   def count[T](start: T, end: T, step: T, isInclusive: Boolean)(
-      implicit num: Integral[T]): Int = {
+      implicit num: Integral[T]
+  ): Int = {
     val zero = num.zero
     val upward = num.lt(start, end)
     val posStep = num.gt(step, zero)
@@ -308,8 +316,7 @@ object NumericRange {
       val limit = num.fromInt(Int.MaxValue)
       def check(t: T): T =
         if (num.gt(t, limit))
-          throw new IllegalArgumentException(
-              "More than Int.MaxValue elements.")
+          throw new IllegalArgumentException("More than Int.MaxValue elements.")
         else t
       // If the range crosses zero, it might overflow when subtracted
       val startside = num.signum(start)
@@ -355,10 +362,14 @@ object NumericRange {
               //   startq steps to waypointA
               //   1 step to waypointB
               //   endq steps to the end (one less if !isInclusive and last==end)
-              num.plus(startq,
-                       num.plus(endq,
-                                if (!isInclusive && last == end) one
-                                else num.fromInt(2)))
+              num.plus(
+                startq,
+                num.plus(
+                  endq,
+                  if (!isInclusive && last == end) one
+                  else num.fromInt(2)
+                )
+              )
             }
           }
         }
@@ -383,21 +394,23 @@ object NumericRange {
   }
 
   def apply[T](start: T, end: T, step: T)(
-      implicit num: Integral[T]): Exclusive[T] =
+      implicit num: Integral[T]
+  ): Exclusive[T] =
     new Exclusive(start, end, step)
   def inclusive[T](start: T, end: T, step: T)(
-      implicit num: Integral[T]): Inclusive[T] =
+      implicit num: Integral[T]
+  ): Inclusive[T] =
     new Inclusive(start, end, step)
 
   private[collection] val defaultOrdering = Map[Numeric[_], Ordering[_]](
-      Numeric.BigIntIsIntegral -> Ordering.BigInt,
-      Numeric.IntIsIntegral -> Ordering.Int,
-      Numeric.ShortIsIntegral -> Ordering.Short,
-      Numeric.ByteIsIntegral -> Ordering.Byte,
-      Numeric.CharIsIntegral -> Ordering.Char,
-      Numeric.LongIsIntegral -> Ordering.Long,
-      Numeric.FloatAsIfIntegral -> Ordering.Float,
-      Numeric.DoubleAsIfIntegral -> Ordering.Double,
-      Numeric.BigDecimalAsIfIntegral -> Ordering.BigDecimal
+    Numeric.BigIntIsIntegral -> Ordering.BigInt,
+    Numeric.IntIsIntegral -> Ordering.Int,
+    Numeric.ShortIsIntegral -> Ordering.Short,
+    Numeric.ByteIsIntegral -> Ordering.Byte,
+    Numeric.CharIsIntegral -> Ordering.Char,
+    Numeric.LongIsIntegral -> Ordering.Long,
+    Numeric.FloatAsIfIntegral -> Ordering.Float,
+    Numeric.DoubleAsIfIntegral -> Ordering.Double,
+    Numeric.BigDecimalAsIfIntegral -> Ordering.BigDecimal
   )
 }

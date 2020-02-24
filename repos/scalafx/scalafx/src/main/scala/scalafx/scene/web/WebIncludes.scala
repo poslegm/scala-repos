@@ -129,7 +129,8 @@ trait WebIncludes {
     * @return $RETWR $WE
     */
   implicit def webEventClosureWrapper[T](
-      handler: (WebEvent[T]) => Any): EventHandler[jfxsw.WebEvent[T]] =
+      handler: (WebEvent[T]) => Any
+  ): EventHandler[jfxsw.WebEvent[T]] =
     new jfxe.EventHandler[jfxsw.WebEvent[T]] {
       def handle(event: jfxsw.WebEvent[T]) {
         handler(event)

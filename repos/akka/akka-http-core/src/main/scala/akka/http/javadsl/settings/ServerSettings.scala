@@ -58,14 +58,16 @@ abstract class ServerSettings { self: ServerSettingsImpl ⇒
   def withBacklog(newValue: Int): ServerSettings =
     self.copy(backlog = newValue)
   def withSocketOptions(
-      newValue: java.lang.Iterable[SocketOption]): ServerSettings =
+      newValue: java.lang.Iterable[SocketOption]
+  ): ServerSettings =
     self.copy(socketOptions = newValue.asScala.toList)
   def withDefaultHostHeader(newValue: Host): ServerSettings =
     self.copy(defaultHostHeader = newValue.asScala)
   def withParserSettings(newValue: ParserSettings): ServerSettings =
     self.copy(parserSettings = newValue.asScala)
   def withWebsocketRandomFactory(
-      newValue: java.util.function.Supplier[Random]): ServerSettings =
+      newValue: java.util.function.Supplier[Random]
+  ): ServerSettings =
     self.copy(websocketRandomFactory = () ⇒ newValue.get())
 }
 

@@ -27,25 +27,28 @@ import org.apache.spark.sql.DataFrame
   * both are non-null Arrays, each with unique elements.
   */
 @Since("1.2.0")
-class MultilabelMetrics @Since("1.2.0")(
-    predictionAndLabels: RDD[(Array[Double], Array[Double])]) {
+class MultilabelMetrics @Since("1.2.0") (
+    predictionAndLabels: RDD[(Array[Double], Array[Double])]
+) {
 
   /**
     * An auxiliary constructor taking a DataFrame.
     * @param predictionAndLabels a DataFrame with two double array columns: prediction and label
     */
   private[mllib] def this(predictionAndLabels: DataFrame) =
-    this(
-        predictionAndLabels.rdd.map { r =>
+    this(predictionAndLabels.rdd.map { r =>
       (r.getSeq[Double](0).toArray, r.getSeq[Double](1).toArray)
     })
 
   private lazy val numDocs: Long = predictionAndLabels.count()
 
-  private lazy val numLabels: Long = predictionAndLabels.flatMap {
-    case (_, labels) =>
-      labels
-  }.distinct().count()
+  private lazy val numLabels: Long = predictionAndLabels
+    .flatMap {
+      case (_, labels) =>
+        labels
+    }
+    .distinct()
+    .count()
 
   /**
     * Returns subset accuracy
@@ -53,10 +56,13 @@ class MultilabelMetrics @Since("1.2.0")(
     */
   @Since("1.2.0")
   lazy val subsetAccuracy: Double =
-    predictionAndLabels.filter {
-      case (predictions, labels) =>
-        predictions.deep == labels.deep
-    }.count().toDouble / numDocs
+    predictionAndLabels
+      .filter {
+        case (predictions, labels) =>
+          predictions.deep == labels.deep
+      }
+      .count()
+      .toDouble / numDocs
 
   /**
     * Returns accuracy
@@ -66,7 +72,7 @@ class MultilabelMetrics @Since("1.2.0")(
     predictionAndLabels.map {
       case (predictions, labels) =>
         labels.intersect(predictions).length.toDouble /
-        (labels.length + predictions.length -
+          (labels.length + predictions.length -
             labels.intersect(predictions).length)
     }.sum / numDocs
 
@@ -78,7 +84,7 @@ class MultilabelMetrics @Since("1.2.0")(
     predictionAndLabels.map {
       case (predictions, labels) =>
         labels.length + predictions.length -
-        2 * labels.intersect(predictions).length
+          2 * labels.intersect(predictions).length
     }.sum / (numDocs * numLabels)
 
   /**
@@ -113,23 +119,29 @@ class MultilabelMetrics @Since("1.2.0")(
     predictionAndLabels.map {
       case (predictions, labels) =>
         2.0 * predictions.intersect(labels).length /
-        (predictions.length + labels.length)
+          (predictions.length + labels.length)
     }.sum / numDocs
 
-  private lazy val tpPerClass = predictionAndLabels.flatMap {
-    case (predictions, labels) =>
-      predictions.intersect(labels)
-  }.countByValue()
+  private lazy val tpPerClass = predictionAndLabels
+    .flatMap {
+      case (predictions, labels) =>
+        predictions.intersect(labels)
+    }
+    .countByValue()
 
-  private lazy val fpPerClass = predictionAndLabels.flatMap {
-    case (predictions, labels) =>
-      predictions.diff(labels)
-  }.countByValue()
+  private lazy val fpPerClass = predictionAndLabels
+    .flatMap {
+      case (predictions, labels) =>
+        predictions.diff(labels)
+    }
+    .countByValue()
 
-  private lazy val fnPerClass = predictionAndLabels.flatMap {
-    case (predictions, labels) =>
-      labels.diff(predictions)
-  }.countByValue()
+  private lazy val fnPerClass = predictionAndLabels
+    .flatMap {
+      case (predictions, labels) =>
+        labels.diff(predictions)
+    }
+    .countByValue()
 
   /**
     * Returns precision for a given label (category)

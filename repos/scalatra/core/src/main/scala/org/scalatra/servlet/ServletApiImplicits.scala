@@ -16,7 +16,8 @@ trait ServletApiImplicits {
     RichSession(session)
 
   implicit def enrichServletContext(
-      servletContext: ServletContext): RichServletContext =
+      servletContext: ServletContext
+  ): RichServletContext =
     RichServletContext(servletContext)
 }
 

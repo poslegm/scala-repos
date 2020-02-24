@@ -75,8 +75,8 @@ class DynamicConfigManager(
     private val zkUtils: ZkUtils,
     private val configHandlers: Map[String, ConfigHandler],
     private val changeExpirationMs: Long = 15 * 60 * 1000,
-    private val time: Time = SystemTime)
-    extends Logging {
+    private val time: Time = SystemTime
+) extends Logging {
   private var lastExecutedChange = -1L
 
   object ConfigChangedNotificationHandler extends NotificationHandler {
@@ -89,42 +89,47 @@ class DynamicConfigManager(
           require(map("version") == 1)
 
           val entityType = map.get("entity_type") match {
-            case Some(ConfigType.Topic) => ConfigType.Topic
+            case Some(ConfigType.Topic)  => ConfigType.Topic
             case Some(ConfigType.Client) => ConfigType.Client
             case _ =>
               throw new IllegalArgumentException(
-                  "Config change notification must have 'entity_type' set to either 'client' or 'topic'." +
-                  " Received: " + json)
+                "Config change notification must have 'entity_type' set to either 'client' or 'topic'." +
+                  " Received: " + json
+              )
           }
 
           val entity = map.get("entity_name") match {
             case Some(value: String) => value
             case _ =>
               throw new IllegalArgumentException(
-                  "Config change notification does not specify 'entity_name'. Received: " +
-                  json)
+                "Config change notification does not specify 'entity_name'. Received: " +
+                  json
+              )
           }
           val entityConfig =
             AdminUtils.fetchEntityConfig(zkUtils, entityType, entity)
           logger.info(
-              s"Processing override for entityType: $entityType, entity: $entity with config: $entityConfig")
+            s"Processing override for entityType: $entityType, entity: $entity with config: $entityConfig"
+          )
           configHandlers(entityType).processConfigChanges(entity, entityConfig)
 
         case o =>
           throw new IllegalArgumentException(
-              "Config change notification has an unexpected value. The format is:" +
+            "Config change notification has an unexpected value. The format is:" +
               "{\"version\" : 1," + " \"entity_type\":\"topic/client\"," +
               " \"entity_name\" : \"topic_name/client_id\"}." + " Received: " +
-              json)
+              json
+          )
       }
     }
   }
 
   private val configChangeListener = new ZkNodeChangeNotificationListener(
-      zkUtils,
-      ZkUtils.EntityConfigChangesPath,
-      AdminUtils.EntityConfigChangeZnodePrefix,
-      ConfigChangedNotificationHandler)
+    zkUtils,
+    ZkUtils.EntityConfigChangesPath,
+    AdminUtils.EntityConfigChangeZnodePrefix,
+    ConfigChangedNotificationHandler
+  )
 
   /**
     * Begin watching for config changes

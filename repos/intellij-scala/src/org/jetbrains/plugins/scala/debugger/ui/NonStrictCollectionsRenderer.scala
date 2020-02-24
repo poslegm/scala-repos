@@ -4,26 +4,49 @@ import java.util
 
 import com.intellij.debugger.DebuggerContext
 import com.intellij.debugger.engine.DebuggerUtils
-import com.intellij.debugger.engine.evaluation.{EvaluateException, EvaluationContext, EvaluationContextImpl}
+import com.intellij.debugger.engine.evaluation.{
+  EvaluateException,
+  EvaluationContext,
+  EvaluationContextImpl
+}
 import com.intellij.debugger.impl.PositionUtil
-import com.intellij.debugger.ui.impl.watch.{ValueDescriptorImpl, WatchItemDescriptor}
+import com.intellij.debugger.ui.impl.watch.{
+  ValueDescriptorImpl,
+  WatchItemDescriptor
+}
 import com.intellij.debugger.ui.tree.render._
-import com.intellij.debugger.ui.tree.{DebuggerTreeNode, NodeDescriptor, ValueDescriptor}
+import com.intellij.debugger.ui.tree.{
+  DebuggerTreeNode,
+  NodeDescriptor,
+  ValueDescriptor
+}
 import com.intellij.openapi.project.Project
 import com.intellij.psi.{JavaPsiFacade, PsiExpression}
-import com.intellij.util.{IncorrectOperationException, StringBuilderSpinAllocator}
+import com.intellij.util.{
+  IncorrectOperationException,
+  StringBuilderSpinAllocator
+}
 import com.sun.jdi._
 import com.sun.tools.jdi.ObjectReferenceImpl
 import org.jetbrains.plugins.scala.debugger.filters.ScalaDebuggerSettings
-import org.jetbrains.plugins.scala.debugger.ui.NonStrictCollectionsRenderer.{CollectionElementNodeDescriptor, Fail, SimpleMethodInvocationResult}
+import org.jetbrains.plugins.scala.debugger.ui.NonStrictCollectionsRenderer.{
+  CollectionElementNodeDescriptor,
+  Fail,
+  SimpleMethodInvocationResult
+}
 
 /**
   * User: Dmitry Naydanov
   * Date: 9/3/12
   */
 class NonStrictCollectionsRenderer extends NodeRendererImpl {
-  import org.jetbrains.plugins.scala.debugger.ui.NonStrictCollectionsRenderer.{MethodNotFound, Success}
-  import org.jetbrains.plugins.scala.debugger.ui.{NonStrictCollectionsRenderer => companionObject}
+  import org.jetbrains.plugins.scala.debugger.ui.NonStrictCollectionsRenderer.{
+    MethodNotFound,
+    Success
+  }
+  import org.jetbrains.plugins.scala.debugger.ui.{
+    NonStrictCollectionsRenderer => companionObject
+  }
 
   def getStartIndex =
     ScalaDebuggerSettings.getInstance().COLLECTION_START_INDEX.intValue()
@@ -45,15 +68,20 @@ class NonStrictCollectionsRenderer extends NodeRendererImpl {
   private def mustNotExpandStreams: Boolean =
     ScalaDebuggerSettings.getInstance().DO_NOT_DISPLAY_STREAMS
 
-  private def invokeLengthMethodByName(objectRef: ObjectReference,
-                                       methodName: String,
-                                       signature: Char,
-                                       context: EvaluationContext) = {
+  private def invokeLengthMethodByName(
+      objectRef: ObjectReference,
+      methodName: String,
+      signature: Char,
+      context: EvaluationContext
+  ) = {
     val suitableMethods =
       objectRef.referenceType().methodsByName(methodName, "()" + signature)
     if (suitableMethods.size() > 0) {
       companionObject.invokeEmptyArgsMethod(
-          objectRef, suitableMethods get 0, context)
+        objectRef,
+        suitableMethods get 0,
+        context
+      )
     } else {
       MethodNotFound()
     }
@@ -61,7 +89,8 @@ class NonStrictCollectionsRenderer extends NodeRendererImpl {
 
   private def tryToGetSize(
       objectRef: ObjectReference,
-      context: EvaluationContext): SimpleMethodInvocationResult[_] = {
+      context: EvaluationContext
+  ): SimpleMethodInvocationResult[_] = {
     @inline def invoke(name: String) =
       invokeLengthMethodByName(objectRef, name, 'I', context)
 
@@ -74,25 +103,30 @@ class NonStrictCollectionsRenderer extends NodeRendererImpl {
 
     invoke("size") match {
       case result @ Success(_) => result
-      case a => a
+      case a                   => a
     }
   }
 
-  def buildChildren(value: Value,
-                    builder: ChildrenBuilder,
-                    evaluationContext: EvaluationContext) {
-    def invokeEmptyArgsMethod(obj: ObjectReference,
-                              actualRefType: ReferenceType,
-                              methodName: String): Value = {
+  def buildChildren(
+      value: Value,
+      builder: ChildrenBuilder,
+      evaluationContext: EvaluationContext
+  ) {
+    def invokeEmptyArgsMethod(
+        obj: ObjectReference,
+        actualRefType: ReferenceType,
+        methodName: String
+    ): Value = {
       val suitableMethods = actualRefType methodsByName methodName
       if (suitableMethods.size() == 0) return null
 
       try {
         evaluationContext.getDebugProcess.invokeMethod(
-            evaluationContext,
-            obj,
-            suitableMethods get 0,
-            companionObject.EMPTY_ARGS)
+          evaluationContext,
+          obj,
+          suitableMethods get 0,
+          companionObject.EMPTY_ARGS
+        )
       } catch {
         case (_: EvaluateException | _: InvocationException |
             _: InvalidTypeException | _: IncompatibleThreadStateException |
@@ -123,7 +157,7 @@ class NonStrictCollectionsRenderer extends NodeRendererImpl {
         for (i <- 0 until getStartIndex) {
           getTail(currentTail, currentTail.referenceType()) match {
             case newTail: ObjectReference => currentTail = newTail
-            case _ => return //ourCollection.size < startIndex
+            case _                        => return //ourCollection.size < startIndex
           }
         }
 
@@ -132,11 +166,13 @@ class NonStrictCollectionsRenderer extends NodeRendererImpl {
           getAll(currentTail, currentTail.referenceType()) match {
             case (newHead: ObjectReference, newTail: ObjectReference) =>
               val newNode = builder.getNodeManager.createNode(
-                  new CollectionElementNodeDescriptor(
-                      indexCount.toString,
-                      evaluationContext.getProject,
-                      newHead),
-                  evaluationContext)
+                new CollectionElementNodeDescriptor(
+                  indexCount.toString,
+                  evaluationContext.getProject,
+                  newHead
+                ),
+                evaluationContext
+              )
               myChildren add newNode
               currentTail = newTail
               indexCount += 1
@@ -151,7 +187,9 @@ class NonStrictCollectionsRenderer extends NodeRendererImpl {
   }
 
   def getChildValueExpression(
-      node: DebuggerTreeNode, context: DebuggerContext): PsiExpression = {
+      node: DebuggerTreeNode,
+      context: DebuggerContext
+  ): PsiExpression = {
     node.getDescriptor match {
       case watch: WatchItemDescriptor =>
         JavaPsiFacade
@@ -164,9 +202,11 @@ class NonStrictCollectionsRenderer extends NodeRendererImpl {
     }
   }
 
-  def isExpandable(value: Value,
-                   evaluationContext: EvaluationContext,
-                   parentDescriptor: NodeDescriptor) = value match {
+  def isExpandable(
+      value: Value,
+      evaluationContext: EvaluationContext,
+      parentDescriptor: NodeDescriptor
+  ) = value match {
     case objectRef: ObjectReferenceImpl =>
       ScalaCollectionRenderer.nonEmpty(objectRef, evaluationContext)
     case _ => false
@@ -187,9 +227,11 @@ class NonStrictCollectionsRenderer extends NodeRendererImpl {
   private def isStreamView(tpe: Type): Boolean =
     DebuggerUtils.instanceOf(tpe, ScalaCollectionRenderer.streamViewClassName)
 
-  def calcLabel(descriptor: ValueDescriptor,
-                context: EvaluationContext,
-                listener: DescriptorLabelListener) = {
+  def calcLabel(
+      descriptor: ValueDescriptor,
+      context: EvaluationContext,
+      listener: DescriptorLabelListener
+  ) = {
     val stringBuilder = StringBuilderSpinAllocator.alloc()
 
     descriptor.getValue match {
@@ -197,15 +239,15 @@ class NonStrictCollectionsRenderer extends NodeRendererImpl {
         val tpe = obj.referenceType()
         val sizeString =
           " size = " +
-          (tryToGetSize(obj, context) match {
-                case Success(value: Int) => value
-                case _ => "?"
-              })
+            (tryToGetSize(obj, context) match {
+              case Success(value: Int) => value
+              case _                   => "?"
+            })
 
         stringBuilder append
-        (if (tpe != null)
-           ScalaCollectionRenderer.transformName(tpe.name) + sizeString
-         else "{...}")
+          (if (tpe != null)
+             ScalaCollectionRenderer.transformName(tpe.name) + sizeString
+           else "{...}")
       case _ => stringBuilder append "{...}"
     }
 
@@ -219,18 +261,19 @@ object NonStrictCollectionsRenderer {
   private val EMPTY_ARGS =
     util.Collections.unmodifiableList(new util.ArrayList[Value]())
 
-  //it considers only part of cases so it is not intended to be used outside 
+  //it considers only part of cases so it is not intended to be used outside
   private def invokeEmptyArgsMethod(
       obj: ObjectReference,
       method: Method,
-      context: EvaluationContext): SimpleMethodInvocationResult[_] = {
+      context: EvaluationContext
+  ): SimpleMethodInvocationResult[_] = {
     try {
       context.getDebugProcess.invokeMethod(context, obj, method, EMPTY_ARGS) match {
         case intValue: IntegerValue => Success[Int](intValue.intValue())
         case boolValue: BooleanValue =>
           Success[Boolean](boolValue.booleanValue())
         case objValue: ObjectReference => Success[Value](objValue)
-        case _ => MethodNotFound()
+        case _                         => MethodNotFound()
       }
     } catch {
       case e @ (_: EvaluateException | _: InvocationException |
@@ -257,8 +300,10 @@ object NonStrictCollectionsRenderer {
       extends SimpleMethodInvocationResult[E]
 
   private class CollectionElementNodeDescriptor(
-      name: String, project: Project, value: Value)
-      extends ValueDescriptorImpl(project, value) {
+      name: String,
+      project: Project,
+      value: Value
+  ) extends ValueDescriptorImpl(project, value) {
     def calcValue(evaluationContext: EvaluationContextImpl) = value
 
     def getDescriptorEvaluation(context: DebuggerContext): PsiExpression = {
@@ -267,7 +312,9 @@ object NonStrictCollectionsRenderer {
           .getInstance(project)
           .getElementFactory
           .createExpressionFromText(
-              name, PositionUtil getContextElement context)
+            name,
+            PositionUtil getContextElement context
+          )
       } catch {
         case e: IncorrectOperationException => null
       }

@@ -19,13 +19,15 @@ object SessionVar {
   def emptyMap = Map(IMap.empty)
 
   def persistAndSet[T](key: ScopedKey[Task[T]], state: State, value: T)(
-      implicit f: sbinary.Format[T]): State = {
+      implicit f: sbinary.Format[T]
+  ): State = {
     persist(key, state, value)(f)
     set(key, state, value)
   }
 
   def persist[T](key: ScopedKey[Task[T]], state: State, value: T)(
-      implicit f: sbinary.Format[T]): Unit =
+      implicit f: sbinary.Format[T]
+  ): Unit =
     Project
       .structure(state)
       .streams(state)
@@ -47,30 +49,40 @@ object SessionVar {
     task.copy(info = task.info.postTransform(g))
   }
 
-  def resolveContext[T](key: ScopedKey[Task[T]],
-                        context: Scope,
-                        state: State): ScopedKey[Task[T]] = {
+  def resolveContext[T](
+      key: ScopedKey[Task[T]],
+      context: Scope,
+      state: State
+  ): ScopedKey[Task[T]] = {
     val subScope = Scope.replaceThis(context)(key.scope)
     val scope =
-      Project.structure(state).data.definingScope(subScope, key.key) getOrElse subScope
+      Project
+        .structure(state)
+        .data
+        .definingScope(subScope, key.key) getOrElse subScope
     ScopedKey(scope, key.key)
   }
 
   def read[T](key: ScopedKey[Task[T]], state: State)(
-      implicit f: Format[T]): Option[T] =
+      implicit f: Format[T]
+  ): Option[T] =
     Project.structure(state).streams(state).use(key) { s =>
-      try { Some(Operations.read(s.readBinary(key, DefaultDataID))) } catch {
+      try { Some(Operations.read(s.readBinary(key, DefaultDataID))) }
+      catch {
         case e: Exception => None
       }
     }
 
   def load[T](key: ScopedKey[Task[T]], state: State)(
-      implicit f: Format[T]): Option[T] =
+      implicit f: Format[T]
+  ): Option[T] =
     get(key, state) orElse read(key, state)(f)
 
   def loadAndSet[T](
-      key: ScopedKey[Task[T]], state: State, setIfUnset: Boolean = true)(
-      implicit f: Format[T]): (State, Option[T]) =
+      key: ScopedKey[Task[T]],
+      state: State,
+      setIfUnset: Boolean = true
+  )(implicit f: Format[T]): (State, Option[T]) =
     get(key, state) match {
       case s: Some[T] => (state, s)
       case None =>

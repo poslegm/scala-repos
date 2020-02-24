@@ -36,7 +36,11 @@ private[v1] class OneStageResource(ui: SparkUI) {
     withStage(stageId) { stageAttempts =>
       stageAttempts.map { stage =>
         AllStagesResource.stageUiToStageData(
-            stage.status, stage.info, stage.ui, includeDetails = true)
+          stage.status,
+          stage.info,
+          stage.ui,
+          includeDetails = true
+        )
       }
     }
   }
@@ -45,20 +49,25 @@ private[v1] class OneStageResource(ui: SparkUI) {
   @Path("/{stageAttemptId: \\d+}")
   def oneAttemptData(
       @PathParam("stageId") stageId: Int,
-      @PathParam("stageAttemptId") stageAttemptId: Int): StageData = {
+      @PathParam("stageAttemptId") stageAttemptId: Int
+  ): StageData = {
     withStageAttempt(stageId, stageAttemptId) { stage =>
       AllStagesResource.stageUiToStageData(
-          stage.status, stage.info, stage.ui, includeDetails = true)
+        stage.status,
+        stage.info,
+        stage.ui,
+        includeDetails = true
+      )
     }
   }
 
   @GET
   @Path("/{stageAttemptId: \\d+}/taskSummary")
-  def taskSummary(@PathParam("stageId") stageId: Int,
-                  @PathParam("stageAttemptId") stageAttemptId: Int,
-                  @DefaultValue("0.05,0.25,0.5,0.75,0.95") @QueryParam(
-                      "quantiles") quantileString: String)
-    : TaskMetricDistributions = {
+  def taskSummary(
+      @PathParam("stageId") stageId: Int,
+      @PathParam("stageAttemptId") stageAttemptId: Int,
+      @DefaultValue("0.05,0.25,0.5,0.75,0.95") @QueryParam("quantiles") quantileString: String
+  ): TaskMetricDistributions = {
     withStageAttempt(stageId, stageAttemptId) { stage =>
       val quantiles = quantileString.split(",").map { s =>
         try {
@@ -69,28 +78,37 @@ private[v1] class OneStageResource(ui: SparkUI) {
         }
       }
       AllStagesResource.taskMetricDistributions(
-          stage.ui.taskData.values, quantiles)
+        stage.ui.taskData.values,
+        quantiles
+      )
     }
   }
 
   @GET
   @Path("/{stageAttemptId: \\d+}/taskList")
-  def taskList(@PathParam("stageId") stageId: Int,
-               @PathParam("stageAttemptId") stageAttemptId: Int,
-               @DefaultValue("0") @QueryParam("offset") offset: Int,
-               @DefaultValue("20") @QueryParam("length") length: Int,
-               @DefaultValue("ID") @QueryParam("sortBy") sortBy: TaskSorting)
-    : Seq[TaskData] = {
+  def taskList(
+      @PathParam("stageId") stageId: Int,
+      @PathParam("stageAttemptId") stageAttemptId: Int,
+      @DefaultValue("0") @QueryParam("offset") offset: Int,
+      @DefaultValue("20") @QueryParam("length") length: Int,
+      @DefaultValue("ID") @QueryParam("sortBy") sortBy: TaskSorting
+  ): Seq[TaskData] = {
     withStageAttempt(stageId, stageAttemptId) { stage =>
-      val tasks = stage.ui.taskData.values.map {
-        AllStagesResource.convertTaskData
-      }.toIndexedSeq.sorted(OneStageResource.ordering(sortBy))
+      val tasks = stage.ui.taskData.values
+        .map {
+          AllStagesResource.convertTaskData
+        }
+        .toIndexedSeq
+        .sorted(OneStageResource.ordering(sortBy))
       tasks.slice(offset, offset + length)
     }
   }
 
   private case class StageStatusInfoUi(
-      status: StageStatus, info: StageInfo, ui: StageUIData)
+      status: StageStatus,
+      info: StageInfo,
+      ui: StageUIData
+  )
 
   private def withStage[T](stageId: Int)(f: Seq[StageStatusInfoUi] => T): T = {
     val stageAttempts = findStageStatusUIData(ui.jobProgressListener, stageId)
@@ -102,28 +120,38 @@ private[v1] class OneStageResource(ui: SparkUI) {
   }
 
   private def findStageStatusUIData(
-      listener: JobProgressListener, stageId: Int): Seq[StageStatusInfoUi] = {
+      listener: JobProgressListener,
+      stageId: Int
+  ): Seq[StageStatusInfoUi] = {
     listener.synchronized {
-      def getStatusInfoUi(status: StageStatus,
-                          infos: Seq[StageInfo]): Seq[StageStatusInfoUi] = {
+      def getStatusInfoUi(
+          status: StageStatus,
+          infos: Seq[StageInfo]
+      ): Seq[StageStatusInfoUi] = {
         infos.filter { _.stageId == stageId }.map { info =>
           val ui = listener.stageIdToData.getOrElse(
-              (info.stageId, info.attemptId),
-              // this is an internal error -- we should always have uiData
-              throw new SparkException(
-                  s"no stage ui data found for stage: ${info.stageId}:${info.attemptId}"))
+            (info.stageId, info.attemptId),
+            // this is an internal error -- we should always have uiData
+            throw new SparkException(
+              s"no stage ui data found for stage: ${info.stageId}:${info.attemptId}"
+            )
+          )
           StageStatusInfoUi(status, info, ui)
         }
       }
       getStatusInfoUi(ACTIVE, listener.activeStages.values.toSeq) ++ getStatusInfoUi(
-          COMPLETE, listener.completedStages) ++ getStatusInfoUi(
-          FAILED, listener.failedStages) ++ getStatusInfoUi(
-          PENDING, listener.pendingStages.values.toSeq)
+        COMPLETE,
+        listener.completedStages
+      ) ++ getStatusInfoUi(FAILED, listener.failedStages) ++ getStatusInfoUi(
+        PENDING,
+        listener.pendingStages.values.toSeq
+      )
     }
   }
 
   private def withStageAttempt[T](stageId: Int, stageAttemptId: Int)(
-      f: StageStatusInfoUi => T): T = {
+      f: StageStatusInfoUi => T
+  ): T = {
     withStage(stageId) { attempts =>
       val oneAttempt = attempts.find { stage =>
         stage.info.attemptId == stageAttemptId
@@ -134,8 +162,9 @@ private[v1] class OneStageResource(ui: SparkUI) {
         case None =>
           val stageAttempts = attempts.map { _.info.attemptId }
           throw new NotFoundException(
-              s"unknown attempt for stage $stageId.  " +
-              s"Found attempts: ${stageAttempts.mkString("[", ",", "]")}")
+            s"unknown attempt for stage $stageId.  " +
+              s"Found attempts: ${stageAttempts.mkString("[", ",", "]")}"
+          )
       }
     }
   }
@@ -150,7 +179,7 @@ object OneStageResource {
           td.taskMetrics.map { _.executorRunTime }.getOrElse(-1L)
         case DECREASING_RUNTIME =>
           -td.taskMetrics.map { _.executorRunTime }.getOrElse(-1L)
-    }
+      }
     Ordering.by(extractor)
   }
 }

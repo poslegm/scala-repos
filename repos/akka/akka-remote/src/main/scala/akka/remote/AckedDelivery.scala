@@ -12,7 +12,8 @@ object SeqNo {
     override def compare(x: SeqNo, y: SeqNo): Int = {
       val sgn =
         if (x.rawValue < y.rawValue) -1
-        else if (x.rawValue > y.rawValue) 1 else 0
+        else if (x.rawValue > y.rawValue) 1
+        else 0
       if (((x.rawValue - y.rawValue) * sgn) < 0L) -sgn else sgn
     }
   }
@@ -77,8 +78,9 @@ class ResendBufferCapacityReachedException(c: Int)
 
 class ResendUnfulfillableException
     extends AkkaException(
-        "Unable to fulfill resend request since negatively acknowledged payload is no longer in buffer. " +
-        "The resend states between two systems are compromised and cannot be recovered.")
+      "Unable to fulfill resend request since negatively acknowledged payload is no longer in buffer. " +
+        "The resend states between two systems are compromised and cannot be recovered."
+    )
 
 /**
   * Implements an immutable resend buffer that buffers messages until they have been acknowledged. Properly removes messages
@@ -95,7 +97,8 @@ final case class AckedSendBuffer[T <: HasSequenceNumber](
     capacity: Int,
     nonAcked: IndexedSeq[T] = Vector.empty[T],
     nacked: IndexedSeq[T] = Vector.empty[T],
-    maxSeq: SeqNo = SeqNo(-1)) {
+    maxSeq: SeqNo = SeqNo(-1)
+) {
 
   /**
     * Processes an incoming acknowledgement and returns a new buffer with only unacknowledged elements remaining.
@@ -105,18 +108,18 @@ final case class AckedSendBuffer[T <: HasSequenceNumber](
   def acknowledge(ack: Ack): AckedSendBuffer[T] = {
     if (ack.cumulativeAck > maxSeq)
       throw new IllegalArgumentException(
-          s"Highest SEQ so far was $maxSeq but cumulative ACK is ${ack.cumulativeAck}")
+        s"Highest SEQ so far was $maxSeq but cumulative ACK is ${ack.cumulativeAck}"
+      )
     val newNacked =
       if (ack.nacks.isEmpty) Vector.empty
       else
-        (nacked ++ nonAcked) filter { m ⇒
-          ack.nacks(m.seq)
-        }
+        (nacked ++ nonAcked) filter { m ⇒ ack.nacks(m.seq) }
     if (newNacked.size < ack.nacks.size) throw new ResendUnfulfillableException
     else
-      this.copy(nonAcked = nonAcked.filter { m ⇒
-        m.seq > ack.cumulativeAck
-      }, nacked = newNacked)
+      this.copy(
+        nonAcked = nonAcked.filter { m ⇒ m.seq > ack.cumulativeAck },
+        nacked = newNacked
+      )
   }
 
   /**
@@ -128,8 +131,9 @@ final case class AckedSendBuffer[T <: HasSequenceNumber](
   def buffer(msg: T): AckedSendBuffer[T] = {
     if (msg.seq <= maxSeq)
       throw new IllegalArgumentException(
-          s"Sequence number must be monotonic. Received [${msg.seq}] " +
-          s"which is smaller than [$maxSeq]")
+        s"Sequence number must be monotonic. Received [${msg.seq}] " +
+          s"which is smaller than [$maxSeq]"
+      )
 
     if (nonAcked.size == capacity)
       throw new ResendBufferCapacityReachedException(capacity)
@@ -152,8 +156,8 @@ final case class AckedSendBuffer[T <: HasSequenceNumber](
 final case class AckedReceiveBuffer[T <: HasSequenceNumber](
     lastDelivered: SeqNo = SeqNo(-1),
     cumulativeAck: SeqNo = SeqNo(-1),
-    buf: SortedSet[T] = TreeSet.empty[T])(
-    implicit val seqOrdering: Ordering[T]) {
+    buf: SortedSet[T] = TreeSet.empty[T]
+)(implicit val seqOrdering: Ordering[T]) {
 
   import SeqNo.ord.max
 
@@ -164,9 +168,12 @@ final case class AckedReceiveBuffer[T <: HasSequenceNumber](
     */
   def receive(arrivedMsg: T): AckedReceiveBuffer[T] = {
     this.copy(
-        cumulativeAck = max(arrivedMsg.seq, cumulativeAck),
-        buf = if (arrivedMsg.seq > lastDelivered && !buf.contains(arrivedMsg))
-            buf + arrivedMsg else buf)
+      cumulativeAck = max(arrivedMsg.seq, cumulativeAck),
+      buf =
+        if (arrivedMsg.seq > lastDelivered && !buf.contains(arrivedMsg))
+          buf + arrivedMsg
+        else buf
+    )
   }
 
   /**
@@ -199,9 +206,11 @@ final case class AckedReceiveBuffer[T <: HasSequenceNumber](
     }
 
     val newBuf = if (deliver.isEmpty) buf else buf.filterNot(deliver.contains)
-    (this.copy(buf = newBuf, lastDelivered = updatedLastDelivered),
-     deliver,
-     ack)
+    (
+      this.copy(buf = newBuf, lastDelivered = updatedLastDelivered),
+      deliver,
+      ack
+    )
   }
 
   /**
@@ -212,11 +221,13 @@ final case class AckedReceiveBuffer[T <: HasSequenceNumber](
     */
   def mergeFrom(that: AckedReceiveBuffer[T]): AckedReceiveBuffer[T] = {
     val mergedLastDelivered = max(this.lastDelivered, that.lastDelivered)
-    this.copy(lastDelivered = mergedLastDelivered,
-              cumulativeAck = max(this.cumulativeAck, that.cumulativeAck),
-              buf = (this.buf union that.buf).filter {
-                _.seq > mergedLastDelivered
-              })
+    this.copy(
+      lastDelivered = mergedLastDelivered,
+      cumulativeAck = max(this.cumulativeAck, that.cumulativeAck),
+      buf = (this.buf union that.buf).filter {
+        _.seq > mergedLastDelivered
+      }
+    )
   }
 
   override def toString = buf.map { _.seq }.mkString("[", ", ", "]")

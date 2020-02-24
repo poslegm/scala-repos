@@ -56,8 +56,9 @@ trait DependencyBuilders {
   }
 }
 
-final class ScalaJSGroupID private[sbtplugin](private val groupID: String) {
-  def %%%(artifactID: String): CrossGroupArtifactID = macro ScalaJSGroupID.auto_impl
+final class ScalaJSGroupID private[sbtplugin] (private val groupID: String) {
+  def %%%(artifactID: String): CrossGroupArtifactID =
+    macro ScalaJSGroupID.auto_impl
 
   def %%%!(artifactID: String): CrossGroupArtifactID =
     ScalaJSGroupID.withCross(this, artifactID, ScalaJSCrossVersion.binary)
@@ -72,21 +73,25 @@ object ScalaJSGroupID {
     *  }}}
     *  instead.
     */
-  def withCross(groupID: ScalaJSGroupID,
-                artifactID: String,
-                cross: CrossVersion): CrossGroupArtifactID = {
+  def withCross(
+      groupID: ScalaJSGroupID,
+      artifactID: String,
+      cross: CrossVersion
+  ): CrossGroupArtifactID = {
     nonEmpty(artifactID, "Artifact ID")
     new CrossGroupArtifactID(groupID.groupID, artifactID, cross)
   }
 
   def auto_impl(c: Context { type PrefixType = ScalaJSGroupID })(
-      artifactID: c.Expr[String]): c.Expr[CrossGroupArtifactID] = {
+      artifactID: c.Expr[String]
+  ): c.Expr[CrossGroupArtifactID] = {
     import c.universe._
 
     // Hack to work around bug in sbt macros (wrong way of collecting local
     // definitions)
     val keysSym = rootMirror.staticModule(
-        "_root_.org.scalajs.sbtplugin.ScalaJSPlugin.AutoImport")
+      "_root_.org.scalajs.sbtplugin.ScalaJSPlugin.AutoImport"
+    )
     val keys = c.Expr[ScalaJSPlugin.AutoImport.type](Ident(keysSym))
 
     reify {
@@ -101,7 +106,10 @@ object ScalaJSGroupID {
 }
 
 final class CrossGroupArtifactID(
-    groupID: String, artifactID: String, crossVersion: CrossVersion) {
+    groupID: String,
+    artifactID: String,
+    crossVersion: CrossVersion
+) {
   def %(revision: String): ModuleID = {
     nonEmpty(revision, "Revision")
     ModuleID(groupID, artifactID, revision).cross(crossVersion)

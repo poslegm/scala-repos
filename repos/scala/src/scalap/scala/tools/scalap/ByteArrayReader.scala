@@ -84,12 +84,12 @@ class ByteArrayReader(content: Array[Byte]) {
     */
   def getInt(bp: Int): Int =
     ((buf(bp) & 0xff) << 24) + ((buf(bp + 1) & 0xff) << 16) +
-    ((buf(bp + 2) & 0xff) << 8) + (buf(bp + 3) & 0xff)
+      ((buf(bp + 2) & 0xff) << 8) + (buf(bp + 3) & 0xff)
 
   /** extract a long integer at position bp from buf
     */
   def getLong(bp: Int): Long =
-    (getInt(bp).toLong << 32) + (getInt(bp + 4).toLong & 0xffffffffL)
+    (getInt(bp).toLong << 32) + (getInt(bp + 4).toLong & 0xFFFFFFFFL)
 
   /** extract a float at position bp from buf
     */

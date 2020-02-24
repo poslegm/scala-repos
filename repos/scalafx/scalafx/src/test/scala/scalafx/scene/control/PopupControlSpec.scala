@@ -41,7 +41,9 @@ import scalafx.testutil.{RunOnApplicationThread, SimpleSFXDelegateSpec}
 @RunWith(classOf[JUnitRunner])
 class PopupControlSpec
     extends SimpleSFXDelegateSpec[jfxsc.PopupControl, PopupControl](
-        classOf[jfxsc.PopupControl], classOf[PopupControl])
+      classOf[jfxsc.PopupControl],
+      classOf[PopupControl]
+    )
     with RunOnApplicationThread {
 
   override protected def getJavaClassInstance = {

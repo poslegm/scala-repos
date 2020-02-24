@@ -5,8 +5,8 @@ object ImplicitBugReport {
 
   implicit def canBuildExp[T]: CanBuildExp[T, Exp[T]] = ???
   implicit def canBuildExpTrav[T, ExpT <: Exp[T]](
-      implicit c: CanBuildExp[T, ExpT])
-    : CanBuildExp[Traversable[T], TraversableExp[T, ExpT]] = ???
+      implicit c: CanBuildExp[T, ExpT]
+  ): CanBuildExp[Traversable[T], TraversableExp[T, ExpT]] = ???
   def toExpTempl[T, That](t: T)(implicit c: CanBuildExp[T, That]): That = ???
 
   def testBug() {

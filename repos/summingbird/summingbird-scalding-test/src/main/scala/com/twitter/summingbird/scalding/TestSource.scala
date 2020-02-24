@@ -37,8 +37,8 @@ object TestSource {
       implicit mf: Manifest[T],
       te: TimeExtractor[T],
       tc: TupleConverter[T],
-      tset: TupleSetter[T])
-    : (Map[ScaldingSource, Buffer[Tuple]], Producer[Scalding, T]) = {
+      tset: TupleSetter[T]
+  ): (Map[ScaldingSource, Buffer[Tuple]], Producer[Scalding, T]) = {
     val src = IterableSource(iter)
     val prod = Scalding.sourceFromMappable { dr =>
       if (dateRangeOpt.isDefined) {

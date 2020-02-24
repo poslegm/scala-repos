@@ -13,7 +13,9 @@ import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.stream.javadsl
 import akka.testkit.AkkaSpec
 import akka.util.Timeout
-import docs.persistence.query.PersistenceQueryDocSpec.{TheOneWhoWritesToQueryJournal}
+import docs.persistence.query.PersistenceQueryDocSpec.{
+  TheOneWhoWritesToQueryJournal
+}
 import org.reactivestreams.Subscriber
 import scala.collection.immutable
 import scala.concurrent.Future
@@ -54,7 +56,9 @@ object PersistenceQueryDocSpec {
       config.getDuration("refresh-interval", MILLISECONDS).millis
 
     override def eventsByTag(
-        tag: String, offset: Long = 0L): Source[EventEnvelope, NotUsed] = {
+        tag: String,
+        offset: Long = 0L
+    ): Source[EventEnvelope, NotUsed] = {
       val props = MyEventsByTagPublisher.props(tag, offset, refreshInterval)
       Source
         .actorPublisher[EventEnvelope](props)
@@ -64,7 +68,8 @@ object PersistenceQueryDocSpec {
     override def eventsByPersistenceId(
         persistenceId: String,
         fromSequenceNr: Long = 0L,
-        toSequenceNr: Long = Long.MaxValue): Source[EventEnvelope, NotUsed] = {
+        toSequenceNr: Long = Long.MaxValue
+    ): Source[EventEnvelope, NotUsed] = {
       // implement in a similar way as eventsByTag
       ???
     }
@@ -98,13 +103,15 @@ object PersistenceQueryDocSpec {
 
     override def eventsByTag(
         tag: String,
-        offset: Long = 0L): javadsl.Source[EventEnvelope, NotUsed] =
+        offset: Long = 0L
+    ): javadsl.Source[EventEnvelope, NotUsed] =
       scaladslReadJournal.eventsByTag(tag, offset).asJava
 
-    override def eventsByPersistenceId(persistenceId: String,
-                                       fromSequenceNr: Long = 0L,
-                                       toSequenceNr: Long = Long.MaxValue)
-      : javadsl.Source[EventEnvelope, NotUsed] =
+    override def eventsByPersistenceId(
+        persistenceId: String,
+        fromSequenceNr: Long = 0L,
+        toSequenceNr: Long = Long.MaxValue
+    ): javadsl.Source[EventEnvelope, NotUsed] =
       scaladslReadJournal
         .eventsByPersistenceId(persistenceId, fromSequenceNr, toSequenceNr)
         .asJava
@@ -117,8 +124,9 @@ object PersistenceQueryDocSpec {
 
     // possibility to add more plugin specific queries
 
-    def byTagsWithMeta(tags: java.util.Set[String])
-      : javadsl.Source[RichEvent, QueryMetadata] = {
+    def byTagsWithMeta(
+        tags: java.util.Set[String]
+    ): javadsl.Source[RichEvent, QueryMetadata] = {
       import scala.collection.JavaConverters._
       scaladslReadJournal.byTagsWithMeta(tags.asScala.toSet).asJava
     }
@@ -157,7 +165,9 @@ object PersistenceQueryDocSpec {
       .map(envelope => envelope.event)
       .map(convertToReadSideTypes) // convert to datatype
       .grouped(20) // batch inserts into groups of 20
-      .runWith(Sink.fromSubscriber(dbBatchWriter)) // write batches to read-side database
+      .runWith(
+        Sink.fromSubscriber(dbBatchWriter)
+      ) // write batches to read-side database
     //#projection-into-different-store-rs
   }
 
@@ -186,12 +196,14 @@ class PersistenceQueryDocSpec(s: String) extends AkkaSpec(s) {
   import PersistenceQueryDocSpec._
 
   def this() {
-    this("""
+    this(
+      """
         akka.persistence.query.my-read-journal {
           class = "docs.persistence.query.PersistenceQueryDocSpec$MyReadJournalProvider"
           refresh-interval = 3s
         }
-      """)
+      """
+    )
   }
 
   implicit val mat = ActorMaterializer()
@@ -201,7 +213,8 @@ class PersistenceQueryDocSpec(s: String) extends AkkaSpec(s) {
     // obtain read journal by plugin id
     val readJournal =
       PersistenceQuery(system).readJournalFor[MyScaladslReadJournal](
-          "akka.persistence.query.my-read-journal")
+        "akka.persistence.query.my-read-journal"
+      )
 
     // issue query to journal
     val source: Source[EventEnvelope, NotUsed] =
@@ -209,9 +222,7 @@ class PersistenceQueryDocSpec(s: String) extends AkkaSpec(s) {
 
     // materialize stream, consuming events
     implicit val mat = ActorMaterializer()
-    source.runForeach { event =>
-      println("Event: " + event)
-    }
+    source.runForeach { event => println("Event: " + event) }
     //#basic-usage
 
     //#all-persistence-ids-live
@@ -247,13 +258,16 @@ class PersistenceQueryDocSpec(s: String) extends AkkaSpec(s) {
     val query: Source[RichEvent, QueryMetadata] =
       readJournal.byTagsWithMeta(Set("red", "blue"))
 
-    query.mapMaterializedValue { meta =>
-      println(s"The query is: " +
-          s"ordered deterministically: ${meta.deterministicOrder}, " +
-          s"infinite: ${meta.infinite}")
-    }.map { event =>
-      println(s"Event payload: ${event.payload}")
-    }.runWith(Sink.ignore)
+    query
+      .mapMaterializedValue { meta =>
+        println(
+          s"The query is: " +
+            s"ordered deterministically: ${meta.deterministicOrder}, " +
+            s"infinite: ${meta.infinite}"
+        )
+      }
+      .map { event => println(s"Event payload: ${event.payload}") }
+      .runWith(Sink.ignore)
 
     //#advanced-journal-query-usage
   }
@@ -285,9 +299,7 @@ class PersistenceQueryDocSpec(s: String) extends AkkaSpec(s) {
         .mapAsync(8) { envelope =>
           (writer ? envelope.event).map(_ => envelope.offset)
         }
-        .mapAsync(1) { offset =>
-          bidProjection.saveProgress(offset)
-        }
+        .mapAsync(1) { offset => bidProjection.saveProgress(offset) }
         .runWith(Sink.ignore)
     }
     //#projection-into-different-store-actor-run
@@ -296,7 +308,8 @@ class PersistenceQueryDocSpec(s: String) extends AkkaSpec(s) {
   class RunWithAsyncFunction {
     val readJournal =
       PersistenceQuery(system).readJournalFor[MyScaladslReadJournal](
-          "akka.persistence.query.my-read-journal")
+        "akka.persistence.query.my-read-journal"
+      )
 
     //#projection-into-different-store-simple
     trait ExampleStore {
@@ -309,9 +322,7 @@ class PersistenceQueryDocSpec(s: String) extends AkkaSpec(s) {
 
     readJournal
       .eventsByTag("bid")
-      .mapAsync(1) { e =>
-        store.save(e)
-      }
+      .mapAsync(1) { e => store.save(e) }
       .runWith(Sink.ignore)
     //#projection-into-different-store-simple
   }

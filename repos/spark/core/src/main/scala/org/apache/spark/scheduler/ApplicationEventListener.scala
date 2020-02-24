@@ -34,7 +34,8 @@ private[spark] class ApplicationEventListener extends SparkListener {
   var adminAcls: Option[String] = None
 
   override def onApplicationStart(
-      applicationStart: SparkListenerApplicationStart) {
+      applicationStart: SparkListenerApplicationStart
+  ) {
     appName = Some(applicationStart.appName)
     appId = applicationStart.appId
     appAttemptId = applicationStart.appAttemptId
@@ -47,7 +48,8 @@ private[spark] class ApplicationEventListener extends SparkListener {
   }
 
   override def onEnvironmentUpdate(
-      environmentUpdate: SparkListenerEnvironmentUpdate) {
+      environmentUpdate: SparkListenerEnvironmentUpdate
+  ) {
     synchronized {
       val environmentDetails = environmentUpdate.environmentDetails
       val allProperties = environmentDetails("Spark Properties").toMap

@@ -7,7 +7,12 @@ package reflect
 package internal
 
 import java.lang.{Class => jClass}
-import java.lang.reflect.{Member => jMember, Constructor => jConstructor, Field => jField, Method => jMethod}
+import java.lang.reflect.{
+  Member => jMember,
+  Constructor => jConstructor,
+  Field => jField,
+  Method => jMethod
+}
 import JavaAccFlags._
 import ClassfileConstants._
 
@@ -48,15 +53,17 @@ final class JavaAccFlags private (val coded: Int) extends AnyVal {
     *  `foo` is the defining package.
     */
   def hasPackageAccessBoundary =
-    !has(JAVA_ACC_PRIVATE | JAVA_ACC_PUBLIC) // equivalently, allows protected or package level access
+    !has(
+      JAVA_ACC_PRIVATE | JAVA_ACC_PUBLIC
+    ) // equivalently, allows protected or package level access
   def isPackageProtected =
     !has(JAVA_ACC_PRIVATE | JAVA_ACC_PROTECTED | JAVA_ACC_PUBLIC)
 
   def toJavaFlags: Int = flags
   def toScalaFlags: Long = flagCarrierId match {
     case Method | Constructor => FlagTranslation methodFlags flags
-    case Class => FlagTranslation classFlags flags
-    case _ => FlagTranslation fieldFlags flags
+    case Class                => FlagTranslation classFlags flags
+    case _                    => FlagTranslation fieldFlags flags
   }
 }
 
@@ -79,8 +86,8 @@ object JavaAccFlags {
   def apply(clazz: jClass[_]): JavaAccFlags = classFlags(clazz.getModifiers)
   def apply(member: jMember): JavaAccFlags = member match {
     case x: jConstructor[_] => constructorFlags(x.getModifiers)
-    case x: jMethod => methodFlags(x.getModifiers)
-    case x: jField => fieldFlags(x.getModifiers)
-    case _ => apply(member.getModifiers)
+    case x: jMethod         => methodFlags(x.getModifiers)
+    case x: jField          => fieldFlags(x.getModifiers)
+    case _                  => apply(member.getModifiers)
   }
 }

@@ -43,8 +43,8 @@ object ToggleGroup {
   * Wraps [[http://docs.oracle.com/javase/8/javafx/api/javafx/scene/control/ToggleGroup.html]].
   */
 class ToggleGroup(
-    override val delegate: jfxsc.ToggleGroup = new jfxsc.ToggleGroup)
-    extends SFXDelegate[jfxsc.ToggleGroup] {
+    override val delegate: jfxsc.ToggleGroup = new jfxsc.ToggleGroup
+) extends SFXDelegate[jfxsc.ToggleGroup] {
 
   /**
     * The selected toggle.

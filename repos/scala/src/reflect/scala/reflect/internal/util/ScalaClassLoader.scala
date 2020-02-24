@@ -30,7 +30,8 @@ trait ScalaClassLoader extends JClassLoader {
   /** Executing an action with this classloader as context classloader */
   def asContext[T](action: => T): T = {
     val saved = contextLoader
-    try { setContext(this); action } finally setContext(saved)
+    try { setContext(this); action }
+    finally setContext(saved)
   }
   def setAsContext() { setContext(this) }
 
@@ -43,7 +44,9 @@ trait ScalaClassLoader extends JClassLoader {
     tryClass(path, initialize = true)
 
   private def tryClass[T <: AnyRef](
-      path: String, initialize: Boolean): Option[Class[T]] =
+      path: String,
+      initialize: Boolean
+  ): Option[Class[T]] =
     catching(classOf[ClassNotFoundException], classOf[SecurityException]) opt Class
       .forName(path, initialize, this)
       .asInstanceOf[Class[T]]
@@ -53,8 +56,9 @@ trait ScalaClassLoader extends JClassLoader {
     tryToInitializeClass[AnyRef](path).map(_.newInstance()).orNull
 
   /** Create an instance with ctor args, or invoke errorFn before throwing. */
-  def create[T <: AnyRef : ClassTag](path: String, errorFn: String => Unit)(
-      args: AnyRef*): T = {
+  def create[T <: AnyRef: ClassTag](path: String, errorFn: String => Unit)(
+      args: AnyRef*
+  ): T = {
     def fail(msg: String) = error(msg, new IllegalArgumentException(msg))
     def error(msg: String, e: Throwable) = { errorFn(msg); throw e }
     try {
@@ -63,23 +67,25 @@ trait ScalaClassLoader extends JClassLoader {
         val ctor = {
           val maybes =
             clazz.getConstructors filter
-            (c =>
-                  c.getParameterCount == args.size &&
+              (c =>
+                c.getParameterCount == args.size &&
                   (c.getParameterTypes zip args).forall {
                     case (k, a) => k isAssignableFrom a.getClass
-                })
+                  }
+              )
           if (maybes.size == 1) maybes.head
           else
-            fail(
-                s"Constructor must accept arg list (${args map
-            (_.getClass.getName) mkString ", "}): ${path}")
+            fail(s"Constructor must accept arg list (${args map
+              (_.getClass.getName) mkString ", "}): ${path}")
         }
         (ctor.newInstance(args: _*)).asInstanceOf[T]
       } else {
         errorFn(
-            s"""Loader for ${classTag[T]}:   [${show(
-               classTag[T].runtimeClass.getClassLoader)}]
-                   |Loader for ${clazz.getName}: [${show(clazz.getClassLoader)}]""".stripMargin)
+          s"""Loader for ${classTag[T]}:   [${show(
+               classTag[T].runtimeClass.getClassLoader
+             )}]
+                   |Loader for ${clazz.getName}: [${show(clazz.getClassLoader)}]""".stripMargin
+        )
         fail(s"Not a ${classTag[T]}: ${path}")
       }
     } catch {
@@ -93,7 +99,7 @@ trait ScalaClassLoader extends JClassLoader {
   /** The actual bytes for a class file, or an empty array if it can't be found. */
   def classBytes(className: String): Array[Byte] =
     classAsStream(className) match {
-      case null => Array()
+      case null   => Array()
       case stream => scala.reflect.io.Streamable.bytes(stream)
     }
 
@@ -107,12 +113,14 @@ trait ScalaClassLoader extends JClassLoader {
   def run(objectName: String, arguments: Seq[String]) {
     val clsToRun =
       tryToInitializeClass(objectName) getOrElse
-      (throw new ClassNotFoundException(objectName))
+        (throw new ClassNotFoundException(objectName))
     val method = clsToRun.getMethod("main", classOf[Array[String]])
     if (!Modifier.isStatic(method.getModifiers))
       throw new NoSuchMethodException(objectName + ".main is not static")
 
-    try asContext(method.invoke(null, Array(arguments.toArray: AnyRef): _*)) // !!! : AnyRef shouldn't be necessary
+    try asContext(
+      method.invoke(null, Array(arguments.toArray: AnyRef): _*)
+    ) // !!! : AnyRef shouldn't be necessary
     catch unwrapHandler({ case ex => throw ex })
   }
 }
@@ -141,11 +149,13 @@ object ScalaClassLoader {
     Thread.currentThread.setContextClassLoader(cl)
   def savingContextLoader[T](body: => T): T = {
     val saved = contextLoader
-    try body finally setContext(saved)
+    try body
+    finally setContext(saved)
   }
 
   class URLClassLoader(urls: Seq[URL], parent: JClassLoader)
-      extends JURLClassLoader(urls.toArray, parent) with ScalaClassLoader
+      extends JURLClassLoader(urls.toArray, parent)
+      with ScalaClassLoader
       with HasClassPath {
 
     private var classloaderURLs: Seq[URL] = urls
@@ -168,5 +178,5 @@ object ScalaClassLoader {
   /** Finding what jar a clazz or instance came from */
   def originOfClass(x: Class[_]): Option[URL] =
     Option(x.getProtectionDomain.getCodeSource) flatMap
-    (x => Option(x.getLocation))
+      (x => Option(x.getLocation))
 }

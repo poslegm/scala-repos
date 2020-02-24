@@ -131,8 +131,9 @@ object CalendarBatcher {
   * or day in the UTC calendar
   */
 final case class CalendarBatcher(
-    unitCount: Int, calField: CalendarBatcher.CalField)
-    extends Batcher {
+    unitCount: Int,
+    calField: CalendarBatcher.CalField
+) extends Batcher {
   final def batchOf(t: Timestamp) =
     BatchID(calField.unitsSinceEpoch(t.toDate) / unitCount)
   final def earliestTimeOf(batch: BatchID) =

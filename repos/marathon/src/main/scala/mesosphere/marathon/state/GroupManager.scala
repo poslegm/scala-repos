@@ -7,7 +7,11 @@ import akka.event.EventStream
 import com.google.inject.Singleton
 import mesosphere.marathon.api.v2.Validation._
 import mesosphere.marathon.core.task.Task
-import mesosphere.marathon.event.{EventModule, GroupChangeFailed, GroupChangeSuccess}
+import mesosphere.marathon.event.{
+  EventModule,
+  GroupChangeFailed,
+  GroupChangeSuccess
+}
 import mesosphere.marathon.io.PathFun
 import mesosphere.marathon.io.storage.StorageProvider
 import mesosphere.marathon.upgrade._
@@ -25,15 +29,15 @@ import scala.util.{Failure, Success}
   * The group manager is the facade for all group related actions.
   * It persists the state of a group and initiates deployments.
   */
-class GroupManager @Singleton @Inject()(
+class GroupManager @Singleton @Inject() (
     @Named(ModuleNames.SERIALIZE_GROUP_UPDATES) serializeUpdates: CapConcurrentExecutions,
     scheduler: MarathonSchedulerService,
     groupRepo: GroupRepository,
     appRepo: AppRepository,
     storage: StorageProvider,
     config: MarathonConf,
-    @Named(EventModule.busName) eventBus: EventStream)
-    extends PathFun {
+    @Named(EventModule.busName) eventBus: EventStream
+) extends PathFun {
 
   private[this] val log = LoggerFactory.getLogger(getClass.getName)
   private[this] val zkName = groupRepo.zkRootName
@@ -101,12 +105,13 @@ class GroupManager @Singleton @Inject()(
     *              one can control, to stop a current deployment and start a new one.
     * @return the deployment plan which will be executed.
     */
-  def update(gid: PathId,
-             fn: Group => Group,
-             version: Timestamp = Timestamp.now(),
-             force: Boolean = false,
-             toKill: Map[PathId, Iterable[Task]] = Map.empty)
-    : Future[DeploymentPlan] =
+  def update(
+      gid: PathId,
+      fn: Group => Group,
+      version: Timestamp = Timestamp.now(),
+      force: Boolean = false,
+      toKill: Map[PathId, Iterable[Task]] = Map.empty
+  ): Future[DeploymentPlan] =
     upgrade(gid, _.update(gid, fn, version), version, force, toKill)
 
   /**
@@ -125,19 +130,23 @@ class GroupManager @Singleton @Inject()(
       fn: Option[AppDefinition] => AppDefinition,
       version: Timestamp = Timestamp.now(),
       force: Boolean = false,
-      toKill: Iterable[Task] = Iterable.empty): Future[DeploymentPlan] =
-    upgrade(appId.parent,
-            _.updateApp(appId, fn, version),
-            version,
-            force,
-            Map(appId -> toKill))
+      toKill: Iterable[Task] = Iterable.empty
+  ): Future[DeploymentPlan] =
+    upgrade(
+      appId.parent,
+      _.updateApp(appId, fn, version),
+      version,
+      force,
+      Map(appId -> toKill)
+    )
 
-  private def upgrade(gid: PathId,
-                      change: Group => Group,
-                      version: Timestamp = Timestamp.now(),
-                      force: Boolean = false,
-                      toKill: Map[PathId, Iterable[Task]] = Map.empty)
-    : Future[DeploymentPlan] = serializeUpdates {
+  private def upgrade(
+      gid: PathId,
+      change: Group => Group,
+      version: Timestamp = Timestamp.now(),
+      force: Boolean = false,
+      toKill: Map[PathId, Iterable[Task]] = Map.empty
+  ): Future[DeploymentPlan] = serializeUpdates {
 
     log.info(s"Upgrade group id:$gid version:$version with force:$force")
 
@@ -147,7 +156,8 @@ class GroupManager @Singleton @Inject()(
           plan.target.app(currentId) match {
             case Some(newApp) =>
               log.info(
-                  s"[${newApp.id}] storing new app version ${newApp.version}")
+                s"[${newApp.id}] storing new app version ${newApp.version}"
+              )
               appRepo.store(newApp).map(_ => ())
             case None =>
               log.info(s"[$currentId] expunging app")
@@ -161,9 +171,10 @@ class GroupManager @Singleton @Inject()(
     val deployment = for {
       from <- rootGroup()
       (toUnversioned, resolve) <- resolveStoreUrls(
-          assignDynamicServicePorts(from, change(from)))
-      to = GroupVersioningUtil.updateVersionInfoForChangedApps(
-          version, from, toUnversioned)
+        assignDynamicServicePorts(from, change(from))
+      )
+      to = GroupVersioningUtil
+        .updateVersionInfoForChangedApps(version, from, toUnversioned)
       _ = validateOrThrow(to)(Group.validGroupWithConfig(config.maxApps.get))
       plan = DeploymentPlan(from, to, resolve, version, toKill)
       _ = validateOrThrow(plan)
@@ -172,7 +183,8 @@ class GroupManager @Singleton @Inject()(
       _ <- storeUpdatedApps(plan)
       _ <- groupRepo.store(zkName, plan.target)
       _ = log.info(
-          s"Updated groups/apps according to deployment plan ${plan.id}")
+        s"Updated groups/apps according to deployment plan ${plan.id}"
+      )
     } yield plan
 
     deployment.onComplete {
@@ -184,13 +196,15 @@ class GroupManager @Singleton @Inject()(
       case Failure(ex) =>
         log.warn(s"Deployment failed for change: $version", ex)
         eventBus.publish(
-            GroupChangeFailed(gid, version.toString, ex.getMessage))
+          GroupChangeFailed(gid, version.toString, ex.getMessage)
+        )
     }
     deployment
   }
 
   private[state] def resolveStoreUrls(
-      group: Group): Future[(Group, Seq[ResolveArtifacts])] = {
+      group: Group
+  ): Future[(Group, Seq[ResolveArtifacts])] = {
     def url2Path(url: String): Future[(String, String)] =
       contentPath(new URL(url)).map(url -> _)
     Future
@@ -209,12 +223,12 @@ class GroupManager @Singleton @Inject()(
           else {
             val storageUrls = app.storeUrls.map(paths).map(storage.item(_).url)
             val resolved =
-              app.copy(fetch = app.fetch ++ storageUrls.map(FetchUri.apply(_)),
-                       storeUrls = Seq.empty)
+              app.copy(
+                fetch = app.fetch ++ storageUrls.map(FetchUri.apply(_)),
+                storeUrls = Seq.empty
+              )
             val appDownloads: Map[URL, String] = app.storeUrls.flatMap { url =>
-              downloads.remove(url).map { path =>
-                new URL(url) -> path
-              }
+              downloads.remove(url).map { path => new URL(url) -> path }
             }.toMap
             if (appDownloads.nonEmpty)
               actions += ResolveArtifacts(resolved, appDownloads)
@@ -225,30 +239,40 @@ class GroupManager @Singleton @Inject()(
   }
 
   //scalastyle:off method.length
-  private[state] def assignDynamicServicePorts(from: Group, to: Group): Group = {
+  private[state] def assignDynamicServicePorts(
+      from: Group,
+      to: Group
+  ): Group = {
     val portRange = Range(config.localPortMin(), config.localPortMax())
     var taken =
       from.transitiveApps.flatMap(_.portNumbers) ++ to.transitiveApps.flatMap(
-          _.portNumbers)
+        _.portNumbers
+      )
 
     def nextGlobalFreePort: Int = synchronized {
       val port = portRange
         .find(!taken.contains(_))
-        .getOrElse(throw new PortRangeExhaustedException(
-                config.localPortMin(),
-                config.localPortMax()
-            ))
+        .getOrElse(
+          throw new PortRangeExhaustedException(
+            config.localPortMin(),
+            config.localPortMax()
+          )
+        )
       log.info(s"Take next configured free port: $port")
       taken += port
       port
     }
 
     def mergeServicePortsAndPortDefinitions(
-        portDefinitions: Seq[PortDefinition], servicePorts: Seq[Int]) = {
+        portDefinitions: Seq[PortDefinition],
+        servicePorts: Seq[Int]
+    ) = {
       portDefinitions
-        .zipAll(servicePorts,
-                AppDefinition.RandomPortDefinition,
-                AppDefinition.RandomPortValue)
+        .zipAll(
+          servicePorts,
+          AppDefinition.RandomPortDefinition,
+          AppDefinition.RandomPortValue
+        )
         .map {
           case (portDefinition, servicePort) =>
             portDefinition.copy(port = servicePort)
@@ -260,11 +284,14 @@ class GroupManager @Singleton @Inject()(
       //all ports that are already assigned in old app definition, but not used in the new definition
       //if the app uses dynamic ports (0), it will get always the same ports assigned
       val assignedAndAvailable = mutable.Queue(
-          from
-            .app(app.id)
-            .map(_.portNumbers.filter(p =>
-                      portRange.contains(p) && !app.servicePorts.contains(p)))
-            .getOrElse(Nil): _*
+        from
+          .app(app.id)
+          .map(
+            _.portNumbers.filter(p =>
+              portRange.contains(p) && !app.servicePorts.contains(p)
+            )
+          )
+          .getOrElse(Nil): _*
       )
 
       def nextFreeAppPort: Int =
@@ -285,24 +312,28 @@ class GroupManager @Singleton @Inject()(
           case (pm, sp) => pm.copy(servicePort = sp)
         }
         c.copy(
-            docker = Some(d.copy(portMappings = Some(mappings)))
+          docker = Some(d.copy(portMappings = Some(mappings)))
         )
       }
 
       app.copy(
-          portDefinitions = mergeServicePortsAndPortDefinitions(
-                app.portDefinitions, servicePorts),
-          container = newContainer.orElse(app.container)
+        portDefinitions = mergeServicePortsAndPortDefinitions(
+          app.portDefinitions,
+          servicePorts
+        ),
+        container = newContainer.orElse(app.container)
       )
     }
 
     val dynamicApps: Set[AppDefinition] = to.transitiveApps.map {
       case app: AppDefinition if app.hasDynamicPort => assignPorts(app)
-      case app: AppDefinition =>
+      case app: AppDefinition                       =>
         // Always set the ports to service ports, even if we do not have dynamic ports in our port mappings
         app.copy(
-            portDefinitions = mergeServicePortsAndPortDefinitions(
-                  app.portDefinitions, app.servicePorts)
+          portDefinitions = mergeServicePortsAndPortDefinitions(
+            app.portDefinitions,
+            app.servicePorts
+          )
         )
     }
 

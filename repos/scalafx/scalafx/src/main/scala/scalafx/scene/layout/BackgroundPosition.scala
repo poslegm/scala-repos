@@ -35,7 +35,8 @@ import scalafx.geometry.Side
 
 object BackgroundPosition {
   implicit def sfxBackgroundPosition2jfx(
-      v: BackgroundPosition): jfxsl.BackgroundPosition =
+      v: BackgroundPosition
+  ): jfxsl.BackgroundPosition =
     if (v != null) v.delegate else null
 
   /** A BackgroundPosition which will center a BackgroundImage. */
@@ -54,19 +55,24 @@ class BackgroundPosition(override val delegate: jfxsl.BackgroundPosition)
     extends SFXDelegate[jfxsl.BackgroundPosition] {
 
   /** Creates a new BackgroundPosition. */
-  def this(horizontalSide: Side,
-           horizontalPosition: Double,
-           horizontalAsPercentage: Boolean,
-           verticalSide: Side,
-           verticalPosition: Double,
-           verticalAsPercentage: Boolean) =
+  def this(
+      horizontalSide: Side,
+      horizontalPosition: Double,
+      horizontalAsPercentage: Boolean,
+      verticalSide: Side,
+      verticalPosition: Double,
+      verticalAsPercentage: Boolean
+  ) =
     this(
-        new jfxsl.BackgroundPosition(horizontalSide,
-                                     horizontalPosition,
-                                     horizontalAsPercentage,
-                                     verticalSide,
-                                     verticalPosition,
-                                     verticalAsPercentage))
+      new jfxsl.BackgroundPosition(
+        horizontalSide,
+        horizontalPosition,
+        horizontalAsPercentage,
+        verticalSide,
+        verticalPosition,
+        verticalAsPercentage
+      )
+    )
 
   /**
     * The value indicating the position of the BackgroundImage relative to the Region along the

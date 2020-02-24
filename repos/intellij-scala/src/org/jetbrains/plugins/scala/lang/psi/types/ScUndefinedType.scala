@@ -29,7 +29,8 @@ case class ScUndefinedType(tpt: ScTypeParameterType) extends NonValueType {
   override def equivInner(
       r: ScType,
       subst: ScUndefinedSubstitutor,
-      falseUndef: Boolean): (Boolean, ScUndefinedSubstitutor) = {
+      falseUndef: Boolean
+  ): (Boolean, ScUndefinedSubstitutor) = {
     var undefinedSubst = subst
     r match {
       case _ if falseUndef => (false, undefinedSubst)
@@ -53,8 +54,10 @@ case class ScUndefinedType(tpt: ScTypeParameterType) extends NonValueType {
   * inferences work together.
   */
 case class ScAbstractType(
-    tpt: ScTypeParameterType, lower: ScType, upper: ScType)
-    extends NonValueType {
+    tpt: ScTypeParameterType,
+    lower: ScType,
+    upper: ScType
+) extends NonValueType {
   private var hash: Int = -1
 
   override def toString: String = {
@@ -77,7 +80,7 @@ case class ScAbstractType(
   override def hashCode: Int = {
     if (hash == -1) {
       hash = (upper.hashCode() * 31 + lower.hashCode()) * 31 +
-      tpt.args.hashCode()
+        tpt.args.hashCode()
     }
     hash
   }
@@ -86,7 +89,7 @@ case class ScAbstractType(
     obj match {
       case ScAbstractType(oTpt, oLower, oUpper) =>
         lower.equals(oLower) && upper.equals(oUpper) &&
-        tpt.args.equals(oTpt.args)
+          tpt.args.equals(oTpt.args)
       case _ => false
     }
   }
@@ -94,7 +97,8 @@ case class ScAbstractType(
   override def equivInner(
       r: ScType,
       uSubst: ScUndefinedSubstitutor,
-      falseUndef: Boolean): (Boolean, ScUndefinedSubstitutor) = {
+      falseUndef: Boolean
+  ): (Boolean, ScUndefinedSubstitutor) = {
     r match {
       case _ if falseUndef => (false, uSubst)
       case rt =>
@@ -115,12 +119,14 @@ case class ScAbstractType(
 
   override def removeAbstracts = simplifyType
 
-  override def recursiveUpdate(update: ScType => (Boolean, ScType),
-                               visited: HashSet[ScType]): ScType = {
+  override def recursiveUpdate(
+      update: ScType => (Boolean, ScType),
+      visited: HashSet[ScType]
+  ): ScType = {
     if (visited.contains(this)) {
       return update(this) match {
         case (true, res) => res
-        case _ => this
+        case _           => this
       }
     }
     val newVisited = visited + this
@@ -128,11 +134,13 @@ case class ScAbstractType(
       case (true, res) => res
       case _ =>
         try {
-          ScAbstractType(tpt
-                           .recursiveUpdate(update, newVisited)
-                           .asInstanceOf[ScTypeParameterType],
-                         lower.recursiveUpdate(update, newVisited),
-                         upper.recursiveUpdate(update, newVisited))
+          ScAbstractType(
+            tpt
+              .recursiveUpdate(update, newVisited)
+              .asInstanceOf[ScTypeParameterType],
+            lower.recursiveUpdate(update, newVisited),
+            upper.recursiveUpdate(update, newVisited)
+          )
         } catch {
           case cce: ClassCastException => throw new RecursiveUpdateException
         }
@@ -142,19 +150,19 @@ case class ScAbstractType(
   override def recursiveVarianceUpdateModifiable[T](
       data: T,
       update: (ScType, Int, T) => (Boolean, ScType, T),
-      variance: Int = 1): ScType = {
+      variance: Int = 1
+  ): ScType = {
     update(this, variance, data) match {
       case (true, res, _) => res
       case (_, _, newData) =>
         try {
           ScAbstractType(
-              tpt
-                .recursiveVarianceUpdateModifiable(newData, update, variance)
-                .asInstanceOf[ScTypeParameterType],
-              lower.recursiveVarianceUpdateModifiable(
-                  newData, update, -variance),
-              upper.recursiveVarianceUpdateModifiable(
-                  newData, update, variance))
+            tpt
+              .recursiveVarianceUpdateModifiable(newData, update, variance)
+              .asInstanceOf[ScTypeParameterType],
+            lower.recursiveVarianceUpdateModifiable(newData, update, -variance),
+            upper.recursiveVarianceUpdateModifiable(newData, update, variance)
+          )
         } catch {
           case cce: ClassCastException => throw new RecursiveUpdateException
         }

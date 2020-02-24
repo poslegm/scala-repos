@@ -25,7 +25,9 @@ object LineNumber {
     getCurrent(depth, Thread.currentThread().getStackTrace)
 
   private[this] def getCurrent(
-      depth: Int, stack: Seq[StackTraceElement]): StackTraceElement =
+      depth: Int,
+      stack: Seq[StackTraceElement]
+  ): StackTraceElement =
     stack(depth + 2)
 
   def ignorePath(classPrefix: String): Option[StackTraceElement] =
@@ -35,13 +37,12 @@ object LineNumber {
 
   private[this] def ignorePaths(
       classPrefixes: Set[String],
-      stack: Seq[StackTraceElement]): Option[StackTraceElement] =
+      stack: Seq[StackTraceElement]
+  ): Option[StackTraceElement] =
     stack
       .drop(2)
       .dropWhile { ste =>
-        classPrefixes.exists { prefix =>
-          ste.getClassName.startsWith(prefix)
-        }
+        classPrefixes.exists { prefix => ste.getClassName.startsWith(prefix) }
       }
       .headOption
 
@@ -56,7 +57,8 @@ object LineNumber {
     tryNonScaldingCaller(Thread.currentThread().getStackTrace)
 
   def tryNonScaldingCaller(
-      stack: Array[StackTraceElement]): Option[StackTraceElement] = {
+      stack: Array[StackTraceElement]
+  ): Option[StackTraceElement] = {
     /* depth = 1:
      * depth 0 => tryNonScaldingCaller
      * depth 1 => caller of this method
@@ -76,12 +78,13 @@ object LineNumber {
       else None
 
     val scaldingJobCaller = headOption(
-        stack.iterator.filter { se =>
-      se.getClassName.startsWith(scaldingPrefix)
-    }.filter { se =>
-      val cls = Class.forName(se.getClassName)
-      jobClass.isAssignableFrom(cls)
-    })
+      stack.iterator
+        .filter { se => se.getClassName.startsWith(scaldingPrefix) }
+        .filter { se =>
+          val cls = Class.forName(se.getClassName)
+          jobClass.isAssignableFrom(cls)
+        }
+    )
 
     scaldingJobCaller.orElse(nonScalding)
   }

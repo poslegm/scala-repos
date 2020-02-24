@@ -8,7 +8,7 @@ object GenerateId {
   def apply(): String = generateCsrfToken()
 
   private[this] def hexEncode(bytes: Array[Byte]): String = {
-    ( (new StringBuilder(bytes.length * 2) /: bytes) { (sb, b) =>
+    ((new StringBuilder(bytes.length * 2) /: bytes) { (sb, b) =>
       if ((b.toInt & 0xff) < 0x10) sb.append("0")
       sb.append(Integer.toString(b.toInt & 0xff, 16))
     }).toString
@@ -54,10 +54,10 @@ trait CsrfTokenSupport {
     */
   protected def isForged: Boolean =
     !request.requestMethod.isSafe &&
-    session.get(csrfKey) != params.get(csrfKey) &&
-    !CsrfTokenSupport.HeaderNames
-      .map(request.headers.get)
-      .contains(session.get(csrfKey))
+      session.get(csrfKey) != params.get(csrfKey) &&
+      !CsrfTokenSupport.HeaderNames
+        .map(request.headers.get)
+        .contains(session.get(csrfKey))
 
   /**
     * Take an action when a forgery is detected. The default action
@@ -88,7 +88,8 @@ trait CsrfTokenSupport {
     * Returns the token from the session.
     */
   protected[scalatra] def csrfToken(
-      implicit request: HttpServletRequest): String =
+      implicit request: HttpServletRequest
+  ): String =
     request.getSession.getAttribute(csrfKey).asInstanceOf[String]
 }
 
@@ -127,8 +128,8 @@ trait XsrfTokenSupport {
     */
   protected def isForged: Boolean =
     !request.requestMethod.isSafe &&
-    session.get(xsrfKey) != params.get(xsrfKey) &&
-    !HeaderNames.map(request.headers.get).contains(session.get(xsrfKey))
+      session.get(xsrfKey) != params.get(xsrfKey) &&
+      !HeaderNames.map(request.headers.get).contains(session.get(xsrfKey))
 
   /**
     * Take an action when a forgery is detected. The default action

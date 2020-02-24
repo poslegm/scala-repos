@@ -8,7 +8,7 @@ import org.scalatest.junit.JUnitRunner
 class EstimatorTest extends FunSuite {
   test("LoadAverage") {
     // This makes LoadAverage.a = 1/2 for easy testing.
-    val interval = -1D / math.log(0.5)
+    val interval = -1d / math.log(0.5)
     val e = new LoadAverage(interval)
     assert(e.estimate.isNaN)
 
@@ -56,21 +56,23 @@ object EstimatorApp extends App {
   val lines = scala.io.Source.stdin.getLines().drop(1)
   val states =
     lines.toArray map (_.split(" ") filter (_ != "") map (_.toDouble)) collect {
-      case Array(s0c,
-                 s1c,
-                 s0u,
-                 s1u,
-                 ec,
-                 eu,
-                 oc,
-                 ou,
-                 pc,
-                 pu,
-                 ygc,
-                 ygct,
-                 fgc,
-                 fgct,
-                 gct) =>
+      case Array(
+          s0c,
+          s1c,
+          s0u,
+          s1u,
+          ec,
+          eu,
+          oc,
+          ou,
+          pc,
+          pu,
+          ygc,
+          ygct,
+          fgc,
+          fgct,
+          gct
+          ) =>
         PoolState(ygc.toLong, ec.toLong.bytes, eu.toLong.bytes)
     }
 

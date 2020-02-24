@@ -42,4 +42,6 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class EqualizerBandSpec
     extends SimpleSFXDelegateSpec[jfxsm.EqualizerBand, EqualizerBand](
-        classOf[jfxsm.EqualizerBand], classOf[EqualizerBand])
+      classOf[jfxsm.EqualizerBand],
+      classOf[EqualizerBand]
+    )

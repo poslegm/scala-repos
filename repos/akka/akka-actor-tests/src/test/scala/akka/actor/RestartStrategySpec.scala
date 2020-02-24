@@ -30,9 +30,15 @@ class RestartStrategySpec
   "A RestartStrategy" must {
 
     "ensure that slave stays dead after max restarts within time range" in {
-      val boss = system.actorOf(Props(new Supervisor(OneForOneStrategy(
-                      maxNrOfRetries = 2, withinTimeRange = 1 second)(List(
-                          classOf[Throwable])))))
+      val boss = system.actorOf(
+        Props(
+          new Supervisor(
+            OneForOneStrategy(maxNrOfRetries = 2, withinTimeRange = 1 second)(
+              List(classOf[Throwable])
+            )
+          )
+        )
+      )
 
       val restartLatch = new TestLatch
       val secondRestartLatch = new TestLatch
@@ -78,12 +84,12 @@ class RestartStrategySpec
 
     "ensure that slave is immortal without max restarts and time range" in {
       val boss = system.actorOf(
-          Props(new Supervisor(OneForOneStrategy()(List(classOf[Throwable])))))
+        Props(new Supervisor(OneForOneStrategy()(List(classOf[Throwable]))))
+      )
 
       val countDownLatch = new TestLatch(100)
 
-      val slaveProps = Props(
-          new Actor {
+      val slaveProps = Props(new Actor {
 
         def receive = {
           case Crash ⇒ throw new Exception("Crashing...")
@@ -96,17 +102,21 @@ class RestartStrategySpec
       val slave =
         Await.result((boss ? slaveProps).mapTo[ActorRef], timeout.duration)
 
-      (1 to 100) foreach { _ ⇒
-        slave ! Crash
-      }
+      (1 to 100) foreach { _ ⇒ slave ! Crash }
       Await.ready(countDownLatch, 2 minutes)
       assert(!slave.isTerminated)
     }
 
     "ensure that slave restarts after number of crashes not within time range" in {
-      val boss = system.actorOf(Props(new Supervisor(OneForOneStrategy(
-                      maxNrOfRetries = 2, withinTimeRange = 500 millis)(List(
-                          classOf[Throwable])))))
+      val boss = system.actorOf(
+        Props(
+          new Supervisor(
+            OneForOneStrategy(maxNrOfRetries = 2, withinTimeRange = 500 millis)(
+              List(classOf[Throwable])
+            )
+          )
+        )
+      )
 
       val restartLatch = new TestLatch
       val secondRestartLatch = new TestLatch
@@ -161,8 +171,13 @@ class RestartStrategySpec
     }
 
     "ensure that slave is not restarted after max retries" in {
-      val boss = system.actorOf(Props(new Supervisor(OneForOneStrategy(
-                      maxNrOfRetries = 2)(List(classOf[Throwable])))))
+      val boss = system.actorOf(
+        Props(
+          new Supervisor(
+            OneForOneStrategy(maxNrOfRetries = 2)(List(classOf[Throwable]))
+          )
+        )
+      )
 
       val restartLatch = new TestLatch
       val secondRestartLatch = new TestLatch
@@ -217,7 +232,8 @@ class RestartStrategySpec
 
       val boss = system.actorOf(Props(new Actor {
         override val supervisorStrategy = OneForOneStrategy(
-            withinTimeRange = 1 second)(List(classOf[Throwable]))
+          withinTimeRange = 1 second
+        )(List(classOf[Throwable]))
         def receive = {
           case p: Props ⇒ sender() ! context.watch(context.actorOf(p))
           case t: Terminated ⇒ maxNoOfRestartsLatch.open()

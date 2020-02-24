@@ -21,7 +21,8 @@ object FutureDocSpec {
       case x: String => sender() ! x.toUpperCase
       case x: Int if x < 0 =>
         sender() ! Status.Failure(
-            new ArithmeticException("Negative values not supported"))
+          new ArithmeticException("Negative values not supported")
+        )
       case x: Int => sender() ! x
     }
   }
@@ -117,9 +118,7 @@ class FutureDocSpec extends AkkaSpec {
       "Hello" + "World"
     }
     val f2 =
-      f1 map { x =>
-        x.length
-      }
+      f1 map { x => x.length }
     f2 foreach println
     //#map
     val result = Await.result(f2, 3 seconds)
@@ -134,11 +133,7 @@ class FutureDocSpec extends AkkaSpec {
     }
     val f2 = Future.successful(3)
     val f3 =
-      f1 map { x =>
-        f2 map { y =>
-          x.length * y
-        }
-      }
+      f1 map { x => f2 map { y => x.length * y } }
     f3 foreach println
     //#wrong-nested-map
     Await.ready(f3, 3 seconds)
@@ -151,11 +146,7 @@ class FutureDocSpec extends AkkaSpec {
     }
     val f2 = Future.successful(3)
     val f3 =
-      f1 flatMap { x =>
-        f2 map { y =>
-          x.length * y
-        }
-      }
+      f1 flatMap { x => f2 map { y => x.length * y } }
     f3 foreach println
     //#flat-map
     val result = Await.result(f3, 3 seconds)
@@ -188,7 +179,7 @@ class FutureDocSpec extends AkkaSpec {
       a <- Future(10 / 2) // 10 / 2 = 5
       b <- Future(a + 1) //  5 + 1 = 6
       c <- Future(a - 1) //  5 - 1 = 4
-          if c > 3 // Future.filter
+      if c > 3 // Future.filter
     } yield b * c //  6 * 4 = 24
 
     // Note that the execution of futures a, b, and c
@@ -380,7 +371,7 @@ class FutureDocSpec extends AkkaSpec {
       val future = Future { "foo" }
       //#onSuccess
       future onSuccess {
-        case "bar" => println("Got my bar alright!")
+        case "bar"     => println("Got my bar alright!")
         case x: String => println("Got some random string: " + x)
       }
       //#onSuccess
@@ -403,7 +394,7 @@ class FutureDocSpec extends AkkaSpec {
       def doSomethingOnFailure(t: Throwable) = ()
       //#onComplete
       future onComplete {
-        case Success(result) => doSomethingOnSuccess(result)
+        case Success(result)  => doSomethingOnSuccess(result)
         case Failure(failure) => doSomethingOnFailure(failure)
       }
       //#onComplete
@@ -437,7 +428,8 @@ class FutureDocSpec extends AkkaSpec {
     // import akka.pattern.after
 
     val delayed = akka.pattern.after(200 millis, using = system.scheduler)(
-        Future.failed(new IllegalStateException("OHNOES")))
+      Future.failed(new IllegalStateException("OHNOES"))
+    )
     val future = Future { Thread.sleep(1000); "foo" }
     val result = Future firstCompletedOf Seq(future, delayed)
     //#after

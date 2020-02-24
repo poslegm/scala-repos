@@ -19,11 +19,12 @@ object KMeansExample extends App {
     * Returns a collection of k points which are the centers of k clusters of
     * `points0`.
     */
-  def kMeans[V, @sp(Double) A, CC[V] <: Iterable[V]](
-      points0: CC[V], k: Int)(implicit vs: NormedVectorSpace[V, A],
-                              order: Order[A],
-                              cbf: CanBuildFrom[Nothing, V, CC[V]],
-                              ct: ClassTag[V]): CC[V] = {
+  def kMeans[V, @sp(Double) A, CC[V] <: Iterable[V]](points0: CC[V], k: Int)(
+      implicit vs: NormedVectorSpace[V, A],
+      order: Order[A],
+      cbf: CanBuildFrom[Nothing, V, CC[V]],
+      ct: ClassTag[V]
+  ): CC[V] = {
 
     val points = points0.toArray
 
@@ -84,9 +85,7 @@ object KMeansExample extends App {
     // wants before we return the clusters.
 
     val bldr = cbf()
-    cfor(0)(_ < clusters.length, _ + 1) { i =>
-      bldr += clusters(i)
-    }
+    cfor(0)(_ < clusters.length, _ + 1) { i => bldr += clusters(i) }
     bldr.result()
   }
 
@@ -94,15 +93,17 @@ object KMeansExample extends App {
   // k centers in d-dimensions.
 
   def genPoints[CC[_], V, @sp(Double) A](d: Int, k: Int, n: Int)(
-      f: Array[Double] => V)(implicit vs: VectorSpace[V, A],
-                             cbf: CanBuildFrom[Nothing, V, CC[V]]): CC[V] = {
+      f: Array[Double] => V
+  )(
+      implicit vs: VectorSpace[V, A],
+      cbf: CanBuildFrom[Nothing, V, CC[V]]
+  ): CC[V] = {
 
     def randPoint(gen: => Double): V =
       f((1 to d).map(_ => gen)(collection.breakOut))
 
-    val centers: Vector[V] = (1 to k).map({ _ =>
-      randPoint(nextDouble() * 10)
-    })(collection.breakOut)
+    val centers: Vector[V] =
+      (1 to k).map({ _ => randPoint(nextDouble() * 10) })(collection.breakOut)
 
     val bldr = cbf()
     cfor(0)(_ < n, _ + 1) { _ =>
@@ -120,7 +121,8 @@ object KMeansExample extends App {
   val points1 =
     genPoints[List, Vector[Double], Double](5, 10, 10000)(_.toVector)
   val points2 = genPoints[List, Vector[BigDecimal], BigDecimal](7, 8, 2000)(
-      _.map(BigDecimal(_)).toVector)
+    _.map(BigDecimal(_)).toVector
+  )
 
   println("Finding clusters of Array[Double] points.")
   val cluster0 = kMeans(points0, 5)

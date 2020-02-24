@@ -49,8 +49,9 @@ class SourceSpec extends WordSpec with Matchers {
   }
 
   class DailySuffixTsvSecond(prefix: String, fs: Fields = Fields.ALL)(
-      override implicit val dateRange: DateRange)
-      extends DailySuffixSource(prefix, dateRange) with DelimitedScheme {
+      override implicit val dateRange: DateRange
+  ) extends DailySuffixSource(prefix, dateRange)
+      with DelimitedScheme {
     override val fields = fs
   }
 
@@ -68,7 +69,8 @@ class SourceSpec extends WordSpec with Matchers {
 }
 
 case class AddOneTsv(p: String)
-    extends FixedPathSource(p) with DelimitedScheme
+    extends FixedPathSource(p)
+    with DelimitedScheme
     with Mappable[(Int, String, String)] {
   import Dsl._
   import TDsl._
@@ -76,23 +78,24 @@ case class AddOneTsv(p: String)
   override val sourceFields = new Fields("one", "two", "three")
   override def converter[U >: (Int, String, String)] =
     TupleConverter.asSuperConverter[(Int, String, String), U](
-        implicitly[TupleConverter[(Int, String, String)]])
+      implicitly[TupleConverter[(Int, String, String)]]
+    )
   override def transformForRead(p: Pipe) = {
-    p.mapTo((0, 1) -> ('one, 'two, 'three)) { t: (Int, String) =>
-      t :+ "1"
-    }
+    p.mapTo((0, 1) -> ('one, 'two, 'three)) { t: (Int, String) => t :+ "1" }
   }
 }
 
 case class RemoveOneTsv(p: String)
-    extends FixedPathSource(p) with DelimitedScheme
+    extends FixedPathSource(p)
+    with DelimitedScheme
     with Mappable[(Int, String, String)] {
   override val transformInTest = true
   import Dsl._
   override val sourceFields = new Fields("one", "two", "three")
   override def converter[U >: (Int, String, String)] =
     TupleConverter.asSuperConverter[(Int, String, String), U](
-        implicitly[TupleConverter[(Int, String, String)]])
+      implicitly[TupleConverter[(Int, String, String)]]
+    )
   override def transformForWrite(p: Pipe) = {
     p.mapTo(('one, 'two, 'three) -> (0, 1)) { t: (Int, String, String) =>
       (t._1, t._2)
@@ -102,10 +105,7 @@ case class RemoveOneTsv(p: String)
 
 class AddRemoveOneJob(args: Args) extends Job(args) {
   AddOneTsv("input").read
-
   //just for fun lets just switch all 1s with 2s
-    .map('three -> 'three) { s: String =>
-      "2"
-    }
+    .map('three -> 'three) { s: String => "2" }
     .write(RemoveOneTsv("output"))
 }

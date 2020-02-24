@@ -14,11 +14,12 @@ import org.jetbrains.plugins.scala.lang.psi.api.base._;
   * Date: 16.05.2008
   */
 class ScalaPrimaryConstructorItemPresentation(
-    private val element: ScPrimaryConstructor)
-    extends ScalaItemPresentation(element) {
+    private val element: ScPrimaryConstructor
+) extends ScalaItemPresentation(element) {
   def getPresentableText: String = {
     ScalaElementPresentation.getPrimaryConstructorPresentableText(
-        myElement.asInstanceOf[ScPrimaryConstructor])
+      myElement.asInstanceOf[ScPrimaryConstructor]
+    )
   }
 
   override def getIcon(open: Boolean): Icon = {

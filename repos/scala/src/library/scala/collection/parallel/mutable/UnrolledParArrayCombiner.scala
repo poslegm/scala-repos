@@ -40,7 +40,8 @@ trait UnrolledParArrayCombiner[T] extends Combiner[T, ParArray[T]] {
     val array = arrayseq.array.asInstanceOf[Array[Any]]
 
     combinerTaskSupport.executeAndWaitResult(
-        new CopyUnrolledToArray(array, 0, size))
+      new CopyUnrolledToArray(array, 0, size)
+    )
 
     new ParArray(arrayseq)
   }
@@ -55,14 +56,16 @@ trait UnrolledParArrayCombiner[T] extends Combiner[T, ParArray[T]] {
   }
 
   def combine[N <: T, NewTo >: ParArray[T]](
-      other: Combiner[N, NewTo]): Combiner[N, NewTo] = other match {
+      other: Combiner[N, NewTo]
+  ): Combiner[N, NewTo] = other match {
     case that if that eq this => this // just return this
     case that: UnrolledParArrayCombiner[t] =>
       buff concat that.buff
       this
     case _ =>
       throw new UnsupportedOperationException(
-          "Cannot combine with combiner of different type.")
+        "Cannot combine with combiner of different type."
+      )
   }
 
   def size = buff.size
@@ -92,7 +95,7 @@ trait UnrolledParArrayCombiner[T] extends Combiner[T, ParArray[T]] {
     private def findStart(pos: Int) = {
       var left = pos
       var node = buff.headPtr
-      while ( (left - node.size) >= 0) {
+      while ((left - node.size) >= 0) {
         left -= node.size
         node = node.next
       }
@@ -100,8 +103,10 @@ trait UnrolledParArrayCombiner[T] extends Combiner[T, ParArray[T]] {
     }
     def split = {
       val fp = howmany / 2
-      List(new CopyUnrolledToArray(array, offset, fp),
-           new CopyUnrolledToArray(array, offset + fp, howmany - fp))
+      List(
+        new CopyUnrolledToArray(array, offset, fp),
+        new CopyUnrolledToArray(array, offset + fp, howmany - fp)
+      )
     }
     def shouldSplitFurther =
       howmany > scala.collection.parallel

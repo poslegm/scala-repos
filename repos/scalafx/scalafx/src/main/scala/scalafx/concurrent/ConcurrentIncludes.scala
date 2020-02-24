@@ -58,7 +58,8 @@ trait ConcurrentIncludes {
     * @return $SFX $SER
     */
   implicit def jfxService2sfxService[T](s: jfxc.Service[T]): Service[T] =
-    if (s != null) new Service[T](s) {} else null
+    if (s != null) new Service[T](s) {}
+    else null
 
   /**
     * $START$SSER.html $SSER$END
@@ -67,8 +68,10 @@ trait ConcurrentIncludes {
     * @return $SFX $SSER
     */
   implicit def jfxScheduledService2sfxScheduledService[T](
-      s: jfxc.ScheduledService[T]): ScheduledService[T] =
-    if (s != null) new ScheduledService[T](s) {} else null
+      s: jfxc.ScheduledService[T]
+  ): ScheduledService[T] =
+    if (s != null) new ScheduledService[T](s) {}
+    else null
 
   /**
     * $START$TSK.html $TSK$END
@@ -77,7 +80,8 @@ trait ConcurrentIncludes {
     * @return $SFX $TSK
     */
   implicit def jfxTask2sfxTask[T](t: jfxc.Task[T]): Task[T] =
-    if (t != null) new Task[T](t) {} else null
+    if (t != null) new Task[T](t) {}
+    else null
 
   /**
     * $START$WRK.html $WRK$END
@@ -89,7 +93,8 @@ trait ConcurrentIncludes {
     if (w != null)
       new Worker[T] {
         override val delegate = w
-      } else null
+      }
+    else null
 
   /**
     * $START$WRS.html $WRS$END
@@ -107,6 +112,7 @@ trait ConcurrentIncludes {
     * @return $SFX $WSE
     */
   implicit def jfxWorkerStateEvent2sfxWorkerStateEvent(
-      w: jfxc.WorkerStateEvent): WorkerStateEvent =
+      w: jfxc.WorkerStateEvent
+  ): WorkerStateEvent =
     if (w != null) new WorkerStateEvent(w) else null
 }

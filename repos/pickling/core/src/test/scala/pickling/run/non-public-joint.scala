@@ -7,9 +7,11 @@ class Person(private val name: String, age: Int, val hobby: Hobby) {
   // NOTE: be careful not to reference age anywhere, so that it's elided by the "constructors" phase
   override def toString = s"Person(name = $name, hobby = $hobby)"
 }
-final class Hobby(var name: String,
-                  private var notes: String,
-                  private val attitude: String) {
+final class Hobby(
+    var name: String,
+    private var notes: String,
+    private val attitude: String
+) {
   override def toString =
     s"Hobby(name = $name, notes = $notes, attitude = $attitude)"
 }
@@ -17,10 +19,13 @@ final class Hobby(var name: String,
 class NonPublicJointTest extends FunSuite {
   test("main") {
     val e = new Person(
-        "Eugene", 25, new Hobby("hacking", "mostly Scala", "loving it"))
+      "Eugene",
+      25,
+      new Hobby("hacking", "mostly Scala", "loving it")
+    )
     val pickle = e.pickle
     assert(
-        pickle.toString === """
+      pickle.toString === """
       |JSONPickle({
       |  "$type": "scala.pickling.non.public.joint.Person",
       |  "hobby": {
@@ -30,7 +35,8 @@ class NonPublicJointTest extends FunSuite {
       |  },
       |  "name": "Eugene"
       |})
-    """.stripMargin.trim)
+    """.stripMargin.trim
+    )
     assert(pickle.unpickle[Person].toString === e.toString)
   }
 }

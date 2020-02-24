@@ -23,7 +23,9 @@ final case class Snapshot(data: Any)
   */
 @SerialVersionUID(1L)
 private[serialization] final case class SnapshotHeader(
-    serializerId: Int, manifest: Option[String])
+    serializerId: Int,
+    manifest: Option[String]
+)
 
 /**
   * [[Snapshot]] serializer.
@@ -49,7 +51,8 @@ class SnapshotSerializer(val system: ExtendedActorSystem)
     case Snapshot(data) ⇒ snapshotToBinary(data.asInstanceOf[AnyRef])
     case _ ⇒
       throw new IllegalArgumentException(
-          s"Can't serialize object of type ${o.getClass}")
+        s"Can't serialize object of type ${o.getClass}"
+      )
   }
 
   /**
@@ -152,14 +155,15 @@ class SnapshotSerializer(val system: ExtendedActorSystem)
 
     serialization
       .deserialize(
-          snapshotBytes, header.serializerId, header.manifest.getOrElse(""))
+        snapshotBytes,
+        header.serializerId,
+        header.manifest.getOrElse("")
+      )
       .get
   }
 
   private def writeInt(outputStream: OutputStream, i: Int) =
-    0 to 24 by 8 foreach { shift ⇒
-      outputStream.write(i >> shift)
-    }
+    0 to 24 by 8 foreach { shift ⇒ outputStream.write(i >> shift) }
 
   private def readShort(inputStream: InputStream) = {
     val ch1 = inputStream.read()
@@ -179,35 +183,10 @@ object SnapshotSerializer {
    * This is the serialized form of Class[Option[_]] (as a superclass, hence
    * the leading 0x78) with Scala 2.10.
    */
-  val key: Array[Byte] = Array(0x78,
-                               0x72,
-                               0x00,
-                               0x0c,
-                               0x73,
-                               0x63,
-                               0x61,
-                               0x6c,
-                               0x61,
-                               0x2e,
-                               0x4f,
-                               0x70,
-                               0x74,
-                               0x69,
-                               0x6f,
-                               0x6e,
-                               0xe3,
-                               0x60,
-                               0x24,
-                               0xa8,
-                               0x32,
-                               0x8a,
-                               0x45,
-                               0xe9, // here is the UID
-                               0x02,
-                               0x00,
-                               0x00,
-                               0x78,
-                               0x70).map(_.toByte)
+  val key: Array[Byte] = Array(0x78, 0x72, 0x00, 0x0c, 0x73, 0x63, 0x61, 0x6c,
+    0x61, 0x2e, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0xe3, 0x60, 0x24, 0xa8,
+    0x32, 0x8a, 0x45, 0xe9, // here is the UID
+    0x02, 0x00, 0x00, 0x78, 0x70).map(_.toByte)
   // The offset of the serialVersionUID in the above.
   val offset = 16
   // This is the new serialVersionUID from Scala 2.11 onwards.
@@ -235,7 +214,7 @@ object SnapshotSerializer {
         // running on 2.11
         true
       } else if (uid ==
-                 (key.slice(offset, offset + replacement.length): Seq[Byte])) {
+                   (key.slice(offset, offset + replacement.length): Seq[Byte])) {
         // running on 2.10, need to switch out UID between key and replacement
         val len = replacement.length
         val tmp = new Array[Byte](len)

@@ -28,10 +28,10 @@ import scala.annotation.unchecked.uncheckedVariance
   *  @author Aleksandar Prokopec
   *  @since 2.9
   */
-trait ParMapLike[K,
-                 +V,
-                 +Repr <: ParMapLike[K, V, Repr, Sequential] with ParMap[K, V],
-                 +Sequential <: Map[K, V] with MapLike[K, V, Sequential]]
+trait ParMapLike[K, +V, +Repr <: ParMapLike[K, V, Repr, Sequential] with ParMap[
+  K,
+  V
+], +Sequential <: Map[K, V] with MapLike[K, V, Sequential]]
     extends GenMapLike[K, V, Repr]
     with ParIterableLike[(K, V), Repr, Sequential] {
   self =>
@@ -43,12 +43,12 @@ trait ParMapLike[K,
 
   def apply(key: K) = get(key) match {
     case Some(v) => v
-    case None => default(key)
+    case None    => default(key)
   }
 
   def getOrElse[U >: V](key: K, default: => U): U = get(key) match {
     case Some(v) => v
-    case None => default
+    case None    => default
   }
 
   def contains(key: K): Boolean = get(key).isDefined
@@ -56,7 +56,8 @@ trait ParMapLike[K,
   def isDefinedAt(key: K): Boolean = contains(key)
 
   private[this] def keysIterator(
-      s: IterableSplitter[(K, V)] @uncheckedVariance): IterableSplitter[K] =
+      s: IterableSplitter[(K, V)] @uncheckedVariance
+  ): IterableSplitter[K] =
     new IterableSplitter[K] { i =>
       val iter = s
       def hasNext = iter.hasNext
@@ -73,7 +74,8 @@ trait ParMapLike[K,
   def keysIterator: IterableSplitter[K] = keysIterator(splitter)
 
   private[this] def valuesIterator(
-      s: IterableSplitter[(K, V)] @uncheckedVariance): IterableSplitter[V] =
+      s: IterableSplitter[(K, V)] @uncheckedVariance
+  ): IterableSplitter[V] =
     new IterableSplitter[V] { i =>
       val iter = s
       def hasNext = iter.hasNext
@@ -93,9 +95,11 @@ trait ParMapLike[K,
     def contains(key: K) = self.contains(key)
     def splitter = keysIterator(self.splitter)
     def +(elem: K): ParSet[K] =
-      (ParSet[K]() ++ this + elem).asInstanceOf[ParSet[K]] // !!! concrete overrides abstract problem
+      (ParSet[K]() ++ this + elem)
+        .asInstanceOf[ParSet[K]] // !!! concrete overrides abstract problem
     def -(elem: K): ParSet[K] =
-      (ParSet[K]() ++ this - elem).asInstanceOf[ParSet[K]] // !!! concrete overrides abstract problem
+      (ParSet[K]() ++ this - elem)
+        .asInstanceOf[ParSet[K]] // !!! concrete overrides abstract problem
     override def size = self.size
     override def foreach[U](f: K => U) = for ((k, v) <- self) f(k)
     override def seq = self.seq.keySet

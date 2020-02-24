@@ -6,15 +6,29 @@ import _root_.java.util
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.util.Processor
 import org.jetbrains.jps.ModuleChunk
-import org.jetbrains.jps.builders.java.{JavaBuilderUtil, JavaSourceRootDescriptor}
+import org.jetbrains.jps.builders.java.{
+  JavaBuilderUtil,
+  JavaSourceRootDescriptor
+}
 import org.jetbrains.jps.builders.{DirtyFilesHolder, FileProcessor}
 import org.jetbrains.jps.incremental.ModuleLevelBuilder.ExitCode
 import org.jetbrains.jps.incremental.fs.CompilationRound
-import org.jetbrains.jps.incremental.messages.{BuildMessage, CompilerMessage, ProgressMessage}
+import org.jetbrains.jps.incremental.messages.{
+  BuildMessage,
+  CompilerMessage,
+  ProgressMessage
+}
 import org.jetbrains.jps.incremental.scala.ScalaBuilder._
 import org.jetbrains.jps.incremental.scala.data.CompilerData
-import org.jetbrains.jps.incremental.scala.local.{IdeClientIdea, PackageObjectsData, ScalaReflectMacroExpansionParser}
-import org.jetbrains.jps.incremental.scala.model.{CompileOrder, IncrementalityType}
+import org.jetbrains.jps.incremental.scala.local.{
+  IdeClientIdea,
+  PackageObjectsData,
+  ScalaReflectMacroExpansionParser
+}
+import org.jetbrains.jps.incremental.scala.model.{
+  CompileOrder,
+  IncrementalityType
+}
 
 import _root_.scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -30,12 +44,15 @@ class IdeaIncrementalBuilder(category: BuilderCategory)
 
   override def getPresentableName: String = "Scala IDEA builder"
 
-  override def build(context: CompileContext,
-                     chunk: ModuleChunk,
-                     dirtyFilesHolder: DirtyFilesHolder[
-                         JavaSourceRootDescriptor, ModuleBuildTarget],
-                     outputConsumer: ModuleLevelBuilder.OutputConsumer)
-    : ModuleLevelBuilder.ExitCode = {
+  override def build(
+      context: CompileContext,
+      chunk: ModuleChunk,
+      dirtyFilesHolder: DirtyFilesHolder[
+        JavaSourceRootDescriptor,
+        ModuleBuildTarget
+      ],
+      outputConsumer: ModuleLevelBuilder.OutputConsumer
+  ): ModuleLevelBuilder.ExitCode = {
 
     if (isDisabled(context, chunk) || ChunkExclusionService.isExcluded(chunk))
       return ExitCode.NOTHING_DONE
@@ -43,17 +60,19 @@ class IdeaIncrementalBuilder(category: BuilderCategory)
     checkIncrementalTypeChange(context)
 
     context.processMessage(
-        new ProgressMessage("Searching for compilable files..."))
+      new ProgressMessage("Searching for compilable files...")
+    )
 
     val sourceDependencies =
       SourceDependenciesProviderService.getSourceDependenciesFor(chunk)
     if (sourceDependencies.nonEmpty) {
       val message =
         "IDEA incremental compiler cannot handle shared source modules: " +
-        sourceDependencies.map(_.getName).mkString(", ") +
-        ".\nPlease enable SBT incremental compiler for the project."
+          sourceDependencies.map(_.getName).mkString(", ") +
+          ".\nPlease enable SBT incremental compiler for the project."
       context.processMessage(
-          new CompilerMessage("scala", BuildMessage.Kind.ERROR, message))
+        new CompilerMessage("scala", BuildMessage.Kind.ERROR, message)
+      )
       return ExitCode.ABORT
     }
 
@@ -66,9 +85,10 @@ class IdeaIncrementalBuilder(category: BuilderCategory)
     if (!hasScalaModules(chunk)) {
       val message =
         "skipping Scala files without a Scala SDK in module(s) " +
-        chunk.getPresentableShortName
+          chunk.getPresentableShortName
       context.processMessage(
-          new CompilerMessage("scala", BuildMessage.Kind.WARNING, message))
+        new CompilerMessage("scala", BuildMessage.Kind.WARNING, message)
+      )
       return ExitCode.NOTHING_DONE
     }
 
@@ -80,8 +100,9 @@ class IdeaIncrementalBuilder(category: BuilderCategory)
       val additionalFiles =
         packageObjectsData.invalidatedPackageObjects(sources).filter(_.exists)
       if (additionalFiles.nonEmpty) {
-        (sources ++ additionalFiles).foreach(
-            f => FSOperations.markDirty(context, CompilationRound.NEXT, f))
+        (sources ++ additionalFiles).foreach(f =>
+          FSOperations.markDirty(context, CompilationRound.NEXT, f)
+        )
         return ExitCode.ADDITIONAL_PASS_REQUIRED
       }
     }
@@ -97,13 +118,15 @@ class IdeaIncrementalBuilder(category: BuilderCategory)
     val compilerName =
       if (modules.exists(CompilerData.isDottyModule)) "dotc" else "scalac"
 
-    val client = new IdeClientIdea(compilerName,
-                                   context,
-                                   modules.map(_.getName).toSeq,
-                                   outputConsumer,
-                                   callback,
-                                   successfullyCompiled,
-                                   packageObjectsData)
+    val client = new IdeClientIdea(
+      compilerName,
+      context,
+      modules.map(_.getName).toSeq,
+      outputConsumer,
+      callback,
+      successfullyCompiled,
+      packageObjectsData
+    )
 
     val scalaSources = sources.filter(_.getName.endsWith(".scala")).asJava
 
@@ -114,17 +137,19 @@ class IdeaIncrementalBuilder(category: BuilderCategory)
       case _ if client.hasReportedErrors || client.isCanceled => ExitCode.ABORT
       case Right(code) =>
         if (delta != null &&
-            JavaBuilderUtil.updateMappings(context,
-                                           delta,
-                                           dirtyFilesHolder,
-                                           chunk,
-                                           scalaSources,
-                                           successfullyCompiled.asJava))
+            JavaBuilderUtil.updateMappings(
+              context,
+              delta,
+              dirtyFilesHolder,
+              chunk,
+              scalaSources,
+              successfullyCompiled.asJava
+            ))
           ExitCode.ADDITIONAL_PASS_REQUIRED
         else {
           if (ScalaReflectMacroExpansionParser.expansions.nonEmpty)
             ScalaReflectMacroExpansionParser.serializeExpansions(context)
-          client.progress("Compilation completed", Some(1.0F))
+          client.progress("Compilation completed", Some(1.0f))
           code
         }
     }
@@ -134,7 +159,9 @@ class IdeaIncrementalBuilder(category: BuilderCategory)
     util.Arrays.asList("scala", "java")
 
   private def isDisabled(
-      context: CompileContext, chunk: ModuleChunk): Boolean = {
+      context: CompileContext,
+      chunk: ModuleChunk
+  ): Boolean = {
     val settings = projectSettings(context)
     def wrongIncrType =
       settings.getIncrementalityType != IncrementalityType.IDEA
@@ -153,7 +180,10 @@ class IdeaIncrementalBuilder(category: BuilderCategory)
       context: CompileContext,
       chunk: ModuleChunk,
       dirtyFilesHolder: DirtyFilesHolder[
-          JavaSourceRootDescriptor, ModuleBuildTarget]): Seq[File] = {
+        JavaSourceRootDescriptor,
+        ModuleBuildTarget
+      ]
+  ): Seq[File] = {
 
     val result = ListBuffer[File]()
 
@@ -163,7 +193,7 @@ class IdeaIncrementalBuilder(category: BuilderCategory)
       projectSettings(context).getCompilerSettings(chunk).getCompileOrder
     val extensionsToCollect = compileOrder match {
       case CompileOrder.Mixed => List(".scala", ".java")
-      case _ => List(".scala")
+      case _                  => List(".scala")
     }
 
     def checkAndCollectFile(file: File): Boolean = {
@@ -174,11 +204,14 @@ class IdeaIncrementalBuilder(category: BuilderCategory)
     }
 
     dirtyFilesHolder.processDirtyFiles(
-        new FileProcessor[JavaSourceRootDescriptor, ModuleBuildTarget] {
-      def apply(target: ModuleBuildTarget,
-                file: File,
-                root: JavaSourceRootDescriptor) = checkAndCollectFile(file)
-    })
+      new FileProcessor[JavaSourceRootDescriptor, ModuleBuildTarget] {
+        def apply(
+            target: ModuleBuildTarget,
+            file: File,
+            root: JavaSourceRootDescriptor
+        ) = checkAndCollectFile(file)
+      }
+    )
 
     for {
       target <- chunk.getTargets.asScala
@@ -187,9 +220,11 @@ class IdeaIncrementalBuilder(category: BuilderCategory)
         .asScala
     } {
       FileUtil.processFilesRecursively(
-          tempRoot.getRootFile, new Processor[File] {
-        def process(file: File) = checkAndCollectFile(file)
-      })
+        tempRoot.getRootFile,
+        new Processor[File] {
+          def process(file: File) = checkAndCollectFile(file)
+        }
+      )
     }
 
     //if no scala files to compile, return empty seq

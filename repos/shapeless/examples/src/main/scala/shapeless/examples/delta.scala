@@ -27,14 +27,17 @@ object DeltaExamples extends App {
 
   assert(6 == 2.delta(8))
   assert(("foo", "bar") == "foo".delta("bar"))
-  assert(6 :: ("foo", "bar") :: HNil == (2 :: "foo" :: HNil)
-        .delta(8 :: "bar" :: HNil))
+  assert(
+    6 :: ("foo", "bar") :: HNil == (2 :: "foo" :: HNil)
+      .delta(8 :: "bar" :: HNil)
+  )
   assert(6 :: ("foo", "bar") :: HNil == Foo(2, "foo").delta(Foo(8, "bar")))
   assert(
-      Bar(true, "foo", Some(Bar(true, "bar", None)))
-        .delta(Bar(false, "food", Some(Bar(true, "barf", None)))) == false :: (
-          "foo", "food") :: Inl(
-          Some(true :: ("bar", "barf") :: Inl(None) :: HNil)) :: HNil
+    Bar(true, "foo", Some(Bar(true, "bar", None)))
+      .delta(Bar(false, "food", Some(Bar(true, "barf", None)))) == false :: (
+      "foo",
+      "food"
+    ) :: Inl(Some(true :: ("bar", "barf") :: Inl(None) :: HNil)) :: HNil
   )
 }
 
@@ -58,7 +61,8 @@ trait Delta0 {
 
 object Delta extends Delta0 {
   def apply[In](
-      implicit delta: Lazy[Delta[In]]): Delta.Aux[In, delta.value.Out] =
+      implicit delta: Lazy[Delta[In]]
+  ): Delta.Aux[In, delta.value.Out] =
     delta.value
 
   type Aux[In, Out0] = Delta[In] { type Out = Out0 }
@@ -91,10 +95,10 @@ object Delta extends Delta0 {
 
       def apply(before: Option[T], after: Option[T]): Out =
         (before, after) match {
-          case (None, None) => Inl(None)
+          case (None, None)       => Inl(None)
           case (Some(b), Some(a)) => Inl(Some(deltaT.value.apply(b, a)))
-          case (Some(b), None) => Inr(Inl(b))
-          case (None, Some(a)) => Inr(Inr(Inl(a)))
+          case (Some(b), None)    => Inr(Inl(b))
+          case (None, Some(a))    => Inr(Inr(Inl(a)))
         }
     }
 

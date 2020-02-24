@@ -13,8 +13,9 @@ import fastparse.all._
   */
 object ProjectTests extends TestSuite {
 
-  def check(ignored: Seq[String] = Nil)(
-      implicit testPath: utest.framework.TestPath) = {
+  def check(
+      ignored: Seq[String] = Nil
+  )(implicit testPath: utest.framework.TestPath) = {
     val repo = "https://github.com/" + testPath.value.last
     val name = repo.split("/").last
     val path = Paths.get("pythonparse/jvm/target/repos/" + name)
@@ -32,7 +33,8 @@ object ProjectTests extends TestSuite {
 
     val pythonFiles: Seq[String] = listFiles(new java.io.File(path.toString))
       .filter(path =>
-            path.toString.endsWith(".py") && !ignored.exists(path.endsWith))
+        path.toString.endsWith(".py") && !ignored.exists(path.endsWith)
+      )
       .map(_.toString)
       .toSeq
 
@@ -40,10 +42,14 @@ object ProjectTests extends TestSuite {
       .result(Future.sequence(pythonFiles.map { p =>
         Future {
           print("-")
-          (Seq("python",
-               "pythonparse/jvm/src/test/resources/pythonparse/parse.py",
-               p).!,
-           p)
+          (
+            Seq(
+              "python",
+              "pythonparse/jvm/src/test/resources/pythonparse/parse.py",
+              p
+            ).!,
+            p
+          )
         }
       }), Duration.Inf)
       .groupBy(_._1)
@@ -65,7 +71,7 @@ object ProjectTests extends TestSuite {
   val tests = TestSuite {
     "dropbox/changes" - check()
     "django/django" - check(
-        ignored = Seq("tests/i18n/test_compilation.py")
+      ignored = Seq("tests/i18n/test_compilation.py")
     )
     "mitsuhiko/flask" - check()
     "zulip/zulip" - check()

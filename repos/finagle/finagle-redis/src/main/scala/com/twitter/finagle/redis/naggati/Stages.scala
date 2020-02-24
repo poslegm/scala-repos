@@ -46,8 +46,9 @@ object Stages {
     * Ensure that a certain number of bytes is buffered before executing the next step, calling
     * `getCount` each time new data arrives, to recompute the total number of bytes desired.
     */
-  def ensureBytesDynamic(getCount: => Int)(
-      process: ChannelBuffer => NextStep): Stage = proxy {
+  def ensureBytesDynamic(
+      getCount: => Int
+  )(process: ChannelBuffer => NextStep): Stage = proxy {
     ensureBytes(getCount)(process)
   }
 
@@ -91,8 +92,9 @@ object Stages {
     * Read bytes until a delimiter is present. The number of bytes up to and including the delimiter
     * is passed to the next processing step. `getDelimiter` is called each time new data arrives.
     */
-  def ensureDelimiterDynamic(getDelimiter: => Byte)(
-      process: (Int, ChannelBuffer) => NextStep) = proxy {
+  def ensureDelimiterDynamic(
+      getDelimiter: => Byte
+  )(process: (Int, ChannelBuffer) => NextStep) = proxy {
     ensureDelimiter(getDelimiter)(process)
   }
 
@@ -100,8 +102,9 @@ object Stages {
     * Read bytes until a delimiter is present. The number of bytes up to and including the delimiter
     * is passed to the next processing step.
     */
-  def ensureDelimiter(delimiter: Byte)(
-      process: (Int, ChannelBuffer) => NextStep) = stage { buffer =>
+  def ensureDelimiter(
+      delimiter: Byte
+  )(process: (Int, ChannelBuffer) => NextStep) = stage { buffer =>
     val n = buffer.bytesBefore(delimiter)
     if (n < 0) {
       Incomplete
@@ -115,8 +118,9 @@ object Stages {
     * including the delimiter to the next processing step. `getDelimiter` is called each time new
     * data arrives.
     */
-  def readToDelimiterDynamic(getDelimiter: => Byte)(
-      process: Array[Byte] => NextStep) = proxy {
+  def readToDelimiterDynamic(
+      getDelimiter: => Byte
+  )(process: Array[Byte] => NextStep) = proxy {
     readToDelimiter(getDelimiter)(process)
   }
 
@@ -141,7 +145,8 @@ object Stages {
     * @param encoding byte-to-character encoding to use
     */
   def readLine(removeLF: Boolean, encoding: String)(
-      process: String => NextStep): Stage = {
+      process: String => NextStep
+  ): Stage = {
     ensureDelimiter('\n'.toByte) { (n, buffer) =>
       val end =
         if ((n > 1) &&

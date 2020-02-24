@@ -11,7 +11,8 @@ import scala.collection.immutable.Seq
 case class Container(
     `type`: Mesos.ContainerInfo.Type = Mesos.ContainerInfo.Type.DOCKER,
     volumes: Seq[Volume] = Nil,
-    docker: Option[Container.Docker] = None)
+    docker: Option[Container.Docker] = None
+)
 
 object Container {
 
@@ -26,7 +27,8 @@ object Container {
       portMappings: Option[Seq[Docker.PortMapping]] = None,
       privileged: Boolean = false,
       parameters: Seq[Parameter] = Nil,
-      forcePullImage: Boolean = false)
+      forcePullImage: Boolean = false
+  )
 
   object Docker {
 
@@ -45,10 +47,13 @@ object Container {
         servicePort: Int = 0,
         protocol: String = "tcp",
         name: Option[String] = None,
-        labels: Map[String, String] = Map.empty[String, String]) {
+        labels: Map[String, String] = Map.empty[String, String]
+    ) {
 
-      require(protocol == "tcp" || protocol == "udp",
-              "protocol can only be 'tcp' or 'udp'")
+      require(
+        protocol == "tcp" || protocol == "udp",
+        "protocol can only be 'tcp' or 'udp'"
+      )
     }
 
     object PortMapping {
@@ -72,7 +77,8 @@ object Container {
     implicit val dockerValidator = validator[Docker] { docker =>
       docker.image is notEmpty
       docker.portMappings is optional(every(PortMapping.portMappingValidator)) and optional(
-          uniquePortNames)
+        uniquePortNames
+      )
     }
   }
 
@@ -90,8 +96,7 @@ object Container {
     }
 
     val validMesosContainer: Validator[Container] = validator[Container] {
-      container =>
-        container.docker is empty
+      container => container.docker is empty
     }
 
     new Validator[Container] {

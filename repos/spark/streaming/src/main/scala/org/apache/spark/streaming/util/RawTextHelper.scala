@@ -26,7 +26,8 @@ private[streaming] object RawTextHelper {
     * Splits lines and counts the words.
     */
   def splitAndCountPartitions(
-      iter: Iterator[String]): Iterator[(String, Long)] = {
+      iter: Iterator[String]
+  ): Iterator[(String, Long)] = {
     val map = new OpenHashMap[String, Long]
     var i = 0
     var j = 0

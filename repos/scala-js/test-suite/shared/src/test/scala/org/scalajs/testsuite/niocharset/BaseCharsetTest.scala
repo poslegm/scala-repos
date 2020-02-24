@@ -19,18 +19,23 @@ import org.junit.Assert._
 class BaseCharsetTest(val charset: Charset) {
   import BaseCharsetTest._
 
-  protected val AllErrorActions = Seq(CodingErrorAction.IGNORE,
-                                      CodingErrorAction.REPLACE,
-                                      CodingErrorAction.REPORT)
+  protected val AllErrorActions = Seq(
+    CodingErrorAction.IGNORE,
+    CodingErrorAction.REPLACE,
+    CodingErrorAction.REPORT
+  )
 
   protected val ReportActions = Seq(CodingErrorAction.REPORT)
 
-  protected def testDecode(in: ByteBuffer)(
-      outParts: OutPart[CharBuffer]*): Unit = {
+  protected def testDecode(
+      in: ByteBuffer
+  )(outParts: OutPart[CharBuffer]*): Unit = {
 
-    def testOneConfig(malformedAction: CodingErrorAction,
-                      unmappableAction: CodingErrorAction,
-                      readOnly: Boolean): Unit = {
+    def testOneConfig(
+        malformedAction: CodingErrorAction,
+        unmappableAction: CodingErrorAction,
+        readOnly: Boolean
+    ): Unit = {
 
       val decoder = charset.newDecoder()
       decoder.onMalformedInput(malformedAction)
@@ -55,7 +60,8 @@ class BaseCharsetTest(val charset: Charset) {
           case BufferPart(buf) =>
             val bufArray = new Array[Char](buf.remaining)
             buf.mark()
-            try buf.get(bufArray) finally buf.reset()
+            try buf.get(bufArray)
+            finally buf.reset()
             expectedChars ++= bufArray
           case Malformed(len) =>
             malformedAction match {
@@ -78,17 +84,23 @@ class BaseCharsetTest(val charset: Charset) {
       }
 
       (actualTry, expectedTry) match {
-        case (Failure(actualEx: MalformedInputException),
-              Failure(expectedEx: MalformedInputException)) =>
+        case (
+            Failure(actualEx: MalformedInputException),
+            Failure(expectedEx: MalformedInputException)
+            ) =>
           assertEquals(expectedEx.getInputLength(), actualEx.getInputLength())
 
-        case (Failure(actualEx: UnmappableCharacterException),
-              Failure(expectedEx: UnmappableCharacterException)) =>
+        case (
+            Failure(actualEx: UnmappableCharacterException),
+            Failure(expectedEx: UnmappableCharacterException)
+            ) =>
           assertEquals(expectedEx.getInputLength(), actualEx.getInputLength())
 
         case (Success(actualChars), Success(expectedChars)) =>
           assertArrayEquals(
-              expectedChars.map(_.toInt), actualChars.map(_.toInt))
+            expectedChars.map(_.toInt),
+            actualChars.map(_.toInt)
+          )
 
         case _ =>
           // For the error message
@@ -101,21 +113,24 @@ class BaseCharsetTest(val charset: Charset) {
 
     for {
       malformedAction <- if (hasAnyMalformed) AllErrorActions
-                        else ReportActions
+      else ReportActions
       unmappableAction <- if (hasAnyUnmappable) AllErrorActions
-                         else ReportActions
+      else ReportActions
       readOnly <- List(false, true)
     } {
       testOneConfig(malformedAction, unmappableAction, readOnly)
     }
   }
 
-  protected def testEncode(in: CharBuffer)(
-      outParts: OutPart[ByteBuffer]*): Unit = {
+  protected def testEncode(
+      in: CharBuffer
+  )(outParts: OutPart[ByteBuffer]*): Unit = {
 
-    def testOneConfig(malformedAction: CodingErrorAction,
-                      unmappableAction: CodingErrorAction,
-                      readOnly: Boolean): Unit = {
+    def testOneConfig(
+        malformedAction: CodingErrorAction,
+        unmappableAction: CodingErrorAction,
+        readOnly: Boolean
+    ): Unit = {
 
       val encoder = charset.newEncoder()
       encoder.onMalformedInput(malformedAction)
@@ -140,7 +155,8 @@ class BaseCharsetTest(val charset: Charset) {
           case BufferPart(buf) =>
             val bufArray = new Array[Byte](buf.remaining)
             buf.mark()
-            try buf.get(bufArray) finally buf.reset()
+            try buf.get(bufArray)
+            finally buf.reset()
             expectedBytes ++= bufArray
           case Malformed(len) =>
             malformedAction match {
@@ -163,12 +179,16 @@ class BaseCharsetTest(val charset: Charset) {
       }
 
       (actualTry, expectedTry) match {
-        case (Failure(actualEx: MalformedInputException),
-              Failure(expectedEx: MalformedInputException)) =>
+        case (
+            Failure(actualEx: MalformedInputException),
+            Failure(expectedEx: MalformedInputException)
+            ) =>
           assertEquals(expectedEx.getInputLength(), actualEx.getInputLength())
 
-        case (Failure(actualEx: UnmappableCharacterException),
-              Failure(expectedEx: UnmappableCharacterException)) =>
+        case (
+            Failure(actualEx: UnmappableCharacterException),
+            Failure(expectedEx: UnmappableCharacterException)
+            ) =>
           assertEquals(expectedEx.getInputLength(), actualEx.getInputLength())
 
         case (Success(actualBytes), Success(expectedBytes)) =>
@@ -185,9 +205,9 @@ class BaseCharsetTest(val charset: Charset) {
 
     for {
       malformedAction <- if (hasAnyMalformed) AllErrorActions
-                        else ReportActions
+      else ReportActions
       unmappableAction <- if (hasAnyUnmappable) AllErrorActions
-                         else ReportActions
+      else ReportActions
       readOnly <- List(false, true)
     } {
       testOneConfig(malformedAction, unmappableAction, readOnly)
@@ -204,7 +224,8 @@ object BaseCharsetTest {
 
   object OutPart {
     implicit def fromBuffer[BufferType <: Buffer](
-        buf: BufferType): BufferPart[BufferType] =
+        buf: BufferType
+    ): BufferPart[BufferType] =
       BufferPart(buf)
   }
 
@@ -217,14 +238,15 @@ object BaseCharsetTest {
       def appendStr(s: String): Unit = {
         val s1 = s.replace(" ", "")
         require(s1.length % 2 == 0)
-        for (i <- 0 until s1.length by 2) buf +=
-          java.lang.Integer.parseInt(s1.substring(i, i + 2), 16).toByte
+        for (i <- 0 until s1.length by 2)
+          buf +=
+            java.lang.Integer.parseInt(s1.substring(i, i + 2), 16).toByte
       }
 
       appendStr(strings.next())
       while (strings.hasNext) {
         expressions.next() match {
-          case b: Byte => buf += b
+          case b: Byte            => buf += b
           case bytes: Array[Byte] => buf ++= bytes
           case bytes: Seq[_] =>
             buf ++= bytes.map(_.asInstanceOf[Number].byteValue())

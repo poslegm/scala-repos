@@ -33,7 +33,7 @@ object AsmNode {
     def fieldsAndMethods: List[AsmMember] = {
       val xs: List[AsmMember] =
         (node.methods.asScala.toList.map(x => (x: AsmMethod)) ++ node.fields.asScala.toList
-              .map(x => (x: AsmField)))
+          .map(x => (x: AsmField)))
       xs sortBy (_.characteristics)
     }
   }

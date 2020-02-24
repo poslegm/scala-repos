@@ -14,16 +14,17 @@ import lila.db.Types.Coll
 import tube._
 
 private[wiki] final class Fetch(gitUrl: String, markdownPath: String)(
-    implicit coll: Coll) {
+    implicit coll: Coll
+) {
 
   def apply: Funit = getFiles flatMap { files =>
     val (defaultPages, langPages) =
       files.map(filePage).flatten partition (_.isDefaultLang)
     val newLangPages = (langPages map { page =>
-          defaultPages find (_.number == page.number) map { default =>
-            page.copy(slug = default.slug)
-          }
-        }).flatten
+      defaultPages find (_.number == page.number) map { default =>
+        page.copy(slug = default.slug)
+      }
+    }).flatten
     $remove($select.all) >> (newLangPages ::: defaultPages)
       .map($insert(_))
       .sequenceFu

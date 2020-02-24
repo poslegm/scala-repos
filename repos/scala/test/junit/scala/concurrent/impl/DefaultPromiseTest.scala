@@ -57,14 +57,16 @@ class DefaultPromiseTest {
 
     /** Get the chain for a given promise */
     private def promiseChain(p: PromiseId): Option[(ChainId, Chain)] = {
-      val found: Iterable[(ChainId, Chain)] = for ((cid, c) <- chains;
-      p0 <- c.promises; if (p0 == p)) yield ((cid, c))
+      val found: Iterable[(ChainId, Chain)] =
+        for ((cid, c) <- chains;
+             p0 <- c.promises; if (p0 == p)) yield ((cid, c))
       found.toList match {
-        case Nil => None
+        case Nil      => None
         case x :: Nil => Some(x)
         case _ =>
           throw new IllegalStateException(
-              s"Promise $p found in more than one chain")
+            s"Promise $p found in more than one chain"
+          )
       }
     }
 
@@ -90,7 +92,7 @@ class DefaultPromiseTest {
 
       def assertIllegalResult = result match {
         case Failure(e: IllegalStateException) => ()
-        case _ => fail(s"Expected IllegalStateException: $result")
+        case _                                 => fail(s"Expected IllegalStateException: $result")
       }
 
       expected match {
@@ -118,7 +120,7 @@ class DefaultPromiseTest {
       for ((cid, chain) <- chains; p <- chain.promises) {
         chain.state match {
           case Right(result) => assertEquals(Some(result), promises(p).value)
-          case Left(_) => ()
+          case Left(_)       => ()
         }
       }
     }
@@ -138,7 +140,7 @@ class DefaultPromiseTest {
       val r = Success(freshId())
       val (cid, chain) = promiseChain(p).get
       val (completionEffect, newState) = chain.state match {
-        case Left(handlers) => (HandlersFired(r, handlers), Right(r))
+        case Left(handlers)    => (HandlersFired(r, handlers), Right(r))
         case Right(completion) => (IllegalThrown, chain.state)
       }
       checkEffect(completionEffect) { promises(p).complete(r) }
@@ -170,7 +172,10 @@ class DefaultPromiseTest {
         case (Right(result), Left(handlers)) =>
           (HandlersFired(result, handlers), Merge(Right(result)))
         case (Right(_), Right(_)) if (cidA == cidB) =>
-          (MaybeIllegalThrown, NoMerge) // Won't be thrown if happen to link a promise to itself
+          (
+            MaybeIllegalThrown,
+            NoMerge
+          ) // Won't be thrown if happen to link a promise to itself
         case (Right(_), Right(_)) =>
           (IllegalThrown, NoMerge)
       }
@@ -182,13 +187,15 @@ class DefaultPromiseTest {
       val (newCidA, newCidB) = mergeOp match {
         case NoMerge => (cidA, cidB)
         case Merge(newState) => {
-            chains = chains - cidA
-            chains = chains - cidB
-            val newCid = freshId()
-            chains = chains.updated(
-                newCid, Chain(chainA.promises ++ chainB.promises, newState))
-            (newCid, newCid)
-          }
+          chains = chains - cidA
+          chains = chains - cidB
+          val newCid = freshId()
+          chains = chains.updated(
+            newCid,
+            Chain(chainA.promises ++ chainB.promises, newState)
+          )
+          (newCid, newCid)
+        }
       }
       assertPromiseValues()
       (newCidA, newCidB)
@@ -245,8 +252,8 @@ class DefaultPromiseTest {
 
     actions foreach { action =>
       action match {
-        case Complete(p) => t.complete(byKey(p))
-        case Link(a, b) => t.link(byKey(a), byKey(b))
+        case Complete(p)      => t.complete(byKey(p))
+        case Link(a, b)       => t.link(byKey(a), byKey(b))
         case AttachHandler(p) => t.attachHandler(byKey(p))
       }
     }
@@ -291,9 +298,11 @@ class DefaultPromiseTest {
       case class Complete(p: PromiseId) extends FlatMapEvent
 
       @tailrec
-      def flatMapEvents(count: Int,
-                        p1: PromiseId,
-                        acc: List[FlatMapEvent]): List[FlatMapEvent] = {
+      def flatMapEvents(
+          count: Int,
+          p1: PromiseId,
+          acc: List[FlatMapEvent]
+      ): List[FlatMapEvent] = {
         if (count == 0) {
           Complete(p1) :: acc
         } else {
@@ -306,7 +315,7 @@ class DefaultPromiseTest {
       assertEquals(flatMapCount + 1, t.chains.size) // All promises are unlinked
       val shuffled = random.shuffle(events)
       shuffled foreach {
-        case Link(a, b) => t.link(a, b)
+        case Link(a, b)  => t.link(a, b)
         case Complete(p) => t.complete(p)
       }
       // All promises should be linked together, no matter the order of their linking
@@ -324,8 +333,7 @@ class DefaultPromiseTest {
       val doneLatch = new CountDownLatch(flatMapCount + 1)
       def execute(f: => Unit) {
         val ec = ExecutionContext.global
-        ec.execute(
-            new Runnable {
+        ec.execute(new Runnable {
           def run() {
             try {
               startLatch.await()

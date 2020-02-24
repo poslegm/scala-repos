@@ -34,7 +34,8 @@ import scalafx.beans.value.ObservableValue
 
 object ObjectExpression {
   implicit def sfxObjectExpression2jfx[J](
-      oe: ObjectExpression[J]): jfxbb.ObjectExpression[J] =
+      oe: ObjectExpression[J]
+  ): jfxbb.ObjectExpression[J] =
     if (oe != null) oe.delegate else null
 }
 
@@ -51,7 +52,8 @@ class ObjectExpression[J](val delegate: jfxbb.ObjectExpression[J]) {
   // explicit conversion needed due to AnyRef typed method
   def =!=[T](v: ObservableValue[T, T]) =
     delegate.isNotEqualTo(
-        ObservableValue.sfxObservableValue2jfxObjectValue[T](v))
+      ObservableValue.sfxObservableValue2jfxObjectValue[T](v)
+    )
   def =!=(v: AnyRef) = delegate.isNotEqualTo(v)
 
   def selectDouble(s: String) = jfxbb.Bindings.selectDouble(this.delegate, s)

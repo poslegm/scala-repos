@@ -72,12 +72,14 @@ trait Internals { self: blackbox.Context =>
       *  @see [[TypingTransformApi]]
       */
     def typingTransform(tree: Tree)(
-        transformer: (Tree, TypingTransformApi) => Tree): Tree
+        transformer: (Tree, TypingTransformApi) => Tree
+    ): Tree
 
     /** Transforms a given tree at a given owner using the provided function.
       *  @see [[TypingTransformApi]]
       */
     def typingTransform(tree: Tree, owner: Symbol)(
-        transformer: (Tree, TypingTransformApi) => Tree): Tree
+        transformer: (Tree, TypingTransformApi) => Tree
+    ): Tree
   }
 }

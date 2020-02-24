@@ -24,9 +24,9 @@ trait ParserApi[+T] {
     * Repeats this parser 0 or more times
     */
   def rep[R](implicit ev: Repeater[T, R]): Parser[R]
-  def rep[R](min: Int = 0,
-             sep: Parser[_] = Pass,
-             max: Int = Int.MaxValue)(implicit ev: Repeater[T, R]): Parser[R]
+  def rep[R](min: Int = 0, sep: Parser[_] = Pass, max: Int = Int.MaxValue)(
+      implicit ev: Repeater[T, R]
+  ): Parser[R]
 
   /**
     * Parses using this or the parser `p`
@@ -95,17 +95,20 @@ class ParserApiImpl[+T](self: Parser[T]) extends ParserApi[T] {
   def rep[R](implicit ev: Repeater[T, R]): Parser[R] =
     Repeat(self, 0, Int.MaxValue, Pass)
   def rep[R](min: Int = 0, sep: Parser[_] = Pass, max: Int = Int.MaxValue)(
-      implicit ev: Repeater[T, R]): Parser[R] = Repeat(self, min, max, sep)
+      implicit ev: Repeater[T, R]
+  ): Parser[R] = Repeat(self, min, max, sep)
 
   def |[V >: T](p: Parser[V]): Parser[V] =
     Either[V](Either.flatten(Vector(self, p)): _*)
 
   def ~[V, R](p: Parser[V])(implicit ev: Sequencer[T, V, R]): Parser[R] =
     Sequence.flatten(
-        Sequence(self, p, cut = false).asInstanceOf[Sequence[R, R, R]])
+      Sequence(self, p, cut = false).asInstanceOf[Sequence[R, R, R]]
+    )
   def ~/[V, R](p: Parser[V])(implicit ev: Sequencer[T, V, R]): Parser[R] =
     Sequence.flatten(
-        Sequence(self, p, cut = true).asInstanceOf[Sequence[R, R, R]])
+      Sequence(self, p, cut = true).asInstanceOf[Sequence[R, R, R]]
+    )
 
   def ?[R](implicit ev: Optioner[T, R]): Parser[R] = Optional(self)
 

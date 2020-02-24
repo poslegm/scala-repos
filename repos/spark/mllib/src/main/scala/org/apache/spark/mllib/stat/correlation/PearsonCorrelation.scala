@@ -55,7 +55,8 @@ private[stat] object PearsonCorrelation extends Correlation with Logging {
     * 0 covariance results in a correlation value of Double.NaN.
     */
   def computeCorrelationMatrixFromCovariance(
-      covarianceMatrix: Matrix): Matrix = {
+      covarianceMatrix: Matrix
+  ): Matrix = {
     val cov = covarianceMatrix.toBreeze.asInstanceOf[BDM[Double]]
     val n = cov.cols
 

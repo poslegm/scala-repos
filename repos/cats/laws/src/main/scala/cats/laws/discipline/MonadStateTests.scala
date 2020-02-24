@@ -9,7 +9,7 @@ import org.scalacheck.Prop.forAll
 trait MonadStateTests[F[_], S] extends MonadTests[F] {
   def laws: MonadStateLaws[F, S]
 
-  def monadState[A : Arbitrary : Eq, B : Arbitrary : Eq, C : Arbitrary : Eq](
+  def monadState[A: Arbitrary: Eq, B: Arbitrary: Eq, C: Arbitrary: Eq](
       implicit ArbFA: Arbitrary[F[A]],
       ArbFB: Arbitrary[F[B]],
       ArbFC: Arbitrary[F[C]],
@@ -24,16 +24,17 @@ trait MonadStateTests[F[_], S] extends MonadTests[F] {
       EqFUnit: Eq[F[Unit]],
       EqFS: Eq[F[S]],
       EqFABC: Eq[F[(A, B, C)]],
-      iso: Isomorphisms[F]): RuleSet = {
+      iso: Isomorphisms[F]
+  ): RuleSet = {
     new RuleSet {
       def name: String = "monadState"
       def bases: Seq[(String, RuleSet)] = Nil
       def parents: Seq[RuleSet] = Seq(monad[A, B, C])
       def props: Seq[(String, Prop)] = Seq(
-          "monadState get idempotent" -> laws.monadStateGetIdempotent,
-          "monadState set twice" -> forAll(laws.monadStateSetTwice _),
-          "monadState set get" -> forAll(laws.monadStateSetGet _),
-          "monadState get set" -> laws.monadStateGetSet
+        "monadState get idempotent" -> laws.monadStateGetIdempotent,
+        "monadState set twice" -> forAll(laws.monadStateSetTwice _),
+        "monadState set get" -> forAll(laws.monadStateSetGet _),
+        "monadState get set" -> laws.monadStateGetSet
       )
     }
   }

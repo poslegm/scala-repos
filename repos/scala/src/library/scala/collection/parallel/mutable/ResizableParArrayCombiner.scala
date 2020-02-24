@@ -29,7 +29,8 @@ trait ResizableParArrayCombiner[T]
       val array = arrayseq.array.asInstanceOf[Array[Any]]
 
       combinerTaskSupport.executeAndWaitResult(
-          new CopyChainToArray(array, 0, size))
+        new CopyChainToArray(array, 0, size)
+      )
 
       new ParArray(arrayseq)
     } else {
@@ -66,11 +67,13 @@ trait ResizableParArrayCombiner[T]
         ind = 0
       }
     }
-    private def copyChunk(buffarr: Array[AnyRef],
-                          buffStart: Int,
-                          ra: Array[Any],
-                          arrayStart: Int,
-                          until: Int) {
+    private def copyChunk(
+        buffarr: Array[AnyRef],
+        buffStart: Int,
+        ra: Array[Any],
+        arrayStart: Int,
+        until: Int
+    ) {
       Array.copy(buffarr, buffStart, ra, arrayStart, until - buffStart)
     }
     private def findStart(pos: Int) = {
@@ -84,8 +87,10 @@ trait ResizableParArrayCombiner[T]
     }
     def split = {
       val fp = howmany / 2
-      List(new CopyChainToArray(array, offset, fp),
-           new CopyChainToArray(array, offset + fp, howmany - fp))
+      List(
+        new CopyChainToArray(array, offset, fp),
+        new CopyChainToArray(array, offset + fp, howmany - fp)
+      )
     }
     def shouldSplitFurther =
       howmany > scala.collection.parallel
@@ -95,9 +100,11 @@ trait ResizableParArrayCombiner[T]
 
 object ResizableParArrayCombiner {
   def apply[T](
-      c: ArrayBuffer[ExposedArrayBuffer[T]]): ResizableParArrayCombiner[T] = {
-    new { val chain = c }
-    with ResizableParArrayCombiner[T] // was: with EnvironmentPassingCombiner[T, ParArray[T]]
+      c: ArrayBuffer[ExposedArrayBuffer[T]]
+  ): ResizableParArrayCombiner[T] = {
+    new { val chain = c } with ResizableParArrayCombiner[
+      T
+    ] // was: with EnvironmentPassingCombiner[T, ParArray[T]]
   }
   def apply[T](): ResizableParArrayCombiner[T] =
     apply(new ArrayBuffer[ExposedArrayBuffer[T]] += new ExposedArrayBuffer[T])

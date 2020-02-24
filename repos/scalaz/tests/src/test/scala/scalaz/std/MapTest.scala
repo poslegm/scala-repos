@@ -8,9 +8,9 @@ import scala.collection.immutable.{Map => SMap, MapLike}
 import scala.math.{Ordering => SOrdering}
 import org.scalacheck.Prop.forAll
 
-abstract class XMapTest[
-    Map[K, V] <: SMap[K, V] with MapLike[K, V, Map[K, V]], BKC[_]](
-    dict: MapSubInstances with MapSubFunctions {
+abstract class XMapTest[Map[K, V] <: SMap[K, V] with MapLike[K, V, Map[K, V]], BKC[
+    _
+]](dict: MapSubInstances with MapSubFunctions {
   type XMap[A, B] = Map[A, B]
   type BuildKeyConstraint[A] = BKC[A]
 })(implicit BKCF: Contravariant[BKC], OI: BKC[Int], OS: BKC[String])
@@ -28,8 +28,7 @@ abstract class XMapTest[
 
   "satisfy equals laws when not natural" ! equal.laws[Map[NotNatural, String]]
 
-  implicit def mapArb[
-      A : Arbitrary : BKC, B : Arbitrary]: Arbitrary[Map[A, B]] =
+  implicit def mapArb[A: Arbitrary: BKC, B: Arbitrary]: Arbitrary[Map[A, B]] =
     Arbitrary(arbitrary[SMap[A, B]] map (m => fromSeq(m.toSeq: _*)))
 
   class NotNatural(val id: Int)
@@ -48,18 +47,17 @@ abstract class XMapTest[
   "map ordering" ! forAll {
     val O = implicitly[Order[Map[String, Int]]]
     val O2 = SOrdering.Iterable(implicitly[SOrdering[(String, Int)]])
-    (kvs: List[(String, Int)], kvs2: List[(String, Int)]) =>
-      {
-        val (m1, m2) = (fromSeq(kvs: _*), fromSeq(kvs2: _*))
-        ((m1.size == kvs.size) && (m2.size == kvs2.size)) ==> {
-          val l: Boolean = O.lessThan(m1, m2)
-          val r: Boolean =
-            (if (m1.size < m2.size) true
-             else if (m1.size > m2.size) false
-             else O2.lt(kvs.sortBy(_._1), kvs2.sortBy(_._1)))
-          l == r
-        }
+    (kvs: List[(String, Int)], kvs2: List[(String, Int)]) => {
+      val (m1, m2) = (fromSeq(kvs: _*), fromSeq(kvs2: _*))
+      ((m1.size == kvs.size) && (m2.size == kvs2.size)) ==> {
+        val l: Boolean = O.lessThan(m1, m2)
+        val r: Boolean =
+          (if (m1.size < m2.size) true
+           else if (m1.size > m2.size) false
+           else O2.lt(kvs.sortBy(_._1), kvs2.sortBy(_._1)))
+        l == r
       }
+    }
   }
 
   "align" ! forAll { (a: Map[Int, String], b: Map[Int, Long]) =>
@@ -100,7 +98,7 @@ abstract class XMapTest[
     // lazy
     var evaluated = false
     getOrAdd[Id.Id, Int, Long](mWithOld, k)({ evaluated = true; vNew }) must_===
-    (mWithOld, vOld)
+      (mWithOld, vOld)
     evaluated must_=== false
   }
 }
@@ -111,4 +109,7 @@ private object DIContravariant extends Contravariant[λ[α => DummyImplicit]] {
 
 object MapTest
     extends XMapTest[SMap, λ[α => DummyImplicit]](std.map)(
-        DIContravariant, implicitly, implicitly)
+      DIContravariant,
+      implicitly,
+      implicitly
+    )

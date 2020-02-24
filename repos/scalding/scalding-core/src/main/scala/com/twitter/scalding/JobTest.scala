@@ -32,7 +32,7 @@ object JobTest {
   def apply(cons: (Args) => Job) = {
     new JobTest(cons)
   }
-  def apply[T <: Job : Manifest] = {
+  def apply[T <: Job: Manifest] = {
     val cons = { (args: Args) =>
       manifest[T].runtimeClass
         .getConstructor(classOf[Args])
@@ -62,9 +62,7 @@ class JobTest(cons: (Args) => Job) {
   private val statsCallbacks = Buffer[(CascadingStats) => Unit]()
   // TODO: Switch the following maps and sets from Source to String keys
   // to guard for scala equality bugs
-  private var sourceMap: (Source) => Option[Buffer[Tuple]] = { _ =>
-    None
-  }
+  private var sourceMap: (Source) => Option[Buffer[Tuple]] = { _ => None }
   private var sinkSet = Set[Source]()
   private var fileSet = Set[String]()
   private var validateJob = false
@@ -79,17 +77,18 @@ class JobTest(cons: (Args) => Job) {
     this
   }
 
-  private def sourceBuffer[T : TupleSetter](
-      s: Source, tups: Iterable[T]): JobTest = {
-    source { src =>
-      if (src == s) Some(tups) else None
-    }
+  private def sourceBuffer[T: TupleSetter](
+      s: Source,
+      tups: Iterable[T]
+  ): JobTest = {
+    source { src => if (src == s) Some(tups) else None }
     this
   }
 
   /** Add a function to produce a mock when a certain source is requested */
-  def source[T](fn: Source => Option[Iterable[T]])(
-      implicit setter: TupleSetter[T]): JobTest = {
+  def source[T](
+      fn: Source => Option[Iterable[T]]
+  )(implicit setter: TupleSetter[T]): JobTest = {
     val oldSm = sourceMap
     val bufferTupFn = fn.andThen { optItT =>
       optItT.map { _.map(t => setter(t)).toBuffer }
@@ -107,21 +106,24 @@ class JobTest(cons: (Args) => Job) {
     * .ifSource { case Tsv("in") => List(1, 2, 3) }
     * We need a different function name from source to help the compiler
     */
-  def ifSource[T](fn: PartialFunction[Source, Iterable[T]])(
-      implicit setter: TupleSetter[T]): JobTest =
+  def ifSource[T](
+      fn: PartialFunction[Source, Iterable[T]]
+  )(implicit setter: TupleSetter[T]): JobTest =
     source(fn.lift)
 
   def source(s: Source, iTuple: Iterable[Product]): JobTest =
     source[Product](s, iTuple)(TupleSetter.ProductSetter)
 
   def source[T](s: Source, iTuple: Iterable[T])(
-      implicit setter: TupleSetter[T]): JobTest =
+      implicit setter: TupleSetter[T]
+  ): JobTest =
     sourceBuffer(s, iTuple)
 
   // This use of `_.get` is probably safe, but difficult to prove correct
   @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
-  def sink[A](s: Source)(op: Buffer[A] => Unit)(
-      implicit conv: TupleConverter[A]) = {
+  def sink[A](
+      s: Source
+  )(op: Buffer[A] => Unit)(implicit conv: TupleConverter[A]) = {
     if (sourceMap(s).isEmpty) {
       // if s is also used as a source, we shouldn't reset its buffer
       source(s, new ListBuffer[Tuple])
@@ -133,32 +135,32 @@ class JobTest(cons: (Args) => Job) {
      */
     sinkSet += s
     callbacks +=
-    (() =>
-          op(buffer.map { tup =>
-            conv(new TupleEntry(tup))
-          }))
+      (() => op(buffer.map { tup => conv(new TupleEntry(tup)) }))
     this
   }
 
-  def typedSink[A](s: Source with TypedSink[A])(op: Buffer[A] => Unit)(
-      implicit conv: TupleConverter[A]) =
+  def typedSink[A](
+      s: Source with TypedSink[A]
+  )(op: Buffer[A] => Unit)(implicit conv: TupleConverter[A]) =
     sink[A](s)(op)
 
   // Used to pass an assertion about a counter defined by the given group and name.
   // If this test is checking for multiple jobs chained by next, this only checks
   // for the counters in the final job's FlowStat.
   def counter(counter: String, group: String = Stats.ScaldingGroup)(
-      op: Long => Unit) = {
+      op: Long => Unit
+  ) = {
     statsCallbacks +=
-    ((stats: CascadingStats) =>
-          op(Stats.getCounterValue(counter, group)(stats)))
+      ((stats: CascadingStats) =>
+        op(Stats.getCounterValue(counter, group)(stats))
+      )
     this
   }
 
   // Used to check an assertion on all custom counters of a given scalding job.
   def counters(op: Map[String, Long] => Unit) = {
     statsCallbacks +=
-    ((stats: CascadingStats) => op(Stats.getAllCustomCounters()(stats)))
+      ((stats: CascadingStats) => op(Stats.getAllCustomCounters()(stats)))
     this
   }
 
@@ -209,8 +211,9 @@ class JobTest(cons: (Args) => Job) {
         conf.set("cascading.flow.job.pollinginterval", "5")
         // Work around for local hadoop race
         conf.set(
-            "mapred.local.dir",
-            "/tmp/hadoop/%s/mapred/local".format(java.util.UUID.randomUUID))
+          "mapred.local.dir",
+          "/tmp/hadoop/%s/mapred/local".format(java.util.UUID.randomUUID)
+        )
         HadoopTest(conf, sourceMap)
       } else {
         Test(sourceMap)
@@ -229,14 +232,18 @@ class JobTest(cons: (Args) => Job) {
 
     // create cascading 3.0 planner trace files during tests
     if (System.getenv.asScala.getOrElse("SCALDING_CASCADING3_DEBUG", "0") == "1") {
-      System.setProperty("cascading.planner.plan.path",
-                         "target/test/cascading/traceplan/" + job.name)
       System.setProperty(
-          "cascading.planner.plan.transforms.path",
-          "target/test/cascading/traceplan/" + job.name + "/transform")
+        "cascading.planner.plan.path",
+        "target/test/cascading/traceplan/" + job.name
+      )
       System.setProperty(
-          "cascading.planner.stats.path",
-          "target/test/cascading/traceplan/" + job.name + "/stats")
+        "cascading.planner.plan.transforms.path",
+        "target/test/cascading/traceplan/" + job.name + "/transform"
+      )
+      System.setProperty(
+        "cascading.planner.stats.path",
+        "target/test/cascading/traceplan/" + job.name + "/stats"
+      )
     }
 
     if (validateJob) {
@@ -246,29 +253,26 @@ class JobTest(cons: (Args) => Job) {
     // Make sure to clean the state:
     job.clear
 
-    val next: Option[Job] = if (runNext) { job.next } else { None }
+    val next: Option[Job] = if (runNext) { job.next }
+    else { None }
     next match {
       case Some(nextjob) => runJob(nextjob, runNext)
       case None => {
-          job.mode match {
-            case hadoopTest @ HadoopTest(_, _) => {
-                /* NOTE: `HadoopTest.finalize` depends on `sinkSet` matching the set of
-                 * "keys" in the `sourceMap`.  Do not change the following line unless
-                 * you also modify the `finalize` function accordingly.
-                 */
-                // The sinks are written to disk, we need to clean them up:
-                sinkSet.foreach { hadoopTest.finalize(_) }
-              }
-            case _ => ()
+        job.mode match {
+          case hadoopTest @ HadoopTest(_, _) => {
+            /* NOTE: `HadoopTest.finalize` depends on `sinkSet` matching the set of
+             * "keys" in the `sourceMap`.  Do not change the following line unless
+             * you also modify the `finalize` function accordingly.
+             */
+            // The sinks are written to disk, we need to clean them up:
+            sinkSet.foreach { hadoopTest.finalize(_) }
           }
-          // Now it is time to check the test conditions:
-          callbacks.foreach { cb =>
-            cb()
-          }
-          statsCallbacks.foreach { cb =>
-            cb(job.scaldingCascadingStats.get)
-          }
+          case _ => ()
         }
+        // Now it is time to check the test conditions:
+        callbacks.foreach { cb => cb() }
+        statsCallbacks.foreach { cb => cb(job.scaldingCascadingStats.get) }
+      }
     }
   }
 }

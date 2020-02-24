@@ -13,7 +13,7 @@ final class VectorOps[A](val self: Vector[A]) extends AnyVal {
 
   final def zipperEnd: Option[Zipper[A]] = v.zipperEnd(self)
 
-  final def <^>[B : Monoid](f: NonEmptyList[A] => B): B = v.<^>(self)(f)
+  final def <^>[B: Monoid](f: NonEmptyList[A] => B): B = v.<^>(self)(f)
 
   final def takeWhileM[M[_]: Monad](p: A => M[Boolean]): M[Vector[A]] =
     v.takeWhileM(self)(p)
@@ -30,16 +30,18 @@ final class VectorOps[A](val self: Vector[A]) extends AnyVal {
   final def powerset: Vector[Vector[A]] = v.powerset(self)
 
   final def partitionM[M[_]: Applicative](
-      p: A => M[Boolean]): M[(Vector[A], Vector[A])] = v.partitionM(self)(p)
+      p: A => M[Boolean]
+  ): M[(Vector[A], Vector[A])] = v.partitionM(self)(p)
 
   final def spanM[M[_]: Monad](p: A => M[Boolean]): M[(Vector[A], Vector[A])] =
     v.spanM(self)(p)
 
-  final def breakM[M[_]: Monad](
-      p: A => M[Boolean]): M[(Vector[A], Vector[A])] = v.breakM(self)(p)
+  final def breakM[M[_]: Monad](p: A => M[Boolean]): M[(Vector[A], Vector[A])] =
+    v.breakM(self)(p)
 
   final def groupWhenM[M[_]: Monad](
-      p: (A, A) => M[Boolean]): M[Vector[Vector[A]]] = v.groupWhenM(self)(p)
+      p: (A, A) => M[Boolean]
+  ): M[Vector[Vector[A]]] = v.groupWhenM(self)(p)
 
   final def groupWhen(p: (A, A) => Boolean): Vector[Vector[A]] =
     v.groupWhen(self)(p)

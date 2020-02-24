@@ -13,10 +13,11 @@ import scala.util.{Try, Success, Failure}
 import org.scalajs.testinterface.ScalaJSClassLoader
 
 @JSExport
-final class Slave(frameworkName: String,
-                  args: js.Array[String],
-                  remoteArgs: js.Array[String])
-    extends BridgeBase(frameworkName) {
+final class Slave(
+    frameworkName: String,
+    args: js.Array[String],
+    remoteArgs: js.Array[String]
+) extends BridgeBase(frameworkName) {
 
   // State
 
@@ -64,8 +65,8 @@ final class Slave(frameworkName: String,
       canSendRunnerMessage = true
 
       // Flush the queue
-      while (!messageQueue.isEmpty) sendOutboundRunnerMessage(
-          messageQueue.dequeue)
+      while (!messageQueue.isEmpty)
+        sendOutboundRunnerMessage(messageQueue.dequeue)
 
       body
     } finally {
@@ -78,8 +79,13 @@ final class Slave(frameworkName: String,
   private def newRunner(): Try[Unit] = {
     val loader = new ScalaJSClassLoader(js.Dynamic.global)
     Try(
-        runner = framework.slaveRunner(
-              args.toArray, remoteArgs.toArray, loader, outboundRunnerMessage))
+      runner = framework.slaveRunner(
+        args.toArray,
+        remoteArgs.toArray,
+        loader,
+        outboundRunnerMessage
+      )
+    )
   }
 
   private def execute(data: js.Dynamic): Unit = {
@@ -87,7 +93,9 @@ final class Slave(frameworkName: String,
 
     val sTask = data.serializedTask.asInstanceOf[String]
     val task = runner.deserializeTask(
-        sTask, str => TaskDefSerializer.deserialize(js.JSON.parse(str)))
+      sTask,
+      str => TaskDefSerializer.deserialize(js.JSON.parse(str))
+    )
 
     val eventHandler = new RemoteEventHandler
 
@@ -141,7 +149,8 @@ final class Slave(frameworkName: String,
   }
 
   private class RemoteLogger(index: Int, val ansiCodesSupported: Boolean)
-      extends Invalidatable with Logger {
+      extends Invalidatable
+      with Logger {
 
     def error(msg: String): Unit = send("error", msg)
     def warn(msg: String): Unit = send("warn", msg)

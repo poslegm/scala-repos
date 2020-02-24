@@ -43,7 +43,7 @@ import scalafx.util.Duration
 object FadeTransition extends AnimationStatics {
 
   /**
-    * Converts a ScalaFX $FT to a JavaFX [[http://docs.oracle.com/javase/8/javafx/api/javafx/animation/FadeTransition.html $FT]], 
+    * Converts a ScalaFX $FT to a JavaFX [[http://docs.oracle.com/javase/8/javafx/api/javafx/animation/FadeTransition.html $FT]],
     * extracting its delegate.
     *
     * @param v ScalaFX $FT
@@ -63,8 +63,9 @@ object FadeTransition extends AnimationStatics {
   * @define DV Default value:
   */
 class FadeTransition(
-    override val delegate: jfxa.FadeTransition = new jfxa.FadeTransition)
-    extends Transition(delegate) with SFXDelegate[jfxa.FadeTransition] {
+    override val delegate: jfxa.FadeTransition = new jfxa.FadeTransition
+) extends Transition(delegate)
+    with SFXDelegate[jfxa.FadeTransition] {
 
   // CONSTRUCTORS
 

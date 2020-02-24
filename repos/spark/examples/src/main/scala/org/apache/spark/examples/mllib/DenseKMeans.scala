@@ -41,11 +41,12 @@ object DenseKMeans {
 
   import InitializationMode._
 
-  case class Params(input: String = null,
-                    k: Int = -1,
-                    numIterations: Int = 10,
-                    initializationMode: InitializationMode = Parallel)
-      extends AbstractParams[Params]
+  case class Params(
+      input: String = null,
+      k: Int = -1,
+      numIterations: Int = 10,
+      initializationMode: InitializationMode = Parallel
+  ) extends AbstractParams[Params]
 
   def main(args: Array[String]) {
     val defaultParams = Params()
@@ -61,10 +62,12 @@ object DenseKMeans {
         .action((x, c) => c.copy(numIterations = x))
       opt[String]("initMode")
         .text(
-            s"initialization mode (${InitializationMode.values.mkString(",")}), " +
-            s"default: ${defaultParams.initializationMode}")
-        .action((x,
-            c) => c.copy(initializationMode = InitializationMode.withName(x)))
+          s"initialization mode (${InitializationMode.values.mkString(",")}), " +
+            s"default: ${defaultParams.initializationMode}"
+        )
+        .action((x, c) =>
+          c.copy(initializationMode = InitializationMode.withName(x))
+        )
       arg[String]("<input>")
         .text("input paths to examples")
         .required()
@@ -73,9 +76,7 @@ object DenseKMeans {
 
     parser
       .parse(args, defaultParams)
-      .map { params =>
-        run(params)
-      }
+      .map { params => run(params) }
       .getOrElse {
         sys.exit(1)
       }
@@ -89,9 +90,7 @@ object DenseKMeans {
 
     val examples = sc
       .textFile(params.input)
-      .map { line =>
-        Vectors.dense(line.split(' ').map(_.toDouble))
-      }
+      .map { line => Vectors.dense(line.split(' ').map(_.toDouble)) }
       .cache()
 
     val numExamples = examples.count()
@@ -99,7 +98,7 @@ object DenseKMeans {
     println(s"numExamples = $numExamples.")
 
     val initMode = params.initializationMode match {
-      case Random => KMeans.RANDOM
+      case Random   => KMeans.RANDOM
       case Parallel => KMeans.K_MEANS_PARALLEL
     }
 

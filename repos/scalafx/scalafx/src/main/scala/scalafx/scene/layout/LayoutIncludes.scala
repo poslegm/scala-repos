@@ -83,15 +83,18 @@ trait LayoutIncludes {
     if (v != null) new BackgroundFill(v) else null
 
   implicit def jfxBackgroundImage2sfx(
-      v: jfxsl.BackgroundImage): BackgroundImage =
+      v: jfxsl.BackgroundImage
+  ): BackgroundImage =
     if (v != null) new BackgroundImage(v) else null
 
   implicit def jfxBackgroundPosition2sfx(
-      v: jfxsl.BackgroundPosition): BackgroundPosition =
+      v: jfxsl.BackgroundPosition
+  ): BackgroundPosition =
     if (v != null) new BackgroundPosition(v) else null
 
   implicit def jfxBackgroundRepeat2sfx(
-      v: jfxsl.BackgroundRepeat): BackgroundRepeat =
+      v: jfxsl.BackgroundRepeat
+  ): BackgroundRepeat =
     if (v != null) new BackgroundRepeat(v) else null
 
   implicit def jfxBackgroundSize2sfx(v: jfxsl.BackgroundSize): BackgroundSize =
@@ -125,7 +128,8 @@ trait LayoutIncludes {
     if (v != null) new BorderStroke(v) else null
 
   implicit def jfxBorderStrokeStyle2sfx(
-      v: jfxsl.BorderStrokeStyle): BorderStrokeStyle =
+      v: jfxsl.BorderStrokeStyle
+  ): BorderStrokeStyle =
     if (v != null) new BorderStrokeStyle(v) else null
 
   implicit def jfxBorderWidths2sfx(v: jfxsl.BorderWidths): BorderWidths =
@@ -138,7 +142,8 @@ trait LayoutIncludes {
     * @return $SFX $CLCT
     */
   implicit def jfxColumnConstraints2sfx(
-      v: jfxsl.ColumnConstraints): ColumnConstraints =
+      v: jfxsl.ColumnConstraints
+  ): ColumnConstraints =
     if (v != null) new ColumnConstraints(v) else null
 
   /**
@@ -148,11 +153,14 @@ trait LayoutIncludes {
     * @return $SFX $CTBS
     */
   implicit def jfxConstraintsBase2sfx(
-      v: jfxsl.ConstraintsBase): ConstraintsBase =
-    if (v != null) new ConstraintsBase(v) {} else null
+      v: jfxsl.ConstraintsBase
+  ): ConstraintsBase =
+    if (v != null) new ConstraintsBase(v) {}
+    else null
 
   implicit def jfxCornerRadii2sfx(v: jfxsl.CornerRadii): CornerRadii =
-    if (v != null) new CornerRadii(v) {} else null
+    if (v != null) new CornerRadii(v) {}
+    else null
 
   /**
     * $START$FLPN.html $FLPN$END

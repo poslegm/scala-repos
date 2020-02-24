@@ -13,9 +13,11 @@ import akka.stream.scaladsl.Source
   * INTERNAL API
   */
 private[akka] object GroupByProcessorImpl {
-  def props(settings: ActorMaterializerSettings,
-            maxSubstreams: Int,
-            keyFor: Any ⇒ Any): Props =
+  def props(
+      settings: ActorMaterializerSettings,
+      maxSubstreams: Int,
+      keyFor: Any ⇒ Any
+  ): Props =
     Props(new GroupByProcessorImpl(settings, maxSubstreams, keyFor))
       .withDeploy(Deploy.local)
 
@@ -25,10 +27,11 @@ private[akka] object GroupByProcessorImpl {
 /**
   * INTERNAL API
   */
-private[akka] class GroupByProcessorImpl(settings: ActorMaterializerSettings,
-                                         val maxSubstreams: Int,
-                                         val keyFor: Any ⇒ Any)
-    extends MultiStreamOutputProcessor(settings) {
+private[akka] class GroupByProcessorImpl(
+    settings: ActorMaterializerSettings,
+    val maxSubstreams: Int,
+    val keyFor: Any ⇒ Any
+) extends MultiStreamOutputProcessor(settings) {
 
   import MultiStreamOutputProcessor._
   import GroupByProcessorImpl.Drop
@@ -40,13 +43,12 @@ private[akka] class GroupByProcessorImpl(settings: ActorMaterializerSettings,
 
   // No substream is open yet. If downstream cancels now, we are complete
   val waitFirst =
-    TransferPhase(primaryInputs.NeedsInput && primaryOutputs.NeedsDemand) {
-      () ⇒
-        val elem = primaryInputs.dequeueInputElement()
-        tryKeyFor(elem) match {
-          case Drop ⇒
-          case key ⇒ nextPhase(openSubstream(elem, key))
-        }
+    TransferPhase(primaryInputs.NeedsInput && primaryOutputs.NeedsDemand) { () ⇒
+      val elem = primaryInputs.dequeueInputElement()
+      tryKeyFor(elem) match {
+        case Drop ⇒
+        case key ⇒ nextPhase(openSubstream(elem, key))
+      }
     }
 
   // some substreams are open now. If downstream cancels, we still continue until the substreams are closed
@@ -66,13 +68,15 @@ private[akka] class GroupByProcessorImpl(settings: ActorMaterializerSettings,
   }
 
   private def tryKeyFor(elem: Any): Any =
-    try keyFor(elem) catch {
+    try keyFor(elem)
+    catch {
       case NonFatal(e) if decider(e) != Supervision.Stop ⇒
         if (settings.debugLogging)
           log.debug(
-              "Dropped element [{}] due to exception from groupBy function: {}",
-              elem,
-              e.getMessage)
+            "Dropped element [{}] due to exception from groupBy function: {}",
+            elem,
+            e.getMessage
+          )
         Drop
     }
 
@@ -84,7 +88,8 @@ private[akka] class GroupByProcessorImpl(settings: ActorMaterializerSettings,
       } else {
         if (keyToSubstreamOutput.size == maxSubstreams)
           throw new IllegalStateException(
-              s"cannot open substream for key '$key': too many substreams open")
+            s"cannot open substream for key '$key': too many substreams open"
+          )
         val substreamOutput = createSubstreamOutput()
         val substreamFlow = Source.fromPublisher[Any](substreamOutput)
         primaryOutputs.enqueueOutputElement(substreamFlow)
@@ -94,7 +99,9 @@ private[akka] class GroupByProcessorImpl(settings: ActorMaterializerSettings,
     }
 
   def dispatchToSubstream(
-      elem: Any, substream: SubstreamOutput): TransferPhase = {
+      elem: Any,
+      substream: SubstreamOutput
+  ): TransferPhase = {
     pendingSubstreamOutput = substream
     TransferPhase(substream.NeedsDemand) { () ⇒
       substream.enqueueOutputElement(elem)

@@ -8,11 +8,12 @@ import actorApi._
 import lila.hub.actorApi.map.Ask
 import makeTimeout.short
 
-private[tournament] final class StartedOrganizer(api: TournamentApi,
-                                                 reminder: ActorRef,
-                                                 isOnline: String => Boolean,
-                                                 socketHub: ActorRef)
-    extends Actor {
+private[tournament] final class StartedOrganizer(
+    api: TournamentApi,
+    reminder: ActorRef,
+    isOnline: String => Boolean,
+    socketHub: ActorRef
+) extends Actor {
 
   override def preStart {
     pairingLogger.info("Start StartedOrganizer")
@@ -62,7 +63,10 @@ private[tournament] final class StartedOrganizer(api: TournamentApi,
   }
 
   private def startPairing(
-      tour: Tournament, activeUserIds: List[String], startAt: Long): Funit =
+      tour: Tournament,
+      activeUserIds: List[String],
+      startAt: Long
+  ): Funit =
     getWaitingUsers(tour) zip PairingRepo.playingUserIds(tour) map {
       case (waitingUsers, playingUserIds) =>
         val users = waitingUsers intersect activeUserIds diff playingUserIds

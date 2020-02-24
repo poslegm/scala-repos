@@ -14,14 +14,16 @@ import akka.actor.ExtensionIdProvider
   * Extension provides access to bound addresses.
   */
 object BoundAddressesExtension
-    extends ExtensionId[BoundAddressesExtension] with ExtensionIdProvider {
+    extends ExtensionId[BoundAddressesExtension]
+    with ExtensionIdProvider {
   override def get(system: ActorSystem): BoundAddressesExtension =
     super.get(system)
 
   override def lookup = BoundAddressesExtension
 
   override def createExtension(
-      system: ExtendedActorSystem): BoundAddressesExtension =
+      system: ExtendedActorSystem
+  ): BoundAddressesExtension =
     new BoundAddressesExtension(system)
 }
 

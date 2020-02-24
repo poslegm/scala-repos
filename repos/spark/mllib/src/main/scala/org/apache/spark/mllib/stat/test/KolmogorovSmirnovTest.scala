@@ -19,8 +19,13 @@ package org.apache.spark.mllib.stat.test
 
 import scala.annotation.varargs
 
-import org.apache.commons.math3.distribution.{NormalDistribution, RealDistribution}
-import org.apache.commons.math3.stat.inference.{KolmogorovSmirnovTest => CommonMathKolmogorovSmirnovTest}
+import org.apache.commons.math3.distribution.{
+  NormalDistribution,
+  RealDistribution
+}
+import org.apache.commons.math3.stat.inference.{
+  KolmogorovSmirnovTest => CommonMathKolmogorovSmirnovTest
+}
 
 import org.apache.spark.internal.Logging
 import org.apache.spark.rdd.RDD
@@ -62,8 +67,10 @@ private[stat] object KolmogorovSmirnovTest extends Logging {
     * @return [[org.apache.spark.mllib.stat.test.KolmogorovSmirnovTestResult]] summarizing the test
     *        results (p-value, statistic, and null hypothesis)
     */
-  def testOneSample(data: RDD[Double],
-                    cdf: Double => Double): KolmogorovSmirnovTestResult = {
+  def testOneSample(
+      data: RDD[Double],
+      cdf: Double => Double
+  ): KolmogorovSmirnovTestResult = {
     val n = data.count().toDouble
     val localData = data
       .sortBy(x => x)
@@ -84,8 +91,10 @@ private[stat] object KolmogorovSmirnovTest extends Logging {
     * @return [[org.apache.spark.mllib.stat.test.KolmogorovSmirnovTestResult]] summarizing the test
     *        results (p-value, statistic, and null hypothesis)
     */
-  def testOneSample(data: RDD[Double],
-                    distObj: RealDistribution): KolmogorovSmirnovTestResult = {
+  def testOneSample(
+      data: RDD[Double],
+      distObj: RealDistribution
+  ): KolmogorovSmirnovTestResult = {
     val cdf = (x: Double) => distObj.cumulativeProbability(x)
     testOneSample(data, cdf)
   }
@@ -105,7 +114,8 @@ private[stat] object KolmogorovSmirnovTest extends Logging {
   private def oneSampleDifferences(
       partData: Iterator[Double],
       n: Double,
-      cdf: Double => Double): Iterator[(Double, Double)] = {
+      cdf: Double => Double
+  ): Iterator[(Double, Double)] = {
     // zip data with index (within that partition)
     // calculate local (unadjusted) empirical CDF and subtract CDF
     partData.zipWithIndex.map {
@@ -127,8 +137,9 @@ private[stat] object KolmogorovSmirnovTest extends Logging {
     *                 (empirical CDF - 1/N - CDF, empirical CDF - CDF)
     * @return `Iterator[(Double, Double, Double)]` the local extrema and a count of elements
     */
-  private def searchOneSampleCandidates(partDiffs: Iterator[(Double, Double)])
-    : Iterator[(Double, Double, Double)] = {
+  private def searchOneSampleCandidates(
+      partDiffs: Iterator[(Double, Double)]
+  ): Iterator[(Double, Double, Double)] = {
     val initAcc = (Double.MaxValue, Double.MinValue, 0.0)
     val pResults = partDiffs.foldLeft(initAcc) {
       case ((pMin, pMax, pCt), (dl, dp)) =>
@@ -150,7 +161,9 @@ private[stat] object KolmogorovSmirnovTest extends Logging {
     * @return The one-sample Kolmogorov Smirnov Statistic
     */
   private def searchOneSampleStatistic(
-      localData: Array[(Double, Double, Double)], n: Double): Double = {
+      localData: Array[(Double, Double, Double)],
+      n: Double
+  ): Double = {
     val initAcc = (Double.MinValue, 0.0)
     // adjust differences based on the number of elements preceding it, which should provide
     // the correct distance between empirical CDF and CDF
@@ -175,37 +188,49 @@ private[stat] object KolmogorovSmirnovTest extends Logging {
     *        test results (p-value, statistic, and null hypothesis)
     */
   @varargs
-  def testOneSample(data: RDD[Double],
-                    distName: String,
-                    params: Double*): KolmogorovSmirnovTestResult = {
+  def testOneSample(
+      data: RDD[Double],
+      distName: String,
+      params: Double*
+  ): KolmogorovSmirnovTestResult = {
     val distObj = distName match {
       case "norm" => {
-          if (params.nonEmpty) {
-            // parameters are passed, then can only be 2
-            require(params.length == 2,
-                    "Normal distribution requires mean and standard " +
-                    "deviation as parameters")
-            new NormalDistribution(params(0), params(1))
-          } else {
-            // if no parameters passed in initializes to standard normal
-            logInfo("No parameters specified for normal distribution," +
-                "initialized to standard normal (i.e. N(0, 1))")
-            new NormalDistribution(0, 1)
-          }
+        if (params.nonEmpty) {
+          // parameters are passed, then can only be 2
+          require(
+            params.length == 2,
+            "Normal distribution requires mean and standard " +
+              "deviation as parameters"
+          )
+          new NormalDistribution(params(0), params(1))
+        } else {
+          // if no parameters passed in initializes to standard normal
+          logInfo(
+            "No parameters specified for normal distribution," +
+              "initialized to standard normal (i.e. N(0, 1))"
+          )
+          new NormalDistribution(0, 1)
         }
+      }
       case _ =>
         throw new UnsupportedOperationException(
-            s"$distName not yet supported through" +
-            s" convenience method. Current options are:['norm'].")
+          s"$distName not yet supported through" +
+            s" convenience method. Current options are:['norm']."
+        )
     }
 
     testOneSample(data, distObj)
   }
 
   private def evalOneSampleP(
-      ksStat: Double, n: Long): KolmogorovSmirnovTestResult = {
+      ksStat: Double,
+      n: Long
+  ): KolmogorovSmirnovTestResult = {
     val pval = 1 - new CommonMathKolmogorovSmirnovTest().cdf(ksStat, n.toInt)
     new KolmogorovSmirnovTestResult(
-        pval, ksStat, NullHypothesis.OneSampleTwoSided.toString)
+      pval,
+      ksStat,
+      NullHypothesis.OneSampleTwoSided.toString
+    )
   }
 }

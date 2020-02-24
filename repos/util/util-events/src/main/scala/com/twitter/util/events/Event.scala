@@ -40,7 +40,9 @@ object Event {
     def deserialize(buf: Buf): Try[Event]
 
     protected def serializeTrace(
-        traceId: Long, spanId: Long): (Option[Long], Option[Long]) = {
+        traceId: Long,
+        spanId: Long
+    ): (Option[Long], Option[Long]) = {
       val sid = if (spanId == NoSpanId) None else Some(spanId)
       val tid = if (traceId == NoTraceId) None else Some(traceId)
       (tid, sid)
@@ -67,13 +69,15 @@ object Event {
   * @param traceIdVal should be `Event.NoTraceId` if there is no supplied value.
   * @param spanIdVal should be `Event.NoSpanId` if there is no supplied value.
   */
-case class Event(etype: Event.Type,
-                 when: Time,
-                 longVal: Long = Event.NoLong,
-                 objectVal: Object = Event.NoObject,
-                 doubleVal: Double = Event.NoDouble,
-                 traceIdVal: Long = Event.NoTraceId,
-                 spanIdVal: Long = Event.NoSpanId) {
+case class Event(
+    etype: Event.Type,
+    when: Time,
+    longVal: Long = Event.NoLong,
+    objectVal: Object = Event.NoObject,
+    doubleVal: Double = Event.NoDouble,
+    traceIdVal: Long = Event.NoTraceId,
+    spanIdVal: Long = Event.NoSpanId
+) {
 
   def getLong: Option[Long] =
     if (Event.NoLong == longVal) None else Some(longVal)

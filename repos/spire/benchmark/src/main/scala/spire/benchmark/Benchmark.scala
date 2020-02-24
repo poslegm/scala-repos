@@ -31,7 +31,8 @@ trait MyBenchmark extends SimpleBenchmark with FixtureSupport {
   * Extend this to create a main object which will run 'cls' (a benchmark).
   */
 abstract class MyRunner(
-    val cls: java.lang.Class[_ <: com.google.caliper.Benchmark]) {
+    val cls: java.lang.Class[_ <: com.google.caliper.Benchmark]
+) {
   def main(args: Array[String]): Unit = Runner.main(cls, args: _*)
 }
 

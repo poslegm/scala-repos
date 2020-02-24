@@ -5,7 +5,8 @@ object Test {
   def lrem(x: Long): Unit = x % 0
 
   def check(x: => Any) =
-    try { x; sys.error("failed to throw divide by zero!") } catch {
+    try { x; sys.error("failed to throw divide by zero!") }
+    catch {
       case _: ArithmeticException =>
     }
 

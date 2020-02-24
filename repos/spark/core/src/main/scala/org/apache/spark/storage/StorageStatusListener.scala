@@ -49,7 +49,9 @@ class StorageStatusListener(conf: SparkConf) extends SparkListener {
 
   /** Update storage status list to reflect updated block statuses */
   private def updateStorageStatus(
-      execId: String, updatedBlocks: Seq[(BlockId, BlockStatus)]) {
+      execId: String,
+      updatedBlocks: Seq[(BlockId, BlockStatus)]
+  ) {
     executorIdToStorageStatus.get(execId).foreach { storageStatus =>
       updatedBlocks.foreach {
         case (blockId, updatedStatus) =>
@@ -89,7 +91,8 @@ class StorageStatusListener(conf: SparkConf) extends SparkListener {
     }
 
   override def onBlockManagerAdded(
-      blockManagerAdded: SparkListenerBlockManagerAdded) {
+      blockManagerAdded: SparkListenerBlockManagerAdded
+  ) {
     synchronized {
       val blockManagerId = blockManagerAdded.blockManagerId
       val executorId = blockManagerId.executorId
@@ -100,7 +103,8 @@ class StorageStatusListener(conf: SparkConf) extends SparkListener {
   }
 
   override def onBlockManagerRemoved(
-      blockManagerRemoved: SparkListenerBlockManagerRemoved) {
+      blockManagerRemoved: SparkListenerBlockManagerRemoved
+  ) {
     synchronized {
       val executorId = blockManagerRemoved.blockManagerId.executorId
       executorIdToStorageStatus.remove(executorId).foreach { status =>

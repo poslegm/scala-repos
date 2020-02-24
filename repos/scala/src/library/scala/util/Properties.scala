@@ -24,7 +24,8 @@ object Properties extends PropertiesTrait {
 
 private[scala] trait PropertiesTrait {
   protected def propCategory: String // specializes the remainder of the values
-  protected def pickJarBasedOn: Class[_] // props file comes from jar containing this
+  protected def pickJarBasedOn
+      : Class[_] // props file comes from jar containing this
 
   /** The name of the properties file */
   protected val propFilename = "/" + propCategory + ".properties"
@@ -39,8 +40,10 @@ private[scala] trait PropertiesTrait {
   }
 
   private def quietlyDispose(action: => Unit, disposal: => Unit) =
-    try { action } finally {
-      try { disposal } catch { case _: IOException => }
+    try { action }
+    finally {
+      try { disposal }
+      catch { case _: IOException => }
     }
 
   def propIsSet(name: String) = System.getProperty(name) != null
@@ -51,7 +54,7 @@ private[scala] trait PropertiesTrait {
   def propOrNone(name: String) = Option(propOrNull(name))
   def propOrFalse(name: String) =
     propOrNone(name) exists
-    (x => List("yes", "on", "true") contains x.toLowerCase)
+      (x => List("yes", "on", "true") contains x.toLowerCase)
   def setProp(name: String, value: String) = System.setProperty(name, value)
   def clearProp(name: String) = System.clearProperty(name)
 
@@ -103,8 +106,8 @@ private[scala] trait PropertiesTrait {
     */
   val versionString =
     "version " + scalaPropOrElse("version.number", "(unknown)")
-  val copyrightString = scalaPropOrElse(
-      "copyright.string", "Copyright 2002-2016, LAMP/EPFL")
+  val copyrightString =
+    scalaPropOrElse("copyright.string", "Copyright 2002-2016, LAMP/EPFL")
 
   /** This is the encoding to use reading in source files, overridden with -encoding.
     *  Note that it uses "prop" i.e. looks in the scala jar, not the system properties.

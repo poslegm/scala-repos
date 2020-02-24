@@ -13,11 +13,13 @@ import akka.http.scaladsl.model._
 
 trait Unmarshaller[-A, B] {
 
-  def apply(value: A)(
-      implicit ec: ExecutionContext, materializer: Materializer): Future[B]
+  def apply(
+      value: A
+  )(implicit ec: ExecutionContext, materializer: Materializer): Future[B]
 
-  def transform[C](f: ExecutionContext ⇒ Materializer ⇒ Future[B] ⇒ Future[C])
-    : Unmarshaller[A, C] =
+  def transform[C](
+      f: ExecutionContext ⇒ Materializer ⇒ Future[B] ⇒ Future[C]
+  ): Unmarshaller[A, C] =
     Unmarshaller.withMaterializer { implicit ec ⇒ implicit mat ⇒ a ⇒
       f(ec)(mat)(this(a))
     }
@@ -26,12 +28,13 @@ trait Unmarshaller[-A, B] {
     transform(implicit ec ⇒ _ ⇒ _.fast map f)
 
   def flatMap[C](
-      f: ExecutionContext ⇒ Materializer ⇒ B ⇒ Future[C]): Unmarshaller[A, C] =
+      f: ExecutionContext ⇒ Materializer ⇒ B ⇒ Future[C]
+  ): Unmarshaller[A, C] =
     transform(implicit ec ⇒ mat ⇒ _.fast flatMap f(ec)(mat))
 
   def recover[C >: B](
-      pf: ExecutionContext ⇒ Materializer ⇒ PartialFunction[Throwable, C])
-    : Unmarshaller[A, C] =
+      pf: ExecutionContext ⇒ Materializer ⇒ PartialFunction[Throwable, C]
+  ): Unmarshaller[A, C] =
     transform(implicit ec ⇒ mat ⇒ _.fast recover pf(ec)(mat))
 
   def withDefaultValue[BB >: B](defaultValue: BB): Unmarshaller[A, BB] =
@@ -39,7 +42,8 @@ trait Unmarshaller[-A, B] {
 }
 
 object Unmarshaller
-    extends GenericUnmarshallers with PredefinedFromEntityUnmarshallers
+    extends GenericUnmarshallers
+    with PredefinedFromEntityUnmarshallers
     with PredefinedFromStringUnmarshallers {
 
   // format: OFF
@@ -89,17 +93,19 @@ object Unmarshaller
   implicit class EnhancedUnmarshaller[A, B](val um: Unmarshaller[A, B])
       extends AnyVal {
     def mapWithInput[C](f: (A, B) ⇒ C): Unmarshaller[A, C] =
-      Unmarshaller.withMaterializer(
-          implicit ec ⇒ implicit mat ⇒ a ⇒ um(a).fast.map(f(a, _)))
+      Unmarshaller.withMaterializer(implicit ec ⇒
+        implicit mat ⇒ a ⇒ um(a).fast.map(f(a, _))
+      )
 
     def flatMapWithInput[C](f: (A, B) ⇒ Future[C]): Unmarshaller[A, C] =
-      Unmarshaller.withMaterializer(
-          implicit ec ⇒ implicit mat ⇒ a ⇒ um(a).fast.flatMap(f(a, _)))
+      Unmarshaller.withMaterializer(implicit ec ⇒
+        implicit mat ⇒ a ⇒ um(a).fast.flatMap(f(a, _))
+      )
   }
 
   implicit class EnhancedFromEntityUnmarshaller[A](
-      val underlying: FromEntityUnmarshaller[A])
-      extends AnyVal {
+      val underlying: FromEntityUnmarshaller[A]
+  ) extends AnyVal {
     def mapWithCharset[B](f: (A, HttpCharset) ⇒ B): FromEntityUnmarshaller[B] =
       underlying.mapWithInput { (entity, data) ⇒
         f(data, Unmarshaller.bestUnmarshallingCharsetFor(entity))
@@ -118,8 +124,9 @@ object Unmarshaller
         if (entity.contentType == ContentTypes.NoContentType ||
             ranges.exists(_ matches entity.contentType)) {
           underlying(entity).fast
-            .recover[A](barkAtUnsupportedContentTypeException(
-                  ranges, entity.contentType))
+            .recover[A](
+              barkAtUnsupportedContentTypeException(ranges, entity.contentType)
+            )
         } else FastFuture.failed(UnsupportedContentTypeException(ranges: _*))
       }
 
@@ -127,10 +134,12 @@ object Unmarshaller
     // Scala 2.10 suffers from this bug: https://issues.scala-lang.org/browse/SI-8018
     private def barkAtUnsupportedContentTypeException(
         ranges: Seq[ContentTypeRange],
-        newContentType: ContentType): PartialFunction[Throwable, Nothing] = {
+        newContentType: ContentType
+    ): PartialFunction[Throwable, Nothing] = {
       case UnsupportedContentTypeException(supported) ⇒
         throw new IllegalStateException(
-            s"Illegal use of `unmarshaller.forContentTypes($ranges)`: $newContentType is not supported by underlying marshaller!")
+          s"Illegal use of `unmarshaller.forContentTypes($ranges)`: $newContentType is not supported by underlying marshaller!"
+        )
     }
   }
 
@@ -157,10 +166,10 @@ object Unmarshaller
     * [[akka.http.scaladsl.unmarshalling.Unmarshaller]] instead.
     */
   final case class UnsupportedContentTypeException(
-      supported: Set[ContentTypeRange])
-      extends RuntimeException(
-          supported.mkString(
-              "Unsupported Content-Type, supported: ", ", ", ""))
+      supported: Set[ContentTypeRange]
+  ) extends RuntimeException(
+        supported.mkString("Unsupported Content-Type, supported: ", ", ", "")
+      )
 
   object UnsupportedContentTypeException {
     def apply(supported: ContentTypeRange*): UnsupportedContentTypeException =

@@ -10,11 +10,14 @@ import org.junit.Test
 
 abstract class CustomInitFilesTest extends JSEnvTest {
   def makeCustomInitFiles(): Seq[VirtualJSFile] = {
-    Seq(new MemVirtualJSFile("custominit.js").withContent("""
+    Seq(
+      new MemVirtualJSFile("custominit.js")
+        .withContent("""
       function customPrint(s) {
         console.log("custom: " + s);
       }
-    """))
+    """)
+    )
   }
 
   @Test

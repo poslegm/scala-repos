@@ -4,8 +4,9 @@
 // along with the real fix: an extractor pattern with 1 sub-pattern should type check for all extractors
 // that return Option[T], whatever T (even if it's a tuple)
 object Foo {
-  def unapply[S, T](scrutinee: S)(
-      implicit witness: FooHasType[S, T]): Option[T] = scrutinee match {
+  def unapply[S, T](
+      scrutinee: S
+  )(implicit witness: FooHasType[S, T]): Option[T] = scrutinee match {
     case i: Int => Some((i, i).asInstanceOf[T])
   }
 }
@@ -22,8 +23,7 @@ object Foo997 {
 
 object Test extends App {
   val x = 8
-  println(
-      x match {
+  println(x match {
     case Foo(p) => p // p should be a pair of Int
   })
 

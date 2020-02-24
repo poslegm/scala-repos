@@ -34,12 +34,14 @@ trait PredefinedFromStringUnmarshallers {
         case "" ⇒ throw Unmarshaller.NoContentException
         case x ⇒
           throw new IllegalArgumentException(
-              s"'$x' is not a valid Boolean value")
+            s"'$x' is not a valid Boolean value"
+          )
       }
     }
 
-  implicit def CsvSeq[T](implicit unmarshaller: Unmarshaller[String, T])
-    : Unmarshaller[String, immutable.Seq[T]] =
+  implicit def CsvSeq[T](
+      implicit unmarshaller: Unmarshaller[String, T]
+  ): Unmarshaller[String, immutable.Seq[T]] =
     Unmarshaller.strict[String, immutable.Seq[String]] { string ⇒
       string.split(",").toList
     } flatMap { implicit ec ⇒ implicit mat ⇒ strings ⇒
@@ -47,30 +49,45 @@ trait PredefinedFromStringUnmarshallers {
     }
 
   val HexByte: Unmarshaller[String, Byte] = numberUnmarshaller(
-      java.lang.Byte.parseByte(_, 16), "8-bit hexadecimal integer")
+    java.lang.Byte.parseByte(_, 16),
+    "8-bit hexadecimal integer"
+  )
 
   val HexShort: Unmarshaller[String, Short] = numberUnmarshaller(
-      java.lang.Short.parseShort(_, 16), "16-bit hexadecimal integer")
+    java.lang.Short.parseShort(_, 16),
+    "16-bit hexadecimal integer"
+  )
 
   val HexInt: Unmarshaller[String, Int] = numberUnmarshaller(
-      java.lang.Integer.parseInt(_, 16), "32-bit hexadecimal integer")
+    java.lang.Integer.parseInt(_, 16),
+    "32-bit hexadecimal integer"
+  )
 
   val HexLong: Unmarshaller[String, Long] = numberUnmarshaller(
-      java.lang.Long.parseLong(_, 16), "64-bit hexadecimal integer")
+    java.lang.Long.parseLong(_, 16),
+    "64-bit hexadecimal integer"
+  )
 
   private def numberUnmarshaller[T](
-      f: String ⇒ T, target: String): Unmarshaller[String, T] =
+      f: String ⇒ T,
+      target: String
+  ): Unmarshaller[String, T] =
     Unmarshaller.strict[String, T] { string ⇒
-      try f(string) catch numberFormatError(string, target)
+      try f(string)
+      catch numberFormatError(string, target)
     }
 
   private def numberFormatError(
-      value: String, target: String): PartialFunction[Throwable, Nothing] = {
+      value: String,
+      target: String
+  ): PartialFunction[Throwable, Nothing] = {
     case e: NumberFormatException ⇒
       throw if (value.isEmpty) Unmarshaller.NoContentException
       else
         new IllegalArgumentException(
-            s"'$value' is not a valid $target value", e)
+          s"'$value' is not a valid $target value",
+          e
+        )
   }
 }
 

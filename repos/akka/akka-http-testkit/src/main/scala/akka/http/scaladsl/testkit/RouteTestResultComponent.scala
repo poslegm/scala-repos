@@ -24,8 +24,8 @@ trait RouteTestResultComponent {
     * A receptacle for the response or rejections created by a route.
     */
   class RouteTestResult(timeout: FiniteDuration)(implicit fm: Materializer) {
-    private[this] var result: Option[Either[
-            immutable.Seq[Rejection], HttpResponse]] = None
+    private[this] var result
+        : Option[Either[immutable.Seq[Rejection], HttpResponse]] = None
     private[this] val latch = new CountDownLatch(1)
 
     def handled: Boolean = synchronized {
@@ -67,8 +67,9 @@ trait RouteTestResultComponent {
       }
     }
 
-    private[testkit] def handleResult(rr: RouteResult)(
-        implicit ec: ExecutionContext): Unit =
+    private[testkit] def handleResult(
+        rr: RouteResult
+    )(implicit ec: ExecutionContext): Unit =
       synchronized {
         if (result.isEmpty) {
           result = rr match {
@@ -88,10 +89,9 @@ trait RouteTestResultComponent {
     private[this] lazy val entityRecreator: () ⇒ ResponseEntity =
       rawResponse.entity match {
         case s: HttpEntity.Strict ⇒
-          () ⇒
-            s
+          () ⇒ s
 
-          case HttpEntity.Default(contentType, contentLength, data) ⇒
+        case HttpEntity.Default(contentType, contentLength, data) ⇒
           val dataChunks = awaitAllElements(data);
           { () ⇒
             HttpEntity.Default(contentType, contentLength, Source(dataChunks))
@@ -99,15 +99,11 @@ trait RouteTestResultComponent {
 
         case HttpEntity.CloseDelimited(contentType, data) ⇒
           val dataChunks = awaitAllElements(data);
-          { () ⇒
-            HttpEntity.CloseDelimited(contentType, Source(dataChunks))
-          }
+          { () ⇒ HttpEntity.CloseDelimited(contentType, Source(dataChunks)) }
 
         case HttpEntity.Chunked(contentType, data) ⇒
           val dataChunks = awaitAllElements(data);
-          { () ⇒
-            HttpEntity.Chunked(contentType, Source(dataChunks))
-          }
+          { () ⇒ HttpEntity.Chunked(contentType, Source(dataChunks)) }
       }
 
     private def failNeitherCompletedNorRejected(): Nothing =

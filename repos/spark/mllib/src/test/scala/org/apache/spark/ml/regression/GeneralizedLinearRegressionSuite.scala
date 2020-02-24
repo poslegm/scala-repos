@@ -33,7 +33,8 @@ import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.functions._
 
 class GeneralizedLinearRegressionSuite
-    extends SparkFunSuite with MLlibTestSparkContext
+    extends SparkFunSuite
+    with MLlibTestSparkContext
     with DefaultReadWriteTest {
 
   private val seed: Int = 42
@@ -54,134 +55,176 @@ class GeneralizedLinearRegressionSuite
     import GeneralizedLinearRegressionSuite._
 
     datasetGaussianIdentity = sqlContext.createDataFrame(
-        sc.parallelize(generateGeneralizedLinearRegressionInput(
-                           intercept = 2.5,
-                           coefficients = Array(2.2, 0.6),
-                           xMean = Array(2.9, 10.5),
-                           xVariance = Array(0.7, 1.2),
-                           nPoints = 10000,
-                           seed,
-                           noiseLevel = 0.01,
-                           family = "gaussian",
-                           link = "identity"),
-                       2))
+      sc.parallelize(
+        generateGeneralizedLinearRegressionInput(
+          intercept = 2.5,
+          coefficients = Array(2.2, 0.6),
+          xMean = Array(2.9, 10.5),
+          xVariance = Array(0.7, 1.2),
+          nPoints = 10000,
+          seed,
+          noiseLevel = 0.01,
+          family = "gaussian",
+          link = "identity"
+        ),
+        2
+      )
+    )
 
     datasetGaussianLog = sqlContext.createDataFrame(
-        sc.parallelize(generateGeneralizedLinearRegressionInput(
-                           intercept = 0.25,
-                           coefficients = Array(0.22, 0.06),
-                           xMean = Array(2.9, 10.5),
-                           xVariance = Array(0.7, 1.2),
-                           nPoints = 10000,
-                           seed,
-                           noiseLevel = 0.01,
-                           family = "gaussian",
-                           link = "log"),
-                       2))
+      sc.parallelize(
+        generateGeneralizedLinearRegressionInput(
+          intercept = 0.25,
+          coefficients = Array(0.22, 0.06),
+          xMean = Array(2.9, 10.5),
+          xVariance = Array(0.7, 1.2),
+          nPoints = 10000,
+          seed,
+          noiseLevel = 0.01,
+          family = "gaussian",
+          link = "log"
+        ),
+        2
+      )
+    )
 
     datasetGaussianInverse = sqlContext.createDataFrame(
-        sc.parallelize(generateGeneralizedLinearRegressionInput(
-                           intercept = 2.5,
-                           coefficients = Array(2.2, 0.6),
-                           xMean = Array(2.9, 10.5),
-                           xVariance = Array(0.7, 1.2),
-                           nPoints = 10000,
-                           seed,
-                           noiseLevel = 0.01,
-                           family = "gaussian",
-                           link = "inverse"),
-                       2))
+      sc.parallelize(
+        generateGeneralizedLinearRegressionInput(
+          intercept = 2.5,
+          coefficients = Array(2.2, 0.6),
+          xMean = Array(2.9, 10.5),
+          xVariance = Array(0.7, 1.2),
+          nPoints = 10000,
+          seed,
+          noiseLevel = 0.01,
+          family = "gaussian",
+          link = "inverse"
+        ),
+        2
+      )
+    )
 
     datasetBinomial = {
       val nPoints = 10000
-      val coefficients = Array(
-          -0.57997, 0.912083, -0.371077, -0.819866, 2.688191)
+      val coefficients =
+        Array(-0.57997, 0.912083, -0.371077, -0.819866, 2.688191)
       val xMean = Array(5.843, 3.057, 3.758, 1.199)
       val xVariance = Array(0.6856, 0.1899, 3.116, 0.581)
 
       val testData = generateMultinomialLogisticInput(
-          coefficients, xMean, xVariance, addIntercept = true, nPoints, seed)
+        coefficients,
+        xMean,
+        xVariance,
+        addIntercept = true,
+        nPoints,
+        seed
+      )
 
       sqlContext.createDataFrame(sc.parallelize(testData, 2))
     }
 
     datasetPoissonLog = sqlContext.createDataFrame(
-        sc.parallelize(generateGeneralizedLinearRegressionInput(
-                           intercept = 0.25,
-                           coefficients = Array(0.22, 0.06),
-                           xMean = Array(2.9, 10.5),
-                           xVariance = Array(0.7, 1.2),
-                           nPoints = 10000,
-                           seed,
-                           noiseLevel = 0.01,
-                           family = "poisson",
-                           link = "log"),
-                       2))
+      sc.parallelize(
+        generateGeneralizedLinearRegressionInput(
+          intercept = 0.25,
+          coefficients = Array(0.22, 0.06),
+          xMean = Array(2.9, 10.5),
+          xVariance = Array(0.7, 1.2),
+          nPoints = 10000,
+          seed,
+          noiseLevel = 0.01,
+          family = "poisson",
+          link = "log"
+        ),
+        2
+      )
+    )
 
     datasetPoissonIdentity = sqlContext.createDataFrame(
-        sc.parallelize(generateGeneralizedLinearRegressionInput(
-                           intercept = 2.5,
-                           coefficients = Array(2.2, 0.6),
-                           xMean = Array(2.9, 10.5),
-                           xVariance = Array(0.7, 1.2),
-                           nPoints = 10000,
-                           seed,
-                           noiseLevel = 0.01,
-                           family = "poisson",
-                           link = "identity"),
-                       2))
+      sc.parallelize(
+        generateGeneralizedLinearRegressionInput(
+          intercept = 2.5,
+          coefficients = Array(2.2, 0.6),
+          xMean = Array(2.9, 10.5),
+          xVariance = Array(0.7, 1.2),
+          nPoints = 10000,
+          seed,
+          noiseLevel = 0.01,
+          family = "poisson",
+          link = "identity"
+        ),
+        2
+      )
+    )
 
     datasetPoissonSqrt = sqlContext.createDataFrame(
-        sc.parallelize(generateGeneralizedLinearRegressionInput(
-                           intercept = 2.5,
-                           coefficients = Array(2.2, 0.6),
-                           xMean = Array(2.9, 10.5),
-                           xVariance = Array(0.7, 1.2),
-                           nPoints = 10000,
-                           seed,
-                           noiseLevel = 0.01,
-                           family = "poisson",
-                           link = "sqrt"),
-                       2))
+      sc.parallelize(
+        generateGeneralizedLinearRegressionInput(
+          intercept = 2.5,
+          coefficients = Array(2.2, 0.6),
+          xMean = Array(2.9, 10.5),
+          xVariance = Array(0.7, 1.2),
+          nPoints = 10000,
+          seed,
+          noiseLevel = 0.01,
+          family = "poisson",
+          link = "sqrt"
+        ),
+        2
+      )
+    )
 
     datasetGammaInverse = sqlContext.createDataFrame(
-        sc.parallelize(generateGeneralizedLinearRegressionInput(
-                           intercept = 2.5,
-                           coefficients = Array(2.2, 0.6),
-                           xMean = Array(2.9, 10.5),
-                           xVariance = Array(0.7, 1.2),
-                           nPoints = 10000,
-                           seed,
-                           noiseLevel = 0.01,
-                           family = "gamma",
-                           link = "inverse"),
-                       2))
+      sc.parallelize(
+        generateGeneralizedLinearRegressionInput(
+          intercept = 2.5,
+          coefficients = Array(2.2, 0.6),
+          xMean = Array(2.9, 10.5),
+          xVariance = Array(0.7, 1.2),
+          nPoints = 10000,
+          seed,
+          noiseLevel = 0.01,
+          family = "gamma",
+          link = "inverse"
+        ),
+        2
+      )
+    )
 
     datasetGammaIdentity = sqlContext.createDataFrame(
-        sc.parallelize(generateGeneralizedLinearRegressionInput(
-                           intercept = 2.5,
-                           coefficients = Array(2.2, 0.6),
-                           xMean = Array(2.9, 10.5),
-                           xVariance = Array(0.7, 1.2),
-                           nPoints = 10000,
-                           seed,
-                           noiseLevel = 0.01,
-                           family = "gamma",
-                           link = "identity"),
-                       2))
+      sc.parallelize(
+        generateGeneralizedLinearRegressionInput(
+          intercept = 2.5,
+          coefficients = Array(2.2, 0.6),
+          xMean = Array(2.9, 10.5),
+          xVariance = Array(0.7, 1.2),
+          nPoints = 10000,
+          seed,
+          noiseLevel = 0.01,
+          family = "gamma",
+          link = "identity"
+        ),
+        2
+      )
+    )
 
     datasetGammaLog = sqlContext.createDataFrame(
-        sc.parallelize(generateGeneralizedLinearRegressionInput(
-                           intercept = 0.25,
-                           coefficients = Array(0.22, 0.06),
-                           xMean = Array(2.9, 10.5),
-                           xVariance = Array(0.7, 1.2),
-                           nPoints = 10000,
-                           seed,
-                           noiseLevel = 0.01,
-                           family = "gamma",
-                           link = "log"),
-                       2))
+      sc.parallelize(
+        generateGeneralizedLinearRegressionInput(
+          intercept = 0.25,
+          coefficients = Array(0.22, 0.06),
+          xMean = Array(2.9, 10.5),
+          xVariance = Array(0.7, 1.2),
+          nPoints = 10000,
+          seed,
+          noiseLevel = 0.01,
+          family = "gamma",
+          link = "log"
+        ),
+        2
+      )
+    )
   }
 
   /**
@@ -189,72 +232,102 @@ class GeneralizedLinearRegressionSuite
     * so we can validate the training accuracy compared with R's glm and glmnet package.
     */
   ignore("export test data into CSV format") {
-    datasetGaussianIdentity.rdd.map {
-      case Row(label: Double, features: Vector) =>
-        label + "," + features.toArray.mkString(",")
-    }.repartition(1)
+    datasetGaussianIdentity.rdd
+      .map {
+        case Row(label: Double, features: Vector) =>
+          label + "," + features.toArray.mkString(",")
+      }
+      .repartition(1)
       .saveAsTextFile(
-          "target/tmp/GeneralizedLinearRegressionSuite/datasetGaussianIdentity")
-    datasetGaussianLog.rdd.map {
-      case Row(label: Double, features: Vector) =>
-        label + "," + features.toArray.mkString(",")
-    }.repartition(1)
+        "target/tmp/GeneralizedLinearRegressionSuite/datasetGaussianIdentity"
+      )
+    datasetGaussianLog.rdd
+      .map {
+        case Row(label: Double, features: Vector) =>
+          label + "," + features.toArray.mkString(",")
+      }
+      .repartition(1)
       .saveAsTextFile(
-          "target/tmp/GeneralizedLinearRegressionSuite/datasetGaussianLog")
-    datasetGaussianInverse.rdd.map {
-      case Row(label: Double, features: Vector) =>
-        label + "," + features.toArray.mkString(",")
-    }.repartition(1)
+        "target/tmp/GeneralizedLinearRegressionSuite/datasetGaussianLog"
+      )
+    datasetGaussianInverse.rdd
+      .map {
+        case Row(label: Double, features: Vector) =>
+          label + "," + features.toArray.mkString(",")
+      }
+      .repartition(1)
       .saveAsTextFile(
-          "target/tmp/GeneralizedLinearRegressionSuite/datasetGaussianInverse")
-    datasetBinomial.rdd.map {
-      case Row(label: Double, features: Vector) =>
-        label + "," + features.toArray.mkString(",")
-    }.repartition(1)
+        "target/tmp/GeneralizedLinearRegressionSuite/datasetGaussianInverse"
+      )
+    datasetBinomial.rdd
+      .map {
+        case Row(label: Double, features: Vector) =>
+          label + "," + features.toArray.mkString(",")
+      }
+      .repartition(1)
       .saveAsTextFile(
-          "target/tmp/GeneralizedLinearRegressionSuite/datasetBinomial")
-    datasetPoissonLog.rdd.map {
-      case Row(label: Double, features: Vector) =>
-        label + "," + features.toArray.mkString(",")
-    }.repartition(1)
+        "target/tmp/GeneralizedLinearRegressionSuite/datasetBinomial"
+      )
+    datasetPoissonLog.rdd
+      .map {
+        case Row(label: Double, features: Vector) =>
+          label + "," + features.toArray.mkString(",")
+      }
+      .repartition(1)
       .saveAsTextFile(
-          "target/tmp/GeneralizedLinearRegressionSuite/datasetPoissonLog")
-    datasetPoissonIdentity.rdd.map {
-      case Row(label: Double, features: Vector) =>
-        label + "," + features.toArray.mkString(",")
-    }.repartition(1)
+        "target/tmp/GeneralizedLinearRegressionSuite/datasetPoissonLog"
+      )
+    datasetPoissonIdentity.rdd
+      .map {
+        case Row(label: Double, features: Vector) =>
+          label + "," + features.toArray.mkString(",")
+      }
+      .repartition(1)
       .saveAsTextFile(
-          "target/tmp/GeneralizedLinearRegressionSuite/datasetPoissonIdentity")
-    datasetPoissonSqrt.rdd.map {
-      case Row(label: Double, features: Vector) =>
-        label + "," + features.toArray.mkString(",")
-    }.repartition(1)
+        "target/tmp/GeneralizedLinearRegressionSuite/datasetPoissonIdentity"
+      )
+    datasetPoissonSqrt.rdd
+      .map {
+        case Row(label: Double, features: Vector) =>
+          label + "," + features.toArray.mkString(",")
+      }
+      .repartition(1)
       .saveAsTextFile(
-          "target/tmp/GeneralizedLinearRegressionSuite/datasetPoissonSqrt")
-    datasetGammaInverse.rdd.map {
-      case Row(label: Double, features: Vector) =>
-        label + "," + features.toArray.mkString(",")
-    }.repartition(1)
+        "target/tmp/GeneralizedLinearRegressionSuite/datasetPoissonSqrt"
+      )
+    datasetGammaInverse.rdd
+      .map {
+        case Row(label: Double, features: Vector) =>
+          label + "," + features.toArray.mkString(",")
+      }
+      .repartition(1)
       .saveAsTextFile(
-          "target/tmp/GeneralizedLinearRegressionSuite/datasetGammaInverse")
-    datasetGammaIdentity.rdd.map {
-      case Row(label: Double, features: Vector) =>
-        label + "," + features.toArray.mkString(",")
-    }.repartition(1)
+        "target/tmp/GeneralizedLinearRegressionSuite/datasetGammaInverse"
+      )
+    datasetGammaIdentity.rdd
+      .map {
+        case Row(label: Double, features: Vector) =>
+          label + "," + features.toArray.mkString(",")
+      }
+      .repartition(1)
       .saveAsTextFile(
-          "target/tmp/GeneralizedLinearRegressionSuite/datasetGammaIdentity")
-    datasetGammaLog.rdd.map {
-      case Row(label: Double, features: Vector) =>
-        label + "," + features.toArray.mkString(",")
-    }.repartition(1)
+        "target/tmp/GeneralizedLinearRegressionSuite/datasetGammaIdentity"
+      )
+    datasetGammaLog.rdd
+      .map {
+        case Row(label: Double, features: Vector) =>
+          label + "," + features.toArray.mkString(",")
+      }
+      .repartition(1)
       .saveAsTextFile(
-          "target/tmp/GeneralizedLinearRegressionSuite/datasetGammaLog")
+        "target/tmp/GeneralizedLinearRegressionSuite/datasetGammaLog"
+      )
   }
 
   test("params") {
     ParamsSuite.checkParams(new GeneralizedLinearRegression)
-    val model = new GeneralizedLinearRegressionModel(
-        "genLinReg", Vectors.dense(0.0), 0.0)
+    val model =
+      new GeneralizedLinearRegressionModel("genLinReg", Vectors.dense(0.0), 0.0)
     ParamsSuite.checkParams(model)
   }
 
@@ -264,7 +337,7 @@ class GeneralizedLinearRegressionSuite
     assert(glr.getFeaturesCol === "features")
     assert(glr.getPredictionCol === "prediction")
     assert(glr.getFitIntercept)
-    assert(glr.getTol === 1E-6)
+    assert(glr.getTol === 1e-6)
     assert(glr.getWeightCol === "")
     assert(glr.getRegParam === 0.0)
     assert(glr.getSolver == "irls")
@@ -319,19 +392,23 @@ class GeneralizedLinearRegressionSuite
        [1] 2.4108902 2.2130248 0.6086152
      */
 
-    val expected = Seq(Vectors.dense(0.0, 2.2960999, 0.8087933),
-                       Vectors.dense(2.5002642, 2.2000403, 0.5999485),
-                       Vectors.dense(0.0, 0.23069326, 0.07993778),
-                       Vectors.dense(0.25001858, 0.22002452, 0.05998789),
-                       Vectors.dense(0.0, 2.3010179, 0.8198976),
-                       Vectors.dense(2.4108902, 2.2130248, 0.6086152))
+    val expected = Seq(
+      Vectors.dense(0.0, 2.2960999, 0.8087933),
+      Vectors.dense(2.5002642, 2.2000403, 0.5999485),
+      Vectors.dense(0.0, 0.23069326, 0.07993778),
+      Vectors.dense(0.25001858, 0.22002452, 0.05998789),
+      Vectors.dense(0.0, 2.3010179, 0.8198976),
+      Vectors.dense(2.4108902, 2.2130248, 0.6086152)
+    )
 
     import GeneralizedLinearRegression._
 
     var idx = 0
-    for ((link, dataset) <- Seq(("identity", datasetGaussianIdentity),
-                                ("log", datasetGaussianLog),
-                                ("inverse", datasetGaussianInverse))) {
+    for ((link, dataset) <- Seq(
+           ("identity", datasetGaussianIdentity),
+           ("log", datasetGaussianLog),
+           ("inverse", datasetGaussianInverse)
+         )) {
       for (fitIntercept <- Seq(false, true)) {
         val trainer = new GeneralizedLinearRegression()
           .setFamily("gaussian")
@@ -339,10 +416,15 @@ class GeneralizedLinearRegressionSuite
           .setFitIntercept(fitIntercept)
         val model = trainer.fit(dataset)
         val actual = Vectors.dense(
-            model.intercept, model.coefficients(0), model.coefficients(1))
-        assert(actual ~= expected(idx) absTol 1e-4,
-               "Model mismatch: GLM with gaussian family, " +
-               s"$link link and fitIntercept = $fitIntercept.")
+          model.intercept,
+          model.coefficients(0),
+          model.coefficients(1)
+        )
+        assert(
+          actual ~= expected(idx) absTol 1e-4,
+          "Model mismatch: GLM with gaussian family, " +
+            s"$link link and fitIntercept = $fitIntercept."
+        )
 
         val familyLink = new FamilyAndLink(Gaussian, Link.fromName(link))
         model
@@ -355,9 +437,10 @@ class GeneralizedLinearRegressionSuite
                 BLAS.dot(features, model.coefficients) + model.intercept
               val prediction2 = familyLink.fitted(eta)
               assert(
-                  prediction1 ~= prediction2 relTol 1E-5,
-                  "Prediction mismatch: GLM with " +
-                  s"gaussian family, $link link and fitIntercept = $fitIntercept.")
+                prediction1 ~= prediction2 relTol 1e-5,
+                "Prediction mismatch: GLM with " +
+                  s"gaussian family, $link link and fitIntercept = $fitIntercept."
+              )
           }
 
         idx += 1
@@ -388,26 +471,33 @@ class GeneralizedLinearRegressionSuite
        [1] 6.7597127 1.4581054 0.3994266
      */
 
-    val expected = Seq(Vectors.dense(0.0, 2.2961005, 0.8087932),
-                       Vectors.dense(0.0, 2.2130368, 0.8309556),
-                       Vectors.dense(0.0, 1.7176137, 0.9610657),
-                       Vectors.dense(2.5002642, 2.2000403, 0.5999485),
-                       Vectors.dense(3.1106389, 2.0935142, 0.5712711),
-                       Vectors.dense(6.7597127, 1.4581054, 0.3994266))
+    val expected = Seq(
+      Vectors.dense(0.0, 2.2961005, 0.8087932),
+      Vectors.dense(0.0, 2.2130368, 0.8309556),
+      Vectors.dense(0.0, 1.7176137, 0.9610657),
+      Vectors.dense(2.5002642, 2.2000403, 0.5999485),
+      Vectors.dense(3.1106389, 2.0935142, 0.5712711),
+      Vectors.dense(6.7597127, 1.4581054, 0.3994266)
+    )
 
     var idx = 0
     for (fitIntercept <- Seq(false, true);
-    regParam <- Seq(0.0, 0.1, 1.0)) {
+         regParam <- Seq(0.0, 0.1, 1.0)) {
       val trainer = new GeneralizedLinearRegression()
         .setFamily("gaussian")
         .setFitIntercept(fitIntercept)
         .setRegParam(regParam)
       val model = trainer.fit(datasetGaussianIdentity)
       val actual = Vectors.dense(
-          model.intercept, model.coefficients(0), model.coefficients(1))
-      assert(actual ~= expected(idx) absTol 1e-4,
-             "Model mismatch: GLM with gaussian family, " +
-             s"fitIntercept = $fitIntercept and regParam = $regParam.")
+        model.intercept,
+        model.coefficients(0),
+        model.coefficients(1)
+      )
+      assert(
+        actual ~= expected(idx) absTol 1e-4,
+        "Model mismatch: GLM with gaussian family, " +
+          s"fitIntercept = $fitIntercept and regParam = $regParam."
+      )
 
       idx += 1
     }
@@ -445,36 +535,41 @@ class GeneralizedLinearRegressionSuite
        [1]  1.5063590 -0.4038015  0.6133664 -0.2687882 -0.5541758
      */
     val expected =
-      Seq(Vectors.dense(0.0, -0.3560284, 1.3010002, -0.3570805, -0.7406762),
-          Vectors.dense(
-              2.8367406, -0.5896187, 0.8931655, -0.3925169, -0.7996989),
-          Vectors.dense(0.0, -0.2134390, 0.7800646, -0.2144267, -0.4438358),
-          Vectors.dense(
-              1.6995366, -0.3524694, 0.5332651, -0.2352985, -0.4780850),
-          Vectors.dense(0.0, -0.2832198, 0.8434144, -0.2524727, -0.5293452),
-          Vectors.dense(
-              1.5063590, -0.4038015, 0.6133664, -0.2687882, -0.5541758))
+      Seq(
+        Vectors.dense(0.0, -0.3560284, 1.3010002, -0.3570805, -0.7406762),
+        Vectors.dense(2.8367406, -0.5896187, 0.8931655, -0.3925169, -0.7996989),
+        Vectors.dense(0.0, -0.2134390, 0.7800646, -0.2144267, -0.4438358),
+        Vectors.dense(1.6995366, -0.3524694, 0.5332651, -0.2352985, -0.4780850),
+        Vectors.dense(0.0, -0.2832198, 0.8434144, -0.2524727, -0.5293452),
+        Vectors.dense(1.5063590, -0.4038015, 0.6133664, -0.2687882, -0.5541758)
+      )
 
     import GeneralizedLinearRegression._
 
     var idx = 0
-    for ((link, dataset) <- Seq(("logit", datasetBinomial),
-                                ("probit", datasetBinomial),
-                                ("cloglog", datasetBinomial))) {
+    for ((link, dataset) <- Seq(
+           ("logit", datasetBinomial),
+           ("probit", datasetBinomial),
+           ("cloglog", datasetBinomial)
+         )) {
       for (fitIntercept <- Seq(false, true)) {
         val trainer = new GeneralizedLinearRegression()
           .setFamily("binomial")
           .setLink(link)
           .setFitIntercept(fitIntercept)
         val model = trainer.fit(dataset)
-        val actual = Vectors.dense(model.intercept,
-                                   model.coefficients(0),
-                                   model.coefficients(1),
-                                   model.coefficients(2),
-                                   model.coefficients(3))
-        assert(actual ~= expected(idx) absTol 1e-4,
-               "Model mismatch: GLM with binomial family, " +
-               s"$link link and fitIntercept = $fitIntercept.")
+        val actual = Vectors.dense(
+          model.intercept,
+          model.coefficients(0),
+          model.coefficients(1),
+          model.coefficients(2),
+          model.coefficients(3)
+        )
+        assert(
+          actual ~= expected(idx) absTol 1e-4,
+          "Model mismatch: GLM with binomial family, " +
+            s"$link link and fitIntercept = $fitIntercept."
+        )
 
         val familyLink = new FamilyAndLink(Binomial, Link.fromName(link))
         model
@@ -487,9 +582,10 @@ class GeneralizedLinearRegressionSuite
                 BLAS.dot(features, model.coefficients) + model.intercept
               val prediction2 = familyLink.fitted(eta)
               assert(
-                  prediction1 ~= prediction2 relTol 1E-5,
-                  "Prediction mismatch: GLM with " +
-                  s"binomial family, $link link and fitIntercept = $fitIntercept.")
+                prediction1 ~= prediction2 relTol 1e-5,
+                "Prediction mismatch: GLM with " +
+                  s"binomial family, $link link and fitIntercept = $fitIntercept."
+              )
           }
 
         idx += 1
@@ -530,19 +626,23 @@ class GeneralizedLinearRegressionSuite
        [1] 2.2958947 0.8090515
        [1] 2.5000480 2.1999972 0.5999968
      */
-    val expected = Seq(Vectors.dense(0.0, 0.22999393, 0.08047088),
-                       Vectors.dense(0.25022353, 0.21998599, 0.05998621),
-                       Vectors.dense(0.0, 2.2929501, 0.8119415),
-                       Vectors.dense(2.5012730, 2.1999407, 0.5999107),
-                       Vectors.dense(0.0, 2.2958947, 0.8090515),
-                       Vectors.dense(2.5000480, 2.1999972, 0.5999968))
+    val expected = Seq(
+      Vectors.dense(0.0, 0.22999393, 0.08047088),
+      Vectors.dense(0.25022353, 0.21998599, 0.05998621),
+      Vectors.dense(0.0, 2.2929501, 0.8119415),
+      Vectors.dense(2.5012730, 2.1999407, 0.5999107),
+      Vectors.dense(0.0, 2.2958947, 0.8090515),
+      Vectors.dense(2.5000480, 2.1999972, 0.5999968)
+    )
 
     import GeneralizedLinearRegression._
 
     var idx = 0
-    for ((link, dataset) <- Seq(("log", datasetPoissonLog),
-                                ("identity", datasetPoissonIdentity),
-                                ("sqrt", datasetPoissonSqrt))) {
+    for ((link, dataset) <- Seq(
+           ("log", datasetPoissonLog),
+           ("identity", datasetPoissonIdentity),
+           ("sqrt", datasetPoissonSqrt)
+         )) {
       for (fitIntercept <- Seq(false, true)) {
         val trainer = new GeneralizedLinearRegression()
           .setFamily("poisson")
@@ -550,10 +650,15 @@ class GeneralizedLinearRegressionSuite
           .setFitIntercept(fitIntercept)
         val model = trainer.fit(dataset)
         val actual = Vectors.dense(
-            model.intercept, model.coefficients(0), model.coefficients(1))
-        assert(actual ~= expected(idx) absTol 1e-4,
-               "Model mismatch: GLM with poisson family, " +
-               s"$link link and fitIntercept = $fitIntercept.")
+          model.intercept,
+          model.coefficients(0),
+          model.coefficients(1)
+        )
+        assert(
+          actual ~= expected(idx) absTol 1e-4,
+          "Model mismatch: GLM with poisson family, " +
+            s"$link link and fitIntercept = $fitIntercept."
+        )
 
         val familyLink = new FamilyAndLink(Poisson, Link.fromName(link))
         model
@@ -566,9 +671,10 @@ class GeneralizedLinearRegressionSuite
                 BLAS.dot(features, model.coefficients) + model.intercept
               val prediction2 = familyLink.fitted(eta)
               assert(
-                  prediction1 ~= prediction2 relTol 1E-5,
-                  "Prediction mismatch: GLM with " +
-                  s"poisson family, $link link and fitIntercept = $fitIntercept.")
+                prediction1 ~= prediction2 relTol 1e-5,
+                "Prediction mismatch: GLM with " +
+                  s"poisson family, $link link and fitIntercept = $fitIntercept."
+              )
           }
 
         idx += 1
@@ -609,19 +715,23 @@ class GeneralizedLinearRegressionSuite
        [1] 0.22958970 0.08091066
        [1] 0.25003210 0.21996957 0.06000215
      */
-    val expected = Seq(Vectors.dense(0.0, 2.3392419, 0.8058058),
-                       Vectors.dense(2.3507700, 2.2533574, 0.6042991),
-                       Vectors.dense(0.0, 2.2908883, 0.8147796),
-                       Vectors.dense(2.5002406, 2.1998346, 0.6000059),
-                       Vectors.dense(0.0, 0.22958970, 0.08091066),
-                       Vectors.dense(0.25003210, 0.21996957, 0.06000215))
+    val expected = Seq(
+      Vectors.dense(0.0, 2.3392419, 0.8058058),
+      Vectors.dense(2.3507700, 2.2533574, 0.6042991),
+      Vectors.dense(0.0, 2.2908883, 0.8147796),
+      Vectors.dense(2.5002406, 2.1998346, 0.6000059),
+      Vectors.dense(0.0, 0.22958970, 0.08091066),
+      Vectors.dense(0.25003210, 0.21996957, 0.06000215)
+    )
 
     import GeneralizedLinearRegression._
 
     var idx = 0
-    for ((link, dataset) <- Seq(("inverse", datasetGammaInverse),
-                                ("identity", datasetGammaIdentity),
-                                ("log", datasetGammaLog))) {
+    for ((link, dataset) <- Seq(
+           ("inverse", datasetGammaInverse),
+           ("identity", datasetGammaIdentity),
+           ("log", datasetGammaLog)
+         )) {
       for (fitIntercept <- Seq(false, true)) {
         val trainer = new GeneralizedLinearRegression()
           .setFamily("gamma")
@@ -629,10 +739,15 @@ class GeneralizedLinearRegressionSuite
           .setFitIntercept(fitIntercept)
         val model = trainer.fit(dataset)
         val actual = Vectors.dense(
-            model.intercept, model.coefficients(0), model.coefficients(1))
-        assert(actual ~= expected(idx) absTol 1e-4,
-               "Model mismatch: GLM with gamma family, " +
-               s"$link link and fitIntercept = $fitIntercept.")
+          model.intercept,
+          model.coefficients(0),
+          model.coefficients(1)
+        )
+        assert(
+          actual ~= expected(idx) absTol 1e-4,
+          "Model mismatch: GLM with gamma family, " +
+            s"$link link and fitIntercept = $fitIntercept."
+        )
 
         val familyLink = new FamilyAndLink(Gamma, Link.fromName(link))
         model
@@ -645,9 +760,10 @@ class GeneralizedLinearRegressionSuite
                 BLAS.dot(features, model.coefficients) + model.intercept
               val prediction2 = familyLink.fitted(eta)
               assert(
-                  prediction1 ~= prediction2 relTol 1E-5,
-                  "Prediction mismatch: GLM with " +
-                  s"gamma family, $link link and fitIntercept = $fitIntercept.")
+                prediction1 ~= prediction2 relTol 1e-5,
+                "Prediction mismatch: GLM with " +
+                  s"gamma family, $link link and fitIntercept = $fitIntercept."
+              )
           }
 
         idx += 1
@@ -665,14 +781,16 @@ class GeneralizedLinearRegressionSuite
        df <- as.data.frame(cbind(A, b))
      */
     val datasetWithWeight = sqlContext.createDataFrame(
-        sc.parallelize(
-            Seq(
-                Instance(17.0, 1.0, Vectors.dense(0.0, 5.0).toSparse),
-                Instance(19.0, 2.0, Vectors.dense(1.0, 7.0)),
-                Instance(23.0, 3.0, Vectors.dense(2.0, 11.0)),
-                Instance(29.0, 4.0, Vectors.dense(3.0, 13.0))
-            ),
-            2))
+      sc.parallelize(
+        Seq(
+          Instance(17.0, 1.0, Vectors.dense(0.0, 5.0).toSparse),
+          Instance(19.0, 2.0, Vectors.dense(1.0, 7.0)),
+          Instance(23.0, 3.0, Vectors.dense(2.0, 11.0)),
+          Instance(29.0, 4.0, Vectors.dense(3.0, 13.0))
+        ),
+        2
+      )
+    )
     /*
        R code:
 
@@ -752,36 +870,35 @@ class GeneralizedLinearRegressionSuite
       .collect()
       .map(_.getDouble(0))
 
-    assert(model.coefficients ~== coefficientsR absTol 1E-3)
-    assert(model.intercept ~== interceptR absTol 1E-3)
+    assert(model.coefficients ~== coefficientsR absTol 1e-3)
+    assert(model.intercept ~== interceptR absTol 1e-3)
     devianceResiduals.zip(devianceResidualsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     pearsonResiduals.zip(pearsonResidualsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     workingResiduals.zip(workingResidualsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     responseResiduals.zip(responseResidualsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     summary.coefficientStandardErrors.zip(seCoefR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     summary.tValues.zip(tValsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     summary.pValues.zip(pValsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
-    assert(summary.dispersion ~== dispersionR absTol 1E-3)
-    assert(summary.nullDeviance ~== nullDevianceR absTol 1E-3)
-    assert(summary.deviance ~== residualDevianceR absTol 1E-3)
+    assert(summary.dispersion ~== dispersionR absTol 1e-3)
+    assert(summary.nullDeviance ~== nullDevianceR absTol 1e-3)
+    assert(summary.deviance ~== residualDevianceR absTol 1e-3)
     assert(summary.residualDegreeOfFreedom === residualDegreeOfFreedomR)
-    assert(
-        summary.residualDegreeOfFreedomNull === residualDegreeOfFreedomNullR)
-    assert(summary.aic ~== aicR absTol 1E-3)
+    assert(summary.residualDegreeOfFreedomNull === residualDegreeOfFreedomNullR)
+    assert(summary.aic ~== aicR absTol 1e-3)
   }
 
   test("glm summary: binomial family with weight") {
@@ -794,14 +911,16 @@ class GeneralizedLinearRegressionSuite
        df <- as.data.frame(cbind(A, b))
      */
     val datasetWithWeight = sqlContext.createDataFrame(
-        sc.parallelize(
-            Seq(
-                Instance(1.0, 1.0, Vectors.dense(0.0, 5.0).toSparse),
-                Instance(0.0, 2.0, Vectors.dense(1.0, 2.0)),
-                Instance(1.0, 3.0, Vectors.dense(2.0, 1.0)),
-                Instance(0.0, 4.0, Vectors.dense(3.0, 3.0))
-            ),
-            2))
+      sc.parallelize(
+        Seq(
+          Instance(1.0, 1.0, Vectors.dense(0.0, 5.0).toSparse),
+          Instance(0.0, 2.0, Vectors.dense(1.0, 2.0)),
+          Instance(1.0, 3.0, Vectors.dense(2.0, 1.0)),
+          Instance(0.0, 4.0, Vectors.dense(3.0, 3.0))
+        ),
+        2
+      )
+    )
     /*
        R code:
 
@@ -883,36 +1002,35 @@ class GeneralizedLinearRegressionSuite
       .collect()
       .map(_.getDouble(0))
 
-    assert(model.coefficients ~== coefficientsR absTol 1E-3)
-    assert(model.intercept ~== interceptR absTol 1E-3)
+    assert(model.coefficients ~== coefficientsR absTol 1e-3)
+    assert(model.intercept ~== interceptR absTol 1e-3)
     devianceResiduals.zip(devianceResidualsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     pearsonResiduals.zip(pearsonResidualsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     workingResiduals.zip(workingResidualsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     responseResiduals.zip(responseResidualsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     summary.coefficientStandardErrors.zip(seCoefR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     summary.tValues.zip(tValsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     summary.pValues.zip(pValsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
-    assert(summary.dispersion ~== dispersionR absTol 1E-3)
-    assert(summary.nullDeviance ~== nullDevianceR absTol 1E-3)
-    assert(summary.deviance ~== residualDevianceR absTol 1E-3)
+    assert(summary.dispersion ~== dispersionR absTol 1e-3)
+    assert(summary.nullDeviance ~== nullDevianceR absTol 1e-3)
+    assert(summary.deviance ~== residualDevianceR absTol 1e-3)
     assert(summary.residualDegreeOfFreedom === residualDegreeOfFreedomR)
-    assert(
-        summary.residualDegreeOfFreedomNull === residualDegreeOfFreedomNullR)
-    assert(summary.aic ~== aicR absTol 1E-3)
+    assert(summary.residualDegreeOfFreedomNull === residualDegreeOfFreedomNullR)
+    assert(summary.aic ~== aicR absTol 1e-3)
   }
 
   test("glm summary: poisson family with weight") {
@@ -925,14 +1043,16 @@ class GeneralizedLinearRegressionSuite
        df <- as.data.frame(cbind(A, b))
      */
     val datasetWithWeight = sqlContext.createDataFrame(
-        sc.parallelize(
-            Seq(
-                Instance(2.0, 1.0, Vectors.dense(0.0, 5.0).toSparse),
-                Instance(8.0, 2.0, Vectors.dense(1.0, 7.0)),
-                Instance(3.0, 3.0, Vectors.dense(2.0, 11.0)),
-                Instance(9.0, 4.0, Vectors.dense(3.0, 13.0))
-            ),
-            2))
+      sc.parallelize(
+        Seq(
+          Instance(2.0, 1.0, Vectors.dense(0.0, 5.0).toSparse),
+          Instance(8.0, 2.0, Vectors.dense(1.0, 7.0)),
+          Instance(3.0, 3.0, Vectors.dense(2.0, 11.0)),
+          Instance(9.0, 4.0, Vectors.dense(3.0, 13.0))
+        ),
+        2
+      )
+    )
     /*
        R code:
 
@@ -1019,36 +1139,35 @@ class GeneralizedLinearRegressionSuite
       .collect()
       .map(_.getDouble(0))
 
-    assert(model.coefficients ~== coefficientsR absTol 1E-3)
-    assert(model.intercept ~== interceptR absTol 1E-3)
+    assert(model.coefficients ~== coefficientsR absTol 1e-3)
+    assert(model.intercept ~== interceptR absTol 1e-3)
     devianceResiduals.zip(devianceResidualsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     pearsonResiduals.zip(pearsonResidualsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     workingResiduals.zip(workingResidualsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     responseResiduals.zip(responseResidualsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     summary.coefficientStandardErrors.zip(seCoefR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     summary.tValues.zip(tValsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     summary.pValues.zip(pValsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
-    assert(summary.dispersion ~== dispersionR absTol 1E-3)
-    assert(summary.nullDeviance ~== nullDevianceR absTol 1E-3)
-    assert(summary.deviance ~== residualDevianceR absTol 1E-3)
+    assert(summary.dispersion ~== dispersionR absTol 1e-3)
+    assert(summary.nullDeviance ~== nullDevianceR absTol 1e-3)
+    assert(summary.deviance ~== residualDevianceR absTol 1e-3)
     assert(summary.residualDegreeOfFreedom === residualDegreeOfFreedomR)
-    assert(
-        summary.residualDegreeOfFreedomNull === residualDegreeOfFreedomNullR)
-    assert(summary.aic ~== aicR absTol 1E-3)
+    assert(summary.residualDegreeOfFreedomNull === residualDegreeOfFreedomNullR)
+    assert(summary.aic ~== aicR absTol 1e-3)
   }
 
   test("glm summary: gamma family with weight") {
@@ -1061,14 +1180,16 @@ class GeneralizedLinearRegressionSuite
        df <- as.data.frame(cbind(A, b))
      */
     val datasetWithWeight = sqlContext.createDataFrame(
-        sc.parallelize(
-            Seq(
-                Instance(2.0, 1.0, Vectors.dense(0.0, 5.0).toSparse),
-                Instance(8.0, 2.0, Vectors.dense(1.0, 7.0)),
-                Instance(3.0, 3.0, Vectors.dense(2.0, 11.0)),
-                Instance(9.0, 4.0, Vectors.dense(3.0, 13.0))
-            ),
-            2))
+      sc.parallelize(
+        Seq(
+          Instance(2.0, 1.0, Vectors.dense(0.0, 5.0).toSparse),
+          Instance(8.0, 2.0, Vectors.dense(1.0, 7.0)),
+          Instance(3.0, 3.0, Vectors.dense(2.0, 11.0)),
+          Instance(9.0, 4.0, Vectors.dense(3.0, 13.0))
+        ),
+        2
+      )
+    )
     /*
        R code:
 
@@ -1152,51 +1273,53 @@ class GeneralizedLinearRegressionSuite
       .collect()
       .map(_.getDouble(0))
 
-    assert(model.coefficients ~== coefficientsR absTol 1E-3)
-    assert(model.intercept ~== interceptR absTol 1E-3)
+    assert(model.coefficients ~== coefficientsR absTol 1e-3)
+    assert(model.intercept ~== interceptR absTol 1e-3)
     devianceResiduals.zip(devianceResidualsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     pearsonResiduals.zip(pearsonResidualsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     workingResiduals.zip(workingResidualsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     responseResiduals.zip(responseResidualsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     summary.coefficientStandardErrors.zip(seCoefR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     summary.tValues.zip(tValsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
     summary.pValues.zip(pValsR).foreach { x =>
-      assert(x._1 ~== x._2 absTol 1E-3)
+      assert(x._1 ~== x._2 absTol 1e-3)
     }
-    assert(summary.dispersion ~== dispersionR absTol 1E-3)
-    assert(summary.nullDeviance ~== nullDevianceR absTol 1E-3)
-    assert(summary.deviance ~== residualDevianceR absTol 1E-3)
+    assert(summary.dispersion ~== dispersionR absTol 1e-3)
+    assert(summary.nullDeviance ~== nullDevianceR absTol 1e-3)
+    assert(summary.deviance ~== residualDevianceR absTol 1e-3)
     assert(summary.residualDegreeOfFreedom === residualDegreeOfFreedomR)
-    assert(
-        summary.residualDegreeOfFreedomNull === residualDegreeOfFreedomNullR)
-    assert(summary.aic ~== aicR absTol 1E-3)
+    assert(summary.residualDegreeOfFreedomNull === residualDegreeOfFreedomNullR)
+    assert(summary.aic ~== aicR absTol 1e-3)
   }
 
   test("read/write") {
-    def checkModelData(model: GeneralizedLinearRegressionModel,
-                       model2: GeneralizedLinearRegressionModel): Unit = {
+    def checkModelData(
+        model: GeneralizedLinearRegressionModel,
+        model2: GeneralizedLinearRegressionModel
+    ): Unit = {
       assert(model.intercept === model2.intercept)
       assert(model.coefficients.toArray === model2.coefficients.toArray)
     }
 
     val glr = new GeneralizedLinearRegression()
     testEstimatorAndModelReadWrite(
-        glr,
-        datasetPoissonLog,
-        GeneralizedLinearRegressionSuite.allParamSettings,
-        checkModelData)
+      glr,
+      datasetPoissonLog,
+      GeneralizedLinearRegressionSuite.allParamSettings,
+      checkModelData
+    )
   }
 }
 
@@ -1208,13 +1331,14 @@ object GeneralizedLinearRegressionSuite {
     * This excludes input columns to simplify some tests.
     */
   val allParamSettings: Map[String, Any] = Map(
-      "family" -> "poisson",
-      "link" -> "log",
-      "fitIntercept" -> true,
-      "maxIter" -> 2, // intentionally small
-      "tol" -> 0.8,
-      "regParam" -> 0.01,
-      "predictionCol" -> "myPrediction")
+    "family" -> "poisson",
+    "link" -> "log",
+    "fitIntercept" -> true,
+    "maxIter" -> 2, // intentionally small
+    "tol" -> 0.8,
+    "regParam" -> 0.01,
+    "predictionCol" -> "myPrediction"
+  )
 
   def generateGeneralizedLinearRegressionInput(
       intercept: Double,
@@ -1225,7 +1349,8 @@ object GeneralizedLinearRegressionSuite {
       seed: Int,
       noiseLevel: Double,
       family: String,
-      link: String): Seq[LabeledPoint] = {
+      link: String
+  ): Seq[LabeledPoint] = {
 
     val rnd = new Random(seed)
     def rndElement(i: Int) = {
@@ -1233,8 +1358,8 @@ object GeneralizedLinearRegressionSuite {
     }
     val (generator, mean) = family match {
       case "gaussian" => (new StandardNormalGenerator, 0.0)
-      case "poisson" => (new PoissonGenerator(1.0), 1.0)
-      case "gamma" => (new GammaGenerator(1.0, 1.0), 1.0)
+      case "poisson"  => (new PoissonGenerator(1.0), 1.0)
+      case "gamma"    => (new GammaGenerator(1.0, 1.0), 1.0)
     }
     generator.setSeed(seed)
 
@@ -1244,9 +1369,9 @@ object GeneralizedLinearRegressionSuite {
       val eta = BLAS.dot(Vectors.dense(coefficients), features) + intercept
       val mu = link match {
         case "identity" => eta
-        case "log" => math.exp(eta)
-        case "sqrt" => math.pow(eta, 2.0)
-        case "inverse" => 1.0 / eta
+        case "log"      => math.exp(eta)
+        case "sqrt"     => math.pow(eta, 2.0)
+        case "inverse"  => 1.0 / eta
       }
       val label = mu + noiseLevel * (generator.nextValue() - mean)
       // Return LabeledPoints with DenseVector

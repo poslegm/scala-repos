@@ -38,4 +38,7 @@ import scalafx.testutil.SFXEnumDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class TreeSortModeSpec
     extends SFXEnumDelegateSpec[jfxsc.TreeSortMode, TreeSortMode](
-        classOf[jfxsc.TreeSortMode], classOf[TreeSortMode], TreeSortMode)
+      classOf[jfxsc.TreeSortMode],
+      classOf[TreeSortMode],
+      TreeSortMode
+    )

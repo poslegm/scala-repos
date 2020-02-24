@@ -41,8 +41,8 @@ private[scheduler] case class JobSubmitted(
     partitions: Array[Int],
     callSite: CallSite,
     listener: JobListener,
-    properties: Properties = null)
-    extends DAGSchedulerEvent
+    properties: Properties = null
+) extends DAGSchedulerEvent
 
 /** A map stage as submitted to run as a separate job */
 private[scheduler] case class MapStageSubmitted(
@@ -50,14 +50,13 @@ private[scheduler] case class MapStageSubmitted(
     dependency: ShuffleDependency[_, _, _],
     callSite: CallSite,
     listener: JobListener,
-    properties: Properties = null)
-    extends DAGSchedulerEvent
+    properties: Properties = null
+) extends DAGSchedulerEvent
 
 private[scheduler] case class StageCancelled(stageId: Int)
     extends DAGSchedulerEvent
 
-private[scheduler] case class JobCancelled(jobId: Int)
-    extends DAGSchedulerEvent
+private[scheduler] case class JobCancelled(jobId: Int) extends DAGSchedulerEvent
 
 private[scheduler] case class JobGroupCancelled(groupId: String)
     extends DAGSchedulerEvent
@@ -75,8 +74,8 @@ private[scheduler] case class CompletionEvent(
     reason: TaskEndReason,
     result: Any,
     accumUpdates: Seq[AccumulableInfo],
-    taskInfo: TaskInfo)
-    extends DAGSchedulerEvent
+    taskInfo: TaskInfo
+) extends DAGSchedulerEvent
 
 private[scheduler] case class ExecutorAdded(execId: String, host: String)
     extends DAGSchedulerEvent
@@ -85,7 +84,9 @@ private[scheduler] case class ExecutorLost(execId: String)
     extends DAGSchedulerEvent
 
 private[scheduler] case class TaskSetFailed(
-    taskSet: TaskSet, reason: String, exception: Option[Throwable])
-    extends DAGSchedulerEvent
+    taskSet: TaskSet,
+    reason: String,
+    exception: Option[Throwable]
+) extends DAGSchedulerEvent
 
 private[scheduler] case object ResubmitFailedStages extends DAGSchedulerEvent

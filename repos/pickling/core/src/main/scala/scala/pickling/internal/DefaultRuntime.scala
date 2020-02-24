@@ -33,5 +33,6 @@ class DefaultRuntime extends spi.PicklingRuntime {
 
   /** A registry of picklers for runtime lookup/usage. */
   override val picklers: PicklerRegistry = new DefaultPicklerRegistry(
-      new DefaultRuntimePicklerGenerator(GRL))
+    new DefaultRuntimePicklerGenerator(GRL)
+  )
 }

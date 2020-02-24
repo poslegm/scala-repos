@@ -34,16 +34,17 @@ import scalafx.delegate.SFXDelegate
 
 object ReadOnlyLongProperty {
   implicit def sfxReadOnlyLongProperty2jfx(
-      rolp: ReadOnlyLongProperty): jfxbp.ReadOnlyLongProperty =
+      rolp: ReadOnlyLongProperty
+  ): jfxbp.ReadOnlyLongProperty =
     if (rolp != null) rolp.delegate else null
 }
 
 class ReadOnlyLongProperty(override val delegate: jfxbp.ReadOnlyLongProperty)
-    extends NumberExpression(delegate) with ReadOnlyProperty[Long, Number]
+    extends NumberExpression(delegate)
+    with ReadOnlyProperty[Long, Number]
     with SFXDelegate[jfxbp.ReadOnlyLongProperty] {
   def this(bean: Object, name: String, value: Long) =
-    this(
-        new jfxbp.ReadOnlyLongPropertyBase() {
+    this(new jfxbp.ReadOnlyLongPropertyBase() {
       def getBean = bean
       def getName = name
       def get = value

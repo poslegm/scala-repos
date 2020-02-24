@@ -11,22 +11,21 @@ import akka.testkit._
 import scala.concurrent.duration._
 import scala.collection.immutable
 
-final case class SingletonClusterMultiNodeConfig(
-    failureDetectorPuppet: Boolean)
+final case class SingletonClusterMultiNodeConfig(failureDetectorPuppet: Boolean)
     extends MultiNodeConfig {
   val first = role("first")
   val second = role("second")
 
   commonConfig(
-      debugConfig(on = false)
-        .withFallback(ConfigFactory.parseString("""
+    debugConfig(on = false)
+      .withFallback(ConfigFactory.parseString("""
       akka.cluster {
         auto-down-unreachable-after = 0s
         failure-detector.threshold = 4
       }
     """))
-        .withFallback(
-            MultiNodeClusterSpec.clusterConfig(failureDetectorPuppet)))
+      .withFallback(MultiNodeClusterSpec.clusterConfig(failureDetectorPuppet))
+  )
 }
 
 class SingletonClusterWithFailureDetectorPuppetMultiJvmNode1
@@ -40,8 +39,9 @@ class SingletonClusterWithAccrualFailureDetectorMultiJvmNode2
     extends SingletonClusterSpec(failureDetectorPuppet = false)
 
 abstract class SingletonClusterSpec(
-    multiNodeConfig: SingletonClusterMultiNodeConfig)
-    extends MultiNodeSpec(multiNodeConfig) with MultiNodeClusterSpec {
+    multiNodeConfig: SingletonClusterMultiNodeConfig
+) extends MultiNodeSpec(multiNodeConfig)
+    with MultiNodeClusterSpec {
 
   def this(failureDetectorPuppet: Boolean) =
     this(SingletonClusterMultiNodeConfig(failureDetectorPuppet))
@@ -78,9 +78,11 @@ abstract class SingletonClusterSpec(
 
         markNodeAsUnavailable(secondAddress)
 
-        awaitMembersUp(numberOfMembers = 1,
-                       canNotBePartOfMemberRing = Set(secondAddress),
-                       30.seconds)
+        awaitMembersUp(
+          numberOfMembers = 1,
+          canNotBePartOfMemberRing = Set(secondAddress),
+          30.seconds
+        )
         clusterView.isSingletonCluster should ===(true)
         awaitCond(clusterView.isLeader)
       }

@@ -10,19 +10,23 @@ import org.scalatra.util.ValueReader
 import org.scalatra.util.conversion._
 
 trait JsonBindingImplicits
-    extends BindingImplicits with JsonImplicitConversions {
+    extends BindingImplicits
+    with JsonImplicitConversions {
 
-  implicit def jsonToDateTime(implicit df: DateParser = JodaDateFormats.Web)
-    : TypeConverter[JValue, DateTime] =
+  implicit def jsonToDateTime(
+      implicit df: DateParser = JodaDateFormats.Web
+  ): TypeConverter[JValue, DateTime] =
     safeOption(_.extractOpt[String].flatMap(df.parse))
 
-  implicit def jsonToDate(implicit df: DateParser = JodaDateFormats.Web)
-    : TypeConverter[JValue, Date] =
+  implicit def jsonToDate(
+      implicit df: DateParser = JodaDateFormats.Web
+  ): TypeConverter[JValue, Date] =
     safeOption(_.extractOpt[String].flatMap(df.parse).map(_.toDate))
 }
 
 trait JsonTypeConverterFactory[T]
-    extends TypeConverterFactory[T] with JsonBindingImplicits {
+    extends TypeConverterFactory[T]
+    with JsonBindingImplicits {
   def resolveJson: TypeConverter[JValue, T]
 }
 
@@ -31,7 +35,8 @@ trait JsonTypeConverterFactories extends JsonBindingImplicits {
       implicit seqConverter: TypeConverter[Seq[String], T],
       stringConverter: TypeConverter[String, T],
       jsonConverter: TypeConverter[JValue, T],
-      formats: Formats): TypeConverterFactory[T] =
+      formats: Formats
+  ): TypeConverterFactory[T] =
     new JsonTypeConverterFactory[T] {
       implicit protected val jsonFormats: Formats = formats
       def resolveJson: TypeConverter[JValue, T] = jsonConverter
@@ -41,8 +46,8 @@ trait JsonTypeConverterFactories extends JsonBindingImplicits {
 }
 
 class JsonTypeConverterFactoriesImports(
-    implicit protected val jsonFormats: Formats)
-    extends JsonTypeConverterFactories
+    implicit protected val jsonFormats: Formats
+) extends JsonTypeConverterFactories
 
 trait JsonCommand extends Command with JsonTypeConverterFactories {
 

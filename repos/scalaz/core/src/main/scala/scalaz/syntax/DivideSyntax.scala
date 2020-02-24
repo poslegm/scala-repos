@@ -2,17 +2,16 @@ package scalaz
 package syntax
 
 /** Wraps a value `self` and provides methods related to `Divide` */
-final class DivideOps[F[_], A] private[syntax](val self: F[A])(
-    implicit val F: Divide[F])
-    extends Ops[F[A]] {
+final class DivideOps[F[_], A] private[syntax] (val self: F[A])(
+    implicit val F: Divide[F]
+) extends Ops[F[A]] {
   ////
 
   ////
 }
 
 sealed trait ToDivideOps0 {
-  implicit def ToDivideOpsUnapply[FA](v: FA)(
-      implicit F0: Unapply[Divide, FA]) =
+  implicit def ToDivideOpsUnapply[FA](v: FA)(implicit F0: Unapply[Divide, FA]) =
     new DivideOps[F0.M, F0.A](F0(v))(F0.TC)
 }
 

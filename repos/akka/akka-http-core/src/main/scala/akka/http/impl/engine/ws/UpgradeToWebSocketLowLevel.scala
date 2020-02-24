@@ -29,5 +29,6 @@ private[http] abstract class UpgradeToWebSocketLowLevel
     */
   private[http] def handleFrames(
       handlerFlow: Graph[FlowShape[FrameEvent, FrameEvent], Any],
-      subprotocol: Option[String] = None): HttpResponse
+      subprotocol: Option[String] = None
+  ): HttpResponse
 }

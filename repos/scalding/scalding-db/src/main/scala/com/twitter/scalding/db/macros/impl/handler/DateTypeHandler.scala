@@ -15,7 +15,8 @@ object DateTypeHandler {
       fieldName: FieldName,
       defaultValue: Option[c.Expr[String]],
       annotationInfo: List[(c.universe.Type, Option[Int])],
-      nullable: Boolean): scala.util.Try[List[ColumnFormat[c.type]]] = {
+      nullable: Boolean
+  ): scala.util.Try[List[ColumnFormat[c.type]]] = {
     import c.universe._
 
     val helper = new {

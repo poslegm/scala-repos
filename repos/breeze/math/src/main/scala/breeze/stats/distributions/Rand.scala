@@ -63,12 +63,12 @@ trait Rand[@specialized(Int, Double) +T] { outer =>
   /**
     * Return a vector of samples.
     */
-  def samplesVector[U >: T](size: Int)(
-      implicit m: ClassTag[U]): DenseVector[U] = {
+  def samplesVector[U >: T](
+      size: Int
+  )(implicit m: ClassTag[U]): DenseVector[U] = {
     val result = new DenseVector[U](new Array[U](size))
-    cfor(0)(i => i < size, i => i + 1)(i =>
-          {
-        result(i) = draw()
+    cfor(0)(i => i < size, i => i + 1)(i => {
+      result(i) = draw()
     })
     result
   }
@@ -113,8 +113,9 @@ trait Rand[@specialized(Int, Double) +T] { outer =>
 }
 
 private final case class MappedRand[
-    @specialized(Int, Double) T, @specialized(Int, Double) U](
-    rand: Rand[T], func: T => U)
+    @specialized(Int, Double) T,
+    @specialized(Int, Double) U
+](rand: Rand[T], func: T => U)
     extends Rand[U] {
   def draw() = func(rand.draw())
   override def drawOpt() = rand.drawOpt().map(func)
@@ -123,8 +124,9 @@ private final case class MappedRand[
 }
 
 private final case class FlatMappedRand[
-    @specialized(Int, Double) T, @specialized(Int, Double) U](
-    rand: Rand[T], func: T => Rand[U])
+    @specialized(Int, Double) T,
+    @specialized(Int, Double) U
+](rand: Rand[T], func: T => Rand[U])
     extends Rand[U] {
   def draw() = func(rand.draw()).draw()
   override def drawOpt() = rand.drawOpt().flatMap(x => func(x).drawOpt())
@@ -156,8 +158,9 @@ private trait PredicateRandDraws[@specialized(Int, Double) T] extends Rand[T] {
 }
 
 private final case class SinglePredicateRand[@specialized(Int, Double) T](
-    rand: Rand[T], pred: T => Boolean)
-    extends PredicateRandDraws[T] {
+    rand: Rand[T],
+    pred: T => Boolean
+) extends PredicateRandDraws[T] {
   protected final def predicate(x: T): Boolean = pred(x)
 
   override def condition(p: T => Boolean): Rand[T] = {
@@ -169,13 +172,13 @@ private final case class SinglePredicateRand[@specialized(Int, Double) T](
 }
 
 private final case class MultiplePredicatesRand[@specialized(Int, Double) T](
-    rand: Rand[T], private val predicates: Array[T => Boolean])
-    extends PredicateRandDraws[T] {
+    rand: Rand[T],
+    private val predicates: Array[T => Boolean]
+) extends PredicateRandDraws[T] {
   override def condition(p: T => Boolean): Rand[T] = {
     val newPredicates = new Array[T => Boolean](predicates.size + 1)
-    cfor(0)(i => i < predicates.size, i => i + 1)(i =>
-          {
-        newPredicates(i) = predicates(i)
+    cfor(0)(i => i < predicates.size, i => i + 1)(i => {
+      newPredicates(i) = predicates(i)
     })
     newPredicates(predicates.size) = p
     MultiplePredicatesRand(rand, newPredicates)
@@ -184,7 +187,7 @@ private final case class MultiplePredicatesRand[@specialized(Int, Double) T](
   protected final def predicate(x: T) = {
     var result: Boolean = true
     var i = 0
-    while ( (i < predicates.size) && result) {
+    while ((i < predicates.size) && result) {
       result = result && predicates(i)(x)
       i = i + 1
     }
@@ -235,8 +238,8 @@ class RandBasis(val generator: RandomGenerator) {
     * Convert a Collection of Rand[T] into a Rand[Collection[T]]
     */
   def promote[T, CC[X] <: Traversable[X] with TraversableLike[X, CC[X]]](
-      col: CC[Rand[T]])(
-      implicit cbf: CanBuildFrom[CC[Rand[T]], T, CC[T]]): Rand[CC[T]] =
+      col: CC[Rand[T]]
+  )(implicit cbf: CanBuildFrom[CC[Rand[T]], T, CC[T]]): Rand[CC[T]] =
     fromBody(col.map(_.get))
 
   /**
@@ -373,8 +376,9 @@ object RandBasis {
     */
   def mt0 = {
     val int = new AtomicInteger()
-    new RandBasis(new ThreadLocalRandomGenerator(
-            new MersenneTwister(int.getAndIncrement())))
+    new RandBasis(
+      new ThreadLocalRandomGenerator(new MersenneTwister(int.getAndIncrement()))
+    )
   }
 
   /**
@@ -382,7 +386,8 @@ object RandBasis {
     */
   def withSeed(seed: Int) = {
     val int = new AtomicInteger(seed)
-    new RandBasis(new ThreadLocalRandomGenerator(
-            new MersenneTwister(int.getAndIncrement())))
+    new RandBasis(
+      new ThreadLocalRandomGenerator(new MersenneTwister(int.getAndIncrement()))
+    )
   }
 }

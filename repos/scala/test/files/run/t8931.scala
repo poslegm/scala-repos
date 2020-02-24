@@ -9,6 +9,8 @@ object Test extends App {
 
   println(c.getGenericInterfaces.toList)
 
-  assert(c.getGenericInterfaces.length == c.getInterfaces.length,
-         s"mismatch between ${c.getGenericInterfaces} and ${c.getInterfaces}")
+  assert(
+    c.getGenericInterfaces.length == c.getInterfaces.length,
+    s"mismatch between ${c.getGenericInterfaces} and ${c.getInterfaces}"
+  )
 }

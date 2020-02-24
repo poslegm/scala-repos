@@ -52,7 +52,7 @@ object Test {
   @elidable(FINEST)
   def fa() = 1
   @elidable(FINEST)
-  def fb() = 1l
+  def fb() = 1L
   @elidable(FINEST)
   def fc() = 1.0f
   @elidable(FINEST)
@@ -99,8 +99,7 @@ object Test {
     }
     List("Test", "Test$") foreach { className =>
       List("f5", "f6", "f7", "f8", "f9", "fa", "fb", "fc", "fd", "fe") foreach {
-        methodName =>
-          Class.forName(className).getMethod(methodName)
+        methodName => Class.forName(className).getMethod(methodName)
       }
     }
   }

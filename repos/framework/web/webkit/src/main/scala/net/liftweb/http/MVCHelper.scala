@@ -59,8 +59,9 @@ trait MVCHelper extends LiftRules.DispatchPF {
 
   private object curSession
       extends RequestVar[LiftSession](
-          S.session openOr LiftRules.statelessSession.vend
-            .apply(curRequest.is)) {
+        S.session openOr LiftRules.statelessSession.vend
+          .apply(curRequest.is)
+      ) {
     override def __nameSalt = Helpers.nextFuncName
   }
 
@@ -95,10 +96,9 @@ trait MVCHelper extends LiftRules.DispatchPF {
           .apply(path)
           .toResponse
 
-          () =>
-            resp
+        () => resp
 
-        case _ =>
+      case _ =>
         S.init(Box !! in, curSession.is) {
           val resp = dispatch
             .find(_.isDefinedAt(path))
@@ -106,8 +106,7 @@ trait MVCHelper extends LiftRules.DispatchPF {
             .apply(path)
             .toResponse
 
-            () =>
-              resp
+          () => resp
         }
     }
   }
@@ -119,7 +118,7 @@ trait MVCHelper extends LiftRules.DispatchPF {
     * NodeSeq (run the template),
     * LiftResponse (send the response back),
     * or Box or Option of any of the above.
-    * 
+    *
     */
   protected sealed trait MVCResponse {
     def toResponse: Box[LiftResponse]
@@ -132,7 +131,7 @@ trait MVCHelper extends LiftRules.DispatchPF {
       case xs =>
         Templates(path) match {
           case ret @ Full(_) => ret
-          case _ => tryIt(path.dropRight(1))
+          case _             => tryIt(path.dropRight(1))
         }
     }
 
@@ -156,10 +155,12 @@ trait MVCHelper extends LiftRules.DispatchPF {
           session <- S.session
           req <- S.request
           template <- templateForPath(req)
-          resp <- session.processTemplate(Full(bind(template)),
-                                          req,
-                                          req.path,
-                                          200)
+          resp <- session.processTemplate(
+            Full(bind(template)),
+            req,
+            req.path,
+            200
+          )
         } yield resp
       }
 
@@ -178,13 +179,15 @@ trait MVCHelper extends LiftRules.DispatchPF {
         val toResponse: Box[LiftResponse] = Full(resp)
       }
 
-    implicit def boxThinginy[T](box: Box[T])(
-        implicit f: T => MVCResponse): MVCResponse = new MVCResponse {
+    implicit def boxThinginy[T](
+        box: Box[T]
+    )(implicit f: T => MVCResponse): MVCResponse = new MVCResponse {
       val toResponse: Box[LiftResponse] = boxToResp(box)(f)
     }
 
-    implicit def optionThinginy[T](box: Option[T])(
-        implicit f: T => MVCResponse): MVCResponse = new MVCResponse {
+    implicit def optionThinginy[T](
+        box: Option[T]
+    )(implicit f: T => MVCResponse): MVCResponse = new MVCResponse {
       val toResponse: Box[LiftResponse] = boxToResp(box)(f)
     }
   }
@@ -193,12 +196,13 @@ trait MVCHelper extends LiftRules.DispatchPF {
     * Turn a Box[T] into the return type expected by
     * DispatchPF.  Note that this method will return
     * messages from Failure() and return codes and messages
-    * from ParamFailure[Int[(msg, _, _, code) 
+    * from ParamFailure[Int[(msg, _, _, code)
     */
   protected implicit def boxToResp[T](
-      in: Box[T])(implicit c: T => MVCResponse): Box[LiftResponse] =
+      in: Box[T]
+  )(implicit c: T => MVCResponse): Box[LiftResponse] =
     in match {
-      case Full(v) => c(v).toResponse
+      case Full(v)     => c(v).toResponse
       case e: EmptyBox => emptyToResp(e)
     }
 
@@ -211,11 +215,13 @@ trait MVCHelper extends LiftRules.DispatchPF {
     eb match {
       case ParamFailure(msg, _, _, code: Int) =>
         Full(
-            InMemoryResponse(
-                msg.getBytes("UTF-8"),
-                ("Content-Type" -> "text/plain; charset=utf-8") :: Nil,
-                Nil,
-                code))
+          InMemoryResponse(
+            msg.getBytes("UTF-8"),
+            ("Content-Type" -> "text/plain; charset=utf-8") :: Nil,
+            Nil,
+            code
+          )
+        )
 
       case Failure(msg, _, _) =>
         Full(NotFoundResponse(msg))
@@ -232,11 +238,10 @@ trait MVCHelper extends LiftRules.DispatchPF {
     def validate: List[FieldError];
     def save(): Boolean
   }, where: String) =
-    () =>
-      {
-        what.validate match {
-          case Nil => what.save(); S.redirectTo(where)
-          case xs => S.error(xs)
-        }
+    () => {
+      what.validate match {
+        case Nil => what.save(); S.redirectTo(where)
+        case xs  => S.error(xs)
+      }
     }
 }

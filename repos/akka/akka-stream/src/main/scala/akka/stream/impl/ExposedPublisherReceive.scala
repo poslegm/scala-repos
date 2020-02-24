@@ -9,8 +9,9 @@ import akka.actor.Actor
   * INTERNAL API
   */
 private[akka] abstract class ExposedPublisherReceive(
-    activeReceive: Actor.Receive, unhandled: Any ⇒ Unit)
-    extends Actor.Receive {
+    activeReceive: Actor.Receive,
+    unhandled: Any ⇒ Unit
+) extends Actor.Receive {
   private var stash = List.empty[Any]
 
   def isDefinedAt(o: Any): Boolean = true

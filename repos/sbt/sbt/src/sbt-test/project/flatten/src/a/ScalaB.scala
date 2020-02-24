@@ -11,5 +11,7 @@ object ScalaC {
   }
   def resource(s: String) =
     assert(
-        getClass.getResource(s) != null, "Could not find resource '" + s + "'")
+      getClass.getResource(s) != null,
+      "Could not find resource '" + s + "'"
+    )
 }

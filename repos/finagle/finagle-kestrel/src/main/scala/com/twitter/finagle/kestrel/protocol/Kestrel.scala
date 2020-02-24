@@ -51,7 +51,8 @@ class Kestrel(failFast: Boolean) extends CodecFactory[Command, Response] {
       // pass every request through a filter to create trace data
       override def prepareConnFactory(
           underlying: ServiceFactory[Command, Response],
-          params: Stack.Params) =
+          params: Stack.Params
+      ) =
         new KestrelTracingFilter() andThen underlying
 
       override def failFastOk = failFast

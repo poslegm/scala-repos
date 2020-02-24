@@ -21,38 +21,40 @@ import kafka.utils.Logging
 private[javaapi] object Implicits extends Logging {
 
   implicit def scalaMessageSetToJavaMessageSet(
-      messageSet: kafka.message.ByteBufferMessageSet)
-    : kafka.javaapi.message.ByteBufferMessageSet = {
+      messageSet: kafka.message.ByteBufferMessageSet
+  ): kafka.javaapi.message.ByteBufferMessageSet = {
     new kafka.javaapi.message.ByteBufferMessageSet(messageSet.buffer)
   }
 
   implicit def toJavaFetchResponse(
-      response: kafka.api.FetchResponse): kafka.javaapi.FetchResponse =
+      response: kafka.api.FetchResponse
+  ): kafka.javaapi.FetchResponse =
     new kafka.javaapi.FetchResponse(response)
 
   implicit def toJavaTopicMetadataResponse(
-      response: kafka.api.TopicMetadataResponse)
-    : kafka.javaapi.TopicMetadataResponse =
+      response: kafka.api.TopicMetadataResponse
+  ): kafka.javaapi.TopicMetadataResponse =
     new kafka.javaapi.TopicMetadataResponse(response)
 
   implicit def toJavaOffsetResponse(
-      response: kafka.api.OffsetResponse): kafka.javaapi.OffsetResponse =
+      response: kafka.api.OffsetResponse
+  ): kafka.javaapi.OffsetResponse =
     new kafka.javaapi.OffsetResponse(response)
 
   implicit def toJavaOffsetFetchResponse(
-      response: kafka.api.OffsetFetchResponse)
-    : kafka.javaapi.OffsetFetchResponse =
+      response: kafka.api.OffsetFetchResponse
+  ): kafka.javaapi.OffsetFetchResponse =
     new kafka.javaapi.OffsetFetchResponse(response)
 
   implicit def toJavaOffsetCommitResponse(
-      response: kafka.api.OffsetCommitResponse)
-    : kafka.javaapi.OffsetCommitResponse =
+      response: kafka.api.OffsetCommitResponse
+  ): kafka.javaapi.OffsetCommitResponse =
     new kafka.javaapi.OffsetCommitResponse(response)
 
   implicit def optionToJavaRef[T](opt: Option[T]): T = {
     opt match {
       case Some(obj) => obj
-      case None => null.asInstanceOf[T]
+      case None      => null.asInstanceOf[T]
     }
   }
 }

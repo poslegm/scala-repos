@@ -196,14 +196,16 @@ trait SubchannelClassification {
     cache.values exists { _ contains subscriber }
 
   private def removeFromCache(
-      changes: immutable.Seq[(Classifier, Set[Subscriber])]): Unit =
+      changes: immutable.Seq[(Classifier, Set[Subscriber])]
+  ): Unit =
     cache = (cache /: changes) {
       case (m, (c, cs)) ⇒
         m.updated(c, m.getOrElse(c, Set.empty[Subscriber]) -- cs)
     }
 
   private def addToCache(
-      changes: immutable.Seq[(Classifier, Set[Subscriber])]): Unit =
+      changes: immutable.Seq[(Classifier, Set[Subscriber])]
+  ): Unit =
     cache = (cache /: changes) {
       case (m, (c, cs)) ⇒
         m.updated(c, m.getOrElse(c, Set.empty[Subscriber]) ++ cs)
@@ -219,14 +221,17 @@ trait SubchannelClassification {
 trait ScanningClassification { self: EventBus ⇒
   protected final val subscribers =
     new ConcurrentSkipListSet[(Classifier, Subscriber)](
-        new Comparator[(Classifier, Subscriber)] {
-      def compare(
-          a: (Classifier, Subscriber), b: (Classifier, Subscriber)): Int =
-        compareClassifiers(a._1, b._1) match {
-          case 0 ⇒ compareSubscribers(a._2, b._2)
-          case other ⇒ other
-        }
-    })
+      new Comparator[(Classifier, Subscriber)] {
+        def compare(
+            a: (Classifier, Subscriber),
+            b: (Classifier, Subscriber)
+        ): Int =
+          compareClassifiers(a._1, b._1) match {
+            case 0 ⇒ compareSubscribers(a._2, b._2)
+            case other ⇒ other
+          }
+      }
+    )
 
   /**
     * Provides a total ordering of Classifiers (think java.util.Comparator.compare)
@@ -285,7 +290,8 @@ trait ManagedActorClassification {
 
   private class ManagedActorClassificationMappings(
       val seqNr: Int,
-      val backing: Map[ActorRef, immutable.TreeSet[ActorRef]]) {
+      val backing: Map[ActorRef, immutable.TreeSet[ActorRef]]
+  ) {
 
     def get(monitored: ActorRef): immutable.TreeSet[ActorRef] =
       backing.getOrElse(monitored, empty)
@@ -293,13 +299,17 @@ trait ManagedActorClassification {
     def add(monitored: ActorRef, monitor: ActorRef) = {
       val watchers = backing.get(monitored).getOrElse(empty) + monitor
       new ManagedActorClassificationMappings(
-          seqNr + 1, backing.updated(monitored, watchers))
+        seqNr + 1,
+        backing.updated(monitored, watchers)
+      )
     }
 
     def remove(monitored: ActorRef, monitor: ActorRef) = {
       val monitors = backing.get(monitored).getOrElse(empty) - monitor
       new ManagedActorClassificationMappings(
-          seqNr + 1, backing.updated(monitored, monitors))
+        seqNr + 1,
+        backing.updated(monitored, monitors)
+      )
     }
 
     def remove(monitored: ActorRef) = {
@@ -310,8 +320,11 @@ trait ManagedActorClassification {
 
   private val mappings =
     new AtomicReference[ManagedActorClassificationMappings](
-        new ManagedActorClassificationMappings(
-            0, Map.empty[ActorRef, immutable.TreeSet[ActorRef]]))
+      new ManagedActorClassificationMappings(
+        0,
+        Map.empty[ActorRef, immutable.TreeSet[ActorRef]]
+      )
+    )
 
   private val empty = immutable.TreeSet.empty[ActorRef]
 
@@ -321,7 +334,9 @@ trait ManagedActorClassification {
 
   @tailrec
   protected final def associate(
-      monitored: ActorRef, monitor: ActorRef): Boolean = {
+      monitored: ActorRef,
+      monitor: ActorRef
+  ): Boolean = {
     val current = mappings.get
 
     current.backing.get(monitored) match {
@@ -372,12 +387,15 @@ trait ManagedActorClassification {
       }
     }
 
-    try { dissociateAsMonitored(actor) } finally { dissociateAsMonitor(actor) }
+    try { dissociateAsMonitored(actor) }
+    finally { dissociateAsMonitor(actor) }
   }
 
   @tailrec
   protected final def dissociate(
-      monitored: ActorRef, monitor: ActorRef): Boolean = {
+      monitored: ActorRef,
+      monitor: ActorRef
+  ): Boolean = {
     val current = mappings.get
 
     current.backing.get(monitored) match {
@@ -436,7 +454,9 @@ trait ManagedActorClassification {
     * INTERNAL API
     */
   private[akka] def registerWithUnsubscriber(
-      subscriber: ActorRef, seqNr: Int): Boolean = {
+      subscriber: ActorRef,
+      seqNr: Int
+  ): Boolean = {
     unsubscriber ! ActorClassificationUnsubscriber.Register(subscriber, seqNr)
     true
   }
@@ -445,9 +465,10 @@ trait ManagedActorClassification {
     * INTERNAL API
     */
   private[akka] def unregisterFromUnsubscriber(
-      subscriber: ActorRef, seqNr: Int): Boolean = {
-    unsubscriber ! ActorClassificationUnsubscriber.Unregister(
-        subscriber, seqNr)
+      subscriber: ActorRef,
+      seqNr: Int
+  ): Boolean = {
+    unsubscriber ! ActorClassificationUnsubscriber.Unregister(subscriber, seqNr)
     true
   }
 }
@@ -466,7 +487,9 @@ trait ActorClassification {
 
   @tailrec
   protected final def associate(
-      monitored: ActorRef, monitor: ActorRef): Boolean = {
+      monitored: ActorRef,
+      monitor: ActorRef
+  ): Boolean = {
     val current = mappings get monitored
     current match {
       case null ⇒
@@ -492,10 +515,12 @@ trait ActorClassification {
   }
 
   protected final def dissociate(
-      monitored: ActorRef): immutable.Iterable[ActorRef] = {
+      monitored: ActorRef
+  ): immutable.Iterable[ActorRef] = {
     @tailrec
     def dissociateAsMonitored(
-        monitored: ActorRef): immutable.Iterable[ActorRef] = {
+        monitored: ActorRef
+    ): immutable.Iterable[ActorRef] = {
       val current = mappings get monitored
       current match {
         case null ⇒ empty
@@ -520,14 +545,17 @@ trait ActorClassification {
       }
     }
 
-    try { dissociateAsMonitored(monitored) } finally {
+    try { dissociateAsMonitored(monitored) }
+    finally {
       dissociateAsMonitor(monitored)
     }
   }
 
   @tailrec
   protected final def dissociate(
-      monitored: ActorRef, monitor: ActorRef): Boolean = {
+      monitored: ActorRef,
+      monitor: ActorRef
+  ): Boolean = {
     val current = mappings get monitored
     current match {
       case null ⇒ false
@@ -540,7 +568,8 @@ trait ActorClassification {
           else true
         } else {
           if (!mappings.replace(monitored, v, removed))
-            dissociate(monitored, monitor) else true
+            dissociate(monitored, monitor)
+          else true
         }
     }
   }

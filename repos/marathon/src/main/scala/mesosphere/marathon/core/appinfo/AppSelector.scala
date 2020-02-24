@@ -18,8 +18,8 @@ object AppSelector {
     new AllAppSelectorsMustMatch(selectors)
 
   private[appinfo] class AllAppSelectorsMustMatch(
-      selectors: Iterable[AppSelector])
-      extends AppSelector {
+      selectors: Iterable[AppSelector]
+  ) extends AppSelector {
     override def matches(app: AppDefinition): Boolean =
       selectors.forall(_.matches(app))
   }

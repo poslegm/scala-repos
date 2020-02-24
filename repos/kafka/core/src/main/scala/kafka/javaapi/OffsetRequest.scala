@@ -24,7 +24,8 @@ import java.nio.ByteBuffer
 class OffsetRequest(
     requestInfo: java.util.Map[TopicAndPartition, PartitionOffsetRequestInfo],
     versionId: Short,
-    clientId: String) {
+    clientId: String
+) {
 
   val underlying = {
     val scalaMap = {
@@ -32,10 +33,10 @@ class OffsetRequest(
       (requestInfo: mutable.Map[TopicAndPartition, PartitionOffsetRequestInfo]).toMap
     }
     kafka.api.OffsetRequest(
-        requestInfo = scalaMap,
-        versionId = versionId,
-        clientId = clientId,
-        replicaId = Request.OrdinaryConsumerId
+      requestInfo = scalaMap,
+      versionId = versionId,
+      clientId = clientId,
+      replicaId = Request.OrdinaryConsumerId
     )
   }
 

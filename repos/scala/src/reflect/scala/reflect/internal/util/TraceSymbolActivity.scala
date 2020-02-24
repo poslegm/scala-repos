@@ -53,8 +53,10 @@ trait TraceSymbolActivity {
   }
   private def showSym(sym: Symbol) {
     def prefix = ("  " * (sym.ownerChain.length - 1)) + sym.id
-    try println("%s#%s %s".format(
-            prefix, sym.accurateKindString, sym.name.decode)) catch {
+    try println(
+      "%s#%s %s".format(prefix, sym.accurateKindString, sym.name.decode)
+    )
+    catch {
       case x: Throwable => println(prefix + " failed: " + x)
     }
     allChildren(sym.id).sorted foreach showIdAndRemove
@@ -74,22 +76,25 @@ trait TraceSymbolActivity {
     sym.name.decode + "#" + sym.id
   }
 
-  private def freq[T, U](xs: scala.collection.Traversable[T])(
-      fn: T => U): List[(U, Int)] = {
+  private def freq[T, U](
+      xs: scala.collection.Traversable[T]
+  )(fn: T => U): List[(U, Int)] = {
     val ys = xs groupBy fn mapValues (_.size)
     ys.toList sortBy (-_._2)
   }
 
-  private def showMapFreq[T](xs: scala.collection.Map[T, Traversable[_]])(
-      showFn: T => String) {
+  private def showMapFreq[T](
+      xs: scala.collection.Map[T, Traversable[_]]
+  )(showFn: T => String) {
     xs.mapValues(_.size).toList.sortBy(-_._2) take 100 foreach {
       case (k, size) =>
         show(size, showFn(k))
     }
     println("\n")
   }
-  private def showFreq[T, U](xs: Traversable[T])(
-      groupFn: T => U, showFn: U => String) = {
+  private def showFreq[T, U](
+      xs: Traversable[T]
+  )(groupFn: T => U, showFn: U => String) = {
     showMapFreq(xs.toList groupBy groupFn)(showFn)
   }
 
@@ -123,15 +128,17 @@ trait TraceSymbolActivity {
     val nameFreq = allSymbols.values.toList groupBy (_.name)
     showHeader("frequency", "%-15s".format("name"), "owners")
     showMapFreq(nameFreq) { name =>
-      "%-15s %s".format(name.decode, {
-        val owners = freq(nameFreq(name))(_.owner)
+      "%-15s %s".format(
+        name.decode, {
+          val owners = freq(nameFreq(name))(_.owner)
 
-        "%4s owners (%s)".format(
+          "%4s owners (%s)".format(
             owners.size,
             owners.take(3).map({ case (k, v) => v + "/" + k }).mkString(", ") +
-            ", ..."
-        )
-      })
+              ", ..."
+          )
+        }
+      )
     }
 
     allSymbols.keys.toList.sorted foreach showIdAndRemove

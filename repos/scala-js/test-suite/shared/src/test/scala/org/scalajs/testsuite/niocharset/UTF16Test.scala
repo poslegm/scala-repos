@@ -26,15 +26,18 @@ abstract class BaseUTF16Test(charset: Charset)
     testDecode(bb"0047 0072 00fc 00df 0020 0047 006f 0074 0074")(cb"Grüß Gott")
     testDecode(bb"039a 03b1 03bb 03b7 03bc 03ad 03c1 03b1")(cb"Καλημέρα")
     testDecode(bb"0635 0628 0627 062d 0020 0627 0644 062e 064a 0631")(
-        cb"صباح الخير")
+      cb"صباح الخير"
+    )
     testDecode(bb"3053 3093 306b 3061 306f")(cb"こんにちは")
     testDecode(bb"0414 043e 0431 0440 044b 0439 0020 0434 0435 043d 044c")(
-        cb"Добрый день")
+      cb"Добрый день"
+    )
     testDecode(bb"4f60 597d")(cb"你好")
 
     // 4-byte characters
     testDecode(bb"d835 dcd7 d835 dcee d835 dcf5 d835 dcf5 d835 dcf8")(
-        cb"\ud835\udcd7\ud835\udcee\ud835\udcf5\ud835\udcf5\ud835\udcf8")
+      cb"\ud835\udcd7\ud835\udcee\ud835\udcf5\ud835\udcf5\ud835\udcf8"
+    )
 
     testDecode(bb"")(cb"")
 
@@ -71,16 +74,18 @@ abstract class BaseUTF16Test(charset: Charset)
     testEncode(cb"Grüß Gott")(bb"0047 0072 00fc 00df 0020 0047 006f 0074 0074")
     testEncode(cb"Καλημέρα")(bb"039a 03b1 03bb 03b7 03bc 03ad 03c1 03b1")
     testEncode(cb"صباح الخير")(
-        bb"0635 0628 0627 062d 0020 0627 0644 062e 064a 0631")
+      bb"0635 0628 0627 062d 0020 0627 0644 062e 064a 0631"
+    )
     testEncode(cb"こんにちは")(bb"3053 3093 306b 3061 306f")
     testEncode(cb"Добрый день")(
-        bb"0414 043e 0431 0440 044b 0439 0020 0434 0435 043d 044c")
+      bb"0414 043e 0431 0440 044b 0439 0020 0434 0435 043d 044c"
+    )
     testEncode(cb"你好")(bb"4f60 597d")
 
     // 4-byte characters
     testEncode(
-        cb"\ud835\udcd7\ud835\udcee\ud835\udcf5\ud835\udcf5\ud835\udcf8")(
-        bb"d835 dcd7 d835 dcee d835 dcf5 d835 dcf5 d835 dcf8")
+      cb"\ud835\udcd7\ud835\udcee\ud835\udcf5\ud835\udcf5\ud835\udcf8"
+    )(bb"d835 dcd7 d835 dcee d835 dcf5 d835 dcf5 d835 dcf8")
 
     testEncode(cb"")(bb"")
 
@@ -110,14 +115,16 @@ class UTF16BETest extends BaseUTF16Test(Charset.forName("UTF-16BE"))
 class UTF16LETest extends BaseUTF16Test(Charset.forName("UTF-16LE")) {
   import UTF16LETest._
 
-  override protected def testDecode(in: ByteBuffer)(
-      outParts: OutPart[CharBuffer]*): Unit = {
+  override protected def testDecode(
+      in: ByteBuffer
+  )(outParts: OutPart[CharBuffer]*): Unit = {
     flipByteBuffer(in)
     super.testDecode(in)(outParts: _*)
   }
 
-  override protected def testEncode(in: CharBuffer)(
-      outParts: OutPart[ByteBuffer]*): Unit = {
+  override protected def testEncode(
+      in: CharBuffer
+  )(outParts: OutPart[ByteBuffer]*): Unit = {
     for (BufferPart(buf) <- outParts) flipByteBuffer(buf)
     super.testEncode(in)(outParts: _*)
   }
@@ -145,8 +152,9 @@ class UTF16Test extends BaseUTF16Test(Charset.forName("UTF-16")) {
   def BigEndianBOM: ByteBuffer =
     ByteBuffer.wrap(Array(0xfe.toByte, 0xff.toByte))
 
-  override protected def testDecode(in: ByteBuffer)(
-      outParts: OutPart[CharBuffer]*): Unit = {
+  override protected def testDecode(
+      in: ByteBuffer
+  )(outParts: OutPart[CharBuffer]*): Unit = {
     // Without BOM, big endian is assumed
     super.testDecode(in)(outParts: _*)
 
@@ -160,8 +168,9 @@ class UTF16Test extends BaseUTF16Test(Charset.forName("UTF-16")) {
     super.testDecode(inWithBOM)(outParts: _*)
   }
 
-  override protected def testEncode(in: CharBuffer)(
-      outParts: OutPart[ByteBuffer]*): Unit = {
+  override protected def testEncode(
+      in: CharBuffer
+  )(outParts: OutPart[ByteBuffer]*): Unit = {
     if (in.remaining == 0) super.testEncode(in)(outParts: _*)
     else super.testEncode(in)(BufferPart(BigEndianBOM) +: outParts: _*)
   }

@@ -22,15 +22,13 @@ import org.apache.spark.streaming.Time
 private[streaming] trait PythonStreamingListener {
 
   /** Called when a receiver has been started */
-  def onReceiverStarted(
-      receiverStarted: JavaStreamingListenerReceiverStarted) {}
+  def onReceiverStarted(receiverStarted: JavaStreamingListenerReceiverStarted) {}
 
   /** Called when a receiver has reported an error */
   def onReceiverError(receiverError: JavaStreamingListenerReceiverError) {}
 
   /** Called when a receiver has been stopped */
-  def onReceiverStopped(
-      receiverStopped: JavaStreamingListenerReceiverStopped) {}
+  def onReceiverStopped(receiverStopped: JavaStreamingListenerReceiverStopped) {}
 
   /** Called when a batch of jobs has been submitted for processing. */
   def onBatchSubmitted(batchSubmitted: JavaStreamingListenerBatchSubmitted) {}
@@ -43,64 +41,72 @@ private[streaming] trait PythonStreamingListener {
 
   /** Called when processing of a job of a batch has started. */
   def onOutputOperationStarted(
-      outputOperationStarted: JavaStreamingListenerOutputOperationStarted) {}
+      outputOperationStarted: JavaStreamingListenerOutputOperationStarted
+  ) {}
 
   /** Called when processing of a job of a batch has completed. */
   def onOutputOperationCompleted(
-      outputOperationCompleted: JavaStreamingListenerOutputOperationCompleted) {}
+      outputOperationCompleted: JavaStreamingListenerOutputOperationCompleted
+  ) {}
 }
 
 private[streaming] class PythonStreamingListenerWrapper(
-    listener: PythonStreamingListener)
-    extends JavaStreamingListener {
+    listener: PythonStreamingListener
+) extends JavaStreamingListener {
 
   /** Called when a receiver has been started */
   override def onReceiverStarted(
-      receiverStarted: JavaStreamingListenerReceiverStarted): Unit = {
+      receiverStarted: JavaStreamingListenerReceiverStarted
+  ): Unit = {
     listener.onReceiverStarted(receiverStarted)
   }
 
   /** Called when a receiver has reported an error */
   override def onReceiverError(
-      receiverError: JavaStreamingListenerReceiverError): Unit = {
+      receiverError: JavaStreamingListenerReceiverError
+  ): Unit = {
     listener.onReceiverError(receiverError)
   }
 
   /** Called when a receiver has been stopped */
   override def onReceiverStopped(
-      receiverStopped: JavaStreamingListenerReceiverStopped): Unit = {
+      receiverStopped: JavaStreamingListenerReceiverStopped
+  ): Unit = {
     listener.onReceiverStopped(receiverStopped)
   }
 
   /** Called when a batch of jobs has been submitted for processing. */
   override def onBatchSubmitted(
-      batchSubmitted: JavaStreamingListenerBatchSubmitted): Unit = {
+      batchSubmitted: JavaStreamingListenerBatchSubmitted
+  ): Unit = {
     listener.onBatchSubmitted(batchSubmitted)
   }
 
   /** Called when processing of a batch of jobs has started.  */
   override def onBatchStarted(
-      batchStarted: JavaStreamingListenerBatchStarted): Unit = {
+      batchStarted: JavaStreamingListenerBatchStarted
+  ): Unit = {
     listener.onBatchStarted(batchStarted)
   }
 
   /** Called when processing of a batch of jobs has completed. */
   override def onBatchCompleted(
-      batchCompleted: JavaStreamingListenerBatchCompleted): Unit = {
+      batchCompleted: JavaStreamingListenerBatchCompleted
+  ): Unit = {
     listener.onBatchCompleted(batchCompleted)
   }
 
   /** Called when processing of a job of a batch has started. */
   override def onOutputOperationStarted(
-      outputOperationStarted: JavaStreamingListenerOutputOperationStarted)
-    : Unit = {
+      outputOperationStarted: JavaStreamingListenerOutputOperationStarted
+  ): Unit = {
     listener.onOutputOperationStarted(outputOperationStarted)
   }
 
   /** Called when processing of a job of a batch has completed. */
   override def onOutputOperationCompleted(
-      outputOperationCompleted: JavaStreamingListenerOutputOperationCompleted)
-    : Unit = {
+      outputOperationCompleted: JavaStreamingListenerOutputOperationCompleted
+  ): Unit = {
     listener.onOutputOperationCompleted(outputOperationCompleted)
   }
 }
@@ -112,36 +118,41 @@ private[streaming] class JavaStreamingListener {
 
   /** Called when a receiver has been started */
   def onReceiverStarted(
-      receiverStarted: JavaStreamingListenerReceiverStarted): Unit = {}
+      receiverStarted: JavaStreamingListenerReceiverStarted
+  ): Unit = {}
 
   /** Called when a receiver has reported an error */
   def onReceiverError(
-      receiverError: JavaStreamingListenerReceiverError): Unit = {}
+      receiverError: JavaStreamingListenerReceiverError
+  ): Unit = {}
 
   /** Called when a receiver has been stopped */
   def onReceiverStopped(
-      receiverStopped: JavaStreamingListenerReceiverStopped): Unit = {}
+      receiverStopped: JavaStreamingListenerReceiverStopped
+  ): Unit = {}
 
   /** Called when a batch of jobs has been submitted for processing. */
   def onBatchSubmitted(
-      batchSubmitted: JavaStreamingListenerBatchSubmitted): Unit = {}
+      batchSubmitted: JavaStreamingListenerBatchSubmitted
+  ): Unit = {}
 
   /** Called when processing of a batch of jobs has started.  */
   def onBatchStarted(batchStarted: JavaStreamingListenerBatchStarted): Unit = {}
 
   /** Called when processing of a batch of jobs has completed. */
   def onBatchCompleted(
-      batchCompleted: JavaStreamingListenerBatchCompleted): Unit = {}
+      batchCompleted: JavaStreamingListenerBatchCompleted
+  ): Unit = {}
 
   /** Called when processing of a job of a batch has started. */
   def onOutputOperationStarted(
-      outputOperationStarted: JavaStreamingListenerOutputOperationStarted)
-    : Unit = {}
+      outputOperationStarted: JavaStreamingListenerOutputOperationStarted
+  ): Unit = {}
 
   /** Called when processing of a job of a batch has completed. */
   def onOutputOperationCompleted(
-      outputOperationCompleted: JavaStreamingListenerOutputOperationCompleted)
-    : Unit = {}
+      outputOperationCompleted: JavaStreamingListenerOutputOperationCompleted
+  ): Unit = {}
 }
 
 /**
@@ -150,36 +161,36 @@ private[streaming] class JavaStreamingListener {
 private[streaming] sealed trait JavaStreamingListenerEvent
 
 private[streaming] class JavaStreamingListenerBatchSubmitted(
-    val batchInfo: JavaBatchInfo)
-    extends JavaStreamingListenerEvent
+    val batchInfo: JavaBatchInfo
+) extends JavaStreamingListenerEvent
 
 private[streaming] class JavaStreamingListenerBatchCompleted(
-    val batchInfo: JavaBatchInfo)
-    extends JavaStreamingListenerEvent
+    val batchInfo: JavaBatchInfo
+) extends JavaStreamingListenerEvent
 
 private[streaming] class JavaStreamingListenerBatchStarted(
-    val batchInfo: JavaBatchInfo)
-    extends JavaStreamingListenerEvent
+    val batchInfo: JavaBatchInfo
+) extends JavaStreamingListenerEvent
 
 private[streaming] class JavaStreamingListenerOutputOperationStarted(
-    val outputOperationInfo: JavaOutputOperationInfo)
-    extends JavaStreamingListenerEvent
+    val outputOperationInfo: JavaOutputOperationInfo
+) extends JavaStreamingListenerEvent
 
 private[streaming] class JavaStreamingListenerOutputOperationCompleted(
-    val outputOperationInfo: JavaOutputOperationInfo)
-    extends JavaStreamingListenerEvent
+    val outputOperationInfo: JavaOutputOperationInfo
+) extends JavaStreamingListenerEvent
 
 private[streaming] class JavaStreamingListenerReceiverStarted(
-    val receiverInfo: JavaReceiverInfo)
-    extends JavaStreamingListenerEvent
+    val receiverInfo: JavaReceiverInfo
+) extends JavaStreamingListenerEvent
 
 private[streaming] class JavaStreamingListenerReceiverError(
-    val receiverInfo: JavaReceiverInfo)
-    extends JavaStreamingListenerEvent
+    val receiverInfo: JavaReceiverInfo
+) extends JavaStreamingListenerEvent
 
 private[streaming] class JavaStreamingListenerReceiverStopped(
-    val receiverInfo: JavaReceiverInfo)
-    extends JavaStreamingListenerEvent
+    val receiverInfo: JavaReceiverInfo
+) extends JavaStreamingListenerEvent
 
 /**
   * Class having information on batches.
@@ -216,7 +227,8 @@ private[streaming] case class JavaBatchInfo(
     processingDelay: Long,
     totalDelay: Long,
     numRecords: Long,
-    outputOperationInfos: java.util.Map[Int, JavaOutputOperationInfo])
+    outputOperationInfos: java.util.Map[Int, JavaOutputOperationInfo]
+)
 
 /**
   * Track the information of input stream at specified batch time.
@@ -231,19 +243,22 @@ private[streaming] case class JavaStreamInputInfo(
     inputStreamId: Int,
     numRecords: Long,
     metadata: java.util.Map[String, Any],
-    metadataDescription: String)
+    metadataDescription: String
+)
 
 /**
   * Class having information about a receiver
   */
-private[streaming] case class JavaReceiverInfo(streamId: Int,
-                                               name: String,
-                                               active: Boolean,
-                                               location: String,
-                                               executorId: String,
-                                               lastErrorMessage: String,
-                                               lastError: String,
-                                               lastErrorTime: Long)
+private[streaming] case class JavaReceiverInfo(
+    streamId: Int,
+    name: String,
+    active: Boolean,
+    location: String,
+    executorId: String,
+    lastErrorMessage: String,
+    lastError: String,
+    lastErrorTime: Long
+)
 
 /**
   * Class having information on output operations.
@@ -259,10 +274,12 @@ private[streaming] case class JavaReceiverInfo(streamId: Int,
   * @param failureReason Failure reason if this output operation fails. If the output operation is
   *                      successful, this field is `null`.
   */
-private[streaming] case class JavaOutputOperationInfo(batchTime: Time,
-                                                      id: Int,
-                                                      name: String,
-                                                      description: String,
-                                                      startTime: Long,
-                                                      endTime: Long,
-                                                      failureReason: String)
+private[streaming] case class JavaOutputOperationInfo(
+    batchTime: Time,
+    id: Int,
+    name: String,
+    description: String,
+    startTime: Long,
+    endTime: Long,
+    failureReason: String
+)

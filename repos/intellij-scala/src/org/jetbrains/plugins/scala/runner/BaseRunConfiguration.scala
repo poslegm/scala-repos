@@ -1,7 +1,12 @@
 package org.jetbrains.plugins.scala
 package runner
 
-import com.intellij.execution.configurations.{ConfigurationFactory, JavaParameters, ModuleBasedConfiguration, RunConfigurationModule}
+import com.intellij.execution.configurations.{
+  ConfigurationFactory,
+  JavaParameters,
+  ModuleBasedConfiguration,
+  RunConfigurationModule
+}
 import com.intellij.execution.{CantRunException, ExecutionException}
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
@@ -19,9 +24,12 @@ import scala.collection.JavaConverters._
 abstract class BaseRunConfiguration(
     val project: Project,
     val configurationFactory: ConfigurationFactory,
-    val name: String)
-    extends ModuleBasedConfiguration[RunConfigurationModule](
-        name, new RunConfigurationModule(project), configurationFactory) {
+    val name: String
+) extends ModuleBasedConfiguration[RunConfigurationModule](
+      name,
+      new RunConfigurationModule(project),
+      configurationFactory
+    ) {
   def mainClass: String
   val defaultJavaOptions = "-Djline.terminal=NONE"
   val useJavaCp = "-usejavacp"
@@ -63,7 +71,8 @@ abstract class BaseRunConfiguration(
 
     val scalaSdk = module.scalaSdk.getOrElse {
       throw new ExecutionException(
-          "No Scala facet configured for module " + module.getName)
+        "No Scala facet configured for module " + module.getName
+      )
     }
 
     val rootManager = ModuleRootManager.getInstance(module)

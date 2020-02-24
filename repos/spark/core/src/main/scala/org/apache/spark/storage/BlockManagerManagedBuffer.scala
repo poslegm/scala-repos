@@ -31,8 +31,8 @@ import org.apache.spark.util.io.ChunkedByteBuffer
 private[storage] class BlockManagerManagedBuffer(
     blockManager: BlockManager,
     blockId: BlockId,
-    chunkedBuffer: ChunkedByteBuffer)
-    extends NettyManagedBuffer(chunkedBuffer.toNetty) {
+    chunkedBuffer: ChunkedByteBuffer
+) extends NettyManagedBuffer(chunkedBuffer.toNetty) {
 
   override def retain(): ManagedBuffer = {
     super.retain()

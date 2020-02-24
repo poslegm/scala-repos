@@ -32,8 +32,7 @@ trait OrderedSerialization[T] extends Ordering[T] with Serialization[T] {
     * This compares two InputStreams. After this call, the position in
     * the InputStreams is mutated to be the end of the record.
     */
-  def compareBinary(
-      a: InputStream, b: InputStream): OrderedSerialization.Result
+  def compareBinary(a: InputStream, b: InputStream): OrderedSerialization.Result
 }
 
 object OrderedSerialization {
@@ -85,11 +84,13 @@ object OrderedSerialization {
     ord.compare(a, b)
 
   def compareBinary[T](a: InputStream, b: InputStream)(
-      implicit ord: OrderedSerialization[T]): Result =
+      implicit ord: OrderedSerialization[T]
+  ): Result =
     ord.compareBinary(a, b)
 
   def writeThenCompare[T](a: T, b: T)(
-      implicit ordb: OrderedSerialization[T]): Result = {
+      implicit ordb: OrderedSerialization[T]
+  ): Result = {
     val abytes = Serialization.toBytes(a)
     val bbytes = Serialization.toBytes(b)
     val ain = new ByteArrayInputStream(abytes)
@@ -100,8 +101,10 @@ object OrderedSerialization {
   /**
     * This is slow, but always an option. Avoid this if you can, especially for large items
     */
-  def readThenCompare[T : OrderedSerialization](
-      as: InputStream, bs: InputStream): Result =
+  def readThenCompare[T: OrderedSerialization](
+      as: InputStream,
+      bs: InputStream
+  ): Result =
     try resultFrom {
       val a = Serialization.read[T](as)
       val b = Serialization.read[T](bs)
@@ -111,9 +114,10 @@ object OrderedSerialization {
     }
 
   private[this] def internalTransformer[T, U, V](
-      packFn: T => U, unpackFn: U => V, presentFn: Try[V] => Try[T])(
-      implicit otherOrdSer: OrderedSerialization[U])
-    : OrderedSerialization[T] = {
+      packFn: T => U,
+      unpackFn: U => V,
+      presentFn: Try[V] => Try[T]
+  )(implicit otherOrdSer: OrderedSerialization[U]): OrderedSerialization[T] = {
     new OrderedSerialization[T] {
       private[this] var cache: (T, U) = null
       private[this] def packCache(t: T): U = {
@@ -131,7 +135,8 @@ object OrderedSerialization {
 
       override def compareBinary(
           a: java.io.InputStream,
-          b: java.io.InputStream): OrderedSerialization.Result =
+          b: java.io.InputStream
+      ): OrderedSerialization.Result =
         otherOrdSer.compareBinary(a, b)
 
       override def compare(x: T, y: T) =
@@ -151,18 +156,21 @@ object OrderedSerialization {
   }
 
   def viaTransform[T, U](packFn: T => U, unpackFn: U => T)(
-      implicit otherOrdSer: OrderedSerialization[U]): OrderedSerialization[T] =
+      implicit otherOrdSer: OrderedSerialization[U]
+  ): OrderedSerialization[T] =
     internalTransformer[T, U, T](packFn, unpackFn, identity)
 
   def viaTryTransform[T, U](packFn: T => U, unpackFn: U => Try[T])(
-      implicit otherOrdSer: OrderedSerialization[U]): OrderedSerialization[T] =
+      implicit otherOrdSer: OrderedSerialization[U]
+  ): OrderedSerialization[T] =
     internalTransformer[T, U, Try[T]](packFn, unpackFn, _.flatMap(identity))
 
   /**
     * The the serialized comparison matches the unserialized comparison
     */
   def compareBinaryMatchesCompare[T](
-      implicit ordb: OrderedSerialization[T]): Law2[T] =
+      implicit ordb: OrderedSerialization[T]
+  ): Law2[T] =
     Law2("compare(a, b) == compareBinary(aBin, bBin)", { (a: T, b: T) =>
       resultFrom(ordb.compare(a, b)) == writeThenCompare(a, b)
     })
@@ -173,17 +181,18 @@ object OrderedSerialization {
     */
   def orderingTransitive[T](implicit ordb: OrderedSerialization[T]): Law3[T] =
     Law3("transitivity", { (a: T, b: T, c: T) =>
-      if (ordb.lteq(a, b) && ordb.lteq(b, c)) { ordb.lteq(a, c) } else true
+      if (ordb.lteq(a, b) && ordb.lteq(b, c)) { ordb.lteq(a, c) }
+      else true
     })
 
   /**
     * ordering must be antisymmetric. If this is not so, sort-based partitioning
     * will be broken
     */
-  def orderingAntisymmetry[T](
-      implicit ordb: OrderedSerialization[T]): Law2[T] =
+  def orderingAntisymmetry[T](implicit ordb: OrderedSerialization[T]): Law2[T] =
     Law2("antisymmetry", { (a: T, b: T) =>
-      if (ordb.lteq(a, b) && ordb.lteq(b, a)) { ordb.equiv(a, b) } else true
+      if (ordb.lteq(a, b) && ordb.lteq(b, a)) { ordb.equiv(a, b) }
+      else true
     })
 
   /**
@@ -191,15 +200,15 @@ object OrderedSerialization {
     * will be broken
     */
   def orderingTotality[T](implicit ordb: OrderedSerialization[T]): Law2[T] =
-    Law2("totality", { (a: T, b: T) =>
-      (ordb.lteq(a, b) || ordb.lteq(b, a))
-    })
+    Law2("totality", { (a: T, b: T) => (ordb.lteq(a, b) || ordb.lteq(b, a)) })
 
-  def allLaws[T : OrderedSerialization]: Iterable[Law[T]] =
-    Serialization.allLaws ++ List(compareBinaryMatchesCompare[T],
-                                  orderingTransitive[T],
-                                  orderingAntisymmetry[T],
-                                  orderingTotality[T])
+  def allLaws[T: OrderedSerialization]: Iterable[Law[T]] =
+    Serialization.allLaws ++ List(
+      compareBinaryMatchesCompare[T],
+      orderingTransitive[T],
+      orderingAntisymmetry[T],
+      orderingTotality[T]
+    )
 }
 
 /**
@@ -211,8 +220,9 @@ object OrderedSerialization {
   * with the ordering (if equivalent in the ordering, the hash must match).
   */
 final case class DeserializingOrderedSerialization[T](
-    serialization: Serialization[T], ordering: Ordering[T])
-    extends OrderedSerialization[T] {
+    serialization: Serialization[T],
+    ordering: Ordering[T]
+) extends OrderedSerialization[T] {
 
   final override def read(i: InputStream) = serialization.read(i)
   final override def write(o: OutputStream, t: T) = serialization.write(o, t)

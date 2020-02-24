@@ -47,7 +47,8 @@ object softmax extends UFunc {
 
   implicit def reduceDouble[T](
       implicit iter: CanTraverseValues[T, Double],
-      maxImpl: max.Impl[T, Double]): Impl[T, Double] = new Impl[T, Double] {
+      maxImpl: max.Impl[T, Double]
+  ): Impl[T, Double] = new Impl[T, Double] {
     def apply(v: T): Double = {
 
       val max = if (!iter.isTraversableAgain(v)) 0.0 else maxImpl(v)
@@ -68,10 +69,12 @@ object softmax extends UFunc {
           }
         }
 
-        override def visitArray(arr: Array[Double],
-                                offset: Int,
-                                length: Int,
-                                stride: Int): Unit = {
+        override def visitArray(
+            arr: Array[Double],
+            offset: Int,
+            length: Int,
+            stride: Int
+        ): Unit = {
           var i = 0
           var off = offset
           while (i < length) {
@@ -90,7 +93,8 @@ object softmax extends UFunc {
 
   implicit def reduceFloat[T](
       implicit iter: CanTraverseValues[T, Float],
-      maxImpl: max.Impl[T, Float]): Impl[T, Float] = new Impl[T, Float] {
+      maxImpl: max.Impl[T, Float]
+  ): Impl[T, Float] = new Impl[T, Float] {
     def apply(v: T): Float = {
 
       val max = if (!iter.isTraversableAgain(v)) 0.0f else maxImpl(v)
@@ -112,7 +116,11 @@ object softmax extends UFunc {
         }
 
         override def visitArray(
-            arr: Array[Float], offset: Int, length: Int, stride: Int): Unit = {
+            arr: Array[Float],
+            offset: Int,
+            length: Int,
+            stride: Int
+        ): Unit = {
           var i = 0
           var off = offset
           var cur = 0.0f

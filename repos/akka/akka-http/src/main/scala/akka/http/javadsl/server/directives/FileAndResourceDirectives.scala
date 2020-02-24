@@ -51,7 +51,8 @@ object FileAndResourceRoute {
     * INTERNAL API
     */
   private[http] def apply(
-      f: ContentTypeResolver ⇒ Route): FileAndResourceRoute =
+      f: ContentTypeResolver ⇒ Route
+  ): FileAndResourceRoute =
     new FileAndResourceRouteWithDefaultResolver(f) with FileAndResourceRoute {
       def withContentType(contentType: ContentType): Route =
         resolveContentTypeWith(StaticContentTypeResolver(contentType))
@@ -62,10 +63,12 @@ object FileAndResourceRoute {
   /**
     * INTERNAL API
     */
-  private[http] def forFixedName(fileName: String)(
-      f: ContentType ⇒ Route): FileAndResourceRoute =
-    new FileAndResourceRouteWithDefaultResolver(
-        resolver ⇒ f(resolver.resolve(fileName))) with FileAndResourceRoute {
+  private[http] def forFixedName(
+      fileName: String
+  )(f: ContentType ⇒ Route): FileAndResourceRoute =
+    new FileAndResourceRouteWithDefaultResolver(resolver ⇒
+      f(resolver.resolve(fileName))
+    ) with FileAndResourceRoute {
       def withContentType(contentType: ContentType): Route =
         resolveContentTypeWith(StaticContentTypeResolver(contentType))
       def resolveContentTypeWith(resolver: ContentTypeResolver): Route =
@@ -88,7 +91,8 @@ abstract class FileAndResourceDirectives extends ExecutionDirectives {
     */
   def getFromResource(path: String, classLoader: ClassLoader): Route =
     FileAndResourceRoute.forFixedName(path)(
-        GetFromResource(path, _, classLoader))
+      GetFromResource(path, _, classLoader)
+    )
 
   /**
     * Completes GET requests with the content from the resource identified by the given
@@ -102,9 +106,12 @@ abstract class FileAndResourceDirectives extends ExecutionDirectives {
     * directoryPath and the unmatched path from the given ClassLoader.
     */
   def getFromResourceDirectory(
-      directoryPath: String, classLoader: ClassLoader): FileAndResourceRoute =
+      directoryPath: String,
+      classLoader: ClassLoader
+  ): FileAndResourceRoute =
     FileAndResourceRoute(
-        GetFromResourceDirectory(directoryPath, classLoader, _))
+      GetFromResourceDirectory(directoryPath, classLoader, _)
+    )
 
   /**
     * Completes GET requests with the content of the given file.
@@ -143,7 +150,8 @@ abstract class FileAndResourceDirectives extends ExecutionDirectives {
     */
   def getFromBrowseableDirectory(directoryPath: String): FileAndResourceRoute =
     FileAndResourceRoute(
-        GetFromDirectory(new File(directoryPath), browseable = true, _))
+      GetFromDirectory(new File(directoryPath), browseable = true, _)
+    )
 
   protected def defaultClassLoader: ClassLoader =
     server.directives.FileAndResourceDirectives.defaultClassLoader

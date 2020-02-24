@@ -23,20 +23,23 @@ class ActorGraphInterpreterSpec extends AkkaSpec {
       val identity = GraphStages.identity[Int]
 
       Await.result(
-          Source(1 to 100).via(identity).grouped(200).runWith(Sink.head),
-          3.seconds) should ===(1 to 100)
+        Source(1 to 100).via(identity).grouped(200).runWith(Sink.head),
+        3.seconds
+      ) should ===(1 to 100)
     }
 
     "be able to reuse a simple identity graph stage" in assertAllStagesStopped {
       val identity = GraphStages.identity[Int]
 
-      Await.result(Source(1 to 100)
-                     .via(identity)
-                     .via(identity)
-                     .via(identity)
-                     .grouped(200)
-                     .runWith(Sink.head),
-                   3.seconds) should ===(1 to 100)
+      Await.result(
+        Source(1 to 100)
+          .via(identity)
+          .via(identity)
+          .via(identity)
+          .grouped(200)
+          .runWith(Sink.head),
+        3.seconds
+      ) should ===(1 to 100)
     }
 
     "be able to interpret a simple bidi stage" in assertAllStagesStopped {
@@ -48,7 +51,8 @@ class ActorGraphInterpreterSpec extends AkkaSpec {
         val shape = BidiShape(in1, out1, in2, out2)
 
         override def createLogic(
-            inheritedAttributes: Attributes): GraphStageLogic =
+            inheritedAttributes: Attributes
+        ): GraphStageLogic =
           new GraphStageLogic(shape) {
             setHandler(in1, new InHandler {
               override def onPush(): Unit = push(out1, grab(in1))
@@ -76,13 +80,12 @@ class ActorGraphInterpreterSpec extends AkkaSpec {
 
       val identity = BidiFlow
         .fromGraph(identityBidi)
-        .join(Flow[Int].map { x ⇒
-          x
-        })
+        .join(Flow[Int].map { x ⇒ x })
 
       Await.result(
-          Source(1 to 10).via(identity).grouped(100).runWith(Sink.head),
-          3.seconds) should ===(1 to 10)
+        Source(1 to 10).via(identity).grouped(100).runWith(Sink.head),
+        3.seconds
+      ) should ===(1 to 10)
     }
 
     "be able to interpret and reuse a simple bidi stage" in assertAllStagesStopped {
@@ -94,7 +97,8 @@ class ActorGraphInterpreterSpec extends AkkaSpec {
         val shape = BidiShape(in1, out1, in2, out2)
 
         override def createLogic(
-            inheritedAttributes: Attributes): GraphStageLogic =
+            inheritedAttributes: Attributes
+        ): GraphStageLogic =
           new GraphStageLogic(shape) {
             setHandler(in1, new InHandler {
               override def onPush(): Unit = push(out1, grab(in1))
@@ -126,13 +130,12 @@ class ActorGraphInterpreterSpec extends AkkaSpec {
 
       val identityBidiF = BidiFlow.fromGraph(identityBidi)
       val identity = (identityBidiF atop identityBidiF atop identityBidiF)
-        .join(Flow[Int].map { x ⇒
-        x
-      })
+        .join(Flow[Int].map { x ⇒ x })
 
       Await.result(
-          Source(1 to 10).via(identity).grouped(100).runWith(Sink.head),
-          3.seconds) should ===(1 to 10)
+        Source(1 to 10).via(identity).grouped(100).runWith(Sink.head),
+        3.seconds
+      ) should ===(1 to 10)
     }
 
     "be able to interpret and resuse a simple bidi stage" in assertAllStagesStopped {
@@ -144,7 +147,8 @@ class ActorGraphInterpreterSpec extends AkkaSpec {
         val shape = BidiShape(in1, out1, in2, out2)
 
         override def createLogic(
-            inheritedAttributes: Attributes): GraphStageLogic =
+            inheritedAttributes: Attributes
+        ): GraphStageLogic =
           new GraphStageLogic(shape) {
             setHandler(in1, new InHandler {
               override def onPush(): Unit = push(out1, grab(in1))
@@ -176,13 +180,12 @@ class ActorGraphInterpreterSpec extends AkkaSpec {
 
       val identityBidiF = BidiFlow.fromGraph(identityBidi)
       val identity = (identityBidiF atop identityBidiF atop identityBidiF)
-        .join(Flow[Int].map { x ⇒
-        x
-      })
+        .join(Flow[Int].map { x ⇒ x })
 
       Await.result(
-          Source(1 to 10).via(identity).grouped(100).runWith(Sink.head),
-          3.seconds) should ===(1 to 10)
+        Source(1 to 10).via(identity).grouped(100).runWith(Sink.head),
+        3.seconds
+      ) should ===(1 to 10)
     }
 
     "be able to interpret a rotated identity bidi stage" in assertAllStagesStopped {
@@ -197,7 +200,8 @@ class ActorGraphInterpreterSpec extends AkkaSpec {
         val shape = BidiShape(in1, out1, in2, out2)
 
         override def createLogic(
-            inheritedAttributes: Attributes): GraphStageLogic =
+            inheritedAttributes: Attributes
+        ): GraphStageLogic =
           new GraphStageLogic(shape) {
             setHandler(in1, new InHandler {
               override def onPush(): Unit = push(out2, grab(in1))
@@ -255,23 +259,31 @@ class ActorGraphInterpreterSpec extends AkkaSpec {
           new SourceShape(Outlet[Int]("test.out"))
 
         override def createLogic(
-            inheritedAttributes: Attributes): GraphStageLogic =
+            inheritedAttributes: Attributes
+        ): GraphStageLogic =
           new GraphStageLogic(shape) {
 
-            setHandler(shape.out, new OutHandler {
-              override def onPull(): Unit = {
-                completeStage()
-                // This cannot be propagated now since the stage is already closed
-                push(shape.out, -1)
+            setHandler(
+              shape.out,
+              new OutHandler {
+                override def onPull(): Unit = {
+                  completeStage()
+                  // This cannot be propagated now since the stage is already closed
+                  push(shape.out, -1)
+                }
               }
-            })
+            )
           }
       }
 
-      EventFilter[IllegalArgumentException](pattern = "Error in stage.*",
-                                            occurrences = 1).intercept {
-        Await.result(Source.fromGraph(failyStage).runWith(Sink.ignore),
-                     3.seconds)
+      EventFilter[IllegalArgumentException](
+        pattern = "Error in stage.*",
+        occurrences = 1
+      ).intercept {
+        Await.result(
+          Source.fromGraph(failyStage).runWith(Sink.ignore),
+          3.seconds
+        )
       }
     }
 
@@ -302,12 +314,15 @@ class ActorGraphInterpreterSpec extends AkkaSpec {
 
       val failyStage = new GraphStage[FanOutShape2[Int, Int, Int]] {
         override val shape: FanOutShape2[Int, Int, Int] =
-          new FanOutShape2(Inlet[Int]("test.in"),
-                           Outlet[Int]("test.out0"),
-                           Outlet[Int]("test.out1"))
+          new FanOutShape2(
+            Inlet[Int]("test.in"),
+            Outlet[Int]("test.out0"),
+            Outlet[Int]("test.out1")
+          )
 
         override def createLogic(
-            inheritedAttributes: Attributes): GraphStageLogic =
+            inheritedAttributes: Attributes
+        ): GraphStageLogic =
           new GraphStageLogic(shape) {
 
             override def preStart(): Unit = {
@@ -316,8 +331,14 @@ class ActorGraphInterpreterSpec extends AkkaSpec {
               fail(shape.out0, te)
             }
 
-            setHandler(shape.out0, ignoreTerminateOutput) //We fail in preStart anyway
-            setHandler(shape.out1, ignoreTerminateOutput) //We fail in preStart anyway
+            setHandler(
+              shape.out0,
+              ignoreTerminateOutput
+            ) //We fail in preStart anyway
+            setHandler(
+              shape.out1,
+              ignoreTerminateOutput
+            ) //We fail in preStart anyway
             passAlong(shape.in, shape.out1)
           }
       }

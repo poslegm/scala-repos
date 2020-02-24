@@ -55,7 +55,9 @@ private[master] class MasterArguments(args: Array[String], conf: SparkConf) {
   private def parse(args: List[String]): Unit = args match {
     case ("--ip" | "-i") :: value :: tail =>
       Utils.checkHost(
-          value, "ip no longer supported, please use hostname " + value)
+        value,
+        "ip no longer supported, please use hostname " + value
+      )
       host = value
       parse(tail)
 
@@ -91,13 +93,14 @@ private[master] class MasterArguments(args: Array[String], conf: SparkConf) {
   private def printUsageAndExit(exitCode: Int) {
     // scalastyle:off println
     System.err.println(
-        "Usage: Master [options]\n" + "\n" + "Options:\n" +
+      "Usage: Master [options]\n" + "\n" + "Options:\n" +
         "  -i HOST, --ip HOST     Hostname to listen on (deprecated, please use --host or -h) \n" +
         "  -h HOST, --host HOST   Hostname to listen on\n" +
         "  -p PORT, --port PORT   Port to listen on (default: 7077)\n" +
         "  --webui-port PORT      Port for web UI (default: 8080)\n" +
         "  --properties-file FILE Path to a custom Spark properties file.\n" +
-        "                         Default is conf/spark-defaults.conf.")
+        "                         Default is conf/spark-defaults.conf."
+    )
     // scalastyle:on println
     System.exit(exitCode)
   }

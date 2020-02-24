@@ -9,7 +9,8 @@ object LazyEitherTTest extends SpecLite {
   import LazyEitherTest.LazyEitherEqual
 
   implicit def lazyEitherTEqual[F[_], A, B](
-      implicit F0: Equal[F[LazyEither[A, B]]]): Equal[LazyEitherT[F, A, B]] =
+      implicit F0: Equal[F[LazyEither[A, B]]]
+  ): Equal[LazyEitherT[F, A, B]] =
     F0.contramap((_: LazyEitherT[F, A, B]).run)
 
   type LazyEitherTList[A, B] = LazyEitherT[List, A, B]
@@ -30,7 +31,8 @@ object LazyEitherTTest extends SpecLite {
 
     val result = BindRec[LazyEitherId].tailrecM[Int, Int] { i =>
       LazyEitherT[Id, Int, Int \/ Int](
-          LazyEither.lazyRight(if (i < 10000) \/.left(i + 1) else \/.right(i)))
+        LazyEither.lazyRight(if (i < 10000) \/.left(i + 1) else \/.right(i))
+      )
     }(0)
     result.getOrElse(0) must_=== times
   }
@@ -42,9 +44,9 @@ object LazyEitherTTest extends SpecLite {
 
   object instances {
     def functor[F[_]: Functor, A] = Functor[LazyEitherT[F, A, ?]]
-    def plus[F[_]: Monad, A : Semigroup] = Plus[LazyEitherT[F, A, ?]]
+    def plus[F[_]: Monad, A: Semigroup] = Plus[LazyEitherT[F, A, ?]]
     def monad[F[_]: Monad, A] = Monad[LazyEitherT[F, A, ?]]
-    def monadPlus[F[_]: Monad, A : Monoid] = MonadPlus[LazyEitherT[F, A, ?]]
+    def monadPlus[F[_]: Monad, A: Monoid] = MonadPlus[LazyEitherT[F, A, ?]]
     def bind[F[_]: Monad, A] = Bind[LazyEitherT[F, A, ?]]
     def foldable[F[_]: Foldable, A] = Foldable[LazyEitherT[F, A, ?]]
     def traverse[F[_]: Traverse, A] = Traverse[LazyEitherT[F, A, ?]]
@@ -53,12 +55,12 @@ object LazyEitherTTest extends SpecLite {
     def bitraverse[F[_]: Traverse] = Bitraverse[LazyEitherT[F, ?, ?]]
 
     // checking absence of ambiguity
-    def functor[F[_]: Monad : Traverse, A] = Functor[LazyEitherT[F, A, ?]]
-    def functor[F[_]: Monad : BindRec, A] = Functor[LazyEitherT[F, A, ?]]
-    def functor[F[_]: BindRec : Traverse, A] = Functor[LazyEitherT[F, A, ?]]
-    def functor[F[_]: Monad, A : Monoid] = Functor[LazyEitherT[F, A, ?]]
-    def bind[F[_]: Monad : BindRec, A] = Bind[LazyEitherT[F, A, ?]]
-    def monad[F[_]: Monad, A : Monoid] = Monad[LazyEitherT[F, A, ?]]
+    def functor[F[_]: Monad: Traverse, A] = Functor[LazyEitherT[F, A, ?]]
+    def functor[F[_]: Monad: BindRec, A] = Functor[LazyEitherT[F, A, ?]]
+    def functor[F[_]: BindRec: Traverse, A] = Functor[LazyEitherT[F, A, ?]]
+    def functor[F[_]: Monad, A: Monoid] = Functor[LazyEitherT[F, A, ?]]
+    def bind[F[_]: Monad: BindRec, A] = Bind[LazyEitherT[F, A, ?]]
+    def monad[F[_]: Monad, A: Monoid] = Monad[LazyEitherT[F, A, ?]]
     def monadError[F[_]: Monad, A] = MonadError[LazyEitherT[F, A, ?], A]
     def foldable[F[_]: Traverse, A] = Foldable[LazyEitherT[F, A, ?]]
     def bifunctor[F[_]: Traverse] = Bifunctor[LazyEitherT[F, ?, ?]]

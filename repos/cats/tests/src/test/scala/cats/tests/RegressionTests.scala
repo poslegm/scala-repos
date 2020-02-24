@@ -11,13 +11,9 @@ class RegressionTests extends CatsSuite {
   // not stack safe, very minimal, not for actual use
   case class State[S, A](run: S => (A, S)) { self =>
     def map[B](f: A => B): State[S, B] =
-      State({ s =>
-        val (a, s2) = self.run(s); (f(a), s2)
-      })
+      State({ s => val (a, s2) = self.run(s); (f(a), s2) })
     def flatMap[B](f: A => State[S, B]): State[S, B] =
-      State({ s =>
-        val (a, s2) = self.run(s); f(a).run(s2)
-      })
+      State({ s => val (a, s2) = self.run(s); f(a).run(s2) })
   }
 
   object State {
@@ -52,7 +48,8 @@ class RegressionTests extends CatsSuite {
     val state = Traverse[List].sequence[State[Int, ?], Person](allocated)
     val (people, counter) = state.run(0)
     people should ===(
-        List(Person(0, "Alice"), Person(1, "Bob"), Person(2, "Claire")))
+      List(Person(0, "Alice"), Person(1, "Bob"), Person(2, "Claire"))
+    )
     counter should ===(3)
 
     // ensure that side-effects occurred in "correct" order
@@ -62,8 +59,8 @@ class RegressionTests extends CatsSuite {
   test("#167: confirm ap2 order") {
     val twelve = Apply[State[String, ?]]
       .ap2(State.instance[String].pure((_: Unit, _: Unit) => ()))(
-          State[String, Unit](s => ((), s + "1")),
-          State[String, Unit](s => ((), s + "2"))
+        State[String, Unit](s => ((), s + "1")),
+        State[String, Unit](s => ((), s + "2"))
       )
       .run("")
       ._2
@@ -73,8 +70,8 @@ class RegressionTests extends CatsSuite {
   test("#167: confirm map2 order") {
     val twelve = Apply[State[String, ?]]
       .map2(
-          State[String, Unit](s => ((), s + "1")),
-          State[String, Unit](s => ((), s + "2"))
+        State[String, Unit](s => ((), s + "1")),
+        State[String, Unit](s => ((), s + "2"))
       )((_: Unit, _: Unit) => ())
       .run("")
       ._2
@@ -84,9 +81,9 @@ class RegressionTests extends CatsSuite {
   test("#167: confirm map3 order") {
     val oneTwoThree = Apply[State[String, ?]]
       .map3(
-          State[String, Unit](s => ((), s + "1")),
-          State[String, Unit](s => ((), s + "2")),
-          State[String, Unit](s => ((), s + "3"))
+        State[String, Unit](s => ((), s + "1")),
+        State[String, Unit](s => ((), s + "2")),
+        State[String, Unit](s => ((), s + "3"))
       )((_: Unit, _: Unit, _: Unit) => ())
       .run("")
       ._2
@@ -95,8 +92,8 @@ class RegressionTests extends CatsSuite {
 
   test("#500: foldMap - traverse consistency") {
     assert(
-        List(1, 2, 3).traverseU(i => Const(List(i))).getConst == List(1, 2, 3)
-          .foldMap(List(_))
+      List(1, 2, 3).traverseU(i => Const(List(i))).getConst == List(1, 2, 3)
+        .foldMap(List(_))
     )
   }
 }

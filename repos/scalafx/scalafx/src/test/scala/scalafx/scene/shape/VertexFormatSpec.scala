@@ -43,7 +43,9 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class VertexFormatSpec
     extends SimpleSFXDelegateSpec[jfxss.VertexFormat, VertexFormat](
-        classOf[jfxss.VertexFormat], classOf[VertexFormat]) {
+      classOf[jfxss.VertexFormat],
+      classOf[VertexFormat]
+    ) {
 
   override protected def getScalaClassInstance =
     VertexFormat.PointNormalTexcoord

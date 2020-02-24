@@ -52,7 +52,7 @@ class Transaction {
       result
     } catch {
       case ex: AbortException => abort(); None
-      case ex: Throwable => abort(); throw ex
+      case ex: Throwable      => abort(); throw ex
     }
 }
 
@@ -94,10 +94,12 @@ trait Transactional {
       if (thisTrans.status == Transaction.Abortable) throw new AbortException
       val w = currentWriter()
       if (w != null)
-        if (thisTrans.id < w.id) { w.makeAbort(); rollBack(); writer = null } else
+        if (thisTrans.id < w.id) { w.makeAbort(); rollBack(); writer = null }
+        else
           throw new AbortException
-      readers = if (readers == null) thisTrans
-      else new Transaction(thisTrans, readers)
+      readers =
+        if (readers == null) thisTrans
+        else new Transaction(thisTrans, readers)
     }
   }
 
@@ -106,7 +108,8 @@ trait Transactional {
     synchronized {
       val w = currentWriter()
       if (w != null)
-        if (thisTrans.id < w.id) { w.makeAbort(); rollBack() } else
+        if (thisTrans.id < w.id) { w.makeAbort(); rollBack() }
+        else
           throw new AbortException
       var r = readers
       while (r != null && r.head.status != Transaction.Running) {

@@ -105,11 +105,12 @@ object TraceId {
         } else None
 
       val traceId = TraceId(
-          if (trace64 == parent64) None else Some(SpanId(trace64)),
-          if (parent64 == span64) None else Some(SpanId(parent64)),
-          SpanId(span64),
-          sampled,
-          flags)
+        if (trace64 == parent64) None else Some(SpanId(trace64)),
+        if (parent64 == span64) None else Some(SpanId(parent64)),
+        SpanId(span64),
+        sampled,
+        flags
+      )
       Return(traceId)
     }
   }
@@ -125,18 +126,20 @@ object TraceId {
   * @param flags Flags relevant to this request. Could be things like debug mode on/off. The sampled flag could eventually
   *              be moved in here.
   */
-final case class TraceId(_traceId: Option[SpanId],
-                         _parentId: Option[SpanId],
-                         spanId: SpanId,
-                         _sampled: Option[Boolean],
-                         flags: Flags) {
+final case class TraceId(
+    _traceId: Option[SpanId],
+    _parentId: Option[SpanId],
+    spanId: SpanId,
+    _sampled: Option[Boolean],
+    flags: Flags
+) {
   def traceId: SpanId = _traceId match {
-    case None => parentId
+    case None     => parentId
     case Some(id) => id
   }
 
   def parentId: SpanId = _parentId match {
-    case None => spanId
+    case None     => spanId
     case Some(id) => id
   }
 
@@ -147,7 +150,7 @@ final case class TraceId(_traceId: Option[SpanId],
 
   override def equals(other: Any) = other match {
     case other: TraceId => this.ids equals other.ids
-    case _ => false
+    case _              => false
   }
 
   override def hashCode(): Int =

@@ -83,14 +83,17 @@ case class ScaldingEnv(override val jobName: String, inargs: Array[String])
   // can be used as a Service
   private def addDeltaWrite(
       snode: Summer[Scalding, Any, Any],
-      sink: Sink[(Any, Any)]): Summer[Scalding, Any, Any] = {
+      sink: Sink[(Any, Any)]
+  ): Summer[Scalding, Any, Any] = {
     val Summer(prod, store, monoid) = snode
     Summer(prod.write(sink), store, monoid)
   }
 
-  case class Built(platform: Scalding,
-                   toRun: TailProducer[Scalding, (Any, (Option[Any], Any))],
-                   stateFn: (Configuration) => VersionedState)
+  case class Built(
+      platform: Scalding,
+      toRun: TailProducer[Scalding, (Any, (Option[Any], Any))],
+      stateFn: (Configuration) => VersionedState
+  )
 
   @transient lazy val build: Built = {
     // Calling abstractJob's constructor and binding it to a variable
@@ -103,7 +106,8 @@ case class ScaldingEnv(override val jobName: String, inargs: Array[String])
 
     // Perform config transformations before Hadoop job submission
     val opts = SourceBuilder.adjust(scaldingBuilder.opts, scaldingBuilder.id)(
-        _.set(Reducers(reducers)))
+      _.set(Reducers(reducers))
+    )
 
     // Support for the old setting based writing
     val toRun: TailProducer[Scalding, (Any, (Option[Any], Any))] = (for {
@@ -115,7 +119,8 @@ case class ScaldingEnv(override val jobName: String, inargs: Array[String])
 
     val scald = Scalding(name, opts)
       .withRegistrars(
-          ajob.registrars ++ builder.registrar.getRegistrars.asScala)
+        ajob.registrars ++ builder.registrar.getRegistrars.asScala
+      )
       .withConfigUpdater { c =>
         Config.tryFrom(ajob.transformConfig(c.toMap).toMap).get
       }
@@ -133,7 +138,8 @@ case class ScaldingEnv(override val jobName: String, inargs: Array[String])
     val stateFn = { (conf: Configuration) =>
       val statePath = getStatePath(scaldingBuilder.node.store).getOrElse {
         sys.error(
-            "You must use a VersionedBatchStore with the old Summingbird API!")
+          "You must use a VersionedBatchStore with the old Summingbird API!"
+        )
       }
       VersionedState(HDFSMetadata(conf, statePath), startDate, batches)
     };
@@ -157,7 +163,8 @@ case class ScaldingEnv(override val jobName: String, inargs: Array[String])
         /* This is generally due to data not being ready, don't give a failed error code */
         if (!args.boolean("scalding.nothrowplan")) {
           println(
-              "use: --scalding.nothrowplan to not give a failing error code in this case")
+            "use: --scalding.nothrowplan to not give a failing error code in this case"
+          )
           throw f
         } else {
           println("[ERROR]: ========== FlowPlanException =========")

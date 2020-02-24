@@ -38,7 +38,8 @@ object ActorWithBoundedStashSpec {
     def receive = {
       case msg: String if msg.startsWith("hello") ⇒
         numStashed += 1
-        try { stash(); sender() ! "ok" } catch {
+        try { stash(); sender() ! "ok" }
+        catch {
           case _: StashOverflowException ⇒
             if (numStashed == 21) {
               sender() ! "STASHOVERFLOW"
@@ -85,12 +86,17 @@ object ActorWithBoundedStashSpec {
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class ActorWithBoundedStashSpec
     extends AkkaSpec(ActorWithBoundedStashSpec.testConf)
-    with BeforeAndAfterEach with DefaultTimeout with ImplicitSender {
+    with BeforeAndAfterEach
+    with DefaultTimeout
+    with ImplicitSender {
   import ActorWithBoundedStashSpec._
 
   override def atStartup: Unit = {
-    system.eventStream.publish(Mute(EventFilter.warning(
-                pattern = ".*received dead letter from.*hello.*")))
+    system.eventStream.publish(
+      Mute(
+        EventFilter.warning(pattern = ".*received dead letter from.*hello.*")
+      )
+    )
   }
 
   override def beforeEach(): Unit =
@@ -145,13 +151,14 @@ class ActorWithBoundedStashSpec
 
     "throw a StashOverflowException in case of a stash capacity violation when configured via dispatcher" in {
       val stasher = system.actorOf(
-          Props[StashingActorWithOverflow].withDispatcher(dispatcherId2))
+        Props[StashingActorWithOverflow].withDispatcher(dispatcherId2)
+      )
       testStashOverflowException(stasher)
     }
 
     "throw a StashOverflowException in case of a stash capacity violation when configured via mailbox" in {
-      val stasher = system.actorOf(
-          Props[StashingActorWithOverflow].withMailbox(mailboxId2))
+      val stasher =
+        system.actorOf(Props[StashingActorWithOverflow].withMailbox(mailboxId2))
       testStashOverflowException(stasher)
     }
   }

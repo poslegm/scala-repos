@@ -44,7 +44,8 @@ object M1 {
   def mergesort[a](less: (a, a) => Boolean)(xs: Array[a]): Unit = {
 
     def While(c: => Boolean)(b: => Unit): Unit =
-      if (c) { b; While(c)(b) } else ();
+      if (c) { b; While(c)(b) }
+      else ();
 
     def swap(i: Int, j: Int): Unit = {
       val t = xs(i);
@@ -148,7 +149,10 @@ object M3 {
     else (v.head * w.head) + dotproduct(v.tail, w.tail)
   }
 
-  def matrixTimesVector(m: List[List[Double]], v: List[Double]): List[Double] = {
+  def matrixTimesVector(
+      m: List[List[Double]],
+      v: List[Double]
+  ): List[Double] = {
     m.map(row => dotproduct(row, v))
   }
 
@@ -158,7 +162,9 @@ object M3 {
   }
 
   def matrixTimesMatrix(
-      m1: List[List[Double]], m2: List[List[Double]]): List[List[Double]] = {
+      m1: List[List[Double]],
+      m2: List[List[Double]]
+  ): List[List[Double]] = {
     val columns = transpose(m2);
     m1.map(row => matrixTimesVector(columns, row))
   }

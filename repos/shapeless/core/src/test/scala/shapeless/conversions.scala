@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-14 Miles Sabin 
+ * Copyright (c) 2011-14 Miles Sabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,7 +84,8 @@ class ConversionTests {
     typed[(A :: HNil) => B](hlab)
 
     def foo[F, L <: HList, R](f: F, l: L)(
-        implicit fntp: FnToProduct.Aux[F, L => R]) = fntp(f)(l)
+        implicit fntp: FnToProduct.Aux[F, L => R]
+    ) = fntp(f)(l)
     val s2 = foo(sum, 2 :: 3 :: HNil)
     val ab2 = foo(ab, a :: HNil)
 
@@ -93,8 +94,9 @@ class ConversionTests {
         cftp(f)(a)
     }
 
-    implicit def mkSyntax[A <: HList, F <: AnyRef](a: A)(
-        implicit ffp: FnFromProduct.Aux[A => Any, F]): HListSyntax[A, F] =
+    implicit def mkSyntax[A <: HList, F <: AnyRef](
+        a: A
+    )(implicit ffp: FnFromProduct.Aux[A => Any, F]): HListSyntax[A, F] =
       new HListSyntax[A, F](a)
 
     val res =

@@ -15,7 +15,7 @@ final class ListOps[A](val self: List[A]) extends AnyVal {
 
   final def zipperEnd: Option[Zipper[A]] = l.zipperEnd(self)
 
-  final def <^>[B : Monoid](f: NonEmptyList[A] => B): B = l.<^>(self)(f)
+  final def <^>[B: Monoid](f: NonEmptyList[A] => B): B = l.<^>(self)(f)
 
   final def takeWhileM[M[_]: Monad](p: A => M[Boolean]): M[List[A]] =
     l.takeWhileM(self)(p)
@@ -32,7 +32,8 @@ final class ListOps[A](val self: List[A]) extends AnyVal {
   final def powerset: List[List[A]] = l.powerset(self)
 
   final def partitionM[M[_]: Applicative](
-      p: A => M[Boolean]): M[(List[A], List[A])] = l.partitionM(self)(p)
+      p: A => M[Boolean]
+  ): M[(List[A], List[A])] = l.partitionM(self)(p)
 
   final def spanM[M[_]: Monad](p: A => M[Boolean]): M[(List[A], List[A])] =
     l.spanM(self)(p)
@@ -41,7 +42,8 @@ final class ListOps[A](val self: List[A]) extends AnyVal {
     l.breakM(self)(p)
 
   final def groupWhenM[M[_]: Monad](
-      p: (A, A) => M[Boolean]): M[List[NonEmptyList[A]]] =
+      p: (A, A) => M[Boolean]
+  ): M[List[NonEmptyList[A]]] =
     l.groupWhenM(self)(p)
 
   final def groupBy1[B](f: A => B): Map[B, NonEmptyList[A]] =
@@ -50,8 +52,9 @@ final class ListOps[A](val self: List[A]) extends AnyVal {
   final def groupWhen(p: (A, A) => Boolean): List[NonEmptyList[A]] =
     l.groupWhen(self)(p)
 
-  final def lookup[B, C](key: B)(
-      implicit eq: Equal[B], ev: A =:= (B, C)): Option[C] =
+  final def lookup[B, C](
+      key: B
+  )(implicit eq: Equal[B], ev: A =:= (B, C)): Option[C] =
     self.find((x: A) => eq.equal(ev(x)._1, key)).map(_._2)
 
   final def mapAccumLeft[B, C](c: C, f: (C, A) => (C, B)): (C, List[B]) =

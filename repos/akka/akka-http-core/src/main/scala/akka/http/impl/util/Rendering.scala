@@ -105,20 +105,22 @@ private[http] object Renderer {
 
   def optionRenderer[D, T](defaultValue: D)(
       implicit sRenderer: Renderer[D],
-      tRenderer: Renderer[T]): Renderer[Option[T]] =
+      tRenderer: Renderer[T]
+  ): Renderer[Option[T]] =
     new Renderer[Option[T]] {
       def render[R <: Rendering](r: R, value: Option[T]): r.type =
         if (value.isEmpty) sRenderer.render(r, defaultValue)
         else tRenderer.render(r, value.get)
     }
 
-  def defaultSeqRenderer[T : Renderer] =
+  def defaultSeqRenderer[T: Renderer] =
     genericSeqRenderer[Renderable, T](Rendering.`, `, Rendering.Empty)
-  def seqRenderer[T : Renderer](separator: String = ", ", empty: String = "") =
+  def seqRenderer[T: Renderer](separator: String = ", ", empty: String = "") =
     genericSeqRenderer[String, T](separator, empty)
   def genericSeqRenderer[S, T](separator: S, empty: S)(
       implicit sRenderer: Renderer[S],
-      tRenderer: Renderer[T]): Renderer[immutable.Seq[T]] =
+      tRenderer: Renderer[T]
+  ): Renderer[immutable.Seq[T]] =
     new Renderer[immutable.Seq[T]] {
       def render[R <: Rendering](r: R, value: immutable.Seq[T]): r.type = {
         @tailrec def recI(values: IndexedSeq[T], ix: Int = 0): r.type =
@@ -181,14 +183,16 @@ private[http] trait Rendering {
 
   def ~~(string: String): this.type = {
     @tailrec def rec(ix: Int = 0): this.type =
-      if (ix < string.length) { this ~~ string.charAt(ix); rec(ix + 1) } else
+      if (ix < string.length) { this ~~ string.charAt(ix); rec(ix + 1) }
+      else
         this
     rec()
   }
 
   def ~~(chars: Array[Char]): this.type = {
     @tailrec def rec(ix: Int = 0): this.type =
-      if (ix < chars.length) { this ~~ chars(ix); rec(ix + 1) } else this
+      if (ix < chars.length) { this ~~ chars(ix); rec(ix + 1) }
+      else this
     rec()
   }
 
@@ -207,9 +211,11 @@ private[http] trait Rendering {
     */
   def ~~#!(s: String): this.type = ~~('"').putEscaped(s) ~~ '"'
 
-  def putEscaped(s: String,
-                 escape: CharPredicate = Rendering.`\"`,
-                 escChar: Char = '\\'): this.type = {
+  def putEscaped(
+      s: String,
+      escape: CharPredicate = Rendering.`\"`,
+      escChar: Char = '\\'
+  ): this.type = {
     @tailrec def rec(ix: Int = 0): this.type =
       if (ix < s.length) {
         val c = s.charAt(ix)
@@ -222,8 +228,8 @@ private[http] trait Rendering {
 }
 
 private[http] object Rendering {
-  val floatFormat = new DecimalFormat(
-      "0.0##", DecimalFormatSymbols.getInstance(Locale.ROOT))
+  val floatFormat =
+    new DecimalFormat("0.0##", DecimalFormatSymbols.getInstance(Locale.ROOT))
   val `\"` = CharPredicate('\\', '"')
 
   case object `, ` extends SingletonValueRenderable // default separator
@@ -290,8 +296,10 @@ private[http] class ByteArrayRendering(sizeHint: Int) extends Rendering {
     val oldSize = size
     val neededSize = oldSize.toLong + delta
     if (array.length < neededSize) {
-      require(neededSize < Int.MaxValue,
-              "Cannot create byte array greater than 2GB in size")
+      require(
+        neededSize < Int.MaxValue,
+        "Cannot create byte array greater than 2GB in size"
+      )
       val newLen = math
         .min(math.max(array.length.toLong << 1, neededSize), Int.MaxValue)
         .toInt
@@ -333,8 +341,9 @@ private[http] class ByteStringRendering(sizeHint: Int) extends Rendering {
   * INTERNAL API
   */
 private[http] class CustomCharsetByteStringRendering(
-    nioCharset: Charset, sizeHint: Int)
-    extends Rendering {
+    nioCharset: Charset,
+    sizeHint: Int
+) extends Rendering {
   private[this] val charBuffer = CharBuffer.allocate(64)
   private[this] val builder = new ByteStringBuilder
   builder.sizeHint(sizeHint)

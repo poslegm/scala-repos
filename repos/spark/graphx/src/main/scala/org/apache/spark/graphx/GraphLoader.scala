@@ -54,13 +54,14 @@ object GraphLoader extends Logging {
     * @param edgeStorageLevel the desired storage level for the edge partitions
     * @param vertexStorageLevel the desired storage level for the vertex partitions
     */
-  def edgeListFile(sc: SparkContext,
-                   path: String,
-                   canonicalOrientation: Boolean = false,
-                   numEdgePartitions: Int = -1,
-                   edgeStorageLevel: StorageLevel = StorageLevel.MEMORY_ONLY,
-                   vertexStorageLevel: StorageLevel = StorageLevel.MEMORY_ONLY)
-    : Graph[Int, Int] = {
+  def edgeListFile(
+      sc: SparkContext,
+      path: String,
+      canonicalOrientation: Boolean = false,
+      numEdgePartitions: Int = -1,
+      edgeStorageLevel: StorageLevel = StorageLevel.MEMORY_ONLY,
+      vertexStorageLevel: StorageLevel = StorageLevel.MEMORY_ONLY
+  ): Graph[Int, Int] = {
     val startTime = System.currentTimeMillis
 
     // Parse the edge data table directly into edge partitions
@@ -70,34 +71,40 @@ object GraphLoader extends Logging {
       } else {
         sc.textFile(path)
       }
-    val edges = lines.mapPartitionsWithIndex { (pid, iter) =>
-      val builder = new EdgePartitionBuilder[Int, Int]
-      iter.foreach { line =>
-        if (!line.isEmpty && line(0) != '#') {
-          val lineArray = line.split("\\s+")
-          if (lineArray.length < 2) {
-            throw new IllegalArgumentException("Invalid line: " + line)
-          }
-          val srcId = lineArray(0).toLong
-          val dstId = lineArray(1).toLong
-          if (canonicalOrientation && srcId > dstId) {
-            builder.add(dstId, srcId, 1)
-          } else {
-            builder.add(srcId, dstId, 1)
+    val edges = lines
+      .mapPartitionsWithIndex { (pid, iter) =>
+        val builder = new EdgePartitionBuilder[Int, Int]
+        iter.foreach { line =>
+          if (!line.isEmpty && line(0) != '#') {
+            val lineArray = line.split("\\s+")
+            if (lineArray.length < 2) {
+              throw new IllegalArgumentException("Invalid line: " + line)
+            }
+            val srcId = lineArray(0).toLong
+            val dstId = lineArray(1).toLong
+            if (canonicalOrientation && srcId > dstId) {
+              builder.add(dstId, srcId, 1)
+            } else {
+              builder.add(srcId, dstId, 1)
+            }
           }
         }
+        Iterator((pid, builder.toEdgePartition))
       }
-      Iterator((pid, builder.toEdgePartition))
-    }.persist(edgeStorageLevel)
+      .persist(edgeStorageLevel)
       .setName("GraphLoader.edgeListFile - edges (%s)".format(path))
     edges.count()
 
-    logInfo("It took %d ms to load the edges".format(
-            System.currentTimeMillis - startTime))
+    logInfo(
+      "It took %d ms to load the edges"
+        .format(System.currentTimeMillis - startTime)
+    )
 
-    GraphImpl.fromEdgePartitions(edges,
-                                 defaultVertexAttr = 1,
-                                 edgeStorageLevel = edgeStorageLevel,
-                                 vertexStorageLevel = vertexStorageLevel)
+    GraphImpl.fromEdgePartitions(
+      edges,
+      defaultVertexAttr = 1,
+      edgeStorageLevel = edgeStorageLevel,
+      vertexStorageLevel = vertexStorageLevel
+    )
   } // end of edgeListFile
 }

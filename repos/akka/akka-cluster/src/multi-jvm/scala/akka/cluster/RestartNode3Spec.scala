@@ -25,10 +25,13 @@ object RestartNode3MultiJvmSpec extends MultiNodeConfig {
   val third = role("third")
 
   commonConfig(
-      debugConfig(on = false)
-        .withFallback(ConfigFactory.parseString(
-                "akka.cluster.auto-down-unreachable-after = off"))
-        .withFallback(MultiNodeClusterSpec.clusterConfig))
+    debugConfig(on = false)
+      .withFallback(
+        ConfigFactory
+          .parseString("akka.cluster.auto-down-unreachable-after = off")
+      )
+      .withFallback(MultiNodeClusterSpec.clusterConfig)
+  )
 
   testTransport(on = true)
 }
@@ -38,7 +41,8 @@ class RestartNode3MultiJvmNode2 extends RestartNode3Spec
 class RestartNode3MultiJvmNode3 extends RestartNode3Spec
 
 abstract class RestartNode3Spec
-    extends MultiNodeSpec(RestartNode3MultiJvmSpec) with MultiNodeClusterSpec
+    extends MultiNodeSpec(RestartNode3MultiJvmSpec)
+    with MultiNodeClusterSpec
     with ImplicitSender {
 
   import RestartNode3MultiJvmSpec._
@@ -51,11 +55,14 @@ abstract class RestartNode3Spec
   def seedNodes: immutable.IndexedSeq[Address] = Vector(first)
 
   lazy val restartedSecondSystem = ActorSystem(
-      system.name,
-      ConfigFactory
-        .parseString("akka.remote.netty.tcp.port=" +
-            secondUniqueAddress.address.port.get)
-        .withFallback(system.settings.config))
+    system.name,
+    ConfigFactory
+      .parseString(
+        "akka.remote.netty.tcp.port=" +
+          secondUniqueAddress.address.port.get
+      )
+      .withFallback(system.settings.config)
+  )
 
   override def afterAll(): Unit = {
     runOn(second) {
@@ -70,7 +77,8 @@ abstract class RestartNode3Spec
 
   "Cluster nodes" must {
     "be able to restart and join again when Down before Up" taggedAs LongRunningTest in within(
-        60.seconds) {
+      60.seconds
+    ) {
       // secondSystem is a separate ActorSystem, to be able to simulate restart
       // we must transfer its address to first
       runOn(first, third) {
@@ -105,8 +113,10 @@ abstract class RestartNode3Spec
       runOn(first) {
         testConductor.blackhole(first, third, Direction.Both).await
         val thirdAddress = address(third)
-        awaitAssert(clusterView.unreachableMembers.map(_.address) should ===(
-                Set(thirdAddress)))
+        awaitAssert(
+          clusterView.unreachableMembers
+            .map(_.address) should ===(Set(thirdAddress))
+        )
       }
       enterBarrier("third-unreachable")
 
@@ -132,9 +142,12 @@ abstract class RestartNode3Spec
       runOn(second) {
         Cluster(restartedSecondSystem).joinSeedNodes(seedNodes)
         awaitAssert(
-            Cluster(restartedSecondSystem).readView.members.size should ===(3))
-        awaitAssert(Cluster(restartedSecondSystem).readView.members
-              .map(_.status) should ===(Set(Up)))
+          Cluster(restartedSecondSystem).readView.members.size should ===(3)
+        )
+        awaitAssert(
+          Cluster(restartedSecondSystem).readView.members
+            .map(_.status) should ===(Set(Up))
+        )
       }
       runOn(first, third) {
         awaitAssert {

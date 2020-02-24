@@ -23,8 +23,10 @@ object EventBusSpec {
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 abstract class EventBusSpec(
-    busName: String, conf: Config = ConfigFactory.empty())
-    extends AkkaSpec(conf) with BeforeAndAfterEach {
+    busName: String,
+    conf: Config = ConfigFactory.empty()
+) extends AkkaSpec(conf)
+    with BeforeAndAfterEach {
   type BusType <: EventBus
 
   def createNewEventBus(): BusType
@@ -36,7 +38,9 @@ abstract class EventBusSpec(
   def classifierFor(event: BusType#Event): BusType#Classifier
 
   def disposeSubscriber(
-      system: ActorSystem, subscriber: BusType#Subscriber): Unit
+      system: ActorSystem,
+      subscriber: BusType#Subscriber
+  ): Unit
 
   lazy val bus = createNewEventBus()
 
@@ -81,13 +85,12 @@ abstract class EventBusSpec(
 
     "allow to add multiple subscribers" in {
       val subscribers =
-        (1 to 10) map { _ ⇒
-          createNewSubscriber()
-        }
+        (1 to 10) map { _ ⇒ createNewSubscriber() }
       val events = createEvents(10)
       val classifiers = events map getClassifierFor
       subscribers.zip(classifiers) forall { case (s, c) ⇒ bus.subscribe(s, c) } should ===(
-          true)
+        true
+      )
       subscribers.zip(classifiers) forall {
         case (s, c) ⇒ bus.unsubscribe(s, c)
       } should ===(true)
@@ -122,13 +125,9 @@ abstract class EventBusSpec(
     "publish the given event to all intended subscribers" in {
       val range = 0 until 10
       val subscribers = range map (_ ⇒ createNewSubscriber())
-      subscribers foreach { s ⇒
-        bus.subscribe(s, classifier) should ===(true)
-      }
+      subscribers foreach { s ⇒ bus.subscribe(s, classifier) should ===(true) }
       bus.publish(event)
-      range foreach { _ ⇒
-        expectMsg(event)
-      }
+      range foreach { _ ⇒ expectMsg(event) }
       subscribers foreach { s ⇒
         bus.unsubscribe(s, classifier) should ===(true);
         disposeSubscriber(system, s)
@@ -162,7 +161,8 @@ abstract class EventBusSpec(
 
 object ActorEventBusSpec {
   class MyActorEventBus(protected val system: ActorSystem)
-      extends ActorEventBus with ManagedActorClassification
+      extends ActorEventBus
+      with ManagedActorClassification
       with ActorClassifier {
 
     type Event = Notification
@@ -182,9 +182,10 @@ class ActorEventBusSpec(conf: Config)
 
   def this() {
     this(
-        ConfigFactory
-          .parseString("akka.actor.debug.event-stream = on")
-          .withFallback(AkkaSpec.testConf))
+      ConfigFactory
+        .parseString("akka.actor.debug.event-stream = on")
+        .withFallback(AkkaSpec.testConf)
+    )
   }
 
   type BusType = MyActorEventBus
@@ -200,7 +201,9 @@ class ActorEventBusSpec(conf: Config)
   def classifierFor(event: BusType#Event) = event.ref
 
   def disposeSubscriber(
-      system: ActorSystem, subscriber: BusType#Subscriber): Unit =
+      system: ActorSystem,
+      subscriber: BusType#Subscriber
+  ): Unit =
     system.stop(subscriber)
 
   // ManagedActorClassification specific tests
@@ -245,7 +248,9 @@ class ActorEventBusSpec(conf: Config)
     a1 ! PoisonPill
     expectTerminated(a1)
 
-    bus.publish(m(2)) // even though a1 has terminated, classification still applies
+    bus.publish(
+      m(2)
+    ) // even though a1 has terminated, classification still applies
     expectMsg(m(2))
 
     disposeSubscriber(system, subs)
@@ -339,7 +344,9 @@ class ScanningEventBusSpec extends EventBusSpec("ScanningEventBus") {
   def classifierFor(event: BusType#Event) = event.toString
 
   def disposeSubscriber(
-      system: ActorSystem, subscriber: BusType#Subscriber): Unit = ()
+      system: ActorSystem,
+      subscriber: BusType#Subscriber
+  ): Unit = ()
 }
 
 object LookupEventBusSpec {
@@ -350,11 +357,15 @@ object LookupEventBusSpec {
 
     override protected def classify(event: Int): String = event.toString
     override protected def compareSubscribers(
-        a: Procedure[Int], b: Procedure[Int]): Int =
+        a: Procedure[Int],
+        b: Procedure[Int]
+    ): Int =
       akka.util.Helpers.compareIdentityHash(a, b)
     override protected def mapSize = 32
     override protected def publish(
-        event: Int, subscriber: Procedure[Int]): Unit =
+        event: Int,
+        subscriber: Procedure[Int]
+    ): Unit =
       subscriber(event)
   }
 }
@@ -375,5 +386,7 @@ class LookupEventBusSpec extends EventBusSpec("LookupEventBus") {
   def classifierFor(event: BusType#Event) = event.toString
 
   def disposeSubscriber(
-      system: ActorSystem, subscriber: BusType#Subscriber): Unit = ()
+      system: ActorSystem,
+      subscriber: BusType#Subscriber
+  ): Unit = ()
 }

@@ -26,8 +26,9 @@ import akka.protobuf.MessageLite
   * INTERNAL API: Protobuf serializer of ClusterSharding messages.
   */
 private[akka] class ClusterShardingMessageSerializer(
-    val system: ExtendedActorSystem)
-    extends SerializerWithStringManifest with BaseSerializer {
+    val system: ExtendedActorSystem
+) extends SerializerWithStringManifest
+    with BaseSerializer {
   import ShardCoordinator.Internal._
   import Shard.{GetShardStats, ShardStats}
   import Shard.{State ⇒ EntityState, EntityStarted, EntityStopped}
@@ -66,66 +67,61 @@ private[akka] class ClusterShardingMessageSerializer(
 
   private val fromBinaryMap =
     collection.immutable.HashMap[String, Array[Byte] ⇒ AnyRef](
-        EntityStateManifest -> entityStateFromBinary,
-        EntityStartedManifest -> entityStartedFromBinary,
-        EntityStoppedManifest -> entityStoppedFromBinary,
-        CoordinatorStateManifest -> coordinatorStateFromBinary,
-        ShardRegionRegisteredManifest -> { bytes ⇒
-          ShardRegionRegistered(actorRefMessageFromBinary(bytes))
-        },
-        ShardRegionProxyRegisteredManifest -> { bytes ⇒
-          ShardRegionProxyRegistered(actorRefMessageFromBinary(bytes))
-        },
-        ShardRegionTerminatedManifest -> { bytes ⇒
-          ShardRegionTerminated(actorRefMessageFromBinary(bytes))
-        },
-        ShardRegionProxyTerminatedManifest -> { bytes ⇒
-          ShardRegionProxyTerminated(actorRefMessageFromBinary(bytes))
-        },
-        ShardHomeAllocatedManifest -> shardHomeAllocatedFromBinary,
-        ShardHomeDeallocatedManifest -> { bytes ⇒
-          ShardHomeDeallocated(shardIdMessageFromBinary(bytes))
-        },
-        RegisterManifest -> { bytes ⇒
-          Register(actorRefMessageFromBinary(bytes))
-        },
-        RegisterProxyManifest -> { bytes ⇒
-          RegisterProxy(actorRefMessageFromBinary(bytes))
-        },
-        RegisterAckManifest -> { bytes ⇒
-          RegisterAck(actorRefMessageFromBinary(bytes))
-        },
-        GetShardHomeManifest -> { bytes ⇒
-          GetShardHome(shardIdMessageFromBinary(bytes))
-        },
-        ShardHomeManifest -> shardHomeFromBinary,
-        HostShardManifest -> { bytes ⇒
-          HostShard(shardIdMessageFromBinary(bytes))
-        },
-        ShardStartedManifest -> { bytes ⇒
-          ShardStarted(shardIdMessageFromBinary(bytes))
-        },
-        BeginHandOffManifest -> { bytes ⇒
-          BeginHandOff(shardIdMessageFromBinary(bytes))
-        },
-        BeginHandOffAckManifest -> { bytes ⇒
-          BeginHandOffAck(shardIdMessageFromBinary(bytes))
-        },
-        HandOffManifest -> { bytes ⇒
-          HandOff(shardIdMessageFromBinary(bytes))
-        },
-        ShardStoppedManifest -> { bytes ⇒
-          ShardStopped(shardIdMessageFromBinary(bytes))
-        },
-        GracefulShutdownReqManifest -> { bytes ⇒
-          GracefulShutdownReq(actorRefMessageFromBinary(bytes))
-        },
-        GetShardStatsManifest -> { bytes ⇒
-          GetShardStats
-        },
-        ShardStatsManifest -> { bytes ⇒
-          shardStatsFromBinary(bytes)
-        })
+      EntityStateManifest -> entityStateFromBinary,
+      EntityStartedManifest -> entityStartedFromBinary,
+      EntityStoppedManifest -> entityStoppedFromBinary,
+      CoordinatorStateManifest -> coordinatorStateFromBinary,
+      ShardRegionRegisteredManifest -> { bytes ⇒
+        ShardRegionRegistered(actorRefMessageFromBinary(bytes))
+      },
+      ShardRegionProxyRegisteredManifest -> { bytes ⇒
+        ShardRegionProxyRegistered(actorRefMessageFromBinary(bytes))
+      },
+      ShardRegionTerminatedManifest -> { bytes ⇒
+        ShardRegionTerminated(actorRefMessageFromBinary(bytes))
+      },
+      ShardRegionProxyTerminatedManifest -> { bytes ⇒
+        ShardRegionProxyTerminated(actorRefMessageFromBinary(bytes))
+      },
+      ShardHomeAllocatedManifest -> shardHomeAllocatedFromBinary,
+      ShardHomeDeallocatedManifest -> { bytes ⇒
+        ShardHomeDeallocated(shardIdMessageFromBinary(bytes))
+      },
+      RegisterManifest -> { bytes ⇒
+        Register(actorRefMessageFromBinary(bytes))
+      },
+      RegisterProxyManifest -> { bytes ⇒
+        RegisterProxy(actorRefMessageFromBinary(bytes))
+      },
+      RegisterAckManifest -> { bytes ⇒
+        RegisterAck(actorRefMessageFromBinary(bytes))
+      },
+      GetShardHomeManifest -> { bytes ⇒
+        GetShardHome(shardIdMessageFromBinary(bytes))
+      },
+      ShardHomeManifest -> shardHomeFromBinary,
+      HostShardManifest -> { bytes ⇒
+        HostShard(shardIdMessageFromBinary(bytes))
+      },
+      ShardStartedManifest -> { bytes ⇒
+        ShardStarted(shardIdMessageFromBinary(bytes))
+      },
+      BeginHandOffManifest -> { bytes ⇒
+        BeginHandOff(shardIdMessageFromBinary(bytes))
+      },
+      BeginHandOffAckManifest -> { bytes ⇒
+        BeginHandOffAck(shardIdMessageFromBinary(bytes))
+      },
+      HandOffManifest -> { bytes ⇒ HandOff(shardIdMessageFromBinary(bytes)) },
+      ShardStoppedManifest -> { bytes ⇒
+        ShardStopped(shardIdMessageFromBinary(bytes))
+      },
+      GracefulShutdownReqManifest -> { bytes ⇒
+        GracefulShutdownReq(actorRefMessageFromBinary(bytes))
+      },
+      GetShardStatsManifest -> { bytes ⇒ GetShardStats },
+      ShardStatsManifest -> { bytes ⇒ shardStatsFromBinary(bytes) }
+    )
 
   override def manifest(obj: AnyRef): String = obj match {
     case _: EntityState ⇒ EntityStateManifest
@@ -157,7 +153,8 @@ private[akka] class ClusterShardingMessageSerializer(
     case _: ShardStats ⇒ ShardStatsManifest
     case _ ⇒
       throw new IllegalArgumentException(
-          s"Can't serialize object of type ${obj.getClass} in [${getClass.getName}]")
+        s"Can't serialize object of type ${obj.getClass} in [${getClass.getName}]"
+      )
   }
 
   override def toBinary(obj: AnyRef): Array[Byte] = obj match {
@@ -195,7 +192,8 @@ private[akka] class ClusterShardingMessageSerializer(
 
     case _ ⇒
       throw new IllegalArgumentException(
-          s"Can't serialize object of type ${obj.getClass} in [${getClass.getName}]")
+        s"Can't serialize object of type ${obj.getClass} in [${getClass.getName}]"
+      )
   }
 
   override def fromBinary(bytes: Array[Byte], manifest: String): AnyRef =
@@ -203,13 +201,17 @@ private[akka] class ClusterShardingMessageSerializer(
       case Some(f) ⇒ f(bytes)
       case None ⇒
         throw new IllegalArgumentException(
-            s"Unimplemented deserialization of message with manifest [$manifest] in [${getClass.getName}]")
+          s"Unimplemented deserialization of message with manifest [$manifest] in [${getClass.getName}]"
+        )
     }
 
   private def coordinatorStateToProto(state: State): sm.CoordinatorState = {
-    val regions = state.regions.map {
-      case (regionRef, _) ⇒ Serialization.serializedActorPath(regionRef)
-    }.toVector.asJava
+    val regions = state.regions
+      .map {
+        case (regionRef, _) ⇒ Serialization.serializedActorPath(regionRef)
+      }
+      .toVector
+      .asJava
 
     val builder = sm.CoordinatorState.newBuilder()
 
@@ -275,7 +277,8 @@ private[akka] class ClusterShardingMessageSerializer(
     sm.ShardIdMessage.parseFrom(bytes).getShard
 
   private def shardHomeAllocatedToProto(
-      evt: ShardHomeAllocated): sm.ShardHomeAllocated =
+      evt: ShardHomeAllocated
+  ): sm.ShardHomeAllocated =
     sm.ShardHomeAllocated
       .newBuilder()
       .setShard(evt.shard)
@@ -283,7 +286,8 @@ private[akka] class ClusterShardingMessageSerializer(
       .build()
 
   private def shardHomeAllocatedFromBinary(
-      bytes: Array[Byte]): ShardHomeAllocated = {
+      bytes: Array[Byte]
+  ): ShardHomeAllocated = {
     val m = sm.ShardHomeAllocated.parseFrom(bytes)
     ShardHomeAllocated(m.getShard, resolveActorRef(m.getRegion))
   }
@@ -340,7 +344,8 @@ private[akka] class ClusterShardingMessageSerializer(
   private def compress(msg: MessageLite): Array[Byte] = {
     val bos = new ByteArrayOutputStream(BufferSize)
     val zip = new GZIPOutputStream(bos)
-    try msg.writeTo(zip) finally zip.close()
+    try msg.writeTo(zip)
+    finally zip.close()
     bos.toByteArray
   }
 
@@ -356,7 +361,8 @@ private[akka] class ClusterShardingMessageSerializer(
         readChunk()
     }
 
-    try readChunk() finally in.close()
+    try readChunk()
+    finally in.close()
     out.toByteArray
   }
 }

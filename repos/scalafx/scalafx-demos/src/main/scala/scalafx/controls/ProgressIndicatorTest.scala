@@ -39,7 +39,8 @@ object ProgressIndicatorTest extends JFXApp {
   val progressIndicator = new ProgressIndicator
 
   val progressIndicatorController = new ProgressIndicatorControls(
-      progressIndicator)
+    progressIndicator
+  )
 
   val mainPane = new BorderPane {
     top = progressIndicator

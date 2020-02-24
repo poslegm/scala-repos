@@ -35,7 +35,9 @@ trait IoHelpers {
       class ReadItAll(in: InputStream, done: String => Unit) extends Runnable {
         def run {
           val br =
-            new BufferedReader(new InputStreamReader(in)) // default to platform character set
+            new BufferedReader(
+              new InputStreamReader(in)
+            ) // default to platform character set
           val lines = new ListBuffer[String]
           var line = ""
           while (line != null) {

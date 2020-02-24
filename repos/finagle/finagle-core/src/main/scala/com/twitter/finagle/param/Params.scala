@@ -73,10 +73,10 @@ object HighResTimer {
     *
     * It is a shared resource and as such, `stop` is ignored.
     */
-  val Default: com.twitter.util.Timer = new JavaTimer(
-      true, Some("HighResTimer")) {
-    override def stop(): Unit = ()
-  }
+  val Default: com.twitter.util.Timer =
+    new JavaTimer(true, Some("HighResTimer")) {
+      override def stop(): Unit = ()
+    }
 
   implicit val param = Stack.Param(HighResTimer(Default))
 }
@@ -143,13 +143,15 @@ object Monitor {
   * which is a total function fully covering the input domain.
   */
 case class ResponseClassifier(
-    responseClassifier: com.twitter.finagle.service.ResponseClassifier) {
+    responseClassifier: com.twitter.finagle.service.ResponseClassifier
+) {
   def mk(): (ResponseClassifier, Stack.Param[ResponseClassifier]) =
     (this, ResponseClassifier.param)
 }
 object ResponseClassifier {
-  implicit val param = Stack.Param(ResponseClassifier(
-          com.twitter.finagle.service.ResponseClassifier.Default))
+  implicit val param = Stack.Param(
+    ResponseClassifier(com.twitter.finagle.service.ResponseClassifier.Default)
+  )
 }
 
 /**

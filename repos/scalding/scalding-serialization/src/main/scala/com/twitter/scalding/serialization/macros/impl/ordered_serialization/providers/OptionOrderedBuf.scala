@@ -19,21 +19,26 @@ import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
 import com.twitter.scalding._
-import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{CompileTimeLengthTypes, ProductLike, TreeOrderedBuf}
+import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
+  CompileTimeLengthTypes,
+  ProductLike,
+  TreeOrderedBuf
+}
 import CompileTimeLengthTypes._
 import com.twitter.scalding.serialization.OrderedSerialization
 
 object OptionOrderedBuf {
   def dispatch(c: Context)(
-      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]])
-    : PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]
+  ): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     case tpe if tpe.erasure =:= c.universe.typeOf[Option[Any]] =>
       OptionOrderedBuf(c)(buildDispatcher, tpe)
   }
 
   def apply(c: Context)(
       buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
-      outerType: c.Type): TreeOrderedBuf[c.type] = {
+      outerType: c.Type
+  ): TreeOrderedBuf[c.type] = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
     val dispatcher = buildDispatcher
@@ -120,7 +125,9 @@ object OptionOrderedBuf {
       override val ctx: c.type = c
       override val tpe = outerType
       override def compareBinary(
-          inputStreamA: TermName, inputStreamB: TermName) =
+          inputStreamA: TermName,
+          inputStreamB: TermName
+      ) =
         genBinaryCompare(inputStreamA, inputStreamB)
       override def hash(element: TermName): ctx.Tree = genHashFn(element)
       override def put(inputStream: TermName, element: TermName) =

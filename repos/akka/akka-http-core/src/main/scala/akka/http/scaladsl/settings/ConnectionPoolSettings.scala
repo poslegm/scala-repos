@@ -47,7 +47,8 @@ abstract class ConnectionPoolSettings extends js.ConnectionPoolSettings {
 
   // overloads for idiomatic Scala use
   def withConnectionSettings(
-      newValue: ClientConnectionSettings): ConnectionPoolSettings =
+      newValue: ClientConnectionSettings
+  ): ConnectionPoolSettings =
     self.copy(connectionSettings = newValue)
 }
 

@@ -21,7 +21,10 @@ import org.jetbrains.plugins.scala.lang.refactoring.util.ScalaNamesUtil
   */
 class ImportAllMembersIntention extends PsiElementBaseIntentionAction {
   override def isAvailable(
-      project: Project, editor: Editor, element: PsiElement): Boolean = {
+      project: Project,
+      editor: Editor,
+      element: PsiElement
+  ): Boolean = {
     val qualAtCaret =
       PsiTreeUtil.getParentOfType(element, classOf[ScReferenceElement])
     if (qualAtCaret == null) return false
@@ -30,7 +33,10 @@ class ImportAllMembersIntention extends PsiElementBaseIntentionAction {
   }
 
   override def invoke(
-      project: Project, editor: Editor, element: PsiElement): Unit = {
+      project: Project,
+      editor: Editor,
+      element: PsiElement
+  ): Unit = {
     val qualAtCaret =
       PsiTreeUtil.getParentOfType(element, classOf[ScReferenceElement])
     if (qualAtCaret == null || !checkQualifier(qualAtCaret)) return
@@ -41,7 +47,11 @@ class ImportAllMembersIntention extends PsiElementBaseIntentionAction {
           .search(named, new LocalSearchScope(importHolder))
           .findAll()
         val pathWithWildcard =
-          ScalaNamesUtil.qualifiedName(named).getOrElse(return ) + "._"
+          ScalaNamesUtil
+            .qualifiedName(named)
+            .getOrElse(
+              return
+            ) + "._"
         importHolder.addImportForPath(pathWithWildcard)
         sorted(usages, isQualifier = true).foreach {
           case isQualifierFor(ref @ resolve(resolved: PsiNamedElement))
@@ -60,7 +70,7 @@ class ImportAllMembersIntention extends PsiElementBaseIntentionAction {
       val text = impExpr.getText
       qual.getText != text && !text.endsWith("_")
     case isQualifierFor(ref) => !isInImport(ref) && resolvesToStablePath(ref)
-    case _ => false
+    case _                   => false
   }
 }
 

@@ -33,9 +33,7 @@ class WorkScheduler {
   }
 
   def dequeueAllInterrupts(f: InterruptReq => Unit): Unit = synchronized {
-    interruptReqs.dequeueAll { iq =>
-      f(iq); true
-    }
+    interruptReqs.dequeueAll { iq => f(iq); true }
   }
 
   /** Called from server: return optional exception posted by client
@@ -46,8 +44,7 @@ class WorkScheduler {
     else {
       val result = Some(throwables.dequeue())
       if (!throwables.isEmpty)
-        postWorkItem { () =>
-        }
+        postWorkItem { () => }
       result
     }
   }

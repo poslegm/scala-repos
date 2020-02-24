@@ -19,18 +19,28 @@ class SbtModuleDataService
       toImport: Seq[DataNode[SbtModuleData]],
       projectData: ProjectData,
       project: Project,
-      modelsProvider: IdeModifiableModelsProvider): Importer[SbtModuleData] =
+      modelsProvider: IdeModifiableModelsProvider
+  ): Importer[SbtModuleData] =
     new SbtModuleDataService.Importer(
-        toImport, projectData, project, modelsProvider)
+      toImport,
+      projectData,
+      project,
+      modelsProvider
+    )
 }
 
 object SbtModuleDataService {
-  private class Importer(dataToImport: Seq[DataNode[SbtModuleData]],
-                         projectData: ProjectData,
-                         project: Project,
-                         modelsProvider: IdeModifiableModelsProvider)
-      extends AbstractImporter[SbtModuleData](
-          dataToImport, projectData, project, modelsProvider) {
+  private class Importer(
+      dataToImport: Seq[DataNode[SbtModuleData]],
+      projectData: ProjectData,
+      project: Project,
+      modelsProvider: IdeModifiableModelsProvider
+  ) extends AbstractImporter[SbtModuleData](
+        dataToImport,
+        projectData,
+        project,
+        modelsProvider
+      ) {
 
     override def importData(): Unit =
       dataToImport.foreach { moduleNode =>
@@ -46,7 +56,9 @@ object SbtModuleDataService {
       }
 
     private def setResolvers(
-        module: Module, resolvers: Set[SbtResolver]): Unit = {
+        module: Module,
+        resolvers: Set[SbtResolver]
+    ): Unit = {
       SbtModule.setResolversTo(module, resolvers)
       resolvers.foreach(SbtResolverIndexesManager().add)
     }

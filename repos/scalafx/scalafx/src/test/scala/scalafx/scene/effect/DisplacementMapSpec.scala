@@ -41,7 +41,9 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class DisplacementMapSpec
     extends SimpleSFXDelegateSpec[jfxse.DisplacementMap, DisplacementMap](
-        classOf[jfxse.DisplacementMap], classOf[DisplacementMap])
+      classOf[jfxse.DisplacementMap],
+      classOf[DisplacementMap]
+    )
     with InputDelegateSpec[DisplacementMap] {
 
   val inputDelegate = getScalaClassInstance

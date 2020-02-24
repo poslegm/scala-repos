@@ -21,7 +21,9 @@ import scala.util.Random
 
 @RunWith(classOf[JUnitRunner])
 class FutureTest
-    extends WordSpec with MockitoSugar with GeneratorDrivenPropertyChecks {
+    extends WordSpec
+    with MockitoSugar
+    with GeneratorDrivenPropertyChecks {
   implicit class FutureMatcher[A](future: Future[A]) {
     def mustProduce(expected: Try[A]) {
       expected match {
@@ -40,7 +42,8 @@ class FutureTest
     def scheduleOnce(when: Time)(f: => Unit): TimerTask =
       throw new Exception("schedule called")
     def schedulePeriodically(when: Time, period: Duration)(
-        f: => Unit): TimerTask =
+        f: => Unit
+    ): TimerTask =
       throw new Exception("schedule called")
     def stop() = ()
   }
@@ -77,9 +80,7 @@ class FutureTest
           }
           iteration onSuccess { _ =>
             complete = true
-          } onFailure { f =>
-            failure = true
-          }
+          } onFailure { f => failure = true }
           assert(complete == false)
           assert(failure == false)
         }
@@ -157,9 +158,7 @@ class FutureTest
 
           iteration onSuccess { _ =>
             complete = true
-          } onFailure { f =>
-            failure = true
-          }
+          } onFailure { f => failure = true }
           assert(complete == false)
           assert(failure == false)
         }
@@ -491,10 +490,9 @@ class FutureTest
         class TraverseTestSpy() {
           var goWasCalled = false
           var promise = Promise[Int]()
-          val go = () =>
-            {
-              goWasCalled = true
-              promise
+          val go = () => {
+            goWasCalled = true
+            promise
           }
         }
 
@@ -582,12 +580,13 @@ class FutureTest
 
         "accept maps of futures" in {
           val map = Map(
-              "1" -> Future.value("1"),
-              "2" -> Future.value("2")
+            "1" -> Future.value("1"),
+            "2" -> Future.value("2")
           )
 
           assert(
-              Await.result(Future.collect(map)) == Map("1" -> "1", "2" -> "2"))
+            Await.result(Future.collect(map)) == Map("1" -> "1", "2" -> "2")
+          )
         }
 
         "work correctly if the given map is empty" in {
@@ -597,8 +596,8 @@ class FutureTest
 
         "return future exception if one of the map values is future exception" in {
           val map = Map(
-              "1" -> Future.value("1"),
-              "2" -> Future.exception(new Exception)
+            "1" -> Future.value("1"),
+            "2" -> Future.exception(new Exception)
           )
 
           intercept[Exception] {
@@ -740,9 +739,10 @@ class FutureTest
         }
       }
 
-      def testJoin(label: String,
-                   joiner: ((Future[Int],
-                   Future[Int]) => Future[(Int, Int)])) {
+      def testJoin(
+          label: String,
+          joiner: ((Future[Int], Future[Int]) => Future[(Int, Int)])
+      ) {
         "join(%s)".format(label) should {
           trait JoinHelper {
             val p0 = new HandledPromise[Int]
@@ -832,7 +832,7 @@ class FutureTest
           jf.cancel(true)
           assert(f.handled match {
             case Some(e: java.util.concurrent.CancellationException) => true
-            case _ => false
+            case _                                                   => false
           })
         }
       }
@@ -941,9 +941,7 @@ class FutureTest
       "map" which {
         "when it's all chill" in {
           val f =
-            Future(1) map { x =>
-              x + 1
-            }
+            Future(1) map { x => x + 1 }
           assert(Await.result(f) == 2)
         }
 
@@ -967,21 +965,21 @@ class FutureTest
         "values" in {
           const.value(1).transform {
             case Return(v) => const.value(v + 1)
-            case Throw(t) => const.value(0)
+            case Throw(t)  => const.value(0)
           } mustProduce (Return(2))
         }
 
         "exceptions" in {
           const.exception(e).transform {
             case Return(_) => const.value(1)
-            case Throw(t) => const.value(0)
+            case Throw(t)  => const.value(0)
           } mustProduce (Return(0))
         }
 
         "exceptions thrown during transformation" in {
           const.value(1).transform {
             case Return(v) => const.value(throw e)
-            case Throw(t) => const.value(0)
+            case Throw(t)  => const.value(0)
           } mustProduce (Throw(e))
         }
 
@@ -989,9 +987,7 @@ class FutureTest
           def ret(): String = {
             val f = const.value(1).transform {
               case Return(v) =>
-                val fn = { () =>
-                  return "OK"
-                }
+                val fn = { () => return "OK" }
                 fn()
                 Future.value(ret())
               case Throw(t) => const.value(0)
@@ -1019,7 +1015,7 @@ class FutureTest
           val actual = intercept[FatalException] {
             const.value(1).transform {
               case Return(v) => const.value(throw e)
-              case Throw(t) => const.value(0)
+              case Throw(t)  => const.value(0)
             }
           }
           assert(actual == e)
@@ -1091,9 +1087,10 @@ class FutureTest
         }
       }
 
-      def testSequence(which: String,
-                       seqop: (Future[Unit],
-                       () => Future[Unit]) => Future[Unit]) {
+      def testSequence(
+          which: String,
+          seqop: (Future[Unit], () => Future[Unit]) => Future[Unit]
+      ) {
         which when {
           "successes" should {
             "interruption of the produced future" which {
@@ -1161,18 +1158,12 @@ class FutureTest
         }
       }
 
-      testSequence("flatMap",
-                   (a, next) =>
-                     a flatMap { _ =>
-                       next()
-                   })
+      testSequence("flatMap", (a, next) => a flatMap { _ => next() })
       testSequence("before", (a, next) => a before next())
 
       "flatMap (values)" should {
         val f =
-          Future(1) flatMap { x =>
-            Future(x + 1)
-          }
+          Future(1) flatMap { x => Future(x + 1) }
 
         "apply" which {
           assert(Await.result(f) == 2)
@@ -1210,13 +1201,13 @@ class FutureTest
           f.raise(new Exception)
           f1.handled match {
             case Some(_) =>
-            case None => assert(false == true)
+            case None    => assert(false == true)
           }
           assert(f2.handled == None)
           f1() = Return(f2)
           f2.handled match {
             case Some(_) =>
-            case None => assert(false == true)
+            case None    => assert(false == true)
           }
         }
       }
@@ -1264,13 +1255,13 @@ class FutureTest
             f.raise(new Exception)
             f1.handled match {
               case Some(_) =>
-              case None => assert(false == true)
+              case None    => assert(false == true)
             }
             assert(f2.handled == None)
             f1() = Throw(new Exception)
             f2.handled match {
               case Some(_) =>
-              case None => assert(false == true)
+              case None    => assert(false == true)
             }
           }
 
@@ -1284,7 +1275,7 @@ class FutureTest
             assert(f1.handled == None)
             f2.handled match {
               case Some(_) =>
-              case None => assert(false == true)
+              case None    => assert(false == true)
             }
           }
         }
@@ -1293,9 +1284,7 @@ class FutureTest
       "foreach" in {
         var wasCalledWith: Option[Int] = None
         val f = Future(1)
-        f foreach { i =>
-          wasCalledWith = Some(i)
-        }
+        f foreach { i => wasCalledWith = Some(i) }
         assert(wasCalledWith == Some(1))
       }
 
@@ -1305,7 +1294,7 @@ class FutureTest
           val f = Future(1)
           f respond {
             case Return(i) => wasCalledWith = Some(i)
-            case Throw(e) => fail(e.toString)
+            case Throw(e)  => fail(e.toString)
           }
           assert(wasCalledWith == Some(1))
         }
@@ -1313,9 +1302,7 @@ class FutureTest
         "when the result has not yet arrived it buffers computations" in {
           var wasCalledWith: Option[Int] = None
           val f = new Promise[Int]
-          f foreach { i =>
-            wasCalledWith = Some(i)
-          }
+          f foreach { i => wasCalledWith = Some(i) }
           assert(wasCalledWith == None)
           f() = Return(1)
           assert(wasCalledWith == Some(1))
@@ -1361,8 +1348,10 @@ class FutureTest
       }
 
       "willEqual" in {
-        assert(Await.result(const.value(1) willEqual (const.value(1)),
-                            1.second) == true)
+        assert(
+          Await
+            .result(const.value(1) willEqual (const.value(1)), 1.second) == true
+        )
       }
 
       "Future() handles exceptions" in {
@@ -1403,9 +1392,7 @@ class FutureTest
 
         local() = 123
         val done =
-          promise map { otherValue =>
-            (otherValue, local())
-          }
+          promise map { otherValue => (otherValue, local()) }
 
         val t = new Thread {
           override def run() {
@@ -1490,7 +1477,7 @@ class FutureTest
           f.raise(new Exception)
           p.handled match {
             case Some(_) =>
-            case None => assert(false == true)
+            case None    => assert(false == true)
           }
         }
       }
@@ -1505,7 +1492,7 @@ class FutureTest
           timer.stop()
           p.handled match {
             case Some(_) =>
-            case None => assert(false == true)
+            case None    => assert(false == true)
           }
         }
 
@@ -1520,7 +1507,7 @@ class FutureTest
           timer.stop()
           p.handled match {
             case Some(_) =>
-            case None => assert(false == true)
+            case None    => assert(false == true)
           }
           assert(p.handled == Some(skyFall))
         }
@@ -1532,7 +1519,7 @@ class FutureTest
           val p = new HandledPromise[Int]
           intercept[TimeoutException] {
             Await.result(
-                p.within(20.milliseconds).raiseWithin(50.milliseconds, skyFall)
+              p.within(20.milliseconds).raiseWithin(50.milliseconds, skyFall)
             )
           }
           timer.stop()
@@ -1571,7 +1558,7 @@ class FutureTest
           f.raise(new Exception)
           p.handled match {
             case Some(_) =>
-            case None => assert(false == true)
+            case None    => assert(false == true)
           }
         }
       }
@@ -1656,8 +1643,7 @@ class FutureTest
     }
   }
 
-  test(
-      "ConstFuture", new MkConst { def apply[A](r: Try[A]) = Future.const(r) })
+  test("ConstFuture", new MkConst { def apply[A](r: Try[A]) = Future.const(r) })
   test("Promise", new MkConst { def apply[A](r: Try[A]) = new Promise(r) })
 
   "Future.apply" should {
@@ -1830,9 +1816,7 @@ class FutureTest
         val i = Random.nextInt(ps.length)
         val e = new Exception("sad panda")
         val t = if (fail) Throw(e) else Return(i)
-        f respond { _ =>
-          ()
-        }
+        f respond { _ => () }
         assert(ps.map(_.waitqLength).sum == n)
         ps(i).update(t)
         assert(ps.map(_.waitqLength).sum == 0)
@@ -1892,9 +1876,7 @@ class FutureTest
         val i = Random.nextInt(ps.length)
         val e = new Exception("sad panda")
         val t = if (fail) Throw(e) else Return(i)
-        f respond { _ =>
-          ()
-        }
+        f respond { _ => () }
         assert(ps.map(_.waitqLength).sum == n)
         ps(i).update(t)
         assert(ps.map(_.waitqLength).sum == 0)
@@ -1949,7 +1931,7 @@ class FutureTest
       def next() = Future.value({ i += 1; i })
       val done = Future.each(next()) {
         case 10 => throw exc
-        case _ =>
+        case _  =>
       }
 
       assert(done.poll == Some(Throw(exc)))
@@ -1959,9 +1941,7 @@ class FutureTest
     "terminate when 'next' throws" in {
       val exc = new Exception
       def next(): Future[Int] = throw exc
-      val done = Future.each(next()) { _ =>
-        throw exc
-      }
+      val done = Future.each(next()) { _ => throw exc }
 
       assert(done.poll == Some(Throw(Future.NextThrewException(exc))))
     }

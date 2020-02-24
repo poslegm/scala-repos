@@ -128,20 +128,30 @@ trait CachedFacet extends ProductISOFacet {
 }
 
 trait CachedCaseClassDefns
-    extends LogFacet with CachedFacet with ProductFacet
-    with PolymorphicEqualityFacet with CopyFacet with ToStringFacet {
+    extends LogFacet
+    with CachedFacet
+    with ProductFacet
+    with PolymorphicEqualityFacet
+    with CopyFacet
+    with ToStringFacet {
 
   trait CaseClassOps
-      extends LogOps with CachedOps with ProductOps with PolymorphicEqualityOps
-      with CopyOps with ToStringOps
+      extends LogOps
+      with CachedOps
+      with ProductOps
+      with PolymorphicEqualityOps
+      with CopyOps
+      with ToStringOps
 
   trait CaseClassCompanion extends CachedCompanion
 
   trait CaseClass
-      extends LogMethods with CachedMethods with ProductMethods
-      with PolymorphicEqualityMethods with CopyMethods with ToStringMethods {
-    self: C =>
-  }
+      extends LogMethods
+      with CachedMethods
+      with ProductMethods
+      with PolymorphicEqualityMethods
+      with CopyMethods
+      with ToStringMethods { self: C => }
 
   val ops: CaseClassOps
 
@@ -153,7 +163,8 @@ trait CachedCaseClassDefns
       tup: Tupler.Aux[Repr0, P0],
       pgen0: Generic.Aux[P0, Repr0],
       typ0: Typeable[C],
-      tag0: ClassTag[C]) = {
+      tag0: ClassTag[C]
+  ) = {
     val fqn = tag0.runtimeClass.getName
     new CaseClassOps {
       type Repr = Repr0
@@ -182,7 +193,7 @@ object ALaCacheDemo extends App {
     val ops = Ops
     object Foo extends CaseClassCompanion
     // keep the constructor private so everybody has to go through .apply
-    class Foo private[FooDefns](val i: Int, val s: String) extends CaseClass {
+    class Foo private[FooDefns] (val i: Int, val s: String) extends CaseClass {
       def stuff = log.info("hello")
     }
   }

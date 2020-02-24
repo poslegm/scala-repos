@@ -25,7 +25,12 @@ import org.apache.spark.mllib.linalg.{Matrix, Vector}
 import org.apache.spark.mllib.linalg.distributed.RowMatrix
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.stat.correlation.Correlations
-import org.apache.spark.mllib.stat.test.{ChiSqTest, ChiSqTestResult, KolmogorovSmirnovTest, KolmogorovSmirnovTestResult}
+import org.apache.spark.mllib.stat.test.{
+  ChiSqTest,
+  ChiSqTestResult,
+  KolmogorovSmirnovTest,
+  KolmogorovSmirnovTestResult
+}
 import org.apache.spark.rdd.RDD
 
 /**
@@ -91,8 +96,7 @@ object Statistics {
     * Java-friendly version of [[corr()]]
     */
   @Since("1.4.1")
-  def corr(
-      x: JavaRDD[java.lang.Double], y: JavaRDD[java.lang.Double]): Double =
+  def corr(x: JavaRDD[java.lang.Double], y: JavaRDD[java.lang.Double]): Double =
     corr(x.rdd.asInstanceOf[RDD[Double]], y.rdd.asInstanceOf[RDD[Double]])
 
   /**
@@ -117,12 +121,16 @@ object Statistics {
     * Java-friendly version of [[corr()]]
     */
   @Since("1.4.1")
-  def corr(x: JavaRDD[java.lang.Double],
-           y: JavaRDD[java.lang.Double],
-           method: String): Double =
-    corr(x.rdd.asInstanceOf[RDD[Double]],
-         y.rdd.asInstanceOf[RDD[Double]],
-         method)
+  def corr(
+      x: JavaRDD[java.lang.Double],
+      y: JavaRDD[java.lang.Double],
+      method: String
+  ): Double =
+    corr(
+      x.rdd.asInstanceOf[RDD[Double]],
+      y.rdd.asInstanceOf[RDD[Double]],
+      method
+    )
 
   /**
     * Conduct Pearson's chi-squared goodness of fit test of the observed data against the
@@ -205,7 +213,8 @@ object Statistics {
   @Since("1.5.0")
   def kolmogorovSmirnovTest(
       data: RDD[Double],
-      cdf: Double => Double): KolmogorovSmirnovTestResult = {
+      cdf: Double => Double
+  ): KolmogorovSmirnovTestResult = {
     KolmogorovSmirnovTest.testOneSample(data, cdf)
   }
 
@@ -222,19 +231,26 @@ object Statistics {
     */
   @Since("1.5.0")
   @varargs
-  def kolmogorovSmirnovTest(data: RDD[Double],
-                            distName: String,
-                            params: Double*): KolmogorovSmirnovTestResult = {
+  def kolmogorovSmirnovTest(
+      data: RDD[Double],
+      distName: String,
+      params: Double*
+  ): KolmogorovSmirnovTestResult = {
     KolmogorovSmirnovTest.testOneSample(data, distName, params: _*)
   }
 
   /** Java-friendly version of [[kolmogorovSmirnovTest()]] */
   @Since("1.5.0")
   @varargs
-  def kolmogorovSmirnovTest(data: JavaDoubleRDD,
-                            distName: String,
-                            params: Double*): KolmogorovSmirnovTestResult = {
+  def kolmogorovSmirnovTest(
+      data: JavaDoubleRDD,
+      distName: String,
+      params: Double*
+  ): KolmogorovSmirnovTestResult = {
     kolmogorovSmirnovTest(
-        data.rdd.asInstanceOf[RDD[Double]], distName, params: _*)
+      data.rdd.asInstanceOf[RDD[Double]],
+      distName,
+      params: _*
+    )
   }
 }

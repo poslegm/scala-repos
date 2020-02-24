@@ -31,11 +31,11 @@ package scalaguide.http.scalabodyparsers {
           val jsonBody: Option[JsValue] = body.asJson
 
           // Expecting json body
-          jsonBody.map { json =>
-            Ok("Got: " + (json \ "name").as[String])
-          }.getOrElse {
-            BadRequest("Expecting application/json request body")
-          }
+          jsonBody
+            .map { json => Ok("Got: " + (json \ "name").as[String]) }
+            .getOrElse {
+              BadRequest("Expecting application/json request body")
+            }
         }
         //#access-json-body
         testAction(save, helloRequest)
@@ -61,9 +61,8 @@ package scalaguide.http.scalabodyparsers {
 
       "body parser file" in {
         //#body-parser-file
-        def save = Action(parse.file(to = new File("/tmp/upload"))) {
-          request =>
-            Ok("Saved the request content to " + request.body)
+        def save = Action(parse.file(to = new File("/tmp/upload"))) { request =>
+          Ok("Saved the request content to " + request.body)
         }
         //#body-parser-file
         testAction(save, helloRequest.withSession("username" -> "player"))
@@ -93,8 +92,7 @@ package scalaguide.http.scalabodyparsers {
           //#body-parser-limit-file
           // Accept only 10KB of data.
           def save = Action(parse.maxLength(1024 * 10, storeInUserFile)) {
-            request =>
-              Ok("Saved the request content to " + request.body)
+            request => Ok("Saved the request content to " + request.body)
           }
           //#body-parser-limit-file
           val result =
@@ -113,8 +111,9 @@ package scalaguide.http.scalabodyparsers {
         import scala.concurrent.ExecutionContext
         import akka.util.ByteString
 
-        class MyController @Inject()(ws: WSClient)(
-            implicit ec: ExecutionContext) {
+        class MyController @Inject() (ws: WSClient)(
+            implicit ec: ExecutionContext
+        ) {
 
           def forward(request: WSRequest): BodyParser[WSResponse] =
             BodyParser { req =>
@@ -127,9 +126,8 @@ package scalaguide.http.scalabodyparsers {
               }
             }
 
-          def myAction = Action(forward(ws.url("https://example.com"))) {
-            req =>
-              Ok("Uploaded")
+          def myAction = Action(forward(ws.url("https://example.com"))) { req =>
+            Ok("Uploaded")
           }
         }
         //#forward-body
@@ -151,8 +149,10 @@ package scalaguide.http.scalabodyparsers {
           val sink: Sink[ByteString, Future[Seq[Seq[String]]]] =
             Flow[ByteString]
             // We split by the new line character, allowing a maximum of 1000 characters per line
-              .via(Framing.delimiter(
-                      ByteString("\n"), 1000, allowTruncation = true))
+              .via(
+                Framing
+                  .delimiter(ByteString("\n"), 1000, allowTruncation = true)
+              )
               // Turn each line to a String and split it by commas
               .map(_.utf8String.trim.split(",").toSeq)
               // Now we fold it into a list
@@ -163,23 +163,26 @@ package scalaguide.http.scalabodyparsers {
         }
         //#csv
 
-        testAction(Action(csv)(req => Ok(req.body(1)(2))),
-                   FakeRequest("POST", "/").withTextBody("1,2\n3,4,foo\n5,6"))
+        testAction(
+          Action(csv)(req => Ok(req.body(1)(2))),
+          FakeRequest("POST", "/").withTextBody("1,2\n3,4,foo\n5,6")
+        )
       }
     }
 
-    def testAction[A : Writeable](action: EssentialAction,
-                                  request: => FakeRequest[A],
-                                  expectedResponse: Int = OK) = {
-      assertAction(action, request, expectedResponse) { result =>
-        success
-      }
+    def testAction[A: Writeable](
+        action: EssentialAction,
+        request: => FakeRequest[A],
+        expectedResponse: Int = OK
+    ) = {
+      assertAction(action, request, expectedResponse) { result => success }
     }
 
-    def assertAction[A : Writeable, T : AsResult](action: EssentialAction,
-                                                  request: => FakeRequest[A],
-                                                  expectedResponse: Int = OK)(
-        assertions: Future[Result] => T) = {
+    def assertAction[A: Writeable, T: AsResult](
+        action: EssentialAction,
+        request: => FakeRequest[A],
+        expectedResponse: Int = OK
+    )(assertions: Future[Result] => T) = {
       running() { app =>
         implicit val mat = ActorMaterializer()(app.actorSystem)
         val result = call(action, request)
@@ -201,9 +204,7 @@ package scalaguide.http.scalabodyparsers {
       val storeInUserFile = parse.using { request =>
         request.session
           .get("username")
-          .map { user =>
-            file(to = new File("/tmp/" + user + ".upload"))
-          }
+          .map { user => file(to = new File("/tmp/" + user + ".upload")) }
           .getOrElse {
             sys.error("You don't have the right to upload here")
           }

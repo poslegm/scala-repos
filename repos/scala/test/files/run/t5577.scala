@@ -11,9 +11,7 @@ object Test {
 
   def main(args: Array[String]) {
     val iteratorBuilder =
-      (new AlarmingBuffer[Int]) mapResult { res =>
-        res.iterator
-      }
+      (new AlarmingBuffer[Int]) mapResult { res => res.iterator }
 
     iteratorBuilder.sizeHint(10)
     iteratorBuilder ++= (0 until 10)

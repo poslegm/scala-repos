@@ -43,13 +43,16 @@ import org.apache.spark.mllib.regression.StreamingLinearAlgorithm
   * }}}
   */
 @Since("1.3.0")
-class StreamingLogisticRegressionWithSGD private[mllib](
+class StreamingLogisticRegressionWithSGD private[mllib] (
     private var stepSize: Double,
     private var numIterations: Int,
     private var miniBatchFraction: Double,
-    private var regParam: Double)
-    extends StreamingLinearAlgorithm[
-        LogisticRegressionModel, LogisticRegressionWithSGD] with Serializable {
+    private var regParam: Double
+) extends StreamingLinearAlgorithm[
+      LogisticRegressionModel,
+      LogisticRegressionWithSGD
+    ]
+    with Serializable {
 
   /**
     * Construct a StreamingLogisticRegression object with default parameters:
@@ -61,7 +64,11 @@ class StreamingLogisticRegressionWithSGD private[mllib](
   def this() = this(0.1, 50, 1.0, 0.0)
 
   protected val algorithm = new LogisticRegressionWithSGD(
-      stepSize, numIterations, regParam, miniBatchFraction)
+    stepSize,
+    numIterations,
+    regParam,
+    miniBatchFraction
+  )
 
   protected var model: Option[LogisticRegressionModel] = None
 

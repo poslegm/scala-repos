@@ -21,5 +21,6 @@ trait CurrentEventsByPersistenceIdQuery extends ReadJournal {
   def currentEventsByPersistenceId(
       persistenceId: String,
       fromSequenceNr: Long,
-      toSequenceNr: Long): Source[EventEnvelope, NotUsed]
+      toSequenceNr: Long
+  ): Source[EventEnvelope, NotUsed]
 }

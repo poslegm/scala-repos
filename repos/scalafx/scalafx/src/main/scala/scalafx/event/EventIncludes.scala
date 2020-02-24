@@ -63,15 +63,20 @@ trait EventIncludes {
     if (e != null) new Event(e) else null
 
   implicit def jfxEventDispatcher2sfx(
-      e: jfxe.EventDispatcher): EventDispatcher =
-    if (e != null) new EventDispatcher(e) {} else null
+      e: jfxe.EventDispatcher
+  ): EventDispatcher =
+    if (e != null) new EventDispatcher(e) {}
+    else null
 
   implicit def jfxEventDispatchChain2sfx(
-      e: jfxe.EventDispatchChain): EventDispatchChain =
-    if (e != null) new EventDispatchChain(e) {} else null
+      e: jfxe.EventDispatchChain
+  ): EventDispatchChain =
+    if (e != null) new EventDispatchChain(e) {}
+    else null
 
   implicit def jfxEventTarget2sfx(e: jfxe.EventTarget): EventTarget =
-    if (e != null) new EventTarget(e) {} else null
+    if (e != null) new EventTarget(e) {}
+    else null
 
   /**
     * Converts a
@@ -83,7 +88,8 @@ trait EventIncludes {
     * @return ScalaFX EventType
     */
   implicit def jfxEventType2sfx[T <: jfxe.Event](
-      e: jfxe.EventType[T]): EventType[T] =
+      e: jfxe.EventType[T]
+  ): EventType[T] =
     if (e != null) new EventType[T](e) else null
 
   /**
@@ -97,7 +103,8 @@ trait EventIncludes {
     * @since 8.0
     */
   implicit def jfxWeakEventHandler2sfx[T <: jfxe.Event](
-      weh: jfxe.WeakEventHandler[T]): WeakEventHandler[T] =
+      weh: jfxe.WeakEventHandler[T]
+  ): WeakEventHandler[T] =
     if (weh != null) new WeakEventHandler(weh) else null
 
   /**
@@ -137,7 +144,8 @@ trait EventIncludes {
     * @return JavaFX EventHandler which handle method will call handler
     */
   implicit def eventClosureWrapperWithZeroParam[T <: jfxe.Event, R](
-      handler: () => R): jfxe.EventHandler[T] =
+      handler: () => R
+  ): jfxe.EventHandler[T] =
     new jfxe.EventHandler[T] {
       def handle(event: T) {
         handler()
@@ -159,9 +167,9 @@ trait EventIncludes {
     * @param handler Closure that that takes scalafx.event.Event as argument.
     * @return JavaFX EventHandler which handle method will call handler
     */
-  implicit def eventClosureWrapperWithParam[
-      J <: jfxe.Event, S <: SFXDelegate[J], R](handler: (S) => R)(
-      implicit jfx2sfx: J => S): jfxe.EventHandler[J] =
+  implicit def eventClosureWrapperWithParam[J <: jfxe.Event, S <: SFXDelegate[
+    J
+  ], R](handler: (S) => R)(implicit jfx2sfx: J => S): jfxe.EventHandler[J] =
     new jfxe.EventHandler[J] {
       def handle(event: J) {
         handler(event)

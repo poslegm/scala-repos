@@ -27,9 +27,7 @@ class ConnectorTest extends WordSpec with MockitoSugar {
         }
         val nConnectors = 3
         val connectors =
-          1 to nConnectors map { _ =>
-            mockConnector
-          }
+          1 to nConnectors map { _ => mockConnector }
         val connector = Connector.RoundRobin(connectors: _*)
       }
 
@@ -37,30 +35,18 @@ class ConnectorTest extends WordSpec with MockitoSugar {
         val h = new ConnectorSpecHelper
         import h._
 
-        connectors foreach { x =>
-          assert(x.apply() == Future.never)
-        }
-        (1 to 2 * nConnectors) foreach { _ =>
-          connector()
-        }
-        connectors foreach { c =>
-          verify(c, times(3)).apply()
-        }
+        connectors foreach { x => assert(x.apply() == Future.never) }
+        (1 to 2 * nConnectors) foreach { _ => connector() }
+        connectors foreach { c => verify(c, times(3)).apply() }
       }
 
       "release" in {
         val h = new ConnectorSpecHelper
         import h._
 
-        connectors foreach { x =>
-          assert(x.release() == Future.never)
-        }
-        (1 to 2) foreach { _ =>
-          connector.release()
-        }
-        connectors foreach { c =>
-          verify(c, times(3)).release()
-        }
+        connectors foreach { x => assert(x.release() == Future.never) }
+        (1 to 2) foreach { _ => connector.release() }
+        connectors foreach { c => verify(c, times(3)).release() }
       }
     }
   }

@@ -44,17 +44,16 @@ trait River { self: Matchers ⇒
   val elements = 1 to 10
   val otherFlow = Flow[Int].map(_.toString)
 
-  def riverOf[T](flowConstructor: Subscriber[T] ⇒ Unit)(
-      implicit system: ActorSystem) = {
+  def riverOf[T](
+      flowConstructor: Subscriber[T] ⇒ Unit
+  )(implicit system: ActorSystem) = {
     val subscriber = TestSubscriber.manualProbe[T]()
 
     flowConstructor(subscriber)
 
     val subscription = subscriber.expectSubscription()
     subscription.request(elements.size)
-    elements.foreach { el ⇒
-      subscriber.expectNext() shouldBe el.toString
-    }
+    elements.foreach { el ⇒ subscriber.expectNext() shouldBe el.toString }
     subscription.request(1)
     subscriber.expectComplete()
   }

@@ -44,8 +44,9 @@ object SecurityHeadersFilter {
     *
     * @return a configured SecurityHeadersFilter.
     */
-  def apply(config: SecurityHeadersConfig = SecurityHeadersConfig())
-    : SecurityHeadersFilter = {
+  def apply(
+      config: SecurityHeadersConfig = SecurityHeadersConfig()
+  ): SecurityHeadersFilter = {
     new SecurityHeadersFilter(config)
   }
 
@@ -74,7 +75,8 @@ case class SecurityHeadersConfig(
     xssProtection: Option[String] = Some("1; mode=block"),
     contentTypeOptions: Option[String] = Some("nosniff"),
     permittedCrossDomainPolicies: Option[String] = Some("master-only"),
-    contentSecurityPolicy: Option[String] = Some("default-src 'self'")) {
+    contentSecurityPolicy: Option[String] = Some("default-src 'self'")
+) {
   def this() {
     this(frameOptions = Some("DENY"))
   }
@@ -83,20 +85,24 @@ case class SecurityHeadersConfig(
   import java.{util => ju}
 
   def withFrameOptions(
-      frameOptions: ju.Optional[String]): SecurityHeadersConfig =
+      frameOptions: ju.Optional[String]
+  ): SecurityHeadersConfig =
     copy(frameOptions = frameOptions.asScala)
   def withXssProtection(
-      xssProtection: ju.Optional[String]): SecurityHeadersConfig =
+      xssProtection: ju.Optional[String]
+  ): SecurityHeadersConfig =
     copy(xssProtection = xssProtection.asScala)
   def withContentTypeOptions(
-      contentTypeOptions: ju.Optional[String]): SecurityHeadersConfig =
+      contentTypeOptions: ju.Optional[String]
+  ): SecurityHeadersConfig =
     copy(contentTypeOptions = contentTypeOptions.asScala)
   def withPermittedCrossDomainPolicies(
-      permittedCrossDomainPolicies: ju.Optional[String])
-    : SecurityHeadersConfig =
+      permittedCrossDomainPolicies: ju.Optional[String]
+  ): SecurityHeadersConfig =
     copy(permittedCrossDomainPolicies = permittedCrossDomainPolicies.asScala)
   def withContentSecurityPolicy(
-      contentSecurityPolicy: ju.Optional[String]): SecurityHeadersConfig =
+      contentSecurityPolicy: ju.Optional[String]
+  ): SecurityHeadersConfig =
     copy(contentSecurityPolicy = contentSecurityPolicy.asScala)
 }
 
@@ -109,13 +115,14 @@ object SecurityHeadersConfig {
     val config = PlayConfig(conf).get[PlayConfig]("play.filters.headers")
 
     SecurityHeadersConfig(
-        frameOptions = config.get[Option[String]]("frameOptions"),
-        xssProtection = config.get[Option[String]]("xssProtection"),
-        contentTypeOptions = config.get[Option[String]]("contentTypeOptions"),
-        permittedCrossDomainPolicies = config
-            .get[Option[String]]("permittedCrossDomainPolicies"),
-        contentSecurityPolicy = config.get[Option[String]](
-              "contentSecurityPolicy"))
+      frameOptions = config.get[Option[String]]("frameOptions"),
+      xssProtection = config.get[Option[String]]("xssProtection"),
+      contentTypeOptions = config.get[Option[String]]("contentTypeOptions"),
+      permittedCrossDomainPolicies = config
+        .get[Option[String]]("permittedCrossDomainPolicies"),
+      contentSecurityPolicy =
+        config.get[Option[String]]("contentSecurityPolicy")
+    )
   }
 }
 
@@ -124,7 +131,7 @@ object SecurityHeadersConfig {
   * method on the companion singleton for convenience.
   */
 @Singleton
-class SecurityHeadersFilter @Inject()(config: SecurityHeadersConfig)
+class SecurityHeadersFilter @Inject() (config: SecurityHeadersConfig)
     extends EssentialFilter {
   import SecurityHeadersFilter._
 
@@ -134,12 +141,13 @@ class SecurityHeadersFilter @Inject()(config: SecurityHeadersConfig)
     */
   protected def headers(request: RequestHeader): Seq[(String, String)] =
     Seq(
-        config.frameOptions.map(X_FRAME_OPTIONS_HEADER -> _),
-        config.xssProtection.map(X_XSS_PROTECTION_HEADER -> _),
-        config.contentTypeOptions.map(X_CONTENT_TYPE_OPTIONS_HEADER -> _),
-        config.permittedCrossDomainPolicies.map(
-            X_PERMITTED_CROSS_DOMAIN_POLICIES_HEADER -> _),
-        config.contentSecurityPolicy.map(CONTENT_SECURITY_POLICY_HEADER -> _)
+      config.frameOptions.map(X_FRAME_OPTIONS_HEADER -> _),
+      config.xssProtection.map(X_XSS_PROTECTION_HEADER -> _),
+      config.contentTypeOptions.map(X_CONTENT_TYPE_OPTIONS_HEADER -> _),
+      config.permittedCrossDomainPolicies.map(
+        X_PERMITTED_CROSS_DOMAIN_POLICIES_HEADER -> _
+      ),
+      config.contentSecurityPolicy.map(CONTENT_SECURITY_POLICY_HEADER -> _)
     ).flatten
 
   /**
@@ -155,7 +163,7 @@ class SecurityHeadersFilter @Inject()(config: SecurityHeadersConfig)
   * Provider for security headers configuration.
   */
 @Singleton
-class SecurityHeadersConfigProvider @Inject()(configuration: Configuration)
+class SecurityHeadersConfigProvider @Inject() (configuration: Configuration)
     extends Provider[SecurityHeadersConfig] {
   lazy val get = SecurityHeadersConfig.fromConfiguration(configuration)
 }
@@ -165,8 +173,8 @@ class SecurityHeadersConfigProvider @Inject()(configuration: Configuration)
   */
 class SecurityHeadersModule extends Module {
   def bindings(environment: Environment, configuration: Configuration) = Seq(
-      bind[SecurityHeadersConfig].toProvider[SecurityHeadersConfigProvider],
-      bind[SecurityHeadersFilter].toSelf
+    bind[SecurityHeadersConfig].toProvider[SecurityHeadersConfigProvider],
+    bind[SecurityHeadersFilter].toSelf
   )
 }
 

@@ -15,11 +15,25 @@ trait IdInstances {
   // TODO Review!
   type Identity[+X] = Need[X]
 
-  val id: Traverse1[Id] with Monad[Id] with BindRec[Id] with Comonad[Id] with Distributive[
-      Id] with Zip[Id] with Unzip[Id] with Align[Id] with Cozip[Id] with Optional[
-      Id] = new Traverse1[Id]
-  with Monad[Id] with BindRec[Id] with Comonad[Id] with Distributive[Id]
-  with Zip[Id] with Unzip[Id] with Align[Id] with Cozip[Id] with Optional[Id] {
+  val id: Traverse1[Id]
+    with Monad[Id]
+    with BindRec[Id]
+    with Comonad[Id]
+    with Distributive[Id]
+    with Zip[Id]
+    with Unzip[Id]
+    with Align[Id]
+    with Cozip[Id]
+    with Optional[Id] = new Traverse1[Id]
+    with Monad[Id]
+    with BindRec[Id]
+    with Comonad[Id]
+    with Distributive[Id]
+    with Zip[Id]
+    with Unzip[Id]
+    with Align[Id]
+    with Cozip[Id]
+    with Optional[Id] {
     def point[A](a: => A): A = a
 
     def bind[A, B](a: A)(f: A => B): B = f(a)
@@ -41,14 +55,15 @@ trait IdInstances {
     def traverse1Impl[G[_]: Apply, A, B](fa: Id[A])(f: A => G[B]): G[Id[B]] =
       f(fa)
 
-    def distributeImpl[G[_]: Functor, A, B](fa: G[A])(
-        f: A => Id[B]): Id[G[B]] = Functor[G].map(fa)(f)
+    def distributeImpl[G[_]: Functor, A, B](fa: G[A])(f: A => Id[B]): Id[G[B]] =
+      Functor[G].map(fa)(f)
 
     override def foldRight[A, B](fa: Id[A], z: => B)(f: (A, => B) => B): B =
       f(fa, z)
 
     override def foldMapRight1[A, B](fa: Id[A])(z: A => B)(
-        f: (A, => B) => B): B = z(fa)
+        f: (A, => B) => B
+    ): B = z(fa)
 
     // Overrides for efficiency.
 
@@ -58,7 +73,8 @@ trait IdInstances {
     override def join[A](ffa: A) = ffa
 
     override def traverse[A, G[_], B](value: G[A])(f: A => Id[B])(
-        implicit G: Traverse[G]): Id[G[B]] = G.map(value)(f)
+        implicit G: Traverse[G]
+    ): Id[G[B]] = G.map(value)(f)
 
     override def sequence[A, G[_]: Traverse](as: G[Id[A]]): Id[G[A]] = as
 
@@ -80,7 +96,7 @@ trait IdInstances {
     def tailrecM[A, B](f: A => A \/ B)(a: A): B =
       f(a) match {
         case -\/(a0) => tailrecM(f)(a0)
-        case \/-(b) => b
+        case \/-(b)  => b
       }
   }
 }

@@ -17,7 +17,8 @@ import java.util.{Collections => JCollections, Enumeration => JEnumeration}
   *  @author Lex Spoon
   */
 class AbstractFileClassLoader(val root: AbstractFile, parent: ClassLoader)
-    extends ClassLoader(parent) with ScalaClassLoader {
+    extends ClassLoader(parent)
+    with ScalaClassLoader {
   protected def classNameToPath(name: String): String =
     if (name endsWith ".class") name
     else s"${name.replace('.', '/')}.class"
@@ -72,7 +73,9 @@ class AbstractFileClassLoader(val root: AbstractFile, parent: ClassLoader)
   override protected def findResources(name: String): JEnumeration[URL] =
     findResource(name) match {
       case null =>
-        JCollections.enumeration(JCollections.emptyList[URL]) //JCollections.emptyEnumeration[URL]
+        JCollections.enumeration(
+          JCollections.emptyList[URL]
+        ) //JCollections.emptyEnumeration[URL]
       case url => JCollections.enumeration(JCollections.singleton(url))
     }
 
@@ -87,25 +90,27 @@ class AbstractFileClassLoader(val root: AbstractFile, parent: ClassLoader)
       else {
         val path = s.substring(0, n)
         new ProtectionDomain(
-            new CodeSource(
-                new URL(path), null.asInstanceOf[Array[Certificate]]),
-            null,
-            this,
-            null)
+          new CodeSource(new URL(path), null.asInstanceOf[Array[Certificate]]),
+          null,
+          this,
+          null
+        )
       }
     }
   }
 
   private val packages = mutable.Map[String, Package]()
 
-  override def definePackage(name: String,
-                             specTitle: String,
-                             specVersion: String,
-                             specVendor: String,
-                             implTitle: String,
-                             implVersion: String,
-                             implVendor: String,
-                             sealBase: URL): Package = {
+  override def definePackage(
+      name: String,
+      specTitle: String,
+      specVersion: String,
+      specVendor: String,
+      implTitle: String,
+      implVersion: String,
+      implVendor: String,
+      sealBase: URL
+  ): Package = {
     throw new UnsupportedOperationException()
   }
 
@@ -113,21 +118,25 @@ class AbstractFileClassLoader(val root: AbstractFile, parent: ClassLoader)
     findAbstractDir(name) match {
       case null => super.getPackage(name)
       case file =>
-        packages.getOrElseUpdate(name, {
-          val ctor =
-            classOf[Package].getDeclaredConstructor(classOf[String],
-                                                    classOf[String],
-                                                    classOf[String],
-                                                    classOf[String],
-                                                    classOf[String],
-                                                    classOf[String],
-                                                    classOf[String],
-                                                    classOf[URL],
-                                                    classOf[ClassLoader])
-          ctor.setAccessible(true)
-          ctor.newInstance(
-              name, null, null, null, null, null, null, null, this)
-        })
+        packages.getOrElseUpdate(
+          name, {
+            val ctor =
+              classOf[Package].getDeclaredConstructor(
+                classOf[String],
+                classOf[String],
+                classOf[String],
+                classOf[String],
+                classOf[String],
+                classOf[String],
+                classOf[String],
+                classOf[URL],
+                classOf[ClassLoader]
+              )
+            ctor.setAccessible(true)
+            ctor
+              .newInstance(name, null, null, null, null, null, null, null, this)
+          }
+        )
     }
 
   override def getPackages(): Array[Package] =

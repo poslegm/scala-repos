@@ -14,7 +14,9 @@ class ScalaInspectionSuppressor extends InspectionSuppressor {
   }
 
   override def getSuppressActions(
-      element: PsiElement, toolShortName: String): Array[SuppressQuickFix] = {
+      element: PsiElement,
+      toolShortName: String
+  ): Array[SuppressQuickFix] = {
     ScalaSuppressableInspectionTool.suppressActions(toolShortName)
   }
 }

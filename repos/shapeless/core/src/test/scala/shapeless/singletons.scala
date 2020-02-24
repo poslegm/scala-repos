@@ -585,8 +585,10 @@ class SingletonTypesTests {
 
   @Test
   def singletonWiden {
-    illTyped(" Widen[A.type] ",
-             "could not find implicit value for parameter widen:.*")
+    illTyped(
+      " Widen[A.type] ",
+      "could not find implicit value for parameter widen:.*"
+    )
   }
 }
 

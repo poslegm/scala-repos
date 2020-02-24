@@ -17,27 +17,32 @@ private final class DeviceApi(coll: Coll) {
   private[push] def findByUserId(userId: String): Fu[List[Device]] =
     coll.find(BSONDocument("userId" -> userId)).cursor[Device]().collect[List]()
 
-  private[push] def findLastByUserId(platform: String)(
-      userId: String): Fu[Option[Device]] =
+  private[push] def findLastByUserId(
+      platform: String
+  )(userId: String): Fu[Option[Device]] =
     coll
-      .find(BSONDocument(
-              "platform" -> platform,
-              "userId" -> userId
-          ))
+      .find(
+        BSONDocument(
+          "platform" -> platform,
+          "userId" -> userId
+        )
+      )
       .sort(BSONDocument("seenAt" -> -1))
       .one[Device]
 
   def register(user: User, platform: String, deviceId: String) = {
     lila.mon.push.register.in(platform)()
     coll
-      .update(BSONDocument("_id" -> deviceId),
-              Device(
-                  _id = deviceId,
-                  platform = platform,
-                  userId = user.id,
-                  seenAt = DateTime.now
-              ),
-              upsert = true)
+      .update(
+        BSONDocument("_id" -> deviceId),
+        Device(
+          _id = deviceId,
+          platform = platform,
+          userId = user.id,
+          seenAt = DateTime.now
+        ),
+        upsert = true
+      )
       .void
   }
 

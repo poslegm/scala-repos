@@ -23,8 +23,10 @@ package kafka.common
 trait ClientIdBroker {}
 
 case class ClientIdAndBroker(
-    clientId: String, brokerHost: String, brokerPort: Int)
-    extends ClientIdBroker {
+    clientId: String,
+    brokerHost: String,
+    brokerPort: Int
+) extends ClientIdBroker {
   override def toString = "%s-%s-%d".format(clientId, brokerHost, brokerPort)
 }
 

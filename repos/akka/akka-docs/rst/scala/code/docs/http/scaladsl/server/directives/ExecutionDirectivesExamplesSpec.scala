@@ -12,8 +12,9 @@ class ExecutionDirectivesExamplesSpec extends RoutingSpec {
   "handleExceptions" in {
     val divByZeroHandler = ExceptionHandler {
       case _: ArithmeticException =>
-        complete((StatusCodes.BadRequest,
-                  "You've got your arithmetic wrong, fool!"))
+        complete(
+          (StatusCodes.BadRequest, "You've got your arithmetic wrong, fool!")
+        )
     }
     val route = path("divide" / IntNumber / IntNumber) { (a, b) =>
       handleExceptions(divByZeroHandler) {
@@ -34,8 +35,12 @@ class ExecutionDirectivesExamplesSpec extends RoutingSpec {
     val totallyMissingHandler = RejectionHandler
       .newBuilder()
       .handleNotFound {
-        complete((StatusCodes.NotFound,
-                  "Oh man, what you are looking for is long gone."))
+        complete(
+          (
+            StatusCodes.NotFound,
+            "Oh man, what you are looking for is long gone."
+          )
+        )
       }
       .handle {
         case ValidationRejection(msg, _) =>
@@ -45,7 +50,8 @@ class ExecutionDirectivesExamplesSpec extends RoutingSpec {
     val route = pathPrefix("handled") {
       handleRejections(totallyMissingHandler) {
         path("existing")(complete("This path exists")) ~ path("boom")(
-            reject(new ValidationRejection("This didn't work.")))
+          reject(new ValidationRejection("This didn't work."))
+        )
       }
     }
 

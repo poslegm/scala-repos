@@ -5,9 +5,7 @@ object FunctionTypes {
   }
 
   val f =
-    a foo { v =>
-      List(1)
-    }
+    a foo { v => List(1) }
   /*start*/
   f /*end*/
 }

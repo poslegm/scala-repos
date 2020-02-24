@@ -25,18 +25,17 @@ import com.twitter.scalding.serialization.macros.impl.ordered_serialization.prov
 
 object OrderedSerializationProviderImpl {
   def normalizedDispatcher(c: Context)(
-      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]])
-    : PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]
+  ): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     case tpe
-        if
-        (!tpe.toString.contains(ImplicitOrderedBuf.macroMarker) &&
-            !(tpe.normalize == tpe)) =>
+        if (!tpe.toString.contains(ImplicitOrderedBuf.macroMarker) &&
+          !(tpe.normalize == tpe)) =>
       buildDispatcher(tpe.normalize)
   }
 
   def scaldingBasicDispatchers(c: Context)(
-      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]])
-    : PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]
+  ): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
 
     val primitiveDispatcher = PrimitiveOrderedBuf.dispatch(c)
     val optionDispatcher = OptionOrderedBuf.dispatch(c)(buildDispatcher)
@@ -68,11 +67,13 @@ object OrderedSerializationProviderImpl {
   }
 
   def fallbackImplicitDispatcher(
-      c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] =
+      c: Context
+  ): PartialFunction[c.Type, TreeOrderedBuf[c.type]] =
     ImplicitOrderedBuf.dispatch(c)
 
   private def dispatcher(
-      c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+      c: Context
+  ): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     import c.universe._
     def buildDispatcher: PartialFunction[c.Type, TreeOrderedBuf[c.type]] =
       OrderedSerializationProviderImpl.dispatcher(c)
@@ -81,13 +82,16 @@ object OrderedSerializationProviderImpl {
       .orElse(fallbackImplicitDispatcher(c))
       .orElse {
         case tpe: Type =>
-          c.abort(c.enclosingPosition,
-                  s"""Unable to find OrderedSerialization for type ${tpe}""")
+          c.abort(
+            c.enclosingPosition,
+            s"""Unable to find OrderedSerialization for type ${tpe}"""
+          )
       }
   }
 
-  def apply[T](c: Context)(
-      implicit T: c.WeakTypeTag[T]): c.Expr[OrderedSerialization[T]] = {
+  def apply[T](
+      c: Context
+  )(implicit T: c.WeakTypeTag[T]): c.Expr[OrderedSerialization[T]] = {
     import c.universe._
 
     val b: TreeOrderedBuf[c.type] = dispatcher(c)(T.tpe)

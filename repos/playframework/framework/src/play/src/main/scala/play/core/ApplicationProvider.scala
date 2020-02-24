@@ -15,14 +15,18 @@ import play.api.mvc._
 trait SourceMapper {
 
   def sourceOf(
-      className: String, line: Option[Int] = None): Option[(File, Option[Int])]
+      className: String,
+      line: Option[Int] = None
+  ): Option[(File, Option[Int])]
 
   def sourceFor(e: Throwable): Option[(File, Option[Int])] = {
     e.getStackTrace
       .find(element => sourceOf(element.getClassName).isDefined)
       .flatMap { interestingStackTrace =>
-        sourceOf(interestingStackTrace.getClassName,
-                 Option(interestingStackTrace.getLineNumber))
+        sourceOf(
+          interestingStackTrace.getClassName,
+          Option(interestingStackTrace.getLineNumber)
+        )
       }
   }
 }
@@ -46,7 +50,8 @@ trait ApplicationProvider {
     * Handle a request directly, without using the application.
     */
   def handleWebCommand(
-      requestHeader: play.api.mvc.RequestHeader): Option[Result] = None
+      requestHeader: play.api.mvc.RequestHeader
+  ): Option[Result] = None
 }
 
 object ApplicationProvider {
@@ -60,7 +65,9 @@ object ApplicationProvider {
 }
 
 trait HandleWebCommandSupport {
-  def handleWebCommand(request: play.api.mvc.RequestHeader,
-                       buildLink: play.core.BuildLink,
-                       path: java.io.File): Option[Result]
+  def handleWebCommand(
+      request: play.api.mvc.RequestHeader,
+      buildLink: play.core.BuildLink,
+      path: java.io.File
+  ): Option[Result]
 }

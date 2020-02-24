@@ -14,14 +14,17 @@ import scala.util.Try
 
 object Util {
   def fromStringUnmarshallerFromFunction[T](
-      convert: function.Function[String, T]): FromStringUnmarshaller[T] =
+      convert: function.Function[String, T]
+  ): FromStringUnmarshaller[T] =
     scalaUnmarshallerFromFunction(convert)
 
   def scalaUnmarshallerFromFunction[T, U](
-      convert: function.Function[T, U]): Unmarshaller[T, U] =
+      convert: function.Function[T, U]
+  ): Unmarshaller[T, U] =
     new Unmarshaller[T, U] {
-      def apply(value: T)(
-          implicit ec: ExecutionContext, mat: Materializer): Future[U] =
+      def apply(
+          value: T
+      )(implicit ec: ExecutionContext, mat: Materializer): Future[U] =
         FastFuture(Try(convert(value)))
     }
 

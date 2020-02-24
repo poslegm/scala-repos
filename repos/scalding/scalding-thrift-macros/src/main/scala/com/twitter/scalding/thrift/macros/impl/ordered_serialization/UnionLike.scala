@@ -27,8 +27,9 @@ object UnionLike {
   // This `_.get` could be removed by switching `subData` to a non-empty list type
   @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
   def compareBinary(c: Context)(
-      inputStreamA: c.TermName, inputStreamB: c.TermName)(
-      subData: List[(Int, c.Type, Option[TreeOrderedBuf[c.type]])]): c.Tree = {
+      inputStreamA: c.TermName,
+      inputStreamB: c.TermName
+  )(subData: List[(Int, c.Type, Option[TreeOrderedBuf[c.type]])]): c.Tree = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
     val valueA = freshT("valueA")
@@ -38,9 +39,9 @@ object UnionLike {
     val compareSameTypes: Tree = subData
       .foldLeft(Option.empty[Tree]) {
         case (existing, (idx, tpe, optiTBuf)) =>
-          val commonCmp: Tree = optiTBuf.map { tBuf =>
-            tBuf.compareBinary(inputStreamA, inputStreamB)
-          }.getOrElse[Tree](q"0")
+          val commonCmp: Tree = optiTBuf
+            .map { tBuf => tBuf.compareBinary(inputStreamA, inputStreamB) }
+            .getOrElse[Tree](q"0")
 
           existing match {
             case Some(t) =>
@@ -76,8 +77,9 @@ object UnionLike {
 
   // This `_.get` could be removed by switching `subData` to a non-empty list type
   @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
-  def hash(c: Context)(element: c.TermName)(
-      subData: List[(Int, c.Type, Option[TreeOrderedBuf[c.type]])]): c.Tree = {
+  def hash(c: Context)(
+      element: c.TermName
+  )(subData: List[(Int, c.Type, Option[TreeOrderedBuf[c.type]])]): c.Tree = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
 
@@ -85,13 +87,15 @@ object UnionLike {
     subData
       .foldLeft(Option.empty[Tree]) {
         case (optiExisting, (idx, tpe, optiTBuf)) =>
-          val commonPut: Tree = optiTBuf.map { tBuf =>
-            q"""{
+          val commonPut: Tree = optiTBuf
+            .map { tBuf =>
+              q"""{
               val $innerArg: $tpe = $element.asInstanceOf[$tpe]
               ${tBuf.hash(innerArg)}
             }
               """
-          }.getOrElse[Tree](q"_root_.scala.Int.MaxValue")
+            }
+            .getOrElse[Tree](q"_root_.scala.Int.MaxValue")
 
           optiExisting match {
             case Some(s) =>
@@ -118,7 +122,8 @@ object UnionLike {
   // This `_.get` could be removed by switching `subData` to a non-empty list type
   @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
   def put(c: Context)(inputStream: c.TermName, element: c.TermName)(
-      subData: List[(Int, c.Type, Option[TreeOrderedBuf[c.type]])]): c.Tree = {
+      subData: List[(Int, c.Type, Option[TreeOrderedBuf[c.type]])]
+  ): c.Tree = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
 
@@ -126,11 +131,13 @@ object UnionLike {
     subData
       .foldLeft(Option.empty[Tree]) {
         case (optiExisting, (idx, tpe, optiTBuf)) =>
-          val commonPut: Tree = optiTBuf.map { tBuf =>
-            q"""val $innerArg: $tpe = $element.asInstanceOf[$tpe]
+          val commonPut: Tree = optiTBuf
+            .map { tBuf =>
+              q"""val $innerArg: $tpe = $element.asInstanceOf[$tpe]
               ${tBuf.put(inputStream, innerArg)}
               """
-          }.getOrElse[Tree](q"()")
+            }
+            .getOrElse[Tree](q"()")
 
           optiExisting match {
             case Some(s) =>
@@ -157,8 +164,8 @@ object UnionLike {
   // This `_.get` could be removed by switching `subData` to a non-empty list type
   @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
   def length(c: Context)(element: c.Tree)(
-      subData: List[(Int, c.Type, Option[TreeOrderedBuf[c.type]])])
-    : CompileTimeLengthTypes[c.type] = {
+      subData: List[(Int, c.Type, Option[TreeOrderedBuf[c.type]])]
+  ): CompileTimeLengthTypes[c.type] = {
     import CompileTimeLengthTypes._
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
@@ -166,23 +173,26 @@ object UnionLike {
     val prevSizeData = subData
       .foldLeft(Option.empty[Tree]) {
         case (optiTree, (idx, tpe, tBufOpt)) =>
-          val baseLenT: Tree = tBufOpt.map { tBuf =>
-            tBuf.length(q"$element.asInstanceOf[$tpe]") match {
-              case m: MaybeLengthCalculation[_] =>
-                m.asInstanceOf[MaybeLengthCalculation[c.type]].t
+          val baseLenT: Tree = tBufOpt
+            .map { tBuf =>
+              tBuf.length(q"$element.asInstanceOf[$tpe]") match {
+                case m: MaybeLengthCalculation[_] =>
+                  m.asInstanceOf[MaybeLengthCalculation[c.type]].t
 
-              case f: FastLengthCalculation[_] =>
-                q"""_root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(${f
-                  .asInstanceOf[FastLengthCalculation[c.type]]
-                  .t})"""
+                case f: FastLengthCalculation[_] =>
+                  q"""_root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(${f
+                    .asInstanceOf[FastLengthCalculation[c.type]]
+                    .t})"""
 
-              case _: NoLengthCalculationAvailable[_] =>
-                return NoLengthCalculationAvailable(c)
-              case e =>
-                sys.error("unexpected input to union length code of " + e)
+                case _: NoLengthCalculationAvailable[_] =>
+                  return NoLengthCalculationAvailable(c)
+                case e =>
+                  sys.error("unexpected input to union length code of " + e)
+              }
             }
-          }.getOrElse(
-              q"_root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(1)")
+            .getOrElse(
+              q"_root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(1)"
+            )
           val tmpPreLen = freshT("tmpPreLen")
 
           val lenT = q"""
@@ -222,8 +232,9 @@ object UnionLike {
 
   // This `_.get` could be removed by switching `subData` to a non-empty list type
   @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
-  def get(c: Context)(inputStream: c.TermName)(
-      subData: List[(Int, c.Type, Option[TreeOrderedBuf[c.type]])]): c.Tree = {
+  def get(c: Context)(
+      inputStream: c.TermName
+  )(subData: List[(Int, c.Type, Option[TreeOrderedBuf[c.type]])]): c.Tree = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
 
@@ -232,13 +243,15 @@ object UnionLike {
     val expandedOut = subData
       .foldLeft(Option.empty[Tree]) {
         case (existing, (idx, tpe, optiTBuf)) =>
-          val extract = optiTBuf.map { tBuf =>
-            q"""
+          val extract = optiTBuf
+            .map { tBuf =>
+              q"""
             ${tBuf.get(inputStream)}
           """
-          }.getOrElse {
-            q"""(new Object).asInstanceOf[$tpe]"""
-          }
+            }
+            .getOrElse {
+              q"""(new Object).asInstanceOf[$tpe]"""
+            }
 
           existing match {
             case Some(t) =>
@@ -270,8 +283,10 @@ object UnionLike {
   // This `_.get` could be removed by switching `subData` to a non-empty list type
   @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
   def compare(c: Context)(
-      cmpType: c.Type, elementA: c.TermName, elementB: c.TermName)(
-      subData: List[(Int, c.Type, Option[TreeOrderedBuf[c.type]])]): c.Tree = {
+      cmpType: c.Type,
+      elementA: c.TermName,
+      elementB: c.TermName
+  )(subData: List[(Int, c.Type, Option[TreeOrderedBuf[c.type]])]): c.Tree = {
     import c.universe._
 
     def freshT(id: String) = newTermName(c.fresh(id))
@@ -306,15 +321,17 @@ object UnionLike {
 
     val compareSameTypes: Option[Tree] = subData.foldLeft(Option.empty[Tree]) {
       case (existing, (idx, tpe, optiTBuf)) =>
-        val commonCmp = optiTBuf.map { tBuf =>
-          val aTerm = freshT("aTerm")
-          val bTerm = freshT("bTerm")
-          q"""
+        val commonCmp = optiTBuf
+          .map { tBuf =>
+            val aTerm = freshT("aTerm")
+            val bTerm = freshT("bTerm")
+            q"""
           val $aTerm: $tpe = $elementA.asInstanceOf[$tpe]
           val $bTerm: $tpe = $elementB.asInstanceOf[$tpe]
           ${tBuf.compare(aTerm, bTerm)}
         """
-        }.getOrElse(q"0")
+          }
+          .getOrElse(q"0")
 
         existing match {
           case Some(t) =>

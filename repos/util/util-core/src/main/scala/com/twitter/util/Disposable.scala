@@ -86,7 +86,8 @@ trait Managed[+T] { selfT =>
     */
   def foreach(f: T => Unit) {
     val r = this.make()
-    try f(r.get) finally r.dispose()
+    try f(r.get)
+    finally r.dispose()
   }
 
   /**
@@ -96,13 +97,14 @@ trait Managed[+T] { selfT =>
     def make() = new Disposable[U] {
       val t = selfT.make()
 
-      val u = try {
-        f(t.get).make()
-      } catch {
-        case e: Exception =>
-          t.dispose()
-          throw e
-      }
+      val u =
+        try {
+          f(t.get).make()
+        } catch {
+          case e: Exception =>
+            t.dispose()
+            throw e
+        }
 
       def get = u.get
 
@@ -120,9 +122,7 @@ trait Managed[+T] { selfT =>
     }
   }
 
-  def map[U](f: T => U): Managed[U] = flatMap { t =>
-    Managed.const(f(t))
-  }
+  def map[U](f: T => U): Managed[U] = flatMap { t => Managed.const(f(t)) }
 
   /**
     * Builds a resource.
@@ -139,5 +139,7 @@ class DoubleTrouble(cause1: Throwable, cause2: Throwable) extends Exception {
   override def getStackTrace = cause1.getStackTrace
   override def getMessage =
     "Double failure while disposing composite resource: %s \n %s".format(
-        cause1.getMessage, cause2.getMessage)
+      cause1.getMessage,
+      cause2.getMessage
+    )
 }

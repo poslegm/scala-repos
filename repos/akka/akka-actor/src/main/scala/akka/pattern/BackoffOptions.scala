@@ -70,17 +70,21 @@ object Backoff {
     *   random delay based on this factor is added, e.g. `0.2` adds up to `20%` delay.
     *   In order to skip this additional delay pass in `0`.
     */
-  def onFailure(childProps: Props,
-                childName: String,
-                minBackoff: FiniteDuration,
-                maxBackoff: FiniteDuration,
-                randomFactor: Double): BackoffOptions =
-    BackoffOptionsImpl(RestartImpliesFailure,
-                       childProps,
-                       childName,
-                       minBackoff,
-                       maxBackoff,
-                       randomFactor)
+  def onFailure(
+      childProps: Props,
+      childName: String,
+      minBackoff: FiniteDuration,
+      maxBackoff: FiniteDuration,
+      randomFactor: Double
+  ): BackoffOptions =
+    BackoffOptionsImpl(
+      RestartImpliesFailure,
+      childProps,
+      childName,
+      minBackoff,
+      maxBackoff,
+      randomFactor
+    )
 
   /**
     * Back-off options for creating a back-off supervisor actor that expects a child actor to stop on failure.
@@ -135,17 +139,21 @@ object Backoff {
     *   random delay based on this factor is added, e.g. `0.2` adds up to `20%` delay.
     *   In order to skip this additional delay pass in `0`.
     */
-  def onStop(childProps: Props,
-             childName: String,
-             minBackoff: FiniteDuration,
-             maxBackoff: FiniteDuration,
-             randomFactor: Double): BackoffOptions =
-    BackoffOptionsImpl(StopImpliesFailure,
-                       childProps,
-                       childName,
-                       minBackoff,
-                       maxBackoff,
-                       randomFactor)
+  def onStop(
+      childProps: Props,
+      childName: String,
+      minBackoff: FiniteDuration,
+      maxBackoff: FiniteDuration,
+      randomFactor: Double
+  ): BackoffOptions =
+    BackoffOptionsImpl(
+      StopImpliesFailure,
+      childProps,
+      childName,
+      minBackoff,
+      maxBackoff,
+      randomFactor
+    )
 }
 
 /**
@@ -179,7 +187,8 @@ trait BackoffOptions {
     *   does not explicitly handle an exception.
     */
   def withSupervisorStrategy(
-      supervisorStrategy: OneForOneStrategy): BackoffOptions
+      supervisorStrategy: OneForOneStrategy
+  ): BackoffOptions
 
   /**
     * Returns a new BackoffOptions with a default `SupervisorStrategy.stoppingStrategy`.
@@ -201,9 +210,9 @@ private final case class BackoffOptionsImpl(
     maxBackoff: FiniteDuration,
     randomFactor: Double,
     reset: Option[BackoffReset] = None,
-    supervisorStrategy: OneForOneStrategy = OneForOneStrategy()(
-          SupervisorStrategy.defaultStrategy.decider))
-    extends BackoffOptions {
+    supervisorStrategy: OneForOneStrategy =
+      OneForOneStrategy()(SupervisorStrategy.defaultStrategy.decider)
+) extends BackoffOptions {
 
   val backoffReset = reset.getOrElse(AutoReset(minBackoff))
 
@@ -213,14 +222,17 @@ private final case class BackoffOptionsImpl(
   def withSupervisorStrategy(supervisorStrategy: OneForOneStrategy) =
     copy(supervisorStrategy = supervisorStrategy)
   def withDefaultStoppingStrategy =
-    copy(supervisorStrategy = OneForOneStrategy()(
-              SupervisorStrategy.stoppingStrategy.decider))
+    copy(supervisorStrategy =
+      OneForOneStrategy()(SupervisorStrategy.stoppingStrategy.decider)
+    )
 
   def props = {
     require(minBackoff > Duration.Zero, "minBackoff must be > 0")
     require(maxBackoff >= minBackoff, "maxBackoff must be >= minBackoff")
-    require(0.0 <= randomFactor && randomFactor <= 1.0,
-            "randomFactor must be between 0.0 and 1.0")
+    require(
+      0.0 <= randomFactor && randomFactor <= 1.0,
+      "randomFactor must be between 0.0 and 1.0"
+    )
     backoffReset match {
       case AutoReset(resetBackoff) ⇒
         require(minBackoff <= resetBackoff && resetBackoff <= maxBackoff)
@@ -230,22 +242,28 @@ private final case class BackoffOptionsImpl(
     backoffType match {
       case RestartImpliesFailure ⇒
         Props(
-            new BackoffOnRestartSupervisor(childProps,
-                                           childName,
-                                           minBackoff,
-                                           maxBackoff,
-                                           backoffReset,
-                                           randomFactor,
-                                           supervisorStrategy))
+          new BackoffOnRestartSupervisor(
+            childProps,
+            childName,
+            minBackoff,
+            maxBackoff,
+            backoffReset,
+            randomFactor,
+            supervisorStrategy
+          )
+        )
       case StopImpliesFailure ⇒
         Props(
-            new BackoffSupervisor(childProps,
-                                  childName,
-                                  minBackoff,
-                                  maxBackoff,
-                                  backoffReset,
-                                  randomFactor,
-                                  supervisorStrategy))
+          new BackoffSupervisor(
+            childProps,
+            childName,
+            minBackoff,
+            maxBackoff,
+            backoffReset,
+            randomFactor,
+            supervisorStrategy
+          )
+        )
     }
   }
 }

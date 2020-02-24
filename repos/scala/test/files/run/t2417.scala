@@ -3,9 +3,8 @@ object Test {
 
   def parallel(numThreads: Int)(block: => Unit) {
     var failure: Throwable = null
-    val threads = Array.tabulate(numThreads)(
-        i =>
-          new Thread {
+    val threads = Array.tabulate(numThreads)(i =>
+      new Thread {
         override def run {
           try {
             block
@@ -13,7 +12,8 @@ object Test {
             case x: Throwable => failure = x
           }
         }
-    })
+      }
+    )
     for (t <- threads) t.start
     for (t <- threads) t.join
     if (failure != null) println("FAILURE: " + failure)
@@ -29,7 +29,8 @@ object Test {
           val obs = s.size
           if (obs != e - 1) {
             throw new Exception(
-                "removed e=" + e + ", size was " + obs + ", s=" + s)
+              "removed e=" + e + ", size was " + obs + ", s=" + s
+            )
           }
         }
       }
@@ -46,7 +47,8 @@ object Test {
           val obs = m.size
           if (obs != e - 1) {
             throw new Exception(
-                "removed e=" + e + ", size was " + obs + ", m=" + m)
+              "removed e=" + e + ", size was " + obs + ", m=" + m
+            )
           }
         }
       }

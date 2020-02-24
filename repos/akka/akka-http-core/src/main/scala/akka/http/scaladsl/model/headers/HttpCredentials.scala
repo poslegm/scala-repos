@@ -10,7 +10,8 @@ import akka.http.javadsl.{model ⇒ jm}
 import akka.http.impl.util.JavaMapping.Implicits._
 
 sealed abstract class HttpCredentials
-    extends jm.headers.HttpCredentials with ValueRenderable {
+    extends jm.headers.HttpCredentials
+    with ValueRenderable {
   def scheme: String
   def token: String
   def params: Map[String, String]
@@ -55,8 +56,8 @@ final case class OAuth2BearerToken(token: String)
 final case class GenericHttpCredentials(
     scheme: String,
     token: String,
-    params: Map[String, String] = Map.empty)
-    extends HttpCredentials {
+    params: Map[String, String] = Map.empty
+) extends HttpCredentials {
   def render[R <: Rendering](r: R): r.type = {
     r ~~ scheme
     if (!token.isEmpty) r ~~ ' ' ~~ token
@@ -65,7 +66,8 @@ final case class GenericHttpCredentials(
         var first = true
         def apply(kvp: (String, String)): Unit = {
           val (k, v) = kvp
-          if (first) { r ~~ ' '; first = false } else r ~~ ','
+          if (first) { r ~~ ' '; first = false }
+          else r ~~ ','
           if (!k.isEmpty) r ~~ k ~~ '='
           r ~~# v
         }
@@ -76,6 +78,8 @@ final case class GenericHttpCredentials(
 
 object GenericHttpCredentials {
   def apply(
-      scheme: String, params: Map[String, String]): GenericHttpCredentials =
+      scheme: String,
+      params: Map[String, String]
+  ): GenericHttpCredentials =
     apply(scheme, "", params)
 }

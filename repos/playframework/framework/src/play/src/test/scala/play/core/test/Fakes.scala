@@ -49,8 +49,8 @@ case class FakeRequest[A](
     id: Long = 666,
     tags: Map[String, String] = Map.empty[String, String],
     secure: Boolean = false,
-    clientCertificateChain: Option[Seq[X509Certificate]] = None)
-    extends Request[A] {
+    clientCertificateChain: Option[Seq[X509Certificate]] = None
+) extends Request[A] {
 
   private def _copy[B](
       id: Long = this.id,
@@ -62,19 +62,21 @@ case class FakeRequest[A](
       headers: Headers = this.headers,
       remoteAddress: String = this.remoteAddress,
       secure: Boolean = this.secure,
-      clientCertificateChain: Option[Seq[X509Certificate]] = this.clientCertificateChain,
-      body: B = this.body): FakeRequest[B] = {
+      clientCertificateChain: Option[Seq[X509Certificate]] =
+        this.clientCertificateChain,
+      body: B = this.body
+  ): FakeRequest[B] = {
     new FakeRequest[B](
-        method,
-        uri,
-        headers,
-        body,
-        remoteAddress,
-        version,
-        id,
-        tags,
-        secure,
-        clientCertificateChain
+      method,
+      uri,
+      headers,
+      body,
+      remoteAddress,
+      version,
+      id,
+      tags,
+      secure,
+      clientCertificateChain
     )
   }
 
@@ -101,9 +103,11 @@ case class FakeRequest[A](
     */
   def withFlash(data: (String, String)*): FakeRequest[A] = {
     withHeaders(
-        play.api.http.HeaderNames.COOKIE -> Cookies.mergeCookieHeader(
-            headers.get(play.api.http.HeaderNames.COOKIE).getOrElse(""),
-            Seq(Flash.encodeAsCookie(new Flash(flash.data ++ data)))))
+      play.api.http.HeaderNames.COOKIE -> Cookies.mergeCookieHeader(
+        headers.get(play.api.http.HeaderNames.COOKIE).getOrElse(""),
+        Seq(Flash.encodeAsCookie(new Flash(flash.data ++ data)))
+      )
+    )
   }
 
   /**
@@ -111,9 +115,11 @@ case class FakeRequest[A](
     */
   def withCookies(cookies: Cookie*): FakeRequest[A] = {
     withHeaders(
-        play.api.http.HeaderNames.COOKIE -> Cookies.mergeCookieHeader(
-            headers.get(play.api.http.HeaderNames.COOKIE).getOrElse(""),
-            cookies))
+      play.api.http.HeaderNames.COOKIE -> Cookies.mergeCookieHeader(
+        headers.get(play.api.http.HeaderNames.COOKIE).getOrElse(""),
+        cookies
+      )
+    )
   }
 
   /**
@@ -121,19 +127,24 @@ case class FakeRequest[A](
     */
   def withSession(newSessions: (String, String)*): FakeRequest[A] = {
     withHeaders(
-        play.api.http.HeaderNames.COOKIE -> Cookies.mergeCookieHeader(
-            headers.get(play.api.http.HeaderNames.COOKIE).getOrElse(""),
-            Seq(Session.encodeAsCookie(
-                    new Session(session.data ++ newSessions)))))
+      play.api.http.HeaderNames.COOKIE -> Cookies.mergeCookieHeader(
+        headers.get(play.api.http.HeaderNames.COOKIE).getOrElse(""),
+        Seq(Session.encodeAsCookie(new Session(session.data ++ newSessions)))
+      )
+    )
   }
 
   /**
     * Set a Form url encoded body to this request.
     */
   def withFormUrlEncodedBody(
-      data: (String, String)*): FakeRequest[AnyContentAsFormUrlEncoded] = {
-    _copy(body = AnyContentAsFormUrlEncoded(
-              play.utils.OrderPreserving.groupBy(data.toSeq)(_._1)))
+      data: (String, String)*
+  ): FakeRequest[AnyContentAsFormUrlEncoded] = {
+    _copy(body =
+      AnyContentAsFormUrlEncoded(
+        play.utils.OrderPreserving.groupBy(data.toSeq)(_._1)
+      )
+    )
   }
 
   def certs = Future.successful(IndexedSeq.empty)
@@ -202,7 +213,9 @@ object FakeRequest {
     * Constructs a new request.
     */
   def apply(
-      method: String, path: String): FakeRequest[AnyContentAsEmpty.type] = {
+      method: String,
+      path: String
+  ): FakeRequest[AnyContentAsEmpty.type] = {
     FakeRequest(method, path, FakeHeaders(), AnyContentAsEmpty)
   }
 

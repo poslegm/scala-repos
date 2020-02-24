@@ -18,20 +18,20 @@ final class ForumSearchApi(client: ESClient, postApi: PostApi)
     client.count(query) map (_.count)
 
   def store(post: Post) = postApi liteView post flatMap {
-    _ ?? { view =>
-      client.store(Id(view.post.id), toDoc(view))
-    }
+    _ ?? { view => client.store(Id(view.post.id), toDoc(view)) }
   }
 
   private def toDoc(view: PostLiteView) =
-    Json.obj(Fields.body -> view.post.text.take(10000),
-             Fields.topic -> view.topic.name,
-             Fields.author -> ~(view.post.userId orElse view.post.author map
-                 (_.toLowerCase)),
-             Fields.topicId -> view.topic.id,
-             Fields.staff -> view.post.isStaff,
-             Fields.troll -> view.post.troll,
-             Fields.date -> view.post.createdAt.getDate)
+    Json.obj(
+      Fields.body -> view.post.text.take(10000),
+      Fields.topic -> view.topic.name,
+      Fields.author -> ~(view.post.userId orElse view.post.author map
+        (_.toLowerCase)),
+      Fields.topicId -> view.topic.id,
+      Fields.staff -> view.post.isStaff,
+      Fields.troll -> view.post.troll,
+      Fields.date -> view.post.createdAt.getDate
+    )
 
   def reset = client match {
     case c: ESClientHttp =>

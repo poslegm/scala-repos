@@ -19,8 +19,10 @@ object Bits {
 
   private[this] val _areTypedArraysSupported = {
     // Here we use `assumingES6` to dce the 4 subsequent tests
-    assumingES6 || js.DynamicImplicits.truthValue(global.ArrayBuffer &&
-        global.Int32Array && global.Float32Array && global.Float64Array)
+    assumingES6 || js.DynamicImplicits.truthValue(
+      global.ArrayBuffer &&
+        global.Int32Array && global.Float32Array && global.Float64Array
+    )
   }
 
   @inline
@@ -115,7 +117,7 @@ object Bits {
     if (areTypedArraysSupported) {
       float64Array(0) = value
       ((int32Array(highOffset).toLong << 32) |
-          (int32Array(lowOffset).toLong & 0xffffffffL))
+        (int32Array(lowOffset).toLong & 0xFFFFFFFFL))
     } else {
       doubleToLongBitsPolyfill(value)
     }
@@ -171,11 +173,16 @@ object Bits {
     val hif = rawToInt(f / 0x100000000L.toDouble)
     val hi = (if (s) 0x80000000 else 0) | (e << hifbits) | hif
     val lo = rawToInt(f)
-    (hi.toLong << 32) | (lo.toLong & 0xffffffffL)
+    (hi.toLong << 32) | (lo.toLong & 0xFFFFFFFFL)
   }
 
   @inline private def decodeIEEE754(
-      ebits: Int, fbits: Int, s: Boolean, e: Int, f: Double): Double = {
+      ebits: Int,
+      fbits: Int,
+      s: Boolean,
+      e: Int,
+      f: Double
+  ): Double = {
 
     import Math.pow
 
@@ -201,7 +208,10 @@ object Bits {
   }
 
   @inline private def encodeIEEE754(
-      ebits: Int, fbits: Int, v: Double): (Boolean, Int, Double) = {
+      ebits: Int,
+      fbits: Int,
+      v: Double
+  ): (Boolean, Int, Double) = {
 
     import Math._
 

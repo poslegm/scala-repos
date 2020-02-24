@@ -51,16 +51,16 @@ object FreeUsage extends App {
   val toState: RngOp ~> RandomReader = new (RngOp ~> RandomReader) {
     def apply[A](fa: RngOp[A]) =
       fa match {
-        case RngOp.NextBoolean => _.nextBoolean
-        case RngOp.NextDouble => _.nextDouble
-        case RngOp.NextFloat => _.nextFloat
-        case RngOp.NextGaussian => _.nextGaussian
-        case RngOp.NextInt => _.nextInt
+        case RngOp.NextBoolean       => _.nextBoolean
+        case RngOp.NextDouble        => _.nextDouble
+        case RngOp.NextFloat         => _.nextFloat
+        case RngOp.NextGaussian      => _.nextGaussian
+        case RngOp.NextInt           => _.nextInt
         case RngOp.NextIntInRange(n) => _.nextInt(n)
-        case RngOp.NextLong => _.nextLong
+        case RngOp.NextLong          => _.nextLong
         case RngOp.NextPrintableChar => _.nextPrintableChar
-        case RngOp.NextString(n) => _.nextString(n)
-        case RngOp.SetSeed(n) => _.setSeed(n)
+        case RngOp.NextString(n)     => _.nextString(n)
+        case RngOp.SetSeed(n)        => _.setSeed(n)
       }
   }
 
@@ -85,7 +85,9 @@ object FreeUsage extends App {
   println(prog.exec(0L)) // pure! always returns (60,28,green)
   println(prog.exec(0L)) // exactly the same of course
   println(prog.exec(123L)) // (82,52,blue)
-  println(prog.liftIO.unsafePerformIO) // DANGER: impure, who knows what will happen?
+  println(
+    prog.liftIO.unsafePerformIO
+  ) // DANGER: impure, who knows what will happen?
 
   // Of course all the normal combinators work
   println(nextBoolean.replicateM(10).exec(0L))

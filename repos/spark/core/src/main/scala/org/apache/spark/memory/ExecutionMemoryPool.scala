@@ -42,8 +42,8 @@ import org.apache.spark.internal.Logging
 private[memory] class ExecutionMemoryPool(
     lock: Object,
     poolName: String
-)
-    extends MemoryPool(lock) with Logging {
+) extends MemoryPool(lock)
+    with Logging {
 
   /**
     * Map from taskAttemptId -> memory consumption in bytes
@@ -88,8 +88,8 @@ private[memory] class ExecutionMemoryPool(
       numBytes: Long,
       taskAttemptId: Long,
       maybeGrowPool: Long => Unit = (additionalSpaceNeeded: Long) => Unit,
-      computeMaxPoolSize: () => Long = () =>
-          poolSize): Long = lock.synchronized {
+      computeMaxPoolSize: () => Long = () => poolSize
+  ): Long = lock.synchronized {
     assert(numBytes > 0, s"invalid number of bytes requested: $numBytes")
 
     // TODO: clean up this clunky method signature
@@ -135,7 +135,8 @@ private[memory] class ExecutionMemoryPool(
       // (this happens if older tasks allocated lots of memory before N grew)
       if (toGrant < numBytes && curMem + toGrant < minMemoryPerTask) {
         logInfo(
-            s"TID $taskAttemptId waiting for at least 1/2N of $poolName pool to be free")
+          s"TID $taskAttemptId waiting for at least 1/2N of $poolName pool to be free"
+        )
         lock.wait()
       } else {
         memoryForTask(taskAttemptId) += toGrant
@@ -154,8 +155,9 @@ private[memory] class ExecutionMemoryPool(
       var memoryToFree =
         if (curMem < numBytes) {
           logWarning(
-              s"Internal error: release called on $numBytes bytes but task only has $curMem bytes " +
-              s"of memory from the $poolName pool")
+            s"Internal error: release called on $numBytes bytes but task only has $curMem bytes " +
+              s"of memory from the $poolName pool"
+          )
           curMem
         } else {
           numBytes

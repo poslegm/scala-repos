@@ -43,23 +43,27 @@ object InnerShadow {
   * Wraps [[http://docs.oracle.com/javase/8/javafx/api/javafx/scene/effect/InnerShadow.html]]
   */
 class InnerShadow(
-    override val delegate: jfxse.InnerShadow = new jfxse.InnerShadow)
-    extends Effect(delegate) with ColorDelegate[jfxse.InnerShadow]
+    override val delegate: jfxse.InnerShadow = new jfxse.InnerShadow
+) extends Effect(delegate)
+    with ColorDelegate[jfxse.InnerShadow]
     with DimensionDelegate[jfxse.InnerShadow]
-    with InputDelegate[jfxse.InnerShadow] with SFXDelegate[jfxse.InnerShadow] {
+    with InputDelegate[jfxse.InnerShadow]
+    with SFXDelegate[jfxse.InnerShadow] {
 
   /**
     * Creates a new instance of InnerShadow with the specified blurType, color, radius, spread, offsetX and offsetY.
     */
-  def this(blurType: jfxse.BlurType,
-           color: Color,
-           radius: Double,
-           choke: Double,
-           offsetX: Double,
-           offsetY: Double) =
+  def this(
+      blurType: jfxse.BlurType,
+      color: Color,
+      radius: Double,
+      choke: Double,
+      offsetX: Double,
+      offsetY: Double
+  ) =
     this(
-        new jfxse.InnerShadow(
-            blurType, color, radius, choke, offsetX, offsetY))
+      new jfxse.InnerShadow(blurType, color, radius, choke, offsetX, offsetY)
+    )
 
   /**
     * Creates a new instance of InnerShadow with specified radius and color.

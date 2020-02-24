@@ -17,7 +17,8 @@ import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.ScObject
   */
 class ScalaTestFinder extends JavaTestFinder {
   override def findTestsForClass(
-      element: PsiElement): java.util.Collection[PsiElement] = {
+      element: PsiElement
+  ): java.util.Collection[PsiElement] = {
     val klass: PsiClass = findSourceElement(element)
     if (klass == null) return Collections.emptySet()
     val klassName = klass.getName.replace("$", "\\$")
@@ -36,9 +37,11 @@ class ScalaTestFinder extends JavaTestFinder {
           if (frameworks.isTestClass(testClass) ||
               frameworks.isPotentialTestClass(testClass)) {
             res.add(
-                Pair.create(testClass,
-                            TestFinderHelper.calcTestNameProximity(
-                                klassName, testClassName)))
+              Pair.create(
+                testClass,
+                TestFinderHelper.calcTestNameProximity(klassName, testClassName)
+              )
+            )
           }
         }
       }

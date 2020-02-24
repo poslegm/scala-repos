@@ -17,8 +17,8 @@ import akka.testkit.AkkaSpec
 
 class FlowConflateSpec extends AkkaSpec {
 
-  val settings = ActorMaterializerSettings(system).withInputBuffer(
-      initialSize = 2, maxSize = 2)
+  val settings = ActorMaterializerSettings(system)
+    .withInputBuffer(initialSize = 2, maxSize = 2)
 
   implicit val materializer = ActorMaterializer(settings)
 
@@ -176,9 +176,7 @@ class FlowConflateSpec extends AkkaSpec {
             exceptionLatch.open()
             throw TE("I hate even seed numbers")
           } else i
-        } { (sum, i) ⇒
-          sum + i
-        }
+        } { (sum, i) ⇒ sum + i }
         .withAttributes(supervisionStrategy(restartingDecider))
         .to(Sink.fromSubscriber(sinkProbe))
         .withAttributes(inputBuffer(initial = 1, max = 1))
@@ -215,10 +213,11 @@ class FlowConflateSpec extends AkkaSpec {
       val latch = TestLatch()
       val conflate = Flow[String]
         .conflateWithSeed(seed = i ⇒ i)((state, elem) ⇒
-              if (elem == "two") {
+          if (elem == "two") {
             latch.open()
             throw TE("two is a three letter word")
-          } else state + elem)
+          } else state + elem
+        )
         .withAttributes(supervisionStrategy(restartingDecider))
 
       val sourceProbe = TestPublisher.probe[String]()
@@ -253,12 +252,13 @@ class FlowConflateSpec extends AkkaSpec {
       val future = Source
         .fromPublisher(sourceProbe)
         .conflateWithSeed(seed = i ⇒ Vector(i))((state, elem) ⇒
-              if (elem == 2) {
+          if (elem == 2) {
             throw TE("three is a four letter word")
           } else {
             if (elem == 4) saw4Latch.open()
             state :+ elem
-        })
+          }
+        )
         .withAttributes(supervisionStrategy(resumingDecider))
         .to(Sink.fromSubscriber(sinkProbe))
         .withAttributes(inputBuffer(initial = 1, max = 1))

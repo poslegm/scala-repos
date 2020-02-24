@@ -8,7 +8,8 @@ import java.nio.channels.ServerSocketChannel
 
 object TestUtils {
   def temporaryServerAddress(
-      interface: String = "127.0.0.1"): InetSocketAddress = {
+      interface: String = "127.0.0.1"
+  ): InetSocketAddress = {
     val serverSocket = ServerSocketChannel.open()
     try {
       serverSocket.socket.bind(new InetSocketAddress(interface, 0))
@@ -18,7 +19,8 @@ object TestUtils {
   }
 
   def temporaryServerHostnameAndPort(
-      interface: String = "127.0.0.1"): (String, Int) = {
+      interface: String = "127.0.0.1"
+  ): (String, Int) = {
     val socketAddress = temporaryServerAddress(interface)
     socketAddress.getHostName -> socketAddress.getPort // TODO getHostString in Java7
   }

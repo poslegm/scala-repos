@@ -44,7 +44,9 @@ object ClusterShardingGetStateSpecConfig extends MultiNodeConfig {
   val first = role("first")
   val second = role("second")
 
-  commonConfig(ConfigFactory.parseString("""
+  commonConfig(
+    ConfigFactory
+      .parseString("""
     akka.loglevel = INFO
     akka.actor.provider = "akka.cluster.ClusterActorRefProvider"
     akka.remote.log-remote-lifecycle-events = off
@@ -55,10 +57,12 @@ object ClusterShardingGetStateSpecConfig extends MultiNodeConfig {
       shard-failure-backoff = 3s
       state-store-mode = "ddata"
     }
-    """))
+    """)
+  )
 
   nodeConfig(first, second)(
-      ConfigFactory.parseString("""akka.cluster.roles=["shard"]"""))
+    ConfigFactory.parseString("""akka.cluster.roles=["shard"]""")
+  )
 }
 
 class ClusterShardingGetStateSpecMultiJvmNode1
@@ -79,18 +83,21 @@ abstract class ClusterShardingGetStateSpec
 
   def startShard(): ActorRef = {
     ClusterSharding(system).start(
-        typeName = shardTypeName,
-        entityProps = Props(new ShardedActor),
-        settings = ClusterShardingSettings(system).withRole("shard"),
-        extractEntityId = extractEntityId,
-        extractShardId = extractShardId)
+      typeName = shardTypeName,
+      entityProps = Props(new ShardedActor),
+      settings = ClusterShardingSettings(system).withRole("shard"),
+      extractEntityId = extractEntityId,
+      extractShardId = extractShardId
+    )
   }
 
   def startProxy(): ActorRef = {
-    ClusterSharding(system).startProxy(typeName = shardTypeName,
-                                       role = Some("shard"),
-                                       extractEntityId = extractEntityId,
-                                       extractShardId = extractShardId)
+    ClusterSharding(system).startProxy(
+      typeName = shardTypeName,
+      role = Some("shard"),
+      extractEntityId = extractEntityId,
+      extractShardId = extractShardId
+    )
   }
 
   def join(from: RoleName): Unit = {

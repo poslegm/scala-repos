@@ -28,10 +28,12 @@ object HoconTokenSets {
     SimpleValuePart | LBrace | LBracket | Dollar | KeyValueSeparator | BadCharacter
   val ObjectEntryStart = PathStart | UnquotedChars
 
-  case class Matcher(tokenSet: TokenSet,
-                     requireNoNewLine: Boolean,
-                     matchNewLine: Boolean,
-                     matchEof: Boolean) {
+  case class Matcher(
+      tokenSet: TokenSet,
+      requireNoNewLine: Boolean,
+      matchNewLine: Boolean,
+      matchEof: Boolean
+  ) {
     def noNewLine = copy(requireNoNewLine = true)
 
     def orNewLineOrEof = copy(matchNewLine = true, matchEof = true)
@@ -40,14 +42,18 @@ object HoconTokenSets {
   }
 
   implicit def token2Matcher(token: HoconTokenType): Matcher =
-    Matcher(TokenSet.create(token),
-            requireNoNewLine = false,
-            matchNewLine = false,
-            matchEof = false)
+    Matcher(
+      TokenSet.create(token),
+      requireNoNewLine = false,
+      matchNewLine = false,
+      matchEof = false
+    )
 
   implicit def tokenSet2Matcher(tokenSet: TokenSet): Matcher =
-    Matcher(tokenSet,
-            requireNoNewLine = false,
-            matchNewLine = false,
-            matchEof = false)
+    Matcher(
+      tokenSet,
+      requireNoNewLine = false,
+      matchNewLine = false,
+      matchEof = false
+    )
 }

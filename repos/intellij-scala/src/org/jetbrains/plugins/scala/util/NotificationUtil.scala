@@ -14,8 +14,10 @@ object NotificationUtil {
   def builder(project: Project, message: String) =
     new NotificationBuilder(project, message)
 
-  class NotificationBuilder protected[NotificationUtil](
-      project: Project, message: String) {
+  class NotificationBuilder protected[NotificationUtil] (
+      project: Project,
+      message: String
+  ) {
     private var group: String = "scala"
     private var title: String = "Warning"
     private var notificationType: NotificationType = NotificationType.WARNING
@@ -34,11 +36,13 @@ object NotificationUtil {
     def setHandler(handler: Handler) = { this.handler = handler; this }
 
     def notification =
-      new Notification(group,
-                       title,
-                       message,
-                       notificationType,
-                       new HyperlinkListener(handler))
+      new Notification(
+        group,
+        title,
+        message,
+        notificationType,
+        new HyperlinkListener(handler)
+      )
     def show() = Notifications.Bus.notify(notification, project)
     def show(notification: Notification) =
       Notifications.Bus.notify(notification, project)
@@ -51,21 +55,22 @@ object NotificationUtil {
       title: String = "Warning",
       notificationType: NotificationType = NotificationType.WARNING,
       displayType: NotificationDisplayType = NotificationDisplayType.BALLOON,
-      handler: Handler = IdHandler) {
-    val notification = new Notification(group,
-                                        title,
-                                        message,
-                                        notificationType,
-                                        new HyperlinkListener(handler))
+      handler: Handler = IdHandler
+  ) {
+    val notification = new Notification(
+      group,
+      title,
+      message,
+      notificationType,
+      new HyperlinkListener(handler)
+    )
     Notifications.Bus.register(group, displayType)
     Notifications.Bus.notify(notification, project)
   }
 
   type Handler = (String) => (Unit)
 
-  private val IdHandler: Handler = { (s: String) =>
-    {}
-  }
+  private val IdHandler: Handler = { (s: String) => {} }
 
   private class HyperlinkListener(handler: Handler)
       extends NotificationListener {

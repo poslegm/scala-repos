@@ -69,7 +69,8 @@ trait Functor[F[_]] extends InvariantFunctor[F] { self =>
     * is contravariant.
     */
   def icompose[G[_]](
-      implicit G0: Contravariant[G]): Contravariant[λ[α => F[G[α]]]] =
+      implicit G0: Contravariant[G]
+  ): Contravariant[λ[α => F[G[α]]]] =
     new Contravariant[λ[α => F[G[α]]]] {
       def contramap[A, B](fa: F[G[A]])(f: B => A) =
         self.map(fa)(ga => G0.contramap(ga)(f))
@@ -107,7 +108,8 @@ trait Functor[F[_]] extends InvariantFunctor[F] { self =>
       * composed function.
       */
     def composite[A, B, C](fa: F[A], f1: A => B, f2: B => C)(
-        implicit FC: Equal[F[C]]): Boolean =
+        implicit FC: Equal[F[C]]
+    ): Boolean =
       FC.equal(map(map(fa)(f1))(f2), map(fa)(f2 compose f1))
   }
   def functorLaw = new FunctorLaw {}

@@ -81,8 +81,7 @@ trait MediaIncludes {
     * @param ae $JFX $AUEQ
     * @return $SFX $AUEQ
     */
-  implicit def jfxAudioEqualizer2sfx(
-      ae: jfxsm.AudioEqualizer): AudioEqualizer =
+  implicit def jfxAudioEqualizer2sfx(ae: jfxsm.AudioEqualizer): AudioEqualizer =
     if (ae != null) new AudioEqualizer(ae) else null
 
   /**
@@ -119,7 +118,8 @@ trait MediaIncludes {
     * @return $SFX $MDEE
     */
   implicit def jfxMediaErrorEvent2sfx(
-      mee: jfxsm.MediaErrorEvent): MediaErrorEvent =
+      mee: jfxsm.MediaErrorEvent
+  ): MediaErrorEvent =
     if (mee != null) new MediaErrorEvent(mee) else null
 
   /**
@@ -128,8 +128,7 @@ trait MediaIncludes {
     * @param me $JFX $MDEX
     * @return $SFX $MDEX
     */
-  implicit def jfxMediaException2sfx(
-      me: jfxsm.MediaException): MediaException =
+  implicit def jfxMediaException2sfx(me: jfxsm.MediaException): MediaException =
     if (me != null) new MediaException(me) else null
 
   /**
@@ -148,7 +147,8 @@ trait MediaIncludes {
     * @return $SFX $MDME
     */
   implicit def jfxMediaMarkerEvent2sfx(
-      mme: jfxsm.MediaMarkerEvent): MediaMarkerEvent =
+      mme: jfxsm.MediaMarkerEvent
+  ): MediaMarkerEvent =
     if (mme != null) new MediaMarkerEvent(mme) else null
 
   /**
@@ -194,7 +194,8 @@ trait MediaIncludes {
     * @return $SFX $TRAC
     */
   implicit def jfxTrack2sfx(t: jfxsm.Track): Track =
-    if (t != null) new Track(t) {} else null
+    if (t != null) new Track(t) {}
+    else null
 
   /**
     * $START$VDTC.html $VDTC$END

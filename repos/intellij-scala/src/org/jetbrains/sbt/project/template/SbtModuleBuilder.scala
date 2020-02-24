@@ -5,13 +5,24 @@ import java.awt.FlowLayout
 import java.io.File
 import javax.swing.{JPanel, JCheckBox}
 
-import com.intellij.ide.util.projectWizard.{ModuleWizardStep, SdkSettingsStep, SettingsStep}
+import com.intellij.ide.util.projectWizard.{
+  ModuleWizardStep,
+  SdkSettingsStep,
+  SettingsStep
+}
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.externalSystem.importing.ImportSpecBuilder
 import com.intellij.openapi.externalSystem.service.execution.ProgressExecutionMode
 import com.intellij.openapi.externalSystem.service.project.wizard.AbstractExternalModuleBuilder
-import com.intellij.openapi.externalSystem.settings.{AbstractExternalSystemSettings, ExternalSystemSettingsListener}
-import com.intellij.openapi.externalSystem.util.{ExternalSystemApiUtil, ExternalSystemBundle, ExternalSystemUtil}
+import com.intellij.openapi.externalSystem.settings.{
+  AbstractExternalSystemSettings,
+  ExternalSystemSettingsListener
+}
+import com.intellij.openapi.externalSystem.util.{
+  ExternalSystemApiUtil,
+  ExternalSystemBundle,
+  ExternalSystemUtil
+}
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.module.{JavaModuleType, ModifiableModuleModel}
 import com.intellij.openapi.projectRoots.{JavaSdk, SdkTypeId}
@@ -31,7 +42,9 @@ import org.jetbrains.sbt.project.settings.SbtProjectSettings
   */
 class SbtModuleBuilder
     extends AbstractExternalModuleBuilder[SbtProjectSettings](
-        SbtProjectSystem.Id, new SbtProjectSettings) {
+      SbtProjectSystem.Id,
+      new SbtProjectSettings
+    ) {
   private var sbtVersion = Versions.DefaultSbtVersion
 
   private var scalaVersion = Versions.DefaultScalaVersion
@@ -54,12 +67,13 @@ class SbtModuleBuilder
     val file = getModuleFilePath.toFile
     val path =
       file.getParent + "/" + Sbt.ModulesDirectory + "/" +
-      file.getName.toLowerCase
+        file.getName.toLowerCase
     setModuleFilePath(path)
   }
 
   override def modifySettingsStep(
-      settingsStep: SettingsStep): ModuleWizardStep = {
+      settingsStep: SettingsStep
+  ): ModuleWizardStep = {
     val sbtVersionComboBox = new SComboBox(Array.empty)
     val scalaVersionComboBox = new SComboBox(Array.empty)
 
@@ -76,38 +90,49 @@ class SbtModuleBuilder
     scalaVersionComboBox.setItems(scalaVersions)
 
     val resolveClassifiersCheckBox = new JCheckBox(
-        SbtBundle("sbt.settings.resolveClassifiers"))
+      SbtBundle("sbt.settings.resolveClassifiers")
+    )
     val resolveJavadocsCheckBox = new JCheckBox(
-        SbtBundle("sbt.settings.resolveJavadocs"))
+      SbtBundle("sbt.settings.resolveJavadocs")
+    )
     val resolveSbtClassifiersCheckBox = new JCheckBox(
-        SbtBundle("sbt.settings.resolveSbtClassifiers"))
+      SbtBundle("sbt.settings.resolveSbtClassifiers")
+    )
     val useAutoImportCheckBox = new JCheckBox(
-        ExternalSystemBundle.message("settings.label.use.auto.import"))
-    val createContentDirsCheckBox = new JCheckBox(ExternalSystemBundle.message(
-            "settings.label.create.empty.content.root.directories"))
+      ExternalSystemBundle.message("settings.label.use.auto.import")
+    )
+    val createContentDirsCheckBox = new JCheckBox(
+      ExternalSystemBundle
+        .message("settings.label.create.empty.content.root.directories")
+    )
 
-    val step = new SdkSettingsStep(
-        settingsStep, this, new Condition[SdkTypeId] {
-      def value(t: SdkTypeId): Boolean = t != null && t.isInstanceOf[JavaSdk]
-    }) {
-      override def updateDataModel() {
-        sbtVersion = sbtVersionComboBox.getSelectedItem
-        scalaVersion = scalaVersionComboBox.getSelectedItem
+    val step =
+      new SdkSettingsStep(settingsStep, this, new Condition[SdkTypeId] {
+        def value(t: SdkTypeId): Boolean = t != null && t.isInstanceOf[JavaSdk]
+      }) {
+        override def updateDataModel() {
+          sbtVersion = sbtVersionComboBox.getSelectedItem
+          scalaVersion = scalaVersionComboBox.getSelectedItem
 
-        settingsStep.getContext setProjectJdk myJdkComboBox.getSelectedJdk
+          settingsStep.getContext setProjectJdk myJdkComboBox.getSelectedJdk
 
-        getExternalProjectSettings.setResolveClassifiers(
-            resolveClassifiersCheckBox.isSelected)
-        getExternalProjectSettings.setResolveJavadocs(
-            resolveJavadocsCheckBox.isSelected)
-        getExternalProjectSettings.setResolveSbtClassifiers(
-            resolveSbtClassifiersCheckBox.isSelected)
-        getExternalProjectSettings.setUseAutoImport(
-            useAutoImportCheckBox.isSelected)
-        getExternalProjectSettings.setCreateEmptyContentRootDirectories(
-            createContentDirsCheckBox.isSelected)
+          getExternalProjectSettings.setResolveClassifiers(
+            resolveClassifiersCheckBox.isSelected
+          )
+          getExternalProjectSettings.setResolveJavadocs(
+            resolveJavadocsCheckBox.isSelected
+          )
+          getExternalProjectSettings.setResolveSbtClassifiers(
+            resolveSbtClassifiersCheckBox.isSelected
+          )
+          getExternalProjectSettings.setUseAutoImport(
+            useAutoImportCheckBox.isSelected
+          )
+          getExternalProjectSettings.setCreateEmptyContentRootDirectories(
+            createContentDirsCheckBox.isSelected
+          )
+        }
       }
-    }
 
     createContentDirsCheckBox.setSelected(true)
     resolveClassifiersCheckBox.setSelected(true)
@@ -115,9 +140,13 @@ class SbtModuleBuilder
     resolveSbtClassifiersCheckBox.setSelected(true)
 
     settingsStep.addSettingsField(
-        SbtBundle("sbt.settings.sbtVersion"), sbtVersionComboBox)
+      SbtBundle("sbt.settings.sbtVersion"),
+      sbtVersionComboBox
+    )
     settingsStep.addSettingsField(
-        SbtBundle("sbt.settings.scalaVersion"), scalaVersionComboBox)
+      SbtBundle("sbt.settings.scalaVersion"),
+      scalaVersionComboBox
+    )
     settingsStep.addSettingsField("", useAutoImportCheckBox)
     settingsStep.addSettingsField("", createContentDirsCheckBox)
 
@@ -131,7 +160,11 @@ class SbtModuleBuilder
   }
 
   private def createProjectTemplateIn(
-      root: File, name: String, scalaVersion: String, sbtVersion: String) {
+      root: File,
+      name: String,
+      scalaVersion: String,
+      sbtVersion: String
+  ) {
     val buildFile = root / Sbt.BuildFile
     val projectDir = root / Sbt.ProjectDirectory
     val pluginsFile = projectDir / Sbt.PluginsFile
@@ -140,11 +173,15 @@ class SbtModuleBuilder
     if (!buildFile.createNewFile() || !projectDir.mkdir() ||
         !pluginsFile.createNewFile()) return
 
-    writeToFile(buildFile,
-                SbtModuleBuilder.formatProjectDefinition(name, scalaVersion))
+    writeToFile(
+      buildFile,
+      SbtModuleBuilder.formatProjectDefinition(name, scalaVersion)
+    )
     writeToFile(pluginsFile, SbtModuleBuilder.PluginsDefinition)
     writeToFile(
-        propertiesFile, SbtModuleBuilder.formatSbtProperties(sbtVersion))
+      propertiesFile,
+      SbtModuleBuilder.formatSbtProperties(sbtVersion)
+    )
   }
 
   override def getNodeIcon = Sbt.Icon
@@ -165,9 +202,10 @@ class SbtModuleBuilder
     val settings = ExternalSystemApiUtil
       .getSettings(model.getProject, SbtProjectSystem.Id)
       .asInstanceOf[AbstractExternalSystemSettings[
-              _ <: AbstractExternalSystemSettings[_, SbtProjectSettings, _],
-              SbtProjectSettings,
-              _ <: ExternalSystemSettingsListener[SbtProjectSettings]]]
+        _ <: AbstractExternalSystemSettings[_, SbtProjectSettings, _],
+        SbtProjectSettings,
+        _ <: ExternalSystemSettingsListener[SbtProjectSettings]
+      ]]
 //    model.commit()
 
     val externalProjectSettings = getExternalProjectSettings
@@ -179,10 +217,10 @@ class SbtModuleBuilder
       ApplicationManager.getApplication.invokeLater(new Runnable() {
         override def run(): Unit =
           ExternalSystemUtil.refreshProjects(
-              new ImportSpecBuilder(model.getProject, SbtProjectSystem.Id)
-                .forceWhenUptodate()
-                .use(ProgressExecutionMode.IN_BACKGROUND_ASYNC)
-            )
+            new ImportSpecBuilder(model.getProject, SbtProjectSystem.Id)
+              .forceWhenUptodate()
+              .use(ProgressExecutionMode.IN_BACKGROUND_ASYNC)
+          )
       })
     }
   }

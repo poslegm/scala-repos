@@ -49,9 +49,13 @@ private[spark] class ShuffleMapTask(
     taskBinary: Broadcast[Array[Byte]],
     partition: Partition,
     @transient private var locs: Seq[TaskLocation],
-    _initialAccums: Seq[Accumulator[_]])
-    extends Task[MapStatus](
-        stageId, stageAttemptId, partition.index, _initialAccums)
+    _initialAccums: Seq[Accumulator[_]]
+) extends Task[MapStatus](
+      stageId,
+      stageAttemptId,
+      partition.index,
+      _initialAccums
+    )
     with Logging {
 
   /** A constructor used only in test suites. This does not require passing in an RDD. */
@@ -68,20 +72,23 @@ private[spark] class ShuffleMapTask(
     val deserializeStartTime = System.currentTimeMillis()
     val ser = SparkEnv.get.closureSerializer.newInstance()
     val (rdd, dep) = ser.deserialize[(RDD[_], ShuffleDependency[_, _, _])](
-        ByteBuffer.wrap(taskBinary.value),
-        Thread.currentThread.getContextClassLoader)
+      ByteBuffer.wrap(taskBinary.value),
+      Thread.currentThread.getContextClassLoader
+    )
     _executorDeserializeTime = System.currentTimeMillis() -
-    deserializeStartTime
+      deserializeStartTime
 
     metrics = Some(context.taskMetrics)
     var writer: ShuffleWriter[Any, Any] = null
     try {
       val manager = SparkEnv.get.shuffleManager
-      writer = manager.getWriter[Any, Any](
-          dep.shuffleHandle, partitionId, context)
-      writer.write(rdd
-            .iterator(partition, context)
-            .asInstanceOf[Iterator[_ <: Product2[Any, Any]]])
+      writer =
+        manager.getWriter[Any, Any](dep.shuffleHandle, partitionId, context)
+      writer.write(
+        rdd
+          .iterator(partition, context)
+          .asInstanceOf[Iterator[_ <: Product2[Any, Any]]]
+      )
       writer.stop(success = true).get
     } catch {
       case e: Exception =>

@@ -15,11 +15,7 @@ class Bug3307 {
     block("abc")
   }
 
-  ({ () =>
-    f { implicit x =>
-      println(x)
-    }
-  })()
+  ({ () => f { implicit x => println(x) } })()
 }
 
 // issue 3301
@@ -28,12 +24,11 @@ trait T[X]
 class Bug3301 {
   def t[A]: T[A] = sys.error("stub")
 
-  () =>
-    {
-      type X = Int
+  () => {
+    type X = Int
 
-      def foo[X] = t[X]
-      ()
+    def foo[X] = t[X]
+    ()
   }
 }
 // issue 3299

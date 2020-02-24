@@ -22,8 +22,8 @@ import akka.testkit.AkkaSpec
 object FlowGroupBySpec {
 
   implicit class Lift[M](
-      val f: SubFlow[Int, M, Source[Int, M]#Repr, RunnableGraph[M]])
-      extends AnyVal {
+      val f: SubFlow[Int, M, Source[Int, M]#Repr, RunnableGraph[M]]
+  ) extends AnyVal {
     def lift(key: Int ⇒ Int) =
       f.prefixAndTail(1)
         .map(p ⇒ key(p._1.head) -> (Source.single(p._1.head) ++ p._2))
@@ -34,8 +34,8 @@ object FlowGroupBySpec {
 class FlowGroupBySpec extends AkkaSpec {
   import FlowGroupBySpec._
 
-  val settings = ActorMaterializerSettings(system).withInputBuffer(
-      initialSize = 2, maxSize = 2)
+  val settings = ActorMaterializerSettings(system)
+    .withInputBuffer(initialSize = 2, maxSize = 2)
 
   implicit val materializer = ActorMaterializer(settings)
 
@@ -53,7 +53,10 @@ class FlowGroupBySpec extends AkkaSpec {
   }
 
   class SubstreamsSupport(
-      groupCount: Int = 2, elementCount: Int = 6, maxSubstreams: Int = -1) {
+      groupCount: Int = 2,
+      elementCount: Int = 6,
+      maxSubstreams: Int = -1
+  ) {
     val source = Source(1 to elementCount).runWith(Sink.asPublisher(false))
     val max = if (maxSubstreams > 0) maxSubstreams else groupCount
     val groupStream = Source
@@ -126,7 +129,8 @@ class FlowGroupBySpec extends AkkaSpec {
         .runWith(Sink.head)
         .futureValue(Timeout(3.seconds))
         .sortBy(_.head) should ===(
-          List(List("Aaa", "Abb"), List("Bcc"), List("Cdd", "Cee")))
+        List(List("Aaa", "Abb"), List("Bcc"), List("Cdd", "Cee"))
+      )
     }
 
     "accept cancellation of substreams" in assertAllStagesStopped {

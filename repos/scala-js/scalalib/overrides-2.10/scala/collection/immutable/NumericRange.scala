@@ -39,9 +39,14 @@ import generic._
   *  @define willNotTerminateInf
   */
 abstract class NumericRange[T](
-    val start: T, val end: T, val step: T, val isInclusive: Boolean)(
-    implicit num: Integral[T])
-    extends AbstractSeq[T] with IndexedSeq[T] with Serializable {
+    val start: T,
+    val end: T,
+    val step: T,
+    val isInclusive: Boolean
+)(implicit num: Integral[T])
+    extends AbstractSeq[T]
+    with IndexedSeq[T]
+    with Serializable {
 
   /** Note that NumericRange must be invariant so that constructs
     *  such as "1L to 10 by 5" do not infer the range type as AnyVal.
@@ -96,7 +101,7 @@ abstract class NumericRange[T](
   // whether it is a member of the sequence (i.e. when step > 1.)
   private def isWithinBoundaries(elem: T) =
     !isEmpty &&
-    ((step > zero && start <= elem && elem <= last) ||
+      ((step > zero && start <= elem && elem <= last) ||
         (step < zero && last <= elem && elem <= start))
   // Methods like apply throw exceptions on invalid n, but methods like take/drop
   // are forgiving: therefore the checks are with the methods.
@@ -160,8 +165,9 @@ abstract class NumericRange[T](
   //
   //   (0.1 to 0.3 by 0.1 contains 0.3) == true
   //
-  private[immutable] def mapRange[A](fm: T => A)(
-      implicit unum: Integral[A]): NumericRange[A] = {
+  private[immutable] def mapRange[A](
+      fm: T => A
+  )(implicit unum: Integral[A]): NumericRange[A] = {
     val self = this
 
     // XXX This may be incomplete.
@@ -186,7 +192,8 @@ abstract class NumericRange[T](
     isWithinBoundaries(x) && (((x - start) % step) == zero)
 
   override def contains(x: Any): Boolean =
-    try containsTyped(x.asInstanceOf[T]) catch {
+    try containsTyped(x.asInstanceOf[T])
+    catch {
       case _: ClassCastException => false
     }
 
@@ -196,17 +203,17 @@ abstract class NumericRange[T](
     else if (numRangeElements == 1) head
     else
       ((this.num fromInt numRangeElements) * (head + last) /
-          (this.num fromInt 2))
+        (this.num fromInt 2))
   }
 
   override lazy val hashCode = super.hashCode()
   override def equals(other: Any) = other match {
     case x: NumericRange[_] =>
       (x canEqual this) && (length == x.length) &&
-      ((length == 0) || // all empty sequences are equal
+        ((length == 0) || // all empty sequences are equal
           (start == x.start &&
-              last == x.last) // same length and same endpoints implies equality
-          )
+            last == x.last) // same length and same endpoints implies equality
+        )
     case _ =>
       super.equals(other)
   }
@@ -226,7 +233,8 @@ object NumericRange {
     *  the number of elements exceeds the maximum Int.
     */
   def count[T](start: T, end: T, step: T, isInclusive: Boolean)(
-      implicit num: Integral[T]): Int = {
+      implicit num: Integral[T]
+  ): Int = {
     val zero = num.zero
     val upward = num.lt(start, end)
     val posStep = num.gt(step, zero)
@@ -254,7 +262,8 @@ object NumericRange {
         val descr = List(start, word, end, "by", step) mkString " "
 
         throw new IllegalArgumentException(
-            descr + ": seqs cannot contain more than Int.MaxValue elements.")
+          descr + ": seqs cannot contain more than Int.MaxValue elements."
+        )
       }
       longCount.toInt
     }
@@ -277,17 +286,19 @@ object NumericRange {
   }
 
   def apply[T](start: T, end: T, step: T)(
-      implicit num: Integral[T]): Exclusive[T] =
+      implicit num: Integral[T]
+  ): Exclusive[T] =
     new Exclusive(start, end, step)
   def inclusive[T](start: T, end: T, step: T)(
-      implicit num: Integral[T]): Inclusive[T] =
+      implicit num: Integral[T]
+  ): Inclusive[T] =
     new Inclusive(start, end, step)
 
   private[collection] val defaultOrdering = Map[Numeric[_], Ordering[_]](
-      Numeric.IntIsIntegral -> Ordering.Int,
-      Numeric.ShortIsIntegral -> Ordering.Short,
-      Numeric.ByteIsIntegral -> Ordering.Byte,
-      Numeric.CharIsIntegral -> Ordering.Char,
-      Numeric.LongIsIntegral -> Ordering.Long
+    Numeric.IntIsIntegral -> Ordering.Int,
+    Numeric.ShortIsIntegral -> Ordering.Short,
+    Numeric.ByteIsIntegral -> Ordering.Byte,
+    Numeric.CharIsIntegral -> Ordering.Char,
+    Numeric.LongIsIntegral -> Ordering.Long
   )
 }

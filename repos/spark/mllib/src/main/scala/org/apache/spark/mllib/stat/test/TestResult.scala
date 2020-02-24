@@ -72,7 +72,7 @@ trait TestResult[DF] {
       }
 
     s"degrees of freedom = ${degreesOfFreedom.toString} \n" +
-    s"statistic = $statistic \n" + s"pValue = $pValue \n" + pValueExplain
+      s"statistic = $statistic \n" + s"pValue = $pValue \n" + pValueExplain
   }
 }
 
@@ -80,13 +80,13 @@ trait TestResult[DF] {
   * Object containing the test results for the chi-squared hypothesis test.
   */
 @Since("1.1.0")
-class ChiSqTestResult private[stat](
+class ChiSqTestResult private[stat] (
     override val pValue: Double,
     @Since("1.1.0") override val degreesOfFreedom: Int,
     @Since("1.1.0") override val statistic: Double,
     @Since("1.1.0") val method: String,
-    @Since("1.1.0") override val nullHypothesis: String)
-    extends TestResult[Int] {
+    @Since("1.1.0") override val nullHypothesis: String
+) extends TestResult[Int] {
 
   override def toString: String = {
     "Chi squared test summary:\n" + s"method: $method\n" + super.toString
@@ -99,11 +99,11 @@ class ChiSqTestResult private[stat](
   */
 @Experimental
 @Since("1.5.0")
-class KolmogorovSmirnovTestResult private[stat](
+class KolmogorovSmirnovTestResult private[stat] (
     @Since("1.5.0") override val pValue: Double,
     @Since("1.5.0") override val statistic: Double,
-    @Since("1.5.0") override val nullHypothesis: String)
-    extends TestResult[Int] {
+    @Since("1.5.0") override val nullHypothesis: String
+) extends TestResult[Int] {
 
   @Since("1.5.0")
   override val degreesOfFreedom = 0
@@ -119,13 +119,14 @@ class KolmogorovSmirnovTestResult private[stat](
   */
 @Experimental
 @Since("1.6.0")
-private[stat] class StreamingTestResult @Since("1.6.0")(
+private[stat] class StreamingTestResult @Since("1.6.0") (
     @Since("1.6.0") override val pValue: Double,
     @Since("1.6.0") override val degreesOfFreedom: Double,
     @Since("1.6.0") override val statistic: Double,
     @Since("1.6.0") val method: String,
-    @Since("1.6.0") override val nullHypothesis: String)
-    extends TestResult[Double] with Serializable {
+    @Since("1.6.0") override val nullHypothesis: String
+) extends TestResult[Double]
+    with Serializable {
 
   override def toString: String = {
     "Streaming test summary:\n" + s"method: $method\n" + super.toString

@@ -2,10 +2,19 @@ package gitbucket.core.ssh
 
 import gitbucket.core.model.Session
 import gitbucket.core.plugin.{GitRepositoryRouting, PluginRegistry}
-import gitbucket.core.service.{RepositoryService, AccountService, SystemSettingsService}
+import gitbucket.core.service.{
+  RepositoryService,
+  AccountService,
+  SystemSettingsService
+}
 import gitbucket.core.servlet.{Database, CommitLogHook}
 import gitbucket.core.util.{Directory, ControlUtil}
-import org.apache.sshd.server.{CommandFactory, Environment, ExitCallback, Command}
+import org.apache.sshd.server.{
+  CommandFactory,
+  Environment,
+  ExitCallback,
+  Command
+}
 import org.slf4j.LoggerFactory
 import java.io.{File, InputStream, OutputStream}
 import ControlUtil._
@@ -78,22 +87,28 @@ abstract class DefaultGitCommand(val owner: String, val repoName: String)
     extends GitCommand { self: RepositoryService with AccountService =>
 
   protected def isWritableUser(
-      username: String, repositoryInfo: RepositoryService.RepositoryInfo)(
-      implicit session: Session): Boolean =
+      username: String,
+      repositoryInfo: RepositoryService.RepositoryInfo
+  )(implicit session: Session): Boolean =
     getAccountByUserName(username) match {
       case Some(account) =>
         hasWritePermission(
-            repositoryInfo.owner, repositoryInfo.name, Some(account))
+          repositoryInfo.owner,
+          repositoryInfo.name,
+          Some(account)
+        )
       case None => false
     }
 }
 
 class DefaultGitUploadPack(owner: String, repoName: String)
-    extends DefaultGitCommand(owner, repoName) with RepositoryService
+    extends DefaultGitCommand(owner, repoName)
+    with RepositoryService
     with AccountService {
 
-  override protected def runTask(user: String)(
-      implicit session: Session): Unit = {
+  override protected def runTask(
+      user: String
+  )(implicit session: Session): Unit = {
     getRepository(owner, repoName.replaceFirst("\\.wiki\\Z", "")).foreach {
       repositoryInfo =>
         if (!repositoryInfo.repository.isPrivate ||
@@ -109,11 +124,13 @@ class DefaultGitUploadPack(owner: String, repoName: String)
 }
 
 class DefaultGitReceivePack(owner: String, repoName: String, baseUrl: String)
-    extends DefaultGitCommand(owner, repoName) with RepositoryService
+    extends DefaultGitCommand(owner, repoName)
+    with RepositoryService
     with AccountService {
 
-  override protected def runTask(user: String)(
-      implicit session: Session): Unit = {
+  override protected def runTask(
+      user: String
+  )(implicit session: Session): Unit = {
     getRepository(owner, repoName.replaceFirst("\\.wiki\\Z", "")).foreach {
       repositoryInfo =>
         if (isWritableUser(user, repositoryInfo)) {
@@ -133,12 +150,18 @@ class DefaultGitReceivePack(owner: String, repoName: String, baseUrl: String)
 }
 
 class PluginGitUploadPack(repoName: String, routing: GitRepositoryRouting)
-    extends GitCommand with SystemSettingsService {
+    extends GitCommand
+    with SystemSettingsService {
 
-  override protected def runTask(user: String)(
-      implicit session: Session): Unit = {
+  override protected def runTask(
+      user: String
+  )(implicit session: Session): Unit = {
     if (routing.filter.filter(
-            "/" + repoName, Some(user), loadSystemSettings(), false)) {
+          "/" + repoName,
+          Some(user),
+          loadSystemSettings(),
+          false
+        )) {
       val path =
         routing.urlPattern.r.replaceFirstIn(repoName, routing.localPath)
       using(Git.open(new File(Directory.GitBucketHome, path))) { git =>
@@ -151,12 +174,18 @@ class PluginGitUploadPack(repoName: String, routing: GitRepositoryRouting)
 }
 
 class PluginGitReceivePack(repoName: String, routing: GitRepositoryRouting)
-    extends GitCommand with SystemSettingsService {
+    extends GitCommand
+    with SystemSettingsService {
 
-  override protected def runTask(user: String)(
-      implicit session: Session): Unit = {
+  override protected def runTask(
+      user: String
+  )(implicit session: Session): Unit = {
     if (routing.filter.filter(
-            "/" + repoName, Some(user), loadSystemSettings(), true)) {
+          "/" + repoName,
+          Some(user),
+          loadSystemSettings(),
+          true
+        )) {
       val path =
         routing.urlPattern.r.replaceFirstIn(repoName, routing.localPath)
       using(Git.open(new File(Directory.GitBucketHome, path))) { git =>

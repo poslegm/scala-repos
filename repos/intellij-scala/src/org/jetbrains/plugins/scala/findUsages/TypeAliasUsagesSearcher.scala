@@ -33,39 +33,49 @@ import org.jetbrains.plugins.scala.lang.resolve.ResolvableReferenceElement
   */
 class TypeAliasUsagesSearcher
     extends QueryExecutorBase[PsiReference, ReferencesSearch.SearchParameters](
-        true) {
+      true
+    ) {
 
-  def processQuery(@NotNull parameters: ReferencesSearch.SearchParameters,
-                   @NotNull consumer: Processor[PsiReference]) {
+  def processQuery(
+      @NotNull parameters: ReferencesSearch.SearchParameters,
+      @NotNull consumer: Processor[PsiReference]
+  ) {
     val target: PsiElement = parameters.getElementToSearch
     val ta = target match {
       case named: PsiNamedElement =>
         inReadAction(ScalaPsiUtil.nameContext(named)) match {
           case ta: ScTypeAliasDefinition => ta
-          case _ => return
+          case _                         => return
         }
       case _ => return
     }
     val name: String = ta.name
     if (name == null || StringUtil.isEmptyOrSpaces(name)) return
     val scope: SearchScope =
-      inReadAction(parameters.getEffectiveSearchScope) // TODO PsiUtil.restrictScopeToGroovyFiles(parameters.getEffectiveSearchScope)
+      inReadAction(
+        parameters.getEffectiveSearchScope
+      ) // TODO PsiUtil.restrictScopeToGroovyFiles(parameters.getEffectiveSearchScope)
     val collector: SearchRequestCollector = parameters.getOptimizer
     val session: SearchSession = collector.getSearchSession
-    collector.searchWord(name,
-                         scope,
-                         UsageSearchContext.IN_CODE,
-                         true,
-                         new MyProcessor(target, null, session))
+    collector.searchWord(
+      name,
+      scope,
+      UsageSearchContext.IN_CODE,
+      true,
+      new MyProcessor(target, null, session)
+    )
   }
 
   private class MyProcessor(
-      myTarget: PsiElement, @Nullable prefix: String, mySession: SearchSession)
-      extends RequestResultProcessor(myTarget, prefix) {
+      myTarget: PsiElement,
+      @Nullable prefix: String,
+      mySession: SearchSession
+  ) extends RequestResultProcessor(myTarget, prefix) {
     def processTextOccurrence(
         element: PsiElement,
         offsetInElement: Int,
-        consumer: Processor[PsiReference]): Boolean = inReadAction {
+        consumer: Processor[PsiReference]
+    ): Boolean = inReadAction {
       ScalaPsiUtil.getParentOfType(element, classOf[ScConstructor]) match {
         case cons: ScConstructor
             if PsiTreeUtil.isAncestor(cons.typeElement, element, false) =>

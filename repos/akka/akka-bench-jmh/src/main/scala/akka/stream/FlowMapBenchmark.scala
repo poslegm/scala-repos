@@ -22,7 +22,8 @@ import scala.concurrent.duration._
 class FlowMapBenchmark {
 
   val config = ConfigFactory
-    .parseString("""
+    .parseString(
+      """
       akka {
         log-config-on-start = off
         log-dead-letters-during-shutdown = off
@@ -46,7 +47,8 @@ class FlowMapBenchmark {
             type = akka.testkit.CallingThreadDispatcherConfigurator
           }
         }
-      }""".stripMargin)
+      }""".stripMargin
+    )
     .withFallback(ConfigFactory.load())
 
   implicit val system = ActorSystem("test", config)
@@ -70,8 +72,8 @@ class FlowMapBenchmark {
 
   @Setup
   def setup(): Unit = {
-    val settings = ActorMaterializerSettings(system).withInputBuffer(
-        initialInputBufferSize, initialInputBufferSize)
+    val settings = ActorMaterializerSettings(system)
+      .withInputBuffer(initialInputBufferSize, initialInputBufferSize)
 
     materializer = ActorMaterializer(settings)
 
@@ -127,7 +129,8 @@ class FlowMapBenchmark {
 
   // source setup
   private def mkMaps[O, Mat](source: Source[O, Mat], count: Int)(
-      flow: => Graph[FlowShape[O, O], _]): Source[O, Mat] = {
+      flow: => Graph[FlowShape[O, O], _]
+  ): Source[O, Mat] = {
     var f = source
     for (i ← 1 to count) f = f.via(flow)
     f

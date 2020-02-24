@@ -24,7 +24,10 @@ import org.apache.hadoop.io.compress.CompressionCodecFactory
 import org.apache.hadoop.mapreduce.InputSplit
 import org.apache.hadoop.mapreduce.RecordReader
 import org.apache.hadoop.mapreduce.TaskAttemptContext
-import org.apache.hadoop.mapreduce.lib.input.{CombineFileRecordReader, CombineFileSplit}
+import org.apache.hadoop.mapreduce.lib.input.{
+  CombineFileRecordReader,
+  CombineFileSplit
+}
 
 /**
   * A trait to implement [[org.apache.hadoop.conf.Configurable Configurable]] interface.
@@ -43,8 +46,11 @@ private[spark] trait Configurable extends HConfigurable {
   * the file.
   */
 private[spark] class WholeTextFileRecordReader(
-    split: CombineFileSplit, context: TaskAttemptContext, index: Integer)
-    extends RecordReader[Text, Text] with Configurable {
+    split: CombineFileSplit,
+    context: TaskAttemptContext,
+    index: Integer
+) extends RecordReader[Text, Text]
+    with Configurable {
 
   private[this] val path = split.getPath(index)
   private[this] val fs = path.getFileSystem(context.getConfiguration)
@@ -56,7 +62,9 @@ private[spark] class WholeTextFileRecordReader(
   private[this] var value: Text = null
 
   override def initialize(
-      split: InputSplit, context: TaskAttemptContext): Unit = {}
+      split: InputSplit,
+      context: TaskAttemptContext
+  ): Unit = {}
 
   override def close(): Unit = {}
 
@@ -97,12 +105,13 @@ private[spark] class WholeTextFileRecordReader(
 private[spark] class ConfigurableCombineFileRecordReader[K, V](
     split: InputSplit,
     context: TaskAttemptContext,
-    recordReaderClass: Class[_ <: RecordReader[K, V] with HConfigurable])
-    extends CombineFileRecordReader[K, V](
-        split.asInstanceOf[CombineFileSplit],
-        context,
-        recordReaderClass
-    ) with Configurable {
+    recordReaderClass: Class[_ <: RecordReader[K, V] with HConfigurable]
+) extends CombineFileRecordReader[K, V](
+      split.asInstanceOf[CombineFileSplit],
+      context,
+      recordReaderClass
+    )
+    with Configurable {
 
   override def initNextRecordReader(): Boolean = {
     val r = super.initNextRecordReader()

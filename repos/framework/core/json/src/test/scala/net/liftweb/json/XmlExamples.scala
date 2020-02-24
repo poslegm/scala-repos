@@ -39,7 +39,7 @@ object XmlExamples extends Specification {
 
   "Conversion transformation example 2" in {
     val json = toJson(users2).transformField {
-      case JField("id", JString(s)) => JField("id", JInt(s.toInt))
+      case JField("id", JString(s))   => JField("id", JInt(s.toInt))
       case JField("user", x: JObject) => JField("user", JArray(x :: Nil))
     }
     compactRender(json) mustEqual """{"users":{"user":[{"id":1,"name":"Harry"}]}}"""
@@ -56,8 +56,7 @@ object XmlExamples extends Specification {
 
     val printer = new scala.xml.PrettyPrinter(100, 2)
     val lotto: JObject = LottoExample.json
-    val xml = toXml(
-        lotto.transformField {
+    val xml = toXml(lotto.transformField {
       case JField("winning-numbers", JArray(nums)) =>
         JField("winning-numbers", flattenArray(nums))
       case JField("numbers", JArray(nums)) =>
@@ -139,8 +138,8 @@ object XmlExamples extends Specification {
 
   val url = "test"
   val groupedText = <g>
-      <group>{ Group(List(Text("foo"), Text("bar"))) }</group>
-      <url>http://example.com/{ url }</url>
+      <group>{Group(List(Text("foo"), Text("bar")))}</group>
+      <url>http://example.com/{url}</url>
     </g>
 
   // Examples by Jonathan Ferguson. See http://groups.google.com/group/liftweb/browse_thread/thread/f3bdfcaf1c21c615/c311a91e44f9c178?show_docid=c311a91e44f9c178
@@ -149,7 +148,8 @@ object XmlExamples extends Specification {
   // { ..., "fieldName": "", "attrName":"someValue", ...}      ->
   // { ..., "fieldName": { "attrName": f("someValue") }, ... }
   def attrToObject(fieldName: String, attrName: String, f: JString => JValue)(
-      json: JValue) =
+      json: JValue
+  ) =
     json.transformField {
       case JField(n, v: JString) if n == attrName =>
         JField(fieldName, JObject(JField(n, f(v)) :: Nil))

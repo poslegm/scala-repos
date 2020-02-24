@@ -32,7 +32,10 @@ private[repl] trait SparkILoopInit { self: SparkILoop =>
 """.format(SPARK_VERSION))
     import Properties._
     val welcomeMsg = "Using Scala %s (%s, Java %s)".format(
-        versionString, javaVmName, javaVersion)
+      versionString,
+      javaVmName,
+      javaVersion
+    )
     echo(welcomeMsg)
     echo("Type in expressions to have them evaluated.")
     echo("Type :help for more information.")
@@ -51,7 +54,8 @@ private[repl] trait SparkILoopInit { self: SparkILoop =>
 
   private def withLock[T](body: => T): T = {
     initLock.lock()
-    try body finally initLock.unlock()
+    try body
+    finally initLock.unlock()
   }
   // a condition used to ensure serial access to the compiler.
   @volatile private var initIsComplete = false
@@ -82,10 +86,12 @@ private[repl] trait SparkILoopInit { self: SparkILoop =>
       withLock { while (!initIsComplete) initLoopCondition.await() }
     if (initError != null) {
       // scalastyle:off println
-      println("""
+      println(
+        """
         |Failed to initialize the REPL due to an unexpected error.
         |This is a bug, please, report it along with the error diagnostics printed below.
-        |%s.""".stripMargin.format(initError))
+        |%s.""".stripMargin.format(initError)
+      )
       // scalastyle:on println
       false
     } else true
@@ -96,8 +102,8 @@ private[repl] trait SparkILoopInit { self: SparkILoop =>
 
   protected def postInitThunks =
     List[Option[() => Unit]](
-        Some(intp.setContextClassLoader _),
-        if (isReplPower) Some(() => enablePowerMode(true)) else None
+      Some(intp.setContextClassLoader _),
+      if (isReplPower) Some(() => enablePowerMode(true)) else None
     ).flatten
   // ++ (
   //   warningsThunks
@@ -131,13 +137,15 @@ private[repl] trait SparkILoopInit { self: SparkILoop =>
           _sc
         }
         """)
-      command("""
+      command(
+        """
         @transient val sqlContext = {
           val _sqlContext = org.apache.spark.repl.Main.interp.createSQLContext()
           println("SQL context available as sqlContext.")
           _sqlContext
         }
-        """)
+        """
+      )
       command("import org.apache.spark.SparkContext._")
       command("import sqlContext.implicits._")
       command("import sqlContext.sql")

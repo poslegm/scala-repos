@@ -47,20 +47,21 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class FilteredBufferSpec[E]
     extends SimpleSFXDelegateSpec[jfxct.FilteredList[E], FilteredBuffer[E]](
-        classOf[jfxct.FilteredList[E]], classOf[FilteredBuffer[E]]) {
+      classOf[jfxct.FilteredList[E]],
+      classOf[FilteredBuffer[E]]
+    ) {
 
   override def getScalaClassInstance =
     new FilteredBuffer(ObservableBuffer.empty[E])
 
   override def getJavaClassInstance =
     new jfxct.FilteredList(
-        jfxc.FXCollections.observableList[E](new ju.ArrayList[E]))
+      jfxc.FXCollections.observableList[E](new ju.ArrayList[E])
+    )
 
   it should "assing comparator correctly" in {
 
-    val sb = new FilteredBuffer(ObservableBuffer(3, 4, 1), { _: Int =>
-      true
-    })
+    val sb = new FilteredBuffer(ObservableBuffer(3, 4, 1), { _: Int => true })
 
     sb.toList should equal(List(3, 4, 1))
 

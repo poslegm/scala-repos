@@ -29,8 +29,8 @@ class ConsumerTopicMetrics(metricId: ClientIdTopic) extends KafkaMetricsGroup {
     case ClientIdAllTopics(clientId) => Map("clientId" -> clientId)
   }
 
-  val messageRate = newMeter(
-      "MessagesPerSec", "messages", TimeUnit.SECONDS, tags)
+  val messageRate =
+    newMeter("MessagesPerSec", "messages", TimeUnit.SECONDS, tags)
   val byteRate = newMeter("BytesPerSec", "bytes", TimeUnit.SECONDS, tags)
 }
 
@@ -43,8 +43,9 @@ class ConsumerTopicStats(clientId: String) extends Logging {
     new ConsumerTopicMetrics(k)
   private val stats =
     new Pool[ClientIdAndTopic, ConsumerTopicMetrics](Some(valueFactory))
-  private val allTopicStats = new ConsumerTopicMetrics(new ClientIdAllTopics(
-          clientId)) // to differentiate from a topic named AllTopics
+  private val allTopicStats = new ConsumerTopicMetrics(
+    new ClientIdAllTopics(clientId)
+  ) // to differentiate from a topic named AllTopics
 
   def getConsumerAllTopicStats(): ConsumerTopicMetrics = allTopicStats
 

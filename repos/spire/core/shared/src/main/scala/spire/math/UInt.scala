@@ -16,7 +16,7 @@ class UInt(val signed: Int) extends AnyVal {
   def toChar: Char = signed.toChar
   def toShort: Short = signed.toShort
   def toInt: Int = signed
-  def toLong: Long = signed & 0xffffffffL
+  def toLong: Long = signed & 0xFFFFFFFFL
   def toFloat: Float = toLong.toFloat
   def toDouble: Double = toLong.toDouble
   def toBigInt: BigInt = BigInt(toLong)
@@ -125,11 +125,15 @@ private[math] trait UIntIsSigned extends Signed[UInt] {
 }
 
 private[math] trait UIntIsReal
-    extends IsIntegral[UInt] with UIntOrder with UIntIsSigned {
+    extends IsIntegral[UInt]
+    with UIntOrder
+    with UIntIsSigned {
   def toDouble(n: UInt): Double = n.toDouble
   def toBigInt(n: UInt): BigInt = n.toBigInt
 }
 
 @SerialVersionUID(0L)
 private[math] class UIntAlgebra
-    extends UIntIsRig with UIntIsReal with Serializable
+    extends UIntIsRig
+    with UIntIsReal
+    with Serializable

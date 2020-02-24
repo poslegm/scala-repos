@@ -46,8 +46,9 @@ class ChannelBufferUsageTracker(
   def increase(size: Long) = synchronized {
     if (state.currentUsage + size > state.usageLimit.inBytes) {
       throw new ChannelBufferUsageException(
-          "Channel buffer usage exceeded limit (" + currentUsage + ", " +
-          size + " vs. " + usageLimit + ")")
+        "Channel buffer usage exceeded limit (" + currentUsage + ", " +
+          size + " vs. " + usageLimit + ")"
+      )
     } else {
       state.currentUsage += size
       if (currentUsage > maxUsage) state.maxUsage = state.currentUsage
@@ -57,8 +58,9 @@ class ChannelBufferUsageTracker(
   def decrease(size: Long) = synchronized {
     if (state.currentUsage < size) {
       throw new ChannelBufferUsageException(
-          "invalid ChannelBufferUsageTracker decrease operation (" + size +
-          " vs. " + currentUsage + ")")
+        "invalid ChannelBufferUsageTracker decrease operation (" + size +
+          " vs. " + currentUsage + ")"
+      )
     } else {
       state.currentUsage -= size
     }
@@ -66,28 +68,29 @@ class ChannelBufferUsageTracker(
 }
 
 private[http] class ChannelBufferManager(
-    usageTracker: ChannelBufferUsageTracker)
-    extends SimpleChannelHandler {
+    usageTracker: ChannelBufferUsageTracker
+) extends SimpleChannelHandler {
   private[this] var bufferUsage = 0L
 
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
     e.getMessage match {
       case buffer: ChannelBuffer => increaseBufferUsage(buffer.capacity())
-      case _ => ()
+      case _                     => ()
     }
 
     super.messageReceived(ctx, e)
   }
 
   override def writeComplete(
-      ctx: ChannelHandlerContext, e: WriteCompletionEvent) {
+      ctx: ChannelHandlerContext,
+      e: WriteCompletionEvent
+  ) {
     clearBufferUsage()
 
     super.writeComplete(ctx, e)
   }
 
-  override def channelClosed(
-      ctx: ChannelHandlerContext, e: ChannelStateEvent) {
+  override def channelClosed(ctx: ChannelHandlerContext, e: ChannelStateEvent) {
     clearBufferUsage()
 
     super.channelClosed(ctx, e)

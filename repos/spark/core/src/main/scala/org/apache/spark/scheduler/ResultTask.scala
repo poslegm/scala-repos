@@ -49,8 +49,8 @@ private[spark] class ResultTask[T, U](
     partition: Partition,
     locs: Seq[TaskLocation],
     val outputId: Int,
-    _initialAccums: Seq[Accumulator[_]] = InternalAccumulator.createAll())
-    extends Task[U](stageId, stageAttemptId, partition.index, _initialAccums)
+    _initialAccums: Seq[Accumulator[_]] = InternalAccumulator.createAll()
+) extends Task[U](stageId, stageAttemptId, partition.index, _initialAccums)
     with Serializable {
 
   @transient private[this] val preferredLocs: Seq[TaskLocation] = {
@@ -63,10 +63,11 @@ private[spark] class ResultTask[T, U](
     val ser = SparkEnv.get.closureSerializer.newInstance()
     val (rdd, func) =
       ser.deserialize[(RDD[T], (TaskContext, Iterator[T]) => U)](
-          ByteBuffer.wrap(taskBinary.value),
-          Thread.currentThread.getContextClassLoader)
+        ByteBuffer.wrap(taskBinary.value),
+        Thread.currentThread.getContextClassLoader
+      )
     _executorDeserializeTime = System.currentTimeMillis() -
-    deserializeStartTime
+      deserializeStartTime
 
     metrics = Some(context.taskMetrics)
     func(context, rdd.iterator(partition, context))

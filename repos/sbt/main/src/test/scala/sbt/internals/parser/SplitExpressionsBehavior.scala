@@ -6,7 +6,8 @@ import org.specs2.mutable.SpecificationLike
 
 trait SplitExpression {
   def split(s: String, file: File = new File("noFile"))(
-      implicit splitter: SplitExpressions.SplitExpression) =
+      implicit splitter: SplitExpressions.SplitExpression
+  ) =
     splitter(file, s.split("\n").toSeq)
 }
 
@@ -14,7 +15,8 @@ trait SplitExpressionsBehavior extends SplitExpression {
   this: SpecificationLike =>
 
   def oldExpressionsSplitter(
-      implicit splitter: SplitExpressions.SplitExpression): Unit = {
+      implicit splitter: SplitExpressions.SplitExpression
+  ): Unit = {
 
     "parse a simple setting" in {
       val (imports, settingsAndDefs) = split("""version := "1.0"""")
@@ -56,14 +58,16 @@ trait SplitExpressionsBehavior extends SplitExpression {
 
     "parse a config containgn a lazy val" in {
       val (imports, settingsAndDefs) = split(
-          """lazy val root = (project in file(".")).enablePlugins­(PlayScala)""")
+        """lazy val root = (project in file(".")).enablePlugins­(PlayScala)"""
+      )
       imports.isEmpty should beTrue
       settingsAndDefs.isEmpty should beFalse
     }
   }
 
   def newExpressionsSplitter(
-      implicit splitter: SplitExpressions.SplitExpression): Unit = {
+      implicit splitter: SplitExpressions.SplitExpression
+  ): Unit = {
 
     "parse a two settings without intervening blank line" in {
       val (imports, settings) = split("""version := "1.0"
@@ -75,8 +79,10 @@ scalaVersion := "2.10.4"""")
 
     "parse a setting and val without intervening blank line" in {
       val (imports, settings) =
-        split("""version := "1.0"
-lazy val root = (project in file(".")).enablePlugins­(PlayScala)""")
+        split(
+          """version := "1.0"
+lazy val root = (project in file(".")).enablePlugins­(PlayScala)"""
+        )
 
       imports.isEmpty should beTrue
       settings.size === 2

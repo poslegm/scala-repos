@@ -18,7 +18,8 @@ object Directives extends AllDirectives {
     * INTERNAL API
     */
   private[http] def custom(
-      f: (Route, immutable.Seq[Route]) ⇒ Route): Directive =
+      f: (Route, immutable.Seq[Route]) ⇒ Route
+  ): Directive =
     new AbstractDirective {
       def createRoute(first: Route, others: Array[Route]): Route =
         f(first, others.toList)

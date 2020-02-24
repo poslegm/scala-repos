@@ -68,19 +68,23 @@ private[python] trait PythonTransformFunctionSerializer {
   * deserialized by Java.
   */
 private[python] class TransformFunction(
-    @transient var pfunc: PythonTransformFunction)
-    extends function.Function2[JList[JavaRDD[_]], Time, JavaRDD[Array[Byte]]] {
+    @transient var pfunc: PythonTransformFunction
+) extends function.Function2[JList[JavaRDD[_]], Time, JavaRDD[Array[Byte]]] {
 
   def apply(rdd: Option[RDD[_]], time: Time): Option[RDD[Array[Byte]]] = {
     val rdds = List(rdd.map(JavaRDD.fromRDD(_)).orNull).asJava
     Option(callPythonTransformFunction(time.milliseconds, rdds)).map(_.rdd)
   }
 
-  def apply(rdd: Option[RDD[_]],
-            rdd2: Option[RDD[_]],
-            time: Time): Option[RDD[Array[Byte]]] = {
-    val rdds = List(rdd.map(JavaRDD.fromRDD(_)).orNull,
-                    rdd2.map(JavaRDD.fromRDD(_)).orNull).asJava
+  def apply(
+      rdd: Option[RDD[_]],
+      rdd2: Option[RDD[_]],
+      time: Time
+  ): Option[RDD[Array[Byte]]] = {
+    val rdds = List(
+      rdd.map(JavaRDD.fromRDD(_)).orNull,
+      rdd2.map(JavaRDD.fromRDD(_)).orNull
+    ).asJava
     Option(callPythonTransformFunction(time.milliseconds, rdds)).map(_.rdd)
   }
 
@@ -90,12 +94,13 @@ private[python] class TransformFunction(
   }
 
   private def callPythonTransformFunction(
-      time: Long, rdds: JList[_]): JavaRDD[Array[Byte]] = {
+      time: Long,
+      rdds: JList[_]
+  ): JavaRDD[Array[Byte]] = {
     val resultRDD = pfunc.call(time, rdds)
     val failure = pfunc.getLastFailure
     if (failure != null) {
-      throw new SparkException(
-          "An exception was raised by Python:\n" + failure)
+      throw new SparkException("An exception was raised by Python:\n" + failure)
     }
     resultRDD
   }
@@ -146,8 +151,7 @@ private[python] object PythonTransformFunctionSerializer {
     val results = serializer.dumps(id)
     val failure = serializer.getLastFailure
     if (failure != null) {
-      throw new SparkException(
-          "An exception was raised by Python:\n" + failure)
+      throw new SparkException("An exception was raised by Python:\n" + failure)
     }
     results
   }
@@ -157,8 +161,7 @@ private[python] object PythonTransformFunctionSerializer {
     val pfunc = serializer.loads(bytes)
     val failure = serializer.getLastFailure
     if (failure != null) {
-      throw new SparkException(
-          "An exception was raised by Python:\n" + failure)
+      throw new SparkException("An exception was raised by Python:\n" + failure)
     }
     pfunc
   }
@@ -182,7 +185,9 @@ private[python] object PythonDStream {
     * cannot be `foreachRDD`, it will confusing py4j
     */
   def callForeachRDD(
-      jdstream: JavaDStream[Array[Byte]], pfunc: PythonTransformFunction) {
+      jdstream: JavaDStream[Array[Byte]],
+      pfunc: PythonTransformFunction
+  ) {
     val func = new TransformFunction((pfunc))
     jdstream.dstream.foreachRDD((rdd, time) => func(Some(rdd), time))
   }
@@ -190,8 +195,9 @@ private[python] object PythonDStream {
   /**
     * convert list of RDD into queue of RDDs, for ssc.queueStream()
     */
-  def toRDDQueue(rdds: JArrayList[JavaRDD[Array[Byte]]])
-    : java.util.Queue[JavaRDD[Array[Byte]]] = {
+  def toRDDQueue(
+      rdds: JArrayList[JavaRDD[Array[Byte]]]
+  ): java.util.Queue[JavaRDD[Array[Byte]]] = {
     val queue = new java.util.LinkedList[JavaRDD[Array[Byte]]]
     rdds.asScala.foreach(queue.add)
     queue
@@ -202,8 +208,9 @@ private[python] object PythonDStream {
   * Base class for PythonDStream with some common methods
   */
 private[python] abstract class PythonDStream(
-    parent: DStream[_], pfunc: PythonTransformFunction)
-    extends DStream[Array[Byte]](parent.ssc) {
+    parent: DStream[_],
+    pfunc: PythonTransformFunction
+) extends DStream[Array[Byte]](parent.ssc) {
 
   val func = new TransformFunction(pfunc)
 
@@ -218,8 +225,9 @@ private[python] abstract class PythonDStream(
   * Transformed DStream in Python.
   */
 private[python] class PythonTransformedDStream(
-    parent: DStream[_], pfunc: PythonTransformFunction)
-    extends PythonDStream(parent, pfunc) {
+    parent: DStream[_],
+    pfunc: PythonTransformFunction
+) extends PythonDStream(parent, pfunc) {
 
   override def compute(validTime: Time): Option[RDD[Array[Byte]]] = {
     val rdd = parent.getOrCompute(validTime)
@@ -234,10 +242,11 @@ private[python] class PythonTransformedDStream(
 /**
   * Transformed from two DStreams in Python.
   */
-private[python] class PythonTransformed2DStream(parent: DStream[_],
-                                                parent2: DStream[_],
-                                                pfunc: PythonTransformFunction)
-    extends DStream[Array[Byte]](parent.ssc) {
+private[python] class PythonTransformed2DStream(
+    parent: DStream[_],
+    parent2: DStream[_],
+    pfunc: PythonTransformFunction
+) extends DStream[Array[Byte]](parent.ssc) {
 
   val func = new TransformFunction(pfunc)
 
@@ -258,17 +267,20 @@ private[python] class PythonTransformed2DStream(parent: DStream[_],
 /**
   * similar to StateDStream
   */
-private[python] class PythonStateDStream(parent: DStream[Array[Byte]],
-                                         reduceFunc: PythonTransformFunction,
-                                         initialRDD: Option[RDD[Array[Byte]]])
-    extends PythonDStream(parent, reduceFunc) {
+private[python] class PythonStateDStream(
+    parent: DStream[Array[Byte]],
+    reduceFunc: PythonTransformFunction,
+    initialRDD: Option[RDD[Array[Byte]]]
+) extends PythonDStream(parent, reduceFunc) {
 
   def this(parent: DStream[Array[Byte]], reduceFunc: PythonTransformFunction) =
     this(parent, reduceFunc, None)
 
-  def this(parent: DStream[Array[Byte]],
-           reduceFunc: PythonTransformFunction,
-           initialRDD: JavaRDD[Array[Byte]]) =
+  def this(
+      parent: DStream[Array[Byte]],
+      reduceFunc: PythonTransformFunction,
+      initialRDD: JavaRDD[Array[Byte]]
+  ) =
     this(parent, reduceFunc, Some(initialRDD.rdd))
 
   super.persist(StorageLevel.MEMORY_ONLY)
@@ -293,8 +305,8 @@ private[python] class PythonReducedWindowedDStream(
     preduceFunc: PythonTransformFunction,
     @transient private val pinvReduceFunc: PythonTransformFunction,
     _windowDuration: Duration,
-    _slideDuration: Duration)
-    extends PythonDStream(parent, preduceFunc) {
+    _slideDuration: Duration
+) extends PythonDStream(parent, preduceFunc) {
 
   super.persist(StorageLevel.MEMORY_ONLY)
 
@@ -332,7 +344,9 @@ private[python] class PythonReducedWindowedDStream(
 
       // subtract the values from old RDDs
       val oldRDDs = parent.slice(
-          previous.beginTime + parent.slideDuration, current.beginTime)
+        previous.beginTime + parent.slideDuration,
+        current.beginTime
+      )
       val subtracted =
         if (oldRDDs.size > 0) {
           invReduceFunc(previousRDD, Some(ssc.sc.union(oldRDDs)), validTime)

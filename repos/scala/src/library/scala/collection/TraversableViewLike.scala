@@ -27,10 +27,12 @@ trait ViewMkString[+A] { self: Traversable[A] =>
   override def mkString(start: String, sep: String, end: String): String = {
     thisSeq.addString(new StringBuilder(), start, sep, end).toString
   }
-  override def addString(b: StringBuilder,
-                         start: String,
-                         sep: String,
-                         end: String): StringBuilder = {
+  override def addString(
+      b: StringBuilder,
+      start: String,
+      sep: String,
+      end: String
+  ): StringBuilder = {
     var first = true
     b append start
     for (x <- self) {
@@ -69,11 +71,13 @@ trait ViewMkString[+A] { self: Traversable[A] =>
   *  @tparam Coll the type of the underlying collection containing the elements.
   *  @tparam This the type of the view itself
   */
-trait TraversableViewLike[
-    +A,
-    +Coll,
-    +This <: TraversableView[A, Coll] with TraversableViewLike[A, Coll, This]]
-    extends Traversable[A] with TraversableLike[A, This] with ViewMkString[A] {
+trait TraversableViewLike[+A, +Coll, +This <: TraversableView[A, Coll] with TraversableViewLike[
+  A,
+  Coll,
+  This
+]] extends Traversable[A]
+    with TraversableLike[A, This]
+    with ViewMkString[A] {
   self =>
 
   protected def underlying: Coll
@@ -93,7 +97,8 @@ trait TraversableViewLike[
 
   /** Explicit instantiation of the `Transformed` trait to reduce class file size in subclasses. */
   private[collection] abstract class AbstractTransformed[+B]
-      extends Traversable[B] with Transformed[B]
+      extends Traversable[B]
+      with Transformed[B]
 
   /** The implementation base trait of this view.
     *  This trait and all its subtraits has to be re-implemented for each
@@ -229,40 +234,47 @@ trait TraversableViewLike[
     final override protected[this] def viewIdentifier = "D"
   }
 
-  override def ++[B >: A, That](xs: GenTraversableOnce[B])(
-      implicit bf: CanBuildFrom[This, B, That]): That =
+  override def ++[B >: A, That](
+      xs: GenTraversableOnce[B]
+  )(implicit bf: CanBuildFrom[This, B, That]): That =
     newAppended(xs.seq.toTraversable).asInstanceOf[That]
 
-  override def ++:[B >: A, That](xs: TraversableOnce[B])(
-      implicit bf: CanBuildFrom[This, B, That]): That =
+  override def ++:[B >: A, That](
+      xs: TraversableOnce[B]
+  )(implicit bf: CanBuildFrom[This, B, That]): That =
     newPrepended(xs.seq.toTraversable).asInstanceOf[That]
 
   // Need second one because of optimization in TraversableLike
-  override def ++:[B >: A, That](xs: Traversable[B])(
-      implicit bf: CanBuildFrom[This, B, That]): That =
+  override def ++:[B >: A, That](
+      xs: Traversable[B]
+  )(implicit bf: CanBuildFrom[This, B, That]): That =
     newPrepended(xs).asInstanceOf[That]
 
-  override def map[B, That](f: A => B)(
-      implicit bf: CanBuildFrom[This, B, That]): That = {
+  override def map[B, That](
+      f: A => B
+  )(implicit bf: CanBuildFrom[This, B, That]): That = {
     newMapped(f).asInstanceOf[That]
 //    val b = bf(repr)
 //          if (b.isInstanceOf[NoBuilder[_]]) newMapped(f).asInstanceOf[That]
 //    else super.map[B, That](f)(bf)
   }
 
-  override def collect[B, That](pf: PartialFunction[A, B])(
-      implicit bf: CanBuildFrom[This, B, That]): That =
+  override def collect[B, That](
+      pf: PartialFunction[A, B]
+  )(implicit bf: CanBuildFrom[This, B, That]): That =
     filter(pf.isDefinedAt).map(pf)(bf)
 
-  override def flatMap[B, That](f: A => GenTraversableOnce[B])(
-      implicit bf: CanBuildFrom[This, B, That]): That = {
+  override def flatMap[B, That](
+      f: A => GenTraversableOnce[B]
+  )(implicit bf: CanBuildFrom[This, B, That]): That = {
     newFlatMapped(f).asInstanceOf[That]
 // was:    val b = bf(repr)
 //     if (b.isInstanceOf[NoBuilder[_]]) newFlatMapped(f).asInstanceOf[That]
 //    else super.flatMap[B, That](f)(bf)
   }
   override def flatten[B](
-      implicit asTraversable: A => /*<:<!!!*/ GenTraversableOnce[B]) =
+      implicit asTraversable: A => /*<:<!!!*/ GenTraversableOnce[B]
+  ) =
     newFlatMapped(asTraversable)
   private[this] implicit def asThis(xs: Transformed[A]): This =
     xs.asInstanceOf[This]
@@ -279,7 +291,8 @@ trait TraversableViewLike[
   protected def newMapped[B](f: A => B): Transformed[B] =
     new { val mapping = f } with AbstractTransformed[B] with Mapped[B]
   protected def newFlatMapped[B](
-      f: A => GenTraversableOnce[B]): Transformed[B] =
+      f: A => GenTraversableOnce[B]
+  ): Transformed[B] =
     new { val mapping = f } with AbstractTransformed[B] with FlatMapped[B]
   protected def newFiltered(p: A => Boolean): Transformed[A] =
     new { val pred = p } with AbstractTransformed[A] with Filtered
@@ -311,27 +324,35 @@ trait TraversableViewLike[
     (newTakenWhile(p), newDroppedWhile(p))
   override def splitAt(n: Int): (This, This) = (newTaken(n), newDropped(n))
 
-  override def scanLeft[B, That](z: B)(op: (B, A) => B)(
-      implicit bf: CanBuildFrom[This, B, That]): That =
+  override def scanLeft[B, That](
+      z: B
+  )(op: (B, A) => B)(implicit bf: CanBuildFrom[This, B, That]): That =
     newForced(thisSeq.scanLeft(z)(op)).asInstanceOf[That]
 
   @migration(
-      "The behavior of `scanRight` has changed. The previous behavior can be reproduced with scanRight.reverse.",
-      "2.9.0")
-  override def scanRight[B, That](z: B)(op: (A, B) => B)(
-      implicit bf: CanBuildFrom[This, B, That]): That =
+    "The behavior of `scanRight` has changed. The previous behavior can be reproduced with scanRight.reverse.",
+    "2.9.0"
+  )
+  override def scanRight[B, That](
+      z: B
+  )(op: (A, B) => B)(implicit bf: CanBuildFrom[This, B, That]): That =
     newForced(thisSeq.scanRight(z)(op)).asInstanceOf[That]
 
   override def groupBy[K](f: A => K): immutable.Map[K, This] =
     thisSeq groupBy f mapValues (xs => newForced(xs))
 
   override def unzip[A1, A2](implicit asPair: A => (A1, A2)) =
-    (newMapped(x => asPair(x)._1), newMapped(x => asPair(x)._2)) // TODO - Performance improvements.
+    (
+      newMapped(x => asPair(x)._1),
+      newMapped(x => asPair(x)._2)
+    ) // TODO - Performance improvements.
 
   override def unzip3[A1, A2, A3](implicit asTriple: A => (A1, A2, A3)) =
-    (newMapped(x => asTriple(x)._1),
-     newMapped(x => asTriple(x)._2),
-     newMapped(x => asTriple(x)._3)) // TODO - Performance improvements.
+    (
+      newMapped(x => asTriple(x)._1),
+      newMapped(x => asTriple(x)._2),
+      newMapped(x => asTriple(x)._3)
+    ) // TODO - Performance improvements.
 
   override def filterNot(p: (A) => Boolean): This =
     newFiltered(a => !(p(a)))

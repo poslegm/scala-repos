@@ -11,10 +11,15 @@ import com.twitter.finagle.Service
 
 class ServerBuildertoTwitterService[Req, Rep](
     builder: ServerBuilder[
-        Req, Rep, ServerConfig.Yes, ServerConfig.Yes, ServerConfig.Yes],
+      Req,
+      Rep,
+      ServerConfig.Yes,
+      ServerConfig.Yes,
+      ServerConfig.Yes
+    ],
     service: Service[Req, Rep],
-    gracePeriod: Duration = 10.seconds)
-    extends admin.Service {
+    gracePeriod: Duration = 10.seconds
+) extends admin.Service {
   private[this] var server: Option[Server] = None
 
   def start() {

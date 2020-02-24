@@ -30,7 +30,9 @@ class StreamFileDocSpec extends AkkaSpec(UnboundedMailboxConfig) {
     //#file-source
     import akka.stream.scaladsl._
     //#file-source
-    Thread.sleep(0) // needs a statement here for valid syntax and to avoid "unused" warnings
+    Thread.sleep(
+      0
+    ) // needs a statement here for valid syntax and to avoid "unused" warnings
   }
 
   {
@@ -55,7 +57,8 @@ class StreamFileDocSpec extends AkkaSpec(UnboundedMailboxConfig) {
     FileIO
       .fromFile(file)
       .withAttributes(
-          ActorAttributes.dispatcher("custom-blocking-io-dispatcher"))
+        ActorAttributes.dispatcher("custom-blocking-io-dispatcher")
+      )
     //#custom-dispatcher-code
   }
 }

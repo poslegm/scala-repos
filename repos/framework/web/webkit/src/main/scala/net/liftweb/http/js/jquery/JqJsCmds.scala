@@ -45,8 +45,10 @@ object JqWiringSupport {
         if (first) cmd
         else {
           val sel = "jQuery('#'+" + id.encJs + ")"
-          Run(sel + ".fadeOut('fast', function() {" + cmd.toJsCmd + " " + sel +
-              ".fadeIn('fast');})")
+          Run(
+            sel + ".fadeOut('fast', function() {" + cmd.toJsCmd + " " + sel +
+              ".fadeIn('fast');})"
+          )
         }
       }
   }
@@ -60,8 +62,10 @@ object JqWiringSupport {
         if (first) cmd
         else {
           val sel = "jQuery('#'+" + id.encJs + ")"
-          Run(sel + ".hide(); " + cmd.toJsCmd + " " + sel +
-              ".slideDown('fast')")
+          Run(
+            sel + ".hide(); " + cmd.toJsCmd + " " + sel +
+              ".slideDown('fast')"
+          )
         }
       }
   }
@@ -86,7 +90,9 @@ object JqWiringSupport {
     * DOM with the deltas between the old list and the new list.
     */
   def calculateDeltas[T](oldList: Seq[T], newList: Seq[T], id: String)(
-      calcId: T => String, calcNodeSeq: T => NodeSeq): JsCmd =
+      calcId: T => String,
+      calcNodeSeq: T => NodeSeq
+  ): JsCmd =
     calculateDeltas[T](Full(oldList), newList, id)(calcId, calcNodeSeq)
 
   /**
@@ -104,7 +110,9 @@ object JqWiringSupport {
     * the DOM represents the new List
     */
   def calculateDeltas[T](oldList: Box[Seq[T]], newList: Seq[T], id: String)(
-      calcId: T => String, calcNodeSeq: T => NodeSeq): JsCmd = {
+      calcId: T => String,
+      calcNodeSeq: T => NodeSeq
+  ): JsCmd = {
     Helpers.delta(oldList, newList) {
       case RemoveDelta(ci) =>
         new JsCmd {
@@ -170,7 +178,7 @@ object JqJE {
     * Calls the jQuery attr function with the given key.
     *
     * Used to get the value of the given attribute.
-    * 
+    *
     * See http://api.jquery.com/attr/ .
     */
   case class JqGetAttr(key: String) extends JsExp with JsMember {
@@ -207,10 +215,12 @@ object JqJE {
     */
   case class JqKeypress(what: (Char, JsCmd)*) extends JsExp with JsMember {
     override def toJsCmd =
-      "keypress(function(e) {" + what.map {
-        case (chr, cmd) =>
-          "if (e.which == " + chr.toInt + ") {" + cmd.toJsCmd + "}"
-      }.mkString(" else \n") + "})"
+      "keypress(function(e) {" + what
+        .map {
+          case (chr, cmd) =>
+            "if (e.which == " + chr.toInt + ") {" + cmd.toJsCmd + "}"
+        }
+        .mkString(" else \n") + "})"
   }
 
   /**
@@ -240,9 +250,7 @@ object JqJE {
     */
   case class JqAppend(content: NodeSeq) extends JsExp with JsMember {
     override val toJsCmd =
-      "append(" + fixHtmlFunc("inline", content) { a =>
-        a
-      } + ")"
+      "append(" + fixHtmlFunc("inline", content) { a => a } + ")"
   }
 
   /**
@@ -265,9 +273,7 @@ object JqJE {
     */
   case class JqAppendTo(content: NodeSeq) extends JsExp with JsMember {
     override val toJsCmd =
-      "appendTo(" + fixHtmlFunc("inline", content) { str =>
-        str
-      } + ")"
+      "appendTo(" + fixHtmlFunc("inline", content) { str => str } + ")"
   }
 
   /**
@@ -279,9 +285,7 @@ object JqJE {
     */
   case class JqPrepend(content: NodeSeq) extends JsExp with JsMember {
     override val toJsCmd =
-      "prepend(" + fixHtmlFunc("inline", content) { str =>
-        str
-      } + ")"
+      "prepend(" + fixHtmlFunc("inline", content) { str => str } + ")"
   }
 
   /**
@@ -293,9 +297,7 @@ object JqJE {
     */
   case class JqPrependTo(content: NodeSeq) extends JsExp with JsMember {
     override val toJsCmd =
-      "prependTo(" + fixHtmlFunc("inline", content) { str =>
-        str
-      } + ")"
+      "prependTo(" + fixHtmlFunc("inline", content) { str => str } + ")"
   }
 
   /**
@@ -320,9 +322,7 @@ object JqJE {
     */
   case class JqEmptyAfter(content: NodeSeq) extends JsExp with JsMember {
     override val toJsCmd =
-      "empty().after(" + fixHtmlFunc("inline", content) { str =>
-        str
-      } + ")"
+      "empty().after(" + fixHtmlFunc("inline", content) { str => str } + ")"
   }
 
   /**
@@ -536,10 +536,11 @@ object JqJsCmds {
     * @param time the duration of the effect.
     */
   class Show(val uid: String, val time: Box[TimeSpan])
-      extends JsCmd with HasTime {
+      extends JsCmd
+      with HasTime {
     def toJsCmd =
       "try{jQuery(" + ("#" + uid).encJs + ").show(" + timeStr +
-      ");} catch (e) {}"
+        ");} catch (e) {}"
   }
 
   /**
@@ -567,21 +568,27 @@ object JqJsCmds {
     * Hide an element identified by uid and the animation will last @time
     */
   class Hide(val uid: String, val time: Box[TimeSpan])
-      extends JsCmd with HasTime {
+      extends JsCmd
+      with HasTime {
     def toJsCmd =
       "try{jQuery(" + ("#" + uid).encJs + ").hide(" + timeStr +
-      ");} catch (e) {}"
+        ");} catch (e) {}"
   }
 
   /**
     * Show a message msg in the element with id where for duration milliseconds and fade out in fadeout milliseconds
     */
   case class DisplayMessage(
-      where: String, msg: NodeSeq, duration: TimeSpan, fadeTime: TimeSpan)
-      extends JsCmd {
+      where: String,
+      msg: NodeSeq,
+      duration: TimeSpan,
+      fadeTime: TimeSpan
+  ) extends JsCmd {
     def toJsCmd =
       (Show(where) & JqSetHtml(where, msg) & After(
-              duration, Hide(where, fadeTime))).toJsCmd
+        duration,
+        Hide(where, fadeTime)
+      )).toJsCmd
   }
 
   /**
@@ -603,10 +610,11 @@ object JqJsCmds {
   case class FadeOut(id: String, duration: TimeSpan, fadeTime: TimeSpan)
       extends JsCmd {
     def toJsCmd =
-      (After(duration,
-             JqJE.JqId(id) ~>
-             (new JsRaw("fadeOut(" + fadeTime.millis + ")")
-                 with JsMember))).toJsCmd
+      (After(
+        duration,
+        JqJE.JqId(id) ~>
+          (new JsRaw("fadeOut(" + fadeTime.millis + ")") with JsMember)
+      )).toJsCmd
   }
 
   /**
@@ -629,10 +637,11 @@ object JqJsCmds {
   case class FadeIn(id: String, duration: TimeSpan, fadeTime: TimeSpan)
       extends JsCmd {
     def toJsCmd =
-      (After(duration,
-             JqJE.JqId(id) ~>
-             (new JsRaw("fadeIn(" + fadeTime.millis + ")")
-                 with JsMember))).toJsCmd
+      (After(
+        duration,
+        JqJE.JqId(id) ~>
+          (new JsRaw("fadeIn(" + fadeTime.millis + ")") with JsMember)
+      )).toJsCmd
   }
 
   /**
@@ -663,7 +672,7 @@ object JqJsCmds {
     /*
     private def contentAsJsStr = {
     val w = new java.io.StringWriter
-    
+
     S.htmlProperties.
     htmlWriter(Group(S.session.
                      map(s =>
@@ -677,7 +686,7 @@ object JqJsCmds {
 
     val toJsCmd = fixHtmlCmdFunc("inline", html) { str =>
       "jQuery.blockUI({ message: " + str +
-      (css.map(",  css: " + _.toJsCmd + " ").openOr("")) + "});"
+        (css.map(",  css: " + _.toJsCmd + " ").openOr("")) + "});"
     }
   }
 

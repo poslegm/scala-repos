@@ -25,12 +25,11 @@ import sbt.testing._
 import TaskDefSerializers._
 import ComUtils.LoopHandler
 
-final class ScalaJSRunner private[testadapter](
+final class ScalaJSRunner private[testadapter] (
     framework: ScalaJSFramework,
     val args: Array[String],
     val remoteArgs: Array[String]
-)
-    extends Runner {
+) extends Runner {
 
   // State and simple vals
 
@@ -115,7 +114,8 @@ final class ScalaJSRunner private[testadapter](
 
   /** A handler for messages sent from the slave to the master */
   private[testadapter] def msgHandler(
-      slave: ComJSRunner): LoopHandler[Nothing] = {
+      slave: ComJSRunner
+  ): LoopHandler[Nothing] = {
     case ("msg", msg) =>
       val optReply = synchronized {
         master.send(s"msg:$msg")
@@ -154,18 +154,17 @@ final class ScalaJSRunner private[testadapter](
     val slaves = this.slaves.values.toList // .toList to make it strict
 
     // First launch the stopping sequence on all slaves
-    val stopMessagesSent = for (slave <- slaves) yield
-      Try {
-        slave.send("stopSlave")
-      }
+    val stopMessagesSent = for (slave <- slaves) yield Try {
+      slave.send("stopSlave")
+    }
 
     // Then process all their messages and close them
-    val slavesClosed = for (slave <- slaves) yield
-      Try {
-        ComUtils.receiveLoop(slave, deadline)(
-            msgHandler(slave) orElse ComUtils.doneHandler)
-        slave.close()
-      }
+    val slavesClosed = for (slave <- slaves) yield Try {
+      ComUtils.receiveLoop(slave, deadline)(
+        msgHandler(slave) orElse ComUtils.doneHandler
+      )
+      slave.close()
+    }
 
     // Return the first failed of all these Try's
     (stopMessagesSent ++ slavesClosed) collectFirst {

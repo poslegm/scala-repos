@@ -29,8 +29,10 @@ object MatMath {
     * @param m1 Left hand matrix operand
     * @param m2 Right hand matrix operand
     */
-  def mult[A, B](m1: Mat[A], m2: Mat[B])(
-      implicit evA: NUM[A], evB: NUM[B]): Mat[Double] = {
+  def mult[A, B](
+      m1: Mat[A],
+      m2: Mat[B]
+  )(implicit evA: NUM[A], evB: NUM[B]): Mat[Double] = {
     import org.ejml.data.DenseMatrix64F
     import org.ejml.ops.CommonOps
 
@@ -59,7 +61,8 @@ object MatMath {
 
     if (numRows < 2 || numCols < 2)
       throw new IllegalArgumentException(
-          "Matrix dimension must be at least [2 x 2]")
+        "Matrix dimension must be at least [2 x 2]"
+      )
 
     val input = mat.transpose.toArray.clone()
     val output = Array.ofDim[Double](numCols * numCols)
@@ -137,11 +140,13 @@ object MatMath {
   // ixB    : starting index of vector b
   // n      : length of vector
   // corr   : do correlation computation
-  private def covariance(values: Array[Double],
-                         ixA: Int,
-                         ixB: Int,
-                         n: Int,
-                         corr: Boolean = false): Double = {
+  private def covariance(
+      values: Array[Double],
+      ixA: Int,
+      ixB: Int,
+      n: Int,
+      corr: Boolean = false
+  ): Double = {
     var va = 0.0
     var vb = 0.0
 
@@ -174,7 +179,11 @@ object MatMath {
     * effects (destructive to out matrix)
     */
   private[saddle] def blockTranspose[@spec(Int, Long, Double) S](
-      inR: Int, inC: Int, in: Array[S], out: Array[S]) {
+      inR: Int,
+      inC: Int,
+      in: Array[S],
+      out: Array[S]
+  ) {
     val XOVER = 60
 
     var r = 0
@@ -208,8 +217,10 @@ object MatMath {
 
   /** Efficient square matrix transpose (destructive)
     */
-  private[saddle] def squareTranspose[@spec(Int, Long, Double) S : ST](
-      sz: Int, out: Array[S]) {
+  private[saddle] def squareTranspose[@spec(Int, Long, Double) S: ST](
+      sz: Int,
+      out: Array[S]
+  ) {
     val csz = sz
     val rsz = sz
 

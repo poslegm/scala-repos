@@ -23,7 +23,11 @@ private[hive] object ReflectionUtils {
   }
 
   def setAncestorField(
-      obj: AnyRef, level: Int, fieldName: String, fieldValue: AnyRef) {
+      obj: AnyRef,
+      level: Int,
+      fieldName: String,
+      fieldValue: AnyRef
+  ) {
     val ancestor = Iterator
       .iterate[Class[_]](obj.getClass)(_.getSuperclass)
       .drop(level)
@@ -47,16 +51,20 @@ private[hive] object ReflectionUtils {
     field.get(clazz).asInstanceOf[T]
   }
 
-  def invokeStatic(clazz: Class[_],
-                   methodName: String,
-                   args: (Class[_], AnyRef)*): AnyRef = {
+  def invokeStatic(
+      clazz: Class[_],
+      methodName: String,
+      args: (Class[_], AnyRef)*
+  ): AnyRef = {
     invoke(clazz, null, methodName, args: _*)
   }
 
-  def invoke(clazz: Class[_],
-             obj: AnyRef,
-             methodName: String,
-             args: (Class[_], AnyRef)*): AnyRef = {
+  def invoke(
+      clazz: Class[_],
+      obj: AnyRef,
+      methodName: String,
+      args: (Class[_], AnyRef)*
+  ): AnyRef = {
 
     val (types, values) = args.unzip
     val method = clazz.getDeclaredMethod(methodName, types: _*)

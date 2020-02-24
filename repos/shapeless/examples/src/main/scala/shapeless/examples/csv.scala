@@ -70,8 +70,9 @@ object CSVConverter {
     def to(i: Int): String = i.toString
   }
 
-  def listCsvLinesConverter[A](l: List[String])(
-      implicit ec: CSVConverter[A]): Try[List[A]] = l match {
+  def listCsvLinesConverter[A](
+      l: List[String]
+  )(implicit ec: CSVConverter[A]): Try[List[A]] = l match {
     case Nil => Success(Nil)
     case Cons(s, ss) =>
       for {
@@ -81,7 +82,8 @@ object CSVConverter {
   }
 
   implicit def listCsvConverter[A](
-      implicit ec: CSVConverter[A]): CSVConverter[List[A]] =
+      implicit ec: CSVConverter[A]
+  ): CSVConverter[List[A]] =
     new CSVConverter[List[A]] {
       def from(s: String): Try[List[A]] =
         listCsvLinesConverter(s.split("\n").toList)(ec)
@@ -94,14 +96,15 @@ object CSVConverter {
     new CSVConverter[HNil] {
       def from(s: String): Try[HNil] = s match {
         case "" => Success(HNil)
-        case s => fail("Cannot convert '" ++ s ++ "' to HNil")
+        case s  => fail("Cannot convert '" ++ s ++ "' to HNil")
       }
       def to(n: HNil) = ""
     }
 
   implicit def deriveHCons[V, T <: HList](
       implicit scv: Lazy[CSVConverter[V]],
-      sct: Lazy[CSVConverter[T]]): CSVConverter[V :: T] =
+      sct: Lazy[CSVConverter[T]]
+  ): CSVConverter[V :: T] =
     new CSVConverter[V :: T] {
 
       def from(s: String): Try[V :: T] = s.span(_ != ',') match {
@@ -121,7 +124,8 @@ object CSVConverter {
 
   implicit def deriveHConsOption[V, T <: HList](
       implicit scv: Lazy[CSVConverter[V]],
-      sct: Lazy[CSVConverter[T]]): CSVConverter[Option[V] :: T] =
+      sct: Lazy[CSVConverter[T]]
+  ): CSVConverter[Option[V] :: T] =
     new CSVConverter[Option[V] :: T] {
 
       def from(s: String): Try[Option[V] :: T] = s.span(_ != ',') match {
@@ -138,7 +142,8 @@ object CSVConverter {
 
       def to(ft: Option[V] :: T): String = {
         ft.head.map(scv.value.to(_) ++ ",").getOrElse("") ++ sct.value.to(
-            ft.tail)
+          ft.tail
+        )
       }
     }
 
@@ -146,7 +151,8 @@ object CSVConverter {
 
   implicit def deriveClass[A, R](
       implicit gen: Generic.Aux[A, R],
-      conv: CSVConverter[R]): CSVConverter[A] = new CSVConverter[A] {
+      conv: CSVConverter[R]
+  ): CSVConverter[A] = new CSVConverter[A] {
 
     def from(s: String): Try[A] = conv.from(s).map(gen.from)
     def to(a: A): String = conv.to(gen.to(a))

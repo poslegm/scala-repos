@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-15 Miles Sabin 
+ * Copyright (c) 2014-15 Miles Sabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,8 @@ object union {
     type Aux[C <: Coproduct, K, V0] = Selector[C, K] { type V = V0 }
 
     implicit def tlSelector[H, T <: Coproduct, K](
-        implicit st: Selector[T, K]): Aux[H :+: T, K, st.V] =
+        implicit st: Selector[T, K]
+    ): Aux[H :+: T, K, st.V] =
       new Selector[H :+: T, K] {
         type V = st.V
         def apply(u: H :+: T): Out = u match {
@@ -51,10 +52,11 @@ object union {
 
   object Selector extends LowPrioritySelector {
     def apply[C <: Coproduct, K](
-        implicit selector: Selector[C, K]): Aux[C, K, selector.V] = selector
+        implicit selector: Selector[C, K]
+    ): Aux[C, K, selector.V] = selector
 
-    implicit def hdSelector[K, V0, T <: Coproduct]: Aux[
-        FieldType[K, V0] :+: T, K, V0] =
+    implicit def hdSelector[K, V0, T <: Coproduct]
+        : Aux[FieldType[K, V0] :+: T, K, V0] =
       new Selector[FieldType[K, V0] :+: T, K] {
         type V = V0
         def apply(u: FieldType[K, V] :+: T): Out = u match {
@@ -66,7 +68,7 @@ object union {
 
   /**
     * Type class supporting collecting the keys of a union as an `HList`.
-    * 
+    *
     * @author Miles Sabin
     */
   trait Keys[U <: Coproduct] extends DepFn0 with Serializable {
@@ -86,7 +88,8 @@ object union {
 
     implicit def coproductKeys[K, V, T <: Coproduct](
         implicit wk: Witness.Aux[K],
-        kt: Keys[T]): Aux[FieldType[K, V] :+: T, K :: kt.Out] =
+        kt: Keys[T]
+    ): Aux[FieldType[K, V] :+: T, K :: kt.Out] =
       new Keys[FieldType[K, V] :+: T] {
         type Out = K :: kt.Out
         def apply(): Out = wk.value :: kt()
@@ -95,7 +98,7 @@ object union {
 
   /**
     * Type class supporting collecting the value of a union as a `Coproduct`.
-    * 
+    *
     * @author Miles Sabin
     */
   trait Values[U <: Coproduct] extends DepFn1[U] with Serializable {
@@ -115,7 +118,8 @@ object union {
       }
 
     implicit def coproductValues[K, V, T <: Coproduct](
-        implicit vt: Values[T]): Aux[FieldType[K, V] :+: T, V :+: vt.Out] =
+        implicit vt: Values[T]
+    ): Aux[FieldType[K, V] :+: T, V :+: vt.Out] =
       new Values[FieldType[K, V] :+: T] {
         type Out = V :+: vt.Out
         def apply(l: FieldType[K, V] :+: T): Out = l match {
@@ -146,8 +150,9 @@ object union {
     }
 
     implicit def cconsFields[K, V, T <: Coproduct](
-        implicit key: Witness.Aux[K], tailFields: Fields[T])
-      : Aux[FieldType[K, V] :+: T, (K, V) :+: tailFields.Out] =
+        implicit key: Witness.Aux[K],
+        tailFields: Fields[T]
+    ): Aux[FieldType[K, V] :+: T, (K, V) :+: tailFields.Out] =
       new Fields[FieldType[K, V] :+: T] {
         type Out = (K, V) :+: tailFields.Out
         def apply(u: FieldType[K, V] :+: T) =
@@ -172,7 +177,8 @@ object union {
 
   object ToMap {
     def apply[U <: Coproduct](
-        implicit toMap: ToMap[U]): Aux[U, toMap.Key, toMap.Value] = toMap
+        implicit toMap: ToMap[U]
+    ): Aux[U, toMap.Key, toMap.Value] = toMap
 
     type Aux[U <: Coproduct, Key0, Value0] = ToMap[U] {
       type Key = Key0; type Value = Value0
@@ -189,7 +195,8 @@ object union {
       cnilToMap[Any, Nothing]
 
     implicit def csingleToMap[K, V](
-        implicit wk: Witness.Aux[K]): Aux[FieldType[K, V] :+: CNil, K, V] =
+        implicit wk: Witness.Aux[K]
+    ): Aux[FieldType[K, V] :+: CNil, K, V] =
       new ToMap[FieldType[K, V] :+: CNil] {
         type Key = K
         type Value = V
@@ -202,7 +209,8 @@ object union {
         implicit tailToMap: ToMap.Aux[TH :+: TT, TK, TV],
         keyLub: Lub[HK, TK, K],
         valueLub: Lub[HV, TV, V],
-        wk: Witness.Aux[HK]): Aux[FieldType[HK, HV] :+: TH :+: TT, K, V] =
+        wk: Witness.Aux[HK]
+    ): Aux[FieldType[HK, HV] :+: TH :+: TT, K, V] =
       new ToMap[FieldType[HK, HV] :+: TH :+: TT] {
         type Key = K
         type Value = V
@@ -227,7 +235,8 @@ object union {
 
   object MapValues {
     def apply[HF, U <: Coproduct](
-        implicit mapValues: MapValues[HF, U]): Aux[HF, U, mapValues.Out] =
+        implicit mapValues: MapValues[HF, U]
+    ): Aux[HF, U, mapValues.Out] =
       mapValues
 
     type Aux[HF, U <: Coproduct, Out0 <: Coproduct] = MapValues[HF, U] {
@@ -241,10 +250,9 @@ object union {
       }
 
     implicit def cconsMapValues[HF, K, V, T <: Coproduct](
-        implicit hc: Case1[HF, V], tailMapValues: MapValues[HF, T])
-      : Aux[HF,
-            FieldType[K, V] :+: T,
-            FieldType[K, hc.Result] :+: tailMapValues.Out] =
+        implicit hc: Case1[HF, V],
+        tailMapValues: MapValues[HF, T]
+    ): Aux[HF, FieldType[K, V] :+: T, FieldType[K, hc.Result] :+: tailMapValues.Out] =
       new MapValues[HF, FieldType[K, V] :+: T] {
         type Out = FieldType[K, hc.Result] :+: tailMapValues.Out
         def apply(c: FieldType[K, V] :+: T) = c match {

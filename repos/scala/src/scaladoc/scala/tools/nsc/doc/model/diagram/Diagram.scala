@@ -19,24 +19,26 @@ sealed abstract class Diagram {
 }
 
 case class ContentDiagram(
-    nodes: List[ /*Class*/ Node], edges: List[(Node, List[Node])])
-    extends Diagram {
+    nodes: List[ /*Class*/ Node],
+    edges: List[(Node, List[Node])]
+) extends Diagram {
   override def isContentDiagram = true
   lazy val depthInfo = new ContentDiagramDepth(this)
 }
 
 /** A class diagram */
-case class InheritanceDiagram(thisNode: ThisNode,
-                              superClasses: List[ /*Class*/ Node],
-                              subClasses: List[ /*Class*/ Node],
-                              incomingImplicits: List[ImplicitNode],
-                              outgoingImplicits: List[ImplicitNode])
-    extends Diagram {
+case class InheritanceDiagram(
+    thisNode: ThisNode,
+    superClasses: List[ /*Class*/ Node],
+    subClasses: List[ /*Class*/ Node],
+    incomingImplicits: List[ImplicitNode],
+    outgoingImplicits: List[ImplicitNode]
+) extends Diagram {
   def nodes =
     thisNode :: superClasses ::: subClasses ::: incomingImplicits ::: outgoingImplicits
   def edges =
     (thisNode -> (superClasses ::: outgoingImplicits)) ::
-    (subClasses ::: incomingImplicits).map(_ -> List(thisNode))
+      (subClasses ::: incomingImplicits).map(_ -> List(thisNode))
 
   override def isInheritanceDiagram = true
   lazy val depthInfo = new DepthInfo {
@@ -60,7 +62,7 @@ sealed abstract class Node {
     case Some(tpl) =>
       tpl match {
         case d: DocTemplateEntity => Some(d)
-        case _ => None
+        case _                    => None
       }
     case _ => None
   }
@@ -69,7 +71,8 @@ sealed abstract class Node {
   def isNormalNode = false
   def isClassNode =
     if (tpl.isDefined)
-      (tpl.get.isClass || tpl.get.qualifiedName == "scala.AnyRef") else false
+      (tpl.get.isClass || tpl.get.qualifiedName == "scala.AnyRef")
+    else false
   def isTraitNode = if (tpl.isDefined) tpl.get.isTrait else false
   def isObjectNode = if (tpl.isDefined) tpl.get.isObject else false
   def isTypeNode =
@@ -124,27 +127,27 @@ object OtherNode {
 
 /** The node for the current class */
 case class ThisNode(tpe: TypeEntity, tpl: Option[TemplateEntity])(
-    val tooltip: Option[String] = None)
-    extends Node { override def isThisNode = true }
+    val tooltip: Option[String] = None
+) extends Node { override def isThisNode = true }
 
 /** The usual node */
 case class NormalNode(tpe: TypeEntity, tpl: Option[TemplateEntity])(
-    val tooltip: Option[String] = None)
-    extends Node { override def isNormalNode = true }
+    val tooltip: Option[String] = None
+) extends Node { override def isNormalNode = true }
 
 /** A class or trait the thisnode can be converted to by an implicit conversion
   *  TODO: I think it makes more sense to use the tpe links to templates instead of the TemplateEntity for implicit nodes
   *  since some implicit conversions convert the class to complex types that cannot be represented as a single template
   */
 case class ImplicitNode(tpe: TypeEntity, tpl: Option[TemplateEntity])(
-    val tooltip: Option[String] = None)
-    extends Node { override def isImplicitNode = true }
+    val tooltip: Option[String] = None
+) extends Node { override def isImplicitNode = true }
 
 /** An outside node is shown in packages when a class from a different package makes it to the package diagram due to
   * its relation to a class in the template (see @contentDiagram hideInheritedNodes annotation) */
 case class OutsideNode(tpe: TypeEntity, tpl: Option[TemplateEntity])(
-    val tooltip: Option[String] = None)
-    extends Node { override def isOutsideNode = true }
+    val tooltip: Option[String] = None
+) extends Node { override def isOutsideNode = true }
 
 // Computing and offering node depth information
 class ContentDiagramDepth(pack: ContentDiagram) extends DepthInfo {

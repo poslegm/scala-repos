@@ -36,8 +36,10 @@ final class SparseArray[@specialized(Double, Int, Float, Long) V](
     var data: Array[V],
     private var used: Int,
     val size: Int,
-    val default: V)
-    extends ArrayLike[V] with Storage[V] with Serializable {
+    val default: V
+) extends ArrayLike[V]
+    with Storage[V]
+    with Serializable {
 
   def this(size: Int, default: V)(implicit manElem: ClassTag[V]) = {
     this(Array.empty, Array.empty, 0, size, default)
@@ -88,7 +90,7 @@ final class SparseArray[@specialized(Double, Int, Float, Long) V](
     * value, the result may be an efficiently dense (or almost dense) paired
     * array.
     */
-  def map[B : ClassTag : Zero](f: V => B): SparseArray[B] = {
+  def map[B: ClassTag: Zero](f: V => B): SparseArray[B] = {
     val newZero = implicitly[Zero[B]].zero
     if (used <= length && f(default) == newZero) {
       // some default values but f(default) is still default
@@ -159,7 +161,7 @@ final class SparseArray[@specialized(Double, Int, Float, Long) V](
       // were filtered ...
       var ii = used - 1
       while (ii >= 0 && index(ii) > newIndex(o) &&
-      index(ii) == newLength - 1) {
+             index(ii) == newLength - 1) {
         ii -= 1
         newLength -= 1
       }
@@ -169,11 +171,13 @@ final class SparseArray[@specialized(Double, Int, Float, Long) V](
       // setting each position in newIndex consecutively to forget missing
       // values
       val newLength = o
-      new SparseArray[V](Array.range(0, newLength),
-                         newData.take(newLength),
-                         newLength,
-                         newLength,
-                         default)
+      new SparseArray[V](
+        Array.range(0, newLength),
+        newData.take(newLength),
+        newLength,
+        newLength,
+        default
+      )
     }
   }
 
@@ -197,7 +201,8 @@ final class SparseArray[@specialized(Double, Int, Float, Long) V](
   protected final def findOffset(i: Int): Int = {
     if (i < 0 || i >= size)
       throw new IndexOutOfBoundsException(
-          "Index " + i + " out of bounds [0," + used + ")")
+        "Index " + i + " out of bounds [0," + used + ")"
+      )
 
     if (used == 0) {
       // empty list do nothing
@@ -317,11 +322,14 @@ final class SparseArray[@specialized(Double, Int, Float, Long) V](
       if (used > data.length) {
         // need to grow array
         val newLength = {
-          if (data.length == 0) { 4 } else if (data.length < 0x0400) {
+          if (data.length == 0) { 4 }
+          else if (data.length < 0x0400) {
             data.length * 2
-          } else if (data.length < 0x0800) { data.length + 0x0400 } else if (data.length < 0x1000) {
+          } else if (data.length < 0x0800) { data.length + 0x0400 }
+          else if (data.length < 0x1000) {
             data.length + 0x0800
-          } else if (data.length < 0x2000) { data.length + 0x1000 } else if (data.length < 0x4000) {
+          } else if (data.length < 0x2000) { data.length + 0x1000 }
+          else if (data.length < 0x4000) {
             data.length + 0x2000
           } else { data.length + 0x4000 }
         }
@@ -332,9 +340,19 @@ final class SparseArray[@specialized(Double, Int, Float, Long) V](
 
         // copy existing data into new arrays
         System.arraycopy(
-            index, insertPos, newIndex, insertPos + 1, used - insertPos - 1)
+          index,
+          insertPos,
+          newIndex,
+          insertPos + 1,
+          used - insertPos - 1
+        )
         System.arraycopy(
-            data, insertPos, newData, insertPos + 1, used - insertPos - 1)
+          data,
+          insertPos,
+          newData,
+          insertPos + 1,
+          used - insertPos - 1
+        )
 
         // update pointers
         index = newIndex
@@ -342,9 +360,19 @@ final class SparseArray[@specialized(Double, Int, Float, Long) V](
       } else if (used - insertPos > 1) {
         // need to make room for new element mid-array
         System.arraycopy(
-            index, insertPos, index, insertPos + 1, used - insertPos - 1)
+          index,
+          insertPos,
+          index,
+          insertPos + 1,
+          used - insertPos - 1
+        )
         System.arraycopy(
-            data, insertPos, data, insertPos + 1, used - insertPos - 1)
+          data,
+          insertPos,
+          data,
+          insertPos + 1,
+          used - insertPos - 1
+        )
       }
 
       // assign new value
@@ -412,28 +440,33 @@ final class SparseArray[@specialized(Double, Int, Float, Long) V](
     reserve(used)
   }
 
-  def concatenate(that: SparseArray[V])(
-      implicit man: ClassTag[V]): SparseArray[V] = {
+  def concatenate(
+      that: SparseArray[V]
+  )(implicit man: ClassTag[V]): SparseArray[V] = {
     if (this.default != that.default)
       throw new IllegalArgumentException("default values should be equal")
-    new SparseArray((this.index.slice(0, this.used) union that.index
-                          .slice(0, that.used)
-                          .map(_ + this.size)).toArray,
-                    (this.data.slice(0, this.used) union that.data.slice(
-                            0, that.used)).toArray,
-                    this.used + that.used,
-                    this.size + that.size,
-                    this.default)
+    new SparseArray(
+      (this.index.slice(0, this.used) union that.index
+        .slice(0, that.used)
+        .map(_ + this.size)).toArray,
+      (this.data.slice(0, this.used) union that.data
+        .slice(0, that.used)).toArray,
+      this.used + that.used,
+      this.size + that.size,
+      this.default
+    )
   }
 }
 
 object SparseArray {
-  def apply[@specialized(Int, Float, Double) T : ClassTag : Zero](values: T*) = {
-    val rv = new SparseArray[T](Array.range(0, values.length),
-                                values.toArray,
-                                values.length,
-                                values.length,
-                                implicitly[Zero[T]].zero)
+  def apply[@specialized(Int, Float, Double) T: ClassTag: Zero](values: T*) = {
+    val rv = new SparseArray[T](
+      Array.range(0, values.length),
+      values.toArray,
+      values.length,
+      values.length,
+      implicitly[Zero[T]].zero
+    )
     rv.compact()
     rv
   }
@@ -447,8 +480,9 @@ object SparseArray {
     *
     * @author dramage
     */
-  def fill[@specialized(Int, Float, Double) T : ClassTag : Zero](length: Int)(
-      value: => T): SparseArray[T] = {
+  def fill[@specialized(Int, Float, Double) T: ClassTag: Zero](
+      length: Int
+  )(value: => T): SparseArray[T] = {
     if (value != implicitly[Zero[T]].zero) {
       val rv = new SparseArray[T](size = length)
       var i = 0
@@ -462,8 +496,9 @@ object SparseArray {
     }
   }
 
-  def create[@specialized(Int, Float, Double) T : ClassTag : Zero](
-      length: Int)(values: (Int, T)*) = {
+  def create[@specialized(Int, Float, Double) T: ClassTag: Zero](
+      length: Int
+  )(values: (Int, T)*) = {
     val rv = new SparseArray[T](length)
     for ((k, v) <- values) {
       rv(k) = v
@@ -471,8 +506,9 @@ object SparseArray {
     rv
   }
 
-  def tabulate[@specialized(Int, Float, Double) T : ClassTag : Zero](
-      length: Int)(fn: (Int => T)) = {
+  def tabulate[@specialized(Int, Float, Double) T: ClassTag: Zero](
+      length: Int
+  )(fn: (Int => T)) = {
     val rv = new SparseArray[T](length)
     var i = 0
     while (i < length) {

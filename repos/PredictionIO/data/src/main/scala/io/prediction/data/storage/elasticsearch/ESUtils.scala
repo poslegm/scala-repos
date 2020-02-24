@@ -25,8 +25,9 @@ import scala.collection.mutable.ArrayBuffer
 object ESUtils {
   val scrollLife = new TimeValue(60000)
 
-  def getAll[T : Manifest](client: Client, builder: SearchRequestBuilder)(
-      implicit formats: Formats): Seq[T] = {
+  def getAll[T: Manifest](client: Client, builder: SearchRequestBuilder)(
+      implicit formats: Formats
+  ): Seq[T] = {
     val results = ArrayBuffer[T]()
     var response = builder.setScroll(scrollLife).get
     var hits = response.getHits().hits()

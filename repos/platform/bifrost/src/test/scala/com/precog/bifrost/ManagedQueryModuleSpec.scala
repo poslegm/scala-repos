@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -40,7 +40,11 @@ import akka.util.Duration
 import blueeyes.util.Clock
 import blueeyes.json._
 import blueeyes.bkka._
-import blueeyes.json.serialization.DefaultSerialization.{DateTimeExtractor => _, DateTimeDecomposer => _, _}
+import blueeyes.json.serialization.DefaultSerialization.{
+  DateTimeExtractor => _,
+  DateTimeDecomposer => _,
+  _
+}
 
 import org.specs2.mutable.Specification
 
@@ -60,7 +64,7 @@ object ManagedQueryTestSupport {
   // If we have a natural transformation from M ~> Future, then we can go
   // through Future to get to TestFuture. This will let us use completeJob
   // with a StreamT[TestFuture, ?] by using `sink` in ManagedQueryModule.
-  implicit def transformThroughFuture[M[+ _]](implicit t: M ~> Future) =
+  implicit def transformThroughFuture[M[+_]](implicit t: M ~> Future) =
     new (M ~> TestFuture) {
       def apply[A](ma: M[A]): TestFuture[A] =
         WriterT(t(ma) map (Tag(None) -> _))
@@ -69,15 +73,16 @@ object ManagedQueryTestSupport {
 
 import ManagedQueryTestSupport._
 
-class ManagedQueryModuleSpec
-    extends TestManagedQueryModule with Specification {
+class ManagedQueryModuleSpec extends TestManagedQueryModule with Specification {
   val actorSystem = ActorSystem("managedQueryModuleSpec")
   val jobActorSystem = ActorSystem("managedQueryModuleSpecJobs")
   implicit val executionContext =
     ExecutionContext.defaultExecutionContext(actorSystem)
   implicit val M: Monad[Future] with Comonad[Future] =
     new blueeyes.bkka.UnsafeFutureComonad(
-        executionContext, Duration(30, "seconds"))
+      executionContext,
+      Duration(30, "seconds")
+    )
 
   val defaultTimeout = Duration(90, TimeUnit.SECONDS)
 
@@ -85,18 +90,20 @@ class ManagedQueryModuleSpec
   val apiKey = "O.o"
 
   var ticker: ActorRef = actorSystem.actorOf(Props(new Ticker(ticks)))
-  val account = AccountDetails("test",
-                               "test@test.test",
-                               clock.now(),
-                               apiKey,
-                               Path.Root,
-                               AccountPlan.Free)
+  val account = AccountDetails(
+    "test",
+    "test@test.test",
+    clock.now(),
+    apiKey,
+    Path.Root,
+    AccountPlan.Free
+  )
 
   def dropStreamToFuture =
-    implicitly[Hoist[StreamT]].hoist[TestFuture, Future](
-        new (TestFuture ~> Future) {
-      def apply[A](fa: TestFuture[A]): Future[A] = fa.value
-    })
+    implicitly[Hoist[StreamT]]
+      .hoist[TestFuture, Future](new (TestFuture ~> Future) {
+        def apply[A](fa: TestFuture[A]): Future[A] = fa.value
+      })
 
   def waitForJobCompletion(jobId: JobId): Future[Job] = {
     import JobState._
@@ -114,20 +121,20 @@ class ManagedQueryModuleSpec
   }
 
   // Performs an incredibly intense compuation that requires numTicks ticks.
-  def execute(numTicks: Int, ticksToTimeout: Option[Int] = None)
-    : Future[(JobId, AtomicInteger, Future[Int])] = {
+  def execute(
+      numTicks: Int,
+      ticksToTimeout: Option[Int] = None
+  ): Future[(JobId, AtomicInteger, Future[Int])] = {
     val timeout =
       ticksToTimeout map { t =>
         Duration(clock.duration * t, TimeUnit.MILLISECONDS)
       }
-    val ctx = EvaluationContext(
-        apiKey, account, Path.Root, Path.Root, clock.now())
+    val ctx =
+      EvaluationContext(apiKey, account, Path.Root, Path.Root, clock.now())
 
     val result = for {
       // TODO: No idea how to work with EitherT[TestFuture, so sys.error it is]
-      executor <- executorFor(apiKey) valueOr { err =>
-        sys.error(err.toString)
-      }
+      executor <- executorFor(apiKey) valueOr { err => sys.error(err.toString) }
       result0 <- executor
         .execute(numTicks.toString, ctx, QueryOptions(timeout = timeout))
         .valueOr(err => sys.error(err.toString)) mapValue {
@@ -139,7 +146,7 @@ class ManagedQueryModuleSpec
       def count(n: Int, cs0: StreamT[Future, CharBuffer]): Future[Int] =
         cs0.uncons flatMap {
           case Some((_, cs)) => count(n + 1, cs)
-          case None => Future(n)
+          case None          => Future(n)
         }
 
       (jobId, ticks, count(0, dropStreamToFuture(result)))
@@ -159,8 +166,10 @@ class ManagedQueryModuleSpec
   }
 
   step {
-    actorSystem.scheduler.schedule(Duration(0, "milliseconds"),
-                                   Duration(clock.duration, "milliseconds")) {
+    actorSystem.scheduler.schedule(
+      Duration(0, "milliseconds"),
+      Duration(clock.duration, "milliseconds")
+    ) {
       ticker ! Tick
     }
     startup.run.copoint
@@ -271,7 +280,8 @@ class ManagedQueryModuleSpec
 
 trait TestManagedQueryModule
     extends Execution[TestFuture, StreamT[TestFuture, CharBuffer]]
-    with ManagedQueryModule with SchedulableFuturesModule {
+    with ManagedQueryModule
+    with SchedulableFuturesModule {
   self =>
 
   def actorSystem: ActorSystem
@@ -287,28 +297,34 @@ trait TestManagedQueryModule
     val clock = self.clock
   }
 
-  def executorFor(apiKey: APIKey)
-    : EitherT[TestFuture,
-              String,
-              QueryExecutor[TestFuture, StreamT[TestFuture, CharBuffer]]] = {
+  def executorFor(apiKey: APIKey): EitherT[TestFuture, String, QueryExecutor[
+    TestFuture,
+    StreamT[TestFuture, CharBuffer]
+  ]] = {
     EitherT.right {
       Applicative[TestFuture] point {
         new QueryExecutor[TestFuture, StreamT[TestFuture, CharBuffer]] {
           import UserQuery.Serialization._
 
           def execute(
-              query: String, ctx: EvaluationContext, opts: QueryOptions) = {
+              query: String,
+              ctx: EvaluationContext,
+              opts: QueryOptions
+          ) = {
             val userQuery =
               UserQuery(query, ctx.basePath, opts.sortOn, opts.sortOrder)
             val numTicks = query.toInt
 
-            EitherT.right[TestFuture,
-                          EvaluationError,
-                          StreamT[TestFuture, CharBuffer]] {
+            EitherT.right[TestFuture, EvaluationError, StreamT[
+              TestFuture,
+              CharBuffer
+            ]] {
               WriterT {
-                createQueryJob(ctx.apiKey,
-                               Some(userQuery.serialize),
-                               opts.timeout) map { implicit M0 =>
+                createQueryJob(
+                  ctx.apiKey,
+                  Some(userQuery.serialize),
+                  opts.timeout
+                ) map { implicit M0 =>
                   val ticks = new AtomicInteger()
                   val result =
                     StreamT.unfoldM[JobQueryTF, CharBuffer, Int](0) {

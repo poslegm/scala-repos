@@ -20,9 +20,7 @@ class C1492 {
   def foo(x: X => X) {}
 
   foo(implicit x => implicitly[X])
-  foo { implicit x =>
-    implicitly[X]
-  }
+  foo { implicit x => implicitly[X] }
 }
 
 // #1579
@@ -59,8 +57,9 @@ object Test1625 {
 }
 
 object Test2188 {
-  implicit def toJavaList[A : ClassManifest](
-      t: collection.Seq[A]): java.util.List[A] =
+  implicit def toJavaList[A: ClassManifest](
+      t: collection.Seq[A]
+  ): java.util.List[A] =
     java.util.Arrays.asList(t.toArray: _*)
 
   val x: java.util.List[String] = List("foo")

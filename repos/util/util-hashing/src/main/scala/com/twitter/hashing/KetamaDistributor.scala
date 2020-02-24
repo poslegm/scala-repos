@@ -14,8 +14,7 @@ class KetamaDistributor[A](
     // clients who depend on those versions of libmemcached, we have to reproduce their result.
     // If the oldLibMemcachedVersionComplianceMode is true the behavior will be reproduced.
     oldLibMemcachedVersionComplianceMode: Boolean = false
-)
-    extends Distributor[A] {
+) extends Distributor[A] {
   private[this] val continuum = {
     val continuum = new TreeMap[Long, KetamaNode[A]]()
 
@@ -54,7 +53,7 @@ class KetamaDistributor[A](
   private def mapEntryForHash(hash: Long) = {
     // hashes are 32-bit because they are 32-bit on the libmemcached and
     // we need to maintain compatibility with libmemcached
-    val truncatedHash = hash & 0xffffffffL
+    val truncatedHash = hash & 0xFFFFFFFFL
 
     val entry = continuum.ceilingEntry(truncatedHash)
     if (entry == null) continuum.firstEntry
@@ -76,6 +75,6 @@ class KetamaDistributor[A](
     val buffer = ByteBuffer.wrap(hasher.digest)
     buffer.order(ByteOrder.LITTLE_ENDIAN)
     buffer.position(alignment << 2)
-    buffer.getInt.toLong & 0xffffffffL
+    buffer.getInt.toLong & 0xFFFFFFFFL
   }
 }

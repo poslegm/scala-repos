@@ -14,8 +14,9 @@ import scala.concurrent.duration.Duration
 import scala.util.control.NonFatal
 
 abstract class RelationalPublisherTest[P <: RelationalProfile](
-    val profile: P, timeout: Long)
-    extends PublisherVerification[Int](new TestEnvironment(timeout), 1000L)
+    val profile: P,
+    timeout: Long
+) extends PublisherVerification[Int](new TestEnvironment(timeout), 1000L)
     with TestNGSuiteLike {
   import profile.api._
 
@@ -36,9 +37,13 @@ abstract class RelationalPublisherTest[P <: RelationalProfile](
 
   @BeforeClass def setUpDB: Unit = {
     db = createDB
-    Await.result(db.run(data.schema.create >>
-                     (data ++= (1 to maxElementsFromPublisher.toInt))),
-                 Duration.Inf)
+    Await.result(
+      db.run(
+        data.schema.create >>
+          (data ++= (1 to maxElementsFromPublisher.toInt))
+      ),
+      Duration.Inf
+    )
   }
 
   @AfterClass def tearDownDB: Unit =

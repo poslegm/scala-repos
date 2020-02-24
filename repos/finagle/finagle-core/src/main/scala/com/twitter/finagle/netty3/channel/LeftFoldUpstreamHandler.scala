@@ -110,8 +110,9 @@ class LeftFoldUpstreamHandler {
 }
 
 private[channel] class LeftFoldHandlerToChannelHandler(
-    initial: LeftFoldUpstreamHandler)
-    extends SimpleChannelUpstreamHandler with Serialized {
+    initial: LeftFoldUpstreamHandler
+) extends SimpleChannelUpstreamHandler
+    with Serialized {
   private[this] var state = initial
 
   override def handleUpstream(ctx: ChannelHandlerContext, e: ChannelEvent) =
@@ -121,23 +122,28 @@ private[channel] class LeftFoldHandlerToChannelHandler(
     state = state.channelBound(ctx, e)
   }
 
-  override def channelClosed(
-      ctx: ChannelHandlerContext, e: ChannelStateEvent) {
+  override def channelClosed(ctx: ChannelHandlerContext, e: ChannelStateEvent) {
     state = state.channelClosed(ctx, e)
   }
 
   override def channelConnected(
-      ctx: ChannelHandlerContext, e: ChannelStateEvent) {
+      ctx: ChannelHandlerContext,
+      e: ChannelStateEvent
+  ) {
     state = state.channelConnected(ctx, e)
   }
 
   override def channelDisconnected(
-      ctx: ChannelHandlerContext, e: ChannelStateEvent) {
+      ctx: ChannelHandlerContext,
+      e: ChannelStateEvent
+  ) {
     state = state.channelDisconnected(ctx, e)
   }
 
   override def channelInterestChanged(
-      ctx: ChannelHandlerContext, e: ChannelStateEvent) {
+      ctx: ChannelHandlerContext,
+      e: ChannelStateEvent
+  ) {
     state = state.channelInterestChanged(ctx, e)
   }
 
@@ -146,17 +152,23 @@ private[channel] class LeftFoldHandlerToChannelHandler(
   }
 
   override def channelUnbound(
-      ctx: ChannelHandlerContext, e: ChannelStateEvent) {
+      ctx: ChannelHandlerContext,
+      e: ChannelStateEvent
+  ) {
     state = state.channelUnbound(ctx, e)
   }
 
   override def childChannelClosed(
-      ctx: ChannelHandlerContext, e: ChildChannelStateEvent) {
+      ctx: ChannelHandlerContext,
+      e: ChildChannelStateEvent
+  ) {
     state = state.childChannelClosed(ctx, e)
   }
 
   override def childChannelOpen(
-      ctx: ChannelHandlerContext, e: ChildChannelStateEvent) {
+      ctx: ChannelHandlerContext,
+      e: ChildChannelStateEvent
+  ) {
     state = state.childChannelOpen(ctx, e)
   }
 
@@ -169,7 +181,9 @@ private[channel] class LeftFoldHandlerToChannelHandler(
   }
 
   override def writeComplete(
-      ctx: ChannelHandlerContext, e: WriteCompletionEvent) {
+      ctx: ChannelHandlerContext,
+      e: WriteCompletionEvent
+  ) {
     state = state.writeComplete(ctx, e)
   }
 }

@@ -31,7 +31,12 @@ import javafx.{event => jfxe, geometry => jfxg, scene => jfxs, util => jfxu}
 
 import scala.language.implicitConversions
 import scalafx.Includes._
-import scalafx.beans.property.{BooleanProperty, DoubleProperty, ObjectProperty, ReadOnlyIntegerProperty}
+import scalafx.beans.property.{
+  BooleanProperty,
+  DoubleProperty,
+  ObjectProperty,
+  ReadOnlyIntegerProperty
+}
 import scalafx.collections.ObservableBuffer
 import scalafx.delegate.SFXDelegate
 import scalafx.event.Event
@@ -44,24 +49,28 @@ object ListView {
 
   object EditEvent {
     implicit def sfxEditEvent2jfx[T](
-        e: EditEvent[T]): jfxsc.ListView.EditEvent[T] =
+        e: EditEvent[T]
+    ): jfxsc.ListView.EditEvent[T] =
       if (e != null) e.delegate else null
   }
 
   class EditEvent[T](override val delegate: jfxsc.ListView.EditEvent[T])
-      extends Event(delegate) with SFXDelegate[jfxsc.ListView.EditEvent[T]] {
+      extends Event(delegate)
+      with SFXDelegate[jfxsc.ListView.EditEvent[T]] {
 
     /**
       * Creates a new EditEvent instance to represent an edit event. This event is used for
       * ListView.EDIT_START_EVENT, ListView.EDIT_COMMIT_EVENT and ListView.EDIT_CANCEL_EVENT types.
       */
-    def this(source: ListView[T],
-             eventType: jfxe.EventType[_ <: jfxsc.ListView.EditEvent[T]],
-             newValue: T,
-             editIndex: Int) =
+    def this(
+        source: ListView[T],
+        eventType: jfxe.EventType[_ <: jfxsc.ListView.EditEvent[T]],
+        newValue: T,
+        editIndex: Int
+    ) =
       this(
-          new jfxsc.ListView.EditEvent[T](
-              source, eventType, newValue, editIndex))
+        new jfxsc.ListView.EditEvent[T](source, eventType, newValue, editIndex)
+      )
 
     /**
       * Returns the ListView upon which the edit took place.
@@ -107,8 +116,9 @@ object ListView {
   * @constructor Creates a default ListView which will display contents stacked vertically.
   */
 class ListView[T](
-    override val delegate: jfxsc.ListView[T] = new jfxsc.ListView[T])
-    extends Control(delegate) with SFXDelegate[jfxsc.ListView[T]] {
+    override val delegate: jfxsc.ListView[T] = new jfxsc.ListView[T]
+) extends Control(delegate)
+    with SFXDelegate[jfxsc.ListView[T]] {
 
   /**
     * Creates a default ListView which will stack the contents retrieved from the provided
@@ -125,7 +135,7 @@ class ListView[T](
     this(new jfxsc.ListView[T](ObservableBuffer(items)))
 
   /**
-    * Setting a custom cell factory has the effect of deferring all cell creation, allowing for 
+    * Setting a custom cell factory has the effect of deferring all cell creation, allowing for
     * total customization of the cell.
     */
   def cellFactory = delegate.cellFactoryProperty
@@ -237,13 +247,15 @@ class ListView[T](
   /**
     * Called when there's a request to scroll an index into view using scrollTo(int) or #scrollTo(S)
     */
-  def onScrollTo: ObjectProperty[
-      jfxe.EventHandler[jfxsc.ScrollToEvent[Integer]]] =
+  def onScrollTo
+      : ObjectProperty[jfxe.EventHandler[jfxsc.ScrollToEvent[Integer]]] =
     delegate.onScrollToProperty
   def onScrollTo_=(v: jfxe.EventHandler[jfxsc.ScrollToEvent[Integer]]) {
     ObjectProperty
       .fillProperty[jfxe.EventHandler[jfxsc.ScrollToEvent[Integer]]](
-        onScrollTo, v)
+        onScrollTo,
+        v
+      )
   }
 
   /**

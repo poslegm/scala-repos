@@ -2,7 +2,11 @@ package com.twitter.finagle.mux
 
 import com.twitter.conversions.time._
 import com.twitter.finagle.Status
-import com.twitter.finagle.stats.{MultiCategorizingExceptionStatsHandler, NullStatsReceiver, StatsReceiver}
+import com.twitter.finagle.stats.{
+  MultiCategorizingExceptionStatsHandler,
+  NullStatsReceiver,
+  StatsReceiver
+}
 import com.twitter.finagle.util._
 import com.twitter.util._
 import java.util.concurrent.atomic.AtomicReference
@@ -43,8 +47,8 @@ private class ThresholdFailureDetector(
     closeTimeout: Duration = 4.seconds,
     nanoTime: () => Long = System.nanoTime,
     statsReceiver: StatsReceiver = NullStatsReceiver,
-    implicit val timer: Timer = DefaultTimer.twitter)
-    extends FailureDetector {
+    implicit val timer: Timer = DefaultTimer.twitter
+) extends FailureDetector {
   require(windowSize > 0)
   private[this] val failureHandler =
     new MultiCategorizingExceptionStatsHandler()
@@ -60,13 +64,14 @@ private class ThresholdFailureDetector(
 
   // start as busy, and become open after receiving the first ping response
   private[this] val state: AtomicReference[Status] = new AtomicReference(
-      Status.Busy)
+    Status.Busy
+  )
 
   private[this] val onBusyTimeout: Throwable => Unit = x =>
     x match {
       case _: TimeoutException => markBusy()
-      case _ =>
-  }
+      case _                   =>
+    }
 
   def status: Status = state.get
 
