@@ -109,7 +109,7 @@ object Stats {
   ): Map[String, Long] = {
     val counts = for {
       counter <- cascadingStats.getCountersFor(ScaldingGroup).asScala
-      value   = getCounterValue(counter)
+      value    = getCounterValue(counter)
     } yield (counter, value)
     counts.toMap
   }

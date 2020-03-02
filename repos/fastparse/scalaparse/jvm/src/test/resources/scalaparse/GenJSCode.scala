@@ -503,7 +503,7 @@ abstract class GenJSCode
         sym: Symbol
     )(implicit pos: Position): List[js.Ident] = {
       for {
-        parent  <- sym.info.parents
+        parent <- sym.info.parents
         typeSym = parent.typeSymbol
         _       = assert(typeSym != NoSymbol, "parent needs symbol")
         if (typeSym.isInterface)
@@ -1739,7 +1739,7 @@ abstract class GenJSCode
       val quadruplets = {
         for {
           (formalArgSym, actualArg) <- formalArgs zip actualArgs
-          formalArg                 = encodeLocalSym(formalArgSym) if (actualArg match {
+          formalArg                  = encodeLocalSym(formalArgSym) if (actualArg match {
             case js.VarRef(`formalArg`) => false
             case _                      => true
           })

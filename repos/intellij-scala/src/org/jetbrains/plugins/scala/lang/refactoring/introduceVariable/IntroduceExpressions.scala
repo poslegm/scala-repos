@@ -279,8 +279,8 @@ trait IntroduceExpressions {
       }
       for {
         //check that first occurence is after first generator
-        forSt     <- result
-        enums     <- forSt.enumerators
+        forSt    <- result
+        enums    <- forSt.enumerators
         generator = enums.generators.head
         if firstOccurenceOffset > generator.getTextRange.getEndOffset
       } yield forSt

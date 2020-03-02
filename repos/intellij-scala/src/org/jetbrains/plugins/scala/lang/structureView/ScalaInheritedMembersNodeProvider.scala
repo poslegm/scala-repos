@@ -78,8 +78,8 @@ class ScalaInheritedMembersNodeProvider
           val types = clazz.allTypeAliases
           for {
             typex <- types
-            t     = typex._1 if t.isInstanceOf[ScTypeAlias]
-            alias = t.asInstanceOf[ScTypeAlias]
+            t      = typex._1 if t.isInstanceOf[ScTypeAlias]
+            alias  = t.asInstanceOf[ScTypeAlias]
             if alias.containingClass != clazz
           } children.add(new ScalaTypeAliasStructureViewElement(alias, true))
 

@@ -33,22 +33,22 @@ object Dependencies {
     )
   }
 
-  val scalaz      = "org.scalaz"               %% "scalaz-core"             % "7.1.7"
-  val scalalib    = "com.github.ornicar"       %% "scalalib"                % "5.4"
+  val scalaz      = "org.scalaz"              %% "scalaz-core"              % "7.1.7"
+  val scalalib    = "com.github.ornicar"      %% "scalalib"                 % "5.4"
   val config      = "com.typesafe"             % "config"                   % "1.3.0"
   val apache      = "org.apache.commons"       % "commons-lang3"            % "3.4"
   val guava       = "com.google.guava"         % "guava"                    % "19.0"
   val findbugs    = "com.google.code.findbugs" % "jsr305"                   % "3.0.1"
-  val hasher      = "com.roundeights"          %% "hasher"                  % "1.2.0"
+  val hasher      = "com.roundeights"         %% "hasher"                   % "1.2.0"
   val jgit        = "org.eclipse.jgit"         % "org.eclipse.jgit"         % "3.2.0.201312181205-r"
   val jodaTime    = "joda-time"                % "joda-time"                % "2.9.2"
   val RM          = "org.reactivemongo"        % "reactivemongo_2.11"       % "0.11.9.1-LILA"
   val PRM         = "org.reactivemongo"        % "play2-reactivemongo_2.11" % "0.11.9"
-  val maxmind     = "com.sanoma.cda"           %% "maxmind-geoip2-scala"    % "1.2.3-THIB"
-  val prismic     = "io.prismic"               %% "scala-kit"               % "1.2.11-THIB"
+  val maxmind     = "com.sanoma.cda"          %% "maxmind-geoip2-scala"     % "1.2.3-THIB"
+  val prismic     = "io.prismic"              %% "scala-kit"                % "1.2.11-THIB"
   val pushy       = "com.relayrides"           % "pushy"                    % "0.4.3"
-  val java8compat = "org.scala-lang.modules"   %% "scala-java8-compat"      % "0.7.0"
-  val semver      = "com.gilt"                 %% "gfc-semver"              % "0.0.2-9-g11173e1"
+  val java8compat = "org.scala-lang.modules"  %% "scala-java8-compat"       % "0.7.0"
+  val semver      = "com.gilt"                %% "gfc-semver"               % "0.0.2-9-g11173e1"
 
   object play {
     val version = "2.4.6"

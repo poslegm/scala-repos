@@ -82,7 +82,7 @@ trait ScTemplateDefinition extends ScNamedElement with PsiClass {
       tp match {
         case Some(tp1) =>
           (for (te <- tp1.allTypeElements;
-                t  = te.getType(TypingContext.empty).getOrAny;
+                t   = te.getType(TypingContext.empty).getOrAny;
                 asPsi = ScType.toPsi(
                   t,
                   getProject,

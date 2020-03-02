@@ -618,9 +618,9 @@ object TestHelpers {
 
     for {
       it <- rp.capture;
-      _  = println("Captured: " + it);
-      _  = println("Does match: " + p2.matcher(it).find);
-      q  = new REMatcher(it, p2);
+      _   = println("Captured: " + it);
+      _   = println("Does match: " + p2.matcher(it).find);
+      q   = new REMatcher(it, p2);
       em <- q.eachFound
     } yield {
       (em(1), em(2))

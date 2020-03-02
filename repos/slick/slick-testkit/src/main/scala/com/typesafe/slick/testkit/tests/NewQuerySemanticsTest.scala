@@ -547,10 +547,10 @@ class NewQuerySemanticsTest extends AsyncTest[RelationalTestDB] {
     val tableC = TableQuery[TableC]
 
     val queryErr2 = for {
-      a     <- tableA
-      b     <- tableB if b.id === a.id
+      a    <- tableA
+      b    <- tableB if b.id === a.id
       start = a.id + 1
-      c     <- tableC if c.start <= start
+      c    <- tableC if c.start <= start
     } yield (b, c)
 
     (tableA.schema ++ tableB.schema ++ tableC.schema).create >> queryErr2.result
@@ -568,7 +568,7 @@ class NewQuerySemanticsTest extends AsyncTest[RelationalTestDB] {
       _ <- as += 42
 
       q0 = as.filter(_.id === 42.bind).length
-      _  <- q0.result.named("q0").map(_ shouldBe 1)
+      _ <- q0.result.named("q0").map(_ shouldBe 1)
 
       q1 = Compiled { (n: Rep[Int]) =>
         as.filter(_.id === n).map(a => as.length)
@@ -576,7 +576,7 @@ class NewQuerySemanticsTest extends AsyncTest[RelationalTestDB] {
       _ <- q1(42).result.named("q1(42)").map(_ shouldBe List(1))
 
       q2 = as.filter(_.id in as.sortBy(_.id).map(_.id))
-      _  <- q2.result.named("q2").map(_ shouldBe Vector(42))
+      _ <- q2.result.named("q2").map(_ shouldBe Vector(42))
     } yield ()
   }
 
@@ -599,7 +599,7 @@ class NewQuerySemanticsTest extends AsyncTest[RelationalTestDB] {
           )
 
       q1 = as.map(identity).filter(_.b === "b3")
-      _  <- q1.result.named("q1").map(r1 => r1.toSet shouldBe Set((3, "a3")))
+      _ <- q1.result.named("q1").map(r1 => r1.toSet shouldBe Set((3, "a3")))
 
       q2a = as.sortBy(_.a) join as on (_.b === _.b)
       q2 = for {

@@ -60,9 +60,9 @@ class SourceResolver(
     for {
       srcJarFile <- srcJars.toList
       // interestingly, this is able to handle zip files
-      srcJar   = vfs.vjar(srcJarFile)
+      srcJar    = vfs.vjar(srcJarFile)
       srcEntry <- scan(srcJar)
-      inferred = infer(srcJar, srcEntry)
+      inferred  = infer(srcJar, srcEntry)
       // continue to hold a reference to source jars
       // so that we can access their contents elsewhere.
       // this does mean we have a file handler, sorry.
@@ -74,7 +74,7 @@ class SourceResolver(
     for {
       (_, module) <- config.modules.toList
       root        <- module.sourceRoots
-      dir         = vfs.vfile(root)
+      dir          = vfs.vfile(root)
       file        <- scan(dir)
     } yield (infer(dir, file), file)
   }.toMultiMapSet

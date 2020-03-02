@@ -392,7 +392,7 @@ class ShardServiceSpec extends TestShardService {
                                                                          simpleQuery
                                                                        )
         jobId = extractJobId(res)
-        job   <- jobManager.findJob(jobId)
+        job  <- jobManager.findJob(jobId)
       } yield job
 
       res.copoint must beLike {
@@ -405,7 +405,7 @@ class ShardServiceSpec extends TestShardService {
                                                                          simpleQuery
                                                                        )
         jobId = extractJobId(res)
-        _     <- waitForJobCompletion(jobId)
+        _    <- waitForJobCompletion(jobId)
         HttpResponse(HttpStatus(OK, _), _, Some(Right(data)), _) <- asyncQueryResults(
                                                                      jobId
                                                                    )

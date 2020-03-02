@@ -12,16 +12,16 @@ class CountTest extends AsyncTest[RelationalTestDB] {
     }
     val testTable = TableQuery(new TestTable(_))
     for {
-      _  <- testTable.schema.create
-      _  <- testTable ++= Seq(1, 2, 3, 4, 5)
+      _ <- testTable.schema.create
+      _ <- testTable ++= Seq(1, 2, 3, 4, 5)
       q1 = Query(testTable.length)
-      _  <- mark("q1", q1.result).map(_ shouldBe Vector(5))
+      _ <- mark("q1", q1.result).map(_ shouldBe Vector(5))
       q2 = testTable.length
-      _  <- mark("q2", q2.result).map(_ shouldBe 5)
+      _ <- mark("q2", q2.result).map(_ shouldBe 5)
       q3 = testTable.filter(_.id < 3).length
-      _  <- mark("q3", q3.result).map(_ shouldBe 2)
+      _ <- mark("q3", q3.result).map(_ shouldBe 2)
       q4 = testTable.take(2).length
-      _  <- mark("q4", q4.result).map(_ shouldBe 2)
+      _ <- mark("q4", q4.result).map(_ shouldBe 2)
     } yield ()
   }
 
@@ -56,9 +56,9 @@ class CountTest extends AsyncTest[RelationalTestDB] {
         p <- posts if p.category === c.id
       } yield (c, p)
       q1 = joinedQuery.length
-      _  <- q1.result.map(_ shouldBe 2)
+      _ <- q1.result.map(_ shouldBe 2)
       q2 = Query(joinedQuery.length)
-      _  <- q2.result.map(_ shouldBe Vector(2))
+      _ <- q2.result.map(_ shouldBe Vector(2))
     } yield ()
   }
 

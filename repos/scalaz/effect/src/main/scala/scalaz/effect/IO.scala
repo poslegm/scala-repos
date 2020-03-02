@@ -290,7 +290,7 @@ object IO extends IOInstances {
       kleisli(hsIORef =>
         (for {
           refCntIORef <- newIORef(1)
-          h           = refCountedFinalizer(finalizer, refCntIORef)
+          h            = refCountedFinalizer(finalizer, refCntIORef)
           _           <- hsIORef.mod(h :: _)
         } yield finalizerHandle[RegionT[S, P, ?]](h)).liftIO[P]
       )

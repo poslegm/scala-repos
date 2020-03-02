@@ -202,8 +202,8 @@ object ScalatraBuild extends Build {
       base = file("commands"),
       settings = scalatraSettings ++ Seq(
         libraryDependencies ++= Seq(
-          "commons-validator"     % "commons-validator" % "1.5.0",
-          "io.backchat.inflector" %% "scala-inflector"  % "1.3.5"
+          "commons-validator"      % "commons-validator" % "1.5.0",
+          "io.backchat.inflector" %% "scala-inflector"   % "1.3.5"
         ),
         libraryDependencies ++= Seq(scalaz, jodaTime, jodaConvert),
         initialCommands := """
@@ -414,27 +414,27 @@ object ScalatraBuild extends Build {
       "org.eclipse.jetty" % "jetty-servlet" % jettyVersion
     lazy val jettyWebsocket =
       "org.eclipse.jetty.websocket" % "websocket-server" % jettyVersion
-    lazy val jettyWebapp   = "org.eclipse.jetty" % "jetty-webapp"    % jettyVersion
-    lazy val jodaConvert   = "org.joda"          % "joda-convert"    % "1.8.1"
-    lazy val jodaTime      = "joda-time"         % "joda-time"       % "2.9.1"
-    lazy val json4sCore    = "org.json4s"        %% "json4s-core"    % json4sVersion
-    lazy val json4sExt     = "org.json4s"        %% "json4s-ext"     % json4sVersion
-    lazy val json4sJackson = "org.json4s"        %% "json4s-jackson" % json4sVersion
-    lazy val json4sNative  = "org.json4s"        %% "json4s-native"  % json4sVersion
-    lazy val junit         = "junit"             % "junit"           % "4.12"
+    lazy val jettyWebapp   = "org.eclipse.jetty" % "jetty-webapp"   % jettyVersion
+    lazy val jodaConvert   = "org.joda"          % "joda-convert"   % "1.8.1"
+    lazy val jodaTime      = "joda-time"         % "joda-time"      % "2.9.1"
+    lazy val json4sCore    = "org.json4s"       %% "json4s-core"    % json4sVersion
+    lazy val json4sExt     = "org.json4s"       %% "json4s-ext"     % json4sVersion
+    lazy val json4sJackson = "org.json4s"       %% "json4s-jackson" % json4sVersion
+    lazy val json4sNative  = "org.json4s"       %% "json4s-native"  % json4sVersion
+    lazy val junit         = "junit"             % "junit"          % "4.12"
     lazy val jUniversalChardet =
       "com.googlecode.juniversalchardet" % "juniversalchardet" % "1.0.3"
     lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.1.3"
     lazy val mimeUtil =
       "eu.medsea.mimeutil" % "mime-util" % "2.1.3" exclude
         ("org.slf4j", "slf4j-log4j12") exclude ("log4j", "log4j")
-    lazy val mockitoAll       = "org.mockito"     % "mockito-all"        % "1.10.19"
+    lazy val mockitoAll       = "org.mockito"      % "mockito-all"       % "1.10.19"
     lazy val rl               = "org.scalatra.rl" %% "rl"                % "0.4.10"
     lazy val scalajCollection = "org.scalaj"      %% "scalaj-collection" % "1.2"
     lazy val scalate =
       "org.scalatra.scalate" %% "scalate-core" % scalateVersion
-    lazy val scalatest   = "org.scalatest"       %% "scalatest"        % scalatestVersion
-    lazy val scalaz      = "org.scalaz"          %% "scalaz-core"      % "7.2.1"
+    lazy val scalatest   = "org.scalatest"      %% "scalatest"         % scalatestVersion
+    lazy val scalaz      = "org.scalaz"         %% "scalaz-core"       % "7.2.1"
     lazy val servletApi  = "javax.servlet"       % "javax.servlet-api" % "3.1.0"
     lazy val springWeb   = "org.springframework" % "spring-web"        % "4.2.3.RELEASE"
     lazy val slf4jApi    = "org.slf4j"           % "slf4j-api"         % "1.7.13"

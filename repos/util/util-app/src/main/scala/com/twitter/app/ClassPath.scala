@@ -136,7 +136,7 @@ private object ClassPath {
 
       for {
         e <- jarFile.entries.asScala if !e.isDirectory
-        n = e.getName if !(ignoredPackages exists (n startsWith _))
+        n  = e.getName if !(ignoredPackages exists (n startsWith _))
         if isClass(n)
       } buf += Info(n, loader)
     } finally {

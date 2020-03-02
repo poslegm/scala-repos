@@ -104,7 +104,7 @@ class SbtDependencyAnnotator extends Annotator {
       ScLiteralImpl.string(version)                         <- Option(maybeVersion)
       ScLiteralImpl.string(group)                           <- Option(maybeGroup)
       ScLiteralImpl.string(artifact)                        <- Option(maybeArtifact)
-      shouldAppendScalaVersion                              = maybePercents.getText == "%%"
+      shouldAppendScalaVersion                               = maybePercents.getText == "%%"
     } yield {
       if (shouldAppendScalaVersion && scalaVersion.isDefined)
         ArtifactInfo(group, artifact + "_" + scalaVersion.get, version)

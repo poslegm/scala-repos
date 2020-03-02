@@ -55,7 +55,7 @@ object TeamInfo {
                   .requestsWithUsers(team)
       mine          = me.??(m => api.belongsTo(team.id, m.id))
       requestedByMe ← !mine ?? me.??(m => RequestRepo.exists(team.id, m.id))
-      cachable      <- cache(team.id)
+      cachable     <- cache(team.id)
       forumNbPosts  ← getForumNbPosts(team.id)
       forumPosts    ← getForumPosts(team.id)
     } yield TeamInfo(

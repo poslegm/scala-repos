@@ -114,9 +114,9 @@ object Dependencies {
 
   def runtime(scalaVersion: String) =
     slf4j ++ Seq("akka-actor", "akka-slf4j")
-      .map("com.typesafe.akka" %% _              % akkaVersion) ++ jacksons ++ Seq(
-      "org.scala-stm"          %% "scala-stm"    % "0.7",
-      "commons-codec"          % "commons-codec" % "1.10",
+      .map("com.typesafe.akka" %% _               % akkaVersion) ++ jacksons ++ Seq(
+      "org.scala-stm"          %% "scala-stm"     % "0.7",
+      "commons-codec"           % "commons-codec" % "1.10",
       jodatime,
       jodaConvert,
       "org.apache.commons"           % "commons-lang3" % "3.4",
@@ -256,7 +256,7 @@ object Dependencies {
   val streamsDependencies =
     Seq(
       "org.reactivestreams" % "reactive-streams" % "1.0.0",
-      "com.typesafe.akka"   %% "akka-stream"     % akkaVersion,
+      "com.typesafe.akka"  %% "akka-stream"      % akkaVersion,
       scalaJava8Compat
     ) ++ specsBuild.map(_ % "test") ++ logback.map(_ % Test) ++ javaTestDeps
 

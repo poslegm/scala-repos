@@ -42,7 +42,7 @@ object LiteralTests extends Properties("Literal") {
   def genUnary: Gen[Literal[Int, Box]] =
     for {
       fn    <- Arbitrary.arbitrary[(Int) => (Int)]
-      bfn   = { case Box(b) => Box(fn(b)) }: Box[Int] => Box[Int]
+      bfn    = { case Box(b) => Box(fn(b)) }: Box[Int] => Box[Int]
       input <- genLiteral
     } yield UnaryLit(input, bfn)
 

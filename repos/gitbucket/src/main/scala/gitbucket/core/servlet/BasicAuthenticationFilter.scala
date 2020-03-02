@@ -94,9 +94,9 @@ class BasicAuthenticationFilter
     implicit val r = request
 
     val account = for {
-      auth                      <- Option(request.getHeader("Authorization"))
+      auth                     <- Option(request.getHeader("Authorization"))
       Array(username, password) = decodeAuthHeader(auth).split(":", 2)
-      account                   <- authenticate(settings, username, password)
+      account                  <- authenticate(settings, username, password)
     } yield {
       request.setAttribute(Keys.Request.UserName, account.userName)
       account
@@ -135,9 +135,9 @@ class BasicAuthenticationFilter
               chain.doFilter(request, response)
             } else {
               val passed = for {
-                auth                      <- Option(request.getHeader("Authorization"))
+                auth                     <- Option(request.getHeader("Authorization"))
                 Array(username, password) = decodeAuthHeader(auth).split(":", 2)
-                account                   <- authenticate(settings, username, password)
+                account                  <- authenticate(settings, username, password)
               } yield
                 if (isUpdating || repository.repository.isPrivate) {
                   if (hasWritePermission(

@@ -63,8 +63,8 @@ class PresentationCompilerCompleter(intp: IMain) extends Completion {
           name: Name
       ): Candidates = {
         val defStrings = for {
-          member  <- matching if member.symNameDropLocal == name
-          sym     <- member.sym.alternatives
+          member <- matching if member.symNameDropLocal == name
+          sym    <- member.sym.alternatives
           sugared = sym.sugaredSymbolOrSelf
         } yield {
           val tp = member.prefix memberType sym

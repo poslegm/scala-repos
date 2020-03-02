@@ -61,7 +61,7 @@ object ToggleTypeAnnotation {
       if value.expr.forall(!_.isAncestorOf(element))
       if value.pList.allPatternsSimple
       bindings = value.bindings if bindings.size == 1
-      binding  <- bindings
+      binding <- bindings
     } {
 
       if (value.typeElement.isDefined) strategy.removeFromValue(value)
@@ -76,7 +76,7 @@ object ToggleTypeAnnotation {
       if variable.expr.forall(!_.isAncestorOf(element))
       if variable.pList.allPatternsSimple
       bindings = variable.bindings if bindings.size == 1
-      binding  <- bindings
+      binding <- bindings
     } {
 
       if (variable.typeElement.isDefined) strategy.removeFromVariable(variable)

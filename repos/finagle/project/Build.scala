@@ -33,8 +33,8 @@ object Finagle extends Build {
   val ostrichLib     = "com.twitter" %% "ostrich" % ostrichVersion
   val jacksonVersion = "2.4.4"
   val jacksonLibs = Seq(
-    "com.fasterxml.jackson.core"   % "jackson-core"          % jacksonVersion,
-    "com.fasterxml.jackson.core"   % "jackson-databind"      % jacksonVersion,
+    "com.fasterxml.jackson.core"    % "jackson-core"         % jacksonVersion,
+    "com.fasterxml.jackson.core"    % "jackson-databind"     % jacksonVersion,
     "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion exclude
       ("com.google.guava", "guava"),
     guavaLib
@@ -78,10 +78,10 @@ object Finagle extends Build {
     crossScalaVersions := Seq("2.10.6", "2.11.7"),
     scalaVersion := "2.11.7",
     libraryDependencies ++= Seq(
-      "org.scalacheck" %% "scalacheck" % "1.12.2" % "test",
-      "org.scalatest"  %% "scalatest"  % "2.2.4"  % "test",
-      "junit"          % "junit"       % "4.10"   % "test",
-      "org.mockito"    % "mockito-all" % "1.9.5"  % "test"
+      "org.scalacheck" %% "scalacheck"  % "1.12.2" % "test",
+      "org.scalatest"  %% "scalatest"   % "2.2.4"  % "test",
+      "junit"           % "junit"       % "4.10"   % "test",
+      "org.mockito"     % "mockito-all" % "1.9.5"  % "test"
     ),
     resolvers += "twitter-repo" at "https://maven.twttr.com",
     ScoverageSbtPlugin.ScoverageKeys.coverageHighlighting :=

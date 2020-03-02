@@ -20,16 +20,16 @@ class RelationalMiscTest extends AsyncTest[RelationalTestDB] {
       _ <- ts ++= Seq(("1", "a"), ("2", "a"), ("3", "b"))
 
       q1 = for (t <- ts if t.a === "1" || t.a === "2") yield t
-      _  <- q1.result.map(r => r.toSet shouldBe Set(("1", "a"), ("2", "a")))
+      _ <- q1.result.map(r => r.toSet shouldBe Set(("1", "a"), ("2", "a")))
 
       q2 = for (t <- ts if (t.a =!= "1") || (t.b =!= "a")) yield t
-      _  <- q2.result.map(r => r.toSet shouldBe Set(("2", "a"), ("3", "b")))
+      _ <- q2.result.map(r => r.toSet shouldBe Set(("2", "a"), ("3", "b")))
 
       // No need to test that the unexpected result is actually unexpected
       // now that the compiler prints a warning about it
 
       q4 = for (t <- ts if t.a =!= "1" || t.b =!= "a") yield t
-      _  <- q4.result.map(r => r.toSet shouldBe Set(("2", "a"), ("3", "b")))
+      _ <- q4.result.map(r => r.toSet shouldBe Set(("2", "a"), ("3", "b")))
     } yield ()
   }
 
@@ -45,10 +45,10 @@ class RelationalMiscTest extends AsyncTest[RelationalTestDB] {
       _ <- t1s ++= Seq("foo", "bar", "foobar", "foo%")
 
       q1 = for { t1 <- t1s if t1.a like "foo" } yield t1.a
-      _  <- q1.result.map(_ shouldBe List("foo"))
+      _ <- q1.result.map(_ shouldBe List("foo"))
 
       q2 = for { t1 <- t1s if t1.a like "foo%" } yield t1.a
-      _  <- q2.to[Set].result.map(_ shouldBe Set("foo", "foobar", "foo%"))
+      _ <- q2.to[Set].result.map(_ shouldBe Set("foo", "foobar", "foo%"))
 
       _ <- ifCap(rcap.likeEscape) {
             val q3 = for { t1 <- t1s if t1.a.like("foo^%", '^') } yield t1.a
@@ -145,9 +145,9 @@ class RelationalMiscTest extends AsyncTest[RelationalTestDB] {
       _ <- t1s ++= Seq(("foo", 1, 2.0), ("bar", 2, 2.0))
 
       q1 = t1s.map(t1 => t1.a ++ t1.b.asColumnOf[String])
-      _  <- q1.to[Set].result.map(_ shouldBe Set("foo1", "bar2"))
+      _ <- q1.to[Set].result.map(_ shouldBe Set("foo1", "bar2"))
       q2 = t1s.map(t1 => t1.c * t1.b.asColumnOf[Double])
-      _  <- q2.to[Set].result.map(_ shouldBe Set(2.0, 4.0))
+      _ <- q2.to[Set].result.map(_ shouldBe Set(2.0, 4.0))
     } yield ()
   }
 
@@ -165,11 +165,11 @@ class RelationalMiscTest extends AsyncTest[RelationalTestDB] {
 
       // GetOrElse in ResultSetMapping on client side
       q1 = for { t <- t1s } yield (t.a, t.b.getOrElse(0))
-      _  <- q1.result.map(r => r.toSet shouldBe Set((1, 10), (2, 0)))
+      _ <- q1.result.map(r => r.toSet shouldBe Set((1, 10), (2, 0)))
 
       // GetOrElse in query on the DB side
       q2 = for { t <- t1s } yield (t.a, t.b.getOrElse(0) + 1)
-      _  <- q2.result.map(r => r.toSet shouldBe Set((1, 11), (2, 1)))
+      _ <- q2.result.map(r => r.toSet shouldBe Set((1, 11), (2, 1)))
     } yield ()
   }
 

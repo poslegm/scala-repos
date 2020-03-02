@@ -59,7 +59,7 @@ object ModuleExtDataService {
     private def doImport(dataNode: DataNode[ModuleExtData]): Unit = {
       for {
         module <- getIdeModuleByNode(dataNode)
-        data   = dataNode.getData
+        data    = dataNode.getData
       } {
         module.configureScalaCompilerSettingsFrom("SBT", data.scalacOptions)
         data.scalaVersion.foreach(version =>
@@ -137,8 +137,8 @@ object ModuleExtDataService {
         javacOptions: Seq[String]
     ): Unit = {
       for {
-        targetPos        <- Option(javacOptions.indexOf("-target")).filterNot(_ == -1)
-        targetValue      <- javacOptions.lift(targetPos + 1)
+        targetPos       <- Option(javacOptions.indexOf("-target")).filterNot(_ == -1)
+        targetValue     <- javacOptions.lift(targetPos + 1)
         compilerSettings = CompilerConfiguration.getInstance(module.getProject)
       } {
         executeProjectChangeAction(

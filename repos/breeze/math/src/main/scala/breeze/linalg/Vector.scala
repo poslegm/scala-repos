@@ -756,9 +756,10 @@ trait VectorOps {
     }
   }
 
-  implicit def canDot_V_V[T: ClassTag: Semiring]: BinaryRegistry[Vector[T], Vector[
-    T
-  ], breeze.linalg.operators.OpMulInner.type, T] = {
+  implicit def canDot_V_V[T: ClassTag: Semiring]
+      : BinaryRegistry[Vector[T], Vector[
+        T
+      ], breeze.linalg.operators.OpMulInner.type, T] = {
     new BinaryRegistry[Vector[T], Vector[T], breeze.linalg.operators.OpMulInner.type, T] {
       val s = implicitly[Semiring[T]]
       override def bindingMissing(a: Vector[T], b: Vector[T]): T = {

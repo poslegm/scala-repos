@@ -248,7 +248,7 @@ class AlgebraicTest extends SpireProperties {
       for {
         unscaledValue <- genBigInt
         scale         <- arbitrary[Byte]
-        x             = BigDecimal(unscaledValue, scale)
+        x              = BigDecimal(unscaledValue, scale)
       } yield RationalAlgebraic(Algebraic(x), Rational(x))
 
     def genDouble: Gen[RationalAlgebraic] =

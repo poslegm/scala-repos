@@ -1390,8 +1390,8 @@ abstract class BCodeHelpers extends BCodeIdiomatic with BytecodeWriters {
       var fieldList = List[String]()
 
       for (f <- fieldSymbols if f.hasGetter;
-           g = f.getterIn(cls);
-           s = f.setterIn(cls); if g.isPublic && !(f.name startsWith "$")) {
+           g  = f.getterIn(cls);
+           s  = f.setterIn(cls); if g.isPublic && !(f.name startsWith "$")) {
         // inserting $outer breaks the bean
         fieldList =
           javaSimpleName(f) :: javaSimpleName(g) :: (if (s != NoSymbol)

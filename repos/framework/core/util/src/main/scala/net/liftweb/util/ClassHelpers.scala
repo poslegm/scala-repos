@@ -56,8 +56,8 @@ trait ClassHelpers { self: ControlHelpers =>
       modifiers: List[Function1[String, String]],
       targetType: Class[C]
   ): Box[Class[C]] =
-    (for (place    <- where.view;
-          mod      <- modifiers.view;
+    (for (place   <- where.view;
+          mod     <- modifiers.view;
           fullName = place + "." + mod(name);
           ignore = List(
             classOf[ClassNotFoundException],

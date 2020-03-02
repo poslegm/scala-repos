@@ -142,7 +142,7 @@ trait ScalaJSSuiteRunner extends SuiteRunner {
     val source = scala.io.Source.fromURL(getClass.getResource(resourceName))
 
     val fileNames = for {
-      line    <- source.getLines
+      line   <- source.getLines
       trimmed = line.trim if trimmed != "" && !trimmed.startsWith("#")
     } yield extendShortTestName(trimmed)
 

@@ -71,7 +71,7 @@ trait SliceColumnarTableModule[M[+_]]
       for {
         paths       <- pathsM(table)
         projections <- paths.toList.traverse(Projection(_)).map(_.flatten)
-        totalLength = projections.map(_.length).sum
+        totalLength  = projections.map(_.length).sum
       } yield {
         def slices(
             proj: Projection,

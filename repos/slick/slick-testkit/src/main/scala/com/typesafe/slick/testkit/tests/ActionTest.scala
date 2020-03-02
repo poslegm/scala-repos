@@ -23,10 +23,10 @@ class ActionTest extends AsyncTest[RelationalTestDB] {
       _ <- db.run {
             ts.schema.create >> (ts ++= Seq(2, 3, 1, 5, 4))
           }
-      q1 = ts.sortBy(_.a).map(_.a)
-      f1 = db.run(q1.result)
+      q1  = ts.sortBy(_.a).map(_.a)
+      f1  = db.run(q1.result)
       r1 <- f1: Future[Seq[Int]]
-      _  = r1 shouldBe List(1, 2, 3, 4, 5)
+      _   = r1 shouldBe List(1, 2, 3, 4, 5)
     } yield ()
   }
 
@@ -45,14 +45,14 @@ class ActionTest extends AsyncTest[RelationalTestDB] {
       l  <- ts.length.result
       p2 <- IsPinned
       s2 <- GetSession
-      _  = p1 shouldBe false
-      _  = p2 shouldBe false
-      _  = s1 shouldNotBe s2
+      _   = p1 shouldBe false
+      _   = p2 shouldBe false
+      _   = s1 shouldNotBe s2
     } yield ()
 
     val aFused = for {
       ((s1, l), s2) <- GetSession zip ts.length.result zip GetSession
-      _             = s1 shouldBe s2
+      _              = s1 shouldBe s2
     } yield ()
 
     val aPinned = for {
@@ -62,12 +62,12 @@ class ActionTest extends AsyncTest[RelationalTestDB] {
             l  <- ts.length.result
             p2 <- IsPinned
             s2 <- GetSession
-            _  = p1 shouldBe true
-            _  = p2 shouldBe true
-            _  = s1 shouldBe s2
+            _   = p1 shouldBe true
+            _   = p2 shouldBe true
+            _   = s1 shouldBe s2
           } yield ()).withPinnedSession
       p3 <- IsPinned
-      _  = p3 shouldBe false
+      _   = p3 shouldBe false
     } yield ()
 
     aSetup andThen aNotPinned andThen aFused andThen aPinned
@@ -87,11 +87,11 @@ class ActionTest extends AsyncTest[RelationalTestDB] {
 
     for {
       r1 <- materialize(p1)
-      _  = r1 shouldBe Vector(1, 2, 3, 4, 5)
+      _   = r1 shouldBe Vector(1, 2, 3, 4, 5)
       r2 <- db.run(q1.result.head)
-      _  = r2 shouldBe 1
+      _   = r2 shouldBe 1
       r3 <- db.run(q1.result.headOption)
-      _  = r3 shouldBe Some(1)
+      _   = r3 shouldBe Some(1)
     } yield ()
   }
 
@@ -136,7 +136,7 @@ class ActionTest extends AsyncTest[RelationalTestDB] {
             ts.schema.create >> (ts ++= Seq(2, 3, 1, 5, 4))
           }
       needFlatten = for (_ <- ts.result) yield ts.result
-      result      <- db.run(needFlatten.flatten)
+      result     <- db.run(needFlatten.flatten)
       _           = result shouldBe Seq(2, 3, 1, 5, 4)
     } yield ()
   }

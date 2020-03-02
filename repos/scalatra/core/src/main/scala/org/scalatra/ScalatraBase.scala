@@ -299,7 +299,7 @@ trait ScalatraBase
     for {
       route        <- routes.toStream // toStream makes it lazy so we stop after match
       matchedRoute <- route.apply(requestPath)
-      saved        = saveMatchedRoute(matchedRoute)
+      saved         = saveMatchedRoute(matchedRoute)
       actionResult <- invoke(saved)
     } yield actionResult
   }

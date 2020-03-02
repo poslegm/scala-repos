@@ -259,7 +259,7 @@ class UISeleniumSuite
       for {
         job @ JObject(_) <- jobJson
         JInt(jobId)      <- job \ "jobId"
-        jobGroup         = job \ "jobGroup"
+        jobGroup          = job \ "jobGroup"
       } {
         jobId.toInt match {
           case 0 => jobGroup should be(JNothing)
@@ -586,7 +586,7 @@ class UISeleniumSuite
         }
         rows.size should be(expJobInfo.size)
         for {
-          (row, idx)  <- rows.zipWithIndex
+          (row, idx) <- rows.zipWithIndex
           columns     = row.findElements(By.tagName("td"))
           id          = columns.get(0).getText()
           description = columns.get(1).getText()
@@ -600,8 +600,8 @@ class UISeleniumSuite
       jobsJson.children.size should be(expJobInfo.size)
       for {
         (job @ JObject(_), idx) <- jobsJson.children.zipWithIndex
-        id                      = (job \ "jobId").extract[String]
-        name                    = (job \ "name").extract[String]
+        id                       = (job \ "jobId").extract[String]
+        name                     = (job \ "name").extract[String]
       } {
         withClue(s"idx = $idx; id = $id; name = ${name.substring(0, 20)}") {
           id should be(expJobInfo(idx)._1)
@@ -638,7 +638,7 @@ class UISeleniumSuite
         }
         rows.size should be(3)
         for {
-          (row, idx)  <- rows.zipWithIndex
+          (row, idx) <- rows.zipWithIndex
           columns     = row.findElements(By.tagName("td"))
           id          = columns.get(0).getText()
           description = columns.get(1).getText()
@@ -652,8 +652,8 @@ class UISeleniumSuite
       stagesJson.children.size should be(3)
       for {
         (stage @ JObject(_), idx) <- stagesJson.children.zipWithIndex
-        id                        = (stage \ "stageId").extract[String]
-        name                      = (stage \ "name").extract[String]
+        id                         = (stage \ "stageId").extract[String]
+        name                       = (stage \ "name").extract[String]
       } {
         id should be(expStageInfo(idx)._1)
         name should include(expStageInfo(idx)._2)

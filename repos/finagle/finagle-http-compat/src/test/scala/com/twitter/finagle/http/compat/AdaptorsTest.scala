@@ -46,8 +46,8 @@ class AdaptorsTest extends FunSuite with GeneratorDrivenPropertyChecks {
     hostLen <- Gen.choose(1, 20)
     pathLen <- Gen.choose(1, 20)
     tld     <- Gen.oneOf(".net", ".com", "org", ".edu")
-    host    = util.Random.alphanumeric.take(hostLen).mkString
-    path    = util.Random.alphanumeric.take(pathLen).mkString
+    host     = util.Random.alphanumeric.take(hostLen).mkString
+    path     = util.Random.alphanumeric.take(pathLen).mkString
   } yield (new URI(scheme, host + tld, "/" + path, null)).toASCIIString
 
   val arbHeader = for {

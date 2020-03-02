@@ -29,7 +29,8 @@ import scala.reflect.ClassTag
   * - Linearized: (Int, Int, String, Int, Option[Double])
   */
 @implicitNotFound(
-  msg = "No matching Shape found.\nSlick does not know how to map the given types.\nPossible causes: T in Table[T] does not match your * projection. Or you use an unsupported type in a Query (e.g. scala List).\n  Required level: ${Level}\n     Source type: ${Mixed_}\n   Unpacked type: ${Unpacked_}\n     Packed type: ${Packed_}\n"
+  msg =
+    "No matching Shape found.\nSlick does not know how to map the given types.\nPossible causes: T in Table[T] does not match your * projection. Or you use an unsupported type in a Query (e.g. scala List).\n  Required level: ${Level}\n     Source type: ${Mixed_}\n   Unpacked type: ${Unpacked_}\n     Packed type: ${Packed_}\n"
 )
 abstract class Shape[Level <: ShapeLevel, -Mixed_, Unpacked_, Packed_] {
   type Mixed    = Mixed_ @uncheckedVariance
@@ -241,7 +242,11 @@ abstract class MappedProductShape[
 
 /** Base class for ProductNodeShapes with a type mapping to a type that extends scala.Product */
 abstract class MappedScalaProductShape[
-    Level <: ShapeLevel, C <: Product, M <: C, U <: C, P <: C
+    Level <: ShapeLevel,
+    C <: Product,
+    M <: C,
+    U <: C,
+    P <: C
 ](implicit val classTag: ClassTag[U])
     extends MappedProductShape[Level, C, M, U, P] {
   override def getIterator(value: C) = value.productIterator
@@ -250,7 +255,10 @@ abstract class MappedScalaProductShape[
 
 /** Shape for Scala tuples of all arities */
 final class TupleShape[
-    Level <: ShapeLevel, M <: Product, U <: Product, P <: Product
+    Level <: ShapeLevel,
+    M <: Product,
+    U <: Product,
+    P <: Product
 ](val shapes: Shape[_, _, _, _]*)
     extends ProductNodeShape[Level, Product, M, U, P] {
   override def getIterator(value: Product) = value.productIterator

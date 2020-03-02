@@ -45,7 +45,7 @@ object SbtModuleDataService {
     override def importData(): Unit =
       dataToImport.foreach { moduleNode =>
         for {
-          module    <- getIdeModuleByNode(moduleNode)
+          module   <- getIdeModuleByNode(moduleNode)
           imports   = moduleNode.getData.imports
           resolvers = moduleNode.getData.resolvers
         } {

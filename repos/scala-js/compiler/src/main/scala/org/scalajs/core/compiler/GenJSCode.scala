@@ -471,7 +471,10 @@ abstract class GenJSCode
 
       // Generate fields (and add to methods + ctors)
       val generatedMembers = {
-        genClassFields(cd) ::: genJSClassConstructor(sym, constructorTrees.toList) :: genJSClassDispatchers(
+        genClassFields(cd) ::: genJSClassConstructor(
+          sym,
+          constructorTrees.toList
+        ) :: genJSClassDispatchers(
           sym,
           dispatchMethodNames.result().distinct
         ) ::: generatedMethods.toList ::: exports
@@ -607,7 +610,7 @@ abstract class GenJSCode
         sym: Symbol
     )(implicit pos: Position): List[js.Ident] = {
       for {
-        parent  <- sym.info.parents
+        parent <- sym.info.parents
         typeSym = parent.typeSymbol
         _       = assert(typeSym != NoSymbol, "parent needs symbol")
         if typeSym.isTraitOrInterface
@@ -2235,7 +2238,7 @@ abstract class GenJSCode
       val quadruplets = {
         for {
           (formalArgSym, actualArg) <- formalArgs zip actualArgs
-          formalArg                 = encodeLocalSym(formalArgSym) if (actualArg match {
+          formalArg                  = encodeLocalSym(formalArgSym) if (actualArg match {
             case js.VarRef(`formalArg`) => false
             case _                      => true
           })

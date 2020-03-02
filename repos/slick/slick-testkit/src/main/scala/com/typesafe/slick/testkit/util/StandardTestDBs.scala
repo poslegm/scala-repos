@@ -201,7 +201,7 @@ object StandardTestDBs {
       import ExecutionContext.Implicits.global
       await(databaseFor("testConn").run(for {
         _ <- dropSchema
-        _ = println(s"[Creating DB2 schema '$schema']")
+        _  = println(s"[Creating DB2 schema '$schema']")
         _ <- sqlu"create schema #$schema"
       } yield ()))
     }

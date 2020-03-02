@@ -400,8 +400,8 @@ object TypeCheckToMatchUtil {
         secondCall: ScGenericCall
     ): Boolean = {
       val option = for {
-        firstArgs   <- firstCall.typeArgs
-        secondArgs  <- secondCall.typeArgs
+        firstArgs  <- firstCall.typeArgs
+        secondArgs <- secondCall.typeArgs
         firstTypes  = firstArgs.typeArgs
         secondTypes = secondArgs.typeArgs if firstTypes.size == 1 &&
           secondTypes.size == 1
@@ -441,8 +441,8 @@ object TypeCheckToMatchUtil {
 
     for {
       (index, suggestedNames) <- renameData
-      caseClause              = caseClauses(index)
-      name                    = suggestedNames.head
+      caseClause               = caseClauses(index)
+      name                     = suggestedNames.head
     } {
       val primary = mutable.ArrayBuffer[ScNamedElement]()
       val dependents =

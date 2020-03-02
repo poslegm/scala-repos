@@ -48,11 +48,11 @@ final class Cached(
       chess960      ← top10Perf(PerfType.Chess960.id)
       kingOfTheHill ← top10Perf(PerfType.KingOfTheHill.id)
       threeCheck    ← top10Perf(PerfType.ThreeCheck.id)
-      antichess     <- top10Perf(PerfType.Antichess.id)
-      atomic        <- top10Perf(PerfType.Atomic.id)
-      horde         <- top10Perf(PerfType.Horde.id)
-      racingKings   <- top10Perf(PerfType.RacingKings.id)
-      crazyhouse    <- top10Perf(PerfType.Crazyhouse.id)
+      antichess    <- top10Perf(PerfType.Antichess.id)
+      atomic       <- top10Perf(PerfType.Atomic.id)
+      horde        <- top10Perf(PerfType.Horde.id)
+      racingKings  <- top10Perf(PerfType.RacingKings.id)
+      crazyhouse   <- top10Perf(PerfType.Crazyhouse.id)
     } yield Perfs.Leaderboards(
       bullet = bullet,
       blitz = blitz,

@@ -34,7 +34,7 @@ class WordCountTest extends CatsSuite {
       appFuncU { (c: Char) =>
         for {
           x <- get[Boolean]
-          y = !isSpace(c)
+          y  = !isSpace(c)
           _ <- set(y)
         } yield testIf(y && !x)
       } andThen appFunc(liftInt)

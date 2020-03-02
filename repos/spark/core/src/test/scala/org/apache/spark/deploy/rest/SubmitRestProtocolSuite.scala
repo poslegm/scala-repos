@@ -137,7 +137,8 @@ class SubmitRestProtocolSuite extends SparkFunSuite {
     )
     assert(newMessage.sparkProperties("spark.driver.cores") === "180")
     assert(
-      newMessage.sparkProperties("spark.driver.extraJavaOptions") === " -Dslices=5 -Dcolor=mostly_red"
+      newMessage
+        .sparkProperties("spark.driver.extraJavaOptions") === " -Dslices=5 -Dcolor=mostly_red"
     )
     assert(
       newMessage

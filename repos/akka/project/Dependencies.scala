@@ -86,8 +86,8 @@ object Dependencies {
       "org.scala-lang.modules" %% "scala-java8-compat" % "0.7.0" // Scala License
 
     object Docs {
-      val sprayJson = "io.spray"             %% "spray-json" % "1.3.2" % "test"
-      val gson      = "com.google.code.gson" % "gson"        % "2.3.1" % "test"
+      val sprayJson = "io.spray"            %% "spray-json" % "1.3.2" % "test"
+      val gson      = "com.google.code.gson" % "gson"       % "2.3.1" % "test"
     }
 
     object Test {

@@ -234,7 +234,7 @@ trait ExceptionQueryLogger[M[+_], -P] extends QueryLogger[M, P] {
   abstract override def die(): M[Unit] =
     for {
       _ <- super.die()
-      _ = throw FatalQueryException("Query terminated abnormally.")
+      _  = throw FatalQueryException("Query terminated abnormally.")
     } yield ()
 }
 

@@ -343,11 +343,11 @@ class ScForStatementImpl(node: ASTNode)
           expr match {
             case f: ScForStatementImpl =>
               for {
-                enums                                      <- f.enumerators
-                gen                                        <- enums.generators.headOption
+                enums                                     <- f.enumerators
+                gen                                       <- enums.generators.headOption
                 ScParenthesisedExpr(f: ScForStatementImpl) = gen.rvalue
                 additionalReplacement                      = f.getDesugarizedExpr
-                repl                                       <- additionalReplacement
+                repl                                      <- additionalReplacement
               } {
                 updateAnalog(f)
                 f.replace(repl)
@@ -368,12 +368,12 @@ class ScForStatementImpl(node: ASTNode)
                 expr <- call.args.exprs.headOption
                 if expr.isInstanceOf[ScBlockExpr]
                 bl                    = expr.asInstanceOf[ScBlockExpr]
-                clauses               <- bl.caseClauses
-                clause                <- clauses.caseClauses.headOption
-                expr                  <- clause.expr if expr.isInstanceOf[ScForStatementImpl]
+                clauses              <- bl.caseClauses
+                clause               <- clauses.caseClauses.headOption
+                expr                 <- clause.expr if expr.isInstanceOf[ScForStatementImpl]
                 f                     = expr.asInstanceOf[ScForStatementImpl]
                 additionalReplacement = f.getDesugarizedExpr
-                repl                  <- additionalReplacement
+                repl                 <- additionalReplacement
               } {
                 updateAnalog(f)
                 f.replace(repl)

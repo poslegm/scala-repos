@@ -21,11 +21,11 @@ object Dependencies {
     "org.jetbrains" % "sbt-structure-extractor-0-13" % sbtStructureVersion
   val sbtLaunch = "org.scala-sbt" % "sbt-launch" % sbtVersion
 
-  val jamm          = "com.github.jbellis"     % "jamm"           % "0.3.1"
-  val scalaLibrary  = "org.scala-lang"         % "scala-library"  % scalaVersion
-  val scalaReflect  = "org.scala-lang"         % "scala-reflect"  % scalaVersion
-  val scalaCompiler = "org.scala-lang"         % "scala-compiler" % scalaVersion
-  val scalaXml      = "org.scala-lang.modules" %% "scala-xml"     % "1.0.2"
+  val jamm          = "com.github.jbellis"      % "jamm"           % "0.3.1"
+  val scalaLibrary  = "org.scala-lang"          % "scala-library"  % scalaVersion
+  val scalaReflect  = "org.scala-lang"          % "scala-reflect"  % scalaVersion
+  val scalaCompiler = "org.scala-lang"          % "scala-compiler" % scalaVersion
+  val scalaXml      = "org.scala-lang.modules" %% "scala-xml"      % "1.0.2"
   val scalaParserCombinators =
     "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
   val sbtStructureCore =
@@ -188,7 +188,7 @@ object DependencyGroups {
       organization = "org.ow2.asm"
     ),
     "org.scalatest" % "scalatest_2.11" % "2.2.1" % "provided",
-    "com.lihaoyi"   %% "utest"         % "0.3.1" % "provided"
+    "com.lihaoyi"  %% "utest"          % "0.3.1" % "provided"
   )
 
   val sbtLaunchTestDownloader =
@@ -205,33 +205,33 @@ object DependencyGroups {
     ).map(v => "org.scala-sbt" % "sbt-launch" % v)
 
   val testDownloader = Seq(
-    "org.scalatest"              % "scalatest_2.11"         % "2.2.1",
-    "org.scalatest"              % "scalatest_2.10"         % "2.2.1",
-    "org.specs2"                 % "specs2_2.11"            % "2.4.15",
-    "org.specs2"                 % "specs2-core_2.11"       % "3.0.1",
-    "org.specs2"                 % "specs2-common_2.11"     % "3.0.1",
-    "org.specs2"                 % "specs2-matcher_2.11"    % "3.0.1",
-    "com.lihaoyi"                % "utest_2.10"             % "0.3.1" % "provided",
-    "org.scalaz"                 % "scalaz-core_2.11"       % "7.1.0",
-    "org.scalaz"                 % "scalaz-concurrent_2.11" % "7.1.0",
-    "org.scala-lang.modules"     % "scala-xml_2.11"         % "1.0.2",
-    "org.specs2"                 % "specs2_2.10"            % "2.4.6",
-    "org.scalaz"                 % "scalaz-core_2.10"       % "7.1.0",
-    "org.scalaz"                 % "scalaz-concurrent_2.10" % "7.1.0",
-    "org.scalaz.stream"          % "scalaz-stream_2.11"     % "0.6a",
-    "com.chuusai"                % "shapeless_2.11"         % "2.0.0",
-    "org.typelevel"              % "scodec-bits_2.11"       % "1.1.0-SNAPSHOT",
-    "org.typelevel"              % "scodec-core_2.11"       % "1.7.0-SNAPSHOT",
-    "org.scalatest"              % "scalatest_2.11"         % "2.1.7",
-    "org.scalatest"              % "scalatest_2.10"         % "2.1.7",
-    "org.scalatest"              % "scalatest_2.10"         % "1.9.2",
-    "com.github.julien-truffaut" %% "monocle-core"          % "1.2.0",
-    "com.github.julien-truffaut" %% "monocle-generic"       % "1.2.0",
-    "com.github.julien-truffaut" %% "monocle-macro"         % "1.2.0",
-    "io.spray"                   %% "spray-routing"         % "1.3.1",
-    "com.typesafe.slick"         %% "slick"                 % "3.1.0",
-    "org.scala-lang.modules"     % "scala-async_2.11"       % "0.9.5",
-    "org.typelevel"              %% "cats"                  % "0.4.0"
+    "org.scalatest"               % "scalatest_2.11"         % "2.2.1",
+    "org.scalatest"               % "scalatest_2.10"         % "2.2.1",
+    "org.specs2"                  % "specs2_2.11"            % "2.4.15",
+    "org.specs2"                  % "specs2-core_2.11"       % "3.0.1",
+    "org.specs2"                  % "specs2-common_2.11"     % "3.0.1",
+    "org.specs2"                  % "specs2-matcher_2.11"    % "3.0.1",
+    "com.lihaoyi"                 % "utest_2.10"             % "0.3.1" % "provided",
+    "org.scalaz"                  % "scalaz-core_2.11"       % "7.1.0",
+    "org.scalaz"                  % "scalaz-concurrent_2.11" % "7.1.0",
+    "org.scala-lang.modules"      % "scala-xml_2.11"         % "1.0.2",
+    "org.specs2"                  % "specs2_2.10"            % "2.4.6",
+    "org.scalaz"                  % "scalaz-core_2.10"       % "7.1.0",
+    "org.scalaz"                  % "scalaz-concurrent_2.10" % "7.1.0",
+    "org.scalaz.stream"           % "scalaz-stream_2.11"     % "0.6a",
+    "com.chuusai"                 % "shapeless_2.11"         % "2.0.0",
+    "org.typelevel"               % "scodec-bits_2.11"       % "1.1.0-SNAPSHOT",
+    "org.typelevel"               % "scodec-core_2.11"       % "1.7.0-SNAPSHOT",
+    "org.scalatest"               % "scalatest_2.11"         % "2.1.7",
+    "org.scalatest"               % "scalatest_2.10"         % "2.1.7",
+    "org.scalatest"               % "scalatest_2.10"         % "1.9.2",
+    "com.github.julien-truffaut" %% "monocle-core"           % "1.2.0",
+    "com.github.julien-truffaut" %% "monocle-generic"        % "1.2.0",
+    "com.github.julien-truffaut" %% "monocle-macro"          % "1.2.0",
+    "io.spray"                   %% "spray-routing"          % "1.3.1",
+    "com.typesafe.slick"         %% "slick"                  % "3.1.0",
+    "org.scala-lang.modules"      % "scala-async_2.11"       % "0.9.5",
+    "org.typelevel"              %% "cats"                   % "0.4.0"
   )
 
   val testScalaLibraryDownloader = Seq(

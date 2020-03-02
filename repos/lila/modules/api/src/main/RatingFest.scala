@@ -45,7 +45,7 @@ object RatingFest {
     for {
       _ <- fuccess(log("Removing history"))
       _ <- db("history3").remove(BSONDocument())
-      _ = log("Reseting perfs")
+      _  = log("Reseting perfs")
       _ <- lila.user.tube.userTube.coll.update(
             BSONDocument(),
             BSONDocument(
@@ -67,10 +67,10 @@ object RatingFest {
             ),
             multi = true
           )
-      _         = log("Gathering cheater IDs")
+      _          = log("Gathering cheater IDs")
       engineIds <- UserRepo.engineIds
-      _         = log(s"Found ${engineIds.size} cheaters")
-      _         = log("Starting the party")
+      _          = log(s"Found ${engineIds.size} cheaters")
+      _          = log("Starting the party")
       _ <- lila.game.tube.gameTube |> { implicit gameTube =>
             val query = $query(lila.game.Query.rated)
             // val query = $query.all

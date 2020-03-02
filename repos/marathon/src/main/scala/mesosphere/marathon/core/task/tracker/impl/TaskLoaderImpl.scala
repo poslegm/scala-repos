@@ -18,7 +18,7 @@ private[tracker] class TaskLoaderImpl(repo: TaskRepository) extends TaskLoader {
   override def loadTasks(): Future[TaskTracker.TasksByApp] = {
     for {
       names <- repo.allIds()
-      _     = log.info(s"About to load ${names.size} tasks")
+      _      = log.info(s"About to load ${names.size} tasks")
       tasks <- Future.sequence(names.map(repo.task(_))).map(_.flatten)
     } yield {
       log.info(s"Loaded ${tasks.size} tasks")

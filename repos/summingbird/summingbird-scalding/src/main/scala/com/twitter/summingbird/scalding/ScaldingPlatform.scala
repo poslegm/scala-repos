@@ -667,7 +667,7 @@ object Scalding {
             val (pfr, mr) = recurse(r, built = ml)
             val merged = for {
               leftAndRight <- pfl.join(pfr)
-              merged       = Scalding.merge(leftAndRight._1, leftAndRight._2)
+              merged        = Scalding.merge(leftAndRight._1, leftAndRight._2)
               maxAvailable <- StateWithError.getState // read the latest state, which is the time
             } yield Scalding.limitTimes(maxAvailable._1, merged)
             (merged, mr)
@@ -683,7 +683,7 @@ object Scalding {
             val (pfr, mr) = recurse(r, built = ml)
             val onlyRight = for {
               leftAndRight <- pfl.join(pfr)
-              justRight    = Scalding.also(leftAndRight._1, leftAndRight._2)
+              justRight     = Scalding.also(leftAndRight._1, leftAndRight._2)
               maxAvailable <- StateWithError.getState // read the latest state, which is the time
             } yield Scalding.limitTimes(maxAvailable._1, justRight)
             (onlyRight, mr)

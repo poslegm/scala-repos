@@ -92,11 +92,12 @@ sealed abstract class IndexedStateT[F[_], -S1, S2, A] { self =>
       implicit M: Comonad[M],
       F: Monad[λ[α => M[FF[α]]]],
       ev: this.type <~< IndexedStateT[λ[α => M[FF[α]]], S, S2, A]
-  ): IndexedStateT[FF, S, S2, A] = IndexedStateT.createState((m: Monad[FF]) =>
-    (s: S) => {
-      M.copoint(ev(self)(s))
-    }
-  )
+  ): IndexedStateT[FF, S, S2, A] =
+    IndexedStateT.createState((m: Monad[FF]) =>
+      (s: S) => {
+        M.copoint(ev(self)(s))
+      }
+    )
 
   def unliftId[M[_], S <: S1](
       implicit M: Comonad[M],

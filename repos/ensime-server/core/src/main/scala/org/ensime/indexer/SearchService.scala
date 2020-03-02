@@ -76,7 +76,7 @@ class SearchService(
       log.info("findStaleFileChecks")
       for {
         check <- checks
-        name  = check.file.getName.getURI if !check.file.exists || check.changed
+        name   = check.file.getName.getURI if !check.file.exists || check.changed
       } yield check
     }.toList
 
@@ -147,9 +147,9 @@ class SearchService(
     // chain together all the future tasks
     for {
       checks  <- db.knownFiles()
-      stale   = findStaleFileChecks(checks)
+      stale    = findStaleFileChecks(checks)
       deletes <- deleteReferences(stale)
-      bases   = findBases()
+      bases    = findBases()
       added   <- indexBases(bases, checks)
       _       <- commitIndex()
     } yield (deletes, added)

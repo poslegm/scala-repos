@@ -29,9 +29,9 @@ private[stream] object Fusing {
     */
   def aggressive[S <: Shape, M](g: Graph[S, M]): FusedGraph[S, M] =
     g match {
-      case fg: FusedGraph[_, _]      ⇒ fg
+      case fg: FusedGraph[_, _]       ⇒ fg
       case FusedGraph(module, shape) => FusedGraph(module, shape)
-      case _                         ⇒ doAggressive(g)
+      case _                          ⇒ doAggressive(g)
     }
 
   private def doAggressive[S <: Shape, M](g: Graph[S, M]): FusedGraph[S, M] = {
@@ -490,7 +490,7 @@ private[stream] object Fusing {
               .asInstanceOf[MaterializedValueSource[Any]]
             val mapped = ms.computation match {
               case Atomic(sub) ⇒ subMat(sub)
-              case Ignore      => Ignore
+              case Ignore     => Ignore
               case other       ⇒ matNodeMapping.get(other)
             }
             if (Debug)

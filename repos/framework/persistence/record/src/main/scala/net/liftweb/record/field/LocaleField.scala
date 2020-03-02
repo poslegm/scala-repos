@@ -43,7 +43,7 @@ trait LocaleTypedField extends TypedField[String] {
       buildDisplayList,
       Full(valueBox.map(_.toString) openOr ""),
       locale => setBox(Full(locale))
-    )             %
+    )              %
       ("tabindex" -> tabIndex.toString)
 
   override def toForm: Box[NodeSeq] =

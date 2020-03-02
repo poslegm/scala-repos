@@ -189,7 +189,7 @@ class ScalaChangeSignatureUsageProcessor
         jc @ (_u: JavaCallUsageInfo) <- usages
         call @ (_c: PsiMethodCallExpression) <- jc.getElement.toOption
                                                  .map(_.getParent)
-        exprs                                             = call.getArgumentList.getExpressions
+        exprs                                              = call.getArgumentList.getExpressions
         (defaultArg @ (_d: PsiMethodCallExpression), idx) <- exprs.zipWithIndex
         if defaultArg.getText
           .contains("$default$")
@@ -347,7 +347,7 @@ class ScalaChangeSignatureUsageProcessor
       results: ArrayBuffer[UsageInfo]
   ): Unit = {
     for {
-      paramInfo  <- changeInfo.getNewParameters
+      paramInfo <- changeInfo.getNewParameters
       oldIdx     = paramInfo.getOldIndex if oldIdx >= 0
       oldName    = changeInfo.getOldParameterNames()(oldIdx)
       parameters = method.getParameterList.getParameters

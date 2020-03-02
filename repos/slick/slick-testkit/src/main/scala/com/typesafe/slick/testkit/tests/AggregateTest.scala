@@ -255,14 +255,14 @@ class AggregateTest extends AsyncTest[RelationalTestDB] {
             val q11        = t4s.groupBy(identity).map(_._1)
             db.run(for {
               res12 <- mark("q12", q12.result)
-              _     = res12.size shouldBe 6
-              _     = res12.toSet shouldBe expected11
+              _      = res12.size shouldBe 6
+              _      = res12.toSet shouldBe expected11
               res13 <- mark("q13", q13.result)
-              _     = res13.size shouldBe 6
-              _     = res13.toSet shouldBe expected11
+              _      = res13.size shouldBe 6
+              _      = res13.toSet shouldBe expected11
               res11 <- mark("q11", q11.result)
-              _     = res11.size shouldBe 2
-              _     = res11.toSet shouldBe expected11
+              _      = res11.size shouldBe 2
+              _      = res11.toSet shouldBe expected11
             } yield ())
           }
       }
@@ -365,9 +365,9 @@ class AggregateTest extends AsyncTest[RelationalTestDB] {
     val bs = TableQuery[B]
     val as = TableQuery[A]
     for {
-      _  <- (as.schema ++ bs.schema).create
+      _ <- (as.schema ++ bs.schema).create
       q1 = as.groupBy(_.id).map(_._2.map(x => x).map(x => x.a).min)
-      _  <- q1.result.map(v => v.toList shouldBe Nil)
+      _ <- q1.result.map(v => v.toList shouldBe Nil)
       q2 = (as joinLeft bs on (_.id === _.id))
         .map {
           case (c, so) =>

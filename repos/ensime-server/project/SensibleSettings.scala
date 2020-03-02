@@ -63,10 +63,10 @@ object Sensible {
       // 4 x 1GB = 4GB
       concurrentRestrictions in Global := Seq(Tags.limitAll(4)),
       dependencyOverrides ++= Set(
-        "org.scala-lang"         % "scala-compiler"            % scalaVersion.value,
-        "org.scala-lang"         % "scala-library"             % scalaVersion.value,
-        "org.scala-lang"         % "scala-reflect"             % scalaVersion.value,
-        "org.scala-lang"         % "scalap"                    % scalaVersion.value,
+        "org.scala-lang"          % "scala-compiler"           % scalaVersion.value,
+        "org.scala-lang"          % "scala-library"            % scalaVersion.value,
+        "org.scala-lang"          % "scala-reflect"            % scalaVersion.value,
+        "org.scala-lang"          % "scalap"                   % scalaVersion.value,
         "org.scala-lang.modules" %% "scala-xml"                % scalaModulesVersion,
         "org.scala-lang.modules" %% "scala-parser-combinators" % scalaModulesVersion,
         "org.scalamacros"        %% "quasiquotes"              % quasiquotesVersion,
@@ -142,7 +142,7 @@ object Sensible {
       "org.scalacheck"    %% "scalacheck" % "1.12.5" % config,
       "com.typesafe.akka" %% "akka-testkit" % akkaVersion % config,
       "com.typesafe.akka" %% "akka-slf4j" % akkaVersion % config
-    ) ++ logback.map(_    % config)
+    ) ++ logback.map(_     % config)
 
   // e.g. YOURKIT_AGENT=/opt/yourkit/bin/linux-x86-64/libyjpagent.so
   val yourkitAgent = Properties

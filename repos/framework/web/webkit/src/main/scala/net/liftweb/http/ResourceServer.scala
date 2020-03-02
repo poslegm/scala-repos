@@ -98,7 +98,7 @@ object ResourceServer {
                .filter(auri => isAllowed(auri))
       rw           = baseResourceLocation :: pathRewriter(auri)
       path         = rw.mkString("/", "/", "")
-      url          <- LiftRules.getResource(path)
+      url         <- LiftRules.getResource(path)
       lastModified = calcLastModified(url)
     } yield request.testFor304(
       lastModified,

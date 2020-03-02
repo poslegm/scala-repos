@@ -209,7 +209,7 @@ private[http] trait LiftMerge { self: LiftSession =>
                     if e.label == "node" && e.prefix == "lift_deferred" =>
                   val deferredNodes: Seq[NodesAndEventJs] = for {
                     idAttribute <- e.attributes("id").take(1)
-                    id          = idAttribute.text
+                    id           = idAttribute.text
                     nodes       <- processedSnippets.get(id)
                   } yield {
                     normalizeMergeAndExtractEvents(nodes, startingState)

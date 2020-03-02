@@ -344,8 +344,8 @@ object Dependency {
   val playJson    = "com.typesafe.play" %% "play-json"    % V.PlayJson
   val chaos =
     "mesosphere" %% "chaos" % V.Chaos exclude ("org.glassfish.web", "javax.el")
-  val guava      = "com.google.guava" % "guava"        % V.Guava
-  val mesosUtils = "mesosphere"       %% "mesos-utils" % V.MesosUtils
+  val guava      = "com.google.guava" % "guava"       % V.Guava
+  val mesosUtils = "mesosphere"      %% "mesos-utils" % V.MesosUtils
   val jacksonCaseClass =
     "mesosphere" %% "jackson-case-class-module" % V.JacksonCCM
   val jerseyServlet = "com.sun.jersey" % "jersey-servlet" % V.Jersey
@@ -367,12 +367,12 @@ object Dependency {
     "org.apache.hadoop" % "hadoop-common" % V.Hadoop excludeAll
       (excludeMortbayJetty, excludeJavaxServlet)
   val beanUtils = "commons-beanutils" % "commons-beanutils" % "1.9.2"
-  val scallop   = "org.rogach"        %% "scallop"          % V.Scallop
+  val scallop   = "org.rogach"       %% "scallop"           % V.Scallop
   val jsonSchemaValidator =
     "com.github.fge" % "json-schema-validator" % V.JsonSchemaValidator
-  val twitterZk  = "com.twitter"         %% "util-zk" % V.TwitterZk
-  val rxScala    = "io.reactivex"        %% "rxscala" % V.RxScala
-  val marathonUI = "mesosphere.marathon" % "ui"       % V.MarathonUI
+  val twitterZk  = "com.twitter"        %% "util-zk" % V.TwitterZk
+  val rxScala    = "io.reactivex"       %% "rxscala" % V.RxScala
+  val marathonUI = "mesosphere.marathon" % "ui"      % V.MarathonUI
   val marathonApiConsole =
     "mesosphere.marathon" % "api-console" % V.MarathonApiConsole
   val graphite = "io.dropwizard.metrics" % "metrics-graphite" % V.Graphite
@@ -383,7 +383,7 @@ object Dependency {
 
   object Test {
     val scalatest   = "org.scalatest"     %% "scalatest"    % V.ScalaTest
-    val mockito     = "org.mockito"       % "mockito-all"   % V.Mockito
+    val mockito     = "org.mockito"        % "mockito-all"  % V.Mockito
     val akkaTestKit = "com.typesafe.akka" %% "akka-testkit" % V.Akka
     val diffson     = "org.gnieh"         %% "diffson"      % V.Diffson
   }

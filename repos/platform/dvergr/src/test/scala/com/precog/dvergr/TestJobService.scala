@@ -110,7 +110,7 @@ class JobServiceSpec extends TestJobService {
 
   def postJobAndGetId(job: JValue, apiKey: String = validAPIKey) =
     for {
-      res                  <- jobsClient.query("apiKey", apiKey).post[JValue]("/jobs/")(job)
+      res                 <- jobsClient.query("apiKey", apiKey).post[JValue]("/jobs/")(job)
       Some(JString(jobId)) = res.content map (_ \ "id")
     } yield jobId
 
@@ -127,7 +127,7 @@ class JobServiceSpec extends TestJobService {
 
   def postMessageAndGetId(jobId: String, channel: String, msg: JValue) =
     for {
-      res            <- postMessage(jobId, channel, msg)
+      res           <- postMessage(jobId, channel, msg)
       Some(JNum(id)) = res.content map (_ \ "id")
     } yield id
 
@@ -179,7 +179,7 @@ class JobServiceSpec extends TestJobService {
       prev: Option[BigDecimal] = None
   ) = {
     for {
-      res            <- putStatus(jobId, message, progress, unit, info, prev)
+      res           <- putStatus(jobId, message, progress, unit, info, prev)
       Some(JNum(id)) = res.content map (_ \ "id")
     } yield id
   }
@@ -217,7 +217,7 @@ class JobServiceSpec extends TestJobService {
     "fetch created jobs" in {
       val obj = (for {
         res                                              <- postJob(jobWithData, validAPIKey)
-        Some(JString(jobId))                             = res.content map (_ \ "id")
+        Some(JString(jobId))                              = res.content map (_ \ "id")
         HttpResponse(HttpStatus(OK, _), _, Some(obj), _) <- getJob(jobId)
       } yield obj).copoint
 
@@ -231,7 +231,7 @@ class JobServiceSpec extends TestJobService {
     "start job and retrieve state" in {
       val (st1, st2, st3) = (for {
         res                              <- postJob(simpleJob, validAPIKey)
-        Some(JString(jobId))             = res.content map (_ \ "id")
+        Some(JString(jobId))              = res.content map (_ \ "id")
         HttpResponse(_, _, Some(st1), _) <- getState(jobId)
         HttpResponse(_, _, Some(st2), _) <- putState(jobId, startJob())
         HttpResponse(_, _, Some(st3), _) <- getState(jobId)
@@ -249,7 +249,7 @@ class JobServiceSpec extends TestJobService {
     "start jobs with explicit date time" in {
       val dt = new DateTime
       val (state, job) = (for {
-        res                  <- postJob(simpleJob, validAPIKey)
+        res                 <- postJob(simpleJob, validAPIKey)
         Some(JString(jobId)) = res.content map (_ \ "id")
         HttpResponse(HttpStatus(OK, _), _, Some(obj1), _) <- putState(
                                                               jobId,
@@ -266,9 +266,9 @@ class JobServiceSpec extends TestJobService {
 
     "fail to cancel job without reason" in {
       (for {
-        job                  <- postJob(simpleJob)
+        job                 <- postJob(simpleJob)
         Some(JString(jobId)) = job.content map (_ \ "id")
-        _                    <- putState(jobId, startJob())
+        _                   <- putState(jobId, startJob())
         res <- putState(
                 jobId,
                 JObject(JField("state", JString("cancelled")) :: Nil)

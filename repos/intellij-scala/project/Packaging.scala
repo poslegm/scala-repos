@@ -43,7 +43,7 @@ object Packaging {
     val resolvedLibraries = (for {
       jarFile  <- libraries
       moduleId <- jarFile.get(moduleID.key)
-      key      = moduleId.organization % moduleId.name % moduleId.revision
+      key       = moduleId.organization % moduleId.name % moduleId.revision
     } yield (key, jarFile.data)).toMap
     entries.map(e => convertEntry(e, resolvedLibraries))
   }

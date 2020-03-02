@@ -168,7 +168,7 @@ case class Group(
       group        <- transitiveAppGroups
       app          <- group.apps
       dependencyId <- app.dependencies
-      dependentApp = transitiveApps.find(_.id == dependencyId).map(a => Set(a))
+      dependentApp  = transitiveApps.find(_.id == dependencyId).map(a => Set(a))
       dependentGroup = allGroups
         .find(_.id == dependencyId)
         .map(_.transitiveApps)

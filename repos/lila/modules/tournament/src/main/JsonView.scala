@@ -140,10 +140,10 @@ final class JsonView(
                 pairing.user2
               ) map { pairOption =>
                 for {
-                  players  <- pairOption
+                  players <- pairOption
                   (p1, p2) = players
-                  rp1      <- RankedPlayer(ranking)(p1)
-                  rp2      <- RankedPlayer(ranking)(p2)
+                  rp1     <- RankedPlayer(ranking)(p1)
+                  rp2     <- RankedPlayer(ranking)(p2)
                 } yield FeaturedGame(game, rp1, rp2)
               }
             }

@@ -833,9 +833,9 @@ object Build extends sbt.Build {
         val paths   = mutable.Set.empty[String]
 
         for {
-          srcDir     <- sourceDirectories
+          srcDir    <- sourceDirectories
           normSrcDir = normPath(srcDir)
-          src        <- (srcDir ** "*.scala").get
+          src       <- (srcDir ** "*.scala").get
         } {
           val normSrc = normPath(src)
           val path    = normSrc.substring(normSrcDir.length)
@@ -1351,7 +1351,7 @@ object Build extends sbt.Build {
         if (shouldPartest.value)
           Seq(
             "org.scala-sbt"              % "sbt"              % sbtVersion.value,
-            "org.scala-lang.modules"     %% "scala-partest"   % "1.0.9",
+            "org.scala-lang.modules"    %% "scala-partest"    % "1.0.9",
             "com.google.javascript"      % "closure-compiler" % "v20130603",
             "io.apigee"                  % "rhino"            % "1.7R5pre4",
             "com.googlecode.json-simple" % "json-simple"      % "1.1.1" exclude

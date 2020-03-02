@@ -68,7 +68,7 @@ trait DocumentCleaner {
     val ems: Elements = doc.getElementsByTag("em")
 
     for {
-      node             <- ems
+      node            <- ems
       images: Elements = node.getElementsByTag("img") if (images.size == 0)
     } {
       val tn: TextNode = new TextNode(node.text, doc.baseUri)

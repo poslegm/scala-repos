@@ -275,7 +275,7 @@ package play.api.mvc {
       for {
         header <- headers.get(headerName).toList
         value0 <- header.split(',')
-        value  = value0.trim
+        value   = value0.trim
       } yield {
         RequestHeader.qPattern.findFirstMatchIn(value) match {
           case Some(m) => (m.group(1).toDouble, m.before.toString)

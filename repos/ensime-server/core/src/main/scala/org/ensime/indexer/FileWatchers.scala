@@ -133,7 +133,7 @@ private class ApachePollingFileWatcher(
     fm.addFile(base)
     for {
       file <- if (recursive) watched.tree else watched.children
-      fo   = vfs.vfile(file)
+      fo    = vfs.vfile(file)
     } {
       // VFS doesn't send "file created" messages when it first starts
       // up, but since we're reacting to a directory deletion, we

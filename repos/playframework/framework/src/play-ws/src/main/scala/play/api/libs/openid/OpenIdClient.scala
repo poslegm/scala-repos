@@ -354,7 +354,7 @@ private[openid] object Discovery {
         _ <- response
               .header(HeaderNames.CONTENT_TYPE)
               .filter(_.contains("application/xrds+xml"))
-        findInXml     = findUriWithType(response.xml) _
+        findInXml      = findUriWithType(response.xml) _
         (typeId, uri) <- serviceTypeId.flatMap(findInXml(_)).headOption
       } yield OpenIDServer(typeId, uri, None)
 

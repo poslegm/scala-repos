@@ -158,7 +158,7 @@ class Inliner[BT <: BTypes](val btypes: BT) {
         selfParamType.toASMType +: traitMethodArgumentTypes: _*
       )
       implClassMethod <- implClassMethodV(implMethodDescriptor)
-      implClassBType  = classBTypeFromParsedClassfile(implClassInternalName)
+      implClassBType   = classBTypeFromParsedClassfile(implClassInternalName)
       selfTypeOk      <- calleeDeclarationClass.isSubtypeOf(selfParamType)
     } yield {
 

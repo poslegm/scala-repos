@@ -52,7 +52,7 @@ trait ScTypeBoundsOwnerImpl extends ScTypeBoundsOwner {
   override def viewTypeElement: Seq[ScTypeElement] = {
     for {
       v <- findChildrenByType(ScalaTokenTypes.tVIEW)
-      e = ScalaPsiUtil.getNextSiblingOfType(v, classOf[ScTypeElement])
+      e  = ScalaPsiUtil.getNextSiblingOfType(v, classOf[ScTypeElement])
       t <- Option(e)
     } yield t
   }

@@ -291,7 +291,7 @@ trait LocationLineManager { self: ScalaPositionManager =>
         val methods   = refType.methods().asScala.filterNot(tooSmall)
 
         for {
-          m                  <- methods
+          m                 <- methods
           caseLinesLocations = caseLines.map(locationsOfLine(m, _))
           if caseLinesLocations.exists(_.nonEmpty)
         } {

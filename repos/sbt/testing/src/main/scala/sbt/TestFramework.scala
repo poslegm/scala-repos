@@ -192,12 +192,11 @@ object TestFramework {
       tests: Seq[TestDefinition],
       log: Logger,
       listeners: Seq[TestReportListener]
-  )
-      : (
-          () => Unit,
-          Seq[(String, TestFunction)],
-          TestResult.Value => () => Unit
-      ) = {
+  ): (
+      () => Unit,
+      Seq[(String, TestFunction)],
+      TestResult.Value => () => Unit
+  ) = {
     val mappedTests = testMap(frameworks.values.toSeq, tests)
     if (mappedTests.isEmpty) (() => (), Nil, _ => () => ())
     else

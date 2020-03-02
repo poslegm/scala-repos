@@ -38,9 +38,9 @@ class ScalaUnreachableCodeInspection
       val components = ControlFlowUtil.detectConnectedComponents(cfg)
       if (components.length > 1) {
         for {
-          comp        <- components.tail
+          comp       <- components.tail
           unreachable = comp.diff(components.head)
-          fragm       <- fragments(unreachable)
+          fragm      <- fragments(unreachable)
         } {
           registerProblem(fragm, holder)
         }

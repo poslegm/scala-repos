@@ -138,24 +138,24 @@ object EnsimeBuild extends Build {
         EnsimeKeys.unmanagedSourceArchives +=
           file(".").getCanonicalFile / "openjdk-langtools/openjdk6-langtools-src.zip",
         libraryDependencies ++= Seq(
-          "com.h2database"     % "h2"             % "1.4.190",
-          "com.typesafe.slick" %% "slick"         % "3.1.1",
-          "com.zaxxer"         % "HikariCP-java6" % "2.3.13",
+          "com.h2database"      % "h2"             % "1.4.190",
+          "com.typesafe.slick" %% "slick"          % "3.1.1",
+          "com.zaxxer"          % "HikariCP-java6" % "2.3.13",
           // Netbeans 7.4+ needs Java 7 (7.3 only needs it at runtime)
           "org.netbeans.api" % "org-netbeans-api-java"            % "RELEASE731",
           "org.netbeans.api" % "org-netbeans-modules-java-source" % "RELEASE731",
           // lucene 4.8+ needs Java 7: http://www.gossamer-threads.com/lists/lucene/general/225300
-          "org.apache.lucene"              % "lucene-core"                    % luceneVersion,
-          "org.apache.lucene"              % "lucene-analyzers-common"        % luceneVersion,
-          "org.ow2.asm"                    % "asm-commons"                    % "5.0.4",
-          "org.ow2.asm"                    % "asm-util"                       % "5.0.4",
-          "org.scala-lang"                 % "scala-compiler"                 % scalaVersion.value,
-          "org.scala-lang"                 % "scalap"                         % scalaVersion.value,
-          "com.typesafe.akka"              %% "akka-actor"                    % Sensible.akkaVersion,
-          "com.typesafe.akka"              %% "akka-slf4j"                    % Sensible.akkaVersion,
-          "org.scala-refactoring"          %% "org.scala-refactoring.library" % "0.9.1-SNAPSHOT",
-          "commons-lang"                   % "commons-lang"                   % "2.6",
-          "com.googlecode.java-diff-utils" % "diffutils"                      % "1.3.0"
+          "org.apache.lucene"              % "lucene-core"                   % luceneVersion,
+          "org.apache.lucene"              % "lucene-analyzers-common"       % luceneVersion,
+          "org.ow2.asm"                    % "asm-commons"                   % "5.0.4",
+          "org.ow2.asm"                    % "asm-util"                      % "5.0.4",
+          "org.scala-lang"                 % "scala-compiler"                % scalaVersion.value,
+          "org.scala-lang"                 % "scalap"                        % scalaVersion.value,
+          "com.typesafe.akka"             %% "akka-actor"                    % Sensible.akkaVersion,
+          "com.typesafe.akka"             %% "akka-slf4j"                    % Sensible.akkaVersion,
+          "org.scala-refactoring"         %% "org.scala-refactoring.library" % "0.9.1-SNAPSHOT",
+          "commons-lang"                   % "commons-lang"                  % "2.6",
+          "com.googlecode.java-diff-utils" % "diffutils"                     % "1.3.0"
         ) ++ Sensible.testLibs("it,test") ++ Sensible
           .shapeless(scalaVersion.value)
       ) enablePlugins BuildInfoPlugin settings

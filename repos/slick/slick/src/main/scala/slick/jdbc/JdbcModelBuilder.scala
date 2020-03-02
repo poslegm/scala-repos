@@ -124,7 +124,7 @@ class JdbcModelBuilder(mTables: Seq[MTable], ignoreInvalidDefaults: Boolean)(
     * are not included. */
   def buildModel: DBIO[m.Model] =
     for {
-      ts            <- DBIO.sequence(tableNamers.map(createTableBuilder))
+      ts           <- DBIO.sequence(tableNamers.map(createTableBuilder))
       tablesByQName = ts.map(t => t.meta.name -> t).toMap
       builders      = createBuilders(tablesByQName)
     } yield m.Model(ts.sortBy(_.meta.name.name).map(_.buildModel(builders)))

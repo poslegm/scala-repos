@@ -246,8 +246,8 @@ trait ActorVFSModule extends VFSModule[Future, Slice] {
 
       for {
         _           <- IOT { IOUtils.makeDirectory(versionDir) }
-        file        = (new File(versionDir, "data"))
-        _           = logger.debug("Creating new blob at " + file)
+        file         = (new File(versionDir, "data"))
+        _            = logger.debug("Creating new blob at " + file)
         writeResult <- write(new FileOutputStream(file), 0L, data)
         blobResult <- IOT {
                        writeResult traverse { size =>

@@ -17,7 +17,11 @@ object FlattenGroup {
   }
 
   class FlattenLeftJoin3[
-      KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C
+      KEY,
+      KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL],
+      A,
+      B,
+      C
   ](nested: KLL[KEY, ((A, B), C)]) {
     def flattenValueTuple: KLL[KEY, (A, B, C)] = nested.mapValues { tup =>
       FlattenGroup.flattenNestedTuple(tup)
@@ -37,7 +41,12 @@ object FlattenGroup {
   }
 
   class FlattenLeftJoin4[
-      KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C, D
+      KEY,
+      KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL],
+      A,
+      B,
+      C,
+      D
   ](nested: KLL[KEY, (((A, B), C), D)]) {
     def flattenValueTuple: KLL[KEY, (A, B, C, D)] = nested.mapValues { tup =>
       FlattenGroup.flattenNestedTuple(tup)
@@ -59,7 +68,13 @@ object FlattenGroup {
   }
 
   class FlattenLeftJoin5[
-      KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C, D, E
+      KEY,
+      KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL],
+      A,
+      B,
+      C,
+      D,
+      E
   ](nested: KLL[KEY, ((((A, B), C), D), E)]) {
     def flattenValueTuple: KLL[KEY, (A, B, C, D, E)] = nested.mapValues { tup =>
       FlattenGroup.flattenNestedTuple(tup)
@@ -81,8 +96,14 @@ object FlattenGroup {
   }
 
   class FlattenLeftJoin6[
-      KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C, D,
-      E, F
+      KEY,
+      KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL],
+      A,
+      B,
+      C,
+      D,
+      E,
+      F
   ](nested: KLL[KEY, (((((A, B), C), D), E), F)]) {
     def flattenValueTuple: KLL[KEY, (A, B, C, D, E, F)] = nested.mapValues {
       tup => FlattenGroup.flattenNestedTuple(tup)
@@ -630,7 +651,10 @@ object FlattenGroup {
                                                                       (
                                                                           (
                                                                               (
-                                                                                  ((A, B), C),
+                                                                                  (
+                                                                                      (A, B),
+                                                                                      C
+                                                                                  ),
                                                                                   D
                                                                               ),
                                                                               E
@@ -718,7 +742,11 @@ object FlattenGroup {
   }
 
   class FlattenOuterJoin3[
-      KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C
+      KEY,
+      KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL],
+      A,
+      B,
+      C
   ](nested: KLL[KEY, (Option[(Option[A], Option[B])], Option[C])]) {
     def flattenValueTuple: KLL[KEY, (Option[A], Option[B], Option[C])] =
       nested.mapValues { tup => FlattenGroup.flattenNestedOptionTuple(tup) }
@@ -741,7 +769,12 @@ object FlattenGroup {
   }
 
   class FlattenOuterJoin4[
-      KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C, D
+      KEY,
+      KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL],
+      A,
+      B,
+      C,
+      D
   ](
       nested: KLL[
         KEY,
@@ -780,7 +813,13 @@ object FlattenGroup {
   }
 
   class FlattenOuterJoin5[
-      KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C, D, E
+      KEY,
+      KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL],
+      A,
+      B,
+      C,
+      D,
+      E
   ](
       nested: KLL[
         KEY,
@@ -838,8 +877,14 @@ object FlattenGroup {
   }
 
   class FlattenOuterJoin6[
-      KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C, D,
-      E, F
+      KEY,
+      KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL],
+      A,
+      B,
+      C,
+      D,
+      E,
+      F
   ](
       nested: KLL[
         KEY,
@@ -1576,7 +1621,12 @@ object FlattenGroup {
                                                                         (
                                                                             Option[
                                                                               (
-                                                                                  Option[(Option[(Option[A], Option[B])], Option[C])],
+                                                                                  Option[
+                                                                                    (
+                                                                                        Option[(Option[A], Option[B])],
+                                                                                        Option[C]
+                                                                                    )
+                                                                                  ],
                                                                                   Option[D]
                                                                               )
                                                                             ],
@@ -1697,7 +1747,12 @@ object FlattenGroup {
                                                                         (
                                                                             Option[
                                                                               (
-                                                                                  Option[(Option[(Option[(Option[A], Option[B])], Option[C])], Option[D])],
+                                                                                  Option[
+                                                                                    (
+                                                                                        Option[(Option[(Option[A], Option[B])], Option[C])],
+                                                                                        Option[D]
+                                                                                    )
+                                                                                  ],
                                                                                   Option[E]
                                                                               )
                                                                             ],
@@ -1823,7 +1878,12 @@ object FlattenGroup {
                                                                               (
                                                                                   Option[
                                                                                     (
-                                                                                        Option[(Option[(Option[(Option[A], Option[B])], Option[C])], Option[D])],
+                                                                                        Option[
+                                                                                          (
+                                                                                              Option[(Option[(Option[A], Option[B])], Option[C])],
+                                                                                              Option[D]
+                                                                                          )
+                                                                                        ],
                                                                                         Option[E]
                                                                                     )
                                                                                   ],
@@ -1957,7 +2017,12 @@ object FlattenGroup {
                                                                                     (
                                                                                         Option[
                                                                                           (
-                                                                                              Option[(Option[(Option[(Option[A], Option[B])], Option[C])], Option[D])],
+                                                                                              Option[
+                                                                                                (
+                                                                                                    Option[(Option[(Option[A], Option[B])], Option[C])],
+                                                                                                    Option[D]
+                                                                                                )
+                                                                                              ],
                                                                                               Option[E]
                                                                                           )
                                                                                         ],
@@ -2099,7 +2164,12 @@ object FlattenGroup {
                                                                                           (
                                                                                               Option[
                                                                                                 (
-                                                                                                    Option[(Option[(Option[(Option[A], Option[B])], Option[C])], Option[D])],
+                                                                                                    Option[
+                                                                                                      (
+                                                                                                          Option[(Option[(Option[A], Option[B])], Option[C])],
+                                                                                                          Option[D]
+                                                                                                      )
+                                                                                                    ],
                                                                                                     Option[E]
                                                                                                 )
                                                                                               ],
@@ -2247,7 +2317,17 @@ object FlattenGroup {
                                                                                           (
                                                                                               Option[
                                                                                                 (
-                                                                                                    Option[(Option[(Option[(Option[(Option[A], Option[B])], Option[C])], Option[D])], Option[E])],
+                                                                                                    Option[
+                                                                                                      (
+                                                                                                          Option[
+                                                                                                            (
+                                                                                                                Option[(Option[(Option[A], Option[B])], Option[C])],
+                                                                                                                Option[D]
+                                                                                                            )
+                                                                                                          ],
+                                                                                                          Option[E]
+                                                                                                      )
+                                                                                                    ],
                                                                                                     Option[F]
                                                                                                 )
                                                                                               ],
@@ -2400,7 +2480,17 @@ object FlattenGroup {
                                                                                                 (
                                                                                                     Option[
                                                                                                       (
-                                                                                                          Option[(Option[(Option[(Option[(Option[A], Option[B])], Option[C])], Option[D])], Option[E])],
+                                                                                                          Option[
+                                                                                                            (
+                                                                                                                Option[
+                                                                                                                  (
+                                                                                                                      Option[(Option[(Option[A], Option[B])], Option[C])],
+                                                                                                                      Option[D]
+                                                                                                                  )
+                                                                                                                ],
+                                                                                                                Option[E]
+                                                                                                            )
+                                                                                                          ],
                                                                                                           Option[F]
                                                                                                       )
                                                                                                     ],

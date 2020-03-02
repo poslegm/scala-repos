@@ -43,7 +43,7 @@ trait ApplicationAnnotator {
   ) {
     for {
       result <- reference.multiResolve(false)
-      r      = result.asInstanceOf[ScalaResolveResult]
+      r       = result.asInstanceOf[ScalaResolveResult]
     } {
       if (r.isAssignment) {
         annotateAssignmentReference(reference, holder)

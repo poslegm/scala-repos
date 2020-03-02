@@ -474,7 +474,7 @@ trait ProdConsAnalyzerImpl {
     var res = Map.empty[AbstractInsnNode, Vector[Set[AbstractInsnNode]]]
     for {
       insn     <- methodNode.instructions.iterator.asScala
-      frame    = frameAt(insn)
+      frame     = frameAt(insn)
       i        <- inputValueSlots(insn)
       producer <- frame.getValue(i).insns.asScala
     } {

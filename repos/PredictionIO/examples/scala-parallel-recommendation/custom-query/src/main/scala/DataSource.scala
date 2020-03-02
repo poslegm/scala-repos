@@ -62,7 +62,7 @@ class DataSource(val dsp: DataSourceParams)
         try {
           (event.event match {
             case "rate" => event.properties.getOpt[Double]("rating")
-            case _      ⇒ None
+            case _       ⇒ None
           }).map(Rating(event.entityId, event.targetEntityId.get, _))
         } catch {
           case e: Exception ⇒

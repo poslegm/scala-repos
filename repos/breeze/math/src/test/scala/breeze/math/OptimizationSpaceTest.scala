@@ -286,9 +286,10 @@ trait OptimizationSpaceTest[M, V, S] extends TensorSpaceTestBase[V, Int, S] {
 
 class DenseOptimizationSpaceTest_Double
     extends OptimizationSpaceTest[DenseMatrix[Double], DenseVector[Double], Double] {
-  override implicit val space: MutableOptimizationSpace[DenseMatrix[Double], DenseVector[
-    Double
-  ], Double] =
+  override implicit val space
+      : MutableOptimizationSpace[DenseMatrix[Double], DenseVector[
+        Double
+      ], Double] =
     MutableOptimizationSpace.DenseDoubleOptimizationSpace.denseDoubleOptSpace
 
   val N = 30

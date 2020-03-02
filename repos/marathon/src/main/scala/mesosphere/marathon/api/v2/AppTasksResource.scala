@@ -54,7 +54,7 @@ class AppTasksResource @Inject() (
         for {
           runningApps <- appIds.filter(taskMap.hasAppTasks)
           id          <- appIds
-          health      = result(healthCheckManager.statuses(id))
+          health       = result(healthCheckManager.statuses(id))
           task        <- taskMap.appTasks(id)
         } yield EnrichedTask(id, task, health.getOrElse(task.taskId, Nil))
 

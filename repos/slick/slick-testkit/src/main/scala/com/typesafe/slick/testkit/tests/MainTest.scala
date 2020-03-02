@@ -75,9 +75,9 @@ class MainTest extends AsyncTest[JdbcTestDB] { mainTest =>
                Seq("Santa's Little Helper", "Snowball")
       total = for (i2 <- ins2; i3 <- ins3) yield ins1 + i2 + i3
       /* All test DBs seem to report the actual number of rows. None would also be acceptable: */
-      _  = total.map(_ shouldBe 7)
+      _   = total.map(_ shouldBe 7)
       r1 <- q1.result
-      _  = r1 shouldBe expectedUserTuples
+      _   = r1 shouldBe expectedUserTuples
     } yield ()) andThen q1.result).withPinnedSession)
 
     materialize(p1.mapResult { case (id, f, l) => User(id, f, l.orNull) })
@@ -215,7 +215,7 @@ class MainTest extends AsyncTest[JdbcTestDB] { mainTest =>
             (7, "Snowball", None)
           )
           deleted <- q5.delete
-          _       = deleted shouldBe 2
+          _        = deleted shouldBe 2
           _       <- q6.result.head.map(_ shouldBe 0)
         } yield ())
       }
@@ -247,7 +247,7 @@ class MainTest extends AsyncTest[JdbcTestDB] { mainTest =>
 
         db.run(for {
           updated2 <- q8.update("n/a", Some("n/a"))
-          _        = updated2 shouldBe 1
+          _         = updated2 shouldBe 1
           _        <- q9.result.map(_ shouldBe 4)
           _        <- q10.result.map(_ shouldBe Nil)
         } yield ())

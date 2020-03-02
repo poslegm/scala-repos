@@ -347,8 +347,8 @@ class VecCheck extends Specification with ScalaCheck {
           val dat = v.contents
           val exp = for {
             i <- 0 until v.length - 1
-            a = dat(i)
-            b = dat(i + 1)
+            a  = dat(i)
+            b  = dat(i + 1)
           } yield (if (a.isNaN) 0 else a) + (if (b.isNaN) 0 else b)
 
           res must_== Vec(exp: _*)

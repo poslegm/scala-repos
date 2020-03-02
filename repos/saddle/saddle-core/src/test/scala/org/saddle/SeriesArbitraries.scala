@@ -52,7 +52,7 @@ object SeriesArbitraries {
     for {
       n   <- Gen.choose(0, 40)
       ix  <- Gen.listOfN(n, IndexArbitraries.getDate)
-      uq  = Index(ix.toSet.toSeq: _*)
+      uq   = Index(ix.toSet.toSeq: _*)
       lst <- Gen.listOfN(uq.length, Gen.chooseNum(-1e3, 1e3))
     } yield Series(Vec(lst: _*), uq)
 

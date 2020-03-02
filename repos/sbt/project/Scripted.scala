@@ -54,7 +54,7 @@ object Scripted {
     val PagedIds: Parser[Seq[String]] = for {
       group <- groupP
       page  <- pageP
-      files = pagedFilenames(group, page)
+      files  = pagedFilenames(group, page)
       // TODO -  Fail the parser if we don't have enough files for the given page size
       //if !files.isEmpty
     } yield files map (f => group + '/' + f)

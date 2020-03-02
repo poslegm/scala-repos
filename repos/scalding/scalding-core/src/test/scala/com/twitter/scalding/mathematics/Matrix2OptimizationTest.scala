@@ -545,10 +545,12 @@ object Matrix2Props extends Properties("Matrix2") {
       * as the dynamic programming procedure computes cost
       * (optimizeProductChain - computeCosts in Prototype)
       */
-    def evaluateProduct(p: Matrix2[Any, Any, Double], labels: LabeledTree)
-        : Option[
-          (BigInt, Matrix2[Any, Any, Double], Matrix2[Any, Any, Double])
-        ] = {
+    def evaluateProduct(
+        p: Matrix2[Any, Any, Double],
+        labels: LabeledTree
+    ): Option[
+      (BigInt, Matrix2[Any, Any, Double], Matrix2[Any, Any, Double])
+    ] = {
       p match {
         case Product(
             left @ MatrixLiteral(_, _),

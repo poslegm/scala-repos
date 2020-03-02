@@ -285,10 +285,10 @@ object CompilerBenchmark {
     val tableC = TableQuery[TableC]
 
     val queryErr2 = for {
-      a     <- tableA
-      b     <- tableB if b.id === a.id
+      a    <- tableA
+      b    <- tableB if b.id === a.id
       start = a.id + 1
-      c     <- tableC if c.start <= start
+      c    <- tableC if c.start <= start
     } yield (b, c)
 
     Vector(queryErr2)

@@ -221,7 +221,9 @@ package parallel {
     *  the receiver (which will be the return value).
     */
   private[parallel] abstract class BucketCombiner[
-      -Elem, +To, Buck,
+      -Elem,
+      +To,
+      Buck,
       +CombinerType <: BucketCombiner[Elem, To, Buck, CombinerType]
   ](private val bucketnumber: Int)
       extends Combiner[Elem, To] {

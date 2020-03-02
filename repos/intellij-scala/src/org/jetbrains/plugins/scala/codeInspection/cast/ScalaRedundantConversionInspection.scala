@@ -44,7 +44,7 @@ class ScalaRedundantConversionInspection
   ) {
     target match {
       case f: ScSyntheticFunction if f.name.startsWith("to") =>
-        for (leftType       <- left.getType(TypingContext.empty);
+        for (leftType      <- left.getType(TypingContext.empty);
              conversionType = f.retType
              if leftType.equiv(conversionType))
           registerProblem(

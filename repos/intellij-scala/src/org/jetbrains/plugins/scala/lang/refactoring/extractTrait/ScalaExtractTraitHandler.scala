@@ -364,7 +364,7 @@ class ScalaExtractTraitHandler extends RefactoringActionHandler {
       }
 
       for {
-        info   <- memberInfos
+        info  <- memberInfos
         member = info.getMember
       } {
         currentMemberName = info.getDisplayName

@@ -9,7 +9,7 @@ object Dependencies {
   val scaloid        = "org.scaloid" %% "scaloid" % scaloidVersion
 
   val robolectric    = "org.robolectric" % "robolectric"     % "2.4"   % "test"
-  val scalaTest      = "org.scalatest"   %% "scalatest"      % "2.2.5" % "test"
+  val scalaTest      = "org.scalatest"  %% "scalatest"       % "2.2.5" % "test"
   val junit          = "junit"           % "junit"           % "4.12"  % "test"
   val junitInterface = "com.novocode"    % "junit-interface" % "0.11"  % "test"
 }

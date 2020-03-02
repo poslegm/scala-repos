@@ -51,7 +51,7 @@ trait TimeZoneTypedField extends StringTypedField {
       buildDisplayList,
       Full(valueBox openOr ""),
       timezone => setBox(Full(timezone))
-    )             %
+    )              %
       ("tabindex" -> tabIndex.toString)
 
   override def toForm: Box[NodeSeq] =

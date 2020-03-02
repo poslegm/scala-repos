@@ -214,9 +214,9 @@ object Multipart {
                        .toMap
                    )
 
-        _           <- values.get("form-data")
-        partName    <- values.get("name")
-        fileName    <- values.get("filename")
+        _          <- values.get("form-data")
+        partName   <- values.get("name")
+        fileName   <- values.get("filename")
         contentType = headers.get("content-type")
       } yield (partName, fileName, contentType)
     }

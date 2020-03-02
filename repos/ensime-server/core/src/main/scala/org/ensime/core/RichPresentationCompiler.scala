@@ -177,7 +177,7 @@ trait RichCompilerControl
   def askReloadAllFiles() = {
     val all = {
       for {
-        file   <- config.scalaSourceFiles
+        file  <- config.scalaSourceFiles
         source = createSourceFile(file)
       } yield source
     }.toSet ++ activeUnits().map(_.source)

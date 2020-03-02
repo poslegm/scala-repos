@@ -52,7 +52,7 @@ object UserAgentCalculator extends Factory {
     */
   def defaultIeCalcFunction(userAgent: Box[String]): Box[Double] =
     for {
-      userAgent  <- userAgent
+      userAgent <- userAgent
       ieMatch    = iePattern.pattern.matcher(userAgent)
       findResult = ieMatch.find if findResult
       ieVersionString <- Box.legacyNullTest(ieMatch.group(2)) or Box
@@ -80,7 +80,7 @@ object UserAgentCalculator extends Factory {
   def defaultSafariCalcFunction(userAgent: Box[String]): Box[Double] =
     for {
       ua  <- userAgent
-      m   = safariPattern.pattern.matcher(ua)
+      m    = safariPattern.pattern.matcher(ua)
       ver <- if (m.find) Helpers.asDouble(m.group(1)) else Empty
     } yield ver
 
@@ -104,7 +104,7 @@ object UserAgentCalculator extends Factory {
   def defaultFirefoxCalcFunction(userAgent: Box[String]): Box[Double] =
     for {
       ua  <- userAgent
-      m   = firefoxPattern.pattern.matcher(ua)
+      m    = firefoxPattern.pattern.matcher(ua)
       ver <- if (m.find) Helpers.asDouble(m.group(1)) else Empty
     } yield ver
 
@@ -144,7 +144,7 @@ object UserAgentCalculator extends Factory {
   def defaultChromeCalcFunction(userAgent: Box[String]): Box[Double] =
     for {
       ua  <- userAgent
-      m   = chromePattern.pattern.matcher(ua)
+      m    = chromePattern.pattern.matcher(ua)
       ver <- if (m.find) Helpers.asDouble(m.group(1)) else Empty
     } yield ver
 }
@@ -1322,9 +1322,9 @@ class Req(
   private def notFoundViaTemplate(path: ParsePath): LiftResponse = {
     this.initIfUnitted {
       (for {
-        session  <- S.session
+        session <- S.session
         template = Templates(path.partPath)
-        resp     <- session.processTemplate(template, this, path, 404)
+        resp    <- session.processTemplate(template, this, path, 404)
       } yield resp) match {
         case Full(resp) => resp
         case _          => Req.defaultCreateNotFound(this)

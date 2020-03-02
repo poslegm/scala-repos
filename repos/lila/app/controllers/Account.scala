@@ -103,8 +103,8 @@ object Account extends LilaController {
             Env.security.emailAddress
               .validate(data.email) err s"Invalid email ${data.email}"
           for {
-            ok   ← UserRepo.checkPasswordById(me.id, data.passwd)
-            _    ← ok ?? UserRepo.email(me.id, email)
+            ok    ← UserRepo.checkPasswordById(me.id, data.passwd)
+            _     ← ok ?? UserRepo.email(me.id, email)
             form <- emailForm(me)
           } yield {
             val content = html.account.email(me, form, ok.some)

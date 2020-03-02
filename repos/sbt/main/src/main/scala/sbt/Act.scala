@@ -78,7 +78,7 @@ object Act {
         conf <- configs(confAmb, defaultConfigs, proj, index)
       } yield for {
         taskAmb <- taskAxis(conf, index.tasks(proj, conf), keyMap)
-        task    = resolveTask(taskAmb)
+        task     = resolveTask(taskAmb)
         key     <- key(index, proj, conf, task, keyMap)
         extra   <- extraAxis(keyMap, IMap.empty)
       } yield {
@@ -88,7 +88,7 @@ object Act {
 
     for {
       rawProject <- optProjectRef(index, current)
-      proj       = resolveProject(rawProject, current)
+      proj        = resolveProject(rawProject, current)
       confAmb    <- config(index configs proj)
       partialMask = ScopeMask(
         rawProject.isExplicit,

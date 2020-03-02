@@ -34,8 +34,8 @@ object BijectionsTest {
     hostLen <- Gen.choose(1, 20)
     pathLen <- Gen.choose(1, 20)
     tld     <- Gen.oneOf(".net", ".com", "org", ".edu")
-    host    = Random.alphanumeric.take(hostLen).mkString
-    path    = Random.alphanumeric.take(pathLen).mkString
+    host     = Random.alphanumeric.take(hostLen).mkString
+    path     = Random.alphanumeric.take(pathLen).mkString
   } yield (new URI(scheme, host + tld, "/" + path, null)).toASCIIString
 
   val arbHeader = for {

@@ -22,7 +22,7 @@ object Export extends LilaController {
           case None =>
             for {
               initialFen <- GameRepo initialFen game
-              pgn        = Env.api.pgnDump(game, initialFen)
+              pgn         = Env.api.pgnDump(game, initialFen)
               analysis ← !get("as").contains("raw") ??
                           (Env.analyse.analyser get game.id)
             } yield Env.analyse

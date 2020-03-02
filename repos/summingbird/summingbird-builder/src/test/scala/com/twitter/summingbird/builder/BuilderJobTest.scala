@@ -45,10 +45,10 @@ object TestJob {
         (t.as[String] + ":" + batchID.as[String]).as[Array[Byte]]
     } { bytes: Array[Byte] =>
       for {
-        deser                         <- bytes.as[Try[String]]
+        deser                        <- bytes.as[Try[String]]
         Array(tString, batchIDString) = deser.split(":")
-        t                             <- tString.as[Try[T]]
-        batchID                       <- batchIDString.as[Try[BatchID]]
+        t                            <- tString.as[Try[T]]
+        batchID                      <- batchIDString.as[Try[BatchID]]
       } yield (t, batchID)
     }
   implicit def valPairInjection[T](

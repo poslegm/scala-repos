@@ -191,8 +191,8 @@ object CompilationData {
   private def createOutputGroups(chunk: ModuleChunk): Seq[(File, File)] = {
     for {
       target     <- chunk.getTargets.asScala.toSeq
-      module     = target.getModule
-      output     = target.getOutputDir
+      module      = target.getModule
+      output      = target.getOutputDir
       sourceRoot <- module.getSourceRoots.asScala.map(_.getFile)
       if sourceRoot.exists
     } yield (sourceRoot, output)

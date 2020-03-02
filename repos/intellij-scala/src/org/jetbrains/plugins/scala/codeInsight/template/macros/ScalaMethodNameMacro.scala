@@ -21,8 +21,7 @@ class ScalaMethodNameMacro extends Macro {
         context.getPsiElementAtStartOffset,
         classOf[ScFunction]
       )
-    ).map(scFun => new TextResult(scFun.getName))
-      .orNull
+    ).map(scFun => new TextResult(scFun.getName)).orNull
 
   override def getName: String = MacroUtil.scalaIdPrefix + "methodName"
 

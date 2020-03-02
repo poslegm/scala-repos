@@ -522,7 +522,7 @@ object BuiltinCommands {
     )
     for {
       lastOnly_keys <- keysParser
-      kvs           = Act.keyValues(structure)(lastOnly_keys._2)
+      kvs            = Act.keyValues(structure)(lastOnly_keys._2)
       f <- if (lastOnly_keys._1) success(() => s)
           else Aggregation.evaluatingParser(s, structure, show)(kvs)
     } yield () => {

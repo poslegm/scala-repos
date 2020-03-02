@@ -161,8 +161,8 @@ class MigrationTo0_11(
     for {
       rootGroup         <- rootGroupFuture
       appIdsFromAppRepo <- appIdsFuture
-      appIds            = appIdsFromAppRepo.toSet ++ rootGroup.transitiveApps.map(_.id)
-      _                 = log.info(s"Discovered ${appIds.size} app IDs")
+      appIds             = appIdsFromAppRepo.toSet ++ rootGroup.transitiveApps.map(_.id)
+      _                  = log.info(s"Discovered ${appIds.size} app IDs")
       appsWithVersions  <- processApps(appIds, rootGroup)
       _                 <- storeUpdatedAppsInRootGroup(rootGroup, appsWithVersions)
     } yield log.info("Finished 0.11 migration")
@@ -408,8 +408,8 @@ class MigrationTo0_16(
 
     for {
       rootGroup <- rootGroupFuture
-      apps      = rootGroup.transitiveApps
-      _         = log.info(s"Discovered ${apps.size} apps")
+      apps       = rootGroup.transitiveApps
+      _          = log.info(s"Discovered ${apps.size} apps")
       _         <- migrateRootGroup(rootGroup)
       _         <- migrateApps(rootGroup)
     } yield log.info("Finished 0.16 migration")

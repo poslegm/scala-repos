@@ -236,11 +236,10 @@ private[scalding] object InternalService {
       mergeLog: TypedPipe[(T, (K, U))],
       valueExpansion: ((V, Option[U])) => TraversableOnce[U],
       reducers: Option[Int]
-  )
-      : (
-          TypedPipe[(T, (K, (V, Option[U])))],
-          TypedPipe[(T, (K, (Option[U], U)))]
-      ) = {
+  ): (
+      TypedPipe[(T, (K, (V, Option[U])))],
+      TypedPipe[(T, (K, (Option[U], U)))]
+  ) = {
 
     def sum(opt: Option[U], u: U): U =
       if (opt.isDefined) Semigroup.plus(opt.get, u) else u

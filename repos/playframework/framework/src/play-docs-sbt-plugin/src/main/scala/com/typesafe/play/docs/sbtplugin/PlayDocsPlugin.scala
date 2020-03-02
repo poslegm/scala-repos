@@ -163,8 +163,8 @@ object PlayDocsPlugin extends AutoPlugin {
         .toSeq,
     docsJarScalaBinaryVersion <<= scalaBinaryVersion,
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% docsName.value                                         % PlayVersion.current,
-      "com.typesafe.play" % s"${docsName.value}_${docsJarScalaBinaryVersion.value}" % docsVersion.value % "docs" notTransitive
+      "com.typesafe.play" %% docsName.value                                          % PlayVersion.current,
+      "com.typesafe.play"  % s"${docsName.value}_${docsJarScalaBinaryVersion.value}" % docsVersion.value % "docs" notTransitive
         ()
     )
   )

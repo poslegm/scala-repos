@@ -465,8 +465,8 @@ object Execution {
         this,
         for {
           (s, st1) <- prev.runStats(conf, mode, cache)
-          next     = fn(s)
-          fut2     = next.runStats(conf, mode, cache)
+          next      = fn(s)
+          fut2      = next.runStats(conf, mode, cache)
           (t, st2) <- fut2
         } yield (t, Monoid.plus(st1, st2))
       )
@@ -714,9 +714,9 @@ object Execution {
         this,
         for {
           flowDef  <- toFuture(Try(result(conf, mode)))
-          _        = FlowStateMap.validateSources(flowDef, mode)
+          _         = FlowStateMap.validateSources(flowDef, mode)
           jobStats <- cache.runFlowDef(conf, mode, flowDef)
-          _        = FlowStateMap.clear(flowDef)
+          _         = FlowStateMap.clear(flowDef)
         } yield ((), ExecutionCounters.fromJobStats(jobStats))
       )
   }
@@ -783,9 +783,9 @@ object Execution {
                       new FlowDef;
                     (head :: tail).foreach(_.write(conf, fd, mode)); fd
                   })
-        _        = FlowStateMap.validateSources(flowDef, mode)
+        _         = FlowStateMap.validateSources(flowDef, mode)
         jobStats <- cache.runFlowDef(conf, mode, flowDef)
-        _        = FlowStateMap.clear(flowDef)
+        _         = FlowStateMap.clear(flowDef)
       } yield (ExecutionCounters.fromJobStats(jobStats))
     }
 

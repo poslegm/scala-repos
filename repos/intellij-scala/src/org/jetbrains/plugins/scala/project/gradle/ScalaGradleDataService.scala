@@ -72,7 +72,7 @@ private object ScalaGradleDataService {
 
     private def doImport(scalaNode: DataNode[ScalaModelData]): Unit =
       for {
-        module            <- getIdeModuleByNode(scalaNode)
+        module           <- getIdeModuleByNode(scalaNode)
         compilerOptions   = compilerOptionsFrom(scalaNode.getData)
         compilerClasspath = scalaNode.getData.getScalaClasspath.asScala.toSeq
       } {

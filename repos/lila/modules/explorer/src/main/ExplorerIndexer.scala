@@ -145,8 +145,8 @@ private final class ExplorerIndexer(
 
   private def makeFastPgn(game: Game): Fu[Option[String]] =
     ~(for {
-      whiteRating      <- stableRating(game.whitePlayer)
-      blackRating      <- stableRating(game.blackPlayer)
+      whiteRating     <- stableRating(game.whitePlayer)
+      blackRating     <- stableRating(game.blackPlayer)
       minPlayerRating  = if (game.variant.exotic) 1400 else 1500
       minAverageRating = if (game.variant.exotic) 1520 else 1600
       if whiteRating >= minPlayerRating

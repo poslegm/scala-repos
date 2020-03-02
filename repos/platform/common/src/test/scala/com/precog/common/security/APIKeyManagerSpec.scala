@@ -43,7 +43,7 @@ trait APIKeyManagerSpec[M[+_]] extends Specification {
       val grantParentage = for {
         rootKey     <- mgr.rootAPIKey
         rootGrantId <- mgr.rootGrantId
-        perms       = Account.newAccountPermissions("012345", Path("/012345/"))
+        perms        = Account.newAccountPermissions("012345", Path("/012345/"))
         grantRequest = v1.NewGrantRequest(
           Some("testGrant"),
           None,

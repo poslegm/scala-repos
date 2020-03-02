@@ -123,7 +123,7 @@ package ll {
         tp     <- typeRefs(targs filterNot (_ eq NoType))
         prefix <- asSeenPrefixes if tp.prefix != prefix
         site   <- classes
-        seen   = tp.asSeenFrom(prefix, site) if tp != seen
+        seen    = tp.asSeenFrom(prefix, site) if tp != seen
         if !seen.isInstanceOf[ExistentialType]
       } yield ((site, tp, prefix, seen)))
 

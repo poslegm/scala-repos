@@ -126,7 +126,7 @@ object BuildUtil {
     val depPairs = for {
       (uri, unit) <- units.toIterable
       project     <- unit.defined.values
-      ref         = ProjectRef(uri, project.id)
+      ref          = ProjectRef(uri, project.id)
       agg         <- project.aggregate
     } yield (ref, agg)
     Relation.empty ++ depPairs

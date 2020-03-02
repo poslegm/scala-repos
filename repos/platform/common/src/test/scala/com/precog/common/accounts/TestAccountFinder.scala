@@ -56,7 +56,7 @@ object TestAccounts {
   )(f: AccountId => M[APIKey]): M[Account] = {
     for {
       accountId <- newAccountId().point[M]
-      path      = Path(accountId)
+      path       = Path(accountId)
       apiKey    <- f(accountId)
     } yield {
       val salt = Account.randomSalt()

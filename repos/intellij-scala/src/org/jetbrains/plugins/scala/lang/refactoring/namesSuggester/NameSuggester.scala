@@ -197,7 +197,7 @@ object NameSuggester {
               if needPrefix.keySet.contains(c.qualifiedName) &&
                 args.nonEmpty =>
             for {
-              s      <- namesByType(args(0), shortVersion = false)
+              s     <- namesByType(args(0), shortVersion = false)
               prefix = needPrefix(c.qualifiedName)
             } {
               add(prefix + s.capitalize)

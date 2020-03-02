@@ -2457,10 +2457,10 @@ object ScalaPsiUtil {
     val previousOffset   = range.getStartOffset - 1
     val nextOffset       = range.getEndOffset
     for {
-      file        <- element.containingFile
+      file       <- element.containingFile
       prevElement = file.findElementAt(previousOffset)
       nextElement = file.findElementAt(nextOffset)
-      parent      <- element.parent
+      parent     <- element.parent
     } {
       if (!prevElement.isInstanceOf[PsiWhiteSpace]) {
         parent.addBefore(

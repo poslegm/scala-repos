@@ -58,7 +58,7 @@ object AndroidFacetDataService {
       dataToImport.foreach { facetNode =>
         for {
           module <- getIdeModuleByNode(facetNode)
-          facet  = getOrCreateFacet(module)
+          facet   = getOrCreateFacet(module)
         } {
           configureFacet(module, facet, facetNode.getData)
         }

@@ -91,9 +91,9 @@ class Hotspot extends Jvm {
       name           <- get("name").map(_.getValue().toString)
       time           <- get("time").map(long)
       freq           <- cs.get("sun.os.hrt.frequency").map(long)
-      duration       = ticksToDuration(time, freq)
-      lastEntryTime  = ticksToDuration(lastEntryTicks, freq)
-      kind           = "%d.%s".format(which, name)
+      duration        = ticksToDuration(time, freq)
+      lastEntryTime   = ticksToDuration(lastEntryTicks, freq)
+      kind            = "%d.%s".format(which, name)
     } yield Gc(invocations, kind, epoch + lastEntryTime, duration)
   }
 

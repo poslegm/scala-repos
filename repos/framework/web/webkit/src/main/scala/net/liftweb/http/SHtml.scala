@@ -793,7 +793,7 @@ trait SHtml extends Loggable {
         case null => ""
         case s    => s
       }
-    }/>)(_                                 % _)) % ("onkeypress" -> """liftUtils.lift_blurIfReturn(event)""") %
+    }/>)(_                                  % _)) % ("onkeypress" -> """liftUtils.lift_blurIfReturn(event)""") %
       (if (ignoreBlur) Null else ("onblur" -> (json(JE.JsRaw("this.value")))))
 
   /**
@@ -1138,7 +1138,7 @@ trait SHtml extends Loggable {
           attrs.foldLeft(<input type="radio" name={groupName}
                                      value={Helpers.nextFuncName}/>)(_ % _) % checked(
             deflt == Full(v)
-          )            %
+          )             %
             ("onclick" -> ajaxCall(Str(""), ignore => ajaxFunc(v))._2.toJsCmd)
         )
       }
@@ -1895,8 +1895,8 @@ trait SHtml extends Loggable {
   ): Elem = {
     import Helpers._
 
-    makeFormElement("number", func, attrs: _*) % ("value"       -> value.toString) %
-      ("min"                                   -> min.toString) % ("max"           -> max.toString)
+    makeFormElement("number", func, attrs: _*) % ("value"     -> value.toString) %
+      ("min"                                  -> min.toString) % ("max"         -> max.toString)
   }
 
   /**
@@ -1956,8 +1956,8 @@ trait SHtml extends Loggable {
     import common.Full
 
     makeFormElement("number", func, attrs: _*) % ("value" -> value.toString) %
-      ("min"                                   -> min.toString) % ("min" -> min.toString) %
-      ("step"                                  -> step.toString)
+      ("min"                                  -> min.toString) % ("min" -> min.toString) %
+      ("step"                                 -> step.toString)
   }
 
   /**
@@ -2006,8 +2006,8 @@ trait SHtml extends Loggable {
   ): Elem = {
     import Helpers._
 
-    makeFormElement("range", func, attrs: _*) % ("value"       -> value.toString) %
-      ("min"                                  -> min.toString) % ("max"           -> max.toString)
+    makeFormElement("range", func, attrs: _*) % ("value"     -> value.toString) %
+      ("min"                                 -> min.toString) % ("max"         -> max.toString)
   }
 
   def textAjaxTest(
@@ -2045,7 +2045,7 @@ trait SHtml extends Loggable {
 
   def hidden(func: () => Any, attrs: ElemAttr*): Elem =
     makeFormElement("hidden", NFuncHolder(func), attrs: _*) %
-      ("value"                                              -> "true")
+      ("value"                                             -> "true")
 
   def hidden(
       func: (String) => Any,
@@ -2053,7 +2053,7 @@ trait SHtml extends Loggable {
       attrs: ElemAttr*
   ): Elem =
     makeFormElement("hidden", SFuncHolder(func), attrs: _*) %
-      ("value"                                              -> defaultlValue)
+      ("value"                                             -> defaultlValue)
 
   /**
     * Create an HTML button with strOrNodeSeq as the body.  The
@@ -2128,7 +2128,7 @@ trait SHtml extends Loggable {
       "value",
       Text(value),
       Null
-    )            %
+    )             %
       ("onclick" -> ("lift.setUriSuffix('" + funcName + "=_'); return true;"))
   }
 
@@ -2244,7 +2244,7 @@ trait SHtml extends Loggable {
             }
 
             e.copy(attributes = newMeta) % ("id" -> id) %
-              ("action"                  -> "javascript://") %
+              ("action"                 -> "javascript://") %
               ("onsubmit" ->
                 (SHtml
                   .makeAjaxCall(LiftRules.jsArtifacts.serialize(id))

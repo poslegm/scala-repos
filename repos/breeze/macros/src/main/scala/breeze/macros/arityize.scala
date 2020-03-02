@@ -155,7 +155,7 @@ object arityize {
       case t @ Ident(x)   => Seq(t)
       case t @ Literal(x) => Seq(t)
       case Apply(who, args) =>
-        for (w2    <- expandArity(c, order, bindings)(who);
+        for (w2   <- expandArity(c, order, bindings)(who);
              args2 = args.flatMap(arg => expandArity(c, order, bindings)(arg)))
           yield {
             Apply(w2, args2)

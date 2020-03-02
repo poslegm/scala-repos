@@ -213,7 +213,7 @@ class ScalaCopyPastePostProcessor
 
     inWriteAction {
       for (Binding(ref, path) <- bindingsToRestore;
-           holder             = ScalaImportTypeFix.getImportHolder(ref, file.getProject))
+           holder              = ScalaImportTypeFix.getImportHolder(ref, file.getProject))
         holder
           .addImportForPath(path, ref)
     }

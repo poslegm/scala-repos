@@ -43,9 +43,9 @@ package scala.collection.immutable.redblacktree {
       } else {
         for {
           oddOrEven <- choose(0, 2)
-          tryRed    = oddOrEven.sample.get % 2 == 0 // work around arbitrary[Boolean] bug
-          isRed     = parentIsBlack && tryRed
-          nextLevel = if (isRed) level else level - 1
+          tryRed     = oddOrEven.sample.get % 2 == 0 // work around arbitrary[Boolean] bug
+          isRed      = parentIsBlack && tryRed
+          nextLevel  = if (isRed) level else level - 1
           left      <- mkTree(nextLevel, !isRed, label + "L")
           right     <- mkTree(nextLevel, !isRed, label + "R")
         } yield {

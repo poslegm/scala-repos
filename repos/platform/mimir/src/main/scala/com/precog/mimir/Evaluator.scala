@@ -318,9 +318,9 @@ trait EvaluatorModule[M[+_]]
         case dag.Extra(graph) =>
           val Some(spec) = mkTransSpec(graph, commonGraph, ctx)
           for {
-            state   <- monadState.gets(identity)
+            state  <- monadState.gets(identity)
             extraId = state.extraCount
-            _       <- monadState.modify { _.copy(extraCount = extraId + 1) }
+            _      <- monadState.modify { _.copy(extraCount = extraId + 1) }
 
             liftedTrans = TransSpec.deepMap(spec) {
               case Leaf(_) => DerefObjectStatic(Leaf(Source), paths.Value)
@@ -757,7 +757,7 @@ trait EvaluatorModule[M[+_]]
             // TODO abstract over absolute/relative load
             case dag.AbsoluteLoad(parent, jtpe) =>
               for {
-                pendingTable    <- prepareEval(parent, splits)
+                pendingTable   <- prepareEval(parent, splits)
                 Path(prefixStr) = ctx.basePath
                 f1 = concatString(MorphContext(ctx, graph))
                   .applyl(CString(prefixStr.replaceAll("([^/])$", "$1/")))
@@ -991,7 +991,7 @@ trait EvaluatorModule[M[+_]]
 
               for {
                 pendingTable <- prepareEval(parent, splits)
-                liftedTrans  = liftToValues(pendingTable.trans)
+                liftedTrans   = liftToValues(pendingTable.trans)
 
                 result = mn(
                   pendingTable.table
@@ -1042,7 +1042,7 @@ trait EvaluatorModule[M[+_]]
             case r @ dag.Reduce(red, parent) =>
               for {
                 pendingTable <- prepareEval(parent, splits)
-                liftedTrans  = liftToValues(pendingTable.trans)
+                liftedTrans   = liftToValues(pendingTable.trans)
                 result <- transState liftM mn(
                            red(
                              pendingTable.table.transform(
@@ -1171,7 +1171,7 @@ trait EvaluatorModule[M[+_]]
                   rightTable.sort(keyValueSpec, SortAscending)
                 )
 
-                pair                      <- zip(leftSortedM, rightSortedM)
+                pair                     <- zip(leftSortedM, rightSortedM)
                 (leftSorted, rightSorted) = pair
 
                 result = if (union) {
@@ -1217,7 +1217,7 @@ trait EvaluatorModule[M[+_]]
                   rightTable.sort(keyValueSpec, SortAscending)
                 )
 
-                pair                      <- zip(leftSortedM, rightSortedM)
+                pair                     <- zip(leftSortedM, rightSortedM)
                 (leftSorted, rightSorted) = pair
 
                 result = leftSorted.cogroup(
@@ -1255,7 +1255,7 @@ trait EvaluatorModule[M[+_]]
               } else {
                 for {
                   pending <- prepareEval(parent, splits)
-                  table   = pending.table.transform(liftToValues(pending.trans))
+                  table    = pending.table.transform(liftToValues(pending.trans))
                   result = {
                     val wrappedSort = trans.WrapObject(sortSpec, "sort-" + id)
                     val wrappedValue =
@@ -1283,7 +1283,7 @@ trait EvaluatorModule[M[+_]]
             case Memoize(parent, _) =>
               for {
                 pending <- prepareEval(parent, splits)
-                table   = pending.table.transform(liftToValues(pending.trans))
+                table    = pending.table.transform(liftToValues(pending.trans))
 
                 result <- transState liftM mn(table.force)
               } yield {
@@ -1322,7 +1322,7 @@ trait EvaluatorModule[M[+_]]
             graph: DepGraph
         ): EvaluatorStateT[DepGraph] = {
           for {
-            state    <- monadState gets identity
+            state   <- monadState gets identity
             optPoint = toEval find { g => !(state.assume contains g) }
 
             optBack = optPoint map { point =>
@@ -1351,7 +1351,7 @@ trait EvaluatorModule[M[+_]]
         for {
           rewrittenGraph <- stage(toEval, graph)
           pendingTable   <- prepareEval(rewrittenGraph, splits)
-          table          = pendingTable.table transform liftToValues(pendingTable.trans)
+          table           = pendingTable.table transform liftToValues(pendingTable.trans)
         } yield table
       }
 

@@ -14,9 +14,9 @@ trait DocJarReading {
 
   def docJarContent(filename: String, entry: String): Option[ByteString] =
     for {
-      file   <- config.allDocJars.find(_.getName == filename)
+      file  <- config.allDocJars.find(_.getName == filename)
       jar    = new JarFile(file)
-      entry  <- Option(jar.getJarEntry(entry))
+      entry <- Option(jar.getJarEntry(entry))
       stream = jar.getInputStream(entry)
     } yield ByteString(stream.toByteArray)
 

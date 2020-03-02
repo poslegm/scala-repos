@@ -58,7 +58,7 @@ private[sbt] final class DefinedSbtValues(
     // than explosion.
     for {
       file <- sbtFiles
-      m    = file.enclosingModule
+      m     = file.enclosingModule
       v    <- file.valNames
     } yield s"import ${m}.${v}"
   }

@@ -179,9 +179,9 @@ class GroupManager @Singleton @Inject() (
       plan = DeploymentPlan(from, to, resolve, version, toKill)
       _    = validateOrThrow(plan)
       _    = log.info(s"Computed new deployment plan:\n$plan")
-      _    <- scheduler.deploy(plan, force)
-      _    <- storeUpdatedApps(plan)
-      _    <- groupRepo.store(zkName, plan.target)
+      _   <- scheduler.deploy(plan, force)
+      _   <- storeUpdatedApps(plan)
+      _   <- groupRepo.store(zkName, plan.target)
       _ = log.info(
         s"Updated groups/apps according to deployment plan ${plan.id}"
       )

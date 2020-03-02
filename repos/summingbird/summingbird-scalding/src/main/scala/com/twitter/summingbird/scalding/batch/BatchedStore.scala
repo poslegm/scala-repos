@@ -322,7 +322,7 @@ trait BatchedStore[K, V] extends scalding.Store[K, V] { self =>
       // fork below so scalding can make sure not to do the operation twice
       merged  = mergeAll(prepareOld(pipeInput) ++ prepareDeltas(pipeDeltas)).fork
       lastOut = toLastFormat(merged)
-      _       <- writeFlow(filteredBatches, lastOut)
+      _      <- writeFlow(filteredBatches, lastOut)
     } yield toOutputFormat(merged)
   }
 
@@ -388,7 +388,7 @@ trait BatchedStore[K, V] extends scalding.Store[K, V] { self =>
     // so unfortunately, this code has a lot of manual tuple unpacking for that reason
     for {
       // Get the BatchID and data for the last snapshot,
-      bidFp                     <- planReadLast
+      bidFp                    <- planReadLast
       (lastBatch, lastSnapshot) = bidFp
 
       // Get latest time for the last batch written to store
@@ -398,7 +398,7 @@ trait BatchedStore[K, V] extends scalding.Store[K, V] { self =>
       firstDeltaTimestamp = lastTimeWrittenToStore.next
 
       // Get the requested timeSpan.
-      tsMode           <- getState[FactoryInput]
+      tsMode          <- getState[FactoryInput]
       (timeSpan, mode) = tsMode
 
       // Get the batches covering the requested timeSpan so we can get the last time stamp we need to request.
@@ -490,16 +490,16 @@ trait BatchedStore[K, V] extends scalding.Store[K, V] { self =>
   ): PipeFactory[(K, (Option[V], V))] =
     for {
       // get requested timespan before readAfterLastBatch
-      tsModeRequested  <- getState[FactoryInput]
+      tsModeRequested <- getState[FactoryInput]
       (tsRequested, _) = tsModeRequested
 
-      readBatchedResult                      <- readAfterLastBatch(delta)
+      readBatchedResult                     <- readAfterLastBatch(delta)
       (actualLast, snapshot, deltaFlow2Pipe) = readBatchedResult
 
       // get the actual timespan read by readAfterLastBatch
-      tsModeRead  <- getState[FactoryInput]
+      tsModeRead <- getState[FactoryInput]
       (tsRead, _) = tsModeRead
-      _           <- atLeastOneBatch(tsRead)
+      _          <- atLeastOneBatch(tsRead)
 
       /**
         * Once we have read the last snapshot and the available batched blocks of delta, just merge

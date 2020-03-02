@@ -59,7 +59,7 @@ trait IngestSupport extends Logging {
     val timestamp = timestampO getOrElse clock.now().toInstant
     val requestAuthorities = for {
       paramIds <- request.parameters.get('ownerAccountId)
-      ids      = paramIds.split("""\s*,\s*""")
+      ids       = paramIds.split("""\s*,\s*""")
       auths    <- Authorities.ifPresent(ids.toSet) if ids.nonEmpty
     } yield auths
 

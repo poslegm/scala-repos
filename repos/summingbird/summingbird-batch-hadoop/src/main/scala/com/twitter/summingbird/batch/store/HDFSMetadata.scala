@@ -113,9 +113,9 @@ class HDFSMetadata(conf: Configuration, rootPath: String) {
       fn: (T) => Boolean
   ): Iterable[(T, HDFSVersionMetadata)] =
     for {
-      v   <- versions
+      v  <- versions
       hmd = apply(v)
-      it  <- hmd.get[T].toOption if fn(it)
+      it <- hmd.get[T].toOption if fn(it)
     } yield (it, hmd)
 
   /**

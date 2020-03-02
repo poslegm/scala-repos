@@ -182,10 +182,9 @@ trait SparseVector_DenseVector_Ops {
   @expand.valify
   implicit def implOpMulInner_SVT_DVT_eq_T[
       @expand.args(Int, Double, Float, Long) T
-  ]
-      : breeze.linalg.operators.OpMulInner.Impl2[SparseVector[T], DenseVector[
-        T
-      ], T] =
+  ]: breeze.linalg.operators.OpMulInner.Impl2[SparseVector[T], DenseVector[
+    T
+  ], T] =
     new breeze.linalg.operators.OpMulInner.Impl2[SparseVector[T], DenseVector[
       T
     ], T] {

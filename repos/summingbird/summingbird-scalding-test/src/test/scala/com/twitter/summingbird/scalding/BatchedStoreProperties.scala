@@ -79,7 +79,7 @@ object BatchedStoreProperties extends Properties("BatchedStore's Properties") {
         in = arbInt.zipWithIndex.map {
           case (item: Int, time: Int) => (time.toLong, item)
         }
-        arbMap        <- Arbitrary.arbitrary[Map[Int, Int]]
+        arbMap       <- Arbitrary.arbitrary[Map[Int, Int]]
         batcher       = TestUtil.randomBatcher(in)
         lastTimeStamp = in.size
         testStore     = TestStore[Int, Int]("test", batcher, arbMap, lastTimeStamp)

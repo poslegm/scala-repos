@@ -117,7 +117,7 @@ abstract class MongoAccountManager(
   )(f: AccountId => Future[APIKey]): Future[Account] = {
     for {
       accountId <- newAccountId
-      path      = Path(accountId)
+      path       = Path(accountId)
       apiKey    <- f(accountId)
       account <- {
         val salt = randomSalt()

@@ -583,7 +583,7 @@ object ScalaImportOptimizer {
 
       for {
         oldInfo         <- infos
-        renamerPrefix   = oldInfo.prefixQualifier
+        renamerPrefix    = oldInfo.prefixQualifier
         (name, newName) <- oldInfo.renames
       } {
         val oldPrefix = s"$renamerPrefix.$name"

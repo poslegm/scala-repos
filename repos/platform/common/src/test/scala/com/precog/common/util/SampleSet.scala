@@ -297,11 +297,11 @@ object AdSamples {
 
   def ordersSample =
     for {
-      userId    <- chooseNum(12345, 12545)
-      taxRate   <- chooseNum(70, 110).map { _.toDouble / 100 }
-      subTotal  <- chooseNum(123, 11145).map { _.toDouble / 100 }
-      shipping  <- oneOf(shippingRates)
-      handling  <- oneOf(handlingCharges)
+      userId   <- chooseNum(12345, 12545)
+      taxRate  <- chooseNum(70, 110).map { _.toDouble / 100 }
+      subTotal <- chooseNum(123, 11145).map { _.toDouble / 100 }
+      shipping <- oneOf(shippingRates)
+      handling <- oneOf(handlingCharges)
       val total = subTotal * taxRate + shipping + handling
     } yield {
       JObject(

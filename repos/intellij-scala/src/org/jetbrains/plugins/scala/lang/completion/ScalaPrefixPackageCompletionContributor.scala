@@ -117,7 +117,7 @@ object ScalaPrefixPackageCompletionContributor {
 
     val prefixMatcher = result.getPrefixMatcher
     for {
-      fqn  <- prefixPackages(project)
+      fqn <- prefixPackages(project)
       name = fqn.substring(fqn.lastIndexOf('.'))
       if prefixMatcher.prefixMatches(name)
     } {

@@ -188,7 +188,7 @@ trait VFSModule[M[+_], Block] extends Logging {
                        )
                      )
         (conversionMT, returnMT) = acceptableMimeTypes(selectedMT)
-        stream                   <- asByteStream(conversionMT)
+        stream                  <- asByteStream(conversionMT)
       } yield (returnMT, stream)
     }
   }

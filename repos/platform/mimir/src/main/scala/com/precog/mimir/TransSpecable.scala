@@ -252,9 +252,9 @@ trait TransSpecableModule[M[+_]]
             node: Join
         )(leftParent: N[S], rightParent: => N[S], op: BinaryOperation) = {
           for {
-            pl      <- leftParent
+            pl     <- leftParent
             (l, al) = get(pl)
-            pr      <- rightParent
+            pr     <- rightParent
             (r, ar) = get(pr)
             result <- if (al == ar) {
                        set(
@@ -269,9 +269,9 @@ trait TransSpecableModule[M[+_]]
 
         def Filter(node: dag.Filter)(leftParent: N[S], rightParent: => N[S]) =
           for {
-            pl      <- leftParent
+            pl     <- leftParent
             (l, al) = get(pl)
-            pr      <- rightParent
+            pr     <- rightParent
             (r, ar) = get(pr)
             result <- if (al == ar) set(pl, (trans.Filter(l, r), al))
                      else init(Leaf(Source), node)
@@ -289,11 +289,11 @@ trait TransSpecableModule[M[+_]]
 
         def Cond(node: dag.Cond)(pred: N[S], left: N[S], right: N[S]) = {
           for {
-            pp      <- pred
+            pp     <- pred
             (p, ap) = get(pp)
-            pl      <- left
+            pl     <- left
             (l, al) = get(pl)
-            pr      <- right
+            pr     <- right
             (r, ar) = get(pr)
 
             result <- if (ap == al && al == ar)

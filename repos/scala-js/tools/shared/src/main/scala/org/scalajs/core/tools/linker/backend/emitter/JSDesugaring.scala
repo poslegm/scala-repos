@@ -1253,7 +1253,7 @@ private[emitter] class JSDesugaring(internalOptions: InternalOptions) {
                 val newCases = {
                   for {
                     (values, body) <- cases
-                    newValues      = (values map transformExpr)
+                    newValues       = (values map transformExpr)
                     // add the break statement
                     newBody = js.Block(pushLhsInto(newLhs, body), js.Break())
                     // desugar alternatives into several cases falling through

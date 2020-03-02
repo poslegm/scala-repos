@@ -260,7 +260,7 @@ class OfferMatcherManagerModuleTest
         task      <- tasks
         resource  <- task.getResourcesList.asScala if resource.getName == "cpus"
         cpuScalar <- Option(resource.getScalar)
-        cpus      = cpuScalar.getValue
+        cpus       = cpuScalar.getValue
       } yield cpus
       cpuValues.sum
     }

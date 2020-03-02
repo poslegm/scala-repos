@@ -28,7 +28,7 @@ object Test extends DirectTest {
                "Outer$PrivateStaticInner",
                "Outer$PublicInner"
              )
-      clazz  = compiler.rootMirror.staticClass(name)
+      clazz   = compiler.rootMirror.staticClass(name)
       constr <- clazz.info.member(termNames.CONSTRUCTOR).alternatives
     } {
       println(constr.defString)

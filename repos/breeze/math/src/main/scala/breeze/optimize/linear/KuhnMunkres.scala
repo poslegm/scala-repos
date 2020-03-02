@@ -116,9 +116,9 @@ object KuhnMunkres extends BipartiteMatching {
 
     def step1() = {
       for {
-        i   <- 0 until n;
+        i  <- 0 until n;
         min = C(i).reduceLeft(_ min _);
-        j   <- 0 until n
+        j  <- 0 until n
       } {
         C(i)(j) -= min;
       }

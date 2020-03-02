@@ -64,7 +64,7 @@ final case class TreeLoc[A](
   def getChild(n: Int): Option[TreeLoc[A]] =
     for {
       lr <- splitChildren(Stream.Empty, tree.subForest, n)
-      ls = lr._1
+      ls  = lr._1
     } yield loc(ls.head, ls.tail, lr._2, downParents)
 
   /** Select the first immediate child of the current node that satisfies the given predicate. */

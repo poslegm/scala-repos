@@ -436,9 +436,9 @@ object ZipperTest extends SpecLite {
   }
 
   val intZipperWithExistingElement: Gen[(Zipper[Int], Int)] = for {
-    z      <- arbitrary[Zipper[Int]]
+    z     <- arbitrary[Zipper[Int]]
     stream = z.toStream
-    i      <- Gen.choose(0, stream.length - 1)
+    i     <- Gen.choose(0, stream.length - 1)
   } yield (z, stream(i))
 
   "given nextC findBy should return Some if the element exists" ! forAll(
@@ -459,7 +459,7 @@ object ZipperTest extends SpecLite {
 
   def minSizeIntZipper(size: Int): Gen[Zipper[Int]] =
     for {
-      leftSize  <- Gen.choose(0, size - 2)
+      leftSize <- Gen.choose(0, size - 2)
       rightSize = size - 1 - leftSize
       lefts <- Gen.containerOfN[Stream, Int](
                 leftSize,

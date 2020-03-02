@@ -203,11 +203,11 @@ object MarkovChain {
     def metropolis[T](
         proposal: T => Rand[T]
     )(logMeasure: T => Double)(implicit rand: RandBasis = Rand) = { t: T =>
-      for (next  <- proposal(t);
+      for (next <- proposal(t);
            newLL = logMeasure(next);
            oldLL = logMeasure(t);
            a     = min(1, exp(newLL - oldLL));
-           u     <- rand.uniform) yield if (u < a) next else t;
+           u    <- rand.uniform) yield if (u < a) next else t;
     }
 
     /**
@@ -219,13 +219,13 @@ object MarkovChain {
         proposal: T => (Density[T] with Rand[T])
     )(logMeasure: T => Double)(implicit rand: RandBasis = Rand) = { t: T =>
       val prop = proposal(t);
-      for (next  <- prop;
+      for (next <- prop;
            newLL = logMeasure(next);
            newP  = prop.logApply(next);
            oldLL = logMeasure(t);
            oldP  = prop.logApply(t);
            a     = min(1, exp(newLL + newP - oldLL - oldP));
-           u     <- rand.uniform) yield if (u < a) next else t;
+           u    <- rand.uniform) yield if (u < a) next else t;
     }
 
     /**

@@ -41,7 +41,7 @@ class DatabaseService(dir: File) extends SLF4JLogging {
       // after shutdown is executed.
       _ <- db.run(sqlu"shutdown")
       _ <- db.shutdown
-      _ = datasource.close()
+      _  = datasource.close()
     } yield ()
 
   if (!dir.exists) {

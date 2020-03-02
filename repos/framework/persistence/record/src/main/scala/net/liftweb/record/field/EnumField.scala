@@ -77,7 +77,7 @@ trait EnumTypedField[EnumType <: Enumeration]
       buildDisplayList,
       Full(valueBox),
       setBox(_)
-    )             %
+    )              %
       ("tabindex" -> tabIndex.toString)
 
   def toForm: Box[NodeSeq] =

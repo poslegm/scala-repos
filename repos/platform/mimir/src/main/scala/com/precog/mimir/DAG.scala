@@ -786,9 +786,9 @@ trait DAG extends Instructions {
         def inner(graph: DepGraph): State[SubstitutionState, DepGraph] = {
 
           val inScopeM = for {
-            state   <- monadState.gets(identity)
+            state  <- monadState.gets(identity)
             inScope = state.inScope || graph == scope
-            _       <- monadState.modify(_.copy(inScope = inScope))
+            _      <- monadState.modify(_.copy(inScope = inScope))
           } yield inScope
 
           val rewritten = inScopeM.flatMap { inScope =>
@@ -926,9 +926,9 @@ trait DAG extends Instructions {
           spec: dag.BucketSpec
       ): State[SubstitutionState, dag.BucketSpec] = {
         val inScopeM = for {
-          state   <- monadState.gets(identity)
+          state  <- monadState.gets(identity)
           inScope = state.inScope || spec == scope
-          _       <- monadState.modify(_.copy(inScope = inScope))
+          _      <- monadState.modify(_.copy(inScope = inScope))
         } yield inScope
 
         val rewritten = inScopeM.flatMap { inScope =>

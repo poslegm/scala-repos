@@ -62,8 +62,8 @@ trait FlatMapOperation[-T, +U] extends Serializable with Closeable {
             x.map(fmo.apply(_)).toIndexedSeq
           val w: Future[Seq[V]] = Future.collect(z).map(_.flatten)
           for {
-            ws       <- w
-            maybes   <- fmo.maybeFlush
+            ws      <- w
+            maybes  <- fmo.maybeFlush
             maybeSeq = maybes.toSeq
           } yield ws ++ maybeSeq
         }

@@ -1108,13 +1108,13 @@ trait ColumnarTableModule[M[+_]]
           val remappedReq = rslice.remap(reqbuf)
 
           for {
-            pairL     <- leftTransform(remappedLeft)
+            pairL    <- leftTransform(remappedLeft)
             (ls0, lx) = pairL
 
-            pairR     <- rightTransform(remappedRight)
+            pairR    <- rightTransform(remappedRight)
             (rs0, rx) = pairR
 
-            pairB     <- bothTransform(remappedLeq, remappedReq)
+            pairB    <- bothTransform(remappedLeq, remappedReq)
             (bs0, bx) = pairB
           } yield {
             assert(lx.size == rx.size && rx.size == bx.size)
@@ -1685,10 +1685,10 @@ trait ColumnarTableModule[M[+_]]
               (rightHead, rightTail) <- rightUnconsed
             } yield {
               for {
-                pairL           <- stlk(leftHead)
+                pairL          <- stlk(leftHead)
                 (lkstate, lkey) = pairL
 
-                pairR           <- strk(rightHead)
+                pairR          <- strk(rightHead)
                 (rkstate, rkey) = pairR
               } yield {
                 Cogroup(
@@ -1975,11 +1975,11 @@ trait ColumnarTableModule[M[+_]]
               head map {
                 case (s, sx) => {
                   for {
-                    pairPrev          <- id.f(state._1, s)
+                    pairPrev         <- id.f(state._1, s)
                     (prevFilter, cur) = pairPrev
 
                     // TODO use an Applicative
-                    pairNext           <- filter.f(state._2, s)
+                    pairNext          <- filter.f(state._2, s)
                     (nextT, curFilter) = pairNext
                   } yield {
                     val next = cur.distinct(prevFilter, curFilter)

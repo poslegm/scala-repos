@@ -1279,7 +1279,7 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
       val meta   = rs.getMetaData
       val colCnt = meta.getColumnCount
       for {
-        pos     <- (1 to colCnt).toList
+        pos    <- (1 to colCnt).toList
         colName = meta.getColumnName(pos).toLowerCase
       } yield columnNameToMappee.get(colName) match {
         case None =>
@@ -1627,7 +1627,7 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
 
   def asHtml(toLine: A): NodeSeq =
     Text(internalTableName_$_$) :: Text("={ ") :: (for {
-      mft   <- mappedFieldList if mft.field.dbDisplay_?
+      mft  <- mappedFieldList if mft.field.dbDisplay_?
       field = ??(mft.method, toLine)
     } yield {
       <span>{field.displayName}={field.asHtml}&nbsp;</span>

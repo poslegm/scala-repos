@@ -119,7 +119,7 @@ object CABRunLengthEncoder {
     // take a token off the input, getting
     // a token and a new state
     (nextTok, newState) = oldState.uncons
-    _                   <- put(newState) // store the new state
+    _                  <- put(newState) // store the new state
   } yield nextTok // return the token
 
   /**

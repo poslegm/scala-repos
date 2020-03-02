@@ -203,7 +203,7 @@ object ScalazArbitrary extends ScalazArbitraryPlatform {
 
     for {
       a  <- Gen.choose(1, size)
-      b  = size - a
+      b   = size - a
       aa <- Gen.choose(1, a)
       ba <- Gen.choose(0, b)
       t <- Apply[Gen].apply4(

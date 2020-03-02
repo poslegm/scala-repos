@@ -40,7 +40,7 @@ abstract class AbstractSplitExpressionsFilesTest(pathName: String)
       val allFiles = new File(rootPath).listFiles.toList
 
       val results = for {
-        path  <- allFiles
+        path <- allFiles
         lines = Source.fromFile(path).getLines().toList
         comparison = SplitterComparison(
           splitLines(path, oldSplitter, lines),

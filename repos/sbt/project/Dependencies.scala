@@ -49,7 +49,7 @@ object Dependencies {
   lazy val jline = "jline" % "jline" % "2.13"
   lazy val ivy =
     "org.scala-sbt.ivy" % "ivy" % "2.3.0-sbt-2cc8d2761242b072cedb0a04cb39435c4fa24f9a"
-  lazy val jsch             = "com.jcraft"              % "jsch"           % "0.1.46" intransitive ()
+  lazy val jsch             = "com.jcraft"               % "jsch"          % "0.1.46" intransitive ()
   lazy val sbinary          = "org.scala-tools.sbinary" %% "sbinary"       % "0.4.2"
   lazy val sbtSerialization = "org.scala-sbt"           %% "serialization" % "0.1.2"
   lazy val scalaCompiler = Def.setting {
@@ -60,7 +60,7 @@ object Dependencies {
   }
   lazy val scalaCheck = "org.scalacheck" %% "scalacheck" % "1.11.4"
   lazy val specs2     = "org.specs2"     %% "specs2"     % "2.3.11"
-  lazy val junit      = "junit"          % "junit"       % "4.11"
+  lazy val junit      = "junit"           % "junit"      % "4.11"
 
   private def scala211Module(name: String, moduleVersion: String) =
     Def.setting {

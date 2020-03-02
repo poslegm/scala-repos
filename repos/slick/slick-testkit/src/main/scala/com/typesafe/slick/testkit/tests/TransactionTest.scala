@@ -24,7 +24,7 @@ class TransactionTest extends AsyncTest[JdbcTestDB] {
         _ <- ts += 1
         _ <- ts.result.map(_ shouldBe Seq(1))
         _ <- GetTransactionality.map(_ shouldBe (1, false))
-        _ = throw new ExpectedException
+        _  = throw new ExpectedException
       } yield ()).transactionally.failed.map(
         _ should
           (_.isInstanceOf[ExpectedException])
@@ -58,7 +58,7 @@ class TransactionTest extends AsyncTest[JdbcTestDB] {
         _ <- ts += 4
         _ <- ts.to[Set].result.map(_ shouldBe Set(2, 3, 4))
         _ <- GetTransactionality.map(_ shouldBe (2, false))
-        _ = throw new ExpectedException
+        _  = throw new ExpectedException
       } yield ()).transactionally.transactionally.failed.map(
         _ should
           (_.isInstanceOf[ExpectedException])

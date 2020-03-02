@@ -241,8 +241,8 @@ object ApplicationBuild extends Build {
     "mod",
     Seq(common, db, user, hub, security, game, analyse, evaluation, report)
   ).settings(
-      libraryDependencies ++= provided(play.api, play.test, RM, PRM)
-    )
+    libraryDependencies ++= provided(play.api, play.test, RM, PRM)
+  )
 
   lazy val user =
     project("user", Seq(common, memo, db, hub, chess, rating)).settings(
@@ -353,8 +353,8 @@ object ApplicationBuild extends Build {
     "simul",
     Seq(common, hub, socket, chess, game, round, chat, memo, quote)
   ).settings(
-      libraryDependencies ++= provided(play.api, RM, PRM)
-    )
+    libraryDependencies ++= provided(play.api, RM, PRM)
+  )
 
   lazy val fishnet =
     project("fishnet", Seq(common, chess, game, analyse, db)).settings(

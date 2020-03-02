@@ -30,10 +30,10 @@ object FibStateExample extends App {
   val initialState = (0, 1)
 
   val (nextFib: State[(Int, Int), Int]) = for {
-    s      <- init: State[(Int, Int), (Int, Int)]
+    s     <- init: State[(Int, Int), (Int, Int)]
     (a, b) = s
     n      = a + b
-    _      <- put(b, n)
+    _     <- put(b, n)
   } yield b // if we yield n, getNFibs gives you (1,2,3,5,8...)
   // yield b instead to get (1,1,2,3...)
 
@@ -107,9 +107,9 @@ object LaunchburyInterpreter extends App {
   // e.g. freshen(Lambda("x", Var("x"))).eval(initialState) => Lambda("$1", Var("$1"))
   private def freshen(e: Expr): State[ReduceState, Expr] = {
     val getFreshVar = for {
-      s                        <- init: State[ReduceState, ReduceState]
+      s                       <- init: State[ReduceState, ReduceState]
       ReduceState(_, f #:: fs) = s
-      _                        <- modify((s: ReduceState) => s.copy(freshVars = fs))
+      _                       <- modify((s: ReduceState) => s.copy(freshVars = fs))
     } yield f
     // Lambda and Let define new bound variables, so we substitute fresh variables into them
     // Var and Apply just recursively traverse the AST
@@ -160,7 +160,7 @@ object LaunchburyInterpreter extends App {
       case Var(x) =>
         for {
           state     <- init: State[ReduceState, ReduceState]
-          e2        = state.heap(x)
+          e2         = state.heap(x)
           _         <- modify((s: ReduceState) => s.copy(heap = s.heap - x))
           e3        <- reduce(e2)
           _         <- modify((s: ReduceState) => s.copy(heap = s.heap + ((x, e3))))

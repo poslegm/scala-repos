@@ -171,8 +171,8 @@ object User extends LilaController {
     val nb = 10
     for {
       leaderboards <- env.cached.leaderboards
-      nbAllTime    ← env.cached topNbGame nb
-      nbDay        ← fuccess(Nil)
+      nbAllTime     ← env.cached topNbGame nb
+      nbDay         ← fuccess(Nil)
       // Env.game.cached activePlayerUidsDay nb map {
       //   _ flatMap { pair =>
       //     env lightUser pair.userId map { UserModel.LightCount(_, pair.nb) }

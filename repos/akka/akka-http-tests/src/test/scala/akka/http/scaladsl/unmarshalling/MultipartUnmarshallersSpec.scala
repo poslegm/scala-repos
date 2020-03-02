@@ -298,8 +298,7 @@ class MultipartUnmarshallersSpec
                 """this is
             |just preamble text""".stripMarginWithNewline("\r\n")
               )
-            ).to[Multipart.General]
-              .failed,
+            ).to[Multipart.General].failed,
             1.second
           )
           .getMessage shouldEqual "Unexpected end of multipart entity"
@@ -316,8 +315,7 @@ class MultipartUnmarshallersSpec
             |content-disposition: form-data; name="email"
             |-----""".stripMarginWithNewline("\r\n")
               )
-            ).to[Multipart.General]
-              .failed,
+            ).to[Multipart.General].failed,
             1.second
           )
           .getMessage shouldEqual "Illegal multipart boundary in message content"
@@ -336,8 +334,7 @@ class MultipartUnmarshallersSpec
             |test@there.com
             |-----""".stripMarginWithNewline("\r\n")
               )
-            ).to[Multipart.General]
-              .failed,
+            ).to[Multipart.General].failed,
             1.second
           )
           .getMessage shouldEqual "multipart part must not contain more than one Content-Type header"
@@ -352,8 +349,7 @@ class MultipartUnmarshallersSpec
             |not good here
             |-----""".stripMarginWithNewline("\r\n")
               )
-            ).to[Multipart.General]
-              .failed,
+            ).to[Multipart.General].failed,
             1.second
           )
           .getMessage shouldEqual "Illegal character ' ' in header name"
