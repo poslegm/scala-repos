@@ -23,14 +23,14 @@ import com.typesafe.config.{ConfigFactory, Config}
 
 /** A JDBC-based database back-end that is used by [[slick.jdbc.JdbcProfile]]. */
 trait JdbcBackend extends RelationalBackend {
-  type This = JdbcBackend
-  type Database = DatabaseDef
-  type Session = SessionDef
-  type DatabaseFactory = DatabaseFactoryDef
-  type Context = JdbcActionContext
+  type This             = JdbcBackend
+  type Database         = DatabaseDef
+  type Session          = SessionDef
+  type DatabaseFactory  = DatabaseFactoryDef
+  type Context          = JdbcActionContext
   type StreamingContext = JdbcStreamingActionContext
 
-  val Database = new DatabaseFactoryDef {}
+  val Database             = new DatabaseFactoryDef {}
   val backend: JdbcBackend = this
 
   def createDatabase(config: Config, path: String): Database =
@@ -55,18 +55,24 @@ trait JdbcBackend extends RelationalBackend {
       * one single element at a time after processing the current one, so that the proper
       * sequencing is preserved even though processing may happen on a different thread. */
     final def stream[T](
-        a: StreamingDBIO[_, T], bufferNext: Boolean): DatabasePublisher[T] =
-      createPublisher(a,
-                      s =>
-                        new JdbcStreamingActionContext(
-                            s, false, DatabaseDef.this, bufferNext))
+        a: StreamingDBIO[_, T],
+        bufferNext: Boolean
+    ): DatabasePublisher[T] =
+      createPublisher(
+        a,
+        s =>
+          new JdbcStreamingActionContext(s, false, DatabaseDef.this, bufferNext)
+      )
 
     override protected[this] def createDatabaseActionContext[T](
-        _useSameThread: Boolean): Context =
+        _useSameThread: Boolean
+    ): Context =
       new JdbcActionContext { val useSameThread = _useSameThread }
 
     override protected[this] def createStreamingDatabaseActionContext[T](
-        s: Subscriber[_ >: T], useSameThread: Boolean): StreamingContext =
+        s: Subscriber[_ >: T],
+        useSameThread: Boolean
+    ): StreamingContext =
       new JdbcStreamingActionContext(s, useSameThread, DatabaseDef.this, true)
 
     protected[this] def synchronousExecutionContext = executor.executionContext
@@ -84,51 +90,68 @@ trait JdbcBackend extends RelationalBackend {
       * [[slick.util.AsyncExecutor]] with the thread pool for asynchronous execution is shut
       * down. If this object represents a connection pool managed directly by Slick, it is also
       * closed. */
-    def close: Unit = try executor.close() finally source.close()
+    def close: Unit =
+      try executor.close()
+      finally source.close()
   }
 
   trait DatabaseFactoryDef {
 
     /** Create a Database based on a [[JdbcDataSource]]. */
-    def forSource(source: JdbcDataSource,
-                  executor: AsyncExecutor = AsyncExecutor.default()) =
+    def forSource(
+        source: JdbcDataSource,
+        executor: AsyncExecutor = AsyncExecutor.default()
+    ) =
       new DatabaseDef(source, executor)
 
     /** Create a Database based on a DataSource. */
-    def forDataSource(ds: DataSource,
-                      executor: AsyncExecutor = AsyncExecutor.default(),
-                      keepAliveConnection: Boolean = false): DatabaseDef =
-      forSource(
-          new DataSourceJdbcDataSource(ds, keepAliveConnection), executor)
+    def forDataSource(
+        ds: DataSource,
+        executor: AsyncExecutor = AsyncExecutor.default(),
+        keepAliveConnection: Boolean = false
+    ): DatabaseDef =
+      forSource(new DataSourceJdbcDataSource(ds, keepAliveConnection), executor)
 
     /** Create a Database based on the JNDI name of a DataSource. */
     def forName(name: String, executor: AsyncExecutor = null) =
       new InitialContext().lookup(name) match {
         case ds: DataSource =>
-          forDataSource(ds, executor match {
-            case null => AsyncExecutor.default(name)
-            case e => e
-          })
+          forDataSource(
+            ds,
+            executor match {
+              case null => AsyncExecutor.default(name)
+              case e    => e
+            }
+          )
         case x =>
           throw new SlickException(
-              "Expected a DataSource for JNDI name " + name + ", but got " + x)
+            "Expected a DataSource for JNDI name " + name + ", but got " + x
+          )
       }
 
     /** Create a Database that uses the DriverManager to open new connections. */
-    def forURL(url: String,
-               user: String = null,
-               password: String = null,
-               prop: Properties = null,
-               driver: String = null,
-               executor: AsyncExecutor = AsyncExecutor.default(),
-               keepAliveConnection: Boolean = false,
-               classLoader: ClassLoader = ClassLoaderUtil.defaultClassLoader)
-      : DatabaseDef =
+    def forURL(
+        url: String,
+        user: String = null,
+        password: String = null,
+        prop: Properties = null,
+        driver: String = null,
+        executor: AsyncExecutor = AsyncExecutor.default(),
+        keepAliveConnection: Boolean = false,
+        classLoader: ClassLoader = ClassLoaderUtil.defaultClassLoader
+    ): DatabaseDef =
       forDataSource(
-          new DriverDataSource(
-              url, user, password, prop, driver, classLoader = classLoader),
-          executor,
-          keepAliveConnection)
+        new DriverDataSource(
+          url,
+          user,
+          password,
+          prop,
+          driver,
+          classLoader = classLoader
+        ),
+        executor,
+        keepAliveConnection
+      )
 
     /** Create a Database that uses the DriverManager to open new connections. */
     def forURL(url: String, prop: Map[String, String]): Database = {
@@ -146,10 +169,12 @@ trait JdbcBackend extends RelationalBackend {
         user: String = null,
         password: String = null,
         prop: Properties = null,
-        executor: AsyncExecutor = AsyncExecutor.default()): DatabaseDef =
-      forDataSource(new DriverDataSource(
-                        url, user, password, prop, driverObject = driver),
-                    executor)
+        executor: AsyncExecutor = AsyncExecutor.default()
+    ): DatabaseDef =
+      forDataSource(
+        new DriverDataSource(url, user, password, prop, driverObject = driver),
+        executor
+      )
 
     /** Load a database configuration through [[https://github.com/typesafehub/config Typesafe Config]].
       *
@@ -304,14 +329,16 @@ trait JdbcBackend extends RelationalBackend {
         path: String,
         config: Config = ConfigFactory.load(),
         driver: Driver = null,
-        classLoader: ClassLoader = ClassLoaderUtil.defaultClassLoader)
-      : Database = {
+        classLoader: ClassLoader = ClassLoaderUtil.defaultClassLoader
+    ): Database = {
       val usedConfig = if (path.isEmpty) config else config.getConfig(path)
       val source =
         JdbcDataSource.forConfig(usedConfig, driver, path, classLoader)
-      val executor = AsyncExecutor(path,
-                                   usedConfig.getIntOr("numThreads", 20),
-                                   usedConfig.getIntOr("queueSize", 1000))
+      val executor = AsyncExecutor(
+        path,
+        usedConfig.getIntOr("numThreads", 20),
+        usedConfig.getIntOr("queueSize", 1000)
+      )
       forSource(source, executor)
     }
   }
@@ -323,84 +350,102 @@ trait JdbcBackend extends RelationalBackend {
     def metaData: DatabaseMetaData
     def capabilities: DatabaseCapabilities
 
-    def resultSetType: ResultSetType = ResultSetType.Auto
-    def resultSetConcurrency: ResultSetConcurrency = ResultSetConcurrency.Auto
-    def resultSetHoldability: ResultSetHoldability = ResultSetHoldability.Auto
+    def resultSetType: ResultSetType                       = ResultSetType.Auto
+    def resultSetConcurrency: ResultSetConcurrency         = ResultSetConcurrency.Auto
+    def resultSetHoldability: ResultSetHoldability         = ResultSetHoldability.Auto
     def decorateStatement[S <: Statement](statement: S): S = statement
-    def fetchSize: Int = 0
+    def fetchSize: Int                                     = 0
 
     final def prepareStatement(
         sql: String,
         defaultType: ResultSetType = ResultSetType.ForwardOnly,
-        defaultConcurrency: ResultSetConcurrency = ResultSetConcurrency.ReadOnly,
-        defaultHoldability: ResultSetHoldability = ResultSetHoldability.Default)
-      : PreparedStatement = {
+        defaultConcurrency: ResultSetConcurrency =
+          ResultSetConcurrency.ReadOnly,
+        defaultHoldability: ResultSetHoldability = ResultSetHoldability.Default
+    ): PreparedStatement = {
       JdbcBackend.logStatement("Preparing statement", sql)
       val s = loggingPreparedStatement(
-          decorateStatement(
-              resultSetHoldability.withDefault(defaultHoldability) match {
-        case ResultSetHoldability.Default =>
-          val rsType = resultSetType.withDefault(defaultType).intValue
-          val rsConc =
-            resultSetConcurrency.withDefault(defaultConcurrency).intValue
-          if (rsType == ResultSet.TYPE_FORWARD_ONLY &&
-              rsConc == ResultSet.CONCUR_READ_ONLY) conn.prepareStatement(sql)
-          else conn.prepareStatement(sql, rsType, rsConc)
-        case h =>
-          conn.prepareStatement(
-              sql,
-              resultSetType.withDefault(defaultType).intValue,
-              resultSetConcurrency.withDefault(defaultConcurrency).intValue,
-              h.intValue)
-      }))
+        decorateStatement(
+          resultSetHoldability.withDefault(defaultHoldability) match {
+            case ResultSetHoldability.Default =>
+              val rsType = resultSetType.withDefault(defaultType).intValue
+              val rsConc =
+                resultSetConcurrency.withDefault(defaultConcurrency).intValue
+              if (rsType == ResultSet.TYPE_FORWARD_ONLY &&
+                  rsConc == ResultSet.CONCUR_READ_ONLY)
+                conn.prepareStatement(sql)
+              else conn.prepareStatement(sql, rsType, rsConc)
+            case h =>
+              conn.prepareStatement(
+                sql,
+                resultSetType.withDefault(defaultType).intValue,
+                resultSetConcurrency.withDefault(defaultConcurrency).intValue,
+                h.intValue
+              )
+          }
+        )
+      )
       if (fetchSize != 0) s.setFetchSize(fetchSize)
       s
     }
 
     final def prepareInsertStatement(
-        sql: String, columnNames: Array[String] = new Array[String](0))
-      : PreparedStatement = {
-      if (JdbcBackend.statementLogger.isDebugEnabled)
-        JdbcBackend.logStatement("Preparing insert statement (returning: " +
-                                 columnNames.mkString(",") + ")",
-                                 sql)
-      val s = loggingPreparedStatement(
-          decorateStatement(conn.prepareStatement(sql, columnNames)))
-      if (fetchSize != 0) s.setFetchSize(fetchSize)
-      s
-    }
-
-    final def prepareInsertStatement(
-        sql: String, columnIndexes: Array[Int]): PreparedStatement = {
+        sql: String,
+        columnNames: Array[String] = new Array[String](0)
+    ): PreparedStatement = {
       if (JdbcBackend.statementLogger.isDebugEnabled)
         JdbcBackend.logStatement(
-            "Preparing insert statement (returning indexes: " +
-            columnIndexes.mkString(",") + ")",
-            sql)
+          "Preparing insert statement (returning: " +
+            columnNames.mkString(",") + ")",
+          sql
+        )
       val s = loggingPreparedStatement(
-          decorateStatement(conn.prepareStatement(sql, columnIndexes)))
+        decorateStatement(conn.prepareStatement(sql, columnNames))
+      )
+      if (fetchSize != 0) s.setFetchSize(fetchSize)
+      s
+    }
+
+    final def prepareInsertStatement(
+        sql: String,
+        columnIndexes: Array[Int]
+    ): PreparedStatement = {
+      if (JdbcBackend.statementLogger.isDebugEnabled)
+        JdbcBackend.logStatement(
+          "Preparing insert statement (returning indexes: " +
+            columnIndexes.mkString(",") + ")",
+          sql
+        )
+      val s = loggingPreparedStatement(
+        decorateStatement(conn.prepareStatement(sql, columnIndexes))
+      )
       if (fetchSize != 0) s.setFetchSize(fetchSize)
       s
     }
 
     final def createStatement(
         defaultType: ResultSetType = ResultSetType.ForwardOnly,
-        defaultConcurrency: ResultSetConcurrency = ResultSetConcurrency.ReadOnly,
-        defaultHoldability: ResultSetHoldability = ResultSetHoldability.Default)
-      : Statement = {
+        defaultConcurrency: ResultSetConcurrency =
+          ResultSetConcurrency.ReadOnly,
+        defaultHoldability: ResultSetHoldability = ResultSetHoldability.Default
+    ): Statement = {
       val s = loggingStatement(
-          decorateStatement(
-              resultSetHoldability.withDefault(defaultHoldability) match {
-        case ResultSetHoldability.Default =>
-          conn.createStatement(
-              resultSetType.withDefault(defaultType).intValue,
-              resultSetConcurrency.withDefault(defaultConcurrency).intValue)
-        case h =>
-          conn.createStatement(
-              resultSetType.withDefault(defaultType).intValue,
-              resultSetConcurrency.withDefault(defaultConcurrency).intValue,
-              h.intValue)
-      }))
+        decorateStatement(
+          resultSetHoldability.withDefault(defaultHoldability) match {
+            case ResultSetHoldability.Default =>
+              conn.createStatement(
+                resultSetType.withDefault(defaultType).intValue,
+                resultSetConcurrency.withDefault(defaultConcurrency).intValue
+              )
+            case h =>
+              conn.createStatement(
+                resultSetType.withDefault(defaultType).intValue,
+                resultSetConcurrency.withDefault(defaultConcurrency).intValue,
+                h.intValue
+              )
+          }
+        )
+      )
       if (fetchSize != 0) s.setFetchSize(fetchSize)
       s
     }
@@ -409,40 +454,51 @@ trait JdbcBackend extends RelationalBackend {
     final def withPreparedStatement[T](
         sql: String,
         defaultType: ResultSetType = ResultSetType.ForwardOnly,
-        defaultConcurrency: ResultSetConcurrency = ResultSetConcurrency.ReadOnly,
-        defaultHoldability: ResultSetHoldability = ResultSetHoldability.Default)(
-        f: (PreparedStatement => T)): T = {
+        defaultConcurrency: ResultSetConcurrency =
+          ResultSetConcurrency.ReadOnly,
+        defaultHoldability: ResultSetHoldability = ResultSetHoldability.Default
+    )(f: (PreparedStatement => T)): T = {
       val st = prepareStatement(
-          sql, defaultType, defaultConcurrency, defaultHoldability)
-      try f(st) finally st.close()
+        sql,
+        defaultType,
+        defaultConcurrency,
+        defaultHoldability
+      )
+      try f(st)
+      finally st.close()
     }
 
     /** A wrapper around the JDBC Connection's prepareInsertStatement method, that automatically closes the statement. */
     final def withPreparedInsertStatement[T](
         sql: String,
-        columnNames: Array[String] = new Array[String](0))(
-        f: (PreparedStatement => T)): T = {
+        columnNames: Array[String] = new Array[String](0)
+    )(f: (PreparedStatement => T)): T = {
       val st = prepareInsertStatement(sql, columnNames)
-      try f(st) finally st.close()
+      try f(st)
+      finally st.close()
     }
 
     /** A wrapper around the JDBC Connection's prepareInsertStatement method, that automatically closes the statement. */
-    final def withPreparedInsertStatement[T](sql: String,
-                                             columnIndexes: Array[Int])(
-        f: (PreparedStatement => T)): T = {
+    final def withPreparedInsertStatement[T](
+        sql: String,
+        columnIndexes: Array[Int]
+    )(f: (PreparedStatement => T)): T = {
       val st = prepareInsertStatement(sql, columnIndexes)
-      try f(st) finally st.close()
+      try f(st)
+      finally st.close()
     }
 
     /** A wrapper around the JDBC Connection's createStatement method, that automatically closes the statement. */
     final def withStatement[T](
         defaultType: ResultSetType = ResultSetType.ForwardOnly,
-        defaultConcurrency: ResultSetConcurrency = ResultSetConcurrency.ReadOnly,
-        defaultHoldability: ResultSetHoldability = ResultSetHoldability.Default)(
-        f: (Statement => T)): T = {
-      val st = createStatement(
-          defaultType, defaultConcurrency, defaultHoldability)
-      try f(st) finally st.close()
+        defaultConcurrency: ResultSetConcurrency =
+          ResultSetConcurrency.ReadOnly,
+        defaultHoldability: ResultSetHoldability = ResultSetHoldability.Default
+    )(f: (Statement => T)): T = {
+      val st =
+        createStatement(defaultType, defaultConcurrency, defaultHoldability)
+      try f(st)
+      finally st.close()
     }
 
     def close(): Unit
@@ -454,20 +510,21 @@ trait JdbcBackend extends RelationalBackend {
         rsConcurrency: ResultSetConcurrency,
         rsHoldability: ResultSetHoldability,
         statementInit: Statement => Unit,
-        _fetchSize: Int): Session = new Session {
-      override def resultSetType = rsType
+        _fetchSize: Int
+    ): Session = new Session {
+      override def resultSetType        = rsType
       override def resultSetConcurrency = rsConcurrency
       override def resultSetHoldability = rsHoldability
-      override def fetchSize = _fetchSize
+      override def fetchSize            = _fetchSize
       override def decorateStatement[S <: Statement](statement: S): S = {
         if (statementInit ne null) statementInit(statement)
         statement
       }
-      def database = self.database
-      def conn = self.conn
-      def metaData = self.metaData
-      def capabilities = self.capabilities
-      def close() = self.close()
+      def database                                = self.database
+      def conn                                    = self.conn
+      def metaData                                = self.metaData
+      def capabilities                            = self.capabilities
+      def close()                                 = self.close()
       private[slick] def startInTransaction: Unit = self.startInTransaction
       private[slick] def endInTransaction(f: => Unit): Unit =
         self.endInTransaction(f)
@@ -479,10 +536,12 @@ trait JdbcBackend extends RelationalBackend {
       else st
 
     protected def loggingPreparedStatement(
-        st: PreparedStatement): PreparedStatement =
+        st: PreparedStatement
+    ): PreparedStatement =
       if (JdbcBackend.statementLogger.isDebugEnabled ||
           JdbcBackend.benchmarkLogger.isDebugEnabled)
-        new LoggingPreparedStatement(st) else st
+        new LoggingPreparedStatement(st)
+      else st
 
     /** Start a `transactionally` block */
     private[slick] def startInTransaction: Unit
@@ -492,10 +551,10 @@ trait JdbcBackend extends RelationalBackend {
   }
 
   class BaseSession(val database: Database) extends SessionDef {
-    protected var open = false
+    protected var open              = false
     protected var inTransactionally = 0
 
-    def isOpen = open
+    def isOpen          = open
     def isInTransaction = inTransactionally > 0
 
     lazy val conn = {
@@ -527,7 +586,9 @@ trait JdbcBackend extends RelationalBackend {
 
     private[slick] def endInTransaction(f: => Unit): Unit = {
       inTransactionally -= 1
-      if (!isInTransaction) try f finally conn.setAutoCommit(true)
+      if (!isInTransaction)
+        try f
+        finally conn.setAutoCommit(true)
     }
 
     def getTransactionality: (Int, Boolean) =
@@ -543,8 +604,8 @@ trait JdbcBackend extends RelationalBackend {
   }
 
   trait JdbcActionContext extends BasicActionContext {
-    private[JdbcBackend] var statementParameters: List[
-        JdbcBackend.StatementParameters] = null
+    private[JdbcBackend] var statementParameters
+        : List[JdbcBackend.StatementParameters] = null
 
     def pushStatementParameters(p: JdbcBackend.StatementParameters): Unit = {
       val p2 =
@@ -555,21 +616,19 @@ trait JdbcBackend extends RelationalBackend {
               JdbcBackend.defaultStatementParameters
             else statementParameters.head
           JdbcBackend.StatementParameters(
-              if (p.rsType eq null) curr.rsType else p.rsType,
-              if (p.rsConcurrency eq null) curr.rsConcurrency
-              else p.rsConcurrency,
-              if (p.rsHoldability eq null) curr.rsHoldability
-              else p.rsHoldability,
-              if (p.statementInit eq null) curr.statementInit
-              else if (curr.statementInit eq null) p.statementInit
-              else { s =>
-                curr.statementInit(s); p.statementInit(s)
-              },
-              p.fetchSize
+            if (p.rsType eq null) curr.rsType else p.rsType,
+            if (p.rsConcurrency eq null) curr.rsConcurrency
+            else p.rsConcurrency,
+            if (p.rsHoldability eq null) curr.rsHoldability
+            else p.rsHoldability,
+            if (p.statementInit eq null) curr.statementInit
+            else if (curr.statementInit eq null) p.statementInit
+            else { s => curr.statementInit(s); p.statementInit(s) },
+            p.fetchSize
           )
         } else p
       statementParameters = p2 ::
-      (if (statementParameters eq null) Nil else statementParameters)
+        (if (statementParameters eq null) Nil else statementParameters)
     }
 
     def popStatementParameters: Unit = {
@@ -584,42 +643,50 @@ trait JdbcBackend extends RelationalBackend {
       if (statementParameters eq null) super.session
       else {
         val p = statementParameters.head
-        super.session.internalForParameters(p.rsType,
-                                            p.rsConcurrency,
-                                            p.rsHoldability,
-                                            p.statementInit,
-                                            p.fetchSize)
+        super.session.internalForParameters(
+          p.rsType,
+          p.rsConcurrency,
+          p.rsHoldability,
+          p.statementInit,
+          p.fetchSize
+        )
       }
 
     /** The current JDBC Connection */
     def connection: Connection = session.conn
   }
 
-  class JdbcStreamingActionContext(subscriber: Subscriber[_],
-                                   useSameThread: Boolean,
-                                   database: Database,
-                                   val bufferNext: Boolean)
-      extends BasicStreamingActionContext(subscriber, useSameThread, database)
+  class JdbcStreamingActionContext(
+      subscriber: Subscriber[_],
+      useSameThread: Boolean,
+      database: Database,
+      val bufferNext: Boolean
+  ) extends BasicStreamingActionContext(subscriber, useSameThread, database)
       with JdbcActionContext
 }
 
 object JdbcBackend extends JdbcBackend {
-  case class StatementParameters(rsType: ResultSetType,
-                                 rsConcurrency: ResultSetConcurrency,
-                                 rsHoldability: ResultSetHoldability,
-                                 statementInit: Statement => Unit,
-                                 fetchSize: Int)
+  case class StatementParameters(
+      rsType: ResultSetType,
+      rsConcurrency: ResultSetConcurrency,
+      rsHoldability: ResultSetHoldability,
+      statementInit: Statement => Unit,
+      fetchSize: Int
+  )
   val defaultStatementParameters = StatementParameters(
-      ResultSetType.Auto,
-      ResultSetConcurrency.Auto,
-      ResultSetHoldability.Auto,
-      null,
-      0)
+    ResultSetType.Auto,
+    ResultSetConcurrency.Auto,
+    ResultSetHoldability.Auto,
+    null,
+    0
+  )
 
   protected[jdbc] lazy val statementLogger = new SlickLogger(
-      LoggerFactory.getLogger(classOf[JdbcBackend].getName + ".statement"))
+    LoggerFactory.getLogger(classOf[JdbcBackend].getName + ".statement")
+  )
   protected[jdbc] lazy val benchmarkLogger = new SlickLogger(
-      LoggerFactory.getLogger(classOf[JdbcBackend].getName + ".benchmark"))
+    LoggerFactory.getLogger(classOf[JdbcBackend].getName + ".benchmark")
+  )
 
   protected[jdbc] def logStatement(msg: String, stmt: String) =
     if (statementLogger.isDebugEnabled) {

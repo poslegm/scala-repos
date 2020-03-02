@@ -2,23 +2,21 @@ import collection._
 import collection.generic._
 
 object Test {
-  def collectIDA[A, B, Repr, That](
-      _this: TraversableLike[A, Repr])(pf: PartialFunction[A, B])(
-      implicit bf: CanBuildFrom[Repr, B, That]): That = {
+  def collectIDA[A, B, Repr, That](_this: TraversableLike[A, Repr])(
+      pf: PartialFunction[A, B]
+  )(implicit bf: CanBuildFrom[Repr, B, That]): That = {
     val repr: Repr = _this.asInstanceOf[Repr]
-    val b = bf(repr)
-    _this foreach { x =>
-      if (pf isDefinedAt x) b += pf(x)
-    }
+    val b          = bf(repr)
+    _this foreach { x => if (pf isDefinedAt x) b += pf(x) }
     b.result
   }
 
-  def collectRW[A, B, Repr, That](
-      _this: TraversableLike[A, Repr])(pf: PartialFunction[A, B])(
-      implicit bf: CanBuildFrom[Repr, B, That]): That = {
+  def collectRW[A, B, Repr, That](_this: TraversableLike[A, Repr])(
+      pf: PartialFunction[A, B]
+  )(implicit bf: CanBuildFrom[Repr, B, That]): That = {
     val repr: Repr = _this.asInstanceOf[Repr]
-    val b = bf(repr)
-    val f = pf runWith { b += _ }
+    val b          = bf(repr)
+    val f          = pf runWith { b += _ }
     _this foreach f
     b.result
   }
@@ -33,10 +31,9 @@ object Test {
   }
 
   object Ex2 {
-    def unapply(x: Int): Option[Int] = {
+    def unapply(x: Int): Option[Int] =
       //cnt += 1
       if ((x % 5) == 0) Some(x) else None
-    }
   }
 
   def resetCnt() = { val r = cnt; cnt = 0; r }
@@ -50,10 +47,10 @@ object Test {
     val xs = 1 to 100
     resetCnt()
 
-    val ysIDA = collectIDA(xs)(pf)
+    val ysIDA  = collectIDA(xs)(pf)
     val cntIDA = resetCnt()
 
-    val ysRW = collectRW(xs)(pf)
+    val ysRW  = collectRW(xs)(pf)
     val cntRW = resetCnt()
 
     val ys = xs collect pf

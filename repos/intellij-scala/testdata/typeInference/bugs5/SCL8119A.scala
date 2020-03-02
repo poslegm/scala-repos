@@ -10,7 +10,7 @@ object SCL8119A {
   class Z[T]
 
   object V {
-    implicit def repr[T]: Z[V[T]] = ???
+    implicit def repr[T]: Z[V[T]]   = ???
     implicit def repr1[T]: Z[DV[T]] = ???
   }
 

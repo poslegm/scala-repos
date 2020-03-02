@@ -8,7 +8,12 @@ import com.intellij.ProjectTopics
 import com.intellij.compiler.CompilerTestUtil
 import com.intellij.compiler.server.BuildManager
 import com.intellij.openapi.application.ex.ApplicationManagerEx
-import com.intellij.openapi.compiler.{CompileContext, CompileStatusNotification, CompilerManager, CompilerMessageCategory}
+import com.intellij.openapi.compiler.{
+  CompileContext,
+  CompileStatusNotification,
+  CompilerManager,
+  CompilerMessageCategory
+}
 import com.intellij.openapi.projectRoots._
 import com.intellij.openapi.roots._
 import com.intellij.openapi.util.text.StringUtil
@@ -29,18 +34,21 @@ import scala.collection.mutable.ListBuffer
   */
 abstract class ScalaCompilerTestBase extends ModuleTestCase with ScalaVersion {
 
-  private var deleteProjectAtTearDown = false
+  private var deleteProjectAtTearDown                = false
   private var scalaLibraryLoader: ScalaLibraryLoader = null
 
   override def setUp(): Unit = {
     super.setUp()
     myProject.getMessageBus
       .connect(myTestRootDisposable)
-      .subscribe(ProjectTopics.PROJECT_ROOTS, new ModuleRootAdapter {
-        override def rootsChanged(event: ModuleRootEvent) {
-          forceFSRescan()
+      .subscribe(
+        ProjectTopics.PROJECT_ROOTS,
+        new ModuleRootAdapter {
+          override def rootsChanged(event: ModuleRootEvent) {
+            forceFSRescan()
+          }
         }
-      })
+      )
     CompilerTestUtil.enableExternalCompiler()
 
     addRoots()
@@ -53,7 +61,8 @@ abstract class ScalaCompilerTestBase extends ModuleTestCase with ScalaVersion {
       val file = new File(getBaseDir.getCanonicalPath, name)
       if (!file.exists()) file.mkdir()
       LocalFileSystem.getInstance.refreshAndFindFileByPath(
-          file.getCanonicalPath)
+        file.getCanonicalPath
+      )
     }
 
     inWriteAction {
@@ -68,16 +77,17 @@ abstract class ScalaCompilerTestBase extends ModuleTestCase with ScalaVersion {
 
   protected def addScalaSdk(loadReflect: Boolean = true) {
     scalaLibraryLoader = new ScalaLibraryLoader(
-        getProject,
-        getModule,
-        getSourceRootDir.getCanonicalPath,
-        loadReflect,
-        Some(getTestProjectJdk))
+      getProject,
+      getModule,
+      getSourceRootDir.getCanonicalPath,
+      loadReflect,
+      Some(getTestProjectJdk)
+    )
 
     scalaLibraryLoader.loadScala(scalaSdkVersion)
   }
 
-  override protected def getTestProjectJdk: Sdk = {
+  override protected def getTestProjectJdk: Sdk =
 //    val jdkTable = JavaAwareProjectJdkTableImpl.getInstanceEx
 //    if (scalaVersion.startsWith("2.12")) {
 //      DebuggerTestUtil.findJdk8()
@@ -86,7 +96,6 @@ abstract class ScalaCompilerTestBase extends ModuleTestCase with ScalaVersion {
 //      jdkTable.getInternalJdk
 //    }
     DebuggerTestUtil.findJdk8()
-  }
 
   protected def forceFSRescan() =
     BuildManager.getInstance.clearState(myProject)
@@ -120,7 +129,7 @@ abstract class ScalaCompilerTestBase extends ModuleTestCase with ScalaVersion {
       }
     })
     val maxCompileTime = 6000
-    var i = 0
+    var i              = 0
     while (!semaphore.waitFor(100) && i < maxCompileTime) {
       if (SwingUtilities.isEventDispatchThread) {
         UIUtil.dispatchAllInvocationEvents()
@@ -128,8 +137,9 @@ abstract class ScalaCompilerTestBase extends ModuleTestCase with ScalaVersion {
       i += 1
     }
     Assert.assertTrue(
-        s"Too long compilation of test data for ${getClass.getSimpleName}.test${getTestName(false)}",
-        i < maxCompileTime)
+      s"Too long compilation of test data for ${getClass.getSimpleName}.test${getTestName(false)}",
+      i < maxCompileTime
+    )
     if (callback.hasError) {
       deleteProjectAtTearDown = true
       callback.throwException()
@@ -140,12 +150,14 @@ abstract class ScalaCompilerTestBase extends ModuleTestCase with ScalaVersion {
   private class ErrorReportingCallback(semaphore: Semaphore)
       extends CompileStatusNotification {
     private var myError: Throwable = null
-    private val myMessages = ListBuffer[String]()
+    private val myMessages         = ListBuffer[String]()
 
-    def finished(aborted: Boolean,
-                 errors: Int,
-                 warnings: Int,
-                 compileContext: CompileContext) {
+    def finished(
+        aborted: Boolean,
+        errors: Int,
+        warnings: Int,
+        compileContext: CompileContext
+    ) {
       try {
         for (category <- CompilerMessageCategory.values) {
           for (message <- compileContext.getMessages(category)) {
@@ -184,16 +196,18 @@ abstract class ScalaCompilerTestBase extends ModuleTestCase with ScalaVersion {
 
   protected def addFileToProject(relativePath: String, text: String) {
     VfsTestUtil.createFile(
-        getSourceRootDir, relativePath, StringUtil.convertLineSeparators(text))
+      getSourceRootDir,
+      relativePath,
+      StringUtil.convertLineSeparators(text)
+    )
   }
 
-  protected def getSourceRootDir: VirtualFile = {
+  protected def getSourceRootDir: VirtualFile =
     getBaseDir.findChild("src")
-  }
 
   protected def saveProject(): Unit = {
     val applicationEx = ApplicationManagerEx.getApplicationEx
-    val setting = applicationEx.isDoNotSave
+    val setting       = applicationEx.isDoNotSave
     applicationEx.doNotSave(false)
     getProject.save()
     applicationEx.doNotSave(setting)

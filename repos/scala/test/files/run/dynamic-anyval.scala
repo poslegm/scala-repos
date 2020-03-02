@@ -12,7 +12,7 @@ object Test {
     override def toString = "" + value
   }
 
-  def f[T](x: DynamicValue[T]) = x.dingo("bippy", 5)
+  def f[T](x: DynamicValue[T])  = x.dingo("bippy", 5)
   def g[T](x: DynamicValue2[T]) = x.dingo("bippy", 5)
 
   def main(args: Array[String]): Unit = {

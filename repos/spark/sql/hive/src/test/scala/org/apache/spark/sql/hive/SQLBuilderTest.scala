@@ -41,13 +41,15 @@ abstract class SQLBuilderTest extends QueryTest with TestHiveSingleton {
   }
 
   protected def checkSQL(plan: LogicalPlan, expectedSQL: String): Unit = {
-    val generatedSQL = try new SQLBuilder(plan, hiveContext).toSQL catch {
-      case NonFatal(e) =>
-        fail(s"""Cannot convert the following logical query plan to SQL:
+    val generatedSQL =
+      try new SQLBuilder(plan, hiveContext).toSQL
+      catch {
+        case NonFatal(e) =>
+          fail(s"""Cannot convert the following logical query plan to SQL:
            |
            |${plan.treeString}
          """.stripMargin)
-    }
+      }
 
     try {
       assert(generatedSQL === expectedSQL)
@@ -62,10 +64,11 @@ abstract class SQLBuilderTest extends QueryTest with TestHiveSingleton {
     }
 
     checkAnswer(
-        sqlContext.sql(generatedSQL), Dataset.newDataFrame(sqlContext, plan))
+      sqlContext.sql(generatedSQL),
+      Dataset.newDataFrame(sqlContext, plan)
+    )
   }
 
-  protected def checkSQL(df: DataFrame, expectedSQL: String): Unit = {
+  protected def checkSQL(df: DataFrame, expectedSQL: String): Unit =
     checkSQL(df.queryExecution.analyzed, expectedSQL)
-  }
 }

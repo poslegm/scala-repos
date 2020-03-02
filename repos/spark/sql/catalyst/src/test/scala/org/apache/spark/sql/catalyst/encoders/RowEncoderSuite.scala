@@ -27,17 +27,16 @@ import org.apache.spark.sql.types._
 @SQLUserDefinedType(udt = classOf[ExamplePointUDT])
 class ExamplePoint(val x: Double, val y: Double) extends Serializable {
   override def hashCode: Int = 41 * (41 + x.toInt) + y.toInt
-  override def equals(that: Any): Boolean = {
+  override def equals(that: Any): Boolean =
     if (that.isInstanceOf[ExamplePoint]) {
       val e = that.asInstanceOf[ExamplePoint]
       (this.x == e.x || (this.x.isNaN && e.x.isNaN) ||
-          (this.x.isInfinity && e.x.isInfinity)) &&
+      (this.x.isInfinity && e.x.isInfinity)) &&
       (this.y == e.y || (this.y.isNaN && e.y.isNaN) ||
-          (this.y.isInfinity && e.y.isInfinity))
+      (this.y.isInfinity && e.y.isInfinity))
     } else {
       false
     }
-  }
 }
 
 /**
@@ -56,7 +55,7 @@ class ExamplePointUDT extends UserDefinedType[ExamplePoint] {
     new GenericArrayData(output)
   }
 
-  override def deserialize(datum: Any): ExamplePoint = {
+  override def deserialize(datum: Any): ExamplePoint =
     datum match {
       case values: ArrayData =>
         if (values.numElements() > 1) {
@@ -66,7 +65,6 @@ class ExamplePointUDT extends UserDefinedType[ExamplePoint] {
           new ExamplePoint(random.nextDouble(), random.nextDouble())
         }
     }
-  }
 
   override def userClass: Class[ExamplePoint] = classOf[ExamplePoint]
 
@@ -79,76 +77,86 @@ class RowEncoderSuite extends SparkFunSuite {
   private val structOfUDT =
     new StructType().add("udt", new ExamplePointUDT, false)
   private val arrayOfString = ArrayType(StringType)
-  private val arrayOfNull = ArrayType(NullType)
-  private val mapOfString = MapType(StringType, StringType)
-  private val arrayOfUDT = ArrayType(new ExamplePointUDT, false)
+  private val arrayOfNull   = ArrayType(NullType)
+  private val mapOfString   = MapType(StringType, StringType)
+  private val arrayOfUDT    = ArrayType(new ExamplePointUDT, false)
 
   encodeDecodeTest(
-      new StructType()
-        .add("null", NullType)
-        .add("boolean", BooleanType)
-        .add("byte", ByteType)
-        .add("short", ShortType)
-        .add("int", IntegerType)
-        .add("long", LongType)
-        .add("float", FloatType)
-        .add("double", DoubleType)
-        .add("decimal", DecimalType.SYSTEM_DEFAULT)
-        .add("string", StringType)
-        .add("binary", BinaryType)
-        .add("date", DateType)
-        .add("timestamp", TimestampType)
-        .add("udt", new ExamplePointUDT))
+    new StructType()
+      .add("null", NullType)
+      .add("boolean", BooleanType)
+      .add("byte", ByteType)
+      .add("short", ShortType)
+      .add("int", IntegerType)
+      .add("long", LongType)
+      .add("float", FloatType)
+      .add("double", DoubleType)
+      .add("decimal", DecimalType.SYSTEM_DEFAULT)
+      .add("string", StringType)
+      .add("binary", BinaryType)
+      .add("date", DateType)
+      .add("timestamp", TimestampType)
+      .add("udt", new ExamplePointUDT)
+  )
 
   encodeDecodeTest(
-      new StructType()
-        .add("arrayOfNull", arrayOfNull)
-        .add("arrayOfString", arrayOfString)
-        .add("arrayOfArrayOfString", ArrayType(arrayOfString))
-        .add("arrayOfArrayOfInt", ArrayType(ArrayType(IntegerType)))
-        .add("arrayOfMap", ArrayType(mapOfString))
-        .add("arrayOfStruct", ArrayType(structOfString))
-        .add("arrayOfUDT", arrayOfUDT))
+    new StructType()
+      .add("arrayOfNull", arrayOfNull)
+      .add("arrayOfString", arrayOfString)
+      .add("arrayOfArrayOfString", ArrayType(arrayOfString))
+      .add("arrayOfArrayOfInt", ArrayType(ArrayType(IntegerType)))
+      .add("arrayOfMap", ArrayType(mapOfString))
+      .add("arrayOfStruct", ArrayType(structOfString))
+      .add("arrayOfUDT", arrayOfUDT)
+  )
 
   encodeDecodeTest(
-      new StructType()
-        .add("mapOfIntAndString", MapType(IntegerType, StringType))
-        .add("mapOfStringAndArray", MapType(StringType, arrayOfString))
-        .add("mapOfArrayAndInt", MapType(arrayOfString, IntegerType))
-        .add("mapOfArray", MapType(arrayOfString, arrayOfString))
-        .add("mapOfStringAndStruct", MapType(StringType, structOfString))
-        .add("mapOfStructAndString", MapType(structOfString, StringType))
-        .add("mapOfStruct", MapType(structOfString, structOfString)))
+    new StructType()
+      .add("mapOfIntAndString", MapType(IntegerType, StringType))
+      .add("mapOfStringAndArray", MapType(StringType, arrayOfString))
+      .add("mapOfArrayAndInt", MapType(arrayOfString, IntegerType))
+      .add("mapOfArray", MapType(arrayOfString, arrayOfString))
+      .add("mapOfStringAndStruct", MapType(StringType, structOfString))
+      .add("mapOfStructAndString", MapType(structOfString, StringType))
+      .add("mapOfStruct", MapType(structOfString, structOfString))
+  )
 
   encodeDecodeTest(
-      new StructType()
-        .add("structOfString", structOfString)
-        .add("structOfStructOfString",
-             new StructType().add("struct", structOfString))
-        .add("structOfArray", new StructType().add("array", arrayOfString))
-        .add("structOfMap", new StructType().add("map", mapOfString))
-        .add("structOfArrayAndMap",
-             new StructType()
-               .add("array", arrayOfString)
-               .add("map", mapOfString))
-        .add("structOfUDT", structOfUDT))
+    new StructType()
+      .add("structOfString", structOfString)
+      .add(
+        "structOfStructOfString",
+        new StructType().add("struct", structOfString)
+      )
+      .add("structOfArray", new StructType().add("array", arrayOfString))
+      .add("structOfMap", new StructType().add("map", mapOfString))
+      .add(
+        "structOfArrayAndMap",
+        new StructType()
+          .add("array", arrayOfString)
+          .add("map", mapOfString)
+      )
+      .add("structOfUDT", structOfUDT)
+  )
 
   test(s"encode/decode: Product") {
-    val schema = new StructType().add("structAsProduct",
-                                      new StructType()
-                                        .add("int", IntegerType)
-                                        .add("string", StringType)
-                                        .add("double", DoubleType))
+    val schema = new StructType().add(
+      "structAsProduct",
+      new StructType()
+        .add("int", IntegerType)
+        .add("string", StringType)
+        .add("double", DoubleType)
+    )
 
     val encoder = RowEncoder(schema)
 
-    val input: Row = Row((100, "test", 0.123))
-    val row = encoder.toRow(input)
+    val input: Row    = Row((100, "test", 0.123))
+    val row           = encoder.toRow(input)
     val convertedBack = encoder.fromRow(row)
     assert(input.getStruct(0) == convertedBack.getStruct(0))
   }
 
-  private def encodeDecodeTest(schema: StructType): Unit = {
+  private def encodeDecodeTest(schema: StructType): Unit =
     test(s"encode/decode: ${schema.simpleString}") {
       val encoder = RowEncoder(schema)
       val inputGenerator =
@@ -158,7 +166,7 @@ class RowEncoderSuite extends SparkFunSuite {
       try {
         for (_ <- 1 to 5) {
           input = inputGenerator.apply().asInstanceOf[Row]
-          val row = encoder.toRow(input)
+          val row           = encoder.toRow(input)
           val convertedBack = encoder.fromRow(row)
           assert(input == convertedBack)
         }
@@ -170,5 +178,4 @@ class RowEncoderSuite extends SparkFunSuite {
              """.stripMargin, e)
       }
     }
-  }
 }

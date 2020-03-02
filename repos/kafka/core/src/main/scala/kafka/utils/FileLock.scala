@@ -5,7 +5,7 @@
   * The ASF licenses this file to You under the Apache License, Version 2.0
   * (the "License"); you may not use this file except in compliance with
   * the License.  You may obtain a copy of the License at
-  * 
+  *
   *    http://www.apache.org/licenses/LICENSE-2.0
   *
   * Unless required by applicable law or agreed to in writing, software
@@ -21,12 +21,12 @@ import java.nio.channels._
 
 /**
   * A file lock a la flock/funlock
-  * 
+  *
   * The given path will be created and opened if it doesn't exist.
   */
 class FileLock(val file: File) extends Logging {
   file.createNewFile() // create the file if it doesn't exist
-  private val channel = new RandomAccessFile(file, "rw").getChannel()
+  private val channel                           = new RandomAccessFile(file, "rw").getChannel()
   private var flock: java.nio.channels.FileLock = null
 
   /**
@@ -42,7 +42,7 @@ class FileLock(val file: File) extends Logging {
   /**
     * Try to lock the file and return true if the locking succeeds
     */
-  def tryLock(): Boolean = {
+  def tryLock(): Boolean =
     this synchronized {
       trace("Acquiring lock on " + file.getAbsolutePath)
       try {
@@ -55,7 +55,6 @@ class FileLock(val file: File) extends Logging {
         case e: OverlappingFileLockException => false
       }
     }
-  }
 
   /**
     * Unlock the lock if it is held
@@ -70,10 +69,9 @@ class FileLock(val file: File) extends Logging {
   /**
     * Destroy this lock, closing the associated FileChannel
     */
-  def destroy() = {
+  def destroy() =
     this synchronized {
       unlock()
       channel.close()
     }
-  }
 }

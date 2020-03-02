@@ -23,5 +23,5 @@ private[http] trait ExtractionImplBase[T] extends RequestVal[T] {
 }
 
 private[http] abstract class ExtractionImpl[T](
-    implicit val classTag: ClassTag[T])
-    extends ExtractionImplBase[T]
+    implicit val classTag: ClassTag[T]
+) extends ExtractionImplBase[T]

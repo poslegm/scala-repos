@@ -4,7 +4,7 @@ class A extends Dynamic {
   def applyDynamic(method: String): B = new B(method)
 }
 class B(method: String) {
-  def apply(x: Int) = s"$method(x: Int) called with x = $x"
+  def apply(x: Int)    = s"$method(x: Int) called with x = $x"
   def apply(x: String) = s"""$method(x: String) called with x = "$x""""
 }
 

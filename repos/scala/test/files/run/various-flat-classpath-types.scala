@@ -39,7 +39,7 @@ object Test {
     def writeAll(text: String): Unit = File(file) writeAll text
 
     def moveContentToZip(zipName: String): Unit = {
-      val newZip = zipsDir createFile s"$zipName.zip"
+      val newZip       = zipsDir createFile s"$zipName.zip"
       val outputStream = new ZipOutputStream(new FileOutputStream(newZip))
 
       def addFileToZip(dirPrefix: String = "")(fileToAdd: JFile): Unit =
@@ -49,11 +49,10 @@ object Test {
           fileToAdd.listFiles() foreach addFileToZip(dirEntryName)
         } else {
           val inputStream = new FileInputStream(fileToAdd)
-          outputStream.putNextEntry(
-              new ZipEntry(dirPrefix + fileToAdd.getName))
+          outputStream.putNextEntry(new ZipEntry(dirPrefix + fileToAdd.getName))
 
           val buffer = new Array[Byte](1024)
-          var count = inputStream.read(buffer)
+          var count  = inputStream.read(buffer)
           while (count > 0) {
             outputStream.write(buffer, 0, count)
             count = inputStream.read(buffer)
@@ -70,23 +69,27 @@ object Test {
 
     def moveContentToJar(jarName: String): Unit = {
       val newJar = jarsDir createFile s"$jarName.jar"
-      Jar.create(file = File(newJar),
-                 sourceDir = Directory(file),
-                 mainClass = "won't be used")
+      Jar.create(
+        file = File(newJar),
+        sourceDir = Directory(file),
+        mainClass = "won't be used"
+      )
       cleanDir(file)
     }
 
     def path: String = file.getAbsolutePath
   }
 
-  private case class DirRep(name: String,
-                            nestedDirs: Seq[DirRep] = Nil,
-                            sourceFiles: Seq[String] = Nil)
+  private case class DirRep(
+      name: String,
+      nestedDirs: Seq[DirRep] = Nil,
+      sourceFiles: Seq[String] = Nil
+  )
 
-  private val compiler = new scala.tools.nsc.MainClass
-  private val appRunner = new scala.tools.nsc.MainGenericRunner
+  private val compiler          = new scala.tools.nsc.MainClass
+  private val appRunner         = new scala.tools.nsc.MainGenericRunner
   private val classPathImplFlag = "-YclasspathImpl:flat"
-  private val javaClassPath = sys.props("java.class.path")
+  private val javaClassPath     = sys.props("java.class.path")
 
   // creates a test dir in a temporary dir containing compiled files of this test
   // root dir will be automatically deleted after the end of test
@@ -96,9 +99,9 @@ object Test {
 
   private val jarsDir = testDir createDir "jars"
   private val zipsDir = testDir createDir "zips"
-  private val srcDir = testDir createDir "src"
-  private val binDir = testDir createDir "bin"
-  private val outDir = testDir createDir "out"
+  private val srcDir  = testDir createDir "src"
+  private val binDir  = testDir createDir "bin"
+  private val outDir  = testDir createDir "out"
 
   def main(args: Array[String]): Unit = {
     createClassesZipInZipsDir()
@@ -169,45 +172,57 @@ object Test {
   }
 
   private def compileFinalApp(): Unit = {
-    val classPath = mkPath(javaClassPath,
-                           binDir.path,
-                           zipsDir.path + "/Bin.zip",
-                           jarsDir.path + "/Bin.jar")
-    val sourcePath = mkPath(
-        srcDir.path, zipsDir.path + "/Src.zip", jarsDir.path + "/Src.jar")
+    val classPath = mkPath(
+      javaClassPath,
+      binDir.path,
+      zipsDir.path + "/Bin.zip",
+      jarsDir.path + "/Bin.jar"
+    )
+    val sourcePath =
+      mkPath(srcDir.path, zipsDir.path + "/Src.zip", jarsDir.path + "/Src.jar")
 
     compiler.process(
-        Array(classPathImplFlag,
-              "-cp",
-              classPath,
-              "-sourcepath",
-              sourcePath,
-              "-d",
-              outDir.path,
-              s"${srcDir.path}/Main.scala"))
+      Array(
+        classPathImplFlag,
+        "-cp",
+        classPath,
+        "-sourcepath",
+        sourcePath,
+        "-d",
+        outDir.path,
+        s"${srcDir.path}/Main.scala"
+      )
+    )
   }
 
   private def runApp(): Unit = {
-    val classPath = mkPath(javaClassPath,
-                           outDir.path,
-                           binDir.path,
-                           zipsDir.path + "/Bin.zip",
-                           jarsDir.path + "/Bin.jar")
+    val classPath = mkPath(
+      javaClassPath,
+      outDir.path,
+      binDir.path,
+      zipsDir.path + "/Bin.zip",
+      jarsDir.path + "/Bin.jar"
+    )
     appRunner.process(Array(classPathImplFlag, "-cp", classPath, "Main"))
   }
 
   private def createStandardSrcHierarchy(baseFileName: String): Unit =
     createSources(
-        RootPackage,
-        srcDir,
-        DirRep("",
-               nestedDirs = Seq(
-                     DirRep("nested",
-                            sourceFiles = Seq("Nested" + baseFileName))),
-               sourceFiles = Seq(baseFileName)))
+      RootPackage,
+      srcDir,
+      DirRep(
+        "",
+        nestedDirs =
+          Seq(DirRep("nested", sourceFiles = Seq("Nested" + baseFileName))),
+        sourceFiles = Seq(baseFileName)
+      )
+    )
 
   private def createSources(
-      pkg: String, dirFile: JFile, dirRep: DirRep): Unit = {
+      pkg: String,
+      dirFile: JFile,
+      dirRep: DirRep
+  ): Unit = {
     dirRep.nestedDirs foreach { rep =>
       val nestedDir = dirFile createDir rep.name
       val nestedPkg = PackageNameUtils.packagePrefix(pkg) + rep.name
@@ -216,23 +231,28 @@ object Test {
 
     val pkgHeader = if (pkg == RootPackage) "" else s"package $pkg\n\n"
     dirRep.sourceFiles foreach { srcName =>
-      val text = s"""${pkgHeader}case class $srcName(x: String = "")"""
+      val text    = s"""${pkgHeader}case class $srcName(x: String = "")"""
       val srcFile = dirFile createSrcFile srcName
       srcFile writeAll text
     }
   }
 
   private def compileSrc(
-      baseFileName: String, destination: JFile = outDir): Unit = {
+      baseFileName: String,
+      destination: JFile = outDir
+  ): Unit = {
     val srcDirPath = srcDir.path
     compiler.process(
-        Array(classPathImplFlag,
-              "-cp",
-              javaClassPath,
-              "-d",
-              destination.path,
-              s"$srcDirPath/$baseFileName.scala",
-              s"$srcDirPath/nested/Nested$baseFileName.scala"))
+      Array(
+        classPathImplFlag,
+        "-cp",
+        javaClassPath,
+        "-d",
+        destination.path,
+        s"$srcDirPath/$baseFileName.scala",
+        s"$srcDirPath/nested/Nested$baseFileName.scala"
+      )
+    )
   }
 
   private def cleanDir(dir: JFile): Unit =

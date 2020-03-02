@@ -8,8 +8,8 @@ import org.scalatest.junit.JUnitRunner
 class EstimatorTest extends FunSuite {
   test("LoadAverage") {
     // This makes LoadAverage.a = 1/2 for easy testing.
-    val interval = -1D / math.log(0.5)
-    val e = new LoadAverage(interval)
+    val interval = -1d / math.log(0.5)
+    val e        = new LoadAverage(interval)
     assert(e.estimate.isNaN)
 
     e.measure(0)
@@ -41,13 +41,16 @@ object EstimatorApp extends App {
     case Array("kalman", n, error) =>
       new KalmanGaussianError(n.toInt, error.toDouble)
     case Array("windowed", n, windows) =>
-      new WindowedMeans(n.toInt, windows.split(",") map { w =>
-        w.split(":") match {
-          case Array(w, i) => (w.toInt, i.toInt)
-          case _ =>
-            throw new IllegalArgumentException("bad weight, count pair " + w)
+      new WindowedMeans(
+        n.toInt,
+        windows.split(",") map { w =>
+          w.split(":") match {
+            case Array(w, i) => (w.toInt, i.toInt)
+            case _ =>
+              throw new IllegalArgumentException("bad weight, count pair " + w)
+          }
         }
-      })
+      )
     case Array("load", interval) =>
       new LoadAverage(interval.toDouble)
     case _ => throw new IllegalArgumentException("bad args ")
@@ -56,21 +59,23 @@ object EstimatorApp extends App {
   val lines = scala.io.Source.stdin.getLines().drop(1)
   val states =
     lines.toArray map (_.split(" ") filter (_ != "") map (_.toDouble)) collect {
-      case Array(s0c,
-                 s1c,
-                 s0u,
-                 s1u,
-                 ec,
-                 eu,
-                 oc,
-                 ou,
-                 pc,
-                 pu,
-                 ygc,
-                 ygct,
-                 fgc,
-                 fgct,
-                 gct) =>
+      case Array(
+          s0c,
+          s1c,
+          s0u,
+          s1u,
+          ec,
+          eu,
+          oc,
+          ou,
+          pc,
+          pu,
+          ygc,
+          ygct,
+          fgc,
+          fgct,
+          gct
+          ) =>
         PoolState(ygc.toLong, ec.toLong.bytes, eu.toLong.bytes)
     }
 

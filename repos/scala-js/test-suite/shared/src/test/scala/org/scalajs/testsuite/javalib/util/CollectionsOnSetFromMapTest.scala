@@ -8,22 +8,20 @@ trait CollectionsOnSetFromMapTest extends SetTest {
 
   def mapFactory: MapFactory
 
-  def factory: SetFactory = {
+  def factory: SetFactory =
     new SetFactory {
       def implementationName: String =
         s"newSetFromMap(${mapFactory.implementationName})"
 
-      def empty[E : ClassTag]: ju.Set[E] =
+      def empty[E: ClassTag]: ju.Set[E] =
         ju.Collections.newSetFromMap[E](mapFactory.empty[E, jl.Boolean])
 
       def allowsNullElement: Boolean =
         mapFactory.allowsNullKeys
     }
-  }
 }
 
-class CollectionsOnSetFromMapOnHashMapTest
-    extends CollectionsOnSetFromMapTest {
+class CollectionsOnSetFromMapOnHashMapTest extends CollectionsOnSetFromMapTest {
   def mapFactory: MapFactory = new HashMapFactory
 }
 

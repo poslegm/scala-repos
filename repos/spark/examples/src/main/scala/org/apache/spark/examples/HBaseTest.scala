@@ -27,7 +27,7 @@ import org.apache.spark._
 object HBaseTest {
   def main(args: Array[String]) {
     val sparkConf = new SparkConf().setAppName("HBaseTest")
-    val sc = new SparkContext(sparkConf)
+    val sc        = new SparkContext(sparkConf)
 
     // please ensure HBASE_CONF_DIR is on classpath of spark driver
     // e.g: set it through spark.driver.extraClassPath property
@@ -53,10 +53,11 @@ object HBaseTest {
     }
 
     val hBaseRDD = sc.newAPIHadoopRDD(
-        conf,
-        classOf[TableInputFormat],
-        classOf[org.apache.hadoop.hbase.io.ImmutableBytesWritable],
-        classOf[org.apache.hadoop.hbase.client.Result])
+      conf,
+      classOf[TableInputFormat],
+      classOf[org.apache.hadoop.hbase.io.ImmutableBytesWritable],
+      classOf[org.apache.hadoop.hbase.client.Result]
+    )
 
     hBaseRDD.count()
 

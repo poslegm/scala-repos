@@ -27,10 +27,10 @@ object FaultHandlingDocSpec {
 
     override val supervisorStrategy =
       OneForOneStrategy(maxNrOfRetries = 10, withinTimeRange = 1 minute) {
-        case _: ArithmeticException => Resume
-        case _: NullPointerException => Restart
+        case _: ArithmeticException      => Resume
+        case _: NullPointerException     => Restart
         case _: IllegalArgumentException => Stop
-        case _: Exception => Escalate
+        case _: Exception                => Escalate
       }
     //#strategy
 
@@ -49,10 +49,10 @@ object FaultHandlingDocSpec {
 
     override val supervisorStrategy =
       OneForOneStrategy(maxNrOfRetries = 10, withinTimeRange = 1 minute) {
-        case _: ArithmeticException => Resume
-        case _: NullPointerException => Restart
+        case _: ArithmeticException      => Resume
+        case _: NullPointerException     => Restart
         case _: IllegalArgumentException => Stop
-        case _: Exception => Escalate
+        case _: Exception                => Escalate
       }
     //#strategy2
 
@@ -86,8 +86,8 @@ object FaultHandlingDocSpec {
     var state = 0
     def receive = {
       case ex: Exception => throw ex
-      case x: Int => state = x
-      case "get" => sender() ! state
+      case x: Int        => state = x
+      case "get"         => sender() ! state
     }
   }
   //#child
@@ -101,19 +101,24 @@ object FaultHandlingDocSpec {
 }
 //#testkit
 class FaultHandlingDocSpec(_system: ActorSystem)
-    extends TestKit(_system) with ImplicitSender with FlatSpecLike
-    with Matchers with BeforeAndAfterAll {
+    extends TestKit(_system)
+    with ImplicitSender
+    with FlatSpecLike
+    with Matchers
+    with BeforeAndAfterAll {
 
   def this() =
     this(
-        ActorSystem(
-            "FaultHandlingDocSpec",
-            ConfigFactory.parseString("""
+      ActorSystem(
+        "FaultHandlingDocSpec",
+        ConfigFactory.parseString("""
       akka {
         loggers = ["akka.testkit.TestEventListener"]
         loglevel = "WARNING"
       }
-      """)))
+      """)
+      )
+    )
 
   override def afterAll {
     TestKit.shutdownActorSystem(system)
@@ -149,7 +154,7 @@ class FaultHandlingDocSpec(_system: ActorSystem)
     }
     EventFilter[IllegalArgumentException](occurrences = 1) intercept {
       //#stop
-      watch(child) // have testActor watch “child”
+      watch(child)                         // have testActor watch “child”
       child ! new IllegalArgumentException // break it
       expectMsgPF() { case Terminated(`child`) => () }
       //#stop

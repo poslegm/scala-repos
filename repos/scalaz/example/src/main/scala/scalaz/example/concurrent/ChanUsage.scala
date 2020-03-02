@@ -19,10 +19,10 @@ object ChanUsage extends App {
 
   val io = for {
     chan <- newChan[Int]
-    _ <- forkIO(calc(chan, 100))
-    _ <- forkIO(calc(chan, 200))
-    a <- chan.read
-    b <- chan.read
+    _    <- forkIO(calc(chan, 100))
+    _    <- forkIO(calc(chan, 200))
+    a    <- chan.read
+    b    <- chan.read
   } yield a + b
   assert(io.unsafePerformIO === 25150)
 }

@@ -15,11 +15,11 @@ import org.junit.Assert._
 class BigIntegerCompareTest {
 
   @Test def testAbsNegative(): Unit = {
-    val aBytes = Array[Byte](1, 2, 3, 4, 5, 6, 7)
-    val aSign = -1
-    val rBytes = Array[Byte](1, 2, 3, 4, 5, 6, 7)
-    val aNumber = new BigInteger(aSign, aBytes)
-    val result = aNumber.abs()
+    val aBytes   = Array[Byte](1, 2, 3, 4, 5, 6, 7)
+    val aSign    = -1
+    val rBytes   = Array[Byte](1, 2, 3, 4, 5, 6, 7)
+    val aNumber  = new BigInteger(aSign, aBytes)
+    val result   = aNumber.abs()
     var resBytes = Array.ofDim[Byte](rBytes.length)
     resBytes = result.toByteArray()
     for (i <- 0 until resBytes.length) {
@@ -29,11 +29,11 @@ class BigIntegerCompareTest {
   }
 
   @Test def testAbsPositive(): Unit = {
-    val aBytes = Array[Byte](1, 2, 3, 4, 5, 6, 7)
-    val aSign = 1
-    val rBytes = Array[Byte](1, 2, 3, 4, 5, 6, 7)
-    val aNumber = new BigInteger(aSign, aBytes)
-    val result = aNumber.abs()
+    val aBytes   = Array[Byte](1, 2, 3, 4, 5, 6, 7)
+    val aSign    = 1
+    val rBytes   = Array[Byte](1, 2, 3, 4, 5, 6, 7)
+    val aNumber  = new BigInteger(aSign, aBytes)
+    val result   = aNumber.abs()
     var resBytes = Array.ofDim[Byte](rBytes.length)
     resBytes = result.toByteArray()
     for (i <- 0 until resBytes.length) {
@@ -46,8 +46,8 @@ class BigIntegerCompareTest {
     val aBytes = Array[Byte](10, 20, 30, 40, 50, 60, 70, 10, 20, 30)
     val bBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
-    val aSign = -1
-    val bSign = -1
+    val aSign   = -1
+    val bSign   = -1
     val aNumber = new BigInteger(aSign, aBytes)
     val bNumber = new BigInteger(bSign, bBytes)
     assertEquals(1, aNumber.compareTo(bNumber))
@@ -57,9 +57,9 @@ class BigIntegerCompareTest {
   @Test def testCompareToDiffSigns1(): Unit = {
     val aBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
-    val bBytes = Array[Byte](10, 20, 30, 40, 50, 60, 70, 10, 20, 30)
-    val aSign = 1
-    val bSign = -1
+    val bBytes  = Array[Byte](10, 20, 30, 40, 50, 60, 70, 10, 20, 30)
+    val aSign   = 1
+    val bSign   = -1
     val aNumber = new BigInteger(aSign, aBytes)
     val bNumber = new BigInteger(bSign, bBytes)
     assertEquals(1, aNumber.compareTo(bNumber))
@@ -68,9 +68,9 @@ class BigIntegerCompareTest {
   @Test def testCompareToDiffSigns2(): Unit = {
     val aBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
-    val bBytes = Array[Byte](10, 20, 30, 40, 50, 60, 70, 10, 20, 30)
-    val aSign = -1
-    val bSign = 1
+    val bBytes  = Array[Byte](10, 20, 30, 40, 50, 60, 70, 10, 20, 30)
+    val aSign   = -1
+    val bSign   = 1
     val aNumber = new BigInteger(aSign, aBytes)
     val bNumber = new BigInteger(bSign, bBytes)
     assertEquals(-1, aNumber.compareTo(bNumber))
@@ -81,8 +81,8 @@ class BigIntegerCompareTest {
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
     val bBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
-    val aSign = -1
-    val bSign = -1
+    val aSign   = -1
+    val bSign   = -1
     val aNumber = new BigInteger(aSign, aBytes)
     val bNumber = new BigInteger(bSign, bBytes)
     assertEquals(0, aNumber.compareTo(bNumber))
@@ -93,8 +93,8 @@ class BigIntegerCompareTest {
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
     val bBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
-    val aSign = 1
-    val bSign = 1
+    val aSign   = 1
+    val bSign   = 1
     val aNumber = new BigInteger(aSign, aBytes)
     val bNumber = new BigInteger(bSign, bBytes)
     assertEquals(0, aNumber.compareTo(bNumber))
@@ -103,9 +103,9 @@ class BigIntegerCompareTest {
   @Test def testCompareToNegNeg1(): Unit = {
     val aBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
-    val bBytes = Array[Byte](10, 20, 30, 40, 50, 60, 70, 10, 20, 30)
-    val aSign = -1
-    val bSign = -1
+    val bBytes  = Array[Byte](10, 20, 30, 40, 50, 60, 70, 10, 20, 30)
+    val aSign   = -1
+    val bSign   = -1
     val aNumber = new BigInteger(aSign, aBytes)
     val bNumber = new BigInteger(bSign, bBytes)
     assertEquals(-1, aNumber.compareTo(bNumber))
@@ -114,7 +114,7 @@ class BigIntegerCompareTest {
   @Test def testCompareToNegZero(): Unit = {
     val aBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
-    val aSign = -1
+    val aSign   = -1
     val aNumber = new BigInteger(aSign, aBytes)
     val bNumber = BigInteger.ZERO
     assertEquals(-1, aNumber.compareTo(bNumber))
@@ -123,9 +123,9 @@ class BigIntegerCompareTest {
   @Test def testCompareToPosPos1(): Unit = {
     val aBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
-    val bBytes = Array[Byte](10, 20, 30, 40, 50, 60, 70, 10, 20, 30)
-    val aSign = 1
-    val bSign = 1
+    val bBytes  = Array[Byte](10, 20, 30, 40, 50, 60, 70, 10, 20, 30)
+    val aSign   = 1
+    val bSign   = 1
     val aNumber = new BigInteger(aSign, aBytes)
     val bNumber = new BigInteger(bSign, bBytes)
     assertEquals(1, aNumber.compareTo(bNumber))
@@ -135,8 +135,8 @@ class BigIntegerCompareTest {
     val aBytes = Array[Byte](10, 20, 30, 40, 50, 60, 70, 10, 20, 30)
     val bBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
-    val aSign = 1
-    val bSign = 1
+    val aSign   = 1
+    val bSign   = 1
     val aNumber = new BigInteger(aSign, aBytes)
     val bNumber = new BigInteger(bSign, bBytes)
     assertEquals(-1, aNumber.compareTo(bNumber))
@@ -145,7 +145,7 @@ class BigIntegerCompareTest {
   @Test def testCompareToPosZero(): Unit = {
     val aBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
-    val aSign = 1
+    val aSign   = 1
     val aNumber = new BigInteger(aSign, aBytes)
     val bNumber = BigInteger.ZERO
     assertEquals(1, aNumber.compareTo(bNumber))
@@ -154,7 +154,7 @@ class BigIntegerCompareTest {
   @Test def testCompareToZeroNeg(): Unit = {
     val bBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
-    val bSign = -1
+    val bSign   = -1
     val aNumber = BigInteger.ZERO
     val bNumber = new BigInteger(bSign, bBytes)
     assertEquals(1, aNumber.compareTo(bNumber))
@@ -163,7 +163,7 @@ class BigIntegerCompareTest {
   @Test def testCompareToZeroPos(): Unit = {
     val bBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
-    val bSign = 1
+    val bSign   = 1
     val aNumber = BigInteger.ZERO
     val bNumber = new BigInteger(bSign, bBytes)
     assertEquals(-1, aNumber.compareTo(bNumber))
@@ -178,9 +178,9 @@ class BigIntegerCompareTest {
   @Test def testEqualsBigIntegerFalse(): Unit = {
     val aBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
-    val bBytes = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
-    val aSign = 1
-    val bSign = 1
+    val bBytes  = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
+    val aSign   = 1
+    val bSign   = 1
     val aNumber = new BigInteger(aSign, aBytes)
     val bNumber = new BigInteger(bSign, bBytes)
     assertFalse(aNumber == bNumber)
@@ -191,8 +191,8 @@ class BigIntegerCompareTest {
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
     val bBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
-    val aSign = 1
-    val bSign = 1
+    val aSign   = 1
+    val bSign   = 1
     val aNumber = new BigInteger(aSign, aBytes)
     val bNumber = new BigInteger(bSign, bBytes)
     assertTrue(aNumber == bNumber)
@@ -201,7 +201,7 @@ class BigIntegerCompareTest {
   @Test def testEqualsNull(): Unit = {
     val aBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
-    val aSign = 1
+    val aSign   = 1
     val aNumber = new BigInteger(aSign, aBytes)
     assertFalse(aNumber == null)
   }
@@ -209,21 +209,21 @@ class BigIntegerCompareTest {
   @Test def testEqualsObject(): Unit = {
     val aBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
-    val aSign = 1
+    val aSign   = 1
     val aNumber = new BigInteger(aSign, aBytes)
-    val obj = new AnyRef()
+    val obj     = new AnyRef()
     assertFalse(aNumber == obj)
   }
 
   @Test def testMaxEqual(): Unit = {
-    val aBytes = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
-    val bBytes = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
-    val aSign = 1
-    val bSign = 1
-    val rBytes = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
-    val aNumber = new BigInteger(aSign, aBytes)
-    val bNumber = new BigInteger(bSign, bBytes)
-    val result = aNumber.max(bNumber)
+    val aBytes   = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
+    val bBytes   = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
+    val aSign    = 1
+    val bSign    = 1
+    val rBytes   = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
+    val aNumber  = new BigInteger(aSign, aBytes)
+    val bNumber  = new BigInteger(bSign, bBytes)
+    val result   = aNumber.max(bNumber)
     var resBytes = Array.ofDim[Byte](rBytes.length)
     resBytes = result.toByteArray()
     for (i <- 0 until resBytes.length) {
@@ -236,13 +236,13 @@ class BigIntegerCompareTest {
     val aBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
     val bBytes = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
-    val aSign = 1
-    val bSign = 1
+    val aSign  = 1
+    val bSign  = 1
     val rBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
-    val aNumber = new BigInteger(aSign, aBytes)
-    val bNumber = new BigInteger(bSign, bBytes)
-    var result = aNumber.max(bNumber)
+    val aNumber  = new BigInteger(aSign, aBytes)
+    val bNumber  = new BigInteger(bSign, bBytes)
+    var result   = aNumber.max(bNumber)
     var resBytes = Array.ofDim[Byte](rBytes.length)
     resBytes = result.toByteArray()
     for (i <- 0 until resBytes.length) {
@@ -261,9 +261,9 @@ class BigIntegerCompareTest {
     val bSign = 1
     val rBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
-    val aNumber = new BigInteger(aSign, aBytes)
-    val bNumber = new BigInteger(bSign, bBytes)
-    val result = aNumber.max(bNumber)
+    val aNumber  = new BigInteger(aSign, aBytes)
+    val bNumber  = new BigInteger(bSign, bBytes)
+    val result   = aNumber.max(bNumber)
     var resBytes = Array.ofDim[Byte](rBytes.length)
     resBytes = result.toByteArray()
     for (i <- 0 until resBytes.length) {
@@ -273,12 +273,12 @@ class BigIntegerCompareTest {
   }
 
   @Test def testMaxNegZero(): Unit = {
-    val aBytes = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
-    val aSign = -1
-    val rBytes = Array[Byte](0)
-    val aNumber = new BigInteger(aSign, aBytes)
-    val bNumber = BigInteger.ZERO
-    val result = aNumber.max(bNumber)
+    val aBytes   = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
+    val aSign    = -1
+    val rBytes   = Array[Byte](0)
+    val aNumber  = new BigInteger(aSign, aBytes)
+    val bNumber  = BigInteger.ZERO
+    val result   = aNumber.max(bNumber)
     var resBytes = Array.ofDim[Byte](rBytes.length)
     resBytes = result.toByteArray()
     for (i <- 0 until resBytes.length) {
@@ -288,14 +288,14 @@ class BigIntegerCompareTest {
   }
 
   @Test def testMinEqual(): Unit = {
-    val aBytes = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
-    val bBytes = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
-    val aSign = 1
-    val bSign = 1
-    val rBytes = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
-    val aNumber = new BigInteger(aSign, aBytes)
-    val bNumber = new BigInteger(bSign, bBytes)
-    val result = aNumber.min(bNumber)
+    val aBytes   = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
+    val bBytes   = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
+    val aSign    = 1
+    val bSign    = 1
+    val rBytes   = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
+    val aNumber  = new BigInteger(aSign, aBytes)
+    val bNumber  = new BigInteger(bSign, bBytes)
+    val result   = aNumber.min(bNumber)
     var resBytes = Array.ofDim[Byte](rBytes.length)
     resBytes = result.toByteArray()
     for (i <- 0 until resBytes.length) {
@@ -307,13 +307,13 @@ class BigIntegerCompareTest {
   @Test def testMinGreater(): Unit = {
     val aBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
-    val bBytes = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
-    val aSign = 1
-    val bSign = 1
-    val rBytes = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
-    val aNumber = new BigInteger(aSign, aBytes)
-    val bNumber = new BigInteger(bSign, bBytes)
-    val result = aNumber.min(bNumber)
+    val bBytes   = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
+    val aSign    = 1
+    val bSign    = 1
+    val rBytes   = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
+    val aNumber  = new BigInteger(aSign, aBytes)
+    val bNumber  = new BigInteger(bSign, bBytes)
+    val result   = aNumber.min(bNumber)
     var resBytes = Array.ofDim[Byte](rBytes.length)
     resBytes = result.toByteArray()
     for (i <- 0 until resBytes.length) {
@@ -326,12 +326,12 @@ class BigIntegerCompareTest {
     val aBytes = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
     val bBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
-    val aSign = 1
-    val bSign = 1
-    val rBytes = Array(45, 91, 3, -15, 35, 26, 3, 91)
-    val aNumber = new BigInteger(aSign, aBytes)
-    val bNumber = new BigInteger(bSign, bBytes)
-    val result = aNumber.min(bNumber)
+    val aSign    = 1
+    val bSign    = 1
+    val rBytes   = Array(45, 91, 3, -15, 35, 26, 3, 91)
+    val aNumber  = new BigInteger(aSign, aBytes)
+    val bNumber  = new BigInteger(bSign, bBytes)
+    val result   = aNumber.min(bNumber)
     var resBytes = Array.ofDim[Byte](rBytes.length)
     resBytes = result.toByteArray()
     for (i <- 0 until resBytes.length) {
@@ -341,12 +341,12 @@ class BigIntegerCompareTest {
   }
 
   @Test def testMinPosZero(): Unit = {
-    val aBytes = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
-    val aSign = 1
-    val rBytes = Array[Byte](0)
-    val aNumber = new BigInteger(aSign, aBytes)
-    val bNumber = BigInteger.ZERO
-    val result = aNumber.min(bNumber)
+    val aBytes   = Array[Byte](45, 91, 3, -15, 35, 26, 3, 91)
+    val aSign    = 1
+    val rBytes   = Array[Byte](0)
+    val aNumber  = new BigInteger(aSign, aBytes)
+    val bNumber  = BigInteger.ZERO
+    val result   = aNumber.min(bNumber)
     var resBytes = Array.ofDim[Byte](rBytes.length)
     resBytes = result.toByteArray()
     for (i <- 0 until resBytes.length) {
@@ -361,8 +361,8 @@ class BigIntegerCompareTest {
     val aSign = -1
     val rBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
-    val aNumber = new BigInteger(aSign, aBytes)
-    val result = aNumber.negate()
+    val aNumber  = new BigInteger(aSign, aBytes)
+    val result   = aNumber.negate()
     var resBytes = Array.ofDim[Byte](rBytes.length)
     resBytes = result.toByteArray()
     for (i <- 0 until resBytes.length) {
@@ -378,10 +378,10 @@ class BigIntegerCompareTest {
     val aBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
     val aSign = 1
-    val rBytes = Array[Byte](
-        -13, -57, -101, 1, 75, -90, -46, -92, -4, 14, -36, -27, -4, -91)
-    val aNumber = new BigInteger(aSign, aBytes)
-    val result = aNumber.negate()
+    val rBytes = Array[Byte](-13, -57, -101, 1, 75, -90, -46, -92, -4, 14, -36,
+      -27, -4, -91)
+    val aNumber  = new BigInteger(aSign, aBytes)
+    val result   = aNumber.negate()
     var resBytes = Array.ofDim[Byte](rBytes.length)
     resBytes = result.toByteArray()
     for (i <- 0 until resBytes.length) {
@@ -391,9 +391,9 @@ class BigIntegerCompareTest {
   }
 
   @Test def testNegateZero(): Unit = {
-    val rBytes = Array[Byte](0)
-    val aNumber = BigInteger.ZERO
-    val result = aNumber.negate()
+    val rBytes   = Array[Byte](0)
+    val aNumber  = BigInteger.ZERO
+    val result   = aNumber.negate()
     var resBytes = Array.ofDim[Byte](rBytes.length)
     resBytes = result.toByteArray()
     for (i <- 0 until resBytes.length) {
@@ -405,7 +405,7 @@ class BigIntegerCompareTest {
   @Test def tassestSignumNegative(): Unit = {
     val aBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
-    val aSign = -1
+    val aSign   = -1
     val aNumber = new BigInteger(aSign, aBytes)
     assertEquals(-1, aNumber.signum())
   }
@@ -413,7 +413,7 @@ class BigIntegerCompareTest {
   @Test def testSignumPositive(): Unit = {
     val aBytes =
       Array[Byte](12, 56, 100, -2, -76, 89, 45, 91, 3, -15, 35, 26, 3, 91)
-    val aSign = 1
+    val aSign   = 1
     val aNumber = new BigInteger(aSign, aBytes)
     assertEquals(1, aNumber.signum())
   }

@@ -34,7 +34,8 @@ import scalafx.delegate.SFXDelegate
 
 object ReadOnlyProperty {
   implicit def sfxReadOnlyProperty2jfx[T, J](
-      rop: ReadOnlyProperty[T, J]): jfxbp.ReadOnlyProperty[J] =
+      rop: ReadOnlyProperty[T, J]
+  ): jfxbp.ReadOnlyProperty[J] =
     if (rop != null) rop.delegate else null
 }
 
@@ -46,7 +47,8 @@ object ReadOnlyProperty {
   * @tparam J Indicates Java type to be wrapped by T. Eventually T and J could be the same.
   */
 trait ReadOnlyProperty[T, J]
-    extends ObservableValue[T, J] with SFXDelegate[jfxbp.ReadOnlyProperty[J]] {
+    extends ObservableValue[T, J]
+    with SFXDelegate[jfxbp.ReadOnlyProperty[J]] {
 
   /**
     * Returns the name of this property.

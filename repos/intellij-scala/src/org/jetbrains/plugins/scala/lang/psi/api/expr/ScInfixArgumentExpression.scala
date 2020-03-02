@@ -10,14 +10,13 @@ trait ScInfixArgumentExpression extends ScExpression {
   /**
     * Return true if this expression is arguments for method invocation
     */
-  def isCall: Boolean = {
+  def isCall: Boolean =
     getContext match {
       case infix: ScInfixExpr =>
         infix.isLeftAssoc match {
-          case true => infix.lOp == this
+          case true  => infix.lOp == this
           case false => infix.rOp == this
         }
       case _ => false
     }
-  }
 }

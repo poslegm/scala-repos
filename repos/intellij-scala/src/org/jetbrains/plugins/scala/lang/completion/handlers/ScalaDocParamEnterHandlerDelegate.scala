@@ -17,12 +17,15 @@ import org.jetbrains.plugins.scala.lang.scaladoc.psi.api.ScDocTag
   */
 class ScalaDocParamEnterHandlerDelegate extends EnterHandlerDelegateAdapter {
   override def postProcessEnter(
-      file: PsiFile, editor: Editor, dataContext: DataContext): Result = {
+      file: PsiFile,
+      editor: Editor,
+      dataContext: DataContext
+  ): Result = {
     if (!file.isInstanceOf[ScalaFile]) {
       return Result.Continue
     }
 
-    val scalaFile = file.asInstanceOf[ScalaFile]
+    val scalaFile   = file.asInstanceOf[ScalaFile]
     val caretOffset = editor.getCaretModel.getOffset
 
     if (scalaFile.elementAt(caretOffset).isEmpty) {
@@ -30,7 +33,7 @@ class ScalaDocParamEnterHandlerDelegate extends EnterHandlerDelegateAdapter {
     }
 
     var nextParent = scalaFile.elementAt(caretOffset).get
-    val document = editor.getDocument
+    val document   = editor.getDocument
 
     while (!nextParent.isInstanceOf[ScDocTag]) {
       nextParent = nextParent.getParent
@@ -38,9 +41,9 @@ class ScalaDocParamEnterHandlerDelegate extends EnterHandlerDelegateAdapter {
         return Result.Continue
       }
     }
-    val tagParent = nextParent.asInstanceOf[ScDocTag]
+    val tagParent       = nextParent.asInstanceOf[ScDocTag]
     val tagValueElement = tagParent.getValueElement
-    val tagNameElement = tagParent.getNameElement
+    val tagNameElement  = tagParent.getNameElement
 
     if (tagParent.getNameElement == null) {
       return Result.Continue
@@ -59,15 +62,16 @@ class ScalaDocParamEnterHandlerDelegate extends EnterHandlerDelegateAdapter {
     val startOffset = tagParent.getNameElement.getTextRange.getStartOffset
     val endOffset =
       probData.getTextRange.getStartOffset +
-      (Option(nextProbData).map(_.getElementType) match {
-            case Some(ScalaDocTokenType.DOC_COMMENT_DATA) =>
-              probData.getTextLength
-            case Some(ScalaDocTokenType.DOC_COMMENT_LEADING_ASTERISKS) => 1
-            case _ => 0
-          })
+        (Option(nextProbData).map(_.getElementType) match {
+          case Some(ScalaDocTokenType.DOC_COMMENT_DATA) =>
+            probData.getTextLength
+          case Some(ScalaDocTokenType.DOC_COMMENT_LEADING_ASTERISKS) => 1
+          case _                                                     => 0
+        })
 
     if (document.getLineNumber(caretOffset) - 1 == document.getLineNumber(
-            tagParent.getNameElement.getTextOffset)) {
+          tagParent.getNameElement.getTextOffset
+        )) {
       val toInsert = StringUtil.repeat(" ", endOffset - startOffset)
       extensions.inWriteAction {
         document.insertString(caretOffset, toInsert)

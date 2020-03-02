@@ -31,7 +31,7 @@ private[netty4] class DecodeHandler[In](decoderFactory: () => FrameDecoder[In])
   override def channelRead(ctx: ChannelHandlerContext, msg: Any): Unit =
     msg match {
       case bb: ByteBuf =>
-        var idx = 0
+        var idx    = 0
         val frames = ctx.attr(DecoderKey).get.apply(ByteBufAsBuf.Owned(bb))
         while (idx < frames.length) {
           ctx.fireChannelRead(frames(idx))

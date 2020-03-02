@@ -67,8 +67,8 @@ private[cluster] class AutoDown(autoDownUnreachableAfter: FiniteDuration)
   * able to unit test the logic without running cluster.
   */
 private[cluster] abstract class AutoDownBase(
-    autoDownUnreachableAfter: FiniteDuration)
-    extends Actor {
+    autoDownUnreachableAfter: FiniteDuration
+) extends Actor {
 
   import AutoDown._
 
@@ -83,12 +83,11 @@ private[cluster] abstract class AutoDownBase(
   val skipMemberStatus = Gossip.convergenceSkipUnreachableWithMemberStatus
 
   var scheduledUnreachable: Map[UniqueAddress, Cancellable] = Map.empty
-  var pendingUnreachable: Set[UniqueAddress] = Set.empty
-  var leader = false
+  var pendingUnreachable: Set[UniqueAddress]                = Set.empty
+  var leader                                                = false
 
-  override def postStop(): Unit = {
+  override def postStop(): Unit =
     scheduledUnreachable.values foreach { _.cancel }
-  }
 
   def receive = {
     case state: CurrentClusterState ⇒
@@ -97,7 +96,7 @@ private[cluster] abstract class AutoDownBase(
 
     case UnreachableMember(m) ⇒ unreachableMember(m)
 
-    case ReachableMember(m) ⇒ remove(m.uniqueAddress)
+    case ReachableMember(m)  ⇒ remove(m.uniqueAddress)
     case MemberRemoved(m, _) ⇒ remove(m.uniqueAddress)
 
     case LeaderChanged(leaderOption) ⇒
@@ -121,17 +120,19 @@ private[cluster] abstract class AutoDownBase(
         !scheduledUnreachable.contains(m.uniqueAddress))
       scheduleUnreachable(m.uniqueAddress)
 
-  def scheduleUnreachable(node: UniqueAddress): Unit = {
+  def scheduleUnreachable(node: UniqueAddress): Unit =
     if (autoDownUnreachableAfter == Duration.Zero) {
       downOrAddPending(node)
     } else {
       val task = scheduler.scheduleOnce(
-          autoDownUnreachableAfter, self, UnreachableTimeout(node))
+        autoDownUnreachableAfter,
+        self,
+        UnreachableTimeout(node)
+      )
       scheduledUnreachable += (node -> task)
     }
-  }
 
-  def downOrAddPending(node: UniqueAddress): Unit = {
+  def downOrAddPending(node: UniqueAddress): Unit =
     if (leader) {
       down(node.address)
     } else {
@@ -139,7 +140,6 @@ private[cluster] abstract class AutoDownBase(
       // a new leader must pick up these
       pendingUnreachable += node
     }
-  }
 
   def remove(node: UniqueAddress): Unit = {
     scheduledUnreachable.get(node) foreach { _.cancel }

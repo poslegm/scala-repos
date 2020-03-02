@@ -18,18 +18,17 @@
 package org.apache.spark.sql.execution.datasources
 
 private[datasources] object ParseModes {
-  val PERMISSIVE_MODE = "PERMISSIVE"
+  val PERMISSIVE_MODE     = "PERMISSIVE"
   val DROP_MALFORMED_MODE = "DROPMALFORMED"
-  val FAIL_FAST_MODE = "FAILFAST"
+  val FAIL_FAST_MODE      = "FAILFAST"
 
   val DEFAULT = PERMISSIVE_MODE
 
-  def isValidMode(mode: String): Boolean = {
+  def isValidMode(mode: String): Boolean =
     mode.toUpperCase match {
       case PERMISSIVE_MODE | DROP_MALFORMED_MODE | FAIL_FAST_MODE => true
-      case _ => false
+      case _                                                      => false
     }
-  }
 
   def isDropMalformedMode(mode: String): Boolean =
     mode.toUpperCase == DROP_MALFORMED_MODE

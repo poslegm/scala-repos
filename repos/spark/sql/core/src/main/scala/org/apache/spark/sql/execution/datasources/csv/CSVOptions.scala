@@ -20,21 +20,26 @@ package org.apache.spark.sql.execution.datasources.csv
 import java.nio.charset.StandardCharsets
 
 import org.apache.spark.internal.Logging
-import org.apache.spark.sql.execution.datasources.{CompressionCodecs, ParseModes}
+import org.apache.spark.sql.execution.datasources.{
+  CompressionCodecs,
+  ParseModes
+}
 
 private[sql] class CSVOptions(
-    @transient private val parameters: Map[String, String])
-    extends Logging with Serializable {
+    @transient private val parameters: Map[String, String]
+) extends Logging
+    with Serializable {
 
   private def getChar(paramName: String, default: Char): Char = {
     val paramValue = parameters.get(paramName)
     paramValue match {
-      case None => default
+      case None                             => default
       case Some(value) if value.length == 0 => '\u0000'
       case Some(value) if value.length == 1 => value.charAt(0)
       case _ =>
         throw new RuntimeException(
-            s"$paramName cannot be more than one character")
+          s"$paramName cannot be more than one character"
+        )
     }
   }
 
@@ -48,7 +53,8 @@ private[sql] class CSVOptions(
         } catch {
           case e: NumberFormatException =>
             throw new RuntimeException(
-                s"$paramName should be an integer. Found $value")
+              s"$paramName should be an integer. Found $value"
+            )
         }
     }
   }
@@ -65,30 +71,33 @@ private[sql] class CSVOptions(
   }
 
   val delimiter = CSVTypeCast.toChar(
-      parameters.getOrElse("sep", parameters.getOrElse("delimiter", ",")))
+    parameters.getOrElse("sep", parameters.getOrElse("delimiter", ","))
+  )
   private val parseMode = parameters.getOrElse("mode", "PERMISSIVE")
   val charset = parameters.getOrElse(
-      "encoding",
-      parameters.getOrElse("charset", StandardCharsets.UTF_8.name()))
+    "encoding",
+    parameters.getOrElse("charset", StandardCharsets.UTF_8.name())
+  )
 
-  val quote = getChar("quote", '\"')
-  val escape = getChar("escape", '\\')
+  val quote   = getChar("quote", '\"')
+  val escape  = getChar("escape", '\\')
   val comment = getChar("comment", '\u0000')
 
-  val headerFlag = getBool("header")
-  val inferSchemaFlag = getBool("inferSchema")
-  val ignoreLeadingWhiteSpaceFlag = getBool("ignoreLeadingWhiteSpace")
+  val headerFlag                   = getBool("header")
+  val inferSchemaFlag              = getBool("inferSchema")
+  val ignoreLeadingWhiteSpaceFlag  = getBool("ignoreLeadingWhiteSpace")
   val ignoreTrailingWhiteSpaceFlag = getBool("ignoreTrailingWhiteSpace")
 
   // Parse mode flags
   if (!ParseModes.isValidMode(parseMode)) {
     logWarning(
-        s"$parseMode is not a valid parse mode. Using ${ParseModes.DEFAULT}.")
+      s"$parseMode is not a valid parse mode. Using ${ParseModes.DEFAULT}."
+    )
   }
 
-  val failFast = ParseModes.isFailFastMode(parseMode)
+  val failFast      = ParseModes.isFailFastMode(parseMode)
   val dropMalformed = ParseModes.isDropMalformedMode(parseMode)
-  val permissive = ParseModes.isPermissiveMode(parseMode)
+  val permissive    = ParseModes.isPermissiveMode(parseMode)
 
   val nullValue = parameters.getOrElse("nullValue", "")
 

@@ -50,15 +50,14 @@ object ExpressionSet {
   */
 class ExpressionSet protected (
     protected val baseSet: mutable.Set[Expression] = new mutable.HashSet,
-    protected val originals: mutable.Buffer[Expression] = new ArrayBuffer)
-    extends Set[Expression] {
+    protected val originals: mutable.Buffer[Expression] = new ArrayBuffer
+) extends Set[Expression] {
 
-  protected def add(e: Expression): Unit = {
+  protected def add(e: Expression): Unit =
     if (!baseSet.contains(e.canonicalized)) {
       baseSet.add(e.canonicalized)
       originals.append(e)
     }
-  }
 
   override def contains(elem: Expression): Boolean =
     baseSet.contains(elem.canonicalized)

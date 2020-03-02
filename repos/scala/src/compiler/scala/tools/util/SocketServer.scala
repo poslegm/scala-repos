@@ -16,9 +16,9 @@ import scala.tools.nsc.io.Socket
 trait CompileOutputCommon {
   def verbose: Boolean
 
-  def info(msg: String) = if (verbose) echo(msg)
-  def echo(msg: String) = { Console println msg; Console.flush() }
-  def warn(msg: String) = { Console.err println msg; Console.flush() }
+  def info(msg: String)  = if (verbose) echo(msg)
+  def echo(msg: String)  = { Console println msg; Console.flush() }
+  def warn(msg: String)  = { Console.err println msg; Console.flush() }
   def fatal(msg: String) = { warn(msg); sys.exit(1) }
 }
 
@@ -37,25 +37,23 @@ abstract class SocketServer(fixPort: Int = 0) extends CompileOutputCommon {
   protected def createServerSocket(): ServerSocket = new ServerSocket(fixPort)
 
   var in: BufferedReader = _
-  var out: PrintWriter = _
-  val BufferSize = 10240
-  lazy val serverSocket = createServerSocket()
-  lazy val port = serverSocket.getLocalPort()
+  var out: PrintWriter   = _
+  val BufferSize         = 10240
+  lazy val serverSocket  = createServerSocket()
+  lazy val port          = serverSocket.getLocalPort()
 
   // Default to 30 minute idle timeout, settable with -max-idle
   protected var idleMinutes = 30
-  private var savedTimeout = 0
-  private val acceptBox = new Socket.Box(
-      () =>
-        {
-      // update the timeout if it has changed
-      if (savedTimeout != idleMinutes) {
-        savedTimeout = idleMinutes
-        setTimeoutOnSocket(savedTimeout)
-      }
-      new Socket(serverSocket.accept())
+  private var savedTimeout  = 0
+  private val acceptBox = new Socket.Box(() => {
+    // update the timeout if it has changed
+    if (savedTimeout != idleMinutes) {
+      savedTimeout = idleMinutes
+      setTimeoutOnSocket(savedTimeout)
+    }
+    new Socket(serverSocket.accept())
   })
-  private def setTimeoutOnSocket(mins: Int) = {
+  private def setTimeoutOnSocket(mins: Int) =
     try {
       serverSocket setSoTimeout (mins * 60 * 1000)
       info("Set socket timeout to " + mins + " minutes.")
@@ -65,17 +63,16 @@ abstract class SocketServer(fixPort: Int = 0) extends CompileOutputCommon {
         warn("Failed to set socket timeout: " + ex)
         false
     }
-  }
 
-  def doSession(clientSocket: Socket) = {
+  def doSession(clientSocket: Socket) =
     clientSocket.applyReaderAndWriter { (in, out) =>
       this.in = in
       this.out = out
       val bufout = clientSocket.bufferedOutput(BufferSize)
 
-      try scala.Console.withOut(bufout)(session()) finally bufout.close()
+      try scala.Console.withOut(bufout)(session())
+      finally bufout.close()
     }
-  }
 
   def run() {
     info("Starting SocketServer run() loop.")
@@ -83,7 +80,8 @@ abstract class SocketServer(fixPort: Int = 0) extends CompileOutputCommon {
     def loop() {
       acceptBox.either match {
         case Right(clientSocket) =>
-          try doSession(clientSocket) finally clientSocket.close()
+          try doSession(clientSocket)
+          finally clientSocket.close()
         case Left(_: SocketTimeoutException) =>
           warn("Idle timeout exceeded on port %d; exiting" format port)
           timeout()
@@ -93,7 +91,8 @@ abstract class SocketServer(fixPort: Int = 0) extends CompileOutputCommon {
       }
       if (!shutdown) loop()
     }
-    try loop() catch {
+    try loop()
+    catch {
       case ex: SocketException =>
         fatal("Compile server caught fatal exception: " + ex)
     } finally serverSocket.close()

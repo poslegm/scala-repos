@@ -18,17 +18,19 @@ import org.junit.Test
 class DateTest {
 
   @Test def compareTo(): Unit = {
-    def compare(x: Date, y: Date): Int = {
+    def compare(x: Date, y: Date): Int =
       x.compareTo(y)
-    }
 
     assertTrue(
-        compare(new Date(97, 11, 5, 0, 0), new Date(98, 11, 5, 0, 0)) < 0)
+      compare(new Date(97, 11, 5, 0, 0), new Date(98, 11, 5, 0, 0)) < 0
+    )
     assertTrue(
-        compare(new Date(98, 11, 5, 0, 0), new Date(97, 11, 5, 0, 0)) > 0)
+      compare(new Date(98, 11, 5, 0, 0), new Date(97, 11, 5, 0, 0)) > 0
+    )
     assertEquals(0, compare(new Date(97, 11, 5, 0, 0), new Date(97, 11, 5)))
     assertTrue(
-        compare(new Date(97, 11, 5, 0, 0), new Date(97, 11, 5, 0, 1)) < 0)
+      compare(new Date(97, 11, 5, 0, 0), new Date(97, 11, 5, 0, 1)) < 0
+    )
     assertEquals(0, compare(new Date(97, 11, 5), new Date(97, 11, 5, 0, 0)))
   }
 
@@ -37,12 +39,15 @@ class DateTest {
       x.asInstanceOf[Comparable[Any]].compareTo(y)
 
     assertTrue(
-        compare(new Date(97, 11, 5, 0, 0), new Date(98, 11, 5, 0, 0)) < 0)
+      compare(new Date(97, 11, 5, 0, 0), new Date(98, 11, 5, 0, 0)) < 0
+    )
     assertTrue(
-        compare(new Date(98, 11, 5, 0, 0), new Date(97, 11, 5, 0, 0)) > 0)
+      compare(new Date(98, 11, 5, 0, 0), new Date(97, 11, 5, 0, 0)) > 0
+    )
     assertEquals(0, compare(new Date(97, 11, 5, 0, 0), new Date(97, 11, 5)))
     assertTrue(
-        compare(new Date(97, 11, 5, 0, 0), new Date(97, 11, 5, 0, 1)) < 0)
+      compare(new Date(97, 11, 5, 0, 0), new Date(97, 11, 5, 0, 1)) < 0
+    )
     assertEquals(0, compare(new Date(97, 11, 5), new Date(97, 11, 5, 0, 0)))
   }
 

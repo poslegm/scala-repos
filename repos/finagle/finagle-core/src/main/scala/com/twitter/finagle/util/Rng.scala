@@ -39,13 +39,13 @@ trait Rng {
   * See [[Rngs]] for Java compatible APIs.
   */
 object Rng {
-  def apply(): Rng = Rng(new java.util.Random)
-  def apply(seed: Long): Rng = Rng(new java.util.Random(seed))
+  def apply(): Rng                     = Rng(new java.util.Random)
+  def apply(seed: Long): Rng           = Rng(new java.util.Random(seed))
   def apply(r: scala.util.Random): Rng = Rng(r.self)
   def apply(r: java.util.Random): Rng = new Rng {
     def nextDouble(): Double = r.nextDouble()
     def nextInt(n: Int): Int = r.nextInt(n)
-    def nextInt(): Int = r.nextInt()
+    def nextInt(): Int       = r.nextInt()
     def nextLong(n: Long): Long = {
       require(n > 0)
 
@@ -55,7 +55,7 @@ object Rng {
       if ((n & -n) == n) return r.nextLong() % n
 
       var bits = 0L
-      var v = 0L
+      var v    = 0L
       do {
         bits = (r.nextLong() << 1) >>> 1
         v = bits % n
@@ -64,9 +64,9 @@ object Rng {
     }
   }
   val threadLocal: Rng = new Rng {
-    def nextDouble(): Double = ThreadLocalRandom.current().nextDouble()
-    def nextInt(n: Int): Int = ThreadLocalRandom.current().nextInt(0, n)
-    def nextInt(): Int = ThreadLocalRandom.current().nextInt()
+    def nextDouble(): Double    = ThreadLocalRandom.current().nextDouble()
+    def nextInt(n: Int): Int    = ThreadLocalRandom.current().nextInt(0, n)
+    def nextInt(): Int          = ThreadLocalRandom.current().nextInt()
     def nextLong(n: Long): Long = ThreadLocalRandom.current().nextLong(n)
   }
 }

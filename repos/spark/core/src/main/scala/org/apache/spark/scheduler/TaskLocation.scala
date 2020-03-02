@@ -30,8 +30,9 @@ private[spark] sealed trait TaskLocation {
   * A location that includes both a host and an executor id on that host.
   */
 private[spark] case class ExecutorCacheTaskLocation(
-    override val host: String, executorId: String)
-    extends TaskLocation {
+    override val host: String,
+    executorId: String
+) extends TaskLocation {
   override def toString: String =
     s"${TaskLocation.executorLocationTag}${host}_$executorId"
 }
@@ -61,9 +62,8 @@ private[spark] object TaskLocation {
   // Identify locations of executors with this prefix.
   val executorLocationTag = "executor_"
 
-  def apply(host: String, executorId: String): TaskLocation = {
+  def apply(host: String, executorId: String): TaskLocation =
     new ExecutorCacheTaskLocation(host, executorId)
-  }
 
   /**
     * Create a TaskLocation from a string returned by getPreferredLocations.
@@ -77,7 +77,8 @@ private[spark] object TaskLocation {
         val splits = str.split("_")
         if (splits.length != 3) {
           throw new IllegalArgumentException(
-              "Illegal executor location format: " + str)
+            "Illegal executor location format: " + str
+          )
         }
         new ExecutorCacheTaskLocation(splits(1), splits(2))
       } else {

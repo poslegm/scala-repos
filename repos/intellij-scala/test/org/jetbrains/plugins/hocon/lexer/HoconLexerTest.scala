@@ -15,18 +15,20 @@ class HoconLexerTest extends HoconFileSetTestCase("lexer") {
 
   override def transform(data: Seq[String]) = {
     val fileContents = data.head
-    val lexer = new HoconLexer
+    val lexer        = new HoconLexer
 
     lexer.start(fileContents)
     val tokenIterator = Iterator
       .iterate(lexer)(advance)
       .takeWhile(_.getTokenType != null)
       .map(l =>
-            (l.getTokenType,
-             fileContents.substring(l.getTokenStart, l.getTokenEnd)))
+        (l.getTokenType, fileContents.substring(l.getTokenStart, l.getTokenEnd))
+      )
 
-    tokenIterator.map {
-      case (token, str) => s"$token {$str}"
-    }.mkString("\n")
+    tokenIterator
+      .map {
+        case (token, str) => s"$token {$str}"
+      }
+      .mkString("\n")
   }
 }

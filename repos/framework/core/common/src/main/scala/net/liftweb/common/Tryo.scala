@@ -18,16 +18,16 @@ trait Tryo {
     *   </ul>
     */
   def tryo[T](ignore: List[Class[_]], onError: Box[Throwable => Unit])(
-      f: => T): Box[T] = {
+      f: => T
+  ): Box[T] =
     try {
       Full(f)
     } catch {
       case c if ignore.exists(_.isAssignableFrom(c.getClass)) =>
-        onError.foreach(_ (c)); Empty
+        onError.foreach(_(c)); Empty
       case c if (ignore == null || ignore.isEmpty) =>
-        onError.foreach(_ (c)); Failure(c.getMessage, Full(c), Empty)
+        onError.foreach(_(c)); Failure(c.getMessage, Full(c), Empty)
     }
-  }
 
   /**
     * Wraps a "try" block around the function f. If f throws
@@ -43,14 +43,13 @@ trait Tryo {
     *   </ul>
     * @see net.liftweb.common.Failure
     */
-  def tryo[T](handler: PartialFunction[Throwable, T], f: => T): Box[T] = {
+  def tryo[T](handler: PartialFunction[Throwable, T], f: => T): Box[T] =
     try {
       Full(f)
     } catch {
       case t if handler.isDefinedAt(t) => Full(handler(t))
-      case e: Throwable => Failure(e.getMessage, Full(e), Empty)
+      case e: Throwable                => Failure(e.getMessage, Full(e), Empty)
     }
-  }
 
   /**
     * Wraps a "try" block around the function f

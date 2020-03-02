@@ -101,14 +101,16 @@ trait TraitViewPager[This <: android.support.v4.view.ViewPager]
   @inline
   def onPageChangeListener(implicit no: NoGetterForThisProperty): Nothing =
     throw new Error(
-        "Android does not support the getter for 'onPageChangeListener'")
+      "Android does not support the getter for 'onPageChangeListener'"
+    )
 
   /**
     * Shortcut for `[[https://developer.android.com/reference/android/support/v4/view/ViewPager.html#setOnPageChangeListener(android.support.v4.view.ViewPager.OnPageChangeListener) setOnPageChangeListener(android.support.v4.view.ViewPager.OnPageChangeListener)]]`
     */
   @inline
   def onPageChangeListener(
-      p: android.support.v4.view.ViewPager.OnPageChangeListener) =
+      p: android.support.v4.view.ViewPager.OnPageChangeListener
+  ) =
     onPageChangeListener_=(p)
 
   /**
@@ -116,7 +118,8 @@ trait TraitViewPager[This <: android.support.v4.view.ViewPager]
     */
   @inline
   def onPageChangeListener_=(
-      p: android.support.v4.view.ViewPager.OnPageChangeListener) = {
+      p: android.support.v4.view.ViewPager.OnPageChangeListener
+  ) = {
     basis.setOnPageChangeListener(p); basis
   }
 
@@ -138,7 +141,8 @@ trait TraitViewPager[This <: android.support.v4.view.ViewPager]
   @inline
   def pageMarginDrawable(implicit no: NoGetterForThisProperty): Nothing =
     throw new Error(
-        "Android does not support the getter for 'pageMarginDrawable'")
+      "Android does not support the getter for 'pageMarginDrawable'"
+    )
 
   /**
     * Shortcut for `[[https://developer.android.com/reference/android/support/v4/view/ViewPager.html#setPageMarginDrawable(int) setPageMarginDrawable(int)]]`
@@ -167,61 +171,67 @@ trait TraitViewPager[This <: android.support.v4.view.ViewPager]
 
   @inline def onPageScrollStateChanged[U](f: Int => U): This = {
     basis.setOnPageChangeListener(
-        new android.support.v4.view.ViewPager.OnPageChangeListener {
-      def onPageScrollStateChanged(p: Int): Unit = { f(p) }
-      def onPageScrolled(p1: Int, p2: Float, p3: Int): Unit = {}
-      def onPageSelected(p: Int): Unit = {}
-    })
+      new android.support.v4.view.ViewPager.OnPageChangeListener {
+        def onPageScrollStateChanged(p: Int): Unit            = f(p)
+        def onPageScrolled(p1: Int, p2: Float, p3: Int): Unit = {}
+        def onPageSelected(p: Int): Unit                      = {}
+      }
+    )
     basis
   }
 
   @inline def onPageScrollStateChanged[U](f: => U): This = {
     basis.setOnPageChangeListener(
-        new android.support.v4.view.ViewPager.OnPageChangeListener {
-      def onPageScrollStateChanged(p: Int): Unit = { f }
-      def onPageScrolled(p1: Int, p2: Float, p3: Int): Unit = {}
-      def onPageSelected(p: Int): Unit = {}
-    })
+      new android.support.v4.view.ViewPager.OnPageChangeListener {
+        def onPageScrollStateChanged(p: Int): Unit            = f
+        def onPageScrolled(p1: Int, p2: Float, p3: Int): Unit = {}
+        def onPageSelected(p: Int): Unit                      = {}
+      }
+    )
     basis
   }
 
   @inline def onPageScrolled[U](f: (Int, Float, Int) => U): This = {
     basis.setOnPageChangeListener(
-        new android.support.v4.view.ViewPager.OnPageChangeListener {
-      def onPageScrollStateChanged(p: Int): Unit = {}
-      def onPageScrolled(p1: Int, p2: Float, p3: Int): Unit = { f(p1, p2, p3) }
-      def onPageSelected(p: Int): Unit = {}
-    })
+      new android.support.v4.view.ViewPager.OnPageChangeListener {
+        def onPageScrollStateChanged(p: Int): Unit            = {}
+        def onPageScrolled(p1: Int, p2: Float, p3: Int): Unit = f(p1, p2, p3)
+        def onPageSelected(p: Int): Unit                      = {}
+      }
+    )
     basis
   }
 
   @inline def onPageScrolled[U](f: => U): This = {
     basis.setOnPageChangeListener(
-        new android.support.v4.view.ViewPager.OnPageChangeListener {
-      def onPageScrollStateChanged(p: Int): Unit = {}
-      def onPageScrolled(p1: Int, p2: Float, p3: Int): Unit = { f }
-      def onPageSelected(p: Int): Unit = {}
-    })
+      new android.support.v4.view.ViewPager.OnPageChangeListener {
+        def onPageScrollStateChanged(p: Int): Unit            = {}
+        def onPageScrolled(p1: Int, p2: Float, p3: Int): Unit = f
+        def onPageSelected(p: Int): Unit                      = {}
+      }
+    )
     basis
   }
 
   @inline def onPageSelected[U](f: Int => U): This = {
     basis.setOnPageChangeListener(
-        new android.support.v4.view.ViewPager.OnPageChangeListener {
-      def onPageScrollStateChanged(p: Int): Unit = {}
-      def onPageScrolled(p1: Int, p2: Float, p3: Int): Unit = {}
-      def onPageSelected(p: Int): Unit = { f(p) }
-    })
+      new android.support.v4.view.ViewPager.OnPageChangeListener {
+        def onPageScrollStateChanged(p: Int): Unit            = {}
+        def onPageScrolled(p1: Int, p2: Float, p3: Int): Unit = {}
+        def onPageSelected(p: Int): Unit                      = f(p)
+      }
+    )
     basis
   }
 
   @inline def onPageSelected[U](f: => U): This = {
     basis.setOnPageChangeListener(
-        new android.support.v4.view.ViewPager.OnPageChangeListener {
-      def onPageScrollStateChanged(p: Int): Unit = {}
-      def onPageScrolled(p1: Int, p2: Float, p3: Int): Unit = {}
-      def onPageSelected(p: Int): Unit = { f }
-    })
+      new android.support.v4.view.ViewPager.OnPageChangeListener {
+        def onPageScrollStateChanged(p: Int): Unit            = {}
+        def onPageScrolled(p1: Int, p2: Float, p3: Int): Unit = {}
+        def onPageSelected(p: Int): Unit                      = f
+      }
+    )
     basis
   }
 }
@@ -229,19 +239,21 @@ trait TraitViewPager[This <: android.support.v4.view.ViewPager]
 /**
   * Automatically generated concrete helper class of `[[https://developer.android.com/reference/android/support/v4/view/ViewPager.html android.support.v4.view.ViewPager]]`.
   */
-class SViewPager()(implicit context: android.content.Context,
-                   parentVGroup: TraitViewGroup[_] = null)
-    extends android.support.v4.view.ViewPager(context)
+class SViewPager()(
+    implicit context: android.content.Context,
+    parentVGroup: TraitViewGroup[_] = null
+) extends android.support.v4.view.ViewPager(context)
     with TraitViewPager[SViewPager] {
 
-  def basis = this
+  def basis                    = this
   override val parentViewGroup = parentVGroup
 }
 
 object SViewPager {
   def apply[LP <: ViewGroupLayoutParams[_, SViewPager]]()(
       implicit context: android.content.Context,
-      defaultLayoutParam: SViewPager => LP): SViewPager = {
+      defaultLayoutParam: SViewPager => LP
+  ): SViewPager = {
     val v = new SViewPager
     v.<<.parent.+=(v)
     v
@@ -252,8 +264,8 @@ object SViewPager {
   * Automatically generated enriching class of `[[https://developer.android.com/reference/android/support/v4/view/PagerAdapter.html android.support.v4.view.PagerAdapter]]`.
   */
 class RichPagerAdapter[This <: android.support.v4.view.PagerAdapter](
-    val basis: This)
-    extends TraitPagerAdapter[This]
+    val basis: This
+) extends TraitPagerAdapter[This]
 
 /**
   * Automatically generated helper trait of `[[https://developer.android.com/reference/android/support/v4/view/PagerAdapter.html android.support.v4.view.PagerAdapter]]`. This contains several property accessors.
@@ -271,10 +283,12 @@ trait TraitPagerAdapter[This <: android.support.v4.view.PagerAdapter] {
 trait ViewImplicits {
   import scala.language.implicitConversions
   @inline implicit def viewPager2RichViewPager[
-      V <: android.support.v4.view.ViewPager](viewPager: V) =
+      V <: android.support.v4.view.ViewPager
+  ](viewPager: V) =
     new RichViewPager[V](viewPager)
   @inline implicit def pagerAdapter2RichPagerAdapter[
-      V <: android.support.v4.view.PagerAdapter](pagerAdapter: V) =
+      V <: android.support.v4.view.PagerAdapter
+  ](pagerAdapter: V) =
     new RichPagerAdapter[V](pagerAdapter)
 }
 object ViewImplicits extends ViewImplicits

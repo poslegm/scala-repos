@@ -91,9 +91,9 @@ object ScalaFX_Controls_04 extends JFXApp {
 
   val hBox = new HBox {
     children = List(
-        minorToggleButton,
-        majorToggleButton,
-        criticalToggleButton
+      minorToggleButton,
+      majorToggleButton,
+      criticalToggleButton
     )
   }
 
@@ -110,16 +110,16 @@ object ScalaFX_Controls_04 extends JFXApp {
   val vBox = new VBox {
     padding = Insets(20, 10, 10, 20)
     children = List(
-        priorityLabel,
-        hBox,
-        rectangle
+      priorityLabel,
+      hBox,
+      rectangle
     )
   }
 
   theToggleGroup.selectedToggle onChange { (_, _, newToggle) =>
     if (newToggle != null) {
       val selectedToggle = theToggleGroup.getSelectedToggle
-      val userDataColor = selectedToggle.getUserData.asInstanceOf[Color]
+      val userDataColor  = selectedToggle.getUserData.asInstanceOf[Color]
       rectangle.fill = userDataColor
     } else {
       rectangle.fill = Color.White

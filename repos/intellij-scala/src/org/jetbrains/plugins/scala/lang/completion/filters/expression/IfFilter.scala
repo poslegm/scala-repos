@@ -11,7 +11,7 @@ import org.jetbrains.plugins.scala.lang.lexer.ScalaTokenTypes
 import org.jetbrains.plugins.scala.lang.parser._
 import org.jetbrains.plugins.scala.lang.psi.api.base.patterns.ScCaseClause
 
-/** 
+/**
   * @author Alexander Podkhalyuzin
   * Date: 28.05.2008
   */
@@ -24,7 +24,7 @@ class IfFilter extends ElementFilter {
       while (parent != null) {
         if (parent.getNode.getElementType == ScalaElementTypes.FOR_STMT) {
           import org.jetbrains.plugins.scala.extensions._
-          if (leaf.getParent != null && //reference
+          if (leaf.getParent != null &&           //reference
               leaf.getParent.getParent != null && //pattern
               leaf.getParent.getParent.getPrevSiblingNotWhitespace != null &&
               //case keyword
@@ -37,12 +37,12 @@ class IfFilter extends ElementFilter {
             if (clause.guard.isDefined) return false
             var position = clause.funType match {
               case Some(elem) => elem.getStartOffsetInParent
-              case None => clause.getTextLength
+              case None       => clause.getTextLength
             }
             val text = clause.getText
             while (text(position - 1).isWhitespace) position -= 1
             return leaf.getTextRange.getEndOffset == clause.getTextRange.getStartOffset +
-            position
+              position
           case _ =>
         }
         parent = parent.getParent
@@ -51,12 +51,10 @@ class IfFilter extends ElementFilter {
     false
   }
 
-  def isClassAcceptable(hintClass: java.lang.Class[_]): Boolean = {
+  def isClassAcceptable(hintClass: java.lang.Class[_]): Boolean =
     true
-  }
 
   @NonNls
-  override def toString: String = {
+  override def toString: String =
     "'if' keyword filter"
-  }
 }

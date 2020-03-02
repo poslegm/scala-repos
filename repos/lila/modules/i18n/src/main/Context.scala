@@ -11,7 +11,10 @@ import org.eclipse.jgit.lib.Repository
 import lila.memo.AsyncCache
 
 private[i18n] final class Context(
-    gitUrl: String, gitFile: String, keys: I18nKeys) {
+    gitUrl: String,
+    gitFile: String,
+    keys: I18nKeys
+) {
 
   type Contexts = Map[String, String]
 
@@ -31,7 +34,7 @@ private[i18n] final class Context(
           // logwarn("i18n context skipped key " + key)
           cs
         case (cs, line) if line startsWith "//" => cs
-        case (cs, line) =>
+        case (cs, line)                         =>
           // logwarn("i18n context skipped line " + line.mkString("="))
           cs
       }
@@ -40,7 +43,7 @@ private[i18n] final class Context(
 
   private def fetch: Fu[Contexts] = gitClone map { dir =>
     val filePath = s"${dir.getAbsolutePath}/$gitFile"
-    val content = fileContent(new File(filePath))
+    val content  = fileContent(new File(filePath))
     dir.delete
     parse(content)
   }

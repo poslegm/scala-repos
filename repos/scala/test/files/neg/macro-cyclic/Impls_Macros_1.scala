@@ -1,9 +1,8 @@
 import scala.reflect.macros.blackbox.Context
 
 object Macros {
-  def impl(c: Context) = {
-    c.universe.reify { implicitly[SourceLocation] }
-  }
+  def impl(c: Context) =
+    c.universe.reify(implicitly[SourceLocation])
 
   implicit def sourceLocation: SourceLocation1 = macro impl
 }
@@ -23,8 +22,9 @@ trait SourceLocation {
   val charOffset: Int
 }
 
-case class SourceLocation1(val outer: SourceLocation,
-                           val fileName: String,
-                           val line: Int,
-                           val charOffset: Int)
-    extends SourceLocation
+case class SourceLocation1(
+    val outer: SourceLocation,
+    val fileName: String,
+    val line: Int,
+    val charOffset: Int
+) extends SourceLocation

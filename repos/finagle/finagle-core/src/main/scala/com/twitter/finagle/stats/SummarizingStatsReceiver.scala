@@ -22,8 +22,8 @@ class SummarizingStatsReceiver extends StatsReceiverWithCumulativeGauges {
     })
 
   // synchronized on `this`
-  private[this] var _gauges = Map[Seq[String], () => Float]()
-  def gauges: Map[Seq[String], () => Float] = synchronized { _gauges }
+  private[this] var _gauges                 = Map[Seq[String], () => Float]()
+  def gauges: Map[Seq[String], () => Float] = synchronized(_gauges)
 
   def counter(name: String*) = new Counter {
     def incr(delta: Int) { counters.addAndGet(name, delta) }
@@ -61,7 +61,7 @@ class SummarizingStatsReceiver extends StatsReceiverWithCumulativeGauges {
     val statValues =
       stats.asMap.asScala collect {
         case (k, buf) if buf.nonEmpty =>
-          val n = buf.size
+          val n      = buf.size
           val values = new Array[Float](n)
           buf.copyToArray(values, 0, n)
           val xs = values.sorted
@@ -69,56 +69,63 @@ class SummarizingStatsReceiver extends StatsReceiverWithCumulativeGauges {
       }
 
     val counterLines = (counterValues map {
-          case (k, v) => (variableName(k), v.toString)
-        }).toSeq
+      case (k, v) => (variableName(k), v.toString)
+    }).toSeq
     val statLines = (statValues map {
-          case (k, xs) =>
-            val n = xs.length
-            def idx(ptile: Double) =
-              math
-                .floor(ptile * n)
-                .toInt
-              (variableName(k),
-               "n=%d min=%.1f med=%.1f p90=%.1f p95=%.1f p99=%.1f p999=%.1f p9999=%.1f max=%.1f"
-                 .format(n,
-                         xs(0),
-                         xs(n / 2),
-                         xs(idx(.9D)),
-                         xs(idx(.95D)),
-                         xs(idx(.99D)),
-                         xs(idx(.999D)),
-                         xs(idx(.9999D)),
-                         xs(n - 1)))
-        }).toSeq
+      case (k, xs) =>
+        val n = xs.length
+        def idx(ptile: Double) =
+          math
+            .floor(ptile * n)
+            .toInt
+        (
+          variableName(k),
+          "n=%d min=%.1f med=%.1f p90=%.1f p95=%.1f p99=%.1f p999=%.1f p9999=%.1f max=%.1f"
+            .format(
+              n,
+              xs(0),
+              xs(n / 2),
+              xs(idx(.9d)),
+              xs(idx(.95d)),
+              xs(idx(.99d)),
+              xs(idx(.999d)),
+              xs(idx(.9999d)),
+              xs(n - 1)
+            )
+        )
+    }).toSeq
 
     lazy val tailValues = (statValues map {
-          case (k, xs) =>
-            val n = xs.length
-            def slice(ptile: Double) = {
-              val end = math.floor(ptile * n).toInt
-              val start = math.ceil(end - ((1.0 - ptile) * n)).toInt
-              for (i <- start to end) yield xs(i)
-            }
-            (variableName(k),
-             "p999=%s, p9999=%s".format(slice(.999D), slice(.9999D)))
-        }).toSeq
+      case (k, xs) =>
+        val n = xs.length
+        def slice(ptile: Double) = {
+          val end   = math.floor(ptile * n).toInt
+          val start = math.ceil(end - ((1.0 - ptile) * n)).toInt
+          for (i <- start to end) yield xs(i)
+        }
+        (
+          variableName(k),
+          "p999=%s, p9999=%s".format(slice(.999d), slice(.9999d))
+        )
+    }).toSeq
 
-    val sortedCounters = counterLines.sortBy { case (k, _) => k }
-    val sortedGauges = gaugeValues.sortBy { case (k, _) => k }
-    val sortedStats = statLines.sortBy { case (k, _) => k }
-    lazy val sortedTails = tailValues.sortBy { case (k, _) => k }
+    val sortedCounters   = counterLines.sortBy { case (k, _) => k }
+    val sortedGauges     = gaugeValues.sortBy { case (k, _)  => k }
+    val sortedStats      = statLines.sortBy { case (k, _)    => k }
+    lazy val sortedTails = tailValues.sortBy { case (k, _)   => k }
 
     val fmt = Function.tupled { (k: String, v: String) =>
       "%-30s %s".format(k, v)
     }
-    val fmtCounters = sortedCounters.map(fmt)
-    val fmtGauges = gaugeValues.map(fmt)
-    val fmtStats = sortedStats.map(fmt)
+    val fmtCounters   = sortedCounters.map(fmt)
+    val fmtGauges     = gaugeValues.map(fmt)
+    val fmtStats      = sortedStats.map(fmt)
     lazy val fmtTails = sortedTails.map(fmt)
 
     "# counters\n" + fmtCounters.mkString("\n") + "\n# gauges\n" +
-    fmtGauges.sorted.mkString("\n") + "\n# stats\n" + fmtStats.mkString("\n") +
-    (if (includeTails) "\n# stats-tails\n" + (fmtTails mkString "\n") else "")
+      fmtGauges.sorted.mkString("\n") + "\n# stats\n" + fmtStats
+      .mkString("\n") +
+      (if (includeTails) "\n# stats-tails\n" + (fmtTails mkString "\n") else "")
   }
 
   def print() = println(summary(false))

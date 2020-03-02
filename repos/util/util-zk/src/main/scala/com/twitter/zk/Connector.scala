@@ -13,7 +13,7 @@ trait Connector {
 
   import Connector.EventHandler
 
-  val name = "zk-connector"
+  val name               = "zk-connector"
   protected lazy val log = Logger.get(name)
 
   private[this] val listeners = new AtomicReference[List[EventHandler]](Nil)

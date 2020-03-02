@@ -99,11 +99,11 @@ class RuntimeArrayTests extends FunSuite {
   }
 
   test("array-short") {
-    val one: Short = 1
-    val two: Short = 2
+    val one: Short   = 1
+    val two: Short   = 2
     val three: Short = 3
-    val p: Any = Array(one, two, three)
-    val pickle = p.pickle
+    val p: Any       = Array(one, two, three)
+    val pickle       = p.pickle
     assert(pickle.value === """
       |{
       |  "$type": "scala.Array[scala.Short]",
@@ -138,11 +138,11 @@ class RuntimeArrayTests extends FunSuite {
   }
 
   test("array-byte") {
-    val one: Byte = 1
-    val two: Byte = 2
+    val one: Byte   = 1
+    val two: Byte   = 2
     val three: Byte = 3
-    val p: Any = Array(one, two, three)
-    val pickle = p.pickle
+    val p: Any      = Array(one, two, three)
+    val pickle      = p.pickle
     assert(pickle.value === """
       |{
       |  "$type": "scala.Array[scala.Byte]",
@@ -159,7 +159,7 @@ class RuntimeArrayTests extends FunSuite {
   }
 
   test("array-float") {
-    val p: Any = Array(1F, 2F, 3F)
+    val p: Any = Array(1f, 2f, 3f)
     val pickle = p.pickle
     assert(pickle.value === """
       |{

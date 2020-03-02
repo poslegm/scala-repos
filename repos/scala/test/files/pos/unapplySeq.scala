@@ -1,10 +1,9 @@
 object FooSeq {
-  def unapplySeq(x: Any): Option[Product2[Int, Seq[String]]] = {
+  def unapplySeq(x: Any): Option[Product2[Int, Seq[String]]] =
     if (x.isInstanceOf[Bar]) {
       val y = x.asInstanceOf[Bar]
       Some(y.size, y.name)
     } else None
-  }
 
   def main(args: Array[String]) = {
     val b = new Bar
@@ -22,6 +21,6 @@ object FooSeq {
 }
 
 class Bar {
-  var size: Int = 50
+  var size: Int         = 50
   var name: Seq[String] = List("medium", "M")
 }

@@ -22,8 +22,9 @@ object ReceivePipeline {
   }
 
   private[ReceivePipeline] case class InnerAndAfter(
-      transformedMsg: Any, after: Unit ⇒ Unit)
-      extends Delegation
+      transformedMsg: Any,
+      after: Unit ⇒ Unit
+  ) extends Delegation
 
   /**
     * Interceptor return value that indicates that the message has been handled
@@ -38,7 +39,7 @@ object ReceivePipeline {
   type Interceptor = PartialFunction[Any, Delegation]
 
   private sealed trait HandlerResult
-  private case object Done extends HandlerResult
+  private case object Done      extends HandlerResult
   private case object Undefined extends HandlerResult
 
   private type Handler = Any ⇒ HandlerResult
@@ -52,7 +53,7 @@ object ReceivePipeline {
 trait ReceivePipeline extends Actor {
   import ReceivePipeline._
 
-  private var pipeline: Vector[Interceptor] = Vector.empty
+  private var pipeline: Vector[Interceptor]              = Vector.empty
   private var decoratorCache: Option[(Receive, Receive)] = None
 
   /**
@@ -74,8 +75,8 @@ trait ReceivePipeline extends Actor {
   }
 
   private def combinedDecorator: Receive ⇒ Receive = { receive ⇒
-    // So that reconstructed Receive PF is undefined only when the actor's 
-    // receive is undefined for a transformed message that reaches it...     
+    // So that reconstructed Receive PF is undefined only when the actor's
+    // receive is undefined for a transformed message that reaches it...
     val innerReceiveHandler: Handler = {
       case msg ⇒ receive.lift(msg).map(_ ⇒ Done).getOrElse(Undefined)
     }
@@ -84,7 +85,9 @@ trait ReceivePipeline extends Actor {
       (outerInterceptor, innerHandler) ⇒
         outerInterceptor.andThen {
           case Inner(msg) ⇒ innerHandler(msg)
-          case InnerAndAfter(msg, after) ⇒ try innerHandler(msg) finally after()
+          case InnerAndAfter(msg, after) ⇒
+            try innerHandler(msg)
+            finally after()
           case HandledCompletely ⇒ Done
         }
     }
@@ -94,10 +97,12 @@ trait ReceivePipeline extends Actor {
 
   private def toReceive(handler: Handler) = new Receive {
     def isDefinedAt(m: Any): Boolean = evaluate(m) != Undefined
-    def apply(m: Any): Unit = evaluate(m)
+    def apply(m: Any): Unit          = evaluate(m)
 
     override def applyOrElse[A1 <: Any, B1 >: Unit](
-        m: A1, default: A1 ⇒ B1): B1 = {
+        m: A1,
+        default: A1 ⇒ B1
+    ): B1 = {
       val result = handler(m)
 
       if (result == Undefined) default(m)
@@ -110,7 +115,9 @@ trait ReceivePipeline extends Actor {
     * INTERNAL API.
     */
   override protected[akka] def aroundReceive(
-      receive: Receive, msg: Any): Unit = {
+      receive: Receive,
+      msg: Any
+  ): Unit = {
     def withCachedDecoration(decorator: Receive ⇒ Receive): Receive =
       decoratorCache match {
         case Some((`receive`, cached)) ⇒ cached

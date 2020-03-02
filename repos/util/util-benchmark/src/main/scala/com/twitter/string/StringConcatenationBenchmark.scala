@@ -9,10 +9,10 @@ import scala.util.Random
 class StringConcatenationBenchmark extends StdBenchAnnotations {
 
   val Length = 16
-  val N = 10000
-  val rng = new Random(1010101)
-  val words = rng.alphanumeric.grouped(Length).map(_.mkString).take(N).toArray
-  var i = 0
+  val N      = 10000
+  val rng    = new Random(1010101)
+  val words  = rng.alphanumeric.grouped(Length).map(_.mkString).take(N).toArray
+  var i      = 0
 
   private[this] def word(): String = {
     val result = words(i)
@@ -21,22 +21,19 @@ class StringConcatenationBenchmark extends StdBenchAnnotations {
   }
 
   @Benchmark
-  def concatenate: String = {
+  def concatenate: String =
     word() + " " + word() + " " + word()
-  }
 
   @Benchmark
-  def interpolate: String = {
+  def interpolate: String =
     s"${word()} ${word()} ${word()}"
-  }
 
   @Benchmark
-  def format: String = {
+  def format: String =
     "%s %s %s".format(word(), word(), word())
-  }
 
   @Benchmark
-  def stringBuilder: String = {
+  def stringBuilder: String =
     new StringBuilder()
       .append(word())
       .append(" ")
@@ -44,7 +41,6 @@ class StringConcatenationBenchmark extends StdBenchAnnotations {
       .append(" ")
       .append(word())
       .toString
-  }
 
   @Benchmark
   def sizedStringBuilder: String = {
@@ -62,11 +58,11 @@ class StringConcatenationBenchmark extends StdBenchAnnotations {
 
   @Benchmark
   def charArray: String = {
-    val a = word()
-    val b = word()
-    val c = word()
+    val a     = word()
+    val b     = word()
+    val c     = word()
     val chars = new Array[Char](a.length + b.length + c.length + 2)
-    var i = 0
+    var i     = 0
     for (char <- a) {
       chars(i) = char
       i += 1

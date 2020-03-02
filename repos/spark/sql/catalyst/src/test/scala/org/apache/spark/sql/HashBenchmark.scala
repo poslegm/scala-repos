@@ -30,23 +30,24 @@ import org.apache.spark.util.Benchmark
 object HashBenchmark {
 
   def test(name: String, schema: StructType, numRows: Int, iters: Int): Unit = {
-    val generator = RandomDataGenerator.forType(schema, nullable = false).get
-    val encoder = RowEncoder(schema)
-    val attrs = schema.toAttributes
+    val generator      = RandomDataGenerator.forType(schema, nullable = false).get
+    val encoder        = RowEncoder(schema)
+    val attrs          = schema.toAttributes
     val safeProjection = GenerateSafeProjection.generate(attrs, attrs)
 
     val rows = (1 to numRows)
       .map(_ =>
-            // The output of encoder is UnsafeRow, use safeProjection to turn in into safe format.
-            safeProjection(encoder.toRow(generator().asInstanceOf[Row]))
-              .copy())
+        // The output of encoder is UnsafeRow, use safeProjection to turn in into safe format.
+        safeProjection(encoder.toRow(generator().asInstanceOf[Row]))
+          .copy()
+      )
       .toArray
 
     val benchmark = new Benchmark("Hash For " + name, iters * numRows)
     benchmark.addCase("interpreted version") { _: Int =>
       for (_ <- 0L until iters) {
         var sum = 0
-        var i = 0
+        var i   = 0
         while (i < numRows) {
           sum += rows(i).hashCode()
           i += 1
@@ -59,7 +60,7 @@ object HashBenchmark {
     benchmark.addCase("codegen version") { _: Int =>
       for (_ <- 0L until iters) {
         var sum = 0
-        var i = 0
+        var i   = 0
         while (i < numRows) {
           sum += getHashCode(rows(i)).getInt(0)
           i += 1

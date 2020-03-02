@@ -20,7 +20,7 @@ class SingletonFactory[Req, Rep](service: Service[Req, Rep])
   def apply(conn: ClientConnection) = Future {
     latch.incr()
     new Service[Req, Rep] {
-      def apply(request: Req) = service(request)
+      def apply(request: Req)            = service(request)
       override def close(deadline: Time) = { latch.decr(); Future.Done }
     }
   }

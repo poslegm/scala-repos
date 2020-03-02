@@ -22,7 +22,7 @@ import java.util.concurrent.locks.ReentrantLock
 
 private[streaming] class ContextWaiter {
 
-  private val lock = new ReentrantLock()
+  private val lock      = new ReentrantLock()
   private val condition = lock.newCondition()
 
   // Guarded by "lock"

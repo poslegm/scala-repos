@@ -15,8 +15,8 @@ class RefreshTest extends FunSuite with MockitoSugar {
     val provider = mock[() => Future[Int]]
     when(provider()).thenReturn(Future.value(1)).thenReturn(Future.value(2))
 
-    val ttl = 1.minute
-    val memoizedFuture = Refresh.every(ttl) { provider() }
+    val ttl            = 1.minute
+    val memoizedFuture = Refresh.every(ttl)(provider())
   }
 
   test("it should call through on first request") {
@@ -87,7 +87,8 @@ class RefreshTest extends FunSuite with MockitoSugar {
   }
 
   test(
-      "it should fail both responses if request is in flight, then request again") {
+    "it should fail both responses if request is in flight, then request again"
+  ) {
     val ctx = new Ctx
     import ctx._
 
@@ -100,8 +101,8 @@ class RefreshTest extends FunSuite with MockitoSugar {
 
     promise.setException(new RuntimeException)
 
-    intercept[RuntimeException] { Await.result(result1) }
-    intercept[RuntimeException] { Await.result(result2) }
+    intercept[RuntimeException](Await.result(result1))
+    intercept[RuntimeException](Await.result(result2))
 
     verify(provider, times(1))()
 

@@ -15,8 +15,9 @@ class PoolingReadRepairClient(
     readRepairProbability: Float,
     readRepairCount: Int = 1,
     futurePool: FuturePool = new ExecutorServiceFuturePool(
-          Executors.newCachedThreadPool()))
-    extends Client {
+      Executors.newCachedThreadPool()
+    )
+) extends Client {
 
   val rand = new Random()
 
@@ -52,9 +53,7 @@ class PoolingReadRepairClient(
         // Read-repair clients that had partial values
         results.zip(clients).map { tuple =>
           val missing = canon.hits -- tuple._1.hits.keys
-          missing.map { hit =>
-            set(hit._1, hit._2.value)
-          }
+          missing.map(hit => set(hit._1, hit._2.value))
         }
       }
 
@@ -76,7 +75,7 @@ class PoolingReadRepairClient(
   def release() = allClients.map(_.release())
   def set(key: String, flags: Int, expiry: Time, value: Buf) = {
     val futures = allClients.map(_.set(key, flags, expiry, value))
-    val base = futures.head
+    val base    = futures.head
     futures.tail.foldLeft(base)(_.or(_))
   }
 
@@ -84,15 +83,20 @@ class PoolingReadRepairClient(
     Future.collect(allClients.map(_.delete(key))).map(_.exists(x => x))
 
   def getsResult(keys: Iterable[String]) = unsupported
-  def stats(args: Option[String]) = unsupported
-  def decr(key: String, delta: Long) = unsupported
-  def incr(key: String, delta: Long) = unsupported
+  def stats(args: Option[String])        = unsupported
+  def decr(key: String, delta: Long)     = unsupported
+  def incr(key: String, delta: Long)     = unsupported
   def checkAndSet(
-      key: String, flags: Int, expiry: Time, value: Buf, casUnique: Buf) =
+      key: String,
+      flags: Int,
+      expiry: Time,
+      value: Buf,
+      casUnique: Buf
+  ) =
     unsupported
   def replace(key: String, flags: Int, expiry: Time, value: Buf) = unsupported
   def prepend(key: String, flags: Int, expiry: Time, value: Buf) = unsupported
-  def append(key: String, flags: Int, expiry: Time, value: Buf) = unsupported
-  def add(key: String, flags: Int, expiry: Time, value: Buf) = unsupported
-  private def unsupported = throw new UnsupportedOperationException
+  def append(key: String, flags: Int, expiry: Time, value: Buf)  = unsupported
+  def add(key: String, flags: Int, expiry: Time, value: Buf)     = unsupported
+  private def unsupported                                        = throw new UnsupportedOperationException
 }

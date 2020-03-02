@@ -1,5 +1,5 @@
 object Repros {
-  class Bar {}
+  class Bar                 {}
   class Baz(val myFoo: Foo) {}
   trait Foo {
     this: Bar =>

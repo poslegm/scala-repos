@@ -28,11 +28,9 @@ object PEMEncodedKeyManager {
       caCertPath: Option[String]
   ): Array[KeyManager] =
     makeKeystore(
-        Files.readBytes(new File(certificatePath)),
-        Files.readBytes(new File(keyPath)),
-        caCertPath map { filename =>
-          Files.readBytes(new File(filename))
-        }
+      Files.readBytes(new File(certificatePath)),
+      Files.readBytes(new File(keyPath)),
+      caCertPath map { filename => Files.readBytes(new File(filename)) }
     )
 
   private[this] def secret(length: Int): Array[Char] = {
@@ -56,11 +54,11 @@ object PEMEncodedKeyManager {
     Shell.run(Array("chmod", "0700", path.getAbsolutePath()))
 
     // Guard the keystore with a randomly-generated password
-    val password = secret(24)
+    val password    = secret(24)
     val passwordStr = new String(password)
 
     // Use non-deterministic file names
-    val fn = new String(secret(12))
+    val fn      = new String(secret(12))
     val pemPath = path + File.separator + "%s.pem".format(fn)
     val p12Path = path + File.separator + "%s.p12".format(fn)
     val jksPath = path + File.separator + "%s.jks".format(fn)
@@ -70,51 +68,51 @@ object PEMEncodedKeyManager {
     // if the chain is present, use it instead of the cert (chain contains cert)
     caCert match {
       case Some(c) => StreamIO.copy(new ByteArrayInputStream(c), f)
-      case None => StreamIO.copy(new ByteArrayInputStream(certificate), f)
+      case None    => StreamIO.copy(new ByteArrayInputStream(certificate), f)
     }
     StreamIO.copy(new ByteArrayInputStream(key), f)
     f.close()
 
     // Import the PEM-encoded certificate and key to a PKCS12 file
     Shell.run(
-        Array(
-            "openssl",
-            "pkcs12",
-            "-export",
-            "-password",
-            "pass:%s".format(passwordStr),
-            "-in",
-            pemPath,
-            "-out",
-            p12Path
-        )
+      Array(
+        "openssl",
+        "pkcs12",
+        "-export",
+        "-password",
+        "pass:%s".format(passwordStr),
+        "-in",
+        pemPath,
+        "-out",
+        p12Path
+      )
     )
 
     // Convert the PKCS12 file into a Java keystore
     Shell.run(
-        Array(
-            "keytool",
-            "-importkeystore",
-            "-srckeystore",
-            p12Path,
-            "-srcstoretype",
-            "PKCS12",
-            "-destkeystore",
-            jksPath,
-            "-trustcacerts",
-            "-srcstorepass",
-            passwordStr,
-            "-keypass",
-            passwordStr,
-            "-storepass",
-            passwordStr
-        )
+      Array(
+        "keytool",
+        "-importkeystore",
+        "-srckeystore",
+        p12Path,
+        "-srcstoretype",
+        "PKCS12",
+        "-destkeystore",
+        jksPath,
+        "-trustcacerts",
+        "-srcstorepass",
+        passwordStr,
+        "-keypass",
+        passwordStr,
+        "-storepass",
+        passwordStr
+      )
     )
 
     // Read the resulting keystore
     val input = new ByteArrayInputStream(Files.readBytes(new File(jksPath)))
-    val ks = KeyStore.getInstance("JKS")
-    val kmf = KeyManagerFactory.getInstance("SunX509")
+    val ks    = KeyStore.getInstance("JKS")
+    val kmf   = KeyManagerFactory.getInstance("SunX509")
     ks.load(input, password)
     kmf.init(ks, password)
 

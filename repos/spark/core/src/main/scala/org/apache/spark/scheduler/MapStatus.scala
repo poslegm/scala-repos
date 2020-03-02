@@ -44,13 +44,12 @@ private[spark] sealed trait MapStatus {
 
 private[spark] object MapStatus {
 
-  def apply(loc: BlockManagerId, uncompressedSizes: Array[Long]): MapStatus = {
+  def apply(loc: BlockManagerId, uncompressedSizes: Array[Long]): MapStatus =
     if (uncompressedSizes.length > 2000) {
       HighlyCompressedMapStatus(loc, uncompressedSizes)
     } else {
       new CompressedMapStatus(loc, uncompressedSizes)
     }
-  }
 
   private[this] val LOG_BASE = 1.1
 
@@ -59,7 +58,7 @@ private[spark] object MapStatus {
     * We do this by encoding the log base 1.1 of the size as an integer, which can support
     * sizes up to 35 GB with at most 10% error.
     */
-  def compressSize(size: Long): Byte = {
+  def compressSize(size: Long): Byte =
     if (size == 0) {
       0
     } else if (size <= 1L) {
@@ -69,18 +68,16 @@ private[spark] object MapStatus {
         .min(255, math.ceil(math.log(size) / math.log(LOG_BASE)).toInt)
         .toByte
     }
-  }
 
   /**
     * Decompress an 8-bit encoded block size, using the reverse operation of compressSize.
     */
-  def decompressSize(compressedSize: Byte): Long = {
+  def decompressSize(compressedSize: Byte): Long =
     if (compressedSize == 0) {
       0
     } else {
       math.pow(LOG_BASE, compressedSize & 0xFF).toLong
     }
-  }
 }
 
 /**
@@ -92,8 +89,9 @@ private[spark] object MapStatus {
   */
 private[spark] class CompressedMapStatus(
     private[this] var loc: BlockManagerId,
-    private[this] var compressedSizes: Array[Byte])
-    extends MapStatus with Externalizable {
+    private[this] var compressedSizes: Array[Byte]
+) extends MapStatus
+    with Externalizable {
 
   protected def this() =
     this(null, null.asInstanceOf[Array[Byte]]) // For deserialization only
@@ -104,9 +102,8 @@ private[spark] class CompressedMapStatus(
 
   override def location: BlockManagerId = loc
 
-  override def getSizeForBlock(reduceId: Int): Long = {
+  override def getSizeForBlock(reduceId: Int): Long =
     MapStatus.decompressSize(compressedSizes(reduceId))
-  }
 
   override def writeExternal(out: ObjectOutput): Unit =
     Utils.tryOrIOException {
@@ -136,25 +133,26 @@ private[spark] class HighlyCompressedMapStatus private (
     private[this] var loc: BlockManagerId,
     private[this] var numNonEmptyBlocks: Int,
     private[this] var emptyBlocks: RoaringBitmap,
-    private[this] var avgSize: Long)
-    extends MapStatus with Externalizable {
+    private[this] var avgSize: Long
+) extends MapStatus
+    with Externalizable {
 
   // loc could be null when the default constructor is called during deserialization
   require(
-      loc == null || avgSize > 0 || numNonEmptyBlocks == 0,
-      "Average size can only be zero for map stages that produced no output")
+    loc == null || avgSize > 0 || numNonEmptyBlocks == 0,
+    "Average size can only be zero for map stages that produced no output"
+  )
 
   protected def this() = this(null, -1, null, -1) // For deserialization only
 
   override def location: BlockManagerId = loc
 
-  override def getSizeForBlock(reduceId: Int): Long = {
+  override def getSizeForBlock(reduceId: Int): Long =
     if (emptyBlocks.contains(reduceId)) {
       0
     } else {
       avgSize
     }
-  }
 
   override def writeExternal(out: ObjectOutput): Unit =
     Utils.tryOrIOException {
@@ -172,17 +170,19 @@ private[spark] class HighlyCompressedMapStatus private (
 }
 
 private[spark] object HighlyCompressedMapStatus {
-  def apply(loc: BlockManagerId,
-            uncompressedSizes: Array[Long]): HighlyCompressedMapStatus = {
+  def apply(
+      loc: BlockManagerId,
+      uncompressedSizes: Array[Long]
+  ): HighlyCompressedMapStatus = {
     // We must keep track of which blocks are empty so that we don't report a zero-sized
     // block as being non-empty (or vice-versa) when using the average block size.
-    var i = 0
+    var i                      = 0
     var numNonEmptyBlocks: Int = 0
-    var totalSize: Long = 0
+    var totalSize: Long        = 0
     // From a compression standpoint, it shouldn't matter whether we track empty or non-empty
     // blocks. From a performance standpoint, we benefit from tracking empty blocks because
     // we expect that there will be far fewer of them, so we will perform fewer bitmap insertions.
-    val emptyBlocks = new RoaringBitmap()
+    val emptyBlocks    = new RoaringBitmap()
     val totalNumBlocks = uncompressedSizes.length
     while (i < totalNumBlocks) {
       var size = uncompressedSizes(i)

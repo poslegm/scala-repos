@@ -19,7 +19,7 @@ import akka.util.{ReflectiveAccess, ReadWriteGuard, ListenerManagement}
   * @author <a href="http://jonasboner.com">Jonas Bon&#233;r</a>
   */
 sealed trait ActorRegistryEvent
-case class ActorRegistered(actor: ActorRef) extends ActorRegistryEvent
+case class ActorRegistered(actor: ActorRef)   extends ActorRegistryEvent
 case class ActorUnregistered(actor: ActorRef) extends ActorRegistryEvent
 
 /**
@@ -34,11 +34,11 @@ case class ActorUnregistered(actor: ActorRef) extends ActorRegistryEvent
   *
   * @author <a href="http://jonasboner.com">Jonas Bon&#233;r</a>
   */
-final class ActorRegistry private[actor]() extends ListenerManagement {
+final class ActorRegistry private[actor] () extends ListenerManagement {
 
   private val actorsByUUID = new ConcurrentHashMap[Uuid, ActorRef]
-  private val actorsById = new Index[String, ActorRef]
-  private val guard = new ReadWriteGuard
+  private val actorsById   = new Index[String, ActorRef]
+  private val guard        = new ReadWriteGuard
 
   /**
     * Returns all actors in the system.
@@ -74,18 +74,19 @@ final class ActorRegistry private[actor]() extends ListenerManagement {
   /**
     * Finds all actors that are subtypes of the class passed in as the ClassTag argument and supporting passed message.
     */
-  def actorsFor[T <: Actor](message: Any)(
-      implicit classTag: ClassTag[T]): Array[ActorRef] =
-    filter(
-        a =>
-          classTag.erasure.isAssignableFrom(a.actor.getClass) &&
-          a.isDefinedAt(message))
+  def actorsFor[T <: Actor](
+      message: Any
+  )(implicit classTag: ClassTag[T]): Array[ActorRef] =
+    filter(a =>
+      classTag.erasure.isAssignableFrom(a.actor.getClass) &&
+        a.isDefinedAt(message)
+    )
 
   /**
     * Finds all actors that satisfy a predicate.
     */
   def filter(p: ActorRef => Boolean): Array[ActorRef] = {
-    val all = new ListBuffer[ActorRef]
+    val all      = new ListBuffer[ActorRef]
     val elements = actorsByUUID.elements
     while (elements.hasMoreElements) {
       val actorId = elements.nextElement
@@ -105,8 +106,7 @@ final class ActorRegistry private[actor]() extends ListenerManagement {
     */
   def actorFor[T <: Actor](implicit classTag: ClassTag[T]): Option[ActorRef] =
     find({
-      case a: ActorRef
-          if classTag.erasure.isAssignableFrom(a.actor.getClass) =>
+      case a: ActorRef if classTag.erasure.isAssignableFrom(a.actor.getClass) =>
         a
     })
 
@@ -162,7 +162,7 @@ final class ActorRegistry private[actor]() extends ListenerManagement {
     */
   def filterTypedActors(p: AnyRef => Boolean): Array[AnyRef] = {
     TypedActorModule.ensureEnabled
-    val all = new ListBuffer[AnyRef]
+    val all      = new ListBuffer[AnyRef]
     val elements = actorsByUUID.elements
     while (elements.hasMoreElements) {
       val proxy = typedActorFor(elements.nextElement)
@@ -175,7 +175,8 @@ final class ActorRegistry private[actor]() extends ListenerManagement {
     * Finds all typed actors that are subtypes of the class passed in as the ClassTag argument.
     */
   def typedActorsFor[T <: AnyRef](
-      implicit classTag: ClassTag[T]): Array[AnyRef] = {
+      implicit classTag: ClassTag[T]
+  ): Array[AnyRef] = {
     TypedActorModule.ensureEnabled
     typedActorsFor[T](classTag.erasure.asInstanceOf[Class[T]])
   }
@@ -184,7 +185,8 @@ final class ActorRegistry private[actor]() extends ListenerManagement {
     * Finds any typed actor that matches T.
     */
   def typedActorFor[T <: AnyRef](
-      implicit classTag: ClassTag[T]): Option[AnyRef] = {
+      implicit classTag: ClassTag[T]
+  ): Option[AnyRef] = {
     TypedActorModule.ensureEnabled
     def predicate(proxy: AnyRef): Boolean = {
       val actorRef =
@@ -230,15 +232,14 @@ final class ActorRegistry private[actor]() extends ListenerManagement {
   /**
     * Get the typed actor proxy for a given typed actor ref.
     */
-  private def typedActorFor(actorRef: ActorRef): Option[AnyRef] = {
+  private def typedActorFor(actorRef: ActorRef): Option[AnyRef] =
     TypedActorModule.typedActorObjectInstance.get.proxyFor(actorRef)
-  }
 
   /**
     *  Registers an actor in the ActorRegistry.
     */
   private[akka] def register(actor: ActorRef) {
-    val id = actor.id
+    val id   = actor.id
     val uuid = actor.uuid
 
     actorsById.put(id, actor)
@@ -252,7 +253,7 @@ final class ActorRegistry private[actor]() extends ListenerManagement {
     * Unregisters an actor in the ActorRegistry.
     */
   private[akka] def unregister(actor: ActorRef) {
-    val id = actor.id
+    val id   = actor.id
     val uuid = actor.uuid
 
     actorsByUUID remove uuid
@@ -270,7 +271,7 @@ final class ActorRegistry private[actor]() extends ListenerManagement {
       val elements = actorsByUUID.elements
       while (elements.hasMoreElements) {
         val actorRef = elements.nextElement
-        val proxy = typedActorFor(actorRef)
+        val proxy    = typedActorFor(actorRef)
         if (proxy.isDefined)
           TypedActorModule.typedActorObjectInstance.get.stop(proxy.get)
         else actorRef.stop()
@@ -291,10 +292,10 @@ final class ActorRegistry private[actor]() extends ListenerManagement {
   *
   * @author Viktor Klang
   */
-class Index[K <: AnyRef, V <: AnyRef : ArrayTag] {
-  private val Naught = Array[V]() //Nil for Arrays
+class Index[K <: AnyRef, V <: AnyRef: ArrayTag] {
+  private val Naught    = Array[V]() //Nil for Arrays
   private val container = new ConcurrentHashMap[K, JSet[V]]
-  private val emptySet = new ConcurrentSkipListSet[V]
+  private val emptySet  = new ConcurrentSkipListSet[V]
 
   /**
     * Associates the value of type V with the key of type K
@@ -306,7 +307,7 @@ class Index[K <: AnyRef, V <: AnyRef : ArrayTag] {
     def spinPut(k: K, v: V): Boolean = {
       var retry = false
       var added = false
-      val set = container get k
+      val set   = container get k
 
       if (set ne null) {
         set.synchronized {
@@ -349,7 +350,7 @@ class Index[K <: AnyRef, V <: AnyRef : ArrayTag] {
     */
   def values(key: K): Array[V] = {
     val set: JSet[V] = container get key
-    val result = if (set ne null) set toArray Naught else Naught
+    val result       = if (set ne null) set toArray Naught else Naught
     result.asInstanceOf[Array[V]]
   }
 
@@ -369,9 +370,7 @@ class Index[K <: AnyRef, V <: AnyRef : ArrayTag] {
     */
   def foreach(fun: (K, V) => Unit) {
     import scala.collection.JavaConversions._
-    container.entrySet foreach { (e) =>
-      e.getValue.foreach(fun(e.getKey, _))
-    }
+    container.entrySet foreach { (e) => e.getValue.foreach(fun(e.getKey, _)) }
   }
 
   /**
@@ -386,9 +385,12 @@ class Index[K <: AnyRef, V <: AnyRef : ArrayTag] {
         if (set.remove(value)) {
           //If we can remove the value
           if (set.isEmpty) //and the set becomes empty
-            container.remove(key, emptySet) //We try to remove the key if it's mapped to an empty set
+            container.remove(
+              key,
+              emptySet
+            ) //We try to remove the key if it's mapped to an empty set
 
-          true //Remove succeeded
+          true       //Remove succeeded
         } else false //Remove failed
       }
     } else false //Remove failed

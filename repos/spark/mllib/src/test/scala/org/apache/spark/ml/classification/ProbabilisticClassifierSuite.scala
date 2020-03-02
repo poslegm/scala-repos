@@ -20,27 +20,26 @@ package org.apache.spark.ml.classification
 import org.apache.spark.SparkFunSuite
 import org.apache.spark.mllib.linalg.{Vector, Vectors}
 
-final class TestProbabilisticClassificationModel(override val uid: String,
-                                                 override val numFeatures: Int,
-                                                 override val numClasses: Int)
-    extends ProbabilisticClassificationModel[
-        Vector, TestProbabilisticClassificationModel] {
+final class TestProbabilisticClassificationModel(
+    override val uid: String,
+    override val numFeatures: Int,
+    override val numClasses: Int
+) extends ProbabilisticClassificationModel[
+      Vector,
+      TestProbabilisticClassificationModel
+    ] {
 
   override def copy(extra: org.apache.spark.ml.param.ParamMap): this.type =
     defaultCopy(extra)
 
-  override protected def predictRaw(input: Vector): Vector = {
+  override protected def predictRaw(input: Vector): Vector =
     input
-  }
 
-  override protected def raw2probabilityInPlace(
-      rawPrediction: Vector): Vector = {
+  override protected def raw2probabilityInPlace(rawPrediction: Vector): Vector =
     rawPrediction
-  }
 
-  def friendlyPredict(input: Vector): Double = {
+  def friendlyPredict(input: Vector): Double =
     predict(input)
-  }
 }
 
 class ProbabilisticClassifierSuite extends SparkFunSuite {
@@ -68,7 +67,7 @@ object ProbabilisticClassifierSuite {
     */
   val allParamSettings: Map[String, Any] =
     ClassifierSuite.allParamSettings ++ Map(
-        "probabilityCol" -> "myProbability",
-        "thresholds" -> Array(0.4, 0.6)
+      "probabilityCol" -> "myProbability",
+      "thresholds"     -> Array(0.4, 0.6)
     )
 }

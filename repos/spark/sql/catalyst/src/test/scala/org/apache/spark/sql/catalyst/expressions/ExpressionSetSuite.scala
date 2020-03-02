@@ -25,21 +25,20 @@ class ExpressionSetSuite extends SparkFunSuite {
 
   val aUpper = AttributeReference("A", IntegerType)(exprId = ExprId(1))
   val aLower = AttributeReference("a", IntegerType)(exprId = ExprId(1))
-  val fakeA = AttributeReference("a", IntegerType)(exprId = ExprId(3))
+  val fakeA  = AttributeReference("a", IntegerType)(exprId = ExprId(3))
 
   val bUpper = AttributeReference("B", IntegerType)(exprId = ExprId(2))
   val bLower = AttributeReference("b", IntegerType)(exprId = ExprId(2))
 
   val aAndBSet = AttributeSet(aUpper :: bUpper :: Nil)
 
-  def setTest(size: Int, exprs: Expression*): Unit = {
+  def setTest(size: Int, exprs: Expression*): Unit =
     test(s"expect $size: ${exprs.mkString(", ")}") {
       val set = ExpressionSet(exprs)
       if (set.size != size) {
         fail(set.toDebugString)
       }
     }
-  }
 
   def setTestIgnore(size: Int, exprs: Expression*): Unit =
     ignore(s"expect $size: ${exprs.mkString(", ")}") {}
@@ -52,16 +51,20 @@ class ExpressionSetSuite extends SparkFunSuite {
 
   setTest(1, aUpper + aLower, aLower + aUpper)
   setTest(1, aUpper + bUpper, bUpper + aUpper)
-  setTest(1,
-          aUpper + bUpper + 3,
-          bUpper + 3 + aUpper,
-          bUpper + aUpper + 3,
-          Literal(3) + aUpper + bUpper)
-  setTest(1,
-          aUpper * bUpper * 3,
-          bUpper * 3 * aUpper,
-          bUpper * aUpper * 3,
-          Literal(3) * aUpper * bUpper)
+  setTest(
+    1,
+    aUpper + bUpper + 3,
+    bUpper + 3 + aUpper,
+    bUpper + aUpper + 3,
+    Literal(3) + aUpper + bUpper
+  )
+  setTest(
+    1,
+    aUpper * bUpper * 3,
+    bUpper * 3 * aUpper,
+    bUpper * aUpper * 3,
+    Literal(3) * aUpper * bUpper
+  )
   setTest(1, aUpper === bUpper, bUpper === aUpper)
 
   setTest(1, aUpper + 1 === bUpper, bUpper === Literal(1) + aUpper)

@@ -18,29 +18,31 @@ import scala.concurrent.Future
   * @param path the path inside the storage, to store the content of the url stream.
   */
 final class CancelableDownload(
-    val url: URL, val provider: StorageProvider, val path: String)
-    extends Logging {
+    val url: URL,
+    val provider: StorageProvider,
+    val path: String
+) extends Logging {
 
-  val tempItem = provider.item(path + UUID.randomUUID().toString)
-  var canceled = false
-  def cancel(): Unit = { canceled = true }
+  val tempItem       = provider.item(path + UUID.randomUUID().toString)
+  var canceled       = false
+  def cancel(): Unit = canceled = true
 
   lazy val get: Future[CancelableDownload] = Future {
     log.info(s"Download started from $url to path $path")
     IO.using(url.openStream()) { in =>
-      tempItem.store { out =>
-        IO.transfer(in, out, close = false, !canceled)
-      }
+      tempItem.store(out => IO.transfer(in, out, close = false, !canceled))
     }
     if (!canceled) {
       log.info(s"Download finished from $url to path $path")
       tempItem.moveTo(path)
     } else {
       log.info(
-          s"Cancel download of $url. Remove temporary storage item $tempItem")
+        s"Cancel download of $url. Remove temporary storage item $tempItem"
+      )
       tempItem.delete()
       throw new CanceledActionException(
-          s"Download of $path from $url has been canceled")
+        s"Download of $path from $url has been canceled"
+      )
     }
     this
   }(ThreadPoolContext.ioContext)
@@ -48,6 +50,6 @@ final class CancelableDownload(
   override def hashCode(): Int = url.hashCode()
   override def equals(other: Any): Boolean = other match {
     case c: CancelableDownload => (c.url == this.url) && (c.path == path)
-    case _ => false
+    case _                     => false
   }
 }

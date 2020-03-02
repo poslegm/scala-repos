@@ -2,7 +2,7 @@ abstract class A() {
   val y: A;
 }
 class B() extends A() {
-  val x = this;
+  val x         = this;
   val y: x.type = x;
 }
 abstract class C() {

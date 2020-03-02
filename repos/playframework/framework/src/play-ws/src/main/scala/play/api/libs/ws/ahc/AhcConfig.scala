@@ -34,52 +34,54 @@ import scala.concurrent.duration._
   * @param disableUrlEncoding Whether the raw URL should be used.
   * @param keepAlive keeps thread pool active, replaces allowPoolingConnection and allowSslConnectionPool
   */
-case class AhcWSClientConfig(wsClientConfig: WSClientConfig = WSClientConfig(),
-                             maxConnectionsPerHost: Int = -1,
-                             maxConnectionsTotal: Int = -1,
-                             maxConnectionLifetime: Duration = Duration.Inf,
-                             idleConnectionInPoolTimeout: Duration = 1.minute,
-                             maxNumberOfRedirects: Int = 5,
-                             maxRequestRetry: Int = 5,
-                             disableUrlEncoding: Boolean = false,
-                             keepAlive: Boolean = true)
+case class AhcWSClientConfig(
+    wsClientConfig: WSClientConfig = WSClientConfig(),
+    maxConnectionsPerHost: Int = -1,
+    maxConnectionsTotal: Int = -1,
+    maxConnectionLifetime: Duration = Duration.Inf,
+    idleConnectionInPoolTimeout: Duration = 1.minute,
+    maxNumberOfRedirects: Int = 5,
+    maxRequestRetry: Int = 5,
+    disableUrlEncoding: Boolean = false,
+    keepAlive: Boolean = true
+)
 
 /**
   * Factory for creating AhcWSClientConfig, for use from Java.
   */
 object AhcWSClientConfigFactory {
 
-  def forClientConfig(config: WSClientConfig) = {
+  def forClientConfig(config: WSClientConfig) =
     AhcWSClientConfig(wsClientConfig = config)
-  }
 }
 
 /**
   * This class creates a DefaultWSClientConfig object from the play.api.Configuration.
   */
 @Singleton
-class AhcWSClientConfigParser @Inject()(wsClientConfig: WSClientConfig,
-                                        configuration: Configuration,
-                                        environment: Environment)
-    extends Provider[AhcWSClientConfig] {
+class AhcWSClientConfigParser @Inject() (
+    wsClientConfig: WSClientConfig,
+    configuration: Configuration,
+    environment: Environment
+) extends Provider[AhcWSClientConfig] {
 
   def get = parse()
 
   def parse(): AhcWSClientConfig = {
 
     val playConfig = PlayConfig(configuration)
-    def get[A : ConfigLoader](name: String): A =
+    def get[A: ConfigLoader](name: String): A =
       playConfig.getDeprecated[A](s"play.ws.ahc.$name", s"play.ws.ning.$name")
 
     val maximumConnectionsPerHost = get[Int]("maxConnectionsPerHost")
-    val maximumConnectionsTotal = get[Int]("maxConnectionsTotal")
-    val maxConnectionLifetime = get[Duration]("maxConnectionLifetime")
+    val maximumConnectionsTotal   = get[Int]("maxConnectionsTotal")
+    val maxConnectionLifetime     = get[Duration]("maxConnectionLifetime")
     val idleConnectionInPoolTimeout =
       get[Duration]("idleConnectionInPoolTimeout")
     val maximumNumberOfRedirects = get[Int]("maxNumberOfRedirects")
-    val maxRequestRetry = get[Int]("maxRequestRetry")
-    val disableUrlEncoding = get[Boolean]("disableUrlEncoding")
-    val keepAlive = get[Boolean]("keepAlive")
+    val maxRequestRetry          = get[Int]("maxRequestRetry")
+    val disableUrlEncoding       = get[Boolean]("disableUrlEncoding")
+    val keepAlive                = get[Boolean]("keepAlive")
 
     // allowPoolingConnection and allowSslConnectionPool were merged into keepAlive in AHC 2.0
     // We want one value, keepAlive, and we don't want to confuse anyone who has to migrate.
@@ -87,23 +89,25 @@ class AhcWSClientConfigParser @Inject()(wsClientConfig: WSClientConfig,
     if (playConfig.underlying.hasPath("play.ws.ahc.keepAlive")) {
       val msg =
         "Both allowPoolingConnection and allowSslConnectionPool have been replaced by keepAlive!"
-      Seq("play.ws.ning.allowPoolingConnection",
-          "play.ws.ning.allowSslConnectionPool").foreach { s =>
+      Seq(
+        "play.ws.ning.allowPoolingConnection",
+        "play.ws.ning.allowSslConnectionPool"
+      ).foreach { s =>
         if (playConfig.underlying.hasPath(s)) {
           throw playConfig.reportError(s, msg)
         }
       }
     }
     AhcWSClientConfig(
-        wsClientConfig = wsClientConfig,
-        maxConnectionsPerHost = maximumConnectionsPerHost,
-        maxConnectionsTotal = maximumConnectionsTotal,
-        maxConnectionLifetime = maxConnectionLifetime,
-        idleConnectionInPoolTimeout = idleConnectionInPoolTimeout,
-        maxNumberOfRedirects = maximumNumberOfRedirects,
-        maxRequestRetry = maxRequestRetry,
-        disableUrlEncoding = disableUrlEncoding,
-        keepAlive = keepAlive
+      wsClientConfig = wsClientConfig,
+      maxConnectionsPerHost = maximumConnectionsPerHost,
+      maxConnectionsTotal = maximumConnectionsTotal,
+      maxConnectionLifetime = maxConnectionLifetime,
+      idleConnectionInPoolTimeout = idleConnectionInPoolTimeout,
+      maxNumberOfRedirects = maximumNumberOfRedirects,
+      maxRequestRetry = maxRequestRetry,
+      disableUrlEncoding = disableUrlEncoding,
+      keepAlive = keepAlive
     )
   }
 }
@@ -122,7 +126,8 @@ class AhcConfigBuilder(ahcConfig: AhcWSClientConfig = AhcWSClientConfig()) {
   def this(config: WSClientConfig) =
     this(AhcWSClientConfig(wsClientConfig = config))
 
-  protected val addCustomSettings: DefaultAsyncHttpClientConfig.Builder => DefaultAsyncHttpClientConfig.Builder =
+  protected val addCustomSettings
+      : DefaultAsyncHttpClientConfig.Builder => DefaultAsyncHttpClientConfig.Builder =
     identity
 
   /**
@@ -153,9 +158,8 @@ class AhcConfigBuilder(ahcConfig: AhcWSClientConfig = AhcWSClientConfig()) {
     *
     * @return the resulting builder
     */
-  def build(): AsyncHttpClientConfig = {
+  def build(): AsyncHttpClientConfig =
     configure().build()
-  }
 
   /**
     * Modify the underlying `DefaultAsyncHttpClientConfig.Builder` using the provided function, after defaults are set.
@@ -164,14 +168,13 @@ class AhcConfigBuilder(ahcConfig: AhcWSClientConfig = AhcWSClientConfig()) {
     * @return the new builder
     */
   def modifyUnderlying(
-      modify: DefaultAsyncHttpClientConfig.Builder => DefaultAsyncHttpClientConfig.Builder)
-    : AhcConfigBuilder = {
+      modify: DefaultAsyncHttpClientConfig.Builder => DefaultAsyncHttpClientConfig.Builder
+  ): AhcConfigBuilder =
     new AhcConfigBuilder(ahcConfig) {
       override val addCustomSettings =
         modify compose AhcConfigBuilder.this.addCustomSettings
       override val builder = AhcConfigBuilder.this.builder
     }
-  }
 
   /**
     * Configures the global settings.
@@ -179,10 +182,9 @@ class AhcConfigBuilder(ahcConfig: AhcWSClientConfig = AhcWSClientConfig()) {
   def configureWS(ahcConfig: AhcWSClientConfig): Unit = {
     val config = ahcConfig.wsClientConfig
 
-    def toMillis(duration: Duration): Int = {
+    def toMillis(duration: Duration): Int =
       if (duration.isFinite()) duration.toMillis.toInt
       else -1
-    }
 
     builder
       .setConnectTimeout(toMillis(config.connectionTimeout))
@@ -198,7 +200,8 @@ class AhcConfigBuilder(ahcConfig: AhcWSClientConfig = AhcWSClientConfig()) {
     builder.setMaxConnections(ahcConfig.maxConnectionsTotal)
     builder.setConnectionTtl(toMillis(ahcConfig.maxConnectionLifetime))
     builder.setPooledConnectionIdleTimeout(
-        toMillis(ahcConfig.idleConnectionInPoolTimeout))
+      toMillis(ahcConfig.idleConnectionInPoolTimeout)
+    )
     builder.setMaxRedirects(ahcConfig.maxNumberOfRedirects)
     builder.setMaxRequestRetry(ahcConfig.maxRequestRetry)
     builder.setDisableUrlEncodingForBoundRequests(ahcConfig.disableUrlEncoding)
@@ -214,8 +217,10 @@ class AhcConfigBuilder(ahcConfig: AhcWSClientConfig = AhcWSClientConfig()) {
     builder.setShutdownTimeout(0)
   }
 
-  def configureProtocols(existingProtocols: Array[String],
-                         sslConfig: SSLConfig): Array[String] = {
+  def configureProtocols(
+      existingProtocols: Array[String],
+      sslConfig: SSLConfig
+  ): Array[String] = {
     val definedProtocols = sslConfig.enabledProtocols match {
       case Some(configuredProtocols) =>
         // If we are given a specific list of protocols, then return it in exactly that order,
@@ -234,7 +239,8 @@ class AhcConfigBuilder(ahcConfig: AhcWSClientConfig = AhcWSClientConfig()) {
       for (deprecatedProtocol <- deprecatedProtocols) {
         if (definedProtocols.contains(deprecatedProtocol)) {
           throw new IllegalStateException(
-              s"Weak protocol $deprecatedProtocol found in ws.ssl.protocols!")
+            s"Weak protocol $deprecatedProtocol found in ws.ssl.protocols!"
+          )
         }
       }
     }
@@ -242,7 +248,9 @@ class AhcConfigBuilder(ahcConfig: AhcWSClientConfig = AhcWSClientConfig()) {
   }
 
   def configureCipherSuites(
-      existingCiphers: Array[String], sslConfig: SSLConfig): Array[String] = {
+      existingCiphers: Array[String],
+      sslConfig: SSLConfig
+  ): Array[String] = {
     val definedCiphers = sslConfig.enabledCipherSuites match {
       case Some(configuredCiphers) =>
         // If we are given a specific list of ciphers, return it in that order.
@@ -257,7 +265,8 @@ class AhcConfigBuilder(ahcConfig: AhcWSClientConfig = AhcWSClientConfig()) {
       for (deprecatedCipher <- deprecatedCiphers) {
         if (definedCiphers.contains(deprecatedCipher)) {
           throw new IllegalStateException(
-              s"Weak cipher $deprecatedCipher found in ws.ssl.ciphers!")
+            s"Weak cipher $deprecatedCipher found in ws.ssl.ciphers!"
+          )
         }
       }
     }
@@ -273,27 +282,31 @@ class AhcConfigBuilder(ahcConfig: AhcWSClientConfig = AhcWSClientConfig()) {
     val sslContext =
       if (sslConfig.default) {
         logger.info(
-            "buildSSLContext: ws.ssl.default is true, using default SSLContext")
+          "buildSSLContext: ws.ssl.default is true, using default SSLContext"
+        )
         validateDefaultTrustManager(sslConfig)
         SSLContext.getDefault
       } else {
         // break out the static methods as much as we can...
-        val keyManagerFactory = buildKeyManagerFactory(sslConfig)
+        val keyManagerFactory   = buildKeyManagerFactory(sslConfig)
         val trustManagerFactory = buildTrustManagerFactory(sslConfig)
         new ConfigSSLContextBuilder(
-            sslConfig, keyManagerFactory, trustManagerFactory).build()
+          sslConfig,
+          keyManagerFactory,
+          trustManagerFactory
+        ).build()
       }
 
     // protocols!
-    val defaultParams = sslContext.getDefaultSSLParameters
+    val defaultParams    = sslContext.getDefaultSSLParameters
     val defaultProtocols = defaultParams.getProtocols
-    val protocols = configureProtocols(defaultProtocols, sslConfig)
+    val protocols        = configureProtocols(defaultProtocols, sslConfig)
     defaultParams.setProtocols(protocols)
     builder.setEnabledProtocols(protocols)
 
     // ciphers!
     val defaultCiphers = defaultParams.getCipherSuites
-    val cipherSuites = configureCipherSuites(defaultCiphers, sslConfig)
+    val cipherSuites   = configureCipherSuites(defaultCiphers, sslConfig)
     defaultParams.setCipherSuites(cipherSuites)
     builder.setEnabledCipherSuites(cipherSuites)
 
@@ -302,13 +315,11 @@ class AhcConfigBuilder(ahcConfig: AhcWSClientConfig = AhcWSClientConfig()) {
     builder.setSslEngineFactory(new JsseSslEngineFactory(sslContext))
   }
 
-  def buildKeyManagerFactory(ssl: SSLConfig): KeyManagerFactoryWrapper = {
+  def buildKeyManagerFactory(ssl: SSLConfig): KeyManagerFactoryWrapper =
     new DefaultKeyManagerFactoryWrapper(ssl.keyManagerConfig.algorithm)
-  }
 
-  def buildTrustManagerFactory(ssl: SSLConfig): TrustManagerFactoryWrapper = {
+  def buildTrustManagerFactory(ssl: SSLConfig): TrustManagerFactoryWrapper =
     new DefaultTrustManagerFactoryWrapper(ssl.trustManagerConfig.algorithm)
-  }
 
   def validateDefaultTrustManager(sslConfig: SSLConfig) {
     // If we are using a default SSL context, we can't filter out certificates with weak algorithms
@@ -331,20 +342,24 @@ class AhcConfigBuilder(ahcConfig: AhcWSClientConfig = AhcWSClientConfig()) {
 
     val constraints = sslConfig.disabledKeyAlgorithms
       .map(a =>
-            AlgorithmConstraintsParser
-              .parseAll(AlgorithmConstraintsParser.expression, a)
-              .get)
+        AlgorithmConstraintsParser
+          .parseAll(AlgorithmConstraintsParser.expression, a)
+          .get
+      )
       .toSet
     val algorithmChecker = new AlgorithmChecker(
-        keyConstraints = constraints, signatureConstraints = Set())
+      keyConstraints = constraints,
+      signatureConstraints = Set()
+    )
     for (cert <- trustManager.getAcceptedIssuers) {
       try {
         algorithmChecker.checkKeyAlgorithms(cert)
       } catch {
         case e: CertPathValidatorException =>
           logger.warn(
-              "You are using ws.ssl.default=true and have a weak certificate in your default trust store!  (You can modify ws.ssl.disabledKeyAlgorithms to remove this message.)",
-              e)
+            "You are using ws.ssl.default=true and have a weak certificate in your default trust store!  (You can modify ws.ssl.disabledKeyAlgorithms to remove this message.)",
+            e
+          )
       }
     }
   }

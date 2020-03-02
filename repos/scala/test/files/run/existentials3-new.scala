@@ -10,16 +10,12 @@ object Test {
   def f3 = { class Bar() extends ToS; object Bar extends ToS; Bar }
   def f4 = { class Bar() extends ToS; new Bar() }
   def f5 = { object Bar extends ToS; Bar }
-  def f6 = { () =>
-    { object Bar extends ToS; Bar }
-  }
+  def f6 = { () => object Bar extends ToS; Bar }
   def f7 = {
-    val f = { () =>
-      { object Bar extends ToS; Bar }
-    }; f
+    val f = { () => object Bar extends ToS; Bar }; f
   }
 
-  def f8 = { trait A; trait B extends A; class C extends B with ToS; new C {} }
+  def f8 = { trait A; trait B          extends A; class C extends B with ToS; new C {} }
   def f9 = { trait A; trait B; class C extends B with A with ToS; new C {} }
 
   def f10 = { class A { type T1 }; List[A#T1]() }
@@ -33,16 +29,12 @@ object Test {
   val g3 = { class Bar() extends ToS; object Bar extends ToS; Bar }
   val g4 = { class Bar() extends ToS; new Bar() }
   val g5 = { object Bar extends ToS; Bar }
-  val g6 = { () =>
-    { object Bar extends ToS; Bar }
-  }
+  val g6 = { () => object Bar extends ToS; Bar }
   val g7 = {
-    val f = { () =>
-      { object Bar extends ToS; Bar }
-    }; f
+    val f = { () => object Bar extends ToS; Bar }; f
   }
 
-  val g8 = { trait A; trait B extends A; class C extends B with ToS; new C {} }
+  val g8 = { trait A; trait B          extends A; class C extends B with ToS; new C {} }
   val g9 = { trait A; trait B; class C extends B with A with ToS; new C {} }
 
   val g10 = { class A { type T1 }; List[A#T1]() }
@@ -56,10 +48,11 @@ object Test {
       if (isFreeType(t.typeSymbol)) t.typeSymbol.info.toString
       else t.typeSymbol.toString
     println(
-        "%s, t=%s, s=%s".format(t, t.asInstanceOf[Product].productPrefix, s))
+      "%s, t=%s, s=%s".format(t, t.asInstanceOf[Product].productPrefix, s)
+    )
   }
-  def m[T : TypeTag](x: T) = printTpe(typeOf[T])
-  def m2[T : WeakTypeTag](x: T) = printTpe(implicitly[WeakTypeTag[T]].tpe)
+  def m[T: TypeTag](x: T)      = printTpe(typeOf[T])
+  def m2[T: WeakTypeTag](x: T) = printTpe(implicitly[WeakTypeTag[T]].tpe)
 
   // tags do work for f10/g10
   def main(args: Array[String]): Unit = {
@@ -94,7 +87,7 @@ object Misc {
   trait Bippy { def bippy = "I'm Bippy!" }
   object o1 {
     def f1 = {
-      trait A extends Seq[U forSome { type U <: Bippy }];
+      trait A          extends Seq[U forSome { type U <: Bippy }];
       abstract class B extends A; trait C extends B; (null: C)
     }
     def f2 = f1.head.bippy

@@ -11,12 +11,12 @@ trait BooleanLatch {
 object BooleanLatch {
   def apply() = new BooleanLatch {
     val sync = new AbstractQueuedSynchronizer {
-      val RELEASED = 0
+      val RELEASED    = 0
       val UNAVAILABLE = -1
 
       setState(UNAVAILABLE)
 
-      def released = getState == RELEASED
+      def released    = getState == RELEASED
       def unavailable = getState == UNAVAILABLE
 
       override def tryAcquire(ignore: Int) =
@@ -30,6 +30,6 @@ object BooleanLatch {
     }
 
     override def release() = sync release 0
-    override def await() = sync acquireInterruptibly 0
+    override def await()   = sync acquireInterruptibly 0
   }
 }

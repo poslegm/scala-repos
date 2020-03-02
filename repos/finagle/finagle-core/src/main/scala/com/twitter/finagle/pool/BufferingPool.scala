@@ -19,18 +19,16 @@ class BufferingPool[Req, Rep](underlying: ServiceFactory[Req, Rep], size: Int)
   private[this] class Wrapped(self: Service[Req, Rep])
       extends ServiceProxy[Req, Rep](self) {
     private[this] val wasReleased = new AtomicBoolean(false)
-    def releaseSelf() = {
+    def releaseSelf() =
       if (wasReleased.compareAndSet(false, true)) self.close()
       else Future.Done
-    }
 
-    override def close(deadline: Time) = {
+    override def close(deadline: Time) =
       // The ordering here is peculiar but important, avoiding races
       // between draining and giving back to the pool.
       if (status == Status.Closed || !buffer.tryPut(this) || draining)
         releaseSelf()
       else Future.Done
-    }
   }
 
   private[this] val buffer = new ConcurrentRingBuffer[Wrapped](size)
@@ -52,7 +50,7 @@ class BufferingPool[Req, Rep](underlying: ServiceFactory[Req, Rep], size: Int)
     while (true) {
       buffer.tryGet() match {
         case Some(service) => service.releaseSelf()
-        case None => return
+        case None          => return
       }
     }
   }

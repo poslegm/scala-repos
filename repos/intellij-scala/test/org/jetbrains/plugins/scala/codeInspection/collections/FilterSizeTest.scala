@@ -12,7 +12,7 @@ class FilterSizeTest extends OperationsOnCollectionInspectionTest {
   def test_1() {
     val selected = s"Array().${START}filter(x => true).size$END"
     check(selected)
-    val text = "Array().filter(x => true).size"
+    val text   = "Array().filter(x => true).size"
     val result = "Array().count(x => true)"
     testFix(text, result, hint)
   }
@@ -20,7 +20,7 @@ class FilterSizeTest extends OperationsOnCollectionInspectionTest {
   def test_2() {
     val selected = s"List().${START}filter(x => true).length$END"
     check(selected)
-    val text = "List().filter(x => true).length"
+    val text   = "List().filter(x => true).length"
     val result = "List().count(x => true)"
     testFix(text, result, hint)
   }
@@ -28,7 +28,7 @@ class FilterSizeTest extends OperationsOnCollectionInspectionTest {
   def test_3() {
     val selected = s"Map() ${START}filter (x => true) size$END"
     check(selected)
-    val text = "Map() filter (x => true) size"
+    val text   = "Map() filter (x => true) size"
     val result = "Map() count (x => true)"
     testFix(text, result, hint)
   }
@@ -36,7 +36,7 @@ class FilterSizeTest extends OperationsOnCollectionInspectionTest {
   def test_4() {
     val selected = s"List().${START}filter {x => true}.size$END"
     check(selected)
-    val text = """List().filter {
+    val text   = """List().filter {
         |  x => true
         |}.size
         |""".stripMargin

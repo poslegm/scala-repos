@@ -30,15 +30,15 @@ import S._
 import JE._
 
 object PasswordField {
-  @volatile var blankPw = "*******"
+  @volatile var blankPw           = "*******"
   @volatile var minPasswordLength = 5
-  @volatile var logRounds = 10
+  @volatile var logRounds         = 10
   def hashpw(in: String): Box[String] =
     tryo(BCrypt.hashpw(in, BCrypt.gensalt(logRounds)))
 }
 
 trait PasswordTypedField extends TypedField[String] {
-  private var invalidPw = false
+  private var invalidPw  = false
   private var invalidMsg = ""
 
   def match_?(toTest: String): Boolean =
@@ -47,26 +47,24 @@ trait PasswordTypedField extends TypedField[String] {
       .flatMap(p => tryo(BCrypt.checkpw(toTest, p)))
       .openOr(false)
 
-  override def set_!(in: Box[String]): Box[String] = {
+  override def set_!(in: Box[String]): Box[String] =
     // can't be hashed here, because this get's called when setting value from database (Squeryl)
     in
-  }
 
   def setPlain(in: String): String = setBoxPlain(Full(in)) openOr defaultValue
 
-  def setBoxPlain(in: Box[String]): Box[String] = {
+  def setBoxPlain(in: Box[String]): Box[String] =
     if (!validatePassword(in)) {
       val hashed = in.map(s => PasswordField.hashpw(s) openOr s)
       setBox(hashed)
     } else setBox(defaultValueBox)
-  }
 
   /**
     * If passed value is an Array[String] or a List[String] containing 2 items with equal value, it it hashes this value and sets it as new password.
     * If passed value is a String or a Full[String] that starts with "$2a$", it assumes that it's a hashed version, thus sets it as it is, without hashing.
     * In any other case, it fails the validation with "Passwords do not match" error
     */
-  def setFromAny(in: Any): Box[String] = {
+  def setFromAny(in: Any): Box[String] =
     in match {
       case (a: Array[String]) if (a.length == 2 && a(0) == a(1)) =>
         setBoxPlain(Full(a(0)))
@@ -76,23 +74,21 @@ trait PasswordTypedField extends TypedField[String] {
       case Full(hash: String) if (hash.startsWith("$2a$")) =>
         setBox(Full(hash))
       case _ => {
-          invalidPw = true; invalidMsg = S.?("passwords.do.not.match");
-          Failure(invalidMsg)
-        }
+        invalidPw = true; invalidMsg = S.?("passwords.do.not.match");
+        Failure(invalidMsg)
+      }
     }
-  }
 
   def setFromString(s: String): Box[String] = s match {
     case null | "" if optional_? => setBoxPlain(Empty)
-    case null | "" => setBoxPlain(Failure(notOptionalErrorMessage))
-    case _ => setBoxPlain(Full(s))
+    case null | ""               => setBoxPlain(Failure(notOptionalErrorMessage))
+    case _                       => setBoxPlain(Full(s))
   }
 
-  override def validate: List[FieldError] = {
+  override def validate: List[FieldError] =
     if (!invalidPw && valueBox != defaultValueBox) Nil
     else if (invalidPw) List(FieldError(this, Text(invalidMsg)))
     else List(FieldError(this, Text(notOptionalErrorMessage)))
-  }
 
   override def notOptionalErrorMessage = S.?("password.must.be.set")
 
@@ -103,24 +99,25 @@ trait PasswordTypedField extends TypedField[String] {
       name={funcName}
       value={valueBox openOr ""}
       tabindex={tabIndex.toString}/>
-  
+
   }
 
   def toForm: Box[NodeSeq] =
     uniqueFieldId match {
       case Full(id) => Full(elem % ("id" -> id))
-      case _ => Full(elem)
+      case _        => Full(elem)
     }
 
   protected def validatePassword(pwdValue: Box[String]): Boolean = {
     pwdValue match {
       case Empty | Full("" | null) if !optional_? => {
-          invalidPw = true; invalidMsg = notOptionalErrorMessage
-        }
+        invalidPw = true; invalidMsg = notOptionalErrorMessage
+      }
       case Full(s)
           if s == "" || s == PasswordField.blankPw ||
-          s.length < PasswordField.minPasswordLength =>
-        { invalidPw = true; invalidMsg = S.?("password.too.short") }
+            s.length < PasswordField.minPasswordLength => {
+        invalidPw = true; invalidMsg = S.?("password.too.short")
+      }
       case _ => { invalidPw = false; invalidMsg = "" }
     }
     invalidPw
@@ -135,13 +132,14 @@ trait PasswordTypedField extends TypedField[String] {
 
   def setFromJValue(jvalue: JValue): Box[MyType] = jvalue match {
     case JNothing | JNull if optional_? => setBoxPlain(Empty)
-    case JString(s) => setFromString(s)
-    case other => setBoxPlain(FieldHelpers.expectedA("JString", other))
+    case JString(s)                     => setFromString(s)
+    case other                          => setBoxPlain(FieldHelpers.expectedA("JString", other))
   }
 }
 
 class PasswordField[OwnerType <: Record[OwnerType]](rec: OwnerType)
-    extends Field[String, OwnerType] with MandatoryTypedField[String]
+    extends Field[String, OwnerType]
+    with MandatoryTypedField[String]
     with PasswordTypedField {
 
   def this(rec: OwnerType, value: String) = {
@@ -161,7 +159,8 @@ class PasswordField[OwnerType <: Record[OwnerType]](rec: OwnerType)
 }
 
 class OptionalPasswordField[OwnerType <: Record[OwnerType]](rec: OwnerType)
-    extends Field[String, OwnerType] with OptionalTypedField[String]
+    extends Field[String, OwnerType]
+    with OptionalTypedField[String]
     with PasswordTypedField {
 
   def this(rec: OwnerType, value: Box[String]) = {

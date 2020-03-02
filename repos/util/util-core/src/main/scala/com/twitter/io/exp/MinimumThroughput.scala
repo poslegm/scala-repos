@@ -23,7 +23,7 @@ object MinimumThroughput {
     // we rely on the `reader.read` and `writer.write` contract that only
     // one read or write can ever be outstanding, so volatile provides
     // us thread-safety.
-    @volatile protected[this] var bytes = 0L
+    @volatile protected[this] var bytes   = 0L
     @volatile protected[this] var elapsed = Duration.Zero
 
     /** Calculate and return the current bps */
@@ -58,7 +58,8 @@ object MinimumThroughput {
   }
 
   private class MinReader(reader: Reader, minBps: Double, timer: Timer)
-      extends Min(minBps) with Reader {
+      extends Min(minBps)
+      with Reader {
     def discard(): Unit = reader.discard()
 
     def read(n: Int): Future[Option[Buf]] = {
@@ -94,7 +95,8 @@ object MinimumThroughput {
   }
 
   private class MinWriter(writer: Writer, minBps: Double, timer: Timer)
-      extends Min(minBps) with Writer {
+      extends Min(minBps)
+      with Writer {
     def fail(cause: Throwable): Unit = writer.fail(cause)
 
     override def write(buf: Buf): Future[Unit] = {

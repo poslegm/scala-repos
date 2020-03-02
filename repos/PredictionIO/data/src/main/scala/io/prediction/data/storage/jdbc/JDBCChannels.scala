@@ -22,7 +22,8 @@ import scalikejdbc._
 
 /** JDBC implementation of [[Channels]] */
 class JDBCChannels(client: String, config: StorageClientConfig, prefix: String)
-    extends Channels with Logging {
+    extends Channels
+    with Logging {
 
   /** Database table name for this data access object */
   val tableName = JDBCUtils.prefixTableName(prefix, "channels")
@@ -62,9 +63,10 @@ class JDBCChannels(client: String, config: StorageClientConfig, prefix: String)
     sql"DELETE FROM $tableName WHERE id = $id".update().apply()
   }
 
-  def resultToChannel(rs: WrappedResultSet): Channel = {
-    Channel(id = rs.int("id"),
-            name = rs.string("name"),
-            appid = rs.int("appid"))
-  }
+  def resultToChannel(rs: WrappedResultSet): Channel =
+    Channel(
+      id = rs.int("id"),
+      name = rs.string("name"),
+      appid = rs.int("appid")
+    )
 }

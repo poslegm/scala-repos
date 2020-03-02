@@ -32,17 +32,18 @@ trait ServletBase extends ScalatraBase with SessionSupport with Initializable {
       override def get(key: String): Option[String] =
         Option(config.getInitParameter(key))
 
-      override def iterator: Iterator[(String, String)] = {
-        for (name <- config.getInitParameterNames.asScala.toIterator) yield
-          (name, config.getInitParameter(name))
-      }
+      override def iterator: Iterator[(String, String)] =
+        for (name <- config.getInitParameterNames.asScala.toIterator)
+          yield (name, config.getInitParameter(name))
     }
   }
 
   override def handle(
-      request: HttpServletRequest, response: HttpServletResponse): Unit = {
+      request: HttpServletRequest,
+      response: HttpServletResponse
+  ): Unit = {
     // As default, the servlet tries to decode params with ISO_8859-1.
-    // It causes an EOFException if params are actually encoded with the 
+    // It causes an EOFException if params are actually encoded with the
     // other code (such as UTF-8)
     if (request.getCharacterEncoding == null) {
       request.setCharacterEncoding(defaultCharacterEncoding)

@@ -2,9 +2,18 @@ package com.twitter.finagle
 
 import com.twitter.finagle
 import com.twitter.finagle.client._
-import com.twitter.finagle.dispatch.{GenSerialClientDispatcher, PipeliningDispatcher}
+import com.twitter.finagle.dispatch.{
+  GenSerialClientDispatcher,
+  PipeliningDispatcher
+}
 import com.twitter.finagle.netty3.Netty3Transporter
-import com.twitter.finagle.param.{Monitor => _, ResponseClassifier => _, ExceptionStatsHandler => _, Tracer => _, _}
+import com.twitter.finagle.param.{
+  Monitor => _,
+  ResponseClassifier => _,
+  ExceptionStatsHandler => _,
+  Tracer => _,
+  _
+}
 import com.twitter.finagle.pool.SingletonPool
 import com.twitter.finagle.redis.protocol.{Command, Reply}
 import com.twitter.finagle.service.{ResponseClassifier, RetryBudget}
@@ -36,33 +45,35 @@ object Redis extends Client[Command, Reply] {
       * A default client stack which supports the pipelined redis client.
       */
     def newStack: Stack[ServiceFactory[Command, Reply]] =
-      StackClient.newStack.replace(
-          DefaultPool.Role, SingletonPool.module[Command, Reply])
+      StackClient.newStack
+        .replace(DefaultPool.Role, SingletonPool.module[Command, Reply])
   }
 
   case class Client(
       stack: Stack[ServiceFactory[Command, Reply]] = Client.newStack,
-      params: Stack.Params = Client.defaultParams)
-      extends StdStackClient[Command, Reply, Client]
-      with WithDefaultLoadBalancer[Client] with RedisRichClient {
+      params: Stack.Params = Client.defaultParams
+  ) extends StdStackClient[Command, Reply, Client]
+      with WithDefaultLoadBalancer[Client]
+      with RedisRichClient {
 
     protected def copy1(
         stack: Stack[ServiceFactory[Command, Reply]] = this.stack,
         params: Stack.Params = this.params
     ): Client = copy(stack, params)
 
-    protected type In = Command
+    protected type In  = Command
     protected type Out = Reply
 
     protected def newTransporter(): Transporter[In, Out] =
       Netty3Transporter(redis.RedisClientPipelineFactory, params)
 
     protected def newDispatcher(
-        transport: Transport[In, Out]): Service[Command, Reply] =
+        transport: Transport[In, Out]
+    ): Service[Command, Reply] =
       new PipeliningDispatcher(
-          transport,
-          params[finagle.param.Stats].statsReceiver
-            .scope(GenSerialClientDispatcher.StatsScope)
+        transport,
+        params[finagle.param.Stats].statsReceiver
+          .scope(GenSerialClientDispatcher.StatsScope)
       )
 
     // Java-friendly forwarders
@@ -84,12 +95,14 @@ object Redis extends Client[Command, Reply] {
       super.withMonitor(monitor)
     override def withTracer(tracer: Tracer): Client = super.withTracer(tracer)
     override def withExceptionStatsHandler(
-        exceptionStatsHandler: ExceptionStatsHandler): Client =
+        exceptionStatsHandler: ExceptionStatsHandler
+    ): Client =
       super.withExceptionStatsHandler(exceptionStatsHandler)
     override def withRequestTimeout(timeout: Duration): Client =
       super.withRequestTimeout(timeout)
     override def withResponseClassifier(
-        responseClassifier: ResponseClassifier): Client =
+        responseClassifier: ResponseClassifier
+    ): Client =
       super.withResponseClassifier(responseClassifier)
     override def withRetryBudget(budget: RetryBudget): Client =
       super.withRetryBudget(budget)
@@ -99,7 +112,8 @@ object Redis extends Client[Command, Reply] {
     override def configured[P](psp: (P, Stack.Param[P])): Client =
       super.configured(psp)
     override def filtered(
-        filter: Filter[Command, Reply, Command, Reply]): Client =
+        filter: Filter[Command, Reply, Command, Reply]
+    ): Client =
       super.filtered(filter)
   }
 

@@ -40,7 +40,7 @@ class GenerateToStringTest extends ScalaGenerateTestBase {
   }
 
   def testEmptyClass(): Unit = {
-    val text = s"""class A() {
+    val text   = s"""class A() {
                  |  $CARET_MARKER
                  |}"""
     val result = """class A() {
@@ -52,7 +52,7 @@ class GenerateToStringTest extends ScalaGenerateTestBase {
   }
 
   def testObject(): Unit = {
-    val text = s"""object Obj {
+    val text   = s"""object Obj {
                  |  val a = 1
                  |
                  |  def b = 2
@@ -70,7 +70,7 @@ class GenerateToStringTest extends ScalaGenerateTestBase {
   }
 
   def testTrait(): Unit = {
-    val text = s"""trait T {
+    val text   = s"""trait T {
                  |  val a = 1
                  |
                  |  def b = 2

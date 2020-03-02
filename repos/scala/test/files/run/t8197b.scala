@@ -1,5 +1,5 @@
 object O {
-  def foo[T](t: T) = 0
+  def foo[T](t: T)                                     = 0
   def foo(s: String)(implicit i: DummyImplicit = null) = 1
 }
 

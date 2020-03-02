@@ -54,8 +54,8 @@ import scala.compat.java8.FutureConverters
   */
 package object scaladsl {
   implicit class SourceToCompletionStage[Out, T](
-      val src: Source[Out, Future[T]])
-      extends AnyVal {
+      val src: Source[Out, Future[T]]
+  ) extends AnyVal {
     def toCompletionStage(): Source[Out, CompletionStage[T]] =
       src.mapMaterializedValue(FutureConverters.toJava)
   }

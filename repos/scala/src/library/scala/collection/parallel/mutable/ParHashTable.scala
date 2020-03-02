@@ -28,19 +28,23 @@ trait ParHashTable[K, Entry >: Null <: HashEntry[K, Entry]]
       private var idx: Int,
       private val until: Int,
       private val totalsize: Int,
-      private var es: Entry)
-      extends IterableSplitter[T] with SizeMapUtils {
+      private var es: Entry
+  ) extends IterableSplitter[T]
+      with SizeMapUtils {
     private val itertable = table
     private var traversed = 0
     scan()
 
     def entry2item(e: Entry): T
     def newIterator(
-        idxFrom: Int, idxUntil: Int, totalSize: Int, es: Entry): IterRepr
+        idxFrom: Int,
+        idxUntil: Int,
+        totalSize: Int,
+        es: Entry
+    ): IterRepr
 
-    def hasNext = {
+    def hasNext =
       es ne null
-    }
 
     def next(): T = {
       val res = es
@@ -59,7 +63,7 @@ trait ParHashTable[K, Entry >: Null <: HashEntry[K, Entry]]
 
     def remaining = totalsize - traversed
 
-    private[parallel] override def debugInformation = {
+    private[parallel] override def debugInformation =
       buildString { append =>
         append("/--------------------\\")
         append("Parallel hash table entry iterator")
@@ -71,13 +75,13 @@ trait ParHashTable[K, Entry >: Null <: HashEntry[K, Entry]]
         append("current entry: " + es)
         append("underlying from " + idx + " until " + until)
         append(
-            itertable
-              .slice(idx, until)
-              .map(x => if (x != null) x.toString else "n/a")
-              .mkString(" | "))
+          itertable
+            .slice(idx, until)
+            .map(x => if (x != null) x.toString else "n/a")
+            .mkString(" | ")
+        )
         append("\\--------------------/")
       }
-    }
 
     def dup = newIterator(idx, until, totalsize, es)
 
@@ -89,35 +93,42 @@ trait ParHashTable[K, Entry >: Null <: HashEntry[K, Entry]]
           val divsz = (until - idx) / 2
 
           // second iterator params
-          val sidx = idx + divsz + 1 // + 1 preserves iteration invariant
+          val sidx   = idx + divsz + 1 // + 1 preserves iteration invariant
           val suntil = until
           val ses =
-            itertable(sidx - 1).asInstanceOf[Entry] // sidx - 1 ensures counting from the right spot
-          val stotal = calcNumElems(
-              sidx - 1, suntil, table.length, sizeMapBucketSize)
+            itertable(sidx - 1).asInstanceOf[
+              Entry
+            ] // sidx - 1 ensures counting from the right spot
+          val stotal =
+            calcNumElems(sidx - 1, suntil, table.length, sizeMapBucketSize)
 
           // first iterator params
-          val fidx = idx
+          val fidx   = idx
           val funtil = idx + divsz
-          val fes = es
+          val fes    = es
           val ftotal = totalsize - stotal
 
           Seq(
-              newIterator(fidx, funtil, ftotal, fes),
-              newIterator(sidx, suntil, stotal, ses)
+            newIterator(fidx, funtil, ftotal, fes),
+            newIterator(sidx, suntil, stotal, ses)
           )
         } else {
           // otherwise, this is the last entry in the table - all what remains is the chain
           // so split the rest of the chain
           val arr = convertToArrayBuffer(es)
           val arrpit = new scala.collection.parallel.BufferSplitter[T](
-              arr, 0, arr.length, signalDelegate)
+            arr,
+            0,
+            arr.length,
+            signalDelegate
+          )
           arrpit.split
         }
       } else Seq(this.asInstanceOf[IterRepr])
 
     private def convertToArrayBuffer(
-        chainhead: Entry): mutable.ArrayBuffer[T] = {
+        chainhead: Entry
+    ): mutable.ArrayBuffer[T] = {
       val buff = mutable.ArrayBuffer[Entry]()
       var curr = chainhead
       while (curr ne null) {
@@ -125,14 +136,12 @@ trait ParHashTable[K, Entry >: Null <: HashEntry[K, Entry]]
         curr = curr.next
       }
       // println("converted " + remaining + " element iterator into buffer: " + buff)
-      buff map { e =>
-        entry2item(e)
-      }
+      buff map { e => entry2item(e) }
     }
 
     protected def countElems(from: Int, until: Int) = {
-      var c = 0
-      var idx = from
+      var c         = 0
+      var idx       = from
       var es: Entry = null
       while (idx < until) {
         es = itertable(idx).asInstanceOf[Entry]
@@ -146,7 +155,7 @@ trait ParHashTable[K, Entry >: Null <: HashEntry[K, Entry]]
     }
 
     protected def countBucketSizes(fromBucket: Int, untilBucket: Int) = {
-      var c = 0
+      var c   = 0
       var idx = fromBucket
       while (idx < untilBucket) {
         c += sizemap(idx)

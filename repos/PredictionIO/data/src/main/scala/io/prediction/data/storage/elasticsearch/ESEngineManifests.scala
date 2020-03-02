@@ -26,23 +26,29 @@ import org.json4s.native.Serialization.read
 import org.json4s.native.Serialization.write
 
 class ESEngineManifests(
-    client: Client, config: StorageClientConfig, index: String)
-    extends EngineManifests with Logging {
-  implicit val formats = DefaultFormats + new EngineManifestSerializer
-  private val estype = "engine_manifests"
+    client: Client,
+    config: StorageClientConfig,
+    index: String
+) extends EngineManifests
+    with Logging {
+  implicit val formats                          = DefaultFormats + new EngineManifestSerializer
+  private val estype                            = "engine_manifests"
   private def esid(id: String, version: String) = s"$id $version"
 
   def insert(engineManifest: EngineManifest): Unit = {
     val json = write(engineManifest)
     val response = client
       .prepareIndex(
-          index, estype, esid(engineManifest.id, engineManifest.version))
+        index,
+        estype,
+        esid(engineManifest.id, engineManifest.version)
+      )
       .setSource(json)
       .execute()
       .actionGet()
   }
 
-  def get(id: String, version: String): Option[EngineManifest] = {
+  def get(id: String, version: String): Option[EngineManifest] =
     try {
       val response = client
         .prepareGet(index, estype, esid(id, version))
@@ -58,9 +64,8 @@ class ESEngineManifests(
         error(e.getMessage)
         None
     }
-  }
 
-  def getAll(): Seq[EngineManifest] = {
+  def getAll(): Seq[EngineManifest] =
     try {
       val builder = client.prepareSearch()
       ESUtils.getAll[EngineManifest](client, builder)
@@ -69,12 +74,11 @@ class ESEngineManifests(
         error(e.getMessage)
         Seq()
     }
-  }
 
   def update(engineManifest: EngineManifest, upsert: Boolean = false): Unit =
     insert(engineManifest)
 
-  def delete(id: String, version: String): Unit = {
+  def delete(id: String, version: String): Unit =
     try {
       client
         .prepareDelete(index, estype, esid(id, version))
@@ -83,5 +87,4 @@ class ESEngineManifests(
     } catch {
       case e: ElasticsearchException => error(e.getMessage)
     }
-  }
 }

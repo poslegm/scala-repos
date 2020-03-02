@@ -15,8 +15,8 @@ import scala.util.Try
 object DottyDownloader extends Downloader {
   final val RepositoryUrl =
     "https://oss.jfrog.org/artifactory/oss-snapshot-local"
-  final val GroupId = "me.d-d"
-  final val ArtifactId = "dotty_2.11"
+  final val GroupId         = "me.d-d"
+  final val ArtifactId      = "dotty_2.11"
   final val DefaultRevision = "0.1-SNAPSHOT"
 
   def downloadDotty(version: String, listener: String => Unit) =
@@ -26,12 +26,13 @@ object DottyDownloader extends Downloader {
     def toDependency(content: Content): Option[Dependency] = content match {
       case e: Element if e.getName == "dependency" =>
         Try(
-            Dependency(
-                e.getChild("groupId").getText,
-                e.getChild("artifactId").getText,
-                e.getChild("version").getText,
-                Option(e.getChild("scope")).map(_.getText)
-            )).toOption
+          Dependency(
+            e.getChild("groupId").getText,
+            e.getChild("artifactId").getText,
+            e.getChild("version").getText,
+            Option(e.getChild("scope")).map(_.getText)
+          )
+        ).toOption
       case _ => None
     }
     val element =
@@ -55,12 +56,14 @@ object DottyDownloader extends Downloader {
 
   override protected def sbtCommandsFor(version: String) =
     Seq(
-        s"""set resolvers := Seq("JFrog OSS Snapshots" at "$RepositoryUrl")""",
-        s"""set libraryDependencies := Seq("$GroupId" % "$ArtifactId" % "$version")"""
+      s"""set resolvers := Seq("JFrog OSS Snapshots" at "$RepositoryUrl")""",
+      s"""set libraryDependencies := Seq("$GroupId" % "$ArtifactId" % "$version")"""
     ) ++ super.sbtCommandsFor(version)
 }
 
-private case class Dependency(groupId: String,
-                              artifactId: String,
-                              version: String,
-                              scope: Option[String])
+private case class Dependency(
+    groupId: String,
+    artifactId: String,
+    version: String,
+    scope: Option[String]
+)

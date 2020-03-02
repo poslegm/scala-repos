@@ -31,17 +31,18 @@ abstract class EnumWithDescription {
   type Value = enum.Value with ValueWithDescription
 
   private var _values: List[Value] = Nil
-  def values = _values
+  def values                       = _values
 
   // possibly not a good idea using this directly
   val enum = new Enumeration {
-    def Value(inName: String,
-              inDescription: String): Value with ValueWithDescription = {
+    def Value(
+        inName: String,
+        inDescription: String
+    ): Value with ValueWithDescription =
       new Val(nextId, inName) with ValueWithDescription {
         def description = inDescription
-        def name = inName
+        def name        = inName
       }
-    }
   }
 
   def Value(name: String, description: String): Value = {

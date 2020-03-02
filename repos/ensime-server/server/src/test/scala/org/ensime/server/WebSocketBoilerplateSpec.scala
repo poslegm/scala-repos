@@ -49,8 +49,8 @@ class WebSocketBoilerplateSpec extends EnsimeSpec with SharedTestKitFixture {
   import DefaultJsonProtocol._
   implicit def FooFormat = jsonFormat1(Foo)
   implicit def BarFormat = jsonFormat1(Bar)
-  val foo = Foo("hello")
-  val bar = Bar(13L)
+  val foo                = Foo("hello")
+  val bar                = Bar(13L)
 
   it should "produce a marshalled Flow that accepts valid messages" in withTestKit {
     tk =>
@@ -67,7 +67,7 @@ class WebSocketBoilerplateSpec extends EnsimeSpec with SharedTestKitFixture {
       }
       val endpoints = jsonMarshalledMessageFlow(user)
 
-      val input = TextMessage(foo.toJson.compactPrint)
+      val input  = TextMessage(foo.toJson.compactPrint)
       val client = TestProbe()
 
       Source.single(input).via(endpoints).runWith(Sink.head).pipeTo(client.ref)
@@ -87,7 +87,7 @@ class WebSocketBoilerplateSpec extends EnsimeSpec with SharedTestKitFixture {
       }
       val endpoints = jsonMarshalledMessageFlow(user)
 
-      val input = BinaryMessage(ByteString(0, 1, 2))
+      val input  = BinaryMessage(ByteString(0, 1, 2))
       val client = TestProbe()
 
       Source.single(input).via(endpoints).runWith(Sink.head).pipeTo(client.ref)
@@ -103,12 +103,10 @@ class WebSocketBoilerplateSpec extends EnsimeSpec with SharedTestKitFixture {
       import tk.system.dispatcher
       implicit val mat = ActorMaterializer()
 
-      val user = Flow[Foo].map { _ =>
-        bar
-      }
+      val user      = Flow[Foo].map(_ => bar)
       val endpoints = jsonMarshalledMessageFlow(user)
 
-      val input = TextMessage.Strict("""{}""")
+      val input  = TextMessage.Strict("""{}""")
       val client = TestProbe()
 
       Source.single(input).via(endpoints).runWith(Sink.head).pipeTo(client.ref)

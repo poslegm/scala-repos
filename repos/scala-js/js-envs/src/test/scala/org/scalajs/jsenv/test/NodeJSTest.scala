@@ -12,12 +12,12 @@ class NodeJSTest extends TimeoutComTests {
   /** Node.js strips double percentage signs - #500 */
   @Test
   def percentageTest: Unit = {
-    val counts = 1 to 15
-    val argcs = 1 to 3
+    val counts  = 1 to 15
+    val argcs   = 1 to 3
     val strings = counts.map("%" * _)
 
     val strlists = for {
-      count <- argcs
+      count  <- argcs
       string <- strings
     } yield List.fill(count)(string)
 
@@ -35,8 +35,7 @@ class NodeJSTest extends TimeoutComTests {
 
   /** Node.js console.log hack didn't allow to log non-Strings - #561 */
   @Test
-  def nonStringTest: Unit = {
-
+  def nonStringTest: Unit =
     """
     console.log(1);
     console.log(undefined);
@@ -49,7 +48,6 @@ class NodeJSTest extends TimeoutComTests {
        |[object Object]
        |1,2
        |""".stripMargin
-  }
 
   @Test
   def slowJSEnvTest: Unit = {

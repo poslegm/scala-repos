@@ -16,11 +16,13 @@ abstract class ConnectHttp {
   def connectionContext: Optional[HttpsConnectionContext]
 
   final def effectiveHttpsConnectionContext(
-      fallbackContext: HttpsConnectionContext): HttpsConnectionContext =
+      fallbackContext: HttpsConnectionContext
+  ): HttpsConnectionContext =
     connectionContext.orElse(fallbackContext)
 
   final def effectiveConnectionContext(
-      fallbackContext: ConnectionContext): ConnectionContext =
+      fallbackContext: ConnectionContext
+  ): ConnectionContext =
     if (connectionContext.isPresent) connectionContext.get()
     else fallbackContext
 
@@ -36,16 +38,14 @@ object ConnectHttp {
   def toHost(uriHost: Uri): ConnectHttp = {
     val s = uriHost.scheme.toLowerCase(Locale.ROOT)
     if (s == "https")
-      new ConnectHttpsImpl(
-          uriHost.host.address, effectivePort(s, uriHost.port))
+      new ConnectHttpsImpl(uriHost.host.address, effectivePort(s, uriHost.port))
     else
       new ConnectHttpImpl(uriHost.host.address, effectivePort(s, uriHost.port))
   }
 
-  def toHost(host: String): ConnectHttp = {
+  def toHost(host: String): ConnectHttp =
     if (isHttpOrHttps(host)) toHost(Uri.create(host))
     else toHost(Uri.create(s"http://$host"))
-  }
 
   def toHost(host: String, port: Int): ConnectHttp = {
     require(port > 0, "port must be > 0")
@@ -60,8 +60,10 @@ object ConnectHttp {
   @throws(classOf[IllegalArgumentException])
   def toHostHttps(uriHost: Uri): ConnectWithHttps = {
     val s = uriHost.scheme.toLowerCase(Locale.ROOT)
-    require(s == "" || s == "https",
-            "toHostHttps used with non https scheme! Was: " + uriHost)
+    require(
+      s == "" || s == "https",
+      "toHostHttps used with non https scheme! Was: " + uriHost
+    )
     val httpsHost = uriHost.scheme("https") // for effective port calculation
     new ConnectHttpsImpl(httpsHost.host.address, effectivePort(uriHost))
   }
@@ -94,7 +96,8 @@ object ConnectHttp {
     else if (s == "http" || s == "ws") 80
     else
       throw new IllegalArgumentException(
-          "Scheme is not http/https/ws/wss and no port given!")
+        "Scheme is not http/https/ws/wss and no port given!"
+      )
   }
 }
 
@@ -114,13 +117,14 @@ final class ConnectHttpImpl(val host: String, val port: Int)
 final class ConnectHttpsImpl(
     val host: String,
     val port: Int,
-    val context: Optional[HttpsConnectionContext] = Optional.empty())
-    extends ConnectWithHttps {
+    val context: Optional[HttpsConnectionContext] = Optional.empty()
+) extends ConnectWithHttps {
 
   override def isHttps: Boolean = true
 
   override def withCustomHttpsContext(
-      context: HttpsConnectionContext): ConnectWithHttps =
+      context: HttpsConnectionContext
+  ): ConnectWithHttps =
     new ConnectHttpsImpl(host, port, Optional.of(context))
 
   override def withDefaultHttpsContext(): ConnectWithHttps =

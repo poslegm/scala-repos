@@ -22,7 +22,7 @@ class ServerStatsFilterTest extends FunSuite {
         new ServerStatsFilter[Unit, Unit](inMemory, Stopwatch.timeNanos)
       filter.andThen(svc)(())
       val expected = 5
-      val actual = inMemory.stats(Seq("handletime_us"))(0)
+      val actual   = inMemory.stats(Seq("handletime_us"))(0)
       assert(actual == expected)
     }
   }

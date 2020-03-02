@@ -52,7 +52,7 @@ trait Scaling {
     */
   def computeScaleDelta(scores: Array[Double]): Int = {
     var maxScale = -10000
-    var i = 0
+    var i        = 0
     while (i < scores.length) {
       val score = scores(i)
       if (score != 0.0) {
@@ -72,7 +72,7 @@ trait Scaling {
     else 0
   }
 
-  def determineScale(score: Double, oldScale: Int): Int = {
+  def determineScale(score: Double, oldScale: Int): Int =
     if (score != 0.0) {
       val maxScale = java.lang.Math.getExponent(score)
       if (maxScale == -10000) oldScale
@@ -84,10 +84,12 @@ trait Scaling {
     } else {
       Int.MinValue
     }
-  }
 
   def scaleArrayToScale(
-      scores: Array[Double], currentScale: Int, targetScale: Int) {
+      scores: Array[Double],
+      currentScale: Int,
+      targetScale: Int
+  ) {
     val scaleDelta = targetScale - currentScale
 
     if (scaleDelta != 0) {
@@ -108,10 +110,12 @@ trait Scaling {
     * @param destScale
     * @return the new scale
     */
-  def sumArrays(src: Array[Double],
-                srcScale: Int,
-                dest: Array[Double],
-                destScale: Int): Int = {
+  def sumArrays(
+      src: Array[Double],
+      srcScale: Int,
+      dest: Array[Double],
+      destScale: Int
+  ): Int =
     if (destScale == srcScale) {
       axpy(1.0, src, dest)
       destScale
@@ -134,7 +138,7 @@ trait Scaling {
     } else {
       // hybrid axpy/scale
       val scaleDelta = destScale - srcScale
-      var i = 0
+      var i          = 0
       while (i < dest.length) {
         dest(i) += java.lang.Math.scalb(src(i), -scaleDelta)
         i += 1
@@ -142,25 +146,21 @@ trait Scaling {
 
       destScale
     }
-  }
 
   /**
     * Converts the scaled value into "normal" space
     */
-  def unscaleValue(score: Double, currentScale: Int) = {
+  def unscaleValue(score: Double, currentScale: Int) =
     java.lang.Math.scalb(score, currentScale)
-  }
 
   /**
     * Converts the scaled value into "normal" space
     */
-  def scaleValue(score: Double, currentScale: Int, targetScale: Int) = {
+  def scaleValue(score: Double, currentScale: Int, targetScale: Int) =
     java.lang.Math.scalb(score, currentScale - targetScale)
-  }
 
-  def toLogSpace(score: Double, currentScale: Int) = {
+  def toLogSpace(score: Double, currentScale: Int) =
     log(score) + currentScale * log(2d)
-  }
 }
 
 object Scaling extends Scaling {

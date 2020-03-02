@@ -38,29 +38,33 @@ import org.apache.spark.util.SerializableConfiguration
 import org.apache.spark.util.collection.BitSet
 
 private[libsvm] class LibSVMOutputWriter(
-    path: String, dataSchema: StructType, context: TaskAttemptContext)
-    extends OutputWriter {
+    path: String,
+    dataSchema: StructType,
+    context: TaskAttemptContext
+) extends OutputWriter {
 
   private[this] val buffer = new Text()
 
   private val recordWriter: RecordWriter[NullWritable, Text] = {
     new TextOutputFormat[NullWritable, Text]() {
       override def getDefaultWorkFile(
-          context: TaskAttemptContext, extension: String): Path = {
+          context: TaskAttemptContext,
+          extension: String
+      ): Path = {
         val configuration = context.getConfiguration
         val uniqueWriteJobId =
           configuration.get("spark.sql.sources.writeJobUUID")
         val taskAttemptId = context.getTaskAttemptID
-        val split = taskAttemptId.getTaskID.getId
+        val split         = taskAttemptId.getTaskID.getId
         new Path(path, f"part-r-$split%05d-$uniqueWriteJobId$extension")
       }
     }.getRecordWriter(context)
   }
 
   override def write(row: Row): Unit = {
-    val label = row.get(0)
+    val label  = row.get(0)
     val vector = row.get(1).asInstanceOf[Vector]
-    val sb = new StringBuilder(label.toString)
+    val sb     = new StringBuilder(label.toString)
     vector.foreachActive {
       case (i, v) =>
         sb += ' '
@@ -70,9 +74,8 @@ private[libsvm] class LibSVMOutputWriter(
     recordWriter.write(NullWritable.get(), buffer)
   }
 
-  override def close(): Unit = {
+  override def close(): Unit =
     recordWriter.close(context)
-  }
 }
 
 /**
@@ -111,39 +114,48 @@ class DefaultSource extends FileFormat with DataSourceRegister {
   @Since("1.6.0")
   override def shortName(): String = "libsvm"
 
-  private def verifySchema(dataSchema: StructType): Unit = {
+  private def verifySchema(dataSchema: StructType): Unit =
     if (dataSchema.size != 2 ||
         (!dataSchema(0).dataType.sameType(DataTypes.DoubleType) ||
-            !dataSchema(1).dataType.sameType(new VectorUDT()))) {
+        !dataSchema(1).dataType.sameType(new VectorUDT()))) {
       throw new IOException(
-          s"Illegal schema for libsvm data, schema=${dataSchema}")
+        s"Illegal schema for libsvm data, schema=${dataSchema}"
+      )
     }
-  }
-  override def inferSchema(sqlContext: SQLContext,
-                           options: Map[String, String],
-                           files: Seq[FileStatus]): Option[StructType] = {
+  override def inferSchema(
+      sqlContext: SQLContext,
+      options: Map[String, String],
+      files: Seq[FileStatus]
+  ): Option[StructType] =
     Some(
-        StructType(
-            StructField("label", DoubleType, nullable = false) :: StructField(
-                "features", new VectorUDT(), nullable = false) :: Nil))
-  }
+      StructType(
+        StructField("label", DoubleType, nullable = false) :: StructField(
+          "features",
+          new VectorUDT(),
+          nullable = false
+        ) :: Nil
+      )
+    )
 
-  override def prepareWrite(sqlContext: SQLContext,
-                            job: Job,
-                            options: Map[String, String],
-                            dataSchema: StructType): OutputWriterFactory = {
+  override def prepareWrite(
+      sqlContext: SQLContext,
+      job: Job,
+      options: Map[String, String],
+      dataSchema: StructType
+  ): OutputWriterFactory =
     new OutputWriterFactory {
-      override def newInstance(path: String,
-                               bucketId: Option[Int],
-                               dataSchema: StructType,
-                               context: TaskAttemptContext): OutputWriter = {
+      override def newInstance(
+          path: String,
+          bucketId: Option[Int],
+          dataSchema: StructType,
+          context: TaskAttemptContext
+      ): OutputWriter = {
         if (bucketId.isDefined) {
           sys.error("LibSVM doesn't support bucketing")
         }
         new LibSVMOutputWriter(path, dataSchema, context)
       }
     }
-  }
 
   override def buildInternalScan(
       sqlContext: SQLContext,
@@ -153,7 +165,8 @@ class DefaultSource extends FileFormat with DataSourceRegister {
       bucketSet: Option[BitSet],
       inputFiles: Seq[FileStatus],
       broadcastedConf: Broadcast[SerializableConfiguration],
-      options: Map[String, String]): RDD[InternalRow] = {
+      options: Map[String, String]
+  ): RDD[InternalRow] = {
     // TODO: This does not handle cases where column pruning has been performed.
 
     verifySchema(dataSchema)
@@ -165,20 +178,23 @@ class DefaultSource extends FileFormat with DataSourceRegister {
         throw new IOException("No input path specified for libsvm data")
       else
         throw new IOException(
-            "Multiple input paths are not supported for libsvm data.")
+          "Multiple input paths are not supported for libsvm data."
+        )
 
     val numFeatures = options.getOrElse("numFeatures", "-1").toInt
-    val vectorType = options.getOrElse("vectorType", "sparse")
+    val vectorType  = options.getOrElse("vectorType", "sparse")
 
-    val sc = sqlContext.sparkContext
+    val sc      = sqlContext.sparkContext
     val baseRdd = MLUtils.loadLibSVMFile(sc, path, numFeatures)
-    val sparse = vectorType == "sparse"
-    baseRdd.map { pt =>
-      val features = if (sparse) pt.features.toSparse else pt.features.toDense
-      Row(pt.label, features)
-    }.mapPartitions { externalRows =>
-      val converter = RowEncoder(dataSchema)
-      externalRows.map(converter.toRow)
-    }
+    val sparse  = vectorType == "sparse"
+    baseRdd
+      .map { pt =>
+        val features = if (sparse) pt.features.toSparse else pt.features.toDense
+        Row(pt.label, features)
+      }
+      .mapPartitions { externalRows =>
+        val converter = RowEncoder(dataSchema)
+        externalRows.map(converter.toRow)
+      }
   }
 }

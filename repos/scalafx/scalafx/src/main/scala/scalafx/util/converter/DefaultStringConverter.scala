@@ -32,11 +32,15 @@ import scala.language.implicitConversions
 
 object DefaultStringConverter {
   implicit def sfxDefaultStringConverter2jfx(
-      c: DefaultStringConverter): jfxuc.DefaultStringConverter =
+      c: DefaultStringConverter
+  ): jfxuc.DefaultStringConverter =
     if (c != null) c.delegate else null
 }
 
 class DefaultStringConverter(
-    delegate: jfxuc.DefaultStringConverter = new jfxuc.DefaultStringConverter)
-    extends StringConverterDelegate[
-        java.lang.String, String, jfxuc.DefaultStringConverter](delegate)
+    delegate: jfxuc.DefaultStringConverter = new jfxuc.DefaultStringConverter
+) extends StringConverterDelegate[
+      java.lang.String,
+      String,
+      jfxuc.DefaultStringConverter
+    ](delegate)

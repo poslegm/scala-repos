@@ -44,10 +44,11 @@ object Intrinsics {
   case class CharsWhile(pred: Char => Boolean, min: Int = 1)
       extends Parser[Unit] {
     private[this] val uberSet = CharBitSet(
-        (Char.MinValue to Char.MaxValue).filter(pred))
+      (Char.MinValue to Char.MaxValue).filter(pred)
+    )
 
     def parseRec(cfg: ParseCtx, index: Int) = {
-      var curr = index
+      var curr  = index
       val input = cfg.input
       while (curr < input.length && uberSet(input(curr))) curr += 1
       if (curr - index < min) fail(cfg.failure, curr)
@@ -70,8 +71,7 @@ object Intrinsics {
         success(cfg.success, (), index + length + 1, Set.empty, false)
       else fail(cfg.failure, index)
     }
-    override def toString = {
+    override def toString =
       s"StringIn(${strings.map(literalize(_)).mkString(", ")})"
-    }
   }
 }

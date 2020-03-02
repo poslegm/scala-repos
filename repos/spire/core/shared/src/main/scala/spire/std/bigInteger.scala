@@ -3,23 +3,32 @@ package std
 
 import java.math.BigInteger
 
-import spire.algebra.{EuclideanRing, IsIntegral, MetricSpace, NRoot, Order, Signed}
+import spire.algebra.{
+  EuclideanRing,
+  IsIntegral,
+  MetricSpace,
+  NRoot,
+  Order,
+  Signed
+}
 
 trait BigIntegerIsEuclideanRing extends EuclideanRing[BigInteger] {
   override def minus(a: BigInteger, b: BigInteger): BigInteger = a subtract b
-  def negate(a: BigInteger): BigInteger = a.negate
-  def one: BigInteger = BigInteger.ONE
-  def plus(a: BigInteger, b: BigInteger): BigInteger = a add b
-  override def pow(a: BigInteger, b: Int): BigInteger = a pow b
+  def negate(a: BigInteger): BigInteger                        = a.negate
+  def one: BigInteger                                          = BigInteger.ONE
+  def plus(a: BigInteger, b: BigInteger): BigInteger           = a add b
+  override def pow(a: BigInteger, b: Int): BigInteger          = a pow b
   override def times(a: BigInteger, b: BigInteger): BigInteger = a multiply b
-  def zero: BigInteger = BigInteger.ZERO
+  def zero: BigInteger                                         = BigInteger.ZERO
 
   override def fromInt(n: Int): BigInteger = BigInteger.valueOf(n)
 
   def quot(a: BigInteger, b: BigInteger): BigInteger = a divide b
-  def mod(a: BigInteger, b: BigInteger): BigInteger = a remainder b
+  def mod(a: BigInteger, b: BigInteger): BigInteger  = a remainder b
   override def quotmod(
-      a: BigInteger, b: BigInteger): (BigInteger, BigInteger) = {
+      a: BigInteger,
+      b: BigInteger
+  ): (BigInteger, BigInteger) = {
     val Array(d, r) = a.divideAndRemainder(b)
     (d, r)
   }
@@ -33,7 +42,8 @@ trait BigIntegerIsNRoot extends NRoot[BigInteger] {
       nroot(a.negate, k).negate
     } else if (a.signum < 0) {
       throw new ArithmeticException(
-          "Cannot find %d-root of negative number." format k)
+        "Cannot find %d-root of negative number." format k
+      )
     } else {
       def findNroot(b: BigInteger, i: Int): BigInteger =
         if (i < 0) {
@@ -52,9 +62,9 @@ trait BigIntegerIsNRoot extends NRoot[BigInteger] {
 }
 
 trait BigIntegerOrder extends Order[BigInteger] {
-  override def eqv(x: BigInteger, y: BigInteger): Boolean = x equals y
+  override def eqv(x: BigInteger, y: BigInteger): Boolean  = x equals y
   override def neqv(x: BigInteger, y: BigInteger): Boolean = !(x equals y)
-  override def gt(x: BigInteger, y: BigInteger): Boolean = (x compareTo y) > 0
+  override def gt(x: BigInteger, y: BigInteger): Boolean   = (x compareTo y) > 0
   override def gteqv(x: BigInteger, y: BigInteger): Boolean =
     (x compareTo y) >= 0
   override def lt(x: BigInteger, y: BigInteger): Boolean = (x compareTo y) < 0
@@ -62,16 +72,18 @@ trait BigIntegerOrder extends Order[BigInteger] {
     (x compareTo y) <= 0
   override def min(x: BigInteger, y: BigInteger): BigInteger = x min y
   override def max(x: BigInteger, y: BigInteger): BigInteger = x max y
-  def compare(x: BigInteger, y: BigInteger): Int = x compareTo y
+  def compare(x: BigInteger, y: BigInteger): Int             = x compareTo y
 }
 
 trait BigIntegerIsSigned extends Signed[BigInteger] {
-  def signum(a: BigInteger): Int = a.signum
+  def signum(a: BigInteger): Int     = a.signum
   def abs(a: BigInteger): BigInteger = a.abs
 }
 
 trait BigIntegerIsReal
-    extends IsIntegral[BigInteger] with BigIntegerOrder with BigIntegerIsSigned
+    extends IsIntegral[BigInteger]
+    with BigIntegerOrder
+    with BigIntegerIsSigned
     with Serializable {
   def toDouble(n: BigInteger): Double = n.doubleValue
   def toBigInt(n: BigInteger): BigInt = n
@@ -83,8 +95,11 @@ trait BigIntegerIsMetricSpace extends MetricSpace[BigInteger, BigInteger] {
 
 @SerialVersionUID(0L)
 class BigIntegerAlgebra
-    extends BigIntegerIsEuclideanRing with BigIntegerIsNRoot
-    with BigIntegerIsMetricSpace with BigIntegerIsReal with Serializable
+    extends BigIntegerIsEuclideanRing
+    with BigIntegerIsNRoot
+    with BigIntegerIsMetricSpace
+    with BigIntegerIsReal
+    with Serializable
 
 trait BigIntegerInstances {
   implicit final val BigIntegerAlgebra = new BigIntegerAlgebra

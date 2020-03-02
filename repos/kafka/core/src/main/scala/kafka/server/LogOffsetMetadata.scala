@@ -20,13 +20,12 @@ import org.apache.kafka.common.KafkaException
 
 object LogOffsetMetadata {
   val UnknownOffsetMetadata = new LogOffsetMetadata(-1, 0, 0)
-  val UnknownSegBaseOffset = -1L
-  val UnknownFilePosition = -1
+  val UnknownSegBaseOffset  = -1L
+  val UnknownFilePosition   = -1
 
   class OffsetOrdering extends Ordering[LogOffsetMetadata] {
-    override def compare(x: LogOffsetMetadata, y: LogOffsetMetadata): Int = {
+    override def compare(x: LogOffsetMetadata, y: LogOffsetMetadata): Int =
       x.offsetDiff(y).toInt
-    }
   }
 }
 
@@ -39,13 +38,15 @@ object LogOffsetMetadata {
 case class LogOffsetMetadata(
     messageOffset: Long,
     segmentBaseOffset: Long = LogOffsetMetadata.UnknownSegBaseOffset,
-    relativePositionInSegment: Int = LogOffsetMetadata.UnknownFilePosition) {
+    relativePositionInSegment: Int = LogOffsetMetadata.UnknownFilePosition
+) {
 
   // check if this offset is already on an older segment compared with the given offset
   def onOlderSegment(that: LogOffsetMetadata): Boolean = {
     if (messageOffsetOnly())
       throw new KafkaException(
-          s"$this cannot compare its segment info with $that since it only has message offset info")
+        s"$this cannot compare its segment info with $that since it only has message offset info"
+      )
 
     this.segmentBaseOffset < that.segmentBaseOffset
   }
@@ -54,36 +55,37 @@ case class LogOffsetMetadata(
   def onSameSegment(that: LogOffsetMetadata): Boolean = {
     if (messageOffsetOnly())
       throw new KafkaException(
-          s"$this cannot compare its segment info with $that since it only has message offset info")
+        s"$this cannot compare its segment info with $that since it only has message offset info"
+      )
 
     this.segmentBaseOffset == that.segmentBaseOffset
   }
 
   // compute the number of messages between this offset to the given offset
-  def offsetDiff(that: LogOffsetMetadata): Long = {
+  def offsetDiff(that: LogOffsetMetadata): Long =
     this.messageOffset - that.messageOffset
-  }
 
   // compute the number of bytes between this offset to the given offset
   // if they are on the same segment and this offset precedes the given offset
   def positionDiff(that: LogOffsetMetadata): Int = {
     if (!onSameSegment(that))
       throw new KafkaException(
-          s"$this cannot compare its segment position with $that since they are not on the same segment")
+        s"$this cannot compare its segment position with $that since they are not on the same segment"
+      )
     if (messageOffsetOnly())
       throw new KafkaException(
-          s"$this cannot compare its segment position with $that since it only has message offset info")
+        s"$this cannot compare its segment position with $that since it only has message offset info"
+      )
 
     this.relativePositionInSegment - that.relativePositionInSegment
   }
 
   // decide if the offset metadata only contains message offset info
-  def messageOffsetOnly(): Boolean = {
+  def messageOffsetOnly(): Boolean =
     segmentBaseOffset == LogOffsetMetadata.UnknownSegBaseOffset &&
-    relativePositionInSegment == LogOffsetMetadata.UnknownFilePosition
-  }
+      relativePositionInSegment == LogOffsetMetadata.UnknownFilePosition
 
   override def toString =
     messageOffset.toString + " [" + segmentBaseOffset + " : " +
-    relativePositionInSegment + "]"
+      relativePositionInSegment + "]"
 }

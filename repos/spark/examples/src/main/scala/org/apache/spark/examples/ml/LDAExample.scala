@@ -41,8 +41,8 @@ object LDAExample {
 
     val input = "data/mllib/sample_lda_data.txt"
     // Creates a Spark context and a SQL context
-    val conf = new SparkConf().setAppName(s"${this.getClass.getSimpleName}")
-    val sc = new SparkContext(conf)
+    val conf       = new SparkConf().setAppName(s"${this.getClass.getSimpleName}")
+    val sc         = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
 
     // $example on$
@@ -54,12 +54,13 @@ object LDAExample {
       .map(Vectors.dense)
       .map(Row(_))
     val schema = StructType(
-        Array(StructField(FEATURES_COL, new VectorUDT, false)))
+      Array(StructField(FEATURES_COL, new VectorUDT, false))
+    )
     val dataset = sqlContext.createDataFrame(rowRDD, schema)
 
     // Trains a LDA model
-    val lda = new LDA().setK(10).setMaxIter(10).setFeaturesCol(FEATURES_COL)
-    val model = lda.fit(dataset)
+    val lda         = new LDA().setK(10).setMaxIter(10).setFeaturesCol(FEATURES_COL)
+    val model       = lda.fit(dataset)
     val transformed = model.transform(dataset)
 
     val ll = model.logLikelihood(dataset)

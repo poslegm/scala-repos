@@ -11,8 +11,8 @@ package scala
 
 object Product9 {
   def unapply[T1, T2, T3, T4, T5, T6, T7, T8, T9](
-      x: Product9[T1, T2, T3, T4, T5, T6, T7, T8, T9])
-    : Option[Product9[T1, T2, T3, T4, T5, T6, T7, T8, T9]] =
+      x: Product9[T1, T2, T3, T4, T5, T6, T7, T8, T9]
+  ): Option[Product9[T1, T2, T3, T4, T5, T6, T7, T8, T9]] =
     Some(x)
 }
 
@@ -20,7 +20,8 @@ object Product9 {
   *  @since 2.3
   */
 trait Product9[+T1, +T2, +T3, +T4, +T5, +T6, +T7, +T8, +T9]
-    extends Any with Product {
+    extends Any
+    with Product {
 
   /** The arity of this product.
     *  @return 9

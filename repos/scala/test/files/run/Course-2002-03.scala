@@ -51,9 +51,9 @@ object M1 {
 object M2 {
   class Rational(x: Int, y: Int) {
     private def gcd(a: Int, b: Int): Int = if (b == 0) a else gcd(b, a % b);
-    private val g = gcd(x, y);
-    def numer = x / g;
-    def denom = y / g;
+    private val g                        = gcd(x, y);
+    def numer                            = x / g;
+    def denom                            = y / g;
     def add(r: Rational) =
       new Rational(numer * r.denom + r.numer * denom, denom * r.denom);
     def sub(r: Rational) =
@@ -80,8 +80,8 @@ object M2 {
 object M3 {
   class Rational(x: Int, y: Int) {
     private def gcd(a: Int, b: Int): Int = if (b == 0) a else gcd(b, a % b);
-    def numer = x / gcd(x, y);
-    def denom = y / gcd(x, y);
+    def numer                            = x / gcd(x, y);
+    def denom                            = y / gcd(x, y);
     def less(that: Rational) =
       this.numer * that.denom < that.numer * this.denom;
     def max(that: Rational) = if (this.less(that)) that else this;
@@ -102,9 +102,9 @@ object M3 {
 object M4 {
   class Rational(x: Int, y: Int) {
     private def gcd(a: Int, b: Int): Int = if (b == 0) a else gcd(b, a % b);
-    private val g = gcd(x, y);
-    def numer = x / g;
-    def denom = y / g;
+    private val g                        = gcd(x, y);
+    def numer                            = x / g;
+    def denom                            = y / g;
     def +(r: Rational) =
       new Rational(numer * r.denom + r.numer * denom, denom * r.denom);
     def -(r: Rational) =
@@ -132,7 +132,7 @@ object M5 {
 
   class Empty extends IntSet {
     def contains(x: Int): Boolean = false;
-    def incl(x: Int): IntSet = new NonEmpty(x, new Empty, new Empty);
+    def incl(x: Int): IntSet      = new NonEmpty(x, new Empty, new Empty);
   }
 
   class NonEmpty(elem: Int, left: IntSet, right: IntSet) extends IntSet {
@@ -167,8 +167,8 @@ object M6 {
 
     // !!! def == (x: Boolean): Boolean = ifThenElse[Boolean](x)(x.!);
     // !!! def != (x: Boolean): Boolean = ifThenElse[Boolean](x.!)(x);
-    def <(x: Boolean): Boolean = ifThenElse[Boolean](new False())(x);
-    def >(x: Boolean): Boolean = ifThenElse[Boolean](x.!)(new False());
+    def <(x: Boolean): Boolean  = ifThenElse[Boolean](new False())(x);
+    def >(x: Boolean): Boolean  = ifThenElse[Boolean](x.!)(new False());
     def <=(x: Boolean): Boolean = ifThenElse[Boolean](x)(new True());
     def >=(x: Boolean): Boolean = ifThenElse[Boolean](new True())(x.!);
   }
@@ -207,8 +207,8 @@ object M8 {
     def intersect0(that: IntSet, accu: IntSet): IntSet;
     def filter0(f: Int => Boolean, accu: IntSet): IntSet;
 
-    def intersect(that: IntSet): IntSet = intersect0(that, new Empty);
-    def intersect2(that: IntSet): IntSet = filter(x => that.contains(x));
+    def intersect(that: IntSet): IntSet   = intersect0(that, new Empty);
+    def intersect2(that: IntSet): IntSet  = filter(x => that.contains(x));
     def filter(f: Int => Boolean): IntSet = filter0(f, new Empty);
 
     def print() = foreach(Console.println);
@@ -216,13 +216,11 @@ object M8 {
     override def toString(): String = {
       val buffer: StringBuilder = new StringBuilder();
       buffer.append('[');
-      foreach(
-          i =>
-            {
-          if (buffer.length > 1) { buffer.append(','); () }; // !!! ; ()
-          buffer.append(i);
-          ()
-      });
+      foreach { i =>
+        if (buffer.length > 1) { buffer.append(','); () }; // !!! ; ()
+        buffer.append(i);
+        ()
+      };
       buffer.append(']');
       buffer.toString();
     }
@@ -230,12 +228,12 @@ object M8 {
 
   class Empty extends IntSet {
     // !!! class Empty() -> object Empty
-    def contains(x: Int): Boolean = false;
-    def incl(x: Int): IntSet = new NonEmpty(x, new Empty, new Empty);
+    def contains(x: Int): Boolean  = false;
+    def incl(x: Int): IntSet       = new NonEmpty(x, new Empty, new Empty);
     def map(f: Int => Int): IntSet = this;
 
-    def foreach(f: Int => Unit): Unit = ();
-    def intersect0(that: IntSet, accu: IntSet): IntSet = accu;
+    def foreach(f: Int => Unit): Unit                    = ();
+    def intersect0(that: IntSet, accu: IntSet): IntSet   = accu;
     def filter0(f: Int => Boolean, accu: IntSet): IntSet = accu;
   }
 
@@ -264,13 +262,13 @@ object M8 {
 
     def intersect0(that: IntSet, accu: IntSet): IntSet =
       right.intersect0(
-          that,
-          left.intersect0(
-              that, if (that.contains(elem)) accu.incl(elem) else accu));
+        that,
+        left
+          .intersect0(that, if (that.contains(elem)) accu.incl(elem) else accu)
+      );
 
     def filter0(f: Int => Boolean, accu: IntSet): IntSet =
-      right.filter0(
-          f, left.filter0(f, if (f(elem)) accu.incl(elem) else accu));
+      right.filter0(f, left.filter0(f, if (f(elem)) accu.incl(elem) else accu));
   }
 
   def test = {
@@ -327,9 +325,9 @@ object M8 {
 object M9 {
   class Rational(x: Int, y: Int) {
     private def gcd(a: Int, b: Int): Int = if (b == 0) a else gcd(b, a % b);
-    private val g = gcd(x, y);
-    def numer = x / g;
-    def denom = y / g;
+    private val g                        = gcd(x, y);
+    def numer                            = x / g;
+    def denom                            = y / g;
     def add(r: Rational) =
       new Rational(numer * r.denom + r.numer * denom, denom * r.denom);
     def sub(r: Rational) =
@@ -338,7 +336,7 @@ object M9 {
       new Rational(numer * r.numer, denom * r.denom);
     def equal(r: Rational) =
       new Rational(numer * r.denom, denom * r.numer);
-    def asString = numer.toString().concat("/").concat(denom.toString());
+    def asString            = numer.toString().concat("/").concat(denom.toString());
     override def toString() = asString;
   }
 

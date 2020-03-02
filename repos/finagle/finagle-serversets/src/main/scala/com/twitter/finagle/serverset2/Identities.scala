@@ -38,8 +38,8 @@ trait Identity {
   * `priority`: 99
   */
 class UserIdentity extends Identity {
-  val scheme = "user"
-  val id = Some(System.getProperty("user.name"))
+  val scheme   = "user"
+  val id       = Some(System.getProperty("user.name"))
   val priority = 99
 }
 
@@ -51,7 +51,7 @@ class UserIdentity extends Identity {
 private[finagle] object Identities {
   private def filter(c: Identity): Option[String] = c.id match {
     case Some(id) => Some("/%s/%s".format(c.scheme, id))
-    case _ => None
+    case _        => None
   }
 
   /**
@@ -59,7 +59,6 @@ private[finagle] object Identities {
     *
     * @return a Sequence of Identities presented as "/scheme/id"
     */
-  def get(): Seq[String] = {
+  def get(): Seq[String] =
     LoadService[Identity]().sortBy(_.priority).flatMap(filter)
-  }
 }

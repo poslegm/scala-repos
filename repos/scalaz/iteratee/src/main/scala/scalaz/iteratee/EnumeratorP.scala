@@ -6,7 +6,7 @@ import Enumeratee2T._
 
 import scala.annotation.tailrec
 
-trait ForallM[P[_ [_]]] {
+trait ForallM[P[_[_]]] {
   def apply[F[_]: Monad]: P[F]
 }
 
@@ -69,8 +69,9 @@ abstract class EnumeratorP[E, F[_]] { self =>
       }
     }
 
-  def join(other: EnumeratorP[E, F])(
-      implicit order: Order[E], m: Monad[F]): EnumeratorP[(E, E), F] =
+  def join(
+      other: EnumeratorP[E, F]
+  )(implicit order: Order[E], m: Monad[F]): EnumeratorP[(E, E), F] =
     EnumeratorP.joinE[E, E, F](m, order.order).apply(self, other)
 
   def merge(other: EnumeratorP[E, F])(implicit ord: Order[E], m: Monad[F]) =
@@ -95,18 +96,21 @@ trait EnumeratorPFunctions {
   def enumPStream[E, F[_]: Monad](xs: Stream[E]): EnumeratorP[E, F] =
     new EnumeratorP[E, F] {
       def apply[G[_]](
-          implicit MO: MonadPartialOrder[G, F]): EnumeratorT[E, G] = {
+          implicit MO: MonadPartialOrder[G, F]
+      ): EnumeratorT[E, G] = {
         import MO._
         enumStream[E, G](xs)
       }
     }
 
-  def liftE2[J, K, I, F[_]](e2t: ForallM[λ[β[_] => Enumeratee2T[J, K, I, β]]])
-    : (EnumeratorP[J, F], EnumeratorP[K, F]) => EnumeratorP[I, F] = {
+  def liftE2[J, K, I, F[_]](
+      e2t: ForallM[λ[β[_] => Enumeratee2T[J, K, I, β]]]
+  ): (EnumeratorP[J, F], EnumeratorP[K, F]) => EnumeratorP[I, F] = {
     (e1: EnumeratorP[J, F], e2: EnumeratorP[K, F]) =>
       new EnumeratorP[I, F] {
         def apply[G[_]](
-            implicit MO: MonadPartialOrder[G, F]): EnumeratorT[I, G] =
+            implicit MO: MonadPartialOrder[G, F]
+        ): EnumeratorT[I, G] =
           new EnumeratorT[I, G] {
             import MO._
             implicit val IOrd =
@@ -135,25 +139,28 @@ trait EnumeratorPFunctions {
       }
     }
 
-  def mergeE[E : Order, F[_]: Monad] = liftE2[E, E, E, F] {
+  def mergeE[E: Order, F[_]: Monad] = liftE2[E, E, E, F] {
     new ForallM[λ[β[_] => Enumeratee2T[E, E, E, β]]] {
       def apply[G[_]: Monad] = mergeI[E, G]
     }
   }
 
-  def mergeAll[E : Order, F[_]: Monad](
-      enumerators: EnumeratorP[E, F]*): EnumeratorP[E, F] = {
+  def mergeAll[E: Order, F[_]: Monad](
+      enumerators: EnumeratorP[E, F]*
+  ): EnumeratorP[E, F] = {
     @tailrec
     def mergeOne(
-        e: EnumeratorP[E, F], es: List[EnumeratorP[E, F]]): EnumeratorP[E, F] =
+        e: EnumeratorP[E, F],
+        es: List[EnumeratorP[E, F]]
+    ): EnumeratorP[E, F] =
       es match {
         case x :: xs => mergeOne(e merge x, xs)
-        case Nil => e
+        case Nil     => e
       }
 
     enumerators.toList match {
       case x :: xs => mergeOne(x, xs)
-      case Nil => empty[E, F]
+      case Nil     => empty[E, F]
     }
   }
 }

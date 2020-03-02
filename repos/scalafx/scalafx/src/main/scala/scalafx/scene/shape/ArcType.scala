@@ -36,7 +36,7 @@ object ArcType extends SFXEnumDelegateCompanion[jfxss.ArcType, ArcType] {
 
   val Open = new ArcType(jfxss.ArcType.OPEN)
   @deprecated("Use Open; OPEN will be removed in a future release", "2.2.60")
-  val OPEN = Open
+  val OPEN  = Open
   val Chord = new ArcType(jfxss.ArcType.CHORD)
   @deprecated("Use Chord; CHORD will be removed in a future release", "2.2.60")
   val CHORD = Chord

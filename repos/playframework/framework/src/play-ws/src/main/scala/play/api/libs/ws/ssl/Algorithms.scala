@@ -66,7 +66,7 @@ object Algorithms {
   /**
     * Returns the keySize of the given key, or None if no key exists.
     */
-  def keySize(key: java.security.Key): Option[Int] = {
+  def keySize(key: java.security.Key): Option[Int] =
     key match {
       case sk: SecretKey =>
         if ((sk.getFormat == "RAW") && sk.getEncoded != null) {
@@ -88,16 +88,16 @@ object Algorithms {
       case unknownKey =>
         try {
           val lengthMethod = unknownKey.getClass.getMethod("length")
-          val l = lengthMethod.invoke(unknownKey).asInstanceOf[Integer]
+          val l            = lengthMethod.invoke(unknownKey).asInstanceOf[Integer]
           if (l >= 0) Some(l) else None
         } catch {
           case _: Throwable =>
             throw new IllegalStateException(
-                s"unknown key ${key.getClass.getName}")
+              s"unknown key ${key.getClass.getName}"
+            )
         }
       // None
     }
-  }
 
   def getKeyAlgorithmName(pubk: Key): String = {
     val name = pubk.getAlgorithm
@@ -107,20 +107,20 @@ object Algorithms {
   def translateKey(pubk: Key): Key = {
     val keyAlgName = getKeyAlgorithmName(pubk)
     foldVersion(
-        run16 = {
-          keyAlgName match {
-            case "EC" =>
-              // If we are on 1.6, then we can't use the EC factory and have to pull it directly.
-              translateECKey(pubk)
-            case _ =>
-              val keyFactory = KeyFactory.getInstance(keyAlgName)
-              keyFactory.translateKey(pubk)
-          }
-        },
-        runHigher = {
-          val keyFactory = KeyFactory.getInstance(keyAlgName)
-          keyFactory.translateKey(pubk)
+      run16 = {
+        keyAlgName match {
+          case "EC" =>
+            // If we are on 1.6, then we can't use the EC factory and have to pull it directly.
+            translateECKey(pubk)
+          case _ =>
+            val keyFactory = KeyFactory.getInstance(keyAlgName)
+            keyFactory.translateKey(pubk)
         }
+      },
+      runHigher = {
+        val keyFactory = KeyFactory.getInstance(keyAlgName)
+        keyFactory.translateKey(pubk)
+      }
     )
   }
 
@@ -152,10 +152,10 @@ object Algorithms {
       throw new IllegalArgumentException("Null or blank algorithm found!")
     }
 
-    val withAndPattern = new scala.util.matching.Regex("(?i)with|and")
+    val withAndPattern        = new scala.util.matching.Regex("(?i)with|and")
     val tokens: Array[String] = "/".r.split(algorithm)
     val elements = (for {
-      t <- tokens
+      t    <- tokens
       name <- withAndPattern.split(t)
     } yield {
       name
@@ -212,14 +212,15 @@ case class MoreThanOrEqual(x: Int) extends ExpressionSymbol {
 }
 
 case class AlgorithmConstraint(
-    algorithm: String, constraint: Option[ExpressionSymbol] = None) {
+    algorithm: String,
+    constraint: Option[ExpressionSymbol] = None
+) {
 
   /**
     * Returns true only if the algorithm matches.  Useful for signature algorithms where we don't care about key size.
     */
-  def matches(algorithm: String): Boolean = {
+  def matches(algorithm: String): Boolean =
     this.algorithm.equalsIgnoreCase(algorithm)
-  }
 
   /**
     * Returns true if the algorithm name matches, and if there's a keySize constraint, will match on that as well.
@@ -238,9 +239,8 @@ case class AlgorithmConstraint(
     }
   }
 
-  override def toString = {
+  override def toString =
     algorithm + constraint.getOrElse("")
-  }
 }
 
 /**
@@ -258,7 +258,8 @@ object AlgorithmConstraintsParser extends RegexParsers {
         result
       case NoSuccess(message, _) =>
         throw new IllegalArgumentException(
-            s"Cannot parse string $input: $message")
+          s"Cannot parse string $input: $message"
+        )
     }
 
   def expression: Parser[AlgorithmConstraint] =
@@ -293,11 +294,7 @@ object AlgorithmConstraintsParser extends RegexParsers {
 
   def operator: Parser[String] = "<=" | "<" | "==" | "!=" | ">=" | ">"
 
-  def decimalInteger: Parser[Int] = """\d+""".r ^^ { f =>
-    f.toInt
-  }
+  def decimalInteger: Parser[Int] = """\d+""".r ^^ { f => f.toInt }
 
-  def algorithm: Parser[String] = """\w+""".r ^^ { f =>
-    f.toString
-  }
+  def algorithm: Parser[String] = """\w+""".r ^^ { f => f.toString }
 }

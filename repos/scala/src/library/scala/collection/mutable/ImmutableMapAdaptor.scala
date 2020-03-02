@@ -24,10 +24,13 @@ import scala.annotation.migration
   *  @since   1
   */
 @deprecated(
-    "Adaptors are inherently unreliable and prone to performance problems.",
-    "2.11.0")
+  "Adaptors are inherently unreliable and prone to performance problems.",
+  "2.11.0"
+)
 class ImmutableMapAdaptor[A, B](protected var imap: immutable.Map[A, B])
-    extends AbstractMap[A, B] with Map[A, B] with Serializable {
+    extends AbstractMap[A, B]
+    with Map[A, B]
+    with Serializable {
 
   override def size: Int = imap.size
 
@@ -57,15 +60,14 @@ class ImmutableMapAdaptor[A, B](protected var imap: immutable.Map[A, B])
 
   override def toList: List[(A, B)] = imap.toList
 
-  override def update(key: A, value: B): Unit = {
+  override def update(key: A, value: B): Unit =
     imap = imap.updated(key, value)
-  }
 
   def -=(key: A): this.type = { imap = imap - key; this }
 
   def +=(kv: (A, B)): this.type = { imap = imap + kv; this }
 
-  override def clear(): Unit = { imap = imap.empty }
+  override def clear(): Unit = imap = imap.empty
 
   override def transform(f: (A, B) => B): this.type = {
     imap = imap.transform(f); this

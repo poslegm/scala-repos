@@ -53,7 +53,8 @@ object CheckBoxListCell {
     * @param cell ScalaFX $CBLC
     */
   implicit def sfxCheckBoxListCell2jfx[T](
-      cell: CheckBoxListCell[T]): jfxscc.CheckBoxListCell[T] =
+      cell: CheckBoxListCell[T]
+  ): jfxscc.CheckBoxListCell[T] =
     if (cell != null) cell.delegate else null
 
   /**
@@ -62,8 +63,8 @@ object CheckBoxListCell {
     * @param selectedProperty $SP
     */
   def forListView[T](
-      selectedProperty: T => ObservableValue[Boolean, java.lang.Boolean])
-    : (ListView[T] => ListCell[T]) = { (view: ListView[T]) =>
+      selectedProperty: T => ObservableValue[Boolean, java.lang.Boolean]
+  ): (ListView[T] => ListCell[T]) = { (view: ListView[T]) =>
     jfxscc.CheckBoxListCell.forListView(selectedProperty).call(view)
   }
 
@@ -71,10 +72,15 @@ object CheckBoxListCell {
     * Added to satisfy Spec tests.
     */
   @deprecated(
-      message = "Use forListView[T](T => ObservableValue[Boolean, java.lang.Boolean])",
-      since = "1.0")
-  def forListView[T](getSelectedProperty: jfxu.Callback[
-          T, jfxbv.ObservableValue[java.lang.Boolean]]) =
+    message =
+      "Use forListView[T](T => ObservableValue[Boolean, java.lang.Boolean])",
+    since = "1.0"
+  )
+  def forListView[T](
+      getSelectedProperty: jfxu.Callback[T, jfxbv.ObservableValue[
+        java.lang.Boolean
+      ]]
+  ) =
     jfxscc.CheckBoxListCell.forListView(getSelectedProperty)
 
   /**
@@ -85,22 +91,27 @@ object CheckBoxListCell {
     */
   def forListView[T](
       selectedProperty: T => ObservableValue[Boolean, java.lang.Boolean],
-      converter: StringConverter[T]): (ListView[T] => ListCell[T]) = {
-    (view: ListView[T]) =>
-      jfxscc.CheckBoxListCell
-        .forListView(selectedProperty, converter)
-        .call(view)
+      converter: StringConverter[T]
+  ): (ListView[T] => ListCell[T]) = { (view: ListView[T]) =>
+    jfxscc.CheckBoxListCell
+      .forListView(selectedProperty, converter)
+      .call(view)
   }
 
   /**
     * Added to satisfy Spec tests.
     */
   @deprecated(
-      message = "Use forListView[T](T => ObservableValue[Boolean, java.lang.Boolean])",
-      since = "1.0")
-  def forListView[T](getSelectedProperty: jfxu.Callback[
-                         T, jfxbv.ObservableValue[java.lang.Boolean]],
-                     converter: jfxu.StringConverter[T]) =
+    message =
+      "Use forListView[T](T => ObservableValue[Boolean, java.lang.Boolean])",
+    since = "1.0"
+  )
+  def forListView[T](
+      getSelectedProperty: jfxu.Callback[T, jfxbv.ObservableValue[
+        java.lang.Boolean
+      ]],
+      converter: jfxu.StringConverter[T]
+  ) =
     jfxscc.CheckBoxListCell.forListView(getSelectedProperty, converter)
 }
 
@@ -115,9 +126,9 @@ object CheckBoxListCell {
   * @define SP Function that takes a T instance and return a obsevable boolean.
   */
 class CheckBoxListCell[T](
-    override val delegate: jfxscc.CheckBoxListCell[T] = new jfxscc.CheckBoxListCell[
-          T])
-    extends ListCell[T](delegate)
+    override val delegate: jfxscc.CheckBoxListCell[T] =
+      new jfxscc.CheckBoxListCell[T]
+) extends ListCell[T](delegate)
     with ConvertableCell[jfxscc.CheckBoxListCell[T], T, T]
     with StateSelectableCell[jfxscc.CheckBoxListCell[T], T, T]
     with UpdatableCell[jfxscc.CheckBoxListCell[T], T]
@@ -128,8 +139,7 @@ class CheckBoxListCell[T](
     *
     * @param selectedProperty $SP
     */
-  def this(
-      selectedProperty: T => ObservableValue[Boolean, java.lang.Boolean]) =
+  def this(selectedProperty: T => ObservableValue[Boolean, java.lang.Boolean]) =
     this(new jfxscc.CheckBoxListCell[T](selectedProperty))
 
   /**
@@ -138,7 +148,9 @@ class CheckBoxListCell[T](
     * @param selectedProperty $SP
     * @param converter StringConverter that receives a T instance.
     */
-  def this(selectedProperty: T => ObservableValue[Boolean, java.lang.Boolean],
-           converter: StringConverter[T]) =
+  def this(
+      selectedProperty: T => ObservableValue[Boolean, java.lang.Boolean],
+      converter: StringConverter[T]
+  ) =
     this(new jfxscc.CheckBoxListCell[T](selectedProperty, converter))
 }

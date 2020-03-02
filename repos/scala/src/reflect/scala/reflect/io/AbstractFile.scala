@@ -7,7 +7,13 @@ package scala
 package reflect
 package io
 
-import java.io.{IOException, InputStream, OutputStream, BufferedOutputStream, ByteArrayOutputStream}
+import java.io.{
+  IOException,
+  InputStream,
+  OutputStream,
+  BufferedOutputStream,
+  ByteArrayOutputStream
+}
 import java.io.{File => JFile}
 import java.net.URL
 import scala.reflect.internal.util.Statistics
@@ -24,7 +30,7 @@ object AbstractFile {
 
   /** Returns "getFile(new File(path))". */
   def getFile(path: String): AbstractFile = getFile(File(path))
-  def getFile(path: Path): AbstractFile = getFile(path.toFile)
+  def getFile(path: Path): AbstractFile   = getFile(path.toFile)
 
   /**
     * If the specified File exists and is a regular file, returns an
@@ -100,7 +106,7 @@ abstract class AbstractFile extends Iterable[AbstractFile] {
   def canonicalPath: String = if (file == null) path else file.getCanonicalPath
 
   /** Checks extension case insensitively. */
-  def hasExtension(other: String) = extension == other.toLowerCase
+  def hasExtension(other: String)    = extension == other.toLowerCase
   private lazy val extension: String = Path.extension(name)
 
   /** The absolute file, if this is a relative file. */
@@ -169,7 +175,7 @@ abstract class AbstractFile extends Iterable[AbstractFile] {
     sizeOption match {
       case Some(size) =>
         var rest = size
-        val arr = new Array[Byte](rest)
+        val arr  = new Array[Byte](rest)
         while (rest > 0) {
           val res = in.read(arr, arr.length - rest, rest)
           if (res == -1) throw new IOException("read error")
@@ -179,7 +185,7 @@ abstract class AbstractFile extends Iterable[AbstractFile] {
         arr
       case None =>
         val out = new ByteArrayOutputStream()
-        var c = in.read()
+        var c   = in.read()
         while (c != -1) {
           out.write(c)
           c = in.read()
@@ -207,20 +213,21 @@ abstract class AbstractFile extends Iterable[AbstractFile] {
   /** Return an abstract file that does not check that `path` denotes
     *  an existing file.
     */
-  def lookupPathUnchecked(path: String, directory: Boolean): AbstractFile = {
+  def lookupPathUnchecked(path: String, directory: Boolean): AbstractFile =
     lookup((f, p, dir) => f.lookupNameUnchecked(p, dir), path, directory)
-  }
 
-  private def lookup(getFile: (AbstractFile, String, Boolean) => AbstractFile,
-                     path0: String,
-                     directory: Boolean): AbstractFile = {
+  private def lookup(
+      getFile: (AbstractFile, String, Boolean) => AbstractFile,
+      path0: String,
+      directory: Boolean
+  ): AbstractFile = {
     val separator = java.io.File.separatorChar
     // trim trailing '/'s
     val path: String =
       if (path0.last == separator) path0 dropRight 1 else path0
     val length = path.length()
     assert(length > 0 && !(path.last == separator), path)
-    var file = this
+    var file  = this
     var start = 0
     while (true) {
       val index = path.indexOf(separator, start)
@@ -234,7 +241,9 @@ abstract class AbstractFile extends Iterable[AbstractFile] {
   }
 
   private def fileOrSubdirectoryNamed(
-      name: String, isDir: Boolean): AbstractFile = {
+      name: String,
+      isDir: Boolean
+  ): AbstractFile = {
     val lookup = lookupName(name, isDir)
     if (lookup != null) lookup
     else {
@@ -249,9 +258,10 @@ abstract class AbstractFile extends Iterable[AbstractFile] {
     * creating an empty file if it does not already existing.
     */
   def fileNamed(name: String): AbstractFile = {
-    assert(isDirectory,
-           "Tried to find '%s' in '%s' but it is not a directory".format(
-               name, path))
+    assert(
+      isDirectory,
+      "Tried to find '%s' in '%s' but it is not a directory".format(name, path)
+    )
     fileOrSubdirectoryNamed(name, isDir = false)
   }
 
@@ -260,9 +270,10 @@ abstract class AbstractFile extends Iterable[AbstractFile] {
     * does not already exist.
     */
   def subdirectoryNamed(name: String): AbstractFile = {
-    assert(isDirectory,
-           "Tried to find '%s' in '%s' but it is not a directory".format(
-               name, path))
+    assert(
+      isDirectory,
+      "Tried to find '%s' in '%s' but it is not a directory".format(name, path)
+    )
     fileOrSubdirectoryNamed(name, isDir = true)
   }
 

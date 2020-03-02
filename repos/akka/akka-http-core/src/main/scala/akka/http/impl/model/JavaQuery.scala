@@ -21,7 +21,7 @@ import scala.compat.java8.OptionConverters._
 /** INTERNAL API */
 case class JavaQuery(query: sm.Uri.Query) extends jm.Query {
   override def get(key: String): Optional[String] = query.get(key).asJava
-  override def toMap: ju.Map[String, String] = query.toMap.asJava
+  override def toMap: ju.Map[String, String]      = query.toMap.asJava
   override def toList: ju.List[Pair[String, String]] =
     query.map(_.asJava).asJava
   override def getOrElse(key: String, _default: String): String =
@@ -29,15 +29,17 @@ case class JavaQuery(query: sm.Uri.Query) extends jm.Query {
   override def toMultiMap: ju.Map[String, ju.List[String]] =
     query.toMultiMap.map { case (k, v) ⇒ (k, v.asJava) }.asJava
   override def getAll(key: String): ju.List[String] = query.getAll(key).asJava
-  override def toString = query.toString
+  override def toString                             = query.toString
   override def withParam(key: String, value: String): jm.Query =
     jm.Query.create(query.map(_.asJava) :+ Pair(key, value): _*)
   override def render(charset: HttpCharset): String =
     UriRendering
-      .renderQuery(new StringRendering,
-                   query,
-                   charset.nioCharset,
-                   CharacterClasses.unreserved)
+      .renderQuery(
+        new StringRendering,
+        query,
+        charset.nioCharset,
+        CharacterClasses.unreserved
+      )
       .get
   override def render(charset: HttpCharset, keep: CharPredicate): String =
     render(charset, keep)

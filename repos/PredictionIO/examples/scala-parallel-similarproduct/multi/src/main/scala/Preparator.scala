@@ -8,12 +8,13 @@ import org.apache.spark.rdd.RDD
 
 class Preparator extends PPreparator[TrainingData, PreparedData] {
 
-  def prepare(sc: SparkContext, trainingData: TrainingData): PreparedData = {
-    new PreparedData(users = trainingData.users,
-                     items = trainingData.items,
-                     viewEvents = trainingData.viewEvents,
-                     likeEvents = trainingData.likeEvents) // ADDED
-  }
+  def prepare(sc: SparkContext, trainingData: TrainingData): PreparedData =
+    new PreparedData(
+      users = trainingData.users,
+      items = trainingData.items,
+      viewEvents = trainingData.viewEvents,
+      likeEvents = trainingData.likeEvents
+    ) // ADDED
 }
 
 class PreparedData(
@@ -21,5 +22,4 @@ class PreparedData(
     val items: RDD[(String, Item)],
     val viewEvents: RDD[ViewEvent],
     val likeEvents: RDD[LikeEvent] // ADDED
-)
-    extends Serializable
+) extends Serializable

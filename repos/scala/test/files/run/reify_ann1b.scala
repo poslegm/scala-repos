@@ -10,8 +10,9 @@ object Test extends App {
   val tree = reify {
     @ann(bar = "1a")
     @ann(bar = "1b")
-    class C[@ann(bar = "2a") @ann(bar = "2b") T](@ann(bar = "3a") @ann(
-            bar = "3b") x: T @ann(bar = "4a") @ann(bar = "4b")) {
+    class C[@ann(bar = "2a") @ann(bar = "2b") T](
+        @ann(bar = "3a") @ann(bar = "3b") x: T @ann(bar = "4a") @ann(bar = "4b")
+    ) {
       @ann(bar = "5a")
       @ann(bar = "5b")
       def f(x: Int @ann(bar = "6a") @ann(bar = "6b")) = {
@@ -27,7 +28,7 @@ object Test extends App {
 
   // test 2: import and typecheck
   val toolbox = cm.mkToolBox()
-  val ttree = toolbox.typecheck(tree)
+  val ttree   = toolbox.typecheck(tree)
   println(ttree.toString)
 
   // test 3: import and compile

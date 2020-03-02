@@ -65,9 +65,11 @@ class StorageStatus(val blockManagerId: BlockManagerId, val maxMem: Long) {
   private var _nonRddStorageInfo: (Long, Long) = (0L, 0L)
 
   /** Create a storage status with an initial set of blocks, leaving the source unmodified. */
-  def this(bmid: BlockManagerId,
-           maxMem: Long,
-           initialBlocks: Map[BlockId, BlockStatus]) {
+  def this(
+      bmid: BlockManagerId,
+      maxMem: Long,
+      initialBlocks: Map[BlockId, BlockStatus]
+  ) {
     this(bmid, maxMem)
     initialBlocks.foreach { case (bid, bstatus) => addBlock(bid, bstatus) }
   }
@@ -98,7 +100,9 @@ class StorageStatus(val blockManagerId: BlockManagerId, val maxMem: Long) {
 
   /** Add the given block to this storage status. If it already exists, overwrite it. */
   private[spark] def addBlock(
-      blockId: BlockId, blockStatus: BlockStatus): Unit = {
+      blockId: BlockId,
+      blockStatus: BlockStatus
+  ): Unit = {
     updateStorageInfo(blockId, blockStatus)
     blockId match {
       case RDDBlockId(rddId, _) =>
@@ -111,9 +115,10 @@ class StorageStatus(val blockManagerId: BlockManagerId, val maxMem: Long) {
 
   /** Update the given block in this storage status. If it doesn't already exist, add it. */
   private[spark] def updateBlock(
-      blockId: BlockId, blockStatus: BlockStatus): Unit = {
+      blockId: BlockId,
+      blockStatus: BlockStatus
+  ): Unit =
     addBlock(blockId, blockStatus)
-  }
 
   /** Remove the given block from this storage status. */
   private[spark] def removeBlock(blockId: BlockId): Option[BlockStatus] = {
@@ -140,27 +145,25 @@ class StorageStatus(val blockManagerId: BlockManagerId, val maxMem: Long) {
     * Return whether the given block is stored in this block manager in O(1) time.
     * Note that this is much faster than `this.blocks.contains`, which is O(blocks) time.
     */
-  def containsBlock(blockId: BlockId): Boolean = {
+  def containsBlock(blockId: BlockId): Boolean =
     blockId match {
       case RDDBlockId(rddId, _) =>
         _rddBlocks.get(rddId).exists(_.contains(blockId))
       case _ =>
         _nonRddBlocks.contains(blockId)
     }
-  }
 
   /**
     * Return the given block stored in this block manager in O(1) time.
     * Note that this is much faster than `this.blocks.get`, which is O(blocks) time.
     */
-  def getBlock(blockId: BlockId): Option[BlockStatus] = {
+  def getBlock(blockId: BlockId): Option[BlockStatus] =
     blockId match {
       case RDDBlockId(rddId, _) =>
         _rddBlocks.get(rddId).flatMap(_.get(blockId))
       case _ =>
         _nonRddBlocks.get(blockId)
     }
-  }
 
   /**
     * Return the number of blocks stored in this block manager in O(RDDs) time.
@@ -209,11 +212,13 @@ class StorageStatus(val blockManagerId: BlockManagerId, val maxMem: Long) {
     * Update the relevant storage info, taking into account any existing status for this block.
     */
   private def updateStorageInfo(
-      blockId: BlockId, newBlockStatus: BlockStatus): Unit = {
+      blockId: BlockId,
+      newBlockStatus: BlockStatus
+  ): Unit = {
     val oldBlockStatus = getBlock(blockId).getOrElse(BlockStatus.empty)
-    val changeInMem = newBlockStatus.memSize - oldBlockStatus.memSize
-    val changeInDisk = newBlockStatus.diskSize - oldBlockStatus.diskSize
-    val level = newBlockStatus.storageLevel
+    val changeInMem    = newBlockStatus.memSize - oldBlockStatus.memSize
+    val changeInDisk   = newBlockStatus.diskSize - oldBlockStatus.diskSize
+    val level          = newBlockStatus.storageLevel
 
     // Compute new info from old info
     val (oldMem, oldDisk) = blockId match {
@@ -225,7 +230,7 @@ class StorageStatus(val blockManagerId: BlockManagerId, val maxMem: Long) {
       case _ =>
         _nonRddStorageInfo
     }
-    val newMem = math.max(oldMem + changeInMem, 0L)
+    val newMem  = math.max(oldMem + changeInMem, 0L)
     val newDisk = math.max(oldDisk + changeInDisk, 0L)
 
     // Set the correct info
@@ -252,21 +257,22 @@ private[spark] object StorageUtils extends Logging {
     * waiting for the GC to find it because that could lead to huge numbers of open files. There's
     * unfortunately no standard API to do this.
     */
-  def dispose(buffer: ByteBuffer): Unit = {
+  def dispose(buffer: ByteBuffer): Unit =
     if (buffer != null && buffer.isInstanceOf[MappedByteBuffer]) {
       logTrace(s"Unmapping $buffer")
       if (buffer.asInstanceOf[DirectBuffer].cleaner() != null) {
         buffer.asInstanceOf[DirectBuffer].cleaner().clean()
       }
     }
-  }
 
   /**
     * Update the given list of RDDInfo with the given list of storage statuses.
     * This method overwrites the old values stored in the RDDInfo's.
     */
   def updateRddInfo(
-      rddInfos: Seq[RDDInfo], statuses: Seq[StorageStatus]): Unit = {
+      rddInfos: Seq[RDDInfo],
+      statuses: Seq[StorageStatus]
+  ): Unit =
     rddInfos.foreach { rddInfo =>
       val rddId = rddInfo.id
       // Assume all blocks belonging to the same RDD have the same storage level
@@ -275,28 +281,30 @@ private[spark] object StorageUtils extends Logging {
         .headOption
         .getOrElse(StorageLevel.NONE)
       val numCachedPartitions = statuses.map(_.numRddBlocksById(rddId)).sum
-      val memSize = statuses.map(_.memUsedByRdd(rddId)).sum
-      val diskSize = statuses.map(_.diskUsedByRdd(rddId)).sum
+      val memSize             = statuses.map(_.memUsedByRdd(rddId)).sum
+      val diskSize            = statuses.map(_.diskUsedByRdd(rddId)).sum
 
       rddInfo.storageLevel = storageLevel
       rddInfo.numCachedPartitions = numCachedPartitions
       rddInfo.memSize = memSize
       rddInfo.diskSize = diskSize
     }
-  }
 
   /**
     * Return a mapping from block ID to its locations for each block that belongs to the given RDD.
     */
   def getRddBlockLocations(
-      rddId: Int, statuses: Seq[StorageStatus]): Map[BlockId, Seq[String]] = {
+      rddId: Int,
+      statuses: Seq[StorageStatus]
+  ): Map[BlockId, Seq[String]] = {
     val blockLocations =
       new mutable.HashMap[BlockId, mutable.ListBuffer[String]]
     statuses.foreach { status =>
       status.rddBlocksById(rddId).foreach {
         case (bid, _) =>
           val location = status.blockManagerId.hostPort
-          blockLocations.getOrElseUpdate(bid, mutable.ListBuffer.empty) += location
+          blockLocations
+            .getOrElseUpdate(bid, mutable.ListBuffer.empty) += location
       }
     }
     blockLocations

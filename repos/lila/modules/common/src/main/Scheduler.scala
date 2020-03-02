@@ -6,13 +6,16 @@ import akka.actor._
 import ornicar.scalalib.Random.{approximatly, nextString}
 
 final class Scheduler(
-    scheduler: akka.actor.Scheduler, enabled: Boolean, debug: Boolean) {
+    scheduler: akka.actor.Scheduler,
+    enabled: Boolean,
+    debug: Boolean
+) {
 
   def throttle[A](delay: FiniteDuration)(batch: Seq[A])(op: A => Unit) {
     batch.zipWithIndex foreach {
       case (a, i) =>
         try {
-          scheduler.scheduleOnce((1 + i) * delay) { op(a) }
+          scheduler.scheduleOnce((1 + i) * delay)(op(a))
         } catch {
           case e: java.lang.IllegalStateException =>
           // the actor system is being stopped, can't schedule
@@ -36,7 +39,7 @@ final class Scheduler(
 
   def future(freq: FiniteDuration, name: String)(op: => Funit) {
     enabled ! {
-      val f = randomize(freq)
+      val f       = randomize(freq)
       val doDebug = debug && freq > 5.seconds
       logger.info("schedule %s every %s".format(name, freq))
       scheduler.schedule(f, f) {
@@ -44,9 +47,10 @@ final class Scheduler(
         doDebug ! logger.info(tagged)
         val start = nowMillis
         op effectFold
-        (e => logger.error("(%s) %s".format(tagged, e.getMessage), e), _ =>
-              doDebug ! logger.info(
-                  tagged + " - %d ms".format(nowMillis - start)))
+          (e => logger.error("(%s) %s".format(tagged, e.getMessage), e), _ =>
+            doDebug ! logger.info(
+              tagged + " - %d ms".format(nowMillis - start)
+            ))
       }
     }
   }
@@ -61,6 +65,8 @@ final class Scheduler(
   private def logger = lila.log("scheduler")
 
   private def randomize(
-      d: FiniteDuration, ratio: Float = 0.05f): FiniteDuration =
+      d: FiniteDuration,
+      ratio: Float = 0.05f
+  ): FiniteDuration =
     approximatly(ratio)(d.toMillis) millis
 }

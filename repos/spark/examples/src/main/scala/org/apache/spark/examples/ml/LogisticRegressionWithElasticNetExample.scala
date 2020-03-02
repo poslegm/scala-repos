@@ -29,7 +29,7 @@ object LogisticRegressionWithElasticNetExample {
   def main(args: Array[String]): Unit = {
     val conf =
       new SparkConf().setAppName("LogisticRegressionWithElasticNetExample")
-    val sc = new SparkContext(conf)
+    val sc     = new SparkContext(conf)
     val sqlCtx = new SQLContext(sc)
 
     // $example on$
@@ -47,7 +47,8 @@ object LogisticRegressionWithElasticNetExample {
 
     // Print the coefficients and intercept for logistic regression
     println(
-        s"Coefficients: ${lrModel.coefficients} Intercept: ${lrModel.intercept}")
+      s"Coefficients: ${lrModel.coefficients} Intercept: ${lrModel.intercept}"
+    )
     // $example off$
 
     sc.stop()

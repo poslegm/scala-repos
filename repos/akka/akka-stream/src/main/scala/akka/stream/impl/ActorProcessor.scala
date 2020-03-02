@@ -27,7 +27,8 @@ private[akka] object ActorProcessor {
   * INTERNAL API
   */
 private[akka] class ActorProcessor[I, O](impl: ActorRef)
-    extends ActorPublisher[O](impl) with Processor[I, O] {
+    extends ActorPublisher[O](impl)
+    with Processor[I, O] {
   override def onSubscribe(s: Subscription): Unit = {
     ReactiveStreamsCompliance.requireNonNullSubscription(s)
     impl ! OnSubscribe(s)
@@ -52,14 +53,14 @@ private[akka] abstract class BatchingInputBuffer(val size: Int, val pump: Pump)
   require((size & (size - 1)) == 0, "buffer size must be a power of two")
   // TODO: buffer and batch sizing heuristics
   private var upstream: Subscription = _
-  private val inputBuffer = Array.ofDim[AnyRef](size)
-  private var inputBufferElements = 0
+  private val inputBuffer            = Array.ofDim[AnyRef](size)
+  private var inputBufferElements    = 0
   private var nextInputElementCursor = 0
-  private var upstreamCompleted = false
-  private val IndexMask = size - 1
+  private var upstreamCompleted      = false
+  private val IndexMask              = size - 1
 
   private def requestBatchSize = math.max(1, inputBuffer.length / 2)
-  private var batchRemaining = requestBatchSize
+  private var batchRemaining   = requestBatchSize
 
   override def toString: String =
     s"BatchingInputBuffer(size=$size, elems=$inputBufferElements, completed=$upstreamCompleted, remaining=$batchRemaining)"
@@ -86,20 +87,20 @@ private[akka] abstract class BatchingInputBuffer(val size: Int, val pump: Pump)
     if (isOpen) {
       if (inputBufferElements == size)
         throw new IllegalStateException("Input buffer overrun")
-      inputBuffer((nextInputElementCursor + inputBufferElements) & IndexMask) = elem
-        .asInstanceOf[AnyRef]
+      inputBuffer((nextInputElementCursor + inputBufferElements) & IndexMask) =
+        elem
+          .asInstanceOf[AnyRef]
       inputBufferElements += 1
     }
     pump.pump()
   }
 
-  override def cancel(): Unit = {
+  override def cancel(): Unit =
     if (!upstreamCompleted) {
       upstreamCompleted = true
       if (upstream ne null) upstream.cancel()
       clear()
     }
-  }
   override def isClosed: Boolean = upstreamCompleted
 
   private def clear(): Unit = {
@@ -107,7 +108,7 @@ private[akka] abstract class BatchingInputBuffer(val size: Int, val pump: Pump)
     inputBufferElements = 0
   }
 
-  override def inputsDepleted = upstreamCompleted && inputBufferElements == 0
+  override def inputsDepleted  = upstreamCompleted && inputBufferElements == 0
   override def inputsAvailable = inputBufferElements > 0
 
   protected def onComplete(): Unit = {
@@ -135,27 +136,27 @@ private[akka] abstract class BatchingInputBuffer(val size: Int, val pump: Pump)
   }
 
   protected def waitingForUpstream: Actor.Receive = {
-    case OnComplete ⇒ onComplete()
+    case OnComplete                ⇒ onComplete()
     case OnSubscribe(subscription) ⇒ onSubscribe(subscription)
-    case OnError(cause) ⇒ onError(cause)
+    case OnError(cause)            ⇒ onError(cause)
   }
 
   protected def upstreamRunning: Actor.Receive = {
-    case OnNext(element) ⇒ enqueueInputElement(element)
-    case OnComplete ⇒ onComplete()
-    case OnError(cause) ⇒ onError(cause)
+    case OnNext(element)           ⇒ enqueueInputElement(element)
+    case OnComplete                ⇒ onComplete()
+    case OnError(cause)            ⇒ onError(cause)
     case OnSubscribe(subscription) ⇒ subscription.cancel() // spec rule 2.5
   }
 
   protected def completed: Actor.Receive = {
     case OnSubscribe(subscription) ⇒
       throw new IllegalStateException(
-          "onSubscribe called after onError or onComplete")
+        "onSubscribe called after onError or onComplete"
+      )
   }
 
-  protected def inputOnError(e: Throwable): Unit = {
+  protected def inputOnError(e: Throwable): Unit =
     clear()
-  }
 }
 
 /**
@@ -168,10 +169,10 @@ private[akka] class SimpleOutputs(val actor: ActorRef, val pump: Pump)
   protected var exposedPublisher: ActorPublisher[Any] = _
 
   protected var subscriber: Subscriber[Any] = _
-  protected var downstreamDemand: Long = 0L
-  protected var downstreamCompleted = false
-  override def demandAvailable = downstreamDemand > 0
-  override def demandCount: Long = downstreamDemand
+  protected var downstreamDemand: Long      = 0L
+  protected var downstreamCompleted         = false
+  override def demandAvailable              = downstreamDemand > 0
+  override def demandCount: Long            = downstreamDemand
 
   override def subreceive = _subreceive
   private val _subreceive = new SubReceive(waitingExposedPublisher)
@@ -184,29 +185,26 @@ private[akka] class SimpleOutputs(val actor: ActorRef, val pump: Pump)
     tryOnNext(subscriber, elem)
   }
 
-  override def complete(): Unit = {
+  override def complete(): Unit =
     if (!downstreamCompleted) {
       downstreamCompleted = true
       if (exposedPublisher ne null) exposedPublisher.shutdown(None)
       if (subscriber ne null) tryOnComplete(subscriber)
     }
-  }
 
-  override def cancel(): Unit = {
+  override def cancel(): Unit =
     if (!downstreamCompleted) {
       downstreamCompleted = true
       if (exposedPublisher ne null) exposedPublisher.shutdown(None)
     }
-  }
 
-  override def error(e: Throwable): Unit = {
+  override def error(e: Throwable): Unit =
     if (!downstreamCompleted) {
       downstreamCompleted = true
       if (exposedPublisher ne null) exposedPublisher.shutdown(Some(e))
       if ((subscriber ne null) && !e.isInstanceOf[SpecViolation])
         tryOnError(subscriber, e)
     }
-  }
 
   override def isClosed: Boolean = downstreamCompleted && (subscriber ne null)
 
@@ -227,7 +225,8 @@ private[akka] class SimpleOutputs(val actor: ActorRef, val pump: Pump)
       subreceive.become(downstreamRunning)
     case other ⇒
       throw new IllegalStateException(
-          s"The first message must be ExposedPublisher but was [$other]")
+        s"The first message must be ExposedPublisher but was [$other]"
+      )
   }
 
   protected def downstreamRunning: Actor.Receive = {
@@ -236,7 +235,8 @@ private[akka] class SimpleOutputs(val actor: ActorRef, val pump: Pump)
     case RequestMore(subscription, elements) ⇒
       if (elements < 1) {
         error(
-            ReactiveStreamsCompliance.numberOfElementsInRequestMustBePositiveException)
+          ReactiveStreamsCompliance.numberOfElementsInRequestMustBePositiveException
+        )
       } else {
         downstreamDemand += elements
         if (downstreamDemand < 1)
@@ -246,7 +246,8 @@ private[akka] class SimpleOutputs(val actor: ActorRef, val pump: Pump)
     case Cancel(subscription) ⇒
       downstreamCompleted = true
       exposedPublisher.shutdown(
-          Some(new ActorPublisher.NormalShutdownException))
+        Some(new ActorPublisher.NormalShutdownException)
+      )
       pump.pump()
   }
 }
@@ -255,14 +256,16 @@ private[akka] class SimpleOutputs(val actor: ActorRef, val pump: Pump)
   * INTERNAL API
   */
 private[akka] abstract class ActorProcessorImpl(
-    val settings: ActorMaterializerSettings)
-    extends Actor with ActorLogging with Pump {
+    val settings: ActorMaterializerSettings
+) extends Actor
+    with ActorLogging
+    with Pump {
 
-  protected val primaryInputs: Inputs = new BatchingInputBuffer(
-      settings.initialInputBufferSize, this) {
-    override def inputOnError(e: Throwable): Unit =
-      ActorProcessorImpl.this.onError(e)
-  }
+  protected val primaryInputs: Inputs =
+    new BatchingInputBuffer(settings.initialInputBufferSize, this) {
+      override def inputOnError(e: Throwable): Unit =
+        ActorProcessorImpl.this.onError(e)
+    }
 
   protected val primaryOutputs: Outputs = new SimpleOutputs(self, this)
 

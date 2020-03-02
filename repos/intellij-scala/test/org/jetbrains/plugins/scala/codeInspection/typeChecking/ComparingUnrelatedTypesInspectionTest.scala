@@ -33,13 +33,13 @@ class ComparingUnrelatedTypesInspectionTest
   }
 
   def testValueTypes() {
-    val text1 = s"""val a = true
+    val text1         = s"""val a = true
                  |val b = 1
                  |${START}b == a$END"""
-    val text2 = s"""val a = true
+    val text2         = s"""val a = true
                  |val b = 0.0
                  |${START}a != b$END"""
-    val text3 = s"${START}true != 0$END"
+    val text3         = s"${START}true != 0$END"
     val text4: String = s"${START}1.isInstanceOf[Boolean]$END"
     checkTextHasError(text1)
     checkTextHasError(text2)
@@ -210,9 +210,9 @@ class ComparingUnrelatedTypesInspectionTest
         |}""".stripMargin)
   }
 
-  def testOverridenWithImplicitParam(): Unit = {
+  def testOverridenWithImplicitParam(): Unit =
     checkTextHasError(
-        s"""
+      s"""
         |class Store(val foo: Int, val bar: String)
         |trait Binder[T] {
         |  def get(implicit store: Store): T
@@ -235,7 +235,6 @@ class ComparingUnrelatedTypesInspectionTest
         |}
       """.stripMargin
     )
-  }
 
   def testOverridenEquals(): Unit = {
     checkTextHasError(s"""

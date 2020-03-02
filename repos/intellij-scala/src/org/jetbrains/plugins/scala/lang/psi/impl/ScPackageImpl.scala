@@ -7,15 +7,24 @@ import com.intellij.psi.impl.file.PsiPackageImpl
 import com.intellij.psi.scope.PsiScopeProcessor
 import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.plugins.scala.ScalaFileType
-import org.jetbrains.plugins.scala.caches.{CachesUtil, ScalaShortNamesCacheManager}
+import org.jetbrains.plugins.scala.caches.{
+  CachesUtil,
+  ScalaShortNamesCacheManager
+}
 import org.jetbrains.plugins.scala.extensions._
 import org.jetbrains.plugins.scala.lang.psi.api.ScPackage
-import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{ScObject, ScTypeDefinition}
+import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{
+  ScObject,
+  ScTypeDefinition
+}
 import org.jetbrains.plugins.scala.lang.psi.impl.toplevel.synthetic.SyntheticClasses
 import org.jetbrains.plugins.scala.lang.psi.types.ScType
 import org.jetbrains.plugins.scala.lang.psi.types.result.TypingContext
 import org.jetbrains.plugins.scala.lang.resolve.ResolveUtils
-import org.jetbrains.plugins.scala.lang.resolve.processor.{BaseProcessor, ResolveProcessor}
+import org.jetbrains.plugins.scala.lang.resolve.processor.{
+  BaseProcessor,
+  ResolveProcessor
+}
 
 import scala.util.control.ControlThrowable
 
@@ -25,25 +34,30 @@ import scala.util.control.ControlThrowable
   */
 class ScPackageImpl private (val pack: PsiPackage)
     extends PsiPackageImpl(
-        pack.getManager.asInstanceOf[PsiManagerEx], pack.getQualifiedName)
+      pack.getManager.asInstanceOf[PsiManagerEx],
+      pack.getQualifiedName
+    )
     with ScPackage {
-  def superProcessDeclarations(processor: PsiScopeProcessor,
-                               state: ResolveState,
-                               lastParent: PsiElement,
-                               place: PsiElement): Boolean = {
+  def superProcessDeclarations(
+      processor: PsiScopeProcessor,
+      state: ResolveState,
+      lastParent: PsiElement,
+      place: PsiElement
+  ): Boolean =
     super.processDeclarations(processor, state, lastParent, place)
-  }
 
-  override def processDeclarations(processor: PsiScopeProcessor,
-                                   state: ResolveState,
-                                   lastParent: PsiElement,
-                                   place: PsiElement): Boolean = {
+  override def processDeclarations(
+      processor: PsiScopeProcessor,
+      state: ResolveState,
+      lastParent: PsiElement,
+      place: PsiElement
+  ): Boolean = {
     if (place.getLanguage == ScalaFileType.SCALA_LANGUAGE &&
         pack.getQualifiedName == "scala") {
       if (!BaseProcessor.isImplicitProcessor(processor)) {
         val scope = processor match {
           case r: ResolveProcessor => r.getResolveScope
-          case _ => place.getResolveScope
+          case _                   => place.getResolveScope
         }
         val namesSet = ScalaShortNamesCacheManager
           .getInstance(getProject)
@@ -71,18 +85,22 @@ class ScPackageImpl private (val pack: PsiPackage)
       }
     } else {
       if (!ResolveUtils.packageProcessDeclarations(
-              pack, processor, state, lastParent, place)) return false
+            pack,
+            processor,
+            state,
+            lastParent,
+            place
+          )) return false
     }
 
     //for Scala
     if (place.getLanguage == ScalaFileType.SCALA_LANGUAGE) {
       val scope = processor match {
         case r: ResolveProcessor => r.getResolveScope
-        case _ => place.getResolveScope
+        case _                   => place.getResolveScope
       }
       if (getQualifiedName == "scala") {
-        ScPackageImpl.implicitlyImportedObject(
-            place.getManager, scope, "scala") match {
+        ScPackageImpl.implicitlyImportedObject(place.getManager, scope, "scala") match {
           case Some(obj: ScObject) =>
             var newState = state
             obj.getType(TypingContext.empty).foreach {
@@ -90,7 +108,11 @@ class ScPackageImpl private (val pack: PsiPackage)
                 newState = state.put(BaseProcessor.FROM_TYPE_KEY, tp)
             }
             if (!obj.processDeclarations(
-                    processor, newState, lastParent, place)) return false
+                  processor,
+                  newState,
+                  lastParent,
+                  place
+                )) return false
           case _ =>
         }
       } else {
@@ -102,7 +124,11 @@ class ScPackageImpl private (val pack: PsiPackage)
                 newState = state.put(BaseProcessor.FROM_TYPE_KEY, tp)
             }
             if (!obj.processDeclarations(
-                    processor, newState, lastParent, place)) return false
+                  processor,
+                  newState,
+                  lastParent,
+                  place
+                )) return false
           case _ =>
         }
       }
@@ -131,40 +157,38 @@ class ScPackageImpl private (val pack: PsiPackage)
       ScPackageImpl.findPackage(getProject, "")
     } else {
       ScPackageImpl.findPackage(
-          getProject, myQualifiedName.substring(0, lastDot))
+        getProject,
+        myQualifiedName.substring(0, lastDot)
+      )
     }
   }
 
-  override def getSubPackages: Array[PsiPackage] = {
+  override def getSubPackages: Array[PsiPackage] =
     super.getSubPackages.map(ScPackageImpl(_))
-  }
 
-  override def getSubPackages(scope: GlobalSearchScope): Array[PsiPackage] = {
+  override def getSubPackages(scope: GlobalSearchScope): Array[PsiPackage] =
     super.getSubPackages(scope).map(ScPackageImpl(_))
-  }
 
   override def isValid: Boolean = true
 }
 
 object ScPackageImpl {
-  def apply(pack: PsiPackage): ScPackageImpl = {
+  def apply(pack: PsiPackage): ScPackageImpl =
     pack match {
-      case null => null
+      case null                => null
       case impl: ScPackageImpl => impl
-      case _ => new ScPackageImpl(pack)
+      case _                   => new ScPackageImpl(pack)
     }
-  }
 
-  def findPackage(project: Project, pName: String) = {
+  def findPackage(project: Project, pName: String) =
     ScPackageImpl(
-        ScalaPsiManager.instance(project).getCachedPackage(pName).orNull)
-  }
+      ScalaPsiManager.instance(project).getCachedPackage(pName).orNull
+    )
 
   class DoNotProcessPackageObjectException extends ControlThrowable
 
-  def isPackageObjectProcessing: Boolean = {
+  def isPackageObjectProcessing: Boolean =
     processing.get() > 0
-  }
 
   def startPackageObjectProcessing() {
     processing.set(processing.get() + 1)
@@ -178,12 +202,13 @@ object ScPackageImpl {
     override def initialValue(): Long = 0
   }
 
-  private def implicitlyImportedObject(manager: PsiManager,
-                                       scope: GlobalSearchScope,
-                                       fqn: String): Option[PsiClass] = {
+  private def implicitlyImportedObject(
+      manager: PsiManager,
+      scope: GlobalSearchScope,
+      fqn: String
+  ): Option[PsiClass] =
     ScalaPsiManager
       .instance(manager.getProject)
       .getCachedClasses(scope, fqn)
       .headOption
-  }
 }

@@ -10,11 +10,11 @@ import scala.compat.java8.OptionConverters._
 
 sealed trait ContentRange extends jm.ContentRange with ValueRenderable {
   // default implementations to override
-  def isSatisfiable: Boolean = false
-  def isOther: Boolean = false
+  def isSatisfiable: Boolean            = false
+  def isOther: Boolean                  = false
   def getSatisfiableFirst: OptionalLong = OptionalLong.empty()
-  def getSatisfiableLast: OptionalLong = OptionalLong.empty()
-  def getOtherValue: Optional[String] = Optional.empty()
+  def getSatisfiableLast: OptionalLong  = OptionalLong.empty()
+  def getOtherValue: Optional[String]   = Optional.empty()
 }
 
 sealed trait ByteContentRange extends ContentRange {
@@ -39,11 +39,15 @@ object ContentRange {
     * Models a satisfiable HTTP content-range.
     */
   final case class Default(
-      first: Long, last: Long, instanceLength: Option[Long])
-      extends ByteContentRange {
+      first: Long,
+      last: Long,
+      instanceLength: Option[Long]
+  ) extends ByteContentRange {
     require(0 <= first && first <= last, "first must be >= 0 and <= last")
-    require(instanceLength.isEmpty || instanceLength.get > last,
-            "instanceLength must be empty or > last")
+    require(
+      instanceLength.isEmpty || instanceLength.get > last,
+      "instanceLength must be empty or > last"
+    )
 
     def render[R <: Rendering](r: R): r.type = {
       r ~~ first ~~ '-' ~~ last ~~ '/'
@@ -64,7 +68,7 @@ object ContentRange {
     * An unsatisfiable content-range.
     */
   final case class Unsatisfiable(length: Long) extends ByteContentRange {
-    val instanceLength = Some(length)
+    val instanceLength                       = Some(length)
     def render[R <: Rendering](r: R): r.type = r ~~ "*/" ~~ length
   }
 

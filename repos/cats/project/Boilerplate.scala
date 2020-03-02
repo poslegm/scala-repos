@@ -15,16 +15,16 @@ object Boilerplate {
   implicit final class BlockHelper(val sc: StringContext) extends AnyVal {
     def block(args: Any*): String = {
       val interpolated = sc.standardInterpolator(treatEscapes, args)
-      val rawLines = interpolated split '\n'
+      val rawLines     = interpolated split '\n'
       val trimmedLines = rawLines map { _ dropWhile (_.isWhitespace) }
       trimmedLines mkString "\n"
     }
   }
 
   val templates: Seq[Template] = Seq(
-      GenCartesianBuilders,
-      GenCartesianArityFunctions,
-      GenApplyArityFunctions
+    GenCartesianBuilders,
+    GenCartesianArityFunctions,
+    GenApplyArityFunctions
   )
 
   val header =
@@ -41,7 +41,7 @@ object Boilerplate {
 
   final class TemplateVals(val arity: Int) {
     val synTypes = (0 until arity) map (n => s"A$n")
-    val synVals = (0 until arity) map (n => s"a$n")
+    val synVals  = (0 until arity) map (n => s"a$n")
     val synTypedVals =
       (synVals zip synTypes) map { case (v, t) => v + ":" + t }
     val `A..N` = synTypes.mkString(", ")
@@ -72,7 +72,7 @@ object Boilerplate {
         rawContents flatMap { _ filter (_ startsWith "-") map (_.tail) }
       val postBody =
         rawContents.head dropWhile (_ startsWith "|") dropWhile
-        (_ startsWith "-") map (_.tail)
+          (_ startsWith "-") map (_.tail)
       (headerLines ++ preBody ++ instances ++ postBody) mkString "\n"
     }
   }
@@ -100,9 +100,7 @@ object Boilerplate {
       import tv._
 
       val tpes =
-        synTypes map { tpe =>
-          s"F[$tpe]"
-        }
+        synTypes map { tpe => s"F[$tpe]" }
       val tpesString = synTypes mkString ", "
       val params =
         (synVals zip tpes) map { case (v, t) => s"$v:$t" } mkString ", "
@@ -113,7 +111,8 @@ object Boilerplate {
           ""
         }
 
-      val n = if (arity == 1) { "" } else { arity.toString }
+      val n = if (arity == 1) { "" }
+      else { arity.toString }
 
       val map =
         if (arity == 1)
@@ -164,14 +163,12 @@ object Boilerplate {
 
   object GenApplyArityFunctions extends Template {
     def filename(root: File) = root / "cats" / "ApplyArityFunctions.scala"
-    override def range = 3 to maxArity
+    override def range       = 3 to maxArity
     def content(tv: TemplateVals) = {
       import tv._
 
       val tpes =
-        synTypes map { tpe =>
-          s"F[$tpe]"
-        }
+        synTypes map { tpe => s"F[$tpe]" }
       val fargs = (0 until arity) map { "f" + _ }
       val fparams =
         (fargs zip tpes) map { case (v, t) => s"$v:$t" } mkString ", "
@@ -189,7 +186,9 @@ object Boilerplate {
         (a until arity) map { n =>
           "a" + n + ":A" + n
         } mkString ","
-      def apN(n: Int) = if (n == 1) { "ap" } else { s"ap$n" }
+      def apN(n: Int) =
+        if (n == 1) { "ap" }
+        else { s"ap$n" }
       def allArgs = (0 until arity) map { "a" + _ } mkString ","
 
       val apply = block"""
@@ -212,14 +211,12 @@ object Boilerplate {
 
   object GenCartesianArityFunctions extends Template {
     def filename(root: File) = root / "cats" / "CartesianArityFunctions.scala"
-    override def range = 2 to maxArity
+    override def range       = 2 to maxArity
     def content(tv: TemplateVals) = {
       import tv._
 
       val tpes =
-        synTypes map { tpe =>
-          s"F[$tpe]"
-        }
+        synTypes map { tpe => s"F[$tpe]" }
       val fargs = (0 until arity) map { "f" + _ }
       val fparams =
         (fargs zip tpes) map { case (v, t) => s"$v:$t" } mkString ", "
@@ -227,9 +224,12 @@ object Boilerplate {
 
       val nestedProducts = (0 until (arity - 2))
         .foldRight(s"cartesian.product(f${arity - 2}, f${arity - 1})")(
-          (i, acc) => s"cartesian.product(f$i, $acc)")
-      val `nested (a..n)` = (0 until (arity - 2)).foldRight(
-          s"(a${arity - 2}, a${arity - 1})")((i, acc) => s"(a$i, $acc)")
+          (i, acc) => s"cartesian.product(f$i, $acc)"
+        )
+      val `nested (a..n)` =
+        (0 until (arity - 2)).foldRight(s"(a${arity - 2}, a${arity - 1})")(
+          (i, acc) => s"(a$i, $acc)"
+        )
 
       block"""
          |package cats

@@ -9,9 +9,8 @@ import cats.syntax.foldable._
 trait TraverseLaws[F[_]] extends FunctorLaws[F] with FoldableLaws[F] {
   implicit override def F: Traverse[F]
 
-  def traverseIdentity[A, B](fa: F[A], f: A => B): IsEq[F[B]] = {
+  def traverseIdentity[A, B](fa: F[A], f: A => B): IsEq[F[B]] =
     fa.traverse[Id, B](f) <-> F.map(fa)(f)
-  }
 
   def traverseSequentialComposition[A, B, C, M[_], N[_]](
       fa: F[A],
@@ -35,7 +34,7 @@ trait TraverseLaws[F[_]] extends FunctorLaws[F] with FoldableLaws[F] {
       def pure[X](x: X): MN[X] = (M.pure(x), N.pure(x))
       def ap[X, Y](f: MN[X => Y])(fa: MN[X]): MN[Y] = {
         val (fam, fan) = fa
-        val (fm, fn) = f
+        val (fm, fn)   = f
         (M.ap(fm)(fam), N.ap(fn)(fan))
       }
       def map[X, Y](fx: MN[X])(f: X => Y): MN[Y] = {

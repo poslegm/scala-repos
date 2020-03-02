@@ -11,9 +11,9 @@ import org.scalatest.mock.MockitoSugar
 class DuplexChannelBufferTransportTest extends FunSuite with MockitoSugar {
 
   class DuplexChannelContext {
-    val in: ChannelBuffer = mock[ChannelBuffer]
+    val in: ChannelBuffer  = mock[ChannelBuffer]
     val out: ChannelBuffer = mock[ChannelBuffer]
-    val t = new DuplexChannelBufferTransport(in, out)
+    val t                  = new DuplexChannelBufferTransport(in, out)
   }
 
   val bb = "hello".getBytes

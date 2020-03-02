@@ -1,11 +1,12 @@
 class Test {
   def test(param: String): PartialFunction[String, String] = {
-    case x: String => /*start*/ test2(x) + " Goodbye" /*end*/
+    case x: String =>
+      /*start*/
+      test2(x) + " Goodbye" /*end*/
   }
 
-  def test2(param: String): Unit = {
+  def test2(param: String): Unit =
     "Hello" + param
-  }
 }
 /*
 class Test {

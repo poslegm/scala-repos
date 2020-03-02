@@ -22,18 +22,24 @@ private[streams] trait EnumeratorSubscriptionFactory[T]
 
   override def createSubscription[U >: T](
       subr: Subscriber[U],
-      onSubscriptionEnded: SubscriptionHandle[U] => Unit) = {
+      onSubscriptionEnded: SubscriptionHandle[U] => Unit
+  ) =
     new EnumeratorSubscription[T, U](
-        enum, emptyElement, subr, onSubscriptionEnded)
-  }
+      enum,
+      emptyElement,
+      subr,
+      onSubscriptionEnded
+    )
 }
 
 /**
   * Adapts an Enumerator to a Publisher.
   */
 private[streams] final class EnumeratorPublisher[T](
-    val enum: Enumerator[T], val emptyElement: Option[T] = None)
-    extends RelaxedPublisher[T] with EnumeratorSubscriptionFactory[T]
+    val enum: Enumerator[T],
+    val emptyElement: Option[T] = None
+) extends RelaxedPublisher[T]
+    with EnumeratorSubscriptionFactory[T]
 
 private[streams] object EnumeratorSubscription {
 
@@ -89,32 +95,32 @@ private[streams] class EnumeratorSubscription[T, U >: T](
     enum: Enumerator[T],
     emptyElement: Option[T],
     subr: Subscriber[U],
-    onSubscriptionEnded: SubscriptionHandle[U] => Unit)
-    extends StateMachine[State[T]](initialState = Requested[T](0, Unattached))
-    with Subscription with SubscriptionHandle[U] {
+    onSubscriptionEnded: SubscriptionHandle[U] => Unit
+) extends StateMachine[State[T]](initialState = Requested[T](0, Unattached))
+    with Subscription
+    with SubscriptionHandle[U] {
 
   // SubscriptionHandle methods
 
-  override def start(): Unit = {
+  override def start(): Unit =
     subr.onSubscribe(this)
-  }
 
   override def subscriber: Subscriber[U] = subr
 
-  override def isActive: Boolean = {
+  override def isActive: Boolean =
     // run immediately, don't need to wait for exclusive access
     state match {
-      case Requested(_, _) => true
+      case Requested(_, _)       => true
       case Completed | Cancelled => false
     }
-  }
 
   // Streams methods
 
   override def request(elements: Long): Unit = {
     if (elements <= 0)
       throw new IllegalArgumentException(
-          s"The number of requested elements must be > 0: requested $elements elements")
+        s"The number of requested elements must be > 0: requested $elements elements"
+      )
     exclusive {
       case Requested(0, its) =>
         state = Requested(elements, extendIteratee(its))
@@ -156,7 +162,8 @@ private[streams] class EnumeratorSubscription[T, U >: T](
       ()
     case Completed =>
       throw new IllegalStateException(
-          "Shouldn't receive another element once completed")
+        "Shouldn't receive another element once completed"
+      )
   }
 
   /**
@@ -170,7 +177,8 @@ private[streams] class EnumeratorSubscription[T, U >: T](
       ()
     case Completed =>
       throw new IllegalStateException(
-          "Shouldn't receive an empty input once completed")
+        "Shouldn't receive an empty input once completed"
+      )
   }
 
   /**
@@ -214,7 +222,7 @@ private[streams] class EnumeratorSubscription[T, U >: T](
     * it recesives input.
     */
   private def extendIteratee(its: IterateeState[T]): IterateeState[T] = {
-    val link = Promise[Iteratee[T, Unit]]()
+    val link                            = Promise[Iteratee[T, Unit]]()
     val linkIteratee: Iteratee[T, Unit] = Iteratee.flatten(link.future)
     val iteratee: Iteratee[T, Unit] = Cont { input =>
       input match {
@@ -222,7 +230,7 @@ private[streams] class EnumeratorSubscription[T, U >: T](
           elementEnumerated(el)
         case Input.Empty =>
           emptyElement match {
-            case None => emptyEnumerated()
+            case None     => emptyEnumerated()
             case Some(el) => elementEnumerated(el)
           }
         case Input.EOF =>
@@ -233,7 +241,8 @@ private[streams] class EnumeratorSubscription[T, U >: T](
     its match {
       case Unattached =>
         enum(iteratee).onComplete(enumeratorApplicationComplete)(
-            Execution.trampoline)
+          Execution.trampoline
+        )
       case Attached(link0) =>
         link0.success(iteratee)
     }

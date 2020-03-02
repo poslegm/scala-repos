@@ -63,6 +63,7 @@ trait CanvasIncludes {
     * @return $SFX $GRCT
     */
   implicit def jfxGraphicsContext2sfx(
-      gc: jfxsc.GraphicsContext): GraphicsContext =
+      gc: jfxsc.GraphicsContext
+  ): GraphicsContext =
     if (gc != null) new GraphicsContext(gc) else null
 }

@@ -19,15 +19,19 @@ class ProtobufSerializerSpec extends AkkaSpec {
 
     "resolve protobuf serializer" in {
       ser.serializerFor(classOf[SerializedMessage]).getClass should ===(
-          classOf[ProtobufSerializer])
+        classOf[ProtobufSerializer]
+      )
       ser.serializerFor(classOf[MyMessage]).getClass should ===(
-          classOf[ProtobufSerializer])
+        classOf[ProtobufSerializer]
+      )
     }
 
     "work for SerializedMessage (just an akka.protobuf message)" in {
       // create a protobuf message
       val protobufMessage = MessageSerializer.serialize(
-          system.asInstanceOf[ExtendedActorSystem], "hello")
+        system.asInstanceOf[ExtendedActorSystem],
+        "hello"
+      )
       // serialize it with ProtobufSerializer
       val bytes = ser.serialize(protobufMessage).get
       // deserialize the bytes with ProtobufSerializer
@@ -36,7 +40,9 @@ class ProtobufSerializerSpec extends AkkaSpec {
         .get
         .asInstanceOf[SerializedMessage]
       deserialized.getSerializerId should ===(protobufMessage.getSerializerId)
-      deserialized.getMessage should ===(protobufMessage.getMessage) // same "hello"
+      deserialized.getMessage should ===(
+        protobufMessage.getMessage
+      ) // same "hello"
     }
   }
 }

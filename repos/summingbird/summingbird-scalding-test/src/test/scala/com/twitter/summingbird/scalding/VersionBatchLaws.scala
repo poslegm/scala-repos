@@ -35,7 +35,14 @@ import org.scalacheck.Properties
 import org.apache.hadoop.conf.Configuration
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable.{ArrayBuffer, Buffer, HashMap => MutableHashMap, Map => MutableMap, SynchronizedBuffer, SynchronizedMap}
+import scala.collection.mutable.{
+  ArrayBuffer,
+  Buffer,
+  HashMap => MutableHashMap,
+  Map => MutableMap,
+  SynchronizedBuffer,
+  SynchronizedMap
+}
 
 import cascading.scheme.local.{TextDelimited => CLTextDelimited}
 import cascading.tuple.{Tuple, Fields, TupleEntry}
@@ -54,7 +61,10 @@ object VersionBatchLaws extends Properties("VersionBatchLaws") {
       // This law is only true for numbers greater than MinValue
       val vbs =
         new store.VersionedBatchStore[Int, Int, Array[Byte], Array[Byte]](
-            null, 0, Batcher.ofHours(1))(null)(null)
+          null,
+          0,
+          Batcher.ofHours(1)
+        )(null)(null)
       val b = vbs.versionToBatchID(l)
       vbs.batchIDToVersion(b) <= l
     }
@@ -63,16 +73,22 @@ object VersionBatchLaws extends Properties("VersionBatchLaws") {
     val b = BatchID(bint)
     val vbs =
       new store.VersionedBatchStore[Int, Int, Array[Byte], Array[Byte]](
-          null, 0, Batcher.ofHours(1))(null)(null)
+        null,
+        0,
+        Batcher.ofHours(1)
+      )(null)(null)
     val v = vbs.batchIDToVersion(b)
     vbs.versionToBatchID(v) == b
   }
   property("version is an upperbound on time") = forAll { (lBig: Long) =>
-    val l = lBig / 1000L
+    val l       = lBig / 1000L
     val batcher = Batcher.ofHours(1)
     val vbs =
       new store.VersionedBatchStore[Int, Int, Array[Byte], Array[Byte]](
-          null, 0, batcher)(null)(null)
+        null,
+        0,
+        batcher
+      )(null)(null)
     val b = vbs.versionToBatchID(l)
     (batcher.earliestTimeOf(b.next).milliSinceEpoch <= l) &&
     (batcher.earliestTimeOf(b).milliSinceEpoch < l)

@@ -52,22 +52,21 @@ object NamedCometListener extends Loggable {
     */
   def getOrAddDispatchersFor(str: Box[String]): LAFuture[LiftActor] =
     synchronized {
-      val name = str.getOrElse("")
+      val name                           = str.getOrElse("")
       val liftActor: LAFuture[LiftActor] = new LAFuture()
       Schedule { () =>
-        {
-          val ret = disptchers.get(name) match {
-            case Some(actor) => actor
-            case None => {
-                val ret = new NamedCometDispatcher(str)
-                disptchers += name -> ret
-                logger.debug("Our map of NamedCometDispatchers is: %s".format(
-                        disptchers));
-                ret
-              }
+        val ret = disptchers.get(name) match {
+          case Some(actor) => actor
+          case None => {
+            val ret = new NamedCometDispatcher(str)
+            disptchers += name -> ret
+            logger.debug(
+              "Our map of NamedCometDispatchers is: %s".format(disptchers)
+            );
+            ret
           }
-          liftActor.satisfy(ret)
         }
+        liftActor.satisfy(ret)
       }
       liftActor
     }
@@ -81,16 +80,14 @@ object NamedCometListener extends Loggable {
     */
   def getDispatchersFor(str: Box[String]): LAFuture[Box[LiftActor]] =
     synchronized {
-      val name = str.getOrElse("")
+      val name                                = str.getOrElse("")
       val liftActor: LAFuture[Box[LiftActor]] = new LAFuture()
       Schedule { () =>
-        {
-          val ret = disptchers.get(name) match {
-            case Some(actor) => Full(actor)
-            case None => Empty
-          }
-          liftActor.satisfy(ret)
+        val ret = disptchers.get(name) match {
+          case Some(actor) => Full(actor)
+          case None        => Empty
         }
+        liftActor.satisfy(ret)
       }
       liftActor
     }

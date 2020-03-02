@@ -1,4 +1,4 @@
-class Length(value: Int) extends annotation.ClassfileAnnotation
+class Length(value: Int)  extends annotation.ClassfileAnnotation
 class Ann2(value: String) extends annotation.ClassfileAnnotation
 
 object Test {

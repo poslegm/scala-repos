@@ -43,7 +43,7 @@ trait CaseClassPackers extends LowPriorityTuplePackers {
 }
 
 trait LowPriorityTuplePackers extends java.io.Serializable {
-  implicit def genericTuplePacker[T : Manifest] = new ReflectionTuplePacker[T]
+  implicit def genericTuplePacker[T: Manifest] = new ReflectionTuplePacker[T]
 }
 
 /**
@@ -54,8 +54,7 @@ trait LowPriorityTuplePackers extends java.io.Serializable {
   * @author Argyris Zymnis
   * @author Oscar Boykin
   */
-class ReflectionTuplePacker[T](implicit m: Manifest[T])
-    extends TuplePacker[T] {
+class ReflectionTuplePacker[T](implicit m: Manifest[T]) extends TuplePacker[T] {
   override def newConverter(fields: Fields) =
     new ReflectionTupleConverter[T](fields)(m)
 }
@@ -76,19 +75,23 @@ class ReflectionTupleConverter[T](fields: Fields)(implicit m: Manifest[T])
   def validate {
     //We can't touch setters because that shouldn't be accessed until map/reduce side, not
     //on submitter.
-    val missing = Dsl.asList(fields).find { f =>
-      !getSetters.contains(f.toString)
-    }
+    val missing =
+      Dsl.asList(fields).find(f => !getSetters.contains(f.toString))
 
     assert(
-        missing.isEmpty, "Field: " + missing.get.toString + " not in setters")
+      missing.isEmpty,
+      "Field: " + missing.get.toString + " not in setters"
+    )
   }
   validate
 
   def getSetters =
-    m.runtimeClass.getDeclaredMethods.filter { _.getName.startsWith("set") }.groupBy {
-      setterToFieldName(_)
-    }.mapValues { _.head }
+    m.runtimeClass.getDeclaredMethods
+      .filter(_.getName.startsWith("set"))
+      .groupBy {
+        setterToFieldName(_)
+      }
+      .mapValues(_.head)
 
   // Do all the reflection for the setters we need:
   // This needs to be lazy because Method is not serializable
@@ -97,7 +100,7 @@ class ReflectionTupleConverter[T](fields: Fields)(implicit m: Manifest[T])
 
   override def apply(input: TupleEntry): T = {
     val newInst = m.runtimeClass.newInstance()
-    val fields = input.getFields
+    val fields  = input.getFields
     (0 until fields.size).map { idx =>
       val thisField = fields.get(idx)
       val setMethod = setters(thisField.toString)
@@ -121,9 +124,12 @@ class OrderedConstructorConverter[T](fields: Fields)(implicit mf: Manifest[T])
   // Keep this as a method, so we can validate by calling, but don't serialize it, and keep it lazy
   // below
   def getConstructor =
-    mf.runtimeClass.getConstructors.filter {
-      _.getParameterTypes.size == fields.size
-    }.head.asInstanceOf[Constructor[T]]
+    mf.runtimeClass.getConstructors
+      .filter {
+        _.getParameterTypes.size == fields.size
+      }
+      .head
+      .asInstanceOf[Constructor[T]]
 
   //Make sure we can actually get a constructor:
   getConstructor
@@ -131,8 +137,8 @@ class OrderedConstructorConverter[T](fields: Fields)(implicit mf: Manifest[T])
   lazy val cons = getConstructor
 
   override def apply(input: TupleEntry): T = {
-    val tup = input.getTuple
-    val args = (0 until tup.size).map { tup.getObject(_) }
+    val tup  = input.getTuple
+    val args = (0 until tup.size).map(tup.getObject(_))
     cons.newInstance(args: _*)
   }
 }

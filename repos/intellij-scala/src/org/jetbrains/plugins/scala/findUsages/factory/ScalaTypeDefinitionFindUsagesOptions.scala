@@ -16,10 +16,10 @@ class ScalaTypeDefinitionFindUsagesOptions(project: Project)
   isSearchForTextOccurrences = false
 
   var isImplementingTypeDefinitions = false
-  var isMembersUsages = false
-  var isSearchCompanionModule = false
+  var isMembersUsages               = false
+  var isSearchCompanionModule       = false
 
-  override def equals(o: Any): Boolean = {
+  override def equals(o: Any): Boolean =
     o match {
       case other: ScalaTypeDefinitionFindUsagesOptions =>
         if (!super.equals(o)) return false
@@ -31,7 +31,6 @@ class ScalaTypeDefinitionFindUsagesOptions(project: Project)
         true
       case _ => false
     }
-  }
 
   override def hashCode(): Int = {
     var res = super.hashCode()
@@ -48,7 +47,8 @@ class ScalaTypeDefinitionFindUsagesOptions(project: Project)
 
     if (isImplementingTypeDefinitions) {
       strings.add(
-          ScalaBundle.message("find.usages.implementing.type.definition"))
+        ScalaBundle.message("find.usages.implementing.type.definition")
+      )
     }
 
     if (isSearchCompanionModule) {

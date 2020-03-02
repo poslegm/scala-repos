@@ -24,14 +24,13 @@ class ScStubFileElementType(lang: Language)
   override def getExternalId = "scala.FILE"
 
   override def deserializeImpl(
-      dataStream: StubInputStream, parentStub: Object): ScFileStub = {
+      dataStream: StubInputStream,
+      parentStub: Object
+  ): ScFileStub =
     ScalaStubsUtil.deserializeFileStubElement(dataStream, parentStub)
-  }
 
-  override def serialize(
-      stub: ScFileStub, dataStream: StubOutputStream): Unit = {
+  override def serialize(stub: ScFileStub, dataStream: StubOutputStream): Unit =
     ScalaStubsUtil.serializeFileStubElement(stub, dataStream)
-  }
 
   def indexStub(stub: ScFileStub, sink: IndexSink) {}
 }

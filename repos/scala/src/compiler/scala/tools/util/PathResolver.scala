@@ -17,7 +17,12 @@ import scala.reflect.io.{File, Directory, Path, AbstractFile}
 import scala.reflect.runtime.ReflectionUtils
 import ClassPath.{JavaContext, DefaultJavaContext, split}
 import PartialFunction.condOpt
-import scala.tools.nsc.classpath.{AggregateFlatClassPath, ClassPathFactory, FlatClassPath, FlatClassPathFactory}
+import scala.tools.nsc.classpath.{
+  AggregateFlatClassPath,
+  ClassPathFactory,
+  FlatClassPath,
+  FlatClassPathFactory
+}
 import scala.tools.nsc.settings.ClassPathRepresentationType
 
 // Loosely based on the draft specification at:
@@ -30,11 +35,13 @@ object PathResolver {
 
   implicit class MkLines(val t: TraversableOnce[_]) extends AnyVal {
     def mkLines: String = t.mkString("", EOL, EOL)
-    def mkLines(header: String,
-                indented: Boolean = false,
-                embraced: Boolean = false): String = {
+    def mkLines(
+        header: String,
+        indented: Boolean = false,
+        embraced: Boolean = false
+    ): String = {
       val space = "\u0020"
-      val sep = if (indented) EOL + space * 2 else EOL
+      val sep   = if (indented) EOL + space * 2 else EOL
       val (lbrace, rbrace) =
         if (embraced) (space + "{", EOL + "}") else ("", "")
       t.mkString(header + lbrace + sep, sep, rbrace + EOL)
@@ -47,9 +54,9 @@ object PathResolver {
 
   /** pretty print class path */
   def ppcp(s: String) = split(s) match {
-    case Nil => ""
+    case Nil    => ""
     case Seq(x) => x
-    case xs => xs.mkString(EOL, EOL, "")
+    case xs     => xs.mkString(EOL, EOL, "")
   }
 
   /** Values found solely by inspecting environment or property variables.
@@ -67,13 +74,13 @@ object PathResolver {
 
     def javaBootClassPath =
       propOrElse("sun.boot.class.path", searchForBootClasspath)
-    def javaExtDirs = propOrEmpty("java.ext.dirs")
-    def scalaHome = propOrEmpty("scala.home")
+    def javaExtDirs  = propOrEmpty("java.ext.dirs")
+    def scalaHome    = propOrEmpty("scala.home")
     def scalaExtDirs = propOrEmpty("scala.ext.dirs")
 
     /** The java classpath and whether to use it. */
     def javaUserClassPath = propOrElse("java.class.path", "")
-    def useJavaClassPath = propOrFalse("scala.usejavacp")
+    def useJavaClassPath  = propOrFalse("scala.usejavacp")
 
     override def toString = s"""
       |object Environment {
@@ -89,15 +96,15 @@ object PathResolver {
     *  to the path resolution specification.
     */
   object Defaults {
-    def scalaSourcePath = Environment.sourcePathEnv
+    def scalaSourcePath   = Environment.sourcePathEnv
     def javaBootClassPath = Environment.javaBootClassPath
     def javaUserClassPath = Environment.javaUserClassPath
-    def javaExtDirs = Environment.javaExtDirs
-    def useJavaClassPath = Environment.useJavaClassPath
+    def javaExtDirs       = Environment.javaExtDirs
+    def useJavaClassPath  = Environment.useJavaClassPath
 
-    def scalaHome = Environment.scalaHome
-    def scalaHomeDir = Directory(scalaHome)
-    def scalaLibDir = Directory(scalaHomeDir / "lib")
+    def scalaHome       = Environment.scalaHome
+    def scalaHomeDir    = Directory(scalaHome)
+    def scalaLibDir     = Directory(scalaHomeDir / "lib")
     def scalaClassesDir = Directory(scalaHomeDir / "classes")
 
     def scalaLibAsJar = File(scalaLibDir / "scala-library.jar")
@@ -119,7 +126,7 @@ object PathResolver {
     // classpath as set up by the runner (or regular classpath under -nobootcp)
     // and then again here.
     def scalaBootClassPath = ""
-    def scalaExtDirs = Environment.scalaExtDirs
+    def scalaExtDirs       = Environment.scalaExtDirs
     def scalaPluginPath =
       (scalaHomeDir / "misc" / "scala-devel" / "plugins").path
 
@@ -150,7 +157,7 @@ object PathResolver {
       *  chance of succeeding).
       */
     def platformTools: Option[File] = {
-      val jarName = "tools.jar"
+      val jarName             = "tools.jar"
       def jarPath(path: Path) = (path / "lib" / jarName).toFile
       def jarAt(path: Path) = {
         val f = jarPath(path)
@@ -167,7 +174,7 @@ object PathResolver {
       val install = Some(Path(javaHome))
 
       (home flatMap jarAt) orElse (install flatMap jarAt) orElse
-      (install map (_.parent) flatMap jarAt) orElse (jdkDir flatMap deeply)
+        (install map (_.parent) flatMap jarAt) orElse (jdkDir flatMap deeply)
     }
     override def toString = s"""
       |object SupplementalLocations {
@@ -176,10 +183,13 @@ object PathResolver {
   }
 
   @deprecated(
-      "This method is no longer used be scalap and will be deleted", "2.11.5")
+    "This method is no longer used be scalap and will be deleted",
+    "2.11.5"
+  )
   def fromPathString(
       path: String,
-      context: JavaContext = DefaultJavaContext): JavaClassPath = {
+      context: JavaContext = DefaultJavaContext
+  ): JavaClassPath = {
     val s = new Settings()
     s.classpath.value = path
     new PathResolver(s, context).result
@@ -195,8 +205,8 @@ object PathResolver {
       println(Defaults)
     } else {
       val settings = new Settings()
-      val rest = settings.processArguments(args.toList, processAll = false)._2
-      val pr = PathResolverFactory.create(settings)
+      val rest     = settings.processArguments(args.toList, processAll = false)._2
+      val pr       = PathResolverFactory.create(settings)
       println("COMMAND: 'scala %s'".format(args.mkString(" ")))
       println("RESIDUAL: 'scala %s'\n".format(rest.mkString(" ")))
 
@@ -205,7 +215,8 @@ object PathResolver {
           cp.show()
         case cp: AggregateFlatClassPath =>
           println(
-              s"ClassPath has ${cp.aggregates.size} entries and results in:\n${cp.asClassPathStrings}")
+            s"ClassPath has ${cp.aggregates.size} entries and results in:\n${cp.asClassPathStrings}"
+          )
       }
     }
 }
@@ -216,28 +227,28 @@ trait PathResolverResult {
   def resultAsURLs: Seq[URL] = result.asURLs
 }
 
-abstract class PathResolverBase[
-    BaseClassPathType <: ClassFileLookup[AbstractFile],
-    ResultClassPathType <: BaseClassPathType](
-    settings: Settings, classPathFactory: ClassPathFactory[BaseClassPathType])
-    extends PathResolverResult {
+abstract class PathResolverBase[BaseClassPathType <: ClassFileLookup[
+  AbstractFile
+], ResultClassPathType <: BaseClassPathType](
+    settings: Settings,
+    classPathFactory: ClassPathFactory[BaseClassPathType]
+) extends PathResolverResult {
 
   import PathResolver.{AsLines, Defaults, ppcp}
 
-  private def cmdLineOrElse(name: String, alt: String) = {
+  private def cmdLineOrElse(name: String, alt: String) =
     (commandLineFor(name) match {
       case Some("") => None
-      case x => x
+      case x        => x
     }) getOrElse alt
-  }
 
   private def commandLineFor(s: String): Option[String] = condOpt(s) {
     case "javabootclasspath" => settings.javabootclasspath.value
-    case "javaextdirs" => settings.javaextdirs.value
-    case "bootclasspath" => settings.bootclasspath.value
-    case "extdirs" => settings.extdirs.value
-    case "classpath" | "cp" => settings.classpath.value
-    case "sourcepath" => settings.sourcepath.value
+    case "javaextdirs"       => settings.javaextdirs.value
+    case "bootclasspath"     => settings.bootclasspath.value
+    case "extdirs"           => settings.extdirs.value
+    case "classpath" | "cp"  => settings.classpath.value
+    case "sourcepath"        => settings.sourcepath.value
   }
 
   /** Calculated values based on any given command line options, falling back on
@@ -267,7 +278,8 @@ abstract class PathResolverBase[
       * TODO: we should refactor this as a separate -bootstrap option to have a clean implementation, no? */
     def sourcePath =
       if (!settings.isScaladoc)
-        cmdLineOrElse("sourcepath", Defaults.scalaSourcePath) else ""
+        cmdLineOrElse("sourcepath", Defaults.scalaSourcePath)
+      else ""
 
     def userClassPath =
       settings.classpath.value // default is specified by settings and can be overridden there
@@ -276,14 +288,18 @@ abstract class PathResolverBase[
 
     // Assemble the elements!
     def basis = List[Traversable[BaseClassPathType]](
-        classesInPath(javaBootClassPath), // 1. The Java bootstrap class path.
-        contentsOfDirsInPath(javaExtDirs), // 2. The Java extension class path.
-        classesInExpandedPath(javaUserClassPath), // 3. The Java application class path.
-        classesInPath(scalaBootClassPath), // 4. The Scala boot class path.
-        contentsOfDirsInPath(scalaExtDirs), // 5. The Scala extension class path.
-        classesInExpandedPath(userClassPath), // 6. The Scala application class path.
-        classesInManifest(useManifestClassPath), // 8. The Manifest class path.
-        sourcesInPath(sourcePath) // 7. The Scala source path.
+      classesInPath(javaBootClassPath),  // 1. The Java bootstrap class path.
+      contentsOfDirsInPath(javaExtDirs), // 2. The Java extension class path.
+      classesInExpandedPath(
+        javaUserClassPath
+      ),                                  // 3. The Java application class path.
+      classesInPath(scalaBootClassPath),  // 4. The Scala boot class path.
+      contentsOfDirsInPath(scalaExtDirs), // 5. The Scala extension class path.
+      classesInExpandedPath(
+        userClassPath
+      ),                                       // 6. The Scala application class path.
+      classesInManifest(useManifestClassPath), // 8. The Manifest class path.
+      sourcesInPath(sourcePath)                // 7. The Scala source path.
     )
 
     lazy val containers = basis.flatten.distinct
@@ -315,9 +331,9 @@ abstract class PathResolverBase[
 
       val xs = (Calculated.basis drop 2).flatten.distinct
       Console print
-      (xs mkLines
+        (xs mkLines
           (s"After java boot/extdirs classpath has ${xs.size} entries:",
-              indented = true))
+          indented = true))
     }
     cp
   }
@@ -330,7 +346,9 @@ abstract class PathResolverBase[
 
 class PathResolver(settings: Settings, context: JavaContext)
     extends PathResolverBase[ClassPath[AbstractFile], JavaClassPath](
-        settings, context) {
+      settings,
+      context
+    ) {
 
   def this(settings: Settings) = this(settings, DefaultJavaContext)
 
@@ -339,9 +357,12 @@ class PathResolver(settings: Settings, context: JavaContext)
 }
 
 class FlatClassPathResolver(
-    settings: Settings, flatClassPathFactory: ClassPathFactory[FlatClassPath])
-    extends PathResolverBase[FlatClassPath, AggregateFlatClassPath](
-        settings, flatClassPathFactory) {
+    settings: Settings,
+    flatClassPathFactory: ClassPathFactory[FlatClassPath]
+) extends PathResolverBase[FlatClassPath, AggregateFlatClassPath](
+      settings,
+      flatClassPathFactory
+    ) {
 
   def this(settings: Settings) =
     this(settings, new FlatClassPathFactory(settings))

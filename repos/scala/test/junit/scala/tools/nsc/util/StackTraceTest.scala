@@ -20,60 +20,70 @@ trait Expecting {
 @RunWith(classOf[JUnit4])
 class StackTraceTest extends Expecting {
   // formerly an enum
-  val CausedBy = "Caused by: "
+  val CausedBy   = "Caused by: "
   val Suppressed = "Suppressed: "
 
   // throws
-  def sample = throw new RuntimeException("Point of failure")
+  def sample          = throw new RuntimeException("Point of failure")
   def sampler: String = sample
 
   // repackage with message
-  def resample: String = try { sample } catch {
-    case e: Throwable => throw new RuntimeException("resample", e)
-  }
+  def resample: String =
+    try { sample }
+    catch {
+      case e: Throwable => throw new RuntimeException("resample", e)
+    }
   def resampler: String = resample
 
   // simple wrapper
-  def wrapper: String = try { sample } catch {
-    case e: Throwable => throw new RuntimeException(e)
-  }
+  def wrapper: String =
+    try { sample }
+    catch {
+      case e: Throwable => throw new RuntimeException(e)
+    }
   // another onion skin
-  def rewrapper: String = try { wrapper } catch {
-    case e: Throwable => throw new RuntimeException(e)
-  }
+  def rewrapper: String =
+    try { wrapper }
+    catch {
+      case e: Throwable => throw new RuntimeException(e)
+    }
   def rewrapperer: String = rewrapper
 
   // only an insane wretch would do this
-  def insane: String = try { sample } catch {
-    case e: Throwable =>
-      val t = new RuntimeException(e)
-      e initCause t
-      throw t
-  }
+  def insane: String =
+    try { sample }
+    catch {
+      case e: Throwable =>
+        val t = new RuntimeException(e)
+        e initCause t
+        throw t
+    }
   def insaner: String = insane
 
   /** Java 7 */
   val suppressable = isJavaAtLeast("1.7")
   type Suppressing = { def addSuppressed(t: Throwable): Unit }
 
-  def repressed: String = try { sample } catch {
-    case e: Throwable =>
-      val t = new RuntimeException("My problem")
-      if (suppressable) {
-        t.asInstanceOf[Suppressing] addSuppressed e
-      }
-      throw t
-  }
+  def repressed: String =
+    try { sample }
+    catch {
+      case e: Throwable =>
+        val t = new RuntimeException("My problem")
+        if (suppressable) {
+          t.asInstanceOf[Suppressing] addSuppressed e
+        }
+        throw t
+    }
   def represser: String = repressed
 
   // evaluating s should throw, p trims stack trace, t is the test of resulting trace string
-  def probe(s: => String)(p: StackTraceElement => Boolean)(
-      t: String => Unit): Unit = {
+  def probe(
+      s: => String
+  )(p: StackTraceElement => Boolean)(t: String => Unit): Unit =
     Try(s) recover { case e => e stackTracePrefixString p } match {
       case Success(s) => t(s)
       case Failure(e) => throw e
     }
-  }
 
   @Test
   def showsAllTrace() {
@@ -127,8 +137,8 @@ class StackTraceTest extends Expecting {
       assert(res.length == 9)
       assert(res exists (_ startsWith CausedBy.toString))
       assert((res collect {
-            case s if s startsWith CausedBy.toString => s
-          }).size == 2)
+        case s if s startsWith CausedBy.toString => s
+      }).size == 2)
     }
   @Test def dontBlowOnCycle() = probe(insaner)(_.getMethodName != "insaner") {
     s =>

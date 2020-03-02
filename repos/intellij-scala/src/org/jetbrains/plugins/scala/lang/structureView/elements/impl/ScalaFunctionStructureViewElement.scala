@@ -14,12 +14,12 @@ import org.jetbrains.plugins.scala.lang.structureView.itemsPresentations.impl._
   * Date: 04.05.2008
   */
 class ScalaFunctionStructureViewElement(
-    private val func: ScFunction, val isInherited: Boolean)
-    extends ScalaStructureViewElement(func, isInherited) {
+    private val func: ScFunction,
+    val isInherited: Boolean
+) extends ScalaStructureViewElement(func, isInherited) {
 
-  def getPresentation: ItemPresentation = {
+  def getPresentation: ItemPresentation =
     new ScalaFunctionItemPresentation(func, isInherited)
-  }
 
   def getChildren: Array[TreeElement] = Array()
 }

@@ -10,17 +10,17 @@ import slick.util.{ReadAheadIterator, CloseableIterator}
   * A database result positioned at a row and column.
   */
 abstract class PositionedResult(val rs: ResultSet) extends Closeable { outer =>
-  protected[this] var pos = Int.MaxValue
+  protected[this] var pos      = Int.MaxValue
   protected[this] val startPos = 0
 
   lazy val numColumns = rs.getMetaData().getColumnCount()
 
-  final def currentPos = pos
+  final def currentPos     = pos
   final def hasMoreColumns = pos < numColumns
 
-  final def skip = { pos += 1; this }
+  final def skip    = { pos += 1; this }
   final def restart = { pos = startPos; this }
-  final def rewind = { pos = Int.MinValue; this }
+  final def rewind  = { pos = Int.MinValue; this }
 
   def nextRow = {
     val ret = (pos == Int.MinValue) || rs.next
@@ -86,67 +86,67 @@ abstract class PositionedResult(val rs: ResultSet) extends Closeable { outer =>
 
   final def nextBooleanOption() = {
     val npos = pos + 1; val r = rs getBoolean npos;
-    val rr = (if (rs.wasNull) None else Some(r)); pos = npos; rr
+    val rr   = (if (rs.wasNull) None else Some(r)); pos = npos; rr
   }
   final def nextBigDecimalOption() = {
     val npos = pos + 1; val r = rs getBigDecimal npos;
-    val rr = (if (rs.wasNull) None else Some(BigDecimal(r))); pos = npos; rr
+    val rr   = (if (rs.wasNull) None else Some(BigDecimal(r))); pos = npos; rr
   }
   final def nextBlobOption() = {
     val npos = pos + 1; val r = rs getBlob npos;
-    val rr = (if (rs.wasNull) None else Some(r)); pos = npos; rr
+    val rr   = (if (rs.wasNull) None else Some(r)); pos = npos; rr
   }
   final def nextByteOption() = {
     val npos = pos + 1; val r = rs getByte npos;
-    val rr = (if (rs.wasNull) None else Some(r)); pos = npos; rr
+    val rr   = (if (rs.wasNull) None else Some(r)); pos = npos; rr
   }
   final def nextBytesOption() = {
     val npos = pos + 1; val r = rs getBytes npos;
-    val rr = (if (rs.wasNull) None else Some(r)); pos = npos; rr
+    val rr   = (if (rs.wasNull) None else Some(r)); pos = npos; rr
   }
   final def nextClobOption() = {
     val npos = pos + 1; val r = rs getClob npos;
-    val rr = (if (rs.wasNull) None else Some(r)); pos = npos; rr
+    val rr   = (if (rs.wasNull) None else Some(r)); pos = npos; rr
   }
   final def nextDateOption() = {
     val npos = pos + 1; val r = rs getDate npos;
-    val rr = (if (rs.wasNull) None else Some(r)); pos = npos; rr
+    val rr   = (if (rs.wasNull) None else Some(r)); pos = npos; rr
   }
   final def nextDoubleOption() = {
     val npos = pos + 1; val r = rs getDouble npos;
-    val rr = (if (rs.wasNull) None else Some(r)); pos = npos; rr
+    val rr   = (if (rs.wasNull) None else Some(r)); pos = npos; rr
   }
   final def nextFloatOption() = {
     val npos = pos + 1; val r = rs getFloat npos;
-    val rr = (if (rs.wasNull) None else Some(r)); pos = npos; rr
+    val rr   = (if (rs.wasNull) None else Some(r)); pos = npos; rr
   }
   final def nextIntOption() = {
     val npos = pos + 1; val r = rs getInt npos;
-    val rr = (if (rs.wasNull) None else Some(r)); pos = npos; rr
+    val rr   = (if (rs.wasNull) None else Some(r)); pos = npos; rr
   }
   final def nextLongOption() = {
     val npos = pos + 1; val r = rs getLong npos;
-    val rr = (if (rs.wasNull) None else Some(r)); pos = npos; rr
+    val rr   = (if (rs.wasNull) None else Some(r)); pos = npos; rr
   }
   final def nextObjectOption() = {
     val npos = pos + 1; val r = rs getObject npos;
-    val rr = (if (rs.wasNull) None else Some(r)); pos = npos; rr
+    val rr   = (if (rs.wasNull) None else Some(r)); pos = npos; rr
   }
   final def nextShortOption() = {
     val npos = pos + 1; val r = rs getShort npos;
-    val rr = (if (rs.wasNull) None else Some(r)); pos = npos; rr
+    val rr   = (if (rs.wasNull) None else Some(r)); pos = npos; rr
   }
   final def nextStringOption() = {
     val npos = pos + 1; val r = rs getString npos;
-    val rr = (if (rs.wasNull) None else Some(r)); pos = npos; rr
+    val rr   = (if (rs.wasNull) None else Some(r)); pos = npos; rr
   }
   final def nextTimeOption() = {
     val npos = pos + 1; val r = rs getTime npos;
-    val rr = (if (rs.wasNull) None else Some(r)); pos = npos; rr
+    val rr   = (if (rs.wasNull) None else Some(r)); pos = npos; rr
   }
   final def nextTimestampOption() = {
     val npos = pos + 1; val r = rs getTimestamp npos;
-    val rr = (if (rs.wasNull) None else Some(r)); pos = npos; rr
+    val rr   = (if (rs.wasNull) None else Some(r)); pos = npos; rr
   }
 
   final def updateBoolean(v: Boolean) {
@@ -202,7 +202,7 @@ abstract class PositionedResult(val rs: ResultSet) extends Closeable { outer =>
     val npos = pos + 1;
     v match {
       case Some(s) => rs.updateBoolean(npos, s);
-      case None => rs.updateNull(npos)
+      case None    => rs.updateNull(npos)
     }; pos = npos
   }
   final def updateBlobOption(v: Option[Blob]) {
@@ -239,7 +239,7 @@ abstract class PositionedResult(val rs: ResultSet) extends Closeable { outer =>
     val npos = pos + 1;
     v match {
       case Some(s) => rs.updateDouble(npos, s);
-      case None => rs.updateNull(npos)
+      case None    => rs.updateNull(npos)
     }; pos = npos
   }
   final def updateFloatOption(v: Option[Float]) {
@@ -270,7 +270,7 @@ abstract class PositionedResult(val rs: ResultSet) extends Closeable { outer =>
     val npos = pos + 1;
     v match {
       case Some(s) => rs.updateString(npos, s);
-      case None => rs.updateNull(npos)
+      case None    => rs.updateNull(npos)
     }; pos = npos
   }
   final def updateTimeOption(v: Option[Time]) {
@@ -283,21 +283,21 @@ abstract class PositionedResult(val rs: ResultSet) extends Closeable { outer =>
     val npos = pos + 1;
     v match {
       case Some(s) => rs.updateTimestamp(npos, s);
-      case None => rs.updateNull(npos)
+      case None    => rs.updateNull(npos)
     }; pos = npos
   }
   final def updateBigDecimalOption(v: Option[BigDecimal]) {
     val npos = pos + 1;
     v match {
       case Some(s) => rs.updateBigDecimal(npos, s.bigDecimal);
-      case None => rs.updateNull(npos)
+      case None    => rs.updateNull(npos)
     }; pos = npos
   }
   final def updateObjectOption(v: Option[AnyRef]) {
     val npos = pos + 1;
     v match {
       case Some(s) => rs.updateObject(npos, s);
-      case None => rs.updateNull(npos)
+      case None    => rs.updateNull(npos)
     }; pos = npos
   }
 
@@ -316,9 +316,11 @@ abstract class PositionedResult(val rs: ResultSet) extends Closeable { outer =>
     * and ends when the discriminator predicate (which can read columns starting
     * at discriminatorPos) returns false or when this PositionedResult ends.
     */
-  def view(discriminatorPos: Int,
-           dataPos: Int,
-           discriminator: (PositionedResult => Boolean)): PositionedResult =
+  def view(
+      discriminatorPos: Int,
+      dataPos: Int,
+      discriminator: (PositionedResult => Boolean)
+  ): PositionedResult =
     new PositionedResult(rs) {
       override protected[this] val startPos = dataPos
       pos = Int.MinValue
@@ -333,7 +335,7 @@ abstract class PositionedResult(val rs: ResultSet) extends Closeable { outer =>
         if (pos == Int.MinValue) disc
         else {
           val outerRet = outer.nextRow
-          val ret = outerRet && disc
+          val ret      = outerRet && disc
           pos = startPos
           if (!ret && outerRet) outer.rewind
           ret
@@ -349,14 +351,13 @@ abstract class PositionedResult(val rs: ResultSet) extends Closeable { outer =>
     */
   def view1: PositionedResult = {
     val discPos = pos
-    val disc = nextObject
-    view(discPos, discPos + 1, { r =>
-      disc != null && disc == r.nextObject
-    })
+    val disc    = nextObject
+    view(discPos, discPos + 1, r => disc != null && disc == r.nextObject)
   }
 
-  final def build[C[_], R](gr: GetResult[R])(
-      implicit canBuildFrom: CanBuildFrom[Nothing, R, C[R]]): C[R] = {
+  final def build[C[_], R](
+      gr: GetResult[R]
+  )(implicit canBuildFrom: CanBuildFrom[Nothing, R, C[R]]): C[R] = {
     val b = canBuildFrom()
     while (nextRow) b += gr(this)
     b.result()
@@ -364,10 +365,11 @@ abstract class PositionedResult(val rs: ResultSet) extends Closeable { outer =>
 
   final def to[C[_]] = new To[C]()
 
-  final class To[C[_]] private[PositionedResult]() {
-    def apply[R](
-        gr: GetResult[R])(implicit session: JdbcBackend#Session,
-                          canBuildFrom: CanBuildFrom[Nothing, R, C[R]]) =
+  final class To[C[_]] private[PositionedResult] () {
+    def apply[R](gr: GetResult[R])(
+        implicit session: JdbcBackend#Session,
+        canBuildFrom: CanBuildFrom[Nothing, R, C[R]]
+    ) =
       build[C, R](gr)
   }
 }
@@ -376,15 +378,18 @@ abstract class PositionedResult(val rs: ResultSet) extends Closeable { outer =>
   * An CloseableIterator for a PositionedResult.
   */
 abstract class PositionedResultIterator[+T](
-    val pr: PositionedResult, maxRows: Int, autoClose: Boolean)
-    extends ReadAheadIterator[T] with CloseableIterator[T] {
+    val pr: PositionedResult,
+    maxRows: Int,
+    autoClose: Boolean
+) extends ReadAheadIterator[T]
+    with CloseableIterator[T] {
 
-  private[this] var closed = false
+  private[this] var closed   = false
   private[this] var readRows = 0
 
   def rs = pr.rs
 
-  protected def fetchNext(): T = {
+  protected def fetchNext(): T =
     if ((readRows < maxRows || maxRows <= 0) && pr.nextRow) {
       val res = extractValue(pr)
       readRows += 1
@@ -393,7 +398,6 @@ abstract class PositionedResultIterator[+T](
       if (autoClose) close()
       finished()
     }
-  }
 
   final def close() {
     if (!closed) {

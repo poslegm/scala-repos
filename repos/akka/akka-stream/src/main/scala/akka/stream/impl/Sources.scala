@@ -19,7 +19,7 @@ private[stream] object QueueSource {
   sealed trait Input[+T]
   final case class Offer[+T](elem: T, promise: Promise[QueueOfferResult])
       extends Input[T]
-  case object Completion extends Input[Nothing]
+  case object Completion                  extends Input[Nothing]
   final case class Failure(ex: Throwable) extends Input[Nothing]
 }
 
@@ -27,22 +27,26 @@ private[stream] object QueueSource {
   * INTERNAL API
   */
 final private[stream] class QueueSource[T](
-    maxBuffer: Int, overflowStrategy: OverflowStrategy)
-    extends GraphStageWithMaterializedValue[
-        SourceShape[T], SourceQueueWithComplete[T]] {
+    maxBuffer: Int,
+    overflowStrategy: OverflowStrategy
+) extends GraphStageWithMaterializedValue[SourceShape[T], SourceQueueWithComplete[
+      T
+    ]] {
   import QueueSource._
 
-  val out = Outlet[T]("queueSource.out")
+  val out                            = Outlet[T]("queueSource.out")
   override val shape: SourceShape[T] = SourceShape.of(out)
 
   override def createLogicAndMaterializedValue(
-      inheritedAttributes: Attributes) = {
+      inheritedAttributes: Attributes
+  ) = {
     val completion = Promise[Done]
-    val stageLogic = new GraphStageLogic(shape) with CallbackWrapper[Input[T]]
-    with OutHandler {
-      var buffer: Buffer[T] = _
+    val stageLogic = new GraphStageLogic(shape)
+      with CallbackWrapper[Input[T]]
+      with OutHandler {
+      var buffer: Buffer[T]              = _
       var pendingOffer: Option[Offer[T]] = None
-      var terminating = false
+      var terminating                    = false
 
       override def preStart(): Unit = {
         if (maxBuffer > 0) buffer = Buffer(maxBuffer, materializer)
@@ -50,8 +54,11 @@ final private[stream] class QueueSource[T](
       }
       override def postStop(): Unit = stopCallback {
         case Offer(elem, promise) ⇒
-          promise.failure(new IllegalStateException(
-                  "Stream is terminated. SourceQueue is detached"))
+          promise.failure(
+            new IllegalStateException(
+              "Stream is terminated. SourceQueue is detached"
+            )
+          )
         case _ ⇒ // ignore
       }
 
@@ -60,7 +67,7 @@ final private[stream] class QueueSource[T](
         offer.promise.success(QueueOfferResult.Enqueued)
       }
 
-      private def bufferElem(offer: Offer[T]): Unit = {
+      private def bufferElem(offer: Offer[T]): Unit =
         if (!buffer.isFull) {
           enqueueAndSuccess(offer)
         } else
@@ -78,21 +85,25 @@ final private[stream] class QueueSource[T](
               offer.promise.success(QueueOfferResult.Dropped)
             case Fail ⇒
               val bufferOverflowException = new BufferOverflowException(
-                  s"Buffer overflow (max capacity was: $maxBuffer)!")
+                s"Buffer overflow (max capacity was: $maxBuffer)!"
+              )
               offer.promise.success(
-                  QueueOfferResult.Failure(bufferOverflowException))
+                QueueOfferResult.Failure(bufferOverflowException)
+              )
               completion.failure(bufferOverflowException)
               failStage(bufferOverflowException)
             case Backpressure ⇒
               pendingOffer match {
                 case Some(_) ⇒
-                  offer.promise.failure(new IllegalStateException(
-                          "You have to wait for previous offer to be resolved to send another request"))
+                  offer.promise.failure(
+                    new IllegalStateException(
+                      "You have to wait for previous offer to be resolved to send another request"
+                    )
+                  )
                 case None ⇒
                   pendingOffer = Some(offer)
               }
           }
-      }
 
       private val callback: AsyncCallback[Input[T]] = getAsyncCallback {
 
@@ -113,14 +124,19 @@ final private[stream] class QueueSource[T](
                 promise.success(QueueOfferResult.Dropped)
               case Fail ⇒
                 val bufferOverflowException = new BufferOverflowException(
-                    s"Buffer overflow (max capacity was: $maxBuffer)!")
+                  s"Buffer overflow (max capacity was: $maxBuffer)!"
+                )
                 promise.success(
-                    QueueOfferResult.Failure(bufferOverflowException))
+                  QueueOfferResult.Failure(bufferOverflowException)
+                )
                 completion.failure(bufferOverflowException)
                 failStage(bufferOverflowException)
               case Backpressure ⇒
-                promise.failure(new IllegalStateException(
-                        "You have to wait for previous offer to be resolved to send another request"))
+                promise.failure(
+                  new IllegalStateException(
+                    "You have to wait for previous offer to be resolved to send another request"
+                  )
+                )
             }
 
         case Completion ⇒
@@ -149,7 +165,7 @@ final private[stream] class QueueSource[T](
         completeStage()
       }
 
-      override def onPull(): Unit = {
+      override def onPull(): Unit =
         if (maxBuffer == 0) {
           pendingOffer match {
             case Some(Offer(elem, promise)) ⇒
@@ -175,33 +191,33 @@ final private[stream] class QueueSource[T](
             completeStage()
           }
         }
-      }
     }
 
-    (stageLogic, new SourceQueueWithComplete[T] {
-      override def watchCompletion() = completion.future
-      override def offer(element: T): Future[QueueOfferResult] = {
-        val p = Promise[QueueOfferResult]
-        stageLogic.invoke(Offer(element, p))
-        p.future
+    (
+      stageLogic,
+      new SourceQueueWithComplete[T] {
+        override def watchCompletion() = completion.future
+        override def offer(element: T): Future[QueueOfferResult] = {
+          val p = Promise[QueueOfferResult]
+          stageLogic.invoke(Offer(element, p))
+          p.future
+        }
+        override def complete(): Unit =
+          stageLogic.invoke(Completion)
+        override def fail(ex: Throwable): Unit =
+          stageLogic.invoke(Failure(ex))
       }
-      override def complete(): Unit = {
-        stageLogic.invoke(Completion)
-      }
-      override def fail(ex: Throwable): Unit = {
-        stageLogic.invoke(Failure(ex))
-      }
-    })
+    )
   }
 }
 
 private[akka] final class SourceQueueAdapter[T](
-    delegate: SourceQueueWithComplete[T])
-    extends akka.stream.javadsl.SourceQueueWithComplete[T] {
+    delegate: SourceQueueWithComplete[T]
+) extends akka.stream.javadsl.SourceQueueWithComplete[T] {
   def offer(elem: T): CompletionStage[QueueOfferResult] =
     delegate.offer(elem).toJava
   def watchCompletion(): CompletionStage[Done] =
     delegate.watchCompletion().toJava
-  def complete(): Unit = delegate.complete()
+  def complete(): Unit          = delegate.complete()
   def fail(ex: Throwable): Unit = delegate.fail(ex)
 }

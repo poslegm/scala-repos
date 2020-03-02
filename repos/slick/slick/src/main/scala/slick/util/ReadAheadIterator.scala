@@ -6,7 +6,7 @@ package slick.util
   */
 trait ReadAheadIterator[+T] extends BufferedIterator[T] {
 
-  private[this] var state = 0 // 0: no data, 1: cached, 2: finished
+  private[this] var state     = 0 // 0: no data, 1: cached, 2: finished
   private[this] var cached: T = null.asInstanceOf[T]
 
   protected[this] final def finished(): T = {

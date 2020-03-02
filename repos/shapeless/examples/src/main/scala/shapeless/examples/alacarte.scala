@@ -86,7 +86,7 @@ object ALaCarteDemo extends App {
   assert(foo == fooCopy)
   assert(foo.hashCode == fooCopy.hashCode)
 
-  val mod = Foo(13, "foo")
+  val mod    = Foo(13, "foo")
   val fooMod = foo.copy(i = 13)
   assert(fooMod ne foo)
   assert(mod == fooMod)

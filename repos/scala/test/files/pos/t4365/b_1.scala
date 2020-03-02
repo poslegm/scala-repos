@@ -2,14 +2,14 @@ import scala.collection._
 
 trait GenSeqView0[+A, +Coll]
 
-trait GenSeqViewLike[+A,
-                     +Coll,
-                     +This <: GenSeqView0[A, Coll] with GenSeqViewLike[
-                         A, Coll, Nothing]]
-    extends GenSeq[A] { self =>
+trait GenSeqViewLike[+A, +Coll, +This <: GenSeqView0[A, Coll] with GenSeqViewLike[
+  A,
+  Coll,
+  Nothing
+]] extends GenSeq[A] { self =>
 
   trait Transformed[+B] {
-    def length: Int = 0
+    def length: Int        = 0
     def apply(idx: Int): B = error("")
   }
 

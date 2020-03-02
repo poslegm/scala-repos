@@ -30,7 +30,10 @@ import scala.collection.immutable.IndexedSeq
   * Assumes you are giving it a non-empty set of data
   */
 private[spark] class Distribution(
-    val data: Array[Double], val startIdx: Int, val endIdx: Int) {
+    val data: Array[Double],
+    val startIdx: Int,
+    val endIdx: Int
+) {
   require(startIdx < endIdx)
   def this(data: Traversable[Double]) = this(data.toArray, 0, data.size)
   java.util.Arrays.sort(data, startIdx, endIdx)
@@ -43,23 +46,18 @@ private[spark] class Distribution(
     * given from 0 to 1
     * @param probabilities
     */
-  def getQuantiles(probabilities: Traversable[Double] = defaultProbabilities)
-    : IndexedSeq[Double] = {
-    probabilities.toIndexedSeq.map { p: Double =>
-      data(closestIndex(p))
-    }
-  }
+  def getQuantiles(
+      probabilities: Traversable[Double] = defaultProbabilities
+  ): IndexedSeq[Double] =
+    probabilities.toIndexedSeq.map { p: Double => data(closestIndex(p)) }
 
-  private def closestIndex(p: Double) = {
+  private def closestIndex(p: Double) =
     math.min((p * length).toInt + startIdx, endIdx - 1)
-  }
 
   def showQuantiles(out: PrintStream = System.out): Unit = {
     // scalastyle:off println
     out.println("min\t25%\t50%\t75%\tmax")
-    getQuantiles(defaultProbabilities).foreach { q =>
-      out.print(q + "\t")
-    }
+    getQuantiles(defaultProbabilities).foreach(q => out.print(q + "\t"))
     out.println
     // scalastyle:on println
   }
@@ -80,21 +78,20 @@ private[spark] class Distribution(
 
 private[spark] object Distribution {
 
-  def apply(data: Traversable[Double]): Option[Distribution] = {
+  def apply(data: Traversable[Double]): Option[Distribution] =
     if (data.size > 0) {
       Some(new Distribution(data))
     } else {
       None
     }
-  }
 
   def showQuantiles(
-      out: PrintStream = System.out, quantiles: Traversable[Double]) {
+      out: PrintStream = System.out,
+      quantiles: Traversable[Double]
+  ) {
     // scalastyle:off println
     out.println("min\t25%\t50%\t75%\tmax")
-    quantiles.foreach { q =>
-      out.print(q + "\t")
-    }
+    quantiles.foreach(q => out.print(q + "\t"))
     out.println
     // scalastyle:on println
   }

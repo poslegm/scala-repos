@@ -1,6 +1,6 @@
 object Test extends App {
   def test[T](t1: T, t2: T)(implicit ord: Ordering[T]) = {
-    val cmp = ord.compare(t1, t2);
+    val cmp  = ord.compare(t1, t2);
     val cmp2 = ord.compare(t2, t1);
 
     assert((cmp == 0) == (cmp2 == 0))
@@ -30,16 +30,19 @@ object Test extends App {
   testAll((1, "foo"), (2, "bar"))
 
   // sortBy
-  val words = "The quick brown fox jumped over the lazy dog".split(' ')
+  val words  = "The quick brown fox jumped over the lazy dog".split(' ')
   val result = words.sortBy(x => (x.length, x.head))
   assert(
-      result sameElements Array[String]("The",
-                                        "dog",
-                                        "fox",
-                                        "the",
-                                        "lazy",
-                                        "over",
-                                        "brown",
-                                        "quick",
-                                        "jumped"))
+    result sameElements Array[String](
+      "The",
+      "dog",
+      "fox",
+      "the",
+      "lazy",
+      "over",
+      "brown",
+      "quick",
+      "jumped"
+    )
+  )
 }

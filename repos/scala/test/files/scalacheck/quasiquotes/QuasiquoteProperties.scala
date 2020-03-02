@@ -5,7 +5,9 @@ import scala.reflect.runtime.universe._, Flag._,
 internal.reificationSupport.setSymbol
 
 class QuasiquoteProperties(name: String)
-    extends Properties(name) with ArbitraryTreesAndNames with Helpers
+    extends Properties(name)
+    with ArbitraryTreesAndNames
+    with Helpers
 
 trait Helpers {
 
@@ -28,8 +30,10 @@ trait Helpers {
         name.asInstanceOf[st.Name] match {
           case FreshName(prefix) =>
             Some(
-                (if (name.isTermName)
-                   TermName(prefix) else TypeName(prefix)).asInstanceOf[T])
+              (if (name.isTermName)
+                 TermName(prefix)
+               else TypeName(prefix)).asInstanceOf[T]
+            )
         }
     }
 
@@ -52,13 +56,13 @@ trait Helpers {
   implicit class TestSimilarListTree(lst: List[Tree]) {
     def ≈(other: List[Tree]) =
       (lst.length == other.length) &&
-      lst.zip(other).forall { case (t1, t2) => t1 ≈ t2 }
+        lst.zip(other).forall { case (t1, t2) => t1 ≈ t2 }
   }
 
   implicit class TestSimilarListListTree(lst: List[List[Tree]]) {
     def ≈(other: List[List[Tree]]) =
       (lst.length == other.length) &&
-      lst.zip(other).forall { case (l1, l2) => l1 ≈ l2 }
+        lst.zip(other).forall { case (l1, l2) => l1 ≈ l2 }
   }
 
   implicit class TestSimilarName(name: Name) {
@@ -68,31 +72,33 @@ trait Helpers {
   implicit class TestSimilarMods(mods: Modifiers) {
     def ≈(other: Modifiers) =
       (mods.flags == other.flags) && (mods.privateWithin ≈ other.privateWithin) &&
-      (mods.annotations ≈ other.annotations)
+        (mods.annotations ≈ other.annotations)
   }
 
-  def assertThrows[T <: AnyRef](f: => Any)(
-      implicit manifest: Manifest[T]): Unit = {
+  def assertThrows[T <: AnyRef](
+      f: => Any
+  )(implicit manifest: Manifest[T]): Unit = {
     val clazz = manifest.runtimeClass.asInstanceOf[Class[T]]
-    val thrown = try {
-      f
-      false
-    } catch {
-      case u: Throwable =>
-        if (!clazz.isAssignableFrom(u.getClass))
-          assert(false, s"wrong exception: $u")
-        true
-    }
+    val thrown =
+      try {
+        f
+        false
+      } catch {
+        case u: Throwable =>
+          if (!clazz.isAssignableFrom(u.getClass))
+            assert(false, s"wrong exception: $u")
+          true
+      }
     if (!thrown) assert(false, "exception wasn't thrown")
   }
 
   def assertEqAst(tree: Tree, code: String) = assert(eqAst(tree, code))
-  def eqAst(tree: Tree, code: String) = tree ≈ parse(code)
+  def eqAst(tree: Tree, code: String)       = tree ≈ parse(code)
 
   val toolbox = currentMirror.mkToolBox()
-  val parse = toolbox.parse(_)
+  val parse   = toolbox.parse(_)
   val compile = toolbox.compile(_)
-  val eval = toolbox.eval(_)
+  val eval    = toolbox.eval(_)
 
   def typecheck(tree: Tree) = toolbox.typecheck(tree)
 
@@ -103,7 +109,8 @@ trait Helpers {
 
   def typecheckPat(tree: Tree) = {
     val q"$_ match { case $res => }" = typecheck(
-        q"((): Any) match { case $tree => }")
+      q"((): Any) match { case $tree => }"
+    )
     res
   }
 
@@ -112,7 +119,7 @@ trait Helpers {
       val status = if (ok) Prop.Proof else Prop.False
       val labels =
         if (description != "") Set(description) else Set.empty[String]
-      Prop { new Prop.Result(status, Nil, Set.empty, labels) }
+      Prop(new Prop.Result(status, Nil, Set.empty, labels))
     }
     try {
       compile(parse(s"""
@@ -125,8 +132,10 @@ trait Helpers {
     } catch {
       case ToolBoxError(emsg, _) =>
         if (!emsg.contains(msg))
-          result(false,
-                 s"error message '${emsg}' is not the same as expected '$msg'")
+          result(
+            false,
+            s"error message '${emsg}' is not the same as expected '$msg'"
+          )
         else result(true)
     }
   }

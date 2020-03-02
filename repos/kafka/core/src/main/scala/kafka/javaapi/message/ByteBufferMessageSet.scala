@@ -28,9 +28,16 @@ class ByteBufferMessageSet(val buffer: ByteBuffer) extends MessageSet {
     new kafka.message.ByteBufferMessageSet(buffer)
 
   def this(
-      compressionCodec: CompressionCodec, messages: java.util.List[Message]) {
-    this(new kafka.message.ByteBufferMessageSet(
-            compressionCodec, new LongRef(0), messages.asScala: _*).buffer)
+      compressionCodec: CompressionCodec,
+      messages: java.util.List[Message]
+  ) {
+    this(
+      new kafka.message.ByteBufferMessageSet(
+        compressionCodec,
+        new LongRef(0),
+        messages.asScala: _*
+      ).buffer
+    )
   }
 
   def this(messages: java.util.List[Message]) {
@@ -44,29 +51,27 @@ class ByteBufferMessageSet(val buffer: ByteBuffer) extends MessageSet {
   override def iterator: java.util.Iterator[MessageAndOffset] =
     new java.util.Iterator[MessageAndOffset] {
       val underlyingIterator = underlying.iterator
-      override def hasNext(): Boolean = {
+      override def hasNext(): Boolean =
         underlyingIterator.hasNext
-      }
 
-      override def next(): MessageAndOffset = {
+      override def next(): MessageAndOffset =
         underlyingIterator.next
-      }
 
       override def remove =
         throw new UnsupportedOperationException(
-            "remove API on MessageSet is not supported")
+          "remove API on MessageSet is not supported"
+        )
     }
 
   override def toString: String = underlying.toString
 
   def sizeInBytes: Int = underlying.sizeInBytes
 
-  override def equals(other: Any): Boolean = {
+  override def equals(other: Any): Boolean =
     other match {
       case that: ByteBufferMessageSet => buffer.equals(that.buffer)
-      case _ => false
+      case _                          => false
     }
-  }
 
   override def hashCode: Int = buffer.hashCode
 }

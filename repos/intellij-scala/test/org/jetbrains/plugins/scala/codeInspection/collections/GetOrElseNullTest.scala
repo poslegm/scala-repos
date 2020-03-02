@@ -14,7 +14,7 @@ class GetOrElseNullTest extends OperationsOnCollectionInspectionTest {
     val selected = s"None.${START}getOrElse(null)$END"
     check(selected)
 
-    val text = "None.getOrElse(null)"
+    val text   = "None.getOrElse(null)"
     val result = "None.orNull"
     testFix(text, result, hint)
   }
@@ -23,7 +23,7 @@ class GetOrElseNullTest extends OperationsOnCollectionInspectionTest {
     val selected = s"None ${START}getOrElse null$END"
     check(selected)
 
-    val text = "None getOrElse null"
+    val text   = "None getOrElse null"
     val result = "None.orNull"
     testFix(text, result, hint)
   }
@@ -32,7 +32,7 @@ class GetOrElseNullTest extends OperationsOnCollectionInspectionTest {
     val selected = s"Some(1) orElse Some(2) ${START}getOrElse null$END"
     check(selected)
 
-    val text = "Some(1) orElse Some(2) getOrElse null"
+    val text   = "Some(1) orElse Some(2) getOrElse null"
     val result = "(Some(1) orElse Some(2)).orNull"
     testFix(text, result, hint)
   }

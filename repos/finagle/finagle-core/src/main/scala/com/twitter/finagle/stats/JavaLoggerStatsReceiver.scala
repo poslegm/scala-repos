@@ -8,7 +8,7 @@ import scala.collection.mutable
 
 class JavaLoggerStatsReceiver(logger: Logger, timer: Timer)
     extends StatsReceiverWithCumulativeGauges {
-  val repr = logger
+  val repr               = logger
   private val timerTasks = new mutable.HashMap[Seq[String], TimerTask]
 
   // Timer here will never be released. This is ok since this class
@@ -40,9 +40,8 @@ class JavaLoggerStatsReceiver(logger: Logger, timer: Timer)
     timerTasks.remove(name) foreach { _.cancel() }
   }
 
-  private[this] def formatName(description: Seq[String]) = {
+  private[this] def formatName(description: Seq[String]) =
     description mkString "/"
-  }
 }
 
 object JavaLoggerStatsReceiver {

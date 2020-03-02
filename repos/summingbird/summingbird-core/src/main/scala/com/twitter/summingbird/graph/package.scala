@@ -28,17 +28,15 @@ package object graph {
     */
   def depthFirstOf[T](t: T)(nf: NeighborFn[T]): List[T] = {
     @annotation.tailrec
-    def loop(stack: List[T], deps: List[T], acc: Set[T]): List[T] = {
+    def loop(stack: List[T], deps: List[T], acc: Set[T]): List[T] =
       stack match {
         case Nil => deps
         case h :: tail =>
-          val newStack = nf(h).filterNot(acc).foldLeft(tail) { (s, it) =>
-            it :: s
-          }
+          val newStack =
+            nf(h).filterNot(acc).foldLeft(tail)((s, it) => it :: s)
           val newDeps = if (acc(h)) deps else h :: deps
           loop(newStack, newDeps, acc + h)
       }
-    }
     val start = nf(t).toList
     loop(start, start.distinct, start.toSet).reverse
   }
@@ -77,17 +75,19 @@ package object graph {
         def withParents(n: T) =
           (n :: (nf(n).toList)).filterNot(acc.contains(_)).distinct
 
-        val (doneThisStep, rest) = todo.map { withParents(_) }.partition {
+        val (doneThisStep, rest) = todo.map(withParents(_)).partition {
           _.size == 1
         }
 
         acc ++=
-        (doneThisStep.flatten.map { n =>
-              val depth =
-                nf(n) //n is done now, so all it's neighbors must be too.
-                .map { acc(_) + 1 }.reduceOption { _ max _ }.getOrElse(0)
-              n -> depth
-            })
+          (doneThisStep.flatten.map { n =>
+            val depth =
+              nf(n) //n is done now, so all it's neighbors must be too.
+                .map(acc(_) + 1)
+                .reduceOption(_ max _)
+                .getOrElse(0)
+            n -> depth
+          })
         computeDepth(rest.flatten)
       }
 

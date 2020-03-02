@@ -15,18 +15,16 @@ abstract class BridgeBase(frameworkName: String) {
   protected[this] val framework = FrameworkLoader.loadFramework(frameworkName)
 
   @JSExport
-  def init(): Unit = {
+  def init(): Unit =
     Com.init(handleMsg _)
-  }
 
   private def handleMsg(msg: String): Unit = {
     val pos = msg.indexOf(':')
     val cmd = if (pos == -1) msg else msg.substring(0, pos)
 
-    def strArg = {
+    def strArg =
       if (pos == -1) throw new IllegalArgumentException(s"$cmd needs args")
       else msg.substring(pos + 1)
-    }
 
     try {
       handleMsgImpl(cmd, strArg)
@@ -49,15 +47,17 @@ abstract class BridgeBase(frameworkName: String) {
 
   protected def handleMsgImpl(cmd: String, strArg: => String): Unit
 
-  protected def tasks2TaskInfos(tasks: Array[Task], runner: Runner): js.Any = {
+  protected def tasks2TaskInfos(tasks: Array[Task], runner: Runner): js.Any =
     tasks.map { task =>
       val serTask = runner.serializeTask(
-          task,
-          taskDef => js.JSON.stringify(TaskDefSerializer.serialize(taskDef)))
+        task,
+        taskDef => js.JSON.stringify(TaskDefSerializer.serialize(taskDef))
+      )
 
-      lit(serializedTask = serTask,
-          taskDef = TaskDefSerializer.serialize(task.taskDef),
-          tags = task.tags.toJSArray)
+      lit(
+        serializedTask = serTask,
+        taskDef = TaskDefSerializer.serialize(task.taskDef),
+        tags = task.tags.toJSArray
+      )
     }.toJSArray
-  }
 }

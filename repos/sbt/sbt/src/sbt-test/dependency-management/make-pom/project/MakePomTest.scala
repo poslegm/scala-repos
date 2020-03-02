@@ -6,19 +6,20 @@ import scala.xml._
 object MakePomTest extends Build {
   lazy val root =
     Project("root", file(".")) settings
-    (readPom <<= makePom map XML.loadFile,
-        TaskKey[Unit]("check-pom") <<= checkPom,
-        TaskKey[Unit]("check-extra") <<= checkExtra, TaskKey[Unit](
-            "check-version-plus-mapping") <<= checkVersionPlusMapping,
-        resolvers += Resolver.sonatypeRepo("snapshots"),
-        makePomConfiguration ~= { _.copy(extra = <extra-tag/>) },
-        libraryDependencies += "com.google.code.findbugs" % "jsr305" % "1.3.+")
+      (readPom <<= makePom map XML.loadFile,
+      TaskKey[Unit]("check-pom") <<= checkPom,
+      TaskKey[Unit]("check-extra") <<= checkExtra, TaskKey[Unit](
+        "check-version-plus-mapping"
+      ) <<= checkVersionPlusMapping,
+      resolvers += Resolver.sonatypeRepo("snapshots"),
+      makePomConfiguration ~= { _.copy(extra = <extra-tag/>) },
+      libraryDependencies += "com.google.code.findbugs" % "jsr305" % "1.3.+")
 
   val readPom = TaskKey[Elem]("read-pom")
 
-  val fakeName = "fake"
-  val fakeURL = "http://example.org"
-  val fakeRepo = fakeName at fakeURL
+  val fakeName     = "fake"
+  val fakeURL      = "http://example.org"
+  val fakeRepo     = fakeName at fakeURL
   def extraTagName = "extra-tag"
 
   def checkProject(pom: Elem) =
@@ -44,9 +45,10 @@ object MakePomTest extends Build {
     (readPom) map { (pomXml) =>
       var found = false
       for {
-        dep <- pomXml \ "dependencies" \ "dependency" if (dep \ "artifactId").text == "jsr305"
-              // TODO - Ignore space here.
-              if (dep \ "version").text != "[1.3,1.4)"
+        dep <- pomXml \ "dependencies" \ "dependency"
+        if (dep \ "artifactId").text == "jsr305"
+        // TODO - Ignore space here.
+        if (dep \ "version").text != "[1.3,1.4)"
       } sys.error(s"Found dependency with invalid maven version: $dep")
       ()
     }
@@ -55,7 +57,7 @@ object MakePomTest extends Build {
     (readPom, fullResolvers) map { (pomXML, ivyRepositories) =>
       checkProject(pomXML)
       withRepositories(pomXML) { repositoriesElement =>
-        val repositories = repositoriesElement \ "repository"
+        val repositories        = repositoriesElement \ "repository"
         val writtenRepositories = repositories.map(read).distinct
         val mavenStyleRepositories = ivyRepositories.collect {
           case x: MavenRepository
@@ -64,12 +66,13 @@ object MakePomTest extends Build {
         } distinct;
 
         lazy val explain = (("Written:" +: writtenRepositories) ++
-            ("Declared:" +: mavenStyleRepositories)).mkString("\n\t")
+          ("Declared:" +: mavenStyleRepositories)).mkString("\n\t")
 
         if (writtenRepositories != mavenStyleRepositories)
           sys.error(
-              "Written repositories did not match declared repositories.\n\t" +
-              explain)
+            "Written repositories did not match declared repositories.\n\t" +
+              explain
+          )
         else ()
       }
     }

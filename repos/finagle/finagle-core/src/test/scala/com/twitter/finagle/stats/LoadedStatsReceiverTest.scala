@@ -11,8 +11,8 @@ class LoadedStatsReceiverTest extends FunSuite {
     LoadedStatsReceiver.self = NullStatsReceiver
 
     val dsr = DefaultStatsReceiver // StatsReceiverProxy
-    val csr = ClientStatsReceiver // NameTranslatingStatsReceiver
-    val ssr = ServerStatsReceiver // NameTranslatingStatsReceiver
+    val csr = ClientStatsReceiver  // NameTranslatingStatsReceiver
+    val ssr = ServerStatsReceiver  // NameTranslatingStatsReceiver
 
     try {
       assert(dsr.isNull, "DefaultStatsReceiver should be null")

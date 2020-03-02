@@ -169,7 +169,7 @@ class ActorRefSourceSpec extends AkkaSpec {
     }
 
     "set actor name equal to stage name" in assertAllStagesStopped {
-      val s = TestSubscriber.manualProbe[Int]()
+      val s    = TestSubscriber.manualProbe[Int]()
       val name = "SomeCustomName"
       val ref = Source
         .actorRef(10, OverflowStrategy.fail)

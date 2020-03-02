@@ -9,7 +9,9 @@ object VerifyClass {
 
   // Returns the error if there's a failure
   private def checkClass(
-      name: String, cl: ClassLoader): (String, Option[String]) = {
+      name: String,
+      cl: ClassLoader
+  ): (String, Option[String]) =
     try {
       Class.forName(name, true, cl)
       (name, None)
@@ -18,7 +20,6 @@ object VerifyClass {
         // TODO: only catch VerifyError (and related) + ExceptionInInitializationError (for static objects that bomb on classload)
         (name, Some(x.toString))
     }
-  }
 
   def checkClassesInJar(name: String, cl: ClassLoader) =
     new Jar(File(name)) filter (_.getName.endsWith(".class")) map { x =>
@@ -42,8 +43,7 @@ object VerifyClass {
     val results = args
       .flatMap(n => checkClasses(n, cl))
       .toMap
-      (for { (name, result) <- results } yield
-        (name, result.getOrElse(null))).asJava
+    (for { (name, result) <- results } yield (name, result.getOrElse(null))).asJava
   }
 
   def main(args: Array[String]): Unit = {

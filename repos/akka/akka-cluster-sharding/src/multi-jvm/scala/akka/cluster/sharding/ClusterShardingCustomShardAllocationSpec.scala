@@ -40,7 +40,7 @@ object ClusterShardingCustomShardAllocationSpec {
   val extractShardId: ShardRegion.ExtractShardId = msg ⇒
     msg match {
       case id: Int ⇒ id.toString
-  }
+    }
 
   case object AllocateReq
   case class UseRegion(region: ActorRef)
@@ -51,13 +51,13 @@ object ClusterShardingCustomShardAllocationSpec {
 
   class Allocator extends Actor {
     var useRegion: Option[ActorRef] = None
-    var rebalance = Set.empty[String]
+    var rebalance                   = Set.empty[String]
     def receive = {
       case UseRegion(region) ⇒
         useRegion = Some(region)
         sender() ! UseRegionAck
       case AllocateReq ⇒
-        useRegion.foreach { sender() ! _ }
+        useRegion.foreach(sender() ! _)
       case RebalanceShards(shards) ⇒
         rebalance = shards
         sender() ! RebalanceShardsAck
@@ -73,25 +73,25 @@ object ClusterShardingCustomShardAllocationSpec {
     override def allocateShard(
         requester: ActorRef,
         shardId: ShardRegion.ShardId,
-        currentShardAllocations: Map[
-            ActorRef, immutable.IndexedSeq[ShardRegion.ShardId]])
-      : Future[ActorRef] = {
+        currentShardAllocations: Map[ActorRef, immutable.IndexedSeq[
+          ShardRegion.ShardId
+        ]]
+    ): Future[ActorRef] =
       (ref ? AllocateReq).mapTo[ActorRef]
-    }
 
     override def rebalance(
-        currentShardAllocations: Map[
-            ActorRef, immutable.IndexedSeq[ShardRegion.ShardId]],
-        rebalanceInProgress: Set[ShardRegion.ShardId])
-      : Future[Set[ShardRegion.ShardId]] = {
+        currentShardAllocations: Map[ActorRef, immutable.IndexedSeq[
+          ShardRegion.ShardId
+        ]],
+        rebalanceInProgress: Set[ShardRegion.ShardId]
+    ): Future[Set[ShardRegion.ShardId]] =
       (ref ? RebalanceReq).mapTo[Set[String]]
-    }
   }
 }
 
 abstract class ClusterShardingCustomShardAllocationSpecConfig(val mode: String)
     extends MultiNodeConfig {
-  val first = role("first")
+  val first  = role("first")
   val second = role("second")
 
   commonConfig(ConfigFactory.parseString(s"""
@@ -119,10 +119,12 @@ object DDataClusterShardingCustomShardAllocationSpecConfig
 
 class PersistentClusterShardingCustomShardAllocationSpec
     extends ClusterShardingCustomShardAllocationSpec(
-        PersistentClusterShardingCustomShardAllocationSpecConfig)
+      PersistentClusterShardingCustomShardAllocationSpecConfig
+    )
 class DDataClusterShardingCustomShardAllocationSpec
     extends ClusterShardingCustomShardAllocationSpec(
-        DDataClusterShardingCustomShardAllocationSpecConfig)
+      DDataClusterShardingCustomShardAllocationSpecConfig
+    )
 
 class PersistentClusterShardingCustomShardAllocationMultiJvmNode1
     extends PersistentClusterShardingCustomShardAllocationSpec
@@ -135,30 +137,35 @@ class DDataClusterShardingCustomShardAllocationMultiJvmNode2
     extends DDataClusterShardingCustomShardAllocationSpec
 
 abstract class ClusterShardingCustomShardAllocationSpec(
-    config: ClusterShardingCustomShardAllocationSpecConfig)
-    extends MultiNodeSpec(config) with STMultiNodeSpec with ImplicitSender {
+    config: ClusterShardingCustomShardAllocationSpecConfig
+) extends MultiNodeSpec(config)
+    with STMultiNodeSpec
+    with ImplicitSender {
   import ClusterShardingCustomShardAllocationSpec._
   import config._
 
   override def initialParticipants = roles.size
 
   val storageLocations =
-    List("akka.persistence.journal.leveldb.dir",
-         "akka.persistence.journal.leveldb-shared.store.dir",
-         "akka.persistence.snapshot-store.local.dir").map(
-        s ⇒ new File(system.settings.config.getString(s)))
+    List(
+      "akka.persistence.journal.leveldb.dir",
+      "akka.persistence.journal.leveldb-shared.store.dir",
+      "akka.persistence.snapshot-store.local.dir"
+    ).map(s ⇒ new File(system.settings.config.getString(s)))
 
   override protected def atStartup() {
     runOn(first) {
-      storageLocations.foreach(
-          dir ⇒ if (dir.exists) FileUtils.deleteDirectory(dir))
+      storageLocations.foreach(dir ⇒
+        if (dir.exists) FileUtils.deleteDirectory(dir)
+      )
     }
   }
 
   override protected def afterTermination() {
     runOn(first) {
-      storageLocations.foreach(
-          dir ⇒ if (dir.exists) FileUtils.deleteDirectory(dir))
+      storageLocations.foreach(dir ⇒
+        if (dir.exists) FileUtils.deleteDirectory(dir)
+      )
     }
   }
 
@@ -170,16 +177,16 @@ abstract class ClusterShardingCustomShardAllocationSpec(
     enterBarrier(from.name + "-joined")
   }
 
-  def startSharding(): Unit = {
+  def startSharding(): Unit =
     ClusterSharding(system).start(
-        typeName = "Entity",
-        entityProps = Props[Entity],
-        settings = ClusterShardingSettings(system),
-        extractEntityId = extractEntityId,
-        extractShardId = extractShardId,
-        allocationStrategy = TestAllocationStrategy(allocator),
-        handOffStopMessage = PoisonPill)
-  }
+      typeName = "Entity",
+      entityProps = Props[Entity],
+      settings = ClusterShardingSettings(system),
+      extractEntityId = extractEntityId,
+      extractShardId = extractShardId,
+      allocationStrategy = TestAllocationStrategy(allocator),
+      handOffStopMessage = PoisonPill
+    )
 
   lazy val region = ClusterSharding(system).shardRegion("Entity")
 
@@ -225,13 +232,15 @@ abstract class ClusterShardingCustomShardAllocationSpec(
       }
       runOn(second) {
         lastSender.path should be(
-            node(first) / "system" / "sharding" / "Entity" / "2" / "2")
+          node(first) / "system" / "sharding" / "Entity" / "2" / "2"
+        )
       }
       enterBarrier("second-started")
 
       runOn(first) {
         system.actorSelection(node(second) / "system" / "sharding" / "Entity") ! Identify(
-            None)
+          None
+        )
         val secondRegion = expectMsgType[ActorIdentity].ref.get
         allocator ! UseRegion(secondRegion)
         expectMsg(UseRegionAck)
@@ -245,7 +254,8 @@ abstract class ClusterShardingCustomShardAllocationSpec(
       }
       runOn(first) {
         lastSender.path should be(
-            node(second) / "system" / "sharding" / "Entity" / "3" / "3")
+          node(second) / "system" / "sharding" / "Entity" / "3" / "3"
+        )
       }
 
       enterBarrier("after-2")
@@ -261,7 +271,8 @@ abstract class ClusterShardingCustomShardAllocationSpec(
           region.tell(2, p.ref)
           p.expectMsg(2.second, 2)
           p.lastSender.path should be(
-              node(second) / "system" / "sharding" / "Entity" / "2" / "2")
+            node(second) / "system" / "sharding" / "Entity" / "2" / "2"
+          )
         }
 
         region ! 1

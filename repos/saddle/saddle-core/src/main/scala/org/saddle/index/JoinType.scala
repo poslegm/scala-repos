@@ -39,5 +39,5 @@ sealed trait JoinType
 
 object InnerJoin extends JoinType
 object OuterJoin extends JoinType
-object LeftJoin extends JoinType
+object LeftJoin  extends JoinType
 object RightJoin extends JoinType

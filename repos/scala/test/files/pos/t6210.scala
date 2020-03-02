@@ -1,10 +1,10 @@
 abstract sealed trait AST
-abstract sealed trait AExpr extends AST
+abstract sealed trait AExpr                extends AST
 case class AAssign(name: String, v: AExpr) extends AExpr
-case class AConstBool(v: Boolean) extends AExpr
+case class AConstBool(v: Boolean)          extends AExpr
 
 trait Ty {}
-case class TInt() extends Ty
+case class TInt()  extends Ty
 case class TBool() extends Ty
 
 object Foo {

@@ -57,7 +57,7 @@ class BoundedStackTest extends WordSpec {
       val buf = new BoundedStack[String](4)
       buf ++= List("a", "b", "c", "d", "e", "f")
       for (i <- 0 until buf.size) {
-        val old = buf(i)
+        val old     = buf(i)
         val updated = old + "2"
         buf(i) = updated
         assert(buf(i) == updated)

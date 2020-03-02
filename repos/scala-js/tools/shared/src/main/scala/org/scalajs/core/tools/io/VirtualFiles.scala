@@ -34,13 +34,12 @@ trait VirtualFile {
   def exists: Boolean
 
   /** URI for this virtual file */
-  def toURI: URI = {
+  def toURI: URI =
     new URI(
-        "virtualfile", // Pseudo-Scheme
-        path, // Scheme specific part
-        null // Fragment
+      "virtualfile", // Pseudo-Scheme
+      path,          // Scheme specific part
+      null           // Fragment
     )
-  }
 }
 
 object VirtualFile {
@@ -120,8 +119,7 @@ object VirtualJSFile {
     new MemVirtualJSFile(path).withVersion(Some(path))
 }
 
-trait WritableVirtualJSFile
-    extends WritableVirtualTextFile with VirtualJSFile {
+trait WritableVirtualJSFile extends WritableVirtualTextFile with VirtualJSFile {
   def sourceMapWriter: Writer
 }
 
@@ -145,7 +143,8 @@ trait VirtualScalaJSIRFile extends VirtualFile {
 /** Base trait for virtual Scala.js IR files that are serialized as binary file.
   */
 trait VirtualSerializedScalaJSIRFile
-    extends VirtualBinaryFile with VirtualScalaJSIRFile {
+    extends VirtualBinaryFile
+    with VirtualScalaJSIRFile {
 
   /** Class info of this file. */
   override def info: ir.Infos.ClassInfo = {
@@ -156,11 +155,12 @@ trait VirtualSerializedScalaJSIRFile
     } catch {
       case e: ir.IRVersionNotSupportedException =>
         throw new ir.IRVersionNotSupportedException(
-            e.version,
-            e.supported,
-            s"Failed to deserialize info of file compiled with Scala.js ${e.version}" +
+          e.version,
+          e.supported,
+          s"Failed to deserialize info of file compiled with Scala.js ${e.version}" +
             s" (supported: ${e.supported.mkString(", ")}): $path",
-            e)
+          e
+        )
 
       case e: IOException =>
         throw new IOException(s"Failed to deserialize info of $path", e)
@@ -177,7 +177,7 @@ trait VirtualSerializedScalaJSIRFile
       val tree = ir.Serializers
         .deserialize(stream, version)
         .asInstanceOf[ir.Trees.ClassDef]
-        (info, tree)
+      (info, tree)
     } catch {
       case e: IOException =>
         throw new IOException(s"Failed to deserialize $path", e)
@@ -194,31 +194,29 @@ trait VirtualJarFile extends VirtualBinaryFile {
     *  It is up to the implementation whether these files are read lazily or not.
     *  The default implementation reads them into memory.
     */
-  def sjsirFiles: Seq[VirtualScalaJSIRFile with RelativeVirtualFile] = {
+  def sjsirFiles: Seq[VirtualScalaJSIRFile with RelativeVirtualFile] =
     findEntries(_.endsWith(".sjsir")) { (entry, stream) =>
       val file = new JarEntryIRFile(path, entry.getName)
       file.content = IO.readInputStreamToByteArray(stream)
       file
     }
-  }
 
-  def jsFiles: Seq[VirtualJSFile with RelativeVirtualFile] = {
+  def jsFiles: Seq[VirtualJSFile with RelativeVirtualFile] =
     findEntries(_.endsWith(".js")) { (entry, stream) =>
       val file = new JarEntryJSFile(path, entry.getName)
       file.content = IO.readInputStreamToString(stream)
       file
     }
-  }
 
-  def jsDependencyManifests: Seq[JSDependencyManifest] = {
+  def jsDependencyManifests: Seq[JSDependencyManifest] =
     findEntries(_ == JSDependencyManifest.ManifestFileName) { (_, stream) =>
       val json = readJSON(new InputStreamReader(stream, "UTF-8"))
       fromJSON[JSDependencyManifest](json)
     }
-  }
 
-  private def findEntries[T](cond: String => Boolean)(
-      mkResult: (ZipEntry, InputStream) => T): Seq[T] = {
+  private def findEntries[T](
+      cond: String => Boolean
+  )(mkResult: (ZipEntry, InputStream) => T): Seq[T] = {
     val stream = new ZipInputStream(inputStream)
     try {
       Iterator

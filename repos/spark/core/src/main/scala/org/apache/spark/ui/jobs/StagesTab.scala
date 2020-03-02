@@ -25,10 +25,10 @@ import org.apache.spark.ui.{SparkUI, SparkUITab}
 /** Web UI showing progress status of all stages in the given SparkContext. */
 private[ui] class StagesTab(parent: SparkUI)
     extends SparkUITab(parent, "stages") {
-  val sc = parent.sc
-  val conf = parent.conf
-  val killEnabled = parent.killEnabled
-  val progressListener = parent.jobProgressListener
+  val sc                     = parent.sc
+  val conf                   = parent.conf
+  val killEnabled            = parent.killEnabled
+  val progressListener       = parent.jobProgressListener
   val operationGraphListener = parent.operationGraphListener
 
   attachPage(new AllStagesPage(this))
@@ -38,7 +38,7 @@ private[ui] class StagesTab(parent: SparkUI)
   def isFairScheduler: Boolean =
     progressListener.schedulingMode == Some(SchedulingMode.FAIR)
 
-  def handleKillRequest(request: HttpServletRequest): Unit = {
+  def handleKillRequest(request: HttpServletRequest): Unit =
     if (killEnabled &&
         parent.securityManager.checkModifyPermissions(request.getRemoteUser)) {
       val killFlag =
@@ -53,5 +53,4 @@ private[ui] class StagesTab(parent: SparkUI)
       // time should be limited in duration.
       Thread.sleep(100)
     }
-  }
 }

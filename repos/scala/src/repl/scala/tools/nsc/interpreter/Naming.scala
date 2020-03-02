@@ -15,7 +15,7 @@ import scala.util.matching.Regex
   */
 trait Naming {
   def unmangle(str: String): String = {
-    val ESC = '\u001b'
+    val ESC     = '\u001b'
     val cleaned = removeIWPackages(removeLineWrapper(str))
     // Looking to exclude binary data which hoses the terminal, but
     // let through the subset of it we need, like whitespace and also
@@ -27,15 +27,16 @@ trait Naming {
     if (binaryChars > 5) // more than one can count while holding a hamburger
       cleaned map {
         case c if lineSeparator contains c => c
-        case c if c.isWhitespace => ' '
-        case c if c < 32 => '?'
-        case c => c
+        case c if c.isWhitespace           => ' '
+        case c if c < 32                   => '?'
+        case c                             => c
       }
     // Not lots - preserve whitespace and ESC
     else
       cleaned map
-      (ch =>
-            if (ch.isWhitespace || ch == ESC) ch else if (ch < 32) '?' else ch)
+        (ch =>
+          if (ch.isWhitespace || ch == ESC) ch else if (ch < 32) '?' else ch
+        )
   }
 
   // The two name forms this is catching are the two sides of this assignment:
@@ -46,13 +47,14 @@ trait Naming {
     val sn = sessionNames
     val members =
       List(sn.read, sn.eval, sn.print) map Regex.quote mkString
-      ("(?:", "|", ")")
+        ("(?:", "|", ")")
     debugging("lineRegex")(
-        Regex.quote(sn.line) + """\d+[./]""" + members + """[$.]""")
+      Regex.quote(sn.line) + """\d+[./]""" + members + """[$.]"""
+    )
   }
 
   private def removeLineWrapper(s: String) = s.replaceAll(lineRegex, "")
-  private def removeIWPackages(s: String) = s.replaceAll("""\$iw[$.]""", "")
+  private def removeIWPackages(s: String)  = s.replaceAll("""\$iw[$.]""", "")
 
   trait SessionNames {
     // All values are configurable by passing e.g. -Dscala.repl.name.read=XXX
@@ -61,10 +63,10 @@ trait Naming {
       sys.props.getOrElse("scala.repl.name." + name, default)
 
     // Prefixes used in repl machinery.  Default to $line, $read, etc.
-    def line = propOr("line")
-    def read = propOr("read")
-    def eval = propOr("eval")
-    def print = propOr("print")
+    def line   = propOr("line")
+    def read   = propOr("read")
+    def eval   = propOr("eval")
+    def print  = propOr("print")
     def result = propOr("result")
 
     // The prefix for unnamed results: by default res0, res1, etc.
@@ -76,7 +78,7 @@ trait Naming {
 
   /** Generates names pre0, pre1, etc. via calls to apply method */
   class NameCreator(pre: String) {
-    private var x = -1
+    private var x          = -1
     var mostRecent: String = ""
 
     def apply(): String = {
@@ -94,15 +96,14 @@ trait Naming {
   private lazy val internalVar =
     new NameCreator(sessionNames.ires) // internal var name, like $ires0
 
-  def isUserVarName(name: String) = userVar didGenerate name
+  def isUserVarName(name: String)     = userVar didGenerate name
   def isInternalVarName(name: String) = internalVar didGenerate name
 
   val freshLineId = {
     var x = 0
-    () =>
-      { x += 1; x }
+    () => { x += 1; x }
   }
-  def freshUserVarName() = userVar()
+  def freshUserVarName()     = userVar()
   def freshInternalVarName() = internalVar()
 
   def resetAllCreators() {

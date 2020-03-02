@@ -26,7 +26,7 @@ import com.twitter.util.{TwitterDateFormat, NetUtil}
 object SyslogHandler {
   val DEFAULT_PORT = 514
 
-  val PRIORITY_USER = 8
+  val PRIORITY_USER   = 8
   val PRIORITY_DAEMON = 24
   val PRIORITY_LOCAL0 = 128
   val PRIORITY_LOCAL1 = 136
@@ -38,18 +38,18 @@ object SyslogHandler {
   val PRIORITY_LOCAL7 = 184
 
   private val SEVERITY_EMERGENCY = 0
-  private val SEVERITY_ALERT = 1
-  private val SEVERITY_CRITICAL = 2
-  private val SEVERITY_ERROR = 3
-  private val SEVERITY_WARNING = 4
-  private val SEVERITY_NOTICE = 5
-  private val SEVERITY_INFO = 6
-  private val SEVERITY_DEBUG = 7
+  private val SEVERITY_ALERT     = 1
+  private val SEVERITY_CRITICAL  = 2
+  private val SEVERITY_ERROR     = 3
+  private val SEVERITY_WARNING   = 4
+  private val SEVERITY_NOTICE    = 5
+  private val SEVERITY_INFO      = 6
+  private val SEVERITY_DEBUG     = 7
 
   /**
     * Convert the java/scala log level into its closest syslog-ng severity.
     */
-  private[logging] def severityForLogLevel(level: Int): Int = {
+  private[logging] def severityForLogLevel(level: Int): Int =
     if (level >= Level.FATAL.value) {
       SEVERITY_ALERT
     } else if (level >= Level.CRITICAL.value) {
@@ -63,9 +63,8 @@ object SyslogHandler {
     } else {
       SEVERITY_DEBUG
     }
-  }
 
-  val ISO_DATE_FORMAT = TwitterDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+  val ISO_DATE_FORMAT        = TwitterDateFormat("yyyy-MM-dd'T'HH:mm:ss")
   val OLD_SYSLOG_DATE_FORMAT = TwitterDateFormat("MMM dd HH:mm:ss")
 
   /**
@@ -85,20 +84,21 @@ object SyslogHandler {
   ) = () => new SyslogHandler(server, port, formatter, level)
 }
 
-class SyslogHandler(val server: String,
-                    val port: Int,
-                    formatter: Formatter,
-                    level: Option[Level])
-    extends Handler(formatter, level) {
+class SyslogHandler(
+    val server: String,
+    val port: Int,
+    formatter: Formatter,
+    level: Option[Level]
+) extends Handler(formatter, level) {
 
-  private val socket = new DatagramSocket
+  private val socket        = new DatagramSocket
   private[logging] val dest = new InetSocketAddress(server, port)
 
   def flush() = {}
   def close() = {}
 
   def publish(record: javalog.LogRecord) = {
-    val data = formatter.format(record).getBytes
+    val data   = formatter.format(record).getBytes
     val packet = new DatagramPacket(data, data.length, dest)
     SyslogFuture {
       try {
@@ -141,12 +141,14 @@ class SyslogFormatter(
     val priority: Int = SyslogHandler.PRIORITY_USER,
     timezone: Option[String] = None,
     truncateAt: Int = 0,
-    truncateStackTracesAt: Int = Formatter.DefaultStackTraceSizeLimit)
-    extends Formatter(timezone,
-                      truncateAt,
-                      truncateStackTracesAt,
-                      useFullPackageNames = false,
-                      prefix = "") {
+    truncateStackTracesAt: Int = Formatter.DefaultStackTraceSizeLimit
+) extends Formatter(
+      timezone,
+      truncateAt,
+      truncateStackTracesAt,
+      useFullPackageNames = false,
+      prefix = ""
+    ) {
 
   override def dateFormat =
     if (useIsoDateFormat) {
@@ -158,9 +160,12 @@ class SyslogFormatter(
   override def lineTerminator = ""
 
   override def formatPrefix(
-      level: javalog.Level, date: String, name: String): String = {
+      level: javalog.Level,
+      date: String,
+      name: String
+  ): String = {
     val syslogLevel = level match {
-      case x: Level => SyslogHandler.severityForLogLevel(x.value)
+      case x: Level         => SyslogHandler.severityForLogLevel(x.value)
       case x: javalog.Level => SyslogHandler.severityForLogLevel(x.intValue)
     }
     serverName match {
@@ -168,19 +173,24 @@ class SyslogFormatter(
         "<%d>%s %s %s: ".format(priority | syslogLevel, date, hostname, name)
       case Some(serverName) =>
         "<%d>%s %s [%s] %s: ".format(
-            priority | syslogLevel, date, hostname, serverName, name)
+          priority | syslogLevel,
+          date,
+          hostname,
+          serverName,
+          name
+        )
     }
   }
 }
 
 object SyslogFuture {
   private val executor = Executors.newSingleThreadExecutor(
-      new NamedPoolThreadFactory("TWITTER-UTIL-SYSLOG", true /*daemon*/ ))
+    new NamedPoolThreadFactory("TWITTER-UTIL-SYSLOG", true /*daemon*/ )
+  )
   private val noop = new Runnable { def run() {} }
 
   def apply(action: => Unit) =
-    executor.submit(
-        new Runnable {
+    executor.submit(new Runnable {
       def run() { action }
     })
 

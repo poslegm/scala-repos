@@ -158,7 +158,7 @@ class CustomSerializersSpec extends Specification with MongoTestKit {
 
       // test data
       val birthday = (new Instant(1288742280000L)).toDateTime
-      val jack = PersonWithDateTime(ObjectId.get, birthday)
+      val jack     = PersonWithDateTime(ObjectId.get, birthday)
 
       // save the Person document
       jack.save

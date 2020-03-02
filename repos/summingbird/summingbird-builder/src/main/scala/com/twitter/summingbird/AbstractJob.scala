@@ -41,8 +41,8 @@ abstract class AbstractJob(env: Env) extends java.io.Serializable {
   // Make these implicitly available. Lazy because the env doesn't
   // initially contain a reference to the builder, and the args
   // constructor might need to make use of it
-  implicit lazy val _env = env
-  implicit lazy val _args = env.args
+  implicit lazy val _env                                           = env
+  implicit lazy val _args                                          = env.args
   def transformConfig(m: Map[String, AnyRef]): Map[String, AnyRef] = m
-  def registrars: List[IKryoRegistrar] = Nil
+  def registrars: List[IKryoRegistrar]                             = Nil
 }

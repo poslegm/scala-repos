@@ -48,18 +48,15 @@ abstract class Exchange extends UnaryNode {
 case class ReusedExchange(override val output: Seq[Attribute], child: Exchange)
     extends LeafNode {
 
-  override def sameResult(plan: SparkPlan): Boolean = {
+  override def sameResult(plan: SparkPlan): Boolean =
     // Ignore this wrapper. `plan` could also be a ReusedExchange, so we reverse the order here.
     plan.sameResult(child)
-  }
 
-  def doExecute(): RDD[InternalRow] = {
+  def doExecute(): RDD[InternalRow] =
     child.execute()
-  }
 
-  override protected[sql] def doExecuteBroadcast[T](): broadcast.Broadcast[T] = {
+  override protected[sql] def doExecuteBroadcast[T](): broadcast.Broadcast[T] =
     child.executeBroadcast()
-  }
 
   // Do not repeat the same tree in explain.
   override def treeChildren: Seq[SparkPlan] = Nil
@@ -82,9 +79,7 @@ case class ReuseExchange(conf: SQLConf) extends Rule[SparkPlan] {
         // the exchanges that have same results usually also have same schemas (same column names).
         val sameSchema =
           exchanges.getOrElseUpdate(exchange.schema, ArrayBuffer[Exchange]())
-        val samePlan = sameSchema.find { e =>
-          exchange.sameResult(e)
-        }
+        val samePlan = sameSchema.find(e => exchange.sameResult(e))
         if (samePlan.isDefined) {
           // Keep the output of this exchange, the following plans require that to resolve
           // attributes.

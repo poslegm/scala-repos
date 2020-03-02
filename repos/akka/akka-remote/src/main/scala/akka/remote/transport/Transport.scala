@@ -21,8 +21,10 @@ object Transport {
     */
   @SerialVersionUID(1L)
   final case class InvalidAssociationException(
-      msg: String, cause: Throwable = null)
-      extends AkkaException(msg, cause) with NoStackTrace
+      msg: String,
+      cause: Throwable = null
+  ) extends AkkaException(msg, cause)
+      with NoStackTrace
 
   /**
     * Message sent to a [[akka.remote.transport.Transport.AssociationEventListener]] registered to a transport
@@ -143,9 +145,8 @@ trait Transport {
     * @param cmd Command message to the transport
     * @return Future that succeeds when the command was handled or dropped
     */
-  def managementCommand(cmd: Any): Future[Boolean] = {
+  def managementCommand(cmd: Any): Future[Boolean] =
     Future.successful(false)
-  }
 }
 
 object AssociationHandle {
@@ -174,15 +175,16 @@ object AssociationHandle {
     *   information about the reason of disassociation
     */
   final case class Disassociated(info: DisassociateInfo)
-      extends HandleEvent with DeadLetterSuppression
+      extends HandleEvent
+      with DeadLetterSuppression
 
   /**
     * Supertype of possible disassociation reasons
     */
   sealed trait DisassociateInfo
 
-  case object Unknown extends DisassociateInfo
-  case object Shutdown extends DisassociateInfo
+  case object Unknown     extends DisassociateInfo
+  case object Shutdown    extends DisassociateInfo
   case object Quarantined extends DisassociateInfo
 
   /**

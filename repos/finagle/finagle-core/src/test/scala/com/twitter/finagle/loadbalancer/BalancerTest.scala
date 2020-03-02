@@ -1,7 +1,11 @@
 package com.twitter.finagle.loadbalancer
 
 import com.twitter.finagle._
-import com.twitter.finagle.stats.{InMemoryStatsReceiver, StatsReceiver, NullStatsReceiver}
+import com.twitter.finagle.stats.{
+  InMemoryStatsReceiver,
+  StatsReceiver,
+  NullStatsReceiver
+}
 import com.twitter.util.{Future, Time}
 import java.util.concurrent.atomic.AtomicInteger
 import org.junit.runner.RunWith
@@ -13,26 +17,29 @@ import org.scalatest.prop.GeneratorDrivenPropertyChecks
 
 @RunWith(classOf[JUnitRunner])
 private class BalancerTest
-    extends FunSuite with Conductors with IntegrationPatience
+    extends FunSuite
+    with Conductors
+    with IntegrationPatience
     with GeneratorDrivenPropertyChecks {
 
   private class TestBalancer(
-      protected val statsReceiver: InMemoryStatsReceiver = new InMemoryStatsReceiver)
-      extends Balancer[Unit, Unit] {
-    def maxEffort: Int = 5
+      protected val statsReceiver: InMemoryStatsReceiver =
+        new InMemoryStatsReceiver
+  ) extends Balancer[Unit, Unit] {
+    def maxEffort: Int            = 5
     def emptyException: Throwable = ???
 
     def stats: InMemoryStatsReceiver = statsReceiver
     protected[this] val maxEffortExhausted =
       statsReceiver.counter("max_effort_exhausted")
 
-    def nodes: Vector[Node] = dist.vector
+    def nodes: Vector[Node]                        = dist.vector
     def factories: Set[ServiceFactory[Unit, Unit]] = nodes.map(_.factory).toSet
 
     def nodeOf(fac: ServiceFactory[Unit, Unit]) =
       nodes.find(_.factory == fac).get
 
-    def _dist() = dist
+    def _dist()    = dist
     def _rebuild() = rebuild()
 
     def rebuildDistributor() {}
@@ -57,7 +64,7 @@ private class BalancerTest
       type This = Node
       def load: Double = ???
       def pending: Int = ???
-      def token: Int = ???
+      def token: Int   = ???
       def close(deadline: Time): Future[Unit] =
         TestBalancer.this.synchronized {
           factory.close()
@@ -85,13 +92,13 @@ private class BalancerTest
     @volatile var ncloses = 0
 
     def close(deadline: Time) = {
-      synchronized { ncloses += 1 }
+      synchronized(ncloses += 1)
       Future.Done
     }
   }
 
-  val genStatus = Gen.oneOf(Status.Open, Status.Busy, Status.Closed)
-  val genSvcFac = genStatus.map(newFac)
+  val genStatus     = Gen.oneOf(Status.Open, Status.Busy, Status.Closed)
+  val genSvcFac     = genStatus.map(newFac)
   val genLoadedNode = for (fac <- genSvcFac) yield fac
   val genNodes =
     Gen.containerOf[List, ServiceFactory[Unit, Unit]](genLoadedNode)
@@ -113,9 +120,9 @@ private class BalancerTest
   }
 
   test("status: balancer with at least one Open node is Open") {
-    val bal = new TestBalancer
+    val bal    = new TestBalancer
     val f1, f2 = newFac(Status.Closed)
-    val f3 = newFac(Status.Open)
+    val f3     = newFac(Status.Open)
     bal.update(Seq(f1, f2, f3))
 
     assert(bal.status == Status.Open)
@@ -131,10 +138,10 @@ private class BalancerTest
   }
 
   test("max_effort_exhausted counter updated properly") {
-    val stats = new InMemoryStatsReceiver()
-    val bal = new TestBalancer(stats)
+    val stats  = new InMemoryStatsReceiver()
+    val bal    = new TestBalancer(stats)
     val closed = newFac(Status.Closed)
-    val open = newFac(Status.Open)
+    val open   = newFac(Status.Open)
 
     // start out all closed
     bal.update(Seq(closed))
@@ -148,7 +155,7 @@ private class BalancerTest
   }
 
   test("updater: keeps nodes up to date") {
-    val bal = new TestBalancer
+    val bal        = new TestBalancer
     val f1, f2, f3 = newFac()
 
     val adds = bal.stats.counter("adds")
@@ -188,11 +195,11 @@ private class BalancerTest
       import conductor._
 
       val bal = new TestBalancer {
-        val beat = new AtomicInteger(1)
+        val beat                               = new AtomicInteger(1)
         @volatile var updateThreads: Set[Long] = Set.empty
 
         override def rebuildDistributor() {
-          synchronized { updateThreads += Thread.currentThread.getId() }
+          synchronized(updateThreads += Thread.currentThread.getId())
           waitForBeat(beat.getAndIncrement())
           waitForBeat(beat.getAndIncrement())
         }

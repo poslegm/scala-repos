@@ -5,7 +5,7 @@ object Test extends App {
   // no compileTimeOnly errors here, because scalac does constant folding
   // the type of reify(42) is Expr[42.type]
   // therefore the type of expr.splice is 42.type, which is then constfolded
-  val expr = reify(42)
+  val expr     = reify(42)
   val ignored1 = expr.splice
   val ignored2 = expr.value
 

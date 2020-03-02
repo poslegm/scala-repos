@@ -40,7 +40,7 @@ object Stat {
   def timeFuture[A](stat: Stat, unit: TimeUnit)(f: => Future[A]): Future[A] = {
     val elapsed = Stopwatch.start()
     try {
-      f.ensure { stat.add(elapsed().inUnit(unit)) }
+      f.ensure(stat.add(elapsed().inUnit(unit)))
     } catch {
       case NonFatal(e) =>
         stat.add(elapsed().inUnit(unit))
@@ -75,7 +75,10 @@ object JStats {
     * Time a given asynchronous `fn` using the given `unit`.
     */
   def timeFuture[A](
-      stat: Stat, fn: Callable[Future[A]], unit: TimeUnit): Future[A] =
+      stat: Stat,
+      fn: Callable[Future[A]],
+      unit: TimeUnit
+  ): Future[A] =
     Stat.timeFuture(stat, unit)(fn.call())
 
   /**

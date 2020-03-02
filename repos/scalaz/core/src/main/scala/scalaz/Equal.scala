@@ -23,13 +23,11 @@ trait Equal[F] { self =>
   trait EqualLaw {
     import std.boolean.conditional
     def commutative(f1: F, f2: F): Boolean = equal(f1, f2) == equal(f2, f1)
-    def reflexive(f: F): Boolean = equal(f, f)
-    def transitive(f1: F, f2: F, f3: F): Boolean = {
+    def reflexive(f: F): Boolean           = equal(f, f)
+    def transitive(f1: F, f2: F, f3: F): Boolean =
       conditional(equal(f1, f2) && equal(f2, f3), equal(f1, f3))
-    }
-    def naturality(f1: F, f2: F): Boolean = {
+    def naturality(f1: F, f2: F): Boolean =
       conditional(equalIsNatural, equal(f1, f2) == (f1 == f2))
-    }
   }
   def equalLaw = new EqualLaw {}
   ////
@@ -42,7 +40,7 @@ object Equal {
   ////
   /** Creates an Equal instance based on universal equality, `a1 == a2` */
   def equalA[A]: Equal[A] = new Equal[A] {
-    def equal(a1: A, a2: A): Boolean = a1 == a2
+    def equal(a1: A, a2: A): Boolean     = a1 == a2
     override def equalIsNatural: Boolean = true
   }
 
@@ -51,7 +49,7 @@ object Equal {
     def equal(a1: A, a2: A): Boolean = a1 eq a2
   }
 
-  def equalBy[A, B : Equal](f: A => B): Equal[A] = Equal[B] contramap f
+  def equalBy[A, B: Equal](f: A => B): Equal[A] = Equal[B] contramap f
 
   implicit val equalContravariant: Divisible[Equal] = new Divisible[Equal] {
     def contramap[A, B](r: Equal[A])(f: B => A) = r.contramap(f)

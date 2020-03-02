@@ -32,16 +32,15 @@ object CanHaarTr {
 
   /**Copy or pad a given vector.
     */
-  private def padOrCopy(v: DenseVector[Double]) = {
+  private def padOrCopy(v: DenseVector[Double]) =
     if ((v.length & -v.length) == v.length) {
       v.copy
     } else {
       val length = 1 << (32 - Integer.numberOfLeadingZeros(v.length))
-      val r = new DenseVector(new Array[Double](length))
+      val r      = new DenseVector(new Array[Double](length))
       r.slice(0, v.length) := v
       r
     }
-  }
 
   /** Transform a matrix into a squared power of 2 matrix.
     */
@@ -63,7 +62,8 @@ object CanHaarTr {
   /** Convert a dense matrix to a dense vector, concatenating all rows.
     */
   private def denseMatrixDToVector(
-      m: DenseMatrix[Double]): DenseVector[Double] = {
+      m: DenseMatrix[Double]
+  ): DenseVector[Double] = {
     val v = new Array[Double](m.size)
     for (r <- 0 until m.rows; c <- 0 until m.cols) {
       val i = r * m.cols + c
@@ -75,7 +75,10 @@ object CanHaarTr {
   /** Shape a DenseVector as a matric with a given number of rows/cols.
     */
   private def denseVectorDToMatrix(
-      v: DenseVector[Double], rows: Int, cols: Int): DenseMatrix[Double] = {
+      v: DenseVector[Double],
+      rows: Int,
+      cols: Int
+  ): DenseMatrix[Double] = {
     val m = DenseMatrix.zeros[Double](rows, cols)
     for (r <- 0 until m.rows; c <- 0 until m.cols) {
       m(r, c) = v(r * cols + c)
@@ -85,15 +88,16 @@ object CanHaarTr {
 
   /** Compute the fht on a given double vector.
     */
-  implicit val dvDouble1FHT: CanHaarTr[
-      DenseVector[Double], DenseVector[Double]] = {
+  implicit val dvDouble1FHT
+      : CanHaarTr[DenseVector[Double], DenseVector[Double]] = {
     new CanHaarTr[DenseVector[Double], DenseVector[Double]] {
       def apply(v: DenseVector[Double]) = {
         def _fht(v: DenseVector[Double]): DenseVector[Double] = {
           if (v.length > 1) {
             val p = v.toArray.grouped(2).toList
             v.slice(0, v.length / 2) := _fht(
-                new DenseVector(p.map(e => (e(0) + e(1)) * nFactor).toArray))
+              new DenseVector(p.map(e => (e(0) + e(1)) * nFactor).toArray)
+            )
             v.slice(v.length / 2, v.length) :=
               new DenseVector(p.map(e => (e(0) - e(1)) * nFactor).toArray)
           }
@@ -106,16 +110,17 @@ object CanHaarTr {
 
   /** Compute the fht on a given double matrix.
     */
-  implicit val dmDouble1FHT: CanHaarTr[
-      DenseMatrix[Double], DenseMatrix[Double]] = {
+  implicit val dmDouble1FHT
+      : CanHaarTr[DenseMatrix[Double], DenseMatrix[Double]] = {
     new CanHaarTr[DenseMatrix[Double], DenseMatrix[Double]] {
       def apply(m: DenseMatrix[Double]) = {
         def _fht(m: DenseMatrix[Double], limit: Int): Unit = if (limit > 1) {
           for (c <- 0 until limit) {
             val p = m(::, c).slice(0, limit).toArray.grouped(2).toArray
             val v =
-              p.map(e => (e(0) + e(1)) * nFactor) ++ p.map(
-                  e => (e(0) - e(1)) * nFactor)
+              p.map(e => (e(0) + e(1)) * nFactor) ++ p.map(e =>
+                (e(0) - e(1)) * nFactor
+              )
             for (r <- 0 until limit) m(r, c) = v(r)
           }
           for (r <- 0 until limit) {
@@ -123,8 +128,9 @@ object CanHaarTr {
             // dv.slice(0,limit) is the same as dv(0 until limit)
             val p = m.t(0 until limit, r).toArray.grouped(2).toArray
             val v =
-              p.map(e => (e(0) + e(1)) * nFactor) ++ p.map(
-                  e => (e(0) - e(1)) * nFactor)
+              p.map(e => (e(0) + e(1)) * nFactor) ++ p.map(e =>
+                (e(0) - e(1)) * nFactor
+              )
             for (c <- 0 until limit) m(r, c) = v(c)
           }
           _fht(m, limit / 2)

@@ -10,7 +10,9 @@ import prop._
 import spire.util.Opt
 
 class SafeLongCheck
-    extends PropSpec with Matchers with GeneratorDrivenPropertyChecks {
+    extends PropSpec
+    with Matchers
+    with GeneratorDrivenPropertyChecks {
 
   import SafeLong.zero
 
@@ -19,7 +21,7 @@ class SafeLongCheck
 
   def invariant(z: SafeLong): SafeLong = {
     z match {
-      case SafeLongLong(_) => ()
+      case SafeLongLong(_)       => ()
       case SafeLongBigInteger(n) => BigInt(n).isValidLong shouldBe false
     }
     z
@@ -68,7 +70,7 @@ class SafeLongCheck
     forAll { (x: BigInt, y: BigInt) =>
       if (y != 0) {
         invariant(SafeLong(x) % SafeLong(y)) shouldBe x % y
-        invariant(SafeLong(x) % y) shouldBe x % y
+        invariant(SafeLong(x) % y) shouldBe x           % y
       }
     }
 
@@ -97,7 +99,7 @@ class SafeLongCheck
     forAll { (x: BigInt, k: Byte) =>
       val sx = SafeLong(x)
       if (k < 0) {
-        intercept[IllegalArgumentException] { sx pow k }
+        intercept[IllegalArgumentException](sx pow k)
         true shouldBe true
       } else {
         invariant(sx ** k) shouldBe (x pow k)
@@ -112,7 +114,7 @@ class SafeLongCheck
       val sm = SafeLong(m)
       if (!sm.isZero) {
         if (k < 0) {
-          intercept[IllegalArgumentException] { sx.modPow(k, sm) }
+          intercept[IllegalArgumentException](sx.modPow(k, sm))
         } else {
           invariant(sx.modPow(k, sm)) shouldBe (sx pow k) % m
         }
@@ -163,7 +165,7 @@ class SafeLongCheck
 
   property("x >> k") {
     forAll { (x: BigInt, k: Byte) =>
-      intercept[ArithmeticException] { SafeLong(x) >> Int.MinValue }
+      intercept[ArithmeticException](SafeLong(x) >> Int.MinValue)
       invariant(SafeLong(x) >> k) shouldBe SafeLong(x >> k)
     }
   }
@@ -172,7 +174,7 @@ class SafeLongCheck
     forAll { (x: Long) =>
       val sx = SafeLong(x)
 
-      intercept[IllegalArgumentException] { sx pow -1 }
+      intercept[IllegalArgumentException](sx pow -1)
 
       sx.toLong shouldBe x
       sx.getLong shouldBe Opt(x)
@@ -200,8 +202,8 @@ class SafeLongCheck
 
   property("mixed size tests") {
     forAll { (ex: Either[Long, BigInt], ey: Either[Long, BigInt]) =>
-      val x = ex.fold(BigInt(_), identity)
-      val y = ey.fold(BigInt(_), identity)
+      val x  = ex.fold(BigInt(_), identity)
+      val y  = ey.fold(BigInt(_), identity)
       val sx = ex.fold(SafeLong(_), SafeLong(_))
       val sy = ey.fold(SafeLong(_), SafeLong(_))
 

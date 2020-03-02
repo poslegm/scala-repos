@@ -5,18 +5,17 @@ object Magic {
   }
   def magic[X, Y](v: X): Y = {
     val o: O[X, Y] = null;
-    val i: o.I = new o.I();
+    val i: o.I     = new o.I();
     i.magic(v);
   }
 }
 
 object Test {
-  def main(args: Array[String]): Unit = {
+  def main(args: Array[String]): Unit =
     try {
       val i: Int = Magic.magic("42");
       Console.println(i);
     } catch {
       case ex: Throwable => ex.printStackTrace()
     }
-  }
 }

@@ -7,9 +7,9 @@ import scala.collection.immutable.Queue
 
 object AsyncQueue {
   private sealed trait State[+T]
-  private case object Idle extends State[Nothing]
-  private case class Offering[T](q: Queue[T]) extends State[T]
-  private case class Polling[T](q: Queue[Promise[T]]) extends State[T]
+  private case object Idle                                     extends State[Nothing]
+  private case class Offering[T](q: Queue[T])                  extends State[T]
+  private case class Polling[T](q: Queue[Promise[T]])          extends State[T]
   private case class Excepting[T](q: Queue[T], exc: Throwable) extends State[T]
 
   /** Indicates there is no max capacity */
@@ -44,7 +44,7 @@ class AsyncQueue[T](maxPendingOffers: Int) {
     */
   def size: Int = state.get match {
     case Offering(q) => q.size
-    case _ => 0
+    case _           => 0
   }
 
   private[this] def queueOf[E](e: E): Queue[E] =
@@ -56,7 +56,7 @@ class AsyncQueue[T](maxPendingOffers: Int) {
       Future.exception(s.exc)
     } else {
       val (elem, nextq) = q.dequeue
-      val nextState = Excepting(nextq, s.exc)
+      val nextState     = Excepting(nextq, s.exc)
       if (state.compareAndSet(s, nextState)) Future.value(elem) else poll()
     }
   }
@@ -77,7 +77,7 @@ class AsyncQueue[T](maxPendingOffers: Int) {
 
     case s @ Offering(q) =>
       val (elem, nextq) = q.dequeue
-      val nextState = if (nextq.nonEmpty) Offering(nextq) else Idle
+      val nextState     = if (nextq.nonEmpty) Offering(nextq) else Idle
       if (state.compareAndSet(s, nextState)) Future.value(elem) else poll()
 
     case s: Excepting[T] =>
@@ -104,7 +104,7 @@ class AsyncQueue[T](maxPendingOffers: Int) {
 
     case s @ Polling(q) =>
       val (waiter, nextq) = q.dequeue
-      val nextState = if (nextq.nonEmpty) Polling(nextq) else Idle
+      val nextState       = if (nextq.nonEmpty) Polling(nextq) else Idle
       if (state.compareAndSet(s, nextState)) {
         waiter.setValue(elem)
         true
@@ -158,7 +158,8 @@ class AsyncQueue[T](maxPendingOffers: Int) {
 
     case s @ Polling(q) =>
       if (!state.compareAndSet(s, Excepting(Queue.empty, exc)))
-        fail(exc, discard) else q.foreach(_.setException(exc))
+        fail(exc, discard)
+      else q.foreach(_.setException(exc))
 
     case s @ Offering(q) =>
       val nextq = if (discard) Queue.empty else q

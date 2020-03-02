@@ -43,46 +43,47 @@ abstract class TemplateSource extends SchemedSource with HfsTapProvider {
     *
     * @returns A cascading TemplateTap.
     */
-  override def createTap(readOrWrite: AccessMode)(
-      implicit mode: Mode): Tap[_, _, _] = {
+  override def createTap(
+      readOrWrite: AccessMode
+  )(implicit mode: Mode): Tap[_, _, _] =
     readOrWrite match {
       case Read =>
         throw new InvalidSourceException("Cannot use TemplateSource for input")
       case Write => {
-          mode match {
-            case Local(_) => {
-                val localTap = new FileTap(localScheme, basePath, sinkMode)
-                new LTemplateTap(localTap, template, pathFields)
-              }
-            case hdfsMode @ Hdfs(_, _) => {
-                val hfsTap = createHfsTap(hdfsScheme, basePath, sinkMode)
-                new HTemplateTap(hfsTap, template, pathFields)
-              }
-            case hdfsTest @ HadoopTest(_, _) => {
-                val hfsTap = createHfsTap(
-                    hdfsScheme, hdfsTest.getWritePathFor(this), sinkMode)
-                new HTemplateTap(hfsTap, template, pathFields)
-              }
-            case _ => TestTapFactory(this, hdfsScheme).createTap(readOrWrite)
+        mode match {
+          case Local(_) => {
+            val localTap = new FileTap(localScheme, basePath, sinkMode)
+            new LTemplateTap(localTap, template, pathFields)
           }
+          case hdfsMode @ Hdfs(_, _) => {
+            val hfsTap = createHfsTap(hdfsScheme, basePath, sinkMode)
+            new HTemplateTap(hfsTap, template, pathFields)
+          }
+          case hdfsTest @ HadoopTest(_, _) => {
+            val hfsTap =
+              createHfsTap(hdfsScheme, hdfsTest.getWritePathFor(this), sinkMode)
+            new HTemplateTap(hfsTap, template, pathFields)
+          }
+          case _ => TestTapFactory(this, hdfsScheme).createTap(readOrWrite)
         }
+      }
     }
-  }
 
   /**
     * Validates the taps, makes sure there are no nulls as the path or template.
     *
     * @param mode The mode of the job.
     */
-  override def validateTaps(mode: Mode): Unit = {
+  override def validateTaps(mode: Mode): Unit =
     if (basePath == null) {
       throw new InvalidSourceException(
-          "basePath cannot be null for TemplateTap")
+        "basePath cannot be null for TemplateTap"
+      )
     } else if (template == null) {
       throw new InvalidSourceException(
-          "template cannot be null for TemplateTap")
+        "template cannot be null for TemplateTap"
+      )
     }
-  }
 }
 
 /**
@@ -95,13 +96,15 @@ abstract class TemplateSource extends SchemedSource with HfsTapProvider {
   * @param sinkMode How to handle conflicts with existing output.
   * @param fields The set of fields to apply to the output.
   */
-case class TemplatedTsv(override val basePath: String,
-                        override val template: String,
-                        override val pathFields: Fields = Fields.ALL,
-                        override val writeHeader: Boolean = false,
-                        override val sinkMode: SinkMode = SinkMode.REPLACE,
-                        override val fields: Fields = Fields.ALL)
-    extends TemplateSource with DelimitedScheme
+case class TemplatedTsv(
+    override val basePath: String,
+    override val template: String,
+    override val pathFields: Fields = Fields.ALL,
+    override val writeHeader: Boolean = false,
+    override val sinkMode: SinkMode = SinkMode.REPLACE,
+    override val fields: Fields = Fields.ALL
+) extends TemplateSource
+    with DelimitedScheme
 
 /**
   * An implementation of SequenceFile output, split over a template tap.
@@ -117,8 +120,9 @@ case class TemplatedSequenceFile(
     override val template: String,
     val sequenceFields: Fields = Fields.ALL,
     override val pathFields: Fields = Fields.ALL,
-    override val sinkMode: SinkMode = SinkMode.REPLACE)
-    extends TemplateSource with SequenceFileScheme {
+    override val sinkMode: SinkMode = SinkMode.REPLACE
+) extends TemplateSource
+    with SequenceFileScheme {
 
   override val fields = sequenceFields
 }

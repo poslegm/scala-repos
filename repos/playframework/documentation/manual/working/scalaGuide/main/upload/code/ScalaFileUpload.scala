@@ -33,7 +33,7 @@ package scalaguide.upload.fileupload {
             .file("picture")
             .map { picture =>
               import java.io.File
-              val filename = picture.filename
+              val filename    = picture.filename
               val contentType = picture.contentType
               picture.ref.moveTo(new File(s"/tmp/picture/$filename"))
               Ok("File uploaded")
@@ -46,12 +46,13 @@ package scalaguide.upload.fileupload {
         //#upload-file-action
 
         val request = FakeRequest().withBody(
-            MultipartFormData(Map.empty,
-                              Seq(FilePart("picture",
-                                           "formuploaded",
-                                           None,
-                                           TemporaryFile(tmpFile))),
-                              Nil)
+          MultipartFormData(
+            Map.empty,
+            Seq(
+              FilePart("picture", "formuploaded", None, TemporaryFile(tmpFile))
+            ),
+            Nil
+          )
         )
         testAction(upload, request)
 
@@ -75,16 +76,17 @@ package scalaguide.upload.fileupload {
       }
     }
 
-    def testAction[A](action: Action[A],
-                      request: => Request[A] = FakeRequest(),
-                      expectedResponse: Int = OK) = {
+    def testAction[A](
+        action: Action[A],
+        request: => Request[A] = FakeRequest(),
+        expectedResponse: Int = OK
+    ) =
       running(GuiceApplicationBuilder().build()) {
 
         val result = action(request)
 
         status(result) must_== expectedResponse
       }
-    }
 
     def writeFile(file: File, content: String) = {
       file.getParentFile.mkdirs()
@@ -106,9 +108,7 @@ package scalaguide.upload.fileupload {
       }
       //#upload-file-directly-action
 
-      def index = Action { request =>
-        Ok("Upload failed")
-      }
+      def index = Action(request => Ok("Upload failed"))
     }
   }
 }

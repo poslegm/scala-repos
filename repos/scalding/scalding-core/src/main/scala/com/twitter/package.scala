@@ -23,14 +23,14 @@ package object scalding {
     * The objects for the Typed-API live in the scalding.typed package
     * but are aliased here.
     */
-  val TDsl = com.twitter.scalding.typed.TDsl
+  val TDsl      = com.twitter.scalding.typed.TDsl
   val TypedPipe = com.twitter.scalding.typed.TypedPipe
-  type TypedPipe[+T] = com.twitter.scalding.typed.TypedPipe[T]
-  type TypedSink[-T] = com.twitter.scalding.typed.TypedSink[T]
-  type TypedSource[+T] = com.twitter.scalding.typed.TypedSource[T]
+  type TypedPipe[+T]    = com.twitter.scalding.typed.TypedPipe[T]
+  type TypedSink[-T]    = com.twitter.scalding.typed.TypedSink[T]
+  type TypedSource[+T]  = com.twitter.scalding.typed.TypedSource[T]
   type KeyedList[K, +V] = com.twitter.scalding.typed.KeyedList[K, V]
-  type ValuePipe[+T] = com.twitter.scalding.typed.ValuePipe[T]
-  type Grouped[K, +V] = com.twitter.scalding.typed.Grouped[K, V]
+  type ValuePipe[+T]    = com.twitter.scalding.typed.ValuePipe[T]
+  type Grouped[K, +V]   = com.twitter.scalding.typed.Grouped[K, V]
 
   /**
     * Make sure this is in sync with version.sbt
@@ -43,36 +43,30 @@ package object scalding {
 
   class RichPathFilter(f: PathFilter) {
 
-    def and(filters: PathFilter*): PathFilter = {
+    def and(filters: PathFilter*): PathFilter =
       new AndPathFilter(Seq(f) ++ filters)
-    }
 
-    def or(filters: PathFilter*): PathFilter = {
+    def or(filters: PathFilter*): PathFilter =
       new OrPathFilter(Seq(f) ++ filters)
-    }
 
-    def not: PathFilter = {
+    def not: PathFilter =
       new NotPathFilter(f)
-    }
   }
 
   private[this] class AndPathFilter(filters: Seq[PathFilter])
       extends PathFilter {
-    override def accept(p: Path): Boolean = {
+    override def accept(p: Path): Boolean =
       filters.forall(_.accept(p))
-    }
   }
 
   private[this] class OrPathFilter(filters: Seq[PathFilter])
       extends PathFilter {
-    override def accept(p: Path): Boolean = {
+    override def accept(p: Path): Boolean =
       filters.exists(_.accept(p))
-    }
   }
 
   private[this] class NotPathFilter(filter: PathFilter) extends PathFilter {
-    override def accept(p: Path): Boolean = {
+    override def accept(p: Path): Boolean =
       !filter.accept(p)
-    }
   }
 }

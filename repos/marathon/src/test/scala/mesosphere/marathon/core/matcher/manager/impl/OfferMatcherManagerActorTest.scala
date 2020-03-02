@@ -22,15 +22,18 @@ import rx.lang.scala.Observer
 import scala.util.Random
 
 class OfferMatcherManagerActorTest
-    extends MarathonActorSupport with FunSuiteLike with Matchers
-    with GivenWhenThen with Mockito {
+    extends MarathonActorSupport
+    with FunSuiteLike
+    with Matchers
+    with GivenWhenThen
+    with Mockito {
 
   test("The list of OfferMatchers is random without precedence") {
     Given("OfferMatcher with num normal matchers")
-    val num = 5
-    val f = new Fixture
-    val appId = PathId("/some/app")
-    val manager = f.offerMatcherManager
+    val num      = 5
+    val f        = new Fixture
+    val appId    = PathId("/some/app")
+    val manager  = f.offerMatcherManager
     val matchers = 1.to(num).map(_ => f.matcher())
     matchers.map { matcher =>
       manager ? OfferMatcherManagerDelegate.AddOrUpdateMatcher(matcher)
@@ -47,10 +50,11 @@ class OfferMatcherManagerActorTest
 
   test("The list of OfferMatchers is sorted by precedence") {
     Given(
-        "OfferMatcher with num precedence and num normal matchers, registered in mixed order")
-    val num = 5
-    val f = new Fixture
-    val appId = PathId("/some/app")
+      "OfferMatcher with num precedence and num normal matchers, registered in mixed order"
+    )
+    val num     = 5
+    val f       = new Fixture
+    val appId   = PathId("/some/app")
     val manager = f.offerMatcherManager
     1.to(num).flatMap(_ => Seq(f.matcher(), f.matcher(Some(appId)))).map {
       matcher =>
@@ -71,15 +75,15 @@ class OfferMatcherManagerActorTest
   implicit val timeout = Timeout(3, TimeUnit.SECONDS)
   class Fixture {
     val metricRegistry = mock[Metrics]
-    val metrics = new OfferMatcherManagerActorMetrics(metricRegistry)
-    val random = new Random(new util.Random())
-    val clock = ConstantClock()
-    val observer = Observer.apply[Boolean]((a: Boolean) => ())
+    val metrics        = new OfferMatcherManagerActorMetrics(metricRegistry)
+    val random         = new Random(new util.Random())
+    val clock          = ConstantClock()
+    val observer       = Observer.apply[Boolean]((a: Boolean) => ())
     object Config extends ScallopConf with OfferMatcherManagerConfig
     Config.afterInit()
     val offerMatcherManager = TestActorRef[OfferMatcherManagerActor](
-        OfferMatcherManagerActor.props(
-            metrics, random, clock, Config, observer))
+      OfferMatcherManagerActor.props(metrics, random, clock, Config, observer)
+    )
 
     def matcher(precedence: Option[PathId] = None): OfferMatcher = {
       val matcher = mock[OfferMatcher]
@@ -90,8 +94,12 @@ class OfferMatcherManagerActorTest
     def reservedOffer(appId: PathId, path: String = "test"): Offer = {
       import MarathonTestHelper._
       makeBasicOffer()
-        .addResources(reservedDisk(LocalVolumeId(appId, path, "uuid").idString,
-                                   containerPath = path))
+        .addResources(
+          reservedDisk(
+            LocalVolumeId(appId, path, "uuid").idString,
+            containerPath = path
+          )
+        )
         .build()
     }
   }

@@ -37,28 +37,29 @@ import org.apache.spark.util.Utils
   * Each WebUI represents a collection of tabs, each of which in turn represents a collection of
   * pages. The use of tabs is optional, however; a WebUI may choose to include pages directly.
   */
-private[spark] abstract class WebUI(val securityManager: SecurityManager,
-                                    val sslOptions: SSLOptions,
-                                    port: Int,
-                                    conf: SparkConf,
-                                    basePath: String = "",
-                                    name: String = "")
-    extends Logging {
+private[spark] abstract class WebUI(
+    val securityManager: SecurityManager,
+    val sslOptions: SSLOptions,
+    port: Int,
+    conf: SparkConf,
+    basePath: String = "",
+    name: String = ""
+) extends Logging {
 
-  protected val tabs = ArrayBuffer[WebUITab]()
+  protected val tabs     = ArrayBuffer[WebUITab]()
   protected val handlers = ArrayBuffer[ServletContextHandler]()
   protected val pageToHandlers =
     new HashMap[WebUIPage, ArrayBuffer[ServletContextHandler]]
   protected var serverInfo: Option[ServerInfo] = None
-  protected val localHostName = Utils.localHostNameForURI()
+  protected val localHostName                  = Utils.localHostNameForURI()
   protected val publicHostName =
     Option(conf.getenv("SPARK_PUBLIC_DNS")).getOrElse(localHostName)
   private val className = Utils.getFormattedClassName(this)
 
-  def getBasePath: String = basePath
-  def getTabs: Seq[WebUITab] = tabs.toSeq
+  def getBasePath: String                     = basePath
+  def getTabs: Seq[WebUITab]                  = tabs.toSeq
   def getHandlers: Seq[ServletContextHandler] = handlers.toSeq
-  def getSecurityManager: SecurityManager = securityManager
+  def getSecurityManager: SecurityManager     = securityManager
 
   /** Attach a tab to this UI, along with all of its attached pages. */
   def attachTab(tab: WebUITab) {
@@ -79,17 +80,19 @@ private[spark] abstract class WebUI(val securityManager: SecurityManager,
   def attachPage(page: WebUIPage) {
     val pagePath = "/" + page.prefix
     val renderHandler = createServletHandler(
-        pagePath,
-        (request: HttpServletRequest) => page.render(request),
-        securityManager,
-        conf,
-        basePath)
+      pagePath,
+      (request: HttpServletRequest) => page.render(request),
+      securityManager,
+      conf,
+      basePath
+    )
     val renderJsonHandler = createServletHandler(
-        pagePath.stripSuffix("/") + "/json",
-        (request: HttpServletRequest) => page.renderJson(request),
-        securityManager,
-        conf,
-        basePath)
+      pagePath.stripSuffix("/") + "/json",
+      (request: HttpServletRequest) => page.renderJson(request),
+      securityManager,
+      conf,
+      basePath
+    )
     attachHandler(renderHandler)
     attachHandler(renderJsonHandler)
     pageToHandlers
@@ -125,33 +128,35 @@ private[spark] abstract class WebUI(val securityManager: SecurityManager,
     * @param resourceBase Root of where to find resources to serve.
     * @param path Path in UI where to mount the resources.
     */
-  def addStaticHandler(resourceBase: String, path: String): Unit = {
+  def addStaticHandler(resourceBase: String, path: String): Unit =
     attachHandler(JettyUtils.createStaticHandler(resourceBase, path))
-  }
 
   /**
     * Remove a static content handler.
     *
     * @param path Path in UI to unmount.
     */
-  def removeStaticHandler(path: String): Unit = {
+  def removeStaticHandler(path: String): Unit =
     handlers.find(_.getContextPath() == path).foreach(detachHandler)
-  }
 
   /** Initialize all components of the server. */
   def initialize()
 
   /** Bind to the HTTP server behind this web interface. */
   def bind() {
-    assert(!serverInfo.isDefined,
-           "Attempted to bind %s more than once!".format(className))
+    assert(
+      !serverInfo.isDefined,
+      "Attempted to bind %s more than once!".format(className)
+    )
     try {
       var host = Option(conf.getenv("SPARK_LOCAL_IP")).getOrElse("0.0.0.0")
       serverInfo = Some(
-          startJettyServer(host, port, sslOptions, handlers, conf, name))
+        startJettyServer(host, port, sslOptions, handlers, conf, name)
+      )
       logInfo(
-          "Bound %s to %s, and started at http://%s:%d".format(
-              className, host, publicHostName, boundPort))
+        "Bound %s to %s, and started at http://%s:%d"
+          .format(className, host, publicHostName, boundPort)
+      )
     } catch {
       case e: Exception =>
         logError("Failed to bind %s".format(className), e)
@@ -165,8 +170,9 @@ private[spark] abstract class WebUI(val securityManager: SecurityManager,
   /** Stop the server behind this web interface. Only valid after bind(). */
   def stop() {
     assert(
-        serverInfo.isDefined,
-        "Attempted to stop %s before binding to a server!".format(className))
+      serverInfo.isDefined,
+      "Attempted to stop %s before binding to a server!".format(className)
+    )
     serverInfo.get.server.stop()
   }
 }
@@ -177,7 +183,7 @@ private[spark] abstract class WebUI(val securityManager: SecurityManager,
   */
 private[spark] abstract class WebUITab(parent: WebUI, val prefix: String) {
   val pages = ArrayBuffer[WebUIPage]()
-  val name = prefix.capitalize
+  val name  = prefix.capitalize
 
   /** Attach a page to this tab. This prepends the page's prefix with the tab's own prefix. */
   def attachPage(page: WebUIPage) {

@@ -16,7 +16,13 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.flow.hadoop.HadoopFlow
-import cascading.flow.{Flow, FlowDef, FlowListener, FlowStepListener, FlowStepStrategy}
+import cascading.flow.{
+  Flow,
+  FlowDef,
+  FlowListener,
+  FlowStepListener,
+  FlowStepStrategy
+}
 import cascading.flow.planner.BaseFlowStep
 import cascading.pipe.Pipe
 import com.twitter.scalding.reducer_estimation.ReducerEstimatorStepStrategy
@@ -39,19 +45,17 @@ trait ExecutionContext {
 
   import ExecutionContext._
 
-  private def getIdentifierOpt(descriptions: Seq[String]): Option[String] = {
+  private def getIdentifierOpt(descriptions: Seq[String]): Option[String] =
     if (descriptions.nonEmpty) Some(descriptions.distinct.mkString(", "))
     else None
-  }
 
   private def updateStepConfigWithDescriptions(
-      step: BaseFlowStep[JobConf]): Unit = {
+      step: BaseFlowStep[JobConf]
+  ): Unit = {
     val conf = step.getConfig
-    getIdentifierOpt(ExecutionContext.getDesc(step)).foreach(
-        descriptionString =>
-          {
-        conf.set(Config.StepDescriptions, descriptionString)
-    })
+    getIdentifierOpt(ExecutionContext.getDesc(step)).foreach {
+      descriptionString => conf.set(Config.StepDescriptions, descriptionString)
+    }
   }
 
   final def buildFlow: Try[Flow[_]] =
@@ -75,7 +79,7 @@ trait ExecutionContext {
 
       // identify the flowDef
       val configWithId = config.addUniqueId(UniqueID.getIDFor(flowDef))
-      val flow = mode.newFlowConnector(configWithId).connect(flowDef)
+      val flow         = mode.newFlowConnector(configWithId).connect(flowDef)
       if (config.getRequireOrderedSerialization) {
         // This will throw, but be caught by the outer try if
         // we have groupby/cogroupby not using OrderedSerializations
@@ -106,12 +110,14 @@ trait ExecutionContext {
               case Success(fn) => fn(mode, configWithId)
               case Failure(e) =>
                 throw new Exception(
-                    "Failed to decode flow step strategy when submitting job",
-                    e)
+                  "Failed to decode flow step strategy when submitting job",
+                  e
+                )
             }
 
           val optionalFinalStrategy = FlowStepStrategies().sumOption(
-              reducerEstimatorStrategy ++ otherStrategies)
+            reducerEstimatorStrategy ++ otherStrategies
+          )
 
           optionalFinalStrategy.foreach { strategy =>
             flow.setFlowStepStrategy(strategy)
@@ -127,7 +133,9 @@ trait ExecutionContext {
             case Success(fn) => flow.addStepListener(fn(mode, configWithId))
             case Failure(e) =>
               new Exception(
-                  "Failed to decode flow step listener when submitting job", e)
+                "Failed to decode flow step listener when submitting job",
+                e
+              )
           }
 
         case _ => ()
@@ -145,7 +153,7 @@ trait ExecutionContext {
   final def run: Future[JobStats] =
     buildFlow match {
       case Success(flow) => Execution.run(flow)
-      case Failure(err) => Future.failed(err)
+      case Failure(err)  => Future.failed(err)
     }
 
   /**
@@ -165,24 +173,23 @@ trait ExecutionContext {
 object ExecutionContext {
   private val LOG: Logger = LoggerFactory.getLogger(ExecutionContext.getClass)
 
-  private[scalding] def getDesc[T](
-      baseFlowStep: BaseFlowStep[T]): Seq[String] = {
+  private[scalding] def getDesc[T](baseFlowStep: BaseFlowStep[T]): Seq[String] =
     baseFlowStep.getGraph.vertexSet.asScala.toSeq.flatMap(_ match {
       case pipe: Pipe => RichPipe.getPipeDescriptions(pipe)
-      case _ => List() // no descriptions
+      case _          => List() // no descriptions
     })
-  }
   /*
    * implicit val ec = ExecutionContext.newContext(config)
    * can be used inside of a Job to get an ExecutionContext if you want
    * to call a function that requires an implicit ExecutionContext
    */
   def newContext(
-      conf: Config)(implicit fd: FlowDef, m: Mode): ExecutionContext =
+      conf: Config
+  )(implicit fd: FlowDef, m: Mode): ExecutionContext =
     new ExecutionContext {
-      def config = conf
+      def config  = conf
       def flowDef = fd
-      def mode = m
+      def mode    = m
     }
 
   implicit def modeFromContext(implicit ec: ExecutionContext): Mode = ec.mode

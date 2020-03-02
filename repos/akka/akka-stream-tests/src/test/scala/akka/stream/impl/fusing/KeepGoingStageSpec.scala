@@ -6,7 +6,12 @@ package akka.stream.impl.fusing
 import akka.actor.{NoSerializationVerificationNeeded, ActorRef}
 import akka.stream.scaladsl.{Keep, Source}
 import akka.stream.{Attributes, Inlet, SinkShape, ActorMaterializer}
-import akka.stream.stage.{InHandler, AsyncCallback, GraphStageLogic, GraphStageWithMaterializedValue}
+import akka.stream.stage.{
+  InHandler,
+  AsyncCallback,
+  GraphStageLogic,
+  GraphStageWithMaterializedValue
+}
 import akka.testkit.AkkaSpec
 import akka.stream.testkit.Utils._
 
@@ -17,25 +22,25 @@ class KeepGoingStageSpec extends AkkaSpec {
 
   implicit val materializer = ActorMaterializer()
 
-  trait PingCmd extends NoSerializationVerificationNeeded
+  trait PingCmd                        extends NoSerializationVerificationNeeded
   case class Register(probe: ActorRef) extends PingCmd
-  case object Ping extends PingCmd
-  case object CompleteStage extends PingCmd
-  case object FailStage extends PingCmd
-  case object Throw extends PingCmd
+  case object Ping                     extends PingCmd
+  case object CompleteStage            extends PingCmd
+  case object FailStage                extends PingCmd
+  case object Throw                    extends PingCmd
 
-  trait PingEvt extends NoSerializationVerificationNeeded
-  case object Pong extends PingEvt
-  case object PostStop extends PingEvt
+  trait PingEvt                 extends NoSerializationVerificationNeeded
+  case object Pong              extends PingEvt
+  case object PostStop          extends PingEvt
   case object UpstreamCompleted extends PingEvt
   case object EndOfEventHandler extends PingEvt
 
   case class PingRef(private val cb: AsyncCallback[PingCmd]) {
     def register(probe: ActorRef): Unit = cb.invoke(Register(probe))
-    def ping(): Unit = cb.invoke(Ping)
-    def stop(): Unit = cb.invoke(CompleteStage)
-    def fail(): Unit = cb.invoke(FailStage)
-    def throwEx(): Unit = cb.invoke(Throw)
+    def ping(): Unit                    = cb.invoke(Ping)
+    def stop(): Unit                    = cb.invoke(CompleteStage)
+    def fail(): Unit                    = cb.invoke(FailStage)
+    def throwEx(): Unit                 = cb.invoke(Throw)
   }
 
   class PingableSink(keepAlive: Boolean)
@@ -43,8 +48,8 @@ class KeepGoingStageSpec extends AkkaSpec {
     val shape = SinkShape[Int](Inlet("ping.in"))
 
     override def createLogicAndMaterializedValue(
-        inheritedAttributes: Attributes)
-      : (GraphStageLogic, Future[PingRef]) = {
+        inheritedAttributes: Attributes
+    ): (GraphStageLogic, Future[PingRef]) = {
       val promise = Promise[PingRef]()
 
       val logic = new GraphStageLogic(shape) {
@@ -57,7 +62,7 @@ class KeepGoingStageSpec extends AkkaSpec {
 
         private def onCommand(cmd: PingCmd): Unit = cmd match {
           case Register(probe) ⇒ listener = Some(probe)
-          case Ping ⇒ listener.foreach(_ ! Pong)
+          case Ping            ⇒ listener.foreach(_ ! Pong)
           case CompleteStage ⇒
             completeStage()
             listener.foreach(_ ! EndOfEventHandler)
@@ -70,13 +75,16 @@ class KeepGoingStageSpec extends AkkaSpec {
             } finally listener.foreach(_ ! EndOfEventHandler)
         }
 
-        setHandler(shape.in, new InHandler {
-          override def onPush(): Unit = pull(shape.in)
+        setHandler(
+          shape.in,
+          new InHandler {
+            override def onPush(): Unit = pull(shape.in)
 
-          // Ignore finish
-          override def onUpstreamFinish(): Unit =
-            listener.foreach(_ ! UpstreamCompleted)
-        })
+            // Ignore finish
+            override def onUpstreamFinish(): Unit =
+              listener.foreach(_ ! UpstreamCompleted)
+          }
+        )
 
         override def postStop(): Unit = listener.foreach(_ ! PostStop)
       }

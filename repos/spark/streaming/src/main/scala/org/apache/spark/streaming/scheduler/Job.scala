@@ -26,13 +26,13 @@ import org.apache.spark.util.{CallSite, Utils}
   * Class representing a Spark computation. It may contain multiple Spark jobs.
   */
 private[streaming] class Job(val time: Time, func: () => _) {
-  private var _id: String = _
-  private var _outputOpId: Int = _
-  private var isSet = false
-  private var _result: Try[_] = null
-  private var _callSite: CallSite = null
+  private var _id: String              = _
+  private var _outputOpId: Int         = _
+  private var isSet                    = false
+  private var _result: Try[_]          = null
+  private var _callSite: CallSite      = null
   private var _startTime: Option[Long] = None
-  private var _endTime: Option[Long] = None
+  private var _endTime: Option[Long]   = None
 
   def run() {
     _result = Try(func())
@@ -41,7 +41,8 @@ private[streaming] class Job(val time: Time, func: () => _) {
   def result: Try[_] = {
     if (_result == null) {
       throw new IllegalStateException(
-          "Cannot access result before job finishes")
+        "Cannot access result before job finishes"
+      )
     }
     _result
   }
@@ -62,7 +63,8 @@ private[streaming] class Job(val time: Time, func: () => _) {
   def outputOpId: Int = {
     if (!isSet) {
       throw new IllegalStateException(
-          "Cannot access number before calling setId")
+        "Cannot access number before calling setId"
+      )
     }
     _outputOpId
   }
@@ -70,26 +72,24 @@ private[streaming] class Job(val time: Time, func: () => _) {
   def setOutputOpId(outputOpId: Int) {
     if (isSet) {
       throw new IllegalStateException(
-          "Cannot call setOutputOpId more than once")
+        "Cannot call setOutputOpId more than once"
+      )
     }
     isSet = true
     _id = s"streaming job $time.$outputOpId"
     _outputOpId = outputOpId
   }
 
-  def setCallSite(callSite: CallSite): Unit = {
+  def setCallSite(callSite: CallSite): Unit =
     _callSite = callSite
-  }
 
   def callSite: CallSite = _callSite
 
-  def setStartTime(startTime: Long): Unit = {
+  def setStartTime(startTime: Long): Unit =
     _startTime = Some(startTime)
-  }
 
-  def setEndTime(endTime: Long): Unit = {
+  def setEndTime(endTime: Long): Unit =
     _endTime = Some(endTime)
-  }
 
   def toOutputOperationInfo: OutputOperationInfo = {
     val failureReason =
@@ -98,13 +98,15 @@ private[streaming] class Job(val time: Time, func: () => _) {
       } else {
         None
       }
-    OutputOperationInfo(time,
-                        outputOpId,
-                        callSite.shortForm,
-                        callSite.longForm,
-                        _startTime,
-                        _endTime,
-                        failureReason)
+    OutputOperationInfo(
+      time,
+      outputOpId,
+      callSite.shortForm,
+      callSite.longForm,
+      _startTime,
+      _endTime,
+      failureReason
+    )
   }
 
   override def toString: String = id

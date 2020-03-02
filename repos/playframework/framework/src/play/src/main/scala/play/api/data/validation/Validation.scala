@@ -12,7 +12,8 @@ package play.api.data.validation
   * @param f the validation function
   */
 case class Constraint[-T](name: Option[String], args: Seq[Any])(
-    f: (T => ValidationResult)) {
+    f: (T => ValidationResult)
+) {
 
   /**
     * Run the constraint validation.
@@ -53,7 +54,8 @@ object Constraint {
     * @return a constraint
     */
   def apply[T](name: String, args: Any*)(
-      f: (T => ValidationResult)): Constraint[T] =
+      f: (T => ValidationResult)
+  ): Constraint[T] =
     apply(Some(name), args.toSeq)(f)
 }
 
@@ -106,11 +108,12 @@ trait Constraints {
     * '''error'''[error.min(minValue)] or [error.min.strict(minValue)]
     */
   def min[T](minValue: T, strict: Boolean = false)(
-      implicit ordering: scala.math.Ordering[T]): Constraint[T] =
+      implicit ordering: scala.math.Ordering[T]
+  ): Constraint[T] =
     Constraint[T]("constraint.min", minValue) { o =>
       (ordering.compare(o, minValue).signum, strict) match {
         case (1, _) | (0, false) => Valid
-        case (_, false) => Invalid(ValidationError("error.min", minValue))
+        case (_, false)          => Invalid(ValidationError("error.min", minValue))
         case (_, true) =>
           Invalid(ValidationError("error.min.strict", minValue))
       }
@@ -123,11 +126,12 @@ trait Constraints {
     * '''error'''[error.max(maxValue)] or [error.max.strict(maxValue)]
     */
   def max[T](maxValue: T, strict: Boolean = false)(
-      implicit ordering: scala.math.Ordering[T]): Constraint[T] =
+      implicit ordering: scala.math.Ordering[T]
+  ): Constraint[T] =
     Constraint[T]("constraint.max", maxValue) { o =>
       (ordering.compare(o, maxValue).signum, strict) match {
         case (-1, _) | (0, false) => Valid
-        case (_, false) => Invalid(ValidationError("error.max", maxValue))
+        case (_, false)           => Invalid(ValidationError("error.max", maxValue))
         case (_, true) =>
           Invalid(ValidationError("error.max.strict", maxValue))
       }
@@ -167,9 +171,11 @@ trait Constraints {
     * '''name'''[constraint.pattern(regex)] or defined by the name parameter.
     * '''error'''[error.pattern(regex)] or defined by the error parameter.
     */
-  def pattern(regex: => scala.util.matching.Regex,
-              name: String = "constraint.pattern",
-              error: String = "error.pattern"): Constraint[String] =
+  def pattern(
+      regex: => scala.util.matching.Regex,
+      name: String = "constraint.pattern",
+      error: String = "error.pattern"
+  ): Constraint[String] =
     Constraint[String](name, () => regex) { o =>
       require(regex != null, "regex must not be null")
       require(name != null, "name must not be null")
@@ -236,21 +242,21 @@ object Invalid {
 
 object ParameterValidator {
   def apply[T](
-      constraints: Iterable[Constraint[T]], optionalParam: Option[T]*) =
+      constraints: Iterable[Constraint[T]],
+      optionalParam: Option[T]*
+  ) =
     optionalParam.flatMap {
       _.map { param =>
         constraints.flatMap {
-          _ (param) match {
+          _(param) match {
             case i: Invalid => Some(i)
-            case _ => None
+            case _          => None
           }
         }
       }
     }.flatten match {
       case Nil => Valid
       case invalids =>
-        invalids.reduceLeft { (a, b) =>
-          a ++ b
-        }
+        invalids.reduceLeft((a, b) => a ++ b)
     }
 }

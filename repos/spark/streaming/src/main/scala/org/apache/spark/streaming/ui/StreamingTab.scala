@@ -34,7 +34,7 @@ private[spark] class StreamingTab(val ssc: StreamingContext)
 
   private val STATIC_RESOURCE_DIR = "org/apache/spark/streaming/ui/static"
 
-  val parent = getSparkUI(ssc)
+  val parent   = getSparkUI(ssc)
   val listener = ssc.progressListener
 
   ssc.addStreamingListener(listener)
@@ -54,10 +54,10 @@ private[spark] class StreamingTab(val ssc: StreamingContext)
 }
 
 private object StreamingTab {
-  def getSparkUI(ssc: StreamingContext): SparkUI = {
+  def getSparkUI(ssc: StreamingContext): SparkUI =
     ssc.sc.ui.getOrElse {
       throw new SparkException(
-          "Parent SparkUI to attach this tab to not found!")
+        "Parent SparkUI to attach this tab to not found!"
+      )
     }
-  }
 }

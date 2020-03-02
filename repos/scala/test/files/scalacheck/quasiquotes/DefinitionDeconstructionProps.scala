@@ -4,9 +4,14 @@ internal.reificationSupport.SyntacticClassDef
 
 object DefinitionDeconstructionProps
     extends QuasiquoteProperties("definition deconstruction")
-    with TraitDeconstruction with ClassDeconstruction with ObjectDeconstruction
-    with ModsDeconstruction with ValVarDeconstruction with DefDeconstruction
-    with PackageDeconstruction with ImportDeconstruction
+    with TraitDeconstruction
+    with ClassDeconstruction
+    with ObjectDeconstruction
+    with ModsDeconstruction
+    with ValVarDeconstruction
+    with DefDeconstruction
+    with PackageDeconstruction
+    with ImportDeconstruction
 
 trait TraitDeconstruction { self: QuasiquoteProperties =>
   property("exhaustive trait matcher") = test {
@@ -21,7 +26,8 @@ trait TraitDeconstruction { self: QuasiquoteProperties =>
     matches("trait Foo extends Bar with Baz")
     matches("trait Foo { self: Bippy => val x: Int = 1}")
     matches(
-        "trait Foo extends { val early: Int = 1 } with Bar { val late = early }")
+      "trait Foo extends { val early: Int = 1 } with Bar { val late = early }"
+    )
     matches("private[Gap] trait Foo")
   }
 }
@@ -63,7 +69,7 @@ trait ClassDeconstruction { self: QuasiquoteProperties =>
 
   property("class tparams") = test {
     val q"class $name[..$tparams]" = q"class Foo[A, B]"
-    assert(tparams.map { _.name } == List(TypeName("A"), TypeName("B")))
+    assert(tparams.map(_.name) == List(TypeName("A"), TypeName("B")))
   }
 
   property("deconstruct bare case class") = test {
@@ -100,29 +106,39 @@ trait ClassDeconstruction { self: QuasiquoteProperties =>
     val PARAMACCESSOR = (1 << 29).toLong.asInstanceOf[FlagSet]
     assertThrows[MatchError] {
       val SyntacticClassDef(_, _, _, _, _, _, _, _, _) = ClassDef(
-          Modifiers(),
-          TypeName("Foo"),
-          List(),
-          Template(
-              List(Select(Ident(TermName("scala")), TypeName("AnyRef"))),
-              noSelfType,
+        Modifiers(),
+        TypeName("Foo"),
+        List(),
+        Template(
+          List(Select(Ident(TermName("scala")), TypeName("AnyRef"))),
+          noSelfType,
+          List(
+            //ValDef(Modifiers(PRIVATE | LOCAL | PARAMACCESSOR), TermName("x"), Ident(TypeName("Int")), EmptyTree),
+            DefDef(
+              Modifiers(),
+              termNames.CONSTRUCTOR,
+              List(),
               List(
-                  //ValDef(Modifiers(PRIVATE | LOCAL | PARAMACCESSOR), TermName("x"), Ident(TypeName("Int")), EmptyTree),
-                  DefDef(Modifiers(),
-                         termNames.CONSTRUCTOR,
-                         List(),
-                         List(List(ValDef(Modifiers(PARAM | PARAMACCESSOR),
-                                          TermName("x"),
-                                          Ident(TypeName("Int")),
-                                          EmptyTree))),
-                         TypeTree(),
-                         Block(List(pendingSuperCall),
-                               Literal(Constant(())))))))
+                List(
+                  ValDef(
+                    Modifiers(PARAM | PARAMACCESSOR),
+                    TermName("x"),
+                    Ident(TypeName("Int")),
+                    EmptyTree
+                  )
+                )
+              ),
+              TypeTree(),
+              Block(List(pendingSuperCall), Literal(Constant(())))
+            )
+          )
+        )
+      )
     }
   }
 
   property("SI-8332") = test {
-    val q"class C(implicit ..$args)" = q"class C(implicit i: I, j: J)"
+    val q"class C(implicit ..$args)"                    = q"class C(implicit i: I, j: J)"
     val q"$imods val i: I" :: q"$jmods val j: J" :: Nil = args
     assert(imods.hasFlag(IMPLICIT))
     assert(jmods.hasFlag(IMPLICIT))
@@ -131,7 +147,7 @@ trait ClassDeconstruction { self: QuasiquoteProperties =>
 
 trait ModsDeconstruction { self: QuasiquoteProperties =>
   property("deconstruct mods") = test {
-    val mods = Modifiers(IMPLICIT | PRIVATE, TermName("foobar"), Nil)
+    val mods              = Modifiers(IMPLICIT | PRIVATE, TermName("foobar"), Nil)
     val q"$mods0 def foo" = q"$mods def foo"
     assert(mods0 ≈ mods)
   }
@@ -148,25 +164,25 @@ trait ModsDeconstruction { self: QuasiquoteProperties =>
   }
 
   property("@..$annots def foo") = test {
-    val a = q"new a"
-    val b = q"new b"
+    val a                     = q"new a"
+    val b                     = q"new b"
     val q"@..$annots def foo" = q"@$a @$b def foo"
     annots ≈ List(a, b)
   }
 
   property("@$annot @..$annots def foo") = test {
-    val a = q"new a"
-    val b = q"new b"
-    val c = q"new c"
+    val a                           = q"new a"
+    val b                           = q"new b"
+    val c                           = q"new c"
     val q"@$first @..$rest def foo" = q"@$a @$b @$c def foo"
     assert(first ≈ a)
     assert(rest ≈ List(b, c))
   }
 
   property("@..$anots @$annot def foo") = test {
-    val a = q"new a"
-    val b = q"new b"
-    val c = q"new c"
+    val a                          = q"new a"
+    val b                          = q"new b"
+    val c                          = q"new c"
     val q"@..$init @$last def foo" = q"@$a @$b @$c def foo"
     assert(init ≈ List(a, b))
     assert(last ≈ c)
@@ -182,7 +198,7 @@ trait ValVarDeconstruction { self: QuasiquoteProperties =>
     matches("val x: Int = 1")
     matches("lazy val x: Int = 1")
     matches("implicit val x = 1")
-    assertThrows[MatchError] { matches("var x = 1") }
+    assertThrows[MatchError](matches("var x = 1"))
   }
 
   property("exhaustive var matcher") = test {
@@ -192,7 +208,7 @@ trait ValVarDeconstruction { self: QuasiquoteProperties =>
     matches("var x: Int")
     matches("var x: Int = 1")
     matches("var x = 1")
-    assertThrows[MatchError] { matches("val x = 1") }
+    assertThrows[MatchError](matches("val x = 1"))
   }
 }
 
@@ -218,14 +234,14 @@ trait PackageDeconstruction { self: QuasiquoteProperties =>
     matches("package object foo { self => }")
     matches("package object foo extends mammy with daddy { def baz }")
     matches("package object foo extends { val early = 1 } with daddy")
-    assertThrows[MatchError] { matches("object foo") }
+    assertThrows[MatchError](matches("object foo"))
   }
 }
 
 trait DefDeconstruction { self: QuasiquoteProperties =>
   property("exhaustive def matcher") = test {
     def matches(line: String) = {
-      val t = parse(line)
+      val t                                                              = parse(line)
       val q"$mods0 def $name0[..$targs0](...$argss0): $restpe0 = $body0" = t
       val q"$mods1 def $name1[..$targs1](...$argss1)(implicit ..$impl1): $restpe1 = $body1" =
         t
@@ -272,37 +288,46 @@ trait ImportDeconstruction { self: QuasiquoteProperties =>
 
   property("extract import binding") = test {
     val q"import $_.$sel" = q"import foo.bar"
-    val pq"bar" = sel
+    val pq"bar"           = sel
   }
 
   property("extract import wildcard") = test {
     val q"import $_.$sel" = q"import foo._"
-    val pq"_" = sel
+    val pq"_"             = sel
   }
 
   property("extract import rename") = test {
-    val q"import $_.$sel" = q"import foo.{bar => baz}"
-    val pq"bar -> baz" = sel
+    val q"import $_.$sel"   = q"import foo.{bar => baz}"
+    val pq"bar -> baz"      = sel
     val pq"$left -> $right" = sel
-    val pq"bar" = left
-    val pq"baz" = right
+    val pq"bar"             = left
+    val pq"baz"             = right
   }
 
   property("extract import unimport") = test {
-    val q"import $_.$sel" = q"import foo.{bar => _}"
-    val pq"bar -> _" = sel
+    val q"import $_.$sel"   = q"import foo.{bar => _}"
+    val pq"bar -> _"        = sel
     val pq"$left -> $right" = sel
-    val pq"bar" = left
-    val pq"_" = right
+    val pq"bar"             = left
+    val pq"_"               = right
   }
 
   property("unquote names into import selector") = forAll {
-    (expr: Tree, plain: TermName, oldname: TermName, newname: TermName,
-    discard: TermName) =>
-      val Import(expr1,
-                 List(ImportSelector(plain11, _, plain12, _),
-                      ImportSelector(oldname1, _, newname1, _),
-                      ImportSelector(discard1, _, wildcard, _))) =
+    (
+        expr: Tree,
+        plain: TermName,
+        oldname: TermName,
+        newname: TermName,
+        discard: TermName
+    ) =>
+      val Import(
+        expr1,
+        List(
+          ImportSelector(plain11, _, plain12, _),
+          ImportSelector(oldname1, _, newname1, _),
+          ImportSelector(discard1, _, wildcard, _)
+        )
+      ) =
         q"import $expr.{$plain, $oldname => $newname, $discard => _}"
 
       expr1 ≈ expr && plain11 == plain12 && plain12 == plain &&

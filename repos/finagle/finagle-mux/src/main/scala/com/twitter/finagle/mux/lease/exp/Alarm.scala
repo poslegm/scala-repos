@@ -60,16 +60,14 @@ private[lease] class DurationAlarm(dur: Duration) extends Alarm {
   private[this] val elapsed = Stopwatch.start()
 
   def sleeptime: Duration = dur - elapsed() max Duration.Zero
-  def finished: Boolean = elapsed() >= dur
+  def finished: Boolean   = elapsed() >= dur
 }
 
 private[lease] class GenerationAlarm(
     ctr: ByteCounter
-)
-    extends PredicateAlarm({
+) extends PredicateAlarm({
       val generation = ctr.info.generation()
-      () =>
-        generation != ctr.info.generation()
+      () => generation != ctr.info.generation()
     })
 
 private[lease] class IntervalAlarm(val sleeptime: Duration) extends Alarm {
@@ -78,7 +76,7 @@ private[lease] class IntervalAlarm(val sleeptime: Duration) extends Alarm {
 
 private[lease] class PredicateAlarm(pred: () => Boolean) extends Alarm {
   def sleeptime: Duration = Duration.Top
-  def finished: Boolean = pred()
+  def finished: Boolean   = pred()
 }
 
 // NB: BytesAlarm will get confused without a GenerationAlarm

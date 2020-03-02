@@ -3,8 +3,8 @@ object SeveralOutputs {
     val q = i
     /*start*/
     println(q)
-    val z = q + 1
-    val zz = q + 2
+    val z   = q + 1
+    val zz  = q + 2
     var zzz = q + 3
     /*end*/
 
@@ -13,8 +13,8 @@ object SeveralOutputs {
 
   def foofoo(y: Int) {
     println(y)
-    val x = y + 1
-    val xx = y + 2
+    val x   = y + 1
+    val xx  = y + 2
     var xxx = y + 3
   }
 }

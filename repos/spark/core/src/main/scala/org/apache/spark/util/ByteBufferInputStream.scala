@@ -27,23 +27,22 @@ import org.apache.spark.storage.StorageUtils
   * at the end of the stream (e.g. to close a memory-mapped file).
   */
 private[spark] class ByteBufferInputStream(
-    private var buffer: ByteBuffer, dispose: Boolean = false)
-    extends InputStream {
+    private var buffer: ByteBuffer,
+    dispose: Boolean = false
+) extends InputStream {
 
-  override def read(): Int = {
+  override def read(): Int =
     if (buffer == null || buffer.remaining() == 0) {
       cleanUp()
       -1
     } else {
       buffer.get() & 0xFF
     }
-  }
 
-  override def read(dest: Array[Byte]): Int = {
+  override def read(dest: Array[Byte]): Int =
     read(dest, 0, dest.length)
-  }
 
-  override def read(dest: Array[Byte], offset: Int, length: Int): Int = {
+  override def read(dest: Array[Byte], offset: Int, length: Int): Int =
     if (buffer == null || buffer.remaining() == 0) {
       cleanUp()
       -1
@@ -52,9 +51,8 @@ private[spark] class ByteBufferInputStream(
       buffer.get(dest, offset, amountToGet)
       amountToGet
     }
-  }
 
-  override def skip(bytes: Long): Long = {
+  override def skip(bytes: Long): Long =
     if (buffer != null) {
       val amountToSkip = math.min(bytes, buffer.remaining).toInt
       buffer.position(buffer.position + amountToSkip)
@@ -65,7 +63,6 @@ private[spark] class ByteBufferInputStream(
     } else {
       0L
     }
-  }
 
   /**
     * Clean up the buffer, and potentially dispose of it using StorageUtils.dispose().

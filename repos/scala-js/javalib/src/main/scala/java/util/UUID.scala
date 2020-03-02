@@ -4,13 +4,16 @@ import java.lang.{Long => JLong}
 
 import scala.scalajs.js
 
-final class UUID private (private val i1: Int,
-                          private val i2: Int,
-                          private val i3: Int,
-                          private val i4: Int,
-                          private[this] var l1: JLong,
-                          private[this] var l2: JLong)
-    extends AnyRef with java.io.Serializable with Comparable[UUID] {
+final class UUID private (
+    private val i1: Int,
+    private val i2: Int,
+    private val i3: Int,
+    private val i4: Int,
+    private[this] var l1: JLong,
+    private[this] var l2: JLong
+) extends AnyRef
+    with java.io.Serializable
+    with Comparable[UUID] {
 
   import UUID._
 
@@ -29,28 +32,30 @@ final class UUID private (private val i1: Int,
    */
 
   def this(mostSigBits: Long, leastSigBits: Long) = {
-    this((mostSigBits >>> 32).toInt,
-         mostSigBits.toInt,
-         (leastSigBits >>> 32).toInt,
-         leastSigBits.toInt,
-         mostSigBits,
-         leastSigBits)
+    this(
+      (mostSigBits >>> 32).toInt,
+      mostSigBits.toInt,
+      (leastSigBits >>> 32).toInt,
+      leastSigBits.toInt,
+      mostSigBits,
+      leastSigBits
+    )
   }
 
   def getLeastSignificantBits(): Long = {
-    if (l2 eq null) l2 = (i3.toLong << 32) | (i4.toLong & 0xffffffffL)
+    if (l2 eq null) l2 = (i3.toLong << 32) | (i4.toLong & 0xFFFFFFFFL)
     l2.longValue
   }
 
   def getMostSignificantBits(): Long = {
-    if (l1 eq null) l1 = (i1.toLong << 32) | (i2.toLong & 0xffffffffL)
+    if (l1 eq null) l1 = (i1.toLong << 32) | (i2.toLong & 0xFFFFFFFFL)
     l1.longValue
   }
 
   def version(): Int =
     (i2 & 0xf000) >> 12
 
-  def variant(): Int = {
+  def variant(): Int =
     if ((i3 & 0x80000000) == 0) {
       // MSB0 not set: NCS backwards compatibility variant
       0
@@ -61,13 +66,12 @@ final class UUID private (private val i1: Int,
       // MSB1 not set: RFC 4122 variant
       2
     }
-  }
 
   def timestamp(): Long = {
     if (version() != TimeBased)
       throw new UnsupportedOperationException("Not a time-based UUID")
     (((i2 >>> 16) | ((i2 & 0x0fff) << 16)).toLong << 32) |
-    (i1.toLong & 0xffffffffL)
+      (i1.toLong & 0xFFFFFFFFL)
   }
 
   def clockSequence(): Int = {
@@ -79,7 +83,7 @@ final class UUID private (private val i1: Int,
   def node(): Long = {
     if (version() != TimeBased)
       throw new UnsupportedOperationException("Not a time-based UUID")
-    ((i3 & 0xffff).toLong << 32) | (i4.toLong & 0xffffffffL)
+    ((i3 & 0xffff).toLong << 32) | (i4.toLong & 0xFFFFFFFFL)
   }
 
   override def toString(): String = {
@@ -94,8 +98,9 @@ final class UUID private (private val i1: Int,
     }
 
     paddedHex8(i1) + "-" + paddedHex4(i2 >>> 16) + "-" +
-    paddedHex4(i2 & 0xffff) + "-" + paddedHex4(i3 >>> 16) + "-" + paddedHex4(
-        i3 & 0xffff) + paddedHex8(i4)
+      paddedHex4(i2 & 0xffff) + "-" + paddedHex4(i3 >>> 16) + "-" + paddedHex4(
+      i3 & 0xffff
+    ) + paddedHex8(i4)
   }
 
   override def hashCode(): Int =
@@ -108,7 +113,7 @@ final class UUID private (private val i1: Int,
       false
   }
 
-  def compareTo(that: UUID): Int = {
+  def compareTo(that: UUID): Int =
     if (this.i1 != that.i1) {
       if (this.i1 > that.i1) 1 else -1
     } else if (this.i2 != that.i2) {
@@ -120,14 +125,13 @@ final class UUID private (private val i1: Int,
     } else {
       0
     }
-  }
 }
 
 object UUID {
-  private final val TimeBased = 1
+  private final val TimeBased   = 1
   private final val DCESecurity = 2
-  private final val NameBased = 3
-  private final val Random = 4
+  private final val NameBased   = 3
+  private final val Random      = 4
 
   private lazy val rng = new Random() // TODO Use java.security.SecureRandom
 

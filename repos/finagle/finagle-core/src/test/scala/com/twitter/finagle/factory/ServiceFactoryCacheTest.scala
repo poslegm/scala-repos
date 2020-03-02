@@ -20,16 +20,15 @@ class ServiceFactoryCacheTest extends FunSuite with MockitoSugar {
   }
 
   var factories: Map[Int, Int] = Map.empty
-  var news: Map[Int, Int] = Map.empty
+  var news: Map[Int, Int]      = Map.empty
 
   case class SF(i: Int) extends ServiceFactory[String, String] {
     assert(!(factories contains i))
     factories += (i -> 0)
-    news += (i -> (1 + news.getOrElse(i, 0)))
+    news += (i      -> (1 + news.getOrElse(i, 0)))
 
     def apply(conn: ClientConnection) =
-      Future.value(
-          new Service[String, String] {
+      Future.value(new Service[String, String] {
         factories = factories + (i -> (factories(i) + 1))
         def apply(req: String) = Future.value(i.toString)
         override def close(deadline: Time) = {
@@ -50,13 +49,10 @@ class ServiceFactoryCacheTest extends FunSuite with MockitoSugar {
     def close(deadline: Time) = Future.Done
   }
 
-  test("cache, evict")(
-      Time.withCurrentTimeFrozen { tc =>
-    val newFactory: Int => ServiceFactory[String, String] = { i =>
-      SF(i)
-    }
-    val cache = new ServiceFactoryCache[Int, String, String](
-        newFactory, maxCacheSize = 2)
+  test("cache, evict")(Time.withCurrentTimeFrozen { tc =>
+    val newFactory: Int => ServiceFactory[String, String] = { i => SF(i) }
+    val cache =
+      new ServiceFactoryCache[Int, String, String](newFactory, maxCacheSize = 2)
 
     assert(factories.isEmpty)
 
@@ -82,14 +78,14 @@ class ServiceFactoryCacheTest extends FunSuite with MockitoSugar {
     val s3x = Await.result(cache(3, ClientConnection.nil))
 
     assert(factories == Map(1 -> 0, 3 -> 1))
-    assert(news == Map(1 -> 1, 2 -> 1, 3 -> 2))
+    assert(news == Map(1      -> 1, 2 -> 1, 3 -> 2))
 
     val s1x, s1y = Await.result(cache(1, ClientConnection.nil))
     assert(factories == Map(1 -> 2, 3 -> 1))
-    assert(news == Map(1 -> 1, 2 -> 1, 3 -> 2))
+    assert(news == Map(1      -> 1, 2 -> 1, 3 -> 2))
 
     val s2x = Await.result(cache(2, ClientConnection.nil))
     assert(factories == Map(1 -> 2, 3 -> 1, 2 -> 1))
-    assert(news == Map(1 -> 1, 2 -> 2, 3 -> 2))
+    assert(news == Map(1      -> 1, 2 -> 2, 3 -> 2))
   })
 }

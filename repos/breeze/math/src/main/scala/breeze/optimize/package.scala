@@ -16,12 +16,12 @@ package object optimize {
     * @tparam Vector
     * @return
     */
-  def minimize[Objective, Vector](fn: Objective,
-                                  init: Vector,
-                                  options: OptimizationOption*)(
-      implicit optimization: OptimizationPackage[Objective, Vector]) = {
+  def minimize[Objective, Vector](
+      fn: Objective,
+      init: Vector,
+      options: OptimizationOption*
+  )(implicit optimization: OptimizationPackage[Objective, Vector]) =
     optimization.minimize(fn, init, options: _*)
-  }
 
   /**
     * Returns a sequence of states representing the iterates of a solver, given an [[breeze.optimize.IterableOptimizationPackage]] that knows how to minimize
@@ -35,11 +35,16 @@ package object optimize {
     * @tparam Vector
     * @return
     */
-  def iterations[Objective, Vector, State](fn: Objective,
-                                           init: Vector,
-                                           options: OptimizationOption*)(
+  def iterations[Objective, Vector, State](
+      fn: Objective,
+      init: Vector,
+      options: OptimizationOption*
+  )(
       implicit optimization: IterableOptimizationPackage[
-          Objective, Vector, State]) = {
+        Objective,
+        Vector,
+        State
+      ]
+  ) =
     optimization.iterations(fn, init, options: _*)
-  }
 }

@@ -22,7 +22,7 @@ class PlainDirectory(givenPath: Directory) extends PlainFile(givenPath) {
 class PlainFile(val givenPath: Path) extends AbstractFile {
   assert(path ne null)
 
-  val file = givenPath.jfile
+  val file                      = givenPath.jfile
   override def underlyingSource = Some(this)
 
   private val fpath = givenPath.toAbsolute
@@ -37,15 +37,15 @@ class PlainFile(val givenPath: Path) extends AbstractFile {
   def absolute = new PlainFile(givenPath.toAbsolute)
 
   override def container: AbstractFile = new PlainFile(givenPath.parent)
-  override def input = givenPath.toFile.inputStream()
-  override def output = givenPath.toFile.outputStream()
-  override def sizeOption = Some(givenPath.length.toInt)
+  override def input                   = givenPath.toFile.inputStream()
+  override def output                  = givenPath.toFile.outputStream()
+  override def sizeOption              = Some(givenPath.length.toInt)
 
-  override def toString = path
+  override def toString        = path
   override def hashCode(): Int = fpath.hashCode()
   override def equals(that: Any): Boolean = that match {
     case x: PlainFile => fpath == x.fpath
-    case _ => false
+    case _            => false
   }
 
   /** Is this abstract file a directory? */
@@ -60,7 +60,7 @@ class PlainFile(val givenPath: Path) extends AbstractFile {
     // between the call to `list` and the iteration. This saves a call to `exists`.
     def existsFast(path: Path) = path match {
       case (_: Directory | _: io.File) => true
-      case _ => path.exists
+      case _                           => path.exists
     }
     if (!isDirectory) Iterator.empty
     else givenPath.toDirectory.list filter existsFast map (new PlainFile(_))

@@ -27,14 +27,14 @@ final class Symbol private (val name: String) extends Serializable {
   override def toString(): String = "'" + name
 
   @throws(classOf[java.io.ObjectStreamException])
-  private def readResolve(): Any = Symbol.apply(name)
-  override def hashCode = name.hashCode()
+  private def readResolve(): Any  = Symbol.apply(name)
+  override def hashCode           = name.hashCode()
   override def equals(other: Any) = this eq other.asInstanceOf[AnyRef]
 }
 
 object Symbol extends UniquenessCache[String, Symbol] {
-  override def apply(name: String): Symbol = super.apply(name)
-  protected def valueFromKey(name: String): Symbol = new Symbol(name)
+  override def apply(name: String): Symbol                = super.apply(name)
+  protected def valueFromKey(name: String): Symbol        = new Symbol(name)
   protected def keyFromValue(sym: Symbol): Option[String] = Some(sym.name)
 }
 
@@ -45,10 +45,10 @@ private[scala] abstract class UniquenessCache[K, V >: Null] {
   import java.util.WeakHashMap
   import java.util.concurrent.locks.ReentrantReadWriteLock
 
-  private val rwl = new ReentrantReadWriteLock()
+  private val rwl   = new ReentrantReadWriteLock()
   private val rlock = rwl.readLock
   private val wlock = rwl.writeLock
-  private val map = new WeakHashMap[K, WeakReference[V]]
+  private val map   = new WeakHashMap[K, WeakReference[V]]
 
   protected def valueFromKey(k: K): V
   protected def keyFromValue(v: V): Option[K]

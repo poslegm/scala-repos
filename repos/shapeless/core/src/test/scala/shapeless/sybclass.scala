@@ -29,24 +29,25 @@ class SybClassTests {
   }
 
   object gsize extends Poly1 {
-    implicit def caseInt = at[Int](_ => 1)
+    implicit def caseInt    = at[Int](_ => 1)
     implicit def caseString = at[String](_.length)
     implicit def default[T] = at[T](_ => 1)
   }
 
-  def gsizeAll2[T](t: T)(
-      implicit everything: Everything[gsize.type, plus.type, T]) =
+  def gsizeAll2[T](
+      t: T
+  )(implicit everything: Everything[gsize.type, plus.type, T]) =
     everything(t)
 
   object incAll extends Poly1 {
-    implicit def caseInt = at[Int](_ + 1)
+    implicit def caseInt    = at[Int](_ + 1)
     implicit def caseString = at[String](_ + "*")
     implicit def default[T](implicit data: Lazy[DataT[this.type, T]]) =
       at[T](data.value.gmapT(_))
   }
 
   object inc extends Poly1 {
-    implicit def caseInt = at[Int](_ + 1)
+    implicit def caseInt    = at[Int](_ + 1)
     implicit def caseString = at[String](_ + "*")
   }
 
@@ -54,75 +55,75 @@ class SybClassTests {
     everywhere(t)
 
   sealed trait Fruit
-  case class Apple(i: Int) extends Fruit
-  case class Pear(i: Int) extends Fruit
+  case class Apple(i: Int)  extends Fruit
+  case class Pear(i: Int)   extends Fruit
   case class Banana(i: Int) extends Fruit
   case class Orange(i: Int) extends Fruit
 
   object showFruit extends Poly1 {
-    implicit def caseApple = at[Apple](_ => "Pomme")
-    implicit def casePear = at[Pear](_ => "Poire")
+    implicit def caseApple  = at[Apple](_ => "Pomme")
+    implicit def casePear   = at[Pear](_ => "Poire")
     implicit def caseBanana = at[Banana](_ => "Banane")
     implicit def caseOrange = at[Orange](_ => "Orange")
   }
 
   object cycleFruit extends Poly1 {
-    implicit def caseApple = at[Apple] { case Apple(i) => Pear(i) }
-    implicit def casePear = at[Pear] { case Pear(i) => Banana(i) }
+    implicit def caseApple  = at[Apple] { case Apple(i)   => Pear(i) }
+    implicit def casePear   = at[Pear] { case Pear(i)     => Banana(i) }
     implicit def caseBanana = at[Banana] { case Banana(i) => Orange(i) }
     implicit def caseOrange = at[Orange] { case Orange(i) => Apple(i) }
   }
 
   sealed trait Tree[T]
-  case class Leaf[T](t: T) extends Tree[T]
+  case class Leaf[T](t: T)                          extends Tree[T]
   case class Node[T](left: Tree[T], right: Tree[T]) extends Tree[T]
 
   @Test
   def testGMapQ {
-    val p = (23, "foo")
+    val p  = (23, "foo")
     val ps = gsizeAll(p)
     assertEquals(5, ps)
 
-    val t = (23, "foo", true, 1.0)
+    val t  = (23, "foo", true, 1.0)
     val ts = gsizeAll(t)
     assertEquals(7, ts)
 
-    val l = List(1, 2, 3)
+    val l  = List(1, 2, 3)
     val ls = gsizeAll(l)
     assertEquals(4, ls)
 
-    val lp = List(("foo", 23), ("bar", 24))
+    val lp  = List(("foo", 23), ("bar", 24))
     val lps = gsizeAll(lp)
     assertEquals(11, lps)
 
-    val pl = (List(1, 2, 3), List("foo", "bar"))
+    val pl  = (List(1, 2, 3), List("foo", "bar"))
     val pls = gsizeAll(pl)
     assertEquals(12, pls)
   }
 
   @Test
   def testGMapT {
-    val p = (23, "foo")
+    val p  = (23, "foo")
     val pi = incAll(p)
     assertEquals((24, "foo*"), pi)
 
-    val t = (23, "foo", true, 1.0)
+    val t  = (23, "foo", true, 1.0)
     val ti = incAll(t)
     assertEquals((24, "foo*", true, 1.0), ti)
 
-    val lp = List((23, "foo"), (13, "bar"))
+    val lp  = List((23, "foo"), (13, "bar"))
     val lpi = incAll(lp)
     assertEquals(List((24, "foo*"), (14, "bar*")), lpi)
 
-    val o = Option(23)
+    val o  = Option(23)
     val oi = incAll(o)
     assertEquals(Some(24), oi)
 
     val e: Either[String, Int] = Right(23)
-    val ei = incAll(e)
+    val ei                     = incAll(e)
     assertEquals(Right(24), ei)
 
-    val lo = List(Some(1), None, Some(2))
+    val lo  = List(Some(1), None, Some(2))
     val loi = incAll(lo)
     assertEquals(List(Some(2), None, Some(3)), loi)
   }
@@ -326,13 +327,13 @@ class SybClassTests {
   case class A(x: Int, y: Boolean, z: Int)
 
   object flip extends Poly1 {
-    implicit def apply[T] = at[T](identity)
+    implicit def apply[T]    = at[T](identity)
     implicit def caseBoolean = at[Boolean](!_)
   }
 
   @Test
   def testGeneric1 {
-    val input = A(1, true, 2)
+    val input    = A(1, true, 2)
     val expected = A(1, false, 2)
 
     val result = everywhere(flip)(input)
@@ -342,7 +343,7 @@ class SybClassTests {
 
   @Test
   def testGeneric2 {
-    val input = List(A(1, true, 2))
+    val input    = List(A(1, true, 2))
     val expected = List(A(1, false, 2))
 
     val result = everywhere(flip)(input)
@@ -352,7 +353,7 @@ class SybClassTests {
 
   @Test
   def testGeneric3 {
-    val input = 1 :: A(1, true, 2) :: HNil
+    val input    = 1 :: A(1, true, 2) :: HNil
     val expected = 1 :: A(1, false, 2) :: HNil
 
     val result = everywhere(flip)(input)
@@ -362,7 +363,7 @@ class SybClassTests {
 
   @Test
   def testGeneric4 {
-    val input = (1, A(1, true, 2))
+    val input    = (1, A(1, true, 2))
     val expected = (1, A(1, false, 2))
 
     val result = everywhere(flip)(input)
@@ -375,7 +376,7 @@ class SybClassTests {
 
   @Test
   def testGeneric5 {
-    val input = Address("Southover Street", "Brighton", "BN2 9UA")
+    val input    = Address("Southover Street", "Brighton", "BN2 9UA")
     val expected = Address("Southover Street*", "Brighton*", "BN2 9UA*")
 
     val result = everywhere(inc)(input)
@@ -387,10 +388,13 @@ class SybClassTests {
 
   @Test
   def testGeneric6 {
-    val input = Person(
-        "Joe Grey", 37, Address("Southover Street", "Brighton", "BN2 9UA"))
+    val input =
+      Person("Joe Grey", 37, Address("Southover Street", "Brighton", "BN2 9UA"))
     val expected = Person(
-        "Joe Grey*", 38, Address("Southover Street*", "Brighton*", "BN2 9UA*"))
+      "Joe Grey*",
+      38,
+      Address("Southover Street*", "Brighton*", "BN2 9UA*")
+    )
 
     val result = everywhere(inc)(input)
     assertEquals(expected, result)
@@ -401,7 +405,7 @@ class SybClassTests {
 
   @Test
   def testHList2 {
-    val input = Apple(1) :: Pear(2) :: Banana(3) :: Orange(4) :: HNil
+    val input    = Apple(1) :: Pear(2) :: Banana(3) :: Orange(4) :: HNil
     val expected = Pear(1) :: Banana(2) :: Orange(3) :: Apple(4) :: HNil
 
     val result = everywhere(cycleFruit)(input)
@@ -411,7 +415,7 @@ class SybClassTests {
 
   @Test
   def testHList3 {
-    val input = Apple(1) :: Pear(2) :: Banana(3) :: Orange(4) :: HNil
+    val input    = Apple(1) :: Pear(2) :: Banana(3) :: Orange(4) :: HNil
     val expected = "Pomme" :: "Poire" :: "Banane" :: "Orange" :: HNil
 
     val result = everywhere(showFruit)(input)
@@ -424,28 +428,28 @@ class SybClassTests {
     type APBO = Apple :+: Pear :+: Banana :+: Orange :+: CNil
     type PBOA = Pear :+: Banana :+: Orange :+: Apple :+: CNil
 
-    val input1 = Coproduct[APBO](Apple(1))
+    val input1    = Coproduct[APBO](Apple(1))
     val expected1 = Coproduct[PBOA](Pear(1))
 
     val result1 = everywhere(cycleFruit)(input1)
     typed[PBOA](result1)
     assertEquals(expected1, result1)
 
-    val input2 = Coproduct[APBO](Pear(2))
+    val input2    = Coproduct[APBO](Pear(2))
     val expected2 = Coproduct[PBOA](Banana(2))
 
     val result2 = everywhere(cycleFruit)(input2)
     typed[PBOA](result2)
     assertEquals(expected2, result2)
 
-    val input3 = Coproduct[APBO](Banana(3))
+    val input3    = Coproduct[APBO](Banana(3))
     val expected3 = Coproduct[PBOA](Orange(3))
 
     val result3 = everywhere(cycleFruit)(input3)
     typed[PBOA](result3)
     assertEquals(expected3, result3)
 
-    val input4 = Coproduct[APBO](Orange(4))
+    val input4    = Coproduct[APBO](Orange(4))
     val expected4 = Coproduct[PBOA](Apple(4))
 
     val result4 = everywhere(cycleFruit)(input4)
@@ -455,14 +459,14 @@ class SybClassTests {
 
   @Test
   def testRecursion {
-    val tree1: Tree[Int] = Leaf(1)
+    val tree1: Tree[Int]     = Leaf(1)
     val expected1: Tree[Int] = Leaf(2)
 
     val result1 = everywhere(inc)(tree1)
     typed[Tree[Int]](result1)
     assertEquals(expected1, result1)
 
-    val tree2: Tree[Int] = Node(Leaf(1), Leaf(2))
+    val tree2: Tree[Int]     = Node(Leaf(1), Leaf(2))
     val expected2: Tree[Int] = Node(Leaf(2), Leaf(3))
 
     val result2 = everywhere(inc)(tree2)
@@ -470,11 +474,13 @@ class SybClassTests {
     assertEquals(expected2, result2)
 
     val tree3: Tree[Int] = Node(
-        Node(Node(Leaf(1), Node(Leaf(2), Leaf(3))), Leaf(4)),
-        Node(Leaf(5), Leaf(6)))
+      Node(Node(Leaf(1), Node(Leaf(2), Leaf(3))), Leaf(4)),
+      Node(Leaf(5), Leaf(6))
+    )
     val expected3: Tree[Int] = Node(
-        Node(Node(Leaf(2), Node(Leaf(3), Leaf(4))), Leaf(5)),
-        Node(Leaf(6), Leaf(7)))
+      Node(Node(Leaf(2), Node(Leaf(3), Leaf(4))), Leaf(5)),
+      Node(Leaf(6), Leaf(7))
+    )
 
     val result3 = everywhere(inc)(tree3)
     typed[Tree[Int]](result3)

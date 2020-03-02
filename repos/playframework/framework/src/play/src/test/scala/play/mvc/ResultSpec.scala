@@ -22,7 +22,7 @@ object ResultSpec extends Specification {
         Results.Ok("Hello world").withCookies(Cookie("name1", "value1")).asJava
 
       val cookies = javaResult.cookies()
-      val cookie = cookies.iterator().next()
+      val cookie  = cookies.iterator().next()
 
       cookie.name() must be_==("name1")
       cookie.value() must be_==("value1")

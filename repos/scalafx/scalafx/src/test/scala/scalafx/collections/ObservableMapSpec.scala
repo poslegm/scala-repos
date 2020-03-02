@@ -46,8 +46,9 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class ObservableMapSpec[K, V]
     extends SimpleSFXDelegateSpec[
-        jfxc.ObservableMap[K, V], ObservableMap[K, V]](
-        classOf[jfxc.ObservableMap[K, V]], classOf[ObservableMap[K, V]]) {
+      jfxc.ObservableMap[K, V],
+      ObservableMap[K, V]
+    ](classOf[jfxc.ObservableMap[K, V]], classOf[ObservableMap[K, V]]) {
 
   /**
     * Verifies if a generated Map is the same instance than a original Map. If it should not be,
@@ -57,9 +58,11 @@ class ObservableMapSpec[K, V]
     * @param originalMap Map Original ObservableMap.
     * @param shouldBeTheSame If both maps should be same instance.
     */
-  private def compareInstances(generatedMap: Map[Int, String],
-                               originalMap: ObservableMap[Int, String],
-                               shouldBeTheSame: Boolean) {
+  private def compareInstances(
+      generatedMap: Map[Int, String],
+      originalMap: ObservableMap[Int, String],
+      shouldBeTheSame: Boolean
+  ) {
     if (shouldBeTheSame) {
       generatedMap should be theSameInstanceAs (originalMap)
     } else {
@@ -94,7 +97,7 @@ class ObservableMapSpec[K, V]
 
   it should "notify on invalidation" in {
     // Preparation
-    val map = ObservableMap(List((1, "one"), (2, "two")))
+    val map             = ObservableMap(List((1, "one"), (2, "two")))
     var invalidateCount = 0
     map onInvalidate {
       invalidateCount += 1
@@ -110,7 +113,7 @@ class ObservableMapSpec[K, V]
 
   it should "notify on changes" in {
     // Preparation
-    val map = ObservableMap((1, "one"), (2, "two"))
+    val map         = ObservableMap((1, "one"), (2, "two"))
     var changeCount = 0
     map onChange {
       changeCount += 1
@@ -127,9 +130,7 @@ class ObservableMapSpec[K, V]
   it should "return changed map" in {
     // Preparation
     val map = ObservableMap((1, "one"), (2, "two"))
-    map onChange { (sourceMap, change) =>
-      sourceMap should be(map)
-    }
+    map onChange { (sourceMap, change) => sourceMap should be(map) }
 
     // Execution
     map(3) = "three"
@@ -137,13 +138,13 @@ class ObservableMapSpec[K, V]
 
   it should "notify each addition individually" in {
     // Preparation
-    val map = ObservableMap.empty[Int, String]
+    val map          = ObservableMap.empty[Int, String]
     val addedEntries = Buffer.empty[(Int, String)]
     map onChange { (sourceMap, change) =>
       change match {
         case Add(key, valueAdded) => {
-            addedEntries += ((key, valueAdded))
-          }
+          addedEntries += ((key, valueAdded))
+        }
         case _ => fail("Unexpected change: " + change)
       }
     }
@@ -151,44 +152,57 @@ class ObservableMapSpec[K, V]
     // Execution
     map(0) = 0.toString
     compareInstances((map += (1 -> 1.toString)), map, true)
-    compareInstances(
-        (map += (2 -> 2.toString) += (3 -> 3.toString)), map, true)
+    compareInstances((map += (2 -> 2.toString) += (3 -> 3.toString)), map, true)
     compareInstances((map += ((4, 4.toString))), map, true)
     compareInstances((map += ((5, 5.toString), (6, 6.toString))), map, true)
     compareInstances((map += (7 -> 7.toString, 8 -> 8.toString)), map, true)
     compareInstances((map ++= List((9, 9.toString))), map, true)
     compareInstances(
-        (map ++= List((10, 10.toString), (11, 11.toString))), map, true)
+      (map ++= List((10, 10.toString), (11, 11.toString))),
+      map,
+      true
+    )
     (map put (12, 12.toString)) should be(None)
     (map getOrElseUpdate (13, 13.toString)) should equal(13.toString)
     // Next operations must not affect original map, so they must not call onchange function
     compareInstances((map + (100 -> 100.toString)), map, false)
     compareInstances(
-        (map + (101 -> 101.toString) + (102 -> 102.toString)), map, false)
+      (map + (101 -> 101.toString) + (102 -> 102.toString)),
+      map,
+      false
+    )
     compareInstances((map + ((103, 103.toString))), map, false)
     compareInstances(
-        (map + ((104, 104.toString), (105, 105.toString))), map, false)
+      (map + ((104, 104.toString), (105, 105.toString))),
+      map,
+      false
+    )
     compareInstances(
-        (map + (106 -> 106.toString, 107 -> 107.toString)), map, false)
+      (map + (106 -> 106.toString, 107 -> 107.toString)),
+      map,
+      false
+    )
     compareInstances((map ++ List((108, 108.toString))), map, false)
     compareInstances(
-        (map ++ List((109, 109.toString), (110, 110.toString))), map, false)
+      (map ++ List((109, 109.toString), (110, 110.toString))),
+      map,
+      false
+    )
     compareInstances((map.updated(111, 111.toString)), map, false)
 
     // Verification
-    addedEntries.toList should equal(
-        (0 to 13).map(i => (i, i.toString)).toList)
+    addedEntries.toList should equal((0 to 13).map(i => (i, i.toString)).toList)
   }
 
   it should "notify each removing individually" in {
     // Preparation
-    val map = ObservableMap((0 to 20).map(i => (i, i.toString)))
+    val map            = ObservableMap((0 to 20).map(i => (i, i.toString)))
     val removedEntries = Buffer.empty[(Int, String)]
     map onChange { (sourceMap, change) =>
       change match {
         case Remove(key, valueRemoved) => {
-            removedEntries += ((key, valueRemoved))
-          }
+          removedEntries += ((key, valueRemoved))
+        }
         case _ => fail("Unexpected change: " + change)
       }
     }
@@ -215,7 +229,8 @@ class ObservableMapSpec[K, V]
     // First Verification
     map should equal(ObservableMap((10 to 20).map(i => (i, i.toString))))
     removedEntries.toList should equal(
-        (0 to 9).map(i => (i, i.toString)).toList)
+      (0 to 9).map(i => (i, i.toString)).toList
+    )
 
     removedEntries.clear()
     // Retain even keys
@@ -225,27 +240,30 @@ class ObservableMapSpec[K, V]
     //    compareInstances(map.retain((i, str) => i % 2 == 0), map, true)
     for (k <- map.keys.toArray if (k % 2 != 0)) { map.remove(k) }
     map should equal(
-        ObservableMap((10 to 20).filter(_ % 2 == 0).map(i => (i, i.toString))))
+      ObservableMap((10 to 20).filter(_ % 2 == 0).map(i => (i, i.toString)))
+    )
     removedEntries.toList.sortWith(_._1 < _._1) should equal(
-        (10 to 20).filter(_ % 2 != 0).map(i => (i, i.toString)).toList)
+      (10 to 20).filter(_ % 2 != 0).map(i => (i, i.toString)).toList
+    )
 
     removedEntries.clear()
     // Clear Map
     map.clear()
     removedEntries.toList.sortWith(_._1 < _._1) should equal(
-        (10 to 20).filter(_ % 2 == 0).map(i => (i, i.toString)).toList)
+      (10 to 20).filter(_ % 2 == 0).map(i => (i, i.toString)).toList
+    )
     map should be('empty)
   }
 
   it should "notify any replacement individually" in {
     // Preparation
-    val map = ObservableMap((0 to 20).map(i => (i, i.toString)))
+    val map             = ObservableMap((0 to 20).map(i => (i, i.toString)))
     val replacedEntries = Buffer.empty[(Int, String, String)]
     map onChange { (sourceMap, change) =>
       change match {
         case Replace(key, valueAdded, valueRemoved) => {
-            replacedEntries += ((key, valueAdded, valueRemoved))
-          }
+          replacedEntries += ((key, valueAdded, valueRemoved))
+        }
         case _ => fail("Unexpected change: " + change)
       }
     }
@@ -289,32 +307,35 @@ class ObservableMapSpec[K, V]
 
   it should "keep his behavior with other types of sets beyond HashMap" in {
     // Preparation
-    val map = ObservableMap(new LinkedHashMap[Int, String])
-    val addedValues = Buffer.empty[(Int, String)]
+    val map           = ObservableMap(new LinkedHashMap[Int, String])
+    val addedValues   = Buffer.empty[(Int, String)]
     val removedValues = Buffer.empty[(Int, String)]
     map onChange { (sourceSet, change) =>
       change match {
-        case Add(key, value) => addedValues += ((key, value))
+        case Add(key, value)    => addedValues += ((key, value))
         case Remove(key, value) => removedValues += ((key, value))
         case Replace(key, added, removed) => {
-            addedValues += ((key, added))
-            removedValues += ((key, removed))
-          }
+          addedValues += ((key, added))
+          removedValues += ((key, removed))
+        }
       }
     }
 
     // Execution
-    compareInstances((map +=
-                         ((3, 3.toString), (1, 1.toString), (5, 5.toString))),
-                     map,
-                     true)
+    compareInstances(
+      (map +=
+        ((3, 3.toString), (1, 1.toString), (5, 5.toString))),
+      map,
+      true
+    )
     compareInstances((map -= (1, 4)), map, true)
     map(3) = "three"
 
     // Verification
     map.toList should equal(List((3, "three"), (5, 5.toString)))
-    addedValues should equal(Buffer(
-            (3, 3.toString), (1, 1.toString), (5, 5.toString), (3, "three")))
+    addedValues should equal(
+      Buffer((3, 3.toString), (1, 1.toString), (5, 5.toString), (3, "three"))
+    )
     removedValues should equal(Buffer((1, 1.toString), (3, 3.toString)))
   }
 }

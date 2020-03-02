@@ -57,12 +57,12 @@ package object prime {
   def factorTrialDivision(n0: SafeLong): Factors = {
     if (n0 == 0) return Factors.zero
 
-    val n = n0.abs
+    val n    = n0.abs
     val sign = Sign(n0.signum)
     if (n == SafeLong.one) return Factors(Map.empty, sign)
 
-    val facts = mutable.Map.empty[SafeLong, Int]
-    var x = n
+    val facts    = mutable.Map.empty[SafeLong, Int]
+    var x        = n
     val (x1, e1) = findPowers(x, SafeLong(2))
     if (e1 > 0) {
       facts(SafeLong(2)) = e1
@@ -91,12 +91,12 @@ package object prime {
   def factorWheelDivision(n0: SafeLong): Factors = {
     if (n0 == 0) return Factors.zero
 
-    val n = n0.abs
+    val n    = n0.abs
     val sign = Sign(n0.signum)
     if (n == 1) return Factors(Map.empty, sign)
 
-    val facts = mutable.Map.empty[SafeLong, Int]
-    var x = n
+    val facts    = mutable.Map.empty[SafeLong, Int]
+    var x        = n
     val (x1, e1) = findPowers(x, SafeLong(2))
     if (e1 > 0) {
       facts(SafeLong(2)) = e1
@@ -111,9 +111,9 @@ package object prime {
       }
     }
 
-    var limit = x.sqrt
-    var b = SafeLong(31)
-    var i = 0
+    var limit   = x.sqrt
+    var b       = SafeLong(31)
+    var i       = 0
     val offsets = Array(2, 2, 2, 4, 2, 4, 2, 4, 6, 2)
     while (b <= limit && x > 1) {
       val (x2, e2) = findPowers(x, b)
@@ -138,13 +138,17 @@ package object prime {
 
       @tailrec
       def fastRho(
-          x: SafeLong, q0: SafeLong, r: SafeLong, m: SafeLong): SafeLong = {
+          x: SafeLong,
+          q0: SafeLong,
+          r: SafeLong,
+          m: SafeLong
+      ): SafeLong = {
         var y = x
         var q = q0
         cfor(0)(r > _, _ + 1)(_ => y = f(y))
 
-        var g = SafeLong.one
-        var k = SafeLong.zero
+        var g  = SafeLong.one
+        var k  = SafeLong.zero
         var ys = y
         while (r > k && g == 1) {
           ys = y
@@ -158,19 +162,20 @@ package object prime {
         }
 
         if (g == 1) fastRho(y, q, r * 2, m)
-        else if (g == n) slowRho(x, ys) else g
+        else if (g == n) slowRho(x, ys)
+        else g
       }
 
       @tailrec def slowRho(x: SafeLong, ys: SafeLong): SafeLong = {
         val yys = f(ys)
-        val g = n gcd (x - yys).abs
+        val g   = n gcd (x - yys).abs
         if (g == 1) slowRho(x, yys) else g
       }
 
       fastRho(rand(n), SafeLong.one, SafeLong.one, rand(n))
     }
 
-    def factor(n: SafeLong): Factors = {
+    def factor(n: SafeLong): Factors =
       if (n == 1) {
         Factors.one
       } else if (isPrime(n)) {
@@ -185,7 +190,6 @@ package object prime {
         while (divisor == n) divisor = rho(n, rand(n))
         factor(divisor) * factor(n / divisor)
       }
-    }
 
     if (n0 == 0) return Factors.zero
 
@@ -198,7 +202,7 @@ package object prime {
 
   private def rand(n: SafeLong): SafeLong = {
     val bits = n.bitLength
-    var x = new java.math.BigInteger(bits, srand)
+    var x    = new java.math.BigInteger(bits, srand)
     while (x.signum == 0) x = new java.math.BigInteger(bits, srand)
     SafeLong(x)
   }
@@ -213,7 +217,7 @@ package object prime {
   private val SieveSize = 9600 * 1000
 
   def sieverUpToNth(n: Long): Siever = {
-    val upper = n * log(n) + n * log(log(n - 0.9385))
+    val upper  = n * log(n) + n * log(log(n - 0.9385))
     val cutoff = max(1000L, (sqrt(upper) + 512L).toLong)
     prime.Siever(SieveSize, cutoff)
   }
@@ -223,12 +227,12 @@ package object prime {
 
   import SafeLong.{two, three}
 
-  def fill(n: Int): Array[SafeLong] = {
+  def fill(n: Int): Array[SafeLong] =
     if (n <= 0) throw new IllegalArgumentException(n.toString)
     else if (n == 1) Array(two)
     else {
       val siever = sieverUpToNth(n)
-      val arr = new Array[SafeLong](n)
+      val arr    = new Array[SafeLong](n)
       arr(0) = two
       arr(1) = three
       def loop(i: Int, last: SafeLong): Unit =
@@ -240,7 +244,6 @@ package object prime {
       loop(2, three)
       arr
     }
-  }
 
   def fill(start: Int, limit: Int): Array[SafeLong] =
     if (start == 0) fill(limit)

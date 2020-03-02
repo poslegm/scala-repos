@@ -10,8 +10,8 @@ import scala.tools.partest.ASMConverters._
 import scala.tools.testing.ClearAfterClass
 
 object DirectCompileTest extends ClearAfterClass.Clearable {
-  var compiler = newCompiler(extraArgs = "-Yopt:l:method")
-  def clear(): Unit = { compiler = null }
+  var compiler      = newCompiler(extraArgs = "-Yopt:l:method")
+  def clear(): Unit = compiler = null
 }
 
 @RunWith(classOf[JUnit4])
@@ -26,8 +26,10 @@ class DirectCompileTest extends ClearAfterClass {
         |  def f = 1
         |}
       """.stripMargin)
-    def s(i: Int, n: Int) = (bytes(i) & 0xff) << n
-    assertTrue((s(0, 24) | s(1, 16) | s(2, 8) | s(3, 0)) == 0xcafebabe) // mocha java latte macchiato surpreme dark roasted espresso
+    def s(i: Int, n: Int)        = (bytes(i) & 0xff) << n
+    assertTrue(
+      (s(0, 24) | s(1, 16) | s(2, 8) | s(3, 0)) == 0xcafebabe
+    ) // mocha java latte macchiato surpreme dark roasted espresso
   }
 
   @Test
@@ -52,13 +54,19 @@ class DirectCompileTest extends ClearAfterClass {
     assertTrue(f.name == "f")
     assertTrue(g.name == "g")
 
-    assertSameCode(instructionsFromMethod(f).dropNonOp,
-                   List(IntOp(BIPUSH, 10), Op(IRETURN)))
+    assertSameCode(
+      instructionsFromMethod(f).dropNonOp,
+      List(IntOp(BIPUSH, 10), Op(IRETURN))
+    )
 
-    assertSameCode(instructionsFromMethod(g).dropNonOp,
-                   List(VarOp(ALOAD, 0),
-                        Invoke(INVOKEVIRTUAL, "C", "f", "()I", itf = false),
-                        Op(IRETURN)))
+    assertSameCode(
+      instructionsFromMethod(g).dropNonOp,
+      List(
+        VarOp(ALOAD, 0),
+        Invoke(INVOKEVIRTUAL, "C", "f", "()I", itf = false),
+        Op(IRETURN)
+      )
+    )
   }
 
   @Test
@@ -66,36 +74,42 @@ class DirectCompileTest extends ClearAfterClass {
     // makes sure that dropNoOp doesn't drop labels that are being used
     val List(f) =
       compileMethods(compiler)("""def f(x: Int) = if (x == 0) "a" else "b"""")
-    assertSameCode(instructionsFromMethod(f).dropLinesFrames,
-                   List(
-                       Label(0),
-                       VarOp(ILOAD, 1),
-                       Op(ICONST_0),
-                       Jump(IF_ICMPNE, Label(7)),
-                       Ldc(LDC, "a"),
-                       Op(ARETURN),
-                       Label(7),
-                       Ldc(LDC, "b"),
-                       Op(ARETURN),
-                       Label(11)
-                   ))
+    assertSameCode(
+      instructionsFromMethod(f).dropLinesFrames,
+      List(
+        Label(0),
+        VarOp(ILOAD, 1),
+        Op(ICONST_0),
+        Jump(IF_ICMPNE, Label(7)),
+        Ldc(LDC, "a"),
+        Op(ARETURN),
+        Label(7),
+        Ldc(LDC, "b"),
+        Op(ARETURN),
+        Label(11)
+      )
+    )
   }
 
   @Test
   def testSeparateCompilation(): Unit = {
-    val codeA = "class A { def f = 1 }"
-    val codeB = "class B extends A { def g = f }"
+    val codeA      = "class A { def f = 1 }"
+    val codeB      = "class B extends A { def g = f }"
     val List(a, b) = compileClassesSeparately(List(codeA, codeB))
-    val ins = getSingleMethod(b, "g").instructions
-    assert(ins exists {
-      case Invoke(_, "B", "f", _, _) => true
-      case _ => false
-    }, ins)
+    val ins        = getSingleMethod(b, "g").instructions
+    assert(
+      ins exists {
+        case Invoke(_, "B", "f", _, _) => true
+        case _                         => false
+      },
+      ins
+    )
   }
 
   @Test
-  def compileErroneous(): Unit = {
-    compileClasses(compiler)("class C { def f: String = 1 }",
-                             allowMessage = _.msg contains "type mismatch")
-  }
+  def compileErroneous(): Unit =
+    compileClasses(compiler)(
+      "class C { def f: String = 1 }",
+      allowMessage = _.msg contains "type mismatch"
+    )
 }

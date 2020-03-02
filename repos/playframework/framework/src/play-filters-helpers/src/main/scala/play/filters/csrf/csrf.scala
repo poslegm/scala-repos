@@ -42,14 +42,16 @@ case class CSRFConfig(
     cookieName: Option[String] = None,
     secureCookie: Boolean = false,
     httpOnlyCookie: Boolean = false,
-    createIfNotFound: RequestHeader => Boolean = CSRFConfig.defaultCreateIfNotFound,
+    createIfNotFound: RequestHeader => Boolean =
+      CSRFConfig.defaultCreateIfNotFound,
     postBodyBuffer: Long = 102400,
     signTokens: Boolean = true,
     checkMethod: String => Boolean = !CSRFConfig.SafeMethods.contains(_),
     checkContentType: Option[String] => Boolean = _ => true,
     headerName: String = "Csrf-Token",
     shouldProtect: RequestHeader => Boolean = _ => false,
-    bypassCorsTrustedOrigins: Boolean = true) {
+    bypassCorsTrustedOrigins: Boolean = true
+) {
 
   // Java builder methods
   def this() = this(cookieName = None)
@@ -60,7 +62,7 @@ case class CSRFConfig(
   import play.mvc.Http.{RequestHeader => JRequestHeader}
   import play.core.j.{RequestHeaderImpl => JRequestHeaderImpl}
 
-  def withTokenName(tokenName: String) = copy(tokenName = tokenName)
+  def withTokenName(tokenName: String)   = copy(tokenName = tokenName)
   def withHeaderName(headerName: String) = copy(headerName = headerName)
   def withCookieName(cookieName: ju.Optional[String]) =
     copy(cookieName = cookieName.asScala)
@@ -69,17 +71,18 @@ case class CSRFConfig(
     copy(httpOnlyCookie = isHttpOnly)
   def withCreateIfNotFound(pred: ju.function.Predicate[JRequestHeader]) =
     copy(createIfNotFound = pred.asScala.compose(new JRequestHeaderImpl(_)))
-  def withPostBodyBuffer(bufsize: Long) = copy(postBodyBuffer = bufsize)
+  def withPostBodyBuffer(bufsize: Long)   = copy(postBodyBuffer = bufsize)
   def withSignTokens(signTokens: Boolean) = copy(signTokens = signTokens)
   def withMethods(checkMethod: ju.function.Predicate[String]) =
     copy(checkMethod = checkMethod.asScala)
   def withContentTypes(
-      checkContentType: ju.function.Predicate[Optional[String]]) =
+      checkContentType: ju.function.Predicate[Optional[String]]
+  ) =
     copy(checkContentType = checkContentType.asScala.compose(_.asJava))
   def withShouldProtect(shouldProtect: ju.function.Predicate[JRequestHeader]) =
     copy(
-        shouldProtect = shouldProtect.asScala.compose(
-              new JRequestHeaderImpl(_)))
+      shouldProtect = shouldProtect.asScala.compose(new JRequestHeaderImpl(_))
+    )
   def withBypassCorsTrustedOrigins(bypass: Boolean) =
     copy(bypassCorsTrustedOrigins = bypass)
 }
@@ -87,12 +90,11 @@ case class CSRFConfig(
 object CSRFConfig {
   private val SafeMethods = Set("GET", "HEAD", "OPTIONS")
 
-  private def defaultCreateIfNotFound(request: RequestHeader) = {
+  private def defaultCreateIfNotFound(request: RequestHeader) =
     // If the request isn't accepting HTML, then it won't be rendering a form, so there's no point in generating a
     // CSRF token for it.
     (request.method == "GET" || request.method == "HEAD") &&
-    (request.accepts("text/html") || request.accepts("application/xml+xhtml"))
-  }
+      (request.accepts("text/html") || request.accepts("application/xml+xhtml"))
 
   private[play] val HeaderNoCheck = "nocheck"
 
@@ -113,9 +115,8 @@ object CSRFConfig {
       if (methodWhiteList.nonEmpty) {
         !methodWhiteList.contains(_)
       } else {
-        if (methodBlackList.isEmpty) { _ =>
-          true
-        } else {
+        if (methodBlackList.isEmpty) { _ => true }
+        else {
           methodBlackList.contains
         }
       }
@@ -129,9 +130,8 @@ object CSRFConfig {
       if (contentTypeWhiteList.nonEmpty) {
         _.forall(!contentTypeWhiteList.contains(_))
       } else {
-        if (contentTypeBlackList.isEmpty) { _ =>
-          true
-        } else {
+        if (contentTypeBlackList.isEmpty) { _ => true }
+        else {
           _.exists(contentTypeBlackList.contains)
         }
       }
@@ -144,38 +144,36 @@ object CSRFConfig {
       .getOrElse(Map.empty)
 
     val shouldProtect: RequestHeader => Boolean = { rh =>
-      def foundHeaderValues(headersToCheck: Map[String, String]) = {
+      def foundHeaderValues(headersToCheck: Map[String, String]) =
         headersToCheck.exists {
-          case (name, "*") => rh.headers.get(name).isDefined
+          case (name, "*")   => rh.headers.get(name).isDefined
           case (name, value) => rh.headers.get(name).contains(value)
         }
-      }
 
       (protectHeaders.isEmpty || foundHeaderValues(protectHeaders)) &&
       !foundHeaderValues(bypassHeaders)
     }
 
     CSRFConfig(
-        tokenName = config.get[String]("token.name"),
-        cookieName = config.get[Option[String]]("cookie.name"),
-        secureCookie = config.get[Boolean]("cookie.secure"),
-        httpOnlyCookie = config.get[Boolean]("cookie.httpOnly"),
-        postBodyBuffer = config
-            .get[ConfigMemorySize]("body.bufferSize")
-            .toBytes,
-        signTokens = config.get[Boolean]("token.sign"),
-        checkMethod = checkMethod,
-        checkContentType = checkContentType,
-        headerName = config.get[String]("header.name"),
-        shouldProtect = shouldProtect,
-        bypassCorsTrustedOrigins = config.get[Boolean](
-              "bypassCorsTrustedOrigins")
+      tokenName = config.get[String]("token.name"),
+      cookieName = config.get[Option[String]]("cookie.name"),
+      secureCookie = config.get[Boolean]("cookie.secure"),
+      httpOnlyCookie = config.get[Boolean]("cookie.httpOnly"),
+      postBodyBuffer = config
+        .get[ConfigMemorySize]("body.bufferSize")
+        .toBytes,
+      signTokens = config.get[Boolean]("token.sign"),
+      checkMethod = checkMethod,
+      checkContentType = checkContentType,
+      headerName = config.get[String]("header.name"),
+      shouldProtect = shouldProtect,
+      bypassCorsTrustedOrigins = config.get[Boolean]("bypassCorsTrustedOrigins")
     )
   }
 }
 
 @Singleton
-class CSRFConfigProvider @Inject()(config: Configuration)
+class CSRFConfigProvider @Inject() (config: Configuration)
     extends Provider[CSRFConfig] {
   lazy val get = CSRFConfig.fromConfiguration(config)
 }
@@ -190,22 +188,21 @@ object CSRF {
   case class Token(name: String, value: String)
 
   object Token {
-    val NameRequestTag = "CSRF_TOKEN_NAME"
-    val RequestTag = "CSRF_TOKEN"
+    val NameRequestTag     = "CSRF_TOKEN_NAME"
+    val RequestTag         = "CSRF_TOKEN"
     val ReSignedRequestTag = "CSRF_TOKEN_RE_SIGNED"
   }
 
   /**
     * Extract token from current request
     */
-  def getToken(implicit request: RequestHeader): Option[Token] = {
+  def getToken(implicit request: RequestHeader): Option[Token] =
     // Try to get the re-signed token first, then get the "new" token.
     for {
       name <- request.tags.get(Token.NameRequestTag)
       value <- request.tags.get(Token.ReSignedRequestTag) orElse request.tags
-        .get(Token.RequestTag)
+                .get(Token.RequestTag)
     } yield Token(name, value)
-  }
 
   /**
     * Extract token from current Java request
@@ -213,9 +210,8 @@ object CSRF {
     * @param request The request to extract the token from
     * @return The token, if found.
     */
-  def getToken(request: play.mvc.Http.RequestHeader): Optional[Token] = {
+  def getToken(request: play.mvc.Http.RequestHeader): Optional[Token] =
     Optional.ofNullable(getToken(request._underlyingHeader()).orNull)
-  }
 
   /**
     * A token provider, for generating and comparing tokens.
@@ -231,20 +227,20 @@ object CSRF {
     def compareTokens(tokenA: String, tokenB: String): Boolean
   }
 
-  class TokenProviderProvider @Inject()(
-      config: CSRFConfig, tokenSigner: CSRFTokenSigner)
-      extends Provider[TokenProvider] {
+  class TokenProviderProvider @Inject() (
+      config: CSRFConfig,
+      tokenSigner: CSRFTokenSigner
+  ) extends Provider[TokenProvider] {
     override val get = config.signTokens match {
-      case true => new SignedTokenProvider(tokenSigner)
+      case true  => new SignedTokenProvider(tokenSigner)
       case false => new UnsignedTokenProvider(tokenSigner)
     }
   }
 
-  class ConfigTokenProvider(
-      config: => CSRFConfig, tokenSigner: CSRFTokenSigner)
+  class ConfigTokenProvider(config: => CSRFConfig, tokenSigner: CSRFTokenSigner)
       extends TokenProvider {
     lazy val underlying = new TokenProviderProvider(config, tokenSigner).get
-    def generateToken = underlying.generateToken
+    def generateToken   = underlying.generateToken
     def compareTokens(tokenA: String, tokenB: String) =
       underlying.compareTokens(tokenA, tokenB)
   }
@@ -272,7 +268,7 @@ object CSRF {
     def handle(req: RequestHeader, msg: String): Future[Result]
   }
 
-  class CSRFHttpErrorHandler @Inject()(httpErrorHandler: HttpErrorHandler)
+  class CSRFHttpErrorHandler @Inject() (httpErrorHandler: HttpErrorHandler)
       extends ErrorHandler {
     import play.api.http.Status.FORBIDDEN
     def handle(req: RequestHeader, msg: String) =
@@ -284,36 +280,39 @@ object CSRF {
       Future.successful(Forbidden(msg))
   }
 
-  class JavaCSRFErrorHandlerAdapter @Inject()(underlying: CSRFErrorHandler)
+  class JavaCSRFErrorHandlerAdapter @Inject() (underlying: CSRFErrorHandler)
       extends ErrorHandler {
     def handle(request: RequestHeader, msg: String) =
-      JavaHelpers.invokeWithContext(
-          request, req => underlying.handle(req, msg))
+      JavaHelpers.invokeWithContext(request, req => underlying.handle(req, msg))
   }
 
-  class JavaCSRFErrorHandlerDelegate @Inject()(delegate: ErrorHandler)
+  class JavaCSRFErrorHandlerDelegate @Inject() (delegate: ErrorHandler)
       extends CSRFErrorHandler {
     import play.api.libs.iteratee.Execution.Implicits.trampoline
 
     def handle(req: Http.RequestHeader, msg: String) =
       FutureConverters.toJava(
-          delegate.handle(req._underlyingHeader(), msg).map(_.asJava))
+        delegate.handle(req._underlyingHeader(), msg).map(_.asJava)
+      )
   }
 
   object ErrorHandler {
     def bindingsFromConfiguration(
         environment: Environment,
-        configuration: Configuration): Seq[Binding[_]] = {
-      Reflect.bindingsFromConfiguration[ErrorHandler,
-                                        CSRFErrorHandler,
-                                        JavaCSRFErrorHandlerAdapter,
-                                        JavaCSRFErrorHandlerDelegate,
-                                        CSRFHttpErrorHandler](
-          environment,
-          PlayConfig(configuration),
-          "play.filters.csrf.errorHandler",
-          "CSRFErrorHandler")
-    }
+        configuration: Configuration
+    ): Seq[Binding[_]] =
+      Reflect.bindingsFromConfiguration[
+        ErrorHandler,
+        CSRFErrorHandler,
+        JavaCSRFErrorHandlerAdapter,
+        JavaCSRFErrorHandlerDelegate,
+        CSRFHttpErrorHandler
+      ](
+        environment,
+        PlayConfig(configuration),
+        "play.filters.csrf.errorHandler",
+        "CSRFErrorHandler"
+      )
   }
 }
 
@@ -321,13 +320,12 @@ object CSRF {
   * The CSRF module.
   */
 class CSRFModule extends Module {
-  def bindings(environment: Environment, configuration: Configuration) = {
+  def bindings(environment: Environment, configuration: Configuration) =
     Seq(
-        bind[CSRFConfig].toProvider[CSRFConfigProvider],
-        bind[CSRF.TokenProvider].toProvider[CSRF.TokenProviderProvider],
-        bind[CSRFFilter].toSelf
+      bind[CSRFConfig].toProvider[CSRFConfigProvider],
+      bind[CSRF.TokenProvider].toProvider[CSRF.TokenProviderProvider],
+      bind[CSRFFilter].toSelf
     ) ++ ErrorHandler.bindingsFromConfiguration(environment, configuration)
-  }
 }
 
 /**
@@ -343,7 +341,12 @@ trait CSRFComponents {
   lazy val csrfTokenProvider: CSRF.TokenProvider =
     new CSRF.TokenProviderProvider(csrfConfig, csrfTokenSigner).get
   lazy val csrfErrorHandler: CSRF.ErrorHandler = new CSRFHttpErrorHandler(
-      httpErrorHandler)
+    httpErrorHandler
+  )
   lazy val csrfFilter: CSRFFilter = new CSRFFilter(
-      csrfConfig, csrfTokenSigner, csrfTokenProvider, csrfErrorHandler)
+    csrfConfig,
+    csrfTokenSigner,
+    csrfTokenProvider,
+    csrfErrorHandler
+  )
 }

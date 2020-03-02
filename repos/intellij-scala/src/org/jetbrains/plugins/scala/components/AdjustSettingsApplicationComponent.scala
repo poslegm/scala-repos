@@ -18,8 +18,8 @@ import org.jetbrains.plugins.scala.settings.ScalaApplicationSettings
   */
 class AdjustSettingsApplicationComponent extends ApplicationComponent {
   private val MEM_SIZE_EXPR: String = "(\\d*)([a-zA-Z]*)"
-  private val XSS_PATTERN: Pattern = Pattern.compile("-Xss" + MEM_SIZE_EXPR)
-  private val XMS_PATTERN: Pattern = Pattern.compile("-Xms" + MEM_SIZE_EXPR)
+  private val XSS_PATTERN: Pattern  = Pattern.compile("-Xss" + MEM_SIZE_EXPR)
+  private val XMS_PATTERN: Pattern  = Pattern.compile("-Xms" + MEM_SIZE_EXPR)
 
   override def initComponent(): Unit = {
     if (ApplicationManager.getApplication.isUnitTestMode) return
@@ -29,9 +29,9 @@ class AdjustSettingsApplicationComponent extends ApplicationComponent {
 
     if (xmx != -1) {
       val preferredXmx = (if (SystemInfo.is32Bit) 1024 else 2048).max(xmx)
-      val xss = VMOptions.readOption(XSS_PATTERN).max(1)
+      val xss          = VMOptions.readOption(XSS_PATTERN).max(1)
       val preferredXss = (if (SystemInfo.is32Bit) 1 else 2).max(xss)
-      val xms = VMOptions.readOption(XMS_PATTERN).max(0)
+      val xms          = VMOptions.readOption(XMS_PATTERN).max(0)
       val preferredXms = preferredXmx
 
       if (xmx < preferredXmx || xss < preferredXss || xms < preferredXms) {
@@ -45,10 +45,11 @@ class AdjustSettingsApplicationComponent extends ApplicationComponent {
 
   override def getComponentName: String = "AdjustSettingsApplicationComponent"
 
-  private class AdjustSettingsDialog(preferredXmx: Int,
-                                     preferredXms: Int,
-                                     preferredXss: Int)
-      extends DialogWrapper(null, true, true) {
+  private class AdjustSettingsDialog(
+      preferredXmx: Int,
+      preferredXms: Int,
+      preferredXss: Int
+  ) extends DialogWrapper(null, true, true) {
     var xmxField: JTextField = null
     var xmsField: JTextField = null
     var xssField: JTextField = null
@@ -73,7 +74,8 @@ class AdjustSettingsApplicationComponent extends ApplicationComponent {
       panel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10))
       val headerPanel = new JPanel(new GridLayout(0, 1, 0, 0))
       headerPanel.add(
-          new JLabel("Recommended memory settings for Scala plugin:"))
+        new JLabel("Recommended memory settings for Scala plugin:")
+      )
       adjustingPanel.add(headerPanel, BorderLayout.NORTH)
       val settingsPanel = new JPanel(new GridLayout(0, 2, 0, 0))
       settingsPanel.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 10))
@@ -94,7 +96,7 @@ class AdjustSettingsApplicationComponent extends ApplicationComponent {
       panel
     }
 
-    override def doOKAction(): Unit = {
+    override def doOKAction(): Unit =
       try {
         val xmsValue = xmsField.getText.toInt
         val xmxValue = xmxField.getText.toInt
@@ -102,8 +104,9 @@ class AdjustSettingsApplicationComponent extends ApplicationComponent {
         if (!VMOptions.writeOption("-Xms", xmsValue, XMS_PATTERN)) {
           ScalaApplicationSettings.getInstance().IGNORE_SETTINGS_CHECK = true
           Messages.showErrorDialog(
-              "Settings weren't adjusted. Need permissions.",
-              "Access is denied")
+            "Settings weren't adjusted. Need permissions.",
+            "Access is denied"
+          )
           return
         }
         VMOptions.writeXmx(xmxValue)
@@ -111,15 +114,12 @@ class AdjustSettingsApplicationComponent extends ApplicationComponent {
       } catch {
         case n: NumberFormatException => //do nothing
       } finally {
-        SwingUtilities.invokeLater(
-            new Runnable {
-          override def run(): Unit = {
+        SwingUtilities.invokeLater(new Runnable {
+          override def run(): Unit =
             ApplicationManager.getApplication.restart()
-          }
         })
         super.doOKAction() //close OK dialog
       }
-    }
 
     override def doCancelAction(): Unit = {
       ScalaApplicationSettings.getInstance().IGNORE_SETTINGS_CHECK = true

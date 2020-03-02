@@ -30,14 +30,17 @@ case class Unzip2[P1 <: Platform[P1], P2 <: Platform[P2]]() {
   private def cast[T](p: Any): (Producer[P1, T], Producer[P2, T]) =
     p.asInstanceOf[(Producer[P1, T], Producer[P2, T])]
 
-  def apply[T](root: Producer[Platform2[P1, P2], T])
-    : (Producer[P1, T], Producer[P2, T]) =
+  def apply[T](
+      root: Producer[Platform2[P1, P2], T]
+  ): (Producer[P1, T], Producer[P2, T]) =
     root match {
       case AlsoProducer(ensure, result) =>
         val (le, re) = apply(ensure)
         val (lr, rr) = apply(result)
-        (le.asInstanceOf[TailProducer[P1, Any]].also(lr),
-         re.asInstanceOf[TailProducer[P2, Any]].also(rr))
+        (
+          le.asInstanceOf[TailProducer[P1, Any]].also(lr),
+          re.asInstanceOf[TailProducer[P2, Any]].also(rr)
+        )
 
       case NamedProducer(producer, id) =>
         val (l, r) = apply(producer)
@@ -69,17 +72,17 @@ case class Unzip2[P1 <: Platform[P1], P2 <: Platform[P2]]() {
         (ll.merge(rl), lr.merge(rr))
 
       case WrittenProducer(producer, sink) =>
-        val (l, r) = apply(producer)
+        val (l, r)                = apply(producer)
         val (leftSink, rightSink) = sink
         (l.write(leftSink), r.write(rightSink))
 
       case LeftJoinedProducer(producer, service) =>
-        val (l, r) = apply(producer)
+        val (l, r)                      = apply(producer)
         val (leftService, rightService) = service
         cast((l.leftJoin(leftService), r.leftJoin(rightService)))
 
       case Summer(producer, store, monoid) =>
-        val (l, r) = apply(producer)
+        val (l, r)                  = apply(producer)
         val (leftStore, rightStore) = store
         cast((Summer(l, leftStore, monoid), Summer(r, rightStore, monoid)))
     }
@@ -92,14 +95,15 @@ case class Unzip2[P1 <: Platform[P1], P2 <: Platform[P2]]() {
 class Platform2[P1 <: Platform[P1], P2 <: Platform[P2]](p1: P1, p2: P2)
     extends Platform[Platform2[P1, P2]] {
   // The type of the inputs for this platform
-  type Source[T] = (P1#Source[T], P2#Source[T])
-  type Store[K, V] = (P1#Store[K, V], P2#Store[K, V])
-  type Sink[T] = (P1#Sink[T], P2#Sink[T])
+  type Source[T]     = (P1#Source[T], P2#Source[T])
+  type Store[K, V]   = (P1#Store[K, V], P2#Store[K, V])
+  type Sink[T]       = (P1#Sink[T], P2#Sink[T])
   type Service[K, V] = (P1#Service[K, V], P2#Service[K, V])
-  type Plan[T] = (P1#Plan[T], P2#Plan[T])
+  type Plan[T]       = (P1#Plan[T], P2#Plan[T])
 
-  private def tCast[T](p: (Producer[P1, T],
-      Producer[P2, T])): (TailProducer[P1, T], TailProducer[P2, T]) =
+  private def tCast[T](
+      p: (Producer[P1, T], Producer[P2, T])
+  ): (TailProducer[P1, T], TailProducer[P2, T]) =
     p.asInstanceOf[(TailProducer[P1, T], TailProducer[P2, T])]
 
   def plan[T](producer: TailProducer[Platform2[P1, P2], T]): Plan[T] = {

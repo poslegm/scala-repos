@@ -17,12 +17,12 @@ trait CollectionsSynchronizedListTest extends CollectionsOnListTest {
 
   def originalFactory: ListFactory
 
-  def factory: ListFactory = {
+  def factory: ListFactory =
     new ListFactory {
       override def implementationName: String =
         s"synchronizedList(${originalFactory.implementationName})"
 
-      override def empty[E : ClassTag]: ju.List[E] =
+      override def empty[E: ClassTag]: ju.List[E] =
         ju.Collections.synchronizedList(originalFactory.empty[E])
 
       override def allowsMutationThroughIterator: Boolean =
@@ -31,7 +31,6 @@ trait CollectionsSynchronizedListTest extends CollectionsOnListTest {
       override def sortableUsingCollections: Boolean =
         originalFactory.sortableUsingCollections
     }
-  }
 }
 
 class CollectionsOnSynchronizedListAbstractListTest

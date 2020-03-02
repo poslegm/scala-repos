@@ -51,16 +51,18 @@ object BasicTypesHelpersSpec extends Specification with DataTables {
       toBoolean(null) must_== false
       "object value" ||
       "boolean value" | (0: Any) !! false | 1 !! true | true !! true | false !! false | "" !! false | "string" !! false | "t" !! true | "total" !! false | "T" !! true | "This" !! false | "0" !! false | "on" !! true | None !! false | Some(
-          "t") !! true | Empty !! false | Full("t") !! true | failure !! false | List(
-          "t", "f") !! true |> { (o: Any, result: Boolean) =>
-        toBoolean(o) must_== result
-      }
+        "t"
+      ) !! true | Empty !! false | Full("t") !! true | failure !! false | List(
+        "t",
+        "f"
+      ) !! true |> { (o: Any, result: Boolean) => toBoolean(o) must_== result }
     }
 
     "have a AsBoolean extractor converting any object to a reasonable Boolean value" in {
       "object value" ||
       "boolean value" |> "t" !! Some(true) | "" !! None | "string" !! None | "total" !! None | "T" !! Some(
-          true) | "This" !! None | "0" !! Some(false) | {
+        true
+      ) | "This" !! None | "0" !! Some(false) | {
         (o: String, result: Option[Boolean]) =>
           AsBoolean.unapply(o) must_== result
       }
@@ -68,15 +70,13 @@ object BasicTypesHelpersSpec extends Specification with DataTables {
 
     "have an AsInt extractor converting any String to a reasonable Int value" in {
       "object value" || "int value" |> "3" !! Some(3) | "n" !! None | {
-        (o: String, result: Option[Int]) =>
-          AsInt.unapply(o) must_== result
+        (o: String, result: Option[Int]) => AsInt.unapply(o) must_== result
       }
     }
 
     "have an AsLong extractor converting any String to a reasonable Long value" in {
       "object value" || "long value" |> "3" !! Some(3L) | "n" !! None | {
-        (o: String, result: Option[Long]) =>
-          AsLong.unapply(o) must_== result
+        (o: String, result: Option[Long]) => AsLong.unapply(o) must_== result
       }
     }
 
@@ -84,11 +84,9 @@ object BasicTypesHelpersSpec extends Specification with DataTables {
       def date(t: Int) = new _root_.java.util.Date(t)
       toInt(null) must_== 0
       "object value" ||
-      "int value" |> 1 !! 1 | 1L !! 1 | List(1, 2) !! 1 | Some(1) !! 1 | Full(
-          1) !! 1 | None !! 0 | Empty !! 0 | failure !! 0 | "3" !! 3 | "n" !! 0 | date(
-          3000) !! 3 | { (o: Any, result: Int) =>
-        toInt(o) must_== result
-      }
+      "int value" |> 1 !! 1 | 1L !! 1 | List(1, 2) !! 1 | Some(1) !! 1 | Full(1) !! 1 | None !! 0 | Empty !! 0 | failure !! 0 | "3" !! 3 | "n" !! 0 | date(
+        3000
+      ) !! 3 | { (o: Any, result: Int) => toInt(o) must_== result }
     }
 
     "have a toLong method converting any object to a reasonable Long value" in {
@@ -96,16 +94,16 @@ object BasicTypesHelpersSpec extends Specification with DataTables {
       toLong(null) must_== 0L
       "object value" ||
       "long value" |> 1 !! 1L | 1L !! 1L | List(1, 2) !! 1L | Some(1) !! 1L | Full(
-          1) !! 1L | None !! 0L | Empty !! 0L | failure !! 0L | "3" !! 3L | "n" !! 0L | date(
-          3000) !! 3000L | { (o: Any, result: Long) =>
-        toLong(o) must_== result
-      }
+        1
+      ) !! 1L | None !! 0L | Empty !! 0L | failure !! 0L | "3" !! 3L | "n" !! 0L | date(
+        3000
+      ) !! 3000L | { (o: Any, result: Long) => toLong(o) must_== result }
     }
 
     "have a toByteArrayInputStream reading an InputStream to a ByteArrayInputStream" in {
       var array: Array[Byte] = Array(12, 14)
-      val input = new ByteArrayInputStream(array)
-      val result = toByteArrayInputStream(input)
+      val input              = new ByteArrayInputStream(array)
+      val result             = toByteArrayInputStream(input)
       result.read must_== 12
       result.read must_== 14
     }
@@ -132,10 +130,10 @@ object BasicTypesHelpersSpec extends Specification with DataTables {
 
       val pf2: PartialFunction[String, Boolean] = {
         case "snipe" => true
-        case "bipe" => false
+        case "bipe"  => false
       }
 
-      val pf3 = pf1.guard(pf2)
+      val pf3                                   = pf1.guard(pf2)
       val pf4: PartialFunction[String, Boolean] = pf1.guard(pf3)
 
       pf3.isDefinedAt("bipe") must_== false

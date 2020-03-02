@@ -25,15 +25,20 @@ import scala.xml.Node
 import org.apache.commons.lang3.StringEscapeUtils
 
 import org.apache.spark.internal.Logging
-import org.apache.spark.sql.hive.thriftserver.HiveThriftServer2.{ExecutionInfo, ExecutionState, SessionInfo}
+import org.apache.spark.sql.hive.thriftserver.HiveThriftServer2.{
+  ExecutionInfo,
+  ExecutionState,
+  SessionInfo
+}
 import org.apache.spark.ui._
 import org.apache.spark.ui.UIUtils._
 
 /** Page for Spark Web UI that shows statistics of a thrift server */
 private[ui] class ThriftServerPage(parent: ThriftServerTab)
-    extends WebUIPage("") with Logging {
+    extends WebUIPage("")
+    with Logging {
 
-  private val listener = parent.listener
+  private val listener  = parent.listener
   private val startTime = Calendar.getInstance().getTime()
   private val emptyCell = "-"
 
@@ -57,7 +62,9 @@ private[ui] class ThriftServerPage(parent: ThriftServerTab)
         <strong>Started at: </strong> {formatDate(startTime)}
       </li>
       <li>
-        <strong>Time since start: </strong>{formatDurationVerbose(timeSinceStart)}
+        <strong>Time since start: </strong>{
+      formatDurationVerbose(timeSinceStart)
+    }
       </li>
     </ul>
   }
@@ -67,20 +74,27 @@ private[ui] class ThriftServerPage(parent: ThriftServerTab)
     val numStatement = listener.getExecutionList.size
     val table =
       if (numStatement > 0) {
-        val headerRow = Seq("User",
-                            "JobID",
-                            "GroupID",
-                            "Start Time",
-                            "Finish Time",
-                            "Duration",
-                            "Statement",
-                            "State",
-                            "Detail")
+        val headerRow = Seq(
+          "User",
+          "JobID",
+          "GroupID",
+          "Start Time",
+          "Finish Time",
+          "Duration",
+          "Statement",
+          "State",
+          "Detail"
+        )
         val dataRows = listener.getExecutionList
 
         def generateDataRow(info: ExecutionInfo): Seq[Node] = {
           val jobLink = info.jobId.map { id: String =>
-            <a href={"%s/jobs/job?id=%s".format(UIUtils.prependBaseUri(parent.basePath), id)}>
+            <a href={
+              "%s/jobs/job?id=%s".format(
+                UIUtils.prependBaseUri(parent.basePath),
+                id
+              )
+            }>
             [{id}]
           </a>
           }
@@ -103,13 +117,16 @@ private[ui] class ThriftServerPage(parent: ThriftServerTab)
         }
 
         Some(
-            UIUtils.listingTable(headerRow,
-                                 generateDataRow,
-                                 dataRows,
-                                 false,
-                                 None,
-                                 Seq(null),
-                                 false))
+          UIUtils.listingTable(
+            headerRow,
+            generateDataRow,
+            dataRows,
+            false,
+            None,
+            Seq(null),
+            false
+          )
+        )
       } else {
         None
       }
@@ -125,8 +142,7 @@ private[ui] class ThriftServerPage(parent: ThriftServerTab)
 
   private def errorMessageCell(errorMessage: String): Seq[Node] = {
     val isMultiline = errorMessage.indexOf('\n') >= 0
-    val errorSummary = StringEscapeUtils.escapeHtml4(
-        if (isMultiline) {
+    val errorSummary = StringEscapeUtils.escapeHtml4(if (isMultiline) {
       errorMessage.substring(0, errorMessage.indexOf('\n'))
     } else {
       errorMessage
@@ -150,40 +166,48 @@ private[ui] class ThriftServerPage(parent: ThriftServerTab)
   /** Generate stats of batch sessions of the thrift server program */
   private def generateSessionStatsTable(): Seq[Node] = {
     val sessionList = listener.getSessionList
-    val numBatches = sessionList.size
+    val numBatches  = sessionList.size
     val table =
       if (numBatches > 0) {
         val dataRows = sessionList
-        val headerRow = Seq("User",
-                            "IP",
-                            "Session ID",
-                            "Start Time",
-                            "Finish Time",
-                            "Duration",
-                            "Total Execute")
+        val headerRow = Seq(
+          "User",
+          "IP",
+          "Session ID",
+          "Start Time",
+          "Finish Time",
+          "Duration",
+          "Total Execute"
+        )
         def generateDataRow(session: SessionInfo): Seq[Node] = {
           val sessionLink = "%s/%s/session?id=%s".format(
-              UIUtils.prependBaseUri(parent.basePath),
-              parent.prefix,
-              session.sessionId)
+            UIUtils.prependBaseUri(parent.basePath),
+            parent.prefix,
+            session.sessionId
+          )
           <tr>
           <td> {session.userName} </td>
           <td> {session.ip} </td>
           <td> <a href={sessionLink}> {session.sessionId} </a> </td>
           <td> {formatDate(session.startTimestamp)} </td>
-          <td> {if (session.finishTimestamp > 0) formatDate(session.finishTimestamp)} </td>
+          <td> {
+            if (session.finishTimestamp > 0) formatDate(session.finishTimestamp)
+          } </td>
           <td> {formatDurationOption(Some(session.totalTime))} </td>
           <td> {session.totalExecution.toString} </td>
         </tr>
         }
         Some(
-            UIUtils.listingTable(headerRow,
-                                 generateDataRow,
-                                 dataRows,
-                                 true,
-                                 None,
-                                 Seq(null),
-                                 false))
+          UIUtils.listingTable(
+            headerRow,
+            generateDataRow,
+            dataRows,
+            true,
+            None,
+            Seq(null),
+            false
+          )
+        )
       } else {
         None
       }
@@ -200,15 +224,13 @@ private[ui] class ThriftServerPage(parent: ThriftServerTab)
   /**
     * Returns a human-readable string representing a duration such as "5 second 35 ms"
     */
-  private def formatDurationOption(msOption: Option[Long]): String = {
+  private def formatDurationOption(msOption: Option[Long]): String =
     msOption.map(formatDurationVerbose).getOrElse(emptyCell)
-  }
 
   /** Generate HTML table from string data */
   private def listingTable(headers: Seq[String], data: Seq[Seq[String]]) = {
-    def generateDataRow(data: Seq[String]): Seq[Node] = {
+    def generateDataRow(data: Seq[String]): Seq[Node] =
       <tr> {data.map(d => <td>{d}</td>)} </tr>
-    }
     UIUtils.listingTable(headers, generateDataRow, data, fixedWidth = true)
   }
 }

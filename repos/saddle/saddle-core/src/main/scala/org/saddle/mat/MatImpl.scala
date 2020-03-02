@@ -23,13 +23,14 @@ import org.saddle._
   * Houses specialized method implementations for code reuse in Mat subclasses
   */
 private[saddle] object MatImpl {
-  def map[@spec(Boolean, Int, Long, Double) A : ST,
-          @spec(Boolean, Int, Long, Double) B : ST](mat: Mat[A])(
-      f: A => B): Mat[B] = {
+  def map[
+      @spec(Boolean, Int, Long, Double) A: ST,
+      @spec(Boolean, Int, Long, Double) B: ST
+  ](mat: Mat[A])(f: A => B): Mat[B] = {
     val sca = implicitly[ST[A]]
     val scb = implicitly[ST[B]]
     val buf = Array.ofDim[B](mat.length)
-    var i = 0
+    var i   = 0
     while (i < mat.length) {
       val v = mat(i)
       if (sca.isMissing(v)) buf(i) = scb.missing
@@ -39,14 +40,16 @@ private[saddle] object MatImpl {
     Mat[B](mat.numRows, mat.numCols, buf)
   }
 
-  def withoutRows[@spec(Boolean, Int, Long, Double) A : ST](
-      m: Mat[A], locs: Array[Int]): Mat[A] = {
+  def withoutRows[@spec(Boolean, Int, Long, Double) A: ST](
+      m: Mat[A],
+      locs: Array[Int]
+  ): Mat[A] =
     if (m.length == 0) Mat.empty[A]
     else {
       val locset = locs.toSet
-      val buf = Buffer[A](m.length)
-      var r = 0
-      var nRows = 0
+      val buf    = Buffer[A](m.length)
+      var r      = 0
+      var nRows  = 0
       while (r < m.numRows) {
         if (!locset.contains(r)) {
           nRows += 1
@@ -61,17 +64,18 @@ private[saddle] object MatImpl {
       if (nRows == 0) Mat.empty[A]
       else Mat(nRows, m.numCols, buf)
     }
-  }
 
-  def takeRows[@spec(Boolean, Int, Long, Double) A : ST](
-      m: Mat[A], locs: Array[Int]): Mat[A] = {
+  def takeRows[@spec(Boolean, Int, Long, Double) A: ST](
+      m: Mat[A],
+      locs: Array[Int]
+  ): Mat[A] =
     if (m.length == 0) Mat.empty[A]
     else {
       val buf = Buffer[A](m.length)
-      var r = 0
+      var r   = 0
       while (r < locs.length) {
         val currRow = locs(r)
-        var c = 0
+        var c       = 0
         while (c < m.numCols) {
           buf.add(m(currRow, c))
           c += 1
@@ -80,5 +84,4 @@ private[saddle] object MatImpl {
       }
       Mat(r, m.numCols, buf.toArray)
     }
-  }
 }

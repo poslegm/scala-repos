@@ -14,13 +14,14 @@ import scala.collection.JavaConverters._
 /** @author Stephen Samuel */
 @Component
 class SpringScalatraBootstrap
-    extends ApplicationContextAware with ServletContextAware {
+    extends ApplicationContextAware
+    with ServletContextAware {
 
   @PostConstruct
   def bootstrap() {
 
     val richContext = new RichServletContext(servletContext)
-    val resources = appContext.getBeansWithAnnotation(classOf[Path])
+    val resources   = appContext.getBeansWithAnnotation(classOf[Path])
     resources.values().asScala.foreach {
       case servlet: ScalatraServlet =>
         var path = servlet.getClass.getAnnotation(classOf[Path]).value()

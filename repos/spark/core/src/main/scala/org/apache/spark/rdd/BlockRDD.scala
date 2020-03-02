@@ -27,9 +27,10 @@ private[spark] class BlockRDDPartition(val blockId: BlockId, idx: Int)
   val index = idx
 }
 
-private[spark] class BlockRDD[T : ClassTag](
-    sc: SparkContext, @transient val blockIds: Array[BlockId])
-    extends RDD[T](sc, Nil) {
+private[spark] class BlockRDD[T: ClassTag](
+    sc: SparkContext,
+    @transient val blockIds: Array[BlockId]
+) extends RDD[T](sc, Nil) {
 
   @transient lazy val _locations =
     BlockManager.blockIdsToHosts(blockIds, SparkEnv.get)
@@ -37,23 +38,21 @@ private[spark] class BlockRDD[T : ClassTag](
 
   override def getPartitions: Array[Partition] = {
     assertValid()
-    (0 until blockIds.length)
-      .map(i =>
-            {
-          new BlockRDDPartition(blockIds(i), i).asInstanceOf[Partition]
-      })
-      .toArray
+    (0 until blockIds.length).map { i =>
+      new BlockRDDPartition(blockIds(i), i).asInstanceOf[Partition]
+    }.toArray
   }
 
   override def compute(split: Partition, context: TaskContext): Iterator[T] = {
     assertValid()
     val blockManager = SparkEnv.get.blockManager
-    val blockId = split.asInstanceOf[BlockRDDPartition].blockId
+    val blockId      = split.asInstanceOf[BlockRDDPartition].blockId
     blockManager.get(blockId) match {
       case Some(block) => block.data.asInstanceOf[Iterator[T]]
       case None =>
         throw new Exception(
-            "Could not compute split, block " + blockId + " not found")
+          "Could not compute split, block " + blockId + " not found"
+        )
     }
   }
 
@@ -78,20 +77,19 @@ private[spark] class BlockRDD[T : ClassTag](
     * Whether this BlockRDD is actually usable. This will be false if the data blocks have been
     * removed using `this.removeBlocks`.
     */
-  private[spark] def isValid: Boolean = {
+  private[spark] def isValid: Boolean =
     _isValid
-  }
 
   /** Check if this BlockRDD is valid. If not valid, exception is thrown. */
   private[spark] def assertValid() {
     if (!isValid) {
       throw new SparkException(
-          "Attempted to use %s after its blocks have been removed!".format(
-              toString))
+        "Attempted to use %s after its blocks have been removed!"
+          .format(toString)
+      )
     }
   }
 
-  protected def getBlockIdLocations(): Map[BlockId, Seq[String]] = {
+  protected def getBlockIdLocations(): Map[BlockId, Seq[String]] =
     _locations
-  }
 }

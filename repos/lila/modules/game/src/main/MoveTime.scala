@@ -19,5 +19,5 @@ private[game] object MoveTime {
     decodeHash.map(x => x._2 -> x._1).toMap
 
   private val lastChar: Char = chars.last
-  private val lastInt: Int = chars.size - 1
+  private val lastInt: Int   = chars.size - 1
 }

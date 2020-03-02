@@ -51,7 +51,8 @@ object RotateTransition extends AnimationStatics {
     * @return JavaFX $RT extracted from `v`.
     */
   implicit def sfxRotateTransition2jfx(
-      v: RotateTransition): jfxa.RotateTransition =
+      v: RotateTransition
+  ): jfxa.RotateTransition =
     if (v != null) v.delegate else null
 }
 
@@ -67,8 +68,9 @@ object RotateTransition extends AnimationStatics {
   * @define DV Default value:
   */
 class RotateTransition(
-    override val delegate: jfxa.RotateTransition = new jfxa.RotateTransition)
-    extends Transition(delegate) with SFXDelegate[jfxa.RotateTransition] {
+    override val delegate: jfxa.RotateTransition = new jfxa.RotateTransition
+) extends Transition(delegate)
+    with SFXDelegate[jfxa.RotateTransition] {
 
   // CONSTRUCTOR
 

@@ -16,7 +16,7 @@ import org.scalatest.mock.MockitoSugar
 class SpnegoAuthenticatorTest extends FunSuite with MockitoSugar {
   import SpnegoAuthenticator._
 
-  def builder = RequestBuilder().url("http://0.0.0.0/arbitrary")
+  def builder          = RequestBuilder().url("http://0.0.0.0/arbitrary")
   def anyAuthenticated = any[Authenticated[Request]]
 
   test("no header") {
@@ -37,10 +37,10 @@ class SpnegoAuthenticatorTest extends FunSuite with MockitoSugar {
   }
 
   test("success") {
-    val credentials = mock[GSSContext]
+    val credentials        = mock[GSSContext]
     val clientToken: Token = Array[Byte](1, 3, 3, 7)
     val credSrc = new Credentials.ClientSource with Credentials.ServerSource {
-      def load() = Future(credentials)
+      def load()                                = Future(credentials)
       def init(c: GSSContext, t: Option[Token]) = Future(clientToken)
       def accept(c: GSSContext, t: Token) = {
         assert(arrayEquals(clientToken, t))
@@ -50,9 +50,9 @@ class SpnegoAuthenticatorTest extends FunSuite with MockitoSugar {
 
     // Spnego-filtered client/server
     val (client, server, service) = serve(credSrc, Some(credSrc))
-    val req = builder.buildGet()
+    val req                       = builder.buildGet()
     stub(service.apply(anyAuthenticated)).toReturn(
-        Future(Response(req.version, Status.Ok))
+      Future(Response(req.version, Status.Ok))
     )
     try {
       // should succeed with exactly one authenticated request
@@ -88,14 +88,14 @@ class SpnegoAuthenticatorTest extends FunSuite with MockitoSugar {
     val service = mock[Service[Authenticated[Request], Response]]
     val server = com.twitter.finagle.Http
       .serve("localhost:*", new ServerFilter(serverSrc) andThen service)
-    val port = server.boundAddress.asInstanceOf[InetSocketAddress].getPort
+    val port      = server.boundAddress.asInstanceOf[InetSocketAddress].getPort
     val rawClient = com.twitter.finagle.Http.newService(s"localhost:$port")
 
-    val client = clientSrc.map { src =>
-      new ClientFilter(src) andThen rawClient
-    }.getOrElse {
-      rawClient
-    }
+    val client = clientSrc
+      .map(src => new ClientFilter(src) andThen rawClient)
+      .getOrElse {
+        rawClient
+      }
     (client, server, service)
   }
 }

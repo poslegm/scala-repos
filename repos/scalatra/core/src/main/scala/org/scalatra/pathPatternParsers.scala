@@ -11,7 +11,7 @@ case class PathPattern(regex: Regex, captureGroupNames: List[String] = Nil) {
 
   def apply(path: String): Option[MultiParams] = {
     // This is a performance hotspot.  Hideous mutatations ahead.
-    val m = regex.pattern.matcher(path)
+    val m           = regex.pattern.matcher(path)
     var multiParams = Map[String, Seq[String]]()
     if (m.matches) {
       var i = 0
@@ -28,8 +28,8 @@ case class PathPattern(regex: Regex, captureGroupNames: List[String] = Nil) {
   }
 
   def +(pathPattern: PathPattern): PathPattern = PathPattern(
-      new Regex(this.regex.toString + pathPattern.regex.toString),
-      this.captureGroupNames ::: pathPattern.captureGroupNames
+    new Regex(this.regex.toString + pathPattern.regex.toString),
+    this.captureGroupNames ::: pathPattern.captureGroupNames
   )
 }
 
@@ -53,13 +53,15 @@ trait RegexPathPatternParser extends PathPatternParser with RegexParsers {
     * strings are not valid regexes, so we wait to compile until the end.
     */
   protected case class PartialPathPattern(
-      regex: String, captureGroupNames: List[String] = Nil) {
+      regex: String,
+      captureGroupNames: List[String] = Nil
+  ) {
 
     def toPathPattern: PathPattern = PathPattern(regex.r, captureGroupNames)
 
     def +(other: PartialPathPattern): PartialPathPattern = PartialPathPattern(
-        this.regex + other.regex,
-        this.captureGroupNames ::: other.captureGroupNames
+      this.regex + other.regex,
+      this.captureGroupNames ::: other.captureGroupNames
     )
   }
 }
@@ -73,12 +75,12 @@ class SinatraPathPatternParser extends RegexPathPatternParser {
     parseAll(pathPattern, pattern) match {
       case Success(pathPattern, _) =>
         (PartialPathPattern("^") + pathPattern +
-            PartialPathPattern("$")).toPathPattern
+          PartialPathPattern("$")).toPathPattern
       case _ =>
         throw new IllegalArgumentException("Invalid path pattern: " + pattern)
     }
 
-  private def pathPattern = rep(token) ^^ { _.reduceLeft { _ + _ } }
+  private def pathPattern = rep(token) ^^ { _.reduceLeft(_ + _) }
 
   private def token = splat | namedGroup | literal
 
@@ -94,9 +96,7 @@ class SinatraPathPatternParser extends RegexPathPatternParser {
     PartialPathPattern("\\" + c)
   }
 
-  private def normalChar = ".".r ^^ { c =>
-    PartialPathPattern(c)
-  }
+  private def normalChar = ".".r ^^ { c => PartialPathPattern(c) }
 }
 
 object SinatraPathPatternParser {
@@ -121,7 +121,7 @@ class RailsPathPatternParser extends RegexPathPatternParser {
     PartialPathPattern("\\A" + e.regex + "\\Z", e.captureGroupNames).toPathPattern
   }
 
-  private def expr = rep1(token) ^^ { _.reduceLeft { _ + _ } }
+  private def expr = rep1(token) ^^ { _.reduceLeft(_ + _) }
 
   private def token = param | glob | optional | static
 
@@ -136,13 +136,10 @@ class RailsPathPatternParser extends RegexPathPatternParser {
   }
 
   private def optional: Parser[PartialPathPattern] = "(" ~> expr <~ ")" ^^ {
-    e =>
-      PartialPathPattern("(?:" + e.regex + ")?", e.captureGroupNames)
+    e => PartialPathPattern("(?:" + e.regex + ")?", e.captureGroupNames)
   }
 
-  private def static = (escaped | char) ^^ { str =>
-    PartialPathPattern(str)
-  }
+  private def static = (escaped | char) ^^ { str => PartialPathPattern(str) }
 
   private def escaped = literal("\\") ~> (char | paren)
 

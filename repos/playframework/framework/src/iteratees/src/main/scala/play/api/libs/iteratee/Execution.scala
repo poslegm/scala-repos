@@ -47,7 +47,7 @@ object Execution {
      *       - a Runnable is running and trampoline is active
      *       - no more Runnables are enqueued for execution after the current Runnable
      *         completes
-     * - next: Runnable => 
+     * - next: Runnable =>
      *       - a Runnable is running and trampoline is active
      *       - one Runnable is scheduled for execution after the current Runnable
      *         completes
@@ -61,7 +61,7 @@ object Execution {
     /** Marks an empty queue (see docs for `local`). */
     private object Empty
 
-    def execute(runnable: Runnable): Unit = {
+    def execute(runnable: Runnable): Unit =
       local.get match {
         case null =>
           // Trampoline is inactive in this thread so start it up!
@@ -72,7 +72,7 @@ object Execution {
             runnable.run()
             executeScheduled()
           } finally {
-            // We've run all the Runnables, so show that the 
+            // We've run all the Runnables, so show that the
             // trampoline has been shut down.
             local.set(null)
           }
@@ -92,15 +92,15 @@ object Execution {
           runnables.addLast(runnable)
         case illegal =>
           throw new IllegalStateException(
-              s"Unsupported trampoline ThreadLocal value: $illegal")
+            s"Unsupported trampoline ThreadLocal value: $illegal"
+          )
       }
-    }
 
     /**
       * Run all tasks that have been scheduled in the ThreadLocal.
       */
     @tailrec
-    private def executeScheduled(): Unit = {
+    private def executeScheduled(): Unit =
       local.get match {
         case Empty =>
           // Nothing to run
@@ -124,9 +124,9 @@ object Execution {
           }
         case illegal =>
           throw new IllegalStateException(
-              s"Unsupported trampoline ThreadLocal value: $illegal")
+            s"Unsupported trampoline ThreadLocal value: $illegal"
+          )
       }
-    }
 
     def reportFailure(t: Throwable): Unit = t.printStackTrace()
   }

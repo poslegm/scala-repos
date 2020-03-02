@@ -26,7 +26,8 @@ import org.apache.spark.storage.StorageLevel
 import org.apache.spark.util.Utils
 
 class PeriodicGraphCheckpointerSuite
-    extends SparkFunSuite with MLlibTestSparkContext {
+    extends SparkFunSuite
+    with MLlibTestSparkContext {
 
   import PeriodicGraphCheckpointerSuite._
 
@@ -35,7 +36,9 @@ class PeriodicGraphCheckpointerSuite
 
     val graph1 = createGraph(sc)
     val checkpointer = new PeriodicGraphCheckpointer[Double, Double](
-        10, graph1.vertices.sparkContext)
+      10,
+      graph1.vertices.sparkContext
+    )
     checkpointer.update(graph1)
     graphsToCheck = graphsToCheck :+ GraphToCheck(graph1, 1)
     checkPersistence(graphsToCheck, 1)
@@ -51,14 +54,16 @@ class PeriodicGraphCheckpointerSuite
   }
 
   test("Checkpointing") {
-    val tempDir = Utils.createTempDir()
-    val path = tempDir.toURI.toString
+    val tempDir            = Utils.createTempDir()
+    val path               = tempDir.toURI.toString
     val checkpointInterval = 2
-    var graphsToCheck = Seq.empty[GraphToCheck]
+    var graphsToCheck      = Seq.empty[GraphToCheck]
     sc.setCheckpointDir(path)
     val graph1 = createGraph(sc)
     val checkpointer = new PeriodicGraphCheckpointer[Double, Double](
-        checkpointInterval, graph1.vertices.sparkContext)
+      checkpointInterval,
+      graph1.vertices.sparkContext
+    )
     checkpointer.update(graph1)
     graph1.edges.count()
     graph1.vertices.count()
@@ -77,9 +82,7 @@ class PeriodicGraphCheckpointerSuite
     }
 
     checkpointer.deleteAllCheckpoints()
-    graphsToCheck.foreach { graph =>
-      confirmCheckpointRemoved(graph.graph)
-    }
+    graphsToCheck.foreach(graph => confirmCheckpointRemoved(graph.graph))
 
     Utils.deleteRecursively(tempDir)
   }
@@ -89,27 +92,25 @@ private object PeriodicGraphCheckpointerSuite {
 
   case class GraphToCheck(graph: Graph[Double, Double], gIndex: Int)
 
-  val edges = Seq(Edge[Double](0, 1, 0),
-                  Edge[Double](1, 2, 0),
-                  Edge[Double](2, 3, 0),
-                  Edge[Double](3, 4, 0))
+  val edges = Seq(
+    Edge[Double](0, 1, 0),
+    Edge[Double](1, 2, 0),
+    Edge[Double](2, 3, 0),
+    Edge[Double](3, 4, 0)
+  )
 
-  def createGraph(sc: SparkContext): Graph[Double, Double] = {
+  def createGraph(sc: SparkContext): Graph[Double, Double] =
     Graph.fromEdges[Double, Double](sc.parallelize(edges), 0)
-  }
 
-  def checkPersistence(graphs: Seq[GraphToCheck], iteration: Int): Unit = {
-    graphs.foreach { g =>
-      checkPersistence(g.graph, g.gIndex, iteration)
-    }
-  }
+  def checkPersistence(graphs: Seq[GraphToCheck], iteration: Int): Unit =
+    graphs.foreach(g => checkPersistence(g.graph, g.gIndex, iteration))
 
   /**
     * Check storage level of graph.
     * @param gIndex  Index of graph in order inserted into checkpointer (from 1).
     * @param iteration  Total number of graphs inserted into checkpointer.
     */
-  def checkPersistence(graph: Graph[_, _], gIndex: Int, iteration: Int): Unit = {
+  def checkPersistence(graph: Graph[_, _], gIndex: Int, iteration: Int): Unit =
     try {
       if (gIndex + 2 < iteration) {
         assert(graph.vertices.getStorageLevel == StorageLevel.NONE)
@@ -121,20 +122,21 @@ private object PeriodicGraphCheckpointerSuite {
     } catch {
       case _: AssertionError =>
         throw new Exception(
-            s"PeriodicGraphCheckpointerSuite.checkPersistence failed with:\n" +
+          s"PeriodicGraphCheckpointerSuite.checkPersistence failed with:\n" +
             s"\t gIndex = $gIndex\n" + s"\t iteration = $iteration\n" +
             s"\t graph.vertices.getStorageLevel = ${graph.vertices.getStorageLevel}\n" +
-            s"\t graph.edges.getStorageLevel = ${graph.edges.getStorageLevel}\n")
+            s"\t graph.edges.getStorageLevel = ${graph.edges.getStorageLevel}\n"
+        )
     }
-  }
 
-  def checkCheckpoint(graphs: Seq[GraphToCheck],
-                      iteration: Int,
-                      checkpointInterval: Int): Unit = {
+  def checkCheckpoint(
+      graphs: Seq[GraphToCheck],
+      iteration: Int,
+      checkpointInterval: Int
+  ): Unit =
     graphs.reverse.foreach { g =>
       checkCheckpoint(g.graph, g.gIndex, iteration, checkpointInterval)
     }
-  }
 
   def confirmCheckpointRemoved(graph: Graph[_, _]): Unit = {
     // Note: We cannot check graph.isCheckpointed since that value is never updated.
@@ -143,8 +145,10 @@ private object PeriodicGraphCheckpointerSuite {
     //       is fixed (though it can then be simplified and not look for the files).
     val fs = FileSystem.get(graph.vertices.sparkContext.hadoopConfiguration)
     graph.getCheckpointFiles.foreach { checkpointFile =>
-      assert(!fs.exists(new Path(checkpointFile)),
-             "Graph checkpoint file should have been removed")
+      assert(
+        !fs.exists(new Path(checkpointFile)),
+        "Graph checkpoint file should have been removed"
+      )
     }
   }
 
@@ -153,10 +157,12 @@ private object PeriodicGraphCheckpointerSuite {
     * @param gIndex  Index of graph in order inserted into checkpointer (from 1).
     * @param iteration  Total number of graphs inserted into checkpointer.
     */
-  def checkCheckpoint(graph: Graph[_, _],
-                      gIndex: Int,
-                      iteration: Int,
-                      checkpointInterval: Int): Unit = {
+  def checkCheckpoint(
+      graph: Graph[_, _],
+      gIndex: Int,
+      iteration: Int,
+      checkpointInterval: Int
+  ): Unit =
     try {
       if (gIndex % checkpointInterval == 0) {
         // We allow 2 checkpoint intervals since we perform an action (checkpointing a second graph)
@@ -164,27 +170,33 @@ private object PeriodicGraphCheckpointerSuite {
         if (iteration - 2 * checkpointInterval < gIndex &&
             gIndex <= iteration) {
           assert(graph.isCheckpointed, "Graph should be checkpointed")
-          assert(graph.getCheckpointFiles.length == 2,
-                 "Graph should have 2 checkpoint files")
+          assert(
+            graph.getCheckpointFiles.length == 2,
+            "Graph should have 2 checkpoint files"
+          )
         } else {
           confirmCheckpointRemoved(graph)
         }
       } else {
         // Graph should never be checkpointed
         assert(
-            !graph.isCheckpointed, "Graph should never have been checkpointed")
-        assert(graph.getCheckpointFiles.isEmpty,
-               "Graph should not have any checkpoint files")
+          !graph.isCheckpointed,
+          "Graph should never have been checkpointed"
+        )
+        assert(
+          graph.getCheckpointFiles.isEmpty,
+          "Graph should not have any checkpoint files"
+        )
       }
     } catch {
       case e: AssertionError =>
         throw new Exception(
-            s"PeriodicGraphCheckpointerSuite.checkCheckpoint failed with:\n" +
+          s"PeriodicGraphCheckpointerSuite.checkCheckpoint failed with:\n" +
             s"\t gIndex = $gIndex\n" + s"\t iteration = $iteration\n" +
             s"\t checkpointInterval = $checkpointInterval\n" +
             s"\t graph.isCheckpointed = ${graph.isCheckpointed}\n" +
             s"\t graph.getCheckpointFiles = ${graph.getCheckpointFiles.mkString(", ")}\n" +
-            s"  AssertionError message: ${e.getMessage}")
+            s"  AssertionError message: ${e.getMessage}"
+        )
     }
-  }
 }

@@ -81,7 +81,7 @@ class GenerateCompanionObjectTest extends ScalaGenerateTestBase {
   }
 
   def testInnerClass() {
-    val text = s"""trait A {
+    val text   = s"""trait A {
                  |  def foo()
                  |  class B {
                  |    def bar()$CARET_MARKER = 1

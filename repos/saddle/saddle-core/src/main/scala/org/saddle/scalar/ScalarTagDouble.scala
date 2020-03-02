@@ -27,8 +27,8 @@ import org.saddle.array.Sorter
   * Double ScalarTag
   */
 object ScalarTagDouble extends ScalarTag[Double] {
-  def missing: Double = Double.NaN
-  def isMissing(v: Double): Boolean = (v != v)
+  def missing: Double                = Double.NaN
+  def isMissing(v: Double): Boolean  = (v != v)
   def notMissing(v: Double): Boolean = (v == v)
 
   // note, consider N/A's equal
@@ -36,11 +36,11 @@ object ScalarTagDouble extends ScalarTag[Double] {
     if (x == y) 0 else if (x > y) 1 else if (x < y) -1 else 0
 
   def toDouble(t: Double)(implicit ev: NUM[Double]): Double = t
-  override def isDouble = true
+  override def isDouble                                     = true
 
-  def zero(implicit ev: NUM[Double]) = 0d
-  def one(implicit ev: NUM[Double]) = 1d
-  def inf(implicit ev: NUM[Double]) = Double.PositiveInfinity
+  def zero(implicit ev: NUM[Double])   = 0d
+  def one(implicit ev: NUM[Double])    = 1d
+  def inf(implicit ev: NUM[Double])    = Double.PositiveInfinity
   def negInf(implicit ev: NUM[Double]) = Double.NegativeInfinity
 
   def show(v: Double) =
@@ -48,9 +48,9 @@ object ScalarTagDouble extends ScalarTag[Double] {
 
   override def runtimeClass = classOf[Double]
 
-  def makeBuf(sz: Int = Buffer.INIT_CAPACITY) = new BufferDouble(sz)
-  def makeLoc(sz: Int = Buffer.INIT_CAPACITY) = new LocatorDouble(sz)
-  def makeVec(arr: Array[Double]) = new VecDouble(arr)
+  def makeBuf(sz: Int = Buffer.INIT_CAPACITY)     = new BufferDouble(sz)
+  def makeLoc(sz: Int = Buffer.INIT_CAPACITY)     = new LocatorDouble(sz)
+  def makeVec(arr: Array[Double])                 = new VecDouble(arr)
   def makeMat(r: Int, c: Int, arr: Array[Double]) = new MatDouble(r, c, arr)
   def makeIndex(vec: Vec[Double])(implicit ord: ORD[Double]): Index[Double] =
     new IndexDouble(vec)

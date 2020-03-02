@@ -74,16 +74,14 @@ class MapHeaderMap(underlying: mutable.Map[String, Seq[String]])
   }
 
   // For Map/MapLike
-  def get(key: String): Option[String] = {
+  def get(key: String): Option[String] =
     underlying.find { case (k, v) => k.equalsIgnoreCase(key) }.flatMap {
       _._2.headOption
     }
-  }
 
   // For Map/MapLike
-  def iterator: Iterator[(String, String)] = {
+  def iterator: Iterator[(String, String)] =
     for ((k, vs) <- underlying.iterator; v <- vs) yield (k, v)
-  }
 
   // For Map/MapLike
   def +=(kv: (String, String)): MapHeaderMap.this.type = {
@@ -110,7 +108,7 @@ class MapHeaderMap(underlying: mutable.Map[String, Seq[String]])
 object MapHeaderMap {
   def apply(headers: Tuple2[String, String]*): MapHeaderMap = {
     val map = headers.groupBy { case (k, v) => k.toLowerCase }.mapValues {
-      case values => values.map { _._2 }
+      case values => values.map(_._2)
     } // remove keys
     new MapHeaderMap(mutable.Map() ++ map)
   }

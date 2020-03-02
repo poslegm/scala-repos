@@ -8,7 +8,7 @@ import org.scalatest.junit.JUnitRunner
 class ResponseClassTest extends FunSuite {
 
   test("validates fractionalSuccess") {
-    intercept[IllegalArgumentException] { ResponseClass.Successful(0.0) }
-    intercept[IllegalArgumentException] { ResponseClass.Successful(1.1) }
+    intercept[IllegalArgumentException](ResponseClass.Successful(0.0))
+    intercept[IllegalArgumentException](ResponseClass.Successful(1.1))
   }
 }

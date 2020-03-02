@@ -9,7 +9,7 @@ case class RoomList(val rooms: Array[Room])
 class RoomListObjectArrayTest extends FunSuite {
   test("main") {
     val rl = RoomList(Array(Room("foo"), Room("biz"), Room("bang")))
-    val p = rl.pickle
+    val p  = rl.pickle
     //println(p.toString)
     val jsn = """JSONPickle({
       |  "$type": "scala.pickling.test.roomlist.objectarray.RoomList",

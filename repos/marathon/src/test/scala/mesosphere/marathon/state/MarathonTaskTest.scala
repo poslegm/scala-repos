@@ -29,10 +29,12 @@ class MarathonTaskTest extends MarathonSpec with GivenWhenThen with Matchers {
     val dummyState = MarathonTaskState(dummy)
 
     When("We call the mergeFromProto function on that state")
-    val proto = makeTask("app/foo", "superhost", 23000, version = None)
+    val proto  = makeTask("app/foo", "superhost", 23000, version = None)
     val merged = dummyState.mergeFromProto(proto)
 
-    Then("The 'merged' state does not have a version because mergeFromProto does not merge but create a new instance based on the given proto")
+    Then(
+      "The 'merged' state does not have a version because mergeFromProto does not merge but create a new instance based on the given proto"
+    )
     merged.toProto shouldEqual proto
   }
 
@@ -43,15 +45,21 @@ class MarathonTaskTest extends MarathonSpec with GivenWhenThen with Matchers {
     val dummyState = MarathonTaskState(dummy)
 
     When("We call the mergeFromProto function using a byte array")
-    val proto = makeTask("app/foo", "superhost", 23000, version = None)
+    val proto  = makeTask("app/foo", "superhost", 23000, version = None)
     val merged = dummyState.mergeFromProto(proto.toByteArray)
 
-    Then("The 'merged' state does not have a version because mergeFromProto does not merge but cerate a new instance based on the given proto")
+    Then(
+      "The 'merged' state does not have a version because mergeFromProto does not merge but cerate a new instance based on the given proto"
+    )
     merged.toProto shouldEqual proto
   }
 
   private[this] def makeTask(
-      id: String, host: String, port: Int, version: Option[String]) = {
+      id: String,
+      host: String,
+      port: Int,
+      version: Option[String]
+  ) = {
     val builder = MarathonTask
       .newBuilder()
       .setHost(host)

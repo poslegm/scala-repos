@@ -59,7 +59,7 @@ object Smuggle {
     new Smuggle(key)
   }
 
-  private val lock = new ReentrantReadWriteLock
+  private val lock            = new ReentrantReadWriteLock
   private val smuggledObjects = mutable.WeakHashMap.empty[Symbol, Any]
 
   private def get[T](key: Symbol): T = {

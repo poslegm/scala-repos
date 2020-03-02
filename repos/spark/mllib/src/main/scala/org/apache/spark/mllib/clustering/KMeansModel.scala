@@ -36,9 +36,11 @@ import org.apache.spark.sql.{Row, SQLContext}
   * A clustering model for K-means. Each point belongs to the cluster with the closest center.
   */
 @Since("0.8.0")
-class KMeansModel @Since("1.1.0")(
-    @Since("1.0.0") val clusterCenters: Array[Vector])
-    extends Saveable with Serializable with PMMLExportable {
+class KMeansModel @Since("1.1.0") (
+    @Since("1.0.0") val clusterCenters: Array[Vector]
+) extends Saveable
+    with Serializable
+    with PMMLExportable {
 
   /**
     * A Java-friendly constructor that takes an Iterable of Vectors.
@@ -56,22 +58,21 @@ class KMeansModel @Since("1.1.0")(
     * Returns the cluster index that a given point belongs to.
     */
   @Since("0.8.0")
-  def predict(point: Vector): Int = {
+  def predict(point: Vector): Int =
     KMeans.findClosest(clusterCentersWithNorm, new VectorWithNorm(point))._1
-  }
 
   /**
     * Maps given points to their cluster indices.
     */
   @Since("1.0.0")
   def predict(points: RDD[Vector]): RDD[Int] = {
-    val centersWithNorm = clusterCentersWithNorm
+    val centersWithNorm   = clusterCentersWithNorm
     val bcCentersWithNorm = points.context.broadcast(centersWithNorm)
-    points.map(
-        p =>
-          KMeans
-            .findClosest(bcCentersWithNorm.value, new VectorWithNorm(p))
-            ._1)
+    points.map(p =>
+      KMeans
+        .findClosest(bcCentersWithNorm.value, new VectorWithNorm(p))
+        ._1
+    )
   }
 
   /**
@@ -87,11 +88,12 @@ class KMeansModel @Since("1.1.0")(
     */
   @Since("0.8.0")
   def computeCost(data: RDD[Vector]): Double = {
-    val centersWithNorm = clusterCentersWithNorm
+    val centersWithNorm   = clusterCentersWithNorm
     val bcCentersWithNorm = data.context.broadcast(centersWithNorm)
     data
       .map(p =>
-            KMeans.pointCost(bcCentersWithNorm.value, new VectorWithNorm(p)))
+        KMeans.pointCost(bcCentersWithNorm.value, new VectorWithNorm(p))
+      )
       .sum()
   }
 
@@ -99,9 +101,8 @@ class KMeansModel @Since("1.1.0")(
     clusterCenters.map(new VectorWithNorm(_))
 
   @Since("1.4.0")
-  override def save(sc: SparkContext, path: String): Unit = {
+  override def save(sc: SparkContext, path: String): Unit =
     KMeansModel.SaveLoadV1_0.save(sc, this, path)
-  }
 
   override protected def formatVersion: String = "1.0"
 }
@@ -110,16 +111,14 @@ class KMeansModel @Since("1.1.0")(
 object KMeansModel extends Loader[KMeansModel] {
 
   @Since("1.4.0")
-  override def load(sc: SparkContext, path: String): KMeansModel = {
+  override def load(sc: SparkContext, path: String): KMeansModel =
     KMeansModel.SaveLoadV1_0.load(sc, path)
-  }
 
   private case class Cluster(id: Int, point: Vector)
 
   private object Cluster {
-    def apply(r: Row): Cluster = {
+    def apply(r: Row): Cluster =
       Cluster(r.getInt(0), r.getAs[Vector](1))
-    }
   }
 
   private[clustering] object SaveLoadV1_0 {
@@ -132,8 +131,12 @@ object KMeansModel extends Loader[KMeansModel] {
     def save(sc: SparkContext, model: KMeansModel, path: String): Unit = {
       val sqlContext = SQLContext.getOrCreate(sc)
       import sqlContext.implicits._
-      val metadata = compact(render(("class" -> thisClassName) ~
-              ("version" -> thisFormatVersion) ~ ("k" -> model.k)))
+      val metadata = compact(
+        render(
+          ("class"     -> thisClassName) ~
+            ("version" -> thisFormatVersion) ~ ("k" -> model.k)
+        )
+      )
       sc.parallelize(Seq(metadata), 1)
         .saveAsTextFile(Loader.metadataPath(path))
       val dataRDD = sc
@@ -147,12 +150,12 @@ object KMeansModel extends Loader[KMeansModel] {
     }
 
     def load(sc: SparkContext, path: String): KMeansModel = {
-      implicit val formats = DefaultFormats
-      val sqlContext = SQLContext.getOrCreate(sc)
+      implicit val formats                     = DefaultFormats
+      val sqlContext                           = SQLContext.getOrCreate(sc)
       val (className, formatVersion, metadata) = Loader.loadMetadata(sc, path)
       assert(className == thisClassName)
       assert(formatVersion == thisFormatVersion)
-      val k = (metadata \ "k").extract[Int]
+      val k         = (metadata \ "k").extract[Int]
       val centroids = sqlContext.read.parquet(Loader.dataPath(path))
       Loader.checkSchema[Cluster](centroids.schema)
       val localCentroids = centroids.rdd.map(Cluster.apply).collect()

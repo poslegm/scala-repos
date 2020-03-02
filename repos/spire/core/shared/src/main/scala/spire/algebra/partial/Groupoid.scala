@@ -27,18 +27,18 @@ trait Groupoid[A] extends Any with Semigroupoid[A] {
   def leftId(a: A): A = partialOp(a, inverse(a)).get
 
   /** Returns the right identity of `a`. */
-  def rightId(a: A): A = partialOp(inverse(a), a).get
-  def partialOpInverse(x: A, y: A): Opt[A] = partialOp(x, inverse(y))
+  def rightId(a: A): A                        = partialOp(inverse(a), a).get
+  def partialOpInverse(x: A, y: A): Opt[A]    = partialOp(x, inverse(y))
   def opInverseIsDefined(x: A, y: A): Boolean = opIsDefined(x, inverse(y))
 }
 
 trait GroupoidLowPriority {
   implicit def fromGroup[A](implicit group: Group[A]): Groupoid[A] =
     new Groupoid[A] {
-      override def opIsDefined(x: A, y: A): Boolean = true
+      override def opIsDefined(x: A, y: A): Boolean        = true
       override def opInverseIsDefined(x: A, y: A): Boolean = true
-      def inverse(a: A): A = group.inverse(a)
-      def partialOp(x: A, y: A): Opt[A] = Opt(group.op(x, y))
+      def inverse(a: A): A                                 = group.inverse(a)
+      def partialOp(x: A, y: A): Opt[A]                    = Opt(group.op(x, y))
       override def partialOpInverse(x: A, y: A): Opt[A] =
         Opt(group.opInverse(x, y))
     }

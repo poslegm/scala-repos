@@ -11,12 +11,11 @@ trait GenUtils { self: Reifier =>
   def reifyProduct(x: Product): Tree =
     reifyProduct(x.productPrefix, x.productIterator.toList)
 
-  def reifyProduct(prefix: String, elements: List[Any]): Tree = {
+  def reifyProduct(prefix: String, elements: List[Any]): Tree =
     // reflection would be more robust, but, hey, this is a hot path
     if (prefix.startsWith("Tuple"))
       scalaFactoryCall(prefix, (elements map reify).toList: _*)
     else mirrorCall(TermName(prefix), (elements map reify): _*)
-  }
 
   // helper functions
 
@@ -30,7 +29,7 @@ trait GenUtils { self: Reifier =>
   def call(fname: String, args: Tree*): Tree =
     Apply(termPath(fname), args.toList)
 
-  def mirrorSelect(name: String): Tree = termPath(nme.UNIVERSE_PREFIX + name)
+  def mirrorSelect(name: String): Tree   = termPath(nme.UNIVERSE_PREFIX + name)
   def mirrorSelect(name: TermName): Tree = mirrorSelect(name.toString)
 
   def mirrorMirrorSelect(name: TermName): Tree =
@@ -71,9 +70,9 @@ trait GenUtils { self: Reifier =>
     *  @param mkName   Creator for last portion of name (either TermName or TypeName)
     */
   def path(fullname: String, mkName: String => Name): Tree = {
-    val parts = fullname split "\\."
+    val parts       = fullname split "\\."
     val prefixParts = parts.init
-    val lastName = mkName(parts.last)
+    val lastName    = mkName(parts.last)
     if (prefixParts.isEmpty) Ident(lastName)
     else {
       val prefixTree =
@@ -107,7 +106,7 @@ trait GenUtils { self: Reifier =>
     case TypeApply(hk, _) => isCrossStageTypeBearer(hk)
     case Select(sym @ Select(_, ctor), nme.apply)
         if ctor == nme.WeakTypeTag || ctor == nme.TypeTag ||
-        ctor == nme.Expr =>
+          ctor == nme.Expr =>
       true
     case _ => false
   }
@@ -117,7 +116,10 @@ trait GenUtils { self: Reifier =>
     if (sym.owner != NoSymbol) origin += "defined by %s".format(sym.owner.name)
     if (sym.pos != NoPosition)
       origin += " in %s:%s:%s".format(
-          sym.pos.source.file.name, sym.pos.line, sym.pos.column)
+        sym.pos.source.file.name,
+        sym.pos.line,
+        sym.pos.column
+      )
     if (origin == "") origin = "of unknown origin"
     origin
   }

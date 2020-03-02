@@ -9,14 +9,16 @@ import scala.collection.mutable
 
 object TaskLabels {
   private[this] final val FRAMEWORK_ID_LABEL = "marathon_framework_id"
-  private[this] final val TASK_ID_LABEL = "marathon_task_id"
+  private[this] final val TASK_ID_LABEL      = "marathon_task_id"
 
   /**
     * Returns a the task id for which this reservation has been performed if the reservation was
     * labeled by this framework.
     */
-  def taskIdForResource(frameworkId: FrameworkId,
-                        resource: MesosProtos.Resource): Option[Task.Id] = {
+  def taskIdForResource(
+      frameworkId: FrameworkId,
+      resource: MesosProtos.Resource
+  ): Option[Task.Id] = {
     val labels = ResourceLabels(resource)
 
     val maybeMatchingFrameworkId =
@@ -28,11 +30,11 @@ object TaskLabels {
 
   def labelsForTask(frameworkId: FrameworkId, task: Task): ResourceLabels =
     labelsForTask(frameworkId, task.taskId)
-  def labelsForTask(
-      frameworkId: FrameworkId, taskId: Task.Id): ResourceLabels =
+  def labelsForTask(frameworkId: FrameworkId, taskId: Task.Id): ResourceLabels =
     ResourceLabels(
-        Map(
-            FRAMEWORK_ID_LABEL -> frameworkId.id,
-            TASK_ID_LABEL -> taskId.idString
-        ))
+      Map(
+        FRAMEWORK_ID_LABEL -> frameworkId.id,
+        TASK_ID_LABEL      -> taskId.idString
+      )
+    )
 }

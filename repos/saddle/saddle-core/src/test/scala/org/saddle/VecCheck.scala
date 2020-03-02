@@ -38,7 +38,7 @@ class VecCheck extends Specification with ScalaCheck {
 
     "single element access of vector" in {
       forAll { (v: Vec[Double]) =>
-        val idx = Gen.choose(0, v.length - 1)
+        val idx  = Gen.choose(0, v.length - 1)
         val data = v.contents
         forAll(idx) { i =>
           (v.at(i).isNA must beTrue) or (v.at(i) must_== Value(data(i)))
@@ -49,14 +49,14 @@ class VecCheck extends Specification with ScalaCheck {
 
     "multiple element access / slicing of vector" in {
       forAll { (v: Vec[Double]) =>
-        val idx = Gen.choose(0, v.length - 2)
+        val idx  = Gen.choose(0, v.length - 2)
         val data = v.contents
         forAll(idx) { i =>
           v(i, i + 1) must_== Vec(data(i), data(i + 1))
-          v(i -> (i + 1)) must_== Vec(data(i), data(i + 1))
+          v(i       -> (i + 1)) must_== Vec(data(i), data(i + 1))
           v((i + 1) -> i) must_== Vec.empty[Double]
-          v(i -> *) must_== Vec(Range(i, v.length).map(data(_)): _*)
-          v(* -> i) must_== Vec(Range(0, i + 1).map(data(_)): _*)
+          v(i       -> *) must_== Vec(Range(i, v.length).map(data(_)): _*)
+          v(*       -> i) must_== Vec(Range(0, i + 1).map(data(_)): _*)
           v(*) must_== v
         }
       }
@@ -95,9 +95,7 @@ class VecCheck extends Specification with ScalaCheck {
     }
 
     "zipmap works" in {
-      forAll { (v: Vec[Double]) =>
-        v.zipMap(v)(_ + _) must_== v * 2.0
-      }
+      forAll((v: Vec[Double]) => v.zipMap(v)(_ + _) must_== v * 2.0)
     }
 
     "dropNA works" in {
@@ -172,9 +170,7 @@ class VecCheck extends Specification with ScalaCheck {
     "forall works" in {
       forAll { (v: Vec[Double]) =>
         var c = 0
-        v.forall(_ > 0.5) { i =>
-          if (!i.isNaN) c += 1
-        }
+        v.forall(_ > 0.5)(i => if (!i.isNaN) c += 1)
         val exp = v.filter(_ > 0.5).count
         c must_== exp
       }
@@ -183,9 +179,7 @@ class VecCheck extends Specification with ScalaCheck {
     "foreach works" in {
       forAll { (v: Vec[Double]) =>
         var c = 0
-        v.foreach { i =>
-          if (!i.isNaN) c += 1
-        }
+        v.foreach(i => if (!i.isNaN) c += 1)
         val exp = v.count
         c must_== exp
       }
@@ -238,8 +232,9 @@ class VecCheck extends Specification with ScalaCheck {
 
     "foldLeftWhile works" in {
       forAll { (v: Vec[Double]) =>
-        val res = v.foldLeftWhile(0)((c: Int, x: Double) => c + 1)((c: Int,
-            x: Double) => c < 3)
+        val res = v.foldLeftWhile(0)((c: Int, x: Double) => c + 1)(
+          (c: Int, x: Double) => c < 3
+        )
         var c = 0
         val exp = v.contents.takeWhile { (v: Double) =>
           v.isNaN || { c += 1; c <= 3 }
@@ -261,7 +256,7 @@ class VecCheck extends Specification with ScalaCheck {
         val res = v.filterScanLeft(_ > 0.5)(0)((c: Int, x: Double) => c + 1)
         res.length must_== v.length
         (res.last.isNA must beTrue) or
-        (res.last must_== Value(v.filter(_ > 0.5).count))
+          (res.last must_== Value(v.filter(_ > 0.5).count))
       }
     }
 
@@ -352,8 +347,8 @@ class VecCheck extends Specification with ScalaCheck {
           val dat = v.contents
           val exp = for {
             i <- 0 until v.length - 1
-            a = dat(i)
-            b = dat(i + 1)
+            a  = dat(i)
+            b  = dat(i + 1)
           } yield (if (a.isNaN) 0 else a) + (if (b.isNaN) 0 else b)
 
           res must_== Vec(exp: _*)
@@ -372,9 +367,7 @@ class VecCheck extends Specification with ScalaCheck {
     }
 
     "serialization works" in {
-      forAll { v: Vec[Double] =>
-        v must_== serializedCopy(v)
-      }
+      forAll { v: Vec[Double] => v must_== serializedCopy(v) }
     }
   }
 }

@@ -4,7 +4,7 @@ package scalaz
   * ListT monad transformer.
   */
 final case class ListT[M[_], A](run: M[List[A]]) {
-  def uncons(implicit M: Applicative[M]): M[Option[(A, ListT[M, A])]] = {
+  def uncons(implicit M: Applicative[M]): M[Option[(A, ListT[M, A])]] =
     M.map(run) { list =>
       list match {
         case Nil => None
@@ -12,7 +12,6 @@ final case class ListT[M[_], A](run: M[List[A]]) {
           Some(listHead, new ListT(M.point(listTail)))
       }
     }
-  }
 
   def ::(a: A)(implicit M: Functor[M]): ListT[M, A] =
     new ListT(M.map(run)(list => a :: list))
@@ -48,17 +47,13 @@ final case class ListT[M[_], A](run: M[List[A]]) {
 
   def ++(bs: => ListT[M, A])(implicit M: Bind[M]): ListT[M, A] =
     new ListT(
-        M.bind(run) { list1 =>
-      M.map(bs.run) { list2 =>
-        list1 ++ list2
-      }
-    })
+      M.bind(run)(list1 => M.map(bs.run)(list2 => list1 ++ list2))
+    )
 
   def flatMap[B](f: A => ListT[M, B])(implicit M: Monad[M]): ListT[M, B] =
-    new ListT(
-        M.bind(run) { list =>
+    new ListT(M.bind(run) { list =>
       list match {
-        case Nil => M.point(Nil)
+        case Nil      => M.point(Nil)
         case nonEmpty => nonEmpty.map(f).reduce(_ ++ _).run
       }
     })
@@ -72,19 +67,15 @@ final case class ListT[M[_], A](run: M[List[A]]) {
   /**Don't use iteratively! */
   def tail(implicit M: Functor[M]): ListT[M, A] = new ListT(M.map(run)(_.tail))
 
-  def foldLeft[B](z: => B)(f: (=> B, => A) => B)(
-      implicit M: Functor[M]): M[B] =
-    M.map(run)(_.foldLeft(z) { (left, right) =>
-      f(left, right)
-    })
+  def foldLeft[B](z: => B)(f: (=> B, => A) => B)(implicit M: Functor[M]): M[B] =
+    M.map(run)(_.foldLeft(z)((left, right) => f(left, right)))
 
   def toList: M[List[A]] = run
 
-  def foldRight[B](z: => B)(f: (=> A, => B) => B)(
-      implicit M: Functor[M]): M[B] =
-    M.map(run)(_.foldRight(z) { (right, left) =>
-      f(right, left)
-    })
+  def foldRight[B](
+      z: => B
+  )(f: (=> A, => B) => B)(implicit M: Functor[M]): M[B] =
+    M.map(run)(_.foldRight(z)((right, left) => f(right, left)))
 
   def length(implicit M: Functor[M]): M[Int] = M.map(run)(_.length)
 }
@@ -95,13 +86,15 @@ final case class ListT[M[_], A](run: M[List[A]]) {
 
 sealed abstract class ListTInstances2 {
   implicit def listTFunctor[F[_]](
-      implicit F0: Functor[F]): Functor[ListT[F, ?]] =
+      implicit F0: Functor[F]
+  ): Functor[ListT[F, ?]] =
     new ListTFunctor[F] {
       implicit def F: Functor[F] = F0
     }
 
   implicit def listTSemigroup[F[_], A](
-      implicit F0: Bind[F]): Semigroup[ListT[F, A]] =
+      implicit F0: Bind[F]
+  ): Semigroup[ListT[F, A]] =
     new ListTSemigroup[F, A] {
       implicit def F: Bind[F] = F0
     }
@@ -109,7 +102,8 @@ sealed abstract class ListTInstances2 {
 
 sealed abstract class ListTInstances1 extends ListTInstances2 {
   implicit def listTMonoid[F[_], A](
-      implicit F0: Monad[F]): Monoid[ListT[F, A]] =
+      implicit F0: Monad[F]
+  ): Monoid[ListT[F, A]] =
     new ListTMonoid[F, A] {
       implicit def F: Monad[F] = F0
     }
@@ -117,17 +111,20 @@ sealed abstract class ListTInstances1 extends ListTInstances2 {
 
 sealed abstract class ListTInstances extends ListTInstances1 {
   implicit def listTMonadPlus[F[_]](
-      implicit F0: Monad[F]): MonadPlus[ListT[F, ?]] =
+      implicit F0: Monad[F]
+  ): MonadPlus[ListT[F, ?]] =
     new ListTMonadPlus[F] {
       implicit def F: Monad[F] = F0
     }
 
   implicit def listTEqual[F[_], A](
-      implicit E: Equal[F[List[A]]]): Equal[ListT[F, A]] =
+      implicit E: Equal[F[List[A]]]
+  ): Equal[ListT[F, A]] =
     E.contramap((_: ListT[F, A]).toList)
 
   implicit def listTShow[F[_], A](
-      implicit E: Show[F[List[A]]]): Show[ListT[F, A]] =
+      implicit E: Show[F[List[A]]]
+  ): Show[ListT[F, A]] =
     Contravariant[Show].contramap(E)((_: ListT[F, A]).toList)
 
   implicit val listTHoist: Hoist[ListT] = new ListTHoist {}
@@ -161,14 +158,16 @@ private trait ListTSemigroup[F[_], A] extends Semigroup[ListT[F, A]] {
 }
 
 private trait ListTMonoid[F[_], A]
-    extends Monoid[ListT[F, A]] with ListTSemigroup[F, A] {
+    extends Monoid[ListT[F, A]]
+    with ListTSemigroup[F, A] {
   implicit def F: Monad[F]
 
   def zero: ListT[F, A] = ListT.empty[F, A]
 }
 
 private trait ListTMonadPlus[F[_]]
-    extends MonadPlus[ListT[F, ?]] with ListTFunctor[F] {
+    extends MonadPlus[ListT[F, ?]]
+    with ListTFunctor[F] {
   implicit def F: Monad[F]
 
   def bind[A, B](fa: ListT[F, A])(f: A => ListT[F, B]): ListT[F, B] =
@@ -191,7 +190,8 @@ private trait ListTHoist extends Hoist[ListT] {
     fromList(G.map(a)(entry => entry :: Nil))
 
   def hoist[M[_], N[_]](
-      f: M ~> N)(implicit M: Monad[M]): ListT[M, ?] ~> ListT[N, ?] =
+      f: M ~> N
+  )(implicit M: Monad[M]): ListT[M, ?] ~> ListT[N, ?] =
     new (ListT[M, ?] ~> ListT[N, ?]) {
       def apply[A](a: ListT[M, A]): ListT[N, A] = fromList(f(a.run))
     }

@@ -33,9 +33,8 @@ object ArrayType extends AbstractDataType {
   override private[sql] def defaultConcreteType: DataType =
     ArrayType(NullType, containsNull = true)
 
-  override private[sql] def acceptsType(other: DataType): Boolean = {
+  override private[sql] def acceptsType(other: DataType): Boolean =
     other.isInstanceOf[ArrayType]
-  }
 
   override private[sql] def simpleString: String = "array"
 }
@@ -62,15 +61,18 @@ case class ArrayType(elementType: DataType, containsNull: Boolean)
   protected def this() = this(null, false)
 
   private[sql] def buildFormattedString(
-      prefix: String, builder: StringBuilder): Unit = {
+      prefix: String,
+      builder: StringBuilder
+  ): Unit = {
     builder.append(
-        s"$prefix-- element: ${elementType.typeName} (containsNull = $containsNull)\n")
+      s"$prefix-- element: ${elementType.typeName} (containsNull = $containsNull)\n"
+    )
     DataType.buildFormattedString(elementType, s"$prefix    |", builder)
   }
 
   override private[sql] def jsonValue =
-    ("type" -> typeName) ~ ("elementType" -> elementType.jsonValue) ~
-    ("containsNull" -> containsNull)
+    ("type"           -> typeName) ~ ("elementType" -> elementType.jsonValue) ~
+      ("containsNull" -> containsNull)
 
   /**
     * The default size of a value of the ArrayType is 100 * the default size of the element type.
@@ -86,30 +88,31 @@ case class ArrayType(elementType: DataType, containsNull: Boolean)
     ArrayType(elementType.asNullable, containsNull = true)
 
   override private[spark] def existsRecursively(
-      f: (DataType) => Boolean): Boolean = {
+      f: (DataType) => Boolean
+  ): Boolean =
     f(this) || elementType.existsRecursively(f)
-  }
 
   @transient
   private[sql] lazy val interpretedOrdering: Ordering[ArrayData] =
     new Ordering[ArrayData] {
       private[this] val elementOrdering: Ordering[Any] = elementType match {
         case dt: AtomicType => dt.ordering.asInstanceOf[Ordering[Any]]
-        case a: ArrayType => a.interpretedOrdering.asInstanceOf[Ordering[Any]]
-        case s: StructType => s.interpretedOrdering.asInstanceOf[Ordering[Any]]
+        case a: ArrayType   => a.interpretedOrdering.asInstanceOf[Ordering[Any]]
+        case s: StructType  => s.interpretedOrdering.asInstanceOf[Ordering[Any]]
         case other =>
           throw new IllegalArgumentException(
-              s"Type $other does not support ordered operations")
+            s"Type $other does not support ordered operations"
+          )
       }
 
       def compare(x: ArrayData, y: ArrayData): Int = {
-        val leftArray = x
+        val leftArray  = x
         val rightArray = y
         val minLength =
           scala.math.min(leftArray.numElements(), rightArray.numElements())
         var i = 0
         while (i < minLength) {
-          val isNullLeft = leftArray.isNullAt(i)
+          val isNullLeft  = leftArray.isNullAt(i)
           val isNullRight = rightArray.isNullAt(i)
           if (isNullLeft && isNullRight) {
             // Do nothing.
@@ -118,8 +121,10 @@ case class ArrayType(elementType: DataType, containsNull: Boolean)
           } else if (isNullRight) {
             return 1
           } else {
-            val comp = elementOrdering.compare(leftArray.get(i, elementType),
-                                               rightArray.get(i, elementType))
+            val comp = elementOrdering.compare(
+              leftArray.get(i, elementType),
+              rightArray.get(i, elementType)
+            )
             if (comp != 0) {
               return comp
             }

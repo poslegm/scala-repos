@@ -14,31 +14,31 @@ import akka.stream.actor.ActorPublisherMessage.{Cancel, Request}
 import scala.concurrent.duration.FiniteDuration
 
 object MyEventsByTagPublisher {
-  def props(
-      tag: String, offset: Long, refreshInterval: FiniteDuration): Props =
+  def props(tag: String, offset: Long, refreshInterval: FiniteDuration): Props =
     Props(new MyEventsByTagPublisher(tag, offset, refreshInterval))
 }
 
 //#events-by-tag-publisher
 class MyEventsByTagPublisher(
-    tag: String, offset: Long, refreshInterval: FiniteDuration)
-    extends ActorPublisher[EventEnvelope] {
+    tag: String,
+    offset: Long,
+    refreshInterval: FiniteDuration
+) extends ActorPublisher[EventEnvelope] {
 
   private case object Continue
 
   private val connection: java.sql.Connection = ???
 
-  private val Limit = 1000
+  private val Limit         = 1000
   private var currentOffset = offset
-  var buf = Vector.empty[EventEnvelope]
+  var buf                   = Vector.empty[EventEnvelope]
 
   import context.dispatcher
   val continueTask = context.system.scheduler
     .schedule(refreshInterval, refreshInterval, self, Continue)
 
-  override def postStop(): Unit = {
+  override def postStop(): Unit =
     continueTask.cancel()
-  }
 
   def receive = {
     case _: Request | Continue ⇒
@@ -57,7 +57,11 @@ class MyEventsByTagPublisher(
         ORDER BY id LIMIT ?
       """)
 
-    def run(tag: String, from: Long, limit: Int): Vector[(Long, Array[Byte])] = {
+    def run(
+        tag: String,
+        from: Long,
+        limit: Int
+    ): Vector[(Long, Array[Byte])] = {
       val s = statement()
       try {
         s.setString(1, tag)
@@ -83,8 +87,7 @@ class MyEventsByTagPublisher(
           case (id, bytes) ⇒
             val p =
               serialization.deserialize(bytes, classOf[PersistentRepr]).get
-            EventEnvelope(
-                offset = id, p.persistenceId, p.sequenceNr, p.payload)
+            EventEnvelope(offset = id, p.persistenceId, p.sequenceNr, p.payload)
         }
       } catch {
         case e: Exception ⇒

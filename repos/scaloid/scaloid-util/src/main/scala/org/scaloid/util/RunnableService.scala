@@ -6,7 +6,7 @@ package org.scaloid.util
 @deprecated("Use PlayableConnecter instead.", "3.6")
 trait RunnableService {
   var running: Boolean = false
-  var startTime = 0L
+  var startTime        = 0L
 
   def timeElapsed = System.currentTimeMillis() - startTime
 
@@ -35,11 +35,15 @@ abstract class RunnableServiceConnector(activity: SActivity) {
 
   private def startTimer() {
     timer = new Timer()
-    timer.schedule(new TimerTask {
-      def run() {
-        runOnUiThread(updateUI(ON_HEARTBEAT))
-      }
-    }, timerInterval, timerInterval)
+    timer.schedule(
+      new TimerTask {
+        def run() {
+          runOnUiThread(updateUI(ON_HEARTBEAT))
+        }
+      },
+      timerInterval,
+      timerInterval
+    )
   }
 
   activity.onPause {

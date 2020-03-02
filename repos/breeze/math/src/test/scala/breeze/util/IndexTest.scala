@@ -25,25 +25,25 @@ import org.junit.runner.RunWith
 class IndexTest extends FunSuite with Checkers {
 
   test("CompositeIndex") {
-    val index = Index(List("a", "b", "c", "d"))
+    val index  = Index(List("a", "b", "c", "d"))
     val index2 = Index(List("e", "f", "g", "h"))
-    val comp = new CompositeIndex(index, index2)
+    val comp   = new CompositeIndex(index, index2)
     assert(comp(1 -> "e") === 4)
     assert(comp(0 -> "e") === -1)
   }
 
   test("PairIndex") {
-    val index = Index(List("a", "b", "c", "d"))
+    val index  = Index(List("a", "b", "c", "d"))
     val index2 = Index(List("e", "f", "g", "h"))
-    val comp = new PairIndex(index, index2)
+    val comp   = new PairIndex(index, index2)
     assert(comp("a" -> "e") === 0)
     assert(comp("e" -> "e") === -1)
   }
 
   test("EitherIndex") {
-    val index = Index(List("a", "b", "c", "d"))
+    val index  = Index(List("a", "b", "c", "d"))
     val index2 = Index(List("e", "f", "g", "h"))
-    val comp = new EitherIndex(index, index2)
+    val comp   = new EitherIndex(index, index2)
     assert(comp(Right("e")) === 4)
     assert(comp(Left("e")) === -1)
   }

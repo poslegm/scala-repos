@@ -42,13 +42,16 @@ object TcpHelper {
 
   class TestClient(connection: ActorRef) extends Actor {
     connection ! Tcp.Register(
-        self, keepOpenOnPeerClosed = true, useResumeWriting = false)
+      self,
+      keepOpenOnPeerClosed = true,
+      useResumeWriting = false
+    )
 
     var queuedWrites = Queue.empty[ByteString]
     var writePending = false
 
-    var toRead = 0
-    var readBuffer = ByteString.empty
+    var toRead           = 0
+    var readBuffer       = ByteString.empty
     var readTo: ActorRef = context.system.deadLetters
 
     var closeAfterWrite: Option[Tcp.CloseCommand] = None
@@ -68,7 +71,7 @@ object TcpHelper {
         writePending = false
         closeAfterWrite match {
           case Some(cmd) ⇒ connection ! cmd
-          case None ⇒
+          case None      ⇒
         }
       case ClientRead(count, requester) ⇒
         readTo = requester
@@ -122,14 +125,14 @@ trait TcpHelper {
   this: TestKitBase ⇒
   import akka.stream.io.TcpHelper._
 
-  val settings = ActorMaterializerSettings(system).withInputBuffer(
-      initialSize = 4, maxSize = 4)
+  val settings = ActorMaterializerSettings(system)
+    .withInputBuffer(initialSize = 4, maxSize = 4)
 
   implicit val materializer = ActorMaterializer(settings)
 
   class Server(val address: InetSocketAddress = temporaryServerAddress()) {
     val serverProbe = TestProbe()
-    val serverRef = system.actorOf(testServerProps(address, serverProbe.ref))
+    val serverRef   = system.actorOf(testServerProps(address, serverProbe.ref))
     serverProbe.expectMsgType[Tcp.Bound]
 
     def waitAccept(): ServerConnection =
@@ -156,11 +159,13 @@ trait TcpHelper {
       expectClosed(_ == expected)
 
     def expectClosed(
-        p: (ConnectionClosed) ⇒ Boolean, max: Duration = 3.seconds): Unit = {
+        p: (ConnectionClosed) ⇒ Boolean,
+        max: Duration = 3.seconds
+    ): Unit = {
       connectionActor ! PingClose(connectionProbe.ref)
       connectionProbe.fishForMessage(max) {
         case c: ConnectionClosed if p(c) ⇒ true
-        case other ⇒ false
+        case other                       ⇒ false
       }
     }
 
@@ -171,7 +176,7 @@ trait TcpHelper {
   }
 
   class TcpReadProbe() {
-    val subscriberProbe = TestSubscriber.manualProbe[ByteString]()
+    val subscriberProbe          = TestSubscriber.manualProbe[ByteString]()
     lazy val tcpReadSubscription = subscriberProbe.expectSubscription()
 
     def read(count: Int): ByteString = {
@@ -187,9 +192,9 @@ trait TcpHelper {
   }
 
   class TcpWriteProbe() {
-    val publisherProbe = TestPublisher.manualProbe[ByteString]()
+    val publisherProbe            = TestPublisher.manualProbe[ByteString]()
     lazy val tcpWriteSubscription = publisherProbe.expectSubscription()
-    var demand = 0L
+    var demand                    = 0L
 
     def write(bytes: ByteString): Unit = {
       if (demand == 0) demand += tcpWriteSubscription.expectRequest()

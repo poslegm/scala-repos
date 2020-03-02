@@ -9,11 +9,11 @@ import scala.util.parsing.combinator._
   */
 class PsiElementMock(val name: String, children: PsiElementMock*)
     extends AbstractPsiElementMock {
-  private var parent: PsiElement = _
+  private var parent: PsiElement      = _
   private var prevSibling: PsiElement = _
   private var nextSibling: PsiElement = _
-  private var firstChild: PsiElement = children.headOption.orNull
-  private var lastChild: PsiElement = children.lastOption.orNull
+  private var firstChild: PsiElement  = children.headOption.orNull
+  private var lastChild: PsiElement   = children.lastOption.orNull
 
   for (child <- children) { child.parent = this }
 
@@ -40,10 +40,9 @@ class PsiElementMock(val name: String, children: PsiElementMock*)
 
   override def toString = name
 
-  override def getText: String = {
+  override def getText: String =
     if (children.isEmpty) toString
     else toString + "(" + children.map(_.getText).mkString(", ") + ")"
-  }
 }
 
 object PsiElementMock extends JavaTokenParsers {

@@ -22,14 +22,15 @@ import scala.collection.mutable
 import org.apache.spark.rpc.RpcEndpointRef
 import org.apache.spark.util.Utils
 
-private[spark] class WorkerInfo(val id: String,
-                                val host: String,
-                                val port: Int,
-                                val cores: Int,
-                                val memory: Int,
-                                val endpoint: RpcEndpointRef,
-                                val webUiAddress: String)
-    extends Serializable {
+private[spark] class WorkerInfo(
+    val id: String,
+    val host: String,
+    val port: Int,
+    val cores: Int,
+    val memory: Int,
+    val endpoint: RpcEndpointRef,
+    val webUiAddress: String
+) extends Serializable {
 
   Utils.checkHost(host, "Expected hostname")
   assert(port > 0)
@@ -39,14 +40,14 @@ private[spark] class WorkerInfo(val id: String,
   @transient var drivers: mutable.HashMap[String, DriverInfo] =
     _ // driverId => info
   @transient var state: WorkerState.Value = _
-  @transient var coresUsed: Int = _
-  @transient var memoryUsed: Int = _
+  @transient var coresUsed: Int           = _
+  @transient var memoryUsed: Int          = _
 
   @transient var lastHeartbeat: Long = _
 
   init()
 
-  def coresFree: Int = cores - coresUsed
+  def coresFree: Int  = cores - coresUsed
   def memoryFree: Int = memory - memoryUsed
 
   private def readObject(in: java.io.ObjectInputStream): Unit =
@@ -83,9 +84,8 @@ private[spark] class WorkerInfo(val id: String,
     }
   }
 
-  def hasExecutor(app: ApplicationInfo): Boolean = {
+  def hasExecutor(app: ApplicationInfo): Boolean =
     executors.values.exists(_.application == app)
-  }
 
   def addDriver(driver: DriverInfo) {
     drivers(driver.id) = driver
@@ -99,9 +99,8 @@ private[spark] class WorkerInfo(val id: String,
     coresUsed -= driver.desc.cores
   }
 
-  def setState(state: WorkerState.Value): Unit = {
+  def setState(state: WorkerState.Value): Unit =
     this.state = state
-  }
 
   def isAlive(): Boolean = this.state == WorkerState.ALIVE
 }

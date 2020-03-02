@@ -2,7 +2,10 @@ package org.jetbrains.plugins.scala.codeInspection.functionExpressions
 
 import com.intellij.codeInspection.LocalInspectionTool
 import org.jetbrains.plugins.scala.codeInspection.SAM.ConvertExpressionToSAMInspection
-import org.jetbrains.plugins.scala.codeInspection.{InspectionBundle, ScalaLightInspectionFixtureTestAdapter}
+import org.jetbrains.plugins.scala.codeInspection.{
+  InspectionBundle,
+  ScalaLightInspectionFixtureTestAdapter
+}
 import org.jetbrains.plugins.scala.project.settings.ScalaCompilerConfiguration
 import org.jetbrains.plugins.scala.util.TestUtils.ScalaSdkVersion
 
@@ -42,7 +45,7 @@ class ConvertExpressionToSAMInspectionTest
          |override def run() = println()
          |})
       """.stripMargin
-    val res = "\nnew Thread(() => println())\n"
+    val res  = "\nnew Thread(() => println())\n"
     testFix(text, res, annotation)
   }
 
@@ -58,7 +61,7 @@ class ConvertExpressionToSAMInspectionTest
         |  override def run(): Unit = ???
         |}
       """.stripMargin
-    val res = "\nval y: Runnable = () => ???\n"
+    val res  = "\nval y: Runnable = () => ???\n"
     testFix(text, res, annotation)
   }
 
@@ -150,7 +153,7 @@ class ConvertExpressionToSAMInspectionTest
          |  }
          |})
       """.stripMargin
-    val res = s"""
+    val res  = s"""
          |new Thread(() => {
          |  def foo(i: Int) = i
          |
@@ -180,7 +183,7 @@ class ConvertExpressionToSAMInspectionTest
          |  }
          |})
        """.stripMargin
-    val res = """
+    val res  = """
         |new Thread(() => {
         |  val i = 2 + 3
         |  val z = 2

@@ -23,18 +23,20 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
   def train(data: PreparedData): ALSModel = {
     // Convert user and item String IDs to Int index for MLlib
     val mllibRatings = data.ratings.map(r =>
-          // MLlibRating requires integer index for user and item
-          MLlibRating(
-              data.users(r.user).toInt, data.items(r.item).toInt, r.rating))
+      // MLlibRating requires integer index for user and item
+      MLlibRating(data.users(r.user).toInt, data.items(r.item).toInt, r.rating)
+    )
     val m = ALS.train(mllibRatings, ap.rank, ap.numIterations, ap.lambda)
-    new ALSModel(rank = m.rank,
-                 userFeatures = m.userFeatures,
-                 productFeatures = m.productFeatures,
-                 users = data.users,
-                 items = data.items)
+    new ALSModel(
+      rank = m.rank,
+      userFeatures = m.userFeatures,
+      productFeatures = m.productFeatures,
+      users = data.users,
+      items = data.items
+    )
   }
 
-  def predict(model: ALSModel, query: Query): PredictedResult = {
+  def predict(model: ALSModel, query: Query): PredictedResult =
     // Convert String ID to Int index for Mllib
     model.users
       .get(query.user)
@@ -50,5 +52,4 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
         logger.info(s"No prediction for unknown user ${query.user}.")
         new PredictedResult(Array.empty)
       }
-  }
 }

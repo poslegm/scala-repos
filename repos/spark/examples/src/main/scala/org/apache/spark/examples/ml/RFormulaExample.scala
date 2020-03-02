@@ -26,17 +26,19 @@ import org.apache.spark.sql.SQLContext
 
 object RFormulaExample {
   def main(args: Array[String]): Unit = {
-    val conf = new SparkConf().setAppName("RFormulaExample")
-    val sc = new SparkContext(conf)
+    val conf       = new SparkConf().setAppName("RFormulaExample")
+    val sc         = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
 
     // $example on$
     val dataset = sqlContext
-      .createDataFrame(Seq(
-              (7, "US", 18, 1.0),
-              (8, "CA", 12, 0.0),
-              (9, "NZ", 15, 0.0)
-          ))
+      .createDataFrame(
+        Seq(
+          (7, "US", 18, 1.0),
+          (8, "CA", 12, 0.0),
+          (9, "NZ", 15, 0.0)
+        )
+      )
       .toDF("id", "country", "hour", "clicked")
     val formula = new RFormula()
       .setFormula("clicked ~ country + hour")

@@ -3,7 +3,7 @@
 
 package foo {
   object regular extends Duh {
-    def buh(n: Long) = println("long")
+    def buh(n: Long)   = println("long")
     def buh(n: Double) = println("double")
   }
   class regular {
@@ -20,11 +20,11 @@ package foo {
   }
 
   trait Duh {
-    def duh(n: Long) = println("long")
+    def duh(n: Long)   = println("long")
     def duh(n: Double) = println("double")
   }
   package object bar extends Duh {
-    def buh(n: Long) = println("long")
+    def buh(n: Long)   = println("long")
     def buh(n: Double) = println("double")
   }
   package bar {
@@ -44,7 +44,6 @@ package foo {
 }
 
 object Test {
-  def main(args: Array[String]): Unit = {
+  def main(args: Array[String]): Unit =
     foo.bar.Main.main(null)
-  }
 }

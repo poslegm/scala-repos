@@ -24,20 +24,23 @@ class RemoveRedundantElseIntention extends PsiElementBaseIntentionAction {
   override def getText: String = "Remove redundant 'else'"
 
   def isAvailable(
-      project: Project, editor: Editor, element: PsiElement): Boolean = {
+      project: Project,
+      editor: Editor,
+      element: PsiElement
+  ): Boolean = {
     val ifStmt: ScIfStmt =
       PsiTreeUtil.getParentOfType(element, classOf[ScIfStmt], false)
     if (ifStmt == null) return false
 
     val thenBranch = ifStmt.thenBranch.orNull
     val elseBranch = ifStmt.elseBranch.orNull
-    val condition = ifStmt.condition.orNull
+    val condition  = ifStmt.condition.orNull
     if (thenBranch == null || elseBranch == null || condition == null)
       return false
 
     val offset = editor.getCaretModel.getOffset
     if (!(thenBranch.getTextRange.getEndOffset <= offset &&
-            offset <= elseBranch.getTextRange.getStartOffset)) return false
+          offset <= elseBranch.getTextRange.getStartOffset)) return false
 
     thenBranch match {
       case tb: ScBlockExpr =>
@@ -60,27 +63,36 @@ class RemoveRedundantElseIntention extends PsiElementBaseIntentionAction {
       PsiTreeUtil.getParentOfType(element, classOf[ScIfStmt], false)
     if (ifStmt == null || !ifStmt.isValid) return
 
-    val thenBranch = ifStmt.thenBranch.getOrElse(return )
+    val thenBranch = ifStmt.thenBranch.getOrElse(
+      return
+    )
     val elseKeyWord = thenBranch.getNextSiblingNotWhitespaceComment
 
-    val elseBranch = ifStmt.elseBranch.getOrElse(return )
+    val elseBranch = ifStmt.elseBranch.getOrElse(
+      return
+    )
 
     val children = elseBranch.copy().children.toList
     var from = children
       .find(_.getNode.getElementType != ScalaTokenTypes.tLBRACE)
-      .getOrElse(return )
+      .getOrElse(
+        return
+      )
     if (ScalaTokenTypes.WHITES_SPACES_TOKEN_SET.contains(
-            from.getNode.getElementType)) from = from.getNextSibling
+          from.getNode.getElementType
+        )) from = from.getNextSibling
     val to = children.reverse
       .find(_.getNode.getElementType != ScalaTokenTypes.tRBRACE)
-      .getOrElse(return )
+      .getOrElse(
+        return
+      )
 
     inWriteAction {
       elseKeyWord.delete()
       elseBranch.delete()
       ifStmt.getParent.addRangeAfter(from, to, ifStmt)
-      ifStmt.getParent.addAfter(
-          ScalaPsiElementFactory.createNewLine(manager), ifStmt)
+      ifStmt.getParent
+        .addAfter(ScalaPsiElementFactory.createNewLine(manager), ifStmt)
       PsiDocumentManager
         .getInstance(project)
         .commitDocument(editor.getDocument)

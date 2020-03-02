@@ -23,17 +23,20 @@ trait ReplConfig {
 
   private def parens(x: Any) = "(" + x + ")"
   private def echo(msg: => String) =
-    try Console println msg catch {
+    try Console println msg
+    catch {
       case x: AssertionError =>
         Console.println("Assertion error printing debugging output: " + x)
     }
 
-  private[nsc] def repldbg(msg: => String) = if (isReplDebug) echo(msg)
+  private[nsc] def repldbg(msg: => String)   = if (isReplDebug) echo(msg)
   private[nsc] def repltrace(msg: => String) = if (isReplTrace) echo(msg)
-  private[nsc] def replinfo(msg: => String) = if (isReplInfo) echo(msg)
+  private[nsc] def replinfo(msg: => String)  = if (isReplInfo) echo(msg)
 
   private[nsc] def logAndDiscard[T](
-      label: String, alt: => T): PartialFunction[Throwable, T] = {
+      label: String,
+      alt: => T
+  ): PartialFunction[Throwable, T] = {
     case t: ControlThrowable => throw t
     case t: Throwable =>
       repldbg(label + ": " + unwrap(t))
@@ -41,13 +44,14 @@ trait ReplConfig {
       alt
   }
   private[nsc] def substituteAndLog[T](label: String, alt: => T)(
-      body: => T): T = {
-    try body catch logAndDiscard(label, alt)
-  }
+      body: => T
+  ): T =
+    try body
+    catch logAndDiscard(label, alt)
 
   def isReplTrace: Boolean = replProps.trace
   def isReplDebug: Boolean = replProps.debug || isReplTrace
-  def isReplInfo: Boolean = replProps.info || isReplDebug
+  def isReplInfo: Boolean  = replProps.info || isReplDebug
   def isReplPower: Boolean = replProps.power
 
   private def csv(p: String, v: String) = p split "," contains v

@@ -9,10 +9,12 @@ import scala.concurrent.Future
 import scala.collection.immutable.Seq
 import scala.collection.mutable
 
-private[appinfo] class DefaultInfoService(groupManager: GroupManager,
-                                          appRepository: AppRepository,
-                                          newBaseData: () => AppInfoBaseData)
-    extends AppInfoService with GroupInfoService {
+private[appinfo] class DefaultInfoService(
+    groupManager: GroupManager,
+    appRepository: AppRepository,
+    newBaseData: () => AppInfoBaseData
+) extends AppInfoService
+    with GroupInfoService {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   private[this] val log = LoggerFactory.getLogger(getClass)
@@ -20,7 +22,8 @@ private[appinfo] class DefaultInfoService(groupManager: GroupManager,
   override def selectApp(
       id: PathId,
       selector: AppSelector,
-      embed: Set[AppInfo.Embed]): Future[Option[AppInfo]] = {
+      embed: Set[AppInfo.Embed]
+  ): Future[Option[AppInfo]] = {
     log.debug(s"queryForAppId $id")
     appRepository.currentVersion(id).flatMap {
       case Some(app) if selector.matches(app) =>
@@ -31,7 +34,8 @@ private[appinfo] class DefaultInfoService(groupManager: GroupManager,
 
   override def selectAppsBy(
       selector: AppSelector,
-      embed: Set[AppInfo.Embed]): Future[Seq[AppInfo]] = {
+      embed: Set[AppInfo.Embed]
+  ): Future[Seq[AppInfo]] = {
     log.debug(s"queryAll")
     groupManager
       .rootGroup()
@@ -42,12 +46,15 @@ private[appinfo] class DefaultInfoService(groupManager: GroupManager,
   override def selectAppsInGroup(
       groupId: PathId,
       selector: AppSelector,
-      embed: Set[AppInfo.Embed]): Future[Seq[AppInfo]] = {
+      embed: Set[AppInfo.Embed]
+  ): Future[Seq[AppInfo]] = {
     log.debug(s"queryAllInGroup $groupId")
     groupManager
       .group(groupId)
-      .map(_.map(_.transitiveApps.filter(selector.matches))
-            .getOrElse(Seq.empty))
+      .map(
+        _.map(_.transitiveApps.filter(selector.matches))
+          .getOrElse(Seq.empty)
+      )
       .flatMap(resolveAppInfos(_, embed))
   }
 
@@ -55,37 +62,40 @@ private[appinfo] class DefaultInfoService(groupManager: GroupManager,
       groupId: PathId,
       groupSelector: GroupSelector,
       appEmbed: Set[Embed],
-      groupEmbed: Set[GroupInfo.Embed]): Future[Option[GroupInfo]] = {
+      groupEmbed: Set[GroupInfo.Embed]
+  ): Future[Option[GroupInfo]] =
     groupManager.group(groupId).flatMap {
       case Some(group) =>
         queryForGroup(group, groupSelector, appEmbed, groupEmbed)
       case None => Future.successful(None)
     }
-  }
 
   override def selectGroupVersion(
       groupId: PathId,
       version: Timestamp,
       groupSelector: GroupSelector,
-      groupEmbed: Set[GroupInfo.Embed]): Future[Option[GroupInfo]] = {
+      groupEmbed: Set[GroupInfo.Embed]
+  ): Future[Option[GroupInfo]] =
     groupManager.group(groupId, version).flatMap {
       case Some(group) =>
         queryForGroup(group, groupSelector, Set.empty, groupEmbed)
       case None => Future.successful(None)
     }
-  }
 
   private[this] def queryForGroup(
       group: Group,
       groupSelector: GroupSelector,
       appEmbed: Set[AppInfo.Embed],
-      groupEmbed: Set[GroupInfo.Embed]): Future[Option[GroupInfo]] = {
+      groupEmbed: Set[GroupInfo.Embed]
+  ): Future[Option[GroupInfo]] = {
 
     //fetch all transitive app infos with one request
     val appInfos = {
       if (groupEmbed(GroupInfo.Embed.Apps))
         resolveAppInfos(
-            group.transitiveApps.filter(groupSelector.matches), appEmbed)
+          group.transitiveApps.filter(groupSelector.matches),
+          appEmbed
+        )
       else Future.successful(Seq.empty)
     }
 
@@ -96,21 +106,23 @@ private[appinfo] class DefaultInfoService(groupManager: GroupManager,
       def queryGroup(ref: Group): Option[GroupInfo] = {
         def groups: Option[Seq[GroupInfo]] =
           if (groupEmbed(GroupInfo.Embed.Groups))
-            Some(
-                ref.groups.toIndexedSeq.flatMap(queryGroup).sortBy(_.group.id))
+            Some(ref.groups.toIndexedSeq.flatMap(queryGroup).sortBy(_.group.id))
           else None
         def apps: Option[Seq[AppInfo]] =
           if (groupEmbed(GroupInfo.Embed.Apps))
-            Some(ref.apps.toIndexedSeq
-                  .flatMap(a => infoById.get(a.id))
-                  .sortBy(_.app.id))
+            Some(
+              ref.apps.toIndexedSeq
+                .flatMap(a => infoById.get(a.id))
+                .sortBy(_.app.id)
+            )
           else None
         //if a subgroup is allowed, we also have to allow all parents implicitly
-        def groupMatches(group: Group): Boolean = {
-          alreadyMatched.getOrElseUpdate(group.id,
-                                         groupSelector.matches(group) ||
-                                         group.groups.exists(groupMatches))
-        }
+        def groupMatches(group: Group): Boolean =
+          alreadyMatched.getOrElseUpdate(
+            group.id,
+            groupSelector.matches(group) ||
+              group.groups.exists(groupMatches)
+          )
         if (groupMatches(ref)) Some(GroupInfo(ref, apps, groups)) else None
       }
       queryGroup(group)
@@ -119,7 +131,8 @@ private[appinfo] class DefaultInfoService(groupManager: GroupManager,
 
   private[this] def resolveAppInfos(
       apps: Iterable[AppDefinition],
-      embed: Set[AppInfo.Embed]): Future[Seq[AppInfo]] = {
+      embed: Set[AppInfo.Embed]
+  ): Future[Seq[AppInfo]] = {
     val baseData = newBaseData()
 
     apps

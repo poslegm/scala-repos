@@ -26,14 +26,13 @@ class TopK[T](k: Int)(implicit ord: Ordering[T]) extends Iterable[T] {
 
   private val keys = new TreeSet[T](ord);
 
-  def +=(e: T) = {
+  def +=(e: T) =
     if (keys.size < k) {
       keys.add(e);
     } else if (keys.size > 0 && ord.lt(keys.first, e) && !keys.contains(e)) {
       keys.remove(keys.first);
       keys.add(e);
     }
-  }
 
   override def iterator: Iterator[T] =
     keys.descendingIterator;
@@ -44,14 +43,16 @@ class TopK[T](k: Int)(implicit ord: Ordering[T]) extends Iterable[T] {
 
 object TopK {
   def apply[T](k: Int, items: TraversableOnce[T])(
-      implicit ord: Ordering[T]): TopK[T] = {
+      implicit ord: Ordering[T]
+  ): TopK[T] = {
     val topk = new TopK[T](k)(ord);
     items.foreach(topk += _);
     topk;
   }
 
   def apply[T, U](k: Int, items: TraversableOnce[T], scoreFn: (T => U))(
-      implicit uord: Ordering[U]): TopK[T] = {
+      implicit uord: Ordering[U]
+  ): TopK[T] = {
     implicit val ord = new Ordering[T] {
       override def compare(x: T, y: T) = uord.compare(scoreFn(x), scoreFn(y));
     };

@@ -33,9 +33,11 @@ sealed abstract class Result[+Out, +A, +X] {
   def mapOut[Out2](f: Out => Out2): Result[Out2, A, X]
   def map[Out2, B](f: (Out, A) => (Out2, B)): Result[Out2, B, X]
   def flatMap[Out2, B](
-      f: (Out, A) => Result[Out2, B, Nothing]): Result[Out2, B, X]
+      f: (Out, A) => Result[Out2, B, Nothing]
+  ): Result[Out2, B, X]
   def orElse[Out2 >: Out, B >: A](
-      other: => Result[Out2, B, Nothing]): Result[Out2, B, X]
+      other: => Result[Out2, B, Nothing]
+  ): Result[Out2, B, X]
 }
 
 case class Success[+Out, +A](out: Out, value: A)
@@ -50,20 +52,22 @@ case class Success[+Out, +A](out: Out, value: A)
   def map[Out2, B](f: (Out, A) => (Out2, B)): Success[Out2, B] =
     f(out, value) match { case (out2, b) => Success(out2, b) }
   def flatMap[Out2, B](
-      f: (Out, A) => Result[Out2, B, Nothing]): Result[Out2, B, Nothing] =
+      f: (Out, A) => Result[Out2, B, Nothing]
+  ): Result[Out2, B, Nothing] =
     f(out, value)
   def orElse[Out2 >: Out, B >: A](
-      other: => Result[Out2, B, Nothing]): Result[Out2, B, Nothing] = this
+      other: => Result[Out2, B, Nothing]
+  ): Result[Out2, B, Nothing] = this
 }
 
 sealed abstract class NoSuccess[+X] extends Result[Nothing, Nothing, X] {
-  def out = throw new ScalaSigParserError("No output")
+  def out   = throw new ScalaSigParserError("No output")
   def value = throw new ScalaSigParserError("No value")
 
   def toOption = None
 
-  def map[B](f: Nothing => B) = this
-  def mapOut[Out2](f: Nothing => Out2) = this
+  def map[B](f: Nothing => B)                          = this
+  def mapOut[Out2](f: Nothing => Out2)                 = this
   def map[Out2, B](f: (Nothing, Nothing) => (Out2, B)) = this
   def flatMap[Out2, B](f: (Nothing, Nothing) => Result[Out2, B, Nothing]) =
     this

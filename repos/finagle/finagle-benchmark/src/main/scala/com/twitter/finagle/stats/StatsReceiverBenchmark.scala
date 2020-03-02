@@ -92,37 +92,39 @@ object StatsReceiverBenchmark {
   private[this] val ostrich = new OstrichStatsReceiver
 
   private[this] val metrics = new MetricsStatsReceiver(
-      Metrics.createDetached(),
-      Sink.default,
-      (n: String) => new Histogram(n))
+    Metrics.createDetached(),
+    Sink.default,
+    (n: String) => new Histogram(n)
+  )
 
   private[this] val metricsBucketed = new MetricsStatsReceiver(
-      Metrics.createDetached(),
-      Sink.default,
-      (n: String) => new MetricsBucketedHistogram(n))
+    Metrics.createDetached(),
+    Sink.default,
+    (n: String) => new MetricsBucketedHistogram(n)
+  )
 
   private[this] val stats = new CommonsStatsReceiver
 
   @State(Scope.Benchmark)
   class StatsReceiverState {
-    val ostrichStatsReceiver: StatsReceiver = ostrich
-    val metricsStatsReceiver: StatsReceiver = metrics
+    val ostrichStatsReceiver: StatsReceiver         = ostrich
+    val metricsStatsReceiver: StatsReceiver         = metrics
     val metricsBucketedStatsReceiver: StatsReceiver = metricsBucketed
   }
 
   @State(Scope.Benchmark)
   class StatState {
-    val ostrichStat: Stat = ostrich.stat("histo")
-    val metricsStat: Stat = metrics.stat("histo")
+    val ostrichStat: Stat         = ostrich.stat("histo")
+    val metricsStat: Stat         = metrics.stat("histo")
     val metricsBucketedStat: Stat = metricsBucketed.stat("histo")
-    val statsStat: Stat = stats.stat("histo")
+    val statsStat: Stat           = stats.stat("histo")
   }
 
   @State(Scope.Benchmark)
   class CounterState {
     val ostrichCounter: Counter = ostrich.counter("cnt")
     val metricsCounter: Counter = metrics.counter("cnt")
-    val statsCounter: Counter = stats.counter("cnt")
+    val statsCounter: Counter   = stats.counter("cnt")
   }
 
   @State(Scope.Thread)
@@ -133,9 +135,9 @@ object StatsReceiverBenchmark {
   @State(Scope.Benchmark)
   class QueryState {
     var statName: String = ""
-    val rng = new Random(31415926535897932L)
+    val rng              = new Random(31415926535897932L)
 
-    def ostrichGet(): StatsSummary = ostrich.repr.get()
+    def ostrichGet(): StatsSummary             = ostrich.repr.get()
     def metricsGet(): util.Map[String, Number] = metrics.registry.sample()
     def metricsBucketedGet(): util.Map[String, Number] =
       metricsBucketed.registry.sample()
@@ -143,10 +145,10 @@ object StatsReceiverBenchmark {
 
     @Setup(Level.Trial)
     def setup(): Unit = {
-      val oStat = ostrich.stat("my_stat")
-      val mStat = metrics.stat("my_stat")
+      val oStat  = ostrich.stat("my_stat")
+      val mStat  = metrics.stat("my_stat")
       val mbStat = metricsBucketed.stat("my_stat")
-      val sStat = stats.stat("my_stat")
+      val sStat  = stats.stat("my_stat")
       (1 to 100000).foreach { x =>
         val rand = rng.nextInt(x)
         oStat.add(rand)

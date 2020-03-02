@@ -26,20 +26,21 @@ trait ScInfixExpr extends ScExpression with ScSugarCallExpr {
     }
   }
 
-  def typeArgs: Option[ScTypeArgs] = {
+  def typeArgs: Option[ScTypeArgs] =
     findChildrenByClassScala(classOf[ScTypeArgs]) match {
       case Array(tpArg: ScTypeArgs) => Some(tpArg)
-      case _ => None
+      case _                        => None
     }
-  }
 
   def rOp: ScExpression = {
     val exprs: Array[ScExpression] = findChildrenByClassScala(
-        classOf[ScExpression])
+      classOf[ScExpression]
+    )
     assert(
-        exprs.length > 2,
-        s"Infix expression contains less than 3 expressions: ${exprs.mkString(
-            "(", ", ", ")")}, exprssion: $getText, full code: ${getContainingFile.getText}")
+      exprs.length > 2,
+      s"Infix expression contains less than 3 expressions: ${exprs
+        .mkString("(", ", ", ")")}, exprssion: $getText, full code: ${getContainingFile.getText}"
+    )
     exprs.apply(2)
   }
 
@@ -61,7 +62,8 @@ trait ScInfixExpr extends ScExpression with ScSugarCallExpr {
 }
 
 object ScInfixExpr {
-  def unapply(it: ScInfixExpr)
-    : Some[(ScExpression, ScReferenceExpression, ScExpression)] =
+  def unapply(
+      it: ScInfixExpr
+  ): Some[(ScExpression, ScReferenceExpression, ScExpression)] =
     Some(it.lOp, it.operation, it.rOp)
 }

@@ -54,7 +54,9 @@ class TimeStampedHashMapSuite extends SparkFunSuite {
     Thread.sleep(10)
     val threshTime1 = System.currentTimeMillis
     Thread.sleep(10)
-    assert(map1("k2") === "v2") // access k2 to update its access time to > threshTime
+    assert(
+      map1("k2") === "v2"
+    ) // access k2 to update its access time to > threshTime
     assert(map1.getTimestamp("k1").isDefined)
     assert(map1.getTimestamp("k1").get < threshTime1)
     assert(map1.getTimestamp("k2").isDefined)
@@ -69,7 +71,7 @@ class TimeStampedHashMapSuite extends SparkFunSuite {
     def newMap() = hashMapConstructor
     val testMap1 = newMap()
     val testMap2 = newMap()
-    val name = testMap1.getClass.getSimpleName
+    val name     = testMap1.getClass.getSimpleName
 
     test(name + " - basic test") {
       // put, get, and apply
@@ -95,7 +97,7 @@ class TimeStampedHashMapSuite extends SparkFunSuite {
       assert(testMap1.get("k3").isEmpty)
 
       // multi put
-      val keys = (1 to 100).map(_.toString)
+      val keys  = (1 to 100).map(_.toString)
       val pairs = keys.map(x => (x, x * 2))
       assert((testMap2 ++ pairs).iterator.toSet === pairs.toSet)
       testMap2 ++= pairs
@@ -104,8 +106,8 @@ class TimeStampedHashMapSuite extends SparkFunSuite {
       assert(testMap2.iterator.toSet === pairs.toSet)
 
       // filter
-      val filtered = testMap2.filter { case (_, v) => v.toInt % 2 == 0 }
-      val evenPairs = pairs.filter { case (_, v) => v.toInt % 2 == 0 }
+      val filtered  = testMap2.filter { case (_, v) => v.toInt % 2 == 0 }
+      val evenPairs = pairs.filter { case (_, v)    => v.toInt % 2 == 0 }
       assert(filtered.iterator.toSet === evenPairs.toSet)
 
       // foreach
@@ -137,9 +139,9 @@ class TimeStampedHashMapSuite extends SparkFunSuite {
 
   /** Test thread safety of a Scala mutable map. */
   def testMapThreadSafety(hashMapConstructor: => mutable.Map[String, String]) {
-    def newMap() = hashMapConstructor
-    val name = newMap().getClass.getSimpleName
-    val testMap = newMap()
+    def newMap()        = hashMapConstructor
+    val name            = newMap().getClass.getSimpleName
+    val testMap         = newMap()
     @volatile var error = false
 
     def getRandomKey(m: mutable.Map[String, String]): Option[String] = {
@@ -153,7 +155,7 @@ class TimeStampedHashMapSuite extends SparkFunSuite {
 
     val threads =
       (1 to 25).map(i =>
-            new Thread() {
+        new Thread() {
           override def run() {
             try {
               for (j <- 1 to 1000) {
@@ -174,7 +176,8 @@ class TimeStampedHashMapSuite extends SparkFunSuite {
                 throw t
             }
           }
-      })
+        }
+      )
 
     test(name + " - threading safety test") {
       threads.map(_.start)

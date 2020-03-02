@@ -2,13 +2,13 @@ trait Equalizer[T]
 trait Gen[A]
 
 class Broken {
-  implicit def const[T](x: T): Gen[T] = ???
+  implicit def const[T](x: T): Gen[T]                       = ???
   implicit def convertToEqualizer[T](left: T): Equalizer[T] = ???
 
   def in(a: Any) = ()
   in {
     import scala.None // any import will do..
-    "" == "" // no longer a problem, see pos/t8129.scala
+    "" == ""          // no longer a problem, see pos/t8129.scala
   }
 
   // We used to fall into the errant code path above when `Any#==` and `AnyRef#==`
@@ -37,7 +37,7 @@ class Broken {
   // Or, we can get here with ambiguous implicits from the formal parameter
   // type of the less specific overload to that of the more specific.
   object T {
-    def foo(a: Any) = true
+    def foo(a: Any)    = true
     def foo(a: String) = true
   }
   in {

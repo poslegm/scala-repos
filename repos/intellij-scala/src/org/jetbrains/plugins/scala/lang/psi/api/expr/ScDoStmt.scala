@@ -4,7 +4,7 @@ package psi
 package api
 package expr
 
-/** 
+/**
   * @author Alexander Podkhalyuzin
   * Date: 06.03.2008
   */
@@ -29,6 +29,7 @@ trait ScDoStmt extends ScExpression {
 
 object ScDoStmt {
   def unapply(
-      doStmt: ScDoStmt): Option[(Option[ScExpression], Option[ScExpression])] =
+      doStmt: ScDoStmt
+  ): Option[(Option[ScExpression], Option[ScExpression])] =
     Some(doStmt.getExprBody, doStmt.condition)
 }

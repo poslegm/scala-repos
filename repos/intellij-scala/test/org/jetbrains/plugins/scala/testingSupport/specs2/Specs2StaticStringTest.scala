@@ -7,9 +7,10 @@ package org.jetbrains.plugins.scala.testingSupport.specs2
 abstract class Specs2StaticStringTest extends Specs2TestCase {
   def testValString() = {
     val testClassName = "ValStringTest"
-    val valFileName = testClassName + ".scala"
-    addFileToProject(valFileName,
-                     """
+    val valFileName   = testClassName + ".scala"
+    addFileToProject(
+      valFileName,
+      """
       |import org.specs2.mutable.Specification
       |
       |class ValStringTest extends Specification {
@@ -21,17 +22,24 @@ abstract class Specs2StaticStringTest extends Specs2TestCase {
       |    }
       |  }
       |}
-      |    """.stripMargin)
+      |    """.stripMargin
+    )
 
-    assert(checkConfigAndSettings(
-            createTestFromLocation(7, 7, valFileName), testClassName, "run"))
+    assert(
+      checkConfigAndSettings(
+        createTestFromLocation(7, 7, valFileName),
+        testClassName,
+        "run"
+      )
+    )
   }
 
   def testStringSum() = {
     val testClassName = "StringSumTest"
-    val sumFileName = testClassName + ".scala"
-    addFileToProject(sumFileName,
-                     """
+    val sumFileName   = testClassName + ".scala"
+    addFileToProject(
+      sumFileName,
+      """
       |import org.specs2.mutable.Specification
       |
       |class StringSumTest extends Specification {
@@ -42,19 +50,24 @@ abstract class Specs2StaticStringTest extends Specs2TestCase {
       |    }
       |  }
       |}
-    """.stripMargin)
+    """.stripMargin
+    )
 
     assert(
-        checkConfigAndSettings(createTestFromLocation(6, 7, sumFileName),
-                               testClassName,
-                               "run fine"))
+      checkConfigAndSettings(
+        createTestFromLocation(6, 7, sumFileName),
+        testClassName,
+        "run fine"
+      )
+    )
   }
 
   def testNonConst() = {
     val testClassName = "BadStringTest"
-    val badFileName = testClassName + ".scala"
-    addFileToProject(badFileName,
-                     """
+    val badFileName   = testClassName + ".scala"
+    addFileToProject(
+      badFileName,
+      """
       |import org.specs2.mutable.Specification
       |
       |class BadStringTest extends Specification {
@@ -69,18 +82,24 @@ abstract class Specs2StaticStringTest extends Specs2TestCase {
       |    }
       |  }
       |}
-    """.stripMargin)
+    """.stripMargin
+    )
 
-    assert(checkConfigAndSettings(
-            createTestFromLocation(6, 7, badFileName), testClassName))
+    assert(
+      checkConfigAndSettings(
+        createTestFromLocation(6, 7, badFileName),
+        testClassName
+      )
+    )
   }
 
   val methodsTestClassName = "SpecsMethodsTest"
-  val methodsTestFileName = methodsTestClassName + ".scala"
+  val methodsTestFileName  = methodsTestClassName + ".scala"
 
-  def addMethodsTest() = {
-    addFileToProject(methodsTestFileName,
-                     """
+  def addMethodsTest() =
+    addFileToProject(
+      methodsTestFileName,
+      """
         |import org.specs2.mutable.Specification
         |
         |class SpecsMethodsTest extends Specification {
@@ -114,76 +133,90 @@ abstract class Specs2StaticStringTest extends Specs2TestCase {
         |    }
         |  }
         |}
-      """.stripMargin.trim)
-  }
+      """.stripMargin.trim
+    )
 
   def testTrim() = {
     addMethodsTest()
 
     assert(
-        checkConfigAndSettings(
-            createTestFromLocation(4, 7, methodsTestFileName),
-            methodsTestClassName,
-            "Test1"))
+      checkConfigAndSettings(
+        createTestFromLocation(4, 7, methodsTestFileName),
+        methodsTestClassName,
+        "Test1"
+      )
+    )
   }
 
   def testToLowerCase() = {
     addMethodsTest()
 
     assert(
-        checkConfigAndSettings(
-            createTestFromLocation(8, 7, methodsTestFileName),
-            methodsTestClassName,
-            "test2"))
+      checkConfigAndSettings(
+        createTestFromLocation(8, 7, methodsTestFileName),
+        methodsTestClassName,
+        "test2"
+      )
+    )
   }
 
   def testSuffix() = {
     addMethodsTest()
 
     assert(
-        checkConfigAndSettings(
-            createTestFromLocation(12, 7, methodsTestFileName),
-            methodsTestClassName,
-            "Test3"))
+      checkConfigAndSettings(
+        createTestFromLocation(12, 7, methodsTestFileName),
+        methodsTestClassName,
+        "Test3"
+      )
+    )
   }
 
   def testPrefix() = {
     addMethodsTest()
 
     assert(
-        checkConfigAndSettings(
-            createTestFromLocation(16, 7, methodsTestFileName),
-            methodsTestClassName,
-            "Test4"))
+      checkConfigAndSettings(
+        createTestFromLocation(16, 7, methodsTestFileName),
+        methodsTestClassName,
+        "Test4"
+      )
+    )
   }
 
   def testSubString1() = {
     addMethodsTest()
 
     assert(
-        checkConfigAndSettings(
-            createTestFromLocation(20, 7, methodsTestFileName),
-            methodsTestClassName,
-            "Test5"))
+      checkConfigAndSettings(
+        createTestFromLocation(20, 7, methodsTestFileName),
+        methodsTestClassName,
+        "Test5"
+      )
+    )
   }
 
   def testSubString2() = {
     addMethodsTest()
 
     assert(
-        checkConfigAndSettings(
-            createTestFromLocation(24, 7, methodsTestFileName),
-            methodsTestClassName,
-            "Test6"))
+      checkConfigAndSettings(
+        createTestFromLocation(24, 7, methodsTestFileName),
+        methodsTestClassName,
+        "Test6"
+      )
+    )
   }
 
   def testReplace() = {
     addMethodsTest()
 
     assert(
-        checkConfigAndSettings(
-            createTestFromLocation(28, 7, methodsTestFileName),
-            methodsTestClassName,
-            "Test7"))
+      checkConfigAndSettings(
+        createTestFromLocation(28, 7, methodsTestFileName),
+        methodsTestClassName,
+        "Test7"
+      )
+    )
   }
 }

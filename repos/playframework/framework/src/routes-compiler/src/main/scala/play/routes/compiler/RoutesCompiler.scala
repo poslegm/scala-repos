@@ -47,11 +47,10 @@ object RoutesCompiler {
             .find(_.startsWith("// @SOURCE:"))
             .map(m => new File(m.trim.drop(11)))
 
-          def mapLine(generatedLine: Int): Option[Int] = {
+          def mapLine(generatedLine: Int): Option[Int] =
             lines.view.take(generatedLine).reverse.collectFirst {
               case LineMarker(line) => Integer.parseInt(line)
             }
-          }
         })
       } else {
         None
@@ -68,11 +67,13 @@ object RoutesCompiler {
     * @param reverseRouter Whether a reverse router should be generated.
     * @param namespaceReverseRouter Whether the reverse router should be namespaced.
     */
-  case class RoutesCompilerTask(file: File,
-                                additionalImports: Seq[String],
-                                forwardsRouter: Boolean,
-                                reverseRouter: Boolean,
-                                namespaceReverseRouter: Boolean)
+  case class RoutesCompilerTask(
+      file: File,
+      additionalImports: Seq[String],
+      forwardsRouter: Boolean,
+      reverseRouter: Boolean,
+      namespaceReverseRouter: Boolean
+  )
 
   /**
     * Compile the given routes file
@@ -85,7 +86,8 @@ object RoutesCompiler {
   def compile(
       task: RoutesCompilerTask,
       generator: RoutesGenerator,
-      generatedDir: File): Either[Seq[RoutesCompilationError], Seq[File]] = {
+      generatedDir: File
+  ): Either[Seq[RoutesCompilationError], Seq[File]] = {
 
     val namespace = Option(task.file.getName)
       .filter(_.endsWith(".routes"))

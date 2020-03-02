@@ -14,14 +14,16 @@ import org.scalatest.{BeforeAndAfter, FunSuite, Tag}
 
 @RunWith(classOf[JUnitRunner])
 class ZkAnnouncerTest extends FunSuite with BeforeAndAfter {
-  val port1 = RandomSocket.nextPort()
-  val port2 = RandomSocket.nextPort()
-  val zkTimeout = 100.milliseconds
+  val port1            = RandomSocket.nextPort()
+  val port2            = RandomSocket.nextPort()
+  val zkTimeout        = 100.milliseconds
   var inst: ZkInstance = _
-  val factory = new ZkClientFactory(zkTimeout)
+  val factory          = new ZkClientFactory(zkTimeout)
 
   implicit val patienceConfig = PatienceConfig(
-      timeout = toSpan(zkTimeout * 3), interval = toSpan(zkTimeout))
+    timeout = toSpan(zkTimeout * 3),
+    interval = toSpan(zkTimeout)
+  )
 
   before {
     inst = new ZkInstance
@@ -43,8 +45,8 @@ class ZkAnnouncerTest extends FunSuite with BeforeAndAfter {
   }
 
   test("announce a primary endpoint") {
-    val ann = new ZkAnnouncer(factory)
-    val res = new ZkResolver(factory)
+    val ann  = new ZkAnnouncer(factory)
+    val res  = new ZkResolver(factory)
     val addr = Address.Inet(new InetSocketAddress(port1), Addr.Metadata.empty)
     Await.result(ann.announce(addr.addr, "%s!0".format(hostPath)))
 
@@ -59,8 +61,8 @@ class ZkAnnouncerTest extends FunSuite with BeforeAndAfter {
   }
 
   test("only announce additional endpoints if a primary endpoint is present") {
-    var va1: Var[Addr] = null
-    var va2: Var[Addr] = null
+    var va1: Var[Addr]   = null
+    var va2: Var[Addr]   = null
     var failedEventually = 1
 
     try {
@@ -73,15 +75,15 @@ class ZkAnnouncerTest extends FunSuite with BeforeAndAfter {
 
       Await.ready(ann.announce(addr2.addr, "%s!0!addr2".format(hostPath)))
       va2 = res.bind("%s!addr2".format(hostPath))
-      eventually { assert(Var.sample(va2) != Addr.Pending) }
+      eventually(assert(Var.sample(va2) != Addr.Pending))
       failedEventually += 1
       assert(Var.sample(va2) == Addr.Neg)
 
       Await.ready(ann.announce(addr1.addr, "%s!0".format(hostPath)))
       va1 = res.bind(hostPath)
-      eventually { assert(Var.sample(va2) == Addr.Bound(addr2)) }
+      eventually(assert(Var.sample(va2) == Addr.Bound(addr2)))
       failedEventually += 1
-      eventually { assert(Var.sample(va1) == Addr.Bound(addr1)) }
+      eventually(assert(Var.sample(va1) == Addr.Bound(addr1)))
     } catch {
       case e: TestFailedDueToTimeoutException =>
         var exceptionString =
@@ -103,7 +105,7 @@ class ZkAnnouncerTest extends FunSuite with BeforeAndAfter {
         val reader =
           new BufferedReader(new InputStreamReader(connection.getInputStream))
         var fullOutput = ""
-        var line = reader.readLine()
+        var line       = reader.readLine()
         while (line != null) {
           fullOutput += line
           line = reader.readLine()
@@ -115,8 +117,8 @@ class ZkAnnouncerTest extends FunSuite with BeforeAndAfter {
   }
 
   test("unannounce additional endpoints, but not primary endpoints") {
-    val ann = new ZkAnnouncer(factory)
-    val res = new ZkResolver(factory)
+    val ann   = new ZkAnnouncer(factory)
+    val res   = new ZkResolver(factory)
     val addr1 = Address.Inet(new InetSocketAddress(port1), Addr.Metadata.empty)
     val addr2 = Address.Inet(new InetSocketAddress(port2), Addr.Metadata.empty)
 
@@ -126,18 +128,18 @@ class ZkAnnouncerTest extends FunSuite with BeforeAndAfter {
     val va1 = res.bind(hostPath)
     val va2 = res.bind("%s!addr2".format(hostPath))
 
-    eventually { assert(Var.sample(va1) == Addr.Bound(addr1)) }
-    eventually { assert(Var.sample(va2) == Addr.Bound(addr2)) }
+    eventually(assert(Var.sample(va1) == Addr.Bound(addr1)))
+    eventually(assert(Var.sample(va2) == Addr.Bound(addr2)))
 
     Await.result(anm2.unannounce())
 
-    eventually { assert(Var.sample(va2) == Addr.Neg) }
+    eventually(assert(Var.sample(va2) == Addr.Neg))
     assert(Var.sample(va1) == Addr.Bound(addr1))
   }
 
   test("unannounce primary endpoints and additional endpoints") {
-    val ann = new ZkAnnouncer(factory)
-    val res = new ZkResolver(factory)
+    val ann   = new ZkAnnouncer(factory)
+    val res   = new ZkResolver(factory)
     val addr1 = Address.Inet(new InetSocketAddress(port1), Addr.Metadata.empty)
     val addr2 = Address.Inet(new InetSocketAddress(port2), Addr.Metadata.empty)
 
@@ -147,13 +149,13 @@ class ZkAnnouncerTest extends FunSuite with BeforeAndAfter {
     val va1 = res.bind(hostPath)
     val va2 = res.bind("%s!addr2".format(hostPath))
 
-    eventually { assert(Var.sample(va1) == Addr.Bound(addr1)) }
-    eventually { assert(Var.sample(va2) == Addr.Bound(addr2)) }
+    eventually(assert(Var.sample(va1) == Addr.Bound(addr1)))
+    eventually(assert(Var.sample(va2) == Addr.Bound(addr2)))
 
     Await.ready(anm1.unannounce())
 
-    eventually { assert(Var.sample(va1) == Addr.Neg) }
-    eventually { assert(Var.sample(va2) == Addr.Neg) }
+    eventually(assert(Var.sample(va1) == Addr.Neg))
+    eventually(assert(Var.sample(va2) == Addr.Neg))
   }
 
   test("announces from the main announcer") {

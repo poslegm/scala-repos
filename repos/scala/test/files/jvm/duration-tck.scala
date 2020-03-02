@@ -15,24 +15,28 @@ object Test extends App {
       case r: Double if r.isNaN =>
         assert(left.asInstanceOf[Double].isNaN, s"$left was not NaN")
       case r: Double if r == 0 && r.compareTo(0) == -1 =>
-        assert(left == 0 && left.asInstanceOf[Double].compareTo(0) == -1,
-               s"$left was not -0.0")
+        assert(
+          left == 0 && left.asInstanceOf[Double].compareTo(0) == -1,
+          s"$left was not -0.0"
+        )
       case Undefined =>
         assert(
-            left.asInstanceOf[AnyRef] eq Undefined, s"$left was not Undefined")
+          left.asInstanceOf[AnyRef] eq Undefined,
+          s"$left was not Undefined"
+        )
       case _ => assert(left == right, s"$left was not equal to $right")
     }
   }
 
-  val zero = 0 seconds
-  val one = 1 second
-  val two = one + one
-  val three = 3 * one
-  val inf = Duration.Inf
-  val minf = Duration.MinusInf
-  val undef = Duration.Undefined
+  val zero   = 0 seconds
+  val one    = 1 second
+  val two    = one + one
+  val three  = 3 * one
+  val inf    = Duration.Inf
+  val minf   = Duration.MinusInf
+  val undef  = Duration.Undefined
   val inputs = List(zero, one, inf, minf, undef)
-  val nan = Double.NaN
+  val nan    = Double.NaN
 
   // test field ops
   one.isFinite mustBe true
@@ -93,9 +97,9 @@ object Test extends App {
   inputs filterNot (_.isFinite) foreach (_ * 0d mustBe undef)
   inputs filterNot (_.isFinite) foreach (_ * -0d mustBe undef)
   inputs filterNot (_.isFinite) foreach
-  (x => x * Double.PositiveInfinity mustBe x)
+    (x => x * Double.PositiveInfinity mustBe x)
   inputs filterNot (_.isFinite) foreach
-  (x => x * Double.NegativeInfinity mustBe -x)
+    (x => x * Double.NegativeInfinity mustBe -x)
 
   inf.toUnit(SECONDS) mustBe Double.PositiveInfinity
   minf.toUnit(MINUTES) mustBe Double.NegativeInfinity
@@ -123,9 +127,9 @@ object Test extends App {
   undef * nan mustBe undef
   inputs foreach (x => x / zero mustBe x.toUnit(SECONDS) / 0d)
   inputs foreach
-  (x => x / 0d mustBe Duration.fromNanos(x.toUnit(NANOSECONDS) / 0d))
+    (x => x / 0d mustBe Duration.fromNanos(x.toUnit(NANOSECONDS) / 0d))
   inputs foreach
-  (x => x / -0d mustBe Duration.fromNanos(x.toUnit(NANOSECONDS) / -0d))
+    (x => x / -0d mustBe Duration.fromNanos(x.toUnit(NANOSECONDS) / -0d))
 
   inputs filterNot (_ eq undef) foreach (_ compareTo undef mustBe -1)
   inputs filterNot (_ eq undef) foreach (undef compareTo _ mustBe 1)
@@ -135,33 +139,35 @@ object Test extends App {
   Duration.fromNanos(nan) mustBe undef
 
   // test overflow protection
-  for (unit ← Seq(DAYS,
-                  HOURS,
-                  MINUTES,
-                  SECONDS,
-                  MILLISECONDS,
-                  MICROSECONDS,
-                  NANOSECONDS)) {
-    val x = unit.convert(Long.MaxValue, NANOSECONDS)
-    val dur = Duration(x, unit)
+  for (unit ← Seq(
+               DAYS,
+               HOURS,
+               MINUTES,
+               SECONDS,
+               MILLISECONDS,
+               MICROSECONDS,
+               NANOSECONDS
+             )) {
+    val x    = unit.convert(Long.MaxValue, NANOSECONDS)
+    val dur  = Duration(x, unit)
     val mdur = Duration(-x, unit)
     -mdur mustBe (dur)
-    intercept[IllegalArgumentException] { Duration(x + 10000000d, unit) }
-    intercept[IllegalArgumentException] { Duration(-x - 10000000d, unit) }
+    intercept[IllegalArgumentException](Duration(x + 10000000d, unit))
+    intercept[IllegalArgumentException](Duration(-x - 10000000d, unit))
     if (unit != NANOSECONDS) {
-      intercept[IllegalArgumentException] { Duration(x + 1, unit) }
-      intercept[IllegalArgumentException] { Duration(-x - 1, unit) }
+      intercept[IllegalArgumentException](Duration(x + 1, unit))
+      intercept[IllegalArgumentException](Duration(-x - 1, unit))
     }
-    intercept[IllegalArgumentException] { dur + 1.day }
-    intercept[IllegalArgumentException] { mdur - 1.day }
-    intercept[IllegalArgumentException] { dur * 1.1 }
-    intercept[IllegalArgumentException] { mdur * 1.1 }
-    intercept[IllegalArgumentException] { dur * 2.1 }
-    intercept[IllegalArgumentException] { mdur * 2.1 }
-    intercept[IllegalArgumentException] { dur / 0.9 }
-    intercept[IllegalArgumentException] { mdur / 0.9 }
-    intercept[IllegalArgumentException] { dur / 0.4 }
-    intercept[IllegalArgumentException] { mdur / 0.4 }
+    intercept[IllegalArgumentException](dur + 1.day)
+    intercept[IllegalArgumentException](mdur - 1.day)
+    intercept[IllegalArgumentException](dur * 1.1)
+    intercept[IllegalArgumentException](mdur * 1.1)
+    intercept[IllegalArgumentException](dur * 2.1)
+    intercept[IllegalArgumentException](mdur * 2.1)
+    intercept[IllegalArgumentException](dur / 0.9)
+    intercept[IllegalArgumentException](mdur / 0.9)
+    intercept[IllegalArgumentException](dur / 0.4)
+    intercept[IllegalArgumentException](mdur / 0.4)
     Duration(x + unit.toString.toLowerCase)
     Duration("-" + x + unit.toString.toLowerCase)
     intercept[IllegalArgumentException] {
@@ -171,8 +177,8 @@ object Test extends App {
       Duration("-%.0f".format(x + 10000000d) + unit.toString.toLowerCase)
     }
   }
-  intercept[IllegalArgumentException] { Duration.fromNanos(1e20) }
-  intercept[IllegalArgumentException] { Duration.fromNanos(-1e20) }
+  intercept[IllegalArgumentException](Duration.fromNanos(1e20))
+  intercept[IllegalArgumentException](Duration.fromNanos(-1e20))
 
   // test precision
   1.second + 1.millisecond mustBe 1001.milliseconds
@@ -187,7 +193,7 @@ object Test extends App {
   (1.second + 1.millisecond).unit mustBe MILLISECONDS
 
   // test Deadline
-  val dead = 2.seconds.fromNow
+  val dead  = 2.seconds.fromNow
   val dead2 = 2 seconds fromNow
 
   { val l = dead.timeLeft; assert(l > 1.second, s"$l <= 1.second") }
@@ -210,6 +216,6 @@ object Test extends App {
     1.second * 2 / 3 mul 5 div 4 plus 3.seconds minus 1.millisecond min 1.second max 1.second
   val finite2: FiniteDuration = 2 * 1.second + 3L * 2.seconds
   finite2 mustBe 8.seconds
-  ( (2 seconds fromNow).timeLeft: FiniteDuration) < 4.seconds mustBe true
+  ((2 seconds fromNow).timeLeft: FiniteDuration) < 4.seconds mustBe true
   val finite3: FiniteDuration = 3.5 seconds span
 }

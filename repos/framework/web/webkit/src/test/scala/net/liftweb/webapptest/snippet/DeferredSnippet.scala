@@ -35,14 +35,13 @@ class DeferredSnippet {
     <span id="second">Very lazy {old}</span>
   }
 
-  def third: NodeSeq = {
+  def third: NodeSeq =
     <span id="third">third {MyNumber.is}</span>
-  }
 
   def stackWhack: NodeSeq = {
     val inActor: Boolean = Thread.currentThread.getStackTrace
       .exists(_.getClassName.contains("net.liftweb.actor."))
 
-    <span id={"actor_"+inActor}>stackWhack</span>
+    <span id={"actor_" + inActor}>stackWhack</span>
   }
 }

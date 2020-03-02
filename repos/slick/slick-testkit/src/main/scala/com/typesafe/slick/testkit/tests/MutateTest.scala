@@ -8,15 +8,17 @@ class MutateTest extends AsyncTest[JdbcTestDB] {
 
   def testMutate = ifCapF(jcap.mutable) {
     class Data(tag: Tag) extends Table[(Int, String)](tag, "DATA") {
-      def id = column[Int]("ID", O.PrimaryKey)
+      def id   = column[Int]("ID", O.PrimaryKey)
       def data = column[String]("DATA")
-      def * = (id, data)
+      def *    = (id, data)
     }
     val data = TableQuery[Data]
 
     var seenEndMarker = false
-    db.run(data.schema.create >>
-          (data ++= Seq((1, "a"), (2, "b"), (3, "c"), (4, "d"))))
+    db.run(
+        data.schema.create >>
+          (data ++= Seq((1, "a"), (2, "b"), (3, "c"), (4, "d")))
+      )
       .flatMap { _ =>
         foreach(db.stream(data.mutate.transactionally)) { m =>
           if (!m.end) {
@@ -39,15 +41,15 @@ class MutateTest extends AsyncTest[JdbcTestDB] {
       def b = column[Int]("B", O.PrimaryKey)
       def * = (a, b)
     }
-    val ts = TableQuery[T]
+    val ts    = TableQuery[T]
     def tsByA = ts.findBy(_.a)
 
     var seenEndMarker = false
     val a =
       seq(
-          ts.schema.create,
-          ts ++= Seq((1, 1), (1, 2), (1, 3), (1, 4)),
-          ts ++= Seq((2, 5), (2, 6), (2, 7), (2, 8))
+        ts.schema.create,
+        ts ++= Seq((1, 1), (1, 2), (1, 3), (1, 4)),
+        ts ++= Seq((2, 5), (2, 6), (2, 7), (2, 8))
       ) andThen tsByA(1).mutate(sendEndMarker = true).transactionally
 
     foreach(db.stream(a)) { m =>

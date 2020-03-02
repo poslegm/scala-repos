@@ -42,14 +42,18 @@ object TabPane {
 
   object TabClosingPolicy
       extends SFXEnumDelegateCompanion[
-          jfxsc.TabPane.TabClosingPolicy, TabClosingPolicy] {
+        jfxsc.TabPane.TabClosingPolicy,
+        TabClosingPolicy
+      ] {
 
     /**
       * All tabs will have the option to be closed.
       */
     val AllTabs = new TabClosingPolicy(jfxsc.TabPane.TabClosingPolicy.ALL_TABS)
-    @deprecated("Use AllTabs; ALL_TABS will be removed in a future release",
-                "8.0.60-R10")
+    @deprecated(
+      "Use AllTabs; ALL_TABS will be removed in a future release",
+      "8.0.60-R10"
+    )
     val ALL_TABS = AllTabs
 
     /**
@@ -57,20 +61,24 @@ object TabPane {
       * shown.
       */
     val SelectedTab = new TabClosingPolicy(
-        jfxsc.TabPane.TabClosingPolicy.SELECTED_TAB)
+      jfxsc.TabPane.TabClosingPolicy.SELECTED_TAB
+    )
     @deprecated(
-        "Use SelectedTab; SELECTED_TAB will be removed in a future release",
-        "8.0.60-R10")
+      "Use SelectedTab; SELECTED_TAB will be removed in a future release",
+      "8.0.60-R10"
+    )
     val SELECTED_TAB = SelectedTab
 
     /**
       * Tabs can not be closed by the user.
       */
     val Unavailable = new TabClosingPolicy(
-        jfxsc.TabPane.TabClosingPolicy.UNAVAILABLE)
+      jfxsc.TabPane.TabClosingPolicy.UNAVAILABLE
+    )
     @deprecated(
-        "Use Unavailable; UNAVAILABLE will be removed in a future release",
-        "8.0.60-R10")
+      "Use Unavailable; UNAVAILABLE will be removed in a future release",
+      "8.0.60-R10"
+    )
     val UNAVAILABLE = Unavailable
 
     protected override def unsortedValues: Array[TabClosingPolicy] =
@@ -79,8 +87,8 @@ object TabPane {
 
   /** Wrapper for [[http://docs.oracle.com/javase/8/javafx/api/javafx/scene/control/TabPane.TabClosingPolicy.html]] */
   sealed case class TabClosingPolicy(
-      override val delegate: jfxsc.TabPane.TabClosingPolicy)
-      extends SFXEnumDelegate[jfxsc.TabPane.TabClosingPolicy]
+      override val delegate: jfxsc.TabPane.TabClosingPolicy
+  ) extends SFXEnumDelegate[jfxsc.TabPane.TabClosingPolicy]
 
   /**
     * TabPane mode will be changed to floating allowing the TabPane to be placed alongside other control.
@@ -89,7 +97,8 @@ object TabPane {
 }
 
 class TabPane(override val delegate: jfxsc.TabPane = new jfxsc.TabPane)
-    extends Control(delegate) with SFXDelegate[jfxsc.TabPane] {
+    extends Control(delegate)
+    with SFXDelegate[jfxsc.TabPane] {
 
   /**
     * The rotatedGraphic state of the tabs in the TabPane.

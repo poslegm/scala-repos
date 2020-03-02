@@ -43,9 +43,11 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class ObservableIntegerArraySpec
     extends SimpleSFXDelegateSpec[
-        jfxc.ObservableIntegerArray, ObservableIntegerArray](
-        classOf[jfxc.ObservableIntegerArray],
-        classOf[ObservableIntegerArray]
+      jfxc.ObservableIntegerArray,
+      ObservableIntegerArray
+    ](
+      classOf[jfxc.ObservableIntegerArray],
+      classOf[ObservableIntegerArray]
     ) {
 
   /**
@@ -53,13 +55,13 @@ class ObservableIntegerArraySpec
     */
   trait InstanceTests {
     val array0: Array[Int] = Array.empty
-    val array1 = Array(4, 5, 6, 7)
-    val array2 = Array(8, 9, 10, 11, 12)
-    val instance0 = ObservableIntegerArray(array0)
-    val instance1 = ObservableIntegerArray(array1)
-    val instance2 = ObservableIntegerArray(array2)
-    val change = Buffer.empty[(ObservableIntegerArray, Change)]
-    var changes = 0
+    val array1             = Array(4, 5, 6, 7)
+    val array2             = Array(8, 9, 10, 11, 12)
+    val instance0          = ObservableIntegerArray(array0)
+    val instance1          = ObservableIntegerArray(array1)
+    val instance2          = ObservableIntegerArray(array2)
+    val change             = Buffer.empty[(ObservableIntegerArray, Change)]
+    var changes            = 0
     def onChangeFull(a: ObservableIntegerArray, c: Change) {
       change += ((a, c))
     }
@@ -72,11 +74,13 @@ class ObservableIntegerArraySpec
     instance1.onChange(onChangeBrief)
     instance2.onChange(onChangeFull(_, _))
     instance2.onChange(onChangeBrief)
-    def verifyChange(n: Int,
-                     array: ObservableIntegerArray,
-                     sizeChanged: Boolean,
-                     start: Int,
-                     end: Int) {
+    def verifyChange(
+        n: Int,
+        array: ObservableIntegerArray,
+        sizeChanged: Boolean,
+        start: Int,
+        end: Int
+    ) {
       val (a, c) = change(n)
       assert(a eq array)
       assert(c.sizeChanged === sizeChanged)
@@ -329,7 +333,9 @@ class ObservableIntegerArraySpec
     testEmpty(ObservableIntegerArray.iterate(0, 0)(_ + 1))
     testNonEmpty(ObservableIntegerArray.iterate(0, 1)(_ + 1), Array(0))
     testNonEmpty(
-        ObservableIntegerArray.iterate(0, 5)(_ + 1), Array(0, 1, 2, 3, 4))
+      ObservableIntegerArray.iterate(0, 5)(_ + 1),
+      Array(0, 1, 2, 3, 4)
+    )
   }
   it should "return valid initialized array from companion's range(start, end)" in {
     testIllegalArgumentExceptionThrown(ObservableIntegerArray.range(1, 2, 0))

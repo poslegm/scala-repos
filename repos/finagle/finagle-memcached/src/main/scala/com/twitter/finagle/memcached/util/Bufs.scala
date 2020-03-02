@@ -6,29 +6,28 @@ import scala.language.implicitConversions
 
 private[finagle] object Bufs {
 
-  final val INVALID_KEY_CHARACTERS = Set(
-      '\n'.toByte, '\u0000'.toByte, '\r'.toByte, ' '.toByte)
+  final val INVALID_KEY_CHARACTERS =
+    Set('\n'.toByte, '\u0000'.toByte, '\r'.toByte, ' '.toByte)
 
   /**
     * @return the Buf representation of non-empty and non-null Strings, else null
     */
-  implicit def nonEmptyStringToBuf(str: String): Buf = {
+  implicit def nonEmptyStringToBuf(str: String): Buf =
     if (Strings.isNullOrEmpty(str)) null
     else Buf.Utf8(str)
-  }
 
   /**
     * @return the Buf representation of non-empty and non-null Strings
     * @note returns null if input is null
     */
   implicit def seqOfNonEmptyStringToBuf(
-      strings: Traversable[String]): Seq[Buf] = {
+      strings: Traversable[String]
+  ): Seq[Buf] =
     if (strings == null) {
       null
     } else {
       strings.map(nonEmptyStringToBuf).toSeq
     }
-  }
 
   implicit class RichBuf(buffer: Buf) extends Seq[Byte] {
 
@@ -39,7 +38,7 @@ private[finagle] object Bufs {
       */
     def split(delimiter: Char): Seq[Buf] = {
       val Buf.Utf8(decoded) = buffer
-      decoded.split(delimiter).map { Buf.Utf8(_) }
+      decoded.split(delimiter).map(Buf.Utf8(_))
     }
 
     /**

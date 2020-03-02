@@ -3,7 +3,7 @@ object Test {
 
     // SI-4981: avoid being limited by math context when not needed
     val big = BigDecimal("32432875832753287583275382753288325325328532875325")
-    val f = big % BigDecimal(scala.math.Pi)
+    val f   = big % BigDecimal(scala.math.Pi)
 
     // SI-1812: use math context to limit decimal expansion
     val a = BigDecimal(1) / BigDecimal(3)

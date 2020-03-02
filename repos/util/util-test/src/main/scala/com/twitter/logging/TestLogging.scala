@@ -25,9 +25,10 @@ import org.scalatest.{BeforeAndAfter, WordSpec}
   */
 trait TestLogging extends BeforeAndAfter { self: WordSpec =>
   val logLevel = Logger.levelNames(
-      Option[String](System.getenv("log")).getOrElse("FATAL").toUpperCase)
+    Option[String](System.getenv("log")).getOrElse("FATAL").toUpperCase
+  )
 
-  private val logger = Logger.get("")
+  private val logger                   = Logger.get("")
   private var oldLevel: jlogging.Level = _
 
   before {
@@ -72,7 +73,6 @@ trait TestLogging extends BeforeAndAfter { self: WordSpec =>
     * Verify that the logger set up with `traceLogger` has received a log line with the given
     * substring somewhere inside it.
     */
-  def mustLog(substring: String) = {
-    assert(logLines().filter { _ contains substring }.size > 0)
-  }
+  def mustLog(substring: String) =
+    assert(logLines().filter(_ contains substring).size > 0)
 }

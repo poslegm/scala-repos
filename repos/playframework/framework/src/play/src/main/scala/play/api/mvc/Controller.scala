@@ -21,8 +21,14 @@ import play.api.i18n.Lang
   * }}}
   */
 trait Controller
-    extends Results with BodyParsers with HttpProtocol with Status
-    with HeaderNames with ContentTypes with RequestExtractors with Rendering {
+    extends Results
+    with BodyParsers
+    with HttpProtocol
+    with Status
+    with HeaderNames
+    with ContentTypes
+    with RequestExtractors
+    with Rendering {
 
   /**
     * Provides an empty `Action` implementation: the result is a standard ‘Not implemented yet’ result page.
@@ -75,14 +81,16 @@ trait Controller
     * }
     * }}}
     */
-  implicit def request2lang(implicit request: RequestHeader): Lang = {
+  implicit def request2lang(implicit request: RequestHeader): Lang =
     play.api.Play.privateMaybeApplication
       .map(app =>
-            play.api.i18n.Messages
-              .messagesApiCache(app)
-              .preferred(request)
-              .lang)
-      .getOrElse(request.acceptLanguages.headOption
-            .getOrElse(play.api.i18n.Lang.defaultLang))
-  }
+        play.api.i18n.Messages
+          .messagesApiCache(app)
+          .preferred(request)
+          .lang
+      )
+      .getOrElse(
+        request.acceptLanguages.headOption
+          .getOrElse(play.api.i18n.Lang.defaultLang)
+      )
 }

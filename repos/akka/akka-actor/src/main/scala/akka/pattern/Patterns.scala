@@ -13,7 +13,12 @@ import scala.compat.java8.FutureConverters._
 object Patterns {
   import akka.japi
   import akka.actor.{ActorRef}
-  import akka.pattern.{ask ⇒ scalaAsk, pipe ⇒ scalaPipe, gracefulStop ⇒ scalaGracefulStop, after ⇒ scalaAfter}
+  import akka.pattern.{
+    ask ⇒ scalaAsk,
+    pipe ⇒ scalaPipe,
+    gracefulStop ⇒ scalaGracefulStop,
+    after ⇒ scalaAfter
+  }
   import akka.util.Timeout
   import scala.concurrent.Future
   import scala.concurrent.duration._
@@ -65,9 +70,11 @@ object Patterns {
     *   timeout);
     * }}}
     */
-  def ask(actor: ActorRef,
-          messageFactory: japi.Function[ActorRef, Any],
-          timeout: Timeout): Future[AnyRef] =
+  def ask(
+      actor: ActorRef,
+      messageFactory: japi.Function[ActorRef, Any],
+      timeout: Timeout
+  ): Future[AnyRef] =
     scalaAsk(actor, messageFactory.apply _)(timeout)
       .asInstanceOf[Future[AnyRef]]
 
@@ -119,9 +126,11 @@ object Patterns {
     *   timeout);
     * }}}
     */
-  def ask(actor: ActorRef,
-          messageFactory: japi.Function[ActorRef, Any],
-          timeoutMillis: Long): Future[AnyRef] =
+  def ask(
+      actor: ActorRef,
+      messageFactory: japi.Function[ActorRef, Any],
+      timeoutMillis: Long
+  ): Future[AnyRef] =
     scalaAsk(actor, messageFactory.apply _)(Timeout(timeoutMillis.millis))
       .asInstanceOf[Future[AnyRef]]
 
@@ -154,9 +163,11 @@ object Patterns {
     *   });
     * }}}
     */
-  def ask(selection: ActorSelection,
-          message: Any,
-          timeout: Timeout): Future[AnyRef] =
+  def ask(
+      selection: ActorSelection,
+      message: Any,
+      timeout: Timeout
+  ): Future[AnyRef] =
     scalaAsk(selection, message)(timeout).asInstanceOf[Future[AnyRef]]
 
   /**
@@ -188,12 +199,14 @@ object Patterns {
     *   });
     * }}}
     */
-  def ask(selection: ActorSelection,
-          message: Any,
-          timeoutMillis: Long): Future[AnyRef] =
+  def ask(
+      selection: ActorSelection,
+      message: Any,
+      timeoutMillis: Long
+  ): Future[AnyRef] =
     scalaAsk(selection, message)(
-        new Timeout(timeoutMillis, TimeUnit.MILLISECONDS))
-      .asInstanceOf[Future[AnyRef]]
+      new Timeout(timeoutMillis, TimeUnit.MILLISECONDS)
+    ).asInstanceOf[Future[AnyRef]]
 
   /**
     * A variation of ask which allows to implement "replyTo" pattern by including
@@ -210,9 +223,11 @@ object Patterns {
     *   timeout);
     * }}}
     */
-  def ask(selection: ActorSelection,
-          messageFactory: japi.Function[ActorRef, Any],
-          timeoutMillis: Long): Future[AnyRef] =
+  def ask(
+      selection: ActorSelection,
+      messageFactory: japi.Function[ActorRef, Any],
+      timeoutMillis: Long
+  ): Future[AnyRef] =
     scalaAsk(selection, messageFactory.apply _)(Timeout(timeoutMillis.millis))
       .asInstanceOf[Future[AnyRef]]
 
@@ -233,8 +248,7 @@ object Patterns {
     *   Patterns.pipe(transformed).to(nextActor);
     * }}}
     */
-  def pipe[T](
-      future: Future[T], context: ExecutionContext): PipeableFuture[T] =
+  def pipe[T](future: Future[T], context: ExecutionContext): PipeableFuture[T] =
     scalaPipe(future)(context)
 
   /**
@@ -248,7 +262,9 @@ object Patterns {
     * is completed with failure [[akka.pattern.AskTimeoutException]].
     */
   def gracefulStop(
-      target: ActorRef, timeout: FiniteDuration): Future[java.lang.Boolean] =
+      target: ActorRef,
+      timeout: FiniteDuration
+  ): Future[java.lang.Boolean] =
     scalaGracefulStop(target, timeout).asInstanceOf[Future[java.lang.Boolean]]
 
   /**
@@ -264,9 +280,11 @@ object Patterns {
     * If the target actor isn't terminated within the timeout the [[scala.concurrent.Future]]
     * is completed with failure [[akka.pattern.AskTimeoutException]].
     */
-  def gracefulStop(target: ActorRef,
-                   timeout: FiniteDuration,
-                   stopMessage: Any): Future[java.lang.Boolean] =
+  def gracefulStop(
+      target: ActorRef,
+      timeout: FiniteDuration,
+      stopMessage: Any
+  ): Future[java.lang.Boolean] =
     scalaGracefulStop(target, timeout, stopMessage)
       .asInstanceOf[Future[java.lang.Boolean]]
 
@@ -274,20 +292,24 @@ object Patterns {
     * Returns a [[scala.concurrent.Future]] that will be completed with the success or failure of the provided Callable
     * after the specified duration.
     */
-  def after[T](duration: FiniteDuration,
-               scheduler: Scheduler,
-               context: ExecutionContext,
-               value: Callable[Future[T]]): Future[T] =
+  def after[T](
+      duration: FiniteDuration,
+      scheduler: Scheduler,
+      context: ExecutionContext,
+      value: Callable[Future[T]]
+  ): Future[T] =
     scalaAfter(duration, scheduler)(value.call())(context)
 
   /**
     * Returns a [[scala.concurrent.Future]] that will be completed with the success or failure of the provided Callable
     * after the specified duration.
     */
-  def after[T](duration: FiniteDuration,
-               scheduler: Scheduler,
-               context: ExecutionContext,
-               value: Future[T]): Future[T] =
+  def after[T](
+      duration: FiniteDuration,
+      scheduler: Scheduler,
+      context: ExecutionContext,
+      value: Future[T]
+  ): Future[T] =
     scalaAfter(duration, scheduler)(value)(context)
 }
 
@@ -327,9 +349,11 @@ object PatternsCS {
     *   });
     * }}}
     */
-  def ask(actor: ActorRef,
-          message: Any,
-          timeout: Timeout): CompletionStage[AnyRef] =
+  def ask(
+      actor: ActorRef,
+      message: Any,
+      timeout: Timeout
+  ): CompletionStage[AnyRef] =
     scalaAsk(actor, message)(timeout).toJava
       .asInstanceOf[CompletionStage[AnyRef]]
 
@@ -348,9 +372,11 @@ object PatternsCS {
     *   timeout);
     * }}}
     */
-  def ask(actor: ActorRef,
-          messageFactory: japi.Function[ActorRef, Any],
-          timeout: Timeout): CompletionStage[AnyRef] =
+  def ask(
+      actor: ActorRef,
+      messageFactory: japi.Function[ActorRef, Any],
+      timeout: Timeout
+  ): CompletionStage[AnyRef] =
     scalaAsk(actor, messageFactory.apply _)(timeout).toJava
       .asInstanceOf[CompletionStage[AnyRef]]
 
@@ -383,9 +409,11 @@ object PatternsCS {
     *   });
     * }}}
     */
-  def ask(actor: ActorRef,
-          message: Any,
-          timeoutMillis: Long): CompletionStage[AnyRef] =
+  def ask(
+      actor: ActorRef,
+      message: Any,
+      timeoutMillis: Long
+  ): CompletionStage[AnyRef] =
     scalaAsk(actor, message)(new Timeout(timeoutMillis, TimeUnit.MILLISECONDS)).toJava
       .asInstanceOf[CompletionStage[AnyRef]]
 
@@ -404,9 +432,11 @@ object PatternsCS {
     *   timeout);
     * }}}
     */
-  def ask(actor: ActorRef,
-          messageFactory: japi.Function[ActorRef, Any],
-          timeoutMillis: Long): CompletionStage[AnyRef] =
+  def ask(
+      actor: ActorRef,
+      messageFactory: japi.Function[ActorRef, Any],
+      timeoutMillis: Long
+  ): CompletionStage[AnyRef] =
     scalaAsk(actor, messageFactory.apply _)(Timeout(timeoutMillis.millis)).toJava
       .asInstanceOf[CompletionStage[AnyRef]]
 
@@ -439,9 +469,11 @@ object PatternsCS {
     *   });
     * }}}
     */
-  def ask(selection: ActorSelection,
-          message: Any,
-          timeout: Timeout): CompletionStage[AnyRef] =
+  def ask(
+      selection: ActorSelection,
+      message: Any,
+      timeout: Timeout
+  ): CompletionStage[AnyRef] =
     scalaAsk(selection, message)(timeout).toJava
       .asInstanceOf[CompletionStage[AnyRef]]
 
@@ -474,11 +506,14 @@ object PatternsCS {
     *   });
     * }}}
     */
-  def ask(selection: ActorSelection,
-          message: Any,
-          timeoutMillis: Long): CompletionStage[AnyRef] =
+  def ask(
+      selection: ActorSelection,
+      message: Any,
+      timeoutMillis: Long
+  ): CompletionStage[AnyRef] =
     scalaAsk(selection, message)(
-        new Timeout(timeoutMillis, TimeUnit.MILLISECONDS)).toJava
+      new Timeout(timeoutMillis, TimeUnit.MILLISECONDS)
+    ).toJava
       .asInstanceOf[CompletionStage[AnyRef]]
 
   /**
@@ -496,9 +531,11 @@ object PatternsCS {
     *   timeout);
     * }}}
     */
-  def ask(selection: ActorSelection,
-          messageFactory: japi.Function[ActorRef, Any],
-          timeoutMillis: Long): CompletionStage[AnyRef] =
+  def ask(
+      selection: ActorSelection,
+      messageFactory: japi.Function[ActorRef, Any],
+      timeoutMillis: Long
+  ): CompletionStage[AnyRef] =
     scalaAsk(selection, messageFactory.apply _)(Timeout(timeoutMillis.millis)).toJava
       .asInstanceOf[CompletionStage[AnyRef]]
 
@@ -519,8 +556,10 @@ object PatternsCS {
     *   Patterns.pipe(transformed).to(nextActor);
     * }}}
     */
-  def pipe[T](future: CompletionStage[T],
-              context: ExecutionContext): PipeableCompletionStage[T] =
+  def pipe[T](
+      future: CompletionStage[T],
+      context: ExecutionContext
+  ): PipeableCompletionStage[T] =
     pipeCompletionStage(future)(context)
 
   /**
@@ -535,7 +574,8 @@ object PatternsCS {
     */
   def gracefulStop(
       target: ActorRef,
-      timeout: FiniteDuration): CompletionStage[java.lang.Boolean] =
+      timeout: FiniteDuration
+  ): CompletionStage[java.lang.Boolean] =
     scalaGracefulStop(target, timeout).toJava
       .asInstanceOf[CompletionStage[java.lang.Boolean]]
 
@@ -552,9 +592,11 @@ object PatternsCS {
     * If the target actor isn't terminated within the timeout the [[java.util.concurrent.CompletionStage]]
     * is completed with failure [[akka.pattern.AskTimeoutException]].
     */
-  def gracefulStop(target: ActorRef,
-                   timeout: FiniteDuration,
-                   stopMessage: Any): CompletionStage[java.lang.Boolean] =
+  def gracefulStop(
+      target: ActorRef,
+      timeout: FiniteDuration,
+      stopMessage: Any
+  ): CompletionStage[java.lang.Boolean] =
     scalaGracefulStop(target, timeout, stopMessage).toJava
       .asInstanceOf[CompletionStage[java.lang.Boolean]]
 
@@ -562,19 +604,23 @@ object PatternsCS {
     * Returns a [[java.util.concurrent.CompletionStage]] that will be completed with the success or failure of the provided Callable
     * after the specified duration.
     */
-  def after[T](duration: FiniteDuration,
-               scheduler: Scheduler,
-               context: ExecutionContext,
-               value: Callable[CompletionStage[T]]): CompletionStage[T] =
+  def after[T](
+      duration: FiniteDuration,
+      scheduler: Scheduler,
+      context: ExecutionContext,
+      value: Callable[CompletionStage[T]]
+  ): CompletionStage[T] =
     afterCompletionStage(duration, scheduler)(value.call())(context)
 
   /**
     * Returns a [[java.util.concurrent.CompletionStage]] that will be completed with the success or failure of the provided value
     * after the specified duration.
     */
-  def after[T](duration: FiniteDuration,
-               scheduler: Scheduler,
-               context: ExecutionContext,
-               value: CompletionStage[T]): CompletionStage[T] =
+  def after[T](
+      duration: FiniteDuration,
+      scheduler: Scheduler,
+      context: ExecutionContext,
+      value: CompletionStage[T]
+  ): CompletionStage[T] =
     afterCompletionStage(duration, scheduler)(value)(context)
 }

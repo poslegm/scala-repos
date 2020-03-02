@@ -41,8 +41,8 @@ import org.apache.spark.streaming.rdd.{MapWithStateRDD, MapWithStateRDDRecord}
   */
 @Experimental
 sealed abstract class MapWithStateDStream[
-    KeyType, ValueType, StateType, MappedType : ClassTag](
-    ssc: StreamingContext)
+    KeyType, ValueType, StateType, MappedType: ClassTag
+](ssc: StreamingContext)
     extends DStream[MappedType](ssc) {
 
   /** Return a pair DStream where each RDD is the snapshot of the state of all the keys. */
@@ -50,28 +50,32 @@ sealed abstract class MapWithStateDStream[
 }
 
 /** Internal implementation of the [[MapWithStateDStream]] */
-private[streaming] class MapWithStateDStreamImpl[KeyType : ClassTag,
-                                                 ValueType : ClassTag,
-                                                 StateType : ClassTag,
-                                                 MappedType : ClassTag](
+private[streaming] class MapWithStateDStreamImpl[
+    KeyType: ClassTag,
+    ValueType: ClassTag,
+    StateType: ClassTag,
+    MappedType: ClassTag
+](
     dataStream: DStream[(KeyType, ValueType)],
-    spec: StateSpecImpl[KeyType, ValueType, StateType, MappedType])
-    extends MapWithStateDStream[KeyType, ValueType, StateType, MappedType](
-        dataStream.context) {
+    spec: StateSpecImpl[KeyType, ValueType, StateType, MappedType]
+) extends MapWithStateDStream[KeyType, ValueType, StateType, MappedType](
+      dataStream.context
+    ) {
 
   private val internalStream =
     new InternalMapWithStateDStream[KeyType, ValueType, StateType, MappedType](
-        dataStream, spec)
+      dataStream,
+      spec
+    )
 
   override def slideDuration: Duration = internalStream.slideDuration
 
   override def dependencies: List[DStream[_]] = List(internalStream)
 
-  override def compute(validTime: Time): Option[RDD[MappedType]] = {
+  override def compute(validTime: Time): Option[RDD[MappedType]] =
     internalStream.getOrCompute(validTime).map {
-      _.flatMap[MappedType] { _.mappedData }
+      _.flatMap[MappedType](_.mappedData)
     }
-  }
 
   /**
     * Forward the checkpoint interval to the internal DStream that computes the state maps. This
@@ -83,11 +87,10 @@ private[streaming] class MapWithStateDStreamImpl[KeyType : ClassTag,
   }
 
   /** Return a pair DStream where each RDD is the snapshot of the state of all the keys. */
-  def stateSnapshots(): DStream[(KeyType, StateType)] = {
+  def stateSnapshots(): DStream[(KeyType, StateType)] =
     internalStream.flatMap {
       _.stateMap.getAll().map { case (k, s, _) => (k, s) }.toTraversable
     }
-  }
 
   def keyClass: Class[_] = implicitly[ClassTag[KeyType]].runtimeClass
 
@@ -111,8 +114,11 @@ private[streaming] class MapWithStateDStreamImpl[KeyType : ClassTag,
   * @tparam E   Type of the mapped data
   */
 private[streaming] class InternalMapWithStateDStream[
-    K : ClassTag, V : ClassTag, S : ClassTag, E : ClassTag](
-    parent: DStream[(K, V)], spec: StateSpecImpl[K, V, S, E])
+    K: ClassTag,
+    V: ClassTag,
+    S: ClassTag,
+    E: ClassTag
+](parent: DStream[(K, V)], spec: StateSpecImpl[K, V, S, E])
     extends DStream[MapWithStateRDDRecord[K, S, E]](parent.context) {
 
   persist(StorageLevel.MEMORY_ONLY)
@@ -133,14 +139,16 @@ private[streaming] class InternalMapWithStateDStream[
   /** Override the default checkpoint duration */
   override def initialize(time: Time): Unit = {
     if (checkpointDuration == null) {
-      checkpointDuration = slideDuration * DEFAULT_CHECKPOINT_DURATION_MULTIPLIER
+      checkpointDuration =
+        slideDuration * DEFAULT_CHECKPOINT_DURATION_MULTIPLIER
     }
     super.initialize(time)
   }
 
   /** Method that generates a RDD for the given time */
   override def compute(
-      validTime: Time): Option[RDD[MapWithStateRDDRecord[K, S, E]]] = {
+      validTime: Time
+  ): Option[RDD[MapWithStateRDDRecord[K, S, E]]] = {
     // Get the previous state or create a new empty state RDD
     val prevStateRDD = getOrCompute(validTime - slideDuration) match {
       case Some(rdd) =>
@@ -148,19 +156,23 @@ private[streaming] class InternalMapWithStateDStream[
           // If the RDD is not partitioned the right way, let us repartition it using the
           // partition index as the key. This is to ensure that state RDD is always partitioned
           // before creating another state RDD using it
-          MapWithStateRDD.createFromRDD[K, V, S, E](rdd.flatMap {
-            _.stateMap.getAll()
-          }, partitioner, validTime)
+          MapWithStateRDD.createFromRDD[K, V, S, E](
+            rdd.flatMap {
+              _.stateMap.getAll()
+            },
+            partitioner,
+            validTime
+          )
         } else {
           rdd
         }
       case None =>
         MapWithStateRDD.createFromPairRDD[K, V, S, E](
-            spec
-              .getInitialStateRDD()
-              .getOrElse(new EmptyRDD[(K, S)](ssc.sparkContext)),
-            partitioner,
-            validTime
+          spec
+            .getInitialStateRDD()
+            .getOrElse(new EmptyRDD[(K, S)](ssc.sparkContext)),
+          partitioner,
+          validTime
         )
     }
 
@@ -174,11 +186,14 @@ private[streaming] class InternalMapWithStateDStream[
       (validTime - interval).milliseconds
     }
     Some(
-        new MapWithStateRDD(prevStateRDD,
-                            partitionedDataRDD,
-                            mappingFunction,
-                            validTime,
-                            timeoutThresholdTime))
+      new MapWithStateRDD(
+        prevStateRDD,
+        partitionedDataRDD,
+        mappingFunction,
+        validTime,
+        timeoutThresholdTime
+      )
+    )
   }
 }
 

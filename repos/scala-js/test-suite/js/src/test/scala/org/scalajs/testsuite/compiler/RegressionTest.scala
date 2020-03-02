@@ -32,18 +32,17 @@ class RegressionTest {
   @Test def Abort_with_some_pattern_match_guards_issue_22(): Unit = {
     object PatternMatchGuards {
       def go(f: Int => Int): Int = f(1)
-      def main(): Unit = {
+      def main(): Unit =
         go {
           case x if false => x
         }
-      }
     }
     // Nothing to check
   }
 
   @Test
   def Bad_encoding_for_characters_spanning_2_UTF_16_chars_issue_23(): Unit = {
-    val str = "A∀\uD835\uDCAB"
+    val str       = "A∀\uD835\uDCAB"
     var s: String = ""
     for (c <- str) {
       val code: Int = c
@@ -59,16 +58,15 @@ class RegressionTest {
 
   @Test
   def should_emit_static_calls_when_forwarding_to_another_constructor_issue_66(
-      ): Unit = {
+      ): Unit =
     new Bug66B("", "")
-  }
 
   @Test
   def should_not_swallow_Unit_expressions_when_converting_to_js_Any_issue_83(
       ): Unit = {
-    var effectHappened = false
+    var effectHappened   = false
     def doEffect(): Unit = effectHappened = true
-    def f(): js.Any = doEffect()
+    def f(): js.Any      = doEffect()
     f()
     assertTrue(effectHappened)
   }
@@ -77,7 +75,7 @@ class RegressionTest {
   def should_correctly_call_subSequence_on_non_string_CharSequences_issue_55(
       ): Unit = {
     val arr: CharSequence = Array('a', 'b', 'c', 'd')
-    val ss = arr.subSequence(2, 3)
+    val ss                = arr.subSequence(2, 3)
     assertEquals(1, ss.length())
     assertEquals('c', ss.charAt(0))
   }
@@ -95,8 +93,8 @@ class RegressionTest {
       def apply(n: Int): Int = n
     }
 
-    val scalaFunction = new Fct
-    val jsFunction: js.Any = scalaFunction
+    val scalaFunction                 = new Fct
+    val jsFunction: js.Any            = scalaFunction
     val thisFunction: js.ThisFunction = scalaFunction
   }
 
@@ -104,7 +102,7 @@ class RegressionTest {
   def should_correctly_dispatch_calls_on_private_functions_issue_165(): Unit = {
     class A {
       private def x: Int = 1
-      def value: Int = x
+      def value: Int     = x
     }
     class B extends A {
       private def x: Int = 2
@@ -179,10 +177,11 @@ class RegressionTest {
 
   @Test
   def should_support_class_literals_for_existential_value_types_issue_218(
-      ): Unit = {
-    assertEquals("org.scalajs.testsuite.compiler.RegressionTest$Bug218Foo",
-                 scala.reflect.classTag[Bug218Foo[_]].toString)
-  }
+      ): Unit =
+    assertEquals(
+      "org.scalajs.testsuite.compiler.RegressionTest$Bug218Foo",
+      scala.reflect.classTag[Bug218Foo[_]].toString
+    )
 
   @Test def should_support_Buffer_issue_268(): Unit = {
     val a = scala.collection.mutable.Buffer.empty[Int]
@@ -262,22 +261,20 @@ class RegressionTest {
   def Param_defs_in_tailrec_methods_should_be_considered_mutable_issue_825(
       ): Unit = {
     @tailrec
-    def foo(x: Int, y: Int): Unit = {
+    def foo(x: Int, y: Int): Unit =
       if (x < y) foo(y, x)
       else {
         assertEquals(4, x)
         assertEquals(2, y)
       }
-    }
     foo(2, 4)
   }
 
-  @Test def null_synchronized_should_throw_issue_874(): Unit = {
+  @Test def null_synchronized_should_throw_issue_874(): Unit =
     assertThrows(classOf[NullPointerException], null.synchronized(5))
-  }
 
   @Test def x_synchronized_should_preserve_side_effects_of_x(): Unit = {
-    var c = 0
+    var c                           = 0
     def x: RegressionTest.this.type = { c += 1; this }
     assertEquals(5, x.synchronized(5))
     assertEquals(1, c)
@@ -288,14 +285,17 @@ class RegressionTest {
       ): Unit = {
     def giveMeANull(): Null = null
     assertThrows(classOf[Exception], (giveMeANull(): StringBuilder).append(5))
-    assertThrows(
-        classOf[Exception], (giveMeANull(): scala.runtime.IntRef).elem)
+    assertThrows(classOf[Exception], (giveMeANull(): scala.runtime.IntRef).elem)
 
     def giveMeANothing(): Nothing = sys.error("boom")
     assertThrows(
-        classOf[Exception], (giveMeANothing(): StringBuilder).append(5))
+      classOf[Exception],
+      (giveMeANothing(): StringBuilder).append(5)
+    )
     assertThrows(
-        classOf[Exception], (giveMeANothing(): scala.runtime.IntRef).elem)
+      classOf[Exception],
+      (giveMeANothing(): scala.runtime.IntRef).elem
+    )
   }
 
   @Test
@@ -373,12 +373,14 @@ class RegressionTest {
          * the call itself.
          * The optimizer eliminates the useless asInstanceOf.
          */
-        concat(v, {
-          // This must be a true block
-          var x = 1
-          while (x < 5) x += 1
-          x
-        })
+        concat(
+          v, {
+            // This must be a true block
+            var x = 1
+            while (x < 5) x += 1
+            x
+          }
+        )
       }
     }
 
@@ -447,13 +449,13 @@ class RegressionTest {
 
     // Make sure F itself is reachable and not completely inlineable
     @noinline def makeF: Any => Any = (() => new F)()
-    val f = makeF
+    val f                           = makeF
     f(5)
   }
 
   @Test def switch_match_with_2_guards_for_the_same_value_issue_1589(): Unit = {
     @noinline def genB(): Int = 0xE1
-    val b = genB()
+    val b                     = genB()
     val x = b >> 4 match {
       case 0xE if b == 0xE0 =>
         4
@@ -476,7 +478,7 @@ class RegressionTest {
 
   @Test def null_asInstanceOf_Unit_should_succeed_issue_1691(): Unit = {
     def getNull(): Any = null
-    val x = getNull().asInstanceOf[Unit]: Any
+    val x              = getNull().asInstanceOf[Unit]: Any
     assertNull(x.asInstanceOf[js.Any])
   }
 
@@ -505,7 +507,7 @@ object RegressionTest {
 
     def bug(x: Int, e: Boolean): Unit = {
       x match {
-        case 1 => doSomething(123, 456, ())
+        case 1      => doSomething(123, 456, ())
         case 2 if e =>
       }
 

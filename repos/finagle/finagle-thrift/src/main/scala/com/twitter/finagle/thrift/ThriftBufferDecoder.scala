@@ -19,7 +19,7 @@ private[thrift] class ThriftBufferDecoder(protocolFactory: TProtocolFactory)
       state: VoidEnum
   ) = {
     val transport = new ChannelBufferToTransport(buffer)
-    val iprot = protocolFactory.getProtocol(transport)
+    val iprot     = protocolFactory.getProtocol(transport)
 
     val beginIndex = buffer.readerIndex
     buffer.markReaderIndex()

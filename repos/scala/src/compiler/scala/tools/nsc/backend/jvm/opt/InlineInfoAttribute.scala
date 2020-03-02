@@ -44,11 +44,13 @@ case class InlineInfoAttribute(inlineInfo: InlineInfo)
     * Serialize the `inlineInfo` into a byte array. Strings are added to the constant pool and serialized
     * as references.
     */
-  override def write(cw: ClassWriter,
-                     code: Array[Byte],
-                     len: Int,
-                     maxStack: Int,
-                     maxLocals: Int): ByteVector = {
+  override def write(
+      cw: ClassWriter,
+      code: Array[Byte],
+      len: Int,
+      maxStack: Int,
+      maxLocals: Int
+  ): ByteVector = {
     val result = new ByteVector()
 
     result.putByte(InlineInfoAttribute.VERSION)
@@ -98,24 +100,26 @@ case class InlineInfoAttribute(inlineInfo: InlineInfo)
     * `buf` is a pre-allocated character array that is guaranteed to be long enough to hold any
     * string of the constant pool. So we can use it to invoke `cr.readUTF8`.
     */
-  override def read(cr: ClassReader,
-                    off: Int,
-                    len: Int,
-                    buf: Array[Char],
-                    codeOff: Int,
-                    labels: Array[Label]): InlineInfoAttribute = {
+  override def read(
+      cr: ClassReader,
+      off: Int,
+      len: Int,
+      buf: Array[Char],
+      codeOff: Int,
+      labels: Array[Label]
+  ): InlineInfoAttribute = {
     var next = off
 
-    def nextByte() = { val r = cr.readByte(next); next += 1; r }
-    def nextUTF8() = { val r = cr.readUTF8(next, buf); next += 2; r }
+    def nextByte()  = { val r = cr.readByte(next); next += 1; r }
+    def nextUTF8()  = { val r = cr.readUTF8(next, buf); next += 2; r }
     def nextShort() = { val r = cr.readShort(next); next += 2; r }
 
     val version = nextByte()
     if (version == 1) {
       val finalSelfSam = nextByte()
-      val isFinal = (finalSelfSam & 1) != 0
-      val hasSelf = (finalSelfSam & 2) != 0
-      val hasSam = (finalSelfSam & 4) != 0
+      val isFinal      = (finalSelfSam & 1) != 0
+      val hasSelf      = (finalSelfSam & 2) != 0
+      val hasSam       = (finalSelfSam & 4) != 0
 
       val self =
         if (!hasSelf) None
@@ -133,24 +137,25 @@ case class InlineInfoAttribute(inlineInfo: InlineInfo)
         }
 
       val numEntries = nextShort()
-      val infos = (0 until numEntries)
-        .map(_ =>
-              {
-            val name = nextUTF8()
-            val desc = nextUTF8()
+      val infos = (0 until numEntries).map { _ =>
+        val name = nextUTF8()
+        val desc = nextUTF8()
 
-            val inlineInfo = nextByte()
-            val isFinal = (inlineInfo & 1) != 0
-            val traitMethodWithStaticImplementation = (inlineInfo & 2) != 0
-            val isInline = (inlineInfo & 4) != 0
-            val isNoInline = (inlineInfo & 8) != 0
-            (name + desc,
-             MethodInlineInfo(isFinal,
-                              traitMethodWithStaticImplementation,
-                              isInline,
-                              isNoInline))
-        })
-        .toMap
+        val inlineInfo                          = nextByte()
+        val isFinal                             = (inlineInfo & 1) != 0
+        val traitMethodWithStaticImplementation = (inlineInfo & 2) != 0
+        val isInline                            = (inlineInfo & 4) != 0
+        val isNoInline                          = (inlineInfo & 8) != 0
+        (
+          name + desc,
+          MethodInlineInfo(
+            isFinal,
+            traitMethodWithStaticImplementation,
+            isInline,
+            isNoInline
+          )
+        )
+      }.toMap
 
       InlineInfoAttribute(InlineInfo(self, isFinal, sam, infos, None))
     } else {

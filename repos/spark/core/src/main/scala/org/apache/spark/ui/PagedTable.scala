@@ -54,10 +54,11 @@ private[ui] abstract class PagedDataSource[T](val pageSize: Int) {
     val totalPages = (dataSize + pageSize - 1) / pageSize
     if (page <= 0 || page > totalPages) {
       throw new IndexOutOfBoundsException(
-          s"Page $page is out of range. Please select a page number between 1 and $totalPages.")
+        s"Page $page is out of range. Please select a page number between 1 and $totalPages."
+      )
     }
     val from = (page - 1) * pageSize
-    val to = dataSize.min(page * pageSize)
+    val to   = dataSize.min(page * pageSize)
     PageData(totalPages, sliceData(from, to))
   }
 }
@@ -151,19 +152,22 @@ private[ui] trait PagedTable[T] {
     * }}}
     */
   private[ui] def pageNavigation(
-      page: Int, pageSize: Int, totalPages: Int): Seq[Node] = {
+      page: Int,
+      pageSize: Int,
+      totalPages: Int
+  ): Seq[Node] = {
     if (totalPages == 1) {
       Nil
     } else {
       // A group includes all page numbers will be shown in the page navigation.
       // The size of group is 10 means there are 10 page numbers will be shown.
       // The first group is 1 to 10, the second is 2 to 20, and so on
-      val groupSize = 10
-      val firstGroup = 0
-      val lastGroup = (totalPages - 1) / groupSize
+      val groupSize    = 10
+      val firstGroup   = 0
+      val lastGroup    = (totalPages - 1) / groupSize
       val currentGroup = (page - 1) / groupSize
-      val startPage = currentGroup * groupSize + 1
-      val endPage = totalPages.min(startPage + groupSize - 1)
+      val startPage    = currentGroup * groupSize + 1
+      val endPage      = totalPages.min(startPage + groupSize - 1)
       val pageTags = (startPage to endPage).map { p =>
         if (p == page) {
           // The current page should be disabled so that it cannot be clicked.
@@ -226,41 +230,49 @@ private[ui] trait PagedTable[T] {
         <div class="pagination" style="margin-bottom: 0px;">
           <span style="float: left; padding-top: 4px; padding-right: 4px;">Page: </span>
           <ul>
-            {if (currentGroup > firstGroup) {
-            <li>
+            {
+        if (currentGroup > firstGroup) {
+          <li>
               <a href={Unparsed(pageLink(startPage - groupSize))} aria-label="Previous Group">
                 <span aria-hidden="true">
                   &lt;&lt;
                 </span>
               </a>
             </li>
-            }}
-            {if (page > 1) {
-            <li>
+        }
+      }
+            {
+        if (page > 1) {
+          <li>
             <a href={Unparsed(pageLink(page - 1))} aria-label="Previous">
               <span aria-hidden="true">
                 &lt;
               </span>
             </a>
             </li>
-            }}
+        }
+      }
             {pageTags}
-            {if (page < totalPages) {
-            <li>
+            {
+        if (page < totalPages) {
+          <li>
               <a href={Unparsed(pageLink(page + 1))} aria-label="Next">
                 <span aria-hidden="true">&gt;</span>
               </a>
             </li>
-            }}
-            {if (currentGroup < lastGroup) {
-            <li>
+        }
+      }
+            {
+        if (currentGroup < lastGroup) {
+          <li>
               <a href={Unparsed(pageLink(startPage + groupSize))} aria-label="Next Group">
                 <span aria-hidden="true">
                   &gt;&gt;
                 </span>
               </a>
             </li>
-          }}
+        }
+      }
           </ul>
         </div>
       </div>

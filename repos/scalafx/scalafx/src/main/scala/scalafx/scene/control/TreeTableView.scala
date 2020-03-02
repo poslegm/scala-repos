@@ -53,7 +53,8 @@ object TreeTableView {
     * @return JavaFX TreeTableView
     */
   implicit def sfxTreeTableView2jfx[T](
-      v: TreeTableView[T]): jfxsc.TreeTableView[T] =
+      v: TreeTableView[T]
+  ): jfxsc.TreeTableView[T] =
     if (v != null) v.delegate else null
 
   /**
@@ -68,7 +69,8 @@ object TreeTableView {
       * @return JavaFX TreeTableView.ResizeFeatures
       */
     implicit def sfxTreeTableViewResizeFeatures2jfx[S](
-        rf: ResizeFeatures[S]): jfxsc.TreeTableView.ResizeFeatures[S] =
+        rf: ResizeFeatures[S]
+    ): jfxsc.TreeTableView.ResizeFeatures[S] =
       if (rf != null) rf.delegate else null
   }
 
@@ -81,8 +83,8 @@ object TreeTableView {
     * @param delegate JavaFX ResizeFeatures to be wrapped.
     */
   class ResizeFeatures[S](
-      override val delegate: jfxsc.TreeTableView.ResizeFeatures[S])
-      extends ResizeFeaturesBase[jfxsc.TreeItem[S]](delegate)
+      override val delegate: jfxsc.TreeTableView.ResizeFeatures[S]
+  ) extends ResizeFeaturesBase[jfxsc.TreeItem[S]](delegate)
       with SFXDelegate[jfxsc.TreeTableView.ResizeFeatures[S]] {
 
     type Delegate = jfxsc.TreeTableView.ResizeFeatures[S]
@@ -96,9 +98,11 @@ object TreeTableView {
       *               created as a result of a TreeTableView resize operation.
       * @param delta  The amount of horizontal space added or removed in the resize operation.
       */
-    def this(table: TreeTableView[S],
-             column: TreeTableColumn[S, _],
-             delta: Double) =
+    def this(
+        table: TreeTableView[S],
+        column: TreeTableColumn[S, _],
+        delta: Double
+    ) =
       this(new jfxsc.TreeTableView.ResizeFeatures(table, column, delta))
 
     /**
@@ -125,7 +129,8 @@ object TreeTableView {
       * @return JavaFX TreeTableView EditEvent
       */
     implicit def sfxTreeTableViewEditEvent2jfx[T](
-        v: EditEvent[T]): jfxsc.TreeTableView.EditEvent[T] =
+        v: EditEvent[T]
+    ): jfxsc.TreeTableView.EditEvent[T] =
       if (v != null) v.delegate else null
 
     /**
@@ -155,14 +160,22 @@ object TreeTableView {
       * TreeTableView.EDIT_START_EVENT, TreeTableView.EDIT_COMMIT_EVENT and
       * TreeTableView.EDIT_CANCEL_EVENT types.
       */
-    def this(source: TreeTableView[T],
-             eventType: jfxe.EventType[_ <: jfxsc.TreeTableView.EditEvent[T]],
-             treeTableItem: TreeItem[T],
-             oldValue: T,
-             newValue: T) =
+    def this(
+        source: TreeTableView[T],
+        eventType: jfxe.EventType[_ <: jfxsc.TreeTableView.EditEvent[T]],
+        treeTableItem: TreeItem[T],
+        oldValue: T,
+        newValue: T
+    ) =
       this(
-          new jfxsc.TreeTableView.EditEvent[T](
-              source, eventType, treeTableItem, oldValue, newValue))
+        new jfxsc.TreeTableView.EditEvent[T](
+          source,
+          eventType,
+          treeTableItem,
+          oldValue,
+          newValue
+        )
+      )
 
     /**
       * Returns the new value input into the TreeItem by the end user.
@@ -197,8 +210,8 @@ object TreeTableView {
       * @return JavaFX TableViewFocusModel
       */
     implicit def sfxTableViewFocusModel2jfx[S](
-        tvfm: TreeTableViewFocusModel[S])
-      : jfxsc.TreeTableView.TreeTableViewFocusModel[S] =
+        tvfm: TreeTableViewFocusModel[S]
+    ): jfxsc.TreeTableView.TreeTableViewFocusModel[S] =
       if (tvfm != null) tvfm.delegate else null
   }
 
@@ -211,9 +224,10 @@ object TreeTableView {
     * @param delegate JavaFX TreeTableViewFocusModel to be wrapped.
     */
   class TreeTableViewFocusModel[S](
-      override val delegate: jfxsc.TreeTableView.TreeTableViewFocusModel[S])
-      extends TableFocusModel[jfxsc.TreeItem[S], jfxsc.TreeTableColumn[S, _]](
-          delegate)
+      override val delegate: jfxsc.TreeTableView.TreeTableViewFocusModel[S]
+  ) extends TableFocusModel[jfxsc.TreeItem[S], jfxsc.TreeTableColumn[S, _]](
+        delegate
+      )
       with SFXDelegate[jfxsc.TreeTableView.TreeTableViewFocusModel[S]] {
 
     type Delegate = jfxsc.TreeTableView.TreeTableViewFocusModel[S]
@@ -238,9 +252,8 @@ object TreeTableView {
       * @param index  The row index of the item to give focus to.
       * @param column The column of the item to give focus to. Can be null.
       */
-    def focus(index: Int, column: TreeTableColumn[S, _]): Unit = {
+    def focus(index: Int, column: TreeTableColumn[S, _]): Unit =
       delegate.focus(index, column)
-    }
 
     /**
       * Convenience method for setting focus on a particular row or cell using a
@@ -248,9 +261,8 @@ object TreeTableView {
       *
       * @param pos The table position where focus should be set.
       */
-    def focus(pos: TreeTablePosition[S, _]): Unit = {
+    def focus(pos: TreeTablePosition[S, _]): Unit =
       delegate.focus(pos)
-    }
 
     /**
       * Causes the item at the given index to receive the focus. This does not cause the current selection to change.
@@ -260,9 +272,8 @@ object TreeTableView {
       *
       * @param index The index of the item to get focus.
       */
-    override def focus(index: Int): Unit = {
+    override def focus(index: Int): Unit =
       delegate.focus(index)
-    }
 
     /**
       * Tests whether the row / cell at the given location currently has the focus within the TableView.
@@ -286,8 +297,8 @@ object TreeTableView {
       * @return JavaFX TreeTableViewSelectionModel
       */
     implicit def sfxTreeTableViewSelectionModel2jfx[S](
-        v: TreeTableView.TreeTableViewSelectionModel[S])
-      : jfxsc.TreeTableView.TreeTableViewSelectionModel[S] = v.delegate
+        v: TreeTableView.TreeTableViewSelectionModel[S]
+    ): jfxsc.TreeTableView.TreeTableViewSelectionModel[S] = v.delegate
   }
 
   /**
@@ -301,8 +312,8 @@ object TreeTableView {
     *
     */
   abstract class TreeTableViewSelectionModel[S](
-      override val delegate: jfxsc.TreeTableView.TreeTableViewSelectionModel[S])
-      extends SFXDelegate[jfxsc.TreeTableView.TreeTableViewSelectionModel[S]] {
+      override val delegate: jfxsc.TreeTableView.TreeTableViewSelectionModel[S]
+  ) extends SFXDelegate[jfxsc.TreeTableView.TreeTableViewSelectionModel[S]] {
 
     type Delegate = jfxsc.TreeTableView.TreeTableViewSelectionModel[S]
 
@@ -312,7 +323,8 @@ object TreeTableView {
       */
     def selectedCells: ObservableBuffer[TreeTablePosition[S, _]] =
       ObservableBuffer(
-          delegate.getSelectedCells.map(ttp => new TreeTablePosition(ttp)))
+        delegate.getSelectedCells.map(ttp => new TreeTablePosition(ttp))
+      )
 
     /**
       * Returns the TreeTableView instance that this selection model is installed in.
@@ -327,19 +339,25 @@ object TreeTableView {
       */
     def modelItem(index: Int): TreeItem[S] = delegate.getModelItem(index)
 
-    def focus(row: Int): Unit = { delegate.focus(row) }
+    def focus(row: Int): Unit = delegate.focus(row)
 
     def focusedIndex: Int = delegate.getFocusedIndex
 
     /**
       * Selects the cells in the range (minRow, minColumn) to (maxRow, maxColumn), inclusive.
       */
-    def selectRange(minRow: Int,
-                    minColumn: TableColumnBase[jfxsc.TreeItem[S], _],
-                    maxRow: Int,
-                    maxColumn: TableColumnBase[jfxsc.TreeItem[S], _]) {
+    def selectRange(
+        minRow: Int,
+        minColumn: TableColumnBase[jfxsc.TreeItem[S], _],
+        maxRow: Int,
+        maxColumn: TableColumnBase[jfxsc.TreeItem[S], _]
+    ) {
       delegate.selectRange(
-          minRow, minColumn.delegate, maxRow, maxColumn.delegate)
+        minRow,
+        minColumn.delegate,
+        maxRow,
+        maxColumn.delegate
+      )
     }
 
     /**
@@ -365,9 +383,8 @@ object TreeTableView {
       *
       * @param row The index that should be the only selected index in this selection model.
       */
-    def clearAndSelect(row: Int): Unit = {
+    def clearAndSelect(row: Int): Unit =
       delegate.clearAndSelect(row)
-    }
 
     /**
       * This will select the given index in the selection model, assuming the index is within the valid range (i.e.
@@ -382,9 +399,8 @@ object TreeTableView {
       *
       * @param row The position of the item to select in the selection model.
       */
-    def select(row: Int): Unit = {
+    def select(row: Int): Unit =
       delegate.select(row)
-    }
 
     /**
       * This method will attempt to select the index that contains the given object. It will iterate through the
@@ -393,9 +409,8 @@ object TreeTableView {
       *
       * @param obj The object to attempt to select in the underlying data model.
       */
-    def select(obj: TreeItem[S]): Unit = {
+    def select(obj: TreeItem[S]): Unit =
       delegate.select(obj)
-    }
 
     /**
       * This method allows for one or more selections to be set at the same time. It will ignore any value that is not
@@ -407,16 +422,14 @@ object TreeTableView {
       *
       * The last valid value given will become the selected index / selected item.
       */
-    def selectIndices(row: Int, rows: Int*): Unit = {
+    def selectIndices(row: Int, rows: Int*): Unit =
       delegate.selectIndices(row, rows: _*)
-    }
 
     /**
       * Convenience method to select all available indices.
       */
-    def selectAll(): Unit = {
+    def selectAll(): Unit =
       delegate.selectAll()
-    }
 
     /**
       * This method will attempt to select the first index in the control. If clearSelection is not called first, this
@@ -426,9 +439,8 @@ object TreeTableView {
       * If the first index is already selected, calling this method will have no result, and no selection event will
       * take place.
       */
-    def selectFirst(): Unit = {
+    def selectFirst(): Unit =
       delegate.selectFirst()
-    }
 
     /**
       * This method will attempt to select the last index in the control. If clearSelection is not called first, this
@@ -438,16 +450,14 @@ object TreeTableView {
       * If the last index is already selected, calling this method will have no result, and no selection event will
       * take place.
       */
-    def selectLast(): Unit = {
+    def selectLast(): Unit =
       delegate.selectLast()
-    }
 
     /**
       * Clears the selection model of all selected indices.
       */
-    def clearSelection(): Unit = {
+    def clearSelection(): Unit =
       delegate.clearSelection()
-    }
 
     /**
       * This method will clear the selection of the item in the given index. If the given index is not selected,
@@ -455,9 +465,8 @@ object TreeTableView {
       *
       * @param index The selected item to deselect.
       */
-    def clearSelection(index: Int): Unit = {
+    def clearSelection(index: Int): Unit =
       delegate.clearSelection(index)
-    }
 
     /**
       * Convenience method to inform if the given index is currently selected in this SelectionModel. Is functionally
@@ -488,9 +497,8 @@ object TreeTableView {
       *
       * If any of these conditions is false, no selection event will take place.
       */
-    def selectPrevious(): Unit = {
+    def selectPrevious(): Unit =
       delegate.selectPrevious()
-    }
 
     /**
       * This method will attempt to select the index directly after the current focused index. If clearSelection is not
@@ -504,9 +512,8 @@ object TreeTableView {
       *
       * If any of these conditions is false, no selection event will take place.
       */
-    def selectNext(): Unit = {
+    def selectNext(): Unit =
       delegate.selectNext()
-    }
   }
 
   /**
@@ -576,8 +583,8 @@ object TreeTableView {
     *
     * @since 8.0
     */
-  def classCssMetaData: mutable.Buffer[jfxcss.CssMetaData[
-          _ <: jfxcss.Styleable, _]] =
+  def classCssMetaData
+      : mutable.Buffer[jfxcss.CssMetaData[_ <: jfxcss.Styleable, _]] =
     jfxsc.PopupControl.getClassCssMetaData
 }
 
@@ -599,8 +606,9 @@ object TreeTableView {
   *
   */
 class TreeTableView[S](
-    override val delegate: jfxsc.TreeTableView[S] = new jfxsc.TreeTableView[S])
-    extends Control(delegate) with SFXDelegate[jfxsc.TreeTableView[S]] {
+    override val delegate: jfxsc.TreeTableView[S] = new jfxsc.TreeTableView[S]
+) extends Control(delegate)
+    with SFXDelegate[jfxsc.TreeTableView[S]] {
 
   type Delegate = jfxsc.TreeTableView[S]
 
@@ -638,9 +646,8 @@ class TreeTableView[S](
     * Property that represents whether or not the TreeView root node is visible.
     */
   def showRoot: BooleanProperty = delegate.showRootProperty
-  def showRoot_=(v: Boolean): Unit = {
+  def showRoot_=(v: Boolean): Unit =
     showRoot() = v
-  }
 
   /**
     * Property that represents which column should have the disclosure node shown in it (that is, the column with the
@@ -649,32 +656,29 @@ class TreeTableView[S](
     */
   def treeColumn: ObjectProperty[jfxsc.TreeTableColumn[S, _]] =
     delegate.treeColumnProperty
-  def treeColumn_=(v: TreeTableColumn[S, _]): Unit = {
+  def treeColumn_=(v: TreeTableColumn[S, _]): Unit =
     treeColumn() = v
-  }
 
   /**
     * The SelectionModel provides the API through which it is possible to select single or multiple items within a
     * TreeTableView, as well as inspect which rows have been selected by the user. Note that it has a generic type that
     * must match the type of the TreeTableView itself.
     */
-  def selectionModel: ObjectProperty[
-      jfxsc.TreeTableView.TreeTableViewSelectionModel[S]] =
+  def selectionModel
+      : ObjectProperty[jfxsc.TreeTableView.TreeTableViewSelectionModel[S]] =
     delegate.selectionModelProperty
-  def selectionModel_=(v: TreeTableView.TreeTableViewSelectionModel[S]): Unit = {
+  def selectionModel_=(v: TreeTableView.TreeTableViewSelectionModel[S]): Unit =
     selectionModel() = v
-  }
 
   /**
     * The FocusModel provides the API through which it is possible to control focus on zero or one rows of the
     * TreeTableView. Generally the default implementation should be more than sufficient.
     */
-  def focusModel: ObjectProperty[
-      jfxsc.TreeTableView.TreeTableViewFocusModel[S]] =
+  def focusModel
+      : ObjectProperty[jfxsc.TreeTableView.TreeTableViewFocusModel[S]] =
     delegate.focusModelProperty
-  def focusModel_=(v: TreeTableView.TreeTableViewFocusModel[S]): Unit = {
+  def focusModel_=(v: TreeTableView.TreeTableViewFocusModel[S]): Unit =
     focusModel() = v
-  }
 
   /**
     * Represents the number of tree nodes presently able to be visible in the TreeTableView. This is essentially the
@@ -691,9 +695,8 @@ class TreeTableView[S](
     * editable will a TreeCell be able to go into their editing state.
     */
   def editable: BooleanProperty = delegate.editableProperty
-  def editable_=(v: Boolean): Unit = {
+  def editable_=(v: Boolean): Unit =
     editable() = v
-  }
 
   /**
     * Represents the current cell being edited, or null if there is no cell being edited.
@@ -708,34 +711,39 @@ class TreeTableView[S](
     */
   def tableMenuButtonVisible: BooleanProperty =
     delegate.tableMenuButtonVisibleProperty
-  def tableMenuButtonVisible_=(v: Boolean): Unit = {
+  def tableMenuButtonVisible_=(v: Boolean): Unit =
     tableMenuButtonVisible() = v
-  }
 
   /**
     * This is the function called when the user completes a column-resize operation. The two most common policies are
     * available as static functions in the TableView class: [[TreeTableView#UNCONSTRAINED_RESIZE_POLICY]] and
     * [[TreeTableView#CONSTRAINED_RESIZE_POLICY]].
     */
-  def columnResizePolicy: ObjectProperty[
-      TreeTableView.ResizeFeatures[S] => Boolean] =
+  def columnResizePolicy
+      : ObjectProperty[TreeTableView.ResizeFeatures[S] => Boolean] =
     ObjectProperty((features: TreeTableView.ResizeFeatures[S]) =>
-          delegate.columnResizePolicyProperty.value.call(features))
+      delegate.columnResizePolicyProperty.value.call(features)
+    )
   def columnResizePolicy_=(
-      p: TreeTableView.ResizeFeatures[_] => Boolean): Unit = {
+      p: TreeTableView.ResizeFeatures[_] => Boolean
+  ): Unit =
     delegate
       .columnResizePolicyProperty()
-      .setValue(new jfxu.Callback[
-              jfxsc.TreeTableView.ResizeFeatures[_], java.lang.Boolean] {
-        def call(v: jfxsc.TreeTableView.ResizeFeatures[_]): java.lang.Boolean = {
-          p(v)
+      .setValue(
+        new jfxu.Callback[
+          jfxsc.TreeTableView.ResizeFeatures[_],
+          java.lang.Boolean
+        ] {
+          def call(
+              v: jfxsc.TreeTableView.ResizeFeatures[_]
+          ): java.lang.Boolean =
+            p(v)
         }
-      })
-  }
-  def columnResizePolicy_=(p: jfxu.Callback[
-          jfxsc.TreeTableView.ResizeFeatures[_], java.lang.Boolean]): Unit = {
+      )
+  def columnResizePolicy_=(
+      p: jfxu.Callback[jfxsc.TreeTableView.ResizeFeatures[_], java.lang.Boolean]
+  ): Unit =
     delegate.columnResizePolicyProperty().setValue(p)
-  }
 
   /**
     * A function which produces a TreeTableRow. The system is responsible for reusing TreeTableRows. Return from this
@@ -750,16 +758,15 @@ class TreeTableView[S](
     * property in the TreeTableColumn class.
     */
   def rowFactory: ObjectProperty[
-      jfxu.Callback[jfxsc.TreeTableView[S], jfxsc.TreeTableRow[S]]] =
+    jfxu.Callback[jfxsc.TreeTableView[S], jfxsc.TreeTableRow[S]]
+  ] =
     delegate.rowFactoryProperty
-  def rowFactory_=(v: (TreeTableView[S] => TreeTableRow[S])): Unit = {
-    rowFactory() = new jfxu.Callback[
-        jfxsc.TreeTableView[S], jfxsc.TreeTableRow[S]] {
-      def call(tv: jfxsc.TreeTableView[S]): jfxsc.TreeTableRow[S] = {
-        v(tv)
+  def rowFactory_=(v: (TreeTableView[S] => TreeTableRow[S])): Unit =
+    rowFactory() =
+      new jfxu.Callback[jfxsc.TreeTableView[S], jfxsc.TreeTableRow[S]] {
+        def call(tv: jfxsc.TreeTableView[S]): jfxsc.TreeTableRow[S] =
+          v(tv)
       }
-    }
-  }
 
   /**
     * This Node is shown to the user when the table has no content to show. This may be the case because the table model
@@ -767,9 +774,8 @@ class TreeTableView[S](
     * to show the user, or that there are no currently visible columns.
     */
   def placeholder: ObjectProperty[jfxs.Node] = delegate.placeholderProperty
-  def placeholder_=(v: Node): Unit = {
+  def placeholder_=(v: Node): Unit =
     placeholder() = v
-  }
 
   /**
     * Specifies whether this control has cells that are a fixed height (of the specified value). If this value is less
@@ -786,26 +792,25 @@ class TreeTableView[S](
     * -fx-fixed-cell-size takes precedence.
     */
   def fixedCellSize: DoubleProperty = delegate.fixedCellSizeProperty
-  def fixedCellSize_=(v: Double): Unit = {
+  def fixedCellSize_=(v: Double): Unit =
     fixedCellSize() = v
-  }
 
   /**
     * Specifies the sort mode to use when sorting the contents of this TreeTableView, should any columns be specified
     * in the sort order list.
     */
   def sortMode: ObjectProperty[jfxsc.TreeSortMode] = delegate.sortModeProperty
-  def sortMode_=(v: TreeSortMode): Unit = {
+  def sortMode_=(v: TreeSortMode): Unit =
     sortMode() = v
-  }
 
   /**
     * The comparator property is a read-only property that is representative of the current state of the sort order list.
     * The sort order list contains the columns that have been added to it either programmatically or via a user clicking
     * on the headers themselves.
     */
-  def comparator: ReadOnlyObjectProperty[
-      java.util.Comparator[jfxsc.TreeItem[S]]] = delegate.comparatorProperty
+  def comparator
+      : ReadOnlyObjectProperty[java.util.Comparator[jfxsc.TreeItem[S]]] =
+    delegate.comparatorProperty
 
   /** The sort policy specifies how sorting in this TreeTableView should be performed. For example, a basic sort policy
     * may just recursively sort the children of the root tree item, whereas a more advanced sort policy may call to a
@@ -817,11 +822,11 @@ class TreeTableView[S](
     * It is recommended that rather than override the sort method that a different sort policy be provided instead.
     */
   def sortPolicy: ObjectProperty[TreeTableView[S] => Boolean] =
-    ObjectProperty(
-        (ttv: TreeTableView[S]) => delegate.sortPolicyProperty.get().call(ttv))
-  def sortPolicy_=(v: TreeTableView[S] => Boolean): Unit = {
+    ObjectProperty((ttv: TreeTableView[S]) =>
+      delegate.sortPolicyProperty.get().call(ttv)
+    )
+  def sortPolicy_=(v: TreeTableView[S] => Boolean): Unit =
     ObjectProperty.fillProperty[TreeTableView[S] => Boolean](sortPolicy, v)
-  }
   /*
   def sortPolicy: ObjectProperty[jfxu.Callback[jfxsc.TreeTableView[T], java.lang.Boolean]] = delegate.sortPolicyProperty
   def sortPolicy_=(v: jfxu.Callback[jfxsc.TreeTableView[T], java.lang.Boolean]) {
@@ -833,12 +838,13 @@ class TreeTableView[S](
     * Called when there's a request to sort the control.
     */
   def onSort: ObjectProperty[
-      jfxe.EventHandler[jfxsc.SortEvent[jfxsc.TreeTableView[S]]]] =
+    jfxe.EventHandler[jfxsc.SortEvent[jfxsc.TreeTableView[S]]]
+  ] =
     delegate.onSortProperty
   def onSort_=(
-      v: jfxe.EventHandler[jfxsc.SortEvent[jfxsc.TreeTableView[S]]]): Unit = {
+      v: jfxe.EventHandler[jfxsc.SortEvent[jfxsc.TreeTableView[S]]]
+  ): Unit =
     onSort() = v
-  }
 
   /**
     * Scrolls the TreeTableView such that the item in the given index is visible to the end user.
@@ -846,46 +852,44 @@ class TreeTableView[S](
     * @param index The index that should be made visible to the user, assuming of course that it is greater than, or
     *              equal to 0, and less than the number of the visible items in the TreeTableView.
     */
-  def scrollTo(index: Int): Unit = { delegate.scrollTo(index) }
+  def scrollTo(index: Int): Unit = delegate.scrollTo(index)
 
   /**
     * Called when there's a request to scroll an index into view using [[scrollTo(int)]]
     */
   def onScrollTo = delegate.onScrollToProperty
-  def onScrollTo_=(v: jfxe.EventHandler[jfxsc.ScrollToEvent[Integer]]): Unit = {
+  def onScrollTo_=(v: jfxe.EventHandler[jfxsc.ScrollToEvent[Integer]]): Unit =
     onScrollTo() = v
-  }
 
   /**
     * Scrolls the TreeTableView so that the given column is visible within the viewport.
     *
     * @param column The column that should be visible to the user.
     */
-  def scrollToColumn(column: TreeTableColumn[S, _]): Unit = {
+  def scrollToColumn(column: TreeTableColumn[S, _]): Unit =
     delegate.scrollToColumn(column)
-  }
 
   /**
     * Scrolls the TreeTableView so that the given index is visible within the viewport.
     *
     * @param index The index of a column that should be visible to the user.
     */
-  def scrollToColumnIndex(index: Int): Unit = {
+  def scrollToColumnIndex(index: Int): Unit =
     delegate.scrollToColumnIndex(index)
-  }
 
   /**
     * Called when there's a request to scroll a column into view using scrollToColumn(TreeTableColumn) or scrollToColumnIndex(int)
     */
   def onScrollToColumn: ObjectProperty[
-      jfxe.EventHandler[jfxsc.ScrollToEvent[jfxsc.TreeTableColumn[S, _]]]] =
+    jfxe.EventHandler[jfxsc.ScrollToEvent[jfxsc.TreeTableColumn[S, _]]]
+  ] =
     delegate.onScrollToColumnProperty
   def onScrollToColumn_=(
-      v: jfxe.EventHandler[jfxsc.ScrollToEvent[jfxsc.TreeTableColumn[S, _]]])
-    : Unit = {
-    ObjectProperty.fillProperty[jfxe.EventHandler[jfxsc.ScrollToEvent[
-                jfxsc.TreeTableColumn[S, _]]]](onScrollToColumn, v)
-  }
+      v: jfxe.EventHandler[jfxsc.ScrollToEvent[jfxsc.TreeTableColumn[S, _]]]
+  ): Unit =
+    ObjectProperty.fillProperty[jfxe.EventHandler[
+      jfxsc.ScrollToEvent[jfxsc.TreeTableColumn[S, _]]
+    ]](onScrollToColumn, v)
 
   /**
     * Returns the index position of the given TreeItem, taking into account the
@@ -938,9 +942,8 @@ class TreeTableView[S](
     * Applies the currently installed resize policy against the given column, resizing it based on the delta value provided.
     *
     */
-  def resizeColumn(column: TreeTableColumn[S, _], delta: Double): Boolean = {
+  def resizeColumn(column: TreeTableColumn[S, _], delta: Double): Boolean =
     delegate.resizeColumn(column, delta)
-  }
 
   /**
     * Causes the cell at the given row/column view indexes to switch into its editing state, if it is not already in it,
@@ -973,7 +976,7 @@ class TreeTableView[S](
     * TreeTableColumn sort type properties change. In other words, this method should only be called directly when
     * something external changes and a sort is required.
     */
-  def sort(): Unit = { delegate.sort() }
+  def sort(): Unit = delegate.sort()
 
   /**
     * Returns the CssMetaData associated with this class, which may include the CssMetaData of its super classes.

@@ -24,24 +24,22 @@ class BroadcastSpec extends AkkaSpec with DefaultTimeout with ImplicitSender {
       val doneLatch = new TestLatch(2)
 
       val counter1 = new AtomicInteger
-      val actor1 = system.actorOf(
-          Props(new Actor {
+      val actor1 = system.actorOf(Props(new Actor {
         def receive = {
-          case "end" ⇒ doneLatch.countDown()
+          case "end"    ⇒ doneLatch.countDown()
           case msg: Int ⇒ counter1.addAndGet(msg)
         }
       }))
 
       val counter2 = new AtomicInteger
-      val actor2 = system.actorOf(
-          Props(new Actor {
+      val actor2 = system.actorOf(Props(new Actor {
         def receive = {
-          case "end" ⇒ doneLatch.countDown()
+          case "end"    ⇒ doneLatch.countDown()
           case msg: Int ⇒ counter2.addAndGet(msg)
         }
       }))
 
-      val paths = List(actor1, actor2).map(_.path.toString)
+      val paths       = List(actor1, actor2).map(_.path.toString)
       val routedActor = system.actorOf(BroadcastGroup(paths).props())
       routedActor ! 1
       routedActor ! "end"
@@ -56,8 +54,7 @@ class BroadcastSpec extends AkkaSpec with DefaultTimeout with ImplicitSender {
       val doneLatch = new TestLatch(2)
 
       val counter1 = new AtomicInteger
-      val actor1 = system.actorOf(
-          Props(new Actor {
+      val actor1 = system.actorOf(Props(new Actor {
         def receive = {
           case "end" ⇒ doneLatch.countDown()
           case msg: Int ⇒
@@ -67,15 +64,14 @@ class BroadcastSpec extends AkkaSpec with DefaultTimeout with ImplicitSender {
       }))
 
       val counter2 = new AtomicInteger
-      val actor2 = system.actorOf(
-          Props(new Actor {
+      val actor2 = system.actorOf(Props(new Actor {
         def receive = {
-          case "end" ⇒ doneLatch.countDown()
+          case "end"    ⇒ doneLatch.countDown()
           case msg: Int ⇒ counter2.addAndGet(msg)
         }
       }))
 
-      val paths = List(actor1, actor2).map(_.path.toString)
+      val paths       = List(actor1, actor2).map(_.path.toString)
       val routedActor = system.actorOf(BroadcastGroup(paths).props())
       routedActor ? 1
       routedActor ! "end"

@@ -3,7 +3,11 @@ package quasiquotes
 
 import scala.tools.nsc.ast.parser.{Parsers => ScalaParser}
 import scala.tools.nsc.ast.parser.Tokens._
-import scala.reflect.internal.util.{BatchSourceFile, SourceFile, FreshNameCreator}
+import scala.reflect.internal.util.{
+  BatchSourceFile,
+  SourceFile,
+  FreshNameCreator
+}
 
 /** Builds upon the vanilla Scala parser and teams up together with Placeholders.scala to emulate holes.
   *  A principled solution to splicing into Scala syntax would be a parser that natively supports holes.
@@ -16,16 +20,15 @@ trait Parsers { self: Quasiquotes =>
   abstract class Parser extends {
     val global: self.global.type = self.global
   } with ScalaParser {
-    def parse(code: String): Tree = {
+    def parse(code: String): Tree =
       try {
-        val file = new BatchSourceFile(nme.QUASIQUOTE_FILE, code)
+        val file   = new BatchSourceFile(nme.QUASIQUOTE_FILE, code)
         val parser = new QuasiquoteParser(file)
-        parser.checkNoEscapingPlaceholders { parser.parseRule(entryPoint) }
+        parser.checkNoEscapingPlaceholders(parser.parseRule(entryPoint))
       } catch {
         case mi: MalformedInput =>
           c.abort(correspondingPosition(mi.offset), mi.msg)
       }
-    }
 
     def correspondingPosition(offset: Int): Position = {
       val posMapList = posMap.toList
@@ -59,7 +62,7 @@ trait Parsers { self: Quasiquotes =>
 
     override def token2string(token: Int): String = token match {
       case EOF => "end of quote"
-      case _ => super.token2string(token)
+      case _   => super.token2string(token)
     }
 
     def entryPoint: QuasiquoteParser => Tree
@@ -101,12 +104,14 @@ trait Parsers { self: Quasiquotes =>
               case _ => gen.mkBlock(stats, doFlatten = true)
             }
           case nme.unapply => gen.mkBlock(stats, doFlatten = false)
-          case other => global.abort("unreachable")
+          case other       => global.abort("unreachable")
         }
 
         // tq"$a => $b"
         override def makeFunctionTypeTree(
-            argtpes: List[Tree], restpe: Tree): Tree =
+            argtpes: List[Tree],
+            restpe: Tree
+        ): Tree =
           FunctionTypePlaceholder(argtpes, restpe)
 
         // make q"val (x: T) = rhs" be equivalent to q"val x: T = rhs" for sake of bug compatibility (SI-8211)
@@ -121,16 +126,19 @@ trait Parsers { self: Quasiquotes =>
 
       // q"def foo($x)"
       override def param(
-          owner: Name, implicitmod: Int, caseParam: Boolean): ValDef =
+          owner: Name,
+          implicitmod: Int,
+          caseParam: Boolean
+      ): ValDef =
         if (isHole &&
-            lookingAhead { in.token == COMMA || in.token == RPAREN }) {
+            lookingAhead(in.token == COMMA || in.token == RPAREN)) {
           ParamPlaceholder(implicitmod, ident())
         } else super.param(owner, implicitmod, caseParam)
 
       // q"($x) => ..." && q"class X { selfie => }
       override def convertToParam(tree: Tree): ValDef = tree match {
         case Ident(name) if isHole(name) => ParamPlaceholder(NoFlags, name)
-        case _ => super.convertToParam(tree)
+        case _                           => super.convertToParam(tree)
       }
 
       // q"foo match { case $x }"
@@ -145,26 +153,26 @@ trait Parsers { self: Quasiquotes =>
 
       override def caseBlock(): Tree = super.caseBlock() match {
         case Block(Nil, expr) => expr
-        case other => other
+        case other            => other
       }
 
       override def isAnnotation: Boolean =
-        super.isAnnotation || (isHole && lookingAhead { isAnnotation })
+        super.isAnnotation || (isHole && lookingAhead(isAnnotation))
 
       override def isModifier: Boolean =
-        super.isModifier || (isHole && lookingAhead { isModifier })
+        super.isModifier || (isHole && lookingAhead(isModifier))
 
       override def isLocalModifier: Boolean =
-        super.isLocalModifier || (isHole && lookingAhead { isLocalModifier })
+        super.isLocalModifier || (isHole && lookingAhead(isLocalModifier))
 
       override def isTemplateIntro: Boolean =
-        super.isTemplateIntro || (isHole && lookingAhead { isTemplateIntro })
+        super.isTemplateIntro || (isHole && lookingAhead(isTemplateIntro))
 
       override def isDefIntro: Boolean =
-        super.isDefIntro || (isHole && lookingAhead { isDefIntro })
+        super.isDefIntro || (isHole && lookingAhead(isDefIntro))
 
       override def isDclIntro: Boolean =
-        super.isDclIntro || (isHole && lookingAhead { isDclIntro })
+        super.isDclIntro || (isHole && lookingAhead(isDclIntro))
 
       override def isStatSep(token: Int) =
         token == EOF || super.isStatSep(token)
@@ -199,15 +207,15 @@ trait Parsers { self: Quasiquotes =>
 
       override def ensureEarlyDef(tree: Tree) = tree match {
         case Ident(name: TermName) if isHole(name) => EarlyDefPlaceholder(name)
-        case _ => super.ensureEarlyDef(tree)
+        case _                                     => super.ensureEarlyDef(tree)
       }
 
       override def isTypedParam(tree: Tree) =
         super.isTypedParam(tree) ||
-        (tree match {
-              case Ident(name) if isHole(name) => true
-              case _ => false
-            })
+          (tree match {
+            case Ident(name) if isHole(name) => true
+            case _                           => false
+          })
 
       override def topStat = super.topStat.orElse {
         case _ if isHole =>
@@ -216,8 +224,7 @@ trait Parsers { self: Quasiquotes =>
           stats
       }
 
-      override def enumerator(
-          isFirst: Boolean, allowNestedIf: Boolean = true) =
+      override def enumerator(isFirst: Boolean, allowNestedIf: Boolean = true) =
         if (isHole && lookingAhead {
               in.token == EOF || in.token == RPAREN || isStatSep
             }) {
@@ -233,7 +240,7 @@ trait Parsers { self: Quasiquotes =>
     def apply(tree: Tree): Block = Block(Nil, tree).updateAttachment(Q)
     def unapply(tree: Tree): Option[Tree] = tree match {
       case Block(Nil, contents) if tree.hasAttachment[Q.type] => Some(contents)
-      case _ => None
+      case _                                                  => None
     }
   }
 

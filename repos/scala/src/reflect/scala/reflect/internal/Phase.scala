@@ -14,10 +14,10 @@ abstract class Phase(val prev: Phase) {
   val id: Id = if (prev eq null) 0 else prev.id + 1
 
   /** New flags visible after this phase has completed */
-  def nextFlags: Long = 0l
+  def nextFlags: Long = 0L
 
   /** New flags visible once this phase has started */
-  def newFlags: Long = 0l
+  def newFlags: Long = 0L
 
   val fmask =
     (if (prev eq null) Flags.InitialFlags
@@ -28,7 +28,7 @@ abstract class Phase(val prev: Phase) {
 
   // does anyone rely on next == this for terminus?
   def next: Phase = if (nx eq NoPhase) this else nx
-  def hasNext = next != this
+  def hasNext     = next != this
   // this definition excludes the terminal phase
   //def iterator = Iterator.iterate(this)(_.nx) takeWhile (p => p.next != p)
   def iterator = Iterator.iterate(this)(_.nx) takeWhile (_ ne NoPhase)
@@ -41,17 +41,17 @@ abstract class Phase(val prev: Phase) {
   // NOTE: sbt injects its own phases which extend this class, and not GlobalPhase, so we must implement this logic here
   private val _erasedTypes =
     ((prev ne null) && (prev ne NoPhase)) &&
-    (prev.name == "erasure" || prev.erasedTypes)
+      (prev.name == "erasure" || prev.erasedTypes)
   def erasedTypes: Boolean = _erasedTypes // overridden in back-end
   final val flatClasses: Boolean =
     ((prev ne null) && (prev ne NoPhase)) &&
-    (prev.name == "flatten" || prev.flatClasses)
+      (prev.name == "flatten" || prev.flatClasses)
   final val specialized: Boolean =
     ((prev ne null) && (prev ne NoPhase)) &&
-    (prev.name == "specialize" || prev.specialized)
+      (prev.name == "specialize" || prev.specialized)
   final val refChecked: Boolean =
     ((prev ne null) && (prev ne NoPhase)) &&
-    (prev.name == "refchecks" || prev.refChecked)
+      (prev.name == "refchecks" || prev.refChecked)
 
   /** This is used only in unsafeTypeParams, and at this writing is
     *  overridden to false in parser, namer, typer, and erasure. (And NoPhase.)
@@ -60,15 +60,15 @@ abstract class Phase(val prev: Phase) {
   def run(): Unit
 
   override def toString() = name
-  override def hashCode = id.## + name.##
+  override def hashCode   = id.## + name.##
   override def equals(other: Any) = other match {
     case x: Phase => id == x.id && name == x.name
-    case _ => false
+    case _        => false
   }
 }
 
 object NoPhase extends Phase(null) {
-  def name = "<no phase>"
+  def name                     = "<no phase>"
   override def keepsTypeParams = false
   def run() { throw new Error("NoPhase.run") }
 }

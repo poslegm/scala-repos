@@ -20,8 +20,7 @@ object HttpServer {
     * HTTP responses.
     */
   class HandleExceptions extends SimpleFilter[Request, Response] {
-    def apply(request: Request, service: Service[Request, Response]) = {
-
+    def apply(request: Request, service: Service[Request, Response]) =
       // `handle` asynchronously handles exceptions.
       service(request) handle {
         case error =>
@@ -36,7 +35,6 @@ object HttpServer {
 
           errorResponse
       }
-    }
   }
 
   /**
@@ -44,14 +42,14 @@ object HttpServer {
     * "Authorization" header.
     */
   class Authorize extends SimpleFilter[Request, Response] {
-    def apply(request: Request, continue: Service[Request, Response]) = {
+    def apply(request: Request, continue: Service[Request, Response]) =
       if (Some("open sesame") == request.headerMap.get(Fields.Authorization)) {
         continue(request)
       } else {
         Future.exception(
-            new IllegalArgumentException("You don't know the secret"))
+          new IllegalArgumentException("You don't know the secret")
+        )
       }
-    }
   }
 
   /**
@@ -67,8 +65,8 @@ object HttpServer {
 
   def main(args: Array[String]) {
     val handleExceptions = new HandleExceptions
-    val authorize = new Authorize
-    val respond = new Respond
+    val authorize        = new Authorize
+    val respond          = new Respond
 
     // compose the Filters and Service together:
     val myService: Service[Request, Response] =

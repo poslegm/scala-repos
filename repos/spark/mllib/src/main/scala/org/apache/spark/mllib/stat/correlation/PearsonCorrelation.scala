@@ -36,9 +36,8 @@ private[stat] object PearsonCorrelation extends Correlation with Logging {
   /**
     * Compute the Pearson correlation for two datasets. NaN if either vector has 0 variance.
     */
-  override def computeCorrelation(x: RDD[Double], y: RDD[Double]): Double = {
+  override def computeCorrelation(x: RDD[Double], y: RDD[Double]): Double =
     computeCorrelationWithMatrixImpl(x, y)
-  }
 
   /**
     * Compute the Pearson correlation matrix S, for the input matrix, where S(i, j) is the
@@ -46,7 +45,7 @@ private[stat] object PearsonCorrelation extends Correlation with Logging {
     */
   override def computeCorrelationMatrix(X: RDD[Vector]): Matrix = {
     val rowMatrix = new RowMatrix(X)
-    val cov = rowMatrix.computeCovariance()
+    val cov       = rowMatrix.computeCovariance()
     computeCorrelationMatrixFromCovariance(cov)
   }
 
@@ -55,9 +54,10 @@ private[stat] object PearsonCorrelation extends Correlation with Logging {
     * 0 covariance results in a correlation value of Double.NaN.
     */
   def computeCorrelationMatrixFromCovariance(
-      covarianceMatrix: Matrix): Matrix = {
+      covarianceMatrix: Matrix
+  ): Matrix = {
     val cov = covarianceMatrix.toBreeze.asInstanceOf[BDM[Double]]
-    val n = cov.cols
+    val n   = cov.cols
 
     // Compute the standard deviation on the diagonals first
     var i = 0
@@ -68,8 +68,8 @@ private[stat] object PearsonCorrelation extends Correlation with Logging {
     }
 
     // Loop through columns since cov is column major
-    var j = 0
-    var sigma = 0.0
+    var j          = 0
+    var sigma      = 0.0
     var containNaN = false
     while (j < n) {
       sigma = cov(j, j)
@@ -103,7 +103,6 @@ private[stat] object PearsonCorrelation extends Correlation with Logging {
     Matrices.fromBreeze(cov)
   }
 
-  private def closeToZero(value: Double, threshold: Double = 1e-12): Boolean = {
+  private def closeToZero(value: Double, threshold: Double = 1e-12): Boolean =
     math.abs(value) <= threshold
-  }
 }

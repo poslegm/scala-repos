@@ -34,21 +34,23 @@ trait LoggerConfigurator {
 
 object LoggerConfigurator {
 
-  def apply(classLoader: ClassLoader): Option[LoggerConfigurator] = {
+  def apply(classLoader: ClassLoader): Option[LoggerConfigurator] =
     findFromResources(classLoader).flatMap { className =>
       apply(className, this.getClass.getClassLoader)
     }
-  }
 
-  def apply(loggerConfiguratorClassName: String,
-            classLoader: ClassLoader): Option[LoggerConfigurator] = {
+  def apply(
+      loggerConfiguratorClassName: String,
+      classLoader: ClassLoader
+  ): Option[LoggerConfigurator] =
     try {
       val loggerConfiguratorClass: Class[_] =
         classLoader.loadClass(loggerConfiguratorClassName)
       Some(
-          loggerConfiguratorClass
-            .newInstance()
-            .asInstanceOf[LoggerConfigurator])
+        loggerConfiguratorClass
+          .newInstance()
+          .asInstanceOf[LoggerConfigurator]
+      )
     } catch {
       case ex: Exception =>
         val msg = s"""
@@ -59,7 +61,6 @@ object LoggerConfigurator {
         ex.printStackTrace()
         None
     }
-  }
 
   private def findFromResources(classLoader: ClassLoader): Option[String] = {
     val in = classLoader.getResourceAsStream("logger-configurator.properties")

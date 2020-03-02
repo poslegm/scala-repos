@@ -30,19 +30,22 @@ import com.twitter.scalding.typed.TypedSink
 import scala.collection.JavaConverters._
 
 trait LzoCodec[T]
-    extends FileSource with SingleMappable[T]
-    with TypedSink[T] with LocalTapSource {
+    extends FileSource
+    with SingleMappable[T]
+    with TypedSink[T]
+    with LocalTapSource {
   def injection: Injection[T, Array[Byte]]
   override def setter[U <: T] =
     TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
   override def hdfsScheme =
     HadoopSchemeInstance(
-        (new LzoByteArrayScheme).asInstanceOf[Scheme[_, _, _, _, _]])
+      (new LzoByteArrayScheme).asInstanceOf[Scheme[_, _, _, _, _]]
+    )
   override def transformForRead(pipe: Pipe) =
-    pipe.flatMap(0 -> 0) { fromBytes(_: Array[Byte]) }
+    pipe.flatMap(0 -> 0)(fromBytes(_: Array[Byte]))
 
   override def transformForWrite(pipe: Pipe) =
-    pipe.mapTo(0 -> 0) { injection.apply(_: T) }
+    pipe.mapTo(0 -> 0)(injection.apply(_: T))
 
   protected def fromBytes(b: Array[Byte]): Option[T] =
     Some(injection.invert(b).get)
@@ -51,7 +54,8 @@ trait LzoCodec[T]
     val tap = createTap(Read)(mode)
     mode.openForRead(config, tap).asScala.flatMap { te =>
       fromBytes(
-          te.selectTuple(sourceFields).getObject(0).asInstanceOf[Array[Byte]])
+        te.selectTuple(sourceFields).getObject(0).asInstanceOf[Array[Byte]]
+      )
     }
   }
 }
@@ -70,68 +74,84 @@ trait ErrorThresholdLzoCodec[T] extends ErrorHandlingLzoCodec[T] {
 }
 
 trait LzoProtobuf[T <: Message]
-    extends LocalTapSource with SingleMappable[T] with TypedSink[T] {
+    extends LocalTapSource
+    with SingleMappable[T]
+    with TypedSink[T] {
   def column: Class[_]
   override def setter[U <: T] =
     TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
   override def hdfsScheme =
     HadoopSchemeInstance(
-        (new LzoProtobufScheme[T](column)).asInstanceOf[Scheme[_, _, _, _, _]])
+      (new LzoProtobufScheme[T](column)).asInstanceOf[Scheme[_, _, _, _, _]]
+    )
 }
 
 trait LzoThrift[T <: TBase[_, _]]
-    extends LocalTapSource with SingleMappable[T] with TypedSink[T] {
+    extends LocalTapSource
+    with SingleMappable[T]
+    with TypedSink[T] {
   def column: Class[_]
   override def setter[U <: T] =
     TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
   override def hdfsScheme =
     HadoopSchemeInstance(
-        (new LzoThriftScheme[T](column)).asInstanceOf[Scheme[_, _, _, _, _]])
+      (new LzoThriftScheme[T](column)).asInstanceOf[Scheme[_, _, _, _, _]]
+    )
 }
 
 trait LzoText
-    extends LocalTapSource with SingleMappable[String] with TypedSink[String] {
+    extends LocalTapSource
+    with SingleMappable[String]
+    with TypedSink[String] {
   override def setter[U <: String] =
     TupleSetter.asSubSetter[String, U](TupleSetter.singleSetter[String])
-  override def hdfsScheme = HadoopSchemeInstance(new LzoTextLine())
+  override def hdfsScheme   = HadoopSchemeInstance(new LzoTextLine())
   override def sourceFields = Dsl.intFields(Seq(1))
 }
 
 trait LzoTsv extends DelimitedScheme with LocalTapSource {
   override def hdfsScheme =
     HadoopSchemeInstance(
-        (new LzoTextDelimited(fields,
-                              skipHeader,
-                              writeHeader,
-                              separator,
-                              strict,
-                              quote,
-                              types,
-                              safe)).asInstanceOf[Scheme[_, _, _, _, _]])
+      (new LzoTextDelimited(
+        fields,
+        skipHeader,
+        writeHeader,
+        separator,
+        strict,
+        quote,
+        types,
+        safe
+      )).asInstanceOf[Scheme[_, _, _, _, _]]
+    )
 }
 
 trait LzoTypedTsv[T]
-    extends DelimitedScheme with Mappable[T]
-    with TypedSink[T] with LocalTapSource {
+    extends DelimitedScheme
+    with Mappable[T]
+    with TypedSink[T]
+    with LocalTapSource {
   override def setter[U <: T] =
     TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
   override def hdfsScheme =
     HadoopSchemeInstance(
-        (new LzoTextDelimited(fields,
-                              skipHeader,
-                              writeHeader,
-                              separator,
-                              strict,
-                              quote,
-                              types,
-                              safe)).asInstanceOf[Scheme[_, _, _, _, _]])
+      (new LzoTextDelimited(
+        fields,
+        skipHeader,
+        writeHeader,
+        separator,
+        strict,
+        quote,
+        types,
+        safe
+      )).asInstanceOf[Scheme[_, _, _, _, _]]
+    )
 
   def mf: Manifest[T]
 
   override val types: Array[Class[_]] = {
     if (classOf[scala.Product].isAssignableFrom(mf.runtimeClass)) {
       //Assume this is a Tuple:
-      mf.typeArguments.map { _.runtimeClass }.toArray
+      mf.typeArguments.map(_.runtimeClass).toArray
     } else {
       //Assume there is only a single item
       Array(mf.runtimeClass)

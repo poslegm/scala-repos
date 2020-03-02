@@ -37,7 +37,7 @@ object FieldSerializerBugs extends Specification {
   "Name with symbols is correctly serialized" in {
     implicit val formats = DefaultFormats + FieldSerializer[AnyRef]()
 
-    val s = WithSymbol(5)
+    val s   = WithSymbol(5)
     val str = Serialization.write(s)
     (str mustEqual """{"a-b*c":5}""") and (read[WithSymbol](str) mustEqual s)
   }

@@ -24,9 +24,10 @@ object SnapshotSpec extends Spec {
         override def run() {
           for (i <- 0 until sz) {
             assert(trie.remove(new Wrap(i)) == Some(i))
-            for (j <- 0 until sz) if (j <= i)
-              assert(trie.get(new Wrap(j)) == None)
-            else assert(trie.get(new Wrap(j)) == Some(j))
+            for (j <- 0 until sz)
+              if (j <= i)
+                assert(trie.get(new Wrap(j)) == None)
+              else assert(trie.get(new Wrap(j)) == Some(j))
           }
         }
       }
@@ -49,7 +50,11 @@ object SnapshotSpec extends Spec {
     }
 
     def consistentReadOnly(
-        name: String, readonly: Map[Wrap, Int], sz: Int, N: Int) {
+        name: String,
+        readonly: Map[Wrap, Int],
+        sz: Int,
+        N: Int
+    ) {
       @volatile var e: Exception = null
 
       // reads possible entries once and stores them
@@ -59,7 +64,8 @@ object SnapshotSpec extends Spec {
         setName("Reader " + name)
 
         override def run() =
-          try check() catch {
+          try check()
+          catch {
             case ex: Exception => e = ex
           }
 
@@ -67,7 +73,7 @@ object SnapshotSpec extends Spec {
           val initial = mutable.Map[Wrap, Int]()
           for (i <- 0 until sz) trie.get(new Wrap(i)) match {
             case Some(i) => initial.put(new Wrap(i), i)
-            case None => // do nothing
+            case None    => // do nothing
           }
 
           for (k <- 0 until N) {
@@ -75,9 +81,11 @@ object SnapshotSpec extends Spec {
               val tres = trie.get(new Wrap(i))
               val ires = initial.get(new Wrap(i))
               if (tres != ires)
-                println(i,
-                        "initially: " + ires,
-                        "traversal %d: %s".format(k, tres))
+                println(
+                  i,
+                  "initially: " + ires,
+                  "traversal %d: %s".format(k, tres)
+                )
               assert(tres == ires)
             }
           }
@@ -103,7 +111,7 @@ object SnapshotSpec extends Spec {
         for (k <- 0 until rep) {
           for (i <- 0 until sz) trie.putIfAbsent(new Wrap(i), i) match {
             case Some(_) => trie.remove(new Wrap(i))
-            case None => // do nothing
+            case None    => // do nothing
           }
         }
       }
@@ -111,25 +119,28 @@ object SnapshotSpec extends Spec {
 
     // removes all the elements from the trie
     class Remover(
-        trie: TrieMap[Wrap, Int], index: Int, totremovers: Int, sz: Int)
-        extends Thread {
+        trie: TrieMap[Wrap, Int],
+        index: Int,
+        totremovers: Int,
+        sz: Int
+    ) extends Thread {
       setName("Remover %d".format(index))
 
       override def run() {
-        for (i <- 0 until sz) trie.remove(
-            new Wrap((i + sz / totremovers * index) % sz))
+        for (i <- 0 until sz)
+          trie.remove(new Wrap((i + sz / totremovers * index) % sz))
       }
     }
 
     "have a consistent quiescent read-only snapshot" in {
       val sz = 10000
-      val N = 100
-      val W = 10
+      val N  = 100
+      val W  = 10
 
       val ct = new TrieMap[Wrap, Int]
       for (i <- 0 until sz) ct(new Wrap(i)) = i
       val readonly = ct.readOnlySnapshot()
-      val threads = for (i <- 0 until W) yield new Modifier(ct, i, N, sz)
+      val threads  = for (i <- 0 until W) yield new Modifier(ct, i, N, sz)
 
       threads.foreach(_.start())
       consistentReadOnly("qm", readonly, sz, N)
@@ -141,37 +152,41 @@ object SnapshotSpec extends Spec {
 
     "have a consistent non-quiescent read-only snapshot, concurrent with removes only" in {
       val sz = 1250
-      val W = 100
-      val S = 5000
+      val W  = 100
+      val S  = 5000
 
       val ct = new TrieMap[Wrap, Int]
       for (i <- 0 until sz) ct(new Wrap(i)) = i
       val threads = for (i <- 0 until W) yield new Remover(ct, i, W, sz)
 
       threads.foreach(_.start())
-      for (i <- 0 until S) consistentReadOnly(
-          "non-qr", ct.readOnlySnapshot(), sz, 5)
+      for (i <- 0 until S)
+        consistentReadOnly("non-qr", ct.readOnlySnapshot(), sz, 5)
       threads.foreach(_.join())
     }
 
     "have a consistent non-quiescent read-only snapshot, concurrent with modifications" in {
       val sz = 1000
-      val N = 7000
-      val W = 10
-      val S = 7000
+      val N  = 7000
+      val W  = 10
+      val S  = 7000
 
       val ct = new TrieMap[Wrap, Int]
       for (i <- 0 until sz) ct(new Wrap(i)) = i
       val threads = for (i <- 0 until W) yield new Modifier(ct, i, N, sz)
 
       threads.foreach(_.start())
-      for (i <- 0 until S) consistentReadOnly(
-          "non-qm", ct.readOnlySnapshot(), sz, 5)
+      for (i <- 0 until S)
+        consistentReadOnly("non-qm", ct.readOnlySnapshot(), sz, 5)
       threads.foreach(_.join())
     }
 
     def consistentNonReadOnly(
-        name: String, trie: TrieMap[Wrap, Int], sz: Int, N: Int) {
+        name: String,
+        trie: TrieMap[Wrap, Int],
+        sz: Int,
+        N: Int
+    ) {
       @volatile var e: Exception = null
 
       // reads possible entries once and stores them
@@ -181,7 +196,8 @@ object SnapshotSpec extends Spec {
         setName("Worker " + name)
 
         override def run() =
-          try check() catch {
+          try check()
+          catch {
             case ex: Exception => e = ex
           }
 
@@ -189,7 +205,7 @@ object SnapshotSpec extends Spec {
           val initial = mutable.Map[Wrap, Int]()
           for (i <- 0 until sz) trie.get(new Wrap(i)) match {
             case Some(i) => initial.put(new Wrap(i), i)
-            case None => // do nothing
+            case None    => // do nothing
           }
 
           for (k <- 0 until N) {
@@ -224,9 +240,9 @@ object SnapshotSpec extends Spec {
 
     "have a consistent non-quiescent snapshot, concurrent with modifications" in {
       val sz = 9000
-      val N = 1000
-      val W = 10
-      val S = 400
+      val N  = 1000
+      val W  = 10
+      val S  = 400
 
       val ct = new TrieMap[Wrap, Int]
       for (i <- 0 until sz) ct(new Wrap(i)) = i
@@ -241,12 +257,12 @@ object SnapshotSpec extends Spec {
     }
 
     "work when many concurrent snapshots are taken, concurrent with modifications" in {
-      val sz = 12000
-      val W = 10
-      val S = 10
+      val sz          = 12000
+      val W           = 10
+      val S           = 10
       val modifytimes = 1200
-      val snaptimes = 600
-      val ct = new TrieMap[Wrap, Int]
+      val snaptimes   = 600
+      val ct          = new TrieMap[Wrap, Int]
       for (i <- 0 until sz) ct(new Wrap(i)) = i
 
       class Snapshooter extends Thread {
@@ -260,10 +276,9 @@ object SnapshotSpec extends Spec {
         }
       }
 
-      val mods = for (i <- 0 until W) yield
-        new Modifier(ct, i, modifytimes, sz)
+      val mods     = for (i <- 0 until W) yield new Modifier(ct, i, modifytimes, sz)
       val shooters = for (i <- 0 until S) yield new Snapshooter
-      val threads = mods ++ shooters
+      val threads  = mods ++ shooters
       threads.foreach(_.start())
       threads.foreach(_.join())
     }

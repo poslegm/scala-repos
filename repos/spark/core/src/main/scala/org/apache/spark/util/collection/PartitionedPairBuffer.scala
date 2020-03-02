@@ -28,18 +28,21 @@ import org.apache.spark.util.collection.WritablePartitionedPairCollection._
   * The buffer can support up to `1073741823 (2 ^ 30 - 1)` elements.
   */
 private[spark] class PartitionedPairBuffer[K, V](initialCapacity: Int = 64)
-    extends WritablePartitionedPairCollection[K, V] with SizeTracker {
+    extends WritablePartitionedPairCollection[K, V]
+    with SizeTracker {
   import PartitionedPairBuffer._
 
-  require(initialCapacity <= MAXIMUM_CAPACITY,
-          s"Can't make capacity bigger than ${MAXIMUM_CAPACITY} elements")
+  require(
+    initialCapacity <= MAXIMUM_CAPACITY,
+    s"Can't make capacity bigger than ${MAXIMUM_CAPACITY} elements"
+  )
   require(initialCapacity >= 1, "Invalid initial capacity")
 
   // Basic growable array data structure. We use a single array of AnyRef to hold both the keys
   // and the values, so that we can sort them efficiently with KVArraySortDataFormat.
   private var capacity = initialCapacity
-  private var curSize = 0
-  private var data = new Array[AnyRef](2 * initialCapacity)
+  private var curSize  = 0
+  private var data     = new Array[AnyRef](2 * initialCapacity)
 
   /** Add an element into the buffer */
   def insert(partition: Int, key: K, value: V): Unit = {
@@ -56,7 +59,8 @@ private[spark] class PartitionedPairBuffer[K, V](initialCapacity: Int = 64)
   private def growArray(): Unit = {
     if (capacity >= MAXIMUM_CAPACITY) {
       throw new IllegalStateException(
-          s"Can't insert more than ${MAXIMUM_CAPACITY} elements")
+        s"Can't insert more than ${MAXIMUM_CAPACITY} elements"
+      )
     }
     val newCapacity =
       if (capacity * 2 < 0 || capacity * 2 > MAXIMUM_CAPACITY) {
@@ -74,7 +78,8 @@ private[spark] class PartitionedPairBuffer[K, V](initialCapacity: Int = 64)
 
   /** Iterate through the data in a given order. For this class this is not really destructive. */
   override def partitionedDestructiveSortedIterator(
-      keyComparator: Option[Comparator[K]]): Iterator[((Int, K), V)] = {
+      keyComparator: Option[Comparator[K]]
+  ): Iterator[((Int, K), V)] = {
     val comparator =
       keyComparator.map(partitionKeyComparator).getOrElse(partitionComparator)
     new Sorter(new KVArraySortDataFormat[(Int, K), AnyRef])
@@ -92,8 +97,10 @@ private[spark] class PartitionedPairBuffer[K, V](initialCapacity: Int = 64)
         if (!hasNext) {
           throw new NoSuchElementException
         }
-        val pair = (data(2 * pos).asInstanceOf[(Int, K)],
-                    data(2 * pos + 1).asInstanceOf[V])
+        val pair = (
+          data(2 * pos).asInstanceOf[(Int, K)],
+          data(2 * pos + 1).asInstanceOf[V]
+        )
         pos += 1
         pair
       }

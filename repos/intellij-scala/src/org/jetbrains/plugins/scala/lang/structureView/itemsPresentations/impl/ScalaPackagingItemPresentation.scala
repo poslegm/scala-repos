@@ -13,8 +13,8 @@ import org.jetbrains.plugins.scala.lang.psi.api.toplevel.packaging._
   */
 class ScalaPackagingItemPresentation(private val element: ScPackaging)
     extends ScalaItemPresentation(element) {
-  def getPresentableText: String = {
+  def getPresentableText: String =
     ScalaElementPresentation.getPackagingPresentableText(
-        myElement.asInstanceOf[ScPackaging])
-  }
+      myElement.asInstanceOf[ScPackaging]
+    )
 }

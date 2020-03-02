@@ -52,9 +52,9 @@ private[random] object Well19937acIndexCache {
   // Third parameter of the algorithm.
   @inline private final val M3: Int = 449
 
-  val vm1 = Array.tabulate(R)(i => (i + M1) % R)
-  val vm2 = Array.tabulate(R)(i => (i + M2) % R)
-  val vm3 = Array.tabulate(R)(i => (i + M3) % R)
+  val vm1  = Array.tabulate(R)(i => (i + M1)  % R)
+  val vm2  = Array.tabulate(R)(i => (i + M2)  % R)
+  val vm3  = Array.tabulate(R)(i => (i + M3)  % R)
   val vrm1 = Array.tabulate(R)(i => (i + R_1) % R)
   val vrm2 = Array.tabulate(R)(i => (i + R_2) % R)
 }

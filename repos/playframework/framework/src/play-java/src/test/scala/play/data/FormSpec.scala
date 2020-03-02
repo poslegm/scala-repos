@@ -22,87 +22,120 @@ import javax.validation.Validation
 object FormSpec extends Specification {
 
   val messagesApi = new DefaultMessagesApi(
-      Environment.simple(),
-      Configuration.reference,
-      new DefaultLangs(Configuration.reference))
+    Environment.simple(),
+    Configuration.reference,
+    new DefaultLangs(Configuration.reference)
+  )
   val jMessagesApi = new play.i18n.MessagesApi(messagesApi)
   val formFactory = new FormFactory(
-      jMessagesApi,
-      new Formatters(jMessagesApi),
-      Validation.buildDefaultValidatorFactory().getValidator())
+    jMessagesApi,
+    new Formatters(jMessagesApi),
+    Validation.buildDefaultValidatorFactory().getValidator()
+  )
 
   "a java form" should {
     "be valid" in {
       val req = dummyRequest(
-          Map("id" -> Array("1234567891"),
-              "name" -> Array("peter"),
-              "done" -> Array("true"),
-              "dueDate" -> Array("15/12/2009")))
+        Map(
+          "id"      -> Array("1234567891"),
+          "name"    -> Array("peter"),
+          "done"    -> Array("true"),
+          "dueDate" -> Array("15/12/2009")
+        )
+      )
       Context.current.set(
-          new Context(666,
-                      null,
-                      req,
-                      Map.empty.asJava,
-                      Map.empty.asJava,
-                      Map.empty.asJava))
+        new Context(
+          666,
+          null,
+          req,
+          Map.empty.asJava,
+          Map.empty.asJava,
+          Map.empty.asJava
+        )
+      )
 
       val myForm =
         formFactory.form(classOf[play.data.models.Task]).bindFromRequest()
       myForm hasErrors () must beEqualTo(false)
     }
     "be valid with mandatory params passed" in {
-      val req = dummyRequest(Map("id" -> Array("1234567891"),
-                                 "name" -> Array("peter"),
-                                 "dueDate" -> Array("15/12/2009")))
+      val req = dummyRequest(
+        Map(
+          "id"      -> Array("1234567891"),
+          "name"    -> Array("peter"),
+          "dueDate" -> Array("15/12/2009")
+        )
+      )
       Context.current.set(
-          new Context(666,
-                      null,
-                      req,
-                      Map.empty.asJava,
-                      Map.empty.asJava,
-                      Map.empty.asJava))
+        new Context(
+          666,
+          null,
+          req,
+          Map.empty.asJava,
+          Map.empty.asJava,
+          Map.empty.asJava
+        )
+      )
 
       val myForm =
         formFactory.form(classOf[play.data.models.Task]).bindFromRequest()
       myForm hasErrors () must beEqualTo(false)
     }
     "have an error due to badly formatted date" in new WithApplication() {
-      val req = dummyRequest(Map("id" -> Array("1234567891"),
-                                 "name" -> Array("peter"),
-                                 "dueDate" -> Array("2009/11e/11")))
+      val req = dummyRequest(
+        Map(
+          "id"      -> Array("1234567891"),
+          "name"    -> Array("peter"),
+          "dueDate" -> Array("2009/11e/11")
+        )
+      )
       Context.current.set(
-          new Context(666,
-                      null,
-                      req,
-                      Map.empty.asJava,
-                      Map.empty.asJava,
-                      Map.empty.asJava))
+        new Context(
+          666,
+          null,
+          req,
+          Map.empty.asJava,
+          Map.empty.asJava,
+          Map.empty.asJava
+        )
+      )
 
       val myForm =
         formFactory.form(classOf[play.data.models.Task]).bindFromRequest()
       myForm hasErrors () must beEqualTo(true)
       myForm.errors.get("dueDate").get(0).messages().size() must beEqualTo(2)
       myForm.errors.get("dueDate").get(0).messages().get(1) must beEqualTo(
-          "error.invalid.java.util.Date")
+        "error.invalid.java.util.Date"
+      )
       myForm.errors.get("dueDate").get(0).messages().get(0) must beEqualTo(
-          "error.invalid")
+        "error.invalid"
+      )
       myForm.errors.get("dueDate").get(0).message() must beEqualTo(
-          "error.invalid.java.util.Date")
+        "error.invalid.java.util.Date"
+      )
     }
     "have an error due to badly formatted date after using setTransientLang" in new WithApplication(
-        GuiceApplicationBuilder()
-          .configure("play.i18n.langs" -> Seq("en", "en-US", "fr"))
-          .build()) {
-      val req = dummyRequest(Map("id" -> Array("1234567891"),
-                                 "name" -> Array("peter"),
-                                 "dueDate" -> Array("2009/11e/11")))
+      GuiceApplicationBuilder()
+        .configure("play.i18n.langs" -> Seq("en", "en-US", "fr"))
+        .build()
+    ) {
+      val req = dummyRequest(
+        Map(
+          "id"      -> Array("1234567891"),
+          "name"    -> Array("peter"),
+          "dueDate" -> Array("2009/11e/11")
+        )
+      )
       Context.current.set(
-          new Context(666,
-                      null,
-                      req,
-                      Map.empty.asJava,
-                      Map.empty.asJava,
-                      Map.empty.asJava))
+        new Context(
+          666,
+          null,
+          req,
+          Map.empty.asJava,
+          Map.empty.asJava,
+          Map.empty.asJava
+        )
+      )
 
       Context.current.get().setTransientLang("fr");
 
@@ -111,28 +144,40 @@ object FormSpec extends Specification {
       myForm hasErrors () must beEqualTo(true)
       myForm.errors.get("dueDate").get(0).messages().size() must beEqualTo(3)
       myForm.errors.get("dueDate").get(0).messages().get(2) must beEqualTo(
-          "error.invalid.dueDate") // is ONLY defined in messages.fr
+        "error.invalid.dueDate"
+      ) // is ONLY defined in messages.fr
       myForm.errors.get("dueDate").get(0).messages().get(1) must beEqualTo(
-          "error.invalid.java.util.Date") // is defined in play's default messages file
+        "error.invalid.java.util.Date"
+      ) // is defined in play's default messages file
       myForm.errors.get("dueDate").get(0).messages().get(0) must beEqualTo(
-          "error.invalid") // is defined in play's default messages file
+        "error.invalid"
+      ) // is defined in play's default messages file
       myForm.errors.get("dueDate").get(0).message() must beEqualTo(
-          "error.invalid.dueDate") // is ONLY defined in messages.fr
+        "error.invalid.dueDate"
+      ) // is ONLY defined in messages.fr
     }
     "have an error due to badly formatted date after using changeLang" in new WithApplication(
-        GuiceApplicationBuilder()
-          .configure("play.i18n.langs" -> Seq("en", "en-US", "fr"))
-          .build()) {
-      val req = dummyRequest(Map("id" -> Array("1234567891"),
-                                 "name" -> Array("peter"),
-                                 "dueDate" -> Array("2009/11e/11")))
+      GuiceApplicationBuilder()
+        .configure("play.i18n.langs" -> Seq("en", "en-US", "fr"))
+        .build()
+    ) {
+      val req = dummyRequest(
+        Map(
+          "id"      -> Array("1234567891"),
+          "name"    -> Array("peter"),
+          "dueDate" -> Array("2009/11e/11")
+        )
+      )
       Context.current.set(
-          new Context(666,
-                      null,
-                      req,
-                      Map.empty.asJava,
-                      Map.empty.asJava,
-                      Map.empty.asJava))
+        new Context(
+          666,
+          null,
+          req,
+          Map.empty.asJava,
+          Map.empty.asJava,
+          Map.empty.asJava
+        )
+      )
 
       Context.current.get().changeLang("fr");
 
@@ -141,62 +186,85 @@ object FormSpec extends Specification {
       myForm hasErrors () must beEqualTo(true)
       myForm.errors.get("dueDate").get(0).messages().size() must beEqualTo(3)
       myForm.errors.get("dueDate").get(0).messages().get(2) must beEqualTo(
-          "error.invalid.dueDate") // is ONLY defined in messages.fr
+        "error.invalid.dueDate"
+      ) // is ONLY defined in messages.fr
       myForm.errors.get("dueDate").get(0).messages().get(1) must beEqualTo(
-          "error.invalid.java.util.Date") // is defined in play's default messages file
+        "error.invalid.java.util.Date"
+      ) // is defined in play's default messages file
       myForm.errors.get("dueDate").get(0).messages().get(0) must beEqualTo(
-          "error.invalid") // is defined in play's default messages file
+        "error.invalid"
+      ) // is defined in play's default messages file
       myForm.errors.get("dueDate").get(0).message() must beEqualTo(
-          "error.invalid.dueDate") // is ONLY defined in messages.fr
+        "error.invalid.dueDate"
+      ) // is ONLY defined in messages.fr
     }
     "have an error due to missing required value" in new WithApplication() {
       val req = dummyRequest(
-          Map("id" -> Array("1234567891x"), "name" -> Array("peter")))
+        Map("id" -> Array("1234567891x"), "name" -> Array("peter"))
+      )
       Context.current.set(
-          new Context(666,
-                      null,
-                      req,
-                      Map.empty.asJava,
-                      Map.empty.asJava,
-                      Map.empty.asJava))
+        new Context(
+          666,
+          null,
+          req,
+          Map.empty.asJava,
+          Map.empty.asJava,
+          Map.empty.asJava
+        )
+      )
 
       val myForm =
         formFactory.form(classOf[play.data.models.Task]).bindFromRequest()
       myForm hasErrors () must beEqualTo(true)
       myForm.errors.get("dueDate").get(0).messages().asScala must contain(
-          "error.required")
+        "error.required"
+      )
     }
     "have an error due to bad value in Id field" in new WithApplication() {
-      val req = dummyRequest(Map("id" -> Array("1234567891x"),
-                                 "name" -> Array("peter"),
-                                 "dueDate" -> Array("12/12/2009")))
+      val req = dummyRequest(
+        Map(
+          "id"      -> Array("1234567891x"),
+          "name"    -> Array("peter"),
+          "dueDate" -> Array("12/12/2009")
+        )
+      )
       Context.current.set(
-          new Context(666,
-                      null,
-                      req,
-                      Map.empty.asJava,
-                      Map.empty.asJava,
-                      Map.empty.asJava))
+        new Context(
+          666,
+          null,
+          req,
+          Map.empty.asJava,
+          Map.empty.asJava,
+          Map.empty.asJava
+        )
+      )
 
       val myForm =
         formFactory.form(classOf[play.data.models.Task]).bindFromRequest()
       myForm hasErrors () must beEqualTo(true)
       myForm.errors.get("id").get(0).messages().asScala must contain(
-          "error.invalid")
+        "error.invalid"
+      )
     }
     "be valid with default date binder" in {
       val req = dummyRequest(
-          Map("id" -> Array("1234567891"),
-              "name" -> Array("peter"),
-              "dueDate" -> Array("15/12/2009"),
-              "endDate" -> Array("2008-11-21")))
+        Map(
+          "id"      -> Array("1234567891"),
+          "name"    -> Array("peter"),
+          "dueDate" -> Array("15/12/2009"),
+          "endDate" -> Array("2008-11-21")
+        )
+      )
       Context.current.set(
-          new Context(666,
-                      null,
-                      req,
-                      Map.empty.asJava,
-                      Map.empty.asJava,
-                      Map.empty.asJava))
+        new Context(
+          666,
+          null,
+          req,
+          Map.empty.asJava,
+          Map.empty.asJava,
+          Map.empty.asJava
+        )
+      )
 
       val myForm =
         formFactory.form(classOf[play.data.models.Task]).bindFromRequest()
@@ -204,23 +272,30 @@ object FormSpec extends Specification {
     }
     "have an error due to badly formatted date for default date binder" in new WithApplication() {
       val req = dummyRequest(
-          Map("id" -> Array("1234567891"),
-              "name" -> Array("peter"),
-              "dueDate" -> Array("15/12/2009"),
-              "endDate" -> Array("2008-11e-21")))
+        Map(
+          "id"      -> Array("1234567891"),
+          "name"    -> Array("peter"),
+          "dueDate" -> Array("15/12/2009"),
+          "endDate" -> Array("2008-11e-21")
+        )
+      )
       Context.current.set(
-          new Context(666,
-                      null,
-                      req,
-                      Map.empty.asJava,
-                      Map.empty.asJava,
-                      Map.empty.asJava))
+        new Context(
+          666,
+          null,
+          req,
+          Map.empty.asJava,
+          Map.empty.asJava,
+          Map.empty.asJava
+        )
+      )
 
       val myForm =
         formFactory.form(classOf[play.data.models.Task]).bindFromRequest()
       myForm hasErrors () must beEqualTo(true)
       myForm.errors.get("endDate").get(0).messages().asScala must contain(
-          "error.invalid.java.util.Date")
+        "error.invalid.java.util.Date"
+      )
     }
 
     "support repeated values for Java binding" in {
@@ -235,8 +310,10 @@ object FormSpec extends Specification {
       val user2 = formFactory
         .form(classOf[AnotherUser])
         .bindFromRequest(
-            dummyRequest(Map("name" -> Array("Kiki"),
-                             "emails[0]" -> Array("kiki@gmail.com"))))
+          dummyRequest(
+            Map("name" -> Array("Kiki"), "emails[0]" -> Array("kiki@gmail.com"))
+          )
+        )
         .get
       user2.getName must beEqualTo("Kiki")
       user2.getEmails.size must beEqualTo(1)
@@ -244,9 +321,14 @@ object FormSpec extends Specification {
       val user3 = formFactory
         .form(classOf[AnotherUser])
         .bindFromRequest(
-            dummyRequest(Map("name" -> Array("Kiki"),
-                             "emails[0]" -> Array("kiki@gmail.com"),
-                             "emails[1]" -> Array("kiki@zen.com"))))
+          dummyRequest(
+            Map(
+              "name"      -> Array("Kiki"),
+              "emails[0]" -> Array("kiki@gmail.com"),
+              "emails[1]" -> Array("kiki@zen.com")
+            )
+          )
+        )
         .get
       user3.getName must beEqualTo("Kiki")
       user3.getEmails.size must beEqualTo(2)
@@ -254,17 +336,24 @@ object FormSpec extends Specification {
       val user4 = formFactory
         .form(classOf[AnotherUser])
         .bindFromRequest(
-            dummyRequest(Map("name" -> Array("Kiki"),
-                             "emails[]" -> Array("kiki@gmail.com"))))
+          dummyRequest(
+            Map("name" -> Array("Kiki"), "emails[]" -> Array("kiki@gmail.com"))
+          )
+        )
         .get
       user4.getName must beEqualTo("Kiki")
       user4.getEmails.size must beEqualTo(1)
 
       val user5 = formFactory
         .form(classOf[AnotherUser])
-        .bindFromRequest(dummyRequest(
-                Map("name" -> Array("Kiki"),
-                    "emails[]" -> Array("kiki@gmail.com", "kiki@zen.com"))))
+        .bindFromRequest(
+          dummyRequest(
+            Map(
+              "name"     -> Array("Kiki"),
+              "emails[]" -> Array("kiki@gmail.com", "kiki@zen.com")
+            )
+          )
+        )
         .get
       user5.getName must beEqualTo("Kiki")
       user5.getEmails.size must beEqualTo(2)
@@ -275,13 +364,13 @@ object FormSpec extends Specification {
       data.put("name", "kiwi")
 
       val userForm1: Form[AnotherUser] = formFactory.form(classOf[AnotherUser])
-      val user1 = userForm1.bind(new java.util.HashMap[String, String]()).get()
+      val user1                        = userForm1.bind(new java.util.HashMap[String, String]()).get()
       user1.getCompany.isPresent must beFalse
 
       data.put("company", "Acme")
 
       val userForm2: Form[AnotherUser] = formFactory.form(classOf[AnotherUser])
-      val user2 = userForm2.bind(data).get()
+      val user2                        = userForm2.bind(data).get()
       user2.getCompany.isPresent must beTrue
     }
 
@@ -294,15 +383,16 @@ object FormSpec extends Specification {
 
       val user2 = formFactory
         .form(classOf[AnotherUser])
-        .bindFromRequest(dummyRequest(
-                Map("name" -> Array("Kiki"), "company" -> Array("Acme"))))
+        .bindFromRequest(
+          dummyRequest(Map("name" -> Array("Kiki"), "company" -> Array("Acme")))
+        )
         .get
       user2.getCompany.get must beEqualTo("Acme")
     }
 
     "bind when valid" in {
       val userForm: Form[MyUser] = formFactory.form(classOf[MyUser])
-      val user = userForm.bind(new java.util.HashMap[String, String]()).get()
+      val user                   = userForm.bind(new java.util.HashMap[String, String]()).get()
       userForm.hasErrors() must equalTo(false)
       (user == null) must equalTo(false)
     }
@@ -325,7 +415,7 @@ object FormSpec extends Specification {
 
     "support custom validators" in {
       "that fails when validator's condition is not met" in {
-        val form = formFactory.form(classOf[Red])
+        val form  = formFactory.form(classOf[Red])
         val bound = form.bind(Map("name" -> "blue").asJava)
         bound.hasErrors must_== true
         bound.hasGlobalErrors must_== true
@@ -335,9 +425,13 @@ object FormSpec extends Specification {
       "that returns customized message when validator fails" in {
         val form = formFactory
           .form(classOf[MyBlueUser])
-          .bind(Map("name" -> "Shrek",
-                    "skinColor" -> "green",
-                    "hairColor" -> "blue").asJava)
+          .bind(
+            Map(
+              "name"      -> "Shrek",
+              "skinColor" -> "green",
+              "hairColor" -> "blue"
+            ).asJava
+          )
         form.hasErrors must beEqualTo(true)
         form.errors().get("hairColor") must beNull
         val validationErrors = form.errors().get("skinColor")
@@ -348,9 +442,13 @@ object FormSpec extends Specification {
       "that returns customized message in annotation when validator fails" in {
         val form = formFactory
           .form(classOf[MyBlueUser])
-          .bind(Map("name" -> "Smurf",
-                    "skinColor" -> "blue",
-                    "hairColor" -> "white").asJava)
+          .bind(
+            Map(
+              "name"      -> "Smurf",
+              "skinColor" -> "blue",
+              "hairColor" -> "white"
+            ).asJava
+          )
         form.errors().get("skinColor") must beNull
         form.hasErrors must beEqualTo(true)
         val validationErrors = form.errors().get("hairColor")
@@ -370,7 +468,8 @@ object FormSpec extends Specification {
             val a = f("a")
             val b = f("b")
             Html(
-                s"${a.name}=${a.value.getOrElse("")},${b.name}=${b.value.getOrElse("")}")
+              s"${a.name}=${a.value.getOrElse("")},${b.name}=${b.value.getOrElse("")}"
+            )
           }
           .map(_.toString)
 
@@ -382,58 +481,69 @@ object FormSpec extends Specification {
         // Don't use bind, the point here is to have a form with data that isn't bound, otherwise the mapping indexes
         // used come from the form, not the input data
         new Form[JavaForm](
-            null,
-            classOf[JavaForm],
-            map.asJava,
-            Map.empty.asJava,
-            Optional.empty[JavaForm],
-            null,
-            null,
-            Validation.buildDefaultValidatorFactory().getValidator())
+          null,
+          classOf[JavaForm],
+          map.asJava,
+          Map.empty.asJava,
+          Optional.empty[JavaForm],
+          null,
+          null,
+          Validation.buildDefaultValidatorFactory().getValidator()
+        )
       }
 
       "render the right number of fields if there's multiple sub fields at a given index when filled from a value" in {
         render(
-            form.fill(
-                new JavaForm(List(new JavaSubForm("somea", "someb")).asJava))
+          form.fill(
+            new JavaForm(List(new JavaSubForm("somea", "someb")).asJava)
+          )
         ) must exactly("foo[0].a=somea,foo[0].b=someb")
       }
 
       "render the right number of fields if there's multiple sub fields at a given index when filled from a form" in {
         render(
-            fillNoBind("somea" -> "someb")
+          fillNoBind("somea" -> "someb")
         ) must exactly("foo[0].a=somea,foo[0].b=someb")
       }
 
       "get the order of the fields correct when filled from a value" in {
         render(
-            form.fill(new JavaForm(List(new JavaSubForm("a", "b"),
-                                        new JavaSubForm("c", "d"),
-                                        new JavaSubForm("e", "f"),
-                                        new JavaSubForm("g", "h")).asJava))
-        ) must exactly("foo[0].a=a,foo[0].b=b",
-                       "foo[1].a=c,foo[1].b=d",
-                       "foo[2].a=e,foo[2].b=f",
-                       "foo[3].a=g,foo[3].b=h").inOrder
+          form.fill(
+            new JavaForm(
+              List(
+                new JavaSubForm("a", "b"),
+                new JavaSubForm("c", "d"),
+                new JavaSubForm("e", "f"),
+                new JavaSubForm("g", "h")
+              ).asJava
+            )
+          )
+        ) must exactly(
+          "foo[0].a=a,foo[0].b=b",
+          "foo[1].a=c,foo[1].b=d",
+          "foo[2].a=e,foo[2].b=f",
+          "foo[3].a=g,foo[3].b=h"
+        ).inOrder
       }
 
       "get the order of the fields correct when filled from a form" in {
         render(
-            fillNoBind("a" -> "b", "c" -> "d", "e" -> "f", "g" -> "h")
-        ) must exactly("foo[0].a=a,foo[0].b=b",
-                       "foo[1].a=c,foo[1].b=d",
-                       "foo[2].a=e,foo[2].b=f",
-                       "foo[3].a=g,foo[3].b=h").inOrder
+          fillNoBind("a" -> "b", "c" -> "d", "e" -> "f", "g" -> "h")
+        ) must exactly(
+          "foo[0].a=a,foo[0].b=b",
+          "foo[1].a=c,foo[1].b=d",
+          "foo[2].a=e,foo[2].b=f",
+          "foo[3].a=g,foo[3].b=h"
+        ).inOrder
       }
     }
   }
 
-  def dummyRequest(data: Map[String, Array[String]]): Request = {
+  def dummyRequest(data: Map[String, Array[String]]): Request =
     new RequestBuilder()
       .uri("http://localhost/test")
       .bodyFormArrayValues(data.asJava)
       .build()
-  }
 }
 
 class JavaForm(@BeanProperty var foo: java.util.List[JavaSubForm]) {

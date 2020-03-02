@@ -9,9 +9,9 @@ import org.eclipse.jgit.lib.Constants
 
 class NoShell(sshAddress: SshAddress) extends Factory[Command] {
   override def create(): Command = new Command() {
-    private var in: InputStream = null
-    private var out: OutputStream = null
-    private var err: OutputStream = null
+    private var in: InputStream        = null
+    private var out: OutputStream      = null
+    private var err: OutputStream      = null
     private var callback: ExitCallback = null
 
     override def start(env: Environment): Unit = {
@@ -45,20 +45,16 @@ class NoShell(sshAddress: SshAddress) extends Factory[Command] {
 
     override def destroy(): Unit = {}
 
-    override def setInputStream(in: InputStream): Unit = {
+    override def setInputStream(in: InputStream): Unit =
       this.in = in
-    }
 
-    override def setOutputStream(out: OutputStream): Unit = {
+    override def setOutputStream(out: OutputStream): Unit =
       this.out = out
-    }
 
-    override def setErrorStream(err: OutputStream): Unit = {
+    override def setErrorStream(err: OutputStream): Unit =
       this.err = err
-    }
 
-    override def setExitCallback(callback: ExitCallback): Unit = {
+    override def setExitCallback(callback: ExitCallback): Unit =
       this.callback = callback
-    }
   }
 }

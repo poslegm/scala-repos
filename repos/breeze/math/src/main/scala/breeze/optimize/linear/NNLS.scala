@@ -18,16 +18,18 @@ class NNLS(val maxIters: Int = -1) extends SerializableLogging {
   type BDM = DenseMatrix[Double]
   type BDV = DenseVector[Double]
 
-  case class State private[NNLS](x: BDV,
-                                 grad: BDV,
-                                 dir: BDV,
-                                 lastDir: BDV,
-                                 res: BDV,
-                                 tmp: BDV,
-                                 lastNorm: Double,
-                                 lastWall: Int,
-                                 iter: Int,
-                                 converged: Boolean)
+  case class State private[NNLS] (
+      x: BDV,
+      grad: BDV,
+      dir: BDV,
+      lastDir: BDV,
+      res: BDV,
+      tmp: BDV,
+      lastNorm: Double,
+      lastWall: Int,
+      iter: Int,
+      converged: Boolean
+  )
 
   // find the optimal unconstrained step
   private def steplen(ata: BDM, dir: BDV, res: BDV, tmp: BDV): Double = {
@@ -38,14 +40,13 @@ class NNLS(val maxIters: Int = -1) extends SerializableLogging {
   }
 
   // stopping condition
-  private def stop(step: Double, ndir: Double, nx: Double): Boolean = {
-    ((step.isNaN) // NaN
-        || (step < 1e-7) // too small or negative
-        || (step > 1e40) // too small; almost certainly numerical problems
-        || (ndir < 1e-12 * nx) // gradient relatively too small
-        || (ndir < 1e-32) // gradient absolutely too small; numerical issues may lurk
-        )
-  }
+  private def stop(step: Double, ndir: Double, nx: Double): Boolean =
+    ((step.isNaN)            // NaN
+      || (step < 1e-7)       // too small or negative
+      || (step > 1e40)       // too small; almost certainly numerical problems
+      || (ndir < 1e-12 * nx) // gradient relatively too small
+      || (ndir < 1e-32)      // gradient absolutely too small; numerical issues may lurk
+    )
 
   /**
     * Solve a least squares problem, possibly with nonnegativity constraints, by a modified
@@ -62,25 +63,31 @@ class NNLS(val maxIters: Int = -1) extends SerializableLogging {
     * iteration did not cause a previously-inactive constraint to become active.
     */
   def initialize(n: Int): State = {
-    val grad = DenseVector.zeros[Double](n)
-    val x = DenseVector.zeros[Double](n)
-    val dir = DenseVector.zeros[Double](n)
-    val lastDir = DenseVector.zeros[Double](n)
-    val res = DenseVector.zeros[Double](n)
-    val tmp = DenseVector.zeros[Double](n)
+    val grad     = DenseVector.zeros[Double](n)
+    val x        = DenseVector.zeros[Double](n)
+    val dir      = DenseVector.zeros[Double](n)
+    val lastDir  = DenseVector.zeros[Double](n)
+    val res      = DenseVector.zeros[Double](n)
+    val tmp      = DenseVector.zeros[Double](n)
     val lastNorm = 0.0
     val lastWall = 0
     State(x, grad, dir, lastDir, res, tmp, lastNorm, lastWall, 0, false)
   }
 
-  def reset(ata: DenseMatrix[Double],
-            atb: DenseVector[Double],
-            state: State) = {
+  def reset(
+      ata: DenseMatrix[Double],
+      atb: DenseVector[Double],
+      state: State
+  ) = {
     import state._
     require(
-        ata.cols == ata.rows, s"NNLS:iterations gram matrix must be symmetric")
-    require(ata.rows == state.x.length,
-            s"NNLS:iterations gram and linear dimension mismatch")
+      ata.cols == ata.rows,
+      s"NNLS:iterations gram matrix must be symmetric"
+    )
+    require(
+      ata.rows == state.x.length,
+      s"NNLS:iterations gram and linear dimension mismatch"
+    )
     x := 0.0
     grad := 0.0
     dir := 0.0
@@ -101,14 +108,16 @@ class NNLS(val maxIters: Int = -1) extends SerializableLogging {
     * @param resetState reset the state based on the flag
     * @return converged state
     */
-  def minimizeAndReturnState(ata: DenseMatrix[Double],
-                             atb: DenseVector[Double],
-                             initialState: State,
-                             resetState: Boolean = true): State = {
+  def minimizeAndReturnState(
+      ata: DenseMatrix[Double],
+      atb: DenseVector[Double],
+      initialState: State,
+      resetState: Boolean = true
+  ): State = {
     val startState =
       if (resetState) reset(ata, atb, initialState) else initialState
     import startState._
-    val n = atb.length
+    val n       = atb.length
     val iterMax = if (maxIters < 0) Math.max(400, 20 * n) else maxIters
 
     var nextNorm = lastNorm
@@ -134,7 +143,7 @@ class NNLS(val maxIters: Int = -1) extends SerializableLogging {
       // use a CG direction under certain conditions
       var step = steplen(ata, grad, res, tmp)
       var ndir = 0.0
-      val nx = x dot x
+      val nx   = x dot x
 
       if (nextIter > nextWall + 1) {
         val alpha = ngrad / nextNorm
@@ -154,16 +163,18 @@ class NNLS(val maxIters: Int = -1) extends SerializableLogging {
 
       // terminate?
       if (stop(step, ndir, nx)) {
-        return State(x,
-                     grad,
-                     dir,
-                     lastDir,
-                     res,
-                     tmp,
-                     nextNorm,
-                     nextWall,
-                     nextIter,
-                     true)
+        return State(
+          x,
+          grad,
+          dir,
+          lastDir,
+          res,
+          tmp,
+          nextNorm,
+          nextWall,
+          nextIter,
+          true
+        )
       } else {
         // don't run through the walls
         cforRange(0 until n) { i =>
@@ -189,29 +200,35 @@ class NNLS(val maxIters: Int = -1) extends SerializableLogging {
   }
 
   def minimizeAndReturnState(
-      ata: DenseMatrix[Double], atb: DenseVector[Double]): State = {
+      ata: DenseMatrix[Double],
+      atb: DenseVector[Double]
+  ): State = {
     val initialState = initialize(atb.length)
     minimizeAndReturnState(ata, atb, initialState)
   }
 
-  def minimize(ata: DenseMatrix[Double],
-               atb: DenseVector[Double]): DenseVector[Double] = {
+  def minimize(
+      ata: DenseMatrix[Double],
+      atb: DenseVector[Double]
+  ): DenseVector[Double] =
     minimizeAndReturnState(ata, atb).x
-  }
 
-  def minimize(ata: DenseMatrix[Double],
-               atb: DenseVector[Double],
-               init: State): DenseVector[Double] = {
+  def minimize(
+      ata: DenseMatrix[Double],
+      atb: DenseVector[Double],
+      init: State
+  ): DenseVector[Double] =
     minimizeAndReturnState(ata, atb, init).x
-  }
 }
 
 object NNLS {
 
   /** Compute the objective value */
-  def computeObjectiveValue(ata: DenseMatrix[Double],
-                            atb: DenseVector[Double],
-                            x: DenseVector[Double]): Double = {
+  def computeObjectiveValue(
+      ata: DenseMatrix[Double],
+      atb: DenseVector[Double],
+      x: DenseVector[Double]
+  ): Double = {
     val res = (x.t * ata * x) * 0.5 - atb.dot(x)
     res
   }
@@ -222,25 +239,27 @@ object NNLS {
     if (args.length < 2) {
       println("Usage: NNLS n s")
       println(
-          "Test NNLS with quadratic function of dimension n for s consecutive solves")
+        "Test NNLS with quadratic function of dimension n for s consecutive solves"
+      )
       sys.exit(1)
     }
 
     val problemSize = args(0).toInt
-    val numSolves = args(1).toInt
-    val nnls = new NNLS()
+    val numSolves   = args(1).toInt
+    val nnls        = new NNLS()
 
-    var i = 0
+    var i        = 0
     var nnlsTime = 0L
     while (i < numSolves) {
-      val ata = QpGenerator.getGram(problemSize)
-      val atb = DenseVector.rand[Double](problemSize, Rand.gaussian(0, 1))
+      val ata       = QpGenerator.getGram(problemSize)
+      val atb       = DenseVector.rand[Double](problemSize, Rand.gaussian(0, 1))
       val startTime = System.nanoTime()
       nnls.minimize(ata, atb)
       nnlsTime = nnlsTime + (System.nanoTime() - startTime)
       i = i + 1
     }
     println(
-        s"NNLS problemSize $problemSize solves $numSolves ${nnlsTime / 1e6} ms")
+      s"NNLS problemSize $problemSize solves $numSolves ${nnlsTime / 1e6} ms"
+    )
   }
 }

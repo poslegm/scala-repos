@@ -47,22 +47,29 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
     * See hashjoin:
     * http://docs.cascading.org/cascading/2.0/javadoc/cascading/pipe/HashJoin.html
     */
-  def hashCogroupOn[V1, R](mapside: TypedPipe[(K, V1)])(
-      joiner: (K, V1, Iterable[V]) => Iterator[R]): TypedPipe[(K, R)] =
+  def hashCogroupOn[V1, R](
+      mapside: TypedPipe[(K, V1)]
+  )(joiner: (K, V1, Iterable[V]) => Iterator[R]): TypedPipe[(K, R)] =
     // Note, the Ordering must have that compare(x,y)== 0 being consistent with hashCode and .equals to
     // otherwise, there may be funky issues with cascading
     TypedPipeFactory({ (fd, mode) =>
       val newPipe =
-        new HashJoin(RichPipe.assignName(
-                         mapside.toPipe(('key, 'value))(fd, mode, tup2Setter)),
-                     Field.singleOrdered("key")(keyOrdering),
-                     getForceToDiskPipeIfNecessary(fd, mode),
-                     Field.singleOrdered("key1")(keyOrdering),
-                     WrappedJoiner(new HashJoiner(joinFunction, joiner)))
+        new HashJoin(
+          RichPipe.assignName(
+            mapside.toPipe(('key, 'value))(fd, mode, tup2Setter)
+          ),
+          Field.singleOrdered("key")(keyOrdering),
+          getForceToDiskPipeIfNecessary(fd, mode),
+          Field.singleOrdered("key1")(keyOrdering),
+          WrappedJoiner(new HashJoiner(joinFunction, joiner))
+        )
 
       //Construct the new TypedPipe
       TypedPipe.from[(K, R)](newPipe.project('key, 'value), ('key, 'value))(
-          fd, mode, tuple2Converter)
+        fd,
+        mode,
+        tuple2Converter
+      )
     })
 
   /**
@@ -89,22 +96,22 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
     * Recursion handles situations where we have a couple of Each ops in a row.
     * For example: pipe.forceToDisk.onComplete results in: Each -> Each -> Checkpoint
     */
-  private def isSafeToSkipForceToDisk(pipe: Pipe, mode: Mode): Boolean = {
+  private def isSafeToSkipForceToDisk(pipe: Pipe, mode: Mode): Boolean =
     pipe match {
       case eachPipe: Each =>
         if (canSkipEachOperation(eachPipe.getOperation, mode)) {
           //need to recurse down to see if parent pipe is ok
-          getPreviousPipe(eachPipe).exists(
-              prevPipe => isSafeToSkipForceToDisk(prevPipe, mode))
+          getPreviousPipe(eachPipe).exists(prevPipe =>
+            isSafeToSkipForceToDisk(prevPipe, mode)
+          )
         } else false
-      case _: Checkpoint => true
-      case _: GroupBy => true
-      case _: CoGroup => true
-      case _: Every => true
+      case _: Checkpoint        => true
+      case _: GroupBy           => true
+      case _: CoGroup           => true
+      case _: Every             => true
       case p if isSourcePipe(p) => true
-      case _ => false
+      case _                    => false
     }
-  }
 
   /**
     * Checks the transform to deduce if it is safe to skip the force to disk.
@@ -114,44 +121,42 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
     * Thus we just go ahead and forceToDisk in those two cases - users can opt out if needed.
     */
   private def canSkipEachOperation(
-      eachOperation: Operation[_], mode: Mode): Boolean = {
+      eachOperation: Operation[_],
+      mode: Mode
+  ): Boolean =
     eachOperation match {
       case f: FlatMapFunction[_, _] =>
         f.getFunction match {
           case _: Converter[_] => true
           case _: FilteredFn[_] =>
             false //we'd like to forceToDisk after a filter
-          case _: MapFn[_, _] => false
+          case _: MapFn[_, _]        => false
           case _: FlatMappedFn[_, _] => false
-          case _ => false // treat empty fn as a Filter all so forceToDisk
+          case _                     => false // treat empty fn as a Filter all so forceToDisk
         }
       case _: CleanupIdentityFunction => true
-      case _ => false
+      case _                          => false
     }
-  }
 
-  private def getHashJoinAutoForceRight(mode: Mode): Boolean = {
+  private def getHashJoinAutoForceRight(mode: Mode): Boolean =
     mode match {
       case h: HadoopMode =>
         val config = Config.fromHadoop(h.jobConf)
         config.getHashJoinAutoForceRight
       case _ => false //default to false
     }
-  }
 
-  private def getPreviousPipe(p: Pipe): Option[Pipe] = {
+  private def getPreviousPipe(p: Pipe): Option[Pipe] =
     if (p.getPrevious != null && p.getPrevious.length == 1)
       p.getPrevious.headOption
     else None
-  }
 
   /**
     * Return true if a pipe is a source Pipe (has no parents / previous) and isn't a
     * Splice.
     */
-  private def isSourcePipe(pipe: Pipe): Boolean = {
+  private def isSourcePipe(pipe: Pipe): Boolean =
     pipe.getParent == null &&
-    (pipe.getPrevious == null || pipe.getPrevious.isEmpty) &&
-    (!pipe.isInstanceOf[Splice])
-  }
+      (pipe.getPrevious == null || pipe.getPrevious.isEmpty) &&
+      (!pipe.isInstanceOf[Splice])
 }

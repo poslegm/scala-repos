@@ -24,7 +24,9 @@ class ThreadLocalRandomTest {
     assertThrows(classOf[UnsupportedOperationException], tlr.setSeed(1))
   }
 
-  def checkIntBounds(b1: Int, b2: Int)(implicit tlr: ThreadLocalRandom): Unit = {
+  def checkIntBounds(b1: Int, b2: Int)(
+      implicit tlr: ThreadLocalRandom
+  ): Unit = {
     val least = min(b1, b2)
     val bound = max(b1, b2)
 
@@ -148,7 +150,9 @@ class ThreadLocalRandomTest {
     assertThrows(classOf[IllegalArgumentException], tlr.nextInt(1, 1))
   }
 
-  def checkLongUpperBound(bound: Long)(implicit tlr: ThreadLocalRandom): Unit = {
+  def checkLongUpperBound(
+      bound: Long
+  )(implicit tlr: ThreadLocalRandom): Unit = {
     val next = tlr.nextLong(bound)
     assertTrue(next < bound)
   }
@@ -260,12 +264,12 @@ class ThreadLocalRandomTest {
 
     assertThrows(classOf[IllegalArgumentException], tlr.nextLong(0L))
     assertThrows(classOf[IllegalArgumentException], tlr.nextLong(-1L))
-    assertThrows(
-        classOf[IllegalArgumentException], tlr.nextLong(Long.MinValue))
+    assertThrows(classOf[IllegalArgumentException], tlr.nextLong(Long.MinValue))
   }
 
   def checkLongBounds(b1: Long, b2: Long)(
-      implicit tlr: ThreadLocalRandom): Unit = {
+      implicit tlr: ThreadLocalRandom
+  ): Unit = {
     val least = min(b1, b2)
     val bound = max(b1, b2)
 
@@ -390,8 +394,9 @@ class ThreadLocalRandomTest {
     assertThrows(classOf[IllegalArgumentException], tlr.nextLong(1L, 1L))
   }
 
-  def checkDoubleUpperBound(bound: Double)(
-      implicit tlr: ThreadLocalRandom): Unit = {
+  def checkDoubleUpperBound(
+      bound: Double
+  )(implicit tlr: ThreadLocalRandom): Unit = {
     val next = tlr.nextDouble(bound)
 
     assertTrue(next < bound)
@@ -505,11 +510,14 @@ class ThreadLocalRandomTest {
     assertThrows(classOf[IllegalArgumentException], tlr.nextDouble(0.0))
     assertThrows(classOf[IllegalArgumentException], tlr.nextDouble(-1.0))
     assertThrows(
-        classOf[IllegalArgumentException], tlr.nextDouble(Double.MinValue))
+      classOf[IllegalArgumentException],
+      tlr.nextDouble(Double.MinValue)
+    )
   }
 
   def checkDoubleBounds(b1: Double, b2: Double)(
-      implicit tlr: ThreadLocalRandom): Unit = {
+      implicit tlr: ThreadLocalRandom
+  ): Unit = {
     val least = min(b1, b2)
     val bound = max(b1, b2)
 

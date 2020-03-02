@@ -2,8 +2,17 @@ package com.twitter.finagle.client
 
 import com.twitter.finagle._
 import com.twitter.finagle.context.Contexts
-import com.twitter.finagle.factory.{BindingFactory, RefcountedFactory, StatsFactoryWrapper, TimeoutFactory}
-import com.twitter.finagle.filter.{DtabStatsFilter, ExceptionSourceFilter, MonitorFilter}
+import com.twitter.finagle.factory.{
+  BindingFactory,
+  RefcountedFactory,
+  StatsFactoryWrapper,
+  TimeoutFactory
+}
+import com.twitter.finagle.filter.{
+  DtabStatsFilter,
+  ExceptionSourceFilter,
+  MonitorFilter
+}
 import com.twitter.finagle.loadbalancer.LoadBalancerFactory
 import com.twitter.finagle.param._
 import com.twitter.finagle.service._
@@ -21,12 +30,12 @@ object StackClient {
     * Canonical Roles for each Client-related Stack modules.
     */
   object Role extends Stack.Role("StackClient") {
-    val pool = Stack.Role("Pool")
+    val pool            = Stack.Role("Pool")
     val requestDraining = Stack.Role("RequestDraining")
-    val prepFactory = Stack.Role("PrepFactory")
+    val prepFactory     = Stack.Role("PrepFactory")
 
     /** PrepConn is special in that it's the first role before the `Endpoint` role */
-    val prepConn = Stack.Role("PrepConn")
+    val prepConn     = Stack.Role("PrepConn")
     val protoTracing = Stack.Role("protoTracing")
   }
 
@@ -265,8 +274,10 @@ object StackClient {
      */
     stk.push(LoadBalancerFactory.module)
     stk.push(StatsFactoryWrapper.module)
-    stk.push(Role.requestDraining,
-             (fac: ServiceFactory[Req, Rep]) => new RefcountedFactory(fac))
+    stk.push(
+      Role.requestDraining,
+      (fac: ServiceFactory[Req, Rep]) => new RefcountedFactory(fac)
+    )
     stk.push(TimeoutFactory.module)
     stk.push(Role.prepFactory, identity[ServiceFactory[Req, Rep]](_))
     stk.push(FactoryToService.module)
@@ -358,7 +369,7 @@ object StackClient {
     */
   val defaultParams: Stack.Params =
     Stack.Params.empty + Stats(ClientStatsReceiver) +
-    LoadBalancerFactory.HostStats(LoadedHostStatsReceiver)
+      LoadBalancerFactory.HostStats(LoadedHostStatsReceiver)
 }
 
 /**
@@ -396,7 +407,7 @@ trait StackClient[Req, Rep]
 
   // these are necessary to have the right types from Java
   def withParams(ps: Stack.Params): StackClient[Req, Rep]
-  def configured[P : Stack.Param](p: P): StackClient[Req, Rep]
+  def configured[P: Stack.Param](p: P): StackClient[Req, Rep]
   def configured[P](psp: (P, Stack.Param[P])): StackClient[Req, Rep]
 }
 
@@ -410,10 +421,14 @@ trait StackClient[Req, Rep]
   *      clients.
   */
 trait StdStackClient[Req, Rep, This <: StdStackClient[Req, Rep, This]]
-    extends StackClient[Req, Rep] with Stack.Parameterized[This]
-    with CommonParams[This] with ClientParams[This]
-    with WithClientAdmissionControl[This] with WithClientTransport[This]
-    with WithSession[This] with WithSessionQualifier[This] {
+    extends StackClient[Req, Rep]
+    with Stack.Parameterized[This]
+    with CommonParams[This]
+    with ClientParams[This]
+    with WithClientAdmissionControl[This]
+    with WithClientTransport[This]
+    with WithSession[This]
+    with WithSessionQualifier[This] {
   self =>
 
   /**
@@ -451,14 +466,14 @@ trait StdStackClient[Req, Rep, This <: StdStackClient[Req, Rep, This]]
     * For expert users only.
     */
   def transformed(
-      f: Stack[ServiceFactory[Req, Rep]] => Stack[ServiceFactory[Req, Rep]])
-    : This =
+      f: Stack[ServiceFactory[Req, Rep]] => Stack[ServiceFactory[Req, Rep]]
+  ): This =
     copy1(stack = f(stack))
 
   /**
     * Creates a new StackClient with parameter `p`.
     */
-  override def configured[P : Stack.Param](p: P): This =
+  override def configured[P: Stack.Param](p: P): This =
     withParams(params + p)
 
   /**
@@ -483,7 +498,7 @@ trait StdStackClient[Req, Rep, This <: StdStackClient[Req, Rep, This]]
     * services but instead wrap the resulting service with a rich API.
     */
   def filtered(filter: Filter[Req, Rep, Req, Rep]): This = {
-    val role = Stack.Role(filter.getClass.getSimpleName)
+    val role      = Stack.Role(filter.getClass.getSimpleName)
     val stackable = Filter.canStackFromFac.toStackable(role, filter)
     withStack(stackable +: stack)
   }
@@ -492,9 +507,10 @@ trait StdStackClient[Req, Rep, This <: StdStackClient[Req, Rep, This]]
     * A copy constructor in lieu of defining StackClient as a
     * case class.
     */
-  protected def copy1(stack: Stack[ServiceFactory[Req, Rep]] = this.stack,
-                      params: Stack.Params = this.params)
-    : This { type In = self.In; type Out = self.Out }
+  protected def copy1(
+      stack: Stack[ServiceFactory[Req, Rep]] = this.stack,
+      params: Stack.Params = this.params
+  ): This { type In = self.In; type Out = self.Out }
 
   /**
     * A stackable module that creates new `Transports` (via transporter)
@@ -502,9 +518,9 @@ trait StdStackClient[Req, Rep, This <: StdStackClient[Req, Rep, This]]
     */
   protected def endpointer: Stackable[ServiceFactory[Req, Rep]] =
     new Stack.Module[ServiceFactory[Req, Rep]] {
-      val role = Endpoint
+      val role        = Endpoint
       val description = "Send requests over the wire"
-      val parameters = Seq(implicitly[Stack.Param[Transporter.EndpointAddr]])
+      val parameters  = Seq(implicitly[Stack.Param[Transporter.EndpointAddr]])
       def make(prms: Stack.Params, next: Stack[ServiceFactory[Req, Rep]]) = {
         val Transporter.EndpointAddr(addr) = prms[Transporter.EndpointAddr]
         val factory = addr match {
@@ -514,7 +530,7 @@ trait StdStackClient[Req, Rep, This <: StdStackClient[Req, Rep, This]]
           case Address.Failed(e) => new FailingFactory[Req, Rep](e)
           case Address.Inet(ia, _) =>
             val endpointClient = copy1(params = prms)
-            val transporter = endpointClient.newTransporter()
+            val transporter    = endpointClient.newTransporter()
             val mkFutureSvc: () => Future[Service[Req, Rep]] = () =>
               transporter(ia).map { trans =>
                 // we do not want to capture and request specific Locals
@@ -522,7 +538,7 @@ trait StdStackClient[Req, Rep, This <: StdStackClient[Req, Rep, This]]
                 Contexts.letClear {
                   endpointClient.newDispatcher(trans)
                 }
-            }
+              }
             ServiceFactory(mkFutureSvc)
         }
         Stack.Leaf(this, factory)
@@ -530,7 +546,7 @@ trait StdStackClient[Req, Rep, This <: StdStackClient[Req, Rep, This]]
     }
 
   def newClient(dest: Name, label0: String): ServiceFactory[Req, Rep] = {
-    val Stats(stats) = params[Stats]
+    val Stats(stats)  = params[Stats]
     val Label(label1) = params[Label]
 
     // For historical reasons, we have two sources for identifying
@@ -544,14 +560,14 @@ trait StdStackClient[Req, Rep, This <: StdStackClient[Req, Rep, This]]
     val clientStack = stack ++ (endpointer +: nilStack)
     val clientParams =
       params + Label(clientLabel) + Stats(stats.scope(clientLabel)) +
-      BindingFactory.Dest(dest)
+        BindingFactory.Dest(dest)
 
     clientStack.make(clientParams)
   }
 
   override def newService(dest: Name, label: String): Service[Req, Rep] = {
     val client = copy1(
-        params = params + FactoryToService.Enabled(true)
+      params = params + FactoryToService.Enabled(true)
     ).newClient(dest, label)
     new FactoryToService[Req, Rep](client)
   }

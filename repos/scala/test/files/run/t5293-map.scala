@@ -14,31 +14,28 @@ object Test extends App {
     end - start
   }
 
-  def benchJava(values: java.util.Map[Int, Int]) = {
+  def benchJava(values: java.util.Map[Int, Int]) =
     bench("Java Map") {
       val m = new java.util.HashMap[Int, Int]
 
       m.putAll(values)
     }
-  }
 
-  def benchScala(values: Iterable[(Int, Int)]) = {
+  def benchScala(values: Iterable[(Int, Int)]) =
     bench("Scala Map") {
       val m = new scala.collection.mutable.HashMap[Int, Int]
 
       m ++= values
     }
-  }
 
-  def benchScalaSorted(values: Iterable[(Int, Int)]) = {
+  def benchScalaSorted(values: Iterable[(Int, Int)]) =
     bench("Scala Map sorted") {
       val m = new scala.collection.mutable.HashMap[Int, Int]
 
       m ++= values.toArray.sorted
     }
-  }
 
-  def benchScalaPar(values: Iterable[(Int, Int)]) = {
+  def benchScalaPar(values: Iterable[(Int, Int)]) =
     bench("Scala ParMap") {
       val m =
         new scala.collection.parallel.mutable.ParHashMap[Int, Int] map { x =>
@@ -47,11 +44,10 @@ object Test extends App {
 
       m ++= values
     }
-  }
 
-  val total = 50000
+  val total  = 50000
   val values = (0 until total) zip (0 until total)
-  val map = scala.collection.mutable.HashMap.empty[Int, Int]
+  val map    = scala.collection.mutable.HashMap.empty[Int, Int]
 
   map ++= values
 
@@ -65,16 +61,20 @@ object Test extends App {
     benchScalaPar(map)
   }
 
-  val javamap = benchJava(map.asJava)
-  val scalamap = benchScala(map)
+  val javamap     = benchJava(map.asJava)
+  val scalamap    = benchScala(map)
   val scalaparmap = benchScalaPar(map)
 
   // println(javamap)
   // println(scalamap)
   // println(scalaparmap)
 
-  assert(scalamap < (javamap * 10),
-         "scalamap: " + scalamap + " vs. javamap: " + javamap)
-  assert(scalaparmap < (javamap * 10),
-         "scalaparmap: " + scalaparmap + " vs. javamap: " + javamap)
+  assert(
+    scalamap < (javamap * 10),
+    "scalamap: " + scalamap + " vs. javamap: " + javamap
+  )
+  assert(
+    scalaparmap < (javamap * 10),
+    "scalaparmap: " + scalaparmap + " vs. javamap: " + javamap
+  )
 }

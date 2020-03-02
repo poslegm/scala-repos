@@ -13,24 +13,24 @@ import org.scalatest.mock.MockitoSugar
 class SamplingTracerTest extends FunSuite with MockitoSugar {
 
   private val traceId = TraceId(
-      None,
-      None,
-      new SpanId(1L),
-      None,
-      Flags()
+    None,
+    None,
+    new SpanId(1L),
+    None,
+    Flags()
   )
 
   private val record = Record(
-      traceId,
-      Time.now,
-      Annotation.Message("sup"),
-      None
+    traceId,
+    Time.now,
+    Annotation.Message("sup"),
+    None
   )
 
   test("sends sampled events to Sink") {
     val sink = mock[Sink]
     when(sink.recording).thenReturn(true)
-    val tracer = mock[Tracer]
+    val tracer         = mock[Tracer]
     val samplingTracer = new SamplingTracer(tracer, 1f, sink)
     samplingTracer.record(record)
 
@@ -39,8 +39,8 @@ class SamplingTracerTest extends FunSuite with MockitoSugar {
   }
 
   test("does not send events to sink when not sampled") {
-    val sink = mock[Sink]
-    val tracer = mock[Tracer]
+    val sink           = mock[Sink]
+    val tracer         = mock[Tracer]
     val samplingTracer = new SamplingTracer(tracer, 0f, sink)
     samplingTracer.record(record)
 

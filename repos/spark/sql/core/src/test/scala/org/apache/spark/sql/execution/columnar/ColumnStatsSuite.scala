@@ -23,24 +23,40 @@ import org.apache.spark.sql.types._
 
 class ColumnStatsSuite extends SparkFunSuite {
   testColumnStats(
-      classOf[BooleanColumnStats], BOOLEAN, createRow(true, false, 0))
-  testColumnStats(classOf[ByteColumnStats],
-                  BYTE,
-                  createRow(Byte.MaxValue, Byte.MinValue, 0))
-  testColumnStats(classOf[ShortColumnStats],
-                  SHORT,
-                  createRow(Short.MaxValue, Short.MinValue, 0))
+    classOf[BooleanColumnStats],
+    BOOLEAN,
+    createRow(true, false, 0)
+  )
   testColumnStats(
-      classOf[IntColumnStats], INT, createRow(Int.MaxValue, Int.MinValue, 0))
-  testColumnStats(classOf[LongColumnStats],
-                  LONG,
-                  createRow(Long.MaxValue, Long.MinValue, 0))
-  testColumnStats(classOf[FloatColumnStats],
-                  FLOAT,
-                  createRow(Float.MaxValue, Float.MinValue, 0))
-  testColumnStats(classOf[DoubleColumnStats],
-                  DOUBLE,
-                  createRow(Double.MaxValue, Double.MinValue, 0))
+    classOf[ByteColumnStats],
+    BYTE,
+    createRow(Byte.MaxValue, Byte.MinValue, 0)
+  )
+  testColumnStats(
+    classOf[ShortColumnStats],
+    SHORT,
+    createRow(Short.MaxValue, Short.MinValue, 0)
+  )
+  testColumnStats(
+    classOf[IntColumnStats],
+    INT,
+    createRow(Int.MaxValue, Int.MinValue, 0)
+  )
+  testColumnStats(
+    classOf[LongColumnStats],
+    LONG,
+    createRow(Long.MaxValue, Long.MinValue, 0)
+  )
+  testColumnStats(
+    classOf[FloatColumnStats],
+    FLOAT,
+    createRow(Float.MaxValue, Float.MinValue, 0)
+  )
+  testColumnStats(
+    classOf[DoubleColumnStats],
+    DOUBLE,
+    createRow(Double.MaxValue, Double.MinValue, 0)
+  )
   testColumnStats(classOf[StringColumnStats], STRING, createRow(null, null, 0))
   testDecimalColumnStats(createRow(null, null, 0))
 
@@ -50,7 +66,8 @@ class ColumnStatsSuite extends SparkFunSuite {
   def testColumnStats[T <: AtomicType, U <: ColumnStats](
       columnStatsClass: Class[U],
       columnType: NativeColumnType[T],
-      initialStatistics: GenericInternalRow): Unit = {
+      initialStatistics: GenericInternalRow
+  ): Unit = {
 
     val columnStatsName = columnStatsClass.getSimpleName
 
@@ -91,10 +108,11 @@ class ColumnStatsSuite extends SparkFunSuite {
   }
 
   def testDecimalColumnStats[T <: AtomicType, U <: ColumnStats](
-      initialStatistics: GenericInternalRow): Unit = {
+      initialStatistics: GenericInternalRow
+  ): Unit = {
 
     val columnStatsName = classOf[DecimalColumnStats].getSimpleName
-    val columnType = COMPACT_DECIMAL(15, 10)
+    val columnType      = COMPACT_DECIMAL(15, 10)
 
     test(s"$columnStatsName: empty") {
       val columnStats = new DecimalColumnStats(15, 10)

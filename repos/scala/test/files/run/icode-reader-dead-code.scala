@@ -38,8 +38,8 @@ object Test extends DirectTest {
   }
 
   def readClass(file: String) = {
-    val cnode = new ClassNode()
-    val is = new FileInputStream(file)
+    val cnode  = new ClassNode()
+    val is     = new FileInputStream(file)
     val reader = new ClassReader(is)
     reader.accept(cnode, 0)
     is.close()
@@ -56,14 +56,14 @@ object Test extends DirectTest {
   }
 
   def addDeadCode() {
-    val file = (testOutput / "p" / "A.class").path
-    val cnode = readClass(file)
+    val file   = (testOutput / "p" / "A.class").path
+    val cnode  = readClass(file)
     val method = cnode.methods.asScala.find(_.name == "f").head
 
     AsmUtils.traceMethod(method)
 
     val insns = method.instructions
-    val it = insns.iterator()
+    val it    = insns.iterator()
     while (it.hasNext) {
       val in = it.next()
       if (in.getOpcode == Opcodes.IRETURN) {

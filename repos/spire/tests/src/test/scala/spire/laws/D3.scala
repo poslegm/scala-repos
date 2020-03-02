@@ -19,7 +19,7 @@ object D3 {
     def op(x: D3, y: D3): D3 = {
       val n0 = x.n / 2
       val n1 = y.n / 2
-      val m = y.n % 2
+      val m  = y.n % 2
 
       if (x.n % 2 == 0) {
         new D3(((n0 + n1) % 3) * 2 + m)

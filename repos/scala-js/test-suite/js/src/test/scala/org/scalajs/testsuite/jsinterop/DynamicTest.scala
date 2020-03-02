@@ -37,9 +37,8 @@ class DynamicTest {
       ): Unit = {
     class Point(val x: Int, val y: Int)
 
-    def jsonToPoint(json: js.Dynamic): Point = {
+    def jsonToPoint(json: js.Dynamic): Point =
       new Point(json.x.toString.toInt, json.y.toString.toInt)
-    }
 
     val json =
       js.eval("var dynamicTestPoint = { x: 1, y: 2 }; dynamicTestPoint;")
@@ -73,7 +72,7 @@ class DynamicTest {
         };
         DynamicTestClass;
         """).asInstanceOf[js.Dynamic]
-    val obj = js.Dynamic.newInstance(DynamicTestClass)("Scala.js")
+    val obj              = js.Dynamic.newInstance(DynamicTestClass)("Scala.js")
     assertEquals("Scala.js", obj.x)
   }
 
@@ -90,7 +89,7 @@ class DynamicTest {
         DynamicTestClassVarArgs;
         """).asInstanceOf[js.Dynamic]
 
-    val obj1 = js.Dynamic.newInstance(DynamicTestClassVarArgs)("Scala.js")
+    val obj1       = js.Dynamic.newInstance(DynamicTestClassVarArgs)("Scala.js")
     val obj1_count = obj1.count
     assertEquals(1, obj1_count)
     val obj1_elem0 = obj1.elem0
@@ -108,8 +107,8 @@ class DynamicTest {
     assertTrue(obj2_elem2)
 
     def obj3Args: Seq[js.Any] = Seq("Scala.js", 42, true)
-    val obj3 = js.Dynamic.newInstance(DynamicTestClassVarArgs)(obj3Args: _*)
-    val obj3_count = obj3.count
+    val obj3                  = js.Dynamic.newInstance(DynamicTestClassVarArgs)(obj3Args: _*)
+    val obj3_count            = obj3.count
     assertEquals(3, obj3_count)
     val obj3_elem0 = obj3.elem0
     assertEquals("Scala.js", obj3_elem0)
@@ -134,7 +133,7 @@ class DynamicTest {
 
   @Test def should_provide_an_object_literal_construction(): Unit = {
     import js.Dynamic.{literal => obj}
-    val x = obj(foo = 3, bar = "foobar")
+    val x     = obj(foo = 3, bar = "foobar")
     val x_foo = x.foo
     assertEquals(3, x_foo.asInstanceOf[Int])
     val x_bar = x.bar
@@ -143,10 +142,8 @@ class DynamicTest {
     assertJSUndefined(x_unknown)
 
     val y = obj(
-        inner = obj(name = "inner obj"),
-        fun = { () =>
-          42
-        }
+      inner = obj(name = "inner obj"),
+      fun = { () => 42 }
     )
     val y_inner_name = y.inner.name
     assertEquals("inner obj", y_inner_name)
@@ -165,7 +162,7 @@ class DynamicTest {
   @Test
   def should_provide_object_literal_construction_with_dynamic_naming(): Unit = {
     import js.Dynamic.{literal => obj}
-    val x = obj("foo" -> 3, "bar" -> "foobar")
+    val x     = obj("foo" -> 3, "bar" -> "foobar")
     val x_foo = x.foo
     assertEquals(3, x_foo)
     val x_bar = x.bar
@@ -176,14 +173,14 @@ class DynamicTest {
     val tup1 = ("hello1", 3: js.Any)
     val tup2 = ("hello2", 10: js.Any)
 
-    val y = obj(tup1, tup2)
+    val y        = obj(tup1, tup2)
     val y_hello1 = y.hello1
     assertEquals(3, y_hello1)
     val y_hello2 = y.hello2
     assertEquals(10, y_hello2)
 
     var count = 0
-    val z = obj({ count += 1; ("foo", "bar") })
+    val z     = obj({ count += 1; ("foo", "bar") })
     val z_foo = z.foo
     assertEquals("bar", z_foo)
     assertEquals(1, count)
@@ -199,7 +196,7 @@ class DynamicTest {
   @Test def should_properly_encode_object_literal_property_names(): Unit = {
     import js.Dynamic.{literal => obj}
 
-    val obj0 = obj("3-" -> 42)
+    val obj0      = obj("3-" -> 42)
     val `obj0_3-` = obj0.`3-`
     assertEquals(42, `obj0_3-`)
 
@@ -229,10 +226,10 @@ class DynamicTest {
     val quote = '"'
 
     Seq(
-        obj("'" + quote -> 7357),
-        obj(s"'$quote" -> 7357),
-        obj("'\"" -> 7357),
-        obj("'" + quote -> 7357)
+      obj("'" + quote -> 7357),
+      obj(s"'$quote"  -> 7357),
+      obj("'\""       -> 7357),
+      obj("'" + quote -> 7357)
     ).foreach { o =>
       val dict = o.asInstanceOf[js.Dictionary[js.Any]]
       assertEquals(7357, dict("'\""))
@@ -255,13 +252,13 @@ class DynamicTest {
      * expanded notation.
      */
 
-    val x = literal.applyDynamic("apply")(fields: _*)
+    val x     = literal.applyDynamic("apply")(fields: _*)
     val x_foo = x.foo
     assertEquals(42, x_foo)
     val x_bar = x.bar
     assertEquals("foobar", x_bar)
 
-    val y = literal.applyDynamicNamed("apply")(fields: _*)
+    val y     = literal.applyDynamicNamed("apply")(fields: _*)
     val y_foo = y.foo
     assertEquals(42, y_foo)
     val y_bar = y.bar
@@ -273,7 +270,7 @@ class DynamicTest {
     import js.Dynamic.{literal => obj}
 
     // Basic functionality
-    val a = obj(foo = 4, bar = 5, foo = 6)
+    val a     = obj(foo = 4, bar = 5, foo = 6)
     val a_foo = a.foo
     assertEquals(6, a_foo) // last wins
     val a_bar = a.bar
@@ -281,7 +278,7 @@ class DynamicTest {
 
     // Side-effects of overwritten properties are kept
     var counter = 0
-    val b = obj(foo = { counter += 1; "foo" }, bar = "bar", foo = "foobar")
+    val b       = obj(foo = { counter += 1; "foo" }, bar = "bar", foo = "foobar")
     assertEquals(1, counter)
     val b_foo = b.foo
     assertEquals("foobar", b_foo)

@@ -17,7 +17,12 @@
 
 package org.apache.spark.api.r
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, DataInputStream, DataOutputStream}
+import java.io.{
+  ByteArrayInputStream,
+  ByteArrayOutputStream,
+  DataInputStream,
+  DataOutputStream
+}
 
 import scala.collection.mutable.HashMap
 import scala.language.existentials
@@ -36,10 +41,13 @@ import org.apache.spark.util.Utils
   */
 @Sharable
 private[r] class RBackendHandler(server: RBackend)
-    extends SimpleChannelInboundHandler[Array[Byte]] with Logging {
+    extends SimpleChannelInboundHandler[Array[Byte]]
+    with Logging {
 
   override def channelRead0(
-      ctx: ChannelHandlerContext, msg: Array[Byte]): Unit = {
+      ctx: ChannelHandlerContext,
+      msg: Array[Byte]
+  ): Unit = {
     val bis = new ByteArrayInputStream(msg)
     val dis = new DataInputStream(bis)
 
@@ -47,10 +55,10 @@ private[r] class RBackendHandler(server: RBackend)
     val dos = new DataOutputStream(bos)
 
     // First bit is isStatic
-    val isStatic = readBoolean(dis)
-    val objId = readString(dis)
+    val isStatic   = readBoolean(dis)
+    val objId      = readString(dis)
     val methodName = readString(dis)
-    val numArgs = readInt(dis)
+    val numArgs    = readInt(dis)
 
     if (objId == "SparkRHandler") {
       methodName match {
@@ -91,23 +99,26 @@ private[r] class RBackendHandler(server: RBackend)
     ctx.write(reply)
   }
 
-  override def channelReadComplete(ctx: ChannelHandlerContext): Unit = {
+  override def channelReadComplete(ctx: ChannelHandlerContext): Unit =
     ctx.flush()
-  }
 
   override def exceptionCaught(
-      ctx: ChannelHandlerContext, cause: Throwable): Unit = {
+      ctx: ChannelHandlerContext,
+      cause: Throwable
+  ): Unit = {
     // Close the connection when an exception is raised.
     cause.printStackTrace()
     ctx.close()
   }
 
-  def handleMethodCall(isStatic: Boolean,
-                       objId: String,
-                       methodName: String,
-                       numArgs: Int,
-                       dis: DataInputStream,
-                       dos: DataOutputStream): Unit = {
+  def handleMethodCall(
+      isStatic: Boolean,
+      objId: String,
+      methodName: String,
+      numArgs: Int,
+      dis: DataInputStream,
+      dos: DataOutputStream
+  ): Unit = {
     var obj: Object = null
     try {
       val cls =
@@ -125,19 +136,21 @@ private[r] class RBackendHandler(server: RBackend)
 
       val args = readArgs(numArgs, dis)
 
-      val methods = cls.getMethods
+      val methods         = cls.getMethods
       val selectedMethods = methods.filter(m => m.getName == methodName)
       if (selectedMethods.length > 0) {
-        val index = findMatchedSignature(
-            selectedMethods.map(_.getParameterTypes), args)
+        val index =
+          findMatchedSignature(selectedMethods.map(_.getParameterTypes), args)
 
         if (index.isEmpty) {
           logWarning(
-              s"cannot find matching method ${cls}.$methodName. " +
-              s"Candidates are:")
+            s"cannot find matching method ${cls}.$methodName. " +
+              s"Candidates are:"
+          )
           selectedMethods.foreach { method =>
             logWarning(
-                s"$methodName(${method.getParameterTypes.mkString(",")})")
+              s"$methodName(${method.getParameterTypes.mkString(",")})"
+            )
           }
           throw new Exception(s"No matched method found for $cls.$methodName")
         }
@@ -154,8 +167,9 @@ private[r] class RBackendHandler(server: RBackend)
 
         if (index.isEmpty) {
           logWarning(
-              s"cannot find matching constructor for ${cls}. " +
-              s"Candidates are:")
+            s"cannot find matching constructor for ${cls}. " +
+              s"Candidates are:"
+          )
           ctors.foreach { ctor =>
             logWarning(s"$cls(${ctor.getParameterTypes.mkString(",")})")
           }
@@ -168,7 +182,8 @@ private[r] class RBackendHandler(server: RBackend)
         writeObject(dos, obj.asInstanceOf[AnyRef])
       } else {
         throw new IllegalArgumentException(
-            "invalid method " + methodName + " for object " + objId)
+          "invalid method " + methodName + " for object " + objId
+        )
       }
     } catch {
       case e: Exception =>
@@ -181,11 +196,8 @@ private[r] class RBackendHandler(server: RBackend)
   }
 
   // Read a number of arguments from the data input stream
-  def readArgs(numArgs: Int, dis: DataInputStream): Array[java.lang.Object] = {
-    (0 until numArgs).map { _ =>
-      readObject(dis)
-    }.toArray
-  }
+  def readArgs(numArgs: Int, dis: DataInputStream): Array[java.lang.Object] =
+    (0 until numArgs).map(_ => readObject(dis)).toArray
 
   // Find a matching method signature in an array of signatures of constructors
   // or methods of the same name according to the passed arguments. Arguments
@@ -197,8 +209,10 @@ private[r] class RBackendHandler(server: RBackend)
   // is passed in instead of an array of candidate constructors or methods.
   //
   // Returns an Option[Int] which is the index of the matched signature in the array.
-  def findMatchedSignature(parameterTypesOfMethods: Array[Array[Class[_]]],
-                           args: Array[Object]): Option[Int] = {
+  def findMatchedSignature(
+      parameterTypesOfMethods: Array[Array[Class[_]]],
+      args: Array[Object]
+  ): Option[Int] = {
     val numArgs = args.length
 
     for (index <- 0 until parameterTypesOfMethods.length) {
@@ -206,7 +220,7 @@ private[r] class RBackendHandler(server: RBackend)
 
       if (parameterTypes.length == numArgs) {
         var argMatched = true
-        var i = 0
+        var i          = 0
         while (i < numArgs && argMatched) {
           val parameterType = parameterTypes(i)
 
@@ -221,10 +235,10 @@ private[r] class RBackendHandler(server: RBackend)
             if (parameterType.isPrimitive) {
               parameterWrapperType = parameterType match {
                 case java.lang.Integer.TYPE => classOf[java.lang.Integer]
-                case java.lang.Long.TYPE => classOf[java.lang.Integer]
-                case java.lang.Double.TYPE => classOf[java.lang.Double]
+                case java.lang.Long.TYPE    => classOf[java.lang.Integer]
+                case java.lang.Double.TYPE  => classOf[java.lang.Double]
                 case java.lang.Boolean.TYPE => classOf[java.lang.Boolean]
-                case _ => parameterType
+                case _                      => parameterType
               }
             }
             if ((parameterType.isPrimitive || args(i) != null) &&
@@ -273,13 +287,11 @@ private[r] object JVMObjectTracker {
   // Investigate using use atomic integer in the future.
   private[this] var objCounter: Int = 0
 
-  def getObject(id: String): Object = {
+  def getObject(id: String): Object =
     objMap(id)
-  }
 
-  def get(id: String): Option[Object] = {
+  def get(id: String): Option[Object] =
     objMap.get(id)
-  }
 
   def put(obj: Object): String = {
     val objId = objCounter.toString
@@ -288,7 +300,6 @@ private[r] object JVMObjectTracker {
     objId
   }
 
-  def remove(id: String): Option[Object] = {
+  def remove(id: String): Option[Object] =
     objMap.remove(id)
-  }
 }

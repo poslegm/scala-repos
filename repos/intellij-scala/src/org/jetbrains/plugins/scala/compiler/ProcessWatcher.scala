@@ -9,9 +9,9 @@ import com.intellij.openapi.util.Key
   */
 class ProcessWatcher(process: Process, commandLine: String) {
   private val processHandler = new OSProcessHandler(process, commandLine)
-  private var errorLines = Vector[String]()
-  private var errorInStdOut = false
-  private val lock = new Object()
+  private var errorLines     = Vector[String]()
+  private var errorInStdOut  = false
+  private val lock           = new Object()
 
   processHandler.addProcessListener(MyProcessListener)
 
@@ -21,13 +21,12 @@ class ProcessWatcher(process: Process, commandLine: String) {
 
   def running: Boolean = !processHandler.isProcessTerminated
 
-  def errors(): Seq[String] = {
+  def errors(): Seq[String] =
     lock.synchronized {
       val result = errorLines
       errorLines = Vector()
       result
     }
-  }
 
   def destroyProcess() {
     process.destroy()

@@ -19,13 +19,12 @@ class ColoredLevel extends ClassicConverter {
 
   import play.utils.Colors
 
-  def convert(event: ILoggingEvent): String = {
+  def convert(event: ILoggingEvent): String =
     event.getLevel match {
       case Level.TRACE => "[" + Colors.blue("trace") + "]"
       case Level.DEBUG => "[" + Colors.cyan("debug") + "]"
-      case Level.INFO => "[" + Colors.white("info") + "]"
-      case Level.WARN => "[" + Colors.yellow("warn") + "]"
+      case Level.INFO  => "[" + Colors.white("info") + "]"
+      case Level.WARN  => "[" + Colors.yellow("warn") + "]"
       case Level.ERROR => "[" + Colors.red("error") + "]"
     }
-  }
 }

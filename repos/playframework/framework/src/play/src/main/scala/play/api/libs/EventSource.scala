@@ -55,11 +55,9 @@ object EventSource {
     * @tparam E from type of the Enumeratee
     */
   @deprecated("Use apply with an Akka source instead", "2.5.0")
-  def apply[E : EventDataExtractor : EventNameExtractor : EventIdExtractor](
+  def apply[E: EventDataExtractor: EventNameExtractor: EventIdExtractor](
       ): Enumeratee[E, Event] =
-    Enumeratee.map[E] { e =>
-      Event(e)
-    }
+    Enumeratee.map[E](e => Event(e))
 
   /**
     * Makes a `Flow[E, Event, _]`, given an input source.
@@ -71,11 +69,9 @@ object EventSource {
     *   Ok.chunked(jsonStream via EventSource.flow).as(ContentTypes.EVENT_STREAM)
     * }}}
     */
-  def flow[
-      E : EventDataExtractor : EventNameExtractor : EventIdExtractor]: Flow[
-      E, Event, _] = {
+  def flow[E: EventDataExtractor: EventNameExtractor: EventIdExtractor]
+      : Flow[E, Event, _] =
     Flow[E].map(Event(_))
-  }
 
   //------------------
   // Event
@@ -111,21 +107,22 @@ object EventSource {
       * and the nameExtractor and idExtractor will implicitly resolve to `None`.
       *
       */
-    def apply[A](a: A)(implicit dataExtractor: EventDataExtractor[A],
-                       nameExtractor: EventNameExtractor[A],
-                       idExtractor: EventIdExtractor[A]): Event = {
-      Event(dataExtractor.eventData(a),
-            idExtractor.eventId(a),
-            nameExtractor.eventName(a))
-    }
+    def apply[A](a: A)(
+        implicit dataExtractor: EventDataExtractor[A],
+        nameExtractor: EventNameExtractor[A],
+        idExtractor: EventIdExtractor[A]
+    ): Event =
+      Event(
+        dataExtractor.eventData(a),
+        idExtractor.eventId(a),
+        nameExtractor.eventName(a)
+      )
 
-    implicit def writeable(implicit codec: Codec): Writeable[Event] = {
+    implicit def writeable(implicit codec: Codec): Writeable[Event] =
       Writeable(event => codec.encode(event.formatted))
-    }
 
-    implicit def contentType(implicit codec: Codec): ContentTypeOf[Event] = {
+    implicit def contentType(implicit codec: Codec): ContentTypeOf[Event] =
       ContentTypeOf(Some(ContentTypes.EVENT_STREAM))
-    }
   }
 
   //------------------
@@ -136,10 +133,12 @@ object EventSource {
 
   trait LowPriorityEventEncoder {
     implicit val stringEvents: EventDataExtractor[String] = EventDataExtractor(
-        identity)
+      identity
+    )
 
     implicit val jsonEvents: EventDataExtractor[JsValue] = EventDataExtractor(
-        Json.stringify)
+      Json.stringify
+    )
   }
 
   object EventDataExtractor extends LowPriorityEventEncoder

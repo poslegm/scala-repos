@@ -8,7 +8,7 @@
  ** Without declaration 3, everything is fine.
  */
 class S3() {
-  val a = new S3();
+  val a         = new S3();
   val b: a.type = a;
   val c: a.type = b;
 }

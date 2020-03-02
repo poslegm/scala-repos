@@ -31,7 +31,9 @@ import scala.math.pow
   * @author dlwh
   */
 case class Gamma(shape: Double, scale: Double)(implicit rand: RandBasis = Rand)
-    extends ContinuousDistr[Double] with Moments[Double, Double] with HasCdf
+    extends ContinuousDistr[Double]
+    with Moments[Double, Double]
+    with HasCdf
     with HasInverseCdf {
   if (shape <= 0.0 || scale <= 0.0)
     throw new IllegalArgumentException("Shape and scale must be positive")
@@ -60,8 +62,8 @@ case class Gamma(shape: Double, scale: Double)(implicit rand: RandBasis = Rand)
       // adapted from numpy distributions.c which is Copyright 2005 Robert Kern (robert.kern@gmail.com) under BSD
       @tailrec
       def rec: Double = {
-        val u = rand.uniform.draw()
-        val v = -math.log(rand.uniform.draw())
+        val u    = rand.uniform.draw()
+        val v    = -math.log(rand.uniform.draw())
         val logU = log(u)
         if (logU <= math.log1p(-shape)) {
           val logV = log(v)
@@ -69,7 +71,7 @@ case class Gamma(shape: Double, scale: Double)(implicit rand: RandBasis = Rand)
           if (logX <= logV) logX
           else rec
         } else {
-          val y = -log((1 - u) / shape)
+          val y    = -log((1 - u) / shape)
           val logX = math.log(1.0 - shape + shape * y) / shape
           if (logX <= math.log(v + y)) logX
           else rec
@@ -78,7 +80,7 @@ case class Gamma(shape: Double, scale: Double)(implicit rand: RandBasis = Rand)
       rec + math.log(scale)
     } else math.log(draw)
 
-  def draw() = {
+  def draw() =
     if (shape == 1.0) {
       scale * -math.log(rand.uniform.draw())
     } else if (shape < 1.0) {
@@ -123,9 +125,9 @@ case class Gamma(shape: Double, scale: Double)(implicit rand: RandBasis = Rand)
 //      x
     } else {
       // from numpy distributions.c which is Copyright 2005 Robert Kern (robert.kern@gmail.com) under BSD
-      val d = shape - 1.0 / 3.0
-      val c = 1.0 / math.sqrt(9.0 * d)
-      var r = 0.0
+      val d  = shape - 1.0 / 3.0
+      val c  = 1.0 / math.sqrt(9.0 * d)
+      var r  = 0.0
       var ok = false
       while (!ok) {
         var v = 0.0
@@ -137,7 +139,7 @@ case class Gamma(shape: Double, scale: Double)(implicit rand: RandBasis = Rand)
 
         v = v * v * v
         val x2 = x * x
-        val u = rand.uniform.draw()
+        val u  = rand.uniform.draw()
         if (u < 1.0 - 0.0331 * (x2 * x2) ||
             log(u) < 0.5 * x2 + d * (1.0 - v + log(v))) {
           r = (scale * d * v)
@@ -146,25 +148,21 @@ case class Gamma(shape: Double, scale: Double)(implicit rand: RandBasis = Rand)
       }
       r
     }
-  }
 
-  def mean = shape * scale
+  def mean     = shape * scale
   def variance = mean * scale
-  def mode = { require(shape >= 1); mean - scale }
-  def entropy = logNormalizer - (shape - 1) * digamma(shape) + shape
+  def mode     = { require(shape >= 1); mean - scale }
+  def entropy  = logNormalizer - (shape - 1) * digamma(shape) + shape
 
-  override def probability(x: Double, y: Double): Double = {
+  override def probability(x: Double, y: Double): Double =
     new GammaDistribution(shape, scale).probability(x, y)
-  }
 
-  override def inverseCdf(p: Double): Double = {
+  override def inverseCdf(p: Double): Double =
 //    gammp(this.shape, p / this.scale);
     new GammaDistribution(shape, scale).inverseCumulativeProbability(p)
-  }
 
-  override def cdf(x: Double): Double = {
+  override def cdf(x: Double): Double =
     new GammaDistribution(shape, scale).cumulativeProbability(x)
-  }
 }
 
 object Gamma
@@ -176,9 +174,9 @@ object Gamma
       extends BaseSuffStat[SufficientStatistic] {
     def *(weight: Double) = SufficientStatistic(n * weight, meanOfLogs, mean)
     def +(t: SufficientStatistic) = {
-      val delta = t.mean - mean
-      val newMean = mean + delta * (t.n / (t.n + n))
-      val logDelta = t.meanOfLogs - meanOfLogs
+      val delta       = t.mean - mean
+      val newMean     = mean + delta * (t.n / (t.n + n))
+      val logDelta    = t.meanOfLogs - meanOfLogs
       val newMeanLogs = meanOfLogs + logDelta * (t.n / (t.n + n))
       SufficientStatistic(t.n + n, newMeanLogs, newMean)
     }
@@ -195,17 +193,16 @@ object Gamma
     assert(s > 0, s) // check concavity
     val k_approx = approx_k(s)
     assert(k_approx > 0, k_approx)
-    val k = Nwt_Rph_iter_for_k(k_approx, s)
+    val k     = Nwt_Rph_iter_for_k(k_approx, s)
     val theta = ss.mean / (k)
     (k, theta)
   }
   /*
    * s = log( x_hat) - log_x_hat
    */
-  def approx_k(s: Double): Double = {
+  def approx_k(s: Double): Double =
     // correct within 1.5%
     (3 - s + math.sqrt(math.pow((s - 3), 2) + 24 * s)) / (12 * s)
-  }
 
   def Nwt_Rph_iter_for_k(k: Double, s: Double): Double = {
     /*

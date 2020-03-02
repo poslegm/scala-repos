@@ -31,14 +31,14 @@ object LazyOptionTest extends SpecLite {
   }
 
   object instances {
-    def equal[A : Equal] = Equal[LazyOption[A]]
-    def monadPlus = MonadPlus[LazyOption]
-    def bindrec = BindRec[LazyOption]
-    def cobind = Cobind[LazyOption]
-    def traverse = Traverse[LazyOption]
-    def zip = Zip[LazyOption]
-    def align = Align[LazyOption]
-    def isEmpty = IsEmpty[LazyOption]
-    def monoid[A : Semigroup] = Monoid[LazyOption[A]]
+    def equal[A: Equal]      = Equal[LazyOption[A]]
+    def monadPlus            = MonadPlus[LazyOption]
+    def bindrec              = BindRec[LazyOption]
+    def cobind               = Cobind[LazyOption]
+    def traverse             = Traverse[LazyOption]
+    def zip                  = Zip[LazyOption]
+    def align                = Align[LazyOption]
+    def isEmpty              = IsEmpty[LazyOption]
+    def monoid[A: Semigroup] = Monoid[LazyOption[A]]
   }
 }

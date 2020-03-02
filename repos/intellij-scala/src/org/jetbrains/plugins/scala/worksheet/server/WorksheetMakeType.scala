@@ -7,6 +7,6 @@ package worksheet.server
   */
 abstract sealed class WorksheetMakeType
 
-object InProcessServer extends WorksheetMakeType
+object InProcessServer    extends WorksheetMakeType
 object OutOfProcessServer extends WorksheetMakeType
-object NonServer extends WorksheetMakeType
+object NonServer          extends WorksheetMakeType

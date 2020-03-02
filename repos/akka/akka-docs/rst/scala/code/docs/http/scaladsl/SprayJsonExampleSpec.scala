@@ -24,7 +24,7 @@ class SprayJsonExampleSpec extends WordSpec with Matchers {
 
     // collect your json format instances into a support trait:
     trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
-      implicit val itemFormat = jsonFormat2(Item)
+      implicit val itemFormat  = jsonFormat2(Item)
       implicit val orderFormat = jsonFormat1(Order) // contains List[Item]
     }
 
@@ -68,17 +68,17 @@ class SprayJsonExampleSpec extends WordSpec with Matchers {
       final case class Order(items: List[Item])
 
       // formats for unmarshalling and marshalling
-      implicit val itemFormat = jsonFormat2(Item)
+      implicit val itemFormat  = jsonFormat2(Item)
       implicit val orderFormat = jsonFormat1(Order)
 
       // (fake) async database query api
       def fetchItem(itemId: Long): Future[Option[Item]] = ???
-      def saveOrder(order: Order): Future[Done] = ???
+      def saveOrder(order: Order): Future[Done]         = ???
 
       def main(args: Array[String]) {
 
         // needed to run the route
-        implicit val system = ActorSystem()
+        implicit val system       = ActorSystem()
         implicit val materializer = ActorMaterializer()
 
         val route: Route =
@@ -89,16 +89,14 @@ class SprayJsonExampleSpec extends WordSpec with Matchers {
 
               onSuccess(maybeItem) {
                 case Some(item) => complete(item)
-                case None => complete(StatusCodes.NotFound)
+                case None       => complete(StatusCodes.NotFound)
               }
             }
           } ~ post {
             path("create-order") {
               entity(as[Order]) { order =>
                 val saved: Future[Done] = saveOrder(order)
-                onComplete(saved) { done =>
-                  complete("order created")
-                }
+                onComplete(saved)(done => complete("order created"))
               }
             }
           }

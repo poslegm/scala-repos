@@ -18,7 +18,7 @@ private[closure] class ClosureAstBuilder(relativizeBaseURI: Option[URI] = None)
     extends JSTreeBuilder {
 
   private val transformer = new ClosureAstTransformer(relativizeBaseURI)
-  private val treeBuf = mutable.ListBuffer.empty[Node]
+  private val treeBuf     = mutable.ListBuffer.empty[Node]
 
   def addJSTree(tree: Tree): Unit =
     treeBuf += transformer.transformStat(tree)(NoPosition)
@@ -37,8 +37,8 @@ private object ClosureAstBuilder {
 
   private class ScalaJSSourceAst(root: Node) extends SourceAst {
     def getAstRoot(compiler: AbstractCompiler): Node = root
-    def clearAst(): Unit = () // Just for GC. Nonsensical here.
-    def getInputId(): InputId = root.getInputId()
+    def clearAst(): Unit                             = () // Just for GC. Nonsensical here.
+    def getInputId(): InputId                        = root.getInputId()
     def getSourceFile(): SourceFile =
       root.getStaticSourceFile().asInstanceOf[SourceFile]
     def setSourceFile(file: SourceFile): Unit =

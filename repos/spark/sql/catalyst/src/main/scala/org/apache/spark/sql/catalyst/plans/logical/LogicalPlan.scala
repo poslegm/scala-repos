@@ -32,7 +32,7 @@ abstract class LogicalPlan extends QueryPlan[LogicalPlan] with Logging {
   /**
     * Marks this plan as already analyzed.  This should only be called by CheckAnalysis.
     */
-  private[catalyst] def setAnalyzed(): Unit = { _analyzed = true }
+  private[catalyst] def setAnalyzed(): Unit = _analyzed = true
 
   /**
     * Returns true if this node and its children have already been gone through analysis and
@@ -50,10 +50,11 @@ abstract class LogicalPlan extends QueryPlan[LogicalPlan] with Logging {
     * @param rule the function use to transform this nodes children
     */
   def resolveOperators(
-      rule: PartialFunction[LogicalPlan, LogicalPlan]): LogicalPlan = {
+      rule: PartialFunction[LogicalPlan, LogicalPlan]
+  ): LogicalPlan =
     if (!analyzed) {
-      val afterRuleOnChildren = transformChildren(
-          rule, (t, r) => t.resolveOperators(r))
+      val afterRuleOnChildren =
+        transformChildren(rule, (t, r) => t.resolveOperators(r))
       if (this fastEquals afterRuleOnChildren) {
         CurrentOrigin.withOrigin(origin) {
           rule.applyOrElse(this, identity[LogicalPlan])
@@ -66,18 +67,17 @@ abstract class LogicalPlan extends QueryPlan[LogicalPlan] with Logging {
     } else {
       this
     }
-  }
 
   /**
     * Recursively transforms the expressions of a tree, skipping nodes that have already
     * been analyzed.
     */
   def resolveExpressions(
-      r: PartialFunction[Expression, Expression]): LogicalPlan = {
+      r: PartialFunction[Expression, Expression]
+  ): LogicalPlan =
     this resolveOperators {
       case p => p.transformExpressions(r)
     }
-  }
 
   /**
     * Computes [[Statistics]] for this plan. The default implementation assumes the output
@@ -89,7 +89,8 @@ abstract class LogicalPlan extends QueryPlan[LogicalPlan] with Logging {
   def statistics: Statistics = {
     if (children.size == 0) {
       throw new UnsupportedOperationException(
-          s"LeafNode $nodeName must implement statistics.")
+        s"LeafNode $nodeName must implement statistics."
+      )
     }
     Statistics(sizeInBytes = children.map(_.statistics.sizeInBytes).product)
   }
@@ -127,18 +128,20 @@ abstract class LogicalPlan extends QueryPlan[LogicalPlan] with Logging {
     * should only be called on analyzed plans since it will throw [[AnalysisException]] for
     * unresolved [[Attribute]]s.
     */
-  def resolve(schema: StructType, resolver: Resolver): Seq[Attribute] = {
+  def resolve(schema: StructType, resolver: Resolver): Seq[Attribute] =
     schema.map { field =>
-      resolveQuoted(field.name, resolver).map {
-        case a: AttributeReference => a
-        case other =>
-          sys.error(s"can not handle nested schema yet...  plan $this")
-      }.getOrElse {
-        throw new AnalysisException(
-            s"Unable to resolve ${field.name} given [${output.map(_.name).mkString(", ")}]")
-      }
+      resolveQuoted(field.name, resolver)
+        .map {
+          case a: AttributeReference => a
+          case other =>
+            sys.error(s"can not handle nested schema yet...  plan $this")
+        }
+        .getOrElse {
+          throw new AnalysisException(
+            s"Unable to resolve ${field.name} given [${output.map(_.name).mkString(", ")}]"
+          )
+        }
     }
-  }
 
   /**
     * Optionally resolves the given strings to a [[NamedExpression]] using the input from all child
@@ -146,7 +149,9 @@ abstract class LogicalPlan extends QueryPlan[LogicalPlan] with Logging {
     * as string in the following form: `[scope].AttributeName.[nested].[fields]...`.
     */
   def resolveChildren(
-      nameParts: Seq[String], resolver: Resolver): Option[NamedExpression] =
+      nameParts: Seq[String],
+      resolver: Resolver
+  ): Option[NamedExpression] =
     resolve(nameParts, children.flatMap(_.output), resolver)
 
   /**
@@ -155,7 +160,9 @@ abstract class LogicalPlan extends QueryPlan[LogicalPlan] with Logging {
     * `[scope].AttributeName.[nested].[fields]...`.
     */
   def resolve(
-      nameParts: Seq[String], resolver: Resolver): Option[NamedExpression] =
+      nameParts: Seq[String],
+      resolver: Resolver
+  ): Option[NamedExpression] =
     resolve(nameParts, output, resolver)
 
   /**
@@ -163,10 +170,8 @@ abstract class LogicalPlan extends QueryPlan[LogicalPlan] with Logging {
     * don't split the name parts quoted by backticks, for example,
     * `ab.cd`.`efg` should be split into two parts "ab.cd" and "efg".
     */
-  def resolveQuoted(
-      name: String, resolver: Resolver): Option[NamedExpression] = {
+  def resolveQuoted(name: String, resolver: Resolver): Option[NamedExpression] =
     resolve(UnresolvedAttribute.parseAttributeName(name), output, resolver)
-  }
 
   /**
     * Resolve the given `name` string against the given attribute, returning either 0 or 1 match.
@@ -178,7 +183,8 @@ abstract class LogicalPlan extends QueryPlan[LogicalPlan] with Logging {
   private def resolveAsTableColumn(
       nameParts: Seq[String],
       resolver: Resolver,
-      attribute: Attribute): Option[(Attribute, List[String])] = {
+      attribute: Attribute
+  ): Option[(Attribute, List[String])] = {
     assert(nameParts.length > 1)
     if (attribute.qualifiers.exists(resolver(_, nameParts.head))) {
       // At least one qualifier matches. See if remaining parts match.
@@ -198,18 +204,20 @@ abstract class LogicalPlan extends QueryPlan[LogicalPlan] with Logging {
   private def resolveAsColumn(
       nameParts: Seq[String],
       resolver: Resolver,
-      attribute: Attribute): Option[(Attribute, List[String])] = {
+      attribute: Attribute
+  ): Option[(Attribute, List[String])] =
     if (!attribute.isGenerated && resolver(attribute.name, nameParts.head)) {
       Option((attribute.withName(nameParts.head), nameParts.tail.toList))
     } else {
       None
     }
-  }
 
   /** Performs attribute resolution given a name and a sequence of possible attributes. */
-  protected def resolve(nameParts: Seq[String],
-                        input: Seq[Attribute],
-                        resolver: Resolver): Option[NamedExpression] = {
+  protected def resolve(
+      nameParts: Seq[String],
+      input: Seq[Attribute],
+      resolver: Resolver
+  ): Option[NamedExpression] = {
 
     // A sequence of possible candidate matches.
     // Each candidate is a tuple. The first element is a resolved attribute, followed by a list
@@ -248,8 +256,10 @@ abstract class LogicalPlan extends QueryPlan[LogicalPlan] with Logging {
         // For example, consider "a.b.c", where "a" is resolved to an existing attribute.
         // Then this will add ExtractValue("c", ExtractValue("b", a)), and alias the final
         // expression as "c".
-        val fieldExprs = nestedFields.foldLeft(a: Expression)((expr,
-            fieldName) => ExtractValue(expr, Literal(fieldName), resolver))
+        val fieldExprs =
+          nestedFields.foldLeft(a: Expression)((expr, fieldName) =>
+            ExtractValue(expr, Literal(fieldName), resolver)
+          )
         Some(Alias(fieldExprs, nestedFields.last)())
 
       // No matches.
@@ -261,7 +271,8 @@ abstract class LogicalPlan extends QueryPlan[LogicalPlan] with Logging {
       case ambiguousReferences =>
         val referenceNames = ambiguousReferences.map(_._1).mkString(", ")
         throw new AnalysisException(
-            s"Reference '$name' is ambiguous, could be: $referenceNames.")
+          s"Reference '$name' is ambiguous, could be: $referenceNames."
+        )
     }
   }
 }
@@ -270,7 +281,7 @@ abstract class LogicalPlan extends QueryPlan[LogicalPlan] with Logging {
   * A logical plan node with no children.
   */
 abstract class LeafNode extends LogicalPlan {
-  override def children: Seq[LogicalPlan] = Nil
+  override def children: Seq[LogicalPlan]       = Nil
   override def producedAttributes: AttributeSet = outputSet
 }
 
@@ -287,7 +298,8 @@ abstract class UnaryNode extends LogicalPlan {
     * expressions with the corresponding alias
     */
   protected def getAliasedConstraints(
-      projectList: Seq[NamedExpression]): Set[Expression] = {
+      projectList: Seq[NamedExpression]
+  ): Set[Expression] =
     projectList.flatMap {
       case a @ Alias(e, _) =>
         child.constraints
@@ -299,14 +311,13 @@ abstract class UnaryNode extends LogicalPlan {
       case _ =>
         Set.empty[Expression]
     }.toSet
-  }
 
   override protected def validConstraints: Set[Expression] = child.constraints
 
   override def statistics: Statistics = {
     // There should be some overhead in Row object, the size should not be zero when there is
     // no columns, this help to prevent divide-by-zero error.
-    val childRowSize = child.output.map(_.dataType.defaultSize).sum + 8
+    val childRowSize  = child.output.map(_.dataType.defaultSize).sum + 8
     val outputRowSize = output.map(_.dataType.defaultSize).sum + 8
     // Assume there will be the same number of rows as child has.
     var sizeInBytes =

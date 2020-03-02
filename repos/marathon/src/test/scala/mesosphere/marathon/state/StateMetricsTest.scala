@@ -12,9 +12,12 @@ import scala.concurrent.{Future, Promise}
 import scala.util.Try
 
 class StateMetricsTest
-    extends FunSuite with Matchers with GivenWhenThen with ScalaFutures {
-  test("time crashing read call") { testCrashingCall(read = true) }
-  test("time crashing write call") { testCrashingCall(read = false) }
+    extends FunSuite
+    with Matchers
+    with GivenWhenThen
+    with ScalaFutures {
+  test("time crashing read call")(testCrashingCall(read = true))
+  test("time crashing write call")(testCrashingCall(read = false))
 
   private[this] def testCrashingCall(read: Boolean): Unit = {
     When("doing the call (but the future is delayed)")
@@ -26,17 +29,21 @@ class StateMetricsTest
     val timed =
       if (read) metrics.timedRead[Unit](_) else metrics.timedWrite[Unit](_)
     val failure: RuntimeException = new scala.RuntimeException("failed")
-    val attempt = Try(timed(throw failure))
+    val attempt                   = Try(timed(throw failure))
 
     Then("we get the expected metric results")
-    metrics.metrics.registry.getMeters.get(untested.errorMeterName).getCount should be(
-        0)
-    metrics.metrics.registry.getMeters.get(tested.errorMeterName).getCount should be(
-        1)
-    metrics.metrics.registry.getMeters.get(untested.requestsMeterName).getCount should be(
-        0)
-    metrics.metrics.registry.getMeters.get(tested.requestsMeterName).getCount should be(
-        1)
+    metrics.metrics.registry.getMeters
+      .get(untested.errorMeterName)
+      .getCount should be(0)
+    metrics.metrics.registry.getMeters
+      .get(tested.errorMeterName)
+      .getCount should be(1)
+    metrics.metrics.registry.getMeters
+      .get(untested.requestsMeterName)
+      .getCount should be(0)
+    metrics.metrics.registry.getMeters
+      .get(tested.requestsMeterName)
+      .getCount should be(1)
     metrics.metrics.registry.getHistograms
       .get(untested.durationHistogramName)
       .getCount should be(0)
@@ -70,17 +77,21 @@ class StateMetricsTest
       if (read) metrics.timedRead[Unit](_) else metrics.timedWrite[Unit](_)
 
     val promise = Promise[Unit]()
-    val result = timed(promise.future)
+    val result  = timed(promise.future)
 
     Then("we get the expected metric results (only invocation count)")
-    metrics.metrics.registry.getMeters.get(untested.errorMeterName).getCount should be(
-        0)
-    metrics.metrics.registry.getMeters.get(tested.errorMeterName).getCount should be(
-        0)
-    metrics.metrics.registry.getMeters.get(untested.requestsMeterName).getCount should be(
-        0)
-    metrics.metrics.registry.getMeters.get(tested.requestsMeterName).getCount should be(
-        1)
+    metrics.metrics.registry.getMeters
+      .get(untested.errorMeterName)
+      .getCount should be(0)
+    metrics.metrics.registry.getMeters
+      .get(tested.errorMeterName)
+      .getCount should be(0)
+    metrics.metrics.registry.getMeters
+      .get(untested.requestsMeterName)
+      .getCount should be(0)
+    metrics.metrics.registry.getMeters
+      .get(tested.requestsMeterName)
+      .getCount should be(1)
     metrics.metrics.registry.getHistograms
       .get(untested.durationHistogramName)
       .getCount should be(0)
@@ -96,14 +107,18 @@ class StateMetricsTest
     promise.success(())
 
     Then("we get the expected metric results")
-    metrics.metrics.registry.getMeters.get(untested.errorMeterName).getCount should be(
-        0)
-    metrics.metrics.registry.getMeters.get(tested.errorMeterName).getCount should be(
-        0)
-    metrics.metrics.registry.getMeters.get(untested.requestsMeterName).getCount should be(
-        0)
-    metrics.metrics.registry.getMeters.get(tested.requestsMeterName).getCount should be(
-        1)
+    metrics.metrics.registry.getMeters
+      .get(untested.errorMeterName)
+      .getCount should be(0)
+    metrics.metrics.registry.getMeters
+      .get(tested.errorMeterName)
+      .getCount should be(0)
+    metrics.metrics.registry.getMeters
+      .get(untested.requestsMeterName)
+      .getCount should be(0)
+    metrics.metrics.registry.getMeters
+      .get(tested.requestsMeterName)
+      .getCount should be(1)
     metrics.metrics.registry.getHistograms
       .get(untested.durationHistogramName)
       .getCount should be(0)
@@ -136,17 +151,21 @@ class StateMetricsTest
     val timed =
       if (read) metrics.timedRead[Unit](_) else metrics.timedWrite[Unit](_)
     val promise = Promise[Unit]()
-    val result = timed(promise.future)
+    val result  = timed(promise.future)
 
     Then("we get the expected metric results (only invocation count)")
-    metrics.metrics.registry.getMeters.get(untested.errorMeterName).getCount should be(
-        0)
-    metrics.metrics.registry.getMeters.get(tested.errorMeterName).getCount should be(
-        0)
-    metrics.metrics.registry.getMeters.get(untested.requestsMeterName).getCount should be(
-        0)
-    metrics.metrics.registry.getMeters.get(tested.requestsMeterName).getCount should be(
-        1)
+    metrics.metrics.registry.getMeters
+      .get(untested.errorMeterName)
+      .getCount should be(0)
+    metrics.metrics.registry.getMeters
+      .get(tested.errorMeterName)
+      .getCount should be(0)
+    metrics.metrics.registry.getMeters
+      .get(untested.requestsMeterName)
+      .getCount should be(0)
+    metrics.metrics.registry.getMeters
+      .get(tested.requestsMeterName)
+      .getCount should be(1)
     metrics.metrics.registry.getHistograms
       .get(untested.durationHistogramName)
       .getCount should be(0)
@@ -164,14 +183,18 @@ class StateMetricsTest
     promise.failure(failure)
 
     Then("we get the expected metric results")
-    metrics.metrics.registry.getMeters.get(untested.errorMeterName).getCount should be(
-        0)
-    metrics.metrics.registry.getMeters.get(tested.errorMeterName).getCount should be(
-        1)
-    metrics.metrics.registry.getMeters.get(untested.requestsMeterName).getCount should be(
-        0)
-    metrics.metrics.registry.getMeters.get(tested.requestsMeterName).getCount should be(
-        1)
+    metrics.metrics.registry.getMeters
+      .get(untested.errorMeterName)
+      .getCount should be(0)
+    metrics.metrics.registry.getMeters
+      .get(tested.errorMeterName)
+      .getCount should be(1)
+    metrics.metrics.registry.getMeters
+      .get(untested.requestsMeterName)
+      .getCount should be(0)
+    metrics.metrics.registry.getMeters
+      .get(tested.requestsMeterName)
+      .getCount should be(1)
     metrics.metrics.registry.getHistograms
       .get(untested.durationHistogramName)
       .getCount should be(0)
@@ -191,7 +214,7 @@ class StateMetricsTest
       extends StateMetrics {
     override lazy val metrics: Metrics = new Metrics(new MetricRegistry)
 
-    val readMetricsPublic: MetricTemplate = readMetrics
+    val readMetricsPublic: MetricTemplate  = readMetrics
     val writeMetricsPublic: MetricTemplate = writeMetrics
 
     override def timedRead[T](f: => Future[T]): Future[T] = super.timedRead(f)

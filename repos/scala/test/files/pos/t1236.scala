@@ -8,7 +8,7 @@ object T {
   }
 
   def foo[F[_]](q: (String, String)) = "hello"
-  def foo[F[_]](e: Empty[F]) = "world"
+  def foo[F[_]](e: Empty[F])         = "world"
 
   val x = foo[List](ListEmpty)
 }

@@ -54,7 +54,7 @@ object Coyoneda {
   def apply[F[_], A, B](fa: F[A])(k0: A => B): Aux[F, B, A] =
     new Coyoneda[F, B] {
       type Pivot = A
-      val k = k0
+      val k  = k0
       val fi = fa
     }
 

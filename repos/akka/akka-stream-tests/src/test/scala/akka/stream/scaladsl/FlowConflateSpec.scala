@@ -17,15 +17,15 @@ import akka.testkit.AkkaSpec
 
 class FlowConflateSpec extends AkkaSpec {
 
-  val settings = ActorMaterializerSettings(system).withInputBuffer(
-      initialSize = 2, maxSize = 2)
+  val settings = ActorMaterializerSettings(system)
+    .withInputBuffer(initialSize = 2, maxSize = 2)
 
   implicit val materializer = ActorMaterializer(settings)
 
   "Conflate" must {
 
     "pass-through elements unchanged when there is no rate difference" in {
-      val publisher = TestPublisher.probe[Int]()
+      val publisher  = TestPublisher.probe[Int]()
       val subscriber = TestSubscriber.manualProbe[Int]()
 
       Source
@@ -45,7 +45,7 @@ class FlowConflateSpec extends AkkaSpec {
     }
 
     "pass-through elements unchanged when there is no rate difference (simple conflate)" in {
-      val publisher = TestPublisher.probe[Int]()
+      val publisher  = TestPublisher.probe[Int]()
       val subscriber = TestSubscriber.manualProbe[Int]()
 
       Source
@@ -65,7 +65,7 @@ class FlowConflateSpec extends AkkaSpec {
     }
 
     "conflate elements while downstream is silent" in {
-      val publisher = TestPublisher.probe[Int]()
+      val publisher  = TestPublisher.probe[Int]()
       val subscriber = TestSubscriber.manualProbe[Int]()
 
       Source
@@ -85,7 +85,7 @@ class FlowConflateSpec extends AkkaSpec {
     }
 
     "conflate elements while downstream is silent (simple conflate)" in {
-      val publisher = TestPublisher.probe[Int]()
+      val publisher  = TestPublisher.probe[Int]()
       val subscriber = TestSubscriber.manualProbe[Int]()
 
       Source
@@ -125,7 +125,7 @@ class FlowConflateSpec extends AkkaSpec {
     }
 
     "backpressure subscriber when upstream is slower" in {
-      val publisher = TestPublisher.probe[Int]()
+      val publisher  = TestPublisher.probe[Int]()
       val subscriber = TestSubscriber.manualProbe[Int]()
 
       Source
@@ -165,8 +165,8 @@ class FlowConflateSpec extends AkkaSpec {
     }
 
     "restart when `seed` throws and a restartingDecider is used" in {
-      val sourceProbe = TestPublisher.probe[Int]()
-      val sinkProbe = TestSubscriber.probe[Int]()
+      val sourceProbe    = TestPublisher.probe[Int]()
+      val sinkProbe      = TestSubscriber.probe[Int]()
       val exceptionLatch = TestLatch()
 
       val future = Source
@@ -176,15 +176,13 @@ class FlowConflateSpec extends AkkaSpec {
             exceptionLatch.open()
             throw TE("I hate even seed numbers")
           } else i
-        } { (sum, i) ⇒
-          sum + i
-        }
+        }((sum, i) ⇒ sum + i)
         .withAttributes(supervisionStrategy(restartingDecider))
         .to(Sink.fromSubscriber(sinkProbe))
         .withAttributes(inputBuffer(initial = 1, max = 1))
         .run()
 
-      val sub = sourceProbe.expectSubscription()
+      val sub     = sourceProbe.expectSubscription()
       val sinkSub = sinkProbe.expectSubscription()
 
       // push the first value
@@ -215,14 +213,15 @@ class FlowConflateSpec extends AkkaSpec {
       val latch = TestLatch()
       val conflate = Flow[String]
         .conflateWithSeed(seed = i ⇒ i)((state, elem) ⇒
-              if (elem == "two") {
+          if (elem == "two") {
             latch.open()
             throw TE("two is a three letter word")
-          } else state + elem)
+          } else state + elem
+        )
         .withAttributes(supervisionStrategy(restartingDecider))
 
       val sourceProbe = TestPublisher.probe[String]()
-      val sinkProbe = TestSubscriber.probe[String]()
+      val sinkProbe   = TestSubscriber.probe[String]()
 
       Source
         .fromPublisher(sourceProbe)
@@ -247,24 +246,25 @@ class FlowConflateSpec extends AkkaSpec {
     "resume when `aggregate` throws and a resumingDecider is used" in {
 
       val sourceProbe = TestPublisher.probe[Int]()
-      val sinkProbe = TestSubscriber.probe[Vector[Int]]()
-      val saw4Latch = TestLatch()
+      val sinkProbe   = TestSubscriber.probe[Vector[Int]]()
+      val saw4Latch   = TestLatch()
 
       val future = Source
         .fromPublisher(sourceProbe)
         .conflateWithSeed(seed = i ⇒ Vector(i))((state, elem) ⇒
-              if (elem == 2) {
+          if (elem == 2) {
             throw TE("three is a four letter word")
           } else {
             if (elem == 4) saw4Latch.open()
             state :+ elem
-        })
+          }
+        )
         .withAttributes(supervisionStrategy(resumingDecider))
         .to(Sink.fromSubscriber(sinkProbe))
         .withAttributes(inputBuffer(initial = 1, max = 1))
         .run()
 
-      val sub = sourceProbe.expectSubscription()
+      val sub     = sourceProbe.expectSubscription()
       val sinkSub = sinkProbe.expectSubscription()
       // push the first three values, the third will trigger
       // the exception

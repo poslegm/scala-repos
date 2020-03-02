@@ -26,7 +26,10 @@ import org.scalacheck.Prop.forAll
   * System under specification for JSON XML.
   */
 object JsonXmlSpec
-    extends Specification with NodeGen with JValueGen with ScalaCheck {
+    extends Specification
+    with NodeGen
+    with JValueGen
+    with ScalaCheck {
   "JSON XML Specification".title
 
   import Xml._
@@ -43,6 +46,6 @@ object JsonXmlSpec
     forAll(conversion)
   }
 
-  implicit def arbXml: Arbitrary[Node] = Arbitrary(genXml)
+  implicit def arbXml: Arbitrary[Node]      = Arbitrary(genXml)
   implicit def arbJValue: Arbitrary[JValue] = Arbitrary(genObject)
 }

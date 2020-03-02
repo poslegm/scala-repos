@@ -29,8 +29,8 @@ import org.apache.spark._
 
 class LauncherBackendSuite extends SparkFunSuite with Matchers {
 
-  private val tests = Seq(
-      "local" -> "local", "standalone/client" -> "local-cluster[1,1,1024]")
+  private val tests =
+    Seq("local" -> "local", "standalone/client" -> "local-cluster[1,1,1024]")
 
   tests.foreach {
     case (name, master) =>
@@ -44,11 +44,15 @@ class LauncherBackendSuite extends SparkFunSuite with Matchers {
     env.put("SPARK_PRINT_LAUNCH_COMMAND", "1")
     val handle = new SparkLauncher(env)
       .setSparkHome(sys.props("spark.test.home"))
-      .setConf(SparkLauncher.DRIVER_EXTRA_CLASSPATH,
-               System.getProperty("java.class.path"))
+      .setConf(
+        SparkLauncher.DRIVER_EXTRA_CLASSPATH,
+        System.getProperty("java.class.path")
+      )
       .setConf("spark.ui.enabled", "false")
-      .setConf(SparkLauncher.DRIVER_EXTRA_JAVA_OPTIONS,
-               s"-Dtest.appender=console")
+      .setConf(
+        SparkLauncher.DRIVER_EXTRA_JAVA_OPTIONS,
+        s"-Dtest.appender=console"
+      )
       .setMaster(master)
       .setAppResource("spark-internal")
       .setMainClass(TestApp.getClass.getName().stripSuffix("$"))
@@ -72,9 +76,8 @@ class LauncherBackendSuite extends SparkFunSuite with Matchers {
 
 object TestApp {
 
-  def main(args: Array[String]): Unit = {
+  def main(args: Array[String]): Unit =
     new SparkContext(new SparkConf()).parallelize(Seq(1)).foreach { i =>
       Thread.sleep(TimeUnit.SECONDS.toMillis(20))
     }
-  }
 }

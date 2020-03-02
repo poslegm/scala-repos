@@ -6,17 +6,16 @@ import mesosphere.marathon.state.PathId
 import rx.lang.scala.{Observable, Subscription}
 
 private[bus] class TaskStatusObservablesImpl(
-    eventStream: InternalTaskStatusEventStream)
-    extends TaskStatusObservables {
+    eventStream: InternalTaskStatusEventStream
+) extends TaskStatusObservables {
 
   override def forAll: Observable[TaskStatusUpdate] = forAppId(PathId.empty)
 
-  override def forAppId(appId: PathId): Observable[TaskStatusUpdate] = {
+  override def forAppId(appId: PathId): Observable[TaskStatusUpdate] =
     Observable.create { observer =>
       eventStream.subscribe(observer, appId)
       Subscription {
         eventStream.unsubscribe(observer, appId)
       }
     }
-  }
 }

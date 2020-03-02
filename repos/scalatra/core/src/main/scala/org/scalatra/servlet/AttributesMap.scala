@@ -12,7 +12,8 @@ import scala.collection.mutable.Map
   * ServletContext) to a mutable map.
   */
 trait AttributesMap
-    extends Map[String, Any] with MutableMapWithIndifferentAccess[Any] {
+    extends Map[String, Any]
+    with MutableMapWithIndifferentAccess[Any] {
 
   protected def attributes: Attributes
 
@@ -22,15 +23,14 @@ trait AttributesMap
     * @return an option value containing the attribute associated with the key
     * in the underlying servlet object, or None if none exists.
     */
-  def get(key: String): Option[Any] = {
+  def get(key: String): Option[Any] =
     if (attributes == null) None
     else {
       attributes.getAttribute(key) match {
         case null => None
-        case v => Some(v)
+        case v    => Some(v)
       }
     }
-  }
 
   /**
     * Optionally return and type cast the attribute associated with the key
@@ -40,10 +40,10 @@ trait AttributesMap
     * @return an option value containing the attributed associated with the key in the underlying servlet object,
     *         or None if none exists
     */
-  def getAs[T](key: String)(implicit mf: Manifest[T],
-                            converter: TypeConverter[Any, T]): Option[T] = {
+  def getAs[T](
+      key: String
+  )(implicit mf: Manifest[T], converter: TypeConverter[Any, T]): Option[T] =
     get(key) flatMap (converter(_))
-  }
 
   /**
     * Return the attribute associated with the key or throw an exception when nothing found
@@ -53,11 +53,11 @@ trait AttributesMap
     * @return an value for the attributed associated with the key in the underlying servlet object,
     *         or throw an exception if the key doesn't exist
     */
-  def as[T](key: String)(
-      implicit mf: Manifest[T], converter: TypeConverter[Any, T]): T = {
+  def as[T](
+      key: String
+  )(implicit mf: Manifest[T], converter: TypeConverter[Any, T]): T =
     getAs[T](key) getOrElse
-    (throw new ScalatraException("Key " + key + " not found"))
-  }
+      (throw new ScalatraException("Key " + key + " not found"))
 
   /**
     * Return the attribute associated with the key or throw an exception when nothing found
@@ -67,21 +67,21 @@ trait AttributesMap
     * @return an value for the attributed associated with the key in the underlying servlet object,
     *         or throw an exception if the key doesn't exist
     */
-  def getAsOrElse[T](key: String, default: => T)(
-      implicit mf: Manifest[T], converter: TypeConverter[Any, T]): T = {
+  def getAsOrElse[T](
+      key: String,
+      default: => T
+  )(implicit mf: Manifest[T], converter: TypeConverter[Any, T]): T =
     getAs[T](key) getOrElse default
-  }
 
   /**
     * Creates a new iterator over all attributes in the underlying servlet object.
     *
     * @return the new iterator
     */
-  def iterator: Iterator[(String, Any)] = {
+  def iterator: Iterator[(String, Any)] =
     attributes.getAttributeNames().asScala map { key =>
       (key, attributes.getAttribute(key))
     }
-  }
 
   /**
     * Sets an attribute on the underlying servlet object.

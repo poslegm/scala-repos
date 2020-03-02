@@ -28,17 +28,19 @@ import com.twitter.bijection.macros.impl.IsCaseClassImpl
   */
 object TupleSetterImpl {
 
-  def caseClassTupleSetterImpl[T](c: Context)(
-      implicit T: c.WeakTypeTag[T]): c.Expr[TupleSetter[T]] =
+  def caseClassTupleSetterImpl[T](
+      c: Context
+  )(implicit T: c.WeakTypeTag[T]): c.Expr[TupleSetter[T]] =
     caseClassTupleSetterCommonImpl(c, false)
 
-  def caseClassTupleSetterWithUnknownImpl[T](c: Context)(
-      implicit T: c.WeakTypeTag[T]): c.Expr[TupleSetter[T]] =
+  def caseClassTupleSetterWithUnknownImpl[T](
+      c: Context
+  )(implicit T: c.WeakTypeTag[T]): c.Expr[TupleSetter[T]] =
     caseClassTupleSetterCommonImpl(c, true)
 
-  def caseClassTupleSetterCommonImpl[T](
-      c: Context, allowUnknownTypes: Boolean)(
-      implicit T: c.WeakTypeTag[T]): c.Expr[TupleSetter[T]] = {
+  def caseClassTupleSetterCommonImpl[T](c: Context, allowUnknownTypes: Boolean)(
+      implicit T: c.WeakTypeTag[T]
+  ): c.Expr[TupleSetter[T]] = {
     import c.universe._
 
     val tupTerm = newTermName(c.fresh("tup"))

@@ -8,10 +8,14 @@ import com.twitter.util.{Closable, CloseAwaitably, Future, FuturePool, Time}
 /**
   * Provides the Reader API for an InputStream
   */
-class InputStreamReader private[io](
-    inputStream: InputStream, maxBufferSize: Int, pool: FuturePool)
-    extends Reader with Closable with CloseAwaitably {
-  private[this] val mutex = new AsyncMutex()
+class InputStreamReader private[io] (
+    inputStream: InputStream,
+    maxBufferSize: Int,
+    pool: FuturePool
+) extends Reader
+    with Closable
+    with CloseAwaitably {
+  private[this] val mutex               = new AsyncMutex()
   @volatile private[this] var discarded = false
 
   def this(inputStream: InputStream, maxBufferSize: Int) =
@@ -31,9 +35,9 @@ class InputStreamReader private[io](
       pool {
         try {
           if (discarded) throw new Reader.ReaderDiscarded()
-          val size = n min maxBufferSize
+          val size   = n min maxBufferSize
           val buffer = new Array[Byte](size)
-          val c = inputStream.read(buffer, 0, size)
+          val c      = inputStream.read(buffer, 0, size)
           if (c == -1) None
           else Some(Buf.ByteArray.Owned(buffer, 0, c))
         } catch {
@@ -57,13 +61,15 @@ class InputStreamReader private[io](
     */
   def close(deadline: Time) = closeAwaitably {
     discard()
-    pool { inputStream.close() }
+    pool(inputStream.close())
   }
 }
 
 object InputStreamReader {
   val DefaultMaxBufferSize = 4096
   def apply(
-      inputStream: InputStream, maxBufferSize: Int = DefaultMaxBufferSize) =
+      inputStream: InputStream,
+      maxBufferSize: Int = DefaultMaxBufferSize
+  ) =
     new InputStreamReader(inputStream, maxBufferSize)
 }

@@ -9,7 +9,13 @@ import akka.util.{ReflectiveAccess, Switch}
 
 import java.util.Queue
 import java.util.concurrent.atomic.AtomicReference
-import java.util.concurrent.{TimeUnit, ExecutorService, RejectedExecutionException, ConcurrentLinkedQueue, LinkedBlockingQueue}
+import java.util.concurrent.{
+  TimeUnit,
+  ExecutorService,
+  RejectedExecutionException,
+  ConcurrentLinkedQueue,
+  LinkedBlockingQueue
+}
 
 /**
   * Default settings are:
@@ -67,51 +73,65 @@ import java.util.concurrent.{TimeUnit, ExecutorService, RejectedExecutionExcepti
 class ExecutorBasedEventDrivenDispatcher(
     _name: String,
     val throughput: Int = Dispatchers.THROUGHPUT,
-    val throughputDeadlineTime: Int = Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
+    val throughputDeadlineTime: Int =
+      Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
     val mailboxType: MailboxType = Dispatchers.MAILBOX_TYPE,
-    val config: ThreadPoolConfig = ThreadPoolConfig())
-    extends MessageDispatcher {
+    val config: ThreadPoolConfig = ThreadPoolConfig()
+) extends MessageDispatcher {
 
-  def this(_name: String,
-           throughput: Int,
-           throughputDeadlineTime: Int,
-           mailboxType: MailboxType) =
-    this(_name,
-         throughput,
-         throughputDeadlineTime,
-         mailboxType,
-         ThreadPoolConfig()) // Needed for Java API usage
+  def this(
+      _name: String,
+      throughput: Int,
+      throughputDeadlineTime: Int,
+      mailboxType: MailboxType
+  ) =
+    this(
+      _name,
+      throughput,
+      throughputDeadlineTime,
+      mailboxType,
+      ThreadPoolConfig()
+    ) // Needed for Java API usage
 
   def this(_name: String, throughput: Int, mailboxType: MailboxType) =
-    this(_name,
-         throughput,
-         Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
-         mailboxType) // Needed for Java API usage
+    this(
+      _name,
+      throughput,
+      Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
+      mailboxType
+    ) // Needed for Java API usage
 
   def this(_name: String, throughput: Int) =
-    this(_name,
-         throughput,
-         Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
-         Dispatchers.MAILBOX_TYPE) // Needed for Java API usage
+    this(
+      _name,
+      throughput,
+      Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
+      Dispatchers.MAILBOX_TYPE
+    ) // Needed for Java API usage
 
   def this(_name: String, _config: ThreadPoolConfig) =
-    this(_name,
-         Dispatchers.THROUGHPUT,
-         Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
-         Dispatchers.MAILBOX_TYPE,
-         _config)
+    this(
+      _name,
+      Dispatchers.THROUGHPUT,
+      Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
+      Dispatchers.MAILBOX_TYPE,
+      _config
+    )
 
   def this(_name: String) =
-    this(_name,
-         Dispatchers.THROUGHPUT,
-         Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
-         Dispatchers.MAILBOX_TYPE) // Needed for Java API usage
+    this(
+      _name,
+      Dispatchers.THROUGHPUT,
+      Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
+      Dispatchers.MAILBOX_TYPE
+    ) // Needed for Java API usage
 
   val name = "akka:event-driven:dispatcher:" + _name
 
   private[akka] val threadFactory = new MonitorableThreadFactory(name)
   private[akka] val executorService = new AtomicReference[ExecutorService](
-      config.createLazyExecutorService(threadFactory))
+    config.createLazyExecutorService(threadFactory)
+  )
 
   private[akka] def dispatch(invocation: MessageInvocation) = {
     val mbox = getMailbox(invocation.receiver)
@@ -121,7 +141,8 @@ class ExecutorBasedEventDrivenDispatcher(
 
   private[akka] def executeFuture(invocation: FutureInvocation[_]): Unit =
     if (active.isOn) {
-      try executorService.get() execute invocation catch {
+      try executorService.get() execute invocation
+      catch {
         case e: RejectedExecutionException =>
           EventHandler.warning(this, e.toString)
           throw e
@@ -138,8 +159,9 @@ class ExecutorBasedEventDrivenDispatcher(
 
   def createMailbox(actorRef: ActorRef): AnyRef = mailboxType match {
     case b: UnboundedMailbox =>
-      new ConcurrentLinkedQueue[MessageInvocation] with MessageQueue
-      with ExecutableMailbox {
+      new ConcurrentLinkedQueue[MessageInvocation]
+        with MessageQueue
+        with ExecutableMailbox {
         @inline
         final def dispatcher = ExecutorBasedEventDrivenDispatcher.this
         @inline
@@ -149,7 +171,7 @@ class ExecutorBasedEventDrivenDispatcher(
       }
     case b: BoundedMailbox =>
       new DefaultBoundedMessageQueue(b.capacity, b.pushTimeOut)
-      with ExecutableMailbox {
+        with ExecutableMailbox {
         @inline
         final def dispatcher = ExecutorBasedEventDrivenDispatcher.this
       }
@@ -158,15 +180,16 @@ class ExecutorBasedEventDrivenDispatcher(
   private[akka] def start {}
 
   private[akka] def shutdown {
-    val old = executorService.getAndSet(
-        config.createLazyExecutorService(threadFactory))
+    val old =
+      executorService.getAndSet(config.createLazyExecutorService(threadFactory))
     if (old ne null) {
       old.shutdownNow()
     }
   }
 
   private[akka] def registerForExecution(
-      mbox: MessageQueue with ExecutableMailbox): Unit = {
+      mbox: MessageQueue with ExecutableMailbox
+  ): Unit =
     if (mbox.dispatcherLock.tryLock()) {
       if (active.isOn && !mbox.suspended.locked) {
         //If the dispatcher is active and the actor not suspended
@@ -179,13 +202,14 @@ class ExecutorBasedEventDrivenDispatcher(
             throw e
         }
       } else {
-        mbox.dispatcherLock.unlock() //If the dispatcher isn't active or if the actor is suspended, unlock the dispatcher lock
+        mbox.dispatcherLock
+          .unlock() //If the dispatcher isn't active or if the actor is suspended, unlock the dispatcher lock
       }
     }
-  }
 
   private[akka] def reRegisterForExecution(
-      mbox: MessageQueue with ExecutableMailbox): Unit =
+      mbox: MessageQueue with ExecutableMailbox
+  ): Unit =
     registerForExecution(mbox)
 
   override val toString = getClass.getSimpleName + "[" + name + "]"
@@ -230,7 +254,7 @@ trait ExecutableMailbox extends Runnable { self: MessageQueue =>
       if (nextMessage ne null) {
         //If we have a message
         if (dispatcher.throughput <= 1) //If we only run one message per process
-          nextMessage.invoke //Just run it
+          nextMessage.invoke            //Just run it
         else {
           //But otherwise, if we are throttled, we need to do some book-keeping
           var processedMessages = 0
@@ -238,7 +262,7 @@ trait ExecutableMailbox extends Runnable { self: MessageQueue =>
           val deadlineNs =
             if (isDeadlineEnabled)
               System.nanoTime +
-              TimeUnit.MILLISECONDS.toNanos(dispatcher.throughputDeadlineTime)
+                TimeUnit.MILLISECONDS.toNanos(dispatcher.throughputDeadlineTime)
             else 0
           do {
             nextMessage.invoke
@@ -249,9 +273,9 @@ trait ExecutableMailbox extends Runnable { self: MessageQueue =>
               processedMessages += 1
               if ((processedMessages >= dispatcher.throughput) ||
                   (isDeadlineEnabled &&
-                      System.nanoTime >= deadlineNs)) // If we're throttled, break out
-                null //We reached our boundaries, abort
-              else self.dequeue //Dequeue the next message
+                  System.nanoTime >= deadlineNs)) // If we're throttled, break out
+                null                              //We reached our boundaries, abort
+              else self.dequeue                   //Dequeue the next message
             }
           } while (nextMessage ne null)
         }
@@ -280,7 +304,9 @@ abstract class PriorityGenerator
   def gen(message: Any): Int
 
   final def compare(
-      thisMessage: MessageInvocation, thatMessage: MessageInvocation): Int =
+      thisMessage: MessageInvocation,
+      thatMessage: MessageInvocation
+  ): Int =
     gen(thisMessage.message) - gen(thatMessage.message)
 }
 
@@ -296,58 +322,81 @@ class PriorityExecutorBasedEventDrivenDispatcher(
     throughput: Int = Dispatchers.THROUGHPUT,
     throughputDeadlineTime: Int = Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
     mailboxType: MailboxType = Dispatchers.MAILBOX_TYPE,
-    config: ThreadPoolConfig = ThreadPoolConfig())
-    extends ExecutorBasedEventDrivenDispatcher(
-        name, throughput, throughputDeadlineTime, mailboxType, config)
+    config: ThreadPoolConfig = ThreadPoolConfig()
+) extends ExecutorBasedEventDrivenDispatcher(
+      name,
+      throughput,
+      throughputDeadlineTime,
+      mailboxType,
+      config
+    )
     with PriorityMailbox {
 
-  def this(name: String,
-           comparator: java.util.Comparator[MessageInvocation],
-           throughput: Int,
-           throughputDeadlineTime: Int,
-           mailboxType: MailboxType) =
-    this(name,
-         comparator,
-         throughput,
-         throughputDeadlineTime,
-         mailboxType,
-         ThreadPoolConfig()) // Needed for Java API usage
+  def this(
+      name: String,
+      comparator: java.util.Comparator[MessageInvocation],
+      throughput: Int,
+      throughputDeadlineTime: Int,
+      mailboxType: MailboxType
+  ) =
+    this(
+      name,
+      comparator,
+      throughput,
+      throughputDeadlineTime,
+      mailboxType,
+      ThreadPoolConfig()
+    ) // Needed for Java API usage
 
-  def this(name: String,
-           comparator: java.util.Comparator[MessageInvocation],
-           throughput: Int,
-           mailboxType: MailboxType) =
-    this(name,
-         comparator,
-         throughput,
-         Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
-         mailboxType) // Needed for Java API usage
+  def this(
+      name: String,
+      comparator: java.util.Comparator[MessageInvocation],
+      throughput: Int,
+      mailboxType: MailboxType
+  ) =
+    this(
+      name,
+      comparator,
+      throughput,
+      Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
+      mailboxType
+    ) // Needed for Java API usage
 
-  def this(name: String,
-           comparator: java.util.Comparator[MessageInvocation],
-           throughput: Int) =
-    this(name,
-         comparator,
-         throughput,
-         Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
-         Dispatchers.MAILBOX_TYPE) // Needed for Java API usage
+  def this(
+      name: String,
+      comparator: java.util.Comparator[MessageInvocation],
+      throughput: Int
+  ) =
+    this(
+      name,
+      comparator,
+      throughput,
+      Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
+      Dispatchers.MAILBOX_TYPE
+    ) // Needed for Java API usage
 
-  def this(name: String,
-           comparator: java.util.Comparator[MessageInvocation],
-           config: ThreadPoolConfig) =
-    this(name,
-         comparator,
-         Dispatchers.THROUGHPUT,
-         Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
-         Dispatchers.MAILBOX_TYPE,
-         config)
+  def this(
+      name: String,
+      comparator: java.util.Comparator[MessageInvocation],
+      config: ThreadPoolConfig
+  ) =
+    this(
+      name,
+      comparator,
+      Dispatchers.THROUGHPUT,
+      Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
+      Dispatchers.MAILBOX_TYPE,
+      config
+    )
 
   def this(name: String, comparator: java.util.Comparator[MessageInvocation]) =
-    this(name,
-         comparator,
-         Dispatchers.THROUGHPUT,
-         Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
-         Dispatchers.MAILBOX_TYPE) // Needed for Java API usage
+    this(
+      name,
+      comparator,
+      Dispatchers.THROUGHPUT,
+      Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
+      Dispatchers.MAILBOX_TYPE
+    ) // Needed for Java API usage
 }
 
 /**
@@ -371,7 +420,7 @@ trait PriorityMailbox { self: ExecutorBasedEventDrivenDispatcher =>
 
       case b: BoundedMailbox =>
         new BoundedPriorityMessageQueue(b.capacity, b.pushTimeOut, comparator)
-        with ExecutableMailbox {
+          with ExecutableMailbox {
           @inline
           final def dispatcher = self
         }

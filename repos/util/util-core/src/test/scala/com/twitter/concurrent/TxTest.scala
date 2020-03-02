@@ -11,7 +11,7 @@ class TxTest extends WordSpec {
   "Tx.twoParty" should {
     "commit when everything goes dandy" in {
       val (stx, rtx) = Tx.twoParty(123)
-      val sf = stx.ack()
+      val sf         = stx.ack()
       assert(sf.poll == None)
       val rf = rtx.ack()
       assert(sf.poll == Some(Return(Tx.Commit(()))))
@@ -20,7 +20,7 @@ class TxTest extends WordSpec {
 
     "abort when receiver nacks" in {
       val (stx, rtx) = Tx.twoParty(123)
-      val sf = stx.ack()
+      val sf         = stx.ack()
       assert(sf.poll == None)
       rtx.nack()
       assert(sf.poll == Some(Return(Tx.Abort)))
@@ -28,7 +28,7 @@ class TxTest extends WordSpec {
 
     "abort when sender nacks" in {
       val (stx, rtx) = Tx.twoParty(123)
-      val rf = rtx.ack()
+      val rf         = rtx.ack()
       assert(rf.poll == None)
       stx.nack()
       assert(rf.poll == Some(Return(Tx.Abort)))

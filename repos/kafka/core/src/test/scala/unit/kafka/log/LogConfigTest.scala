@@ -31,13 +31,13 @@ class LogConfigTest {
   @Test
   def testKafkaConfigToProps() {
     val millisInHour = 60L * 60L * 1000L
-    val kafkaProps = TestUtils.createBrokerConfig(nodeId = 0, zkConnect = "")
+    val kafkaProps   = TestUtils.createBrokerConfig(nodeId = 0, zkConnect = "")
     kafkaProps.put(KafkaConfig.LogRollTimeHoursProp, "2")
     kafkaProps.put(KafkaConfig.LogRollTimeJitterHoursProp, "2")
     kafkaProps.put(KafkaConfig.LogRetentionTimeHoursProp, "2")
 
     val kafkaConfig = KafkaConfig.fromProps(kafkaProps)
-    val logProps = KafkaServer.copyKafkaConfigToLog(kafkaConfig)
+    val logProps    = KafkaServer.copyKafkaConfigToLog(kafkaConfig)
     assertEquals(2 * millisInHour, logProps.get(LogConfig.SegmentMsProp))
     assertEquals(2 * millisInHour, logProps.get(LogConfig.SegmentJitterMsProp))
     assertEquals(2 * millisInHour, logProps.get(LogConfig.RetentionMsProp))
@@ -45,7 +45,7 @@ class LogConfigTest {
 
   @Test
   def testFromPropsEmpty() {
-    val p = new Properties()
+    val p      = new Properties()
     val config = LogConfig(p)
     Assert.assertEquals(LogConfig(), config)
   }
@@ -53,7 +53,7 @@ class LogConfigTest {
   @Test
   def testFromPropsInvalid() {
     LogConfig.configNames.foreach(name =>
-          name match {
+      name match {
         case LogConfig.UncleanLeaderElectionEnableProp =>
           assertPropertyInvalid(name, "not a boolean")
         case LogConfig.RetentionBytesProp =>
@@ -70,19 +70,18 @@ class LogConfigTest {
           assertPropertyInvalid(name, "")
         case positiveIntProperty =>
           assertPropertyInvalid(name, "not_a_number", "-1")
-    })
+      }
+    )
   }
 
   private def assertPropertyInvalid(name: String, values: AnyRef*) {
-    values.foreach(
-        (value) =>
-          {
-        val props = new Properties
-        props.setProperty(name, value.toString)
-        intercept[Exception] {
-          LogConfig(props)
-        }
-    })
+    values.foreach { (value) =>
+      val props = new Properties
+      props.setProperty(name, value.toString)
+      intercept[Exception] {
+        LogConfig(props)
+      }
+    }
   }
 
   private def randFrom[T](choices: T*): T = {

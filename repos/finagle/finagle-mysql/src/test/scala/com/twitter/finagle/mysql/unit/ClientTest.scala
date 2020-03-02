@@ -18,15 +18,17 @@ class ClientTest extends FunSuite with MockitoSugar with MustMatchers {
   test("basic test creates a new service for each query") {
     val service = new MockService()
     val factory = spy(new MockServiceFactory(service))
-    val client = spy(Client(factory))
+    val client  = spy(Client(factory))
 
     client.query(sqlQuery)
     client.query(sqlQuery)
 
-    service.requests must equal(List(
-            sqlQuery,
-            sqlQuery
-        ).map(QueryRequest(_)))
+    service.requests must equal(
+      List(
+        sqlQuery,
+        sqlQuery
+      ).map(QueryRequest(_))
+    )
 
     verify(client, times(2)).query(sqlQuery)
     verify(factory, times(2)).apply()

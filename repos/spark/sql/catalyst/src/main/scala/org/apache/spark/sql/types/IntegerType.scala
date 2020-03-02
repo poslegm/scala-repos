@@ -36,7 +36,7 @@ class IntegerType private () extends IntegralType {
   @transient private[sql] lazy val tag = ScalaReflectionLock.synchronized {
     typeTag[InternalType]
   }
-  private[sql] val numeric = implicitly[Numeric[Int]]
+  private[sql] val numeric  = implicitly[Numeric[Int]]
   private[sql] val integral = implicitly[Integral[Int]]
   private[sql] val ordering = implicitly[Ordering[InternalType]]
 

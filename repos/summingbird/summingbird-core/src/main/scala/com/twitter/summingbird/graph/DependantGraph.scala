@@ -24,7 +24,7 @@ abstract class DependantGraph[T] {
   def nodes: List[T]
   def dependenciesOf(t: T): Iterable[T]
 
-  lazy val allTails: List[T] = nodes.filter { fanOut(_).get == 0 }
+  lazy val allTails: List[T]       = nodes.filter(fanOut(_).get == 0)
   private lazy val nodeSet: Set[T] = nodes.toSet
 
   /**
@@ -38,13 +38,13 @@ abstract class DependantGraph[T] {
   /**
     * The max of zero and 1 + depth of all parents if the node is the graph
     */
-  def isNode(p: T): Boolean = nodeSet.contains(p)
+  def isNode(p: T): Boolean    = nodeSet.contains(p)
   def depth(p: T): Option[Int] = depths.get(p)
 
   def dependantsOf(p: T): Option[List[T]] =
     if (isNode(p)) Some(graph(p).toList) else None
 
-  def fanOut(p: T): Option[Int] = dependantsOf(p).map { _.size }
+  def fanOut(p: T): Option[Int] = dependantsOf(p).map(_.size)
 
   /**
     * Return all dependendants of a given node.

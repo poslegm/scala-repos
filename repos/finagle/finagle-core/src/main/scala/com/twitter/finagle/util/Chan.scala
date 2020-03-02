@@ -17,8 +17,8 @@ trait Chan[-T] {
   * They can be thought of as featherweight actors.
   */
 trait Proc[-T] extends Chan[T] {
-  private[this] val q = new ConcurrentLinkedQueue[T]
-  private[this] val nq = new AtomicInteger(0)
+  private[this] val q                = new ConcurrentLinkedQueue[T]
+  private[this] val nq               = new AtomicInteger(0)
   @volatile private[this] var closed = false
 
   def close() { closed = true }
@@ -31,7 +31,8 @@ trait Proc[-T] extends Chan[T] {
         // Swallow exceptions as these would cause
         // unbounded queue growth.
         if (!closed) {
-          try receiver(elem) catch {
+          try receiver(elem)
+          catch {
             case exc: Throwable =>
               Logger
                 .getLogger("")

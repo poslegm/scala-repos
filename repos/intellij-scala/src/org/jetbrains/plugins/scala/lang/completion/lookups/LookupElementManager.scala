@@ -5,7 +5,10 @@ import com.intellij.psi._
 import org.jetbrains.plugins.scala.extensions._
 import org.jetbrains.plugins.scala.lang.psi.ScalaPsiUtil
 import org.jetbrains.plugins.scala.lang.psi.fake.FakePsiMethod
-import org.jetbrains.plugins.scala.lang.psi.types.result.{TypingContext, TypingContextOwner}
+import org.jetbrains.plugins.scala.lang.psi.types.result.{
+  TypingContext,
+  TypingContextOwner
+}
 import org.jetbrains.plugins.scala.lang.psi.types.{Nothing, ScType}
 import org.jetbrains.plugins.scala.lang.resolve.ScalaResolveResult
 
@@ -15,9 +18,10 @@ import org.jetbrains.plugins.scala.lang.resolve.ScalaResolveResult
   */
 object LookupElementManager {
   def getKeywrodLookupElement(
-      keyword: String, position: PsiElement): LookupElement = {
+      keyword: String,
+      position: PsiElement
+  ): LookupElement =
     ScalaKeywordLookupItem.getLookupElement(keyword, position)
-  }
 
   def getLookupElement(
       resolveResult: ScalaResolveResult,
@@ -29,22 +33,23 @@ object LookupElementManager {
       isInStableCodeReference: Boolean = false,
       containingClass: Option[PsiClass] = None,
       isInSimpleString: Boolean = false,
-      isInInterpolatedString: Boolean = false): Seq[ScalaLookupItem] = {
-    val element = resolveResult.element
+      isInInterpolatedString: Boolean = false
+  ): Seq[ScalaLookupItem] = {
+    val element     = resolveResult.element
     val substitutor = resolveResult.substitutor
 
     def isRenamed = resolveResult.isRenamed.filter(element.name != _)
 
     def isCurrentClassMember: Boolean = {
       def checkIsExpectedClassMember(
-          expectedClassOption: Option[PsiClass]): Boolean = {
+          expectedClassOption: Option[PsiClass]
+      ): Boolean =
         expectedClassOption.exists { expectedClass =>
           ScalaPsiUtil.nameContext(element) match {
             case m: PsiMember if m.containingClass == expectedClass => true
-            case _ => false
+            case _                                                  => false
           }
         }
-      }
 
       def usedImportForElement = resolveResult.importsUsed.nonEmpty
       def isPredef =
@@ -69,17 +74,18 @@ object LookupElementManager {
       }
     }
 
-    def isDeprecated: Boolean = {
+    def isDeprecated: Boolean =
       element match {
         case doc: PsiDocCommentOwner if doc.isDeprecated => true
-        case _ => false
+        case _                                           => false
       }
-    }
 
     def getLookupElementInternal(
-        isAssignment: Boolean, name: String): ScalaLookupItem = {
-      val lookupItem: ScalaLookupItem = new ScalaLookupItem(
-          element, name, containingClass)
+        isAssignment: Boolean,
+        name: String
+    ): ScalaLookupItem = {
+      val lookupItem: ScalaLookupItem =
+        new ScalaLookupItem(element, name, containingClass)
       lookupItem.isClassName = isClassName
       lookupItem.isNamedParameter = resolveResult.isNamedParameter
       lookupItem.isDeprecated = isDeprecated
@@ -98,12 +104,14 @@ object LookupElementManager {
     }
 
     val name: String = isRenamed.getOrElse(element.name)
-    val Setter = """(.*)_=""".r
+    val Setter       = """(.*)_=""".r
     name match {
       case Setter(prefix) if !element.isInstanceOf[FakePsiMethod] =>
         //if element is fake psi method, then this setter is already generated from var
-        Seq(getLookupElementInternal(isAssignment = true, prefix),
-            getLookupElementInternal(isAssignment = false, name))
+        Seq(
+          getLookupElementInternal(isAssignment = true, prefix),
+          getLookupElementInternal(isAssignment = false, name)
+        )
       case _ => Seq(getLookupElementInternal(isAssignment = false, name))
     }
   }

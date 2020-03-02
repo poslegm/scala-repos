@@ -8,9 +8,8 @@ object SCL5840 {
   }
 
   object Macros {
-    def impl(c: Context)(args: c.Expr[Any]*): c.Expr[SC] = {
-      c.universe.reify { new SC }
-    }
+    def impl(c: Context)(args: c.Expr[Any]*): c.Expr[SC] =
+      c.universe.reify(new SC)
   }
 
   object Test {
@@ -21,7 +20,7 @@ object SCL5840 {
 
     /*start*/
     foo"say hello".hello /*end*/ // Cannot resolve symbol hello
-    noMacro"say hello".hello // It works
+    noMacro"say hello".hello     // It works
 
     def h: SC = macro Macros.impl
     h.hello // It also works

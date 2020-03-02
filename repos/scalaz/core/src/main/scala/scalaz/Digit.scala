@@ -86,26 +86,28 @@ object Digit extends DigitInstances {
     OptionT(F.map(cs)(digitFromChar))
 
   def digitsOr[F[_]](chars: F[Char], d: => Digit)(
-      implicit F: Functor[F]): F[Digit] =
+      implicit F: Functor[F]
+  ): F[Digit] =
     F.map(chars)(a => digitFromChar(a) getOrElse d)
 
-  def digitsCollapse[F[_]](
-      chars: F[Char])(implicit F: MonadPlus[F]): F[Digit] =
-    F.bind(chars)(
-        a =>
-          Digit.digitFromChar(a) match {
-        case None => F.empty[Digit]
+  def digitsCollapse[F[_]](chars: F[Char])(implicit F: MonadPlus[F]): F[Digit] =
+    F.bind(chars)(a =>
+      Digit.digitFromChar(a) match {
+        case None    => F.empty[Digit]
         case Some(d) => F.point(d)
-    })
+      }
+    )
 
-  def traverseDigits[F[_]](chars: F[Char])(
-      implicit F: Traverse[F]): Option[F[Digit]] = {
+  def traverseDigits[F[_]](
+      chars: F[Char]
+  )(implicit F: Traverse[F]): Option[F[Digit]] = {
     import std.option._
     F.sequence(digits(chars).run)
   }
 
   def traverseDigitsOr[F[_]](chars: F[Char], d: => F[Digit])(
-      implicit F: Traverse[F]): F[Digit] =
+      implicit F: Traverse[F]
+  ): F[Digit] =
     traverseDigits(chars) getOrElse d
 }
 

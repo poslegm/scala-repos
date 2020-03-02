@@ -37,11 +37,14 @@ import scala.collection.parallel.mutable.ParHashMap
   *  @define willNotTerminateInf
   */
 @SerialVersionUID(1L)
-class HashMap[A, B] private[collection](
-    contents: HashTable.Contents[A, DefaultEntry[A, B]])
-    extends AbstractMap[A, B] with Map[A, B] with MapLike[A, B, HashMap[A, B]]
+class HashMap[A, B] private[collection] (
+    contents: HashTable.Contents[A, DefaultEntry[A, B]]
+) extends AbstractMap[A, B]
+    with Map[A, B]
+    with MapLike[A, B, HashMap[A, B]]
     with HashTable[A, DefaultEntry[A, B]]
-    with CustomParallelizable[(A, B), ParHashMap[A, B]] with Serializable {
+    with CustomParallelizable[(A, B), ParHashMap[A, B]]
+    with Serializable {
   initWithContents(contents)
 
   type Entry = DefaultEntry[A, B]
@@ -109,16 +112,16 @@ class HashMap[A, B] private[collection](
 
   /* Override to avoid tuple allocation */
   override def keysIterator: Iterator[A] = new AbstractIterator[A] {
-    val iter = entriesIterator
+    val iter    = entriesIterator
     def hasNext = iter.hasNext
-    def next() = iter.next().key
+    def next()  = iter.next().key
   }
 
   /* Override to avoid tuple allocation */
   override def valuesIterator: Iterator[B] = new AbstractIterator[B] {
-    val iter = entriesIterator
+    val iter    = entriesIterator
     def hasNext = iter.hasNext
-    def next() = iter.next().value
+    def next()  = iter.next().value
   }
 
   /** Toggles whether a size map is used to track hash map statistics.
@@ -128,15 +131,17 @@ class HashMap[A, B] private[collection](
       if (!isSizeMapDefined) sizeMapInitAndRebuild()
     } else sizeMapDisable()
 
-  protected def createNewEntry[B1](key: A, value: B1): Entry = {
+  protected def createNewEntry[B1](key: A, value: B1): Entry =
     new Entry(key, value.asInstanceOf[B])
-  }
 
   private def writeObject(out: java.io.ObjectOutputStream) {
-    serializeTo(out, { entry =>
-      out.writeObject(entry.key)
-      out.writeObject(entry.value)
-    })
+    serializeTo(
+      out,
+      { entry =>
+        out.writeObject(entry.key)
+        out.writeObject(entry.value)
+      }
+    )
   }
 
   private def readObject(in: java.io.ObjectInputStream) {

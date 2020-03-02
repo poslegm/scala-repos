@@ -32,19 +32,20 @@ object BlockingChannel {
   *
   */
 @nonthreadsafe
-class BlockingChannel(val host: String,
-                      val port: Int,
-                      val readBufferSize: Int,
-                      val writeBufferSize: Int,
-                      val readTimeoutMs: Int)
-    extends Logging {
-  private var connected = false
-  private var channel: SocketChannel = null
-  private var readChannel: ReadableByteChannel = null
+class BlockingChannel(
+    val host: String,
+    val port: Int,
+    val readBufferSize: Int,
+    val writeBufferSize: Int,
+    val readTimeoutMs: Int
+) extends Logging {
+  private var connected                          = false
+  private var channel: SocketChannel             = null
+  private var readChannel: ReadableByteChannel   = null
   private var writeChannel: GatheringByteChannel = null
-  private val lock = new Object()
-  private val connectTimeoutMs = readTimeoutMs
-  private var connectionId: String = ""
+  private val lock                               = new Object()
+  private val connectTimeoutMs                   = readTimeoutMs
+  private var connectionId: String               = ""
 
   def connect() = lock synchronized {
     if (!connected) {
@@ -58,31 +59,34 @@ class BlockingChannel(val host: String,
         channel.socket.setSoTimeout(readTimeoutMs)
         channel.socket.setKeepAlive(true)
         channel.socket.setTcpNoDelay(true)
-        channel.socket.connect(
-            new InetSocketAddress(host, port), connectTimeoutMs)
+        channel.socket
+          .connect(new InetSocketAddress(host, port), connectTimeoutMs)
 
         writeChannel = channel
         // Need to create a new ReadableByteChannel from input stream because SocketChannel doesn't implement read with timeout
         // See: http://stackoverflow.com/questions/2866557/timeout-for-socketchannel-doesnt-work
         readChannel = Channels.newChannel(channel.socket().getInputStream)
         connected = true
-        val localHost = channel.socket.getLocalAddress.getHostAddress
-        val localPort = channel.socket.getLocalPort
+        val localHost  = channel.socket.getLocalAddress.getHostAddress
+        val localPort  = channel.socket.getLocalPort
         val remoteHost = channel.socket.getInetAddress.getHostAddress
         val remotePort = channel.socket.getPort
         connectionId = localHost + ":" + localPort + "-" + remoteHost + ":" +
-        remotePort
+          remotePort
         // settings may not match what we requested above
         val msg =
           "Created socket with SO_TIMEOUT = %d (requested %d), SO_RCVBUF = %d (requested %d), SO_SNDBUF = %d (requested %d), connectTimeoutMs = %d."
         debug(
-            msg.format(channel.socket.getSoTimeout,
-                       readTimeoutMs,
-                       channel.socket.getReceiveBufferSize,
-                       readBufferSize,
-                       channel.socket.getSendBufferSize,
-                       writeBufferSize,
-                       connectTimeoutMs))
+          msg.format(
+            channel.socket.getSoTimeout,
+            readTimeoutMs,
+            channel.socket.getReceiveBufferSize,
+            readBufferSize,
+            channel.socket.getSendBufferSize,
+            writeBufferSize,
+            connectTimeoutMs
+          )
+        )
       } catch {
         case e: Throwable => disconnect()
       }

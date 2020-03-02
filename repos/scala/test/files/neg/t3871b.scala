@@ -23,22 +23,22 @@ object E {
   val e = new E
   import e._
   def n(a: A, b: B, c: C) = {
-    b.protE // 1c
-    c.protE // 1c
-    a.protE // 1c
+    b.protE  // 1c
+    c.protE  // 1c
+    a.protE  // 1c
     A.protOE // 1c
   }
 }
 
 class E {
   object A {
-    protected def protO = 2
-    protected[E] def protOE = 3
+    protected def protO        = 2
+    protected[E] def protOE    = 3
     protected[this] def protOT = 3
   }
   class A {
-    protected def prot = 2
-    protected[E] def protE = 3
+    protected def prot        = 2
+    protected[E] def protE    = 3
     protected[this] def protT = 4
 
     // 1a
@@ -98,9 +98,9 @@ class E {
 
   class Z {
     def n(a: A, b: B, c: C) = {
-      b.prot // not allowed
-      c.prot // not allowed
-      a.prot // not allowed
+      b.prot  // not allowed
+      c.prot  // not allowed
+      a.prot  // not allowed
       b.protE // 2
       a.protE // 2
       c.protE // 2
@@ -116,9 +116,9 @@ class Other {
   val e = new E
   import e._
   def n(a: A, b: B, c: C) = {
-    b.prot // not allowed
-    c.prot // not allowed
-    a.prot // not allowed
+    b.prot  // not allowed
+    c.prot  // not allowed
+    a.prot  // not allowed
     b.protE // not allowed
     a.protE // not allowed
     c.protE // not allowed

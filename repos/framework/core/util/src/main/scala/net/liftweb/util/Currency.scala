@@ -24,14 +24,13 @@ import common._
   * A simple fixed-point currency representation
   */
 class Currency(val amount: Long, val symbol: String, val decimals: Int) {
-  override def toString = {
+  override def toString =
     if (decimals == 0) symbol + amount
     else {
-      val d = amount.toDouble
+      val d   = amount.toDouble
       val pow = math.pow(10, decimals)
       symbol + (d / pow)
     }
-  }
 
   /**
     * Return a string formatted as the URL-encoded symbol followed
@@ -83,8 +82,8 @@ object Currency {
     */
   def apply(s: String): Box[Currency] = s.roboSplit("&") match {
     case List(cur, a, d) =>
-      for (av <- asLong(a); dv <- asInt(d)) yield
-        new Currency(av, urlDecode(cur), dv)
+      for (av <- asLong(a); dv <- asInt(d))
+        yield new Currency(av, urlDecode(cur), dv)
     case _ => Empty
   }
 }

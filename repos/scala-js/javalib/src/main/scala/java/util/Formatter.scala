@@ -7,7 +7,8 @@ import java.io._
 import java.lang._
 
 final class Formatter(private val dest: Appendable)
-    extends Closeable with Flushable {
+    extends Closeable
+    with Flushable {
   import Formatter._
 
   var closed = false
@@ -18,7 +19,7 @@ final class Formatter(private val dest: Appendable)
     if (!closed) {
       dest match {
         case cl: Closeable => cl.close()
-        case _ =>
+        case _             =>
       }
     }
     closed = true
@@ -27,7 +28,7 @@ final class Formatter(private val dest: Appendable)
   def flush(): Unit = ifNotClosed {
     dest match {
       case fl: Flushable => fl.flush()
-      case _ =>
+      case _             =>
     }
   }
 
@@ -36,9 +37,9 @@ final class Formatter(private val dest: Appendable)
   def format(format_in: String, args: Array[AnyRef]): Formatter = ifNotClosed {
     import js.JSNumberOps._
 
-    var fmt: String = format_in
+    var fmt: String            = format_in
     var lastImplicitIndex: Int = 0
-    var lastIndex: Int = 0 // required for < flag
+    var lastIndex: Int         = 0 // required for < flag
 
     while (!fmt.isEmpty) {
       fmt match {
@@ -57,7 +58,7 @@ final class Formatter(private val dest: Appendable)
         case FormattedChunk(matchResult) =>
           fmt = fmt.substring(matchResult(0).get.length)
 
-          val flags = matchResult(2).get
+          val flags                 = matchResult(2).get
           def hasFlag(flag: String) = flags.indexOf(flag) >= 0
 
           val indexStr = matchResult(1).getOrElse("")
@@ -97,12 +98,12 @@ final class Formatter(private val dest: Appendable)
             conversion <= 'Z'
 
           def intArg: Int = (arg: Any) match {
-            case arg: Int => arg
+            case arg: Int  => arg
             case arg: Char => arg.toInt
           }
           def numberArg: scala.Double = (arg: Any) match {
             case arg: Number => arg.doubleValue()
-            case arg: Char => arg.toDouble
+            case arg: Char   => arg.toDouble
           }
 
           def padCaptureSign(argStr: String, prefix: String) = {
@@ -114,7 +115,7 @@ final class Formatter(private val dest: Appendable)
 
           def strRepeat(s: String, times: Int) = {
             var result: String = ""
-            var i = times
+            var i              = times
             while (i > 0) {
               result += s
               i -= 1
@@ -122,7 +123,7 @@ final class Formatter(private val dest: Appendable)
             result
           }
 
-          def with_+(s: String, preventZero: scala.Boolean = false) = {
+          def with_+(s: String, preventZero: scala.Boolean = false) =
             if (s.charAt(0) != '-') {
               if (hasFlag("+")) pad(s, "+", preventZero)
               else if (hasFlag(" ")) pad(s, " ", preventZero)
@@ -131,22 +132,23 @@ final class Formatter(private val dest: Appendable)
               if (hasFlag("(")) pad(s.substring(1) + ")", "(", preventZero)
               else pad(s.substring(1), "-", preventZero)
             }
-          }
 
-          def pad(argStr: String,
-                  prefix: String = "",
-                  preventZero: Boolean = false) = {
+          def pad(
+              argStr: String,
+              prefix: String = "",
+              preventZero: Boolean = false
+          ) = {
             val prePadLen = argStr.length + prefix.length
 
             val padStr = {
               if (width <= prePadLen) {
                 prefix + argStr
               } else {
-                val padRight = hasFlag("-")
-                val padZero = hasFlag("0") && !preventZero
-                val padLength = width - prePadLen
+                val padRight        = hasFlag("-")
+                val padZero         = hasFlag("0") && !preventZero
+                val padLength       = width - prePadLen
                 val padChar: String = if (padZero) "0" else " "
-                val padding = strRepeat(padChar, padLength)
+                val padding         = strRepeat(padChar, padLength)
 
                 if (padZero && padRight)
                   throw new java.util.IllegalFormatFlagsException(flags)
@@ -166,9 +168,9 @@ final class Formatter(private val dest: Appendable)
             case 'b' | 'B' =>
               pad {
                 arg match {
-                  case null => "false"
+                  case null       => "false"
                   case b: Boolean => String.valueOf(b)
-                  case _ => "true"
+                  case _          => "true"
                 }
               }
             case 'h' | 'H' =>
@@ -181,14 +183,16 @@ final class Formatter(private val dest: Appendable)
                 case formattable: Formattable =>
                   val flags = {
                     (if (hasFlag("-")) FormattableFlags.LEFT_JUSTIFY else 0) |
-                    (if (hasFlag("#")) FormattableFlags.ALTERNATE else 0) |
-                    (if (isConversionUpperCase) FormattableFlags.UPPERCASE
-                     else 0)
+                      (if (hasFlag("#")) FormattableFlags.ALTERNATE else 0) |
+                      (if (isConversionUpperCase) FormattableFlags.UPPERCASE
+                       else 0)
                   }
-                  formattable.formatTo(this,
-                                       flags,
-                                       if (hasWidth) width else -1,
-                                       if (hasPrecision) precision else -1)
+                  formattable.formatTo(
+                    this,
+                    flags,
+                    if (hasWidth) width else -1,
+                    if (hasPrecision) precision else -1
+                  )
                   None // no further processing
                 case _ =>
                   if (!hasFlag("#")) pad(String.valueOf(arg))
@@ -201,13 +205,13 @@ final class Formatter(private val dest: Appendable)
               with_+(numberArg.toString())
             case 'o' =>
               val str = (arg: Any) match {
-                case arg: scala.Int => Integer.toOctalString(arg)
+                case arg: scala.Int  => Integer.toOctalString(arg)
                 case arg: scala.Long => Long.toOctalString(arg)
               }
               padCaptureSign(str, if (hasFlag("#")) "0" else "")
             case 'x' | 'X' =>
               val str = (arg: Any) match {
-                case arg: scala.Int => Integer.toHexString(arg)
+                case arg: scala.Int  => Integer.toHexString(arg)
                 case arg: scala.Long => Long.toHexString(arg)
               }
               padCaptureSign(str, if (hasFlag("#")) "0x" else "")
@@ -228,22 +232,24 @@ final class Formatter(private val dest: Appendable)
                 with_+(numberArg.toFixed(Math.max(p - sig, 0)))
               } else sciNotation(p - 1)
             case 'f' =>
-              with_+({
+              with_+(
                 // JavaDoc: 6 is default precision
-                numberArg.toFixed(if (hasPrecision) precision else 6)
-              }, numberArg.isNaN || numberArg.isInfinite)
+                numberArg.toFixed(if (hasPrecision) precision else 6),
+                numberArg.isNaN || numberArg.isInfinite
+              )
           }
 
           def sciNotation(precision: Int) = {
             val exp = numberArg.toExponential(precision)
-            with_+({
+            with_+(
               // check if we need additional 0 padding in exponent
               // JavaDoc: at least 2 digits
               if ('e' == exp.charAt(exp.length - 3)) {
                 exp.substring(0, exp.length - 1) + "0" +
-                exp.charAt(exp.length - 1)
-              } else exp
-            }, numberArg.isNaN || numberArg.isInfinite)
+                  exp.charAt(exp.length - 1)
+              } else exp,
+              numberArg.isNaN || numberArg.isInfinite
+            )
           }
       }
     }
@@ -252,8 +258,8 @@ final class Formatter(private val dest: Appendable)
   }
 
   def ioException(): IOException = null
-  def locale(): Locale = ifNotClosed { null }
-  def out(): Appendable = ifNotClosed { dest }
+  def locale(): Locale           = ifNotClosed(null)
+  def out(): Appendable          = ifNotClosed(dest)
 
   override def toString(): String = out().toString()
 
@@ -268,17 +274,16 @@ final class Formatter(private val dest: Appendable)
 object Formatter {
 
   private class RegExpExtractor(val regexp: js.RegExp) {
-    def unapply(str: String): Option[js.RegExp.ExecResult] = {
+    def unapply(str: String): Option[js.RegExp.ExecResult] =
       Option(regexp.exec(str))
-    }
   }
 
-  private val RegularChunk = new RegExpExtractor(
-      new js.RegExp("""^[^\x25]+"""))
-  private val DoublePercent = new RegExpExtractor(
-      new js.RegExp("""^\x25{2}"""))
-  private val EOLChunk = new RegExpExtractor(new js.RegExp("""^\x25n"""))
+  private val RegularChunk  = new RegExpExtractor(new js.RegExp("""^[^\x25]+"""))
+  private val DoublePercent = new RegExpExtractor(new js.RegExp("""^\x25{2}"""))
+  private val EOLChunk      = new RegExpExtractor(new js.RegExp("""^\x25n"""))
   private val FormattedChunk = new RegExpExtractor(
-      new js.RegExp(
-          """^\x25(?:([1-9]\d*)\$)?([-#+ 0,\(<]*)(\d*)(?:\.(\d+))?([A-Za-z])"""))
+    new js.RegExp(
+      """^\x25(?:([1-9]\d*)\$)?([-#+ 0,\(<]*)(\d*)(?:\.(\d+))?([A-Za-z])"""
+    )
+  )
 }

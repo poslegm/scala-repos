@@ -9,7 +9,7 @@ import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
 
 class ConnectHttpSpec extends WordSpec with Matchers with BeforeAndAfterAll {
 
-  val httpContext = ConnectionContext.noEncryption()
+  val httpContext  = ConnectionContext.noEncryption()
   val httpsContext = ConnectionContext.https(null)
 
   val successResponse = HttpResponse.create().withStatus(200)

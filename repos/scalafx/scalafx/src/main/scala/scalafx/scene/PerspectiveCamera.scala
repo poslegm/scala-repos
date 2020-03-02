@@ -35,13 +35,15 @@ import scalafx.delegate.SFXDelegate
 
 object PerspectiveCamera {
   implicit def sfxPerspectiveCamera2jfx(
-      c: PerspectiveCamera): jfxs.PerspectiveCamera =
+      c: PerspectiveCamera
+  ): jfxs.PerspectiveCamera =
     if (c != null) c.delegate else null
 }
 
 class PerspectiveCamera(
-    override val delegate: jfxs.PerspectiveCamera = new jfxs.PerspectiveCamera)
-    extends Camera(delegate) with SFXDelegate[jfxs.PerspectiveCamera] {
+    override val delegate: jfxs.PerspectiveCamera = new jfxs.PerspectiveCamera
+) extends Camera(delegate)
+    with SFXDelegate[jfxs.PerspectiveCamera] {
 
   /** Constructs a PerspectiveCamera with the specified fixedEyeAtCameraZero flag.  */
   def this(fixedEyeAtCameraZero: Boolean) =

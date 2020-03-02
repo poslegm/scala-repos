@@ -9,11 +9,13 @@ object Test extends BytecodeTest {
 
   def show: Unit = {
     def test(methodName: String, expected: Int) {
-      val classNode = loadClassNode("Lean")
+      val classNode  = loadClassNode("Lean")
       val methodNode = getMethod(classNode, methodName)
-      val got = countNullChecks(methodNode.instructions)
-      assert(got == expected,
-             s"$methodName: expected $expected but got $got comparisons")
+      val got        = countNullChecks(methodNode.instructions)
+      assert(
+        got == expected,
+        s"$methodName: expected $expected but got $got comparisons"
+      )
     }
     test("string", expected = 0)
     test("module", expected = 0)

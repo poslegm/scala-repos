@@ -8,15 +8,14 @@ private[kestrel] class DecodingToResponse
     extends AbstractDecodingToResponse[Response] {
   import AbstractDecodingToResponse._
 
-  def parseResponse(tokens: Seq[Buf]) = {
+  def parseResponse(tokens: Seq[Buf]) =
     tokens.head match {
       case NOT_FOUND => NotFound()
-      case STORED => Stored()
-      case DELETED => Deleted()
-      case ERROR => Error()
-      case _ => Error()
+      case STORED    => Stored()
+      case DELETED   => Deleted()
+      case ERROR     => Error()
+      case _         => Error()
     }
-  }
 
   def parseValues(valueLines: Seq[TokensWithData]) = {
     val values = valueLines.map { valueLine =>

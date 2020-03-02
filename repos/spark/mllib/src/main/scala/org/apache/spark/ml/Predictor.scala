@@ -32,7 +32,10 @@ import org.apache.spark.sql.types.{DataType, DoubleType, StructType}
   * (private[ml])  Trait for parameters for prediction (regression and classification).
   */
 private[ml] trait PredictorParams
-    extends Params with HasLabelCol with HasFeaturesCol with HasPredictionCol {
+    extends Params
+    with HasLabelCol
+    with HasFeaturesCol
+    with HasPredictionCol {
 
   /**
     * Validates and transforms the input schema with the provided param map.
@@ -45,7 +48,8 @@ private[ml] trait PredictorParams
   protected def validateAndTransformSchema(
       schema: StructType,
       fitting: Boolean,
-      featuresDataType: DataType): StructType = {
+      featuresDataType: DataType
+  ): StructType = {
     // TODO: Support casting Array[Double] and Array[Float] to Vector when FeaturesType = Vector
     SchemaUtils.checkColumnType(schema, $(featuresCol), featuresDataType)
     if (fitting) {
@@ -68,10 +72,13 @@ private[ml] trait PredictorParams
   *            parameter to specify the concrete type for the corresponding model.
   */
 @DeveloperApi
-abstract class Predictor[FeaturesType,
-                         Learner <: Predictor[FeaturesType, Learner, M],
-                         M <: PredictionModel[FeaturesType, M]]
-    extends Estimator[M] with PredictorParams {
+abstract class Predictor[FeaturesType, Learner <: Predictor[
+  FeaturesType,
+  Learner,
+  M
+], M <: PredictionModel[FeaturesType, M]]
+    extends Estimator[M]
+    with PredictorParams {
 
   /** @group setParam */
   def setLabelCol(value: String): Learner =
@@ -114,20 +121,18 @@ abstract class Predictor[FeaturesType,
     */
   private[ml] def featuresDataType: DataType = new VectorUDT
 
-  override def transformSchema(schema: StructType): StructType = {
+  override def transformSchema(schema: StructType): StructType =
     validateAndTransformSchema(schema, fitting = true, featuresDataType)
-  }
 
   /**
     * Extract [[labelCol]] and [[featuresCol]] from the given dataset,
     * and put it in an RDD with strong types.
     */
-  protected def extractLabeledPoints(dataset: DataFrame): RDD[LabeledPoint] = {
+  protected def extractLabeledPoints(dataset: DataFrame): RDD[LabeledPoint] =
     dataset.select($(labelCol), $(featuresCol)).rdd.map {
       case Row(label: Double, features: Vector) =>
         LabeledPoint(label, features)
     }
-  }
 }
 
 /**
@@ -140,9 +145,11 @@ abstract class Predictor[FeaturesType,
   *            parameter to specify the concrete type for the corresponding model.
   */
 @DeveloperApi
-abstract class PredictionModel[
-    FeaturesType, M <: PredictionModel[FeaturesType, M]]
-    extends Model[M] with PredictorParams {
+abstract class PredictionModel[FeaturesType, M <: PredictionModel[
+  FeaturesType,
+  M
+]] extends Model[M]
+    with PredictorParams {
 
   /** @group setParam */
   def setFeaturesCol(value: String): M =
@@ -166,9 +173,8 @@ abstract class PredictionModel[
     */
   protected def featuresDataType: DataType = new VectorUDT
 
-  override def transformSchema(schema: StructType): StructType = {
+  override def transformSchema(schema: StructType): StructType =
     validateAndTransformSchema(schema, fitting = false, featuresDataType)
-  }
 
   /**
     * Transforms dataset by reading from [[featuresCol]], calling [[predict()]], and storing
@@ -182,8 +188,10 @@ abstract class PredictionModel[
     if ($(predictionCol).nonEmpty) {
       transformImpl(dataset)
     } else {
-      this.logWarning(s"$uid: Predictor.transform() was called as NOOP" +
-          " since no output columns were set.")
+      this.logWarning(
+        s"$uid: Predictor.transform() was called as NOOP" +
+          " since no output columns were set."
+      )
       dataset
     }
   }

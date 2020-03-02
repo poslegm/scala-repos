@@ -13,19 +13,23 @@ import java.net.URI
 private[io] class AtomicFileOutputStream private (
     private val baseFile: File,
     private val tmpFile: File
-)
-    extends FileOutputStream(tmpFile) {
+) extends FileOutputStream(tmpFile) {
 
   private[this] var _closed = false
 
   def this(baseFile: File) = {
-    this(baseFile, {
-      // Create a temporary file we actually write to
-      val tmpFile = File.createTempFile(
-          ".tmp-" + baseFile.getName, ".tmp", baseFile.getParentFile)
-      tmpFile.deleteOnExit()
-      tmpFile
-    })
+    this(
+      baseFile, {
+        // Create a temporary file we actually write to
+        val tmpFile = File.createTempFile(
+          ".tmp-" + baseFile.getName,
+          ".tmp",
+          baseFile.getParentFile
+        )
+        tmpFile.deleteOnExit()
+        tmpFile
+      }
+    )
   }
 
   override def close(): Unit = {
@@ -40,15 +44,16 @@ private[io] class AtomicFileOutputStream private (
   }
 
   /** Try to atomically replace the baseFile with the tmpFile */
-  private[this] def atomicReplace(): Unit = {
+  private[this] def atomicReplace(): Unit =
     if (!tmpFile.renameTo(baseFile)) {
       // Renaming failed. Fallback to copy
       try {
-        IO.copyTo(FileVirtualBinaryFile(tmpFile),
-                  WritableFileVirtualBinaryFile(baseFile))
+        IO.copyTo(
+          FileVirtualBinaryFile(tmpFile),
+          WritableFileVirtualBinaryFile(baseFile)
+        )
       } finally {
         tmpFile.delete()
       }
     }
-  }
 }

@@ -3,7 +3,11 @@ package mesosphere.marathon.core.flow
 import akka.event.EventStream
 import mesosphere.marathon.MarathonSchedulerDriverHolder
 import mesosphere.marathon.core.base.Clock
-import mesosphere.marathon.core.flow.impl.{OfferReviverDelegate, OfferMatcherLaunchTokensActor, ReviveOffersActor}
+import mesosphere.marathon.core.flow.impl.{
+  OfferReviverDelegate,
+  OfferMatcherLaunchTokensActor,
+  ReviveOffersActor
+}
 import mesosphere.marathon.core.leadership.LeadershipModule
 import mesosphere.marathon.core.matcher.manager.OfferMatcherManager
 import mesosphere.marathon.core.task.bus.TaskStatusObservables
@@ -31,27 +35,30 @@ class FlowModule(leadershipModule: LeadershipModule) {
       conf: ReviveOffersConfig,
       marathonEventStream: EventStream,
       offersWanted: Observable[Boolean],
-      driverHolder: MarathonSchedulerDriverHolder): Option[OfferReviver] = {
-
+      driverHolder: MarathonSchedulerDriverHolder
+  ): Option[OfferReviver] =
     if (conf.reviveOffersForNewApps()) {
       lazy val reviveOffersActor = ReviveOffersActor.props(
-          clock,
-          conf,
-          marathonEventStream,
-          offersWanted,
-          driverHolder
+        clock,
+        conf,
+        marathonEventStream,
+        offersWanted,
+        driverHolder
       )
       val actorRef = leadershipModule.startWhenLeader(
-          reviveOffersActor, "reviveOffersWhenWanted")
+        reviveOffersActor,
+        "reviveOffersWhenWanted"
+      )
       log.info(
-          s"Calling reviveOffers is enabled. Use --disable_revive_offers_for_new_apps to disable.")
+        s"Calling reviveOffers is enabled. Use --disable_revive_offers_for_new_apps to disable."
+      )
       Some(new OfferReviverDelegate(actorRef))
     } else {
       log.info(
-          s"Calling reviveOffers is disabled. Use --revive_offers_for_new_apps to enable.")
+        s"Calling reviveOffers is disabled. Use --revive_offers_for_new_apps to enable."
+      )
       None
     }
-  }
 
   /**
     * Refills the launch tokens of the OfferMatcherManager periodically. See [[LaunchTokenConfig]] for configuration.
@@ -64,14 +71,17 @@ class FlowModule(leadershipModule: LeadershipModule) {
   def refillOfferMatcherManagerLaunchTokens(
       conf: LaunchTokenConfig,
       taskStatusObservables: TaskStatusObservables,
-      offerMatcherManager: OfferMatcherManager): Unit = {
+      offerMatcherManager: OfferMatcherManager
+  ): Unit = {
     lazy val offerMatcherLaunchTokensProps =
       OfferMatcherLaunchTokensActor.props(
-          conf,
-          taskStatusObservables,
-          offerMatcherManager
+        conf,
+        taskStatusObservables,
+        offerMatcherManager
       )
     leadershipModule.startWhenLeader(
-        offerMatcherLaunchTokensProps, "offerMatcherLaunchTokens")
+      offerMatcherLaunchTokensProps,
+      "offerMatcherLaunchTokens"
+    )
   }
 }

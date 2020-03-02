@@ -16,27 +16,27 @@ class ScalaRunConfigurationRefactoringListenerProvider
   private def wrap(td: ScTemplateDefinition) =
     new PsiClassWrapper(td, td.qualifiedName, td.name)
   private def decorate(
-      listener: RefactoringElementListener): RefactoringElementListener = {
+      listener: RefactoringElementListener
+  ): RefactoringElementListener = {
     if (listener == null) return null
 
     new RefactoringElementListener {
       def elementMoved(newElement: PsiElement) = newElement match {
         case td: ScTemplateDefinition => listener.elementMoved(wrap(td))
-        case _ =>
+        case _                        =>
       }
       def elementRenamed(newElement: PsiElement) = newElement match {
         case td: ScTemplateDefinition => listener.elementRenamed(wrap(td))
-        case _ =>
+        case _                        =>
       }
     }
   }
 
-  override def getListener(element: PsiElement): RefactoringElementListener = {
+  override def getListener(element: PsiElement): RefactoringElementListener =
     element match {
       case td: ScTemplateDefinition =>
         val wrapper = wrap(td)
         decorate(super.getListener(wrapper))
       case _ => null
     }
-  }
 }

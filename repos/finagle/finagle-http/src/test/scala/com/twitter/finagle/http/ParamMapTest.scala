@@ -51,10 +51,14 @@ class ParamMapTest extends FunSuite {
     assert(Request("?x=1").params.getLong("x") == Some(1L))
     assert(Request("?x=0").params.getLong("x") == Some(0L))
     assert(Request("?x=-1").params.getLong("x") == Some(-1L))
-    assert(Request("?x=9223372036854775807").params.getLong("x") == Some(
-            9223372036854775807L))
-    assert(Request("?x=-9223372036854775808").params.getLong("x") == Some(
-            -9223372036854775808L))
+    assert(
+      Request("?x=9223372036854775807").params
+        .getLong("x") == Some(9223372036854775807L)
+    )
+    assert(
+      Request("?x=-9223372036854775808").params
+        .getLong("x") == Some(-9223372036854775808L)
+    )
     assert(Request("?x=9223372036854775808").params.getLong("x") == Some(0L))
     assert(Request("?x=-9223372036854775809").params.getLong("x") == Some(0L))
     assert(Request("?x=garbage").params.getLong("x") == Some(0L))
@@ -115,26 +119,31 @@ class ParamMapTest extends FunSuite {
 
   test("iterator") {
     val request = Request("/search.json?q=twitter&q=twitter2&lang=en")
-    assert(request.params.iterator.toList.sorted == List(
-            ("lang", "en"), ("q", "twitter"), ("q", "twitter2")))
+    assert(
+      request.params.iterator.toList.sorted == List(
+        ("lang", "en"),
+        ("q", "twitter"),
+        ("q", "twitter2")
+      )
+    )
   }
 
   test("plus") {
     val request = Request("/search.json?q=twitter")
-    val params = request.params + ("lang" -> "en")
+    val params  = request.params + ("lang" -> "en")
     assert(params.get("q") == Some("twitter"))
     assert(params.get("lang") == Some("en"))
   }
 
   test("minus") {
     val request = Request("/search.json?q=twitter")
-    val params = request.params - "q"
+    val params  = request.params - "q"
     assert(params.get("q") == None)
   }
 
   test("empty") {
     val request = Request("/search.json?q=twitter")
-    val params = request.params.empty
+    val params  = request.params.empty
     assert(params.get("q") == None)
   }
 
@@ -164,14 +173,15 @@ class ParamMapTest extends FunSuite {
       request.contentType = "application/x-www-form-urlencoded"
       request.contentString = "q=twitter"
       assert(request.params.get("q") == Some("twitter")) // favor POST param
-      assert(request.params.getAll("q").toList.sorted == List("twitter",
-                                                              "twitter2"))
+      assert(
+        request.params.getAll("q").toList.sorted == List("twitter", "twitter2")
+      )
     }
   }
 
   test("ignore body only during TRACE requests") {
-    val url = "/search.json?lang=en"
-    val contentType = "application/x-www-form-urlencoded"
+    val url           = "/search.json?lang=en"
+    val contentType   = "application/x-www-form-urlencoded"
     val contentString = "q=twitter"
 
     val getRequest = Request(Method.Get, url)

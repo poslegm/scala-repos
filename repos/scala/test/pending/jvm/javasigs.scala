@@ -2,18 +2,20 @@ import java.io._
 
 object Scalatest {
   val outputdir = System.getProperty("partest.output", "inner.obj")
-  val scalalib = System.getProperty("partest.lib", "")
+  val scalalib  = System.getProperty("partest.lib", "")
   val classpath = outputdir + File.pathSeparator + scalalib
-  val javacmd = System.getProperty("javacmd", "java")
-  val javac = System.getProperty("javaccmd", "javac")
+  val javacmd   = System.getProperty("javacmd", "java")
+  val javac     = System.getProperty("javaccmd", "javac")
 
   def javac(src: String, opts: String, fname: String) {
     val tmpfilename = outputdir + File.separator + fname
-    val tmpfile = new FileWriter(tmpfilename)
+    val tmpfile     = new FileWriter(tmpfilename)
     tmpfile.write(src)
     tmpfile.close
-    exec(javac + " -d " + outputdir + " -classpath " + classpath + " " + opts +
-        tmpfilename)
+    exec(
+      javac + " -d " + outputdir + " -classpath " + classpath + " " + opts +
+        tmpfilename
+    )
   }
 
   def java(cname: String) =
@@ -35,10 +37,10 @@ object Scalatest {
   /** Execute cmd, wait for the process to end and pipe its output to stdout */
   def exec(cmd: String) {
     val proc = Runtime.getRuntime().exec(cmd)
-    val inp = new BufferedReader(new InputStreamReader(proc.getInputStream))
+    val inp  = new BufferedReader(new InputStreamReader(proc.getInputStream))
     val errp = new BufferedReader(new InputStreamReader(proc.getErrorStream))
-    val t1 = slurp(inp)
-    val t2 = slurp(errp)
+    val t1   = slurp(inp)
+    val t2   = slurp(errp)
     proc.waitFor()
     t1.done = true
     t2.done = true

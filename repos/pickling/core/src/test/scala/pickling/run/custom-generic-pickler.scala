@@ -3,11 +3,13 @@ import org.scalatest.FunSuite
 
 case class MyClass[A](myString: String, a: A)
 
-class MyClassPickler[A](implicit val format: PickleFormat,
-                        aTypeTag: FastTypeTag[A],
-                        aPickler: Pickler[A],
-                        aUnpickler: Unpickler[A])
-    extends Pickler[MyClass[A]] with Unpickler[MyClass[A]] {
+class MyClassPickler[A](
+    implicit val format: PickleFormat,
+    aTypeTag: FastTypeTag[A],
+    aPickler: Pickler[A],
+    aUnpickler: Unpickler[A]
+) extends Pickler[MyClass[A]]
+    with Unpickler[MyClass[A]] {
 
   private val stringUnpickler = implicitly[Unpickler[String]]
 
@@ -16,13 +18,10 @@ class MyClassPickler[A](implicit val format: PickleFormat,
   override def pickle(picklee: MyClass[A], builder: PBuilder) = {
     builder.beginEntry(picklee, tag)
     builder.putField(
-        "myString",
-        b => b.beginEntry(picklee.myString, FastTypeTag.String).endEntry())
-    builder.putField("a",
-                     b =>
-                       {
-                         aPickler.pickle(picklee.a, b)
-                     })
+      "myString",
+      b => b.beginEntry(picklee.myString, FastTypeTag.String).endEntry()
+    )
+    builder.putField("a", b => aPickler.pickle(picklee.a, b))
     builder.endEntry()
   }
 
@@ -32,7 +31,7 @@ class MyClassPickler[A](implicit val format: PickleFormat,
     val myStringUnpickled =
       stringUnpickler.unpickle(tag, reader).asInstanceOf[String]
     reader.endEntry()
-    val aTag = reader.beginEntry()
+    val aTag       = reader.beginEntry()
     val aUnpickled = aUnpickler.unpickle(aTag, reader).asInstanceOf[A]
     reader.endEntry()
     MyClass(myStringUnpickled, aUnpickled)
@@ -41,14 +40,15 @@ class MyClassPickler[A](implicit val format: PickleFormat,
 
 class CustomGenericPicklerTest extends FunSuite {
 
-  implicit def myClassPickler[A : Pickler : Unpickler : FastTypeTag](
-      implicit pf: PickleFormat) =
+  implicit def myClassPickler[A: Pickler: Unpickler: FastTypeTag](
+      implicit pf: PickleFormat
+  ) =
     new MyClassPickler
 
   test("main") {
-    val inst = MyClass("test", 42)
+    val inst   = MyClass("test", 42)
     val pickle = inst.pickle
-    val up = pickle.unpickle[MyClass[Int]]
+    val up     = pickle.unpickle[MyClass[Int]]
     assert(up.toString === inst.toString)
   }
 }

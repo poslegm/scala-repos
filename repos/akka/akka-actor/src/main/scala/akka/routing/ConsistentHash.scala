@@ -17,8 +17,10 @@ import java.util.Arrays
   * hash, i.e. make sure it is different for different nodes.
   *
   */
-class ConsistentHash[T : ClassTag] private (
-    nodes: immutable.SortedMap[Int, T], val virtualNodesFactor: Int) {
+class ConsistentHash[T: ClassTag] private (
+    nodes: immutable.SortedMap[Int, T],
+    val virtualNodesFactor: Int
+) {
 
   import ConsistentHash._
 
@@ -40,11 +42,13 @@ class ConsistentHash[T : ClassTag] private (
     */
   def :+(node: T): ConsistentHash[T] = {
     val nodeHash = hashFor(node.toString)
-    new ConsistentHash(nodes ++
-                       ((1 to virtualNodesFactor) map { r ⇒
-                             (concatenateNodeHash(nodeHash, r) -> node)
-                           }),
-                       virtualNodesFactor)
+    new ConsistentHash(
+      nodes ++
+        ((1 to virtualNodesFactor) map { r ⇒
+          (concatenateNodeHash(nodeHash, r) -> node)
+        }),
+      virtualNodesFactor
+    )
   }
 
   /**
@@ -61,11 +65,11 @@ class ConsistentHash[T : ClassTag] private (
     */
   def :-(node: T): ConsistentHash[T] = {
     val nodeHash = hashFor(node.toString)
-    new ConsistentHash(nodes --
-                       ((1 to virtualNodesFactor) map { r ⇒
-                             concatenateNodeHash(nodeHash, r)
-                           }),
-                       virtualNodesFactor)
+    new ConsistentHash(
+      nodes --
+        ((1 to virtualNodesFactor) map { r ⇒ concatenateNodeHash(nodeHash, r) }),
+      virtualNodesFactor
+    )
   }
 
   /**
@@ -77,14 +81,13 @@ class ConsistentHash[T : ClassTag] private (
 
   // converts the result of Arrays.binarySearch into a index in the nodeRing array
   // see documentation of Arrays.binarySearch for what it returns
-  private def idx(i: Int): Int = {
+  private def idx(i: Int): Int =
     if (i >= 0) i // exact match
     else {
       val j = math.abs(i + 1)
       if (j >= nodeHashRing.length) 0 // after last, use first
-      else j // next node clockwise
+      else j                          // next node clockwise
     }
-  }
 
   /**
     * Get the node responsible for the data key.
@@ -94,7 +97,8 @@ class ConsistentHash[T : ClassTag] private (
   def nodeFor(key: Array[Byte]): T = {
     if (isEmpty)
       throw new IllegalStateException(
-          "Can't get node for [%s] from an empty node ring" format key)
+        "Can't get node for [%s] from an empty node ring" format key
+      )
 
     nodeRing(idx(Arrays.binarySearch(nodeHashRing, hashFor(key))))
   }
@@ -107,7 +111,8 @@ class ConsistentHash[T : ClassTag] private (
   def nodeFor(key: String): T = {
     if (isEmpty)
       throw new IllegalStateException(
-          "Can't get node for [%s] from an empty node ring" format key)
+        "Can't get node for [%s] from an empty node ring" format key
+      )
 
     nodeRing(idx(Arrays.binarySearch(nodeHashRing, hashFor(key))))
   }
@@ -119,26 +124,31 @@ class ConsistentHash[T : ClassTag] private (
 }
 
 object ConsistentHash {
-  def apply[T : ClassTag](
-      nodes: Iterable[T], virtualNodesFactor: Int): ConsistentHash[T] = {
+  def apply[T: ClassTag](
+      nodes: Iterable[T],
+      virtualNodesFactor: Int
+  ): ConsistentHash[T] =
     new ConsistentHash(
-        immutable.SortedMap.empty[Int, T] ++
+      immutable.SortedMap.empty[Int, T] ++
         (for {
-              node ← nodes
-              nodeHash = hashFor(node.toString)
-              vnode ← 1 to virtualNodesFactor
-            } yield (concatenateNodeHash(nodeHash, vnode) -> node)),
-        virtualNodesFactor)
-  }
+          node     ← nodes
+          nodeHash = hashFor(node.toString)
+          vnode    ← 1 to virtualNodesFactor
+        } yield (concatenateNodeHash(nodeHash, vnode) -> node)),
+      virtualNodesFactor
+    )
 
   /**
     * Java API: Factory method to create a ConsistentHash
     */
-  def create[T](nodes: java.lang.Iterable[T],
-                virtualNodesFactor: Int): ConsistentHash[T] = {
+  def create[T](
+      nodes: java.lang.Iterable[T],
+      virtualNodesFactor: Int
+  ): ConsistentHash[T] = {
     import scala.collection.JavaConverters._
     apply(nodes.asScala, virtualNodesFactor)(
-        ClassTag(classOf[Any].asInstanceOf[Class[T]]))
+      ClassTag(classOf[Any].asInstanceOf[Class[T]])
+    )
   }
 
   private def concatenateNodeHash(nodeHash: Int, vnode: Int): Int = {

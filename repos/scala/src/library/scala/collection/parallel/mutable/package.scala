@@ -24,7 +24,11 @@ package mutable {
   private[mutable] trait SizeMapUtils {
 
     protected def calcNumElems(
-        from: Int, until: Int, tableLength: Int, sizeMapBucketSize: Int) = {
+        from: Int,
+        until: Int,
+        tableLength: Int,
+        sizeMapBucketSize: Int
+    ) = {
       // find the first bucket
       val fbindex = from / sizeMapBucketSize
 
@@ -59,22 +63,22 @@ package mutable {
 
   /* hack-arounds */
   private[mutable] class ExposedArrayBuffer[T]
-      extends ArrayBuffer[T] with Sizing {
-    def internalArray = array
+      extends ArrayBuffer[T]
+      with Sizing {
+    def internalArray           = array
     def setInternalSize(s: Int) = size0 = s
-    override def sizeHint(len: Int) = {
+    override def sizeHint(len: Int) =
       if (len > size && len >= 1) {
         val newarray = new Array[AnyRef](len)
         Array.copy(array, 0, newarray, 0, size0)
         array = newarray
       }
-    }
   }
 
   private[mutable] class ExposedArraySeq[T](arr: Array[AnyRef], sz: Int)
       extends ArraySeq[T](sz) {
-    override val array = arr
-    override val length = sz
+    override val array        = arr
+    override val length       = sz
     override def stringPrefix = "ArraySeq"
   }
 }

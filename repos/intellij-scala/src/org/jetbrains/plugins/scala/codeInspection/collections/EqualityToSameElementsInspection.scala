@@ -6,8 +6,7 @@ import org.jetbrains.plugins.scala.lang.psi.api.expr.ScExpression
 /**
   * @author Nikolay.Tropin
   */
-class EqualityToSameElementsInspection
-    extends OperationOnCollectionInspection {
+class EqualityToSameElementsInspection extends OperationOnCollectionInspection {
   override def possibleSimplificationTypes: Array[SimplificationType] =
     Array(ArrayEquality, IteratorsEquality)
 }
@@ -21,22 +20,24 @@ object ArrayEquality extends SimplificationType {
     expr match {
       case left `==` right if arraysOrSeqAndArray(left, right) =>
         Some(
-            replace(expr)
-              .withText(invocationText(left, "sameElements", right))
-              .highlightRef)
+          replace(expr)
+            .withText(invocationText(left, "sameElements", right))
+            .highlightRef
+        )
       case left `!=` right if arraysOrSeqAndArray(left, right) =>
         Some(
-            replace(expr)
-              .withText(
-                  invocationText(negation = true, left, "sameElements", right))
-              .highlightRef)
+          replace(expr)
+            .withText(
+              invocationText(negation = true, left, "sameElements", right)
+            )
+            .highlightRef
+        )
       case _ => None
     }
 
-  private def arraysOrSeqAndArray(left: ScExpression, right: ScExpression) = {
+  private def arraysOrSeqAndArray(left: ScExpression, right: ScExpression) =
     isArray(left) && (isArray(right) || isSeq(right)) || isArray(right) &&
-    isSeq(left)
-  }
+      isSeq(left)
 }
 
 object IteratorsEquality extends SimplificationType {
@@ -48,15 +49,18 @@ object IteratorsEquality extends SimplificationType {
     expr match {
       case left `==` right if iterators(left, right) =>
         Some(
-            replace(expr)
-              .withText(invocationText(left, "sameElements", right))
-              .highlightRef)
+          replace(expr)
+            .withText(invocationText(left, "sameElements", right))
+            .highlightRef
+        )
       case left `!=` right if iterators(left, right) =>
         Some(
-            replace(expr)
-              .withText(
-                  invocationText(negation = true, left, "sameElements", right))
-              .highlightRef)
+          replace(expr)
+            .withText(
+              invocationText(negation = true, left, "sameElements", right)
+            )
+            .highlightRef
+        )
       case _ => None
     }
 

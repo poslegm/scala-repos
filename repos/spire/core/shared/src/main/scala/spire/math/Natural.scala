@@ -20,13 +20,15 @@ import Natural._
 
 @SerialVersionUID(0L)
 sealed abstract class Natural
-    extends ScalaNumber with ScalaNumericConversions with Serializable { lhs =>
+    extends ScalaNumber
+    with ScalaNumericConversions
+    with Serializable { lhs =>
 
   def digit: UInt
 
   def foldDigitsLeft[@sp A](a: A)(f: (A, UInt) => A): A = {
     @tailrec def recur(next: Natural, sofar: A): A = next match {
-      case End(d) => f(a, d)
+      case End(d)         => f(a, d)
       case Digit(d, tail) => recur(tail, f(a, d))
     }
     recur(this, a)
@@ -42,7 +44,7 @@ sealed abstract class Natural
 
     @tailrec
     def recur(next: Natural, b: Int): Int = next match {
-      case End(d) => b + bit(d, 0)
+      case End(d)         => b + bit(d, 0)
       case Digit(_, tail) => recur(tail, b + 32)
     }
     recur(this, 0)
@@ -51,7 +53,7 @@ sealed abstract class Natural
   def getDigitLength: Int = {
     @tailrec
     def recur(next: Natural, n: Int): Int = next match {
-      case End(d) => n + 1
+      case End(d)         => n + 1
       case Digit(d, tail) => recur(tail, n + 1)
     }
     recur(this, 0)
@@ -60,7 +62,7 @@ sealed abstract class Natural
   def toList: List[UInt] = {
     @tailrec
     def recur(next: Natural, sofar: List[UInt]): List[UInt] = next match {
-      case End(d) => d :: sofar
+      case End(d)         => d :: sofar
       case Digit(d, tail) => recur(tail, d :: sofar)
     }
     recur(this, Nil)
@@ -68,7 +70,7 @@ sealed abstract class Natural
 
   // Array[UInt] would be boxed so we do this for now.
   def toArray: Array[Int] = {
-    val n = getDigitLength
+    val n   = getDigitLength
     val arr = new Array[Int](n)
     @tailrec
     def recur(next: Natural, i: Int): Unit = next match {
@@ -85,50 +87,49 @@ sealed abstract class Natural
   def reversed: Natural = {
     @tailrec
     def recur(next: Natural, sofar: Natural): Natural = next match {
-      case End(d) => Digit(d, sofar)
+      case End(d)         => Digit(d, sofar)
       case Digit(d, tail) => recur(tail, Digit(d, sofar))
     }
     this match {
       case Digit(d, tail) => recur(tail, End(d))
-      case _ => this
+      case _              => this
     }
   }
 
   def trim: Natural = {
     @tailrec
-    def recur(next: Natural): Natural = {
+    def recur(next: Natural): Natural =
       next match {
         case Digit(n, tail) =>
           if (n == UInt(0)) recur(tail) else next
         case End(n) =>
           next
       }
-    }
     recur(reversed).reversed
   }
 
-  def isWhole: Boolean = true
-  def underlying: Object = this
-  def intValue: Int = toInt
-  def longValue: Long = toLong
-  def floatValue: Float = toBigInt.toFloat
+  def isWhole: Boolean    = true
+  def underlying: Object  = this
+  def intValue: Int       = toInt
+  def longValue: Long     = toLong
+  def floatValue: Float   = toBigInt.toFloat
   def doubleValue: Double = toBigInt.toDouble
 
   override def toInt: Int = digit.toInt & 0x7fffffff
 
   override def toLong: Long = this match {
-    case End(d) => d.toLong
+    case End(d)         => d.toLong
     case Digit(d, tail) => (tail.toLong << 32L) + d.toLong
   }
 
   def toBigInt: BigInt = this match {
-    case End(d) => BigInt(d.toLong)
+    case End(d)         => BigInt(d.toLong)
     case Digit(d, tail) => (tail.toBigInt << 32) + BigInt(d.toLong)
   }
 
   // calculate 9 digits at a time using /%
   override def toString: String = {
-    @tailrec def recur(next: Natural, s: String): String = {
+    @tailrec def recur(next: Natural, s: String): String =
       next match {
         case End(d) =>
           d.toLong.toString + s
@@ -137,7 +138,6 @@ sealed abstract class Natural
           if (q.isZero) r.digit.toLong.toString + s
           else recur(q, "%09d%s" format (r.digit.toLong, s))
       }
-    }
     recur(this, "")
   }
 
@@ -206,12 +206,12 @@ sealed abstract class Natural
     def recur(lhs: Natural, rhs: Natural, d: Int): Int = lhs match {
       case End(ld) =>
         rhs match {
-          case End(rd) => cmp(ld, rd, d)
+          case End(rd)  => cmp(ld, rd, d)
           case _: Digit => -rhs.compare(ld)
         }
       case Digit(ld, ltail) =>
         rhs match {
-          case End(rd) => lhs.compare(rd)
+          case End(rd)          => lhs.compare(rd)
           case Digit(rd, rtail) => recur(ltail, rtail, cmp(ld, rd, d))
         }
     }
@@ -220,18 +220,18 @@ sealed abstract class Natural
   }
 
   final override def equals(rhs: Any): Boolean = rhs match {
-    case rhs: Natural => this === rhs
-    case rhs: UInt => (lhs compare rhs) == 0
-    case rhs: BigInt => lhs.toBigInt == rhs
-    case rhs: SafeLong => SafeLong(lhs.toBigInt) == rhs
-    case rhs: BigDecimal => rhs.isWhole && lhs.toBigInt == rhs
-    case rhs: Rational => rhs.isWhole && Rational(lhs.toBigInt) == rhs
-    case rhs: Algebraic => rhs == lhs
-    case rhs: Real => lhs == rhs.toRational
-    case rhs: Number => Number(lhs.toBigInt) == rhs
-    case rhs: Complex[_] => rhs == lhs
+    case rhs: Natural       => this === rhs
+    case rhs: UInt          => (lhs compare rhs) == 0
+    case rhs: BigInt        => lhs.toBigInt == rhs
+    case rhs: SafeLong      => SafeLong(lhs.toBigInt) == rhs
+    case rhs: BigDecimal    => rhs.isWhole && lhs.toBigInt == rhs
+    case rhs: Rational      => rhs.isWhole && Rational(lhs.toBigInt) == rhs
+    case rhs: Algebraic     => rhs == lhs
+    case rhs: Real          => lhs == rhs.toRational
+    case rhs: Number        => Number(lhs.toBigInt) == rhs
+    case rhs: Complex[_]    => rhs == lhs
     case rhs: Quaternion[_] => rhs == lhs
-    case that => unifiedPrimitiveEquals(that)
+    case that               => unifiedPrimitiveEquals(that)
   }
 
   def ===(rhs: Natural): Boolean =
@@ -240,18 +240,18 @@ sealed abstract class Natural
   def =!=(rhs: Natural): Boolean =
     !(this === rhs)
 
-  def <(rhs: Natural): Boolean = (lhs compare rhs) < 0
+  def <(rhs: Natural): Boolean  = (lhs compare rhs) < 0
   def <=(rhs: Natural): Boolean = (lhs compare rhs) <= 0
-  def >(rhs: Natural): Boolean = (lhs compare rhs) > 0
+  def >(rhs: Natural): Boolean  = (lhs compare rhs) > 0
   def >=(rhs: Natural): Boolean = (lhs compare rhs) >= 0
 
-  def <(r: UInt): Boolean = (lhs compare r) < 0
-  def <=(r: UInt): Boolean = (lhs compare r) <= 0
-  def >(r: UInt): Boolean = (lhs compare r) > 0
-  def >=(r: UInt): Boolean = (lhs compare r) >= 0
-  def <(r: BigInt): Boolean = (lhs.toBigInt compare r) < 0
+  def <(r: UInt): Boolean    = (lhs compare r) < 0
+  def <=(r: UInt): Boolean   = (lhs compare r) <= 0
+  def >(r: UInt): Boolean    = (lhs compare r) > 0
+  def >=(r: UInt): Boolean   = (lhs compare r) >= 0
+  def <(r: BigInt): Boolean  = (lhs.toBigInt compare r) < 0
   def <=(r: BigInt): Boolean = (lhs.toBigInt compare r) <= 0
-  def >(r: BigInt): Boolean = (lhs.toBigInt compare r) > 0
+  def >(r: BigInt): Boolean  = (lhs.toBigInt compare r) > 0
   def >=(r: BigInt): Boolean = (lhs.toBigInt compare r) >= 0
 
   // implemented in Digit and End
@@ -263,12 +263,12 @@ sealed abstract class Natural
   def %(rd: UInt): Natural
   def /%(rd: UInt): (Natural, Natural)
 
-  def +(rhs: BigInt): BigInt = lhs.toBigInt + rhs
-  def -(rhs: BigInt): BigInt = lhs.toBigInt - rhs
-  def *(rhs: BigInt): BigInt = lhs.toBigInt * rhs
-  def /~(rhs: BigInt): BigInt = lhs.toBigInt / rhs
-  def /(rhs: BigInt): BigInt = lhs.toBigInt / rhs
-  def %(rhs: BigInt): BigInt = lhs.toBigInt % rhs
+  def +(rhs: BigInt): BigInt            = lhs.toBigInt + rhs
+  def -(rhs: BigInt): BigInt            = lhs.toBigInt - rhs
+  def *(rhs: BigInt): BigInt            = lhs.toBigInt * rhs
+  def /~(rhs: BigInt): BigInt           = lhs.toBigInt / rhs
+  def /(rhs: BigInt): BigInt            = lhs.toBigInt / rhs
+  def %(rhs: BigInt): BigInt            = lhs.toBigInt % rhs
   def /%(rhs: BigInt): (BigInt, BigInt) = lhs.toBigInt /% rhs
 
   def +(rhs: Natural): Natural = {
@@ -307,7 +307,7 @@ sealed abstract class Natural
               Natural(ld.toLong - rd.toLong - carry)
 
             case Digit(rd, rtail) =>
-              val t = ld.toLong - rd.toLong - carry
+              val t  = ld.toLong - rd.toLong - carry
               val tl = rtail - UInt(-(t >> 32))
               if (tl.isInstanceOf[End] && tl.digit == UInt(0)) End(UInt(t))
               else Digit(UInt(t), tl)
@@ -316,13 +316,13 @@ sealed abstract class Natural
         case Digit(ld, ltail) =>
           right match {
             case End(rd) =>
-              val t = ld.toLong - rd.toLong - carry
+              val t  = ld.toLong - rd.toLong - carry
               val tl = ltail - UInt(-(t >> 32))
               if (tl.isInstanceOf[End] && tl.digit == UInt(0)) End(UInt(t))
               else Digit(UInt(t), tl)
 
             case Digit(rd, rtail) =>
-              val t = ld.toLong - rd.toLong - carry
+              val t  = ld.toLong - rd.toLong - carry
               val tl = recur(ltail, rtail, -(t >> 32))
               if (tl.isInstanceOf[End] && tl.digit == UInt(0)) End(UInt(t))
               else Digit(UInt(t), tl)
@@ -330,7 +330,8 @@ sealed abstract class Natural
       }
     if (lhs < rhs)
       throw new ArithmeticException(
-          "negative subtraction: %s - %s" format (lhs, rhs))
+        "negative subtraction: %s - %s" format (lhs, rhs)
+      )
     else recur(lhs, rhs, 0L)
   }
 
@@ -341,32 +342,31 @@ sealed abstract class Natural
         case End(rd) => lhs * rd
         case Digit(rd, rtail) =>
           Digit(UInt(0), Digit(UInt(0), ltail * rtail)) +
-          Digit(UInt(0), ltail * rd) + Digit(UInt(0), rtail * ld) + Natural(
-              ld.toLong * rd.toLong)
+            Digit(UInt(0), ltail * rd) + Digit(UInt(0), rtail * ld) + Natural(
+            ld.toLong * rd.toLong
+          )
       }
   }
 
   def pow(rhs: Natural): Natural = {
-    @tailrec def _pow(t: Natural, b: Natural, e: Natural): Natural = {
+    @tailrec def _pow(t: Natural, b: Natural, e: Natural): Natural =
       if (e.isZero) t
       else if (e.isOdd) _pow(t * b, b * b, e >> 1)
       else _pow(t, b * b, e >> 1)
-    }
     _pow(Natural(1), lhs, rhs)
   }
 
   def pow(rhs: UInt): Natural = {
-    @tailrec def _pow(t: Natural, b: Natural, e: UInt): Natural = {
+    @tailrec def _pow(t: Natural, b: Natural, e: UInt): Natural =
       if (e == UInt(0)) t
       else if ((e & UInt(1)) == UInt(1)) _pow(t * b, b * b, e >> 1)
       else _pow(t, b * b, e >> 1)
-    }
     _pow(Natural(1), lhs, rhs)
   }
 
   def /~(rhs: Natural): Natural = lhs / rhs
 
-  def /(rhs: Natural): Natural = {
+  def /(rhs: Natural): Natural =
     rhs match {
       case End(rd) =>
         lhs / rd
@@ -391,9 +391,8 @@ sealed abstract class Natural
             }
         }
     }
-  }
 
-  def %(rhs: Natural): Natural = {
+  def %(rhs: Natural): Natural =
     rhs match {
       case End(rd) => lhs % rd
 
@@ -404,7 +403,7 @@ sealed abstract class Natural
           case Digit(ld, ltail) =>
             rhs.compare(UInt(1)) match {
               case -1 => throw new IllegalArgumentException("/ by zero")
-              case 0 => End(UInt(0))
+              case 0  => End(UInt(0))
               case 1 =>
                 val p = rhs.powerOfTwo
                 if (p >= 0) lhs & ((Natural(1) << p) - UInt(1))
@@ -412,9 +411,8 @@ sealed abstract class Natural
             }
         }
     }
-  }
 
-  def /%(rhs: Natural): (Natural, Natural) = {
+  def /%(rhs: Natural): (Natural, Natural) =
     rhs match {
       case End(rd) => (lhs / rd, lhs % rd)
 
@@ -425,7 +423,7 @@ sealed abstract class Natural
           case Digit(ld, ltail) =>
             rhs.compare(UInt(1)) match {
               case -1 => throw new IllegalArgumentException("/ by zero")
-              case 0 => (lhs, Natural(0))
+              case 0  => (lhs, Natural(0))
               case 1 =>
                 val p = rhs.powerOfTwo
                 if (p >= 0) {
@@ -437,15 +435,14 @@ sealed abstract class Natural
             }
         }
     }
-  }
 
   private def longdiv(num: Natural, denom: Natural): (Natural, Natural) = {
     var rem = num
     var quo = Natural(0)
 
-    var remBits: Int = rem.getNumBits
+    var remBits: Int   = rem.getNumBits
     var denomBits: Int = denom.getNumBits
-    var shift: Int = remBits - denomBits
+    var shift: Int     = remBits - denomBits
 
     while (shift >= 0) {
       val shifted = denom << shift
@@ -481,7 +478,7 @@ sealed abstract class Natural
         next
       } else {
         next match {
-          case End(d) => End(UInt(0))
+          case End(d)         => End(UInt(0))
           case Digit(d, tail) => recur(tail, n - 1)
         }
       }
@@ -495,7 +492,7 @@ sealed abstract class Natural
         Natural((d.toLong >> m) | carry)
       case Digit(d, tail) =>
         val t = (d.toLong | carry) << (32 - m)
-        Digit(UInt(t >> 32), recur(tail, t & 0xffffffffL))
+        Digit(UInt(t >> 32), recur(tail, t & 0xFFFFFFFFL))
     }
     recur(chop(n / 32).reversed, 0L).reversed
   }
@@ -503,18 +500,18 @@ sealed abstract class Natural
   def |(rhs: Natural): Natural = lhs match {
     case End(ld) =>
       rhs match {
-        case End(rd) => End(ld | rd)
+        case End(rd)          => End(ld | rd)
         case Digit(rd, rtail) => Digit(ld | rd, rtail)
       }
     case Digit(ld, ltail) =>
       rhs match {
-        case End(rd) => Digit(ld | rd, ltail)
+        case End(rd)          => Digit(ld | rd, ltail)
         case Digit(rd, rtail) => Digit(ld | rd, ltail | rtail)
       }
   }
 
   def |(rhs: UInt): Natural = lhs match {
-    case End(ld) => End(ld | rhs)
+    case End(ld)          => End(ld | rhs)
     case Digit(ld, ltail) => Digit(ld | rhs, ltail)
   }
 
@@ -522,12 +519,12 @@ sealed abstract class Natural
     def and(lhs: Natural, rhs: Natural): Natural = lhs match {
       case End(ld) =>
         rhs match {
-          case End(rd) => End(ld & rd)
+          case End(rd)          => End(ld & rd)
           case Digit(rd, rtail) => End(ld & rd)
         }
       case Digit(ld, ltail) =>
         rhs match {
-          case End(rd) => End(ld & rd)
+          case End(rd)          => End(ld & rd)
           case Digit(rd, rtail) => Digit(ld & rd, and(ltail, rtail))
         }
     }
@@ -540,12 +537,12 @@ sealed abstract class Natural
     def xor(lhs: Natural, rhs: Natural): Natural = lhs match {
       case End(ld) =>
         rhs match {
-          case End(rd) => End(ld ^ rd)
+          case End(rd)          => End(ld ^ rd)
           case Digit(rd, rtail) => Digit(ld ^ rd, rtail)
         }
       case Digit(ld, ltail) =>
         rhs match {
-          case End(rd) => Digit(ld ^ rd, ltail)
+          case End(rd)          => Digit(ld ^ rd, ltail)
           case Digit(rd, rtail) => Digit(ld ^ rd, ltail ^ rtail)
         }
     }
@@ -553,7 +550,7 @@ sealed abstract class Natural
   }
 
   def ^(rhs: UInt): Natural = lhs match {
-    case End(ld) => End(ld ^ rhs)
+    case End(ld)          => End(ld ^ rhs)
     case Digit(ld, ltail) => Digit(ld ^ rhs, ltail)
   }
 }
@@ -572,15 +569,16 @@ object Natural extends NaturalInstances {
   }
 
   def apply(n: Long): Natural =
-    if ((n & 0xffffffffL) == n) End(UInt(n.toInt))
+    if ((n & 0xFFFFFFFFL) == n) End(UInt(n.toInt))
     else Digit(UInt(n.toInt), End(UInt((n >> 32).toInt)))
 
   def apply(n: BigInt): Natural =
     if (n < 0)
       throw new IllegalArgumentException(
-          "negative numbers not allowed: %s" format n)
-    else if (n < 0xffffffffL) End(UInt(n.toLong))
-    else Digit(UInt((n & 0xffffffffL).toLong), apply(n >> 32))
+        "negative numbers not allowed: %s" format n
+      )
+    else if (n < 0xFFFFFFFFL) End(UInt(n.toLong))
+    else Digit(UInt((n & 0xFFFFFFFFL).toLong), apply(n >> 32))
 
   private val ten18 = Natural(1000000000000000000L)
   def apply(s: String): Natural = {
@@ -597,11 +595,11 @@ object Natural extends NaturalInstances {
   }
 
   val zero: Natural = apply(0L)
-  val one: Natural = apply(1L)
+  val one: Natural  = apply(1L)
 
   @SerialVersionUID(0L)
   case class Digit(d: UInt, tl: Natural) extends Natural with Serializable {
-    def digit: UInt = d
+    def digit: UInt   = d
     def tail: Natural = tl
 
     def +(n: UInt): Natural =
@@ -631,10 +629,14 @@ object Natural extends NaturalInstances {
 
     def /%(n: UInt): (Natural, Natural) = {
       @tailrec
-      def recur(next: Natural, rem: UInt, sofar: Natural): (Natural, Natural) = {
+      def recur(
+          next: Natural,
+          rem: UInt,
+          sofar: Natural
+      ): (Natural, Natural) = {
         val t: ULong = ULong(rem.toLong << 32) + ULong(next.digit.toLong)
-        val q: Long = (t / ULong(n.toLong)).toLong
-        val r: Long = (t % ULong(n.toLong)).toLong
+        val q: Long  = (t / ULong(n.toLong)).toLong
+        val r: Long  = (t % ULong(n.toLong)).toLong
 
         next match {
           case Natural.End(d) => (Digit(UInt(q), sofar), End(UInt(r)))
@@ -669,7 +671,7 @@ object Natural extends NaturalInstances {
         this
       } else {
         val t = d.toLong + n.toLong
-        if (t <= 0xffffffffL) End(UInt(t))
+        if (t <= 0xFFFFFFFFL) End(UInt(t))
         else Digit(UInt(t), End(UInt(1)))
       }
 
@@ -681,7 +683,8 @@ object Natural extends NaturalInstances {
         if (t >= 0L) End(UInt(t.toInt))
         else
           throw new IllegalArgumentException(
-              "illegal subtraction: %s %s" format (this, n))
+            "illegal subtraction: %s %s" format (this, n)
+          )
       }
 
     def *(n: UInt): Natural =
@@ -705,11 +708,17 @@ trait NaturalInstances {
   implicit final val NaturalAlgebra = new NaturalAlgebra
   import NumberTag._
   implicit final val NaturalTag = new CustomTag[Natural](
-      Integral, Some(Natural.zero), Some(Natural.zero), None, false, false)
+    Integral,
+    Some(Natural.zero),
+    Some(Natural.zero),
+    None,
+    false,
+    false
+  )
 }
 
 private[math] trait NaturalIsRig extends Rig[Natural] {
-  def one: Natural = Natural(1L)
+  def one: Natural                          = Natural(1L)
   def plus(a: Natural, b: Natural): Natural = a + b
   override def pow(a: Natural, b: Int): Natural = {
     if (b < 0)
@@ -717,26 +726,28 @@ private[math] trait NaturalIsRig extends Rig[Natural] {
     a pow UInt(b)
   }
   override def times(a: Natural, b: Natural): Natural = a * b
-  def zero: Natural = Natural(0L)
+  def zero: Natural                                   = Natural(0L)
 }
 
 private[math] trait NaturalOrder extends Order[Natural] {
-  override def eqv(x: Natural, y: Natural): Boolean = x == y
-  override def neqv(x: Natural, y: Natural): Boolean = x != y
-  override def gt(x: Natural, y: Natural): Boolean = x > y
+  override def eqv(x: Natural, y: Natural): Boolean   = x == y
+  override def neqv(x: Natural, y: Natural): Boolean  = x != y
+  override def gt(x: Natural, y: Natural): Boolean    = x > y
   override def gteqv(x: Natural, y: Natural): Boolean = x >= y
-  override def lt(x: Natural, y: Natural): Boolean = x < y
+  override def lt(x: Natural, y: Natural): Boolean    = x < y
   override def lteqv(x: Natural, y: Natural): Boolean = x <= y
-  def compare(x: Natural, y: Natural): Int = x.compare(y)
+  def compare(x: Natural, y: Natural): Int            = x.compare(y)
 }
 
 private[math] trait NaturalIsSigned extends Signed[Natural] {
-  def signum(a: Natural): Int = if (a == Natural.zero) 0 else 1
+  def signum(a: Natural): Int  = if (a == Natural.zero) 0 else 1
   def abs(a: Natural): Natural = a
 }
 
 private[math] trait NaturalIsReal
-    extends IsIntegral[Natural] with NaturalOrder with NaturalIsSigned {
+    extends IsIntegral[Natural]
+    with NaturalOrder
+    with NaturalIsSigned {
   def toDouble(n: Natural): Double = n.toDouble
   def toBigInt(n: Natural): BigInt = n.toBigInt
 }

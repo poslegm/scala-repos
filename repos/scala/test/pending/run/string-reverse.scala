@@ -2,8 +2,8 @@
   *  See ticket #2565.
   */
 object Test {
-  val xs = "Les Mise\u0301rables" // this is the tricky one to reverse
-  val ys = "Les Misérables"
+  val xs  = "Les Mise\u0301rables" // this is the tricky one to reverse
+  val ys  = "Les Misérables"
   val xs2 = new StringBuilder(xs)
   val ys2 = new StringBuilder(ys)
 

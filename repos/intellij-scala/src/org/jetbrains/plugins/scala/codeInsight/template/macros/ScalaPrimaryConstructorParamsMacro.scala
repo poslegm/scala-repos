@@ -9,12 +9,13 @@ import org.jetbrains.plugins.scala.codeInsight.template.util.MacroUtil
   */
 class ScalaPrimaryConstructorParamsMacro extends Macro {
   override def calculateResult(
-      params: Array[Expression], context: ExpressionContext): Result = {
+      params: Array[Expression],
+      context: ExpressionContext
+  ): Result =
     MacroUtil
       .getPrimaryConbstructorParams(context)
       .map(new PsiElementResult(_))
       .orNull
-  }
 
   def getName: String = MacroUtil.scalaIdPrefix + "primaryConstructorParams"
 

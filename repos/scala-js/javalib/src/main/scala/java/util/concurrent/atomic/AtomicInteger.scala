@@ -1,7 +1,8 @@
 package java.util.concurrent.atomic
 
 class AtomicInteger(private[this] var value: Int)
-    extends Number with Serializable {
+    extends Number
+    with Serializable {
 
   def this() = this(0)
 
@@ -19,13 +20,12 @@ class AtomicInteger(private[this] var value: Int)
     old
   }
 
-  final def compareAndSet(expect: Int, update: Int): Boolean = {
+  final def compareAndSet(expect: Int, update: Int): Boolean =
     if (expect != value) false
     else {
       value = update
       true
     }
-  }
 
   final def weakCompareAndSet(expect: Int, update: Int): Boolean =
     compareAndSet(expect, update)
@@ -57,8 +57,8 @@ class AtomicInteger(private[this] var value: Int)
   override def toString(): String =
     value.toString()
 
-  def intValue(): Int = value
-  def longValue(): Long = value.toLong
-  def floatValue(): Float = value.toFloat
+  def intValue(): Int       = value
+  def longValue(): Long     = value.toLong
+  def floatValue(): Float   = value.toFloat
   def doubleValue(): Double = value.toDouble
 }

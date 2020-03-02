@@ -2,11 +2,11 @@ object Test extends Function0[Int] {
   // this and v resolve to Test.this, Test.v not A.this, A.v
   class A(x: Function0[Int] = this)(val a: Int = v, val b: Int = v * x())
       extends Function0[Int] {
-    val v = 3
+    val v                 = 3
     override def toString = x.toString + ", " + a + ", " + b
     // ordinary instance scope
     def m(i: Int = v, y: Function0[Int] = this) = "m, " + i + ", " + y()
-    def apply() = 19
+    def apply()                                 = 19
   }
   object A {
     val v = 5
@@ -15,8 +15,8 @@ object Test extends Function0[Int] {
       x.toString + ", " + a + ", " + b
     override def toString = "A"
   }
-  val v = 7
-  def apply() = 17
+  val v                 = 7
+  def apply()           = 17
   override def toString = "Test"
   def main(args: Array[String]) {
     val sut = new A()()

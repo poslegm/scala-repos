@@ -15,15 +15,17 @@ object HttpStreamingClient {
   def main(args: Array[String]): Unit = {
     val username = args(0)
     val password = args(1)
-    val host = args(2)
-    val path = args(3)
+    val host     = args(2)
+    val path     = args(3)
 
     val client = Http.client.withStreaming(enabled = true).newService(host)
 
-    val request = Request(Method.Get, path)
+    val request  = Request(Method.Get, path)
     val userpass = username + ":" + password
     request.headerMap.add(
-        "Authorization", "Basic " + Base64.encode(userpass.getBytes("UTF-8")))
+      "Authorization",
+      "Basic " + Base64.encode(userpass.getBytes("UTF-8"))
+    )
     request.headerMap.add("User-Agent", "Finagle 0.0")
     request.headerMap.add("Host", host)
     println(request)
@@ -49,7 +51,7 @@ object HttpStreamingClient {
 
   def fromReader(reader: Reader): AsyncStream[Buf] =
     AsyncStream.fromFuture(reader.read(Int.MaxValue)).flatMap {
-      case None => AsyncStream.empty
+      case None    => AsyncStream.empty
       case Some(a) => a +:: fromReader(reader)
     }
 }

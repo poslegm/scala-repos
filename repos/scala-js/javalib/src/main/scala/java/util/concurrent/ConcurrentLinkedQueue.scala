@@ -4,7 +4,9 @@ import java.util._
 import scala.collection.JavaConversions._
 
 class ConcurrentLinkedQueue[E]()
-    extends AbstractQueue[E] with Queue[E] with Serializable {
+    extends AbstractQueue[E]
+    with Queue[E]
+    with Serializable {
 
   def this(c: Collection[_ <: E]) = {
     this()
@@ -18,7 +20,7 @@ class ConcurrentLinkedQueue[E]()
 
   private var _size: Double = 0
 
-  override def add(e: E): Boolean = {
+  override def add(e: E): Boolean =
     if (e == null) {
       throw new NullPointerException()
     } else {
@@ -33,12 +35,11 @@ class ConcurrentLinkedQueue[E]()
 
       true
     }
-  }
 
   override def offer(e: E): Boolean =
     add(e)
 
-  override def poll(): E = {
+  override def poll(): E =
     if (isEmpty()) null.asInstanceOf[E]
     else {
       val oldHead = head
@@ -49,7 +50,6 @@ class ConcurrentLinkedQueue[E]()
       _size -= 1
       oldHead.value
     }
-  }
 
   override def peek(): E =
     if (isEmpty()) null.asInstanceOf[E]
@@ -67,14 +67,14 @@ class ConcurrentLinkedQueue[E]()
     current
   }
 
-  private def removeNode(node: Node[E]): Unit = {
+  private def removeNode(node: Node[E]): Unit =
     if (node eq head) {
       poll()
     } else if (head ne null) {
-      var prev = head
+      var prev             = head
       var current: Node[E] = head.next
 
-      while ( (current ne null) && (current ne node)) {
+      while ((current ne null) && (current ne node)) {
         prev = current
         current = current.next
       }
@@ -88,9 +88,8 @@ class ConcurrentLinkedQueue[E]()
         if (current eq last) last = prev
       }
     }
-  }
 
-  override def iterator(): Iterator[E] = {
+  override def iterator(): Iterator[E] =
     new Iterator[E] {
 
       private var nextNode: Node[Node[E]] = {
@@ -133,7 +132,6 @@ class ConcurrentLinkedQueue[E]()
         lastNode = null
       }
     }
-  }
 }
 
 object ConcurrentLinkedQueue {

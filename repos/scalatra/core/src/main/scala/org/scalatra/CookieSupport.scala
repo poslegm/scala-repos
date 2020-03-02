@@ -9,14 +9,16 @@ import org.scalatra.util.RicherString._
 
 import scala.collection._
 
-case class CookieOptions(domain: String = "",
-                         path: String = "",
-                         maxAge: Int = -1,
-                         secure: Boolean = false,
-                         comment: String = "",
-                         httpOnly: Boolean = false,
-                         version: Int = 0,
-                         encoding: String = "UTF-8")
+case class CookieOptions(
+    domain: String = "",
+    path: String = "",
+    maxAge: Int = -1,
+    secure: Boolean = false,
+    comment: String = "",
+    httpOnly: Boolean = false,
+    version: Int = 0,
+    encoding: String = "UTF-8"
+)
 
 object Cookie {
 
@@ -36,7 +38,8 @@ object Cookie {
     DateUtil.formatDate(date, "EEE, dd MMM yyyy HH:mm:ss zzz")
 }
 case class Cookie(name: String, value: String)(
-    implicit cookieOptions: CookieOptions = CookieOptions()) {
+    implicit cookieOptions: CookieOptions = CookieOptions()
+) {
   import org.scalatra.Cookie._
 
   val options: CookieOptions = cookieOptions
@@ -69,7 +72,10 @@ case class Cookie(name: String, value: String)(
   }
 
   private[this] def appendMaxAge(
-      sb: StringBuilder, maxAge: Int, version: Int): StringBuilder = {
+      sb: StringBuilder,
+      maxAge: Int,
+      version: Int
+  ): StringBuilder = {
     val dateInMillis = maxAge match {
       case a if a < 0 =>
         None // we don't do anything for max-age when it's < 0 then it becomes a session cookie
@@ -88,53 +94,60 @@ case class Cookie(name: String, value: String)(
   }
 
   private[this] def appendExpires(
-      sb: StringBuilder, expires: Date): StringBuilder =
+      sb: StringBuilder,
+      expires: Date
+  ): StringBuilder =
     sb append "; Expires=" append formatExpires(expires)
 }
 
-class SweetCookies(private[this] val reqCookies: Map[String, String],
-                   private[this] val response: HttpServletResponse)
-    extends ServletApiImplicits {
+class SweetCookies(
+    private[this] val reqCookies: Map[String, String],
+    private[this] val response: HttpServletResponse
+) extends ServletApiImplicits {
 
   private[this] lazy val cookies =
     mutable.HashMap[String, String]() ++ reqCookies
 
   def get(key: String): Option[String] = cookies.get(key)
 
-  def apply(key: String): String = {
+  def apply(key: String): String =
     cookies.get(key) getOrElse
-    (throw new Exception("No cookie could be found for the specified key"))
-  }
+      (throw new Exception("No cookie could be found for the specified key"))
 
   def update(name: String, value: String)(
-      implicit cookieOptions: CookieOptions = CookieOptions()): Cookie = {
+      implicit cookieOptions: CookieOptions = CookieOptions()
+  ): Cookie = {
     cookies += name -> value
     addCookie(name, value, cookieOptions)
   }
 
   def set(name: String, value: String)(
-      implicit cookieOptions: CookieOptions = CookieOptions()): Cookie = {
+      implicit cookieOptions: CookieOptions = CookieOptions()
+  ): Cookie =
     this.update(name, value)(cookieOptions)
-  }
 
-  def delete(name: String)(
-      implicit cookieOptions: CookieOptions = CookieOptions()): Unit = {
+  def delete(
+      name: String
+  )(implicit cookieOptions: CookieOptions = CookieOptions()): Unit = {
     cookies -= name
     addCookie(name, "", cookieOptions.copy(maxAge = 0))
   }
 
-  def +=(keyValuePair: (String, String))(
-      implicit cookieOptions: CookieOptions = CookieOptions()): Cookie = {
+  def +=(
+      keyValuePair: (String, String)
+  )(implicit cookieOptions: CookieOptions = CookieOptions()): Cookie =
     this.update(keyValuePair._1, keyValuePair._2)(cookieOptions)
-  }
 
-  def -=(key: String)(
-      implicit cookieOptions: CookieOptions = CookieOptions()): Unit = {
+  def -=(
+      key: String
+  )(implicit cookieOptions: CookieOptions = CookieOptions()): Unit =
     delete(key)(cookieOptions)
-  }
 
   private def addCookie(
-      name: String, value: String, options: CookieOptions): Cookie = {
+      name: String,
+      value: String,
+      options: CookieOptions
+  ): Cookie = {
     val cookie = new Cookie(name, value)(options)
     response.addCookie(cookie)
     cookie
@@ -152,15 +165,14 @@ trait CookieContext { self: ScalatraContext =>
 
   import org.scalatra.CookieSupport._
 
-  implicit def cookieOptions: CookieOptions = {
+  implicit def cookieOptions: CookieOptions =
     servletContext.get(CookieOptionsKey).orNull.asInstanceOf[CookieOptions]
-  }
 
-  def cookies(implicit request: HttpServletRequest): SweetCookies = {
+  def cookies(implicit request: HttpServletRequest): SweetCookies =
     request.get(SweetCookiesKey).orNull.asInstanceOf[SweetCookies]
-  }
 }
 @deprecated(
-    "You can remove this mixin, it's included in core by default", "2.2")
-trait CookieSupport { self: ScalatraBase =>
-}
+  "You can remove this mixin, it's included in core by default",
+  "2.2"
+)
+trait CookieSupport { self: ScalatraBase => }

@@ -7,17 +7,21 @@ import com.intellij.ide.structureView.StructureViewTreeElement
 import com.intellij.pom.Navigatable
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.plugins.scala.lang.psi.api.statements.{ScValue, ScVariable};
+import org.jetbrains.plugins.scala.lang.psi.api.statements.{
+  ScValue,
+  ScVariable
+};
 
 /**
   * @author Alexander Podkhalyuzin
   * Date: 04.05.2008
   */
 abstract class ScalaStructureViewElement(
-    protected val myElement: PsiElement, val inherited: Boolean)
-    extends StructureViewTreeElement {
+    protected val myElement: PsiElement,
+    val inherited: Boolean
+) extends StructureViewTreeElement {
 
-  def getValue: Object = {
+  def getValue: Object =
     if (myElement.isValid) {
       /*
         code for right positioning for caret in case such:
@@ -39,24 +43,21 @@ abstract class ScalaStructureViewElement(
     } else {
       null;
     }
-  }
 
   def navigate(b: Boolean) {
     myElement.asInstanceOf[Navigatable].navigate(b);
   }
 
-  def canNavigate: Boolean = {
+  def canNavigate: Boolean =
     myElement.asInstanceOf[Navigatable].canNavigate
-  }
 
-  def canNavigateToSource: Boolean = {
+  def canNavigateToSource: Boolean =
     myElement.asInstanceOf[Navigatable].canNavigateToSource
-  }
 
   override def equals(o: Any): Boolean = {
     val clazz = o match {
       case obj: Object => obj.getClass
-      case _ => return false
+      case _           => return false
     }
     if (o == null || getClass != clazz) return false
     val that = o.asInstanceOf[ScalaStructureViewElement]
@@ -69,7 +70,7 @@ abstract class ScalaStructureViewElement(
 
   override def hashCode(): Int = {
     val value = getValue
-    val is = if (inherited) 1 else 0
+    val is    = if (inherited) 1 else 0
     if (value == null) 0
     else value.hashCode * 2 + is
   }

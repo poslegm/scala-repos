@@ -19,7 +19,10 @@ package org.apache.spark.sql.catalyst.expressions
 
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.analysis.TypeCheckResult
-import org.apache.spark.sql.catalyst.expressions.codegen.{CodegenContext, ExprCode}
+import org.apache.spark.sql.catalyst.expressions.codegen.{
+  CodegenContext,
+  ExprCode
+}
 import org.apache.spark.sql.types._
 import org.apache.spark.util.collection.unsafe.sort.PrefixComparators.BinaryPrefixComparator
 import org.apache.spark.util.collection.unsafe.sort.PrefixComparators.DoublePrefixComparator
@@ -41,25 +44,26 @@ case object Descending extends SortDirection {
   * transformations over expression will descend into its child.
   */
 case class SortOrder(child: Expression, direction: SortDirection)
-    extends UnaryExpression with Unevaluable {
+    extends UnaryExpression
+    with Unevaluable {
 
   /** Sort order is not foldable because we don't have an eval for it. */
   override def foldable: Boolean = false
 
-  override def checkInputDataTypes(): TypeCheckResult = {
+  override def checkInputDataTypes(): TypeCheckResult =
     if (RowOrdering.isOrderable(dataType)) {
       TypeCheckResult.TypeCheckSuccess
     } else {
       TypeCheckResult.TypeCheckFailure(
-          s"cannot sort data type ${dataType.simpleString}")
+        s"cannot sort data type ${dataType.simpleString}"
+      )
     }
-  }
 
   override def dataType: DataType = child.dataType
-  override def nullable: Boolean = child.nullable
+  override def nullable: Boolean  = child.nullable
 
   override def toString: String = s"$child ${direction.sql}"
-  override def sql: String = child.sql + " " + direction.sql
+  override def sql: String      = child.sql + " " + direction.sql
 
   def isAscending: Boolean = direction == Ascending
 }
@@ -73,8 +77,8 @@ case class SortPrefix(child: SortOrder) extends UnaryExpression {
     throw new UnsupportedOperationException
 
   override def genCode(ctx: CodegenContext, ev: ExprCode): String = {
-    val childCode = child.child.gen(ctx)
-    val input = childCode.value
+    val childCode       = child.child.gen(ctx)
+    val input           = childCode.value
     val BinaryPrefixCmp = classOf[BinaryPrefixComparator].getName
     val DoublePrefixCmp = classOf[DoublePrefixComparator].getName
 
@@ -86,8 +90,10 @@ case class SortPrefix(child: SortOrder) extends UnaryExpression {
       case DateType | TimestampType =>
         (Long.MinValue, s"(long) $input")
       case FloatType | DoubleType =>
-        (DoublePrefixComparator.computePrefix(Double.NegativeInfinity),
-         s"$DoublePrefixCmp.computePrefix((double)$input)")
+        (
+          DoublePrefixComparator.computePrefix(Double.NegativeInfinity),
+          s"$DoublePrefixCmp.computePrefix((double)$input)"
+        )
       case StringType => (0L, s"$input.getPrefix()")
       case BinaryType => (0L, s"$BinaryPrefixCmp.computePrefix($input)")
       case dt: DecimalType
@@ -103,8 +109,10 @@ case class SortPrefix(child: SortOrder) extends UnaryExpression {
           }
         (Long.MinValue, prefix)
       case dt: DecimalType =>
-        (DoublePrefixComparator.computePrefix(Double.NegativeInfinity),
-         s"$DoublePrefixCmp.computePrefix($input.toDouble())")
+        (
+          DoublePrefixComparator.computePrefix(Double.NegativeInfinity),
+          s"$DoublePrefixCmp.computePrefix($input.toDouble())"
+        )
       case _ => (0L, "0L")
     }
 

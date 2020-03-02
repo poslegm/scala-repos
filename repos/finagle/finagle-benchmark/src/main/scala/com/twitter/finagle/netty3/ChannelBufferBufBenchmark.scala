@@ -19,16 +19,16 @@ class ChannelBufferBufBenchmark extends StdBenchAnnotations {
 
   @Setup(Level.Iteration)
   def setup(): Unit = {
-    val cap = size * 2
+    val cap   = size * 2
     val start = cap / 4
-    val end = start + size
-    val raw = 0.until(cap).map(_.toByte).toArray
+    val end   = start + size
+    val raw   = 0.until(cap).map(_.toByte).toArray
 
     val bb = java.nio.ByteBuffer.wrap(raw, start, size)
     val cb = ChannelBuffers.wrappedBuffer(raw, start, size)
     channelBufferBuf = ChannelBufferBuf.Owned(cb)
 
-    val byteArrayBuf = Buf.ByteArray.Owned(raw, start, end)
+    val byteArrayBuf  = Buf.ByteArray.Owned(raw, start, end)
     val byteBufferBuf = Buf.ByteBuffer.Owned(bb)
     val concatBuf = byteArrayBuf
       .slice(0, size / 2)

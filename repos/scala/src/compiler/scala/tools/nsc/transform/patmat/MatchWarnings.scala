@@ -25,17 +25,19 @@ trait MatchWarnings { self: PatternMatching =>
       def declarationOfName(tpe: Type, name: Name): Symbol = tpe match {
         case PolyType(tparams, restpe) =>
           tparams find (_.name == name) getOrElse declarationOfName(
-              restpe, name)
+            restpe,
+            name
+          )
         case MethodType(params, restpe) =>
-          params find (_.name == name) getOrElse declarationOfName(
-              restpe, name)
+          params find (_.name == name) getOrElse declarationOfName(restpe, name)
         case ClassInfoType(_, _, clazz) => clazz.rawInfo member name
-        case _ => NoSymbol
+        case _                          => NoSymbol
       }
       pat match {
         case Bind(name, _) =>
-          context.enclosingContextChain.foldLeft(NoSymbol: Symbol)((res,
-              ctx) => res orElse declarationOfName(ctx.owner.rawInfo, name))
+          context.enclosingContextChain.foldLeft(NoSymbol: Symbol)((res, ctx) =>
+            res orElse declarationOfName(ctx.owner.rawInfo, name)
+          )
         case _ => NoSymbol
       }
     }
@@ -54,7 +56,7 @@ trait MatchWarnings { self: PatternMatching =>
       // Using an iterator so we can recognize the last case
       val it = cases.iterator
 
-      def addendum(pat: Tree) = {
+      def addendum(pat: Tree) =
         matchingSymbolInScope(pat) match {
           case NoSymbol => ""
           case sym =>
@@ -63,16 +65,16 @@ trait MatchWarnings { self: PatternMatching =>
               else sym + " in"
             s"\nIf you intended to match against $desc ${sym.owner}, you must use backticks, like: case `${sym.nameString}` =>"
         }
-      }
 
       while (it.hasNext) {
         val cdef = it.next()
         // If a default case has been seen, then every succeeding case is unreachable.
         if (vpat != null)
           reporter.warning(
-              cdef.body.pos,
-              "unreachable code due to " + vpat +
-              addendum(cdef.pat)) // TODO: make configurable whether this is an error
+            cdef.body.pos,
+            "unreachable code due to " + vpat +
+              addendum(cdef.pat)
+          ) // TODO: make configurable whether this is an error
         // If this is a default case and more cases follow, warn about this one so
         // we have a reason to mention its pattern variable name and any corresponding
         // symbol in scope.  Errors will follow from the remaining cases, at least
@@ -80,13 +82,14 @@ trait MatchWarnings { self: PatternMatching =>
         else if (it.hasNext && (treeInfo isDefaultCase cdef)) {
           val vpatName = cdef.pat match {
             case Bind(name, _) => s" '$name'"
-            case _ => ""
+            case _             => ""
           }
           vpat = s"variable pattern$vpatName on line ${cdef.pat.pos.line}"
           reporter.warning(
-              cdef.pos,
-              s"patterns after a variable pattern cannot match (SLS 8.1.1)" +
-              addendum(cdef.pat))
+            cdef.pos,
+            s"patterns after a variable pattern cannot match (SLS 8.1.1)" +
+              addendum(cdef.pat)
+          )
         }
       }
     }

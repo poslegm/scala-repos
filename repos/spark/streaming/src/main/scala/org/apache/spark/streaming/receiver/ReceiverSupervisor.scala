@@ -36,8 +36,7 @@ import org.apache.spark.util.{ThreadUtils, Utils}
 private[streaming] abstract class ReceiverSupervisor(
     receiver: Receiver[_],
     conf: SparkConf
-)
-    extends Logging {
+) extends Logging {
 
   /** Enumeration to identify current state of the Receiver */
   object ReceiverState extends Enumeration {
@@ -50,7 +49,8 @@ private[streaming] abstract class ReceiverSupervisor(
   receiver.attachSupervisor(this)
 
   private val futureExecutionContext = ExecutionContext.fromExecutorService(
-      ThreadUtils.newDaemonCachedThreadPool("receiver-supervisor-future", 128))
+    ThreadUtils.newDaemonCachedThreadPool("receiver-supervisor-future", 128)
+  )
 
   /** Receiver id */
   protected val streamId = receiver.streamId
@@ -103,7 +103,8 @@ private[streaming] abstract class ReceiverSupervisor(
     * will take care of it.
     */
   def createBlockGenerator(
-      blockGeneratorListener: BlockGeneratorListener): BlockGenerator
+      blockGeneratorListener: BlockGeneratorListener
+  ): BlockGenerator
 
   /** Report errors. */
   def reportError(message: String, throwable: Throwable)
@@ -154,9 +155,10 @@ private[streaming] abstract class ReceiverSupervisor(
       } else {
         // The driver refused us
         stop(
-            "Registered unsuccessfully because Driver refused to start receiver " +
+          "Registered unsuccessfully because Driver refused to start receiver " +
             streamId,
-            None)
+          None
+        )
       }
     } catch {
       case NonFatal(t) =>
@@ -168,8 +170,10 @@ private[streaming] abstract class ReceiverSupervisor(
   def stopReceiver(message: String, error: Option[Throwable]): Unit =
     synchronized {
       try {
-        logInfo("Stopping receiver with message: " + message + ": " +
-            error.getOrElse(""))
+        logInfo(
+          "Stopping receiver with message: " + message + ": " +
+            error.getOrElse("")
+        )
         receiverState match {
           case Initialized =>
             logWarning("Skip stopping receiver because it has not yet stared")
@@ -184,7 +188,8 @@ private[streaming] abstract class ReceiverSupervisor(
       } catch {
         case NonFatal(t) =>
           logError(
-              s"Error stopping receiver $streamId ${Utils.exceptionString(t)}")
+            s"Error stopping receiver $streamId ${Utils.exceptionString(t)}"
+          )
       }
     }
 
@@ -198,10 +203,14 @@ private[streaming] abstract class ReceiverSupervisor(
     Future {
       // This is a blocking action so we should use "futureExecutionContext" which is a cached
       // thread pool.
-      logWarning("Restarting receiver with delay " + delay + " ms: " + message,
-                 error.getOrElse(null))
+      logWarning(
+        "Restarting receiver with delay " + delay + " ms: " + message,
+        error.getOrElse(null)
+      )
       stopReceiver(
-          "Restarting receiver with delay " + delay + "ms: " + message, error)
+        "Restarting receiver with delay " + delay + "ms: " + message,
+        error
+      )
       logDebug("Sleeping for " + delay)
       Thread.sleep(delay)
       logInfo("Starting receiver again")

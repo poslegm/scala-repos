@@ -30,7 +30,12 @@ package scalafx.controls
 import scalafx.Includes._
 import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage
-import scalafx.controls.controls.{ControlControls, PropertiesNodes, TextFieldControls, TextInputControlControls}
+import scalafx.controls.controls.{
+  ControlControls,
+  PropertiesNodes,
+  TextFieldControls,
+  TextInputControlControls
+}
 import scalafx.geometry.Pos
 import scalafx.scene.Scene
 import scalafx.scene.control.{Button, Label, PasswordField}
@@ -46,10 +51,12 @@ object PasswordFieldTest extends JFXApp {
     fillWidth = true
     alignment = Pos.Center
     hgrow = Priority.Never
-    children = List(new PasswordFieldControls(passwordField),
-                    new TextFieldControls(passwordField),
-                    new TextInputControlControls(passwordField),
-                    new ControlControls(passwordField))
+    children = List(
+      new PasswordFieldControls(passwordField),
+      new TextFieldControls(passwordField),
+      new TextInputControlControls(passwordField),
+      new ControlControls(passwordField)
+    )
   }
 
   val mainPane = new BorderPane {
@@ -85,12 +92,12 @@ class PasswordFieldControls(target: PasswordField)
     */
   val btnCopy = new Button {
     text = "Copy"
-    onAction = handle { target.copy() }
+    onAction = handle(target.copy())
   }
 
   val btnCut = new Button {
     text = "Cut"
-    onAction = handle { target.cut() }
+    onAction = handle(target.cut())
   }
 
   super.addNode("Typed Text", lblText)

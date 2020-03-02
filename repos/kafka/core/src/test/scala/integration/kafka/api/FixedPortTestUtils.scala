@@ -26,31 +26,33 @@ import kafka.utils.TestUtils
   * certainly doing something wrong unless you can prove that your test **cannot function** properly without it.
   */
 object FixedPortTestUtils {
-  def choosePorts(count: Int): Seq[Int] = {
+  def choosePorts(count: Int): Seq[Int] =
     try {
       val sockets = (0 until count).map(i => new ServerSocket(0))
-      val ports = sockets.map(_.getLocalPort())
+      val ports   = sockets.map(_.getLocalPort())
       sockets.foreach(_.close())
       ports
     } catch {
       case e: IOException => {
-          throw new RuntimeException(e)
-        }
+        throw new RuntimeException(e)
+      }
     }
-  }
 
   def createBrokerConfigs(
       numConfigs: Int,
       zkConnect: String,
       enableControlledShutdown: Boolean = true,
-      enableDeleteTopic: Boolean = false): Seq[Properties] = {
+      enableDeleteTopic: Boolean = false
+  ): Seq[Properties] = {
     val ports = FixedPortTestUtils.choosePorts(numConfigs)
-    (0 until numConfigs).map(
-        node =>
-          TestUtils.createBrokerConfig(node,
-                                       zkConnect,
-                                       enableControlledShutdown,
-                                       enableDeleteTopic,
-                                       ports(node)))
+    (0 until numConfigs).map(node =>
+      TestUtils.createBrokerConfig(
+        node,
+        zkConnect,
+        enableControlledShutdown,
+        enableDeleteTopic,
+        ports(node)
+      )
+    )
   }
 }

@@ -16,20 +16,23 @@ import com.typesafe.config.ConfigFactory
 
 object JepsenInspiredInsertSpec extends MultiNodeConfig {
   val controller = role("controller")
-  val n1 = role("n1")
-  val n2 = role("n2")
-  val n3 = role("n3")
-  val n4 = role("n4")
-  val n5 = role("n5")
+  val n1         = role("n1")
+  val n2         = role("n2")
+  val n3         = role("n3")
+  val n4         = role("n4")
+  val n5         = role("n5")
 
-  commonConfig(ConfigFactory.parseString("""
+  commonConfig(
+    ConfigFactory
+      .parseString("""
     akka.loglevel = INFO
     akka.actor.provider = "akka.cluster.ClusterActorRefProvider"
     akka.log-dead-letters = off
     akka.log-dead-letters-during-shutdown = off
     akka.remote.log-remote-lifecycle-events = ERROR
     akka.testconductor.barrier-timeout = 60 s
-    """))
+    """)
+  )
 
   testTransport(on = true)
 }
@@ -42,7 +45,8 @@ class JepsenInspiredInsertSpecMultiJvmNode5 extends JepsenInspiredInsertSpec
 class JepsenInspiredInsertSpecMultiJvmNode6 extends JepsenInspiredInsertSpec
 
 class JepsenInspiredInsertSpec
-    extends MultiNodeSpec(JepsenInspiredInsertSpec) with STMultiNodeSpec
+    extends MultiNodeSpec(JepsenInspiredInsertSpec)
+    with STMultiNodeSpec
     with ImplicitSender {
   import JepsenInspiredInsertSpec._
   import Replicator._
@@ -50,12 +54,12 @@ class JepsenInspiredInsertSpec
   override def initialParticipants = roles.size
 
   implicit val cluster = Cluster(system)
-  val replicator = DistributedData(system).replicator
-  val nodes = roles.drop(1) // controller not part of active nodes
-  val nodeCount = nodes.size
-  val timeout = 3.seconds.dilated
-  val delayMillis = 0
-  val totalCount = 200
+  val replicator       = DistributedData(system).replicator
+  val nodes            = roles.drop(1) // controller not part of active nodes
+  val nodeCount        = nodes.size
+  val timeout          = 3.seconds.dilated
+  val delayMillis      = 0
+  val totalCount       = 200
   //  val delayMillis = 20
   //  val totalCount = 2000
   val expectedData = (0 until totalCount).toSet
@@ -71,10 +75,9 @@ class JepsenInspiredInsertSpec
       if (rndDelay != 0) Thread.sleep(delayMillis)
     }
 
-  def sleepBeforePartition(): Unit = {
+  def sleepBeforePartition(): Unit =
     if (delayMillis != 0)
       Thread.sleep(delayMillis * totalCount / nodeCount / 10)
-  }
 
   def sleepDuringPartition(): Unit =
     Thread.sleep(math.max(5000, delayMillis * totalCount / nodeCount / 2))
@@ -90,7 +93,7 @@ class JepsenInspiredInsertSpec
 
     "setup cluster" in {
       runOn(nodes: _*) {
-        nodes.foreach { join(_, n1) }
+        nodes.foreach(join(_, n1))
 
         within(10.seconds) {
           awaitAssert {
@@ -101,9 +104,7 @@ class JepsenInspiredInsertSpec
       }
 
       runOn(controller) {
-        nodes.foreach { n ⇒
-          enterBarrier(n.name + "-joined")
-        }
+        nodes.foreach(n ⇒ enterBarrier(n.name + "-joined"))
       }
 
       enterBarrier("after-setup")
@@ -116,8 +117,10 @@ class JepsenInspiredInsertSpec
       val writeProbe = TestProbe()
       val writeAcks = myData.map { i ⇒
         sleepDelay()
-        replicator.tell(Update(key, ORSet(), WriteLocal, Some(i))(_ + i),
-                        writeProbe.ref)
+        replicator.tell(
+          Update(key, ORSet(), WriteLocal, Some(i))(_ + i),
+          writeProbe.ref
+        )
         writeProbe.receiveOne(3.seconds)
       }
       val successWriteAcks = writeAcks.collect {
@@ -148,15 +151,17 @@ class JepsenInspiredInsertSpec
   }
 
   "write/read to majority when all nodes connected" in {
-    val key = ORSetKey[Int]("B")
-    val readMajority = ReadMajority(timeout)
+    val key           = ORSetKey[Int]("B")
+    val readMajority  = ReadMajority(timeout)
     val writeMajority = WriteMajority(timeout)
     runOn(nodes: _*) {
       val writeProbe = TestProbe()
       val writeAcks = myData.map { i ⇒
         sleepDelay()
-        replicator.tell(Update(key, ORSet(), writeMajority, Some(i))(_ + i),
-                        writeProbe.ref)
+        replicator.tell(
+          Update(key, ORSet(), writeMajority, Some(i))(_ + i),
+          writeProbe.ref
+        )
         writeProbe.receiveOne(timeout + 1.second)
       }
       val successWriteAcks = writeAcks.collect {
@@ -193,13 +198,15 @@ class JepsenInspiredInsertSpec
     val key = ORSetKey[Int]("C")
     runOn(controller) {
       sleepBeforePartition()
-      for (a ← List(n1, n4, n5); b ← List(n2, n3)) testConductor
-        .blackhole(a, b, Direction.Both)
-        .await
+      for (a ← List(n1, n4, n5); b ← List(n2, n3))
+        testConductor
+          .blackhole(a, b, Direction.Both)
+          .await
       sleepDuringPartition()
-      for (a ← List(n1, n4, n5); b ← List(n2, n3)) testConductor
-        .passThrough(a, b, Direction.Both)
-        .await
+      for (a ← List(n1, n4, n5); b ← List(n2, n3))
+        testConductor
+          .passThrough(a, b, Direction.Both)
+          .await
       enterBarrier("partition-healed-3")
     }
 
@@ -207,8 +214,10 @@ class JepsenInspiredInsertSpec
       val writeProbe = TestProbe()
       val writeAcks = myData.map { i ⇒
         sleepDelay()
-        replicator.tell(Update(key, ORSet(), WriteLocal, Some(i))(_ + i),
-                        writeProbe.ref)
+        replicator.tell(
+          Update(key, ORSet(), WriteLocal, Some(i))(_ + i),
+          writeProbe.ref
+        )
         writeProbe.receiveOne(3.seconds)
       }
       val successWriteAcks = writeAcks.collect {
@@ -241,18 +250,20 @@ class JepsenInspiredInsertSpec
   }
 
   "write to majority during 3+2 partition and read from majority after partition" in {
-    val key = ORSetKey[Int]("D")
-    val readMajority = ReadMajority(timeout)
+    val key           = ORSetKey[Int]("D")
+    val readMajority  = ReadMajority(timeout)
     val writeMajority = WriteMajority(timeout)
     runOn(controller) {
       sleepBeforePartition()
-      for (a ← List(n1, n4, n5); b ← List(n2, n3)) testConductor
-        .blackhole(a, b, Direction.Both)
-        .await
+      for (a ← List(n1, n4, n5); b ← List(n2, n3))
+        testConductor
+          .blackhole(a, b, Direction.Both)
+          .await
       sleepDuringPartition()
-      for (a ← List(n1, n4, n5); b ← List(n2, n3)) testConductor
-        .passThrough(a, b, Direction.Both)
-        .await
+      for (a ← List(n1, n4, n5); b ← List(n2, n3))
+        testConductor
+          .passThrough(a, b, Direction.Both)
+          .await
       enterBarrier("partition-healed-4")
     }
 
@@ -260,8 +271,10 @@ class JepsenInspiredInsertSpec
       val writeProbe = TestProbe()
       val writeAcks = myData.map { i ⇒
         sleepDelay()
-        replicator.tell(Update(key, ORSet(), writeMajority, Some(i))(_ + i),
-                        writeProbe.ref)
+        replicator.tell(
+          Update(key, ORSet(), writeMajority, Some(i))(_ + i),
+          writeProbe.ref
+        )
         writeProbe.receiveOne(timeout + 1.second)
       }
       val successWriteAcks = writeAcks.collect {

@@ -36,8 +36,7 @@ import org.apache.spark.SparkContext
   * @see [[LocalFileSystemPersistentModelLoader]]
   * @group Algorithm
   */
-trait LocalFileSystemPersistentModel[AP <: Params]
-    extends PersistentModel[AP] {
+trait LocalFileSystemPersistentModel[AP <: Params] extends PersistentModel[AP] {
   def save(id: String, params: AP, sc: SparkContext): Boolean = {
     Utils.save(id, this)
     true
@@ -56,9 +55,8 @@ trait LocalFileSystemPersistentModel[AP <: Params]
   */
 trait LocalFileSystemPersistentModelLoader[AP <: Params, M]
     extends PersistentModelLoader[AP, M] {
-  def apply(id: String, params: AP, sc: Option[SparkContext]): M = {
+  def apply(id: String, params: AP, sc: Option[SparkContext]): M =
     Utils.load(id).asInstanceOf[M]
-  }
 }
 
 /** DEPRECATED. Use [[LocalFileSystemPersistentModel]] instead.

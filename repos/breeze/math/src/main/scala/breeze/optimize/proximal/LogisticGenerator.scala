@@ -13,17 +13,19 @@ object LogisticGenerator {
       extends DiffFunction[DenseVector[Double]] {
     def calculate(x: DenseVector[Double]) = {
       val cumGradient = DenseVector.zeros[Double](x.length)
-      var cumLoss = 0.0
+      var cumLoss     = 0.0
 
       var i = 0
       while (i < data.rows) {
-        val brzData = data(i, ::).t
-        val margin: Double = -1.0 * x.dot(brzData)
+        val brzData            = data(i, ::).t
+        val margin: Double     = -1.0 * x.dot(brzData)
         val gradientMultiplier = (1.0 / (1.0 + math.exp(margin))) - labels(i)
-        val gradient = brzData * gradientMultiplier
+        val gradient           = brzData * gradientMultiplier
         val loss =
           if (labels(i) > 0) {
-            math.log1p(math.exp(margin)) // log1p is log(1+p) but more accurate for small p
+            math.log1p(
+              math.exp(margin)
+            ) // log1p is log(1+p) but more accurate for small p
           } else {
             math.log1p(math.exp(margin)) - margin
           }

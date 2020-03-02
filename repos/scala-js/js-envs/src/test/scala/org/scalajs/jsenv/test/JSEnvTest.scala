@@ -20,7 +20,7 @@ abstract class JSEnvTest {
     def hasOutput(expectedOut: String): Unit = {
 
       val console = new StoreJSConsole()
-      val logger = new StoreLogger()
+      val logger  = new StoreLogger()
 
       newJSEnv.jsRunner(code).run(logger, console)
 
@@ -28,23 +28,24 @@ abstract class JSEnvTest {
       val hasBadLog =
         log exists {
           case Log(level, _) if level >= Level.Warn => true
-          case Trace(_) => true
-          case _ => false
+          case Trace(_)                             => true
+          case _                                    => false
         }
 
-      assertFalse("VM shouldn't log errors, warnings or traces. Log:\n" +
-                  log.mkString("\n"),
-                  hasBadLog)
+      assertFalse(
+        "VM shouldn't log errors, warnings or traces. Log:\n" +
+          log.mkString("\n"),
+        hasBadLog
+      )
       assertEquals("Output should match", expectedOut, console.getLog)
     }
 
-    def fails(): Unit = {
+    def fails(): Unit =
       try {
         newJSEnv.jsRunner(code).run(NullLogger, NullJSConsole)
         assertTrue("Code snipped should fail", false)
       } catch {
         case e: Exception =>
       }
-    }
   }
 }

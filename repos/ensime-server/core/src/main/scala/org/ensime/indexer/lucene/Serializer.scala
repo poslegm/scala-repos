@@ -9,12 +9,14 @@ import org.apache.lucene.search.BooleanClause.Occur._
 import org.apache.lucene.search.{BooleanQuery, Query, TermQuery}
 
 abstract class Serializer[T](clazz: Class[T])
-    extends DocumentProvider[T] with DocumentRecovery[T]
+    extends DocumentProvider[T]
+    with DocumentRecovery[T]
     with QueryProvider[T] {
-  private val TypeField = new StringField(
-      "TYPE", clazz.getSimpleName, Store.YES)
+  private val TypeField =
+    new StringField("TYPE", clazz.getSimpleName, Store.YES)
   private val TypeTerm = new TermQuery(
-      new Term(TypeField.name, TypeField.stringValue))
+    new Term(TypeField.name, TypeField.stringValue)
+  )
 
   def id(t: T): String
 
@@ -27,10 +29,9 @@ abstract class Serializer[T](clazz: Class[T])
   }
   def addFields(doc: Document, t: T): Unit
 
-  final def createQuery(e: T): Query = {
+  final def createQuery(e: T): Query =
     new BooleanQuery {
       add(TypeTerm, MUST)
       add(new TermQuery(new Term("ID", id(e))), MUST)
     }
-  }
 }

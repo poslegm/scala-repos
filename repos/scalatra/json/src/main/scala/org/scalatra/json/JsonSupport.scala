@@ -24,10 +24,11 @@ trait JsonSupport[T] extends JsonOutput[T] {
 
   private[this] val logger = LoggerFactory.getLogger(getClass)
 
-  private[this] val _defaultCacheRequestBody = true
+  private[this] val _defaultCacheRequestBody      = true
   protected def cacheRequestBodyAsString: Boolean = _defaultCacheRequestBody
-  protected def parseRequestBody(format: String)(
-      implicit request: HttpServletRequest) =
+  protected def parseRequestBody(
+      format: String
+  )(implicit request: HttpServletRequest) =
     try {
       val ct = request.contentType getOrElse ""
       if (format == "json") {
@@ -37,8 +38,9 @@ trait JsonSupport[T] extends JsonOutput[T] {
           else if (cacheRequestBodyAsString) readJsonFromBody(request.body)
           else
             readJsonFromStreamWithCharset(
-                request.inputStream,
-                request.characterEncoding getOrElse defaultCharacterEncoding)
+              request.inputStream,
+              request.characterEncoding getOrElse defaultCharacterEncoding
+            )
         }
         transformRequestBody(bd)
       } else if (format == "xml") {
@@ -52,14 +54,16 @@ trait JsonSupport[T] extends JsonOutput[T] {
       } else JNothing
     } catch {
       case t: Throwable ⇒ {
-          logger.error(s"Parsing the request body failed, because:", t)
-          JNothing
-        }
+        logger.error(s"Parsing the request body failed, because:", t)
+        JNothing
+      }
     }
 
   protected def readJsonFromBody(bd: String): JValue
   protected def readJsonFromStreamWithCharset(
-      stream: InputStream, charset: String): JValue
+      stream: InputStream,
+      charset: String
+  ): JValue
   protected def readJsonFromStream(stream: InputStream): JValue =
     readJsonFromStreamWithCharset(stream, defaultCharacterEncoding)
 
@@ -67,19 +71,22 @@ trait JsonSupport[T] extends JsonOutput[T] {
     val parserFactory = SAXParserFactory.newInstance()
     parserFactory.setNamespaceAware(false)
     parserFactory.setFeature(
-        "http://xml.org/sax/features/external-general-entities", false);
+      "http://xml.org/sax/features/external-general-entities",
+      false
+    );
     parserFactory.setFeature(
-        "http://xml.org/sax/features/external-parameter-entities", false);
+      "http://xml.org/sax/features/external-parameter-entities",
+      false
+    );
     val saxParser = parserFactory.newSAXParser()
     XML.withSAXParser(saxParser)
   }
 
-  protected def readXmlFromBody(bd: String): JValue = {
+  protected def readXmlFromBody(bd: String): JValue =
     if (bd.nonBlank) {
       val JObject(JField(_, jv) :: Nil) = toJson(secureXML.loadString(bd))
       jv
     } else JNothing
-  }
   protected def readXmlFromStream(stream: InputStream): JValue = {
     val rdr = new InputStreamReader(stream)
     if (rdr.ready()) {
@@ -89,28 +96,29 @@ trait JsonSupport[T] extends JsonOutput[T] {
   }
   protected def transformRequestBody(body: JValue) = body
 
-  override protected def invoke(matchedRoute: MatchedRoute) = {
+  override protected def invoke(matchedRoute: MatchedRoute) =
     withRouteMultiParams(Some(matchedRoute)) {
       val mt = request.contentType.fold("application/x-www-form-urlencoded")(
-          _.split(";").head)
+        _.split(";").head
+      )
       val fmt = mimeTypes get mt getOrElse "html"
       if (shouldParseBody(fmt)) {
         request(ParsedBodyKey) = parseRequestBody(fmt).asInstanceOf[AnyRef]
       }
       super.invoke(matchedRoute)
     }
-  }
 
-  protected def shouldParseBody(fmt: String)(
-      implicit request: HttpServletRequest) =
+  protected def shouldParseBody(
+      fmt: String
+  )(implicit request: HttpServletRequest) =
     (fmt == "json" || fmt == "xml") && !request.requestMethod.isSafe &&
-    parsedBody == JNothing
+      parsedBody == JNothing
 
   def parsedBody(implicit request: HttpServletRequest): JValue =
     request
       .get(ParsedBodyKey)
       .fold({
-        val fmt = requestFormat
+        val fmt        = requestFormat
         var bd: JValue = JNothing
         if (fmt == "json" || fmt == "xml") {
           bd = parseRequestBody(fmt)

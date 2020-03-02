@@ -14,7 +14,7 @@ import org.scalajs.core.tools.io.IRFileCache.IRContainer
 
 trait IRContainerPlatformExtensions {
   this: IRContainer.type =>
-  def fromClasspath(classpath: Seq[JFile]): Seq[IRContainer] = {
+  def fromClasspath(classpath: Seq[JFile]): Seq[IRContainer] =
     classpath flatMap { entry =>
       if (!entry.exists) Nil
       else if (entry.isDirectory) fromDirectory(entry)
@@ -22,7 +22,6 @@ trait IRContainerPlatformExtensions {
       else
         throw new IllegalArgumentException("Illegal classpath entry " + entry)
     }
-  }
 
   def fromJar(jar: JFile): Jar = {
     require(jar.isFile)
@@ -42,7 +41,7 @@ trait IRContainerPlatformExtensions {
 
     for (ir <- walkForIR(baseDir)) yield {
       val relDir = ir.getPath.stripPrefix(baseDir.getPath)
-      val vf = FileVirtualScalaJSIRFile.relative(ir, relDir)
+      val vf     = FileVirtualScalaJSIRFile.relative(ir, relDir)
       File(vf)
     }
   }

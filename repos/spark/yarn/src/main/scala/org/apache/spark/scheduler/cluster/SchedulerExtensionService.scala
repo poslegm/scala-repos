@@ -67,7 +67,8 @@ trait SchedulerExtensionService {
 case class SchedulerExtensionServiceBinding(
     sparkContext: SparkContext,
     applicationId: ApplicationId,
-    attemptId: Option[ApplicationAttemptId] = None)
+    attemptId: Option[ApplicationAttemptId] = None
+)
 
 /**
   * Container for [[SchedulerExtensionService]] instances.
@@ -80,10 +81,11 @@ case class SchedulerExtensionServiceBinding(
   * is undefined.
   */
 private[spark] class SchedulerExtensionServices
-    extends SchedulerExtensionService with Logging {
-  private var serviceOption: Option[String] = None
+    extends SchedulerExtensionService
+    with Logging {
+  private var serviceOption: Option[String]             = None
   private var services: List[SchedulerExtensionService] = Nil
-  private val started = new AtomicBoolean(false)
+  private val started                                   = new AtomicBoolean(false)
   private var binding: SchedulerExtensionServiceBinding = _
 
   /**
@@ -101,10 +103,11 @@ private[spark] class SchedulerExtensionServices
     require(binding.applicationId != null, "Null appId parameter")
     this.binding = binding
     val sparkContext = binding.sparkContext
-    val appId = binding.applicationId
-    val attemptId = binding.attemptId
+    val appId        = binding.applicationId
+    val attemptId    = binding.attemptId
     logInfo(
-        s"Starting Yarn extension services with app $appId and attemptId $attemptId")
+      s"Starting Yarn extension services with app $appId and attemptId $attemptId"
+    )
 
     services = sparkContext.conf
       .get(SCHEDULER_SERVICES)
@@ -132,14 +135,11 @@ private[spark] class SchedulerExtensionServices
     * Stop the services; idempotent.
     *
     */
-  override def stop(): Unit = {
+  override def stop(): Unit =
     if (started.getAndSet(false)) {
       logInfo(s"Stopping $this")
-      services.foreach { s =>
-        Utils.tryLogNonFatalError(s.stop())
-      }
+      services.foreach(s => Utils.tryLogNonFatalError(s.stop()))
     }
-  }
 
   override def toString(): String = s"""SchedulerExtensionServices
     |(serviceOption=$serviceOption,

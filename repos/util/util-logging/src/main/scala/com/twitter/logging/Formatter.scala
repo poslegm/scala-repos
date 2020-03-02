@@ -27,12 +27,12 @@ import scala.collection.mutable
 private[logging] object Formatter {
   // FIXME: might be nice to unmangle some scala names here.
   private[logging] def formatStackTrace(
-      t: Throwable, limit: Int): List[String] = {
+      t: Throwable,
+      limit: Int
+  ): List[String] = {
     var out = new mutable.ListBuffer[String]
     if (limit > 0) {
-      out ++= t.getStackTrace.map { elem =>
-        "    at %s".format(elem.toString)
-      }
+      out ++= t.getStackTrace.map(elem => "    at %s".format(elem.toString))
       if (out.length > limit) {
         out.trimEnd(out.length - limit)
         out += "    (...more...)"
@@ -45,9 +45,9 @@ private[logging] object Formatter {
     out.toList
   }
 
-  val DateFormatRegex = Pattern.compile("<([^>]+)>")
+  val DateFormatRegex            = Pattern.compile("<([^>]+)>")
   val DefaultStackTraceSizeLimit = 30
-  val DefaultPrefix = "%.3s [<yyyyMMdd-HH:mm:ss.SSS>] %s: "
+  val DefaultPrefix              = "%.3s [<yyyyMMdd-HH:mm:ss.SSS>] %s: "
 }
 
 /**
@@ -93,13 +93,14 @@ class Formatter(
     val truncateAt: Int = 0,
     val truncateStackTracesAt: Int = Formatter.DefaultStackTraceSizeLimit,
     val useFullPackageNames: Boolean = false,
-    val prefix: String = Formatter.DefaultPrefix)
-    extends javalog.Formatter {
+    val prefix: String = Formatter.DefaultPrefix
+) extends javalog.Formatter {
 
   private val matcher = Formatter.DateFormatRegex.matcher(prefix)
 
   private val DATE_FORMAT = TwitterDateFormat(
-      if (matcher.find()) matcher.group(1) else "yyyyMMdd-HH:mm:ss.SSS")
+    if (matcher.find()) matcher.group(1) else "yyyyMMdd-HH:mm:ss.SSS"
+  )
   private val FORMAT = matcher.replaceFirst("%3\\$s")
 
   /**
@@ -122,24 +123,22 @@ class Formatter(
     * Return the string to prefix each log message with, given a log level,
     * formatted date string, and package name.
     */
-  def formatPrefix(level: javalog.Level, date: String, name: String): String = {
+  def formatPrefix(level: javalog.Level, date: String, name: String): String =
     FORMAT.format(formatLevelName(level), name, date)
-  }
 
   /**
     * Return the string representation of a given log level's name
     */
-  def formatLevelName(level: javalog.Level): String = {
+  def formatLevelName(level: javalog.Level): String =
     level match {
       case x: Level =>
         x.name
       case x: javalog.Level =>
         Logger.levels.get(x.intValue) match {
-          case None => "%03d".format(x.intValue)
+          case None        => "%03d".format(x.intValue)
           case Some(level) => level.name
         }
     }
-  }
 
   /**
     * Return the line terminator (if any) to use at the end of each log
@@ -155,7 +154,7 @@ class Formatter(
       Array(message)
     } else {
       val splitOnNewlines = message.split("\n")
-      val numThrowLines = if (record.getThrown == null) 0 else 20
+      val numThrowLines   = if (record.getThrown == null) 0 else 20
 
       val lines =
         new mutable.ArrayBuffer[String](splitOnNewlines.length + numThrowLines)
@@ -174,54 +173,58 @@ class Formatter(
   /**
     * Return formatted text from a java LogRecord.
     */
-  def formatText(record: javalog.LogRecord): String = {
+  def formatText(record: javalog.LogRecord): String =
     record match {
       case null => ""
       case r: LogRecord => {
-          r.getParameters match {
-            case null => r.getMessage
-            case formatArgs => String.format(r.getMessage, formatArgs: _*)
-          }
+        r.getParameters match {
+          case null       => r.getMessage
+          case formatArgs => String.format(r.getMessage, formatArgs: _*)
         }
+      }
       case r: javalog.LogRecord => {
-          r.getParameters match {
-            case null => r.getMessage
-            case formatArgs =>
-              MessageFormat.format(r.getMessage, formatArgs: _*)
-          }
+        r.getParameters match {
+          case null => r.getMessage
+          case formatArgs =>
+            MessageFormat.format(r.getMessage, formatArgs: _*)
         }
+      }
     }
-  }
 
   override def format(record: javalog.LogRecord): String = {
     val name = formatName(record)
     val prefix = formatPrefix(
-        record.getLevel, dateFormat.format(new Date(record.getMillis)), name)
+      record.getLevel,
+      dateFormat.format(new Date(record.getMillis)),
+      name
+    )
     formatMessageLines(record).mkString(
-        prefix, lineTerminator + prefix, lineTerminator)
+      prefix,
+      lineTerminator + prefix,
+      lineTerminator
+    )
   }
 
   /**
     * Returns the formatted name of the node given a LogRecord
     */
-  def formatName(record: javalog.LogRecord): String = {
+  def formatName(record: javalog.LogRecord): String =
     record.getLoggerName match {
       case null => "(root)"
-      case "" => "(root)"
+      case ""   => "(root)"
       case n => {
-          val nameSegments = n.split("\\.")
-          if (nameSegments.length >= 2) {
-            if (useFullPackageNames) {
-              nameSegments.slice(0, nameSegments.length - 1).mkString(".")
-            } else {
-              nameSegments(nameSegments.length - 2)
-            }
+        val nameSegments = n.split("\\.")
+        if (nameSegments.length >= 2) {
+          if (useFullPackageNames) {
+            nameSegments.slice(0, nameSegments.length - 1).mkString(".")
           } else {
-            n
+            nameSegments(nameSegments.length - 2)
           }
+        } else {
+          n
         }
+      }
     }
-  }
 
   /**
     * Truncates the text from a java LogRecord, if necessary

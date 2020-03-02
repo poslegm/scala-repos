@@ -18,29 +18,30 @@ import scala.collection.mutable.ArrayBuffer
   * @author Nikolay.Tropin
   */
 class ScalaChangeSignatureRowEditor(
-    item: ScalaParameterTableModelItem, dialog: ScalaChangeSignatureDialog)
-    extends JBTableRowEditor {
+    item: ScalaParameterTableModelItem,
+    dialog: ScalaChangeSignatureDialog
+) extends JBTableRowEditor {
 
-  private val project = dialog.project
-  private val fileType = dialog.getFileType
-  private val signatureUpdater = dialog.signatureUpdater
-  private val backgroundColor = dialog.getContentPane.getBackground
+  private val project               = dialog.project
+  private val fileType              = dialog.getFileType
+  private val signatureUpdater      = dialog.signatureUpdater
+  private val backgroundColor       = dialog.getContentPane.getBackground
   private val separatorColor: Color = dialog.clauseSeparatorColor
 
   private val table = dialog.parametersTable
   val typeDoc =
     PsiDocumentManager.getInstance(project).getDocument(item.typeCodeFragment)
-  val myTypeEditor: EditorTextField = new EditorTextField(
-      typeDoc, project, fileType)
+  val myTypeEditor: EditorTextField =
+    new EditorTextField(typeDoc, project, fileType)
 
-  val myNameEditor: EditorTextField = new EditorTextField(
-      item.parameter.getName, project, fileType)
+  val myNameEditor: EditorTextField =
+    new EditorTextField(item.parameter.getName, project, fileType)
   val defaultValueDoc = PsiDocumentManager
     .getInstance(project)
     .getDocument(item.defaultValueCodeFragment)
 
-  val myDefaultValueEditor = new EditorTextField(
-      defaultValueDoc, project, fileType)
+  val myDefaultValueEditor =
+    new EditorTextField(defaultValueDoc, project, fileType)
 
   def prepareEditor(table: JTable, row: Int) {
     setLayout(new BorderLayout)
@@ -65,11 +66,9 @@ class ScalaChangeSignatureRowEditor(
 
   def addTypeEditor() {
     myTypeEditor.addDocumentListener(signatureUpdater)
-    myTypeEditor.addDocumentListener(
-        new DocumentAdapter {
-      override def documentChanged(e: DocumentEvent): Unit = {
+    myTypeEditor.addDocumentListener(new DocumentAdapter {
+      override def documentChanged(e: DocumentEvent): Unit =
         item.typeText = myTypeEditor.getText
-      }
     })
     myTypeEditor.addDocumentListener(new this.RowEditorChangeListener(1))
     add(createLabeledPanel("Type:", myTypeEditor), BorderLayout.CENTER)
@@ -90,30 +89,28 @@ class ScalaChangeSignatureRowEditor(
   def addDefaultValueEditor(additionalPanel: JPanel) {
     myDefaultValueEditor.setPreferredWidth(table.getWidth / 2)
     myDefaultValueEditor.addDocumentListener(
-        new this.RowEditorChangeListener(2))
-    myDefaultValueEditor.addDocumentListener(
-        new DocumentAdapter {
-      override def documentChanged(e: DocumentEvent): Unit = {
+      new this.RowEditorChangeListener(2)
+    )
+    myDefaultValueEditor.addDocumentListener(new DocumentAdapter {
+      override def documentChanged(e: DocumentEvent): Unit =
         item.parameter.defaultValue = myDefaultValueEditor.getText.trim
-      }
     })
     additionalPanel.add(
-        createLabeledPanel("Default value:", myDefaultValueEditor),
-        BorderLayout.WEST)
+      createLabeledPanel("Default value:", myDefaultValueEditor),
+      BorderLayout.WEST
+    )
   }
 
-  def getValue: JBTableRow = {
+  def getValue: JBTableRow =
     new JBTableRow {
-      def getValueAt(column: Int): AnyRef = {
+      def getValueAt(column: Int): AnyRef =
         column match {
           case 0 => myNameEditor.getText.trim
           case 1 => myTypeEditor.getText.trim
           case 2 => myDefaultValueEditor.getText.trim
           case _ => null
         }
-      }
     }
-  }
 
   def getPreferredFocusedComponent: JComponent = {
     val me: MouseEvent = getMouseEvent

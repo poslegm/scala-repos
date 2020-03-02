@@ -10,11 +10,11 @@ object ProbMonadRunner extends MyRunner(classOf[ProbMonadBenchmark])
 
 class ProbMonadBenchmark extends BreezeBenchmark {
 
-  val f: Double => Double = x => math.exp(-x * x)
-  val f2: Double => Double = x => x * x
-  val f3: Double => Double = x => math.log(x)
+  val f: Double => Double        = x => math.exp(-x * x)
+  val f2: Double => Double       = x => x * x
+  val f3: Double => Double       = x => math.log(x)
   val fm: Double => Rand[Double] = (x => Uniform(min(x, 2 * x), max(x, 2 * x)))
-  val gaussian = Gaussian(0, 1)
+  val gaussian                   = Gaussian(0, 1)
 
   val size = 1024 * 1024
 
@@ -71,12 +71,9 @@ class ProbMonadBenchmark extends BreezeBenchmark {
   }
 
   def timeDrawOpt(reps: Int) = run(reps) {
-    val mg = gaussian.condition(x => x > 0)
+    val mg     = gaussian.condition(x => x > 0)
     val result = new Array[Option[Double]](size)
-    cfor(0)(i => i < size, i => i + 1)(i =>
-          {
-        result(i) = mg.drawOpt()
-    })
+    cfor(0)(i => i < size, i => i + 1)(i => result(i) = mg.drawOpt())
     result
   }
   def timeDrawOptMultipleCondition(reps: Int) = run(reps) {
@@ -85,10 +82,7 @@ class ProbMonadBenchmark extends BreezeBenchmark {
       .condition(x => x < 1)
       .condition(x => x > -1)
     val result = new Array[Option[Double]](size)
-    cfor(0)(i => i < size, i => i + 1)(i =>
-          {
-        result(i) = mg.drawOpt()
-    })
+    cfor(0)(i => i < size, i => i + 1)(i => result(i) = mg.drawOpt())
     result
   }
 }

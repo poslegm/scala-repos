@@ -4,7 +4,12 @@ object Test {
 
   def main(args: Array[String]) {
     val m = scala.collection.mutable.LinkedHashMap(
-        "one" -> 1, "two" -> 2, "three" -> 3, "four" -> 4, "five" -> 5)
+      "one"   -> 1,
+      "two"   -> 2,
+      "three" -> 3,
+      "four"  -> 4,
+      "five"  -> 5
+    )
     val expected = List("one", "two", "three", "four", "five")
     assert(m.keys.iterator.toList == expected)
     assert(m.keys.drop(0).iterator.toList == expected)
@@ -23,7 +28,7 @@ object Test {
     assert(m.values.drop(4).iterator.toList == expvals.drop(4))
     assert(m.values.drop(5).iterator.toList == expvals.drop(5))
 
-    val pred = (x: String) => x.length < 6
+    val pred     = (x: String) => x.length < 6
     val filtered = m.filterKeys(pred)
     assert(filtered.drop(0).keys.toList == expected.filter(pred))
     assert(filtered.drop(1).keys.toList == expected.filter(pred).drop(1))

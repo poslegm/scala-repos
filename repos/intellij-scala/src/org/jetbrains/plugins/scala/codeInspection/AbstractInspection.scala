@@ -10,8 +10,10 @@ import org.jetbrains.plugins.scala.extensions.VisitorWrapper
 abstract class AbstractInspection(id: String, name: String)
     extends LocalInspectionTool {
   def this() {
-    this(AbstractInspection.formatId(getClass),
-         AbstractInspection.formatName(getClass))
+    this(
+      AbstractInspection.formatId(getClass),
+      AbstractInspection.formatName(getClass)
+    )
   }
 
   def this(name: String) {
@@ -20,8 +22,7 @@ abstract class AbstractInspection(id: String, name: String)
 
   override def getDisplayName: String = name
 
-  override final def buildVisitor(
-      holder: ProblemsHolder, isOnTheFly: Boolean) =
+  override final def buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
     VisitorWrapper(actionFor(holder))
 
   def actionFor(holder: ProblemsHolder): PartialFunction[PsiElement, Any]
@@ -30,9 +31,8 @@ abstract class AbstractInspection(id: String, name: String)
 object AbstractInspection {
   private val CapitalLetterPattern = "(?<!=.)\\p{Lu}".r
 
-  def formatId(aClass: Class[_]) = {
+  def formatId(aClass: Class[_]) =
     aClass.getSimpleName.stripSuffix("Inspection")
-  }
 
   def formatName(aClass: Class[_]) = {
     val id = formatId(aClass)

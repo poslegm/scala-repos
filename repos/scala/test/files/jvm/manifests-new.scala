@@ -81,12 +81,16 @@ object Test2 {
   println("(true,false)=" + load[(Boolean, Boolean)](dump((true, false))))
   println()
 
-  println("List(List(1), List(2))=" +
-      load[List[List[Int]]](dump(List(List(1), List(2)))))
+  println(
+    "List(List(1), List(2))=" +
+      load[List[List[Int]]](dump(List(List(1), List(2))))
+  )
   println()
 
-  println("Array(Array(1), Array(2))=" +
-      loadArray[Array[Int]](dump(Array(Array(1), Array(2)))))
+  println(
+    "Array(Array(1), Array(2))=" +
+      loadArray[Array[Int]](dump(Array(Array(1), Array(2))))
+  )
   println()
 }
 
@@ -95,7 +99,7 @@ object Marshal {
   import scala.reflect.ClassTag
 
   def dump[A](o: A)(implicit t: ClassTag[A]): Array[Byte] = {
-    val ba = new ByteArrayOutputStream(512)
+    val ba  = new ByteArrayOutputStream(512)
     val out = new ObjectOutputStream(ba)
     out.writeObject(t)
     out.writeObject(o)
@@ -107,7 +111,7 @@ object Marshal {
   @throws(classOf[ClassCastException])
   @throws(classOf[ClassNotFoundException])
   def load[A](buffer: Array[Byte])(implicit expected: ClassTag[A]): A = {
-    val in = new ObjectInputStream(new ByteArrayInputStream(buffer))
+    val in    = new ObjectInputStream(new ByteArrayInputStream(buffer))
     val found = in.readObject.asInstanceOf[ClassTag[_]]
     try {
       found.runtimeClass.asSubclass(expected.runtimeClass)
@@ -116,8 +120,9 @@ object Marshal {
       case _: ClassCastException =>
         in.close()
         throw new ClassCastException(
-            "type mismatch;" + "\n found : " + found + "\n required: " +
-            expected)
+          "type mismatch;" + "\n found : " + found + "\n required: " +
+            expected
+        )
     }
   }
 }
@@ -125,7 +130,7 @@ object Marshal {
 trait TestUtil {
   import java.io._
   def write[A](o: A): Array[Byte] = {
-    val ba = new ByteArrayOutputStream(512)
+    val ba  = new ByteArrayOutputStream(512)
     val out = new ObjectOutputStream(ba)
     out.writeObject(o)
     out.close()
@@ -139,10 +144,11 @@ trait TestUtil {
     // todo. type tags are not yet serializable
 //    val t1: TypeTag[T] = read(write(t))
     val t1: TypeTag[T] = t
-    val x1 = x.toString.replaceAll("@[0-9a-z]+$", "")
+    val x1             = x.toString.replaceAll("@[0-9a-z]+$", "")
     println(
-        "x=" + x1 + ", t=" + t1 + ", k=" +
+      "x=" + x1 + ", t=" + t1 + ", k=" +
         t1.tpe.asInstanceOf[Product].productPrefix + ", s=" +
-        t1.tpe.typeSymbol.toString)
+        t1.tpe.typeSymbol.toString
+    )
   }
 }

@@ -64,7 +64,7 @@ case class AtxHeaderLine(pre: String, pay: String)
     * "  foo ##  \n" => "foo"
     */
   def trimHashes() = {
-    val s = payload.trim
+    val s   = payload.trim
     var idx = s.length - 1
     while (idx >= 0 && s.charAt(idx) == '#') idx -= 1
     s.substring(0, idx + 1).trim
@@ -108,7 +108,7 @@ case class ExtendedFencedCode(pre: String, pay: String)
   def languageFormat = pay.trim()
 }
 
-/** Ending line of a fenced code block: three backticks followed by optional whitespace 
+/** Ending line of a fenced code block: three backticks followed by optional whitespace
   */
 case class FencedCode(pre: String) extends MarkdownLine(pre)
 
@@ -130,15 +130,16 @@ case class LinkDefinitionStart(id: String, url: String) {
 /**
   * This class allows us to reference a map with link definitions resulting from the line parsing during block parsing.
   * It extends a Reader for MarkdownLines and allows us to add the said map to the parsing context.
-  * This is basically a modification of the parser monad's state. 
+  * This is basically a modification of the parser monad's state.
   */
-case class MarkdownLineReader private (val lines: Seq[MarkdownLine],
-                                       val lookup: Map[String, LinkDefinition],
-                                       val lineCount: Int)
-    extends Reader[MarkdownLine] {
+case class MarkdownLineReader private (
+    val lines: Seq[MarkdownLine],
+    val lookup: Map[String, LinkDefinition],
+    val lineCount: Int
+) extends Reader[MarkdownLine] {
 
   /** Not existing line that signals EOF.
-    * This object cannot be referenced by any other code so it will fail all line parsers. 
+    * This object cannot be referenced by any other code so it will fail all line parsers.
     */
   private object EofLine extends MarkdownLine("\nEOF\n")
 
@@ -151,8 +152,8 @@ case class MarkdownLineReader private (val lines: Seq[MarkdownLine],
     else new MarkdownLineReader(lines.tail, lookup, lineCount + 1)
   def atEnd = lines.isEmpty
   def pos = new Position {
-    def line = lineCount
-    def column = 1
+    def line                   = lineCount
+    def column                 = 1
     protected def lineContents = first.fullLine
   }
 }
@@ -179,14 +180,13 @@ trait LineParsers extends InlineParsers {
     */
   def linkDefinitionUrl: Parser[String] =
     (elem('<') ~> markdownText(Set('>'), true) <~ '>' ^^ { _.mkString.trim }) |
-    (markdownText(Set(' ', '\t'), true) ^^ { _.mkString })
+      (markdownText(Set(' ', '\t'), true) ^^ { _.mkString })
 
   /** The title in a link definition.
     */
   def linkDefinitionTitle: Parser[String] =
     ows ~> ("""\"[^\n]*["]""".r | """\'[^\n]*\'""".r | """\([^\n]*\)""".r) <~ ows ^^ {
-      s =>
-        s.substring(1, s.length - 1)
+      s => s.substring(1, s.length - 1)
     }
 
   /** A link definition that later gets stripped from the output.
@@ -276,16 +276,16 @@ trait LineParsers extends InlineParsers {
     }
 
   /**
-    * A fenced code line. Can be the start or the end of a fenced code block 
+    * A fenced code line. Can be the start or the end of a fenced code block
     */
   val fencedCodeLine: Parser[FencedCode] =
     """ {0,3}\`{3,}[\t\v ]*""".r ^^ {
       case prefix => new FencedCode(prefix)
     }
 
-  /** Matches the start of a fenced code block with additional language token: 
+  /** Matches the start of a fenced code block with additional language token:
     * up to three spaces, three or more backticks, whitespace, an optional
-    * language token, optional whitespace 
+    * language token, optional whitespace
     */
   val extendedFencedCodeLine: Parser[ExtendedFencedCode] =
     fencedCodeLine ~ """\w+[\t\v ]*""".r ^^ {

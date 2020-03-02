@@ -29,20 +29,20 @@ object SVMWithSGDExample {
 
   def main(args: Array[String]): Unit = {
     val conf = new SparkConf().setAppName("SVMWithSGDExample")
-    val sc = new SparkContext(conf)
+    val sc   = new SparkContext(conf)
 
     // $example on$
     // Load training data in LIBSVM format.
     val data = MLUtils.loadLibSVMFile(sc, "data/mllib/sample_libsvm_data.txt")
 
     // Split data into training (60%) and test (40%).
-    val splits = data.randomSplit(Array(0.6, 0.4), seed = 11L)
+    val splits   = data.randomSplit(Array(0.6, 0.4), seed = 11L)
     val training = splits(0).cache()
-    val test = splits(1)
+    val test     = splits(1)
 
     // Run training algorithm to build the model
     val numIterations = 100
-    val model = SVMWithSGD.train(training, numIterations)
+    val model         = SVMWithSGD.train(training, numIterations)
 
     // Clear the default threshold.
     model.clearThreshold()
@@ -55,7 +55,7 @@ object SVMWithSGDExample {
 
     // Get evaluation metrics.
     val metrics = new BinaryClassificationMetrics(scoreAndLabels)
-    val auROC = metrics.areaUnderROC()
+    val auROC   = metrics.areaUnderROC()
 
     println("Area under ROC = " + auROC)
 

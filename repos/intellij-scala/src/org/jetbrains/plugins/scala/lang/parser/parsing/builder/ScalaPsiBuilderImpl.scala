@@ -12,17 +12,16 @@ import scala.collection.mutable
   * @author Alexander Podkhalyuzin
   */
 class ScalaPsiBuilderImpl(builder: PsiBuilder)
-    extends PsiBuilderAdapter(builder) with ScalaPsiBuilder {
+    extends PsiBuilderAdapter(builder)
+    with ScalaPsiBuilder {
   private final val newlinesEnabled: mutable.Stack[Boolean] =
     new mutable.Stack[Boolean]
 
-  def newlineBeforeCurrentToken: Boolean = {
+  def newlineBeforeCurrentToken: Boolean =
     countNewlineBeforeCurrentToken() > 0
-  }
 
-  def twoNewlinesBeforeCurrentToken: Boolean = {
+  def twoNewlinesBeforeCurrentToken: Boolean =
     countNewlineBeforeCurrentToken() > 1
-  }
 
   /**
     * @return 0 if new line is disabled here, or there is no \n chars between tokens
@@ -36,7 +35,7 @@ class ScalaPsiBuilderImpl(builder: PsiBuilder)
 
     var i = 1
     while (i < getCurrentOffset &&
-    TokenSets.WHITESPACE_OR_COMMENT_SET.contains(rawLookup(-i))) i += 1
+           TokenSets.WHITESPACE_OR_COMMENT_SET.contains(rawLookup(-i))) i += 1
     val textBefore = getOriginalText
       .subSequence(rawTokenTypeStart(-i + 1), rawTokenTypeStart(0))
       .toString

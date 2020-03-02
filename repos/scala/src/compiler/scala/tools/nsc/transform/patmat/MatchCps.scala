@@ -16,10 +16,10 @@ trait MatchCps { self: PatternMatching =>
     private def cpsSymbol(name: String) =
       rootMirror.getClassIfDefined(s"scala.util.continuations.$name")
 
-    val MarkerCPSAdaptPlus = cpsSymbol("cpsPlus")
+    val MarkerCPSAdaptPlus  = cpsSymbol("cpsPlus")
     val MarkerCPSAdaptMinus = cpsSymbol("cpsMinus")
-    val MarkerCPSSynth = cpsSymbol("cpsSynth")
-    val MarkerCPSTypes = cpsSymbol("cpsParam")
+    val MarkerCPSSynth      = cpsSymbol("cpsSynth")
+    val MarkerCPSTypes      = cpsSymbol("cpsParam")
     val stripTriggerCPSAnns =
       Set[Symbol](MarkerCPSSynth, MarkerCPSAdaptMinus, MarkerCPSAdaptPlus)
     val strippedCPSAnns = stripTriggerCPSAnns + MarkerCPSTypes

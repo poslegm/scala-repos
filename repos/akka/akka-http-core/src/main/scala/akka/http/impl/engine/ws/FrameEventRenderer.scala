@@ -29,8 +29,11 @@ private[http] class FrameEventRenderer
           ctx.push(renderStart(start))
 
         case f: FrameData ⇒
-          ctx.fail(new IllegalStateException(
-                  "unexpected FrameData (need FrameStart first)"))
+          ctx.fail(
+            new IllegalStateException(
+              "unexpected FrameData (need FrameStart first)"
+            )
+          )
       }
   }
 
@@ -43,11 +46,13 @@ private[http] class FrameEventRenderer
           case FrameData(data, lastPart) ⇒
             if (data.size > remaining)
               throw new IllegalStateException(
-                  s"Expected $remaining frame bytes but got ${data.size}")
+                s"Expected $remaining frame bytes but got ${data.size}"
+              )
             else if (data.size == remaining) {
               if (!lastPart)
                 throw new IllegalStateException(
-                    s"Frame data complete but `lastPart` flag not set")
+                  s"Frame data complete but `lastPart` flag not set"
+                )
               become(nextState)
               ctx.push(data)
             } else {
@@ -56,8 +61,11 @@ private[http] class FrameEventRenderer
             }
 
           case f: FrameStart ⇒
-            ctx.fail(new IllegalStateException(
-                    "unexpected FrameStart (need more FrameData first)"))
+            ctx.fail(
+              new IllegalStateException(
+                "unexpected FrameStart (need more FrameData first)"
+              )
+            )
         }
     }
 
@@ -68,9 +76,9 @@ private[http] class FrameEventRenderer
 
     val length = header.length
     val (lengthBits, extraLengthBytes) = length match {
-      case x if x < 126 ⇒ (x.toInt, 0)
+      case x if x < 126     ⇒ (x.toInt, 0)
       case x if x <= 0xFFFF ⇒ (126, 2)
-      case _ ⇒ (127, 8)
+      case _                ⇒ (127, 8)
     }
 
     val maskBytes = if (header.mask.isDefined) 4 else 0
@@ -81,7 +89,9 @@ private[http] class FrameEventRenderer
     def bool(b: Boolean, mask: Int): Int = if (b) mask else 0
     val flags =
       bool(header.fin, FIN_MASK) | bool(header.rsv1, RSV1_MASK) | bool(
-          header.rsv2, RSV2_MASK) | bool(header.rsv3, RSV3_MASK)
+        header.rsv2,
+        RSV2_MASK
+      ) | bool(header.rsv3, RSV3_MASK)
 
     data(0) = (flags | header.opcode.code).toByte
     data(1) = (bool(header.mask.isDefined, MASK_MASK) | lengthBits).toByte

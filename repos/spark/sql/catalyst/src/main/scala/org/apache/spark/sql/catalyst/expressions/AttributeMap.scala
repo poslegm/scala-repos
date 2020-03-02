@@ -23,9 +23,8 @@ package org.apache.spark.sql.catalyst.expressions
   * of the name, or the expected nullability).
   */
 object AttributeMap {
-  def apply[A](kvs: Seq[(Attribute, A)]): AttributeMap[A] = {
+  def apply[A](kvs: Seq[(Attribute, A)]): AttributeMap[A] =
     new AttributeMap(kvs.map(kv => (kv._1.exprId, kv)).toMap)
-  }
 
   /** Given a schema, constructs an [[AttributeMap]] from [[Attribute]] to ordinal */
   def byIndex(schema: Seq[Attribute]): AttributeMap[Int] =
@@ -37,7 +36,8 @@ object AttributeMap {
 }
 
 class AttributeMap[A](baseMap: Map[ExprId, (Attribute, A)])
-    extends Map[Attribute, A] with Serializable {
+    extends Map[Attribute, A]
+    with Serializable {
 
   override def get(k: Attribute): Option[A] = baseMap.get(k.exprId).map(_._2)
 

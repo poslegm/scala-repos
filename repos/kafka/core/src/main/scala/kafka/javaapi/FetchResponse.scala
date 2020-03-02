@@ -20,7 +20,8 @@ class FetchResponse(private val underlying: kafka.api.FetchResponse) {
 
   def messageSet(
       topic: String,
-      partition: Int): kafka.javaapi.message.ByteBufferMessageSet = {
+      partition: Int
+  ): kafka.javaapi.message.ByteBufferMessageSet = {
     import Implicits._
     underlying.messageSet(topic, partition)
   }

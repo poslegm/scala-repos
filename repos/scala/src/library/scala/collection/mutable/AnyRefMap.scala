@@ -28,10 +28,14 @@ import generic.CanBuildFrom
   *
   */
 @SerialVersionUID(1L)
-final class AnyRefMap[K <: AnyRef, V] private[collection](
-    defaultEntry: K => V, initialBufferSize: Int, initBlank: Boolean)
-    extends AbstractMap[K, V]
-    with Map[K, V] with MapLike[K, V, AnyRefMap[K, V]] with Serializable {
+final class AnyRefMap[K <: AnyRef, V] private[collection] (
+    defaultEntry: K => V,
+    initialBufferSize: Int,
+    initBlank: Boolean
+) extends AbstractMap[K, V]
+    with Map[K, V]
+    with MapLike[K, V, AnyRefMap[K, V]]
+    with Serializable {
   import AnyRefMap._
   def this() = this(AnyRefMap.exceptionDefault, 16, true)
 
@@ -50,20 +54,21 @@ final class AnyRefMap[K <: AnyRef, V] private[collection](
   def this(defaultEntry: K => V, initialBufferSize: Int) =
     this(defaultEntry, initialBufferSize, true)
 
-  private[this] var mask = 0
-  private[this] var _size = 0
-  private[this] var _vacant = 0
-  private[this] var _hashes: Array[Int] = null
-  private[this] var _keys: Array[AnyRef] = null
+  private[this] var mask                   = 0
+  private[this] var _size                  = 0
+  private[this] var _vacant                = 0
+  private[this] var _hashes: Array[Int]    = null
+  private[this] var _keys: Array[AnyRef]   = null
   private[this] var _values: Array[AnyRef] = null
 
   if (initBlank) defaultInitialize(initialBufferSize)
 
   private[this] def defaultInitialize(n: Int) {
-    mask = if (n < 0) 0x7
-    else
-      (((1 << (32 - java.lang.Integer.numberOfLeadingZeros(n - 1))) -
-              1) & 0x3FFFFFFF) | 0x7
+    mask =
+      if (n < 0) 0x7
+      else
+        (((1 << (32 - java.lang.Integer.numberOfLeadingZeros(n - 1))) -
+          1) & 0x3FFFFFFF) | 0x7
     _hashes = new Array[Int](mask + 1)
     _keys = new Array[AnyRef](mask + 1)
     _values = new Array[AnyRef](mask + 1)
@@ -80,13 +85,13 @@ final class AnyRefMap[K <: AnyRef, V] private[collection](
     mask = m; _size = sz; _vacant = vc; _hashes = hz; _keys = kz; _values = vz
   }
 
-  override def size: Int = _size
+  override def size: Int              = _size
   override def empty: AnyRefMap[K, V] = new AnyRefMap(defaultEntry)
 
   private def imbalanced: Boolean =
     (_size + _vacant) > 0.5 * mask || _vacant > _size
 
-  private def hashOf(key: K): Int = {
+  private def hashOf(key: K): Int =
     if (key eq null) 0x41081989
     else {
       val h = key.hashCode
@@ -95,7 +100,6 @@ final class AnyRefMap[K <: AnyRef, V] private[collection](
       val j = (i ^ (i >>> 13))
       if (j == 0) 0x41081989 else j & 0x7FFFFFFF
     }
-  }
 
   private def seekEntry(h: Int, k: AnyRef): Int = {
     var e = h & mask
@@ -147,7 +151,7 @@ final class AnyRefMap[K <: AnyRef, V] private[collection](
       // Our hash table may have resized or even contain what we want now
       // (but if it does, we'll replace it)
       val value = {
-        val oh = _hashes
+        val oh  = _hashes
         val ans = defaultValue
         if (oh ne _hashes) {
           i = seekEntryOrOpen(h, key)
@@ -314,13 +318,12 @@ final class AnyRefMap[K <: AnyRef, V] private[collection](
       true
     }
 
-    def next: (K, V) = {
+    def next: (K, V) =
       if (hasNext) {
         val ans = (kz(index).asInstanceOf[K], vz(index).asInstanceOf[V])
         index += 1
         ans
       } else throw new NoSuchElementException("next")
-    }
   }
 
   override def foreach[U](f: ((K, V)) => U) {
@@ -328,8 +331,8 @@ final class AnyRefMap[K <: AnyRef, V] private[collection](
     var e = _size
     while (e > 0) {
       while (i < _hashes.length && {
-        val h = _hashes(i); h + h == 0 && i < _hashes.length
-      }) i += 1
+               val h = _hashes(i); h + h == 0 && i < _hashes.length
+             }) i += 1
       if (i < _hashes.length) {
         f((_keys(i).asInstanceOf[K], _values(i).asInstanceOf[V]))
         i += 1
@@ -339,9 +342,9 @@ final class AnyRefMap[K <: AnyRef, V] private[collection](
   }
 
   override def clone(): AnyRefMap[K, V] = {
-    val hz = java.util.Arrays.copyOf(_hashes, _hashes.length)
-    val kz = java.util.Arrays.copyOf(_keys, _keys.length)
-    val vz = java.util.Arrays.copyOf(_values, _values.length)
+    val hz  = java.util.Arrays.copyOf(_hashes, _hashes.length)
+    val kz  = java.util.Arrays.copyOf(_keys, _keys.length)
+    val vz  = java.util.Arrays.copyOf(_values, _values.length)
     val arm = new AnyRefMap[K, V](defaultEntry, 1, false)
     arm.initializeTo(mask, _size, _vacant, hz, kz, vz)
     arm
@@ -353,7 +356,9 @@ final class AnyRefMap[K <: AnyRef, V] private[collection](
     arm
   }
 
-  override def ++[V1 >: V](xs: GenTraversableOnce[(K, V1)]): AnyRefMap[K, V1] = {
+  override def ++[V1 >: V](
+      xs: GenTraversableOnce[(K, V1)]
+  ): AnyRefMap[K, V1] = {
     val arm = clone().asInstanceOf[AnyRefMap[K, V1]]
     xs.foreach(kv => arm += kv)
     arm
@@ -388,10 +393,10 @@ final class AnyRefMap[K <: AnyRef, V] private[collection](
     *  collection immediately.
     */
   def mapValuesNow[V1](f: V => V1): AnyRefMap[K, V1] = {
-    val arm = new AnyRefMap[K, V1](AnyRefMap.exceptionDefault, 1, false)
-    val hz = java.util.Arrays.copyOf(_hashes, _hashes.length)
-    val kz = java.util.Arrays.copyOf(_keys, _keys.length)
-    val vz = new Array[AnyRef](_values.length)
+    val arm  = new AnyRefMap[K, V1](AnyRefMap.exceptionDefault, 1, false)
+    val hz   = java.util.Arrays.copyOf(_hashes, _hashes.length)
+    val kz   = java.util.Arrays.copyOf(_keys, _keys.length)
+    val vz   = new Array[AnyRef](_values.length)
     var i, j = 0
     while (i < _hashes.length & j < _size) {
       val h = _hashes(i)
@@ -423,19 +428,19 @@ final class AnyRefMap[K <: AnyRef, V] private[collection](
 }
 
 object AnyRefMap {
-  private final val IndexMask = 0x3FFFFFFF
+  private final val IndexMask  = 0x3FFFFFFF
   private final val MissingBit = 0x80000000
-  private final val VacantBit = 0x40000000
+  private final val VacantBit  = 0x40000000
   private final val MissVacant = 0xC0000000
 
   private val exceptionDefault = (k: Any) =>
     throw new NoSuchElementException(if (k == null) "(null)" else k.toString)
 
-  implicit def canBuildFrom[K <: AnyRef, V, J <: AnyRef, U]: CanBuildFrom[
-      AnyRefMap[K, V], (J, U), AnyRefMap[J, U]] =
+  implicit def canBuildFrom[K <: AnyRef, V, J <: AnyRef, U]
+      : CanBuildFrom[AnyRefMap[K, V], (J, U), AnyRefMap[J, U]] =
     new CanBuildFrom[AnyRefMap[K, V], (J, U), AnyRefMap[J, U]] {
       def apply(from: AnyRefMap[K, V]): AnyRefMapBuilder[J, U] = apply()
-      def apply(): AnyRefMapBuilder[J, U] = new AnyRefMapBuilder[J, U]
+      def apply(): AnyRefMapBuilder[J, U]                      = new AnyRefMapBuilder[J, U]
     }
 
   /** A builder for instances of `AnyRefMap`.
@@ -455,7 +460,7 @@ object AnyRefMap {
 
   /** Creates a new `AnyRefMap` with zero or more key/value pairs. */
   def apply[K <: AnyRef, V](elems: (K, V)*): AnyRefMap[K, V] = {
-    val sz = if (elems.hasDefiniteSize) elems.size else 4
+    val sz  = if (elems.hasDefiniteSize) elems.size else 4
     val arm = new AnyRefMap[K, V](sz * 2)
     elems.foreach { case (k, v) => arm(k) = v }
     if (arm.size < (sz >> 3)) arm.repack()
@@ -473,10 +478,12 @@ object AnyRefMap {
     *  Equivalent to but more efficient than `AnyRefMap((keys zip values): _*)`.
     */
   def fromZip[K <: AnyRef, V](
-      keys: Array[K], values: Array[V]): AnyRefMap[K, V] = {
-    val sz = math.min(keys.length, values.length)
+      keys: Array[K],
+      values: Array[V]
+  ): AnyRefMap[K, V] = {
+    val sz  = math.min(keys.length, values.length)
     val arm = new AnyRefMap[K, V](sz * 2)
-    var i = 0
+    var i   = 0
     while (i < sz) { arm(keys(i)) = values(i); i += 1 }
     if (arm.size < (sz >> 3)) arm.repack()
     arm
@@ -486,11 +493,13 @@ object AnyRefMap {
     *  Equivalent to but more efficient than `AnyRefMap((keys zip values): _*)`.
     */
   def fromZip[K <: AnyRef, V](
-      keys: Iterable[K], values: Iterable[V]): AnyRefMap[K, V] = {
-    val sz = math.min(keys.size, values.size)
+      keys: Iterable[K],
+      values: Iterable[V]
+  ): AnyRefMap[K, V] = {
+    val sz  = math.min(keys.size, values.size)
     val arm = new AnyRefMap[K, V](sz * 2)
-    val ki = keys.iterator
-    val vi = values.iterator
+    val ki  = keys.iterator
+    val vi  = values.iterator
     while (ki.hasNext && vi.hasNext) arm(ki.next) = vi.next
     if (arm.size < (sz >> 3)) arm.repack()
     arm

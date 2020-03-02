@@ -11,8 +11,16 @@ import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef._
 import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiElementFactory
 import org.jetbrains.plugins.scala.lang.psi.light.ScPrimaryConstructorWrapper
 import org.jetbrains.plugins.scala.lang.psi.types._
-import org.jetbrains.plugins.scala.lang.psi.types.nonvalue.{ScMethodType, ScTypePolymorphicType, TypeParameter}
-import org.jetbrains.plugins.scala.macroAnnotations.{Cached, CachedInsidePsiElement, ModCount}
+import org.jetbrains.plugins.scala.lang.psi.types.nonvalue.{
+  ScMethodType,
+  ScTypePolymorphicType,
+  TypeParameter
+}
+import org.jetbrains.plugins.scala.macroAnnotations.{
+  Cached,
+  CachedInsidePsiElement,
+  ModCount
+}
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -21,7 +29,9 @@ import scala.collection.mutable.ArrayBuffer
   * Date: 07.03.2008
   */
 trait ScPrimaryConstructor
-    extends ScMember with ScMethodLike with ScAnnotationsHolder {
+    extends ScMember
+    with ScMethodLike
+    with ScAnnotationsHolder {
   def hasMalformedSignature = parameterList.clauses.exists {
     _.parameters.dropRight(1).exists(_.isRepeatedParameter)
   }
@@ -54,11 +64,13 @@ trait ScPrimaryConstructor
   def effectiveParameterClauses: Seq[ScParameterClause] = {
     def emptyParameterList: ScParameterClause =
       ScalaPsiElementFactory.createEmptyClassParamClauseWithContext(
-          getManager, parameterList)
+        getManager,
+        parameterList
+      )
     val clausesWithInitialEmpty = parameterList.clauses match {
-      case Seq() => Seq(emptyParameterList)
+      case Seq()                            => Seq(emptyParameterList)
       case Seq(clause) if clause.isImplicit => Seq(emptyParameterList, clause)
-      case clauses => clauses
+      case clauses                          => clauses
     }
     clausesWithInitialEmpty ++ syntheticParamClause
   }
@@ -71,38 +83,46 @@ trait ScPrimaryConstructor
     if (hasImplicit) None
     else
       ScalaPsiUtil.syntheticParamClause(
-          containingClass.asInstanceOf[ScTypeParametersOwner],
-          parameterList,
-          classParam = true)
+        containingClass.asInstanceOf[ScTypeParametersOwner],
+        parameterList,
+        classParam = true
+      )
   }
 
   def methodType(result: Option[ScType]): ScType = {
     val parameters: ScParameters = parameterList
-    val clauses = parameters.clauses
+    val clauses                  = parameters.clauses
     val returnType: ScType = result.getOrElse({
-      val clazz = getParent.asInstanceOf[ScTypeDefinition]
+      val clazz          = getParent.asInstanceOf[ScTypeDefinition]
       val typeParameters = clazz.typeParameters
-      val parentClazz = ScalaPsiUtil.getPlaceTd(clazz)
+      val parentClazz    = ScalaPsiUtil.getPlaceTd(clazz)
       val designatorType: ScType =
         if (parentClazz != null)
           ScProjectionType(
-              ScThisType(parentClazz), clazz, superReference = false)
+            ScThisType(parentClazz),
+            clazz,
+            superReference = false
+          )
         else ScDesignatorType(clazz)
       if (typeParameters.isEmpty) designatorType
       else {
         ScParameterizedType(
-            designatorType,
-            typeParameters.map(
-                new ScTypeParameterType(_, ScSubstitutor.empty)))
+          designatorType,
+          typeParameters.map(new ScTypeParameterType(_, ScSubstitutor.empty))
+        )
       }
     })
     if (clauses.isEmpty)
       return new ScMethodType(returnType, Seq.empty, false)(
-          getProject, getResolveScope)
+        getProject,
+        getResolveScope
+      )
     val res = clauses.foldRight[ScType](returnType) {
       (clause: ScParameterClause, tp: ScType) =>
         new ScMethodType(tp, clause.getSmartParameters, clause.isImplicit)(
-            getProject, getResolveScope)
+          getProject,
+          getResolveScope
+        )
     }
     res.asInstanceOf[ScMethodType]
   }
@@ -113,25 +133,30 @@ trait ScPrimaryConstructor
     if (typeParameters.isEmpty) methodType
     else
       ScTypePolymorphicType(
-          methodType, typeParameters.map(new TypeParameter(_)))
+        methodType,
+        typeParameters.map(new TypeParameter(_))
+      )
   }
 
   def getParamByName(
-      name: String, clausePosition: Int = -1): Option[ScParameter] = {
+      name: String,
+      clausePosition: Int = -1
+  ): Option[ScParameter] =
     clausePosition match {
       case -1 =>
-        for (param <- parameters if ScalaPsiUtil.memberNamesEquals(
-                         param.name, name)) return Some(param)
+        for (param <- parameters
+             if ScalaPsiUtil.memberNamesEquals(param.name, name))
+          return Some(param)
         None
-      case i if i < 0 => None
+      case i if i < 0                                 => None
       case i if i >= effectiveParameterClauses.length => None
       case i =>
         val clause: ScParameterClause = effectiveParameterClauses.apply(i)
-        for (param <- clause.parameters if ScalaPsiUtil.memberNamesEquals(
-                         param.name, name)) return Some(param)
+        for (param <- clause.parameters
+             if ScalaPsiUtil.memberNamesEquals(param.name, name))
+          return Some(param)
         None
     }
-  }
 
   @Cached(synchronized = false, ModCount.getBlockModificationCount, this)
   def getFunctionWrappers: Seq[ScPrimaryConstructorWrapper] = {
@@ -139,7 +164,7 @@ trait ScPrimaryConstructor
     buffer += new ScPrimaryConstructorWrapper(this)
     for {
       first <- parameterList.clauses.headOption if first.hasRepeatedParam
-              if hasAnnotation("scala.annotation.varargs").isDefined
+      if hasAnnotation("scala.annotation.varargs").isDefined
     } {
       buffer += new ScPrimaryConstructorWrapper(this, isJavaVarargs = true)
     }
@@ -155,11 +180,10 @@ trait ScPrimaryConstructor
 
 object ScPrimaryConstructor {
   object ofClass {
-    def unapply(pc: ScPrimaryConstructor): Option[ScClass] = {
+    def unapply(pc: ScPrimaryConstructor): Option[ScClass] =
       pc.containingClass match {
         case c: ScClass => Some(c)
-        case _ => None
+        case _          => None
       }
-    }
   }
 }

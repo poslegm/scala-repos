@@ -7,8 +7,9 @@ import org.scalacheck.Arbitrary
 import cats.std.all._
 
 abstract class FoldableCheck[F[_]: Foldable](name: String)(
-    implicit ArbFInt: Arbitrary[F[Int]])
-    extends CatsSuite with PropertyChecks {
+    implicit ArbFInt: Arbitrary[F[Int]]
+) extends CatsSuite
+    with PropertyChecks {
 
   def iterator[T](fa: F[T]): Iterator[T]
 
@@ -45,16 +46,14 @@ abstract class FoldableCheck[F[_]: Foldable](name: String)(
 class FoldableTestsAdditional extends CatsSuite {
 
   // exists method written in terms of foldRight
-  def contains[F[_]: Foldable, A : Eq](as: F[A], goal: A): Eval[Boolean] =
-    as.foldRight(Now(false)) { (a, lb) =>
-      if (a === goal) Now(true) else lb
-    }
+  def contains[F[_]: Foldable, A: Eq](as: F[A], goal: A): Eval[Boolean] =
+    as.foldRight(Now(false))((a, lb) => if (a === goal) Now(true) else lb)
 
   test("Foldable[List]") {
     val F = Foldable[List]
 
     // some basic sanity checks
-    val ns = (1 to 10).toList
+    val ns    = (1 to 10).toList
     val total = ns.sum
     F.foldLeft(ns, 0)(_ + _) should ===(total)
     F.foldRight(ns, Now(0))((x, ly) => ly.map(x + _)).value should ===(total)
@@ -78,8 +77,9 @@ class FoldableTestsAdditional extends CatsSuite {
     assert(contains(large, 10000).value)
 
     // safely build large lists
-    val larger = F.foldRight(large, Now(List.empty[Int]))(
-        (x, lxs) => lxs.map((x + 1) :: _))
+    val larger = F.foldRight(large, Now(List.empty[Int]))((x, lxs) =>
+      lxs.map((x + 1) :: _)
+    )
     larger.value should ===(large.map(_ + 1))
   }
 
@@ -87,9 +87,9 @@ class FoldableTestsAdditional extends CatsSuite {
     def nonzero(acc: Long, x: Long): Option[Long] =
       if (x == 0) None else Some(acc + x)
 
-    val n = 100000L
+    val n        = 100000L
     val expected = n * (n + 1) / 2
-    val actual = Foldable[List].foldM((1L to n).toList, 0L)(nonzero)
+    val actual   = Foldable[List].foldM((1L to n).toList, 0L)(nonzero)
     assert(actual.get == expected)
   }
 
@@ -97,7 +97,7 @@ class FoldableTestsAdditional extends CatsSuite {
     val F = Foldable[Stream]
 
     def bomb[A]: A = sys.error("boom")
-    val dangerous = 0 #:: 1 #:: 2 #:: bomb[Stream[Int]]
+    val dangerous  = 0 #:: 1 #:: 2 #:: bomb[Stream[Int]]
 
     // doesn't blow up - this also ensures it works for infinite streams.
     assert(contains(dangerous, 2).value)

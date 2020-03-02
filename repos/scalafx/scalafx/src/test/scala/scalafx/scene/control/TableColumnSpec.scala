@@ -41,7 +41,9 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class TableColumnSpec[S, T]
     extends SimpleSFXDelegateSpec[jfxsc.TableColumn[S, T], TableColumn[S, T]](
-        classOf[jfxsc.TableColumn[S, T]], classOf[TableColumn[S, T]]) {
+      classOf[jfxsc.TableColumn[S, T]],
+      classOf[TableColumn[S, T]]
+    ) {
 
   it should " have parametrized default constructor - Issue 40" in {
     // Without correctly parametrized default constructor following line was throwing exception:
@@ -53,7 +55,7 @@ class TableColumnSpec[S, T]
 
   it should "not drop nested columns - Issue 44" in {
     val firstTC = new TableColumn[String, String]("First")
-    val lastTC = new TableColumn[String, String]("Last")
+    val lastTC  = new TableColumn[String, String]("Last")
 
     val nameTC = new TableColumn[String, String]("Name")
     nameTC.columns.size should (equal(0))

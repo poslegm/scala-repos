@@ -16,7 +16,11 @@ class SimRankAlgorithm(val ap: SimRankParams)
   def train(td: TrainingData): RDD[(Long, Double)] = {
     td.g.edges.count()
     val scores = DeltaSimRankRDD.compute(
-        td.g, ap.numIterations, td.identityMatrix, ap.decay)
+      td.g,
+      ap.numIterations,
+      td.identityMatrix,
+      ap.decay
+    )
     scores
   }
 
@@ -31,8 +35,8 @@ class SimRankAlgorithm(val ap: SimRankParams)
   def predict(model: RDD[(Long, Double)], query: Query): Double = {
     // Will never encounter rounding errors because model is an n*n "matrix".
     val numElems = math.sqrt(model.count()).toInt
-    val index = query.item1 * numElems + query.item2
-    val seq = model.lookup(index)
+    val index    = query.item1 * numElems + query.item2
+    val seq      = model.lookup(index)
     seq.head
   }
 }

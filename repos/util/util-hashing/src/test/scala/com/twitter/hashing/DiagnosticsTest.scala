@@ -12,18 +12,18 @@ class DiagnosticsTest extends WordSpec {
 
       val nodes = hosts.map { s =>
         val Array(host, port, weight) = s.split(":")
-        val identifier = host + ":" + port
+        val identifier                = host + ":" + port
         KetamaNode(identifier, weight.toInt, identifier)
       }
 
       val hashFunctions = List(
-          "FNV1_32" -> KeyHasher.FNV1_32,
-          "FNV1A_32" -> KeyHasher.FNV1A_32,
-          "FNV1_64" -> KeyHasher.FNV1_64,
-          "FNV1A_64" -> KeyHasher.FNV1A_64,
-          "CRC32-ITU" -> KeyHasher.CRC32_ITU,
-          "HSIEH" -> KeyHasher.HSIEH,
-          "JENKINS" -> KeyHasher.JENKINS
+        "FNV1_32"   -> KeyHasher.FNV1_32,
+        "FNV1A_32"  -> KeyHasher.FNV1A_32,
+        "FNV1_64"   -> KeyHasher.FNV1_64,
+        "FNV1A_64"  -> KeyHasher.FNV1A_64,
+        "CRC32-ITU" -> KeyHasher.CRC32_ITU,
+        "HSIEH"     -> KeyHasher.HSIEH,
+        "JENKINS"   -> KeyHasher.JENKINS
       )
 
       val keys = (1 until 1000000).map(_.toString).toList

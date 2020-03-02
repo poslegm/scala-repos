@@ -27,9 +27,12 @@ object BundleDelegatingClassLoader {
 
   def apply(
       context: BundleContext,
-      fallBackCLassLoader: Option[ClassLoader]): BundleDelegatingClassLoader =
+      fallBackCLassLoader: Option[ClassLoader]
+  ): BundleDelegatingClassLoader =
     new BundleDelegatingClassLoader(
-        context.getBundle, fallBackCLassLoader.orNull)
+      context.getBundle,
+      fallBackCLassLoader.orNull
+    )
 }
 
 /*
@@ -37,45 +40,44 @@ object BundleDelegatingClassLoader {
  * and the bundles transitive dependencies. If there's a ClassLoader specified, that will be used as a fallback.
  */
 class BundleDelegatingClassLoader(
-    bundle: Bundle, fallBackClassLoader: ClassLoader)
-    extends ClassLoader(fallBackClassLoader) {
+    bundle: Bundle,
+    fallBackClassLoader: ClassLoader
+) extends ClassLoader(fallBackClassLoader) {
 
   private val bundles = findTransitiveBundles(bundle).toList
 
   override def findClass(name: String): Class[_] = {
-    @tailrec def find(remaining: List[Bundle]): Class[_] = {
+    @tailrec def find(remaining: List[Bundle]): Class[_] =
       if (remaining.isEmpty) throw new ClassNotFoundException(name)
       else
-        Try { remaining.head.loadClass(name) } match {
+        Try(remaining.head.loadClass(name)) match {
           case Success(cls) ⇒ cls
-          case Failure(_) ⇒ find(remaining.tail)
+          case Failure(_)   ⇒ find(remaining.tail)
         }
-    }
     find(bundles)
   }
 
   override def findResource(name: String): URL = {
-    @tailrec def find(remaining: List[Bundle]): URL = {
+    @tailrec def find(remaining: List[Bundle]): URL =
       if (remaining.isEmpty) getParent.getResource(name)
       else
-        Option { remaining.head.getResource(name) } match {
+        Option(remaining.head.getResource(name)) match {
           case Some(r) ⇒ r
-          case None ⇒ find(remaining.tail)
+          case None    ⇒ find(remaining.tail)
         }
-    }
     find(bundles)
   }
 
   override def findResources(name: String): Enumeration[URL] = {
     val resources = bundles.flatMap { bundle ⇒
-      Option(bundle.getResources(name)).map { _.asScala.toList }.getOrElse(Nil)
+      Option(bundle.getResources(name)).map(_.asScala.toList).getOrElse(Nil)
     }
     java.util.Collections.enumeration(resources.asJava)
   }
 
   private def findTransitiveBundles(bundle: Bundle): Set[Bundle] = {
     @tailrec
-    def process(processed: Set[Bundle], remaining: Set[Bundle]): Set[Bundle] = {
+    def process(processed: Set[Bundle], remaining: Set[Bundle]): Set[Bundle] =
       if (remaining.isEmpty) {
         processed
       } else {
@@ -98,7 +100,6 @@ class BundleDelegatingClassLoader(
           process(processed + b, rest ++ (direct -- processed))
         }
       }
-    }
     process(Set.empty, Set(bundle))
   }
 }

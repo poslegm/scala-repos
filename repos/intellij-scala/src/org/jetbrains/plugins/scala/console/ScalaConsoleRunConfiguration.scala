@@ -17,8 +17,10 @@ import org.jetbrains.plugins.scala.runner.BaseRunConfiguration
   * Date: 10.02.2009
   */
 class ScalaConsoleRunConfiguration(
-    project: Project, configurationFactory: ConfigurationFactory, name: String)
-    extends BaseRunConfiguration(project, configurationFactory, name) {
+    project: Project,
+    configurationFactory: ConfigurationFactory,
+    name: String
+) extends BaseRunConfiguration(project, configurationFactory, name) {
   val mainClass = "org.jetbrains.plugins.scala.compiler.rt.ConsoleRunner"
 
   def apply(params: ScalaConsoleRunConfigurationForm) {
@@ -29,7 +31,9 @@ class ScalaConsoleRunConfiguration(
   }
 
   def getState(
-      executor: Executor, env: ExecutionEnvironment): RunProfileState = {
+      executor: Executor,
+      env: ExecutionEnvironment
+  ): RunProfileState = {
     val state = new JavaCommandLineState(env) {
       protected override def createJavaParameters: JavaParameters = {
         val params = createParams
@@ -41,7 +45,9 @@ class ScalaConsoleRunConfiguration(
     val consoleBuilder = new TextConsoleBuilderImpl(project) {
       override def getConsole: ConsoleView = {
         val consoleView = new ScalaLanguageConsole(
-            project, ScalaLanguageConsoleView.SCALA_CONSOLE)
+          project,
+          ScalaLanguageConsoleView.SCALA_CONSOLE
+        )
         consoleView.setPrompt(null)
         consoleView
       }

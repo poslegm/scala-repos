@@ -20,7 +20,10 @@ class ResizableMultiReaderRingBufferSpec extends WordSpec with ShouldMatchers {
     }
 
     "fail reads if nothing can be read" in new Test(
-        iSize = 4, mSize = 4, cursorCount = 3) {
+      iSize = 4,
+      mSize = 4,
+      cursorCount = 3
+    ) {
       write(1) shouldEqual true
       write(2) shouldEqual true
       write(3) shouldEqual true
@@ -43,7 +46,10 @@ class ResizableMultiReaderRingBufferSpec extends WordSpec with ShouldMatchers {
     }
 
     "fail writes if there is no more space" in new Test(
-        iSize = 4, mSize = 4, cursorCount = 2) {
+      iSize = 4,
+      mSize = 4,
+      cursorCount = 2
+    ) {
       write(1) shouldEqual true
       write(2) shouldEqual true
       write(3) shouldEqual true
@@ -84,7 +90,10 @@ class ResizableMultiReaderRingBufferSpec extends WordSpec with ShouldMatchers {
     }
 
     "automatically grow if possible" in new Test(
-        iSize = 2, mSize = 8, cursorCount = 2) {
+      iSize = 2,
+      mSize = 8,
+      cursorCount = 2
+    ) {
       write(1) shouldEqual true
       inspect shouldEqual "1 0 (size=1, writeIx=1, readIx=0, cursors=2)"
       write(2) shouldEqual true
@@ -122,15 +131,15 @@ class ResizableMultiReaderRingBufferSpec extends WordSpec with ShouldMatchers {
       // create 100 buffers with an initialSize of 1 and a maxSize of 1 to 64,
       // for each one attach 1 to 8 cursors and randomly try reading and writing to the buffer;
       // in total 200 elements need to be written to the buffer and read in the correct order by each cursor
-      val MAXSIZEBIT_LIMIT = 6 // 2 ^ (this number)
-      val COUNTER_LIMIT = 200
-      val LOG = false
-      val sb = new java.lang.StringBuilder
+      val MAXSIZEBIT_LIMIT       = 6 // 2 ^ (this number)
+      val COUNTER_LIMIT          = 200
+      val LOG                    = false
+      val sb                     = new java.lang.StringBuilder
       def log(s: ⇒ String): Unit = if (LOG) sb.append(s)
 
       class StressTestCursor(cursorNr: Int, run: Int) extends Cursor {
         var cursor: Int = _
-        var counter = 1
+        var counter     = 1
         def tryReadAndReturnTrueIfDone(buf: TestBuffer): Boolean = {
           log(s"  Try reading of $toString: ")
           try {
@@ -138,12 +147,14 @@ class ResizableMultiReaderRingBufferSpec extends WordSpec with ShouldMatchers {
             log("OK\n")
             if (x != counter)
               fail(
-                  s"""|Run $run, cursorNr $cursorNr, counter $counter: got unexpected $x
+                s"""|Run $run, cursorNr $cursorNr, counter $counter: got unexpected $x
                          |  Buf: ${buf.inspect}
                          |  Cursors: ${buf.cursors.cursors.mkString(
-                     "\n           ")}
+                     "\n           "
+                   )}
                          |Log:\n$sb
-                      """.stripMargin)
+                      """.stripMargin
+              )
             counter += 1
             counter == COUNTER_LIMIT
           } catch {
@@ -158,21 +169,25 @@ class ResizableMultiReaderRingBufferSpec extends WordSpec with ShouldMatchers {
       val random = new Random
       for {
         bit ← 1 to MAXSIZEBIT_LIMIT
-        n ← 1 to 2
+        n   ← 1 to 2
       } {
         var counter = 1
         var activeCursors = List
           .tabulate(random.nextInt(8) + 1)(new StressTestCursor(_, 1 << bit))
         var stillWriting =
           2 // give writing a slight bias, so as to somewhat "stretch" the buffer
-        val buf = new TestBuffer(1, 1 << bit, new Cursors {
-          def cursors = activeCursors
-        })
+        val buf = new TestBuffer(
+          1,
+          1 << bit,
+          new Cursors {
+            def cursors = activeCursors
+          }
+        )
         sb.setLength(0)
         while (activeCursors.nonEmpty) {
           log(s"Buf: ${buf.inspect}\n")
           val activeCursorCount = activeCursors.size
-          val index = random.nextInt(activeCursorCount + stillWriting)
+          val index             = random.nextInt(activeCursorCount + stillWriting)
           if (index >= activeCursorCount) {
             log(s"  Writing $counter: ")
             if (buf.write(counter)) {
@@ -203,7 +218,8 @@ class ResizableMultiReaderRingBufferSpec extends WordSpec with ShouldMatchers {
   class Test(iSize: Int, mSize: Int, cursorCount: Int)
       extends TestBuffer(iSize, mSize, new SimpleCursors(cursorCount)) {
     def read(cursorIx: Int): Integer =
-      try read(cursors.cursors(cursorIx)) catch {
+      try read(cursors.cursors(cursorIx))
+      catch {
         case NothingToReadException ⇒ null
       }
   }

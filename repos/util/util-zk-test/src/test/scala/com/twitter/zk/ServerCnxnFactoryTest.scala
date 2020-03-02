@@ -13,12 +13,12 @@ class ServerCnxnFactoryTest extends FunSuite with BeforeAndAfter {
   val addr = InetAddress.getLocalHost
 
   var testServer: ZooKeeperServer = null
-  var tmpDir: File = null
+  var tmpDir: File                = null
 
   before {
     tmpDir = FileUtils.createTempDir()
-    testServer = new ZooKeeperServer(
-        tmpDir, tmpDir, ZooKeeperServer.DEFAULT_TICK_TIME)
+    testServer =
+      new ZooKeeperServer(tmpDir, tmpDir, ZooKeeperServer.DEFAULT_TICK_TIME)
   }
 
   after {
@@ -26,7 +26,7 @@ class ServerCnxnFactoryTest extends FunSuite with BeforeAndAfter {
   }
 
   test("ServerCnxnFactory returns valid Factory") {
-    val factory = ServerCnxnFactory(addr)
+    val factory   = ServerCnxnFactory(addr)
     val boundPort = factory.getLocalPort
 
     factory.startup(testServer)

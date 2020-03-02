@@ -9,11 +9,11 @@ import org.eclipse.jetty.util.component.{LifeCycle, AbstractLifeCycle}
 import org.eclipse.jetty.util.log
 
 private[phantomjs] final class JettyWebsocketManager(
-    wsListener: WebsocketListener)
-    extends WebsocketManager { thisMgr =>
+    wsListener: WebsocketListener
+) extends WebsocketManager { thisMgr =>
 
   private[this] var webSocketConn: WebSocket.Connection = null
-  private[this] var closed = false
+  private[this] var closed                              = false
 
   // We can just set the logger here, since we are supposed to be protected by
   // the private ClassLoader that loads us reflectively.
@@ -27,21 +27,20 @@ private[phantomjs] final class JettyWebsocketManager(
   private[this] val server = new Server()
 
   server.addConnector(connector)
-  server.setHandler(
-      new WebSocketHandler {
+  server.setHandler(new WebSocketHandler {
     // Support Hixie 76 for Phantom.js
     getWebSocketFactory().setMinVersion(-1)
 
     override def doWebSocketConnect(
-        request: HttpServletRequest, protocol: String): WebSocket =
+        request: HttpServletRequest,
+        protocol: String
+    ): WebSocket =
       new ComWebSocketListener
   })
 
-  server.addLifeCycleListener(
-      new AbstractLifeCycle.AbstractLifeCycleListener {
-    override def lifeCycleStarted(event: LifeCycle): Unit = {
+  server.addLifeCycleListener(new AbstractLifeCycle.AbstractLifeCycleListener {
+    override def lifeCycleStarted(event: LifeCycle): Unit =
       if (event.isRunning()) wsListener.onRunning()
-    }
   })
 
   private class ComWebSocketListener extends WebSocket.OnTextMessage {
@@ -65,8 +64,9 @@ private[phantomjs] final class JettyWebsocketManager(
 
       if (statusCode != 1000) {
         throw new Exception(
-            "Abnormal closing of connection. " +
-            s"Code: $statusCode, Reason: $reason")
+          "Abnormal closing of connection. " +
+            s"Code: $statusCode, Reason: $reason"
+        )
       }
     }
 
@@ -90,15 +90,15 @@ private[phantomjs] final class JettyWebsocketManager(
 
     def ignore(ignored: Throwable): Unit = ()
 
-    def info(msg: String, args: Object*): Unit = log("INFO", msg, args)
+    def info(msg: String, args: Object*): Unit     = log("INFO", msg, args)
     def info(msg: String, thrown: Throwable): Unit = log("INFO", msg, thrown)
-    def info(thrown: Throwable): Unit = log("INFO", thrown)
+    def info(thrown: Throwable): Unit              = log("INFO", thrown)
 
-    def warn(msg: String, args: Object*): Unit = log("WARN", msg, args)
+    def warn(msg: String, args: Object*): Unit     = log("WARN", msg, args)
     def warn(msg: String, thrown: Throwable): Unit = log("WARN", msg, thrown)
-    def warn(thrown: Throwable): Unit = log("WARN", thrown)
+    def warn(thrown: Throwable): Unit              = log("WARN", thrown)
 
-    def isDebugEnabled(): Boolean = debugEnabled
+    def isDebugEnabled(): Boolean               = debugEnabled
     def setDebugEnabled(enabled: Boolean): Unit = debugEnabled = enabled
 
     private def log(lvl: String, msg: String, args: Object*): Unit =
@@ -118,7 +118,7 @@ private[phantomjs] final class JettyWebsocketManager(
   def stop(): Unit = server.stop()
 
   def isConnected: Boolean = webSocketConn != null && !closed
-  def isClosed: Boolean = closed
+  def isClosed: Boolean    = closed
 
   def localPort: Int = connector.getLocalPort()
 

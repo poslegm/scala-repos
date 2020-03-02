@@ -31,15 +31,18 @@ private[spark] sealed trait TaskResult[T]
 
 /** A reference to a DirectTaskResult that has been stored in the worker's BlockManager. */
 private[spark] case class IndirectTaskResult[T](blockId: BlockId, size: Int)
-    extends TaskResult[T] with Serializable
+    extends TaskResult[T]
+    with Serializable
 
 /** A TaskResult that contains the task's return value and accumulator updates. */
 private[spark] class DirectTaskResult[T](
-    var valueBytes: ByteBuffer, var accumUpdates: Seq[AccumulableInfo])
-    extends TaskResult[T] with Externalizable {
+    var valueBytes: ByteBuffer,
+    var accumUpdates: Seq[AccumulableInfo]
+) extends TaskResult[T]
+    with Externalizable {
 
   private var valueObjectDeserialized = false
-  private var valueObject: T = _
+  private var valueObject: T          = _
 
   def this() = this(null.asInstanceOf[ByteBuffer], null)
 
@@ -52,7 +55,7 @@ private[spark] class DirectTaskResult[T](
     }
 
   override def readExternal(in: ObjectInput): Unit = Utils.tryOrIOException {
-    val blen = in.readInt()
+    val blen    = in.readInt()
     val byteVal = new Array[Byte](blen)
     in.readFully(byteVal)
     valueBytes = ByteBuffer.wrap(byteVal)
@@ -77,7 +80,7 @@ private[spark] class DirectTaskResult[T](
     *
     * After the first time, `value()` is trivial and just returns the deserialized `valueObject`.
     */
-  def value(): T = {
+  def value(): T =
     if (valueObjectDeserialized) {
       valueObject
     } else {
@@ -88,5 +91,4 @@ private[spark] class DirectTaskResult[T](
       valueObjectDeserialized = true
       valueObject
     }
-  }
 }

@@ -32,7 +32,12 @@ import javafx.{collections => jfxc, util => jfxu}
 
 import scala.language.implicitConversions
 import scalafx.Includes._
-import scalafx.beans.property.{BooleanProperty, DoubleProperty, IntegerProperty, ObjectProperty}
+import scalafx.beans.property.{
+  BooleanProperty,
+  DoubleProperty,
+  IntegerProperty,
+  ObjectProperty
+}
 import scalafx.collections.ObservableBuffer
 import scalafx.delegate.SFXDelegate
 import scalafx.util.StringConverter
@@ -40,13 +45,14 @@ import scalafx.util.StringConverter
 object SpinnerValueFactory {
 
   implicit def sfxSpinnerValueFactory2jfx[T](
-      v: SpinnerValueFactory[T]): jfxsc.SpinnerValueFactory[T] =
+      v: SpinnerValueFactory[T]
+  ): jfxsc.SpinnerValueFactory[T] =
     if (v != null) v.delegate else null
 
   object ListSpinnerValueFactory {
     implicit def sfxListSpinnerValueFactory2jfx[T](
-        v: ListSpinnerValueFactory[T])
-      : jfxsc.SpinnerValueFactory.ListSpinnerValueFactory[T] =
+        v: ListSpinnerValueFactory[T]
+    ): jfxsc.SpinnerValueFactory.ListSpinnerValueFactory[T] =
       if (v != null) v.delegate else null
   }
 
@@ -59,8 +65,9 @@ object SpinnerValueFactory {
     */
   class ListSpinnerValueFactory[T](
       override val delegate: jfxsc.SpinnerValueFactory.ListSpinnerValueFactory[
-          T])
-      extends SpinnerValueFactory(delegate)
+        T
+      ]
+  ) extends SpinnerValueFactory(delegate)
       with SFXDelegate[jfxsc.SpinnerValueFactory.ListSpinnerValueFactory[T]] {
 
     /**
@@ -71,8 +78,8 @@ object SpinnerValueFactory {
       */
     def this(items: ObservableBuffer[T]) {
       this(
-          new jfxsc.SpinnerValueFactory.ListSpinnerValueFactory(
-              items.delegate))
+        new jfxsc.SpinnerValueFactory.ListSpinnerValueFactory(items.delegate)
+      )
     }
 
     /**
@@ -87,14 +94,14 @@ object SpinnerValueFactory {
 
   object IntegerSpinnerValueFactory {
     implicit def sfxIntegerSpinnerValueFactory2jfx(
-        v: IntegerSpinnerValueFactory)
-      : jfxsc.SpinnerValueFactory.IntegerSpinnerValueFactory =
+        v: IntegerSpinnerValueFactory
+    ): jfxsc.SpinnerValueFactory.IntegerSpinnerValueFactory =
       if (v != null) v.delegate else null
   }
 
   class IntegerSpinnerValueFactory(
-      override val delegate: jfxsc.SpinnerValueFactory.IntegerSpinnerValueFactory)
-      extends SpinnerValueFactory[Integer](delegate)
+      override val delegate: jfxsc.SpinnerValueFactory.IntegerSpinnerValueFactory
+  ) extends SpinnerValueFactory[Integer](delegate)
       with SFXDelegate[jfxsc.SpinnerValueFactory.IntegerSpinnerValueFactory] {
 
     /**
@@ -119,8 +126,13 @@ object SpinnerValueFactory {
       *                     else the min value will be used.
       */
     def this(min: Int, max: Int, initialValue: Int) {
-      this(new jfxsc.SpinnerValueFactory.IntegerSpinnerValueFactory(
-              min, max, initialValue))
+      this(
+        new jfxsc.SpinnerValueFactory.IntegerSpinnerValueFactory(
+          min,
+          max,
+          initialValue
+        )
+      )
     }
 
     /**
@@ -134,8 +146,14 @@ object SpinnerValueFactory {
       * @param amountToStepBy The amount to increment or decrement by, per step.
       */
     def this(min: Int, max: Int, initialValue: Int, amountToStepBy: Int) {
-      this(new jfxsc.SpinnerValueFactory.IntegerSpinnerValueFactory(
-              min, max, initialValue, amountToStepBy))
+      this(
+        new jfxsc.SpinnerValueFactory.IntegerSpinnerValueFactory(
+          min,
+          max,
+          initialValue,
+          amountToStepBy
+        )
+      )
     }
 
     /**
@@ -164,8 +182,9 @@ object SpinnerValueFactory {
   }
 
   object DoubleSpinnerValueFactory {
-    implicit def sfxDoubleSpinnerValueFactory2jfx(v: DoubleSpinnerValueFactory)
-      : jfxsc.SpinnerValueFactory.DoubleSpinnerValueFactory =
+    implicit def sfxDoubleSpinnerValueFactory2jfx(
+        v: DoubleSpinnerValueFactory
+    ): jfxsc.SpinnerValueFactory.DoubleSpinnerValueFactory =
       if (v != null) v.delegate else null
   }
 
@@ -175,8 +194,8 @@ object SpinnerValueFactory {
     *
     */
   class DoubleSpinnerValueFactory(
-      override val delegate: jfxsc.SpinnerValueFactory.DoubleSpinnerValueFactory)
-      extends SpinnerValueFactory(delegate)
+      override val delegate: jfxsc.SpinnerValueFactory.DoubleSpinnerValueFactory
+  ) extends SpinnerValueFactory(delegate)
       with SFXDelegate[jfxsc.SpinnerValueFactory.DoubleSpinnerValueFactory] {
 
     /**
@@ -202,8 +221,13 @@ object SpinnerValueFactory {
       *                     else the min value will be used.
       */
     def this(min: Double, max: Double, initialValue: Double) {
-      this(new jfxsc.SpinnerValueFactory.DoubleSpinnerValueFactory(
-              min, max, initialValue))
+      this(
+        new jfxsc.SpinnerValueFactory.DoubleSpinnerValueFactory(
+          min,
+          max,
+          initialValue
+        )
+      )
     }
 
     /**
@@ -216,12 +240,20 @@ object SpinnerValueFactory {
       *                     else the min value will be used.
       * @param amountToStepBy The amount to increment or decrement by, per step.
       */
-    def this(min: Double,
-             max: Double,
-             initialValue: Double,
-             amountToStepBy: Double) {
-      this(new jfxsc.SpinnerValueFactory.DoubleSpinnerValueFactory(
-              min, max, initialValue, amountToStepBy))
+    def this(
+        min: Double,
+        max: Double,
+        initialValue: Double,
+        amountToStepBy: Double
+    ) {
+      this(
+        new jfxsc.SpinnerValueFactory.DoubleSpinnerValueFactory(
+          min,
+          max,
+          initialValue,
+          amountToStepBy
+        )
+      )
     }
 
     /**
@@ -261,17 +293,16 @@ object SpinnerValueFactory {
   *           coincide with the type of the Spinner that the value factory is set on.
   */
 abstract class SpinnerValueFactory[T](
-    override val delegate: jfxsc.SpinnerValueFactory[T])
-    extends SFXDelegate[jfxsc.SpinnerValueFactory[T]] {
+    override val delegate: jfxsc.SpinnerValueFactory[T]
+) extends SFXDelegate[jfxsc.SpinnerValueFactory[T]] {
 
   /**
     * Represents the current value of the SpinnerValueFactory, or null if no
     * value has been set.
     */
   def value: ObjectProperty[T] = delegate.valueProperty()
-  def value_=(newValue: T): Unit = {
+  def value_=(newValue: T): Unit =
     value() = newValue
-  }
 
   /**
     * Converts the user-typed input (when the Spinner is `editable`) to an object of type T,
@@ -280,9 +311,8 @@ abstract class SpinnerValueFactory[T](
     */
   def converter: ObjectProperty[jfxu.StringConverter[T]] =
     delegate.converterProperty()
-  def converter_=(newValue: StringConverter[T]): Unit = {
+  def converter_=(newValue: StringConverter[T]): Unit =
     converter() = newValue
-  }
 
   /**
     * The wrapAround property is used to specify whether the value factory should
@@ -290,7 +320,6 @@ abstract class SpinnerValueFactory[T](
     * from the maximum value back to the minimum value (and vice versa).
     */
   def wrapAround: BooleanProperty = delegate.wrapAroundProperty()
-  def wrapAround_=(value: Boolean): Unit = {
+  def wrapAround_=(value: Boolean): Unit =
     wrapAround() = value
-  }
 }

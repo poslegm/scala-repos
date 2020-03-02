@@ -33,11 +33,12 @@ import org.apache.spark.util.StatCounter
   */
 @Since("1.6.0")
 @BeanInfo
-case class BinarySample @Since("1.6.0")(
-    @Since("1.6.0") isExperiment: Boolean, @Since("1.6.0") value: Double) {
-  override def toString: String = {
+case class BinarySample @Since("1.6.0") (
+    @Since("1.6.0") isExperiment: Boolean,
+    @Since("1.6.0") value: Double
+) {
+  override def toString: String =
     s"($isExperiment, $value)"
-  }
 }
 
 /**
@@ -68,9 +69,9 @@ case class BinarySample @Since("1.6.0")(
   */
 @Experimental
 @Since("1.6.0")
-class StreamingTest @Since("1.6.0")() extends Logging with Serializable {
-  private var peacePeriod: Int = 0
-  private var windowSize: Int = 0
+class StreamingTest @Since("1.6.0") () extends Logging with Serializable {
+  private var peacePeriod: Int                = 0
+  private var windowSize: Int                 = 0
   private var testMethod: StreamingTestMethod = WelchTTest
 
   /** Set the number of initial batches to ignore. Default: 0. */
@@ -107,10 +108,11 @@ class StreamingTest @Since("1.6.0")() extends Logging with Serializable {
     */
   @Since("1.6.0")
   def registerStream(
-      data: DStream[BinarySample]): DStream[StreamingTestResult] = {
+      data: DStream[BinarySample]
+  ): DStream[StreamingTestResult] = {
     val dataAfterPeacePeriod = dropPeacePeriod(data)
-    val summarizedData = summarizeByKeyAndWindow(dataAfterPeacePeriod)
-    val pairedSummaries = pairSummaries(summarizedData)
+    val summarizedData       = summarizeByKeyAndWindow(dataAfterPeacePeriod)
+    val pairedSummaries      = pairSummaries(summarizedData)
 
     testMethod.doTest(pairedSummaries)
   }
@@ -125,13 +127,14 @@ class StreamingTest @Since("1.6.0")() extends Logging with Serializable {
     */
   @Since("1.6.0")
   def registerStream(
-      data: JavaDStream[BinarySample]): JavaDStream[StreamingTestResult] = {
+      data: JavaDStream[BinarySample]
+  ): JavaDStream[StreamingTestResult] =
     JavaDStream.fromDStream(registerStream(data.dstream))
-  }
 
   /** Drop all batches inside the peace period. */
   private[stat] def dropPeacePeriod(
-      data: DStream[BinarySample]): DStream[BinarySample] = {
+      data: DStream[BinarySample]
+  ): DStream[BinarySample] =
     data.transform { (rdd, time) =>
       if (time.milliseconds > data.slideDuration.milliseconds * peacePeriod) {
         rdd
@@ -139,21 +142,20 @@ class StreamingTest @Since("1.6.0")() extends Logging with Serializable {
         data.context.sparkContext.parallelize(Seq())
       }
     }
-  }
 
   /** Compute summary statistics over each key and the specified test window size. */
   private[stat] def summarizeByKeyAndWindow(
-      data: DStream[BinarySample]): DStream[(Boolean, StatCounter)] = {
+      data: DStream[BinarySample]
+  ): DStream[(Boolean, StatCounter)] = {
     val categoryValuePair =
       data.map(sample => (sample.isExperiment, sample.value))
     if (this.windowSize == 0) {
-      categoryValuePair.updateStateByKey[StatCounter](
-          (newValues: Seq[Double], oldSummary: Option[StatCounter]) =>
-            {
+      categoryValuePair.updateStateByKey[StatCounter] {
+        (newValues: Seq[Double], oldSummary: Option[StatCounter]) =>
           val newSummary = oldSummary.getOrElse(new StatCounter())
           newSummary.merge(newValues)
           Some(newSummary)
-      })
+      }
     } else {
       val windowDuration = data.slideDuration * this.windowSize
       categoryValuePair.groupByKeyAndWindow(windowDuration).mapValues {
@@ -170,11 +172,10 @@ class StreamingTest @Since("1.6.0")() extends Logging with Serializable {
     * and experiment group up to this batch.
     */
   private[stat] def pairSummaries(
-      summarizedData: DStream[(Boolean, StatCounter)])
-    : DStream[(StatCounter, StatCounter)] = {
+      summarizedData: DStream[(Boolean, StatCounter)]
+  ): DStream[(StatCounter, StatCounter)] =
     summarizedData
       .map[(Int, StatCounter)](x => (0, x._2))
       .groupByKey() // should be length two (control/experiment group)
       .map(x => (x._2.head, x._2.last))
-  }
 }

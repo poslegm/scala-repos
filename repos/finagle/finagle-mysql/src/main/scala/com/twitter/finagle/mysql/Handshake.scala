@@ -17,7 +17,7 @@ class IncompatibleServerError(msg: String) extends Exception(msg)
   */
 case object IncompatibleVersion
     extends IncompatibleServerError(
-        "This client is only compatible with MySQL version 4.1 and later"
+      "This client is only compatible with MySQL version 4.1 and later"
     )
 
 /**
@@ -26,7 +26,7 @@ case object IncompatibleVersion
   */
 case object IncompatibleCharset
     extends IncompatibleServerError(
-        "This client is only compatible with UTF-8 and Latin-1 charset encoding"
+      "This client is only compatible with UTF-8 and Latin-1 charset encoding"
     )
 
 object Handshake {
@@ -63,13 +63,13 @@ object Handshake {
     */
   def apply(prms: Stack.Params): Handshake = {
     val Credentials(u, p) = prms[Credentials]
-    val Database(db) = prms[Database]
-    val Charset(cs) = prms[Charset]
+    val Database(db)      = prms[Database]
+    val Charset(cs)       = prms[Charset]
     Handshake(
-        username = u,
-        password = p,
-        database = db,
-        charset = cs
+      username = u,
+      password = p,
+      database = db,
+      charset = cs
     )
   }
 }
@@ -105,11 +105,12 @@ case class Handshake(
     clientCap: Capability = Capability.baseCap,
     charset: Short = Utf8_general_ci,
     maxPacketSize: StorageUnit = 1.gigabyte
-)
-    extends (HandshakeInit => Try[HandshakeResponse]) {
+) extends (HandshakeInit => Try[HandshakeResponse]) {
   import Capability._
   require(
-      maxPacketSize <= 1.gigabyte, "max packet size can't exceed 1 gigabyte")
+    maxPacketSize <= 1.gigabyte,
+    "max packet size can't exceed 1 gigabyte"
+  )
 
   private[this] val newClientCap =
     if (database.isDefined) clientCap + ConnectWithDB
@@ -123,20 +124,18 @@ case class Handshake(
     if (Charset.isCompatible(init.charset)) Return(true)
     else Throw(IncompatibleCharset)
 
-  def apply(init: HandshakeInit) = {
+  def apply(init: HandshakeInit) =
     for {
       _ <- isCompatibleVersion(init)
       _ <- isCompatibleCharset(init)
-    } yield
-      HandshakeResponse(
-          username,
-          password,
-          database,
-          newClientCap,
-          init.salt,
-          init.serverCap,
-          charset,
-          maxPacketSize.inBytes.toInt
-      )
-  }
+    } yield HandshakeResponse(
+      username,
+      password,
+      database,
+      newClientCap,
+      init.salt,
+      init.serverCap,
+      charset,
+      maxPacketSize.inBytes.toInt
+    )
 }

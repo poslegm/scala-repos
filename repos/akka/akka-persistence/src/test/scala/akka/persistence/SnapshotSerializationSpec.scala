@@ -17,7 +17,7 @@ object SnapshotSerializationSpec {
     class MySnapshot(val id: String) extends SerializationMarker {
       override def equals(obj: scala.Any) = obj match {
         case s: MySnapshot ⇒ s.id.equals(id)
-        case _ ⇒ false
+        case _             ⇒ false
       }
     }
   }
@@ -26,14 +26,14 @@ object SnapshotSerializationSpec {
 
   class MySerializer extends Serializer {
     def includeManifest: Boolean = true
-    def identifier = 5177
+    def identifier               = 5177
 
     def toBinary(obj: AnyRef): Array[Byte] = {
       val bStream = new ByteArrayOutputStream()
       val pStream = new PrintStream(bStream)
       val msg: String = obj match {
         case s: MySnapshot ⇒ s.id
-        case _ ⇒ "unknown"
+        case _             ⇒ "unknown"
       }
       pStream.println(msg)
       bStream.toByteArray
@@ -41,7 +41,7 @@ object SnapshotSerializationSpec {
 
     def fromBinary(bytes: Array[Byte], clazz: Option[Class[_]]): AnyRef = {
       val bStream = new ByteArrayInputStream(bytes)
-      val reader = new BufferedReader(new InputStreamReader(bStream))
+      val reader  = new BufferedReader(new InputStreamReader(bStream))
       new MySnapshot(reader.readLine())
     }
   }
@@ -51,25 +51,26 @@ object SnapshotSerializationSpec {
 
     override def receiveRecover: Receive = {
       case SnapshotOffer(md, s) ⇒ probe ! ((md, s))
-      case RecoveryCompleted ⇒ // ignore
-      case other ⇒ probe ! other
+      case RecoveryCompleted    ⇒ // ignore
+      case other                ⇒ probe ! other
     }
 
     override def receiveCommand = {
-      case s: String ⇒ saveSnapshot(new MySnapshot(s))
+      case s: String               ⇒ saveSnapshot(new MySnapshot(s))
       case SaveSnapshotSuccess(md) ⇒ probe ! md.sequenceNr
-      case other ⇒ probe ! other
+      case other                   ⇒ probe ! other
     }
   }
 }
 
 class SnapshotSerializationSpec
     extends PersistenceSpec(
-        PersistenceSpec.config(
-            "leveldb",
-            "SnapshotSerializationSpec",
-            serialization = "off",
-            extraConfig = Some("""
+      PersistenceSpec.config(
+        "leveldb",
+        "SnapshotSerializationSpec",
+        serialization = "off",
+        extraConfig =
+          Some("""
     akka.actor {
       serializers {
         my-snapshot = "akka.persistence.SnapshotSerializationSpec$MySerializer"
@@ -78,7 +79,10 @@ class SnapshotSerializationSpec
         "akka.persistence.SnapshotSerializationSpec$SerializationMarker" = my-snapshot
       }
     }
-  """))) with ImplicitSender {
+  """)
+      )
+    )
+    with ImplicitSender {
 
   import SnapshotSerializationSpec._
   import SnapshotSerializationSpec.XXXXXXXXXXXXXXXXXXXX._

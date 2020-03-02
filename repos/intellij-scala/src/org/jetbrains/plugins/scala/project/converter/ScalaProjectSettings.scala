@@ -41,7 +41,9 @@ class ScalaProjectSettings(basePackages: Seq[String]) extends XmlConversion {
   }
 
   private def addDirectoryBasedOptions(
-      options: Elem, context: ConversionContext): Option[File] = {
+      options: Elem,
+      context: ConversionContext
+  ): Option[File] = {
     val file = getDirectorySettingsFileIn(context)
 
     if (file.exists()) {
@@ -65,31 +67,34 @@ class ScalaProjectSettings(basePackages: Seq[String]) extends XmlConversion {
 
   private def getDirectorySettingsFileIn(context: ConversionContext): File = {
     val base = Option(context.getSettingsBaseDir)
-      .getOrElse(throw new CannotConvertException(
-            "Only directory-based IDEA projects are supported"))
+      .getOrElse(
+        throw new CannotConvertException(
+          "Only directory-based IDEA projects are supported"
+        )
+      )
 
     new File(base, "scala_settings.xml")
   }
 
   private def addProjectBasedOptions(
-      options: Elem, context: ConversionContext) {
+      options: Elem,
+      context: ConversionContext
+  ) {
     val rootElement = context.getProjectSettings.getRootElement
     rootElement.addContent(asJava(options))
   }
 
-  def createSettingsElement(options: Elem): Elem = {
+  def createSettingsElement(options: Elem): Elem =
     <project version="4">
       <component name="ScalaProjectSettings">
         {options}
       </component>
     </project>
-  }
 
-  private def createOptionsElement(basePackages: Seq[String]): Elem = {
+  private def createOptionsElement(basePackages: Seq[String]): Elem =
     <option name="basePackages">
       <list>
         {basePackages.map(name => <option value={name} />)}
       </list>
     </option>
-  }
 }

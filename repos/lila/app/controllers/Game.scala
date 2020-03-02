@@ -11,9 +11,9 @@ import views._
 object Game extends LilaController {
 
   private def paginator = Env.game.paginator
-  private def cached = Env.game.cached
+  private def cached    = Env.game.cached
   private def searchEnv = Env.gameSearch
-  def searchForm = searchEnv.forms.search
+  def searchForm        = searchEnv.forms.search
 
   def delete(gameId: String) = Auth { implicit ctx => me =>
     OptionFuResult(GameRepo game gameId) { game =>
@@ -21,7 +21,8 @@ object Game extends LilaController {
         Env.hub.actor.bookmark ! lila.hub.actorApi.bookmark.Remove(game.id)
         (GameRepo remove game.id) >> (lila.analyse.AnalysisRepo remove game.id) >> Env.game.cached
           .clearNbImportedByCache(me.id) inject Redirect(
-            routes.User.show(me.username))
+          routes.User.show(me.username)
+        )
       } else
         fuccess {
           Redirect(routes.Round.watcher(game.id, game.firstColor.name))
@@ -37,25 +38,28 @@ object Game extends LilaController {
 
   def exportConfirm(user: String) = AuthBody { implicit ctx => me =>
     implicit val req = ctx.body
-    val userId = user.toLowerCase
+    val userId       = user.toLowerCase
     if (me.id == userId)
       Env.security.forms.empty.bindFromRequest.fold(
-          err =>
-            Env.security.forms.anyCaptcha map { captcha =>
-              BadRequest(html.game.export(userId, err, captcha))
+        err =>
+          Env.security.forms.anyCaptcha map { captcha =>
+            BadRequest(html.game.export(userId, err, captcha))
           },
-          _ =>
-            fuccess {
-              import org.joda.time.DateTime
-              import org.joda.time.format.DateTimeFormat
-              val date =
-                (DateTimeFormat forPattern "yyyy-MM-dd") print new DateTime
-              Ok.chunked(Env.api.pgnDump exportUserGames userId)
-                .withHeaders(CONTENT_TYPE -> ContentTypes.TEXT,
-                             CONTENT_DISPOSITION ->
-                             ("attachment; filename=" +
-                                 s"lichess_${me.username}_$date.pgn"))
-          })
+        _ =>
+          fuccess {
+            import org.joda.time.DateTime
+            import org.joda.time.format.DateTimeFormat
+            val date =
+              (DateTimeFormat forPattern "yyyy-MM-dd") print new DateTime
+            Ok.chunked(Env.api.pgnDump exportUserGames userId)
+              .withHeaders(
+                CONTENT_TYPE -> ContentTypes.TEXT,
+                CONTENT_DISPOSITION ->
+                  ("attachment; filename=" +
+                    s"lichess_${me.username}_$date.pgn")
+              )
+          }
+      )
     else notFound
   }
 }

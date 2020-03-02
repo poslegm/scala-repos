@@ -4,7 +4,7 @@ class C
 object C
 
 object Test extends App {
-  type T = Int
+  type T     = Int
   type Id[X] = X
   println(symbolOf[Int])
   println(symbolOf[C.type])

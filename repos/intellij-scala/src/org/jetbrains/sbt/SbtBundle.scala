@@ -15,7 +15,7 @@ object SbtBundle {
     CommonBundle.message(get(), key, params: _*)
 
   private var ourBundle: Reference[ResourceBundle] = null
-  private val BUNDLE = "org.jetbrains.sbt.SbtBundle"
+  private val BUNDLE                               = "org.jetbrains.sbt.SbtBundle"
 
   private def get(): ResourceBundle = {
     var bundle: ResourceBundle = null

@@ -22,18 +22,21 @@ import akka.actor.RootActorPath
 import akka.cluster.MultiNodeClusterSpec.EndActor
 
 object UnreachableNodeJoinsAgainMultiNodeConfig extends MultiNodeConfig {
-  val first = role("first")
+  val first  = role("first")
   val second = role("second")
-  val third = role("third")
+  val third  = role("third")
   val fourth = role("fourth")
 
   commonConfig(
-      ConfigFactory
-        .parseString("""
+    ConfigFactory
+      .parseString("""
       akka.remote.log-remote-lifecycle-events = off
     """)
-        .withFallback(debugConfig(on = false)
-              .withFallback(MultiNodeClusterSpec.clusterConfig)))
+      .withFallback(
+        debugConfig(on = false)
+          .withFallback(MultiNodeClusterSpec.clusterConfig)
+      )
+  )
 
   testTransport(on = true)
 }
@@ -57,9 +60,9 @@ abstract class UnreachableNodeJoinsAgainSpec
 
   def allBut(
       role: RoleName,
-      roles: immutable.Seq[RoleName] = roles): immutable.Seq[RoleName] = {
+      roles: immutable.Seq[RoleName] = roles
+  ): immutable.Seq[RoleName] =
     roles.filterNot(_ == role)
-  }
 
   lazy val master = second
   lazy val victim = fourth
@@ -102,7 +105,8 @@ abstract class UnreachableNodeJoinsAgainSpec
             clusterView.unreachableMembers.size should ===(roles.size - 1)
           }
           clusterView.unreachableMembers.map(_.address) should ===(
-              (allButVictim map address).toSet)
+            (allButVictim map address).toSet
+          )
         }
       }
 
@@ -118,9 +122,9 @@ abstract class UnreachableNodeJoinsAgainSpec
           // still one unreachable
           clusterView.unreachableMembers.size should ===(1)
           clusterView.unreachableMembers.head.address should ===(
-              node(victim).address)
-          clusterView.unreachableMembers.head.status should ===(
-              MemberStatus.Up)
+            node(victim).address
+          )
+          clusterView.unreachableMembers.head.status should ===(MemberStatus.Up)
         }
       }
 
@@ -136,10 +140,14 @@ abstract class UnreachableNodeJoinsAgainSpec
       runOn(allButVictim: _*) {
         // eventually removed
         awaitMembersUp(roles.size - 1, Set(victim))
-        awaitAssert(clusterView.unreachableMembers should ===(Set.empty),
-                    15 seconds)
-        awaitAssert(clusterView.members.map(_.address) should ===(
-                (allButVictim map address).toSet))
+        awaitAssert(
+          clusterView.unreachableMembers should ===(Set.empty),
+          15 seconds
+        )
+        awaitAssert(
+          clusterView.members
+            .map(_.address) should ===((allButVictim map address).toSet)
+        )
       }
 
       endBarrier()
@@ -176,31 +184,40 @@ abstract class UnreachableNodeJoinsAgainSpec
         Await.ready(system.whenTerminated, 10 seconds)
         // create new ActorSystem with same host:port
         val freshSystem =
-          ActorSystem(system.name, ConfigFactory.parseString(s"""
+          ActorSystem(
+            system.name,
+            ConfigFactory.parseString(s"""
             akka.remote.netty.tcp {
               hostname = ${victimAddress.host.get}
               port = ${victimAddress.port.get}
             }
-            """).withFallback(system.settings.config))
+            """).withFallback(system.settings.config)
+          )
 
         try {
           Cluster(freshSystem).join(masterAddress)
           within(15 seconds) {
             awaitAssert(
-                Cluster(freshSystem).readView.members.map(_.address) should contain(
-                    victimAddress))
-            awaitAssert(Cluster(freshSystem).readView.members.size should ===(
-                    expectedNumberOfMembers))
+              Cluster(freshSystem).readView.members
+                .map(_.address) should contain(victimAddress)
+            )
             awaitAssert(
-                Cluster(freshSystem).readView.members.map(_.status) should ===(
-                    Set(MemberStatus.Up)))
+              Cluster(freshSystem).readView.members.size should ===(
+                expectedNumberOfMembers
+              )
+            )
+            awaitAssert(
+              Cluster(freshSystem).readView.members
+                .map(_.status) should ===(Set(MemberStatus.Up))
+            )
           }
 
           // signal to master node that victim is done
           val endProbe = TestProbe()(freshSystem)
           val endActor = freshSystem.actorOf(
-              Props(classOf[EndActor], endProbe.ref, Some(masterAddress)),
-              "end")
+            Props(classOf[EndActor], endProbe.ref, Some(masterAddress)),
+            "end"
+          )
           endActor ! EndActor.SendEnd
           endProbe.expectMsg(EndActor.EndAck)
         } finally {

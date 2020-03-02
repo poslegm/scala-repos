@@ -47,7 +47,9 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class ObservableBufferSpec[T]
     extends SimpleSFXDelegateSpec[jfxc.ObservableList[T], ObservableBuffer[T]](
-        classOf[jfxc.ObservableList[T]], classOf[ObservableBuffer[T]]) {
+      classOf[jfxc.ObservableList[T]],
+      classOf[ObservableBuffer[T]]
+    ) {
 
   /**
     * Verifies if a generated Buffer is the same instance than a original Buffer. If it should not be,
@@ -57,9 +59,11 @@ class ObservableBufferSpec[T]
     * @param originalBuffer Buffer Original ObservableBuffer.
     * @param shouldBeTheSame If both maps should be same instance.
     */
-  private def compareInstances(generatedBuffer: Buffer[_],
-                               originalBuffer: ObservableBuffer[_],
-                               shouldBeTheSame: Boolean) {
+  private def compareInstances(
+      generatedBuffer: Buffer[_],
+      originalBuffer: ObservableBuffer[_],
+      shouldBeTheSame: Boolean
+  ) {
     if (shouldBeTheSame) {
       generatedBuffer should be theSameInstanceAs originalBuffer
     } else {
@@ -68,9 +72,11 @@ class ObservableBufferSpec[T]
     }
   }
 
-  private def compareAfterRemoving[T1](generatedBuffer: Buffer[T1],
-                                       originalBuffer: ObservableBuffer[T1],
-                                       expectedResult: T1*) {
+  private def compareAfterRemoving[T1](
+      generatedBuffer: Buffer[T1],
+      originalBuffer: ObservableBuffer[T1],
+      expectedResult: T1*
+  ) {
     generatedBuffer.toList should equal(expectedResult.toList)
     generatedBuffer should not be theSameInstanceAs(originalBuffer)
     generatedBuffer.getClass should be(classOf[ObservableBuffer[T1]])
@@ -102,7 +108,7 @@ class ObservableBufferSpec[T]
 
   it should "notify on invalidation" in {
     // Preparation
-    val buffer = ObservableBuffer("a", "b", "c")
+    val buffer          = ObservableBuffer("a", "b", "c")
     var invalidateCount = 0
     buffer onInvalidate {
       invalidateCount += 1
@@ -117,7 +123,7 @@ class ObservableBufferSpec[T]
 
   it should "notify on changes" in {
     // Preparation
-    val buffer = ObservableBuffer("a", "b", "c")
+    val buffer      = ObservableBuffer("a", "b", "c")
     var changeCount = 0
     buffer onChange {
       changeCount += 1
@@ -135,8 +141,7 @@ class ObservableBufferSpec[T]
     val buffer = ObservableBuffer("a", "b", "c")
     buffer onChange {
       // Verification
-      (list, changes) =>
-        list should be(buffer.delegate)
+      (list, changes) => list should be(buffer.delegate)
     }
 
     // Execution
@@ -145,20 +150,18 @@ class ObservableBufferSpec[T]
 
   it should "notify individuals appends" in {
     // Preparation
-    val buffer = ObservableBuffer("a", "b", "c")
-    var changeCount = 0
-    var addedElement = ""
+    val buffer           = ObservableBuffer("a", "b", "c")
+    var changeCount      = 0
+    var addedElement     = ""
     var expectedPosition = -1
     buffer onChange { (list, changes) =>
-      {
-        changes.toList match {
-          case (List(Add(position, elements))) =>
-            changeCount += 1
-            position should be(expectedPosition)
-            elements should have size 1
-            elements.toSeq(0) should equal(addedElement)
-          case _ => fail("Unexpected changes: " + changes)
-        }
+      changes.toList match {
+        case (List(Add(position, elements))) =>
+          changeCount += 1
+          position should be(expectedPosition)
+          elements should have size 1
+          elements.toSeq(0) should equal(addedElement)
+        case _ => fail("Unexpected changes: " + changes)
       }
     }
 
@@ -187,7 +190,7 @@ class ObservableBufferSpec[T]
 
   it should "batch notify with additions" in {
     // Preparation
-    val buffer = ObservableBuffer("a", "b", "c")
+    val buffer      = ObservableBuffer("a", "b", "c")
     var changeCount = 0
     buffer onChange { (list, changes) =>
       for (change <- changes) change match {
@@ -222,20 +225,18 @@ class ObservableBufferSpec[T]
 
   it should "notify individuals remotions" in {
     // Preparation
-    val buffer = ObservableBuffer("a", "b", "c", "d", "e", "f")
-    var changeCount = 0
-    var removedElement = ""
+    val buffer           = ObservableBuffer("a", "b", "c", "d", "e", "f")
+    var changeCount      = 0
+    var removedElement   = ""
     var expectedPosition = -1
     buffer onChange { (list, changes) =>
-      {
-        changes.toList match {
-          case (List(Remove(position, elements))) =>
-            changeCount += 1
-            position should be(expectedPosition)
-            elements should have size 1
-            elements.toSeq(0) should equal(removedElement)
-          case _ => fail("Unexpected changes: " + changes)
-        }
+      changes.toList match {
+        case (List(Remove(position, elements))) =>
+          changeCount += 1
+          position should be(expectedPosition)
+          elements should have size 1
+          elements.toSeq(0) should equal(removedElement)
+        case _ => fail("Unexpected changes: " + changes)
       }
     }
 
@@ -260,7 +261,7 @@ class ObservableBufferSpec[T]
 
   it should "batch notify with removes" in {
     // Preparation
-    val buffer = ObservableBuffer("a", "b", "c")
+    val buffer      = ObservableBuffer("a", "b", "c")
     var changeCount = 0
     buffer onChange { (list, changes) =>
       for (change <- changes) change match {
@@ -268,7 +269,7 @@ class ObservableBufferSpec[T]
           changeCount += 1
           position should equal(0)
           elements should equal(Seq("a", "b", "c"))
-        case Add(_, _) =>
+        case Add(_, _)      =>
         case _ @otherChange => fail(otherChange.toString)
       }
     }
@@ -311,7 +312,7 @@ class ObservableBufferSpec[T]
 
   it should "notify when it is removed a range of elements" in {
     // Preparation
-    val buffer = ObservableBuffer("a", "b", "c", "d", "e")
+    val buffer      = ObservableBuffer("a", "b", "c", "d", "e")
     var changeCount = 0
     buffer onChange { (list, changes) =>
       for (change <- changes) change match {
@@ -319,7 +320,7 @@ class ObservableBufferSpec[T]
           changeCount += 1
           position should equal(1)
           elements should equal(Seq("b", "c", "d"))
-        case Add(_, _) =>
+        case Add(_, _)      =>
         case _ @otherChange => fail(otherChange.toString)
       }
     }
@@ -361,7 +362,7 @@ class ObservableBufferSpec[T]
 
   it should "notify on replace with a remove and add" in {
     // Preparation
-    val buffer = ObservableBuffer("a", "b", "c")
+    val buffer      = ObservableBuffer("a", "b", "c")
     var changeCount = 0
     buffer onChange { (list, changes) =>
       for (change <- changes) change match {
@@ -385,7 +386,7 @@ class ObservableBufferSpec[T]
   }
 
   it should "notify on a sort order change with a reorder from the JavaFX collection sort" in {
-    val buffer = ObservableBuffer("f", "e", "d", "c", "b", "a")
+    val buffer      = ObservableBuffer("f", "e", "d", "c", "b", "a")
     var changeCount = 0
     buffer onChange { (list, changes) =>
       for (change <- changes) change match {
@@ -409,7 +410,7 @@ class ObservableBufferSpec[T]
 
   it should "notify on a sort order change with a reorder from a member method" in {
     // Preparation
-    val buffer = ObservableBuffer("f", "e", "d", "c", "b", "a")
+    val buffer      = ObservableBuffer("f", "e", "d", "c", "b", "a")
     var changeCount = 0
     buffer onChange { (list, changes) =>
       for (change <- changes) change match {
@@ -444,7 +445,7 @@ class ObservableBufferSpec[T]
 
   it should "notify on a sort order change with a reorder from a member method with a comparison function" in {
     // Preparation
-    val buffer = ObservableBuffer("f", "e", "d", "c", "b", "a")
+    val buffer      = ObservableBuffer("f", "e", "d", "c", "b", "a")
     var changeCount = 0
     buffer onChange { (list, changes) =>
       for (change <- changes) change match {
@@ -468,9 +469,9 @@ class ObservableBufferSpec[T]
 
   it should "shufle with a only change" in {
     // Preparation
-    val buffer = ObservableBuffer("a", "b", "c", "d", "e")
+    val buffer      = ObservableBuffer("a", "b", "c", "d", "e")
     var removeCount = 0
-    var addCount = 0
+    var addCount    = 0
     buffer onChange { (list, changes) =>
       for (change <- changes) change match {
         case Add(pos, addedBuffer) =>
@@ -499,11 +500,10 @@ class ObservableBufferSpec[T]
     // Preparation
     val buffer = ObservableBuffer("a", "b", "c", "d", "e")
     buffer onChange { (list, changes) =>
-      {
-        list.toList should equal(List("c", "d"))
-        changes.toList should equal(
-            List(Remove(0, Buffer("a", "b")), Remove(2, Buffer("e"))))
-      }
+      list.toList should equal(List("c", "d"))
+      changes.toList should equal(
+        List(Remove(0, Buffer("a", "b")), Remove(2, Buffer("e")))
+      )
     }
 
     // Execution
@@ -517,12 +517,14 @@ class ObservableBufferSpec[T]
     // Preparation
     val buffer = ObservableBuffer("a", "b", "c", "d", "e")
     buffer onChange { (list, changes) =>
-      {
-        list.toList should equal(List("b", "d"))
-        changes.toList should equal(List(Remove(0, Buffer("a")),
-                                         Remove(1, Buffer("c")),
-                                         Remove(2, Buffer("e"))))
-      }
+      list.toList should equal(List("b", "d"))
+      changes.toList should equal(
+        List(
+          Remove(0, Buffer("a")),
+          Remove(1, Buffer("c")),
+          Remove(2, Buffer("e"))
+        )
+      )
     }
 
     // Execution
@@ -543,16 +545,15 @@ class ObservableBufferSpec[T]
   }
 
   it should "revert using just one changing" in {
-    val buffer = ObservableBuffer(1, 2, 3, 4, 5)
+    val buffer          = ObservableBuffer(1, 2, 3, 4, 5)
     var changesDetected = 0
 
     buffer onChange { (list, changes) =>
-      {
-        changesDetected += 1
-        list.toList should equal(List(5, 4, 3, 2, 1))
-        changes.toList should equal(List(Remove(0, Buffer(1, 2, 3, 4, 5)),
-                                         Add(0, Buffer(5, 4, 3, 2, 1))))
-      }
+      changesDetected += 1
+      list.toList should equal(List(5, 4, 3, 2, 1))
+      changes.toList should equal(
+        List(Remove(0, Buffer(1, 2, 3, 4, 5)), Add(0, Buffer(5, 4, 3, 2, 1)))
+      )
     }
 
     ObservableBuffer.revertBuffer(buffer)
@@ -561,16 +562,15 @@ class ObservableBufferSpec[T]
   }
 
   it should "replace all occurrences of a element with just one change" in {
-    val buffer = ObservableBuffer(1, 2, 3, 1, 5)
+    val buffer          = ObservableBuffer(1, 2, 3, 1, 5)
     var changesDetected = 0
 
     buffer onChange { (list, changes) =>
-      {
-        changesDetected += 1
-        list.toList should equal(List(0, 2, 3, 0, 5))
-        changes.toList should equal(List(Remove(0, Buffer(1, 2, 3, 1, 5)),
-                                         Add(0, Buffer(0, 2, 3, 0, 5))))
-      }
+      changesDetected += 1
+      list.toList should equal(List(0, 2, 3, 0, 5))
+      changes.toList should equal(
+        List(Remove(0, Buffer(1, 2, 3, 1, 5)), Add(0, Buffer(0, 2, 3, 0, 5)))
+      )
     }
 
     buffer.replaceAll(1, 0)
@@ -579,16 +579,18 @@ class ObservableBufferSpec[T]
   }
 
   it should "fill all with just one change" in {
-    val buffer = ObservableBuffer(1, 2, 3, 4, 5)
+    val buffer          = ObservableBuffer(1, 2, 3, 4, 5)
     var changesDetected = 0
 
     buffer onChange { (list, changes) =>
-      {
-        changesDetected += 1
-        list.toList should equal(List(-1, -1, -1, -1, -1))
-        changes.toList should equal(List(Remove(0, Buffer(1, 2, 3, 4, 5)),
-                                         Add(0, Buffer(-1, -1, -1, -1, -1))))
-      }
+      changesDetected += 1
+      list.toList should equal(List(-1, -1, -1, -1, -1))
+      changes.toList should equal(
+        List(
+          Remove(0, Buffer(1, 2, 3, 4, 5)),
+          Add(0, Buffer(-1, -1, -1, -1, -1))
+        )
+      )
     }
 
     ObservableBuffer.fillAll(buffer, -1)
@@ -598,23 +600,21 @@ class ObservableBufferSpec[T]
 
   it should "keep his behavior with other types of sets beyond default implementation" in {
     // Preparation
-    val buffer = ObservableBuffer(new StringBuilder)
-    val addedValues = Buffer.empty[Any]
+    val buffer        = ObservableBuffer(new StringBuilder)
+    val addedValues   = Buffer.empty[Any]
     val removedValues = Buffer.empty[Any]
-    val permutations = Buffer.empty[Buffer[(Int, Int)]]
+    val permutations  = Buffer.empty[Buffer[(Int, Int)]]
     buffer onChange { (list, changes) =>
-      {
-        for (change <- changes) change match {
-          case Add(pos, addedBuffer) =>
-            addedValues ++= addedBuffer.toBuffer
-          case Remove(pos, removedBuffer) =>
-            removedValues ++= removedBuffer.toBuffer
-          case Reorder(start, end, permutation) =>
-            val p = Buffer.empty[(Int, Int)]
-            (start until end).foreach(i => p += ((i, permutation(i))))
-            permutations += p
-          case Update(pas, updated) => println(s"  case Update: $change")
-        }
+      for (change <- changes) change match {
+        case Add(pos, addedBuffer) =>
+          addedValues ++= addedBuffer.toBuffer
+        case Remove(pos, removedBuffer) =>
+          removedValues ++= removedBuffer.toBuffer
+        case Reorder(start, end, permutation) =>
+          val p = Buffer.empty[(Int, Int)]
+          (start until end).foreach(i => p += ((i, permutation(i))))
+          permutations += p
+        case Update(pas, updated) => println(s"  case Update: $change")
       }
     }
 
@@ -630,11 +630,13 @@ class ObservableBufferSpec[T]
     // Verification
     buffer.toList should equal(List('e', 'h', 'j', 'r', 't', 'z'))
     addedValues.toList should equal(
-        List('e', 'a', 't', 'r', 'j', 'd', 'z', 'h'))
+      List('e', 'a', 't', 'r', 'j', 'd', 'z', 'h')
+    )
     removedValues.toList should equal(List('d', 'a'))
     permutations should have size 1
     permutations(0).toList should equal(
-        List((0, 3), (1, 2), (2, 5), (3, 0), (4, 1), (5, 4)))
+      List((0, 3), (1, 2), (2, 5), (3, 0), (4, 1), (5, 4))
+    )
   }
 
   it should "not ignore updates (Issue #169)" in {
@@ -642,24 +644,25 @@ class ObservableBufferSpec[T]
     type ElementType = jfxc.ObservableList[String]
 
     val items = new ObservableBuffer(
-        jfxc.FXCollections.observableArrayList[ElementType](
-            (elem: ElementType) => Array[jfxb.Observable](elem)))
+      jfxc.FXCollections.observableArrayList[ElementType]((elem: ElementType) =>
+        Array[jfxb.Observable](elem)
+      )
+    )
 
     items.append(jfxc.FXCollections.observableArrayList("test"))
 
     var actualFrom = -1
-    var actualTo = -1
-    var changed = false
-    items.onChange((obs, changes) =>
-          {
-        changed = true
-        for (change <- changes) change match {
-          case ObservableBuffer.Update(from, to) =>
-            actualFrom = from
-            actualTo = to
-          case _ @otherChange => fail("Wrong change: " + otherChange.toString)
-        }
-    })
+    var actualTo   = -1
+    var changed    = false
+    items.onChange { (obs, changes) =>
+      changed = true
+      for (change <- changes) change match {
+        case ObservableBuffer.Update(from, to) =>
+          actualFrom = from
+          actualTo = to
+        case _ @otherChange => fail("Wrong change: " + otherChange.toString)
+      }
+    }
 
     items(0) += "update"
 
@@ -675,7 +678,7 @@ class ObservableBufferSpec[T]
       (collection: ObservableBuffer[Double], changes: Seq[Change[Double]]) =>
         changes.foreach {
           case Add(_, elements) =>
-          case _ =>
+          case _                =>
         }
     }
   }

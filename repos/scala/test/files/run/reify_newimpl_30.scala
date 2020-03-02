@@ -9,7 +9,8 @@ object Test extends App {
       val code = reify {
         List[C#T](2)
       }
-      try { println(code.eval) } catch {
+      try { println(code.eval) }
+      catch {
         case e: ToolBoxError => println(e.getMessage)
       }
     }

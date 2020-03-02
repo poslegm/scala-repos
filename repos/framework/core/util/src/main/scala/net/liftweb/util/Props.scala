@@ -25,7 +25,7 @@ import Helpers._
 import common._
 
 private[util] trait Props extends Logger {
-  type PropProvider = scala.collection.Map[String, String]
+  type PropProvider        = scala.collection.Map[String, String]
   type InterpolationValues = scala.collection.Map[String, String]
 
   /**
@@ -34,20 +34,19 @@ private[util] trait Props extends Logger {
     * @param name key for the property to get
     * @return the value of the property if defined
     */
-  def get(name: String): Box[String] = {
+  def get(name: String): Box[String] =
     lockedProviders.flatMap(_.get(name)).headOption.map(interpolate)
-  }
 
   private[this] val interpolateRegex = """(.*?)\Q${\E(.*?)\Q}\E([^$]*)""".r
 
   private[this] def interpolate(value: String): String = {
-    def lookup(key: String) = {
+    def lookup(key: String) =
       lockedInterpolationValues.flatMap(_.get(key)).headOption
-    }
 
     val interpolated = for {
       interpolateRegex(before, key, after) <- interpolateRegex.findAllMatchIn(
-          value.toString)
+                                               value.toString
+                                             )
     } yield {
       val lookedUp = lookup(key).getOrElse(("${" + key + "}"))
 
@@ -92,8 +91,9 @@ private[util] trait Props extends Logger {
       case Nil =>
       case bad =>
         throw new Exception(
-            "The following required properties are not defined: " +
-            bad.mkString(","))
+          "The following required properties are not defined: " +
+            bad.mkString(",")
+        )
     }
   }
 
@@ -105,9 +105,8 @@ private[util] trait Props extends Logger {
     *
     * @param provider Arbitrary map of property key -> property value.
     */
-  def appendProvider(provider: PropProvider): List[PropProvider] = {
+  def appendProvider(provider: PropProvider): List[PropProvider] =
     updateProviders(_ :+ provider)
-  }
 
   /**
     * Updates Props to find property values in the argument BEFORE looking in
@@ -118,9 +117,8 @@ private[util] trait Props extends Logger {
     * @param provider Arbitrary map of property key -> property value to be used
     *                 for property lookup.
     */
-  def prependProvider(provider: PropProvider): List[PropProvider] = {
+  def prependProvider(provider: PropProvider): List[PropProvider] =
     updateProviders(provider :: _)
-  }
 
   /**
     * Passes the current `PropProvider`s to the passed `updater`, then sets the
@@ -132,8 +130,9 @@ private[util] trait Props extends Logger {
     * @param updater Function that gets the current `PropProvider`s and returns
     *                the new ones to use.
     */
-  def updateProviders(updater: (List[PropProvider]) => List[PropProvider])
-    : List[PropProvider] = {
+  def updateProviders(
+      updater: (List[PropProvider]) => List[PropProvider]
+  ): List[PropProvider] = {
     providers = updater(providers)
     providers
   }
@@ -147,9 +146,9 @@ private[util] trait Props extends Logger {
     *                 for interpolation.
     */
   def appendInterpolationValues(
-      interpolationValues: InterpolationValues): Seq[InterpolationValues] = {
+      interpolationValues: InterpolationValues
+  ): Seq[InterpolationValues] =
     updateInterpolationValues(_ :+ interpolationValues)
-  }
 
   /**
     * Passes the current `InterpolationValues`s to the passed `updater`, then sets the
@@ -162,8 +161,8 @@ private[util] trait Props extends Logger {
     *                the new ones to use.
     */
   def updateInterpolationValues(
-      updater: (List[InterpolationValues]) => List[InterpolationValues])
-    : List[InterpolationValues] = {
+      updater: (List[InterpolationValues]) => List[InterpolationValues]
+  ): List[InterpolationValues] = {
     interpolationValues = updater(interpolationValues)
     interpolationValues
   }
@@ -181,14 +180,16 @@ private[util] trait Props extends Logger {
     */
   lazy val mode: Props.RunModes.Value = {
     runModeInitialised = true
-    Box.legacyNullTest((System.getProperty("run.mode"))).map(_.toLowerCase) match {
-      case Full("test") => Test
-      case Full("production") => Production
-      case Full("staging") => Staging
-      case Full("pilot") => Pilot
-      case Full("profile") => Profile
+    Box
+      .legacyNullTest((System.getProperty("run.mode")))
+      .map(_.toLowerCase) match {
+      case Full("test")        => Test
+      case Full("production")  => Production
+      case Full("staging")     => Staging
+      case Full("pilot")       => Pilot
+      case Full("profile")     => Profile
       case Full("development") => Development
-      case _ => (autoDetectRunModeFn.get)()
+      case _                   => (autoDetectRunModeFn.get)()
     }
   }
 
@@ -222,8 +223,10 @@ private[util] trait Props extends Logger {
     def allowModification = !runModeInitialised
 
     def onModificationProhibited() {
-      warn("Setting property " + name +
-          " has no effect. Run mode already initialised to " + mode + ".")
+      warn(
+        "Setting property " + name +
+          " has no effect. Run mode already initialised to " + mode + "."
+      )
     }
   }
 
@@ -236,24 +239,24 @@ private[util] trait Props extends Logger {
     */
   val doesStackTraceContainKnownTestRunner =
     new RunModeProperty[Array[StackTraceElement] => Boolean](
-        "doesStackTraceContainKnownTestRunner",
-        (st: Array[StackTraceElement]) =>
-          {
-            val names = List(
-                "org.apache.maven.surefire.booter.SurefireBooter",
-                "sbt.TestRunner",
-                "org.jetbrains.plugins.scala.testingSupport.scalaTest.ScalaTestRunner",
-                "org.scalatest.tools.Runner",
-                "org.scalatest.tools.ScalaTestFramework$ScalaTestRunner",
-                "org.scalatools.testing.Runner",
-                "org.scalatools.testing.Runner2",
-                "org.specs2.runner.TestInterfaceRunner", // sometimes specs2 runs tests on another thread
-                "org.specs2.runner.TestInterfaceConsoleReporter",
-                "org.specs2.specification.FragmentExecution",
-                "org.specs2.specification.core.Execution"
-            )
-            st.exists(e => names.exists(e.getClassName.startsWith))
-        })
+      "doesStackTraceContainKnownTestRunner",
+      (st: Array[StackTraceElement]) => {
+        val names = List(
+          "org.apache.maven.surefire.booter.SurefireBooter",
+          "sbt.TestRunner",
+          "org.jetbrains.plugins.scala.testingSupport.scalaTest.ScalaTestRunner",
+          "org.scalatest.tools.Runner",
+          "org.scalatest.tools.ScalaTestFramework$ScalaTestRunner",
+          "org.scalatools.testing.Runner",
+          "org.scalatools.testing.Runner2",
+          "org.specs2.runner.TestInterfaceRunner", // sometimes specs2 runs tests on another thread
+          "org.specs2.runner.TestInterfaceConsoleReporter",
+          "org.specs2.specification.FragmentExecution",
+          "org.specs2.specification.core.Execution"
+        )
+        st.exists(e => names.exists(e.getClassName.startsWith))
+      }
+    )
 
   /**
     * When the `run.mode` environment variable isn't set or recognised, this function is invoked to determine the
@@ -264,20 +267,20 @@ private[util] trait Props extends Logger {
     * will have no effect and will instead log a warning.)
     */
   val autoDetectRunModeFn = new RunModeProperty[() => Props.RunModes.Value](
-      "autoDetectRunModeFn",
-      () =>
-        {
-          val st = Thread.currentThread.getStackTrace
-          if ((doesStackTraceContainKnownTestRunner.get)(st)) Test
-          else Development
-      })
+    "autoDetectRunModeFn",
+    () => {
+      val st = Thread.currentThread.getStackTrace
+      if ((doesStackTraceContainKnownTestRunner.get)(st)) Test
+      else Development
+    }
+  )
 
   /**
     * Is the system running in production mode (apply full optimizations)
     */
   lazy val productionMode: Boolean =
     mode == Props.RunModes.Production || mode == Props.RunModes.Pilot ||
-    mode == Props.RunModes.Staging
+      mode == Props.RunModes.Staging
 
   /**
     * Is the system running in development mode
@@ -293,19 +296,19 @@ private[util] trait Props extends Logger {
     * The resource path segment corresponding to the current mode.
     */
   lazy val modeName = mode match {
-    case Test => "test"
-    case Staging => "staging"
+    case Test       => "test"
+    case Staging    => "staging"
     case Production => "production"
-    case Pilot => "pilot"
-    case Profile => "profile"
-    case _ => ""
+    case Pilot      => "pilot"
+    case Profile    => "profile"
+    case _          => ""
   }
 
   private lazy val _modeName = dotLen(modeName)
 
   private def dotLen(in: String): String = in match {
     case null | "" => in
-    case x => x + "."
+    case x         => x + "."
   }
 
   /**
@@ -337,14 +340,15 @@ private[util] trait Props extends Logger {
     * in /props
     */
   lazy val toTry: List[() => String] = List(
-      () => "/props/" + _modeName + _userName + _hostName,
-      () => "/props/" + _modeName + _userName,
-      () => "/props/" + _modeName + _hostName,
-      () => "/props/" + _modeName + "default.",
-      () => "/" + _modeName + _userName + _hostName,
-      () => "/" + _modeName + _userName,
-      () => "/" + _modeName + _hostName,
-      () => "/" + _modeName + "default.")
+    () => "/props/" + _modeName + _userName + _hostName,
+    () => "/props/" + _modeName + _userName,
+    () => "/props/" + _modeName + _hostName,
+    () => "/props/" + _modeName + "default.",
+    () => "/" + _modeName + _userName + _hostName,
+    () => "/" + _modeName + _userName,
+    () => "/" + _modeName + _hostName,
+    () => "/" + _modeName + "default."
+  )
 
   /**
     * This is a function that returns the first places to look for a props file.
@@ -367,19 +371,18 @@ private[util] trait Props extends Logger {
     var tried: List[String] = Nil
 
     trace(
-        "Loading properties. Active run.mode is %s".format(
-            if (modeName == "") "(Development)" else modeName))
+      "Loading properties. Active run.mode is %s"
+        .format(if (modeName == "") "(Development)" else modeName)
+    )
 
     def vendStreams: List[(String, () => Box[InputStream])] =
       whereToLook() ::: toTry.map { f =>
-        {
-          val name = f() + "props"
-          name -> { () =>
-            val res = tryo { getClass.getResourceAsStream(name) }
-              .filter(_ ne null)
-            trace("Trying to open resource %s. Result=%s".format(name, res))
-            res
-          }
+        val name = f() + "props"
+        name -> { () =>
+          val res = tryo(getClass.getResourceAsStream(name))
+            .filter(_ ne null)
+          trace("Trying to open resource %s. Result=%s".format(name, res))
+          res
         }
       }
 
@@ -391,7 +394,7 @@ private[util] trait Props extends Logger {
           stream <- streamBox()
         } yield {
           val ret = new Properties
-          val ba = Helpers.readWholeStream(stream)
+          val ba  = Helpers.readWholeStream(stream)
           try {
             ret.loadFromXML(new ByteArrayInputStream(ba))
             debug("Loaded XML properties from resource %s".format(str))
@@ -405,8 +408,7 @@ private[util] trait Props extends Logger {
     } match {
       // if we've got a propety file, create name/value pairs and turn them into a Map
       case Full(prop) =>
-        Map(
-            prop.entrySet.toArray.flatMap {
+        Map(prop.entrySet.toArray.flatMap {
           case s: JMap.Entry[_, _] =>
             List((s.getKey.toString, s.getValue.toString))
           case _ => Nil
@@ -414,8 +416,9 @@ private[util] trait Props extends Logger {
 
       case _ =>
         error(
-            "Failed to find a properties file (but properties were accessed).  Searched: " +
-            tried.reverse.mkString(", "))
+          "Failed to find a properties file (but properties were accessed).  Searched: " +
+            tried.reverse.mkString(", ")
+        )
         Map()
     }
   }
@@ -425,21 +428,19 @@ private[util] trait Props extends Logger {
   // by the user.
   private[this] var providersAccumulator: Option[List[PropProvider]] = None
 
-  private[this] def providers = {
+  private[this] def providers =
     providersAccumulator getOrElse {
       val baseProviders = List(props)
       providersAccumulator = Some(baseProviders)
 
       baseProviders
     }
-  }
-  private[this] def providers_=(newProviders: List[PropProvider]) = {
+  private[this] def providers_=(newProviders: List[PropProvider]) =
     providersAccumulator = Some(newProviders)
-  }
 
   private[this] var interpolationValues: List[InterpolationValues] = Nil
 
-  private[this] lazy val lockedProviders = providers
+  private[this] lazy val lockedProviders           = providers
   private[this] lazy val lockedInterpolationValues = interpolationValues
 }
 
@@ -474,10 +475,10 @@ object Props extends Props {
     */
   object RunModes extends Enumeration {
     val Development = Value(1, "Development")
-    val Test = Value(2, "Test")
-    val Staging = Value(3, "Staging")
-    val Production = Value(4, "Production")
-    val Pilot = Value(5, "Pilot")
-    val Profile = Value(6, "Profile")
+    val Test        = Value(2, "Test")
+    val Staging     = Value(3, "Staging")
+    val Production  = Value(4, "Production")
+    val Pilot       = Value(5, "Pilot")
+    val Profile     = Value(6, "Profile")
   }
 }

@@ -12,16 +12,15 @@ import java.io._
 /** A ByteArrayOutputStream that exposes various hooks for testing purposes. */
 class MockByteArrayOutputStream extends ByteArrayOutputStream {
   private var _flushed: Boolean = true
-  private var _closed: Boolean = false
+  private var _closed: Boolean  = false
 
   var throwing: Boolean = false
 
   def flushed: Boolean = _flushed
-  def closed: Boolean = _closed
+  def closed: Boolean  = _closed
 
-  private def maybeThrow(): Unit = {
+  private def maybeThrow(): Unit =
     if (throwing) throw new IOException("MockByteArrayOutputStream throws")
-  }
 
   private def writeOp[A](op: => A): A = {
     maybeThrow()

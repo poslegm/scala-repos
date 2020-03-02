@@ -20,32 +20,37 @@ import util.matching.Regex
 import kafka.coordinator.GroupCoordinator
 
 object Topic {
-  val legalChars = "[a-zA-Z0-9\\._\\-]"
+  val legalChars            = "[a-zA-Z0-9\\._\\-]"
   private val maxNameLength = 255
-  private val rgx = new Regex(legalChars + "+")
+  private val rgx           = new Regex(legalChars + "+")
 
   def validate(topic: String) {
     if (topic.length <= 0)
       throw new org.apache.kafka.common.errors.InvalidTopicException(
-          "topic name is illegal, can't be empty")
+        "topic name is illegal, can't be empty"
+      )
     else if (topic.equals(".") || topic.equals(".."))
       throw new org.apache.kafka.common.errors.InvalidTopicException(
-          "topic name cannot be \".\" or \"..\"")
+        "topic name cannot be \".\" or \"..\""
+      )
     else if (topic.length > maxNameLength)
       throw new org.apache.kafka.common.errors.InvalidTopicException(
-          "topic name is illegal, can't be longer than " + maxNameLength +
-          " characters")
+        "topic name is illegal, can't be longer than " + maxNameLength +
+          " characters"
+      )
 
     rgx.findFirstIn(topic) match {
       case Some(t) =>
         if (!t.equals(topic))
           throw new org.apache.kafka.common.errors.InvalidTopicException(
-              "topic name " + topic +
-              " is illegal, contains a character other than ASCII alphanumerics, '.', '_' and '-'")
+            "topic name " + topic +
+              " is illegal, contains a character other than ASCII alphanumerics, '.', '_' and '-'"
+          )
       case None =>
         throw new org.apache.kafka.common.errors.InvalidTopicException(
-            "topic name " + topic +
-            " is illegal,  contains a character other than ASCII alphanumerics, '.', '_' and '-'")
+          "topic name " + topic +
+            " is illegal,  contains a character other than ASCII alphanumerics, '.', '_' and '-'"
+        )
     }
   }
 
@@ -55,9 +60,8 @@ object Topic {
     * @param topic The topic to check for colliding character
     * @return true if the topic has collision characters
     */
-  def hasCollisionChars(topic: String): Boolean = {
+  def hasCollisionChars(topic: String): Boolean =
     topic.contains("_") || topic.contains(".")
-  }
 
   /**
     * Returns true if the topicNames collide due to a period ('.') or underscore ('_') in the same position.
@@ -66,7 +70,6 @@ object Topic {
     * @param topicB A topic to check for collision
     * @return true if the topics collide
     */
-  def hasCollision(topicA: String, topicB: String): Boolean = {
+  def hasCollision(topicA: String, topicB: String): Boolean =
     topicA.replace('.', '_') == topicB.replace('.', '_')
-  }
 }

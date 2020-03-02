@@ -35,9 +35,8 @@ private[stat] object SpearmanCorrelation extends Correlation with Logging {
   /**
     * Compute Spearman's correlation for two datasets.
     */
-  override def computeCorrelation(x: RDD[Double], y: RDD[Double]): Double = {
+  override def computeCorrelation(x: RDD[Double], y: RDD[Double]): Double =
     computeCorrelationWithMatrixImpl(x, y)
-  }
 
   /**
     * Compute Spearman's correlation matrix S, for the input matrix, where S(i, j) is the
@@ -56,18 +55,15 @@ private[stat] object SpearmanCorrelation extends Correlation with Logging {
     val sorted = colBased.sortByKey()
     // assign global ranks (using average ranks for tied values)
     val globalRanks = sorted.zipWithIndex().mapPartitions { iter =>
-      var preCol = -1
-      var preVal = Double.NaN
-      var startRank = -1.0
+      var preCol     = -1
+      var preVal     = Double.NaN
+      var startRank  = -1.0
       var cachedUids = ArrayBuffer.empty[Long]
-      val flush: () => Iterable[(Long, (Int, Double))] = () =>
-        {
-          val averageRank = startRank + (cachedUids.size - 1) / 2.0
-          val output = cachedUids.map { uid =>
-            (uid, (preCol, averageRank))
-          }
-          cachedUids.clear()
-          output
+      val flush: () => Iterable[(Long, (Int, Double))] = () => {
+        val averageRank = startRank + (cachedUids.size - 1) / 2.0
+        val output      = cachedUids.map(uid => (uid, (preCol, averageRank)))
+        cachedUids.clear()
+        output
       }
       iter.flatMap {
         case (((j, v), uid), rank) =>

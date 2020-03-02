@@ -10,7 +10,8 @@ import breeze.numerics.{log, round, log1p, expm1}
   * @author dlwh
   */
 case class Logarthmic(p: Double)(implicit rand: RandBasis = Rand)
-    extends DiscreteDistr[Int] with Moments[Double, Double] {
+    extends DiscreteDistr[Int]
+    with Moments[Double, Double] {
   require(p >= 0)
   require(p <= 1)
 
@@ -25,7 +26,7 @@ case class Logarthmic(p: Double)(implicit rand: RandBasis = Rand)
       1
     } else {
       val u1 = rand.uniform.draw()
-      val q = -expm1(u1 * h)
+      val q  = -expm1(u1 * h)
       if (u2 < q * q) {
         round(1.0 + log(u2) / log(q)).toInt
       } else if (u2 > q) {
@@ -36,20 +37,19 @@ case class Logarthmic(p: Double)(implicit rand: RandBasis = Rand)
     }
   }
 
-  def probabilityOf(x: Int) = {
+  def probabilityOf(x: Int) =
     -1.0 / log1p(-p) * math.pow(p, x) / x
-  }
 
   def mean = -1.0 / log1p(-p) * (p / (1 - p))
 
   def variance = {
-    val l1p = log1p(-p)
-    val onemp = 1 - p
+    val l1p       = log1p(-p)
+    val onemp     = 1 - p
     val denompart = onemp * l1p
     -p * (p + l1p) / (denompart * denompart)
   }
 
-  def mode = 1
+  def mode    = 1
   def entropy = ???
 
   override def toString() = ScalaRunTime._toString(this)

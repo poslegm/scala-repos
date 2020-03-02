@@ -9,7 +9,7 @@ object SCL5303 {
   }
 
   object A {
-    val x = new TestClass
+    val x             = new TestClass
     val i: Some[Long] = null
     /*start*/
     x.setId(i) /*end*/ // [1]

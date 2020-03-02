@@ -22,9 +22,7 @@ trait ActorMap extends Actor {
     case TellAll(msg) => actors.values foreach (_ forward msg)
 
     case TellIds(ids, msg) =>
-      ids foreach { id =>
-        actors get id foreach (_ forward msg)
-      }
+      ids foreach { id => actors get id foreach (_ forward msg) }
 
     case Ask(id, msg) => getOrMake(id) forward msg
 
@@ -49,6 +47,6 @@ object ActorMap {
 
   def apply(make: String => Actor) = new ActorMap {
     def mkActor(id: String) = make(id)
-    def receive = actorMapReceive
+    def receive             = actorMapReceive
   }
 }

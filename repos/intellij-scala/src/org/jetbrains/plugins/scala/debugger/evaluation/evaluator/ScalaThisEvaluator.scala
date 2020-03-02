@@ -55,19 +55,21 @@ class ScalaThisEvaluator(iterations: Int = 0) extends Evaluator {
     }
     if (iterations > 0) {
       var thisRef: ObjectReference = objRef.asInstanceOf[ObjectReference]
-      var idx: Int = 0
+      var idx: Int                 = 0
       while (idx < iterations && thisRef != null) {
         thisRef = getOuterObject(thisRef)
         idx += 1
       }
       if (thisRef == null)
         throw EvaluationException(
-            ScalaBundle.message("outer.this.not.available"))
+          ScalaBundle.message("outer.this.not.available")
+        )
       objRef = thisRef
     }
     if (objRef == null) {
       throw EvaluationException(
-          DebuggerBundle.message("evaluation.error.this.not.avalilable"))
+        DebuggerBundle.message("evaluation.error.this.not.avalilable")
+      )
     }
     objRef
   }

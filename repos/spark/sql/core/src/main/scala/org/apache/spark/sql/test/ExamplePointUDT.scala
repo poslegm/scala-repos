@@ -30,7 +30,7 @@ private[sql] class ExamplePoint(val x: Double, val y: Double)
     extends Serializable {
   override def equals(other: Any): Boolean = other match {
     case that: ExamplePoint => this.x == that.x && this.y == that.y
-    case _ => false
+    case _                  => false
   }
 }
 
@@ -50,12 +50,11 @@ private[sql] class ExamplePointUDT extends UserDefinedType[ExamplePoint] {
     new GenericArrayData(output)
   }
 
-  override def deserialize(datum: Any): ExamplePoint = {
+  override def deserialize(datum: Any): ExamplePoint =
     datum match {
       case values: ArrayData =>
         new ExamplePoint(values.getDouble(0), values.getDouble(1))
     }
-  }
 
   override def userClass: Class[ExamplePoint] = classOf[ExamplePoint]
 

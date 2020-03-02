@@ -102,18 +102,17 @@ package object mat {
     * Create a square identity matrix of dimension n x n
     * @param n The number of rows/columns of the square matrix
     */
-  def ident(n: Int): Mat[Double] = {
+  def ident(n: Int): Mat[Double] =
     if (n <= 0) Mat.empty[Double]
     else {
       val tmp = Array.ofDim[Double](n * n)
-      var i = 0
+      var i   = 0
       while (i < n) {
         tmp(n * i + i) = 1
         i += 1
       }
       Mat(n, n, tmp)
     }
-  }
 
   /**
     * Given a vector, create a matrix whose diagonal entries equal the vector, with zeros off-diagonal.
@@ -140,9 +139,11 @@ package object mat {
     * @param asRows if true, returns row-tiling; default is column-tiling
     * @tparam T type of elements in array
     */
-  def repeat[@spec(Boolean, Int, Long, Double) T : ST](
-      v: Array[T], n: Int, asRows: Boolean = false): Mat[T] = {
-
+  def repeat[@spec(Boolean, Int, Long, Double) T: ST](
+      v: Array[T],
+      n: Int,
+      asRows: Boolean = false
+  ): Mat[T] =
     if (asRows) {
       val tmp = array.flatten(for (i <- 1 to n) yield v)
       Mat(n, v.length, tmp)
@@ -150,5 +151,4 @@ package object mat {
       val tmp = for (i <- array.range(0, n)) yield v
       Mat(tmp)
     }
-  }
 }

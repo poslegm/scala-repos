@@ -9,21 +9,26 @@ import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class HttpResponseClassifierTest extends FunSuite {
-  private val req = Request()
+  private val req                              = Request()
   private def rep(code: Status): Try[Response] = Return(Response(code))
 
   test("ServerErrorsAsFailures") {
     val classifier = HttpResponseClassifier.ServerErrorsAsFailures
     assert("ServerErrorsAsFailures" == classifier.toString)
 
-    assert(ResponseClass.NonRetryableFailure == classifier(
-            ReqRep(req, rep(Status.InternalServerError))))
+    assert(
+      ResponseClass.NonRetryableFailure == classifier(
+        ReqRep(req, rep(Status.InternalServerError))
+      )
+    )
 
     assert(!classifier.isDefinedAt(ReqRep(req, rep(Status.Ok))))
     assert(
-        ResponseClass.NonRetryableFailure == classifier.applyOrElse(
-            ReqRep(req, rep(Status.InternalServerError)),
-            ResponseClassifier.Default))
+      ResponseClass.NonRetryableFailure == classifier.applyOrElse(
+        ReqRep(req, rep(Status.InternalServerError)),
+        ResponseClassifier.Default
+      )
+    )
   }
 
   test("apply") {
@@ -36,13 +41,21 @@ class HttpResponseClassifierTest extends FunSuite {
     }
     val classifier = ok500.orElse(badReqs)
 
-    assert(ResponseClass.Success == classifier(
-            ReqRep(req, rep(Status.fromCode(500)))))
-    assert(ResponseClass.NonRetryableFailure == classifier(
-            ReqRep(Request("fail" -> "1"), rep(Status.Ok))))
+    assert(
+      ResponseClass.Success == classifier(
+        ReqRep(req, rep(Status.fromCode(500)))
+      )
+    )
+    assert(
+      ResponseClass.NonRetryableFailure == classifier(
+        ReqRep(Request("fail" -> "1"), rep(Status.Ok))
+      )
+    )
 
     assert(!classifier.isDefinedAt(ReqRep(req, rep(Status.Ok))))
-    assert(ResponseClass.Success == classifier.applyOrElse(
-            ReqRep(req, rep(Status.Ok)), ResponseClassifier.Default))
+    assert(
+      ResponseClass.Success == classifier
+        .applyOrElse(ReqRep(req, rep(Status.Ok)), ResponseClassifier.Default)
+    )
   }
 }

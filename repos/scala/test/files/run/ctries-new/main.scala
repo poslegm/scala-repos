@@ -13,7 +13,7 @@ object Test {
 trait Spec {
 
   implicit def implicitously = scala.language.implicitConversions
-  implicit def reflectively = scala.language.reflectiveCalls
+  implicit def reflectively  = scala.language.reflectiveCalls
 
   implicit def str2ops(s: String) = new {
     def in[U](body: => U) {
@@ -27,15 +27,18 @@ trait Spec {
   }
 
   def evaluating[U](body: => U) = new {
-    def shouldProduce[T <: Throwable : ClassTag]() = {
+    def shouldProduce[T <: Throwable: ClassTag]() = {
       var produced = false
-      try body catch {
+      try body
+      catch {
         case e: Throwable =>
           if (e.getClass == implicitly[ClassTag[T]].runtimeClass)
             produced = true
       } finally {
-        assert(produced,
-               "Did not produce exception of type: " + implicitly[ClassTag[T]])
+        assert(
+          produced,
+          "Did not produce exception of type: " + implicitly[ClassTag[T]]
+        )
       }
     }
   }

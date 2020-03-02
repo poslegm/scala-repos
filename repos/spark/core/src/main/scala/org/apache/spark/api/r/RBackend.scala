@@ -38,35 +38,36 @@ import org.apache.spark.internal.Logging
 private[spark] class RBackend {
 
   private[this] var channelFuture: ChannelFuture = null
-  private[this] var bootstrap: ServerBootstrap = null
-  private[this] var bossGroup: EventLoopGroup = null
+  private[this] var bootstrap: ServerBootstrap   = null
+  private[this] var bossGroup: EventLoopGroup    = null
 
   def init(): Int = {
     val conf = new SparkConf()
     bossGroup = new NioEventLoopGroup(
-        conf.getInt("spark.r.numRBackendThreads", 2))
+      conf.getInt("spark.r.numRBackendThreads", 2)
+    )
     val workerGroup = bossGroup
-    val handler = new RBackendHandler(this)
+    val handler     = new RBackendHandler(this)
 
     bootstrap = new ServerBootstrap()
       .group(bossGroup, workerGroup)
       .channel(classOf[NioServerSocketChannel])
 
     bootstrap.childHandler(new ChannelInitializer[SocketChannel]() {
-      def initChannel(ch: SocketChannel): Unit = {
+      def initChannel(ch: SocketChannel): Unit =
         ch.pipeline()
           .addLast("encoder", new ByteArrayEncoder())
           .addLast(
-              "frameDecoder",
-              // maxFrameLength = 2G
-              // lengthFieldOffset = 0
-              // lengthFieldLength = 4
-              // lengthAdjustment = 0
-              // initialBytesToStrip = 4, i.e. strip out the length field itself
-              new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4))
+            "frameDecoder",
+            // maxFrameLength = 2G
+            // lengthFieldOffset = 0
+            // lengthFieldLength = 4
+            // lengthAdjustment = 0
+            // initialBytesToStrip = 4, i.e. strip out the length field itself
+            new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4)
+          )
           .addLast("decoder", new ByteArrayDecoder())
           .addLast("handler", handler)
-      }
     })
 
     channelFuture = bootstrap.bind(new InetSocketAddress("localhost", 0))
@@ -78,9 +79,8 @@ private[spark] class RBackend {
       .getPort()
   }
 
-  def run(): Unit = {
+  def run(): Unit =
     channelFuture.channel.closeFuture().syncUninterruptibly()
-  }
 
   def close(): Unit = {
     if (channelFuture != null) {
@@ -113,14 +113,14 @@ private[spark] object RBackend extends Logging {
     try {
       // bind to random port
       val boundPort = sparkRBackend.init()
-      val serverSocket = new ServerSocket(
-          0, 1, InetAddress.getByName("localhost"))
+      val serverSocket =
+        new ServerSocket(0, 1, InetAddress.getByName("localhost"))
       val listenPort = serverSocket.getLocalPort()
 
       // tell the R process via temporary file
       val path = args(0)
-      val f = new File(path + ".tmp")
-      val dos = new DataOutputStream(new FileOutputStream(f))
+      val f    = new File(path + ".tmp")
+      val dos  = new DataOutputStream(new FileOutputStream(f))
       dos.writeInt(boundPort)
       dos.writeInt(listenPort)
       SerDe.writeString(dos, RUtils.rPackages.getOrElse(""))

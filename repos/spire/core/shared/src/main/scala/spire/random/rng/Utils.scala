@@ -51,9 +51,8 @@ object Utils {
 
   @volatile private var seedUniquifier = 8682522807148012L
 
-  def intFromTime(time: Long = System.nanoTime): Int = {
+  def intFromTime(time: Long = System.nanoTime): Int =
     longFromTime(time).toInt
-  }
 
   def longFromTime(time: Long = System.nanoTime): Long = {
     seedUniquifier += 1
@@ -85,7 +84,7 @@ object Utils {
   }
 
   def seedFromArray(length: Int, seed: Array[Int]): Array[Int] = {
-    val a = seedFromInt(length, 19650218)
+    val a        = seedFromInt(length, 19650218)
     val length_1 = length - 1
 
     var i = 1
@@ -128,7 +127,7 @@ object Utils {
   }
 
   def seedFromArray(length: Int, seed: Array[Long]): Array[Long] = {
-    val a = seedFromLong(length, 19650218)
+    val a        = seedFromLong(length, 19650218)
     val length_1 = length - 1
 
     var i = 1

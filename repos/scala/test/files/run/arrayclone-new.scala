@@ -15,7 +15,7 @@ object Test extends App {
 
 object BooleanArrayClone {
   val it: Array[Boolean] = Array(true, false);
-  val cloned = it.clone();
+  val cloned             = it.clone();
   assert(cloned.sameElements(it));
   cloned(0) = false;
   assert(it(0) == true)
@@ -23,7 +23,7 @@ object BooleanArrayClone {
 
 object ByteArrayClone {
   val it: Array[Byte] = Array(1, 0);
-  val cloned = it.clone();
+  val cloned          = it.clone();
   assert(cloned.sameElements(it));
   cloned(0) = 0;
   assert(it(0) == 1)
@@ -31,7 +31,7 @@ object ByteArrayClone {
 
 object ShortArrayClone {
   val it: Array[Short] = Array(1, 0);
-  val cloned = it.clone();
+  val cloned           = it.clone();
   assert(cloned.sameElements(it));
   cloned(0) = 0;
   assert(it(0) == 1)
@@ -39,7 +39,7 @@ object ShortArrayClone {
 
 object CharArrayClone {
   val it: Array[Char] = Array(1, 0);
-  val cloned = it.clone();
+  val cloned          = it.clone();
   assert(cloned.sameElements(it));
   cloned(0) = 0;
   assert(it(0) == 1)
@@ -47,7 +47,7 @@ object CharArrayClone {
 
 object IntArrayClone {
   val it: Array[Int] = Array(1, 0);
-  val cloned = it.clone();
+  val cloned         = it.clone();
   assert(cloned.sameElements(it));
   cloned(0) = 0;
   assert(it(0) == 1)
@@ -55,7 +55,7 @@ object IntArrayClone {
 
 object LongArrayClone {
   val it: Array[Long] = Array(1, 0);
-  val cloned = it.clone();
+  val cloned          = it.clone();
   assert(cloned.sameElements(it));
   cloned(0) = 0;
   assert(it(0) == 1)
@@ -63,7 +63,7 @@ object LongArrayClone {
 
 object FloatArrayClone {
   val it: Array[Float] = Array(1, 0);
-  val cloned = it.clone();
+  val cloned           = it.clone();
   assert(cloned.sameElements(it));
   cloned(0) = 0;
   assert(it(0) == 1)
@@ -71,7 +71,7 @@ object FloatArrayClone {
 
 object DoubleArrayClone {
   val it: Array[Double] = Array(1, 0);
-  val cloned = it.clone();
+  val cloned            = it.clone();
   assert(cloned.sameElements(it));
   cloned(0) = 0;
   assert(it(0) == 1)
@@ -79,7 +79,7 @@ object DoubleArrayClone {
 
 object ObjectArrayClone {
   val it: Array[String] = Array("1", "0");
-  val cloned = it.clone();
+  val cloned            = it.clone();
   assert(cloned.sameElements(it));
   cloned(0) = "0";
   assert(it(0) == "1")
@@ -95,7 +95,7 @@ object PolymorphicArrayClone {
 
   testIt(Array("one", "two"), "one", "two");
 
-  class Mangler[T : ClassTag](ts: T*) {
+  class Mangler[T: ClassTag](ts: T*) {
     // this will always be a BoxedAnyArray even after we've unboxed its contents.
     val it = ts.toArray[T];
   }

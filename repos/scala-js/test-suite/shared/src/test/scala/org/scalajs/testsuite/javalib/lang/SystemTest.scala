@@ -67,15 +67,17 @@ class SystemTest {
     assertEquals("abc123", string0.mkString)
 
     val ab01Chars = Array("ab".toCharArray, "01".toCharArray)
-    val chars = new Array[Array[Char]](32)
+    val chars     = new Array[Array[Char]](32)
     System.arraycopy(ab01Chars, 0, chars, 0, 2)
     for (i <- Seq(0, 2, 4, 8, 16)) {
       System.arraycopy(chars, i / 4, chars, i, i)
     }
 
     assertEquals(12, chars.filter(_ == null).length)
-    assertEquals("ab01ab0101ab01ab0101ab0101ab01ab0101ab01",
-                 chars.filter(_ != null).map(_.mkString).mkString)
+    assertEquals(
+      "ab01ab0101ab01ab0101ab0101ab01ab0101ab01",
+      chars.filter(_ != null).map(_.mkString).mkString
+    )
   }
 
   @Test def arraycopy_with_range_overlaps_for_the_same_array(): Unit = {
@@ -109,8 +111,8 @@ class SystemTest {
   @Test def identityHashCode(): Unit = {
     class HasIDHashCode
 
-    val x1 = new HasIDHashCode
-    val x2 = new HasIDHashCode
+    val x1          = new HasIDHashCode
+    val x2          = new HasIDHashCode
     val x1FirstHash = x1.hashCode()
     assertEquals(x1FirstHash, x1.hashCode())
     if (!executingInJVM) assertNotEquals(x1.hashCode(), x2.hashCode())
@@ -126,14 +128,15 @@ class SystemTest {
     assertEquals(list2, list1)
     assertEquals(list2.hashCode(), list1.hashCode())
     assertNotEquals(
-        System.identityHashCode(list1), System.identityHashCode(list2))
+      System.identityHashCode(list1),
+      System.identityHashCode(list2)
+    )
   }
 
-  @Test def identityHashCode_of_null(): Unit = {
+  @Test def identityHashCode_of_null(): Unit =
     assertEquals(0, System.identityHashCode(null))
-  }
 
-  @Test def identityHashCode_of_values_implemented_as_JS_primitives(): Unit = {
+  @Test def identityHashCode_of_values_implemented_as_JS_primitives(): Unit =
     if (!executingInJVM) {
       assertEquals("foo".hashCode(), System.identityHashCode("foo"))
       assertEquals("".hashCode(), System.identityHashCode(""))
@@ -146,5 +149,4 @@ class SystemTest {
 
       assertEquals(().hashCode(), System.identityHashCode(()))
     }
-  }
 }

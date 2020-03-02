@@ -24,10 +24,9 @@ object Agent {
   /**
     * Default agent implementation.
     */
-  private final class SecretAgent[T](
-      initialValue: T, context: ExecutionContext)
+  private final class SecretAgent[T](initialValue: T, context: ExecutionContext)
       extends Agent[T] {
-    private val ref = Ref(initialValue)
+    private val ref     = Ref(initialValue)
     private val updater = SerializedSuspendableExecutionContext(10)(context)
 
     def get(): T = ref.single.get
@@ -39,11 +38,13 @@ object Agent {
       withinTransaction(new Runnable { def run = ref.single.transform(f) })
 
     def sendOff(f: T ⇒ T)(implicit ec: ExecutionContext): Unit =
-      withinTransaction(
-          new Runnable {
+      withinTransaction(new Runnable {
         def run =
-          try updater.suspend() finally ec.execute(new Runnable {
-            def run = try ref.single.transform(f) finally updater.resume()
+          try updater.suspend()
+          finally ec.execute(new Runnable {
+            def run =
+              try ref.single.transform(f)
+              finally updater.resume()
           })
       })
 
@@ -54,12 +55,13 @@ object Agent {
 
     def alterOff(f: T ⇒ T)(implicit ec: ExecutionContext): Future[T] = {
       val result = Promise[T]()
-      withinTransaction(
-          new Runnable {
+      withinTransaction(new Runnable {
         def run = {
           updater.suspend()
           result completeWith Future(
-              try ref.single.transformAndGet(f) finally updater.resume())
+            try ref.single.transformAndGet(f)
+            finally updater.resume()
+          )
         }
       })
       result.future
@@ -68,17 +70,16 @@ object Agent {
     /**
       * Internal helper method
       */
-    private final def withinTransaction(run: Runnable): Unit = {
+    private final def withinTransaction(run: Runnable): Unit =
       Txn.findCurrent match {
         case Some(txn) ⇒ Txn.afterCommit(_ ⇒ updater.execute(run))(txn)
-        case _ ⇒ updater.execute(run)
+        case _         ⇒ updater.execute(run)
       }
-    }
 
     /**
       * Internal helper method
       */
-    private final def doAlter(f: ⇒ T): Future[T] = {
+    private final def doAlter(f: ⇒ T): Future[T] =
       Txn.findCurrent match {
         case Some(txn) ⇒
           val result = Promise[T]()
@@ -86,7 +87,6 @@ object Agent {
           result.future
         case _ ⇒ Future(f)(updater)
       }
-    }
 
     def future(): Future[T] = Future(ref.single.get)(updater)
 

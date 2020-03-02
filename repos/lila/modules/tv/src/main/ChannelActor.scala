@@ -37,9 +37,7 @@ private[tv] final class ChannelActor(channel: Tv.Channel) extends Actor {
             rematch(game) orElse feature(candidates) foreach elect
           case _ => feature(candidates) foreach elect
         }
-        manyIds = candidates.sortBy { g =>
-          -(~g.averageUsersRating)
-        }.map(_.id)
+        manyIds = candidates.sortBy(g => -(~g.averageUsersRating)).map(_.id)
       }
   }
 
@@ -49,7 +47,7 @@ private[tv] final class ChannelActor(channel: Tv.Channel) extends Actor {
 
   def wayBetter(game: Game, candidates: List[Game]) = feature(candidates) map {
     case Some(next) if isWayBetter(game, next) => next.some
-    case _ => none
+    case _                                     => none
   }
 
   def isWayBetter(g1: Game, g2: Game) =
@@ -63,19 +61,20 @@ private[tv] final class ChannelActor(channel: Tv.Channel) extends Actor {
 
   def score(game: Game): Int = math.round {
     (heuristics map {
-          case (fn, coefficient) => heuristicBox(fn(game)) * coefficient
-        }).sum * 1000
+      case (fn, coefficient) => heuristicBox(fn(game)) * coefficient
+    }).sum * 1000
   }
 
   type Heuristic = Game => Float
   val heuristicBox = box(0 to 1) _
-  val ratingBox = box(1000 to 2700) _
-  val turnBox = box(1 to 25) _
+  val ratingBox    = box(1000 to 2700) _
+  val turnBox      = box(1 to 25) _
 
   val heuristics: List[(Heuristic, Float)] = List(
-      ratingHeuristic(Color.White) -> 1.2f,
-      ratingHeuristic(Color.Black) -> 1.2f,
-      progressHeuristic -> 0.7f)
+    ratingHeuristic(Color.White) -> 1.2f,
+    ratingHeuristic(Color.Black) -> 1.2f,
+    progressHeuristic            -> 0.7f
+  )
 
   def ratingHeuristic(color: Color): Heuristic =
     game => ratingBox(game.player(color).rating | 1400)

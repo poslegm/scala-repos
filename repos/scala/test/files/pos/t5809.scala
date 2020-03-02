@@ -1,6 +1,6 @@
 package object foo {
   implicit class EnrichedInt(foo: Int) {
-    def bar = ???
+    def bar   = ???
     def bippy = foo
   }
 }

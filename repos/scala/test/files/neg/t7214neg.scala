@@ -26,13 +26,13 @@ class Crash {
   }
   (t: Any) match {
     case Extractor() =>
-    case _ =>
+    case _           =>
   }
 
   // checking that correct outer tests are applied when
   // aliases for path dependent types are involved.
   val c2 = new C
-  type CdotT = c.T
+  type CdotT  = c.T
   type C2dotT = c2.T
 
   val outerField =
@@ -41,7 +41,9 @@ class Crash {
 
   (t: Any) match {
     case _: C2dotT =>
-      println(s"!!! wrong match. t.outer=${outerField.get(t)} / c2 = $c2") // this matches on 2.10.0
+      println(
+        s"!!! wrong match. t.outer=${outerField.get(t)} / c2 = $c2"
+      ) // this matches on 2.10.0
     case _: CdotT =>
     case _ =>
       println(s"!!! wrong match. t.outer=${outerField.get(t)} / c = $c")

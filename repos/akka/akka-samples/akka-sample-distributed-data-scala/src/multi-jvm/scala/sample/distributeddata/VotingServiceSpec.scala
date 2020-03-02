@@ -17,11 +17,14 @@ object VotingServiceSpec extends MultiNodeConfig {
   val node2 = role("node-2")
   val node3 = role("node-3")
 
-  commonConfig(ConfigFactory.parseString("""
+  commonConfig(
+    ConfigFactory
+      .parseString("""
     akka.loglevel = INFO
     akka.actor.provider = "akka.cluster.ClusterActorRefProvider"
     akka.log-dead-letters-during-shutdown = off
-    """))
+    """)
+  )
 }
 
 class VotingServiceSpecMultiJvmNode1 extends VotingServiceSpec
@@ -29,7 +32,8 @@ class VotingServiceSpecMultiJvmNode2 extends VotingServiceSpec
 class VotingServiceSpecMultiJvmNode3 extends VotingServiceSpec
 
 class VotingServiceSpec
-    extends MultiNodeSpec(VotingServiceSpec) with STMultiNodeSpec
+    extends MultiNodeSpec(VotingServiceSpec)
+    with STMultiNodeSpec
     with ImplicitSender {
   import VotingServiceSpec._
 
@@ -61,7 +65,7 @@ class VotingServiceSpec
     "count votes correctly" in within(15.seconds) {
       import VotingService._
       val votingService = system.actorOf(Props[VotingService], "votingService")
-      val N = 1000
+      val N             = 1000
       runOn(node1) {
         votingService ! Open
         for (n ← 1 to N) {

@@ -29,7 +29,7 @@ abstract class JSPrimitives {
   import jsDefinitions._
   import scalaPrimitives._
 
-  val F2JS = 305 // FunctionN to js.FunctionN
+  val F2JS     = 305 // FunctionN to js.FunctionN
   val F2JSTHIS = 306 // FunctionN to js.ThisFunction{N-1}
 
   val DYNNEW = 321 // Instantiate a new JavaScript object
@@ -40,9 +40,9 @@ abstract class JSPrimitives {
 
   val ARR_CREATE = 337 // js.Array.apply (array literal syntax)
 
-  val TYPEOF = 344 // typeof x
+  val TYPEOF   = 344 // typeof x
   val DEBUGGER = 345 // js.debugger()
-  val HASPROP = 346 // js.Object.hasProperty(o, p), equiv to `p in o` in JS
+  val HASPROP  = 346 // js.Object.hasProperty(o, p), equiv to `p in o` in JS
   val OBJPROPS = 347 // js.Object.properties(o), equiv to `for (p in o)` in JS
   val JS_NATIVE =
     348 // js.native. Marker method. Fails if tried to be emitted.
@@ -50,7 +50,7 @@ abstract class JSPrimitives {
   val UNITVAL = 349 // () value, which is undefined
 
   val CONSTRUCTOROF = 352 // runtime.constructorOf(clazz)
-  val LINKING_INFO = 354 // $linkingInfo
+  val LINKING_INFO  = 354 // $linkingInfo
 
   /** Initialize the map of primitive methods (for GenJSCode) */
   def init(): Unit = initWithPrimitives(addPrimitive)
@@ -68,15 +68,14 @@ abstract class JSPrimitives {
     scalaJSPrimitives.contains(sym)
 
   /** For a primitive, is it one for which we should emit its body anyway? */
-  def shouldEmitPrimitiveBody(sym: Symbol): Boolean = {
+  def shouldEmitPrimitiveBody(sym: Symbol): Boolean =
     /* No @switch because some Scala 2.11 versions erroneously report a
      * warning for switch matches with less than 3 non-default cases.
      */
     scalaPrimitives.getPrimitive(sym) match {
       case F2JS | F2JSTHIS => true
-      case _ => false
+      case _               => false
     }
-  }
 
   private val scalaJSPrimitives = mutable.Map.empty[Symbol, Int]
 

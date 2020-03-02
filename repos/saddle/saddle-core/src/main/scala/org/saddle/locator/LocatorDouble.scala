@@ -15,7 +15,10 @@
   **/
 package org.saddle.locator
 
-import it.unimi.dsi.fastutil.doubles.{Double2IntOpenHashMap, Double2IntLinkedOpenHashMap}
+import it.unimi.dsi.fastutil.doubles.{
+  Double2IntOpenHashMap,
+  Double2IntLinkedOpenHashMap
+}
 
 /**
   * A double-to-integer hash map, backed by fastutil implementation
@@ -46,8 +49,8 @@ class LocatorDouble(sz: Int = Locator.INIT_CAPACITY) extends Locator[Double] {
 
   def counts() = {
     val iter = map.keySet().iterator()
-    val res = Array.ofDim[Int](size)
-    var i = 0
+    val res  = Array.ofDim[Int](size)
+    var i    = 0
     while (iter.hasNext) {
       res(i) = cts.get(iter.nextDouble())
       i += 1

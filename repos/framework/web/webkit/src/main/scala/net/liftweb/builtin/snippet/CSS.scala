@@ -27,11 +27,9 @@ import scala.xml._
 object CSS extends DispatchSnippet {
   def dispatch: DispatchIt = {
     case "blueprint" =>
-      _ =>
-        blueprint
-      case "fancyType" =>
-      _ =>
-        fancyType
+      _ => blueprint
+    case "fancyType" =>
+      _ => fancyType
   }
 
   /**
@@ -44,19 +42,24 @@ object CSS extends DispatchSnippet {
     * to your template and Lift will replace it with the path to the blueprint css styles
     * (screen and print media)
     */
-  def blueprint: NodeSeq = {
+  def blueprint: NodeSeq =
     <xml:group>
-      <link rel="stylesheet" href={"/" + LiftRules.resourceServerPath +
-                                   "/blueprint/screen.css"} type="text/css"
+      <link rel="stylesheet" href={
+      "/" + LiftRules.resourceServerPath +
+        "/blueprint/screen.css"
+    } type="text/css"
         media="screen, projection"/>
-      <link rel="stylesheet" href={"/" + LiftRules.resourceServerPath +
-                                   "/blueprint/print.css"} type="text/css" media="print"/>
-    </xml:group> ++ Unparsed("""
+      <link rel="stylesheet" href={
+      "/" + LiftRules.resourceServerPath +
+        "/blueprint/print.css"
+    } type="text/css" media="print"/>
+    </xml:group> ++ Unparsed(
+      """
   <!--[if IE]><link rel="stylesheet" href=""" + '"' +
         S.contextPath + """/""" + LiftRules.resourceServerPath +
         """/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
-    """)
-  }
+    """
+    )
 
   /**
     * Add
@@ -69,9 +72,10 @@ object CSS extends DispatchSnippet {
     * css styles
     * (screen media)
     */
-  def fancyType: NodeSeq = {
-    <link rel="stylesheet" href={"/" + LiftRules.resourceServerPath +
-                                 "/blueprint/plugins/fancy-type/screen.css"}
+  def fancyType: NodeSeq =
+    <link rel="stylesheet" href={
+      "/" + LiftRules.resourceServerPath +
+        "/blueprint/plugins/fancy-type/screen.css"
+    }
       type="text/css" media="screen, projection"/>
-  }
 }

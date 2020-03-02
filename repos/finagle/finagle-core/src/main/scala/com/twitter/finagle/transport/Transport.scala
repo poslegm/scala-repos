@@ -5,7 +5,15 @@ import com.twitter.finagle.context.Contexts
 import com.twitter.finagle.{Stack, Status}
 import com.twitter.finagle.ssl
 import com.twitter.io.{Buf, Reader, Writer}
-import com.twitter.util.{Closable, Future, Promise, Time, Throw, Return, Duration}
+import com.twitter.util.{
+  Closable,
+  Future,
+  Promise,
+  Time,
+  Throw,
+  Return,
+  Duration
+}
 import java.net.SocketAddress
 import java.security.cert.Certificate
 
@@ -68,15 +76,15 @@ trait Transport[In, Out] extends Closable { self =>
     */
   def map[In1, Out1](f: In1 => In, g: Out => Out1): Transport[In1, Out1] =
     new Transport[In1, Out1] {
-      def write(req: In1): Future[Unit] = Future(f(req)).flatMap(self.write)
-      def read(): Future[Out1] = self.read().map(g)
-      def status: Status = self.status
-      val onClose: Future[Throwable] = self.onClose
-      def localAddress: SocketAddress = self.localAddress
-      def remoteAddress: SocketAddress = self.remoteAddress
+      def write(req: In1): Future[Unit]        = Future(f(req)).flatMap(self.write)
+      def read(): Future[Out1]                 = self.read().map(g)
+      def status: Status                       = self.status
+      val onClose: Future[Throwable]           = self.onClose
+      def localAddress: SocketAddress          = self.localAddress
+      def remoteAddress: SocketAddress         = self.remoteAddress
       def peerCertificate: Option[Certificate] = self.peerCertificate
-      def close(deadline: Time): Future[Unit] = self.close(deadline)
-      override def toString: String = self.toString
+      def close(deadline: Time): Future[Unit]  = self.close(deadline)
+      override def toString: String            = self.toString
     }
 }
 
@@ -217,12 +225,12 @@ object Transport {
     * @param f A mapping from `A` to `Future[Option[Buf]]`.
     */
   private[finagle] def copyToWriter[A](trans: Transport[_, A], w: Writer)(
-      f: A => Future[Option[Buf]]): Future[Unit] = {
+      f: A => Future[Option[Buf]]
+  ): Future[Unit] =
     trans.read().flatMap(f).flatMap {
-      case None => Future.Done
+      case None      => Future.Done
       case Some(buf) => w.write(buf) before copyToWriter(trans, w)(f)
     }
-  }
 
   /**
     * Collates a transport, using the collation function `chunkOfA`,
@@ -240,13 +248,13 @@ object Transport {
     */
   private[finagle] def collate[A](
       trans: Transport[_, A],
-      chunkOfA: A => Future[Option[Buf]]): Reader with Future[Unit] =
+      chunkOfA: A => Future[Option[Buf]]
+  ): Reader with Future[Unit] =
     new Promise[Unit] with Reader {
       private[this] val rw = Reader.writable()
-      become(
-          Transport.copyToWriter(trans, rw)(chunkOfA) respond {
+      become(Transport.copyToWriter(trans, rw)(chunkOfA) respond {
         case Throw(exc) => rw.fail(exc)
-        case Return(_) => rw.close()
+        case Return(_)  => rw.close()
       })
 
       def read(n: Int) = rw.read(n)
@@ -281,13 +289,13 @@ trait TransportFactory {
   */
 abstract class TransportProxy[In, Out](self: Transport[In, Out])
     extends Transport[In, Out] {
-  def status: Status = self.status
-  val onClose: Future[Throwable] = self.onClose
-  def localAddress: SocketAddress = self.localAddress
-  def remoteAddress: SocketAddress = self.remoteAddress
+  def status: Status                       = self.status
+  val onClose: Future[Throwable]           = self.onClose
+  def localAddress: SocketAddress          = self.localAddress
+  def remoteAddress: SocketAddress         = self.remoteAddress
   def peerCertificate: Option[Certificate] = self.peerCertificate
-  def close(deadline: Time): Future[Unit] = self.close(deadline)
-  override def toString: String = self.toString
+  def close(deadline: Time): Future[Unit]  = self.close(deadline)
+  override def toString: String            = self.toString
 }
 
 /**
@@ -304,20 +312,17 @@ class QueueTransport[In, Out](writeq: AsyncQueue[In], readq: AsyncQueue[Out])
   }
 
   def read(): Future[Out] =
-    readq.poll() onFailure { exc =>
-      closep.updateIfEmpty(Throw(exc))
-    }
+    readq.poll() onFailure { exc => closep.updateIfEmpty(Throw(exc)) }
 
   def status = if (closep.isDefined) Status.Closed else Status.Open
   def close(deadline: Time) = {
-    val ex = new IllegalStateException(
-        "close() is undefined on QueueTransport")
+    val ex = new IllegalStateException("close() is undefined on QueueTransport")
     closep.updateIfEmpty(Return(ex))
     Future.exception(ex)
   }
 
-  val onClose = closep
-  val localAddress = new SocketAddress {}
-  val remoteAddress = new SocketAddress {}
+  val onClose                              = closep
+  val localAddress                         = new SocketAddress {}
+  val remoteAddress                        = new SocketAddress {}
   def peerCertificate: Option[Certificate] = None
 }

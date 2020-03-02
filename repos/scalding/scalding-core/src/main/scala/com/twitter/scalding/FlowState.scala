@@ -21,8 +21,10 @@ import java.util.WeakHashMap
 /**
   * Immutable state that we attach to the Flow using the FlowStateMap
   */
-case class FlowState(sourceMap: Map[String, Source] = Map.empty,
-                     flowConfigUpdates: Set[(String, String)] = Set()) {
+case class FlowState(
+    sourceMap: Map[String, Source] = Map.empty,
+    flowConfigUpdates: Set[(String, String)] = Set()
+) {
   def addSource(id: String, s: Source): FlowState =
     copy(sourceMap = sourceMap + (id -> s))
 
@@ -52,19 +54,18 @@ object FlowStateMap {
   /**
     * Function to update a state.
     */
-  def mutate[T](fd: FlowDef)(fn: FlowState => (FlowState, T)): T = {
+  def mutate[T](fd: FlowDef)(fn: FlowState => (FlowState, T)): T =
     flowMap.synchronized {
-      val oldState = Option(flowMap.get(fd)).getOrElse(FlowState())
+      val oldState      = Option(flowMap.get(fd)).getOrElse(FlowState())
       val (newState, t) = fn(oldState)
       flowMap.put(fd, newState)
       t
     }
-  }
   def get(fd: FlowDef): Option[FlowState] =
-    flowMap.synchronized { Option(flowMap.get(fd)) }
+    flowMap.synchronized(Option(flowMap.get(fd)))
 
   def clear(fd: FlowDef): Unit =
-    flowMap.synchronized { flowMap.remove(fd) }
+    flowMap.synchronized(flowMap.remove(fd))
 
   def validateSources(flowDef: FlowDef, mode: Mode): Unit =
     /*
@@ -73,8 +74,10 @@ object FlowStateMap {
      */
     if (!flowDef.getSources.isEmpty) {
       get(flowDef)
-        .getOrElse(sys.error(
-                "Could not find a flowState for flowDef: %s".format(flowDef)))
+        .getOrElse(
+          sys
+            .error("Could not find a flowState for flowDef: %s".format(flowDef))
+        )
         .validateSources(mode)
     } else ()
 }

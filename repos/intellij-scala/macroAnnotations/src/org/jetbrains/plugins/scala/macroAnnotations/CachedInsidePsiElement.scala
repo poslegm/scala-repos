@@ -16,22 +16,23 @@ import scala.reflect.macros.whitebox
   */
 class CachedInsidePsiElement(psiElement: Any, dependencyItem: Object)
     extends StaticAnnotation {
-  def macroTransform(annottees: Any*) = macro CachedInsidePsiElement.cachedInsidePsiElementImpl
+  def macroTransform(annottees: Any*) =
+    macro CachedInsidePsiElement.cachedInsidePsiElementImpl
 }
 
 object CachedInsidePsiElement {
-  def cachedInsidePsiElementImpl(c: whitebox.Context)(
-      annottees: c.Tree*): c.Expr[Any] = {
+  def cachedInsidePsiElementImpl(
+      c: whitebox.Context
+  )(annottees: c.Tree*): c.Expr[Any] = {
     import CachedMacroUtil._
     import c.universe._
     implicit val x: c.type = c
-    def parameters: (Tree, Tree) = {
+    def parameters: (Tree, Tree) =
       c.prefix.tree match {
         case q"new CachedInsidePsiElement(..$params)" if params.length == 2 =>
           (params.head, modCountParamToModTracker(c)(params(1), params.head))
         case _ => abort("Wrong annotation parameters!")
       }
-    }
 
     //annotation parameters
     val (elem, dependencyItem) = parameters
@@ -43,14 +44,14 @@ object CachedInsidePsiElement {
         }
 
         //generated names
-        val cachedFunName = generateTermName("cachedFun")
-        val keyId = c.freshName(name.toString + "cacheKey")
-        val key = generateTermName(name + "Key")
+        val cachedFunName  = generateTermName("cachedFun")
+        val keyId          = c.freshName(name.toString + "cacheKey")
+        val key            = generateTermName(name + "Key")
         val cacheStatsName = generateTermName("cacheStats")
-        val defdefFQN = thisFunctionFQN(name.toString)
+        val defdefFQN      = thisFunctionFQN(name.toString)
 
         val analyzeCaches = analyzeCachesEnabled(c)
-        val provider = TypeName("MyProvider")
+        val provider      = TypeName("MyProvider")
 
         val actualCalculation =
           transformRhsToAnalyzeCaches(c)(cacheStatsName, retTp, rhs)
@@ -64,8 +65,8 @@ object CachedInsidePsiElement {
           ..$analyzeCachesEnterCacheArea
           $cachesUtilFQN.get($elem, $key, new $cachesUtilFQN.$provider[Any, $retTp]($elem, _ => $cachedFunName())($dependencyItem))
           """
-        val updatedDef = DefDef(
-            mods, name, tpParams, paramss, retTp, updatedRhs)
+        val updatedDef =
+          DefDef(mods, name, tpParams, paramss, retTp, updatedRhs)
         val res = q"""
           private val $key = $cachesUtilFQN.getOrCreateKey[$keyTypeFQN[$cachedValueTypeFQN[$retTp]]]($keyId)
           ${if (analyzeCaches)

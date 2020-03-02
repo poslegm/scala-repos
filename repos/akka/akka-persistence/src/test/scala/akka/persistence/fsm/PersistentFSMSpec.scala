@@ -15,7 +15,8 @@ import scala.reflect.ClassTag
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 abstract class PersistentFSMSpec(config: Config)
-    extends PersistenceSpec(config) with ImplicitSender {
+    extends PersistenceSpec(config)
+    with ImplicitSender {
   import PersistentFSMSpec._
 
   //Dummy report actor, for tests that don't need it
@@ -25,14 +26,15 @@ abstract class PersistentFSMSpec(config: Config)
     "function as a regular FSM " in {
       val persistenceId = name
       val fsmRef = system.actorOf(
-          WebStoreCustomerFSM.props(persistenceId, dummyReportActorRef))
+        WebStoreCustomerFSM.props(persistenceId, dummyReportActorRef)
+      )
 
       watch(fsmRef)
       fsmRef ! SubscribeTransitionCallBack(testActor)
 
-      val shirt = Item("1", "Shirt", 59.99F)
-      val shoes = Item("2", "Shoes", 89.99F)
-      val coat = Item("3", "Coat", 119.99F)
+      val shirt = Item("1", "Shirt", 59.99f)
+      val shoes = Item("2", "Shoes", 89.99f)
+      val coat  = Item("3", "Coat", 119.99f)
 
       fsmRef ! GetCurrentCart
       fsmRef ! AddItem(shirt)
@@ -62,12 +64,13 @@ abstract class PersistentFSMSpec(config: Config)
     "function as a regular FSM on state timeout" taggedAs TimingTest in {
       val persistenceId = name
       val fsmRef = system.actorOf(
-          WebStoreCustomerFSM.props(persistenceId, dummyReportActorRef))
+        WebStoreCustomerFSM.props(persistenceId, dummyReportActorRef)
+      )
 
       watch(fsmRef)
       fsmRef ! SubscribeTransitionCallBack(testActor)
 
-      val shirt = Item("1", "Shirt", 59.99F)
+      val shirt = Item("1", "Shirt", 59.99f)
 
       fsmRef ! AddItem(shirt)
 
@@ -85,13 +88,14 @@ abstract class PersistentFSMSpec(config: Config)
       val persistenceId = name
 
       val fsmRef = system.actorOf(
-          WebStoreCustomerFSM.props(persistenceId, dummyReportActorRef))
+        WebStoreCustomerFSM.props(persistenceId, dummyReportActorRef)
+      )
       watch(fsmRef)
       fsmRef ! SubscribeTransitionCallBack(testActor)
 
-      val shirt = Item("1", "Shirt", 59.99F)
-      val shoes = Item("2", "Shoes", 89.99F)
-      val coat = Item("3", "Coat", 119.99F)
+      val shirt = Item("1", "Shirt", 59.99f)
+      val shoes = Item("2", "Shoes", 89.99f)
+      val coat  = Item("3", "Coat", 119.99f)
 
       fsmRef ! GetCurrentCart
       fsmRef ! AddItem(shirt)
@@ -110,7 +114,8 @@ abstract class PersistentFSMSpec(config: Config)
       expectTerminated(fsmRef)
 
       val recoveredFsmRef = system.actorOf(
-          WebStoreCustomerFSM.props(persistenceId, dummyReportActorRef))
+        WebStoreCustomerFSM.props(persistenceId, dummyReportActorRef)
+      )
       watch(recoveredFsmRef)
       recoveredFsmRef ! SubscribeTransitionCallBack(testActor)
 
@@ -139,13 +144,14 @@ abstract class PersistentFSMSpec(config: Config)
 
       val reportActorProbe = TestProbe()
       val fsmRef = system.actorOf(
-          WebStoreCustomerFSM.props(persistenceId, reportActorProbe.ref))
+        WebStoreCustomerFSM.props(persistenceId, reportActorProbe.ref)
+      )
       watch(fsmRef)
       fsmRef ! SubscribeTransitionCallBack(testActor)
 
-      val shirt = Item("1", "Shirt", 59.99F)
-      val shoes = Item("2", "Shoes", 89.99F)
-      val coat = Item("3", "Coat", 119.99F)
+      val shirt = Item("1", "Shirt", 59.99f)
+      val shoes = Item("2", "Shoes", 89.99f)
+      val coat  = Item("3", "Coat", 119.99f)
 
       fsmRef ! AddItem(shirt)
       fsmRef ! AddItem(shoes)
@@ -165,13 +171,14 @@ abstract class PersistentFSMSpec(config: Config)
 
       val reportActorProbe = TestProbe()
       val fsmRef = system.actorOf(
-          WebStoreCustomerFSM.props(persistenceId, reportActorProbe.ref))
+        WebStoreCustomerFSM.props(persistenceId, reportActorProbe.ref)
+      )
       watch(fsmRef)
       fsmRef ! SubscribeTransitionCallBack(testActor)
 
-      val shirt = Item("1", "Shirt", 59.99F)
-      val shoes = Item("2", "Shoes", 89.99F)
-      val coat = Item("3", "Coat", 119.99F)
+      val shirt = Item("1", "Shirt", 59.99f)
+      val shoes = Item("2", "Shoes", 89.99f)
+      val coat  = Item("3", "Coat", 119.99f)
 
       fsmRef ! AddItem(shirt)
       fsmRef ! AddItem(shoes)
@@ -187,24 +194,28 @@ abstract class PersistentFSMSpec(config: Config)
     "recover successfully with correct state timeout" taggedAs TimingTest in {
       val persistenceId = name
       val fsmRef = system.actorOf(
-          WebStoreCustomerFSM.props(persistenceId, dummyReportActorRef))
+        WebStoreCustomerFSM.props(persistenceId, dummyReportActorRef)
+      )
 
       watch(fsmRef)
       fsmRef ! SubscribeTransitionCallBack(testActor)
 
-      val shirt = Item("1", "Shirt", 59.99F)
+      val shirt = Item("1", "Shirt", 59.99f)
 
       fsmRef ! AddItem(shirt)
 
       expectMsg(CurrentState(fsmRef, LookingAround, None))
       expectMsg(Transition(fsmRef, LookingAround, Shopping, Some(1 second)))
 
-      expectNoMsg(0.6 seconds) // arbitrarily chosen delay, less than the timeout, before stopping the FSM
+      expectNoMsg(
+        0.6 seconds
+      ) // arbitrarily chosen delay, less than the timeout, before stopping the FSM
       fsmRef ! PoisonPill
       expectTerminated(fsmRef)
 
       var recoveredFsmRef = system.actorOf(
-          WebStoreCustomerFSM.props(persistenceId, dummyReportActorRef))
+        WebStoreCustomerFSM.props(persistenceId, dummyReportActorRef)
+      )
       watch(recoveredFsmRef)
       recoveredFsmRef ! SubscribeTransitionCallBack(testActor)
 
@@ -212,15 +223,19 @@ abstract class PersistentFSMSpec(config: Config)
 
       within(0.9 seconds, 1.9 seconds) {
         expectMsg(
-            Transition(recoveredFsmRef, Shopping, Inactive, Some(2 seconds)))
+          Transition(recoveredFsmRef, Shopping, Inactive, Some(2 seconds))
+        )
       }
 
-      expectNoMsg(0.6 seconds) // arbitrarily chosen delay, less than the timeout, before stopping the FSM
+      expectNoMsg(
+        0.6 seconds
+      ) // arbitrarily chosen delay, less than the timeout, before stopping the FSM
       recoveredFsmRef ! PoisonPill
       expectTerminated(recoveredFsmRef)
 
       recoveredFsmRef = system.actorOf(
-          WebStoreCustomerFSM.props(persistenceId, dummyReportActorRef))
+        WebStoreCustomerFSM.props(persistenceId, dummyReportActorRef)
+      )
       watch(recoveredFsmRef)
       recoveredFsmRef ! SubscribeTransitionCallBack(testActor)
 
@@ -230,11 +245,14 @@ abstract class PersistentFSMSpec(config: Config)
 
     "not trigger onTransition for stay()" taggedAs TimingTest in {
       val persistenceId = name
-      val probe = TestProbe()
+      val probe         = TestProbe()
       val fsmRef =
         system.actorOf(SimpleTransitionFSM.props(persistenceId, probe.ref))
 
-      probe.expectMsg(3.seconds, "LookingAround -> LookingAround") // caused by initialize(), OK
+      probe.expectMsg(
+        3.seconds,
+        "LookingAround -> LookingAround"
+      ) // caused by initialize(), OK
 
       fsmRef ! "goto(the same state)" // causes goto()
       probe.expectMsg(3.seconds, "LookingAround -> LookingAround")
@@ -247,12 +265,13 @@ abstract class PersistentFSMSpec(config: Config)
       val persistenceId = name
 
       val fsmRef = system.actorOf(
-          WebStoreCustomerFSM.props(persistenceId, dummyReportActorRef))
+        WebStoreCustomerFSM.props(persistenceId, dummyReportActorRef)
+      )
       watch(fsmRef)
 
-      val shirt = Item("1", "Shirt", 59.99F)
-      val shoes = Item("2", "Shoes", 89.99F)
-      val coat = Item("3", "Coat", 119.99F)
+      val shirt = Item("1", "Shirt", 59.99f)
+      val shoes = Item("2", "Shoes", 89.99f)
+      val coat  = Item("3", "Coat", 119.99f)
 
       fsmRef ! GetCurrentCart
       fsmRef ! AddItem(shirt)
@@ -275,17 +294,23 @@ abstract class PersistentFSMSpec(config: Config)
 
       expectTerminated(fsmRef)
 
-      val persistentEventsStreamer = system.actorOf(
-          PersistentEventsStreamer.props(persistenceId, testActor))
+      val persistentEventsStreamer =
+        system.actorOf(PersistentEventsStreamer.props(persistenceId, testActor))
 
-      expectMsg(ItemAdded(Item("1", "Shirt", 59.99F)))
-      expectMsgType[StateChangeEvent] //because a timeout is defined, State Change is persisted
+      expectMsg(ItemAdded(Item("1", "Shirt", 59.99f)))
+      expectMsgType[
+        StateChangeEvent
+      ] //because a timeout is defined, State Change is persisted
 
-      expectMsg(ItemAdded(Item("2", "Shoes", 89.99F)))
-      expectMsgType[StateChangeEvent] //because a timeout is defined, State Change is persisted
+      expectMsg(ItemAdded(Item("2", "Shoes", 89.99f)))
+      expectMsgType[
+        StateChangeEvent
+      ] //because a timeout is defined, State Change is persisted
 
-      expectMsg(ItemAdded(Item("3", "Coat", 119.99F)))
-      expectMsgType[StateChangeEvent] //because a timeout is defined, State Change is persisted
+      expectMsg(ItemAdded(Item("3", "Coat", 119.99f)))
+      expectMsgType[
+        StateChangeEvent
+      ] //because a timeout is defined, State Change is persisted
 
       expectMsg(OrderExecuted)
       expectMsgType[StateChangeEvent]
@@ -323,44 +348,44 @@ object PersistentFSMSpec {
   }
   case object EmptyShoppingCart extends ShoppingCart {
     def addItem(item: Item) = NonEmptyShoppingCart(item :: Nil)
-    def empty() = this
+    def empty()             = this
   }
   case class NonEmptyShoppingCart(items: Seq[Item]) extends ShoppingCart {
     def addItem(item: Item) = NonEmptyShoppingCart(items :+ item)
-    def empty() = EmptyShoppingCart
+    def empty()             = EmptyShoppingCart
   }
   //#customer-states-data
 
   //#customer-commands
   sealed trait Command
   case class AddItem(item: Item) extends Command
-  case object Buy extends Command
-  case object Leave extends Command
-  case object GetCurrentCart extends Command
+  case object Buy                extends Command
+  case object Leave              extends Command
+  case object GetCurrentCart     extends Command
   //#customer-commands
 
   //#customer-domain-events
   sealed trait DomainEvent
   case class ItemAdded(item: Item) extends DomainEvent
-  case object OrderExecuted extends DomainEvent
-  case object OrderDiscarded extends DomainEvent
+  case object OrderExecuted        extends DomainEvent
+  case object OrderDiscarded       extends DomainEvent
   //#customer-domain-events
 
   //Side effects - report events to be sent to some "Report Actor"
   sealed trait ReportEvent
   case class PurchaseWasMade(items: Seq[Item]) extends ReportEvent
-  case object ShoppingCardDiscarded extends ReportEvent
+  case object ShoppingCardDiscarded            extends ReportEvent
 
   class SimpleTransitionFSM(_persistenceId: String, reportActor: ActorRef)(
-      implicit val domainEventClassTag: ClassTag[DomainEvent])
-      extends PersistentFSM[UserState, ShoppingCart, DomainEvent] {
+      implicit val domainEventClassTag: ClassTag[DomainEvent]
+  ) extends PersistentFSM[UserState, ShoppingCart, DomainEvent] {
     override val persistenceId = _persistenceId
 
     startWith(LookingAround, EmptyShoppingCart)
 
     when(LookingAround) {
       case Event("stay", _) ⇒ stay
-      case Event(e, _) ⇒ goto(LookingAround)
+      case Event(e, _)      ⇒ goto(LookingAround)
     }
 
     onTransition {
@@ -368,7 +393,9 @@ object PersistentFSMSpec {
     }
 
     override def applyEvent(
-        domainEvent: DomainEvent, currentData: ShoppingCart): ShoppingCart =
+        domainEvent: DomainEvent,
+        currentData: ShoppingCart
+    ): ShoppingCart =
       currentData
   }
   object SimpleTransitionFSM {
@@ -377,8 +404,8 @@ object PersistentFSMSpec {
   }
 
   class WebStoreCustomerFSM(_persistenceId: String, reportActor: ActorRef)(
-      implicit val domainEventClassTag: ClassTag[DomainEvent])
-      extends PersistentFSM[UserState, ShoppingCart, DomainEvent] {
+      implicit val domainEventClassTag: ClassTag[DomainEvent]
+  ) extends PersistentFSM[UserState, ShoppingCart, DomainEvent] {
 
     override def persistenceId = _persistenceId
 
@@ -435,13 +462,14 @@ object PersistentFSMSpec {
       */
     //#customer-apply-event
     override def applyEvent(
-        event: DomainEvent, cartBeforeEvent: ShoppingCart): ShoppingCart = {
+        event: DomainEvent,
+        cartBeforeEvent: ShoppingCart
+    ): ShoppingCart =
       event match {
         case ItemAdded(item) ⇒ cartBeforeEvent.addItem(item)
-        case OrderExecuted ⇒ cartBeforeEvent
-        case OrderDiscarded ⇒ cartBeforeEvent.empty()
+        case OrderExecuted   ⇒ cartBeforeEvent
+        case OrderDiscarded  ⇒ cartBeforeEvent.empty()
       }
-    }
     //#customer-apply-event
   }
 
@@ -456,7 +484,7 @@ object PersistentFSMSpec {
 
     def receiveRecover = {
       case RecoveryCompleted ⇒ // do nothing
-      case persistentEvent ⇒ client ! persistentEvent
+      case persistentEvent   ⇒ client ! persistentEvent
     }
 
     def receiveCommand = {
@@ -472,7 +500,9 @@ object PersistentFSMSpec {
 
 class LeveldbPersistentFSMSpec
     extends PersistentFSMSpec(
-        PersistenceSpec.config("leveldb", "PersistentFSMSpec"))
+      PersistenceSpec.config("leveldb", "PersistentFSMSpec")
+    )
 class InmemPersistentFSMSpec
     extends PersistentFSMSpec(
-        PersistenceSpec.config("inmem", "PersistentFSMSpec"))
+      PersistenceSpec.config("inmem", "PersistentFSMSpec")
+    )

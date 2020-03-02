@@ -33,17 +33,17 @@ private[twitter] trait MetricsRegistry extends StatsRegistry {
   private[this] def updateMetrics(): Unit =
     if (registry != null) {
       for (entry <- registry.sampleCounters().entrySet) {
-        val key = entry.getKey()
+        val key      = entry.getKey()
         val newValue = entry.getValue().doubleValue
         val newMetric = metrics.get(key) match {
           case Some(prev) => cumulative(newValue - prev.value, newValue)
-          case None => cumulative(newValue, newValue)
+          case None       => cumulative(newValue, newValue)
         }
         metrics.put(key, newMetric)
       }
 
       for (entry <- registry.sampleGauges().entrySet) {
-        val key = entry.getKey()
+        val key      = entry.getKey()
         val newValue = entry.getValue().doubleValue
         metrics.put(key, instantaneous(newValue))
       }

@@ -2,8 +2,8 @@ trait Thing { type A; var p: A = _ }
 class A[T](final val x: Thing { type A = T }) {
   type Q = T
 
-  def x1: T = x.p
-  def x2: Q = x.p
+  def x1: T   = x.p
+  def x2: Q   = x.p
   def x3: x.A = x.p
 }
 // all result types should be inferred as Int

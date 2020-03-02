@@ -14,7 +14,7 @@ trait JavacOutputParsing extends Logger {
   private case class Header(file: File, line: Long, kind: Kind)
 
   private var header: Option[Header] = None
-  private var lines: Vector[String] = Vector.empty
+  private var lines: Vector[String]  = Vector.empty
 
   protected def client: Client
 
@@ -31,17 +31,23 @@ trait JavacOutputParsing extends Logger {
     line match {
       case HeaderPattern(path, row, modifier, message) =>
         header = Some(
-            Header(new File(path),
-                   row.toLong,
-                   if (modifier == null) kind else Kind.WARNING))
+          Header(
+            new File(path),
+            row.toLong,
+            if (modifier == null) kind
+            else Kind.WARNING
+          )
+        )
         lines :+= message
       case PointerPattern(prefix) if header.isDefined =>
         val text = (lines :+ line).mkString("\n")
-        client.message(header.get.kind,
-                       text,
-                       header.map(_.file),
-                       header.map(_.line),
-                       Some(1L + prefix.length))
+        client.message(
+          header.get.kind,
+          text,
+          header.map(_.file),
+          header.map(_.line),
+          Some(1L + prefix.length)
+        )
         header = None
         lines = Vector.empty
       case NotePattern(message) =>
@@ -59,8 +65,8 @@ trait JavacOutputParsing extends Logger {
 }
 
 object JavacOutputParsing {
-  val HeaderPattern = "(.*?):(\\d+):( warning:)?(.*)".r
+  val HeaderPattern  = "(.*?):(\\d+):( warning:)?(.*)".r
   val PointerPattern = "(\\s*)\\^".r
-  val NotePattern = "Note: (.*)".r
-  val TotalsPattern = "\\d+ (errors?|warnings?)".r
+  val NotePattern    = "Note: (.*)".r
+  val TotalsPattern  = "\\d+ (errors?|warnings?)".r
 }

@@ -53,7 +53,7 @@ object MixedBag extends App {
     import std.stream._
 
     val tree: Tree[Int] = 1.node(2.node(3.leaf), 4.leaf, 5.leaf)
-    val r = tree.foldRight(".")((i, s) => i.toString |+| s)
+    val r               = tree.foldRight(".")((i, s) => i.toString |+| s)
     r assert_=== "12345."
     val f = tree.flatten.foldMap(_.toString)
     f assert_=== "12345"
@@ -80,19 +80,19 @@ object MixedBag extends App {
     import WriterT._
 
     type Pair[+A] = (A, A)
-    type Tree[A] = Free[Pair, A]
+    type Tree[A]  = Free[Pair, A]
 
     implicit val pairFunctor: Functor[Pair] = new Functor[Pair] {
       def map[A, B](as: Pair[A])(f: A => B) =
         f(as._1) -> f(as._2)
     }
 
-    def leaf[A](a: A): Tree[A] = Free.pure(a)
+    def leaf[A](a: A): Tree[A]                   = Free.pure(a)
     def node[A](l: Tree[A], r: Tree[A]): Tree[A] = Free[Pair, A](l -> r)
 
     def flattenWriter[A](t: Tree[A]): DList[A] = {
       def flatten(t: Tree[A]): Writer[DList[A], Unit] = t.resume match {
-        case \/-(a) => DList(a).tell
+        case \/-(a)      => DList(a).tell
         case -\/((x, y)) => flatten(x) >> flatten(y)
       }
       flatten(t).run._1

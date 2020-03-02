@@ -10,8 +10,9 @@ import scala.reflect.internal.util.ScalaClassLoader
 
 /** A command for ScriptRunner */
 class GenericRunnerCommand(
-    args: List[String], override val settings: GenericRunnerSettings)
-    extends CompilerCommand(args, settings) {
+    args: List[String],
+    override val settings: GenericRunnerSettings
+) extends CompilerCommand(args, settings) {
 
   def this(args: List[String], error: String => Unit) =
     this(args, new GenericRunnerSettings(error))
@@ -30,7 +31,7 @@ class GenericRunnerCommand(
   private lazy val (_ok, targetAndArguments) =
     settings.processArguments(args, processAll = false)
   override def ok = _ok
-  private def guessHowToRun(target: String): GenericRunnerCommand.HowToRun = {
+  private def guessHowToRun(target: String): GenericRunnerCommand.HowToRun =
     if (!ok) Error
     else if (io.Jar.isJarOrZip(target)) AsJar
     else if (ScalaClassLoader.classExists(settings.classpathURLs, target))
@@ -43,7 +44,6 @@ class GenericRunnerCommand(
         Error
       }
     }
-  }
 
   /** String with either the jar file, class name, or script file name. */
   def thingToRun = targetAndArguments.headOption getOrElse ""
@@ -55,7 +55,8 @@ class GenericRunnerCommand(
     case Nil => AsRepl
     case hd :: _ =>
       waysToRun find (_.name == settings.howtorun.value) getOrElse guessHowToRun(
-          hd)
+        hd
+      )
   }
 
   def shortUsageMsg =
@@ -101,10 +102,10 @@ used to prevent this.%n"""
 
 object GenericRunnerCommand {
   sealed abstract class HowToRun(val name: String) {}
-  case object AsJar extends HowToRun("jar")
+  case object AsJar    extends HowToRun("jar")
   case object AsObject extends HowToRun("object")
   case object AsScript extends HowToRun("script")
-  case object AsRepl extends HowToRun("repl")
-  case object Error extends HowToRun("<error>")
+  case object AsRepl   extends HowToRun("repl")
+  case object Error    extends HowToRun("<error>")
   val waysToRun = List(AsJar, AsObject, AsScript, AsRepl)
 }

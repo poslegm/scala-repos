@@ -144,15 +144,15 @@ trait TimeLike[This <: TimeLike[This]] extends Ordered[This] { self: This =>
 
   def inMicroseconds: Long = inNanoseconds / Duration.NanosPerMicrosecond
   def inMilliseconds: Long = inNanoseconds / Duration.NanosPerMillisecond
-  def inLongSeconds: Long = inNanoseconds / Duration.NanosPerSecond
+  def inLongSeconds: Long  = inNanoseconds / Duration.NanosPerSecond
   def inSeconds: Int =
     if (inLongSeconds > Int.MaxValue) Int.MaxValue
     else if (inLongSeconds < Int.MinValue) Int.MinValue
     else inLongSeconds.toInt
   // Units larger than seconds safely fit into 32-bits when converting from a 64-bit nanosecond basis
   def inMinutes: Int = (inNanoseconds / Duration.NanosPerMinute).toInt
-  def inHours: Int = (inNanoseconds / Duration.NanosPerHour).toInt
-  def inDays: Int = (inNanoseconds / Duration.NanosPerDay).toInt
+  def inHours: Int   = (inNanoseconds / Duration.NanosPerHour).toInt
+  def inDays: Int    = (inNanoseconds / Duration.NanosPerDay).toInt
   def inMillis: Long = inMilliseconds // (Backwards compatibility)
 
   /**
@@ -161,7 +161,7 @@ trait TimeLike[This <: TimeLike[This]] extends Ordered[This] { self: This =>
     * `TimeUnit.MILLISECONDS`) before resorting to the default
     * `TimeUnit.NANOSECONDS`.
     */
-  def inTimeUnit: (Long, TimeUnit) = {
+  def inTimeUnit: (Long, TimeUnit) =
     // allow for APIs that may treat TimeUnit differently if measured in very tiny units.
     if (inNanoseconds % Duration.NanosPerSecond == 0) {
       (inSeconds, TimeUnit.SECONDS)
@@ -170,7 +170,6 @@ trait TimeLike[This <: TimeLike[This]] extends Ordered[This] { self: This =>
     } else {
       (inNanoseconds, TimeUnit.NANOSECONDS)
     }
-  }
 
   /**
     * Adds `delta` to this `TimeLike`. Adding `Duration.Top` results
@@ -186,9 +185,9 @@ trait TimeLike[This <: TimeLike[This]] extends Ordered[This] { self: This =>
     }
 
     delta match {
-      case Duration.Top => Top
-      case Duration.Bottom => Bottom
-      case Duration.Undefined => Undefined
+      case Duration.Top             => Top
+      case Duration.Bottom          => Bottom
+      case Duration.Undefined       => Undefined
       case Duration.Nanoseconds(ns) => addNanos(inNanoseconds, ns)
     }
   }
@@ -225,7 +224,7 @@ trait TimeLike[This <: TimeLike[This]] extends Ordered[This] { self: This =>
     case (Nanoseconds(num), Duration.Nanoseconds(denom)) =>
       fromNanoseconds((num / denom) * denom)
     case (self, Duration.Nanoseconds(_)) => self
-    case (_, _) => Undefined
+    case (_, _)                          => Undefined
   }
 
   def max(that: This): This =
@@ -244,7 +243,7 @@ trait TimeLike[This <: TimeLike[This]] extends Ordered[This] { self: This =>
   /** Equality within `maxDelta` */
   def moreOrLessEquals(other: This, maxDelta: Duration): Boolean =
     (other ne Undefined) &&
-    ((this == other) || (this diff other).abs <= maxDelta)
+      ((this == other) || (this diff other).abs <= maxDelta)
 }
 
 /**
@@ -307,17 +306,17 @@ object Time extends TimeLikeOps[Time] {
 
     override def equals(other: Any) = other match {
       case t: Time => t eq this
-      case _ => false
+      case _       => false
     }
 
     override def +(delta: Duration) = delta match {
       case Duration.Bottom | Duration.Undefined => Undefined
-      case _ => this // Top or finite.
+      case _                                    => this // Top or finite.
     }
 
     override def diff(that: Time) = that match {
       case Top | Undefined => Duration.Undefined
-      case other => Duration.Top
+      case other           => Duration.Top
     }
 
     override def isFinite = false
@@ -337,17 +336,17 @@ object Time extends TimeLikeOps[Time] {
 
     override def equals(other: Any) = other match {
       case t: Time => t eq this
-      case _ => false
+      case _       => false
     }
 
     override def +(delta: Duration) = delta match {
       case Duration.Top | Duration.Undefined => Undefined
-      case _ => this
+      case _                                 => this
     }
 
     override def diff(that: Time) = that match {
       case Bottom | Undefined => Duration.Undefined
-      case other => Duration.Bottom
+      case other              => Duration.Bottom
     }
 
     override def isFinite = false
@@ -360,13 +359,13 @@ object Time extends TimeLikeOps[Time] {
 
     override def equals(other: Any) = other match {
       case t: Time => t eq this
-      case _ => false
+      case _       => false
     }
 
     override def compare(that: Time) = if (this eq that) 0 else 1
-    override def +(delta: Duration) = this
-    override def diff(that: Time) = Duration.Undefined
-    override def isFinite = false
+    override def +(delta: Duration)  = this
+    override def diff(that: Time)    = Duration.Undefined
+    override def isFinite            = false
 
     private def writeReplace(): Object = TimeBox.Undefined()
   }
@@ -376,14 +375,13 @@ object Time extends TimeLikeOps[Time] {
     *
     * $now
     */
-  def now: Time = {
+  def now: Time =
     localGetTime() match {
       case None =>
         Time.fromMilliseconds(System.currentTimeMillis())
       case Some(f) =>
         f()
     }
-  }
 
   /**
     * The unix epoch. Times are measured relative to this.
@@ -391,12 +389,12 @@ object Time extends TimeLikeOps[Time] {
   val epoch = fromNanoseconds(0L)
 
   private val defaultFormat = new TimeFormat("yyyy-MM-dd HH:mm:ss Z")
-  private val rssFormat = new TimeFormat("E, dd MMM yyyy HH:mm:ss Z")
+  private val rssFormat     = new TimeFormat("E, dd MMM yyyy HH:mm:ss Z")
 
   /**
     * Note, this should only ever be updated by methods used for testing.
     */
-  private[util] val localGetTime = new Local[() => Time]
+  private[util] val localGetTime  = new Local[() => Time]
   private[util] val localGetTimer = new Local[MockTimer]
 
   /**
@@ -417,7 +415,7 @@ object Time extends TimeLikeOps[Time] {
     */
   def withTimeFunction[A](timeFunction: => Time)(body: TimeControl => A): A = {
     @volatile var tf = () => timeFunction
-    val tmr = new MockTimer
+    val tmr          = new MockTimer
 
     Time.localGetTime.let(() => tf()) {
       Time.localGetTimer.let(tmr) {
@@ -460,9 +458,8 @@ object Time extends TimeLikeOps[Time] {
     *
     * $nowusage
     */
-  def withCurrentTimeFrozen[A](body: TimeControl => A): A = {
+  def withCurrentTimeFrozen[A](body: TimeControl => A): A =
     withTimeAt(Time.now)(body)
-  }
 
   /**
     * Puts the currently executing thread to sleep for the given duration,
@@ -472,14 +469,13 @@ object Time extends TimeLikeOps[Time] {
     *
     * $nowusage
     */
-  def sleep(duration: Duration): Unit = {
+  def sleep(duration: Duration): Unit =
     localGetTimer() match {
       case None =>
         Thread.sleep(duration.inMilliseconds)
       case Some(timer) =>
         Await.result(Future.sleep(duration)(timer))
     }
-  }
 
   /**
     * Returns the Time parsed from a string in RSS format. Eg: "Wed, 15 Jun 2005 19:00:00 GMT"
@@ -497,9 +493,11 @@ trait TimeControl {
   *
   * The default timezone is UTC.
   */
-class TimeFormat(pattern: String,
-                 locale: Option[Locale],
-                 timezone: TimeZone = TimeZone.getTimeZone("UTC")) {
+class TimeFormat(
+    pattern: String,
+    locale: Option[Locale],
+    timezone: TimeZone = TimeZone.getTimeZone("UTC")
+) {
 
   // jdk6 and jdk7 pick up the default locale differently in SimpleDateFormat,
   // so we can't rely on Locale.getDefault here.
@@ -530,16 +528,15 @@ class TimeFormat(pattern: String,
     }
   }
 
-  def format(time: Time): String = {
+  def format(time: Time): String =
     format.synchronized(format.format(time.toDate))
-  }
 }
 
 /**
   * An absolute point in time, represented as the number of
   * nanoseconds since the Unix epoch.
   */
-sealed class Time private[util](protected val nanos: Long) extends {
+sealed class Time private[util] (protected val nanos: Long) extends {
   protected val ops = Time
 } with TimeLike[Time] with Serializable {
   import ops._
@@ -551,7 +548,7 @@ sealed class Time private[util](protected val nanos: Long) extends {
     */
   override def toString: String = defaultFormat.format(this)
 
-  override def equals(other: Any): Boolean = {
+  override def equals(other: Any): Boolean =
     // in order to ensure that the sentinels are only equal
     // to themselves, we need to make sure we only compare nanos
     // when both instances are `Time`s and not a sentinel subclass.
@@ -560,7 +557,6 @@ sealed class Time private[util](protected val nanos: Long) extends {
     } else {
       false
     }
-  }
 
   override def hashCode: Int =
     // inline java.lang.Long.hashCode to avoid the BoxesRunTime.boxToLong
@@ -596,9 +592,9 @@ sealed class Time private[util](protected val nanos: Long) extends {
 
     that match {
       case Undefined => Duration.Undefined
-      case Top => Duration.Bottom
-      case Bottom => Duration.Top
-      case _ => subNanos(this.inNanoseconds, that.inNanoseconds)
+      case Top       => Duration.Bottom
+      case Bottom    => Duration.Top
+      case _         => subNanos(this.inNanoseconds, that.inNanoseconds)
     }
   }
 
@@ -656,5 +652,5 @@ sealed class Time private[util](protected val nanos: Long) extends {
 
   // for Java-compatibility
   override def floor(increment: Duration): Time = super.floor(increment)
-  override def ceil(increment: Duration): Time = super.ceil(increment)
+  override def ceil(increment: Duration): Time  = super.ceil(increment)
 }

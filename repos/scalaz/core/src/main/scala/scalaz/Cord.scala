@@ -23,7 +23,7 @@ final case class Cord(self: FingerTree[Int, String]) {
     */
   def apply(i: Int): Char = {
     val (a, b) = self.split(_ > i)
-    b.viewl.headOption.map(_ (i - a.measure)).getOrElse(rangeError(i))
+    b.viewl.headOption.map(_(i - a.measure)).getOrElse(rangeError(i))
   }
 
   /**
@@ -31,7 +31,7 @@ final case class Cord(self: FingerTree[Int, String]) {
     * Time complexity: O(log N)
     */
   def split(i: Int): (Cord, Cord) = {
-    val (l, mid, r) = self.split1(_ > i)
+    val (l, mid, r)  = self.split1(_ > i)
     val (midl, midr) = mid.splitAt(i - l.measure)
     (cord(l :+ midl), cord(midr +: r))
   }
@@ -108,14 +108,14 @@ final case class Cord(self: FingerTree[Int, String]) {
     */
   def map(f: Char => Char): Cord = cord(self map (_ map f))
 
-  def toList: List[Char] = toVector.toList
+  def toList: List[Char]     = toVector.toList
   def toStream: Stream[Char] = toVector.toStream
   def toVector: Vector[Char] = self.foldMap(_.toVector)
   override def toString: String = {
     import syntax.foldable._
     import Free._
     val sb = new StringBuilder(self.measure)
-    val t = self.traverse_[Trampoline](x => Trampoline.delay(sb ++= x))
+    val t  = self.traverse_[Trampoline](x => Trampoline.delay(sb ++= x))
     t.run
     sb.toString
   }
@@ -144,19 +144,19 @@ object Cord {
   def fromStrings[A](as: Seq[String]): Cord =
     cord(as.foldLeft(FingerTree.empty[Int, String](sizer))((x, y) => x :+ y))
 
-  implicit val sizer: Reducer[String, Int] = UnitReducer(
-      (a: String) => a.length)
+  implicit val sizer: Reducer[String, Int] =
+    UnitReducer((a: String) => a.length)
 
   def mkCord(sep: Cord, as: Cord*): Cord =
     if (!as.isEmpty) as.tail.foldLeft(as.head)(_ ++ sep ++ _)
     else Cord()
 
   implicit lazy val CordShow: Show[Cord] = new Show[Cord] {
-    override def show(x: Cord) = x
+    override def show(x: Cord)  = x
     override def shows(x: Cord) = x.toString
   }
   implicit lazy val CordMonoid: Monoid[Cord] = new Monoid[Cord] {
-    def zero = empty
+    def zero                        = empty
     def append(x: Cord, y: => Cord) = x ++ y
   }
   implicit lazy val CordEqual: Equal[Cord] = new Equal[Cord] {

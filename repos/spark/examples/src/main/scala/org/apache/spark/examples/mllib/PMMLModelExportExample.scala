@@ -28,7 +28,7 @@ object PMMLModelExportExample {
 
   def main(args: Array[String]): Unit = {
     val conf = new SparkConf().setAppName("PMMLModelExportExample")
-    val sc = new SparkContext(conf)
+    val sc   = new SparkContext(conf)
 
     // $example on$
     // Load and parse the data
@@ -37,9 +37,9 @@ object PMMLModelExportExample {
       data.map(s => Vectors.dense(s.split(' ').map(_.toDouble))).cache()
 
     // Cluster the data into two classes using KMeans
-    val numClusters = 2
+    val numClusters   = 2
     val numIterations = 20
-    val clusters = KMeans.train(parsedData, numClusters, numIterations)
+    val clusters      = KMeans.train(parsedData, numClusters, numIterations)
 
     // Export to PMML to a String in PMML format
     println("PMML Model:\n" + clusters.toPMML)

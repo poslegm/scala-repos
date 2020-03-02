@@ -8,8 +8,8 @@ class C;
 class D;
 
 object Help {
-  val max: Int = 4;
-  var next: Int = 0;
+  val max: Int            = 4;
+  var next: Int           = 0;
   var vars: Array[String] = new Array[String](max);
   def init: Unit = {
     var i = 0;
@@ -18,7 +18,7 @@ object Help {
   }
   def check(count: Int, value: String): Boolean = {
     var b: Boolean = true;
-    var i: Int = 0;
+    var i: Int     = 0;
     while (i < count) { if (vars(i) != value) b = false; i = i + 1; }
     while (i < max) { if (vars(i) != null) b = false; i = i + 1; }
     b;
@@ -44,8 +44,8 @@ abstract class Foo___ { type I >: Null <: AnyRef; def f: I; f; }
 abstract class Foo__f {
   type I >: Null <: AnyRef; def f: I = { foo; null }; f;
 }
-abstract class Foo_I_ { class I; def f: I; f; }
-abstract class Foo_If { class I; def f: I = { foo; null }; f; }
+abstract class Foo_I_    { class I; def f: I; f; }
+abstract class Foo_If    { class I; def f: I = { foo; null }; f; }
 abstract class FooX__[X] { type I >: Null <: AnyRef; def f: I; f; }
 abstract class FooX_f[X] {
   type I >: Null <: AnyRef; def f: I = { foo; null }; f;
@@ -53,10 +53,10 @@ abstract class FooX_f[X] {
 abstract class FooXI_[X] { class I; def f: I; f; }
 abstract class FooXIf[X] { class I; def f: I = { foo; null }; f; }
 
-trait Bar___ { type I >: Null <: AnyRef; def f: I; f; }
-trait Bar__f { type I >: Null <: AnyRef; def f: I = { bar; null }; f; }
-trait Bar_I_ { class I; def f: I; f; }
-trait Bar_If { class I; def f: I = { bar; null }; f; }
+trait Bar___    { type I >: Null <: AnyRef; def f: I; f; }
+trait Bar__f    { type I >: Null <: AnyRef; def f: I = { bar; null }; f; }
+trait Bar_I_    { class I; def f: I; f; }
+trait Bar_If    { class I; def f: I = { bar; null }; f; }
 trait BarY__[Y] { type I >: Null <: AnyRef; def f: I; f; }
 trait BarY_f[Y] { type I >: Null <: AnyRef; def f: I = { bar; null }; f; }
 trait BarYI_[Y] { class I; def f: I; f; }
@@ -6124,7 +6124,7 @@ class S_TZIfwFooX_fwBarY_f[T] extends MixZIfwFooX_fwBarY_f[C] { ;; f; }
 
 object Test {
   var errors: Int = 0;
-  def test(name: String, test: => Any, count: Int, value: String) = {
+  def test(name: String, test: => Any, count: Int, value: String) =
     try {
       Help.init;
       test;
@@ -6136,12 +6136,11 @@ object Test {
       }
     } catch {
       case exception: Throwable => {
-          Console.print(name + " raised exception " + exception);
-          Console.println;
-          errors = errors + 1;
-        }
+        Console.print(name + " raised exception " + exception);
+        Console.println;
+        errors = errors + 1;
+      }
     }
-  }
 
   def main(args: Array[String]): Unit = {
 

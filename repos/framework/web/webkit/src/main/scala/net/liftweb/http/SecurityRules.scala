@@ -65,13 +65,12 @@ final case class HttpsRules(
     * Returns the headers implied by this set of HTTPS rules. If `enforce` is
     * false, returns nothing.
     */
-  def headers(enforce: Boolean): List[(String, String)] = {
+  def headers(enforce: Boolean): List[(String, String)] =
     if (enforce) {
       headers
     } else {
       Nil
     }
-  }
 }
 object HttpsRules {
 
@@ -105,7 +104,8 @@ sealed trait JavaScriptSourceRestriction extends ContentSourceRestriction
   */
 sealed trait StylesheetSourceRestriction extends ContentSourceRestriction
 sealed trait GeneralSourceRestriction
-    extends JavaScriptSourceRestriction with StylesheetSourceRestriction
+    extends JavaScriptSourceRestriction
+    with StylesheetSourceRestriction
 
 object ContentSourceRestriction {
 
@@ -172,7 +172,8 @@ object ContentSourceRestriction {
     * policies.
     */
   case object UnsafeInline
-      extends JavaScriptSourceRestriction with StylesheetSourceRestriction {
+      extends JavaScriptSourceRestriction
+      with StylesheetSourceRestriction {
     val sourceRestrictionString = "'unsafe-inline'"
   }
 
@@ -237,18 +238,20 @@ object ContentSourceRestriction {
   */
 final case class ContentSecurityPolicy(
     defaultSources: List[ContentSourceRestriction] = List(
-          ContentSourceRestriction.Self),
+      ContentSourceRestriction.Self
+    ),
     connectSources: List[ContentSourceRestriction] = Nil,
     fontSources: List[ContentSourceRestriction] = Nil,
     frameSources: List[ContentSourceRestriction] = Nil,
     imageSources: List[ContentSourceRestriction] = List(
-          ContentSourceRestriction.All),
+      ContentSourceRestriction.All
+    ),
     mediaSources: List[ContentSourceRestriction] = Nil,
     objectSources: List[ContentSourceRestriction] = Nil,
     scriptSources: List[JavaScriptSourceRestriction] = List(
-          ContentSourceRestriction.UnsafeEval,
-          ContentSourceRestriction.Self
-      ),
+      ContentSourceRestriction.UnsafeEval,
+      ContentSourceRestriction.Self
+    ),
     styleSources: List[StylesheetSourceRestriction] = Nil,
     reportUri: Option[URI] = Some(ContentSecurityPolicy.defaultReportUri)
 ) {
@@ -259,22 +262,24 @@ final case class ContentSecurityPolicy(
     */
   def contentSecurityPolicyString = {
     val allRestrictions = List(
-        "default-src" -> defaultSources,
-        "connect-src" -> connectSources,
-        "font-src" -> fontSources,
-        "frame-src" -> frameSources,
-        "img-src" -> imageSources,
-        "media-src" -> mediaSources,
-        "object-src" -> objectSources,
-        "script-src" -> scriptSources,
-        "style-src" -> styleSources
+      "default-src" -> defaultSources,
+      "connect-src" -> connectSources,
+      "font-src"    -> fontSources,
+      "frame-src"   -> frameSources,
+      "img-src"     -> imageSources,
+      "media-src"   -> mediaSources,
+      "object-src"  -> objectSources,
+      "script-src"  -> scriptSources,
+      "style-src"   -> styleSources
     )
 
-    val restrictionString = allRestrictions.collect {
-      case (category, restrictions) if restrictions.nonEmpty =>
-        category + " " +
-        restrictions.map(_.sourceRestrictionString).mkString(" ")
-    }.mkString("; ")
+    val restrictionString = allRestrictions
+      .collect {
+        case (category, restrictions) if restrictions.nonEmpty =>
+          category + " " +
+            restrictions.map(_.sourceRestrictionString).mkString(" ")
+      }
+      .mkString("; ")
 
     reportUri.map { uri =>
       s"$restrictionString; report-uri $uri"
@@ -285,22 +290,24 @@ final case class ContentSecurityPolicy(
 
   private[this] lazy val reportOnlyHeaders = {
     List(
-        "Content-Security-Policy-Report-Only" -> contentSecurityPolicyString,
-        "X-Content-Security-Policy-Report-Only" -> contentSecurityPolicyString
+      "Content-Security-Policy-Report-Only"   -> contentSecurityPolicyString,
+      "X-Content-Security-Policy-Report-Only" -> contentSecurityPolicyString
     )
   }
   private[this] lazy val enforcedHeaders = {
     List(
-        "Content-Security-Policy" -> contentSecurityPolicyString,
-        "X-Content-Security-Policy" -> contentSecurityPolicyString
+      "Content-Security-Policy"   -> contentSecurityPolicyString,
+      "X-Content-Security-Policy" -> contentSecurityPolicyString
     )
   }
 
   /**
     * Returns the headers implied by this content security policy.
     */
-  def headers(enforce: Boolean = true,
-              logViolations: Boolean = true): List[(String, String)] = {
+  def headers(
+      enforce: Boolean = true,
+      logViolations: Boolean = true
+  ): List[(String, String)] =
     if (enforce) {
       enforcedHeaders
     } else if (logViolations) {
@@ -308,7 +315,6 @@ final case class ContentSecurityPolicy(
     } else {
       Nil
     }
-  }
 }
 object ContentSecurityPolicy {
 
@@ -316,9 +322,8 @@ object ContentSecurityPolicy {
     * The default URI where security policy violations will be reported. This
     * URI is under Lift's URI namespace, at `[[LiftRules.liftPath]]`.
     */
-  def defaultReportUri = {
+  def defaultReportUri =
     new URI(LiftRules.liftPath + "/content-security-policy-report")
-  }
 
   /**
     * Creates a restrictive content security policy that disallows images from
@@ -328,9 +333,8 @@ object ContentSecurityPolicy {
     * to the same origin, but allows images from any source; the secure one only
     * differs because it adds restrictions to the image sources.
     */
-  def secure: ContentSecurityPolicy = {
+  def secure: ContentSecurityPolicy =
     ContentSecurityPolicy(imageSources = Nil)
-  }
 }
 
 /**
@@ -366,28 +370,33 @@ object ContentSecurityPolicyViolation extends LazyLoggable {
         }
         violationJson = camelCasedJson \ "csp-report"
         extractedViolation <- tryo(
-            violationJson.extract[ContentSecurityPolicyViolation])
+                               violationJson
+                                 .extract[ContentSecurityPolicyViolation]
+                             )
       } yield {
         extractedViolation
       }
 
-      () =>
-        {
-          violation match {
-            case Full(violation) =>
-              LiftRules.contentSecurityPolicyViolationReport(violation) or Full(
-                  OkResponse())
+      () => {
+        violation match {
+          case Full(violation) =>
+            LiftRules.contentSecurityPolicyViolationReport(violation) or Full(
+              OkResponse()
+            )
 
-            case _ =>
-              logger.warn(
-                  s"Got a content security violation report we couldn't interpret: '${request.body
-                    .map(new String(_, "UTF-8"))}'."
+          case _ =>
+            logger.warn(
+              s"Got a content security violation report we couldn't interpret: '${request.body
+                .map(new String(_, "UTF-8"))}'."
+            )
+
+            Full(
+              BadRequestResponse(
+                "Unrecognized format for content security policy report."
               )
-
-              Full(BadRequestResponse(
-                      "Unrecognized format for content security policy report."))
-          }
+            )
         }
+      }
   }
 }
 
@@ -403,13 +412,12 @@ sealed trait FrameRestrictions {
     * Because of how frame restrictions are handled, if enforcement is turned
     * off, no headers are generated.
     */
-  def headers(enforce: Boolean = false): List[(String, String)] = {
+  def headers(enforce: Boolean = false): List[(String, String)] =
     if (enforce) {
       headers
     } else {
       Nil
     }
-  }
 }
 object FrameRestrictions {
 
@@ -451,7 +459,8 @@ final case class SecurityRules(
     https: Option[HttpsRules] = None,
     content: Option[ContentSecurityPolicy] = Some(ContentSecurityPolicy()),
     frameRestrictions: Option[FrameRestrictions] = Some(
-          FrameRestrictions.SameOrigin),
+      FrameRestrictions.SameOrigin
+    ),
     enforceInOtherModes: Boolean = false,
     logInOtherModes: Boolean = true,
     enforceInDevMode: Boolean = false,
@@ -477,7 +486,8 @@ final case class SecurityRules(
     */
   lazy val headers: List[(String, String)] = {
     https.toList.flatMap(_.headers(enforce_?)) ::: content.toList.flatMap(
-        _.headers(enforce_?, logViolations_?)) ::: frameRestrictions.toList
+      _.headers(enforce_?, logViolations_?)
+    ) ::: frameRestrictions.toList
       .flatMap(_.headers(enforce_?))
   }
 }
@@ -491,11 +501,10 @@ object SecurityRules {
     * To tweak any of these settings, use the `SecurityRules` constructor
     * directly.
     */
-  def secure = {
+  def secure =
     apply(
-        Some(HttpsRules.secure),
-        Some(ContentSecurityPolicy.secure),
-        enforceInOtherModes = true
+      Some(HttpsRules.secure),
+      Some(ContentSecurityPolicy.secure),
+      enforceInOtherModes = true
     )
-  }
 }

@@ -13,15 +13,14 @@ object Test extends DirectTest {
     }
   """.trim
 
-  override def show(): Unit = {
+  override def show(): Unit =
     Console.withErr(System.out) {
       compile()
     }
-  }
 }
 
 import language.dynamics
 class D extends Dynamic {
-  def selectDynamic(name: String): Any = ???
+  def selectDynamic(name: String): Any              = ???
   def updateDynamic(name: String)(value: Any): Unit = ???
 }

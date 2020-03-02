@@ -22,8 +22,9 @@ import akka.testkit.AkkaSpec
 class SettingsImpl(config: Config) extends Extension {
   val DbUri: String = config.getString("myapp.db.uri")
   val CircuitBreakerTimeout: Duration = Duration(
-      config.getMilliseconds("myapp.circuit-breaker.timeout"),
-      TimeUnit.MILLISECONDS)
+    config.getMilliseconds("myapp.circuit-breaker.timeout"),
+    TimeUnit.MILLISECONDS
+  )
 }
 //#extension
 
@@ -60,7 +61,7 @@ object SettingsExtensionDocSpec {
   //#extension-usage-actor
 
   class MyActor extends Actor {
-    val settings = Settings(context.system)
+    val settings   = Settings(context.system)
     val connection = connect(settings.DbUri, settings.CircuitBreakerTimeout)
 
     //#extension-usage-actor
@@ -68,9 +69,8 @@ object SettingsExtensionDocSpec {
       case someMessage =>
     }
 
-    def connect(dbUri: String, circuitBreakerTimeout: Duration) = {
+    def connect(dbUri: String, circuitBreakerTimeout: Duration) =
       "dummy"
-    }
   }
 }
 
@@ -79,7 +79,7 @@ class SettingsExtensionDocSpec
 
   "demonstrate how to create application specific settings extension in Scala" in {
     //#extension-usage
-    val dbUri = Settings(system).DbUri
+    val dbUri                 = Settings(system).DbUri
     val circuitBreakerTimeout = Settings(system).CircuitBreakerTimeout
     //#extension-usage
   }

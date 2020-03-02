@@ -10,7 +10,7 @@ class Random(seed_in: Long) extends AnyRef with java.io.Serializable {
   private var seedLo: Int = _ // 24 lsb of the seed
 
   // see nextGaussian()
-  private var nextNextGaussian: Double = _
+  private var nextNextGaussian: Double      = _
   private var haveNextNextGaussian: Boolean = false
 
   setSeed(seed_in)
@@ -52,7 +52,7 @@ class Random(seed_in: Long) extends AnyRef with java.io.Serializable {
     val oldSeedHi = seedHi
     val oldSeedLo = seedLo
 
-    val mul = 0x5DEECE66DL
+    val mul   = 0x5DEECE66DL
     val mulHi = (mul >>> 24).toInt
     val mulLo = mul.toInt & ((1 << 24) - 1)
 
@@ -72,17 +72,16 @@ class Random(seed_in: Long) extends AnyRef with java.io.Serializable {
     result32 >>> (32 - bits)
   }
 
-  def nextDouble(): Double = {
+  def nextDouble(): Double =
     // ((next(26).toLong << 27) + next(27)) / (1L << 53).toDouble
     ((next(26).toDouble * (1L << 27).toDouble) + next(27).toDouble) /
-    (1L << 53).toDouble
-  }
+      (1L << 53).toDouble
 
   def nextBoolean(): Boolean = next(1) != 0
 
   def nextInt(): Int = next(32)
 
-  def nextInt(n: Int): Int = {
+  def nextInt(n: Int): Int =
     if (n <= 0) {
       throw new IllegalArgumentException("n must be positive")
     } else if ((n & -n) == n) {
@@ -102,7 +101,7 @@ class Random(seed_in: Long) extends AnyRef with java.io.Serializable {
     } else {
       @tailrec
       def loop(): Int = {
-        val bits = next(31)
+        val bits  = next(31)
         val value = bits % n
         if (bits - value + (n - 1) < 0) loop()
         else value
@@ -110,20 +109,18 @@ class Random(seed_in: Long) extends AnyRef with java.io.Serializable {
 
       loop()
     }
-  }
 
   def nextLong(): Long = (next(32).toLong << 32) + next(32)
 
-  def nextFloat(): Float = {
+  def nextFloat(): Float =
     // next(24).toFloat / (1 << 24).toFloat
     (next(24).toDouble / (1 << 24).toDouble).toFloat
-  }
 
   def nextBytes(bytes: Array[Byte]): Unit = {
     var i = 0
     while (i < bytes.length) {
       var rnd = nextInt()
-      var n = Math.min(bytes.length - i, 4)
+      var n   = Math.min(bytes.length - i, 4)
       while (n > 0) {
         bytes(i) = rnd.toByte
         rnd >>= 8
@@ -133,7 +130,7 @@ class Random(seed_in: Long) extends AnyRef with java.io.Serializable {
     }
   }
 
-  def nextGaussian(): Double = {
+  def nextGaussian(): Double =
     // See http://www.protonfish.com/jslib/boxmuller.shtml
 
     /* The Box-Muller algorithm produces two random numbers at once. We save
@@ -167,14 +164,13 @@ class Random(seed_in: Long) extends AnyRef with java.io.Serializable {
       // And return x*c
       x * c
     }
-  }
 }
 
 object Random {
 
   /** Generate a random long from JS RNG to seed a new Random */
   private def randomSeed(): Long =
-    (randomInt().toLong << 32) | (randomInt().toLong & 0xffffffffL)
+    (randomInt().toLong << 32) | (randomInt().toLong & 0xFFFFFFFFL)
 
   private def randomInt(): Int =
     (Math.floor(js.Math.random() * 4294967296.0) - 2147483648.0).toInt

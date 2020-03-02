@@ -17,16 +17,22 @@ limitations under the License.
 package com.twitter.summingbird.online.executor
 
 import com.twitter.summingbird.online.Queue
-import com.twitter.summingbird.online.option.{MaxWaitingFutures, MaxFutureWaitTime, MaxEmitPerExecute}
+import com.twitter.summingbird.online.option.{
+  MaxWaitingFutures,
+  MaxFutureWaitTime,
+  MaxEmitPerExecute
+}
 import com.twitter.util.{Await, Future}
 import scala.util.{Try, Success, Failure}
 import java.util.concurrent.TimeoutException
 import org.slf4j.{LoggerFactory, Logger}
 
-abstract class AsyncBase[I, O, S, D, RC](maxWaitingFutures: MaxWaitingFutures,
-                                         maxWaitingTime: MaxFutureWaitTime,
-                                         maxEmitPerExec: MaxEmitPerExecute)
-    extends Serializable with OperationContainer[I, O, S, D, RC] {
+abstract class AsyncBase[I, O, S, D, RC](
+    maxWaitingFutures: MaxWaitingFutures,
+    maxWaitingTime: MaxFutureWaitTime,
+    maxEmitPerExec: MaxEmitPerExecute
+) extends Serializable
+    with OperationContainer[I, O, S, D, RC] {
 
   @transient protected lazy val logger: Logger =
     LoggerFactory.getLogger(getClass)
@@ -38,7 +44,8 @@ abstract class AsyncBase[I, O, S, D, RC](maxWaitingFutures: MaxWaitingFutures,
     */
   def apply(
       state: S,
-      in: I): Future[TraversableOnce[(Seq[S], Future[TraversableOnce[O]])]]
+      in: I
+  ): Future[TraversableOnce[(Seq[S], Future[TraversableOnce[O]])]]
   def tick: Future[TraversableOnce[(Seq[S], Future[TraversableOnce[O]])]] =
     Future.value(Nil)
 
@@ -47,19 +54,18 @@ abstract class AsyncBase[I, O, S, D, RC](maxWaitingFutures: MaxWaitingFutures,
     Queue.linkedNonBlocking[(Seq[S], Try[TraversableOnce[O]])]
 
   override def executeTick =
-    finishExecute(
-        tick.onFailure { thr =>
+    finishExecute(tick.onFailure { thr =>
       responses.put(((Seq(), Failure(thr))))
     })
 
   override def execute(state: S, data: I) =
-    finishExecute(
-        apply(state, data).onFailure { thr =>
+    finishExecute(apply(state, data).onFailure { thr =>
       responses.put(((List(state), Failure(thr))))
     })
 
   private def finishExecute(
-      fIn: Future[TraversableOnce[(Seq[S], Future[TraversableOnce[O]])]]) = {
+      fIn: Future[TraversableOnce[(Seq[S], Future[TraversableOnce[O]])]]
+  ) = {
     addOutstandingFuture(handleSuccess(fIn).unit)
 
     // always empty the responses
@@ -67,18 +73,15 @@ abstract class AsyncBase[I, O, S, D, RC](maxWaitingFutures: MaxWaitingFutures,
   }
 
   private def handleSuccess(
-      fut: Future[TraversableOnce[(Seq[S], Future[TraversableOnce[O]])]]) =
+      fut: Future[TraversableOnce[(Seq[S], Future[TraversableOnce[O]])]]
+  ) =
     fut.onSuccess {
       iter: TraversableOnce[(Seq[S], Future[TraversableOnce[O]])] =>
         // Collect the result onto our responses
         val iterSize = iter.foldLeft(0) {
           case (iterSize, (tups, res)) =>
-            res.onSuccess { t =>
-              responses.put(((tups, Success(t))))
-            }
-            res.onFailure { t =>
-              responses.put(((tups, Failure(t))))
-            }
+            res.onSuccess(t => responses.put(((tups, Success(t)))))
+            res.onFailure(t => responses.put(((tups, Failure(t)))))
             // Make sure there are not too many outstanding:
             if (addOutstandingFuture(res.unit)) {
               iterSize + 1
@@ -92,9 +95,9 @@ abstract class AsyncBase[I, O, S, D, RC](maxWaitingFutures: MaxWaitingFutures,
            * May indicate maxWaitingFutures is too low.
            */
           logger.debug(
-              "Exceeded maxWaitingFutures({}), put {} futures",
-              maxWaitingFutures.get,
-              iterSize
+            "Exceeded maxWaitingFutures({}), put {} futures",
+            maxWaitingFutures.get,
+            iterSize
           )
         }
     }
@@ -116,7 +119,9 @@ abstract class AsyncBase[I, O, S, D, RC](maxWaitingFutures: MaxWaitingFutures,
       } catch {
         case te: TimeoutException =>
           logger.error(
-              "forceExtra failed on %d Futures".format(toForce.size), te)
+            "forceExtra failed on %d Futures".format(toForce.size),
+            te
+          )
       }
     }
   }

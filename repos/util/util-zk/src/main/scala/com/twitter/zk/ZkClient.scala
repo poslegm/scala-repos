@@ -17,7 +17,7 @@ import com.twitter.util.{Duration, Future, Timer}
   * with alternative settings on the same underlying Connector.
   */
 trait ZkClient {
-  val name = "zk.client"
+  val name              = "zk.client"
   protected[zk] val log = Logger.get(name)
 
   /** Build a ZNode handle using this ZkClient. */
@@ -72,10 +72,11 @@ trait ZkClient {
       _connector: Connector = connector,
       _acl: Seq[ACL] = acl,
       _mode: CreateMode = mode,
-      _retryPolicy: RetryPolicy = retryPolicy) = new ZkClient {
-    val connector = _connector
-    override val acl = _acl
-    override val mode = _mode
+      _retryPolicy: RetryPolicy = retryPolicy
+  ) = new ZkClient {
+    val connector            = _connector
+    override val acl         = _acl
+    override val mode        = _mode
     override val retryPolicy = _retryPolicy
   }
 }
@@ -88,23 +89,24 @@ object ZkClient {
   }
 
   /** Build a ZkClient with a NativeConnector */
-  def apply(connectString: String,
-            connectTimeout: Option[Duration],
-            sessionTimeout: Duration)(implicit timer: Timer): ZkClient = {
-    apply(
-        NativeConnector(connectString, connectTimeout, sessionTimeout, timer))
-  }
+  def apply(
+      connectString: String,
+      connectTimeout: Option[Duration],
+      sessionTimeout: Duration
+  )(implicit timer: Timer): ZkClient =
+    apply(NativeConnector(connectString, connectTimeout, sessionTimeout, timer))
 
   /** Build a ZkClient with a NativeConnector */
-  def apply(connectString: String,
-            connectTimeout: Duration,
-            sessionTimeout: Duration)(implicit timer: Timer): ZkClient = {
+  def apply(
+      connectString: String,
+      connectTimeout: Duration,
+      sessionTimeout: Duration
+  )(implicit timer: Timer): ZkClient =
     apply(connectString, Some(connectTimeout), sessionTimeout)(timer)
-  }
 
   /** Build a ZkClient with a NativeConnector */
   def apply(connectString: String, sessionTimeout: Duration)(
-      implicit timer: Timer): ZkClient = {
+      implicit timer: Timer
+  ): ZkClient =
     apply(connectString, None, sessionTimeout)(timer)
-  }
 }

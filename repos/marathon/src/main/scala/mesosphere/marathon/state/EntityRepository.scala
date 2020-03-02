@@ -3,7 +3,8 @@ package mesosphere.marathon.state
 import scala.concurrent.Future
 
 trait EntityRepository[T <: MarathonState[_, T]]
-    extends StateMetrics with VersionedEntry {
+    extends StateMetrics
+    with VersionedEntry {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   protected def store: EntityStore[T]
@@ -13,7 +14,7 @@ trait EntityRepository[T <: MarathonState[_, T]]
     * Returns the most recently stored entity with the supplied id.
     */
   protected def currentVersion(id: String): Future[Option[T]] =
-    timedRead { this.store.fetch(id) }
+    timedRead(this.store.fetch(id))
 
   /**
     * Returns the entity with the supplied id and version.
@@ -40,10 +41,8 @@ trait EntityRepository[T <: MarathonState[_, T]]
   protected def current(): Future[Iterable[T]] = timedRead {
     allIds().flatMap { names =>
       Future
-        .sequence(names.map { name =>
-          currentVersion(name)
-        })
-        .map { _.flatten }
+        .sequence(names.map(name => currentVersion(name)))
+        .map(_.flatten)
     }
   }
 
@@ -53,10 +52,13 @@ trait EntityRepository[T <: MarathonState[_, T]]
   def listVersions(id: String): Future[Iterable[Timestamp]] = timedRead {
     val prefix = versionKeyPrefix(id)
     this.store.names().map { names =>
-      names.collect {
-        case name: String if name.startsWith(prefix) =>
-          Timestamp(name.substring(prefix.length))
-      }.sorted.reverse
+      names
+        .collect {
+          case name: String if name.startsWith(prefix) =>
+            Timestamp(name.substring(prefix.length))
+        }
+        .sorted
+        .reverse
     }
   }
 
@@ -74,25 +76,30 @@ trait EntityRepository[T <: MarathonState[_, T]]
   }
 
   private[this] def limitNumberOfVersions(
-      id: String): Future[Iterable[Boolean]] = {
+      id: String
+  ): Future[Iterable[Boolean]] = {
     val maximum = maxVersions.map { maximum =>
       listVersions(id).flatMap { versions =>
-        Future.sequence(versions
-              .drop(maximum)
-              .map(version => store.expunge(versionKey(id, version))))
+        Future.sequence(
+          versions
+            .drop(maximum)
+            .map(version => store.expunge(versionKey(id, version)))
+        )
       }
     }
     maximum.getOrElse(Future.successful(Nil))
   }
 
   protected def storeWithVersion(
-      id: String, version: Timestamp, t: T): Future[T] = {
+      id: String,
+      version: Timestamp,
+      t: T
+  ): Future[T] =
     for {
-      alias <- storeByName(id, t)
+      alias  <- storeByName(id, t)
       result <- storeByName(versionKey(id, version), t)
-      limit <- limitNumberOfVersions(id)
+      limit  <- limitNumberOfVersions(id)
     } yield result
-  }
 
   /**
     * Stores the given entity directly under the given id without a second versioned store.

@@ -18,12 +18,12 @@ class KeyHasherTest extends WordSpec {
     src.getLines
   }
 
-  val base64 = new Base64()
+  val base64              = new Base64()
   def decode(str: String) = base64.decode(str)
 
   def testHasher(name: String, hasher: KeyHasher) = {
     val sources = readResource(name + "_source") map { decode(_) }
-    val hashes = readResource(name + "_hashes")
+    val hashes  = readResource(name + "_hashes")
     assert(sources.size > 0)
 
     sources zip hashes foreach {

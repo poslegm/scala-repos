@@ -83,15 +83,14 @@ class InMemoryStatsReceiver extends StatsReceiver {
     */
   def addGauge(name: String*)(f: => Float): Gauge = {
     val gauge = new Gauge {
-      def remove(): Unit = {
+      def remove(): Unit =
         gauges -= name
-      }
 
       override def toString: String = {
         // avoid holding a reference to `f`
         val current = gauges.get(name) match {
           case Some(fn) => fn()
-          case None => -0.0f
+          case None     => -0.0f
         }
         s"Gauge(${name.mkString("/")}=$current)"
       }
@@ -106,12 +105,12 @@ class InMemoryStatsReceiver extends StatsReceiver {
     * Dumps this in-memory stats receiver to the given [[PrintStream]].
     */
   def print(p: PrintStream): Unit = {
-    for ((k, v) <- counters) p.printf(
-        "%s %d\n", k.mkString("/"), v: java.lang.Integer)
-    for ((k, g) <- gauges) p.printf(
-        "%s %f\n", k.mkString("/"), g(): java.lang.Float)
-    for ((k, s) <- stats if s.size > 0) p.printf(
-        "%s %f\n", k.mkString("/"), (s.sum / s.size): java.lang.Float)
+    for ((k, v) <- counters)
+      p.printf("%s %d\n", k.mkString("/"), v: java.lang.Integer)
+    for ((k, g) <- gauges)
+      p.printf("%s %f\n", k.mkString("/"), g(): java.lang.Float)
+    for ((k, s) <- stats if s.size > 0)
+      p.printf("%s %f\n", k.mkString("/"), (s.sum / s.size): java.lang.Float)
   }
 
   /**

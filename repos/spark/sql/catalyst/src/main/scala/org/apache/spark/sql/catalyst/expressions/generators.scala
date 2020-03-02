@@ -68,19 +68,22 @@ trait Generator extends Expression {
 /**
   * A generator that produces its output using the provided lambda function.
   */
-case class UserDefinedGenerator(elementTypes: Seq[(DataType, Boolean, String)],
-                                function: Row => TraversableOnce[InternalRow],
-                                children: Seq[Expression])
-    extends Generator with CodegenFallback {
+case class UserDefinedGenerator(
+    elementTypes: Seq[(DataType, Boolean, String)],
+    function: Row => TraversableOnce[InternalRow],
+    children: Seq[Expression]
+) extends Generator
+    with CodegenFallback {
 
-  @transient private[this] var inputRow: InterpretedProjection = _
+  @transient private[this] var inputRow: InterpretedProjection      = _
   @transient private[this] var convertToScala: (InternalRow) => Row = _
 
   private def initializeConverters(): Unit = {
     inputRow = new InterpretedProjection(children)
     convertToScala = {
       val inputSchema = StructType(
-          children.map(e => StructField(e.simpleString, e.dataType, true)))
+        children.map(e => StructField(e.simpleString, e.dataType, true))
+      )
       CatalystTypeConverters.createToScalaConverter(inputSchema)
     }.asInstanceOf[InternalRow => Row]
   }
@@ -101,19 +104,21 @@ case class UserDefinedGenerator(elementTypes: Seq[(DataType, Boolean, String)],
   * Given an input array produces a sequence of rows for each value in the array.
   */
 case class Explode(child: Expression)
-    extends UnaryExpression with Generator with CodegenFallback {
+    extends UnaryExpression
+    with Generator
+    with CodegenFallback {
 
   override def children: Seq[Expression] = child :: Nil
 
-  override def checkInputDataTypes(): TypeCheckResult = {
+  override def checkInputDataTypes(): TypeCheckResult =
     if (child.dataType.isInstanceOf[ArrayType] ||
         child.dataType.isInstanceOf[MapType]) {
       TypeCheckResult.TypeCheckSuccess
     } else {
       TypeCheckResult.TypeCheckFailure(
-          s"input to function explode should be array or map type, not ${child.dataType}")
+        s"input to function explode should be array or map type, not ${child.dataType}"
+      )
     }
-  }
 
   // hive-compatible default alias for explode function ("col" for array, "key", "value" for map)
   override def elementTypes: Seq[(DataType, Boolean, String)] =
@@ -123,7 +128,7 @@ case class Explode(child: Expression)
         (kt, false, "key") :: (vt, valueContainsNull, "value") :: Nil
     }
 
-  override def eval(input: InternalRow): TraversableOnce[InternalRow] = {
+  override def eval(input: InternalRow): TraversableOnce[InternalRow] =
     child.dataType match {
       case ArrayType(et, _) =>
         val inputArray = child.eval(input).asInstanceOf[ArrayData]
@@ -131,11 +136,7 @@ case class Explode(child: Expression)
           Nil
         } else {
           val rows = new Array[InternalRow](inputArray.numElements())
-          inputArray.foreach(et,
-                             (i, e) =>
-                               {
-                                 rows(i) = InternalRow(e)
-                             })
+          inputArray.foreach(et, (i, e) => rows(i) = InternalRow(e))
           rows
         }
       case MapType(kt, vt, _) =>
@@ -144,16 +145,16 @@ case class Explode(child: Expression)
           Nil
         } else {
           val rows = new Array[InternalRow](inputMap.numElements())
-          var i = 0
-          inputMap.foreach(kt,
-                           vt,
-                           (k, v) =>
-                             {
-                               rows(i) = InternalRow(k, v)
-                               i += 1
-                           })
+          var i    = 0
+          inputMap.foreach(
+            kt,
+            vt,
+            (k, v) => {
+              rows(i) = InternalRow(k, v)
+              i += 1
+            }
+          )
           rows
         }
     }
-  }
 }

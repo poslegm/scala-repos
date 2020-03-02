@@ -12,7 +12,7 @@ case class UserInfos(user: User, history: List[Attempt], chart: JsArray)
 object UserInfos {
 
   private def historySize = 20
-  private def chartSize = 12
+  private def chartSize   = 12
 
   import Attempt.attemptBSONHandler
 
@@ -36,12 +36,16 @@ object UserInfos {
 
     private def fetchAttempts(userId: String): Fu[List[Attempt]] =
       attemptColl
-        .find(BSONDocument(
-                Attempt.BSONFields.userId -> userId
-            ))
-        .sort(BSONDocument(
-                Attempt.BSONFields.date -> -1
-            ))
+        .find(
+          BSONDocument(
+            Attempt.BSONFields.userId -> userId
+          )
+        )
+        .sort(
+          BSONDocument(
+            Attempt.BSONFields.date -> -1
+          )
+        )
         .cursor[Attempt]()
         .collect[List](math.max(historySize, chartSize))
   }

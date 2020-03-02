@@ -9,7 +9,7 @@ import org.saddle.Vec
 trait VecStatsImplicits {
   type Vec2Stats[A] = Vec[A] => VecStats[A]
 
-  implicit def vecToIntStats(s: Vec[Int]): VecStats[Int] = new IntStats(s)
+  implicit def vecToIntStats(s: Vec[Int]): VecStats[Int]    = new IntStats(s)
   implicit def vecToLongStats(s: Vec[Long]): VecStats[Long] = new LongStats(s)
   implicit def vecToDoubleStats(s: Vec[Double]): VecStats[Double] =
     new DoubleStats(s)
@@ -26,5 +26,6 @@ trait VecStatsImplicits {
   implicit def vecToLongRollingStats(s: Vec[Long]): VecRollingStats[Long] =
     new VecRollingStats[Long](s)
   implicit def vecToDoubleRollingStats(
-      s: Vec[Double]): VecRollingStats[Double] = new VecRollingStats[Double](s)
+      s: Vec[Double]
+  ): VecRollingStats[Double] = new VecRollingStats[Double](s)
 }

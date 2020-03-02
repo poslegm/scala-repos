@@ -24,7 +24,9 @@ import scala.collection.parallel.Combiner
   *  @since 2.9
   */
 trait ParMap[K, V]
-    extends GenMap[K, V] with parallel.ParMap[K, V] with ParIterable[(K, V)]
+    extends GenMap[K, V]
+    with parallel.ParMap[K, V]
+    with ParIterable[(K, V)]
     with GenericParMapTemplate[K, V, ParMap]
     with ParMapLike[K, V, ParMap[K, V], mutable.Map[K, V]] {
 
@@ -75,16 +77,16 @@ object ParMap extends ParMapFactory[ParMap] {
       extends scala.collection.parallel.ParMap.WithDefault(underlying, d)
       with ParMap[K, V] {
     override def +=(kv: (K, V)) = { underlying += kv; this }
-    def -=(key: K) = { underlying -= key; this }
-    override def empty = new WithDefault(underlying.empty, d)
+    def -=(key: K)              = { underlying -= key; this }
+    override def empty          = new WithDefault(underlying.empty, d)
     override def updated[U >: V](key: K, value: U): WithDefault[K, U] =
       new WithDefault[K, U](underlying.updated[U](key, value), d)
     override def +[U >: V](kv: (K, U)): WithDefault[K, U] =
       updated(kv._1, kv._2)
     override def -(key: K): WithDefault[K, V] =
       new WithDefault(underlying - key, d)
-    override def seq = underlying.seq.withDefault(d)
-    def clear() = underlying.clear()
+    override def seq                     = underlying.seq.withDefault(d)
+    def clear()                          = underlying.clear()
     def put(key: K, value: V): Option[V] = underlying.put(key, value)
 
     /** If these methods aren't overridden to thread through the underlying map,

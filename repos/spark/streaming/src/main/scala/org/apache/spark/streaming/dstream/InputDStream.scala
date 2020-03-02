@@ -39,7 +39,7 @@ import org.apache.spark.util.Utils
   *
   * @param _ssc Streaming context that will execute this input stream
   */
-abstract class InputDStream[T : ClassTag](_ssc: StreamingContext)
+abstract class InputDStream[T: ClassTag](_ssc: StreamingContext)
     extends DStream[T](_ssc) {
 
   private[streaming] var lastValidTime: Time = null
@@ -74,9 +74,9 @@ abstract class InputDStream[T : ClassTag](_ssc: StreamingContext)
     */
   protected[streaming] override val baseScope: Option[String] = {
     val scopeName =
-      Option(ssc.sc.getLocalProperty(SparkContext.RDD_SCOPE_KEY)).map { json =>
-        RDDOperationScope.fromJson(json).name + s" [$id]"
-      }.getOrElse(name.toLowerCase)
+      Option(ssc.sc.getLocalProperty(SparkContext.RDD_SCOPE_KEY))
+        .map(json => RDDOperationScope.fromJson(json).name + s" [$id]")
+        .getOrElse(name.toLowerCase)
     Some(new RDDOperationScope(scopeName).toJson)
   }
 
@@ -86,19 +86,20 @@ abstract class InputDStream[T : ClassTag](_ssc: StreamingContext)
     * This ensures that InputDStream.compute() is called strictly on increasing
     * times.
     */
-  override private[streaming] def isTimeValid(time: Time): Boolean = {
+  override private[streaming] def isTimeValid(time: Time): Boolean =
     if (!super.isTimeValid(time)) {
       false // Time not valid
     } else {
       // Time is valid, but check it it is more than lastValidTime
       if (lastValidTime != null && time < lastValidTime) {
-        logWarning("isTimeValid called with " + time +
-            " where as last valid time is " + lastValidTime)
+        logWarning(
+          "isTimeValid called with " + time +
+            " where as last valid time is " + lastValidTime
+        )
       }
       lastValidTime = time
       true
     }
-  }
 
   override def dependencies: List[DStream[_]] = List()
 

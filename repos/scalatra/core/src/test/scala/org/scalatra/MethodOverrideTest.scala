@@ -3,9 +3,9 @@ package org.scalatra
 import org.scalatra.test.scalatest.ScalatraFunSuite
 
 class MethodOverrideTestServlet extends ScalatraServlet with MethodOverride {
-  put("/foo") { "PUT" }
-  post("/foo") { "POST" }
-  get("/foo") { "GET" }
+  put("/foo")("PUT")
+  post("/foo")("POST")
+  get("/foo")("GET")
 }
 
 class MethodOverrideTest extends ScalatraFunSuite {
@@ -42,7 +42,8 @@ class MethodOverrideTest extends ScalatraFunSuite {
   }
 
   test(
-      "should not override method for methods other than POST with X-HTTP-METHOD header") {
+    "should not override method for methods other than POST with X-HTTP-METHOD header"
+  ) {
     get("/foo", headers = Map(MethodOverride.HeaderName.toList(1) -> "put")) {
       body should equal("GET")
     }

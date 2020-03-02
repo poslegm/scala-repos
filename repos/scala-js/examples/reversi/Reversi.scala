@@ -32,7 +32,7 @@ class Reversi(jQuery: JQueryStatic, playground: JQuery) {
 
   val BoardSize = 8 // size of a Reversi board
 
-  def inBounds(index: Int): Boolean = index >= 0 && index < BoardSize
+  def inBounds(index: Int): Boolean     = index >= 0 && index < BoardSize
   def inBounds(x: Int, y: Int): Boolean = inBounds(x) && inBounds(y)
 
   class Square(val x: Int, val y: Int) {
@@ -52,48 +52,50 @@ class Reversi(jQuery: JQueryStatic, playground: JQuery) {
     override def toString() = "Square(" + x + ", " + y + ", " + owner + ")"
   }
 
-  val board = Array.tabulate[Square](BoardSize, BoardSize)(new Square(_, _))
-  val allSquares = board.flatten
+  val board                 = Array.tabulate[Square](BoardSize, BoardSize)(new Square(_, _))
+  val allSquares            = board.flatten
   var currentPlayer: Player = White // Irrelevant, set again in startGame()
 
   // The GUI -------------------------------------------------------------------
 
   val resetButton = createResetButton()
-  val passButton = createPassButton()
-  val status = createStatus()
+  val passButton  = createPassButton()
+  val status      = createStatus()
   buildUI()
 
-  def createResetButton() = {
-    jQuery("<input>",
-           js.Dynamic.literal(
-               `type` = "button",
-               value = "Reset"
-           )).click(reset _)
-  }
+  def createResetButton() =
+    jQuery(
+      "<input>",
+      js.Dynamic.literal(
+        `type` = "button",
+        value = "Reset"
+      )
+    ).click(reset _)
 
-  def createPassButton() = {
-    jQuery("<input>",
-           js.Dynamic.literal(
-               `type` = "button",
-               value = "Pass"
-           )).click(pass _)
-  }
+  def createPassButton() =
+    jQuery(
+      "<input>",
+      js.Dynamic.literal(
+        `type` = "button",
+        value = "Pass"
+      )
+    ).click(pass _)
 
-  def createStatus() = {
+  def createStatus() =
     jQuery("<span>")
-  }
 
   def buildUI() {
     // Some dimensions
-    val SquareSizePx = 48
+    val SquareSizePx     = 48
     val HalfSquareSizePx = SquareSizePx / 2
-    val PawnRadiusPx = HalfSquareSizePx - 4
-    val BoardSizePx = BoardSize * SquareSizePx + 3
+    val PawnRadiusPx     = HalfSquareSizePx - 4
+    val BoardSizePx      = BoardSize * SquareSizePx + 3
 
     // Creat the board canvas
     val boardCanvas = jQuery(
-        "<canvas width='" + BoardSizePx + "' height='" + BoardSizePx +
-        "'></canvas>")
+      "<canvas width='" + BoardSizePx + "' height='" + BoardSizePx +
+        "'></canvas>"
+    )
     val domCanvas = boardCanvas.get(0).asInstanceOf[HTMLCanvasElement]
     val context =
       domCanvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
@@ -118,12 +120,14 @@ class Reversi(jQuery: JQueryStatic, playground: JQuery) {
       if (square.owner != NoPlayer) {
         context.fillStyle = if (square.owner == White) "white" else "black"
         context.beginPath()
-        context.arc(x + HalfSquareSizePx,
-                    y + HalfSquareSizePx,
-                    PawnRadiusPx,
-                    0,
-                    2 * Math.PI,
-                    true)
+        context.arc(
+          x + HalfSquareSizePx,
+          y + HalfSquareSizePx,
+          PawnRadiusPx,
+          0,
+          2 * Math.PI,
+          true
+        )
         context.fill()
       }
     }
@@ -131,17 +135,15 @@ class Reversi(jQuery: JQueryStatic, playground: JQuery) {
     // Draw squares now, and everytime they change ownership
     for (square <- allSquares) {
       drawSquare(square)
-      square.onOwnerChange = { (prevOwner, newOwner) =>
-        drawSquare(square)
-      }
+      square.onOwnerChange = { (prevOwner, newOwner) => drawSquare(square) }
     }
 
     // Configure clicks on the board
     boardCanvas.click { (event: JQueryEvent) =>
       val offsetX = event.pageX - boardCanvas.offset().left
       val offsetY = event.pageY - boardCanvas.offset().top
-      val x = offsetX.toInt / SquareSizePx
-      val y = offsetY.toInt / SquareSizePx
+      val x       = offsetX.toInt / SquareSizePx
+      val y       = offsetY.toInt / SquareSizePx
 
       if (inBounds(x, y)) clickSquare(board(x)(y))
     }
@@ -178,8 +180,10 @@ class Reversi(jQuery: JQueryStatic, playground: JQuery) {
 
   def startTurn() {
     val (scoreWhite, scoreBlack) = computeScore()
-    status.text(currentPlayer + "'s turn -- White: " + scoreWhite +
-        " -- Black: " + scoreBlack)
+    status.text(
+      currentPlayer + "'s turn -- White: " + scoreWhite +
+        " -- Black: " + scoreBlack
+    )
 
     passButton.prop("disabled", true)
 
@@ -197,8 +201,10 @@ class Reversi(jQuery: JQueryStatic, playground: JQuery) {
           if (scoreWhite > scoreBlack) "White won!"
           else if (scoreBlack > scoreWhite) "Black won!"
           else "Draw"
-        status.text("Game finished -- White: " + scoreWhite + " -- Black: " +
-            scoreBlack + " -- " + winnerText)
+        status.text(
+          "Game finished -- White: " + scoreWhite + " -- Black: " +
+            scoreBlack + " -- " + winnerText
+        )
       }
     }
   }
@@ -216,29 +222,30 @@ class Reversi(jQuery: JQueryStatic, playground: JQuery) {
     nextTurn()
   }
 
-  def existsValidMove(): Boolean = {
+  def existsValidMove(): Boolean =
     allSquares.exists(isValidMove)
-  }
 
-  def isValidMove(square: Square): Boolean = {
+  def isValidMove(square: Square): Boolean =
     !computeFlips(square).isEmpty
-  }
 
-  def computeFlips(square: Square): List[Square] = {
+  def computeFlips(square: Square): List[Square] =
     if (square.owner != NoPlayer) Nil
     else {
       for {
-        i <- (-1 to 1).toList
-        j <- -1 to 1 if i != 0 || j != 0
+        i    <- (-1 to 1).toList
+        j    <- -1 to 1 if i != 0 || j != 0
         flip <- computeFlipsInDirection(square.x, square.y, i, j)
       } yield flip
     }
-  }
 
   def computeFlipsInDirection(
-      x: Int, y: Int, dirx: Int, diry: Int): List[Square] = {
+      x: Int,
+      y: Int,
+      dirx: Int,
+      diry: Int
+  ): List[Square] = {
 
-    val allInDir = allSquaresInDirection(x, y, dirx, diry)
+    val allInDir            = allSquaresInDirection(x, y, dirx, diry)
     val (toFlip, remaining) = allInDir.span(_.owner == currentPlayer.opponent)
 
     val success = remaining.headOption.exists(_.owner == currentPlayer)
@@ -247,7 +254,11 @@ class Reversi(jQuery: JQueryStatic, playground: JQuery) {
   }
 
   def allSquaresInDirection(
-      fromx: Int, fromy: Int, dirx: Int, diry: Int): List[Square] = {
+      fromx: Int,
+      fromy: Int,
+      dirx: Int,
+      diry: Int
+  ): List[Square] = {
     val nextx = fromx + dirx
     val nexty = fromy + diry
     if (inBounds(nextx, nexty))
@@ -255,16 +266,15 @@ class Reversi(jQuery: JQueryStatic, playground: JQuery) {
     else Nil
   }
 
-  def computeScore(): (Int, Int) = {
+  def computeScore(): (Int, Int) =
     allSquares.foldLeft((0, 0)) {
       case ((white, black), square) =>
         square.owner match {
-          case White => (white + 1, black)
-          case Black => (white, black + 1)
+          case White    => (white + 1, black)
+          case Black    => (white, black + 1)
           case NoPlayer => (white, black)
         }
     }
-  }
 
   def nextTurn() {
     currentPlayer = currentPlayer.opponent

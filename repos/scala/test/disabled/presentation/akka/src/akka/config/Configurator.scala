@@ -10,7 +10,8 @@ private[akka] trait TypedActorConfiguratorBase {
 
   def configure(
       restartStrategy: FaultHandlingStrategy,
-      components: List[SuperviseTypedActor]): TypedActorConfiguratorBase
+      components: List[SuperviseTypedActor]
+  ): TypedActorConfiguratorBase
 
   def inject: TypedActorConfiguratorBase
 

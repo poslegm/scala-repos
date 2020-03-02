@@ -53,10 +53,9 @@ object Row {
   /**
     * Merge multiple rows into a single row, one after another.
     */
-  def merge(rows: Row*): Row = {
+  def merge(rows: Row*): Row =
     // TODO: Improve the performance of this if used in performance critical part.
     new GenericRow(rows.flatMap(_.toSeq).toArray)
-  }
 
   /** Returns an empty row. */
   val empty = apply()
@@ -341,10 +340,10 @@ trait Row extends Serializable {
     * @throws UnsupportedOperationException when schema is not defined.
     * @throws IllegalArgumentException when fieldName do not exist.
     */
-  def fieldIndex(name: String): Int = {
+  def fieldIndex(name: String): Int =
     throw new UnsupportedOperationException(
-        "fieldIndex on a Row without schema is undefined.")
-  }
+      "fieldIndex on a Row without schema is undefined."
+    )
 
   /**
     * Returns a Map(name -> value) for the requested fieldNames
@@ -355,11 +354,8 @@ trait Row extends Serializable {
     * @throws IllegalArgumentException when fieldName do not exist.
     * @throws ClassCastException when data type does not match.
     */
-  def getValuesMap[T](fieldNames: Seq[String]): Map[String, T] = {
-    fieldNames.map { name =>
-      name -> getAs[T](name)
-    }.toMap
-  }
+  def getValuesMap[T](fieldNames: Seq[String]): Map[String, T] =
+    fieldNames.map(name => name -> getAs[T](name)).toMap
 
   override def toString(): String = s"[${this.mkString(",")}]"
 
@@ -371,7 +367,7 @@ trait Row extends Serializable {
   /** Returns true if there are any NULL values in this row. */
   def anyNull: Boolean = {
     val len = length
-    var i = 0
+    var i   = 0
     while (i < len) {
       if (isNullAt(i)) { return true }
       i += 1
@@ -431,8 +427,8 @@ trait Row extends Serializable {
 
   override def hashCode: Int = {
     // Using Scala's Seq hash code implementation.
-    var n = 0
-    var h = MurmurHash3.seqSeed
+    var n   = 0
+    var h   = MurmurHash3.seqSeed
     val len = length
     while (n < len) {
       h = MurmurHash3.mix(h, apply(n).##)
@@ -447,9 +443,9 @@ trait Row extends Serializable {
     * Return a Scala Seq representing the row. Elements are placed in the same order in the Seq.
     */
   def toSeq: Seq[Any] = {
-    val n = length
+    val n      = length
     val values = new Array[Any](n)
-    var i = 0
+    var i      = 0
     while (i < n) {
       values.update(i, get(i))
       i += 1

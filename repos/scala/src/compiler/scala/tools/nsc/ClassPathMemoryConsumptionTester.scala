@@ -14,11 +14,12 @@ object ClassPathMemoryConsumptionTester {
 
   private class TestSettings extends Settings {
     val requiredInstances = IntSetting(
-        "-requiredInstances",
-        "Determine how many times classpath should be loaded",
-        10,
-        Some((1, 10000)),
-        (_: String) => None)
+      "-requiredInstances",
+      "Determine how many times classpath should be loaded",
+      10,
+      Some((1, 10000)),
+      (_: String) => None
+    )
   }
 
   private class MainRetainsGlobal extends scala.tools.nsc.MainClass {
@@ -29,10 +30,9 @@ object ClassPathMemoryConsumptionTester {
     }
   }
 
-  def main(args: Array[String]): Unit = {
+  def main(args: Array[String]): Unit =
     if (args contains "-help") usage()
     else doTest(args)
-  }
 
   private def doTest(args: Array[String]) = {
     val settings = loadSettings(args.toList)
@@ -53,18 +53,20 @@ object ClassPathMemoryConsumptionTester {
     println("Memory consumption can be now measured")
 
     var textFromStdIn = ""
-    while (textFromStdIn.toLowerCase != "exit") textFromStdIn = readLine(
-        "Type 'exit' to close application: ")
+    while (textFromStdIn.toLowerCase != "exit")
+      textFromStdIn = readLine("Type 'exit' to close application: ")
   }
 
   /**
     * Prints usage information
     */
   private def usage(): Unit =
-    println("""Use classpath and sourcepath options like in the case of e.g. 'scala' command.
+    println(
+      """Use classpath and sourcepath options like in the case of e.g. 'scala' command.
                | There's also one additional option:
                | -requiredInstances <int value> Determine how many times classpath should be loaded
-             """.stripMargin.trim)
+             """.stripMargin.trim
+    )
 
   private def loadSettings(args: List[String]) = {
     val settings = new TestSettings()
@@ -79,6 +81,7 @@ object ClassPathMemoryConsumptionTester {
     if (instancesIndex == -1) args
     else
       args.dropRight(args.length - instancesIndex) ++ args.drop(
-          instancesIndex + 2)
+        instancesIndex + 2
+      )
   }
 }

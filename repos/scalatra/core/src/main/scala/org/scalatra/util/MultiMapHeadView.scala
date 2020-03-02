@@ -4,18 +4,16 @@ import scala.collection.immutable.Map
 
 object MultiMapHeadView {
 
-  def empty[A, B]: MultiMapHeadView[A, B] = {
+  def empty[A, B]: MultiMapHeadView[A, B] =
     new MultiMapHeadView[A, B] {
       override protected val multiMap = Map.empty[A, Seq[B]]
     }
-  }
 
-  def emptyIndifferent[
-      B]: MultiMapHeadView[String, B] with MapWithIndifferentAccess[B] = {
+  def emptyIndifferent[B]
+      : MultiMapHeadView[String, B] with MapWithIndifferentAccess[B] =
     new MultiMapHeadView[String, B] with MapWithIndifferentAccess[B] {
       override protected val multiMap = Map.empty[String, Seq[B]]
     }
-  }
 }
 
 trait MultiMapHeadView[A, B] extends Map[A, B] {
@@ -31,9 +29,7 @@ trait MultiMapHeadView[A, B] extends Map[A, B] {
   override def iterator: Iterator[(A, B)] =
     multiMap.flatMap {
       case (k, v) =>
-        v.headOption.map { _v =>
-          (k, _v)
-        }
+        v.headOption.map(_v => (k, _v))
     }.iterator
 
   override def -(key: A): Map[A, B] = Map() ++ this - key

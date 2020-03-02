@@ -29,13 +29,17 @@ import immutable.StringLike
   */
 @SerialVersionUID(0 - 8525408645367278351L)
 final class StringBuilder(private val underlying: JavaStringBuilder)
-    extends AbstractSeq[Char] with java.lang.CharSequence
-    with IndexedSeq[Char] with StringLike[StringBuilder]
-    with ReusableBuilder[Char, String] with Serializable {
+    extends AbstractSeq[Char]
+    with java.lang.CharSequence
+    with IndexedSeq[Char]
+    with StringLike[StringBuilder]
+    with ReusableBuilder[Char, String]
+    with Serializable {
 
   override protected[this] def thisCollection: StringBuilder = this
   override protected[this] def toCollection(
-      repr: StringBuilder): StringBuilder = repr
+      repr: StringBuilder
+  ): StringBuilder = repr
 
   /** Creates a string builder buffer as builder for this class */
   override protected[this] def newBuilder =
@@ -46,7 +50,8 @@ final class StringBuilder(private val underlying: JavaStringBuilder)
     */
   def this(initCapacity: Int, initValue: String) =
     this(
-        new JavaStringBuilder(initValue.length + initCapacity) append initValue)
+      new JavaStringBuilder(initValue.length + initCapacity) append initValue
+    )
 
   /** Constructs a string builder with no characters in it and an
     *  initial capacity of 16 characters.
@@ -262,13 +267,13 @@ final class StringBuilder(private val underlying: JavaStringBuilder)
     *  @return     This StringBuilder.
     */
   def append(x: Boolean): StringBuilder = { underlying append x; this }
-  def append(x: Byte): StringBuilder = append(x.toInt)
-  def append(x: Short): StringBuilder = append(x.toInt)
-  def append(x: Int): StringBuilder = { underlying append x; this }
-  def append(x: Long): StringBuilder = { underlying append x; this }
-  def append(x: Float): StringBuilder = { underlying append x; this }
-  def append(x: Double): StringBuilder = { underlying append x; this }
-  def append(x: Char): StringBuilder = { underlying append x; this }
+  def append(x: Byte): StringBuilder    = append(x.toInt)
+  def append(x: Short): StringBuilder   = append(x.toInt)
+  def append(x: Int): StringBuilder     = { underlying append x; this }
+  def append(x: Long): StringBuilder    = { underlying append x; this }
+  def append(x: Float): StringBuilder   = { underlying append x; this }
+  def append(x: Double): StringBuilder  = { underlying append x; this }
+  def append(x: Char): StringBuilder    = { underlying append x; this }
 
   /** Remove a subsequence of Chars from this sequence, starting at the
     *  given start index (inclusive) and extending to the end index (exclusive)
@@ -311,7 +316,11 @@ final class StringBuilder(private val underlying: JavaStringBuilder)
     *         offset < 0, len < 0, or (offset + len) > str.length.
     */
   def insertAll(
-      index: Int, str: Array[Char], offset: Int, len: Int): StringBuilder = {
+      index: Int,
+      str: Array[Char],
+      offset: Int,
+      len: Int
+  ): StringBuilder = {
     underlying.insert(index, str, offset, len)
     this
   }
@@ -370,7 +379,7 @@ final class StringBuilder(private val underlying: JavaStringBuilder)
     */
   def insert(index: Int, x: Boolean): StringBuilder =
     insert(index, String.valueOf(x))
-  def insert(index: Int, x: Byte): StringBuilder = insert(index, x.toInt)
+  def insert(index: Int, x: Byte): StringBuilder  = insert(index, x.toInt)
   def insert(index: Int, x: Short): StringBuilder = insert(index, x.toInt)
   def insert(index: Int, x: Int): StringBuilder =
     insert(index, String.valueOf(x))
@@ -422,8 +431,9 @@ final class StringBuilder(private val underlying: JavaStringBuilder)
     *  @return   the reversed StringBuilder
     */
   @migration(
-      "`reverse` returns a new instance.  Use `reverseContents` to update in place and return that StringBuilder itself.",
-      "2.8.0")
+    "`reverse` returns a new instance.  Use `reverseContents` to update in place and return that StringBuilder itself.",
+    "2.8.0"
+  )
   override def reverse: StringBuilder =
     new StringBuilder(new JavaStringBuilder(underlying).reverse)
 

@@ -47,7 +47,9 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class KeyFrameSpec
     extends SimpleSFXDelegateSpec[jfxa.KeyFrame, KeyFrame](
-        classOf[jfxa.KeyFrame], classOf[KeyFrame]) {
+      classOf[jfxa.KeyFrame],
+      classOf[KeyFrame]
+    ) {
 
   override protected def getScalaClassInstance = KeyFrame(5 s)
 
@@ -66,7 +68,8 @@ class KeyFrameSpec
       def handle(p1: jfxe.ActionEvent) {}
     }
     KeyFrame(10 ms, onFinished = finishHandler).onFinished should equal(
-        finishHandler)
+      finishHandler
+    )
   }
 
   it should "have a simpler syntax for finish handlers" in {
@@ -90,13 +93,12 @@ class KeyFrameSpec
   it should "have a simpler syntax for finish handlers as non-param functions" in {
     var callCount1 = 0
     var callCount2 = 0
-    val finishHandler = () =>
-      {
-        // There is a potential problems with code blocks as event handlers,
-        // only the last statement is executed during handler invocation
-        // prior statements are executed only once during construction.
-        callCount1 += 1
-        callCount2 += 1
+    val finishHandler = () => {
+      // There is a potential problems with code blocks as event handlers,
+      // only the last statement is executed during handler invocation
+      // prior statements are executed only once during construction.
+      callCount1 += 1
+      callCount2 += 1
     }
     // Call the handler 3 times
     KeyFrame(10 ms, onFinished = finishHandler).onFinished.handle(null)
@@ -108,8 +110,8 @@ class KeyFrameSpec
   }
 
   it should "have a simpler syntax for finish handlers with events" in {
-    var callCount1 = 0
-    var callCount2 = 0
+    var callCount1  = 0
+    var callCount2  = 0
     val actionEvent = new jfxe.ActionEvent()
     val finishHandler = { (event: ActionEvent) =>
       callCount1 += 1
@@ -126,14 +128,15 @@ class KeyFrameSpec
 
   it should "have a convenient apply construction format and property access for values" in {
     val doubleProperty = new DoubleProperty(null, "sample")
-    val frames = Set(KeyValue(doubleProperty, 50d))
+    val frames         = Set(KeyValue(doubleProperty, 50d))
     KeyFrame(10 ms, values = frames).values should equal(
-        setAsJavaSet(frames.map(_.delegate)))
+      setAsJavaSet(frames.map(_.delegate))
+    )
   }
 
   it should "support the at(duration) {value} syntax" in {
     val doubleProperty = new DoubleProperty(null, "sample")
-    val keyFrame = at(5 s) { doubleProperty -> 20 }
+    val keyFrame       = at(5 s)(doubleProperty -> 20)
     keyFrame.time should equal(5 s)
     keyFrame.values should have size (1)
   }

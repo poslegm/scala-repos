@@ -3,7 +3,7 @@ package org.scalatra
 import org.scalatra.test.scalatest.ScalatraFunSuite
 
 class ErrorHandlerTest extends ScalatraFunSuite {
-  trait TestException extends RuntimeException
+  trait TestException     extends RuntimeException
   case class Exception1() extends TestException
   case class Exception2() extends TestException
   case class Exception3() extends TestException
@@ -13,17 +13,17 @@ class ErrorHandlerTest extends ScalatraFunSuite {
       status = 418
       throw new Exception1
     }
-    get("/uncaught") { throw new RuntimeException }
+    get("/uncaught")(throw new RuntimeException)
     error { case e: TestException => "base" }
   }
 
   class ChildServlet extends BaseServlet {
-    get("/2") { throw new Exception2 }
+    get("/2")(throw new Exception2)
     error { case e: Exception2 => "child" }
   }
 
   class HaltServlet extends BaseServlet {
-    get("/3") { throw new Exception3 }
+    get("/3")(throw new Exception3)
     error { case e: Exception3 => halt(413, "no more") }
   }
 

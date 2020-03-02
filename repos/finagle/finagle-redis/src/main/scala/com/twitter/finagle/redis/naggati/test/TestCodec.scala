@@ -22,18 +22,19 @@ import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.channel._
 
 class Counter {
-  var readBytes = 0
+  var readBytes    = 0
   var writtenBytes = 0
 }
 
 object TestCodec {
-  def apply[A : Manifest](firstStage: Stage, encoder: Encoder[A]) = {
+  def apply[A: Manifest](firstStage: Stage, encoder: Encoder[A]) = {
     val counter = new Counter()
-    val codec = new Codec(firstStage, encoder, { n =>
-      counter.readBytes += n
-    }, { n =>
-      counter.writtenBytes += n
-    })
+    val codec = new Codec(
+      firstStage,
+      encoder,
+      n => counter.readBytes += n,
+      n => counter.writtenBytes += n
+    )
     val testCodec = new TestCodec(codec)
     (testCodec, counter)
   }
@@ -45,7 +46,7 @@ object TestCodec {
   */
 class TestCodec[A](val codec: Codec[A]) {
   val downstreamOutput = new mutable.ListBuffer[AnyRef]
-  val upstreamOutput = new mutable.ListBuffer[AnyRef]
+  val upstreamOutput   = new mutable.ListBuffer[AnyRef]
 
   private def log(e: MessageEvent, list: mutable.ListBuffer[AnyRef]) {
     e.getMessage match {
@@ -61,7 +62,7 @@ class TestCodec[A](val codec: Codec[A]) {
   private def toStrings(wrapped: Seq[Any]): Seq[String] = wrapped.map { item =>
     item match {
       case x: Array[Byte] => new String(x, "UTF-8")
-      case x => x.toString
+      case x              => x.toString
     }
   }
 
@@ -86,10 +87,10 @@ class TestCodec[A](val codec: Codec[A]) {
   }
   val channel = new AbstractChannel(null, null, pipeline, sink) {
     def getRemoteAddress() = null
-    def getLocalAddress() = null
-    def isConnected() = true
-    def isBound() = true
-    def getConfig() = new DefaultChannelConfig()
+    def getLocalAddress()  = null
+    def isConnected()      = true
+    def isBound()          = true
+    def getConfig()        = new DefaultChannelConfig()
     override def close() = {
       downstreamOutput += "<CLOSE>"
       null
@@ -99,18 +100,23 @@ class TestCodec[A](val codec: Codec[A]) {
   def apply(buffer: ChannelBuffer) = {
     upstreamOutput.clear()
     codec.messageReceived(
-        context, new UpstreamMessageEvent(pipeline.getChannel, buffer, null))
+      context,
+      new UpstreamMessageEvent(pipeline.getChannel, buffer, null)
+    )
     upstreamOutput.toList
   }
 
   def send(obj: Any): Seq[String] = {
     downstreamOutput.clear()
     codec.handleDownstream(
-        context,
-        new DownstreamMessageEvent(pipeline.getChannel,
-                                   Channels.future(pipeline.getChannel),
-                                   obj,
-                                   null))
+      context,
+      new DownstreamMessageEvent(
+        pipeline.getChannel,
+        Channels.future(pipeline.getChannel),
+        obj,
+        null
+      )
+    )
     getDownstream
   }
 

@@ -10,7 +10,9 @@ trait DatePicklers extends PrimitivePicklers {
     new AbstractPicklerUnpickler[Date] {
       private val dateFormatTemplate = {
         val format =
-          new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'") //use ISO_8601 format
+          new SimpleDateFormat(
+            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+          ) //use ISO_8601 format
         format.setLenient(false)
         format.setTimeZone(TimeZone.getTimeZone("UTC"))
         format
@@ -23,12 +25,12 @@ trait DatePicklers extends PrimitivePicklers {
         builder.beginEntry(picklee, tag)
 
         builder.putField(
-            "value",
-            b =>
-              {
-                b.hintElidedType(implicitly[FastTypeTag[String]])
-                stringPickler.pickle(dateFormat.format(picklee), b)
-            })
+          "value",
+          b => {
+            b.hintElidedType(implicitly[FastTypeTag[String]])
+            stringPickler.pickle(dateFormat.format(picklee), b)
+          }
+        )
 
         builder.endEntry()
       }

@@ -13,13 +13,13 @@ sealed abstract class C extends B { val fld: Int }
 final class D extends C { val fld = 1 }
 
 final class E extends C {
-  val fld = 2
+  val fld          = 2
   def incr(x: Int) = x + 1
 }
 
 // case class should work whether final or not
 final case class F(bar: Int) extends A
-case class G(bar: Int) extends A
+case class G(bar: Int)       extends A
 
 // case class should work when extending B or C too
 final case class H(bar: Int) extends B

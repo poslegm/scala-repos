@@ -7,7 +7,11 @@ import javax.swing.border.Border
 
 import com.intellij.openapi.editor._
 import com.intellij.openapi.editor.colors.EditorColorsScheme
-import com.intellij.openapi.editor.event.{EditorMouseEventArea, EditorMouseListener, EditorMouseMotionListener}
+import com.intellij.openapi.editor.event.{
+  EditorMouseEventArea,
+  EditorMouseListener,
+  EditorMouseMotionListener
+}
 import com.intellij.openapi.editor.markup.MarkupModel
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
@@ -43,9 +47,12 @@ class EditorStub extends Editor {
   def isDisposed: Boolean = false
 
   def removeEditorMouseMotionListener(
-      listener: EditorMouseMotionListener): Unit = {}
+      listener: EditorMouseMotionListener
+  ): Unit = {}
 
-  def addEditorMouseMotionListener(listener: EditorMouseMotionListener): Unit = {}
+  def addEditorMouseMotionListener(
+      listener: EditorMouseMotionListener
+  ): Unit = {}
 
   def removeEditorMouseListener(listener: EditorMouseListener): Unit = {}
 
@@ -102,5 +109,8 @@ class EditorStub extends Editor {
   def getInsets: Insets = null
 
   override def offsetToVisualPosition(
-      i: Int, b: Boolean, b1: Boolean): VisualPosition = null
+      i: Int,
+      b: Boolean,
+      b1: Boolean
+  ): VisualPosition = null
 }

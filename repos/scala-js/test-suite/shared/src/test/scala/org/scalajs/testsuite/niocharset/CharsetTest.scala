@@ -17,9 +17,8 @@ import org.scalajs.testsuite.utils.Platform.executingInJVM
 
 class CharsetTest {
 
-  @Test def defaultCharset(): Unit = {
+  @Test def defaultCharset(): Unit =
     assertSame("UTF-8", Charset.defaultCharset().name())
-  }
 
   @Test def forName(): Unit = {
     assertEquals("ISO-8859-1", Charset.forName("ISO-8859-1").name())
@@ -49,11 +48,12 @@ class CharsetTest {
     assertEquals("UTF-16", Charset.forName("UnicodeBig").name())
 
     // Issue #2040
-    expectThrows(
-        classOf[UnsupportedCharsetException], Charset.forName("UTF_8"))
+    expectThrows(classOf[UnsupportedCharsetException], Charset.forName("UTF_8"))
 
-    expectThrows(classOf[UnsupportedCharsetException],
-                 Charset.forName("this-charset-does-not-exist"))
+    expectThrows(
+      classOf[UnsupportedCharsetException],
+      Charset.forName("this-charset-does-not-exist")
+    )
   }
 
   @Test def isSupported(): Unit = {

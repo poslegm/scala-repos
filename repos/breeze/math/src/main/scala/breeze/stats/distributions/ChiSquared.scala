@@ -10,7 +10,9 @@ import scala.runtime.ScalaRunTime
   * @author dlwh
   **/
 case class ChiSquared(k: Double)(implicit rand: RandBasis = Rand)
-    extends ContinuousDistr[Double] with Moments[Double, Double] with HasCdf
+    extends ContinuousDistr[Double]
+    with Moments[Double, Double]
+    with HasCdf
     with HasInverseCdf {
   private val innerGamma = Gamma(k / 2, 2)
 
@@ -29,39 +31,37 @@ case class ChiSquared(k: Double)(implicit rand: RandBasis = Rand)
       }
     } else {
       throw new IllegalArgumentException(
-          "Domain of ChiSquared.pdf is [0,Infinity), you tried to apply to " +
-          x)
+        "Domain of ChiSquared.pdf is [0,Infinity), you tried to apply to " +
+          x
+      )
     }
 
   def unnormalizedLogPdf(x: Double): Double = innerGamma.unnormalizedLogPdf(x)
 
   lazy val logNormalizer: Double = innerGamma.logNormalizer
 
-  def mean: Double = innerGamma.mean
+  def mean: Double     = innerGamma.mean
   def variance: Double = innerGamma.variance
-  def mode: Double = innerGamma.mode
-  def entropy: Double = innerGamma.entropy
+  def mode: Double     = innerGamma.mode
+  def entropy: Double  = innerGamma.entropy
 
   override def toString: String = ScalaRunTime._toString(this)
 
-  override def probability(x: Double, y: Double): Double = {
+  override def probability(x: Double, y: Double): Double =
     innerGamma.probability(x, y)
-  }
 
-  override def inverseCdf(p: Double): Double = {
+  override def inverseCdf(p: Double): Double =
     innerGamma.inverseCdf(p)
-  }
 
   // Probability that x < a <= Y
-  override def cdf(x: Double): Double = {
+  override def cdf(x: Double): Double =
     innerGamma.cdf(x)
-  }
 }
 
 object ChiSquared
     extends ExponentialFamily[ChiSquared, Double]
     with ContinuousDistributionUFuncProvider[Double, ChiSquared] {
-  type Parameter = Double
+  type Parameter           = Double
   type SufficientStatistic = Gamma.SufficientStatistic
   def emptySufficientStatistic: ChiSquared.SufficientStatistic =
     Gamma.emptySufficientStatistic
@@ -69,8 +69,9 @@ object ChiSquared
   def sufficientStatisticFor(t: Double): ChiSquared.SufficientStatistic =
     Gamma.sufficientStatisticFor(t)
 
-  def likelihoodFunction(stats: ChiSquared.SufficientStatistic)
-    : DiffFunction[ChiSquared.Parameter] = {
+  def likelihoodFunction(
+      stats: ChiSquared.SufficientStatistic
+  ): DiffFunction[ChiSquared.Parameter] = {
     val inner = Gamma.likelihoodFunction(stats)
     new DiffFunction[ChiSquared.Parameter] {
       def calculate(x: ChiSquared.Parameter): (Double, ChiSquared.Parameter) = {
@@ -80,9 +81,8 @@ object ChiSquared
     }
   }
 
-  def mle(ss: ChiSquared.SufficientStatistic): ChiSquared.Parameter = {
+  def mle(ss: ChiSquared.SufficientStatistic): ChiSquared.Parameter =
     ss.mean
-  }
 
   def distribution(p: ChiSquared.Parameter): ChiSquared = ChiSquared(p)
 }

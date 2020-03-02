@@ -6,9 +6,16 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.{PsiClass, PsiModifier}
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.ScModifierListOwner
-import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{ScClass, ScTypeDefinition}
+import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{
+  ScClass,
+  ScTypeDefinition
+}
 import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiManager
-import org.jetbrains.plugins.scala.lang.psi.types.{Conformance, ScParameterizedType, ScType}
+import org.jetbrains.plugins.scala.lang.psi.types.{
+  Conformance,
+  ScParameterizedType,
+  ScType
+}
 import org.jetbrains.plugins.scala.testingSupport.ScalaTestingConfiguration
 import org.jetbrains.plugins.scala.testingSupport.test._
 
@@ -19,8 +26,8 @@ import org.jetbrains.plugins.scala.testingSupport.test._
 class ScalaTestRunConfiguration(
     override val project: Project,
     override val configurationFactory: ConfigurationFactory,
-    override val name: String)
-    extends AbstractTestRunConfiguration(project, configurationFactory, name)
+    override val name: String
+) extends AbstractTestRunConfiguration(project, configurationFactory, name)
     with ScalaTestingConfiguration {
 
   override def suitePaths = List("org.scalatest.Suite")
@@ -47,7 +54,9 @@ object ScalaTestRunConfiguration extends SuiteValidityChecker {
     val project = clazz.getProject
     val constructors = clazz match {
       case c: ScClass =>
-        c.secondaryConstructors.filter(_.isConstructor).toList ::: c.constructor.toList
+        c.secondaryConstructors
+          .filter(_.isConstructor)
+          .toList ::: c.constructor.toList
       case _ => clazz.getConstructors.toList
     }
     for (con <- constructors) {
@@ -55,14 +64,16 @@ object ScalaTestRunConfiguration extends SuiteValidityChecker {
         con match {
           case owner: ScModifierListOwner =>
             if (owner.hasModifierProperty(PsiModifier.PUBLIC)) {
-              val params = con.getParameterList.getParameters
+              val params     = con.getParameterList.getParameters
               val firstParam = params(0)
               val psiManager = ScalaPsiManager.instance(project)
               val mapPsiClass = psiManager
-                .getCachedClass(ProjectScope.getAllScope(project),
-                                "scala.collection.immutable.Map")
+                .getCachedClass(
+                  ProjectScope.getAllScope(project),
+                  "scala.collection.immutable.Map"
+                )
                 .orNull
-              val mapClass = ScType.designator(mapPsiClass)
+              val mapClass   = ScType.designator(mapPsiClass)
               val paramClass = ScType.create(firstParam.getType, project)
               val conformanceType = paramClass match {
                 case parameterizedType: ScParameterizedType =>
@@ -79,7 +90,8 @@ object ScalaTestRunConfiguration extends SuiteValidityChecker {
   }
 
   override protected[test] def lackSuitableConstructor(
-      clazz: PsiClass): Boolean = {
+      clazz: PsiClass
+  ): Boolean = {
     val hasConfigMapAnnotation = clazz match {
       case classDef: ScTypeDefinition =>
         val annotation = classDef.hasAnnotation(wrapWithAnnotationFqn)

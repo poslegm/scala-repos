@@ -9,8 +9,7 @@ import com.typesafe.slick.testkit.util.{DBTest, DBTestObject, JdbcTestDB}
 import com.typesafe.slick.testkit.util.StandardTestDBs._
 
 object CodeGeneratorAllTest
-    extends DBTestObject(
-        H2Mem, SQLiteMem, Postgres, MySQL, DerbyMem, HsqldbMem)
+    extends DBTestObject(H2Mem, SQLiteMem, Postgres, MySQL, DerbyMem, HsqldbMem)
 
 class CodeGeneratorAllTest(val tdb: JdbcTestDB) extends DBTest {
   import tdb.profile.api._
@@ -19,19 +18,19 @@ class CodeGeneratorAllTest(val tdb: JdbcTestDB) extends DBTest {
   def test {
     case class Category(id: Int, name: String)
     class Categories(tag: Tag) extends Table[Category](tag, "categories") {
-      def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+      def id   = column[Int]("id", O.PrimaryKey, O.AutoInc)
       def name = column[String]("name", O.Length(254))
-      def * = (id, name) <> (Category.tupled, Category.unapply)
-      def idx = index("IDX_NAME", name)
+      def *    = (id, name) <> (Category.tupled, Category.unapply)
+      def idx  = index("IDX_NAME", name)
     }
     val categories = TableQuery[Categories]
 
     class Posts(tag: Tag)
         extends Table[(Int, String, Option[Int])](tag, "POSTS") {
-      def id = column[Int]("id")
-      def title = column[String]("title")
-      def category = column[Option[Int]]("category")
-      def * = (id, title, category)
+      def id         = column[Int]("id")
+      def title      = column[String]("title")
+      def category   = column[Option[Int]]("category")
+      def *          = (id, title, category)
       def categoryFK = foreignKey("category_fk", category, categories)(_.id.?)
     }
     val posts = TableQuery[Posts]
@@ -42,9 +41,8 @@ class CodeGeneratorAllTest(val tdb: JdbcTestDB) extends DBTest {
     val modelA = tdb.profile.createModel()
     // customize code generator
     val codegenA =
-      modelA.map(
-          m =>
-            new SourceCodeGenerator(m) {
+      modelA.map(m =>
+        new SourceCodeGenerator(m) {
           // override mapped table and class name
           override def entityName =
             dbTableName => dbTableName.dropRight(1).toLowerCase.toCamelCase
@@ -71,16 +69,21 @@ class CodeGeneratorAllTest(val tdb: JdbcTestDB) extends DBTest {
                   else super.rawType
               }
             }
-      })
+        }
+      )
     val profileName =
       tdb.profile.getClass.toString.dropRight(1).split("[\\. ]").last
 
     val codegen = Await.result(
-        db.run((createA >> codegenA).withPinnedSession), Duration.Inf)
-    codegen.writeToFile("slick.jdbc.H2Profile",
-                        "target/slick-testkit-codegen-tests/",
-                        "all.test",
-                        profileName + "Tables",
-                        profileName + ".scala")
+      db.run((createA >> codegenA).withPinnedSession),
+      Duration.Inf
+    )
+    codegen.writeToFile(
+      "slick.jdbc.H2Profile",
+      "target/slick-testkit-codegen-tests/",
+      "all.test",
+      profileName + "Tables",
+      profileName + ".scala"
+    )
   }
 }

@@ -1,7 +1,12 @@
 package org.jetbrains.plugins.scala
 package worksheet.ui
 
-import java.awt.event.{ActionEvent, ActionListener, AdjustmentEvent, AdjustmentListener}
+import java.awt.event.{
+  ActionEvent,
+  ActionListener,
+  AdjustmentEvent,
+  AdjustmentListener
+}
 import java.awt.{BorderLayout, Color, Dimension}
 import java.util
 import javax.swing.{JComponent, JLayeredPane, Timer}
@@ -31,7 +36,10 @@ import com.intellij.ui.JBSplitter
 import org.jetbrains.plugins.scala
 import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
 import org.jetbrains.plugins.scala.settings.ScalaProjectSettings
-import org.jetbrains.plugins.scala.worksheet.processor.{FileAttributeUtilCache, WorksheetSourceProcessor}
+import org.jetbrains.plugins.scala.worksheet.processor.{
+  FileAttributeUtilCache,
+  WorksheetSourceProcessor
+}
 import org.jetbrains.plugins.scala.worksheet.runconfiguration.WorksheetViewerInfo
 
 import _root_.scala.collection.mutable.ArrayBuffer
@@ -42,31 +50,35 @@ import _root_.scala.util.Random
   * Date: 1/20/14
   */
 class WorksheetEditorPrinter(
-    originalEditor: Editor, worksheetViewer: Editor, file: ScalaFile) {
-  private val project = originalEditor.getProject
+    originalEditor: Editor,
+    worksheetViewer: Editor,
+    file: ScalaFile
+) {
+  private val project          = originalEditor.getProject
   private val originalDocument = originalEditor.getDocument
-  private val viewerDocument = worksheetViewer.getDocument
-  private val timer = new Timer(
-      WorksheetEditorPrinter.IDLE_TIME_MLS, TimerListener)
+  private val viewerDocument   = worksheetViewer.getDocument
+  private val timer =
+    new Timer(WorksheetEditorPrinter.IDLE_TIME_MLS, TimerListener)
 
-  private val outputBuffer = new StringBuilder
-  private val foldingOffsets = ArrayBuffer.apply[(Int, Int, Int, Int)]()
-  private var linesCount = 0
-  private var totalCount = 0
-  private var insertedToOriginal = 0
-  private var prefix = ""
+  private val outputBuffer         = new StringBuilder
+  private val foldingOffsets       = ArrayBuffer.apply[(Int, Int, Int, Int)]()
+  private var linesCount           = 0
+  private var totalCount           = 0
+  private var insertedToOriginal   = 0
+  private var prefix               = ""
   @volatile private var terminated = false
 
-  private var inited = false
+  private var inited        = false
   private var cutoffPrinted = false
 
   private val viewerFolding =
     worksheetViewer.getFoldingModel.asInstanceOf[FoldingModelImpl]
   private lazy val group = new WorksheetFoldGroup(
-      getViewerEditor,
-      originalEditor,
-      project,
-      worksheetViewer.getUserData(WorksheetEditorPrinter.DIFF_SPLITTER_KEY))
+    getViewerEditor,
+    originalEditor,
+    project,
+    worksheetViewer.getUserData(WorksheetEditorPrinter.DIFF_SPLITTER_KEY)
+  )
 
   @volatile private var buffed = 0
 
@@ -114,11 +126,15 @@ class WorksheetEditorPrinter(
             insertedToOriginal -= differ
 
             foldingOffsets +=
-            ((start + insertedToOriginal + differ,
-              outputBuffer.length -
-              outputBuffer.reverseIterator.takeWhile(_ == '\n').length,
-              end - start + 1,
-              end))
+              (
+                (
+                  start + insertedToOriginal + differ,
+                  outputBuffer.length -
+                    outputBuffer.reverseIterator.takeWhile(_ == '\n').length,
+                  end - start + 1,
+                  end
+                )
+              )
           }
 
           buffed += linesCount
@@ -147,11 +163,13 @@ class WorksheetEditorPrinter(
     if (oldSync != null) oldSync.dispose()
 
     WorksheetEditorPrinter.synch(
-        originalEditor,
-        worksheetViewer,
-        Option(worksheetViewer.getUserData(
-                WorksheetEditorPrinter.DIFF_SPLITTER_KEY)),
-        Some(group))
+      originalEditor,
+      worksheetViewer,
+      Option(
+        worksheetViewer.getUserData(WorksheetEditorPrinter.DIFF_SPLITTER_KEY)
+      ),
+      Some(group)
+    )
 
     extensions.invokeLater {
       viewerFolding runBatchFoldingOperation new Runnable {
@@ -160,13 +178,15 @@ class WorksheetEditorPrinter(
         }
       }
       getViewerEditor.getCaretModel.moveToVisualPosition(
-          new VisualPosition(0, 0))
+        new VisualPosition(0, 0)
+      )
     }
 
     if (file != null) {
       @inline def checkFlag(psi: PsiElement) =
         psi != null && psi.getCopyableUserData(
-            WorksheetSourceProcessor.WORKSHEET_PRE_CLASS_KEY) != null
+          WorksheetSourceProcessor.WORKSHEET_PRE_CLASS_KEY
+        ) != null
 
       var s = file.getFirstChild
       var f = checkFlag(s)
@@ -212,11 +232,12 @@ class WorksheetEditorPrinter(
         .getPsiFile(originalEditor.getDocument) match {
         case scalaFile: ScalaFile =>
           WorksheetEditorPrinter.saveWorksheetEvaluation(
-              scalaFile,
-              str,
-              worksheetViewer
-                .getUserData(WorksheetEditorPrinter.DIFF_SPLITTER_KEY)
-                .getProportion)
+            scalaFile,
+            str,
+            worksheetViewer
+              .getUserData(WorksheetEditorPrinter.DIFF_SPLITTER_KEY)
+              .getProportion
+          )
         case _ =>
       }
     }
@@ -264,29 +285,33 @@ class WorksheetEditorPrinter(
 
         CommandProcessor
           .getInstance()
-          .executeCommand(project, new Runnable {
-            override def run() {
-              viewerFolding runBatchFoldingOperation
-              (new Runnable {
+          .executeCommand(
+            project,
+            new Runnable {
+              override def run() {
+                viewerFolding runBatchFoldingOperation
+                  (new Runnable {
                     override def run() {
                       foldingOffsetsCopy map {
                         case (start, end, limit, originalEnd) =>
                           val offset =
-                            originalDocument getLineEndOffset Math.min(
-                                originalEnd, originalDocument.getLineCount)
+                            originalDocument getLineEndOffset Math
+                              .min(originalEnd, originalDocument.getLineCount)
                           val linesCount =
                             viewerDocument.getLineNumber(end) - start - limit +
-                            1
+                              1
 
                           new WorksheetFoldRegionDelegate(
-                              ed,
-                              viewerDocument.getLineStartOffset(start +
-                                  limit - 1),
-                              end,
-                              offset,
-                              linesCount,
-                              group,
-                              limit
+                            ed,
+                            viewerDocument.getLineStartOffset(
+                              start +
+                                limit - 1
+                            ),
+                            end,
+                            offset,
+                            linesCount,
+                            group,
+                            limit
                           )
                       } foreach {
                         case region =>
@@ -296,8 +321,11 @@ class WorksheetEditorPrinter(
                       WorksheetFoldGroup.save(file, group)
                     }
                   }, false)
-            }
-          }, null, null)
+              }
+            },
+            null,
+            null
+          )
       }
     }
   }
@@ -320,7 +348,7 @@ class WorksheetEditorPrinter(
   private def incUpdate(text: String, document: Document) {
     //todo
     val linesOld = viewerDocument.getLineCount
-    val total = totalCount
+    val total    = totalCount
 
     if (total >= linesOld || text.length >= viewerDocument.getTextLength) {
       document setText text
@@ -328,18 +356,27 @@ class WorksheetEditorPrinter(
     } else {
       CommandProcessor
         .getInstance()
-        .executeCommand(project, new Runnable {
-          override def run() {
-            if (linesOld != viewerDocument.getLineCount) return
-            viewerDocument.deleteString(0, text.length)
-            viewerDocument.insertString(0, text)
+        .executeCommand(
+          project,
+          new Runnable {
+            override def run() {
+              if (linesOld != viewerDocument.getLineCount) return
+              viewerDocument.deleteString(0, text.length)
+              viewerDocument.insertString(0, text)
 
-            for (i <- total until viewerDocument.getLineCount) getViewerEditor.getMarkupModel
-              .addLineHighlighter(
-                i, 0, new TextAttributes(Color.gray, null, null, null, 0))
-            commitDocument(viewerDocument)
-          }
-        }, null, null)
+              for (i <- total until viewerDocument.getLineCount)
+                getViewerEditor.getMarkupModel
+                  .addLineHighlighter(
+                    i,
+                    0,
+                    new TextAttributes(Color.gray, null, null, null, 0)
+                  )
+              commitDocument(viewerDocument)
+            }
+          },
+          null,
+          null
+        )
     }
   }
 
@@ -349,34 +386,37 @@ class WorksheetEditorPrinter(
 }
 
 object WorksheetEditorPrinter {
-  val END_MESSAGE = "Output exceeds cutoff limit.\n"
-  val BULK_COUNT = 15
+  val END_MESSAGE   = "Output exceeds cutoff limit.\n"
+  val BULK_COUNT    = 15
   val IDLE_TIME_MLS = 1000
 
   val DIFF_SPLITTER_KEY =
     Key.create[WorksheetDiffSplitters.SimpleWorksheetSplitter](
-        "SimpleWorksheetViewerSplitter")
+      "SimpleWorksheetViewerSplitter"
+    )
   val DIFF_SYNC_SUPPORT =
     Key.create[SyncScrollSupport]("WorksheetSyncScrollSupport")
 
-  private val LAST_WORKSHEET_RUN_RESULT = new FileAttribute(
-      "LastWorksheetRunResult", 2, false)
-  private val LAST_WORKSHEET_RUN_RATIO = new FileAttribute(
-      "ScalaWorksheetLastRatio", 1, false)
+  private val LAST_WORKSHEET_RUN_RESULT =
+    new FileAttribute("LastWorksheetRunResult", 2, false)
+  private val LAST_WORKSHEET_RUN_RATIO =
+    new FileAttribute("ScalaWorksheetLastRatio", 1, false)
 
   private val patched = new util.WeakHashMap[Editor, String]()
 
   def getPatched = patched
 
-  private def synch(originalEditor: Editor,
-                    worksheetViewer: Editor,
-                    diffSplitter: Option[
-                        WorksheetDiffSplitters.SimpleWorksheetSplitter] = None,
-                    foldGroup: Option[WorksheetFoldGroup] = None) {
+  private def synch(
+      originalEditor: Editor,
+      worksheetViewer: Editor,
+      diffSplitter: Option[WorksheetDiffSplitters.SimpleWorksheetSplitter] =
+        None,
+      foldGroup: Option[WorksheetFoldGroup] = None
+  ) {
     class MyCaretAdapterBase extends CaretAdapter {
       override def equals(obj: Any): Boolean = obj match {
         case _: MyCaretAdapterBase => true
-        case _ => false
+        case _                     => false
       }
 
       override def hashCode(): Int = 12345
@@ -391,11 +431,15 @@ object WorksheetEditorPrinter {
                     .asInstanceOf[EditorImpl]
                     .getContentComponent
                     .hasFocus) return
-              recipient.getCaretModel.moveToVisualPosition(new VisualPosition(
-                      Math.min(
-                          group left2rightOffset don.getCaretModel.getVisualPosition.getLine,
-                          recipient.getDocument.getLineCount),
-                      0))
+              recipient.getCaretModel.moveToVisualPosition(
+                new VisualPosition(
+                  Math.min(
+                    group left2rightOffset don.getCaretModel.getVisualPosition.getLine,
+                    recipient.getDocument.getLineCount
+                  ),
+                  0
+                )
+              )
             }
           }
       } getOrElse new CaretAdapter {
@@ -405,7 +449,8 @@ object WorksheetEditorPrinter {
                 .getContentComponent
                 .hasFocus) return
           recipient.getCaretModel.moveToVisualPosition(
-              don.getCaretModel.getVisualPosition)
+            don.getCaretModel.getVisualPosition
+          )
         }
       }
 
@@ -428,16 +473,24 @@ object WorksheetEditorPrinter {
 //            checkAndAdd(viewerImpl, originalImpl)
 
             viewerImpl.getCaretModel.moveToVisualPosition(
-                new VisualPosition(
-                    Math.min(originalImpl.getCaretModel.getVisualPosition.line,
-                             viewerImpl.getDocument.getLineCount),
-                    0)
+              new VisualPosition(
+                Math.min(
+                  originalImpl.getCaretModel.getVisualPosition.line,
+                  viewerImpl.getDocument.getLineCount
+                ),
+                0
+              )
             )
 
             val syncSupport = new SyncScrollSupport
-            syncSupport.install(Array[EditingSides](
-                    new WorksheetDiffSplitters.WorksheetEditingSides(
-                        originalEditor, worksheetViewer)))
+            syncSupport.install(
+              Array[EditingSides](
+                new WorksheetDiffSplitters.WorksheetEditingSides(
+                  originalEditor,
+                  worksheetViewer
+                )
+              )
+            )
 
             originalEditor.putUserData(DIFF_SYNC_SUPPORT, syncSupport)
 
@@ -445,9 +498,10 @@ object WorksheetEditorPrinter {
               case splitter =>
                 viewerImpl.getScrollPane.getVerticalScrollBar
                   .addAdjustmentListener(new AdjustmentListener {
-                  override def adjustmentValueChanged(
-                      e: AdjustmentEvent): Unit = splitter.redrawDiffs()
-                })
+                    override def adjustmentValueChanged(
+                        e: AdjustmentEvent
+                    ): Unit = splitter.redrawDiffs()
+                  })
             }
           }
         }
@@ -456,16 +510,28 @@ object WorksheetEditorPrinter {
   }
 
   def saveWorksheetEvaluation(
-      file: ScalaFile, result: String, ratio: Float = 0.5f) {
+      file: ScalaFile,
+      result: String,
+      ratio: Float = 0.5f
+  ) {
     FileAttributeUtilCache.writeAttribute(
-        LAST_WORKSHEET_RUN_RESULT, file, result)
+      LAST_WORKSHEET_RUN_RESULT,
+      file,
+      result
+    )
     FileAttributeUtilCache.writeAttribute(
-        LAST_WORKSHEET_RUN_RATIO, file, ratio.toString)
+      LAST_WORKSHEET_RUN_RATIO,
+      file,
+      ratio.toString
+    )
   }
 
   def saveOnlyRatio(file: ScalaFile, ratio: Float = 0.5f) {
     FileAttributeUtilCache.writeAttribute(
-        LAST_WORKSHEET_RUN_RATIO, file, ratio.toString)
+      LAST_WORKSHEET_RUN_RATIO,
+      file,
+      ratio.toString
+    )
   }
 
   def loadWorksheetEvaluation(file: ScalaFile): Option[(String, Float)] = {
@@ -487,7 +553,10 @@ object WorksheetEditorPrinter {
   def deleteWorksheetEvaluation(file: ScalaFile) {
     FileAttributeUtilCache.writeAttribute(LAST_WORKSHEET_RUN_RESULT, file, "")
     FileAttributeUtilCache.writeAttribute(
-        LAST_WORKSHEET_RUN_RATIO, file, 0.5f.toString)
+      LAST_WORKSHEET_RUN_RATIO,
+      file,
+      0.5f.toString
+    )
   }
 
   def newWorksheetUiFor(editor: Editor, virtualFile: VirtualFile) =
@@ -498,13 +567,17 @@ object WorksheetEditorPrinter {
 
   def newUiFor(editor: Editor, virtualFile: VirtualFile, isPlain: Boolean) =
     new WorksheetEditorPrinter(
+      editor,
+      createRightSideViewer(
         editor,
-        createRightSideViewer(
-            editor, virtualFile, getOrCreateViewerEditorFor(editor, isPlain)),
-        PsiManager getInstance editor.getProject findFile virtualFile match {
-          case scalaFile: ScalaFile => scalaFile
-          case _ => null
-        })
+        virtualFile,
+        getOrCreateViewerEditorFor(editor, isPlain)
+      ),
+      PsiManager getInstance editor.getProject findFile virtualFile match {
+        case scalaFile: ScalaFile => scalaFile
+        case _                    => null
+      }
+    )
 
   def createWorksheetEditor(editor: Editor) =
     getOrCreateViewerEditorFor(editor, true)
@@ -512,11 +585,13 @@ object WorksheetEditorPrinter {
   def createMacroEditor(editor: Editor) =
     getOrCreateViewerEditorFor(editor, false)
 
-  def createRightSideViewer(editor: Editor,
-                            virtualFile: VirtualFile,
-                            rightSideEditor: Editor,
-                            modelSync: Boolean = false): Editor = {
-    val editorComponent = editor.getComponent
+  def createRightSideViewer(
+      editor: Editor,
+      virtualFile: VirtualFile,
+      rightSideEditor: Editor,
+      modelSync: Boolean = false
+  ): Editor = {
+    val editorComponent        = editor.getComponent
     val editorContentComponent = editor.getContentComponent
 
     val worksheetViewer = rightSideEditor.asInstanceOf[EditorImpl]
@@ -528,10 +603,11 @@ object WorksheetEditorPrinter {
           case _ if worksheetViewer.getUserData(DIFF_SPLITTER_KEY) != null =>
             worksheetViewer.getUserData(DIFF_SPLITTER_KEY).getProportion
           case _ => 0.5f
-        } else 0.5f
+        }
+      else 0.5f
 
     val dimension = editorComponent.getSize()
-    val prefDim = new Dimension(dimension.width / 2, dimension.height)
+    val prefDim   = new Dimension(dimension.width / 2, dimension.height)
 
     editor.getSettings setFoldingOutlineShown false
 
@@ -541,11 +617,16 @@ object WorksheetEditorPrinter {
     editorContentComponent.setPreferredSize(prefDim)
 
     if (!ApplicationManager.getApplication.isUnitTestMode) {
-      val child = editorComponent.getParent
+      val child  = editorComponent.getParent
       val parent = child.getParent
 
       val diffPane = WorksheetDiffSplitters.createSimpleSplitter(
-          editor, worksheetViewer, List.empty, List.empty, prop)
+        editor,
+        worksheetViewer,
+        List.empty,
+        List.empty,
+        prop
+      )
 
       worksheetViewer.putUserData(DIFF_SPLITTER_KEY, diffPane)
 
@@ -578,24 +659,26 @@ object WorksheetEditorPrinter {
               parent.add(diffPane, 1)
             }
           case _ => patchEditor()
-        } else patchEditor()
+        }
+      else patchEditor()
     }
 
     WorksheetViewerInfo.addViewer(worksheetViewer, editor)
     worksheetViewer
   }
 
-  private def getOrCreateViewerEditorFor(editor: Editor, isPlain: Boolean) = {
+  private def getOrCreateViewerEditorFor(editor: Editor, isPlain: Boolean) =
     WorksheetViewerInfo getViewer editor match {
       case editorImpl: EditorImpl => editorImpl
       case _ =>
         if (isPlain) createBlankEditor(editor.getProject)
         else
-          createBlankEditorWithLang(editor.getProject,
-                                    ScalaFileType.SCALA_LANGUAGE,
-                                    ScalaFileType.SCALA_FILE_TYPE)
+          createBlankEditorWithLang(
+            editor.getProject,
+            ScalaFileType.SCALA_LANGUAGE,
+            ScalaFileType.SCALA_FILE_TYPE
+          )
     }
-  }
 
   private def createBlankEditor(project: Project): Editor = {
     val factory: EditorFactory = EditorFactory.getInstance
@@ -605,22 +688,29 @@ object WorksheetEditorPrinter {
     editor.getContentComponent.getParent match {
       case jComp: JComponent =>
         jComp.putClientProperty(
-            DataManager.CLIENT_PROPERTY_DATA_PROVIDER, new DataProvider {
-          override def getData(dataId: String) =
-            if (CommonDataKeys.HOST_EDITOR.is(dataId)) editor else null
-        })
+          DataManager.CLIENT_PROPERTY_DATA_PROVIDER,
+          new DataProvider {
+            override def getData(dataId: String) =
+              if (CommonDataKeys.HOST_EDITOR.is(dataId)) editor else null
+          }
+        )
       case _ =>
     }
     editor
   }
 
   private def createBlankEditorWithLang(
-      project: Project, lang: Language, fileType: LanguageFileType): Editor = {
+      project: Project,
+      lang: Language,
+      fileType: LanguageFileType
+  ): Editor = {
     val file = PsiFileFactory
       .getInstance(project)
       .createFileFromText("dummy_" + Random.nextString(10), lang, "")
     val editor = EditorFactory.getInstance.createViewer(
-        PsiDocumentManager.getInstance(project).getDocument(file), project)
+      PsiDocumentManager.getInstance(project).getDocument(file),
+      project
+    )
     val editorHighlighter = EditorHighlighterFactory.getInstance
       .createEditorHighlighter(project, fileType)
 

@@ -12,7 +12,10 @@ import org.jetbrains.plugins.scala.lang.psi.ScalaPsiUtil
 import org.jetbrains.plugins.scala.lang.psi.api.base.ScStableCodeReferenceElement
 import org.jetbrains.plugins.scala.lang.psi.api.base.patterns.ScConstructorPattern
 import org.jetbrains.plugins.scala.lang.psi.api.statements.ScFunctionDefinition
-import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{ScClass, ScObject}
+import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{
+  ScClass,
+  ScObject
+}
 import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiElementFactory
 import org.jetbrains.plugins.scala.lang.psi.types.ScType
 import org.jetbrains.plugins.scala.lang.refactoring.namesSuggester.NameSuggester
@@ -23,20 +26,23 @@ class ConvertToTypedPatternIntention extends PsiElementBaseIntentionAction {
 
   override def getText = getFamilyName
 
-  def isAvailable(project: Project, editor: Editor, element: PsiElement) = {
+  def isAvailable(project: Project, editor: Editor, element: PsiElement) =
     element match {
-      case e @ Parent(Both(ref: ScStableCodeReferenceElement,
-                           Parent(_: ScConstructorPattern))) =>
+      case e @ Parent(
+            Both(
+              ref: ScStableCodeReferenceElement,
+              Parent(_: ScConstructorPattern)
+            )
+          ) =>
         true
 
       case _ => false
     }
-  }
 
   override def invoke(project: Project, editor: Editor, element: PsiElement) {
-    val codeRef = element.getParent.asInstanceOf[ScStableCodeReferenceElement]
+    val codeRef       = element.getParent.asInstanceOf[ScStableCodeReferenceElement]
     val constrPattern = codeRef.getParent.asInstanceOf[ScConstructorPattern]
-    val manager = codeRef.getManager
+    val manager       = codeRef.getManager
     val name = codeRef.bind() match {
       case Some(result @ ScalaResolveResult(fun: ScFunctionDefinition, _))
           if fun.name == "unapply" =>
@@ -45,7 +51,7 @@ class ConvertToTypedPatternIntention extends PsiElementBaseIntentionAction {
           case Some(obj: ScObject) =>
             ScalaPsiUtil.getCompanionModule(obj) match {
               case Some(cls: ScClass) =>
-                val tpe = ScType.designator(cls)
+                val tpe   = ScType.designator(cls)
                 val names = NameSuggester.suggestNamesByType(tpe)
                 names.head
               case _ => "value"
@@ -56,7 +62,9 @@ class ConvertToTypedPatternIntention extends PsiElementBaseIntentionAction {
     }
     // TODO replace references to the constructor pattern params with "value.param"
     val newPattern = ScalaPsiElementFactory.createPatternFromText(
-        "%s: %s".format(name, codeRef.getText), manager)
+      "%s: %s".format(name, codeRef.getText),
+      manager
+    )
     constrPattern.replace(newPattern)
   }
 }

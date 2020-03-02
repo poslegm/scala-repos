@@ -22,17 +22,19 @@ import Proxy.Typed
   *  @since   2.9
   */
 trait ScalaNumberProxy[T]
-    extends Any with ScalaNumericAnyConversions
-    with Typed[T] with OrderedProxy[T] {
+    extends Any
+    with ScalaNumericAnyConversions
+    with Typed[T]
+    with OrderedProxy[T] {
   protected implicit def num: Numeric[T]
 
-  def underlying() = self.asInstanceOf[AnyRef]
+  def underlying()  = self.asInstanceOf[AnyRef]
   def doubleValue() = num.toDouble(self)
-  def floatValue() = num.toFloat(self)
-  def longValue() = num.toLong(self)
-  def intValue() = num.toInt(self)
-  def byteValue() = intValue().toByte
-  def shortValue() = intValue().toShort
+  def floatValue()  = num.toFloat(self)
+  def longValue()   = num.toLong(self)
+  def intValue()    = num.toInt(self)
+  def byteValue()   = intValue().toByte
+  def shortValue()  = intValue().toShort
 
   /** Returns `'''this'''` if `'''this''' < that` or `that` otherwise. */
   def min(that: T): T = num.min(self, that)
@@ -50,7 +52,9 @@ trait ScalaWholeNumberProxy[T] extends Any with ScalaNumberProxy[T] {
   def isWhole() = true
 }
 trait IntegralProxy[T]
-    extends Any with ScalaWholeNumberProxy[T] with RangedProxy[T] {
+    extends Any
+    with ScalaWholeNumberProxy[T]
+    with RangedProxy[T] {
   protected implicit def num: Integral[T]
   type ResultWithoutStep = NumericRange[T]
 
@@ -64,7 +68,9 @@ trait IntegralProxy[T]
     NumericRange.inclusive(self, end, step)
 }
 trait FractionalProxy[T]
-    extends Any with ScalaNumberProxy[T] with RangedProxy[T] {
+    extends Any
+    with ScalaNumberProxy[T]
+    with RangedProxy[T] {
   protected implicit def num: Fractional[T]
   protected implicit def integralNum: Integral[T]
 

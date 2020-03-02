@@ -28,7 +28,7 @@ sealed trait IdentifierWithDatabase {
   def database: Option[String]
   def quotedString: String =
     database.map(db => s"`$db`.`$name`").getOrElse(s"`$name`")
-  def unquotedString: String = database.map(db => s"$db.$name").getOrElse(name)
+  def unquotedString: String    = database.map(db => s"$db.$name").getOrElse(name)
   override def toString: String = quotedString
 }
 

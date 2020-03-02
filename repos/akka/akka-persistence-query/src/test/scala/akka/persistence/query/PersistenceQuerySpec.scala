@@ -14,7 +14,9 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 
 class PersistenceQuerySpec
-    extends WordSpecLike with Matchers with BeforeAndAfterAll {
+    extends WordSpecLike
+    with Matchers
+    with BeforeAndAfterAll {
 
   val eventAdaptersConfig = s"""
       |akka.persistence.query.journal.dummy {
@@ -38,16 +40,19 @@ class PersistenceQuerySpec
         intercept[IllegalArgumentException] {
           PersistenceQuery
             .get(system)
-            .readJournalFor[DummyReadJournal](DummyReadJournal.Identifier +
-                "-unknown")
+            .readJournalFor[DummyReadJournal](
+              DummyReadJournal.Identifier +
+                "-unknown"
+            )
         }.getMessage should include("missing persistence read journal")
       }
     }
   }
 
   private val systemCounter = new AtomicInteger()
-  private def withActorSystem(conf: String = "")(
-      block: ActorSystem ⇒ Unit): Unit = {
+  private def withActorSystem(
+      conf: String = ""
+  )(block: ActorSystem ⇒ Unit): Unit = {
     val config = DummyReadJournalProvider.config
       .withFallback(DummyJavaReadJournalProvider.config)
       .withFallback(ConfigFactory.parseString(conf))
@@ -55,7 +60,8 @@ class PersistenceQuerySpec
       .withFallback(ConfigFactory.load())
 
     val sys = ActorSystem(s"sys-${systemCounter.incrementAndGet()}", config)
-    try block(sys) finally Await.ready(sys.terminate(), 10.seconds)
+    try block(sys)
+    finally Await.ready(sys.terminate(), 10.seconds)
   }
 }
 

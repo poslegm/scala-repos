@@ -6,7 +6,12 @@ import com.google.inject.name.Names
 import com.google.inject.servlet.ServletModule
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer
 import mesosphere.chaos.ServiceStatus
-import mesosphere.chaos.http.{HelpServlet, LogConfigServlet, PingServlet, ServiceStatusServlet}
+import mesosphere.chaos.http.{
+  HelpServlet,
+  LogConfigServlet,
+  PingServlet,
+  ServiceStatusServlet
+}
 
 /**
   * This mostly corresponds to the RestModule from Chaos but with the following functionality removed:
@@ -17,12 +22,12 @@ import mesosphere.chaos.http.{HelpServlet, LogConfigServlet, PingServlet, Servic
 class BaseRestModule extends ServletModule {
 
   // Override these in a subclass to mount resources at a different path
-  val pingUrl = "/ping"
-  val metricsUrl = "/metrics"
-  val loggingUrl = "/logging"
-  val helpUrl = "/help"
+  val pingUrl           = "/ping"
+  val metricsUrl        = "/metrics"
+  val loggingUrl        = "/logging"
+  val helpUrl           = "/help"
   val guiceContainerUrl = "/*"
-  val statusUrl = "/status"
+  val statusUrl         = "/status"
   val statusCatchAllUrl = "/status/*"
 
   protected override def configureServlets() {

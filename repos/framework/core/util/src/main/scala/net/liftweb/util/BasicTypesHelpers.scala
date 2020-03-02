@@ -17,7 +17,15 @@
 package net.liftweb
 package util
 
-import java.io.{InputStream, ByteArrayOutputStream, ByteArrayInputStream, Reader, File, FileInputStream, BufferedReader}
+import java.io.{
+  InputStream,
+  ByteArrayOutputStream,
+  ByteArrayInputStream,
+  Reader,
+  File,
+  FileInputStream,
+  BufferedReader
+}
 import scala.util.Try
 import scala.xml._
 import common._
@@ -47,7 +55,9 @@ object AvoidTypeErasureIssues1 {
   * This object adds functionality to Scala standard types.
   */
 object BasicTypesHelpers
-    extends BasicTypesHelpers with StringHelpers with ControlHelpers
+    extends BasicTypesHelpers
+    with StringHelpers
+    with ControlHelpers
 
 /**
   * This trait adds functionality to Scala standard types
@@ -65,10 +75,9 @@ trait BasicTypesHelpers { self: StringHelpers with ControlHelpers =>
       * @return a BooleanSome containing the specified value
       * if the decorated boolean is true, or a BooleanNone otherwise.
       */
-    def ?[A](first: => A): BooleanOption[A] = {
+    def ?[A](first: => A): BooleanOption[A] =
       if (b) BooleanSome(() => first)
       else BooleanNone
-    }
 
     /**
       * Class for return values from the Boolean2 ternary operator.
@@ -113,12 +122,14 @@ trait BasicTypesHelpers { self: StringHelpers with ControlHelpers =>
     */
   def compareElem(left: Elem, right: Elem): Boolean =
     compareXml(left.child, right.child) && left.label == right.label &&
-    (((null eq left.prefix) && (null eq right.prefix)) ||
+      (((null eq left.prefix) && (null eq right.prefix)) ||
         left.prefix == right.prefix) && left.scope == right.scope &&
-    compareMetaData(left.attributes.toList, right.attributes.toList)
+      compareMetaData(left.attributes.toList, right.attributes.toList)
 
   private def findFilter(
-      m: MetaData, lst: List[MetaData]): Box[List[MetaData]] = {
+      m: MetaData,
+      lst: List[MetaData]
+  ): Box[List[MetaData]] = {
     var found = false
     val ret = lst.filter {
       case PrefixedAttribute(pre, label, value, _) if !found =>
@@ -148,12 +159,12 @@ trait BasicTypesHelpers { self: StringHelpers with ControlHelpers =>
   def compareMetaData(left: List[MetaData], right: List[MetaData]): Boolean =
     (left, right) match {
       case (Nil, Nil) => true
-      case (_, Nil) => false
-      case (Nil, _) => false
+      case (_, Nil)   => false
+      case (Nil, _)   => false
       case (attr :: rl, right) =>
         findFilter(attr, right) match {
           case Full(rr) => compareMetaData(rl, rr)
-          case _ => false
+          case _        => false
         }
       case _ => false
     }
@@ -161,20 +172,19 @@ trait BasicTypesHelpers { self: StringHelpers with ControlHelpers =>
   /**
     * Comparse two XML nodes
     */
-  def compareNode(left: Node, right: Node): Boolean = {
+  def compareNode(left: Node, right: Node): Boolean =
     (left, right) match {
-      case (Group(gl), Group(gr)) => compareXml(gl, gr)
-      case (el: Elem, er: Elem) => compareElem(el, er)
+      case (Group(gl), Group(gr))       => compareXml(gl, gr)
+      case (el: Elem, er: Elem)         => compareElem(el, er)
       case (Unparsed(tl), Unparsed(tr)) => tl == tr
-      case (Text(tl), Text(tr)) => tl == tr
+      case (Text(tl), Text(tr))         => tl == tr
 
       case (el: EntityRef, er: EntityRef) => el === er
-      case (Comment(cl), Comment(cr)) => cl == cr
-      case (PCData(dl), PCData(dr)) => dl == dr
+      case (Comment(cl), Comment(cr))     => cl == cr
+      case (PCData(dl), PCData(dr))       => dl == dr
       case (pl: ProcInstr, pr: ProcInstr) => pl === pr
-      case (a, b) => a.toString == b.toString
+      case (a, b)                         => a.toString == b.toString
     }
-  }
 
   /**
     * Optional cons that implements the expression: <code>expr ?> value ::: List</code>
@@ -193,8 +203,9 @@ trait BasicTypesHelpers { self: StringHelpers with ControlHelpers =>
     * A helper class that facilitates wrapping of one PartialFunction
     * around another
     */
-  final implicit class PartialFunctionWrapper[
-      A](around: PartialFunction[A, _]) {
+  final implicit class PartialFunctionWrapper[A](
+      around: PartialFunction[A, _]
+  ) {
 
     /**
       * Allows you to put a guard around a partial function
@@ -204,20 +215,20 @@ trait BasicTypesHelpers { self: StringHelpers with ControlHelpers =>
     def guard[B](other: PartialFunction[A, B]): PartialFunction[A, B] =
       new PartialFunction[A, B] {
         def isDefinedAt(a: A) = around.isDefinedAt(a) && other.isDefinedAt(a)
-        def apply(a: A): B = other.apply(a)
+        def apply(a: A): B    = other.apply(a)
       }
   }
 
   implicit class OptionExtension[T](option: Option[T]) {
     def toBox: Box[T] = option match {
       case Some(x) => Full(x)
-      case None => Empty
+      case None    => Empty
     }
   }
 
   implicit class TryExtension[T](tryy: Try[T]) {
     def toBox: Box[T] = tryy match {
-      case scala.util.Success(x) => Full(x)
+      case scala.util.Success(x)  => Full(x)
       case scala.util.Failure(ex) => Failure(ex.getMessage, Full(ex), Empty)
     }
   }
@@ -225,22 +236,21 @@ trait BasicTypesHelpers { self: StringHelpers with ControlHelpers =>
   /**
     * Convert any object to an "equivalent" Boolean depending on its value
     */
-  def toBoolean(in: Any): Boolean = {
+  def toBoolean(in: Any): Boolean =
     in match {
-      case null => false
-      case b: Boolean => b
-      case i: Int => i != 0
-      case lo: Long => lo != 0
-      case n: Number => n.intValue != 0
-      case s: String => asBoolean(s) openOr false
-      case None => false
+      case null                     => false
+      case b: Boolean               => b
+      case i: Int                   => i != 0
+      case lo: Long                 => lo != 0
+      case n: Number                => n.intValue != 0
+      case s: String                => asBoolean(s) openOr false
+      case None                     => false
       case Empty | Failure(_, _, _) => false
-      case Full(n) => toBoolean(n)
-      case Some(n) => toBoolean(n)
-      case x :: xs => toBoolean(x)
-      case o => toBoolean(o.toString)
+      case Full(n)                  => toBoolean(n)
+      case Some(n)                  => toBoolean(n)
+      case x :: xs                  => toBoolean(x)
+      case o                        => toBoolean(o.toString)
     }
-  }
 
   /**
     * A helper that will convert the String to a Boolean if it's
@@ -256,16 +266,16 @@ trait BasicTypesHelpers { self: StringHelpers with ControlHelpers =>
       if (null eq in) None
       else
         in.toLowerCase match {
-          case "t" | "true" | "yes" | "1" | "on" => Full(true)
+          case "t" | "true" | "yes" | "1" | "on"  => Full(true)
           case "f" | "false" | "no" | "0" | "off" => Full(false)
-          case _ => None
+          case _                                  => None
         }
   }
 
   /**
     * Safely convert the specified String to an Int.
     */
-  def asInt(in: String): Box[Int] = tryo { in.trim.toInt }
+  def asInt(in: String): Box[Int] = tryo(in.trim.toInt)
 
   /**
     * A helpful Int extractor
@@ -277,7 +287,7 @@ trait BasicTypesHelpers { self: StringHelpers with ControlHelpers =>
   /**
     * Safely convert the specified String to a Double.
     */
-  def asDouble(in: String): Box[Double] = tryo { in.trim.toDouble }
+  def asDouble(in: String): Box[Double] = tryo(in.trim.toDouble)
 
   /**
     * A helpful Double extractor
@@ -301,68 +311,65 @@ trait BasicTypesHelpers { self: StringHelpers with ControlHelpers =>
   /**
     * Convert any object to an "equivalent" Long depending on its value
     */
-  def asLong(in: Any): Box[Long] = {
+  def asLong(in: Any): Box[Long] =
     in match {
-      case null => Empty
-      case i: Int => Full(i.toLong)
-      case n: Long => Full(n)
-      case d: java.util.Date => Full(d.getTime)
-      case n: Number => Full(n.longValue)
-      case (n: Number) :: _ => Full(n.longValue)
-      case Some(n) => asLong(n)
-      case Full(n) => asLong(n)
+      case null                            => Empty
+      case i: Int                          => Full(i.toLong)
+      case n: Long                         => Full(n)
+      case d: java.util.Date               => Full(d.getTime)
+      case n: Number                       => Full(n.longValue)
+      case (n: Number) :: _                => Full(n.longValue)
+      case Some(n)                         => asLong(n)
+      case Full(n)                         => asLong(n)
       case None | Empty | Failure(_, _, _) => Empty
-      case s: String => asLong(s)
-      case x :: xs => asLong(x)
-      case o => asLong(o.toString)
+      case s: String                       => asLong(s)
+      case x :: xs                         => asLong(x)
+      case o                               => asLong(o.toString)
     }
-  }
 
   /**
     * Convert any object to an "equivalent" Int depending on its value
     */
-  def toInt(in: Any): Int = {
+  def toInt(in: Any): Int =
     in match {
-      case null => 0
-      case n: Int => n
-      case lo: Long => lo.toInt
-      case n: Number => n.intValue
-      case (n: Number) :: _ => n.intValue
-      case Some(n) => toInt(n)
-      case Full(n) => toInt(n)
+      case null                            => 0
+      case n: Int                          => n
+      case lo: Long                        => lo.toInt
+      case n: Number                       => n.intValue
+      case (n: Number) :: _                => n.intValue
+      case Some(n)                         => toInt(n)
+      case Full(n)                         => toInt(n)
       case None | Empty | Failure(_, _, _) => 0
-      case s: String => parseNumber(s).toInt
-      case d: java.util.Date => (d.getTime / 1000L).toInt
-      case x :: xs => toInt(x)
-      case o => toInt(o.toString)
+      case s: String                       => parseNumber(s).toInt
+      case d: java.util.Date               => (d.getTime / 1000L).toInt
+      case x :: xs                         => toInt(x)
+      case o                               => toInt(o.toString)
     }
-  }
 
   /**
     * Convert any object to an "equivalent" Long depending on its value
     */
-  def toLong(in: Any): Long = {
+  def toLong(in: Any): Long =
     in match {
-      case null => 0L
-      case i: Int => i
-      case n: Long => n
-      case d: java.util.Date => d.getTime
-      case n: Number => n.longValue
-      case (n: Number) :: _ => n.longValue
-      case Some(n) => toLong(n)
-      case Full(n) => toLong(n)
+      case null                            => 0L
+      case i: Int                          => i
+      case n: Long                         => n
+      case d: java.util.Date               => d.getTime
+      case n: Number                       => n.longValue
+      case (n: Number) :: _                => n.longValue
+      case Some(n)                         => toLong(n)
+      case Full(n)                         => toLong(n)
       case None | Empty | Failure(_, _, _) => 0L
-      case s: String => parseNumber(s)
-      case x :: xs => toLong(x)
-      case o => toLong(o.toString)
+      case s: String                       => parseNumber(s)
+      case x :: xs                         => toLong(x)
+      case o                               => toLong(o.toString)
     }
-  }
 
   /**
     * Convert any InputStream to a ByteArrayInputStream
     */
   def toByteArrayInputStream(in: InputStream) = {
-    val ba = new Array[Byte](4096)
+    val ba  = new Array[Byte](4096)
     val bos = new ByteArrayOutputStream
     var len = 0
     while (len >= 0) {
@@ -385,11 +392,10 @@ trait BasicTypesHelpers { self: StringHelpers with ControlHelpers =>
     * @return true if two Byte arrays contain the same bytes
     */
   def isEq(a: Array[Byte], b: Array[Byte]) = {
-    def eq(a: Array[Byte], b: Array[Byte], pos: Int, len: Int): Boolean = {
+    def eq(a: Array[Byte], b: Array[Byte], pos: Int, len: Int): Boolean =
       if (pos == len) true
       else if (a(pos) != b(pos)) false
       else eq(a, b, pos + 1, len)
-    }
     a.length == b.length && eq(a, b, 0, a.length)
   }
 }

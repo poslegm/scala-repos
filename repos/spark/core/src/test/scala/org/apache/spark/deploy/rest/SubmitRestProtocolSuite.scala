@@ -31,27 +31,27 @@ class SubmitRestProtocolSuite extends SparkFunSuite {
 
   test("validate") {
     val request = new DummyRequest
-    intercept[SubmitRestProtocolException] { request.validate() } // missing everything
+    intercept[SubmitRestProtocolException](request.validate()) // missing everything
     request.clientSparkVersion = "1.2.3"
-    intercept[SubmitRestProtocolException] { request.validate() } // missing name and age
+    intercept[SubmitRestProtocolException](request.validate()) // missing name and age
     request.name = "something"
-    intercept[SubmitRestProtocolException] { request.validate() } // missing only age
+    intercept[SubmitRestProtocolException](request.validate()) // missing only age
     request.age = 2
-    intercept[SubmitRestProtocolException] { request.validate() } // age too low
+    intercept[SubmitRestProtocolException](request.validate()) // age too low
     request.age = 10
     request.validate() // everything is set properly
     request.clientSparkVersion = null
-    intercept[SubmitRestProtocolException] { request.validate() } // missing only Spark version
+    intercept[SubmitRestProtocolException](request.validate()) // missing only Spark version
     request.clientSparkVersion = "1.2.3"
     request.name = null
-    intercept[SubmitRestProtocolException] { request.validate() } // missing only name
+    intercept[SubmitRestProtocolException](request.validate()) // missing only name
     request.message = "not-setting-name"
-    intercept[SubmitRestProtocolException] { request.validate() } // still missing name
+    intercept[SubmitRestProtocolException](request.validate()) // still missing name
   }
 
   test("request to and from JSON") {
     val request = new DummyRequest
-    intercept[SubmitRestProtocolException] { request.toJson } // implicit validation
+    intercept[SubmitRestProtocolException](request.toJson) // implicit validation
     request.clientSparkVersion = "1.2.3"
     request.active = true
     request.age = 25
@@ -84,7 +84,7 @@ class SubmitRestProtocolSuite extends SparkFunSuite {
 
   test("CreateSubmissionRequest") {
     val message = new CreateSubmissionRequest
-    intercept[SubmitRestProtocolException] { message.validate() }
+    intercept[SubmitRestProtocolException](message.validate())
     message.clientSparkVersion = "1.2.3"
     message.appResource = "honey-walnut-cherry.jar"
     message.mainClass = "org.apache.spark.examples.SparkPie"
@@ -110,35 +110,43 @@ class SubmitRestProtocolSuite extends SparkFunSuite {
     // bad fields
     var badConf = conf.clone().set("spark.driver.cores", "one hundred feet")
     message.sparkProperties = badConf.getAll.toMap
-    intercept[SubmitRestProtocolException] { message.validate() }
+    intercept[SubmitRestProtocolException](message.validate())
     badConf = conf.clone().set("spark.driver.supervise", "nope, never")
     message.sparkProperties = badConf.getAll.toMap
-    intercept[SubmitRestProtocolException] { message.validate() }
+    intercept[SubmitRestProtocolException](message.validate())
     badConf = conf.clone().set("spark.cores.max", "two men")
     message.sparkProperties = badConf.getAll.toMap
-    intercept[SubmitRestProtocolException] { message.validate() }
+    intercept[SubmitRestProtocolException](message.validate())
     message.sparkProperties = conf.getAll.toMap
     // test JSON
     val json = message.toJson
     assertJsonEquals(json, submitDriverRequestJson)
-    val newMessage = SubmitRestProtocolMessage.fromJson(
-        json, classOf[CreateSubmissionRequest])
+    val newMessage =
+      SubmitRestProtocolMessage.fromJson(json, classOf[CreateSubmissionRequest])
     assert(newMessage.clientSparkVersion === "1.2.3")
     assert(newMessage.appResource === "honey-walnut-cherry.jar")
     assert(newMessage.mainClass === "org.apache.spark.examples.SparkPie")
     assert(newMessage.sparkProperties("spark.app.name") === "SparkPie")
     assert(
-        newMessage.sparkProperties("spark.jars") === "mayonnaise.jar,ketchup.jar")
+      newMessage.sparkProperties("spark.jars") === "mayonnaise.jar,ketchup.jar"
+    )
     assert(newMessage.sparkProperties("spark.files") === "fireball.png")
     assert(
-        newMessage.sparkProperties("spark.driver.memory") === s"${Utils.DEFAULT_DRIVER_MEM_MB}m")
+      newMessage
+        .sparkProperties("spark.driver.memory") === s"${Utils.DEFAULT_DRIVER_MEM_MB}m"
+    )
     assert(newMessage.sparkProperties("spark.driver.cores") === "180")
     assert(
-        newMessage.sparkProperties("spark.driver.extraJavaOptions") === " -Dslices=5 -Dcolor=mostly_red")
+      newMessage.sparkProperties("spark.driver.extraJavaOptions") === " -Dslices=5 -Dcolor=mostly_red"
+    )
     assert(
-        newMessage.sparkProperties("spark.driver.extraClassPath") === "food-coloring.jar")
+      newMessage
+        .sparkProperties("spark.driver.extraClassPath") === "food-coloring.jar"
+    )
     assert(
-        newMessage.sparkProperties("spark.driver.extraLibraryPath") === "pickle.jar")
+      newMessage
+        .sparkProperties("spark.driver.extraLibraryPath") === "pickle.jar"
+    )
     assert(newMessage.sparkProperties("spark.driver.supervise") === "false")
     assert(newMessage.sparkProperties("spark.executor.memory") === "256m")
     assert(newMessage.sparkProperties("spark.cores.max") === "10000")
@@ -149,7 +157,7 @@ class SubmitRestProtocolSuite extends SparkFunSuite {
 
   test("CreateSubmissionResponse") {
     val message = new CreateSubmissionResponse
-    intercept[SubmitRestProtocolException] { message.validate() }
+    intercept[SubmitRestProtocolException](message.validate())
     message.serverSparkVersion = "1.2.3"
     message.submissionId = "driver_123"
     message.success = true
@@ -158,7 +166,9 @@ class SubmitRestProtocolSuite extends SparkFunSuite {
     val json = message.toJson
     assertJsonEquals(json, submitDriverResponseJson)
     val newMessage = SubmitRestProtocolMessage.fromJson(
-        json, classOf[CreateSubmissionResponse])
+      json,
+      classOf[CreateSubmissionResponse]
+    )
     assert(newMessage.serverSparkVersion === "1.2.3")
     assert(newMessage.submissionId === "driver_123")
     assert(newMessage.success)
@@ -166,7 +176,7 @@ class SubmitRestProtocolSuite extends SparkFunSuite {
 
   test("KillSubmissionResponse") {
     val message = new KillSubmissionResponse
-    intercept[SubmitRestProtocolException] { message.validate() }
+    intercept[SubmitRestProtocolException](message.validate())
     message.serverSparkVersion = "1.2.3"
     message.submissionId = "driver_123"
     message.success = true
@@ -183,7 +193,7 @@ class SubmitRestProtocolSuite extends SparkFunSuite {
 
   test("SubmissionStatusResponse") {
     val message = new SubmissionStatusResponse
-    intercept[SubmitRestProtocolException] { message.validate() }
+    intercept[SubmitRestProtocolException](message.validate())
     message.serverSparkVersion = "1.2.3"
     message.submissionId = "driver_123"
     message.success = true
@@ -196,7 +206,9 @@ class SubmitRestProtocolSuite extends SparkFunSuite {
     val json = message.toJson
     assertJsonEquals(json, driverStatusResponseJson)
     val newMessage = SubmitRestProtocolMessage.fromJson(
-        json, classOf[SubmissionStatusResponse])
+      json,
+      classOf[SubmissionStatusResponse]
+    )
     assert(newMessage.serverSparkVersion === "1.2.3")
     assert(newMessage.submissionId === "driver_123")
     assert(newMessage.driverState === "RUNNING")
@@ -207,7 +219,7 @@ class SubmitRestProtocolSuite extends SparkFunSuite {
 
   test("ErrorResponse") {
     val message = new ErrorResponse
-    intercept[SubmitRestProtocolException] { message.validate() }
+    intercept[SubmitRestProtocolException](message.validate())
     message.serverSparkVersion = "1.2.3"
     message.message = "Field not found in submit request: X"
     message.validate()
@@ -307,24 +319,27 @@ class SubmitRestProtocolSuite extends SparkFunSuite {
 
   /** Assert that the contents in the two JSON strings are equal after ignoring whitespace. */
   private def assertJsonEquals(
-      jsonString1: String, jsonString2: String): Unit = {
+      jsonString1: String,
+      jsonString2: String
+  ): Unit = {
     val trimmedJson1 = jsonString1.trim
     val trimmedJson2 = jsonString2.trim
-    val json1 = compact(render(parse(trimmedJson1)))
-    val json2 = compact(render(parse(trimmedJson2)))
+    val json1        = compact(render(parse(trimmedJson1)))
+    val json2        = compact(render(parse(trimmedJson2)))
     // Put this on a separate line to avoid printing comparison twice when test fails
     val equals = json1 == json2
     assert(
-        equals,
-        "\"[%s]\" did not equal \"[%s]\"".format(trimmedJson1, trimmedJson2))
+      equals,
+      "\"[%s]\" did not equal \"[%s]\"".format(trimmedJson1, trimmedJson2)
+    )
   }
 }
 
 private class DummyResponse extends SubmitRestProtocolResponse
 private class DummyRequest extends SubmitRestProtocolRequest {
   var active: Boolean = null
-  var age: Integer = null
-  var name: String = null
+  var age: Integer    = null
+  var name: String    = null
   protected override def doValidate(): Unit = {
     super.doValidate()
     assertFieldIsSet(name, "name")

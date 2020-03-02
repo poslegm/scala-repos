@@ -16,8 +16,8 @@ object ScalaTestingWithDatabases extends Specification {
       import play.api.db.Databases
 
       val database = Databases(
-          driver = "com.mysql.jdbc.Driver",
-          url = "jdbc:mysql://localhost/test"
+        driver = "com.mysql.jdbc.Driver",
+        url = "jdbc:mysql://localhost/test"
       )
       //#database
     }
@@ -27,13 +27,13 @@ object ScalaTestingWithDatabases extends Specification {
       import play.api.db.Databases
 
       val database = Databases(
-          driver = "com.mysql.jdbc.Driver",
-          url = "jdbc:mysql://localhost/test",
-          name = "mydatabase",
-          config = Map(
-                "user" -> "test",
-                "password" -> "secret"
-            )
+        driver = "com.mysql.jdbc.Driver",
+        url = "jdbc:mysql://localhost/test",
+        name = "mydatabase",
+        config = Map(
+          "user"     -> "test",
+          "password" -> "secret"
+        )
       )
       //#full-config
 
@@ -47,8 +47,8 @@ object ScalaTestingWithDatabases extends Specification {
       import play.api.db.Databases
 
       Databases.withDatabase(
-          driver = "com.mysql.jdbc.Driver",
-          url = "jdbc:mysql://localhost/test"
+        driver = "com.mysql.jdbc.Driver",
+        url = "jdbc:mysql://localhost/test"
       ) { database =>
         val connection = database.getConnection()
       // ...
@@ -60,17 +60,16 @@ object ScalaTestingWithDatabases extends Specification {
       //#custom-with-database
       import play.api.db.{Database, Databases}
 
-      def withMyDatabase[T](block: Database => T) = {
+      def withMyDatabase[T](block: Database => T) =
         Databases.withDatabase(
-            driver = "com.mysql.jdbc.Driver",
-            url = "jdbc:mysql://localhost/test",
-            name = "mydatabase",
-            config = Map(
-                  "user" -> "test",
-                  "password" -> "secret"
-              )
+          driver = "com.mysql.jdbc.Driver",
+          url = "jdbc:mysql://localhost/test",
+          name = "mydatabase",
+          config = Map(
+            "user"     -> "test",
+            "password" -> "secret"
+          )
         )(block)
-      }
       //#custom-with-database
 
       //#custom-with-database-use
@@ -102,13 +101,13 @@ object ScalaTestingWithDatabases extends Specification {
       import play.api.db.Databases
 
       val database = Databases.inMemory(
-          name = "mydatabase",
-          urlOptions = Map(
-                "MODE" -> "MYSQL"
-            ),
-          config = Map(
-                "logStatements" -> true
-            )
+        name = "mydatabase",
+        urlOptions = Map(
+          "MODE" -> "MYSQL"
+        ),
+        config = Map(
+          "logStatements" -> true
+        )
       )
       //#in-memory-full-config
 
@@ -138,21 +137,21 @@ object ScalaTestingWithDatabases extends Specification {
       //#with-in-memory-custom
       import play.api.db.{Database, Databases}
 
-      def withMyDatabase[T](block: Database => T) = {
+      def withMyDatabase[T](block: Database => T) =
         Databases.withInMemory(
-            name = "mydatabase",
-            urlOptions = Map(
-                  "MODE" -> "MYSQL"
-              ),
-            config = Map(
-                  "logStatements" -> true
-              )
+          name = "mydatabase",
+          urlOptions = Map(
+            "MODE" -> "MYSQL"
+          ),
+          config = Map(
+            "logStatements" -> true
+          )
         )(block)
-      }
       //#with-in-memory-custom
 
       withMyDatabase(
-          _.getConnection().getMetaData.getDatabaseProductName must_== "H2")
+        _.getConnection().getMetaData.getDatabaseProductName must_== "H2"
+      )
     }
 
     "allow running evolutions" in play.api.db.Databases.withInMemory() {
@@ -175,14 +174,15 @@ object ScalaTestingWithDatabases extends Specification {
         import play.api.db.evolutions._
 
         Evolutions.applyEvolutions(
-            database,
-            SimpleEvolutionsReader.forDefault(
-                Evolution(
-                    1,
-                    "create table test (id bigint not null, name varchar(255));",
-                    "drop table test;"
-                )
-            ))
+          database,
+          SimpleEvolutionsReader.forDefault(
+            Evolution(
+              1,
+              "create table test (id bigint not null, name varchar(255));",
+              "drop table test;"
+            )
+          )
+        )
         //#apply-evolutions-simple
 
         val connection = database.getConnection()
@@ -194,64 +194,66 @@ object ScalaTestingWithDatabases extends Specification {
         Evolutions.cleanupEvolutions(database)
         //#cleanup-evolutions-simple
 
-        connection.prepareStatement("select * from test").executeQuery() must throwAn[
-            SQLException]
+        connection
+          .prepareStatement("select * from test")
+          .executeQuery() must throwAn[SQLException]
     }
 
     "allow running evolutions from a custom path" in play.api.db.Databases
       .withInMemory() { database =>
-      //#apply-evolutions-custom-path
-      import play.api.db.evolutions._
+        //#apply-evolutions-custom-path
+        import play.api.db.evolutions._
 
-      Evolutions.applyEvolutions(
-          database, ClassLoaderEvolutionsReader.forPrefix("testdatabase/"))
-      //#apply-evolutions-custom-path
-      ok
-    }
+        Evolutions.applyEvolutions(
+          database,
+          ClassLoaderEvolutionsReader.forPrefix("testdatabase/")
+        )
+        //#apply-evolutions-custom-path
+        ok
+      }
 
     "allow play to manage evolutions for you" in play.api.db.Databases
       .withInMemory() { database =>
-      //#with-evolutions
-      import play.api.db.evolutions._
+        //#with-evolutions
+        import play.api.db.evolutions._
 
-      Evolutions.withEvolutions(database) {
-        val connection = database.getConnection()
+        Evolutions.withEvolutions(database) {
+          val connection = database.getConnection()
 
-        // ...
+          // ...
+        }
+        //#with-evolutions
+        ok
       }
-      //#with-evolutions
-      ok
-    }
 
     "allow simple composition of with database and with evolutions" in {
       //#with-evolutions-custom
       import play.api.db.{Database, Databases}
       import play.api.db.evolutions._
 
-      def withMyDatabase[T](block: Database => T) = {
-
+      def withMyDatabase[T](block: Database => T) =
         Databases.withInMemory(
-            urlOptions = Map(
-                  "MODE" -> "MYSQL"
-              ),
-            config = Map(
-                  "logStatements" -> true
-              )
+          urlOptions = Map(
+            "MODE" -> "MYSQL"
+          ),
+          config = Map(
+            "logStatements" -> true
+          )
         ) { database =>
           Evolutions.withEvolutions(
-              database,
-              SimpleEvolutionsReader.forDefault(
-                  Evolution(
-                      1,
-                      "create table test (id bigint not null, name varchar(255));",
-                      "drop table test;"
-                  )
-              )) {
+            database,
+            SimpleEvolutionsReader.forDefault(
+              Evolution(
+                1,
+                "create table test (id bigint not null, name varchar(255));",
+                "drop table test;"
+              )
+            )
+          ) {
 
             block(database)
           }
         }
-      }
       //#with-evolutions-custom
 
       //#with-evolutions-custom-use

@@ -4,7 +4,7 @@ object Test {
 
   //def error[a](x: String):a = new java.lang.RuntimeException(x) throw;
 
-  def main(args: Array[String]): Unit = {
+  def main(args: Array[String]): Unit =
     try {
       try {
         Console.println("hi!")
@@ -12,7 +12,6 @@ object Test {
       } finally Console.println("ho!")
     } catch {
       case ex: IOException => Console.println("io exception!");
-      case ex => Console.println(ex);
+      case ex              => Console.println(ex);
     }
-  }
 }

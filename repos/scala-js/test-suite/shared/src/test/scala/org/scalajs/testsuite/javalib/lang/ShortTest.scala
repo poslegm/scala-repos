@@ -58,7 +58,7 @@ class ShortTest {
 
     test("abc")
     test("")
-    test("60000") // out of range
+    test("60000")  // out of range
     test("-90000") // out of range
   }
 }

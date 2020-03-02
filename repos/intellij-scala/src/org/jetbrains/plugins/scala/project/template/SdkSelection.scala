@@ -26,17 +26,18 @@ trait SdkSelection {
   protected def filesChooserDescriptor: FileChooserDescriptor
 
   protected def chooseSdkFiles(
-      parentComponent: JComponent): Option[SdkDescriptor] = {
+      parentComponent: JComponent
+  ): Option[SdkDescriptor] =
     browse(parentComponent).flatMap {
       case Left(message) =>
         Messages.showErrorDialog(parentComponent, message)
         None
       case Right(sdk) => Some(sdk)
     }
-  }
 
   protected def browse(
-      parent: JComponent): Option[Either[String, SdkDescriptor]] = {
+      parent: JComponent
+  ): Option[Either[String, SdkDescriptor]] = {
     val virtualFiles =
       FileChooser.chooseFiles(filesChooserDescriptor, parent, null, null).toSeq
 

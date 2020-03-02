@@ -13,7 +13,7 @@ case class User(id: Int, name: String) {}
 //#declaration
 object User {
 
-  // stubbed test 
+  // stubbed test
   // designed to be lightweight operation
   def findById(id: Int): Option[User] = {
     Logger.info("findById: " + id.toString)
@@ -25,15 +25,13 @@ object User {
   //#bind
   implicit def pathBinder(implicit intBinder: PathBindable[Int]) =
     new PathBindable[User] {
-      override def bind(key: String, value: String): Either[String, User] = {
+      override def bind(key: String, value: String): Either[String, User] =
         for {
-          id <- intBinder.bind(key, value).right
+          id   <- intBinder.bind(key, value).right
           user <- User.findById(id).toRight("User not found").right
         } yield user
-      }
-      override def unbind(key: String, user: User): String = {
+      override def unbind(key: String, user: User): String =
         user.id.toString
-      }
     }
   //#bind
 }

@@ -53,9 +53,11 @@ import scala.annotation.implicitNotFound
   * knowing that only that library's network operations will be affected.
   * Application callback execution can be configured separately.
   */
-@implicitNotFound("""Cannot find an implicit ExecutionContext. You might pass
+@implicitNotFound(
+  """Cannot find an implicit ExecutionContext. You might pass
 an (implicit ec: ExecutionContext) parameter to your method
-or import scala.concurrent.ExecutionContext.Implicits.global.""")
+or import scala.concurrent.ExecutionContext.Implicits.global."""
+)
 trait ExecutionContext {
 
   /** Runs a block of code on this execution context.
@@ -101,7 +103,8 @@ trait ExecutionContextExecutor extends ExecutionContext with Executor
   * Java [[http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html ExecutorService]].
   */
 trait ExecutionContextExecutorService
-    extends ExecutionContextExecutor with ExecutorService
+    extends ExecutionContextExecutor
+    with ExecutorService
 
 /** Contains factory methods for creating execution contexts.
   */
@@ -142,7 +145,8 @@ object ExecutionContext {
     */
   def fromExecutorService(
       e: ExecutorService,
-      reporter: Throwable => Unit): ExecutionContextExecutorService =
+      reporter: Throwable => Unit
+  ): ExecutionContextExecutorService =
     impl.ExecutionContextImpl.fromExecutorService(e, reporter)
 
   /** Creates an `ExecutionContext` from the given `ExecutorService` with the [[scala.concurrent.ExecutionContext$.defaultReporter default reporter]].
@@ -158,8 +162,7 @@ object ExecutionContext {
     *  @param e the `ExecutorService` to use. If `null`, a new `ExecutorService` is created with [[http://www.scala-lang.org/api/current/index.html#scala.concurrent.ExecutionContext$@global:scala.concurrent.ExecutionContextExecutor default configuration]].
     *  @return  the `ExecutionContext` using the given `ExecutorService`
     */
-  def fromExecutorService(
-      e: ExecutorService): ExecutionContextExecutorService =
+  def fromExecutorService(e: ExecutorService): ExecutionContextExecutorService =
     fromExecutorService(e, defaultReporter)
 
   /** Creates an `ExecutionContext` from the given `Executor`.
@@ -169,7 +172,9 @@ object ExecutionContext {
     *  @return          the `ExecutionContext` using the given `Executor`
     */
   def fromExecutor(
-      e: Executor, reporter: Throwable => Unit): ExecutionContextExecutor =
+      e: Executor,
+      reporter: Throwable => Unit
+  ): ExecutionContextExecutor =
     impl.ExecutionContextImpl.fromExecutor(e, reporter)
 
   /** Creates an `ExecutionContext` from the given `Executor` with the [[scala.concurrent.ExecutionContext$.defaultReporter default reporter]].

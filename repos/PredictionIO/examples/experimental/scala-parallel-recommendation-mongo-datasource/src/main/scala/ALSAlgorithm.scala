@@ -26,18 +26,20 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
     val userStringIntMap = BiMap.stringInt(data.ratings.map(_.user))
     val itemStringIntMap = BiMap.stringInt(data.ratings.map(_.item))
     val mllibRatings = data.ratings.map(r =>
-          // MLlibRating requires integer index for user and item
-          MLlibRating(
-              userStringIntMap(r.user), itemStringIntMap(r.item), r.rating))
+      // MLlibRating requires integer index for user and item
+      MLlibRating(userStringIntMap(r.user), itemStringIntMap(r.item), r.rating)
+    )
     val m = ALS.train(mllibRatings, ap.rank, ap.numIterations, ap.lambda)
-    new ALSModel(rank = m.rank,
-                 userFeatures = m.userFeatures,
-                 productFeatures = m.productFeatures,
-                 userStringIntMap = userStringIntMap,
-                 itemStringIntMap = itemStringIntMap)
+    new ALSModel(
+      rank = m.rank,
+      userFeatures = m.userFeatures,
+      productFeatures = m.productFeatures,
+      userStringIntMap = userStringIntMap,
+      itemStringIntMap = itemStringIntMap
+    )
   }
 
-  def predict(model: ALSModel, query: Query): PredictedResult = {
+  def predict(model: ALSModel, query: Query): PredictedResult =
     // Convert String ID to Int index for Mllib
     model.userStringIntMap
       .get(query.user)
@@ -55,5 +57,4 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
         logger.info(s"No prediction for unknown user ${query.user}.")
         new PredictedResult(Array.empty)
       }
-  }
 }

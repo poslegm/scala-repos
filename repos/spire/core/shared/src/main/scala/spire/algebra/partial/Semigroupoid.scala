@@ -22,10 +22,11 @@ trait Semigroupoid[A] extends Any {
 
 trait SemigroupoidLowPriority {
   implicit def fromSemigroup[A](
-      implicit semigroup: Semigroup[A]): Semigroupoid[A] =
+      implicit semigroup: Semigroup[A]
+  ): Semigroupoid[A] =
     new Semigroupoid[A] {
       override def opIsDefined(x: A, y: A): Boolean = true
-      def partialOp(x: A, y: A): Opt[A] = Opt(semigroup.op(x, y))
+      def partialOp(x: A, y: A): Opt[A]             = Opt(semigroup.op(x, y))
     }
 }
 

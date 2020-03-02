@@ -12,13 +12,13 @@ private[parser] trait AcceptLanguageHeader {
   // http://tools.ietf.org/html/rfc7231#section-5.3.5
   def `accept-language` = rule {
     oneOrMore(`language-range-decl`).separatedBy(listSep) ~ EOI ~>
-    (`Accept-Language`(_))
+      (`Accept-Language`(_))
   }
 
   def `language-range-decl` = rule {
     `language-range` ~ optional(weight) ~> { (range, optQ) ⇒
       optQ match {
-        case None ⇒ range
+        case None    ⇒ range
         case Some(q) ⇒ range withQValue q
       }
     }

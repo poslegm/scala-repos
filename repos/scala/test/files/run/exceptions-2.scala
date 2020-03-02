@@ -5,7 +5,7 @@
 trait Tree extends Exception;
 
 case class Node(a: Tree, b: Tree) extends Tree;
-case class Leaf(x: Int) extends Tree;
+case class Leaf(x: Int)           extends Tree;
 
 object NoExcep {
   def a = true;
@@ -17,14 +17,14 @@ object NoExcep {
       Console.println(t);
     } catch {
       case Node(Leaf(_), Leaf(_)) => a;
-      case Leaf(_) => b;
+      case Leaf(_)                => b;
     }
 
   def method2 =
     try {
       Console.println("Hello, world");
     } catch {
-      case _: Error => Console.println("File error");
+      case _: Error     => Console.println("File error");
       case t: Throwable => Console.println("Unknown error");
     }
 
@@ -34,10 +34,10 @@ object NoExcep {
         Console.println("method3");
       } catch {
         case Node(Leaf(_), Leaf(_)) => Console.println("First one");
-        case Leaf(_) => Console.println("Second one");
+        case Leaf(_)                => Console.println("Second one");
       }
     } catch {
-      case _: Error => Console.println("File error");
+      case _: Error     => Console.println("File error");
       case t: Exception => Console.println("Unknown error");
     }
 
@@ -78,7 +78,7 @@ object Test {
       if (10 > 0) throw Leaf(10);
       Console.println("nooo oneeee can priiiint meee");
     } catch {
-      case Leaf(a) => Console.println(a);
+      case Leaf(a)      => Console.println(a);
       case _: Exception => Console.println("Exception occurred");
     } finally {
       Console.println("Finally!");
@@ -89,7 +89,7 @@ object Test {
       if (10 > 0) throw Leaf(10);
       Console.println("nooo oneeee can priiiint meee");
     } catch {
-      case Leaf(a) => Console.println(a);
+      case Leaf(a)      => Console.println(a);
       case _: Exception => Console.println("Exception occurred");
     }
 
@@ -97,7 +97,7 @@ object Test {
       val a: Leaf = null;
       println(a.x);
     } catch {
-      case Leaf(a) => Console.println(a);
+      case Leaf(a)                 => Console.println(a);
       case _: NullPointerException => Console.println("Exception occurred");
     }
   }
@@ -116,24 +116,26 @@ object Test {
     }
 
   def withValue1: Unit = {
-    val x = try {
-      10
-    } finally {
-      Console.println("Oh, oh");
-    };
+    val x =
+      try {
+        10
+      } finally {
+        Console.println("Oh, oh");
+      };
     Console.println(x);
   }
 
   def withValue2: Unit = {
-    val x = try {
-      null
-    } finally {
-      Console.println("droped a null");
-    };
+    val x =
+      try {
+        null
+      } finally {
+        Console.println("droped a null");
+      };
     Console.println(x);
   }
 
-  def tryFinallyTry: Unit = {
+  def tryFinallyTry: Unit =
     try {
       ()
     } finally {
@@ -144,7 +146,6 @@ object Test {
           Console.println("Silently ignore exception in finally");
       }
     }
-  }
 
   def valInFinally: Unit =
     try {} finally {
@@ -223,7 +224,7 @@ object Test {
     }
 
   /** bug #1020, no crash at compile time */
-  def tryCatchInFinally: Unit = {
+  def tryCatchInFinally: Unit =
     try {
       Console.println("Try")
     } catch {
@@ -234,14 +235,14 @@ object Test {
       // Always make sure result sets and statements are closed,
       // and the connection is returned to the pool
       if (x != 10) {
-        try { Console.println("Fin"); } catch {
+        try { Console.println("Fin"); }
+        catch {
           case e: java.io.IOException => ;
         }
       }
     }
-  }
 
-  def tryThrowFinally: Unit = {
+  def tryThrowFinally: Unit =
     try {
       print("A")
       throw new Exception
@@ -252,7 +253,6 @@ object Test {
     } finally {
       println("C")
     }
-  }
 
   def execute(f: => Unit) =
     try {
@@ -273,7 +273,8 @@ object Test {
       }
     } finally {
       Console.println("Outer finally");
-      try { 1 } catch { case e: java.io.IOException => () }
+      try { 1 }
+      catch { case e: java.io.IOException => () }
     }
 
   /** Test that empty finally clauses containing while are correctly emitted.
@@ -288,9 +289,8 @@ object Test {
   }
 
   /* Tests that class Issue passes verification. */
-  def whileInFinally = {
+  def whileInFinally =
     new Issue
-  }
 
   def main(args: Array[String]): Unit = {
     Console.println("nested1: ");
@@ -342,8 +342,7 @@ object Test {
     Console.println("Return inside body and return in finally:");
     execute(returnInBodyAndInFinally);
 
-    Console.println(
-        "Return inside body and return in finally inside finally:");
+    Console.println("Return inside body and return in finally inside finally:");
     execute(returnInBodyAndInFinally2);
 
     Console.println("Throw in catch and finally:");

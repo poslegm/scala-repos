@@ -15,11 +15,11 @@ class VMEventManager(val eventQueue: EventQueue, debugManager: ActorRef)
   // TODO needs proper stop method with interrupt
 
   @volatile var finished = false
-  override def run(): Unit = {
+  override def run(): Unit =
     while (!finished) {
       try {
         val eventSet = eventQueue.remove()
-        val it = eventSet.eventIterator()
+        val it       = eventSet.eventIterator()
         while (it.hasNext) {
           val evt = it.nextEvent()
           evt match {
@@ -40,5 +40,4 @@ class VMEventManager(val eventQueue: EventQueue, debugManager: ActorRef)
           finished = true
       }
     }
-  }
 }

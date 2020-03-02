@@ -11,7 +11,7 @@ import scala.collection.mutable
 class EventTest extends FunSuite {
 
   test("pub/sub while active") {
-    val e = Event[Int]()
+    val e   = Event[Int]()
     val ref = new AtomicReference[Seq[Int]](Seq.empty)
     val sub = e.build.register(Witness(ref))
 
@@ -28,7 +28,7 @@ class EventTest extends FunSuite {
 
   test("Event.filter") {
     val calls = new AtomicInteger()
-    val e = Event[Int]()
+    val e     = Event[Int]()
     val evens = e.filter { p =>
       calls.incrementAndGet()
       p % 2 == 0
@@ -47,7 +47,7 @@ class EventTest extends FunSuite {
 
   test("Event.map") {
     val calls = new AtomicInteger()
-    val e = Event[Int]()
+    val e     = Event[Int]()
     val mapped = e.map { p =>
       calls.incrementAndGet()
       p * 2
@@ -62,9 +62,9 @@ class EventTest extends FunSuite {
   }
 
   test("Event.collect") {
-    val e = Event[Int]()
+    val e      = Event[Int]()
     val events = e collect { case i if i % 2 == 0 => i * 2 }
-    val ref = new AtomicReference[Seq[Int]](Seq.empty)
+    val ref    = new AtomicReference[Seq[Int]](Seq.empty)
     events.build.register(Witness(ref))
 
     e.notify(1)
@@ -76,7 +76,7 @@ class EventTest extends FunSuite {
   }
 
   test("Event.foldLeft") {
-    val e = Event[Int]()
+    val e   = Event[Int]()
     val sum = e.foldLeft(0)(_ + _)
     val ref = new AtomicReference[Int](0)
     sum.register(Witness(ref))
@@ -89,8 +89,8 @@ class EventTest extends FunSuite {
   }
 
   test("Event.sliding") {
-    val e = Event[Int]()
-    val w = e.sliding(3)
+    val e   = Event[Int]()
+    val w   = e.sliding(3)
     val ref = new AtomicReference[Seq[Int]](Seq.empty)
     w.register(Witness(ref))
 
@@ -105,7 +105,7 @@ class EventTest extends FunSuite {
   }
 
   test("Event.mergeMap") {
-    val e = Event[Int]()
+    val e      = Event[Int]()
     val inners = new mutable.ArrayBuffer[Witness[String]]
     val e2 =
       e mergeMap { i =>
@@ -113,7 +113,7 @@ class EventTest extends FunSuite {
         inners += e
         e
       }
-    val ref = new AtomicReference[String]("")
+    val ref      = new AtomicReference[String]("")
     val closable = e2.register(Witness(ref))
 
     assert(inners.isEmpty)
@@ -139,18 +139,14 @@ class EventTest extends FunSuite {
       def register(w: Witness[Int]) = {
         n += 1
         w.notify(1)
-        Closable.make { _ =>
-          n -= 1; Future.Done
-        }
+        Closable.make { _ => n -= 1; Future.Done }
       }
     }
 
     val e12 =
-      e1 mergeMap { _ =>
-        e2
-      }
+      e1 mergeMap { _ => e2 }
 
-    val ref = new AtomicReference(Seq.empty[Int])
+    val ref      = new AtomicReference(Seq.empty[Int])
     val closable = e12.build.register(Witness(ref))
     assert(ref.get == Seq(1))
     assert(n == 2)
@@ -159,9 +155,9 @@ class EventTest extends FunSuite {
   }
 
   test("Event.select") {
-    val e1 = Event[Int]()
-    val e2 = Event[String]()
-    val e = e1 select e2
+    val e1  = Event[Int]()
+    val e2  = Event[String]()
+    val e   = e1 select e2
     val ref = new AtomicReference[Seq[Either[Int, String]]](Seq.empty)
     e.build.register(Witness(ref))
     assert(ref.get.isEmpty)
@@ -176,9 +172,9 @@ class EventTest extends FunSuite {
   }
 
   test("Event.zip") {
-    val e1 = Event[Int]()
-    val e2 = Event[String]()
-    val e = e1 zip e2
+    val e1  = Event[Int]()
+    val e2  = Event[String]()
+    val e   = e1 zip e2
     val ref = new AtomicReference[Seq[(Int, String)]](Seq.empty)
     e.build.register(Witness(ref))
 
@@ -191,9 +187,9 @@ class EventTest extends FunSuite {
   }
 
   test("Event.joinLast") {
-    val e1 = Event[Int]()
-    val e2 = Event[String]()
-    val e = e1 joinLast e2
+    val e1  = Event[Int]()
+    val e2  = Event[String]()
+    val e   = e1 joinLast e2
     val ref = new AtomicReference[(Int, String)]((0, ""))
     e.register(Witness(ref))
 
@@ -209,8 +205,8 @@ class EventTest extends FunSuite {
   }
 
   test("Event.take") {
-    val e = Event[Int]()
-    val e1 = e.take(5)
+    val e   = Event[Int]()
+    val e1  = e.take(5)
     val ref = new AtomicReference[Seq[Int]](Seq.empty)
     e1.build.register(Witness(ref))
 
@@ -228,8 +224,8 @@ class EventTest extends FunSuite {
 
   test("Event.merge") {
     val e1, e2 = Event[Int]()
-    val e = e1 merge e2
-    val ref = new AtomicReference[Seq[Int]](Seq.empty)
+    val e      = e1 merge e2
+    val ref    = new AtomicReference[Seq[Int]](Seq.empty)
     e.build.register(Witness(ref))
 
     for (i <- 0 until 100) e1.notify(i)
@@ -271,7 +267,7 @@ class EventTest extends FunSuite {
     val exc = new Exception
     f.raise(exc)
     assert(f.isDefined)
-    val caught = intercept[Exception] { Await.result(f) }
+    val caught = intercept[Exception](Await.result(f))
     assert(caught == exc)
   }
 
@@ -282,9 +278,7 @@ class EventTest extends FunSuite {
     }
 
     def ite[T](i: Var[Boolean], t: Var[T], e: Var[T]) =
-      i flatMap { i =>
-        if (i) t else e
-      }
+      i flatMap { i => if (i) t else e }
 
     val b = Var(true)
     val x = Var(7)
@@ -309,13 +303,13 @@ class EventTest extends FunSuite {
   }
 
   test("Event.register: no races between registered witnesses") {
-    val e = Event[Unit]()
+    val e       = Event[Unit]()
     val counter = new AtomicInteger
-    val n = 1000
+    val n       = 1000
 
     val nThreads = 8
-    val latch = new CountDownLatch(n)
-    val ex = Executors.newFixedThreadPool(nThreads)
+    val latch    = new CountDownLatch(n)
+    val ex       = Executors.newFixedThreadPool(nThreads)
     val addTask = new Runnable {
       def run() = {
         e.respond(_ => counter.incrementAndGet())
@@ -331,12 +325,10 @@ class EventTest extends FunSuite {
   }
 
   test("Event.dedupWith") {
-    val e = Event[Int]()
+    val e   = Event[Int]()
     val ref = new AtomicReference[IndexedSeq[Int]]
 
-    e.dedupWith { (a, b) =>
-      a >= b
-    }.build.register(Witness(ref))
+    e.dedupWith((a, b) => a >= b).build.register(Witness(ref))
     e.notify(0)
     e.notify(0)
     e.notify(1)
@@ -349,7 +341,7 @@ class EventTest extends FunSuite {
   }
 
   test("Event.dedup") {
-    val e = Event[Int]()
+    val e   = Event[Int]()
     val ref = new AtomicReference[IndexedSeq[Int]]
 
     e.dedup.build.register(Witness(ref))

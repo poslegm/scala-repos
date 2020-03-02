@@ -187,8 +187,8 @@ class VecStatsCheck extends Specification with ScalaCheck {
 
       forAll { (v: Vec[Double]) =>
         val data = v.contents.sorted
-        val len = data.length
-        val med = v.median
+        val len  = data.length
+        val med  = v.median
         (len == 0 && med.isNaN) || {
           len % 2 match {
             case 0 => areClose(med, (data(len / 2) + data(len / 2 - 1)) / 2.0)
@@ -203,8 +203,8 @@ class VecStatsCheck extends Specification with ScalaCheck {
 
       forAll { (v: Vec[Double]) =>
         val data = v.contents.filter(!_.isNaN).sorted
-        val len = data.length
-        val med = v.median
+        val len  = data.length
+        val med  = v.median
         (len == 0 && med.isNaN) || {
           len % 2 match {
             case 0 => areClose(med, (data(len / 2) + data(len / 2 - 1)) / 2.0)
@@ -221,9 +221,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val mean = v.geomean
 
         val stats = new DescriptiveStatistics()
-        v.contents.foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.foreach(v => stats.addValue(v))
 
         areClose(mean, stats.getGeometricMean)
       }
@@ -236,9 +234,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val mean = v.geomean
 
         val stats = new DescriptiveStatistics()
-        v.contents.filter(!_.isNaN).foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.filter(!_.isNaN).foreach(v => stats.addValue(v))
 
         areClose(mean, stats.getGeometricMean)
       }
@@ -251,9 +247,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val vrnc = v.variance
 
         val stats = new DescriptiveStatistics()
-        v.contents.foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.foreach(v => stats.addValue(v))
 
         areClose(vrnc, stats.getVariance)
       }
@@ -266,9 +260,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val vrnc = v.variance
 
         val stats = new DescriptiveStatistics()
-        v.contents.filter(!_.isNaN).foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.filter(!_.isNaN).foreach(v => stats.addValue(v))
 
         areClose(vrnc, stats.getVariance)
       }
@@ -281,9 +273,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val skew = v.skew
 
         val stats = new DescriptiveStatistics()
-        v.contents.foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.foreach(v => stats.addValue(v))
 
         areClose(skew, stats.getSkewness)
       }
@@ -296,9 +286,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val skew = v.skew
 
         val stats = new DescriptiveStatistics()
-        v.contents.filter(!_.isNaN).foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.filter(!_.isNaN).foreach(v => stats.addValue(v))
 
         areClose(skew, stats.getSkewness)
       }
@@ -311,9 +299,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val kurt = v.kurt
 
         val stats = new DescriptiveStatistics()
-        v.contents.foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.foreach(v => stats.addValue(v))
 
         areClose(kurt, stats.getKurtosis)
       }
@@ -326,9 +312,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val kurt = v.kurt
 
         val stats = new DescriptiveStatistics()
-        v.contents.filter(!_.isNaN).foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.filter(!_.isNaN).foreach(v => stats.addValue(v))
 
         areClose(kurt, stats.getKurtosis)
       }
@@ -338,13 +322,11 @@ class VecStatsCheck extends Specification with ScalaCheck {
       implicit val vec = Arbitrary(VecArbitraries.vecDoubleWithNA)
 
       forAll { (v: Vec[Double]) =>
-        val pct50 = v.percentile(35)
+        val pct50  = v.percentile(35)
         val pct100 = v.percentile(100)
 
         val stats = new DescriptiveStatistics()
-        v.contents.filter(!_.isNaN).foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.filter(!_.isNaN).foreach(v => stats.addValue(v))
 
         areClose(pct50, stats.getPercentile(35))
         areClose(v.percentile(50), v.median)
@@ -527,8 +509,8 @@ class VecStatsCheck extends Specification with ScalaCheck {
 
       forAll { (v: Vec[Long]) =>
         val data = v.contents.sorted
-        val len = data.length
-        val med = v.median
+        val len  = data.length
+        val med  = v.median
         (len == 0 && med.isNaN) || {
           len % 2 match {
             case 0 => areClose(med, (data(len / 2) + data(len / 2 - 1)) / 2.0)
@@ -543,8 +525,8 @@ class VecStatsCheck extends Specification with ScalaCheck {
 
       forAll { (v: Vec[Long]) =>
         val data = v.contents.filter(_ != Long.MinValue).sorted
-        val len = data.length
-        val med = v.median
+        val len  = data.length
+        val med  = v.median
         (len == 0 && med.isNaN) || {
           len % 2 match {
             case 0 => areClose(med, (data(len / 2) + data(len / 2 - 1)) / 2.0)
@@ -561,9 +543,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val mean = v.geomean
 
         val stats = new DescriptiveStatistics()
-        v.contents.foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.foreach(v => stats.addValue(v))
 
         areClose(mean, stats.getGeometricMean)
       }
@@ -576,9 +556,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val mean = v.geomean
 
         val stats = new DescriptiveStatistics()
-        v.contents.filter(_ != Long.MinValue).foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.filter(_ != Long.MinValue).foreach(v => stats.addValue(v))
 
         areClose(mean, stats.getGeometricMean)
       }
@@ -591,9 +569,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val vrnc = v.variance
 
         val stats = new DescriptiveStatistics()
-        v.contents.foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.foreach(v => stats.addValue(v))
 
         areClose(vrnc, stats.getVariance)
       }
@@ -606,9 +582,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val vrnc = v.variance
 
         val stats = new DescriptiveStatistics()
-        v.contents.filter(_ != Long.MinValue).foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.filter(_ != Long.MinValue).foreach(v => stats.addValue(v))
 
         areClose(vrnc, stats.getVariance)
       }
@@ -621,9 +595,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val skew = v.skew
 
         val stats = new DescriptiveStatistics()
-        v.contents.foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.foreach(v => stats.addValue(v))
 
         areClose(skew, stats.getSkewness)
       }
@@ -636,9 +608,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val skew = v.skew
 
         val stats = new DescriptiveStatistics()
-        v.contents.filter(_ != Long.MinValue).foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.filter(_ != Long.MinValue).foreach(v => stats.addValue(v))
 
         areClose(skew, stats.getSkewness)
       }
@@ -651,9 +621,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val kurt = v.kurt
 
         val stats = new DescriptiveStatistics()
-        v.contents.foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.foreach(v => stats.addValue(v))
 
         areClose(kurt, stats.getKurtosis)
       }
@@ -666,9 +634,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val kurt = v.kurt
 
         val stats = new DescriptiveStatistics()
-        v.contents.filter(_ != Long.MinValue).foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.filter(_ != Long.MinValue).foreach(v => stats.addValue(v))
 
         areClose(kurt, stats.getKurtosis)
       }
@@ -833,8 +799,8 @@ class VecStatsCheck extends Specification with ScalaCheck {
 
       forAll { (v: Vec[Int]) =>
         val data = v.contents.sorted
-        val len = data.length
-        val med = v.median
+        val len  = data.length
+        val med  = v.median
         (len == 0 && med.isNaN) || {
           len % 2 match {
             case 0 => areClose(med, (data(len / 2) + data(len / 2 - 1)) / 2.0)
@@ -849,8 +815,8 @@ class VecStatsCheck extends Specification with ScalaCheck {
 
       forAll { (v: Vec[Int]) =>
         val data = v.contents.filter(_ != Int.MinValue).sorted
-        val len = data.length
-        val med = v.median
+        val len  = data.length
+        val med  = v.median
         (len == 0 && med.isNaN) || {
           len % 2 match {
             case 0 => areClose(med, (data(len / 2) + data(len / 2 - 1)) / 2.0)
@@ -867,9 +833,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val mean = v.geomean
 
         val stats = new DescriptiveStatistics()
-        v.contents.foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.foreach(v => stats.addValue(v))
 
         areClose(mean, stats.getGeometricMean)
       }
@@ -882,9 +846,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val mean = v.geomean
 
         val stats = new DescriptiveStatistics()
-        v.contents.filter(_ != Int.MinValue).foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.filter(_ != Int.MinValue).foreach(v => stats.addValue(v))
 
         areClose(mean, stats.getGeometricMean)
       }
@@ -897,9 +859,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val vrnc = v.variance
 
         val stats = new DescriptiveStatistics()
-        v.contents.foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.foreach(v => stats.addValue(v))
 
         areClose(vrnc, stats.getVariance)
       }
@@ -912,9 +872,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val vrnc = v.variance
 
         val stats = new DescriptiveStatistics()
-        v.contents.filter(_ != Int.MinValue).foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.filter(_ != Int.MinValue).foreach(v => stats.addValue(v))
 
         areClose(vrnc, stats.getVariance)
       }
@@ -927,9 +885,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val skew = v.skew
 
         val stats = new DescriptiveStatistics()
-        v.contents.foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.foreach(v => stats.addValue(v))
 
         areClose(skew, stats.getSkewness)
       }
@@ -942,9 +898,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val skew = v.skew
 
         val stats = new DescriptiveStatistics()
-        v.contents.filter(_ != Int.MinValue).foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.filter(_ != Int.MinValue).foreach(v => stats.addValue(v))
 
         areClose(skew, stats.getSkewness)
       }
@@ -957,9 +911,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val kurt = v.kurt
 
         val stats = new DescriptiveStatistics()
-        v.contents.foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.foreach(v => stats.addValue(v))
 
         areClose(kurt, stats.getKurtosis)
       }
@@ -972,9 +924,7 @@ class VecStatsCheck extends Specification with ScalaCheck {
         val kurt = v.kurt
 
         val stats = new DescriptiveStatistics()
-        v.contents.filter(_ != Int.MinValue).foreach { v =>
-          stats.addValue(v)
-        }
+        v.contents.filter(_ != Int.MinValue).foreach(v => stats.addValue(v))
 
         areClose(kurt, stats.getKurtosis)
       }

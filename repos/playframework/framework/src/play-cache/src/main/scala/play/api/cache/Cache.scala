@@ -9,7 +9,11 @@ import play.api.inject.{BindingKey, Injector, ApplicationLifecycle, Module}
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 import scala.concurrent.duration._
-import play.cache.{CacheApi => JavaCacheApi, DefaultCacheApi => DefaultJavaCacheApi, NamedCacheImpl}
+import play.cache.{
+  CacheApi => JavaCacheApi,
+  DefaultCacheApi => DefaultJavaCacheApi,
+  NamedCacheImpl
+}
 
 import net.sf.ehcache._
 import com.google.common.primitives.Primitives
@@ -40,8 +44,9 @@ trait CacheApi {
     * @param expiration expiration period in seconds.
     * @param orElse The default function to invoke if the value was not found in cache.
     */
-  def getOrElse[A : ClassTag](
-      key: String, expiration: Duration = Duration.Inf)(orElse: => A): A
+  def getOrElse[A: ClassTag](key: String, expiration: Duration = Duration.Inf)(
+      orElse: => A
+  ): A
 
   /**
     * Retrieve a value from the cache for the given type
@@ -49,7 +54,7 @@ trait CacheApi {
     * @param key Item key.
     * @return result as Option[T]
     */
-  def get[T : ClassTag](key: String): Option[T]
+  def get[T: ClassTag](key: String): Option[T]
 }
 
 /**
@@ -59,7 +64,7 @@ trait CacheApi {
   */
 object Cache {
 
-  private val cacheApiCache = Application.instanceCache[CacheApi]
+  private val cacheApiCache                              = Application.instanceCache[CacheApi]
   private[cache] def cacheApi(implicit app: Application) = cacheApiCache(app)
 
   private def intToDuration(seconds: Int): Duration =
@@ -74,9 +79,9 @@ object Cache {
     */
   @deprecated("Inject CacheApi into your component", "2.5.0")
   def set(key: String, value: Any, expiration: Duration = Duration.Inf)(
-      implicit app: Application): Unit = {
+      implicit app: Application
+  ): Unit =
     cacheApi.set(key, value, expiration)
-  }
 
   /**
     * Set a value into the cache.
@@ -87,9 +92,9 @@ object Cache {
     */
   @deprecated("Inject CacheApi into your component", "2.5.0")
   def set(key: String, value: Any, expiration: Int)(
-      implicit app: Application): Unit = {
+      implicit app: Application
+  ): Unit =
     set(key, value, intToDuration(expiration))
-  }
 
   /**
     * Retrieve a value from the cache.
@@ -97,9 +102,8 @@ object Cache {
     * @param key Item key.
     */
   @deprecated("Inject CacheApi into your component", "2.5.0")
-  def get(key: String)(implicit app: Application): Option[Any] = {
+  def get(key: String)(implicit app: Application): Option[Any] =
     cacheApi.get[Any](key)
-  }
 
   /**
     * Retrieve a value from the cache, or set it from a default function.
@@ -110,9 +114,9 @@ object Cache {
     */
   @deprecated("Inject CacheApi into your component", "2.5.0")
   def getOrElse[A](key: String, expiration: Duration = Duration.Inf)(
-      orElse: => A)(implicit app: Application, ct: ClassTag[A]): A = {
+      orElse: => A
+  )(implicit app: Application, ct: ClassTag[A]): A =
     cacheApi.getOrElse(key, expiration)(orElse)
-  }
 
   /**
     * Retrieve a value from the cache, or set it from a default function.
@@ -122,10 +126,10 @@ object Cache {
     * @param orElse The default function to invoke if the value was not found in cache.
     */
   @deprecated("Inject CacheApi into your component", "2.5.0")
-  def getOrElse[A](key: String, expiration: Int)(orElse: => A)(
-      implicit app: Application, ct: ClassTag[A]): A = {
+  def getOrElse[A](key: String, expiration: Int)(
+      orElse: => A
+  )(implicit app: Application, ct: ClassTag[A]): A =
     getOrElse(key, intToDuration(expiration))(orElse)
-  }
 
   /**
     * Retrieve a value from the cache for the given type
@@ -134,15 +138,14 @@ object Cache {
     * @return result as Option[T]
     */
   @deprecated("Inject CacheApi into your component", "2.5.0")
-  def getAs[T](key: String)(
-      implicit app: Application, ct: ClassTag[T]): Option[T] = {
+  def getAs[T](
+      key: String
+  )(implicit app: Application, ct: ClassTag[T]): Option[T] =
     cacheApi.get[T](key)
-  }
 
   @deprecated("Inject CacheApi into your component", "2.5.0")
-  def remove(key: String)(implicit app: Application): Unit = {
+  def remove(key: String)(implicit app: Application): Unit =
     cacheApi.remove(key)
-  }
 }
 
 /**
@@ -154,14 +157,16 @@ trait EhCacheComponents {
   def applicationLifecycle: ApplicationLifecycle
 
   lazy val ehCacheManager: CacheManager = new CacheManagerProvider(
-      environment, configuration, applicationLifecycle).get
+    environment,
+    configuration,
+    applicationLifecycle
+  ).get
 
   /**
     * Use this to create with the given name.
     */
-  def cacheApi(name: String): CacheApi = {
+  def cacheApi(name: String): CacheApi =
     new EhCacheApi(NamedEhCacheProvider.getNamedCache(name, ehCacheManager))
-  }
 
   lazy val defaultCacheApi: CacheApi = cacheApi("play")
 }
@@ -181,41 +186,41 @@ class EhCacheModule extends Module {
       configuration.underlying.getStringList("play.cache.bindCaches").toSeq
 
     // Creates a named cache qualifier
-    def named(name: String): NamedCache = {
+    def named(name: String): NamedCache =
       new NamedCacheImpl(name)
-    }
 
     // bind a cache with the given name
     def bindCache(name: String) = {
-      val namedCache = named(name)
-      val ehcacheKey = bind[Ehcache].qualifiedWith(namedCache)
+      val namedCache  = named(name)
+      val ehcacheKey  = bind[Ehcache].qualifiedWith(namedCache)
       val cacheApiKey = bind[CacheApi].qualifiedWith(namedCache)
       Seq(
-          ehcacheKey.to(new NamedEhCacheProvider(name)),
-          cacheApiKey.to(new NamedCacheApiProvider(ehcacheKey)),
-          bind[JavaCacheApi]
-            .qualifiedWith(namedCache)
-            .to(new NamedJavaCacheApiProvider(cacheApiKey)),
-          bind[Cached]
-            .qualifiedWith(namedCache)
-            .to(new NamedCachedProvider(cacheApiKey))
-        )
+        ehcacheKey.to(new NamedEhCacheProvider(name)),
+        cacheApiKey.to(new NamedCacheApiProvider(ehcacheKey)),
+        bind[JavaCacheApi]
+          .qualifiedWith(namedCache)
+          .to(new NamedJavaCacheApiProvider(cacheApiKey)),
+        bind[Cached]
+          .qualifiedWith(namedCache)
+          .to(new NamedCachedProvider(cacheApiKey))
+      )
     }
 
     Seq(
-        bind[CacheManager].toProvider[CacheManagerProvider],
-        // alias the default cache to the unqualified implementation
-        bind[CacheApi].to(
-            bind[CacheApi].qualifiedWith(named(defaultCacheName))),
-        bind[JavaCacheApi].to[DefaultJavaCacheApi]
+      bind[CacheManager].toProvider[CacheManagerProvider],
+      // alias the default cache to the unqualified implementation
+      bind[CacheApi].to(bind[CacheApi].qualifiedWith(named(defaultCacheName))),
+      bind[JavaCacheApi].to[DefaultJavaCacheApi]
     ) ++ bindCache(defaultCacheName) ++ bindCaches.flatMap(bindCache)
   }
 }
 
 @Singleton
-class CacheManagerProvider @Inject()(
-    env: Environment, config: Configuration, lifecycle: ApplicationLifecycle)
-    extends Provider[CacheManager] {
+class CacheManagerProvider @Inject() (
+    env: Environment,
+    config: Configuration,
+    lifecycle: ApplicationLifecycle
+) extends Provider[CacheManager] {
   lazy val get: CacheManager = {
     val resourceName = config.underlying.getString("play.cache.configResource")
     val configResource = env
@@ -230,7 +235,7 @@ class CacheManagerProvider @Inject()(
 private[play] class NamedEhCacheProvider(name: String)
     extends Provider[Ehcache] {
   @Inject private var manager: CacheManager = _
-  lazy val get: Ehcache = NamedEhCacheProvider.getNamedCache(name, manager)
+  lazy val get: Ehcache                     = NamedEhCacheProvider.getNamedCache(name, manager)
 }
 
 private[play] object NamedEhCacheProvider {
@@ -241,11 +246,12 @@ private[play] object NamedEhCacheProvider {
     } catch {
       case e: ObjectExistsException =>
         throw new EhCacheExistsException(
-            s"""An EhCache instance with name '$name' already exists.
+          s"""An EhCache instance with name '$name' already exists.
            |
            |This usually indicates that multiple instances of a dependent component (e.g. a Play application) have been started at the same time.
          """.stripMargin,
-            e)
+          e
+        )
     }
 }
 
@@ -277,7 +283,7 @@ private[play] case class EhCacheExistsException(msg: String, cause: Throwable)
     extends RuntimeException(msg, cause)
 
 @Singleton
-class EhCacheApi @Inject()(cache: Ehcache) extends CacheApi {
+class EhCacheApi @Inject() (cache: Ehcache) extends CacheApi {
 
   def set(key: String, value: Any, expiration: Duration) = {
     val element = new Element(key, value)
@@ -296,7 +302,7 @@ class EhCacheApi @Inject()(cache: Ehcache) extends CacheApi {
     cache.put(element)
   }
 
-  def get[T](key: String)(implicit ct: ClassTag[T]): Option[T] = {
+  def get[T](key: String)(implicit ct: ClassTag[T]): Option[T] =
     Option(cache.get(key))
       .map(_.getObjectValue)
       .filter { v =>
@@ -304,18 +310,14 @@ class EhCacheApi @Inject()(cache: Ehcache) extends CacheApi {
         ct == ClassTag.Nothing || (ct == ClassTag.Unit && v == ((): Unit))
       }
       .asInstanceOf[Option[T]]
-  }
 
-  def getOrElse[A : ClassTag](key: String, expiration: Duration)(
-      orElse: => A) = {
+  def getOrElse[A: ClassTag](key: String, expiration: Duration)(orElse: => A) =
     get[A](key).getOrElse {
       val value = orElse
       set(key, value, expiration)
       value
     }
-  }
 
-  def remove(key: String) = {
+  def remove(key: String) =
     cache.remove(key)
-  }
 }

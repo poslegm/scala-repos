@@ -10,7 +10,7 @@ import org.jetbrains.plugins.scala.lang.formatter.AbstractScalaFormatterTestBase
 class ScalaFormatSelectionTest extends AbstractScalaFormatterTestBase {
 
   val startMarker = "/*start*/"
-  val endMarker = "/*end*/"
+  val endMarker   = "/*end*/"
 
   override def doTextTest(text: String, textAfter: String): Unit = {
     myTextRange = null

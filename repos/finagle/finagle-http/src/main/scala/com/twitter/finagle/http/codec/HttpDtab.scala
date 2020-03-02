@@ -20,20 +20,20 @@ import scala.collection.mutable.ArrayBuffer
   * Utf8 strings.
   */
 object HttpDtab {
-  private val Header = "dtab-local"
-  private val Prefix = "x-dtab-"
+  private val Header  = "dtab-local"
+  private val Prefix  = "x-dtab-"
   private val Maxsize = 100
-  private val Utf8 = Charset.forName("UTF-8")
-  private val Base64 = BaseEncoding.base64()
+  private val Utf8    = Charset.forName("UTF-8")
+  private val Base64  = BaseEncoding.base64()
 
   private val indexstr: Int => String = ((0 until Maxsize) map
-      (i => i -> "%02d".format(i))).toMap
+    (i => i -> "%02d".format(i))).toMap
 
   private def b64Encode(v: String): String =
     Base64.encode(v.getBytes(Utf8))
 
   private def b64Decode(v: String): Try[String] =
-    Try { Base64.decode(v) } map (new String(_, Utf8))
+    Try(Base64.decode(v)) map (new String(_, Utf8))
 
   private val unmatchedFailure = Failure("Unmatched X-Dtab headers")
 
@@ -72,12 +72,12 @@ object HttpDtab {
 
   private def validHeaderPair(aKey: String, bKey: String): Boolean =
     aKey.length == bKey.length && aKey(aKey.length - 1) == 'a' &&
-    bKey(bKey.length - 1) == 'b' &&
-    aKey.substring(0, aKey.length - 1) == bKey.substring(0, bKey.length - 1)
+      bKey(bKey.length - 1) == 'b' &&
+      aKey.substring(0, aKey.length - 1) == bKey.substring(0, bKey.length - 1)
 
   private def isDtabHeader(hdr: (String, String)): Boolean =
     hdr._1.equalsIgnoreCase(Header) ||
-    hdr._1.regionMatches(true, 0, Prefix, 0, Prefix.length)
+      hdr._1.regionMatches(true, 0, Prefix, 0, Prefix.length)
 
   private val EmptyReturn = Return(Dtab.empty)
 
@@ -88,7 +88,7 @@ object HttpDtab {
     */
   private[finagle] def strip(msg: Message): Seq[(String, String)] = {
     var headerArr: ArrayBuffer[(String, String)] = null
-    val headerIt = msg.headerMap.iterator
+    val headerIt                                 = msg.headerMap.iterator
     while (headerIt.hasNext) {
       val header = headerIt.next()
       if (isDtabHeader(header)) {
@@ -120,7 +120,8 @@ object HttpDtab {
 
     if (dtab.size >= Maxsize) {
       throw new IllegalArgumentException(
-          "Dtabs with length greater than 100 are not serializable with HTTP")
+        "Dtabs with length greater than 100 are not serializable with HTTP"
+      )
     }
 
     for ((Dentry(prefix, dst), i) <- dtab.zipWithIndex) {
@@ -155,7 +156,7 @@ object HttpDtab {
     if (!msg.headerMap.contains(Header)) EmptyReturn
     else
       Try {
-        val headers = msg.headerMap.getAll(Header)
+        val headers  = msg.headerMap.getAll(Header)
         val dentries = headers.view.flatMap(_ split ',').flatMap(Dtab.read(_))
         Dtab(dentries.toIndexedSeq)
       }
@@ -168,7 +169,7 @@ object HttpDtab {
   private def readXDtabPairs(msg: Message): Try[Dtab] = {
     // Common case: no actual overrides.
     var keys: ArrayBuffer[String] = null
-    val headers = msg.headerMap.iterator
+    val headers                   = msg.headerMap.iterator
     while (headers.hasNext) {
       val key = headers.next()._1.toLowerCase
       if (key.startsWith(Prefix)) {
@@ -185,11 +186,11 @@ object HttpDtab {
     val n = keys.size / 2
 
     val dentries = new Array[Dentry](n)
-    var i = 0
+    var i        = 0
     while (i < n) {
-      val j = i * 2
+      val j      = i * 2
       val prefix = keys(j)
-      val dest = keys(j + 1)
+      val dest   = keys(j + 1)
 
       if (!validHeaderPair(prefix, dest)) return Throw(unmatchedFailure)
 

@@ -6,6 +6,6 @@ case class Link(
 )
 
 class StringOptionAdapter extends XmlAdapter[String, Option[String]] {
-  def unmarshal(str: String) = error("stub")
+  def unmarshal(str: String)      = error("stub")
   def marshal(op: Option[String]) = error("Stub")
 }

@@ -3,10 +3,22 @@ package com.twitter.finagle.builder
 import com.twitter.util
 import com.twitter.concurrent.AsyncSemaphore
 import com.twitter.finagle.{Server => FinagleServer, _}
-import com.twitter.finagle.filter.{MaskCancelFilter, RequestSemaphoreFilter, ServerAdmissionControl}
+import com.twitter.finagle.filter.{
+  MaskCancelFilter,
+  RequestSemaphoreFilter,
+  ServerAdmissionControl
+}
 import com.twitter.finagle.netty3.Netty3Listener
-import com.twitter.finagle.netty3.channel.{IdleConnectionFilter, OpenConnectionsThresholds}
-import com.twitter.finagle.server.{Listener, StackBasedServer, StackServer, StdStackServer}
+import com.twitter.finagle.netty3.channel.{
+  IdleConnectionFilter,
+  OpenConnectionsThresholds
+}
+import com.twitter.finagle.server.{
+  Listener,
+  StackBasedServer,
+  StackServer,
+  StdStackServer
+}
 import com.twitter.finagle.service.{ExpiringService, TimeoutFilter}
 import com.twitter.finagle.ssl.{Engine, Ssl}
 import com.twitter.finagle.stats.StatsReceiver
@@ -39,16 +51,23 @@ trait Server extends ListeningServer {
 object ServerBuilder {
 
   type Complete[Req, Rep] = ServerBuilder[
-      Req, Rep, ServerConfig.Yes, ServerConfig.Yes, ServerConfig.Yes]
+    Req,
+    Rep,
+    ServerConfig.Yes,
+    ServerConfig.Yes,
+    ServerConfig.Yes
+  ]
 
   def apply() = new ServerBuilder()
-  def get() = apply()
+  def get()   = apply()
 
   /**
     * Provides a typesafe `build` for Java.
     */
   def safeBuild[Req, Rep](
-      service: Service[Req, Rep], builder: Complete[Req, Rep]): Server =
+      service: Service[Req, Rep],
+      builder: Complete[Req, Rep]
+  ): Server =
     builder.build(service)(ServerConfigEvidence.FullyConfigured)
 
   /**
@@ -66,8 +85,10 @@ object ServerConfig {
   type FullySpecified[Req, Rep] = ServerConfig[Req, Rep, Yes, Yes, Yes]
 
   def nilServer[Req, Rep] = new FinagleServer[Req, Rep] {
-    def serve(addr: SocketAddress,
-              service: ServiceFactory[Req, Rep]): ListeningServer =
+    def serve(
+        addr: SocketAddress,
+        service: ServiceFactory[Req, Rep]
+    ): ListeningServer =
       NullServer
   }
 
@@ -77,14 +98,14 @@ object ServerConfig {
       (this, BindTo.param)
   }
   private[builder] object BindTo {
-    implicit val param = Stack.Param(
-        BindTo(new SocketAddress {
+    implicit val param = Stack.Param(BindTo(new SocketAddress {
       override val toString = "unknown"
     }))
   }
 
   private[builder] case class MonitorFactory(
-      mFactory: (String, SocketAddress) => util.Monitor) {
+      mFactory: (String, SocketAddress) => util.Monitor
+  ) {
     def mk(): (MonitorFactory, Stack.Param[MonitorFactory]) =
       (this, MonitorFactory.param)
   }
@@ -102,20 +123,29 @@ object ServerConfig {
 }
 
 @implicitNotFound(
-    "Builder is not fully configured: Codec: ${HasCodec}, BindTo: ${HasBindTo}, Name: ${HasName}")
+  "Builder is not fully configured: Codec: ${HasCodec}, BindTo: ${HasBindTo}, Name: ${HasName}"
+)
 trait ServerConfigEvidence[HasCodec, HasBindTo, HasName]
 
 private[builder] object ServerConfigEvidence {
   implicit object FullyConfigured
       extends ServerConfigEvidence[
-          ServerConfig.Yes, ServerConfig.Yes, ServerConfig.Yes]
+        ServerConfig.Yes,
+        ServerConfig.Yes,
+        ServerConfig.Yes
+      ]
 }
 
 /**
   * A configuration object that represents what shall be built.
   */
 private[builder] final class ServerConfig[
-    Req, Rep, HasCodec, HasBindTo, HasName]
+    Req,
+    Rep,
+    HasCodec,
+    HasBindTo,
+    HasName
+]
 
 /**
   * A handy Builder for constructing Servers (i.e., binding Services to
@@ -174,7 +204,7 @@ private[builder] final class ServerConfig[
   * @see The [[http://twitter.github.io/finagle/guide/Configuration.html user guide]]
   *      for information on the preferred `with`-style APIs insead.
   */
-class ServerBuilder[Req, Rep, HasCodec, HasBindTo, HasName] private[builder](
+class ServerBuilder[Req, Rep, HasCodec, HasBindTo, HasName] private[builder] (
     val params: Stack.Params,
     mk: Stack.Params => FinagleServer[Req, Rep]
 ) {
@@ -183,8 +213,8 @@ class ServerBuilder[Req, Rep, HasCodec, HasBindTo, HasName] private[builder](
 
   // Convenient aliases.
   type FullySpecifiedConfig = FullySpecified[Req, Rep]
-  type ThisConfig = ServerConfig[Req, Rep, HasCodec, HasBindTo, HasName]
-  type This = ServerBuilder[Req, Rep, HasCodec, HasBindTo, HasName]
+  type ThisConfig           = ServerConfig[Req, Rep, HasCodec, HasBindTo, HasName]
+  type This                 = ServerBuilder[Req, Rep, HasCodec, HasBindTo, HasName]
 
   private[builder] def this() =
     this(Stack.Params.empty, Function.const(ServerConfig.nilServer) _)
@@ -197,7 +227,7 @@ class ServerBuilder[Req, Rep, HasCodec, HasBindTo, HasName] private[builder](
   ): ServerBuilder[Req1, Rep1, HasCodec1, HasBindTo1, HasName1] =
     new ServerBuilder(ps, newServer)
 
-  protected def configured[P : Stack.Param, HasCodec1, HasBindTo1, HasName1](
+  protected def configured[P: Stack.Param, HasCodec1, HasBindTo1, HasName1](
       param: P
   ): ServerBuilder[Req, Rep, HasCodec1, HasBindTo1, HasName1] =
     copy(params + param, mk)
@@ -223,23 +253,22 @@ class ServerBuilder[Req, Rep, HasCodec, HasBindTo, HasName] private[builder](
       val Label(label) = ps[Label]
       val BindTo(addr) = ps[BindTo]
       val Stats(stats) = ps[Stats]
-      val codec = codecFactory(ServerCodecConfig(label, addr))
+      val codec        = codecFactory(ServerCodecConfig(label, addr))
 
       val newStack = StackServer
         .newStack[Req1, Rep1]
         .replace(
-            StackServer.Role.preparer,
-            (next: ServiceFactory[Req1, Rep1]) =>
-              codec.prepareConnFactory(next, ps + Stats(stats.scope(label)))
+          StackServer.Role.preparer,
+          (next: ServiceFactory[Req1, Rep1]) =>
+            codec.prepareConnFactory(next, ps + Stats(stats.scope(label)))
         )
         .replace(TraceInitializerFilter.role, codec.newTraceInitializer)
 
       case class Server(
           stack: Stack[ServiceFactory[Req1, Rep1]] = newStack,
           params: Stack.Params = ps
-      )
-          extends StdStackServer[Req1, Rep1, Server] {
-        protected type In = Any
+      ) extends StdStackServer[Req1, Rep1, Server] {
+        protected type In  = Any
         protected type Out = Any
 
         protected def copy1(
@@ -251,22 +280,29 @@ class ServerBuilder[Req, Rep, HasCodec, HasBindTo, HasName] private[builder](
           Netty3Listener(codec.pipelineFactory, params)
 
         protected def newDispatcher(
-            transport: Transport[In, Out], service: Service[Req1, Rep1]) = {
+            transport: Transport[In, Out],
+            service: Service[Req1, Rep1]
+        ) = {
           // TODO: Expiration logic should be installed using ExpiringService
           // in StackServer#newStack. Then we can thread through "closes"
           // via ClientConnection.
           val Timer(timer) = params[Timer]
           val ExpiringService.Param(idleTime, lifeTime) =
             params[ExpiringService.Param]
-          val Stats(sr) = params[Stats]
-          val idle = if (idleTime.isFinite) Some(idleTime) else None
-          val life = if (lifeTime.isFinite) Some(lifeTime) else None
+          val Stats(sr)  = params[Stats]
+          val idle       = if (idleTime.isFinite) Some(idleTime) else None
+          val life       = if (lifeTime.isFinite) Some(lifeTime) else None
           val dispatcher = codec.newServerDispatcher(transport, service)
           (idle, life) match {
             case (None, None) => dispatcher
             case _ =>
               new ExpiringService(
-                  service, idle, life, timer, sr.scope("expired")) {
+                service,
+                idle,
+                life,
+                timer,
+                sr.scope("expired")
+              ) {
                 protected def onExpire() { dispatcher.close(Time.now) }
               }
           }
@@ -279,8 +315,8 @@ class ServerBuilder[Req, Rep, HasCodec, HasBindTo, HasName] private[builder](
         else ps + ProtocolLibrary(codec.protocolLibraryName)
 
       Server(
-          stack = newStack,
-          params = serverParams
+        stack = newStack,
+        params = serverParams
       )
     })
 
@@ -334,12 +370,15 @@ class ServerBuilder[Req, Rep, HasCodec, HasBindTo, HasName] private[builder](
   def backlog(value: Int): This =
     configured(Listener.Backlog(Some(value)))
 
-  def bindTo(address: SocketAddress)
-    : ServerBuilder[Req, Rep, HasCodec, Yes, HasName] =
+  def bindTo(
+      address: SocketAddress
+  ): ServerBuilder[Req, Rep, HasCodec, Yes, HasName] =
     configured(BindTo(address))
 
   @deprecated(
-      "use com.twitter.finagle.netty3.numWorkers flag instead", "2015-11-18")
+    "use com.twitter.finagle.netty3.numWorkers flag instead",
+    "2015-11-18"
+  )
   def channelFactory(cf: ServerChannelFactory): This =
     configured(Netty3Listener.ChannelFactory(cf))
 
@@ -349,18 +388,22 @@ class ServerBuilder[Req, Rep, HasCodec, HasBindTo, HasName] private[builder](
   def logChannelActivity(v: Boolean): This =
     configured(Transport.Verbose(v))
 
-  def tls(certificatePath: String,
-          keyPath: String,
-          caCertificatePath: String = null,
-          ciphers: String = null,
-          nextProtos: String = null): This =
-    newFinagleSslEngine(
-        () =>
-          Ssl.server(certificatePath,
-                     keyPath,
-                     caCertificatePath,
-                     ciphers,
-                     nextProtos))
+  def tls(
+      certificatePath: String,
+      keyPath: String,
+      caCertificatePath: String = null,
+      ciphers: String = null,
+      nextProtos: String = null
+  ): This =
+    newFinagleSslEngine(() =>
+      Ssl.server(
+        certificatePath,
+        keyPath,
+        caCertificatePath,
+        ciphers,
+        nextProtos
+      )
+    )
 
   /**
     * Provide a raw SSL engine that is used to establish SSL sessions.
@@ -411,8 +454,7 @@ class ServerBuilder[Req, Rep, HasCodec, HasBindTo, HasName] private[builder](
     configured(MonitorFactory(mFactory))
 
   @deprecated("Use tracer() instead", "7.0.0")
-  def tracerFactory(
-      factory: com.twitter.finagle.tracing.Tracer.Factory): This =
+  def tracerFactory(factory: com.twitter.finagle.tracing.Tracer.Factory): This =
     tracer(factory())
 
   // API compatibility method
@@ -427,11 +469,10 @@ class ServerBuilder[Req, Rep, HasCodec, HasBindTo, HasName] private[builder](
     * Cancel pending futures whenever the the connection is shut down.
     * This defaults to true.
     */
-  def cancelOnHangup(yesOrNo: Boolean): This = {
+  def cancelOnHangup(yesOrNo: Boolean): This =
     // Note: We invert `yesOrNo` as the param here because the filter's
     // cancellation-masking is the inverse operation of cancelling on hangup.
     configured(MaskCancelFilter.Param(!yesOrNo))
-  }
 
   def hostConnectionMaxIdleTime(howlong: Duration): This =
     configured(params[ExpiringService.Param].copy(idleTime = howlong))
@@ -488,7 +529,8 @@ class ServerBuilder[Req, Rep, HasCodec, HasBindTo, HasName] private[builder](
     * which is a total function fully covering the input domain.
     */
   def responseClassifier(
-      classifier: com.twitter.finagle.service.ResponseClassifier): This =
+      classifier: com.twitter.finagle.service.ResponseClassifier
+  ): This =
     configured(param.ResponseClassifier(classifier))
 
   /**
@@ -509,7 +551,8 @@ class ServerBuilder[Req, Rep, HasCodec, HasBindTo, HasName] private[builder](
     * @param exceptionStatsHandler function to record failure details.
     */
   def exceptionCategorizer(
-      exceptionStatsHandler: stats.ExceptionStatsHandler): This =
+      exceptionStatsHandler: stats.ExceptionStatsHandler
+  ): This =
     configured(ExceptionStatsHandler(exceptionStatsHandler))
 
   /* Builder methods follow */
@@ -519,16 +562,21 @@ class ServerBuilder[Req, Rep, HasCodec, HasBindTo, HasName] private[builder](
     */
   def build(service: Service[Req, Rep])(
       implicit THE_BUILDER_IS_NOT_FULLY_SPECIFIED_SEE_ServerBuilder_DOCUMENTATION: ServerConfigEvidence[
-          HasCodec, HasBindTo, HasName]
+        HasCodec,
+        HasBindTo,
+        HasName
+      ]
   ): Server = build(ServiceFactory.const(service))
 
   @deprecated("Used for ABI compat", "5.0.1")
   def build(
       service: Service[Req, Rep],
-      THE_BUILDER_IS_NOT_FULLY_SPECIFIED_SEE_ServerBuilder_DOCUMENTATION: ThisConfig =:= FullySpecifiedConfig)
-    : Server =
-    build(ServiceFactory.const(service),
-          THE_BUILDER_IS_NOT_FULLY_SPECIFIED_SEE_ServerBuilder_DOCUMENTATION)
+      THE_BUILDER_IS_NOT_FULLY_SPECIFIED_SEE_ServerBuilder_DOCUMENTATION: ThisConfig =:= FullySpecifiedConfig
+  ): Server =
+    build(
+      ServiceFactory.const(service),
+      THE_BUILDER_IS_NOT_FULLY_SPECIFIED_SEE_ServerBuilder_DOCUMENTATION
+    )
 
   /**
     * Construct the Server, given the provided Service factory.
@@ -538,7 +586,8 @@ class ServerBuilder[Req, Rep, HasCodec, HasBindTo, HasName] private[builder](
       implicit THE_BUILDER_IS_NOT_FULLY_SPECIFIED_SEE_ServerBuilder_DOCUMENTATION: ThisConfig =:= FullySpecifiedConfig
   ): Server =
     build((_: ClientConnection) => serviceFactory())(
-        THE_BUILDER_IS_NOT_FULLY_SPECIFIED_SEE_ServerBuilder_DOCUMENTATION)
+      THE_BUILDER_IS_NOT_FULLY_SPECIFIED_SEE_ServerBuilder_DOCUMENTATION
+    )
 
   /**
     * Construct the Server, given the provided ServiceFactory. This
@@ -549,10 +598,13 @@ class ServerBuilder[Req, Rep, HasCodec, HasBindTo, HasName] private[builder](
   def build(serviceFactory: (ClientConnection) => Service[Req, Rep])(
       implicit THE_BUILDER_IS_NOT_FULLY_SPECIFIED_SEE_ServerBuilder_DOCUMENTATION: ThisConfig =:= FullySpecifiedConfig
   ): Server =
-    build(new ServiceFactory[Req, Rep] {
-      def apply(conn: ClientConnection) = Future.value(serviceFactory(conn))
-      def close(deadline: Time) = Future.Done
-    }, THE_BUILDER_IS_NOT_FULLY_SPECIFIED_SEE_ServerBuilder_DOCUMENTATION)
+    build(
+      new ServiceFactory[Req, Rep] {
+        def apply(conn: ClientConnection) = Future.value(serviceFactory(conn))
+        def close(deadline: Time)         = Future.Done
+      },
+      THE_BUILDER_IS_NOT_FULLY_SPECIFIED_SEE_ServerBuilder_DOCUMENTATION
+    )
 
   /**
     * Construct the Server, given the provided ServiceFactory. This
@@ -561,20 +613,25 @@ class ServerBuilder[Req, Rep, HasCodec, HasBindTo, HasName] private[builder](
     */
   def build(serviceFactory: ServiceFactory[Req, Rep])(
       implicit THE_BUILDER_IS_NOT_FULLY_SPECIFIED_SEE_ServerBuilder_DOCUMENTATION: ServerConfigEvidence[
-          HasCodec, HasBindTo, HasName]
+        HasCodec,
+        HasBindTo,
+        HasName
+      ]
   ): Server = {
 
     val Label(lbl) = params[Label]
-    val label = if (lbl == "") "server" else lbl
+    val label      = if (lbl == "") "server" else lbl
 
-    val BindTo(addr) = params[BindTo]
-    val Logger(logger) = params[Logger]
-    val Daemonize(daemon) = params[Daemonize]
+    val BindTo(addr)               = params[BindTo]
+    val Logger(logger)             = params[Logger]
+    val Daemonize(daemon)          = params[Daemonize]
     val MonitorFactory(newMonitor) = params[MonitorFactory]
 
     val monitor =
       newMonitor(lbl, InetSocketAddressUtil.toPublic(addr)) andThen new SourceTrackingMonitor(
-          logger, label)
+        logger,
+        label
+      )
 
     val serverParams =
       params + Monitor(monitor) + Reporter(NullReporterFactory)
@@ -600,10 +657,11 @@ class ServerBuilder[Req, Rep, HasCodec, HasBindTo, HasName] private[builder](
   @deprecated("Used for ABI compat", "5.0.1")
   def build(
       serviceFactory: ServiceFactory[Req, Rep],
-      THE_BUILDER_IS_NOT_FULLY_SPECIFIED_SEE_ServerBuilder_DOCUMENTATION: ThisConfig =:= FullySpecifiedConfig)
-    : Server =
+      THE_BUILDER_IS_NOT_FULLY_SPECIFIED_SEE_ServerBuilder_DOCUMENTATION: ThisConfig =:= FullySpecifiedConfig
+  ): Server =
     build(serviceFactory)(
-        new ServerConfigEvidence[HasCodec, HasBindTo, HasName] {})
+      new ServerConfigEvidence[HasCodec, HasBindTo, HasName] {}
+    )
 
   /**
     * Construct a Service, with runtime checks for builder

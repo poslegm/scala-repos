@@ -40,12 +40,13 @@ object AbsoluteError extends Loss {
     * @return Loss gradient
     */
   @Since("1.2.0")
-  override def gradient(prediction: Double, label: Double): Double = {
+  override def gradient(prediction: Double, label: Double): Double =
     if (label - prediction < 0) 1.0 else -1.0
-  }
 
   override private[spark] def computeError(
-      prediction: Double, label: Double): Double = {
+      prediction: Double,
+      label: Double
+  ): Double = {
     val err = label - prediction
     math.abs(err)
   }

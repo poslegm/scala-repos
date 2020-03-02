@@ -6,13 +6,18 @@ package statements
 package params
 
 import com.intellij.psi._
-import org.jetbrains.plugins.scala.lang.psi.api.toplevel.{ScPolymorphicElement, ScTypeParametersOwner}
+import org.jetbrains.plugins.scala.lang.psi.api.toplevel.{
+  ScPolymorphicElement,
+  ScTypeParametersOwner
+}
 
 /**
   * @author Alexander Podkhalyuzin
   */
 trait ScTypeParam
-    extends ScalaPsiElement with ScPolymorphicElement with PsiTypeParameter
+    extends ScalaPsiElement
+    with ScPolymorphicElement
+    with PsiTypeParameter
     with ScAnnotationsHolder {
   import org.jetbrains.plugins.scala.lang.psi.api.statements.params.ScTypeParam._
 
@@ -22,7 +27,8 @@ trait ScTypeParam
 
   def variance: Int =
     if (isCovariant) Covariant
-    else if (isContravariant) Contravariant else Invariant
+    else if (isContravariant) Contravariant
+    else Invariant
 
   def owner: ScTypeParametersOwner
 
@@ -36,7 +42,7 @@ trait ScTypeParam
 }
 
 object ScTypeParam {
-  val Covariant = 1
-  val Invariant = 0
+  val Covariant     = 1
+  val Invariant     = 0
   val Contravariant = -1
 }

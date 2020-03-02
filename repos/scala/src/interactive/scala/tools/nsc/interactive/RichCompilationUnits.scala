@@ -47,7 +47,7 @@ trait RichCompilationUnits { self: Global =>
       *  will stop once a tree that contains this position range
       *  is fully attributed.
       */
-    var _targetPos: Position = NoPosition
+    var _targetPos: Position         = NoPosition
     override def targetPos: Position = _targetPos
     def targetPos_=(p: Position) { _targetPos = p }
 

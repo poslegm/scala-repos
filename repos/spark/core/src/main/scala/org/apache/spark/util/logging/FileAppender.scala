@@ -27,8 +27,10 @@ import org.apache.spark.util.{IntParam, Utils}
   * Continuously appends the data from an input stream into the given file.
   */
 private[spark] class FileAppender(
-    inputStream: InputStream, file: File, bufferSize: Int = 8192)
-    extends Logging {
+    inputStream: InputStream,
+    file: File,
+    bufferSize: Int = 8192
+) extends Logging {
   @volatile private var outputStream: FileOutputStream = null
   @volatile private var markedForStop =
     false // has the appender been asked to stopped
@@ -64,7 +66,7 @@ private[spark] class FileAppender(
       Utils.tryWithSafeFinally {
         openFile()
         val buf = new Array[Byte](bufferSize)
-        var n = 0
+        var n   = 0
         while (!markedForStop && n != -1) {
           try {
             n = inputStream.read(buf)
@@ -117,63 +119,77 @@ private[spark] object FileAppender extends Logging {
 
   /** Create the right appender based on Spark configuration */
   def apply(
-      inputStream: InputStream, file: File, conf: SparkConf): FileAppender = {
+      inputStream: InputStream,
+      file: File,
+      conf: SparkConf
+  ): FileAppender = {
 
     import RollingFileAppender._
 
-    val rollingStrategy = conf.get(STRATEGY_PROPERTY, STRATEGY_DEFAULT)
+    val rollingStrategy  = conf.get(STRATEGY_PROPERTY, STRATEGY_DEFAULT)
     val rollingSizeBytes = conf.get(SIZE_PROPERTY, STRATEGY_DEFAULT)
-    val rollingInterval = conf.get(INTERVAL_PROPERTY, INTERVAL_DEFAULT)
+    val rollingInterval  = conf.get(INTERVAL_PROPERTY, INTERVAL_DEFAULT)
 
     def createTimeBasedAppender(): FileAppender = {
       val validatedParams: Option[(Long, String)] = rollingInterval match {
         case "daily" =>
-          logInfo(
-              s"Rolling executor logs enabled for $file with daily rolling")
+          logInfo(s"Rolling executor logs enabled for $file with daily rolling")
           Some(24 * 60 * 60 * 1000L, "--yyyy-MM-dd")
         case "hourly" =>
           logInfo(
-              s"Rolling executor logs enabled for $file with hourly rolling")
+            s"Rolling executor logs enabled for $file with hourly rolling"
+          )
           Some(60 * 60 * 1000L, "--yyyy-MM-dd--HH")
         case "minutely" =>
           logInfo(
-              s"Rolling executor logs enabled for $file with rolling every minute")
+            s"Rolling executor logs enabled for $file with rolling every minute"
+          )
           Some(60 * 1000L, "--yyyy-MM-dd--HH-mm")
         case IntParam(seconds) =>
           logInfo(
-              s"Rolling executor logs enabled for $file with rolling $seconds seconds")
+            s"Rolling executor logs enabled for $file with rolling $seconds seconds"
+          )
           Some(seconds * 1000L, "--yyyy-MM-dd--HH-mm-ss")
         case _ =>
           logWarning(
-              s"Illegal interval for rolling executor logs [$rollingInterval], " +
-              s"rolling logs not enabled")
+            s"Illegal interval for rolling executor logs [$rollingInterval], " +
+              s"rolling logs not enabled"
+          )
           None
       }
-      validatedParams.map {
-        case (interval, pattern) =>
-          new RollingFileAppender(
+      validatedParams
+        .map {
+          case (interval, pattern) =>
+            new RollingFileAppender(
               inputStream,
               file,
               new TimeBasedRollingPolicy(interval, pattern),
-              conf)
-      }.getOrElse {
-        new FileAppender(inputStream, file)
-      }
+              conf
+            )
+        }
+        .getOrElse {
+          new FileAppender(inputStream, file)
+        }
     }
 
-    def createSizeBasedAppender(): FileAppender = {
+    def createSizeBasedAppender(): FileAppender =
       rollingSizeBytes match {
         case IntParam(bytes) =>
           logInfo(
-              s"Rolling executor logs enabled for $file with rolling every $bytes bytes")
+            s"Rolling executor logs enabled for $file with rolling every $bytes bytes"
+          )
           new RollingFileAppender(
-              inputStream, file, new SizeBasedRollingPolicy(bytes), conf)
+            inputStream,
+            file,
+            new SizeBasedRollingPolicy(bytes),
+            conf
+          )
         case _ =>
           logWarning(
-              s"Illegal size [$rollingSizeBytes] for rolling executor logs, rolling logs not enabled")
+            s"Illegal size [$rollingSizeBytes] for rolling executor logs, rolling logs not enabled"
+          )
           new FileAppender(inputStream, file)
       }
-    }
 
     rollingStrategy match {
       case "" =>
@@ -184,8 +200,9 @@ private[spark] object FileAppender extends Logging {
         createSizeBasedAppender()
       case _ =>
         logWarning(
-            s"Illegal strategy [$rollingStrategy] for rolling executor logs, " +
-            s"rolling logs not enabled")
+          s"Illegal strategy [$rollingStrategy] for rolling executor logs, " +
+            s"rolling logs not enabled"
+        )
         new FileAppender(inputStream, file)
     }
   }

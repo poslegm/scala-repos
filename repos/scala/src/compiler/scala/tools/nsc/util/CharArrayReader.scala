@@ -47,7 +47,7 @@ abstract class CharArrayReader extends CharArrayReaderData { self =>
   def isUnicodeEscape = charOffset == lastUnicodeOffset
 
   /** Advance one character; reducing CR;LF pairs to just LF */
-  final def nextChar(): Unit = {
+  final def nextChar(): Unit =
     if (charOffset >= buf.length) {
       ch = SU
     } else {
@@ -60,7 +60,6 @@ abstract class CharArrayReader extends CharArrayReaderData { self =>
         potentialLineEnd()
       }
     }
-  }
 
   /** Advance one character, leaving CR;LF pairs intact.
     *  This is for use in multi-line strings, so there are no
@@ -84,7 +83,7 @@ abstract class CharArrayReader extends CharArrayReaderData { self =>
       while (p >= 0 && buf(p) == '\\') p -= 1
       (charOffset - p) % 2 == 0
     }
-    def udigit: Int = {
+    def udigit: Int =
       if (charOffset >= buf.length) {
         // Since the positioning code is very insistent about throwing exceptions,
         // we have to decrement the position so our error message can be seen, since
@@ -97,11 +96,10 @@ abstract class CharArrayReader extends CharArrayReaderData { self =>
         else error(charOffset, "error in unicode escape")
         d
       }
-    }
     if (charOffset < buf.length && buf(charOffset) == 'u' && decodeUni &&
         evenSlashPrefix) {
       do charOffset += 1 while (charOffset < buf.length &&
-      buf(charOffset) == 'u')
+        buf(charOffset) == 'u')
       val code = udigit << 12 | udigit << 8 | udigit << 4 | udigit
       lastUnicodeOffset = charOffset
       ch = code.toChar
@@ -135,7 +133,7 @@ abstract class CharArrayReader extends CharArrayReaderData { self =>
     val buf = self.buf
     charOffset = self.charOffset
     ch = self.ch
-    override def decodeUni = self.decodeUni
+    override def decodeUni              = self.decodeUni
     def error(offset: Int, msg: String) = self.error(offset, msg)
 
     /** A mystery why CharArrayReader.nextChar() returns Unit */

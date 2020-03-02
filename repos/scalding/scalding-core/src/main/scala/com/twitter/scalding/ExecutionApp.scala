@@ -37,17 +37,22 @@ object ExecutionApp {
 
   private[this] val dArgPattern = "-D([^=]+)=([^\\s]+)".r
 
-  private[this] val hadoopReservedArgs = List(
-      "-fs", "-jt", "-files", "-libjars", "-archives")
+  private[this] val hadoopReservedArgs =
+    List("-fs", "-jt", "-files", "-libjars", "-archives")
 
-  def extractUserHadoopArgs(args: Array[String]): (HadoopArgs, NonHadoopArgs) = {
+  def extractUserHadoopArgs(
+      args: Array[String]
+  ): (HadoopArgs, NonHadoopArgs) = {
 
     val argsWithLibJars = ExpandLibJarsGlobs(args)
 
     // This adds a look back mechanism to match on other hadoop args we need to support
     // currently thats just libjars
     val (hadoopArgs, tmpNonHadoop, finalLast) = argsWithLibJars.foldLeft(
-        Array[String](), Array[String](), Option.empty[String]) {
+      Array[String](),
+      Array[String](),
+      Option.empty[String]
+    ) {
       // Current is a -D, so store the last in non hadoop, and add current to hadoop args
       case ((hadoopArgs, nonHadoop, Some(l)), current)
           if dArgPattern.findFirstIn(current).isDefined =>
@@ -70,7 +75,7 @@ object ExecutionApp {
     // We can have something left in the last bucket, so extract it.
     val nonHadoop = finalLast match {
       case Some(x) => tmpNonHadoop :+ x
-      case None => tmpNonHadoop
+      case None    => tmpNonHadoop
     }
 
     // Throwaway hadoop config
@@ -78,8 +83,10 @@ object ExecutionApp {
     val unparsed = (new GenericOptionsParser(new Configuration, hadoopArgs))
       .getRemainingArgs
 
-    (HadoopArgs(hadoopArgs.filter(!unparsed.contains(_))),
-     NonHadoopArgs(nonHadoop ++ unparsed))
+    (
+      HadoopArgs(hadoopArgs.filter(!unparsed.contains(_))),
+      NonHadoopArgs(nonHadoop ++ unparsed)
+    )
   }
 }
 
@@ -99,11 +106,11 @@ trait ExecutionApp extends java.io.Serializable {
      * the hadoop arg parser, otherwise, scalding.
      */
     val (hadoopArgs, nonHadoop) = ExecutionApp.extractUserHadoopArgs(inputArgs)
-    val hconf = new Configuration
+    val hconf                   = new Configuration
     // This has the side-effect of mutating the hconf
     new GenericOptionsParser(hconf, hadoopArgs.toArray)
-    val args = Args(nonHadoop.toArray)
-    val mode = Mode(args, hconf)
+    val args   = Args(nonHadoop.toArray)
+    val mode   = Mode(args, hconf)
     val config = Config.hadoopWithDefaults(hconf).setArgs(args)
     /*
      * Make sure the hadoop config is set in sync with the config

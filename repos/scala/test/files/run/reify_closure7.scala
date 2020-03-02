@@ -4,24 +4,22 @@ import scala.reflect.runtime.{currentMirror => cm}
 import scala.tools.reflect.ToolBox
 
 object Test extends App {
-  var q = 0
+  var q               = 0
   var clo: Int => Int = null
-  def foo[T : TypeTag](ys: List[T]): Int => Int = {
+  def foo[T: TypeTag](ys: List[T]): Int => Int = {
     val z = 1
     var y = 0
     val fun = reify { (x: Int) =>
-      {
-        y += 1
-        q += 1
-        println("q = " + q)
-        println("y = " + y)
-        x + ys.length * z + q + y
-      }
+      y += 1
+      q += 1
+      println("q = " + q)
+      println("y = " + y)
+      x + ys.length * z + q + y
     }
 
     if (clo == null) {
       val toolbox = cm.mkToolBox()
-      val dyn = toolbox.eval(fun.tree)
+      val dyn     = toolbox.eval(fun.tree)
       clo = dyn.asInstanceOf[Int => Int]
     }
 

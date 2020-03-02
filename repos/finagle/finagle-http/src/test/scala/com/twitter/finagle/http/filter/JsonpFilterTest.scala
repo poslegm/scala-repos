@@ -22,7 +22,7 @@ class JsonpFilterTest extends FunSuite {
   }
 
   test("wrap json") {
-    val request = Request("/test.json", "callback" -> "mycallback")
+    val request  = Request("/test.json", "callback" -> "mycallback")
     val response = Await.result(JsonpFilter(request, dummyService))
 
     assert(response.contentType == Some("application/javascript"))

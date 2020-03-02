@@ -7,7 +7,11 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.{PsiDocumentManager, PsiElement}
 import org.jetbrains.plugins.scala.extensions._
-import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScExpression, ScParenthesisedExpr, ScReturnStmt}
+import org.jetbrains.plugins.scala.lang.psi.api.expr.{
+  ScExpression,
+  ScParenthesisedExpr,
+  ScReturnStmt
+}
 import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiElementFactory
 import org.jetbrains.plugins.scala.lang.psi.types.result.TypingContext
 
@@ -25,13 +29,16 @@ class ExpandBooleanIntention extends PsiElementBaseIntentionAction {
   override def getText: String = "Expand boolean use to 'if else'"
 
   def isAvailable(
-      project: Project, editor: Editor, element: PsiElement): Boolean = {
+      project: Project,
+      editor: Editor,
+      element: PsiElement
+  ): Boolean = {
     val returnStmt: ScReturnStmt =
       PsiTreeUtil.getParentOfType(element, classOf[ScReturnStmt], false)
     if (returnStmt == null) return false
 
     val range: TextRange = returnStmt.getTextRange
-    val offset = editor.getCaretModel.getOffset
+    val offset           = editor.getCaretModel.getOffset
     if (!(range.getStartOffset <= offset && offset <= range.getEndOffset))
       return false
 
@@ -50,21 +57,23 @@ class ExpandBooleanIntention extends PsiElementBaseIntentionAction {
     if (returnStmt == null || !returnStmt.isValid) return
 
     val start = returnStmt.getTextRange.getStartOffset
-    val expr = new StringBuilder
+    val expr  = new StringBuilder
     val value = returnStmt.expr.orNull
     if (value == null) return
     expr.append("if ")
 
     value match {
       case v: ScParenthesisedExpr => expr.append(v.getText)
-      case _ => expr.append("(").append(value.getText).append(")")
+      case _                      => expr.append("(").append(value.getText).append(")")
     }
 
     expr.append("{ return true } else { return false }")
 
     val newReturnStmt: ScExpression =
       ScalaPsiElementFactory.createExpressionFromText(
-          expr.toString(), element.getManager)
+        expr.toString(),
+        element.getManager
+      )
 
     inWriteAction {
       returnStmt.replaceExpression(newReturnStmt, true)

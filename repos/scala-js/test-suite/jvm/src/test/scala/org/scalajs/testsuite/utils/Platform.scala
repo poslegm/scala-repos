@@ -17,18 +17,18 @@ object Platform {
     else throw new Exception("Unknown java.version format")
   }
 
-  def executingInRhino: Boolean = false
-  def executingInNodeJS: Boolean = false
+  def executingInRhino: Boolean     = false
+  def executingInNodeJS: Boolean    = false
   def executingInPhantomJS: Boolean = false
-  def typedArrays: Boolean = false
-  def sourceMaps: Boolean = false
+  def typedArrays: Boolean          = false
+  def sourceMaps: Boolean           = false
 
-  def isInFastOpt: Boolean = false
-  def isInFullOpt: Boolean = false
-  def isInProductionMode: Boolean = false
+  def isInFastOpt: Boolean         = false
+  def isInFullOpt: Boolean         = false
+  def isInProductionMode: Boolean  = false
   def isInDevelopmentMode: Boolean = true
 
   def hasCompliantAsInstanceOfs: Boolean = true
-  def hasCompliantModule: Boolean = true
-  def hasStrictFloats: Boolean = true
+  def hasCompliantModule: Boolean        = true
+  def hasStrictFloats: Boolean           = true
 }

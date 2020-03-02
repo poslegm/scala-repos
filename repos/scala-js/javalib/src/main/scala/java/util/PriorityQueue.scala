@@ -7,8 +7,10 @@ import scala.annotation.tailrec
 import scala.language.existentials
 
 class PriorityQueue[E] protected (
-    ordering: Ordering[_ >: E], _comparator: Comparator[_ >: E])
-    extends AbstractQueue[E] with Serializable { self =>
+    ordering: Ordering[_ >: E],
+    _comparator: Comparator[_ >: E]
+) extends AbstractQueue[E]
+    with Serializable { self =>
 
   def this(initialCapacity: Int) = {
     this(defaultOrdering[E], null.asInstanceOf[Comparator[_ >: E]])
@@ -19,8 +21,10 @@ class PriorityQueue[E] protected (
     this(11)
 
   def this(initialCapacity: Int, comparator: Comparator[_ >: E]) = {
-    this(PriorityQueue.safeGetOrdering[E](comparator),
-         null.asInstanceOf[Comparator[E]])
+    this(
+      PriorityQueue.safeGetOrdering[E](comparator),
+      null.asInstanceOf[Comparator[E]]
+    )
     if (initialCapacity < 1) throw new IllegalArgumentException()
   }
 
@@ -30,14 +34,18 @@ class PriorityQueue[E] protected (
   }
 
   def this(c: PriorityQueue[_ <: E]) = {
-    this(PriorityQueue.safeGetOrdering[E](c.comparator()),
-         c.comparator().asInstanceOf[Comparator[E]])
+    this(
+      PriorityQueue.safeGetOrdering[E](c.comparator()),
+      c.comparator().asInstanceOf[Comparator[E]]
+    )
     addAll(c)
   }
 
   def this(sortedSet: SortedSet[_ <: E]) = {
-    this(PriorityQueue.safeGetOrdering[E](sortedSet.comparator()),
-         sortedSet.comparator().asInstanceOf[Comparator[E]])
+    this(
+      PriorityQueue.safeGetOrdering[E](sortedSet.comparator()),
+      sortedSet.comparator().asInstanceOf[Comparator[E]]
+    )
     addAll(sortedSet)
   }
 
@@ -48,13 +56,12 @@ class PriorityQueue[E] protected (
   private val inner: mutable.PriorityQueue[Box[E]] =
     new mutable.PriorityQueue[Box[E]]()
 
-  override def add(e: E): Boolean = {
+  override def add(e: E): Boolean =
     if (e == null) throw new NullPointerException()
     else {
       inner += Box(e)
       true
     }
-  }
 
   def offer(e: E): Boolean = add(e)
 
@@ -62,12 +69,13 @@ class PriorityQueue[E] protected (
     inner.headOption.fold(null.asInstanceOf[E])(_.inner)
 
   override def remove(o: Any): Boolean = {
-    val boxed = Box(o.asInstanceOf[E])
+    val boxed       = Box(o.asInstanceOf[E])
     val initialSize = inner.size
 
     @tailrec
     def takeLeft(
-        part: mutable.PriorityQueue[Box[E]]): mutable.PriorityQueue[Box[E]] = {
+        part: mutable.PriorityQueue[Box[E]]
+    ): mutable.PriorityQueue[Box[E]] =
       if (inner.isEmpty) part
       else {
         val next = inner.dequeue
@@ -75,7 +83,6 @@ class PriorityQueue[E] protected (
         else if (BoxOrdering.compare(boxed, next) > 0) part += next
         else takeLeft(part += next)
       }
-    }
 
     val left = takeLeft(new mutable.PriorityQueue[Box[E]]())
     inner ++= left
@@ -86,7 +93,7 @@ class PriorityQueue[E] protected (
   override def contains(o: Any): Boolean =
     inner.exists(_ === Box(o))
 
-  def iterator(): Iterator[E] = {
+  def iterator(): Iterator[E] =
     new Iterator[E] {
       private val iter = inner.clone.iterator
 
@@ -99,16 +106,14 @@ class PriorityQueue[E] protected (
         last.get
       }
 
-      def remove(): Unit = {
+      def remove(): Unit =
         if (last.isEmpty) {
           throw new IllegalStateException()
         } else {
           last.foreach(self.remove(_))
           last = None
         }
-      }
     }
-  }
 
   def size(): Int = inner.size
 

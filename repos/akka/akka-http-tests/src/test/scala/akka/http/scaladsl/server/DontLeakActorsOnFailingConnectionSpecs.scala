@@ -25,7 +25,9 @@ import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
 class DontLeakActorsOnFailingConnectionSpecs
-    extends WordSpecLike with Matchers with BeforeAndAfterAll {
+    extends WordSpecLike
+    with Matchers
+    with BeforeAndAfterAll {
 
   val config = ConfigFactory
     .parseString("""
@@ -35,8 +37,8 @@ class DontLeakActorsOnFailingConnectionSpecs
       stdout-loglevel = OFF
     }""")
     .withFallback(ConfigFactory.load())
-  implicit val system = ActorSystem(
-      "DontLeakActorsOnFailingConnectionSpecs", config)
+  implicit val system =
+    ActorSystem("DontLeakActorsOnFailingConnectionSpecs", config)
   import system.dispatcher
   implicit val materializer = ActorMaterializer()
 
@@ -44,7 +46,8 @@ class DontLeakActorsOnFailingConnectionSpecs
 
   // TODO DUPLICATED
   def assertAllStagesStopped[T](
-      name: String)(block: ⇒ T)(implicit materializer: Materializer): T =
+      name: String
+  )(block: ⇒ T)(implicit materializer: Materializer): T =
     materializer match {
       case impl: ActorMaterializerImpl ⇒
         val probe = TestProbe()(impl.system)
@@ -56,12 +59,12 @@ class DontLeakActorsOnFailingConnectionSpecs
             impl.supervisor.tell(StreamSupervisor.GetChildren, probe.ref)
             val children =
               probe.expectMsgType[StreamSupervisor.Children].children.filter {
-                c ⇒
-                  c.path.toString contains name
+                c ⇒ c.path.toString contains name
               }
             assert(
-                children.isEmpty,
-                s"expected no StreamSupervisor children, but got [${children.mkString(", ")}]")
+              children.isEmpty,
+              s"expected no StreamSupervisor children, but got [${children.mkString(", ")}]"
+            )
           }
         }
         result
@@ -72,11 +75,12 @@ class DontLeakActorsOnFailingConnectionSpecs
 
     "not leak connection Actors when hitting non-existing endpoint" ignore {
       assertAllStagesStopped("InternalConnectionFlow") {
-        val reqsCount = 100
-        val clientFlow = Http().superPool[Int]()
+        val reqsCount    = 100
+        val clientFlow   = Http().superPool[Int]()
         val (_, _, port) = TestUtils.temporaryServerHostnameAndPort()
-        val source = Source(1 to reqsCount).map(
-            i ⇒ HttpRequest(uri = Uri(s"http://127.0.0.1:$port/test/$i")) -> i)
+        val source = Source(1 to reqsCount).map(i ⇒
+          HttpRequest(uri = Uri(s"http://127.0.0.1:$port/test/$i")) -> i
+        )
 
         val countDown = new CountDownLatch(reqsCount)
         val sink = Sink.foreach[(Try[HttpResponse], Int)] {
@@ -92,7 +96,7 @@ class DontLeakActorsOnFailingConnectionSpecs
     }
   }
 
-  private def handleResponse(httpResp: Try[HttpResponse], id: Int): Unit = {
+  private def handleResponse(httpResp: Try[HttpResponse], id: Int): Unit =
     httpResp match {
       case Success(httpRes) ⇒
         println(s"$id: OK: (${httpRes.status.intValue}")
@@ -101,9 +105,7 @@ class DontLeakActorsOnFailingConnectionSpecs
       case Failure(ex) ⇒
         println(s"$id: FAIL: $ex")
     }
-  }
 
-  override def afterAll = {
+  override def afterAll =
     Await.result(system.terminate(), 3.seconds)
-  }
 }

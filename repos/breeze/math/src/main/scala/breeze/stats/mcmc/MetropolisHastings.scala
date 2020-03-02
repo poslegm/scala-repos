@@ -30,8 +30,11 @@ trait MetropolisHastings[T] extends Rand[T] {
   def likelihood(x: T): Double = math.exp(logLikelihood(x))
   def likelihoodRatio(start: T, end: T): Double =
     math.exp(
-        logLikelihood(start) - logLikelihood(end) + logTransitionProbability(
-            start, end) - logTransitionProbability(end, start))
+      logLikelihood(start) - logLikelihood(end) + logTransitionProbability(
+        start,
+        end
+      ) - logTransitionProbability(end, start)
+    )
   def rand: RandBasis
 
   protected def nextDouble: Double =
@@ -53,33 +56,36 @@ trait TracksStatistics { self: MetropolisHastings[_] =>
   def total: Long
   def acceptanceCount: Long
   def aboveOneCount: Long
-  def rejectionCount: Long = total - acceptanceCount
-  def aboveOneFrac: Double = aboveOneCount.toDouble / total.toDouble
+  def rejectionCount: Long  = total - acceptanceCount
+  def aboveOneFrac: Double  = aboveOneCount.toDouble / total.toDouble
   def rejectionFrac: Double = rejectionCount.toDouble / total.toDouble
 }
 
-abstract class BaseMetropolisHastings[T](logLikelihoodFunc: T => Double,
-                                         init: T,
-                                         burnIn: Long = 0,
-                                         dropCount: Int = 0)(
-    implicit val rand: RandBasis = Rand)
-    extends MetropolisHastings[T] with Process[T] with TracksStatistics {
+abstract class BaseMetropolisHastings[T](
+    logLikelihoodFunc: T => Double,
+    init: T,
+    burnIn: Long = 0,
+    dropCount: Int = 0
+)(implicit val rand: RandBasis = Rand)
+    extends MetropolisHastings[T]
+    with Process[T]
+    with TracksStatistics {
   //Everything but the proposalDraw is implemented
 
-  private var last: T = init
-  private var acceptances: Long = 0
-  private var totalCount: Long = 0
+  private var last: T                  = init
+  private var acceptances: Long        = 0
+  private var totalCount: Long         = 0
   private var acceptanceAboveOne: Long = 0
 
   def logLikelihood(x: T) = logLikelihoodFunc(x)
 
-  def aboveOneCount = acceptanceAboveOne
-  def total = totalCount
+  def aboveOneCount   = acceptanceAboveOne
+  def total           = totalCount
   def acceptanceCount = acceptances
 
   private def getNext(): T = {
     totalCount += 1
-    val maybeNext = proposalDraw(last)
+    val maybeNext       = proposalDraw(last)
     val acceptanceRatio = likelihoodRatio(maybeNext, last)
     if (acceptanceRatio > 1.0) {
       //This is logically unnecessary, but allows us to skip a call to nextDouble
@@ -98,23 +104,16 @@ abstract class BaseMetropolisHastings[T](logLikelihoodFunc: T => Double,
   }
 
   // Burn in
-  cfor(0)(i => i < burnIn, i => i + 1)(i =>
-        {
-      getNext()
-  })
+  cfor(0)(i => i < burnIn, i => i + 1)(i => getNext())
   // end burn in
 
-  def draw(): T = {
+  def draw(): T =
     if (dropCount == 0) {
       getNext()
     } else {
-      cfor(0)(i => i < dropCount, i => i + 1)(i =>
-            {
-          getNext()
-      })
+      cfor(0)(i => i < dropCount, i => i + 1)(i => getNext())
       getNext()
     }
-  }
 }
 
 case class ArbitraryMetropolisHastings[T](
@@ -123,9 +122,11 @@ case class ArbitraryMetropolisHastings[T](
     val logProposalDensity: (T, T) => Double,
     init: T,
     burnIn: Long = 0,
-    dropCount: Int = 0)(implicit rand: RandBasis = Rand)
+    dropCount: Int = 0
+)(implicit rand: RandBasis = Rand)
     extends BaseMetropolisHastings[T](logLikelihood, init, burnIn, dropCount)(
-        rand) {
+      rand
+    ) {
   def proposalDraw(x: T) = proposal(x).draw()
   def logTransitionProbability(start: T, end: T): Double =
     logProposalDensity(start, end)
@@ -133,14 +134,17 @@ case class ArbitraryMetropolisHastings[T](
   def observe(x: T) = this.copy(burnIn = 0, init = x)
 }
 
-case class AffineStepMetropolisHastings[T](logLikelihood: T => Double,
-                                           val proposalStep: Rand[T],
-                                           init: T,
-                                           burnIn: Long = 0,
-                                           dropCount: Int = 0)(
-    implicit rand: RandBasis = Rand, vectorSpace: VectorSpace[T, _])
+case class AffineStepMetropolisHastings[T](
+    logLikelihood: T => Double,
+    val proposalStep: Rand[T],
+    init: T,
+    burnIn: Long = 0,
+    dropCount: Int = 0
+)(implicit rand: RandBasis = Rand, vectorSpace: VectorSpace[T, _])
     extends BaseMetropolisHastings[T](logLikelihood, init, burnIn, dropCount)(
-        rand) with SymmetricMetropolisHastings[T] {
+      rand
+    )
+    with SymmetricMetropolisHastings[T] {
   /*
    *  Handles typical case of x => x + random().
    *
@@ -153,9 +157,9 @@ case class AffineStepMetropolisHastings[T](logLikelihood: T => Double,
   def observe(x: T) = this.copy(burnIn = 0, init = x)
 }
 
-case class ThreadedBufferedRand[T](
-    wrapped: Rand[T], bufferSize: Int = 1024 * 8)(implicit m: ClassTag[T])
-    extends Rand[T] {
+case class ThreadedBufferedRand[T](wrapped: Rand[T], bufferSize: Int = 1024 * 8)(
+    implicit m: ClassTag[T]
+) extends Rand[T] {
   require(bufferSize > 0)
 
   private val usedArrayQueue =
@@ -173,10 +177,9 @@ case class ThreadedBufferedRand[T](
         val buff =
           usedArrayQueue.poll(1, java.util.concurrent.TimeUnit.SECONDS)
         if (buff != null) {
-          cfor(0)(i => i < bufferSize, i => i + 1)(i =>
-                {
-              buff(i) = wrapped.draw()
-          })
+          cfor(0)(i => i < bufferSize, i => i + 1) { i =>
+            buff(i) = wrapped.draw()
+          }
           newArrayQueue.put(buff)
         }
       }
@@ -187,14 +190,13 @@ case class ThreadedBufferedRand[T](
   worker.start()
 
   private var buffer: Array[T] = newArrayQueue.take()
-  private var position: Int = 0
+  private var position: Int    = 0
 
-  def stop() = {
+  def stop() =
     //In order to allow this class to be garbage collected, you must set this to true.
     stopWorker = true
-  }
 
-  def draw(): T = {
+  def draw(): T =
     if (position < bufferSize) {
       position += 1
       buffer(position - 1)
@@ -204,5 +206,4 @@ case class ThreadedBufferedRand[T](
       position = 1
       buffer(0)
     }
-  }
 }

@@ -31,9 +31,9 @@ trait _a extends AnyRef with _b {
 }
 trait a123 extends AnyRef with _a with _b {
   val a: this.type = this;
-  val A: A = new A();
+  val A: A         = new A();
   class A() extends AObject {
-    def getX(): B.X = B.getX();
+    def getX(): B.X  = B.getX();
     def setX(x: B.X) = B.setX(x);
   }
 }
@@ -50,10 +50,10 @@ trait _b {
 }
 abstract class b() extends AnyRef with _b {
   val b: this.type = this;
-  val B: B = new B();
+  val B: B         = new B();
   class B() extends BObject {
     class X() {}
-    def getX(): X = new X();
+    def getX(): X  = new X();
     def setX(x: X) = ();
   }
 }
@@ -66,7 +66,7 @@ trait _m {
 }
 abstract class m() extends AnyRef with _m with _b {
   val m: this.type = this;
-  val M: M = new M();
+  val M: M         = new M();
   class M() extends MObject with a123 with Linker {
     def test() = {
       val x: B.X = B.getX();

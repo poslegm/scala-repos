@@ -11,11 +11,14 @@ import org.jboss.netty.buffer.ChannelBuffer
 trait SortedSets { self: BaseClient =>
   private[this] def parseMBulkReply(
       withScores: JBoolean
-  ): PartialFunction[Reply, Future[Either[ZRangeResults, Seq[ChannelBuffer]]]] = {
-    val parse: PartialFunction[
-        Reply, Either[ZRangeResults, Seq[ChannelBuffer]]] = {
+  )
+      : PartialFunction[Reply, Future[
+        Either[ZRangeResults, Seq[ChannelBuffer]]
+      ]] = {
+    val parse
+        : PartialFunction[Reply, Either[ZRangeResults, Seq[ChannelBuffer]]] = {
       case MBulkReply(messages) => withScoresHelper(withScores)(messages)
-      case EmptyMBulkReply() => withScoresHelper(withScores)(Nil)
+      case EmptyMBulkReply()    => withScoresHelper(withScores)(Nil)
     }
     parse andThen Future.value
   }
@@ -35,11 +38,12 @@ trait SortedSets { self: BaseClient =>
     * @param member
     * @return Number of elements added to sorted set
     */
-  def zAdd(key: ChannelBuffer,
-           score: JDouble,
-           member: ChannelBuffer): Future[JLong] = {
+  def zAdd(
+      key: ChannelBuffer,
+      score: JDouble,
+      member: ChannelBuffer
+  ): Future[JLong] =
     zAddMulti(key, Seq((score, member)))
-  }
 
   /**
     * Adds member, score pairs to sorted set
@@ -48,14 +52,13 @@ trait SortedSets { self: BaseClient =>
     * @return Number of elements added to sorted set
     * @note Adding multiple elements only works with redis 2.4 or later.
     */
-  def zAddMulti(key: ChannelBuffer,
-                members: Seq[(JDouble, ChannelBuffer)]): Future[JLong] = {
-    doRequest(ZAdd(key, members.map { m =>
-      ZMember(m._1, m._2)
-    })) {
+  def zAddMulti(
+      key: ChannelBuffer,
+      members: Seq[(JDouble, ChannelBuffer)]
+  ): Future[JLong] =
+    doRequest(ZAdd(key, members.map(m => ZMember(m._1, m._2)))) {
       case IntegerReply(n) => Future.value(n)
     }
-  }
 
   /**
     * Returns sorted set cardinality of the sorted set at key
@@ -76,7 +79,10 @@ trait SortedSets { self: BaseClient =>
     * @return Number of elements between min and max in sorted set
     */
   def zCount(
-      key: ChannelBuffer, min: ZInterval, max: ZInterval): Future[JLong] =
+      key: ChannelBuffer,
+      min: ZInterval,
+      max: ZInterval
+  ): Future[JLong] =
     doRequest(ZCount(key, min, max)) {
       case IntegerReply(n) => Future.value(n)
     }
@@ -95,7 +101,7 @@ trait SortedSets { self: BaseClient =>
       limit: Option[Limit]
   ): Future[Either[ZRangeResults, Seq[ChannelBuffer]]] =
     doRequest(
-        ZRangeByScore(key, min, max, WithScores.option(withScores), limit)
+      ZRangeByScore(key, min, max, WithScores.option(withScores), limit)
     )(parseMBulkReply(withScores))
 
   /**
@@ -122,7 +128,7 @@ trait SortedSets { self: BaseClient =>
       withScores: JBoolean
   ): Future[Either[ZRangeResults, Seq[ChannelBuffer]]] =
     doRequest(ZRevRange(key, start, stop, WithScores.option(withScores)))(
-        parseMBulkReply(withScores)
+      parseMBulkReply(withScores)
     )
 
   /**
@@ -140,8 +146,9 @@ trait SortedSets { self: BaseClient =>
       limit: Option[Limit]
   ): Future[Either[ZRangeResults, Seq[ChannelBuffer]]] =
     doRequest(
-        ZRevRangeByScore(key, max, min, WithScores.option(withScores), limit))(
-        parseMBulkReply(withScores)
+      ZRevRangeByScore(key, max, min, WithScores.option(withScores), limit)
+    )(
+      parseMBulkReply(withScores)
     )
 
   /**
@@ -150,7 +157,9 @@ trait SortedSets { self: BaseClient =>
     * @return Score of member
     */
   def zScore(
-      key: ChannelBuffer, member: ChannelBuffer): Future[Option[JDouble]] =
+      key: ChannelBuffer,
+      member: ChannelBuffer
+  ): Future[Option[JDouble]] =
     doRequest(ZScore(key, member)) {
       case BulkReply(message) =>
         Future.value(Some(NumberFormat.toDouble(BytesToString(message.array))))
@@ -164,9 +173,11 @@ trait SortedSets { self: BaseClient =>
     * @return the rank of the member
     */
   def zRevRank(
-      key: ChannelBuffer, member: ChannelBuffer): Future[Option[JLong]] =
+      key: ChannelBuffer,
+      member: ChannelBuffer
+  ): Future[Option[JLong]] =
     doRequest(ZRevRank(key, member)) {
-      case IntegerReply(n) => Future.value(Some(n))
+      case IntegerReply(n)  => Future.value(Some(n))
       case EmptyBulkReply() => Future.value(None)
     }
 
@@ -179,9 +190,11 @@ trait SortedSets { self: BaseClient =>
     * @param member
     * @return the new value of the incremented member
     */
-  def zIncrBy(key: ChannelBuffer,
-              amount: JDouble,
-              member: ChannelBuffer): Future[Option[JDouble]] =
+  def zIncrBy(
+      key: ChannelBuffer,
+      amount: JDouble,
+      member: ChannelBuffer
+  ): Future[Option[JDouble]] =
     doRequest(ZIncrBy(key, amount, member)) {
       case BulkReply(message) =>
         Future.value(Some(NumberFormat.toDouble(BytesToString(message.array))))
@@ -196,7 +209,7 @@ trait SortedSets { self: BaseClient =>
     */
   def zRank(key: ChannelBuffer, member: ChannelBuffer): Future[Option[JLong]] =
     doRequest(ZRank(key, member)) {
-      case IntegerReply(n) => Future.value(Some(n))
+      case IntegerReply(n)  => Future.value(Some(n))
       case EmptyBulkReply() => Future.value(None)
     }
 
@@ -208,7 +221,10 @@ trait SortedSets { self: BaseClient =>
     * @return Number of members removed from sorted set.
     */
   def zRemRangeByRank(
-      key: ChannelBuffer, start: JLong, stop: JLong): Future[JLong] =
+      key: ChannelBuffer,
+      start: JLong,
+      stop: JLong
+  ): Future[JLong] =
     doRequest(ZRemRangeByRank(key, start, stop)) {
       case IntegerReply(n) => Future.value(n)
     }
@@ -221,7 +237,10 @@ trait SortedSets { self: BaseClient =>
     * @return Number of members removed from sorted set.
     */
   def zRemRangeByScore(
-      key: ChannelBuffer, min: ZInterval, max: ZInterval): Future[JLong] =
+      key: ChannelBuffer,
+      min: ZInterval,
+      max: ZInterval
+  ): Future[JLong] =
     doRequest(ZRemRangeByScore(key, min, max)) {
       case IntegerReply(n) => Future.value(n)
     }

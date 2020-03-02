@@ -26,20 +26,21 @@ import org.apache.spark.deploy.ApplicationDescription
 import org.apache.spark.rpc.RpcEndpointRef
 import org.apache.spark.util.Utils
 
-private[spark] class ApplicationInfo(val startTime: Long,
-                                     val id: String,
-                                     val desc: ApplicationDescription,
-                                     val submitDate: Date,
-                                     val driver: RpcEndpointRef,
-                                     defaultCores: Int)
-    extends Serializable {
+private[spark] class ApplicationInfo(
+    val startTime: Long,
+    val id: String,
+    val desc: ApplicationDescription,
+    val submitDate: Date,
+    val driver: RpcEndpointRef,
+    defaultCores: Int
+) extends Serializable {
 
-  @transient var state: ApplicationState.Value = _
+  @transient var state: ApplicationState.Value                 = _
   @transient var executors: mutable.HashMap[Int, ExecutorDesc] = _
-  @transient var removedExecutors: ArrayBuffer[ExecutorDesc] = _
-  @transient var coresGranted: Int = _
-  @transient var endTime: Long = _
-  @transient var appSource: ApplicationSource = _
+  @transient var removedExecutors: ArrayBuffer[ExecutorDesc]   = _
+  @transient var coresGranted: Int                             = _
+  @transient var endTime: Long                                 = _
+  @transient var appSource: ApplicationSource                  = _
   @transient
   @volatile var appUIUrlAtHistoryServer: Option[String] = None
 
@@ -70,7 +71,7 @@ private[spark] class ApplicationInfo(val startTime: Long,
     appUIUrlAtHistoryServer = None
   }
 
-  private def newExecutorId(useID: Option[Int] = None): Int = {
+  private def newExecutorId(useID: Option[Int] = None): Int =
     useID match {
       case Some(id) =>
         nextExecutorId = math.max(nextExecutorId, id + 1)
@@ -80,13 +81,19 @@ private[spark] class ApplicationInfo(val startTime: Long,
         nextExecutorId += 1
         id
     }
-  }
 
-  private[master] def addExecutor(worker: WorkerInfo,
-                                  cores: Int,
-                                  useID: Option[Int] = None): ExecutorDesc = {
+  private[master] def addExecutor(
+      worker: WorkerInfo,
+      cores: Int,
+      useID: Option[Int] = None
+  ): ExecutorDesc = {
     val exec = new ExecutorDesc(
-        newExecutorId(useID), this, worker, cores, desc.memoryPerExecutorMB)
+      newExecutorId(useID),
+      this,
+      worker,
+      cores,
+      desc.memoryPerExecutorMB
+    )
     executors(exec.id) = exec
     coresGranted += cores
     exec
@@ -120,9 +127,8 @@ private[spark] class ApplicationInfo(val startTime: Long,
     endTime = System.currentTimeMillis()
   }
 
-  private[master] def isFinished: Boolean = {
+  private[master] def isFinished: Boolean =
     state != ApplicationState.WAITING && state != ApplicationState.RUNNING
-  }
 
   /**
     * Return the limit on the number of executors this application can have.
@@ -130,13 +136,12 @@ private[spark] class ApplicationInfo(val startTime: Long,
     */
   private[deploy] def getExecutorLimit: Int = executorLimit
 
-  def duration: Long = {
+  def duration: Long =
     if (endTime != -1) {
       endTime - startTime
     } else {
       System.currentTimeMillis() - startTime
     }
-  }
 
   /**
     * Returns the original application UI url unless there is its address at history server

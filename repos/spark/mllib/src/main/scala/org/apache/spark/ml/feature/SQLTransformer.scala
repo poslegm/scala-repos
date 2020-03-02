@@ -40,8 +40,9 @@ import org.apache.spark.sql.types.StructType
   */
 @Experimental
 @Since("1.6.0")
-class SQLTransformer @Since("1.6.0")(override val uid: String)
-    extends Transformer with DefaultParamsWritable {
+class SQLTransformer @Since("1.6.0") (override val uid: String)
+    extends Transformer
+    with DefaultParamsWritable {
 
   @Since("1.6.0")
   def this() = this(Identifiable.randomUID("sql"))
@@ -69,16 +70,16 @@ class SQLTransformer @Since("1.6.0")(override val uid: String)
     val tableName = Identifiable.randomUID(uid)
     dataset.registerTempTable(tableName)
     val realStatement = $(statement).replace(tableIdentifier, tableName)
-    val outputDF = dataset.sqlContext.sql(realStatement)
+    val outputDF      = dataset.sqlContext.sql(realStatement)
     outputDF
   }
 
   @Since("1.6.0")
   override def transformSchema(schema: StructType): StructType = {
-    val sc = SparkContext.getOrCreate()
+    val sc         = SparkContext.getOrCreate()
     val sqlContext = SQLContext.getOrCreate(sc)
-    val dummyRDD = sc.parallelize(Seq(Row.empty))
-    val dummyDF = sqlContext.createDataFrame(dummyRDD, schema)
+    val dummyRDD   = sc.parallelize(Seq(Row.empty))
+    val dummyDF    = sqlContext.createDataFrame(dummyRDD, schema)
     dummyDF.registerTempTable(tableIdentifier)
     val outputSchema = sqlContext.sql($(statement)).schema
     outputSchema

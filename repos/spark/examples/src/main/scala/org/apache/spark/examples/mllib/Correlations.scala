@@ -35,8 +35,8 @@ import org.apache.spark.mllib.util.MLUtils
 object Correlations {
 
   case class Params(
-      input: String = "data/mllib/sample_linear_regression_data.txt")
-      extends AbstractParams[Params]
+      input: String = "data/mllib/sample_linear_regression_data.txt"
+  ) extends AbstractParams[Params]
 
   def main(args: Array[String]) {
 
@@ -46,15 +46,18 @@ object Correlations {
       head("Correlations: an example app for computing correlations")
       opt[String]("input")
         .text(
-            s"Input path to labeled examples in LIBSVM format, default: ${defaultParams.input}")
+          s"Input path to labeled examples in LIBSVM format, default: ${defaultParams.input}"
+        )
         .action((x, c) => c.copy(input = x))
-      note("""
+      note(
+        """
         |For example, the following command runs this app on a synthetic dataset:
         |
         | bin/spark-submit --class org.apache.spark.examples.mllib.Correlations \
         |  examples/target/scala-*/spark-examples-*.jar \
         |  --input data/mllib/sample_linear_regression_data.txt
-        """.stripMargin)
+        """.stripMargin
+      )
     }
 
     parser.parse(args, defaultParams).map { params =>
@@ -66,7 +69,7 @@ object Correlations {
 
   def run(params: Params) {
     val conf = new SparkConf().setAppName(s"Correlations with $params")
-    val sc = new SparkContext(conf)
+    val sc   = new SparkContext(conf)
 
     val examples = MLUtils.loadLibSVMFile(sc, params.input).cache()
 
@@ -74,16 +77,16 @@ object Correlations {
     println(s"${examples.count()} data points")
 
     // Calculate label -- feature correlations
-    val labelRDD = examples.map(_.label)
+    val labelRDD    = examples.map(_.label)
     val numFeatures = examples.take(1)(0).features.size
-    val corrType = "pearson"
+    val corrType    = "pearson"
     println()
     println(s"Correlation ($corrType) between label and each feature")
     println(s"Feature\tCorrelation")
     var feature = 0
     while (feature < numFeatures) {
       val featureRDD = examples.map(_.features(feature))
-      val corr = Statistics.corr(labelRDD, featureRDD)
+      val corr       = Statistics.corr(labelRDD, featureRDD)
       println(s"$feature\t$corr")
       feature += 1
     }

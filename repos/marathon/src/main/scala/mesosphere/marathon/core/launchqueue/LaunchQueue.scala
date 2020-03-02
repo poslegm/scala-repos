@@ -21,7 +21,8 @@ object LaunchQueue {
       tasksLeftToLaunch: Int,
       taskLaunchesInFlight: Int, // FIXME (217): rename to taskOpsInFlight
       tasksLaunched: Int,
-      backOffUntil: Timestamp) {
+      backOffUntil: Timestamp
+  ) {
 
     /**
       * Indicates if the launch queue tries to launch tasks for this app.
@@ -68,5 +69,6 @@ trait LaunchQueue {
 
   /** Notify queue about TaskUpdate */
   def notifyOfTaskUpdate(
-      update: TaskStatusUpdate): Future[Option[QueuedTaskInfo]]
+      update: TaskStatusUpdate
+  ): Future[Option[QueuedTaskInfo]]
 }

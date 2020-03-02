@@ -1,6 +1,6 @@
 abstract class NullaryTest[T, m[s]] {
   def nullary: String = "a"
-  val x = nullary
+  val x               = nullary
 
   def nullary2: T
   val x2 = nullary2

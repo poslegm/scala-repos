@@ -32,16 +32,19 @@ object SnippetSpec extends Specification with XmlMatchers {
 
   def makeReq =
     Full(
-        new Req(Req.NilPath,
-                "",
-                GetRequest,
-                Empty,
-                null,
-                System.nanoTime,
-                System.nanoTime,
-                false,
-                () => ParamCalcInfo(Nil, Map.empty, Nil, Empty),
-                Map()))
+      new Req(
+        Req.NilPath,
+        "",
+        GetRequest,
+        Empty,
+        null,
+        System.nanoTime,
+        System.nanoTime,
+        false,
+        () => ParamCalcInfo(Nil, Map.empty, Nil, Empty),
+        Map()
+      )
+    )
 
   "Templates" should {
     "Correctly process lift:content_id" in {
@@ -99,8 +102,10 @@ object SnippetSpec extends Specification with XmlMatchers {
         S.mapSnippetsWith("foo" -> ((a: NodeSeq) => a)) {
           for {
             s <- S.session
-          } yield
-            s.processSurroundAndInclude("test", <lift:foo>{res}</lift:foo>)
+          } yield s.processSurroundAndInclude(
+            "test",
+            <lift:foo>{res}</lift:foo>
+          )
         }
       }
 
@@ -149,10 +154,10 @@ object SnippetSpec extends Specification with XmlMatchers {
         S.mapSnippetsWith("foo" -> testAttrs _) {
           for {
             s <- S.session
-          } yield
-            s.processSurroundAndInclude(
-                "test",
-                <div class="l:foo?bing=bong?fuzz=faz+snark?noodle=FatPoodle" />)
+          } yield s.processSurroundAndInclude(
+            "test",
+            <div class="l:foo?bing=bong?fuzz=faz+snark?noodle=FatPoodle" />
+          )
         }
       }
 
@@ -173,10 +178,10 @@ object SnippetSpec extends Specification with XmlMatchers {
         S.mapSnippetsWith("foo" -> testAttrs _) {
           for {
             s <- S.session
-          } yield
-            s.processSurroundAndInclude(
-                "test",
-                <div class="l:foo?bing=bong;fuzz=faz+snark;noodle=FatPoodle" />)
+          } yield s.processSurroundAndInclude(
+            "test",
+            <div class="l:foo?bing=bong;fuzz=faz+snark;noodle=FatPoodle" />
+          )
         }
       }
 
@@ -219,10 +224,10 @@ object SnippetSpec extends Specification with XmlMatchers {
         S.mapSnippetsWith("foo" -> testAttrs _) {
           for {
             s <- S.session
-          } yield
-            s.processSurroundAndInclude(
-                "test",
-                <div class="l:foo?bing=bong?fuzz=faz+snark;noodle=FatPoodle" />)
+          } yield s.processSurroundAndInclude(
+            "test",
+            <div class="l:foo?bing=bong?fuzz=faz+snark;noodle=FatPoodle" />
+          )
         }
       }
 
@@ -278,8 +283,10 @@ object SnippetSpec extends Specification with XmlMatchers {
         S.mapSnippetsWith("foo" -> ChangeVar.foo _) {
           for {
             s <- S.session
-          } yield
-            s.processSurroundAndInclude("test", <lift:foo>{res}</lift:foo>)
+          } yield s.processSurroundAndInclude(
+            "test",
+            <lift:foo>{res}</lift:foo>
+          )
         }
       }
 
@@ -287,15 +294,17 @@ object SnippetSpec extends Specification with XmlMatchers {
     }
 
     "Snippet invocation succeeds in normal mode" in {
-      val res = <div>dog</div>
+      val res     = <div>dog</div>
       val session = new LiftSession("", "hello", Empty)
 
       val ret = S.init(makeReq, session) {
         S.mapSnippetsWith("foo" -> ChangeVar.foo _) {
           for {
             s <- S.session
-          } yield
-            s.processSurroundAndInclude("test", <lift:foo>{res}</lift:foo>)
+          } yield s.processSurroundAndInclude(
+            "test",
+            <lift:foo>{res}</lift:foo>
+          )
         }
       }
 
@@ -309,8 +318,10 @@ object SnippetSpec extends Specification with XmlMatchers {
         S.mapSnippetsWith("foo" -> Funky.foo _) {
           for {
             s <- S.session
-          } yield
-            s.processSurroundAndInclude("test", <lift:foo>{res}</lift:foo>)
+          } yield s.processSurroundAndInclude(
+            "test",
+            <lift:foo>{res}</lift:foo>
+          )
         }
       }
 
@@ -318,15 +329,17 @@ object SnippetSpec extends Specification with XmlMatchers {
     }
 
     "Snippet invocation succeeds in normal mode (function table)" in {
-      val res = <div>dog</div>
+      val res     = <div>dog</div>
       val session = new LiftSession("", "hello", Empty)
 
       val ret = S.init(makeReq, session) {
         S.mapSnippetsWith("foo" -> Funky.foo _) {
           for {
             s <- S.session
-          } yield
-            s.processSurroundAndInclude("test", <lift:foo>{res}</lift:foo>)
+          } yield s.processSurroundAndInclude(
+            "test",
+            <lift:foo>{res}</lift:foo>
+          )
         }
       }
 
@@ -351,7 +364,11 @@ object SnippetSpec extends Specification with XmlMatchers {
         val ret = SHtml.onSubmitBoolean(s => ())(<input type="checkbox"/>)
 
         ret.size must_== 2
-        (ret \\ "input").flatMap(_ \ "@name").map(_.text).mkString.length must be > 0
+        (ret \\ "input")
+          .flatMap(_ \ "@name")
+          .map(_.text)
+          .mkString
+          .length must be > 0
       }
     }
 
@@ -394,10 +411,10 @@ object SnippetSpec extends Specification with XmlMatchers {
         S.mapSnippetsWith("foo" -> ChangeVar.foo _) {
           for {
             s <- S.session
-          } yield
-            s.processSurroundAndInclude(
-                "test",
-                <div class="l:foo?eager_eval=true">a<lift:foo>b</lift:foo></div>)
+          } yield s.processSurroundAndInclude(
+            "test",
+            <div class="l:foo?eager_eval=true">a<lift:foo>b</lift:foo></div>
+          )
         }
         myInfo.is must_== "ab"
       }
@@ -408,8 +425,13 @@ object SnippetSpec extends Specification with XmlMatchers {
     "properly reflect the full snippet stack with S.attrs" in {
       S.initIfUninitted(new LiftSession("", "", Empty)) {
         S.withAttrs(new UnprefixedAttribute("a", "a", Null)) {
-          S.withAttrs(new UnprefixedAttribute(
-                  "b", "b", new UnprefixedAttribute("c", "c", Null))) {
+          S.withAttrs(
+            new UnprefixedAttribute(
+              "b",
+              "b",
+              new UnprefixedAttribute("c", "c", Null)
+            )
+          ) {
             S.withAttrs(new UnprefixedAttribute("d", "d", Null)) {
               S.attr("a") must_== Full("a")
               S.attr("b") must_== Full("b")
@@ -437,8 +459,13 @@ object SnippetSpec extends Specification with XmlMatchers {
     "reflect only the last pushed values with S.currentAttrs" in {
       S.initIfUninitted(new LiftSession("", "", Empty)) {
         S.withAttrs(new UnprefixedAttribute("a", "a", Null)) {
-          S.withAttrs(new UnprefixedAttribute(
-                  "b", "b", new UnprefixedAttribute("c", "c", Null))) {
+          S.withAttrs(
+            new UnprefixedAttribute(
+              "b",
+              "b",
+              new UnprefixedAttribute("c", "c", Null)
+            )
+          ) {
             S.withAttrs(new UnprefixedAttribute("d", "d", Null)) {
               S.currentAttr("a") must_== Empty
               S.currentAttr("b") must_== Empty

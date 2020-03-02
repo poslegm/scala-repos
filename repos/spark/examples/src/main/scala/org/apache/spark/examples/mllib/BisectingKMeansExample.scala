@@ -36,7 +36,7 @@ object BisectingKMeansExample {
 
   def main(args: Array[String]) {
     val sparkConf = new SparkConf().setAppName("mllib.BisectingKMeansExample")
-    val sc = new SparkContext(sparkConf)
+    val sc        = new SparkContext(sparkConf)
 
     // $example on$
     // Loads and parses data
@@ -45,7 +45,7 @@ object BisectingKMeansExample {
     val data = sc.textFile("data/mllib/kmeans_data.txt").map(parse).cache()
 
     // Clustering the data into 6 clusters by BisectingKMeans.
-    val bkm = new BisectingKMeans().setK(6)
+    val bkm   = new BisectingKMeans().setK(6)
     val model = bkm.run(data)
 
     // Show the compute cost and the cluster centers

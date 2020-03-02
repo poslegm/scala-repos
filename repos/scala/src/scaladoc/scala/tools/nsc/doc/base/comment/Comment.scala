@@ -28,17 +28,17 @@ abstract class Comment {
         case Chain(list) =>
           list foreach scan
         case tag: HtmlTag => {
-            if (stack.length > 0 && tag.canClose(stack.last)) {
-              stack.remove(stack.length - 1)
-            } else {
-              tag.close match {
-                case Some(t) =>
-                  stack += t
-                case None =>
-                  ;
-              }
+          if (stack.length > 0 && tag.canClose(stack.last)) {
+            stack.remove(stack.length - 1)
+          } else {
+            tag.close match {
+              case Some(t) =>
+                stack += t
+              case None =>
+                ;
             }
           }
+        }
         case _ =>
           ;
       }
@@ -49,14 +49,13 @@ abstract class Comment {
 
   /** A shorter version of the body. Either from `@shortDescription` or the
     *  first sentence of the body. */
-  def short: Inline = {
+  def short: Inline =
     shortDescription orElse body.summary match {
       case Some(s) =>
         closeHtmlTags(s)
       case _ =>
         Text("")
     }
-  }
 
   /** A list of authors. The empty list is used when no author is defined. */
   def authors: List[Body]
@@ -133,5 +132,5 @@ abstract class Comment {
   override def toString =
     body.toString + "\n" + (authors map ("@author " + _.toString))
       .mkString("\n") + (result map ("@return " + _.toString)).mkString("\n") +
-    (version map ("@version " + _.toString)).mkString
+      (version map ("@version " + _.toString)).mkString
 }

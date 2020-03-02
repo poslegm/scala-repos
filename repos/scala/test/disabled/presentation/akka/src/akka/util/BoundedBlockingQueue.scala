@@ -8,8 +8,10 @@ import java.util.concurrent.{TimeUnit, BlockingQueue}
 import java.util.{AbstractQueue, Queue, Collection, Iterator}
 
 class BoundedBlockingQueue[E <: AnyRef](
-    val maxCapacity: Int, private val backing: Queue[E])
-    extends AbstractQueue[E] with BlockingQueue[E] {
+    val maxCapacity: Int,
+    private val backing: Queue[E]
+) extends AbstractQueue[E]
+    with BlockingQueue[E] {
 
   backing match {
     case null =>
@@ -26,7 +28,7 @@ class BoundedBlockingQueue[E <: AnyRef](
   protected val lock = new ReentrantLock(false)
 
   private val notEmpty = lock.newCondition()
-  private val notFull = lock.newCondition()
+  private val notFull  = lock.newCondition()
 
   def put(e: E): Unit = {
     //Blocks until not full
@@ -206,7 +208,7 @@ class BoundedBlockingQueue[E <: AnyRef](
     else {
       lock.lock()
       try {
-        var n = 0
+        var n    = 0
         var e: E = null.asInstanceOf[E]
         while (n < maxElements) {
           backing.poll() match {
@@ -265,7 +267,7 @@ class BoundedBlockingQueue[E <: AnyRef](
     try {
       val elements = backing.toArray
       new Iterator[E] {
-        var at = 0
+        var at   = 0
         var last = -1
 
         def hasNext(): Boolean = at < elements.length

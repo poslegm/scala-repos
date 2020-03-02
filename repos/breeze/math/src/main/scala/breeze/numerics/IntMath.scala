@@ -32,7 +32,7 @@ object IntMath {
     var b = base
     if (exp < 0 && base != 1) 0
     else {
-      var e = exp
+      var e      = exp
       var result = 1
       while (e != 0) {
         if ((e & 1) != 0) result *= b
@@ -54,7 +54,7 @@ object IntMath {
     var b = base
     if (exp < 0 && base != 1) 0
     else {
-      var e = exp
+      var e            = exp
       var result: Long = 1
       while (e != 0) {
         if ((e & 1) != 0) result *= b

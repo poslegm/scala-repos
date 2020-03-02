@@ -27,7 +27,7 @@ private[prediction] object Utils {
   val dateTimeNoMillisFormatter =
     ISODateTimeFormat.dateTimeNoMillis().withOffsetParsed()
 
-  def stringToDateTime(dt: String): DateTime = {
+  def stringToDateTime(dt: String): DateTime =
     // We accept two formats.
     // 1. "yyyy-MM-dd'T'HH:mm:ss.SSSZZ"
     // 2. "yyyy-MM-dd'T'HH:mm:ssZZ"
@@ -37,11 +37,10 @@ private[prediction] object Utils {
       dateTimeFormatter.parseDateTime(dt)
     } catch {
       case e: IllegalArgumentException => {
-          // handle when the datetime string doesn't specify milliseconds.
-          dateTimeNoMillisFormatter.parseDateTime(dt)
-        }
+        // handle when the datetime string doesn't specify milliseconds.
+        dateTimeNoMillisFormatter.parseDateTime(dt)
+      }
     }
-  }
 
   def dateTimeToString(dt: DateTime): String = dateTimeFormatter.print(dt)
   // dt.toString

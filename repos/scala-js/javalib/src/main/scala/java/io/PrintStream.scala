@@ -4,8 +4,12 @@ import java.nio.charset.Charset
 import java.util.Formatter
 
 class PrintStream private (
-    _out: OutputStream, autoFlush: Boolean, charset: Charset)
-    extends FilterOutputStream(_out) with Appendable with Closeable {
+    _out: OutputStream,
+    autoFlush: Boolean,
+    charset: Charset
+) extends FilterOutputStream(_out)
+    with Appendable
+    with Closeable {
 
   /* The way we handle charsets here is a bit tricky, because we want to
    * minimize the area of reachability for normal programs.
@@ -62,8 +66,8 @@ class PrintStream private (
     new OutputStreamWriter(this, c)
   }
 
-  private var closing: Boolean = false
-  private var closed: Boolean = false
+  private var closing: Boolean   = false
+  private var closed: Boolean    = false
   private var errorFlag: Boolean = false
 
   override def flush(): Unit =
@@ -79,7 +83,7 @@ class PrintStream private (
     }
   }
 
-  def checkError(): Boolean = {
+  def checkError(): Boolean =
     if (closed) {
       /* Just check the error flag.
        * Common sense would tell us to look at the underlying writer's
@@ -95,13 +99,12 @@ class PrintStream private (
        */
       errorFlag ||
       (out match {
-            case out: PrintStream => out.checkError()
-            case _ => false
-          })
+        case out: PrintStream => out.checkError()
+        case _                => false
+      })
     }
-  }
 
-  protected[io] def setError(): Unit = errorFlag = true
+  protected[io] def setError(): Unit   = errorFlag = true
   protected[io] def clearError(): Unit = errorFlag = false
 
   /* Note that calling directly the write() methods will happily bypass the
@@ -121,27 +124,25 @@ class PrintStream private (
    * This is consistent with the behavior of the JDK.
    */
 
-  override def write(b: Int): Unit = {
+  override def write(b: Int): Unit =
     ensureOpenAndTrapIOExceptions {
       out.write(b)
       if (autoFlush && b == '\n') flush()
     }
-  }
 
-  override def write(buf: Array[Byte], off: Int, len: Int): Unit = {
+  override def write(buf: Array[Byte], off: Int, len: Int): Unit =
     ensureOpenAndTrapIOExceptions {
       out.write(buf, off, len)
       if (autoFlush) flush()
     }
-  }
 
-  def print(b: Boolean): Unit = printString(String.valueOf(b))
-  def print(c: Char): Unit = printString(String.valueOf(c))
-  def print(i: Int): Unit = printString(String.valueOf(i))
-  def print(l: Long): Unit = printString(String.valueOf(l))
-  def print(f: Float): Unit = printString(String.valueOf(f))
-  def print(d: Double): Unit = printString(String.valueOf(d))
-  def print(s: String): Unit = printString(if (s == null) "null" else s)
+  def print(b: Boolean): Unit  = printString(String.valueOf(b))
+  def print(c: Char): Unit     = printString(String.valueOf(c))
+  def print(i: Int): Unit      = printString(String.valueOf(i))
+  def print(l: Long): Unit     = printString(String.valueOf(l))
+  def print(f: Float): Unit    = printString(String.valueOf(f))
+  def print(d: Double): Unit   = printString(String.valueOf(d))
+  def print(s: String): Unit   = printString(if (s == null) "null" else s)
   def print(obj: AnyRef): Unit = printString(String.valueOf(obj))
 
   private def printString(s: String): Unit = ensureOpenAndTrapIOExceptions {
@@ -160,15 +161,15 @@ class PrintStream private (
     if (autoFlush) flush()
   }
 
-  def println(b: Boolean): Unit = { print(b); println() }
-  def println(c: Char): Unit = { print(c); println() }
-  def println(i: Int): Unit = { print(i); println() }
-  def println(l: Long): Unit = { print(l); println() }
-  def println(f: Float): Unit = { print(f); println() }
-  def println(d: Double): Unit = { print(d); println() }
+  def println(b: Boolean): Unit     = { print(b); println() }
+  def println(c: Char): Unit        = { print(c); println() }
+  def println(i: Int): Unit         = { print(i); println() }
+  def println(l: Long): Unit        = { print(l); println() }
+  def println(f: Float): Unit       = { print(f); println() }
+  def println(d: Double): Unit      = { print(d); println() }
   def println(s: Array[Char]): Unit = { print(s); println() }
-  def println(s: String): Unit = { print(s); println() }
-  def println(obj: AnyRef): Unit = { print(obj); println() }
+  def println(s: String): Unit      = { print(s); println() }
+  def println(obj: AnyRef): Unit    = { print(obj); println() }
 
   def printf(fmt: String, args: Array[Object]): PrintStream =
     format(fmt, args)
@@ -200,17 +201,14 @@ class PrintStream private (
     this
   }
 
-  @inline private[this] def trapIOExceptions(body: => Unit): Unit = {
+  @inline private[this] def trapIOExceptions(body: => Unit): Unit =
     try {
       body
     } catch {
       case _: IOException => setError()
     }
-  }
 
-  @inline private[this] def ensureOpenAndTrapIOExceptions(
-      body: => Unit): Unit = {
+  @inline private[this] def ensureOpenAndTrapIOExceptions(body: => Unit): Unit =
     if (closed) setError()
     else trapIOExceptions(body)
-  }
 }

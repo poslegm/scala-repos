@@ -13,12 +13,14 @@ import akka.actor.Actor
 import akka.actor.Deploy
 
 object MembershipChangeListenerUpMultiJvmSpec extends MultiNodeConfig {
-  val first = role("first")
+  val first  = role("first")
   val second = role("second")
-  val third = role("third")
+  val third  = role("third")
 
-  commonConfig(debugConfig(on = false).withFallback(
-          MultiNodeClusterSpec.clusterConfigWithFailureDetectorPuppet))
+  commonConfig(
+    debugConfig(on = false)
+      .withFallback(MultiNodeClusterSpec.clusterConfigWithFailureDetectorPuppet)
+  )
 }
 
 class MembershipChangeListenerUpMultiJvmNode1
@@ -42,19 +44,22 @@ abstract class MembershipChangeListenerUpSpec
       awaitClusterUp(first)
 
       runOn(first, second) {
-        val latch = TestLatch()
+        val latch             = TestLatch()
         val expectedAddresses = Set(first, second) map address
-        cluster.subscribe(system.actorOf(Props(new Actor {
-          var members = Set.empty[Member]
-          def receive = {
-            case state: CurrentClusterState ⇒ members = state.members
-            case MemberUp(m) ⇒
-              members = members - m + m
-              if (members.map(_.address) == expectedAddresses)
-                latch.countDown()
-            case _ ⇒ // ignore
-          }
-        }).withDeploy(Deploy.local)), classOf[MemberEvent])
+        cluster.subscribe(
+          system.actorOf(Props(new Actor {
+            var members = Set.empty[Member]
+            def receive = {
+              case state: CurrentClusterState ⇒ members = state.members
+              case MemberUp(m) ⇒
+                members = members - m + m
+                if (members.map(_.address) == expectedAddresses)
+                  latch.countDown()
+              case _ ⇒ // ignore
+            }
+          }).withDeploy(Deploy.local)),
+          classOf[MemberEvent]
+        )
         enterBarrier("listener-1-registered")
         cluster.join(first)
         latch.await
@@ -69,18 +74,21 @@ abstract class MembershipChangeListenerUpSpec
 
     "(when three nodes) after cluster convergence updates the membership table then all MembershipChangeListeners should be triggered" taggedAs LongRunningTest in {
 
-      val latch = TestLatch()
+      val latch             = TestLatch()
       val expectedAddresses = Set(first, second, third) map address
-      cluster.subscribe(system.actorOf(Props(new Actor {
-        var members = Set.empty[Member]
-        def receive = {
-          case state: CurrentClusterState ⇒ members = state.members
-          case MemberUp(m) ⇒
-            members = members - m + m
-            if (members.map(_.address) == expectedAddresses) latch.countDown()
-          case _ ⇒ // ignore
-        }
-      }).withDeploy(Deploy.local)), classOf[MemberEvent])
+      cluster.subscribe(
+        system.actorOf(Props(new Actor {
+          var members = Set.empty[Member]
+          def receive = {
+            case state: CurrentClusterState ⇒ members = state.members
+            case MemberUp(m) ⇒
+              members = members - m + m
+              if (members.map(_.address) == expectedAddresses) latch.countDown()
+            case _ ⇒ // ignore
+          }
+        }).withDeploy(Deploy.local)),
+        classOf[MemberEvent]
+      )
       enterBarrier("listener-2-registered")
 
       runOn(third) {

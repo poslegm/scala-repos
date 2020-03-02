@@ -31,13 +31,14 @@ import field.joda._
 class BasicTestRecord private () extends Record[BasicTestRecord] {
   def meta = BasicTestRecord
 
-  object field1 extends StringField(this, 10)
-  object field2 extends StringField(this, 10)
+  object field1     extends StringField(this, 10)
+  object field2     extends StringField(this, 10)
   object fieldThree extends StringField(this, 10)
 }
 
 object BasicTestRecord
-    extends BasicTestRecord with MetaRecord[BasicTestRecord] {
+    extends BasicTestRecord
+    with MetaRecord[BasicTestRecord] {
   override def fieldOrder = List(field2, field1)
 }
 
@@ -50,13 +51,14 @@ class PasswordTestRecord private () extends Record[PasswordTestRecord] {
     def validateNonEmptyPassword(v: String): List[FieldError] =
       v match {
         case "testvalue" => Text("no way!")
-        case _ => Nil
+        case _           => Nil
       }
   }
 }
 
 object PasswordTestRecord
-    extends PasswordTestRecord with MetaRecord[PasswordTestRecord]
+    extends PasswordTestRecord
+    with MetaRecord[PasswordTestRecord]
 
 class StringTestRecord private () extends Record[StringTestRecord] {
   def meta = StringTestRecord
@@ -68,11 +70,12 @@ class StringTestRecord private () extends Record[StringTestRecord] {
 }
 
 object StringTestRecord
-    extends StringTestRecord with MetaRecord[StringTestRecord]
+    extends StringTestRecord
+    with MetaRecord[StringTestRecord]
 
 object MyTestEnum extends Enumeration {
-  val ONE = Value("ONE")
-  val TWO = Value("TWO")
+  val ONE   = Value("ONE")
+  val TWO   = Value("TWO")
   val THREE = Value("THREE")
 }
 
@@ -80,28 +83,28 @@ trait HarnessedLifecycleCallbacks extends LifecycleCallbacks {
   this: BaseField =>
 
   var beforeValidationHarness: () => Unit = () => ()
-  override def beforeValidation = beforeValidationHarness()
-  var afterValidationHarness: () => Unit = () => ()
-  override def afterValidation = afterValidationHarness()
+  override def beforeValidation           = beforeValidationHarness()
+  var afterValidationHarness: () => Unit  = () => ()
+  override def afterValidation            = afterValidationHarness()
 
-  var beforeSaveHarness: () => Unit = () => ()
-  override def beforeSave = beforeSaveHarness()
+  var beforeSaveHarness: () => Unit   = () => ()
+  override def beforeSave             = beforeSaveHarness()
   var beforeCreateHarness: () => Unit = () => ()
-  override def beforeCreate = beforeCreateHarness()
+  override def beforeCreate           = beforeCreateHarness()
   var beforeUpdateHarness: () => Unit = () => ()
-  override def beforeUpdate = beforeUpdateHarness()
+  override def beforeUpdate           = beforeUpdateHarness()
 
-  var afterSaveHarness: () => Unit = () => ()
-  override def afterSave = afterSaveHarness()
+  var afterSaveHarness: () => Unit   = () => ()
+  override def afterSave             = afterSaveHarness()
   var afterCreateHarness: () => Unit = () => ()
-  override def afterCreate = afterCreateHarness()
+  override def afterCreate           = afterCreateHarness()
   var afterUpdateHarness: () => Unit = () => ()
-  override def afterUpdate = afterUpdateHarness()
+  override def afterUpdate           = afterUpdateHarness()
 
   var beforeDeleteHarness: () => Unit = () => ()
-  override def beforeDelete = beforeDeleteHarness()
-  var afterDeleteHarness: () => Unit = () => ()
-  override def afterDelete = afterDeleteHarness()
+  override def beforeDelete           = beforeDeleteHarness()
+  var afterDeleteHarness: () => Unit  = () => ()
+  override def afterDelete            = afterDeleteHarness()
 }
 
 class LifecycleTestRecord private () extends Record[LifecycleTestRecord] {
@@ -111,30 +114,33 @@ class LifecycleTestRecord private () extends Record[LifecycleTestRecord] {
     meta.foreachCallback(this, f)
 
   object stringFieldWithCallbacks
-      extends StringField(this, 100) with HarnessedLifecycleCallbacks
+      extends StringField(this, 100)
+      with HarnessedLifecycleCallbacks
 }
 
 object LifecycleTestRecord
-    extends LifecycleTestRecord with MetaRecord[LifecycleTestRecord]
+    extends LifecycleTestRecord
+    with MetaRecord[LifecycleTestRecord]
 
 class ValidationTestRecord private () extends Record[ValidationTestRecord] {
   def meta = ValidationTestRecord
 
   object stringFieldWithValidation extends StringField(this, 100) {
     var validationHarness: ValueType => List[FieldError] = x => Nil
-    override def validations = validationHarness :: super.validations
+    override def validations                             = validationHarness :: super.validations
   }
 }
 
 object ValidationTestRecord
-    extends ValidationTestRecord with MetaRecord[ValidationTestRecord]
+    extends ValidationTestRecord
+    with MetaRecord[ValidationTestRecord]
 
 class FilterTestRecord private () extends Record[FilterTestRecord] {
   def meta = FilterTestRecord
 
   object stringFieldWithFiltering extends StringField(this, 100) {
     var setFilterHarness: ValueType => ValueType = identity _
-    override def setFilter = setFilterHarness :: super.setFilter
+    override def setFilter                       = setFilterHarness :: super.setFilter
 
     var setFilterBoxHarness: Box[MyType] => Box[MyType] = identity _
     override protected def setFilterBox =
@@ -143,7 +149,8 @@ class FilterTestRecord private () extends Record[FilterTestRecord] {
 }
 
 object FilterTestRecord
-    extends FilterTestRecord with MetaRecord[FilterTestRecord]
+    extends FilterTestRecord
+    with MetaRecord[FilterTestRecord]
 
 class FieldTypeTestRecord private () extends Record[FieldTypeTestRecord] {
   def meta = FieldTypeTestRecord
@@ -258,11 +265,12 @@ class FieldTypeTestRecord private () extends Record[FieldTypeTestRecord] {
   }
   object optionalJodaTimeField extends OptionalJodaTimeField(this)
 
-  def fieldsToCompare = {
+  def fieldsToCompare =
     fields
       .filterNot(_.name == "mandatoryBinaryField") // binarys don't compare
-      .filterNot(_.name == "mandatoryDateTimeField") // toInternetDate is lossy (doesn't retain time to ms precision)
-  }
+      .filterNot(
+        _.name == "mandatoryDateTimeField"
+      ) // toInternetDate is lossy (doesn't retain time to ms precision)
 
   override def equals(other: Any): Boolean = other match {
     case that: FieldTypeTestRecord =>
@@ -274,7 +282,8 @@ class FieldTypeTestRecord private () extends Record[FieldTypeTestRecord] {
 }
 
 object FieldTypeTestRecord
-    extends FieldTypeTestRecord with MetaRecord[FieldTypeTestRecord]
+    extends FieldTypeTestRecord
+    with MetaRecord[FieldTypeTestRecord]
 
 trait SyntheticTestTrait {
 
@@ -282,7 +291,8 @@ trait SyntheticTestTrait {
 }
 
 class SyntheticTestRecord
-    extends Record[SyntheticTestRecord] with SyntheticTestTrait {
+    extends Record[SyntheticTestRecord]
+    with SyntheticTestTrait {
 
   object genericField extends StringField(this, 1024)
 
@@ -290,7 +300,8 @@ class SyntheticTestRecord
 }
 
 object SyntheticTestRecord
-    extends SyntheticTestRecord with MetaRecord[SyntheticTestRecord]
+    extends SyntheticTestRecord
+    with MetaRecord[SyntheticTestRecord]
 
 class CustomFormatDateTimeRecord private ()
     extends Record[CustomFormatDateTimeRecord] {
@@ -321,4 +332,5 @@ class CustomTypeIntFieldRecord private ()
 }
 
 object CustomTypeIntFieldRecord
-    extends CustomTypeIntFieldRecord with MetaRecord[CustomTypeIntFieldRecord]
+    extends CustomTypeIntFieldRecord
+    with MetaRecord[CustomTypeIntFieldRecord]

@@ -3,7 +3,10 @@ package com.twitter.finagle.http
 import com.twitter.finagle.http.util.StringUtil
 import java.nio.charset.Charset
 import java.util.{List => JList, Map => JMap}
-import org.jboss.netty.handler.codec.http.{QueryStringDecoder, QueryStringEncoder}
+import org.jboss.netty.handler.codec.http.{
+  QueryStringDecoder,
+  QueryStringEncoder
+}
 import scala.collection.immutable
 import scala.collection.JavaConverters._
 
@@ -22,8 +25,8 @@ abstract class ParamMap
     */
   def +[B >: String](kv: (String, B)): ParamMap = {
     val (key, value) = (kv._1, kv._2.toString)
-    val map = MapParamMap.tuplesToMultiMap(iterator.toSeq)
-    val mapWithKey = map.updated(key, Seq(value))
+    val map          = MapParamMap.tuplesToMultiMap(iterator.toSeq)
+    val mapWithKey   = map.updated(key, Seq(value))
     new MapParamMap(mapWithKey, isValid)
   }
 
@@ -106,8 +109,9 @@ abstract class ParamMap
 
 /** Map-backed ParamMap. */
 class MapParamMap(
-    underlying: Map[String, Seq[String]], val isValid: Boolean = true)
-    extends ParamMap {
+    underlying: Map[String, Seq[String]],
+    val isValid: Boolean = true
+) extends ParamMap {
 
   def get(name: String): Option[String] =
     underlying.get(name) flatMap { _.headOption }
@@ -115,9 +119,8 @@ class MapParamMap(
   def getAll(name: String): Iterable[String] =
     underlying.getOrElse(name, Nil)
 
-  def iterator: Iterator[(String, String)] = {
+  def iterator: Iterator[(String, String)] =
     for ((k, vs) <- underlying.iterator; v <- vs) yield (k, v)
-  }
 
   override def keySet: Set[String] =
     underlying.keySet
@@ -131,27 +134,23 @@ object MapParamMap {
     new MapParamMap(MapParamMap.tuplesToMultiMap(params))
 
   def apply(map: Map[String, String]): MapParamMap =
-    new MapParamMap(
-        map.mapValues { value =>
-      Seq(value)
-    })
+    new MapParamMap(map.mapValues(value => Seq(value)))
 
   private[http] def tuplesToMultiMap(
       tuples: Seq[Tuple2[String, String]]
-  ): Map[String, Seq[String]] = {
+  ): Map[String, Seq[String]] =
     tuples.groupBy { case (k, v) => k }.mapValues {
-      case values => values.map { _._2 }
+      case values => values.map(_._2)
     }
-  }
 }
 
 /** Empty ParamMap */
 object EmptyParamMap extends ParamMap {
-  val isValid = true
-  def get(name: String): Option[String] = None
+  val isValid                                = true
+  def get(name: String): Option[String]      = None
   def getAll(name: String): Iterable[String] = Nil
-  def iterator: Iterator[(String, String)] = Iterator.empty
-  override def -(name: String): ParamMap = this
+  def iterator: Iterator[(String, String)]   = Iterator.empty
+  override def -(name: String): ParamMap     = this
 }
 
 /**
@@ -166,7 +165,8 @@ class RequestParamMap(val request: Request) extends ParamMap {
   private[this] var _isValid = true
 
   private[this] val getParams: JMap[String, JList[String]] = parseParams(
-      request.uri)
+    request.uri
+  )
 
   private[this] val postParams: JMap[String, JList[String]] = {
     if (request.method != Method.Trace &&
@@ -179,7 +179,7 @@ class RequestParamMap(val request: Request) extends ParamMap {
 
   // Convert IllegalArgumentException to ParamMapException so it can be handled
   // appropriately (e.g., 400 Bad Request).
-  private[this] def parseParams(s: String): JMap[String, JList[String]] = {
+  private[this] def parseParams(s: String): JMap[String, JList[String]] =
     try {
       new QueryStringDecoder(s).getParameters
     } catch {
@@ -187,7 +187,6 @@ class RequestParamMap(val request: Request) extends ParamMap {
         _isValid = false
         ParamMap.EmptyJMap
     }
-  }
 
   override def getAll(name: String): Iterable[String] =
     jgetAll(postParams, name) ++ jgetAll(getParams, name)
@@ -197,7 +196,7 @@ class RequestParamMap(val request: Request) extends ParamMap {
   /** Get value */
   def get(name: String): Option[String] =
     jget(postParams, name) match {
-      case None => jget(getParams, name)
+      case None  => jget(getParams, name)
       case value => value
     }
 
@@ -212,7 +211,9 @@ class RequestParamMap(val request: Request) extends ParamMap {
 
   // Get value from JMap, which might be null
   private def jget(
-      params: JMap[String, JList[String]], name: String): Option[String] = {
+      params: JMap[String, JList[String]],
+      name: String
+  ): Option[String] = {
     val values = params.get(name)
     if (values != null && !values.isEmpty()) {
       Some(values.get(0))
@@ -223,7 +224,9 @@ class RequestParamMap(val request: Request) extends ParamMap {
 
   // Get values from JMap, which might be null
   private def jgetAll(
-      params: JMap[String, JList[String]], name: String): Iterable[String] = {
+      params: JMap[String, JList[String]],
+      name: String
+  ): Iterable[String] = {
     val values = params.get(name)
     if (values != null) {
       values.asScala
@@ -234,11 +237,10 @@ class RequestParamMap(val request: Request) extends ParamMap {
 
   // Get iterable for JMap, which might be null
   private def jiterator(
-      params: JMap[String, JList[String]]): Iterator[(String, String)] =
+      params: JMap[String, JList[String]]
+  ): Iterator[(String, String)] =
     params.entrySet.asScala.flatMap { entry =>
-      entry.getValue.asScala map { value =>
-        (entry.getKey, value)
-      }
+      entry.getValue.asScala map { value => (entry.getKey, value) }
     }.toIterator
 }
 

@@ -19,13 +19,14 @@ import akka.actor.ActorIdentity
 import akka.actor.Identify
 
 object RemoteDeliveryMultiJvmSpec extends MultiNodeConfig {
-  val first = role("first")
+  val first  = role("first")
   val second = role("second")
-  val third = role("third")
+  val third  = role("third")
 
   commonConfig(
-      debugConfig(on = false)
-        .withFallback(ConfigFactory.parseString("akka.loglevel=INFO")))
+    debugConfig(on = false)
+      .withFallback(ConfigFactory.parseString("akka.loglevel=INFO"))
+  )
 
   final case class Letter(n: Int, route: List[ActorRef])
 
@@ -41,7 +42,8 @@ class RemoteDeliveryMultiJvmNode2 extends RemoteDeliverySpec
 class RemoteDeliveryMultiJvmNode3 extends RemoteDeliverySpec
 
 abstract class RemoteDeliverySpec
-    extends MultiNodeSpec(RemoteDeliveryMultiJvmSpec) with STMultiNodeSpec
+    extends MultiNodeSpec(RemoteDeliveryMultiJvmSpec)
+    with STMultiNodeSpec
     with ImplicitSender {
 
   import RemoteDeliveryMultiJvmSpec._
@@ -51,7 +53,8 @@ abstract class RemoteDeliverySpec
   def identify(role: RoleName, actorName: String): ActorRef =
     within(10 seconds) {
       system.actorSelection(node(role) / "user" / actorName) ! Identify(
-          actorName)
+        actorName
+      )
       expectMsgType[ActorIdentity].ref.get
     }
 
@@ -62,9 +65,9 @@ abstract class RemoteDeliverySpec
       enterBarrier("actors-started")
 
       runOn(first) {
-        val p1 = identify(first, "postman-first")
-        val p2 = identify(second, "postman-second")
-        val p3 = identify(third, "postman-third")
+        val p1    = identify(first, "postman-first")
+        val p2    = identify(second, "postman-second")
+        val p3    = identify(third, "postman-third")
         val route = p2 :: p3 :: p2 :: p3 :: testActor :: Nil
 
         for (n ← 1 to 500) {

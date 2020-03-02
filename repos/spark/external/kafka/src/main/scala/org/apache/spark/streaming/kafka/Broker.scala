@@ -24,24 +24,22 @@ import org.apache.spark.annotation.Experimental
   * Differs from the Kafka project's internal kafka.cluster.Broker, which contains a server ID.
   */
 final class Broker private (
-                            /** Broker's hostname */
-                            val host: String,
-                            /** Broker's port */
-                            val port: Int)
-    extends Serializable {
+    /** Broker's hostname */
+    val host: String,
+    /** Broker's port */
+    val port: Int
+) extends Serializable {
   override def equals(obj: Any): Boolean = obj match {
     case that: Broker =>
       this.host == that.host && this.port == that.port
     case _ => false
   }
 
-  override def hashCode: Int = {
+  override def hashCode: Int =
     41 * (41 + host.hashCode) + port
-  }
 
-  override def toString(): String = {
+  override def toString(): String =
     s"Broker($host, $port)"
-  }
 }
 
 /**
@@ -56,11 +54,10 @@ object Broker {
   def apply(host: String, port: Int): Broker =
     new Broker(host, port)
 
-  def unapply(broker: Broker): Option[(String, Int)] = {
+  def unapply(broker: Broker): Option[(String, Int)] =
     if (broker == null) {
       None
     } else {
       Some((broker.host, broker.port))
     }
-  }
 }

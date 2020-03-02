@@ -24,8 +24,7 @@ import kafka.utils.{SystemTime, threadsafe}
 import scala.math._
 
 @threadsafe
-private[timer] class TimerTaskList(taskCounter: AtomicInteger)
-    extends Delayed {
+private[timer] class TimerTaskList(taskCounter: AtomicInteger) extends Delayed {
 
   // TimerTaskList forms a doubly linked cyclic list using a dummy root entry
   // root.next points to the head
@@ -38,17 +37,15 @@ private[timer] class TimerTaskList(taskCounter: AtomicInteger)
 
   // Set the bucket's expiration time
   // Returns true if the expiration time is changed
-  def setExpiration(expirationMs: Long): Boolean = {
+  def setExpiration(expirationMs: Long): Boolean =
     expiration.getAndSet(expirationMs) != expirationMs
-  }
 
   // Get the bucket's expiration time
-  def getExpiration(): Long = {
+  def getExpiration(): Long =
     expiration.get()
-  }
 
   // Apply the supplied function to each of tasks in this list
-  def foreach(f: (TimerTask) => Unit): Unit = {
+  def foreach(f: (TimerTask) => Unit): Unit =
     synchronized {
       var entry = root.next
       while (entry ne root) {
@@ -59,7 +56,6 @@ private[timer] class TimerTaskList(taskCounter: AtomicInteger)
         entry = nextEntry
       }
     }
-  }
 
   // Add a timer task entry to this list
   def add(timerTaskEntry: TimerTaskEntry): Unit = {
@@ -89,7 +85,7 @@ private[timer] class TimerTaskList(taskCounter: AtomicInteger)
   }
 
   // Remove the specified timer task entry from this list
-  def remove(timerTaskEntry: TimerTaskEntry): Unit = {
+  def remove(timerTaskEntry: TimerTaskEntry): Unit =
     synchronized {
       timerTaskEntry.synchronized {
         if (timerTaskEntry.list eq this) {
@@ -102,10 +98,9 @@ private[timer] class TimerTaskList(taskCounter: AtomicInteger)
         }
       }
     }
-  }
 
   // Remove all task entries and apply the supplied function to each of them
-  def flush(f: (TimerTaskEntry) => Unit): Unit = {
+  def flush(f: (TimerTaskEntry) => Unit): Unit =
     synchronized {
       var head = root.next
       while (head ne root) {
@@ -115,12 +110,12 @@ private[timer] class TimerTaskList(taskCounter: AtomicInteger)
       }
       expiration.set(-1L)
     }
-  }
 
-  def getDelay(unit: TimeUnit): Long = {
+  def getDelay(unit: TimeUnit): Long =
     unit.convert(
-        max(getExpiration - SystemTime.milliseconds, 0), TimeUnit.MILLISECONDS)
-  }
+      max(getExpiration - SystemTime.milliseconds, 0),
+      TimeUnit.MILLISECONDS
+    )
 
   def compareTo(d: Delayed): Int = {
 
@@ -135,7 +130,7 @@ private[timer] class TimerTaskList(taskCounter: AtomicInteger)
 private[timer] class TimerTaskEntry(val timerTask: TimerTask) {
 
   @volatile
-  var list: TimerTaskList = null
+  var list: TimerTaskList  = null
   var next: TimerTaskEntry = null
   var prev: TimerTaskEntry = null
 
@@ -143,9 +138,8 @@ private[timer] class TimerTaskEntry(val timerTask: TimerTask) {
   // setTimerTaskEntry will remove it.
   if (timerTask != null) timerTask.setTimerTaskEntry(this)
 
-  def cancelled: Boolean = {
+  def cancelled: Boolean =
     timerTask.getTimerTaskEntry != this
-  }
 
   def remove(): Unit = {
     var currentList = list

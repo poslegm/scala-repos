@@ -20,11 +20,13 @@ import scala.language.postfixOps
 class MockClient extends Client {
   def set(queueName: String, value: Buf, expiry: Time = Time.epoch) = null
   def get(
-      queueName: String, waitUpTo: Duration = 0.seconds): Future[Option[Buf]] =
+      queueName: String,
+      waitUpTo: Duration = 0.seconds
+  ): Future[Option[Buf]] =
     null
-  def delete(queueName: String): Future[Response] = null
-  def flush(queueName: String): Future[Response] = null
-  def read(queueName: String): ReadHandle = null
+  def delete(queueName: String): Future[Response]                    = null
+  def flush(queueName: String): Future[Response]                     = null
+  def read(queueName: String): ReadHandle                            = null
   def write(queueName: String, offer: Offer[Buf]): Future[Throwable] = null
   def close() {}
 }
@@ -42,9 +44,9 @@ class ClientTest extends FunSuite with MockitoSugar {
 
   trait ClientReliablyHelper extends GlobalHelper {
     val messages = new Broker[ReadMessage]
-    val error = new Broker[Throwable]
-    val client = Mockito.spy(new MockClient)
-    val rh = mock[ReadHandle]
+    val error    = new Broker[Throwable]
+    val client   = Mockito.spy(new MockClient)
+    val rh       = mock[ReadHandle]
     when(rh.messages) thenReturn messages.recv
     when(rh.error) thenReturn error.recv
     when(client.read("foo")) thenReturn rh
@@ -77,8 +79,8 @@ class ClientTest extends FunSuite with MockitoSugar {
       assert((h.messages ??) == m)
 
       val messages2 = new Broker[ReadMessage]
-      val error2 = new Broker[Throwable]
-      val rh2 = mock[ReadHandle]
+      val error2    = new Broker[Throwable]
+      val rh2       = mock[ReadHandle]
       when(rh2.messages) thenReturn messages2.recv
       when(rh2.error) thenReturn error2.recv
       when(client.read("foo")) thenReturn rh2
@@ -103,9 +105,9 @@ class ClientTest extends FunSuite with MockitoSugar {
   test("Client.readReliably should reconnect on failure(with delay)") {
     Time.withCurrentTimeFrozen { tc =>
       new ClientReliablyHelper {
-        val timer = new MockTimer
+        val timer  = new MockTimer
         val delays = Stream(1.seconds, 2.seconds, 3.second)
-        val h = client.readReliably("foo", timer, delays)
+        val h      = client.readReliably("foo", timer, delays)
         verify(client).read("foo")
 
         val errf = (h.error ?)
@@ -139,17 +141,17 @@ class ClientTest extends FunSuite with MockitoSugar {
 
   test("ConnectedClient.read should interrupt current request on close") {
     new GlobalHelper {
-      val queueName = "foo"
+      val queueName    = "foo"
       val queueNameBuf = Buf.Utf8(queueName)
-      val factory = mock[ServiceFactory[Command, Response]]
-      val service = mock[Service[Command, Response]]
-      val client = new ConnectedClient(factory)
-      val open = Open(queueNameBuf, Some(Duration.Top))
+      val factory      = mock[ServiceFactory[Command, Response]]
+      val service      = mock[Service[Command, Response]]
+      val client       = new ConnectedClient(factory)
+      val open         = Open(queueNameBuf, Some(Duration.Top))
       val closeAndOpen = CloseAndOpen(queueNameBuf, Some(Duration.Top))
-      val abort = Abort(queueNameBuf)
+      val abort        = Abort(queueNameBuf)
 
       when(factory.apply()) thenReturn Future(service)
-      val promise = new Promise[Response]()
+      val promise                  = new Promise[Response]()
       @volatile var wasInterrupted = false
       promise.setInterruptHandler {
         case _cause =>
@@ -168,11 +170,12 @@ class ClientTest extends FunSuite with MockitoSugar {
   }
 
   test(
-      "ThriftConnectedClient.read should interrupt current trift request on close") {
-    val queueName = "foo"
-    val clientFactory = mock[FinagledClientFactory]
+    "ThriftConnectedClient.read should interrupt current trift request on close"
+  ) {
+    val queueName      = "foo"
+    val clientFactory  = mock[FinagledClientFactory]
     val finagledClient = mock[FinagledClosableClient]
-    val client = new ThriftConnectedClient(clientFactory, Duration.Top)
+    val client         = new ThriftConnectedClient(clientFactory, Duration.Top)
 
     when(clientFactory.apply()) thenReturn Future(finagledClient)
     val promise = new Promise[Seq[Item]]()

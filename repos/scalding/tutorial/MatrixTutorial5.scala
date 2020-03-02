@@ -8,7 +8,7 @@ import com.twitter.scalding.mathematics.Matrix
  *
  * Loads a directed graph adjacency matrix where a[i,j] = 1 if there is an edge from a[i] to b[j]
  * and computes the jaccard similarity between any two pairs of vectors
- * 
+ *
  * ../scripts/scald.rb --local MatrixTutorial5.scala --input data/graph.tsv --output data/jaccardSim.tsv
  *
  */
@@ -24,8 +24,8 @@ class ComputeJaccardJob(args: Args) extends Job(args) {
 
   // intersectMat holds the size of the intersection of row(a)_i n row (b)_j
   val intersectMat = aBinary * aBinary.transpose
-  val aSumVct = aBinary.sumColVectors
-  val bSumVct = aBinary.sumRowVectors
+  val aSumVct      = aBinary.sumColVectors
+  val bSumVct      = aBinary.sumRowVectors
 
   //Using zip to repeat the row and column vectors values on the right hand
   //for all non-zeroes on the left hand matrix

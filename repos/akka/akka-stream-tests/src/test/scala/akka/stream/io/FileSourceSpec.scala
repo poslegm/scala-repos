@@ -34,12 +34,13 @@ object FileSourceSpec {
 class FileSourceSpec extends AkkaSpec(UnboundedMailboxConfig) {
 
   val settings = ActorMaterializerSettings(system).withDispatcher(
-      "akka.actor.default-dispatcher")
+    "akka.actor.default-dispatcher"
+  )
   implicit val materializer = ActorMaterializer(settings)
 
   val TestText = {
     ("a" * 1000) + ("b" * 1000) + ("c" * 1000) + ("d" * 1000) + ("e" * 1000) +
-    ("f" * 1000)
+      ("f" * 1000)
   }
 
   val testFile = {
@@ -62,16 +63,14 @@ class FileSourceSpec extends AkkaSpec(UnboundedMailboxConfig) {
   val manyLines = {
     val f = File.createTempFile(s"file-source-spec-lines_$LinesCount", "tmp")
     val w = new OutputStreamWriter(new FileOutputStream(f), UTF_8)
-    (1 to LinesCount).foreach { l ⇒
-      w.append("a" * l).append("\n")
-    }
+    (1 to LinesCount).foreach(l ⇒ w.append("a" * l).append("\n"))
     w.close()
     f
   }
 
   "File Source" must {
     "read contents from a file" in assertAllStagesStopped {
-      val chunkSize = 512
+      val chunkSize        = 512
       val bufferAttributes = Attributes.inputBuffer(1, 2)
 
       val p = FileIO
@@ -107,7 +106,7 @@ class FileSourceSpec extends AkkaSpec(UnboundedMailboxConfig) {
     }
 
     "complete only when all contents of a file have been signalled" in assertAllStagesStopped {
-      val chunkSize = 256
+      val chunkSize        = 256
       val bufferAttributes = Attributes.inputBuffer(4, 8)
 
       val demandAllButOneChunks = TestText.length / chunkSize - 1
@@ -129,8 +128,8 @@ class FileSourceSpec extends AkkaSpec(UnboundedMailboxConfig) {
       }
 
       sub.request(demandAllButOneChunks)
-      for (i ← 1 to demandAllButOneChunks) c.expectNext().utf8String should ===(
-          nextChunk())
+      for (i ← 1 to demandAllButOneChunks)
+        c.expectNext().utf8String should ===(nextChunk())
       c.expectNoMsg(300.millis)
 
       sub.request(1)
@@ -151,10 +150,12 @@ class FileSourceSpec extends AkkaSpec(UnboundedMailboxConfig) {
       c.expectError()
     }
 
-    List(Settings(chunkSize = 512, readAhead = 2),
-         Settings(chunkSize = 512, readAhead = 4),
-         Settings(chunkSize = 2048, readAhead = 2),
-         Settings(chunkSize = 2048, readAhead = 4)) foreach { settings ⇒
+    List(
+      Settings(chunkSize = 512, readAhead = 2),
+      Settings(chunkSize = 512, readAhead = 4),
+      Settings(chunkSize = 2048, readAhead = 2),
+      Settings(chunkSize = 2048, readAhead = 4)
+    ) foreach { settings ⇒
       import settings._
 
       s"count lines in real file (chunkSize = $chunkSize, readAhead = $readAhead)" in {
@@ -172,8 +173,8 @@ class FileSourceSpec extends AkkaSpec(UnboundedMailboxConfig) {
     }
 
     "use dedicated blocking-io-dispatcher by default" in assertAllStagesStopped {
-      val sys = ActorSystem("dispatcher-testing", UnboundedMailboxConfig)
-      val materializer = ActorMaterializer()(sys)
+      val sys              = ActorSystem("dispatcher-testing", UnboundedMailboxConfig)
+      val materializer     = ActorMaterializer()(sys)
       implicit val timeout = Timeout(500.millis)
 
       try {
@@ -187,7 +188,8 @@ class FileSourceSpec extends AkkaSpec(UnboundedMailboxConfig) {
         val ref = expectMsgType[Children].children
           .find(_.path.toString contains "fileSource")
           .get
-        try assertDispatcher(ref, "akka.stream.default-blocking-io-dispatcher") finally p
+        try assertDispatcher(ref, "akka.stream.default-blocking-io-dispatcher")
+        finally p
           .cancel()
       } finally shutdown(sys)
     }
@@ -195,15 +197,16 @@ class FileSourceSpec extends AkkaSpec(UnboundedMailboxConfig) {
     //FIXME: overriding dispatcher should be made available with dispatcher alias support in materializer (#17929)
     "allow overriding the dispatcher using Attributes" in {
       pending
-      val sys = ActorSystem("dispatcher-testing", UnboundedMailboxConfig)
-      val materializer = ActorMaterializer()(sys)
+      val sys              = ActorSystem("dispatcher-testing", UnboundedMailboxConfig)
+      val materializer     = ActorMaterializer()(sys)
       implicit val timeout = Timeout(500.millis)
 
       try {
         val p = FileIO
           .fromFile(manyLines)
           .withAttributes(
-              ActorAttributes.dispatcher("akka.actor.default-dispatcher"))
+            ActorAttributes.dispatcher("akka.actor.default-dispatcher")
+          )
           .runWith(TestSink.probe)(materializer)
 
         materializer
@@ -213,7 +216,8 @@ class FileSourceSpec extends AkkaSpec(UnboundedMailboxConfig) {
         val ref = expectMsgType[Children].children
           .find(_.path.toString contains "File")
           .get
-        try assertDispatcher(ref, "akka.actor.default-dispatcher") finally p
+        try assertDispatcher(ref, "akka.actor.default-dispatcher")
+        finally p
           .cancel()
       } finally shutdown(sys)
     }

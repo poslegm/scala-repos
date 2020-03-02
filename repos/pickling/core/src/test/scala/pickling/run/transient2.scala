@@ -34,7 +34,7 @@ class OneToOneDependency[T](rdd: RDD[T]) extends NarrowDependency[T](rdd) {
 class SparkConf(loadDefaults: Boolean)
 class SparkContext(config: SparkConf)
 
-class RDD[T : ClassTag](
+class RDD[T: ClassTag](
     @transient private var sc: SparkContext,
     @transient private var deps: Seq[Dependency[_]]
 ) /*extends Serializable with Logging*/ {
@@ -50,9 +50,10 @@ class RDD[T : ClassTag](
   override def toString = s"RDD($x)"
 }
 
-class FlatMappedRDD[U : ClassTag, T : ClassTag](
-    val prev: RDD[T], f: T => TraversableOnce[U])
-    extends RDD[U](prev) {
+class FlatMappedRDD[U: ClassTag, T: ClassTag](
+    val prev: RDD[T],
+    f: T => TraversableOnce[U]
+) extends RDD[U](prev) {
 
   private var fun = f
 
@@ -68,14 +69,14 @@ class FlatMappedRDD[U : ClassTag, T : ClassTag](
 
 class Transient2SparkTest extends FunSuite {
   test("main") {
-    val sc = new SparkContext(new SparkConf(true))
+    val sc  = new SparkContext(new SparkConf(true))
     val rdd = new RDD[Int](sc, Seq(new Dependency(null)))
     // TODo - There's a bug with implicit expansion of Seq picklers, which we need to fix.
     //implicit def depP = PicklerUnpickler.generate[Dependency[_]]
     //implicit val seqDepp = Defaults.seqPickler[Dependency[_]]
     //implicit val rddpp = PicklerUnpickler.generate[RDD[Int]]
     //implicit val fmrddp = PicklerUnpickler.generate[FlatMappedRDD[Int, Int]]
-    val fmrdd = new FlatMappedRDD[Int, Int](rdd, (x: Int) => (1 to x).toList)
+    val fmrdd         = new FlatMappedRDD[Int, Int](rdd, (x: Int) => (1 to x).toList)
     val p: JSONPickle = fmrdd.pickle
     //System.err.println(p)
     val up = p.unpickle[FlatMappedRDD[Int, Int]]

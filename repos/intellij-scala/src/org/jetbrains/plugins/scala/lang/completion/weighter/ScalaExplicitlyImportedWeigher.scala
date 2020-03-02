@@ -11,7 +11,10 @@ import org.jetbrains.plugins.scala.lang.psi.api.statements.{ScValue, ScVariable}
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.ScNamedElement
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.imports.ScImportStmt
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.templates.ScTemplateBody
-import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{ScMember, ScObject}
+import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{
+  ScMember,
+  ScObject
+}
 import org.jetbrains.plugins.scala.lang.psi.{ScImportsHolder, ScalaPsiUtil}
 import org.jetbrains.plugins.scala.lang.resolve.ScalaResolveResult
 
@@ -24,7 +27,7 @@ import scala.collection.mutable.ArrayBuffer
 class ScalaExplicitlyImportedWeigher extends ProximityWeigher {
   def applyQualifier(qual: String, position: PsiElement): Option[Integer] = {
     if (position == null) return None
-    val index = qual.lastIndexOf('.')
+    val index       = qual.lastIndexOf('.')
     val qualNoPoint = if (index < 0) null else qual.substring(0, index)
     val tuple: (ArrayBuffer[ScImportStmt], Long) =
       position.getUserData(ScalaExplicitlyImportedWeigher.key)
@@ -47,11 +50,13 @@ class ScalaExplicitlyImportedWeigher extends ProximityWeigher {
       buffer = new ArrayBuffer[ScImportStmt]()
       treeWalkup(position.getContext, position)
       position.putUserData(
-          ScalaExplicitlyImportedWeigher.key, (buffer, currentModCount))
+        ScalaExplicitlyImportedWeigher.key,
+        (buffer, currentModCount)
+      )
     }
     val iter = buffer.iterator
     while (iter.hasNext) {
-      val stmt = iter.next()
+      val stmt     = iter.next()
       val exprIter = stmt.importExprs.iterator
       while (exprIter.hasNext) {
         val expr = exprIter.next()
@@ -104,12 +109,12 @@ class ScalaExplicitlyImportedWeigher extends ProximityWeigher {
             if (qualNoPoint != null) {
               val memberName = member match {
                 case named: ScNamedElement => named.name
-                case _ => member.getName
+                case _                     => member.getName
               }
               val qual = qualNoPoint + "." + memberName
               applyQualifier(qual, position) match {
                 case Some(x) => return Some(x)
-                case None =>
+                case None    =>
               }
             }
           case _ =>
@@ -124,7 +129,7 @@ class ScalaExplicitlyImportedWeigher extends ProximityWeigher {
     if (position == null) {
       return 0
     }
-    val elementFile: PsiFile = element.getContainingFile
+    val elementFile: PsiFile  = element.getContainingFile
     val positionFile: PsiFile = position.getContainingFile
     if (!positionFile.isInstanceOf[ScalaFile]) return 0
     if (positionFile != null && elementFile != null &&
@@ -136,12 +141,12 @@ class ScalaExplicitlyImportedWeigher extends ProximityWeigher {
         val qual: String = clazz.qualifiedName
         applyQualifier(qual, position) match {
           case Some(x) => return x
-          case None =>
+          case None    =>
         }
       case member: ScMember =>
         applyToMember(member, position) match {
           case Some(x) => return x
-          case None =>
+          case None    =>
         }
       case member: PsiMember if member.hasModifierProperty("static") =>
         val clazz = member.containingClass
@@ -149,12 +154,12 @@ class ScalaExplicitlyImportedWeigher extends ProximityWeigher {
           val qualNoPoint = clazz.qualifiedName
           val memberName = member match {
             case named: ScNamedElement => named.name
-            case _ => member.getName
+            case _                     => member.getName
           }
           val qual = qualNoPoint + "." + memberName
           applyQualifier(qual, position) match {
             case Some(x) => return x
-            case None =>
+            case None    =>
           }
         }
       case b: ScBindingPattern =>
@@ -162,12 +167,12 @@ class ScalaExplicitlyImportedWeigher extends ProximityWeigher {
           case v: ScValue =>
             applyToMember(v, position) match {
               case Some(x) => return x
-              case None =>
+              case None    =>
             }
           case v: ScVariable =>
             applyToMember(v, position) match {
               case Some(x) => return x
-              case None =>
+              case None    =>
             }
           case _ =>
         }

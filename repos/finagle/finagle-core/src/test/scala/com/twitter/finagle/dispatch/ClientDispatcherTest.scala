@@ -16,8 +16,8 @@ import org.scalatest.mock.MockitoSugar
 class ClientDispatcherTest extends FunSuite with MockitoSugar {
   class DispatchHelper {
     val closeP = new Promise[Exception]
-    val stats = new InMemoryStatsReceiver()
-    val trans = mock[Transport[String, String]]
+    val stats  = new InMemoryStatsReceiver()
+    val trans  = mock[Transport[String, String]]
     when(trans.onClose).thenReturn(closeP)
 
     val disp = new SerialClientDispatcher[String, String](trans, stats)
@@ -68,7 +68,8 @@ class ClientDispatcherTest extends FunSuite with MockitoSugar {
   }
 
   test(
-      "ClientDispatcher should interrupt when close transport and cancel pending requests") {
+    "ClientDispatcher should interrupt when close transport and cancel pending requests"
+  ) {
     val h = new DispatchHelper
     import h._
 
@@ -168,8 +169,8 @@ class ClientDispatcherTest extends FunSuite with MockitoSugar {
     closeP.setException(new Exception("fin"))
 
     // pending requests are failed
-    val e1 = intercept[Exception] { (Await.result(r2, 2.seconds)) }
-    val e2 = intercept[Exception] { (Await.result(r3, 2.seconds)) }
+    val e1 = intercept[Exception]((Await.result(r2, 2.seconds)))
+    val e2 = intercept[Exception]((Await.result(r3, 2.seconds)))
 
     assert(e1.getMessage == "fin")
     assert(e2.getMessage == "fin")
@@ -183,9 +184,9 @@ class ClientDispatcherTest extends FunSuite with MockitoSugar {
     val (r1, r2, r3) = (disp("0"), disp("1"), disp("2"))
 
     // requests are failed
-    val e1 = intercept[Exception] { (Await.result(r1, 2.seconds)) }
-    val e2 = intercept[Exception] { (Await.result(r2, 2.seconds)) }
-    val e3 = intercept[Exception] { (Await.result(r3, 2.seconds)) }
+    val e1 = intercept[Exception]((Await.result(r1, 2.seconds)))
+    val e2 = intercept[Exception]((Await.result(r2, 2.seconds)))
+    val e3 = intercept[Exception]((Await.result(r3, 2.seconds)))
 
     assert(e1.getMessage == "fin")
     assert(e2.getMessage == "fin")

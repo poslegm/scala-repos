@@ -9,7 +9,7 @@ case class Person(val name: String, val age: Int) {
 
 class PrivateVarTest extends FunSuite {
   test("main") {
-    val p = new Person("Bob", 42)
+    val p      = new Person("Bob", 42)
     val pickle = p.pickle
     assert(pickle.value === """
       |{

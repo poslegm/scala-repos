@@ -31,31 +31,31 @@ abstract class LineMarkerTestBase extends LightCodeInsightFixtureTestCase {
   }
 
   def doTest() = {
-    val path = getBasePath + getTestName(false) + ".test"
+    val path  = getBasePath + getTestName(false) + ".test"
     val input = Source.fromFile(new File(path)).getLines().mkString("\n")
     myFixture.configureByText(
-        ScalaFileType.SCALA_FILE_TYPE, input.replaceAll(marker, ""))
+      ScalaFileType.SCALA_FILE_TYPE,
+      input.replaceAll(marker, "")
+    )
 
     DaemonCodeAnalyzerSettings.getInstance.SHOW_METHOD_SEPARATORS = true
     myFixture.asInstanceOf[JavaCodeInsightTestFixtureImpl].doHighlighting()
 
     val expected = getSeparatorsFrom(input)
-    val actual = getSeparatorsFrom(myFixture.getEditor, myFixture.getProject)
+    val actual   = getSeparatorsFrom(myFixture.getEditor, myFixture.getProject)
     assertEquals(expected.mkString(", "), actual.mkString(", "))
   }
 
-  def getSeparatorsFrom(text: String) = {
-    for { (line, i) <- text.split("\n").zipWithIndex if line.contains(marker) } yield
-      i + 1
-  }
+  def getSeparatorsFrom(text: String) =
+    for { (line, i) <- text.split("\n").zipWithIndex if line.contains(marker) } yield i + 1
 
   def getSeparatorsFrom(editor: Editor, project: Project) = {
     val separators = for {
-      each <- DaemonCodeAnalyzerImpl.getLineMarkers(
-                 editor.getDocument, project)
-                 if each.separatorPlacement == SeparatorPlacement.TOP
+      each <- DaemonCodeAnalyzerImpl.getLineMarkers(editor.getDocument, project)
+      if each.separatorPlacement == SeparatorPlacement.TOP
       index = editor.getDocument.getLineNumber(
-          each.getElement.getTextRange.getStartOffset)
+        each.getElement.getTextRange.getStartOffset
+      )
     } yield index + 1
     separators.sortWith(_ < _)
   }

@@ -37,12 +37,12 @@ object Config {
   }
 
   class Specified[+A](f: => A) extends Required[A] {
-    lazy val value = f
+    lazy val value  = f
     def isSpecified = true
   }
 
   case object Unspecified extends Required[scala.Nothing] {
-    def value = throw new NoSuchElementException
+    def value       = throw new NoSuchElementException
     def isSpecified = false
   }
 
@@ -58,11 +58,11 @@ object Config {
     def apply() = throw new UnsupportedOperationException
   }
 
-  implicit def toSpecified[A](value: => A) = new Specified(value)
+  implicit def toSpecified[A](value: => A)       = new Specified(value)
   implicit def toSpecifiedOption[A](value: => A) = new Specified(Some(value))
   implicit def fromRequired[A](req: Required[A]) = req.value
   implicit def intoOption[A](item: A): Option[A] = Some(item)
-  implicit def intoList[A](item: A): List[A] = List(item)
+  implicit def intoList[A](item: A): List[A]     = List(item)
 }
 
 /**
@@ -98,9 +98,9 @@ trait Config[T] extends (() => T) {
     */
   lazy val memoized: T = apply()
 
-  def required[A]: Required[A] = Unspecified
+  def required[A]: Required[A]                = Unspecified
   def required[A](default: => A): Required[A] = new Specified(default)
-  def optional[A]: Required[Option[A]] = new Specified(None)
+  def optional[A]: Required[Option[A]]        = new Specified(None)
   def optional[A](default: => A): Required[Option[A]] =
     new Specified(Some(default))
 
@@ -113,11 +113,11 @@ trait Config[T] extends (() => T) {
   /** a non-lazy way to create a Specified that can be called from java */
   def specified[A](value: A) = new Specified(value)
 
-  implicit def toSpecified[A](value: => A) = new Specified(value)
+  implicit def toSpecified[A](value: => A)       = new Specified(value)
   implicit def toSpecifiedOption[A](value: => A) = new Specified(Some(value))
   implicit def fromRequired[A](req: Required[A]) = req.value
   implicit def intoOption[A](item: A): Option[A] = Some(item)
-  implicit def intoList[A](item: A): List[A] = List(item)
+  implicit def intoList[A](item: A): List[A]     = List(item)
 
   /**
     * Looks for any fields that are Required but currently Unspecified, in
@@ -127,8 +127,8 @@ trait Config[T] extends (() => T) {
     */
   def missingValues: Seq[String] = {
     val alreadyVisited = mutable.Set[AnyRef]()
-    val interestingReturnTypes = Seq(
-        classOf[Required[_]], classOf[Config[_]], classOf[Option[_]])
+    val interestingReturnTypes =
+      Seq(classOf[Required[_]], classOf[Config[_]], classOf[Option[_]])
     val buf = new mutable.ListBuffer[String]
     def collect(prefix: String, config: Config[_]) {
       if (!alreadyVisited.contains(config)) {
@@ -139,7 +139,7 @@ trait Config[T] extends (() => T) {
           }
         for (method <- nullaryMethods) {
           val name = method.getName
-          val rt = method.getReturnType
+          val rt   = method.getReturnType
           if (name != "required" && name != "optional" &&
               !name.endsWith("$outer") && // no loops!
               interestingReturnTypes.exists(_.isAssignableFrom(rt))) {

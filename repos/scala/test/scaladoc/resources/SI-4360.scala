@@ -25,7 +25,7 @@ package scala.test.scaladoc.prefix {
         def fooCA(x: pack1.A#Z) = 1
         def fooCB(x: pack1.B#Z) = 1
         def fooCS(x: pack2.Z#Z) = 1
-        def fooCL(x: L#Z) = 1
+        def fooCL(x: L#Z)       = 1
         // test in packages
         def fooPA(x: pack1.a.C) = 1
         def fooPB(x: pack1.b.C) = 1

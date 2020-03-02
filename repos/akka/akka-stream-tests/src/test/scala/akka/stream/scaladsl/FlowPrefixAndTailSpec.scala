@@ -14,8 +14,8 @@ import akka.testkit.AkkaSpec
 
 class FlowPrefixAndTailSpec extends AkkaSpec {
 
-  val settings = ActorMaterializerSettings(system).withInputBuffer(
-      initialSize = 2, maxSize = 2)
+  val settings = ActorMaterializerSettings(system)
+    .withInputBuffer(initialSize = 2, maxSize = 2)
 
   implicit val materializer = ActorMaterializer(settings)
 
@@ -26,8 +26,8 @@ class FlowPrefixAndTailSpec extends AkkaSpec {
     def newHeadSink = Sink.head[(immutable.Seq[Int], Source[Int, _])]
 
     "work on empty input" in assertAllStagesStopped {
-      val futureSink = newHeadSink
-      val fut = Source.empty.prefixAndTail(10).runWith(futureSink)
+      val futureSink         = newHeadSink
+      val fut                = Source.empty.prefixAndTail(10).runWith(futureSink)
       val (prefix, tailFlow) = Await.result(fut, 3.seconds)
       prefix should be(Nil)
       val tailSubscriber = TestSubscriber.manualProbe[Int]
@@ -36,8 +36,8 @@ class FlowPrefixAndTailSpec extends AkkaSpec {
     }
 
     "work on short input" in assertAllStagesStopped {
-      val futureSink = newHeadSink
-      val fut = Source(List(1, 2, 3)).prefixAndTail(10).runWith(futureSink)
+      val futureSink         = newHeadSink
+      val fut                = Source(List(1, 2, 3)).prefixAndTail(10).runWith(futureSink)
       val (prefix, tailFlow) = Await.result(fut, 3.seconds)
       prefix should be(List(1, 2, 3))
       val tailSubscriber = TestSubscriber.manualProbe[Int]
@@ -46,41 +46,41 @@ class FlowPrefixAndTailSpec extends AkkaSpec {
     }
 
     "work on longer inputs" in assertAllStagesStopped {
-      val futureSink = newHeadSink
-      val fut = Source(1 to 10).prefixAndTail(5).runWith(futureSink)
+      val futureSink    = newHeadSink
+      val fut           = Source(1 to 10).prefixAndTail(5).runWith(futureSink)
       val (takes, tail) = Await.result(fut, 3.seconds)
       takes should be(1 to 5)
 
       val futureSink2 = Sink.head[immutable.Seq[Int]]
-      val fut2 = tail.grouped(6).runWith(futureSink2)
+      val fut2        = tail.grouped(6).runWith(futureSink2)
       Await.result(fut2, 3.seconds) should be(6 to 10)
     }
 
     "handle zero take count" in assertAllStagesStopped {
-      val futureSink = newHeadSink
-      val fut = Source(1 to 10).prefixAndTail(0).runWith(futureSink)
+      val futureSink    = newHeadSink
+      val fut           = Source(1 to 10).prefixAndTail(0).runWith(futureSink)
       val (takes, tail) = Await.result(fut, 3.seconds)
       takes should be(Nil)
 
       val futureSink2 = Sink.head[immutable.Seq[Int]]
-      val fut2 = tail.grouped(11).runWith(futureSink2)
+      val fut2        = tail.grouped(11).runWith(futureSink2)
       Await.result(fut2, 3.seconds) should be(1 to 10)
     }
 
     "handle negative take count" in assertAllStagesStopped {
-      val futureSink = newHeadSink
-      val fut = Source(1 to 10).prefixAndTail(-1).runWith(futureSink)
+      val futureSink    = newHeadSink
+      val fut           = Source(1 to 10).prefixAndTail(-1).runWith(futureSink)
       val (takes, tail) = Await.result(fut, 3.seconds)
       takes should be(Nil)
 
       val futureSink2 = Sink.head[immutable.Seq[Int]]
-      val fut2 = tail.grouped(11).runWith(futureSink2)
+      val fut2        = tail.grouped(11).runWith(futureSink2)
       Await.result(fut2, 3.seconds) should be(1 to 10)
     }
 
     "work if size of take is equal to stream size" in assertAllStagesStopped {
-      val futureSink = newHeadSink
-      val fut = Source(1 to 10).prefixAndTail(10).runWith(futureSink)
+      val futureSink    = newHeadSink
+      val fut           = Source(1 to 10).prefixAndTail(10).runWith(futureSink)
       val (takes, tail) = Await.result(fut, 3.seconds)
       takes should be(1 to 10)
 
@@ -90,8 +90,8 @@ class FlowPrefixAndTailSpec extends AkkaSpec {
     }
 
     "throw if tail is attempted to be materialized twice" in assertAllStagesStopped {
-      val futureSink = newHeadSink
-      val fut = Source(1 to 2).prefixAndTail(1).runWith(futureSink)
+      val futureSink    = newHeadSink
+      val fut           = Source(1 to 2).prefixAndTail(1).runWith(futureSink)
       val (takes, tail) = Await.result(fut, 3.seconds)
       takes should be(Seq(1))
 
@@ -101,7 +101,8 @@ class FlowPrefixAndTailSpec extends AkkaSpec {
       val subscriber2 = TestSubscriber.probe[Int]()
       tail.to(Sink.fromSubscriber(subscriber2)).run()
       subscriber2.expectSubscriptionAndError().getMessage should ===(
-          "Substream Source cannot be materialized more than once")
+        "Substream Source cannot be materialized more than once"
+      )
 
       subscriber1.requestNext(2).expectComplete()
     }
@@ -110,10 +111,13 @@ class FlowPrefixAndTailSpec extends AkkaSpec {
       val ms = 300
 
       val tightTimeoutMaterializer = ActorMaterializer(
-          ActorMaterializerSettings(system).withSubscriptionTimeoutSettings(
-              StreamSubscriptionTimeoutSettings(
-                  StreamSubscriptionTimeoutTerminationMode.cancel,
-                  ms.millisecond)))
+        ActorMaterializerSettings(system).withSubscriptionTimeoutSettings(
+          StreamSubscriptionTimeoutSettings(
+            StreamSubscriptionTimeoutTerminationMode.cancel,
+            ms.millisecond
+          )
+        )
+      )
 
       val futureSink = newHeadSink
       val fut = Source(1 to 2)
@@ -127,14 +131,18 @@ class FlowPrefixAndTailSpec extends AkkaSpec {
 
       tail.to(Sink.fromSubscriber(subscriber)).run()(tightTimeoutMaterializer)
       subscriber.expectSubscriptionAndError().getMessage should ===(
-          s"Substream Source has not been materialized in ${ms} milliseconds")
+        s"Substream Source has not been materialized in ${ms} milliseconds"
+      )
     }
     "not fail the stream if substream has not been subscribed in time and configured subscription timeout is noop" in assertAllStagesStopped {
       val tightTimeoutMaterializer = ActorMaterializer(
-          ActorMaterializerSettings(system).withSubscriptionTimeoutSettings(
-              StreamSubscriptionTimeoutSettings(
-                  StreamSubscriptionTimeoutTerminationMode.noop,
-                  1.millisecond)))
+        ActorMaterializerSettings(system).withSubscriptionTimeoutSettings(
+          StreamSubscriptionTimeoutSettings(
+            StreamSubscriptionTimeoutTerminationMode.noop,
+            1.millisecond
+          )
+        )
+      )
 
       val futureSink = newHeadSink
       val fut = Source(1 to 2)
@@ -152,8 +160,8 @@ class FlowPrefixAndTailSpec extends AkkaSpec {
     }
 
     "shut down main stage if substream is empty, even when not subscribed" in assertAllStagesStopped {
-      val futureSink = newHeadSink
-      val fut = Source.single(1).prefixAndTail(1).runWith(futureSink)
+      val futureSink    = newHeadSink
+      val fut           = Source.single(1).prefixAndTail(1).runWith(futureSink)
       val (takes, tail) = Await.result(fut, 3.seconds)
       takes should be(Seq(1))
     }
@@ -169,7 +177,7 @@ class FlowPrefixAndTailSpec extends AkkaSpec {
         .to(Sink.fromSubscriber(subscriber))
         .run()
 
-      val upstream = publisher.expectSubscription()
+      val upstream   = publisher.expectSubscription()
       val downstream = subscriber.expectSubscription()
 
       downstream.request(1)
@@ -192,7 +200,7 @@ class FlowPrefixAndTailSpec extends AkkaSpec {
         .to(Sink.fromSubscriber(subscriber))
         .run()
 
-      val upstream = publisher.expectSubscription()
+      val upstream   = publisher.expectSubscription()
       val downstream = subscriber.expectSubscription()
 
       downstream.request(1000)
@@ -223,7 +231,7 @@ class FlowPrefixAndTailSpec extends AkkaSpec {
         .to(Sink.fromSubscriber(subscriber))
         .run()
 
-      val upstream = publisher.expectSubscription()
+      val upstream   = publisher.expectSubscription()
       val downstream = subscriber.expectSubscription()
 
       downstream.request(1)
@@ -246,7 +254,7 @@ class FlowPrefixAndTailSpec extends AkkaSpec {
         .to(Sink.fromSubscriber(subscriber))
         .run()
 
-      val upstream = publisher.expectSubscription()
+      val upstream   = publisher.expectSubscription()
       val downstream = subscriber.expectSubscription()
 
       downstream.request(1000)

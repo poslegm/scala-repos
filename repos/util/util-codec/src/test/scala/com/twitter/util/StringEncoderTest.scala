@@ -41,8 +41,8 @@ class StringEncoderTest extends WordSpec {
 @RunWith(classOf[JUnitRunner])
 class Base64StringEncoderTest extends WordSpec {
   val urlUnsafeBytes = Array(-1.toByte, -32.toByte)
-  val resultUnsafe = "/+A"
-  val resultSafe = "_-A"
+  val resultUnsafe   = "/+A"
+  val resultSafe     = "_-A"
 
   "encode / as _ and encode + as - to maintain url safe strings" in {
     assert(Base64UrlSafeStringEncoder.encode(urlUnsafeBytes) == resultSafe)
@@ -68,14 +68,16 @@ class GZIPStringEncoderTest extends WordSpec {
 
       testCodec("a")
       testCodec(
-          "\n\t\n\t\n\n\n\n\t\n\nt\n\t\n\t\n\tn\t\nt\nt\nt\nt\nt\nt\tn\nt\nt\n\t\nt\n")
+        "\n\t\n\t\n\n\n\n\t\n\nt\n\t\n\t\n\tn\t\nt\nt\nt\nt\nt\nt\tn\nt\nt\n\t\nt\n"
+      )
       testCodec("aosnetuhsaontehusaonethsoantehusaonethusonethusnaotehu")
 
       // build a huge string
       val sb = new StringBuilder
       for (_ <- 1 to 10000) {
         sb.append(
-            "oasnuthoesntihosnteidosentidosentauhsnoetidosentihsoneitdsnuthsin\n")
+          "oasnuthoesntihosnteidosentidosentauhsnoetidosentihsoneitdsnuthsin\n"
+        )
       }
       testCodec(sb.toString)
     }

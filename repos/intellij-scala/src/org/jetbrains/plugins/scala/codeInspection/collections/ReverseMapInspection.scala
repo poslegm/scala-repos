@@ -9,16 +9,16 @@ import org.jetbrains.plugins.scala.lang.psi.api.expr.ScExpression
 object ReverseMap extends SimplificationType() {
   override def hint: String = InspectionBundle.message("replace.reverse.map")
 
-  override def getSimplification(expr: ScExpression): Option[Simplification] = {
+  override def getSimplification(expr: ScExpression): Option[Simplification] =
     expr match {
       case qual `.reverse` () `.map` () =>
         Some(
-            replace(expr)
-              .withText(invocationText(qual, "reverseMap"))
-              .highlightFrom(qual))
+          replace(expr)
+            .withText(invocationText(qual, "reverseMap"))
+            .highlightFrom(qual)
+        )
       case _ => None
     }
-  }
 }
 
 class ReverseMapInspection extends OperationOnCollectionInspection {

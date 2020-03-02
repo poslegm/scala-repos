@@ -10,7 +10,10 @@ import mesosphere.marathon.api.MarathonRestModule
 import mesosphere.marathon.core.CoreGuiceModule
 import mesosphere.marathon.event.EventModule
 import mesosphere.marathon.event.http.HttpEventModule
-import mesosphere.marathon.metrics.{MetricsReporterModule, MetricsReporterService}
+import mesosphere.marathon.metrics.{
+  MetricsReporterModule,
+  MetricsReporterService
+}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
@@ -20,13 +23,13 @@ class MarathonApp extends App {
 
   lazy val zk: ZooKeeperClient = {
     require(
-        conf.zooKeeperSessionTimeout() < Integer.MAX_VALUE,
-        "ZooKeeper timeout too large!"
+      conf.zooKeeperSessionTimeout() < Integer.MAX_VALUE,
+      "ZooKeeper timeout too large!"
     )
 
     val client = new ZooKeeperClient(
-        Amount.of(conf.zooKeeperSessionTimeout().toInt, Time.MILLISECONDS),
-        conf.zooKeeperHostAddresses.asJavaCollection
+      Amount.of(conf.zooKeeperSessionTimeout().toInt, Time.MILLISECONDS),
+      conf.zooKeeperHostAddresses.asJavaCollection
     )
 
     // Marathon can't do anything useful without a ZK connection
@@ -46,31 +49,28 @@ class MarathonApp extends App {
     client
   }
 
-  def modules(): Seq[Module] = {
+  def modules(): Seq[Module] =
     Seq(
-        new HttpModule(conf),
-        new MetricsModule,
-        new MetricsReporterModule(conf),
-        new MarathonModule(conf, conf, zk),
-        new MarathonRestModule,
-        new EventModule(conf),
-        new DebugModule(conf),
-        new CoreGuiceModule
+      new HttpModule(conf),
+      new MetricsModule,
+      new MetricsReporterModule(conf),
+      new MarathonModule(conf, conf, zk),
+      new MarathonRestModule,
+      new EventModule(conf),
+      new DebugModule(conf),
+      new CoreGuiceModule
     ) ++ getEventsModule
-  }
 
-  def getEventsModule: Option[Module] = {
+  def getEventsModule: Option[Module] =
     conf.eventSubscriber.get flatMap {
       case "http_callback" =>
-        log.info(
-            "Using HttpCallbackEventSubscriber for event" + "notification")
+        log.info("Using HttpCallbackEventSubscriber for event" + "notification")
         Some(new HttpEventModule(conf))
 
       case _ =>
         log.info("Event notification disabled.")
         None
     }
-  }
 
   override lazy val conf = new AllConf(args)
 
@@ -83,12 +83,13 @@ class MarathonApp extends App {
     setConcurrentContextDefaults()
 
     log.info(
-        s"Starting Marathon ${BuildInfo.version} with ${args.mkString(" ")}")
+      s"Starting Marathon ${BuildInfo.version} with ${args.mkString(" ")}"
+    )
 
     run(
-        classOf[HttpService],
-        classOf[MarathonSchedulerService],
-        classOf[MetricsReporterService]
+      classOf[HttpService],
+      classOf[MarathonSchedulerService],
+      classOf[MetricsReporterService]
     )
   }
 
@@ -125,11 +126,10 @@ class MarathonApp extends App {
     * presence of blocking computation.
     */
   private[this] def setConcurrentContextDefaults(): Unit = {
-    def setIfNotDefined(property: String, value: String): Unit = {
+    def setIfNotDefined(property: String, value: String): Unit =
       if (!sys.props.contains(property)) {
         sys.props += property -> value
       }
-    }
 
     setIfNotDefined("scala.concurrent.context.minThreads", "5")
     setIfNotDefined("scala.concurrent.context.numThreads", "x2")

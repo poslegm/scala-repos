@@ -26,7 +26,8 @@ class RateLimiterActorTest extends MarathonSpec {
   test("AddDelay increases delay and sends update") {
     limiterRef ! RateLimiterActor.AddDelay(app)
     updateReceiver.expectMsg(
-        RateLimiterActor.DelayUpdate(app, clock.now() + backoff))
+      RateLimiterActor.DelayUpdate(app, clock.now() + backoff)
+    )
     val delay = askLimiter(RateLimiterActor.GetDelay(app))
       .asInstanceOf[RateLimiterActor.DelayUpdate]
     assert(delay.delayUntil == clock.now() + backoff)
@@ -35,7 +36,8 @@ class RateLimiterActorTest extends MarathonSpec {
   test("ResetDelay resets delay and sends update") {
     limiterRef ! RateLimiterActor.AddDelay(app)
     updateReceiver.expectMsg(
-        RateLimiterActor.DelayUpdate(app, clock.now() + backoff))
+      RateLimiterActor.DelayUpdate(app, clock.now() + backoff)
+    )
     limiterRef ! RateLimiterActor.ResetDelay(app)
     updateReceiver.expectMsg(RateLimiterActor.DelayUpdate(app, clock.now()))
     val delay = askLimiter(RateLimiterActor.GetDelay(app))
@@ -43,23 +45,25 @@ class RateLimiterActorTest extends MarathonSpec {
     assert(delay.delayUntil == clock.now())
   }
 
-  private[this] def askLimiter(message: Any): Any = {
+  private[this] def askLimiter(message: Any): Any =
     Await.result(limiterRef ? message, 3.seconds)
-  }
 
   private val backoff: FiniteDuration = 10.seconds
-  private val backoffFactor: Double = 2.0
+  private val backoffFactor: Double   = 2.0
   private[this] val app = AppDefinition(
-      id = PathId("/test"), backoff = backoff, backoffFactor = backoffFactor)
+    id = PathId("/test"),
+    backoff = backoff,
+    backoffFactor = backoffFactor
+  )
 
-  private[this] implicit val timeout: Timeout = 3.seconds
+  private[this] implicit val timeout: Timeout         = 3.seconds
   private[this] implicit var actorSystem: ActorSystem = _
-  private[this] var clock: ConstantClock = _
-  private[this] var rateLimiter: RateLimiter = _
-  private[this] var taskTracker: TaskTracker = _
-  private[this] var appRepository: AppRepository = _
-  private[this] var updateReceiver: TestProbe = _
-  private[this] var limiterRef: ActorRef = _
+  private[this] var clock: ConstantClock              = _
+  private[this] var rateLimiter: RateLimiter          = _
+  private[this] var taskTracker: TaskTracker          = _
+  private[this] var appRepository: AppRepository      = _
+  private[this] var updateReceiver: TestProbe         = _
+  private[this] var limiterRef: ActorRef              = _
 
   before {
     actorSystem = ActorSystem()

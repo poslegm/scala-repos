@@ -9,8 +9,8 @@ object Test {
     val bos = new ByteArrayOutputStream()
     val out = new ObjectOutputStream(bos)
     out.writeObject(obj)
-    val arr = bos.toByteArray()
-    val in = new ObjectInputStream(new ByteArrayInputStream(arr))
+    val arr   = bos.toByteArray()
+    val in    = new ObjectInputStream(new ByteArrayInputStream(arr))
     val deser = in.readObject()
 
     println(deser)

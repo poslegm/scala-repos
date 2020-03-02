@@ -38,7 +38,7 @@ trait PhasedLatches {
   private[this] lazy val phaseOrder = Order.order[Int] { (a, b) =>
     import Ordering._
     (b - a) match {
-      case 0 => EQ
+      case 0          => EQ
       case x if x > 0 => GT
       case y if y < 0 => LT
     }
@@ -69,11 +69,11 @@ trait PhasedLatches {
       val sync = new QueuedSynchronizer
 
       /** Release the current phase. */
-      def release = IO { sync releaseShared 1 }
+      def release = IO(sync releaseShared 1)
 
       /** Await for the specified phase.*/
       @throws(classOf[InterruptedException])
-      def awaitPhase(phase: Int) = IO { sync acquireSharedInterruptibly phase }
+      def awaitPhase(phase: Int) = IO(sync acquireSharedInterruptibly phase)
 
       @throws(classOf[InterruptedException])
       def awaitPhaseFor(phase: Int, period: Long, unit: TimeUnit) = IO {

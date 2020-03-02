@@ -4,7 +4,7 @@ class Coll[+T] {
   type A1 <: T
   type A2 <: A1
 
-  def contains = new { def apply[T1 <: T](value: T1) = ??? }
+  def contains  = new { def apply[T1 <: T](value: T1)  = ??? }
   def contains1 = new { def apply[T1 <: A1](value: T1) = ??? }
   def contains2 = new { def apply[T1 <: A2](value: T1) = ??? }
   def contains3 = {
@@ -12,7 +12,7 @@ class Coll[+T] {
       type B1 <: T
       type B2 <: B1
     }
-    new Bippy { def apply[T1 <: T](value: T1) = ??? }
+    new Bippy { def apply[T1 <: T](value: T1)  = ??? }
     new Bippy { def apply[T1 <: B1](value: T1) = ??? }
     new Bippy { def apply[T1 <: B2](value: T1) = ??? }
     new Bippy {
@@ -20,12 +20,12 @@ class Coll[+T] {
       type B4 = List[B2]
       def apply1[T1 <: B3](value: T1) = ???
       def apply2[T1 <: B4](value: T1) = ???
-      def apply3(value: B3) = ???
-      def apply4(value: B4) = value.head
+      def apply3(value: B3)           = ???
+      def apply4(value: B4)           = value.head
     }
   }
   def contains4 = new {
-    def apply1(s: String)(x: Int)(value: T) = ???
+    def apply1(s: String)(x: Int)(value: T)           = ???
     def apply2[T1 <: T](s: String)(x: Int)(value: T1) = ???
   }
   def containsOk = {
@@ -41,7 +41,7 @@ class Coll[+T] {
 
 object Test {
   def main(args: Array[String]): Unit = {
-    val xs = new Coll[List[String]]
+    val xs                            = new Coll[List[String]]
     val ys: Coll[Traversable[String]] = xs
 
     println(ys contains Nil)

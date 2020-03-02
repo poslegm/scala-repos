@@ -19,10 +19,9 @@ final case class Position(
   def show: String = s"$line:$column"
 
   def isEmpty: Boolean = {
-    def isEmptySlowPath(): Boolean = {
+    def isEmptySlowPath(): Boolean =
       source.getScheme == null && source.getRawAuthority == null &&
-      source.getRawQuery == null && source.getRawFragment == null
-    }
+        source.getRawQuery == null && source.getRawFragment == null
     source.getRawPath == "" && isEmptySlowPath()
   }
 
@@ -36,7 +35,7 @@ object Position {
 
   object SourceFile {
     def apply(f: java.io.File): SourceFile = f.toURI
-    def apply(f: String): SourceFile = new java.net.URI(f)
+    def apply(f: String): SourceFile       = new java.net.URI(f)
   }
 
   val NoPosition = Position(SourceFile(""), 0, 0)

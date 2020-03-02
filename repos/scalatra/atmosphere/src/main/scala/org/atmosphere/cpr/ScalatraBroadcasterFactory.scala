@@ -15,8 +15,9 @@ import scala.util.{Try, Success, Failure}
 object ScalatraBroadcasterFactory {}
 
 class ScalatraBroadcasterFactory(
-    var cfg: AtmosphereConfig, bCfg: BroadcasterConf)(
-    implicit wireFormat: WireFormat, system: ActorSystem)
+    var cfg: AtmosphereConfig,
+    bCfg: BroadcasterConf
+)(implicit wireFormat: WireFormat, system: ActorSystem)
     extends BroadcasterFactory {
   BroadcasterFactory.setBroadcasterFactory(this, cfg)
 
@@ -24,13 +25,15 @@ class ScalatraBroadcasterFactory(
   private[this] val store: ConcurrentMap[Any, Broadcaster] =
     new ConcurrentHashMap[Any, Broadcaster]().asScala
 
-  override def configure(clazz: Class[_ <: Broadcaster],
-                         broadcasterLifeCyclePolicy: String,
-                         c: AtmosphereConfig) {
+  override def configure(
+      clazz: Class[_ <: Broadcaster],
+      broadcasterLifeCyclePolicy: String,
+      c: AtmosphereConfig
+  ) {
     this.cfg = c
   }
 
-  private def createBroadcaster[T <: Broadcaster](c: Class[T], id: Any): T = {
+  private def createBroadcaster[T <: Broadcaster](c: Class[T], id: Any): T =
     try {
       val b: T =
         if (classOf[ScalatraBroadcaster].isAssignableFrom(c)) {
@@ -46,8 +49,13 @@ class ScalatraBroadcasterFactory(
       b.setSuspendPolicy(-1, Broadcaster.POLICY.FIFO)
 
       if (b.getBroadcasterConfig == null) {
-        b.setBroadcasterConfig(new BroadcasterConfig(
-                cfg.framework().broadcasterFilters, cfg, id.toString).init())
+        b.setBroadcasterConfig(
+          new BroadcasterConfig(
+            cfg.framework().broadcasterFilters,
+            cfg,
+            id.toString
+          ).init()
+        )
       }
 
       b.setBroadcasterLifeCyclePolicy(BroadcasterLifeCyclePolicy.NEVER)
@@ -60,7 +68,6 @@ class ScalatraBroadcasterFactory(
       case ex: Exception =>
         throw new DefaultBroadcasterFactory.BroadcasterCreationException(ex)
     }
-  }
 
   def add(b: Broadcaster, id: Any): Boolean = store.put(id, b).isEmpty
 
@@ -68,8 +75,9 @@ class ScalatraBroadcasterFactory(
     val s = cfg.getInitParameter(ApplicationConfig.SHARED)
     if (s != null && s.equalsIgnoreCase("TRUE")) {
       logger.warn(
-          "Factory shared, will not be destroyed. That can possibly cause memory leaks if" +
-          "Broadcaster where created. Make sure you destroy them manually.")
+        "Factory shared, will not be destroyed. That can possibly cause memory leaks if" +
+          "Broadcaster where created. Make sure you destroy them manually."
+      )
     }
 
     var bc: BroadcasterConfig = null
@@ -95,12 +103,15 @@ class ScalatraBroadcasterFactory(
     lookup(c, id, false)
 
   def lookup[T <: Broadcaster](
-      c: Class[T], id: scala.Any, createIfNull: Boolean): T = {
+      c: Class[T],
+      id: scala.Any,
+      createIfNull: Boolean
+  ): T = {
     val bOpt = store get id
     if (bOpt.isDefined && !c.isAssignableFrom(bOpt.get.getClass)) {
       val msg =
         "Invalid lookup class " + c.getName + ". Cached class is: " +
-        bOpt.get.getClass.getName
+          bOpt.get.getClass.getName
       logger.warn(msg)
       throw new IllegalStateException(msg)
     }
@@ -114,31 +125,33 @@ class ScalatraBroadcasterFactory(
       }
       if (store.putIfAbsent(id, createBroadcaster(c, id)) == null) {
         logger.debug(
-            "Added Broadcaster %s. Factory size: %s.".format(id, store.size))
+          "Added Broadcaster %s. Factory size: %s.".format(id, store.size)
+        )
       }
     }
     store.get(id) match {
       case Some(b) => b.asInstanceOf[T]
-      case None => null.asInstanceOf[T]
+      case None    => null.asInstanceOf[T]
     }
   }
 
   def lookup[T <: Broadcaster](id: scala.Any): T =
     lookup(id, createIfNull = false)
 
-  def lookup[T <: Broadcaster](id: scala.Any, createIfNull: Boolean): T = {
+  def lookup[T <: Broadcaster](id: scala.Any, createIfNull: Boolean): T =
     lookup(classOf[ScalatraBroadcaster], id, createIfNull).asInstanceOf[T]
-  }
 
-  def lookupAll(): java.util.Collection[Broadcaster] = {
+  def lookupAll(): java.util.Collection[Broadcaster] =
     store.values.toList.asJavaCollection
-  }
 
   def remove(b: Broadcaster, id: Any): Boolean = {
     val removed: Boolean = store.remove(id, b)
     if (removed) {
       logger.debug(
-          "Removing Broadcaster {} factory size now {} ", id, store.size)
+        "Removing Broadcaster {} factory size now {} ",
+        id,
+        store.size
+      )
     }
     removed
   }
@@ -160,8 +173,8 @@ class ScalatraBroadcasterFactory(
       }
     } catch {
       case ex: Exception => {
-          logger.warn(ex.getMessage, ex)
-        }
+        logger.warn(ex.getMessage, ex)
+      }
     }
   }
 }

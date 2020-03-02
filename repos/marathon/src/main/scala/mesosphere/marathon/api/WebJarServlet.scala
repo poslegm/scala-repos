@@ -12,9 +12,11 @@ class WebJarServlet extends HttpServlet {
 
   //scalastyle:off method.length
   override def doGet(
-      req: HttpServletRequest, resp: HttpServletResponse): Unit = {
+      req: HttpServletRequest,
+      resp: HttpServletResponse
+  ): Unit = {
 
-    def sendResource(resourceURI: String, mime: String): Unit = {
+    def sendResource(resourceURI: String, mime: String): Unit =
       //scalastyle:off magic.number
       IO.withResource(resourceURI) { stream =>
         resp.setContentType(mime)
@@ -24,7 +26,6 @@ class WebJarServlet extends HttpServlet {
       } getOrElse {
         resp.sendError(404)
       }
-    }
 
     def sendResourceNormalized(resourceURI: String, mime: String): Unit = {
       val normalized = new URI(resourceURI).normalize().getPath
@@ -34,11 +35,11 @@ class WebJarServlet extends HttpServlet {
     }
 
     //extract request data
-    val jar = req.getServletPath // e.g. /ui
-    var resource = req.getPathInfo // e.g. /fonts/icon.gif
+    val jar      = req.getServletPath // e.g. /ui
+    var resource = req.getPathInfo    // e.g. /fonts/icon.gif
     if (resource.endsWith("/"))
       resource = resource + "index.html" // welcome file
-    val file = resource.split("/").last //e.g. icon.gif
+    val file      = resource.split("/").last                   //e.g. icon.gif
     val mediaType = file.split("\\.").lastOption.getOrElse("") //e.g. gif
     val mime = Option(getServletContext.getMimeType(file))
       .getOrElse(mimeType(mediaType)) //e.g plain/text
@@ -72,17 +73,18 @@ class WebJarServlet extends HttpServlet {
     else sendResourceNormalized(resourceURI, mime)
   }
 
-  private[this] def mimeType(mediaType: String): String = {
+  private[this] def mimeType(mediaType: String): String =
     mediaType.toLowerCase match {
       case "eot" => "application/vnd.ms-fontobject"
       case "svg" => "image/svg+xml"
       case "ttf" => "application/font-ttf"
-      case _ => "application/octet-stream"
+      case _     => "application/octet-stream"
     }
-  }
 
   private[this] def sendRedirect(
-      response: HttpServletResponse, location: String): Unit = {
+      response: HttpServletResponse,
+      location: String
+  ): Unit = {
     response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY)
     response.setHeader("Location", location)
   }

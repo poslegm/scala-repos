@@ -39,10 +39,10 @@ import org.apache.spark.storage.StorageLevel
   */
 @Since("0.8.0")
 @DeveloperApi
-abstract class GeneralizedLinearModel @Since("1.0.0")(
+abstract class GeneralizedLinearModel @Since("1.0.0") (
     @Since("1.0.0") val weights: Vector,
-    @Since("0.8.0") val intercept: Double)
-    extends Serializable {
+    @Since("0.8.0") val intercept: Double
+) extends Serializable {
 
   /**
     * Predict the result given a data point and the weights learned.
@@ -52,7 +52,10 @@ abstract class GeneralizedLinearModel @Since("1.0.0")(
     * @param intercept Intercept of the model.
     */
   protected def predictPoint(
-      dataMatrix: Vector, weightMatrix: Vector, intercept: Double): Double
+      dataMatrix: Vector,
+      weightMatrix: Vector,
+      intercept: Double
+  ): Double
 
   /**
     * Predict values for the given data set using the model trained.
@@ -65,8 +68,8 @@ abstract class GeneralizedLinearModel @Since("1.0.0")(
   def predict(testData: RDD[Vector]): RDD[Double] = {
     // A small optimization to avoid serializing the entire model. Only the weightsMatrix
     // and intercept is needed.
-    val localWeights = weights
-    val bcWeights = testData.context.broadcast(localWeights)
+    val localWeights   = weights
+    val bcWeights      = testData.context.broadcast(localWeights)
     val localIntercept = intercept
     testData.mapPartitions { iter =>
       val w = bcWeights.value
@@ -82,16 +85,14 @@ abstract class GeneralizedLinearModel @Since("1.0.0")(
     *
     */
   @Since("1.0.0")
-  def predict(testData: Vector): Double = {
+  def predict(testData: Vector): Double =
     predictPoint(testData, weights, intercept)
-  }
 
   /**
     * Print a summary of the model.
     */
-  override def toString: String = {
+  override def toString: String =
     s"${this.getClass.getName}: intercept = ${intercept}, numFeatures = ${weights.size}"
-  }
 }
 
 /**
@@ -103,7 +104,8 @@ abstract class GeneralizedLinearModel @Since("1.0.0")(
 @Since("0.8.0")
 @DeveloperApi
 abstract class GeneralizedLinearAlgorithm[M <: GeneralizedLinearModel]
-    extends Logging with Serializable {
+    extends Logging
+    with Serializable {
 
   protected val validators: Seq[RDD[LabeledPoint] => Boolean] = List()
 
@@ -159,7 +161,9 @@ abstract class GeneralizedLinearAlgorithm[M <: GeneralizedLinearModel]
   /**
     * Set if the algorithm should use feature scaling to improve the convergence during optimization.
     */
-  private[mllib] def setFeatureScaling(useFeatureScaling: Boolean): this.type = {
+  private[mllib] def setFeatureScaling(
+      useFeatureScaling: Boolean
+  ): this.type = {
     this.useFeatureScaling = useFeatureScaling
     this
   }
@@ -231,9 +235,8 @@ abstract class GeneralizedLinearAlgorithm[M <: GeneralizedLinearModel]
     *
     */
   @Since("0.8.0")
-  def run(input: RDD[LabeledPoint]): M = {
+  def run(input: RDD[LabeledPoint]): M =
     run(input, generateInitialWeights(input))
-  }
 
   /**
     * Run the algorithm with the configured parameters on an input RDD
@@ -249,8 +252,9 @@ abstract class GeneralizedLinearAlgorithm[M <: GeneralizedLinearModel]
 
     if (input.getStorageLevel == StorageLevel.NONE) {
       logWarning(
-          "The input data is not directly cached, which may hurt performance if its" +
-          " parent RDDs are also uncached.")
+        "The input data is not directly cached, which may hurt performance if its" +
+          " parent RDDs are also uncached."
+      )
     }
 
     // Check the data properties before running the optimizer
@@ -330,8 +334,9 @@ abstract class GeneralizedLinearAlgorithm[M <: GeneralizedLinearModel]
 
     var weights =
       if (addIntercept && numOfLinearPredictor == 1) {
-        Vectors.dense(weightsWithIntercept.toArray.slice(
-                0, weightsWithIntercept.size - 1))
+        Vectors.dense(
+          weightsWithIntercept.toArray.slice(0, weightsWithIntercept.size - 1)
+        )
       } else {
         weightsWithIntercept
       }
@@ -354,22 +359,24 @@ abstract class GeneralizedLinearAlgorithm[M <: GeneralizedLinearModel]
           * scale for each set of linear predictor. Note that the intercepts have to be explicitly
           * excluded when `addIntercept == true` since the intercepts are part of weights now.
           */
-        var i = 0
-        val n = weights.size / numOfLinearPredictor
+        var i            = 0
+        val n            = weights.size / numOfLinearPredictor
         val weightsArray = weights.toArray
         while (i < numOfLinearPredictor) {
           val start = i * n
-          val end = (i + 1) * n - { if (addIntercept) 1 else 0 }
+          val end   = (i + 1) * n - { if (addIntercept) 1 else 0 }
 
           val partialWeightsArray = scaler
             .transform(Vectors.dense(weightsArray.slice(start, end)))
             .toArray
 
-          System.arraycopy(partialWeightsArray,
-                           0,
-                           weightsArray,
-                           start,
-                           partialWeightsArray.length)
+          System.arraycopy(
+            partialWeightsArray,
+            0,
+            weightsArray,
+            start,
+            partialWeightsArray.length
+          )
           i += 1
         }
         weights = Vectors.dense(weightsArray)
@@ -379,8 +386,9 @@ abstract class GeneralizedLinearAlgorithm[M <: GeneralizedLinearModel]
     // Warn at the end of the run as well, for increased visibility.
     if (input.getStorageLevel == StorageLevel.NONE) {
       logWarning(
-          "The input data was not directly cached, which may hurt performance if its" +
-          " parent RDDs are also uncached.")
+        "The input data was not directly cached, which may hurt performance if its" +
+          " parent RDDs are also uncached."
+      )
     }
 
     // Unpersist cached data

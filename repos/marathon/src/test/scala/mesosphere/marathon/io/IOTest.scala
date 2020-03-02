@@ -14,7 +14,7 @@ class IOTest extends MarathonSpec with GivenWhenThen with Matchers {
       .getBytes("UTF-8")
 
     When("compress and decompress")
-    val compressed = IO.gzipCompress(hello)
+    val compressed   = IO.gzipCompress(hello)
     val uncompressed = IO.gzipUncompress(compressed)
 
     Then("compressed is smaller and round trip works")

@@ -6,4 +6,4 @@ package scala.tools.nsc.ast.parser
 
 abstract class Change
 case class Insertion(text: String) extends Change
-case class Deletion(nchars: Int) extends Change
+case class Deletion(nchars: Int)   extends Change

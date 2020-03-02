@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-14 Miles Sabin 
+ * Copyright (c) 2012-14 Miles Sabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,8 @@ object FlattenExample {
   }
   object flatten extends LowPriorityFlatten {
     implicit def caseTuple[P <: Product](
-        implicit lfm: Lazy[FlatMapper[P, flatten.type]]) =
+        implicit lfm: Lazy[FlatMapper[P, flatten.type]]
+    ) =
       at[P](lfm.value(_))
   }
 
@@ -42,7 +43,7 @@ object FlattenExample {
   typed[List[Int]](l1)
 
   object toDouble extends Poly1 {
-    implicit def caseInt = at[Int](_.toDouble)
+    implicit def caseInt    = at[Int](_.toDouble)
     implicit def caseDouble = at[Double](identity)
   }
 
@@ -54,6 +55,8 @@ object FlattenExample {
 
   val t3 = (23, ((true, 2.0, "foo"), "bar"), (13, false))
   val f3 =
-    flatten(t3) // Inferred type is (Int, Boolean, Double, String, String, Int, Boolean)
+    flatten(
+      t3
+    ) // Inferred type is (Int, Boolean, Double, String, String, Int, Boolean)
   typed[(Int, Boolean, Double, String, String, Int, Boolean)](f3)
 }

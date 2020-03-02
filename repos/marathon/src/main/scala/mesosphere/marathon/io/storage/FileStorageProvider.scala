@@ -11,12 +11,15 @@ import mesosphere.marathon.io.IO
   * @param path the relative path, this item is identified with.
   */
 case class FileStorageItem(
-    file: File, basePath: File, path: String, baseUrl: String)
-    extends StorageItem {
+    file: File,
+    basePath: File,
+    path: String,
+    baseUrl: String
+) extends StorageItem {
 
   def store(fn: OutputStream => Unit): FileStorageItem = {
     IO.createDirectory(file.getParentFile)
-    IO.using(new FileOutputStream(file)) { fn }
+    IO.using(new FileOutputStream(file))(fn)
     this
   }
 
@@ -27,11 +30,11 @@ case class FileStorageItem(
     FileStorageItem(to, basePath, path, url)
   }
 
-  def url: String = s"$baseUrl/$path"
+  def url: String                = s"$baseUrl/$path"
   def inputStream(): InputStream = new FileInputStream(file)
-  def lastModified: Long = file.lastModified()
-  def length: Long = file.length()
-  def exists: Boolean = file.exists()
+  def lastModified: Long         = file.lastModified()
+  def length: Long               = file.length()
+  def exists: Boolean            = file.exists()
 
   def delete() {
     file.delete()
@@ -53,9 +56,12 @@ case class FileStorageItem(
   */
 class FileStorageProvider(val url: String, val basePath: File)
     extends StorageProvider {
-  require(basePath.exists(),
-          "Base path does not exist: %s. Configuration error?".format(
-              basePath.getAbsolutePath))
+  require(
+    basePath.exists(),
+    "Base path does not exist: %s. Configuration error?".format(
+      basePath.getAbsolutePath
+    )
+  )
 
   def item(path: String): FileStorageItem = {
     val file: File = new File(basePath, path)

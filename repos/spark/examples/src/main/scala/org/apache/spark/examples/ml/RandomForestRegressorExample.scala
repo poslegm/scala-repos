@@ -23,14 +23,17 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.evaluation.RegressionEvaluator
 import org.apache.spark.ml.feature.VectorIndexer
-import org.apache.spark.ml.regression.{RandomForestRegressionModel, RandomForestRegressor}
+import org.apache.spark.ml.regression.{
+  RandomForestRegressionModel,
+  RandomForestRegressor
+}
 // $example off$
 import org.apache.spark.sql.SQLContext
 
 object RandomForestRegressorExample {
   def main(args: Array[String]): Unit = {
-    val conf = new SparkConf().setAppName("RandomForestRegressorExample")
-    val sc = new SparkContext(conf)
+    val conf       = new SparkConf().setAppName("RandomForestRegressorExample")
+    val sc         = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
 
     // $example on$

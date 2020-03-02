@@ -54,22 +54,26 @@ private[spark] class ByteArrayChunkOutputStream(chunkSize: Int)
       allocateNewChunkIfNeeded()
       val thisBatch = math.min(chunkSize - position, len - written)
       System.arraycopy(
-          bytes, written + off, chunks(lastChunkIndex), position, thisBatch)
+        bytes,
+        written + off,
+        chunks(lastChunkIndex),
+        position,
+        thisBatch
+      )
       written += thisBatch
       position += thisBatch
     }
   }
 
   @inline
-  private def allocateNewChunkIfNeeded(): Unit = {
+  private def allocateNewChunkIfNeeded(): Unit =
     if (position == chunkSize) {
       chunks += new Array[Byte](chunkSize)
       lastChunkIndex += 1
       position = 0
     }
-  }
 
-  def toArrays: Array[Array[Byte]] = {
+  def toArrays: Array[Array[Byte]] =
     if (lastChunkIndex == -1) {
       new Array[Array[Byte]](0)
     } else {
@@ -87,9 +91,13 @@ private[spark] class ByteArrayChunkOutputStream(chunkSize: Int)
       } else {
         ret(lastChunkIndex) = new Array[Byte](position)
         System.arraycopy(
-            chunks(lastChunkIndex), 0, ret(lastChunkIndex), 0, position)
+          chunks(lastChunkIndex),
+          0,
+          ret(lastChunkIndex),
+          0,
+          position
+        )
       }
       ret
     }
-  }
 }

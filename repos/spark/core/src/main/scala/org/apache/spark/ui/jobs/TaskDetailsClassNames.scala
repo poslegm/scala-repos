@@ -25,11 +25,11 @@ package org.apache.spark.ui.jobs
   * to have the style set to "display: none;" by default.
   */
 private[spark] object TaskDetailsClassNames {
-  val SCHEDULER_DELAY = "scheduler_delay"
+  val SCHEDULER_DELAY           = "scheduler_delay"
   val TASK_DESERIALIZATION_TIME = "deserialization_time"
   val SHUFFLE_READ_BLOCKED_TIME = "fetch_wait_time"
-  val SHUFFLE_READ_REMOTE_SIZE = "shuffle_read_remote"
+  val SHUFFLE_READ_REMOTE_SIZE  = "shuffle_read_remote"
   val RESULT_SERIALIZATION_TIME = "serialization_time"
-  val GETTING_RESULT_TIME = "getting_result_time"
-  val PEAK_EXECUTION_MEMORY = "peak_execution_memory"
+  val GETTING_RESULT_TIME       = "getting_result_time"
+  val PEAK_EXECUTION_MEMORY     = "peak_execution_memory"
 }

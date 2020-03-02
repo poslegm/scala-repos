@@ -5,7 +5,10 @@ import com.intellij.codeInsight.CodeInsightUtilCore
 import com.intellij.codeInsight.highlighting.HighlightManager
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.codeInsight.template._
-import com.intellij.codeInsight.template.impl.{TemplateManagerImpl, TemplateState}
+import com.intellij.codeInsight.template.impl.{
+  TemplateManagerImpl,
+  TemplateState
+}
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.colors.{EditorColors, EditorColorsManager}
@@ -43,18 +46,20 @@ class IntroduceExplicitParameterIntention
   override def getText: String = getFamilyName
 
   def isAvailable(
-      project: Project, editor: Editor, _element: PsiElement): Boolean = {
+      project: Project,
+      editor: Editor,
+      _element: PsiElement
+  ): Boolean =
     findExpression(_element, editor) match {
       case Some(x) => true
-      case None => false
+      case None    => false
     }
-  }
 
   override def invoke(project: Project, editor: Editor, element: PsiElement) {
     val expr = findExpression(element, editor).get
     if (expr == null || !expr.isValid) return
 
-    val buf = new StringBuilder
+    val buf         = new StringBuilder
     val underscores = ScUnderScoreSectionUtil.underscores(expr)
     val parentStartOffset =
       if (ApplicationManager.getApplication.isUnitTestMode)
@@ -72,9 +77,9 @@ class IntroduceExplicitParameterIntention
     val offsets: mutable.HashMap[String, Int] =
       new mutable.HashMap[String, Int]
     val usedNames: mutable.HashSet[String] = new mutable.HashSet[String]
-    val macros: mutable.HashSet[String] = new mutable.HashSet[String]
-    var needComma = false
-    var needBraces = false
+    val macros: mutable.HashSet[String]    = new mutable.HashSet[String]
+    var needComma                          = false
+    var needBraces                         = false
 
     for (m <- Extensions.getExtensions(Macro.EP_NAME)) {
       macros.add(m.getName)
@@ -85,28 +90,37 @@ class IntroduceExplicitParameterIntention
       if (underscores.size > 1) needComma = true
 
       val names = NameSuggester.suggestNames(
+        u,
+        new ScalaVariableValidator(
+          null,
+          project,
           u,
-          new ScalaVariableValidator(
-              null, project, u, false, expr.getContext, expr.getContext) {
-            override def validateName(
-                name: String, increaseNumber: Boolean): String = {
-              var res = super.validateName(name, increaseNumber)
-              var index = 1
+          false,
+          expr.getContext,
+          expr.getContext
+        ) {
+          override def validateName(
+              name: String,
+              increaseNumber: Boolean
+          ): String = {
+            var res   = super.validateName(name, increaseNumber)
+            var index = 1
 
-              if (usedNames.contains(res)) {
-                val indexStr = res.replaceAll(name, "")
-                if (indexStr != "") index = Integer.valueOf(indexStr)
+            if (usedNames.contains(res)) {
+              val indexStr = res.replaceAll(name, "")
+              if (indexStr != "") index = Integer.valueOf(indexStr)
 
-                while (usedNames.contains(name + index)) {
-                  index = index + 1
-                }
-              } else {
-                return res
+              while (usedNames.contains(name + index)) {
+                index = index + 1
               }
-              res = name + index
-              res
+            } else {
+              return res
             }
-          })
+            res = name + index
+            res
+          }
+        }
+      )
 
       var un = names(0)
       if (macros.contains(un)) {
@@ -136,7 +150,7 @@ class IntroduceExplicitParameterIntention
 
     inWriteAction {
       for (u <- underscores) {
-        val param = underscoreToParam.get(u)
+        val param    = underscoreToParam.get(u)
         val replaced = u.replace(param.get).asInstanceOf[ScParameter]
         underscoreToParam.put(u, replaced)
         offsets.put(param.get.name, replaced.getTextRange.getStartOffset)
@@ -150,7 +164,9 @@ class IntroduceExplicitParameterIntention
     buf.append(expr.getText)
 
     val newExpr = ScalaPsiElementFactory.createExpressionFromText(
-        buf.toString(), element.getManager)
+      buf.toString(),
+      element.getManager
+    )
 
     inWriteAction {
       val document = editor.getDocument
@@ -160,14 +176,16 @@ class IntroduceExplicitParameterIntention
 
       val file = PsiDocumentManager.getInstance(project).getPsiFile(document)
       val parent =
-        PsiTreeUtil.findCommonParent(file.findElementAt(parentStartOffset),
-                                     file.findElementAt(parentEndOffset - 1))
+        PsiTreeUtil.findCommonParent(
+          file.findElementAt(parentStartOffset),
+          file.findElementAt(parentEndOffset - 1)
+        )
 
       val builder: TemplateBuilderImpl = TemplateBuilderFactory
         .getInstance()
         .createTemplateBuilder(parent)
         .asInstanceOf[TemplateBuilderImpl]
-      val params = new mutable.HashMap[Int, String]()
+      val params  = new mutable.HashMap[Int, String]()
       val depends = new mutable.HashMap[Int, String]()
 
       var index: Int = 1
@@ -175,14 +193,28 @@ class IntroduceExplicitParameterIntention
         case f: ScFunctionExpr =>
           for (parameter <- f.parameters) {
             val lookupExpr = new MyLookupExpression(
-                parameter.name, null, parameter, f, false, null)
+              parameter.name,
+              null,
+              parameter,
+              f,
+              false,
+              null
+            )
             builder.replaceElement(
-                parameter.nameId, parameter.name, lookupExpr, true)
+              parameter.nameId,
+              parameter.name,
+              lookupExpr,
+              true
+            )
 
             val dependantParam =
               file.findElementAt(offsets(parameter.name) + diff)
             builder.replaceElement(
-                dependantParam, parameter.name + "_1", parameter.name, false)
+              dependantParam,
+              parameter.name + "_1",
+              parameter.name,
+              false
+            )
 
             params.put(index, parameter.name)
             depends.put(index, parameter.name + "_1")
@@ -195,100 +227,115 @@ class IntroduceExplicitParameterIntention
       CodeInsightUtilCore.forcePsiPostprocessAndRestoreElement(parent)
 
       editor.getCaretModel.moveToOffset(parent.getTextRange.getStartOffset)
-      val template = builder.buildInlineTemplate()
+      val template       = builder.buildInlineTemplate()
       val myHighlighters = new ArrayBuffer[RangeHighlighter]
       val rangesToHighlight: mutable.HashMap[TextRange, TextAttributes] =
         new mutable.HashMap[TextRange, TextAttributes]
 
       TemplateManager
         .getInstance(project)
-        .startTemplate(editor, template, new TemplateEditingAdapter {
-          override def waitingForInput(template: Template) {
-            markCurrentVariables(1)
-          }
-
-          override def currentVariableChanged(templateState: TemplateState,
-                                              template: Template,
-                                              oldIndex: Int,
-                                              newIndex: Int) {
-            if (oldIndex >= 0) clearHighlighters()
-            if (newIndex > 0) markCurrentVariables(newIndex + 1)
-          }
-
-          override def templateCancelled(template: Template) {
-            clearHighlighters()
-          }
-
-          override def templateFinished(template: Template,
-                                        brokenOff: Boolean) {
-            clearHighlighters()
-          }
-
-          private def addHighlights(
-              ranges: mutable.HashMap[TextRange, TextAttributes],
-              editor: Editor,
-              highlighters: ArrayBuffer[RangeHighlighter],
-              highlightManager: HighlightManager) {
-            for ((range, attributes) <- ranges) {
-              import scala.collection.JavaConversions._
-              highlightManager.addOccurrenceHighlight(editor,
-                                                      range.getStartOffset,
-                                                      range.getEndOffset,
-                                                      attributes,
-                                                      0,
-                                                      highlighters,
-                                                      null)
+        .startTemplate(
+          editor,
+          template,
+          new TemplateEditingAdapter {
+            override def waitingForInput(template: Template) {
+              markCurrentVariables(1)
             }
-            for (highlighter <- highlighters) {
-              highlighter.setGreedyToLeft(true)
-              highlighter.setGreedyToRight(true)
+
+            override def currentVariableChanged(
+                templateState: TemplateState,
+                template: Template,
+                oldIndex: Int,
+                newIndex: Int
+            ) {
+              if (oldIndex >= 0) clearHighlighters()
+              if (newIndex > 0) markCurrentVariables(newIndex + 1)
             }
-          }
 
-          private def markCurrentVariables(index: Int) {
-            val colorsManager: EditorColorsManager =
-              EditorColorsManager.getInstance
-            val templateState: TemplateState =
-              TemplateManagerImpl.getTemplateState(editor)
-            var i: Int = 0
+            override def templateCancelled(template: Template) {
+              clearHighlighters()
+            }
 
-            while (i < templateState.getSegmentsCount) {
-              val segmentOffset: TextRange = templateState.getSegmentRange(i)
-              val name: String = template.getSegmentName(i)
-              var attributes: TextAttributes = null
-              if (name == params.get(index).get) {
-                attributes = colorsManager.getGlobalScheme.getAttributes(
-                    EditorColors.WRITE_SEARCH_RESULT_ATTRIBUTES)
-              } else if (name == depends.get(index).get) {
-                attributes = colorsManager.getGlobalScheme.getAttributes(
-                    EditorColors.SEARCH_RESULT_ATTRIBUTES)
+            override def templateFinished(
+                template: Template,
+                brokenOff: Boolean
+            ) {
+              clearHighlighters()
+            }
+
+            private def addHighlights(
+                ranges: mutable.HashMap[TextRange, TextAttributes],
+                editor: Editor,
+                highlighters: ArrayBuffer[RangeHighlighter],
+                highlightManager: HighlightManager
+            ) {
+              for ((range, attributes) <- ranges) {
+                import scala.collection.JavaConversions._
+                highlightManager.addOccurrenceHighlight(
+                  editor,
+                  range.getStartOffset,
+                  range.getEndOffset,
+                  attributes,
+                  0,
+                  highlighters,
+                  null
+                )
               }
-              if (attributes != null)
-                rangesToHighlight.put(segmentOffset, attributes)
-              i += 1
+              for (highlighter <- highlighters) {
+                highlighter.setGreedyToLeft(true)
+                highlighter.setGreedyToRight(true)
+              }
             }
-            addHighlights(rangesToHighlight,
-                          editor,
-                          myHighlighters,
-                          HighlightManager.getInstance(project))
-          }
 
-          private def clearHighlighters() {
-            val highlightManager = HighlightManager.getInstance(project)
-            myHighlighters.foreach { a =>
-              highlightManager.removeSegmentHighlighter(editor, a)
+            private def markCurrentVariables(index: Int) {
+              val colorsManager: EditorColorsManager =
+                EditorColorsManager.getInstance
+              val templateState: TemplateState =
+                TemplateManagerImpl.getTemplateState(editor)
+              var i: Int = 0
+
+              while (i < templateState.getSegmentsCount) {
+                val segmentOffset: TextRange   = templateState.getSegmentRange(i)
+                val name: String               = template.getSegmentName(i)
+                var attributes: TextAttributes = null
+                if (name == params.get(index).get) {
+                  attributes = colorsManager.getGlobalScheme
+                    .getAttributes(EditorColors.WRITE_SEARCH_RESULT_ATTRIBUTES)
+                } else if (name == depends.get(index).get) {
+                  attributes = colorsManager.getGlobalScheme
+                    .getAttributes(EditorColors.SEARCH_RESULT_ATTRIBUTES)
+                }
+                if (attributes != null)
+                  rangesToHighlight.put(segmentOffset, attributes)
+                i += 1
+              }
+              addHighlights(
+                rangesToHighlight,
+                editor,
+                myHighlighters,
+                HighlightManager.getInstance(project)
+              )
             }
-            rangesToHighlight.clear()
-            myHighlighters.clear()
+
+            private def clearHighlighters() {
+              val highlightManager = HighlightManager.getInstance(project)
+              myHighlighters.foreach { a =>
+                highlightManager.removeSegmentHighlighter(editor, a)
+              }
+              rangesToHighlight.clear()
+              myHighlighters.clear()
+            }
           }
-        })
+        )
 
       PsiDocumentManager.getInstance(project).commitDocument(document)
     }
   }
 
   private def findExpression(
-      _element: PsiElement, editor: Editor): Option[ScExpression] = {
+      _element: PsiElement,
+      editor: Editor
+  ): Option[ScExpression] = {
     var element: PsiElement = _element
     if (!element.getParent.isInstanceOf[ScUnderscoreSection]) {
       if (element.getTextRange.getStartOffset == editor.getCaretModel.getOffset) {
@@ -303,7 +350,7 @@ class IntroduceExplicitParameterIntention
         case expression: ScExpression =>
           if (ScUnderScoreSectionUtil.isUnderscoreFunction(element)) {
             val underscores = ScUnderScoreSectionUtil.underscores(element)
-            val offset = editor.getCaretModel.getOffset
+            val offset      = editor.getCaretModel.getOffset
             for (u <- underscores) {
               val range: TextRange = u.getTextRange
               if (range.getStartOffset <= offset &&

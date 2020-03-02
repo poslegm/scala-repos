@@ -18,7 +18,12 @@ package com.twitter.scalding.thrift.macros.impl
 import com.twitter.scalding.serialization.macros.impl.OrderedSerializationProviderImpl
 import com.twitter.scalding.serialization.macros.impl.ordered_serialization._
 import com.twitter.scalding.serialization.OrderedSerialization
-import com.twitter.scalding.thrift.macros.impl.ordered_serialization.{ScroogeEnumOrderedBuf, ScroogeUnionOrderedBuf, ScroogeOrderedBuf, ScroogeOuterOrderedBuf}
+import com.twitter.scalding.thrift.macros.impl.ordered_serialization.{
+  ScroogeEnumOrderedBuf,
+  ScroogeUnionOrderedBuf,
+  ScroogeOrderedBuf,
+  ScroogeOuterOrderedBuf
+}
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
@@ -30,7 +35,8 @@ object ScroogeInternalOrderedSerializationImpl {
   // which will inject an implicit lazy val for a new OrderedSerialization and then exit the macro.
   // This avoids methods becoming too long via inlining.
   private def innerDispatcher(
-      c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+      c: Context
+  ): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     import c.universe._
     def buildDispatcher: PartialFunction[c.Type, TreeOrderedBuf[c.type]] =
       ScroogeInternalOrderedSerializationImpl.innerDispatcher(c)
@@ -44,13 +50,17 @@ object ScroogeInternalOrderedSerializationImpl {
       .orElse(scroogeEnumDispatcher)
       .orElse(scroogeUnionDispatcher)
       .orElse(scroogeOuterOrderedBuf)
-      .orElse(OrderedSerializationProviderImpl.scaldingBasicDispatchers(c)(
-              buildDispatcher))
+      .orElse(
+        OrderedSerializationProviderImpl
+          .scaldingBasicDispatchers(c)(buildDispatcher)
+      )
       .orElse(OrderedSerializationProviderImpl.fallbackImplicitDispatcher(c))
       .orElse {
         case tpe: Type =>
-          c.abort(c.enclosingPosition,
-                  s"""Unable to find OrderedSerialization for type ${tpe}""")
+          c.abort(
+            c.enclosingPosition,
+            s"""Unable to find OrderedSerialization for type ${tpe}"""
+          )
       }
   }
 
@@ -58,7 +68,8 @@ object ScroogeInternalOrderedSerializationImpl {
   // This is the dispatcher routine only hit when we enter in via an external call implicitly or explicitly to the macro.
   // It has the ability to generate code for thrift structs, with the scroogeDispatcher.
   private def outerDispatcher(
-      c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+      c: Context
+  ): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     def buildOuterDispatcher: PartialFunction[c.Type, TreeOrderedBuf[c.type]] =
       ScroogeInternalOrderedSerializationImpl.outerDispatcher(c)
     def buildDispatcher: PartialFunction[c.Type, TreeOrderedBuf[c.type]] =
@@ -74,8 +85,9 @@ object ScroogeInternalOrderedSerializationImpl {
       .orElse(innerDisp)
   }
 
-  def apply[T](c: Context)(
-      implicit T: c.WeakTypeTag[T]): c.Expr[OrderedSerialization[T]] = {
+  def apply[T](
+      c: Context
+  )(implicit T: c.WeakTypeTag[T]): c.Expr[OrderedSerialization[T]] = {
     val b: TreeOrderedBuf[c.type] = outerDispatcher(c)(T.tpe)
     TreeOrderedBuf.toOrderedSerialization[T](c)(b)
   }

@@ -43,9 +43,9 @@ object ByteArray {
     def reads(json: JsValue) =
       (for {
         hexStr ← json str "$binary"
-        bytes ← fromHexStr(hexStr).toOption
+        bytes  ← fromHexStr(hexStr).toOption
       } yield bytes) match {
-        case None => JsError(s"error reading ByteArray from $json")
+        case None     => JsError(s"error reading ByteArray from $json")
         case Some(ba) => JsSuccess(ba)
       }
 
@@ -54,14 +54,14 @@ object ByteArray {
   }
 
   def parseByte(s: String): Byte = {
-    var i = s.length - 1
-    var sum = 0
+    var i    = s.length - 1
+    var sum  = 0
     var mult = 1
     while (i >= 0) {
       s.charAt(i) match {
         case '1' => sum += mult
         case '0' =>
-        case x => sys error s"invalid binary literal: $x in $s"
+        case x   => sys error s"invalid binary literal: $x in $s"
       }
       mult *= 2
       i -= 1

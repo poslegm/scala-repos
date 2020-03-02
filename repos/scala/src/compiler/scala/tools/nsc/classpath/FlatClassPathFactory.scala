@@ -22,7 +22,7 @@ class FlatClassPathFactory(settings: Settings)
   override def sourcesInPath(path: String): List[FlatClassPath] =
     for {
       file <- expandPath(path, expandStar = false)
-      dir <- Option(AbstractFile getDirectory file)
+      dir  <- Option(AbstractFile getDirectory file)
     } yield createSourcePath(dir)
 
   private def createSourcePath(file: AbstractFile): FlatClassPath =

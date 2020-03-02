@@ -14,7 +14,7 @@ object IterateeTTest extends SpecLite {
 
   "consume" in {
     (consume[Int, Id, List] &= enumStream(Stream(1, 2, 3))).run must_===
-    (List(1, 2, 3))
+      (List(1, 2, 3))
   }
 
   "fold in constant stack space" in {
@@ -25,8 +25,8 @@ object IterateeTTest extends SpecLite {
 
   object instances {
     object iterateet {
-      def monad[F[_]: Monad, E] = Monad[IterateeT[E, F, ?]]
-      def liftIO[F[_]: MonadIO, E] = LiftIO[IterateeT[E, F, ?]]
+      def monad[F[_]: Monad, E]     = Monad[IterateeT[E, F, ?]]
+      def liftIO[F[_]: MonadIO, E]  = LiftIO[IterateeT[E, F, ?]]
       def monadIO[F[_]: MonadIO, E] = MonadIO[IterateeT[E, F, ?]]
     }
 

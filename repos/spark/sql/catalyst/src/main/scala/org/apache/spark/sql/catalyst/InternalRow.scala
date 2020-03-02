@@ -49,7 +49,7 @@ abstract class InternalRow extends SpecializedGetters with Serializable {
     assert(len == fieldTypes.length)
 
     val values = new Array[Any](len)
-    var i = 0
+    var i      = 0
     while (i < len) {
       values(i) = get(i, fieldTypes(i))
       i += 1

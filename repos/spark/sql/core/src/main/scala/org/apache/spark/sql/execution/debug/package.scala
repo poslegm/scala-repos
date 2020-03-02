@@ -25,7 +25,10 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.expressions.Attribute
-import org.apache.spark.sql.catalyst.expressions.codegen.{CodegenContext, ExprCode}
+import org.apache.spark.sql.catalyst.expressions.codegen.{
+  CodegenContext,
+  ExprCode
+}
 import org.apache.spark.sql.catalyst.trees.TreeNodeRef
 import org.apache.spark.sql.internal.SQLConf
 
@@ -45,9 +48,8 @@ package object debug {
     * Augments [[SQLContext]] with debug methods.
     */
   implicit class DebugSQLContext(sqlContext: SQLContext) {
-    def debug(): Unit = {
+    def debug(): Unit =
       sqlContext.setConf(SQLConf.DATAFRAME_EAGER_ANALYSIS, false)
-    }
   }
 
   /**
@@ -55,7 +57,7 @@ package object debug {
     */
   implicit class DebugQuery(query: DataFrame) extends Logging {
     def debug(): Unit = {
-      val plan = query.queryExecution.executedPlan
+      val plan    = query.queryExecution.executedPlan
       val visited = new collection.mutable.HashSet[TreeNodeRef]()
       val debugPlan =
         plan transform {
@@ -66,13 +68,14 @@ package object debug {
       logDebug(s"Results returned: ${debugPlan.execute().count()}")
       debugPlan.foreach {
         case d: DebugNode => d.dumpStats()
-        case _ =>
+        case _            =>
       }
     }
   }
 
   private[sql] case class DebugNode(child: SparkPlan)
-      extends UnaryNode with CodegenSupport {
+      extends UnaryNode
+      with CodegenSupport {
     def output: Seq[Attribute] = child.output
 
     implicit object SetAccumulatorParam
@@ -83,7 +86,9 @@ package object debug {
       }
 
       def addInPlace(
-          v1: HashSet[String], v2: HashSet[String]): HashSet[String] = {
+          v1: HashSet[String],
+          v2: HashSet[String]
+      ): HashSet[String] = {
         v1 ++= v2
         v1
       }
@@ -95,8 +100,9 @@ package object debug {
       *                     causing the wrong data to be projected.
       */
     case class ColumnMetrics(
-        elementTypes: Accumulator[HashSet[String]] = sparkContext.accumulator(
-              HashSet.empty))
+        elementTypes: Accumulator[HashSet[String]] =
+          sparkContext.accumulator(HashSet.empty)
+    )
 
     val tupleCount: Accumulator[Int] = sparkContext.accumulator[Int](0)
 
@@ -115,7 +121,7 @@ package object debug {
       }
     }
 
-    protected override def doExecute(): RDD[InternalRow] = {
+    protected override def doExecute(): RDD[InternalRow] =
       child.execute().mapPartitions { iter =>
         new Iterator[InternalRow] {
           def hasNext: Boolean = iter.hasNext
@@ -135,19 +141,18 @@ package object debug {
           }
         }
       }
-    }
 
-    override def upstreams(): Seq[RDD[InternalRow]] = {
+    override def upstreams(): Seq[RDD[InternalRow]] =
       child.asInstanceOf[CodegenSupport].upstreams()
-    }
 
-    override def doProduce(ctx: CodegenContext): String = {
+    override def doProduce(ctx: CodegenContext): String =
       child.asInstanceOf[CodegenSupport].produce(ctx, this)
-    }
 
     override def doConsume(
-        ctx: CodegenContext, input: Seq[ExprCode], row: String): String = {
+        ctx: CodegenContext,
+        input: Seq[ExprCode],
+        row: String
+    ): String =
       consume(ctx, input)
-    }
   }
 }

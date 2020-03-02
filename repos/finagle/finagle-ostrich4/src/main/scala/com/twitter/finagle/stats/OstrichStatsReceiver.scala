@@ -5,8 +5,7 @@ import com.twitter.ostrich.stats.{Stats, StatsCollection}
 class OstrichStatsReceiver(
     val repr: StatsCollection = Stats,
     val delimiter: String = "/"
-)
-    extends StatsReceiverWithCumulativeGauges {
+) extends StatsReceiverWithCumulativeGauges {
 
   def this() = this(Stats, "/")
   // To avoid breaking the Java API:
@@ -15,7 +14,7 @@ class OstrichStatsReceiver(
   override def toString: String = "OstrichStatsReceiver"
 
   override protected[this] def registerGauge(name: Seq[String], f: => Float) {
-    repr.addGauge(variableName(name)) { f.toDouble }
+    repr.addGauge(variableName(name))(f.toDouble)
   }
 
   override protected[this] def deregisterGauge(name: Seq[String]) {

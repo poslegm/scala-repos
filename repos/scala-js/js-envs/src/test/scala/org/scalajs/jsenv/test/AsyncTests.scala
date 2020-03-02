@@ -23,14 +23,13 @@ trait AsyncTests extends BasicJSEnvTests {
     newJSEnv.asyncRunner(codeVF)
   }
 
-  protected def start(runner: AsyncJSRunner): Future[Unit] = {
+  protected def start(runner: AsyncJSRunner): Future[Unit] =
     runner.start(new ScalaConsoleLogger(Level.Warn), ConsoleJSConsole)
-  }
 
   @Test
   def futureTest: Unit = {
     val runner = asyncRunner("")
-    val fut = start(runner)
+    val fut    = start(runner)
 
     Await.result(fut, DefaultTimeout)
 
@@ -40,7 +39,7 @@ trait AsyncTests extends BasicJSEnvTests {
   @Test
   def stopAfterTerminatedTest: Unit = {
     val runner = asyncRunner("")
-    val fut = start(runner)
+    val fut    = start(runner)
 
     Await.result(fut, DefaultTimeout)
 

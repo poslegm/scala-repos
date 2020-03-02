@@ -3,11 +3,11 @@ trait Expr[T] {
 }
 
 object Expr {
-  implicit def doubleToConst(d: Double) = Const(ExtDouble(d))
+  implicit def doubleToConst(d: Double)       = Const(ExtDouble(d))
   implicit def extDoubleToConst(d: ExtDouble) = Const(d)
 }
 
-case class Const[T](value: T) extends Expr[T]
+case class Const[T](value: T)                      extends Expr[T]
 case class Add[T](first: Expr[T], second: Expr[T]) extends Expr[T]
 
 case class ExtDouble(value: Double) {

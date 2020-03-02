@@ -34,11 +34,11 @@ class UnsafeRowSuite extends SparkFunSuite {
   test("UnsafeRow Java serialization") {
     // serializing an UnsafeRow pointing to a large buffer should only serialize the relevant data
     val data = new Array[Byte](1024)
-    val row = new UnsafeRow(1)
+    val row  = new UnsafeRow(1)
     row.pointTo(data, 16)
     row.setLong(0, 19285)
 
-    val ser = new JavaSerializer(new SparkConf).newInstance()
+    val ser  = new JavaSerializer(new SparkConf).newInstance()
     val row1 = ser.deserialize[UnsafeRow](ser.serialize(row))
     assert(row1.getLong(0) == 19285)
     assert(row1.getBaseObject().asInstanceOf[Array[Byte]].length == 16)
@@ -47,11 +47,11 @@ class UnsafeRowSuite extends SparkFunSuite {
   test("UnsafeRow Kryo serialization") {
     // serializing an UnsafeRow pointing to a large buffer should only serialize the relevant data
     val data = new Array[Byte](1024)
-    val row = new UnsafeRow(1)
+    val row  = new UnsafeRow(1)
     row.pointTo(data, 16)
     row.setLong(0, 19285)
 
-    val ser = new KryoSerializer(new SparkConf).newInstance()
+    val ser  = new KryoSerializer(new SparkConf).newInstance()
     val row1 = ser.deserialize[UnsafeRow](ser.serialize(row))
     assert(row1.getLong(0) == 19285)
     assert(row1.getBaseObject().asInstanceOf[Array[Byte]].length == 16)
@@ -68,37 +68,41 @@ class UnsafeRowSuite extends SparkFunSuite {
 
   test("writeToStream") {
     val row = InternalRow.apply(
-        UTF8String.fromString("hello"), UTF8String.fromString("world"), 123)
+      UTF8String.fromString("hello"),
+      UTF8String.fromString("world"),
+      123
+    )
     val arrayBackedUnsafeRow: UnsafeRow = UnsafeProjection
       .create(Array[DataType](StringType, StringType, IntegerType))
       .apply(row)
     assert(arrayBackedUnsafeRow.getBaseObject.isInstanceOf[Array[Byte]])
-    val (bytesFromArrayBackedRow, field0StringFromArrayBackedRow): (Array[Byte],
-    String) = {
+    val (bytesFromArrayBackedRow, field0StringFromArrayBackedRow): (
+        Array[Byte],
+        String
+    ) = {
       val baos = new ByteArrayOutputStream()
       arrayBackedUnsafeRow.writeToStream(baos, null)
       (baos.toByteArray, arrayBackedUnsafeRow.getString(0))
     }
-    val (bytesFromOffheapRow, field0StringFromOffheapRow): (Array[Byte],
-    String) = {
+    val (bytesFromOffheapRow, field0StringFromOffheapRow): (Array[Byte], String) = {
       val offheapRowPage =
         MemoryAllocator.UNSAFE.allocate(arrayBackedUnsafeRow.getSizeInBytes)
       try {
         Platform.copyMemory(
-            arrayBackedUnsafeRow.getBaseObject,
-            arrayBackedUnsafeRow.getBaseOffset,
-            offheapRowPage.getBaseObject,
-            offheapRowPage.getBaseOffset,
-            arrayBackedUnsafeRow.getSizeInBytes
+          arrayBackedUnsafeRow.getBaseObject,
+          arrayBackedUnsafeRow.getBaseOffset,
+          offheapRowPage.getBaseObject,
+          offheapRowPage.getBaseOffset,
+          arrayBackedUnsafeRow.getSizeInBytes
         )
         val offheapUnsafeRow: UnsafeRow = new UnsafeRow(3)
         offheapUnsafeRow.pointTo(
-            offheapRowPage.getBaseObject,
-            offheapRowPage.getBaseOffset,
-            arrayBackedUnsafeRow.getSizeInBytes
+          offheapRowPage.getBaseObject,
+          offheapRowPage.getBaseOffset,
+          arrayBackedUnsafeRow.getSizeInBytes
         )
         assert(offheapUnsafeRow.getBaseObject === null)
-        val baos = new ByteArrayOutputStream()
+        val baos        = new ByteArrayOutputStream()
         val writeBuffer = new Array[Byte](1024)
         offheapUnsafeRow.writeToStream(baos, writeBuffer)
         (baos.toByteArray, offheapUnsafeRow.getString(0))
@@ -136,7 +140,7 @@ class UnsafeRowSuite extends SparkFunSuite {
     val unsafeRow = converter.apply(row)
 
     val emptyRow = UnsafeRow.createFromByteArray(64, 2)
-    val buffer = emptyRow.getBaseObject
+    val buffer   = emptyRow.getBaseObject
 
     emptyRow.copyFrom(unsafeRow)
     assert(emptyRow.getSizeInBytes() === unsafeRow.getSizeInBytes)
@@ -151,7 +155,7 @@ class UnsafeRowSuite extends SparkFunSuite {
 
     val longString =
       UTF8String.fromString((1 to 100).map(_ => "abc").reduce(_ + _))
-    val row2 = InternalRow(3, longString)
+    val row2       = InternalRow(3, longString)
     val unsafeRow2 = converter.apply(row2)
 
     // make sure we can resize.

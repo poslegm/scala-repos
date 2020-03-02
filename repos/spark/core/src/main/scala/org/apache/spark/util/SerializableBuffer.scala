@@ -17,7 +17,12 @@
 
 package org.apache.spark.util
 
-import java.io.{EOFException, IOException, ObjectInputStream, ObjectOutputStream}
+import java.io.{
+  EOFException,
+  IOException,
+  ObjectInputStream,
+  ObjectOutputStream
+}
 import java.nio.ByteBuffer
 import java.nio.channels.Channels
 
@@ -34,7 +39,7 @@ private[spark] class SerializableBuffer(@transient var buffer: ByteBuffer)
       val length = in.readInt()
       buffer = ByteBuffer.allocate(length)
       var amountRead = 0
-      val channel = Channels.newChannel(in)
+      val channel    = Channels.newChannel(in)
       while (amountRead < length) {
         val ret = channel.read(buffer)
         if (ret == -1) {

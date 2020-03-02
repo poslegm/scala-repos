@@ -29,23 +29,28 @@ trait QueryStringParameterExtractor[T] {
   import QueryStringParameterExtractor._
   def unapply(qs: QueryString): Option[T]
   def unapply(req: RequestHeader): Option[T] = unapply(req.queryString)
-  def unapply(uri: URI): Option[T] = unapply(parse(uri.getRawQuery))
-  def unapply(uri: URL): Option[T] = unapply(parse(uri.getQuery))
+  def unapply(uri: URI): Option[T]           = unapply(parse(uri.getRawQuery))
+  def unapply(uri: URL): Option[T]           = unapply(parse(uri.getQuery))
 }
 
 object QueryStringParameterExtractor {
-  private def parse(query: String): QueryString = {
+  private def parse(query: String): QueryString =
     Option(query)
-      .map(_.split("&").toSeq.map { keyValue =>
-        keyValue.split("=", 2) match {
-          case Array(key, value) => key -> value
-          case Array(key) => key -> ""
-        }
-      }.groupBy(_._1).mapValues(_.map(_._2)).toMap)
+      .map(
+        _.split("&").toSeq
+          .map { keyValue =>
+            keyValue.split("=", 2) match {
+              case Array(key, value) => key -> value
+              case Array(key)        => key -> ""
+            }
+          }
+          .groupBy(_._1)
+          .mapValues(_.map(_._2))
+          .toMap
+      )
       .getOrElse(Map.empty)
-  }
 
   def required(name: String) = new RequiredQueryStringParameter(name)
   def optional(name: String) = new OptionalQueryStringParameter(name)
-  def seq(name: String) = new SeqQueryStringParameter(name)
+  def seq(name: String)      = new SeqQueryStringParameter(name)
 }

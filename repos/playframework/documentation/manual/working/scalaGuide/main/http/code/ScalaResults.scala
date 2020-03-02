@@ -43,8 +43,8 @@ package scalaguide.http.scalaresults {
 
       "Manipulating HTTP headers" in {
         //#set-headers
-        val result = Ok("Hello World!").withHeaders(
-            CACHE_CONTROL -> "max-age=3600", ETAG -> "xx")
+        val result = Ok("Hello World!")
+          .withHeaders(CACHE_CONTROL -> "max-age=3600", ETAG -> "xx")
         //#set-headers
         testHeader(result, CACHE_CONTROL, "max-age=3600")
         testHeader(result, ETAG, "xx")
@@ -70,8 +70,9 @@ package scalaguide.http.scalaresults {
 
       "Changing the charset for text based HTTP responses" in {
         val index = new scalaguide.http.scalaresults.full.Application().index
-        assertAction(index)(
-            res => testContentType(await(res), "charset=iso-8859-1"))
+        assertAction(index)(res =>
+          testContentType(await(res), "charset=iso-8859-1")
+        )
       }
 
       "HTML method works" in {
@@ -81,34 +82,31 @@ package scalaguide.http.scalaresults {
       }
     }
 
-    def testContentType(results: Result, contentType: String) = {
+    def testContentType(results: Result, contentType: String) =
       results.body.contentType must beSome.which {
         _ must contain(contentType)
       }
-    }
 
-    def testHeader(results: Result, key: String, value: String) = {
+    def testHeader(results: Result, key: String, value: String) =
       results.header.headers.get(key).get must contain(value)
-    }
 
-    def testAction[A](action: Action[A],
-                      expectedResponse: Int = OK,
-                      request: Request[A] = FakeRequest()) = {
-      assertAction(action, expectedResponse, request) { result =>
-        success
-      }
-    }
+    def testAction[A](
+        action: Action[A],
+        expectedResponse: Int = OK,
+        request: Request[A] = FakeRequest()
+    ) =
+      assertAction(action, expectedResponse, request)(result => success)
 
-    def assertAction[A, T : AsResult](action: Action[A],
-                                      expectedResponse: Int = OK,
-                                      request: Request[A] = FakeRequest())(
-        assertions: Future[Result] => T) = {
+    def assertAction[A, T: AsResult](
+        action: Action[A],
+        expectedResponse: Int = OK,
+        request: Request[A] = FakeRequest()
+    )(assertions: Future[Result] => T) =
       running() { app =>
         val result = action(request)
         status(result) must_== expectedResponse
         assertions(result)
       }
-    }
   }
 
   package scalaguide.http.scalaresults.full {
@@ -125,9 +123,8 @@ package scalaguide.http.scalaresults {
 
     object CodeShow {
       //#Source-Code-HTML
-      def HTML(implicit codec: Codec) = {
+      def HTML(implicit codec: Codec) =
         "text/html; charset=" + codec.charset
-      }
       //#Source-Code-HTML
     }
   }

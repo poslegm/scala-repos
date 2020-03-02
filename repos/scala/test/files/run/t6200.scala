@@ -8,13 +8,13 @@ object Test extends App {
     override def hashCode = value / 5
   }
 
-  def testCorrectness[T : Ordering](n: Int, mkKey: Int => T) {
+  def testCorrectness[T: Ordering](n: Int, mkKey: Int => T) {
     val o = implicitly[Ordering[T]]
     val s = HashMap.empty[T, Unit] ++ (0 until n).map(x => mkKey(x) -> (()))
     for (i <- 0 until n) {
       val ki = mkKey(i)
-      val a = s.filter(kv => o.lt(kv._1, ki))
-      val b = s.filterNot(kv => o.lt(kv._1, ki))
+      val a  = s.filter(kv => o.lt(kv._1, ki))
+      val b  = s.filterNot(kv => o.lt(kv._1, ki))
       require(a.size == i && (0 until i).forall(i => a.contains(mkKey(i))))
       require(b.size == n - i && (i until n).forall(i => b.contains(mkKey(i))))
     }
@@ -31,7 +31,7 @@ object Test extends App {
 
   // this tests that neither hashCode nor equals are called during filter
   def testNoHashing() {
-    var hashCount = 0
+    var hashCount   = 0
     var equalsCount = 0
     case class HashCounter(value: Int) extends Ordered[HashCounter] {
       def compare(that: HashCounter) = value compare that.value
@@ -45,17 +45,18 @@ object Test extends App {
         equalsCount += 1
         that match {
           case HashCounter(value) => this.value == value
-          case _ => false
+          case _                  => false
         }
       }
     }
 
     val s =
-      HashMap.empty[HashCounter, Unit] ++ (0 until 100).map(
-          k => HashCounter(k) -> (()))
-    val hashCount0 = hashCount
+      HashMap.empty[HashCounter, Unit] ++ (0 until 100).map(k =>
+        HashCounter(k) -> (())
+      )
+    val hashCount0   = hashCount
     val equalsCount0 = equalsCount
-    val t = s.filter(_._1 < HashCounter(50))
+    val t            = s.filter(_._1 < HashCounter(50))
     require(hashCount == hashCount0)
     require(equalsCount == equalsCount0)
   }

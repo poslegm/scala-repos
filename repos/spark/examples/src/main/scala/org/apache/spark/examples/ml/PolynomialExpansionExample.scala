@@ -27,15 +27,15 @@ import org.apache.spark.sql.SQLContext
 
 object PolynomialExpansionExample {
   def main(args: Array[String]): Unit = {
-    val conf = new SparkConf().setAppName("PolynomialExpansionExample")
-    val sc = new SparkContext(conf)
+    val conf       = new SparkConf().setAppName("PolynomialExpansionExample")
+    val sc         = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
 
     // $example on$
     val data = Array(
-        Vectors.dense(-2.0, 2.3),
-        Vectors.dense(0.0, 0.0),
-        Vectors.dense(0.6, -1.1)
+      Vectors.dense(-2.0, 2.3),
+      Vectors.dense(0.0, 0.0),
+      Vectors.dense(0.6, -1.1)
     )
     val df =
       sqlContext.createDataFrame(data.map(Tuple1.apply)).toDF("features")

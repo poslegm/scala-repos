@@ -36,7 +36,7 @@ trait RangeDirectives {
     */
   def withRangeSupport: Directive0 =
     extractRequestContext.flatMap { ctx ⇒
-      val settings = ctx.settings
+      val settings     = ctx.settings
       implicit val log = ctx.log
       import settings.{rangeCountLimit, rangeCoalescingThreshold}
 
@@ -44,7 +44,9 @@ trait RangeDirectives {
         def length = end - start
         def apply(entity: UniversalEntity): UniversalEntity =
           entity.transformDataBytes(
-              length, StreamUtils.sliceBytesTransformer(start, length))
+            length,
+            StreamUtils.sliceBytesTransformer(start, length)
+          )
         def distance(other: IndexRange) =
           mergedEnd(other) - mergedStart(other) - (length + other.length)
         def mergeWith(other: IndexRange) =
@@ -64,7 +66,9 @@ trait RangeDirectives {
             new IndexRange(first, entityLength)
           case ByteRange.Suffix(suffixLength) ⇒
             new IndexRange(
-                math.max(0, entityLength - suffixLength), entityLength)
+              math.max(0, entityLength - suffixLength),
+              entityLength
+            )
         }
 
       // See comment of the `range-coalescing-threshold` setting in `reference.conf` for the rationale of this behavior.
@@ -76,9 +80,11 @@ trait RangeDirectives {
           otherCandidates :+ merged
         }
 
-      def multipartRanges(ranges: Seq[ByteRange],
-                          entity: UniversalEntity): Multipart.ByteRanges = {
-        val length = entity.contentLength
+      def multipartRanges(
+          ranges: Seq[ByteRange],
+          entity: UniversalEntity
+      ): Multipart.ByteRanges = {
+        val length                   = entity.contentLength
         val iRanges: Seq[IndexRange] = ranges.map(indexRange(length))
 
         // It's only possible to run once over the input entity data stream because it's not known if the
@@ -94,8 +100,9 @@ trait RangeDirectives {
               StreamUtils.sliceBytesTransformer(range.start, range.length)
             val bytes = entity.dataBytes.via(flow)
             val part = Multipart.ByteRanges.BodyPart(
-                range.contentRange(length),
-                HttpEntity(entity.contentType, range.length, bytes))
+              range.contentRange(length),
+              HttpEntity(entity.contentType, range.length, bytes)
+            )
             Source.single(part)
           case n ⇒
             Source fromGraph GraphDSL.create() { implicit b ⇒
@@ -111,8 +118,9 @@ trait RangeDirectives {
                   .map {
                     case (_, bytes) ⇒
                       Multipart.ByteRanges.BodyPart(
-                          range.contentRange(length),
-                          HttpEntity(entity.contentType, range.length, bytes))
+                        range.contentRange(length),
+                        HttpEntity(entity.contentType, range.length, bytes)
+                      )
                   } ~> merge
               }
               entity.dataBytes ~> bcast
@@ -122,26 +130,30 @@ trait RangeDirectives {
         Multipart.ByteRanges(source)
       }
 
-      def rangeResponse(range: ByteRange,
-                        entity: UniversalEntity,
-                        length: Long,
-                        headers: immutable.Seq[HttpHeader]) = {
+      def rangeResponse(
+          range: ByteRange,
+          entity: UniversalEntity,
+          length: Long,
+          headers: immutable.Seq[HttpHeader]
+      ) = {
         val aiRange = indexRange(length)(range)
-        HttpResponse(PartialContent,
-                     `Content-Range`(aiRange.contentRange(length)) +: headers,
-                     aiRange(entity))
+        HttpResponse(
+          PartialContent,
+          `Content-Range`(aiRange.contentRange(length)) +: headers,
+          aiRange(entity)
+        )
       }
 
       def satisfiable(entityLength: Long)(range: ByteRange): Boolean =
         range match {
-          case ByteRange.Slice(firstPos, _) ⇒ firstPos < entityLength
+          case ByteRange.Slice(firstPos, _)   ⇒ firstPos < entityLength
           case ByteRange.FromOffset(firstPos) ⇒ firstPos < entityLength
-          case ByteRange.Suffix(length) ⇒ length > 0
+          case ByteRange.Suffix(length)       ⇒ length > 0
         }
       def universal(entity: HttpEntity): Option[UniversalEntity] =
         entity match {
           case u: UniversalEntity ⇒ Some(u)
-          case _ ⇒ None
+          case _                  ⇒ None
         }
 
       def applyRanges(ranges: immutable.Seq[ByteRange]): Directive0 =
@@ -155,17 +167,23 @@ trait RangeDirectives {
                     case Nil ⇒
                       ctx.reject(UnsatisfiableRangeRejection(ranges, length))
                     case Seq(satisfiableRange) ⇒
-                      ctx.complete(rangeResponse(
-                              satisfiableRange, entity, length, headers))
+                      ctx.complete(
+                        rangeResponse(satisfiableRange, entity, length, headers)
+                      )
                     case satisfiableRanges ⇒
                       ctx.complete(
-                          (PartialContent,
-                           headers,
-                           multipartRanges(satisfiableRanges, entity)))
+                        (
+                          PartialContent,
+                          headers,
+                          multipartRanges(satisfiableRanges, entity)
+                        )
+                      )
                   }
                 case None ⇒
                   // Ranges not supported for Chunked or CloseDelimited responses
-                  ctx.reject(UnsatisfiableRangeRejection(ranges, -1)) // FIXME: provide better error
+                  ctx.reject(
+                    UnsatisfiableRangeRejection(ranges, -1)
+                  ) // FIXME: provide better error
               }
           }
         }

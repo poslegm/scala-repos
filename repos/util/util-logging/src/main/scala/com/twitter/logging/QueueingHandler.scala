@@ -25,7 +25,8 @@ import java.util.{logging => javalog}
 object QueueingHandler {
 
   private[this] val executor = Executors.newCachedThreadPool(
-      new NamedPoolThreadFactory("QueueingHandlerPool", makeDaemons = true))
+    new NamedPoolThreadFactory("QueueingHandlerPool", makeDaemons = true)
+  )
 
   private val DefaultFuturePool = new ExecutorServiceFuturePool(executor)
 
@@ -47,8 +48,7 @@ object QueueingHandler {
   ): () => QueueingHandler =
     () => new QueueingHandler(handler(), maxQueueSize, inferClassNames)
 
-  def apply(
-      handler: HandlerFactory, maxQueueSize: Int): () => QueueingHandler =
+  def apply(handler: HandlerFactory, maxQueueSize: Int): () => QueueingHandler =
     apply(handler, maxQueueSize, false)
 
   // java interop
@@ -78,8 +78,10 @@ object QueueingHandler {
   * logging by getting the stack trace synchronously.
   */
 class QueueingHandler(
-    handler: Handler, val maxQueueSize: Int, inferClassNames: Boolean)
-    extends ProxyHandler(handler) {
+    handler: Handler,
+    val maxQueueSize: Int,
+    inferClassNames: Boolean
+) extends ProxyHandler(handler) {
 
   import QueueingHandler._
 
@@ -90,7 +92,7 @@ class QueueingHandler(
     this(handler, Int.MaxValue)
 
   protected val dropLogNode: String = ""
-  protected val log: Logger = Logger(dropLogNode)
+  protected val log: Logger         = Logger(dropLogNode)
 
   private[this] val queue = new AsyncQueue[javalog.LogRecord](maxQueueSize)
 
@@ -113,36 +115,32 @@ class QueueingHandler(
   private[this] def doPublish(record: javalog.LogRecord): Unit =
     super.publish(record)
 
-  private[this] def loop(): Future[Unit] = {
+  private[this] def loop(): Future[Unit] =
     queue.poll().map(doPublish).respond {
-      case Return(_) => loop()
+      case Return(_)                   => loop()
       case Throw(QueueClosedException) => // indicates we should shutdown
-      case Throw(e) =>
+      case Throw(e)                    =>
         // `doPublish` can throw, and we want to keep on publishing...
         e.printStackTrace()
         loop()
     }
-  }
 
   // begin polling for log records
   DefaultFuturePool {
     loop()
   }
 
-  override def close(): Unit = {
+  override def close(): Unit =
     if (closed.compareAndSet(false, true)) {
       queue.fail(QueueClosedException, discard = true)
 
       // Propagate close
       super.close()
     }
-  }
 
   override def flush(): Unit = {
     // Publish all records in queue
-    queue.drain().map { records =>
-      records.foreach(doPublish)
-    }
+    queue.drain().map(records => records.foreach(doPublish))
 
     // Propagate flush
     super.flush()
@@ -151,8 +149,9 @@ class QueueingHandler(
   /**
     * Called when record dropped.  Default is to log to console.
     */
-  protected def onOverflow(record: javalog.LogRecord): Unit = {
-    Console.err.println(String.format(
-            "[%s] log queue overflow - record dropped", Time.now.toString))
-  }
+  protected def onOverflow(record: javalog.LogRecord): Unit =
+    Console.err.println(
+      String
+        .format("[%s] log queue overflow - record dropped", Time.now.toString)
+    )
 }

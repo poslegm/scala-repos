@@ -15,5 +15,5 @@ trait B extends A {
   }
   implicit def coerceSym(sym: Symbol): SymbolImpl;
   var s: Symbol = _;
-  val s_scope = s.scope;
+  val s_scope   = s.scope;
 }

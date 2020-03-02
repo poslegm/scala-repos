@@ -44,8 +44,9 @@ object ContextMenu {
   * Wraps [[http://docs.oracle.com/javase/8/javafx/api/javafx/scene/control/ContextMenu.html]].
   */
 class ContextMenu(
-    override val delegate: jfxsc.ContextMenu = new jfxsc.ContextMenu)
-    extends PopupControl(delegate) with SFXDelegate[jfxsc.ContextMenu] {
+    override val delegate: jfxsc.ContextMenu = new jfxsc.ContextMenu
+) extends PopupControl(delegate)
+    with SFXDelegate[jfxsc.ContextMenu] {
 
   /**
     * Create a new ContextMenu initialized with the given items

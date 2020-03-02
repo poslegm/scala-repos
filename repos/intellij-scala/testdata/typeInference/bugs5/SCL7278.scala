@@ -8,21 +8,21 @@ object SCL7278 {
   }
 
   class X(val z: Z) {
-    def foo(x: Int): Int = 123
+    def foo(x: Int): Int      = 123
     def foo(x: z.Foo): String = "text"
-    def m = foo(z.Bar)
+    def m                     = foo(z.Bar)
   }
 
   case class Y(z: Z) {
-    def foo(x: Int): Int = 123
+    def foo(x: Int): Int      = 123
     def foo(x: z.Foo): String = "text"
-    def m = foo(z.Bar)
+    def m                     = foo(z.Bar)
   }
 
   class Y2(z: Z) {
-    def foo(x: Int): Int = 123
+    def foo(x: Int): Int      = 123
     def foo(x: z.Foo): String = "text"
-    def m = foo(z.Bar)
+    def m                     = foo(z.Bar)
   }
 
   val z: Z = new Z

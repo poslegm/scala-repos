@@ -1,6 +1,6 @@
 object ProjTest {
   trait MInt { type Type }
-  trait _0 extends MInt { type Type = Boolean }
+  trait _0                extends MInt { type Type = Boolean  }
   trait Succ[Pre <: MInt] extends MInt { type Type = Pre#Type }
 
   type _1 = Succ[_0]

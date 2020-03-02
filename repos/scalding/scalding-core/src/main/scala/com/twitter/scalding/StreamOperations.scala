@@ -24,7 +24,8 @@ import cascading.tuple.{Tuple => CTuple, TupleEntry}
   * in each operation.
   */
 trait StreamOperations[+Self <: StreamOperations[Self]]
-    extends Sortable[Self] with java.io.Serializable {
+    extends Sortable[Self]
+    with java.io.Serializable {
 
   /**
     * Corresponds to a Cascading Buffer
@@ -43,8 +44,8 @@ trait StreamOperations[+Self <: StreamOperations[Self]]
     * state captured)
     */
   def mapStream[T, X](fieldDef: (Fields, Fields))(
-      mapfn: (Iterator[T]) => TraversableOnce[X])(
-      implicit conv: TupleConverter[T], setter: TupleSetter[X]): Self
+      mapfn: (Iterator[T]) => TraversableOnce[X]
+  )(implicit conv: TupleConverter[T], setter: TupleSetter[X]): Self
 
   /////////////////////////////////////////
   // All the below functions are implemented in terms of the above
@@ -53,46 +54,44 @@ trait StreamOperations[+Self <: StreamOperations[Self]]
   /**
     * Remove the first cnt elements
     */
-  def drop(cnt: Int): Self = {
+  def drop(cnt: Int): Self =
     mapStream[CTuple, CTuple](Fields.VALUES -> Fields.ARGS) { s =>
       s.drop(cnt)
     }(TupleConverter.CTupleConverter, TupleSetter.CTupleSetter)
-  }
 
   /**
     * Drop while the predicate is true, starting at the first false, output all
     */
-  def dropWhile[T](f: Fields)(fn: (T) => Boolean)(
-      implicit conv: TupleConverter[T]): Self = {
+  def dropWhile[T](
+      f: Fields
+  )(fn: (T) => Boolean)(implicit conv: TupleConverter[T]): Self =
     mapStream[TupleEntry, CTuple](f -> Fields.ARGS) { s =>
-      s.dropWhile(te => fn(conv(te))).map { _.getTuple }
+      s.dropWhile(te => fn(conv(te))).map(_.getTuple)
     }(TupleConverter.TupleEntryConverter, TupleSetter.CTupleSetter)
-  }
-  def scanLeft[X, T](fieldDef: (Fields, Fields))(init: X)(fn: (X, T) => X)(
-      implicit setter: TupleSetter[X], conv: TupleConverter[T]): Self = {
+  def scanLeft[X, T](fieldDef: (Fields, Fields))(init: X)(
+      fn: (X, T) => X
+  )(implicit setter: TupleSetter[X], conv: TupleConverter[T]): Self =
     mapStream[T, X](fieldDef) { s =>
       // scala's default is not consistent in 2.8 and 2.9, this standardizes the behavior
       new ScanLeftIterator(s, init, fn)
     }(conv, setter)
-  }
 
   /**
     * Only keep the first cnt elements
     */
-  def take(cnt: Int): Self = {
+  def take(cnt: Int): Self =
     mapStream[CTuple, CTuple](Fields.VALUES -> Fields.ARGS) { s =>
       s.take(cnt)
     }(TupleConverter.CTupleConverter, TupleSetter.CTupleSetter)
-  }
 
   /**
     * Take while the predicate is true, stopping at the
     * first false. Output all taken elements.
     */
-  def takeWhile[T](f: Fields)(fn: (T) => Boolean)(
-      implicit conv: TupleConverter[T]): Self = {
+  def takeWhile[T](
+      f: Fields
+  )(fn: (T) => Boolean)(implicit conv: TupleConverter[T]): Self =
     mapStream[TupleEntry, CTuple](f -> Fields.ARGS) { s =>
-      s.takeWhile(te => fn(conv(te))).map { _.getTuple }
+      s.takeWhile(te => fn(conv(te))).map(_.getTuple)
     }(TupleConverter.TupleEntryConverter, TupleSetter.CTupleSetter)
-  }
 }

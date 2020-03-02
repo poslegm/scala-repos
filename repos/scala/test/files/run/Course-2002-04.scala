@@ -4,7 +4,7 @@
 
 object M0 {
 
-  def quicksort[a](less: (a, a) => Boolean)(xs: List[a]): List[a] = {
+  def quicksort[a](less: (a, a) => Boolean)(xs: List[a]): List[a] =
     if (xs.isEmpty) xs
     else {
       val pivot: a = xs.head;
@@ -14,17 +14,16 @@ object M0 {
         quicksort(less)(xs.tail.filter(elem => !less(elem, pivot)));
       smaller ::: List(pivot) ::: greaterOrEqual
     }
-  }
 
   def test = {
     val isort: List[Int] => List[Int] = quicksort[Int]((x, y) => x < y);
-    val list0 = List(6, 3, 1, 8, 7, 1, 2, 5, 8, 4, 3, 4, 8);
-    val list1 = quicksort[Int]((x, y) => x < y)(list0);
-    val list2 = quicksort[Int]((x, y) => x < y)(list1);
-    val list3 = isort(list0);
-    val list4 = isort(list1);
-    val list5 = quicksort[Int]((x, y) => x >= y)(list0);
-    val list6 = quicksort[Int]((x, y) => x >= y)(list1);
+    val list0                         = List(6, 3, 1, 8, 7, 1, 2, 5, 8, 4, 3, 4, 8);
+    val list1                         = quicksort[Int]((x, y) => x < y)(list0);
+    val list2                         = quicksort[Int]((x, y) => x < y)(list1);
+    val list3                         = isort(list0);
+    val list4                         = isort(list1);
+    val list5                         = quicksort[Int]((x, y) => x >= y)(list0);
+    val list6                         = quicksort[Int]((x, y) => x >= y)(list1);
 
     Console.println("list0 = " + list0);
     Console.println("list1 = " + list1);
@@ -44,7 +43,8 @@ object M1 {
   def mergesort[a](less: (a, a) => Boolean)(xs: Array[a]): Unit = {
 
     def While(c: => Boolean)(b: => Unit): Unit =
-      if (c) { b; While(c)(b) } else ();
+      if (c) { b; While(c)(b) }
+      else ();
 
     def swap(i: Int, j: Int): Unit = {
       val t = xs(i);
@@ -55,8 +55,8 @@ object M1 {
 
     def sort1(l: Int, r: Int): Unit = {
       val pivot = xs((l + r) / 2);
-      var i = l;
-      var j = r;
+      var i     = l;
+      var j     = r;
       While(i <= j) {
         While(less(xs(i), pivot)) { i = i + 1 }
         While(less(pivot, xs(j))) { j = j - 1 }
@@ -123,10 +123,9 @@ object M1 {
 
 object M2 {
 
-  def horner(x: Double, coefs: List[Double]): Double = {
+  def horner(x: Double, coefs: List[Double]): Double =
     if (coefs.isEmpty) 0
     else horner(x, coefs.tail) * x + coefs.head
-  }
 
   def test = {
     val poly = List(9.0, 5.0, 7.0, 5.0);
@@ -143,22 +142,21 @@ object M2 {
 
 object M3 {
 
-  def dotproduct(v: List[Double], w: List[Double]): Double = {
+  def dotproduct(v: List[Double], w: List[Double]): Double =
     if (v.isEmpty) 0
     else (v.head * w.head) + dotproduct(v.tail, w.tail)
-  }
 
-  def matrixTimesVector(m: List[List[Double]], v: List[Double]): List[Double] = {
+  def matrixTimesVector(m: List[List[Double]], v: List[Double]): List[Double] =
     m.map(row => dotproduct(row, v))
-  }
 
-  def transpose(m: List[List[Double]]): List[List[Double]] = {
+  def transpose(m: List[List[Double]]): List[List[Double]] =
     if (m.isEmpty || m.head.isEmpty) List()
     else m.map(row => row.head) :: transpose(m.map(row => row.tail))
-  }
 
   def matrixTimesMatrix(
-      m1: List[List[Double]], m2: List[List[Double]]): List[List[Double]] = {
+      m1: List[List[Double]],
+      m2: List[List[Double]]
+  ): List[List[Double]] = {
     val columns = transpose(m2);
     m1.map(row => matrixTimesVector(columns, row))
   }

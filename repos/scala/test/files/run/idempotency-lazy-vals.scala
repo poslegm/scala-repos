@@ -6,7 +6,7 @@ import scala.tools.reflect.Eval
 object Test extends App {
   val lazee = reify {
     class C {
-      lazy val x = 2
+      lazy val x          = 2
       implicit lazy val y = 3
     }
     val c = new C()
@@ -14,7 +14,7 @@ object Test extends App {
     x * implicitly[Int]
   }
   println(lazee.eval)
-  val tb = cm.mkToolBox()
+  val tb     = cm.mkToolBox()
   val tlazee = tb.typecheck(lazee.tree)
   println(tlazee)
   val rtlazee = tb.untypecheck(tlazee)

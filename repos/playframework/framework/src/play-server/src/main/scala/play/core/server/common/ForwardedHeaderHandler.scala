@@ -51,17 +51,22 @@ import ForwardedHeaderHandler._
   * </dl>
   */
 private[server] class ForwardedHeaderHandler(
-    configuration: ForwardedHeaderHandlerConfig) {
+    configuration: ForwardedHeaderHandlerConfig
+) {
 
-  def remoteConnection(rawRemoteAddress: InetAddress,
-                       rawSecure: Boolean,
-                       headers: Headers): ConnectionInfo = {
+  def remoteConnection(
+      rawRemoteAddress: InetAddress,
+      rawSecure: Boolean,
+      headers: Headers
+  ): ConnectionInfo = {
     val rawConnection = ConnectionInfo(rawRemoteAddress, rawSecure)
     remoteConnection(rawConnection, headers)
   }
 
   def remoteConnection(
-      rawConnection: ConnectionInfo, headers: Headers): ConnectionInfo = {
+      rawConnection: ConnectionInfo,
+      headers: Headers
+  ): ConnectionInfo = {
 
     // Use a mutable iterator for performance when scanning the
     // header entries. Go through the headers in reverse order because
@@ -71,7 +76,7 @@ private[server] class ForwardedHeaderHandler(
       configuration.forwardedHeaders(headers).reverseIterator
 
     @tailrec
-    def scan(prev: ConnectionInfo): ConnectionInfo = {
+    def scan(prev: ConnectionInfo): ConnectionInfo =
       // Check if there's a forwarded header for us to scan.
       if (headerEntries.hasNext) {
         // There is a forwarded header from 'prev', so lets check if 'prev' is trusted.
@@ -83,7 +88,7 @@ private[server] class ForwardedHeaderHandler(
           configuration.parseEntry(entry) match {
             case Left(error) =>
               ForwardedHeaderHandler.logger.debug(
-                  s"Error with info in forwarding header $entry, using $prev instead: $error."
+                s"Error with info in forwarding header $entry, using $prev instead: $error."
               )
               prev
             case Right(connection) =>
@@ -98,7 +103,6 @@ private[server] class ForwardedHeaderHandler(
         // No more headers to process, so just use its address.
         prev
       }
-    }
 
     // Start scanning through connections starting at the rawConnection that
     // was made the the Play server.
@@ -114,7 +118,7 @@ private[server] object ForwardedHeaderHandler {
     * The verison of headers that this Play application understands.
     */
   sealed trait ForwardedHeaderVersion
-  case object Rfc7239 extends ForwardedHeaderVersion
+  case object Rfc7239    extends ForwardedHeaderVersion
   case object Xforwarded extends ForwardedHeaderVersion
 
   type HeaderParser = Headers => Seq[ForwardedEntry]
@@ -124,10 +128,14 @@ private[server] object ForwardedHeaderHandler {
     * optional.
     */
   final case class ForwardedEntry(
-      addressString: Option[String], protoString: Option[String])
+      addressString: Option[String],
+      protoString: Option[String]
+  )
 
   case class ForwardedHeaderHandlerConfig(
-      version: ForwardedHeaderVersion, trustedProxies: List[Subnet]) {
+      version: ForwardedHeaderVersion,
+      trustedProxies: List[Subnet]
+  ) {
 
     val nodeIdentifierParser = new NodeIdentifierParser(version)
 
@@ -135,12 +143,11 @@ private[server] object ForwardedHeaderHandler {
       * Removes surrounding quotes if present, otherwise returns original string.
       * Not RFC compliant. To be compliant we need proper header field parsing.
       */
-    private def unquote(s: String): String = {
+    private def unquote(s: String): String =
       if (s.length >= 2 && s.charAt(0) == '"' &&
           s.charAt(s.length - 1) == '"') {
         s.substring(1, s.length - 1)
       } else s
-    }
 
     /**
       * Parse any Forward or X-Forwarded-* headers into a sequence of ForwardedEntry
@@ -152,29 +159,26 @@ private[server] object ForwardedHeaderHandler {
         case Rfc7239 =>
           (for {
             fhs <- headers.getAll("Forwarded")
-            fh <- fhs.split(",\\s*")
+            fh  <- fhs.split(",\\s*")
           } yield fh)
-            .map(_.split(";")
-                  .flatMap(s =>
-                        {
-                  val splitted = s.split("=", 2)
-                  if (splitted.length < 2) Seq.empty
-                  else {
-                    // Remove surrounding quotes
-                    val name =
-                      splitted(0).toLowerCase(java.util.Locale.ENGLISH)
-                    val value = unquote(splitted(1))
-                    Seq(name -> value)
-                  }
-              })
-                  .toMap)
+            .map(_.split(";").flatMap { s =>
+              val splitted = s.split("=", 2)
+              if (splitted.length < 2) Seq.empty
+              else {
+                // Remove surrounding quotes
+                val name =
+                  splitted(0).toLowerCase(java.util.Locale.ENGLISH)
+                val value = unquote(splitted(1))
+                Seq(name -> value)
+              }
+            }.toMap)
             .map { paramMap: Map[String, String] =>
               ForwardedEntry(paramMap.get("for"), paramMap.get("proto"))
             }
         case Xforwarded =>
           def h(h: Headers, key: String) =
             h.getAll(key).flatMap(s => s.split(",\\s*")).map(unquote)
-          val forHeaders = h(headers, "X-Forwarded-For")
+          val forHeaders   = h(headers, "X-Forwarded-For")
           val protoHeaders = h(headers, "X-Forwarded-Proto")
           if (forHeaders.length == protoHeaders.length) {
             forHeaders.zip(protoHeaders).map {
@@ -196,7 +200,7 @@ private[server] object ForwardedHeaderHandler {
       * parsing fails or because the connection info doesn't include an IP address, this
       * method will return `Left` with an error message.
       */
-    def parseEntry(entry: ForwardedEntry): Either[String, ConnectionInfo] = {
+    def parseEntry(entry: ForwardedEntry): Either[String, ConnectionInfo] =
       entry.addressString match {
         case None =>
           // We had a forwarding header, but it was missing the address entry for some reason.
@@ -206,7 +210,9 @@ private[server] object ForwardedHeaderHandler {
             case Right((Ip(address), _)) =>
               // Parsing was successful, use this connection and scan for another connection.
               val secure =
-                entry.protoString.fold(false)(_ == "https") // Assume insecure by default
+                entry.protoString.fold(false)(
+                  _ == "https"
+                ) // Assume insecure by default
               val connection = ConnectionInfo(address, secure)
               Right(connection)
             case errorOrNonIp =>
@@ -214,35 +220,36 @@ private[server] object ForwardedHeaderHandler {
               Left(s"Parse error: $errorOrNonIp")
           }
       }
-    }
 
     /**
       * Check if a connection is considered to be a trusted proxy, i.e. a proxy whose
       * forwarding headers we will process.
       */
-    def isTrustedProxy(connection: ConnectionInfo): Boolean = {
+    def isTrustedProxy(connection: ConnectionInfo): Boolean =
       trustedProxies.exists(_.isInRange(connection.address))
-    }
   }
 
   object ForwardedHeaderHandlerConfig {
     def apply(
-        configuration: Option[Configuration]): ForwardedHeaderHandlerConfig = {
+        configuration: Option[Configuration]
+    ): ForwardedHeaderHandlerConfig = {
       val config = PlayConfig(configuration.getOrElse(Configuration.reference))
         .get[PlayConfig]("play.http.forwarded")
 
       val version = config.get[String]("version") match {
         case "x-forwarded" => Xforwarded
-        case "rfc7239" => Rfc7239
+        case "rfc7239"     => Rfc7239
         case _ =>
           throw config.reportError(
-              "version",
-              "Forwarded header version must be either x-forwarded or rfc7239")
+            "version",
+            "Forwarded header version must be either x-forwarded or rfc7239"
+          )
       }
 
       ForwardedHeaderHandlerConfig(
-          version,
-          config.get[Seq[String]]("trustedProxies").map(Subnet.apply).toList)
+        version,
+        config.get[Seq[String]]("trustedProxies").map(Subnet.apply).toList
+      )
     }
   }
 }

@@ -43,13 +43,12 @@ private[tree] case class NodeIndexUpdater(split: Split, nodeIndex: Int) {
     * @param splits Split information to convert the bin indices to approximate feature values.
     * @return Child node index to update to.
     */
-  def updateNodeIndex(binnedFeature: Int, splits: Array[Split]): Int = {
+  def updateNodeIndex(binnedFeature: Int, splits: Array[Split]): Int =
     if (split.shouldGoLeft(binnedFeature, splits)) {
       LearningNode.leftChildIndex(nodeIndex)
     } else {
       LearningNode.rightChildIndex(nodeIndex)
     }
-  }
 }
 
 /**
@@ -63,8 +62,9 @@ private[tree] case class NodeIndexUpdater(split: Split, nodeIndex: Int) {
   *                           (how often should the cache be checkpointed.).
   */
 private[spark] class NodeIdCache(
-    var nodeIdsForInstances: RDD[Array[Int]], val checkpointInterval: Int)
-    extends Logging {
+    var nodeIdsForInstances: RDD[Array[Int]],
+    val checkpointInterval: Int
+) extends Logging {
 
   // Keep a reference to a previous node Ids for instances.
   // Because we will keep on re-persisting updated node Ids,
@@ -73,7 +73,7 @@ private[spark] class NodeIdCache(
 
   // To keep track of the past checkpointed RDDs.
   private val checkpointQueue = mutable.Queue[RDD[Array[Int]]]()
-  private var rddUpdateCount = 0
+  private var rddUpdateCount  = 0
 
   // Indicates whether we can checkpoint
   private val canCheckpoint =
@@ -95,7 +95,8 @@ private[spark] class NodeIdCache(
   def updateNodeIndices(
       data: RDD[BaggedPoint[TreePoint]],
       nodeIdUpdaters: Array[mutable.Map[Int, NodeIndexUpdater]],
-      splits: Array[Array[Split]]): Unit = {
+      splits: Array[Array[Split]]
+  ): Unit = {
     if (prevNodeIdsForInstances != null) {
       // Unpersist the previous one if one exists.
       prevNodeIdsForInstances.unpersist()
@@ -111,8 +112,9 @@ private[spark] class NodeIdCache(
           if (nodeIdUpdater != null) {
             val featureIndex = nodeIdUpdater.split.featureIndex
             val newNodeIndex = nodeIdUpdater.updateNodeIndex(
-                binnedFeature = point.datum.binnedFeatures(featureIndex),
-                splits = splits(featureIndex))
+              binnedFeature = point.datum.binnedFeatures(featureIndex),
+              splits = splits(featureIndex)
+            )
             ids(treeId) = newNodeIndex
           }
           treeId += 1
@@ -140,8 +142,9 @@ private[spark] class NodeIdCache(
           } catch {
             case e: IOException =>
               logError(
-                  "Decision Tree learning using cacheNodeIds failed to remove checkpoint" +
-                  s" file: ${old.getCheckpointFile.get}")
+                "Decision Tree learning using cacheNodeIds failed to remove checkpoint" +
+                  s" file: ${old.getCheckpointFile.get}"
+              )
           }
         } else {
           canDelete = false
@@ -165,8 +168,9 @@ private[spark] class NodeIdCache(
         } catch {
           case e: IOException =>
             logError(
-                "Decision Tree learning using cacheNodeIds failed to remove checkpoint" +
-                s" file: ${old.getCheckpointFile.get}")
+              "Decision Tree learning using cacheNodeIds failed to remove checkpoint" +
+                s" file: ${old.getCheckpointFile.get}"
+            )
         }
       }
     }
@@ -189,11 +193,14 @@ private[spark] object NodeIdCache {
     * @param initVal The initial values in the cache.
     * @return A node Id cache containing an RDD of initial root node Indices.
     */
-  def init(data: RDD[BaggedPoint[TreePoint]],
-           numTrees: Int,
-           checkpointInterval: Int,
-           initVal: Int = 1): NodeIdCache = {
+  def init(
+      data: RDD[BaggedPoint[TreePoint]],
+      numTrees: Int,
+      checkpointInterval: Int,
+      initVal: Int = 1
+  ): NodeIdCache =
     new NodeIdCache(
-        data.map(_ => Array.fill[Int](numTrees)(initVal)), checkpointInterval)
-  }
+      data.map(_ => Array.fill[Int](numTrees)(initVal)),
+      checkpointInterval
+    )
 }

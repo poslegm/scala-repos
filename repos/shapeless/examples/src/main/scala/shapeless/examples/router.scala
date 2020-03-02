@@ -40,14 +40,15 @@ object RouterExample extends App {
       override def toString = s"(${self.toString}|${that.toString})"
     }
 
-    def :+:[B](that: Router[B])(
-        implicit adjoin: Adjoin[B :+: A :+: CNil]): Router[adjoin.Out] =
+    def :+:[B](
+        that: Router[B]
+    )(implicit adjoin: Adjoin[B :+: A :+: CNil]): Router[adjoin.Out] =
       new Router[adjoin.Out] {
         def apply(path: String) =
           that(path)
             .map(b => adjoin(Inl(b)))
             .orElse(
-                self(path).map(a => adjoin(Inr(Inl(a))))
+              self(path).map(a => adjoin(Inr(Inl(a))))
             )
       }
   }
@@ -58,12 +59,12 @@ object RouterExample extends App {
     override def toString = s
   }
 
-  val fooRouter: Router[Int] = matchString("foo").map(_ => 1)
+  val fooRouter: Router[Int]    = matchString("foo").map(_ => 1)
   val barRouter: Router[Symbol] = matchString("bar").map(_ => 'x)
   val bazRouter: Router[Double] = matchString("baz").map(_ => 0.0)
-  val quxRouter: Router[Char] = matchString("qux").map(_ => 'z')
+  val quxRouter: Router[Char]   = matchString("qux").map(_ => 'z')
 
-  val fooBarRouter: Router[Int :+: Symbol :+: CNil] = fooRouter :+: barRouter
+  val fooBarRouter: Router[Int :+: Symbol :+: CNil]  = fooRouter :+: barRouter
   val bazQuxRouter: Router[Double :+: Char :+: CNil] = bazRouter :+: quxRouter
 
   type All = Int :+: Symbol :+: Double :+: Char :+: CNil

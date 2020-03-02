@@ -9,8 +9,8 @@ import com.twitter.util.{Future, Promise, Time}
   * requests have been completed.
   */
 private[finagle] class RefcountedService[Req, Rep](
-    underlying: Service[Req, Rep])
-    extends ServiceProxy[Req, Rep](underlying) {
+    underlying: Service[Req, Rep]
+) extends ServiceProxy[Req, Rep](underlying) {
   protected[this] val replyLatch = new AsyncLatch
 
   override def apply(request: Req) = {

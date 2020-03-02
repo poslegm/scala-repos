@@ -6,11 +6,12 @@ package org.jetbrains.plugins.scala.testingSupport.specs2
   */
 abstract class Specs2RegExpTestNameTest extends Specs2TestCase {
   protected val regExpClassName = "SpecsRegExpTest"
-  protected val regExpFileName = regExpClassName + ".scala"
+  protected val regExpFileName  = regExpClassName + ".scala"
 
   def addRegExpTest() {
-    addFileToProject(regExpFileName,
-                     """
+    addFileToProject(
+      regExpFileName,
+      """
         |import org.specs2.mutable.Specification
         |
         |class SpecsRegExpTest extends Specification {
@@ -32,58 +33,68 @@ abstract class Specs2RegExpTestNameTest extends Specs2TestCase {
         |    "run" ! { success }
         |  }
         |}
-      """.stripMargin.trim)
+      """.stripMargin.trim
+    )
   }
 
   def testInnerMost() = {
     addRegExpTest()
 
     runTestByLocation(
-        8,
-        10,
-        regExpFileName,
-        checkConfigAndSettings(_, regExpClassName, "test"),
-        root =>
-          checkResultTreeHasExactNamedPath(root,
-                                           "[root]",
-                                           regExpClassName,
-                                           "The RegExpTest should",
-                                           "test") &&
-          checkResultTreeDoesNotHaveNodes(root, "testtest", "testtesttest"))
+      8,
+      10,
+      regExpFileName,
+      checkConfigAndSettings(_, regExpClassName, "test"),
+      root =>
+        checkResultTreeHasExactNamedPath(
+          root,
+          "[root]",
+          regExpClassName,
+          "The RegExpTest should",
+          "test"
+        ) &&
+          checkResultTreeDoesNotHaveNodes(root, "testtest", "testtesttest")
+    )
   }
 
   def testMiddle() = {
     addRegExpTest()
 
     runTestByLocation(
-        10,
-        10,
-        regExpFileName,
-        checkConfigAndSettings(_, regExpClassName, "testtest"),
-        root =>
-          checkResultTreeHasExactNamedPath(root,
-                                           "[root]",
-                                           regExpClassName,
-                                           "The RegExpTest should",
-                                           "testtest") &&
-          checkResultTreeDoesNotHaveNodes(root, "test", "testtesttest"))
+      10,
+      10,
+      regExpFileName,
+      checkConfigAndSettings(_, regExpClassName, "testtest"),
+      root =>
+        checkResultTreeHasExactNamedPath(
+          root,
+          "[root]",
+          regExpClassName,
+          "The RegExpTest should",
+          "testtest"
+        ) &&
+          checkResultTreeDoesNotHaveNodes(root, "test", "testtesttest")
+    )
   }
 
   def testOuterMost() = {
     addRegExpTest()
 
     runTestByLocation(
-        4,
-        10,
-        regExpFileName,
-        checkConfigAndSettings(_, regExpClassName, "testtesttest"),
-        root =>
-          checkResultTreeHasExactNamedPath(root,
-                                           "[root]",
-                                           regExpClassName,
-                                           "The RegExpTest should",
-                                           "testtesttest") &&
-          checkResultTreeDoesNotHaveNodes(root, "test", "testtest"))
+      4,
+      10,
+      regExpFileName,
+      checkConfigAndSettings(_, regExpClassName, "testtesttest"),
+      root =>
+        checkResultTreeHasExactNamedPath(
+          root,
+          "[root]",
+          regExpClassName,
+          "The RegExpTest should",
+          "testtesttest"
+        ) &&
+          checkResultTreeDoesNotHaveNodes(root, "test", "testtest")
+    )
   }
 
   //TODO: enable the test once I find a way to run different tests with same description in specs2
@@ -91,23 +102,35 @@ abstract class Specs2RegExpTestNameTest extends Specs2TestCase {
     addRegExpTest()
 
     runTestByLocation(
-        14,
-        10,
-        regExpFileName,
-        checkConfigAndSettings(_, regExpClassName, "run"),
-        root =>
-          checkResultTreeHasExactNamedPath(
-              root, "[root]", regExpClassName, "First should", "run") &&
-          checkResultTreeDoesNotHaveNodes(root, "Second should"))
+      14,
+      10,
+      regExpFileName,
+      checkConfigAndSettings(_, regExpClassName, "run"),
+      root =>
+        checkResultTreeHasExactNamedPath(
+          root,
+          "[root]",
+          regExpClassName,
+          "First should",
+          "run"
+        ) &&
+          checkResultTreeDoesNotHaveNodes(root, "Second should")
+    )
 
     runTestByLocation(
-        18,
-        10,
-        regExpFileName,
-        checkConfigAndSettings(_, regExpClassName, "run"),
-        root =>
-          checkResultTreeHasExactNamedPath(
-              root, "[root]", regExpClassName, "Second should", "run") &&
-          checkResultTreeDoesNotHaveNodes(root, "First should"))
+      18,
+      10,
+      regExpFileName,
+      checkConfigAndSettings(_, regExpClassName, "run"),
+      root =>
+        checkResultTreeHasExactNamedPath(
+          root,
+          "[root]",
+          regExpClassName,
+          "Second should",
+          "run"
+        ) &&
+          checkResultTreeDoesNotHaveNodes(root, "First should")
+    )
   }
 }

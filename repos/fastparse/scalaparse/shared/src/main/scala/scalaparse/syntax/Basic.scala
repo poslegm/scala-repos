@@ -9,30 +9,30 @@ object Basic {
 
   //Numbers and digits
 
-  val digits = "0123456789"
-  val Digit = P(CharIn(digits))
+  val digits    = "0123456789"
+  val Digit     = P(CharIn(digits))
   val hexDigits = digits + "abcdefABCDEF"
-  val HexDigit = P(CharIn(hexDigits))
-  val HexNum = P("0x" ~ CharsWhile(hexDigits.contains(_)))
-  val DecNum = P(CharsWhile(digits.contains(_)))
-  val Exp = P(CharIn("Ee") ~ CharIn("+-").? ~ DecNum)
+  val HexDigit  = P(CharIn(hexDigits))
+  val HexNum    = P("0x" ~ CharsWhile(hexDigits.contains(_)))
+  val DecNum    = P(CharsWhile(digits.contains(_)))
+  val Exp       = P(CharIn("Ee") ~ CharIn("+-").? ~ DecNum)
   val FloatType = P(CharIn("fFdD"))
 
   val WSChars = P(CharsWhile("\u0020\u0009".contains(_)))
   val Newline = P(StringIn("\r\n", "\n"))
-  val Semi = P(";" | Newline.rep(1))
-  val OpChar = P(CharPred(isOpChar))
+  val Semi    = P(";" | Newline.rep(1))
+  val OpChar  = P(CharPred(isOpChar))
 
-  def isOpChar(c: Char) = {
+  def isOpChar(c: Char) =
     // scalac 2.10 crashes if OtherOrMathSymbol below is substituted by its body
     // Same thing for LetterDigit, LowerChar, UpperChar
     fastparse.CharPredicates.isOtherSymbol(c) ||
-    fastparse.CharPredicates.isMathSymbol(c) ||
-    "!#%&*+-/:<=>?@\\^|~".contains(c)
-  }
+      fastparse.CharPredicates.isMathSymbol(c) ||
+      "!#%&*+-/:<=>?@\\^|~".contains(c)
   val Letter = P(CharPred(c => c.isLetter | c.isDigit | "$_".contains(c)))
   val LetterDigitDollarUnderscore = P(
-      CharPred(c => c.isLetter | c.isDigit | "$_".contains(c)))
+    CharPred(c => c.isLetter | c.isDigit | "$_".contains(c))
+  )
   val Lower = P(CharPred(c => c.isLower || "$_".contains(c)))
   val Upper = P(CharPred(_.isUpper))
 }

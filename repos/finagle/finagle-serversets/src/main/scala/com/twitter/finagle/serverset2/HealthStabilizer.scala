@@ -19,8 +19,8 @@ private[serverset2] object HealthStabilizer {
 
   // A superset of ClientHealth used to track probation in addition to healthy/unhealthy
   private sealed trait Status
-  private case object Unknown extends Status
-  private case object Healthy extends Status
+  private case object Unknown   extends Status
+  private case object Healthy   extends Status
   private case object Unhealthy extends Status
   private case class Probation(timeInProbation: Stopwatch.Elapsed)
       extends Status
@@ -29,14 +29,13 @@ private[serverset2] object HealthStabilizer {
       va: Var[ClientHealth],
       probationEpoch: Epoch,
       statsReceiver: StatsReceiver
-  ): Var[ClientHealth] = {
-
+  ): Var[ClientHealth] =
     Var.async[ClientHealth](ClientHealth.Healthy) { u =>
       val stateChanges = va.changes.dedup
         .select(probationEpoch.event)
         .foldLeft[Status](Unknown) {
           // always take the first update as our status
-          case (Unknown, Left(ClientHealth.Healthy)) => Healthy
+          case (Unknown, Left(ClientHealth.Healthy))   => Healthy
           case (Unknown, Left(ClientHealth.Unhealthy)) => Unhealthy
 
           // Any change from * => healthy makes us immediately healthy
@@ -58,26 +57,32 @@ private[serverset2] object HealthStabilizer {
 
       val currentStatus = new AtomicReference[Status]()
       val gaugeListener =
-        stateChanges.dedup.register(Witness { currentStatus })
+        stateChanges.dedup.register(Witness(currentStatus))
       val gauge = statsReceiver.addGauge("zkHealth") {
         currentStatus.get() match {
-          case Unknown => 0
-          case Healthy => 1
-          case Unhealthy => 2
+          case Unknown      => 0
+          case Healthy      => 1
+          case Unhealthy    => 2
           case Probation(_) => 3
         }
       }
 
-      val notify = stateChanges.collect {
-        // re-map to the underlying health status
-        case Healthy | Probation(_) => ClientHealth.Healthy
-        case Unhealthy => ClientHealth.Unhealthy
-      }.dedup.register(Witness(u))
+      val notify = stateChanges
+        .collect {
+          // re-map to the underlying health status
+          case Healthy | Probation(_) => ClientHealth.Healthy
+          case Unhealthy              => ClientHealth.Unhealthy
+        }
+        .dedup
+        .register(Witness(u))
 
-      Closable.all(notify, gaugeListener, Closable.make { _ =>
-        gauge.remove()
-        Future.Done
-      })
+      Closable.all(
+        notify,
+        gaugeListener,
+        Closable.make { _ =>
+          gauge.remove()
+          Future.Done
+        }
+      )
     }
-  }
 }

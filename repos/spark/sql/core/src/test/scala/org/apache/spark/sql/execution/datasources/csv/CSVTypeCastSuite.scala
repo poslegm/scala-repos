@@ -28,15 +28,20 @@ import org.apache.spark.unsafe.types.UTF8String
 class CSVTypeCastSuite extends SparkFunSuite {
 
   test("Can parse decimal type values") {
-    val stringValues = Seq("10.05", "1,000.01", "158,058,049.001")
+    val stringValues  = Seq("10.05", "1,000.01", "158,058,049.001")
     val decimalValues = Seq(10.05, 1000.01, 158058049.001)
-    val decimalType = new DecimalType()
+    val decimalType   = new DecimalType()
 
     stringValues.zip(decimalValues).foreach {
       case (strVal, decimalVal) =>
         val decimalValue = new BigDecimal(decimalVal.toString)
-        assert(CSVTypeCast.castTo(strVal, decimalType) === Decimal(
-                decimalValue, decimalType.precision, decimalType.scale))
+        assert(
+          CSVTypeCast.castTo(strVal, decimalType) === Decimal(
+            decimalValue,
+            decimalType.precision,
+            decimalType.scale
+          )
+        )
     }
   }
 
@@ -61,8 +66,10 @@ class CSVTypeCastSuite extends SparkFunSuite {
     val exception = intercept[IllegalArgumentException] {
       CSVTypeCast.toChar("""\1""")
     }
-    assert(exception.getMessage.contains(
-            "Unsupported special character for delimiter"))
+    assert(
+      exception.getMessage
+        .contains("Unsupported special character for delimiter")
+    )
   }
 
   test("Nullable types are handled") {
@@ -70,10 +77,14 @@ class CSVTypeCastSuite extends SparkFunSuite {
   }
 
   test("String type should always return the same as the input") {
-    assert(CSVTypeCast.castTo("", StringType, nullable = true) == UTF8String
-          .fromString(""))
-    assert(CSVTypeCast.castTo("", StringType, nullable = false) == UTF8String
-          .fromString(""))
+    assert(
+      CSVTypeCast.castTo("", StringType, nullable = true) == UTF8String
+        .fromString("")
+    )
+    assert(
+      CSVTypeCast.castTo("", StringType, nullable = false) == UTF8String
+        .fromString("")
+    )
   }
 
   test("Throws exception for empty string with non null type") {
@@ -92,11 +103,15 @@ class CSVTypeCastSuite extends SparkFunSuite {
     assert(CSVTypeCast.castTo("1.00", DoubleType) == 1.0)
     assert(CSVTypeCast.castTo("true", BooleanType) == true)
     val timestamp = "2015-01-01 00:00:00"
-    assert(CSVTypeCast.castTo(timestamp, TimestampType) == DateTimeUtils
-          .stringToTime(timestamp)
-          .getTime * 1000L)
-    assert(CSVTypeCast.castTo("2015-01-01", DateType) == DateTimeUtils
-          .millisToDays(DateTimeUtils.stringToTime("2015-01-01").getTime))
+    assert(
+      CSVTypeCast.castTo(timestamp, TimestampType) == DateTimeUtils
+        .stringToTime(timestamp)
+        .getTime * 1000L
+    )
+    assert(
+      CSVTypeCast.castTo("2015-01-01", DateType) == DateTimeUtils
+        .millisToDays(DateTimeUtils.stringToTime("2015-01-01").getTime)
+    )
   }
 
   test("Float and Double Types are cast correctly with Locale") {

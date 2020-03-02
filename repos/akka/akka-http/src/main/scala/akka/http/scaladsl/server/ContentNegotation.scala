@@ -19,12 +19,12 @@ final class MediaTypeNegotiator(requestHeaders: Seq[HttpHeader]) {
     */
   val acceptedMediaRanges: List[MediaRange] = (for {
     Accept(mediaRanges) ← requestHeaders
-    range ← mediaRanges
+    range               ← mediaRanges
   } yield range).sortBy {
     // `sortBy` is stable, i.e. upholds the original order on identical keys
-    case x if x.isWildcard ⇒ 2f // most general, needs to come last
+    case x if x.isWildcard     ⇒ 2f  // most general, needs to come last
     case MediaRange.One(_, qv) ⇒ -qv // most specific, needs to come first
-    case _ ⇒ 1f // simple range like `image/*`
+    case _                     ⇒ 1f  // simple range like `image/*`
   }.toList
 
   /**
@@ -54,11 +54,11 @@ final class CharsetNegotiator(requestHeaders: Seq[HttpHeader]) {
     */
   val acceptedCharsetRanges: List[HttpCharsetRange] = (for {
     `Accept-Charset`(charsetRanges) ← requestHeaders
-    range ← charsetRanges
+    range                           ← charsetRanges
   } yield range).sortBy {
     // `sortBy` is stable, i.e. upholds the original order on identical keys
-    case _: HttpCharsetRange.`*` ⇒ 1f // most general, needs to come last
-    case x ⇒ -x.qValue // all others come first
+    case _: HttpCharsetRange.`*` ⇒ 1f        // most general, needs to come last
+    case x                       ⇒ -x.qValue // all others come first
   }.toList
 
   /**
@@ -86,10 +86,10 @@ final class CharsetNegotiator(requestHeaders: Seq[HttpHeader]) {
     */
   def pickBest: Option[HttpCharset] =
     acceptedCharsetRanges match {
-      case Nil ⇒ Some(`UTF-8`)
-      case HttpCharsetRange.One(cs, _) :: _ ⇒ Some(cs)
+      case Nil                                      ⇒ Some(`UTF-8`)
+      case HttpCharsetRange.One(cs, _) :: _         ⇒ Some(cs)
       case HttpCharsetRange.`*`(qv) :: _ if qv > 0f ⇒ Some(`UTF-8`)
-      case _ ⇒ None
+      case _                                        ⇒ None
     }
 }
 
@@ -123,7 +123,7 @@ final class ContentNegotiator(requestHeaders: Seq[HttpHeader]) {
       .collectFirst { case (alt, q) if q > 0f ⇒ alt }
       .flatMap {
         case Alternative.ContentType(ct) ⇒ Some(ct)
-        case Alternative.MediaType(mt) ⇒ csn.pickBest.map(mt.withCharset)
+        case Alternative.MediaType(mt)   ⇒ csn.pickBest.map(mt.withCharset)
       }
 }
 
@@ -137,15 +137,14 @@ object ContentNegotiator {
       ContentType(contentType)
     implicit def apply(mediaType: model.MediaType): Alternative =
       mediaType match {
-        case x: model.MediaType.Binary ⇒ ContentType(x)
+        case x: model.MediaType.Binary           ⇒ ContentType(x)
         case x: model.MediaType.WithFixedCharset ⇒ ContentType(x)
-        case x: model.MediaType.WithOpenCharset ⇒ MediaType(x)
+        case x: model.MediaType.WithOpenCharset  ⇒ MediaType(x)
       }
 
-    case class ContentType(contentType: model.ContentType)
-        extends Alternative {
+    case class ContentType(contentType: model.ContentType) extends Alternative {
       def mediaType = contentType.mediaType
-      def format = contentType.toString
+      def format    = contentType.toString
     }
     case class MediaType(mediaType: model.MediaType.WithOpenCharset)
         extends Alternative {
@@ -167,11 +166,11 @@ final class EncodingNegotiator(requestHeaders: Seq[HttpHeader]) {
     */
   val acceptedEncodingRanges: List[HttpEncodingRange] = (for {
     `Accept-Encoding`(encodingRanges) ← requestHeaders
-    range ← encodingRanges
+    range                             ← encodingRanges
   } yield range).sortBy {
     // `sortBy` is stable, i.e. upholds the original order on identical keys
-    case _: HttpEncodingRange.`*` ⇒ 1f // most general, needs to come last
-    case x ⇒ -x.qValue // all others come first
+    case _: HttpEncodingRange.`*` ⇒ 1f        // most general, needs to come last
+    case x                        ⇒ -x.qValue // all others come first
   }.toList
 
   /**
@@ -227,13 +226,13 @@ final class LanguageNegotiator(requestHeaders: Seq[HttpHeader]) {
     */
   val acceptedLanguageRanges: List[LanguageRange] = (for {
     `Accept-Language`(languageRanges) ← requestHeaders
-    range ← languageRanges
+    range                             ← languageRanges
   } yield range).sortBy {
     // `sortBy` is stable, i.e. upholds the original order on identical keys
     case _: LanguageRange.`*` ⇒ 1f // most general, needs to come last
     case x ⇒
       -(2 * x.subTags.size +
-          x.qValue) // more subtags -> more specific -> go first
+        x.qValue) // more subtags -> more specific -> go first
   }.toList
 
   /**

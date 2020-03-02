@@ -26,16 +26,18 @@ import org.apache.spark.sql.SQLContext
 
 object CountVectorizerExample {
   def main(args: Array[String]) {
-    val conf = new SparkConf().setAppName("CounterVectorizerExample")
-    val sc = new SparkContext(conf)
+    val conf       = new SparkConf().setAppName("CounterVectorizerExample")
+    val sc         = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
 
     // $example on$
     val df = sqlContext
-      .createDataFrame(Seq(
-              (0, Array("a", "b", "c")),
-              (1, Array("a", "b", "b", "c", "a"))
-          ))
+      .createDataFrame(
+        Seq(
+          (0, Array("a", "b", "c")),
+          (1, Array("a", "b", "b", "c", "a"))
+        )
+      )
       .toDF("id", "words")
 
     // fit a CountVectorizerModel from the corpus

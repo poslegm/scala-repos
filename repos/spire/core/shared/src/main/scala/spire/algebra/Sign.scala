@@ -10,7 +10,7 @@ sealed abstract class Sign(val toInt: Int) {
   def unary_-(): Sign = this match {
     case Positive => Negative
     case Negative => Positive
-    case Zero => Zero
+    case Zero     => Zero
   }
 
   def *(that: Sign): Sign = Sign(this.toInt * that.toInt)
@@ -19,7 +19,7 @@ sealed abstract class Sign(val toInt: Int) {
 }
 
 object Sign {
-  case object Zero extends Sign(0)
+  case object Zero     extends Sign(0)
   case object Positive extends Sign(1)
   case object Negative extends Sign(-1)
 
@@ -28,12 +28,12 @@ object Sign {
     if (i == 0) Zero else if (i > 0) Positive else Negative
 
   class SignAlgebra extends CMonoid[Sign] with Signed[Sign] with Order[Sign] {
-    def id: Sign = Positive
+    def id: Sign                   = Positive
     def op(a: Sign, b: Sign): Sign = a * b
 
     override def sign(a: Sign): Sign = a
-    def signum(a: Sign): Int = a.toInt
-    def abs(a: Sign): Sign = if (a == Negative) Positive else a
+    def signum(a: Sign): Int         = a.toInt
+    def abs(a: Sign): Sign           = if (a == Negative) Positive else a
 
     def compare(x: Sign, y: Sign): Int =
       java.lang.Integer.signum(x.toInt - y.toInt)
@@ -45,12 +45,13 @@ object Sign {
     Multiplicative(SignAlgebra)
 
   implicit def SignAction[A](
-      implicit A: AdditiveGroup[A]): MultiplicativeAction[A, Sign] =
+      implicit A: AdditiveGroup[A]
+  ): MultiplicativeAction[A, Sign] =
     new MultiplicativeAction[A, Sign] {
       def gtimesl(s: Sign, a: A): A = s match {
         case Positive => a
         case Negative => A.negate(a)
-        case Zero => A.zero
+        case Zero     => A.zero
       }
       def gtimesr(a: A, s: Sign): A = gtimesl(s, a)
     }

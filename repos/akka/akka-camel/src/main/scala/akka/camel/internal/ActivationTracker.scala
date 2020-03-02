@@ -28,11 +28,11 @@ private[camel] class ActivationTracker extends Actor with ActorLogging {
       * @return a partial function that handles messages in the 'not activated' state
       */
     def notActivated(): State = {
-      var awaitingActivation = List[ActorRef]()
+      var awaitingActivation   = List[ActorRef]()
       var awaitingDeActivation = List[ActorRef]()
 
       {
-        case AwaitActivation(ref) ⇒ awaitingActivation ::= sender()
+        case AwaitActivation(ref)   ⇒ awaitingActivation ::= sender()
         case AwaitDeActivation(ref) ⇒ awaitingDeActivation ::= sender()
         case msg @ EndpointActivated(ref) ⇒
           awaitingActivation.foreach(_ ! msg)
@@ -52,7 +52,7 @@ private[camel] class ActivationTracker extends Actor with ActorLogging {
       var awaitingDeActivation = currentAwaitingDeActivation
 
       {
-        case AwaitActivation(ref) ⇒ sender() ! EndpointActivated(ref)
+        case AwaitActivation(ref)   ⇒ sender() ! EndpointActivated(ref)
         case AwaitDeActivation(ref) ⇒ awaitingDeActivation ::= sender()
         case msg @ EndpointDeActivated(ref) ⇒
           awaitingDeActivation foreach (_ ! msg)
@@ -69,7 +69,7 @@ private[camel] class ActivationTracker extends Actor with ActorLogging {
       */
     def deactivated: State = {
       // deactivated means it was activated at some point, so tell sender() it was activated
-      case AwaitActivation(ref) ⇒ sender() ! EndpointActivated(ref)
+      case AwaitActivation(ref)   ⇒ sender() ! EndpointActivated(ref)
       case AwaitDeActivation(ref) ⇒ sender() ! EndpointDeActivated(ref)
       //resurrected at restart.
       case msg @ EndpointActivated(ref) ⇒
@@ -106,15 +106,18 @@ private[camel] class ActivationTracker extends Actor with ActorLogging {
 
   override def receive = {
     case msg @ ActivationMessage(ref) ⇒
-      (activations.getOrElseUpdate(ref, new ActivationStateMachine).receive orElse logStateWarning(
-              ref))(msg)
+      (activations
+        .getOrElseUpdate(ref, new ActivationStateMachine)
+        .receive orElse logStateWarning(ref))(msg)
   }
 
   private[this] def logStateWarning(actorRef: ActorRef): Receive = {
     case msg ⇒
-      log.warning("Message [{}] not expected in current state of actor [{}]",
-                  msg,
-                  actorRef)
+      log.warning(
+        "Message [{}] not expected in current state of actor [{}]",
+        msg,
+        actorRef
+      )
   }
 }
 

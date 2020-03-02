@@ -1,7 +1,7 @@
 import scala.language.{higherKinds, implicitConversions}
 
 trait Intf {
-  type Rep [+T]
+  type Rep[+T]
   type M[+T] = Rep[Maybe[T]]
 
   val __match: Matcher
@@ -37,7 +37,7 @@ trait Impl extends Intf {
   object __match extends Matcher {
     def runOrElse[T, U](in: Rep[T])(matcher: Rep[T] => M[U]): Rep[U] =
       ("runOrElse(" + in + ", ?" + matcher("?") + ")")
-    def zero: M[Nothing] = "zero"
+    def zero: M[Nothing]        = "zero"
     def one[T](x: Rep[T]): M[T] = "one(" + x.toString + ")"
     def guard[T](cond: Rep[Boolean], dann: => Rep[T]): M[T] =
       s"guard($cond,$dann)"
@@ -52,9 +52,9 @@ trait Impl extends Intf {
       m + ".orElse(" + alternative + ")"
   }
 
-  def repInt(x: Int): Rep[Int] = x.toString
+  def repInt(x: Int): Rep[Int]             = x.toString
   def repBoolean(x: Boolean): Rep[Boolean] = x.toString
-  def repString(x: String): Rep[String] = x
+  def repString(x: String): Rep[String]    = x
 }
 
 object Test extends Impl with Intf with App {

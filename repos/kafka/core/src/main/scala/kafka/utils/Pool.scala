@@ -5,7 +5,7 @@
   * The ASF licenses this file to You under the Apache License, Version 2.0
   * (the "License"); you may not use this file except in compliance with
   * the License.  You may obtain a copy of the License at
-  * 
+  *
   *    http://www.apache.org/licenses/LICENSE-2.0
   *
   * Unless required by applicable law or agreed to in writing, software
@@ -26,7 +26,7 @@ class Pool[K, V](valueFactory: Option[(K) => V] = None)
     extends Iterable[(K, V)] {
 
   private val pool: ConcurrentMap[K, V] = new ConcurrentHashMap[K, V]
-  private val createLock = new Object
+  private val createLock                = new Object
 
   def this(m: collection.Map[K, V]) {
     this()

@@ -24,11 +24,11 @@ object InfixExpr {
 
     type MStack[X] = _root_.scala.collection.mutable.Stack[X]
 
-    val markerStack = new MStack[PsiBuilder.Marker]
-    val opStack = new MStack[String]
-    val infixMarker = builder.mark
+    val markerStack  = new MStack[PsiBuilder.Marker]
+    val opStack      = new MStack[String]
+    val infixMarker  = builder.mark
     var backupMarker = builder.mark
-    var count = 0
+    var count        = 0
     if (!PrefixExpr.parse(builder)) {
       backupMarker.drop()
       infixMarker.drop()
@@ -36,7 +36,7 @@ object InfixExpr {
     }
     var exitOf = true
     while (builder.getTokenType == ScalaTokenTypes.tIDENTIFIER &&
-    !builder.newlineBeforeCurrentToken && exitOf) {
+           !builder.newlineBeforeCurrentToken && exitOf) {
       //need to know associativity
       val s = builder.getTokenText
 
@@ -60,7 +60,7 @@ object InfixExpr {
         }
       }
       val setMarker = builder.mark
-      val opMarker = builder.mark
+      val opMarker  = builder.mark
       builder.advanceLexer() //Ate id
       opMarker.done(ScalaElementTypes.REFERENCE_EXPRESSION)
       TypeArgs.parse(builder, isPattern = false)
@@ -98,11 +98,13 @@ object InfixExpr {
   //private var assoc: Int = 0  //this mark associativity: left - 1, right - -1
 
   //compares two operators a id2 b id1 c
-  private def compar(id1: String, id2: String, builder: PsiBuilder): Boolean = {
+  private def compar(id1: String, id2: String, builder: PsiBuilder): Boolean =
     if (priority(id1, assignments = true) < priority(id2, assignments = true))
       true //  a * b + c  =((a * b) + c)
     else if (priority(id1, assignments = true) > priority(
-                 id2, assignments = true)) false //  a + b * c = (a + (b * c))
+               id2,
+               assignments = true
+             )) false //  a + b * c = (a + (b * c))
     else if (associate(id1) == associate(id2))
       if (associate(id1) == -1) true
       else false
@@ -110,14 +112,12 @@ object InfixExpr {
       builder error ErrMsg("wrong.type.associativity")
       false
     }
-  }
 
   //Associations of operator
-  def associate(id: String): Int = {
+  def associate(id: String): Int =
     id.charAt(id.length - 1) match {
       case ':' => -1
       // right
       case _ => +1 // left
     }
-  }
 }

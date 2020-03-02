@@ -10,7 +10,7 @@ import org.jetbrains.plugins.scala.lang.parser.parsing.builder.ScalaPsiBuilder
 import org.jetbrains.plugins.scala.lang.parser.parsing.expressions.Expr
 import org.jetbrains.plugins.scala.lang.parser.parsing.statements._
 
-/** 
+/**
   * @author Alexander Podkhalyuzin
   * Date: 13.02.2008
   */
@@ -22,7 +22,7 @@ import org.jetbrains.plugins.scala.lang.parser.parsing.statements._
  */
 
 object TemplateStat {
-  def parse(builder: ScalaPsiBuilder): Boolean = {
+  def parse(builder: ScalaPsiBuilder): Boolean =
     builder.getTokenType match {
       case ScalaTokenTypes.kIMPORT =>
         Import parse builder
@@ -40,5 +40,4 @@ object TemplateStat {
           return false
         }
     }
-  }
 }

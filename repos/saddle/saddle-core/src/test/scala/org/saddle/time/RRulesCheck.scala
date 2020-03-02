@@ -26,7 +26,7 @@ class RRulesCheck extends Specification with ScalaCheck {
 
   private def genDate: Gen[DateTime] =
     for {
-      year <- Gen.choose(1990, 2020)
+      year   <- Gen.choose(1990, 2020)
       offset <- Gen.choose(-366, 366)
     } yield new DateTime(year, 1, 1, 0, 0, 0, 0).plusDays(offset)
 

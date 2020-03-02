@@ -20,10 +20,12 @@ import mutable.{Builder, SetBuilder}
   */
 object TreeSet extends ImmutableSortedSetFactory[TreeSet] {
   implicit def implicitBuilder[A](
-      implicit ordering: Ordering[A]): Builder[A, TreeSet[A]] =
+      implicit ordering: Ordering[A]
+  ): Builder[A, TreeSet[A]] =
     newBuilder[A](ordering)
   override def newBuilder[A](
-      implicit ordering: Ordering[A]): Builder[A, TreeSet[A]] =
+      implicit ordering: Ordering[A]
+  ): Builder[A, TreeSet[A]] =
     new SetBuilder(empty[A](ordering))
 
   /** The empty set of this type
@@ -51,11 +53,14 @@ object TreeSet extends ImmutableSortedSetFactory[TreeSet] {
   */
 @SerialVersionUID(-5685982407650748405L)
 @deprecatedInheritance(
-    "The implementation details of immutable tree sets make inheriting from them unwise.",
-    "2.11.0")
-class TreeSet[A] private (
-    tree: RB.Tree[A, Unit])(implicit val ordering: Ordering[A])
-    extends SortedSet[A] with SortedSetLike[A, TreeSet[A]] with Serializable {
+  "The implementation details of immutable tree sets make inheriting from them unwise.",
+  "2.11.0"
+)
+class TreeSet[A] private (tree: RB.Tree[A, Unit])(
+    implicit val ordering: Ordering[A]
+) extends SortedSet[A]
+    with SortedSetLike[A, TreeSet[A]]
+    with Serializable {
 
   if (ordering eq null)
     throw new NullPointerException("ordering must not be null")
@@ -64,46 +69,43 @@ class TreeSet[A] private (
 
   override def size = RB.count(tree)
 
-  override def head = RB.smallest(tree).key
+  override def head       = RB.smallest(tree).key
   override def headOption = if (RB.isEmpty(tree)) None else Some(head)
-  override def last = RB.greatest(tree).key
+  override def last       = RB.greatest(tree).key
   override def lastOption = if (RB.isEmpty(tree)) None else Some(last)
 
   override def tail = new TreeSet(RB.delete(tree, firstKey))
   override def init = new TreeSet(RB.delete(tree, lastKey))
 
-  override def drop(n: Int) = {
+  override def drop(n: Int) =
     if (n <= 0) this
     else if (n >= size) empty
     else newSet(RB.drop(tree, n))
-  }
 
-  override def take(n: Int) = {
+  override def take(n: Int) =
     if (n <= 0) empty
     else if (n >= size) this
     else newSet(RB.take(tree, n))
-  }
 
-  override def slice(from: Int, until: Int) = {
+  override def slice(from: Int, until: Int) =
     if (until <= from) empty
     else if (from <= 0) take(until)
     else if (until >= size) drop(from)
     else newSet(RB.slice(tree, from, until))
-  }
 
   override def dropRight(n: Int) = take(size - math.max(n, 0))
   override def takeRight(n: Int) = drop(size - math.max(n, 0))
-  override def splitAt(n: Int) = (take(n), drop(n))
+  override def splitAt(n: Int)   = (take(n), drop(n))
 
   private[this] def countWhile(p: A => Boolean): Int = {
     var result = 0
-    val it = iterator
+    val it     = iterator
     while (it.hasNext && p(it.next())) result += 1
     result
   }
   override def dropWhile(p: A => Boolean) = drop(countWhile(p))
   override def takeWhile(p: A => Boolean) = take(countWhile(p))
-  override def span(p: A => Boolean) = splitAt(countWhile(p))
+  override def span(p: A => Boolean)      = splitAt(countWhile(p))
 
   def this()(implicit ordering: Ordering[A]) = this(null)(ordering)
 
@@ -163,10 +165,10 @@ class TreeSet[A] private (
     newSet(RB.rangeImpl(tree, from, until))
   override def range(from: A, until: A): TreeSet[A] =
     newSet(RB.range(tree, from, until))
-  override def from(from: A): TreeSet[A] = newSet(RB.from(tree, from))
-  override def to(to: A): TreeSet[A] = newSet(RB.to(tree, to))
+  override def from(from: A): TreeSet[A]   = newSet(RB.from(tree, from))
+  override def to(to: A): TreeSet[A]       = newSet(RB.to(tree, to))
   override def until(until: A): TreeSet[A] = newSet(RB.until(tree, until))
 
   override def firstKey = head
-  override def lastKey = last
+  override def lastKey  = last
 }

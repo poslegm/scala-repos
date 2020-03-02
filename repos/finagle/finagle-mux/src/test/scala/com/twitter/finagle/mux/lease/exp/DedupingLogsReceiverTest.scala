@@ -12,7 +12,7 @@ import org.scalatest.mock.MockitoSugar
 class DedupingLogsReceiverTest extends FunSuite with MockitoSugar {
   test("DedupingLogsReceiver logs when recording and flushing") {
     val mockLog = mock[Logger]
-    val lr = new DedupingLogsReceiver(mockLog)
+    val lr      = new DedupingLogsReceiver(mockLog)
     lr.record("log", "me")
     verify(mockLog, never).info(anyString)
     lr.flush()
@@ -21,7 +21,7 @@ class DedupingLogsReceiverTest extends FunSuite with MockitoSugar {
 
   test("DedupingLogsReceiver relogging obliterates the old") {
     val mockLog = mock[Logger]
-    val lr = new DedupingLogsReceiver(mockLog)
+    val lr      = new DedupingLogsReceiver(mockLog)
     lr.record("log", "me")
     verify(mockLog, never).info(anyString)
     lr.record("log", "you")
@@ -32,7 +32,7 @@ class DedupingLogsReceiverTest extends FunSuite with MockitoSugar {
 
   test("DedupingLogsReceiver can log multiple values") {
     val mockLog = mock[Logger]
-    val lr = new DedupingLogsReceiver(mockLog)
+    val lr      = new DedupingLogsReceiver(mockLog)
     lr.record("log", "me")
     verify(mockLog, never).info(anyString)
     lr.record("gol", "em")
@@ -49,7 +49,7 @@ class DedupingLogsReceiverTest extends FunSuite with MockitoSugar {
 
   test("DedupingLogsReceiver record order doesn't matter") {
     val mockLog = mock[Logger]
-    val lr = new DedupingLogsReceiver(mockLog)
+    val lr      = new DedupingLogsReceiver(mockLog)
     lr.record("log", "me")
     lr.record("gol", "em")
     lr.flush()
@@ -63,7 +63,7 @@ class DedupingLogsReceiverTest extends FunSuite with MockitoSugar {
 
   test("DedupingLogsReceiver flushes clears too") {
     val mockLog = mock[Logger]
-    val lr = new DedupingLogsReceiver(mockLog)
+    val lr      = new DedupingLogsReceiver(mockLog)
     lr.record("log", "1")
     verify(mockLog, never).info("log=1")
     lr.flush()

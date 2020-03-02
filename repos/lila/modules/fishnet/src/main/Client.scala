@@ -3,12 +3,13 @@ package lila.fishnet
 import org.joda.time.DateTime
 
 case class Client(
-    _id: Client.Key, // API key used to authenticate and assign move or analysis
-    userId: Client.UserId, // lichess user ID
-    skill: Client.Skill, // what can this client do
+    _id: Client.Key,                   // API key used to authenticate and assign move or analysis
+    userId: Client.UserId,             // lichess user ID
+    skill: Client.Skill,               // what can this client do
     instance: Option[Client.Instance], // last seen instance
     enabled: Boolean,
-    createdAt: DateTime) {
+    createdAt: DateTime
+) {
 
   def key = _id
 
@@ -26,23 +27,27 @@ case class Client(
 
 object Client {
 
-  val offline = Client(_id = Key("offline"),
-                       userId = UserId("offline"),
-                       skill = Skill.All,
-                       instance = None,
-                       enabled = true,
-                       createdAt = DateTime.now)
+  val offline = Client(
+    _id = Key("offline"),
+    userId = UserId("offline"),
+    skill = Skill.All,
+    instance = None,
+    enabled = true,
+    createdAt = DateTime.now
+  )
 
-  case class Key(value: String) extends AnyVal with StringValue
-  case class Version(value: String) extends AnyVal with StringValue
-  case class UserId(value: String) extends AnyVal with StringValue
+  case class Key(value: String)       extends AnyVal with StringValue
+  case class Version(value: String)   extends AnyVal with StringValue
+  case class UserId(value: String)    extends AnyVal with StringValue
   case class IpAddress(value: String) extends AnyVal with StringValue
   case class Engine(name: String)
 
-  case class Instance(version: Version,
-                      engine: Engine,
-                      ip: IpAddress,
-                      seenAt: DateTime) {
+  case class Instance(
+      version: Version,
+      engine: Engine,
+      ip: IpAddress,
+      seenAt: DateTime
+  ) {
 
     def update(i: Instance): Option[Instance] =
       if (i.version != version) i.some
@@ -63,10 +68,10 @@ object Client {
     def key = toString.toLowerCase
   }
   object Skill {
-    case object Move extends Skill
+    case object Move     extends Skill
     case object Analysis extends Skill
-    case object All extends Skill
-    val all = List(Move, Analysis, All)
+    case object All      extends Skill
+    val all                = List(Move, Analysis, All)
     def byKey(key: String) = all.find(_.key == key)
   }
 

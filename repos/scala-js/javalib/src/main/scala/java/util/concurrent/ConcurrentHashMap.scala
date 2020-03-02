@@ -7,7 +7,9 @@ import java.util._
 import scala.collection.JavaConversions._
 
 class ConcurrentHashMap[K >: Null, V >: Null]
-    extends AbstractMap[K, V] with ConcurrentMap[K, V] with Serializable {
+    extends AbstractMap[K, V]
+    with ConcurrentMap[K, V]
+    with Serializable {
   self =>
 
   def this(initialCapacity: Int) =
@@ -43,20 +45,17 @@ class ConcurrentHashMap[K >: Null, V >: Null]
     inner.exists { case (_, iv) => value === iv }
   }
 
-  override def put(key: K, value: V): V = {
+  override def put(key: K, value: V): V =
     if (key != null && value != null)
       inner.put(Box(key), value).getOrElse(null)
     else throw new NullPointerException()
-  }
 
-  def putIfAbsent(key: K, value: V): V = {
+  def putIfAbsent(key: K, value: V): V =
     if (key != null && value != null) inner.getOrElseUpdate(Box(key), value)
     else throw new NullPointerException()
-  }
 
-  override def putAll(m: Map[_ <: K, _ <: V]): Unit = {
+  override def putAll(m: Map[_ <: K, _ <: V]): Unit =
     for (e <- m.entrySet()) put(e.getKey, e.getValue)
-  }
 
   override def remove(key: Any): V =
     inner.remove(Box(key.asInstanceOf[K])).getOrElse(null)
@@ -67,7 +66,7 @@ class ConcurrentHashMap[K >: Null, V >: Null]
     else false
   }
 
-  override def replace(key: K, oldValue: V, newValue: V): Boolean = {
+  override def replace(key: K, oldValue: V, newValue: V): Boolean =
     if (key != null && oldValue != null && newValue != null) {
       val old = inner(Box(key))
       if (oldValue === old) {
@@ -79,16 +78,14 @@ class ConcurrentHashMap[K >: Null, V >: Null]
     } else {
       throw new NullPointerException()
     }
-  }
 
-  override def replace(key: K, value: V): V = {
+  override def replace(key: K, value: V): V =
     if (key != null && value != null) {
       if (inner(Box(key)) != null) put(key, value)
       else null
     } else {
       throw new NullPointerException()
     }
-  }
 
   override def clear(): Unit =
     inner.clear()
@@ -96,11 +93,11 @@ class ConcurrentHashMap[K >: Null, V >: Null]
   override def keySet(): ConcurrentHashMap.KeySetView[K, V] =
     new ConcurrentHashMap.KeySetView[K, V](this)
 
-  def entrySet(): Set[Map.Entry[K, V]] = {
+  def entrySet(): Set[Map.Entry[K, V]] =
     new AbstractSet[Map.Entry[K, V]] {
       override def size(): Int = self.size
 
-      def iterator(): Iterator[Map.Entry[K, V]] = {
+      def iterator(): Iterator[Map.Entry[K, V]] =
         new Iterator[Map.Entry[K, V]] {
           private val keysCopy = inner.keysIterator
 
@@ -115,18 +112,15 @@ class ConcurrentHashMap[K >: Null, V >: Null]
             new AbstractMap.SimpleImmutableEntry(k(), v)
           }
 
-          def remove(): Unit = {
+          def remove(): Unit =
             if (lastKey != null) {
               inner.remove(lastKey)
               lastKey = null
             } else {
               throw new IllegalStateException()
             }
-          }
         }
-      }
     }
-  }
 
   def keys(): Enumeration[K] =
     asJavaEnumeration(inner.keys.iterator.map(_.inner))
@@ -137,9 +131,10 @@ class ConcurrentHashMap[K >: Null, V >: Null]
 
 object ConcurrentHashMap {
 
-  class KeySetView[K >: Null, V >: Null] private[ConcurrentHashMap](
-      chm: ConcurrentHashMap[K, V])
-      extends Set[K] with Serializable {
+  class KeySetView[K >: Null, V >: Null] private[ConcurrentHashMap] (
+      chm: ConcurrentHashMap[K, V]
+  ) extends Set[K]
+      with Serializable {
 
     def size(): Int = chm.size
 
@@ -147,7 +142,7 @@ object ConcurrentHashMap {
 
     def contains(o: Any): Boolean = chm.containsKey(o)
 
-    def iterator(): Iterator[K] = {
+    def iterator(): Iterator[K] =
       new Iterator[K] {
         val iter = chm.entrySet.iterator()
 
@@ -157,7 +152,6 @@ object ConcurrentHashMap {
 
         def remove(): Unit = iter.remove()
       }
-    }
 
     def toArray(): Array[AnyRef] =
       chm.keys().asInstanceOf[Enumeration[AnyRef]].toArray[AnyRef]
@@ -196,7 +190,7 @@ object ConcurrentHashMap {
     def clear(): Unit = chm.clear()
 
     private def removeWhere(p: Any => Boolean): Boolean = {
-      val iter = chm.entrySet.iterator
+      val iter    = chm.entrySet.iterator
       var changed = false
       while (iter.hasNext) {
         if (p(iter.next().getKey())) {

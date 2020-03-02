@@ -9,25 +9,26 @@ abstract class Driver {
 
   val prompt = residentPromptString
 
-  var reporter: Reporter = _
+  var reporter: Reporter                 = _
   protected var command: CompilerCommand = _
-  protected var settings: Settings = _
+  protected var settings: Settings       = _
 
   /** Forward errors to the (current) reporter. */
-  protected def scalacError(msg: String): Unit = {
+  protected def scalacError(msg: String): Unit =
     reporter.error(
-        FakePos("scalac"), msg + "\n  scalac -help  gives more information")
-  }
+      FakePos("scalac"),
+      msg + "\n  scalac -help  gives more information"
+    )
 
   /** True to continue compilation. */
-  protected def processSettingsHook(): Boolean = {
-    if (settings.version) { reporter echo versionMsg; false } else
+  protected def processSettingsHook(): Boolean =
+    if (settings.version) { reporter echo versionMsg; false }
+    else
       !reporter.hasErrors
-  }
 
   protected def newCompiler(): Global
 
-  protected def doCompile(compiler: Global): Unit = {
+  protected def doCompile(compiler: Global): Unit =
     if (command.files.isEmpty) {
       reporter.echo(command.usageMsg)
       reporter.echo(compiler.pluginOptionsHelp)
@@ -36,7 +37,6 @@ abstract class Driver {
       run compile command.files
       reporter.finish()
     }
-  }
 
   def process(args: Array[String]): Boolean = {
     val ss = new Settings(scalacError)
@@ -56,8 +56,8 @@ abstract class Driver {
         case ex: Throwable =>
           compiler.reportThrowable(ex)
           ex match {
-            case FatalError(msg) => // signals that we should fail compilation.
-            case _ => throw ex // unexpected error, tell the outside world.
+            case FatalError(msg) =>          // signals that we should fail compilation.
+            case _               => throw ex // unexpected error, tell the outside world.
           }
       }
     } else if (reporter.hasErrors) reporter.flush()

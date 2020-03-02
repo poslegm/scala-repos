@@ -25,7 +25,7 @@ class ReplicatedCache extends Actor {
   import akka.cluster.ddata.Replicator._
   import ReplicatedCache._
 
-  val replicator = DistributedData(context.system).replicator
+  val replicator       = DistributedData(context.system).replicator
   implicit val cluster = Cluster(context.system)
 
   def dataKey(entryKey: String): LWWMapKey[Any] =
@@ -34,7 +34,8 @@ class ReplicatedCache extends Actor {
   def receive = {
     case PutInCache(key, value) ⇒
       replicator ! Update(dataKey(key), LWWMap(), WriteLocal)(
-          _ + (key -> value))
+        _ + (key -> value)
+      )
     case Evict(key) ⇒
       replicator ! Update(dataKey(key), LWWMap(), WriteLocal)(_ - key)
     case GetFromCache(key) ⇒
@@ -44,7 +45,7 @@ class ReplicatedCache extends Actor {
         case data: LWWMap[_] ⇒
           data.get(key) match {
             case Some(value) ⇒ replyTo ! Cached(key, Some(value))
-            case None ⇒ replyTo ! Cached(key, None)
+            case None        ⇒ replyTo ! Cached(key, None)
           }
       }
     case NotFound(_, Some(Request(key, replyTo))) ⇒

@@ -13,16 +13,16 @@ import scala.collection.mutable.ArrayBuffer
   * Date: 14.08.15.
   */
 class ScalaEditorFoldingTest extends ScalaLightCodeInsightFixtureTestAdapter {
-  private val FOLD_START_MARKER = "<|fold>"
-  private val FOLD_END_MARKER = "</fold>"
+  private val FOLD_START_MARKER  = "<|fold>"
+  private val FOLD_END_MARKER    = "</fold>"
   private val FOLD_MARKER_LENGTH = FOLD_START_MARKER.length
 
-  private[this] val ST = FOLD_START_MARKER
+  private[this] val ST  = FOLD_START_MARKER
   private[this] val END = FOLD_END_MARKER
 
   private def genericCheckRegions(fileText: String) {
-    val myRegions = new ArrayBuffer[TextRange]()
-    val myFileText = new StringBuilder(fileText.length)
+    val myRegions     = new ArrayBuffer[TextRange]()
+    val myFileText    = new StringBuilder(fileText.length)
     val myOpenMarkers = mutable.Stack[Int]()
 
     var i1 = fileText indexOf FOLD_START_MARKER
@@ -33,8 +33,7 @@ class ScalaEditorFoldingTest extends ScalaLightCodeInsightFixtureTestAdapter {
       overallFixOffset += FOLD_MARKER_LENGTH
     @inline
     def appendPair(errorPlaceMsg: String) {
-      assert(
-          myOpenMarkers.nonEmpty, "Unbalanced fold markers " + errorPlaceMsg)
+      assert(myOpenMarkers.nonEmpty, "Unbalanced fold markers " + errorPlaceMsg)
       val st = myOpenMarkers.pop()
       myRegions += new TextRange(st, i2 - overallFixOffset)
     }
@@ -50,7 +49,9 @@ class ScalaEditorFoldingTest extends ScalaLightCodeInsightFixtureTestAdapter {
         val i2Old = i2
         i2 = fileText.indexOf(FOLD_END_MARKER, i2Old + 1)
         myFileText append fileText.substring(
-            i2Old + FOLD_MARKER_LENGTH, if (i2 > 0) Math.min(i2, i1) else i1)
+          i2Old + FOLD_MARKER_LENGTH,
+          if (i2 > 0) Math.min(i2, i1) else i1
+        )
 
         increaseOverall()
       } else if (i1 < i2 && i1 > -1) {
@@ -62,7 +63,9 @@ class ScalaEditorFoldingTest extends ScalaLightCodeInsightFixtureTestAdapter {
         i1 = fileText.indexOf(FOLD_START_MARKER, i1Old + 1)
 
         myFileText append fileText.substring(
-            i1Old + FOLD_MARKER_LENGTH, if (i1 > -1) Math.min(i2, i1) else i2)
+          i1Old + FOLD_MARKER_LENGTH,
+          if (i1 > -1) Math.min(i2, i1) else i2
+        )
       } else if (i1 < i2) {
         //i1 == -1
         appendPair("#1.5")
@@ -72,14 +75,16 @@ class ScalaEditorFoldingTest extends ScalaLightCodeInsightFixtureTestAdapter {
         val i2Old = i2
         i2 = fileText.indexOf(FOLD_END_MARKER, i2Old + 1)
         myFileText.append(
-            if (i2 == -1) fileText.substring(i2Old + FOLD_MARKER_LENGTH)
-            else fileText.substring(i2Old + FOLD_MARKER_LENGTH, i2)
+          if (i2 == -1) fileText.substring(i2Old + FOLD_MARKER_LENGTH)
+          else fileText.substring(i2Old + FOLD_MARKER_LENGTH, i2)
         )
       } else assert(assertion = false, "Unbalanced fold markers #2")
     }
 
-    assert(myOpenMarkers.isEmpty,
-           s"Unbalanced fold markers #3: ${myOpenMarkers.mkString}")
+    assert(
+      myOpenMarkers.isEmpty,
+      s"Unbalanced fold markers #3: ${myOpenMarkers.mkString}"
+    )
 
     val assumedRegionRanges = myRegions
       .result()
@@ -89,20 +94,25 @@ class ScalaEditorFoldingTest extends ScalaLightCodeInsightFixtureTestAdapter {
 
     val myBuilder = new ScalaFoldingBuilder
     val regions = myBuilder.buildFoldRegions(
-        myFixture.getFile.getNode, myFixture getDocument myFixture.getFile)
+      myFixture.getFile.getNode,
+      myFixture getDocument myFixture.getFile
+    )
 
     assert(
-        regions.length == assumedRegionRanges.size,
-        s"Different region count, expected: ${assumedRegionRanges.size}, but got: ${regions.length}")
+      regions.length == assumedRegionRanges.size,
+      s"Different region count, expected: ${assumedRegionRanges.size}, but got: ${regions.length}"
+    )
 
     (regions zip assumedRegionRanges).zipWithIndex foreach {
       case ((region, assumedRange), idx) =>
         assert(
-            region.getRange.getStartOffset == assumedRange.getStartOffset,
-            s"Different start offsets in region #$idx : expected ${assumedRange.getStartOffset}, but got ${region.getRange.getStartOffset}")
+          region.getRange.getStartOffset == assumedRange.getStartOffset,
+          s"Different start offsets in region #$idx : expected ${assumedRange.getStartOffset}, but got ${region.getRange.getStartOffset}"
+        )
         assert(
-            region.getRange.getEndOffset == assumedRange.getEndOffset,
-            s"Different end offsets in region #$idx : expected ${assumedRange.getEndOffset}, but got ${region.getRange.getEndOffset}")
+          region.getRange.getEndOffset == assumedRange.getEndOffset,
+          s"Different end offsets in region #$idx : expected ${assumedRange.getEndOffset}, but got ${region.getRange.getEndOffset}"
+        )
     }
   }
 

@@ -11,7 +11,7 @@ import com.twitter.util.{Await, Return}
 class BrokerTest extends WordSpec {
   "Broker" should {
     "send data (send, recv)" in {
-      val br = new Broker[Int]
+      val br    = new Broker[Int]
       val sendF = br.send(123).sync()
       assert(sendF.isDefined == false)
       val recvF = br.recv.sync()
@@ -21,7 +21,7 @@ class BrokerTest extends WordSpec {
     }
 
     "send data (recv, send)" in {
-      val br = new Broker[Int]
+      val br    = new Broker[Int]
       val recvF = br.recv.sync()
       assert(recvF.isDefined == false)
       val sendF = br.send(123).sync()
@@ -32,7 +32,7 @@ class BrokerTest extends WordSpec {
     }
 
     "queue receivers (recv, recv, send, send)" in {
-      val br = new Broker[Int]
+      val br     = new Broker[Int]
       val r0, r1 = br.recv.sync()
       assert(r0.isDefined == false)
       assert(r1.isDefined == false)
@@ -46,7 +46,7 @@ class BrokerTest extends WordSpec {
     }
 
     "queue senders (send, send, recv, recv)" in {
-      val br = new Broker[Int]
+      val br     = new Broker[Int]
       val s0, s1 = br.send(123).sync()
       assert(s0.isDefined == false)
       assert(s1.isDefined == false)
@@ -61,7 +61,7 @@ class BrokerTest extends WordSpec {
 
     "interrupts" should {
       "removes queued receiver" in {
-        val br = new Broker[Int]
+        val br    = new Broker[Int]
         val recvF = br.recv.sync()
         recvF.raise(new Exception)
         assert(br.send(123).sync().poll == None)
@@ -69,7 +69,7 @@ class BrokerTest extends WordSpec {
       }
 
       "removes queued sender" in {
-        val br = new Broker[Int]
+        val br    = new Broker[Int]
         val sendF = br.send(123).sync()
         sendF.raise(new Exception)
         assert(br.recv.sync().poll == None)
@@ -107,7 +107,7 @@ class BrokerTest extends WordSpec {
     }
 
     "integrate" in {
-      val br = new Broker[Int]
+      val br    = new Broker[Int]
       val offer = Offer.choose(br.recv, Offer.const(999))
       assert(offer.sync().poll == Some(Return(999)))
 

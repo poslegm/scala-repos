@@ -17,13 +17,12 @@ class GuiceApplicationLoaderSpec extends Specification {
 
     "allow adding additional modules" in {
       val module = new AbstractModule {
-        def configure() = {
+        def configure() =
           bind(classOf[Bar]) to classOf[MarsBar]
-        }
       }
       val builder = new GuiceApplicationBuilder().bindings(module)
-      val loader = new GuiceApplicationLoader(builder)
-      val app = loader.load(fakeContext)
+      val loader  = new GuiceApplicationLoader(builder)
+      val app     = loader.load(fakeContext)
       app.injector.instanceOf[Bar] must beAnInstanceOf[MarsBar]
     }
 
@@ -31,13 +30,13 @@ class GuiceApplicationLoaderSpec extends Specification {
       val builder = new GuiceApplicationBuilder()
         .load(new BuiltinModule, new ManualTestModule)
       val loader = new GuiceApplicationLoader(builder)
-      val app = loader.load(fakeContext)
+      val app    = loader.load(fakeContext)
       app.injector.instanceOf[Foo] must beAnInstanceOf[ManualFoo]
     }
 
     "load static Guice modules from configuration" in {
       val loader = new GuiceApplicationLoader()
-      val app = loader.load(fakeContextWithModule(classOf[StaticTestModule]))
+      val app    = loader.load(fakeContextWithModule(classOf[StaticTestModule]))
       app.injector.instanceOf[Foo] must beAnInstanceOf[StaticFoo]
     }
 
@@ -62,47 +61,44 @@ class GuiceApplicationLoaderSpec extends Specification {
     val c = f.initialConfiguration
     val newModules: Seq[String] =
       c.getStringSeq("play.modules.enabled").fold(Seq.empty[String]) {
-        oldModules =>
-          oldModules :+ module.getName
+        oldModules => oldModules :+ module.getName
       }
-    val modulesConf = Configuration("play.modules.enabled" -> newModules)
+    val modulesConf  = Configuration("play.modules.enabled" -> newModules)
     val combinedConf = f.initialConfiguration ++ modulesConf
     f.copy(initialConfiguration = combinedConf)
   }
 }
 
 class ManualTestModule extends AbstractModule {
-  def configure(): Unit = {
+  def configure(): Unit =
     bind(classOf[Foo]) to classOf[ManualFoo]
-  }
 }
 
 class StaticTestModule extends AbstractModule {
-  def configure(): Unit = {
+  def configure(): Unit =
     bind(classOf[Foo]) to classOf[StaticFoo]
-  }
 }
 
 class ScalaConfiguredModule(
-    environment: Environment, configuration: Configuration)
-    extends AbstractModule {
-  def configure(): Unit = {
+    environment: Environment,
+    configuration: Configuration
+) extends AbstractModule {
+  def configure(): Unit =
     bind(classOf[Foo]) to classOf[ScalaConfiguredFoo]
-  }
 }
 class JavaConfiguredModule(
-    environment: JavaEnvironment, configuration: JavaConfiguration)
-    extends AbstractModule {
-  def configure(): Unit = {
+    environment: JavaEnvironment,
+    configuration: JavaConfiguration
+) extends AbstractModule {
+  def configure(): Unit =
     bind(classOf[Foo]) to classOf[JavaConfiguredFoo]
-  }
 }
 
 trait Bar
 class MarsBar extends Bar
 
 trait Foo
-class ManualFoo extends Foo
-class StaticFoo extends Foo
+class ManualFoo          extends Foo
+class StaticFoo          extends Foo
 class ScalaConfiguredFoo extends Foo
-class JavaConfiguredFoo extends Foo
+class JavaConfiguredFoo  extends Foo

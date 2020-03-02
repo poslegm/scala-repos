@@ -40,22 +40,24 @@ object eig extends UFunc {
 
       // Find the needed workspace
       val worksize = Array.ofDim[Double](1)
-      val info = new intW(0)
+      val info     = new intW(0)
 
-      lapack.dgeev("N",
-                   "V",
-                   n,
-                   Array.empty[Double],
-                   scala.math.max(1, n),
-                   Array.empty[Double],
-                   Array.empty[Double],
-                   Array.empty[Double],
-                   scala.math.max(1, n),
-                   Array.empty[Double],
-                   scala.math.max(1, n),
-                   worksize,
-                   -1,
-                   info)
+      lapack.dgeev(
+        "N",
+        "V",
+        n,
+        Array.empty[Double],
+        scala.math.max(1, n),
+        Array.empty[Double],
+        Array.empty[Double],
+        Array.empty[Double],
+        scala.math.max(1, n),
+        Array.empty[Double],
+        scala.math.max(1, n),
+        worksize,
+        -1,
+        info
+      )
 
       // Allocate the workspace
       val lwork: Int =
@@ -68,20 +70,22 @@ object eig extends UFunc {
 
       val A = DenseMatrix.zeros[Double](n, n)
       A := m
-      lapack.dgeev("N",
-                   "V",
-                   n,
-                   A.data,
-                   scala.math.max(1, n),
-                   Wr.data,
-                   Wi.data,
-                   Array.empty[Double],
-                   scala.math.max(1, n),
-                   Vr.data,
-                   scala.math.max(1, n),
-                   work,
-                   work.length,
-                   info)
+      lapack.dgeev(
+        "N",
+        "V",
+        n,
+        A.data,
+        scala.math.max(1, n),
+        Wr.data,
+        Wi.data,
+        Array.empty[Double],
+        scala.math.max(1, n),
+        Vr.data,
+        scala.math.max(1, n),
+        work,
+        work.length,
+        info
+      )
 
       if (info.`val` > 0)
         throw new NotConvergedException(NotConvergedException.Iterations)
@@ -101,25 +105,25 @@ object eigSym extends UFunc {
   type DenseEigSym = EigSym[DenseVector[Double], DenseMatrix[Double]]
   implicit object EigSym_DM_Impl
       extends Impl[DenseMatrix[Double], DenseEigSym] {
-    def apply(X: DenseMatrix[Double]): DenseEigSym = {
+    def apply(X: DenseMatrix[Double]): DenseEigSym =
       doEigSym(X, true) match {
         case (ev, Some(rev)) => EigSym(ev, rev)
-        case _ => throw new RuntimeException("Shouldn't be here!")
+        case _               => throw new RuntimeException("Shouldn't be here!")
       }
-    }
   }
 
   object justEigenvalues extends UFunc {
     implicit object EigSym_DM_Impl
         extends Impl[DenseMatrix[Double], DenseVector[Double]] {
-      def apply(X: DenseMatrix[Double]): DenseVector[Double] = {
+      def apply(X: DenseMatrix[Double]): DenseVector[Double] =
         doEigSym(X, false)._1
-      }
     }
   }
 
-  private def doEigSym(X: Matrix[Double], rightEigenvectors: Boolean)
-    : (DenseVector[Double], Option[DenseMatrix[Double]]) = {
+  private def doEigSym(
+      X: Matrix[Double],
+      rightEigenvectors: Boolean
+  ): (DenseVector[Double], Option[DenseMatrix[Double]]) = {
     requireNonEmptyMatrix(X)
 
     // As LAPACK doesn't check if the given matrix is in fact symmetric,
@@ -132,22 +136,23 @@ object eigSym extends UFunc {
     // Copy the lower triangular part of X. LAPACK will store the result in A.
     val A = lowerTriangular(X)
 
-    val N = X.rows
-    val evs = DenseVector.zeros[Double](N)
+    val N     = X.rows
+    val evs   = DenseVector.zeros[Double](N)
     val lwork = scala.math.max(1, 3 * N - 1)
-    val work = Array.ofDim[Double](lwork)
-    val info = new intW(0)
+    val work  = Array.ofDim[Double](lwork)
+    val info  = new intW(0)
     lapack.dsyev(
-        if (rightEigenvectors)
-          "V" else "N" /* eigenvalues N, eigenvalues & eigenvectors "V" */,
-        "L" /* lower triangular */,
-        N /* number of rows */,
-        A.data,
-        scala.math.max(1, N) /* LDA */,
-        evs.data,
-        work /* workspace */,
-        lwork /* workspace size */,
-        info
+      if (rightEigenvectors)
+        "V"
+      else "N" /* eigenvalues N, eigenvalues & eigenvectors "V" */,
+      "L" /* lower triangular */,
+      N /* number of rows */,
+      A.data,
+      scala.math.max(1, N) /* LDA */,
+      evs.data,
+      work /* workspace */,
+      lwork /* workspace size */,
+      info
     )
     // A value of info.`val` < 0 would tell us that the i-th argument
     // of the call to dsyev was erroneous (where i == |info.`val`|).

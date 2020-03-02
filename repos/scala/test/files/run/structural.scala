@@ -10,38 +10,38 @@ object test1 {
 
   class Tata(name: String) {
     override def toString = name
-    def tatMe = "oy"
+    def tatMe             = "oy"
   }
 
   class Titi extends Tata("titi")
 
   object Rec {
-    val a = 1
-    val b = 2
-    val c = "hey"
-    def d(x: AnyRef) = new Object { override def toString = "dee" }
-    def e(x: Tata) = new Tata("iei")
-    def f(x: Int) = x + 1
-    def g(x: Int) = { v = x }
-    def h(x: Unit) = new Object { override def toString = "eitch" }
-    def i(x: Array[Int]) = x(0)
-    def j(x: Array[AnyRef]) = x(0)
-    def k(x: Array[Char]) = x(0)
-    def l(x: Array[Unit]) = x(0)
-    def m(x: Array[String]) = x(0)
-    def n(x: Array[Tata]) = x(0)
-    def o: Array[Int] = Array(1, 2, 3)
-    def p: Array[AnyRef] = Array(o1, o2)
-    def q: Array[Char] = Array('1', '2')
-    def r: Array[Unit] = Array((), ())
-    def s: Array[String] = Array("one", "two")
-    def t: Array[Tata] = Array(t1, t2)
+    val a                        = 1
+    val b                        = 2
+    val c                        = "hey"
+    def d(x: AnyRef)             = new Object { override def toString = "dee" }
+    def e(x: Tata)               = new Tata("iei")
+    def f(x: Int)                = x + 1
+    def g(x: Int)                = v = x
+    def h(x: Unit)               = new Object { override def toString = "eitch" }
+    def i(x: Array[Int])         = x(0)
+    def j(x: Array[AnyRef])      = x(0)
+    def k(x: Array[Char])        = x(0)
+    def l(x: Array[Unit])        = x(0)
+    def m(x: Array[String])      = x(0)
+    def n(x: Array[Tata])        = x(0)
+    def o: Array[Int]            = Array(1, 2, 3)
+    def p: Array[AnyRef]         = Array(o1, o2)
+    def q: Array[Char]           = Array('1', '2')
+    def r: Array[Unit]           = Array((), ())
+    def s: Array[String]         = Array("one", "two")
+    def t: Array[Tata]           = Array(t1, t2)
     def u[T](f: T => T, v: T): T = f(v)
-    var v = 4
-    var w = 11
-    val x = t1
-    val y: Tata = null
-    def z(t: Tata) = ()
+    var v                        = 4
+    var w                        = 11
+    val x                        = t1
+    val y: Tata                  = null
+    def z(t: Tata)               = ()
   }
 
   type rt = Object {
@@ -164,7 +164,7 @@ object test3 {
     try {
       r.f
     } catch {
-      case e: Exc => println("caught")
+      case e: Exc       => println("caught")
       case e: Throwable => println(e)
     }
 

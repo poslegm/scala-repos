@@ -15,6 +15,6 @@ trait RefCountedFinalizers {
   def refCountedFinalizer(u: IO[Unit], i: IORef[Int]): RefCountedFinalizer =
     new RefCountedFinalizer {
       val finalizer = u
-      val refcount = i
+      val refcount  = i
     }
 }

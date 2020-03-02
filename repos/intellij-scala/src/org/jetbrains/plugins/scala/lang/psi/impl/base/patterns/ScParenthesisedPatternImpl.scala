@@ -10,19 +10,22 @@ import com.intellij.psi.PsiElementVisitor
 import org.jetbrains.plugins.scala.lang.psi.api.ScalaElementVisitor
 import org.jetbrains.plugins.scala.lang.psi.api.base.patterns._
 import org.jetbrains.plugins.scala.lang.psi.types.ScType
-import org.jetbrains.plugins.scala.lang.psi.types.result.{TypeResult, TypingContext}
+import org.jetbrains.plugins.scala.lang.psi.types.result.{
+  TypeResult,
+  TypingContext
+}
 
 /**
   * @author ilyas, Alexander Podkhalyuzin
   */
 class ScParenthesisedPatternImpl(node: ASTNode)
-    extends ScalaPsiElementImpl(node) with ScParenthesisedPattern {
-  override def accept(visitor: PsiElementVisitor): Unit = {
+    extends ScalaPsiElementImpl(node)
+    with ScParenthesisedPattern {
+  override def accept(visitor: PsiElementVisitor): Unit =
     visitor match {
       case visitor: ScalaElementVisitor => super.accept(visitor)
-      case _ => super.accept(visitor)
+      case _                            => super.accept(visitor)
     }
-  }
 
   override def toString: String = "PatternInParenthesis"
 

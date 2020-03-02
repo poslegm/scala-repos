@@ -6,7 +6,12 @@ package akka.actor
 import scala.collection.immutable
 
 import akka.AkkaException
-import akka.dispatch.{UnboundedDequeBasedMessageQueueSemantics, RequiresMessageQueue, Envelope, DequeBasedMessageQueueSemantics}
+import akka.dispatch.{
+  UnboundedDequeBasedMessageQueueSemantics,
+  RequiresMessageQueue,
+  Envelope,
+  DequeBasedMessageQueueSemantics
+}
 
 import scala.util.control.NoStackTrace
 
@@ -73,16 +78,18 @@ trait UnrestrictedStash extends Actor with StashSupport {
     *  Overridden callback. Prepends all messages in the stash to the mailbox,
     *  clears the stash, stops all children and invokes the postStop() callback.
     */
-  override def preRestart(reason: Throwable, message: Option[Any]): Unit = {
-    try unstashAll() finally super.preRestart(reason, message)
-  }
+  override def preRestart(reason: Throwable, message: Option[Any]): Unit =
+    try unstashAll()
+    finally super.preRestart(reason, message)
 
   /**
     *  Overridden callback. Prepends all messages in the stash to the mailbox and clears the stash.
     *  Must be called when overriding this method, otherwise stashed messages won't be propagated to DeadLetters
     *  when actor stops.
     */
-  override def postStop(): Unit = try unstashAll() finally super.postStop()
+  override def postStop(): Unit =
+    try unstashAll()
+    finally super.postStop()
 }
 
 /**
@@ -98,7 +105,7 @@ private[akka] trait StashFactory {
       )(implicit ctx: ActorContext, ref: ActorRef): StashSupport =
     new StashSupport {
       def context: ActorContext = ctx
-      def self: ActorRef = ref
+      def self: ActorRef        = ref
     }
 }
 
@@ -148,13 +155,14 @@ private[akka] trait StashSupport {
       case queue: DequeBasedMessageQueueSemantics ⇒ queue
       case other ⇒
         throw ActorInitializationException(
-            self,
-            s"DequeBasedMailbox required, got: ${other.getClass.getName}\n" +
+          self,
+          s"DequeBasedMailbox required, got: ${other.getClass.getName}\n" +
             """An (unbounded) deque-based mailbox can be configured as follows:
           |  my-custom-mailbox {
           |    mailbox-type = "akka.dispatch.UnboundedDequeBasedMailbox"
           |  }
-          |""".stripMargin)
+          |""".stripMargin
+        )
     }
   }
 
@@ -169,11 +177,13 @@ private[akka] trait StashSupport {
     val currMsg = actorCell.currentMessage
     if (theStash.nonEmpty && (currMsg eq theStash.last))
       throw new IllegalStateException(
-          s"Can't stash the same message $currMsg more than once")
+        s"Can't stash the same message $currMsg more than once"
+      )
     if (capacity <= 0 || theStash.size < capacity) theStash :+= currMsg
     else
       throw new StashOverflowException(
-          s"Couldn't enqueue message ${currMsg.message.getClass.getName} from ${currMsg.sender} to stash of $self")
+        s"Couldn't enqueue message ${currMsg.message.getClass.getName} from ${currMsg.sender} to stash of $self"
+      )
   }
 
   /**
@@ -228,15 +238,15 @@ private[akka] trait StashSupport {
     *  @param filterPredicate only stashed messages selected by this predicate are
     *                         prepended to the mailbox.
     */
-  private[akka] def unstashAll(filterPredicate: Any ⇒ Boolean): Unit = {
+  private[akka] def unstashAll(filterPredicate: Any ⇒ Boolean): Unit =
     try {
-      val i = theStash.reverseIterator.filter(
-          envelope ⇒ filterPredicate(envelope.message))
+      val i = theStash.reverseIterator.filter(envelope ⇒
+        filterPredicate(envelope.message)
+      )
       while (i.hasNext) enqueueFirst(i.next())
     } finally {
       theStash = Vector.empty[Envelope]
     }
-  }
 
   /**
     * INTERNAL API.
@@ -258,7 +268,7 @@ private[akka] trait StashSupport {
     mailbox.enqueueFirst(self, envelope)
     envelope.message match {
       case Terminated(ref) ⇒ actorCell.terminatedQueuedFor(ref)
-      case _ ⇒
+      case _               ⇒
     }
   }
 }
@@ -267,4 +277,5 @@ private[akka] trait StashSupport {
   * Is thrown when the size of the Stash exceeds the capacity of the Stash
   */
 class StashOverflowException(message: String, cause: Throwable = null)
-    extends AkkaException(message, cause) with NoStackTrace
+    extends AkkaException(message, cause)
+    with NoStackTrace

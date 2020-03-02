@@ -10,10 +10,12 @@ import org.scalatra.util.MultiMap
   * may be invoked.  The route parameters extracted by the matchers are made
   * available to the action.
   */
-case class Route(routeMatchers: Seq[RouteMatcher] = Seq.empty,
-                 action: Action,
-                 contextPath: HttpServletRequest => String = _ => "",
-                 metadata: Map[Symbol, Any] = Map.empty) {
+case class Route(
+    routeMatchers: Seq[RouteMatcher] = Seq.empty,
+    action: Action,
+    contextPath: HttpServletRequest => String = _ => "",
+    metadata: Map[Symbol, Any] = Map.empty
+) {
 
   /**
     * Optionally returns this route's action and the multi-map of route
@@ -22,17 +24,14 @@ case class Route(routeMatchers: Seq[RouteMatcher] = Seq.empty,
     * None is returned.  If there are no route matchers, some empty map is
     * returned.
     */
-  def apply(requestPath: String): Option[MatchedRoute] = {
+  def apply(requestPath: String): Option[MatchedRoute] =
     routeMatchers.foldLeft(Option(MultiMap())) {
       (acc: Option[MultiParams], routeMatcher: RouteMatcher) =>
         for {
-          routeParams <- acc
+          routeParams   <- acc
           matcherParams <- routeMatcher(requestPath)
         } yield routeParams ++ matcherParams
-    } map { routeParams =>
-      MatchedRoute(action, routeParams)
-    }
-  }
+    } map { routeParams => MatchedRoute(action, routeParams) }
 
   /**
     * The reversible matcher of a route is the first reversible matcher, if
@@ -54,18 +53,17 @@ object Route {
   def apply(transformers: Seq[RouteTransformer], action: Action): Route =
     apply(transformers, action, (_: HttpServletRequest) => "")
 
-  def apply(transformers: Seq[RouteTransformer],
-            action: Action,
-            contextPath: HttpServletRequest => String): Route = {
+  def apply(
+      transformers: Seq[RouteTransformer],
+      action: Action,
+      contextPath: HttpServletRequest => String
+  ): Route = {
     val route = Route(action = action, contextPath = contextPath)
-    transformers.foldLeft(route) { (route, transformer) =>
-      transformer(route)
-    }
+    transformers.foldLeft(route)((route, transformer) => transformer(route))
   }
 
   def appendMatcher(matcher: RouteMatcher): RouteTransformer = {
-    (route: Route) =>
-      route.copy(routeMatchers = route.routeMatchers :+ matcher)
+    (route: Route) => route.copy(routeMatchers = route.routeMatchers :+ matcher)
   }
 }
 

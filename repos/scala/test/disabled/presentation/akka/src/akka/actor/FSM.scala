@@ -13,7 +13,7 @@ object FSM {
 
   object NullFunction extends PartialFunction[Any, Nothing] {
     def isDefinedAt(o: Any) = false
-    def apply(o: Any) = sys.error("undefined")
+    def apply(o: Any)       = sys.error("undefined")
   }
 
   case class CurrentState[S](fsmRef: ActorRef, state: S)
@@ -22,24 +22,31 @@ object FSM {
   case class UnsubscribeTransitionCallBack(actorRef: ActorRef)
 
   sealed trait Reason
-  case object Normal extends Reason
-  case object Shutdown extends Reason
+  case object Normal             extends Reason
+  case object Shutdown           extends Reason
   case class Failure(cause: Any) extends Reason
 
   case object StateTimeout
   case class TimeoutMarker(generation: Long)
 
-  case class Timer(name: String, msg: AnyRef, repeat: Boolean, generation: Int) {
+  case class Timer(
+      name: String,
+      msg: AnyRef,
+      repeat: Boolean,
+      generation: Int
+  ) {
     private var ref: Option[ScheduledFuture[AnyRef]] = _
 
     def schedule(actor: ActorRef, timeout: Duration) {
       if (repeat) {
         ref = Some(
-            Scheduler.schedule(
-                actor, this, timeout.length, timeout.length, timeout.unit))
+          Scheduler
+            .schedule(actor, this, timeout.length, timeout.length, timeout.unit)
+        )
       } else {
         ref = Some(
-            Scheduler.scheduleOnce(actor, this, timeout.length, timeout.unit))
+          Scheduler.scheduleOnce(actor, this, timeout.length, timeout.unit)
+        )
       }
     }
 
@@ -151,8 +158,8 @@ trait FSM[S, D] extends ListenerManagement {
 
   import FSM._
 
-  type StateFunction = scala.PartialFunction[Event[D], State]
-  type Timeout = Option[Duration]
+  type StateFunction     = scala.PartialFunction[Event[D], State]
+  type Timeout           = Option[Duration]
   type TransitionHandler = PartialFunction[(S, S), Unit]
 
   /**
@@ -171,9 +178,9 @@ trait FSM[S, D] extends ListenerManagement {
     * @param stateFunction partial function describing response to input
     */
   protected final def when(stateName: S, stateTimeout: Timeout = None)(
-      stateFunction: StateFunction) = {
+      stateFunction: StateFunction
+  ) =
     register(stateName, stateFunction, stateTimeout)
-  }
 
   /**
     * Set initial state. Call this method from the constructor before the #initialize method.
@@ -182,11 +189,12 @@ trait FSM[S, D] extends ListenerManagement {
     * @param stateData initial state data
     * @param timeout state timeout for the initial state, overriding the default timeout for that state
     */
-  protected final def startWith(stateName: S,
-                                stateData: D,
-                                timeout: Timeout = None) = {
+  protected final def startWith(
+      stateName: S,
+      stateData: D,
+      timeout: Timeout = None
+  ) =
     currentState = State(stateName, stateData, timeout)
-  }
 
   /**
     * Produce transition to other state. Return this from a state function in
@@ -195,9 +203,8 @@ trait FSM[S, D] extends ListenerManagement {
     * @param nextStateName state designator for the next state
     * @return state transition descriptor
     */
-  protected final def goto(nextStateName: S): State = {
+  protected final def goto(nextStateName: S): State =
     State(nextStateName, currentState.stateData)
-  }
 
   /**
     * Produce "empty" transition descriptor. Return this from a state function
@@ -205,31 +212,27 @@ trait FSM[S, D] extends ListenerManagement {
     *
     * @return descriptor for staying in current state
     */
-  protected final def stay(): State = {
+  protected final def stay(): State =
     // cannot directly use currentState because of the timeout field
     goto(currentState.stateName)
-  }
 
   /**
     * Produce change descriptor to stop this FSM actor with reason "Normal".
     */
-  protected final def stop(): State = {
+  protected final def stop(): State =
     stop(Normal)
-  }
 
   /**
     * Produce change descriptor to stop this FSM actor including specified reason.
     */
-  protected final def stop(reason: Reason): State = {
+  protected final def stop(reason: Reason): State =
     stop(reason, currentState.stateData)
-  }
 
   /**
     * Produce change descriptor to stop this FSM actor including specified reason.
     */
-  protected final def stop(reason: Reason, stateData: D): State = {
+  protected final def stop(reason: Reason, stateData: D): State =
     stay using stateData withStopReason (reason)
-  }
 
   /**
     * Schedule named timer to deliver message after given delay, possibly repeating.
@@ -240,7 +243,11 @@ trait FSM[S, D] extends ListenerManagement {
     * @return current state descriptor
     */
   protected final def setTimer(
-      name: String, msg: AnyRef, timeout: Duration, repeat: Boolean): State = {
+      name: String,
+      msg: AnyRef,
+      timeout: Duration,
+      repeat: Boolean
+  ): State = {
     if (timers contains name) {
       timers(name).cancel
     }
@@ -254,12 +261,11 @@ trait FSM[S, D] extends ListenerManagement {
     * Cancel named timer, ensuring that the message is not subsequently delivered (no race).
     * @param name of the timer to cancel
     */
-  protected final def cancelTimer(name: String) = {
+  protected final def cancelTimer(name: String) =
     if (timers contains name) {
       timers(name).cancel
       timers -= name
     }
-  }
 
   /**
     * Inquire whether the named timer is still active. Returns true unless the
@@ -319,16 +325,15 @@ trait FSM[S, D] extends ListenerManagement {
     * Set handler which is called upon termination of this FSM actor.
     */
   protected final def onTermination(
-      terminationHandler: PartialFunction[StopEvent[S, D], Unit]) = {
+      terminationHandler: PartialFunction[StopEvent[S, D], Unit]
+  ) =
     terminateEvent = terminationHandler
-  }
 
   /**
     * Set handler which is called upon reception of unhandled messages.
     */
-  protected final def whenUnhandled(stateFunction: StateFunction) = {
+  protected final def whenUnhandled(stateFunction: StateFunction) =
     handleEvent = stateFunction orElse handleEventDefault
-  }
 
   /**
     * Verify existence of initial state and setup timers. This should be the
@@ -346,21 +351,21 @@ trait FSM[S, D] extends ListenerManagement {
   /*
    * FSM State data and current timeout handling
    */
-  private var currentState: State = _
+  private var currentState: State                            = _
   private var timeoutFuture: Option[ScheduledFuture[AnyRef]] = None
-  private var generation: Long = 0L
+  private var generation: Long                               = 0L
 
   /*
    * Timer handling
    */
-  private val timers = mutable.Map[String, Timer]()
+  private val timers   = mutable.Map[String, Timer]()
   private val timerGen = Iterator from 0
 
   /*
    * State definitions
    */
   private val stateFunctions = mutable.Map[S, StateFunction]()
-  private val stateTimeouts = mutable.Map[S, Timeout]()
+  private val stateTimeouts  = mutable.Map[S, Timeout]()
 
   private def register(name: S, function: StateFunction, timeout: Timeout) {
     if (stateFunctions contains name) {
@@ -386,7 +391,7 @@ trait FSM[S, D] extends ListenerManagement {
    */
   private var terminateEvent: PartialFunction[StopEvent[S, D], Unit] = {
     case StopEvent(Failure(cause), _, _) =>
-    case StopEvent(reason, _, _) =>
+    case StopEvent(reason, _, _)         =>
   }
 
   /*
@@ -430,17 +435,17 @@ trait FSM[S, D] extends ListenerManagement {
     case UnsubscribeTransitionCallBack(actorRef) =>
       removeListener(actorRef)
     case value => {
-        if (timeoutFuture.isDefined) {
-          timeoutFuture.get.cancel(true)
-          timeoutFuture = None
-        }
-        generation += 1
-        processEvent(value)
+      if (timeoutFuture.isDefined) {
+        timeoutFuture.get.cancel(true)
+        timeoutFuture = None
       }
+      generation += 1
+      processEvent(value)
+    }
   }
 
   private def processEvent(value: Any) = {
-    val event = Event(value, currentState.stateData)
+    val event     = Event(value, currentState.stateData)
     val stateFunc = stateFunctions(currentState.stateName)
     val nextState =
       if (stateFunc isDefinedAt event) {
@@ -451,23 +456,24 @@ trait FSM[S, D] extends ListenerManagement {
       }
     nextState.stopReason match {
       case Some(reason) => terminate(reason)
-      case None => makeTransition(nextState)
+      case None         => makeTransition(nextState)
     }
   }
 
-  private def makeTransition(nextState: State) = {
+  private def makeTransition(nextState: State) =
     if (!stateFunctions.contains(nextState.stateName)) {
       terminate(
-          Failure("Next state %s does not exist".format(nextState.stateName)))
+        Failure("Next state %s does not exist".format(nextState.stateName))
+      )
     } else {
       if (currentState.stateName != nextState.stateName) {
         handleTransition(currentState.stateName, nextState.stateName)
         notifyListeners(
-            Transition(self, currentState.stateName, nextState.stateName))
+          Transition(self, currentState.stateName, nextState.stateName)
+        )
       }
       applyState(nextState)
     }
-  }
 
   private def applyState(nextState: State) = {
     currentState = nextState
@@ -478,15 +484,17 @@ trait FSM[S, D] extends ListenerManagement {
       val t = timeout.get
       if (t.finite_? && t.length >= 0) {
         timeoutFuture = Some(
-            Scheduler.scheduleOnce(
-                self, TimeoutMarker(generation), t.length, t.unit))
+          Scheduler
+            .scheduleOnce(self, TimeoutMarker(generation), t.length, t.unit)
+        )
       }
     }
   }
 
   private def terminate(reason: Reason) = {
     terminateEvent.apply(
-        StopEvent(reason, currentState.stateName, currentState.stateData))
+      StopEvent(reason, currentState.stateName, currentState.stateData)
+    )
     self.stop()
   }
 
@@ -502,9 +510,8 @@ trait FSM[S, D] extends ListenerManagement {
       * next state. This timeout overrides any default timeout set for the next
       * state.
       */
-    def forMax(timeout: Duration): State = {
+    def forMax(timeout: Duration): State =
       copy(timeout = Some(timeout))
-    }
 
     /**
       * Send reply to sender of the current message, if available.
@@ -514,7 +521,7 @@ trait FSM[S, D] extends ListenerManagement {
     def replying(replyValue: Any): State = {
       self.sender match {
         case Some(sender) => sender ! replyValue
-        case None =>
+        case None         =>
       }
       this
     }
@@ -523,9 +530,8 @@ trait FSM[S, D] extends ListenerManagement {
       * Modify state transition descriptor with new state data. The data will be
       * set when transitioning to the new state.
       */
-    def using(nextStateDate: D): State = {
+    def using(nextStateDate: D): State =
       copy(stateData = nextStateDate)
-    }
 
     private[akka] var stopReason: Option[Reason] = None
 

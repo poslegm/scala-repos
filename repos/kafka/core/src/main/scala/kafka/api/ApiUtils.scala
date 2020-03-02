@@ -5,7 +5,7 @@
   * The ASF licenses this file to You under the Apache License, Version 2.0
   * (the "License"); you may not use this file except in compliance with
   * the License.  You may obtain a copy of the License at
-  * 
+  *
   *    http://www.apache.org/licenses/LICENSE-2.0
   *
   * Unless required by applicable law or agreed to in writing, software
@@ -52,7 +52,8 @@ object ApiUtils {
       val encodedString = string.getBytes(ProtocolEncoding)
       if (encodedString.length > Short.MaxValue) {
         throw new KafkaException(
-            "String exceeds the maximum size of " + Short.MaxValue + ".")
+          "String exceeds the maximum size of " + Short.MaxValue + "."
+        )
       } else {
         buffer.putShort(encodedString.length.asInstanceOf[Short])
         buffer.put(encodedString)
@@ -64,31 +65,35 @@ object ApiUtils {
     * Return size of a size prefixed string where the size is stored as a 2 byte short
     * @param string The string to write
     */
-  def shortStringLength(string: String): Int = {
+  def shortStringLength(string: String): Int =
     if (string == null) {
       2
     } else {
       val encodedString = string.getBytes(ProtocolEncoding)
       if (encodedString.length > Short.MaxValue) {
         throw new KafkaException(
-            "String exceeds the maximum size of " + Short.MaxValue + ".")
+          "String exceeds the maximum size of " + Short.MaxValue + "."
+        )
       } else {
         2 + encodedString.length
       }
     }
-  }
 
   /**
     * Read an integer out of the bytebuffer from the current position and check that it falls within the given
     * range. If not, throw KafkaException.
     */
   def readIntInRange(
-      buffer: ByteBuffer, name: String, range: (Int, Int)): Int = {
+      buffer: ByteBuffer,
+      name: String,
+      range: (Int, Int)
+  ): Int = {
     val value = buffer.getInt
     if (value < range._1 || value > range._2)
       throw new KafkaException(
-          name + " has value " +
-          value + " which is not in the range " + range + ".")
+        name + " has value " +
+          value + " which is not in the range " + range + "."
+      )
     else value
   }
 
@@ -97,12 +102,16 @@ object ApiUtils {
     * range. If not, throw KafkaException.
     */
   def readShortInRange(
-      buffer: ByteBuffer, name: String, range: (Short, Short)): Short = {
+      buffer: ByteBuffer,
+      name: String,
+      range: (Short, Short)
+  ): Short = {
     val value = buffer.getShort
     if (value < range._1 || value > range._2)
       throw new KafkaException(
-          name + " has value " +
-          value + " which is not in the range " + range + ".")
+        name + " has value " +
+          value + " which is not in the range " + range + "."
+      )
     else value
   }
 
@@ -111,18 +120,22 @@ object ApiUtils {
     * range. If not, throw KafkaException.
     */
   def readLongInRange(
-      buffer: ByteBuffer, name: String, range: (Long, Long)): Long = {
+      buffer: ByteBuffer,
+      name: String,
+      range: (Long, Long)
+  ): Long = {
     val value = buffer.getLong
     if (value < range._1 || value > range._2)
       throw new KafkaException(
-          name + " has value " +
-          value + " which is not in the range " + range + ".")
+        name + " has value " +
+          value + " which is not in the range " + range + "."
+      )
     else value
   }
 
   private[api] def hasPendingWrites(channel: GatheringByteChannel): Boolean =
     channel match {
       case t: TransportLayer => t.hasPendingWrites
-      case _ => false
+      case _                 => false
     }
 }

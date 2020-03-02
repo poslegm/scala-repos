@@ -25,7 +25,8 @@ object RootFinder {
     }
 
   implicit def BigDecimalMathContextRootFinder(
-      mc: MathContext): RootFinder[BigDecimal] =
+      mc: MathContext
+  ): RootFinder[BigDecimal] =
     new RootFinder[BigDecimal] {
       def findRoots(poly: Polynomial[BigDecimal]): Roots[BigDecimal] =
         new BigDecimalRelativeRoots(poly, mc)

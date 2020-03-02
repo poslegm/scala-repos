@@ -19,7 +19,12 @@ package com.twitter.summingbird.online
 import com.twitter.util.{Await, Duration, Future, Try}
 
 import java.util.{Queue => JQueue}
-import java.util.concurrent.{ArrayBlockingQueue, BlockingQueue, LinkedBlockingQueue, TimeUnit}
+import java.util.concurrent.{
+  ArrayBlockingQueue,
+  BlockingQueue,
+  LinkedBlockingQueue,
+  TimeUnit
+}
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -46,20 +51,18 @@ object Queue {
   def linkedNonBlocking[T]: Queue[T] =
     fromQueue(new ConcurrentLinkedQueue())
 
-  def fromBlocking[T](bq: BlockingQueue[T]): Queue[T] = {
+  def fromBlocking[T](bq: BlockingQueue[T]): Queue[T] =
     new Queue[T] {
-      override def add(t: T) = bq.put(t)
+      override def add(t: T)       = bq.put(t)
       override def pollNonBlocking = Option(bq.poll())
     }
-  }
 
   // Uses Queue.add to put. This will fail for full blocking queues
-  def fromQueue[T](q: JQueue[T]): Queue[T] = {
+  def fromQueue[T](q: JQueue[T]): Queue[T] =
     new Queue[T] {
-      override def add(t: T) = q.add(t)
+      override def add(t: T)       = q.add(t)
       override def pollNonBlocking = Option(q.poll())
     }
-  }
 }
 
 /**
@@ -129,7 +132,7 @@ abstract class Queue[T] {
   @annotation.tailrec
   final def foldLeft[V](init: V)(fn: (V, T) => V): V =
     poll match {
-      case None => init
+      case None     => init
       case Some(it) => foldLeft(fn(init, it))(fn)
     }
 
@@ -149,7 +152,7 @@ abstract class Queue[T] {
     require(maxLength >= 0, "maxLength must be >= 0.")
 
     @annotation.tailrec
-    def loop(size: Int, acc: List[T] = Nil): List[T] = {
+    def loop(size: Int, acc: List[T] = Nil): List[T] =
       if (size > maxLength) {
         pollNonBlocking match {
           case None => acc.reverse // someone else cleared us out
@@ -157,7 +160,6 @@ abstract class Queue[T] {
             loop(count.decrementAndGet, item :: acc)
         }
       } else acc.reverse
-    }
     loop(count.get)
   }
 }

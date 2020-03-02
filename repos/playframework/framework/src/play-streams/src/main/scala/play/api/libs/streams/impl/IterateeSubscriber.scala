@@ -36,8 +36,9 @@ private[streams] object IterateeSubscriber {
     * @param result A Promise of the eventual result of this Subscriber.
     */
   case class SubscribedNoStep[T, R](
-      subs: Subscription, result: Promise[Iteratee[T, R]])
-      extends State[T, R]
+      subs: Subscription,
+      result: Promise[Iteratee[T, R]]
+  ) extends State[T, R]
 
   /**
     * A Subscriber that hasn't had onSubscribe called on it yet, but whose
@@ -47,8 +48,9 @@ private[streams] object IterateeSubscriber {
     * @param result A Promise of the eventual result of this Subscriber.
     */
   case class NotSubscribedWithCont[T, R](
-      cont: Step.Cont[T, R], result: Promise[Iteratee[T, R]])
-      extends State[T, R]
+      cont: Step.Cont[T, R],
+      result: Promise[Iteratee[T, R]]
+  ) extends State[T, R]
 
   /**
     * A Subscriber that has had onSubscribe called, has a current Iteratee with
@@ -59,10 +61,11 @@ private[streams] object IterateeSubscriber {
     * @param cont The current Step of the Iteratee.
     * @param result A Promise of the eventual result of this Subscriber.
     */
-  case class SubscribedWithCont[T, R](subs: Subscription,
-                                      cont: Step.Cont[T, R],
-                                      result: Promise[Iteratee[T, R]])
-      extends State[T, R]
+  case class SubscribedWithCont[T, R](
+      subs: Subscription,
+      cont: Step.Cont[T, R],
+      result: Promise[Iteratee[T, R]]
+  ) extends State[T, R]
 
   /**
     * A Subscriber that has been completed with onComplete but whose Iteratee
@@ -87,7 +90,8 @@ import IterateeSubscriber._
 
 private[streams] class IterateeSubscriber[T, R, S](iter0: Iteratee[T, R])
     extends StateMachine[State[T, R]](
-        initialState = NotSubscribedNoStep(Promise[Iteratee[T, R]]()))
+      initialState = NotSubscribedNoStep(Promise[Iteratee[T, R]]())
+    )
     with Subscriber[T] {
 
   // We immediately fold on the iteratee
@@ -175,10 +179,12 @@ private[streams] class IterateeSubscriber[T, R, S](iter0: Iteratee[T, R])
       ()
   }
 
-  private def continueWithNext(subs: Subscription,
-                               cont: Step.Cont[T, R],
-                               element: T,
-                               result: Promise[Iteratee[T, R]]): Unit = {
+  private def continueWithNext(
+      subs: Subscription,
+      cont: Step.Cont[T, R],
+      element: T,
+      result: Promise[Iteratee[T, R]]
+  ): Unit = {
     val nextIteratee = cont.k(Input.El(element))
     getNextStepFromIteratee(nextIteratee)
     state = SubscribedNoStep(subs, result)
@@ -188,7 +194,7 @@ private[streams] class IterateeSubscriber[T, R, S](iter0: Iteratee[T, R])
     * Called when the iteratee folds to a Cont step. We may want to feed
     * an Input to the Iteratee.
     */
-  private def onContStep(cont: Step.Cont[T, R]): Unit = {
+  private def onContStep(cont: Step.Cont[T, R]): Unit =
     exclusive {
       case NotSubscribedNoStep(result) =>
         state = NotSubscribedWithCont(cont, result)
@@ -204,7 +210,6 @@ private[streams] class IterateeSubscriber[T, R, S](iter0: Iteratee[T, R])
       case Finished(resultIteratee) =>
         ()
     }
-  }
 
   /**
     * Called when the iteratee folds to a Done or Error step. We may want to
@@ -230,13 +235,12 @@ private[streams] class IterateeSubscriber[T, R, S](iter0: Iteratee[T, R])
     * Folds an Iteratee to get its Step. The Step is used to choose a method
     * to call.
     */
-  private def getNextStepFromIteratee(iter: Iteratee[T, R]): Unit = {
+  private def getNextStepFromIteratee(iter: Iteratee[T, R]): Unit =
     iter.pureFold {
-      case c @ Step.Cont(_) => onContStep(c)
-      case d @ Step.Done(_, _) => onDoneOrErrorStep(d)
+      case c @ Step.Cont(_)     => onContStep(c)
+      case d @ Step.Done(_, _)  => onDoneOrErrorStep(d)
       case e @ Step.Error(_, _) => onDoneOrErrorStep(e)
     }(Execution.trampoline)
-  }
 
   /** Flattens a Promise[Iteratee] to an Iteratee. */
   private def promiseToIteratee(result: Promise[Iteratee[T, R]]) =
@@ -247,7 +251,9 @@ private[streams] class IterateeSubscriber[T, R, S](iter0: Iteratee[T, R])
     * has been called. This is done by feeding EOF to the Cont Iteratee.
     */
   private def finishWithCompletedCont(
-      cont: Step.Cont[T, R], result: Promise[Iteratee[T, R]]): Unit = {
+      cont: Step.Cont[T, R],
+      result: Promise[Iteratee[T, R]]
+  ): Unit = {
     val nextIteratee = cont.k(Input.EOF)
     result.success(nextIteratee)
     state = Finished(nextIteratee)
@@ -258,7 +264,9 @@ private[streams] class IterateeSubscriber[T, R, S](iter0: Iteratee[T, R])
     * setting the Iteratee Future to an failed state.
     */
   private def finishWithError(
-      cause: Throwable, result: Promise[Iteratee[T, R]]): Unit = {
+      cause: Throwable,
+      result: Promise[Iteratee[T, R]]
+  ): Unit = {
     result.failure(cause)
     state = Finished(promiseToIteratee(result))
   }
@@ -268,7 +276,9 @@ private[streams] class IterateeSubscriber[T, R, S](iter0: Iteratee[T, R])
     * setting the result to the Step's iteratee.
     */
   private def finishWithDoneOrErrorStep(
-      step: Step[T, R], result: Promise[Iteratee[T, R]]): Unit = {
+      step: Step[T, R],
+      result: Promise[Iteratee[T, R]]
+  ): Unit = {
     val nextIteratee = step.it
     result.success(nextIteratee)
     state = Finished(nextIteratee)

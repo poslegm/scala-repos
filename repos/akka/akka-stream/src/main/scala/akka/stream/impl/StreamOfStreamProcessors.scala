@@ -15,18 +15,24 @@ import scala.collection.mutable
 private[akka] object MultiStreamOutputProcessor {
   final case class SubstreamKey(id: Long)
   final case class SubstreamRequestMore(substream: SubstreamKey, demand: Long)
-      extends DeadLetterSuppression with NoSerializationVerificationNeeded
+      extends DeadLetterSuppression
+      with NoSerializationVerificationNeeded
   final case class SubstreamCancel(substream: SubstreamKey)
-      extends DeadLetterSuppression with NoSerializationVerificationNeeded
+      extends DeadLetterSuppression
+      with NoSerializationVerificationNeeded
   final case class SubstreamSubscribe(
-      substream: SubstreamKey, subscriber: Subscriber[Any])
-      extends DeadLetterSuppression with NoSerializationVerificationNeeded
+      substream: SubstreamKey,
+      subscriber: Subscriber[Any]
+  ) extends DeadLetterSuppression
+      with NoSerializationVerificationNeeded
   final case class SubstreamSubscriptionTimeout(substream: SubstreamKey)
-      extends DeadLetterSuppression with NoSerializationVerificationNeeded
+      extends DeadLetterSuppression
+      with NoSerializationVerificationNeeded
 
   class SubstreamSubscription(
-      val parent: ActorRef, val substreamKey: SubstreamKey)
-      extends Subscription {
+      val parent: ActorRef,
+      val substreamKey: SubstreamKey
+  ) extends Subscription {
     override def request(elements: Long): Unit =
       parent ! SubstreamRequestMore(substreamKey, elements)
     override def cancel(): Unit = parent ! SubstreamCancel(substreamKey)
@@ -36,29 +42,32 @@ private[akka] object MultiStreamOutputProcessor {
 
   object SubstreamOutput {
     sealed trait PublisherState
-    sealed trait CompletedState extends PublisherState
-    case object Open extends PublisherState
+    sealed trait CompletedState                     extends PublisherState
+    case object Open                                extends PublisherState
     final case class Attached(sub: Subscriber[Any]) extends PublisherState
-    case object Completed extends CompletedState
-    case object Cancelled extends CompletedState
-    final case class Failed(e: Throwable) extends CompletedState
+    case object Completed                           extends CompletedState
+    case object Cancelled                           extends CompletedState
+    final case class Failed(e: Throwable)           extends CompletedState
   }
 
-  class SubstreamOutput(val key: SubstreamKey,
-                        actor: ActorRef,
-                        pump: Pump,
-                        subscriptionTimeout: Cancellable)
-      extends SimpleOutputs(actor, pump) with Publisher[Any] {
+  class SubstreamOutput(
+      val key: SubstreamKey,
+      actor: ActorRef,
+      pump: Pump,
+      subscriptionTimeout: Cancellable
+  ) extends SimpleOutputs(actor, pump)
+      with Publisher[Any] {
     import ReactiveStreamsCompliance._
 
     import SubstreamOutput._
 
     private val subscription = new SubstreamSubscription(actor, key)
-    private val state = new AtomicReference[PublisherState](Open)
+    private val state        = new AtomicReference[PublisherState](Open)
 
     override def subreceive: SubReceive =
       throw new UnsupportedOperationException(
-          "Substream outputs are managed in a dedicated receive block")
+        "Substream outputs are managed in a dedicated receive block"
+      )
 
     def isAttached = state.get().isInstanceOf[Attached]
 
@@ -67,33 +76,31 @@ private[akka] object MultiStreamOutputProcessor {
       pump.pump()
     }
 
-    override def error(e: Throwable): Unit = {
+    override def error(e: Throwable): Unit =
       if (!downstreamCompleted) {
         closePublisher(Failed(e))
         downstreamCompleted = true
       }
-    }
 
-    override def cancel(): Unit = {
+    override def cancel(): Unit =
       if (!downstreamCompleted) {
         closePublisher(Cancelled)
         downstreamCompleted = true
       }
-    }
 
-    override def complete(): Unit = {
+    override def complete(): Unit =
       if (!downstreamCompleted) {
         closePublisher(Completed)
         downstreamCompleted = true
       }
-    }
 
     private def closePublisher(withState: CompletedState): Unit = {
       subscriptionTimeout.cancel()
       state.getAndSet(withState) match {
         case _: CompletedState ⇒
           throw new IllegalStateException(
-              "Attempted to double shutdown publisher")
+            "Attempted to double shutdown publisher"
+          )
         case Attached(sub) ⇒
           if (subscriber eq null) tryOnSubscribe(sub, CancelledSubscription)
           closeSubscriber(sub, withState)
@@ -102,12 +109,14 @@ private[akka] object MultiStreamOutputProcessor {
     }
 
     private def closeSubscriber(
-        s: Subscriber[Any], withState: CompletedState): Unit =
+        s: Subscriber[Any],
+        withState: CompletedState
+    ): Unit =
       withState match {
-        case Completed ⇒ tryOnComplete(s)
-        case Cancelled ⇒ // nothing to do
+        case Completed                ⇒ tryOnComplete(s)
+        case Cancelled                ⇒ // nothing to do
         case Failed(e: SpecViolation) ⇒ // nothing to do
-        case Failed(e) ⇒ tryOnError(s, e)
+        case Failed(e)                ⇒ tryOnError(s, e)
       }
 
     override def subscribe(s: Subscriber[_ >: Any]): Unit = {
@@ -124,7 +133,8 @@ private[akka] object MultiStreamOutputProcessor {
             closeSubscriber(s, c)
           case Open ⇒
             throw new IllegalStateException(
-                "Publisher cannot become open after being used before")
+              "Publisher cannot become open after being used before"
+            )
         }
       }
     }
@@ -141,7 +151,8 @@ private[akka] object MultiStreamOutputProcessor {
   * INTERNAL API
   */
 private[akka] trait MultiStreamOutputProcessorLike
-    extends Pump with StreamSubscriptionTimeoutSupport {
+    extends Pump
+    with StreamSubscriptionTimeoutSupport {
   this: Actor with ActorLogging ⇒
 
   import MultiStreamOutputProcessor._
@@ -155,8 +166,8 @@ private[akka] trait MultiStreamOutputProcessorLike
 
   protected def createSubstreamOutput(): SubstreamOutput = {
     val id = SubstreamKey(nextId())
-    val cancellable = scheduleSubscriptionTimeout(
-        self, SubstreamSubscriptionTimeout(id))
+    val cancellable =
+      scheduleSubscriptionTimeout(self, SubstreamSubscriptionTimeout(id))
     val output = new SubstreamOutput(id, self, this, cancellable)
     substreamOutputs(output.key) = output
     output
@@ -167,31 +178,27 @@ private[akka] trait MultiStreamOutputProcessorLike
     pump()
   }
 
-  protected def cancelSubstreamOutput(substream: SubstreamKey): Unit = {
+  protected def cancelSubstreamOutput(substream: SubstreamKey): Unit =
     substreamOutputs.get(substream) match {
       case Some(sub) ⇒
         sub.cancel()
         substreamOutputs -= substream
       case _ ⇒ // ignore, already completed...
     }
-  }
 
-  protected def completeSubstreamOutput(substream: SubstreamKey): Unit = {
+  protected def completeSubstreamOutput(substream: SubstreamKey): Unit =
     substreamOutputs.get(substream) match {
       case Some(sub) ⇒
         sub.complete()
         substreamOutputs -= substream
       case _ ⇒ // ignore, already completed...
     }
-  }
 
-  protected def failOutputs(e: Throwable): Unit = {
+  protected def failOutputs(e: Throwable): Unit =
     substreamOutputs.values foreach (_.error(e))
-  }
 
-  protected def finishOutputs(): Unit = {
+  protected def finishOutputs(): Unit =
     substreamOutputs.values foreach (_.complete())
-  }
 
   val outputSubstreamManagement: Receive = {
     case SubstreamRequestMore(key, demand) ⇒
@@ -199,26 +206,29 @@ private[akka] trait MultiStreamOutputProcessorLike
         case Some(sub) ⇒
           if (demand < 1) // According to Reactive Streams Spec 3.9, with non-positive demand must yield onError
             sub.error(
-                ReactiveStreamsCompliance.numberOfElementsInRequestMustBePositiveException)
+              ReactiveStreamsCompliance.numberOfElementsInRequestMustBePositiveException
+            )
           else sub.enqueueOutputDemand(demand)
         case _ ⇒ // ignore...
       }
     case SubstreamSubscribe(key, subscriber) ⇒
       substreamOutputs.get(key) match {
         case Some(sub) ⇒ sub.attachSubscriber(subscriber)
-        case _ ⇒ // ignore...
+        case _         ⇒ // ignore...
       }
     case SubstreamSubscriptionTimeout(key) ⇒
       substreamOutputs.get(key) match {
         case Some(sub) if !sub.isAttached ⇒ subscriptionTimedOut(sub)
-        case _ ⇒ // ignore...
+        case _                            ⇒ // ignore...
       }
     case SubstreamCancel(key) ⇒
       invalidateSubstreamOutput(key)
   }
 
   override protected def handleSubscriptionTimeout(
-      target: Publisher[_], cause: Exception) = target match {
+      target: Publisher[_],
+      cause: Exception
+  ) = target match {
     case s: SubstreamOutput ⇒
       s.error(cause)
       s.attachSubscriber(CancelingSubscriber)
@@ -230,9 +240,10 @@ private[akka] trait MultiStreamOutputProcessorLike
   * INTERNAL API
   */
 private[akka] abstract class MultiStreamOutputProcessor(
-    _settings: ActorMaterializerSettings)
-    extends ActorProcessorImpl(_settings) with MultiStreamOutputProcessorLike {
-  private var _nextId = 0L
+    _settings: ActorMaterializerSettings
+) extends ActorProcessorImpl(_settings)
+    with MultiStreamOutputProcessorLike {
+  private var _nextId          = 0L
   protected def nextId(): Long = { _nextId += 1; _nextId }
 
   override val subscriptionTimeoutSettings =

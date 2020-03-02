@@ -3,24 +3,29 @@ package format
 
 import com.intellij.psi.PsiElement
 import org.jetbrains.plugins.scala.extensions._
-import org.jetbrains.plugins.scala.lang.psi.api.base.{ScInterpolatedStringLiteral, ScLiteral}
+import org.jetbrains.plugins.scala.lang.psi.api.base.{
+  ScInterpolatedStringLiteral,
+  ScLiteral
+}
 import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScExpression, ScInfixExpr}
 import org.jetbrains.plugins.scala.lang.psi.api.statements.ScTypeAlias
 import org.jetbrains.plugins.scala.lang.psi.types.result.TypingContext
-import org.jetbrains.plugins.scala.lang.psi.types.{ScDesignatorType, ScProjectionType}
+import org.jetbrains.plugins.scala.lang.psi.types.{
+  ScDesignatorType,
+  ScProjectionType
+}
 
 /**
   * Pavel Fatin
   */
 object StringConcatenationParser extends StringParser {
-  def parse(element: PsiElement): Option[Seq[StringPart]] = {
+  def parse(element: PsiElement): Option[Seq[StringPart]] =
     Some(element) collect {
       case exp @ ScInfixExpr(left, op, right)
           if op.getText == "+" && isString(exp) =>
         val prefix = parse(left).getOrElse(parseOperand(left))
         prefix ++: parseOperand(right)
     }
-  }
 
   private def parseOperand(exp: ScExpression): Seq[StringPart] = {
     exp match {
@@ -45,7 +50,8 @@ object StringConcatenationParser extends StringParser {
     exp.getType(TypingContext.empty).toOption match {
       case Some(ScDesignatorType(element)) => element.name == "String"
       case Some(
-          ScProjectionType(ScDesignatorType(predef), ta: ScTypeAlias, _)) =>
+          ScProjectionType(ScDesignatorType(predef), ta: ScTypeAlias, _)
+          ) =>
         predef.name == "Predef" && ta.name == "String"
       case _ => false
     }

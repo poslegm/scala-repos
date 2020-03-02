@@ -8,8 +8,8 @@ import com.intellij.openapi.vfs.VirtualFile
   */
 trait CompiledFileAdjuster {
 
-  protected var sourceFileName: String = ""
-  protected var compiled = false
+  protected var sourceFileName: String   = ""
+  protected var compiled                 = false
   protected var virtualFile: VirtualFile = null
 
   private[decompiler] def setSourceFileName(s: String) {

@@ -17,8 +17,11 @@ import scala.language.higherKinds
   *
   *  @since 2.8
   */
-abstract class SortedMapFactory[
-    CC[A, B] <: SortedMap[A, B] with SortedMapLike[A, B, CC[A, B]]] {
+abstract class SortedMapFactory[CC[A, B] <: SortedMap[A, B] with SortedMapLike[
+  A,
+  B,
+  CC[A, B]
+]] {
 
   type Coll = CC[_, _]
 
@@ -33,6 +36,6 @@ abstract class SortedMapFactory[
   class SortedMapCanBuildFrom[A, B](implicit ord: Ordering[A])
       extends CanBuildFrom[Coll, (A, B), CC[A, B]] {
     def apply(from: Coll) = newBuilder[A, B](ord)
-    def apply() = newBuilder[A, B]
+    def apply()           = newBuilder[A, B]
   }
 }

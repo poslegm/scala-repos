@@ -63,7 +63,7 @@ class ConcurrentBijection[A, B] extends MMap[A, B] {
 
   override def size = forward.size
 
-  def get(key: A) = toOpt(forward.get(key))
+  def get(key: A)          = toOpt(forward.get(key))
   def getReverse(value: B) = toOpt(reverse.get(value))
 
   def iterator = forward.entrySet.iterator.map(e => (e.getKey, e.getValue))

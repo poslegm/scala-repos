@@ -23,9 +23,7 @@ package controllers {
     def show(id: Long) = Action {
       Client
         .findById(id)
-        .map { client =>
-          Ok(views.html.Clients.display(client))
-        }
+        .map(client => Ok(views.html.Clients.display(client)))
         .getOrElse(NotFound)
     }
     // #show-client-action
@@ -35,15 +33,15 @@ package controllers {
 
   class Application extends Controller {
     def download(name: String) = Action(Ok("download " + name))
-    def homePage() = Action(Ok("home page"))
+    def homePage()             = Action(Ok("home page"))
 
     def loadContentFromDatabase(page: String) = Some("showing page " + page)
 
     // #show-page-action
     def show(page: String) = Action {
-      loadContentFromDatabase(page).map { htmlContent =>
-        Ok(htmlContent).as("text/html")
-      }.getOrElse(NotFound)
+      loadContentFromDatabase(page)
+        .map(htmlContent => Ok(htmlContent).as("text/html"))
+        .getOrElse(NotFound)
     }
     // #show-page-action
   }
@@ -120,8 +118,10 @@ object ScalaRoutingSpec extends Specification {
     }
     "support default values for parameters" in {
       contentOf(FakeRequest("GET", "/clients"), classOf[defaultvalue.Routes]) must_== "clients page 1"
-      contentOf(FakeRequest("GET", "/clients?page=2"),
-                classOf[defaultvalue.Routes]) must_== "clients page 2"
+      contentOf(
+        FakeRequest("GET", "/clients?page=2"),
+        classOf[defaultvalue.Routes]
+      ) must_== "clients page 2"
     }
     "support optional values for parameters" in {
       contentOf(FakeRequest("GET", "/api/list-all")) must_== "version None"
@@ -142,12 +142,13 @@ object ScalaRoutingSpec extends Specification {
   }
 
   def contentOf(
-      rh: RequestHeader, router: Class[_ <: Router] = classOf[Routes]) = {
+      rh: RequestHeader,
+      router: Class[_ <: Router] = classOf[Routes]
+  ) =
     running() { app =>
       implicit val mat = ActorMaterializer()(app.actorSystem)
       contentAsString(app.injector.instanceOf(router).routes(rh) match {
         case e: EssentialAction => e(rh).run()
       })
     }
-  }
 }

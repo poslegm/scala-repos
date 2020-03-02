@@ -13,7 +13,8 @@ class UdpConnectedIntegrationSpec
     extends AkkaSpec("""
     akka.loglevel = INFO
     akka.actor.serialize-creators = on
-    """) with ImplicitSender {
+    """)
+    with ImplicitSender {
 
   val addresses = temporaryServerAddresses(3, udp = true)
 
@@ -24,13 +25,16 @@ class UdpConnectedIntegrationSpec
     commander.sender()
   }
 
-  def connectUdp(localAddress: Option[InetSocketAddress],
-                 remoteAddress: InetSocketAddress,
-                 handler: ActorRef): ActorRef = {
+  def connectUdp(
+      localAddress: Option[InetSocketAddress],
+      remoteAddress: InetSocketAddress,
+      handler: ActorRef
+  ): ActorRef = {
     val commander = TestProbe()
     commander.send(
-        IO(UdpConnected),
-        UdpConnected.Connect(handler, remoteAddress, localAddress, Nil))
+      IO(UdpConnected),
+      UdpConnected.Connect(handler, remoteAddress, localAddress, Nil)
+    )
     commander.expectMsg(UdpConnected.Connected)
     commander.sender()
   }
@@ -39,9 +43,9 @@ class UdpConnectedIntegrationSpec
 
     "be able to send and receive without binding" in {
       val serverAddress = addresses(0)
-      val server = bindUdp(serverAddress, testActor)
-      val data1 = ByteString("To infinity and beyond!")
-      val data2 = ByteString("All your datagram belong to us")
+      val server        = bindUdp(serverAddress, testActor)
+      val data1         = ByteString("To infinity and beyond!")
+      val data2         = ByteString("All your datagram belong to us")
       connectUdp(localAddress = None, serverAddress, testActor) ! UdpConnected
         .Send(data1)
 
@@ -59,9 +63,9 @@ class UdpConnectedIntegrationSpec
     "be able to send and receive with binding" in {
       val serverAddress = addresses(1)
       val clientAddress = addresses(2)
-      val server = bindUdp(serverAddress, testActor)
-      val data1 = ByteString("To infinity and beyond!")
-      val data2 = ByteString("All your datagram belong to us")
+      val server        = bindUdp(serverAddress, testActor)
+      val data1         = ByteString("To infinity and beyond!")
+      val data2         = ByteString("All your datagram belong to us")
       connectUdp(Some(clientAddress), serverAddress, testActor) ! UdpConnected
         .Send(data1)
 

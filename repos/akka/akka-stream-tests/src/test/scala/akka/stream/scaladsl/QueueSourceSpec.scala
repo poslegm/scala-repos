@@ -21,12 +21,11 @@ import akka.stream.testkit.scaladsl.TestSink
 
 class QueueSourceSpec extends AkkaSpec {
   implicit val materializer = ActorMaterializer()
-  implicit val ec = system.dispatcher
-  val pause = 300.millis
+  implicit val ec           = system.dispatcher
+  val pause                 = 300.millis
 
-  def assertSuccess(f: Future[QueueOfferResult]): Unit = {
+  def assertSuccess(f: Future[QueueOfferResult]): Unit =
     f.futureValue should ===(QueueOfferResult.Enqueued)
-  }
 
   "A QueueSource" must {
 
@@ -52,7 +51,7 @@ class QueueSourceSpec extends AkkaSpec {
 
     "be reusable" in {
       val source = Source.queue(0, OverflowStrategy.backpressure)
-      val q1 = source.to(Sink.ignore).run()
+      val q1     = source.to(Sink.ignore).run()
       q1.complete()
       q1.watchCompletion().futureValue should ===(Done)
       val q2 = source.to(Sink.ignore).run()
@@ -64,7 +63,7 @@ class QueueSourceSpec extends AkkaSpec {
         .queue[Int](0, OverflowStrategy.backpressure)
         .toMat(TestSink.probe)(Keep.both)
         .run()
-      val f = source.offer(42)
+      val f  = source.offer(42)
       val ex = source.offer(43).failed.futureValue
       ex shouldBe a[IllegalStateException]
       ex.getMessage should include("have to wait")
@@ -149,11 +148,13 @@ class QueueSourceSpec extends AkkaSpec {
     }
 
     "remember pull from downstream to send offered element immediately" in assertAllStagesStopped {
-      val s = TestSubscriber.manualProbe[Int]()
+      val s     = TestSubscriber.manualProbe[Int]()
       val probe = TestProbe()
       val queue =
-        TestSourceStage(new QueueSource[Int](1, OverflowStrategy.dropHead),
-                        probe).to(Sink.fromSubscriber(s)).run()
+        TestSourceStage(
+          new QueueSource[Int](1, OverflowStrategy.dropHead),
+          probe
+        ).to(Sink.fromSubscriber(s)).run()
       val sub = s.expectSubscription
 
       sub.request(1)
@@ -188,7 +189,9 @@ class QueueSourceSpec extends AkkaSpec {
       val queue =
         Source.queue(1, OverflowStrategy.fail).to(Sink.fromSubscriber(s)).run()
       queue.watchCompletion().pipeTo(testActor)
-      queue.offer(1) //need to wait when first offer is done as initialization can be done in this moment
+      queue.offer(
+        1
+      ) //need to wait when first offer is done as initialization can be done in this moment
       queue.offer(2)
       expectMsgClass(classOf[Status.Failure])
     }
@@ -253,8 +256,8 @@ class QueueSourceSpec extends AkkaSpec {
 
       val mat1subscriber = TestSubscriber.probe[String]()
       val mat2subscriber = TestSubscriber.probe[String]()
-      val sourceQueue1 = source.to(Sink.fromSubscriber(mat1subscriber)).run()
-      val sourceQueue2 = source.to(Sink.fromSubscriber(mat2subscriber)).run()
+      val sourceQueue1   = source.to(Sink.fromSubscriber(mat1subscriber)).run()
+      val sourceQueue2   = source.to(Sink.fromSubscriber(mat2subscriber)).run()
 
       mat1subscriber.ensureSubscription()
       mat2subscriber.ensureSubscription()

@@ -5,7 +5,10 @@ import java.util
 
 import com.intellij.refactoring.classMembers.MemberInfoModel
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.ScMember
-import org.jetbrains.plugins.scala.lang.refactoring.ui.{ScalaMemberSelectionPanelBase, ScalaMemberSelectionTableBase}
+import org.jetbrains.plugins.scala.lang.refactoring.ui.{
+  ScalaMemberSelectionPanelBase,
+  ScalaMemberSelectionTableBase
+}
 
 /**
   * Nikolay.Tropin
@@ -14,21 +17,30 @@ import org.jetbrains.plugins.scala.lang.refactoring.ui.{ScalaMemberSelectionPane
 class ScalaExtractMembersSelectionPanel(
     title: String,
     memberInfo: util.List[ScalaExtractMemberInfo],
-    abstractColumnHeader: String)
-    extends ScalaMemberSelectionPanelBase[ScMember, ScalaExtractMemberInfo](
-        title, memberInfo, abstractColumnHeader) {
+    abstractColumnHeader: String
+) extends ScalaMemberSelectionPanelBase[ScMember, ScalaExtractMemberInfo](
+      title,
+      memberInfo,
+      abstractColumnHeader
+    ) {
 
   override def createMemberSelectionTable(
       memberInfos: util.List[ScalaExtractMemberInfo],
-      abstractColumnHeader: String) = {
+      abstractColumnHeader: String
+  ) =
     new ScalaExtractMemberSelectionTable(
-        memberInfos, ExtractTraitInfoModel, abstractColumnHeader)
-  }
+      memberInfos,
+      ExtractTraitInfoModel,
+      abstractColumnHeader
+    )
 }
 
 class ScalaExtractMemberSelectionTable(
     memberInfos: util.Collection[ScalaExtractMemberInfo],
     memberInfoModel: MemberInfoModel[ScMember, ScalaExtractMemberInfo],
-    abstractColumnHeader: String)
-    extends ScalaMemberSelectionTableBase[ScMember, ScalaExtractMemberInfo](
-        memberInfos, memberInfoModel, abstractColumnHeader) {}
+    abstractColumnHeader: String
+) extends ScalaMemberSelectionTableBase[ScMember, ScalaExtractMemberInfo](
+      memberInfos,
+      memberInfoModel,
+      abstractColumnHeader
+    ) {}

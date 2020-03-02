@@ -39,7 +39,7 @@ class MapToSetAdapter[A](map: Map[A, A]) extends Set[A] {
     map -= elem
     this
   }
-  override def size = map.size
-  def iterator = map.keysIterator
+  override def size     = map.size
+  def iterator          = map.keysIterator
   def contains(elem: A) = map.contains(elem)
 }

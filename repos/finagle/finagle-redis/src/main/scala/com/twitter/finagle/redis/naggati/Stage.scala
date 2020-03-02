@@ -25,9 +25,9 @@ import org.jboss.netty.buffer.ChannelBuffer
   * - Emit(obj): Complete protocol object decoded; return to the first stage and start a new object.
   */
 sealed trait NextStep
-case object Incomplete extends NextStep
+case object Incomplete             extends NextStep
 case class GoToStage(stage: Stage) extends NextStep
-case class Emit(obj: AnyRef) extends NextStep
+case class Emit(obj: AnyRef)       extends NextStep
 
 /**
   * A decoder stage.

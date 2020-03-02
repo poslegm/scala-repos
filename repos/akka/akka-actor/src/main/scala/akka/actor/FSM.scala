@@ -22,7 +22,7 @@ object FSM {
     */
   object NullFunction extends PartialFunction[Any, Nothing] {
     def isDefinedAt(o: Any) = false
-    def apply(o: Any) = sys.error("undefined")
+    def apply(o: Any)       = sys.error("undefined")
   }
 
   /**
@@ -89,16 +89,21 @@ object FSM {
     */
   // FIXME: what about the cancellable?
   private[akka] final case class Timer(
-      name: String, msg: Any, repeat: Boolean, generation: Int)(
-      context: ActorContext)
+      name: String,
+      msg: Any,
+      repeat: Boolean,
+      generation: Int
+  )(context: ActorContext)
       extends NoSerializationVerificationNeeded {
-    private var ref: Option[Cancellable] = _
-    private val scheduler = context.system.scheduler
+    private var ref: Option[Cancellable]  = _
+    private val scheduler                 = context.system.scheduler
     private implicit val executionContext = context.dispatcher
 
     def schedule(actor: ActorRef, timeout: FiniteDuration): Unit =
-      ref = Some(if (repeat) scheduler.schedule(timeout, timeout, actor, this)
-          else scheduler.scheduleOnce(timeout, actor, this))
+      ref = Some(
+        if (repeat) scheduler.schedule(timeout, timeout, actor, this)
+        else scheduler.scheduleOnce(timeout, actor, this)
+      )
 
     def cancel(): Unit =
       if (ref.isDefined) {
@@ -127,26 +132,33 @@ object FSM {
     * INTERNAL API
     * Using a subclass for binary compatibility reasons
     */
-  private[akka] class SilentState[S, D](_stateName: S,
-                                        _stateData: D,
-                                        _timeout: Option[FiniteDuration],
-                                        _stopReason: Option[Reason],
-                                        _replies: List[Any])
-      extends State[S, D](
-          _stateName, _stateData, _timeout, _stopReason, _replies) {
+  private[akka] class SilentState[S, D](
+      _stateName: S,
+      _stateData: D,
+      _timeout: Option[FiniteDuration],
+      _stopReason: Option[Reason],
+      _replies: List[Any]
+  ) extends State[S, D](
+        _stateName,
+        _stateData,
+        _timeout,
+        _stopReason,
+        _replies
+      ) {
 
     /**
       * INTERNAL API
       */
     private[akka] override def notifies: Boolean = false
 
-    override def copy(stateName: S = stateName,
-                      stateData: D = stateData,
-                      timeout: Option[FiniteDuration] = timeout,
-                      stopReason: Option[Reason] = stopReason,
-                      replies: List[Any] = replies): State[S, D] = {
+    override def copy(
+        stateName: S = stateName,
+        stateData: D = stateData,
+        timeout: Option[FiniteDuration] = timeout,
+        stopReason: Option[Reason] = stopReason,
+        replies: List[Any] = replies
+    ): State[S, D] =
       new SilentState(stateName, stateData, timeout, stopReason, replies)
-    }
   }
 
   /**
@@ -154,11 +166,13 @@ object FSM {
     * name, the state data, possibly custom timeout, stop reason and replies
     * accumulated while processing the last message.
     */
-  case class State[S, D](stateName: S,
-                         stateData: D,
-                         timeout: Option[FiniteDuration] = None,
-                         stopReason: Option[Reason] = None,
-                         replies: List[Any] = Nil) {
+  case class State[S, D](
+      stateName: S,
+      stateData: D,
+      timeout: Option[FiniteDuration] = None,
+      stopReason: Option[Reason] = None,
+      replies: List[Any] = Nil
+  ) {
 
     /**
       * INTERNAL API
@@ -166,13 +180,14 @@ object FSM {
     private[akka] def notifies: Boolean = true
 
     // defined here to be able to override it in SilentState
-    def copy(stateName: S = stateName,
-             stateData: D = stateData,
-             timeout: Option[FiniteDuration] = timeout,
-             stopReason: Option[Reason] = stopReason,
-             replies: List[Any] = replies): State[S, D] = {
+    def copy(
+        stateName: S = stateName,
+        stateData: D = stateData,
+        timeout: Option[FiniteDuration] = timeout,
+        stopReason: Option[Reason] = stopReason,
+        replies: List[Any] = replies
+    ): State[S, D] =
       new State(stateName, stateData, timeout, stopReason, replies)
-    }
 
     /**
       * Modify state transition descriptor to include a state timeout for the
@@ -184,10 +199,14 @@ object FSM {
     def forMax(timeout: Duration): State[S, D] = timeout match {
       case f: FiniteDuration ⇒ copy(timeout = Some(f))
       case Duration.Inf ⇒
-        copy(timeout = SomeMaxFiniteDuration) // we map the Infinite duration to a special marker,
+        copy(timeout =
+          SomeMaxFiniteDuration
+        ) // we map the Infinite duration to a special marker,
       case _ ⇒
-        copy(timeout = None) // that means "cancel stateTimeout". This marker is needed
-    } // so we do not have to break source/binary compat.
+        copy(timeout =
+          None
+        ) // that means "cancel stateTimeout". This marker is needed
+    }     // so we do not have to break source/binary compat.
     // TODO: Can be removed once we can break State#timeout signature to `Option[Duration]`
 
     /**
@@ -195,32 +214,28 @@ object FSM {
       *
       * @return this state transition descriptor
       */
-    def replying(replyValue: Any): State[S, D] = {
+    def replying(replyValue: Any): State[S, D] =
       copy(replies = replyValue :: replies)
-    }
 
     /**
       * Modify state transition descriptor with new state data. The data will be
       * set when transitioning to the new state.
       */
-    def using(@deprecatedName('nextStateDate) nextStateData: D): State[S, D] = {
+    def using(@deprecatedName('nextStateDate) nextStateData: D): State[S, D] =
       copy(stateData = nextStateData)
-    }
 
     /**
       * INTERNAL API.
       */
-    private[akka] def withStopReason(reason: Reason): State[S, D] = {
+    private[akka] def withStopReason(reason: Reason): State[S, D] =
       copy(stopReason = Some(reason))
-    }
 
     /**
       * INTERNAL API.
       */
-    private[akka] def withNotification(notifies: Boolean): State[S, D] = {
+    private[akka] def withNotification(notifies: Boolean): State[S, D] =
       if (notifies) State(stateName, stateData, timeout, stopReason, replies)
       else new SilentState(stateName, stateData, timeout, stopReason, replies)
-    }
   }
 
   /**
@@ -235,8 +250,10 @@ object FSM {
     * `onTermination` block.
     */
   final case class StopEvent[S, D](
-      reason: Reason, currentState: S, stateData: D)
-      extends NoSerializationVerificationNeeded
+      reason: Reason,
+      currentState: S,
+      stateData: D
+  ) extends NoSerializationVerificationNeeded
 }
 
 /**
@@ -322,17 +339,17 @@ trait FSM[S, D] extends Actor with Listeners with ActorLogging {
 
   import FSM._
 
-  type State = FSM.State[S, D]
-  type Event = FSM.Event[D]
-  type StopEvent = FSM.StopEvent[S, D]
-  type StateFunction = scala.PartialFunction[Event, State]
-  type Timeout = Option[FiniteDuration]
+  type State             = FSM.State[S, D]
+  type Event             = FSM.Event[D]
+  type StopEvent         = FSM.StopEvent[S, D]
+  type StateFunction     = scala.PartialFunction[Event, State]
+  type Timeout           = Option[FiniteDuration]
   type TransitionHandler = PartialFunction[(S, S), Unit]
 
   /*
    * “import” so that these are visible without an import
    */
-  val Event: FSM.Event.type = FSM.Event
+  val Event: FSM.Event.type         = FSM.Event
   val StopEvent: FSM.StopEvent.type = FSM.StopEvent
 
   /**
@@ -362,7 +379,8 @@ trait FSM[S, D] extends Actor with Listeners with ActorLogging {
     * @param stateFunction partial function describing response to input
     */
   final def when(stateName: S, stateTimeout: FiniteDuration = null)(
-      stateFunction: StateFunction): Unit =
+      stateFunction: StateFunction
+  ): Unit =
     register(stateName, stateFunction, Option(stateTimeout))
 
   /**
@@ -375,7 +393,10 @@ trait FSM[S, D] extends Actor with Listeners with ActorLogging {
     * @param timeout state timeout for the initial state, overriding the default timeout for that state
     */
   final def startWith(
-      stateName: S, stateData: D, timeout: Timeout = None): Unit =
+      stateName: S,
+      stateData: D,
+      timeout: Timeout = None
+  ): Unit =
     currentState = FSM.State(stateName, stateData, timeout)
 
   /**
@@ -401,7 +422,9 @@ trait FSM[S, D] extends Actor with Listeners with ActorLogging {
     * @return descriptor for staying in current state
     */
   final def stay(): State =
-    goto(currentState.stateName).withNotification(false) // cannot directly use currentState because of the timeout field
+    goto(currentState.stateName).withNotification(
+      false
+    ) // cannot directly use currentState because of the timeout field
 
   /**
     * Produce change descriptor to stop this FSM actor with reason "Normal".
@@ -436,13 +459,17 @@ trait FSM[S, D] extends Actor with Listeners with ActorLogging {
     * @param timeout delay of first message delivery and between subsequent messages
     * @param repeat send once if false, scheduleAtFixedRate if true
     */
-  final def setTimer(name: String,
-                     msg: Any,
-                     timeout: FiniteDuration,
-                     repeat: Boolean = false): Unit = {
+  final def setTimer(
+      name: String,
+      msg: Any,
+      timeout: FiniteDuration,
+      repeat: Boolean = false
+  ): Unit = {
     if (debugEvent)
-      log.debug("setting " + (if (repeat) "repeating " else "") + "timer '" +
-          name + "'/" + timeout + ": " + msg)
+      log.debug(
+        "setting " + (if (repeat) "repeating " else "") + "timer '" +
+          name + "'/" + timeout + ": " + msg
+      )
     if (timers contains name) {
       timers(name).cancel
     }
@@ -515,7 +542,8 @@ trait FSM[S, D] extends Actor with Listeners with ActorLogging {
     * function literal. To be used with onTransition.
     */
   implicit final def total2pf(
-      transitionHandler: (S, S) ⇒ Unit): TransitionHandler =
+      transitionHandler: (S, S) ⇒ Unit
+  ): TransitionHandler =
     new TransitionHandler {
       def isDefinedAt(in: (S, S)) = true
       def apply(in: (S, S)) { transitionHandler(in._1, in._2) }
@@ -526,7 +554,8 @@ trait FSM[S, D] extends Actor with Listeners with ActorLogging {
     * this method again will overwrite the previous contents.
     */
   final def onTermination(
-      terminationHandler: PartialFunction[StopEvent, Unit]): Unit =
+      terminationHandler: PartialFunction[StopEvent, Unit]
+  ): Unit =
     terminateEvent = terminationHandler
 
   /**
@@ -565,7 +594,8 @@ trait FSM[S, D] extends Actor with Listeners with ActorLogging {
   final def nextStateData = nextState match {
     case null ⇒
       throw new IllegalStateException(
-          "nextStateData is only available during onTransition")
+        "nextStateData is only available during onTransition"
+      )
     case x ⇒ x.stateData
   }
 
@@ -580,25 +610,28 @@ trait FSM[S, D] extends Actor with Listeners with ActorLogging {
   /*
    * FSM State data and current timeout handling
    */
-  private var currentState: State = _
+  private var currentState: State                = _
   private var timeoutFuture: Option[Cancellable] = None
-  private var nextState: State = _
-  private var generation: Long = 0L
+  private var nextState: State                   = _
+  private var generation: Long                   = 0L
 
   /*
    * Timer handling
    */
-  private val timers = mutable.Map[String, Timer]()
+  private val timers   = mutable.Map[String, Timer]()
   private val timerGen = Iterator from 0
 
   /*
    * State definitions
    */
   private val stateFunctions = mutable.Map[S, StateFunction]()
-  private val stateTimeouts = mutable.Map[S, Timeout]()
+  private val stateTimeouts  = mutable.Map[S, Timeout]()
 
   private def register(
-      name: S, function: StateFunction, timeout: Timeout): Unit = {
+      name: S,
+      function: StateFunction,
+      timeout: Timeout
+  ): Unit =
     if (stateFunctions contains name) {
       stateFunctions(name) = stateFunctions(name) orElse function
       stateTimeouts(name) = timeout orElse stateTimeouts(name)
@@ -606,7 +639,6 @@ trait FSM[S, D] extends Actor with Listeners with ActorLogging {
       stateFunctions(name) = function
       stateTimeouts(name) = timeout
     }
-  }
 
   /*
    * unhandled event handler
@@ -669,13 +701,13 @@ trait FSM[S, D] extends Actor with Listeners with ActorLogging {
     case Deafen(actorRef) ⇒
       listeners.remove(actorRef)
     case value ⇒ {
-        if (timeoutFuture.isDefined) {
-          timeoutFuture.get.cancel()
-          timeoutFuture = None
-        }
-        generation += 1
-        processMsg(value, sender())
+      if (timeoutFuture.isDefined) {
+        timeoutFuture.get.cancel()
+        timeoutFuture = None
       }
+      generation += 1
+      processMsg(value, sender())
+    }
   }
 
   private def processMsg(value: Any, source: AnyRef): Unit = {
@@ -695,27 +727,24 @@ trait FSM[S, D] extends Actor with Listeners with ActorLogging {
     applyState(nextState)
   }
 
-  private[akka] def applyState(nextState: State): Unit = {
+  private[akka] def applyState(nextState: State): Unit =
     nextState.stopReason match {
       case None ⇒ makeTransition(nextState)
       case _ ⇒
-        nextState.replies.reverse foreach { r ⇒
-          sender() ! r
-        }
+        nextState.replies.reverse foreach { r ⇒ sender() ! r }
         terminate(nextState)
         context.stop(self)
     }
-  }
 
-  private[akka] def makeTransition(nextState: State): Unit = {
+  private[akka] def makeTransition(nextState: State): Unit =
     if (!stateFunctions.contains(nextState.stateName)) {
       terminate(
-          stay withStopReason Failure(
-              "Next state %s does not exist".format(nextState.stateName)))
+        stay withStopReason Failure(
+          "Next state %s does not exist".format(nextState.stateName)
+        )
+      )
     } else {
-      nextState.replies.reverse foreach { r ⇒
-        sender() ! r
-      }
+      nextState.replies.reverse foreach { r ⇒ sender() ! r }
       if (currentState.stateName != nextState.stateName ||
           nextState.notifies) {
         this.nextState = nextState
@@ -727,8 +756,10 @@ trait FSM[S, D] extends Actor with Listeners with ActorLogging {
 
       def scheduleTimeout(d: FiniteDuration): Some[Cancellable] = {
         import context.dispatcher
-        Some(context.system.scheduler
-              .scheduleOnce(d, self, TimeoutMarker(generation)))
+        Some(
+          context.system.scheduler
+            .scheduleOnce(d, self, TimeoutMarker(generation))
+        )
       }
 
       currentState.timeout match {
@@ -740,7 +771,6 @@ trait FSM[S, D] extends Actor with Listeners with ActorLogging {
           if (timeout.isDefined) timeoutFuture = scheduleTimeout(timeout.get)
       }
     }
-  }
 
   /**
     * Call `onTermination` hook; if you want to retain this behavior when
@@ -759,20 +789,19 @@ trait FSM[S, D] extends Actor with Listeners with ActorLogging {
     super.postStop()
   }
 
-  private def terminate(nextState: State): Unit = {
+  private def terminate(nextState: State): Unit =
     if (currentState.stopReason.isEmpty) {
       val reason = nextState.stopReason.get
       logTermination(reason)
       for (timer ← timers.values) timer.cancel()
       timers.clear()
-      timeoutFuture.foreach { _.cancel() }
+      timeoutFuture.foreach(_.cancel())
       currentState = nextState
 
-      val stopEvent = StopEvent(
-          reason, currentState.stateName, currentState.stateData)
+      val stopEvent =
+        StopEvent(reason, currentState.stateName, currentState.stateData)
       if (terminateEvent.isDefinedAt(stopEvent)) terminateEvent(stopEvent)
     }
-  }
 
   /**
     * By default [[FSM.Failure]] is logged at error level and other reason
@@ -780,8 +809,8 @@ trait FSM[S, D] extends Actor with Listeners with ActorLogging {
     */
   protected def logTermination(reason: Reason): Unit = reason match {
     case Failure(ex: Throwable) ⇒ log.error(ex, "terminating due to Failure")
-    case Failure(msg: AnyRef) ⇒ log.error(msg.toString)
-    case _ ⇒
+    case Failure(msg: AnyRef)   ⇒ log.error(msg.toString)
+    case _                      ⇒
   }
 }
 
@@ -802,8 +831,8 @@ trait LoggingFSM[S, D] extends FSM[S, D] {
 
   private val events = new Array[Event](logDepth)
   private val states = new Array[AnyRef](logDepth)
-  private var pos = 0
-  private var full = false
+  private var pos    = 0
+  private var full   = false
 
   private def advance() {
     val n = pos + 1
@@ -816,13 +845,15 @@ trait LoggingFSM[S, D] extends FSM[S, D] {
   }
 
   private[akka] abstract override def processEvent(
-      event: Event, source: AnyRef): Unit = {
+      event: Event,
+      source: AnyRef
+  ): Unit = {
     if (debugEvent) {
       val srcstr = source match {
-        case s: String ⇒ s
+        case s: String            ⇒ s
         case Timer(name, _, _, _) ⇒ "timer " + name
-        case a: ActorRef ⇒ a.toString
-        case _ ⇒ "unknown"
+        case a: ActorRef          ⇒ a.toString
+        case _                    ⇒ "unknown"
       }
       log.debug("processing " + event + " from " + srcstr)
     }
@@ -849,7 +880,7 @@ trait LoggingFSM[S, D] extends FSM[S, D] {
   protected def getLog: IndexedSeq[LogEntry[S, D]] = {
     val log =
       events zip states filter (_._1 ne null) map
-      (x ⇒ LogEntry(x._2.asInstanceOf[S], x._1.stateData, x._1.event))
+        (x ⇒ LogEntry(x._2.asInstanceOf[S], x._1.stateData, x._1.event))
     if (full) {
       IndexedSeq() ++ log.drop(pos) ++ log.take(pos)
     } else {

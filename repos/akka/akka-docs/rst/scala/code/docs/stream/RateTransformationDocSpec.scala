@@ -24,9 +24,9 @@ class RateTransformationDocSpec extends AkkaSpec {
   "conflate should summarize" in {
     //#conflate-summarize
     val statsFlow = Flow[Double].conflateWithSeed(Seq(_))(_ :+ _).map { s =>
-      val μ = s.sum / s.size
+      val μ  = s.sum / s.size
       val se = s.map(x => pow(x - μ, 2))
-      val σ = sqrt(se.sum / se.size)
+      val σ  = sqrt(se.sum / se.size)
       (σ, μ, s.size)
     }
     //#conflate-summarize
@@ -46,7 +46,7 @@ class RateTransformationDocSpec extends AkkaSpec {
     val sampleFlow = Flow[Double]
       .conflateWithSeed(Seq(_)) {
         case (acc, elem) if Random.nextDouble < p => acc :+ elem
-        case (acc, _) => acc
+        case (acc, _)                             => acc
       }
       .mapConcat(identity)
     //#conflate-sample
@@ -82,8 +82,9 @@ class RateTransformationDocSpec extends AkkaSpec {
     val driftFlow = Flow[Double].expand(i => Iterator.from(0).map(i -> _))
     //#expand-drift
     val latch = TestLatch(2)
-    val realDriftFlow = Flow[Double].expand(
-        d => { latch.countDown(); Iterator.from(0).map(d -> _) })
+    val realDriftFlow = Flow[Double].expand { d =>
+      latch.countDown(); Iterator.from(0).map(d -> _)
+    }
 
     val (pub, sub) = TestSource
       .probe[Double]

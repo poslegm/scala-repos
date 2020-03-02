@@ -19,7 +19,10 @@ import com.intellij.openapi.components._
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiNamedElement
 import org.jetbrains.plugins.scala.lang.psi.api.macros.impl._
-import org.jetbrains.plugins.scala.lang.psi.api.statements.{ScFunction, ScMacroDefinition}
+import org.jetbrains.plugins.scala.lang.psi.api.statements.{
+  ScFunction,
+  ScMacroDefinition
+}
 import org.jetbrains.plugins.scala.lang.psi.types.ScType
 
 /**
@@ -27,7 +30,8 @@ import org.jetbrains.plugins.scala.lang.psi.types.ScType
   * date 19.12.14
   */
 class ScalaMacroEvaluator(project: Project)
-    extends ProjectComponent with ScalaMacroTypeable {
+    extends ProjectComponent
+    with ScalaMacroTypeable {
 
   override def projectOpened() = ()
 
@@ -40,12 +44,12 @@ class ScalaMacroEvaluator(project: Project)
   override def getComponentName = "ScalaMacroEvaluator"
 
   lazy val typingRules = Seq(
-      MatchRule("product", "shapeless.Generic", ShapelessForProduct),
-      MatchRule("apply", "shapeless.LowPriorityGeneric", ShapelessForProduct),
-      DefaultRule
+    MatchRule("product", "shapeless.Generic", ShapelessForProduct),
+    MatchRule("apply", "shapeless.LowPriorityGeneric", ShapelessForProduct),
+    DefaultRule
   )
 
-  def isMacro(n: PsiNamedElement): Option[ScFunction] = {
+  def isMacro(n: PsiNamedElement): Option[ScFunction] =
     n match {
       case f: ScMacroDefinition => Some(f)
       //todo: fix decompiler to avoid this check:
@@ -56,16 +60,16 @@ class ScalaMacroEvaluator(project: Project)
         Some(f)
       case _ => None
     }
-  }
 
   override def checkMacro(
-      macros: ScFunction, context: MacroContext): Option[ScType] = {
+      macros: ScFunction,
+      context: MacroContext
+  ): Option[ScType] =
     typingRules
       .filter(_.isApplicable(macros))
       .head
       .typeable
       .checkMacro(macros, context)
-  }
 }
 
 object ScalaMacroEvaluator {
@@ -80,9 +84,8 @@ trait MacroRule {
 
 case class MatchRule(name: String, clazz: String, typeable: ScalaMacroTypeable)
     extends MacroRule {
-  def isApplicable(fun: ScFunction) = {
+  def isApplicable(fun: ScFunction) =
     fun.name == name && fun.containingClass.qualifiedName == clazz
-  }
 }
 
 object DefaultRule extends MacroRule {

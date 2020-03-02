@@ -9,11 +9,10 @@ import scala.collection._
 object TestMemcachedServer {
   def start(): Option[TestMemcachedServer] = start(None)
 
-  def start(address: Option[InetSocketAddress]): Option[TestMemcachedServer] = {
+  def start(address: Option[InetSocketAddress]): Option[TestMemcachedServer] =
     if (!Option(System.getProperty("USE_EXTERNAL_MEMCACHED")).isDefined)
       InternalMemcached.start(address)
     else ExternalMemcached.start(address)
-  }
 }
 
 trait TestMemcachedServer {
@@ -22,14 +21,14 @@ trait TestMemcachedServer {
 }
 
 private[memcached] object InternalMemcached {
-  def start(address: Option[InetSocketAddress]): Option[TestMemcachedServer] = {
+  def start(address: Option[InetSocketAddress]): Option[TestMemcachedServer] =
     try {
       val server = new InProcessMemcached(
-          address.getOrElse(
-              new InetSocketAddress(InetAddress.getLoopbackAddress, 0))
+        address.getOrElse(
+          new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
+        )
       )
-      Some(
-          new TestMemcachedServer {
+      Some(new TestMemcachedServer {
         val address =
           server.start().boundAddress.asInstanceOf[InetSocketAddress]
         def stop() { server.stop(true) }
@@ -37,19 +36,18 @@ private[memcached] object InternalMemcached {
     } catch {
       case NonFatal(_) => None
     }
-  }
 }
 
 private[memcached] object ExternalMemcached { self =>
   class MemcachedBinaryNotFound extends Exception
   private[this] var processes: List[Process] = List()
-  private[this] val forbiddenPorts = 11000.until(11900)
-  private[this] var takenPorts: Set[Int] = Set[Int]()
+  private[this] val forbiddenPorts           = 11000.until(11900)
+  private[this] var takenPorts: Set[Int]     = Set[Int]()
   // prevent us from taking a port that is anything close to a real memcached port.
 
   private[this] def findAddress() = {
     var address: Option[InetSocketAddress] = None
-    var tries = 100
+    var tries                              = 100
     while (address == None && tries >= 0) {
       address = Some(RandomSocket.nextAddress())
       if (forbiddenPorts.contains(address.get.getPort) ||
@@ -64,7 +62,7 @@ private[memcached] object ExternalMemcached { self =>
 
     takenPorts += address
       .getOrElse(
-          new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
+        new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
       )
       .getPort
     address
@@ -76,11 +74,13 @@ private[memcached] object ExternalMemcached { self =>
 
   def start(address: Option[InetSocketAddress]): Option[TestMemcachedServer] = {
     def exec(address: InetSocketAddress): Process = {
-      val cmd = Seq("memcached",
-                    "-l",
-                    address.getHostName,
-                    "-p",
-                    address.getPort.toString)
+      val cmd = Seq(
+        "memcached",
+        "-l",
+        address.getHostName,
+        "-p",
+        address.getPort.toString
+      )
       val builder = new ProcessBuilder(cmd.toList)
       builder.start()
     }
@@ -91,8 +91,7 @@ private[memcached] object ExternalMemcached { self =>
         processes :+= proc
 
         if (waitForPort(addr.getPort))
-          Some(
-              new TestMemcachedServer {
+          Some(new TestMemcachedServer {
             val address = addr
             def stop() {
               proc.destroy()
@@ -108,20 +107,19 @@ private[memcached] object ExternalMemcached { self =>
 
   def waitForPort(port: Int, timeout: Duration = 5.seconds): Boolean = {
     val elapsed = Stopwatch.start()
-    def loop(): Boolean = {
+    def loop(): Boolean =
       if (!isPortAvailable(port)) true
       else if (timeout < elapsed()) false
       else {
         Thread.sleep(100)
         loop()
       }
-    }
     loop()
   }
 
   def isPortAvailable(port: Int): Boolean = {
     var ss: ServerSocket = null
-    var result = false
+    var result           = false
     try {
       ss = new ServerSocket(port)
       ss.setReuseAddress(true)
@@ -139,8 +137,7 @@ private[memcached] object ExternalMemcached { self =>
   // Make sure the process is always killed eventually
   Runtime
     .getRuntime()
-    .addShutdownHook(
-        new Thread {
+    .addShutdownHook(new Thread {
       override def run() {
         processes foreach { p =>
           p.destroy()

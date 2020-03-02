@@ -12,9 +12,11 @@ object Test extends StoreReporterDirectTest {
   def compileCode(code: String, jarFileName: String) = {
     val classpath =
       List(sys.props("partest.lib"), testOutput.path) mkString sys.props(
-          "path.separator")
-    compileString(newCompiler(
-            "-cp", classpath, "-d", s"${testOutput.path}/$jarFileName"))(code)
+        "path.separator"
+      )
+    compileString(
+      newCompiler("-cp", classpath, "-d", s"${testOutput.path}/$jarFileName")
+    )(code)
   }
 
   // TODO flat classpath doesn't support the classpath invalidation yet so we force using the recursive one
@@ -66,13 +68,13 @@ object Test extends StoreReporterDirectTest {
       |:require ${testOutput.path}/$jar
       |test.Test.test()
       |""".stripMargin.trim
-    val output = ILoop.run(codeToRun, settings)
-    var lines = output.lines.drop(headerLength)
+    val output    = ILoop.run(codeToRun, settings)
+    var lines     = output.lines.drop(headerLength)
     lines = lines drop promptLength
     val added = lines.next
     assert(
-        added.contains("Added") && added.contains("test1.jar"),
-        s"[${added}] in [${output.lines.mkString("/")}]"
+      added.contains("Added") && added.contains("test1.jar"),
+      s"[${added}] in [${output.lines.mkString("/")}]"
     )
     lines = lines drop promptLength
     assert {
@@ -90,8 +92,8 @@ object Test extends StoreReporterDirectTest {
       |:require ${testOutput.path}/$jar1
       |:require ${testOutput.path}/$jar2
       |""".stripMargin.trim
-    val output = ILoop.run(codeToRun, settings)
-    var lines = output.lines.drop(headerLength)
+    val output    = ILoop.run(codeToRun, settings)
+    var lines     = output.lines.drop(headerLength)
     lines = lines drop promptLength
     val added = lines.next
     assert {
@@ -116,8 +118,8 @@ object Test extends StoreReporterDirectTest {
       |:require ${testOutput.path}/$jar3
       |test.Test3.test()
       |""".stripMargin.trim
-    val output = ILoop.run(codeToRun, settings)
-    var lines = output.lines.drop(headerLength)
+    val output    = ILoop.run(codeToRun, settings)
+    var lines     = output.lines.drop(headerLength)
     lines = lines drop promptLength
     val added = lines.next
     assert {
@@ -131,13 +133,13 @@ object Test extends StoreReporterDirectTest {
 
   def test4(): Unit = {
     // twice the same jar should be rejected
-    val jar1 = "test1.jar"
+    val jar1      = "test1.jar"
     val codeToRun = s"""
       |:require ${testOutput.path}/$jar1
       |:require ${testOutput.path}/$jar1
       |""".stripMargin.trim
-    val output = ILoop.run(codeToRun, settings)
-    var lines = output.lines.drop(headerLength)
+    val output    = ILoop.run(codeToRun, settings)
+    var lines     = output.lines.drop(headerLength)
     lines = lines drop promptLength
     val added = lines.next
     assert {
@@ -153,7 +155,7 @@ object Test extends StoreReporterDirectTest {
 
   def test5(): Unit = {
     val codeToRun = ":require /does/not/exist.jar"
-    val output = ILoop.run(codeToRun, settings)
+    val output    = ILoop.run(codeToRun, settings)
     assert(!output.contains("NullPointerException"), output)
     assert(output.contains("Cannot load '/does/not/exist.jar'"), output)
   }
@@ -167,7 +169,7 @@ object Test extends StoreReporterDirectTest {
       |:require ${testOutput.path}/$jar
       |import test6._; new A; new Z
       |""".stripMargin.trim
-    val output = ILoop.run(codeToRun, settings)
+    val output    = ILoop.run(codeToRun, settings)
     assert(output.contains("created test6.A"), output)
     assert(output.contains("created test6.Z"), output)
   }

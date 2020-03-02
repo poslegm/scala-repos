@@ -28,13 +28,17 @@ class CombiningLimitsSuite extends PlanTest {
   object Optimize extends RuleExecutor[LogicalPlan] {
     val batches =
       Batch("Filter Pushdown", FixedPoint(100), ColumnPruning) :: Batch(
-          "Combine Limit", FixedPoint(10), CombineLimits) :: Batch(
-          "Constant Folding",
-          FixedPoint(10),
-          NullPropagation,
-          ConstantFolding,
-          BooleanSimplification,
-          SimplifyConditionals) :: Nil
+        "Combine Limit",
+        FixedPoint(10),
+        CombineLimits
+      ) :: Batch(
+        "Constant Folding",
+        FixedPoint(10),
+        NullPropagation,
+        ConstantFolding,
+        BooleanSimplification,
+        SimplifyConditionals
+      ) :: Nil
   }
 
   val testRelation = LocalRelation('a.int, 'b.int, 'c.int)
@@ -42,7 +46,7 @@ class CombiningLimitsSuite extends PlanTest {
   test("limits: combines two limits") {
     val originalQuery = testRelation.select('a).limit(10).limit(5)
 
-    val optimized = Optimize.execute(originalQuery.analyze)
+    val optimized     = Optimize.execute(originalQuery.analyze)
     val correctAnswer = testRelation.select('a).limit(5).analyze
 
     comparePlans(optimized, correctAnswer)
@@ -51,7 +55,7 @@ class CombiningLimitsSuite extends PlanTest {
   test("limits: combines three limits") {
     val originalQuery = testRelation.select('a).limit(2).limit(7).limit(5)
 
-    val optimized = Optimize.execute(originalQuery.analyze)
+    val optimized     = Optimize.execute(originalQuery.analyze)
     val correctAnswer = testRelation.select('a).limit(2).analyze
 
     comparePlans(optimized, correctAnswer)
@@ -60,7 +64,7 @@ class CombiningLimitsSuite extends PlanTest {
   test("limits: combines two limits after ColumnPruning") {
     val originalQuery = testRelation.select('a).limit(2).select('a).limit(5)
 
-    val optimized = Optimize.execute(originalQuery.analyze)
+    val optimized     = Optimize.execute(originalQuery.analyze)
     val correctAnswer = testRelation.select('a).limit(2).analyze
 
     comparePlans(optimized, correctAnswer)

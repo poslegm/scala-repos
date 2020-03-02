@@ -11,21 +11,21 @@ class InterpolatedStringTypingTest
     extends ScalaLightCodeInsightFixtureTestAdapter {
 
   def testSimpleStringTypingOpeningQuote() {
-    val text = "class A { val a = s" + CARET_MARKER + " }"
+    val text        = "class A { val a = s" + CARET_MARKER + " }"
     val assumedStub = "class A { val a = s\"" + CARET_MARKER + "\" }"
 
     checkGeneratedTextAfterTyping(text, assumedStub, '\"')
   }
 
   def testSimpleStringTypingClosingQuote() {
-    val text = "class A { val a = s\"" + CARET_MARKER + "\" }"
+    val text        = "class A { val a = s\"" + CARET_MARKER + "\" }"
     val assumedStub = "class A { val a = s\"\"" + CARET_MARKER + " }"
 
     checkGeneratedTextAfterTyping(text, assumedStub, '\"')
   }
 
   def testMultilineStringTypingOpeningQuote() {
-    val text = "class A { val a = f\"\"" + CARET_MARKER + " }"
+    val text        = "class A { val a = f\"\"" + CARET_MARKER + " }"
     val assumedStub = "class A { val a = f\"\"\"" + CARET_MARKER + "\"\"\" }"
 
     checkGeneratedTextAfterTyping(text, assumedStub, '\"')
@@ -58,23 +58,23 @@ class InterpolatedStringTypingTest
   def testMultiLineStringBraceTyped() {
     val text =
       "class A { val a = f\"\"\"blah blah $" + CARET_MARKER +
-      " blah blah\"\"\"}"
+        " blah blah\"\"\"}"
     val assumedStub =
       "class A { val a = f\"\"\"blah blah ${" + CARET_MARKER +
-      "} blah blah\"\"\"}"
+        "} blah blah\"\"\"}"
 
     checkGeneratedTextAfterTyping(text, assumedStub, '{')
   }
 
   def testInsertBrace() {
-    val text = s""" val a = s"($$$CARET_MARKER)" """
+    val text    = s""" val a = s"($$$CARET_MARKER)" """
     val assumed = s""" val a = s"($${$CARET_MARKER})" """
 
     checkGeneratedTextAfterTyping(text, assumed, '{')
   }
 
   def testInsertBraceInvalidCode() {
-    val text = s""" val a = s"blah-blah $$$CARET_MARKER """
+    val text    = s""" val a = s"blah-blah $$$CARET_MARKER """
     val assumed = s""" val a = s"blah-blah $${$CARET_MARKER} """
 
     checkGeneratedTextAfterTyping(text, assumed, '{')

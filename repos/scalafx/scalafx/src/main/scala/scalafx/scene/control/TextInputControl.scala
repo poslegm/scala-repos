@@ -31,17 +31,26 @@ import javafx.scene.{control => jfxsc, text => jfxst}
 
 import scala.language.implicitConversions
 import scalafx.Includes._
-import scalafx.beans.property.{BooleanProperty, ReadOnlyIntegerProperty, ReadOnlyObjectProperty, ReadOnlyStringProperty, StringProperty, _}
+import scalafx.beans.property.{
+  BooleanProperty,
+  ReadOnlyIntegerProperty,
+  ReadOnlyObjectProperty,
+  ReadOnlyStringProperty,
+  StringProperty,
+  _
+}
 import scalafx.delegate.SFXDelegate
 
 object TextInputControl {
   implicit def sfxTextInputControl2jfx(
-      v: TextInputControl): jfxsc.TextInputControl =
+      v: TextInputControl
+  ): jfxsc.TextInputControl =
     if (v != null) v.delegate else null
 }
 
 abstract class TextInputControl(override val delegate: jfxsc.TextInputControl)
-    extends Control(delegate) with SFXDelegate[jfxsc.TextInputControl] {
+    extends Control(delegate)
+    with SFXDelegate[jfxsc.TextInputControl] {
 
   /**
     * The anchor of the text selection.
@@ -118,7 +127,6 @@ abstract class TextInputControl(override val delegate: jfxsc.TextInputControl)
     */
   def textFormatter: ObjectProperty[jfxsc.TextFormatter[_]] =
     delegate.textFormatterProperty()
-  def textFormatter_=(v: TextFormatter[_]): Unit = {
+  def textFormatter_=(v: TextFormatter[_]): Unit =
     ObjectProperty.fillProperty(textFormatter, v)
-  }
 }

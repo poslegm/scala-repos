@@ -40,13 +40,16 @@ import generic._
   *  @define willNotTerminateInf
   */
 @deprecated(
-    "Low-level linked lists are deprecated due to idiosyncrasies in interface and incomplete features.",
-    "2.11.0")
+  "Low-level linked lists are deprecated due to idiosyncrasies in interface and incomplete features.",
+  "2.11.0"
+)
 @SerialVersionUID(-8144992287952814767L)
 class DoubleLinkedList[A]()
-    extends AbstractSeq[A] with LinearSeq[A]
+    extends AbstractSeq[A]
+    with LinearSeq[A]
     with GenericTraversableTemplate[A, DoubleLinkedList]
-    with DoubleLinkedListLike[A, DoubleLinkedList[A]] with Serializable {
+    with DoubleLinkedListLike[A, DoubleLinkedList[A]]
+    with Serializable {
   next = this
 
   /** Creates a node for the double linked list.
@@ -87,7 +90,7 @@ object DoubleLinkedList extends SeqFactory[DoubleLinkedList] {
   def newBuilder[A]: Builder[A, DoubleLinkedList[A]] =
     new Builder[A, DoubleLinkedList[A]] {
       def emptyList() = new DoubleLinkedList[A]()
-      var current = emptyList()
+      var current     = emptyList()
 
       def +=(elem: A): this.type = {
         if (current.isEmpty) current = new DoubleLinkedList(elem, emptyList())
@@ -97,6 +100,6 @@ object DoubleLinkedList extends SeqFactory[DoubleLinkedList] {
       }
 
       def clear(): Unit = current = emptyList()
-      def result() = current
+      def result()      = current
     }
 }

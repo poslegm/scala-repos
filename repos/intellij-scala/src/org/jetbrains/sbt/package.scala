@@ -25,13 +25,15 @@ package object sbt {
     }
 
   implicit def toIdeaPredicate[A](
-      f: A => Boolean): IdeaFunction[A, JavaBoolean] =
+      f: A => Boolean
+  ): IdeaFunction[A, JavaBoolean] =
     new IdeaFunction[A, JavaBoolean] {
       def fun(a: A) = JavaBoolean.valueOf(f(a))
     }
 
   implicit def toIdeaFunction2[A, B, C](
-      f: (A, B) => C): IdeaFunction[IdeaPair[A, B], C] =
+      f: (A, B) => C
+  ): IdeaFunction[IdeaPair[A, B], C] =
     new IdeaFunction[IdeaPair[A, B], C] {
       def fun(pair: IdeaPair[A, B]) = f(pair.getFirst, pair.getSecond)
     }
@@ -39,7 +41,7 @@ package object sbt {
   implicit class RichFile(val file: File) extends AnyVal {
     def /(path: String): File = new File(file, path)
 
-    def `<<`: File = <<(1)
+    def `<<` : File = <<(1)
 
     def `<<`(level: Int): File = RichFile.parent(file, level)
 
@@ -134,22 +136,22 @@ package object sbt {
       if (opt.isEmpty) None else Option(f(opt.get))
   }
 
-  def jarWith[T : ClassTag]: File = {
+  def jarWith[T: ClassTag]: File = {
     val tClass = implicitly[ClassTag[T]].runtimeClass
 
     Option(PathUtil.getJarPathForClass(tClass)).map(new File(_)).getOrElse {
       throw new RuntimeException(
-          "Jar file not found for class " + tClass.getName)
+        "Jar file not found for class " + tClass.getName
+      )
     }
   }
 
-  def using[A <: Closeable, B](resource: A)(block: A => B): B = {
+  def using[A <: Closeable, B](resource: A)(block: A => B): B =
     try {
       block(resource)
     } finally {
       resource.close()
     }
-  }
 
   def writeLinesTo(file: File, lines: String*) {
     using(new PrintWriter(new FileWriter(file))) { writer =>
@@ -173,7 +175,8 @@ package object sbt {
   }
 
   def usingTempFile[T](prefix: String, suffix: Option[String] = None)(
-      block: File => T): T = {
+      block: File => T
+  ): T = {
     val file = FileUtil.createTempFile(prefix, suffix.orNull, true)
     try {
       block(file)
@@ -186,12 +189,11 @@ package object sbt {
 
   private def parse(fileName: String): (String, String) = fileName match {
     case NameWithExtension(name, extension) => (name, extension)
-    case name => (name, "")
+    case name                               => (name, "")
   }
 
-  def inWriteAction[T](body: => T): T = {
+  def inWriteAction[T](body: => T): T =
     ApplicationManager.getApplication.runWriteAction(new Computable[T] {
       def compute: T = body
     })
-  }
 }

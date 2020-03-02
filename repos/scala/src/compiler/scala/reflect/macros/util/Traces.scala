@@ -4,7 +4,7 @@ package util
 trait Traces {
   def globalSettings: scala.tools.nsc.Settings
 
-  val macroDebugLite = globalSettings.YmacrodebugLite.value
+  val macroDebugLite    = globalSettings.YmacrodebugLite.value
   val macroDebugVerbose = globalSettings.YmacrodebugVerbose.value
   @inline final def macroLogLite(msg: => Any) {
     if (macroDebugLite || macroDebugVerbose) println(msg)

@@ -9,16 +9,18 @@ import java.util._
   * ArrayBlockingQueue have been ported, except the mutation methods of the iterator. See
   * `java.util.concurrent.ArrayBlockingQueue` for documentation. */
 abstract class ManagedArrayBlockingQueue[E >: Null <: AnyRef](
-    capacity: Int, fair: Boolean = false)
-    extends AbstractQueue[E] with BlockingQueue[E] { self =>
+    capacity: Int,
+    fair: Boolean = false
+) extends AbstractQueue[E]
+    with BlockingQueue[E] { self =>
 
   /** Determine if the item should be accepted at the current time. */
   protected[this] def accept(item: E, size: Int): Boolean
 
-  private[this] val items = new Array[AnyRef](capacity)
-  private[this] val lock = new ReentrantLock(fair)
-  private[this] val notEmpty = lock.newCondition
-  private[this] val notFull = lock.newCondition
+  private[this] val items                      = new Array[AnyRef](capacity)
+  private[this] val lock                       = new ReentrantLock(fair)
+  private[this] val notEmpty                   = lock.newCondition
+  private[this] val notFull                    = lock.newCondition
   private[this] var takeIndex, putIndex, count = 0
 
   private[this] def checkNotNull(v: AnyRef): Unit =
@@ -39,7 +41,7 @@ abstract class ManagedArrayBlockingQueue[E >: Null <: AnyRef](
 
   private[this] def extract: E = {
     val items = this.items
-    val x: E = items(takeIndex).asInstanceOf[E]
+    val x: E  = items(takeIndex).asInstanceOf[E]
     items(takeIndex) = null
     takeIndex = inc(takeIndex)
     count -= 1
@@ -48,7 +50,7 @@ abstract class ManagedArrayBlockingQueue[E >: Null <: AnyRef](
   }
 
   private[this] def removeAt(_i: Int) {
-    var i = _i
+    var i     = _i
     val items = this.items
     if (i == takeIndex) {
       items(takeIndex) = null
@@ -180,8 +182,8 @@ abstract class ManagedArrayBlockingQueue[E >: Null <: AnyRef](
     if (c eq this) throw new IllegalArgumentException
     val items = this.items
     locked {
-      var i = takeIndex
-      var n = 0
+      var i   = takeIndex
+      var n   = 0
       val max = count
       while (n < max) {
         c.add(items(i).asInstanceOf[E])
@@ -205,8 +207,8 @@ abstract class ManagedArrayBlockingQueue[E >: Null <: AnyRef](
     if (maxElements <= 0) return 0
     val items = this.items
     locked {
-      var i: Int = takeIndex
-      var n: Int = 0
+      var i: Int   = takeIndex
+      var n: Int   = 0
       val max: Int = if ((maxElements < count)) maxElements else count
       while (n < max) {
         c.add(items(i).asInstanceOf[E])
@@ -226,9 +228,9 @@ abstract class ManagedArrayBlockingQueue[E >: Null <: AnyRef](
   def iterator: Iterator[E] = new Iterator[E] {
     private var remaining: Int = _
     private var nextIndex: Int = _
-    private var nextItem: E = _
-    private var lastItem: E = _
-    private var lastRet: Int = -1
+    private var nextItem: E    = _
+    private var lastItem: E    = _
+    private var lastRet: Int   = -1
 
     locked {
       remaining = count
@@ -240,7 +242,7 @@ abstract class ManagedArrayBlockingQueue[E >: Null <: AnyRef](
 
     def hasNext: Boolean = remaining > 0
 
-    def next: E = {
+    def next: E =
       locked {
         if (remaining <= 0) throw new NoSuchElementException
         lastRet = nextIndex
@@ -255,18 +257,19 @@ abstract class ManagedArrayBlockingQueue[E >: Null <: AnyRef](
         }) ()
         x
       }
-    }
 
     def remove: Unit = throw new UnsupportedOperationException
   }
 
   @inline private[this] def locked[T](f: => T) = {
     lock.lock
-    try f finally lock.unlock
+    try f
+    finally lock.unlock
   }
 
   @inline private[this] def lockedInterruptibly[T](f: => T) = {
     lock.lockInterruptibly
-    try f finally lock.unlock
+    try f
+    finally lock.unlock
   }
 }

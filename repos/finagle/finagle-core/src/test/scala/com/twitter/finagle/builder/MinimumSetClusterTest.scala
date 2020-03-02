@@ -9,7 +9,7 @@ import com.twitter.util.Await
 class MinimumSetClusterTest extends FunSuite {
   class ClusterHelper {
     val dynamicCluster = new ClusterInt()
-    val minimum = Set(1, 2, 3)
+    val minimum        = Set(1, 2, 3)
 
     val cluster = new MinimumSetCluster(minimum, dynamicCluster)
   }

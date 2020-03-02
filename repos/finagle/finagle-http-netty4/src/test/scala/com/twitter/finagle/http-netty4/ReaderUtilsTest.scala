@@ -46,7 +46,7 @@ class ReaderUtilsTest extends FunSuite {
     val rw = Reader.writable()
 
     val (write, read) = (new AsyncQueue[Any], new AsyncQueue[Any])
-    val tr = new QueueTransport[Any, Any](write, read)
+    val tr            = new QueueTransport[Any, Any](write, read)
 
     rw.write(Buf.Utf8("msg1"))
 
@@ -99,6 +99,6 @@ class ReaderUtilsTest extends FunSuite {
 
     streamChunks(failingT, rw)
 
-    intercept[ReaderDiscarded] { Await.result(rw.read(1), 2.seconds) }
+    intercept[ReaderDiscarded](Await.result(rw.read(1), 2.seconds))
   }
 }

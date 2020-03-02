@@ -11,9 +11,9 @@ package reflect.internal.pickling
 object ByteCodecs {
 
   def avoidZero(src: Array[Byte]): Array[Byte] = {
-    var i = 0
+    var i      = 0
     val srclen = src.length
-    var count = 0
+    var count  = 0
     while (i < srclen) {
       if (src(i) == 0x7f) count += 1
       i += 1
@@ -37,9 +37,9 @@ object ByteCodecs {
   }
 
   def regenerateZero(src: Array[Byte]): Int = {
-    var i = 0
+    var i      = 0
     val srclen = src.length
-    var j = 0
+    var j      = 0
     while (i < srclen) {
       val in: Int = src(i) & 0xff
       if (in == 0xc0 && (src(i + 1) & 0xff) == 0x80) {
@@ -60,9 +60,9 @@ object ByteCodecs {
   def encode8to7(src: Array[Byte]): Array[Byte] = {
     val srclen = src.length
     val dstlen = (srclen * 8 + 6) / 7
-    val dst = new Array[Byte](dstlen)
-    var i = 0
-    var j = 0
+    val dst    = new Array[Byte](dstlen)
+    var i      = 0
+    var j      = 0
     while (i + 6 < srclen) {
       var in: Int = src(i) & 0xff
       dst(j) = (in & 0x7f).toByte
@@ -124,8 +124,8 @@ object ByteCodecs {
   }
 
   def decode7to8(src: Array[Byte], srclen: Int): Int = {
-    var i = 0
-    var j = 0
+    var i      = 0
+    var j      = 0
     val dstlen = (srclen * 7 + 7) / 8
     while (i + 7 < srclen) {
       var out: Int = src(i).toInt

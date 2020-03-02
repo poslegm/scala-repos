@@ -14,19 +14,17 @@ case class Assessible(analysed: Analysed) {
 
   def suspiciousErrorRate(color: Color): Boolean =
     listAverage(Accuracy.diffsList(Pov(game, color), analysis)) <
-    (game.speed match {
-          case Speed.Bullet => 25
-          case Speed.Blitz => 20
-          case _ => 15
-        })
+      (game.speed match {
+        case Speed.Bullet => 25
+        case Speed.Blitz  => 20
+        case _            => 15
+      })
 
   def alwaysHasAdvantage(color: Color): Boolean =
     !analysis.infos.exists { info =>
       info.score.fold(info.mate.fold(false) { a =>
         (signum(a).toInt == color.fold(-1, 1))
-      }) { cp =>
-        color.fold(cp.centipawns < -100, cp.centipawns > 100)
-      }
+      })(cp => color.fold(cp.centipawns < -100, cp.centipawns > 100))
     }
 
   def highBlurRate(color: Color): Boolean =
@@ -39,13 +37,13 @@ case class Assessible(analysed: Analysed) {
     game.player(color).hasSuspiciousHoldAlert
 
   def mkFlags(color: Color): PlayerFlags = PlayerFlags(
-      suspiciousErrorRate(color),
-      alwaysHasAdvantage(color),
-      highBlurRate(color),
-      moderateBlurRate(color),
-      consistentMoveTimes(Pov(game, color)),
-      noFastMoves(Pov(game, color)),
-      suspiciousHoldAlert(color)
+    suspiciousErrorRate(color),
+    alwaysHasAdvantage(color),
+    highBlurRate(color),
+    moderateBlurRate(color),
+    consistentMoveTimes(Pov(game, color)),
+    noFastMoves(Pov(game, color)),
+    suspiciousHoldAlert(color)
   )
 
   private val T = true
@@ -94,26 +92,26 @@ case class Assessible(analysed: Analysed) {
     listAverage(Accuracy.diffsList(Pov(game, color), analysis)).toInt
   def sfSd(color: Color): Int =
     listDeviation(Accuracy.diffsList(Pov(game, color), analysis)).toInt
-  def mtAvg(color: Color): Int = listAverage(game moveTimes color).toInt
-  def mtSd(color: Color): Int = listDeviation(game moveTimes color).toInt
-  def blurs(color: Color): Int = game.playerBlurPercent(color)
+  def mtAvg(color: Color): Int    = listAverage(game moveTimes color).toInt
+  def mtSd(color: Color): Int     = listDeviation(game moveTimes color).toInt
+  def blurs(color: Color): Int    = game.playerBlurPercent(color)
   def hold(color: Color): Boolean = game.player(color).hasSuspiciousHoldAlert
 
   def playerAssessment(color: Color): PlayerAssessment =
     PlayerAssessment(
-        _id = game.id + "/" + color.name,
-        gameId = game.id,
-        userId = ~game.player(color).userId,
-        white = (color == Color.White),
-        assessment = rankCheating(color),
-        date = DateTime.now,
-        // meta
-        flags = mkFlags(color),
-        sfAvg = sfAvg(color),
-        sfSd = sfSd(color),
-        mtAvg = mtAvg(color),
-        mtSd = mtSd(color),
-        blurs = blurs(color),
-        hold = hold(color)
+      _id = game.id + "/" + color.name,
+      gameId = game.id,
+      userId = ~game.player(color).userId,
+      white = (color == Color.White),
+      assessment = rankCheating(color),
+      date = DateTime.now,
+      // meta
+      flags = mkFlags(color),
+      sfAvg = sfAvg(color),
+      sfSd = sfSd(color),
+      mtAvg = mtAvg(color),
+      mtSd = mtSd(color),
+      blurs = blurs(color),
+      hold = hold(color)
     )
 }

@@ -87,11 +87,10 @@ final class FreeAbGroup[A] private (val terms: Map[A, Int]) extends AnyVal {
     * positive terms on the right. If either side has no terms at all, then that
     * side is `None`.
     */
-  def splitSemigroup[B](f: A => B)(
-      implicit B: CSemigroup[B]): (Option[B], Option[B]) =
-    split[Option[B]] { a =>
-      Some(f(a))
-    }
+  def splitSemigroup[B](
+      f: A => B
+  )(implicit B: CSemigroup[B]): (Option[B], Option[B]) =
+    split[Option[B]](a => Some(f(a)))
 
   def |+|(rhs: FreeAbGroup[A]): FreeAbGroup[A] =
     new FreeAbGroup(lhs.terms + rhs.terms)
@@ -118,14 +117,16 @@ object FreeAbGroup { companion =>
   final def id[A]: FreeAbGroup[A] = new FreeAbGroup(Map.empty)
 
   final def apply[A](a: A): FreeAbGroup[A] = lift(a)
-  final def lift[A](a: A): FreeAbGroup[A] = new FreeAbGroup[A](Map((a, 1)))
+  final def lift[A](a: A): FreeAbGroup[A]  = new FreeAbGroup[A](Map((a, 1)))
 
   implicit def FreeAbGroupGroup[A]: AbGroup[FreeAbGroup[A]] =
     new AbGroup[FreeAbGroup[A]] {
-      def id: FreeAbGroup[A] = companion.id
+      def id: FreeAbGroup[A]                                       = companion.id
       def op(a: FreeAbGroup[A], b: FreeAbGroup[A]): FreeAbGroup[A] = a |+| b
-      def inverse(a: FreeAbGroup[A]): FreeAbGroup[A] = a.inverse
+      def inverse(a: FreeAbGroup[A]): FreeAbGroup[A]               = a.inverse
       override def opInverse(
-          a: FreeAbGroup[A], b: FreeAbGroup[A]): FreeAbGroup[A] = a |-| b
+          a: FreeAbGroup[A],
+          b: FreeAbGroup[A]
+      ): FreeAbGroup[A] = a |-| b
     }
 }

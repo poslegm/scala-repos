@@ -23,12 +23,12 @@ import com.twitter.scalding.RichDate
 
 case class Timestamp(milliSinceEpoch: Long) extends AnyVal {
   def compare(that: Timestamp) = milliSinceEpoch.compare(that.milliSinceEpoch)
-  def prev = copy(milliSinceEpoch = milliSinceEpoch - 1)
-  def next = copy(milliSinceEpoch = milliSinceEpoch + 1)
-  def toDate = new Date(milliSinceEpoch)
-  def toRichDate = new RichDate(milliSinceEpoch)
-  def -(other: Milliseconds) = Timestamp(milliSinceEpoch - other.toLong)
-  def +(other: Milliseconds) = Timestamp(milliSinceEpoch + other.toLong)
+  def prev                     = copy(milliSinceEpoch = milliSinceEpoch - 1)
+  def next                     = copy(milliSinceEpoch = milliSinceEpoch + 1)
+  def toDate                   = new Date(milliSinceEpoch)
+  def toRichDate               = new RichDate(milliSinceEpoch)
+  def -(other: Milliseconds)   = Timestamp(milliSinceEpoch - other.toLong)
+  def +(other: Milliseconds)   = Timestamp(milliSinceEpoch + other.toLong)
   // Delta between two timestamps
   def -(other: Timestamp): Milliseconds =
     Milliseconds(milliSinceEpoch - other.milliSinceEpoch)
@@ -44,8 +44,8 @@ case class Timestamp(milliSinceEpoch: Long) extends AnyVal {
 }
 
 object Timestamp {
-  val Max = Timestamp(Long.MaxValue)
-  val Min = Timestamp(Long.MinValue)
+  val Max            = Timestamp(Long.MaxValue)
+  val Min            = Timestamp(Long.MinValue)
   def now: Timestamp = Timestamp(System.currentTimeMillis)
 
   implicit def fromDate(d: Date) = Timestamp(d.getTime)
@@ -55,19 +55,19 @@ object Timestamp {
     Monoid.from(Timestamp.Min)(orderingOnTimestamp.max(_, _))
 
   implicit val timestamp2Date: Bijection[Timestamp, Date] =
-    Bijection.build[Timestamp, Date] { ts =>
-      new Date(ts.milliSinceEpoch)
-    } { fromDate(_) }
+    Bijection.build[Timestamp, Date](ts => new Date(ts.milliSinceEpoch)) {
+      fromDate(_)
+    }
 
   implicit val timestamp2Long: Bijection[Timestamp, Long] =
-    Bijection.build[Timestamp, Long] { _.milliSinceEpoch } { Timestamp(_) }
+    Bijection.build[Timestamp, Long](_.milliSinceEpoch)(Timestamp(_))
 
   implicit val timestampSuccessible: Successible[Timestamp] =
     new Successible[Timestamp] {
       def next(old: Timestamp) =
         if (old.milliSinceEpoch != Long.MaxValue) Some(old.next) else None
       def ordering: Ordering[Timestamp] = Timestamp.orderingOnTimestamp
-      def partialOrdering = Timestamp.orderingOnTimestamp
+      def partialOrdering               = Timestamp.orderingOnTimestamp
     }
 
   implicit val timestampPredecessible: Predecessible[Timestamp] =
@@ -75,7 +75,7 @@ object Timestamp {
       def prev(old: Timestamp) =
         if (old.milliSinceEpoch != Long.MinValue) Some(old.prev) else None
       def ordering: Ordering[Timestamp] = Timestamp.orderingOnTimestamp
-      def partialOrdering = Timestamp.orderingOnTimestamp
+      def partialOrdering               = Timestamp.orderingOnTimestamp
     }
 
   // This is a right semigroup, that given any two Timestamps just take the one on the right.
@@ -86,7 +86,7 @@ object Timestamp {
     override def sumOption(ti: TraversableOnce[Timestamp]) =
       if (ti.isEmpty) None
       else {
-        val iter = ti.toIterator
+        val iter            = ti.toIterator
         var last: Timestamp = iter.next
         while (iter.hasNext) {
           last = iter.next

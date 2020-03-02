@@ -3,7 +3,7 @@ object SCL9261 extends App {
   import slick.lifted.AbstractTable
 
   trait HasId[U, P] {
-    type Id = U
+    type Id       = U
     type IdColumn = P
 
     def id: IdColumn
@@ -13,14 +13,14 @@ object SCL9261 extends App {
   class B[T <: AbstractTable[_], U, P](cons: Tag => T with HasId[U, P])(
       implicit ushape: Shape[ColumnsShapeLevel, U, U, _],
       pshape: Shape[ColumnsShapeLevel, P, U, P]
-  )
-      extends TableQuery(cons) {}
+  ) extends TableQuery(cons) {}
 
   class T(tag: Tag)
-      extends Table[(Long, String)](tag, "test") with HasId1[Long] {
-    def id = column[Long]("id")
+      extends Table[(Long, String)](tag, "test")
+      with HasId1[Long] {
+    def id    = column[Long]("id")
     def value = column[String]("value")
-    def * = (id, value)
+    def *     = (id, value)
   }
 
   object Q extends B(new T(_)) {}

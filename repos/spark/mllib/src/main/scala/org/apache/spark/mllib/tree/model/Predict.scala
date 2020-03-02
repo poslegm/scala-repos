@@ -26,21 +26,20 @@ import org.apache.spark.annotation.{DeveloperApi, Since}
   */
 @Since("1.2.0")
 @DeveloperApi
-class Predict @Since("1.2.0")(@Since("1.2.0") val predict: Double,
-                              @Since("1.2.0") val prob: Double = 0.0)
-    extends Serializable {
+class Predict @Since("1.2.0") (
+    @Since("1.2.0") val predict: Double,
+    @Since("1.2.0") val prob: Double = 0.0
+) extends Serializable {
 
   override def toString: String = s"$predict (prob = $prob)"
 
-  override def equals(other: Any): Boolean = {
+  override def equals(other: Any): Boolean =
     other match {
       case p: Predict => predict == p.predict && prob == p.prob
-      case _ => false
+      case _          => false
     }
-  }
 
-  override def hashCode: Int = {
+  override def hashCode: Int =
     com.google.common.base.Objects
       .hashCode(predict: java.lang.Double, prob: java.lang.Double)
-  }
 }

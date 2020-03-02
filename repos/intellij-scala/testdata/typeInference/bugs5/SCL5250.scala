@@ -1,6 +1,6 @@
 class SCL5250 {
   var _foo = 3
-  def foo = _foo
+  def foo  = _foo
 
   def foo_=(f: Int): Boolean = {
     _foo = f

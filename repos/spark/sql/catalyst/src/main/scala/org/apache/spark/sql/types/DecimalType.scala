@@ -41,12 +41,14 @@ case class DecimalType(precision: Int, scale: Int) extends FractionalType {
 
   if (scale > precision) {
     throw new AnalysisException(
-        s"Decimal scale ($scale) cannot be greater than precision ($precision).")
+      s"Decimal scale ($scale) cannot be greater than precision ($precision)."
+    )
   }
 
   if (precision > DecimalType.MAX_PRECISION) {
     throw new AnalysisException(
-        s"DecimalType can only support precision up to 38")
+      s"DecimalType can only support precision up to 38"
+    )
   }
 
   // default constructor for Java
@@ -57,9 +59,9 @@ case class DecimalType(precision: Int, scale: Int) extends FractionalType {
   @transient private[sql] lazy val tag = ScalaReflectionLock.synchronized {
     typeTag[InternalType]
   }
-  private[sql] val numeric = Decimal.DecimalIsFractional
+  private[sql] val numeric    = Decimal.DecimalIsFractional
   private[sql] val fractional = Decimal.DecimalIsFractional
-  private[sql] val ordering = Decimal.DecimalIsFractional
+  private[sql] val ordering   = Decimal.DecimalIsFractional
   private[sql] val asIntegral = Decimal.DecimalAsIfIntegral
 
   override def typeName: String = s"decimal($precision,$scale)"
@@ -107,37 +109,35 @@ case class DecimalType(precision: Int, scale: Int) extends FractionalType {
 object DecimalType extends AbstractDataType {
   import scala.math.min
 
-  val MAX_PRECISION = 38
-  val MAX_SCALE = 38
+  val MAX_PRECISION               = 38
+  val MAX_SCALE                   = 38
   val SYSTEM_DEFAULT: DecimalType = DecimalType(MAX_PRECISION, 18)
-  val USER_DEFAULT: DecimalType = DecimalType(10, 0)
+  val USER_DEFAULT: DecimalType   = DecimalType(10, 0)
 
   // The decimal types compatible with other numeric types
-  private[sql] val ByteDecimal = DecimalType(3, 0)
-  private[sql] val ShortDecimal = DecimalType(5, 0)
-  private[sql] val IntDecimal = DecimalType(10, 0)
-  private[sql] val LongDecimal = DecimalType(20, 0)
-  private[sql] val FloatDecimal = DecimalType(14, 7)
+  private[sql] val ByteDecimal   = DecimalType(3, 0)
+  private[sql] val ShortDecimal  = DecimalType(5, 0)
+  private[sql] val IntDecimal    = DecimalType(10, 0)
+  private[sql] val LongDecimal   = DecimalType(20, 0)
+  private[sql] val FloatDecimal  = DecimalType(14, 7)
   private[sql] val DoubleDecimal = DecimalType(30, 15)
 
   private[sql] def forType(dataType: DataType): DecimalType = dataType match {
-    case ByteType => ByteDecimal
-    case ShortType => ShortDecimal
+    case ByteType    => ByteDecimal
+    case ShortType   => ShortDecimal
     case IntegerType => IntDecimal
-    case LongType => LongDecimal
-    case FloatType => FloatDecimal
-    case DoubleType => DoubleDecimal
+    case LongType    => LongDecimal
+    case FloatType   => FloatDecimal
+    case DoubleType  => DoubleDecimal
   }
 
-  private[sql] def bounded(precision: Int, scale: Int): DecimalType = {
+  private[sql] def bounded(precision: Int, scale: Int): DecimalType =
     DecimalType(min(precision, MAX_PRECISION), min(scale, MAX_SCALE))
-  }
 
   override private[sql] def defaultConcreteType: DataType = SYSTEM_DEFAULT
 
-  override private[sql] def acceptsType(other: DataType): Boolean = {
+  override private[sql] def acceptsType(other: DataType): Boolean =
     other.isInstanceOf[DecimalType]
-  }
 
   override private[sql] def simpleString: String = "decimal"
 
@@ -149,42 +149,39 @@ object DecimalType extends AbstractDataType {
   private[sql] object Expression {
     def unapply(e: Expression): Option[(Int, Int)] = e.dataType match {
       case t: DecimalType => Some((t.precision, t.scale))
-      case _ => None
+      case _              => None
     }
   }
 
   /**
     * Returns if dt is a DecimalType that fits inside a int
     */
-  def is32BitDecimalType(dt: DataType): Boolean = {
+  def is32BitDecimalType(dt: DataType): Boolean =
     dt match {
       case t: DecimalType =>
         t.precision <= Decimal.MAX_INT_DIGITS
       case _ => false
     }
-  }
 
   /**
     * Returns if dt is a DecimalType that fits inside a long
     */
-  def is64BitDecimalType(dt: DataType): Boolean = {
+  def is64BitDecimalType(dt: DataType): Boolean =
     dt match {
       case t: DecimalType =>
         t.precision <= Decimal.MAX_LONG_DIGITS
       case _ => false
     }
-  }
 
   /**
     * Returns if dt is a DecimalType that doesn't fit inside a long
     */
-  def isByteArrayDecimalType(dt: DataType): Boolean = {
+  def isByteArrayDecimalType(dt: DataType): Boolean =
     dt match {
       case t: DecimalType =>
         t.precision > Decimal.MAX_LONG_DIGITS
       case _ => false
     }
-  }
 
   def unapply(t: DataType): Boolean = t.isInstanceOf[DecimalType]
 

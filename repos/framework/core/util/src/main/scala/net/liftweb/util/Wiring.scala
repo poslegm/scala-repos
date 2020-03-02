@@ -37,9 +37,9 @@ trait Dependent {
   def youDependOnMe(who: Cell[_]): Unit = synchronized {
     _iDependOn = new WeakReference(who.asInstanceOf[Object]) :: _iDependOn
       .filter(_.get match {
-      case null => false
-      case x => x ne who
-    })
+        case null => false
+        case x    => x ne who
+      })
   }
 
   /**
@@ -48,7 +48,7 @@ trait Dependent {
   def youDontDependOnMe(who: Cell[_]): Unit = synchronized {
     val tList = _iDependOn.filter(_.get match {
       case null => false
-      case x => x ne who
+      case x    => x ne who
     })
 
     _iDependOn = tList
@@ -61,7 +61,7 @@ trait Dependent {
     _iDependOn
       .flatMap(_.get match {
         case null => Nil
-        case x => List(x)
+        case x    => List(x)
       })
       .asInstanceOf[List[Cell[_]]]
   }
@@ -71,9 +71,8 @@ trait Dependent {
   /**
     * Remove from all dependencies
     */
-  protected def unregisterFromAllDependencies(): Unit = {
+  protected def unregisterFromAllDependencies(): Unit =
     whoDoIDependOn.foreach(_.removeDependent(this))
-  }
 }
 
 /**
@@ -115,7 +114,7 @@ trait Cell[T] extends Dependent {
     synchronized {
       val tList = _dependentCells.filter(_.get match {
         case null => false
-        case x => x ne dep
+        case x    => x ne dep
       })
 
       _dependentCells = new WeakReference(dep: Dependent) :: tList
@@ -131,10 +130,9 @@ trait Cell[T] extends Dependent {
     */
   def removeDependent[T <: Dependent](dep: T): T = {
     synchronized {
-      _dependentCells = _dependentCells.filter(
-          _.get match {
+      _dependentCells = _dependentCells.filter(_.get match {
         case null => false
-        case x => x ne dep
+        case x    => x ne dep
       })
     }
 
@@ -147,19 +145,19 @@ trait Cell[T] extends Dependent {
     * Notify dependents of a state change.  Note this
     * will be performed on a separate thread asynchronously
     */
-  def notifyDependents(): Unit = {
+  def notifyDependents(): Unit =
     Schedule.schedule(
-        () => dependents.foreach(_.predicateChanged(this)), TimeSpan(0))
-  }
+      () => dependents.foreach(_.predicateChanged(this)),
+      TimeSpan(0)
+    )
 
   /**
     * Get a List of the Dependents
     */
   def dependents: Seq[Dependent] = synchronized {
-    _dependentCells.flatMap(
-        _.get match {
+    _dependentCells.flatMap(_.get match {
       case null => Nil
-      case x => List(x)
+      case x    => List(x)
     })
   }
 }
@@ -246,7 +244,7 @@ final class ValueCell[A](initialValue: A) extends Cell[A] with LiftValue[A] {
   override def equals(other: Any): Boolean = synchronized {
     other match {
       case vc: ValueCell[_] => value == vc.get
-      case _ => false
+      case _                => false
     }
   }
 }
@@ -263,8 +261,7 @@ final case class SeqCell[T](cells: Cell[T]*) extends Cell[Seq[T]] {
     */
   def currentValue: (Seq[T], Long) = {
     val tcv = cells.map(_.currentValue)
-    tcv.map(_._1) -> tcv.foldLeft(0L)(
-        (max, c) => if (max > c._2) max else c._2)
+    tcv.map(_._1) -> tcv.foldLeft(0L)((max, c) => if (max > c._2) max else c._2)
   }
 
   /**
@@ -293,20 +290,26 @@ object FuncCell {
     * Construct a function cell based on three parameters
     */
   def apply[A, B, C, Z](a: Cell[A], b: Cell[B], c: Cell[C])(
-      f: (A, B, C) => Z): Cell[Z] = FuncCell3(a, b, c, f)
+      f: (A, B, C) => Z
+  ): Cell[Z] = FuncCell3(a, b, c, f)
 
   /**
     * Construct a function cell based on four parameters
     */
   def apply[A, B, C, D, Z](a: Cell[A], b: Cell[B], c: Cell[C], d: Cell[D])(
-      f: (A, B, C, D) => Z): Cell[Z] = FuncCell4(a, b, c, d, f)
+      f: (A, B, C, D) => Z
+  ): Cell[Z] = FuncCell4(a, b, c, d, f)
 
   /**
     * Construct a function cell based on five parameters
     */
   def apply[A, B, C, D, E, Z](
-      a: Cell[A], b: Cell[B], c: Cell[C], d: Cell[D], e: Cell[E])(
-      f: (A, B, C, D, E) => Z): Cell[Z] = FuncCell5(a, b, c, d, e, f)
+      a: Cell[A],
+      b: Cell[B],
+      c: Cell[C],
+      d: Cell[D],
+      e: Cell[E]
+  )(f: (A, B, C, D, E) => Z): Cell[Z] = FuncCell5(a, b, c, d, e, f)
 }
 
 final case class FuncCell1[A, Z](a: Cell[A], f: A => Z) extends Cell[Z] {
@@ -316,9 +319,8 @@ final case class FuncCell1[A, Z](a: Cell[A], f: A => Z) extends Cell[Z] {
   /**
     * If the predicate cell changes, the Dependent will be notified
     */
-  def predicateChanged(which: Cell[_]): Unit = {
+  def predicateChanged(which: Cell[_]): Unit =
     notifyDependents()
-  }
 
   a.addDependent(this)
 
@@ -348,7 +350,7 @@ final case class FuncCell2[A, B, Z](a: Cell[A], b: Cell[B], f: (A, B) => Z)
   def currentValue: (Z, Long) = synchronized {
     val (v1, t1) = a.currentValue
     val (v2, t2) = b.currentValue
-    val t = WiringHelper.max(t1, t2)
+    val t        = WiringHelper.max(t1, t2)
     if (t > ct) {
       value = f(v1, v2)
       ct = t
@@ -358,8 +360,11 @@ final case class FuncCell2[A, B, Z](a: Cell[A], b: Cell[B], f: (A, B) => Z)
 }
 
 final case class FuncCell3[A, B, C, Z](
-    a: Cell[A], b: Cell[B], c: Cell[C], f: (A, B, C) => Z)
-    extends Cell[Z] {
+    a: Cell[A],
+    b: Cell[B],
+    c: Cell[C],
+    f: (A, B, C) => Z
+) extends Cell[Z] {
   private var value: Z = _
   private var ct: Long = 0
 
@@ -376,7 +381,7 @@ final case class FuncCell3[A, B, C, Z](
     val (v1, t1) = a.currentValue
     val (v2, t2) = b.currentValue
     val (v3, t3) = c.currentValue
-    val t = WiringHelper.max(t1, t2, t3)
+    val t        = WiringHelper.max(t1, t2, t3)
     if (t > ct) {
       value = f(v1, v2, v3)
       ct = t
@@ -386,17 +391,20 @@ final case class FuncCell3[A, B, C, Z](
 }
 
 final case class FuncCell4[A, B, C, D, Z](
-    a: Cell[A], b: Cell[B], c: Cell[C], d: Cell[D], f: (A, B, C, D) => Z)
-    extends Cell[Z] {
+    a: Cell[A],
+    b: Cell[B],
+    c: Cell[C],
+    d: Cell[D],
+    f: (A, B, C, D) => Z
+) extends Cell[Z] {
   private var value: Z = _
   private var ct: Long = 0
 
   /**
     * If the predicate cell changes, the Dependent will be notified
     */
-  def predicateChanged(which: Cell[_]): Unit = {
+  def predicateChanged(which: Cell[_]): Unit =
     notifyDependents()
-  }
 
   a.addDependent(this)
   b.addDependent(this)
@@ -408,7 +416,7 @@ final case class FuncCell4[A, B, C, D, Z](
     val (v2, t2) = b.currentValue
     val (v3, t3) = c.currentValue
     val (v4, t4) = d.currentValue
-    val t = WiringHelper.max(t1, t2, t3, t4)
+    val t        = WiringHelper.max(t1, t2, t3, t4)
     if (t > ct) {
       value = f(v1, v2, v3, v4)
       ct = t
@@ -417,22 +425,22 @@ final case class FuncCell4[A, B, C, D, Z](
   }
 }
 
-final case class FuncCell5[A, B, C, D, E, Z](a: Cell[A],
-                                             b: Cell[B],
-                                             c: Cell[C],
-                                             d: Cell[D],
-                                             e: Cell[E],
-                                             f: (A, B, C, D, E) => Z)
-    extends Cell[Z] {
+final case class FuncCell5[A, B, C, D, E, Z](
+    a: Cell[A],
+    b: Cell[B],
+    c: Cell[C],
+    d: Cell[D],
+    e: Cell[E],
+    f: (A, B, C, D, E) => Z
+) extends Cell[Z] {
   private var value: Z = _
   private var ct: Long = 0
 
   /**
     * If the predicate cell changes, the Dependent will be notified
     */
-  def predicateChanged(which: Cell[_]): Unit = {
+  def predicateChanged(which: Cell[_]): Unit =
     notifyDependents()
-  }
 
   a.addDependent(this)
   b.addDependent(this)
@@ -446,7 +454,7 @@ final case class FuncCell5[A, B, C, D, E, Z](a: Cell[A],
     val (v3, t3) = c.currentValue
     val (v4, t4) = d.currentValue
     val (v5, t5) = e.currentValue
-    val t = WiringHelper.max(t1, t2, t3, t4, t5)
+    val t        = WiringHelper.max(t1, t2, t3, t4, t5)
     if (t > ct) {
       value = f(v1, v2, v3, v4, v5)
       ct = t

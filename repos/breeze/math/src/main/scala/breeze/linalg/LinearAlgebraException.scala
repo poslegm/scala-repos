@@ -9,14 +9,16 @@ trait LinearAlgebraException extends RuntimeException
   * Exception thrown if a routine has not converged.
   */
 class NotConvergedException(
-    val reason: NotConvergedException.Reason, msg: String = "")
-    extends RuntimeException(msg) with LinearAlgebraException
+    val reason: NotConvergedException.Reason,
+    msg: String = ""
+) extends RuntimeException(msg)
+    with LinearAlgebraException
 
 object NotConvergedException {
   trait Reason
   object Iterations extends Reason
   object Divergence extends Reason
-  object Breakdown extends Reason
+  object Breakdown  extends Reason
 }
 
 class MatrixNotSymmetricException
@@ -37,7 +39,9 @@ class MatrixEmptyException
   * @author dramage, dlwh
   */
 class MatrixSingularException(msg: String = "")
-    extends RuntimeException(msg) with LinearAlgebraException
+    extends RuntimeException(msg)
+    with LinearAlgebraException
 
 class LapackException(msg: String = "")
-    extends RuntimeException(msg) with LinearAlgebraException
+    extends RuntimeException(msg)
+    with LinearAlgebraException

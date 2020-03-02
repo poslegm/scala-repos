@@ -17,44 +17,44 @@ class IntegerReflectiveCall(value: Int) {
   def unary_- : scala.Int = -value
   // scalastyle:on disallow.space.before.token
 
-  def +(x: scala.Byte): scala.Int = value + x
-  def +(x: scala.Short): scala.Int = value + x
-  def +(x: scala.Char): scala.Int = value + x
-  def +(x: scala.Int): scala.Int = value + x
-  def +(x: scala.Long): scala.Long = value + x
-  def +(x: scala.Float): scala.Float = value + x
+  def +(x: scala.Byte): scala.Int      = value + x
+  def +(x: scala.Short): scala.Int     = value + x
+  def +(x: scala.Char): scala.Int      = value + x
+  def +(x: scala.Int): scala.Int       = value + x
+  def +(x: scala.Long): scala.Long     = value + x
+  def +(x: scala.Float): scala.Float   = value + x
   def +(x: scala.Double): scala.Double = value + x
 
-  def -(x: scala.Byte): scala.Int = value - x
-  def -(x: scala.Short): scala.Int = value - x
-  def -(x: scala.Char): scala.Int = value - x
-  def -(x: scala.Int): scala.Int = value - x
-  def -(x: scala.Long): scala.Long = value - x
-  def -(x: scala.Float): scala.Float = value - x
+  def -(x: scala.Byte): scala.Int      = value - x
+  def -(x: scala.Short): scala.Int     = value - x
+  def -(x: scala.Char): scala.Int      = value - x
+  def -(x: scala.Int): scala.Int       = value - x
+  def -(x: scala.Long): scala.Long     = value - x
+  def -(x: scala.Float): scala.Float   = value - x
   def -(x: scala.Double): scala.Double = value - x
 
-  def *(x: scala.Byte): scala.Int = value * x
-  def *(x: scala.Short): scala.Int = value * x
-  def *(x: scala.Char): scala.Int = value * x
-  def *(x: scala.Int): scala.Int = value * x
-  def *(x: scala.Long): scala.Long = value * x
-  def *(x: scala.Float): scala.Float = value * x
+  def *(x: scala.Byte): scala.Int      = value * x
+  def *(x: scala.Short): scala.Int     = value * x
+  def *(x: scala.Char): scala.Int      = value * x
+  def *(x: scala.Int): scala.Int       = value * x
+  def *(x: scala.Long): scala.Long     = value * x
+  def *(x: scala.Float): scala.Float   = value * x
   def *(x: scala.Double): scala.Double = value * x
 
-  def /(x: scala.Byte): scala.Int = value / x
-  def /(x: scala.Short): scala.Int = value / x
-  def /(x: scala.Char): scala.Int = value / x
-  def /(x: scala.Int): scala.Int = value / x
-  def /(x: scala.Long): scala.Long = value / x
-  def /(x: scala.Float): scala.Float = value / x
+  def /(x: scala.Byte): scala.Int      = value / x
+  def /(x: scala.Short): scala.Int     = value / x
+  def /(x: scala.Char): scala.Int      = value / x
+  def /(x: scala.Int): scala.Int       = value / x
+  def /(x: scala.Long): scala.Long     = value / x
+  def /(x: scala.Float): scala.Float   = value / x
   def /(x: scala.Double): scala.Double = value / x
 
-  def %(x: scala.Byte): scala.Int = value % x
-  def %(x: scala.Short): scala.Int = value % x
-  def %(x: scala.Char): scala.Int = value % x
-  def %(x: scala.Int): scala.Int = value % x
-  def %(x: scala.Long): scala.Long = value % x
-  def %(x: scala.Float): scala.Float = value % x
+  def %(x: scala.Byte): scala.Int      = value % x
+  def %(x: scala.Short): scala.Int     = value % x
+  def %(x: scala.Char): scala.Int      = value % x
+  def %(x: scala.Int): scala.Int       = value % x
+  def %(x: scala.Long): scala.Long     = value % x
+  def %(x: scala.Float): scala.Float   = value % x
   def %(x: scala.Double): scala.Double = value % x
 
   // Methods of scala.Int that are not defined on scala.Double
@@ -63,28 +63,28 @@ class IntegerReflectiveCall(value: Int) {
   def unary_~ : scala.Int = ~value
   // scalastyle:on disallow.space.before.token
 
-  def <<(x: scala.Int): scala.Int = value << x
-  def <<(x: scala.Long): scala.Int = value << x
-  def >>>(x: scala.Int): scala.Int = value >>> x
+  def <<(x: scala.Int): scala.Int   = value << x
+  def <<(x: scala.Long): scala.Int  = value << x
+  def >>>(x: scala.Int): scala.Int  = value >>> x
   def >>>(x: scala.Long): scala.Int = value >>> x
-  def >>(x: scala.Int): scala.Int = value >> x
-  def >>(x: scala.Long): scala.Int = value >> x
+  def >>(x: scala.Int): scala.Int   = value >> x
+  def >>(x: scala.Long): scala.Int  = value >> x
 
-  def |(x: scala.Byte): scala.Int = value | x
+  def |(x: scala.Byte): scala.Int  = value | x
   def |(x: scala.Short): scala.Int = value | x
-  def |(x: scala.Char): scala.Int = value | x
-  def |(x: scala.Int): scala.Int = value | x
+  def |(x: scala.Char): scala.Int  = value | x
+  def |(x: scala.Int): scala.Int   = value | x
   def |(x: scala.Long): scala.Long = value | x
 
-  def &(x: scala.Byte): scala.Int = value & x
+  def &(x: scala.Byte): scala.Int  = value & x
   def &(x: scala.Short): scala.Int = value & x
-  def &(x: scala.Char): scala.Int = value & x
-  def &(x: scala.Int): scala.Int = value & x
+  def &(x: scala.Char): scala.Int  = value & x
+  def &(x: scala.Int): scala.Int   = value & x
   def &(x: scala.Long): scala.Long = value & x
 
-  def ^(x: scala.Byte): scala.Int = value ^ x
+  def ^(x: scala.Byte): scala.Int  = value ^ x
   def ^(x: scala.Short): scala.Int = value ^ x
-  def ^(x: scala.Char): scala.Int = value ^ x
-  def ^(x: scala.Int): scala.Int = value ^ x
+  def ^(x: scala.Char): scala.Int  = value ^ x
+  def ^(x: scala.Int): scala.Int   = value ^ x
   def ^(x: scala.Long): scala.Long = value ^ x
 }

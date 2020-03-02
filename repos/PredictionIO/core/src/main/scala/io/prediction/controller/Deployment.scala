@@ -24,7 +24,7 @@ import scala.language.implicitConversions
   */
 trait Deployment extends EngineFactory {
   protected[this] var _engine: BaseEngine[_, _, _, _] = _
-  protected[this] var engineSet: Boolean = false
+  protected[this] var engineSet: Boolean              = false
 
   /** Returns the [[Engine]] of this [[Deployment]] */
   def apply(): BaseEngine[_, _, _, _] = {

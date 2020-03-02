@@ -22,7 +22,11 @@ import java.io.IOException
 import org.apache.hadoop.fs.FSDataInputStream
 import org.apache.hadoop.io.{BytesWritable, LongWritable}
 import org.apache.hadoop.io.compress.CompressionCodecFactory
-import org.apache.hadoop.mapreduce.{InputSplit, RecordReader, TaskAttemptContext}
+import org.apache.hadoop.mapreduce.{
+  InputSplit,
+  RecordReader,
+  TaskAttemptContext
+}
 import org.apache.hadoop.mapreduce.lib.input.FileSplit
 
 /**
@@ -38,13 +42,13 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit
 private[spark] class FixedLengthBinaryRecordReader
     extends RecordReader[LongWritable, BytesWritable] {
 
-  private var splitStart: Long = 0L
-  private var splitEnd: Long = 0L
-  private var currentPosition: Long = 0L
-  private var recordLength: Int = 0
+  private var splitStart: Long                   = 0L
+  private var splitEnd: Long                     = 0L
+  private var currentPosition: Long              = 0L
+  private var recordLength: Int                  = 0
   private var fileInputStream: FSDataInputStream = null
-  private var recordKey: LongWritable = null
-  private var recordValue: BytesWritable = null
+  private var recordKey: LongWritable            = null
+  private var recordValue: BytesWritable         = null
 
   override def close() {
     if (fileInputStream != null) {
@@ -52,30 +56,26 @@ private[spark] class FixedLengthBinaryRecordReader
     }
   }
 
-  override def getCurrentKey: LongWritable = {
+  override def getCurrentKey: LongWritable =
     recordKey
-  }
 
-  override def getCurrentValue: BytesWritable = {
+  override def getCurrentValue: BytesWritable =
     recordValue
-  }
 
-  override def getProgress: Float = {
+  override def getProgress: Float =
     splitStart match {
       case x if x == splitEnd => 0.0.toFloat
       case _ =>
         Math
           .min(
-              ((currentPosition -
-                      splitStart) / (splitEnd - splitStart)).toFloat,
-              1.0
+            ((currentPosition -
+              splitStart) / (splitEnd - splitStart)).toFloat,
+            1.0
           )
           .toFloat
     }
-  }
 
-  override def initialize(
-      inputSplit: InputSplit, context: TaskAttemptContext) {
+  override def initialize(inputSplit: InputSplit, context: TaskAttemptContext) {
     // the file input
     val fileSplit = inputSplit.asInstanceOf[FileSplit]
 
@@ -93,7 +93,8 @@ private[spark] class FixedLengthBinaryRecordReader
     val codec = new CompressionCodecFactory(conf).getCodec(file)
     if (codec != null) {
       throw new IOException(
-          "FixedLengthRecordReader does not support reading compressed files")
+        "FixedLengthRecordReader does not support reading compressed files"
+      )
     }
     // get the record length
     recordLength = FixedLengthBinaryInputFormat.getRecordLength(context)

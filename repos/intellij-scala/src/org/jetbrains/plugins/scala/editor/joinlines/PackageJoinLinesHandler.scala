@@ -2,7 +2,10 @@ package org.jetbrains.plugins.scala
 package editor
 package joinlines
 
-import com.intellij.codeInsight.editorActions.{JoinLinesHandlerDelegate, JoinRawLinesHandlerDelegate}
+import com.intellij.codeInsight.editorActions.{
+  JoinLinesHandlerDelegate,
+  JoinRawLinesHandlerDelegate
+}
 import com.intellij.openapi.editor.Document
 import com.intellij.psi._
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.packaging.ScPackaging
@@ -11,8 +14,12 @@ import org.jetbrains.plugins.scala.lang.psi.api.toplevel.packaging.ScPackaging
 class PackageJoinLinesHandler extends JoinRawLinesHandlerDelegate {
   // Not very robust if there is trailing whitespace on the first line.
   def tryJoinRawLines(
-      document: Document, file: PsiFile, start: Int, end: Int): Int = {
-    val elementAtStartLineEnd: PsiElement = file.findElementAt(start)
+      document: Document,
+      file: PsiFile,
+      start: Int,
+      end: Int
+  ): Int = {
+    val elementAtStartLineEnd: PsiElement  = file.findElementAt(start)
     val elementAtNextLineStart: PsiElement = file.findElementAt(end)
     if (elementAtNextLineStart == null || elementAtStartLineEnd == null)
       return JoinLinesHandlerDelegate.CANNOT_JOIN
@@ -26,7 +33,10 @@ class PackageJoinLinesHandler extends JoinRawLinesHandlerDelegate {
   }
 
   def tryJoinLines(
-      document: Document, file: PsiFile, start: Int, end: Int): Int = {
+      document: Document,
+      file: PsiFile,
+      start: Int,
+      end: Int
+  ): Int =
     JoinLinesHandlerDelegate.CANNOT_JOIN
-  }
 }

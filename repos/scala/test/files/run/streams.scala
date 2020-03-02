@@ -60,7 +60,7 @@ object Test extends App {
 
   // ticket #6415
   lazy val x = { println("evaluated"); 1 }
-  val s4 = 0 #:: x #:: Stream.empty
+  val s4     = 0 #:: x #:: Stream.empty
 
   println(s4.isDefinedAt(0))
 }

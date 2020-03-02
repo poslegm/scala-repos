@@ -45,8 +45,8 @@ object DatePicker {
   * Wraps [[http://docs.oracle.com/javase/8/javafx/api/javafx/scene/control/DatePicker.html]].
   */
 class DatePicker(
-    override val delegate: jfxsc.DatePicker = new jfxsc.DatePicker())
-    extends ComboBoxBase[LocalDate](delegate)
+    override val delegate: jfxsc.DatePicker = new jfxsc.DatePicker()
+) extends ComboBoxBase[LocalDate](delegate)
     with SFXDelegate[jfxsc.DatePicker] {
 
   /**
@@ -76,9 +76,8 @@ class DatePicker(
   def dayCellFactory = delegate.dayCellFactoryProperty
   def dayCellFactory_=(value: DatePicker => DateCell) {
     dayCellFactory() = new jfxu.Callback[jfxsc.DatePicker, jfxsc.DateCell] {
-      def call(result: jfxsc.DatePicker) = {
+      def call(result: jfxsc.DatePicker) =
         value(result)
-      }
     }
   }
 
@@ -91,7 +90,6 @@ class DatePicker(
     * Whether the `DatePicker` popup should display a column showing week numbers.
     */
   def showWeekNumbers = delegate.showWeekNumbersProperty
-  def showWeekNumbers_=(value: Boolean) = {
+  def showWeekNumbers_=(value: Boolean) =
     showWeekNumbers() = value
-  }
 }

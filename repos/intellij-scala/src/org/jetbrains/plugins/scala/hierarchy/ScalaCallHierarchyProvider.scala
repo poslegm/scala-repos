@@ -8,14 +8,14 @@ import com.intellij.psi.{PsiElement, PsiMethod}
   * @author Alexander Podkhalyuzin
   */
 class ScalaCallHierarchyProvider extends JavaCallHierarchyProvider {
-  override def browserActivated(hierarchyBrowser: HierarchyBrowser): Unit = {
+  override def browserActivated(hierarchyBrowser: HierarchyBrowser): Unit =
     hierarchyBrowser
       .asInstanceOf[ScalaCallHierarchyBrowser]
       .changeView(CallHierarchyBrowserBase.CALLER_TYPE)
-  }
 
-  override def createHierarchyBrowser(target: PsiElement): HierarchyBrowser = {
+  override def createHierarchyBrowser(target: PsiElement): HierarchyBrowser =
     new ScalaCallHierarchyBrowser(
-        target.getProject, target.asInstanceOf[PsiMethod])
-  }
+      target.getProject,
+      target.asInstanceOf[PsiMethod]
+    )
 }

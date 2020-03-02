@@ -108,67 +108,67 @@ class BigDecimalTest {
   // java.lang.Math.BigDecimal double Constructors
 
   @Test def `should accept 3.3 as a double`(): Unit = {
-    val d = 3.3
+    val d  = 3.3
     val bd = new BigDecimal(d)
     assertEquals(d, bd.doubleValue(), 0.0)
   }
 
   @Test def `should accept 99.99 as a double`(): Unit = {
-    val d = 99.99
+    val d  = 99.99
     val bd = new BigDecimal(d)
     assertEquals(d, bd.doubleValue(), 0.0)
   }
 
   @Test def `should accept 9999.9999 as a double`(): Unit = {
     val d: Double = 9999.9999
-    val bd = new BigDecimal(d)
+    val bd        = new BigDecimal(d)
     assertEquals(d, bd.doubleValue(), 0.0)
   }
 
   @Test def `should accept 99999999.99999999 as a double`(): Unit = {
-    val d = 99999999.99999999
+    val d  = 99999999.99999999
     val bd = new BigDecimal(d)
     assertEquals(d, bd.doubleValue(), 0.0)
   }
 
   @Test def `should accept 999999999.999999999 as a double`(): Unit = {
-    val d = 999999999.999999999
+    val d  = 999999999.999999999
     val bd = new BigDecimal(d)
     assertEquals(d, bd.doubleValue(), 0.0)
   }
 
   @Test def `should accept 9999999999.9999999999 as a double`(): Unit = {
-    val d = 9999999999.9999999999
+    val d  = 9999999999.9999999999
     val bd = new BigDecimal(d)
     assertEquals(d, bd.doubleValue(), 0.0)
   }
 
   @Test def `should accept -3.3 as a double`(): Unit = {
-    val d = -3.3
+    val d  = -3.3
     val bd = new BigDecimal(d)
     assertEquals(d, bd.doubleValue(), 0.0)
   }
 
   @Test def `should accept -99.99 as a double`(): Unit = {
-    val d = -99.99
+    val d  = -99.99
     val bd = new BigDecimal(d)
     assertEquals(d, bd.doubleValue(), 0.0)
   }
 
   @Test def `should accept -99999999.99999999 as a double`(): Unit = {
-    val d = -99999999.99999999
+    val d  = -99999999.99999999
     val bd = new BigDecimal(d)
     assertEquals(d, bd.doubleValue(), 0.0)
   }
 
   @Test def `should accept -999999999.999999999 as a double`(): Unit = {
-    val d = -999999999.999999999
+    val d  = -999999999.999999999
     val bd = new BigDecimal(d)
     assertEquals(d, bd.doubleValue(), 0.0)
   }
 
   @Test def `should accept -9999999999.9999999999 as a double`(): Unit = {
-    val d = -9999999999.9999999999
+    val d  = -9999999999.9999999999
     val bd = new BigDecimal(d)
     assertEquals(d, bd.doubleValue(), 0.0)
   }

@@ -74,7 +74,8 @@ trait LEvents {
     */
   @DeveloperApi
   def futureInsert(event: Event, appId: Int)(
-      implicit ec: ExecutionContext): Future[String] =
+      implicit ec: ExecutionContext
+  ): Future[String] =
     futureInsert(event, appId, None)
 
   /** :: DeveloperApi ::
@@ -86,7 +87,8 @@ trait LEvents {
     */
   @DeveloperApi
   def futureInsert(event: Event, appId: Int, channelId: Option[Int])(
-      implicit ec: ExecutionContext): Future[String]
+      implicit ec: ExecutionContext
+  ): Future[String]
 
   /** :: DeveloperApi ::
     * Get an [[Event]] in a non-blocking fashion.
@@ -96,7 +98,8 @@ trait LEvents {
     */
   @DeveloperApi
   def futureGet(eventId: String, appId: Int)(
-      implicit ec: ExecutionContext): Future[Option[Event]] =
+      implicit ec: ExecutionContext
+  ): Future[Option[Event]] =
     futureGet(eventId, appId, None)
 
   /** :: DeveloperApi ::
@@ -121,7 +124,8 @@ trait LEvents {
     */
   @DeveloperApi
   def futureDelete(eventId: String, appId: Int)(
-      implicit ec: ExecutionContext): Future[Boolean] =
+      implicit ec: ExecutionContext
+  ): Future[Boolean] =
     futureDelete(eventId, appId, None)
 
   /** :: DeveloperApi ::
@@ -197,15 +201,15 @@ trait LEvents {
       entityType: String,
       startTime: Option[DateTime] = None,
       untilTime: Option[DateTime] = None,
-      required: Option[Seq[String]] = None)(
-      implicit ec: ExecutionContext): Future[Map[String, PropertyMap]] = {
+      required: Option[Seq[String]] = None
+  )(implicit ec: ExecutionContext): Future[Map[String, PropertyMap]] =
     futureFind(
-        appId = appId,
-        channelId = channelId,
-        startTime = startTime,
-        untilTime = untilTime,
-        entityType = Some(entityType),
-        eventNames = Some(LEventAggregator.eventNames)
+      appId = appId,
+      channelId = channelId,
+      startTime = startTime,
+      untilTime = untilTime,
+      entityType = Some(entityType),
+      eventNames = Some(LEventAggregator.eventNames)
     ).map { eventIt =>
       val dm = LEventAggregator.aggregateProperties(eventIt)
       if (required.isDefined) {
@@ -215,7 +219,6 @@ trait LEvents {
         }
       } else dm
     }
-  }
 
   /**
     * :: Experimental ::
@@ -241,45 +244,42 @@ trait LEvents {
       entityType: String,
       entityId: String,
       startTime: Option[DateTime] = None,
-      untilTime: Option[DateTime] = None)(
-      implicit ec: ExecutionContext): Future[Option[PropertyMap]] = {
+      untilTime: Option[DateTime] = None
+  )(implicit ec: ExecutionContext): Future[Option[PropertyMap]] =
     futureFind(
-        appId = appId,
-        channelId = channelId,
-        startTime = startTime,
-        untilTime = untilTime,
-        entityType = Some(entityType),
-        entityId = Some(entityId),
-        eventNames = Some(LEventAggregator.eventNames)
-    ).map { eventIt =>
-      LEventAggregator.aggregatePropertiesSingle(eventIt)
-    }
-  }
+      appId = appId,
+      channelId = channelId,
+      startTime = startTime,
+      untilTime = untilTime,
+      entityType = Some(entityType),
+      entityId = Some(entityId),
+      eventNames = Some(LEventAggregator.eventNames)
+    ).map(eventIt => LEventAggregator.aggregatePropertiesSingle(eventIt))
 
   // following is blocking
-  private[prediction] def insert(event: Event,
-                                 appId: Int,
-                                 channelId: Option[Int] = None,
-                                 timeout: Duration = defaultTimeout)(
-      implicit ec: ExecutionContext): String = {
+  private[prediction] def insert(
+      event: Event,
+      appId: Int,
+      channelId: Option[Int] = None,
+      timeout: Duration = defaultTimeout
+  )(implicit ec: ExecutionContext): String =
     Await.result(futureInsert(event, appId, channelId), timeout)
-  }
 
-  private[prediction] def get(eventId: String,
-                              appId: Int,
-                              channelId: Option[Int] = None,
-                              timeout: Duration = defaultTimeout)(
-      implicit ec: ExecutionContext): Option[Event] = {
+  private[prediction] def get(
+      eventId: String,
+      appId: Int,
+      channelId: Option[Int] = None,
+      timeout: Duration = defaultTimeout
+  )(implicit ec: ExecutionContext): Option[Event] =
     Await.result(futureGet(eventId, appId, channelId), timeout)
-  }
 
-  private[prediction] def delete(eventId: String,
-                                 appId: Int,
-                                 channelId: Option[Int] = None,
-                                 timeout: Duration = defaultTimeout)(
-      implicit ec: ExecutionContext): Boolean = {
+  private[prediction] def delete(
+      eventId: String,
+      appId: Int,
+      channelId: Option[Int] = None,
+      timeout: Duration = defaultTimeout
+  )(implicit ec: ExecutionContext): Boolean =
     Await.result(futureDelete(eventId, appId, channelId), timeout)
-  }
 
   /** reads from database and returns events iterator.
     *
@@ -306,32 +306,36 @@ trait LEvents {
     * @param ec ExecutionContext
     * @return Iterator[Event]
     */
-  private[prediction] def find(appId: Int,
-                               channelId: Option[Int] = None,
-                               startTime: Option[DateTime] = None,
-                               untilTime: Option[DateTime] = None,
-                               entityType: Option[String] = None,
-                               entityId: Option[String] = None,
-                               eventNames: Option[Seq[String]] = None,
-                               targetEntityType: Option[Option[String]] = None,
-                               targetEntityId: Option[Option[String]] = None,
-                               limit: Option[Int] = None,
-                               reversed: Option[Boolean] = None,
-                               timeout: Duration = defaultTimeout)(
-      implicit ec: ExecutionContext): Iterator[Event] = {
-    Await.result(futureFind(appId = appId,
-                            channelId = channelId,
-                            startTime = startTime,
-                            untilTime = untilTime,
-                            entityType = entityType,
-                            entityId = entityId,
-                            eventNames = eventNames,
-                            targetEntityType = targetEntityType,
-                            targetEntityId = targetEntityId,
-                            limit = limit,
-                            reversed = reversed),
-                 timeout)
-  }
+  private[prediction] def find(
+      appId: Int,
+      channelId: Option[Int] = None,
+      startTime: Option[DateTime] = None,
+      untilTime: Option[DateTime] = None,
+      entityType: Option[String] = None,
+      entityId: Option[String] = None,
+      eventNames: Option[Seq[String]] = None,
+      targetEntityType: Option[Option[String]] = None,
+      targetEntityId: Option[Option[String]] = None,
+      limit: Option[Int] = None,
+      reversed: Option[Boolean] = None,
+      timeout: Duration = defaultTimeout
+  )(implicit ec: ExecutionContext): Iterator[Event] =
+    Await.result(
+      futureFind(
+        appId = appId,
+        channelId = channelId,
+        startTime = startTime,
+        untilTime = untilTime,
+        entityType = entityType,
+        entityId = entityId,
+        eventNames = eventNames,
+        targetEntityType = targetEntityType,
+        targetEntityId = targetEntityId,
+        limit = limit,
+        reversed = reversed
+      ),
+      timeout
+    )
 
   // NOTE: remove in next release
   @deprecated("Use find() instead.", "0.9.2")
@@ -347,28 +351,32 @@ trait LEvents {
       targetEntityId: Option[Option[String]] = None,
       limit: Option[Int] = None,
       reversed: Option[Boolean] = None,
-      timeout: Duration = defaultTimeout)(
-      implicit ec: ExecutionContext): Either[StorageError, Iterator[Event]] = {
+      timeout: Duration = defaultTimeout
+  )(implicit ec: ExecutionContext): Either[StorageError, Iterator[Event]] =
     try {
       // return Either for legacy usage
       Right(
-          Await.result(futureFind(appId = appId,
-                                  channelId = channelId,
-                                  startTime = startTime,
-                                  untilTime = untilTime,
-                                  entityType = entityType,
-                                  entityId = entityId,
-                                  eventNames = eventNames,
-                                  targetEntityType = targetEntityType,
-                                  targetEntityId = targetEntityId,
-                                  limit = limit,
-                                  reversed = reversed),
-                       timeout))
+        Await.result(
+          futureFind(
+            appId = appId,
+            channelId = channelId,
+            startTime = startTime,
+            untilTime = untilTime,
+            entityType = entityType,
+            entityId = entityId,
+            eventNames = eventNames,
+            targetEntityType = targetEntityType,
+            targetEntityId = targetEntityId,
+            limit = limit,
+            reversed = reversed
+          ),
+          timeout
+        )
+      )
     } catch {
       case e: TimeoutException => Left(StorageError(s"${e}"))
-      case e: Exception => Left(StorageError(s"${e}"))
+      case e: Exception        => Left(StorageError(s"${e}"))
     }
-  }
 
   /** reads events of the specified entity.
     *
@@ -394,33 +402,34 @@ trait LEvents {
     */
   // NOTE: remove this function in next release
   @deprecated("Use LEventStore.findByEntity() instead.", "0.9.2")
-  def findSingleEntity(appId: Int,
-                       channelId: Option[Int] = None,
-                       entityType: String,
-                       entityId: String,
-                       eventNames: Option[Seq[String]] = None,
-                       targetEntityType: Option[Option[String]] = None,
-                       targetEntityId: Option[Option[String]] = None,
-                       startTime: Option[DateTime] = None,
-                       untilTime: Option[DateTime] = None,
-                       limit: Option[Int] = None,
-                       latest: Boolean = true,
-                       timeout: Duration = defaultTimeout)(
-      implicit ec: ExecutionContext): Either[StorageError, Iterator[Event]] = {
-
-    findLegacy(appId = appId,
-               channelId = channelId,
-               startTime = startTime,
-               untilTime = untilTime,
-               entityType = Some(entityType),
-               entityId = Some(entityId),
-               eventNames = eventNames,
-               targetEntityType = targetEntityType,
-               targetEntityId = targetEntityId,
-               limit = limit,
-               reversed = Some(latest),
-               timeout = timeout)
-  }
+  def findSingleEntity(
+      appId: Int,
+      channelId: Option[Int] = None,
+      entityType: String,
+      entityId: String,
+      eventNames: Option[Seq[String]] = None,
+      targetEntityType: Option[Option[String]] = None,
+      targetEntityId: Option[Option[String]] = None,
+      startTime: Option[DateTime] = None,
+      untilTime: Option[DateTime] = None,
+      limit: Option[Int] = None,
+      latest: Boolean = true,
+      timeout: Duration = defaultTimeout
+  )(implicit ec: ExecutionContext): Either[StorageError, Iterator[Event]] =
+    findLegacy(
+      appId = appId,
+      channelId = channelId,
+      startTime = startTime,
+      untilTime = untilTime,
+      entityType = Some(entityType),
+      entityId = Some(entityId),
+      eventNames = eventNames,
+      targetEntityType = targetEntityType,
+      targetEntityId = targetEntityId,
+      limit = limit,
+      reversed = Some(latest),
+      timeout = timeout
+    )
 
   /** Aggregate properties of entities based on these special events:
     * \$set, \$unset, \$delete events.
@@ -442,16 +451,19 @@ trait LEvents {
       startTime: Option[DateTime] = None,
       untilTime: Option[DateTime] = None,
       required: Option[Seq[String]] = None,
-      timeout: Duration = defaultTimeout)(
-      implicit ec: ExecutionContext): Map[String, PropertyMap] = {
-    Await.result(futureAggregateProperties(appId = appId,
-                                           channelId = channelId,
-                                           entityType = entityType,
-                                           startTime = startTime,
-                                           untilTime = untilTime,
-                                           required = required),
-                 timeout)
-  }
+      timeout: Duration = defaultTimeout
+  )(implicit ec: ExecutionContext): Map[String, PropertyMap] =
+    Await.result(
+      futureAggregateProperties(
+        appId = appId,
+        channelId = channelId,
+        entityType = entityType,
+        startTime = startTime,
+        untilTime = untilTime,
+        required = required
+      ),
+      timeout
+    )
 
   /**
     * :: Experimental ::
@@ -478,15 +490,17 @@ trait LEvents {
       entityId: String,
       startTime: Option[DateTime] = None,
       untilTime: Option[DateTime] = None,
-      timeout: Duration = defaultTimeout)(
-      implicit ec: ExecutionContext): Option[PropertyMap] = {
-
-    Await.result(futureAggregatePropertiesOfEntity(appId = appId,
-                                                   channelId = channelId,
-                                                   entityType = entityType,
-                                                   entityId = entityId,
-                                                   startTime = startTime,
-                                                   untilTime = untilTime),
-                 timeout)
-  }
+      timeout: Duration = defaultTimeout
+  )(implicit ec: ExecutionContext): Option[PropertyMap] =
+    Await.result(
+      futureAggregatePropertiesOfEntity(
+        appId = appId,
+        channelId = channelId,
+        entityType = entityType,
+        entityId = entityId,
+        startTime = startTime,
+        untilTime = untilTime
+      ),
+      timeout
+    )
 }

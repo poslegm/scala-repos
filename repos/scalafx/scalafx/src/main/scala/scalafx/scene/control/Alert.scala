@@ -149,7 +149,8 @@ object Alert {
   * @define ORIGINALDOC Original Documentation]].
   */
 class Alert(override val delegate: jfxsc.Alert)
-    extends Dialog[jfxsc.ButtonType](delegate) with SFXDelegate[jfxsc.Alert] {
+    extends Dialog[jfxsc.ButtonType](delegate)
+    with SFXDelegate[jfxsc.Alert] {
 
   /**
     * Creates an alert with the given AlertType (refer to the `AlertType`
@@ -198,11 +199,10 @@ class Alert(override val delegate: jfxsc.Alert)
     *
     * @return An `Option` that contains the `result`.
     */
-  def showAndWait(): Option[ButtonType] = {
+  def showAndWait(): Option[ButtonType] =
     super
       .showAndWait((x: jfxsc.ButtonType) => new ButtonType(x))
       .asInstanceOf[Option[ButtonType]]
-  }
 
   def alertType: ObjectProperty[jfxsc.Alert.AlertType] =
     delegate.alertTypeProperty

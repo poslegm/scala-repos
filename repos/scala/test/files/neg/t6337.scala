@@ -7,7 +7,7 @@ object C {
 }
 
 class X[T](val i: XX[T]) extends AnyVal
-class XX[T](val x: T) extends AnyVal
+class XX[T](val x: T)    extends AnyVal
 
 object C1 {
   def main(args: Array[String]) {
@@ -16,5 +16,5 @@ object C1 {
   }
 }
 
-class X1[T](val i: XX1[T]) extends AnyVal
+class X1[T](val i: XX1[T])     extends AnyVal
 class XX1[T](val x: Option[T]) extends AnyVal

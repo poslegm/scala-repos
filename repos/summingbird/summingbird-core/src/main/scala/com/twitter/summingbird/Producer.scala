@@ -26,7 +26,8 @@ object Producer {
     * and it returns the input node.
     */
   def entireGraphOf[P <: Platform[P]](
-      p: Producer[P, Any]): List[Producer[P, Any]] = {
+      p: Producer[P, Any]
+  ): List[Producer[P, Any]] = {
     val above = graph.depthFirstOf(p)(parentsOf)
     p :: above
   }
@@ -36,16 +37,17 @@ object Producer {
     *  It differs from dependencies in that it will also return the predecessor of an AlsoProducer
     */
   def parentsOf[P <: Platform[P]](
-      in: Producer[P, Any]): List[Producer[P, Any]] = {
+      in: Producer[P, Any]
+  ): List[Producer[P, Any]] =
     in match {
       case AlsoProducer(l, r) => List(l, r)
-      case _ => dependenciesOf(in)
+      case _                  => dependenciesOf(in)
     }
-  }
 
   /** Returns the first Summer of the provided list of Producers */
   def retrieveSummer[P <: Platform[P]](
-      paths: List[Producer[P, _]]): Option[Summer[P, _, _]] =
+      paths: List[Producer[P, _]]
+  ): Option[Summer[P, _, _]] =
     paths.collectFirst { case s: Summer[P, _, _] => s }
 
   /**
@@ -60,8 +62,9 @@ object Producer {
     * implicit conversion from Producer[P, T] to KeyedProducer[P, K, V] when the type T is a tuple of (K, V) as proven by evidence ev
     *  enabling the operations on keys (sumByKey, ...)
     */
-  implicit def evToKeyed[P <: Platform[P], T, K, V](producer: Producer[P, T])(
-      implicit ev: T <:< (K, V)): KeyedProducer[P, K, V] =
+  implicit def evToKeyed[P <: Platform[P], T, K, V](
+      producer: Producer[P, T]
+  )(implicit ev: T <:< (K, V)): KeyedProducer[P, K, V] =
     IdentityKeyedProducer[P, K, V](producer.asInstanceOf[Producer[P, (K, V)]])
 
   /**
@@ -69,7 +72,8 @@ object Producer {
     *  enabling the operations on keys (sumByKey, ...)
     */
   implicit def toKeyed[P <: Platform[P], K, V](
-      producer: Producer[P, (K, V)]): KeyedProducer[P, K, V] =
+      producer: Producer[P, (K, V)]
+  ): KeyedProducer[P, K, V] =
     IdentityKeyedProducer[P, K, V](producer)
 
   /** a semigroup on producers where + means merge */
@@ -78,20 +82,21 @@ object Producer {
 
   /** the list of the Producers, this producer directly depends on */
   def dependenciesOf[P <: Platform[P]](
-      p: Producer[P, Any]): List[Producer[P, Any]] =
+      p: Producer[P, Any]
+  ): List[Producer[P, Any]] =
     p match {
-      case Source(_) => List()
-      case AlsoProducer(_, producer) => List(producer)
-      case NamedProducer(producer, _) => List(producer)
-      case IdentityKeyedProducer(producer) => List(producer)
-      case OptionMappedProducer(producer, _) => List(producer)
-      case FlatMappedProducer(producer, _) => List(producer)
-      case KeyFlatMappedProducer(producer, _) => List(producer)
+      case Source(_)                            => List()
+      case AlsoProducer(_, producer)            => List(producer)
+      case NamedProducer(producer, _)           => List(producer)
+      case IdentityKeyedProducer(producer)      => List(producer)
+      case OptionMappedProducer(producer, _)    => List(producer)
+      case FlatMappedProducer(producer, _)      => List(producer)
+      case KeyFlatMappedProducer(producer, _)   => List(producer)
       case ValueFlatMappedProducer(producer, _) => List(producer)
-      case WrittenProducer(producer, _) => List(producer)
-      case LeftJoinedProducer(producer, _) => List(producer)
-      case Summer(producer, _, _) => List(producer)
-      case MergedProducer(l, r) => List(l, r)
+      case WrittenProducer(producer, _)         => List(producer)
+      case LeftJoinedProducer(producer, _)      => List(producer)
+      case Summer(producer, _, _)               => List(producer)
+      case MergedProducer(l, r)                 => List(l, r)
     }
 
   /**
@@ -99,31 +104,32 @@ object Producer {
     */
   def isNoOp[P <: Platform[P]](p: Producer[P, Any]): Boolean = p match {
     case IdentityKeyedProducer(_) => true
-    case NamedProducer(_, _) => true
-    case MergedProducer(_, _) => true
-    case AlsoProducer(_, _) => true
+    case NamedProducer(_, _)      => true
+    case MergedProducer(_, _)     => true
+    case AlsoProducer(_, _)       => true
     // The rest do something
-    case Source(_) => false
-    case OptionMappedProducer(_, _) => false
-    case FlatMappedProducer(_, _) => false
-    case KeyFlatMappedProducer(_, _) => false
+    case Source(_)                     => false
+    case OptionMappedProducer(_, _)    => false
+    case FlatMappedProducer(_, _)      => false
+    case KeyFlatMappedProducer(_, _)   => false
     case ValueFlatMappedProducer(_, _) => false
-    case WrittenProducer(_, _) => false
-    case LeftJoinedProducer(_, _) => false
-    case Summer(_, _, _) => false
+    case WrittenProducer(_, _)         => false
+    case LeftJoinedProducer(_, _)      => false
+    case Summer(_, _, _)               => false
   }
 
   /** returns true if this Producer is an output of the DAG (Summer and WrittenProducer) */
   def isOutput[P <: Platform[P]](p: Producer[P, Any]): Boolean = p match {
     case Summer(_, _, _) | WrittenProducer(_, _) => true
-    case _ => false
+    case _                                       => false
   }
 
   /**
     * Return all dependencies of a given node in depth first, left first order.
     */
   def transitiveDependenciesOf[P <: Platform[P]](
-      p: Producer[P, Any]): List[Producer[P, Any]] = {
+      p: Producer[P, Any]
+  ): List[Producer[P, Any]] = {
     val nfn = dependenciesOf[P](_)
     graph.depthFirstOf(p)(nfn)
   }
@@ -169,7 +175,8 @@ sealed trait Producer[P <: Platform[P], +T] {
     * say a stream of inputs, such as IDs.
     */
   def lookup[U >: T, V](
-      service: P#Service[U, V]): KeyedProducer[P, U, Option[V]] =
+      service: P#Service[U, V]
+  ): KeyedProducer[P, U, Option[V]] =
     map[(U, Unit)]((_, ())).leftJoin(service).mapValues { case (_, v) => v }
 
   /** Map each item to a new value */
@@ -215,8 +222,9 @@ sealed trait TailProducer[P <: Platform[P], +T] extends Producer[P, T] {
     * This can be used to combine two independent Producers in a way that ensures
     * that the Platform will plan both into a single Plan.
     */
-  def also[R](that: TailProducer[P, R])(
-      implicit ev: DummyImplicit): TailProducer[P, R] =
+  def also[R](
+      that: TailProducer[P, R]
+  )(implicit ev: DummyImplicit): TailProducer[P, R] =
     new AlsoTailProducer(this, that)
 
   def also[R](that: Producer[P, R]): Producer[P, R] = AlsoProducer(this, that)
@@ -226,49 +234,60 @@ sealed trait TailProducer[P <: Platform[P], +T] extends Producer[P, T] {
 }
 
 class AlsoTailProducer[P <: Platform[P], +T, +R](
-    ensure: TailProducer[P, T], result: TailProducer[P, R])
-    extends AlsoProducer[P, T, R](ensure, result) with TailProducer[P, R]
+    ensure: TailProducer[P, T],
+    result: TailProducer[P, R]
+) extends AlsoProducer[P, T, R](ensure, result)
+    with TailProducer[P, R]
 
 /**
   * This is a special node that ensures that the first argument is planned, but produces values
   * equivalent to the result.
   */
 case class AlsoProducer[P <: Platform[P], +T, +R](
-    ensure: TailProducer[P, T], result: Producer[P, R])
-    extends Producer[P, R]
+    ensure: TailProducer[P, T],
+    result: Producer[P, R]
+) extends Producer[P, R]
 
 case class NamedProducer[P <: Platform[P], +T](
-    producer: Producer[P, T], id: String)
-    extends Producer[P, T]
+    producer: Producer[P, T],
+    id: String
+) extends Producer[P, T]
 
 class TPNamedProducer[P <: Platform[P], +T](
-    producer: Producer[P, T], id: String)
-    extends NamedProducer[P, T](producer, id) with TailProducer[P, T]
+    producer: Producer[P, T],
+    id: String
+) extends NamedProducer[P, T](producer, id)
+    with TailProducer[P, T]
 
 /**
   * Represents filters and maps which may be optimized differently
   * Note that "option-mapping" is closed under composition and hence useful to call out
   */
 case class OptionMappedProducer[P <: Platform[P], T, +U](
-    producer: Producer[P, T], fn: T => Option[U])
-    extends Producer[P, U]
+    producer: Producer[P, T],
+    fn: T => Option[U]
+) extends Producer[P, U]
 
 case class FlatMappedProducer[P <: Platform[P], T, +U](
-    producer: Producer[P, T], fn: T => TraversableOnce[U])
-    extends Producer[P, U]
+    producer: Producer[P, T],
+    fn: T => TraversableOnce[U]
+) extends Producer[P, U]
 
 case class MergedProducer[P <: Platform[P], +T](
-    left: Producer[P, T], right: Producer[P, T])
-    extends Producer[P, T]
+    left: Producer[P, T],
+    right: Producer[P, T]
+) extends Producer[P, T]
 
 case class WrittenProducer[P <: Platform[P], T, U >: T](
-    producer: Producer[P, T], sink: P#Sink[U])
-    extends TailProducer[P, T]
+    producer: Producer[P, T],
+    sink: P#Sink[U]
+) extends TailProducer[P, T]
 
-case class Summer[P <: Platform[P], K, V](producer: Producer[P, (K, V)],
-                                          store: P#Store[K, V],
-                                          semigroup: Semigroup[V])
-    extends KeyedProducer[P, K, (Option[V], V)]
+case class Summer[P <: Platform[P], K, V](
+    producer: Producer[P, (K, V)],
+    store: P#Store[K, V],
+    semigroup: Semigroup[V]
+) extends KeyedProducer[P, K, (Option[V], V)]
     with TailProducer[P, (K, (Option[V], V))]
 
 /**
@@ -277,13 +296,13 @@ case class Summer[P <: Platform[P], K, V](producer: Producer[P, (K, V)],
   * do it! This is how you communicate structure to Summingbird and it uses these hints
   * to attempt the most efficient run of your code.
   */
-sealed trait KeyedProducer[P <: Platform[P], K, V]
-    extends Producer[P, (K, V)] {
+sealed trait KeyedProducer[P <: Platform[P], K, V] extends Producer[P, (K, V)] {
 
   /** Builds a new KeyedProvider by applying a partial function to keys of elements of this one on which the function is defined.*/
   def collectKeys[K2](pf: PartialFunction[K, K2]): KeyedProducer[P, K2, V] =
-    IdentityKeyedProducer(
-        collect { case (k, v) if pf.isDefinedAt(k) => (pf(k), v) })
+    IdentityKeyedProducer(collect {
+      case (k, v) if pf.isDefinedAt(k) => (pf(k), v)
+    })
 
   /** Builds a new KeyedProvider by applying a partial function to values of elements of this one on which the function is defined.*/
   def collectValues[V2](pf: PartialFunction[V, V2]): KeyedProducer[P, K, V2] =
@@ -307,9 +326,7 @@ sealed trait KeyedProducer[P <: Platform[P], K, V]
     * the partition.
     */
   def filterValues(pred: V => Boolean): KeyedProducer[P, K, V] =
-    flatMapValues { v =>
-      if (pred(v)) Iterator(v) else Iterator.empty
-    }
+    flatMapValues(v => if (pred(v)) Iterator(v) else Iterator.empty)
 
   /**
     * Prefer to call this method to flatMap if you are expanding only keys.
@@ -329,8 +346,9 @@ sealed trait KeyedProducer[P <: Platform[P], K, V]
     * Do a lookup/join on a service. This is how you trigger async computation is summingbird.
     * Any remote API call, DB lookup, etc... happens here
     */
-  def leftJoin[RightV](service: P#Service[K, RightV])
-    : KeyedProducer[P, K, (V, Option[RightV])] =
+  def leftJoin[RightV](
+      service: P#Service[K, RightV]
+  ): KeyedProducer[P, K, (V, Option[RightV])] =
     LeftJoinedProducer(this, service)
 
   /**
@@ -340,7 +358,8 @@ sealed trait KeyedProducer[P <: Platform[P], K, V]
     */
   def leftJoin[RightV](
       stream: KeyedProducer[P, K, RightV],
-      buffer: P#Buffer[K, RightV]): KeyedProducer[P, K, (V, Option[RightV])] =
+      buffer: P#Buffer[K, RightV]
+  ): KeyedProducer[P, K, (V, Option[RightV])] =
     stream.write(buffer).also(leftJoin(buffer))
 
   /**
@@ -352,9 +371,7 @@ sealed trait KeyedProducer[P <: Platform[P], K, V]
 
   /** Prefer this to a raw map as this may be optimized to avoid a key reshuffle */
   def mapValues[U](fn: V => U): KeyedProducer[P, K, U] =
-    flatMapValues { v =>
-      Iterator(fn(v))
-    }
+    flatMapValues(v => Iterator(fn(v)))
 
   /**
     * emits a KeyedProducer with a value that is the store value, just BEFORE a merge,
@@ -365,8 +382,9 @@ sealed trait KeyedProducer[P <: Platform[P], K, V]
     * (v0, vdelta1), (v0 + vdelta1, vdelta2), (v0 + vdelta1 + vdelta2, vdelta3), ...
     *
     */
-  def sumByKey(store: P#Store[K, V])(
-      implicit semigroup: Semigroup[V]): Summer[P, K, V] =
+  def sumByKey(
+      store: P#Store[K, V]
+  )(implicit semigroup: Semigroup[V]): Summer[P, K, V] =
     Summer(this, store, semigroup)
 
   /** Exchange values for keys */
@@ -377,17 +395,20 @@ sealed trait KeyedProducer[P <: Platform[P], K, V]
 }
 
 case class KeyFlatMappedProducer[P <: Platform[P], K, V, K2](
-    producer: Producer[P, (K, V)], fn: K => TraversableOnce[K2])
-    extends KeyedProducer[P, K2, V]
+    producer: Producer[P, (K, V)],
+    fn: K => TraversableOnce[K2]
+) extends KeyedProducer[P, K2, V]
 
 case class ValueFlatMappedProducer[P <: Platform[P], K, V, V2](
-    producer: Producer[P, (K, V)], fn: V => TraversableOnce[V2])
-    extends KeyedProducer[P, K, V2]
+    producer: Producer[P, (K, V)],
+    fn: V => TraversableOnce[V2]
+) extends KeyedProducer[P, K, V2]
 
 case class IdentityKeyedProducer[P <: Platform[P], K, V](
-    producer: Producer[P, (K, V)])
-    extends KeyedProducer[P, K, V]
+    producer: Producer[P, (K, V)]
+) extends KeyedProducer[P, K, V]
 
 case class LeftJoinedProducer[P <: Platform[P], K, V, JoinedV](
-    left: Producer[P, (K, V)], joined: P#Service[K, JoinedV])
-    extends KeyedProducer[P, K, (V, Option[JoinedV])]
+    left: Producer[P, (K, V)],
+    joined: P#Service[K, JoinedV]
+) extends KeyedProducer[P, K, (V, Option[JoinedV])]

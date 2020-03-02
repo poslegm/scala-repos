@@ -35,7 +35,14 @@ import org.scalacheck.Properties
 import org.apache.hadoop.conf.Configuration
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable.{ArrayBuffer, Buffer, HashMap => MutableHashMap, Map => MutableMap, SynchronizedBuffer, SynchronizedMap}
+import scala.collection.mutable.{
+  ArrayBuffer,
+  Buffer,
+  HashMap => MutableHashMap,
+  Map => MutableMap,
+  SynchronizedBuffer,
+  SynchronizedMap
+}
 
 import cascading.scheme.local.{TextDelimited => CLTextDelimited}
 import cascading.tuple.{Tuple, Fields, TupleEntry}
@@ -65,15 +72,20 @@ class ScaldingSerializationSpecs extends WordSpec {
       val (buffer, source) = TestSource(inWithTime)
 
       val summer = TestGraphs.singleStepJob[Scalding, (Long, Int), Int, Int](
-          source, testStore) { tup =>
-        List((1 -> tup._2))
-      }
+        source,
+        testStore
+      )(tup => List((1 -> tup._2)))
 
-      val mode = HadoopTest(new Configuration, {
-        case x: ScaldingSource => buffer.get(x)
-      })
+      val mode = HadoopTest(
+        new Configuration,
+        {
+          case x: ScaldingSource => buffer.get(x)
+        }
+      )
       val intr = Interval.leftClosedRightOpen(
-          Timestamp(0L), Timestamp(inWithTime.size.toLong))
+        Timestamp(0L),
+        Timestamp(inWithTime.size.toLong)
+      )
       val scald = Scalding("scalaCheckJob")
 
       assert((try {

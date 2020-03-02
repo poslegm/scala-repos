@@ -4,7 +4,7 @@
 
 object M0 {
   def gcd(a: Int, b: Int): Int = if (b == 0) a else gcd(b, a % b)
-  def factorial(n: Int): Int = if (n == 0) 1 else n * factorial(n - 1)
+  def factorial(n: Int): Int   = if (n == 0) 1 else n * factorial(n - 1)
 
   Console.println(gcd(14, 21))
   Console.println(factorial(5))
@@ -47,16 +47,16 @@ object M1 {
 //############################################################################
 
 object M2 {
-  def id(x: Int): Double = x;
-  def cube(x: Int): Double = x * x * x;
+  def id(x: Int): Double         = x;
+  def cube(x: Int): Double       = x * x * x;
   def reciprocal(x: Int): Double = 1.0 / x;
 
   def sum(f: Int => Double, a: Int, b: Int): Double =
     if (a > b) 0
     else f(a) + sum(f, a + 1, b);
 
-  def sumInts(a: Int, b: Int): Double = sum(id, a, b);
-  def sumCubes(a: Int, b: Int): Double = sum(cube, a, b);
+  def sumInts(a: Int, b: Int): Double        = sum(id, a, b);
+  def sumCubes(a: Int, b: Int): Double       = sum(cube, a, b);
   def sumReciprocals(a: Int, b: Int): Double = sum(reciprocal, a, b);
   def sumPi(n: Int): Double = {
     def element(x: Int): Double = 4.0 / (4 * x + 1) - 4.0 / (4 * x - 1);
@@ -78,8 +78,8 @@ object M3 {
     if (a > b) 0
     else f(a) + sum(f, a + 1, b);
 
-  def sumInts(a: Int, b: Int): Double = sum((xXXXXX => xXXXXX), a, b);
-  def sumCubes(a: Int, b: Int): Double = sum((x => x * x * x), a, b);
+  def sumInts(a: Int, b: Int): Double        = sum((xXXXXX => xXXXXX), a, b);
+  def sumCubes(a: Int, b: Int): Double       = sum((x => x * x * x), a, b);
   def sumReciprocals(a: Int, b: Int): Double = sum((x => 1.0 / x), a, b);
   def sumPi(n: Int): Double =
     4 + sum((x => 4.0 / (4 * x + 1) - 4.0 / (4 * x - 1)), 1, n);
@@ -102,8 +102,8 @@ object M4 {
     sumF
   }
 
-  def sumInts = sum(x => x)
-  def sumCubes = sum(x => x * x * x)
+  def sumInts        = sum(x => x)
+  def sumCubes       = sum(x => x * x * x)
   def sumReciprocals = sum(1.0 / _)
   def sumPi = { n: Int =>
     4 + sum(x => 4.0 / (4 * x + 1) - 4.0 / (4 * x - 1))(1, n)
@@ -125,8 +125,8 @@ object M5 {
     else f(a) + sum(f)(a + 1, b)
   }
 
-  def sumInts = sum(x => x)
-  def sumCubes = sum(x => x * x * x)
+  def sumInts        = sum(x => x)
+  def sumCubes       = sum(x => x * x * x)
   def sumReciprocals = sum(x => 1.0 / x)
   def sumPi = { n: Int =>
     4 + sum(x => 4.0 / (4 * x + 1) - 4.0 / (4 * x - 1))(1, n)
@@ -147,8 +147,8 @@ object M6 {
     if (a > b) 0
     else f(a) + sum(f)(a + 1, b);
 
-  def sumInts = sum(x => x) _
-  def sumCubes = sum(x => x * x * x) _
+  def sumInts        = sum(x => x) _
+  def sumCubes       = sum(x => x * x * x) _
   def sumReciprocals = sum(x => 1.0 / x) _
   def sumPi = { n: Int =>
     4 + sum(x => 4.0 / (4 * x + 1) - 4.0 / (4 * x - 1))(1, n)
@@ -172,8 +172,8 @@ object M7 {
     iter(a, 0)
   }
 
-  def sumInts = sum(x => x) _
-  def sumCubes = sum(x => x * x * x) _
+  def sumInts        = sum(x => x) _
+  def sumCubes       = sum(x => x * x * x) _
   def sumReciprocals = sum(x => 1.0 / x) _
   def sumPi = { n: Int =>
     4 + sum(x => 4.0 / (4 * x + 1) - 4.0 / (4 * x - 1))(1, n)
@@ -209,10 +209,12 @@ object M8 {
 //############################################################################
 
 object M9 {
-  def accumulate[t](combiner: (t, t) => t,
-                    nullValue: t,
-                    f: Int => t,
-                    next: Int => Int)(a: Int, b: Int): t =
+  def accumulate[t](
+      combiner: (t, t) => t,
+      nullValue: t,
+      f: Int => t,
+      next: Int => Int
+  )(a: Int, b: Int): t =
     if (a > b) nullValue
     else combiner(f(a), accumulate(combiner, nullValue, f, next)(next(a), b))
 
@@ -224,8 +226,8 @@ object M9 {
   def product(f: Int => Double): (Int, Int) => Double =
     accumulate((x: Double, y: Double) => x * y, 1d, f, inc)
 
-  def sumInts = sum(x => x)
-  def sumCubes = sum(x => x * x * x)
+  def sumInts        = sum(x => x)
+  def sumCubes       = sum(x => x * x * x)
   def sumReciprocals = sum(x => 1.0 / x)
   def sumPi = { n: Int =>
     4 + sum(x => 4.0 / (4 * x + 1) - 4.0 / (4 * x - 1))(1, n)
@@ -236,8 +238,9 @@ object M9 {
   }
 
   val pi =
-    2 * product(x => 2 * x * 2 * x)(1, 20) / product(
-        x => (2 * x - 1) * (2 * x - 1))(1, 20) / 40
+    2 * product(x => 2 * x * 2 * x)(1, 20) / product(x =>
+      (2 * x - 1) * (2 * x - 1)
+    )(1, 20) / 40
 
   Console.println(sumInts(1, 4))
   Console.println(sumCubes(1, 4))
@@ -252,8 +255,8 @@ object M9 {
 //############################################################################
 
 object MA {
-  val tolerance = 0.0001
-  def abs(x: Double) = if (x < 0) -x else x
+  val tolerance                           = 0.0001
+  def abs(x: Double)                      = if (x < 0) -x else x
   def isCloseEnough(x: Double, y: Double) = abs((x - y) / x) < tolerance
   def fixedPoint(f: Double => Double)(firstGuess: Double) = {
     def iterate(guess: Double): Double = {
@@ -273,8 +276,8 @@ object MA {
 //############################################################################
 
 object MB {
-  val tolerance = 0.0001;
-  def abs(x: Double) = if (x < 0) -x else x;
+  val tolerance                           = 0.0001;
+  def abs(x: Double)                      = if (x < 0) -x else x;
   def isCloseEnough(x: Double, y: Double) = abs((x - y) / x) < tolerance;
   def fixedPoint(f: Double => Double)(firstGuess: Double) = {
     def iterate(guess: Double): Double = {
@@ -286,7 +289,7 @@ object MB {
     iterate(firstGuess)
   }
   def averageDamp(f: Double => Double)(x: Double) = (x + f(x)) / 2;
-  def sqrt(x: Double) = fixedPoint(averageDamp(y => x / y))(1.0);
+  def sqrt(x: Double)                             = fixedPoint(averageDamp(y => x / y))(1.0);
 
   Console.println("sqrt(2) = " + sqrt(2))
   Console.println
@@ -296,18 +299,16 @@ object MB {
 
 object MC {
   def sum(f: Int => Double)(a: Int, b: Int): Double = {
-    def iter(a: Int, result: Double): Double = {
+    def iter(a: Int, result: Double): Double =
       if (a > b) result
       else iter(a + 1, result + f(a))
-    }
     iter(a, 0)
   }
 
   def product(f: Int => Double)(a: Int, b: Int): Double = {
-    def iter(a: Int, result: Double): Double = {
+    def iter(a: Int, result: Double): Double =
       if (a > b) result
       else iter(a + 1, result * f(a))
-    }
     iter(a, 1)
   }
 
@@ -334,17 +335,17 @@ object MC {
 
 object MD {
   def reduce(op: (Double, Double) => Double, zero: Double)(
-      f: Int => Double)(a: Int, b: Int): Double = {
-    def iter(a: Int, result: Double): Double = {
+      f: Int => Double
+  )(a: Int, b: Int): Double = {
+    def iter(a: Int, result: Double): Double =
       if (a > b) result
       else iter(a + 1, op(result, f(a)))
-    }
     iter(a, zero)
   }
 
-  def plus(x: Double, y: Double) = x + y;
-  val sum: (Int => Double) => (Int, Int) => Double = reduce(plus, 0);
-  def times(x: Double, y: Double) = x * y;
+  def plus(x: Double, y: Double)                       = x + y;
+  val sum: (Int => Double) => (Int, Int) => Double     = reduce(plus, 0);
+  def times(x: Double, y: Double)                      = x * y;
   val product: (Int => Double) => (Int, Int) => Double = reduce(times, 1);
 
   def factorial(n: Int) = product(x => x)(1, n)
@@ -370,11 +371,11 @@ object MD {
 
 object ME {
   def reduce(op: (Double, Double) => Double, zero: Double)(
-      f: Int => Double)(a: Int, b: Int): Double = {
-    def iter(a: Int, result: Double): Double = {
+      f: Int => Double
+  )(a: Int, b: Int): Double = {
+    def iter(a: Int, result: Double): Double =
       if (a > b) result
       else iter(a + 1, op(result, f(a)))
-    }
     iter(a, zero)
   }
 

@@ -18,24 +18,22 @@ import org.scalacheck.Prop._
 
 class GCDTest extends FunSuite with Checkers {
   implicit def ArbBigDecimal: Arbitrary[BigDecimal] =
-    Arbitrary(
-        for {
+    Arbitrary(for {
       value <- arbitrary[Long]
       scale <- arbitrary[Short]
     } yield BigDecimal(value, scale.toInt))
 
   implicit def ArbRational: Arbitrary[Rational] =
-    Arbitrary(
-        for {
+    Arbitrary(for {
       n <- arbitrary[Long]
       d <- arbitrary[Long] if d != 0
     } yield Rational(n, d))
 
-  def testGcd[A : EuclideanRing : IsReal : NumberTag](x: A, y: A): Boolean = {
+  def testGcd[A: EuclideanRing: IsReal: NumberTag](x: A, y: A): Boolean =
     (x == Ring[A].zero || y == Ring[A].zero) || {
       val den = spire.math.gcd(x, y)
-      val x0 = x /~ den
-      val y0 = y /~ den
+      val x0  = x /~ den
+      val y0  = y /~ den
       if (NumberTag[A].isFinite(x0) && NumberTag[A].isFinite(y0)) {
         x0.isWhole && y0.isWhole && (spire.math.gcd(x0, y0) == Ring[A].one)
       } else {
@@ -43,29 +41,20 @@ class GCDTest extends FunSuite with Checkers {
         true
       }
     }
-  }
 
   test("GCD of floats with 0 exponent in result is correct") {
-    val x = -1.586002E-34f
-    val y = 3.3793717E-7f
+    val x = -1.586002e-34f
+    val y = 3.3793717e-7f
     val d = spire.math.gcd(x, y)
     assert((x / d).isWhole === true)
     assert((y / d).isWhole === true)
     assert(spire.math.gcd(x / d, y / d) === 1f)
   }
 
-  test("Int GCD")(check(forAll { (a: Int, b: Int) =>
-    testGcd(a, b)
-  }))
-  test("Long GCD")(check(forAll { (a: Long, b: Long) =>
-    testGcd(a, b)
-  }))
-  test("Float GCD")(check(forAll { (a: Float, b: Float) =>
-    testGcd(a, b)
-  }))
-  test("Double GCD")(check(forAll { (a: Double, b: Double) =>
-    testGcd(a, b)
-  }))
+  test("Int GCD")(check(forAll((a: Int, b: Int) => testGcd(a, b))))
+  test("Long GCD")(check(forAll((a: Long, b: Long) => testGcd(a, b))))
+  test("Float GCD")(check(forAll((a: Float, b: Float) => testGcd(a, b))))
+  test("Double GCD")(check(forAll((a: Double, b: Double) => testGcd(a, b))))
   // Disabled. Getting unexplainable OOM errors, even with isWhole commented out.
   // test("BigDecimal GCD")(check(forAll { (a: BigDecimal, b: BigDecimal) => testGcd(a, b) }))
   test("Rational GCD")(check(forAll { (a: Rational, b: Rational) =>

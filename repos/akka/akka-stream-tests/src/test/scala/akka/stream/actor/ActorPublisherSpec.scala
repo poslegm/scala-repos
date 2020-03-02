@@ -4,7 +4,12 @@
 package akka.stream.actor
 
 import akka.actor.{ActorRef, PoisonPill, Props}
-import akka.stream.{ClosedShape, ActorMaterializer, ActorMaterializerSettings, ActorAttributes}
+import akka.stream.{
+  ClosedShape,
+  ActorMaterializer,
+  ActorMaterializerSettings,
+  ActorAttributes
+}
 import akka.stream.scaladsl._
 import akka.stream.testkit._
 import akka.stream.testkit.Utils._
@@ -23,7 +28,9 @@ object ActorPublisherSpec {
     """
 
   def testPublisherProps(
-      probe: ActorRef, useTestDispatcher: Boolean = true): Props = {
+      probe: ActorRef,
+      useTestDispatcher: Boolean = true
+  ): Props = {
     val p = Props(new TestPublisher(probe))
     if (useTestDispatcher) p.withDispatcher("akka.test.stream-dispatcher")
     else p
@@ -43,15 +50,15 @@ object ActorPublisherSpec {
 
     def receive = {
       case Request(element) ⇒ probe ! TotalDemand(totalDemand)
-      case Produce(elem) ⇒ onNext(elem)
+      case Produce(elem)    ⇒ onNext(elem)
       case Err(reason) ⇒
         onError(new RuntimeException(reason) with NoStackTrace)
       case ErrThenStop(reason) ⇒
         onErrorThenStop(new RuntimeException(reason) with NoStackTrace)
-      case Complete ⇒ onComplete()
+      case Complete         ⇒ onComplete()
       case CompleteThenStop ⇒ onCompleteThenStop()
-      case Boom ⇒ throw new RuntimeException("boom") with NoStackTrace
-      case ThreadName ⇒ probe ! Thread.currentThread.getName
+      case Boom             ⇒ throw new RuntimeException("boom") with NoStackTrace
+      case ThreadName       ⇒ probe ! Thread.currentThread.getName
     }
   }
 
@@ -129,7 +136,8 @@ object ActorPublisherSpec {
 }
 
 class ActorPublisherSpec
-    extends AkkaSpec(ActorPublisherSpec.config) with ImplicitSender {
+    extends AkkaSpec(ActorPublisherSpec.config)
+    with ImplicitSender {
 
   import akka.stream.actor.ActorPublisherSpec._
 
@@ -139,9 +147,9 @@ class ActorPublisherSpec
 
     "accumulate demand" in {
       val probe = TestProbe()
-      val ref = system.actorOf(testPublisherProps(probe.ref))
-      val p = ActorPublisher[String](ref)
-      val s = TestSubscriber.probe[String]()
+      val ref   = system.actorOf(testPublisherProps(probe.ref))
+      val p     = ActorPublisher[String](ref)
+      val s     = TestSubscriber.probe[String]()
       p.subscribe(s)
       s.request(2)
       probe.expectMsg(TotalDemand(2))
@@ -152,9 +160,9 @@ class ActorPublisherSpec
 
     "allow onNext up to requested elements, but not more" in {
       val probe = TestProbe()
-      val ref = system.actorOf(testPublisherProps(probe.ref))
-      val p = ActorPublisher[String](ref)
-      val s = TestSubscriber.probe[String]()
+      val ref   = system.actorOf(testPublisherProps(probe.ref))
+      val p     = ActorPublisher[String](ref)
+      val s     = TestSubscriber.probe[String]()
       p.subscribe(s)
       s.request(2)
       ref ! Produce("elem-1")
@@ -168,8 +176,8 @@ class ActorPublisherSpec
 
     "signal error" in {
       val probe = TestProbe()
-      val ref = system.actorOf(testPublisherProps(probe.ref))
-      val s = TestSubscriber.manualProbe[String]()
+      val ref   = system.actorOf(testPublisherProps(probe.ref))
+      val s     = TestSubscriber.manualProbe[String]()
       ActorPublisher[String](ref).subscribe(s)
       ref ! Err("wrong")
       s.expectSubscription()
@@ -178,8 +186,8 @@ class ActorPublisherSpec
 
     "not terminate after signalling onError" in {
       val probe = TestProbe()
-      val ref = system.actorOf(testPublisherProps(probe.ref))
-      val s = TestSubscriber.manualProbe[String]()
+      val ref   = system.actorOf(testPublisherProps(probe.ref))
+      val s     = TestSubscriber.manualProbe[String]()
       ActorPublisher[String](ref).subscribe(s)
       s.expectSubscription()
       probe.watch(ref)
@@ -190,8 +198,8 @@ class ActorPublisherSpec
 
     "terminate after signalling onErrorThenStop" in {
       val probe = TestProbe()
-      val ref = system.actorOf(testPublisherProps(probe.ref))
-      val s = TestSubscriber.manualProbe[String]()
+      val ref   = system.actorOf(testPublisherProps(probe.ref))
+      val s     = TestSubscriber.manualProbe[String]()
       ActorPublisher[String](ref).subscribe(s)
       s.expectSubscription()
       probe.watch(ref)
@@ -202,7 +210,7 @@ class ActorPublisherSpec
 
     "signal error before subscribe" in {
       val probe = TestProbe()
-      val ref = system.actorOf(testPublisherProps(probe.ref))
+      val ref   = system.actorOf(testPublisherProps(probe.ref))
       ref ! Err("early err")
       val s = TestSubscriber.manualProbe[String]()
       ActorPublisher[String](ref).subscribe(s)
@@ -211,9 +219,9 @@ class ActorPublisherSpec
 
     "drop onNext elements after cancel" in {
       val probe = TestProbe()
-      val ref = system.actorOf(testPublisherProps(probe.ref))
-      val p = ActorPublisher[String](ref)
-      val s = TestSubscriber.probe[String]()
+      val ref   = system.actorOf(testPublisherProps(probe.ref))
+      val p     = ActorPublisher[String](ref)
+      val s     = TestSubscriber.probe[String]()
       p.subscribe(s)
       s.request(2)
       ref ! Produce("elem-1")
@@ -225,9 +233,9 @@ class ActorPublisherSpec
 
     "remember requested after restart" in {
       val probe = TestProbe()
-      val ref = system.actorOf(testPublisherProps(probe.ref))
-      val p = ActorPublisher[String](ref)
-      val s = TestSubscriber.probe[String]()
+      val ref   = system.actorOf(testPublisherProps(probe.ref))
+      val p     = ActorPublisher[String](ref)
+      val s     = TestSubscriber.probe[String]()
       p.subscribe(s)
       s.request(3)
       probe.expectMsg(TotalDemand(3))
@@ -243,8 +251,8 @@ class ActorPublisherSpec
 
     "signal onComplete" in {
       val probe = TestProbe()
-      val ref = system.actorOf(testPublisherProps(probe.ref))
-      val s = TestSubscriber.probe[String]()
+      val ref   = system.actorOf(testPublisherProps(probe.ref))
+      val s     = TestSubscriber.probe[String]()
       ActorPublisher[String](ref).subscribe(s)
       s.request(3)
       ref ! Produce("elem-1")
@@ -255,8 +263,8 @@ class ActorPublisherSpec
 
     "not terminate after signalling onComplete" in {
       val probe = TestProbe()
-      val ref = system.actorOf(testPublisherProps(probe.ref))
-      val s = TestSubscriber.manualProbe[String]()
+      val ref   = system.actorOf(testPublisherProps(probe.ref))
+      val s     = TestSubscriber.manualProbe[String]()
       ActorPublisher[String](ref).subscribe(s)
       val sub = s.expectSubscription()
       sub.request(3)
@@ -271,8 +279,8 @@ class ActorPublisherSpec
 
     "terminate after signalling onCompleteThenStop" in {
       val probe = TestProbe()
-      val ref = system.actorOf(testPublisherProps(probe.ref))
-      val s = TestSubscriber.manualProbe[String]()
+      val ref   = system.actorOf(testPublisherProps(probe.ref))
+      val s     = TestSubscriber.manualProbe[String]()
       ActorPublisher[String](ref).subscribe(s)
       val sub = s.expectSubscription()
       sub.request(3)
@@ -287,7 +295,7 @@ class ActorPublisherSpec
 
     "signal immediate onComplete" in {
       val probe = TestProbe()
-      val ref = system.actorOf(testPublisherProps(probe.ref))
+      val ref   = system.actorOf(testPublisherProps(probe.ref))
       ref ! Complete
       val s = TestSubscriber.manualProbe[String]()
       ActorPublisher[String](ref).subscribe(s)
@@ -296,20 +304,21 @@ class ActorPublisherSpec
 
     "only allow one subscriber" in {
       val probe = TestProbe()
-      val ref = system.actorOf(testPublisherProps(probe.ref))
-      val s = TestSubscriber.manualProbe[String]()
+      val ref   = system.actorOf(testPublisherProps(probe.ref))
+      val s     = TestSubscriber.manualProbe[String]()
       ActorPublisher[String](ref).subscribe(s)
       s.expectSubscription()
       val s2 = TestSubscriber.manualProbe[String]()
       ActorPublisher[String](ref).subscribe(s2)
       s2.expectSubscriptionAndError().getClass should be(
-          classOf[IllegalStateException])
+        classOf[IllegalStateException]
+      )
     }
 
     "signal onCompete when actor is stopped" in {
       val probe = TestProbe()
-      val ref = system.actorOf(testPublisherProps(probe.ref))
-      val s = TestSubscriber.manualProbe[String]()
+      val ref   = system.actorOf(testPublisherProps(probe.ref))
+      val s     = TestSubscriber.manualProbe[String]()
       ActorPublisher[String](ref).subscribe(s)
       s.expectSubscription()
       ref ! PoisonPill
@@ -325,12 +334,14 @@ class ActorPublisherSpec
         val sink: Sink[String, ActorRef] =
           Sink.actorSubscriber(receiverProps(probe.ref))
 
-        val (snd, rcv) = source.collect {
-          case n if n % 2 == 0 ⇒ "elem-" + n
-        }.toMat(sink)(Keep.both)
+        val (snd, rcv) = source
+          .collect {
+            case n if n % 2 == 0 ⇒ "elem-" + n
+          }
+          .toMat(sink)(Keep.both)
           .run()
 
-          (1 to 3) foreach { snd ! _ }
+        (1 to 3) foreach { snd ! _ }
         probe.expectMsg("elem-2")
 
         (4 to 500) foreach { n ⇒
@@ -338,9 +349,7 @@ class ActorPublisherSpec
           snd ! n
         }
 
-        (4 to 500 by 2) foreach { n ⇒
-          probe.expectMsg("elem-" + n)
-        }
+        (4 to 500 by 2) foreach { n ⇒ probe.expectMsg("elem-" + n) }
 
         watch(snd)
         rcv ! PoisonPill
@@ -350,14 +359,15 @@ class ActorPublisherSpec
 
     "work in a GraphDSL" in {
       implicit val materializer = ActorMaterializer()
-      val probe1 = TestProbe()
-      val probe2 = TestProbe()
+      val probe1                = TestProbe()
+      val probe2                = TestProbe()
 
       val senderRef1 = system.actorOf(senderProps)
-      val source1 = Source.fromPublisher(ActorPublisher[Int](senderRef1))
+      val source1    = Source.fromPublisher(ActorPublisher[Int](senderRef1))
 
       val sink1 = Sink.fromSubscriber(
-          ActorSubscriber[String](system.actorOf(receiverProps(probe1.ref))))
+        ActorSubscriber[String](system.actorOf(receiverProps(probe1.ref)))
+      )
       val sink2: Sink[String, ActorRef] =
         Sink.actorSubscriber(receiverProps(probe2.ref))
 
@@ -380,7 +390,7 @@ class ActorPublisherSpec
         })
         .run()
 
-        (0 to 10).foreach {
+      (0 to 10).foreach {
         senderRef1 ! _
         senderRef2 ! _
       }
@@ -395,8 +405,8 @@ class ActorPublisherSpec
       implicit val materializer = ActorMaterializer()
       Utils.assertAllStagesStopped {
         val timeout = 150.millis
-        val a = system.actorOf(timeoutingProps(testActor, timeout))
-        val pub = ActorPublisher(a)
+        val a       = system.actorOf(timeoutingProps(testActor, timeout))
+        val pub     = ActorPublisher(a)
 
         // don't subscribe for `timeout` millis, so it will shut itself down
         expectMsg("timed-out")
@@ -415,8 +425,8 @@ class ActorPublisherSpec
 
     "be able to define a subscription-timeout, which is cancelled by the first incoming Subscriber" in {
       implicit val materializer = ActorMaterializer()
-      val timeout = 500.millis
-      val sub = TestSubscriber.manualProbe[Int]()
+      val timeout               = 500.millis
+      val sub                   = TestSubscriber.manualProbe[Int]()
 
       within(2 * timeout) {
         val pub =
@@ -432,11 +442,13 @@ class ActorPublisherSpec
 
     "use dispatcher from materializer settings" in {
       implicit val materializer = ActorMaterializer(
-          ActorMaterializerSettings(system).withDispatcher("my-dispatcher1"))
+        ActorMaterializerSettings(system).withDispatcher("my-dispatcher1")
+      )
       val s = TestSubscriber.manualProbe[String]()
       val ref = Source
         .actorPublisher(
-            testPublisherProps(testActor, useTestDispatcher = false))
+          testPublisherProps(testActor, useTestDispatcher = false)
+        )
         .to(Sink.fromSubscriber(s))
         .run()
       ref ! ThreadName
@@ -445,10 +457,11 @@ class ActorPublisherSpec
 
     "use dispatcher from operation attributes" in {
       implicit val materializer = ActorMaterializer()
-      val s = TestSubscriber.manualProbe[String]()
+      val s                     = TestSubscriber.manualProbe[String]()
       val ref = Source
         .actorPublisher(
-            testPublisherProps(testActor, useTestDispatcher = false))
+          testPublisherProps(testActor, useTestDispatcher = false)
+        )
         .withAttributes(ActorAttributes.dispatcher("my-dispatcher1"))
         .to(Sink.fromSubscriber(s))
         .run()
@@ -458,11 +471,12 @@ class ActorPublisherSpec
 
     "use dispatcher from props" in {
       implicit val materializer = ActorMaterializer()
-      val s = TestSubscriber.manualProbe[String]()
+      val s                     = TestSubscriber.manualProbe[String]()
       val ref = Source
-        .actorPublisher(testPublisherProps(
-                testActor,
-                useTestDispatcher = false).withDispatcher("my-dispatcher1"))
+        .actorPublisher(
+          testPublisherProps(testActor, useTestDispatcher = false)
+            .withDispatcher("my-dispatcher1")
+        )
         .withAttributes(ActorAttributes.dispatcher("my-dispatcher2"))
         .to(Sink.fromSubscriber(s))
         .run()

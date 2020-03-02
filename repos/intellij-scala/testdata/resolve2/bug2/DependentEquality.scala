@@ -16,15 +16,14 @@ object Test {
     } with TreeInfo
   }
   abstract class SymbolTable extends Trees
-  abstract class Global extends SymbolTable
+  abstract class Global      extends SymbolTable
   trait Analyzer {
     val global: Global
   }
 
   trait Typers { self: Analyzer =>
     import global._
-    private def argMode(fun: Tree) = {
+    private def argMode(fun: Tree) =
       treeInfo. /* line: 5 */ goo(fun)
-    }
   }
 }

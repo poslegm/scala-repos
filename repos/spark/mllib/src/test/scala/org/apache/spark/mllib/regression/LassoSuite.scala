@@ -21,14 +21,18 @@ import scala.util.Random
 
 import org.apache.spark.SparkFunSuite
 import org.apache.spark.mllib.linalg.Vectors
-import org.apache.spark.mllib.util.{LinearDataGenerator, LocalClusterSparkContext, MLlibTestSparkContext}
+import org.apache.spark.mllib.util.{
+  LinearDataGenerator,
+  LocalClusterSparkContext,
+  MLlibTestSparkContext
+}
 import org.apache.spark.util.Utils
 
 private object LassoSuite {
 
   /** 3 features */
-  val model = new LassoModel(
-      weights = Vectors.dense(0.1, 0.2, 0.3), intercept = 0.5)
+  val model =
+    new LassoModel(weights = Vectors.dense(0.1, 0.2, 0.3), intercept = 0.5)
 }
 
 class LassoSuite extends SparkFunSuite with MLlibTestSparkContext {
@@ -61,15 +65,19 @@ class LassoSuite extends SparkFunSuite with MLlibTestSparkContext {
     val ls = new LassoWithSGD()
     ls.optimizer.setStepSize(1.0).setRegParam(0.01).setNumIterations(40)
 
-    val model = ls.run(testRDD)
+    val model   = ls.run(testRDD)
     val weight0 = model.weights(0)
     val weight1 = model.weights(1)
     val weight2 = model.weights(2)
     assert(weight0 >= 1.9 && weight0 <= 2.1, weight0 + " not in [1.9, 2.1]")
     assert(
-        weight1 >= -1.60 && weight1 <= -1.40, weight1 + " not in [-1.6, -1.4]")
-    assert(weight2 >= -1.0e-3 && weight2 <= 1.0e-3,
-           weight2 + " not in [-0.001, 0.001]")
+      weight1 >= -1.60 && weight1 <= -1.40,
+      weight1 + " not in [-1.6, -1.4]"
+    )
+    assert(
+      weight2 >= -1.0e-3 && weight2 <= 1.0e-3,
+      weight2 + " not in [-0.001, 0.001]"
+    )
 
     val validationData = LinearDataGenerator
       .generateLinearInput(A, Array[Double](B, C), nPoints, 17)
@@ -81,11 +89,15 @@ class LassoSuite extends SparkFunSuite with MLlibTestSparkContext {
 
     // Test prediction on RDD.
     validatePrediction(
-        model.predict(validationRDD.map(_.features)).collect(), validationData)
+      model.predict(validationRDD.map(_.features)).collect(),
+      validationData
+    )
 
     // Test prediction on Array.
     validatePrediction(
-        validationData.map(row => model.predict(row.features)), validationData)
+      validationData.map(row => model.predict(row.features)),
+      validationData
+    )
   }
 
   test("Lasso local random SGD with initial weights") {
@@ -102,9 +114,9 @@ class LassoSuite extends SparkFunSuite with MLlibTestSparkContext {
           LabeledPoint(label, Vectors.dense(1.0 +: features.toArray))
       }
 
-    val initialA = -1.0
-    val initialB = -1.0
-    val initialC = -1.0
+    val initialA       = -1.0
+    val initialB       = -1.0
+    val initialC       = -1.0
     val initialWeights = Vectors.dense(initialA, initialB, initialC)
 
     val testRDD = sc.parallelize(testData, 2).cache()
@@ -116,15 +128,19 @@ class LassoSuite extends SparkFunSuite with MLlibTestSparkContext {
       .setNumIterations(40)
       .setConvergenceTol(0.0005)
 
-    val model = ls.run(testRDD, initialWeights)
+    val model   = ls.run(testRDD, initialWeights)
     val weight0 = model.weights(0)
     val weight1 = model.weights(1)
     val weight2 = model.weights(2)
     assert(weight0 >= 1.9 && weight0 <= 2.1, weight0 + " not in [1.9, 2.1]")
     assert(
-        weight1 >= -1.60 && weight1 <= -1.40, weight1 + " not in [-1.6, -1.4]")
-    assert(weight2 >= -1.0e-3 && weight2 <= 1.0e-3,
-           weight2 + " not in [-0.001, 0.001]")
+      weight1 >= -1.60 && weight1 <= -1.40,
+      weight1 + " not in [-1.6, -1.4]"
+    )
+    assert(
+      weight2 >= -1.0e-3 && weight2 <= 1.0e-3,
+      weight2 + " not in [-0.001, 0.001]"
+    )
 
     val validationData = LinearDataGenerator
       .generateLinearInput(A, Array[Double](B, C), nPoints, 17)
@@ -136,18 +152,22 @@ class LassoSuite extends SparkFunSuite with MLlibTestSparkContext {
 
     // Test prediction on RDD.
     validatePrediction(
-        model.predict(validationRDD.map(_.features)).collect(), validationData)
+      model.predict(validationRDD.map(_.features)).collect(),
+      validationData
+    )
 
     // Test prediction on Array.
     validatePrediction(
-        validationData.map(row => model.predict(row.features)), validationData)
+      validationData.map(row => model.predict(row.features)),
+      validationData
+    )
   }
 
   test("model save/load") {
     val model = LassoSuite.model
 
     val tempDir = Utils.createTempDir()
-    val path = tempDir.toURI.toString
+    val path    = tempDir.toURI.toString
 
     // Save model, load it back, and compare.
     try {
@@ -171,13 +191,13 @@ class LassoClusterSuite extends SparkFunSuite with LocalClusterSparkContext {
       .mapPartitionsWithIndex { (idx, iter) =>
         val random = new Random(idx)
         iter.map(i =>
-              LabeledPoint(1.0,
-                           Vectors.dense(Array.fill(n)(random.nextDouble()))))
+          LabeledPoint(1.0, Vectors.dense(Array.fill(n)(random.nextDouble())))
+        )
       }
       .cache()
     // If we serialize data directly in the task closure, the size of the serialized task would be
     // greater than 1MB and hence Spark would throw an error.
-    val model = LassoWithSGD.train(points, 2)
+    val model       = LassoWithSGD.train(points, 2)
     val predictions = model.predict(points.map(_.features))
   }
 }

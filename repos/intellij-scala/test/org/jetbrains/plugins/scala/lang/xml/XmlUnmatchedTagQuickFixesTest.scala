@@ -12,17 +12,19 @@ class XmlUnmatchedTagQuickFixesTest
     extends ScalaLightCodeInsightFixtureTestAdapter {
   val renameOpeningQuickFixHint = ScalaBundle.message("xml.rename.opening.tag")
   val renameClosingQuickFixHint = ScalaBundle.message("xml.rename.closing.tag")
-  val deleteUnmatchedTagHint = ScalaBundle.message("xml.delete.unmatched.tag")
+  val deleteUnmatchedTagHint    = ScalaBundle.message("xml.delete.unmatched.tag")
 
   private def check(text: String, assumedStub: String, hint: String) {
-    testQuickFix(text.replace("\r", ""),
-                 assumedStub.replace("\r", ""),
-                 hint,
-                 classOf[ScalaXmlUnmatchedTagInspection])
+    testQuickFix(
+      text.replace("\r", ""),
+      assumedStub.replace("\r", ""),
+      hint,
+      classOf[ScalaXmlUnmatchedTagInspection]
+    )
   }
 
   def testSimple() {
-    val text = "val xml = <a>blah</b>"
+    val text        = "val xml = <a>blah</b>"
     val assumedStub = "val xml = <a>blah</a>"
 
     check(text, assumedStub, renameClosingQuickFixHint)
@@ -37,7 +39,7 @@ class XmlUnmatchedTagQuickFixesTest
   }
 
   def testNested() {
-    val text = """
+    val text        = """
         val xml = <aaa attr1="1">
                     <bbb>blah blah</bbb>
                     <ccc>
@@ -62,7 +64,7 @@ class XmlUnmatchedTagQuickFixesTest
   }
 
   def testInsideCase() {
-    val text = """
+    val text        = """
         <aa></aa> match {
           case <aaa><bbb>{1 + 2 + i}</ccc></aaa> =>
           case _ =>

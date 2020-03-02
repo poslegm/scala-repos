@@ -3,7 +3,9 @@ package java.util
 import scala.scalajs.js
 
 class ArrayDeque[E] private (private var inner: js.Array[E])
-    extends AbstractCollection[E] with Deque[E] with Cloneable
+    extends AbstractCollection[E]
+    with Deque[E]
+    with Cloneable
     with Serializable {
   self =>
 
@@ -29,7 +31,7 @@ class ArrayDeque[E] private (private var inner: js.Array[E])
   def addLast(e: E): Unit =
     offerLast(e)
 
-  def offerFirst(e: E): Boolean = {
+  def offerFirst(e: E): Boolean =
     if (e == null) {
       throw new NullPointerException()
     } else {
@@ -37,9 +39,8 @@ class ArrayDeque[E] private (private var inner: js.Array[E])
       status += 1
       true
     }
-  }
 
-  def offerLast(e: E): Boolean = {
+  def offerLast(e: E): Boolean =
     if (e == null) {
       throw new NullPointerException()
     } else {
@@ -47,51 +48,42 @@ class ArrayDeque[E] private (private var inner: js.Array[E])
       status += 1
       true
     }
-  }
 
-  def removeFirst(): E = {
+  def removeFirst(): E =
     if (inner.isEmpty) throw new NoSuchElementException()
     else pollFirst()
-  }
 
-  def removeLast(): E = {
+  def removeLast(): E =
     if (inner.isEmpty) throw new NoSuchElementException()
     else pollLast()
-  }
 
-  def pollFirst(): E = {
+  def pollFirst(): E =
     if (inner.isEmpty) null.asInstanceOf[E]
     else {
       val res = inner.remove(0)
       status += 1
       res
     }
-  }
 
-  def pollLast(): E = {
+  def pollLast(): E =
     if (inner.isEmpty) null.asInstanceOf[E]
     else inner.pop()
-  }
 
-  def getFirst(): E = {
+  def getFirst(): E =
     if (inner.isEmpty) throw new NoSuchElementException()
     else peekFirst()
-  }
 
-  def getLast(): E = {
+  def getLast(): E =
     if (inner.isEmpty) throw new NoSuchElementException()
     else peekLast()
-  }
 
-  def peekFirst(): E = {
+  def peekFirst(): E =
     if (inner.isEmpty) null.asInstanceOf[E]
     else inner.head
-  }
 
-  def peekLast(): E = {
+  def peekLast(): E =
     if (inner.isEmpty) null.asInstanceOf[E]
     else inner.last
-  }
 
   def removeFirstOccurrence(o: Any): Boolean = {
     val index = inner.indexWhere(_ === o)
@@ -132,7 +124,7 @@ class ArrayDeque[E] private (private var inner: js.Array[E])
 
   def size(): Int = inner.size
 
-  private def failFastIterator(startIndex: Int, nex: (Int) => Int) = {
+  private def failFastIterator(startIndex: Int, nex: (Int) => Int) =
     new Iterator[E] {
       private def checkStatus() =
         if (self.status != actualStatus)
@@ -163,7 +155,6 @@ class ArrayDeque[E] private (private var inner: js.Array[E])
         }
       }
     }
-  }
 
   def iterator(): Iterator[E] =
     failFastIterator(-1, x => (x + 1))

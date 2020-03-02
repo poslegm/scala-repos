@@ -55,37 +55,47 @@ import org.apache.spark.util.Utils
   * @tparam R the full accumulated data (result type)
   * @tparam T partial data that can be added in
   */
-class Accumulable[R, T] private (val id: Long,
-                                 // SI-8813: This must explicitly be a private val, or else scala 2.11 doesn't compile
-                                 @transient private val initialValue: R,
-                                 param: AccumulableParam[R, T],
-                                 val name: Option[String],
-                                 internal: Boolean,
-                                 private[spark] val countFailedValues: Boolean)
-    extends Serializable {
+class Accumulable[R, T] private (
+    val id: Long,
+    // SI-8813: This must explicitly be a private val, or else scala 2.11 doesn't compile
+    @transient private val initialValue: R,
+    param: AccumulableParam[R, T],
+    val name: Option[String],
+    internal: Boolean,
+    private[spark] val countFailedValues: Boolean
+) extends Serializable {
 
-  private[spark] def this(initialValue: R,
-                          param: AccumulableParam[R, T],
-                          name: Option[String],
-                          internal: Boolean,
-                          countFailedValues: Boolean) = {
-    this(Accumulators.newId(),
-         initialValue,
-         param,
-         name,
-         internal,
-         countFailedValues)
+  private[spark] def this(
+      initialValue: R,
+      param: AccumulableParam[R, T],
+      name: Option[String],
+      internal: Boolean,
+      countFailedValues: Boolean
+  ) = {
+    this(
+      Accumulators.newId(),
+      initialValue,
+      param,
+      name,
+      internal,
+      countFailedValues
+    )
   }
 
-  private[spark] def this(initialValue: R,
-                          param: AccumulableParam[R, T],
-                          name: Option[String],
-                          internal: Boolean) = {
+  private[spark] def this(
+      initialValue: R,
+      param: AccumulableParam[R, T],
+      name: Option[String],
+      internal: Boolean
+  ) = {
     this(initialValue, param, name, internal, false /* countFailedValues */ )
   }
 
   def this(
-      initialValue: R, param: AccumulableParam[R, T], name: Option[String]) =
+      initialValue: R,
+      param: AccumulableParam[R, T],
+      name: Option[String]
+  ) =
     this(initialValue, param, name, false /* internal */ )
 
   def this(initialValue: R, param: AccumulableParam[R, T]) =
@@ -93,8 +103,8 @@ class Accumulable[R, T] private (val id: Long,
 
   @volatile
   @transient private var value_ : R = initialValue // Current value on driver
-  val zero = param.zero(initialValue) // Zero value to be passed to executors
-  private var deserialized = false
+  val zero                          = param.zero(initialValue) // Zero value to be passed to executors
+  private var deserialized          = false
 
   // In many places we create internal accumulators without access to the active context cleaner,
   // so if we register them here then we may never unregister these accumulators. To avoid memory
@@ -117,10 +127,15 @@ class Accumulable[R, T] private (val id: Long,
     * [[Accumulators]] again. This method exists so that the caller can avoid passing the
     * same mutable instance around.
     */
-  private[spark] def copy(): Accumulable[R, T] = {
+  private[spark] def copy(): Accumulable[R, T] =
     new Accumulable[R, T](
-        id, initialValue, param, name, internal, countFailedValues)
-  }
+      id,
+      initialValue,
+      param,
+      name,
+      internal,
+      countFailedValues
+    )
 
   /**
     * Add more data to this accumulator / accumulable
@@ -153,14 +168,14 @@ class Accumulable[R, T] private (val id: Long,
   /**
     * Access the accumulator's current value; only allowed on driver.
     */
-  def value: R = {
+  def value: R =
     if (!deserialized) {
       value_
     } else {
       throw new UnsupportedOperationException(
-          "Can't read accumulator value in task")
+        "Can't read accumulator value in task"
+      )
     }
-  }
 
   /**
     * Get the current value of this accumulator from within a task.
@@ -181,29 +196,30 @@ class Accumulable[R, T] private (val id: Long,
       value_ = newValue
     } else {
       throw new UnsupportedOperationException(
-          "Can't assign accumulator value in task")
+        "Can't assign accumulator value in task"
+      )
     }
   }
 
   /**
     * Set the accumulator's value. For internal use only.
     */
-  def setValue(newValue: R): Unit = { value_ = newValue }
+  def setValue(newValue: R): Unit = value_ = newValue
 
   /**
     * Set the accumulator's value. For internal use only.
     */
-  private[spark] def setValueAny(newValue: Any): Unit = {
+  private[spark] def setValueAny(newValue: Any): Unit =
     setValue(newValue.asInstanceOf[R])
-  }
 
   /**
     * Create an [[AccumulableInfo]] representation of this [[Accumulable]] with the provided values.
     */
   private[spark] def toInfo(
-      update: Option[Any], value: Option[Any]): AccumulableInfo = {
+      update: Option[Any],
+      value: Option[Any]
+  ): AccumulableInfo =
     new AccumulableInfo(id, name, update, value, internal, countFailedValues)
-  }
 
   // Called by Java when deserializing an object
   private def readObject(in: ObjectInputStream): Unit =
@@ -261,8 +277,9 @@ trait AccumulableParam[R, T] extends Serializable {
   def zero(initialValue: R): R
 }
 
-private[spark] class GrowableAccumulableParam[
-    R <% Growable[T] with TraversableOnce[T] with Serializable : ClassTag, T]
+private[spark] class GrowableAccumulableParam[R <% Growable[T] with TraversableOnce[
+  T
+] with Serializable: ClassTag, T]
     extends AccumulableParam[R, T] {
 
   def addAccumulator(growable: R, elem: T): R = {
@@ -278,7 +295,7 @@ private[spark] class GrowableAccumulableParam[
   def zero(initialValue: R): R = {
     // We need to clone initialValue, but it's hard to specify that R should also be Cloneable.
     // Instead we'll serialize it to a buffer and load it back.
-    val ser = new JavaSerializer(new SparkConf(false)).newInstance()
+    val ser  = new JavaSerializer(new SparkConf(false)).newInstance()
     val copy = ser.deserialize[R](ser.serialize(initialValue))
     copy.clear() // In case it contained stuff
     copy

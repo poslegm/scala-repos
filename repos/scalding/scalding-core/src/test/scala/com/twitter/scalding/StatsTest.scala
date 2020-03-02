@@ -28,9 +28,9 @@ class StatsTestJob2(args: Args) extends StatsTestJob1(args) {
 class StatsTest extends WordSpec with Matchers {
 
   val goodInput = List(("a", 0), ("b", 1), ("c", 2))
-  val badInput = List(("a", 0), ("b", 0), ("c", 0))
+  val badInput  = List(("a", 0), ("b", 0), ("c", 0))
 
-  def runJobTest[T : TupleSetter](f: Args => Job, input: List[T]): Unit = {
+  def runJobTest[T: TupleSetter](f: Args => Job, input: List[T]): Unit =
     JobTest(f)
       .arg("input", "input")
       .arg("output", "output")
@@ -39,7 +39,6 @@ class StatsTest extends WordSpec with Matchers {
         outBuf shouldBe input
       }
       .run
-  }
 
   "StatsTestJob" should {
     "pass if verifyCounters() is true" in {
@@ -49,17 +48,19 @@ class StatsTest extends WordSpec with Matchers {
 
   it should {
     "fail if verifyCounters() is false" in {
-      an[FlowException] should be thrownBy runJobTest(new StatsTestJob1(_),
-                                                      badInput)
+      an[FlowException] should be thrownBy runJobTest(
+        new StatsTestJob1(_),
+        badInput
+      )
     }
   }
 
   it should {
     "skip verifyCounters() if job fails" in {
       (the[FlowException] thrownBy runJobTest(
-              new StatsTestJob1(_),
-              List((null, 0)))).getCause.getCause shouldBe a[
-          NullPointerException]
+        new StatsTestJob1(_),
+        List((null, 0))
+      )).getCause.getCause shouldBe a[NullPointerException]
     }
   }
 

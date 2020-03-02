@@ -32,14 +32,14 @@ trait BinaryUpdateRegistry[A <: AnyRef, B, Op <: OpType]
     with MMRegistry2[UFunc.InPlaceImpl2[Op, _ <: A, _ <: B]] {
   protected def bindingMissing(a: A, b: B): Unit =
     throw new UnsupportedOperationException(
-        "Types not found!" + a + b + " " + ops)
+      "Types not found!" + a + b + " " + ops
+    )
   protected def multipleOptions(
       a: A,
       b: B,
-      m: Map[(Class[_], Class[_]), UFunc.InPlaceImpl2[Op, _ <: A, _ <: B]])
-    : Unit = {
+      m: Map[(Class[_], Class[_]), UFunc.InPlaceImpl2[Op, _ <: A, _ <: B]]
+  ): Unit =
     throw new RuntimeException("Multiple bindings for method: " + m)
-  }
 
   def apply(a: A, b: B) {
     val ac = a.asInstanceOf[AnyRef].getClass
@@ -74,8 +74,9 @@ trait BinaryUpdateRegistry[A <: AnyRef, B, Op <: OpType]
     }
   }
 
-  def register[AA <: A, BB <: B](op: InPlaceImpl2[Op, AA, BB])(
-      implicit cA: ClassTag[AA], cB: ClassTag[BB]) {
+  def register[AA <: A, BB <: B](
+      op: InPlaceImpl2[Op, AA, BB]
+  )(implicit cA: ClassTag[AA], cB: ClassTag[BB]) {
     super.register(cA.runtimeClass, cB.runtimeClass, op)
   }
 }

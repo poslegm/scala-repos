@@ -24,14 +24,15 @@ import org.mozilla.javascript.{Scriptable, Context}
   *  It is immensely useful, because it allows to load lazily only the scripts
   *  that are actually needed.
   */
-private[rhino] class LazyScalaJSScope(coreLib: ScalaJSCoreLib,
-                                      globalScope: Scriptable,
-                                      base: Scriptable,
-                                      isStatics: Boolean)
-    extends Scriptable {
+private[rhino] class LazyScalaJSScope(
+    coreLib: ScalaJSCoreLib,
+    globalScope: Scriptable,
+    base: Scriptable,
+    isStatics: Boolean
+) extends Scriptable {
 
-  private val fields = mutable.HashMap.empty[String, Any]
-  private var prototype: Scriptable = _
+  private val fields                  = mutable.HashMap.empty[String, Any]
+  private var prototype: Scriptable   = _
   private var parentScope: Scriptable = _
 
   {
@@ -39,7 +40,7 @@ private[rhino] class LazyScalaJSScope(coreLib: ScalaJSCoreLib,
     for (id <- base.getIds()) {
       (id.asInstanceOf[Any]: @unchecked) match {
         case name: String => put(name, this, base.get(name, base))
-        case index: Int => put(index, this, base.get(index, base))
+        case index: Int   => put(index, this, base.get(index, base))
       }
     }
   }
@@ -47,14 +48,13 @@ private[rhino] class LazyScalaJSScope(coreLib: ScalaJSCoreLib,
   private def load(name: String): Unit =
     coreLib.load(globalScope, propNameToEncodedName(name))
 
-  private def propNameToEncodedName(name: String): String = {
+  private def propNameToEncodedName(name: String): String =
     if (isStatics) name.split("__")(0)
     else name
-  }
 
   override def getClassName(): String = "LazyScalaJSScope"
 
-  override def get(name: String, start: Scriptable): AnyRef = {
+  override def get(name: String, start: Scriptable): AnyRef =
     if (name == "__noSuchMethod__") {
       /* Automatically called by Rhino when trying to call a method fails.
        * We don't want to throw a ClassNotFoundException for this case, but
@@ -65,7 +65,8 @@ private[rhino] class LazyScalaJSScope(coreLib: ScalaJSCoreLib,
       Scriptable.NOT_FOUND
     } else {
       fields
-        .getOrElse(name, {
+        .getOrElse(
+          name,
           try {
             load(name)
             fields.getOrElse(name, Scriptable.NOT_FOUND)
@@ -75,10 +76,9 @@ private[rhino] class LazyScalaJSScope(coreLib: ScalaJSCoreLib,
             case t: RhinoJSEnv.ClassNotFoundException =>
               throw Context.throwAsScriptRuntimeEx(t)
           }
-        })
+        )
         .asInstanceOf[AnyRef]
     }
-  }
 
   override def get(index: Int, start: Scriptable): AnyRef =
     get(index.toString, start)
@@ -94,19 +94,18 @@ private[rhino] class LazyScalaJSScope(coreLib: ScalaJSCoreLib,
     put(index.toString, start, value)
 
   override def delete(name: String): Unit = ()
-  override def delete(index: Int): Unit = ()
+  override def delete(index: Int): Unit   = ()
 
-  override def getPrototype(): Scriptable = prototype
+  override def getPrototype(): Scriptable            = prototype
   override def setPrototype(value: Scriptable): Unit = prototype = value
 
-  override def getParentScope(): Scriptable = parentScope
+  override def getParentScope(): Scriptable            = parentScope
   override def setParentScope(value: Scriptable): Unit = parentScope = value
 
   override def getIds(): Array[AnyRef] = fields.keys.toArray
 
-  override def getDefaultValue(hint: java.lang.Class[_]): AnyRef = {
+  override def getDefaultValue(hint: java.lang.Class[_]): AnyRef =
     base.getDefaultValue(hint)
-  }
 
   override def hasInstance(instance: Scriptable): Boolean = false
 }

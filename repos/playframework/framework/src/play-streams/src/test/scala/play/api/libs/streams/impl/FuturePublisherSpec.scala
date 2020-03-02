@@ -28,32 +28,29 @@ class FuturePublisherSpec extends Specification {
         subscription.success(s)
       }
       override def onError(t: Throwable) = record(OnError(t))
-      override def onNext(element: T) = record(OnNext(element))
-      override def onComplete() = record(OnComplete)
+      override def onNext(element: T)    = record(OnNext(element))
+      override def onComplete()          = record(OnComplete)
     }
 
-    def forSubscription(f: Subscription => Any): Future[Unit] = {
+    def forSubscription(f: Subscription => Any): Future[Unit] =
       subscriber.subscription.future.map(f).map(_ => ())
-    }
-    def request(elementCount: Int): Future[Unit] = {
+    def request(elementCount: Int): Future[Unit] =
       forSubscription { s =>
         record(RequestMore(elementCount))
         s.request(elementCount)
       }
-    }
-    def cancel(): Future[Unit] = {
+    def cancel(): Future[Unit] =
       forSubscription { s =>
         record(Cancel)
         s.cancel()
       }
-    }
   }
 
   "FuturePublisher" should {
     "produce immediate success results" in {
       val testEnv = new TestEnv[Int]
-      val fut = Future.successful(1)
-      val pubr = new FuturePublisher(fut)
+      val fut     = Future.successful(1)
+      val pubr    = new FuturePublisher(fut)
       pubr.subscribe(testEnv.subscriber)
       testEnv.next must_== OnSubscribe
       testEnv.request(1)
@@ -61,18 +58,18 @@ class FuturePublisherSpec extends Specification {
       testEnv.next must_== OnNext(1)
     }
     "produce immediate failure results" in {
-      val testEnv = new TestEnv[Int]
-      val e = new Exception("test failure")
+      val testEnv          = new TestEnv[Int]
+      val e                = new Exception("test failure")
       val fut: Future[Int] = Future.failed(e)
-      val pubr = new FuturePublisher(fut)
+      val pubr             = new FuturePublisher(fut)
       pubr.subscribe(testEnv.subscriber)
       testEnv.next must_== OnError(e)
       testEnv.isEmptyAfterDelay() must beTrue
     }
     "produce delayed success results" in {
       val testEnv = new TestEnv[Int]
-      val prom = Promise[Int]()
-      val pubr = new FuturePublisher(prom.future)
+      val prom    = Promise[Int]()
+      val pubr    = new FuturePublisher(prom.future)
       pubr.subscribe(testEnv.subscriber)
       testEnv.next must_== OnSubscribe
       testEnv.request(1)
@@ -85,8 +82,8 @@ class FuturePublisherSpec extends Specification {
     }
     "produce delayed failure results" in {
       val testEnv = new TestEnv[Int]
-      val prom = Promise[Int]()
-      val pubr = new FuturePublisher(prom.future)
+      val prom    = Promise[Int]()
+      val pubr    = new FuturePublisher(prom.future)
       pubr.subscribe(testEnv.subscriber)
       testEnv.next must_== OnSubscribe
       testEnv.request(1)

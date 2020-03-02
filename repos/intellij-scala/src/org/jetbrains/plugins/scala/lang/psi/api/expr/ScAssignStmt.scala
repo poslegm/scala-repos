@@ -7,7 +7,10 @@ package expr
 import com.intellij.psi.{PsiElement, PsiField}
 import org.jetbrains.plugins.scala.lang.psi.api.statements.ScVariable
 import org.jetbrains.plugins.scala.lang.psi.api.statements.params.ScClassParameter
-import org.jetbrains.plugins.scala.lang.resolve.{ResolvableReferenceExpression, ScalaResolveResult}
+import org.jetbrains.plugins.scala.lang.resolve.{
+  ResolvableReferenceExpression,
+  ScalaResolveResult
+}
 
 /**
   * @author Alexander Podkhalyuzin
@@ -19,31 +22,29 @@ trait ScAssignStmt extends ScExpression {
   def getRExpression: Option[ScExpression] =
     findLastChild(classOf[ScExpression]) match {
       case Some(expr: ScExpression) if expr != getLExpression => Some(expr)
-      case _ => None
+      case _                                                  => None
     }
 
-  def assignName: Option[String] = {
+  def assignName: Option[String] =
     getLExpression match {
       case ref: ScReferenceExpression if ref.qualifier == None =>
         Some(ref.getText)
       case _ => None
     }
-  }
 
   override def accept(visitor: ScalaElementVisitor) {
     visitor.visitAssignmentStatement(this)
   }
 
-  def isNamedParameter: Boolean = {
+  def isNamedParameter: Boolean =
     getLExpression match {
       case expr: ScReferenceExpression =>
         expr.bind() match {
           case Some(r) => r.isNamedParameter
-          case _ => false
+          case _       => false
         }
       case _ => false
     }
-  }
 
   def mirrorMethodCall: Option[ScMethodCall]
 
@@ -58,12 +59,12 @@ trait ScAssignStmt extends ScExpression {
   /**
     * @return element to which equals sign should navigate
     */
-  def assignNavigationElement: PsiElement = {
+  def assignNavigationElement: PsiElement =
     getLExpression match {
       case methodCall: ScMethodCall =>
         methodCall.applyOrUpdateElement match {
           case Some(r) => r.getActualElement
-          case None => null
+          case None    => null
         }
       case left =>
         resolveAssignment match {
@@ -72,16 +73,15 @@ trait ScAssignStmt extends ScExpression {
             left match {
               case ref: ScReferenceExpression =>
                 ref.resolve() match {
-                  case v: ScVariable => v
+                  case v: ScVariable                  => v
                   case p: ScClassParameter if p.isVar => p
-                  case f: PsiField => f
-                  case _ => null
+                  case f: PsiField                    => f
+                  case _                              => null
                 }
               case _ => null
             }
         }
     }
-  }
 
   def isDynamicNamedAssignment: Boolean = {
     getContext match {
@@ -94,13 +94,13 @@ trait ScAssignStmt extends ScExpression {
                 r.bind() match {
                   case Some(resolveResult)
                       if resolveResult.isDynamic &&
-                      resolveResult.name == ResolvableReferenceExpression.APPLY_DYNAMIC_NAMED =>
+                        resolveResult.name == ResolvableReferenceExpression.APPLY_DYNAMIC_NAMED =>
                     return true
                   case _ =>
                     m.applyOrUpdateElement match {
                       case Some(innerResult)
                           if innerResult.isDynamic &&
-                          innerResult.name == ResolvableReferenceExpression.APPLY_DYNAMIC_NAMED =>
+                            innerResult.name == ResolvableReferenceExpression.APPLY_DYNAMIC_NAMED =>
                         return true
                       case _ =>
                     }

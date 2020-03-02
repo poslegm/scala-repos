@@ -37,13 +37,14 @@ import scalafx.geometry.HPos
 
 object ColumnConstraints {
   implicit def sfxColumnConstraints2jfx(
-      v: ColumnConstraints): jfxsl.ColumnConstraints =
+      v: ColumnConstraints
+  ): jfxsl.ColumnConstraints =
     if (v != null) v.delegate else null
 }
 
 class ColumnConstraints(
-    override val delegate: jfxsl.ColumnConstraints = new jfxsl.ColumnConstraints)
-    extends ConstraintsBase(delegate)
+    override val delegate: jfxsl.ColumnConstraints = new jfxsl.ColumnConstraints
+) extends ConstraintsBase(delegate)
     with SFXDelegate[jfxsl.ColumnConstraints] {
 
   /**
@@ -60,15 +61,24 @@ class ColumnConstraints(
   /**
     * Creates a column constraint object with a fixed size range, horizontal grow priority, horizontal alignment, and horizontal fill behavior.
     */
-  def this(minWidth: Double,
-           prefWidth: Double,
-           maxWidth: Double,
-           hgrow: jfxsl.Priority,
-           halignment: jfxg.HPos,
-           fillWidth: Boolean) =
+  def this(
+      minWidth: Double,
+      prefWidth: Double,
+      maxWidth: Double,
+      hgrow: jfxsl.Priority,
+      halignment: jfxg.HPos,
+      fillWidth: Boolean
+  ) =
     this(
-        new jfxsl.ColumnConstraints(
-            minWidth, prefWidth, maxWidth, hgrow, halignment, fillWidth))
+      new jfxsl.ColumnConstraints(
+        minWidth,
+        prefWidth,
+        maxWidth,
+        hgrow,
+        halignment,
+        fillWidth
+      )
+    )
 
   /**
     * The horizontal fill policy for the column.

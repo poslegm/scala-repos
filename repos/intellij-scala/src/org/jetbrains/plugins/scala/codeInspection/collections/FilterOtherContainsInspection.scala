@@ -2,7 +2,11 @@ package org.jetbrains.plugins.scala.codeInspection.collections
 
 import org.jetbrains.plugins.scala.codeInspection.InspectionBundle
 import org.jetbrains.plugins.scala.extensions.ResolvesTo
-import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScExpression, ScFunctionExpr, ScUnderscoreSection}
+import org.jetbrains.plugins.scala.lang.psi.api.expr.{
+  ScExpression,
+  ScFunctionExpr,
+  ScUnderscoreSection
+}
 
 /**
   * @author Nikolay.Tropin
@@ -13,7 +17,7 @@ class FilterOtherContainsInspection extends OperationOnCollectionInspection {
 }
 
 object `.contains _` {
-  def unapply(expr: ScExpression): Option[ScExpression] = {
+  def unapply(expr: ScExpression): Option[ScExpression] =
     stripped(expr) match {
       case ScFunctionExpr(Seq(x), Some(result)) =>
         stripped(result) match {
@@ -26,16 +30,15 @@ object `.contains _` {
       case undSect: ScUnderscoreSection =>
         undSect.bindingExpr match {
           case Some(qual `.contains` ()) => Some(qual)
-          case _ => None
+          case _                         => None
         }
       case qual `.contains` () => Some(qual)
-      case _ => None
+      case _                   => None
     }
-  }
 }
 
 object `!.contains _` {
-  def unapply(expr: ScExpression): Option[ScExpression] = {
+  def unapply(expr: ScExpression): Option[ScExpression] =
     stripped(expr) match {
       case ScFunctionExpr(Seq(x), Some(result)) =>
         stripped(result) match {
@@ -46,7 +49,6 @@ object `!.contains _` {
         }
       case _ => None
     }
-  }
 }
 
 object FilterContainsToIntersect extends SimplificationType {
@@ -58,15 +60,17 @@ object FilterContainsToIntersect extends SimplificationType {
       case qual `.filter` (other `.contains _` ())
           if isSet(qual) && isSet(other) =>
         Some(
-            replace(expr)
-              .withText(invocationText(qual, "intersect", other))
-              .highlightFrom(qual))
+          replace(expr)
+            .withText(invocationText(qual, "intersect", other))
+            .highlightFrom(qual)
+        )
       case qual `.filterNot` (other `!.contains _` ())
           if isSet(qual) && isSet(other) =>
         Some(
-            replace(expr)
-              .withText(invocationText(qual, "intersect", other))
-              .highlightFrom(qual))
+          replace(expr)
+            .withText(invocationText(qual, "intersect", other))
+            .highlightFrom(qual)
+        )
       case _ => None
     }
 }
@@ -80,15 +84,17 @@ object FilterNotContainsToDiff extends SimplificationType {
       case qual `.filter` (other `!.contains _` ())
           if isSet(qual) && isSet(other) =>
         Some(
-            replace(expr)
-              .withText(invocationText(qual, "diff", other))
-              .highlightFrom(qual))
+          replace(expr)
+            .withText(invocationText(qual, "diff", other))
+            .highlightFrom(qual)
+        )
       case qual `.filterNot` (other `.contains _` ())
           if isSet(qual) && isSet(other) =>
         Some(
-            replace(expr)
-              .withText(invocationText(qual, "diff", other))
-              .highlightFrom(qual))
+          replace(expr)
+            .withText(invocationText(qual, "diff", other))
+            .highlightFrom(qual)
+        )
       case _ => None
     }
 }

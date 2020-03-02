@@ -6,7 +6,11 @@ package types
 
 import org.jetbrains.plugins.scala.lang.lexer.ScalaTokenTypes
 import org.jetbrains.plugins.scala.lang.parser.parsing.builder.ScalaPsiBuilder
-import org.jetbrains.plugins.scala.lang.parser.parsing.statements.{Dcl, Def, EmptyDcl}
+import org.jetbrains.plugins.scala.lang.parser.parsing.statements.{
+  Dcl,
+  Def,
+  EmptyDcl
+}
 
 /**
   * @author Alexander Podkhalyuzin
@@ -18,7 +22,7 @@ import org.jetbrains.plugins.scala.lang.parser.parsing.statements.{Dcl, Def, Emp
  */
 
 object RefineStat {
-  def parse(builder: ScalaPsiBuilder): Boolean = {
+  def parse(builder: ScalaPsiBuilder): Boolean =
     builder.getTokenType match {
       case ScalaTokenTypes.kTYPE =>
         if (!Def.parse(builder, isMod = false)) {
@@ -27,8 +31,7 @@ object RefineStat {
           }
         }
         return true
-      case ScalaTokenTypes.kVAR | ScalaTokenTypes.kVAL |
-          ScalaTokenTypes.kDEF =>
+      case ScalaTokenTypes.kVAR | ScalaTokenTypes.kVAL | ScalaTokenTypes.kDEF =>
         if (Dcl.parse(builder, isMod = false)) {
           return true
         } else {
@@ -38,5 +41,4 @@ object RefineStat {
       case _ =>
         return false
     }
-  }
 }

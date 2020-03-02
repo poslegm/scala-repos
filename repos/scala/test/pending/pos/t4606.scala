@@ -15,7 +15,7 @@ object t4606 {
     println(x.foo) // 10
     println(x.bar) // 10
     println(x.baz) // 10
-    println(x.x) // 10
+    println(x.x)   // 10
   }
 }
 

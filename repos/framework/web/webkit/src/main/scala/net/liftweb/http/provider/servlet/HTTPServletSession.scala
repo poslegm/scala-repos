@@ -30,7 +30,9 @@ class HTTPServletSession(session: HttpSession) extends HTTPSession {
 
   def link(liftSession: LiftSession) =
     session.setAttribute(
-        LiftMagicID, SessionToServletBridge(liftSession.underlyingId))
+      LiftMagicID,
+      SessionToServletBridge(liftSession.underlyingId)
+    )
 
   def unlink(liftSession: LiftSession) = session.removeAttribute(LiftMagicID)
 
@@ -55,18 +57,17 @@ class HTTPServletSession(session: HttpSession) extends HTTPSession {
   * Represents the "bridge" between HttpSession and LiftSession
   */
 case class SessionToServletBridge(uniqueId: String)
-    extends HttpSessionBindingListener with HttpSessionActivationListener {
-  def sessionDidActivate(se: HttpSessionEvent) = {
+    extends HttpSessionBindingListener
+    with HttpSessionActivationListener {
+  def sessionDidActivate(se: HttpSessionEvent) =
     SessionMaster
       .getSession(uniqueId, Empty)
-      .foreach(ls => LiftSession.onSessionActivate.foreach(_ (ls)))
-  }
+      .foreach(ls => LiftSession.onSessionActivate.foreach(_(ls)))
 
-  def sessionWillPassivate(se: HttpSessionEvent) = {
+  def sessionWillPassivate(se: HttpSessionEvent) =
     SessionMaster
       .getSession(uniqueId, Empty)
-      .foreach(ls => LiftSession.onSessionPassivate.foreach(_ (ls)))
-  }
+      .foreach(ls => LiftSession.onSessionPassivate.foreach(_(ls)))
 
   def valueBound(event: HttpSessionBindingEvent) {}
 

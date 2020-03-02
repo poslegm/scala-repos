@@ -15,11 +15,13 @@ object ScalatraServlet {
   val RequestPathKey = "org.scalatra.ScalatraServlet.requestPath"
 
   def requestPath(request: HttpServletRequest): String = {
-    require(request != null,
-            "The request can't be null for getting the request path")
+    require(
+      request != null,
+      "The request can't be null for getting the request path"
+    )
     def startIndex(r: HttpServletRequest) =
       r.getContextPath.blankOption.map(_.length).getOrElse(0) +
-      r.getServletPath.blankOption.map(_.length).getOrElse(0)
+        r.getServletPath.blankOption.map(_.length).getOrElse(0)
     def getRequestPath(r: HttpServletRequest) = {
       val u =
         (catching(classOf[NullPointerException]) opt { r.getRequestURI } getOrElse "/")
@@ -57,9 +59,10 @@ object ScalatraServlet {
 trait ScalatraServlet extends HttpServlet with ServletBase with Initializable {
 
   override def service(
-      request: HttpServletRequest, response: HttpServletResponse): Unit = {
+      request: HttpServletRequest,
+      response: HttpServletResponse
+  ): Unit =
     handle(request, response)
-  }
 
   /**
     * Defines the request path to be matched by routers.  The default
@@ -77,10 +80,13 @@ trait ScalatraServlet extends HttpServlet with ServletBase with Initializable {
 
   protected def routeBasePath(implicit request: HttpServletRequest): String = {
     require(
-        config != null, "routeBasePath requires the servlet to be initialized")
+      config != null,
+      "routeBasePath requires the servlet to be initialized"
+    )
     require(
-        request != null,
-        "routeBasePath requires an active request to determine the servlet path")
+      request != null,
+      "routeBasePath requires an active request to determine the servlet path"
+    )
 
     servletContext.getContextPath + request.getServletPath
   }
@@ -91,9 +97,8 @@ trait ScalatraServlet extends HttpServlet with ServletBase with Initializable {
     *
     * This action can be overridden by a notFound block.
     */
-  protected var doNotFound: Action = () =>
-    {
-      serveStaticResource() getOrElse resourceNotFound()
+  protected var doNotFound: Action = () => {
+    serveStaticResource() getOrElse resourceNotFound()
   }
 
   /**
@@ -101,27 +106,31 @@ trait ScalatraServlet extends HttpServlet with ServletBase with Initializable {
     * to return None to stop this.
     */
   protected def serveStaticResource(
-      )(implicit request: HttpServletRequest,
-        response: HttpServletResponse): Option[Any] = {
+      )(
+      implicit request: HttpServletRequest,
+      response: HttpServletResponse
+  ): Option[Any] =
     servletContext.resource(request) map { _ =>
       servletContext.getNamedDispatcher("default").forward(request, response)
     }
-  }
 
   /**
     * Called by default notFound if no routes matched and no static resource
     * could be found.
     */
-  protected def resourceNotFound()(implicit request: HttpServletRequest,
-                                   response: HttpServletResponse): Any = {
+  protected def resourceNotFound()(
+      implicit request: HttpServletRequest,
+      response: HttpServletResponse
+  ): Any = {
     response.setStatus(404)
     if (isDevelopmentMode) {
       val error = "Requesting \"%s %s\" on servlet \"%s\" but only have: %s"
       response.getWriter println error.format(
-          request.getMethod,
-          Option(request.getPathInfo) getOrElse "/",
-          request.getServletPath,
-          routes.entryPoints.mkString("<ul><li>", "</li><li>", "</li></ul>"))
+        request.getMethod,
+        Option(request.getPathInfo) getOrElse "/",
+        request.getServletPath,
+        routes.entryPoints.mkString("<ul><li>", "</li><li>", "</li></ul>")
+      )
     }
   }
 
@@ -132,9 +141,8 @@ trait ScalatraServlet extends HttpServlet with ServletBase with Initializable {
     initialize(config) // see Initializable.initialize for why
   }
 
-  override def initialize(config: ServletConfig): Unit = {
+  override def initialize(config: ServletConfig): Unit =
     super.initialize(config)
-  }
 
   override def destroy(): Unit = {
     shutdown()

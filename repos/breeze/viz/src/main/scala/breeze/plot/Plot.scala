@@ -1,12 +1,20 @@
 package breeze.plot
 
 import org.jfree.chart.JFreeChart
-import org.jfree.chart.plot.{CrosshairState, PlotRenderingInfo, DefaultDrawingSupplier}
+import org.jfree.chart.plot.{
+  CrosshairState,
+  PlotRenderingInfo,
+  DefaultDrawingSupplier
+}
 import org.jfree.chart.axis._
 import java.awt._
 import collection.mutable.ArrayBuffer
 import collection.mutable
-import org.jfree.chart.renderer.xy.{XYItemRendererState, XYItemRenderer, AbstractXYItemRenderer}
+import org.jfree.chart.renderer.xy.{
+  XYItemRendererState,
+  XYItemRenderer,
+  AbstractXYItemRenderer
+}
 import java.awt.geom.Rectangle2D
 import org.jfree.data.xy
 import java.lang
@@ -19,19 +27,17 @@ import scala.List
   * @author dlwh
   */
 class Plot() {
-  private val datasets = new ArrayBuffer[xy.XYDataset]
+  private val datasets  = new ArrayBuffer[xy.XYDataset]
   private val renderers = new ArrayBuffer[XYItemRenderer]
-  private var series = 0
+  private var series    = 0
   private val listeners = new mutable.WeakHashMap[Plot.Listener, Unit]()
 
   def +=(pl: Series) = {
-    val (d, r) = pl.getChartStuff({ i =>
-      "Series " + (series + i)
-    }, { i =>
-      Plot.fillPaint(series + i)
-    }, { i =>
-      Plot.stroke(series + i)
-    })
+    val (d, r) = pl.getChartStuff(
+      i => "Series " + (series + i),
+      i => Plot.fillPaint(series + i),
+      i => Plot.stroke(series + i)
+    )
     datasets += d
     renderers += r
     series += d.getSeriesCount
@@ -110,8 +116,9 @@ class Plot() {
     if (value != logScaleX) {
       // TODO this is such a pain. There has to be a better way.
       val oldAxis = _xaxis
-      _xaxis = if (value) new LogarithmicAxis(xlabel)
-      else new NumberAxis(xlabel)
+      _xaxis =
+        if (value) new LogarithmicAxis(xlabel)
+        else new NumberAxis(xlabel)
       plot.setDomainAxis(_xaxis)
       xlim = oldAxis.getLowerBound -> oldAxis.getUpperBound
       _xaxis.setStandardTickUnits(oldAxis.getStandardTickUnits)
@@ -123,8 +130,9 @@ class Plot() {
     if (value != logScaleY) {
       // TODO this is such a pain. There has to be a better way.
       val oldAxis = _yaxis
-      _yaxis = if (value) new LogarithmicAxis(ylabel)
-      else new NumberAxis(ylabel)
+      _yaxis =
+        if (value) new LogarithmicAxis(ylabel)
+        else new NumberAxis(ylabel)
       plot.setRangeAxis(_yaxis)
       ylim = oldAxis.getLowerBound -> oldAxis.getUpperBound
       _yaxis.setStandardTickUnits(oldAxis.getStandardTickUnits)
@@ -157,11 +165,10 @@ class Plot() {
 
   // set integer tick units by default
   Array(xaxis, yaxis) foreach
-  (axis =>
-        {
-          axis.setAutoRangeIncludesZero(false)
-          axis.setStandardTickUnits(Plot.integerTickUnits)
-      })
+    (axis => {
+      axis.setAutoRangeIncludesZero(false)
+      axis.setStandardTickUnits(Plot.integerTickUnits)
+    })
 
   /** The JFreeChart plot object. */
   lazy val plot = {
@@ -170,12 +177,15 @@ class Plot() {
     rv.setRangeAxis(yaxis)
 
     rv.setDrawingSupplier(
-        new DefaultDrawingSupplier(Plot.paints,
-                                   Plot.fillPaints,
-                                   Plot.outlinePaints,
-                                   Plot.strokes,
-                                   Plot.outlineStrokes,
-                                   Plot.shapes))
+      new DefaultDrawingSupplier(
+        Plot.paints,
+        Plot.fillPaints,
+        Plot.outlinePaints,
+        Plot.strokes,
+        Plot.outlineStrokes,
+        Plot.shapes
+      )
+    )
 
     rv
   }
@@ -221,7 +231,7 @@ object Plot {
 
   val integerTickUnits = {
     val units = new TickUnits()
-    val df = new java.text.DecimalFormat("0")
+    val df    = new java.text.DecimalFormat("0")
     for (b <- List(1, 2, 5); e <- List(0, 1, 2, 3, 4, 5, 6, 7, 8)) {
       units.add(new NumberTickUnit(b * math.pow(10, e).toInt, df))
     }
@@ -283,10 +293,11 @@ object Plot {
     datasetSeriesOffsets += 0
     private val seriesDelegates = ArrayBuffer[Int]()
 
-    private def delegate[A](series: Int)(f: (xy.XYDataset, Int) => A) = {
-      f(datasets(seriesDelegates(series)),
-        series - datasetSeriesOffsets(seriesDelegates(series)))
-    }
+    private def delegate[A](series: Int)(f: (xy.XYDataset, Int) => A) =
+      f(
+        datasets(seriesDelegates(series)),
+        series - datasetSeriesOffsets(seriesDelegates(series))
+      )
 
     def clear() {
       datasets.clear()
@@ -305,7 +316,7 @@ object Plot {
 
     def getItemCount(series: Int): Int = delegate(series)(_ getItemCount _)
 
-    def getX(p1: Int, p2: Int): Number = { delegate(p1)(_.getX(_, p2)) }
+    def getX(p1: Int, p2: Int): Number = delegate(p1)(_.getX(_, p2))
     def getY(p1: Int, p2: Int): Number = delegate(p1)(_.getY(_, p2))
     def getZ(p1: Int, p2: Int): Number =
       delegate(p1)(_.asInstanceOf[xy.XYZDataset].getZ(_, p2))
@@ -327,13 +338,14 @@ object Plot {
     private val datasetSeriesOffsets = ArrayBuffer[Int]()
     datasetSeriesOffsets += 0
     private val seriesDelegates = ArrayBuffer[Int]()
-    private val autopaint = ArrayBuffer[Boolean]()
-    private val autostroke = ArrayBuffer[Boolean]()
+    private val autopaint       = ArrayBuffer[Boolean]()
+    private val autostroke      = ArrayBuffer[Boolean]()
 
-    private def delegate[A](series: Int)(f: (xy.XYItemRenderer, Int) => A) = {
-      f(renderers(seriesDelegates(series)),
-        series - datasetSeriesOffsets(seriesDelegates(series)))
-    }
+    private def delegate[A](series: Int)(f: (xy.XYItemRenderer, Int) => A) =
+      f(
+        renderers(seriesDelegates(series)),
+        series - datasetSeriesOffsets(seriesDelegates(series))
+      )
 
     def clear() {
       renderers.clear()
@@ -342,10 +354,12 @@ object Plot {
       seriesDelegates.clear()
     }
 
-    def +=(d: xy.XYItemRenderer,
-           numSeries: Int,
-           autocolor: Boolean,
-           autostroke: Boolean) {
+    def +=(
+        d: xy.XYItemRenderer,
+        numSeries: Int,
+        autocolor: Boolean,
+        autostroke: Boolean
+    ) {
       renderers += d
       for (i <- 0 until numSeries) {
         seriesDelegates += (renderers.size - 1)
@@ -355,25 +369,27 @@ object Plot {
       datasetSeriesOffsets += seriesDelegates.length
     }
 
-    def drawItem(p1: Graphics2D,
-                 p2: XYItemRendererState,
-                 p3: Rectangle2D,
-                 p4: PlotRenderingInfo,
-                 p5: org.jfree.chart.plot.XYPlot,
-                 p6: ValueAxis,
-                 p7: ValueAxis,
-                 p8: org.jfree.data.xy.XYDataset,
-                 series: Int,
-                 item: Int,
-                 p11: CrosshairState,
-                 p12: Int) {
+    def drawItem(
+        p1: Graphics2D,
+        p2: XYItemRendererState,
+        p3: Rectangle2D,
+        p4: PlotRenderingInfo,
+        p5: org.jfree.chart.plot.XYPlot,
+        p6: ValueAxis,
+        p7: ValueAxis,
+        p8: org.jfree.data.xy.XYDataset,
+        series: Int,
+        item: Int,
+        p11: CrosshairState,
+        p12: Int
+    ) {
       delegate(series)(
-          _.drawItem(p1, p2, p3, p4, p5, p6, p7, p8, _, item, p11, p12))
+        _.drawItem(p1, p2, p3, p4, p5, p6, p7, p8, _, item, p11, p12)
+      )
     }
 
-    override def getItemVisible(series: Int, item: Int): Boolean = {
+    override def getItemVisible(series: Int, item: Int): Boolean =
       delegate(series)(_.getItemVisible(_, item))
-    }
 
     override def isSeriesVisible(series: Int): Boolean =
       delegate(series)(_.isSeriesVisible(_))
@@ -386,108 +402,100 @@ object Plot {
     }
 
     override def setSeriesVisible(
-        series: Int, visible: lang.Boolean, notify: Boolean) {
+        series: Int,
+        visible: lang.Boolean,
+        notify: Boolean
+    ) {
       delegate(series)(_.setSeriesVisible(_, visible, notify))
     }
 
-    override def isSeriesVisibleInLegend(series: Int): Boolean = {
+    override def isSeriesVisibleInLegend(series: Int): Boolean =
       delegate(series)(_.isSeriesVisibleInLegend(_))
-    }
 
-    override def getItemPaint(series: Int, column: Int): Paint = {
+    override def getItemPaint(series: Int, column: Int): Paint =
       if (autopaint(series)) Plot.paint(series)
       else delegate(series)(_.getItemPaint(_, column))
-    }
 
-    override def getSeriesVisibleInLegend(series: Int): lang.Boolean = {
+    override def getSeriesVisibleInLegend(series: Int): lang.Boolean =
       delegate(series)(_.getSeriesVisibleInLegend(_))
-    }
 
     override def setSeriesVisibleInLegend(series: Int, visible: lang.Boolean) {
       delegate(series)(_.setSeriesVisibleInLegend(_, visible))
     }
 
     override def setSeriesVisibleInLegend(
-        series: Int, visible: lang.Boolean, notify: Boolean) {
+        series: Int,
+        visible: lang.Boolean,
+        notify: Boolean
+    ) {
       delegate(series)(_.setSeriesVisibleInLegend(_, visible, notify))
     }
 
-    override def getSeriesPaint(series: Int): Paint = {
+    override def getSeriesPaint(series: Int): Paint =
       if (autopaint(series)) Plot.paint(series)
       else delegate(series)(_.getSeriesPaint(_))
-    }
 
     override def setSeriesPaint(series: Int, paint: Paint) {
       delegate(series)(_.setSeriesPaint(_, paint))
       autopaint(series) = false
     }
 
-    override def getItemOutlinePaint(series: Int, column: Int): Paint = {
+    override def getItemOutlinePaint(series: Int, column: Int): Paint =
       if (autopaint(series)) Plot.paint(series)
       else delegate(series)(_.getItemOutlinePaint(_, column))
-    }
 
     override def setSeriesOutlinePaint(series: Int, paint: Paint) {
       delegate(series)(_.setSeriesOutlinePaint(_, paint))
     }
 
-    override def getSeriesOutlinePaint(series: Int): Paint = {
+    override def getSeriesOutlinePaint(series: Int): Paint =
       if (autopaint(series)) Plot.paint(series)
       else delegate(series)(_.getSeriesOutlinePaint(_))
-    }
 
-    override def getItemStroke(series: Int, column: Int): Stroke = {
+    override def getItemStroke(series: Int, column: Int): Stroke =
       if (autostroke(series)) Plot.stroke(series)
       else delegate(series)(_.getItemStroke(_, column))
 
-      //    renderer.setSeriesStroke(0, Plot.stroke(series))
-      //    renderer.setSeriesShape(0, Plot.shape(series))
-      //    renderer.setSeriesOutlineStroke(0, Plot.outlineStroke(series))
-    }
+    //    renderer.setSeriesStroke(0, Plot.stroke(series))
+    //    renderer.setSeriesShape(0, Plot.shape(series))
+    //    renderer.setSeriesOutlineStroke(0, Plot.outlineStroke(series))
 
-    override def getSeriesStroke(series: Int): Stroke = {
+    override def getSeriesStroke(series: Int): Stroke =
       if (autostroke(series)) Plot.stroke(series)
       else delegate(series)(_.getSeriesStroke(_))
-    }
 
     override def setSeriesStroke(series: Int, stroke: Stroke) {
       delegate(series)(_.setSeriesStroke(_, stroke))
     }
 
-    override def getItemOutlineStroke(series: Int, column: Int): Stroke = {
+    override def getItemOutlineStroke(series: Int, column: Int): Stroke =
       if (autostroke(series)) Plot.outlineStroke(series)
       else delegate(series)(_.getItemOutlineStroke(_, column))
-    }
 
     override def setSeriesOutlineStroke(series: Int, stroke: Stroke) {
       delegate(series)(_.setSeriesOutlineStroke(_, stroke))
     }
 
-    override def getSeriesOutlineStroke(series: Int): Stroke = {
+    override def getSeriesOutlineStroke(series: Int): Stroke =
       if (autostroke(series)) Plot.outlineStroke(series)
       else delegate(series)(_.getSeriesOutlineStroke(_))
-    }
 
-    override def getSeriesShape(series: Int): Shape = {
+    override def getSeriesShape(series: Int): Shape =
       if (autostroke(series)) Plot.shape(series)
       else delegate(series)(_.getSeriesShape(_))
-    }
 
     override def setSeriesShape(series: Int, shape: Shape) {
       delegate(series)(_.setSeriesShape(_, shape))
     }
 
-    override def getItemShape(series: Int, column: Int): Shape = {
+    override def getItemShape(series: Int, column: Int): Shape =
       if (autostroke(series)) Plot.shape(series)
       else delegate(series)(_.getItemShape(_, column))
-    }
 
-    override def isItemLabelVisible(series: Int, column: Int): Boolean = {
+    override def isItemLabelVisible(series: Int, column: Int): Boolean =
       delegate(series)(_.isItemLabelVisible(_, column))
-    }
 
-    override def isSeriesItemLabelsVisible(series: Int): Boolean = {
+    override def isSeriesItemLabelsVisible(series: Int): Boolean =
       delegate(series)(_.isSeriesItemLabelsVisible(_))
-    }
   }
 }

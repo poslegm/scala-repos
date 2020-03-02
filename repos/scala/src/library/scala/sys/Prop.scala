@@ -81,7 +81,8 @@ object Prop {
     *  via this object's apply method.
     */
   @annotation.implicitNotFound(
-      "No implicit property creator available for type ${T}.")
+    "No implicit property creator available for type ${T}."
+  )
   trait Creator[+T] {
 
     /** Creates a Prop[T] of this type based on the given key. */
@@ -91,9 +92,9 @@ object Prop {
   implicit object FileProp
       extends CreatorImpl[java.io.File](s => new java.io.File(s))
   implicit object StringProp extends CreatorImpl[String](s => s)
-  implicit object IntProp extends CreatorImpl[Int](_.toInt)
+  implicit object IntProp    extends CreatorImpl[Int](_.toInt)
   implicit object DoubleProp extends CreatorImpl[Double](_.toDouble)
 
-  def apply[T : Creator](key: String): Prop[T] =
+  def apply[T: Creator](key: String): Prop[T] =
     implicitly[Creator[T]] apply key
 }

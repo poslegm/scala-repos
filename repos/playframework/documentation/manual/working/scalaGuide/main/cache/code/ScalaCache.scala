@@ -20,9 +20,8 @@ package scalaguide.cache {
     import play.api.cache.CacheApi
     import play.api.cache.Cached
 
-    def withCache[T](block: CacheApi => T) = {
+    def withCache[T](block: CacheApi => T) =
       running()(app => block(app.injector.instanceOf[CacheApi]))
-    }
 
     "A scala Cache" should {
 
@@ -82,8 +81,8 @@ package scalaguide.cache {
       "cached page" in {
         running() { app =>
           implicit val mat = ActorMaterializer()(app.actorSystem)
-          val cachedApp = app.injector.instanceOf[cachedaction.Application1]
-          val result = cachedApp.index(FakeRequest()).run()
+          val cachedApp    = app.injector.instanceOf[cachedaction.Application1]
+          val result       = cachedApp.index(FakeRequest()).run()
           status(result) must_== 200
         }
       }
@@ -91,15 +90,17 @@ package scalaguide.cache {
       "composition cached page" in {
         running() { app =>
           val cachedApp = app.injector.instanceOf[cachedaction.Application1]
-          testAction(action = cachedApp.userProfile,
-                     expectedResponse = UNAUTHORIZED)
+          testAction(
+            action = cachedApp.userProfile,
+            expectedResponse = UNAUTHORIZED
+          )
         }
       }
 
       "control cache" in {
         running() { app =>
           implicit val mat = ActorMaterializer()(app.actorSystem)
-          val cachedApp = app.injector.instanceOf[cachedaction.Application1]
+          val cachedApp    = app.injector.instanceOf[cachedaction.Application1]
           val result0 =
             cachedApp.get(1)(FakeRequest("GET", "/resource/1")).run()
           status(result0) must_== 200
@@ -112,7 +113,7 @@ package scalaguide.cache {
       "control cache" in {
         running() { app =>
           implicit val mat = ActorMaterializer()(app.actorSystem)
-          val cachedApp = app.injector.instanceOf[cachedaction.Application2]
+          val cachedApp    = app.injector.instanceOf[cachedaction.Application2]
           val result0 =
             cachedApp.get(1)(FakeRequest("GET", "/resource/1")).run()
           status(result0) must_== 200
@@ -123,33 +124,31 @@ package scalaguide.cache {
       }
     }
 
-    def testAction[A](action: EssentialAction,
-                      request: => Request[A] = FakeRequest(),
-                      expectedResponse: Int = OK) = {
-      assertAction(action, request, expectedResponse) { result =>
-        success
-      }
-    }
+    def testAction[A](
+        action: EssentialAction,
+        request: => Request[A] = FakeRequest(),
+        expectedResponse: Int = OK
+    ) =
+      assertAction(action, request, expectedResponse)(result => success)
 
-    def assertAction[A, T : AsResult](action: EssentialAction,
-                                      request: => Request[A] = FakeRequest(),
-                                      expectedResponse: Int = OK)(
-        assertions: Future[Result] => T) = {
+    def assertAction[A, T: AsResult](
+        action: EssentialAction,
+        request: => Request[A] = FakeRequest(),
+        expectedResponse: Int = OK
+    )(assertions: Future[Result] => T) =
       running() { app =>
         implicit val mat = ActorMaterializer()(app.actorSystem)
-        val result = action(request).run()
+        val result       = action(request).run()
         status(result) must_== expectedResponse
         assertions(result)
       }
-    }
   }
 
   package views {
 
     object html {
-      def profile(user: User) = {
+      def profile(user: User) =
         s"Hello, $user.name"
-      }
     }
   }
 
@@ -159,7 +158,7 @@ package scalaguide.cache {
     import play.api.mvc._
     import javax.inject.Inject
 
-    class Application @Inject()(cache: CacheApi) extends Controller {}
+    class Application @Inject() (cache: CacheApi) extends Controller {}
 //#inject
   }
 
@@ -169,10 +168,9 @@ package scalaguide.cache {
     import play.api.mvc._
     import javax.inject.Inject
 
-    class Application @Inject()(
+    class Application @Inject() (
         @NamedCache("session-cache") sessionCache: CacheApi
-    )
-        extends Controller {}
+    ) extends Controller {}
 //#qualified
   }
 
@@ -181,10 +179,10 @@ package scalaguide.cache {
     import play.api.cache.Cached
     import javax.inject.Inject
 
-    class Application @Inject()(cached: Cached) extends Controller {}
+    class Application @Inject() (cached: Cached) extends Controller {}
 //#cached-action-app
 
-    class Application1 @Inject()(cached: Cached) extends Controller {
+    class Application1 @Inject() (cached: Cached) extends Controller {
       //#cached-action
       def index = cached("homePage") {
         Action {
@@ -216,7 +214,7 @@ package scalaguide.cache {
       }
       //#cached-action-control
     }
-    class Application2 @Inject()(cached: Cached) extends Controller {
+    class Application2 @Inject() (cached: Cached) extends Controller {
       //#cached-action-control-404
       def get(index: Int) = {
         val caching =

@@ -80,8 +80,8 @@ private[streaming] class BlockGenerator(
     receiverId: Int,
     conf: SparkConf,
     clock: Clock = new SystemClock()
-)
-    extends RateLimiter(conf) with Logging {
+) extends RateLimiter(conf)
+    with Logging {
 
   private case class Block(id: StreamBlockId, buffer: ArrayBuffer[Any])
 
@@ -99,17 +99,23 @@ private[streaming] class BlockGenerator(
   private object GeneratorState extends Enumeration {
     type GeneratorState = Value
     val Initialized, Active, StoppedAddingData, StoppedGeneratingBlocks,
-    StoppedAll = Value
+        StoppedAll = Value
   }
   import GeneratorState._
 
   private val blockIntervalMs =
     conf.getTimeAsMs("spark.streaming.blockInterval", "200ms")
-  require(blockIntervalMs > 0,
-          s"'spark.streaming.blockInterval' should be a positive value")
+  require(
+    blockIntervalMs > 0,
+    s"'spark.streaming.blockInterval' should be a positive value"
+  )
 
   private val blockIntervalTimer = new RecurringTimer(
-      clock, blockIntervalMs, updateCurrentBuffer, "BlockGenerator")
+    clock,
+    blockIntervalMs,
+    updateCurrentBuffer,
+    "BlockGenerator"
+  )
   private val blockQueueSize =
     conf.getInt("spark.streaming.blockQueueSize", 10)
   private val blocksForPushing = new ArrayBlockingQueue[Block](blockQueueSize)
@@ -118,7 +124,7 @@ private[streaming] class BlockGenerator(
   }
 
   @volatile private var currentBuffer = new ArrayBuffer[Any]
-  @volatile private var state = Initialized
+  @volatile private var state         = Initialized
 
   /** Start block generating and pushing threads. */
   def start(): Unit = synchronized {
@@ -129,7 +135,8 @@ private[streaming] class BlockGenerator(
       logInfo("Started BlockGenerator")
     } else {
       throw new SparkException(
-          s"Cannot start BlockGenerator as its not in the Initialized state [state = $state]")
+        s"Cannot start BlockGenerator as its not in the Initialized state [state = $state]"
+      )
     }
   }
 
@@ -147,7 +154,8 @@ private[streaming] class BlockGenerator(
         state = StoppedAddingData
       } else {
         logWarning(
-            s"Cannot stop BlockGenerator as its not in the Active state [state = $state]")
+          s"Cannot stop BlockGenerator as its not in the Active state [state = $state]"
+        )
         return
       }
     }
@@ -167,7 +175,7 @@ private[streaming] class BlockGenerator(
   /**
     * Push a single data item into the buffer.
     */
-  def addData(data: Any): Unit = {
+  def addData(data: Any): Unit =
     if (state == Active) {
       waitToPush()
       synchronized {
@@ -175,20 +183,21 @@ private[streaming] class BlockGenerator(
           currentBuffer += data
         } else {
           throw new SparkException(
-              "Cannot add data as BlockGenerator has not been started or has been stopped")
+            "Cannot add data as BlockGenerator has not been started or has been stopped"
+          )
         }
       }
     } else {
       throw new SparkException(
-          "Cannot add data as BlockGenerator has not been started or has been stopped")
+        "Cannot add data as BlockGenerator has not been started or has been stopped"
+      )
     }
-  }
 
   /**
     * Push a single data item into the buffer. After buffering the data, the
     * `BlockGeneratorListener.onAddData` callback will be called.
     */
-  def addDataWithCallback(data: Any, metadata: Any): Unit = {
+  def addDataWithCallback(data: Any, metadata: Any): Unit =
     if (state == Active) {
       waitToPush()
       synchronized {
@@ -197,14 +206,15 @@ private[streaming] class BlockGenerator(
           listener.onAddData(data, metadata)
         } else {
           throw new SparkException(
-              "Cannot add data as BlockGenerator has not been started or has been stopped")
+            "Cannot add data as BlockGenerator has not been started or has been stopped"
+          )
         }
       }
     } else {
       throw new SparkException(
-          "Cannot add data as BlockGenerator has not been started or has been stopped")
+        "Cannot add data as BlockGenerator has not been started or has been stopped"
+      )
     }
-  }
 
   /**
     * Push multiple data items into the buffer. After buffering the data, the
@@ -212,7 +222,9 @@ private[streaming] class BlockGenerator(
     * are atomically added to the buffer, and are hence guaranteed to be present in a single block.
     */
   def addMultipleDataWithCallback(
-      dataIterator: Iterator[Any], metadata: Any): Unit = {
+      dataIterator: Iterator[Any],
+      metadata: Any
+  ): Unit =
     if (state == Active) {
       // Unroll iterator into a temp buffer, and wait for pushing in the process
       val tempBuffer = new ArrayBuffer[Any]
@@ -226,21 +238,22 @@ private[streaming] class BlockGenerator(
           listener.onAddData(tempBuffer, metadata)
         } else {
           throw new SparkException(
-              "Cannot add data as BlockGenerator has not been started or has been stopped")
+            "Cannot add data as BlockGenerator has not been started or has been stopped"
+          )
         }
       }
     } else {
       throw new SparkException(
-          "Cannot add data as BlockGenerator has not been started or has been stopped")
+        "Cannot add data as BlockGenerator has not been started or has been stopped"
+      )
     }
-  }
 
   def isActive(): Boolean = state == Active
 
   def isStopped(): Boolean = state == StoppedAll
 
   /** Change the buffer to which single records are added to. */
-  private def updateCurrentBuffer(time: Long): Unit = {
+  private def updateCurrentBuffer(time: Long): Unit =
     try {
       var newBlock: Block = null
       synchronized {
@@ -262,7 +275,6 @@ private[streaming] class BlockGenerator(
       case e: Exception =>
         reportError("Error in block updating thread", e)
     }
-  }
 
   /** Keep pushing blocks to the BlockManager. */
   private def keepPushingBlocks() {
@@ -277,7 +289,7 @@ private[streaming] class BlockGenerator(
       while (areBlocksBeingGenerated) {
         Option(blocksForPushing.poll(10, TimeUnit.MILLISECONDS)) match {
           case Some(block) => pushBlock(block)
-          case None =>
+          case None        =>
         }
       }
 

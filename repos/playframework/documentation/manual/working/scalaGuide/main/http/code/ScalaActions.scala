@@ -17,53 +17,49 @@ package scalaguide.http.scalaactions {
     "A scala action" should {
       "allow writing a simple echo action" in {
         //#echo-action
-        def echo = Action { request =>
-          Ok("Got request [" + request + "]")
-        }
+        def echo = Action(request => Ok("Got request [" + request + "]"))
         //#echo-action
         testAction(echo)
       }
 
       "support zero arg actions" in {
         testAction(
-            //#zero-arg-action
-            Action {
-              Ok("Hello world")
-            }
-            //#zero-arg-action
+          //#zero-arg-action
+          Action {
+            Ok("Hello world")
+          }
+          //#zero-arg-action
         )
       }
 
       "pass the request to the action" in {
         testAction(
-            //#request-action
-            Action { request =>
-              Ok("Got request [" + request + "]")
-            }
-            //#request-action
+          //#request-action
+          Action(request => Ok("Got request [" + request + "]"))
+          //#request-action
         )
       }
 
       "pass the request implicitly to the action" in {
         testAction(
-            //#implicit-request-action
-            Action { implicit request =>
-              Ok("Got request [" + request + "]")
-            }
-            //#implicit-request-action
+          //#implicit-request-action
+          Action(implicit request => Ok("Got request [" + request + "]"))
+          //#implicit-request-action
         )
       }
 
       "allow specifying a parser" in {
-        testAction(action = //#json-parser-action
-                     Action(parse.json) { implicit request =>
-                     Ok("Got request [" + request + "]")
-                   }
-                   //#json-parser-action
-                   ,
-                   request = FakeRequest()
-                       .withBody(Json.obj())
-                       .withHeaders(CONTENT_TYPE -> "application/json"))
+        testAction(
+          action = //#json-parser-action
+            Action(parse.json) { implicit request =>
+              Ok("Got request [" + request + "]")
+            }
+          //#json-parser-action
+          ,
+          request = FakeRequest()
+            .withBody(Json.obj())
+            .withHeaders(CONTENT_TYPE -> "application/json")
+        )
       }
 
       "work for a full controller class" in {
@@ -88,9 +84,9 @@ package scalaguide.http.scalaactions {
 
         def index = Action {
           Result(
-              header = ResponseHeader(200, Map.empty),
-              body = HttpEntity.Strict(ByteString("Hello world!"),
-                                       Some("text/plain"))
+            header = ResponseHeader(200, Map.empty),
+            body =
+              HttpEntity.Strict(ByteString("Hello world!"), Some("text/plain"))
           )
         }
         //#simple-result-action
@@ -112,12 +108,12 @@ package scalaguide.http.scalaactions {
         val formWithErrors = ""
 
         //#other-results
-        val ok = Ok("Hello world!")
-        val notFound = NotFound
+        val ok           = Ok("Hello world!")
+        val notFound     = NotFound
         val pageNotFound = NotFound(<h1>Page not found</h1>)
-        val badRequest = BadRequest(views.html.form(formWithErrors))
-        val oops = InternalServerError("Oops")
-        val anyStatus = Status(488)("Strange response type")
+        val badRequest   = BadRequest(views.html.form(formWithErrors))
+        val oops         = InternalServerError("Oops")
+        val anyStatus    = Status(488)("Strange response type")
         //#other-results
 
         anyStatus.header.status must_== 488
@@ -153,24 +149,23 @@ package scalaguide.http.scalaactions {
       }
     }
 
-    def testAction[A](action: Action[A],
-                      expectedResponse: Int = OK,
-                      request: Request[A] = FakeRequest()) = {
-      assertAction(action, expectedResponse, request) { result =>
-        success
-      }
-    }
+    def testAction[A](
+        action: Action[A],
+        expectedResponse: Int = OK,
+        request: Request[A] = FakeRequest()
+    ) =
+      assertAction(action, expectedResponse, request)(result => success)
 
-    def assertAction[A, T : AsResult](action: Action[A],
-                                      expectedResponse: Int = OK,
-                                      request: Request[A] = FakeRequest())(
-        assertions: Future[Result] => T) = {
+    def assertAction[A, T: AsResult](
+        action: Action[A],
+        expectedResponse: Int = OK,
+        request: Request[A] = FakeRequest()
+    )(assertions: Future[Result] => T) =
       running() { _ =>
         val result = action(request)
         status(result) must_== expectedResponse
         assertions(result)
       }
-    }
   }
 
 // Faking a form view

@@ -19,8 +19,8 @@ private[niocharset] abstract class UTF_16_Common protected (
     // scalastyle:ignore
     name: String,
     aliases: Array[String],
-    private val endianness: Int)
-    extends Charset(name, aliases) {
+    private val endianness: Int
+) extends Charset(name, aliases) {
 
   import UTF_16_Common._
 
@@ -29,8 +29,7 @@ private[niocharset] abstract class UTF_16_Common protected (
   def newDecoder(): CharsetDecoder = new Decoder
   def newEncoder(): CharsetEncoder = new Encoder
 
-  private class Decoder
-      extends CharsetDecoder(UTF_16_Common.this, 0.5f, 1.0f) {
+  private class Decoder extends CharsetDecoder(UTF_16_Common.this, 0.5f, 1.0f) {
     private var endianness = UTF_16_Common.this.endianness
 
     override protected def implReset(): Unit = {
@@ -41,7 +40,7 @@ private[niocharset] abstract class UTF_16_Common protected (
     def decodeLoop(in: ByteBuffer, out: CharBuffer): CoderResult = {
       @inline
       @tailrec
-      def loop(): CoderResult = {
+      def loop(): CoderResult =
         if (in.remaining < 2) CoderResult.UNDERFLOW
         else {
           val b1 = in.get() & 0xff
@@ -110,19 +109,21 @@ private[niocharset] abstract class UTF_16_Common protected (
             }
           }
         }
-      }
 
       loop()
     }
   }
 
   private class Encoder
-      extends CharsetEncoder(UTF_16_Common.this,
-                             2.0f,
-                             2.0f,
-                             // Character 0xfffd
-                             if (endianness == LittleEndian)
-                               Array(-3, -1) else Array(-1, -3)) {
+      extends CharsetEncoder(
+        UTF_16_Common.this,
+        2.0f,
+        2.0f,
+        // Character 0xfffd
+        if (endianness == LittleEndian)
+          Array(-3, -1)
+        else Array(-1, -3)
+      ) {
 
     private var needToWriteBOM: Boolean = endianness == AutoEndian
 
@@ -146,7 +147,7 @@ private[niocharset] abstract class UTF_16_Common protected (
       val bigEndian = endianness != LittleEndian
 
       @inline
-      def putChar(c: Char): Unit = {
+      def putChar(c: Char): Unit =
         if (bigEndian) {
           out.put((c >> 8).toByte)
           out.put(c.toByte)
@@ -154,11 +155,10 @@ private[niocharset] abstract class UTF_16_Common protected (
           out.put(c.toByte)
           out.put((c >> 8).toByte)
         }
-      }
 
       @inline
       @tailrec
-      def loop(): CoderResult = {
+      def loop(): CoderResult =
         if (in.remaining == 0) CoderResult.UNDERFLOW
         else {
           val c1 = in.get()
@@ -197,7 +197,6 @@ private[niocharset] abstract class UTF_16_Common protected (
             }
           }
         }
-      }
 
       loop()
     }
@@ -206,7 +205,7 @@ private[niocharset] abstract class UTF_16_Common protected (
 
 private[niocharset] object UTF_16_Common {
   // scalastyle:ignore
-  final val AutoEndian = 0
-  final val BigEndian = 1
+  final val AutoEndian   = 0
+  final val BigEndian    = 1
   final val LittleEndian = 2
 }

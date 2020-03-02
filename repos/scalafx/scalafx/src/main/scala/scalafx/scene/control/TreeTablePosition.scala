@@ -47,7 +47,8 @@ object TreeTablePosition {
     * @return JavaFX TreeTablePosition
     */
   implicit def sfxTreeTablePosition2jfx[S, T](
-      ttp: TreeTablePosition[S, T]): jfxsc.TreeTablePosition[S, T] =
+      ttp: TreeTablePosition[S, T]
+  ): jfxsc.TreeTablePosition[S, T] =
     if (ttp != null) ttp.delegate else null
 }
 
@@ -66,8 +67,8 @@ object TreeTablePosition {
   * @define ORIGINALDOC Original Documentation]].
   */
 class TreeTablePosition[S, T](
-    override val delegate: jfxsc.TreeTablePosition[S, T])
-    extends TablePositionBase[jfxsc.TreeTableColumn[S, T]](delegate)
+    override val delegate: jfxsc.TreeTablePosition[S, T]
+) extends TablePositionBase[jfxsc.TreeTableColumn[S, T]](delegate)
     with SFXDelegate[jfxsc.TreeTablePosition[S, T]] {
 
   /**
@@ -79,9 +80,11 @@ class TreeTablePosition[S, T](
     * @param tableColumn   The TreeTableColumn instance that this TreeTablePosition represents.
     * @see $URL0#TreeTablePosition-javafx.scene.control.TreeTableView-int-javafx.scene.control.TreeTableColumn- $ORIGINALDOC
     */
-  def this(treeTableView: jfxsc.TreeTableView[S],
-           row: Int,
-           tableColumn: jfxsc.TreeTableColumn[S, T]) =
+  def this(
+      treeTableView: jfxsc.TreeTableView[S],
+      row: Int,
+      tableColumn: jfxsc.TreeTableColumn[S, T]
+  ) =
     this(new jfxsc.TreeTablePosition(treeTableView, row, tableColumn))
 
   /**

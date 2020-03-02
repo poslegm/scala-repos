@@ -24,7 +24,7 @@ trait Compat210Component {
 
   implicit final class SymbolCompat(self: Symbol) {
     def unexpandedName: Name = self.originalName
-    def originalName: Name = sys.error("infinite loop in Compat")
+    def originalName: Name   = sys.error("infinite loop in Compat")
 
     def isLocalToBlock: Boolean = self.isLocal
 
@@ -35,13 +35,11 @@ trait Compat210Component {
 
   // enteringPhase/exitingPhase replace beforePhase/afterPhase
 
-  @inline final def enteringPhase[T](ph: Phase)(op: => T): T = {
+  @inline final def enteringPhase[T](ph: Phase)(op: => T): T =
     global.enteringPhase(ph)(op)
-  }
 
-  @inline final def exitingPhase[T](ph: Phase)(op: => T): T = {
+  @inline final def exitingPhase[T](ph: Phase)(op: => T): T =
     global.exitingPhase(ph)(op)
-  }
 
   implicit final class GlobalCompat(self: Compat210Component.this.global.type) {
 
@@ -129,7 +127,9 @@ trait Compat210Component {
 
   // Compat to support: new overridingPairs.Cursor(sym).iterator
 
-  implicit class OverridingPairsCursor2Iterable(cursor: overridingPairs.Cursor) {
+  implicit class OverridingPairsCursor2Iterable(
+      cursor: overridingPairs.Cursor
+  ) {
     def iterator: Iterator[SymbolPair] = new Iterator[SymbolPair] {
       skipIgnoredEntries()
 
@@ -142,9 +142,8 @@ trait Compat210Component {
         symbolPair
       }
 
-      private def skipIgnoredEntries(): Unit = {
+      private def skipIgnoredEntries(): Unit =
         while (cursor.hasNext && ignoreNextEntry) cursor.next()
-      }
 
       /** In 2.10 the overridingPairs.Cursor returns some false positives
         *  on overriding members. The known false positives are always trying to
@@ -159,7 +158,9 @@ trait Compat210Component {
     /** To make this compat code compile in 2.11 as the fields `overriding` and
       *  `overridden` are only present in 2.10.
       */
-    private implicit class Cursor210toCursor211(cursor: overridingPairs.Cursor) {
+    private implicit class Cursor210toCursor211(
+        cursor: overridingPairs.Cursor
+    ) {
       def overriding: Symbol = sys.error("infinite loop in Compat")
       def overridden: Symbol = sys.error("infinite loop in Compat")
     }
@@ -171,7 +172,8 @@ trait Compat210Component {
     def valueClazz: Symbol = self.original.typeSymbol
     def erasedUnderlying: Type =
       enteringPhase(currentRun.erasurePhase)(
-          erasure.erasedValueClassArg(self.original))
+        erasure.erasedValueClassArg(self.original)
+      )
     def original: TypeRef = sys.error("infinite loop in Compat")
   }
 
@@ -181,11 +183,12 @@ trait Compat210Component {
     global.definitions.repeatedToSingle(t)
 
   private implicit final class DefinitionsCompat(
-      self: Compat210Component.this.global.definitions.type) {
+      self: Compat210Component.this.global.definitions.type
+  ) {
 
     def repeatedToSingle(t: Type): Type = t match {
       case TypeRef(_, self.RepeatedParamClass, arg :: Nil) => arg
-      case _ => t
+      case _                                               => t
     }
   }
 
@@ -214,7 +217,8 @@ object Compat210Component {
   }
 
   private implicit final class AnalyzerCompat(
-      self: scala.tools.nsc.typechecker.Analyzer) {
+      self: scala.tools.nsc.typechecker.Analyzer
+  ) {
     def FUNmode = {
       // scalastyle:ignore
       import Compat210Component.LowPriorityMode._

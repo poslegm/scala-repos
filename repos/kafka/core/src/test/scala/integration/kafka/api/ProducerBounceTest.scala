@@ -24,7 +24,7 @@ import org.junit.Assert._
 import org.junit.{After, Before, Test}
 
 class ProducerBounceTest extends KafkaServerTestHarness {
-  private val producerBufferSize = 30000
+  private val producerBufferSize    = 30000
   private val serverMessageMaxBytes = producerBufferSize / 2
 
   val numServers = 2
@@ -32,7 +32,9 @@ class ProducerBounceTest extends KafkaServerTestHarness {
   val overridingProps = new Properties()
   overridingProps.put(KafkaConfig.AutoCreateTopicsEnableProp, false.toString)
   overridingProps.put(
-      KafkaConfig.MessageMaxBytesProp, serverMessageMaxBytes.toString)
+    KafkaConfig.MessageMaxBytesProp,
+    serverMessageMaxBytes.toString
+  )
   // Set a smaller value for the number of partitions for the offset commit topic (__consumer_offset topic)
   // so that the creation of that topic/partition(s) and subsequent leader assignment doesn't take relatively long
   overridingProps.put(KafkaConfig.OffsetsTopicPartitionsProp, 1.toString)
@@ -46,12 +48,14 @@ class ProducerBounceTest extends KafkaServerTestHarness {
   //
   // Since such quick rotation of servers is incredibly unrealistic, we allow this one test to preallocate ports, leaving
   // a small risk of hitting errors due to port conflicts. Hopefully this is infrequent enough to not cause problems.
-  override def generateConfigs() = {
+  override def generateConfigs() =
     FixedPortTestUtils
       .createBrokerConfigs(
-          numServers, zkConnect, enableControlledShutdown = false)
+        numServers,
+        zkConnect,
+        enableControlledShutdown = false
+      )
       .map(KafkaConfig.fromProps(_, overridingProps))
-  }
 
   private var consumer1: SimpleConsumer = null
   private var consumer2: SimpleConsumer = null
@@ -69,11 +73,20 @@ class ProducerBounceTest extends KafkaServerTestHarness {
     super.setUp()
 
     producer1 = TestUtils.createNewProducer(
-        brokerList, acks = 0, bufferSize = producerBufferSize)
+      brokerList,
+      acks = 0,
+      bufferSize = producerBufferSize
+    )
     producer2 = TestUtils.createNewProducer(
-        brokerList, acks = 1, bufferSize = producerBufferSize)
+      brokerList,
+      acks = 1,
+      bufferSize = producerBufferSize
+    )
     producer3 = TestUtils.createNewProducer(
-        brokerList, acks = -1, bufferSize = producerBufferSize)
+      brokerList,
+      acks = -1,
+      bufferSize = producerBufferSize
+    )
   }
 
   @After
@@ -92,10 +105,12 @@ class ProducerBounceTest extends KafkaServerTestHarness {
   @Test
   def testBrokerFailure() {
     val numPartitions = 3
-    val leaders = TestUtils.createTopic(
-        zkUtils, topic1, numPartitions, numServers, servers)
-    assertTrue("Leader of all partitions of the topic should exist",
-               leaders.values.forall(leader => leader.isDefined))
+    val leaders =
+      TestUtils.createTopic(zkUtils, topic1, numPartitions, numServers, servers)
+    assertTrue(
+      "Leader of all partitions of the topic should exist",
+      leaders.values.forall(leader => leader.isDefined)
+    )
 
     val scheduler = new ProducerScheduler()
     scheduler.start
@@ -115,8 +130,8 @@ class ProducerBounceTest extends KafkaServerTestHarness {
 
       // Make sure the leader still exists after bouncing brokers
       (0 until numPartitions).foreach(partition =>
-            TestUtils.waitUntilLeaderIsElectedOrChanged(
-                zkUtils, topic1, partition))
+        TestUtils.waitUntilLeaderIsElectedOrChanged(zkUtils, topic1, partition)
+      )
     }
 
     scheduler.shutdown
@@ -126,45 +141,65 @@ class ProducerBounceTest extends KafkaServerTestHarness {
     assertTrue(scheduler.failed == false)
 
     // double check that the leader info has been propagated after consecutive bounces
-    val newLeaders = (0 until numPartitions).map(
-        i => TestUtils.waitUntilMetadataIsPropagated(servers, topic1, i))
+    val newLeaders = (0 until numPartitions).map(i =>
+      TestUtils.waitUntilMetadataIsPropagated(servers, topic1, i)
+    )
     val fetchResponses = newLeaders.zipWithIndex.map {
       case (leader, partition) =>
         // Consumers must be instantiated after all the restarts since they use random ports each time they start up
         val consumer = new SimpleConsumer(
-            "localhost", servers(leader).boundPort(), 100, 1024 * 1024, "")
+          "localhost",
+          servers(leader).boundPort(),
+          100,
+          1024 * 1024,
+          ""
+        )
         val response = consumer
-          .fetch(new FetchRequestBuilder()
-                .addFetch(topic1, partition, 0, Int.MaxValue)
-                .build())
+          .fetch(
+            new FetchRequestBuilder()
+              .addFetch(topic1, partition, 0, Int.MaxValue)
+              .build()
+          )
           .messageSet(topic1, partition)
         consumer.close
         response
     }
     val messages =
       fetchResponses.flatMap(r => r.iterator.toList.map(_.message))
-    val uniqueMessages = messages.toSet
+    val uniqueMessages    = messages.toSet
     val uniqueMessageSize = uniqueMessages.size
 
-    assertEquals("Should have fetched " + scheduler.sent + " unique messages",
-                 scheduler.sent,
-                 uniqueMessageSize)
+    assertEquals(
+      "Should have fetched " + scheduler.sent + " unique messages",
+      scheduler.sent,
+      uniqueMessageSize
+    )
   }
 
   private class ProducerScheduler
       extends ShutdownableThread("daemon-producer", false) {
     val numRecords = 1000
-    var sent = 0
-    var failed = false
+    var sent       = 0
+    var failed     = false
 
     val producer = TestUtils.createNewProducer(
-        brokerList, bufferSize = producerBufferSize, retries = 10)
+      brokerList,
+      bufferSize = producerBufferSize,
+      retries = 10
+    )
 
     override def doWork(): Unit = {
-      val responses = for (i <- sent + 1 to sent + numRecords) yield
-        producer.send(new ProducerRecord[Array[Byte], Array[Byte]](
-                          topic1, null, null, i.toString.getBytes),
-                      new ErrorLoggingCallback(topic1, null, null, true))
+      val responses =
+        for (i <- sent + 1 to sent + numRecords)
+          yield producer.send(
+            new ProducerRecord[Array[Byte], Array[Byte]](
+              topic1,
+              null,
+              null,
+              i.toString.getBytes
+            ),
+            new ErrorLoggingCallback(topic1, null, null, true)
+          )
       val futures = responses.toList
 
       try {

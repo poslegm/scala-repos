@@ -35,7 +35,7 @@ object ArrayBuilder {
     *  @return       a new empty array builder.
     */
   @inline
-  def make[T : ClassTag](): ArrayBuilder[T] =
+  def make[T: ClassTag](): ArrayBuilder[T] =
     new ArrayBuilder.generic[T](implicitly[ClassTag[T]].runtimeClass)
 
   /** A generic ArrayBuilder optimized for Scala.js.
@@ -47,7 +47,7 @@ object ArrayBuilder {
   private final class generic[T](elementClass: Class[_])
       extends ArrayBuilder[T] {
 
-    private val isCharArrayBuilder = classOf[Char] == elementClass
+    private val isCharArrayBuilder   = classOf[Char] == elementClass
     private val elems: js.Array[Any] = js.Array()
 
     def +=(elem: T): this.type = {
@@ -76,26 +76,28 @@ object ArrayBuilder {
 
   // Intrinsic
   private def zeroOf(runtimeClass: Class[_]): Any = runtimeClass match {
-    case java.lang.Byte.TYPE => 0.toByte
-    case java.lang.Short.TYPE => 0.toShort
+    case java.lang.Byte.TYPE      => 0.toByte
+    case java.lang.Short.TYPE     => 0.toShort
     case java.lang.Character.TYPE => 0 // yes, as an Int
-    case java.lang.Integer.TYPE => 0
-    case java.lang.Long.TYPE => 0L
-    case java.lang.Float.TYPE => 0.0f
-    case java.lang.Double.TYPE => 0.0
-    case java.lang.Boolean.TYPE => false
-    case java.lang.Void.TYPE => ()
-    case _ => null
+    case java.lang.Integer.TYPE   => 0
+    case java.lang.Long.TYPE      => 0L
+    case java.lang.Float.TYPE     => 0.0f
+    case java.lang.Double.TYPE    => 0.0
+    case java.lang.Boolean.TYPE   => false
+    case java.lang.Void.TYPE      => ()
+    case _                        => null
   }
 
   // Intrinsic
   private def genericArrayBuilderResult[T](
-      runtimeClass: Class[_], a: js.Array[Any]): Array[T] = {
+      runtimeClass: Class[_],
+      a: js.Array[Any]
+  ): Array[T] = {
     val len = a.length
 
     if (classOf[Char] == runtimeClass) {
       val result = new Array[Char](len)
-      var i = 0
+      var i      = 0
       while (i != len) {
         result(i) = a(i).asInstanceOf[Int].toChar
         i += 1
@@ -119,13 +121,14 @@ object ArrayBuilder {
     *  @tparam T     type of elements for the array builder, subtype of `AnyRef` with a `ClassTag` context bound.
     */
   @deprecatedInheritance(
-      "ArrayBuilder.ofRef is an internal implementation not intended for subclassing.",
-      "2.11.0")
-  class ofRef[T <: AnyRef : ClassTag] extends ArrayBuilder[T] {
+    "ArrayBuilder.ofRef is an internal implementation not intended for subclassing.",
+    "2.11.0"
+  )
+  class ofRef[T <: AnyRef: ClassTag] extends ArrayBuilder[T] {
 
     private var elems: Array[T] = _
-    private var capacity: Int = 0
-    private var size: Int = 0
+    private var capacity: Int   = 0
+    private var size: Int       = 0
 
     private def mkArray(size: Int): Array[T] = {
       val newelems = new Array[T](size)
@@ -172,14 +175,13 @@ object ArrayBuilder {
       size = 0
     }
 
-    def result() = {
+    def result() =
       if (capacity != 0 && capacity == size) elems
       else mkArray(size)
-    }
 
     override def equals(other: Any): Boolean = other match {
       case x: ofRef[_] => (size == x.size) && (elems == x.elems)
-      case _ => false
+      case _           => false
     }
 
     override def toString = "ArrayBuilder.ofRef"
@@ -187,13 +189,14 @@ object ArrayBuilder {
 
   /** A class for array builders for arrays of `byte`s. */
   @deprecatedInheritance(
-      "ArrayBuilder.ofByte is an internal implementation not intended for subclassing.",
-      "2.11.0")
+    "ArrayBuilder.ofByte is an internal implementation not intended for subclassing.",
+    "2.11.0"
+  )
   class ofByte extends ArrayBuilder[Byte] {
 
     private var elems: Array[Byte] = _
-    private var capacity: Int = 0
-    private var size: Int = 0
+    private var capacity: Int      = 0
+    private var size: Int          = 0
 
     private def mkArray(size: Int): Array[Byte] = {
       val newelems = new Array[Byte](size)
@@ -239,14 +242,13 @@ object ArrayBuilder {
       size = 0
     }
 
-    def result() = {
+    def result() =
       if (capacity != 0 && capacity == size) elems
       else mkArray(size)
-    }
 
     override def equals(other: Any): Boolean = other match {
       case x: ofByte => (size == x.size) && (elems == x.elems)
-      case _ => false
+      case _         => false
     }
 
     override def toString = "ArrayBuilder.ofByte"
@@ -254,13 +256,14 @@ object ArrayBuilder {
 
   /** A class for array builders for arrays of `short`s. */
   @deprecatedInheritance(
-      "ArrayBuilder.ofShort is an internal implementation not intended for subclassing.",
-      "2.11.0")
+    "ArrayBuilder.ofShort is an internal implementation not intended for subclassing.",
+    "2.11.0"
+  )
   class ofShort extends ArrayBuilder[Short] {
 
     private var elems: Array[Short] = _
-    private var capacity: Int = 0
-    private var size: Int = 0
+    private var capacity: Int       = 0
+    private var size: Int           = 0
 
     private def mkArray(size: Int): Array[Short] = {
       val newelems = new Array[Short](size)
@@ -306,14 +309,13 @@ object ArrayBuilder {
       size = 0
     }
 
-    def result() = {
+    def result() =
       if (capacity != 0 && capacity == size) elems
       else mkArray(size)
-    }
 
     override def equals(other: Any): Boolean = other match {
       case x: ofShort => (size == x.size) && (elems == x.elems)
-      case _ => false
+      case _          => false
     }
 
     override def toString = "ArrayBuilder.ofShort"
@@ -321,13 +323,14 @@ object ArrayBuilder {
 
   /** A class for array builders for arrays of `char`s. */
   @deprecatedInheritance(
-      "ArrayBuilder.ofChar is an internal implementation not intended for subclassing.",
-      "2.11.0")
+    "ArrayBuilder.ofChar is an internal implementation not intended for subclassing.",
+    "2.11.0"
+  )
   class ofChar extends ArrayBuilder[Char] {
 
     private var elems: Array[Char] = _
-    private var capacity: Int = 0
-    private var size: Int = 0
+    private var capacity: Int      = 0
+    private var size: Int          = 0
 
     private def mkArray(size: Int): Array[Char] = {
       val newelems = new Array[Char](size)
@@ -373,14 +376,13 @@ object ArrayBuilder {
       size = 0
     }
 
-    def result() = {
+    def result() =
       if (capacity != 0 && capacity == size) elems
       else mkArray(size)
-    }
 
     override def equals(other: Any): Boolean = other match {
       case x: ofChar => (size == x.size) && (elems == x.elems)
-      case _ => false
+      case _         => false
     }
 
     override def toString = "ArrayBuilder.ofChar"
@@ -388,13 +390,14 @@ object ArrayBuilder {
 
   /** A class for array builders for arrays of `int`s. */
   @deprecatedInheritance(
-      "ArrayBuilder.ofInt is an internal implementation not intended for subclassing.",
-      "2.11.0")
+    "ArrayBuilder.ofInt is an internal implementation not intended for subclassing.",
+    "2.11.0"
+  )
   class ofInt extends ArrayBuilder[Int] {
 
     private var elems: Array[Int] = _
-    private var capacity: Int = 0
-    private var size: Int = 0
+    private var capacity: Int     = 0
+    private var size: Int         = 0
 
     private def mkArray(size: Int): Array[Int] = {
       val newelems = new Array[Int](size)
@@ -440,14 +443,13 @@ object ArrayBuilder {
       size = 0
     }
 
-    def result() = {
+    def result() =
       if (capacity != 0 && capacity == size) elems
       else mkArray(size)
-    }
 
     override def equals(other: Any): Boolean = other match {
       case x: ofInt => (size == x.size) && (elems == x.elems)
-      case _ => false
+      case _        => false
     }
 
     override def toString = "ArrayBuilder.ofInt"
@@ -455,13 +457,14 @@ object ArrayBuilder {
 
   /** A class for array builders for arrays of `long`s. */
   @deprecatedInheritance(
-      "ArrayBuilder.ofLong is an internal implementation not intended for subclassing.",
-      "2.11.0")
+    "ArrayBuilder.ofLong is an internal implementation not intended for subclassing.",
+    "2.11.0"
+  )
   class ofLong extends ArrayBuilder[Long] {
 
     private var elems: Array[Long] = _
-    private var capacity: Int = 0
-    private var size: Int = 0
+    private var capacity: Int      = 0
+    private var size: Int          = 0
 
     private def mkArray(size: Int): Array[Long] = {
       val newelems = new Array[Long](size)
@@ -507,14 +510,13 @@ object ArrayBuilder {
       size = 0
     }
 
-    def result() = {
+    def result() =
       if (capacity != 0 && capacity == size) elems
       else mkArray(size)
-    }
 
     override def equals(other: Any): Boolean = other match {
       case x: ofLong => (size == x.size) && (elems == x.elems)
-      case _ => false
+      case _         => false
     }
 
     override def toString = "ArrayBuilder.ofLong"
@@ -522,13 +524,14 @@ object ArrayBuilder {
 
   /** A class for array builders for arrays of `float`s. */
   @deprecatedInheritance(
-      "ArrayBuilder.ofFloat is an internal implementation not intended for subclassing.",
-      "2.11.0")
+    "ArrayBuilder.ofFloat is an internal implementation not intended for subclassing.",
+    "2.11.0"
+  )
   class ofFloat extends ArrayBuilder[Float] {
 
     private var elems: Array[Float] = _
-    private var capacity: Int = 0
-    private var size: Int = 0
+    private var capacity: Int       = 0
+    private var size: Int           = 0
 
     private def mkArray(size: Int): Array[Float] = {
       val newelems = new Array[Float](size)
@@ -574,14 +577,13 @@ object ArrayBuilder {
       size = 0
     }
 
-    def result() = {
+    def result() =
       if (capacity != 0 && capacity == size) elems
       else mkArray(size)
-    }
 
     override def equals(other: Any): Boolean = other match {
       case x: ofFloat => (size == x.size) && (elems == x.elems)
-      case _ => false
+      case _          => false
     }
 
     override def toString = "ArrayBuilder.ofFloat"
@@ -589,13 +591,14 @@ object ArrayBuilder {
 
   /** A class for array builders for arrays of `double`s. */
   @deprecatedInheritance(
-      "ArrayBuilder.ofDouble is an internal implementation not intended for subclassing.",
-      "2.11.0")
+    "ArrayBuilder.ofDouble is an internal implementation not intended for subclassing.",
+    "2.11.0"
+  )
   class ofDouble extends ArrayBuilder[Double] {
 
     private var elems: Array[Double] = _
-    private var capacity: Int = 0
-    private var size: Int = 0
+    private var capacity: Int        = 0
+    private var size: Int            = 0
 
     private def mkArray(size: Int): Array[Double] = {
       val newelems = new Array[Double](size)
@@ -641,14 +644,13 @@ object ArrayBuilder {
       size = 0
     }
 
-    def result() = {
+    def result() =
       if (capacity != 0 && capacity == size) elems
       else mkArray(size)
-    }
 
     override def equals(other: Any): Boolean = other match {
       case x: ofDouble => (size == x.size) && (elems == x.elems)
-      case _ => false
+      case _           => false
     }
 
     override def toString = "ArrayBuilder.ofDouble"
@@ -658,8 +660,8 @@ object ArrayBuilder {
   class ofBoolean extends ArrayBuilder[Boolean] {
 
     private var elems: Array[Boolean] = _
-    private var capacity: Int = 0
-    private var size: Int = 0
+    private var capacity: Int         = 0
+    private var size: Int             = 0
 
     private def mkArray(size: Int): Array[Boolean] = {
       val newelems = new Array[Boolean](size)
@@ -705,14 +707,13 @@ object ArrayBuilder {
       size = 0
     }
 
-    def result() = {
+    def result() =
       if (capacity != 0 && capacity == size) elems
       else mkArray(size)
-    }
 
     override def equals(other: Any): Boolean = other match {
       case x: ofBoolean => (size == x.size) && (elems == x.elems)
-      case _ => false
+      case _            => false
     }
 
     override def toString = "ArrayBuilder.ofBoolean"
@@ -720,13 +721,14 @@ object ArrayBuilder {
 
   /** A class for array builders for arrays of `Unit` type. */
   @deprecatedInheritance(
-      "ArrayBuilder.ofUnit is an internal implementation not intended for subclassing.",
-      "2.11.0")
+    "ArrayBuilder.ofUnit is an internal implementation not intended for subclassing.",
+    "2.11.0"
+  )
   class ofUnit extends ArrayBuilder[Unit] {
 
     private var elems: Array[Unit] = _
-    private var capacity: Int = 0
-    private var size: Int = 0
+    private var capacity: Int      = 0
+    private var size: Int          = 0
 
     private def mkArray(size: Int): Array[Unit] = {
       val newelems = new Array[Unit](size)
@@ -772,14 +774,13 @@ object ArrayBuilder {
       size = 0
     }
 
-    def result() = {
+    def result() =
       if (capacity != 0 && capacity == size) elems
       else mkArray(size)
-    }
 
     override def equals(other: Any): Boolean = other match {
       case x: ofUnit => (size == x.size) && (elems == x.elems)
-      case _ => false
+      case _         => false
     }
 
     override def toString = "ArrayBuilder.ofUnit"

@@ -27,9 +27,8 @@ object Transform {
   final class TaskAndValue[T](val task: Task[T], val value: T)
   def dummyMap(dummyMap: DummyTaskMap): Task ~>| Task = {
     val pmap = new DelegatingPMap[Task, Task](new collection.mutable.ListMap)
-    def add[T](dummy: TaskAndValue[T]): Unit = {
+    def add[T](dummy: TaskAndValue[T]): Unit =
       pmap(dummy.task) = fromDummyStrict(dummy.task, dummy.value)
-    }
     dummyMap.mappings.foreach(x => add(x))
     pmap
   }
@@ -47,8 +46,8 @@ object Transform {
 
   def taskToNode(pre: Task ~> Task): NodeView[Task] = new NodeView[Task] {
     def apply[T](t: Task[T]): Node[Task, T] = pre(t).work match {
-      case Pure(eval, _) => uniform(Nil)(_ => Right(eval()))
-      case m: Mapped[t, k] => toNode[t, k](m.in)(right ∙ m.f)(m.alist)
+      case Pure(eval, _)       => uniform(Nil)(_ => Right(eval()))
+      case m: Mapped[t, k]     => toNode[t, k](m.in)(right ∙ m.f)(m.alist)
       case m: FlatMapped[t, k] => toNode[t, k](m.in)(left ∙ m.f)(m.alist)
       case DependsOn(in, deps) =>
         uniform(existToAny(deps))(const(Left(in)) ∙ all)
@@ -56,19 +55,21 @@ object Transform {
     }
     def inline[T](t: Task[T]) = t.work match {
       case Pure(eval, true) => Some(eval)
-      case _ => None
+      case _                => None
     }
   }
 
-  def uniform[T, D](tasks: Seq[Task[D]])(
-      f: Seq[Result[D]] => Either[Task[T], T]): Node[Task, T] =
+  def uniform[T, D](
+      tasks: Seq[Task[D]]
+  )(f: Seq[Result[D]] => Either[Task[T], T]): Node[Task, T] =
     toNode[T, ({ type l[L[x]] = List[L[D]] })#l](tasks.toList)(f)(AList.seq[D])
 
-  def toNode[T, k[L[x]]](inputs: k[Task])(f: k[Result] => Either[Task[T], T])(
-      implicit a: AList[k]): Node[Task, T] = new Node[Task, T] {
+  def toNode[T, k[L[x]]](inputs: k[Task])(
+      f: k[Result] => Either[Task[T], T]
+  )(implicit a: AList[k]): Node[Task, T] = new Node[Task, T] {
     type K[L[x]] = k[L]
-    val in = inputs
-    val alist = a
+    val in                       = inputs
+    val alist                    = a
     def work(results: K[Result]) = f(results)
   }
 }

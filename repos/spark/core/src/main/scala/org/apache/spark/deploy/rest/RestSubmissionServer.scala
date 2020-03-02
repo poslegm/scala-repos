@@ -49,8 +49,10 @@ import org.apache.spark.util.Utils
   * server error.
   */
 private[spark] abstract class RestSubmissionServer(
-    val host: String, val requestedPort: Int, val masterConf: SparkConf)
-    extends Logging {
+    val host: String,
+    val requestedPort: Int,
+    val masterConf: SparkConf
+) extends Logging {
   protected val submitRequestServlet: SubmitRequestServlet
   protected val killRequestServlet: KillRequestServlet
   protected val statusRequestServlet: StatusRequestServlet
@@ -61,10 +63,10 @@ private[spark] abstract class RestSubmissionServer(
   protected val baseContext =
     s"/${RestSubmissionServer.PROTOCOL_VERSION}/submissions"
   protected lazy val contextToServlet = Map[String, RestServlet](
-      s"$baseContext/create/*" -> submitRequestServlet,
-      s"$baseContext/kill/*" -> killRequestServlet,
-      s"$baseContext/status/*" -> statusRequestServlet,
-      "/*" -> new ErrorServlet // default handler
+    s"$baseContext/create/*" -> submitRequestServlet,
+    s"$baseContext/kill/*"   -> killRequestServlet,
+    s"$baseContext/status/*" -> statusRequestServlet,
+    "/*"                     -> new ErrorServlet // default handler
   )
 
   /** Start the server and return the bound port. */
@@ -73,7 +75,8 @@ private[spark] abstract class RestSubmissionServer(
       Utils.startServiceOnPort[Server](requestedPort, doStart, masterConf)
     _server = Some(server)
     logInfo(
-        s"Started REST server for submitting applications on port $boundPort")
+      s"Started REST server for submitting applications on port $boundPort"
+    )
     boundPort
   }
 
@@ -82,7 +85,7 @@ private[spark] abstract class RestSubmissionServer(
     * Return a 2-tuple of the started server and the bound port.
     */
   private def doStart(startPort: Int): (Server, Int) = {
-    val server = new Server(new InetSocketAddress(host, startPort))
+    val server     = new Server(new InetSocketAddress(host, startPort))
     val threadPool = new QueuedThreadPool
     threadPool.setDaemon(true)
     server.setThreadPool(threadPool)
@@ -97,16 +100,15 @@ private[spark] abstract class RestSubmissionServer(
     val boundPort = server
       .getConnectors()(0)
       .getLocalPort
-      (server, boundPort)
+    (server, boundPort)
   }
 
-  def stop(): Unit = {
+  def stop(): Unit =
     _server.foreach(_.stop())
-  }
 }
 
 private[rest] object RestSubmissionServer {
-  val PROTOCOL_VERSION = RestSubmissionClient.PROTOCOL_VERSION
+  val PROTOCOL_VERSION            = RestSubmissionClient.PROTOCOL_VERSION
   val SC_UNKNOWN_PROTOCOL_VERSION = 468
 }
 
@@ -119,8 +121,10 @@ private[rest] abstract class RestServlet extends HttpServlet with Logging {
     * Serialize the given response message to JSON and send it through the response servlet.
     * This validates the response before sending it to ensure it is properly constructed.
     */
-  protected def sendResponse(responseMessage: SubmitRestProtocolResponse,
-                             responseServlet: HttpServletResponse): Unit = {
+  protected def sendResponse(
+      responseMessage: SubmitRestProtocolResponse,
+      responseServlet: HttpServletResponse
+  ): Unit = {
     val message = validateResponse(responseMessage, responseServlet)
     responseServlet.setContentType("application/json")
     responseServlet.setCharacterEncoding("utf-8")
@@ -136,19 +140,20 @@ private[rest] abstract class RestServlet extends HttpServlet with Logging {
     */
   protected def findUnknownFields(
       requestJson: String,
-      requestMessage: SubmitRestProtocolMessage): Array[String] = {
-    val clientSideJson = parse(requestJson)
-    val serverSideJson = parse(requestMessage.toJson)
+      requestMessage: SubmitRestProtocolMessage
+  ): Array[String] = {
+    val clientSideJson      = parse(requestJson)
+    val serverSideJson      = parse(requestMessage.toJson)
     val Diff(_, _, unknown) = clientSideJson.diff(serverSideJson)
     unknown match {
       case j: JObject => j.obj.map { case (k, _) => k }.toArray
-      case _ => Array.empty[String] // No difference
+      case _          => Array.empty[String] // No difference
     }
   }
 
   /** Return a human readable String representation of the exception. */
   protected def formatException(e: Throwable): String = {
-    val stackTraceString = e.getStackTrace.map { "\t" + _ }.mkString("\n")
+    val stackTraceString = e.getStackTrace.map("\t" + _).mkString("\n")
     s"$e\n$stackTraceString"
   }
 
@@ -165,13 +170,12 @@ private[rest] abstract class RestServlet extends HttpServlet with Logging {
     * For instance, we expect the path to take the form /[submission ID]/maybe/something/else.
     * The returned submission ID cannot be empty. If the path is unexpected, return None.
     */
-  protected def parseSubmissionId(path: String): Option[String] = {
+  protected def parseSubmissionId(path: String): Option[String] =
     if (path == null || path.isEmpty) {
       None
     } else {
       path.stripPrefix("/").split("/").headOption.filter(_.nonEmpty)
     }
-  }
 
   /**
     * Validate the response to ensure that it is correctly constructed.
@@ -181,7 +185,8 @@ private[rest] abstract class RestServlet extends HttpServlet with Logging {
     */
   private def validateResponse(
       responseMessage: SubmitRestProtocolResponse,
-      responseServlet: HttpServletResponse): SubmitRestProtocolResponse = {
+      responseServlet: HttpServletResponse
+  ): SubmitRestProtocolResponse =
     try {
       responseMessage.validate()
       responseMessage
@@ -190,7 +195,6 @@ private[rest] abstract class RestServlet extends HttpServlet with Logging {
         responseServlet.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
         handleError("Internal server error: " + formatException(e))
     }
-  }
 }
 
 /**
@@ -203,7 +207,9 @@ private[rest] abstract class KillRequestServlet extends RestServlet {
     * driver and return an appropriate response to the client. Otherwise, return error.
     */
   protected override def doPost(
-      request: HttpServletRequest, response: HttpServletResponse): Unit = {
+      request: HttpServletRequest,
+      response: HttpServletResponse
+  ): Unit = {
     val submissionId = parseSubmissionId(request.getPathInfo)
     val responseMessage = submissionId.map(handleKill).getOrElse {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST)
@@ -225,7 +231,9 @@ private[rest] abstract class StatusRequestServlet extends RestServlet {
     * driver from the Master and include it in the response. Otherwise, return error.
     */
   protected override def doGet(
-      request: HttpServletRequest, response: HttpServletResponse): Unit = {
+      request: HttpServletRequest,
+      response: HttpServletResponse
+  ): Unit = {
     val submissionId = parseSubmissionId(request.getPathInfo)
     val responseMessage = submissionId.map(handleStatus).getOrElse {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST)
@@ -249,30 +257,35 @@ private[rest] abstract class SubmitRequestServlet extends RestServlet {
     * If the request is successfully processed, return an appropriate response to the
     * client indicating so. Otherwise, return error instead.
     */
-  protected override def doPost(requestServlet: HttpServletRequest,
-                                responseServlet: HttpServletResponse): Unit = {
-    val responseMessage = try {
-      val requestMessageJson =
-        Source.fromInputStream(requestServlet.getInputStream).mkString
-      val requestMessage =
-        SubmitRestProtocolMessage.fromJson(requestMessageJson)
-      // The response should have already been validated on the client.
-      // In case this is not true, validate it ourselves to avoid potential NPEs.
-      requestMessage.validate()
-      handleSubmit(requestMessageJson, requestMessage, responseServlet)
-    } catch {
-      // The client failed to provide a valid JSON, so this is not our fault
-      case e @ (_: JsonProcessingException | _: SubmitRestProtocolException) =>
-        responseServlet.setStatus(HttpServletResponse.SC_BAD_REQUEST)
-        handleError("Malformed request: " + formatException(e))
-    }
+  protected override def doPost(
+      requestServlet: HttpServletRequest,
+      responseServlet: HttpServletResponse
+  ): Unit = {
+    val responseMessage =
+      try {
+        val requestMessageJson =
+          Source.fromInputStream(requestServlet.getInputStream).mkString
+        val requestMessage =
+          SubmitRestProtocolMessage.fromJson(requestMessageJson)
+        // The response should have already been validated on the client.
+        // In case this is not true, validate it ourselves to avoid potential NPEs.
+        requestMessage.validate()
+        handleSubmit(requestMessageJson, requestMessage, responseServlet)
+      } catch {
+        // The client failed to provide a valid JSON, so this is not our fault
+        case e @ (_: JsonProcessingException |
+            _: SubmitRestProtocolException) =>
+          responseServlet.setStatus(HttpServletResponse.SC_BAD_REQUEST)
+          handleError("Malformed request: " + formatException(e))
+      }
     sendResponse(responseMessage, responseServlet)
   }
 
   protected def handleSubmit(
       requestMessageJson: String,
       requestMessage: SubmitRestProtocolMessage,
-      responseServlet: HttpServletResponse): SubmitRestProtocolResponse
+      responseServlet: HttpServletResponse
+  ): SubmitRestProtocolResponse
 }
 
 /**
@@ -283,9 +296,11 @@ private class ErrorServlet extends RestServlet {
 
   /** Service a faulty request by returning an appropriate error message to the client. */
   protected override def service(
-      request: HttpServletRequest, response: HttpServletResponse): Unit = {
-    val path = request.getPathInfo
-    val parts = path.stripPrefix("/").split("/").filter(_.nonEmpty).toList
+      request: HttpServletRequest,
+      response: HttpServletResponse
+  ): Unit = {
+    val path            = request.getPathInfo
+    val parts           = path.stripPrefix("/").split("/").filter(_.nonEmpty).toList
     var versionMismatch = false
     var msg = parts match {
       case Nil =>

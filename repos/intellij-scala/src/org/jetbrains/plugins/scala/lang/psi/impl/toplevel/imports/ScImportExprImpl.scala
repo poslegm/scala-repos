@@ -23,12 +23,15 @@ import org.jetbrains.plugins.scala.lang.psi.stubs.ScImportExprStub
   * Date: 20.02.2008
   */
 class ScImportExprImpl private (
-    stub: StubElement[ScImportExpr], nodeType: IElementType, node: ASTNode)
-    extends ScalaStubBasedElementImpl(stub, nodeType, node) with ScImportExpr {
+    stub: StubElement[ScImportExpr],
+    nodeType: IElementType,
+    node: ASTNode
+) extends ScalaStubBasedElementImpl(stub, nodeType, node)
+    with ScImportExpr {
   override def accept(visitor: PsiElementVisitor) {
     visitor match {
       case visitor: ScalaElementVisitor => super.accept(visitor)
-      case _ => super.accept(visitor)
+      case _                            => super.accept(visitor)
     }
   }
 
@@ -49,12 +52,12 @@ class ScImportExprImpl private (
     } else {
       selectorSet match {
         case Some(set) => set.hasWildcard
-        case None => false
+        case None      => false
       }
     }
   }
 
-  def wildcardElement: Option[PsiElement] = {
+  def wildcardElement: Option[PsiElement] =
     if (findChildByType[PsiElement](ScalaTokenTypes.tUNDER) != null) {
       Some(findChildByType[PsiElement](ScalaTokenTypes.tUNDER))
     } else {
@@ -64,26 +67,24 @@ class ScImportExprImpl private (
         case None => None
       }
     }
-  }
 
-  def qualifier: ScStableCodeReferenceElement = {
+  def qualifier: ScStableCodeReferenceElement =
     if (reference.isEmpty) throw new IncorrectOperationException()
     else if (!singleWildcard && selectorSet.isEmpty)
       reference.flatMap(_.qualifier).orNull
     else reference.get
-  }
 
   def deleteExpr() {
     val parent = getParent.asInstanceOf[ScImportStmt]
     if (parent.importExprs.length == 1) {
       parent.getParent match {
         case x: ScImportsHolder => x.deleteImportStmt(parent)
-        case _ =>
+        case _                  =>
       }
     } else {
-      val node = parent.getNode
+      val node   = parent.getNode
       val remove = node.removeChild _
-      val next = getNextSibling
+      val next   = getNextSibling
       if (next != null) {
         def removeWhitespaceAfterComma(comma: ASTNode) {
           if (comma.getTreeNext != null &&
@@ -138,7 +139,8 @@ class ScImportExprImpl private (
 
   def selectorSet: Option[ScImportSelectors] = {
     val psi: ScImportSelectors = getStubOrPsiChild(
-        ScalaElementTypes.IMPORT_SELECTORS)
+      ScalaElementTypes.IMPORT_SELECTORS
+    )
     Option(psi)
   }
 
@@ -146,6 +148,8 @@ class ScImportExprImpl private (
     val stub = getStub
     if (stub != null) stub.asInstanceOf[ScImportExprStub].reference
     else
-      getFirstChild.asOptionOf[ScStableCodeReferenceElement] /*findChild(classOf[ScStableCodeReferenceElement])*/
+      getFirstChild.asOptionOf[
+        ScStableCodeReferenceElement
+      ] /*findChild(classOf[ScStableCodeReferenceElement])*/
   }
 }

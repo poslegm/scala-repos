@@ -21,11 +21,13 @@ import akka.persistence.journal.Tagged
   * INTERNAL API.
   */
 private[persistence] trait LeveldbStore
-    extends Actor with WriteJournalBase with LeveldbIdMapping
+    extends Actor
+    with WriteJournalBase
+    with LeveldbIdMapping
     with LeveldbRecovery {
   val configPath: String
 
-  val config = context.system.settings.config.getConfig(configPath)
+  val config        = context.system.settings.config.getConfig(configPath)
   val nativeLeveldb = config.getBoolean("native")
 
   val leveldbOptions = new Options().createIfMissing(true)
@@ -33,18 +35,18 @@ private[persistence] trait LeveldbStore
     new ReadOptions().verifyChecksums(config.getBoolean("checksum"))
   val leveldbWriteOptions =
     new WriteOptions().sync(config.getBoolean("fsync")).snapshot(false)
-  val leveldbDir = new File(config.getString("dir"))
+  val leveldbDir  = new File(config.getString("dir"))
   var leveldb: DB = _
 
   private val persistenceIdSubscribers =
     new mutable.HashMap[String, mutable.Set[ActorRef]]
-    with mutable.MultiMap[String, ActorRef]
+      with mutable.MultiMap[String, ActorRef]
   private val tagSubscribers =
     new mutable.HashMap[String, mutable.Set[ActorRef]]
-    with mutable.MultiMap[String, ActorRef]
+      with mutable.MultiMap[String, ActorRef]
   private var allPersistenceIdsSubscribers = Set.empty[ActorRef]
 
-  private var tagSequenceNr = Map.empty[String, Long]
+  private var tagSequenceNr          = Map.empty[String, Long]
   private val tagPersistenceIdPrefix = "$$$"
 
   def leveldbFactory =
@@ -55,14 +57,15 @@ private[persistence] trait LeveldbStore
 
   import Key._
 
-  def asyncWriteMessages(messages: immutable.Seq[AtomicWrite])
-    : Future[immutable.Seq[Try[Unit]]] = {
+  def asyncWriteMessages(
+      messages: immutable.Seq[AtomicWrite]
+  ): Future[immutable.Seq[Try[Unit]]] = {
     var persistenceIds = Set.empty[String]
-    var allTags = Set.empty[String]
+    var allTags        = Set.empty[String]
 
     val result = Future.fromTry(Try {
       withBatch(batch ⇒
-            messages.map {
+        messages.map {
           a ⇒
             Try {
               a.payload.foreach {
@@ -76,27 +79,29 @@ private[persistence] trait LeveldbStore
                     allTags = allTags union tags
 
                   require(
-                      !p2.persistenceId.startsWith(tagPersistenceIdPrefix),
-                      s"persistenceId [${p.persistenceId}] must not start with $tagPersistenceIdPrefix")
+                    !p2.persistenceId.startsWith(tagPersistenceIdPrefix),
+                    s"persistenceId [${p.persistenceId}] must not start with $tagPersistenceIdPrefix"
+                  )
                   addToMessageBatch(p2, tags, batch)
               }
               if (hasPersistenceIdSubscribers)
                 persistenceIds += a.persistenceId
             }
-      })
+        }
+      )
     })
 
     if (hasPersistenceIdSubscribers) {
-      persistenceIds.foreach { pid ⇒
-        notifyPersistenceIdChange(pid)
-      }
+      persistenceIds.foreach(pid ⇒ notifyPersistenceIdChange(pid))
     }
     if (hasTagSubscribers && allTags.nonEmpty) allTags.foreach(notifyTagChange)
     result
   }
 
   def asyncDeleteMessagesTo(
-      persistenceId: String, toSequenceNr: Long): Future[Unit] =
+      persistenceId: String,
+      toSequenceNr: Long
+  ): Future[Unit] =
     try Future.successful {
       withBatch { batch ⇒
         val nid = numericId(persistenceId)
@@ -110,7 +115,7 @@ private[persistence] trait LeveldbStore
         }
 
         if (fromSequenceNr != Long.MaxValue) {
-          val toSeqNr = math.min(toSequenceNr, readHighestSequenceNr(nid))
+          val toSeqNr    = math.min(toSequenceNr, readHighestSequenceNr(nid))
           var sequenceNr = fromSequenceNr
           while (sequenceNr <= toSeqNr) {
             batch.delete(keyToBytes(Key(nid, sequenceNr, 0)))
@@ -126,7 +131,7 @@ private[persistence] trait LeveldbStore
     leveldbReadOptions.snapshot(leveldb.getSnapshot)
 
   def withIterator[R](body: DBIterator ⇒ R): R = {
-    val ro = leveldbSnapshot()
+    val ro       = leveldbSnapshot()
     val iterator = leveldb.iterator(ro)
     try {
       body(iterator)
@@ -152,17 +157,21 @@ private[persistence] trait LeveldbStore
   def persistentFromBytes(a: Array[Byte]): PersistentRepr =
     serialization.deserialize(a, classOf[PersistentRepr]).get
 
-  private def addToMessageBatch(persistent: PersistentRepr,
-                                tags: Set[String],
-                                batch: WriteBatch): Unit = {
+  private def addToMessageBatch(
+      persistent: PersistentRepr,
+      tags: Set[String],
+      batch: WriteBatch
+  ): Unit = {
     val persistentBytes = persistentToBytes(persistent)
-    val nid = numericId(persistent.persistenceId)
+    val nid             = numericId(persistent.persistenceId)
     batch.put(
-        keyToBytes(counterKey(nid)), counterToBytes(persistent.sequenceNr))
+      keyToBytes(counterKey(nid)),
+      counterToBytes(persistent.sequenceNr)
+    )
     batch.put(keyToBytes(Key(nid, persistent.sequenceNr, 0)), persistentBytes)
 
     tags.foreach { tag ⇒
-      val tagNid = tagNumericId(tag)
+      val tagNid   = tagNumericId(tag)
       val tagSeqNr = nextTagSequenceNr(tag)
       batch.put(keyToBytes(counterKey(tagNid)), counterToBytes(tagSeqNr))
       batch.put(keyToBytes(Key(tagNid, tagSeqNr, 0)), persistentBytes)
@@ -172,7 +181,7 @@ private[persistence] trait LeveldbStore
   private def nextTagSequenceNr(tag: String): Long = {
     val n = tagSequenceNr.get(tag) match {
       case Some(n) ⇒ n
-      case None ⇒ readHighestSequenceNr(tagNumericId(tag))
+      case None    ⇒ readHighestSequenceNr(tagNumericId(tag))
     }
     tagSequenceNr = tagSequenceNr.updated(tag, n + 1)
     n + 1
@@ -186,9 +195,10 @@ private[persistence] trait LeveldbStore
 
   override def preStart() {
     leveldb = leveldbFactory.open(
-        leveldbDir,
-        if (nativeLeveldb) leveldbOptions
-        else leveldbOptions.compressionType(CompressionType.NONE))
+      leveldbDir,
+      if (nativeLeveldb) leveldbOptions
+      else leveldbOptions.compressionType(CompressionType.NONE)
+    )
     super.preStart()
   }
 
@@ -201,7 +211,9 @@ private[persistence] trait LeveldbStore
     persistenceIdSubscribers.nonEmpty
 
   protected def addPersistenceIdSubscriber(
-      subscriber: ActorRef, persistenceId: String): Unit =
+      subscriber: ActorRef,
+      persistenceId: String
+  ): Unit =
     persistenceIdSubscribers.addBinding(persistenceId, subscriber)
 
   protected def removeSubscriber(subscriber: ActorRef): Unit = {
@@ -215,9 +227,7 @@ private[persistence] trait LeveldbStore
     val tagKeys = tagSubscribers.collect {
       case (k, s) if s.contains(subscriber) ⇒ k
     }
-    tagKeys.foreach { key ⇒
-      tagSubscribers.removeBinding(key, subscriber)
-    }
+    tagKeys.foreach(key ⇒ tagSubscribers.removeBinding(key, subscriber))
 
     allPersistenceIdsSubscribers -= subscriber
   }
@@ -247,11 +257,10 @@ private[persistence] trait LeveldbStore
       tagSubscribers(tag).foreach(_ ! changed)
     }
 
-  override protected def newPersistenceIdAdded(id: String): Unit = {
+  override protected def newPersistenceIdAdded(id: String): Unit =
     if (hasAllPersistenceIdsSubscribers &&
         !id.startsWith(tagPersistenceIdPrefix)) {
       val added = LeveldbJournal.PersistenceIdAdded(id)
       allPersistenceIdsSubscribers.foreach(_ ! added)
     }
-  }
 }

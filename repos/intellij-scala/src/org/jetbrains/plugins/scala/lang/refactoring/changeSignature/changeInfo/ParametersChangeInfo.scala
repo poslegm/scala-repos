@@ -12,8 +12,8 @@ import org.jetbrains.plugins.scala.lang.refactoring.util.ScalaNamesUtil
 private[changeInfo] trait ParametersChangeInfo {
   this: ScalaChangeInfo =>
 
-  private val oldParameters = ScalaParameterInfo.allForMethod(function)
-  private val oldParametersArray = oldParameters.flatten.toArray
+  private val oldParameters                    = ScalaParameterInfo.allForMethod(function)
+  private val oldParametersArray               = oldParameters.flatten.toArray
   private val oldParameterNames: Array[String] = oldParametersArray.map(_.name)
   private val oldParameterTypes: Array[String] =
     oldParametersArray.map(_.getTypeText)
@@ -34,13 +34,13 @@ private[changeInfo] trait ParametersChangeInfo {
   val isParameterTypesChanged: Boolean = newParameters.zipWithIndex.exists {
     case (p, i) =>
       (p.oldIndex == i) &&
-      (p.getTypeText != getOldParameterTypes(i) ||
+        (p.getTypeText != getOldParameterTypes(i) ||
           p.isRepeatedParameter != oldParametersArray(i).isRepeatedParameter ||
           p.isByName != oldParametersArray(i).isByName)
   }
 
-  val wasVararg: Boolean = false
-  val isObtainsVarags: Boolean = false
+  val wasVararg: Boolean        = false
+  val isObtainsVarags: Boolean  = false
   val isRetainsVarargs: Boolean = false
   val isArrayToVarargs: Boolean = false
 
@@ -50,7 +50,7 @@ private[changeInfo] trait ParametersChangeInfo {
 
   def getOldParameterTypes: Array[String] = oldParameterTypes
 
-  def defaultParameterForJava(p: ScalaParameterInfo, idx: Int): String = {
+  def defaultParameterForJava(p: ScalaParameterInfo, idx: Int): String =
     if (this.isAddDefaultArgs) {
       if (this.function.isConstructor) {
         this.function.containingClass match {
@@ -61,5 +61,4 @@ private[changeInfo] trait ParametersChangeInfo {
         }
       } else s"${this.getNewName}$$default$$${idx + 1}()"
     } else p.defaultValue
-  }
 }

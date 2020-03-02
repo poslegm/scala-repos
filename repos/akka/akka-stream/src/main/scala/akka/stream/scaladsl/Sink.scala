@@ -10,7 +10,12 @@ import akka.stream.actor.ActorSubscriber
 import akka.stream.impl.Stages.DefaultAttributes
 import akka.stream.impl.StreamLayout.Module
 import akka.stream.impl._
-import akka.stream.stage.{Context, PushStage, SyncDirective, TerminationDirective}
+import akka.stream.stage.{
+  Context,
+  PushStage,
+  SyncDirective,
+  TerminationDirective
+}
 import akka.stream.{javadsl, _}
 import org.reactivestreams.{Publisher, Subscriber}
 import scala.annotation.tailrec
@@ -44,8 +49,9 @@ final class Sink[-In, +Mat](private[stream] override val module: Module)
     * Connect this `Sink` to a `Source` and run it. The returned value is the materialized value
     * of the `Source`, e.g. the `Subscriber` of a [[Source#subscriber]].
     */
-  def runWith[Mat2](source: Graph[SourceShape[In], Mat2])(
-      implicit materializer: Materializer): Mat2 =
+  def runWith[Mat2](
+      source: Graph[SourceShape[In], Mat2]
+  )(implicit materializer: Materializer): Mat2 =
     Source.fromGraph(source).to(this).run()
 
   def mapMaterializedValue[Mat2](f: Mat ⇒ Mat2): Sink[In, Mat2] =
@@ -97,9 +103,9 @@ object Sink {
     */
   def fromGraph[T, M](g: Graph[SinkShape[T], M]): Sink[T, M] =
     g match {
-      case s: Sink[T, M] ⇒ s
+      case s: Sink[T, M]         ⇒ s
       case s: javadsl.Sink[T, M] ⇒ s.asScala
-      case other ⇒ new Sink(other.module)
+      case other                 ⇒ new Sink(other.module)
     }
 
   /**
@@ -107,16 +113,20 @@ object Sink {
     */
   def fromSubscriber[T](subscriber: Subscriber[T]): Sink[T, NotUsed] =
     new Sink(
-        new SubscriberSink(subscriber,
-                           DefaultAttributes.subscriberSink,
-                           shape("SubscriberSink")))
+      new SubscriberSink(
+        subscriber,
+        DefaultAttributes.subscriberSink,
+        shape("SubscriberSink")
+      )
+    )
 
   /**
     * A `Sink` that immediately cancels its upstream after materialization.
     */
   def cancelled[T]: Sink[T, NotUsed] =
-    new Sink[Any, NotUsed](new CancelSink(
-            DefaultAttributes.cancelledSink, shape("CancelledSink")))
+    new Sink[Any, NotUsed](
+      new CancelSink(DefaultAttributes.cancelledSink, shape("CancelledSink"))
+    )
 
   /**
     * A `Sink` that materializes into a `Future` of the first value received.
@@ -130,9 +140,10 @@ object Sink {
       .fromGraph(new HeadOptionStage[T])
       .withAttributes(DefaultAttributes.headSink)
       .mapMaterializedValue(e ⇒
-            e.map(_.getOrElse(
-                    throw new NoSuchElementException("head of empty stream")))(
-                ExecutionContexts.sameThreadExecutionContext))
+        e.map(
+          _.getOrElse(throw new NoSuchElementException("head of empty stream"))
+        )(ExecutionContexts.sameThreadExecutionContext)
+      )
 
   /**
     * A `Sink` that materializes into a `Future` of the optional first value received.
@@ -158,9 +169,10 @@ object Sink {
       .fromGraph(new LastOptionStage[T])
       .withAttributes(DefaultAttributes.lastSink)
       .mapMaterializedValue(e ⇒
-            e.map(_.getOrElse(
-                    throw new NoSuchElementException("last of empty stream")))(
-                ExecutionContexts.sameThreadExecutionContext))
+        e.map(
+          _.getOrElse(throw new NoSuchElementException("last of empty stream"))
+        )(ExecutionContexts.sameThreadExecutionContext)
+      )
 
   /**
     * A `Sink` that materializes into a `Future` of the optional last value received.
@@ -200,19 +212,25 @@ object Sink {
     */
   def asPublisher[T](fanout: Boolean): Sink[T, Publisher[T]] =
     new Sink(
-        if (fanout)
-          new FanoutPublisherSink[T](DefaultAttributes.fanoutPublisherSink,
-                                     shape("FanoutPublisherSink"))
-        else
-          new PublisherSink[T](
-              DefaultAttributes.publisherSink, shape("PublisherSink")))
+      if (fanout)
+        new FanoutPublisherSink[T](
+          DefaultAttributes.fanoutPublisherSink,
+          shape("FanoutPublisherSink")
+        )
+      else
+        new PublisherSink[T](
+          DefaultAttributes.publisherSink,
+          shape("PublisherSink")
+        )
+    )
 
   /**
     * A `Sink` that will consume the stream and discard the elements.
     */
   def ignore: Sink[Any, Future[Done]] =
     new Sink(
-        new SinkholeSink(DefaultAttributes.ignoreSink, shape("SinkholeSink")))
+      new SinkholeSink(DefaultAttributes.ignoreSink, shape("SinkholeSink"))
+    )
 
   /**
     * A `Sink` that will invoke the given procedure for each received element. The sink is materialized
@@ -227,10 +245,9 @@ object Sink {
     * Combine several sinks with fun-out strategy like `Broadcast` or `Balance` and returns `Sink`.
     */
   def combine[T, U](first: Sink[U, _], second: Sink[U, _], rest: Sink[U, _]*)(
-      strategy: Int ⇒ Graph[UniformFanOutShape[T, U], NotUsed])
-    : Sink[T, NotUsed] =
-    Sink.fromGraph(
-        GraphDSL.create() { implicit b ⇒
+      strategy: Int ⇒ Graph[UniformFanOutShape[T, U], NotUsed]
+  ): Sink[T, NotUsed] =
+    Sink.fromGraph(GraphDSL.create() { implicit b ⇒
       import GraphDSL.Implicits._
       val d = b.add(strategy(rest.size + 2))
       d.out(0) ~> first
@@ -259,8 +276,9 @@ object Sink {
     *
     * @see [[#mapAsyncUnordered]]
     */
-  def foreachParallel[T](parallelism: Int)(f: T ⇒ Unit)(
-      implicit ec: ExecutionContext): Sink[T, Future[Done]] =
+  def foreachParallel[T](
+      parallelism: Int
+  )(f: T ⇒ Unit)(implicit ec: ExecutionContext): Sink[T, Future[Done]] =
     Flow[T]
       .mapAsyncUnordered(parallelism)(t ⇒ Future(f(t)))
       .toMat(Sink.ignore)(Keep.right)
@@ -292,24 +310,26 @@ object Sink {
     */
   def onComplete[T](callback: Try[Done] ⇒ Unit): Sink[T, NotUsed] = {
 
-    def newOnCompleteStage(): PushStage[T, NotUsed] = {
+    def newOnCompleteStage(): PushStage[T, NotUsed] =
       new PushStage[T, NotUsed] {
         override def onPush(elem: T, ctx: Context[NotUsed]): SyncDirective =
           ctx.pull()
 
         override def onUpstreamFailure(
-            cause: Throwable, ctx: Context[NotUsed]): TerminationDirective = {
+            cause: Throwable,
+            ctx: Context[NotUsed]
+        ): TerminationDirective = {
           callback(Failure(cause))
           ctx.fail(cause)
         }
 
         override def onUpstreamFinish(
-            ctx: Context[NotUsed]): TerminationDirective = {
+            ctx: Context[NotUsed]
+        ): TerminationDirective = {
           callback(Success(Done))
           ctx.finish()
         }
       }
-    }
 
     Flow[T]
       .transform(newOnCompleteStage)
@@ -334,10 +354,13 @@ object Sink {
     */
   def actorRef[T](ref: ActorRef, onCompleteMessage: Any): Sink[T, NotUsed] =
     new Sink(
-        new ActorRefSink(ref,
-                         onCompleteMessage,
-                         DefaultAttributes.actorRefSink,
-                         shape("ActorRefSink")))
+      new ActorRefSink(
+        ref,
+        onCompleteMessage,
+        DefaultAttributes.actorRefSink,
+        shape("ActorRefSink")
+      )
+    )
 
   /**
     * Sends the elements of the stream to the given `ActorRef` that sends back back-pressure signal.
@@ -357,13 +380,17 @@ object Sink {
       onInitMessage: Any,
       ackMessage: Any,
       onCompleteMessage: Any,
-      onFailureMessage: (Throwable) ⇒ Any = Status.Failure): Sink[T, NotUsed] =
+      onFailureMessage: (Throwable) ⇒ Any = Status.Failure
+  ): Sink[T, NotUsed] =
     Sink.fromGraph(
-        new ActorRefBackpressureSinkStage(ref,
-                                          onInitMessage,
-                                          ackMessage,
-                                          onCompleteMessage,
-                                          onFailureMessage))
+      new ActorRefBackpressureSinkStage(
+        ref,
+        onInitMessage,
+        ackMessage,
+        onCompleteMessage,
+        onFailureMessage
+      )
+    )
 
   /**
     * Creates a `Sink` that is materialized to an [[akka.actor.ActorRef]] which points to an Actor
@@ -371,12 +398,17 @@ object Sink {
     * be [[akka.stream.actor.ActorSubscriber]].
     */
   def actorSubscriber[T](props: Props): Sink[T, ActorRef] = {
-    require(classOf[ActorSubscriber].isAssignableFrom(props.actorClass()),
-            "Actor must be ActorSubscriber")
+    require(
+      classOf[ActorSubscriber].isAssignableFrom(props.actorClass()),
+      "Actor must be ActorSubscriber"
+    )
     new Sink(
-        new ActorSubscriberSink(props,
-                                DefaultAttributes.actorSubscriberSink,
-                                shape("ActorSubscriberSink")))
+      new ActorSubscriberSink(
+        props,
+        DefaultAttributes.actorSubscriberSink,
+        shape("ActorSubscriberSink")
+      )
+    )
   }
 
   /**

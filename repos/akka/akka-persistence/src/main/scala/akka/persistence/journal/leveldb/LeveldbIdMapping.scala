@@ -17,9 +17,9 @@ private[persistence] trait LeveldbIdMapping extends Actor {
   this: LeveldbStore ⇒
   import Key._
 
-  private val idOffset = 10
+  private val idOffset                = 10
   private var idMap: Map[String, Int] = Map.empty
-  private val idMapLock = new Object
+  private val idMapLock               = new Object
 
   /**
     * Get the mapped numeric id for the specified persistent actor `id`. Creates and
@@ -31,7 +31,7 @@ private[persistence] trait LeveldbIdMapping extends Actor {
     */
   def numericId(id: String): Int = idMapLock.synchronized {
     idMap.get(id) match {
-      case None ⇒ writeIdMapping(id, idMap.size + idOffset)
+      case None    ⇒ writeIdMapping(id, idMap.size + idOffset)
       case Some(v) ⇒ v
     }
   }
@@ -50,18 +50,19 @@ private[persistence] trait LeveldbIdMapping extends Actor {
   }
 
   private def readIdMap(
-      pathMap: Map[String, Int], iter: DBIterator): Map[String, Int] = {
+      pathMap: Map[String, Int],
+      iter: DBIterator
+  ): Map[String, Int] =
     if (!iter.hasNext) pathMap
     else {
       val nextEntry = iter.next()
-      val nextKey = keyFromBytes(nextEntry.getKey)
+      val nextKey   = keyFromBytes(nextEntry.getKey)
       if (!isMappingKey(nextKey)) pathMap
       else {
         val nextVal = new String(nextEntry.getValue, UTF_8)
         readIdMap(pathMap + (nextVal -> nextKey.mappingId), iter)
       }
     }
-  }
 
   private def writeIdMapping(id: String, numericId: Int): Int = {
     idMap = idMap + (id -> numericId)

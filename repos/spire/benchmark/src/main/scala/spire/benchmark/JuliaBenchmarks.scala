@@ -26,8 +26,8 @@ class JuliaBenchmarks extends MyBenchmark {
 
   def timeMandelComplex(reps: Int) = run(reps) {
     var total = 0
-    var r = -2.0
-    var i = 0
+    var r     = -2.0
+    var i     = 0
     while (i < 25) {
       var c = -1.0
       var j = 0
@@ -46,7 +46,7 @@ class JuliaBenchmarks extends MyBenchmark {
     var z = c
     var n = 1
     while (n < 80) {
-      if (z.abs > 2.0F) return n - 1
+      if (z.abs > 2.0f) return n - 1
       z = z * z + c
       n += 1
     }
@@ -55,8 +55,8 @@ class JuliaBenchmarks extends MyBenchmark {
 
   def timeMandelFloat(reps: Int) = run(reps) {
     var total = 0
-    var r = -2.0
-    var i = 0
+    var r     = -2.0
+    var i     = 0
     while (i < 25) {
       var c = -1.0
       var j = 0
@@ -75,7 +75,7 @@ class JuliaBenchmarks extends MyBenchmark {
     var z = c
     var n = 1
     while (n < 80) {
-      if (FastComplex.abs(z) > 2.0F) return n - 1
+      if (FastComplex.abs(z) > 2.0f) return n - 1
       z = FastComplex.add(FastComplex.multiply(z, z), c)
       n += 1
     }
@@ -84,8 +84,8 @@ class JuliaBenchmarks extends MyBenchmark {
 
   def timeMandelFast(reps: Int) = run(reps) {
     var total = 0
-    var r = -2.0
-    var i = 0
+    var r     = -2.0
+    var i     = 0
     while (i < 25) {
       var c = -1.0
       var j = 0

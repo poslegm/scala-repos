@@ -11,7 +11,7 @@ object TimeoutMock {
     assert(!installed, "Mock timeout already installed.")
     import js.Dynamic.global
 
-    val realSetTimeout = global.setTimeout
+    val realSetTimeout   = global.setTimeout
     val realClearTimeout = global.clearTimeout
 
     val mockTimeouts = new MockTimeouts
@@ -33,7 +33,7 @@ object TimeoutMock {
   }
 
   private class MockTimeouts {
-    private var timeouts = List.empty[MockTimeout]
+    private var timeouts         = List.empty[MockTimeout]
     private var currentTime: Int = 0
 
     def setTimeout(fun: js.Function0[_], delay: Int): MockTimeout = {
@@ -41,14 +41,13 @@ object TimeoutMock {
       val triggerTime = currentTime + delay
       assert(triggerTime >= 0, "Time overflow")
       val (before, after) = timeouts.span(_.triggerTime <= triggerTime)
-      val timeout = new MockTimeout(triggerTime, fun)
+      val timeout         = new MockTimeout(triggerTime, fun)
       timeouts = before ::: timeout :: after
       timeout
     }
 
-    def clearTimeout(timeout: MockTimeout): Unit = {
+    def clearTimeout(timeout: MockTimeout): Unit =
       timeout.clearTimeout()
-    }
 
     def tick(ms: Int): Unit = {
       assert(ms >= 0)
@@ -67,12 +66,10 @@ object TimeoutMock {
   class MockTimeout(val triggerTime: Int, fun: js.Function0[_]) {
     private var cleared = false
 
-    def clearTimeout(): Unit = {
+    def clearTimeout(): Unit =
       cleared = true
-    }
 
-    def execute(): Unit = {
+    def execute(): Unit =
       if (!cleared) fun()
-    }
   }
 }

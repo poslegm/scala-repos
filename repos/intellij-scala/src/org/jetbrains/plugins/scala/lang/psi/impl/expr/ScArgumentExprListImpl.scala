@@ -16,17 +16,17 @@ import org.jetbrains.plugins.scala.lang.psi.types.nonvalue.Parameter
   * Date: 07.03.2008
   */
 class ScArgumentExprListImpl(node: ASTNode)
-    extends ScalaPsiElementImpl(node) with ScArgumentExprList {
+    extends ScalaPsiElementImpl(node)
+    with ScArgumentExprList {
   override def toString: String = "ArgumentList"
 
-  def invocationCount: Int = {
+  def invocationCount: Int =
     callExpression match {
       case call: ScMethodCall => call.args.invocationCount + 1
-      case _ => 1
+      case _                  => 1
     }
-  }
 
-  def callReference: Option[ScReferenceExpression] = {
+  def callReference: Option[ScReferenceExpression] =
     getContext match {
       case call: ScMethodCall =>
         call.deepestInvokedExpr match {
@@ -34,34 +34,31 @@ class ScArgumentExprListImpl(node: ASTNode)
           case gen: ScGenericCall =>
             gen.referencedExpr match {
               case ref: ScReferenceExpression => Some(ref)
-              case _ => None
+              case _                          => None
             }
           case _ => None
         }
       case _ => None
     }
-  }
 
-  def callGeneric: Option[ScGenericCall] = {
+  def callGeneric: Option[ScGenericCall] =
     getContext match {
       case call: ScMethodCall =>
         call.deepestInvokedExpr match {
           case gen: ScGenericCall => Some(gen)
-          case _ => None
+          case _                  => None
         }
       case _ => None
     }
-  }
 
-  def callExpression: ScExpression = {
+  def callExpression: ScExpression =
     getContext match {
       case call: ScMethodCall =>
         call.getEffectiveInvokedExpr
       case _ => null
     }
-  }
 
-  def matchedParameters: Seq[(ScExpression, Parameter)] = {
+  def matchedParameters: Seq[(ScExpression, Parameter)] =
     getContext match {
       case call: ScMethodCall => call.matchedParameters
       case constr: ScConstructor =>
@@ -70,9 +67,8 @@ class ScArgumentExprListImpl(node: ASTNode)
         }
       case _ => Seq.empty
     }
-  }
 
-  override def addBefore(element: PsiElement, anchor: PsiElement): PsiElement = {
+  override def addBefore(element: PsiElement, anchor: PsiElement): PsiElement =
     if (anchor == null) {
       if (exprs.isEmpty) {
         val par: PsiElement =
@@ -90,12 +86,11 @@ class ScArgumentExprListImpl(node: ASTNode)
     } else {
       super.addBefore(element, anchor)
     }
-  }
 
   def addExpr(expr: ScExpression): ScArgumentExprList = {
-    val par = findChildByType[PsiElement](ScalaTokenTypes.tLPARENTHESIS)
-    val nextNode = par.getNode.getTreeNext
-    val node = getNode
+    val par               = findChildByType[PsiElement](ScalaTokenTypes.tLPARENTHESIS)
+    val nextNode          = par.getNode.getTreeNext
+    val node              = getNode
     val needCommaAndSpace = exprs.nonEmpty
     node.addChild(expr.getNode, nextNode)
     if (needCommaAndSpace) {
@@ -108,11 +103,13 @@ class ScArgumentExprListImpl(node: ASTNode)
   }
 
   def addExprAfter(
-      expr: ScExpression, anchor: PsiElement): ScArgumentExprList = {
+      expr: ScExpression,
+      anchor: PsiElement
+  ): ScArgumentExprList = {
     val nextNode = anchor.getNode.getTreeNext
-    val comma = ScalaPsiElementFactory.createComma(getManager)
-    val space = ScalaPsiElementFactory.createNewLineNode(getManager, " ")
-    val node = getNode
+    val comma    = ScalaPsiElementFactory.createComma(getManager)
+    val space    = ScalaPsiElementFactory.createNewLineNode(getManager, " ")
+    val node     = getNode
     if (nextNode != null) {
       node.addChild(comma.getNode, nextNode)
       node.addChild(space, nextNode)

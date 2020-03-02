@@ -12,9 +12,7 @@ import StatusCodes._
 class HostDirectivesExamplesSpec extends RoutingSpec {
 
   "extractHost" in {
-    val route = extractHost { hn =>
-      complete(s"Hostname: $hn")
-    }
+    val route = extractHost(hn => complete(s"Hostname: $hn"))
 
     // tests:
     Get() ~> Host("company.com", 9090) ~> route ~> check {

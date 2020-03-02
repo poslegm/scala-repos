@@ -5,7 +5,9 @@ import scala.collection.mutable
 import scala.collection.JavaConversions._
 
 class HashMap[K, V] protected (inner: mutable.Map[Box[K], V])
-    extends AbstractMap[K, V] with Serializable with Cloneable { self =>
+    extends AbstractMap[K, V]
+    with Serializable
+    with Cloneable { self =>
 
   def this() =
     this(mutable.HashMap.empty[Box[K], V])
@@ -29,9 +31,8 @@ class HashMap[K, V] protected (inner: mutable.Map[Box[K], V])
   override def clear(): Unit =
     inner.clear()
 
-  override def clone(): AnyRef = {
+  override def clone(): AnyRef =
     new HashMap(inner.clone())
-  }
 
   override def containsKey(key: Any): Boolean =
     inner.contains(Box(key.asInstanceOf[K]))
@@ -71,18 +72,16 @@ class HashMap[K, V] protected (inner: mutable.Map[Box[K], V])
   private class EntrySet
       extends AbstractSet[Map.Entry[K, V]]
       with AbstractMapView[Map.Entry[K, V]] {
-    override def iterator(): Iterator[Map.Entry[K, V]] = {
+    override def iterator(): Iterator[Map.Entry[K, V]] =
       new AbstractMapViewIterator[Map.Entry[K, V]] {
-        override protected def getNextForm(key: Box[K]): Map.Entry[K, V] = {
+        override protected def getNextForm(key: Box[K]): Map.Entry[K, V] =
           new AbstractMap.SimpleEntry(key.inner, inner(key)) {
             override def setValue(value: V): V = {
               inner.update(key, value)
               super.setValue(value)
             }
           }
-        }
       }
-    }
   }
 
   private class KeySet extends AbstractSet[K] with AbstractMapView[K] {
@@ -93,23 +92,21 @@ class HashMap[K, V] protected (inner: mutable.Map[Box[K], V])
       contains
     }
 
-    override def iterator(): Iterator[K] = {
+    override def iterator(): Iterator[K] =
       new AbstractMapViewIterator[K] {
         protected def getNextForm(key: Box[K]): K =
           key.inner
       }
-    }
   }
 
   private class ValuesView extends AbstractMapView[V] {
     override def size(): Int =
       inner.size
 
-    override def iterator(): Iterator[V] = {
+    override def iterator(): Iterator[V] =
       new AbstractMapViewIterator[V] {
         protected def getNextForm(key: Box[K]): V = inner(key)
       }
-    }
   }
 
   private trait AbstractMapView[E] extends AbstractCollection[E] {
@@ -135,7 +132,7 @@ class HashMap[K, V] protected (inner: mutable.Map[Box[K], V])
     final override def hasNext: Boolean =
       innerIterator.hasNext
 
-    final override def remove(): Unit = {
+    final override def remove(): Unit =
       lastKey match {
         case Some(key) =>
           inner.remove(key)
@@ -143,11 +140,10 @@ class HashMap[K, V] protected (inner: mutable.Map[Box[K], V])
         case None =>
           throw new IllegalStateException
       }
-    }
   }
 }
 
 object HashMap {
   private[HashMap] final val DEFAULT_INITIAL_CAPACITY = 16
-  private[HashMap] final val DEFAULT_LOAD_FACTOR = 0.75f
+  private[HashMap] final val DEFAULT_LOAD_FACTOR      = 0.75f
 }

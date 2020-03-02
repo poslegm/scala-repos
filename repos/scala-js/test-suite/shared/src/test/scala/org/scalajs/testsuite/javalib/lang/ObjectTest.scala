@@ -29,7 +29,7 @@ class ObjectTest {
   @Test def equals(): Unit = {
     case class XY(x: Int, y: Int)
 
-    val l = List(XY(1, 2), XY(2, 1))
+    val l    = List(XY(1, 2), XY(2, 1))
     val xy12 = XY(1, 2)
 
     assertTrue(l.contains(xy12))
@@ -53,9 +53,8 @@ class ObjectTest {
     assertTrue((Array(Nil): Any).isInstanceOf[Object])
   }
 
-  @Test def null_should_not_be_an_Object(): Unit = {
+  @Test def null_should_not_be_an_Object(): Unit =
     assertFalse((null: Any).isInstanceOf[Object])
-  }
 
   @Test
   def everything_should_cast_to_Object_successfully_including_null(): Unit = {

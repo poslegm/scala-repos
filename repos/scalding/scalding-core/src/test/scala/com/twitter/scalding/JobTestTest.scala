@@ -30,14 +30,14 @@ class JobTestTest extends WordSpec with Matchers {
           .arg("output", "output")
           .source(incorrectSource, testInput)
           .sink[(String, Int)](Tsv("output")) { outBuf =>
-            { outBuf shouldBe testInput }
+            outBuf shouldBe testInput
           }
           .run
 
       the[IllegalArgumentException] thrownBy {
         runJobTest()
       } should have message
-      (s"Failed to create tap for: ${requiredSource}, with error: requirement failed: " +
+        (s"Failed to create tap for: ${requiredSource}, with error: requirement failed: " +
           TestTapFactory.sourceNotFoundError.format(requiredSource))
     }
   }

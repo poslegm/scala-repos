@@ -26,7 +26,7 @@ abstract class BurtleRot32(_a: Int, _b: Int, _c: Int, _d: Int)
 
   def getSeedBytes: Array[Byte] = {
     val bytes = new Array[Byte](16)
-    val bb = ByteBuffer.wrap(bytes)
+    val bb    = ByteBuffer.wrap(bytes)
     bb.putInt(a)
     bb.putInt(b)
     bb.putInt(c)

@@ -42,7 +42,7 @@ import org.apache.spark.sql.SQLContext
   * Note: [[HDFSMetadataLog]] doesn't support S3-like file systems as they don't guarantee listing
   * files in a directory always shows the latest files.
   */
-class HDFSMetadataLog[T : ClassTag](sqlContext: SQLContext, path: String)
+class HDFSMetadataLog[T: ClassTag](sqlContext: SQLContext, path: String)
     extends MetadataLog[T] {
 
   private val metadataPath = new Path(path)
@@ -52,7 +52,9 @@ class HDFSMetadataLog[T : ClassTag](sqlContext: SQLContext, path: String)
       FileContext.getFileContext(sqlContext.sparkContext.hadoopConfiguration)
     } else {
       FileContext.getFileContext(
-          metadataPath.toUri, sqlContext.sparkContext.hadoopConfiguration)
+        metadataPath.toUri,
+        sqlContext.sparkContext.hadoopConfiguration
+      )
     }
 
   if (!fc.util().exists(metadataPath)) {
@@ -75,11 +77,10 @@ class HDFSMetadataLog[T : ClassTag](sqlContext: SQLContext, path: String)
   private val serializer =
     new JavaSerializer(sqlContext.sparkContext.conf).newInstance()
 
-  private def batchFile(batchId: Long): Path = {
+  private def batchFile(batchId: Long): Path =
     new Path(metadataPath, batchId.toString)
-  }
 
-  override def add(batchId: Long, metadata: T): Boolean = {
+  override def add(batchId: Long, metadata: T): Boolean =
     get(batchId).map(_ => false).getOrElse {
       // Only write metadata when the batch has not yet been written.
       val buffer = serializer.serialize(metadata)
@@ -94,7 +95,6 @@ class HDFSMetadataLog[T : ClassTag](sqlContext: SQLContext, path: String)
           throw new InterruptedException("Creating file is interrupted")
       }
     }
-  }
 
   /**
     * Write a batch to a temp file then rename it to the batch file.
@@ -125,13 +125,17 @@ class HDFSMetadataLog[T : ClassTag](sqlContext: SQLContext, path: String)
             // If "rename" fails, it means some other "HDFSMetadataLog" has committed the batch.
             // So throw an exception to tell the user this is not a valid behavior.
             throw new ConcurrentModificationException(
-                s"Multiple HDFSMetadataLog are using $path", e)
+              s"Multiple HDFSMetadataLog are using $path",
+              e
+            )
           case e: FileNotFoundException =>
             // Sometimes, "create" will succeed when multiple writers are calling it at the same
             // time. However, only one writer can call "rename" successfully, others will get
             // FileNotFoundException because the first writer has removed it.
             throw new ConcurrentModificationException(
-                s"Multiple HDFSMetadataLog are using $path", e)
+              s"Multiple HDFSMetadataLog are using $path",
+              e
+            )
         }
       } catch {
         case e: IOException if isFileAlreadyExistsException(e) =>
@@ -152,12 +156,11 @@ class HDFSMetadataLog[T : ClassTag](sqlContext: SQLContext, path: String)
     }
   }
 
-  private def isFileAlreadyExistsException(e: IOException): Boolean = {
+  private def isFileAlreadyExistsException(e: IOException): Boolean =
     e.isInstanceOf[FileAlreadyExistsException] ||
-    // Old Hadoop versions don't throw FileAlreadyExistsException. Although it's fixed in
-    // HADOOP-9361, we still need to support old Hadoop versions.
-    (e.getMessage != null && e.getMessage.startsWith("File already exists: "))
-  }
+      // Old Hadoop versions don't throw FileAlreadyExistsException. Although it's fixed in
+      // HADOOP-9361, we still need to support old Hadoop versions.
+      (e.getMessage != null && e.getMessage.startsWith("File already exists: "))
 
   override def get(batchId: Long): Option[T] = {
     val batchMetadataFile = batchFile(batchId)

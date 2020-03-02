@@ -11,7 +11,7 @@ trait Person[T] {
   val randNums: Array[T]
 }
 
-case class PersonInt(name: String, randNums: Array[Int]) extends Person[Int]
+case class PersonInt(name: String, randNums: Array[Int])   extends Person[Int]
 case class PersonByte(name: String, randNums: Array[Byte]) extends Person[Byte]
 case class PersonShort(name: String, randNums: Array[Short])
     extends Person[Short]
@@ -28,36 +28,41 @@ class BinaryInputStreamReaderTest extends FunSuite {
 
     val pickle: BinaryPickle = arr.pickle
     assert(
-        pickle.value.mkString("[", ",", "]") === "[0,0,0,22,115,99,97,108,97,46,65,114,114,97,121,91,115,99,97,108,97,46,73,110,116,93,0,0,0,2,30,0,0,0,31,0,0,0]")
+      pickle.value.mkString("[", ",", "]") === "[0,0,0,22,115,99,97,108,97,46,65,114,114,97,121,91,115,99,97,108,97,46,73,110,116,93,0,0,0,2,30,0,0,0,31,0,0,0]"
+    )
 
     val streamPickle = BinaryPickle(new ByteArrayInputStream(pickle.value))
-    val readArr = streamPickle.unpickle[Array[Int]]
+    val readArr      = streamPickle.unpickle[Array[Int]]
     assert(readArr.mkString("[", ",", "]") === "[30,31]")
   }
 
   // Byte, Short, Char, Int, Long, Float, Double
 
-  def testPerson[T, U <: Person[T]: FastTypeTag](obj: U)(
-      implicit p: Pickler[U], u: Unpickler[U]): Unit = {
-    val pickle = obj.pickle
+  def testPerson[T, U <: Person[T]: FastTypeTag](
+      obj: U
+  )(implicit p: Pickler[U], u: Unpickler[U]): Unit = {
+    val pickle       = obj.pickle
     val streamPickle = BinaryPickle(new ByteArrayInputStream(pickle.value))
-    val readObj = streamPickle.unpickle[U]
+    val readObj      = streamPickle.unpickle[U]
     assert(mkString(obj) == mkString(readObj))
   }
 
   test("case class 1") {
     testPerson[Byte, PersonByte](
-        PersonByte("James", (1 to 200).map(_.toByte).toArray))
+      PersonByte("James", (1 to 200).map(_.toByte).toArray)
+    )
   }
 
   test("case class 2") {
     testPerson[Short, PersonShort](
-        PersonShort("James", (1 to 200).map(_.toShort).toArray))
+      PersonShort("James", (1 to 200).map(_.toShort).toArray)
+    )
   }
 
   test("case class 3") {
     testPerson[Char, PersonChar](
-        PersonChar("James", (1 to 200).map(_.toChar).toArray))
+      PersonChar("James", (1 to 200).map(_.toChar).toArray)
+    )
   }
 
   test("case class 4") {
@@ -78,8 +83,8 @@ class BinaryInputStreamReaderTest extends FunSuite {
     obj2.pickleTo(output)
 
     val streamPickle = BinaryPickle(new ByteArrayInputStream(output.result))
-    val readObj1 = streamPickle.unpickle[Employee]
-    val readObj2 = streamPickle.unpickle[Employee]
+    val readObj1     = streamPickle.unpickle[Employee]
+    val readObj2     = streamPickle.unpickle[Employee]
     try {
       streamPickle.unpickle[Employee]
       assert(false, "EndOfStreamException not thrown")

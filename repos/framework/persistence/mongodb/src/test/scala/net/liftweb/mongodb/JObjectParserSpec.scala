@@ -38,22 +38,18 @@ object JObjectParserSpec extends Specification {
   "JObjectParser" should {
     "convert strings to ObjectId by default" in {
       val (oid, dbo) = buildTestData
-      val xval = tryo(dbo.get("x").asInstanceOf[ObjectId])
+      val xval       = tryo(dbo.get("x").asInstanceOf[ObjectId])
 
-      xval.toList map { x =>
-        x must_== oid
-      }
+      xval.toList map { x => x must_== oid }
 
       xval.isDefined must_== true
     }
     "not convert strings to ObjectId when configured not to" in {
       JObjectParser.stringProcessor.doWith((s: String) => s) {
         val (oid, dbo) = buildTestData
-        val xval = tryo(dbo.get("x").asInstanceOf[String])
+        val xval       = tryo(dbo.get("x").asInstanceOf[String])
 
-        xval.toList map { x =>
-          x must_== oid.toString
-        }
+        xval.toList map { x => x must_== oid.toString }
 
         xval.isDefined must_== true
       }

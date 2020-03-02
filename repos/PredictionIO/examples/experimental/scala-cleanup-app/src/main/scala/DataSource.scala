@@ -21,31 +21,34 @@ import scala.concurrent.{Await, Future}
 case class DataSourceParams(
     appId: Int,
     cutoffTime: DateTime
-)
-    extends Params
+) extends Params
 
 class DataSource(val dsp: DataSourceParams)
     extends PDataSource[
-        TrainingData, EmptyEvaluationInfo, Query, EmptyActualResult] {
+      TrainingData,
+      EmptyEvaluationInfo,
+      Query,
+      EmptyActualResult
+    ] {
 
   @transient lazy val logger = Logger[this.type]
 
   override def readTraining(sc: SparkContext): TrainingData = {
-    val eventsDb = Storage.getPEvents()
+    val eventsDb  = Storage.getPEvents()
     val lEventsDb = Storage.getLEvents()
     logger.info(s"CleanupApp: $dsp")
 
     val countBefore = eventsDb
       .find(
-          appId = dsp.appId
+        appId = dsp.appId
       )(sc)
       .count
     logger.info(s"Event count before cleanup: $countBefore")
 
     val countRemove = eventsDb
       .find(
-          appId = dsp.appId,
-          untilTime = Some(dsp.cutoffTime)
+        appId = dsp.appId,
+        untilTime = Some(dsp.cutoffTime)
       )(sc)
       .count
     logger.info(s"Number of events to remove: $countRemove")
@@ -53,8 +56,8 @@ class DataSource(val dsp: DataSourceParams)
     logger.info(s"Remove events from appId ${dsp.appId}")
     val eventsToRemove: Array[String] = eventsDb
       .find(
-          appId = dsp.appId,
-          untilTime = Some(dsp.cutoffTime)
+        appId = dsp.appId,
+        untilTime = Some(dsp.cutoffTime)
       )(sc)
       .map {
         case e =>
@@ -62,7 +65,7 @@ class DataSource(val dsp: DataSourceParams)
       }
       .collect
 
-    var lastFuture: Future[Boolean] = Future[Boolean] { true }
+    var lastFuture: Future[Boolean] = Future[Boolean](true)
     eventsToRemove.foreach {
       case eventId =>
         if (eventId != "") {
@@ -76,7 +79,7 @@ class DataSource(val dsp: DataSourceParams)
 
     val countAfter = eventsDb
       .find(
-          appId = dsp.appId
+        appId = dsp.appId
       )(sc)
       .count
     logger.info(s"Event count after cleanup: $countAfter")

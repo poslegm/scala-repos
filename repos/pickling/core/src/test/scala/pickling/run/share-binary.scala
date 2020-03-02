@@ -6,8 +6,7 @@ import scala.pickling._, scala.pickling.Defaults._, binary._
 
 import java.io.ByteArrayInputStream
 
-final class C(
-    val name: String, val desc: String, var c: C, val arr: Array[Int])
+final class C(val name: String, val desc: String, var c: C, val arr: Array[Int])
 case class Outer(a: Array[Simple])
 
 final class Simple(x: Int) {
@@ -92,7 +91,7 @@ class ShareBinaryTest extends FunSuite {
 
   test("register many unpicklees") {
     val output = new ByteArrayOutput
-    val arr = Array.ofDim[Simple](66000)
+    val arr    = Array.ofDim[Simple](66000)
 
     for (i <- 0 until 66000) {
       val obj = new Simple(i)

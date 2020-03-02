@@ -25,12 +25,12 @@ import test.illTyped
 object CachedTestDefns {
   trait CachedTC[T]
   object CachedTC {
-    implicit def mkTC[T] = new CachedTC[T] {}
+    implicit def mkTC[T]                  = new CachedTC[T] {}
     implicit val cached: CachedTC[String] = cachedImplicit
   }
 
   object CachedTest {
-    implicit val i: CachedTC[Int] = cachedImplicit
+    implicit val i: CachedTC[Int]           = cachedImplicit
     implicit lazy val il: CachedTC[Boolean] = cachedImplicit
   }
 
@@ -45,7 +45,9 @@ object CachedTestDefns {
     }
 
     implicit def eqGeneric[T, R](
-        implicit gen: Generic.Aux[T, R], eqRepr: Lazy[Eq[R]]): Eq[T] =
+        implicit gen: Generic.Aux[T, R],
+        eqRepr: Lazy[Eq[R]]
+    ): Eq[T] =
       new Eq[T] {
         def eqv(x: T, y: T): Boolean =
           eqRepr.value.eqv(gen.to(x), gen.to(y))
@@ -58,7 +60,9 @@ object CachedTestDefns {
 
     // Induction step for products
     implicit def eqHCons[H, T <: HList](
-        implicit eqH: Lazy[Eq[H]], eqT: Lazy[Eq[T]]): Eq[H :: T] =
+        implicit eqH: Lazy[Eq[H]],
+        eqT: Lazy[Eq[T]]
+    ): Eq[H :: T] =
       new Eq[H :: T] {
         def eqv(x: H :: T, y: H :: T): Boolean =
           eqH.value.eqv(x.head, y.head) && eqT.value.eqv(x.tail, y.tail)
@@ -108,7 +112,7 @@ class CachedTest {
   @Test
   def testDivergent {
     illTyped(
-        "cachedImplicit[math.Ordering[Ordered[Int]]]"
+      "cachedImplicit[math.Ordering[Ordered[Int]]]"
     )
   }
 
@@ -116,7 +120,7 @@ class CachedTest {
   def testNotFound1 {
     trait T[X]
     illTyped(
-        "cachedImplicit[T[String]]"
+      "cachedImplicit[T[String]]"
     )
   }
 
@@ -125,14 +129,14 @@ class CachedTest {
     @scala.annotation.implicitNotFound("No U[${X}]")
     trait U[X]
     illTyped(
-        "cachedImplicit[U[String]]",
-        "No U\\[String]"
+      "cachedImplicit[U[String]]",
+      "No U\\[String]"
     )
   }
 
   case class Quux(i: Int, s: String)
   object Quux {
-    val gen0 = cachedImplicit[Generic[Quux]]
+    val gen0                                       = cachedImplicit[Generic[Quux]]
     implicit val gen: Generic.Aux[Quux, gen0.Repr] = gen0
   }
 
@@ -144,17 +148,17 @@ class CachedTest {
     val gen = Generic[Quux]
     assert(gen eq Quux.gen0)
 
-    val q = Quux(23, "foo")
-    val h: Int = gen.to(q).head
+    val q          = Quux(23, "foo")
+    val h: Int     = gen.to(q).head
     val th: String = gen.to(q).tail.head
   }
 
   case class Quux2(i: Int, s: String)
   object Quux2 {
-    val gen0 = cachedImplicit[Generic[Quux2]]
+    val gen0                                        = cachedImplicit[Generic[Quux2]]
     implicit val gen: Generic.Aux[Quux2, gen0.Repr] = gen0
 
-    val lgen0 = cachedImplicit[LabelledGeneric[Quux2]]
+    val lgen0                                                 = cachedImplicit[LabelledGeneric[Quux2]]
     implicit val lgen: LabelledGeneric.Aux[Quux2, lgen0.Repr] = lgen0
   }
 
@@ -173,10 +177,10 @@ class CachedTest {
 
     val q = Quux2(23, "foo")
 
-    val h: Int = gen.to(q).head
+    val h: Int     = gen.to(q).head
     val th: String = gen.to(q).tail.head
 
-    val lh: FieldType[Witness.`'i`.T, Int] = lgen.to(q).head
+    val lh: FieldType[Witness.`'i`.T, Int]     = lgen.to(q).head
     val lth: FieldType[Witness.`'s`.T, String] = lgen.to(q).tail.head
   }
 

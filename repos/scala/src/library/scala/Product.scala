@@ -39,9 +39,9 @@ trait Product extends Any with Equals {
   def productIterator: Iterator[Any] =
     new scala.collection.AbstractIterator[Any] {
       private var c: Int = 0
-      private val cmax = productArity
-      def hasNext = c < cmax
-      def next() = { val result = productElement(c); c += 1; result }
+      private val cmax   = productArity
+      def hasNext        = c < cmax
+      def next()         = { val result = productElement(c); c += 1; result }
     }
 
   /** A string used in the `toString` methods of derived classes.

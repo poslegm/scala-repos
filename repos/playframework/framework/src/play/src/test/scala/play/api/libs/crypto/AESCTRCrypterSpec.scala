@@ -11,7 +11,7 @@ import play.api.libs.Codecs
 
 class AESCTRCrypterSpec extends Specification {
 
-  val key = "0123456789abcdef"
+  val key          = "0123456789abcdef"
   val cryptoConfig = CryptoConfig(key, None, "AES")
 
   "Crypto api using symmetrical encryption" should {
@@ -30,7 +30,7 @@ class AESCTRCrypterSpec extends Specification {
 
     "be able to decrypt text generated using the old transformation methods" in {
       val text = "Play Framework 2.0"
-      val key = "0123456789abcdef"
+      val key  = "0123456789abcdef"
       // old way to encrypt things
       val cipher = Cipher.getInstance("AES")
       val skeySpec =

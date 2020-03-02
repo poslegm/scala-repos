@@ -22,11 +22,12 @@ trait LeadershipModule {
 }
 
 object LeadershipModule {
-  def apply(actorRefFactory: ActorRefFactory,
-            zk: ZooKeeperClient,
-            leader: LeadershipAbdication): LeadershipModule = {
+  def apply(
+      actorRefFactory: ActorRefFactory,
+      zk: ZooKeeperClient,
+      leader: LeadershipAbdication
+  ): LeadershipModule =
     new LeadershipModuleImpl(actorRefFactory, zk, leader)
-  }
 }
 
 /**
@@ -39,16 +40,16 @@ object LeadershipModule {
 private[leadership] class LeadershipModuleImpl(
     actorRefFactory: ActorRefFactory,
     zk: ZooKeeperClient,
-    leader: LeadershipAbdication)
-    extends LeadershipModule {
+    leader: LeadershipAbdication
+) extends LeadershipModule {
 
-  private[this] var whenLeaderRefs = Set.empty[ActorRef]
+  private[this] var whenLeaderRefs   = Set.empty[ActorRef]
   private[this] var started: Boolean = false
 
   override def startWhenLeader(props: Props, name: String): ActorRef = {
     require(!started, "already started")
     val proxyProps = WhenLeaderActor.props(props)
-    val actorRef = actorRefFactory.actorOf(proxyProps, name)
+    val actorRef   = actorRefFactory.actorOf(proxyProps, name)
     whenLeaderRefs += actorRef
     actorRef
   }
@@ -59,7 +60,7 @@ private[leadership] class LeadershipModuleImpl(
     require(!started, "already started")
     started = true
 
-    val props = LeadershipCoordinatorActor.props(whenLeaderRefs)
+    val props    = LeadershipCoordinatorActor.props(whenLeaderRefs)
     val actorRef = actorRefFactory.actorOf(props, "leaderShipCoordinator")
     new LeadershipCoordinatorDelegate(actorRef)
   }
@@ -67,6 +68,8 @@ private[leadership] class LeadershipModuleImpl(
   /**
     * Register this actor by default.
     */
-  startWhenLeader(AbdicateOnConnectionLossActor.props(zk, leader),
-                  "AbdicateOnConnectionLoss")
+  startWhenLeader(
+    AbdicateOnConnectionLossActor.props(zk, leader),
+    "AbdicateOnConnectionLoss"
+  )
 }

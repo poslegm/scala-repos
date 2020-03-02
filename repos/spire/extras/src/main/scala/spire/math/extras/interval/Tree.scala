@@ -14,11 +14,10 @@ private[interval] object Tree {
   @inline final def levelAbove(a: Long, b: Long): Byte =
     (63 - numberOfLeadingZeros(a ^ b)).toByte
 
-  @inline final def maskAbove(prefix: Long, bit: Byte) = {
+  @inline final def maskAbove(prefix: Long, bit: Byte) =
     // this is not the same as (-1L << (bit + 1)) due to the somewhat strange behavior of the java shift operator
     // -1L << 64 gives -1L, whereas (-1L << 63) << 1 gives 0L like we need
     prefix & ((-1L << bit) << 1)
-  }
 
   @inline final def zeroAt(value: Long, bit: Byte) =
     (value & (1L << bit)) == 0L
@@ -31,8 +30,8 @@ private[interval] object Tree {
       throw new IllegalArgumentException("Arguments of concat must be ordered")
     val p1 = t1.prefix
     val p2 = t2.prefix
-    val l = levelAbove(p1, p2)
-    val p = maskAbove(p1, l)
+    val l  = levelAbove(p1, p2)
+    val p  = maskAbove(p1, l)
     Branch(p, l, t1, t2)
   }
 
@@ -55,7 +54,11 @@ private[interval] object Tree {
     * @return the result, can be null
     */
   @inline private final def branch(
-      p: Long, level: Byte, l: Tree, r: Tree): Tree =
+      p: Long,
+      level: Byte,
+      l: Tree,
+      r: Tree
+  ): Tree =
     if (l eq null) r
     else if (r eq null) l
     else Branch(p, level, l, r)
@@ -68,9 +71,13 @@ private[interval] object Tree {
   sealed abstract class BooleanBinaryOperator {
 
     @inline private final def disjoint(
-        a0: Boolean, a: Tree, b0: Boolean, b: Tree): Boolean = {
-      val a_p = a.prefix
-      val b_p = b.prefix
+        a0: Boolean,
+        a: Tree,
+        b0: Boolean,
+        b: Tree
+    ): Boolean = {
+      val a_p   = a.prefix
+      val b_p   = b.prefix
       val level = levelAbove(a_p, b_p)
       if (zeroAt(a_p, level)) {
         // a is before b, so it is overlapped by b0
@@ -93,8 +100,7 @@ private[interval] object Tree {
       * @param b a leaf from the rhs
       * @return the result. Can be a leaf or null
       */
-    protected def collision(
-        a0: Boolean, a: Leaf, b0: Boolean, b: Leaf): Boolean
+    protected def collision(a0: Boolean, a: Leaf, b0: Boolean, b: Leaf): Boolean
 
     /**
       * This will be called when a is completely covered by a contiguous interval of b
@@ -122,7 +128,12 @@ private[interval] object Tree {
       * @param b a node (leaf or branch) from the rhs
       * @return the result, can be null
       */
-    private final def op(a0: Boolean, a: Tree, b0: Boolean, b: Tree): Boolean = {
+    private final def op(
+        a0: Boolean,
+        a: Tree,
+        b0: Boolean,
+        b: Tree
+    ): Boolean = {
       val a_l = a.level
       val a_p = a.prefix
       val b_l = b.level
@@ -216,10 +227,10 @@ private[interval] object Tree {
       * @return the result, can be null
       */
     private final def join(a0: Boolean, a: Tree, b0: Boolean, b: Tree): Tree = {
-      val a_p = a.prefix
-      val b_p = b.prefix
+      val a_p   = a.prefix
+      val b_p   = b.prefix
       val level = levelAbove(a_p, b_p)
-      val p = maskAbove(a_p, level)
+      val p     = maskAbove(a_p, level)
       if (zeroAt(a_p, level)) {
         // a is before b, so it is overlapped by b0
         val a1 = overlapA(a0, a, b0)
@@ -342,12 +353,11 @@ private[interval] object Tree {
       }
     }
 
-    final def apply(a0: Boolean, a: Tree, b0: Boolean, b: Tree) = {
+    final def apply(a0: Boolean, a: Tree, b0: Boolean, b: Tree) =
       if ((a eq null) && (b eq null)) null
       else if (a eq null) overlapB(a0, b0, b)
       else if (b eq null) overlapA(a0, a, b0)
       else op(a0, a, b0, b)
-    }
   }
 
   object DisjointCalculator extends BooleanBinaryOperator {
@@ -355,14 +365,24 @@ private[interval] object Tree {
     override protected def op(a: Boolean, b: Boolean): Boolean = !(a & b)
 
     override protected def overlapB(
-        a0: Boolean, b0: Boolean, b: Tree): Boolean = !a0
+        a0: Boolean,
+        b0: Boolean,
+        b: Tree
+    ): Boolean = !a0
 
     override protected def overlapA(
-        a0: Boolean, a: Tree, b0: Boolean): Boolean = !b0
+        a0: Boolean,
+        a: Tree,
+        b0: Boolean
+    ): Boolean = !b0
 
     override protected def collision(
-        a0: Boolean, a: Leaf, b0: Boolean, b: Leaf): Boolean = {
-      val at1 = !((a.at ^ a0) & (b.at ^ b0))
+        a0: Boolean,
+        a: Leaf,
+        b0: Boolean,
+        b: Leaf
+    ): Boolean = {
+      val at1    = !((a.at ^ a0) & (b.at ^ b0))
       val above1 = !((a.above ^ a0) & (b.above ^ b0))
       at1 && above1
     }
@@ -373,14 +393,24 @@ private[interval] object Tree {
     override protected def op(a: Boolean, b: Boolean): Boolean = a | !b
 
     override protected def overlapB(
-        a0: Boolean, b0: Boolean, b: Tree): Boolean = a0
+        a0: Boolean,
+        b0: Boolean,
+        b: Tree
+    ): Boolean = a0
 
     override protected def overlapA(
-        a0: Boolean, a: Tree, b0: Boolean): Boolean = !b0
+        a0: Boolean,
+        a: Tree,
+        b0: Boolean
+    ): Boolean = !b0
 
     override protected def collision(
-        a0: Boolean, a: Leaf, b0: Boolean, b: Leaf): Boolean = {
-      val at1 = (a.at ^ a0) | !(b.at ^ b0)
+        a0: Boolean,
+        a: Leaf,
+        b0: Boolean,
+        b: Leaf
+    ): Boolean = {
+      val at1    = (a.at ^ a0) | !(b.at ^ b0)
       val above1 = (a.above ^ a0) | !(b.above ^ b0)
       at1 && above1
     }
@@ -390,7 +420,7 @@ private[interval] object Tree {
 
     protected def collision(a0: Boolean, a: Leaf, b0: Boolean, b: Leaf) = {
       val below1 = a0 | b0
-      val at1 = (a.at ^ a0) | (b.at ^ b0)
+      val at1    = (a.at ^ a0) | (b.at ^ b0)
       val above1 = (a.above ^ a0) | (b.above ^ b0)
       leaf(below1 != at1, at1 != above1, a, b)
     }
@@ -408,7 +438,7 @@ private[interval] object Tree {
 
     protected def collision(a0: Boolean, a: Leaf, b0: Boolean, b: Leaf) = {
       val below1 = a0 ^ b0
-      val at1 = (a.at ^ a0) ^ (b.at ^ b0)
+      val at1    = (a.at ^ a0) ^ (b.at ^ b0)
       val above1 = (a.above ^ a0) ^ (b.above ^ b0)
       leaf(below1 != at1, at1 != above1, a, b)
     }
@@ -422,7 +452,7 @@ private[interval] object Tree {
 
     protected def collision(a0: Boolean, a: Leaf, b0: Boolean, b: Leaf) = {
       val below1 = a0 & b0
-      val at1 = (a.at ^ a0) & (b.at ^ b0)
+      val at1    = (a.at ^ a0) & (b.at ^ b0)
       val above1 = (a.above ^ a0) & (b.above ^ b0)
       leaf(below1 != at1, at1 != above1, a, b)
     }
@@ -454,12 +484,12 @@ private[interval] object Tree {
       a match {
         case a: Branch =>
           val prefix = a.prefix
-          val level = a.level
+          val level  = a.level
           if (!hasMatchAt(value, prefix, level)) {
             // key is either before or after a
             val branchLevel = levelAbove(prefix, value)
             if (zeroAt(prefix, branchLevel)) a0 ^ a.sign // after
-            else a0 // before
+            else a0                                      // before
           } else {
             // key is within a
             if (zeroAt(value, level)) op(a0, a.left, value)
@@ -490,7 +520,7 @@ private[interval] object Tree {
   }
 
   def leaf(changeBelow: Boolean, changeAbove: Boolean, a: Leaf, b: Leaf) = {
-    val at = changeBelow
+    val at   = changeBelow
     val sign = changeBelow ^ changeAbove
     if (!changeBelow && !changeAbove) null
     else if (at == a.at && sign == a.sign) a
@@ -502,8 +532,7 @@ private[interval] object Tree {
     * A leaf.
     * @param prefix the prefix, which in case of a leaf is identical to the key
     */
-  final case class Leaf(prefix: Long, at: Boolean, sign: Boolean)
-      extends Tree {
+  final case class Leaf(prefix: Long, at: Boolean, sign: Boolean) extends Tree {
 
     /**
       * For a leaf, the prefix is the key
@@ -530,12 +559,11 @@ private[interval] object Tree {
 
     val sign = left.sign ^ right.sign
 
-    def lr(left: Tree, right: Tree): Tree = {
+    def lr(left: Tree, right: Tree): Tree =
       if (left eq null) right
       else if (right eq null) left
       else if ((left eq this.left) && (right eq this.right)) this
       else copy(left = left, right = right)
-    }
   }
 }
 

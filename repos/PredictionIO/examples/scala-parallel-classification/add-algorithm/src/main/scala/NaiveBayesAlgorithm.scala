@@ -10,16 +10,14 @@ import org.apache.spark.mllib.linalg.Vectors
 
 case class NaiveBayesAlgorithmParams(
     lambda: Double
-)
-    extends Params
+) extends Params
 
 // extends P2LAlgorithm because the MLlib's NaiveBayesModel doesn't contain RDD.
 class NaiveBayesAlgorithm(val ap: NaiveBayesAlgorithmParams)
     extends P2LAlgorithm[PreparedData, NaiveBayesModel, Query, PredictedResult] {
 
-  def train(sc: SparkContext, data: PreparedData): NaiveBayesModel = {
+  def train(sc: SparkContext, data: PreparedData): NaiveBayesModel =
     NaiveBayes.train(data.labeledPoints, ap.lambda)
-  }
 
   def predict(model: NaiveBayesModel, query: Query): PredictedResult = {
     val label = model.predict(Vectors.dense(query.features))

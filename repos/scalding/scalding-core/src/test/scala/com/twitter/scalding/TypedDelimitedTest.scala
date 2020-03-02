@@ -55,17 +55,18 @@ class TypedOsvJob(args: Args) extends Job(args) {
 }
 
 object DailySuffixTypedTsvJob {
-  val strd1 = "2014-05-01"
-  val strd2 = "2014-05-02"
-  implicit val tz = DateOps.UTC
+  val strd1           = "2014-05-01"
+  val strd2           = "2014-05-02"
+  implicit val tz     = DateOps.UTC
   implicit val parser = DateParser.default
-  implicit val dr1 = DateRange(RichDate(strd1), RichDate(strd2))
+  implicit val dr1    = DateRange(RichDate(strd1), RichDate(strd2))
 
   def source(str: String) = DailySuffixTypedTsv[(String, Int)](str)
 }
 
 class DailySuffixTypedTsvJob(args: Args)
-    extends Job(args) with UtcDateRangeJob {
+    extends Job(args)
+    with UtcDateRangeJob {
   try {
     DailySuffixTypedTsvJob
       .source("input0")

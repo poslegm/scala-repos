@@ -19,19 +19,21 @@ import views._
 
 object Round extends LilaController with TheftPrevention {
 
-  private def env = Env.round
+  private def env         = Env.round
   private def bookmarkApi = Env.bookmark.api
-  private def analyser = Env.analyse.analyser
+  private def analyser    = Env.analyse.analyser
 
   def websocketWatcher(gameId: String, color: String) = SocketOption[JsValue] {
     implicit ctx =>
       get("sri") ?? { uid =>
-        env.socketHandler.watcher(gameId = gameId,
-                                  colorName = color,
-                                  uid = uid,
-                                  user = ctx.me,
-                                  ip = ctx.ip,
-                                  userTv = get("userTv"))
+        env.socketHandler.watcher(
+          gameId = gameId,
+          colorName = color,
+          uid = uid,
+          user = ctx.me,
+          ip = ctx.ip,
+          userTv = get("userTv")
+        )
       }
   }
 
@@ -44,11 +46,11 @@ object Round extends LilaController with TheftPrevention {
             get("sri") match {
               case Some(uid) =>
                 requestAiMove(pov) >> env.socketHandler.player(
-                    pov,
-                    uid,
-                    ~get("ran"),
-                    ctx.me,
-                    ctx.ip
+                  pov,
+                  uid,
+                  ~get("ran"),
+                  ctx.me,
+                  ctx.ip
                 ) map Right.apply
               case None => fuccess(Left(NotFound))
             }
@@ -61,41 +63,41 @@ object Round extends LilaController with TheftPrevention {
 
   private def renderPlayer(pov: Pov)(implicit ctx: Context): Fu[Result] =
     negotiate(
-        html = pov.game.started.fold(
-              PreventTheft(pov) {
-              myTour(pov.game.tournamentId, true) zip
-              (pov.game.simulId ?? Env.simul.repo.find) zip Env.game
-                .crosstableApi(pov.game) zip
-              (pov.game.isSwitchable ?? otherPovs(pov.game)) flatMap {
-                case (((tour, simul), crosstable), playing) =>
-                  simul foreach Env.simul.api.onPlayerConnection(pov.game,
-                                                                 ctx.me)
-                  Env.api.roundApi
-                    .player(pov, lila.api.Mobile.Api.currentVersion) map {
-                    data =>
-                      Ok(html.round.player(
-                              pov,
-                              data,
-                              tour = tour,
-                              simul = simul,
-                              cross = crosstable,
-                              playing = playing,
-                              prefs = ctx.isAuth option
-                                (Env.pref.forms miniPrefOf ctx.pref)))
-                  }
-              }
-            }.mon(_.http.response.player.website),
-              notFound
-          ),
-        api = apiVersion =>
-            {
-            if (isTheft(pov)) fuccess(theftResponse)
-            else
+      html = pov.game.started.fold(
+        PreventTheft(pov) {
+          myTour(pov.game.tournamentId, true) zip
+            (pov.game.simulId ?? Env.simul.repo.find) zip Env.game
+            .crosstableApi(pov.game) zip
+            (pov.game.isSwitchable ?? otherPovs(pov.game)) flatMap {
+            case (((tour, simul), crosstable), playing) =>
+              simul foreach Env.simul.api.onPlayerConnection(pov.game, ctx.me)
               Env.api.roundApi
-                .player(pov, apiVersion)
-                .map { Ok(_) }
-                .mon(_.http.response.player.mobile)
-        }
+                .player(pov, lila.api.Mobile.Api.currentVersion) map { data =>
+                Ok(
+                  html.round.player(
+                    pov,
+                    data,
+                    tour = tour,
+                    simul = simul,
+                    cross = crosstable,
+                    playing = playing,
+                    prefs = ctx.isAuth option
+                      (Env.pref.forms miniPrefOf ctx.pref)
+                  )
+                )
+              }
+          }
+        }.mon(_.http.response.player.website),
+        notFound
+      ),
+      api = apiVersion => {
+        if (isTheft(pov)) fuccess(theftResponse)
+        else
+          Env.api.roundApi
+            .player(pov, apiVersion)
+            .map(Ok(_))
+            .mon(_.http.response.player.mobile)
+      }
     ) map NoCache
 
   def player(fullId: String) = Open { implicit ctx =>
@@ -115,17 +117,16 @@ object Round extends LilaController with TheftPrevention {
       }
   }
 
-  private def getNext(currentGame: GameModel)(
-      povs: List[Pov])(implicit ctx: Context) =
+  private def getNext(
+      currentGame: GameModel
+  )(povs: List[Pov])(implicit ctx: Context) =
     povs find { pov =>
       pov.isMyTurn && (pov.game.hasClock || !currentGame.hasClock)
     }
 
   def others(gameId: String) = Open { implicit ctx =>
     OptionFuResult(GameRepo game gameId) { currentGame =>
-      otherPovs(currentGame) map { povs =>
-        Ok(html.round.others(povs))
-      }
+      otherPovs(currentGame) map { povs => Ok(html.round.others(povs)) }
     }
   }
 
@@ -134,7 +135,8 @@ object Round extends LilaController with TheftPrevention {
       if (currentPov.isMyTurn)
         fuccess {
           Ok(Json.obj("nope" -> true))
-        } else
+        }
+      else
         otherPovs(currentPov.game) map getNext(currentPov.game) map { next =>
           Ok(Json.obj("next" -> next.map(_.fullId)))
         }
@@ -150,7 +152,7 @@ object Round extends LilaController with TheftPrevention {
         case None =>
           fuccess(Redirect(currentGame.simulId match {
             case Some(simulId) => routes.Simul.show(simulId)
-            case None => routes.Round.watcher(gameId, "white")
+            case None          => routes.Round.watcher(gameId, "white")
           }))
       }
     }
@@ -166,51 +168,60 @@ object Round extends LilaController with TheftPrevention {
   }
 
   def watch(pov: Pov, userTv: Option[UserModel] = None)(
-      implicit ctx: Context): Fu[Result] =
+      implicit ctx: Context
+  ): Fu[Result] =
     playablePovForReq(pov.game) match {
       case Some(player) if userTv.isEmpty =>
         renderPlayer(pov withColor player.color)
       case _ =>
         negotiate(
-            html = {
-              if (getBool("sudo") && isGranted(_.SuperAdmin))
-                Redirect(routes.Round.player(pov.fullId)).fuccess
-              else if (pov.game.replayable)
-                Analyse.replay(pov, userTv = userTv)
-              else if (HTTPRequest.isHuman(ctx.req))
-                myTour(pov.game.tournamentId, false) zip
+          html = {
+            if (getBool("sudo") && isGranted(_.SuperAdmin))
+              Redirect(routes.Round.player(pov.fullId)).fuccess
+            else if (pov.game.replayable)
+              Analyse.replay(pov, userTv = userTv)
+            else if (HTTPRequest.isHuman(ctx.req))
+              myTour(pov.game.tournamentId, false) zip
                 (pov.game.simulId ?? Env.simul.repo.find) zip Env.game
-                  .crosstableApi(pov.game) zip Env.api.roundApi.watcher(
-                    pov,
-                    lila.api.Mobile.Api.currentVersion,
-                    tv = none,
-                    withOpening = false) map {
-                  case (((tour, simul), crosstable), data) =>
-                    Ok(html.round.watcher(pov,
-                                          data,
-                                          tour,
-                                          simul,
-                                          crosstable,
-                                          userTv = userTv))
-                } else
-                // web crawlers don't need the full thing
-                GameRepo.initialFen(pov.game.id) zip Env.game.crosstableApi(
-                    pov.game) map {
-                  case (initialFen, crosstable) =>
-                    val pgn = Env.api.pgnDump(pov.game, initialFen)
-                    Ok(html.round.watcherBot(pov, initialFen, pgn, crosstable))
-                }
-            }.mon(_.http.response.watcher.website),
-            api = apiVersion =>
-                Env.api.roundApi.watcher(
-                    pov, apiVersion, tv = none, withOpening = false) map {
-                Ok(_)
+                .crosstableApi(pov.game) zip Env.api.roundApi.watcher(
+                pov,
+                lila.api.Mobile.Api.currentVersion,
+                tv = none,
+                withOpening = false
+              ) map {
+                case (((tour, simul), crosstable), data) =>
+                  Ok(
+                    html.round.watcher(
+                      pov,
+                      data,
+                      tour,
+                      simul,
+                      crosstable,
+                      userTv = userTv
+                    )
+                  )
+              }
+            else
+              // web crawlers don't need the full thing
+              GameRepo.initialFen(pov.game.id) zip Env.game.crosstableApi(
+                pov.game
+              ) map {
+                case (initialFen, crosstable) =>
+                  val pgn = Env.api.pgnDump(pov.game, initialFen)
+                  Ok(html.round.watcherBot(pov, initialFen, pgn, crosstable))
+              }
+          }.mon(_.http.response.watcher.website),
+          api = apiVersion =>
+            Env.api.roundApi
+              .watcher(pov, apiVersion, tv = none, withOpening = false) map {
+              Ok(_)
             }
         ) map NoCache
     }
 
   private def myTour(tourId: Option[String], withStanding: Boolean)(
-      implicit ctx: Context): Fu[Option[MiniStanding]] =
+      implicit ctx: Context
+  ): Fu[Option[MiniStanding]] =
     tourId ?? { tid =>
       Env.tournament.api.miniStanding(tid, ctx.userId, withStanding)
     }
@@ -230,11 +241,11 @@ object Round extends LilaController with TheftPrevention {
   }
 
   def sidesWatcher(gameId: String, color: String) = Open { implicit ctx =>
-    OptionFuResult(GameRepo.pov(gameId, color)) { sides(_, false) }
+    OptionFuResult(GameRepo.pov(gameId, color))(sides(_, false))
   }
 
   def sidesPlayer(gameId: String, color: String) = Open { implicit ctx =>
-    OptionFuResult(GameRepo.pov(gameId, color)) { sides(_, true) }
+    OptionFuResult(GameRepo.pov(gameId, color))(sides(_, true))
   }
 
   def writeNote(gameId: String) = AuthBody { implicit ctx => me =>
@@ -242,13 +253,16 @@ object Round extends LilaController with TheftPrevention {
     import play.api.data._
     implicit val req = ctx.body
     Form(single("text" -> text)).bindFromRequest.fold(
-        err => fuccess(BadRequest),
-        text => Env.round.noteApi.set(gameId, me.id, text.trim take 10000))
+      err => fuccess(BadRequest),
+      text => Env.round.noteApi.set(gameId, me.id, text.trim take 10000)
+    )
   }
 
   private def sides(pov: Pov, isPlayer: Boolean)(implicit ctx: Context) =
     myTour(pov.game.tournamentId, isPlayer) zip
-    (pov.game.simulId ?? Env.simul.repo.find) zip GameRepo.initialFen(pov.game) zip Env.game
+      (pov.game.simulId ?? Env.simul.repo.find) zip GameRepo.initialFen(
+      pov.game
+    ) zip Env.game
       .crosstableApi(pov.game) map {
       case (((tour, simul), initialFen), crosstable) =>
         Ok(html.game.sides(pov, initialFen, tour, crosstable, simul))
@@ -257,10 +271,13 @@ object Round extends LilaController with TheftPrevention {
   def continue(id: String, mode: String) = Open { implicit ctx =>
     OptionResult(GameRepo game id) { game =>
       Redirect(
-          "%s?fen=%s#%s".format(routes.Lobby.home(),
-                                get("fen") |
-                                (chess.format.Forsyth >> game.toChess),
-                                mode))
+        "%s?fen=%s#%s".format(
+          routes.Lobby.home(),
+          get("fen") |
+            (chess.format.Forsyth >> game.toChess),
+          mode
+        )
+      )
     }
   }
 
@@ -272,15 +289,11 @@ object Round extends LilaController with TheftPrevention {
   }
 
   def mini(gameId: String, color: String) = Open { implicit ctx =>
-    OptionOk(GameRepo.pov(gameId, color)) { pov =>
-      html.game.mini(pov)
-    }
+    OptionOk(GameRepo.pov(gameId, color))(pov => html.game.mini(pov))
   }
 
   def miniFullId(fullId: String) = Open { implicit ctx =>
-    OptionOk(GameRepo pov fullId) { pov =>
-      html.game.mini(pov)
-    }
+    OptionOk(GameRepo pov fullId)(pov => html.game.mini(pov))
   }
 
   def atom(gameId: String, color: String) = Action.async { implicit req =>

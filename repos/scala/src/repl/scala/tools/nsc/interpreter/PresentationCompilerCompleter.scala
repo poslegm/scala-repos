@@ -14,8 +14,8 @@ class PresentationCompilerCompleter(intp: IMain) extends Completion {
 
   private type Handler = Result => Candidates
 
-  private var lastRequest = NoRequest
-  private var tabCount = 0
+  private var lastRequest                                = NoRequest
+  private var tabCount                                   = 0
   private var lastCommonPrefixCompletion: Option[String] = None
 
   def resetVerbosity(): Unit = { tabCount = 0; lastRequest = NoRequest }
@@ -32,9 +32,9 @@ class PresentationCompilerCompleter(intp: IMain) extends Completion {
     }
 
     // secret handshakes
-    val slashPrint = """.*// *print *""".r
+    val slashPrint  = """.*// *print *""".r
     val slashTypeAt = """.*// *typeAt *(\d+) *(\d+) *""".r
-    val Cursor = IMain.DummyCursorFragment + " "
+    val Cursor      = IMain.DummyCursorFragment + " "
 
     def print(result: Result) = {
       val offset = result.preambleLength
@@ -51,16 +51,20 @@ class PresentationCompilerCompleter(intp: IMain) extends Completion {
     }
     def typeAt(result: Result, start: Int, end: Int) = {
       val tpString = result.compiler.exitingTyper(
-          result.typedTreeAt(buf, start, end).tpe.toString)
+        result.typedTreeAt(buf, start, end).tpe.toString
+      )
       Candidates(cursor, "" :: tpString :: Nil)
     }
     def candidates(result: Result): Candidates = {
       import result.compiler._
       import CompletionResult._
-      def defStringCandidates(matching: List[Member], name: Name): Candidates = {
+      def defStringCandidates(
+          matching: List[Member],
+          name: Name
+      ): Candidates = {
         val defStrings = for {
           member <- matching if member.symNameDropLocal == name
-          sym <- member.sym.alternatives
+          sym    <- member.sym.alternatives
           sugared = sym.sugaredSymbolOrSelf
         } yield {
           val tp = member.prefix memberType sym
@@ -76,19 +80,19 @@ class PresentationCompilerCompleter(intp: IMain) extends Completion {
             def viaUniversalExtensionMethod = m match {
               case t: TypeMember
                   if t.implicitlyAdded &&
-                  t.viaView.info.params.head.info.bounds.isEmptyBounds =>
+                    t.viaView.info.params.head.info.bounds.isEmptyBounds =>
                 true
               case _ => false
             }
             (isUniversal && nme.isReplWrapperName(m.prefix.typeSymbol.name) ||
-                isUniversal && tabCount == 0 && r.name.isEmpty ||
-                viaUniversalExtensionMethod && tabCount == 0 && r.name.isEmpty)
+            isUniversal && tabCount == 0 && r.name.isEmpty ||
+            viaUniversalExtensionMethod && tabCount == 0 && r.name.isEmpty)
           }
 
           val matching = r.matchingResults().filterNot(shouldHide)
           val tabAfterCommonPrefixCompletion =
             lastCommonPrefixCompletion.contains(buf.substring(0, cursor)) &&
-            matching.exists(_.symNameDropLocal == r.name)
+              matching.exists(_.symNameDropLocal == r.name)
           val doubleTab =
             tabCount > 0 && matching.forall(_.symNameDropLocal == r.name)
           if (tabAfterCommonPrefixCompletion || doubleTab)
@@ -100,9 +104,12 @@ class PresentationCompilerCompleter(intp: IMain) extends Completion {
               .filterNot(shouldHide)
             val memberCompletions =
               camelMatches.map(_.symNameDropLocal.decoded).distinct.sorted
-            def allowCompletion = ((memberCompletions.size == 1) ||
-                CompletionResult.camelMatch(r.name)(r.name.newName(
-                        StringOps.longestCommonPrefix(memberCompletions))))
+            def allowCompletion =
+              ((memberCompletions.size == 1) ||
+                CompletionResult.camelMatch(r.name)(
+                  r.name
+                    .newName(StringOps.longestCommonPrefix(memberCompletions))
+                ))
             if (memberCompletions.isEmpty) Completion.NoCandidates
             else if (allowCompletion)
               Candidates(cursor - r.positionDelta, memberCompletions)
@@ -117,12 +124,14 @@ class PresentationCompilerCompleter(intp: IMain) extends Completion {
             Candidates(cursor - r.positionDelta, memberCompletions)
           }
       }
-      lastCommonPrefixCompletion = if (found != Completion.NoCandidates &&
-                                       buf.length >= found.cursor)
-        Some(
+      lastCommonPrefixCompletion =
+        if (found != Completion.NoCandidates &&
+            buf.length >= found.cursor)
+          Some(
             buf.substring(0, found.cursor) +
-            StringOps.longestCommonPrefix(found.candidates))
-      else None
+              StringOps.longestCommonPrefix(found.candidates)
+          )
+        else None
       found
     }
     val buf1 = buf.patch(cursor, Cursor, 0)

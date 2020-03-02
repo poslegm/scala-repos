@@ -28,15 +28,13 @@ object ActorPublisherTest {
       case Produce if totalDemand > 0 && !isCompleted && source.hasNext ⇒
         onNext(source.next())
       case Produce if !isCompleted && !source.hasNext ⇒ onComplete()
-      case Produce if isCompleted ⇒ // no-op
-      case _ ⇒ // no-op
+      case Produce if isCompleted                     ⇒ // no-op
+      case _                                          ⇒ // no-op
     }
 
     def loopDemand() {
       val loopUntil = math.min(100, totalDemand)
-      1 to loopUntil.toInt foreach { _ ⇒
-        self ! Produce
-      }
+      1 to loopUntil.toInt foreach { _ ⇒ self ! Produce }
       if (loopUntil > 100) self ! Loop
     }
   }
@@ -45,8 +43,10 @@ object ActorPublisherTest {
 class ActorPublisherTest extends AkkaPublisherVerification[Int] {
 
   override def createPublisher(elements: Long): Publisher[Int] = {
-    val ref = system.actorOf(Props(classOf[TestPublisher], elements)
-          .withDispatcher("akka.test.stream-dispatcher"))
+    val ref = system.actorOf(
+      Props(classOf[TestPublisher], elements)
+        .withDispatcher("akka.test.stream-dispatcher")
+    )
 
     ActorPublisher(ref)
   }

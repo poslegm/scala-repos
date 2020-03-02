@@ -9,27 +9,29 @@ import org.jetbrains.plugins.scala.base.ScalaLightCodeInsightFixtureTestAdapter
   */
 class DoubleNegationInspectionTest
     extends ScalaLightCodeInsightFixtureTestAdapter {
-  val s = ScalaLightCodeInsightFixtureTestAdapter.SELECTION_START
-  val e = ScalaLightCodeInsightFixtureTestAdapter.SELECTION_END
+  val s          = ScalaLightCodeInsightFixtureTestAdapter.SELECTION_START
+  val e          = ScalaLightCodeInsightFixtureTestAdapter.SELECTION_END
   val annotation = "Double negation"
-  val hint = "Remove double negation"
+  val hint       = "Remove double negation"
 
   private def check(text: String) {
     checkTextHasError(text, annotation, classOf[DoubleNegationInspection])
   }
 
   private def testFix(text: String, result: String) {
-    testQuickFix(text.replace("\r", ""),
-                 result.replace("\r", ""),
-                 hint,
-                 classOf[DoubleNegationInspection])
+    testQuickFix(
+      text.replace("\r", ""),
+      result.replace("\r", ""),
+      hint,
+      classOf[DoubleNegationInspection]
+    )
   }
 
   def test_NotNotTrue() {
     val selectedText = s"$s!(!true)$e"
     check(selectedText)
 
-    val text = "!(!true)"
+    val text   = "!(!true)"
     val result = "true"
     testFix(text, result)
   }
@@ -38,7 +40,7 @@ class DoubleNegationInspectionTest
     val selectedText = s"val flag: Boolean = $s!(a != b)$e"
     check(selectedText)
 
-    val text = "val flag: Boolean = !(a != b)"
+    val text   = "val flag: Boolean = !(a != b)"
     val result = "val flag: Boolean = a == b"
     testFix(text, result)
   }
@@ -47,7 +49,7 @@ class DoubleNegationInspectionTest
     val selectedText = s"if ($s!a != b$e) true else false"
     check(selectedText)
 
-    val text = "if (!a != b) true else false"
+    val text   = "if (!a != b) true else false"
     val result = "if (a == b) true else false"
     testFix(text, result)
   }
@@ -56,7 +58,7 @@ class DoubleNegationInspectionTest
     val selectedText = s"$s!a == !b$e"
     check(selectedText)
 
-    val text = "!a == !b"
+    val text   = "!a == !b"
     val result = "a == b"
     testFix(text, result)
   }
@@ -65,7 +67,7 @@ class DoubleNegationInspectionTest
     val selectedText = s"$s!a != !b$e"
     check(selectedText)
 
-    val text = "!a != !b"
+    val text   = "!a != !b"
     val result = "a != b"
     testFix(text, result)
   }

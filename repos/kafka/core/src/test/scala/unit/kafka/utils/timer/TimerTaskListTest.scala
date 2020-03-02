@@ -35,11 +35,11 @@ class TimerTaskListTest {
   @Test
   def testAll() {
     val sharedCounter = new AtomicInteger(0)
-    val runCounter = new AtomicInteger(0)
-    val execCounter = new AtomicInteger(0)
-    val list1 = new TimerTaskList(sharedCounter)
-    val list2 = new TimerTaskList(sharedCounter)
-    val list3 = new TimerTaskList(sharedCounter)
+    val runCounter    = new AtomicInteger(0)
+    val execCounter   = new AtomicInteger(0)
+    val list1         = new TimerTaskList(sharedCounter)
+    val list2         = new TimerTaskList(sharedCounter)
+    val list3         = new TimerTaskList(sharedCounter)
 
     val tasks = (1 to 10).map { i =>
       val task = new TestTask(10L)
@@ -76,17 +76,17 @@ class TimerTaskListTest {
     assertEquals(tasks.size, sharedCounter.get)
 
     // cancel tasks in lists
-    list1.foreach { _.cancel() }
+    list1.foreach(_.cancel())
     assertEquals(0, size(list1))
     assertEquals(4, size(list2))
     assertEquals(6, size(list3))
 
-    list2.foreach { _.cancel() }
+    list2.foreach(_.cancel())
     assertEquals(0, size(list1))
     assertEquals(0, size(list2))
     assertEquals(6, size(list3))
 
-    list3.foreach { _.cancel() }
+    list3.foreach(_.cancel())
     assertEquals(0, size(list1))
     assertEquals(0, size(list2))
     assertEquals(0, size(list3))

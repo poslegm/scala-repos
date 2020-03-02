@@ -56,7 +56,7 @@ object TempFile {
         throw new FileNotFoundException(path)
       case stream =>
         val (basename, ext) = parsePath(path)
-        val file = File.createTempFile(basename, "." + ext)
+        val file            = File.createTempFile(basename, "." + ext)
         file.deleteOnExit()
         val fos = new BufferedOutputStream(new FileOutputStream(file), 1 << 20)
         StreamIO.copy(stream, fos)
@@ -68,7 +68,7 @@ object TempFile {
 
   private[this] def parsePath(path: String) =
     path.split(File.separatorChar).last.split('.').reverse match {
-      case Array(basename) => (basename, "")
-      case Array(ext, base @ _ *) => (base.reverse.mkString("."), ext)
+      case Array(basename)       => (basename, "")
+      case Array(ext, base @ _*) => (base.reverse.mkString("."), ext)
     }
 }

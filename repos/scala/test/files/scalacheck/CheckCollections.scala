@@ -4,11 +4,12 @@ import org.scalacheck.Prop._
 import scala.reflect.internal.util.Collections._
 
 object Test extends Properties("reflect.internal.util.Collections") {
-  def map2ConserveOld[A <: AnyRef, B](
-      xs: List[A], ys: List[B])(f: (A, B) => A): List[A] =
+  def map2ConserveOld[A <: AnyRef, B](xs: List[A], ys: List[B])(
+      f: (A, B) => A
+  ): List[A] =
     if (xs.isEmpty || ys.isEmpty) xs
     else {
-      val x1 = f(xs.head, ys.head)
+      val x1  = f(xs.head, ys.head)
       val xs1 = map2Conserve(xs.tail, ys.tail)(f)
       if ((x1 eq xs.head) && (xs1 eq xs.tail)) xs
       else x1 :: xs1
@@ -32,7 +33,7 @@ object Test extends Properties("reflect.internal.util.Collections") {
 
   def checkStackOverflow() {
     var xs: List[String] = Nil
-    var ys: List[Int] = Nil
+    var ys: List[Int]    = Nil
     for (i <- 0 until 250000) {
       xs = "X" :: xs
       ys = 1 :: ys
@@ -41,8 +42,8 @@ object Test extends Properties("reflect.internal.util.Collections") {
   }
 
   val tests = List(
-      ("map2Conserve(identity)", prop1_map2Conserve),
-      ("map2Conserve == old impl", prop2_map2Conserve)
+    ("map2Conserve(identity)", prop1_map2Conserve),
+    ("map2Conserve == old impl", prop2_map2Conserve)
   )
 
   checkStackOverflow()

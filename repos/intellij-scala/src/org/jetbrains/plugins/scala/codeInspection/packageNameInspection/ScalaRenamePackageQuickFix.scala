@@ -11,18 +11,23 @@ import org.jetbrains.plugins.scala.util.ScalaUtils
   * Date: 08.07.2009
   */
 class ScalaRenamePackageQuickFix(myFile: ScalaFile, name: String)
-    extends AbstractFixOnPsiElement(if (name == null || name.isEmpty)
-                                      "Remove package statement"
-                                    else s"Rename Package to $name",
-                                    myFile) {
+    extends AbstractFixOnPsiElement(
+      if (name == null || name.isEmpty)
+        "Remove package statement"
+      else s"Rename Package to $name",
+      myFile
+    ) {
   def doApplyFix(project: Project): Unit = {
     val file = getElement
     if (!file.isValid) return
-    ScalaUtils.runWriteAction(new Runnable {
-      def run(): Unit = {
-        file.setPackageName(name)
-      }
-    }, project, "Rename Package QuickFix")
+    ScalaUtils.runWriteAction(
+      new Runnable {
+        def run(): Unit =
+          file.setPackageName(name)
+      },
+      project,
+      "Rename Package QuickFix"
+    )
   }
 
   override def getFamilyName: String = "Rename Package"

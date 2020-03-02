@@ -19,7 +19,9 @@ package org.apache.spark.mapred
 
 import java.io.IOException
 
-import org.apache.hadoop.mapreduce.{TaskAttemptContext => MapReduceTaskAttemptContext}
+import org.apache.hadoop.mapreduce.{
+  TaskAttemptContext => MapReduceTaskAttemptContext
+}
 import org.apache.hadoop.mapreduce.{OutputCommitter => MapReduceOutputCommitter}
 
 import org.apache.spark.{SparkEnv, TaskContext}
@@ -40,26 +42,29 @@ object SparkHadoopMapRedUtil extends Logging {
     *  - `spark.speculation`
     *  - `spark.hadoop.outputCommitCoordination.enabled`
     */
-  def commitTask(committer: MapReduceOutputCommitter,
-                 mrTaskContext: MapReduceTaskAttemptContext,
-                 jobId: Int,
-                 splitId: Int): Unit = {
+  def commitTask(
+      committer: MapReduceOutputCommitter,
+      mrTaskContext: MapReduceTaskAttemptContext,
+      jobId: Int,
+      splitId: Int
+  ): Unit = {
 
     val mrTaskAttemptID = mrTaskContext.getTaskAttemptID
 
     // Called after we have decided to commit
-    def performCommit(): Unit = {
+    def performCommit(): Unit =
       try {
         committer.commitTask(mrTaskContext)
         logInfo(s"$mrTaskAttemptID: Committed")
       } catch {
         case cause: IOException =>
           logError(
-              s"Error committing the output of task: $mrTaskAttemptID", cause)
+            s"Error committing the output of task: $mrTaskAttemptID",
+            cause
+          )
           committer.abortTask(mrTaskContext)
           throw cause
       }
-    }
 
     // First, check whether the task's output has already been committed by some other attempt
     if (committer.needsTaskCommit(mrTaskContext)) {
@@ -70,13 +75,15 @@ object SparkHadoopMapRedUtil extends Logging {
         val speculationEnabled =
           sparkConf.getBoolean("spark.speculation", defaultValue = false)
         // This (undocumented) setting is an escape-hatch in case the commit code introduces bugs
-        sparkConf.getBoolean("spark.hadoop.outputCommitCoordination.enabled",
-                             speculationEnabled)
+        sparkConf.getBoolean(
+          "spark.hadoop.outputCommitCoordination.enabled",
+          speculationEnabled
+        )
       }
 
       if (shouldCoordinateWithDriver) {
         val outputCommitCoordinator = SparkEnv.get.outputCommitCoordinator
-        val taskAttemptNumber = TaskContext.get().attemptNumber()
+        val taskAttemptNumber       = TaskContext.get().attemptNumber()
         val canCommit =
           outputCommitCoordinator.canCommit(jobId, splitId, taskAttemptNumber)
 
@@ -89,7 +96,11 @@ object SparkHadoopMapRedUtil extends Logging {
           // We need to abort the task so that the driver can reschedule new attempts, if necessary
           committer.abortTask(mrTaskContext)
           throw new CommitDeniedException(
-              message, jobId, splitId, taskAttemptNumber)
+            message,
+            jobId,
+            splitId,
+            taskAttemptNumber
+          )
         }
       } else {
         // Speculation is disabled or a user has chosen to manually bypass the commit coordination
@@ -98,7 +109,8 @@ object SparkHadoopMapRedUtil extends Logging {
     } else {
       // Some other attempt committed the output, so we do nothing and signal success
       logInfo(
-          s"No need to commit output of task because needsTaskCommit=false: $mrTaskAttemptID")
+        s"No need to commit output of task because needsTaskCommit=false: $mrTaskAttemptID"
+      )
     }
   }
 }

@@ -10,7 +10,7 @@ trait Evals {
     val u: U
 
     def eval(tree: u.Tree): Int = 123
-    def eval(s: String) = s
+    def eval(s: String)         = s
   }
 
   private lazy val evalToolBox: ToolBox[ru.type] = null

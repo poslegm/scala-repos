@@ -14,16 +14,20 @@ import org.jetbrains.plugins.scala.lang.psi.types.result.TypingContext
   */
 class ScalaMethodReturnTypeMacro extends Macro {
   override def calculateResult(
-      params: Array[Expression], context: ExpressionContext): Result = {
-    Option(PsiTreeUtil.getParentOfType(context.getPsiElementAtStartOffset,
-                                       classOf[ScFunction]))
-      .map(_.getType(TypingContext.empty).getOrAny match {
+      params: Array[Expression],
+      context: ExpressionContext
+  ): Result =
+    Option(
+      PsiTreeUtil.getParentOfType(
+        context.getPsiElementAtStartOffset,
+        classOf[ScFunction]
+      )
+    ).map(_.getType(TypingContext.empty).getOrAny match {
         case ScFunctionType(rt, _) => rt
-        case t => t
+        case t                     => t
       })
       .map(new ScalaTypeResult(_))
       .orNull
-  }
 
   override def getName: String = MacroUtil.scalaIdPrefix + "methodReturnType"
 

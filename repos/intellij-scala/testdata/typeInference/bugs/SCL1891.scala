@@ -5,7 +5,7 @@ object Test {
 
   def main(args: Array[String]) {
     val buggy = new Buggy(() => "a string")
-    val ret = buggy.ret
+    val ret   = buggy.ret
     /*start*/
     ret /*end*/
   }

@@ -20,9 +20,8 @@ class WindowedMaxBenchmark extends StdBenchAnnotations {
   var windowedMax: WindowedMax = _
 
   @Setup
-  def setup(): Unit = {
+  def setup(): Unit =
     windowedMax = new WindowedMax(windowSize)
-  }
 
   @Benchmark
   def addAndGet(s: Stream): Long = {
@@ -41,7 +40,7 @@ object WindowedMaxBenchmark {
   @State(Scope.Thread)
   class Stream {
     private val input: Array[Long] = Array.fill(1000)(Random.nextLong())
-    private var index: Int = 0
+    private var index: Int         = 0
     def next(): Long = {
       val n = input(index)
       index = (index + 1) % input.length

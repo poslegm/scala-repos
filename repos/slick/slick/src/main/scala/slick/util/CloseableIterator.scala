@@ -18,15 +18,17 @@ trait CloseableIterator[+T] extends Iterator[T] with Closeable { self =>
   override def map[B](f: T => B): CloseableIterator[B] =
     new CloseableIterator[B] {
       def hasNext = self.hasNext
-      def next() = f(self.next())
+      def next()  = f(self.next())
       def close() = self.close()
     }
 
   final def use[R](f: (Iterator[T] => R)): R =
-    try f(this) finally close()
+    try f(this)
+    finally close()
 
   final def use[R](f: => R): R =
-    try f finally close()
+    try f
+    finally close()
 
   /**
     * Return a new CloseableIterator which also closes the supplied Closeable
@@ -35,8 +37,10 @@ trait CloseableIterator[+T] extends Iterator[T] with Closeable { self =>
   final def thenClose(c: Closeable): CloseableIterator[T] =
     new CloseableIterator[T] {
       def hasNext = self.hasNext
-      def next() = self.next()
-      def close() = try self.close() finally c.close()
+      def next()  = self.next()
+      def close() =
+        try self.close()
+        finally c.close()
     }
 
   protected final def noNext =
@@ -50,7 +54,7 @@ object CloseableIterator {
     */
   val empty: CloseableIterator[Nothing] = new CloseableIterator[Nothing] {
     def hasNext = false
-    def next() = noNext
+    def next()  = noNext
     def close() {}
   }
 
@@ -59,8 +63,10 @@ object CloseableIterator {
     */
   class Single[+T](item: T) extends CloseableIterator[T] {
     private var more = true
-    def hasNext = more
-    def next() = if (more) { more = false; item } else noNext
+    def hasNext      = more
+    def next() =
+      if (more) { more = false; item }
+      else noNext
     def close {}
   }
 
@@ -75,9 +81,11 @@ object CloseableIterator {
   final class Close[C <: Closeable](makeC: => C) {
     def after[T](f: C => CloseableIterator[T]) = {
       val c = makeC
-      (try f(c) catch {
+      (try f(c)
+      catch {
         case NonFatal(e) =>
-          try c.close() catch ignoreFollowOnError
+          try c.close()
+          catch ignoreFollowOnError
           throw e
       }) thenClose c
     }

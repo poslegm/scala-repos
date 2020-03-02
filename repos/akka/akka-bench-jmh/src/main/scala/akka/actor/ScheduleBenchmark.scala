@@ -41,10 +41,10 @@ import scala.concurrent.{Await, Promise}
 @Measurement(iterations = 20, time = 1700, timeUnit = TimeUnit.MILLISECONDS)
 class ScheduleBenchmark {
   implicit val system: ActorSystem = ActorSystem()
-  val scheduler: Scheduler = system.scheduler
-  val interval: FiniteDuration = 25.millis
-  val within: FiniteDuration = 2.seconds
-  implicit val timeout: Timeout = Timeout(within)
+  val scheduler: Scheduler         = system.scheduler
+  val interval: FiniteDuration     = 25.millis
+  val within: FiniteDuration       = 2.seconds
+  implicit val timeout: Timeout    = Timeout(within)
 
   @Param(Array("4", "16", "64"))
   var to = 0
@@ -52,7 +52,7 @@ class ScheduleBenchmark {
   @Param(Array("0.1", "0.35", "0.9"))
   var ratio = 0d
 
-  var winner: Int = _
+  var winner: Int           = _
   var promise: Promise[Any] = _
 
   @Setup(Level.Iteration)
@@ -88,9 +88,12 @@ class ScheduleBenchmark {
     val tryWithNext = (1 to to)
       .foldLeft(0.millis -> List[Cancellable]()) {
         case ((interv, c), idx) ⇒
-          (interv + interval, scheduler.scheduleOnce(interv) {
-            op(idx)
-          } :: c)
+          (
+            interv + interval,
+            scheduler.scheduleOnce(interv) {
+              op(idx)
+            } :: c
+          )
       }
       ._2
     promise.future.onComplete {

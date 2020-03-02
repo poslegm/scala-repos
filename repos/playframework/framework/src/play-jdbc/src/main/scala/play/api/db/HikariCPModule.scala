@@ -20,11 +20,10 @@ import com.zaxxer.hikari.{HikariDataSource, HikariConfig}
   * HikariCP runtime inject module.
   */
 class HikariCPModule extends Module {
-  def bindings(environment: Environment, configuration: Configuration) = {
+  def bindings(environment: Environment, configuration: Configuration) =
     Seq(
-        bind[ConnectionPool].to[HikariCPConnectionPool]
+      bind[ConnectionPool].to[HikariCPConnectionPool]
     )
-  }
 }
 
 /**
@@ -34,11 +33,12 @@ trait HikariCPComponents {
   def environment: Environment
 
   lazy val connectionPool: ConnectionPool = new HikariCPConnectionPool(
-      environment)
+    environment
+  )
 }
 
 @Singleton
-class HikariCPConnectionPool @Inject()(environment: Environment)
+class HikariCPConnectionPool @Inject() (environment: Environment)
     extends ConnectionPool {
 
   import HikariCPConnectionPool._
@@ -50,16 +50,18 @@ class HikariCPConnectionPool @Inject()(environment: Environment)
     * @param configuration the data source configuration
     * @return a data source backed by a connection pool
     */
-  override def create(name: String,
-                      dbConfig: DatabaseConfig,
-                      configuration: Config): DataSource = {
+  override def create(
+      name: String,
+      dbConfig: DatabaseConfig,
+      configuration: Config
+  ): DataSource = {
     val config = PlayConfig(configuration)
 
     Try {
       Logger.info(s"Creating Pool for datasource '$name'")
 
       val hikariConfig = new HikariCPConfig(dbConfig, config).toHikariConfig
-      val datasource = new HikariDataSource(hikariConfig)
+      val datasource   = new HikariDataSource(hikariConfig)
 
       // Bind in JNDI
       dbConfig.jndiName.foreach { jndiName =>
@@ -115,19 +117,18 @@ class HikariCPConfig(dbConfig: DatabaseConfig, configuration: PlayConfig) {
 
     val dataSourceConfig = config.get[PlayConfig]("dataSource")
     dataSourceConfig.underlying.root().keySet().asScala.foreach { key =>
-      hikariConfig.addDataSourceProperty(
-          key, dataSourceConfig.get[String](key))
+      hikariConfig.addDataSourceProperty(key, dataSourceConfig.get[String](key))
     }
 
-    def toMillis(duration: Duration) = {
+    def toMillis(duration: Duration) =
       if (duration.isFinite()) duration.toMillis
-      else 0l
-    }
+      else 0L
 
     // Frequently used
     hikariConfig.setAutoCommit(config.get[Boolean]("autoCommit"))
     hikariConfig.setConnectionTimeout(
-        toMillis(config.get[Duration]("connectionTimeout")))
+      toMillis(config.get[Duration]("connectionTimeout"))
+    )
     hikariConfig.setIdleTimeout(toMillis(config.get[Duration]("idleTimeout")))
     hikariConfig.setMaxLifetime(toMillis(config.get[Duration]("maxLifetime")))
     config
@@ -139,11 +140,14 @@ class HikariCPConfig(dbConfig: DatabaseConfig, configuration: PlayConfig) {
 
     // Infrequently used
     hikariConfig.setInitializationFailFast(
-        config.get[Boolean]("initializationFailFast"))
+      config.get[Boolean]("initializationFailFast")
+    )
     hikariConfig.setIsolateInternalQueries(
-        config.get[Boolean]("isolateInternalQueries"))
+      config.get[Boolean]("isolateInternalQueries")
+    )
     hikariConfig.setAllowPoolSuspension(
-        config.get[Boolean]("allowPoolSuspension"))
+      config.get[Boolean]("allowPoolSuspension")
+    )
     hikariConfig.setReadOnly(config.get[Boolean]("readOnly"))
     hikariConfig.setRegisterMbeans(config.get[Boolean]("registerMbeans"))
     config
@@ -154,9 +158,11 @@ class HikariCPConfig(dbConfig: DatabaseConfig, configuration: PlayConfig) {
       .get[Option[String]]("transactionIsolation")
       .foreach(hikariConfig.setTransactionIsolation)
     hikariConfig.setValidationTimeout(
-        config.get[FiniteDuration]("validationTimeout").toMillis)
+      config.get[FiniteDuration]("validationTimeout").toMillis
+    )
     hikariConfig.setLeakDetectionThreshold(
-        toMillis(config.get[Duration]("leakDetectionThreshold")))
+      toMillis(config.get[Duration]("leakDetectionThreshold"))
+    )
 
     hikariConfig.validate()
     hikariConfig

@@ -36,7 +36,7 @@ class ScalaLiteralEvaluator(value: AnyRef, tp: ScType) extends Evaluator {
 
 object ScalaLiteralEvaluator {
   def apply(l: ScLiteral): ScalaLiteralEvaluator = {
-    val tp = l.getType().getOrAny
+    val tp    = l.getType().getOrAny
     val value = l.getValue
     import org.jetbrains.plugins.scala.lang.psi.types.Null
     if (value == null && tp != Null) {

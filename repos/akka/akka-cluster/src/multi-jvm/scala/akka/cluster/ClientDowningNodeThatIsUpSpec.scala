@@ -12,15 +12,17 @@ import akka.actor.Address
 import scala.collection.immutable
 
 final case class ClientDowningNodeThatIsUpMultiNodeConfig(
-    failureDetectorPuppet: Boolean)
-    extends MultiNodeConfig {
-  val first = role("first")
+    failureDetectorPuppet: Boolean
+) extends MultiNodeConfig {
+  val first  = role("first")
   val second = role("second")
-  val third = role("third")
+  val third  = role("third")
   val fourth = role("fourth")
 
-  commonConfig(debugConfig(on = false).withFallback(
-          MultiNodeClusterSpec.clusterConfig(failureDetectorPuppet)))
+  commonConfig(
+    debugConfig(on = false)
+      .withFallback(MultiNodeClusterSpec.clusterConfig(failureDetectorPuppet))
+  )
 }
 
 class ClientDowningNodeThatIsUpWithFailureDetectorPuppetMultiJvmNode1
@@ -42,8 +44,9 @@ class ClientDowningNodeThatIsUpWithAccrualFailureDetectorMultiJvmNode4
     extends ClientDowningNodeThatIsUpSpec(failureDetectorPuppet = false)
 
 abstract class ClientDowningNodeThatIsUpSpec(
-    multiNodeConfig: ClientDowningNodeThatIsUpMultiNodeConfig)
-    extends MultiNodeSpec(multiNodeConfig) with MultiNodeClusterSpec {
+    multiNodeConfig: ClientDowningNodeThatIsUpMultiNodeConfig
+) extends MultiNodeSpec(multiNodeConfig)
+    with MultiNodeClusterSpec {
 
   def this(failureDetectorPuppet: Boolean) =
     this(ClientDowningNodeThatIsUpMultiNodeConfig(failureDetectorPuppet))
@@ -63,8 +66,10 @@ abstract class ClientDowningNodeThatIsUpSpec(
 
         markNodeAsUnavailable(thirdAddress)
 
-        awaitMembersUp(numberOfMembers = 3,
-                       canNotBePartOfMemberRing = Set(thirdAddress))
+        awaitMembersUp(
+          numberOfMembers = 3,
+          canNotBePartOfMemberRing = Set(thirdAddress)
+        )
         clusterView.members.exists(_.address == thirdAddress) should ===(false)
       }
 
@@ -75,8 +80,10 @@ abstract class ClientDowningNodeThatIsUpSpec(
       runOn(second, fourth) {
         enterBarrier("down-third-node")
 
-        awaitMembersUp(numberOfMembers = 3,
-                       canNotBePartOfMemberRing = Set(thirdAddress))
+        awaitMembersUp(
+          numberOfMembers = 3,
+          canNotBePartOfMemberRing = Set(thirdAddress)
+        )
       }
 
       enterBarrier("await-completion")

@@ -16,24 +16,23 @@ import play.api.PlayCoreTestApplication
 object ResourcesSpec extends Specification {
   import Resources._
 
-  lazy val app = PlayCoreTestApplication()
-  lazy val tmpDir = createTempDir("resources-", ".tmp")
-  lazy val jar = File.createTempFile("jar-", ".tmp", tmpDir)
-  lazy val fileRes = File.createTempFile("file-", ".tmp", tmpDir)
-  lazy val dirRes = createTempDir("dir-", ".tmp", tmpDir)
-  lazy val dirSpacesRes = createTempDir("dir spaces ", ".tmp", tmpDir)
-  lazy val spacesDir = createTempDir("spaces ", ".tmp", tmpDir)
-  lazy val spacesJar = File.createTempFile("jar-spaces", ".tmp", spacesDir)
-  lazy val resourcesDir = new File(app.classloader.getResource("").getPath)
-  lazy val tmpResourcesDir = createTempDir(
-      "test-bundle-", ".tmp", resourcesDir)
-  lazy val fileBundle = File.createTempFile("file-", ".tmp", tmpResourcesDir)
-  lazy val dirBundle = createTempDir("dir-", ".tmp", tmpResourcesDir)
-  lazy val spacesDirBundle = createTempDir(
-      "dir spaces ", ".tmp", tmpResourcesDir)
+  lazy val app             = PlayCoreTestApplication()
+  lazy val tmpDir          = createTempDir("resources-", ".tmp")
+  lazy val jar             = File.createTempFile("jar-", ".tmp", tmpDir)
+  lazy val fileRes         = File.createTempFile("file-", ".tmp", tmpDir)
+  lazy val dirRes          = createTempDir("dir-", ".tmp", tmpDir)
+  lazy val dirSpacesRes    = createTempDir("dir spaces ", ".tmp", tmpDir)
+  lazy val spacesDir       = createTempDir("spaces ", ".tmp", tmpDir)
+  lazy val spacesJar       = File.createTempFile("jar-spaces", ".tmp", spacesDir)
+  lazy val resourcesDir    = new File(app.classloader.getResource("").getPath)
+  lazy val tmpResourcesDir = createTempDir("test-bundle-", ".tmp", resourcesDir)
+  lazy val fileBundle      = File.createTempFile("file-", ".tmp", tmpResourcesDir)
+  lazy val dirBundle       = createTempDir("dir-", ".tmp", tmpResourcesDir)
+  lazy val spacesDirBundle =
+    createTempDir("dir spaces ", ".tmp", tmpResourcesDir)
   lazy val classloader = app.classloader
-  lazy val osgiClassloader = new OsgiClassLoaderSimulator(
-      app.classloader, resourcesDir)
+  lazy val osgiClassloader =
+    new OsgiClassLoaderSimulator(app.classloader, resourcesDir)
 
   /* In order to test Resources.isDirectory when the protocol is "bundle://", there are 2 options:
    * a) run the test within an OSGi container (using Pax Exam),
@@ -41,7 +40,7 @@ object ResourcesSpec extends Specification {
   class OsgiClassLoaderSimulator(classloader: ClassLoader, resourcesDir: File)
       extends ClassLoader {
     override def getResource(name: String): URL = {
-      val f = new File(resourcesDir, name)
+      val f    = new File(resourcesDir, name)
       val fURL = f.toURI.toURL
       if (!f.exists) null
       else {
@@ -103,8 +102,8 @@ object ResourcesSpec extends Specification {
 
     "return true for a directory reource URL with the 'bundle' protocol" in {
       val relativeIndex = dirBundle.getAbsolutePath.indexOf("test-bundle-")
-      val dir = dirBundle.getAbsolutePath.substring(relativeIndex)
-      val url = new URL("bundle", "325.0", 25, dir, new BundleStreamHandler)
+      val dir           = dirBundle.getAbsolutePath.substring(relativeIndex)
+      val url           = new URL("bundle", "325.0", 25, dir, new BundleStreamHandler)
       isDirectory(osgiClassloader, url) must beTrue
     }
 
@@ -118,8 +117,8 @@ object ResourcesSpec extends Specification {
 
     "return false for a file resource URL with the 'bundle' protocol" in {
       val relativeIndex = fileBundle.getAbsolutePath.indexOf("test-bundle-")
-      val file = fileBundle.getAbsolutePath.substring(relativeIndex)
-      val url = new URL("bundle", "325.0", 25, file, new BundleStreamHandler)
+      val file          = fileBundle.getAbsolutePath.substring(relativeIndex)
+      val url           = new URL("bundle", "325.0", 25, file, new BundleStreamHandler)
       isDirectory(osgiClassloader, url) must beFalse
     }
 
@@ -131,19 +130,29 @@ object ResourcesSpec extends Specification {
 
     "return true for a directory resource URL that contains spaces in the zip path with the 'zip' protocol" in {
       val url = new URL(
-          "zip", "", 0, createZipUrl(spacesJar, dirRes), EmptyURLStreamHandler)
+        "zip",
+        "",
+        0,
+        createZipUrl(spacesJar, dirRes),
+        EmptyURLStreamHandler
+      )
       isDirectory(classloader, url) must beTrue
     }
 
     "return true for a directory resource URL that contains spaces in the file path with the 'zip' protocol" in {
       val url = new URL(
-          "zip", "", 0, createZipUrl(jar, dirSpacesRes), EmptyURLStreamHandler)
+        "zip",
+        "",
+        0,
+        createZipUrl(jar, dirSpacesRes),
+        EmptyURLStreamHandler
+      )
       isDirectory(classloader, url) must beTrue
     }
 
     "return false for a file resource URL with the 'zip' protocol" in {
-      val url = new URL(
-          "zip", "", 0, createZipUrl(jar, fileRes), EmptyURLStreamHandler)
+      val url =
+        new URL("zip", "", 0, createZipUrl(jar, fileRes), EmptyURLStreamHandler)
       isDirectory(classloader, url) must beFalse
     }
 
@@ -168,16 +177,17 @@ object ResourcesSpec extends Specification {
     }
   }
 
-  private def createJarUrl(jarFile: File, file: File) = {
+  private def createJarUrl(jarFile: File, file: File) =
     s"${jarFile.toURI.toURL}!/${UriEncoding.encodePathSegment(file.getName, "utf-8")}"
-  }
 
-  private def createZipUrl(zipFile: File, file: File) = {
+  private def createZipUrl(zipFile: File, file: File) =
     s"zip:${zipFile.toURI.toURL}!/${UriEncoding.encodePathSegment(file.getName, "utf-8")}"
-  }
 
   private def createTempDir(
-      prefix: String, suffix: String, parent: File = null) = {
+      prefix: String,
+      suffix: String,
+      parent: File = null
+  ) = {
     val f = File.createTempFile(prefix, suffix, parent)
     f.delete()
     f.mkdir()
@@ -199,7 +209,7 @@ object ResourcesSpec extends Specification {
 
     if (!file.isDirectory) {
       val in = new BufferedInputStream(new FileInputStream(file))
-      var b = in.read()
+      var b  = in.read()
       while (b > -1) {
         zip.write(b)
         b = in.read()

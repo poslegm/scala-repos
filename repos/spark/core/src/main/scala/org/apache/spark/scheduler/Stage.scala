@@ -53,13 +53,14 @@ import org.apache.spark.util.CallSite
   * @param callSite Location in the user program associated with this stage: either where the target
   *   RDD was created, for a shuffle map stage, or where the action for a result stage was called.
   */
-private[scheduler] abstract class Stage(val id: Int,
-                                        val rdd: RDD[_],
-                                        val numTasks: Int,
-                                        val parents: List[Stage],
-                                        val firstJobId: Int,
-                                        val callSite: CallSite)
-    extends Logging {
+private[scheduler] abstract class Stage(
+    val id: Int,
+    val rdd: RDD[_],
+    val numTasks: Int,
+    val parents: List[Stage],
+    val firstJobId: Int,
+    val callSite: CallSite
+) extends Logging {
 
   val numPartitions = rdd.partitions.length
 
@@ -71,7 +72,7 @@ private[scheduler] abstract class Stage(val id: Int,
   /** The ID to use for the next new attempt for this stage. */
   private var nextAttemptId: Int = 0
 
-  val name: String = callSite.shortForm
+  val name: String    = callSite.shortForm
   val details: String = callSite.longForm
 
   private var _internalAccumulators: Seq[Accumulator[_]] = Seq.empty
@@ -86,9 +87,8 @@ private[scheduler] abstract class Stage(val id: Int,
     * belonging to this stage has already finished. Otherwise, reinitializing the internal
     * accumulators here again will override partial values from the finished tasks.
     */
-  def resetInternalAccumulators(): Unit = {
+  def resetInternalAccumulators(): Unit =
     _internalAccumulators = InternalAccumulator.create(rdd.sparkContext)
-  }
 
   /**
     * Pointer to the [StageInfo] object for the most recent attempt. This needs to be initialized
@@ -106,9 +106,8 @@ private[scheduler] abstract class Stage(val id: Int,
     */
   private val fetchFailedAttemptIds = new HashSet[Int]
 
-  private[scheduler] def clearFailures(): Unit = {
+  private[scheduler] def clearFailures(): Unit =
     fetchFailedAttemptIds.clear()
-  }
 
   /**
     * Check whether we should abort the failedStage due to multiple consecutive fetch failures.
@@ -117,7 +116,8 @@ private[scheduler] abstract class Stage(val id: Int,
     * true if the number of failures exceeds the allowable number of failures.
     */
   private[scheduler] def failedOnFetchAndShouldAbort(
-      stageAttemptId: Int): Boolean = {
+      stageAttemptId: Int
+  ): Boolean = {
     fetchFailedAttemptIds.add(stageAttemptId)
     fetchFailedAttemptIds.size >= Stage.MAX_CONSECUTIVE_FETCH_FAILURES
   }
@@ -125,11 +125,14 @@ private[scheduler] abstract class Stage(val id: Int,
   /** Creates a new attempt for this stage by creating a new StageInfo with a new attempt ID. */
   def makeNewStageAttempt(
       numPartitionsToCompute: Int,
-      taskLocalityPreferences: Seq[Seq[TaskLocation]] = Seq.empty): Unit = {
-    _latestInfo = StageInfo.fromStage(this,
-                                      nextAttemptId,
-                                      Some(numPartitionsToCompute),
-                                      taskLocalityPreferences)
+      taskLocalityPreferences: Seq[Seq[TaskLocation]] = Seq.empty
+  ): Unit = {
+    _latestInfo = StageInfo.fromStage(
+      this,
+      nextAttemptId,
+      Some(numPartitionsToCompute),
+      taskLocalityPreferences
+    )
     nextAttemptId += 1
   }
 
@@ -140,7 +143,7 @@ private[scheduler] abstract class Stage(val id: Int,
 
   override final def equals(other: Any): Boolean = other match {
     case stage: Stage => stage != null && stage.id == id
-    case _ => false
+    case _            => false
   }
 
   /** Returns the sequence of partition ids that are missing (i.e. needs to be computed). */

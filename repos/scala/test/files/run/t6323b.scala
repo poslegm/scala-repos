@@ -7,11 +7,11 @@ object Test extends App {
     try {
       case class Test(a: String, b: List[Int])
 
-      val lookAtMe = m.reflect(Test("a", List(5)))
-      val value = u.weakTypeOf[Test]
-      val members = value.members
-      val member = value.members.filter(_.name.encodedName == TermName("a"))
-      val aAccessor = lookAtMe.reflectMethod(member.head.asMethod)
+      val lookAtMe      = m.reflect(Test("a", List(5)))
+      val value         = u.weakTypeOf[Test]
+      val members       = value.members
+      val member        = value.members.filter(_.name.encodedName == TermName("a"))
+      val aAccessor     = lookAtMe.reflectMethod(member.head.asMethod)
       val thisShouldBeA = aAccessor.apply()
       println(thisShouldBeA)
     } catch {

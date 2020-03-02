@@ -19,9 +19,8 @@ class IntegerTestOnJDK8 {
   val MinValue: Int = Int.MinValue
 
   @Test def should_parse_uInt_strings(): Unit = {
-    def test(s: String, v: Int, radix: Int = 10): Unit = {
+    def test(s: String, v: Int, radix: Int = 10): Unit =
       assertEquals(v, Integer.parseUnsignedInt(s, radix))
-    }
 
     test("0", 0)
     test("5", 5)
@@ -39,7 +38,9 @@ class IntegerTestOnJDK8 {
   @Test def should_reject_invalid_uInt_strings_when_parsing(): Unit = {
     def test(s: String, radix: Int = 10): Unit =
       expectThrows(
-          classOf[NumberFormatException], Integer.parseUnsignedInt(s, radix))
+        classOf[NumberFormatException],
+        Integer.parseUnsignedInt(s, radix)
+      )
 
     test("abc")
     test("5a")
@@ -53,9 +54,8 @@ class IntegerTestOnJDK8 {
   }
 
   @Test def should_parse_strings_in_base_16(): Unit = {
-    def test(s: String, v: Int): Unit = {
+    def test(s: String, v: Int): Unit =
       assertEquals(v, Integer.parseUnsignedInt(s, 16))
-    }
 
     test("0", 0x0)
     test("5", 0x5)
@@ -128,8 +128,10 @@ class IntegerTestOnJDK8 {
   @Test def should_provide_toUnsignedString_with_radix(): Unit = {
     assertEquals("17777777777", Integer.toUnsignedString(2147483647, 8))
     assertEquals("7fffffff", Integer.toUnsignedString(2147483647, 16))
-    assertEquals("1111111111111111111111111111111",
-                 Integer.toUnsignedString(2147483647, 2))
+    assertEquals(
+      "1111111111111111111111111111111",
+      Integer.toUnsignedString(2147483647, 2)
+    )
     assertEquals("2147483647", Integer.toUnsignedString(2147483647, 10))
     assertEquals("ffffffff", Integer.toUnsignedString(0xFFFFFFFF, 16))
     assertEquals("4294967295", Integer.toUnsignedString(0xFFFFFFFF, 10))

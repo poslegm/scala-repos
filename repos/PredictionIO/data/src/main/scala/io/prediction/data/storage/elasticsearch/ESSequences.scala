@@ -25,9 +25,9 @@ import org.json4s.native.JsonMethods._
 class ESSequences(client: Client, config: StorageClientConfig, index: String)
     extends Logging {
   implicit val formats = DefaultFormats
-  private val estype = "sequences"
+  private val estype   = "sequences"
 
-  val indices = client.admin.indices
+  val indices            = client.admin.indices
   val indexExistResponse = indices.prepareExists(index).get
   if (!indexExistResponse.isExists) {
     // val settingsJson =
@@ -39,8 +39,8 @@ class ESSequences(client: Client, config: StorageClientConfig, index: String)
     indices.prepareTypesExists(index).setTypes(estype).get
   if (!typeExistResponse.isExists) {
     val mappingJson =
-      (estype -> ("_source" -> ("enabled" -> 0)) ~ ("_all" -> ("enabled" -> 0)) ~
-          ("_type" -> ("index" -> "no")) ~ ("enabled" -> 0))
+      (estype    -> ("_source" -> ("enabled"          -> 0)) ~ ("_all" -> ("enabled" -> 0)) ~
+        ("_type" -> ("index"   -> "no")) ~ ("enabled" -> 0))
     indices
       .preparePutMapping(index)
       .setType(estype)
@@ -48,7 +48,7 @@ class ESSequences(client: Client, config: StorageClientConfig, index: String)
       .get
   }
 
-  def genNext(name: String): Int = {
+  def genNext(name: String): Int =
     try {
       val response = client
         .prepareIndex(index, estype, name)
@@ -60,5 +60,4 @@ class ESSequences(client: Client, config: StorageClientConfig, index: String)
         error(e.getMessage)
         0
     }
-  }
 }

@@ -17,9 +17,11 @@ object Test extends App {
     new Implicit1[T](b)
   // implicit2, with two alternatives
   implicit def implicit2alt1[T <: Intermediate[_ <: String, _]](
-      implicit c: Implicit3[T]) = new Implicit2[T](c)
+      implicit c: Implicit3[T]
+  ) = new Implicit2[T](c)
   implicit def implicit2alt2[T <: Intermediate[_ <: Double, _]](
-      implicit c: Implicit3[T]) = new Implicit2[T](c)
+      implicit c: Implicit3[T]
+  ) = new Implicit2[T](c)
   // implicit3, with two alternatives
   implicit def implicit3alt1[T <: Intermediate[_, _ <: Int]] =
     new Implicit3[T]()

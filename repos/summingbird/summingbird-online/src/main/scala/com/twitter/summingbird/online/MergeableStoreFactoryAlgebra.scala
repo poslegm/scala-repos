@@ -33,14 +33,11 @@ class WrappedTSInMergeable[K, V](self: Mergeable[K, V])
   override def close(time: Time) = self.close(time)
 
   override def multiMerge[K1 <: K](
-      kvs: Map[K1, (Timestamp, V)]): Map[K1, Future[Option[(Timestamp, V)]]] =
+      kvs: Map[K1, (Timestamp, V)]
+  ): Map[K1, Future[Option[(Timestamp, V)]]] =
     self.multiMerge(kvs.mapValues(_._2)).map {
       case (k, futOpt) =>
-        (k, futOpt.map { opt =>
-          opt.map { v =>
-            (kvs(k)._1, v)
-          }
-        })
+        (k, futOpt.map(opt => opt.map(v => (kvs(k)._1, v))))
     }
 }
 
@@ -54,12 +51,16 @@ object MergeableStoreFactoryAlgebra {
       The merge operation here takes the inbound value of (Timestamp, V), performs the inner merge from the store.
       Then looks back up the timestamp handed from the stream and outputs with that.
    */
-  def wrapOnlineFactory[K, V](supplier: MergeableStoreFactory[K, V])
-    : MergeableStoreFactory[K, (Timestamp, V)] = {
-    val mergeable: () => Mergeable[K, (Timestamp, V)] = () =>
-      { new WrappedTSInMergeable(supplier.mergeableStore()) }
+  def wrapOnlineFactory[K, V](
+      supplier: MergeableStoreFactory[K, V]
+  ): MergeableStoreFactory[K, (Timestamp, V)] = {
+    val mergeable: () => Mergeable[K, (Timestamp, V)] = () => {
+      new WrappedTSInMergeable(supplier.mergeableStore())
+    }
 
     MergeableStoreFactory[K, (Timestamp, V)](
-        mergeable, supplier.mergeableBatcher)
+      mergeable,
+      supplier.mergeableBatcher
+    )
   }
 }

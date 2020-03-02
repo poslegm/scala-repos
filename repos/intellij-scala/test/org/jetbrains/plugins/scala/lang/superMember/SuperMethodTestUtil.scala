@@ -15,12 +15,12 @@ import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.ScMember
   */
 object SuperMethodTestUtil {
   def transform(myFile: PsiFile, offset: Int): String = {
-    var resa = ""
-    val el = myFile.findElementAt(offset)
+    var resa   = ""
+    val el     = myFile.findElementAt(offset)
     val member = PsiTreeUtil.getParentOfType(el, classOf[ScMember], false)
     member match {
       case method: ScFunction =>
-        val signs = method.superSignaturesIncludingSelfType
+        val signs              = method.superSignaturesIncludingSelfType
         val res: StringBuilder = new StringBuilder("")
         for (sign <- signs) {
           val s = ScalaPsiUtil.nameContext(sign.namedElement) match {
@@ -32,8 +32,9 @@ object SuperMethodTestUtil {
           }
           res.append(s + sign.namedElement.name + "\n")
         }
-        resa = if (res.toString == "") ""
-        else res.substring(0, res.length - 1).toString
+        resa =
+          if (res.toString == "") ""
+          else res.substring(0, res.length - 1).toString
       case _ => resa = "Not implemented test"
     }
     resa

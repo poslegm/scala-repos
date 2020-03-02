@@ -10,12 +10,14 @@ import org.jetbrains.plugins.scala.statistics.CacheStatistics
   * Date: 11/19/12
   */
 @State(
-    name = "TypeAwareHighlightingApplicationState",
-    storages = Array(new Storage("scala_config.xml"))
+  name = "TypeAwareHighlightingApplicationState",
+  storages = Array(new Storage("scala_config.xml"))
 )
 class TypeAwareHighlightingApplicationState
-    extends ApplicationComponent with PersistentStateComponent[
-        TypeAwareHighlightingApplicationState.TypeAwareHighlightingApplicationSettings] {
+    extends ApplicationComponent
+    with PersistentStateComponent[
+      TypeAwareHighlightingApplicationState.TypeAwareHighlightingApplicationSettings
+    ] {
   import org.jetbrains.plugins.scala.components.TypeAwareHighlightingApplicationState.TypeAwareHighlightingApplicationSettings
   private var myState = new TypeAwareHighlightingApplicationSettings
 
@@ -34,9 +36,8 @@ class TypeAwareHighlightingApplicationState
 
   def initComponent() {}
 
-  def disposeComponent(): Unit = {
+  def disposeComponent(): Unit =
     CacheStatistics.printStats()
-  }
 }
 
 object TypeAwareHighlightingApplicationState {
@@ -49,5 +50,6 @@ object TypeAwareHighlightingApplicationState {
 
   def getInstance =
     ApplicationManager.getApplication getComponent classOf[
-        TypeAwareHighlightingApplicationState]
+      TypeAwareHighlightingApplicationState
+    ]
 }

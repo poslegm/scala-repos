@@ -9,7 +9,7 @@ import scala.util.{Failure, Success}
 object TryTest extends SpecLite {
 
   // these probably aren't a great idea, but they are just for tests
-  implicit val showThrowable: Show[Throwable] = Show.showA
+  implicit val showThrowable: Show[Throwable]   = Show.showA
   implicit val equalThrowable: Equal[Throwable] = Equal.equalA
 
   "toDisjunction Failure" ! forAll { t: Throwable =>

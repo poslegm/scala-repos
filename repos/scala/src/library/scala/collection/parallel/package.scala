@@ -20,9 +20,9 @@ import scala.language.implicitConversions
   */
 package object parallel {
   /* constants */
-  val MIN_FOR_COPY = 512
-  val CHECK_RATE = 512
-  val SQRT2 = math.sqrt(2)
+  val MIN_FOR_COPY        = 512
+  val CHECK_RATE          = 512
+  val SQRT2               = math.sqrt(2)
   val availableProcessors = java.lang.Runtime.getRuntime.availableProcessors
 
   /* functions */
@@ -40,14 +40,15 @@ package object parallel {
   def setTaskSupport[Coll](c: Coll, t: TaskSupport): Coll = {
     c match {
       case pc: ParIterableLike[_, _, _] => pc.tasksupport = t
-      case _ => // do nothing
+      case _                            => // do nothing
     }
     c
   }
 
   /** Adds toParArray method to collection classes. */
   implicit class CollectionsHaveToParArray[C, T](c: C)(
-      implicit asGto: C => scala.collection.GenTraversableOnce[T]) {
+      implicit asGto: C => scala.collection.GenTraversableOnce[T]
+  ) {
     def toParArray = {
       val t = asGto(c)
       if (t.isInstanceOf[ParArray[_]]) t.asInstanceOf[ParArray[T]]
@@ -65,28 +66,28 @@ package parallel {
 
   /** Implicit conversions used in the implementation of parallel collections. */
   private[collection] object ParallelCollectionImplicits {
-    implicit def factory2ops[From, Elem, To](
-        bf: CanBuildFrom[From, Elem, To]) = new FactoryOps[From, Elem, To] {
-      def isParallel = bf.isInstanceOf[Parallel]
-      def asParallel = bf.asInstanceOf[CanCombineFrom[From, Elem, To]]
-      def ifParallel[R](isbody: CanCombineFrom[From, Elem, To] => R) =
-        new Otherwise[R] {
-          def otherwise(notbody: => R) =
-            if (isParallel) isbody(asParallel) else notbody
-        }
-    }
-    implicit def traversable2ops[T](
-        t: scala.collection.GenTraversableOnce[T]) = new TraversableOps[T] {
-      def isParallel = t.isInstanceOf[Parallel]
-      def isParIterable = t.isInstanceOf[ParIterable[_]]
-      def asParIterable = t.asInstanceOf[ParIterable[T]]
-      def isParSeq = t.isInstanceOf[ParSeq[_]]
-      def asParSeq = t.asInstanceOf[ParSeq[T]]
-      def ifParSeq[R](isbody: ParSeq[T] => R) = new Otherwise[R] {
-        def otherwise(notbody: => R) =
-          if (isParallel) isbody(asParSeq) else notbody
+    implicit def factory2ops[From, Elem, To](bf: CanBuildFrom[From, Elem, To]) =
+      new FactoryOps[From, Elem, To] {
+        def isParallel = bf.isInstanceOf[Parallel]
+        def asParallel = bf.asInstanceOf[CanCombineFrom[From, Elem, To]]
+        def ifParallel[R](isbody: CanCombineFrom[From, Elem, To] => R) =
+          new Otherwise[R] {
+            def otherwise(notbody: => R) =
+              if (isParallel) isbody(asParallel) else notbody
+          }
       }
-    }
+    implicit def traversable2ops[T](t: scala.collection.GenTraversableOnce[T]) =
+      new TraversableOps[T] {
+        def isParallel    = t.isInstanceOf[Parallel]
+        def isParIterable = t.isInstanceOf[ParIterable[_]]
+        def asParIterable = t.asInstanceOf[ParIterable[T]]
+        def isParSeq      = t.isInstanceOf[ParSeq[_]]
+        def asParSeq      = t.asInstanceOf[ParSeq[T]]
+        def ifParSeq[R](isbody: ParSeq[T] => R) = new Otherwise[R] {
+          def otherwise(notbody: => R) =
+            if (isParallel) isbody(asParSeq) else notbody
+        }
+      }
     implicit def throwable2ops(self: Throwable) = new ThrowableOps {
       def alongWith(that: Throwable) = (self, that) match {
         case (self: CompositeThrowable, that: CompositeThrowable) =>
@@ -107,8 +108,7 @@ package parallel {
 
     def isParallel: Boolean
     def asParallel: CanCombineFrom[From, Elem, To]
-    def ifParallel[R](
-        isbody: CanCombineFrom[From, Elem, To] => R): Otherwise[R]
+    def ifParallel[R](isbody: CanCombineFrom[From, Elem, To] => R): Otherwise[R]
   }
 
   trait TraversableOps[T] {
@@ -150,12 +150,13 @@ package parallel {
   @deprecated("This class will be removed.", "2.11.0")
   final case class CompositeThrowable(throwables: Set[Throwable])
       extends Exception(
-          "Multiple exceptions thrown during a parallel computation: " +
+        "Multiple exceptions thrown during a parallel computation: " +
           throwables
             .map(t =>
-                  t + "\n" + t.getStackTrace.take(10).++("...").mkString("\n"))
+              t + "\n" + t.getStackTrace.take(10).++("...").mkString("\n")
+            )
             .mkString("\n\n")
-        )
+      )
 
   /** A helper iterator for iterating very small array buffers.
     *  Automatically forwards the signal delegate when splitting.
@@ -164,8 +165,8 @@ package parallel {
       private val buffer: scala.collection.mutable.ArrayBuffer[T],
       private var index: Int,
       private val until: Int,
-      _sigdel: scala.collection.generic.Signalling)
-      extends IterableSplitter[T] {
+      _sigdel: scala.collection.generic.Signalling
+  ) extends IterableSplitter[T] {
     signalDelegate = _sigdel
     def hasNext = index < until
     def next = {
@@ -174,16 +175,16 @@ package parallel {
       r
     }
     def remaining = until - index
-    def dup = new BufferSplitter(buffer, index, until, signalDelegate)
+    def dup       = new BufferSplitter(buffer, index, until, signalDelegate)
     def split: Seq[IterableSplitter[T]] =
       if (remaining > 1) {
         val divsz = (until - index) / 2
         Seq(
-            new BufferSplitter(buffer, index, index + divsz, signalDelegate),
-            new BufferSplitter(buffer, index + divsz, until, signalDelegate)
+          new BufferSplitter(buffer, index, index + divsz, signalDelegate),
+          new BufferSplitter(buffer, index + divsz, until, signalDelegate)
         )
       } else Seq(this)
-    private[parallel] override def debugInformation = {
+    private[parallel] override def debugInformation =
       buildString { append =>
         append("---------------")
         append("Buffer iterator")
@@ -192,7 +193,6 @@ package parallel {
         append("until: " + until)
         append("---------------")
       }
-    }
   }
 
   /** A helper combiner which contains an array of buckets. Buckets themselves
@@ -220,8 +220,9 @@ package parallel {
     *  the receiver (which will be the return value).
     */
   private[parallel] abstract class BucketCombiner[
-      -Elem, +To, Buck, +CombinerType <: BucketCombiner[
-          Elem, To, Buck, CombinerType]](private val bucketnumber: Int)
+      -Elem, +To, Buck,
+      +CombinerType <: BucketCombiner[Elem, To, Buck, CombinerType]
+  ](private val bucketnumber: Int)
       extends Combiner[Elem, To] {
     //self: EnvironmentPassingCombiner[Elem, To] =>
     protected var buckets: Array[UnrolledBuffer[Buck]] @uncheckedVariance =
@@ -240,7 +241,8 @@ package parallel {
     def afterCombine[N <: Elem, NewTo >: To](other: Combiner[N, NewTo]) {}
 
     def combine[N <: Elem, NewTo >: To](
-        other: Combiner[N, NewTo]): Combiner[N, NewTo] = {
+        other: Combiner[N, NewTo]
+    ): Combiner[N, NewTo] =
       if (this eq other) this
       else
         other match {
@@ -263,6 +265,5 @@ package parallel {
           case _ =>
             sys.error("Unexpected combiner type.")
         }
-    }
   }
 }

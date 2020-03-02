@@ -41,17 +41,17 @@ import scalafx.scene.layout.StackPane
   */
 class EnsembleSepiaTone extends EnsembleExample {
 
-  def getContent = {
+  def getContent =
     new StackPane {
       padding = Insets(20)
       children = new ImageView {
         image = new Image(
-            this.getClass
-              .getResourceAsStream("/scalafx/ensemble/images/boat.jpg"))
+          this.getClass
+            .getResourceAsStream("/scalafx/ensemble/images/boat.jpg")
+        )
         effect = new SepiaTone() {
           level = 0.9d
         }
       }
     }
-  }
 }

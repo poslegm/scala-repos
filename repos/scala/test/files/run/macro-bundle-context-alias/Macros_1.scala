@@ -3,9 +3,9 @@ import scala.reflect.macros.blackbox.{Context => BlackboxContext}
 import scala.reflect.macros.whitebox.{Context => WhiteboxContext}
 
 object Module {
-  type BBC = BlackboxContext
+  type BBC  = BlackboxContext
   type RBBC = BBC { type PrefixType = C }
-  type WBC = WhiteboxContext
+  type WBC  = WhiteboxContext
   type RWBC = WBC { type PrefixType = C }
 
   class BlackboxBundle(val c: BBC) {

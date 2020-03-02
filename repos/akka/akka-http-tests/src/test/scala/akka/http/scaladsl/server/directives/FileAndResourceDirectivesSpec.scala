@@ -21,14 +21,16 @@ import akka.http.impl.util._
 import akka.http.scaladsl.TestUtils.writeAllText
 
 class FileAndResourceDirectivesSpec
-    extends RoutingSpec with Inspectors with Inside {
+    extends RoutingSpec
+    with Inspectors
+    with Inside {
 
   override def testConfigSource =
     "akka.http.routing.range-coalescing-threshold = 1"
 
   "getFromFile" should {
     "reject non-GET requests" in {
-      Put() ~> getFromFile("some") ~> check { handled shouldEqual false }
+      Put() ~> getFromFile("some") ~> check(handled shouldEqual false)
     }
     "reject requests to non-existing files" in {
       Get() ~> getFromFile("nonExistentFile") ~> check {
@@ -81,7 +83,9 @@ class FileAndResourceDirectivesSpec
         writeAllText("ABCDEFGHIJKLMNOPQRSTUVWXYZ", file)
         val rangeHeader = Range(ByteRange(1, 10), ByteRange.suffix(10))
         Get() ~> addHeader(rangeHeader) ~> getFromFile(
-            file, ContentTypes.`text/plain(UTF-8)`) ~> check {
+          file,
+          ContentTypes.`text/plain(UTF-8)`
+        ) ~> check {
           status shouldEqual StatusCodes.PartialContent
           header[`Content-Range`] shouldEqual None
           mediaType.withParams(Map.empty) shouldEqual `multipart/byteranges`
@@ -91,7 +95,9 @@ class FileAndResourceDirectivesSpec
             .awaitResult(3.seconds)
             .strictParts
           parts.map(_.entity.data.utf8String) should contain theSameElementsAs List(
-              "BCDEFGHIJK", "QRSTUVWXYZ")
+            "BCDEFGHIJK",
+            "QRSTUVWXYZ"
+          )
         }
       } finally file.delete
     }
@@ -113,7 +119,8 @@ class FileAndResourceDirectivesSpec
         Get() ~> getFromFile(file) ~> check {
           mediaType shouldEqual `image/svg+xml`
           header[`Content-Encoding`] shouldEqual Some(
-              `Content-Encoding`(HttpEncodings.gzip))
+            `Content-Encoding`(HttpEncodings.gzip)
+          )
           responseAs[String] shouldEqual "123"
         }
       } finally file.delete
@@ -126,7 +133,8 @@ class FileAndResourceDirectivesSpec
         Get() ~> getFromFile(file) ~> check {
           mediaType shouldEqual `application/javascript`
           header[`Content-Encoding`] shouldEqual Some(
-              `Content-Encoding`(HttpEncodings.gzip))
+            `Content-Encoding`(HttpEncodings.gzip)
+          )
           responseAs[String] shouldEqual "456"
         }
       } finally file.delete
@@ -135,7 +143,7 @@ class FileAndResourceDirectivesSpec
 
   "getFromResource" should {
     "reject non-GET requests" in {
-      Put() ~> getFromResource("some") ~> check { handled shouldEqual false }
+      Put() ~> getFromResource("some") ~> check(handled shouldEqual false)
     }
     "reject requests to non-existing resources" in {
       Get() ~> getFromResource("nonExistingResource") ~> check {
@@ -280,7 +288,9 @@ class FileAndResourceDirectivesSpec
     new File(base, "subDirectory/emptySub").mkdir()
     def eraseDateTime(s: String) =
       s.replaceAll(
-          """\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d""", "xxxx-xx-xx xx:xx:xx")
+        """\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d""",
+        "xxxx-xx-xx xx:xx:xx"
+      )
     implicit val settings =
       RoutingSettings.default.withRenderVanityFooter(false)
 
@@ -387,7 +397,8 @@ class FileAndResourceDirectivesSpec
     }
     "properly render a simple directory with a path prefix" in {
       Get("/files/") ~> pathPrefix("files")(
-          listDirectoryContents(base + "/someDir")) ~> check {
+        listDirectoryContents(base + "/someDir")
+      ) ~> check {
         eraseDateTime(responseAs[String]) shouldEqual prep {
           """<html>
             |<head><title>Index of /files/</title></head>
@@ -408,7 +419,8 @@ class FileAndResourceDirectivesSpec
     }
     "properly render a sub directory with a path prefix" in {
       Get("/files/sub/") ~> pathPrefix("files")(
-          listDirectoryContents(base + "/someDir")) ~> check {
+        listDirectoryContents(base + "/someDir")
+      ) ~> check {
         eraseDateTime(responseAs[String]) shouldEqual prep {
           """<html>
             |<head><title>Index of /files/sub/</title></head>
@@ -428,7 +440,8 @@ class FileAndResourceDirectivesSpec
     }
     "properly render an empty top-level directory with a path prefix" in {
       Get("/files/") ~> pathPrefix("files")(
-          listDirectoryContents(base + "/subDirectory/emptySub")) ~> check {
+        listDirectoryContents(base + "/subDirectory/emptySub")
+      ) ~> check {
         eraseDateTime(responseAs[String]) shouldEqual prep {
           """<html>
             |<head><title>Index of /files/</title></head>
@@ -455,8 +468,7 @@ class FileAndResourceDirectivesSpec
   def prep(s: String) = s.stripMarginWithNewline("\n")
 
   def evaluateTo[T](t: T, atMost: Duration = 100.millis)(
-      implicit ec: ExecutionContext): Matcher[Future[T]] =
-    be(t).compose[Future[T]] { fut ⇒
-      fut.awaitResult(atMost)
-    }
+      implicit ec: ExecutionContext
+  ): Matcher[Future[T]] =
+    be(t).compose[Future[T]](fut ⇒ fut.awaitResult(atMost))
 }

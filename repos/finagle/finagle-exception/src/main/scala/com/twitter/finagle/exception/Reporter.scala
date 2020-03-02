@@ -3,8 +3,17 @@ package com.twitter.finagle.exception
 import com.twitter.app.GlobalFlag
 import com.twitter.conversions.time._
 import com.twitter.finagle.builder.ClientBuilder
-import com.twitter.finagle.exception.thriftscala.{LogEntry, ResultCode, Scribe, Scribe$FinagleClient}
-import com.twitter.finagle.stats.{ClientStatsReceiver, NullStatsReceiver, StatsReceiver}
+import com.twitter.finagle.exception.thriftscala.{
+  LogEntry,
+  ResultCode,
+  Scribe,
+  Scribe$FinagleClient
+}
+import com.twitter.finagle.stats.{
+  ClientStatsReceiver,
+  NullStatsReceiver,
+  StatsReceiver
+}
 import com.twitter.finagle.thrift.{Protocols, ThriftClientFramedCodec}
 import com.twitter.finagle.tracing.Trace
 import com.twitter.finagle.util.ReporterFactory
@@ -25,7 +34,7 @@ trait MonitorFactory extends ServerMonitorFactory with ClientMonitorFactory {
 }
 
 object NullMonitorFactory extends MonitorFactory {
-  def clientMonitor(serviceName: String) = NullMonitor
+  def clientMonitor(serviceName: String)                         = NullMonitor
   def serverMonitor(serviceName: String, address: SocketAddress) = NullMonitor
 }
 
@@ -44,9 +53,11 @@ object Reporter {
     * receive method is called does not report any endpoints.
     */
   def defaultReporter(
-      scribeHost: String, scribePort: Int, serviceName: String): Reporter = {
+      scribeHost: String,
+      scribePort: Int,
+      serviceName: String
+  ): Reporter =
     new Reporter(makeClient(scribeHost, scribePort), serviceName)
-  }
 
   /**
     * Create a default client reporter.
@@ -57,9 +68,8 @@ object Reporter {
     * It returns a String => Reporter, which conforms to ClientBuilder's monitor option.
     */
   @deprecated("Use reporterFactory instead")
-  def clientReporter(scribeHost: String, scribePort: Int): String => Monitor = {
+  def clientReporter(scribeHost: String, scribePort: Int): String => Monitor =
     monitorFactory(scribeHost, scribePort).clientMonitor
-  }
 
   /**
     * Create a default source (i.e. server) reporter.
@@ -71,10 +81,11 @@ object Reporter {
     * monitor option.
     */
   @deprecated("Use reporterFactory instead")
-  def sourceReporter(scribeHost: String,
-                     scribePort: Int): (String, SocketAddress) => Monitor = {
+  def sourceReporter(
+      scribeHost: String,
+      scribePort: Int
+  ): (String, SocketAddress) => Monitor =
     monitorFactory(scribeHost, scribePort).serverMonitor
-  }
 
   /**
     * Create a reporter factory that can produce either a client or server reporter based
@@ -86,8 +97,7 @@ object Reporter {
 
       def clientMonitor(serviceName: String): Reporter =
         new Reporter(scribeClient, serviceName).withClient()
-      def serverMonitor(
-          serviceName: String, address: SocketAddress): Reporter =
+      def serverMonitor(serviceName: String, address: SocketAddress): Reporter =
         new Reporter(scribeClient, serviceName).withSource(address)
     }
 
@@ -120,13 +130,15 @@ object Reporter {
   * which case there should be no network failure. If there is failure in this case, something else
   * is very wrong!
   */
-sealed case class Reporter(client: Scribe[Future],
-                           serviceName: String,
-                           statsReceiver: StatsReceiver = NullStatsReceiver,
-                           private val sourceAddress: Option[String] = Some(
-                                 InetAddress.getLoopbackAddress.getHostName),
-                           private val clientAddress: Option[String] = None)
-    extends Monitor {
+sealed case class Reporter(
+    client: Scribe[Future],
+    serviceName: String,
+    statsReceiver: StatsReceiver = NullStatsReceiver,
+    private val sourceAddress: Option[String] = Some(
+      InetAddress.getLoopbackAddress.getHostName
+    ),
+    private val clientAddress: Option[String] = None
+) extends Monitor {
 
   private[this] val okCounter = statsReceiver.counter("report_exception_ok")
   private[this] val tryLaterCounter =
@@ -138,7 +150,8 @@ sealed case class Reporter(client: Scribe[Future],
     * The endpoint string is the ip address of the host (e.g. "127.0.0.1").
     */
   def withClient(
-      address: InetAddress = InetAddress.getLoopbackAddress): Reporter =
+      address: InetAddress = InetAddress.getLoopbackAddress
+  ): Reporter =
     copy(clientAddress = Some(address.getHostAddress))
 
   /**
@@ -161,18 +174,13 @@ sealed case class Reporter(client: Scribe[Future],
     * endpoint).
     */
   def createEntry(e: Throwable): LogEntry = {
-    var se = new ServiceException(
-        serviceName, e, Time.now, Trace.id.traceId.toLong)
+    var se =
+      new ServiceException(serviceName, e, Time.now, Trace.id.traceId.toLong)
 
-    sourceAddress foreach { sa =>
-      se = se withSource sa
-    }
-    clientAddress foreach { ca =>
-      se = se withClient ca
-    }
+    sourceAddress foreach { sa => se = se withSource sa }
+    clientAddress foreach { ca => se = se withClient ca }
 
-    LogEntry(
-        Reporter.scribeCategory, GZIPStringEncoder.encodeString(se.toJson))
+    LogEntry(Reporter.scribeCategory, GZIPStringEncoder.encodeString(se.toJson))
   }
 
   /**
@@ -183,7 +191,7 @@ sealed case class Reporter(client: Scribe[Future],
     */
   def handle(t: Throwable): Boolean = {
     client.log(createEntry(t) :: Nil) onSuccess {
-      case ResultCode.Ok => okCounter.incr()
+      case ResultCode.Ok       => okCounter.incr()
       case ResultCode.TryLater => tryLaterCounter.incr()
     } onFailure {
       case e => statsReceiver.counter("report_exception_" + e.toString).incr()
@@ -195,8 +203,9 @@ sealed case class Reporter(client: Scribe[Future],
 
 object host
     extends GlobalFlag[InetSocketAddress](
-        new InetSocketAddress("localhost", 1463),
-        "Host to scribe exception messages")
+      new InetSocketAddress("localhost", 1463),
+      "Host to scribe exception messages"
+    )
 
 class ExceptionReporter extends ReporterFactory {
   private[this] val client =

@@ -20,12 +20,10 @@ import com.twitter.scalding._
 
 class HistogramJob(args: Args) extends Job(args) {
   try {
-    val hist = Tsv("input", 'n).groupAll { _.histogram('n -> 'hist) }
+    val hist = Tsv("input", 'n).groupAll(_.histogram('n -> 'hist))
 
     hist
-      .flatMapTo('hist -> ('bin, 'cdf)) { h: Histogram =>
-        h.cdf
-      }
+      .flatMapTo('hist -> ('bin, 'cdf)) { h: Histogram => h.cdf }
       .write(Tsv("cdf-output"))
 
     hist
@@ -40,10 +38,10 @@ class HistogramJob(args: Args) extends Job(args) {
 
 class HistogramJobTest extends WordSpec with Matchers {
   import Dsl._
-  val values = List(1.0, 2.5, 1.5, 3.0, 3.0, 3.0, 4.2, 2.0, 8.0, 1.0)
+  val values    = List(1.0, 2.5, 1.5, 3.0, 3.0, 3.0, 4.2, 2.0, 8.0, 1.0)
   val inputData = values.map(Tuple1(_))
-  val cdfOutput = Set(
-      (1.0, 0.3), (2.0, 0.5), (3.0, 0.8), (4.0, 0.9), (8.0, 1.0))
+  val cdfOutput =
+    Set((1.0, 0.3), (2.0, 0.5), (3.0, 0.8), (4.0, 0.9), (8.0, 1.0))
   "A HistogramJob" should {
     JobTest(new HistogramJob(_))
       .source(Tsv("input", ('n)), inputData)

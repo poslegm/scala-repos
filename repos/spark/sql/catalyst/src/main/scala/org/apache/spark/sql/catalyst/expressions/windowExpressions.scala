@@ -18,9 +18,18 @@
 package org.apache.spark.sql.catalyst.expressions
 
 import org.apache.spark.sql.AnalysisException
-import org.apache.spark.sql.catalyst.analysis.{TypeCheckResult, UnresolvedException}
-import org.apache.spark.sql.catalyst.analysis.TypeCheckResult.{TypeCheckFailure, TypeCheckSuccess}
-import org.apache.spark.sql.catalyst.expressions.aggregate.{DeclarativeAggregate, NoOp}
+import org.apache.spark.sql.catalyst.analysis.{
+  TypeCheckResult,
+  UnresolvedException
+}
+import org.apache.spark.sql.catalyst.analysis.TypeCheckResult.{
+  TypeCheckFailure,
+  TypeCheckSuccess
+}
+import org.apache.spark.sql.catalyst.expressions.aggregate.{
+  DeclarativeAggregate,
+  NoOp
+}
 import org.apache.spark.sql.types._
 
 /**
@@ -36,30 +45,37 @@ sealed trait WindowSpec
   * @param orderSpec It defines the ordering of rows in a partition.
   * @param frameSpecification It defines the window frame in a partition.
   */
-case class WindowSpecDefinition(partitionSpec: Seq[Expression],
-                                orderSpec: Seq[SortOrder],
-                                frameSpecification: WindowFrame)
-    extends Expression with WindowSpec with Unevaluable {
+case class WindowSpecDefinition(
+    partitionSpec: Seq[Expression],
+    orderSpec: Seq[SortOrder],
+    frameSpecification: WindowFrame
+) extends Expression
+    with WindowSpec
+    with Unevaluable {
 
   def validate: Option[String] = frameSpecification match {
     case UnspecifiedFrame =>
       Some(
-          "Found a UnspecifiedFrame. It should be converted to a SpecifiedWindowFrame " +
-          "during analysis. Please file a bug report.")
+        "Found a UnspecifiedFrame. It should be converted to a SpecifiedWindowFrame " +
+          "during analysis. Please file a bug report."
+      )
     case frame: SpecifiedWindowFrame =>
       frame.validate.orElse {
-        def checkValueBasedBoundaryForRangeFrame(): Option[String] = {
+        def checkValueBasedBoundaryForRangeFrame(): Option[String] =
           if (orderSpec.length > 1) {
             // It is not allowed to have a value-based PRECEDING and FOLLOWING
             // as the boundary of a Range Window Frame.
-            Some("This Range Window Frame only accepts at most one ORDER BY expression.")
+            Some(
+              "This Range Window Frame only accepts at most one ORDER BY expression."
+            )
           } else if (orderSpec.nonEmpty &&
                      !orderSpec.head.dataType.isInstanceOf[NumericType]) {
-            Some("The data type of the expression in the ORDER BY clause should be a numeric type.")
+            Some(
+              "The data type of the expression in the ORDER BY clause should be a numeric type."
+            )
           } else {
             None
           }
-        }
 
         (frame.frameType, frame.frameStart, frame.frameEnd) match {
           case (RangeFrame, vp: ValuePreceding, _) =>
@@ -79,10 +95,10 @@ case class WindowSpecDefinition(partitionSpec: Seq[Expression],
 
   override lazy val resolved: Boolean =
     childrenResolved && checkInputDataTypes().isSuccess &&
-    frameSpecification.isInstanceOf[SpecifiedWindowFrame]
+      frameSpecification.isInstanceOf[SpecifiedWindowFrame]
 
-  override def nullable: Boolean = true
-  override def foldable: Boolean = false
+  override def nullable: Boolean  = true
+  override def foldable: Boolean  = false
   override def dataType: DataType = throw new UnsupportedOperationException
 
   override def sql: String = {
@@ -151,10 +167,10 @@ sealed trait FrameBoundary {
 object FrameBoundary {
   def apply(boundary: FrameBoundary): Option[Int] = unapply(boundary)
   def unapply(boundary: FrameBoundary): Option[Int] = boundary match {
-    case CurrentRow => Some(0)
+    case CurrentRow             => Some(0)
     case ValuePreceding(offset) => Some(-offset)
     case ValueFollowing(offset) => Some(offset)
-    case _ => None
+    case _                      => None
   }
 }
 
@@ -163,7 +179,7 @@ case object UnboundedPreceding extends FrameBoundary {
   def notFollows(other: FrameBoundary): Boolean = other match {
     case UnboundedPreceding => true
     case vp: ValuePreceding => true
-    case CurrentRow => true
+    case CurrentRow         => true
     case vf: ValueFollowing => true
     case UnboundedFollowing => true
   }
@@ -174,11 +190,11 @@ case object UnboundedPreceding extends FrameBoundary {
 /** <value> PRECEDING boundary. */
 case class ValuePreceding(value: Int) extends FrameBoundary {
   def notFollows(other: FrameBoundary): Boolean = other match {
-    case UnboundedPreceding => false
+    case UnboundedPreceding           => false
     case ValuePreceding(anotherValue) => value >= anotherValue
-    case CurrentRow => true
-    case vf: ValueFollowing => true
-    case UnboundedFollowing => true
+    case CurrentRow                   => true
+    case vf: ValueFollowing           => true
+    case UnboundedFollowing           => true
   }
 
   override def toString: String = s"$value PRECEDING"
@@ -189,7 +205,7 @@ case object CurrentRow extends FrameBoundary {
   def notFollows(other: FrameBoundary): Boolean = other match {
     case UnboundedPreceding => false
     case vp: ValuePreceding => false
-    case CurrentRow => true
+    case CurrentRow         => true
     case vf: ValueFollowing => true
     case UnboundedFollowing => true
   }
@@ -200,11 +216,11 @@ case object CurrentRow extends FrameBoundary {
 /** <value> FOLLOWING boundary. */
 case class ValueFollowing(value: Int) extends FrameBoundary {
   def notFollows(other: FrameBoundary): Boolean = other match {
-    case UnboundedPreceding => false
-    case vp: ValuePreceding => false
-    case CurrentRow => false
+    case UnboundedPreceding           => false
+    case vp: ValuePreceding           => false
+    case CurrentRow                   => false
     case ValueFollowing(anotherValue) => value <= anotherValue
-    case UnboundedFollowing => true
+    case UnboundedFollowing           => true
   }
 
   override def toString: String = s"$value FOLLOWING"
@@ -215,7 +231,7 @@ case object UnboundedFollowing extends FrameBoundary {
   def notFollows(other: FrameBoundary): Boolean = other match {
     case UnboundedPreceding => false
     case vp: ValuePreceding => false
-    case CurrentRow => false
+    case CurrentRow         => false
     case vf: ValueFollowing => false
     case UnboundedFollowing => true
   }
@@ -232,16 +248,18 @@ sealed trait WindowFrame
 case object UnspecifiedFrame extends WindowFrame
 
 /** A specified Window Frame. */
-case class SpecifiedWindowFrame(frameType: FrameType,
-                                frameStart: FrameBoundary,
-                                frameEnd: FrameBoundary)
-    extends WindowFrame {
+case class SpecifiedWindowFrame(
+    frameType: FrameType,
+    frameStart: FrameBoundary,
+    frameEnd: FrameBoundary
+) extends WindowFrame {
 
   /** If this WindowFrame is valid or not. */
   def validate: Option[String] = (frameType, frameStart, frameEnd) match {
     case (_, UnboundedFollowing, _) =>
       Some(
-          s"$UnboundedFollowing is not allowed as the start of a Window Frame.")
+        s"$UnboundedFollowing is not allowed as the start of a Window Frame."
+      )
     case (_, _, UnboundedPreceding) =>
       Some(s"$UnboundedPreceding is not allowed as the end of a Window Frame.")
     // case (RowFrame, start, end) => ??? RowFrame specific rule
@@ -252,13 +270,13 @@ case class SpecifiedWindowFrame(frameType: FrameType,
       } else {
         val reason =
           s"The end of this Window Frame $end is smaller than the start of " +
-          s"this Window Frame $start."
+            s"this Window Frame $start."
         Some(reason)
       }
   }
 
   override def toString: String = frameType match {
-    case RowFrame => s"ROWS BETWEEN $frameStart AND $frameEnd"
+    case RowFrame   => s"ROWS BETWEEN $frameStart AND $frameEnd"
     case RangeFrame => s"RANGE BETWEEN $frameStart AND $frameEnd"
   }
 }
@@ -271,8 +289,10 @@ object SpecifiedWindowFrame {
     * @param acceptWindowFrame If the window function accepts user-specified frame.
     * @return
     */
-  def defaultWindowFrame(hasOrderSpecification: Boolean,
-                         acceptWindowFrame: Boolean): SpecifiedWindowFrame = {
+  def defaultWindowFrame(
+      hasOrderSpecification: Boolean,
+      acceptWindowFrame: Boolean
+  ): SpecifiedWindowFrame =
     if (hasOrderSpecification && acceptWindowFrame) {
       // If order spec is defined and the window function supports user specified window frames,
       // the default frame is RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW.
@@ -282,12 +302,13 @@ object SpecifiedWindowFrame {
       // ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING.
       SpecifiedWindowFrame(RowFrame, UnboundedPreceding, UnboundedFollowing)
     }
-  }
 }
 
 case class UnresolvedWindowExpression(
-    child: Expression, windowSpec: WindowSpecReference)
-    extends UnaryExpression with Unevaluable {
+    child: Expression,
+    windowSpec: WindowSpecReference
+) extends UnaryExpression
+    with Unevaluable {
 
   override def dataType: DataType =
     throw new UnresolvedException(this, "dataType")
@@ -299,17 +320,19 @@ case class UnresolvedWindowExpression(
 }
 
 case class WindowExpression(
-    windowFunction: Expression, windowSpec: WindowSpecDefinition)
-    extends Expression with Unevaluable {
+    windowFunction: Expression,
+    windowSpec: WindowSpecDefinition
+) extends Expression
+    with Unevaluable {
 
   override def children: Seq[Expression] = windowFunction :: windowSpec :: Nil
 
   override def dataType: DataType = windowFunction.dataType
-  override def foldable: Boolean = windowFunction.foldable
-  override def nullable: Boolean = windowFunction.nullable
+  override def foldable: Boolean  = windowFunction.foldable
+  override def nullable: Boolean  = windowFunction.nullable
 
   override def toString: String = s"$windowFunction $windowSpec"
-  override def sql: String = windowFunction.sql + " OVER " + windowSpec.sql
+  override def sql: String      = windowFunction.sql + " OVER " + windowSpec.sql
 }
 
 /**
@@ -327,7 +350,9 @@ trait WindowFunction extends Expression {
   * offset -2, will get the value of x 2 rows back in the partition.
   */
 abstract class OffsetWindowFunction
-    extends Expression with WindowFunction with Unevaluable
+    extends Expression
+    with WindowFunction
+    with Unevaluable
     with ImplicitCastInputTypes {
 
   /**
@@ -372,10 +397,11 @@ abstract class OffsetWindowFunction
       case o: Int => o
       case x =>
         throw new AnalysisException(
-            s"Offset expression must be a foldable integer expression: $x")
+          s"Offset expression must be a foldable integer expression: $x"
+        )
     }
     val boundary = direction match {
-      case Ascending => ValueFollowing(offsetValue)
+      case Ascending  => ValueFollowing(offsetValue)
       case Descending => ValuePreceding(offsetValue)
     }
     SpecifiedWindowFrame(RowFrame, boundary, boundary)
@@ -402,8 +428,10 @@ abstract class OffsetWindowFunction
   * @param default to use when the input value is null or when the offset is larger than the window.
   */
 @ExpressionDescription(
-    usage = """_FUNC_(input, offset, default) - LEAD returns the value of 'x' at 'offset' rows
-     after the current row in the window""")
+  usage =
+    """_FUNC_(input, offset, default) - LEAD returns the value of 'x' at 'offset' rows
+     after the current row in the window"""
+)
 case class Lead(input: Expression, offset: Expression, default: Expression)
     extends OffsetWindowFunction {
 
@@ -430,8 +458,10 @@ case class Lead(input: Expression, offset: Expression, default: Expression)
   * @param default to use when the input value is null or when the offset is smaller than the window.
   */
 @ExpressionDescription(
-    usage = """_FUNC_(input, offset, default) - LAG returns the value of 'x' at 'offset' rows
-     before the current row in the window""")
+  usage =
+    """_FUNC_(input, offset, default) - LAG returns the value of 'x' at 'offset' rows
+     before the current row in the window"""
+)
 case class Lag(input: Expression, offset: Expression, default: Expression)
     extends OffsetWindowFunction {
 
@@ -446,26 +476,28 @@ case class Lag(input: Expression, offset: Expression, default: Expression)
 }
 
 abstract class AggregateWindowFunction
-    extends DeclarativeAggregate with WindowFunction { self: Product =>
-  override val frame = SpecifiedWindowFrame(
-      RowFrame, UnboundedPreceding, CurrentRow)
-  override def dataType: DataType = IntegerType
-  override def nullable: Boolean = true
+    extends DeclarativeAggregate
+    with WindowFunction { self: Product =>
+  override val frame =
+    SpecifiedWindowFrame(RowFrame, UnboundedPreceding, CurrentRow)
+  override def dataType: DataType       = IntegerType
+  override def nullable: Boolean        = true
   override def supportsPartial: Boolean = false
   override lazy val mergeExpressions = throw new UnsupportedOperationException(
-      "Window Functions do not support merging.")
+    "Window Functions do not support merging."
+  )
 }
 
 abstract class RowNumberLike extends AggregateWindowFunction {
-  override def children: Seq[Expression] = Nil
+  override def children: Seq[Expression]         = Nil
   override def inputTypes: Seq[AbstractDataType] = Nil
-  protected val zero = Literal(0)
-  protected val one = Literal(1)
+  protected val zero                             = Literal(0)
+  protected val one                              = Literal(1)
   protected val rowNumber =
     AttributeReference("rowNumber", IntegerType, nullable = false)()
   override val aggBufferAttributes: Seq[AttributeReference] = rowNumber :: Nil
-  override val initialValues: Seq[Expression] = zero :: Nil
-  override val updateExpressions: Seq[Expression] = Add(rowNumber, one) :: Nil
+  override val initialValues: Seq[Expression]               = zero :: Nil
+  override val updateExpressions: Seq[Expression]           = Add(rowNumber, one) :: Nil
 }
 
 /**
@@ -477,7 +509,10 @@ trait SizeBasedWindowFunction extends AggregateWindowFunction {
 
 object SizeBasedWindowFunction {
   val n = AttributeReference(
-      "window__partition__size", IntegerType, nullable = false)()
+    "window__partition__size",
+    IntegerType,
+    nullable = false
+  )()
 }
 
 /**
@@ -487,12 +522,14 @@ object SizeBasedWindowFunction {
   * This documentation has been based upon similar documentation for the Hive and Presto projects.
   */
 @ExpressionDescription(
-    usage = """_FUNC_() - The ROW_NUMBER() function assigns a unique, sequential number to
+  usage =
+    """_FUNC_() - The ROW_NUMBER() function assigns a unique, sequential number to
      each row, starting with one, according to the ordering of rows within
-     the window partition.""")
+     the window partition."""
+)
 case class RowNumber() extends RowNumberLike {
   override val evaluateExpression = rowNumber
-  override def sql: String = "ROW_NUMBER()"
+  override def sql: String        = "ROW_NUMBER()"
 }
 
 /**
@@ -504,16 +541,18 @@ case class RowNumber() extends RowNumberLike {
   * This documentation has been based upon similar documentation for the Hive and Presto projects.
   */
 @ExpressionDescription(
-    usage = """_FUNC_() - The CUME_DIST() function computes the position of a value relative to
-     a all values in the partition.""")
+  usage =
+    """_FUNC_() - The CUME_DIST() function computes the position of a value relative to
+     a all values in the partition."""
+)
 case class CumeDist() extends RowNumberLike with SizeBasedWindowFunction {
   override def dataType: DataType = DoubleType
   // The frame for CUME_DIST is Range based instead of Row based, because CUME_DIST must
   // return the same value for equal values in the partition.
-  override val frame = SpecifiedWindowFrame(
-      RangeFrame, UnboundedPreceding, CurrentRow)
-  override val evaluateExpression = Divide(
-      Cast(rowNumber, DoubleType), Cast(n, DoubleType))
+  override val frame =
+    SpecifiedWindowFrame(RangeFrame, UnboundedPreceding, CurrentRow)
+  override val evaluateExpression =
+    Divide(Cast(rowNumber, DoubleType), Cast(n, DoubleType))
   override def sql: String = "CUME_DIST()"
 }
 
@@ -539,10 +578,13 @@ case class CumeDist() extends RowNumberLike with SizeBasedWindowFunction {
   * @param buckets number of buckets to divide the rows in. Default value is 1.
   */
 @ExpressionDescription(
-    usage = """_FUNC_(x) - The NTILE(n) function divides the rows for each window partition
-     into 'n' buckets ranging from 1 to at most 'n'.""")
+  usage =
+    """_FUNC_(x) - The NTILE(n) function divides the rows for each window partition
+     into 'n' buckets ranging from 1 to at most 'n'."""
+)
 case class NTile(buckets: Expression)
-    extends RowNumberLike with SizeBasedWindowFunction {
+    extends RowNumberLike
+    with SizeBasedWindowFunction {
   def this() = this(Literal(1))
 
   override def children: Seq[Expression] = Seq(buckets)
@@ -552,12 +594,14 @@ case class NTile(buckets: Expression)
   override def checkInputDataTypes(): TypeCheckResult = {
     if (!buckets.foldable) {
       return TypeCheckFailure(
-          s"Buckets expression must be foldable, but got $buckets")
+        s"Buckets expression must be foldable, but got $buckets"
+      )
     }
 
     if (buckets.dataType != IntegerType) {
       return TypeCheckFailure(
-          s"Buckets expression must be integer type, but got $buckets")
+        s"Buckets expression must be integer type, but got $buckets"
+      )
     }
 
     val i = buckets.eval().asInstanceOf[Int]
@@ -580,30 +624,32 @@ case class NTile(buckets: Expression)
     If(GreaterThanOrEqual(rowNumber, bucketThreshold), e, zero)
 
   override val aggBufferAttributes = Seq(
-      rowNumber,
-      bucket,
-      bucketThreshold,
-      bucketSize,
-      bucketsWithPadding
+    rowNumber,
+    bucket,
+    bucketThreshold,
+    bucketSize,
+    bucketsWithPadding
   )
 
   override val initialValues = Seq(
-      zero,
-      zero,
-      zero,
-      Cast(Divide(n, buckets), IntegerType),
-      Cast(Remainder(n, buckets), IntegerType)
+    zero,
+    zero,
+    zero,
+    Cast(Divide(n, buckets), IntegerType),
+    Cast(Remainder(n, buckets), IntegerType)
   )
 
   override val updateExpressions = Seq(
-      Add(rowNumber, one),
-      Add(bucket, bucketOverflow(one)),
-      Add(bucketThreshold,
-          bucketOverflow(
-              Add(bucketSize,
-                  If(LessThan(bucket, bucketsWithPadding), one, zero)))),
-      NoOp,
-      NoOp
+    Add(rowNumber, one),
+    Add(bucket, bucketOverflow(one)),
+    Add(
+      bucketThreshold,
+      bucketOverflow(
+        Add(bucketSize, If(LessThan(bucket, bucketsWithPadding), one, zero))
+      )
+    ),
+    NoOp,
+    NoOp
   )
 
   override val evaluateExpression = bucket
@@ -638,8 +684,8 @@ abstract class RankLike extends AggregateWindowFunction {
     AttributeReference("rank", IntegerType, nullable = false)()
   protected val rowNumber =
     AttributeReference("rowNumber", IntegerType, nullable = false)()
-  protected val zero = Literal(0)
-  protected val one = Literal(1)
+  protected val zero              = Literal(0)
+  protected val one               = Literal(1)
   protected val increaseRowNumber = Add(rowNumber, one)
 
   /**
@@ -649,8 +695,8 @@ abstract class RankLike extends AggregateWindowFunction {
   protected def rankSource: Expression = rowNumber
 
   /** Increase the rank when the current rank == 0 or when the one of order attributes changes. */
-  protected val increaseRank = If(
-      And(orderEquals, Not(EqualTo(rank, zero))), rank, rankSource)
+  protected val increaseRank =
+    If(And(orderEquals, Not(EqualTo(rank, zero))), rank, rankSource)
 
   override val aggBufferAttributes: Seq[AttributeReference] =
     rank +: rowNumber +: orderAttrs
@@ -674,13 +720,15 @@ abstract class RankLike extends AggregateWindowFunction {
   *                 Analyser.
   */
 @ExpressionDescription(
-    usage = """_FUNC_() -  RANK() computes the rank of a value in a group of values. The result
+  usage =
+    """_FUNC_() -  RANK() computes the rank of a value in a group of values. The result
      is one plus the number of rows preceding or equal to the current row in the
-     ordering of the partition. Tie values will produce gaps in the sequence.""")
+     ordering of the partition. Tie values will produce gaps in the sequence."""
+)
 case class Rank(children: Seq[Expression]) extends RankLike {
   def this() = this(Nil)
   override def withOrder(order: Seq[Expression]): Rank = Rank(order)
-  override def sql: String = "RANK()"
+  override def sql: String                             = "RANK()"
 }
 
 /**
@@ -695,17 +743,19 @@ case class Rank(children: Seq[Expression]) extends RankLike {
   *                 Analyser.
   */
 @ExpressionDescription(
-    usage = """_FUNC_() - The DENSE_RANK() function computes the rank of a value in a group of
+  usage =
+    """_FUNC_() - The DENSE_RANK() function computes the rank of a value in a group of
      values. The result is one plus the previously assigned rank value. Unlike Rank,
-     DenseRank will not produce gaps in the ranking sequence.""")
+     DenseRank will not produce gaps in the ranking sequence."""
+)
 case class DenseRank(children: Seq[Expression]) extends RankLike {
   def this() = this(Nil)
   override def withOrder(order: Seq[Expression]): DenseRank = DenseRank(order)
-  override protected def rankSource = Add(rank, one)
-  override val updateExpressions = increaseRank +: children
-  override val aggBufferAttributes = rank +: orderAttrs
-  override val initialValues = zero +: orderInit
-  override def sql: String = "DENSE_RANK()"
+  override protected def rankSource                         = Add(rank, one)
+  override val updateExpressions                            = increaseRank +: children
+  override val aggBufferAttributes                          = rank +: orderAttrs
+  override val initialValues                                = zero +: orderInit
+  override def sql: String                                  = "DENSE_RANK()"
 }
 
 /**
@@ -723,18 +773,24 @@ case class DenseRank(children: Seq[Expression]) extends RankLike {
   *                 Analyser.
   */
 @ExpressionDescription(
-    usage = """_FUNC_() - PERCENT_RANK() The PercentRank function computes the percentage
-     ranking of a value in a group of values.""")
+  usage =
+    """_FUNC_() - PERCENT_RANK() The PercentRank function computes the percentage
+     ranking of a value in a group of values."""
+)
 case class PercentRank(children: Seq[Expression])
-    extends RankLike with SizeBasedWindowFunction {
+    extends RankLike
+    with SizeBasedWindowFunction {
   def this() = this(Nil)
   override def withOrder(order: Seq[Expression]): PercentRank =
     PercentRank(order)
   override def dataType: DataType = DoubleType
   override val evaluateExpression = If(
-      GreaterThan(n, one),
-      Divide(Cast(Subtract(rank, one), DoubleType),
-             Cast(Subtract(n, one), DoubleType)),
-      Literal(0.0d))
+    GreaterThan(n, one),
+    Divide(
+      Cast(Subtract(rank, one), DoubleType),
+      Cast(Subtract(n, one), DoubleType)
+    ),
+    Literal(0.0d)
+  )
   override def sql: String = "PERCENT_RANK()"
 }

@@ -21,10 +21,9 @@ import java.lang.reflect.{InvocationHandler, Method, Proxy}
 import scala.collection.{Map, Set, mutable}
 
 object SignalHandlerFactory {
-  def apply() = {
+  def apply() =
     // only one actual implementation for now
     SunSignalHandler.instantiate
-  }
 }
 
 trait SignalHandler {
@@ -32,19 +31,18 @@ trait SignalHandler {
 }
 
 object SunSignalHandler {
-  def instantiate() = {
+  def instantiate() =
     try {
       Class.forName("sun.misc.Signal")
       Some(new SunSignalHandler())
     } catch {
       case ex: ClassNotFoundException => None
     }
-  }
 }
 
 class SunSignalHandler extends SignalHandler {
   private val signalHandlerClass = Class.forName("sun.misc.SignalHandler")
-  private val signalClass = Class.forName("sun.misc.Signal")
+  private val signalClass        = Class.forName("sun.misc.Signal")
   private val handleMethod =
     signalClass.getMethod("handle", signalClass, signalHandlerClass)
   private val nameMethod = signalClass.getMethod("getName")
@@ -56,18 +54,19 @@ class SunSignalHandler extends SignalHandler {
       .asInstanceOf[Object]
     val proxy = Proxy
       .newProxyInstance(
-          signalHandlerClass.getClassLoader,
-          Array[Class[_]](signalHandlerClass),
-          new InvocationHandler {
-            def invoke(proxy: Object, method: Method, args: Array[Object]) = {
-              if (method.getName() == "handle") {
-                handlers(signal).foreach { x =>
-                  x(nameMethod.invoke(args(0)).asInstanceOf[String])
-                }
+        signalHandlerClass.getClassLoader,
+        Array[Class[_]](signalHandlerClass),
+        new InvocationHandler {
+          def invoke(proxy: Object, method: Method, args: Array[Object]) = {
+            if (method.getName() == "handle") {
+              handlers(signal).foreach { x =>
+                x(nameMethod.invoke(args(0)).asInstanceOf[String])
               }
-              null
             }
-          })
+            null
+          }
+        }
+      )
       .asInstanceOf[Object]
 
     handleMethod.invoke(null, sunSignal, proxy)
@@ -85,7 +84,7 @@ object HandleSignal {
   def apply(posixSignal: String)(f: String => Unit) {
     if (!handlers.contains(posixSignal)) {
       handlers.synchronized {
-        SignalHandlerFactory().foreach { _.handle(posixSignal, handlers) }
+        SignalHandlerFactory().foreach(_.handle(posixSignal, handlers))
         handlers(posixSignal) = mutable.HashSet[String => Unit]()
       }
     }

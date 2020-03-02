@@ -30,18 +30,18 @@ sealed abstract class Level(val name: String, val value: Int)
 }
 
 object Level {
-  case object OFF extends Level("OFF", Int.MaxValue)
-  case object FATAL extends Level("FATAL", 1000)
+  case object OFF      extends Level("OFF", Int.MaxValue)
+  case object FATAL    extends Level("FATAL", 1000)
   case object CRITICAL extends Level("CRITICAL", 970)
-  case object ERROR extends Level("ERROR", 930)
-  case object WARNING extends Level("WARNING", 900)
-  case object INFO extends Level("INFO", 800)
-  case object DEBUG extends Level("DEBUG", 500)
-  case object TRACE extends Level("TRACE", 400)
-  case object ALL extends Level("ALL", Int.MinValue)
+  case object ERROR    extends Level("ERROR", 930)
+  case object WARNING  extends Level("WARNING", 900)
+  case object INFO     extends Level("INFO", 800)
+  case object DEBUG    extends Level("DEBUG", 500)
+  case object TRACE    extends Level("TRACE", 400)
+  case object ALL      extends Level("ALL", Int.MinValue)
 
-  private[logging] val AllLevels: Seq[Level] = Seq(
-      OFF, FATAL, CRITICAL, ERROR, WARNING, INFO, DEBUG, TRACE, ALL)
+  private[logging] val AllLevels: Seq[Level] =
+    Seq(OFF, FATAL, CRITICAL, ERROR, WARNING, INFO, DEBUG, TRACE, ALL)
 
   /**
     * Associate [[java.util.logging.Level]] and `Level` by their integer
@@ -73,27 +73,27 @@ class LoggingException(reason: String) extends Exception(reason)
   */
 class Logger protected (val name: String, private val wrapped: javalog.Logger) {
   // wrapped methods:
-  def addHandler(handler: javalog.Handler) = wrapped.addHandler(handler)
-  def getFilter() = wrapped.getFilter()
-  def getHandlers() = wrapped.getHandlers()
-  def getLevel() = wrapped.getLevel()
-  def getParent() = wrapped.getParent()
-  def getUseParentHandlers() = wrapped.getUseParentHandlers()
-  def isLoggable(level: javalog.Level) = wrapped.isLoggable(level)
-  def log(record: javalog.LogRecord) = wrapped.log(record)
+  def addHandler(handler: javalog.Handler)    = wrapped.addHandler(handler)
+  def getFilter()                             = wrapped.getFilter()
+  def getHandlers()                           = wrapped.getHandlers()
+  def getLevel()                              = wrapped.getLevel()
+  def getParent()                             = wrapped.getParent()
+  def getUseParentHandlers()                  = wrapped.getUseParentHandlers()
+  def isLoggable(level: javalog.Level)        = wrapped.isLoggable(level)
+  def log(record: javalog.LogRecord)          = wrapped.log(record)
   def removeHandler(handler: javalog.Handler) = wrapped.removeHandler(handler)
-  def setFilter(filter: javalog.Filter) = wrapped.setFilter(filter)
-  def setLevel(level: javalog.Level) = wrapped.setLevel(level)
-  def setUseParentHandlers(use: Boolean) = wrapped.setUseParentHandlers(use)
+  def setFilter(filter: javalog.Filter)       = wrapped.setFilter(filter)
+  def setLevel(level: javalog.Level)          = wrapped.setLevel(level)
+  def setUseParentHandlers(use: Boolean)      = wrapped.setUseParentHandlers(use)
 
-  override def toString = {
+  override def toString =
     "<%s name='%s' level=%s handlers=%s use_parent=%s>".format(
-        getClass.getName,
-        name,
-        getLevel(),
-        getHandlers().toList.mkString("[", ", ", "]"),
-        if (getUseParentHandlers()) "true" else "false")
-  }
+      getClass.getName,
+      name,
+      getLevel(),
+      getHandlers().toList.mkString("[", ", ", "]"),
+      if (getUseParentHandlers()) "true" else "false"
+    )
 
   /**
     * Log a message, with sprintf formatting, at the desired level.
@@ -108,8 +108,7 @@ class Logger protected (val name: String, private val wrapped: javalog.Logger) {
     * formatting is required.
     */
   @varargs
-  final def log(
-      level: Level, thrown: Throwable, message: String, items: Any*) {
+  final def log(level: Level, thrown: Throwable, message: String, items: Any*) {
     val myLevel = getLevel
     if ((myLevel eq null) || (level.intValue >= myLevel.intValue)) {
 
@@ -129,7 +128,11 @@ class Logger protected (val name: String, private val wrapped: javalog.Logger) {
     log(level, message, items: _*)
 
   final def apply(
-      level: Level, thrown: Throwable, message: String, items: Any*) =
+      level: Level,
+      thrown: Throwable,
+      message: String,
+      items: Any*
+  ) =
     log(level, thrown, message, items)
 
   // convenience methods:
@@ -237,18 +240,17 @@ class Logger protected (val name: String, private val wrapped: javalog.Logger) {
 
 object NullLogger
     extends Logger(
-        "null", {
-          val jLog = javalog.Logger.getLogger("null")
-          jLog.setLevel(Level.OFF)
-          jLog
-        }
+      "null", {
+        val jLog = javalog.Logger.getLogger("null")
+        jLog.setLevel(Level.OFF)
+        jLog
+      }
     )
 
 object Logger extends Iterable[Logger] {
 
   private[this] val levelNamesMap: Map[String, Level] = Level.AllLevels.map {
-    level =>
-      level.name -> level
+    level => level.name -> level
   }.toMap
 
   private[this] val levelsMap: Map[Int, Level] = Level.AllLevels.map { level =>
@@ -325,19 +327,18 @@ object Logger extends Iterable[Logger] {
   /**
     * Remove all existing log handlers from all existing loggers.
     */
-  def clearHandlers() = {
+  def clearHandlers() =
     foreach { logger =>
       logger.clearHandlers()
       logger.setLevel(null)
     }
-  }
 
   /**
     * Execute a block with a given set of handlers, reverting back to the original
     * handlers upon completion.
     */
   def withLoggers(loggerFactories: List[() => Logger])(f: => Unit): Unit =
-    withLazyLoggers(loggerFactories.map(_ ()))(f)
+    withLazyLoggers(loggerFactories.map(_()))(f)
 
   /**
     * Execute a block with a given set of handlers, reverting back to the original
@@ -354,19 +355,19 @@ object Logger extends Iterable[Logger] {
 
     reset()
     loggerFactoryCache = localLoggerFactoryCache
-    loggerFactoryCache.foreach { _ () }
+    loggerFactoryCache.foreach(_())
   }
 
   /**
     * Return a logger for the given package name. If one doesn't already
     * exist, a new logger will be created and returned.
     */
-  def get(name: String): Logger = {
+  def get(name: String): Logger =
     loggersCache.get(name) match {
       case logger: Logger =>
         logger
       case null =>
-        val logger = new Logger(name, javalog.Logger.getLogger(name))
+        val logger    = new Logger(name, javalog.Logger.getLogger(name))
         val oldLogger = loggersCache.putIfAbsent(name, logger)
         if (oldLogger != null) {
           oldLogger
@@ -374,7 +375,6 @@ object Logger extends Iterable[Logger] {
           logger
         }
     }
-  }
 
   /** An alias for `get(name)` */
   def apply(name: String) = get(name)
@@ -393,13 +393,12 @@ object Logger extends Iterable[Logger] {
   /** An alias for `get()` */
   def apply() = get(2)
 
-  private def getForClassName(className: String) = {
+  private def getForClassName(className: String) =
     if (className.endsWith("$")) {
       get(className.substring(0, className.length - 1))
     } else {
       get(className)
     }
-  }
 
   /**
     * Return a logger for the package of the class given.
@@ -422,6 +421,6 @@ object Logger extends Iterable[Logger] {
     loggerFactoryCache = loggerFactories
 
     clearHandlers()
-    loggerFactories.foreach { _ () }
+    loggerFactories.foreach(_())
   }
 }

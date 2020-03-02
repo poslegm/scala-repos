@@ -27,9 +27,15 @@ import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiElementFactory
 import org.jetbrains.plugins.scala.lang.psi.impl.toplevel.typedef.TypeDefinitionMembers
 import org.jetbrains.plugins.scala.lang.psi.light.ScFunctionWrapper
 import org.jetbrains.plugins.scala.lang.psi.types._
-import org.jetbrains.plugins.scala.lang.psi.types.result.{TypeResult, TypingContext}
+import org.jetbrains.plugins.scala.lang.psi.types.result.{
+  TypeResult,
+  TypingContext
+}
 import org.jetbrains.plugins.scala.lang.resolve.processor.BaseProcessor
-import org.jetbrains.plugins.scala.macroAnnotations.{CachedInsidePsiElement, ModCount}
+import org.jetbrains.plugins.scala.macroAnnotations.{
+  CachedInsidePsiElement,
+  ModCount
+}
 
 /**
   * @author ven
@@ -51,21 +57,22 @@ trait ScTemplateDefinition extends ScNamedElement with PsiClass {
         }
       case _ =>
     }
-    assert(getLastChild.isInstanceOf[ScExtendsBlock],
-           "Class hasn't extends block: " + this.getText)
+    assert(
+      getLastChild.isInstanceOf[ScExtendsBlock],
+      "Class hasn't extends block: " + this.getText
+    )
     getLastChild.asInstanceOf[ScExtendsBlock]
   }
 
-  def refs = {
+  def refs =
     extendsBlock.templateParents.toSeq.flatMap(_.typeElements).map {
       refElement =>
         val tuple: Option[(PsiClass, ScSubstitutor)] = refElement
           .getType(TypingContext.empty)
           .toOption
           .flatMap(ScType.extractClassType(_, Some(getProject)))
-          (refElement, tuple)
+        (refElement, tuple)
     }
-  }
 
   def innerExtendsListTypes = {
     val eb = extendsBlock
@@ -74,62 +81,67 @@ trait ScTemplateDefinition extends ScNamedElement with PsiClass {
       tp match {
         case Some(tp1) =>
           (for (te <- tp1.allTypeElements;
-          t = te.getType(TypingContext.empty).getOrAny;
-          asPsi = ScType.toPsi(
-              t, getProject, GlobalSearchScope.allScope(getProject))
-              if asPsi.isInstanceOf[PsiClassType]) yield
-            asPsi.asInstanceOf[PsiClassType]).toArray[PsiClassType]
+                t   = te.getType(TypingContext.empty).getOrAny;
+                asPsi = ScType.toPsi(
+                  t,
+                  getProject,
+                  GlobalSearchScope.allScope(getProject)
+                )
+                if asPsi.isInstanceOf[PsiClassType])
+            yield asPsi.asInstanceOf[PsiClassType]).toArray[PsiClassType]
         case _ => PsiClassType.EMPTY_ARRAY
       }
     } else PsiClassType.EMPTY_ARRAY
   }
 
-  def showAsInheritor: Boolean = {
+  def showAsInheritor: Boolean =
     isInstanceOf[ScTypeDefinition] || extendsBlock.templateBody != None
-  }
 
   override def findMethodBySignature(
-      patternMethod: PsiMethod, checkBases: Boolean): PsiMethod = {
+      patternMethod: PsiMethod,
+      checkBases: Boolean
+  ): PsiMethod =
     PsiClassImplUtil.findMethodBySignature(this, patternMethod, checkBases)
-  }
 
   override def findMethodsBySignature(
-      patternMethod: PsiMethod, checkBases: Boolean): Array[PsiMethod] = {
+      patternMethod: PsiMethod,
+      checkBases: Boolean
+  ): Array[PsiMethod] =
     PsiClassImplUtil.findMethodsBySignature(this, patternMethod, checkBases)
-  }
 
   override def findMethodsByName(
-      name: String, checkBases: Boolean): Array[PsiMethod] = {
+      name: String,
+      checkBases: Boolean
+  ): Array[PsiMethod] =
     PsiClassImplUtil.findMethodsByName(this, name, checkBases)
-  }
 
-  override def findFieldByName(name: String, checkBases: Boolean): PsiField = {
+  override def findFieldByName(name: String, checkBases: Boolean): PsiField =
     PsiClassImplUtil.findFieldByName(this, name, checkBases)
-  }
 
   override def findInnerClassByName(
-      name: String, checkBases: Boolean): PsiClass = {
+      name: String,
+      checkBases: Boolean
+  ): PsiClass =
     PsiClassImplUtil.findInnerByName(this, name, checkBases)
-  }
 
   import java.util.{Collection => JCollection, List => JList}
 
   import com.intellij.openapi.util.{Pair => IPair}
 
-  def getAllFields: Array[PsiField] = {
+  def getAllFields: Array[PsiField] =
     PsiClassImplUtil.getAllFields(this)
-  }
 
   override def findMethodsAndTheirSubstitutorsByName(
       name: String,
-      checkBases: Boolean): JList[IPair[PsiMethod, PsiSubstitutor]] = {
+      checkBases: Boolean
+  ): JList[IPair[PsiMethod, PsiSubstitutor]] = {
     //the reordering is a hack to enable 'go to test location' for junit test methods defined in traits
     import scala.collection.JavaConversions._
     PsiClassImplUtil
       .findMethodsAndTheirSubstitutorsByName(this, name, checkBases)
       .toList
       .sortBy(myPair =>
-            myPair.first match {
+        myPair.first match {
           case wrapper: ScFunctionWrapper
               if wrapper.function.isInstanceOf[ScFunctionDeclaration] =>
             1
@@ -142,26 +154,27 @@ trait ScTemplateDefinition extends ScNamedElement with PsiClass {
               case _ => 1
             }
           case _ => 1
-      })
+        }
+      )
   }
 
-  override def getAllMethodsAndTheirSubstitutors: JList[IPair[
-          PsiMethod, PsiSubstitutor]] = {
+  override def getAllMethodsAndTheirSubstitutors
+      : JList[IPair[PsiMethod, PsiSubstitutor]] =
     PsiClassImplUtil.getAllWithSubstitutorsByMap(this, MemberType.METHOD)
-  }
 
-  override def getVisibleSignatures: JCollection[HierarchicalMethodSignature] = {
+  override def getVisibleSignatures: JCollection[HierarchicalMethodSignature] =
     PsiSuperMethodImplUtil.getVisibleSignatures(this)
-  }
 
   def getType(ctx: TypingContext): TypeResult[ScType]
 
   def getTypeWithProjections(
-      ctx: TypingContext, thisProjections: Boolean = false): TypeResult[ScType]
+      ctx: TypingContext,
+      thisProjections: Boolean = false
+  ): TypeResult[ScType]
 
-  def members: Seq[ScMember] = extendsBlock.members
+  def members: Seq[ScMember]     = extendsBlock.members
   def functions: Seq[ScFunction] = extendsBlock.functions
-  def aliases: Seq[ScTypeAlias] = extendsBlock.aliases
+  def aliases: Seq[ScTypeAlias]  = extendsBlock.aliases
 
   @CachedInsidePsiElement(this, ModCount.getBlockModificationCount)
   def syntheticMethodsWithOverride: Seq[PsiMethod] =
@@ -199,20 +212,21 @@ trait ScTemplateDefinition extends ScNamedElement with PsiClass {
   def selfType = extendsBlock.selfType
 
   def superTypes: List[ScType] = extendsBlock.superTypes
-  def supers: Seq[PsiClass] = extendsBlock.supers
+  def supers: Seq[PsiClass]    = extendsBlock.supers
 
   def allTypeAliases =
     TypeDefinitionMembers
       .getTypes(this)
       .allFirstSeq()
       .flatMap(n =>
-            n.map {
+        n.map {
           case (_, x) => (x.info, x.substitutor)
-      }) ++ syntheticTypeDefinitions
+        }
+      ) ++ syntheticTypeDefinitions
       .filter(!_.isObject)
       .map((_, ScSubstitutor.empty))
 
-  def allTypeAliasesIncludingSelfType = {
+  def allTypeAliasesIncludingSelfType =
     selfType match {
       case Some(selfType) =>
         val clazzType = getTypeWithProjections(TypingContext.empty).getOrAny
@@ -228,28 +242,28 @@ trait ScTemplateDefinition extends ScNamedElement with PsiClass {
       case _ =>
         allTypeAliases
     }
-  }
 
   def allVals =
     TypeDefinitionMembers
       .getSignatures(this)
       .allFirstSeq()
       .flatMap(n =>
-            n.filter {
+        n.filter {
           case (_, x) =>
             !x.info.isInstanceOf[PhysicalSignature] &&
-            (x.info.namedElement match {
-                  case v =>
-                    ScalaPsiUtil.nameContext(v) match {
-                      case _: ScVariable => v.name == x.info.name
-                      case _: ScValue => v.name == x.info.name
-                      case _ => true
-                    }
-                })
-      })
+              (x.info.namedElement match {
+                case v =>
+                  ScalaPsiUtil.nameContext(v) match {
+                    case _: ScVariable => v.name == x.info.name
+                    case _: ScValue    => v.name == x.info.name
+                    case _             => true
+                  }
+              })
+        }
+      )
       .map { case (_, n) => (n.info.namedElement, n.substitutor) }
 
-  def allValsIncludingSelfType = {
+  def allValsIncludingSelfType =
     selfType match {
       case Some(selfType) =>
         val clazzType = getTypeWithProjections(TypingContext.empty).getOrAny
@@ -259,18 +273,19 @@ trait ScTemplateDefinition extends ScNamedElement with PsiClass {
               .getSignatures(c, Some(clazzType), this)
               .allFirstSeq()
               .flatMap(n =>
-                    n.filter {
+                n.filter {
                   case (_, x) =>
                     !x.info.isInstanceOf[PhysicalSignature] &&
-                    (x.info.namedElement match {
-                          case v =>
-                            ScalaPsiUtil.nameContext(v) match {
-                              case _: ScVariable => v.name == x.info.name
-                              case _: ScValue => v.name == x.info.name
-                              case _ => true
-                            }
-                        })
-              })
+                      (x.info.namedElement match {
+                        case v =>
+                          ScalaPsiUtil.nameContext(v) match {
+                            case _: ScVariable => v.name == x.info.name
+                            case _: ScValue    => v.name == x.info.name
+                            case _             => true
+                          }
+                      })
+                }
+              )
               .map { case (_, n) => (n.info.namedElement, n.substitutor) }
           case _ =>
             allVals
@@ -278,7 +293,6 @@ trait ScTemplateDefinition extends ScNamedElement with PsiClass {
       case _ =>
         allVals
     }
-  }
 
   def allMethods: Iterable[PhysicalSignature] =
     TypeDefinitionMembers
@@ -290,7 +304,7 @@ trait ScTemplateDefinition extends ScNamedElement with PsiClass {
       .map { case (_, n) => n.info.asInstanceOf[PhysicalSignature] } ++ syntheticMethodsNoOverride
       .map(new PhysicalSignature(_, ScSubstitutor.empty))
 
-  def allMethodsIncludingSelfType: Iterable[PhysicalSignature] = {
+  def allMethodsIncludingSelfType: Iterable[PhysicalSignature] =
     selfType match {
       case Some(selfType) =>
         val clazzType = getTypeWithProjections(TypingContext.empty).getOrAny
@@ -310,7 +324,6 @@ trait ScTemplateDefinition extends ScNamedElement with PsiClass {
       case _ =>
         allMethods
     }
-  }
 
   def allSignatures =
     TypeDefinitionMembers
@@ -318,7 +331,7 @@ trait ScTemplateDefinition extends ScNamedElement with PsiClass {
       .allFirstSeq()
       .flatMap(_.map { case (_, n) => n.info })
 
-  def allSignaturesIncludingSelfType = {
+  def allSignaturesIncludingSelfType =
     selfType match {
       case Some(selfType) =>
         val clazzType = getTypeWithProjections(TypingContext.empty).getOrAny
@@ -334,46 +347,54 @@ trait ScTemplateDefinition extends ScNamedElement with PsiClass {
       case _ =>
         allSignatures
     }
-  }
 
   def isScriptFileClass = getContainingFile match {
     case file: ScalaFile => file.isScriptFile(false)
-    case _ => false
+    case _               => false
   }
 
-  def processDeclarations(processor: PsiScopeProcessor,
-                          oldState: ResolveState,
-                          lastParent: PsiElement,
-                          place: PsiElement): Boolean = {
+  def processDeclarations(
+      processor: PsiScopeProcessor,
+      oldState: ResolveState,
+      lastParent: PsiElement,
+      place: PsiElement
+  ): Boolean = {
     if (!processor.isInstanceOf[BaseProcessor]) {
       val lastChild = this match {
         case s: ScalaStubBasedElementImpl[_] => s.getLastChildStub
-        case _ => this.getLastChild
+        case _                               => this.getLastChild
       }
       val languageLevel: LanguageLevel = processor match {
         case methodProcessor: MethodsProcessor =>
           methodProcessor.getLanguageLevel
         case _ => PsiUtil.getLanguageLevel(place)
       }
-      return PsiClassImplUtil.processDeclarationsInClass(this,
-                                                         processor,
-                                                         oldState,
-                                                         null,
-                                                         lastChild,
-                                                         place,
-                                                         languageLevel,
-                                                         false)
+      return PsiClassImplUtil.processDeclarationsInClass(
+        this,
+        processor,
+        oldState,
+        null,
+        lastChild,
+        place,
+        languageLevel,
+        false
+      )
     }
     if (extendsBlock.templateBody.isDefined && PsiTreeUtil.isContextAncestor(
-            extendsBlock.templateBody.get, place, false) && lastParent != null)
+          extendsBlock.templateBody.get,
+          place,
+          false
+        ) && lastParent != null)
       return true
     processDeclarationsForTemplateBody(processor, oldState, lastParent, place)
   }
 
-  def processDeclarationsForTemplateBody(processor: PsiScopeProcessor,
-                                         oldState: ResolveState,
-                                         lastParent: PsiElement,
-                                         place: PsiElement): Boolean = {
+  def processDeclarationsForTemplateBody(
+      processor: PsiScopeProcessor,
+      oldState: ResolveState,
+      lastParent: PsiElement,
+      place: PsiElement
+  ): Boolean = {
     if (DumbService.getInstance(getProject).isDumb) return true
     var state = oldState
     //exception cases
@@ -394,9 +415,10 @@ trait ScTemplateDefinition extends ScNamedElement with PsiClass {
       case _ =>
     }
     state = state.put(
-        BaseProcessor.FROM_TYPE_KEY,
-        if (ScalaPsiUtil.isPlaceTdAncestor(this, place)) ScThisType(this)
-        else ScType.designator(this))
+      BaseProcessor.FROM_TYPE_KEY,
+      if (ScalaPsiUtil.isPlaceTdAncestor(this, place)) ScThisType(this)
+      else ScType.designator(this)
+    )
     val eb = extendsBlock
     eb.templateParents match {
       case Some(p) if PsiTreeUtil.isContextAncestor(p, place, false) =>
@@ -431,14 +453,18 @@ trait ScTemplateDefinition extends ScNamedElement with PsiClass {
                   this match {
                     case t: ScTypeDefinition
                         if selfTypeElement != None &&
-                        !PsiTreeUtil.isContextAncestor(selfTypeElement.get,
-                                                       place,
-                                                       true) &&
-                        PsiTreeUtil.isContextAncestor(e.templateBody.orNull,
-                                                      place,
-                                                      true) &&
-                        processor.isInstanceOf[BaseProcessor] &&
-                        !t.isInstanceOf[ScObject] =>
+                          !PsiTreeUtil.isContextAncestor(
+                            selfTypeElement.get,
+                            place,
+                            true
+                          ) &&
+                          PsiTreeUtil.isContextAncestor(
+                            e.templateBody.orNull,
+                            place,
+                            true
+                          ) &&
+                          processor.isInstanceOf[BaseProcessor] &&
+                          !t.isInstanceOf[ScObject] =>
                       selfTypeElement match {
                         case Some(_) =>
                           processor
@@ -446,13 +472,23 @@ trait ScTemplateDefinition extends ScNamedElement with PsiClass {
                             .processType(ScThisType(t), place, state)
                         case _ =>
                           if (!TypeDefinitionMembers.processDeclarations(
-                                  this, processor, state, lastParent, place)) {
+                                this,
+                                processor,
+                                state,
+                                lastParent,
+                                place
+                              )) {
                             return false
                           }
                       }
                     case _ =>
                       if (!TypeDefinitionMembers.processDeclarations(
-                              this, processor, state, lastParent, place))
+                            this,
+                            processor,
+                            state,
+                            lastParent,
+                            place
+                          ))
                         return false
                   }
                 }
@@ -478,24 +514,30 @@ trait ScTemplateDefinition extends ScNamedElement with PsiClass {
         }
         if (ScalaPsiUtil.isLineTerminator(before.getPsi))
           body.getNode.addChild(
-              ScalaPsiElementFactory.createNewLineNode(member.getManager),
-              before)
+            ScalaPsiElementFactory.createNewLineNode(member.getManager),
+            before
+          )
         body.getNode.addChild(member.getNode, before)
         if (!ScalaPsiUtil.isLineTerminator(before.getPsi))
           body.getNode.addChild(
-              ScalaPsiElementFactory.createNewLineNode(member.getManager),
-              before)
+            ScalaPsiElementFactory.createNewLineNode(member.getManager),
+            before
+          )
         else
           body.getNode.replaceChild(
-              before,
-              ScalaPsiElementFactory.createNewLineNode(member.getManager))
+            before,
+            ScalaPsiElementFactory.createNewLineNode(member.getManager)
+          )
       case None =>
         val eBlockNode: ASTNode = extendsBlock.getNode
         eBlockNode.addChild(
-            ScalaPsiElementFactory.createWhitespace(member.getManager).getNode)
-        eBlockNode.addChild(ScalaPsiElementFactory
-              .createBodyFromMember(member, member.getManager)
-              .getNode)
+          ScalaPsiElementFactory.createWhitespace(member.getManager).getNode
+        )
+        eBlockNode.addChild(
+          ScalaPsiElementFactory
+            .createBodyFromMember(member, member.getManager)
+            .getNode
+        )
         return members(0)
     }
     member
@@ -505,22 +547,24 @@ trait ScTemplateDefinition extends ScNamedElement with PsiClass {
     member.getParent.getNode.removeChild(member.getNode)
   }
 
-  def functionsByName(name: String): Seq[PsiMethod] = {
+  def functionsByName(name: String): Seq[PsiMethod] =
     (for ((p: PhysicalSignature, _) <- TypeDefinitionMembers
-      .getSignatures(this)
-      .forName(name)
-      ._1) yield
-      p.method).++(syntheticMethodsNoOverride.filter(_.name == name))
-  }
+                                        .getSignatures(this)
+                                        .forName(name)
+                                        ._1)
+      yield p.method).++(syntheticMethodsNoOverride.filter(_.name == name))
 
   override def isInheritor(baseClass: PsiClass, deep: Boolean): Boolean = {
     if (baseClass == null) return false
 
     val visited: util.Set[PsiClass] = new util.HashSet[PsiClass]
-    val baseQualifiedName = baseClass.qualifiedName
-    val baseName = baseClass.name
+    val baseQualifiedName           = baseClass.qualifiedName
+    val baseName                    = baseClass.name
     def isInheritorInner(
-        base: PsiClass, drv: PsiClass, deep: Boolean): Boolean = {
+        base: PsiClass,
+        drv: PsiClass,
+        deep: Boolean
+    ): Boolean = {
       ProgressManager.checkCanceled()
       if (!visited.contains(drv)) {
         visited.add(drv)
@@ -531,21 +575,21 @@ trait ScTemplateDefinition extends ScNamedElement with PsiClass {
             while (supersIterator.hasNext) {
               val c = supersIterator.next()
               val value = baseClass match {
-                case _: ScTrait if c.isInstanceOf[ScTrait] => true
-                case _: ScClass if c.isInstanceOf[ScClass] => true
+                case _: ScTrait if c.isInstanceOf[ScTrait]      => true
+                case _: ScClass if c.isInstanceOf[ScClass]      => true
                 case _ if !c.isInstanceOf[ScTemplateDefinition] => true
-                case _ => false
+                case _                                          => false
               }
               if (value && c.name == baseName &&
                   c.qualifiedName == baseQualifiedName && value) return true
               if (deep && isInheritorInner(base, c, deep)) return true
             }
           case _ =>
-            val supers = drv.getSuperTypes
+            val supers         = drv.getSuperTypes
             val supersIterator = supers.iterator
             while (supersIterator.hasNext) {
               val psiT = supersIterator.next()
-              val c = psiT.resolveGenerics.getElement
+              val c    = psiT.resolveGenerics.getElement
               if (c != null) {
                 if (c.name == baseName && c.qualifiedName == baseQualifiedName)
                   return true

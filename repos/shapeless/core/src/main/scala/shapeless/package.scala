@@ -27,8 +27,8 @@ package object shapeless {
     type λ[T] = C
   }
 
-  type ¬[T] = T => Nothing
-  type ¬¬[T] = ¬[¬[T]]
+  type ¬[T]    = T => Nothing
+  type ¬¬[T]   = ¬[¬[T]]
   type ∧[T, U] = T with U
   type ∨[T, U] = ¬[¬[T] ∧ ¬[U]]
 
@@ -40,13 +40,13 @@ package object shapeless {
   // Type inequalities
   trait =:!=[A, B]
 
-  implicit def neq[A, B]: A =:!= B = new =:!=[A, B] {}
+  implicit def neq[A, B]: A =:!= B    = new =:!=[A, B] {}
   implicit def neqAmbig1[A]: A =:!= A = unexpected
   implicit def neqAmbig2[A]: A =:!= A = unexpected
 
   trait <:!<[A, B]
 
-  implicit def nsub[A, B]: A <:!< B = new <:!<[A, B] {}
+  implicit def nsub[A, B]: A <:!< B            = new <:!<[A, B] {}
   implicit def nsubAmbig1[A, B >: A]: A <:!< B = unexpected
   implicit def nsubAmbig2[A, B >: A]: A <:!< B = unexpected
 
@@ -61,9 +61,9 @@ package object shapeless {
 
   /** `Optic` definitions */
   val optic = OpticDefns
-  val lens = OpticDefns
+  val lens  = OpticDefns
   val prism = OpticDefns
-  val ^ = Path
+  val ^     = Path
 
   /** `Nat` literals */
   val nat = Nat
@@ -118,17 +118,18 @@ package shapeless {
     import c.universe._
 
     def cachedImplicitImpl[T](implicit tTag: WeakTypeTag[T]): Tree = {
-      val casted = c.asInstanceOf[reflect.macros.runtime.Context]
-      val typer = casted.callsiteTyper
-      val global: casted.universe.type = casted.universe
+      val casted                         = c.asInstanceOf[reflect.macros.runtime.Context]
+      val typer                          = casted.callsiteTyper
+      val global: casted.universe.type   = casted.universe
       val analyzer: global.analyzer.type = global.analyzer
-      val tCtx = typer.context
-      val owner = tCtx.owner
+      val tCtx                           = typer.context
+      val owner                          = tCtx.owner
       if (!owner.isVal && !owner.isLazy)
         c.abort(
-            c.enclosingPosition,
-            "cachedImplicit should only be used to initialize vals and lazy vals")
-      val tTpe = weakTypeOf[T]
+          c.enclosingPosition,
+          "cachedImplicit should only be used to initialize vals and lazy vals"
+        )
+      val tTpe        = weakTypeOf[T]
       val application = casted.macroApplication
       val tpe = {
         val tpe0 =
@@ -141,11 +142,11 @@ package shapeless {
       // the thing we are enclosed in
       val sCtx = tCtx.makeImplicit(false)
       val is = new analyzer.ImplicitSearch(
-          tree = application,
-          pt = tpe,
-          isView = false,
-          context0 = sCtx,
-          pos0 = c.enclosingPosition.asInstanceOf[global.Position]
+        tree = application,
+        pt = tpe,
+        isView = false,
+        context0 = sCtx,
+        pos0 = c.enclosingPosition.asInstanceOf[global.Position]
       ) {
         override def searchImplicit(
             implicitInfoss: List[List[analyzer.ImplicitInfo]],

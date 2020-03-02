@@ -28,16 +28,19 @@ import akka.actor.ActorSelection
 import akka.cluster.MemberStatus
 
 object ClusterSingletonManagerStartupSpec extends MultiNodeConfig {
-  val first = role("first")
+  val first  = role("first")
   val second = role("second")
-  val third = role("third")
+  val third  = role("third")
 
-  commonConfig(ConfigFactory.parseString("""
+  commonConfig(
+    ConfigFactory
+      .parseString("""
     akka.loglevel = INFO
     akka.actor.provider = "akka.cluster.ClusterActorRefProvider"
     akka.remote.log-remote-lifecycle-events = off
     akka.cluster.auto-down-unreachable-after = 0s
-    """))
+    """)
+  )
 
   case object EchoStarted
 
@@ -61,31 +64,36 @@ class ClusterSingletonManagerStartupMultiJvmNode3
 
 class ClusterSingletonManagerStartupSpec
     extends MultiNodeSpec(ClusterSingletonManagerStartupSpec)
-    with STMultiNodeSpec with ImplicitSender {
+    with STMultiNodeSpec
+    with ImplicitSender {
   import ClusterSingletonManagerStartupSpec._
 
   override def initialParticipants = roles.size
 
-  def join(from: RoleName, to: RoleName): Unit = {
+  def join(from: RoleName, to: RoleName): Unit =
     runOn(from) {
       Cluster(system) join node(to).address
       createSingleton()
     }
-  }
 
-  def createSingleton(): ActorRef = {
-    system.actorOf(ClusterSingletonManager.props(
-                       singletonProps = Props(classOf[Echo], testActor),
-                       terminationMessage = PoisonPill,
-                       settings = ClusterSingletonManagerSettings(system)),
-                   name = "echo")
-  }
+  def createSingleton(): ActorRef =
+    system.actorOf(
+      ClusterSingletonManager.props(
+        singletonProps = Props(classOf[Echo], testActor),
+        terminationMessage = PoisonPill,
+        settings = ClusterSingletonManagerSettings(system)
+      ),
+      name = "echo"
+    )
 
   lazy val echoProxy: ActorRef = {
-    system.actorOf(ClusterSingletonProxy.props(
-                       singletonManagerPath = "/user/echo",
-                       settings = ClusterSingletonProxySettings(system)),
-                   name = "echoProxy")
+    system.actorOf(
+      ClusterSingletonProxy.props(
+        singletonManagerPath = "/user/echo",
+        settings = ClusterSingletonProxySettings(system)
+      ),
+      name = "echoProxy"
+    )
   }
 
   "Startup of Cluster Singleton" must {

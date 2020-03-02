@@ -33,7 +33,7 @@ class MatLong(r: Int, c: Int, values: Array[Long]) extends Mat[Long] {
 
   def toVec = scalarTag.makeVec(toArray)
 
-  def map[@spec(Boolean, Int, Long, Double) B : ST](f: (Long) => B): Mat[B] =
+  def map[@spec(Boolean, Int, Long, Double) B: ST](f: (Long) => B): Mat[B] =
     MatImpl.map(this)(f)
 
   // Cache the transpose: it's much faster to transpose and slice a continuous
@@ -70,9 +70,9 @@ class MatLong(r: Int, c: Int, values: Array[Long]) extends Mat[Long] {
     arrCopyToDblArr(values)
 
   private[saddle] def arrCopyToDblArr(r: Array[Long]): Array[Double] = {
-    val sa = ScalarTagLong
+    val sa  = ScalarTagLong
     val arr = Array.ofDim[Double](r.length)
-    var i = 0
+    var i   = 0
     while (i < r.length) {
       arr(i) = sa.toDouble(r(i))
       i += 1
@@ -84,13 +84,13 @@ class MatLong(r: Int, c: Int, values: Array[Long]) extends Mat[Long] {
   override def equals(o: Any): Boolean = o match {
     case rv: Mat[_] =>
       (this eq rv) || this.numRows == rv.numRows &&
-      this.numCols == rv.numCols && {
-        var i = 0
+        this.numCols == rv.numCols && {
+        var i  = 0
         var eq = true
         while (eq && i < length) {
           eq &&=
-          (apply(i) == rv(i) || this.scalarTag.isMissing(apply(i)) &&
-              rv.scalarTag.isMissing(rv(i)))
+            (apply(i) == rv(i) || this.scalarTag.isMissing(apply(i)) &&
+            rv.scalarTag.isMissing(rv(i)))
           i += 1
         }
         eq

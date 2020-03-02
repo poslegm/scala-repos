@@ -35,9 +35,9 @@ final class IRFileCache {
   private[this] val globalCache = new ConcurrentHashMap[String, PersistedFiles]
 
   // Statistics
-  private[this] val statsReused = new AtomicInteger(0)
+  private[this] val statsReused      = new AtomicInteger(0)
   private[this] val statsInvalidated = new AtomicInteger(0)
-  private[this] val statsTreesRead = new AtomicInteger(0)
+  private[this] val statsTreesRead   = new AtomicInteger(0)
 
   /** Create a new sub-cache.
     *
@@ -47,10 +47,12 @@ final class IRFileCache {
   def newCache: Cache = new Cache
 
   /** Approximate statistics about the cache usage */
-  def stats: IRFileCache.Stats = {
+  def stats: IRFileCache.Stats =
     new IRFileCache.Stats(
-        statsReused.get, statsInvalidated.get, statsTreesRead.get)
-  }
+      statsReused.get,
+      statsInvalidated.get,
+      statsTreesRead.get
+    )
 
   /** Reset statistics */
   def clearStats(): Unit = {
@@ -61,7 +63,7 @@ final class IRFileCache {
 
   /** A cache to use for individual runs. Not threadsafe */
   final class Cache private[IRFileCache] {
-    private[this] var readyToUse: Boolean = false
+    private[this] var readyToUse: Boolean             = false
     private[this] var localCache: Seq[PersistedFiles] = _
 
     /** Extract and cache IR.
@@ -108,12 +110,11 @@ final class IRFileCache {
       *  The cache may be reused after calling [[free]] (but this is not any
       *  faster than calling [[newCache]], modulo the object allocation).
       */
-    def free(): Unit = {
+    def free(): Unit =
       if (localCache != null) {
         localCache.foreach(_.unreference())
         localCache = null
       }
-    }
 
     protected override def finalize(): Unit = {
       free()
@@ -162,7 +163,7 @@ final class IRFileCache {
       } else {
         // try to increase ref count
         if (_references.compareAndSet(refs, refs + 1)) true // done
-        else reference() // something changed, try again
+        else reference()                                    // something changed, try again
       }
     }
 
@@ -226,13 +227,14 @@ final class IRFileCache {
 
     private def extractIRFiles(file: IRContainer) = file match {
       case IRContainer.File(file) => file :: Nil
-      case IRContainer.Jar(jar) => jar.sjsirFiles
+      case IRContainer.Jar(jar)   => jar.sjsirFiles
     }
   }
 
   private final class PersistentIRFile(
-      private[this] var _irFile: VirtualRelativeIRFile)
-      extends VirtualScalaJSIRFile with RelativeVirtualFile {
+      private[this] var _irFile: VirtualRelativeIRFile
+  ) extends VirtualScalaJSIRFile
+      with RelativeVirtualFile {
 
     import ir.Trees._
     import ir.Infos
@@ -240,14 +242,13 @@ final class IRFileCache {
     @volatile
     private[this] var _tree: ClassDef = null
 
-    override val path: String = _irFile.path
+    override val path: String            = _irFile.path
     override val version: Option[String] = _irFile.version
-    override val info: Infos.ClassInfo = _irFile.info
-    override val relativePath: String = _irFile.relativePath
+    override val info: Infos.ClassInfo   = _irFile.info
+    override val relativePath: String    = _irFile.relativePath
 
-    override def exists: Boolean = {
+    override def exists: Boolean =
       _tree != null || _irFile.exists
-    }
 
     override def tree: ClassDef = {
       if (_tree == null) {
@@ -268,7 +269,7 @@ final class IRFileCache {
     private def loadTree(): Unit = clearOnThrow {
       statsTreesRead.incrementAndGet()
       _tree = _irFile.tree // This can fail due to I/O
-      _irFile = null // Free for GC
+      _irFile = null       // Free for GC
     }
   }
 
@@ -278,23 +279,22 @@ final class IRFileCache {
     *  are not anymore.
     */
   @inline
-  private def clearOnThrow[T](body: => T): T = {
-    try body catch {
+  private def clearOnThrow[T](body: => T): T =
+    try body
+    catch {
       case t: Throwable =>
         globalCache.clear()
         throw t
     }
-  }
 }
 
 object IRFileCache {
   final class Stats(val reused: Int, val invalidated: Int, val treesRead: Int) {
 
     /** Descriptive line to display in logs */
-    def logLine: String = {
+    def logLine: String =
       s"reused: $reused -- " + s"invalidated: $invalidated -- " +
-      s"trees read: $treesRead"
-    }
+        s"trees read: $treesRead"
   }
 
   type VirtualRelativeIRFile = VirtualScalaJSIRFile with RelativeVirtualFile
@@ -303,19 +303,19 @@ object IRFileCache {
 
   object IRContainer extends IRContainerPlatformExtensions {
     final case class File(ir: VirtualRelativeIRFile) extends IRContainer {
-      override def path: String = ir.path
-      override def name: String = ir.name
+      override def path: String            = ir.path
+      override def name: String            = ir.name
       override def version: Option[String] = ir.version
-      override def exists: Boolean = ir.exists
-      override def toURI: URI = ir.toURI
+      override def exists: Boolean         = ir.exists
+      override def toURI: URI              = ir.toURI
     }
 
     final case class Jar(jar: VirtualJarFile) extends IRContainer {
-      override def path: String = jar.path
-      override def name: String = jar.name
+      override def path: String            = jar.path
+      override def name: String            = jar.name
       override def version: Option[String] = jar.version
-      override def exists: Boolean = jar.exists
-      override def toURI: URI = jar.toURI
+      override def exists: Boolean         = jar.exists
+      override def toURI: URI              = jar.toURI
     }
   }
 }

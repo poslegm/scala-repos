@@ -17,13 +17,19 @@
 package net.liftweb
 package util
 
-import Helpers.{tryo, internetDateFormatter => internetDateFormat, dateFormatter => dateFormat, hourFormat, timeFormatter => timeFormat}
+import Helpers.{
+  tryo,
+  internetDateFormatter => internetDateFormat,
+  dateFormatter => dateFormat,
+  hourFormat,
+  timeFormatter => timeFormat
+}
 import net.liftweb.common._
 import java.util.Date
 
 /**
   * Implement this trait to specify a set of rules to parse and format dates
-  * @author nafg 
+  * @author nafg
   */
 trait DateTimeConverter {
 
@@ -63,16 +69,16 @@ trait DateTimeConverter {
   */
 object DefaultDateTimeConverter extends DateTimeConverter {
   def formatDateTime(d: Date) = internetDateFormat.format(d)
-  def formatDate(d: Date) = dateFormat.format(d)
+  def formatDate(d: Date)     = dateFormat.format(d)
 
   /**  Uses Helpers.hourFormat which includes seconds but not time zone */
   def formatTime(d: Date) = hourFormat.format(d)
 
-  def parseDateTime(s: String) = tryo { internetDateFormat.parse(s) }
-  def parseDate(s: String) = tryo { dateFormat.parse(s) }
+  def parseDateTime(s: String) = tryo(internetDateFormat.parse(s))
+  def parseDate(s: String)     = tryo(dateFormat.parse(s))
 
   /** Tries Helpers.hourFormat and Helpers.timeFormat */
-  def parseTime(s: String) = tryo { hourFormat.parse(s) } or tryo {
+  def parseTime(s: String) = tryo(hourFormat.parse(s)) or tryo {
     timeFormat.parse(s)
   }
 }

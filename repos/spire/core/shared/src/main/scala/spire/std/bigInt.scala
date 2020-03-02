@@ -1,23 +1,30 @@
 package spire
 package std
 
-import spire.algebra.{EuclideanRing, IsIntegral, MetricSpace, NRoot, Order, Signed}
+import spire.algebra.{
+  EuclideanRing,
+  IsIntegral,
+  MetricSpace,
+  NRoot,
+  Order,
+  Signed
+}
 
 trait BigIntIsEuclideanRing extends EuclideanRing[BigInt] {
   override def minus(a: BigInt, b: BigInt): BigInt = a - b
-  def negate(a: BigInt): BigInt = -a
-  val one: BigInt = BigInt(1)
-  def plus(a: BigInt, b: BigInt): BigInt = a + b
-  override def pow(a: BigInt, b: Int): BigInt = a pow b
+  def negate(a: BigInt): BigInt                    = -a
+  val one: BigInt                                  = BigInt(1)
+  def plus(a: BigInt, b: BigInt): BigInt           = a + b
+  override def pow(a: BigInt, b: Int): BigInt      = a pow b
   override def times(a: BigInt, b: BigInt): BigInt = a * b
-  val zero: BigInt = BigInt(0)
+  val zero: BigInt                                 = BigInt(0)
 
   override def fromInt(n: Int): BigInt = BigInt(n)
 
-  def quot(a: BigInt, b: BigInt): BigInt = a / b
-  def mod(a: BigInt, b: BigInt): BigInt = a % b
+  def quot(a: BigInt, b: BigInt): BigInt                       = a / b
+  def mod(a: BigInt, b: BigInt): BigInt                        = a % b
   override def quotmod(a: BigInt, b: BigInt): (BigInt, BigInt) = a /% b
-  def gcd(a: BigInt, b: BigInt): BigInt = a.gcd(b)
+  def gcd(a: BigInt, b: BigInt): BigInt                        = a.gcd(b)
 }
 
 // This is not included in the *Instances trait!
@@ -27,7 +34,8 @@ trait BigIntIsNRoot extends NRoot[BigInt] {
       -nroot(-a, k)
     } else if (a < 0) {
       throw new ArithmeticException(
-          "Cannot find %d-root of negative number." format k)
+        "Cannot find %d-root of negative number." format k
+      )
     } else {
       def findNroot(b: BigInt, i: Int): BigInt =
         if (i < 0) {
@@ -46,14 +54,14 @@ trait BigIntIsNRoot extends NRoot[BigInt] {
 }
 
 trait BigIntOrder extends Order[BigInt] {
-  override def eqv(x: BigInt, y: BigInt): Boolean = x == y
-  override def neqv(x: BigInt, y: BigInt): Boolean = x != y
-  override def gt(x: BigInt, y: BigInt): Boolean = x > y
+  override def eqv(x: BigInt, y: BigInt): Boolean   = x == y
+  override def neqv(x: BigInt, y: BigInt): Boolean  = x != y
+  override def gt(x: BigInt, y: BigInt): Boolean    = x > y
   override def gteqv(x: BigInt, y: BigInt): Boolean = x >= y
-  override def lt(x: BigInt, y: BigInt): Boolean = x < y
+  override def lt(x: BigInt, y: BigInt): Boolean    = x < y
   override def lteqv(x: BigInt, y: BigInt): Boolean = x <= y
-  override def min(x: BigInt, y: BigInt): BigInt = x.min(y)
-  override def max(x: BigInt, y: BigInt): BigInt = x.max(y)
+  override def min(x: BigInt, y: BigInt): BigInt    = x.min(y)
+  override def max(x: BigInt, y: BigInt): BigInt    = x.max(y)
   // Scala compareTo has no guarantee to return only -1, 0 or 1, as per Spire's compare contractm
   // so we call Java's compareTo which does
   def compare(x: BigInt, y: BigInt): Int = x.bigInteger.compareTo(y.bigInteger)
@@ -65,7 +73,9 @@ trait BigIntIsSigned extends Signed[BigInt] {
 }
 
 trait BigIntIsReal
-    extends IsIntegral[BigInt] with BigIntOrder with BigIntIsSigned
+    extends IsIntegral[BigInt]
+    with BigIntOrder
+    with BigIntIsSigned
     with Serializable {
   def toDouble(n: BigInt): Double = n.toDouble
   def toBigInt(n: BigInt): BigInt = n
@@ -77,8 +87,11 @@ trait BigIntIsMetricSpace extends MetricSpace[BigInt, BigInt] {
 
 @SerialVersionUID(0L)
 class BigIntAlgebra
-    extends BigIntIsEuclideanRing with BigIntIsNRoot with BigIntIsMetricSpace
-    with BigIntIsReal with Serializable
+    extends BigIntIsEuclideanRing
+    with BigIntIsNRoot
+    with BigIntIsMetricSpace
+    with BigIntIsReal
+    with Serializable
 
 trait BigIntInstances {
   implicit final val BigIntAlgebra = new BigIntAlgebra

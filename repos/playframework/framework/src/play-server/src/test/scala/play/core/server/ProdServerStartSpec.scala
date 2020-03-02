@@ -30,11 +30,14 @@ object ProdServerStartSpec extends Specification {
   }
 
   case class ExitException(
-      message: String, cause: Option[Throwable] = None, returnCode: Int = -1)
-      extends Exception(s"Exit with $message, $returnCode", cause.orNull)
+      message: String,
+      cause: Option[Throwable] = None,
+      returnCode: Int = -1
+  ) extends Exception(s"Exit with $message, $returnCode", cause.orNull)
 
   def exitResult[A](f: => A): Either[(String, Option[String]), A] =
-    try Right(f) catch {
+    try Right(f)
+    catch {
       case ExitException(message, cause, _) =>
         val causeMessage: Option[String] =
           cause.flatMap(c => Option(c.getMessage))
@@ -42,10 +45,11 @@ object ProdServerStartSpec extends Specification {
     }
 
   /** A mocked ServerProcess */
-  class FakeServerProcess(val args: Seq[String] = Seq(),
-                          propertyMap: Map[String, String] = Map(),
-                          val pid: Option[String] = None)
-      extends ServerProcess {
+  class FakeServerProcess(
+      val args: Seq[String] = Seq(),
+      propertyMap: Map[String, String] = Map(),
+      val pid: Option[String] = None
+  ) extends ServerProcess {
 
     val classLoader: ClassLoader = getClass.getClassLoader
 
@@ -53,34 +57,34 @@ object ProdServerStartSpec extends Specification {
     for ((k, v) <- propertyMap) { properties.put(k, v) }
 
     private var hooks = Seq.empty[() => Unit]
-    def addShutdownHook(hook: => Unit) = {
+    def addShutdownHook(hook: => Unit) =
       hooks = hooks :+ (() => hook)
-    }
-    def shutdown(): Unit = {
+    def shutdown(): Unit =
       for (h <- hooks) h.apply()
-    }
 
-    def exit(message: String,
-             cause: Option[Throwable] = None,
-             returnCode: Int = -1): Nothing = {
+    def exit(
+        message: String,
+        cause: Option[Throwable] = None,
+        returnCode: Int = -1
+    ): Nothing =
       throw new ExitException(message, cause, returnCode)
-    }
   }
 
   // A family of fake servers for us to test
 
   class FakeServer(context: ServerProvider.Context)
-      extends Server with ServerWithStop {
-    def config = context.config
-    def applicationProvider = context.appProvider
-    def mode = config.mode
-    def mainAddress = ???
+      extends Server
+      with ServerWithStop {
+    def config                  = context.config
+    def applicationProvider     = context.appProvider
+    def mode                    = config.mode
+    def mainAddress             = ???
     @volatile var stopCallCount = 0
     override def stop() = {
       stopCallCount += 1
       super.stop()
     }
-    def httpPort = config.port
+    def httpPort  = config.port
     def httpsPort = config.sslPort
   }
 
@@ -94,14 +98,14 @@ object ProdServerStartSpec extends Specification {
     "read settings, create custom ServerProvider, create a pid file, start the the server and register shutdown hooks" in withTempDir {
       tempDir =>
         val process = new FakeServerProcess(
-            args = Seq(tempDir.getAbsolutePath),
-            propertyMap = Map("play.server.provider" -> classOf[
-                      FakeServerProvider].getName),
-            pid = Some("999")
+          args = Seq(tempDir.getAbsolutePath),
+          propertyMap =
+            Map("play.server.provider" -> classOf[FakeServerProvider].getName),
+          pid = Some("999")
         )
         val pidFile = new File(tempDir, "RUNNING_PID")
         pidFile.exists must beFalse
-        val server = ProdServerStart.start(process)
+        val server                 = ProdServerStart.start(process)
         def fakeServer: FakeServer = server.asInstanceOf[FakeServer]
         try {
           server.getClass must_== classOf[FakeServer]
@@ -118,18 +122,18 @@ object ProdServerStartSpec extends Specification {
 
     "read configuration for ports" in withTempDir { tempDir =>
       val process = new FakeServerProcess(
-          args = Seq(tempDir.getAbsolutePath),
-          propertyMap = Map(
-                "play.server.provider" -> classOf[FakeServerProvider].getName,
-                "play.server.http.port" -> "disabled",
-                "play.server.https.port" -> "443",
-                "play.server.http.address" -> "localhost"
-            ),
-          pid = Some("123")
+        args = Seq(tempDir.getAbsolutePath),
+        propertyMap = Map(
+          "play.server.provider"     -> classOf[FakeServerProvider].getName,
+          "play.server.http.port"    -> "disabled",
+          "play.server.https.port"   -> "443",
+          "play.server.http.address" -> "localhost"
+        ),
+        pid = Some("123")
       )
       val pidFile = new File(tempDir, "RUNNING_PID")
       pidFile.exists must beFalse
-      val server = ProdServerStart.start(process)
+      val server                 = ProdServerStart.start(process)
       def fakeServer: FakeServer = server.asInstanceOf[FakeServer]
       try {
         server.getClass must_== classOf[FakeServer]
@@ -147,18 +151,18 @@ object ProdServerStartSpec extends Specification {
 
     "read configuration for disabled https port" in withTempDir { tempDir =>
       val process = new FakeServerProcess(
-          args = Seq(tempDir.getAbsolutePath),
-          propertyMap = Map(
-                "play.server.provider" -> classOf[FakeServerProvider].getName,
-                "play.server.http.port" -> "80",
-                "play.server.https.port" -> "disabled",
-                "play.server.http.address" -> "localhost"
-            ),
-          pid = Some("123")
+        args = Seq(tempDir.getAbsolutePath),
+        propertyMap = Map(
+          "play.server.provider"     -> classOf[FakeServerProvider].getName,
+          "play.server.http.port"    -> "80",
+          "play.server.https.port"   -> "disabled",
+          "play.server.http.address" -> "localhost"
+        ),
+        pid = Some("123")
       )
       val pidFile = new File(tempDir, "RUNNING_PID")
       pidFile.exists must beFalse
-      val server = ProdServerStart.start(process)
+      val server                 = ProdServerStart.start(process)
       def fakeServer: FakeServer = server.asInstanceOf[FakeServer]
       try {
         server.getClass must_== classOf[FakeServer]

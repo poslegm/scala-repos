@@ -10,7 +10,7 @@ import javax.swing._
   */
 class DefaultValuesUsagePanel(labelText: String = "Default values:")
     extends JPanel {
-  private val myRbModifyCalls: JRadioButton = new JRadioButton
+  private val myRbModifyCalls: JRadioButton   = new JRadioButton
   private val myRbAddDefaultArg: JRadioButton = new JRadioButton
 
   init()

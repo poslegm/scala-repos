@@ -6,7 +6,7 @@ package java.lang
  * So we use a binary signature that no Java source file can ever produce.
  */
 class Thread private (dummy: Unit) extends Runnable {
-  private var interruptedState = false
+  private var interruptedState   = false
   private[this] var name: String = "main" // default name of the main thread
 
   def run(): Unit = ()

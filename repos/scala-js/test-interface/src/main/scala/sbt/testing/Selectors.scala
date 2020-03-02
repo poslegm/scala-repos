@@ -29,8 +29,8 @@ abstract sealed class Selector
   */
 final class SuiteSelector extends Selector with Serializable {
   override def equals(o: Any): Boolean = o.isInstanceOf[SuiteSelector]
-  override def hashCode(): Int = 29
-  override def toString(): String = "SuiteSelector"
+  override def hashCode(): Int         = 29
+  override def toString(): String      = "SuiteSelector"
 }
 
 /** Information in addition to a test class name that identifies a test
@@ -38,8 +38,7 @@ final class SuiteSelector extends Selector with Serializable {
   *  specified as the <code>fullyQualifiedName</code> attribute passed to the
   *  event.
   */
-final class TestSelector(_testName: String)
-    extends Selector with Serializable {
+final class TestSelector(_testName: String) extends Selector with Serializable {
 
   if (_testName == null) throw new NullPointerException("testName was null");
 
@@ -51,10 +50,10 @@ final class TestSelector(_testName: String)
 
   override def equals(that: Any): Boolean = that match {
     case that: TestSelector => this.testName == that.testName
-    case _ => false
+    case _                  => false
   }
 
-  override def hashCode(): Int = testName.hashCode()
+  override def hashCode(): Int    = testName.hashCode()
   override def toString(): String = s"TestSelector($testName)"
 }
 
@@ -62,7 +61,8 @@ final class TestSelector(_testName: String)
   *  about which an event was fired.
   */
 final class NestedSuiteSelector(_suiteId: String)
-    extends Selector with Serializable {
+    extends Selector
+    with Serializable {
 
   if (_suiteId == null) throw new NullPointerException("suiteId was null");
 
@@ -75,10 +75,10 @@ final class NestedSuiteSelector(_suiteId: String)
 
   override def equals(that: Any): Boolean = that match {
     case that: NestedSuiteSelector => this.suiteId == that.suiteId
-    case _ => false
+    case _                         => false
   }
 
-  override def hashCode(): Int = suiteId.hashCode()
+  override def hashCode(): Int    = suiteId.hashCode()
   override def toString(): String = s"NestedSuiteSelector($suiteId)"
 }
 
@@ -86,7 +86,8 @@ final class NestedSuiteSelector(_suiteId: String)
   *  nested suite about which an event was fired.
   */
 final class NestedTestSelector(_suiteId: String, _testName: String)
-    extends Selector with Serializable {
+    extends Selector
+    with Serializable {
 
   if (_suiteId == null) throw new NullPointerException("suiteId was null");
   if (_testName == null) throw new NullPointerException("testName was null");
@@ -129,7 +130,8 @@ final class NestedTestSelector(_suiteId: String, _testName: String)
   *  <code>testWildcard</code> string as a substring will be selected.
   */
 final class TestWildcardSelector(_testWildcard: String)
-    extends Selector with Serializable {
+    extends Selector
+    with Serializable {
 
   if (_testWildcard == null)
     throw new NullPointerException("testWildcard was null");

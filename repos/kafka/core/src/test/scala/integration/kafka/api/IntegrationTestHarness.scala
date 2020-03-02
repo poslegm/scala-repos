@@ -38,17 +38,18 @@ trait IntegrationTestHarness extends KafkaServerTestHarness {
   val serverCount: Int
   lazy val producerConfig = new Properties
   lazy val consumerConfig = new Properties
-  lazy val serverConfig = new Properties
+  lazy val serverConfig   = new Properties
 
   val consumers = Buffer[KafkaConsumer[Array[Byte], Array[Byte]]]()
   val producers = Buffer[KafkaProducer[Array[Byte], Array[Byte]]]()
 
   override def generateConfigs() = {
     val cfgs = TestUtils.createBrokerConfigs(
-        serverCount,
-        zkConnect,
-        interBrokerSecurityProtocol = Some(securityProtocol),
-        trustStoreFile = trustStoreFile)
+      serverCount,
+      zkConnect,
+      interBrokerSecurityProtocol = Some(securityProtocol),
+      trustStoreFile = trustStoreFile
+    )
     cfgs.foreach(_.putAll(serverConfig))
     cfgs.map(KafkaConfig.fromProps)
   }
@@ -61,42 +62,52 @@ trait IntegrationTestHarness extends KafkaServerTestHarness {
       TestUtils.consumerSecurityConfigs(securityProtocol, trustStoreFile)
     super.setUp()
     producerConfig.put(
-        ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-        classOf[org.apache.kafka.common.serialization.ByteArraySerializer])
+      ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
+      classOf[org.apache.kafka.common.serialization.ByteArraySerializer]
+    )
     producerConfig.put(
-        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-        classOf[org.apache.kafka.common.serialization.ByteArraySerializer])
+      ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+      classOf[org.apache.kafka.common.serialization.ByteArraySerializer]
+    )
     producerConfig.putAll(producerSecurityProps)
     consumerConfig.put(
-        ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-        classOf[org.apache.kafka.common.serialization.ByteArrayDeserializer])
+      ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+      classOf[org.apache.kafka.common.serialization.ByteArrayDeserializer]
+    )
     consumerConfig.put(
-        ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-        classOf[org.apache.kafka.common.serialization.ByteArrayDeserializer])
+      ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+      classOf[org.apache.kafka.common.serialization.ByteArrayDeserializer]
+    )
     consumerConfig.putAll(consumerSecurityProps)
-    for (i <- 0 until producerCount) producers +=
-      TestUtils.createNewProducer(brokerList,
-                                  securityProtocol = this.securityProtocol,
-                                  trustStoreFile = this.trustStoreFile,
-                                  props = Some(producerConfig))
+    for (i <- 0 until producerCount)
+      producers +=
+        TestUtils.createNewProducer(
+          brokerList,
+          securityProtocol = this.securityProtocol,
+          trustStoreFile = this.trustStoreFile,
+          props = Some(producerConfig)
+        )
     for (i <- 0 until consumerCount) {
       consumers +=
-        TestUtils.createNewConsumer(brokerList,
-                                    securityProtocol = this.securityProtocol,
-                                    trustStoreFile = this.trustStoreFile,
-                                    props = Some(consumerConfig))
+        TestUtils.createNewConsumer(
+          brokerList,
+          securityProtocol = this.securityProtocol,
+          trustStoreFile = this.trustStoreFile,
+          props = Some(consumerConfig)
+        )
     }
 
     // create the consumer offset topic
     TestUtils.createTopic(
-        zkUtils,
-        TopicConstants.GROUP_METADATA_TOPIC_NAME,
-        serverConfig.getProperty(KafkaConfig.OffsetsTopicPartitionsProp).toInt,
-        serverConfig
-          .getProperty(KafkaConfig.OffsetsTopicReplicationFactorProp)
-          .toInt,
-        servers,
-        servers(0).consumerCoordinator.offsetsTopicConfigs)
+      zkUtils,
+      TopicConstants.GROUP_METADATA_TOPIC_NAME,
+      serverConfig.getProperty(KafkaConfig.OffsetsTopicPartitionsProp).toInt,
+      serverConfig
+        .getProperty(KafkaConfig.OffsetsTopicReplicationFactorProp)
+        .toInt,
+      servers,
+      servers(0).consumerCoordinator.offsetsTopicConfigs
+    )
   }
 
   @After

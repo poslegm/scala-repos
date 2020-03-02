@@ -40,7 +40,7 @@ private object BSONHandlers {
   }
   implicit val FENBSONHandler = new BSONHandler[BSONString, FEN] {
     def read(b: BSONString) = FEN(b.value)
-    def write(x: FEN) = BSONString(x.value)
+    def write(x: FEN)       = BSONString(x.value)
   }
 
   implicit val WorkIdBSONHandler =

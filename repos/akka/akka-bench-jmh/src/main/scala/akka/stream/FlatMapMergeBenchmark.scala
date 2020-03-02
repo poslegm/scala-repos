@@ -17,7 +17,8 @@ import scala.concurrent.duration._
 class FlatMapMergeBenchmark {
   implicit val system = ActorSystem("FlatMapMergeBenchmark")
   val materializerSettings = ActorMaterializerSettings(system).withDispatcher(
-      "akka.test.stream-dispatcher")
+    "akka.test.stream-dispatcher"
+  )
   implicit val materializer = ActorMaterializer(materializerSettings)
 
   val NumberOfElements = 100000
@@ -44,13 +45,11 @@ class FlatMapMergeBenchmark {
   }
 
   @TearDown
-  def shutdown(): Unit = {
+  def shutdown(): Unit =
     Await.result(system.terminate(), 5.seconds)
-  }
 
   @Benchmark
   @OperationsPerInvocation(100000) // Note: needs to match NumberOfElements.
-  def flat_map_merge_100k_elements(): Unit = {
+  def flat_map_merge_100k_elements(): Unit =
     Await.result(graph.run(), Duration.Inf)
-  }
 }

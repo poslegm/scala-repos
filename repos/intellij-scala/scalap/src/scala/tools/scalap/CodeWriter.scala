@@ -11,12 +11,12 @@ import java.io._
 
 class CodeWriter(writer: Writer) {
 
-  private val nl = compat.Platform.EOL
-  private var step = "  "
+  private val nl    = compat.Platform.EOL
+  private var step  = "  "
   private var level = 0
   private var align = false
   private var space = false
-  private var line = false
+  private var line  = false
 
   def getWriter = writer
 
@@ -49,7 +49,7 @@ class CodeWriter(writer: Writer) {
     this
   }
 
-  def newline: CodeWriter = {
+  def newline: CodeWriter =
     if (step == null) newspace
     else if (!line) {
       try {
@@ -62,7 +62,6 @@ class CodeWriter(writer: Writer) {
       space = false
       this
     } else this
-  }
 
   def newspace: CodeWriter = {
     space = !align

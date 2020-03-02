@@ -7,23 +7,23 @@ import org.joda.time.DateTime
 trait Granter {
 
   private val TeamSlugPattern = """^team-([\w-]+)$""".r
-  private val StaffSlug = "staff"
+  private val StaffSlug       = "staff"
 
   protected def userBelongsToTeam(teamId: String, userId: String): Boolean
   protected def userOwnsTeam(teamId: String, userId: String): Fu[Boolean]
 
   def isGrantedRead(categSlug: String)(implicit ctx: UserContext): Boolean =
-    (categSlug == StaffSlug).fold(
-        ctx.me exists Master(Permission.StaffForum), true)
+    (categSlug == StaffSlug)
+      .fold(ctx.me exists Master(Permission.StaffForum), true)
 
   def isGrantedWrite(categSlug: String)(implicit ctx: UserContext): Boolean =
     isOldEnoughToForum && {
       ctx.me ?? { me =>
         Master(Permission.StaffForum)(me) || {
           categSlug match {
-            case StaffSlug => false
+            case StaffSlug               => false
             case TeamSlugPattern(teamId) => userBelongsToTeam(teamId, me.id)
-            case _ => true
+            case _                       => true
           }
         }
       }
@@ -38,9 +38,7 @@ trait Granter {
     categSlug match {
       case _ if (ctx.me ?? Master(Permission.ModerateForum)) => fuccess(true)
       case TeamSlugPattern(teamId) =>
-        ctx.me ?? { me =>
-          userOwnsTeam(teamId, me.id)
-        }
+        ctx.me ?? { me => userOwnsTeam(teamId, me.id) }
       case _ => fuccess(false)
     }
 }

@@ -16,14 +16,15 @@ object IO {
   private val BufferSize = 8192
 
   def readFile(file: String): Array[Byte] = readFile(Paths.get(file))
-  def readFile(path: Path): Array[Byte] = Files.readAllBytes(path)
+  def readFile(path: Path): Array[Byte]   = Files.readAllBytes(path)
 
   def listFiles(file: String): Array[File] = listFiles(new File(file))
   def listFiles(file: File): Array[File] = {
     if (!file.exists()) throw new FileNotFoundException(file.getAbsolutePath)
     if (!file.isDirectory)
       throw new FileNotFoundException(
-          s"File ${file.getAbsolutePath} is not a directory!")
+        s"File ${file.getAbsolutePath} is not a directory!"
+      )
     file.listFiles()
   }
 
@@ -38,10 +39,14 @@ object IO {
   }
 
   def copyFile(sourceFile: File, targetFile: File) {
-    require(sourceFile.exists,
-            "Source file '" + sourceFile.getAbsolutePath + "' does not exist.")
-    require(!sourceFile.isDirectory,
-            "Source file '" + sourceFile.getAbsolutePath + "' is a directory.")
+    require(
+      sourceFile.exists,
+      "Source file '" + sourceFile.getAbsolutePath + "' does not exist."
+    )
+    require(
+      !sourceFile.isDirectory,
+      "Source file '" + sourceFile.getAbsolutePath + "' is a directory."
+    )
     using(new FileInputStream(sourceFile)) { source =>
       using(new FileOutputStream(targetFile)) { target =>
         transfer(source, target, close = false)
@@ -54,7 +59,8 @@ object IO {
       val result = dir.mkdirs()
       if (!result || !dir.isDirectory || !dir.exists)
         throw new IOException(
-            "Can not create Directory: " + dir.getAbsolutePath)
+          "Can not create Directory: " + dir.getAbsolutePath
+        )
     }
   }
 
@@ -65,9 +71,11 @@ object IO {
     file.delete()
   }
 
-  def mdSum(in: InputStream,
-            mdName: String = "SHA-1",
-            out: OutputStream = ByteStreams.nullOutputStream()): String = {
+  def mdSum(
+      in: InputStream,
+      mdName: String = "SHA-1",
+      out: OutputStream = ByteStreams.nullOutputStream()
+  ): String = {
     val md = MessageDigest.getInstance(mdName)
     transfer(new DigestInputStream(in, md), out)
     //scalastyle:off magic.number
@@ -84,16 +92,17 @@ object IO {
     out.toByteArray
   }
 
-  def gzipUncompress(bytes: Array[Byte]): Array[Byte] = {
+  def gzipUncompress(bytes: Array[Byte]): Array[Byte] =
     using(new GZIPInputStream(new ByteArrayInputStream(bytes))) { in =>
       ByteStreams.toByteArray(in)
     }
-  }
 
-  def transfer(in: InputStream,
-               out: OutputStream,
-               close: Boolean = true,
-               continue: => Boolean = true) {
+  def transfer(
+      in: InputStream,
+      out: OutputStream,
+      close: Boolean = true,
+      continue: => Boolean = true
+  ) {
     try {
       val buffer = new Array[Byte](BufferSize)
       @tailrec
@@ -115,20 +124,18 @@ object IO {
     new String(out.toByteArray, "UTF-8")
   }
 
-  def withResource[T](path: String)(fn: InputStream => T): Option[T] = {
+  def withResource[T](path: String)(fn: InputStream => T): Option[T] =
     Option(getClass.getResourceAsStream(path)).flatMap { stream =>
       Try(stream.available()) match {
         case Success(length) => Some(fn(stream))
-        case Failure(ex) => None
+        case Failure(ex)     => None
       }
     }
-  }
 
-  def using[A <: Closeable, B](closeable: A)(fn: (A) => B): B = {
+  def using[A <: Closeable, B](closeable: A)(fn: (A) => B): B =
     try {
       fn(closeable)
     } finally {
       Try(closeable.close())
     }
-  }
 }

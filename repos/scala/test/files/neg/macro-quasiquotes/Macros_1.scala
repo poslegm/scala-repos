@@ -4,8 +4,8 @@ import scala.reflect.macros.blackbox.Context
 class Impls(val c: Context) {
   import c.universe._
   def impl1(x: Expr[Int]) = q"println(x)"
-  def impl2(x: Tree) = q"println(x)"
-  def impl3(x: Block) = q"println(x)"
+  def impl2(x: Tree)      = q"println(x)"
+  def impl3(x: Block)     = q"println(x)"
 }
 
 object Macros {

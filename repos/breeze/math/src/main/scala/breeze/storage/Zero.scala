@@ -22,13 +22,13 @@ import breeze.math.Semiring
   *
   * @author dlwh
   */
-@SerialVersionUID(1l)
+@SerialVersionUID(1L)
 trait Zero[@specialized T] extends Serializable {
   def zero: T
 }
 
 object Zero extends ZeroLowPriority {
-  def forClass(clazz: Class[_]): Zero[_] = {
+  def forClass(clazz: Class[_]): Zero[_] =
     if (clazz == Integer.TYPE) IntZero
     else if (clazz == java.lang.Float.TYPE) FloatZero
     else if (clazz == java.lang.Double.TYPE) DoubleZero
@@ -37,7 +37,6 @@ object Zero extends ZeroLowPriority {
     else if (clazz == java.lang.Boolean.TYPE) BooleanZero
     else if (clazz == java.lang.Character.TYPE) CharZero
     else refDefault
-  }
 
   def apply[T](v: T): Zero[T] = new Zero[T] {
     def zero = v
@@ -52,7 +51,7 @@ object Zero extends ZeroLowPriority {
   }
 
   implicit object LongZero extends Zero[Long] {
-    override def zero = 0l
+    override def zero = 0L
   }
 
   implicit object ByteZero extends Zero[Byte] {
@@ -86,9 +85,8 @@ object Zero extends ZeroLowPriority {
 
 trait ZeroVeryLowPriority {
   this: Zero.type =>
-  implicit def ObjectZero[T <: AnyRef] = {
+  implicit def ObjectZero[T <: AnyRef] =
     refDefault.asInstanceOf[Zero[T]]
-  }
 
   protected val refDefault = new Zero[AnyRef] {
     override def zero: AnyRef = null
@@ -98,6 +96,6 @@ trait ZeroVeryLowPriority {
 trait ZeroLowPriority extends ZeroVeryLowPriority {
   this: Zero.type =>
 
-  implicit def zeroFromSemiring[T : Semiring] =
+  implicit def zeroFromSemiring[T: Semiring] =
     Zero(implicitly[Semiring[T]].zero)
 }

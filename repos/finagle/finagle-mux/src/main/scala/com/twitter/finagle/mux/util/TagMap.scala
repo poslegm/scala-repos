@@ -37,17 +37,17 @@ private[mux] trait TagMap[T] extends Iterable[(Int, T)] {
 }
 
 private[mux] object TagMap {
-  def apply[T <: Object : ClassTag](
+  def apply[T <: Object: ClassTag](
       set: TagSet,
       fastSize: Int = 256
   ): TagMap[T] = new TagMap[T] {
     require(fastSize >= 0)
     require(set.range.start >= 0)
-    private[this] val fast = new Array[T](fastSize)
-    private[this] val fallback = new HashMap[Int, T]
-    private[this] val fastOff = set.range.start
+    private[this] val fast                      = new Array[T](fastSize)
+    private[this] val fallback                  = new HashMap[Int, T]
+    private[this] val fastOff                   = set.range.start
     private[this] def inFast(tag: Int): Boolean = tag < fastSize + fastOff
-    private[this] def getFast(tag: Int): T = fast(tag - fastOff)
+    private[this] def getFast(tag: Int): T      = fast(tag - fastOff)
     private[this] def setFast(tag: Int, el: T) { fast(tag - fastOff) = el }
 
     def map(el: T): Option[Int] = synchronized {

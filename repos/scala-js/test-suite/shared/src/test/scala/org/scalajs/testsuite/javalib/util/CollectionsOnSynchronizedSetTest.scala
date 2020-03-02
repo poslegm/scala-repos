@@ -15,18 +15,17 @@ trait CollectionsOnSynchronizedSetTest extends CollectionsOnSetsTest {
 
   def originalFactory: SetFactory
 
-  def factory: SetFactory = {
+  def factory: SetFactory =
     new SetFactory {
       override def implementationName: String =
         s"synchronizedSet(${originalFactory.implementationName})"
 
-      override def empty[E : ClassTag]: ju.Set[E] =
+      override def empty[E: ClassTag]: ju.Set[E] =
         ju.Collections.synchronizedSet(originalFactory.empty[E])
 
       def allowsNullElement: Boolean =
         originalFactory.allowsNullElement
     }
-  }
 }
 
 trait CollectionsOnSynchronizedSortedSetTest
@@ -34,18 +33,17 @@ trait CollectionsOnSynchronizedSortedSetTest
 
   def originalFactory: SortedSetFactory
 
-  def factory: SortedSetFactory = {
+  def factory: SortedSetFactory =
     new SortedSetFactory {
       override def implementationName: String =
         s"synchronizedSortedSet(${originalFactory.implementationName})"
 
-      override def empty[E : ClassTag]: ju.SortedSet[E] =
+      override def empty[E: ClassTag]: ju.SortedSet[E] =
         ju.Collections.synchronizedSortedSet(originalFactory.empty[E])
 
       def allowsNullElement: Boolean =
         originalFactory.allowsNullElement
     }
-  }
 }
 
 class CollectionsOnSynchronizedSetHashSetFactoryTest

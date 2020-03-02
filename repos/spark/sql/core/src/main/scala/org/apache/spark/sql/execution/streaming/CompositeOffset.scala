@@ -33,9 +33,9 @@ case class CompositeOffset(offsets: Seq[Option[Offset]]) extends Offset {
         if otherComposite.offsets.size == offsets.size =>
       val comparisons = offsets.zip(otherComposite.offsets).map {
         case (Some(a), Some(b)) => a compareTo b
-        case (None, None) => 0
-        case (None, _) => -1
-        case (_, None) => 1
+        case (None, None)       => 0
+        case (None, _)          => -1
+        case (_, None)          => 1
       }
       val nonZeroSigns = comparisons.map(sign).filter(_ != 0).toSet
       nonZeroSigns.size match {
@@ -44,16 +44,17 @@ case class CompositeOffset(offsets: Seq[Option[Offset]]) extends Offset {
           nonZeroSigns.head // if there are only (0s and 1s) or (0s and -1s)
         case _ => // there are both 1s and -1s
           throw new IllegalArgumentException(
-              s"Invalid comparison between non-linear histories: $this <=> $other")
+            s"Invalid comparison between non-linear histories: $this <=> $other"
+          )
       }
     case _ =>
       throw new IllegalArgumentException(s"Cannot compare $this <=> $other")
   }
 
   private def sign(num: Int): Int = num match {
-    case i if i < 0 => -1
+    case i if i < 0  => -1
     case i if i == 0 => 0
-    case i if i > 0 => 1
+    case i if i > 0  => 1
   }
 }
 
@@ -63,7 +64,6 @@ object CompositeOffset {
     * Returns a [[CompositeOffset]] with a variable sequence of offsets.
     * `nulls` in the sequence are converted to `None`s.
     */
-  def fill(offsets: Offset*): CompositeOffset = {
+  def fill(offsets: Offset*): CompositeOffset =
     CompositeOffset(offsets.map(Option(_)))
-  }
 }

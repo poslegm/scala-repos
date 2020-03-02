@@ -17,10 +17,12 @@ import org.jetbrains.plugins.scala.util.MultilineStringUtil
   * Date: 5/5/12
   */
 class MultiLineStringCopyPasteProcessor extends CopyPastePreProcessor {
-  def preprocessOnCopy(file: PsiFile,
-                       startOffsets: Array[Int],
-                       endOffsets: Array[Int],
-                       text: String): String = {
+  def preprocessOnCopy(
+      file: PsiFile,
+      startOffsets: Array[Int],
+      endOffsets: Array[Int],
+      text: String
+  ): String = {
     val settings = ScalaCodeStyleSettings.getInstance(file.getProject)
     if (!file.isInstanceOf[ScalaFile] ||
         !settings.PROCESS_MARGIN_ON_COPY_PASTE || startOffsets.length != 1 ||
@@ -28,31 +30,35 @@ class MultiLineStringCopyPasteProcessor extends CopyPastePreProcessor {
     findOuterString(file.findElementAt(startOffsets(0))) match {
       case Some(element)
           if element.getTextRange.getStartOffset <= startOffsets(0) &&
-          element.getTextRange.getEndOffset >= endOffsets(0) =>
+            element.getTextRange.getEndOffset >= endOffsets(0) =>
         text stripMargin getMarginChar(element)
       case _ => null
     }
   }
 
-  def preprocessOnPaste(project: Project,
-                        file: PsiFile,
-                        editor: Editor,
-                        text: String,
-                        rawText: RawText): String = {
+  def preprocessOnPaste(
+      project: Project,
+      file: PsiFile,
+      editor: Editor,
+      text: String,
+      rawText: RawText
+  ): String = {
     val settings = ScalaCodeStyleSettings.getInstance(file.getProject)
     if (!file.isInstanceOf[ScalaFile] ||
         !settings.PROCESS_MARGIN_ON_COPY_PASTE) return text
 
-    val offset = editor.getCaretModel.getOffset
+    val offset   = editor.getCaretModel.getOffset
     val document = editor.getDocument
-    val element = file.findElementAt(offset)
+    val element  = file.findElementAt(offset)
 
     if (checkElement(element) || offset < element.getTextOffset + 3)
       return text
 
     val marginChar = getMarginChar(element)
     val textRange = new TextRange(
-        document.getLineStartOffset(document.getLineNumber(offset)), offset)
+      document.getLineStartOffset(document.getLineNumber(offset)),
+      offset
+    )
 
     (if (document.getText(textRange).trim.length == 0 &&
          (text.trim().length == 0 || text.trim.charAt(0) != marginChar))
@@ -70,7 +76,8 @@ class MultiLineStringCopyPasteProcessor extends CopyPastePreProcessor {
         Some(interpLiteral)
       case string
           if MultiLineStringCopyPasteProcessor.SAFE_ELEMENTS.contains(
-              string.getNode.getElementType) =>
+            string.getNode.getElementType
+          ) =>
         Some(findOuterString(element.getParent).getOrElse(string))
       case _ => None
     }
@@ -82,7 +89,8 @@ class MultiLineStringCopyPasteProcessor extends CopyPastePreProcessor {
 
 object MultiLineStringCopyPasteProcessor {
   private val SAFE_ELEMENTS = TokenSet.create(
-      ScalaTokenTypes.tMULTILINE_STRING,
-      ScalaTokenTypes.tINTERPOLATED_MULTILINE_STRING,
-      ScalaTokenTypes.tINTERPOLATED_STRING_ID)
+    ScalaTokenTypes.tMULTILINE_STRING,
+    ScalaTokenTypes.tINTERPOLATED_MULTILINE_STRING,
+    ScalaTokenTypes.tINTERPOLATED_STRING_ID
+  )
 }

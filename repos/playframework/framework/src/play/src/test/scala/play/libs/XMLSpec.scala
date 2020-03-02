@@ -12,9 +12,8 @@ object XMLSpec extends Specification {
 
   "The Java XML support" should {
 
-    def parse(xml: String) = {
+    def parse(xml: String) =
       XML.fromString(xml)
-    }
 
     def writeStringToFile(file: File, text: String) = {
       val out = new FileOutputStream(file)
@@ -45,11 +44,14 @@ object XMLSpec extends Specification {
 
     "parse XML bodies without loading in a related schema from a parameter" in {
       val externalParameterEntity = File.createTempFile("xep", ".dtd")
-      val externalGeneralEntity = File.createTempFile("xxe", ".txt")
-      writeStringToFile(externalParameterEntity, s"""
+      val externalGeneralEntity   = File.createTempFile("xxe", ".txt")
+      writeStringToFile(
+        externalParameterEntity,
+        s"""
           |<!ENTITY % xge SYSTEM "${externalGeneralEntity.toURI}">
           |<!ENTITY % pe "<!ENTITY xxe '%xge;'>">
-        """.stripMargin)
+        """.stripMargin
+      )
       writeStringToFile(externalGeneralEntity, "I shouldnt be there!")
       externalGeneralEntity.deleteOnExit()
       externalParameterEntity.deleteOnExit()
@@ -66,9 +68,9 @@ object XMLSpec extends Specification {
     }
 
     "gracefully fail when there are too many nested entities" in {
-      val nested = for (x <- 1 to 30) yield
-        "<!ENTITY laugh" + x + " \"&laugh" + (x - 1) + ";&laugh" + (x - 1) +
-        ";\">"
+      val nested = for (x <- 1 to 30)
+        yield "<!ENTITY laugh" + x + " \"&laugh" + (x - 1) + ";&laugh" + (x - 1) +
+          ";\">"
       val xml = s"""<?xml version="1.0"?>
                   | <!DOCTYPE billion [
                   | <!ELEMENT billion (#PCDATA)>
@@ -83,9 +85,9 @@ object XMLSpec extends Specification {
     }
 
     "gracefully fail when an entity expands to be very large" in {
-      val as = "a" * 50000
+      val as       = "a" * 50000
       val entities = "&a;" * 50000
-      val xml = s"""<?xml version="1.0"?>
+      val xml      = s"""<?xml version="1.0"?>
                   | <!DOCTYPE kaboom [
                   | <!ENTITY a "$as">
                   | ]>

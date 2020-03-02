@@ -16,7 +16,9 @@ object RetryingService {
     * is a [[com.twitter.finagle.WriteException WriteException]].
     */
   def tries[Req, Rep](
-      numTries: Int, stats: StatsReceiver): Filter[Req, Rep, Req, Rep] = {
+      numTries: Int,
+      stats: StatsReceiver
+  ): Filter[Req, Rep, Req, Rep] = {
     val policy = RetryPolicy.tries(numTries)
     new RetryExceptionsFilter[Req, Rep](policy, HighResTimer.Default, stats)
   }
@@ -37,11 +39,12 @@ object RetryingService {
   * @see The [[https://twitter.github.io/finagle/guide/Servers.html#request-timeout user guide]]
   *      for more details.
   */
-class RetryFilter[Req, Rep](retryPolicy: RetryPolicy[(Req, Try[Rep])],
-                            timer: Timer,
-                            statsReceiver: StatsReceiver,
-                            retryBudget: RetryBudget)
-    extends Filter[Req, Rep, Req, Rep] {
+class RetryFilter[Req, Rep](
+    retryPolicy: RetryPolicy[(Req, Try[Rep])],
+    timer: Timer,
+    statsReceiver: StatsReceiver,
+    retryBudget: RetryBudget
+) extends Filter[Req, Rep, Req, Rep] {
 
   /**
     * A [[com.twitter.finagle.Filter]] that coordinates retries of subsequent
@@ -57,10 +60,10 @@ class RetryFilter[Req, Rep](retryPolicy: RetryPolicy[(Req, Try[Rep])],
       timer: Timer,
       statsReceiver: StatsReceiver
   ) = this(
-      retryPolicy,
-      timer,
-      statsReceiver,
-      RetryBudget()
+    retryPolicy,
+    timer,
+    statsReceiver,
+    RetryBudget()
   )
 
   private[this] val retriesStat = statsReceiver.stat("retries")
@@ -69,7 +72,7 @@ class RetryFilter[Req, Rep](retryPolicy: RetryPolicy[(Req, Try[Rep])],
     statsReceiver.scope("retries").counter("budget_exhausted")
 
   @inline
-  private[this] def schedule(d: Duration)(f: => Future[Rep]) = {
+  private[this] def schedule(d: Duration)(f: => Future[Rep]) =
     if (d > 0.seconds) {
       val promise = new Promise[Rep]
       timer.schedule(Time.now + d) {
@@ -77,7 +80,6 @@ class RetryFilter[Req, Rep](retryPolicy: RetryPolicy[(Req, Try[Rep])],
       }
       promise
     } else f
-  }
 
   private[this] def dispatch(
       req: Req,
@@ -129,7 +131,10 @@ object RetryFilter {
       implicit timer: Timer
   ): RetryFilter[Req, Rep] =
     new RetryFilter[Req, Rep](
-        RetryPolicy.backoff(backoffs)(shouldRetry), timer, statsReceiver)
+      RetryPolicy.backoff(backoffs)(shouldRetry),
+      timer,
+      statsReceiver
+    )
 }
 
 /**
@@ -151,12 +156,13 @@ final class RetryExceptionsFilter[Req, Rep](
     retryPolicy: RetryPolicy[Try[Nothing]],
     timer: Timer,
     statsReceiver: StatsReceiver,
-    retryBudget: RetryBudget)
-    extends RetryFilter[Req, Rep](
-        RetryPolicy.convertExceptionPolicy(retryPolicy),
-        timer,
-        statsReceiver,
-        retryBudget) {
+    retryBudget: RetryBudget
+) extends RetryFilter[Req, Rep](
+      RetryPolicy.convertExceptionPolicy(retryPolicy),
+      timer,
+      statsReceiver,
+      retryBudget
+    ) {
 
   /**
     * A [[com.twitter.finagle.Filter]] that coordinates retries of subsequent
@@ -175,10 +181,10 @@ final class RetryExceptionsFilter[Req, Rep](
       timer: Timer,
       statsReceiver: StatsReceiver = NullStatsReceiver
   ) = this(
-      retryPolicy,
-      timer,
-      statsReceiver,
-      RetryBudget()
+    retryPolicy,
+    timer,
+    statsReceiver,
+    RetryBudget()
   )
 }
 
@@ -199,9 +205,10 @@ object RetryExceptionsFilter {
       implicit timer: Timer
   ): RetryExceptionsFilter[Req, Rep] =
     new RetryExceptionsFilter[Req, Rep](
-        RetryPolicy.backoff(backoffs)(shouldRetry),
-        timer,
-        statsReceiver)
+      RetryPolicy.backoff(backoffs)(shouldRetry),
+      timer,
+      statsReceiver
+    )
 
   def typeAgnostic(
       retryPolicy: RetryPolicy[Try[Nothing]],

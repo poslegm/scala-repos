@@ -32,10 +32,9 @@ private final class MoveDB {
     case (acc, (_, m)) =>
       if (m.nonAcquired)
         Some {
-          acc.fold(m) { a =>
-            if (m.createdAt isBefore a.createdAt) m else a
-          }
-        } else acc
+          acc.fold(m)(a => if (m.createdAt isBefore a.createdAt) m else a)
+        }
+      else acc
   }
 
   def updateOrGiveUp(move: Move) =

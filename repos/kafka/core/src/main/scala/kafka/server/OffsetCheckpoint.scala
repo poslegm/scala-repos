@@ -28,7 +28,7 @@ import java.io._
 
 object OffsetCheckpoint {
   private val WhiteSpacesPattern = Pattern.compile("\\s+")
-  private val CurrentVersion = 0
+  private val CurrentVersion     = 0
 }
 
 /**
@@ -36,16 +36,16 @@ object OffsetCheckpoint {
   */
 class OffsetCheckpoint(val file: File) extends Logging {
   import OffsetCheckpoint._
-  private val path = file.toPath.toAbsolutePath
+  private val path     = file.toPath.toAbsolutePath
   private val tempPath = Paths.get(path.toString + ".tmp")
-  private val lock = new Object()
+  private val lock     = new Object()
   file.createNewFile() // in case the file doesn't exist
 
   def write(offsets: Map[TopicAndPartition, Long]) {
     lock synchronized {
       // write to temp file and then swap with the existing file
       val fileOutputStream = new FileOutputStream(tempPath.toFile)
-      val writer = new BufferedWriter(new OutputStreamWriter(fileOutputStream))
+      val writer           = new BufferedWriter(new OutputStreamWriter(fileOutputStream))
       try {
         writer.write(CurrentVersion.toString)
         writer.newLine()
@@ -65,8 +65,9 @@ class OffsetCheckpoint(val file: File) extends Logging {
         case e: FileNotFoundException =>
           if (FileSystems.getDefault.isReadOnly) {
             fatal(
-                "Halting writes to offset checkpoint file because the underlying file system is inaccessible : ",
-                e)
+              "Halting writes to offset checkpoint file because the underlying file system is inaccessible : ",
+              e
+            )
             Runtime.getRuntime.halt(1)
           }
           throw e
@@ -84,7 +85,7 @@ class OffsetCheckpoint(val file: File) extends Logging {
       new IOException(s"Malformed line in offset checkpoint file: $line'")
 
     lock synchronized {
-      val reader = new BufferedReader(new FileReader(file))
+      val reader       = new BufferedReader(new FileReader(file))
       var line: String = null
       try {
         line = reader.readLine()
@@ -95,7 +96,7 @@ class OffsetCheckpoint(val file: File) extends Logging {
             line = reader.readLine()
             if (line == null) return Map.empty
             val expectedSize = line.toInt
-            val offsets = mutable.Map[TopicAndPartition, Long]()
+            val offsets      = mutable.Map[TopicAndPartition, Long]()
             line = reader.readLine()
             while (line != null) {
               WhiteSpacesPattern.split(line) match {
@@ -108,12 +109,14 @@ class OffsetCheckpoint(val file: File) extends Logging {
             }
             if (offsets.size != expectedSize)
               throw new IOException(
-                  s"Expected $expectedSize entries but found only ${offsets.size}")
+                s"Expected $expectedSize entries but found only ${offsets.size}"
+              )
             offsets
           case _ =>
             throw new IOException(
-                "Unrecognized version of the highwatermark checkpoint file: " +
-                version)
+              "Unrecognized version of the highwatermark checkpoint file: " +
+                version
+            )
         }
       } catch {
         case e: NumberFormatException => throw malformedLineException(line)

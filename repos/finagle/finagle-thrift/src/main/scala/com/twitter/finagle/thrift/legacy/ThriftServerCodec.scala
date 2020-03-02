@@ -17,14 +17,16 @@ private[thrift] class ThriftServerEncoder(protocolFactory: TProtocolFactory)
   override def writeRequested(ctx: ChannelHandlerContext, e: MessageEvent) =
     e.getMessage match {
       case reply @ ThriftReply(response, call) =>
-        val buffer = ChannelBuffers.dynamicBuffer()
+        val buffer    = ChannelBuffers.dynamicBuffer()
         val transport = new ChannelBufferToTransport(buffer)
-        val protocol = protocolFactory.getProtocol(transport)
+        val protocol  = protocolFactory.getProtocol(transport)
         call.writeReply(call.seqid, protocol, response)
-        Channels.write(ctx,
-                       Channels.succeededFuture(e.getChannel()),
-                       buffer,
-                       e.getRemoteAddress)
+        Channels.write(
+          ctx,
+          Channels.succeededFuture(e.getChannel()),
+          buffer,
+          e.getRemoteAddress
+        )
       case _ =>
         Channels.fireExceptionCaught(ctx, new IllegalArgumentException)
     }
@@ -37,11 +39,13 @@ private[thrift] class ThriftServerDecoder(protocolFactory: TProtocolFactory)
     extends ReplayingDecoder[VoidEnum] {
   private[this] val logger = Logger.getLogger(getClass.getName)
 
-  def decodeThriftCall(ctx: ChannelHandlerContext,
-                       channel: Channel,
-                       buffer: ChannelBuffer): Object = {
+  def decodeThriftCall(
+      ctx: ChannelHandlerContext,
+      channel: Channel,
+      buffer: ChannelBuffer
+  ): Object = {
     val transport = new ChannelBufferToTransport(buffer)
-    val protocol = protocolFactory.getProtocol(transport)
+    val protocol  = protocolFactory.getProtocol(transport)
 
     val message = protocol.readMessageBegin()
 
@@ -64,10 +68,12 @@ private[thrift] class ThriftServerDecoder(protocolFactory: TProtocolFactory)
     }
   }
 
-  override def decode(ctx: ChannelHandlerContext,
-                      channel: Channel,
-                      buffer: ChannelBuffer,
-                      state: VoidEnum) =
+  override def decode(
+      ctx: ChannelHandlerContext,
+      channel: Channel,
+      buffer: ChannelBuffer,
+      state: VoidEnum
+  ) =
     // Thrift incorrectly assumes a read of zero bytes is an error, so treat
     // empty buffers as no-ops.
     if (buffer.readable) decodeThriftCall(ctx, channel, buffer)

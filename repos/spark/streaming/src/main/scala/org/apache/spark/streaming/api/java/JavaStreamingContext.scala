@@ -30,7 +30,10 @@ import org.apache.hadoop.mapreduce.{InputFormat => NewInputFormat}
 
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.api.java.{JavaPairRDD, JavaRDD, JavaSparkContext}
-import org.apache.spark.api.java.function.{Function => JFunction, Function2 => JFunction2}
+import org.apache.spark.api.java.function.{
+  Function => JFunction,
+  Function2 => JFunction2
+}
 import org.apache.spark.api.java.function.{Function0 => JFunction0}
 import org.apache.spark.deploy.SparkHadoopUtil
 import org.apache.spark.rdd.RDD
@@ -60,8 +63,7 @@ class JavaStreamingContext(val ssc: StreamingContext) extends Closeable {
     * @param batchDuration The time interval at which streaming data will be divided into batches
     */
   def this(master: String, appName: String, batchDuration: Duration) =
-    this(
-        new StreamingContext(master, appName, batchDuration, null, Nil, Map()))
+    this(new StreamingContext(master, appName, batchDuration, null, Nil, Map()))
 
   /**
     * Create a StreamingContext.
@@ -72,14 +74,23 @@ class JavaStreamingContext(val ssc: StreamingContext) extends Closeable {
     * @param jarFile JAR file containing job code, to ship to cluster. This can be a path on the
     *                local file system or an HDFS, HTTP, HTTPS, or FTP URL.
     */
-  def this(master: String,
-           appName: String,
-           batchDuration: Duration,
-           sparkHome: String,
-           jarFile: String) =
+  def this(
+      master: String,
+      appName: String,
+      batchDuration: Duration,
+      sparkHome: String,
+      jarFile: String
+  ) =
     this(
-        new StreamingContext(
-            master, appName, batchDuration, sparkHome, Seq(jarFile), Map()))
+      new StreamingContext(
+        master,
+        appName,
+        batchDuration,
+        sparkHome,
+        Seq(jarFile),
+        Map()
+      )
+    )
 
   /**
     * Create a StreamingContext.
@@ -90,14 +101,23 @@ class JavaStreamingContext(val ssc: StreamingContext) extends Closeable {
     * @param jars Collection of JARs to send to the cluster. These can be paths on the local file
     *             system or HDFS, HTTP, HTTPS, or FTP URLs.
     */
-  def this(master: String,
-           appName: String,
-           batchDuration: Duration,
-           sparkHome: String,
-           jars: Array[String]) =
+  def this(
+      master: String,
+      appName: String,
+      batchDuration: Duration,
+      sparkHome: String,
+      jars: Array[String]
+  ) =
     this(
-        new StreamingContext(
-            master, appName, batchDuration, sparkHome, jars, Map()))
+      new StreamingContext(
+        master,
+        appName,
+        batchDuration,
+        sparkHome,
+        jars,
+        Map()
+      )
+    )
 
   /**
     * Create a StreamingContext.
@@ -109,19 +129,24 @@ class JavaStreamingContext(val ssc: StreamingContext) extends Closeable {
     *             system or HDFS, HTTP, HTTPS, or FTP URLs.
     * @param environment Environment variables to set on worker nodes
     */
-  def this(master: String,
-           appName: String,
-           batchDuration: Duration,
-           sparkHome: String,
-           jars: Array[String],
-           environment: JMap[String, String]) =
+  def this(
+      master: String,
+      appName: String,
+      batchDuration: Duration,
+      sparkHome: String,
+      jars: Array[String],
+      environment: JMap[String, String]
+  ) =
     this(
-        new StreamingContext(master,
-                             appName,
-                             batchDuration,
-                             sparkHome,
-                             jars,
-                             environment.asScala))
+      new StreamingContext(
+        master,
+        appName,
+        batchDuration,
+        sparkHome,
+        jars,
+        environment.asScala
+      )
+    )
 
   /**
     * Create a JavaStreamingContext using an existing JavaSparkContext.
@@ -169,9 +194,8 @@ class JavaStreamingContext(val ssc: StreamingContext) extends Closeable {
       hostname: String,
       port: Int,
       storageLevel: StorageLevel
-  ): JavaReceiverInputDStream[String] = {
+  ): JavaReceiverInputDStream[String] =
     ssc.socketTextStream(hostname, port, storageLevel)
-  }
 
   /**
     * Create an input stream from network source hostname:port. Data is received using
@@ -181,9 +205,10 @@ class JavaStreamingContext(val ssc: StreamingContext) extends Closeable {
     * @param port          Port to connect to for receiving data
     */
   def socketTextStream(
-      hostname: String, port: Int): JavaReceiverInputDStream[String] = {
+      hostname: String,
+      port: Int
+  ): JavaReceiverInputDStream[String] =
     ssc.socketTextStream(hostname, port)
-  }
 
   /**
     * Create an input stream from network source hostname:port. Data is received using
@@ -199,7 +224,8 @@ class JavaStreamingContext(val ssc: StreamingContext) extends Closeable {
       hostname: String,
       port: Int,
       converter: JFunction[InputStream, java.lang.Iterable[T]],
-      storageLevel: StorageLevel): JavaReceiverInputDStream[T] = {
+      storageLevel: StorageLevel
+  ): JavaReceiverInputDStream[T] = {
     def fn: (InputStream) => Iterator[T] =
       (x: InputStream) => converter.call(x).iterator().asScala
     implicit val cmt: ClassTag[T] =
@@ -215,9 +241,8 @@ class JavaStreamingContext(val ssc: StreamingContext) extends Closeable {
     * file system. File names starting with . are ignored.
     * @param directory HDFS directory to monitor for new file
     */
-  def textFileStream(directory: String): JavaDStream[String] = {
+  def textFileStream(directory: String): JavaDStream[String] =
     ssc.textFileStream(directory)
-  }
 
   /**
     * Create an input stream that monitors a Hadoop-compatible filesystem
@@ -231,9 +256,10 @@ class JavaStreamingContext(val ssc: StreamingContext) extends Closeable {
     * @param recordLength The length at which to split the records
     */
   def binaryRecordsStream(
-      directory: String, recordLength: Int): JavaDStream[Array[Byte]] = {
+      directory: String,
+      recordLength: Int
+  ): JavaDStream[Array[Byte]] =
     ssc.binaryRecordsStream(directory, recordLength)
-  }
 
   /**
     * Create an input stream from network source hostname:port, where data is received
@@ -248,11 +274,13 @@ class JavaStreamingContext(val ssc: StreamingContext) extends Closeable {
   def rawSocketStream[T](
       hostname: String,
       port: Int,
-      storageLevel: StorageLevel): JavaReceiverInputDStream[T] = {
+      storageLevel: StorageLevel
+  ): JavaReceiverInputDStream[T] = {
     implicit val cmt: ClassTag[T] =
       implicitly[ClassTag[AnyRef]].asInstanceOf[ClassTag[T]]
     JavaReceiverInputDStream.fromReceiverInputDStream(
-        ssc.rawSocketStream(hostname, port, storageLevel))
+      ssc.rawSocketStream(hostname, port, storageLevel)
+    )
   }
 
   /**
@@ -265,11 +293,14 @@ class JavaStreamingContext(val ssc: StreamingContext) extends Closeable {
     * @tparam T            Type of the objects in the received blocks
     */
   def rawSocketStream[T](
-      hostname: String, port: Int): JavaReceiverInputDStream[T] = {
+      hostname: String,
+      port: Int
+  ): JavaReceiverInputDStream[T] = {
     implicit val cmt: ClassTag[T] =
       implicitly[ClassTag[AnyRef]].asInstanceOf[ClassTag[T]]
     JavaReceiverInputDStream.fromReceiverInputDStream(
-        ssc.rawSocketStream(hostname, port))
+      ssc.rawSocketStream(hostname, port)
+    )
   }
 
   /**
@@ -289,7 +320,8 @@ class JavaStreamingContext(val ssc: StreamingContext) extends Closeable {
       directory: String,
       kClass: Class[K],
       vClass: Class[V],
-      fClass: Class[F]): JavaPairInputDStream[K, V] = {
+      fClass: Class[F]
+  ): JavaPairInputDStream[K, V] = {
     implicit val cmk: ClassTag[K] = ClassTag(kClass)
     implicit val cmv: ClassTag[V] = ClassTag(vClass)
     implicit val cmf: ClassTag[F] = ClassTag(fClass)
@@ -317,11 +349,12 @@ class JavaStreamingContext(val ssc: StreamingContext) extends Closeable {
       vClass: Class[V],
       fClass: Class[F],
       filter: JFunction[Path, JBoolean],
-      newFilesOnly: Boolean): JavaPairInputDStream[K, V] = {
+      newFilesOnly: Boolean
+  ): JavaPairInputDStream[K, V] = {
     implicit val cmk: ClassTag[K] = ClassTag(kClass)
     implicit val cmv: ClassTag[V] = ClassTag(vClass)
     implicit val cmf: ClassTag[F] = ClassTag(fClass)
-    def fn: (Path) => Boolean = (x: Path) => filter.call(x).booleanValue()
+    def fn: (Path) => Boolean     = (x: Path) => filter.call(x).booleanValue()
     ssc.fileStream[K, V, F](directory, fn, newFilesOnly)
   }
 
@@ -348,11 +381,12 @@ class JavaStreamingContext(val ssc: StreamingContext) extends Closeable {
       fClass: Class[F],
       filter: JFunction[Path, JBoolean],
       newFilesOnly: Boolean,
-      conf: Configuration): JavaPairInputDStream[K, V] = {
+      conf: Configuration
+  ): JavaPairInputDStream[K, V] = {
     implicit val cmk: ClassTag[K] = ClassTag(kClass)
     implicit val cmv: ClassTag[V] = ClassTag(vClass)
     implicit val cmf: ClassTag[F] = ClassTag(fClass)
-    def fn: (Path) => Boolean = (x: Path) => filter.call(x).booleanValue()
+    def fn: (Path) => Boolean     = (x: Path) => filter.call(x).booleanValue()
     ssc.fileStream[K, V, F](directory, fn, newFilesOnly, conf)
   }
 
@@ -414,9 +448,11 @@ class JavaStreamingContext(val ssc: StreamingContext) extends Closeable {
     * @param defaultRDD Default RDD is returned by the DStream when the queue is empty
     * @tparam T         Type of objects in the RDD
     */
-  def queueStream[T](queue: java.util.Queue[JavaRDD[T]],
-                     oneAtATime: Boolean,
-                     defaultRDD: JavaRDD[T]): JavaInputDStream[T] = {
+  def queueStream[T](
+      queue: java.util.Queue[JavaRDD[T]],
+      oneAtATime: Boolean,
+      defaultRDD: JavaRDD[T]
+  ): JavaInputDStream[T] = {
     implicit val cm: ClassTag[T] =
       implicitly[ClassTag[AnyRef]].asInstanceOf[ClassTag[T]]
     val sQueue = new scala.collection.mutable.Queue[RDD[T]]
@@ -439,9 +475,11 @@ class JavaStreamingContext(val ssc: StreamingContext) extends Closeable {
     * Create a unified DStream from multiple DStreams of the same type and same slide duration.
     */
   def union[T](
-      first: JavaDStream[T], rest: JList[JavaDStream[T]]): JavaDStream[T] = {
+      first: JavaDStream[T],
+      rest: JList[JavaDStream[T]]
+  ): JavaDStream[T] = {
     val dstreams: Seq[DStream[T]] = (Seq(first) ++ rest.asScala).map(_.dstream)
-    implicit val cm: ClassTag[T] = first.classTag
+    implicit val cm: ClassTag[T]  = first.classTag
     ssc.union(dstreams)(cm)
   }
 
@@ -455,8 +493,8 @@ class JavaStreamingContext(val ssc: StreamingContext) extends Closeable {
     val dstreams: Seq[DStream[(K, V)]] =
       (Seq(first) ++ rest.asScala).map(_.dstream)
     implicit val cm: ClassTag[(K, V)] = first.classTag
-    implicit val kcm: ClassTag[K] = first.kManifest
-    implicit val vcm: ClassTag[V] = first.vManifest
+    implicit val kcm: ClassTag[K]     = first.kManifest
+    implicit val vcm: ClassTag[V]     = first.vManifest
     new JavaPairDStream[K, V](ssc.union(dstreams)(cm))(kcm, vcm)
   }
 
@@ -475,10 +513,9 @@ class JavaStreamingContext(val ssc: StreamingContext) extends Closeable {
   ): JavaDStream[T] = {
     implicit val cmt: ClassTag[T] =
       implicitly[ClassTag[AnyRef]].asInstanceOf[ClassTag[T]]
-    val scalaTransformFunc = (rdds: Seq[RDD[_]], time: Time) =>
-      {
-        val jrdds = rdds.map(JavaRDD.fromRDD(_)).asJava
-        transformFunc.call(jrdds, time).rdd
+    val scalaTransformFunc = (rdds: Seq[RDD[_]], time: Time) => {
+      val jrdds = rdds.map(JavaRDD.fromRDD(_)).asJava
+      transformFunc.call(jrdds, time).rdd
     }
     ssc.transform(dstreams.asScala.map(_.dstream).toSeq, scalaTransformFunc)
   }
@@ -500,10 +537,9 @@ class JavaStreamingContext(val ssc: StreamingContext) extends Closeable {
       implicitly[ClassTag[AnyRef]].asInstanceOf[ClassTag[K]]
     implicit val cmv: ClassTag[V] =
       implicitly[ClassTag[AnyRef]].asInstanceOf[ClassTag[V]]
-    val scalaTransformFunc = (rdds: Seq[RDD[_]], time: Time) =>
-      {
-        val jrdds = rdds.map(JavaRDD.fromRDD(_)).asJava
-        transformFunc.call(jrdds, time).rdd
+    val scalaTransformFunc = (rdds: Seq[RDD[_]], time: Time) => {
+      val jrdds = rdds.map(JavaRDD.fromRDD(_)).asJava
+      transformFunc.call(jrdds, time).rdd
     }
     ssc.transform(dstreams.asScala.map(_.dstream).toSeq, scalaTransformFunc)
   }
@@ -553,24 +589,21 @@ class JavaStreamingContext(val ssc: StreamingContext) extends Closeable {
     *   </li>
     * </ul>
     */
-  def getState(): StreamingContextState = {
+  def getState(): StreamingContextState =
     ssc.getState()
-  }
 
   /**
     * Start the execution of the streams.
     */
-  def start(): Unit = {
+  def start(): Unit =
     ssc.start()
-  }
 
   /**
     * Wait for the execution to stop. Any exceptions that occurs during the execution
     * will be thrown in this thread.
     */
-  def awaitTermination(): Unit = {
+  def awaitTermination(): Unit =
     ssc.awaitTermination()
-  }
 
   /**
     * Wait for the execution to stop. Any exceptions that occurs during the execution
@@ -580,16 +613,14 @@ class JavaStreamingContext(val ssc: StreamingContext) extends Closeable {
     * @return `true` if it's stopped; or throw the reported error during the execution; or `false`
     *         if the waiting time elapsed before returning from the method.
     */
-  def awaitTerminationOrTimeout(timeout: Long): Boolean = {
+  def awaitTerminationOrTimeout(timeout: Long): Boolean =
     ssc.awaitTerminationOrTimeout(timeout)
-  }
 
   /**
     * Stop the execution of the streams. Will stop the associated JavaSparkContext as well.
     */
-  def stop(): Unit = {
+  def stop(): Unit =
     ssc.stop()
-  }
 
   /**
     * Stop the execution of the streams.
@@ -603,9 +634,8 @@ class JavaStreamingContext(val ssc: StreamingContext) extends Closeable {
     * @param stopGracefully Stop gracefully by waiting for the processing of all
     *                       received data to be completed
     */
-  def stop(stopSparkContext: Boolean, stopGracefully: Boolean): Unit = {
+  def stop(stopSparkContext: Boolean, stopGracefully: Boolean): Unit =
     ssc.stop(stopSparkContext, stopGracefully)
-  }
 
   override def close(): Unit = stop()
 }
@@ -628,11 +658,10 @@ object JavaStreamingContext {
       checkpointPath: String,
       creatingFunc: JFunction0[JavaStreamingContext]
   ): JavaStreamingContext = {
-    val ssc = StreamingContext.getOrCreate(checkpointPath,
-                                           () =>
-                                             {
-                                               creatingFunc.call().ssc
-                                           })
+    val ssc = StreamingContext.getOrCreate(
+      checkpointPath,
+      () => creatingFunc.call().ssc
+    )
     new JavaStreamingContext(ssc)
   }
 
@@ -652,12 +681,11 @@ object JavaStreamingContext {
       creatingFunc: JFunction0[JavaStreamingContext],
       hadoopConf: Configuration
   ): JavaStreamingContext = {
-    val ssc = StreamingContext.getOrCreate(checkpointPath,
-                                           () =>
-                                             {
-                                               creatingFunc.call().ssc
-                                           },
-                                           hadoopConf)
+    val ssc = StreamingContext.getOrCreate(
+      checkpointPath,
+      () => creatingFunc.call().ssc,
+      hadoopConf
+    )
     new JavaStreamingContext(ssc)
   }
 
@@ -680,13 +708,12 @@ object JavaStreamingContext {
       hadoopConf: Configuration,
       createOnError: Boolean
   ): JavaStreamingContext = {
-    val ssc = StreamingContext.getOrCreate(checkpointPath,
-                                           () =>
-                                             {
-                                               creatingFunc.call().ssc
-                                           },
-                                           hadoopConf,
-                                           createOnError)
+    val ssc = StreamingContext.getOrCreate(
+      checkpointPath,
+      () => creatingFunc.call().ssc,
+      hadoopConf,
+      createOnError
+    )
     new JavaStreamingContext(ssc)
   }
 

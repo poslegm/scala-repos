@@ -1,6 +1,6 @@
 class A private () {}
-class B {}
+class B            {}
 object T {
   implicit def a2b(a: A): B = null
-  def t = new A()
+  def t                     = new A()
 }

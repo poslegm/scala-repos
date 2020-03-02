@@ -17,7 +17,7 @@ import scala.concurrent.Future
 
 class StreamTcpDocSpec extends AkkaSpec {
 
-  implicit val ec = system.dispatcher
+  implicit val ec           = system.dispatcher
   implicit val materializer = ActorMaterializer()
 
   // silence sysout
@@ -47,9 +47,13 @@ class StreamTcpDocSpec extends AkkaSpec {
         println(s"New connection from: ${connection.remoteAddress}")
 
         val echo = Flow[ByteString]
-          .via(Framing.delimiter(ByteString("\n"),
-                                 maximumFrameLength = 256,
-                                 allowTruncation = true))
+          .via(
+            Framing.delimiter(
+              ByteString("\n"),
+              maximumFrameLength = 256,
+              allowTruncation = true
+            )
+          )
           .map(_.utf8String)
           .map(_ + "!!!\n")
           .map(ByteString(_))
@@ -63,7 +67,10 @@ class StreamTcpDocSpec extends AkkaSpec {
   "initial server banner echo server" in {
     val localhost = TestUtils.temporaryServerAddress()
     val connections =
-      Tcp().bind(localhost.getHostName, localhost.getPort) // TODO getHostString in Java7
+      Tcp().bind(
+        localhost.getHostName,
+        localhost.getPort
+      ) // TODO getHostString in Java7
     val serverProbe = TestProbe()
 
     import akka.stream.scaladsl.Framing
@@ -75,17 +82,19 @@ class StreamTcpDocSpec extends AkkaSpec {
 
       import connection._
       val welcomeMsg = s"Welcome to: $localAddress, you are: $remoteAddress!"
-      val welcome = Source.single(welcomeMsg)
+      val welcome    = Source.single(welcomeMsg)
 
       val serverLogic = Flow[ByteString]
-        .via(Framing.delimiter(ByteString("\n"),
-                               maximumFrameLength = 256,
-                               allowTruncation = true))
+        .via(
+          Framing.delimiter(
+            ByteString("\n"),
+            maximumFrameLength = 256,
+            allowTruncation = true
+          )
+        )
         .map(_.utf8String)
         //#welcome-banner-chat-server
-        .map { command ⇒
-          serverProbe.ref ! command; command
-        }
+        .map { command ⇒ serverProbe.ref ! command; command }
         //#welcome-banner-chat-server
         .via(commandParser)
         // merge in the initial banner after parser
@@ -101,12 +110,11 @@ class StreamTcpDocSpec extends AkkaSpec {
 
     val input =
       new AtomicReference("Hello world" :: "What a lovely day" :: Nil)
-    def readLine(prompt: String): String = {
+    def readLine(prompt: String): String =
       input.get() match {
         case all @ cmd :: tail if input.compareAndSet(all, tail) ⇒ cmd
-        case _ ⇒ "q"
+        case _                                                   ⇒ "q"
       }
-    }
 
     {
       //#repl-client
@@ -124,9 +132,13 @@ class StreamTcpDocSpec extends AkkaSpec {
         .map(elem => ByteString(s"$elem\n"))
 
       val repl = Flow[ByteString]
-        .via(Framing.delimiter(ByteString("\n"),
-                               maximumFrameLength = 256,
-                               allowTruncation = true))
+        .via(
+          Framing.delimiter(
+            ByteString("\n"),
+            maximumFrameLength = 256,
+            allowTruncation = true
+          )
+        )
         .map(_.utf8String)
         .map(text => println("Server: " + text))
         .map(_ => readLine("> "))

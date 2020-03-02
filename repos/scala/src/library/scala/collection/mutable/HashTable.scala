@@ -42,7 +42,8 @@ trait HashTable[A, Entry >: Null <: HashEntry[A, Entry]]
   /** The actual hash table.
     */
   @transient protected var table: Array[HashEntry[A, Entry]] = new Array(
-      initialCapacity)
+    initialCapacity
+  )
 
   /** The number of mappings contained in this hash table.
     */
@@ -83,7 +84,9 @@ trait HashTable[A, Entry >: Null <: HashEntry[A, Entry]]
     * entry to be read from the input stream.
     */
   private[collection] def init(
-      in: java.io.ObjectInputStream, readEntry: => Entry) {
+      in: java.io.ObjectInputStream,
+      readEntry: => Entry
+  ) {
     in.defaultReadObject
 
     _loadFactor = in.readInt()
@@ -117,7 +120,9 @@ trait HashTable[A, Entry >: Null <: HashEntry[A, Entry]]
     * deserialize, `init` should be used.
     */
   private[collection] def serializeTo(
-      out: java.io.ObjectOutputStream, writeEntry: Entry => Unit) {
+      out: java.io.ObjectOutputStream,
+      writeEntry: Entry => Unit
+  ) {
     out.defaultWriteObject
     out.writeInt(_loadFactor)
     out.writeInt(tableSize)
@@ -130,8 +135,9 @@ trait HashTable[A, Entry >: Null <: HashEntry[A, Entry]]
   /** Find entry with given key in table, null if not found.
     */
   @deprecatedOverriding(
-      "No sensible way to override findEntry as private findEntry0 is used in multiple places internally.",
-      "2.11.0")
+    "No sensible way to override findEntry as private findEntry0 is used in multiple places internally.",
+    "2.11.0"
+  )
   protected def findEntry(key: A): Entry =
     findEntry0(key, index(elemHashCode(key)))
 
@@ -145,8 +151,9 @@ trait HashTable[A, Entry >: Null <: HashEntry[A, Entry]]
     *  pre: no entry with same key exists
     */
   @deprecatedOverriding(
-      "No sensible way to override addEntry as private addEntry0 is used in multiple places internally.",
-      "2.11.0")
+    "No sensible way to override addEntry as private addEntry0 is used in multiple places internally.",
+    "2.11.0"
+  )
   protected def addEntry(e: Entry) {
     addEntry0(e, index(elemHashCode(e.key)))
   }
@@ -180,8 +187,9 @@ trait HashTable[A, Entry >: Null <: HashEntry[A, Entry]]
   /** Remove entry from table if present.
     */
   @deprecatedOverriding(
-      "Internal implementation does not admit sensible overriding of this method.",
-      "2.11.0")
+    "Internal implementation does not admit sensible overriding of this method.",
+    "2.11.0"
+  )
   protected def removeEntry(key: A): Entry = {
     val h = index(elemHashCode(key))
     var e = table(h).asInstanceOf[Entry]
@@ -213,8 +221,8 @@ trait HashTable[A, Entry >: Null <: HashEntry[A, Entry]]
   protected def entriesIterator: Iterator[Entry] =
     new AbstractIterator[Entry] {
       val iterTable = table
-      var idx = lastPopulatedIndex
-      var es = iterTable(idx)
+      var idx       = lastPopulatedIndex
+      var es        = iterTable(idx)
 
       def hasNext = es != null
       def next() = {
@@ -231,8 +239,8 @@ trait HashTable[A, Entry >: Null <: HashEntry[A, Entry]]
   /** Avoid iterator for a 2x faster traversal. */
   protected def foreachEntry[U](f: Entry => U) {
     val iterTable = table
-    var idx = lastPopulatedIndex
-    var es = iterTable(idx)
+    var idx       = lastPopulatedIndex
+    var es        = iterTable(idx)
 
     while (es != null) {
       f(es.asInstanceOf[Entry])
@@ -262,7 +270,7 @@ trait HashTable[A, Entry >: Null <: HashEntry[A, Entry]]
     while (i >= 0) {
       var e = oldTable(i)
       while (e != null) {
-        val h = index(elemHashCode(e.key))
+        val h  = index(elemHashCode(e.key))
         val e1 = e.next
         e.next = table(h).asInstanceOf[Entry]
         table(h) = e
@@ -294,22 +302,25 @@ trait HashTable[A, Entry >: Null <: HashEntry[A, Entry]]
    * there.
    */
   @deprecatedOverriding(
-      "Internal implementation does not admit sensible overriding of this method.",
-      "2.11.0")
+    "Internal implementation does not admit sensible overriding of this method.",
+    "2.11.0"
+  )
   protected def nnSizeMapAdd(h: Int) = if (sizemap ne null) {
     sizemap(h >> sizeMapBucketBitSize) += 1
   }
 
   @deprecatedOverriding(
-      "Internal implementation does not admit sensible overriding of this method.",
-      "2.11.0")
+    "Internal implementation does not admit sensible overriding of this method.",
+    "2.11.0"
+  )
   protected def nnSizeMapRemove(h: Int) = if (sizemap ne null) {
     sizemap(h >> sizeMapBucketBitSize) -= 1
   }
 
   @deprecatedOverriding(
-      "Internal implementation does not admit sensible overriding of this method.",
-      "2.11.0")
+    "Internal implementation does not admit sensible overriding of this method.",
+    "2.11.0"
+  )
   protected def nnSizeMapReset(tableLength: Int) = if (sizemap ne null) {
     val nsize = calcSizeMapSize(tableLength)
     if (sizemap.length != nsize) sizemap = new Array[Int](nsize)
@@ -321,8 +332,9 @@ trait HashTable[A, Entry >: Null <: HashEntry[A, Entry]]
     else table.length / sizeMapBucketSize
 
   @deprecatedOverriding(
-      "Internal implementation does not admit sensible overriding of this method.",
-      "2.11.0")
+    "Internal implementation does not admit sensible overriding of this method.",
+    "2.11.0"
+  )
   protected def calcSizeMapSize(tableLength: Int) =
     (tableLength >> sizeMapBucketBitSize) + 1
 
@@ -333,15 +345,16 @@ trait HashTable[A, Entry >: Null <: HashEntry[A, Entry]]
 
   // discards the previous sizemap and populates the new one
   @deprecatedOverriding(
-      "Internal implementation does not admit sensible overriding of this method.",
-      "2.11.0")
+    "Internal implementation does not admit sensible overriding of this method.",
+    "2.11.0"
+  )
   protected def sizeMapInitAndRebuild() {
     sizeMapInit(table.length)
 
     // go through the buckets, count elements
-    var tableidx = 0
-    var bucketidx = 0
-    val tbl = table
+    var tableidx   = 0
+    var bucketidx  = 0
+    val tbl        = table
     var tableuntil = 0
     if (tbl.length < sizeMapBucketSize) tableuntil = tbl.length
     else tableuntil = sizeMapBucketSize
@@ -367,13 +380,15 @@ trait HashTable[A, Entry >: Null <: HashEntry[A, Entry]]
   }
 
   @deprecatedOverriding(
-      "Internal implementation does not admit sensible overriding of this method.",
-      "2.11.0")
+    "Internal implementation does not admit sensible overriding of this method.",
+    "2.11.0"
+  )
   protected def sizeMapDisable() = sizemap = null
 
   @deprecatedOverriding(
-      "Internal implementation does not admit sensible overriding of this method.",
-      "2.11.0")
+    "Internal implementation does not admit sensible overriding of this method.",
+    "2.11.0"
+  )
   protected def isSizeMapDefined = sizemap ne null
 
   // override to automatically initialize the size map
@@ -387,9 +402,9 @@ trait HashTable[A, Entry >: Null <: HashEntry[A, Entry]]
   // we take the most significant bits of the hashcode, not the lower ones
   // this is of crucial importance when populating the table in parallel
   protected final def index(hcode: Int) = {
-    val ones = table.length - 1
+    val ones     = table.length - 1
     val improved = improve(hcode, seedvalue)
-    val shifted = (improved >> (32 - java.lang.Integer.bitCount(ones))) & ones
+    val shifted  = (improved >> (32 - java.lang.Integer.bitCount(ones))) & ones
     shifted
   }
 
@@ -406,12 +421,12 @@ trait HashTable[A, Entry >: Null <: HashEntry[A, Entry]]
   }
 
   private[collection] def hashTableContents = new HashTable.Contents(
-      _loadFactor,
-      table,
-      tableSize,
-      threshold,
-      seedvalue,
-      sizemap
+    _loadFactor,
+    table,
+    tableSize,
+    threshold,
+    seedvalue,
+    sizemap
   )
 }
 
@@ -489,7 +504,7 @@ private[collection] object HashTable {
 
       // the rest of the computation is due to SI-5293
       val rotation = seed % 32
-      val rotated = (i >>> rotation) | (i << (32 - rotation))
+      val rotated  = (i >>> rotation) | (i << (32 - rotation))
       rotated
     }
   }

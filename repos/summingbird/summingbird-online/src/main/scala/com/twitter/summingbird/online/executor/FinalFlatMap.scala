@@ -24,7 +24,12 @@ import com.twitter.summingbird.online.Externalizer
 
 import com.twitter.summingbird.online.FlatMapOperation
 
-import com.twitter.summingbird.online.option.{SummerBuilder, MaxWaitingFutures, MaxFutureWaitTime, MaxEmitPerExecute}
+import com.twitter.summingbird.online.option.{
+  SummerBuilder,
+  MaxWaitingFutures,
+  MaxFutureWaitTime,
+  MaxEmitPerExecute
+}
 import scala.collection.mutable.{Map => MMap, ListBuffer}
 // These CMaps we generate in the FFM, we use it as an immutable wrapper around
 // a mutable map.
@@ -45,7 +50,7 @@ private[summingbird] case class KeyValueShards(get: Int) {
     math.abs(k.hashCode % get)
 }
 
-class FinalFlatMap[Event, Key, Value : Semigroup, S <: InputState[_], D, RC](
+class FinalFlatMap[Event, Key, Value: Semigroup, S <: InputState[_], D, RC](
     @transient flatMapOp: FlatMapOperation[Event, (Key, Value)],
     summerBuilder: SummerBuilder,
     maxWaitingFutures: MaxWaitingFutures,
@@ -53,11 +58,14 @@ class FinalFlatMap[Event, Key, Value : Semigroup, S <: InputState[_], D, RC](
     maxEmitPerExec: MaxEmitPerExecute,
     summerShards: KeyValueShards,
     pDecoder: Injection[Event, D],
-    pEncoder: Injection[(Int, CMap[Key, Value]), D])
-    extends AsyncBase[Event, (Int, CMap[Key, Value]), S, D, RC](
-        maxWaitingFutures, maxWaitingTime, maxEmitPerExec) {
+    pEncoder: Injection[(Int, CMap[Key, Value]), D]
+) extends AsyncBase[Event, (Int, CMap[Key, Value]), S, D, RC](
+      maxWaitingFutures,
+      maxWaitingTime,
+      maxEmitPerExec
+    ) {
 
-  type InS = S
+  type InS           = S
   type OutputElement = (Int, CMap[Key, Value])
 
   val encoder = pEncoder
@@ -68,15 +76,17 @@ class FinalFlatMap[Event, Key, Value : Semigroup, S <: InputState[_], D, RC](
   type SummerK = Key
   type SummerV = (Seq[S], Value)
   lazy val sCache = summerBuilder.getSummer[SummerK, SummerV](
-      implicitly[Semigroup[(Seq[S], Value)]])
+    implicitly[Semigroup[(Seq[S], Value)]]
+  )
 
   // Lazy transient as const futures are not serializable
   @transient private[this] lazy val noData = List(
-      (List(), Future.value(Nil))
+    (List(), Future.value(Nil))
   )
 
-  private def formatResult(outData: Map[Key, (Seq[S], Value)])
-    : TraversableOnce[(Seq[S], Future[TraversableOnce[OutputElement]])] = {
+  private def formatResult(
+      outData: Map[Key, (Seq[S], Value)]
+  ): TraversableOnce[(Seq[S], Future[TraversableOnce[OutputElement]])] =
     if (outData.isEmpty) {
       noData
     } else {
@@ -96,14 +106,16 @@ class FinalFlatMap[Event, Key, Value : Semigroup, S <: InputState[_], D, RC](
           (listS, Future.value(List((outerKey, innerMap))))
       }
     }
-  }
 
-  override def tick: Future[TraversableOnce[
-          (Seq[S], Future[TraversableOnce[OutputElement]])]] =
+  override def tick: Future[
+    TraversableOnce[(Seq[S], Future[TraversableOnce[OutputElement]])]
+  ] =
     sCache.tick.map(formatResult(_))
 
-  def cache(state: S, items: TraversableOnce[(Key, Value)]): Future[
-      TraversableOnce[(Seq[S], Future[TraversableOnce[OutputElement]])]] =
+  def cache(
+      state: S,
+      items: TraversableOnce[(Key, Value)]
+  ): Future[TraversableOnce[(Seq[S], Future[TraversableOnce[OutputElement]])]] =
     try {
       val itemL = items.toList
       if (itemL.size > 0) {
@@ -117,9 +129,9 @@ class FinalFlatMap[Event, Key, Value : Semigroup, S <: InputState[_], D, RC](
       } else {
         // Here we handle mapping to nothing, option map et. al
         Future.value(
-            List(
-                (List(state), Future.value(Nil))
-            )
+          List(
+            (List(state), Future.value(Nil))
+          )
         )
       }
     } catch {
@@ -127,7 +139,7 @@ class FinalFlatMap[Event, Key, Value : Semigroup, S <: InputState[_], D, RC](
     }
 
   override def apply(state: S, tup: Event) =
-    lockedOp.get.apply(tup).map { cache(state, _) }.flatten
+    lockedOp.get.apply(tup).map(cache(state, _)).flatten
 
   override def cleanup {
     lockedOp.get.close

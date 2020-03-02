@@ -4,6 +4,6 @@ class A {
 }
 
 class B {
-  def foo = 123
+  def foo             = 123
   @deprecated def bar = 456
 }

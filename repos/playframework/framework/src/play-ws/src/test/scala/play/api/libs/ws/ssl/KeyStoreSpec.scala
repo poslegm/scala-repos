@@ -12,7 +12,8 @@ class KeyStoreSpec extends Specification with Mockito {
 
     "create several certificate" in {
       val builder =
-        new StringBasedKeyStoreBuilder("""-----BEGIN CERTIFICATE-----
+        new StringBasedKeyStoreBuilder(
+          """-----BEGIN CERTIFICATE-----
         |MIIDIDCCAomgAwIBAgIENd70zzANBgkqhkiG9w0BAQUFADBOMQswCQYDVQQGEwJV
         |UzEQMA4GA1UEChMHRXF1aWZheDEtMCsGA1UECxMkRXF1aWZheCBTZWN1cmUgQ2Vy
         |dGlmaWNhdGUgQXV0aG9yaXR5MB4XDTk4MDgyMjE2NDE1MVoXDTE4MDgyMjE2NDE1
@@ -61,7 +62,8 @@ class KeyStoreSpec extends Specification with Mockito {
         |cVyVLhQPGivRqWvBX2c9FvFyIK++FsoOMF/Jy6WTLMNnVB5yIoojdmyUHVFSbJ3E4EcC18y/8IB7
         |GG4l3GJh1qb+wR1/2bP9jVxFEFrGZWSa6yz1A0/WSGL7Lg==
         |-----END CERTIFICATE-----
-        |""".stripMargin)
+        |""".stripMargin
+        )
 
       val certs = builder.build()
       certs.size() must be_==(3)

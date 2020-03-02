@@ -20,7 +20,7 @@ import org.jetbrains.plugins.scala.lang.parser.parsing.expressions.Annotation
 
 object PatVarDef {
   def parse(builder: ScalaPsiBuilder): Boolean = {
-    val patVarMarker = builder.mark
+    val patVarMarker      = builder.mark
     val annotationsMarker = builder.mark
     while (Annotation.parse(builder)) {}
     annotationsMarker.done(ScalaElementTypes.ANNOTATIONS)

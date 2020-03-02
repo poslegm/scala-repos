@@ -20,12 +20,15 @@ import play.mvc.Results
 import play.mvc.Results.Chunks
 
 object NettyJavaResultsHandlingSpec
-    extends JavaResultsHandlingSpec with NettyIntegrationSpecification
+    extends JavaResultsHandlingSpec
+    with NettyIntegrationSpecification
 object AkkaHttpJavaResultsHandlingSpec
-    extends JavaResultsHandlingSpec with AkkaHttpIntegrationSpecification
+    extends JavaResultsHandlingSpec
+    with AkkaHttpIntegrationSpecification
 
 trait JavaResultsHandlingSpec
-    extends PlaySpecification with WsTestClient
+    extends PlaySpecification
+    with WsTestClient
     with ServerIntegrationSpecification {
 
   sequential
@@ -33,9 +36,11 @@ trait JavaResultsHandlingSpec
   "Java results handling" should {
     def makeRequest[T](controller: MockController)(block: WSResponse => T) = {
       implicit val port = testServerPort
-      lazy val app: Application = GuiceApplicationBuilder().routes {
-        case _ => JAction(app, controller)
-      }.build()
+      lazy val app: Application = GuiceApplicationBuilder()
+        .routes {
+          case _ => JAction(app, controller)
+        }
+        .build()
 
       running(TestServer(port, app)) {
         val response = await(wsUrl("/").get())
@@ -43,8 +48,7 @@ trait JavaResultsHandlingSpec
       }
     }
 
-    "treat headers case insensitively" in makeRequest(
-        new MockController {
+    "treat headers case insensitively" in makeRequest(new MockController {
       def action = {
         response.setHeader("Server", "foo")
         response.setHeader("server", "bar")
@@ -67,7 +71,7 @@ trait JavaResultsHandlingSpec
     }
 
     "chunk results that are streamed" in makeRequest(new MockController {
-      def action = {
+      def action =
         Results.ok(new Results.StringChunks() {
           def onReady(out: Chunks.Out[String]) {
             out.write("a")
@@ -76,7 +80,6 @@ trait JavaResultsHandlingSpec
             out.close()
           }
         })
-      }
     }) { response =>
       response.header(TRANSFER_ENCODING) must beSome("chunked")
       response.header(CONTENT_LENGTH) must beNone
@@ -84,7 +87,7 @@ trait JavaResultsHandlingSpec
     }
 
     "chunk legacy event source results" in makeRequest(new MockController {
-      def action = {
+      def action =
         Results.ok(new LegacyEventSource() {
           def onConnected(): Unit = {
             send(LegacyEventSource.Event.event("a"))
@@ -92,7 +95,6 @@ trait JavaResultsHandlingSpec
             close()
           }
         })
-      }
     }) { response =>
       response.header(CONTENT_TYPE) must beSome.like {
         case value =>
@@ -115,7 +117,8 @@ trait JavaResultsHandlingSpec
       response.header(TRANSFER_ENCODING) must beSome("chunked")
       response.header(CONTENT_LENGTH) must beNone
       response.body must contain(
-          "<html><body><script type=\"text/javascript\">callback('a');</script><script type=\"text/javascript\">callback('b');</script><script type=\"text/javascript\">callback('c');</script>")
+        "<html><body><script type=\"text/javascript\">callback('a');</script><script type=\"text/javascript\">callback('b');</script><script type=\"text/javascript\">callback('c');</script>"
+      )
     }
 
     "chunk comet results from json" in makeRequest(new MockController {
@@ -131,7 +134,8 @@ trait JavaResultsHandlingSpec
       response.header(TRANSFER_ENCODING) must beSome("chunked")
       response.header(CONTENT_LENGTH) must beNone
       response.body must contain(
-          "<html><body><script type=\"text/javascript\">callback({\"foo\":\"bar\"});</script>")
+        "<html><body><script type=\"text/javascript\">callback({\"foo\":\"bar\"});</script>"
+      )
     }
 
     "chunk event source results" in makeRequest(new MockController {
@@ -157,22 +161,22 @@ trait JavaResultsHandlingSpec
     }
 
     "stream input stream responses as chunked" in makeRequest(
-        new MockController {
-      def action = {
-        Results.ok(new ByteArrayInputStream("hello".getBytes("utf-8")))
+      new MockController {
+        def action =
+          Results.ok(new ByteArrayInputStream("hello".getBytes("utf-8")))
       }
-    }) { response =>
+    ) { response =>
       response.header(TRANSFER_ENCODING) must beSome("chunked")
       response.body must_== "hello"
     }
 
     "not chunk input stream results if a content length is set" in makeRequest(
-        new MockController {
-      def action = {
-        // chunk size 2 to force more than one chunk
-        Results.ok(new ByteArrayInputStream("hello".getBytes("utf-8")), 5)
+      new MockController {
+        def action =
+          // chunk size 2 to force more than one chunk
+          Results.ok(new ByteArrayInputStream("hello".getBytes("utf-8")), 5)
       }
-    }) { response =>
+    ) { response =>
       response.header(CONTENT_LENGTH) must beSome("5")
       response.header(TRANSFER_ENCODING) must beNone
       response.body must_== "hello"

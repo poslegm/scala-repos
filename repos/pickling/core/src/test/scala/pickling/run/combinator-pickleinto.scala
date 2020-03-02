@@ -17,9 +17,9 @@ import scala.reflect.runtime.universe._
 
 class Person(val id: Int) {
   private var _name: String = _
-  def name = _name
-  private var _age: Int = _
-  def age = _age
+  def name                  = _name
+  private var _age: Int     = _
+  def age                   = _age
   def initDetails(data: Map[Int, (String, Int)]) {
     val details = data(id)
     _name = details._1
@@ -39,14 +39,17 @@ class CombinatorPickleIntoTest extends FunSuite {
         def pickle(p: Person, builder: PBuilder): Unit = {
           // let's say we only want to pickle id, since we can look up name and age based on id
           // then we can make use of a size hint, so that a fixed-size array can be used for pickling
-          builder.hintKnownSize(100) // FIXME: if the value is too small, we can get java.lang.ArrayIndexOutOfBoundsException
+          builder.hintKnownSize(
+            100
+          ) // FIXME: if the value is too small, we can get java.lang.ArrayIndexOutOfBoundsException
           builder.beginEntry(p, implicitly[FastTypeTag[Person]])
-          builder.putField("id",
-                           b =>
-                             {
-                               b.hintElidedType(FastTypeTag.Int)
-                               intp.pickle(p.id, b)
-                           })
+          builder.putField(
+            "id",
+            b => {
+              b.hintElidedType(FastTypeTag.Int)
+              intp.pickle(p.id, b)
+            }
+          )
           builder.endEntry()
         }
       }
@@ -56,7 +59,7 @@ class CombinatorPickleIntoTest extends FunSuite {
         def tag: FastTypeTag[Person] = implicitly[FastTypeTag[Person]]
         def unpickle(tag: String, reader: PReader): Any = {
           reader.hintElidedType(FastTypeTag.Int)
-          val tag = reader.beginEntry()
+          val tag       = reader.beginEntry()
           val unpickled = intup.unpickle(tag, reader).asInstanceOf[Int]
           reader.endEntry()
           val p = new Person(unpickled)
@@ -65,7 +68,7 @@ class CombinatorPickleIntoTest extends FunSuite {
         }
       }
 
-    val bart = new Person(2)
+    val bart   = new Person(2)
     val pickle = bart.pickle
     val expected0 =
       "[0,0,0,43,115,99,97,108,97,46,112,105,99,107,108,105,110,103,46,99,111,109,98,105,110,97,116,111,114,46,112,105,99,107,108,101,105,110,116,111,46,80,101,114,115,111,110,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]"

@@ -22,11 +22,10 @@ object NetUtil {
         false
     }
 
-  def ipToInt(ip: String): Int = {
+  def ipToInt(ip: String): Int =
     ipToOptionInt(ip) getOrElse {
       throw new IllegalArgumentException("invalid IPv4 address: " + ip)
     }
-  }
 
   def ipToOptionInt(ip: String): Option[Int] = {
     // Fast IPv4 address to integer.  This is fast because it avoids split,
@@ -70,7 +69,7 @@ object NetUtil {
     if (s.isEmpty || s.length > 3) {
       return -1
     }
-    var i = 0
+    var i   = 0
     var num = 0
     while (i < s.length) {
       val c = s.charAt(i).toInt
@@ -87,17 +86,17 @@ object NetUtil {
     }
   }
 
-  def inetAddressToInt(inetAddress: InetAddress): Int = {
+  def inetAddressToInt(inetAddress: InetAddress): Int =
     inetAddress match {
       case inetAddress: Inet4Address =>
         val addr = inetAddress.getAddress
         ((addr(0) & 0xff) << 24) | ((addr(1) & 0xff) << 16) |
-        ((addr(2) & 0xff) << 8) | (addr(3) & 0xff)
+          ((addr(2) & 0xff) << 8) | (addr(3) & 0xff)
       case _ =>
         throw new IllegalArgumentException(
-            "non-Inet4Address cannot be converted to an Int")
+          "non-Inet4Address cannot be converted to an Int"
+        )
     }
-  }
 
   // Converts either a full or partial ip, (e.g.127.0.0.1, 127.0)
   // to it's integer equivalent with mask specified by prefixlen.
@@ -107,18 +106,18 @@ object NetUtil {
     val arr = ip.split('.')
     val pLen = prefixLen match {
       case None if arr.length != 4 => arr.length * 8
-      case t => t.getOrElse(32)
+      case t                       => t.getOrElse(32)
     }
 
     val netIp = ipToInt(arr.padTo(4, "0").mkString("."))
-    val mask = (1 << 31) >> (pLen - 1)
+    val mask  = (1 << 31) >> (pLen - 1)
     (netIp, mask)
   }
 
   // Get the ip block from CIDR notation, returned as (subnet, subnetMask)
   def cidrToIpBlock(cidr: String): (Int, Int) = cidr.split('/') match {
     case Array(ip, prefixLen) => ipToIpBlock(ip, Some(prefixLen.toInt))
-    case Array(ip) => ipToIpBlock(ip, None)
+    case Array(ip)            => ipToIpBlock(ip, None)
   }
 
   def isIpInBlock(ip: Int, ipBlock: (Int, Int)): Boolean = ipBlock match {
@@ -126,24 +125,24 @@ object NetUtil {
   }
 
   def isInetAddressInBlock(
-      inetAddress: InetAddress, ipBlock: (Int, Int)): Boolean =
+      inetAddress: InetAddress,
+      ipBlock: (Int, Int)
+  ): Boolean =
     isIpInBlock(inetAddressToInt(inetAddress), ipBlock)
 
-  def isIpInBlocks(ip: Int, ipBlocks: Iterable[(Int, Int)]): Boolean = {
-    ipBlocks exists { ipBlock =>
-      isIpInBlock(ip, ipBlock)
-    }
-  }
+  def isIpInBlocks(ip: Int, ipBlocks: Iterable[(Int, Int)]): Boolean =
+    ipBlocks exists { ipBlock => isIpInBlock(ip, ipBlock) }
 
-  def isIpInBlocks(ip: String, ipBlocks: Iterable[(Int, Int)]): Boolean = {
+  def isIpInBlocks(ip: String, ipBlocks: Iterable[(Int, Int)]): Boolean =
     isIpInBlocks(ipToInt(ip), ipBlocks)
-  }
 
   def isInetAddressInBlocks(
-      inetAddress: InetAddress, ipBlocks: Iterable[(Int, Int)]): Boolean =
+      inetAddress: InetAddress,
+      ipBlocks: Iterable[(Int, Int)]
+  ): Boolean =
     isIpInBlocks(inetAddressToInt(inetAddress), ipBlocks)
 
-  def getLocalHostName(): String = {
+  def getLocalHostName(): String =
     try {
       InetAddress.getLocalHost().getHostName()
     } catch {
@@ -152,10 +151,9 @@ object NetUtil {
           case Some(host) =>
             host.split(":") match {
               case Array(hostName, _) => hostName
-              case _ => "unknown_host"
+              case _                  => "unknown_host"
             }
           case None => "unknown_host"
         }
     }
-  }
 }

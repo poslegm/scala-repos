@@ -19,9 +19,8 @@ import org.jetbrains.plugins.scala.lang.psi.impl.expr._
 
 class ScalaWithIfSurrounder extends ScalaExpressionSurrounder {
 
-  override def getTemplateAsString(elements: Array[PsiElement]): String = {
+  override def getTemplateAsString(elements: Array[PsiElement]): String =
     return "if (a) {\n" + super.getTemplateAsString(elements) + "\n}"
-  }
 
   override def getTemplateDescription = "if"
 
@@ -30,7 +29,7 @@ class ScalaWithIfSurrounder extends ScalaExpressionSurrounder {
       case x: ScParenthesisedExpr =>
         x.expr match {
           case Some(y) => y
-          case _ => return x.getTextRange
+          case _       => return x.getTextRange
         }
       case x => x
     }

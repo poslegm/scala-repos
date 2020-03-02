@@ -68,9 +68,9 @@ private[receiver] abstract class RateLimiter(conf: SparkConf) extends Logging {
   /**
     * Get the initial rateLimit to initial rateLimiter
     */
-  private def getInitialRateLimit(): Long = {
+  private def getInitialRateLimit(): Long =
     math.min(
-        conf.getLong("spark.streaming.backpressure.initialRate", maxRateLimit),
-        maxRateLimit)
-  }
+      conf.getLong("spark.streaming.backpressure.initialRate", maxRateLimit),
+      maxRateLimit
+    )
 }

@@ -9,14 +9,14 @@ object Test extends App {
       def z(w: T): T
     } = new {
       type T = String;
-      val y = "foo";
+      val y            = "foo";
       def z(w: String) = w + "bar"
     }
     lazy val u = { println("u evaluated"); x }
     def foo(v: => u.type#T): u.type#T = {
       x = new {
         type T = MacGuffin;
-        val y = new MacGuffin;
+        val y               = new MacGuffin;
         def z(w: MacGuffin) = w
       }
       u.z(v)

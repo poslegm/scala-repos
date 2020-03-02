@@ -14,8 +14,8 @@ object Test {
 
 trait Features {
   implicit def implicitously = scala.language.implicitConversions
-  implicit def reflectively = scala.language.reflectiveCalls
-  implicit def postulously = scala.language.postfixOps
+  implicit def reflectively  = scala.language.reflectiveCalls
+  implicit def postulously   = scala.language.postfixOps
 }
 
 trait Output {
@@ -41,7 +41,7 @@ trait MinimalScalaTest extends Output with Features {
       snippets
     }
 
-    def in[U](snippet: => U) = {
+    def in[U](snippet: => U) =
       try {
         bufferPrintln("- " + s)
         snippet
@@ -52,29 +52,30 @@ trait MinimalScalaTest extends Output with Features {
           bufferPrintln(e.getStackTrace().mkString("\n"))
           throwables += e
       }
-    }
   }
 
   implicit def objectops(obj: Any) = new {
 
-    def mustBe(other: Any) = assert(obj == other, obj + " is not " + other)
+    def mustBe(other: Any)    = assert(obj == other, obj + " is not " + other)
     def mustEqual(other: Any) = mustBe(other)
   }
 
-  def intercept[T <: Throwable : Manifest](body: => Any): T = {
+  def intercept[T <: Throwable: Manifest](body: => Any): T =
     try {
       body
       throw new Exception(
-          "Exception of type %s was not thrown".format(manifest[T]))
+        "Exception of type %s was not thrown".format(manifest[T])
+      )
     } catch {
       case t: Throwable =>
         if (manifest[T].runtimeClass != t.getClass) throw t
         else t.asInstanceOf[T]
     }
-  }
 
-  def checkType[T : Manifest, S](
-      in: Future[T], refmanifest: Manifest[S]): Boolean =
+  def checkType[T: Manifest, S](
+      in: Future[T],
+      refmanifest: Manifest[S]
+  ): Boolean =
     manifest[T] == refmanifest
 }
 
@@ -87,10 +88,10 @@ object TestLatch {
 class TestLatch(count: Int = 1) extends Awaitable[Unit] {
   private var latch = new CountDownLatch(count)
 
-  def countDown() = latch.countDown()
+  def countDown()     = latch.countDown()
   def isOpen: Boolean = latch.getCount == 0
-  def open() = while (!isOpen) countDown()
-  def reset() = latch = new CountDownLatch(count)
+  def open()          = while (!isOpen) countDown()
+  def reset()         = latch = new CountDownLatch(count)
 
   @throws(classOf[TimeoutException])
   def ready(atMost: Duration)(implicit permit: CanAwait) = {
@@ -101,7 +102,6 @@ class TestLatch(count: Int = 1) extends Awaitable[Unit] {
   }
 
   @throws(classOf[Exception])
-  def result(atMost: Duration)(implicit permit: CanAwait): Unit = {
+  def result(atMost: Duration)(implicit permit: CanAwait): Unit =
     ready(atMost)
-  }
 }

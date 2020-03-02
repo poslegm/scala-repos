@@ -16,9 +16,9 @@ import java.math.BigInteger
 import java.lang.Long.numberOfTrailingZeros
 
 object BigIntegerIsRig extends Rig[BigInteger] {
-  def zero: BigInteger = new BigInteger("0")
-  def one: BigInteger = new BigInteger("1")
-  def plus(x: BigInteger, y: BigInteger): BigInteger = x.add(y)
+  def zero: BigInteger                                = new BigInteger("0")
+  def one: BigInteger                                 = new BigInteger("1")
+  def plus(x: BigInteger, y: BigInteger): BigInteger  = x.add(y)
   def times(x: BigInteger, y: BigInteger): BigInteger = x.multiply(y)
 }
 

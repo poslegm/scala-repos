@@ -19,27 +19,26 @@ private[cache] class EvictingCache[K, V](underlying: FutureCache[K, V])
   }
 
   override def getOrElseUpdate(k: K)(v: => Future[V]): Future[V] =
-    evictOnFailure(k, underlying.getOrElseUpdate(k) {
-      v
-    })
+    evictOnFailure(
+      k,
+      underlying.getOrElseUpdate(k) {
+        v
+      }
+    )
 }
 
 private[cache] class LazilyEvictingCache[K, V](
     underlying: LoadingFutureCache[K, V]
-)
-    extends FutureCacheProxy[K, V](underlying) {
-  private[this] def invalidateLazily(k: K, f: Future[V]): Unit = {
+) extends FutureCacheProxy[K, V](underlying) {
+  private[this] def invalidateLazily(k: K, f: Future[V]): Unit =
     f.poll match {
       case Some(Throw(e)) => underlying.evict(k, f)
-      case _ =>
+      case _              =>
     }
-  }
 
   override def get(k: K): Option[Future[V]] = {
     val result = super.get(k)
-    result foreach { fut =>
-      invalidateLazily(k, fut)
-    }
+    result foreach { fut => invalidateLazily(k, fut) }
     result
   }
 

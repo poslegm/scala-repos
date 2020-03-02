@@ -5,18 +5,16 @@ import akka.event.EventStream
 import mesosphere.marathon.event.{EventModule, EventSubscriber, MarathonEvent}
 import javax.inject.{Named, Inject}
 
-class HttpCallbackEventSubscriber @Inject()(
+class HttpCallbackEventSubscriber @Inject() (
     @Named(HttpEventModule.StatusUpdateActor) val actor: ActorRef,
-    @Named(EventModule.busName) val eventBus: EventStream)
-    extends EventSubscriber[HttpEventConfiguration, HttpEventModule] {
+    @Named(EventModule.busName) val eventBus: EventStream
+) extends EventSubscriber[HttpEventConfiguration, HttpEventModule] {
 
   eventBus.subscribe(actor, classOf[MarathonEvent])
 
-  def configuration(): Class[HttpEventConfiguration] = {
+  def configuration(): Class[HttpEventConfiguration] =
     classOf[HttpEventConfiguration]
-  }
 
-  def module(): Option[Class[HttpEventModule]] = {
+  def module(): Option[Class[HttpEventModule]] =
     Some(classOf[HttpEventModule])
-  }
 }

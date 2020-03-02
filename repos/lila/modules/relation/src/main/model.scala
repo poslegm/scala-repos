@@ -18,5 +18,5 @@ object BSONHandlers {
 
   private[relation] implicit val followerBSONHandler = Macros.handler[Follower]
   private[relation] implicit val followedBSONHandler = Macros.handler[Followed]
-  private[relation] implicit val blockedBSONHandler = Macros.handler[Blocked]
+  private[relation] implicit val blockedBSONHandler  = Macros.handler[Blocked]
 }

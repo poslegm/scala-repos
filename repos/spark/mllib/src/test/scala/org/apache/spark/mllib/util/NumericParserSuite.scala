@@ -22,7 +22,7 @@ import org.apache.spark.{SparkException, SparkFunSuite}
 class NumericParserSuite extends SparkFunSuite {
 
   test("parser") {
-    val s = "((1.0,2e3),-4,[5e-6,7.0E8],+9)"
+    val s      = "((1.0,2e3),-4,[5e-6,7.0E8],+9)"
     val parsed = NumericParser.parse(s).asInstanceOf[Seq[_]]
     assert(parsed(0).asInstanceOf[Seq[_]] === Seq(1.0, 2.0e3))
     assert(parsed(1).asInstanceOf[Double] === -4.0)
@@ -39,7 +39,7 @@ class NumericParserSuite extends SparkFunSuite {
   }
 
   test("parser with whitespaces") {
-    val s = "(0.0, [1.0, 2.0])"
+    val s      = "(0.0, [1.0, 2.0])"
     val parsed = NumericParser.parse(s).asInstanceOf[Seq[_]]
     assert(parsed(0).asInstanceOf[Double] === 0.0)
     assert(parsed(1).asInstanceOf[Array[Double]] === Array(1.0, 2.0))

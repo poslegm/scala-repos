@@ -7,8 +7,8 @@ class RuntimeArrayTest extends FunSuite {
 
   test("primitive array") {
     def testIt(x: Any): Unit = {
-      val p = x.pickle
-      val up = p.unpickle[Any]
+      val p   = x.pickle
+      val up  = p.unpickle[Any]
       val arr = up.asInstanceOf[Array[Int]]
       assert(arr.mkString(",") == "5,6")
     }
@@ -20,8 +20,8 @@ class RuntimeArrayTest extends FunSuite {
 
   test("non-primitive array") {
     def testIt(x: Any): Unit = {
-      val p = x.pickle
-      val up = p.unpickle[Any]
+      val p   = x.pickle
+      val up  = p.unpickle[Any]
       val arr = up.asInstanceOf[Array[(Int, Double)]]
       assert(arr.mkString(",") == "(5,0.5),(6,0.6)")
     }

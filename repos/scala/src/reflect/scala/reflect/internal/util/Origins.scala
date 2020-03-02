@@ -43,12 +43,13 @@ abstract class Origins {
   def newRep(xs: StackSlice): Rep
   def repString(rep: Rep): String
 
-  private val origins = new mutable.HashMap[Rep, Int] withDefaultValue 0
+  private val origins      = new mutable.HashMap[Rep, Int] withDefaultValue 0
   private def add(xs: Rep) = origins(xs) += 1
-  private def total = origins.values.foldLeft(0L)(_ + _)
+  private def total        = origins.values.foldLeft(0L)(_ + _)
 
   // Create a stack and whittle it down to the interesting part.
-  def readStack(): Array[StackTraceElement] = (Thread.currentThread.getStackTrace dropWhile
+  def readStack(): Array[StackTraceElement] =
+    (Thread.currentThread.getStackTrace dropWhile
       (x => !isCutoff(x)) dropWhile isCutoff drop 1)
 
   def apply[T](body: => T): T = {
@@ -58,8 +59,9 @@ abstract class Origins {
   def clear() = origins.clear()
   def show() = {
     println(
-        "\n>> Origins tag '%s' logged %s calls from %s distinguished sources.\n"
-          .format(tag, total, origins.keys.size))
+      "\n>> Origins tag '%s' logged %s calls from %s distinguished sources.\n"
+        .format(tag, total, origins.keys.size)
+    )
     origins.toList sortBy (-_._2) foreach {
       case (k, v) => println("%7s %s".format(v, repString(k)))
     }
@@ -71,7 +73,7 @@ abstract class Origins {
 }
 
 object Origins {
-  private val counters = mutable.HashMap[String, Origins]()
+  private val counters  = mutable.HashMap[String, Origins]()
   private val thisClass = this.getClass.getName
 
   locally {
@@ -79,7 +81,8 @@ object Origins {
   }
 
   case class OriginId(className: String, methodName: String) {
-    def matches(el: StackTraceElement) = ((methodName == el.getMethodName) &&
+    def matches(el: StackTraceElement) =
+      ((methodName == el.getMethodName) &&
         (className startsWith el.getClassName))
   }
 
@@ -92,7 +95,7 @@ object Origins {
 
   private def preCutoff(el: StackTraceElement) =
     ((el.getClassName == thisClass) ||
-        (el.getClassName startsWith "java.lang."))
+      (el.getClassName startsWith "java.lang."))
   private def findCutoff() = {
     val cutoff = (Thread.currentThread.getStackTrace dropWhile preCutoff).head
     OriginId(cutoff.getClassName, cutoff.getMethodName)
@@ -114,8 +117,8 @@ object Origins {
       extends Origins {
     type Rep = List[StackTraceElement]
     def isCutoff(el: StackTraceElement) = id matches el
-    def newRep(xs: StackSlice): Rep = (xs take numLines).toList
-    def repString(rep: Rep) = rep.map("\n  " + _).mkString
-    override def readStack() = super.readStack() drop 1
+    def newRep(xs: StackSlice): Rep     = (xs take numLines).toList
+    def repString(rep: Rep)             = rep.map("\n  " + _).mkString
+    override def readStack()            = super.readStack() drop 1
   }
 }

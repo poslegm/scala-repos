@@ -14,12 +14,14 @@ import org.scalatest.mock.MockitoSugar
 
 @RunWith(classOf[JUnitRunner])
 class TimerTest
-    extends FunSuite with MockitoSugar with Eventually
+    extends FunSuite
+    with MockitoSugar
+    with Eventually
     with IntegrationPatience {
 
   private def testTimerRunsWithLocals(timer: Timer): Unit = {
-    val timerLocal = new AtomicInteger(0)
-    val local = new Local[Int]
+    val timerLocal  = new AtomicInteger(0)
+    val local       = new Local[Int]
     val expectedVal = 99
     local.let(expectedVal) {
       timer.schedule(Time.now + 10.millis) {
@@ -33,9 +35,9 @@ class TimerTest
   }
 
   test("ThreadStoppingTimer should stop timers in a different thread") {
-    val executor = mock[ExecutorService]
+    val executor   = mock[ExecutorService]
     val underlying = mock[Timer]
-    val timer = new ThreadStoppingTimer(underlying, executor)
+    val timer      = new ThreadStoppingTimer(underlying, executor)
 
     verify(executor, never()).submit(any[Runnable])
     timer.stop()
@@ -48,7 +50,7 @@ class TimerTest
 
   test("ReferenceCountingTimer calls the factory when it is first acquired") {
     val underlying = mock[Timer]
-    val factory = mock[() => Timer]
+    val factory    = mock[() => Timer]
     when(factory()).thenReturn(underlying)
 
     val refcounted = new ReferenceCountingTimer(factory)
@@ -59,10 +61,11 @@ class TimerTest
   }
 
   test(
-      "ReferenceCountingTimer stops the underlying timer when acquire count reaches 0") {
+    "ReferenceCountingTimer stops the underlying timer when acquire count reaches 0"
+  ) {
 
     val underlying = mock[Timer]
-    val factory = mock[() => Timer]
+    val factory    = mock[() => Timer]
     when(factory()).thenReturn(underlying)
 
     val refcounted = new ReferenceCountingTimer(factory)
@@ -93,27 +96,27 @@ class TimerTest
   }
 
   test("ScheduledThreadPoolTimer should increment a counter") {
-    val timer = new ScheduledThreadPoolTimer
+    val timer   = new ScheduledThreadPoolTimer
     val counter = new AtomicInteger(0)
     timer.schedule(100.millis, 200.millis) {
       counter.incrementAndGet()
     }
-    eventually { assert(counter.get() >= 2) }
+    eventually(assert(counter.get() >= 2))
     timer.stop()
   }
 
   test("ScheduledThreadPoolTimer should schedule(when)") {
-    val timer = new ScheduledThreadPoolTimer
+    val timer   = new ScheduledThreadPoolTimer
     val counter = new AtomicInteger(0)
     timer.schedule(Time.now + 200.millis) {
       counter.incrementAndGet()
     }
-    eventually { assert(counter.get() == 1) }
+    eventually(assert(counter.get() == 1))
     timer.stop()
   }
 
   test("ScheduledThreadPoolTimer should cancel schedule(when)") {
-    val timer = new ScheduledThreadPoolTimer
+    val timer   = new ScheduledThreadPoolTimer
     val counter = new AtomicInteger(0)
     val task = timer.schedule(Time.now + 200.millis) {
       counter.incrementAndGet()
@@ -130,7 +133,7 @@ class TimerTest
 
   test("JavaTimer should not stop working when an exception is thrown") {
     var errors = 0
-    var latch = new CountDownLatch(1)
+    var latch  = new CountDownLatch(1)
 
     val timer = new JavaTimer {
       override def logError(t: Throwable) {
@@ -161,28 +164,28 @@ class TimerTest
   }
 
   test("JavaTimer should schedule(when)") {
-    val timer = new JavaTimer
+    val timer   = new JavaTimer
     val counter = new AtomicInteger(0)
     timer.schedule(Time.now + 20.millis) {
       counter.incrementAndGet()
     }
     Thread.sleep(40.milliseconds.inMillis)
-    eventually { assert(counter.get() == 1) }
+    eventually(assert(counter.get() == 1))
     timer.stop()
   }
 
   test("JavaTimer should schedule(pre-epoch)") {
-    val timer = new JavaTimer
+    val timer   = new JavaTimer
     val counter = new AtomicInteger(0)
     timer.schedule(Time.Bottom) {
       counter.incrementAndGet()
     }
-    eventually { assert(counter.get() == 1) }
+    eventually(assert(counter.get() == 1))
     timer.stop()
   }
 
   test("JavaTimer should cancel schedule(when)") {
-    val timer = new JavaTimer
+    val timer   = new JavaTimer
     val counter = new AtomicInteger(0)
     val task = timer.schedule(Time.now + 20.millis) {
       counter.incrementAndGet()
@@ -201,7 +204,7 @@ class TimerTest
     val result = "boom"
     Time.withCurrentTimeFrozen { ctl =>
       val timer = new MockTimer
-      val f = timer.doLater(1.millis)(result)
+      val f     = timer.doLater(1.millis)(result)
       assert(!f.isDefined)
       ctl.advance(2.millis)
       timer.tick()
@@ -212,15 +215,15 @@ class TimerTest
 
   test("Timer should doLater throws exception") {
     Time.withCurrentTimeFrozen { ctl =>
-      val timer = new MockTimer
-      val ex = new Exception
+      val timer        = new MockTimer
+      val ex           = new Exception
       def task: String = throw ex
-      val f = timer.doLater(1.millis)(task)
+      val f            = timer.doLater(1.millis)(task)
       assert(!f.isDefined)
       ctl.advance(2.millis)
       timer.tick()
       assert(f.isDefined)
-      intercept[Throwable] { Await.result(f, 0.millis) }
+      intercept[Throwable](Await.result(f, 0.millis))
     }
   }
 
@@ -228,13 +231,13 @@ class TimerTest
     val result = "boom"
     Time.withCurrentTimeFrozen { ctl =>
       val timer = new MockTimer
-      val f = timer.doLater(1.millis)(result)
+      val f     = timer.doLater(1.millis)(result)
       assert(!f.isDefined)
       f.raise(new Exception)
       ctl.advance(2.millis)
       timer.tick()
       assert(f.isDefined)
-      intercept[CancellationException] { Await.result(f) }
+      intercept[CancellationException](Await.result(f))
     }
   }
 
@@ -242,7 +245,7 @@ class TimerTest
     val result = "boom"
     Time.withCurrentTimeFrozen { ctl =>
       val timer = new MockTimer
-      val f = timer.doAt(Time.now + 1.millis)(result)
+      val f     = timer.doAt(Time.now + 1.millis)(result)
       assert(!f.isDefined)
       ctl.advance(2.millis)
       timer.tick()
@@ -255,7 +258,7 @@ class TimerTest
     val result = "boom"
     Time.withCurrentTimeFrozen { ctl =>
       val timer = new MockTimer
-      val f = timer.doAt(Time.now + 1.millis)(result)
+      val f     = timer.doAt(Time.now + 1.millis)(result)
       assert(!f.isDefined)
       val exc = new Exception
       f.raise(exc)
@@ -273,7 +276,7 @@ class TimerTest
 
   test("Timer should schedule(when)") {
     Time.withCurrentTimeFrozen { ctl =>
-      val timer = new MockTimer
+      val timer   = new MockTimer
       val counter = new AtomicInteger(0)
       timer.schedule(Time.now + 1.millis)(counter.incrementAndGet())
       ctl.advance(2.millis)
@@ -284,9 +287,9 @@ class TimerTest
 
   test("Timer should cancel schedule(when)") {
     Time.withCurrentTimeFrozen { ctl =>
-      val timer = new MockTimer
+      val timer   = new MockTimer
       val counter = new AtomicInteger(0)
-      val task = timer.schedule(Time.now + 1.millis)(counter.incrementAndGet())
+      val task    = timer.schedule(Time.now + 1.millis)(counter.incrementAndGet())
       task.cancel()
       ctl.advance(2.millis)
       timer.tick()
@@ -296,9 +299,9 @@ class TimerTest
 
   test("Timer should cancel schedule(duration)") {
     Time.withCurrentTimeFrozen { ctl =>
-      val timer = new MockTimer
+      val timer   = new MockTimer
       val counter = new AtomicInteger(0)
-      val task = timer.schedule(1.millis)(counter.incrementAndGet())
+      val task    = timer.schedule(1.millis)(counter.incrementAndGet())
       ctl.advance(2.millis)
       timer.tick()
       task.cancel()
@@ -311,10 +314,10 @@ class TimerTest
   private def mockTimerLocalPropagation(
       timer: MockTimer,
       localValue: Int
-  ): Int = {
+  ): Int =
     Time.withCurrentTimeFrozen { tc =>
       val timerLocal = new AtomicInteger(0)
-      val local = new Local[Int]
+      val local      = new Local[Int]
       local.let(localValue) {
         timer.schedule(Time.now + 10.millis) {
           timerLocal.set(local().getOrElse(-1))
@@ -324,7 +327,6 @@ class TimerTest
       timer.tick()
       timerLocal.get()
     }
-  }
 
   test("MockTimer propagateLocals") {
     val timer = new MockTimer()
@@ -341,7 +343,7 @@ class TimerTest
         true
     }
     Monitor.using(monitor) {
-      timer.schedule(Time.now + 10.millis) { throw new SomeEx }
+      timer.schedule(Time.now + 10.millis)(throw new SomeEx)
     }
 
     eventually {

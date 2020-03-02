@@ -32,18 +32,20 @@ import scala.util.control.NonFatal
 trait UniqueKeyedService[K, V] extends SimpleService[K, V] {
 
   /** Load the range of data to do a join */
-  def readDateRange(requested: DateRange)(
-      implicit flowDef: FlowDef, mode: Mode): TypedPipe[(K, V)]
+  def readDateRange(
+      requested: DateRange
+  )(implicit flowDef: FlowDef, mode: Mode): TypedPipe[(K, V)]
   def ordering: Ordering[K]
   def reducers: Option[Int]
 
   /** You can override this to use hashJoin for instance */
   def doJoin[W](in: TypedPipe[(Timestamp, (K, W))], serv: TypedPipe[(K, V)])(
       implicit flowDef: FlowDef,
-      mode: Mode): TypedPipe[(Timestamp, (K, (W, Option[V])))] = {
+      mode: Mode
+  ): TypedPipe[(Timestamp, (K, (W, Option[V])))] = {
     implicit val ord: Ordering[K] = ordering
     def withReducers[U, T](grouped: Grouped[U, T]) =
-      reducers.map { grouped.withReducers(_) }.getOrElse(grouped)
+      reducers.map(grouped.withReducers(_)).getOrElse(grouped)
 
     withReducers(in.map { case (t, (k, w)) => (k, (t, w)) }.group)
       .leftJoin(withReducers(serv.group))
@@ -52,8 +54,9 @@ trait UniqueKeyedService[K, V] extends SimpleService[K, V] {
   }
 
   final override def serve[W](
-      covering: DateRange, input: TypedPipe[(Timestamp, (K, W))])(
-      implicit flowDef: FlowDef, mode: Mode) =
+      covering: DateRange,
+      input: TypedPipe[(Timestamp, (K, W))]
+  )(implicit flowDef: FlowDef, mode: Mode) =
     doJoin(input, readDateRange(covering))
 }
 
@@ -66,27 +69,30 @@ trait SourceUniqueKeyedService[S <: SSource, K, V]
   def satisfiable(requested: DateRange, mode: Mode): Try[DateRange] =
     Scalding.minify(mode, requested)(source(_))
 
-  final override def readDateRange(req: DateRange)(
-      implicit flowDef: FlowDef, mode: Mode) =
+  final override def readDateRange(
+      req: DateRange
+  )(implicit flowDef: FlowDef, mode: Mode) =
     toPipe(source(req))
 }
 
 object UniqueKeyedService extends java.io.Serializable {
 
-  def from[K : Ordering, V](
+  def from[K: Ordering, V](
       fn: DateRange => Mappable[(K, V)],
       reducers: Option[Int] = None,
-      requireFullySatisfiable: Boolean = false): UniqueKeyedService[K, V] =
+      requireFullySatisfiable: Boolean = false
+  ): UniqueKeyedService[K, V] =
     fromAndThen[(K, V), K, V](fn, identity, reducers, requireFullySatisfiable)
 
   /** The Mappable is the subclass of Source that knows about the file system. */
-  def fromAndThen[T, K : Ordering, V](
+  def fromAndThen[T, K: Ordering, V](
       fn: DateRange => Mappable[T],
       andThen: TypedPipe[T] => TypedPipe[(K, V)],
       inputReducers: Option[Int] = None,
-      requireFullySatisfiable: Boolean = false): UniqueKeyedService[K, V] =
+      requireFullySatisfiable: Boolean = false
+  ): UniqueKeyedService[K, V] =
     new SourceUniqueKeyedService[Mappable[T], K, V] {
-      def ordering = Ordering[K]
+      def ordering              = Ordering[K]
       def source(dr: DateRange) = fn(dr)
       def toPipe(mappable: Mappable[T])(implicit flow: FlowDef, mode: Mode) =
         andThen(TypedPipe.from(mappable))
@@ -94,7 +100,9 @@ object UniqueKeyedService extends java.io.Serializable {
       def reducers: Option[Int] = inputReducers
 
       override def satisfiable(
-          requested: DateRange, mode: Mode): Try[DateRange] = {
+          requested: DateRange,
+          mode: Mode
+      ): Try[DateRange] =
         if (requireFullySatisfiable) {
           val s = fn(requested)
           try {
@@ -110,6 +118,5 @@ object UniqueKeyedService extends java.io.Serializable {
         } else {
           super.satisfiable(requested, mode)
         }
-      }
     }
 }

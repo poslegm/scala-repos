@@ -18,8 +18,8 @@ class ConcurrentMultiMapTest extends WordSpec {
     assert(map.get(0) == List())
     assert(map.get(2) == List())
 
-    map += 0 -> 20
-    map += 3 -> 30
+    map += 0  -> 20
+    map += 3  -> 30
     map += 10 -> 40
 
     assert(map.get(1) == List(2, 3, 4))

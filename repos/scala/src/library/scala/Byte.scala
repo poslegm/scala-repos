@@ -557,9 +557,9 @@ object Byte extends AnyValCompanion {
 
   /** Language mandated coercions from Byte to "wider" types. */
   import scala.language.implicitConversions
-  implicit def byte2short(x: Byte): Short = x.toShort
-  implicit def byte2int(x: Byte): Int = x.toInt
-  implicit def byte2long(x: Byte): Long = x.toLong
-  implicit def byte2float(x: Byte): Float = x.toFloat
+  implicit def byte2short(x: Byte): Short   = x.toShort
+  implicit def byte2int(x: Byte): Int       = x.toInt
+  implicit def byte2long(x: Byte): Long     = x.toLong
+  implicit def byte2float(x: Byte): Float   = x.toFloat
   implicit def byte2double(x: Byte): Double = x.toDouble
 }

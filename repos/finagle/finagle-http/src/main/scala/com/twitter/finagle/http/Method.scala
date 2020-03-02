@@ -10,13 +10,13 @@ sealed abstract class Method(name: String) {
 }
 
 object Method {
-  case object Get extends Method("GET")
-  case object Post extends Method("POST")
-  case object Put extends Method("PUT")
-  case object Head extends Method("HEAD")
-  case object Patch extends Method("PATCH")
-  case object Delete extends Method("DELETE")
-  case object Trace extends Method("TRACE")
+  case object Get     extends Method("GET")
+  case object Post    extends Method("POST")
+  case object Put     extends Method("PUT")
+  case object Head    extends Method("HEAD")
+  case object Patch   extends Method("PATCH")
+  case object Delete  extends Method("DELETE")
+  case object Trace   extends Method("TRACE")
   case object Connect extends Method("CONNECT")
   case object Options extends Method("OPTIONS")
 
@@ -31,15 +31,15 @@ object Method {
     * of the common methods, we observe the case.
     */
   def apply(name: String): Method = name.toUpperCase match {
-    case "GET" => Get
-    case "POST" => Post
-    case "PUT" => Put
-    case "HEAD" => Head
-    case "PATCH" => Patch
-    case "DELETE" => Delete
-    case "TRACE" => Trace
+    case "GET"     => Get
+    case "POST"    => Post
+    case "PUT"     => Put
+    case "HEAD"    => Head
+    case "PATCH"   => Patch
+    case "DELETE"  => Delete
+    case "TRACE"   => Trace
     case "CONNECT" => Connect
     case "OPTIONS" => Options
-    case method => Custom(name)
+    case method    => Custom(name)
   }
 }

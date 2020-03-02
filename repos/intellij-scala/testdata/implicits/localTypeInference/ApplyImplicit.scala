@@ -3,7 +3,7 @@ object tedfdst {
 
   implicit def s2i(s: String): Int = 0
 
-  val thiss = this
+  val thiss          = this
   val y: Option[Int] = thiss( /*start*/ "" /*end*/ )
 }
 /*

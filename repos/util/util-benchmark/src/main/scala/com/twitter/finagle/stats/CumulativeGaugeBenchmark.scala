@@ -53,14 +53,16 @@ class CumulativeGaugeBenchmark extends StdBenchAnnotations {
 object CumulativeGaugeBenchmark {
 
   class CumulativeStatsRecv extends StatsReceiverWithCumulativeGauges {
-    override val repr: AnyRef = this
+    override val repr: AnyRef                    = this
     override def counter(name: String*): Counter = ???
-    override def stat(name: String*): Stat = ???
+    override def stat(name: String*): Stat       = ???
 
     var gauges = Map.empty[Seq[String], () => Float]
 
     override protected[this] def registerGauge(
-        name: Seq[String], f: => Float): Unit =
+        name: Seq[String],
+        f: => Float
+    ): Unit =
       gauges += name -> (() => f)
 
     override protected[this] def deregisterGauge(name: Seq[String]): Unit =

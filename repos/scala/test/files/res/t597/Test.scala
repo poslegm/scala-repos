@@ -4,14 +4,14 @@ abstract class Base {
   type A <: Ax;
 
   abstract class Ax {
-    def a = null;
+    def a      = null;
     def string = "A";
   }
 }
 trait ExtB extends Base {
   type A <: Ax;
   trait Ax extends super.Ax {
-    def c = null;
+    def c               = null;
     override def string = super.string + "C";
   }
 }
@@ -21,7 +21,7 @@ trait ExtC extends /*ExtA with*/ ExtB {
   trait Ax extends super.Ax {
     a
     c
-    def d = null;
+    def d               = null;
     override def string = super.string + "D";
   }
 }

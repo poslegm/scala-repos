@@ -55,14 +55,13 @@ trait WireFormat {
 abstract class SimpleJsonWireFormat extends WireFormat {
   self: org.json4s.JsonMethods[_] =>
 
-  val name = "simpleJson"
+  val name        = "simpleJson"
   val supportsAck = false
 
-  private[this] def parseMessage(message: String) = {
+  private[this] def parseMessage(message: String) =
     if (message.trim.startsWith("{") || message.trim.startsWith("["))
       parseOpt(message) map (JsonMessage(_)) getOrElse TextMessage(message)
     else TextMessage(message)
-  }
 
   def parseOutMessage(message: String): OutboundMessage = parseMessage(message)
 
@@ -71,7 +70,7 @@ abstract class SimpleJsonWireFormat extends WireFormat {
   def render(message: OutboundMessage) = message match {
     case TextMessage(text) => text
     case JsonMessage(json) => renderJson(json)
-    case _ => ""
+    case _                 => ""
   }
 
   protected def renderJson(json: JValue): String

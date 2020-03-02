@@ -62,15 +62,17 @@ class LocalSchedulerLifoTest extends LocalSchedulerTest(true)
 
 @RunWith(classOf[JUnitRunner])
 class ThreadPoolSchedulerTest
-    extends FunSuite with Eventually with IntegrationPatience {
+    extends FunSuite
+    with Eventually
+    with IntegrationPatience {
   test("works") {
-    val p = new Promise[Unit]
+    val p         = new Promise[Unit]
     val scheduler = new ThreadPoolScheduler("test")
     scheduler.submit(new Runnable {
       def run() { p.setDone() }
     })
 
-    eventually { p.isDone }
+    eventually(p.isDone)
 
     scheduler.shutdown()
   }

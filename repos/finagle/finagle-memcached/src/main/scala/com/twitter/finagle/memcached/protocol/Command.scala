@@ -12,7 +12,7 @@ private object KeyValidation {
   /** Return -1 if no invalid bytes */
   private def invalidByteIndex(key: Buf): Int = {
     val bs = Buf.ByteArray.Owned.extract(key)
-    var i = 0
+    var i  = 0
     while (i < bs.length) {
       if (Bufs.INVALID_KEY_CHARACTERS.contains(bs(i))) return i
       i += 1
@@ -20,23 +20,24 @@ private object KeyValidation {
     -1
   }
 
-  private val KeyCheck: Buf => Unit = key =>
-    {
-      if (key == null)
-        throw new IllegalArgumentException("Invalid keys: key cannot be null")
+  private val KeyCheck: Buf => Unit = key => {
+    if (key == null)
+      throw new IllegalArgumentException("Invalid keys: key cannot be null")
 
-      if (tooLong(key))
-        throw new IllegalArgumentException(
-            "Invalid keys: key cannot be longer than %d bytes (%d)".format(
-                MaxKeyLength, key.length))
+    if (tooLong(key))
+      throw new IllegalArgumentException(
+        "Invalid keys: key cannot be longer than %d bytes (%d)"
+          .format(MaxKeyLength, key.length)
+      )
 
-      val index = invalidByteIndex(key)
-      if (index != -1) {
-        val ch = Buf.ByteArray.Owned.extract(key)(index)
-        throw new IllegalArgumentException(
-            "Invalid keys: key cannot have whitespace or control characters: '0x%d'"
-              .format(ch))
-      }
+    val index = invalidByteIndex(key)
+    if (index != -1) {
+      val ch = Buf.ByteArray.Owned.extract(key)(index)
+      throw new IllegalArgumentException(
+        "Invalid keys: key cannot have whitespace or control characters: '0x%d'"
+          .format(ch)
+      )
+    }
   }
 }
 
@@ -57,36 +58,43 @@ trait KeyValidation {
     val ks = keys
     if (ks == null)
       throw new IllegalArgumentException(
-          "Invalid keys: cannot have null for keys")
+        "Invalid keys: cannot have null for keys"
+      )
 
     ks.foreach(KeyCheck)
   }
 
-  def badKey(key: Buf): Boolean = {
+  def badKey(key: Buf): Boolean =
     if (key == null) true
     else {
       tooLong(key) || invalidByteIndex(key) != -1
     }
-  }
 }
 
 sealed abstract class Command(val name: String)
 
 abstract class StorageCommand(
-    key: Buf, flags: Int, expiry: Time, value: Buf, name: String)
-    extends Command(name) with KeyValidation {
+    key: Buf,
+    flags: Int,
+    expiry: Time,
+    value: Buf,
+    name: String
+) extends Command(name)
+    with KeyValidation {
   def keys: Seq[Buf] = Seq(key)
 }
 
 abstract class NonStorageCommand(name: String) extends Command(name)
 
 abstract class ArithmeticCommand(key: Buf, delta: Long, name: String)
-    extends NonStorageCommand(name) with KeyValidation {
+    extends NonStorageCommand(name)
+    with KeyValidation {
   def keys: Seq[Buf] = Seq(key)
 }
 
 abstract class RetrievalCommand(name: String)
-    extends NonStorageCommand(name) with KeyValidation {
+    extends NonStorageCommand(name)
+    with KeyValidation {
   def keys: Seq[Buf]
 }
 
@@ -105,7 +113,7 @@ case class Cas(key: Buf, flags: Int, expiry: Time, value: Buf, casUnique: Buf)
     extends StorageCommand(key, flags, expiry, value, "Cas")
 
 // retrieval commands
-case class Get(keys: Seq[Buf]) extends RetrievalCommand("Get")
+case class Get(keys: Seq[Buf])  extends RetrievalCommand("Get")
 case class Gets(keys: Seq[Buf]) extends RetrievalCommand("Gets")
 
 // arithmetic commands
@@ -119,7 +127,7 @@ case class Delete(key: Buf) extends Command("Delete") with KeyValidation {
   def keys: Seq[Buf] = Seq(key)
 }
 case class Stats(args: Seq[Buf]) extends NonStorageCommand("Stats")
-case class Quit() extends Command("Quit")
+case class Quit()                extends Command("Quit")
 
 // twemcache specific commands
 case class Upsert(key: Buf, flags: Int, expiry: Time, value: Buf, version: Buf)

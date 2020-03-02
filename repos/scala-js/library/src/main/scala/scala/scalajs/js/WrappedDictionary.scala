@@ -16,27 +16,25 @@ import scala.collection.generic.CanBuildFrom
 /** Wrapper to use a js.Dictionary as a scala.mutable.Map */
 @inline
 class WrappedDictionary[A](val dict: Dictionary[A])
-    extends mutable.AbstractMap[String, A] with mutable.Map[String, A]
+    extends mutable.AbstractMap[String, A]
+    with mutable.Map[String, A]
     with mutable.MapLike[String, A, WrappedDictionary[A]] {
 
   import WrappedDictionary._
 
-  def get(key: String): Option[A] = {
+  def get(key: String): Option[A] =
     if (contains(key)) Some(dict.rawApply(key))
     else None
-  }
 
-  override def apply(key: String): A = {
+  override def apply(key: String): A =
     if (contains(key)) dict.rawApply(key)
     else throw new NoSuchElementException("key not found: " + key)
-  }
 
-  override def contains(key: String): Boolean = {
+  override def contains(key: String): Boolean =
     /* We have to use a safe version of hasOwnProperty, because
      * "hasOwnProperty" could be a key of this dictionary.
      */
     safeHasOwnProperty(dict, key)
-  }
 
   def -=(key: String): this.type = {
     if (contains(key)) dict.delete(key)
@@ -77,9 +75,9 @@ object WrappedDictionary {
 
   private final class DictionaryIterator[+A](dict: Dictionary[A])
       extends Iterator[(String, A)] {
-    private[this] val keys = Object.keys(dict.asInstanceOf[Object])
+    private[this] val keys       = Object.keys(dict.asInstanceOf[Object])
     private[this] var index: Int = 0
-    def hasNext(): Boolean = index < keys.length
+    def hasNext(): Boolean       = index < keys.length
     def next(): (String, A) = {
       val key = keys(index)
       index += 1
@@ -89,11 +87,12 @@ object WrappedDictionary {
 
   def empty[A]: WrappedDictionary[A] = new WrappedDictionary(Dictionary.empty)
 
-  type CBF[A] = CanBuildFrom[
-      WrappedDictionary[_], (String, A), WrappedDictionary[A]]
+  type CBF[A] =
+    CanBuildFrom[WrappedDictionary[_], (String, A), WrappedDictionary[A]]
   implicit def canBuildFrom[A]: CBF[A] = new CBF[A] {
-    def apply(from: WrappedDictionary[_])
-      : Builder[(String, A), WrappedDictionary[A]] =
+    def apply(
+        from: WrappedDictionary[_]
+    ): Builder[(String, A), WrappedDictionary[A]] =
       new WrappedDictionaryBuilder[A]
     def apply(): Builder[(String, A), WrappedDictionary[A]] =
       new WrappedDictionaryBuilder[A]

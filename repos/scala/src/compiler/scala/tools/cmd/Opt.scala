@@ -29,18 +29,21 @@ object Opt {
     def programInfo: Info
     protected def opt = fromOpt(name)
 
-    def --? : Boolean // --opt is set
+    def --? : Boolean               // --opt is set
     def -->(body: => Unit): Boolean // if --opt is set, execute body
-    def --| : Option[String] // --opt <arg: String> is optional, result is Option[String]
-    def --^[T : FromString]: Option[T] // --opt <arg: T> is optional, result is Option[T]
+    def --| : Option[
+      String
+    ] // --opt <arg: String> is optional, result is Option[String]
+    def --^[T: FromString]
+        : Option[T] // --opt <arg: T> is optional, result is Option[T]
 
     def optMap[T](f: String => T) = --| map f
 
     /** Names.
       */
-    def defaultTo[T : FromString](default: T): T
+    def defaultTo[T: FromString](default: T): T
     def defaultToEnv(envVar: String): String
-    def choiceOf[T : FromString](choices: T*): Option[T]
+    def choiceOf[T: FromString](choices: T*): Option[T]
     def expandTo(args: String*): Unit
 
     /** Help.
@@ -48,24 +51,25 @@ object Opt {
     def /(descr: String): String // --opt has help description 'descr'
   }
 
-  class Reference(val programInfo: Info,
-                  val options: Reference.Accumulators,
-                  val name: String)
-      extends Implicit {
+  class Reference(
+      val programInfo: Info,
+      val options: Reference.Accumulators,
+      val name: String
+  ) extends Implicit {
     import options._
 
-    def --? = { addUnary(opt); false }
+    def --?                = { addUnary(opt); false }
     def -->(body: => Unit) = { addUnary(opt); false }
-    def --| = { addBinary(opt); None }
-    def --^[T : FromString] = { addBinary(opt); None }
+    def --|                = { addBinary(opt); None }
+    def --^[T: FromString] = { addBinary(opt); None }
 
-    def defaultTo[T : FromString](default: T) = {
+    def defaultTo[T: FromString](default: T) = {
       addBinary(opt); addHelpDefault(() => default.toString); default
     }
     def defaultToEnv(envVar: String) = {
       addBinary(opt); addHelpEnvDefault(envVar); ""
     }
-    def choiceOf[T : FromString](choices: T*) = { addBinary(opt); None }
+    def choiceOf[T: FromString](choices: T*) = { addBinary(opt); None }
     def expandTo(args: String*) = {
       addExpand(name, args.toList); addHelpAlias(() => args mkString " ")
     }
@@ -75,14 +79,17 @@ object Opt {
   }
 
   class Instance(
-      val programInfo: Info, val parsed: CommandLine, val name: String)
-      extends Implicit with Error {
+      val programInfo: Info,
+      val parsed: CommandLine,
+      val name: String
+  ) extends Implicit
+      with Error {
     def --? = parsed isSet opt
     def -->(body: => Unit) = {
       val isSet = parsed isSet opt; if (isSet) body; isSet
     }
     def --| = parsed get opt
-    def --^[T : FromString] = {
+    def --^[T: FromString] = {
       val fs = implicitly[FromString[T]]
       --| map { arg =>
         if (fs isDefinedAt arg) fs(arg)
@@ -90,16 +97,15 @@ object Opt {
       }
     }
 
-    def defaultTo[T : FromString](default: T) = --^[T] getOrElse default
-    def defaultToEnv(envVar: String) = --| getOrElse envOrElse(envVar, "")
-    def expandTo(args: String*) = ()
+    def defaultTo[T: FromString](default: T) = --^[T] getOrElse default
+    def defaultToEnv(envVar: String)         = --| getOrElse envOrElse(envVar, "")
+    def expandTo(args: String*)              = ()
 
-    def choiceOf[T : FromString](choices: T*) = {
+    def choiceOf[T: FromString](choices: T*) =
       --^[T] map { arg =>
         if (choices contains arg) arg
         else failOption(arg.toString, "not a valid choice from " + choices)
       }
-    }
 
     def /(descr: String) = name
   }

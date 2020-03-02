@@ -68,9 +68,9 @@ class WatermarkPoolTest extends FunSpec with MockitoSugar {
 
   describe("WatermarkPool (lowWatermark = 1, highWatermark = 1)") {
     trait WatermarkPoolLowOneHighOne {
-      val factory = mock[ServiceFactory[Int, Int]]
+      val factory  = mock[ServiceFactory[Int, Int]]
       val service0 = mock[Service[Int, Int]]
-      val promise = new Promise[Service[Int, Int]]
+      val promise  = new Promise[Service[Int, Int]]
 
       when(factory.close(any[Time])).thenReturn(Future.Done)
       when(service0.close(any[Time])).thenReturn(Future.Done)
@@ -135,7 +135,7 @@ class WatermarkPoolTest extends FunSpec with MockitoSugar {
         val cause = new Exception
         f1.raise(cause)
         assert(f1.isDefined)
-        val failure = intercept[Failure] { Await.result(f1) }
+        val failure = intercept[Failure](Await.result(f1))
         assert(failure.getCause.isInstanceOf[CancelledConnectionException])
         assert(failure.isFlagged(Failure.Interrupted))
       }
@@ -145,7 +145,7 @@ class WatermarkPoolTest extends FunSpec with MockitoSugar {
       new WatermarkPoolLowOneHighOne {
         val f0 = pool()
         assert(f0.isDefined)
-        Await.result(f0).close() // give it back
+        Await.result(f0).close()                   // give it back
         verify(service0, never()).close(any[Time]) // it retained
 
         val service1 = mock[Service[Int, Int]]
@@ -196,7 +196,8 @@ class WatermarkPoolTest extends FunSpec with MockitoSugar {
   }
 
   describe(
-      "WatermarkPool (lowWatermark = 1, highWatermark = 1, maxWaiters = 2)") {
+    "WatermarkPool (lowWatermark = 1, highWatermark = 1, maxWaiters = 2)"
+  ) {
     val factory = mock[ServiceFactory[Int, Int]]
     when(factory.close(any[Time])).thenReturn(Future.Done)
     val service0 = mock[Service[Int, Int]]
@@ -205,12 +206,14 @@ class WatermarkPoolTest extends FunSpec with MockitoSugar {
     when(factory()).thenReturn(Future.value(service0))
     when(service0.status).thenReturn(Status.Open)
 
-    val statsRecv = new InMemoryStatsReceiver
-    val pool = new WatermarkPool(factory, 1, 1, statsRecv, maxWaiters = 2)
-    def numWaited() = statsRecv.counter("pool_num_waited")()
+    val statsRecv           = new InMemoryStatsReceiver
+    val pool                = new WatermarkPool(factory, 1, 1, statsRecv, maxWaiters = 2)
+    def numWaited()         = statsRecv.counter("pool_num_waited")()
     def numTooManyWaiters() = statsRecv.counter("pool_num_too_many_waiters")()
 
-    it("should throw TooManyWaitersException when the number of waiters exceeds 2") {
+    it(
+      "should throw TooManyWaitersException when the number of waiters exceeds 2"
+    ) {
       assert(0 == numWaited())
       assert(0 == numTooManyWaiters())
       val f0 = pool()
@@ -232,7 +235,7 @@ class WatermarkPoolTest extends FunSpec with MockitoSugar {
       // three waiters and i freak out.
       val f3 = pool()
       assert(f3.isDefined)
-      intercept[TooManyWaitersException] { Await.result(f3) }
+      intercept[TooManyWaitersException](Await.result(f3))
       assert(2 == numWaited())
       assert(1 == numTooManyWaiters())
 
@@ -283,17 +286,11 @@ class WatermarkPoolTest extends FunSpec with MockitoSugar {
     it("should return the cached connections for the next 100 apply calls") {
       // We can now fetch them again, incurring no additional object
       // creation.
-      0 until 100 foreach { _ =>
-        Await.result(pool())
-      }
-      mocks foreach { service =>
-        verify(service, times(2)).status
-      }
+      0 until 100 foreach { _ => Await.result(pool()) }
+      mocks foreach { service => verify(service, times(2)).status }
 
       verify(factory, times(100))()
-      mocks foreach { service =>
-        verify(service, never()).close(any[Time])
-      }
+      mocks foreach { service => verify(service, never()).close(any[Time]) }
     }
   }
 
@@ -305,7 +302,7 @@ class WatermarkPoolTest extends FunSpec with MockitoSugar {
     when(service.status).thenReturn(Status.Open)
     when(service(123)).thenReturn(Future.value(321))
     val highWaterMark = 5
-    val pool = new WatermarkPool(factory, 1, highWaterMark)
+    val pool          = new WatermarkPool(factory, 1, highWaterMark)
   }
 
   describe("Watermark service lifecyle") {
@@ -386,33 +383,33 @@ class WatermarkPoolTest extends FunSpec with MockitoSugar {
     it("service cancellation does not affect # of services") {
       val factory = mock[ServiceFactory[Int, Int]]
       when(factory.close(any[Time])).thenReturn(Future.Done)
-      val lowWatermark = 5
+      val lowWatermark  = 5
       val highWatermark = 10
-      val maxWaiters = 3
+      val maxWaiters    = 3
       val pool = new WatermarkPool(
-          factory, lowWatermark, highWatermark, maxWaiters = maxWaiters)
+        factory,
+        lowWatermark,
+        highWatermark,
+        maxWaiters = maxWaiters
+      )
 
       val services =
-        0 until highWatermark map { _ =>
-          new Promise[Service[Int, Int]]
-        }
+        0 until highWatermark map { _ => new Promise[Service[Int, Int]] }
       val wrappedServices =
         services map { s =>
           when(factory()).thenReturn(s)
           pool()
         }
-      0 until maxWaiters map { _ =>
-        pool()
-      }
+      0 until maxWaiters map { _ => pool() }
       val f = pool()
       assert(f.isDefined)
-      intercept[TooManyWaitersException] { Await.result(f) }
+      intercept[TooManyWaitersException](Await.result(f))
 
       // # of services does not change after the cancellation
       wrappedServices foreach { _.raise(new Exception) }
       val f1 = pool()
       assert(f1.isDefined)
-      intercept[TooManyWaitersException] { Await.result(f1) }
+      intercept[TooManyWaitersException](Await.result(f1))
     }
   }
 
@@ -442,7 +439,7 @@ class WatermarkPoolTest extends FunSpec with MockitoSugar {
     it("should deny new requests") {
       new WatermarkPoolLowOneHighFive {
         pool.close()
-        intercept[ServiceClosedException] { Await.result(pool()) }
+        intercept[ServiceClosedException](Await.result(pool()))
       }
     }
 

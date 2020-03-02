@@ -37,7 +37,8 @@ case class HadoopPlatformJobTest(
     dataToCreate: Seq[(String, Seq[String])] = Vector(),
     sourceWriters: Seq[Args => Job] = Vector.empty,
     sourceReaders: Seq[Mode => Unit] = Vector.empty,
-    flowCheckers: Seq[Flow[JobConf] => Unit] = Vector.empty) {
+    flowCheckers: Seq[Flow[JobConf] => Unit] = Vector.empty
+) {
   private val LOG = LoggerFactory.getLogger(getClass)
 
   def arg(inArg: String, value: List[String]): HadoopPlatformJobTest =
@@ -46,36 +47,37 @@ case class HadoopPlatformJobTest(
   def arg(inArg: String, value: String): HadoopPlatformJobTest =
     arg(inArg, List(value))
 
-  def source[T : TypeDescriptor](
-      location: String, data: Seq[T]): HadoopPlatformJobTest =
+  def source[T: TypeDescriptor](
+      location: String,
+      data: Seq[T]
+  ): HadoopPlatformJobTest =
     source(TypedText.tsv[T](location), data)
 
   def source[T](out: TypedSink[T], data: Seq[T]): HadoopPlatformJobTest =
-    copy(
-        sourceWriters = sourceWriters :+ { args: Args =>
+    copy(sourceWriters = sourceWriters :+ { args: Args =>
       new Job(args) {
         TypedPipe
           .from(List(""))
-          .flatMap { _ =>
-            data
-          }
+          .flatMap(_ => data)
           .write(out)
       }
     })
 
-  def sink[T : TypeDescriptor](location: String)(
-      toExpect: Seq[T] => Unit): HadoopPlatformJobTest =
+  def sink[T: TypeDescriptor](
+      location: String
+  )(toExpect: Seq[T] => Unit): HadoopPlatformJobTest =
     sink(TypedText.tsv[T](location))(toExpect)
 
-  def sink[T](in: Mappable[T])(
-      toExpect: Seq[T] => Unit): HadoopPlatformJobTest =
-    copy(
-        sourceReaders = sourceReaders :+ { m: Mode =>
+  def sink[T](
+      in: Mappable[T]
+  )(toExpect: Seq[T] => Unit): HadoopPlatformJobTest =
+    copy(sourceReaders = sourceReaders :+ { m: Mode =>
       toExpect(in.toIterator(Config.defaultFrom(m), m).toSeq)
     })
 
   def inspectCompletedFlow(
-      checker: Flow[JobConf] => Unit): HadoopPlatformJobTest =
+      checker: Flow[JobConf] => Unit
+  ): HadoopPlatformJobTest =
     copy(flowCheckers = flowCheckers :+ checker)
 
   private def createSources() {
@@ -96,14 +98,12 @@ case class HadoopPlatformJobTest(
         tmpFile.delete()
     }
 
-    sourceWriters.foreach { cons =>
-      runJob(initJob(cons))
-    }
+    sourceWriters.foreach(cons => runJob(initJob(cons)))
   }
 
   private def checkSinks() {
     LOG.debug("Executing sinks")
-    sourceReaders.foreach { _ (cluster.mode) }
+    sourceReaders.foreach(_(cluster.mode))
   }
 
   def run {
@@ -130,7 +130,7 @@ case class HadoopPlatformJobTest(
     job.clear
     job.next match {
       case Some(nextJob) => runJob(nextJob)
-      case None => ()
+      case None          => ()
     }
   }
 }

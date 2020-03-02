@@ -63,8 +63,8 @@ class AsyncQueueTest extends FunSuite {
     val q = new AsyncQueue[Int]
 
     val exc = new Exception("sad panda")
-    val p0 = q.poll()
-    val p1 = q.poll()
+    val p0  = q.poll()
+    val p1  = q.poll()
 
     assert(!p0.isDefined)
     assert(!p1.isDefined)
@@ -80,7 +80,7 @@ class AsyncQueueTest extends FunSuite {
     val q = new AsyncQueue[Int]
 
     val exc = new Exception("sad panda")
-    val p0 = q.poll()
+    val p0  = q.poll()
 
     assert(!p0.isDefined)
 
@@ -107,7 +107,7 @@ class AsyncQueueTest extends FunSuite {
 
   test("failure is final") {
     val exc = new Exception()
-    val q = new AsyncQueue[Int]()
+    val q   = new AsyncQueue[Int]()
 
     // observable via poll
     q.fail(exc)
@@ -148,13 +148,13 @@ class AsyncQueueTest extends FunSuite {
 
   test("offer at max capacity") {
     val q = new AsyncQueue[Int](1)
-    assert(q.offer(1)) // ok
+    assert(q.offer(1))  // ok
     assert(!q.offer(2)) // over capacity
     assert(1 == q.size)
     assert(Return(Queue(1)) == q.drain())
     assert(0 == q.size)
 
-    assert(q.offer(3)) // ok
+    assert(q.offer(3))  // ok
     assert(!q.offer(4)) // over capacity
     assert(1 == q.size)
     assert(Return(Queue(3)) == q.drain())

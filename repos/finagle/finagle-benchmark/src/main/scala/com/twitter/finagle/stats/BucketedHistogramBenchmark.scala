@@ -21,21 +21,20 @@ class BucketedHistogramBenchmark extends StdBenchAnnotations {
   }
 
   @Benchmark
-  def percentiles(state: PercentileState): Array[Long] = {
+  def percentiles(state: PercentileState): Array[Long] =
     state.histogram.getQuantiles(BucketedHistogramBenchmark.percentiles)
-  }
 }
 
 object BucketedHistogramBenchmark {
 
-  final val N = 10000
+  final val N           = 10000
   final val percentiles = Array[Double](0.5, 0.9, 0.95, 0.99, 0.999, 0.9999)
 
   @State(Scope.Benchmark)
   class DataState {
     val datas: Array[Long] = {
       val rng = new Random(1010101)
-      Array.fill(N) { (rng.nextDouble() * 100000L).toLong }
+      Array.fill(N)((rng.nextDouble() * 100000L).toLong)
     }
   }
 
@@ -50,8 +49,7 @@ object BucketedHistogramBenchmark {
     val histogram = BucketedHistogram()
 
     @Setup
-    def setup(state: DataState): Unit = {
+    def setup(state: DataState): Unit =
       state.datas.foreach(histogram.add)
-    }
   }
 }

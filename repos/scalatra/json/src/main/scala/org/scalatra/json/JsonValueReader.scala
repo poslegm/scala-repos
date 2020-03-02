@@ -13,11 +13,11 @@ class JsonValueReader(val data: JValue)(implicit formats: Formats)
 
   private val separator = new {
     val beginning = "."
-    val end = ""
+    val end       = ""
   }
 
   def read(key: String): Either[String, Option[JValue]] =
-    allCatch.withApply(t => Left(t.getMessage)) { Right(readPath(key)) }
+    allCatch.withApply(t => Left(t.getMessage))(Right(readPath(key)))
 
   protected def readPath(path: String, subj: JValue = data): Option[JValue] = {
     val partIndex = path.indexOf(separator.beginning)
@@ -41,7 +41,7 @@ class JsonValueReader(val data: JValue)(implicit formats: Formats)
     val jv = subj \ path
     jv match {
       case JNothing => None
-      case o => Some(o)
+      case o        => Some(o)
     }
   }
 }

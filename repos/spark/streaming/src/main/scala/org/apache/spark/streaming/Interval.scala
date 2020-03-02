@@ -23,19 +23,18 @@ private[streaming] class Interval(val beginTime: Time, val endTime: Time) {
 
   def duration(): Duration = endTime - beginTime
 
-  def +(time: Duration): Interval = {
+  def +(time: Duration): Interval =
     new Interval(beginTime + time, endTime + time)
-  }
 
-  def -(time: Duration): Interval = {
+  def -(time: Duration): Interval =
     new Interval(beginTime - time, endTime - time)
-  }
 
   def <(that: Interval): Boolean = {
     if (this.duration != that.duration) {
       throw new Exception(
-          "Comparing two intervals with different durations [" + this + ", " +
-          that + "]")
+        "Comparing two intervals with different durations [" + this + ", " +
+          that + "]"
+      )
     }
     this.endTime < that.endTime
   }
@@ -51,7 +50,7 @@ private[streaming] class Interval(val beginTime: Time, val endTime: Time) {
 
 private[streaming] object Interval {
   def currentInterval(duration: Duration): Interval = {
-    val time = new Time(System.currentTimeMillis)
+    val time          = new Time(System.currentTimeMillis)
     val intervalBegin = time.floor(duration)
     new Interval(intervalBegin, intervalBegin + duration)
   }

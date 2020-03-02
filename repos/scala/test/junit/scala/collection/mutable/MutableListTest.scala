@@ -27,7 +27,7 @@ class MutableListTest {
   @Test def iteratorMustNotHoldOntoLast(): Unit = {
     val is = MutableList(Some(1), Some(2))
     val it = is.iterator
-    val x = Some(3)
+    val x  = Some(3)
     is += x
     assertNotReachable(x, it) {
       it.next()

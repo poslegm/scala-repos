@@ -11,9 +11,9 @@ object CaseInsensitiveTest extends SpecLite {
     Equal[CaseInsensitive[String]].equal(a.map(x => x), a)
   }
 
-  "map associativity" ! forAll { (a: CaseInsensitive[String], f: String => String,
-  g: String => String) =>
-    Equal[CaseInsensitive[String]].equal(a.map(f).map(g), a.map(g compose f))
+  "map associativity" ! forAll {
+    (a: CaseInsensitive[String], f: String => String, g: String => String) =>
+      Equal[CaseInsensitive[String]].equal(a.map(f).map(g), a.map(g compose f))
   }
 
   checkAll(monoid.laws[CaseInsensitive[String]])

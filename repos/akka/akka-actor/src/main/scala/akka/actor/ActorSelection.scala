@@ -37,9 +37,10 @@ abstract class ActorSelection extends Serializable {
     */
   def tell(msg: Any, sender: ActorRef): Unit =
     ActorSelection.deliverSelection(
-        anchor.asInstanceOf[InternalActorRef],
-        sender,
-        ActorSelectionMessage(msg, path, wildcardFanOut = false))
+      anchor.asInstanceOf[InternalActorRef],
+      sender,
+      ActorSelectionMessage(msg, path, wildcardFanOut = false)
+    )
 
   /**
     * Forwards the message and passes the original sender actor as the sender.
@@ -61,10 +62,10 @@ abstract class ActorSelection extends Serializable {
     */
   def resolveOne()(implicit timeout: Timeout): Future[ActorRef] = {
     implicit val ec = ExecutionContexts.sameThreadExecutionContext
-    val p = Promise[ActorRef]()
+    val p           = Promise[ActorRef]()
     this.ask(Identify(None)) onComplete {
       case Success(ActorIdentity(_, Some(ref))) ⇒ p.success(ref)
-      case _ ⇒ p.failure(ActorNotFound(this))
+      case _                                    ⇒ p.failure(ActorNotFound(this))
     }
     p.future
   }
@@ -125,7 +126,7 @@ abstract class ActorSelection extends Serializable {
 
   override def equals(obj: Any): Boolean = obj match {
     case s: ActorSelection ⇒ this.anchor == s.anchor && this.path == s.path
-    case _ ⇒ false
+    case _                 ⇒ false
   }
 
   override lazy val hashCode: Int = {
@@ -171,7 +172,7 @@ object ActorSelection {
       })(scala.collection.breakOut)
     new ActorSelection with ScalaActorSelection {
       override val anchor = anchorRef
-      override val path = compiled
+      override val path   = compiled
     }
   }
 
@@ -180,22 +181,25 @@ object ActorSelection {
     * The receive logic for ActorSelectionMessage. The idea is to recursively descend as far as possible
     * with local refs and hand over to that “foreign” child when we encounter it.
     */
-  private[akka] def deliverSelection(anchor: InternalActorRef,
-                                     sender: ActorRef,
-                                     sel: ActorSelectionMessage): Unit =
+  private[akka] def deliverSelection(
+      anchor: InternalActorRef,
+      sender: ActorRef,
+      sel: ActorSelectionMessage
+  ): Unit =
     if (sel.elements.isEmpty) anchor.tell(sel.msg, sender)
     else {
 
       val iter = sel.elements.iterator
 
-      @tailrec def rec(ref: InternalActorRef): Unit = {
+      @tailrec def rec(ref: InternalActorRef): Unit =
         ref match {
           case refWithCell: ActorRefWithCell ⇒
             def emptyRef =
               new EmptyLocalActorRef(
-                  refWithCell.provider,
-                  anchor.path / sel.elements.map(_.toString),
-                  refWithCell.underlying.system.eventStream)
+                refWithCell.provider,
+                anchor.path / sel.elements.map(_.toString),
+                refWithCell.underlying.system.eventStream
+              )
 
             iter.next() match {
               case SelectParent ⇒
@@ -222,16 +226,22 @@ object ActorSelection {
                 } else {
                   val matchingChildren =
                     chldr.filter(c ⇒ p.pattern.matcher(c.path.name).matches)
-                  // don't send to emptyRef after wildcard fan-out 
+                  // don't send to emptyRef after wildcard fan-out
                   if (matchingChildren.isEmpty && !sel.wildcardFanOut)
                     emptyRef.tell(sel, sender)
                   else {
-                    val m = sel.copy(elements = iter.toVector,
-                                     wildcardFanOut = sel.wildcardFanOut ||
-                                       matchingChildren.size > 1)
+                    val m = sel.copy(
+                      elements = iter.toVector,
+                      wildcardFanOut = sel.wildcardFanOut ||
+                        matchingChildren.size > 1
+                    )
                     matchingChildren.foreach(c ⇒
-                          deliverSelection(
-                              c.asInstanceOf[InternalActorRef], sender, m))
+                      deliverSelection(
+                        c.asInstanceOf[InternalActorRef],
+                        sender,
+                        m
+                      )
+                    )
                   }
                 }
             }
@@ -240,7 +250,6 @@ object ActorSelection {
             // foreign ref, continue by sending ActorSelectionMessage to it with remaining elements
             ref.tell(sel.copy(elements = iter.toVector), sender)
         }
-      }
 
       rec(anchor)
     }
@@ -267,12 +276,13 @@ trait ScalaActorSelection {
 private[akka] final case class ActorSelectionMessage(
     msg: Any,
     elements: immutable.Iterable[SelectionPathElement],
-    wildcardFanOut: Boolean)
-    extends AutoReceivedMessage with PossiblyHarmful {
+    wildcardFanOut: Boolean
+) extends AutoReceivedMessage
+    with PossiblyHarmful {
 
   def identifyRequest: Option[Identify] = msg match {
     case x: Identify ⇒ Some(x)
-    case _ ⇒ None
+    case _           ⇒ None
   }
 }
 
@@ -297,7 +307,7 @@ private[akka] final case class SelectChildName(name: String)
 @SerialVersionUID(2L)
 private[akka] final case class SelectChildPattern(patternStr: String)
     extends SelectionPathElement {
-  val pattern: Pattern = Helpers.makePattern(patternStr)
+  val pattern: Pattern          = Helpers.makePattern(patternStr)
   override def toString: String = patternStr
 }
 

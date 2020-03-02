@@ -30,8 +30,8 @@ object Pack {
 
   def intsToBytes(ints: Array[Int]): Array[Byte] = {
     val arr = new Array[Byte](ints.length * 4)
-    var i = 0
-    var j = 0
+    var i   = 0
+    var j   = 0
     while (i < ints.length) {
       val n = ints(i)
       arr(j) = ism(n, 24)
@@ -64,7 +64,7 @@ object Pack {
 
   def intsFromByteBuffer(bb: ByteBuffer, n: Int): Array[Int] = {
     val out = new Array[Int](n)
-    var i = 0
+    var i   = 0
     while (i < n && bb.remaining >= 4) {
       out(i) = bb.getInt();
       i += 1
@@ -74,7 +74,7 @@ object Pack {
   }
 
   @inline private[this] def lsm(n: Long, shift: Int): Byte =
-    ((n >>> shift) & 0xffL).toByte
+    ((n >>> shift) & 0xFFL).toByte
 
   def longToBytes(n: Long): Array[Byte] = {
     val arr = new Array[Byte](8)
@@ -94,8 +94,8 @@ object Pack {
 
   def longsToBytes(longs: Array[Long]): Array[Byte] = {
     val arr = new Array[Byte](longs.length * 8)
-    var i = 0
-    var j = 0
+    var i   = 0
+    var j   = 0
     while (i < longs.length) {
       val n = longs(i)
       arr(j) = lsm(n, 56)
@@ -115,16 +115,18 @@ object Pack {
   def longFromBytes(bytes: Array[Byte]): Long =
     longFromByteBuffer(ByteBuffer.wrap(bytes))
 
-  def longFromBytes(b1: Byte,
-                    b2: Byte,
-                    b3: Byte,
-                    b4: Byte,
-                    b5: Byte,
-                    b6: Byte,
-                    b7: Byte,
-                    b8: Byte): Long =
-    (b1 & 0xffL) << 56 | (b2 & 0xffL) << 48 | (b3 & 0xffL) << 40 | (b4 & 0xffL) << 32 |
-    (b5 & 0xffL) << 24 | (b6 & 0xffL) << 16 | (b7 & 0xffL) << 8 | (b8 & 0xffL)
+  def longFromBytes(
+      b1: Byte,
+      b2: Byte,
+      b3: Byte,
+      b4: Byte,
+      b5: Byte,
+      b6: Byte,
+      b7: Byte,
+      b8: Byte
+  ): Long =
+    (b1 & 0xFFL) << 56 | (b2 & 0xFFL) << 48 | (b3 & 0xFFL) << 40 | (b4 & 0xFFL) << 32 |
+      (b5 & 0xFFL) << 24 | (b6 & 0xFFL) << 16 | (b7 & 0xFFL) << 8 | (b8 & 0xFFL)
 
   def longFromByteBuffer(bb: ByteBuffer): Long =
     if (bb.remaining >= 8) {
@@ -140,7 +142,7 @@ object Pack {
 
   def longsFromByteBuffer(bb: ByteBuffer, n: Int): Array[Long] = {
     val out = new Array[Long](n)
-    var i = 0
+    var i   = 0
     while (i < n && bb.remaining >= 8) {
       out(i) = bb.getLong();
       i += 1
@@ -172,19 +174,20 @@ object Pack {
       throw new IllegalArgumentException(s"$index outside of 0-3")
     }
 
-  def intToByteMacro(c: Context)(n: c.Expr[Int])(
-      index: c.Expr[Int]): c.Expr[Byte] = {
+  def intToByteMacro(
+      c: Context
+  )(n: c.Expr[Int])(index: c.Expr[Int]): c.Expr[Byte] = {
     import c.universe._
     index.tree match {
       case Literal(Constant(i: Int)) =>
         if (0 <= i && i < 4) {
           val offset = c.Expr[Int](Literal(Constant(24 - i * 8)))
-          reify { ((n.splice >>> offset.splice) & 0xff).toByte }
+          reify(((n.splice >>> offset.splice) & 0xff).toByte)
         } else {
           c.abort(c.enclosingPosition, "index outside of 0-3")
         }
       case _ =>
-        reify { Pack.intToByteRuntime(n.splice)(index.splice) }
+        reify(Pack.intToByteRuntime(n.splice)(index.splice))
     }
   }
 
@@ -195,19 +198,20 @@ object Pack {
       throw new IllegalArgumentException(s"$index outside of 0-7")
     }
 
-  def longToByteMacro(c: Context)(n: c.Expr[Long])(
-      index: c.Expr[Int]): c.Expr[Byte] = {
+  def longToByteMacro(
+      c: Context
+  )(n: c.Expr[Long])(index: c.Expr[Int]): c.Expr[Byte] = {
     import c.universe._
     index.tree match {
       case Literal(Constant(i: Int)) =>
         if (0 <= i && i < 8) {
           val offset = c.Expr[Int](Literal(Constant(56 - i * 8)))
-          reify { ((n.splice >>> offset.splice) & 0xff).toByte }
+          reify(((n.splice >>> offset.splice) & 0xff).toByte)
         } else {
           c.abort(c.enclosingPosition, "index outside of 0-7")
         }
       case _ =>
-        reify { Pack.longToByteRuntime(n.splice)(index.splice) }
+        reify(Pack.longToByteRuntime(n.splice)(index.splice))
     }
   }
 }

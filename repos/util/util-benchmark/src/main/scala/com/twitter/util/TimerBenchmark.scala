@@ -18,11 +18,11 @@ import org.openjdk.jmh.annotations._
 @Threads(4)
 class TimerBenchmark extends StdBenchAnnotations {
 
-  private[this] val period = 5.minutes
+  private[this] val period   = 5.minutes
   private[this] val wayLater = Time.now + 20.minutes
 
-  private[this] val baseline = Timer.Nil
-  @volatile private[this] var javaUtil: JavaTimer = _
+  private[this] val baseline                                     = Timer.Nil
+  @volatile private[this] var javaUtil: JavaTimer                = _
   @volatile private[this] var executor: ScheduledThreadPoolTimer = _
 
   @Setup(Level.Iteration)
@@ -43,21 +43,21 @@ class TimerBenchmark extends StdBenchAnnotations {
     * the work, not expense of "dequeueing" and running.
     */
   private[this] def scheduleOnce(timer: Timer): TimerTask =
-    timer.schedule(wayLater) { () }
+    timer.schedule(wayLater)(())
 
   /**
     * Note: this really just benchmarks how expensive it is to "enqueue"
     * the work, not expense of "dequeueing" and running.
     */
   private[this] def schedulePeriodic(timer: Timer): TimerTask =
-    timer.schedule(wayLater, period) { () }
+    timer.schedule(wayLater, period)(())
 
   /**
     * Note: this really just benchmarks how expensive it is to "enqueue"
     * the work, not expense of "dequeueing" and running.
     */
   private[this] def doAt(timer: Timer): Future[Unit] =
-    timer.doAt(wayLater) { () }
+    timer.doAt(wayLater)(())
 
   @Benchmark
   def scheduleOnceBaseline: TimerTask =

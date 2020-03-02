@@ -25,9 +25,10 @@ object ScalaLibraryDescription extends ScalaLibraryDescription {
   override protected val sdkDescriptor = ScalaSdkDescriptor
 
   override def dialog(
-      parentComponent: JComponent, provider: () => util.List[SdkChoice]) = {
+      parentComponent: JComponent,
+      provider: () => util.List[SdkChoice]
+  ) =
     new SdkSelectionDialog(parentComponent, provider)
-  }
 
   override def sdks(contextDirectory: VirtualFile) =
     super.sdks(contextDirectory) ++ systemSdks
@@ -94,8 +95,10 @@ trait ScalaLibraryDescription extends CustomLibraryDescription {
 
   protected val mavenScalaRoot = mavenRepository / "org" / "scala-lang"
 
-  def dialog(parentComponent: JComponent,
-             provide: () => java.util.List[SdkChoice]): SdkSelectionDialog
+  def dialog(
+      parentComponent: JComponent,
+      provide: () => java.util.List[SdkChoice]
+  ): SdkSelectionDialog
 
   def sdks(contextDirectory: VirtualFile): Seq[SdkChoice] = {
     val localSdks = Option(contextDirectory).toSeq
@@ -111,7 +114,9 @@ trait ScalaLibraryDescription extends CustomLibraryDescription {
   def getSuitableLibraryKinds = Collections.singleton(libraryKind)
 
   def createNewLibrary(
-      parentComponent: JComponent, contextDirectory: VirtualFile) = {
+      parentComponent: JComponent,
+      contextDirectory: VirtualFile
+  ) = {
     implicit val ordering = implicitly[Ordering[Version]].reverse
     Option(dialog(parentComponent, () => sdks(contextDirectory).asJava).open())
       .map(_.createNewLibraryConfiguration())
@@ -128,7 +133,7 @@ trait ScalaLibraryDescription extends CustomLibraryDescription {
 
   protected def mavenSdks = sdksIn(mavenScalaRoot)
 
-  private def sdksIn(root: File): Seq[SdkDescriptor] = {
+  private def sdksIn(root: File): Seq[SdkDescriptor] =
     discoverComponents(root)
       .groupBy(_.version)
       .mapValues(sdkDescriptor.from)
@@ -136,7 +141,6 @@ trait ScalaLibraryDescription extends CustomLibraryDescription {
       .collect {
         case (Some(version), Right(sdk)) => sdk
       }
-  }
 }
 
 case class SdkChoice(sdk: SdkDescriptor, source: String)

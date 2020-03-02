@@ -6,7 +6,10 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScArgumentExprList, ScExpression}
+import org.jetbrains.plugins.scala.lang.psi.api.expr.{
+  ScArgumentExprList,
+  ScExpression
+}
 import org.jetbrains.plugins.scala.lang.psi.types.nonvalue.Parameter
 
 /**
@@ -18,21 +21,22 @@ class PermuteArgumentsIntention extends PsiElementBaseIntentionAction {
   override def getText =
     "Permute arguments to match the parameter declaration order"
 
-  def isAvailable(project: Project, editor: Editor, element: PsiElement) = {
+  def isAvailable(project: Project, editor: Editor, element: PsiElement) =
     check(project, editor, element).isDefined
-  }
 
   override def invoke(project: Project, editor: Editor, element: PsiElement) {
     if (!element.isValid) return
     check(project, editor, element) match {
       case Some(x) => x()
-      case None =>
+      case None    =>
     }
   }
 
-  private def check(project: Project,
-                    editor: Editor,
-                    element: PsiElement): Option[() => Unit] = {
+  private def check(
+      project: Project,
+      editor: Editor,
+      element: PsiElement
+  ): Option[() => Unit] = {
     val argList =
       PsiTreeUtil.getParentOfType(element, classOf[ScArgumentExprList])
     if (argList == null) return None
@@ -40,16 +44,15 @@ class PermuteArgumentsIntention extends PsiElementBaseIntentionAction {
     val argsAndMatchingParams: Seq[(ScExpression, Parameter)] =
       argList.matchedParameters.sortBy(_._1.getTextOffset)
     val argumentParamIndices: Seq[Int] = argsAndMatchingParams.map(_._2.index)
-    val sorted: Seq[Int] = argumentParamIndices.sorted
+    val sorted: Seq[Int]               = argumentParamIndices.sorted
     if (argumentParamIndices != sorted) {
-      val doIt = () =>
-        {
-          val argsCopy = argList.exprs.map(_.copy)
-          argList.exprs.zipWithIndex.foreach {
-            case (argExpr, i) =>
-              val i2 = argumentParamIndices.indexOf(sorted(i))
-              argExpr.replace(argsCopy(i2))
-          }
+      val doIt = () => {
+        val argsCopy = argList.exprs.map(_.copy)
+        argList.exprs.zipWithIndex.foreach {
+          case (argExpr, i) =>
+            val i2 = argumentParamIndices.indexOf(sorted(i))
+            argExpr.replace(argsCopy(i2))
+        }
       }
       Some(doIt)
     } else None

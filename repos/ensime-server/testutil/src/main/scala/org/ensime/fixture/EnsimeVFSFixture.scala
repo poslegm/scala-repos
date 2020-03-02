@@ -27,7 +27,9 @@ trait IsolatedEnsimeVFSFixture extends Suite with EnsimeVFSFixture {
   * a project that is cloned once for the test suite.
   */
 trait SharedEnsimeVFSFixture
-    extends Suite with EnsimeVFSFixture with BeforeAndAfterAll {
+    extends Suite
+    with EnsimeVFSFixture
+    with BeforeAndAfterAll {
   private[fixture] implicit var _vfs: EnsimeVFS = _
 
   override def beforeAll(): Unit = {
@@ -40,7 +42,6 @@ trait SharedEnsimeVFSFixture
     _vfs.close()
   }
 
-  override def withVFS[T](testCode: EnsimeVFS => T): T = {
+  override def withVFS[T](testCode: EnsimeVFS => T): T =
     testCode(_vfs)
-  }
 }

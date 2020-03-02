@@ -54,12 +54,12 @@ object ScalaUdpDocSpec {
     def ready(socket: ActorRef): Receive = {
       case Udp.Received(data, remote) =>
         val processed = // parse data etc., e.g. using PipelineStage
-        //#listener
-        data.utf8String
+          //#listener
+          data.utf8String
         //#listener
         socket ! Udp.Send(data, remote) // example server echoes back
         nextActor ! processed
-      case Udp.Unbind => socket ! Udp.Unbind
+      case Udp.Unbind  => socket ! Udp.Unbind
       case Udp.Unbound => context.stop(self)
     }
   }
@@ -102,11 +102,11 @@ abstract class UdpDocSpec extends AkkaSpec {
   def connectedProps(remote: InetSocketAddress): Props
 
   "demonstrate Udp" in {
-    val probe = TestProbe()
-    val listen = watch(system.actorOf(listenerProps(probe.ref)))
-    val local = probe.expectMsgType[InetSocketAddress]
+    val probe    = TestProbe()
+    val listen   = watch(system.actorOf(listenerProps(probe.ref)))
+    val local    = probe.expectMsgType[InetSocketAddress]
     val listener = probe.lastSender
-    val send = system.actorOf(simpleSenderProps(local))
+    val send     = system.actorOf(simpleSenderProps(local))
     probe.expectMsg("hello")
     send ! "world"
     probe.expectMsg("world")
@@ -115,9 +115,9 @@ abstract class UdpDocSpec extends AkkaSpec {
   }
 
   "demonstrate Udp suspend reading" in {
-    val probe = TestProbe()
-    val listen = watch(system.actorOf(listenerProps(probe.ref)))
-    val local = probe.expectMsgType[InetSocketAddress]
+    val probe    = TestProbe()
+    val listen   = watch(system.actorOf(listenerProps(probe.ref)))
+    val local    = probe.expectMsgType[InetSocketAddress]
     val listener = probe.lastSender
     listener ! Udp.SuspendReading
     Thread.sleep(1000) // no way to find out when the above is finished
@@ -132,11 +132,11 @@ abstract class UdpDocSpec extends AkkaSpec {
   }
 
   "demonstrate UdpConnected" in {
-    val probe = TestProbe()
-    val listen = watch(system.actorOf(listenerProps(probe.ref)))
-    val local = probe.expectMsgType[InetSocketAddress]
+    val probe    = TestProbe()
+    val listen   = watch(system.actorOf(listenerProps(probe.ref)))
+    val local    = probe.expectMsgType[InetSocketAddress]
     val listener = probe.lastSender
-    val conn = watch(system.actorOf(connectedProps(local)))
+    val conn     = watch(system.actorOf(connectedProps(local)))
     probe.expectMsg("hello")
     probe.expectMsg("world")
     conn ! "hello"

@@ -26,9 +26,8 @@ class VerifiableProperties(val props: Properties) extends Logging {
 
   def this() = this(new Properties)
 
-  def containsKey(name: String): Boolean = {
+  def containsKey(name: String): Boolean =
     props.containsKey(name)
-  }
 
   def getProperty(name: String): String = {
     val value = props.getProperty(name)
@@ -72,19 +71,24 @@ class VerifiableProperties(val props: Properties) extends Logging {
       if (containsKey(name)) getProperty(name).toInt
       else default
     require(
-        v >= range._1 && v <= range._2,
-        name + " has value " + v + " which is not in the range " + range + ".")
+      v >= range._1 && v <= range._2,
+      name + " has value " + v + " which is not in the range " + range + "."
+    )
     v
   }
 
   def getShortInRange(
-      name: String, default: Short, range: (Short, Short)): Short = {
+      name: String,
+      default: Short,
+      range: (Short, Short)
+  ): Short = {
     val v =
       if (containsKey(name)) getProperty(name).toShort
       else default
     require(
-        v >= range._1 && v <= range._2,
-        name + " has value " + v + " which is not in the range " + range + ".")
+      v >= range._1 && v <= range._2,
+      name + " has value " + v + " which is not in the range " + range + "."
+    )
     v
   }
 
@@ -116,8 +120,9 @@ class VerifiableProperties(val props: Properties) extends Logging {
       if (containsKey(name)) getProperty(name).toLong
       else default
     require(
-        v >= range._1 && v <= range._2,
-        name + " has value " + v + " which is not in the range " + range + ".")
+      v >= range._1 && v <= range._2,
+      name + " has value " + v + " which is not in the range " + range + "."
+    )
     v
   }
 
@@ -134,10 +139,9 @@ class VerifiableProperties(val props: Properties) extends Logging {
     * @param name The property name
     * @param default The default value for the property if not present
     */
-  def getDouble(name: String, default: Double): Double = {
+  def getDouble(name: String, default: Double): Double =
     if (containsKey(name)) getDouble(name)
     else default
-  }
 
   /**
     * Read a boolean value from the properties instance
@@ -145,26 +149,26 @@ class VerifiableProperties(val props: Properties) extends Logging {
     * @param default The default value to use if the property is not found
     * @return the boolean value
     */
-  def getBoolean(name: String, default: Boolean): Boolean = {
+  def getBoolean(name: String, default: Boolean): Boolean =
     if (!containsKey(name)) default
     else {
       val v = getProperty(name)
-      require(v == "true" || v == "false",
-              "Unacceptable value for property '" + name +
-              "', boolean values must be either 'true' or 'false")
+      require(
+        v == "true" || v == "false",
+        "Unacceptable value for property '" + name +
+          "', boolean values must be either 'true' or 'false"
+      )
       v.toBoolean
     }
-  }
 
   def getBoolean(name: String) = getString(name).toBoolean
 
   /**
     * Get a string property, or, if no such property is defined, return the given default value
     */
-  def getString(name: String, default: String): String = {
+  def getString(name: String, default: String): String =
     if (containsKey(name)) getProperty(name)
     else default
-  }
 
   /**
     * Get a string property or throw and exception if no such property is defined.
@@ -177,25 +181,28 @@ class VerifiableProperties(val props: Properties) extends Logging {
   /**
     * Get a Map[String, String] from a property list in the form k1:v2, k2:v2, ...
     */
-  def getMap(name: String,
-             valid: String => Boolean = s => true): Map[String, String] = {
+  def getMap(
+      name: String,
+      valid: String => Boolean = s => true
+  ): Map[String, String] =
     try {
       val m = CoreUtils.parseCsvMap(getString(name, ""))
       m.foreach {
         case (key, value) =>
           if (!valid(value))
             throw new IllegalArgumentException(
-                "Invalid entry '%s' = '%s' for property '%s'".format(
-                    key, value, name))
+              "Invalid entry '%s' = '%s' for property '%s'"
+                .format(key, value, name)
+            )
       }
       m
     } catch {
       case e: Exception =>
         throw new IllegalArgumentException(
-            "Error parsing configuration property '%s': %s".format(
-                name, e.getMessage))
+          "Error parsing configuration property '%s': %s"
+            .format(name, e.getMessage)
+        )
     }
-  }
 
   /**
     * Parse compression codec from a property list in either. Codecs may be specified as integers, or as strings.
@@ -225,8 +232,8 @@ class VerifiableProperties(val props: Properties) extends Logging {
         warn("Property %s is not valid".format(key))
       else
         info(
-            "Property %s is overridden to %s".format(
-                key, props.getProperty(key)))
+          "Property %s is overridden to %s".format(key, props.getProperty(key))
+        )
     }
   }
 

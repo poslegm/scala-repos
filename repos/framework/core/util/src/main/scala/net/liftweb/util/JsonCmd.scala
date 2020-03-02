@@ -27,10 +27,12 @@ trait HasParams {
 /**
   * Impersonates a JSON command
   */
-case class JsonCmd(command: String,
-                   target: String,
-                   params: Any,
-                   all: scala.collection.Map[String, Any])
+case class JsonCmd(
+    command: String,
+    target: String,
+    params: Any,
+    all: scala.collection.Map[String, Any]
+)
 
 import net.liftweb.json.JsonAST._
 
@@ -47,11 +49,11 @@ object JsonCommand {
   def unapply(in: JValue): Option[(String, Option[String], JValue)] =
     for {
       JString(command) <- in \ "command"
-      params <- in \ "params" if params != JNothing
+      params           <- in \ "params" if params != JNothing
     } yield {
       val target = (in \ "target") match {
         case JString(t) => Some(t)
-        case _ => None
+        case _          => None
       }
       (command, target, params)
     }
@@ -62,9 +64,9 @@ object JsonCommand {
   * Holds information about a response
   */
 class ResponseInfoHolder {
-  var headers: Map[String, String] = Map.empty
+  var headers: Map[String, String]  = Map.empty
   private var _docType: Box[String] = Empty
-  private var _setDocType = false
+  private var _setDocType           = false
 
   def docType = _docType
 

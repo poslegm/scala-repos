@@ -19,7 +19,11 @@ package org.apache.spark.rdd
 
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.fasterxml.jackson.annotation.{JsonIgnore, JsonInclude, JsonPropertyOrder}
+import com.fasterxml.jackson.annotation.{
+  JsonIgnore,
+  JsonInclude,
+  JsonPropertyOrder
+}
 import com.fasterxml.jackson.annotation.JsonInclude.Include
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
@@ -46,28 +50,26 @@ import org.apache.spark.internal.Logging
 private[spark] class RDDOperationScope(
     val name: String,
     val parent: Option[RDDOperationScope] = None,
-    val id: String = RDDOperationScope.nextScopeId().toString) {
+    val id: String = RDDOperationScope.nextScopeId().toString
+) {
 
-  def toJson: String = {
+  def toJson: String =
     RDDOperationScope.jsonMapper.writeValueAsString(this)
-  }
 
   /**
     * Return a list of scopes that this scope is a part of, including this scope itself.
     * The result is ordered from the outermost scope (eldest ancestor) to this scope.
     */
   @JsonIgnore
-  def getAllScopes: Seq[RDDOperationScope] = {
+  def getAllScopes: Seq[RDDOperationScope] =
     parent.map(_.getAllScopes).getOrElse(Seq.empty) ++ Seq(this)
-  }
 
-  override def equals(other: Any): Boolean = {
+  override def equals(other: Any): Boolean =
     other match {
       case s: RDDOperationScope =>
         id == s.id && name == s.name && parent == s.parent
       case _ => false
     }
-  }
 
   override def hashCode(): Int = Objects.hashCode(id, name, parent)
 
@@ -83,9 +85,8 @@ private[spark] object RDDOperationScope extends Logging {
     new ObjectMapper().registerModule(DefaultScalaModule)
   private val scopeCounter = new AtomicInteger(0)
 
-  def fromJson(s: String): RDDOperationScope = {
+  def fromJson(s: String): RDDOperationScope =
     jsonMapper.readValue(s, classOf[RDDOperationScope])
-  }
 
   /** Return a globally unique operation scope ID. */
   def nextScopeId(): Int = scopeCounter.getAndIncrement
@@ -98,7 +99,9 @@ private[spark] object RDDOperationScope extends Logging {
     * Note: Return statements are NOT allowed in body.
     */
   private[spark] def withScope[T](
-      sc: SparkContext, allowNesting: Boolean = false)(body: => T): T = {
+      sc: SparkContext,
+      allowNesting: Boolean = false
+  )(body: => T): T = {
     val ourMethodName = "withScope"
     val callerMethodName = Thread.currentThread
       .getStackTrace()
@@ -110,8 +113,7 @@ private[spark] object RDDOperationScope extends Logging {
         logWarning("No valid method name for this RDD operation scope!")
         "N/A"
       }
-    withScope[T](sc, callerMethodName, allowNesting, ignoreParent = false)(
-        body)
+    withScope[T](sc, callerMethodName, allowNesting, ignoreParent = false)(body)
   }
 
   /**
@@ -127,15 +129,17 @@ private[spark] object RDDOperationScope extends Logging {
     *
     * Note: Return statements are NOT allowed in body.
     */
-  private[spark] def withScope[T](sc: SparkContext,
-                                  name: String,
-                                  allowNesting: Boolean,
-                                  ignoreParent: Boolean)(body: => T): T = {
+  private[spark] def withScope[T](
+      sc: SparkContext,
+      name: String,
+      allowNesting: Boolean,
+      ignoreParent: Boolean
+  )(body: => T): T = {
     // Save the old scope to restore it later
-    val scopeKey = SparkContext.RDD_SCOPE_KEY
+    val scopeKey      = SparkContext.RDD_SCOPE_KEY
     val noOverrideKey = SparkContext.RDD_SCOPE_NO_OVERRIDE_KEY
-    val oldScopeJson = sc.getLocalProperty(scopeKey)
-    val oldScope = Option(oldScopeJson).map(RDDOperationScope.fromJson)
+    val oldScopeJson  = sc.getLocalProperty(scopeKey)
+    val oldScope      = Option(oldScopeJson).map(RDDOperationScope.fromJson)
     val oldNoOverride = sc.getLocalProperty(noOverrideKey)
     try {
       if (ignoreParent) {
@@ -144,7 +148,9 @@ private[spark] object RDDOperationScope extends Logging {
       } else if (sc.getLocalProperty(noOverrideKey) == null) {
         // Otherwise, set the scope only if the higher level caller allows us to do so
         sc.setLocalProperty(
-            scopeKey, new RDDOperationScope(name, oldScope).toJson)
+          scopeKey,
+          new RDDOperationScope(name, oldScope).toJson
+        )
       }
       // Optionally disallow the child body to override our scope
       if (!allowNesting) {

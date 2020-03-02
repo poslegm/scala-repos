@@ -11,32 +11,35 @@ import com.twitter.util.{Duration, FuturePool}
   * This connector blocks, but it doesn't seem worth a FuturePool only for this connector.
   */
 class CommonConnector(
-    val underlying: ZooKeeperClient, timeout: Duration = COMMON_FOREVER)(
-    implicit pool: FuturePool)
+    val underlying: ZooKeeperClient,
+    timeout: Duration = COMMON_FOREVER
+)(implicit pool: FuturePool)
     extends Connector {
   underlying.register(sessionBroker)
 
-  def apply() = pool { underlying.get(timeout.toLongAmount) }
-  def release() = pool { underlying.close() }
+  def apply()   = pool(underlying.get(timeout.toLongAmount))
+  def release() = pool(underlying.close())
 }
 
 object CommonConnector {
   def apply(
-      underlying: ZooKeeperClient, connectTimeout: Duration = COMMON_FOREVER)(
-      implicit pool: FuturePool): CommonConnector = {
+      underlying: ZooKeeperClient,
+      connectTimeout: Duration = COMMON_FOREVER
+  )(implicit pool: FuturePool): CommonConnector =
     new CommonConnector(underlying, connectTimeout)(pool)
-  }
 
   def apply(addrs: Seq[java.net.InetSocketAddress], sessionTimeout: Duration)(
-      implicit pool: FuturePool): CommonConnector = {
+      implicit pool: FuturePool
+  ): CommonConnector =
     apply(new ZooKeeperClient(sessionTimeout.toIntAmount, addrs.asJava))(pool)
-  }
 
-  def apply(addrs: Seq[java.net.InetSocketAddress],
-            sessionTimeout: Duration,
-            connectTimeout: Duration)(
-      implicit pool: FuturePool): CommonConnector = {
-    apply(new ZooKeeperClient(sessionTimeout.toIntAmount, addrs.asJava),
-          connectTimeout)(pool)
-  }
+  def apply(
+      addrs: Seq[java.net.InetSocketAddress],
+      sessionTimeout: Duration,
+      connectTimeout: Duration
+  )(implicit pool: FuturePool): CommonConnector =
+    apply(
+      new ZooKeeperClient(sessionTimeout.toIntAmount, addrs.asJava),
+      connectTimeout
+    )(pool)
 }

@@ -27,7 +27,7 @@ import org.apache.spark.{Accumulator, SparkContext}
 private[spark] abstract class Stopwatch extends Serializable {
 
   @transient private var running: Boolean = false
-  private var startTime: Long = _
+  private var startTime: Long             = _
 
   /**
     * Name of the stopwatch.
@@ -90,9 +90,8 @@ private[spark] class LocalStopwatch(override val name: String)
 
   override def elapsed(): Long = elapsedTime
 
-  override protected def add(duration: Long): Unit = {
+  override protected def add(duration: Long): Unit =
     elapsedTime += duration
-  }
 }
 
 /**
@@ -100,17 +99,17 @@ private[spark] class LocalStopwatch(override val name: String)
   * @param sc SparkContext
   */
 private[spark] class DistributedStopwatch(
-    sc: SparkContext, override val name: String)
-    extends Stopwatch {
+    sc: SparkContext,
+    override val name: String
+) extends Stopwatch {
 
   private val elapsedTime: Accumulator[Long] =
     sc.accumulator(0L, s"DistributedStopwatch($name)")
 
   override def elapsed(): Long = elapsedTime.value
 
-  override protected def add(duration: Long): Unit = {
+  override protected def add(duration: Long): Unit =
     elapsedTime += duration
-  }
 }
 
 /**
@@ -127,8 +126,10 @@ private[spark] class MultiStopwatch(@transient private val sc: SparkContext)
     * @param name stopwatch name
     */
   def addLocal(name: String): this.type = {
-    require(!stopwatches.contains(name),
-            s"Stopwatch with name $name already exists.")
+    require(
+      !stopwatches.contains(name),
+      s"Stopwatch with name $name already exists."
+    )
     stopwatches(name) = new LocalStopwatch(name)
     this
   }
@@ -138,8 +139,10 @@ private[spark] class MultiStopwatch(@transient private val sc: SparkContext)
     * @param name stopwatch name
     */
   def addDistributed(name: String): this.type = {
-    require(!stopwatches.contains(name),
-            s"Stopwatch with name $name already exists.")
+    require(
+      !stopwatches.contains(name),
+      s"Stopwatch with name $name already exists."
+    )
     stopwatches(name) = new DistributedStopwatch(sc, name)
     this
   }
@@ -150,10 +153,9 @@ private[spark] class MultiStopwatch(@transient private val sc: SparkContext)
     */
   def apply(name: String): Stopwatch = stopwatches(name)
 
-  override def toString: String = {
+  override def toString: String =
     stopwatches.values.toArray
       .sortBy(_.name)
       .map(c => s"  $c")
       .mkString("{\n", ",\n", "\n}")
-  }
 }

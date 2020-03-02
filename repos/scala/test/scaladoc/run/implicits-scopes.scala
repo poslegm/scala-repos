@@ -27,7 +27,7 @@ object Test extends ScaladocModelTest {
 
     val doTest1 = {
       val test1 = base._package("test1")
-      val A = test1._class("A")
+      val A     = test1._class("A")
 
       conv = A._conversion(test1.qualifiedName + ".toB")
       assert(conv.members.length == 1)
@@ -37,9 +37,9 @@ object Test extends ScaladocModelTest {
 //// test2 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     val doTest2 = {
-      val test2 = base._package("test2")
+      val test2   = base._package("test2")
       val classes = test2._package("classes")
-      val A = classes._class("A")
+      val A       = classes._class("A")
 
       conv = A._conversion(test2.qualifiedName + ".toB")
       assert(conv.members.length == 1)
@@ -50,7 +50,7 @@ object Test extends ScaladocModelTest {
 
     val doTest3 = {
       val test3 = base._package("test3")
-      val A = test3._class("A")
+      val A     = test3._class("A")
 
       conv = A._conversion(A.qualifiedName + ".toB")
       assert(conv.members.length == 1)
@@ -61,8 +61,8 @@ object Test extends ScaladocModelTest {
 
     val doTest4 = {
       val test4 = base._package("test4")
-      val A = test4._class("A")
-      val S = test4._object("S")
+      val A     = test4._class("A")
+      val S     = test4._object("S")
 
       conv = A._conversion(S.qualifiedName + ".toB")
       assert(conv.members.length == 1)
@@ -74,7 +74,7 @@ object Test extends ScaladocModelTest {
     val doTest5 = {
       val test5 = base._package("test5")
       val scope = test5._object("scope")
-      val A = scope._class("A")
+      val A     = scope._class("A")
 
       conv = A._conversion(scope.qualifiedName + ".toB")
       assert(conv.members.length == 1)

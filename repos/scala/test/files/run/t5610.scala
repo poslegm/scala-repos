@@ -1,17 +1,15 @@
 object Test {
   def main(args: Array[String]): Unit = {
-    var test: String = null
+    var test: String            = null
     val fun1: Int => () => Unit = foo(test) _
     val fun2: Int => () => Unit = foo(test)(_)
     val fun3: Int => () => Unit = {
       lazy val eta1: String = test
-      (dummy: Int) =>
-        foo(eta1)(dummy)
+      (dummy: Int) => foo(eta1)(dummy)
     }
     val fun4: Int => () => Unit = {
       val eta1: () => String = () => test
-      (dummy: Int) =>
-        foo(eta1())(dummy)
+      (dummy: Int) => foo(eta1())(dummy)
     }
     test = "some string"
     fun1(1)()

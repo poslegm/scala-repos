@@ -8,7 +8,7 @@ import pack.G
 
 class Groups2 {
   val b: ArrayBuffer[Int] = null
-  val c: ArrayList[Int] = null
+  val c: ArrayList[Int]   = null
 }
 /*
 package pack {

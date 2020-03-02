@@ -10,13 +10,13 @@ import FromString.ExistingDir
 
 trait CodegenSpec extends Spec with Meta.StdOpts with Interpolation {
   def referenceSpec = CodegenSpec
-  def programInfo = Spec.Info("codegen", "", "scala.tools.cmd.gen.Codegen")
+  def programInfo   = Spec.Info("codegen", "", "scala.tools.cmd.gen.Codegen")
 
   help("Usage: codegen [<options>]")
 
-  val outDir = "out" / "directory for generated files" --^ ExistingDir
+  val outDir  = "out" / "directory for generated files" --^ ExistingDir
   val anyvals = "anyvals" / "generate sources for AnyVal types" --?
-  val genall = "all" / "generate sources for everything" --?
+  val genall  = "all" / "generate sources for everything" --?
 }
 
 object CodegenSpec extends CodegenSpec with Reference {

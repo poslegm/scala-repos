@@ -40,13 +40,15 @@ class CoGroupBuilder(groupFields: Fields, joinMode: JoinMode)
   // and remove it from joinWithSmaller/joinWithTiny
   override def schedule(name: String, pipe: Pipe): Pipe = {
     assert(!sorting.isDefined, "cannot use a sortBy when doing a coGroup")
-    assert(!coGroups.isEmpty,
-           "coGroupBy requires at least one other pipe to .coGroup")
-    val fields = (groupFields :: coGroups.map { _._1 }).toArray
-    val pipes = (pipe :: coGroups.map { _._2 }).map { RichPipe.assignName(_) }.toArray
-    val joinModes = (joinMode :: coGroups.map { _._3 }).map { _.booleanValue }.toArray
+    assert(
+      !coGroups.isEmpty,
+      "coGroupBy requires at least one other pipe to .coGroup"
+    )
+    val fields      = (groupFields :: coGroups.map(_._1)).toArray
+    val pipes       = (pipe :: coGroups.map(_._2)).map(RichPipe.assignName(_)).toArray
+    val joinModes   = (joinMode :: coGroups.map(_._3)).map(_.booleanValue).toArray
     val mixedJoiner = new MixedJoin(joinModes)
-    val cg: Pipe = new CoGroup(pipes, fields, null, WrappedJoiner(mixedJoiner))
+    val cg: Pipe    = new CoGroup(pipes, fields, null, WrappedJoiner(mixedJoiner))
     overrideReducers(cg)
     evs.foldRight(cg)((op: Pipe => Every, p) => op(p))
   }

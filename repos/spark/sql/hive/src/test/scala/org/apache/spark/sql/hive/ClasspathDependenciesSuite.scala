@@ -40,18 +40,16 @@ class ClasspathDependenciesSuite extends SparkFunSuite {
     classloader.loadClass(classname)
   }
 
-  private def assertLoads(classes: String*): Unit = {
+  private def assertLoads(classes: String*): Unit =
     classes.foreach(assertLoads)
-  }
 
   private def findResource(classname: String): URL = {
     val resource = resourceName(classname)
     classloader.getResource(resource)
   }
 
-  private def resourceName(classname: String): String = {
+  private def resourceName(classname: String): String =
     classname.replace(".", "/") + ".class"
-  }
 
   private def assertClassNotFound(classname: String): Unit = {
     Option(findResource(classname)).foreach { resourceURL =>
@@ -63,13 +61,12 @@ class ClasspathDependenciesSuite extends SparkFunSuite {
     }
   }
 
-  private def assertClassNotFound(classes: String*): Unit = {
+  private def assertClassNotFound(classes: String*): Unit =
     classes.foreach(assertClassNotFound)
-  }
 
   private val KRYO = "com.esotericsoftware.kryo.Kryo"
 
-  private val SPARK_HIVE = "org.apache.hive."
+  private val SPARK_HIVE   = "org.apache.hive."
   private val SPARK_SHADED = "org.spark-project.hive.shaded."
 
   test("shaded Protobuf") {
@@ -93,19 +90,19 @@ class ClasspathDependenciesSuite extends SparkFunSuite {
 
   test("Forbidden Dependencies") {
     assertClassNotFound(
-        SPARK_HIVE + KRYO,
-        SPARK_SHADED + KRYO,
-        "org.apache.hive." + KRYO,
-        "com.esotericsoftware.shaded." + STD_INSTANTIATOR,
-        SPARK_HIVE + "com.esotericsoftware.shaded." + STD_INSTANTIATOR,
-        "org.apache.hive.com.esotericsoftware.shaded." + STD_INSTANTIATOR
+      SPARK_HIVE + KRYO,
+      SPARK_SHADED + KRYO,
+      "org.apache.hive." + KRYO,
+      "com.esotericsoftware.shaded." + STD_INSTANTIATOR,
+      SPARK_HIVE + "com.esotericsoftware.shaded." + STD_INSTANTIATOR,
+      "org.apache.hive.com.esotericsoftware.shaded." + STD_INSTANTIATOR
     )
   }
 
   test("parquet-hadoop-bundle") {
     assertLoads(
-        "parquet.hadoop.ParquetOutputFormat",
-        "parquet.hadoop.ParquetInputFormat"
+      "parquet.hadoop.ParquetOutputFormat",
+      "parquet.hadoop.ParquetInputFormat"
     )
   }
 }

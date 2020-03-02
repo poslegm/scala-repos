@@ -18,11 +18,10 @@ trait Orient2 {
 object Orient2 {
   // Very fast, but may be incorrect.
   val bad = new Orient2 {
-    def orient(p: Point2, q: Point2, r: Point2): Int = {
+    def orient(p: Point2, q: Point2, r: Point2): Int =
       spire.math
         .signum((q.x - p.x) * (r.y - p.y) - (r.x - p.x) * (q.y - p.y))
         .toInt
-    }
   }
 
   // Slow, but correct.
@@ -60,13 +59,12 @@ class FpFilterBenchmark extends MyBenchmark {
 
   var points: Array[Point2] = _
 
-  override protected def setUp(): Unit = {
+  override protected def setUp(): Unit =
     points = init(size)(Point2(Random.nextDouble, Random.nextDouble))
-  }
 
   def findSign(o: Orient2): Int = {
-    val ps = points
-    var i = 2
+    val ps   = points
+    var i    = 2
     var sign = 0
     while (i < ps.length) {
       sign = sign ^ o.orient(ps(i - 2), ps(i - 1), ps(i))
@@ -75,7 +73,7 @@ class FpFilterBenchmark extends MyBenchmark {
     sign
   }
 
-  def timeDouble(reps: Int) = run(reps)(findSign(Orient2.bad))
+  def timeDouble(reps: Int)     = run(reps)(findSign(Orient2.bad))
   def timeBigDecimal(reps: Int) = run(reps)(findSign(Orient2.slow))
-  def timeFpFilter(reps: Int) = run(reps)(findSign(Orient2.fast))
+  def timeFpFilter(reps: Int)   = run(reps)(findSign(Orient2.fast))
 }

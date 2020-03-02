@@ -14,65 +14,63 @@ class BasicRouteSpecs extends RoutingSpec {
   "routes created by the concatenation operator '~'" should {
     "yield the first sub route if it succeeded" in {
       Get() ~> {
-        get { complete("first") } ~ get { complete("second") }
-      } ~> check { responseAs[String] shouldEqual "first" }
+        get(complete("first")) ~ get(complete("second"))
+      } ~> check(responseAs[String] shouldEqual "first")
     }
     "yield the second sub route if the first did not succeed" in {
       Get() ~> {
-        post { complete("first") } ~ get { complete("second") }
-      } ~> check { responseAs[String] shouldEqual "second" }
+        post(complete("first")) ~ get(complete("second"))
+      } ~> check(responseAs[String] shouldEqual "second")
     }
     "collect rejections from both sub routes" in {
       Delete() ~> {
-        get { completeOk } ~ put { completeOk }
+        get(completeOk) ~ put(completeOk)
       } ~> check {
         rejections shouldEqual Seq(MethodRejection(GET), MethodRejection(PUT))
       }
     }
     "clear rejections that have already been 'overcome' by previous directives" in {
       Put() ~> {
-        put { parameter('yeah) { echoComplete } } ~ get { completeOk }
-      } ~> check { rejection shouldEqual MissingQueryParamRejection("yeah") }
+        put(parameter('yeah)(echoComplete)) ~ get(completeOk)
+      } ~> check(rejection shouldEqual MissingQueryParamRejection("yeah"))
     }
   }
 
   "Route conjunction" should {
     val stringDirective = provide("The cat")
-    val intDirective = provide(42)
+    val intDirective    = provide(42)
     val doubleDirective = provide(23.0)
 
-    val dirStringInt = stringDirective & intDirective
-    val dirStringIntDouble = dirStringInt & doubleDirective
-    val dirDoubleStringInt = doubleDirective & dirStringInt
+    val dirStringInt          = stringDirective & intDirective
+    val dirStringIntDouble    = dirStringInt & doubleDirective
+    val dirDoubleStringInt    = doubleDirective & dirStringInt
     val dirStringIntStringInt = dirStringInt & dirStringInt
 
     "work for two elements" in {
       Get("/abc") ~> {
-        dirStringInt { (str, i) ⇒
-          complete(s"$str ${i + 1}")
-        }
-      } ~> check { responseAs[String] shouldEqual "The cat 43" }
+        dirStringInt((str, i) ⇒ complete(s"$str ${i + 1}"))
+      } ~> check(responseAs[String] shouldEqual "The cat 43")
     }
     "work for 2 + 1" in {
       Get("/abc") ~> {
         dirStringIntDouble { (str, i, d) ⇒
           complete(s"$str ${i + 1} ${d + 0.1}")
         }
-      } ~> check { responseAs[String] shouldEqual "The cat 43 23.1" }
+      } ~> check(responseAs[String] shouldEqual "The cat 43 23.1")
     }
     "work for 1 + 2" in {
       Get("/abc") ~> {
         dirDoubleStringInt { (d, str, i) ⇒
           complete(s"$str ${i + 1} ${d + 0.1}")
         }
-      } ~> check { responseAs[String] shouldEqual "The cat 43 23.1" }
+      } ~> check(responseAs[String] shouldEqual "The cat 43 23.1")
     }
     "work for 2 + 2" in {
       Get("/abc") ~> {
         dirStringIntStringInt { (str, i, str2, i2) ⇒
           complete(s"$str ${i + i2} $str2")
         }
-      } ~> check { responseAs[String] shouldEqual "The cat 84 The cat" }
+      } ~> check(responseAs[String] shouldEqual "The cat 84 The cat")
     }
   }
   "Route disjunction" should {
@@ -135,7 +133,7 @@ class BasicRouteSpecs extends RoutingSpec {
   }
   "Dynamic execution of inner routes of Directive0" should {
     "re-execute inner routes every time" in {
-      var a = ""
+      var a            = ""
       val dynamicRoute = get { a += "x"; complete(a) }
       def expect(route: Route, s: String) = Get() ~> route ~> check {
         responseAs[String] shouldEqual s
@@ -151,17 +149,17 @@ class BasicRouteSpecs extends RoutingSpec {
   case object MyException extends RuntimeException
   "Route sealing" should {
     "catch route execution exceptions" in EventFilter[MyException.type](
-        occurrences = 1).intercept {
+      occurrences = 1
+    ).intercept {
       Get("/abc") ~> Route.seal {
-        get { ctx ⇒
-          throw MyException
-        }
+        get(ctx ⇒ throw MyException)
       } ~> check {
         status shouldEqual StatusCodes.InternalServerError
       }
     }
     "catch route building exceptions" in EventFilter[MyException.type](
-        occurrences = 1).intercept {
+      occurrences = 1
+    ).intercept {
       Get("/abc") ~> Route.seal {
         get {
           throw MyException
@@ -171,7 +169,8 @@ class BasicRouteSpecs extends RoutingSpec {
       }
     }
     "convert all rejections to responses" in EventFilter[RuntimeException](
-        occurrences = 1).intercept {
+      occurrences = 1
+    ).intercept {
       object MyRejection extends Rejection
       Get("/abc") ~> Route.seal {
         get {
@@ -183,15 +182,15 @@ class BasicRouteSpecs extends RoutingSpec {
     }
     "always prioritize MethodRejections over AuthorizationFailedRejections" in {
       Get("/abc") ~> Route.seal {
-        post { completeOk } ~ authorize(false) { completeOk }
+        post(completeOk) ~ authorize(false)(completeOk)
       } ~> check {
         status shouldEqual StatusCodes.MethodNotAllowed
         responseAs[String] shouldEqual "HTTP method not allowed, supported methods: POST"
       }
 
       Get("/abc") ~> Route.seal {
-        authorize(false) { completeOk } ~ post { completeOk }
-      } ~> check { status shouldEqual StatusCodes.MethodNotAllowed }
+        authorize(false)(completeOk) ~ post(completeOk)
+      } ~> check(status shouldEqual StatusCodes.MethodNotAllowed)
     }
   }
 }

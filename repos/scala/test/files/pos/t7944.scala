@@ -18,7 +18,7 @@ object Test {
 
     // variations on the theme, all failed before similarly.
     val assign1: M[Int, Nothing] = { val temp = runawayTypeVar; temp }
-    val assign2: M[Int, String] = runawayTypeVar
+    val assign2: M[Int, String]  = runawayTypeVar
     val assign3: M[Int, Nothing] = { val temp = Left(1).disjunction; temp }
   }
 }

@@ -63,7 +63,7 @@ abstract class DelayedOperation(delayMs: Long) extends TimerTask with Logging {
    * the first thread will succeed in completing the operation and return
    * true, others will still return false
    */
-  def forceComplete(): Boolean = {
+  def forceComplete(): Boolean =
     if (completed.compareAndSet(false, true)) {
       // cancel the timeout timer
       cancel()
@@ -72,7 +72,6 @@ abstract class DelayedOperation(delayMs: Long) extends TimerTask with Logging {
     } else {
       false
     }
-  }
 
   /**
     * Check if the delayed operation is already completed
@@ -102,24 +101,29 @@ abstract class DelayedOperation(delayMs: Long) extends TimerTask with Logging {
   /*
    * run() method defines a task that is executed on timeout
    */
-  override def run(): Unit = {
+  override def run(): Unit =
     if (forceComplete()) onExpiration()
-  }
 }
 
 /**
   * A helper purgatory class for bookkeeping delayed operations with a timeout, and expiring timed out operations.
   */
 class DelayedOperationPurgatory[T <: DelayedOperation](
-    purgatoryName: String, brokerId: Int = 0, purgeInterval: Int = 1000)
-    extends Logging with KafkaMetricsGroup {
+    purgatoryName: String,
+    brokerId: Int = 0,
+    purgeInterval: Int = 1000
+) extends Logging
+    with KafkaMetricsGroup {
 
   // timeout timer
   private[this] val executor =
-    Executors.newFixedThreadPool(1, new ThreadFactory() {
-      def newThread(runnable: Runnable): Thread =
-        Utils.newThread("executor-" + purgatoryName, runnable, false)
-    })
+    Executors.newFixedThreadPool(
+      1,
+      new ThreadFactory() {
+        def newThread(runnable: Runnable): Thread =
+          Utils.newThread("executor-" + purgatoryName, runnable, false)
+      }
+    )
   private[this] val timeoutTimer = new Timer(executor)
 
   /* a list of operation watching keys */
@@ -137,19 +141,19 @@ class DelayedOperationPurgatory[T <: DelayedOperation](
   private val metricsTags = Map("delayedOperation" -> purgatoryName)
 
   newGauge(
-      "PurgatorySize",
-      new Gauge[Int] {
-        def value = watched()
-      },
-      metricsTags
+    "PurgatorySize",
+    new Gauge[Int] {
+      def value = watched()
+    },
+    metricsTags
   )
 
   newGauge(
-      "NumDelayedOperations",
-      new Gauge[Int] {
-        def value = delayed()
-      },
-      metricsTags
+    "NumDelayedOperations",
+    new Gauge[Int] {
+      def value = delayed()
+    },
+    metricsTags
   )
 
   expirationReaper.start()
@@ -217,7 +221,7 @@ class DelayedOperationPurgatory[T <: DelayedOperation](
     * @return the number of completed operations during this process
     */
   def checkAndComplete(key: Any): Int = {
-    val watchers = inReadLock(removeWatchersLock) { watchersForKey.get(key) }
+    val watchers = inReadLock(removeWatchersLock)(watchersForKey.get(key))
     if (watchers == null) 0
     else watchers.tryCompleteWatched()
   }

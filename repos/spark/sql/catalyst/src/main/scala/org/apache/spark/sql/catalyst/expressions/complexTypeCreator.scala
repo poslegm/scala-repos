@@ -33,37 +33,41 @@ case class CreateArray(children: Seq[Expression]) extends Expression {
 
   override def checkInputDataTypes(): TypeCheckResult =
     TypeUtils.checkForSameTypeInputExpr(
-        children.map(_.dataType), "function array")
+      children.map(_.dataType),
+      "function array"
+    )
 
-  override def dataType: DataType = {
-    ArrayType(children.headOption.map(_.dataType).getOrElse(NullType),
-              containsNull = children.exists(_.nullable))
-  }
+  override def dataType: DataType =
+    ArrayType(
+      children.headOption.map(_.dataType).getOrElse(NullType),
+      containsNull = children.exists(_.nullable)
+    )
 
   override def nullable: Boolean = false
 
-  override def eval(input: InternalRow): Any = {
+  override def eval(input: InternalRow): Any =
     new GenericArrayData(children.map(_.eval(input)).toArray)
-  }
 
   override def genCode(ctx: CodegenContext, ev: ExprCode): String = {
     val arrayClass = classOf[GenericArrayData].getName
-    val values = ctx.freshName("values")
+    val values     = ctx.freshName("values")
     s"""
       final boolean ${ev.isNull} = false;
       final Object[] $values = new Object[${children.size}];
-    """ + children.zipWithIndex.map {
-      case (e, i) =>
-        val eval = e.gen(ctx)
-        eval.code + s"""
+    """ + children.zipWithIndex
+      .map {
+        case (e, i) =>
+          val eval = e.gen(ctx)
+          eval.code + s"""
           if (${eval.isNull}) {
             $values[$i] = null;
           } else {
             $values[$i] = ${eval.value};
           }
          """
-    }.mkString("\n") +
-    s"final ArrayData ${ev.value} = new $arrayClass($values);"
+      }
+      .mkString("\n") +
+      s"final ArrayData ${ev.value} = new $arrayClass($values);"
   }
 
   override def prettyName: String = "array"
@@ -83,10 +87,12 @@ case class CreateStruct(children: Seq[Expression]) extends Expression {
           case ne: NamedExpression =>
             StructField(ne.name, ne.dataType, ne.nullable, ne.metadata)
           case _ =>
-            StructField(s"col${idx + 1}",
-                        child.dataType,
-                        child.nullable,
-                        Metadata.empty)
+            StructField(
+              s"col${idx + 1}",
+              child.dataType,
+              child.nullable,
+              Metadata.empty
+            )
         }
     }
     StructType(fields)
@@ -94,28 +100,29 @@ case class CreateStruct(children: Seq[Expression]) extends Expression {
 
   override def nullable: Boolean = false
 
-  override def eval(input: InternalRow): Any = {
+  override def eval(input: InternalRow): Any =
     InternalRow(children.map(_.eval(input)): _*)
-  }
 
   override def genCode(ctx: CodegenContext, ev: ExprCode): String = {
     val rowClass = classOf[GenericInternalRow].getName
-    val values = ctx.freshName("values")
+    val values   = ctx.freshName("values")
     s"""
       boolean ${ev.isNull} = false;
       final Object[] $values = new Object[${children.size}];
-    """ + children.zipWithIndex.map {
-      case (e, i) =>
-        val eval = e.gen(ctx)
-        eval.code + s"""
+    """ + children.zipWithIndex
+      .map {
+        case (e, i) =>
+          val eval = e.gen(ctx)
+          eval.code + s"""
           if (${eval.isNull}) {
             $values[$i] = null;
           } else {
             $values[$i] = ${eval.value};
           }
          """
-    }.mkString("\n") +
-    s"final InternalRow ${ev.value} = new $rowClass($values);"
+      }
+      .mkString("\n") +
+      s"final InternalRow ${ev.value} = new $rowClass($values);"
   }
 
   override def prettyName: String = "struct"
@@ -147,10 +154,12 @@ case class CreateNamedStruct(children: Seq[Expression]) extends Expression {
   override lazy val dataType: StructType = {
     val fields = names.zip(valExprs).map {
       case (name, valExpr) =>
-        StructField(name.asInstanceOf[UTF8String].toString,
-                    valExpr.dataType,
-                    valExpr.nullable,
-                    Metadata.empty)
+        StructField(
+          name.asInstanceOf[UTF8String].toString,
+          valExpr.dataType,
+          valExpr.nullable,
+          Metadata.empty
+        )
     }
     StructType(fields)
   }
@@ -159,47 +168,49 @@ case class CreateNamedStruct(children: Seq[Expression]) extends Expression {
 
   override def nullable: Boolean = false
 
-  override def checkInputDataTypes(): TypeCheckResult = {
+  override def checkInputDataTypes(): TypeCheckResult =
     if (children.size % 2 != 0) {
       TypeCheckResult.TypeCheckFailure(
-          s"$prettyName expects an even number of arguments.")
+        s"$prettyName expects an even number of arguments."
+      )
     } else {
       val invalidNames =
         nameExprs.filterNot(e => e.foldable && e.dataType == StringType)
       if (invalidNames.nonEmpty) {
         TypeCheckResult.TypeCheckFailure(
-            s"Only foldable StringType expressions are allowed to appear at odd position , got :" +
-            s" ${invalidNames.mkString(",")}")
+          s"Only foldable StringType expressions are allowed to appear at odd position , got :" +
+            s" ${invalidNames.mkString(",")}"
+        )
       } else if (!names.contains(null)) {
         TypeCheckResult.TypeCheckSuccess
       } else {
         TypeCheckResult.TypeCheckFailure("Field name should not be null")
       }
     }
-  }
 
-  override def eval(input: InternalRow): Any = {
+  override def eval(input: InternalRow): Any =
     InternalRow(valExprs.map(_.eval(input)): _*)
-  }
 
   override def genCode(ctx: CodegenContext, ev: ExprCode): String = {
     val rowClass = classOf[GenericInternalRow].getName
-    val values = ctx.freshName("values")
+    val values   = ctx.freshName("values")
     s"""
       boolean ${ev.isNull} = false;
       final Object[] $values = new Object[${valExprs.size}];
-    """ + valExprs.zipWithIndex.map {
-      case (e, i) =>
-        val eval = e.gen(ctx)
-        eval.code + s"""
+    """ + valExprs.zipWithIndex
+      .map {
+        case (e, i) =>
+          val eval = e.gen(ctx)
+          eval.code + s"""
           if (${eval.isNull}) {
             $values[$i] = null;
           } else {
             $values[$i] = ${eval.value};
           }
          """
-    }.mkString("\n") +
-    s"final InternalRow ${ev.value} = new $rowClass($values);"
+      }
+      .mkString("\n") +
+      s"final InternalRow ${ev.value} = new $rowClass($values);"
   }
 
   override def prettyName: String = "named_struct"
@@ -223,10 +234,12 @@ case class CreateStructUnsafe(children: Seq[Expression]) extends Expression {
           case ne: NamedExpression =>
             StructField(ne.name, ne.dataType, ne.nullable, ne.metadata)
           case _ =>
-            StructField(s"col${idx + 1}",
-                        child.dataType,
-                        child.nullable,
-                        Metadata.empty)
+            StructField(
+              s"col${idx + 1}",
+              child.dataType,
+              child.nullable,
+              Metadata.empty
+            )
         }
     }
     StructType(fields)
@@ -234,9 +247,8 @@ case class CreateStructUnsafe(children: Seq[Expression]) extends Expression {
 
   override def nullable: Boolean = false
 
-  override def eval(input: InternalRow): Any = {
+  override def eval(input: InternalRow): Any =
     InternalRow(children.map(_.eval(input)): _*)
-  }
 
   override def genCode(ctx: CodegenContext, ev: ExprCode): String = {
     val eval = GenerateUnsafeProjection.createCode(ctx, children)
@@ -278,9 +290,8 @@ case class CreateNamedStructUnsafe(children: Seq[Expression])
 
   override def nullable: Boolean = false
 
-  override def eval(input: InternalRow): Any = {
+  override def eval(input: InternalRow): Any =
     InternalRow(valExprs.map(_.eval(input)): _*)
-  }
 
   override def genCode(ctx: CodegenContext, ev: ExprCode): String = {
     val eval = GenerateUnsafeProjection.createCode(ctx, valExprs)

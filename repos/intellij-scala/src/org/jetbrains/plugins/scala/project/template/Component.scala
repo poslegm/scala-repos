@@ -22,7 +22,7 @@ sealed class Artifact(val prefix: String, resource: Option[String] = None) {
 
     file.getName match {
       case FileName(number) => Some(Version(number))
-      case _ => None
+      case _                => None
     }
   }
 
@@ -34,24 +34,29 @@ sealed class Artifact(val prefix: String, resource: Option[String] = None) {
 
 object Artifact {
   def values: Set[Artifact] =
-    Set(ScalaLibrary,
-        ScalaCompiler,
-        ScalaReflect,
-        ScalaXml,
-        ScalaSwing,
-        ScalaCombinators,
-        ScalaActors)
+    Set(
+      ScalaLibrary,
+      ScalaCompiler,
+      ScalaReflect,
+      ScalaXml,
+      ScalaSwing,
+      ScalaCombinators,
+      ScalaActors
+    )
 
   private def readProperty(
-      file: File, resource: String, name: String): Option[String] = {
+      file: File,
+      resource: String,
+      name: String
+  ): Option[String] =
     try {
       val url = new URL("jar:%s!/%s".format(file.toURI.toString, resource))
-      Option(url.openStream).flatMap(
-          it => using(new BufferedInputStream(it))(readProperty(_, name)))
+      Option(url.openStream).flatMap(it =>
+        using(new BufferedInputStream(it))(readProperty(_, name))
+      )
     } catch {
       case _: IOException => None
     }
-  }
 
   private def readProperty(input: InputStream, name: String): Option[String] = {
     val properties = new Properties()
@@ -102,14 +107,19 @@ object Kind {
 }
 
 case class Component(
-    artifact: Artifact, kind: Kind, version: Option[Version], file: File)
+    artifact: Artifact,
+    kind: Kind,
+    version: Option[Version],
+    file: File
+)
 
 object Component {
   def discoverIn(files: Seq[File]): Seq[Component] = {
     val patterns = (Artifact.values ++ DottyArtifact.values).flatMap {
       artifact =>
-        Kind.values.map(
-            kind => (kind.patternFor(artifact.prefix), artifact, kind))
+        Kind.values.map(kind =>
+          (kind.patternFor(artifact.prefix), artifact, kind)
+        )
     }
 
     files.filter(it => it.isFile && it.getName.endsWith(".jar")).flatMap {

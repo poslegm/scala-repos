@@ -38,9 +38,13 @@ abstract class Gradient extends Serializable {
     *
     * @return (gradient: Vector, loss: Double)
     */
-  def compute(data: Vector, label: Double, weights: Vector): (Vector, Double) = {
+  def compute(
+      data: Vector,
+      label: Double,
+      weights: Vector
+  ): (Vector, Double) = {
     val gradient = Vectors.zeros(weights.size)
-    val loss = compute(data, label, weights, gradient)
+    val loss     = compute(data, label, weights, gradient)
     (gradient, loss)
   }
 
@@ -55,10 +59,12 @@ abstract class Gradient extends Serializable {
     *
     * @return loss
     */
-  def compute(data: Vector,
-              label: Double,
-              weights: Vector,
-              cumGradient: Vector): Double
+  def compute(
+      data: Vector,
+      label: Double,
+      weights: Vector,
+      cumGradient: Vector
+  ): Double
 }
 
 /**
@@ -151,22 +157,28 @@ class LogisticGradient(numClasses: Int) extends Gradient {
   def this() = this(2)
 
   override def compute(
-      data: Vector, label: Double, weights: Vector): (Vector, Double) = {
+      data: Vector,
+      label: Double,
+      weights: Vector
+  ): (Vector, Double) = {
     val gradient = Vectors.zeros(weights.size)
-    val loss = compute(data, label, weights, gradient)
+    val loss     = compute(data, label, weights, gradient)
     (gradient, loss)
   }
 
-  override def compute(data: Vector,
-                       label: Double,
-                       weights: Vector,
-                       cumGradient: Vector): Double = {
+  override def compute(
+      data: Vector,
+      label: Double,
+      weights: Vector,
+      cumGradient: Vector
+  ): Double = {
     val dataSize = data.size
 
     // (weights.size / dataSize + 1) is number of classes
     require(
-        weights.size % dataSize == 0 &&
-        numClasses == weights.size / dataSize + 1)
+      weights.size % dataSize == 0 &&
+        numClasses == weights.size / dataSize + 1
+    )
     numClasses match {
       case 2 =>
         /**
@@ -176,7 +188,7 @@ class LogisticGradient(numClasses: Int) extends Gradient {
           * and multinomial one can also be used in binary case, we still implement a specialized
           * binary version for performance reason.
           */
-        val margin = -1.0 * dot(data, weights)
+        val margin     = -1.0 * dot(data, weights)
         val multiplier = (1.0 / (1.0 + math.exp(margin))) - label
         axpy(multiplier, data, cumGradient)
         if (label > 0) {
@@ -193,18 +205,20 @@ class LogisticGradient(numClasses: Int) extends Gradient {
           case dv: DenseVector => dv.values
           case _ =>
             throw new IllegalArgumentException(
-                s"weights only supports dense vector but got type ${weights.getClass}.")
+              s"weights only supports dense vector but got type ${weights.getClass}."
+            )
         }
         val cumGradientArray = cumGradient match {
           case dv: DenseVector => dv.values
           case _ =>
             throw new IllegalArgumentException(
-                s"cumGradient only supports dense vector but got type ${cumGradient.getClass}.")
+              s"cumGradient only supports dense vector but got type ${cumGradient.getClass}."
+            )
         }
 
         // marginY is margins(label - 1) in the formula.
-        var marginY = 0.0
-        var maxMargin = Double.NegativeInfinity
+        var marginY        = 0.0
+        var maxMargin      = Double.NegativeInfinity
         var maxMarginIndex = 0
 
         val margins = Array.tabulate(numClasses - 1) { i =>
@@ -279,18 +293,23 @@ class LogisticGradient(numClasses: Int) extends Gradient {
 @DeveloperApi
 class LeastSquaresGradient extends Gradient {
   override def compute(
-      data: Vector, label: Double, weights: Vector): (Vector, Double) = {
-    val diff = dot(data, weights) - label
-    val loss = diff * diff / 2.0
+      data: Vector,
+      label: Double,
+      weights: Vector
+  ): (Vector, Double) = {
+    val diff     = dot(data, weights) - label
+    val loss     = diff * diff / 2.0
     val gradient = data.copy
     scal(diff, gradient)
     (gradient, loss)
   }
 
-  override def compute(data: Vector,
-                       label: Double,
-                       weights: Vector,
-                       cumGradient: Vector): Double = {
+  override def compute(
+      data: Vector,
+      label: Double,
+      weights: Vector,
+      cumGradient: Vector
+  ): Double = {
     val diff = dot(data, weights) - label
     axpy(diff, data, cumGradient)
     diff * diff / 2.0
@@ -306,7 +325,10 @@ class LeastSquaresGradient extends Gradient {
 @DeveloperApi
 class HingeGradient extends Gradient {
   override def compute(
-      data: Vector, label: Double, weights: Vector): (Vector, Double) = {
+      data: Vector,
+      label: Double,
+      weights: Vector
+  ): (Vector, Double) = {
     val dotProduct = dot(data, weights)
     // Our loss function with {0, 1} labels is max(0, 1 - (2y - 1) (f_w(x)))
     // Therefore the gradient is -(2y - 1)*x
@@ -320,10 +342,12 @@ class HingeGradient extends Gradient {
     }
   }
 
-  override def compute(data: Vector,
-                       label: Double,
-                       weights: Vector,
-                       cumGradient: Vector): Double = {
+  override def compute(
+      data: Vector,
+      label: Double,
+      weights: Vector,
+      cumGradient: Vector
+  ): Double = {
     val dotProduct = dot(data, weights)
     // Our loss function with {0, 1} labels is max(0, 1 - (2y - 1) (f_w(x)))
     // Therefore the gradient is -(2y - 1)*x

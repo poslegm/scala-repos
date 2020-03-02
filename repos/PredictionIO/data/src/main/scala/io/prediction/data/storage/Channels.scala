@@ -30,8 +30,10 @@ case class Channel(
     name: String, // must be unique within the same app
     appid: Int
 ) {
-  require(Channel.isValidName(name),
-          "Invalid channel name: ${name}. ${Channel.nameConstraint}")
+  require(
+    Channel.isValidName(name),
+    "Invalid channel name: ${name}. ${Channel.nameConstraint}"
+  )
 }
 
 /** :: DeveloperApi ::
@@ -48,10 +50,9 @@ object Channel {
     * @param s Channel name to examine
     * @return true if channel name is valid, false otherwise
     */
-  def isValidName(s: String): Boolean = {
+  def isValidName(s: String): Boolean =
     // note: update channelNameConstraint if this rule is changed
     s.matches("^[a-zA-Z0-9-]{1,16}$")
-  }
 
   /** For consistent error message display */
   val nameConstraint: String =

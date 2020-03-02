@@ -192,7 +192,7 @@ trait VecStats[@spec(Int, Long, Double) A] {
   protected def _variance(r: Vec[A], subOp: (A, Double) => Double): Double = {
     val sa = r.scalarTag
     val sd = ScalarTagDouble
-    val c = count
+    val c  = count
 
     if (c < 1) sd.missing
     else if (c == 1) 0.0
@@ -208,12 +208,12 @@ trait VecStats[@spec(Int, Long, Double) A] {
   protected def _skew(r: Vec[A], subOp: (A, Double) => Double): Double = {
     val sa = r.scalarTag
     val sd = ScalarTagDouble
-    val c = count
+    val c  = count
 
     if (c > 2) {
       val v: Double = variance
       val m: Double = mean
-      val coef = c / ((c - 1) * (c - 2) * v * math.sqrt(v))
+      val coef      = c / ((c - 1) * (c - 2) * v * math.sqrt(v))
       r.filterFoldLeft(sa.notMissing)(0d) { (x, y) =>
         val tmp = subOp(y, m)
         x + coef * tmp * tmp * tmp
@@ -222,12 +222,12 @@ trait VecStats[@spec(Int, Long, Double) A] {
   }
 
   protected def _kurt(r: Vec[A], subOp: (A, Double) => Double): Double = {
-    val sa = r.scalarTag
-    val sd = ScalarTagDouble
+    val sa        = r.scalarTag
+    val sd        = ScalarTagDouble
     val c: Double = count
 
     if (c > 3) {
-      val vari = variance
+      val vari      = variance
       val m: Double = mean
       val acacc = r.filterFoldLeft(sa.notMissing)(0d) { (x, y) =>
         val tmp = subOp(y, m)
@@ -240,13 +240,15 @@ trait VecStats[@spec(Int, Long, Double) A] {
   }
 
   protected def _demeaned(
-      r: Vec[A], subOp: (A, Double) => Double): Vec[Double] = {
+      r: Vec[A],
+      subOp: (A, Double) => Double
+  ): Vec[Double] = {
     val sa = r.scalarTag
     val sd = ScalarTagDouble
 
     val mn = mean
     val ar = Array.ofDim[Double](r.length)
-    var i = 0
+    var i  = 0
     while (i < r.length) {
       val v = r(i)
       if (sa.notMissing(v)) ar(i) = subOp(r(i), mn)
@@ -260,11 +262,13 @@ trait VecStats[@spec(Int, Long, Double) A] {
   protected def _median(r: Vec[A])(implicit n: NUM[A]): Double = {
     val sd = ScalarTagDouble
 
-    def _arrCopyToDblArr(r: Vec[A])(implicit n: NUM[A]): (Int, Array[Double]) = {
+    def _arrCopyToDblArr(
+        r: Vec[A]
+    )(implicit n: NUM[A]): (Int, Array[Double]) = {
       val arr = Array.ofDim[Double](r.length)
-      val sa = r.scalarTag
-      var i = 0
-      var j = 0
+      val sa  = r.scalarTag
+      var i   = 0
+      var j   = 0
       while (i < r.length) {
         val v = sa.toDouble(r(i))
         if (v == v) {
@@ -313,7 +317,10 @@ trait VecStats[@spec(Int, Long, Double) A] {
 
   // NB: destructive to argument v
   protected def _rank(
-      v: Array[Double], tie: RankTie, ascending: Boolean): Vec[Double] = {
+      v: Array[Double],
+      tie: RankTie,
+      ascending: Boolean
+  ): Vec[Double] = {
     val sd = ScalarTagDouble
 
     val nan =
@@ -332,9 +339,9 @@ trait VecStats[@spec(Int, Long, Double) A] {
 
     val dat = array.take(v, srt, 0.0)
 
-    var i = 0
-    var s = 0.0 // summation
-    var d = 0 // duplicate counter
+    var i   = 0
+    var s   = 0.0 // summation
+    var d   = 0 // duplicate counter
     val res = array.empty[Double](len)
     while (i < len) {
       val v = dat(i)
@@ -385,7 +392,8 @@ trait VecStats[@spec(Int, Long, Double) A] {
 
   // percentile function: see: http://en.wikipedia.org/wiki/Percentile
   protected def _percentile(v: Vec[Double], tile: Double, method: PctMethod)(
-      implicit n: NUM[A]): Double = {
+      implicit n: NUM[A]
+  ): Double = {
     val sd = ScalarTagDouble
     val vf = v.dropNA
     if (vf.length == 0 || tile < 0 || tile > 100) sd.missing
@@ -395,13 +403,14 @@ trait VecStats[@spec(Int, Long, Double) A] {
       else {
         val n = method match {
           case PctMethod.Excel => (tile / 100.0) * (c - 1.0) + 1.0
-          case PctMethod.NIST => (tile / 100.0) * (c + 1.0)
+          case PctMethod.NIST  => (tile / 100.0) * (c + 1.0)
         }
         val s = vf.sorted
         val k = math.floor(n).toInt
         val d = n - k
         if (k <= 0) s(0)
-        else if (k >= c) s.last else s(k - 1) + d * (s(k) - s(k - 1))
+        else if (k >= c) s.last
+        else s(k - 1) + d * (s(k) - s(k - 1))
       }
     }
   }
@@ -411,21 +420,25 @@ class DoubleStats(r: Vec[Double]) extends VecStats[Double] {
   val sd = ScalarTagDouble
 
   def sum: Double = r.filterFoldLeft(sd.notMissing)(0d)(_ + _)
-  def count: Int = r.filterFoldLeft(sd.notMissing)(0)((a, b) => a + 1)
+  def count: Int  = r.filterFoldLeft(sd.notMissing)(0)((a, b) => a + 1)
 
   def min: Option[Double] =
     if (r.count == 0) None
     else {
-      val res = r.filterFoldLeft(sd.notMissing)(sd.inf)(
-          (x: Double, y: Double) => if (x < y) x else y)
+      val res =
+        r.filterFoldLeft(sd.notMissing)(sd.inf)((x: Double, y: Double) =>
+          if (x < y) x else y
+        )
       Some(res)
     }
 
   def max: Option[Double] =
     if (r.count == 0) None
     else {
-      val res: Double = r.filterFoldLeft(sd.notMissing)(sd.negInf)(
-          (x: Double, y: Double) => if (x > y) x else y)
+      val res: Double =
+        r.filterFoldLeft(sd.notMissing)(sd.negInf)((x: Double, y: Double) =>
+          if (x > y) x else y
+        )
       Some(res)
     }
 
@@ -434,18 +447,17 @@ class DoubleStats(r: Vec[Double]) extends VecStats[Double] {
     r.filterFoldLeft(t => sd.notMissing(t) && test(t))(0)((a, b) => a + 1)
   def logsum: Double =
     r.filterFoldLeft(sd.notMissing)(0d)((x, y) => x + math.log(y))
-  def mean: Double = sum / count
-  def median: Double = _median(r)
-  def geomean: Double = math.exp(logsum / count)
+  def mean: Double     = sum / count
+  def median: Double   = _median(r)
+  def geomean: Double  = math.exp(logsum / count)
   def variance: Double = _variance(r, _ - _)
-  def skew: Double = _skew(r, _ - _)
-  def kurt: Double = _kurt(r, _ - _)
+  def skew: Double     = _skew(r, _ - _)
+  def kurt: Double     = _kurt(r, _ - _)
   def percentile(tile: Double, method: PctMethod = PctMethod.NIST): Double =
     _percentile(r, tile, method)
 
   def demeaned: Vec[Double] = _demeaned(r, _ - _)
-  def rank(
-      tie: RankTie = RankTie.Avg, ascending: Boolean = true): Vec[Double] =
+  def rank(tie: RankTie = RankTie.Avg, ascending: Boolean = true): Vec[Double] =
     _rank(r.contents, tie, ascending)
 
   def argmin: Int = array.argmin(r.toArray)
@@ -458,39 +470,42 @@ class IntStats(r: Vec[Int]) extends VecStats[Int] {
   def min: Option[Int] =
     if (r.count == 0) None
     else {
-      val res: Int = r.filterFoldLeft(si.notMissing)(si.inf)(
-          (x: Int, y: Int) => if (x < y) x else y)
+      val res: Int = r.filterFoldLeft(si.notMissing)(si.inf)((x: Int, y: Int) =>
+        if (x < y) x else y
+      )
       Some(res)
     }
 
   def max: Option[Int] =
     if (r.count == 0) None
     else {
-      val res: Int = r.filterFoldLeft(si.notMissing)(si.negInf)(
-          (x: Int, y: Int) => if (x > y) x else y)
+      val res: Int =
+        r.filterFoldLeft(si.notMissing)(si.negInf)((x: Int, y: Int) =>
+          if (x > y) x else y
+        )
       Some(res)
     }
 
-  def sum: Int = r.filterFoldLeft(si.notMissing)(0)(_ + _)
+  def sum: Int   = r.filterFoldLeft(si.notMissing)(0)(_ + _)
   def count: Int = r.filterFoldLeft(si.notMissing)(0)((a, b) => a + 1)
-  def prod: Int = r.filterFoldLeft(si.notMissing)(1)(_ * _)
+  def prod: Int  = r.filterFoldLeft(si.notMissing)(1)(_ * _)
   def countif(test: Int => Boolean): Int =
     r.filterFoldLeft(t => si.notMissing(t) && test(t))(0)((a, b) => a + 1)
   def logsum: Double =
-    r.filterFoldLeft(si.notMissing)(0d)(
-        (x, y) => x + math.log(y.asInstanceOf[Double]))
-  def mean: Double = sum.asInstanceOf[Double] / count
-  def median: Double = _median(r)
-  def geomean: Double = math.exp(logsum / count)
+    r.filterFoldLeft(si.notMissing)(0d)((x, y) =>
+      x + math.log(y.asInstanceOf[Double])
+    )
+  def mean: Double     = sum.asInstanceOf[Double] / count
+  def median: Double   = _median(r)
+  def geomean: Double  = math.exp(logsum / count)
   def variance: Double = _variance(r, _ - _)
-  def skew: Double = _skew(r, _ - _)
-  def kurt: Double = _kurt(r, _ - _)
+  def skew: Double     = _skew(r, _ - _)
+  def kurt: Double     = _kurt(r, _ - _)
   def percentile(tile: Double, method: PctMethod = PctMethod.NIST): Double =
     _percentile(r.toDoubleArray, tile, method)
 
   def demeaned: Vec[Double] = _demeaned(r, _ - _)
-  def rank(
-      tie: RankTie = RankTie.Avg, ascending: Boolean = true): Vec[Double] =
+  def rank(tie: RankTie = RankTie.Avg, ascending: Boolean = true): Vec[Double] =
     _rank(r.toDoubleArray, tie, ascending)
 
   def argmin: Int = array.argmin(r.toArray)
@@ -503,38 +518,41 @@ class LongStats(r: Vec[Long]) extends VecStats[Long] {
   def min: Option[Long] =
     if (r.count == 0) None
     else {
-      val res: Long = r.filterFoldLeft(sl.notMissing)(sl.inf)(
-          (x: Long, y: Long) => if (x < y) x else y)
+      val res: Long =
+        r.filterFoldLeft(sl.notMissing)(sl.inf)((x: Long, y: Long) =>
+          if (x < y) x else y
+        )
       Some(res)
     }
 
   def max: Option[Long] =
     if (r.count == 0) None
     else {
-      val res: Long = r.filterFoldLeft(sl.notMissing)(sl.negInf)(
-          (x: Long, y: Long) => if (x > y) x else y)
+      val res: Long =
+        r.filterFoldLeft(sl.notMissing)(sl.negInf)((x: Long, y: Long) =>
+          if (x > y) x else y
+        )
       Some(res)
     }
 
-  def sum: Long = r.filterFoldLeft(sl.notMissing)(0L)(_ + _)
+  def sum: Long  = r.filterFoldLeft(sl.notMissing)(0L)(_ + _)
   def count: Int = r.filterFoldLeft(sl.notMissing)(0)((a, b) => a + 1)
   def prod: Long = r.filterFoldLeft(sl.notMissing)(1L)(_ * _)
   def countif(test: Long => Boolean): Int =
     r.filterFoldLeft(t => sl.notMissing(t) && test(t))(0)((a, b) => a + 1)
   def logsum: Double =
     r.filterFoldLeft(sl.notMissing)(0d)((x, y) => x + math.log(y))
-  def mean: Double = sum.asInstanceOf[Double] / count
-  def median: Double = _median(r)
-  def geomean: Double = math.exp(logsum / count)
+  def mean: Double     = sum.asInstanceOf[Double] / count
+  def median: Double   = _median(r)
+  def geomean: Double  = math.exp(logsum / count)
   def variance: Double = _variance(r, _ - _)
-  def skew: Double = _skew(r, _ - _)
-  def kurt: Double = _kurt(r, _ - _)
+  def skew: Double     = _skew(r, _ - _)
+  def kurt: Double     = _kurt(r, _ - _)
   def percentile(tile: Double, method: PctMethod = PctMethod.NIST): Double =
     _percentile(r.toDoubleArray, tile, method)
 
   def demeaned: Vec[Double] = _demeaned(r, _ - _)
-  def rank(
-      tie: RankTie = RankTie.Avg, ascending: Boolean = true): Vec[Double] =
+  def rank(tie: RankTie = RankTie.Avg, ascending: Boolean = true): Vec[Double] =
     _rank(r.toDoubleArray, tie, ascending)
 
   def argmin: Int = array.argmin(r.toArray)

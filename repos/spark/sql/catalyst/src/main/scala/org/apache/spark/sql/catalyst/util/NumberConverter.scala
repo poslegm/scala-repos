@@ -31,7 +31,7 @@ object NumberConverter {
     * @param x is treated as unsigned
     * @param m is treated as signed
     */
-  private def unsignedLongDiv(x: Long, m: Int): Long = {
+  private def unsignedLongDiv(x: Long, m: Int): Long =
     if (x >= 0) {
       x / m
     } else {
@@ -40,9 +40,8 @@ object NumberConverter {
       // => uval = x + 2*MAX + 2
       // Now, use the fact: (a+b)/c = a/c + b/c + (a%c+b%c)/c
       x / m + 2 * (Long.MaxValue / m) + 2 / m +
-      (x % m + 2 * (Long.MaxValue % m) + 2 % m) / m
+        (x % m + 2 * (Long.MaxValue % m) + 2 % m) / m
     }
-  }
 
   /**
     * Decode v into value[].
@@ -72,7 +71,7 @@ object NumberConverter {
     */
   private def encode(radix: Int, fromPos: Int): Long = {
     var v: Long = 0L
-    val bound = unsignedLongDiv(-1 - radix, radix) // Possible overflow once
+    val bound   = unsignedLongDiv(-1 - radix, radix) // Possible overflow once
     // val
     // exceeds this value
     var i = fromPos
@@ -175,6 +174,7 @@ object NumberConverter {
       value(resultStartPos) = '-'
     }
     UTF8String.fromBytes(
-        java.util.Arrays.copyOfRange(value, resultStartPos, value.length))
+      java.util.Arrays.copyOfRange(value, resultStartPos, value.length)
+    )
   }
 }

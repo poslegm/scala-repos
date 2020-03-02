@@ -18,12 +18,14 @@ import org.jetbrains.plugins.scala.extensions._
   * [[HoconCommenter]] and so I need this custom enter handler for the other one.
   */
 class EnterInHashCommentHandler extends EnterHandlerDelegateAdapter {
-  override def preprocessEnter(file: PsiFile,
-                               editor: Editor,
-                               caretOffsetRef: Ref[Integer],
-                               caretAdvance: Ref[Integer],
-                               dataContext: DataContext,
-                               originalHandler: EditorActionHandler): Result =
+  override def preprocessEnter(
+      file: PsiFile,
+      editor: Editor,
+      caretOffsetRef: Ref[Integer],
+      caretAdvance: Ref[Integer],
+      dataContext: DataContext,
+      originalHandler: EditorActionHandler
+  ): Result =
     file match {
       case _: HoconPsiFile =>
         // This code is copied from com.intellij.codeInsight.editorActions.enter.EnterInLineCommentHandler
@@ -32,9 +34,9 @@ class EnterInHashCommentHandler extends EnterHandlerDelegateAdapter {
         val caretOffset = caretOffsetRef.get.intValue
         val psiAtOffset = file.findElementAt(caretOffset)
         if (psiAtOffset != null && psiAtOffset.getTextOffset < caretOffset) {
-          val token = psiAtOffset.getNode
+          val token    = psiAtOffset.getNode
           val document = editor.getDocument
-          val text = document.getText
+          val text     = document.getText
           if (token.getElementType == HoconTokenType.HashComment) {
             val offset = CharArrayUtil.shiftForward(text, caretOffset, " \t")
             if (offset < document.getTextLength &&
@@ -61,19 +63,22 @@ class EnterInHashCommentHandler extends EnterHandlerDelegateAdapter {
     }
 
   override def postProcessEnter(
-      file: PsiFile, editor: Editor, dataContext: DataContext): Result =
+      file: PsiFile,
+      editor: Editor,
+      dataContext: DataContext
+  ): Result =
     file match {
       case _: HoconPsiFile =>
-        val caretModel = editor.getCaretModel
-        val caretOffset = caretModel.getOffset
-        val psiAtOffset = file.findElementAt(caretOffset)
+        val caretModel   = editor.getCaretModel
+        val caretOffset  = caretModel.getOffset
+        val psiAtOffset  = file.findElementAt(caretOffset)
         lazy val prevPsi = psiAtOffset.getPrevSiblingNotWhitespace
 
         def lineNumber(psi: PsiElement) =
           editor.getDocument.getLineNumber(psi.getTextRange.getStartOffset)
         def isHashComment(psi: PsiElement) =
           psi != null &&
-          psi.getNode.getElementType == HoconTokenType.HashComment
+            psi.getNode.getElementType == HoconTokenType.HashComment
 
         if (isHashComment(psiAtOffset) && isHashComment(prevPsi) &&
             lineNumber(psiAtOffset) == lineNumber(prevPsi) + 1 &&

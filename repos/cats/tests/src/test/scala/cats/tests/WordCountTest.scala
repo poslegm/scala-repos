@@ -22,7 +22,7 @@ class WordCountTest extends CatsSuite {
 
     // An applicatve functor to count each character
     val countChar: AppFunc[Count, Char, Unit] = appFunc(count)
-    def testIf(b: Boolean): Int = if (b) 1 else 0
+    def testIf(b: Boolean): Int               = if (b) 1 else 0
     // An applicative functor to count each line
     val countLine: AppFunc[Count, Char, Unit] = appFunc { (c: Char) =>
       liftInt(testIf(c == '\n'))
@@ -34,18 +34,18 @@ class WordCountTest extends CatsSuite {
       appFuncU { (c: Char) =>
         for {
           x <- get[Boolean]
-          y = !isSpace(c)
+          y  = !isSpace(c)
           _ <- set(y)
         } yield testIf(y && !x)
       } andThen appFunc(liftInt)
 
     val countAll = countWord product countLine product countChar
     // Run all applicative functions at once
-    val allResults = countAll.traverse(text)
+    val allResults     = countAll.traverse(text)
     val wordCountState = allResults.first.first
-    val lineCount = allResults.first.second
-    val charCount = allResults.second
-    val wordCount = wordCountState.runA(false).value
+    val lineCount      = allResults.first.second
+    val charCount      = allResults.second
+    val wordCount      = wordCountState.runA(false).value
     charCount.getConst should ===(96)
     lineCount.getConst should ===(2)
     wordCount.getConst should ===(17)

@@ -5,10 +5,9 @@ object Test {
 
   def serializeDeserialize[T <: AnyRef](obj: T) = {
     val buffer = new ByteArrayOutputStream
-    val out = new ObjectOutputStream(buffer)
+    val out    = new ObjectOutputStream(buffer)
     out.writeObject(obj)
-    val in = new ObjectInputStream(
-        new ByteArrayInputStream(buffer.toByteArray))
+    val in = new ObjectInputStream(new ByteArrayInputStream(buffer.toByteArray))
     in.readObject.asInstanceOf[T]
   }
 

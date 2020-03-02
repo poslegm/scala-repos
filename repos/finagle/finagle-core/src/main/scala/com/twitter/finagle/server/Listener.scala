@@ -15,15 +15,16 @@ import java.net.SocketAddress
   */
 trait Listener[In, Out] {
   def listen(addr: SocketAddress)(
-      serveTransport: Transport[In, Out] => Unit): ListeningServer
+      serveTransport: Transport[In, Out] => Unit
+  ): ListeningServer
 }
 
 /**
   * An empty Listener that can be used as a placeholder.
   */
 object NullListener extends Listener[Any, Any] {
-  def listen(addr: SocketAddress)(
-      serveTransport: Transport[Any, Any] => Unit) = NullServer
+  def listen(addr: SocketAddress)(serveTransport: Transport[Any, Any] => Unit) =
+    NullServer
 }
 
 /**

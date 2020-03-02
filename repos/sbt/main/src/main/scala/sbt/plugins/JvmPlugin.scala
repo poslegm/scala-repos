@@ -20,7 +20,7 @@ object JvmPlugin extends AutoPlugin {
   // We are automatically enabled for any IvyModule project.  We also require its settings
   // for ours to work.
   override def requires = IvyPlugin
-  override def trigger = allRequirements
+  override def trigger  = allRequirements
 
   override lazy val projectSettings: Seq[Setting[_]] =
     Defaults.runnerSettings ++ Defaults.paths ++ Classpaths.jvmPublishSettings ++ Classpaths.jvmBaseSettings ++ Defaults.projectTasks ++ Defaults.packageBase ++ Defaults.compileBase ++ Defaults.defaultConfigs

@@ -276,7 +276,7 @@ object Float extends AnyValCompanion {
     *  representable as a Float.
     */
   final val MinPositiveValue = java.lang.Float.MIN_VALUE
-  final val NaN = java.lang.Float.NaN
+  final val NaN              = java.lang.Float.NaN
   final val PositiveInfinity = java.lang.Float.POSITIVE_INFINITY
   final val NegativeInfinity = java.lang.Float.NEGATIVE_INFINITY
 

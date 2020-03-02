@@ -8,11 +8,23 @@ import com.intellij.psi._
 import org.jetbrains.plugins.scala.extensions.ResolvesTo
 import org.jetbrains.plugins.scala.lang.lexer.ScalaTokenTypes
 import org.jetbrains.plugins.scala.lang.psi.ScalaPsiUtil
-import org.jetbrains.plugins.scala.lang.psi.api.base.patterns.{ScBindingPattern, ScReferencePattern}
-import org.jetbrains.plugins.scala.lang.psi.api.base.{ScReferenceElement, ScStableCodeReferenceElement}
+import org.jetbrains.plugins.scala.lang.psi.api.base.patterns.{
+  ScBindingPattern,
+  ScReferencePattern
+}
+import org.jetbrains.plugins.scala.lang.psi.api.base.{
+  ScReferenceElement,
+  ScStableCodeReferenceElement
+}
 import org.jetbrains.plugins.scala.lang.psi.api.statements.params.ScParameter
-import org.jetbrains.plugins.scala.lang.psi.api.statements.{ScFunctionDefinition, ScVariable}
-import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{ScClass, ScObject}
+import org.jetbrains.plugins.scala.lang.psi.api.statements.{
+  ScFunctionDefinition,
+  ScVariable
+}
+import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{
+  ScClass,
+  ScObject
+}
 import org.jetbrains.plugins.scala.lang.psi.fake.FakePsiMethod
 import org.jetbrains.plugins.scala.lang.psi.light.PsiTypedDefinitionWrapper
 import org.jetbrains.plugins.scala.lang.psi.light.scala._
@@ -28,17 +40,18 @@ class ScalaTargetElementEvaluator extends TargetElementEvaluatorEx {
 
   def getElementByReference(ref: PsiReference, flags: Int): PsiElement =
     ref.getElement match {
-      case isUnapplyFromVal(binding) => binding
-      case isCaseClassParameter(cp) => cp
-      case isVarSetterFakeMethod(refPattern) => refPattern
-      case isVarSetterWrapper(refPattern) => refPattern
+      case isUnapplyFromVal(binding)                => binding
+      case isCaseClassParameter(cp)                 => cp
+      case isVarSetterFakeMethod(refPattern)        => refPattern
+      case isVarSetterWrapper(refPattern)           => refPattern
       case ResolvesTo(isLightScNamedElement(named)) => named
-      case _ => null
+      case _                                        => null
     }
 
   private object isUnapplyFromVal {
     def unapply(
-        ref: ScStableCodeReferenceElement): Option[(ScBindingPattern)] = {
+        ref: ScStableCodeReferenceElement
+    ): Option[(ScBindingPattern)] = {
       if (ref == null) return null
       ref.bind() match {
         case Some(resolve @ ScalaResolveResult(fun: ScFunctionDefinition, _))
@@ -55,7 +68,7 @@ class ScalaTargetElementEvaluator extends TargetElementEvaluatorEx {
 
   private object isVarSetterFakeMethod {
     val setterSuffixes = Seq("_=", "_$eq")
-    def unapply(ref: ScReferenceElement): Option[ScReferencePattern] = {
+    def unapply(ref: ScReferenceElement): Option[ScReferencePattern] =
       ref.resolve() match {
         case fakeMethod: FakePsiMethod
             if setterSuffixes.exists(fakeMethod.getName.endsWith) =>
@@ -69,12 +82,11 @@ class ScalaTargetElementEvaluator extends TargetElementEvaluatorEx {
           }
         case _ => None
       }
-    }
   }
 
   private object isVarSetterWrapper {
     val setterSuffix = "_$eq"
-    def unapply(ref: PsiReferenceExpression): Option[ScReferencePattern] = {
+    def unapply(ref: PsiReferenceExpression): Option[ScReferencePattern] =
       ref.resolve() match {
         case wrapper: PsiTypedDefinitionWrapper
             if wrapper.getName endsWith setterSuffix =>
@@ -88,7 +100,6 @@ class ScalaTargetElementEvaluator extends TargetElementEvaluatorEx {
           }
         case _ => None
       }
-    }
   }
 
   private object isCaseClassParameter {
@@ -115,7 +126,10 @@ class ScalaTargetElementEvaluator extends TargetElementEvaluatorEx {
   }
 
   def isIdentifierPart(
-      file: PsiFile, text: CharSequence, offset: Int): Boolean = {
+      file: PsiFile,
+      text: CharSequence,
+      offset: Int
+  ): Boolean = {
     val child: PsiElement = file.findElementAt(offset)
     child != null && child.getNode != null &&
     ScalaTokenTypes.IDENTIFIER_TOKEN_SET.contains(child.getNode.getElementType)
@@ -124,7 +138,8 @@ class ScalaTargetElementEvaluator extends TargetElementEvaluatorEx {
   private def addClassParameterForSyntheticApply(
       newName: String,
       allRenames: util.Map[PsiElement, String],
-      namedElement: PsiNamedElement) {
+      namedElement: PsiNamedElement
+  ) {
     namedElement match {
       case p: ScParameter =>
         p.owner match {

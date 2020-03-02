@@ -17,7 +17,7 @@ class BufInputStream(val buf: Buf) extends InputStream {
   // Returns an estimate of the number of bytes that can be read (or
   // skipped over) from this input stream without blocking by the next
   // invocation of a method for this input stream.
-  override def available(): Int = synchronized { rest.length }
+  override def available(): Int = synchronized(rest.length)
 
   // Closing a BufInputStream has no effect.
   override def close() {}

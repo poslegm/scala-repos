@@ -21,7 +21,10 @@ package org.apache.spark.examples.ml
 import org.apache.spark.{SparkConf, SparkContext}
 // $example on$
 import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.classification.{GBTClassificationModel, GBTClassifier}
+import org.apache.spark.ml.classification.{
+  GBTClassificationModel,
+  GBTClassifier
+}
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.feature.{IndexToString, StringIndexer, VectorIndexer}
 // $example off$
@@ -31,7 +34,7 @@ object GradientBoostedTreeClassifierExample {
   def main(args: Array[String]): Unit = {
     val conf =
       new SparkConf().setAppName("GradientBoostedTreeClassifierExample")
-    val sc = new SparkContext(conf)
+    val sc         = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
 
     // $example on$

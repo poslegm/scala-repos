@@ -15,7 +15,7 @@ object Test {
   }
 
   def checkRangedImpl() {
-    val tree = mutable.SortedSet[Int](3, 1, 6, 7, 5, 2)
+    val tree       = mutable.SortedSet[Int](3, 1, 6, 7, 5, 2)
     val projection = tree.rangeImpl(Some(3), Some(6))
     assert(projection == immutable.SortedSet(3, 5))
     assert(projection.size == 2)

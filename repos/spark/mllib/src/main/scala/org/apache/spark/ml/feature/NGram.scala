@@ -47,7 +47,11 @@ class NGram(override val uid: String)
     * @group param
     */
   val n: IntParam = new IntParam(
-      this, "n", "number elements per n-gram (>=1)", ParamValidators.gtEq(1))
+    this,
+    "n",
+    "number elements per n-gram (>=1)",
+    ParamValidators.gtEq(1)
+  )
 
   /** @group setParam */
   def setN(value: Int): this.type = set(n, value)
@@ -57,14 +61,14 @@ class NGram(override val uid: String)
 
   setDefault(n -> 2)
 
-  override protected def createTransformFunc: Seq[String] => Seq[String] = {
+  override protected def createTransformFunc: Seq[String] => Seq[String] =
     _.iterator.sliding($(n)).withPartial(false).map(_.mkString(" ")).toSeq
-  }
 
-  override protected def validateInputType(inputType: DataType): Unit = {
-    require(inputType.sameType(ArrayType(StringType)),
-            s"Input type must be ArrayType(StringType) but got $inputType.")
-  }
+  override protected def validateInputType(inputType: DataType): Unit =
+    require(
+      inputType.sameType(ArrayType(StringType)),
+      s"Input type must be ArrayType(StringType) but got $inputType."
+    )
 
   override protected def outputDataType: DataType =
     new ArrayType(StringType, false)

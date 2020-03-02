@@ -35,15 +35,16 @@ import org.apache.commons.lang3.SystemUtils
   *
   * If outputPerIteration is true, the timing for each run will be printed to stdout.
   */
-private[spark] class Benchmark(name: String,
-                               valuesPerIteration: Long,
-                               iters: Int = 5,
-                               outputPerIteration: Boolean = false) {
+private[spark] class Benchmark(
+    name: String,
+    valuesPerIteration: Long,
+    iters: Int = 5,
+    outputPerIteration: Boolean = false
+) {
   val benchmarks = mutable.ArrayBuffer.empty[Benchmark.Case]
 
-  def addCase(name: String)(f: Int => Unit): Unit = {
+  def addCase(name: String)(f: Int => Unit): Unit =
     benchmarks += Benchmark.Case(name, f)
-  }
 
   /**
     * Runs the benchmark and outputs the results to stdout. This should be copied and added as
@@ -64,23 +65,28 @@ private[spark] class Benchmark(name: String,
     val firstBest = results.head.bestMs
     // The results are going to be processor specific so it is useful to include that.
     println(Benchmark.getProcessorName())
-    printf("%-35s %16s %12s %13s %10s\n",
-           name + ":",
-           "Best/Avg Time(ms)",
-           "Rate(M/s)",
-           "Per Row(ns)",
-           "Relative")
+    printf(
+      "%-35s %16s %12s %13s %10s\n",
+      name + ":",
+      "Best/Avg Time(ms)",
+      "Rate(M/s)",
+      "Per Row(ns)",
+      "Relative"
+    )
     println(
-        "-----------------------------------------------------------------------------------" +
-        "--------")
+      "-----------------------------------------------------------------------------------" +
+        "--------"
+    )
     results.zip(benchmarks).foreach {
       case (result, benchmark) =>
-        printf("%-35s %16s %12s %13s %10s\n",
-               benchmark.name,
-               "%5.0f / %4.0f" format (result.bestMs, result.avgMs),
-               "%10.1f" format result.bestRate,
-               "%6.1f" format (1000 / result.bestRate),
-               "%3.1fX" format (firstBest / result.bestMs))
+        printf(
+          "%-35s %16s %12s %13s %10s\n",
+          benchmark.name,
+          "%5.0f / %4.0f" format (result.bestMs, result.avgMs),
+          "%10.1f" format result.bestRate,
+          "%6.1f" format (1000 / result.bestRate),
+          "%3.1fX" format (firstBest / result.bestMs)
+        )
     }
     println
     // scalastyle:on
@@ -95,34 +101,36 @@ private[spark] object Benchmark {
     * This should return a user helpful processor information. Getting at this depends on the OS.
     * This should return something like "Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz"
     */
-  def getProcessorName(): String = {
+  def getProcessorName(): String =
     if (SystemUtils.IS_OS_MAC_OSX) {
       Utils.executeAndGetOutput(
-          Seq("/usr/sbin/sysctl", "-n", "machdep.cpu.brand_string"))
+        Seq("/usr/sbin/sysctl", "-n", "machdep.cpu.brand_string")
+      )
     } else if (SystemUtils.IS_OS_LINUX) {
       Try {
         val grepPath = Utils.executeAndGetOutput(Seq("which", "grep"))
         Utils.executeAndGetOutput(
-            Seq(grepPath, "-m", "1", "model name", "/proc/cpuinfo"))
+          Seq(grepPath, "-m", "1", "model name", "/proc/cpuinfo")
+        )
       }.getOrElse("Unknown processor")
     } else {
       System.getenv("PROCESSOR_IDENTIFIER")
     }
-  }
 
   /**
     * Runs a single function `f` for iters, returning the average time the function took and
     * the rate of the function.
     */
   def measure(num: Long, iters: Int, outputPerIteration: Boolean)(
-      f: Int => Unit): Result = {
+      f: Int => Unit
+  ): Result = {
     val runTimes = ArrayBuffer[Long]()
     for (i <- 0 until iters + 1) {
       val start = System.nanoTime()
 
       f(i)
 
-      val end = System.nanoTime()
+      val end     = System.nanoTime()
       val runTime = end - start
       if (i > 0) {
         runTimes += runTime
@@ -135,7 +143,7 @@ private[spark] object Benchmark {
       }
     }
     val best = runTimes.min
-    val avg = runTimes.sum / iters
+    val avg  = runTimes.sum / iters
     Result(avg / 1000000.0, num / (best / 1000.0), best / 1000000.0)
   }
 }

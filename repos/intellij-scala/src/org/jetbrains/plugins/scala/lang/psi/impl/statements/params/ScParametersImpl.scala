@@ -20,8 +20,11 @@ import org.jetbrains.plugins.scala.lang.psi.stubs.ScParamClausesStub
   * Date: 22.02.2008
   */
 class ScParametersImpl private (
-    stub: StubElement[ScParameters], nodeType: IElementType, node: ASTNode)
-    extends ScalaStubBasedElementImpl(stub, nodeType, node) with ScParameters {
+    stub: StubElement[ScParameters],
+    nodeType: IElementType,
+    node: ASTNode
+) extends ScalaStubBasedElementImpl(stub, nodeType, node)
+    with ScParameters {
 
   def this(node: ASTNode) = { this(null, null, node) }
   def this(stub: ScParamClausesStub) = {
@@ -30,18 +33,21 @@ class ScParametersImpl private (
 
   override def toString: String = "Parameters"
 
-  def clauses: Seq[ScParameterClause] = {
-    getStubOrPsiChildren(ScalaElementTypes.PARAM_CLAUSE,
-                         JavaArrayFactoryUtil.ScParameterClauseFactory).toSeq
-  }
+  def clauses: Seq[ScParameterClause] =
+    getStubOrPsiChildren(
+      ScalaElementTypes.PARAM_CLAUSE,
+      JavaArrayFactoryUtil.ScParameterClauseFactory
+    ).toSeq
 
-  override def processDeclarations(processor: PsiScopeProcessor,
-                                   state: ResolveState,
-                                   lastParent: PsiElement,
-                                   place: PsiElement): Boolean = {
+  override def processDeclarations(
+      processor: PsiScopeProcessor,
+      state: ResolveState,
+      lastParent: PsiElement,
+      place: PsiElement
+  ): Boolean = {
     if (lastParent != null) {
       val clausesIterator = clauses.iterator
-      var break = false
+      var break           = false
       while (clausesIterator.hasNext && !break) {
         val clause = clausesIterator.next()
         if (clause == lastParent) break = true
@@ -64,11 +70,11 @@ class ScParametersImpl private (
   override def accept(visitor: PsiElementVisitor) {
     visitor match {
       case s: ScalaElementVisitor => s.visitParameters(this)
-      case _ => super.accept(visitor)
+      case _                      => super.accept(visitor)
     }
   }
 
-  override def add(element: PsiElement): PsiElement = {
+  override def add(element: PsiElement): PsiElement =
     element match {
       case param: ScParameter =>
         clauses.lastOption match {
@@ -83,5 +89,4 @@ class ScParametersImpl private (
         }
       case _ => super.add(element)
     }
-  }
 }

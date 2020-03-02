@@ -20,12 +20,12 @@ object Test1 {
 object Test2 {
 
   object ThreadState extends Enumeration {
-    val New = Value("NEW");
-    val Runnable = Value("RUNNABLE");
-    val Blocked = Value("BLOCKED");
-    val Waiting = Value("WAITING");
+    val New          = Value("NEW");
+    val Runnable     = Value("RUNNABLE");
+    val Blocked      = Value("BLOCKED");
+    val Waiting      = Value("WAITING");
     val TimedWaiting = Value("TIMED_WAITING");
-    val Terminated = Value("TERMINATED");
+    val Terminated   = Value("TERMINATED");
   }
 
   def run: Int = {
@@ -39,13 +39,12 @@ object Test3 {
   object Direction extends Enumeration {
     val North = Value("North")
     val South = Value("South")
-    val East = Value("East")
-    val West = Value("West")
+    val East  = Value("East")
+    val West  = Value("West")
   }
 
   def run: Int = {
-    val it = for (d <- Direction.values; if d.toString() startsWith "N") yield
-      d;
+    val it = for (d <- Direction.values; if d.toString() startsWith "N") yield d;
     it.toList.length
   }
 }
@@ -55,8 +54,8 @@ object Test4 {
   object Direction extends Enumeration {
     val North = Value("North")
     val South = Value("South")
-    val East = Value("East")
-    val West = Value("West")
+    val East  = Value("East")
+    val West  = Value("West")
   }
 
   def run: Int = {
@@ -102,17 +101,17 @@ object Test5 {
 }
 
 object SerializationTest {
-  object Types extends Enumeration { val X, Y = Value }
-  class A extends java.io.Serializable { val types = Types.values }
-  class B extends java.io.Serializable { val types = Set(Types.X, Types.Y) }
+  object Types extends Enumeration          { val X, Y  = Value                 }
+  class A      extends java.io.Serializable { val types = Types.values          }
+  class B      extends java.io.Serializable { val types = Set(Types.X, Types.Y) }
 
   def serialize(obj: AnyRef) = {
     val baos = new java.io.ByteArrayOutputStream()
-    val oos = new java.io.ObjectOutputStream(baos)
+    val oos  = new java.io.ObjectOutputStream(baos)
     oos.writeObject(obj)
     oos.close()
-    val bais = new java.io.ByteArrayInputStream(baos.toByteArray)
-    val ois = new java.io.ObjectInputStream(bais)
+    val bais  = new java.io.ByteArrayInputStream(baos.toByteArray)
+    val ois   = new java.io.ObjectInputStream(bais)
     val prime = ois.readObject()
     ois.close()
     prime
@@ -140,9 +139,9 @@ object Test {
       }
     } catch {
       case exception: Throwable => {
-          Console.print(" raised exception " + exception);
-          exception.printStackTrace();
-        }
+        Console.print(" raised exception " + exception);
+        exception.printStackTrace();
+      }
     }
     Console.println;
   }

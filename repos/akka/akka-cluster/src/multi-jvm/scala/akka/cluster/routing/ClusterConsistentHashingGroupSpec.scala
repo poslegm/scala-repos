@@ -29,16 +29,17 @@ object ClusterConsistentHashingGroupMultiJvmSpec extends MultiNodeConfig {
     var receivedMessages = Set.empty[Any]
     def receive = {
       case Get ⇒ sender() ! Collected(receivedMessages)
-      case m ⇒ receivedMessages += m
+      case m   ⇒ receivedMessages += m
     }
   }
 
-  val first = role("first")
+  val first  = role("first")
   val second = role("second")
-  val third = role("third")
+  val third  = role("third")
 
   commonConfig(
-      debugConfig(on = false).withFallback(MultiNodeClusterSpec.clusterConfig))
+    debugConfig(on = false).withFallback(MultiNodeClusterSpec.clusterConfig)
+  )
 }
 
 class ClusterConsistentHashingGroupMultiJvmNode1
@@ -50,7 +51,9 @@ class ClusterConsistentHashingGroupMultiJvmNode3
 
 abstract class ClusterConsistentHashingGroupSpec
     extends MultiNodeSpec(ClusterConsistentHashingGroupMultiJvmSpec)
-    with MultiNodeClusterSpec with ImplicitSender with DefaultTimeout {
+    with MultiNodeClusterSpec
+    with ImplicitSender
+    with DefaultTimeout {
   import ClusterConsistentHashingGroupMultiJvmSpec._
 
   /**
@@ -59,7 +62,7 @@ abstract class ClusterConsistentHashingGroupSpec
   private def fullAddress(actorRef: ActorRef): Address =
     actorRef.path.address match {
       case Address(_, _, None, None) ⇒ cluster.selfAddress
-      case a ⇒ a
+      case a                         ⇒ a
     }
 
   def currentRoutees(router: ActorRef) =
@@ -81,15 +84,19 @@ abstract class ClusterConsistentHashingGroupSpec
       }
       val paths = List("/user/dest")
       val router = system.actorOf(
-          ClusterRouterGroup(
-              local = ConsistentHashingGroup(paths, hashMapping = hashMapping),
-              settings = ClusterRouterGroupSettings(totalInstances = 10,
-                                                    paths,
-                                                    allowLocalRoutees = true,
-                                                    useRole = None)).props(),
-          "router")
+        ClusterRouterGroup(
+          local = ConsistentHashingGroup(paths, hashMapping = hashMapping),
+          settings = ClusterRouterGroupSettings(
+            totalInstances = 10,
+            paths,
+            allowLocalRoutees = true,
+            useRole = None
+          )
+        ).props(),
+        "router"
+      )
       // it may take some time until router receives cluster member events
-      awaitAssert { currentRoutees(router).size should ===(3) }
+      awaitAssert(currentRoutees(router).size should ===(3))
       val keys = List("A", "B", "C", "D", "E", "F", "G")
       for (_ ← 1 to 10; k ← keys) { router ! k }
       enterBarrier("messages-sent")

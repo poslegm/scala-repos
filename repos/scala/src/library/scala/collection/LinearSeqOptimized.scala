@@ -47,7 +47,7 @@ trait LinearSeqOptimized[+A, +Repr <: LinearSeqOptimized[A, Repr]]
     */
   def length: Int = {
     var these = self
-    var len = 0
+    var len   = 0
     while (!these.isEmpty) {
       len += 1
       these = these.tail
@@ -116,7 +116,7 @@ trait LinearSeqOptimized[+A, +Repr <: LinearSeqOptimized[A, Repr]]
 
   override /*TraversableLike*/
   def foldLeft[B](z: B)(@deprecatedName('f) op: (B, A) => B): B = {
-    var acc = z
+    var acc   = z
     var these = this
     while (!these.isEmpty) {
       acc = op(acc, these.head)
@@ -145,7 +145,7 @@ trait LinearSeqOptimized[+A, +Repr <: LinearSeqOptimized[A, Repr]]
   def last: A = {
     if (isEmpty) throw new NoSuchElementException
     var these = this
-    var nx = these.tail
+    var nx    = these.tail
     while (!nx.isEmpty) {
       these = nx
       nx = nx.tail
@@ -155,8 +155,8 @@ trait LinearSeqOptimized[+A, +Repr <: LinearSeqOptimized[A, Repr]]
 
   override /*IterableLike*/
   def take(n: Int): Repr = {
-    val b = newBuilder
-    var i = 0
+    val b     = newBuilder
+    var i     = 0
     var these = repr
     while (!these.isEmpty && i < n) {
       i += 1
@@ -169,7 +169,7 @@ trait LinearSeqOptimized[+A, +Repr <: LinearSeqOptimized[A, Repr]]
   override /*TraversableLike*/
   def drop(n: Int): Repr = {
     var these: Repr = repr
-    var count = n
+    var count       = n
     while (!these.isEmpty && count > 0) {
       these = these.tail
       count -= 1
@@ -190,9 +190,9 @@ trait LinearSeqOptimized[+A, +Repr <: LinearSeqOptimized[A, Repr]]
 
   override /*IterableLike*/
   def dropRight(n: Int): Repr = {
-    val b = newBuilder
+    val b     = newBuilder
     var these = this
-    var lead = this drop n
+    var lead  = this drop n
     while (!lead.isEmpty) {
       b += these.head
       these = these.tail
@@ -204,10 +204,10 @@ trait LinearSeqOptimized[+A, +Repr <: LinearSeqOptimized[A, Repr]]
   override /*IterableLike*/
   def slice(from: Int, until: Int): Repr = {
     var these: Repr = repr
-    var count = from max 0
+    var count       = from max 0
     if (until <= count) return newBuilder.result()
 
-    val b = newBuilder
+    val b          = newBuilder
     var sliceElems = until - count
     while (these.nonEmpty && count > 0) {
       these = these.tail
@@ -223,7 +223,7 @@ trait LinearSeqOptimized[+A, +Repr <: LinearSeqOptimized[A, Repr]]
 
   override /*IterableLike*/
   def takeWhile(p: A => Boolean): Repr = {
-    val b = newBuilder
+    val b     = newBuilder
     var these = this
     while (!these.isEmpty && p(these.head)) {
       b += these.head
@@ -235,7 +235,7 @@ trait LinearSeqOptimized[+A, +Repr <: LinearSeqOptimized[A, Repr]]
   override /*TraversableLike*/
   def span(p: A => Boolean): (Repr, Repr) = {
     var these: Repr = repr
-    val b = newBuilder
+    val b           = newBuilder
     while (!these.isEmpty && p(these.head)) {
       b += these.head
       these = these.tail
@@ -262,11 +262,10 @@ trait LinearSeqOptimized[+A, +Repr <: LinearSeqOptimized[A, Repr]]
 
   override /*SeqLike*/
   def lengthCompare(len: Int): Int = {
-    @tailrec def loop(i: Int, xs: Repr): Int = {
+    @tailrec def loop(i: Int, xs: Repr): Int =
       if (i == len) if (xs.isEmpty) 0 else 1
       else if (xs.isEmpty) -1
       else loop(i + 1, xs.tail)
-    }
     if (len < 0) 1
     else loop(0, this)
   }
@@ -276,7 +275,7 @@ trait LinearSeqOptimized[+A, +Repr <: LinearSeqOptimized[A, Repr]]
 
   override /*SeqLike*/
   def segmentLength(p: A => Boolean, from: Int): Int = {
-    var i = 0
+    var i     = 0
     var these = this drop from
     while (!these.isEmpty && p(these.head)) {
       i += 1
@@ -287,7 +286,7 @@ trait LinearSeqOptimized[+A, +Repr <: LinearSeqOptimized[A, Repr]]
 
   override /*SeqLike*/
   def indexWhere(p: A => Boolean, from: Int): Int = {
-    var i = from
+    var i     = from
     var these = this drop from
     while (these.nonEmpty) {
       if (p(these.head)) return i
@@ -300,9 +299,9 @@ trait LinearSeqOptimized[+A, +Repr <: LinearSeqOptimized[A, Repr]]
 
   override /*SeqLike*/
   def lastIndexWhere(p: A => Boolean, end: Int): Int = {
-    var i = 0
+    var i     = 0
     var these = this
-    var last = -1
+    var last  = -1
     while (!these.isEmpty && i <= end) {
       if (p(these.head)) last = i
       these = these.tail

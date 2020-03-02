@@ -14,6 +14,6 @@ class S8() {
   class B() {}
 }
 object M {
-  val x = new S8();
+  val x        = new S8();
   val y: x.a.B = new x.A(); //correct?
 }

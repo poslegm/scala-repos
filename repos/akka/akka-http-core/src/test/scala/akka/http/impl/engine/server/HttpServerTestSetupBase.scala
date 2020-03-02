@@ -23,31 +23,39 @@ abstract class HttpServerTestSetupBase {
   implicit def system: ActorSystem
   implicit def materializer: Materializer
 
-  val requests = TestSubscriber.probe[HttpRequest]
+  val requests  = TestSubscriber.probe[HttpRequest]
   val responses = TestPublisher.probe[HttpResponse]()
 
   def settings =
     ServerSettings(system).withServerHeader(
-        Some(Server(List(ProductVersion("akka-http", "test")))))
+      Some(Server(List(ProductVersion("akka-http", "test"))))
+    )
   def remoteAddress: Option[InetSocketAddress] = None
 
   val (netIn, netOut) = {
-    val netIn = TestPublisher.probe[ByteString]()
+    val netIn  = TestPublisher.probe[ByteString]()
     val netOut = ByteStringSinkProbe()
 
     RunnableGraph
-      .fromGraph(GraphDSL.create(HttpServerBluePrint(
-                  settings, remoteAddress = remoteAddress, log = NoLogging)) {
-        implicit b ⇒ server ⇒
+      .fromGraph(
+        GraphDSL.create(
+          HttpServerBluePrint(
+            settings,
+            remoteAddress = remoteAddress,
+            log = NoLogging
+          )
+        ) { implicit b ⇒ server ⇒
           import GraphDSL.Implicits._
-          Source.fromPublisher(netIn) ~> Flow[ByteString].map(
-              SessionBytes(null, _)) ~> server.in2
-          server.out1 ~> Flow[SslTlsOutbound].collect { case SendBytes(x) ⇒ x }
+          Source.fromPublisher(netIn) ~> Flow[ByteString]
+            .map(SessionBytes(null, _)) ~> server.in2
+          server.out1 ~> Flow[SslTlsOutbound]
+            .collect { case SendBytes(x) ⇒ x }
             .buffer(1, OverflowStrategy.backpressure) ~> netOut.sink
           server.out2 ~> Sink.fromSubscriber(requests)
           Source.fromPublisher(responses) ~> server.in1
           ClosedShape
-      })
+        }
+      )
       .run()
 
     netIn -> netOut
@@ -57,9 +65,11 @@ abstract class HttpServerTestSetupBase {
     val trimmed = expected.stripMarginWithNewline("\r\n")
     // XXXX = 4 bytes, ISO Date Time String = 29 bytes => need to request 25 bytes more than expected string
     val expectedSize = ByteString(trimmed, "utf8").length + 25
-    val received = wipeDate(netOut.expectBytes(expectedSize).utf8String)
-    assert(received == trimmed,
-           s"Expected request '$trimmed' but got '$received'")
+    val received     = wipeDate(netOut.expectBytes(expectedSize).utf8String)
+    assert(
+      received == trimmed,
+      s"Expected request '$trimmed' but got '$received'"
+    )
   }
 
   def wipeDate(string: String) =
@@ -67,13 +77,13 @@ abstract class HttpServerTestSetupBase {
       .fastSplit('\n')
       .map {
         case s if s.startsWith("Date:") ⇒ "Date: XXXX\r"
-        case s ⇒ s
+        case s                          ⇒ s
       }
       .mkString("\n")
 
-  def expectRequest(): HttpRequest = requests.requestNext()
+  def expectRequest(): HttpRequest               = requests.requestNext()
   def expectNoRequest(max: FiniteDuration): Unit = requests.expectNoMsg(max)
-  def expectSubscribe(): Unit = netOut.expectComplete()
+  def expectSubscribe(): Unit                    = netOut.expectComplete()
   def expectSubscribeAndNetworkClose(): Unit =
     netOut.expectSubscriptionAndComplete()
   def expectNetworkClose(): Unit = netOut.expectComplete()

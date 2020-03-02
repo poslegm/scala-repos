@@ -8,7 +8,7 @@ object TestCase {
   implicit def map2ops[T, F](fs: Map[T, F]) = new MapOps[F] {
     //if you remove this line, then code compiles
     lazy val m: Manifest[T] = sys.error("just something to make it compile")
-    def is(xs: List[T]) = List(xs)
+    def is(xs: List[T])     = List(xs)
   }
 
   def main(args: Array[String]) {

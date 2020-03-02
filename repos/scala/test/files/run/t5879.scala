@@ -26,7 +26,7 @@ object Test {
       a
     }
 
-    val r = a.merged(b) { collision }
+    val r = a.merged(b)(collision)
     println(r)
     println(r(1))
   }
@@ -39,7 +39,7 @@ object Test {
       b
     }
 
-    val r = a.merged(b) { collision }
+    val r = a.merged(b)(collision)
     println(r)
     println(r(1))
   }
@@ -47,11 +47,10 @@ object Test {
   def resolveMany() {
     val a = HashMap((0 until 100) zip (0 until 100): _*)
     val b = HashMap((0 until 100) zip (100 until 200): _*)
-    def collision(a: (Int, Int), b: (Int, Int)) = {
+    def collision(a: (Int, Int), b: (Int, Int)) =
       (a._1, a._2 + b._2)
-    }
 
-    val r = a.merged(b) { collision }
+    val r = a.merged(b)(collision)
     for ((k, v) <- r) assert(v == 100 + 2 * k, (k, v))
   }
 }

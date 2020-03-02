@@ -27,21 +27,24 @@ import org.apache.kafka.common.protocol.{ApiKeys, Errors}
 import scala.collection.mutable.ListBuffer
 
 object TopicMetadataRequest extends Logging {
-  val CurrentVersion = 0.shortValue
+  val CurrentVersion  = 0.shortValue
   val DefaultClientId = ""
 }
 
-case class TopicMetadataRequest(versionId: Short,
-                                correlationId: Int,
-                                clientId: String,
-                                topics: Seq[String])
-    extends RequestOrResponse(Some(ApiKeys.METADATA.id)) {
+case class TopicMetadataRequest(
+    versionId: Short,
+    correlationId: Int,
+    clientId: String,
+    topics: Seq[String]
+) extends RequestOrResponse(Some(ApiKeys.METADATA.id)) {
 
   def this(topics: Seq[String], correlationId: Int) =
-    this(TopicMetadataRequest.CurrentVersion,
-         correlationId,
-         TopicMetadataRequest.DefaultClientId,
-         topics)
+    this(
+      TopicMetadataRequest.CurrentVersion,
+      correlationId,
+      TopicMetadataRequest.DefaultClientId,
+      topics
+    )
 
   def writeTo(buffer: ByteBuffer) {
     buffer.putShort(versionId)
@@ -51,30 +54,32 @@ case class TopicMetadataRequest(versionId: Short,
     topics.foreach(topic => writeShortString(buffer, topic))
   }
 
-  def sizeInBytes(): Int = {
+  def sizeInBytes(): Int =
     2 + /* version id */
     4 + /* correlation id */
     shortStringLength(clientId) + /* client id */
     4 + /* number of topics */
     topics.foldLeft(0)(_ + shortStringLength(_)) /* topics */
-  }
 
-  override def toString(): String = {
+  override def toString(): String =
     describe(true)
-  }
 
-  override def handleError(e: Throwable,
-                           requestChannel: RequestChannel,
-                           request: RequestChannel.Request): Unit = {
+  override def handleError(
+      e: Throwable,
+      requestChannel: RequestChannel,
+      request: RequestChannel.Request
+  ): Unit = {
     val topicMetadata = topics.map { topic =>
       TopicMetadata(topic, Nil, Errors.forException(e).code)
     }
-    val errorResponse = TopicMetadataResponse(
-        Seq(), topicMetadata, correlationId)
+    val errorResponse =
+      TopicMetadataResponse(Seq(), topicMetadata, correlationId)
     requestChannel.sendResponse(
-        new Response(
-            request,
-            new RequestOrResponseSend(request.connectionId, errorResponse)))
+      new Response(
+        request,
+        new RequestOrResponseSend(request.connectionId, errorResponse)
+      )
+    )
   }
 
   override def describe(details: Boolean): String = {

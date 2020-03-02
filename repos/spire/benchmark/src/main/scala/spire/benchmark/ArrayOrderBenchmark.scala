@@ -43,7 +43,7 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   }
 
   def directCompare(x: Array[Int], y: Array[Int]): Int = {
-    var i = 0
+    var i  = 0
     val ev = Order[Int]
     while (i < x.length && i < y.length) {
       val cmp = ev.compare(x(i), y(i))
@@ -53,8 +53,10 @@ class ArrayOrderBenchmarks extends MyBenchmark {
     x.length - y.length
   }
 
-  def indirectAdd[@sp(Int) A : ClassTag : Ring](
-      x: Array[A], y: Array[A]): Array[A] =
+  def indirectAdd[@sp(Int) A: ClassTag: Ring](
+      x: Array[A],
+      y: Array[A]
+  ): Array[A] =
     spire.std.ArraySupport.plus(x, y)
 
   def directAdd(x: Array[Int], y: Array[Int]): Array[Int] = {
@@ -72,7 +74,7 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   // def timeCompareGeneric(reps: Int) = run(reps) { a compare b }
   // def timeCompareDirect(reps: Int) = run(reps) { directCompare(a, b) }
 
-  def timeAddGeneric(reps: Int) = run(reps) { a + b }
-  def timeAddIndirect(reps: Int) = run(reps) { indirectAdd(a, b) }
-  def timeAddDirect(reps: Int) = run(reps) { directAdd(a, b) }
+  def timeAddGeneric(reps: Int)  = run(reps)(a + b)
+  def timeAddIndirect(reps: Int) = run(reps)(indirectAdd(a, b))
+  def timeAddDirect(reps: Int)   = run(reps)(directAdd(a, b))
 }

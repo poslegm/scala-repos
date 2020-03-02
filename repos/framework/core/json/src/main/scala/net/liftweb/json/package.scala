@@ -21,7 +21,7 @@ package object json {
 
   type JValue = JsonAST.JValue
   val JNothing = JsonAST.JNothing
-  val JNull = JsonAST.JNull
+  val JNull    = JsonAST.JNull
   type JString = JsonAST.JString
   val JString = JsonAST.JString
   type JDouble = JsonAST.JDouble
@@ -37,11 +37,13 @@ package object json {
   type JArray = JsonAST.JArray
   val JArray = JsonAST.JArray
 
-  def parse(s: String): JValue = JsonParser.parse(s)
+  def parse(s: String): JValue            = JsonParser.parse(s)
   def parseOpt(s: String): Option[JValue] = JsonParser.parseOpt(s)
 
   @deprecated(
-      "Please switch to using prettyRender or compactRender instead.", "3.0")
+    "Please switch to using prettyRender or compactRender instead.",
+    "3.0"
+  )
   def render(value: JValue): JsonAST.RenderIntermediaryDocument =
     JsonAST.render(value)
 
@@ -52,6 +54,6 @@ package object json {
   @deprecated("Please switch to using prettyRender instead.", "3.0")
   def pretty(d: JsonAST.RenderIntermediaryDocument): String = Printer.pretty(d)
 
-  def prettyRender(value: JValue): String = JsonAST.prettyRender(value)
+  def prettyRender(value: JValue): String  = JsonAST.prettyRender(value)
   def compactRender(value: JValue): String = JsonAST.compactRender(value)
 }

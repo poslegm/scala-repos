@@ -15,7 +15,7 @@ class ParameterTest extends FunSuite {
     }
 
     locally {
-      val y: String = null
+      val y: String    = null
       val x: Parameter = y
       assert(x == NullParameter)
     }

@@ -12,12 +12,11 @@ class XmlUnmatchedTagInspectionTest
     extends ScalaLightCodeInsightFixtureTestAdapter {
   val noOpeningTagError = ScalaBundle.message("xml.no.opening.tag")
   val noClosingTagError = ScalaBundle.message("xml.no.closing.tag")
-  val s = ScalaLightCodeInsightFixtureTestAdapter.SELECTION_START
-  val e = ScalaLightCodeInsightFixtureTestAdapter.SELECTION_END
+  val s                 = ScalaLightCodeInsightFixtureTestAdapter.SELECTION_START
+  val e                 = ScalaLightCodeInsightFixtureTestAdapter.SELECTION_END
 
   private def check(text: String, annotation: String) {
-    checkTextHasError(
-        text, annotation, classOf[ScalaXmlUnmatchedTagInspection])
+    checkTextHasError(text, annotation, classOf[ScalaXmlUnmatchedTagInspection])
   }
 
   def testSimpleClosingError() {

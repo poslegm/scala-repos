@@ -22,20 +22,28 @@ class FlatClassPathResolverTest {
   val tempDir = new TemporaryFolder()
 
   private val packagesToTest = List(
-      FlatClassPath.RootPackage, "scala", "scala.reflect", "scala.reflect.io")
-  private val classFilesToFind = List("scala.tools.util.FlatClassPathResolver",
-                                      "scala.reflect.io.AbstractFile",
-                                      "scala.collection.immutable.List",
-                                      "scala.Option",
-                                      "scala.collection.immutable.Vector",
-                                      "scala.util.hashing.MurmurHash3",
-                                      "java.lang.Object",
-                                      "java.util.Date")
+    FlatClassPath.RootPackage,
+    "scala",
+    "scala.reflect",
+    "scala.reflect.io"
+  )
+  private val classFilesToFind = List(
+    "scala.tools.util.FlatClassPathResolver",
+    "scala.reflect.io.AbstractFile",
+    "scala.collection.immutable.List",
+    "scala.Option",
+    "scala.collection.immutable.Vector",
+    "scala.util.hashing.MurmurHash3",
+    "java.lang.Object",
+    "java.util.Date"
+  )
 
   private val classesToFind =
-    classFilesToFind ++ List("TestSourceInRootPackage",
-                             "scala.reflect.io.TestScalaSource",
-                             "scala.reflect.io.TestJavaSource")
+    classFilesToFind ++ List(
+      "TestSourceInRootPackage",
+      "scala.reflect.io.TestScalaSource",
+      "scala.reflect.io.TestJavaSource"
+    )
 
   private val settings = new Settings
 
@@ -70,40 +78,44 @@ class FlatClassPathResolverTest {
 
     def compareEntriesInPackage(inPackage: String): Unit = {
       val packages = classPath.packages(inPackage)
-      val classes = classPath.classes(inPackage)
-      val sources = classPath.sources(inPackage)
+      val classes  = classPath.classes(inPackage)
+      val sources  = classPath.sources(inPackage)
       val FlatClassPathEntries(packagesFromList, classesAndSourcesFromList) =
         classPath.list(inPackage)
 
-      val packageNames = packages.map(_.name).sorted
+      val packageNames         = packages.map(_.name).sorted
       val packageNamesFromList = packagesFromList.map(_.name).sorted
       assertEquals(
-          s"Methods list and packages for package '$inPackage' should return the same packages",
-          packageNames,
-          packageNamesFromList)
+        s"Methods list and packages for package '$inPackage' should return the same packages",
+        packageNames,
+        packageNamesFromList
+      )
 
       val classFileNames = classes.map(_.name).sorted
       val classFileNamesFromList =
         classesAndSourcesFromList.filter(_.binary.isDefined).map(_.name).sorted
       assertEquals(
-          s"Methods list and classes for package '$inPackage' should return entries for the same class files",
-          classFileNames,
-          classFileNamesFromList)
+        s"Methods list and classes for package '$inPackage' should return entries for the same class files",
+        classFileNames,
+        classFileNamesFromList
+      )
 
       val sourceFileNames = sources.map(_.name).sorted
       val sourceFileNamesFromList =
         classesAndSourcesFromList.filter(_.source.isDefined).map(_.name).sorted
       assertEquals(
-          s"Methods list and sources for package '$inPackage' should return entries for the same source files",
-          sourceFileNames,
-          sourceFileNamesFromList)
+        s"Methods list and sources for package '$inPackage' should return entries for the same source files",
+        sourceFileNames,
+        sourceFileNamesFromList
+      )
 
       val uniqueNamesOfClassAndSourceFiles =
         (classFileNames ++ sourceFileNames).toSet
       assertEquals(
-          s"Class and source entries with the same name obtained via list for package '$inPackage' should be merged into one containing both files",
-          uniqueNamesOfClassAndSourceFiles.size,
-          classesAndSourcesFromList.length)
+        s"Class and source entries with the same name obtained via list for package '$inPackage' should be merged into one containing both files",
+        uniqueNamesOfClassAndSourceFiles.size,
+        classesAndSourcesFromList.length
+      )
     }
 
     packagesToTest foreach compareEntriesInPackage
@@ -111,7 +123,7 @@ class FlatClassPathResolverTest {
 
   @Test
   def testCreatedEntriesAgainstRecursiveClassPath: Unit = {
-    val flatClassPath = createFlatClassPath(settings)
+    val flatClassPath      = createFlatClassPath(settings)
     val recursiveClassPath = new PathResolver(settings).result
 
     def compareEntriesInPackage(inPackage: String): Unit = {
@@ -119,7 +131,8 @@ class FlatClassPathResolverTest {
       @tailrec
       def traverseToPackage(
           packageNameParts: Seq[String],
-          cp: ClassPath[AbstractFile]): ClassPath[AbstractFile] = {
+          cp: ClassPath[AbstractFile]
+      ): ClassPath[AbstractFile] =
         packageNameParts match {
           case Nil => cp
           case h :: t =>
@@ -127,25 +140,26 @@ class FlatClassPathResolverTest {
               case Some(nestedCp) => traverseToPackage(t, nestedCp)
               case _ =>
                 throw new Exception(
-                    s"There's no package $inPackage in recursive classpath - error when searching for '$h'")
+                  s"There's no package $inPackage in recursive classpath - error when searching for '$h'"
+                )
             }
         }
-      }
 
       val packageNameParts =
         if (inPackage == FlatClassPath.RootPackage) Nil
         else inPackage.split('.').toList
-      val recursiveClassPathInPackage = traverseToPackage(
-          packageNameParts, recursiveClassPath)
+      val recursiveClassPathInPackage =
+        traverseToPackage(packageNameParts, recursiveClassPath)
 
       val flatCpPackages = flatClassPath.packages(inPackage).map(_.name)
-      val pkgPrefix = PackageNameUtils.packagePrefix(inPackage)
+      val pkgPrefix      = PackageNameUtils.packagePrefix(inPackage)
       val recursiveCpPackages =
         recursiveClassPathInPackage.packages.map(pkgPrefix + _.name)
       assertEquals(
-          s"Packages in package '$inPackage' on flat cp should be the same as on the recursive cp",
-          recursiveCpPackages,
-          flatCpPackages)
+        s"Packages in package '$inPackage' on flat cp should be the same as on the recursive cp",
+        recursiveCpPackages,
+        flatCpPackages
+      )
 
       val flatCpSources = flatClassPath.sources(inPackage).map(_.name).sorted
       val recursiveCpSources = recursiveClassPathInPackage.classes
@@ -153,9 +167,10 @@ class FlatClassPathResolverTest {
         .map(_.name)
         .sorted
       assertEquals(
-          s"Source entries in package '$inPackage' on flat cp should be the same as on the recursive cp",
-          recursiveCpSources,
-          flatCpSources)
+        s"Source entries in package '$inPackage' on flat cp should be the same as on the recursive cp",
+        recursiveCpSources,
+        flatCpSources
+      )
 
       val flatCpClasses = flatClassPath.classes(inPackage).map(_.name).sorted
       val recursiveCpClasses = recursiveClassPathInPackage.classes
@@ -163,9 +178,10 @@ class FlatClassPathResolverTest {
         .map(_.name)
         .sorted
       assertEquals(
-          s"Class entries in package '$inPackage' on flat cp should be the same as on the recursive cp",
-          recursiveCpClasses,
-          flatCpClasses)
+        s"Class entries in package '$inPackage' on flat cp should be the same as on the recursive cp",
+        recursiveCpClasses,
+        flatCpClasses
+      )
     }
 
     packagesToTest foreach compareEntriesInPackage
@@ -175,8 +191,10 @@ class FlatClassPathResolverTest {
   def testFindClassFile: Unit = {
     val classPath = createFlatClassPath(settings)
     classFilesToFind foreach { className =>
-      assertTrue(s"File for $className should be found",
-                 classPath.findClassFile(className).isDefined)
+      assertTrue(
+        s"File for $className should be found",
+        classPath.findClassFile(className).isDefined
+      )
     }
   }
 
@@ -184,8 +202,10 @@ class FlatClassPathResolverTest {
   def testFindClass: Unit = {
     val classPath = createFlatClassPath(settings)
     classesToFind foreach { className =>
-      assertTrue(s"File for $className should be found",
-                 classPath.findClass(className).isDefined)
+      assertTrue(
+        s"File for $className should be found",
+        classPath.findClass(className).isDefined
+      )
     }
   }
 }

@@ -36,14 +36,14 @@ class SparkContextInfoSuite extends SparkFunSuite with LocalSparkContext {
 
   test("getPersistentRDDs returns an immutable map") {
     sc = new SparkContext("local", "test")
-    val rdd1 = sc.makeRDD(Array(1, 2, 3, 4), 2).cache()
+    val rdd1   = sc.makeRDD(Array(1, 2, 3, 4), 2).cache()
     val myRdds = sc.getPersistentRDDs
     assert(myRdds.size === 1)
     assert(myRdds(0) === rdd1)
     assert(myRdds(0).getStorageLevel === StorageLevel.MEMORY_ONLY)
 
     // myRdds2 should have 2 RDDs, but myRdds should not change
-    val rdd2 = sc.makeRDD(Array(5, 6, 7, 8), 1).cache()
+    val rdd2    = sc.makeRDD(Array(5, 6, 7, 8), 1).cache()
     val myRdds2 = sc.getPersistentRDDs
     assert(myRdds2.size === 2)
     assert(myRdds2(0) === rdd1)
@@ -77,26 +77,28 @@ package object testPackage extends Assertions {
   private val CALL_SITE_REGEX = "(.+) at (.+):([0-9]+)".r
 
   def runCallSiteTest(sc: SparkContext) {
-    val rdd = sc.makeRDD(Array(1, 2, 3, 4), 2)
+    val rdd             = sc.makeRDD(Array(1, 2, 3, 4), 2)
     val rddCreationSite = rdd.getCreationSite
     val curCallSite =
       sc.getCallSite().shortForm // note: 2 lines after definition of "rdd"
 
     val rddCreationLine = rddCreationSite match {
       case CALL_SITE_REGEX(func, file, line) => {
-          assert(func === "makeRDD")
-          assert(file === "SparkContextInfoSuite.scala")
-          line.toInt
-        }
+        assert(func === "makeRDD")
+        assert(file === "SparkContextInfoSuite.scala")
+        line.toInt
+      }
       case _ => fail("Did not match expected call site format")
     }
 
     curCallSite match {
       case CALL_SITE_REGEX(func, file, line) => {
-          assert(func === "getCallSite") // this is correct because we called it from outside of Spark
-          assert(file === "SparkContextInfoSuite.scala")
-          assert(line.toInt === rddCreationLine.toInt + 2)
-        }
+        assert(
+          func === "getCallSite"
+        ) // this is correct because we called it from outside of Spark
+        assert(file === "SparkContextInfoSuite.scala")
+        assert(line.toInt === rddCreationLine.toInt + 2)
+      }
       case _ => fail("Did not match expected call site format")
     }
   }

@@ -44,7 +44,8 @@ import org.apache.spark.rdd.{EmptyRDD, HadoopRDD, NewHadoopRDD, RDD}
   * creating a new one.  This limitation may eventually be removed; see SPARK-2243 for more details.
   */
 class JavaSparkContext(val sc: SparkContext)
-    extends JavaSparkContextVarargsWorkaround with Closeable {
+    extends JavaSparkContextVarargsWorkaround
+    with Closeable {
 
   /**
     * Create a JavaSparkContext that loads settings from system properties (for instance, when
@@ -80,7 +81,11 @@ class JavaSparkContext(val sc: SparkContext)
     *                or an HDFS, HTTP, HTTPS, or FTP URL.
     */
   def this(
-      master: String, appName: String, sparkHome: String, jarFile: String) =
+      master: String,
+      appName: String,
+      sparkHome: String,
+      jarFile: String
+  ) =
     this(new SparkContext(master, appName, sparkHome, Seq(jarFile)))
 
   /**
@@ -90,10 +95,12 @@ class JavaSparkContext(val sc: SparkContext)
     * @param jars Collection of JARs to send to the cluster. These can be paths on the local file
     *             system or HDFS, HTTP, HTTPS, or FTP URLs.
     */
-  def this(master: String,
-           appName: String,
-           sparkHome: String,
-           jars: Array[String]) =
+  def this(
+      master: String,
+      appName: String,
+      sparkHome: String,
+      jars: Array[String]
+  ) =
     this(new SparkContext(master, appName, sparkHome, jars.toSeq))
 
   /**
@@ -104,14 +111,22 @@ class JavaSparkContext(val sc: SparkContext)
     *             system or HDFS, HTTP, HTTPS, or FTP URLs.
     * @param environment Environment variables to set on worker nodes
     */
-  def this(master: String,
-           appName: String,
-           sparkHome: String,
-           jars: Array[String],
-           environment: JMap[String, String]) =
+  def this(
+      master: String,
+      appName: String,
+      sparkHome: String,
+      jars: Array[String],
+      environment: JMap[String, String]
+  ) =
     this(
-        new SparkContext(
-            master, appName, sparkHome, jars.toSeq, environment.asScala))
+      new SparkContext(
+        master,
+        appName,
+        sparkHome,
+        jars.toSeq,
+        environment.asScala
+      )
+    )
 
   private[spark] val env = sc.env
 
@@ -155,8 +170,10 @@ class JavaSparkContext(val sc: SparkContext)
     parallelize(list, sc.defaultParallelism)
 
   /** Distribute a local Scala collection to form an RDD. */
-  def parallelizePairs[K, V](list: java.util.List[Tuple2[K, V]],
-                             numSlices: Int): JavaPairRDD[K, V] = {
+  def parallelizePairs[K, V](
+      list: java.util.List[Tuple2[K, V]],
+      numSlices: Int
+  ): JavaPairRDD[K, V] = {
     implicit val ctagK: ClassTag[K] = fakeClassTag
     implicit val ctagV: ClassTag[V] = fakeClassTag
     JavaPairRDD.fromRDD(sc.parallelize(list.asScala, numSlices))
@@ -164,18 +181,23 @@ class JavaSparkContext(val sc: SparkContext)
 
   /** Distribute a local Scala collection to form an RDD. */
   def parallelizePairs[K, V](
-      list: java.util.List[Tuple2[K, V]]): JavaPairRDD[K, V] =
+      list: java.util.List[Tuple2[K, V]]
+  ): JavaPairRDD[K, V] =
     parallelizePairs(list, sc.defaultParallelism)
 
   /** Distribute a local Scala collection to form an RDD. */
   def parallelizeDoubles(
-      list: java.util.List[java.lang.Double], numSlices: Int): JavaDoubleRDD =
+      list: java.util.List[java.lang.Double],
+      numSlices: Int
+  ): JavaDoubleRDD =
     JavaDoubleRDD.fromRDD(
-        sc.parallelize(list.asScala.map(_.doubleValue()), numSlices))
+      sc.parallelize(list.asScala.map(_.doubleValue()), numSlices)
+    )
 
   /** Distribute a local Scala collection to form an RDD. */
   def parallelizeDoubles(
-      list: java.util.List[java.lang.Double]): JavaDoubleRDD =
+      list: java.util.List[java.lang.Double]
+  ): JavaDoubleRDD =
     parallelizeDoubles(list, sc.defaultParallelism)
 
   /**
@@ -222,7 +244,9 @@ class JavaSparkContext(val sc: SparkContext)
     * @param minPartitions A suggestion value of the minimal splitting number for input data.
     */
   def wholeTextFiles(
-      path: String, minPartitions: Int): JavaPairRDD[String, String] =
+      path: String,
+      minPartitions: Int
+  ): JavaPairRDD[String, String] =
     new JavaPairRDD(sc.wholeTextFiles(path, minPartitions))
 
   /**
@@ -266,7 +290,8 @@ class JavaSparkContext(val sc: SparkContext)
     */
   def binaryFiles(
       path: String,
-      minPartitions: Int): JavaPairRDD[String, PortableDataStream] =
+      minPartitions: Int
+  ): JavaPairRDD[String, PortableDataStream] =
     new JavaPairRDD(sc.binaryFiles(path, minPartitions))
 
   /**
@@ -305,9 +330,8 @@ class JavaSparkContext(val sc: SparkContext)
     * @param path Directory to the input data files
     * @return An RDD of data with values, represented as byte arrays
     */
-  def binaryRecords(path: String, recordLength: Int): JavaRDD[Array[Byte]] = {
+  def binaryRecords(path: String, recordLength: Int): JavaRDD[Array[Byte]] =
     new JavaRDD(sc.binaryRecords(path, recordLength))
-  }
 
   /** Get an RDD for a Hadoop SequenceFile with given key and value types.
     *
@@ -316,10 +340,12 @@ class JavaSparkContext(val sc: SparkContext)
     * If you plan to directly cache Hadoop writable objects, you should first copy them using
     * a `map` function.
     * */
-  def sequenceFile[K, V](path: String,
-                         keyClass: Class[K],
-                         valueClass: Class[V],
-                         minPartitions: Int): JavaPairRDD[K, V] = {
+  def sequenceFile[K, V](
+      path: String,
+      keyClass: Class[K],
+      valueClass: Class[V],
+      minPartitions: Int
+  ): JavaPairRDD[K, V] = {
     implicit val ctagK: ClassTag[K] = ClassTag(keyClass)
     implicit val ctagV: ClassTag[V] = ClassTag(valueClass)
     new JavaPairRDD(sc.sequenceFile(path, keyClass, valueClass, minPartitions))
@@ -332,9 +358,11 @@ class JavaSparkContext(val sc: SparkContext)
     * If you plan to directly cache Hadoop writable objects, you should first copy them using
     * a `map` function.
     */
-  def sequenceFile[K, V](path: String,
-                         keyClass: Class[K],
-                         valueClass: Class[V]): JavaPairRDD[K, V] = {
+  def sequenceFile[K, V](
+      path: String,
+      keyClass: Class[K],
+      valueClass: Class[V]
+  ): JavaPairRDD[K, V] = {
     implicit val ctagK: ClassTag[K] = ClassTag(keyClass)
     implicit val ctagV: ClassTag[V] = ClassTag(valueClass)
     new JavaPairRDD(sc.sequenceFile(path, keyClass, valueClass))
@@ -422,7 +450,7 @@ class JavaSparkContext(val sc: SparkContext)
   ): JavaPairRDD[K, V] = {
     implicit val ctagK: ClassTag[K] = ClassTag(keyClass)
     implicit val ctagV: ClassTag[V] = ClassTag(valueClass)
-    val rdd = sc.hadoopRDD(conf, inputFormatClass, keyClass, valueClass)
+    val rdd                         = sc.hadoopRDD(conf, inputFormatClass, keyClass, valueClass)
     new JavaHadoopRDD(rdd.asInstanceOf[HadoopRDD[K, V]])
   }
 
@@ -442,8 +470,8 @@ class JavaSparkContext(val sc: SparkContext)
   ): JavaPairRDD[K, V] = {
     implicit val ctagK: ClassTag[K] = ClassTag(keyClass)
     implicit val ctagV: ClassTag[V] = ClassTag(valueClass)
-    val rdd = sc.hadoopFile(
-        path, inputFormatClass, keyClass, valueClass, minPartitions)
+    val rdd =
+      sc.hadoopFile(path, inputFormatClass, keyClass, valueClass, minPartitions)
     new JavaHadoopRDD(rdd.asInstanceOf[HadoopRDD[K, V]])
   }
 
@@ -462,7 +490,7 @@ class JavaSparkContext(val sc: SparkContext)
   ): JavaPairRDD[K, V] = {
     implicit val ctagK: ClassTag[K] = ClassTag(keyClass)
     implicit val ctagV: ClassTag[V] = ClassTag(valueClass)
-    val rdd = sc.hadoopFile(path, inputFormatClass, keyClass, valueClass)
+    val rdd                         = sc.hadoopFile(path, inputFormatClass, keyClass, valueClass)
     new JavaHadoopRDD(rdd.asInstanceOf[HadoopRDD[K, V]])
   }
 
@@ -480,10 +508,11 @@ class JavaSparkContext(val sc: SparkContext)
       fClass: Class[F],
       kClass: Class[K],
       vClass: Class[V],
-      conf: Configuration): JavaPairRDD[K, V] = {
+      conf: Configuration
+  ): JavaPairRDD[K, V] = {
     implicit val ctagK: ClassTag[K] = ClassTag(kClass)
     implicit val ctagV: ClassTag[V] = ClassTag(vClass)
-    val rdd = sc.newAPIHadoopFile(path, fClass, kClass, vClass, conf)
+    val rdd                         = sc.newAPIHadoopFile(path, fClass, kClass, vClass, conf)
     new JavaNewHadoopRDD(rdd.asInstanceOf[NewHadoopRDD[K, V]])
   }
 
@@ -508,17 +537,20 @@ class JavaSparkContext(val sc: SparkContext)
       conf: Configuration,
       fClass: Class[F],
       kClass: Class[K],
-      vClass: Class[V]): JavaPairRDD[K, V] = {
+      vClass: Class[V]
+  ): JavaPairRDD[K, V] = {
     implicit val ctagK: ClassTag[K] = ClassTag(kClass)
     implicit val ctagV: ClassTag[V] = ClassTag(vClass)
-    val rdd = sc.newAPIHadoopRDD(conf, fClass, kClass, vClass)
+    val rdd                         = sc.newAPIHadoopRDD(conf, fClass, kClass, vClass)
     new JavaNewHadoopRDD(rdd.asInstanceOf[NewHadoopRDD[K, V]])
   }
 
   /** Build the union of two or more RDDs. */
   override def union[T](
-      first: JavaRDD[T], rest: java.util.List[JavaRDD[T]]): JavaRDD[T] = {
-    val rdds: Seq[RDD[T]] = (Seq(first) ++ rest.asScala).map(_.rdd)
+      first: JavaRDD[T],
+      rest: java.util.List[JavaRDD[T]]
+  ): JavaRDD[T] = {
+    val rdds: Seq[RDD[T]]          = (Seq(first) ++ rest.asScala).map(_.rdd)
     implicit val ctag: ClassTag[T] = first.classTag
     sc.union(rdds)
   }
@@ -526,17 +558,20 @@ class JavaSparkContext(val sc: SparkContext)
   /** Build the union of two or more RDDs. */
   override def union[K, V](
       first: JavaPairRDD[K, V],
-      rest: java.util.List[JavaPairRDD[K, V]]): JavaPairRDD[K, V] = {
-    val rdds: Seq[RDD[(K, V)]] = (Seq(first) ++ rest.asScala).map(_.rdd)
+      rest: java.util.List[JavaPairRDD[K, V]]
+  ): JavaPairRDD[K, V] = {
+    val rdds: Seq[RDD[(K, V)]]          = (Seq(first) ++ rest.asScala).map(_.rdd)
     implicit val ctag: ClassTag[(K, V)] = first.classTag
-    implicit val ctagK: ClassTag[K] = first.kClassTag
-    implicit val ctagV: ClassTag[V] = first.vClassTag
+    implicit val ctagK: ClassTag[K]     = first.kClassTag
+    implicit val ctagV: ClassTag[V]     = first.vClassTag
     new JavaPairRDD(sc.union(rdds))
   }
 
   /** Build the union of two or more RDDs. */
-  override def union(first: JavaDoubleRDD,
-                     rest: java.util.List[JavaDoubleRDD]): JavaDoubleRDD = {
+  override def union(
+      first: JavaDoubleRDD,
+      rest: java.util.List[JavaDoubleRDD]
+  ): JavaDoubleRDD = {
     val rdds: Seq[RDD[Double]] = (Seq(first) ++ rest.asScala).map(_.srdd)
     new JavaDoubleRDD(sc.union(rdds))
   }
@@ -556,7 +591,9 @@ class JavaSparkContext(val sc: SparkContext)
     * This version supports naming the accumulator for display in Spark's web UI.
     */
   def intAccumulator(
-      initialValue: Int, name: String): Accumulator[java.lang.Integer] =
+      initialValue: Int,
+      name: String
+  ): Accumulator[java.lang.Integer] =
     sc.accumulator(initialValue, name)(IntAccumulatorParam)
       .asInstanceOf[Accumulator[java.lang.Integer]]
 
@@ -575,7 +612,9 @@ class JavaSparkContext(val sc: SparkContext)
     * This version supports naming the accumulator for display in Spark's web UI.
     */
   def doubleAccumulator(
-      initialValue: Double, name: String): Accumulator[java.lang.Double] =
+      initialValue: Double,
+      name: String
+  ): Accumulator[java.lang.Double] =
     sc.accumulator(initialValue, name)(DoubleAccumulatorParam)
       .asInstanceOf[Accumulator[java.lang.Double]]
 
@@ -593,7 +632,9 @@ class JavaSparkContext(val sc: SparkContext)
     * This version supports naming the accumulator for display in Spark's web UI.
     */
   def accumulator(
-      initialValue: Int, name: String): Accumulator[java.lang.Integer] =
+      initialValue: Int,
+      name: String
+  ): Accumulator[java.lang.Integer] =
     intAccumulator(initialValue, name)
 
   /**
@@ -610,7 +651,9 @@ class JavaSparkContext(val sc: SparkContext)
     * This version supports naming the accumulator for display in Spark's web UI.
     */
   def accumulator(
-      initialValue: Double, name: String): Accumulator[java.lang.Double] =
+      initialValue: Double,
+      name: String
+  ): Accumulator[java.lang.Double] =
     doubleAccumulator(initialValue, name)
 
   /**
@@ -618,7 +661,9 @@ class JavaSparkContext(val sc: SparkContext)
     * values to using the `add` method. Only the master can access the accumulator's `value`.
     */
   def accumulator[T](
-      initialValue: T, accumulatorParam: AccumulatorParam[T]): Accumulator[T] =
+      initialValue: T,
+      accumulatorParam: AccumulatorParam[T]
+  ): Accumulator[T] =
     sc.accumulator(initialValue)(accumulatorParam)
 
   /**
@@ -627,9 +672,11 @@ class JavaSparkContext(val sc: SparkContext)
     *
     * This version supports naming the accumulator for display in Spark's web UI.
     */
-  def accumulator[T](initialValue: T,
-                     name: String,
-                     accumulatorParam: AccumulatorParam[T]): Accumulator[T] =
+  def accumulator[T](
+      initialValue: T,
+      name: String,
+      accumulatorParam: AccumulatorParam[T]
+  ): Accumulator[T] =
     sc.accumulator(initialValue, name)(accumulatorParam)
 
   /**
@@ -637,7 +684,9 @@ class JavaSparkContext(val sc: SparkContext)
     * can "add" values with `add`. Only the master can access the accumuable's `value`.
     */
   def accumulable[T, R](
-      initialValue: T, param: AccumulableParam[T, R]): Accumulable[T, R] =
+      initialValue: T,
+      param: AccumulableParam[T, R]
+  ): Accumulable[T, R] =
     sc.accumulable(initialValue)(param)
 
   /**
@@ -646,9 +695,11 @@ class JavaSparkContext(val sc: SparkContext)
     *
     * This version supports naming the accumulator for display in Spark's web UI.
     */
-  def accumulable[T, R](initialValue: T,
-                        name: String,
-                        param: AccumulableParam[T, R]): Accumulable[T, R] =
+  def accumulable[T, R](
+      initialValue: T,
+      name: String,
+      param: AccumulableParam[T, R]
+  ): Accumulable[T, R] =
     sc.accumulable(initialValue, name)(param)
 
   /**
@@ -698,9 +749,8 @@ class JavaSparkContext(val sc: SparkContext)
     * '''Note:''' As it will be reused in all Hadoop RDDs, it's better not to modify it unless you
     * plan to set some global configurations for all Hadoop RDDs.
     */
-  def hadoopConfiguration(): Configuration = {
+  def hadoopConfiguration(): Configuration =
     sc.hadoopConfiguration
-  }
 
   /**
     * Set the directory under which RDDs are going to be checkpointed. The directory must
@@ -784,7 +834,10 @@ class JavaSparkContext(val sc: SparkContext)
     * where HDFS may respond to Thread.interrupt() by marking nodes as dead.
     */
   def setJobGroup(
-      groupId: String, description: String, interruptOnCancel: Boolean): Unit =
+      groupId: String,
+      description: String,
+      interruptOnCancel: Boolean
+  ): Unit =
     sc.setJobGroup(groupId, description, interruptOnCancel)
 
   /**
@@ -813,12 +866,11 @@ class JavaSparkContext(val sc: SparkContext)
     * Returns an Java map of JavaRDDs that have marked themselves as persistent via cache() call.
     * Note that this does not necessarily mean the caching or computation was successful.
     */
-  def getPersistentRDDs: JMap[java.lang.Integer, JavaRDD[_]] = {
+  def getPersistentRDDs: JMap[java.lang.Integer, JavaRDD[_]] =
     sc.getPersistentRDDs
       .mapValues(s => JavaRDD.fromRDD(s))
       .asJava
       .asInstanceOf[JMap[java.lang.Integer, JavaRDD[_]]]
-  }
 }
 
 object JavaSparkContext {

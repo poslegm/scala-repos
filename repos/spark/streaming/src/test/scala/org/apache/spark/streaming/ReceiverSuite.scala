@@ -40,8 +40,8 @@ class ReceiverSuite extends TestSuiteBase with Timeouts with Serializable {
 
   test("receiver life cycle") {
 
-    val receiver = new FakeReceiver
-    val executor = new FakeReceiverSupervisor(receiver)
+    val receiver        = new FakeReceiver
+    val executor        = new FakeReceiverSupervisor(receiver)
     val executorStarted = new Semaphore(0)
 
     assert(executor.isAllEmpty)
@@ -79,9 +79,9 @@ class ReceiverSuite extends TestSuiteBase with Timeouts with Serializable {
     }
 
     // Verify whether the data stored by the receiver was sent to the executor
-    val byteBuffer = ByteBuffer.allocate(100)
+    val byteBuffer  = ByteBuffer.allocate(100)
     val arrayBuffer = new ArrayBuffer[Int]()
-    val iterator = arrayBuffer.iterator
+    val iterator    = arrayBuffer.iterator
     receiver.store(1)
     receiver.store(byteBuffer)
     receiver.store(arrayBuffer)
@@ -131,17 +131,17 @@ class ReceiverSuite extends TestSuiteBase with Timeouts with Serializable {
 
   ignore("block generator throttling") {
     val blockGeneratorListener = new FakeBlockGeneratorListener
-    val blockIntervalMs = 100
-    val maxRate = 1001
+    val blockIntervalMs        = 100
+    val maxRate                = 1001
     val conf = new SparkConf()
       .set("spark.streaming.blockInterval", s"${blockIntervalMs}ms")
       .set("spark.streaming.receiver.maxRate", maxRate.toString)
-    val blockGenerator = new BlockGenerator(blockGeneratorListener, 1, conf)
-    val expectedBlocks = 20
-    val waitTime = expectedBlocks * blockIntervalMs
-    val expectedMessages = maxRate * waitTime / 1000
+    val blockGenerator           = new BlockGenerator(blockGeneratorListener, 1, conf)
+    val expectedBlocks           = 20
+    val waitTime                 = expectedBlocks * blockIntervalMs
+    val expectedMessages         = maxRate * waitTime / 1000
     val expectedMessagesPerBlock = maxRate * blockIntervalMs / 1000
-    val generatedData = new ArrayBuffer[Int]
+    val generatedData            = new ArrayBuffer[Int]
 
     // Generate blocks
     val startTime = System.currentTimeMillis()
@@ -155,20 +155,19 @@ class ReceiverSuite extends TestSuiteBase with Timeouts with Serializable {
     blockGenerator.stop()
 
     val recordedBlocks = blockGeneratorListener.arrayBuffers
-    val recordedData = recordedBlocks.flatten
+    val recordedData   = recordedBlocks.flatten
     assert(blockGeneratorListener.arrayBuffers.size > 0, "No blocks received")
-    assert(
-        recordedData.toSet === generatedData.toSet, "Received data not same")
+    assert(recordedData.toSet === generatedData.toSet, "Received data not same")
 
     // recordedData size should be close to the expected rate; use an error margin proportional to
     // the value, so that rate changes don't cause a brittle test
     val minExpectedMessages = expectedMessages - 0.05 * expectedMessages
     val maxExpectedMessages = expectedMessages + 0.05 * expectedMessages
-    val numMessages = recordedData.size
+    val numMessages         = recordedData.size
     assert(
-        numMessages >= minExpectedMessages &&
+      numMessages >= minExpectedMessages &&
         numMessages <= maxExpectedMessages,
-        s"#records received = $numMessages, not between $minExpectedMessages and $maxExpectedMessages"
+      s"#records received = $numMessages, not between $minExpectedMessages and $maxExpectedMessages"
     )
 
     // XXX Checking every block would require an even distribution of messages across blocks,
@@ -177,7 +176,7 @@ class ReceiverSuite extends TestSuiteBase with Timeouts with Serializable {
       expectedMessagesPerBlock - 0.05 * expectedMessagesPerBlock
     val maxExpectedMessagesPerBlock =
       expectedMessagesPerBlock + 0.05 * expectedMessagesPerBlock
-    val receivedBlockSizes = recordedBlocks.map { _.size }.mkString(",")
+    val receivedBlockSizes = recordedBlocks.map(_.size).mkString(",")
 
     // the first and last block may be incomplete, so we slice them out
     val validBlocks = recordedBlocks.drop(1).dropRight(1)
@@ -185,9 +184,9 @@ class ReceiverSuite extends TestSuiteBase with Timeouts with Serializable {
       validBlocks.map(block => block.size).sum / validBlocks.size
 
     assert(
-        averageBlockSize >= minExpectedMessagesPerBlock &&
+      averageBlockSize >= minExpectedMessagesPerBlock &&
         averageBlockSize <= maxExpectedMessagesPerBlock,
-        s"# records in received blocks = [$receivedBlockSizes], not between " +
+      s"# records in received blocks = [$receivedBlockSizes], not between " +
         s"$minExpectedMessagesPerBlock and $maxExpectedMessagesPerBlock, on average"
     )
   }
@@ -201,7 +200,9 @@ class ReceiverSuite extends TestSuiteBase with Timeouts with Serializable {
     */
   test("write ahead log - generating and cleaning") {
     val sparkConf = new SparkConf()
-      .setMaster("local[4]") // must be at least 3 as we are going to start 2 receivers
+      .setMaster(
+        "local[4]"
+      ) // must be at least 3 as we are going to start 2 receivers
       .setAppName(framework)
       .set("spark.ui.enabled", "true")
       .set("spark.streaming.receiver.writeAheadLog.enable", "true")
@@ -216,17 +217,16 @@ class ReceiverSuite extends TestSuiteBase with Timeouts with Serializable {
     val allLogFiles2 = new mutable.HashSet[String]()
     logInfo("Temp checkpoint directory = " + tempDirectory)
 
-    def getBothCurrentLogFiles(): (Seq[String], Seq[String]) = {
+    def getBothCurrentLogFiles(): (Seq[String], Seq[String]) =
       (getCurrentLogFiles(logDirectory1), getCurrentLogFiles(logDirectory2))
-    }
 
-    def getCurrentLogFiles(logDirectory: File): Seq[String] = {
+    def getCurrentLogFiles(logDirectory: File): Seq[String] =
       try {
         if (logDirectory.exists()) {
           logDirectory1
             .listFiles()
-            .filter { _.getName.startsWith("log") }
-            .map { _.toString }
+            .filter(_.getName.startsWith("log"))
+            .map(_.toString)
         } else {
           Seq.empty
         }
@@ -234,7 +234,6 @@ class ReceiverSuite extends TestSuiteBase with Timeouts with Serializable {
         case e: Exception =>
           Seq.empty
       }
-    }
 
     def printLogFiles(message: String, files: Seq[String]) {
       logInfo(s"$message (${files.size} files):\n" + files.mkString("\n"))
@@ -242,8 +241,8 @@ class ReceiverSuite extends TestSuiteBase with Timeouts with Serializable {
 
     withStreamingContext(new StreamingContext(sparkConf, batchDuration)) {
       ssc =>
-        val receiver1 = new FakeReceiver(sendData = true)
-        val receiver2 = new FakeReceiver(sendData = true)
+        val receiver1       = new FakeReceiver(sendData = true)
+        val receiver2       = new FakeReceiver(sendData = true)
         val receiverStream1 = ssc.receiverStream(receiver1)
         val receiverStream2 = ssc.receiverStream(receiver2)
         receiverStream1.register()
@@ -253,8 +252,10 @@ class ReceiverSuite extends TestSuiteBase with Timeouts with Serializable {
 
         // Run until sufficient WAL files have been generated and
         // the first WAL files has been deleted
-        eventually(timeout(20 seconds),
-                   interval(batchDuration.milliseconds millis)) {
+        eventually(
+          timeout(20 seconds),
+          interval(batchDuration.milliseconds millis)
+        ) {
           val (logFiles1, logFiles2) = getBothCurrentLogFiles()
           allLogFiles1 ++= logFiles1
           allLogFiles2 ++= logFiles2
@@ -269,8 +270,8 @@ class ReceiverSuite extends TestSuiteBase with Timeouts with Serializable {
         }
         ssc.stop(stopSparkContext = true, stopGracefully = true)
 
-        val sortedAllLogFiles1 = allLogFiles1.toSeq.sorted
-        val sortedAllLogFiles2 = allLogFiles2.toSeq.sorted
+        val sortedAllLogFiles1             = allLogFiles1.toSeq.sorted
+        val sortedAllLogFiles2             = allLogFiles2.toSeq.sorted
         val (leftLogFiles1, leftLogFiles2) = getBothCurrentLogFiles()
 
         printLogFiles("Receiver 0: all", sortedAllLogFiles1)
@@ -293,37 +294,42 @@ class ReceiverSuite extends TestSuiteBase with Timeouts with Serializable {
     */
   class FakeReceiverSupervisor(receiver: FakeReceiver)
       extends ReceiverSupervisor(receiver, new SparkConf()) {
-    val singles = new ArrayBuffer[Any]
-    val byteBuffers = new ArrayBuffer[ByteBuffer]
-    val iterators = new ArrayBuffer[Iterator[_]]
+    val singles      = new ArrayBuffer[Any]
+    val byteBuffers  = new ArrayBuffer[ByteBuffer]
+    val iterators    = new ArrayBuffer[Iterator[_]]
     val arrayBuffers = new ArrayBuffer[ArrayBuffer[_]]
-    val errors = new ArrayBuffer[Throwable]
+    val errors       = new ArrayBuffer[Throwable]
 
     /** Check if all data structures are clean */
-    def isAllEmpty: Boolean = {
+    def isAllEmpty: Boolean =
       singles.isEmpty && byteBuffers.isEmpty && iterators.isEmpty &&
-      arrayBuffers.isEmpty && errors.isEmpty
-    }
+        arrayBuffers.isEmpty && errors.isEmpty
 
     def pushSingle(data: Any) {
       singles += data
     }
 
-    def pushBytes(bytes: ByteBuffer,
-                  optionalMetadata: Option[Any],
-                  optionalBlockId: Option[StreamBlockId]) {
+    def pushBytes(
+        bytes: ByteBuffer,
+        optionalMetadata: Option[Any],
+        optionalBlockId: Option[StreamBlockId]
+    ) {
       byteBuffers += bytes
     }
 
-    def pushIterator(iterator: Iterator[_],
-                     optionalMetadata: Option[Any],
-                     optionalBlockId: Option[StreamBlockId]) {
+    def pushIterator(
+        iterator: Iterator[_],
+        optionalMetadata: Option[Any],
+        optionalBlockId: Option[StreamBlockId]
+    ) {
       iterators += iterator
     }
 
-    def pushArrayBuffer(arrayBuffer: ArrayBuffer[_],
-                        optionalMetadata: Option[Any],
-                        optionalBlockId: Option[StreamBlockId]) {
+    def pushArrayBuffer(
+        arrayBuffer: ArrayBuffer[_],
+        optionalMetadata: Option[Any],
+        optionalBlockId: Option[StreamBlockId]
+    ) {
       arrayBuffers += arrayBuffer
     }
 
@@ -334,9 +340,9 @@ class ReceiverSuite extends TestSuiteBase with Timeouts with Serializable {
     override protected def onReceiverStart(): Boolean = true
 
     override def createBlockGenerator(
-        blockGeneratorListener: BlockGeneratorListener): BlockGenerator = {
+        blockGeneratorListener: BlockGeneratorListener
+    ): BlockGenerator =
       null
-    }
   }
 
   /**
@@ -346,7 +352,7 @@ class ReceiverSuite extends TestSuiteBase with Timeouts with Serializable {
       extends BlockGeneratorListener {
     // buffer of data received as ArrayBuffers
     val arrayBuffers = new ArrayBuffer[ArrayBuffer[Int]]
-    val errors = new ArrayBuffer[Throwable]
+    val errors       = new ArrayBuffer[Throwable]
 
     def onAddData(data: Any, metadata: Any) {}
 
@@ -370,9 +376,9 @@ class ReceiverSuite extends TestSuiteBase with Timeouts with Serializable {
 class FakeReceiver(sendData: Boolean = false)
     extends Receiver[Int](StorageLevel.MEMORY_ONLY) {
   @volatile var otherThread: Thread = null
-  @volatile var receiving = false
-  @volatile var onStartCalled = false
-  @volatile var onStopCalled = false
+  @volatile var receiving           = false
+  @volatile var onStartCalled       = false
+  @volatile var onStopCalled        = false
 
   def onStart() {
     otherThread = new Thread() {

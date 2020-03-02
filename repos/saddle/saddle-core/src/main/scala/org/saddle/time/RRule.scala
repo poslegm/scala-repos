@@ -73,16 +73,18 @@ case class RRule private (
     bysecond: List[Int] = List.empty,
     inzone: DateTimeZone = TZ_LOCAL,
     joins: List[(RRule, Option[DateTime])] = List.empty,
-    excepts: List[(RRule, Option[DateTime])] = List.empty) {
+    excepts: List[(RRule, Option[DateTime])] = List.empty
+) {
 
-  private def dt2dtv(dt: DateTime): com.google.ical.values.DateTimeValueImpl = {
-    new com.google.ical.values.DateTimeValueImpl(dt.getYear,
-                                                 dt.getMonthOfYear,
-                                                 dt.getDayOfMonth,
-                                                 dt.getHourOfDay,
-                                                 dt.getMinuteOfHour,
-                                                 dt.getSecondOfMinute)
-  }
+  private def dt2dtv(dt: DateTime): com.google.ical.values.DateTimeValueImpl =
+    new com.google.ical.values.DateTimeValueImpl(
+      dt.getYear,
+      dt.getMonthOfYear,
+      dt.getDayOfMonth,
+      dt.getHourOfDay,
+      dt.getMinuteOfHour,
+      dt.getSecondOfMinute
+    )
 
   protected[time] def toICal: com.google.ical.values.RRule = {
     val rrule = new com.google.ical.values.RRule()
@@ -90,40 +92,22 @@ case class RRule private (
     rrule.setFreq(freq.toICal)
     rrule.setInterval(interval)
 
-    wkst.foreach { w =>
-      rrule.setWkSt(w.toICal)
-    }
-    count.foreach { rrule.setCount(_) }
-    until.foreach { dt =>
-      rrule.setUntil(dt2dtv(dt))
-    }
-    bysetpos.headOption.foreach { _ =>
-      rrule.setBySetPos(bysetpos.toArray)
-    }
-    bymonth.headOption.foreach { _ =>
-      rrule.setByMonth(bymonth.toArray)
-    }
+    wkst.foreach(w => rrule.setWkSt(w.toICal))
+    count.foreach(rrule.setCount(_))
+    until.foreach(dt => rrule.setUntil(dt2dtv(dt)))
+    bysetpos.headOption.foreach(_ => rrule.setBySetPos(bysetpos.toArray))
+    bymonth.headOption.foreach(_ => rrule.setByMonth(bymonth.toArray))
     bymonthday.headOption.foreach { _ =>
       rrule.setByMonthDay(bymonthday.toArray)
     }
-    byyearday.headOption.foreach { _ =>
-      rrule.setByYearDay(byyearday.toArray)
-    }
-    byweekno.headOption.foreach { _ =>
-      rrule.setByWeekNo(byweekno.toArray)
-    }
+    byyearday.headOption.foreach(_ => rrule.setByYearDay(byyearday.toArray))
+    byweekno.headOption.foreach(_ => rrule.setByWeekNo(byweekno.toArray))
     byday.headOption.foreach { _ =>
       rrule.setByDay(seqAsJavaList(byday.map(v => v.toICal)))
     }
-    byhour.headOption.foreach { _ =>
-      rrule.setByHour(byhour.toArray)
-    }
-    byminute.headOption.foreach { _ =>
-      rrule.setByMinute(byminute.toArray)
-    }
-    bysecond.headOption.foreach { _ =>
-      rrule.setBySecond(bysecond.toArray)
-    }
+    byhour.headOption.foreach(_ => rrule.setByHour(byhour.toArray))
+    byminute.headOption.foreach(_ => rrule.setByMinute(byminute.toArray))
+    bysecond.headOption.foreach(_ => rrule.setBySecond(bysecond.toArray))
 
     rrule
   }
@@ -229,10 +213,11 @@ case class RRule private (
   def counting(i: Int) = {
     val outer = this
     new {
-      def from(dt: DateTime): DateTime = {
+      def from(dt: DateTime): DateTime =
         if (i == 0)
           throw new IllegalArgumentException(
-              "argument to occurrence must not equal 0")
+            "argument to occurrence must not equal 0"
+          )
         else if (i > 0)
           // counting occurrences forward
           outer.from(dt).toStream.drop(i - 1).head
@@ -256,7 +241,6 @@ case class RRule private (
           val idx = Index.make(outer, lbound, ubound)
           idx.raw(idx.rsearch(dt) - iabs)
         }
-      }
     }
   }
 
@@ -280,27 +264,35 @@ case class RRule private (
     */
   def from(dt: DateTime): Iterator[DateTime] = {
     val riter = RecurrenceIteratorFactory.createRecurrenceIterator(
-        toICal, dt2dtv(dt), inzone.toTimeZone)
+      toICal,
+      dt2dtv(dt),
+      inzone.toTimeZone
+    )
 
     val iterWithJoins = joins.foldLeft(riter) {
       case (i1, (rrule, t)) =>
-        val tmpfrom = t.map { dt2dtv } getOrElse dt2dtv(dt)
+        val tmpfrom = t.map(dt2dtv) getOrElse dt2dtv(dt)
         val tmpiter = RecurrenceIteratorFactory.createRecurrenceIterator(
-            rrule.toICal, tmpfrom, inzone.toTimeZone)
+          rrule.toICal,
+          tmpfrom,
+          inzone.toTimeZone
+        )
         RecurrenceIteratorFactory.join(i1, tmpiter)
     }
 
     val iterWithJoinsWithExcepts = excepts.foldLeft(iterWithJoins) {
       case (i1, (rrule, t)) =>
-        val tmpfrom = t.map { dt2dtv } getOrElse dt2dtv(dt)
+        val tmpfrom = t.map(dt2dtv) getOrElse dt2dtv(dt)
         val tmpiter = RecurrenceIteratorFactory.createRecurrenceIterator(
-            rrule.toICal, tmpfrom, inzone.toTimeZone)
+          rrule.toICal,
+          tmpfrom,
+          inzone.toTimeZone
+        )
         RecurrenceIteratorFactory.except(i1, tmpiter)
     }
 
     DateTimeIteratorFactory.createDateTimeIterator(iterWithJoinsWithExcepts) map {
-      dt =>
-        dt.withZone(inzone)
+      dt => dt.withZone(inzone)
     }
   }
 

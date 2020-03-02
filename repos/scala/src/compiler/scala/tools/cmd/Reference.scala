@@ -20,10 +20,10 @@ trait Reference extends Spec {
   lazy val options = new Reference.Accumulators()
   import options._
 
-  def helpMsg = options.helpMsg
+  def helpMsg                    = options.helpMsg
   def propertyArgs: List[String] = Nil
 
-  def isUnaryOption(s: String) = unary contains fromOpt(s)
+  def isUnaryOption(s: String)  = unary contains fromOpt(s)
   def isBinaryOption(s: String) = binary contains fromOpt(s)
   def isExpandOption(s: String) = expansionMap contains fromOpt(s)
 
@@ -49,15 +49,15 @@ object Reference {
   val MaxLine = 80
 
   class Accumulators() {
-    private val _help = new ListBuffer[() => String]
-    private var _unary = List[String]()
+    private val _help   = new ListBuffer[() => String]
+    private var _unary  = List[String]()
     private var _binary = List[String]()
     private var _expand = Map[String, List[String]]()
 
-    def helpFormatStr = "    %-" + longestArg + "s %s"
+    def helpFormatStr    = "    %-" + longestArg + "s %s"
     def defaultFormatStr = (" " * (longestArg + 7)) + "%s"
 
-    def addUnary(s: String): Unit = _unary +:= s
+    def addUnary(s: String): Unit  = _unary +:= s
     def addBinary(s: String): Unit = _binary +:= s
 
     def addExpand(opt: String, expanded: List[String]) =
@@ -65,16 +65,16 @@ object Reference {
 
     def mapHelp(g: String => String): Unit = {
       val idx = _help.length - 1
-      val f = _help(idx)
+      val f   = _help(idx)
 
       _help(idx) = () => g(f())
     }
 
     def addHelp(f: () => String): Unit = _help += f
     def addHelpAlias(f: () => String) = mapHelp { s =>
-      val str = "alias for '%s'" format f()
+      val str    = "alias for '%s'" format f()
       def noHelp = (helpFormatStr.format("", "")).length == s.length
-      val str2 = if (noHelp) str else " (" + str + ")"
+      val str2   = if (noHelp) str else " (" + str + ")"
 
       s + str2
     }
@@ -85,18 +85,18 @@ object Reference {
       else defaultFormatStr.format(s, str)
     }
     def addHelpEnvDefault(name: String): Unit = mapHelp { s =>
-      val line1 = "%s (default: %s)".format(s, name)
+      val line1  = "%s (default: %s)".format(s, name)
       val envNow = envOrNone(name) map ("'" + _ + "'") getOrElse "unset"
-      val line2 = defaultFormatStr.format("Currently " + envNow)
+      val line2  = defaultFormatStr.format("Currently " + envNow)
 
       line1 + "\n" + line2
     }
 
-    lazy val unary = (_unary ++ _expand.keys).distinct
-    lazy val binary = _binary.distinct
-    lazy val all = unary ++ binary
+    lazy val unary        = (_unary ++ _expand.keys).distinct
+    lazy val binary       = _binary.distinct
+    lazy val all          = unary ++ binary
     lazy val expansionMap = _expand
-    lazy val helpMsg = _help map (f => f() + "\n") mkString
-    lazy val longestArg = all map (_.length) max
+    lazy val helpMsg      = _help map (f => f() + "\n") mkString
+    lazy val longestArg   = all map (_.length) max
   }
 }

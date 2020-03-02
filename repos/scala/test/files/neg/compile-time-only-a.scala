@@ -55,25 +55,25 @@ object Test extends App {
   C5(2)
 
   val c6 = new C6(2)
-  val _ = c6.x
+  val _  = c6.x
   c6.foo
   type Foo = c6.Foo
   c6.y = c6.y
 
-  val c701: (C7, C7) = ???
-  val c702: (C7 => C7) = ???
-  val c703: { val x: C7 } = ???
+  val c701: (C7, C7)       = ???
+  val c702: (C7 => C7)     = ???
+  val c703: { val x: C7 }  = ???
   val c704: AnyRef with C7 = ???
   // https://groups.google.com/forum/#!topic/scala-internals/5n07TiCnBZU
   // val c705: ({ @compileTimeOnly("C7") type C7[T] = List[T] })#C7[_] = ???
-  val c706: C7 Either C7 = ???
-  val c707a: List[C7] = ???
-  val c707b = List[C7]()
+  val c706: C7 Either C7                = ???
+  val c707a: List[C7]                   = ???
+  val c707b                             = List[C7]()
   val c708a: T forSome { type T <: C7 } = ???
   // https://groups.google.com/forum/#!topic/scala-internals/5n07TiCnBZU
   // val c708b: T forSome { @compileTimeOnly("C7") type T } = ???
   val c709: (C8[Int], C8[C7]) = ???
-  val c710: (C8[_] => C8[_]) = ???
+  val c710: (C8[_] => C8[_])  = ???
 }
 
 @compileTimeOnly("placebo")

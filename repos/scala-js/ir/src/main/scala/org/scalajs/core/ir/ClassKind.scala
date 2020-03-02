@@ -15,47 +15,47 @@ sealed abstract class ClassKind {
 
   def isClass: Boolean = this match {
     case Class | ModuleClass => true
-    case _ => false
+    case _                   => false
   }
 
   def isJSClass: Boolean = this match {
     case JSClass | JSModuleClass => true
-    case _ => false
+    case _                       => false
   }
 
   def hasModuleAccessor: Boolean = this match {
     case ModuleClass | JSModuleClass => true
-    case _ => false
+    case _                           => false
   }
 
   def isAnyScalaJSDefinedClass: Boolean = this match {
     case Class | ModuleClass | JSClass | JSModuleClass => true
-    case _ => false
+    case _                                             => false
   }
 
   def withoutModuleAccessor: ClassKind = this match {
-    case ModuleClass => Class
+    case ModuleClass   => Class
     case JSModuleClass => JSClass
-    case _ => this
+    case _             => this
   }
 }
 
 object ClassKind {
-  case object Class extends ClassKind
-  case object ModuleClass extends ClassKind
-  case object Interface extends ClassKind
-  case object RawJSType extends ClassKind
+  case object Class         extends ClassKind
+  case object ModuleClass   extends ClassKind
+  case object Interface     extends ClassKind
+  case object RawJSType     extends ClassKind
   case object HijackedClass extends ClassKind
-  case object JSClass extends ClassKind
+  case object JSClass       extends ClassKind
   case object JSModuleClass extends ClassKind
 
   private[ir] def toByte(kind: ClassKind): Byte = kind match {
-    case ClassKind.Class => 1
-    case ClassKind.ModuleClass => 2
-    case ClassKind.Interface => 3
-    case ClassKind.RawJSType => 4
+    case ClassKind.Class         => 1
+    case ClassKind.ModuleClass   => 2
+    case ClassKind.Interface     => 3
+    case ClassKind.RawJSType     => 4
     case ClassKind.HijackedClass => 5
-    case ClassKind.JSClass => 6
+    case ClassKind.JSClass       => 6
     case ClassKind.JSModuleClass => 7
   }
 

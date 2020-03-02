@@ -12,25 +12,29 @@ import org.jetbrains.plugins.scala.lang.psi.types.ScType
 import org.jetbrains.plugins.scala.lang.psi.types.nonvalue.TypeParameter
 import org.jetbrains.plugins.scala.lang.psi.types.result.TypeResult
 
-/** 
+/**
   * @author Alexander Podkhalyuzin
   * Date: 06.03.2008
   */
 trait ScReferenceExpression
-    extends ScalaPsiElement with ScExpression with ScReferenceElement {
+    extends ScalaPsiElement
+    with ScExpression
+    with ScReferenceElement {
   def isQualified = qualifier.isDefined
 
   def qualifier: Option[ScExpression] = getFirstChild match {
     case e: ScExpression => Some(e)
-    case _ => None
+    case _               => None
   }
 
   protected var resolveFunction: () => Array[ResolveResult] = null
 
   protected var shapeResolveFunction: () => Array[ResolveResult] = null
 
-  def setupResolveFunctions(resolveFunction: () => Array[ResolveResult],
-                            shapeResolveFunction: () => Array[ResolveResult]) {
+  def setupResolveFunctions(
+      resolveFunction: () => Array[ResolveResult],
+      shapeResolveFunction: () => Array[ResolveResult]
+  ) {
     this.resolveFunction = resolveFunction
     this.shapeResolveFunction = shapeResolveFunction
   }
@@ -39,18 +43,17 @@ trait ScReferenceExpression
     * Includes qualifier for Infix, Postfix and Prefix expression
     * @return qualifier for Infix, Postfix, Prefix or reference expression
     */
-  def smartQualifier: Option[ScExpression] = {
+  def smartQualifier: Option[ScExpression] =
     qualifier match {
       case Some(qual) => Some(qual)
       case _ =>
         getParent match {
-          case p: ScPrefixExpr if p.operation == this => Some(p.operand)
+          case p: ScPrefixExpr if p.operation == this  => Some(p.operand)
           case p: ScPostfixExpr if p.operation == this => Some(p.getBaseExpr)
-          case p: ScInfixExpr if p.operation == this => Some(p.getBaseExpr)
-          case _ => None
+          case p: ScInfixExpr if p.operation == this   => Some(p.getBaseExpr)
+          case _                                       => None
         }
     }
-  }
 
   /**
     * This method returns all possible types for this place.
@@ -71,7 +74,9 @@ trait ScReferenceExpression
   def shapeType: TypeResult[ScType]
 
   override def createReplacingElementWithClassName(
-      useFullQualifiedName: Boolean, clazz: TypeToImport) = {
+      useFullQualifiedName: Boolean,
+      clazz: TypeToImport
+  ) =
     if (useFullQualifiedName) {
       super.createReplacingElementWithClassName(useFullQualifiedName, clazz)
     } else {
@@ -79,15 +84,18 @@ trait ScReferenceExpression
         .createExpressionFromText(clazz.name, clazz.element.getManager)
         .asInstanceOf[ScReferenceExpression]
     }
-  }
 
   def bindToElement(
-      element: PsiElement, containingClass: Option[PsiClass]): PsiElement
+      element: PsiElement,
+      containingClass: Option[PsiClass]
+  ): PsiElement
 
   def getPrevTypeInfoParams: Seq[TypeParameter]
 
-  def getSimpleVariants(implicits: Boolean,
-                        filterNotNamedVariants: Boolean): Array[ResolveResult]
+  def getSimpleVariants(
+      implicits: Boolean,
+      filterNotNamedVariants: Boolean
+  ): Array[ResolveResult]
 }
 
 object ScReferenceExpression {

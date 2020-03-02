@@ -9,7 +9,8 @@ import com.twitter.conversions.storage._
 @RunWith(classOf[JUnitRunner])
 class StorageUnitTest extends FunSuite {
   test(
-      "StorageUnit: should convert whole numbers into storage units (back and forth)") {
+    "StorageUnit: should convert whole numbers into storage units (back and forth)"
+  ) {
     assert(1.byte.inBytes == 1)
     assert(1.kilobyte.inBytes == 1024)
     assert(1.megabyte.inMegabytes == 1.0)
@@ -40,8 +41,8 @@ class StorageUnitTest extends FunSuite {
   }
 
   test("StorageUnit: should reject soulless robots") {
-    intercept[NumberFormatException] { StorageUnit.parse("100.bottles") }
-    intercept[NumberFormatException] { StorageUnit.parse("100 bytes") }
+    intercept[NumberFormatException](StorageUnit.parse("100.bottles"))
+    intercept[NumberFormatException](StorageUnit.parse("100 bytes"))
   }
 
   test("StorageUnit: should deal with negative values") {

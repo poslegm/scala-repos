@@ -32,19 +32,18 @@ trait KinesisFunSuite extends SparkFunSuite {
       test(testName)(testBody)
     } else {
       ignore(
-          s"$testName [enable by setting env var $envVarNameForEnablingTests=1]")(
-          testBody)
+        s"$testName [enable by setting env var $envVarNameForEnablingTests=1]"
+      )(testBody)
     }
   }
 
   /** Run the give body of code only if Kinesis tests are enabled */
-  def runIfTestsEnabled(message: String)(body: => Unit): Unit = {
+  def runIfTestsEnabled(message: String)(body: => Unit): Unit =
     if (shouldRunTests) {
       body
     } else {
       ignore(
-          s"$message [enable by setting env var $envVarNameForEnablingTests=1]")(
-          ())
+        s"$message [enable by setting env var $envVarNameForEnablingTests=1]"
+      )(())
     }
-  }
 }

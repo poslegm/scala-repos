@@ -107,9 +107,9 @@ package object typedarray {
 
   def charArray2Uint16Array(array: scala.Array[Char]): Uint16Array = {
     // Can't use array2typedArrayImpl because Uint16Array contains Ints
-    val len = array.length
+    val len  = array.length
     val dest = new Uint16Array(len)
-    var i = 0
+    var i    = 0
     while (i < len) {
       dest(i) = array(i).toInt
       i += 1
@@ -127,15 +127,11 @@ package object typedarray {
     array2typedArrayImpl(array, new Float64Array(array.length))
 
   @inline private def array2typedArrayImpl[ // scalastyle:ignore
-                                           @specialized(Byte,
-                                                        Short,
-                                                        Int,
-                                                        Float,
-                                                        Double) T,
-                                           Repr <: TypedArray[T, Repr]](
-      array: scala.Array[T], dest: Repr): Repr = {
+      @specialized(Byte, Short, Int, Float, Double) T,
+      Repr <: TypedArray[T, Repr]
+  ](array: scala.Array[T], dest: Repr): Repr = {
     val len = array.length
-    var i = 0
+    var i   = 0
     while (i < len) {
       dest(i) = array(i)
       i += 1
@@ -153,9 +149,9 @@ package object typedarray {
 
   def uint16Array2CharArray(array: Uint16Array): scala.Array[Char] = {
     // Can't use typedArray2arrayImpl because Uint16Array contains Ints
-    val len = array.length
+    val len  = array.length
     val dest = new scala.Array[Char](len)
-    var i = 0
+    var i    = 0
     while (i < len) {
       dest(i) = array(i).toChar
       i += 1
@@ -173,15 +169,11 @@ package object typedarray {
     typedArray2arrayImpl(array, new scala.Array(array.length))
 
   @inline private def typedArray2arrayImpl[ // scalastyle:ignore
-                                           @specialized(Byte,
-                                                        Short,
-                                                        Int,
-                                                        Float,
-                                                        Double) T,
-                                           Repr <: TypedArray[T, Repr]](
-      array: Repr, dest: scala.Array[T]): scala.Array[T] = {
+      @specialized(Byte, Short, Int, Float, Double) T,
+      Repr <: TypedArray[T, Repr]
+  ](array: Repr, dest: scala.Array[T]): scala.Array[T] = {
     val len = dest.length
-    var i = 0
+    var i   = 0
     while (i < len) {
       dest(i) = array(i)
       i += 1

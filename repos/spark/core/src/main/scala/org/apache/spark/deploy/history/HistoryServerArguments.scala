@@ -27,14 +27,15 @@ import org.apache.spark.util.Utils
   * Command-line parser for the master.
   */
 private[history] class HistoryServerArguments(
-    conf: SparkConf, args: Array[String])
-    extends Logging {
+    conf: SparkConf,
+    args: Array[String]
+) extends Logging {
   private var propertiesFile: String = null
 
   parse(args.toList)
 
   @tailrec
-  private def parse(args: List[String]): Unit = {
+  private def parse(args: List[String]): Unit =
     if (args.length == 1) {
       setLogDirectory(args.head)
     } else {
@@ -55,12 +56,12 @@ private[history] class HistoryServerArguments(
           printUsageAndExit(1)
       }
     }
-  }
 
   private def setLogDirectory(value: String): Unit = {
     logWarning(
-        "Setting log directory through the command line is deprecated as of " +
-        "Spark 1.1.0. Please set this through spark.history.fs.logDirectory instead.")
+      "Setting log directory through the command line is deprecated as of " +
+        "Spark 1.1.0. Please set this through spark.history.fs.logDirectory instead."
+    )
     conf.set("spark.history.fs.logDirectory", value)
   }
 
@@ -69,7 +70,8 @@ private[history] class HistoryServerArguments(
 
   private def printUsageAndExit(exitCode: Int) {
     // scalastyle:off println
-    System.err.println("""
+    System.err.println(
+      """
       |Usage: HistoryServer [options]
       |
       |Options:
@@ -97,7 +99,8 @@ private[history] class HistoryServerArguments(
       |                                     (default: file:/tmp/spark-events)
       |  spark.history.fs.updateInterval    How often to reload log data from storage
       |                                     (in seconds, default: 10)
-      |""".stripMargin)
+      |""".stripMargin
+    )
     // scalastyle:on println
     System.exit(exitCode)
   }

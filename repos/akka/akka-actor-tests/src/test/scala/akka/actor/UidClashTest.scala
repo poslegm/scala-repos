@@ -13,7 +13,8 @@ object UidClashTest {
 
   class TerminatedForNonWatchedActor
       extends Exception(
-          "Received Terminated for actor that was not actually watched")
+        "Received Terminated for actor that was not actually watched"
+      )
       with NoStackTrace
 
   @volatile var oldActor: ActorRef = _
@@ -21,20 +22,23 @@ object UidClashTest {
   private[akka] class EvilCollidingActorRef(
       override val provider: ActorRefProvider,
       override val path: ActorPath,
-      val eventStream: EventStream)
-      extends MinimalActorRef {
+      val eventStream: EventStream
+  ) extends MinimalActorRef {
 
     //Ignore everything
-    override def isTerminated: Boolean = true
+    override def isTerminated: Boolean                           = true
     override def sendSystemMessage(message: SystemMessage): Unit = ()
     override def !(message: Any)(
-        implicit sender: ActorRef = Actor.noSender): Unit = ()
+        implicit sender: ActorRef = Actor.noSender
+    ): Unit = ()
   }
 
   def createCollidingRef(system: ActorSystem): ActorRef =
-    new EvilCollidingActorRef(system.asInstanceOf[ActorSystemImpl].provider,
-                              oldActor.path,
-                              system.eventStream)
+    new EvilCollidingActorRef(
+      system.asInstanceOf[ActorSystemImpl].provider,
+      oldActor.path,
+      system.eventStream
+    )
 
   case object PleaseRestart
   case object PingMyself
@@ -43,7 +47,7 @@ object UidClashTest {
   class RestartedActor extends Actor {
 
     def receive = {
-      case PleaseRestart ⇒ throw new Exception("restart")
+      case PleaseRestart   ⇒ throw new Exception("restart")
       case Terminated(ref) ⇒ throw new TerminatedForNonWatchedActor
       // This is the tricky part to make this test a positive one (avoid expectNoMsg).
       // Since anything enqueued in postRestart will arrive before the Terminated
@@ -52,17 +56,16 @@ object UidClashTest {
       // 2. As a response to pint, RestartedSafely is sent to self
       // 3a. if Terminated was enqueued during the restart procedure it will arrive before the RestartedSafely message
       // 3b. otherwise only the RestartedSafely message arrives
-      case PingMyself ⇒ self ! RestartedSafely
+      case PingMyself      ⇒ self ! RestartedSafely
       case RestartedSafely ⇒ context.parent ! RestartedSafely
     }
 
-    override def preRestart(reason: Throwable, message: Option[Any]): Unit = {
+    override def preRestart(reason: Throwable, message: Option[Any]): Unit =
       context.children foreach { child ⇒
         oldActor = child
         context.unwatch(child)
         context.stop(child)
       }
-    }
 
     override def preStart(): Unit =
       context.watch(context.actorOf(Props.empty, "child"))
@@ -85,7 +88,7 @@ object UidClashTest {
       context.actorOf(Props[RestartedActor], "theRestartedOne")
 
     def receive = {
-      case PleaseRestart ⇒ theRestartedOne ! PleaseRestart
+      case PleaseRestart   ⇒ theRestartedOne ! PleaseRestart
       case RestartedSafely ⇒ probe ! RestartedSafely
     }
   }

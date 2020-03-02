@@ -27,8 +27,8 @@ import org.apache.spark.util.SizeEstimator
 class PrimitiveKeyOpenHashMapSuite extends SparkFunSuite with Matchers {
 
   test("size for specialized, primitive key, value (int, int)") {
-    val capacity = 1024
-    val map = new PrimitiveKeyOpenHashMap[Int, Int](capacity)
+    val capacity   = 1024
+    val map        = new PrimitiveKeyOpenHashMap[Int, Int](capacity)
     val actualSize = SizeEstimator.estimate(map)
     // 32 bit for keys, 32 bit for values, and 1 bit for the bitset.
     val expectedSize = capacity * (32 + 32 + 1) / 8
@@ -44,7 +44,9 @@ class PrimitiveKeyOpenHashMapSuite extends SparkFunSuite with Matchers {
     val goodMap3 = new PrimitiveKeyOpenHashMap[Int, Int](256)
     assert(goodMap3.size === 0)
     intercept[IllegalArgumentException] {
-      new PrimitiveKeyOpenHashMap[Int, Int](1 << 30 + 1) // Invalid map size: bigger than 2^30
+      new PrimitiveKeyOpenHashMap[Int, Int](
+        1 << 30 + 1
+      ) // Invalid map size: bigger than 2^30
     }
     intercept[IllegalArgumentException] {
       new PrimitiveKeyOpenHashMap[Int, Int](-1)
@@ -56,7 +58,7 @@ class PrimitiveKeyOpenHashMapSuite extends SparkFunSuite with Matchers {
 
   test("basic operations") {
     val longBase = 1000000L
-    val map = new PrimitiveKeyOpenHashMap[Long, Int]
+    val map      = new PrimitiveKeyOpenHashMap[Long, Int]
 
     for (i <- 1 to 1000) {
       map(i + longBase) = i
@@ -93,19 +95,21 @@ class PrimitiveKeyOpenHashMapSuite extends SparkFunSuite with Matchers {
     }
     assert(map.size === 100)
     for (i <- 1 to 100) {
-      val res = map.changeValue(i.toLong, { assert(false); "" },
-                                v =>
-                                  {
-                                    assert(v === i.toString)
-                                    v + "!"
-                                })
+      val res = map.changeValue(
+        i.toLong,
+        { assert(false); "" },
+        v => {
+          assert(v === i.toString)
+          v + "!"
+        }
+      )
       assert(res === i + "!")
     }
     // Iterate from 101 to 400 to make sure the map grows a couple of times, because we had a
     // bug where changeValue would return the wrong result when the map grew on that insert
     for (i <- 101 to 400) {
       val res =
-        map.changeValue(i.toLong, { i + "!" }, v => { assert(false); v })
+        map.changeValue(i.toLong, i + "!", v => { assert(false); v })
       assert(res === i + "!")
     }
     assert(map.size === 400)

@@ -41,24 +41,22 @@ private[evaluation] object Precision
 /** False positive rate. Defined as 0.0 when there are no negative examples. */
 private[evaluation] object FalsePositiveRate
     extends BinaryClassificationMetricComputer {
-  override def apply(c: BinaryConfusionMatrix): Double = {
+  override def apply(c: BinaryConfusionMatrix): Double =
     if (c.numNegatives == 0) {
       0.0
     } else {
       c.numFalsePositives.toDouble / c.numNegatives
     }
-  }
 }
 
 /** Recall. Defined as 0.0 when there are no positive examples. */
 private[evaluation] object Recall extends BinaryClassificationMetricComputer {
-  override def apply(c: BinaryConfusionMatrix): Double = {
+  override def apply(c: BinaryConfusionMatrix): Double =
     if (c.numPositives == 0) {
       0.0
     } else {
       c.numTruePositives.toDouble / c.numPositives
     }
-  }
 }
 
 /**
@@ -72,7 +70,7 @@ private[evaluation] case class FMeasure(beta: Double)
   private val beta2 = beta * beta
   override def apply(c: BinaryConfusionMatrix): Double = {
     val precision = Precision(c)
-    val recall = Recall(c)
+    val recall    = Recall(c)
     if (precision + recall == 0) {
       0.0
     } else {

@@ -1,10 +1,10 @@
 abstract class Node extends NodeSeq
-trait NodeSeq extends Seq[Node]
+trait NodeSeq       extends Seq[Node]
 object NodeSeq {
   implicit def seqToNodeSeq(ns: Seq[Node]): NodeSeq = ???
   def foo[B, That](f: Seq[B])(
-      implicit bf: scala.collection.generic.CanBuildFrom[Seq[Int], B, That])
-    : That = ???
+      implicit bf: scala.collection.generic.CanBuildFrom[Seq[Int], B, That]
+  ): That = ???
 }
 
 class Transformer {

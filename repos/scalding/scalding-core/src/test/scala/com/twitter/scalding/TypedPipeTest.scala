@@ -28,7 +28,8 @@ import typed.MultiJoin
 
 object TUtil {
   def printStack(fn: => Unit) {
-    try { fn } catch { case e: Throwable => e.printStackTrace; throw e }
+    try { fn }
+    catch { case e: Throwable => e.printStackTrace; throw e }
   }
 }
 
@@ -36,9 +37,7 @@ class TupleAdderJob(args: Args) extends Job(args) {
 
   TypedText
     .tsv[(String, String)]("input")
-    .map { f =>
-      (1 +: f) ++ (2, 3)
-    }
+    .map(f => (1 +: f) ++ (2, 3))
     .write(TypedText.tsv[(Int, String, String, Int, Int)]("output"))
 }
 
@@ -46,10 +45,13 @@ class TupleAdderTest extends WordSpec with Matchers {
   import Dsl._
   "A TupleAdderJob" should {
     JobTest(new TupleAdderJob(_))
-      .source(TypedText.tsv[(String, String)]("input"),
-              List(("a", "a"), ("b", "b")))
+      .source(
+        TypedText.tsv[(String, String)]("input"),
+        List(("a", "a"), ("b", "b"))
+      )
       .sink[(Int, String, String, Int, Int)](
-          TypedText.tsv[(Int, String, String, Int, Int)]("output")) { outBuf =>
+        TypedText.tsv[(Int, String, String, Int, Int)]("output")
+      ) { outBuf =>
         "be able to use generated tuple adders" in {
           outBuf should have size 2
           outBuf.toSet shouldBe Set((1, "a", "a", 2, 3), (1, "b", "b", 2, 3))
@@ -62,11 +64,15 @@ class TupleAdderTest extends WordSpec with Matchers {
 
 class TypedPipeJob(args: Args) extends Job(args) {
   //Word count using TypedPipe
-  TextLine("inputFile").flatMap { _.split("\\s+") }.map { w =>
-    (w, 1L)
-  }.forceToDisk.group
-  //.forceToReducers
-  .sum.debug.write(TypedText.tsv[(String, Long)]("outputFile"))
+  TextLine("inputFile")
+    .flatMap(_.split("\\s+"))
+    .map(w => (w, 1L))
+    .forceToDisk
+    .group
+    //.forceToReducers
+    .sum
+    .debug
+    .write(TypedText.tsv[(String, Long)]("outputFile"))
 }
 
 class TypedPipeTest extends WordSpec with Matchers {
@@ -94,9 +100,10 @@ class TypedPipeTest extends WordSpec with Matchers {
 
 class TypedSumByKeyJob(args: Args) extends Job(args) {
   //Word count using TypedPipe
-  TextLine("inputFile").flatMap { l =>
-    l.split("\\s+").map((_, 1L))
-  }.sumByKey.write(TypedText.tsv[(String, Long)]("outputFile"))
+  TextLine("inputFile")
+    .flatMap(l => l.split("\\s+").map((_, 1L)))
+    .sumByKey
+    .write(TypedText.tsv[(String, Long)]("outputFile"))
 }
 
 class TypedSumByKeyTest extends WordSpec with Matchers {
@@ -123,8 +130,8 @@ class TypedSumByKeyTest extends WordSpec with Matchers {
 
 class TypedPipeJoinJob(args: Args) extends Job(args) {
   (Tsv("inputFile0").read.toTypedPipe[(Int, Int)](0, 1).group leftJoin TypedPipe
-        .from[(Int, Int)](Tsv("inputFile1").read, (0, 1))
-        .group).toTypedPipe
+    .from[(Int, Int)](Tsv("inputFile1").read, (0, 1))
+    .group).toTypedPipe
     .write(TypedText.tsv[(Int, (Int, Option[Int]))]("outputFile"))
 }
 
@@ -134,8 +141,10 @@ class TypedPipeJoinTest extends WordSpec with Matchers {
     JobTest(new com.twitter.scalding.TypedPipeJoinJob(_))
       .source(Tsv("inputFile0"), List((0, 0), (1, 1), (2, 2), (3, 3), (4, 5)))
       .source(Tsv("inputFile1"), List((0, 1), (1, 2), (2, 3), (3, 4)))
-      .typedSink[(Int, (Int, Option[Int]))](TypedText
-            .tsv[(Int, (Int, Option[Int]))]("outputFile")) { outputBuffer =>
+      .typedSink[(Int, (Int, Option[Int]))](
+        TypedText
+          .tsv[(Int, (Int, Option[Int]))]("outputFile")
+      ) { outputBuffer =>
         val outMap = outputBuffer.toMap
         "correctly join" in {
           outMap should have size 5
@@ -171,19 +180,21 @@ class TypedPipeJoinKryoTest extends WordSpec with Matchers {
     "closure not be serializable" in {
       val box = new OpaqueJoinBox(2)
 
-      val fn = { v: Int =>
-        v * box.get
-      }
+      val fn = { v: Int => v * box.get }
 
       serialization.Externalizer(fn).javaWorks shouldBe false
     }
   }
   "A TypedPipeJoinKryo" should {
     JobTest(new com.twitter.scalding.TypedPipeJoinKryoJob(_))
-      .source(TypedText.tsv[(Int, Int)]("inputFile0"),
-              List((0, 0), (1, 1), (2, 2), (3, 3), (4, 5)))
-      .source(TypedText.tsv[(Int, Int)]("inputFile1"),
-              List((0, 1), (1, 2), (2, 3), (3, 4)))
+      .source(
+        TypedText.tsv[(Int, Int)]("inputFile0"),
+        List((0, 0), (1, 1), (2, 2), (3, 3), (4, 5))
+      )
+      .source(
+        TypedText.tsv[(Int, Int)]("inputFile1"),
+        List((0, 1), (1, 2), (2, 3), (3, 4))
+      )
       .typedSink[(Int, Int)](TypedText.tsv[(Int, Int)]("outputFile")) {
         outputBuffer =>
           val outMap = outputBuffer.toMap
@@ -240,7 +251,7 @@ class TypedPipeDistinctByTest extends WordSpec with Matchers {
           val outSet = outputBuffer.toSet
           outSet should have size 3
           List(outSet) should contain oneOf
-          (Set((0, 1), (2, 2), (2, 5)), Set((1, 1), (2, 2), (2, 5)))
+            (Set((0, 1), (2, 2), (2, 5)), Set((1, 1), (2, 2), (2, 5)))
         }
       }
       .run
@@ -292,10 +303,14 @@ class TypedPipeHashJoinTest extends WordSpec with Matchers {
   import Dsl._
   "A TypedPipeHashJoinJob" should {
     JobTest(new TypedPipeHashJoinJob(_))
-      .source(TypedText.tsv[(Int, Int)]("inputFile0"),
-              List((0, 0), (1, 1), (2, 2), (3, 3), (4, 5)))
-      .source(TypedText.tsv[(Int, Int)]("inputFile1"),
-              List((0, 1), (1, 2), (2, 3), (3, 4)))
+      .source(
+        TypedText.tsv[(Int, Int)]("inputFile0"),
+        List((0, 0), (1, 1), (2, 2), (3, 3), (4, 5))
+      )
+      .source(
+        TypedText.tsv[(Int, Int)]("inputFile1"),
+        List((0, 1), (1, 2), (2, 3), (3, 4))
+      )
       .typedSink(TypedText.tsv[(Int, (Int, Option[Int]))]("outputFile")) {
         outputBuffer =>
           val outMap = outputBuffer.toMap
@@ -317,13 +332,19 @@ class TypedImplicitJob(args: Args) extends Job(args) {
   def revTup[K, V](in: (K, V)): (V, K) = (in._2, in._1)
   TextLine("inputFile").read
     .typed(1 -> ('maxWord, 'maxCnt)) { tpipe: TypedPipe[String] =>
-      tpipe.flatMap { _.split("\\s+") }.map { w =>
-        (w, 1L)
-      }.group.sum.groupAll
-      // Looks like swap, but on the values in the grouping:
-      .mapValues { revTup _ }.forceToReducers.max
-      // Throw out the Unit key and reverse the value tuple
-      .values.swap
+      tpipe
+        .flatMap(_.split("\\s+"))
+        .map(w => (w, 1L))
+        .group
+        .sum
+        .groupAll
+        // Looks like swap, but on the values in the grouping:
+        .mapValues(revTup _)
+        .forceToReducers
+        .max
+        // Throw out the Unit key and reverse the value tuple
+        .values
+        .swap
     }
     .write(TypedText.tsv[(String, Int)]("outputFile"))
 }
@@ -346,10 +367,10 @@ class TypedPipeTypedTest extends WordSpec with Matchers {
 }
 
 class TypedWithOnCompleteJob(args: Args) extends Job(args) {
-  val onCompleteMapperStat = Stat("onCompleteMapper")
+  val onCompleteMapperStat  = Stat("onCompleteMapper")
   val onCompleteReducerStat = Stat("onCompleteReducer")
-  def onCompleteMapper() = onCompleteMapperStat.inc
-  def onCompleteReducer() = onCompleteReducerStat.inc
+  def onCompleteMapper()    = onCompleteMapperStat.inc
+  def onCompleteReducer()   = onCompleteReducerStat.inc
   // find repeated words ignoring case
   TypedText
     .tsv[String]("input")
@@ -368,8 +389,10 @@ class TypedPipeWithOnCompleteTest extends WordSpec with Matchers {
   val inputText = "the quick brown fox jumps over the lazy LAZY dog"
   "A TypedWithOnCompleteJob" should {
     JobTest(new TypedWithOnCompleteJob(_))
-      .source(TypedText.tsv[String]("input"),
-              inputText.split("\\s+").map(Tuple1(_)))
+      .source(
+        TypedText.tsv[String]("input"),
+        inputText.split("\\s+").map(Tuple1(_))
+      )
       .counter("onCompleteMapper") { cnt =>
         "have onComplete called on mapper" in { assert(cnt == 1) }
       }
@@ -396,8 +419,8 @@ class TypedPipeWithOnCompleteTest extends WordSpec with Matchers {
 }
 
 class TypedPipeWithOuterAndLeftJoin(args: Args) extends Job(args) {
-  val userNames = TypedText.tsv[(Int, String)]("inputNames").group
-  val userData = TypedText.tsv[(Int, Double)]("inputData").group
+  val userNames    = TypedText.tsv[(Int, String)]("inputNames").group
+  val userData     = TypedText.tsv[(Int, Double)]("inputData").group
   val optionalData = TypedText.tsv[(Int, Boolean)]("inputOptionalData").group
 
   userNames
@@ -412,12 +435,18 @@ class TypedPipeWithOuterAndLeftJoinTest extends WordSpec with Matchers {
 
   "A TypedPipeWithOuterAndLeftJoin" should {
     JobTest(new TypedPipeWithOuterAndLeftJoin(_))
-      .source(TypedText.tsv[(Int, String)]("inputNames"),
-              List((1, "Jimmy Foursquare")))
-      .source(TypedText.tsv[(Int, Double)]("inputData"),
-              List((1, 0.1), (5, 0.5)))
-      .source(TypedText.tsv[(Int, Boolean)]("inputOptionalData"),
-              List((1, true), (99, false)))
+      .source(
+        TypedText.tsv[(Int, String)]("inputNames"),
+        List((1, "Jimmy Foursquare"))
+      )
+      .source(
+        TypedText.tsv[(Int, Double)]("inputData"),
+        List((1, 0.1), (5, 0.5))
+      )
+      .source(
+        TypedText.tsv[(Int, Boolean)]("inputOptionalData"),
+        List((1, true), (99, false))
+      )
       .sink[Long](TypedText.tsv[Int]("output")) { outbuf =>
         "have output for user 1" in {
           assert(outbuf.toList.contains(1) == true)
@@ -436,26 +465,30 @@ class TypedPipeWithOuterAndLeftJoinTest extends WordSpec with Matchers {
 
 class TJoinCountJob(args: Args) extends Job(args) {
   (TypedPipe.from[(Int, Int)](Tsv("in0", (0, 1)), (0, 1)).group join TypedPipe
-        .from[(Int, Int)](Tsv("in1", (0, 1)), (0, 1))
-        .group).size.write(TypedText.tsv[(Int, Long)]("out"))
+    .from[(Int, Int)](Tsv("in1", (0, 1)), (0, 1))
+    .group).size.write(TypedText.tsv[(Int, Long)]("out"))
 
   //Also check simple joins:
   (TypedPipe.from[(Int, Int)](Tsv("in0", (0, 1)), (0, 1)).group join TypedPipe
-        .from[(Int, Int)](Tsv("in1", (0, 1)), (0, 1))
-        .group)
+    .from[(Int, Int)](Tsv("in1", (0, 1)), (0, 1))
+    .group)
   //Flatten out to three values:
-  .toTypedPipe.map { kvw =>
-    (kvw._1, kvw._2._1, kvw._2._2)
-  }.write(TypedText.tsv[(Int, Int, Int)]("out2"))
+  .toTypedPipe
+    .map(kvw => (kvw._1, kvw._2._1, kvw._2._2))
+    .write(TypedText.tsv[(Int, Int, Int)]("out2"))
 
   //Also check simple leftJoins:
-  (TypedPipe.from[(Int, Int)](Tsv("in0", (0, 1)), (0, 1)).group leftJoin TypedPipe
-        .from[(Int, Int)](Tsv("in1", (0, 1)), (0, 1))
-        .group)
+  (TypedPipe
+    .from[(Int, Int)](Tsv("in0", (0, 1)), (0, 1))
+    .group leftJoin TypedPipe
+    .from[(Int, Int)](Tsv("in1", (0, 1)), (0, 1))
+    .group)
   //Flatten out to three values:
-  .toTypedPipe.map { kvw: (Int, (Int, Option[Int])) =>
-    (kvw._1, kvw._2._1, kvw._2._2.getOrElse(-1))
-  }.write(TypedText.tsv[(Int, Int, Int)]("out3"))
+  .toTypedPipe
+    .map { kvw: (Int, (Int, Option[Int])) =>
+      (kvw._1, kvw._2._1, kvw._2._2.getOrElse(-1))
+    }
+    .write(TypedText.tsv[(Int, Int, Int)]("out3"))
 }
 
 /**
@@ -464,63 +497,71 @@ class TJoinCountJob(args: Args) extends Job(args) {
 class TNiceJoinCountJob(args: Args) extends Job(args) {
 
   (TypedPipe.from[(Int, Int)](Tsv("in0", (0, 1)), (0, 1)) join TypedPipe
-        .from[(Int, Int)](Tsv("in1", (0, 1)), (0, 1))).size
+    .from[(Int, Int)](Tsv("in1", (0, 1)), (0, 1))).size
     .write(TypedText.tsv[(Int, Long)]("out"))
 
   //Also check simple joins:
   (TypedPipe.from[(Int, Int)](Tsv("in0", (0, 1)), (0, 1)) join TypedPipe
-        .from[(Int, Int)](Tsv("in1", (0, 1)), (0, 1)))
+    .from[(Int, Int)](Tsv("in1", (0, 1)), (0, 1)))
   //Flatten out to three values:
-  .toTypedPipe.map { kvw =>
-    (kvw._1, kvw._2._1, kvw._2._2)
-  }.write(TypedText.tsv[(Int, Int, Int)]("out2"))
+  .toTypedPipe
+    .map(kvw => (kvw._1, kvw._2._1, kvw._2._2))
+    .write(TypedText.tsv[(Int, Int, Int)]("out2"))
 
   //Also check simple leftJoins:
   (TypedPipe.from[(Int, Int)](Tsv("in0", (0, 1)), (0, 1)) leftJoin TypedPipe
-        .from[(Int, Int)](Tsv("in1", (0, 1)), (0, 1)))
+    .from[(Int, Int)](Tsv("in1", (0, 1)), (0, 1)))
   //Flatten out to three values:
-  .toTypedPipe.map { kvw: (Int, (Int, Option[Int])) =>
-    (kvw._1, kvw._2._1, kvw._2._2.getOrElse(-1))
-  }.write(TypedText.tsv[(Int, Int, Int)]("out3"))
+  .toTypedPipe
+    .map { kvw: (Int, (Int, Option[Int])) =>
+      (kvw._1, kvw._2._1, kvw._2._2.getOrElse(-1))
+    }
+    .write(TypedText.tsv[(Int, Int, Int)]("out3"))
 }
 
 class TNiceJoinByCountJob(args: Args) extends Job(args) {
   import com.twitter.scalding.typed.Syntax._
 
   (TypedPipe.from[(Int, Int)](Tsv("in0", (0, 1)), (0, 1)) joinBy TypedPipe
-        .from[(Int, Int)](Tsv("in1", (0, 1)), (0, 1)))(_._1, _._1).size
+    .from[(Int, Int)](Tsv("in1", (0, 1)), (0, 1)))(_._1, _._1).size
     .write(TypedText.tsv[(Int, Long)]("out"))
 
   //Also check simple joins:
   (TypedPipe.from[(Int, Int)](Tsv("in0", (0, 1)), (0, 1)) joinBy TypedPipe
-        .from[(Int, Int)](Tsv("in1", (0, 1)), (0, 1)))(_._1, _._1)
+    .from[(Int, Int)](Tsv("in1", (0, 1)), (0, 1)))(_._1, _._1)
   //Flatten out to three values:
-  .toTypedPipe.map { kvw =>
-    (kvw._1, kvw._2._1._2, kvw._2._2._2)
-  }.write(TypedText.tsv[(Int, Int, Int)]("out2"))
+  .toTypedPipe
+    .map(kvw => (kvw._1, kvw._2._1._2, kvw._2._2._2))
+    .write(TypedText.tsv[(Int, Int, Int)]("out2"))
 
   //Also check simple leftJoins:
   (TypedPipe.from[(Int, Int)](Tsv("in0", (0, 1)), (0, 1)) leftJoinBy TypedPipe
-        .from[(Int, Int)](Tsv("in1", (0, 1)), (0, 1)))(_._1, _._1)
+    .from[(Int, Int)](Tsv("in1", (0, 1)), (0, 1)))(_._1, _._1)
   //Flatten out to three values:
-  .toTypedPipe.map { kvw: (Int, ((Int, Int), Option[(Int, Int)])) =>
-    (kvw._1, kvw._2._1._2, kvw._2._2.getOrElse((-1, -1))._2)
-  }.write(TypedText.tsv[(Int, Int, Int)]("out3"))
+  .toTypedPipe
+    .map { kvw: (Int, ((Int, Int), Option[(Int, Int)])) =>
+      (kvw._1, kvw._2._1._2, kvw._2._2.getOrElse((-1, -1))._2)
+    }
+    .write(TypedText.tsv[(Int, Int, Int)]("out3"))
 }
 
 class TypedPipeJoinCountTest extends WordSpec with Matchers {
   import Dsl._
 
-  val joinTests = List("com.twitter.scalding.TJoinCountJob",
-                       "com.twitter.scalding.TNiceJoinCountJob",
-                       "com.twitter.scalding.TNiceJoinByCountJob")
+  val joinTests = List(
+    "com.twitter.scalding.TJoinCountJob",
+    "com.twitter.scalding.TNiceJoinCountJob",
+    "com.twitter.scalding.TNiceJoinByCountJob"
+  )
 
   joinTests.foreach { jobName =>
     "A " + jobName should {
       var idx = 0
       JobTest(jobName)
-        .source(Tsv("in0", (0, 1)),
-                List((0, 1), (0, 2), (1, 1), (1, 5), (2, 10)))
+        .source(
+          Tsv("in0", (0, 1)),
+          List((0, 1), (0, 2), (1, 1), (1, 5), (2, 10))
+        )
         .source(Tsv("in1", (0, 1)), List((0, 10), (1, 20), (1, 10), (1, 30)))
         .typedSink(TypedText.tsv[(Int, Long)]("out")) { outbuf =>
           val outMap = outbuf.toMap
@@ -532,30 +573,34 @@ class TypedPipeJoinCountTest extends WordSpec with Matchers {
           idx += 1
         }
         .typedSink(TypedText.tsv[(Int, Int, Int)]("out2")) { outbuf2 =>
-          val outMap = outbuf2.groupBy { _._1 }
+          val outMap = outbuf2.groupBy(_._1)
           (idx + ": correctly do a simple join") in {
             outMap should have size 2
             outMap(0).toList.sorted shouldBe List((0, 1, 10), (0, 2, 10))
-            outMap(1).toList.sorted shouldBe List((1, 1, 10),
-                                                  (1, 1, 20),
-                                                  (1, 1, 30),
-                                                  (1, 5, 10),
-                                                  (1, 5, 20),
-                                                  (1, 5, 30))
+            outMap(1).toList.sorted shouldBe List(
+              (1, 1, 10),
+              (1, 1, 20),
+              (1, 1, 30),
+              (1, 5, 10),
+              (1, 5, 20),
+              (1, 5, 30)
+            )
           }
           idx += 1
         }
         .typedSink(TypedText.tsv[(Int, Int, Int)]("out3")) { outbuf =>
-          val outMap = outbuf.groupBy { _._1 }
+          val outMap = outbuf.groupBy(_._1)
           (idx + ": correctly do a simple leftJoin") in {
             outMap should have size 3
             outMap(0).toList.sorted shouldBe List((0, 1, 10), (0, 2, 10))
-            outMap(1).toList.sorted shouldBe List((1, 1, 10),
-                                                  (1, 1, 20),
-                                                  (1, 1, 30),
-                                                  (1, 5, 10),
-                                                  (1, 5, 20),
-                                                  (1, 5, 30))
+            outMap(1).toList.sorted shouldBe List(
+              (1, 1, 10),
+              (1, 1, 20),
+              (1, 1, 30),
+              (1, 5, 10),
+              (1, 5, 20),
+              (1, 5, 30)
+            )
             outMap(2).toList.sorted shouldBe List((2, 10, -1))
           }
           idx += 1
@@ -583,10 +628,12 @@ class TypedPipeCrossTest extends WordSpec with Matchers {
         .typedSink(TypedText.tsv[(String, String)]("crossed")) { outbuf =>
           val sortedL = outbuf.toList.sorted
           (idx + ": create a cross-product") in {
-            sortedL shouldBe List(("all", "body"),
-                                  ("all", "every"),
-                                  ("you", "body"),
-                                  ("you", "every"))
+            sortedL shouldBe List(
+              ("all", "body"),
+              ("all", "every"),
+              ("you", "body"),
+              ("you", "every")
+            )
           }
           idx += 1
         }
@@ -598,12 +645,8 @@ class TypedPipeCrossTest extends WordSpec with Matchers {
 }
 
 class TJoinTakeJob(args: Args) extends Job(args) {
-  val items0 = TextLine("in0").flatMap { s =>
-    (1 to 10).map((_, s))
-  }.group
-  val items1 = TextLine("in1").map { s =>
-    (s.toInt, ())
-  }.group
+  val items0 = TextLine("in0").flatMap(s => (1 to 10).map((_, s))).group
+  val items1 = TextLine("in1").map(s => (s.toInt, ())).group
 
   items0
     .join(items1.take(1))
@@ -624,7 +667,7 @@ class TypedJoinTakeTest extends WordSpec with Matchers {
           val sortedL = outbuf.toList.sorted
           (idx + ": dedup keys by using take") in {
             sortedL shouldBe
-            (List((3, "you"), (3, "all"), (2, "you"), (2, "all")).sorted)
+              (List((3, "you"), (3, "all"), (2, "you"), (2, "all")).sorted)
           }
           idx += 1
         }
@@ -649,7 +692,7 @@ class TypedGroupAllTest extends WordSpec with Matchers {
         .source(TextLine("in"), input)
         .typedSink(TypedText.tsv[String]("out")) { outbuf =>
           val sortedL = outbuf.toList
-          val correct = input.map { _._2 }.sorted
+          val correct = input.map(_._2).sorted
           (idx + ": create sorted output") in {
             sortedL shouldBe correct
           }
@@ -674,7 +717,12 @@ class TSelfJoinTest extends WordSpec with Matchers {
       .source(TypedText.tsv[(Int, Int)]("in"), List((1, 2), (1, 3), (2, 1)))
       .typedSink(TypedText.tsv[(Int, Int)]("out")) { outbuf =>
         outbuf.toList.sorted shouldBe List(
-            (1, 1), (2, 2), (2, 3), (3, 2), (3, 3))
+          (1, 1),
+          (2, 2),
+          (2, 3),
+          (3, 2),
+          (3, 3)
+        )
       }
       .run
       .runHadoop
@@ -684,12 +732,12 @@ class TSelfJoinTest extends WordSpec with Matchers {
 
 class TJoinWordCount(args: Args) extends Job(args) {
 
-  def countWordsIn(pipe: TypedPipe[(String)]) = {
-    pipe.flatMap { _.split("\\s+").map(_.toLowerCase) }
+  def countWordsIn(pipe: TypedPipe[(String)]) =
+    pipe
+      .flatMap(_.split("\\s+").map(_.toLowerCase))
       .groupBy(identity)
       .mapValueStream(input => Iterator(input.size))
       .forceToReducers
-  }
 
   val first = countWordsIn(TypedPipe.from(TextLine("in0")))
 
@@ -711,17 +759,21 @@ class TypedJoinWCTest extends WordSpec with Matchers {
     TUtil.printStack {
       val in0 = List((0, "you all everybody"), (1, "a b c d"), (2, "a b c"))
       val in1 = List((0, "you"), (1, "a b c d"), (2, "a a b b c c"))
-      def count(in: List[(Int, String)]): Map[String, Int] = {
-        in.flatMap { _._2.split("\\s+").map { _.toLowerCase } }.groupBy {
-          identity
-        }.mapValues { _.size }
-      }
+      def count(in: List[(Int, String)]): Map[String, Int] =
+        in.flatMap(_._2.split("\\s+").map(_.toLowerCase))
+          .groupBy {
+            identity
+          }
+          .mapValues(_.size)
       def outerjoin[K, U, V](
-          m1: Map[K, U], z1: U, m2: Map[K, V], z2: V): Map[K, (U, V)] = {
+          m1: Map[K, U],
+          z1: U,
+          m2: Map[K, V],
+          z2: V
+      ): Map[K, (U, V)] =
         (m1.keys ++ m2.keys).map { k =>
           (k, (m1.getOrElse(k, z1), m2.getOrElse(k, z2)))
         }.toMap
-      }
       val correct = outerjoin(count(in0), 0, count(in1), 0).toList.map { tup =>
         (tup._1, tup._2._1, tup._2._2)
       }.sorted
@@ -750,9 +802,10 @@ class TypedLimitTest extends WordSpec with Matchers {
   import Dsl._
   "A TypedLimitJob" should {
     JobTest(new TypedLimitJob(_))
-      .source(TypedText.tsv[String]("input"), (0 to 100).map { i =>
-        Tuple1(i.toString)
-      })
+      .source(
+        TypedText.tsv[String]("input"),
+        (0 to 100).map(i => Tuple1(i.toString))
+      )
       .typedSink(TypedText.tsv[String]("output")) { outBuf =>
         "not have more than the limited outputs" in {
           outBuf.size should be <= 10
@@ -766,7 +819,7 @@ class TypedLimitTest extends WordSpec with Matchers {
 class TypedFlattenJob(args: Args) extends Job(args) {
   TypedText
     .tsv[String]("input")
-    .map { _.split(" ").toList }
+    .map(_.split(" ").toList)
     .flatten
     .write(TypedText.tsv[String]("output"))
 }
@@ -775,8 +828,10 @@ class TypedFlattenTest extends WordSpec with Matchers {
   import Dsl._
   "A TypedLimitJob" should {
     JobTest(new TypedFlattenJob(_))
-      .source(TypedText.tsv[String]("input"),
-              List(Tuple1("you all"), Tuple1("every body")))
+      .source(
+        TypedText.tsv[String]("input"),
+        List(Tuple1("you all"), Tuple1("every body"))
+      )
       .typedSink(TypedText.tsv[String]("output")) { outBuf =>
         "correctly flatten" in {
           outBuf.toSet shouldBe Set("you", "all", "every", "body")
@@ -799,8 +854,10 @@ class TypedMergeTest extends WordSpec with Matchers {
   "A TypedMergeJob" should {
     var idx = 0
     JobTest(new TypedMergeJob(_))
-      .source(TypedText.tsv[String]("input"),
-              List(Tuple1("you all"), Tuple1("every body")))
+      .source(
+        TypedText.tsv[String]("input"),
+        List(Tuple1("you all"), Tuple1("every body"))
+      )
       .typedSink(TypedText.tsv[String]("output")) { outBuf =>
         (idx + ": correctly flatten") in {
           outBuf.toSet shouldBe Set("you all", "every body")
@@ -821,9 +878,7 @@ class TypedMergeTest extends WordSpec with Matchers {
 
 class TypedShardJob(args: Args) extends Job(args) {
   (TypedPipe.from(TypedText.tsv[String]("input")) ++
-      (TypedPipe.empty.map { _ =>
-            "hey"
-          }) ++ TypedPipe.from(List("item")))
+    (TypedPipe.empty.map { _ => "hey" }) ++ TypedPipe.from(List("item")))
     .shard(10)
     .write(TypedText.tsv[String]("output"))
 }
@@ -850,9 +905,7 @@ class TypedShardTest extends WordSpec with Matchers {
 class TypedLocalSumJob(args: Args) extends Job(args) {
   TypedPipe
     .from(TypedText.tsv[String]("input"))
-    .flatMap { s =>
-      s.split(" ").map((_, 1L))
-    }
+    .flatMap(s => s.split(" ").map((_, 1L)))
     .sumByLocalKeys
     .write(TypedText.tsv[(String, Long)]("output"))
 }
@@ -860,7 +913,7 @@ class TypedLocalSumJob(args: Args) extends Job(args) {
 class TypedLocalSumTest extends WordSpec with Matchers {
   import Dsl._
   "A TypedLocalSumJob" should {
-    var idx = 0
+    var idx     = 0
     val genList = Gen.listOf(Gen.identifier)
     // Take one random sample
     lazy val mk: List[String] = genList.sample.getOrElse(mk)
@@ -869,10 +922,8 @@ class TypedLocalSumTest extends WordSpec with Matchers {
       .typedSink(TypedText.tsv[(String, Long)]("output")) { outBuf =>
         s"$idx: not expand and have correct total sum" in {
           import com.twitter.algebird.MapAlgebra.sumByKey
-          val lres = outBuf.toList
-          val fmapped = mk.flatMap { s =>
-            s.split(" ").map((_, 1L))
-          }
+          val lres    = outBuf.toList
+          val fmapped = mk.flatMap(s => s.split(" ").map((_, 1L)))
           lres.size should be <= (fmapped.size)
           sumByKey(lres) shouldBe (sumByKey(fmapped))
         }
@@ -895,12 +946,10 @@ class TypedHeadJob(args: Args) extends Job(args) {
 class TypedHeadTest extends WordSpec with Matchers {
   import Dsl._
   "A TypedHeadJob" should {
-    val rng = new java.util.Random
+    val rng   = new java.util.Random
     val COUNT = 10000
-    val KEYS = 100
-    val mk = (1 to COUNT).map { _ =>
-      (rng.nextInt % KEYS, rng.nextInt)
-    }
+    val KEYS  = 100
+    val mk    = (1 to COUNT).map(_ => (rng.nextInt % KEYS, rng.nextInt))
     JobTest(new TypedHeadJob(_))
       .source(TypedText.tsv[(Int, Int)]("input"), mk)
       .typedSink(TypedText.tsv[(Int, Int)]("output")) { outBuf =>
@@ -931,12 +980,10 @@ class TypedSortWithTakeJob(args: Args) extends Job(args) {
 class TypedSortWithTakeTest extends WordSpec with Matchers {
   import Dsl._
   "A TypedSortWithTakeJob" should {
-    val rng = new java.util.Random
+    val rng   = new java.util.Random
     val COUNT = 10000
-    val KEYS = 100
-    val mk = (1 to COUNT).map { _ =>
-      (rng.nextInt % KEYS, rng.nextInt)
-    }
+    val KEYS  = 100
+    val mk    = (1 to COUNT).map(_ => (rng.nextInt % KEYS, rng.nextInt))
     JobTest(new TypedSortWithTakeJob(_))
       .source(TypedText.tsv[(Int, Int)]("input"), mk)
       .sink[(Int, Int)](TypedText.tsv[(Int, Int)]("output")) { outBuf =>
@@ -944,7 +991,9 @@ class TypedSortWithTakeTest extends WordSpec with Matchers {
           val correct = mk
             .groupBy(_._1)
             .mapValues(_.map(i => i._2).sorted.reverse.take(5).toSet)
-          outBuf.groupBy(_._1).mapValues(_.map { case (k, v) => v }.toSet) shouldBe correct
+          outBuf
+            .groupBy(_._1)
+            .mapValues(_.map { case (k, v) => v }.toSet) shouldBe correct
         }
       }
       .sink[(Int, Int)](TypedText.tsv[(Int, Int)]("output2")) { outBuf =>
@@ -952,7 +1001,9 @@ class TypedSortWithTakeTest extends WordSpec with Matchers {
           val correct = mk
             .groupBy(_._1)
             .mapValues(_.map(i => i._2).sorted.reverse.take(5).toSet)
-          outBuf.groupBy(_._1).mapValues(_.map { case (k, v) => v }.toSet) shouldBe correct
+          outBuf
+            .groupBy(_._1)
+            .mapValues(_.map { case (k, v) => v }.toSet) shouldBe correct
         }
       }
       .run
@@ -964,18 +1015,16 @@ class TypedLookupJob(args: Args) extends Job(args) {
   TypedPipe
     .from(TypedText.tsv[Int]("input0"))
     .hashLookup(TypedPipe.from(TypedText.tsv[(Int, String)]("input1")).group)
-    .mapValues { o: Option[String] =>
-      o.getOrElse("")
-    }
+    .mapValues { o: Option[String] => o.getOrElse("") }
     .write(TypedText.tsv[(Int, String)]("output"))
 }
 
 class TypedLookupJobTest extends WordSpec with Matchers {
   import Dsl._
   "A TypedLookupJob" should {
-    val rng = new java.util.Random
+    val rng   = new java.util.Random
     val COUNT = 10000
-    val KEYS = 100
+    val KEYS  = 100
     val mk = (1 to COUNT).map { _ =>
       (rng.nextInt % KEYS, rng.nextInt.toString)
     }
@@ -985,9 +1034,10 @@ class TypedLookupJobTest extends WordSpec with Matchers {
       .typedSink(TypedText.tsv[(Int, String)]("output")) { outBuf =>
         "correctly TypedPipe.hashLookup" in {
           val data = mk.groupBy(_._1)
-          val correct = (-1 to 100).flatMap { k =>
-            data.get(k).getOrElse(List((k, "")))
-          }.toList.sorted
+          val correct = (-1 to 100)
+            .flatMap(k => data.get(k).getOrElse(List((k, ""))))
+            .toList
+            .sorted
           outBuf should have size (correct.size)
           outBuf.toList.sorted shouldBe correct
         }
@@ -1001,19 +1051,18 @@ class TypedLookupReduceJob(args: Args) extends Job(args) {
   TypedPipe
     .from(TypedText.tsv[Int]("input0"))
     .hashLookup(
-        TypedPipe.from(TypedText.tsv[(Int, String)]("input1")).group.max)
-    .mapValues { o: Option[String] =>
-      o.getOrElse("")
-    }
+      TypedPipe.from(TypedText.tsv[(Int, String)]("input1")).group.max
+    )
+    .mapValues { o: Option[String] => o.getOrElse("") }
     .write(TypedText.tsv[(Int, String)]("output"))
 }
 
 class TypedLookupReduceJobTest extends WordSpec with Matchers {
   import Dsl._
   "A TypedLookupJob" should {
-    val rng = new java.util.Random
+    val rng   = new java.util.Random
     val COUNT = 10000
-    val KEYS = 100
+    val KEYS  = 100
     val mk = (1 to COUNT).map { _ =>
       (rng.nextInt % KEYS, rng.nextInt.toString)
     }
@@ -1026,9 +1075,10 @@ class TypedLookupReduceJobTest extends WordSpec with Matchers {
             val (k, v) = kvs.maxBy(_._2)
             (k, v)
           }
-          val correct = (-1 to 100).map { k =>
-            data.get(k).getOrElse((k, ""))
-          }.toList.sorted
+          val correct = (-1 to 100)
+            .map(k => data.get(k).getOrElse((k, "")))
+            .toList
+            .sorted
           outBuf should have size (correct.size)
           outBuf.toList.sorted shouldBe correct
         }
@@ -1041,8 +1091,8 @@ class TypedLookupReduceJobTest extends WordSpec with Matchers {
 class TypedFilterJob(args: Args) extends Job(args) {
   TypedPipe
     .from(TypedText.tsv[Int]("input"))
-    .filter { _ > 50 }
-    .filterNot { _ % 2 == 0 }
+    .filter(_ > 50)
+    .filterNot(_ % 2 == 0)
     .write(TypedText.tsv[Int]("output"))
 }
 
@@ -1050,8 +1100,8 @@ class TypedFilterTest extends WordSpec with Matchers {
   import Dsl._
   "A TypedPipe" should {
     "filter and filterNot elements" in {
-      val input = -1 to 100
-      val isEven = (i: Int) => i % 2 == 0
+      val input          = -1 to 100
+      val isEven         = (i: Int) => i % 2 == 0
       val expectedOutput = input filter { _ > 50 } filterNot isEven
 
       TUtil.printStack {
@@ -1070,7 +1120,7 @@ class TypedFilterTest extends WordSpec with Matchers {
 
 class TypedPartitionJob(args: Args) extends Job(args) {
   val (p1, p2) =
-    TypedPipe.from(TypedText.tsv[Int]("input")).partition { _ > 50 }
+    TypedPipe.from(TypedText.tsv[Int]("input")).partition(_ > 50)
   p1.write(TypedText.tsv[Int]("output1"))
   p2.write(TypedText.tsv[Int]("output2"))
 }
@@ -1079,7 +1129,7 @@ class TypedPartitionTest extends WordSpec with Matchers {
   import Dsl._
   "A TypedPipe" should {
     "partition elements" in {
-      val input = -1 to 100
+      val input                  = -1 to 100
       val (expected1, expected2) = input partition { _ > 50 }
 
       TUtil.printStack {
@@ -1101,8 +1151,8 @@ class TypedPartitionTest extends WordSpec with Matchers {
 
 class TypedMultiJoinJob(args: Args) extends Job(args) {
   val zero = TypedPipe.from(TypedText.tsv[(Int, Int)]("input0"))
-  val one = TypedPipe.from(TypedText.tsv[(Int, Int)]("input1"))
-  val two = TypedPipe.from(TypedText.tsv[(Int, Int)]("input2"))
+  val one  = TypedPipe.from(TypedText.tsv[(Int, Int)]("input1"))
+  val two  = TypedPipe.from(TypedText.tsv[(Int, Int)]("input2"))
 
   val cogroup = MultiJoin(zero, one.group.max, two.group.max)
 
@@ -1111,22 +1161,21 @@ class TypedMultiJoinJob(args: Args) extends Job(args) {
   val distinct = cogroup.inputs.groupBy(identity).map(_._2.head).toList
   assert(distinct.size == cogroup.inputs.size)
 
-  cogroup.map { case (k, (v0, v1, v2)) => (k, v0, v1, v2) }
+  cogroup
+    .map { case (k, (v0, v1, v2)) => (k, v0, v1, v2) }
     .write(TypedText.tsv[(Int, Int, Int, Int)]("output"))
 }
 
 class TypedMultiJoinJobTest extends WordSpec with Matchers {
   import Dsl._
   "A TypedMultiJoinJob" should {
-    val rng = new java.util.Random
+    val rng   = new java.util.Random
     val COUNT = 100 * 100
-    val KEYS = 10
-    def mk = (1 to COUNT).map { _ =>
-      (rng.nextInt % KEYS, rng.nextInt)
-    }
-    val mk0 = mk
-    val mk1 = mk
-    val mk2 = mk
+    val KEYS  = 10
+    def mk    = (1 to COUNT).map(_ => (rng.nextInt % KEYS, rng.nextInt))
+    val mk0   = mk
+    val mk1   = mk
+    val mk2   = mk
     JobTest(new TypedMultiJoinJob(_))
       .source(TypedText.tsv[(Int, Int)]("input0"), mk0)
       .source(TypedText.tsv[(Int, Int)]("input1"), mk1)
@@ -1145,17 +1194,20 @@ class TypedMultiJoinJobTest extends WordSpec with Matchers {
           val d1 = groupMax(mk1)
           val d2 = groupMax(mk2)
 
-          val correct = (d0.keySet ++ d1.keySet ++ d2.keySet).toList.flatMap {
-            k =>
+          val correct = (d0.keySet ++ d1.keySet ++ d2.keySet).toList
+            .flatMap { k =>
               (for {
                 v0s <- d0.get(k)
-                v1 <- d1.get(k)
-                v2 <- d2.get(k)
+                v1  <- d1.get(k)
+                v2  <- d2.get(k)
               } yield (v0s, (k, v1, v2)))
-          }.flatMap {
-            case (v0s, (k, v1, v2)) =>
-              v0s.map { (k, _, v1, v2) }
-          }.toList.sorted
+            }
+            .flatMap {
+              case (v0s, (k, v1, v2)) =>
+                v0s.map((k, _, v1, v2))
+            }
+            .toList
+            .sorted
 
           outBuf should have size (correct.size)
           outBuf.toList.sorted shouldBe correct
@@ -1181,49 +1233,50 @@ class TypedMultiSelfJoinJob(args: Args) extends Job(args) {
   val distinct = cogroup.inputs.groupBy(identity).map(_._2.head).toList
   assert(distinct.size < cogroup.inputs.size)
 
-  cogroup.map { case (k, ((v0, v1), v2)) => (k, v0, v1, v2) }
+  cogroup
+    .map { case (k, ((v0, v1), v2)) => (k, v0, v1, v2) }
     .write(TypedText.tsv[(Int, Int, Int, Int)]("output"))
 }
 
 class TypedMultiSelfJoinJobTest extends WordSpec with Matchers {
   import Dsl._
   "A TypedMultiSelfJoinJob" should {
-    val rng = new java.util.Random
+    val rng   = new java.util.Random
     val COUNT = 10000
-    val KEYS = 100
-    def mk = (1 to COUNT).map { _ =>
-      (rng.nextInt % KEYS, rng.nextInt)
-    }
-    val mk0 = mk
-    val mk1 = mk
+    val KEYS  = 100
+    def mk    = (1 to COUNT).map(_ => (rng.nextInt % KEYS, rng.nextInt))
+    val mk0   = mk
+    val mk1   = mk
     JobTest(new TypedMultiSelfJoinJob(_))
       .source(TypedText.tsv[(Int, Int)]("input0"), mk0)
       .source(TypedText.tsv[(Int, Int)]("input1"), mk1)
       .typedSink(TypedText.tsv[(Int, Int, Int, Int)]("output")) { outBuf =>
         "correctly do a multi-self-join" in {
-          def group(it: Seq[(Int, Int)])(red: (Int,
-                                         Int) => Int): Map[Int, Int] =
+          def group(
+              it: Seq[(Int, Int)]
+          )(red: (Int, Int) => Int): Map[Int, Int] =
             it.groupBy(_._1)
-              .mapValues { kvs =>
-                kvs.map(_._2).reduce(red)
-              }
+              .mapValues(kvs => kvs.map(_._2).reduce(red))
               .toMap
 
           val d0 = mk0.groupBy(_._1).mapValues(_.map { case (_, v) => v })
           val d1 = group(mk1)(_ max _)
           val d2 = group(mk1)(_ min _)
 
-          val correct = (d0.keySet ++ d1.keySet ++ d2.keySet).toList.flatMap {
-            k =>
+          val correct = (d0.keySet ++ d1.keySet ++ d2.keySet).toList
+            .flatMap { k =>
               (for {
                 v0s <- d0.get(k)
-                v1 <- d1.get(k)
-                v2 <- d2.get(k)
+                v1  <- d1.get(k)
+                v2  <- d2.get(k)
               } yield (v0s, (k, v1, v2)))
-          }.flatMap {
-            case (v0s, (k, v1, v2)) =>
-              v0s.map { (k, _, v1, v2) }
-          }.toList.sorted
+            }
+            .flatMap {
+              case (v0s, (k, v1, v2)) =>
+                v0s.map((k, _, v1, v2))
+            }
+            .toList
+            .sorted
 
           outBuf should have size (correct.size)
           outBuf.toList.sorted shouldBe correct
@@ -1238,9 +1291,7 @@ class TypedMapGroup(args: Args) extends Job(args) {
   TypedPipe
     .from(TypedText.tsv[(Int, Int)]("input"))
     .group
-    .mapGroup { (k, iters) =>
-      iters.map(_ * k)
-    }
+    .mapGroup((k, iters) => iters.map(_ * k))
     .max
     .write(TypedText.tsv[(Int, Int)]("output"))
 }
@@ -1248,21 +1299,17 @@ class TypedMapGroup(args: Args) extends Job(args) {
 class TypedMapGroupTest extends WordSpec with Matchers {
   import Dsl._
   "A TypedMapGroup" should {
-    val rng = new java.util.Random
+    val rng   = new java.util.Random
     val COUNT = 10000
-    val KEYS = 100
-    val mk = (1 to COUNT).map { _ =>
-      (rng.nextInt % KEYS, rng.nextInt)
-    }
+    val KEYS  = 100
+    val mk    = (1 to COUNT).map(_ => (rng.nextInt % KEYS, rng.nextInt))
     JobTest(new TypedMapGroup(_))
       .source(TypedText.tsv[(Int, Int)]("input"), mk)
       .typedSink(TypedText.tsv[(Int, Int)]("output")) { outBuf =>
         "correctly do a mapGroup" in {
           def mapGroup(it: Seq[(Int, Int)]): Map[Int, Int] =
             it.groupBy(_._1)
-              .mapValues { kvs =>
-                kvs.map { case (k, v) => k * v }.max
-              }
+              .mapValues(kvs => kvs.map { case (k, v) => k * v }.max)
               .toMap
           val correct = mapGroup(mk).toList.sorted
           outBuf should have size (correct.size)
@@ -1324,7 +1371,7 @@ class TypedSelfLeftCrossTest extends WordSpec with Matchers {
           val sum = input.reduceOption(_ + _)
           // toString to deal with our hadoop testing jank
           outBuf.toList.sortBy(_._1).toString shouldBe
-          (input.sorted.map((_, sum)).toString)
+            (input.sorted.map((_, sum)).toString)
         }
         idx += 1
       }(implicitly[TypeDescriptor[(Int, Option[Int])]].converter)
@@ -1359,7 +1406,7 @@ class JoinMapGroupJobTest extends WordSpec with Matchers {
 }
 
 class MapValueStreamNonEmptyIteratorJob(args: Args) extends Job(args) {
-  val input = TypedPipe.from[(Int, String)](Seq((1, "a"), (1, "b"), (3, "a")))
+  val input     = TypedPipe.from[(Int, String)](Seq((1, "a"), (1, "b"), (3, "a")))
   val extraKeys = TypedPipe.from[(Int, String)](Seq((4, "a")))
 
   input
@@ -1389,9 +1436,7 @@ class NullSinkJob(args: Args, m: scala.collection.mutable.Buffer[Int])
     extends Job(args) {
   TypedPipe
     .from(0 to 100)
-    .map { i =>
-      m += i; i
-    } // side effect
+    .map { i => m += i; i } // side effect
     .write(source.NullSink)
 }
 
@@ -1411,7 +1456,7 @@ class NullSinkJobTest extends WordSpec with Matchers {
 
 class TypedSketchJoinJob(args: Args) extends Job(args) {
   val zero = TypedPipe.from(TypedText.tsv[(Int, Int)]("input0"))
-  val one = TypedPipe.from(TypedText.tsv[(Int, Int)]("input1"))
+  val one  = TypedPipe.from(TypedText.tsv[(Int, Int)]("input1"))
 
   implicit def serialize(k: Int) = k.toString.getBytes
 
@@ -1429,7 +1474,7 @@ class TypedSketchJoinJob(args: Args) extends Job(args) {
 
 class TypedSketchLeftJoinJob(args: Args) extends Job(args) {
   val zero = TypedPipe.from(TypedText.tsv[(Int, Int)]("input0"))
-  val one = TypedPipe.from(TypedText.tsv[(Int, Int)]("input1"))
+  val one  = TypedPipe.from(TypedText.tsv[(Int, Int)]("input1"))
 
   implicit def serialize(k: Int) = k.toString.getBytes
 
@@ -1450,30 +1495,36 @@ object TypedSketchJoinTestHelper {
 
   val rng = new java.util.Random
   def generateInput(
-      size: Int, max: Int, dist: (Int) => Int): List[(Int, Int)] = {
+      size: Int,
+      max: Int,
+      dist: (Int) => Int
+  ): List[(Int, Int)] = {
     def next: Int = rng.nextInt(max)
 
     (0 to size).flatMap { i =>
       val k = next
-      (1 to dist(k)).map { j =>
-        (k, next)
-      }
+      (1 to dist(k)).map(j => (k, next))
     }.toList
   }
 
   def runJobWithArguments(
       fn: (Args) => Job,
       reducers: Int,
-      dist: (Int) => Int): (List[(Int, Int, Int)], List[(Int, Int, Int)]) = {
+      dist: (Int) => Int
+  ): (List[(Int, Int, Int)], List[(Int, Int, Int)]) = {
 
     val sketchResult = Buffer[(Int, Int, Int)]()
-    val innerResult = Buffer[(Int, Int, Int)]()
+    val innerResult  = Buffer[(Int, Int, Int)]()
     JobTest(fn)
       .arg("reducers", reducers.toString)
-      .source(TypedText.tsv[(Int, Int)]("input0"),
-              generateInput(1000, 100, dist))
-      .source(TypedText.tsv[(Int, Int)]("input1"),
-              generateInput(100, 100, x => 1))
+      .source(
+        TypedText.tsv[(Int, Int)]("input0"),
+        generateInput(1000, 100, dist)
+      )
+      .source(
+        TypedText.tsv[(Int, Int)]("input1"),
+        generateInput(100, 100, x => 1)
+      )
       .typedSink(TypedText.tsv[(Int, Int, Int)]("output-sketch")) { outBuf =>
         sketchResult ++= outBuf
       }
@@ -1484,7 +1535,7 @@ object TypedSketchJoinTestHelper {
       .runHadoop
       .finish
 
-      (sketchResult.toList.sorted, innerResult.toList.sorted)
+    (sketchResult.toList.sorted, innerResult.toList.sorted)
   }
 }
 
@@ -1501,13 +1552,19 @@ class TypedSketchJoinJobTest extends WordSpec with Matchers {
 
     "get the same result when half the left keys are missing" in {
       val (sk, inner) = runJobWithArguments(
-          new TypedSketchJoinJob(_), 10, x => if (x < 50) 0 else 1)
+        new TypedSketchJoinJob(_),
+        10,
+        x => if (x < 50) 0 else 1
+      )
       sk shouldBe inner
     }
 
     "get the same result with a massive skew to one key" in {
       val (sk, inner) = runJobWithArguments(
-          new TypedSketchJoinJob(_), 10, x => if (x == 50) 1000 else 1)
+        new TypedSketchJoinJob(_),
+        10,
+        x => if (x == 50) 1000 else 1
+      )
       sk shouldBe inner
     }
 
@@ -1519,7 +1576,10 @@ class TypedSketchJoinJobTest extends WordSpec with Matchers {
 
     "still work with massive skew and only one reducer" in {
       val (sk, inner) = runJobWithArguments(
-          new TypedSketchJoinJob(_), 1, x => if (x == 50) 1000 else 1)
+        new TypedSketchJoinJob(_),
+        1,
+        x => if (x == 50) 1000 else 1
+      )
       sk shouldBe inner
     }
   }
@@ -1538,13 +1598,19 @@ class TypedSketchLeftJoinJobTest extends WordSpec with Matchers {
 
     "get the same result when half the left keys are missing" in {
       val (sk, inner) = runJobWithArguments(
-          new TypedSketchJoinJob(_), 10, x => if (x < 50) 0 else 1)
+        new TypedSketchJoinJob(_),
+        10,
+        x => if (x < 50) 0 else 1
+      )
       sk shouldBe inner
     }
 
     "get the same result with a massive skew to one key" in {
       val (sk, inner) = runJobWithArguments(
-          new TypedSketchJoinJob(_), 10, x => if (x == 50) 1000 else 1)
+        new TypedSketchJoinJob(_),
+        10,
+        x => if (x == 50) 1000 else 1
+      )
       sk shouldBe inner
     }
 
@@ -1556,7 +1622,10 @@ class TypedSketchLeftJoinJobTest extends WordSpec with Matchers {
 
     "still work with massive skew and only one reducer" in {
       val (sk, inner) = runJobWithArguments(
-          new TypedSketchJoinJob(_), 1, x => if (x == 50) 1000 else 1)
+        new TypedSketchJoinJob(_),
+        1,
+        x => if (x == 50) 1000 else 1
+      )
       sk shouldBe inner
     }
   }

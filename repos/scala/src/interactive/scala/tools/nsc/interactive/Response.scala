@@ -22,8 +22,8 @@ package interactive
 class Response[T] {
 
   private var data: Option[Either[T, Throwable]] = None
-  private var complete = false
-  private var cancelled = false
+  private var complete                           = false
+  private var cancelled                          = false
 
   /** Set provisional data, more to come
     */
@@ -56,9 +56,9 @@ class Response[T] {
         wait()
       } catch {
         case exc: InterruptedException => {
-            Thread.currentThread().interrupt()
-            raise(exc)
-          }
+          Thread.currentThread().interrupt()
+          raise(exc)
+        }
       }
     }
     data.get
@@ -70,16 +70,16 @@ class Response[T] {
     *  or else None if no provisional result was stored.
     */
   def get(timeout: Long): Option[Either[T, Throwable]] = synchronized {
-    val start = System.currentTimeMillis
+    val start   = System.currentTimeMillis
     var current = start
     while (!complete && start + timeout > current) {
       try {
         wait(timeout - (current - start))
       } catch {
         case exc: InterruptedException => {
-            Thread.currentThread().interrupt()
-            raise(exc)
-          }
+          Thread.currentThread().interrupt()
+          raise(exc)
+        }
       }
       current = System.currentTimeMillis
     }
@@ -88,7 +88,7 @@ class Response[T] {
 
   /** Final data set was stored
     */
-  def isComplete = synchronized { complete }
+  def isComplete = synchronized(complete)
 
   /** Cancel action computing this response (Only the
     *  party that calls get on a response may cancel).
@@ -97,7 +97,7 @@ class Response[T] {
 
   /** A cancel request for this response has been issued
     */
-  def isCancelled = synchronized { cancelled }
+  def isCancelled = synchronized(cancelled)
 
   def clear() = synchronized {
     data = None

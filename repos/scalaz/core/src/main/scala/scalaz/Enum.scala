@@ -49,7 +49,8 @@ trait Enum[F] extends Order[F] { self =>
     * @param m The implementation of the zero function from which to start.
     */
   def succStateZeroM[X, Y](f: F => X, k: X => State[F, Y])(
-      implicit m: Monoid[F]): Y =
+      implicit m: Monoid[F]
+  ): Y =
     (succState(f) flatMap k) eval m.zero
 
   /**
@@ -96,7 +97,8 @@ trait Enum[F] extends Order[F] { self =>
     * @param m The implementation of the zero function from which to start.
     */
   def predStateZeroM[X, Y](f: F => X, k: X => State[F, Y])(
-      implicit m: Monoid[F]): Y =
+      implicit m: Monoid[F]
+  ): Y =
     (predState(f) flatMap k) eval m.zero
 
   /**
@@ -137,17 +139,20 @@ trait Enum[F] extends Order[F] { self =>
     EphemeralStream.cons(a, fromStep(n, succn(n, a)))
 
   def fromTo(a: F, z: F): EphemeralStream[F] =
-    EphemeralStream.cons(a,
-                         if (equal(a, z)) EphemeralStream.emptyEphemeralStream
-                         else
-                           fromTo(if (lessThan(a, z)) succ(a) else pred(a), z))
+    EphemeralStream.cons(
+      a,
+      if (equal(a, z)) EphemeralStream.emptyEphemeralStream
+      else
+        fromTo(if (lessThan(a, z)) succ(a) else pred(a), z)
+    )
 
   def fromToL(a: F, z: F): List[F] = {
     def fromToLT(a: F, z: F): Trampoline[List[F]] =
       if (equal(a, z)) return_(a :: Nil)
       else
         suspend(
-            fromToLT(if (lessThan(a, z)) succ(a) else pred(a), z) map (a :: _))
+          fromToLT(if (lessThan(a, z)) succ(a) else pred(a), z) map (a :: _)
+        )
     fromToLT(a, z).run
   }
 
@@ -156,11 +161,13 @@ trait Enum[F] extends Order[F] { self =>
       if (n > 0) greaterThan(_, _)
       else if (n < 0) lessThan(_, _)
       else (_: F, _: F) => false
-    EphemeralStream.cons(a, {
-      val k = succn(n, a)
-      if (cmp(k, z)) EphemeralStream.emptyEphemeralStream
-      else fromStepTo(n, k, z)
-    })
+    EphemeralStream.cons(
+      a, {
+        val k = succn(n, a)
+        if (cmp(k, z)) EphemeralStream.emptyEphemeralStream
+        else fromStepTo(n, k, z)
+      }
+    )
   }
 
   def fromStepToL(n: Int, a: F, z: F): List[F] = {

@@ -25,9 +25,16 @@ import scala.language.existentials
 
 import com.google.common.reflect.TypeToken
 
-import org.apache.spark.sql.catalyst.analysis.{UnresolvedAttribute, UnresolvedExtractValue}
+import org.apache.spark.sql.catalyst.analysis.{
+  UnresolvedAttribute,
+  UnresolvedExtractValue
+}
 import org.apache.spark.sql.catalyst.expressions._
-import org.apache.spark.sql.catalyst.util.{ArrayBasedMapData, DateTimeUtils, GenericArrayData}
+import org.apache.spark.sql.catalyst.util.{
+  ArrayBasedMapData,
+  DateTimeUtils,
+  GenericArrayData
+}
 import org.apache.spark.sql.types._
 import org.apache.spark.unsafe.types.UTF8String
 
@@ -37,8 +44,8 @@ import org.apache.spark.unsafe.types.UTF8String
 object JavaTypeInference {
 
   private val iterableType = TypeToken.of(classOf[JIterable[_]])
-  private val mapType = TypeToken.of(classOf[JMap[_, _]])
-  private val listType = TypeToken.of(classOf[JList[_]])
+  private val mapType      = TypeToken.of(classOf[JMap[_, _]])
+  private val listType     = TypeToken.of(classOf[JList[_]])
   private val iteratorReturnType =
     classOf[JIterable[_]].getMethod("iterator").getGenericReturnType
   private val nextReturnType =
@@ -53,39 +60,37 @@ object JavaTypeInference {
     * @param beanClass Java type
     * @return (SQL data type, nullable)
     */
-  def inferDataType(beanClass: Class[_]): (DataType, Boolean) = {
+  def inferDataType(beanClass: Class[_]): (DataType, Boolean) =
     inferDataType(TypeToken.of(beanClass))
-  }
 
   /**
     * Infers the corresponding SQL data type of a Java type.
     * @param typeToken Java type
     * @return (SQL data type, nullable)
     */
-  private def inferDataType(typeToken: TypeToken[_]): (DataType, Boolean) = {
+  private def inferDataType(typeToken: TypeToken[_]): (DataType, Boolean) =
     typeToken.getRawType match {
       case c: Class[_] if c.isAnnotationPresent(classOf[SQLUserDefinedType]) =>
-        (c.getAnnotation(classOf[SQLUserDefinedType]).udt().newInstance(),
-         true)
+        (c.getAnnotation(classOf[SQLUserDefinedType]).udt().newInstance(), true)
 
       case c: Class[_] if c == classOf[java.lang.String] => (StringType, true)
-      case c: Class[_] if c == classOf[Array[Byte]] => (BinaryType, true)
+      case c: Class[_] if c == classOf[Array[Byte]]      => (BinaryType, true)
 
-      case c: Class[_] if c == java.lang.Short.TYPE => (ShortType, false)
+      case c: Class[_] if c == java.lang.Short.TYPE   => (ShortType, false)
       case c: Class[_] if c == java.lang.Integer.TYPE => (IntegerType, false)
-      case c: Class[_] if c == java.lang.Long.TYPE => (LongType, false)
-      case c: Class[_] if c == java.lang.Double.TYPE => (DoubleType, false)
-      case c: Class[_] if c == java.lang.Byte.TYPE => (ByteType, false)
-      case c: Class[_] if c == java.lang.Float.TYPE => (FloatType, false)
+      case c: Class[_] if c == java.lang.Long.TYPE    => (LongType, false)
+      case c: Class[_] if c == java.lang.Double.TYPE  => (DoubleType, false)
+      case c: Class[_] if c == java.lang.Byte.TYPE    => (ByteType, false)
+      case c: Class[_] if c == java.lang.Float.TYPE   => (FloatType, false)
       case c: Class[_] if c == java.lang.Boolean.TYPE => (BooleanType, false)
 
       case c: Class[_] if c == classOf[java.lang.Short] => (ShortType, true)
       case c: Class[_] if c == classOf[java.lang.Integer] =>
         (IntegerType, true)
-      case c: Class[_] if c == classOf[java.lang.Long] => (LongType, true)
+      case c: Class[_] if c == classOf[java.lang.Long]   => (LongType, true)
       case c: Class[_] if c == classOf[java.lang.Double] => (DoubleType, true)
-      case c: Class[_] if c == classOf[java.lang.Byte] => (ByteType, true)
-      case c: Class[_] if c == classOf[java.lang.Float] => (FloatType, true)
+      case c: Class[_] if c == classOf[java.lang.Byte]   => (ByteType, true)
+      case c: Class[_] if c == classOf[java.lang.Float]  => (FloatType, true)
       case c: Class[_] if c == classOf[java.lang.Boolean] =>
         (BooleanType, true)
 
@@ -104,8 +109,8 @@ object JavaTypeInference {
         (ArrayType(dataType, nullable), true)
 
       case _ if mapType.isAssignableFrom(typeToken) =>
-        val (keyType, valueType) = mapKeyValueType(typeToken)
-        val (keyDataType, _) = inferDataType(keyType)
+        val (keyType, valueType)      = mapKeyValueType(typeToken)
+        val (keyDataType, _)          = inferDataType(keyType)
         val (valueDataType, nullable) = inferDataType(valueType)
         (MapType(keyDataType, valueDataType, nullable), true)
 
@@ -123,28 +128,30 @@ object JavaTypeInference {
         }
         (new StructType(fields), true)
     }
-  }
 
   private def getJavaBeanProperties(
-      beanClass: Class[_]): Array[PropertyDescriptor] = {
+      beanClass: Class[_]
+  ): Array[PropertyDescriptor] = {
     val beanInfo = Introspector.getBeanInfo(beanClass)
-    beanInfo.getPropertyDescriptors.filter(
-        p => p.getReadMethod != null && p.getWriteMethod != null)
+    beanInfo.getPropertyDescriptors.filter(p =>
+      p.getReadMethod != null && p.getWriteMethod != null
+    )
   }
 
   private def elementType(typeToken: TypeToken[_]): TypeToken[_] = {
-    val typeToken2 = typeToken.asInstanceOf[TypeToken[_ <: JIterable[_]]]
+    val typeToken2        = typeToken.asInstanceOf[TypeToken[_ <: JIterable[_]]]
     val iterableSuperType = typeToken2.getSupertype(classOf[JIterable[_]])
-    val iteratorType = iterableSuperType.resolveType(iteratorReturnType)
+    val iteratorType      = iterableSuperType.resolveType(iteratorReturnType)
     iteratorType.resolveType(nextReturnType)
   }
 
   private def mapKeyValueType(
-      typeToken: TypeToken[_]): (TypeToken[_], TypeToken[_]) = {
-    val typeToken2 = typeToken.asInstanceOf[TypeToken[_ <: JMap[_, _]]]
+      typeToken: TypeToken[_]
+  ): (TypeToken[_], TypeToken[_]) = {
+    val typeToken2   = typeToken.asInstanceOf[TypeToken[_ <: JMap[_, _]]]
     val mapSuperType = typeToken2.getSupertype(classOf[JMap[_, _]])
-    val keyType = elementType(mapSuperType.resolveType(keySetReturnType))
-    val valueType = elementType(mapSuperType.resolveType(valuesReturnType))
+    val keyType      = elementType(mapSuperType.resolveType(keySetReturnType))
+    val valueType    = elementType(mapSuperType.resolveType(valuesReturnType))
     keyType -> valueType
   }
 
@@ -157,14 +164,14 @@ object JavaTypeInference {
     */
   private def inferExternalType(cls: Class[_]): DataType = cls match {
     case c if c == java.lang.Boolean.TYPE => BooleanType
-    case c if c == java.lang.Byte.TYPE => ByteType
-    case c if c == java.lang.Short.TYPE => ShortType
+    case c if c == java.lang.Byte.TYPE    => ByteType
+    case c if c == java.lang.Short.TYPE   => ShortType
     case c if c == java.lang.Integer.TYPE => IntegerType
-    case c if c == java.lang.Long.TYPE => LongType
-    case c if c == java.lang.Float.TYPE => FloatType
-    case c if c == java.lang.Double.TYPE => DoubleType
-    case c if c == classOf[Array[Byte]] => BinaryType
-    case _ => ObjectType(cls)
+    case c if c == java.lang.Long.TYPE    => LongType
+    case c if c == java.lang.Float.TYPE   => FloatType
+    case c if c == java.lang.Double.TYPE  => DoubleType
+    case c if c == classOf[Array[Byte]]   => BinaryType
+    case _                                => ObjectType(cls)
   }
 
   /**
@@ -173,12 +180,13 @@ object JavaTypeInference {
     * of the same name as the constructor arguments.  Nested classes will have their fields accessed
     * using UnresolvedExtractValue.
     */
-  def constructorFor(beanClass: Class[_]): Expression = {
+  def constructorFor(beanClass: Class[_]): Expression =
     constructorFor(TypeToken.of(beanClass), None)
-  }
 
   private def constructorFor(
-      typeToken: TypeToken[_], path: Option[Expression]): Expression = {
+      typeToken: TypeToken[_],
+      path: Option[Expression]
+  ): Expression = {
 
     /** Returns the current path with a sub-field extracted. */
     def addToPath(part: String): Expression =
@@ -209,93 +217,118 @@ object JavaTypeInference {
         NewInstance(c, getPath :: Nil, ObjectType(c))
 
       case c if c == classOf[java.sql.Date] =>
-        StaticInvoke(DateTimeUtils.getClass,
-                     ObjectType(c),
-                     "toJavaDate",
-                     getPath :: Nil,
-                     propagateNull = true)
+        StaticInvoke(
+          DateTimeUtils.getClass,
+          ObjectType(c),
+          "toJavaDate",
+          getPath :: Nil,
+          propagateNull = true
+        )
 
       case c if c == classOf[java.sql.Timestamp] =>
-        StaticInvoke(DateTimeUtils.getClass,
-                     ObjectType(c),
-                     "toJavaTimestamp",
-                     getPath :: Nil,
-                     propagateNull = true)
+        StaticInvoke(
+          DateTimeUtils.getClass,
+          ObjectType(c),
+          "toJavaTimestamp",
+          getPath :: Nil,
+          propagateNull = true
+        )
 
       case c if c == classOf[java.lang.String] =>
         Invoke(getPath, "toString", ObjectType(classOf[String]))
 
       case c if c == classOf[java.math.BigDecimal] =>
-        Invoke(getPath,
-               "toJavaBigDecimal",
-               ObjectType(classOf[java.math.BigDecimal]))
+        Invoke(
+          getPath,
+          "toJavaBigDecimal",
+          ObjectType(classOf[java.math.BigDecimal])
+        )
 
       case c if c.isArray =>
         val elementType = c.getComponentType
         val primitiveMethod = elementType match {
           case c if c == java.lang.Boolean.TYPE => Some("toBooleanArray")
-          case c if c == java.lang.Byte.TYPE => Some("toByteArray")
-          case c if c == java.lang.Short.TYPE => Some("toShortArray")
+          case c if c == java.lang.Byte.TYPE    => Some("toByteArray")
+          case c if c == java.lang.Short.TYPE   => Some("toShortArray")
           case c if c == java.lang.Integer.TYPE => Some("toIntArray")
-          case c if c == java.lang.Long.TYPE => Some("toLongArray")
-          case c if c == java.lang.Float.TYPE => Some("toFloatArray")
-          case c if c == java.lang.Double.TYPE => Some("toDoubleArray")
-          case _ => None
+          case c if c == java.lang.Long.TYPE    => Some("toLongArray")
+          case c if c == java.lang.Float.TYPE   => Some("toFloatArray")
+          case c if c == java.lang.Double.TYPE  => Some("toDoubleArray")
+          case _                                => None
         }
 
-        primitiveMethod.map { method =>
-          Invoke(getPath, method, ObjectType(c))
-        }.getOrElse {
-          Invoke(MapObjects(
-                     p => constructorFor(typeToken.getComponentType, Some(p)),
-                     getPath,
-                     inferDataType(elementType)._1),
-                 "array",
-                 ObjectType(c))
-        }
+        primitiveMethod
+          .map(method => Invoke(getPath, method, ObjectType(c)))
+          .getOrElse {
+            Invoke(
+              MapObjects(
+                p => constructorFor(typeToken.getComponentType, Some(p)),
+                getPath,
+                inferDataType(elementType)._1
+              ),
+              "array",
+              ObjectType(c)
+            )
+          }
 
       case c if listType.isAssignableFrom(typeToken) =>
         val et = elementType(typeToken)
-        val array = Invoke(MapObjects(p => constructorFor(et, Some(p)),
-                                      getPath,
-                                      inferDataType(et)._1),
-                           "array",
-                           ObjectType(classOf[Array[Any]]))
+        val array = Invoke(
+          MapObjects(
+            p => constructorFor(et, Some(p)),
+            getPath,
+            inferDataType(et)._1
+          ),
+          "array",
+          ObjectType(classOf[Array[Any]])
+        )
 
         StaticInvoke(
-            classOf[java.util.Arrays], ObjectType(c), "asList", array :: Nil)
+          classOf[java.util.Arrays],
+          ObjectType(c),
+          "asList",
+          array :: Nil
+        )
 
       case _ if mapType.isAssignableFrom(typeToken) =>
         val (keyType, valueType) = mapKeyValueType(typeToken)
-        val keyDataType = inferDataType(keyType)._1
-        val valueDataType = inferDataType(valueType)._1
+        val keyDataType          = inferDataType(keyType)._1
+        val valueDataType        = inferDataType(valueType)._1
 
         val keyData = Invoke(
-            MapObjects(p => constructorFor(keyType, Some(p)),
-                       Invoke(getPath, "keyArray", ArrayType(keyDataType)),
-                       keyDataType),
-            "array",
-            ObjectType(classOf[Array[Any]]))
+          MapObjects(
+            p => constructorFor(keyType, Some(p)),
+            Invoke(getPath, "keyArray", ArrayType(keyDataType)),
+            keyDataType
+          ),
+          "array",
+          ObjectType(classOf[Array[Any]])
+        )
 
         val valueData = Invoke(
-            MapObjects(p => constructorFor(valueType, Some(p)),
-                       Invoke(getPath, "valueArray", ArrayType(valueDataType)),
-                       valueDataType),
-            "array",
-            ObjectType(classOf[Array[Any]]))
+          MapObjects(
+            p => constructorFor(valueType, Some(p)),
+            Invoke(getPath, "valueArray", ArrayType(valueDataType)),
+            valueDataType
+          ),
+          "array",
+          ObjectType(classOf[Array[Any]])
+        )
 
-        StaticInvoke(ArrayBasedMapData.getClass,
-                     ObjectType(classOf[JMap[_, _]]),
-                     "toJavaMap",
-                     keyData :: valueData :: Nil)
+        StaticInvoke(
+          ArrayBasedMapData.getClass,
+          ObjectType(classOf[JMap[_, _]]),
+          "toJavaMap",
+          keyData :: valueData :: Nil
+        )
 
       case other =>
         val properties = getJavaBeanProperties(other)
         assert(properties.length > 0)
 
         val setters = properties.map { p =>
-          val fieldName = p.getName
-          val fieldType = typeToken.method(p.getReadMethod).getReturnType
+          val fieldName     = p.getName
+          val fieldType     = typeToken.method(p.getReadMethod).getReturnType
           val (_, nullable) = inferDataType(fieldType)
           val constructor =
             constructorFor(fieldType, Some(addToPath(fieldName)))
@@ -304,20 +337,22 @@ object JavaTypeInference {
               constructor
             } else {
               AssertNotNull(
-                  constructor, Seq("currently no type path record in java"))
+                constructor,
+                Seq("currently no type path record in java")
+              )
             }
           p.getWriteMethod.getName -> setter
         }.toMap
 
-        val newInstance = NewInstance(
-            other, Nil, ObjectType(other), propagateNull = false)
+        val newInstance =
+          NewInstance(other, Nil, ObjectType(other), propagateNull = false)
         val result = InitializeJavaBean(newInstance, setters)
 
         if (path.nonEmpty) {
           expressions.If(
-              IsNull(getPath),
-              expressions.Literal.create(null, ObjectType(other)),
-              result
+            IsNull(getPath),
+            expressions.Literal.create(null, ObjectType(other)),
+            result
           )
         } else {
           result
@@ -335,19 +370,27 @@ object JavaTypeInference {
   }
 
   private def extractorFor(
-      inputObject: Expression, typeToken: TypeToken[_]): Expression = {
+      inputObject: Expression,
+      typeToken: TypeToken[_]
+  ): Expression = {
 
     def toCatalystArray(
-        input: Expression, elementType: TypeToken[_]): Expression = {
+        input: Expression,
+        elementType: TypeToken[_]
+    ): Expression = {
       val (dataType, nullable) = inferDataType(elementType)
       if (ScalaReflection.isNativeType(dataType)) {
-        NewInstance(classOf[GenericArrayData],
-                    input :: Nil,
-                    dataType = ArrayType(dataType, nullable))
+        NewInstance(
+          classOf[GenericArrayData],
+          input :: Nil,
+          dataType = ArrayType(dataType, nullable)
+        )
       } else {
-        MapObjects(extractorFor(_, elementType),
-                   input,
-                   ObjectType(elementType.getRawType))
+        MapObjects(
+          extractorFor(_, elementType),
+          input,
+          ObjectType(elementType.getRawType)
+        )
       }
     }
 
@@ -356,28 +399,36 @@ object JavaTypeInference {
     } else {
       typeToken.getRawType match {
         case c if c == classOf[String] =>
-          StaticInvoke(classOf[UTF8String],
-                       StringType,
-                       "fromString",
-                       inputObject :: Nil)
+          StaticInvoke(
+            classOf[UTF8String],
+            StringType,
+            "fromString",
+            inputObject :: Nil
+          )
 
         case c if c == classOf[java.sql.Timestamp] =>
-          StaticInvoke(DateTimeUtils.getClass,
-                       TimestampType,
-                       "fromJavaTimestamp",
-                       inputObject :: Nil)
+          StaticInvoke(
+            DateTimeUtils.getClass,
+            TimestampType,
+            "fromJavaTimestamp",
+            inputObject :: Nil
+          )
 
         case c if c == classOf[java.sql.Date] =>
-          StaticInvoke(DateTimeUtils.getClass,
-                       DateType,
-                       "fromJavaDate",
-                       inputObject :: Nil)
+          StaticInvoke(
+            DateTimeUtils.getClass,
+            DateType,
+            "fromJavaDate",
+            inputObject :: Nil
+          )
 
         case c if c == classOf[java.math.BigDecimal] =>
-          StaticInvoke(Decimal.getClass,
-                       DecimalType.SYSTEM_DEFAULT,
-                       "apply",
-                       inputObject :: Nil)
+          StaticInvoke(
+            Decimal.getClass,
+            DecimalType.SYSTEM_DEFAULT,
+            "apply",
+            inputObject :: Nil
+          )
 
         case c if c == classOf[java.lang.Boolean] =>
           Invoke(inputObject, "booleanValue", BooleanType)
@@ -405,24 +456,29 @@ object JavaTypeInference {
           // not guarantee they have same iteration order(which is different from scala map).
           // A possible solution is creating a new `MapObjects` that can iterate a map directly.
           throw new UnsupportedOperationException(
-              "map type is not supported currently")
+            "map type is not supported currently"
+          )
 
         case other =>
           val properties = getJavaBeanProperties(other)
           if (properties.length > 0) {
-            CreateNamedStruct(
-                properties.flatMap { p =>
+            CreateNamedStruct(properties.flatMap { p =>
               val fieldName = p.getName
               val fieldType = typeToken.method(p.getReadMethod).getReturnType
-              val fieldValue = Invoke(inputObject,
-                                      p.getReadMethod.getName,
-                                      inferExternalType(fieldType.getRawType))
-              expressions.Literal(fieldName) :: extractorFor(fieldValue,
-                                                             fieldType) :: Nil
+              val fieldValue = Invoke(
+                inputObject,
+                p.getReadMethod.getName,
+                inferExternalType(fieldType.getRawType)
+              )
+              expressions.Literal(fieldName) :: extractorFor(
+                fieldValue,
+                fieldType
+              ) :: Nil
             })
           } else {
             throw new UnsupportedOperationException(
-                s"Cannot infer type for class ${other.getName} because it is not bean-compliant")
+              s"Cannot infer type for class ${other.getName} because it is not bean-compliant"
+            )
           }
       }
     }

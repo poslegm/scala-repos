@@ -9,9 +9,9 @@ import nsc.plugins.PluginComponent
 class ThePlugin(val global: Global) extends Plugin {
   import global._
 
-  val name = "myplugin"
+  val name        = "myplugin"
   val description = "Declares one plugin with a missing requirement"
-  val components = List[PluginComponent](thePhase)
+  val components  = List[PluginComponent](thePhase)
 
   private object thePhase extends PluginComponent {
     val global = ThePlugin.this.global

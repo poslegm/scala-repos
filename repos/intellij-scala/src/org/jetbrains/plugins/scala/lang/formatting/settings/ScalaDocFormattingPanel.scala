@@ -7,7 +7,10 @@ import javax.swing.{JComponent, JPanel, JCheckBox}
 import com.intellij.application.options.codeStyle.OptionTreeWithPreviewPanel
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.ui.OnePixelDivider
-import com.intellij.psi.codeStyle.{LanguageCodeStyleSettingsProvider, CodeStyleSettings}
+import com.intellij.psi.codeStyle.{
+  LanguageCodeStyleSettingsProvider,
+  CodeStyleSettings
+}
 import com.intellij.ui.border.CustomLineBorder
 import org.jetbrains.plugins.scala.{ScalaLanguage, ScalaFileType}
 
@@ -18,9 +21,9 @@ import org.jetbrains.plugins.scala.{ScalaLanguage, ScalaFileType}
 class ScalaDocFormattingPanel(val settings: CodeStyleSettings)
     extends OptionTreeWithPreviewPanel(settings) {
 
-  private var myEnableCheckBox: JCheckBox = null
+  private var myEnableCheckBox: JCheckBox        = null
   private var myAsteriskStyleCheckBox: JCheckBox = null
-  private val myScaladocPanel: JPanel = new JPanel(new BorderLayout)
+  private val myScaladocPanel: JPanel            = new JPanel(new BorderLayout)
 
   init()
 
@@ -28,16 +31,17 @@ class ScalaDocFormattingPanel(val settings: CodeStyleSettings)
     super.init()
 
     myEnableCheckBox = new JCheckBox("Enable scaladoc formatting")
-    myEnableCheckBox.addActionListener(
-        new ActionListener() {
+    myEnableCheckBox.addActionListener(new ActionListener() {
       override def actionPerformed(e: ActionEvent): Unit = update()
     })
 
     myAsteriskStyleCheckBox = new JCheckBox(
-        "Use scaladoc indent for leading asterisk")
+      "Use scaladoc indent for leading asterisk"
+    )
 
     myPanel.setBorder(
-        new CustomLineBorder(OnePixelDivider.BACKGROUND, 1, 0, 0, 0))
+      new CustomLineBorder(OnePixelDivider.BACKGROUND, 1, 0, 0, 0)
+    )
     myScaladocPanel.add(BorderLayout.CENTER, myPanel)
     val topPanel = new JPanel(new BorderLayout)
     myScaladocPanel.add(topPanel, BorderLayout.NORTH)
@@ -135,6 +139,6 @@ class ScalaDocFormattingPanel(val settings: CodeStyleSettings)
 
 object ScalaDocFormattingPanel {
   val BLANK_LINES_GROUP = "Blank lines"
-  val ALIGNMENT_GROUP = "Alignment"
-  val OTHER_GROUP = "Other"
+  val ALIGNMENT_GROUP   = "Alignment"
+  val OTHER_GROUP       = "Other"
 }

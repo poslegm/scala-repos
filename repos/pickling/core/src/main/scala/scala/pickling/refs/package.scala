@@ -17,6 +17,6 @@ package refs {
   }
 
   sealed trait ShareNonPrimitives extends Share
-  sealed trait ShareEverything extends Share
-  sealed trait ShareNothing extends Share
+  sealed trait ShareEverything    extends Share
+  sealed trait ShareNothing       extends Share
 }

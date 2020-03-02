@@ -86,7 +86,7 @@ class Random private (rng64: () => Long) {
     * This is based on Apache Commons Math's nextGaussian, which in turn is based
     * on the Polar Method of Box, Muller, & Marsiglia as described in Knuth 3.4.1C
     */
-  @tailrec final def nextGaussian: Double = {
+  @tailrec final def nextGaussian: Double =
     if (next == next) {
       val tmp = next
       next = Double.NaN
@@ -94,16 +94,16 @@ class Random private (rng64: () => Long) {
     } else {
       val u1 = 2.0 * nextDouble - 1.0
       val u2 = 2.0 * nextDouble - 1.0
-      val s = u1 * u1 + u2 * u2
+      val s  = u1 * u1 + u2 * u2
 
       if (s >= 1) nextGaussian
       else {
-        val bm = if (s != 0) { math.sqrt(-2.0 * math.log(s) / s) } else s
+        val bm = if (s != 0) { math.sqrt(-2.0 * math.log(s) / s) }
+        else s
         next = u1 * bm
         u2 * bm
       }
     }
-  }
 }
 
 object Random {
@@ -136,7 +136,7 @@ object XorShift {
   def apply(seed: Long): () => Long = makeRNG((13, 7, 17), seed)
 
   def makeRNG(tup: (Int, Int, Int), seed: Long): () => Long = {
-    var seedL = seed
+    var seedL     = seed
     val (a, b, c) = tup
     () =>
       seedL ^= (seedL << a); seedL ^= (seedL >> b); seedL ^= (seedL << c); seedL
@@ -159,14 +159,13 @@ object LFib4 {
     for (i <- 0 until 256) state(i) = jrand.nextLong
     var c = 0
 
-    () =>
-      {
-        c += 1
-        c &= 0xFF
-        state(c) = state(c) + state((c + 58) & 0xFF) +
+    () => {
+      c += 1
+      c &= 0xFF
+      state(c) = state(c) + state((c + 58) & 0xFF) +
         state((c + 119) & 0xFF) + state((c + 178) & 0xFF)
-        state(c)
-      }
+      state(c)
+    }
   }
 }
 
@@ -190,14 +189,13 @@ object Ziff98 {
     var nd = 0
     for (i <- 0 until m) state(i) = jrand.nextLong
 
-    () =>
-      {
-        nd += 1
-        val (a1, b1, c1, d1, e1) =
-          (nd & m, (nd - a) & m, (nd - b) & m, (nd - c) & m, (nd - d) & m)
-        state(a1) = state(b1) ^ state(c1) ^ state(d1) ^ state(e1)
-        state(a1)
-      }
+    () => {
+      nd += 1
+      val (a1, b1, c1, d1, e1) =
+        (nd & m, (nd - a) & m, (nd - b) & m, (nd - c) & m, (nd - d) & m)
+      state(a1) = state(b1) ^ state(c1) ^ state(d1) ^ state(e1)
+      state(a1)
+    }
   }
 }
 

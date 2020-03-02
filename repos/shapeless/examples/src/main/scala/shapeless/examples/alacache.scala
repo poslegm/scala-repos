@@ -81,9 +81,9 @@ trait CachedFacet extends ProductISOFacet {
   trait CachedOps extends ProductISOOps {
     // we use our own synchronization to avoid unnecessary object creation
     // in getOrElseUpdate style queries.
-    private val cache = new WeakHashMap[C, WeakReference[C]]()
+    private val cache   = new WeakHashMap[C, WeakReference[C]]()
     private val uncache = new WeakHashMap[C, WeakReference[Some[P]]]()
-    def apply(p: P): C = intern(fromProduct(p))
+    def apply(p: P): C  = intern(fromProduct(p))
     // use this variant if you don't want auto-caching
     // and uncomment the method in CachedMethods
     //def apply(p: P): C = fromProduct(p)
@@ -109,8 +109,8 @@ trait CachedFacet extends ProductISOFacet {
         c
       }
     }
-    def alive(): Long = cache.synchronized { cache.size() }
-    def aliveExtracted(): Long = uncache.synchronized { uncache.size() }
+    def alive(): Long          = cache.synchronized(cache.size())
+    def aliveExtracted(): Long = uncache.synchronized(uncache.size())
   }
 
   val ops: CachedOps
@@ -120,28 +120,38 @@ trait CachedFacet extends ProductISOFacet {
   }
 
   trait CachedCompanion {
-    @nonGeneric def apply(elems: ops.P): C = ops.apply(elems)
+    @nonGeneric def apply(elems: ops.P): C       = ops.apply(elems)
     @nonGeneric def unapply(s: C): Option[ops.P] = ops.unapply(s)
-    @nonGeneric def alive(): Long = ops.alive()
-    @nonGeneric def aliveExtracted(): Long = ops.aliveExtracted()
+    @nonGeneric def alive(): Long                = ops.alive()
+    @nonGeneric def aliveExtracted(): Long       = ops.aliveExtracted()
   }
 }
 
 trait CachedCaseClassDefns
-    extends LogFacet with CachedFacet with ProductFacet
-    with PolymorphicEqualityFacet with CopyFacet with ToStringFacet {
+    extends LogFacet
+    with CachedFacet
+    with ProductFacet
+    with PolymorphicEqualityFacet
+    with CopyFacet
+    with ToStringFacet {
 
   trait CaseClassOps
-      extends LogOps with CachedOps with ProductOps with PolymorphicEqualityOps
-      with CopyOps with ToStringOps
+      extends LogOps
+      with CachedOps
+      with ProductOps
+      with PolymorphicEqualityOps
+      with CopyOps
+      with ToStringOps
 
   trait CaseClassCompanion extends CachedCompanion
 
   trait CaseClass
-      extends LogMethods with CachedMethods with ProductMethods
-      with PolymorphicEqualityMethods with CopyMethods with ToStringMethods {
-    self: C =>
-  }
+      extends LogMethods
+      with CachedMethods
+      with ProductMethods
+      with PolymorphicEqualityMethods
+      with CopyMethods
+      with ToStringMethods { self: C => }
 
   val ops: CaseClassOps
 
@@ -153,20 +163,21 @@ trait CachedCaseClassDefns
       tup: Tupler.Aux[Repr0, P0],
       pgen0: Generic.Aux[P0, Repr0],
       typ0: Typeable[C],
-      tag0: ClassTag[C]) = {
+      tag0: ClassTag[C]
+  ) = {
     val fqn = tag0.runtimeClass.getName
     new CaseClassOps {
-      type Repr = Repr0
+      type Repr  = Repr0
       type LRepr = LRepr0
-      type P = P0
-      val gen = gen0
-      val lgen = lgen0
-      val pgen = pgen0
-      val typ = typ0
-      val tag = tag0
-      val logger = Logger.getLogger(fqn)
+      type P     = P0
+      val gen           = gen0
+      val lgen          = lgen0
+      val pgen          = pgen0
+      val typ           = typ0
+      val tag           = tag0
+      val logger        = Logger.getLogger(fqn)
       val productPrefix = fqn.split("(\\.|\\$)").last
-      val productArity = toInt()
+      val productArity  = toInt()
     }
   }
 }
@@ -182,7 +193,7 @@ object ALaCacheDemo extends App {
     val ops = Ops
     object Foo extends CaseClassCompanion
     // keep the constructor private so everybody has to go through .apply
-    class Foo private[FooDefns](val i: Int, val s: String) extends CaseClass {
+    class Foo private[FooDefns] (val i: Int, val s: String) extends CaseClass {
       def stuff = log.info("hello")
     }
   }
@@ -242,7 +253,7 @@ object ALaCacheDemo extends App {
   assert(foo == fooCopy)
   assert(foo.hashCode == fooCopy.hashCode)
 
-  val mod = Foo(13, "foo")
+  val mod    = Foo(13, "foo")
   val fooMod = foo.copy(i = 13)
   assert(fooMod ne foo)
   assert(mod == fooMod)

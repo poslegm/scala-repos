@@ -56,8 +56,10 @@ import parallel.ParSet
   *  @define mayNotTerminateInf
   */
 trait SetLike[A, +This <: SetLike[A, This] with Set[A]]
-    extends IterableLike[A, This] with GenSetLike[A, This]
-    with Subtractable[A, This] with Parallelizable[A, ParSet[A]] {
+    extends IterableLike[A, This]
+    with GenSetLike[A, This]
+    with Subtractable[A, This]
+    with Parallelizable[A, ParSet[A]] {
   self =>
 
   /** The empty set of the same type as this set
@@ -76,14 +78,13 @@ trait SetLike[A, +This <: SetLike[A, This] with Set[A]]
   protected[this] override def parCombiner = ParSet.newCombiner[A]
 
   // Default collection type appropriate for immutable collections; mutable collections override this
-  override def toSeq: Seq[A] = {
+  override def toSeq: Seq[A] =
     if (isEmpty) Vector.empty[A]
     else {
       val vb = Vector.newBuilder[A]
       foreach(vb += _)
       vb.result
     }
-  }
 
   override def toBuffer[A1 >: A]: mutable.Buffer[A1] = {
     val result = new mutable.ArrayBuffer[A1](size)
@@ -95,10 +96,13 @@ trait SetLike[A, +This <: SetLike[A, This] with Set[A]]
   // note: this is only overridden here to add the migration annotation,
   // which I hope to turn into an Xlint style warning as the migration aspect
   // is not central to its importance.
-  @migration("Set.map now returns a Set, so it will discard duplicate values.",
-             "2.8.0")
+  @migration(
+    "Set.map now returns a Set, so it will discard duplicate values.",
+    "2.8.0"
+  )
   override def map[B, That](f: A => B)(
-      implicit bf: CanBuildFrom[This, B, That]): That = super.map(f)(bf)
+      implicit bf: CanBuildFrom[This, B, That]
+  ): That = super.map(f)(bf)
 
   /** Tests if some element is contained in this set.
     *
@@ -185,18 +189,17 @@ trait SetLike[A, +This <: SetLike[A, This] with Set[A]]
     *  @param len  the size of the subsets.
     *  @return     the iterator.
     */
-  def subsets(len: Int): Iterator[This] = {
+  def subsets(len: Int): Iterator[This] =
     if (len < 0 || len > size) Iterator.empty
     else new SubsetsItr(self.toIndexedSeq, len)
-  }
 
   /** An iterator over all subsets of this set.
     *
     *  @return     the iterator.
     */
   def subsets(): Iterator[This] = new AbstractIterator[This] {
-    private val elms = self.toIndexedSeq
-    private var len = 0
+    private val elms                = self.toIndexedSeq
+    private var len                 = 0
     private var itr: Iterator[This] = Iterator.empty
 
     def hasNext = len <= elms.size || itr.hasNext
@@ -222,7 +225,7 @@ trait SetLike[A, +This <: SetLike[A, This] with Set[A]]
     */
   private class SubsetsItr(elms: IndexedSeq[A], len: Int)
       extends AbstractIterator[This] {
-    private val idxs = Array.range(0, len + 1)
+    private val idxs     = Array.range(0, len + 1)
     private var _hasNext = true
     idxs(len) = elms.size
 
@@ -252,5 +255,5 @@ trait SetLike[A, +This <: SetLike[A, This] with Set[A]]
     *           Unless overridden this is simply `"Set"`.
     */
   override def stringPrefix: String = "Set"
-  override def toString = super [IterableLike].toString
+  override def toString             = super[IterableLike].toString
 }

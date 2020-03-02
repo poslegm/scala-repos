@@ -18,14 +18,17 @@ import scala.concurrent.Future
   * More tests are in [[mesosphere.marathon.tasks.TaskTrackerImplTest]]
   */
 class StatusUpdateActionResolverTest
-    extends FunSuite with Mockito with GivenWhenThen with ScalaFutures
+    extends FunSuite
+    with Mockito
+    with GivenWhenThen
+    with ScalaFutures
     with Matchers {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   test("an update for a non-existing tasks is mapped to fail") {
     val f = new Fixture
     Given("a taskID without task")
-    val appId = PathId("/app")
+    val appId  = PathId("/app")
     val taskId = Task.Id.forApp(appId)
     f.taskTracker.task(taskId) returns Future.successful(None)
     And("a status update")
@@ -39,20 +42,21 @@ class StatusUpdateActionResolverTest
 
     And("a fail action is returned")
     action.getClass should be(classOf[TaskOpProcessor.Action.Fail])
-    action.asInstanceOf[TaskOpProcessor.Action.Fail].cause.getMessage should equal(
-        s"$taskId of app [$appId] does not exist")
+    action
+      .asInstanceOf[TaskOpProcessor.Action.Fail]
+      .cause
+      .getMessage should equal(s"$taskId of app [$appId] does not exist")
 
     And("there are no more interactions")
     f.verifyNoMoreInteractions()
   }
 
   class Fixture {
-    val clock = ConstantClock()
-    val taskTracker = mock[TaskTracker]
+    val clock          = ConstantClock()
+    val taskTracker    = mock[TaskTracker]
     val actionResolver = new StatusUpdateActionResolver(clock, taskTracker)
 
-    def verifyNoMoreInteractions(): Unit = {
+    def verifyNoMoreInteractions(): Unit =
       noMoreInteractions(taskTracker)
-    }
   }
 }

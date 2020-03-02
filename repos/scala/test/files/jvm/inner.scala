@@ -35,12 +35,11 @@ class A {
   val impl = new Impl(0)
 
   class Impl2 extends Impl(1) with impl.Itf2 {
-    def method2 = {
+    def method2 =
       println(abc)
-    }
   }
 
-  def newImpl: Itf = new Impl(1)
+  def newImpl: Itf       = new Impl(1)
   def newImpl2: Itf#Itf2 = new Impl2
 
   class Outer1(arg1: Int) {
@@ -54,7 +53,7 @@ class A {
 
 object Scalatest {
   private val outputdir = System.getProperty("partest.output", "inner.obj")
-  private val scalalib = System.getProperty("partest.lib", "")
+  private val scalalib  = System.getProperty("partest.lib", "")
   private val classpath = outputdir + File.pathSeparator + scalalib
   private val javabin = {
     val jhome = new File(System.getProperty("java.home"))
@@ -63,11 +62,11 @@ object Scalatest {
     else new File(jhome, "bin").getAbsolutePath
   }
   private val javacmd = javabin + File.separator + "java"
-  private val javac = javabin + File.separator + "javac"
+  private val javac   = javabin + File.separator + "javac"
 
   def javac(src: String, fname: String) {
     val tmpfilename = outputdir + File.separator + fname
-    val tmpfile = new FileWriter(tmpfilename)
+    val tmpfile     = new FileWriter(tmpfilename)
     tmpfile.write(src)
     tmpfile.close
     exec(javac, "-d", outputdir, "-classpath", classpath, tmpfilename)
@@ -79,7 +78,7 @@ object Scalatest {
   /** Execute cmd, wait for the process to end and pipe its output to stdout */
   private def exec(args: String*) {
     val proc = Runtime.getRuntime().exec(args.toArray)
-    val inp = new BufferedReader(new InputStreamReader(proc.getInputStream))
+    val inp  = new BufferedReader(new InputStreamReader(proc.getInputStream))
     val errp = new BufferedReader(new InputStreamReader(proc.getErrorStream))
     proc.waitFor()
     while (inp.ready) println(inp.readLine())

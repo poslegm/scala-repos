@@ -4,7 +4,12 @@ import com.fasterxml.uuid.{EthernetAddress, Generators}
 import mesosphere.marathon.Protos.MarathonTask
 import mesosphere.marathon.core.task.bus.MarathonTaskStatus
 import mesosphere.marathon.core.task.tracker.impl.TaskSerializer
-import mesosphere.marathon.state.{AppDefinition, PathId, PersistentVolume, Timestamp}
+import mesosphere.marathon.state.{
+  AppDefinition,
+  PathId,
+  PersistentVolume,
+  Timestamp
+}
 import org.apache.mesos.Protos.TaskState
 import org.apache.mesos.Protos.TaskState._
 import org.apache.mesos.{Protos => MesosProtos}
@@ -36,7 +41,7 @@ sealed trait Task {
     taskId.mesosTaskId
   }
 
-  def mesosStatus: Option[MesosProtos.TaskStatus] = {
+  def mesosStatus: Option[MesosProtos.TaskStatus] =
     launched.flatMap(_.status.mesosStatus).orElse {
       launchedMesosId.map { mesosId =>
         val taskStatusBuilder = MesosProtos.TaskStatus.newBuilder
@@ -44,14 +49,13 @@ sealed trait Task {
           .setTaskId(mesosId)
 
         agentInfo.agentId.foreach { slaveId =>
-          taskStatusBuilder.setSlaveId(
-              MesosProtos.SlaveID.newBuilder().setValue(slaveId))
+          taskStatusBuilder
+            .setSlaveId(MesosProtos.SlaveID.newBuilder().setValue(slaveId))
         }
 
         taskStatusBuilder.build()
       }
     }
-  }
 
   def ipAddresses: Iterable[MesosProtos.NetworkInfo.IPAddress] =
     launched.map(_.ipAddresses).getOrElse(Iterable.empty)
@@ -62,7 +66,7 @@ sealed trait Task {
 
     maybeContainerIp match {
       case Some(ipAddress) if app.ipAddress.isDefined => ipAddress
-      case _ => agentInfo.host
+      case _                                          => agentInfo.host
     }
   }
 }
@@ -72,12 +76,13 @@ object Task {
   /**
     * A LaunchedEphemeral task is a stateless task that does not consume reserved resources or persistent volumes.
     */
-  case class LaunchedEphemeral(taskId: Task.Id,
-                               agentInfo: AgentInfo,
-                               appVersion: Timestamp,
-                               status: Status,
-                               networking: Networking)
-      extends Task {
+  case class LaunchedEphemeral(
+      taskId: Task.Id,
+      agentInfo: AgentInfo,
+      appVersion: Timestamp,
+      status: Status,
+      networking: Networking
+  ) extends Task {
 
     import LaunchedEphemeral.log
 
@@ -90,12 +95,11 @@ object Task {
 
     override def update(update: TaskStateOp): TaskStateChange = update match {
       // case 1: now running
-      case TaskStateOp.MesosUpdate(
-          MarathonTaskStatus.Running(mesosStatus), now)
+      case TaskStateOp.MesosUpdate(MarathonTaskStatus.Running(mesosStatus), now)
           if !hasStartedRunning =>
         val updated = copy(
-            status = status.copy(
-                  startedAt = Some(now), mesosStatus = mesosStatus))
+          status = status.copy(startedAt = Some(now), mesosStatus = mesosStatus)
+        )
         TaskStateChange.Update(updated)
 
       // case 2: terminal
@@ -105,28 +109,32 @@ object Task {
       // case 3: health or state updated
       case TaskStateOp.MesosUpdate(taskStatus, now) =>
         val healthOrStateChange = for {
-          current <- status.mesosStatus
-          update <- taskStatus.mesosStatus
+          current   <- status.mesosStatus
+          update    <- taskStatus.mesosStatus
           newStatus <- updatedHealthOrState(current, update)
-        } yield
-          TaskStateChange.Update(
-              copy(status = status.copy(mesosStatus = Some(newStatus))))
+        } yield TaskStateChange.Update(
+          copy(status = status.copy(mesosStatus = Some(newStatus)))
+        )
 
         healthOrStateChange.getOrElse {
           log.debug(
-              "Ignoring status update for {}. Status did not change.", taskId)
+            "Ignoring status update for {}. Status did not change.",
+            taskId
+          )
           TaskStateChange.NoChange
         }
 
       // failure case: Launch
       case _: TaskStateOp.Launch =>
         TaskStateChange.Failure(
-            "Unable to handle Launch op on LaunchedEphemeral")
+          "Unable to handle Launch op on LaunchedEphemeral"
+        )
 
       // failure case: Timeout
       case TaskStateOp.ReservationTimeout =>
         TaskStateChange.Failure(
-            "Unable to handle Timeout op on LaunchedEphemeral")
+          "Unable to handle Timeout op on LaunchedEphemeral"
+        )
     }
   }
 
@@ -142,8 +150,10 @@ object Task {
     * @param reservation Information about the reserved resources and persistent volumes
     */
   case class Reserved(
-      taskId: Task.Id, agentInfo: AgentInfo, reservation: Reservation)
-      extends Task {
+      taskId: Task.Id,
+      agentInfo: AgentInfo,
+      reservation: Reservation
+  ) extends Task {
 
     override def reservationWithVolumes: Option[Reservation] =
       Some(reservation)
@@ -153,12 +163,15 @@ object Task {
     override def update(update: TaskStateOp): TaskStateChange = update match {
       case TaskStateOp.Launch(appVersion, status, networking) =>
         TaskStateChange.Update(
-            LaunchedOnReservation(taskId,
-                                  agentInfo,
-                                  appVersion,
-                                  status,
-                                  networking,
-                                  reservation))
+          LaunchedOnReservation(
+            taskId,
+            agentInfo,
+            appVersion,
+            status,
+            networking,
+            reservation
+          )
+        )
 
       case TaskStateOp.ReservationTimeout =>
         TaskStateChange.Expunge
@@ -166,17 +179,19 @@ object Task {
       // failure case: MesosUpdate
       case _: TaskStateOp.MesosUpdate =>
         TaskStateChange.Failure(
-            "Unable to handle MesosUpdate op on Reserved task")
+          "Unable to handle MesosUpdate op on Reserved task"
+        )
     }
   }
 
-  case class LaunchedOnReservation(taskId: Task.Id,
-                                   agentInfo: AgentInfo,
-                                   appVersion: Timestamp,
-                                   status: Status,
-                                   networking: Networking,
-                                   reservation: Reservation)
-      extends Task {
+  case class LaunchedOnReservation(
+      taskId: Task.Id,
+      agentInfo: AgentInfo,
+      appVersion: Timestamp,
+      status: Status,
+      networking: Networking,
+      reservation: Reservation
+  ) extends Task {
 
     import LaunchedOnReservation.log
 
@@ -190,50 +205,54 @@ object Task {
 
     override def update(update: TaskStateOp): TaskStateChange = update match {
       // case 1: now running
-      case TaskStateOp.MesosUpdate(
-          MarathonTaskStatus.Running(mesosStatus), now)
+      case TaskStateOp.MesosUpdate(MarathonTaskStatus.Running(mesosStatus), now)
           if !hasStartedRunning =>
         val updated = copy(
-            status = status.copy(
-                  startedAt = Some(now), mesosStatus = mesosStatus))
+          status = status.copy(startedAt = Some(now), mesosStatus = mesosStatus)
+        )
         TaskStateChange.Update(updated)
 
       // case 2: terminal
       // FIXME (3221): handle task_lost, kill etc differently and set appropriate timeouts (if any)
       case TaskStateOp.MesosUpdate(MarathonTaskStatus.Terminal(_), now) =>
         TaskStateChange.Update(
-            Task.Reserved(
-                taskId = taskId,
-                agentInfo = agentInfo,
-                reservation = reservation.copy(
-                      state = Task.Reservation.State.Suspended(timeout = None))
-            ))
+          Task.Reserved(
+            taskId = taskId,
+            agentInfo = agentInfo,
+            reservation = reservation
+              .copy(state = Task.Reservation.State.Suspended(timeout = None))
+          )
+        )
 
       // case 3: health or state updated
       case TaskStateOp.MesosUpdate(taskStatus, now) =>
         val healthOrStateChange = for {
-          current <- status.mesosStatus
-          update <- taskStatus.mesosStatus
+          current   <- status.mesosStatus
+          update    <- taskStatus.mesosStatus
           newStatus <- updatedHealthOrState(current, update)
-        } yield
-          TaskStateChange.Update(
-              copy(status = status.copy(mesosStatus = Some(newStatus))))
+        } yield TaskStateChange.Update(
+          copy(status = status.copy(mesosStatus = Some(newStatus)))
+        )
 
         healthOrStateChange.getOrElse {
           log.debug(
-              "Ignoring status update for {}. Status did not change.", taskId)
+            "Ignoring status update for {}. Status did not change.",
+            taskId
+          )
           TaskStateChange.NoChange
         }
 
       // failure case: Launch
       case _: TaskStateOp.Launch =>
         TaskStateChange.Failure(
-            "Unable to handle Launch op on LaunchedOnReservation}")
+          "Unable to handle Launch op on LaunchedOnReservation}"
+        )
 
       // failure case: Timeout
       case TaskStateOp.ReservationTimeout =>
         TaskStateChange.Failure(
-            "Unable to handle Timeout op on LaunchedOnReservation")
+          "Unable to handle Timeout op on LaunchedOnReservation"
+        )
     }
   }
 
@@ -244,11 +263,12 @@ object Task {
   /** returns the new status if the health status has been added or changed, or if the state changed */
   private[this] def updatedHealthOrState(
       current: MesosProtos.TaskStatus,
-      update: MesosProtos.TaskStatus): Option[MesosProtos.TaskStatus] = {
+      update: MesosProtos.TaskStatus
+  ): Option[MesosProtos.TaskStatus] = {
 
     val healthy =
       update.hasHealthy &&
-      (!current.hasHealthy || current.getHealthy != update.getHealthy)
+        (!current.hasHealthy || current.getHealthy != update.getHealthy)
     val changed = healthy || current.getState != update.getState
     if (changed) {
       Some(update)
@@ -263,23 +283,22 @@ object Task {
   case class Id(idString: String) {
     lazy val mesosTaskId: MesosProtos.TaskID =
       MesosProtos.TaskID.newBuilder().setValue(idString).build()
-    lazy val appId: PathId = Id.appId(idString)
+    lazy val appId: PathId        = Id.appId(idString)
     override def toString: String = s"task [$idString]"
   }
 
   object Id {
     private val appDelimiter = "."
-    private val TaskIdRegex = """^(.+)[\._]([^_\.]+)$""".r
+    private val TaskIdRegex  = """^(.+)[\._]([^_\.]+)$""".r
     private val uuidGenerator =
       Generators.timeBasedGenerator(EthernetAddress.fromInterface())
 
-    def appId(taskId: String): PathId = {
+    def appId(taskId: String): PathId =
       taskId match {
         case TaskIdRegex(appId, uuid) => PathId.fromSafePath(appId)
         case _ =>
           throw new MatchError(s"taskId $taskId is no valid identifier")
       }
-    }
 
     def apply(mesosTaskId: MesosProtos.TaskID): Id =
       new Id(mesosTaskId.getValue)
@@ -295,7 +314,9 @@ object Task {
     * and associated persistent local volumes.
     */
   case class Reservation(
-      volumeIds: Iterable[LocalVolumeId], state: Reservation.State)
+      volumeIds: Iterable[LocalVolumeId],
+      state: Reservation.State
+  )
 
   object Reservation {
     sealed trait State {
@@ -330,7 +351,10 @@ object Task {
       * @param reason The reason why this timeout was set up
       */
     case class Timeout(
-        initiated: Timestamp, deadline: Timestamp, reason: Timeout.Reason)
+        initiated: Timestamp,
+        deadline: Timestamp,
+        reason: Timeout.Reason
+    )
 
     object Timeout {
       sealed trait Reason
@@ -364,7 +388,10 @@ object Task {
 
     def apply(appId: PathId, volume: PersistentVolume): LocalVolumeId =
       LocalVolumeId(
-          appId, volume.containerPath, uuidGenerator.generate().toString)
+        appId,
+        volume.containerPath,
+        uuidGenerator.generate().toString
+      )
 
     def unapply(id: String): Option[(LocalVolumeId)] = id match {
       case LocalVolumeEncoderRE(app, path, uuid) =>
@@ -377,7 +404,10 @@ object Task {
     * Represents a task which has been launched (i.e. sent to Mesos for launching).
     */
   case class Launched(
-      appVersion: Timestamp, status: Status, networking: Networking) {
+      appVersion: Timestamp,
+      status: Status,
+      networking: Networking
+  ) {
 
     def hasStartedRunning: Boolean = status.startedAt.isDefined
 
@@ -386,16 +416,18 @@ object Task {
     def ipAddresses: Iterable[MesosProtos.NetworkInfo.IPAddress] =
       networking match {
         case list: NetworkInfoList => list.addresses
-        case _ => Iterable.empty
+        case _                     => Iterable.empty
       }
   }
 
   /**
     * Info relating to the host on which the task has been launched.
     */
-  case class AgentInfo(host: String,
-                       agentId: Option[String],
-                       attributes: Iterable[MesosProtos.Attribute])
+  case class AgentInfo(
+      host: String,
+      agentId: Option[String],
+      attributes: Iterable[MesosProtos.Attribute]
+  )
 
   /**
     * Contains information about the status of a launched task including timestamps for important
@@ -405,9 +437,11 @@ object Task {
     *                 Mesos. This is important because we periodically check for any tasks with an old stagedAt
     *                 timestamp and kill them (See KillOverdueTasksActor).
     */
-  case class Status(stagedAt: Timestamp,
-                    startedAt: Option[Timestamp] = None,
-                    mesosStatus: Option[MesosProtos.TaskStatus] = None)
+  case class Status(
+      stagedAt: Timestamp,
+      startedAt: Option[Timestamp] = None,
+      mesosStatus: Option[MesosProtos.TaskStatus] = None
+  )
 
   /** Info on how to reach the task in the network. */
   sealed trait Networking {
@@ -424,8 +458,7 @@ object Task {
     * The task has been launched with one-IP-per-task settings. The ports can be discovered
     * by inspecting the [[mesosphere.marathon.state.DiscoveryInfo]] in the [[mesosphere.marathon.state.AppDefinition]].
     */
-  case class NetworkInfoList(
-      networkInfoList: Iterable[MesosProtos.NetworkInfo])
+  case class NetworkInfoList(networkInfoList: Iterable[MesosProtos.NetworkInfo])
       extends Networking {
     import scala.collection.JavaConverters._
     def addresses: Iterable[MesosProtos.NetworkInfo.IPAddress] =
@@ -443,8 +476,7 @@ object Task {
 
   object Terminated {
     def isTerminated(state: TaskState): Boolean = state match {
-      case TASK_ERROR | TASK_FAILED | TASK_FINISHED |
-          TASK_KILLED | TASK_LOST =>
+      case TASK_ERROR | TASK_FAILED | TASK_FINISHED | TASK_KILLED | TASK_LOST =>
         true
       case _ => false
     }

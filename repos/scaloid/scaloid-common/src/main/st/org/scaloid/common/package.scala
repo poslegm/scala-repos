@@ -45,7 +45,10 @@ import scala.util.Try
   * @author Sung-Ho Lee
   */
 package object common
-    extends Logger with SystemServices with Helpers with Implicits {
+    extends Logger
+    with SystemServices
+    with Helpers
+    with Implicits {
 
   val idSequence = new java.util.concurrent.atomic.AtomicInteger(0)
 
@@ -64,33 +67,29 @@ package object common
 
   lazy val uiThread = Looper.getMainLooper.getThread
 
-  def runOnUiThread(f: => Unit): Unit = {
+  def runOnUiThread(f: => Unit): Unit =
     if (uiThread == Thread.currentThread) {
       f
     } else {
-      handler.post(
-          new Runnable() {
+      handler.post(new Runnable() {
         def run() {
           f
         }
       })
     }
-  }
 
-  def evalOnUiThread[T](f: => T): Future[T] = {
+  def evalOnUiThread[T](f: => T): Future[T] =
     if (uiThread == Thread.currentThread) {
       Future.fromTry(Try(f))
     } else {
       val p = Promise[T]()
-      handler.post(
-          new Runnable() {
+      handler.post(new Runnable() {
         def run() {
           p.complete(Try(f))
         }
       })
       p.future
     }
-  }
 
   private[scaloid] trait NoGetterForThisProperty
 }

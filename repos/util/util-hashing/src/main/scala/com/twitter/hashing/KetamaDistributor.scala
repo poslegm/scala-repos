@@ -14,13 +14,12 @@ class KetamaDistributor[A](
     // clients who depend on those versions of libmemcached, we have to reproduce their result.
     // If the oldLibMemcachedVersionComplianceMode is true the behavior will be reproduced.
     oldLibMemcachedVersionComplianceMode: Boolean = false
-)
-    extends Distributor[A] {
+) extends Distributor[A] {
   private[this] val continuum = {
     val continuum = new TreeMap[Long, KetamaNode[A]]()
 
-    val nodeCount = _nodes.size
-    val totalWeight = _nodes.foldLeft(0) { _ + _.weight }
+    val nodeCount   = _nodes.size
+    val totalWeight = _nodes.foldLeft(0)(_ + _.weight)
 
     _nodes foreach { node =>
       val pointsOnRing =
@@ -48,13 +47,13 @@ class KetamaDistributor[A](
     continuum
   }
 
-  def nodes: Seq[A] = _nodes.map(_.handle)
+  def nodes: Seq[A]  = _nodes.map(_.handle)
   def nodeCount: Int = _nodes.size
 
   private def mapEntryForHash(hash: Long) = {
     // hashes are 32-bit because they are 32-bit on the libmemcached and
     // we need to maintain compatibility with libmemcached
-    val truncatedHash = hash & 0xffffffffL
+    val truncatedHash = hash & 0xFFFFFFFFL
 
     val entry = continuum.ceilingEntry(truncatedHash)
     if (entry == null) continuum.firstEntry
@@ -66,9 +65,8 @@ class KetamaDistributor[A](
     (entry.getKey, entry.getValue.handle)
   }
 
-  def nodeForHash(hash: Long): A = {
+  def nodeForHash(hash: Long): A =
     mapEntryForHash(hash).getValue.handle
-  }
 
   protected def computeHash(key: String, alignment: Int): Long = {
     val hasher = MessageDigest.getInstance("MD5")
@@ -76,6 +74,6 @@ class KetamaDistributor[A](
     val buffer = ByteBuffer.wrap(hasher.digest)
     buffer.order(ByteOrder.LITTLE_ENDIAN)
     buffer.position(alignment << 2)
-    buffer.getInt.toLong & 0xffffffffL
+    buffer.getInt.toLong & 0xFFFFFFFFL
   }
 }

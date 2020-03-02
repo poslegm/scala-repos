@@ -15,12 +15,12 @@ object JavaFormHelpers extends PlaySpecification {
     {
       def segment(name: String)(implicit app: Application) = {
         val formFactory = app.injector.instanceOf[play.data.FormFactory]
-        val form = formFactory.form(classOf[User])
-        val u = new UserForm
+        val form        = formFactory.form(classOf[User])
+        val u           = new UserForm
         u.setName("foo")
         u.setEmails(util.Arrays.asList("a@a", "b@b"))
         val userForm = formFactory.form(classOf[UserForm]).fill(u)
-        val body = html.helpers(form, userForm).body
+        val body     = html.helpers(form, userForm).body
         body.lines
           .dropWhile(_ != "<span class=\"" + name + "\">")
           .drop(1)
@@ -56,8 +56,8 @@ object JavaFormHelpers extends PlaySpecification {
     {
       "allow rendering input fields" in new WithApplication() {
         val formFactory = app.injector.instanceOf[play.data.FormFactory]
-        val form = formFactory.form(classOf[User])
-        val body = html.fullform(form).body
+        val form        = formFactory.form(classOf[User])
+        val body        = html.fullform(form).body
         body must contain("""type="text"""")
         body must contain("""type="password"""")
         body must contain("""name="email"""")
@@ -66,8 +66,8 @@ object JavaFormHelpers extends PlaySpecification {
 
       "allow custom field constructors" in new WithApplication() {
         val formFactory = app.injector.instanceOf[play.data.FormFactory]
-        val form = formFactory.form(classOf[User])
-        val body = html.withFieldConstructor(form).body
+        val form        = formFactory.form(classOf[User])
+        val body        = html.withFieldConstructor(form).body
         body must contain("foobar")
       }
     }

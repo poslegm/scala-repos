@@ -6,7 +6,7 @@ import Flag._
 import internal._
 
 object Test extends App {
-  val tb = cm.mkToolBox()
+  val tb  = cm.mkToolBox()
   val msg = internal.reificationSupport.newFreeTerm("msg", "C")
   internal.reificationSupport.setInfo(msg, typeOf[String])
   try {

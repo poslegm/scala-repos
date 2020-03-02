@@ -9,8 +9,8 @@ import org.scalatest._
   */
 class rot90Test extends FunSuite {
   test("rot90 numpy docs test") {
-    val m = DenseMatrix((1, 2), (3, 4))
-    val r90 = DenseMatrix((2, 4), (1, 3))
+    val m    = DenseMatrix((1, 2), (3, 4))
+    val r90  = DenseMatrix((2, 4), (1, 3))
     val r180 = DenseMatrix((4, 3), (2, 1))
     assert(rot90(m) === r90)
     assert(rot90(m, 2) === r180)

@@ -23,7 +23,7 @@ class LastWriteWinsQueue[A] extends java.util.Queue[A] {
     p1.size == 1 && item.get == p1.iterator.next()
 
   def remove(candidate: AnyRef) = {
-    val contained = item.get
+    val contained         = item.get
     val containsCandidate = contained.map(_ == candidate).getOrElse(false)
     if (containsCandidate) {
       item.compareAndSet(contained, None)
@@ -31,8 +31,9 @@ class LastWriteWinsQueue[A] extends java.util.Queue[A] {
     containsCandidate
   }
 
-  def toArray[T](array: Array[T with java.lang.Object])
-    : Array[T with java.lang.Object] = {
+  def toArray[T](
+      array: Array[T with java.lang.Object]
+  ): Array[T with java.lang.Object] = {
     val contained = item.get
     if (contained.isDefined && array.length > 0) {
       array(0) = contained.get.asInstanceOf[T with java.lang.Object]

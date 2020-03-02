@@ -24,7 +24,7 @@ import scala.collection.mutable
   */
 class ScalaApplicationUsagesCollector
     extends AbstractApplicationUsagesCollector {
-  override def getProjectUsages(project: Project): util.Set[UsageDescriptor] = {
+  override def getProjectUsages(project: Project): util.Set[UsageDescriptor] =
     extensions.inReadAction {
       val set: mutable.HashSet[UsageDescriptor] =
         new mutable.HashSet[UsageDescriptor]
@@ -34,7 +34,7 @@ class ScalaApplicationUsagesCollector
 
       //collecting Scala version
       var scala_version: Option[String] = None
-      var java_version: Option[String] = None
+      var java_version: Option[String]  = None
       for (module <- ModuleManager.getInstance(project).getModules) {
         module.scalaSdk.flatMap(_.compilerVersion).foreach { version =>
           scala_version = Some(version)
@@ -42,7 +42,7 @@ class ScalaApplicationUsagesCollector
 
         ModuleRootManager.getInstance(module).getSdk match {
           case jsdk: JavaSdk => java_version = Option(jsdk.getVersionString)
-          case _ =>
+          case _             =>
         }
       }
 
@@ -74,7 +74,9 @@ class ScalaApplicationUsagesCollector
         checkLibrary("securesocial", "SecureSocial")
         checkLibrary("com.github.dwhjames.awswrap", "AWSWrap")
         checkLibrary(
-            "com.github.mauricio.async.db.postgresql", "postgresql-async")
+          "com.github.mauricio.async.db.postgresql",
+          "postgresql-async"
+        )
         checkLibrary("com.netflix.edda", "Edda")
         checkLibrary("redis", "Rediscala")
         checkLibrary("scalaz", "Scalaz")
@@ -114,7 +116,6 @@ class ScalaApplicationUsagesCollector
       import scala.collection.JavaConversions._
       set
     }
-  }
 
   override def getGroupId: GroupDescriptor = GroupDescriptor.create("Scala")
 }

@@ -23,7 +23,7 @@ object TestkitDocSpec {
 
   class MyActor extends Actor {
     def receive = {
-      case Say42 => sender() ! 42
+      case Say42       => sender() ! 42
       case "some work" => sender() ! "some result"
     }
   }
@@ -92,7 +92,7 @@ class TestkitDocSpec extends AkkaSpec with DefaultTimeout with ImplicitSender {
     import akka.testkit.TestActorRef
 
     val actorRef = TestActorRef[MyActor]
-    val actor = actorRef.underlyingActor
+    val actor    = actorRef.underlyingActor
     //#test-actor-ref
   }
 
@@ -133,7 +133,7 @@ class TestkitDocSpec extends AkkaSpec with DefaultTimeout with ImplicitSender {
 
     val actorRef = TestActorRef(new MyActor)
     // hypothetical message stimulating a '42' answer
-    val future = actorRef ? Say42
+    val future               = actorRef ? Say42
     val Success(result: Int) = future.value.get
     result should be(42)
     //#test-behavior
@@ -153,13 +153,12 @@ class TestkitDocSpec extends AkkaSpec with DefaultTimeout with ImplicitSender {
     //#test-expecting-exceptions
     import akka.testkit.TestActorRef
 
-    val actorRef = TestActorRef(
-        new Actor {
+    val actorRef = TestActorRef(new Actor {
       def receive = {
         case "hello" => throw new IllegalArgumentException("boom")
       }
     })
-    intercept[IllegalArgumentException] { actorRef.receive("hello") }
+    intercept[IllegalArgumentException](actorRef.receive("hello"))
     //#test-expecting-exceptions
   }
 
@@ -173,7 +172,7 @@ class TestkitDocSpec extends AkkaSpec with DefaultTimeout with ImplicitSender {
     within(200 millis) {
       worker ! "some work"
       expectMsg("some result")
-      expectNoMsg // will block for the rest of the 200ms
+      expectNoMsg       // will block for the rest of the 200ms
       Thread.sleep(300) // will NOT make this block fail
     }
     //#test-within
@@ -191,7 +190,7 @@ class TestkitDocSpec extends AkkaSpec with DefaultTimeout with ImplicitSender {
     //#test-probe
     val probe1 = TestProbe()
     val probe2 = TestProbe()
-    val actor = system.actorOf(Props[MyDoubleEcho])
+    val actor  = system.actorOf(Props[MyDoubleEcho])
     actor ! ((probe1.ref, probe2.ref))
     actor ! "hello"
     probe1.expectMsg(500 millis, "hello")
@@ -214,7 +213,7 @@ class TestkitDocSpec extends AkkaSpec with DefaultTimeout with ImplicitSender {
 
   "demonstrate usage of test probe with custom name" in {
     //#test-probe-with-custom-name
-    val worker = TestProbe("worker")
+    val worker     = TestProbe("worker")
     val aggregator = TestProbe("aggregator")
 
     worker.ref.path.name should startWith("worker")
@@ -238,9 +237,12 @@ class TestkitDocSpec extends AkkaSpec with DefaultTimeout with ImplicitSender {
     import scala.concurrent.duration._
     import akka.pattern.ask
     //#test-probe-reply
-    val probe = TestProbe()
+    val probe  = TestProbe()
     val future = probe.ref ? "hello"
-    probe.expectMsg(0 millis, "hello") // TestActor runs on CallingThreadDispatcher
+    probe.expectMsg(
+      0 millis,
+      "hello"
+    ) // TestActor runs on CallingThreadDispatcher
     probe.reply("world")
     assert(future.isCompleted && future.value == Some(Success("world")))
     //#test-probe-reply
@@ -250,9 +252,9 @@ class TestkitDocSpec extends AkkaSpec with DefaultTimeout with ImplicitSender {
     import akka.testkit.TestProbe
     import akka.actor.Props
     //#test-probe-forward
-    val probe = TestProbe()
+    val probe  = TestProbe()
     val source = system.actorOf(Props(classOf[Source], probe.ref))
-    val dest = system.actorOf(Props[Destination])
+    val dest   = system.actorOf(Props[Destination])
     source ! "start"
     probe.expectMsg("work")
     probe.forward(dest)
@@ -273,10 +275,13 @@ class TestkitDocSpec extends AkkaSpec with DefaultTimeout with ImplicitSender {
     import com.typesafe.config.ConfigFactory
 
     implicit val system = ActorSystem(
-        "testsystem",
-        ConfigFactory.parseString("""
+      "testsystem",
+      ConfigFactory.parseString(
+        """
       akka.loggers = ["akka.testkit.TestEventListener"]
-      """))
+      """
+      )
+    )
     try {
       val actor = system.actorOf(Props.empty)
       EventFilter[ActorKilledException](occurrences = 1) intercept {
@@ -298,7 +303,8 @@ class TestkitDocSpec extends AkkaSpec with DefaultTimeout with ImplicitSender {
       //#put-your-test-code-here
       val probe = TestProbe()
       probe.send(testActor, "hello")
-      try expectMsg("hello") catch {
+      try expectMsg("hello")
+      catch {
         case NonFatal(e) => system.terminate(); throw e
       }
       //#put-your-test-code-here

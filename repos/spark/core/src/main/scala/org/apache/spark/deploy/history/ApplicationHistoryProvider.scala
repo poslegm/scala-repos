@@ -22,23 +22,27 @@ import java.util.zip.ZipOutputStream
 import org.apache.spark.SparkException
 import org.apache.spark.ui.SparkUI
 
-private[spark] case class ApplicationAttemptInfo(attemptId: Option[String],
-                                                 startTime: Long,
-                                                 endTime: Long,
-                                                 lastUpdated: Long,
-                                                 sparkUser: String,
-                                                 completed: Boolean = false)
+private[spark] case class ApplicationAttemptInfo(
+    attemptId: Option[String],
+    startTime: Long,
+    endTime: Long,
+    lastUpdated: Long,
+    sparkUser: String,
+    completed: Boolean = false
+)
 
 private[spark] case class ApplicationHistoryInfo(
-    id: String, name: String, attempts: List[ApplicationAttemptInfo]) {
+    id: String,
+    name: String,
+    attempts: List[ApplicationAttemptInfo]
+) {
 
   /**
     * Has this application completed?
     * @return true if the most recent attempt has completed
     */
-  def completed: Boolean = {
+  def completed: Boolean =
     attempts.nonEmpty && attempts.head.completed
-  }
 }
 
 /**
@@ -64,8 +68,7 @@ private[history] abstract class HistoryUpdateProbe {
   * @param ui Spark UI
   * @param updateProbe probe to call to check on the update state of this application attempt
   */
-private[history] case class LoadedAppUI(
-    ui: SparkUI, updateProbe: () => Boolean)
+private[history] case class LoadedAppUI(ui: SparkUI, updateProbe: () => Boolean)
 
 private[history] abstract class ApplicationHistoryProvider {
 
@@ -104,7 +107,9 @@ private[history] abstract class ApplicationHistoryProvider {
     * @throws SparkException if the logs for the app id cannot be found.
     */
   @throws(classOf[SparkException])
-  def writeEventLogs(appId: String,
-                     attemptId: Option[String],
-                     zipStream: ZipOutputStream): Unit
+  def writeEventLogs(
+      appId: String,
+      attemptId: Option[String],
+      zipStream: ZipOutputStream
+  ): Unit
 }

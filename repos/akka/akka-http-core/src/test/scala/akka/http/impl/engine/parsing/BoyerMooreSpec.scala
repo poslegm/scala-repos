@@ -28,13 +28,15 @@ class BoyerMooreSpec extends WordSpec with Matchers {
       val haystackLen = 1000
       (0 to 9) foreach { run ⇒
         val alphabet =
-          alphabetBase.take(4 + random.nextInt(5)) // 4 to 8 distinct alphanumeric chars
+          alphabetBase.take(
+            4 + random.nextInt(5)
+          ) // 4 to 8 distinct alphanumeric chars
         val randomAlphabetChars =
           Stream.continually(alphabet(random.nextInt(alphabet.length)))
         def randomBytes(num: Int): ByteString =
           ByteString(randomAlphabetChars.take(num): _*)
         val haystack = randomBytes(haystackLen)
-        val needle = randomBytes(run / 3 + 3) // 3 to 6 random alphabet chars
+        val needle   = randomBytes(run / 3 + 3) // 3 to 6 random alphabet chars
 
         val bmFinds = find(needle, haystack, skipFindsThatStartInFinds = true)
         val reFinds = findWithRegex(needle, haystack)
@@ -45,7 +47,7 @@ class BoyerMooreSpec extends WordSpec with Matchers {
 
           def showFind(ix: Int): String = {
             val startIdx = math.max(ix - 8, 0)
-            val endIdx = math.min(ix + needle.length + 8, haystack.length)
+            val endIdx   = math.min(ix + needle.length + 8, haystack.length)
 
             s"""...${showBytes(haystack.drop(startIdx).take(endIdx - startIdx))}...
                |${" " * (3 + math.min(8, ix) * 3)}${"^" * len(needle.length)}
@@ -67,22 +69,31 @@ class BoyerMooreSpec extends WordSpec with Matchers {
     }
   }
 
-  def findString(needle: String,
-                 haystack: String,
-                 skipFindsThatStartInFinds: Boolean = false): Seq[Int] =
+  def findString(
+      needle: String,
+      haystack: String,
+      skipFindsThatStartInFinds: Boolean = false
+  ): Seq[Int] =
     find(ByteString(needle), ByteString(haystack), skipFindsThatStartInFinds)
 
-  def find(needle: ByteString,
-           haystack: ByteString,
-           skipFindsThatStartInFinds: Boolean = false): Seq[Int] = {
+  def find(
+      needle: ByteString,
+      haystack: ByteString,
+      skipFindsThatStartInFinds: Boolean = false
+  ): Seq[Int] = {
     val boyerMoore = new BoyerMoore(needle.toArray[Byte])
     @tailrec def rec(offset: Int, result: Seq[Int]): Seq[Int] = {
-      val ix = try boyerMoore.nextIndex(haystack, offset) catch {
-        case NotEnoughDataException ⇒ -1
-      }
+      val ix =
+        try boyerMoore.nextIndex(haystack, offset)
+        catch {
+          case NotEnoughDataException ⇒ -1
+        }
       if (ix >= 0)
-        rec(if (skipFindsThatStartInFinds) ix + needle.length else ix + 1,
-            result :+ ix) else result
+        rec(
+          if (skipFindsThatStartInFinds) ix + needle.length else ix + 1,
+          result :+ ix
+        )
+      else result
     }
     rec(0, Seq.empty)
   }

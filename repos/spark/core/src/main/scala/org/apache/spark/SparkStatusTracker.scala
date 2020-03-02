@@ -31,7 +31,7 @@ package org.apache.spark
   *
   * NOTE: this class's constructor should be considered private and may be subject to change.
   */
-class SparkStatusTracker private[spark](sc: SparkContext) {
+class SparkStatusTracker private[spark] (sc: SparkContext) {
 
   private val jobProgressListener = sc.jobProgressListener
 
@@ -43,64 +43,63 @@ class SparkStatusTracker private[spark](sc: SparkContext) {
     * invocations of this method.  This method does not guarantee the order of the elements in
     * its result.
     */
-  def getJobIdsForGroup(jobGroup: String): Array[Int] = {
+  def getJobIdsForGroup(jobGroup: String): Array[Int] =
     jobProgressListener.synchronized {
       jobProgressListener.jobGroupToJobIds
         .getOrElse(jobGroup, Seq.empty)
         .toArray
     }
-  }
 
   /**
     * Returns an array containing the ids of all active stages.
     *
     * This method does not guarantee the order of the elements in its result.
     */
-  def getActiveStageIds(): Array[Int] = {
+  def getActiveStageIds(): Array[Int] =
     jobProgressListener.synchronized {
       jobProgressListener.activeStages.values.map(_.stageId).toArray
     }
-  }
 
   /**
     * Returns an array containing the ids of all active jobs.
     *
     * This method does not guarantee the order of the elements in its result.
     */
-  def getActiveJobIds(): Array[Int] = {
+  def getActiveJobIds(): Array[Int] =
     jobProgressListener.synchronized {
       jobProgressListener.activeJobs.values.map(_.jobId).toArray
     }
-  }
 
   /**
     * Returns job information, or `None` if the job info could not be found or was garbage collected.
     */
-  def getJobInfo(jobId: Int): Option[SparkJobInfo] = {
+  def getJobInfo(jobId: Int): Option[SparkJobInfo] =
     jobProgressListener.synchronized {
       jobProgressListener.jobIdToData.get(jobId).map { data =>
         new SparkJobInfoImpl(jobId, data.stageIds.toArray, data.status)
       }
     }
-  }
 
   /**
     * Returns stage information, or `None` if the stage info could not be found or was
     * garbage collected.
     */
-  def getStageInfo(stageId: Int): Option[SparkStageInfo] = {
+  def getStageInfo(stageId: Int): Option[SparkStageInfo] =
     jobProgressListener.synchronized {
       for (info <- jobProgressListener.stageIdToInfo.get(stageId);
-      data <- jobProgressListener.stageIdToData.get((stageId, info.attemptId))) yield {
-        new SparkStageInfoImpl(stageId,
-                               info.attemptId,
-                               info.submissionTime.getOrElse(0),
-                               info.name,
-                               info.numTasks,
-                               data.numActiveTasks,
-                               data.numCompleteTasks,
-                               data.numFailedTasks)
+           data <- jobProgressListener.stageIdToData.get(
+                    (stageId, info.attemptId)
+                  )) yield {
+        new SparkStageInfoImpl(
+          stageId,
+          info.attemptId,
+          info.submissionTime.getOrElse(0),
+          info.name,
+          info.numTasks,
+          data.numActiveTasks,
+          data.numCompleteTasks,
+          data.numFailedTasks
+        )
       }
     }
-  }
 }

@@ -12,12 +12,13 @@ object DensePolynomialBenchmark
     extends MyRunner(classOf[DensePolynomialBenchmark])
 
 class DensePolynomialBenchmark
-    extends BreezeBenchmark with BuildsRandomVectors {
+    extends BreezeBenchmark
+    with BuildsRandomVectors {
 
   def randomPoly(order: Int) = {
     val uniform = Uniform(0, 1)
-    val array = new Array[Double](order)
-    var i = 0
+    val array   = new Array[Double](order)
+    var i       = 0
     while (i < order) {
       array(i) = uniform.draw()
       i += 1
@@ -26,16 +27,12 @@ class DensePolynomialBenchmark
   }
 
   def timePolyOnDenseVector(reps: Int) =
-    runWith2(reps, { randomPoly(10) }, { randomArray(1024 * 4) })(
-        (poly, arr) =>
-          {
-        poly(arr)
-    })
+    runWith2(reps, randomPoly(10), randomArray(1024 * 4)) { (poly, arr) =>
+      poly(arr)
+    }
 
   def timePolyOnDenseMatrix(reps: Int) =
-    runWith2(reps, { randomPoly(10) }, { randomMatrix(256, 256) })(
-        (poly, arr) =>
-          {
-        poly(arr)
-    })
+    runWith2(reps, randomPoly(10), randomMatrix(256, 256)) { (poly, arr) =>
+      poly(arr)
+    }
 }

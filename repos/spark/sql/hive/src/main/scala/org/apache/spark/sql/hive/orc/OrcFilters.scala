@@ -61,7 +61,7 @@ private[orc] object OrcFilters extends Logging {
     // collect all convertible ones to build the final `SearchArgument`.
     val convertibleFilters = for {
       filter <- filters
-      _ <- buildSearchArgument(filter, SearchArgumentFactory.newBuilder())
+      _      <- buildSearchArgument(filter, SearchArgumentFactory.newBuilder())
     } yield filter
 
     for {
@@ -69,18 +69,22 @@ private[orc] object OrcFilters extends Logging {
       conjunction <- convertibleFilters.reduceOption(And)
       // Then tries to build a single ORC `SearchArgument` for the conjunction predicate
       builder <- buildSearchArgument(
-          conjunction, SearchArgumentFactory.newBuilder())
+                  conjunction,
+                  SearchArgumentFactory.newBuilder()
+                )
     } yield builder.build()
   }
 
   private def buildSearchArgument(
-      expression: Filter, builder: Builder): Option[Builder] = {
+      expression: Filter,
+      builder: Builder
+  ): Option[Builder] = {
     def newBuilder = SearchArgumentFactory.newBuilder()
 
     def isSearchableLiteral(value: Any): Boolean = value match {
       // These are types recognized by the `SearchArgumentImpl.BuilderImpl.boxLiteral()` method.
-      case _: String | _: Long | _: Double | _: Byte | _: Short |
-          _: Integer | _: Float =>
+      case _: String | _: Long | _: Double | _: Byte | _: Short | _: Integer |
+          _: Float =>
         true
       case _: DateWritable | _: HiveDecimal | _: HiveChar | _: HiveVarchar =>
         true
@@ -97,23 +101,23 @@ private[orc] object OrcFilters extends Logging {
         // Pushing one side of AND down is only safe to do at the top level.
         // You can see ParquetRelation's initializeLocalJobFunc method as an example.
         for {
-          _ <- buildSearchArgument(left, newBuilder)
-          _ <- buildSearchArgument(right, newBuilder)
+          _   <- buildSearchArgument(left, newBuilder)
+          _   <- buildSearchArgument(right, newBuilder)
           lhs <- buildSearchArgument(left, builder.startAnd())
           rhs <- buildSearchArgument(right, lhs)
         } yield rhs.end()
 
       case Or(left, right) =>
         for {
-          _ <- buildSearchArgument(left, newBuilder)
-          _ <- buildSearchArgument(right, newBuilder)
+          _   <- buildSearchArgument(left, newBuilder)
+          _   <- buildSearchArgument(right, newBuilder)
           lhs <- buildSearchArgument(left, builder.startOr())
           rhs <- buildSearchArgument(right, lhs)
         } yield rhs.end()
 
       case Not(child) =>
         for {
-          _ <- buildSearchArgument(child, newBuilder)
+          _      <- buildSearchArgument(child, newBuilder)
           negate <- buildSearchArgument(child, builder.startNot())
         } yield negate.end()
 
@@ -136,8 +140,7 @@ private[orc] object OrcFilters extends Logging {
       case GreaterThan(attribute, value) if isSearchableLiteral(value) =>
         Some(builder.startNot().lessThanEquals(attribute, value).end())
 
-      case GreaterThanOrEqual(attribute, value)
-          if isSearchableLiteral(value) =>
+      case GreaterThanOrEqual(attribute, value) if isSearchableLiteral(value) =>
         Some(builder.startNot().lessThan(attribute, value).end())
 
       case IsNull(attribute) =>
@@ -148,10 +151,11 @@ private[orc] object OrcFilters extends Logging {
 
       case In(attribute, values) if values.forall(isSearchableLiteral) =>
         Some(
-            builder
-              .startAnd()
-              .in(attribute, values.map(_.asInstanceOf[AnyRef]): _*)
-              .end())
+          builder
+            .startAnd()
+            .in(attribute, values.map(_.asInstanceOf[AnyRef]): _*)
+            .end()
+        )
 
       case _ => None
     }

@@ -15,7 +15,7 @@ class BroadcastStatsReceiverTest extends FunSuite with Matchers {
     val recvB = recv1.scope("scopeB")
 
     val broadcastA = BroadcastStatsReceiver(Seq(recv1, recvA))
-    val counterA = broadcastA.counter("hi")
+    val counterA   = broadcastA.counter("hi")
     assert(None == recv1.counters.get(Seq("hi")))
     assert(None == recv1.counters.get(Seq("scopeA", "hi")))
 
@@ -24,7 +24,7 @@ class BroadcastStatsReceiverTest extends FunSuite with Matchers {
     assert(1 == recv1.counters(Seq("scopeA", "hi")))
 
     val broadcastB = BroadcastStatsReceiver(Seq(recv1, recvB))
-    val counterB = broadcastB.counter("hi")
+    val counterB   = broadcastB.counter("hi")
     assert(None == recv1.counters.get(Seq("scopeB", "hi")))
 
     counterB.incr(1)
@@ -39,7 +39,7 @@ class BroadcastStatsReceiverTest extends FunSuite with Matchers {
     val recvB = recv1.scope("scopeB")
 
     val broadcastA = BroadcastStatsReceiver(Seq(recv1, recvA))
-    val statA = broadcastA.stat("hi")
+    val statA      = broadcastA.stat("hi")
     assert(None == recv1.stats.get(Seq("hi")))
     assert(None == recv1.stats.get(Seq("scopeA", "hi")))
 
@@ -48,7 +48,7 @@ class BroadcastStatsReceiverTest extends FunSuite with Matchers {
     assert(Seq(5f) == recv1.stats(Seq("scopeA", "hi")))
 
     val broadcastB = BroadcastStatsReceiver(Seq(recv1, recvB))
-    val statB = broadcastB.stat("hi")
+    val statB      = broadcastB.stat("hi")
     assert(None == recv1.stats.get(Seq("scopeB", "hi")))
 
     statB.add(10f)
@@ -65,7 +65,7 @@ class BroadcastStatsReceiverTest extends FunSuite with Matchers {
     assert(None == recv1.gauges.get(Seq("hi")))
     assert(None == recv1.gauges.get(Seq("scopeA", "hi")))
 
-    val gaugeA = broadcastA.addGauge("hi") { 5f }
+    val gaugeA = broadcastA.addGauge("hi")(5f)
     assert(5f == recv1.gauges(Seq("hi"))())
     assert(5f == recv1.gauges(Seq("scopeA", "hi"))())
 
@@ -75,7 +75,7 @@ class BroadcastStatsReceiverTest extends FunSuite with Matchers {
   }
 
   test("scope") {
-    val base = new InMemoryStatsReceiver
+    val base   = new InMemoryStatsReceiver
     val scoped = base.scope("scoped")
     val subscoped =
       BroadcastStatsReceiver(Seq(base, scoped)).scope("subscoped")
@@ -88,7 +88,7 @@ class BroadcastStatsReceiverTest extends FunSuite with Matchers {
   }
 
   test("scopeSuffix") {
-    val base = new InMemoryStatsReceiver
+    val base   = new InMemoryStatsReceiver
     val scoped = base.scope("scoped")
     val subscoped = BroadcastStatsReceiver(Seq(base, scoped))
       .scopeSuffix("suffixed")
@@ -104,7 +104,7 @@ class BroadcastStatsReceiverTest extends FunSuite with Matchers {
   test("time") {
     val recv1 = new InMemoryStatsReceiver
     val recv2 = new InMemoryStatsReceiver
-    val recv = BroadcastStatsReceiver(Seq(recv1, recv2))
+    val recv  = BroadcastStatsReceiver(Seq(recv1, recv2))
 
     val statName = Seq("meh")
     recv1.stats.get(statName).isEmpty should be(true)
@@ -112,11 +112,11 @@ class BroadcastStatsReceiverTest extends FunSuite with Matchers {
 
     val stat = recv.stat("meh")
 
-    Stat.time(stat) { () }
+    Stat.time(stat)(())
     recv1.stats(statName).size should be(1)
     recv2.stats(statName).size should be(1)
 
-    Stat.time(stat) { () }
+    Stat.time(stat)(())
     recv1.stats(statName).size should be(2)
     recv2.stats(statName).size should be(2)
   }
@@ -124,7 +124,7 @@ class BroadcastStatsReceiverTest extends FunSuite with Matchers {
   test("timeFuture") {
     val recv1 = new InMemoryStatsReceiver
     val recv2 = new InMemoryStatsReceiver
-    val recv = BroadcastStatsReceiver(Seq(recv1, recv2))
+    val recv  = BroadcastStatsReceiver(Seq(recv1, recv2))
 
     val statName = Seq("meh")
     recv1.stats.get(statName).isEmpty should be(true)

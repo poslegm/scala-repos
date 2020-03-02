@@ -7,11 +7,11 @@ object Test extends App {
   val code = {
     val x = 2
     reify {
-      reify { x }.splice
+      reify(x).splice
     }
   }
 
-  val toolbox = cm.mkToolBox()
+  val toolbox   = cm.mkToolBox()
   val evaluated = toolbox.eval(code.tree)
   println("evaluated = " + evaluated)
 }

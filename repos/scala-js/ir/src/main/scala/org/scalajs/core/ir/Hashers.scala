@@ -10,10 +10,10 @@ import Tags._
 
 object Hashers {
 
-  def hashMethodDef(methodDef: MethodDef): MethodDef = {
+  def hashMethodDef(methodDef: MethodDef): MethodDef =
     if (methodDef.hash.isDefined) methodDef
     else {
-      val hasher = new TreeHasher()
+      val hasher                                          = new TreeHasher()
       val MethodDef(static, name, args, resultType, body) = methodDef
 
       hasher.mixPos(methodDef.pos)
@@ -27,39 +27,39 @@ object Hashers {
       val hash = hasher.finalizeHash()
 
       MethodDef(static, name, args, resultType, body)(
-          methodDef.optimizerHints, Some(hash))(methodDef.pos)
+        methodDef.optimizerHints,
+        Some(hash)
+      )(methodDef.pos)
     }
-  }
 
   /** Hash definitions from a ClassDef where applicable */
   def hashDefs(defs: List[Tree]): List[Tree] = defs map {
     case methodDef: MethodDef => hashMethodDef(methodDef)
-    case otherDef => otherDef
+    case otherDef             => otherDef
   }
 
   /** Hash the definitions in a ClassDef (where applicable) */
-  def hashClassDef(classDef: ClassDef): ClassDef = {
+  def hashClassDef(classDef: ClassDef): ClassDef =
     classDef.copy(defs = hashDefs(classDef.defs))(classDef.optimizerHints)(
-        classDef.pos)
-  }
+      classDef.pos
+    )
 
-  def hashesEqual(x: TreeHash, y: TreeHash, considerPos: Boolean): Boolean = {
+  def hashesEqual(x: TreeHash, y: TreeHash, considerPos: Boolean): Boolean =
     Arrays.equals(x.treeHash, y.treeHash) &&
-    (!considerPos || Arrays.equals(x.posHash, y.posHash))
-  }
+      (!considerPos || Arrays.equals(x.posHash, y.posHash))
 
   def hashAsVersion(hash: TreeHash, considerPos: Boolean): String = {
     // 2 chars per byte, 20 bytes per hash
-    val size = 2 * (if (considerPos) 2 else 1) * 20
+    val size    = 2 * (if (considerPos) 2 else 1) * 20
     val builder = new StringBuilder(size)
 
     def hexDigit(digit: Int): Char = Character.forDigit(digit, 16)
 
-    def append(hash: Array[Byte]): Unit = {
-      for (b <- hash) builder
-        .append(hexDigit(b >> 4))
-        .append(hexDigit(b & 0xF))
-    }
+    def append(hash: Array[Byte]): Unit =
+      for (b <- hash)
+        builder
+          .append(hexDigit(b >> 4))
+          .append(hexDigit(b & 0xF))
     append(hash.treeHash)
 
     if (considerPos) append(hash.posHash)
@@ -444,17 +444,17 @@ object Hashers {
       mixType(tpe.asInstanceOf[Type])
 
     def mixType(tpe: Type): Unit = tpe match {
-      case AnyType => mixTag(TagAnyType)
+      case AnyType     => mixTag(TagAnyType)
       case NothingType => mixTag(TagNothingType)
-      case UndefType => mixTag(TagUndefType)
+      case UndefType   => mixTag(TagUndefType)
       case BooleanType => mixTag(TagBooleanType)
-      case IntType => mixTag(TagIntType)
-      case LongType => mixTag(TagLongType)
-      case FloatType => mixTag(TagFloatType)
-      case DoubleType => mixTag(TagDoubleType)
-      case StringType => mixTag(TagStringType)
-      case NullType => mixTag(TagNullType)
-      case NoType => mixTag(TagNoType)
+      case IntType     => mixTag(TagIntType)
+      case LongType    => mixTag(TagLongType)
+      case FloatType   => mixTag(TagFloatType)
+      case DoubleType  => mixTag(TagDoubleType)
+      case StringType  => mixTag(TagStringType)
+      case NullType    => mixTag(TagNullType)
+      case NoType      => mixTag(TagNoType)
 
       case tpe: ClassType =>
         mixTag(TagClassType)
@@ -484,7 +484,7 @@ object Hashers {
     def mixOptIdent(optIdent: Option[Ident]): Unit = optIdent.foreach(mixIdent)
 
     def mixPropertyName(name: PropertyName): Unit = name match {
-      case name: Ident => mixIdent(name)
+      case name: Ident         => mixIdent(name)
       case name: StringLiteral => mixTree(name)
     }
 

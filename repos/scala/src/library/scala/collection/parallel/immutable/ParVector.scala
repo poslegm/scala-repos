@@ -36,8 +36,10 @@ import immutable.VectorIterator
   *  @define coll immutable parallel vector
   */
 class ParVector[+T](private[this] val vector: Vector[T])
-    extends ParSeq[T] with GenericParTemplate[T, ParVector]
-    with ParSeqLike[T, ParVector[T], Vector[T]] with Serializable {
+    extends ParSeq[T]
+    with GenericParTemplate[T, ParVector]
+    with ParSeqLike[T, ParVector[T], Vector[T]]
+    with Serializable {
   override def companion = ParVector
 
   def this() = this(Vector())
@@ -57,8 +59,9 @@ class ParVector[+T](private[this] val vector: Vector[T])
   override def toVector: Vector[T] = vector
 
   class ParVectorIterator(_start: Int, _end: Int)
-      extends VectorIterator[T](_start, _end) with SeqSplitter[T] {
-    def remaining: Int = remainingElementCount
+      extends VectorIterator[T](_start, _end)
+      with SeqSplitter[T] {
+    def remaining: Int      = remainingElementCount
     def dup: SeqSplitter[T] = (new ParVector(remainingVector)).splitter
     def split: Seq[ParVectorIterator] = {
       val rem = remaining
@@ -67,13 +70,14 @@ class ParVector[+T](private[this] val vector: Vector[T])
     }
     def psplit(sizes: Int*): Seq[ParVectorIterator] = {
       var remvector = remainingVector
-      val splitted = new ArrayBuffer[Vector[T]]
+      val splitted  = new ArrayBuffer[Vector[T]]
       for (sz <- sizes) {
         splitted += remvector.take(sz)
         remvector = remvector.drop(sz)
       }
-      splitted.map(
-          v => new ParVector(v).splitter.asInstanceOf[ParVectorIterator])
+      splitted.map(v =>
+        new ParVector(v).splitter.asInstanceOf[ParVectorIterator]
+      )
     }
   }
 }
@@ -95,7 +99,7 @@ object ParVector extends ParFactory[ParVector] {
 private[immutable] class LazyParVectorCombiner[T]
     extends Combiner[T, ParVector[T]] {
 //self: EnvironmentPassingCombiner[T, ParVector[T]] =>
-  var sz = 0
+  var sz      = 0
   val vectors = new ArrayBuffer[VectorBuilder[T]] += new VectorBuilder[T]
 
   def size: Int = sz

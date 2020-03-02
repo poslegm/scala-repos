@@ -9,7 +9,7 @@ import scala.util.Random
   */
 class Poisson(fraction: Double, seed: Int) {
 
-  val L = math.exp(-fraction)
+  val L               = math.exp(-fraction)
   val randomGenerator = new Random(seed)
 
   def nextInt = {

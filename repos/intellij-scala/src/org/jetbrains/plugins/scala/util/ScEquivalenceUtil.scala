@@ -23,30 +23,28 @@ object ScEquivalenceUtil {
     if (clazz1.qualifiedName != clazz2.qualifiedName) return false
     val isSomeClassLocalOrAnonymous =
       clazz1.qualifiedName == null || clazz2.qualifiedName == null ||
-      (PsiTreeUtil.getContextOfType(clazz1, true, classOf[PsiClass]) != null &&
+        (PsiTreeUtil.getContextOfType(clazz1, true, classOf[PsiClass]) != null &&
           clazz1.getContainingClass == null) ||
-      (PsiTreeUtil.getContextOfType(clazz2, true, classOf[PsiClass]) != null &&
+        (PsiTreeUtil.getContextOfType(clazz2, true, classOf[PsiClass]) != null &&
           clazz2.getContainingClass == null)
 
     if (isSomeClassLocalOrAnonymous) return false
 
     clazz1 match {
       case _: ScObject => clazz2.isInstanceOf[ScObject]
-      case _ => !clazz2.isInstanceOf[ScObject]
+      case _           => !clazz2.isInstanceOf[ScObject]
     }
   }
 
-  def arePackagesEquivalent(p1: PsiPackage, p2: PsiPackage) = {
+  def arePackagesEquivalent(p1: PsiPackage, p2: PsiPackage) =
     p1 != null && p2 != null && p1.getManager == p2.getManager &&
-    p1.getQualifiedName == p2.getQualifiedName
-  }
+      p1.getQualifiedName == p2.getQualifiedName
 
-  def smartEquivalence(elem1: PsiElement, elem2: PsiElement): Boolean = {
+  def smartEquivalence(elem1: PsiElement, elem2: PsiElement): Boolean =
     (elem1, elem2) match {
       case (clazz1: PsiClass, clazz2: PsiClass) =>
         areClassesEquivalent(clazz1, clazz2)
       case (p1: PsiPackage, p2: PsiPackage) => arePackagesEquivalent(p1, p2)
-      case _ => elem1 == elem2
+      case _                                => elem1 == elem2
     }
-  }
 }

@@ -4,12 +4,11 @@ abstract class Codensity[F[_], A] { self =>
   def apply[B](f: A => F[B]): F[B]
   def improve(implicit F: Applicative[F]): F[A] =
     apply(a => F.point(a))
-  def flatMap[B](k: A => Codensity[F, B]): Codensity[F, B] = {
+  def flatMap[B](k: A => Codensity[F, B]): Codensity[F, B] =
     new Codensity[F, B] {
       def apply[C](h: B => F[C]): F[C] =
         self.apply(a => k(a)(h))
     }
-  }
   def map[B](k: A => B): Codensity[F, B] =
     flatMap(x => Codensity.pureCodensity(k(x)))
 
@@ -35,7 +34,8 @@ object Codensity extends CodensityInstances {
     * [[scalaz.MonadPlus]] laws should hold.
     */
   implicit def codensityMonadPlus[F[_]](
-      implicit F: ApplicativePlus[F]): MonadPlus[Codensity[F, ?]] =
+      implicit F: ApplicativePlus[F]
+  ): MonadPlus[Codensity[F, ?]] =
     new CodensityMonad[F] with MonadPlus[Codensity[F, ?]] {
       def empty[A] =
         new Codensity[F, A] {
@@ -51,7 +51,7 @@ object Codensity extends CodensityInstances {
   implicit val codensityTrans: MonadTrans[Codensity] =
     new MonadTrans[Codensity] {
       def liftM[G[_]: Monad, A](a: G[A]) = Codensity.rep(a)
-      def apply[G[_]: Monad] = codensityMonad[G]
+      def apply[G[_]: Monad]             = codensityMonad[G]
     }
 }
 

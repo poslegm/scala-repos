@@ -5,8 +5,8 @@ import chess.Color
 sealed trait Line {
   def text: String
   def author: String
-  def isSystem = author == systemUserId
-  def isHuman = !isSystem
+  def isSystem    = author == systemUserId
+  def isHuman     = !isSystem
   def humanAuthor = isHuman option author
 }
 
@@ -27,12 +27,12 @@ object Line {
 
   implicit val userLineBSONHandler = new BSONHandler[BSONString, UserLine] {
     def read(bsonStr: BSONString) = strToUserLine(bsonStr.value) | invalidLine
-    def write(x: UserLine) = BSONString(userLineToStr(x))
+    def write(x: UserLine)        = BSONString(userLineToStr(x))
   }
 
   implicit val lineBSONHandler = new BSONHandler[BSONString, Line] {
     def read(bsonStr: BSONString) = strToLine(bsonStr.value) | invalidLine
-    def write(x: Line) = BSONString(lineToStr(x))
+    def write(x: Line)            = BSONString(lineToStr(x))
   }
 
   private val UserLineRegex = """^([\w-]{2,})(\s|\!)(.+)$""".r
@@ -52,7 +52,7 @@ object Line {
     }
   }
   def lineToStr(x: Line) = x match {
-    case u: UserLine => userLineToStr(u)
+    case u: UserLine   => userLineToStr(u)
     case p: PlayerLine => s"${p.color.letter} ${p.text}"
   }
 

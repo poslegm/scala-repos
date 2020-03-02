@@ -1,6 +1,6 @@
 object K {
   def isNotBlank(s: String): Boolean = true
-  val data: Map[String, Any] = Map.empty
+  val data: Map[String, Any]         = Map.empty
   /*start*/
   List("WFC", "StC", "BBG")
     .map(data.get(_))

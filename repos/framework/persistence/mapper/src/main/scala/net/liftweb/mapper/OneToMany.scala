@@ -35,10 +35,10 @@ trait OneToMany[K, T <: KeyedMapper[K, T]] extends KeyedMapper[K, T] {
 
   private[mapper] lazy val oneToManyFields: List[MappedOneToManyBase[Rec]] = {
     new FieldFinder[MappedOneToManyBase[Rec]](
-        getSingleton,
-        net.liftweb.common.Logger(classOf[OneToMany[K, T]])
+      getSingleton,
+      net.liftweb.common.Logger(classOf[OneToMany[K, T]])
     ).accessorMethods map
-    (_.invoke(this).asInstanceOf[MappedOneToManyBase[Rec]])
+      (_.invoke(this).asInstanceOf[MappedOneToManyBase[Rec]])
   }
 
   /**
@@ -62,7 +62,7 @@ trait OneToMany[K, T <: KeyedMapper[K, T]] extends KeyedMapper[K, T] {
     if (oneToManyFields.forall {
           (_: MappedOneToManyBase[_ <: Mapper[_]]) match {
             case f: Cascade[_] => f.delete_!
-            case _ => true
+            case _             => true
           }
         }) super.delete_!
     else {
@@ -76,29 +76,30 @@ trait OneToMany[K, T <: KeyedMapper[K, T]] extends KeyedMapper[K, T] {
     * Returns a function that takes a Mapper and looks up the actualField of field on the Mapper.
     */
   implicit def foreignKey[K, O <: Mapper[O], T <: KeyedMapper[K, T]](
-      field: MappedForeignKey[K, O, T]): O => MappedForeignKey[K, O, T] =
+      field: MappedForeignKey[K, O, T]
+  ): O => MappedForeignKey[K, O, T] =
     field.actualField(_).asInstanceOf[MappedForeignKey[K, O, T]]
 
   /**
     * Simple OneToMany support for children from the same table
     */
-  class MappedOneToMany[O <: Mapper[O]](meta: MetaMapper[O],
-                                        foreign: MappedForeignKey[K, O, T],
-                                        qp: QueryParam[O]*)
-      extends MappedOneToManyBase[O](
-          () =>
-            {
-              val ret =
-                meta.findAll(By(foreign, primaryKeyField.get) :: qp.toList: _*)
-              for (child <- ret) {
-                foreign
-                  .actualField(child)
-                  .asInstanceOf[MappedForeignKey[K, O, T]]
-                  .primeObj(net.liftweb.common.Full(OneToMany.this: T))
-              }
-              ret
-          },
-          foreign
+  class MappedOneToMany[O <: Mapper[O]](
+      meta: MetaMapper[O],
+      foreign: MappedForeignKey[K, O, T],
+      qp: QueryParam[O]*
+  ) extends MappedOneToManyBase[O](
+        () => {
+          val ret =
+            meta.findAll(By(foreign, primaryKeyField.get) :: qp.toList: _*)
+          for (child <- ret) {
+            foreign
+              .actualField(child)
+              .asInstanceOf[MappedForeignKey[K, O, T]]
+              .primeObj(net.liftweb.common.Full(OneToMany.this: T))
+          }
+          ret
+        },
+        foreign
       )
 
   /**
@@ -113,9 +114,13 @@ trait OneToMany[K, T <: KeyedMapper[K, T]] extends KeyedMapper[K, T] {
     */
   class MappedOneToManyBase[O <: Mapper[_]](
       val reloadFunc: () => Seq[O],
-      val foreign: O => MappedForeignKey[K, _, T] /*forSome { type X <: Mapper[X] }*/ )
-      extends scala.collection.mutable.Buffer[O] {
-    private var inited = false
+      val foreign: O => MappedForeignKey[
+        K,
+        _,
+        T
+      ] /*forSome { type X <: Mapper[X] }*/
+  ) extends scala.collection.mutable.Buffer[O] {
+    private var inited             = false
     private var _delegate: List[O] = _
 
     /**
@@ -172,7 +177,7 @@ trait OneToMany[K, T <: KeyedMapper[K, T]] extends KeyedMapper[K, T] {
     // 2.7
     //def elements = delegate.elements
     // 2.8
-    def iterator = delegate.iterator
+    def iterator      = delegate.iterator
     def apply(n: Int) = delegate(n)
 
     // 2.7
@@ -249,7 +254,10 @@ trait OneToMany[K, T <: KeyedMapper[K, T]] extends KeyedMapper[K, T] {
       val c = getClass.getSimpleName
       val l = c.lastIndexOf("$")
       c.substring(c.lastIndexOf("$", l - 1) + 1, l) + delegate.mkString(
-          "[", ", ", "]")
+        "[",
+        ", ",
+        "]"
+      )
     }
   }
 
@@ -281,12 +289,11 @@ trait OneToMany[K, T <: KeyedMapper[K, T]] extends KeyedMapper[K, T] {
     * by this field should be deleted when the parent is deleted.
     */
   trait Cascade[O <: Mapper[_]] extends MappedOneToManyBase[O] {
-    def delete_! = {
+    def delete_! =
       delegate.forall { e =>
         if (foreign(e).get == OneToMany.this.primaryKeyField.get) {
           e.delete_!
         } else true // doesn't constitute a failure
       }
-    }
   }
 }

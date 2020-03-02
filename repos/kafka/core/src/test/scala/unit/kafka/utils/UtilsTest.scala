@@ -38,7 +38,7 @@ class UtilsTest extends JUnitSuite {
 
   @Test
   def testCircularIterator() {
-    val l = List(1, 2)
+    val l   = List(1, 2)
     val itl = CoreUtils.circularIterator(l)
     assertEquals(1, itl.next())
     assertEquals(2, itl.next())
@@ -46,7 +46,7 @@ class UtilsTest extends JUnitSuite {
     assertEquals(2, itl.next())
     assertFalse(itl.hasDefiniteSize)
 
-    val s = Set(1, 2)
+    val s   = Set(1, 2)
     val its = CoreUtils.circularIterator(s)
     assertEquals(1, its.next())
     assertEquals(2, its.next())
@@ -74,43 +74,51 @@ class UtilsTest extends JUnitSuite {
 
   @Test
   def testReplaceSuffix() {
-    assertEquals("blah.foo.text",
-                 CoreUtils.replaceSuffix("blah.foo.txt", ".txt", ".text"))
     assertEquals(
-        "blah.foo", CoreUtils.replaceSuffix("blah.foo.txt", ".txt", ""))
+      "blah.foo.text",
+      CoreUtils.replaceSuffix("blah.foo.txt", ".txt", ".text")
+    )
+    assertEquals(
+      "blah.foo",
+      CoreUtils.replaceSuffix("blah.foo.txt", ".txt", "")
+    )
     assertEquals("txt.txt", CoreUtils.replaceSuffix("txt.txt.txt", ".txt", ""))
     assertEquals("foo.txt", CoreUtils.replaceSuffix("foo", "", ".txt"))
   }
 
   @Test
   def testReadInt() {
-    val values = Array(0,
-                       1,
-                       -1,
-                       Byte.MaxValue,
-                       Short.MaxValue,
-                       2 * Short.MaxValue,
-                       Int.MaxValue / 2,
-                       Int.MinValue / 2,
-                       Int.MaxValue,
-                       Int.MinValue,
-                       Int.MaxValue)
+    val values = Array(
+      0,
+      1,
+      -1,
+      Byte.MaxValue,
+      Short.MaxValue,
+      2 * Short.MaxValue,
+      Int.MaxValue / 2,
+      Int.MinValue / 2,
+      Int.MaxValue,
+      Int.MinValue,
+      Int.MaxValue
+    )
     val buffer = ByteBuffer.allocate(4 * values.size)
     for (i <- 0 until values.length) {
       buffer.putInt(i * 4, values(i))
-      assertEquals("Written value should match read value.",
-                   values(i),
-                   CoreUtils.readInt(buffer.array, i * 4))
+      assertEquals(
+        "Written value should match read value.",
+        values(i),
+        CoreUtils.readInt(buffer.array, i * 4)
+      )
     }
   }
 
   @Test
   def testCsvList() {
-    val emptyString: String = ""
-    val nullString: String = null
-    val emptyList = CoreUtils.parseCsvList(emptyString)
+    val emptyString: String     = ""
+    val nullString: String      = null
+    val emptyList               = CoreUtils.parseCsvList(emptyString)
     val emptyListFromNullString = CoreUtils.parseCsvList(nullString)
-    val emptyStringList = Seq.empty[String]
+    val emptyStringList         = Seq.empty[String]
     assertTrue(emptyList != null)
     assertTrue(emptyListFromNullString != null)
     assertTrue(emptyStringList.equals(emptyListFromNullString))
@@ -120,32 +128,32 @@ class UtilsTest extends JUnitSuite {
   @Test
   def testCsvMap() {
     val emptyString: String = ""
-    val emptyMap = CoreUtils.parseCsvMap(emptyString)
-    val emptyStringMap = Map.empty[String, String]
+    val emptyMap            = CoreUtils.parseCsvMap(emptyString)
+    val emptyStringMap      = Map.empty[String, String]
     assertTrue(emptyMap != null)
     assertTrue(emptyStringMap.equals(emptyStringMap))
 
     val kvPairsIpV6: String = "a:b:c:v,a:b:c:v"
-    val ipv6Map = CoreUtils.parseCsvMap(kvPairsIpV6)
+    val ipv6Map             = CoreUtils.parseCsvMap(kvPairsIpV6)
     for (m <- ipv6Map) {
       assertTrue(m._1.equals("a:b:c"))
       assertTrue(m._2.equals("v"))
     }
 
     val singleEntry: String = "key:value"
-    val singleMap = CoreUtils.parseCsvMap(singleEntry)
-    val value = singleMap.getOrElse("key", 0)
+    val singleMap           = CoreUtils.parseCsvMap(singleEntry)
+    val value               = singleMap.getOrElse("key", 0)
     assertTrue(value.equals("value"))
 
     val kvPairsIpV4: String = "192.168.2.1/30:allow, 192.168.2.1/30:allow"
-    val ipv4Map = CoreUtils.parseCsvMap(kvPairsIpV4)
+    val ipv4Map             = CoreUtils.parseCsvMap(kvPairsIpV4)
     for (m <- ipv4Map) {
       assertTrue(m._1.equals("192.168.2.1/30"))
       assertTrue(m._2.equals("allow"))
     }
 
     val kvPairsSpaces: String = "key:value      , key:   value"
-    val spaceMap = CoreUtils.parseCsvMap(kvPairsSpaces)
+    val spaceMap              = CoreUtils.parseCsvMap(kvPairsSpaces)
     for (m <- spaceMap) {
       assertTrue(m._1.equals("key"))
       assertTrue(m._2.equals("value"))

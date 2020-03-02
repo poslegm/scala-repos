@@ -12,24 +12,21 @@ class ScalaProjectCache(project: Project, events: ScalaProjectEvents)
     extends AbstractProjectComponent(project) {
   private val cache = new ConcurrentHashMap[AnyRef, AnyRef]()
 
-  events.addScalaProjectListener(
-      new ScalaProjectListener {
+  events.addScalaProjectListener(new ScalaProjectListener {
     def onScalaProjectChanged() {
       cache.clear()
     }
   })
 
-  override def projectClosed(): Unit = {
+  override def projectClosed(): Unit =
     cache.clear()
-  }
 
-  def getOrUpdate[K <: AnyRef, V <: AnyRef](key: K)(value: => V): V = {
+  def getOrUpdate[K <: AnyRef, V <: AnyRef](key: K)(value: => V): V =
     Option(cache.get(key).asInstanceOf[V]).getOrElse {
       val result = value
       cache.put(key, result)
       result
     }
-  }
 }
 
 object ScalaProjectCache {

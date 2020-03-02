@@ -34,7 +34,7 @@ class EquivalentExpressions {
   case class Expr(e: Expression) {
     override def equals(o: Any): Boolean = o match {
       case other: Expr => e.semanticEquals(other.e)
-      case _ => false
+      case _           => false
     }
     override val hashCode: Int = e.semanticHash()
   }
@@ -48,10 +48,10 @@ class EquivalentExpressions {
     * expressions. Non-recursive.
     * Returns true if there was already a matching expression.
     */
-  def addExpr(expr: Expression): Boolean = {
+  def addExpr(expr: Expression): Boolean =
     if (expr.deterministic) {
       val e: Expr = Expr(expr)
-      val f = equivalenceMap.get(e)
+      val f       = equivalenceMap.get(e)
       if (f.isDefined) {
         f.get += expr
         true
@@ -62,7 +62,6 @@ class EquivalentExpressions {
     } else {
       false
     }
-  }
 
   /**
     * Adds the expression to this data structure recursively. Stops if a matching expression
@@ -81,16 +80,14 @@ class EquivalentExpressions {
     * Returns all of the expression trees that are equivalent to `e`. Returns
     * an empty collection if there are none.
     */
-  def getEquivalentExprs(e: Expression): Seq[Expression] = {
+  def getEquivalentExprs(e: Expression): Seq[Expression] =
     equivalenceMap.getOrElse(Expr(e), mutable.MutableList())
-  }
 
   /**
     * Returns all the equivalent sets of expressions.
     */
-  def getAllEquivalentExprs: Seq[Seq[Expression]] = {
+  def getAllEquivalentExprs: Seq[Seq[Expression]] =
     equivalenceMap.values.map(_.toSeq).toSeq
-  }
 
   /**
     * Returns the state of the data structure as a string. If `all` is false, skips sets of
@@ -101,10 +98,10 @@ class EquivalentExpressions {
     sb.append("Equivalent expressions:\n")
     equivalenceMap.foreach {
       case (k, v) => {
-          if (all || v.length > 1) {
-            sb.append("  " + v.mkString(", ")).append("\n")
-          }
+        if (all || v.length > 1) {
+          sb.append("  " + v.mkString(", ")).append("\n")
         }
+      }
     }
     sb.toString()
   }

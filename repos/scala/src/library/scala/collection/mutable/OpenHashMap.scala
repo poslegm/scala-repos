@@ -19,12 +19,13 @@ package mutable
 object OpenHashMap {
 
   def apply[K, V](elems: (K, V)*) = new OpenHashMap[K, V] ++= elems
-  def empty[K, V] = new OpenHashMap[K, V]
+  def empty[K, V]                 = new OpenHashMap[K, V]
 
-  final private class OpenEntry[Key, Value](val key: Key,
-                                            val hash: Int,
-                                            var value: Option[Value])
-      extends HashEntry[Key, OpenEntry[Key, Value]]
+  final private class OpenEntry[Key, Value](
+      val key: Key,
+      val hash: Int,
+      var value: Option[Value]
+  ) extends HashEntry[Key, OpenEntry[Key, Value]]
 
   private[mutable] def nextPositivePowerOfTwo(i: Int) =
     1 << (32 - Integer.numberOfLeadingZeros(i - 1))
@@ -49,7 +50,8 @@ object OpenHashMap {
   *  @define willNotTerminateInf
   */
 class OpenHashMap[Key, Value](initialSize: Int)
-    extends AbstractMap[Key, Value] with Map[Key, Value]
+    extends AbstractMap[Key, Value]
+    with Map[Key, Value]
     with MapLike[Key, Value, OpenHashMap[Key, Value]] {
 
   import OpenHashMap.OpenEntry
@@ -64,10 +66,10 @@ class OpenHashMap[Key, Value](initialSize: Int)
   private[this] val actualInitialSize =
     OpenHashMap.nextPositivePowerOfTwo(initialSize)
 
-  private var mask = actualInitialSize - 1
+  private var mask                = actualInitialSize - 1
   private var table: Array[Entry] = new Array[Entry](actualInitialSize)
-  private var _size = 0
-  private var deleted = 0
+  private var _size               = 0
+  private var deleted             = 0
 
   // Used for tracking inserts so that iterators can determine in concurrent modification has occurred.
   private[this] var modCount = 0
@@ -86,13 +88,14 @@ class OpenHashMap[Key, Value](initialSize: Int)
     * Copy only the occupied slots, effectively eliminating the deleted slots.
     */
   private[this] def growTable() = {
-    val oldSize = mask + 1
-    val newSize = 4 * oldSize
+    val oldSize  = mask + 1
+    val newSize  = 4 * oldSize
     val oldTable = table
     table = new Array[Entry](newSize)
     mask = newSize - 1
-    oldTable.foreach(
-        entry => if (entry != null && entry.value != None) addEntry(entry))
+    oldTable.foreach(entry =>
+      if (entry != null && entry.value != None) addEntry(entry)
+    )
     deleted = 0
   }
 
@@ -103,18 +106,18 @@ class OpenHashMap[Key, Value](initialSize: Int)
 
   /** Return the index of the first slot in the hash table (in probe order)
     * that either is empty, or is or was last occupied by the given key.
-    * 
+    *
     * This method is an optimization for when the hash value is in hand.
-    * 
+    *
     * @param hash hash value for `key`
     */
   private[this] def findIndex(key: Key, hash: Int): Int = {
     var j = hash
 
-    var index = hash & mask
+    var index   = hash & mask
     var perturb = index
     while (table(index) != null && !(table(index).hash == hash &&
-        table(index).key == key)) {
+             table(index).key == key)) {
       j = 5 * j + 1 + perturb
       perturb >>= 5
       index = j & mask
@@ -130,13 +133,15 @@ class OpenHashMap[Key, Value](initialSize: Int)
   }
 
   @deprecatedOverriding(
-      "+= should not be overridden in order to maintain consistency with put.",
-      "2.11.0")
+    "+= should not be overridden in order to maintain consistency with put.",
+    "2.11.0"
+  )
   def +=(kv: (Key, Value)): this.type = { put(kv._1, kv._2); this }
 
   @deprecatedOverriding(
-      "-= should not be overridden in order to maintain consistency with remove.",
-      "2.11.0")
+    "-= should not be overridden in order to maintain consistency with remove.",
+    "2.11.0"
+  )
   def -=(key: Key): this.type = { remove(key); this }
 
   override def put(key: Key, value: Value): Option[Value] =
@@ -177,10 +182,10 @@ class OpenHashMap[Key, Value](initialSize: Int)
   def get(key: Key): Option[Value] = {
     val hash = hashOf(key)
 
-    var j = hash
-    var index = hash & mask
+    var j       = hash
+    var index   = hash & mask
     var perturb = index
-    var entry = table(index)
+    var entry   = table(index)
     while (entry != null) {
       if (entry.hash == hash && entry.key == key) {
         return entry.value
@@ -200,13 +205,13 @@ class OpenHashMap[Key, Value](initialSize: Int)
     *  @return   the iterator
     */
   def iterator: Iterator[(Key, Value)] = new AbstractIterator[(Key, Value)] {
-    var index = 0
+    var index           = 0
     val initialModCount = modCount
 
     private[this] def advance() {
       if (initialModCount != modCount) sys.error("Concurrent modification")
-      while ( (index <= mask) &&
-      (table(index) == null || table(index).value == None)) index += 1
+      while ((index <= mask) &&
+             (table(index) == null || table(index).value == None)) index += 1
     }
 
     def hasNext = { advance(); index <= mask }
@@ -221,8 +226,9 @@ class OpenHashMap[Key, Value](initialSize: Int)
 
   override def clone() = {
     val it = new OpenHashMap[Key, Value]
-    foreachUndeletedEntry(
-        entry => it.put(entry.key, entry.hash, entry.value.get))
+    foreachUndeletedEntry(entry =>
+      it.put(entry.key, entry.hash, entry.value.get)
+    )
     it
   }
 
@@ -238,12 +244,10 @@ class OpenHashMap[Key, Value](initialSize: Int)
     */
   override def foreach[U](f: ((Key, Value)) => U) {
     val startModCount = modCount
-    foreachUndeletedEntry(
-        entry =>
-          {
-        if (modCount != startModCount) sys.error("Concurrent Modification")
-        f((entry.key, entry.value.get))
-    })
+    foreachUndeletedEntry { entry =>
+      if (modCount != startModCount) sys.error("Concurrent Modification")
+      f((entry.key, entry.value.get))
+    }
   }
 
   private[this] def foreachUndeletedEntry(f: Entry => Unit) {
@@ -251,17 +255,18 @@ class OpenHashMap[Key, Value](initialSize: Int)
   }
 
   override def transform(f: (Key, Value) => Value) = {
-    foreachUndeletedEntry(
-        entry => entry.value = Some(f(entry.key, entry.value.get)))
+    foreachUndeletedEntry(entry =>
+      entry.value = Some(f(entry.key, entry.value.get))
+    )
     this
   }
 
   override def retain(f: (Key, Value) => Boolean) = {
-    foreachUndeletedEntry(
-        entry =>
-          if (!f(entry.key, entry.value.get)) {
+    foreachUndeletedEntry(entry =>
+      if (!f(entry.key, entry.value.get)) {
         entry.value = None; size -= 1; deleted += 1
-    })
+      }
+    )
     this
   }
 

@@ -3,7 +3,7 @@ import scala.language.reflectiveCalls
 
 object Test extends App {
   trait Foo[A]
-  implicit def fooString: Foo[String] = null
+  implicit def fooString: Foo[String]         = null
   implicit def value[A](implicit foo: Foo[A]) = 5
 
   println(implicitly[Int])

@@ -7,10 +7,10 @@ import org.objectweb.asm.Opcodes._
 import scala.collection.immutable.Queue
 
 sealed trait Access
-case object Public extends Access
-case object Default extends Access
+case object Public    extends Access
+case object Default   extends Access
 case object Protected extends Access
-case object Private extends Access
+case object Private   extends Access
 
 object Access {
   def apply(code: Int): Access =
@@ -27,21 +27,22 @@ sealed trait FullyQualifiedName {
 
 case class PackageName(path: List[String]) extends FullyQualifiedName {
   def contains(o: FullyQualifiedName) = o match {
-    case PackageName(pn) => pn.startsWith(path)
-    case ClassName(p, _) => contains(p)
+    case PackageName(pn)  => pn.startsWith(path)
+    case ClassName(p, _)  => contains(p)
     case MemberName(c, _) => contains(c)
   }
   def fqnString = path.mkString(".")
-  def parent = PackageName(path.init)
+  def parent    = PackageName(path.init)
 }
 
 case class ClassName(pack: PackageName, name: String)
-    extends FullyQualifiedName with DescriptorType {
+    extends FullyQualifiedName
+    with DescriptorType {
   def contains(o: FullyQualifiedName) = o match {
     case ClassName(op, on) if pack == op && on.startsWith(name) =>
       (on == name) || on.startsWith(name + "$")
     case MemberName(cn, _) => contains(cn)
-    case _ => false
+    case _                 => false
   }
 
   def fqnString =
@@ -50,8 +51,8 @@ case class ClassName(pack: PackageName, name: String)
 
   def internalString =
     "L" +
-    (if (pack.path.isEmpty) name else pack.path.mkString("/") + "/" + name) +
-    ";"
+      (if (pack.path.isEmpty) name else pack.path.mkString("/") + "/" + name) +
+      ";"
 }
 
 object ClassName {
@@ -59,50 +60,48 @@ object ClassName {
   // we consider Primitives to be ClassNames
   private def Primitive(name: String, desc: String): ClassName =
     new ClassName(Root, name) {
-      override def fqnString = name
+      override def fqnString      = name
       override def internalString = desc
     }
 
   val PrimitiveBoolean = Primitive("boolean", "Z")
-  val PrimitiveByte = Primitive("byte", "B")
-  val PrimitiveChar = Primitive("char", "C")
-  val PrimitiveShort = Primitive("short", "S")
-  val PrimitiveInt = Primitive("int", "I")
-  val PrimitiveLong = Primitive("long", "J")
-  val PrimitiveFloat = Primitive("float", "F")
-  val PrimitiveDouble = Primitive("double", "D")
-  val PrimitiveVoid = Primitive("void", "V")
+  val PrimitiveByte    = Primitive("byte", "B")
+  val PrimitiveChar    = Primitive("char", "C")
+  val PrimitiveShort   = Primitive("short", "S")
+  val PrimitiveInt     = Primitive("int", "I")
+  val PrimitiveLong    = Primitive("long", "J")
+  val PrimitiveFloat   = Primitive("float", "F")
+  val PrimitiveDouble  = Primitive("double", "D")
+  val PrimitiveVoid    = Primitive("void", "V")
 
   // must be a single type descriptor
   // strips array reification
   def fromDescriptor(desc: String): ClassName =
     DescriptorParser.parseType(desc) match {
-      case c: ClassName => c
+      case c: ClassName       => c
       case a: ArrayDescriptor => a.reifier
     }
 
   // internal name is effectively the FQN with / instead of dots
   def fromInternal(internal: String): ClassName = {
-    val parts = internal.split("/")
+    val parts           = internal.split("/")
     val (before, after) = parts.splitAt(parts.length - 1)
     ClassName(PackageName(before.toList), after(0))
   }
 
-  def cleanupPackage(name: String): String = {
+  def cleanupPackage(name: String): String =
     name
       .replaceAll("\\.package\\$?\\.", ".")
       .replaceAll("\\.package\\$(?!$)", ".")
       .replaceAll("\\.package$", ".package\\$")
-  }
 }
 
 case class MemberName(
     owner: ClassName,
     name: String
-)
-    extends FullyQualifiedName {
+) extends FullyQualifiedName {
   def contains(o: FullyQualifiedName) = this == o
-  def fqnString = ClassName.cleanupPackage(owner.fqnString + "." + name)
+  def fqnString                       = ClassName.cleanupPackage(owner.fqnString + "." + name)
 }
 
 sealed trait DescriptorType {
@@ -111,7 +110,7 @@ sealed trait DescriptorType {
 
 case class ArrayDescriptor(fqn: DescriptorType) extends DescriptorType {
   def reifier: ClassName = fqn match {
-    case c: ClassName => c
+    case c: ClassName       => c
     case a: ArrayDescriptor => a.reifier
   }
   def internalString = "[" + fqn.internalString

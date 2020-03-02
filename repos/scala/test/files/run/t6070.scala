@@ -7,7 +7,7 @@ abstract class Bomb {
 
 class StringBomb extends Bomb {
   type T = String
-  val x = "abc"
+  val x                       = "abc"
   def size(that: String): Int = that.length
 }
 

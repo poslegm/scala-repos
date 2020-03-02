@@ -9,12 +9,12 @@ import org.jboss.netty.handler.codec.oneone.OneToOneDecoder
   * ChannelBuffers (which have been deframed) into byte arrays.
   */
 private[thrift] class ThriftChannelBufferDecoder extends OneToOneDecoder {
-  def decode(ctx: ChannelHandlerContext, ch: Channel, message: Object) = {
+  def decode(ctx: ChannelHandlerContext, ch: Channel, message: Object) =
     message match {
       case buffer: ChannelBuffer
           if buffer.hasArray && buffer.arrayOffset == 0 &&
-          buffer.readerIndex == 0 &&
-          buffer.readableBytes == buffer.array().length =>
+            buffer.readerIndex == 0 &&
+            buffer.readableBytes == buffer.array().length =>
         buffer.array()
       case buffer: ChannelBuffer =>
         val arr = new Array[Byte](buffer.readableBytes)
@@ -22,5 +22,4 @@ private[thrift] class ThriftChannelBufferDecoder extends OneToOneDecoder {
         arr
       case _ => throw new IllegalArgumentException("no byte buffer")
     }
-  }
 }

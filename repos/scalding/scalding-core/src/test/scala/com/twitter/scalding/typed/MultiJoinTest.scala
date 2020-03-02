@@ -25,10 +25,10 @@ class MultiJoinTest extends WordSpec {
   def addKeys[V](t: Seq[V]): Seq[(Int, V)] =
     t.iterator.zipWithIndex.map { case (v, k) => (k, v) }.toSeq
 
-  val doubles = TypedPipe.from(addKeys(List(1.0D, 2.0D, 3.0D)))
-  val longs = TypedPipe.from(addKeys(List(10L, 20L, 30L)))
+  val doubles = TypedPipe.from(addKeys(List(1.0d, 2.0d, 3.0d)))
+  val longs   = TypedPipe.from(addKeys(List(10L, 20L, 30L)))
   val strings = TypedPipe.from(addKeys(List("one", "two", "three")))
-  val sets = TypedPipe.from(addKeys(List(Set(1), Set(2), Set(3))))
+  val sets    = TypedPipe.from(addKeys(List(Set(1), Set(2), Set(3))))
   val maps =
     TypedPipe.from(addKeys(List(Map(1 -> 1), Map(2 -> 2), Map(3 -> 3))))
 
@@ -44,43 +44,63 @@ class MultiJoinTest extends WordSpec {
   "The flatten methods" should {
     "actually match the outputs of joins" in {
 
-      val joinedFlat: CoGrouped[Int,
-                                (Double, Long, String, Set[Int],
-                                Map[Int, Int])] = joined.mapValues { x =>
-        flattenNestedTuple(x)
-      }
+      val joinedFlat
+          : CoGrouped[Int, (Double, Long, String, Set[Int], Map[Int, Int])] =
+        joined.mapValues(x => flattenNestedTuple(x))
 
-      val leftJoinedFlat: CoGrouped[Int,
-                                    (Double, Option[Long], Option[String],
-                                    Option[Set[Int]], Option[Map[Int, Int]])] =
-        leftJoined.mapValues { x =>
-          flattenNestedTuple(x)
-        }
+      val leftJoinedFlat: CoGrouped[
+        Int,
+        (
+            Double,
+            Option[Long],
+            Option[String],
+            Option[Set[Int]],
+            Option[Map[Int, Int]]
+        )
+      ] =
+        leftJoined.mapValues(x => flattenNestedTuple(x))
 
-      val outerJoinedFlat: CoGrouped[Int,
-                                     (Option[Double], Option[Long],
-                                     Option[String], Option[Set[Int]],
-                                     Option[Map[Int, Int]])] =
-        outerJoined.mapValues { x =>
-          flattenNestedOptionTuple(x)
-        }
+      val outerJoinedFlat: CoGrouped[
+        Int,
+        (
+            Option[Double],
+            Option[Long],
+            Option[String],
+            Option[Set[Int]],
+            Option[Map[Int, Int]]
+        )
+      ] =
+        outerJoined.mapValues(x => flattenNestedOptionTuple(x))
     }
 
     "Have implicit flattenValueTuple methods for low arity" in {
 
-      val joinedFlat: CoGrouped[Int,
-                                (Double, Long, String, Set[Int],
-                                Map[Int, Int])] = joined.flattenValueTuple
+      val joinedFlat
+          : CoGrouped[Int, (Double, Long, String, Set[Int], Map[Int, Int])] =
+        joined.flattenValueTuple
 
-      val leftJoinedFlat: CoGrouped[Int,
-                                    (Double, Option[Long], Option[String],
-                                    Option[Set[Int]], Option[Map[Int, Int]])] =
+      val leftJoinedFlat: CoGrouped[
+        Int,
+        (
+            Double,
+            Option[Long],
+            Option[String],
+            Option[Set[Int]],
+            Option[Map[Int, Int]]
+        )
+      ] =
         leftJoined.flattenValueTuple
 
-      val outerJoinedFlat: CoGrouped[Int,
-                                     (Option[Double], Option[Long],
-                                     Option[String], Option[Set[Int]],
-                                     Option[Map[Int, Int]])] =
+      val outerJoinedFlat: CoGrouped[
+        Int,
+        (
+            Option[Double],
+            Option[Long],
+            Option[String],
+            Option[Set[Int]],
+            Option[Map[Int, Int]]
+        )
+      ] =
         outerJoined.flattenValueTuple
     }
   }

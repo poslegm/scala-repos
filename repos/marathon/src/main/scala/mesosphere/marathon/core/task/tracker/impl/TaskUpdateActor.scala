@@ -6,7 +6,11 @@ import akka.actor.{Actor, Props, Status}
 import akka.event.LoggingReceive
 import mesosphere.marathon.core.base.Clock
 import mesosphere.marathon.core.task.Task
-import mesosphere.marathon.core.task.tracker.impl.TaskUpdateActor.{ActorMetrics, FinishedTaskOp, ProcessTaskOp}
+import mesosphere.marathon.core.task.tracker.impl.TaskUpdateActor.{
+  ActorMetrics,
+  FinishedTaskOp,
+  ProcessTaskOp
+}
 import mesosphere.marathon.metrics.Metrics.AtomicIntGauge
 import mesosphere.marathon.metrics.{MetricPrefixes, Metrics}
 import org.slf4j.LoggerFactory
@@ -15,11 +19,12 @@ import scala.collection.immutable.Queue
 import scala.concurrent.Future
 
 object TaskUpdateActor {
-  def props(clock: Clock,
-            metrics: ActorMetrics,
-            processor: TaskOpProcessor): Props = {
+  def props(
+      clock: Clock,
+      metrics: ActorMetrics,
+      processor: TaskOpProcessor
+  ): Props =
     Props(new TaskUpdateActor(clock, metrics, processor))
-  }
 
   /** Request that the [[TaskUpdateActor]] should process the given op. */
   private[impl] case class ProcessTaskOp(op: TaskOpProcessor.Operation)
@@ -60,8 +65,10 @@ object TaskUpdateActor {
   * * Errors in this actor lead to a restart of the TaskTrackerActor.
   */
 private[impl] class TaskUpdateActor(
-    clock: Clock, metrics: ActorMetrics, processor: TaskOpProcessor)
-    extends Actor {
+    clock: Clock,
+    metrics: ActorMetrics,
+    processor: TaskOpProcessor
+) extends Actor {
   private[this] val log = LoggerFactory.getLogger(getClass)
 
   // this has to be a mutable field because we need to access it in postStop()
@@ -80,10 +87,10 @@ private[impl] class TaskUpdateActor(
     super.postStop()
 
     // Answer all outstanding requests.
-    operationsByTaskId.values.iterator.flatten.map(_.sender) foreach {
-      sender =>
-        sender ! Status.Failure(
-            new IllegalStateException("TaskUpdateActor stopped"))
+    operationsByTaskId.values.iterator.flatten.map(_.sender) foreach { sender =>
+      sender ! Status.Failure(
+        new IllegalStateException("TaskUpdateActor stopped")
+      )
     }
 
     metrics.numberOfActiveOps.setValue(0)
@@ -92,7 +99,8 @@ private[impl] class TaskUpdateActor(
 
   def receive: Receive = LoggingReceive {
     case ProcessTaskOp(
-        op @ TaskOpProcessor.Operation(deadline, _, taskId, _)) =>
+        op @ TaskOpProcessor.Operation(deadline, _, taskId, _)
+        ) =>
       val oldQueue: Queue[TaskOpProcessor.Operation] =
         operationsByTaskId(taskId)
       val newQueue = oldQueue :+ op
@@ -114,8 +122,9 @@ private[impl] class TaskUpdateActor(
       if (log.isDebugEnabled) {
         val queuedCount = metrics.numberOfQueuedOps.getValue
         log.debug(
-            s"Finished processing ${op.action} for app [${op.appId}] and ${op.taskId} " +
-            s"$activeCount active, $queuedCount queued.");
+          s"Finished processing ${op.action} for app [${op.appId}] and ${op.taskId} " +
+            s"$activeCount active, $queuedCount queued."
+        );
       }
 
       processNextOpIfExists(op.taskId)
@@ -125,32 +134,34 @@ private[impl] class TaskUpdateActor(
       throw new IllegalStateException("received failure", cause)
   }
 
-  private[this] def processNextOpIfExists(taskId: Task.Id): Unit = {
+  private[this] def processNextOpIfExists(taskId: Task.Id): Unit =
     operationsByTaskId(taskId).headOption foreach { op =>
       val queuedCount = metrics.numberOfQueuedOps.decrement()
       val activeCount = metrics.numberOfActiveOps.increment()
       log.debug(
-          s"Start processing ${op.action} for app [${op.appId}] and ${op.taskId}. " +
-          s"$activeCount active, $queuedCount queued.")
+        s"Start processing ${op.action} for app [${op.appId}] and ${op.taskId}. " +
+          s"$activeCount active, $queuedCount queued."
+      )
 
       import context.dispatcher
       val future = {
         if (op.deadline <= clock.now()) {
           metrics.timedOutOpsMeter.mark()
           op.sender ! Status.Failure(
-              new TimeoutException(
-                  s"Timeout: ${op.action} for app [${op.appId}] and ${op.taskId}.")
+            new TimeoutException(
+              s"Timeout: ${op.action} for app [${op.appId}] and ${op.taskId}."
+            )
           )
           Future.successful(())
         } else metrics.processOpTimer.timeFuture(processor.process(op))
       }.map { _ =>
         log.debug(
-            s"Finished processing ${op.action} for app [${op.appId}] and ${op.taskId}")
+          s"Finished processing ${op.action} for app [${op.appId}] and ${op.taskId}"
+        )
         FinishedTaskOp(op)
       }
 
       import akka.pattern.pipe
       future.pipeTo(self)
     }
-  }
 }

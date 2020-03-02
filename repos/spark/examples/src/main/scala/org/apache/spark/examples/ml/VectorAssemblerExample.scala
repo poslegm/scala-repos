@@ -27,14 +27,14 @@ import org.apache.spark.sql.SQLContext
 
 object VectorAssemblerExample {
   def main(args: Array[String]): Unit = {
-    val conf = new SparkConf().setAppName("VectorAssemblerExample")
-    val sc = new SparkContext(conf)
+    val conf       = new SparkConf().setAppName("VectorAssemblerExample")
+    val sc         = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
 
     // $example on$
     val dataset = sqlContext
       .createDataFrame(
-          Seq((0, 18, 1.0, Vectors.dense(0.0, 10.0, 0.5), 1.0))
+        Seq((0, 18, 1.0, Vectors.dense(0.0, 10.0, 0.5), 1.0))
       )
       .toDF("id", "hour", "mobile", "userFeatures", "clicked")
 

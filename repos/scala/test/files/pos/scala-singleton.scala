@@ -2,12 +2,12 @@
 // of this didn't work until the commit which accompanies this.
 object Test {
   def f1(x: AnyRef with Singleton): AnyRef with Singleton = x
-  def f2[T <: AnyRef with Singleton](x: T): T = x
+  def f2[T <: AnyRef with Singleton](x: T): T             = x
 
   val x1: AnyRef with Singleton = "abc"
-  val x2 = "def"
-  final val x3 = "ghi"
-  val x4: String = "jkl"
+  val x2                        = "def"
+  final val x3                  = "ghi"
+  val x4: String                = "jkl"
 
   // compiles...
   def narrow1(x: AnyRef): AnyRef with Singleton = x
@@ -24,8 +24,8 @@ object Test {
 
   object imp {
     implicit def narrow4[T <: AnyRef](x: T): AnyRef with Singleton = x
-    val x5: String = "mno"
-    def imp1 = f1(x5)
+    val x5: String                                                 = "mno"
+    def imp1                                                       = f1(x5)
 
     // f2(x5)   // doesn't work but I think it should
     def imp2 = f2(narrow4(x5))

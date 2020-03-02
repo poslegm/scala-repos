@@ -18,7 +18,7 @@ object AssertUtil {
   private final val timeout = 60 * 1000L // wait a minute
 
   private implicit class `ref helper`[A](val r: Reference[A]) extends AnyVal {
-    def isEmpty: Boolean = r.get == null
+    def isEmpty: Boolean  = r.get == null
     def nonEmpty: Boolean = !isEmpty
   }
   private implicit class `class helper`(val clazz: Class[_]) extends AnyVal {
@@ -42,39 +42,42 @@ object AssertUtil {
     */
   def assertThrows[T <: Throwable](
       body: => Any,
-      checkMessage: String => Boolean = s => true)(
-      implicit manifest: Manifest[T]): Unit = {
+      checkMessage: String => Boolean = s => true
+  )(implicit manifest: Manifest[T]): Unit =
     try {
       body
       fail("Expression did not throw!")
     } catch {
       case e: Throwable
           if (manifest.runtimeClass isAssignableFrom e.getClass) &&
-          checkMessage(e.getMessage) =>
+            checkMessage(e.getMessage) =>
     }
-  }
 
   /** JUnit-style assertion for `IterableLike.sameElements`.
     */
-  def assertSameElements[A, B >: A](expected: IterableLike[A, _],
-                                    actual: GenIterable[B],
-                                    message: String = ""): Unit =
+  def assertSameElements[A, B >: A](
+      expected: IterableLike[A, _],
+      actual: GenIterable[B],
+      message: String = ""
+  ): Unit =
     if (!(expected sameElements actual))
       fail(
-          f"${if (message.nonEmpty) s"$message " else ""}expected:<${stringOf(
-              expected)}> but was:<${stringOf(actual)}>"
+        f"${if (message.nonEmpty) s"$message " else ""}expected:<${stringOf(expected)}> but was:<${stringOf(actual)}>"
       )
 
   /** Convenient for testing iterators.
     */
   def assertSameElements[A, B >: A](
-      expected: IterableLike[A, _], actual: Iterator[B]): Unit =
+      expected: IterableLike[A, _],
+      actual: Iterator[B]
+  ): Unit =
     assertSameElements(expected, actual.toList, "")
 
   /** Value is not strongly reachable from roots after body is evaluated.
     */
   def assertNotReachable[A <: AnyRef](a: => A, roots: AnyRef*)(
-      body: => Unit): Unit = {
+      body: => Unit
+  ): Unit = {
     val wkref = new WeakReference(a)
     def refs(root: AnyRef): mutable.Set[AnyRef] = {
       val seen = new IdentityHashMap[AnyRef, Unit]
@@ -83,8 +86,8 @@ object AssertUtil {
           seen.put(o, ())
           for {
             f <- o.getClass.allFields if !Modifier.isStatic(f.getModifiers)
-                if !f.getType.isPrimitive
-                if !classOf[Reference[_]].isAssignableFrom(f.getType)
+            if !f.getType.isPrimitive
+            if !classOf[Reference[_]].isAssignableFrom(f.getType)
           } loop(f follow o)
         }
       loop(root)

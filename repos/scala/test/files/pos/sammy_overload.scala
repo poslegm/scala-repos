@@ -3,7 +3,7 @@ trait Consumer[T] {
 }
 
 object Test {
-  def foo(x: String): Unit = ???
-  def foo(): Unit = ???
+  def foo(x: String): Unit     = ???
+  def foo(): Unit              = ???
   val f: Consumer[_ >: String] = foo
 }

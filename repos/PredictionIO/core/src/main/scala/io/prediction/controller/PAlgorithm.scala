@@ -52,7 +52,10 @@ abstract class PAlgorithm[PD, M, Q, P] extends BaseAlgorithm[PD, M, Q, P] {
   def train(sc: SparkContext, pd: PD): M
 
   def batchPredictBase(
-      sc: SparkContext, bm: Any, qs: RDD[(Long, Q)]): RDD[(Long, P)] =
+      sc: SparkContext,
+      bm: Any,
+      qs: RDD[(Long, Q)]
+  ): RDD[(Long, P)] =
     batchPredict(bm.asInstanceOf[M], qs)
 
   /** To provide evaluation feature, one must override and implement this method
@@ -68,9 +71,8 @@ abstract class PAlgorithm[PD, M, Q, P] extends BaseAlgorithm[PD, M, Q, P] {
   def batchPredict(m: M, qs: RDD[(Long, Q)]): RDD[(Long, P)] =
     throw new NotImplementedError("batchPredict not implemented")
 
-  def predictBase(baseModel: Any, query: Q): P = {
+  def predictBase(baseModel: Any, query: Q): P =
     predict(baseModel.asInstanceOf[M], query)
-  }
 
   /** Implement this method to produce a prediction from a query and trained
     * model.
@@ -105,7 +107,11 @@ abstract class PAlgorithm[PD, M, Q, P] extends BaseAlgorithm[PD, M, Q, P] {
     */
   @DeveloperApi
   override def makePersistentModel(
-      sc: SparkContext, modelId: String, algoParams: Params, bm: Any): Any = {
+      sc: SparkContext,
+      modelId: String,
+      algoParams: Params,
+      bm: Any
+  ): Any = {
     val m = bm.asInstanceOf[M]
     if (m.isInstanceOf[PersistentModel[_]]) {
       if (m.asInstanceOf[PersistentModel[Params]]

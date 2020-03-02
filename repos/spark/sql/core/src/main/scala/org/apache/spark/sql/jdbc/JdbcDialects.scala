@@ -72,10 +72,12 @@ abstract class JdbcDialect extends Serializable {
     * @return The actual DataType (subclasses of [[org.apache.spark.sql.types.DataType]])
     *         or null if the default type mapping should be used.
     */
-  def getCatalystType(sqlType: Int,
-                      typeName: String,
-                      size: Int,
-                      md: MetadataBuilder): Option[DataType] = None
+  def getCatalystType(
+      sqlType: Int,
+      typeName: String,
+      size: Int,
+      md: MetadataBuilder
+  ): Option[DataType] = None
 
   /**
     * Retrieve the jdbc / sql type for a given datatype.
@@ -88,9 +90,8 @@ abstract class JdbcDialect extends Serializable {
     * Quotes the identifier. This is used to put quotes around the identifier in case the column
     * name is a reserved keyword, or in case it contains characters that require quotes (e.g. space).
     */
-  def quoteIdentifier(colName: String): String = {
+  def quoteIdentifier(colName: String): String =
     s""""$colName""""
-  }
 
   /**
     * Get the SQL query that should be used to find if the given table exists. Dialects can
@@ -98,9 +99,8 @@ abstract class JdbcDialect extends Serializable {
     * @param table  The name of the table.
     * @return The SQL query to use for checking the table.
     */
-  def getTableExistsQuery(table: String): String = {
+  def getTableExistsQuery(table: String): String =
     s"SELECT * FROM $table WHERE 1=0"
-  }
 
   /**
     * Override connection specific properties to run before a select is made.  This is in place to
@@ -109,7 +109,9 @@ abstract class JdbcDialect extends Serializable {
     * @param properties The connection properties.  This is passed through from the relation.
     */
   def beforeFetch(
-      connection: Connection, properties: Map[String, String]): Unit = {}
+      connection: Connection,
+      properties: Map[String, String]
+  ): Unit = {}
 }
 
 /**
@@ -132,18 +134,16 @@ object JdbcDialects {
     *
     * @param dialect The new dialect.
     */
-  def registerDialect(dialect: JdbcDialect): Unit = {
+  def registerDialect(dialect: JdbcDialect): Unit =
     dialects = dialect :: dialects.filterNot(_ == dialect)
-  }
 
   /**
     * Unregister a dialect. Does nothing if the dialect is not registered.
     *
     * @param dialect The jdbc dialect.
     */
-  def unregisterDialect(dialect: JdbcDialect): Unit = {
+  def unregisterDialect(dialect: JdbcDialect): Unit =
     dialects = dialects.filterNot(_ == dialect)
-  }
 
   private[this] var dialects = List[JdbcDialect]()
 

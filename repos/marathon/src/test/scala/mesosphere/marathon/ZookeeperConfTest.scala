@@ -6,7 +6,7 @@ import scala.util.Try
 class ZookeeperConfTest extends MarathonSpec {
 
   test("urlParameterGetParsed") {
-    val url = "zk://host1:123,host2,host3:312/path"
+    val url  = "zk://host1:123,host2,host3:312/path"
     val opts = conf("--zk", url)
     assert(opts.zkURL == url)
     assert(opts.zkHosts == "host1:123,host2,host3:312")
@@ -14,7 +14,7 @@ class ZookeeperConfTest extends MarathonSpec {
   }
 
   test("urlParameterWithAuthGetParsed") {
-    val url = "zk://user1:pass1@host1:123,host2,host3:312/path"
+    val url  = "zk://user1:pass1@host1:123,host2,host3:312/path"
     val opts = conf("--zk", url)
     assert(opts.zkURL == url)
     assert(opts.zkHosts == "host1:123,host2,host3:312")
@@ -22,8 +22,7 @@ class ZookeeperConfTest extends MarathonSpec {
   }
 
   test("wrongURLIsNotParsed") {
-    assert(
-        Try(conf("--zk", "zk://host1:foo/path")).isFailure, "No port number")
+    assert(Try(conf("--zk", "zk://host1:foo/path")).isFailure, "No port number")
     assert(Try(conf("--zk", "zk://host1")).isFailure, "No path")
   }
 

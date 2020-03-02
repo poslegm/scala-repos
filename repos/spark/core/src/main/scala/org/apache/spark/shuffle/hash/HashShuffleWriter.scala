@@ -29,12 +29,13 @@ private[spark] class HashShuffleWriter[K, V](
     shuffleBlockResolver: FileShuffleBlockResolver,
     handle: BaseShuffleHandle[K, V, _],
     mapId: Int,
-    context: TaskContext)
-    extends ShuffleWriter[K, V] with Logging {
+    context: TaskContext
+) extends ShuffleWriter[K, V]
+    with Logging {
 
-  private val dep = handle.dependency
+  private val dep             = handle.dependency
   private val numOutputSplits = dep.partitioner.numPartitions
-  private val metrics = context.taskMetrics
+  private val metrics         = context.taskMetrics
 
   // Are we in the process of stopping? Because map tasks can call stop() with success = true
   // and then call stop() with success = false if they get an exception, we want to make sure
@@ -45,7 +46,12 @@ private[spark] class HashShuffleWriter[K, V](
 
   private val blockManager = SparkEnv.get.blockManager
   private val shuffle = shuffleBlockResolver.forMapTask(
-      dep.shuffleId, mapId, numOutputSplits, dep.serializer, writeMetrics)
+    dep.shuffleId,
+    mapId,
+    numOutputSplits,
+    dep.serializer,
+    writeMetrics
+  )
 
   /** Write a bunch of records to this task's output */
   override def write(records: Iterator[Product2[K, V]]): Unit = {
@@ -57,8 +63,10 @@ private[spark] class HashShuffleWriter[K, V](
           records
         }
       } else {
-        require(!dep.mapSideCombine,
-                "Map-side combine without Aggregator specified!")
+        require(
+          !dep.mapSideCombine,
+          "Map-side combine without Aggregator specified!"
+        )
         records
       }
 
@@ -123,7 +131,8 @@ private[spark] class HashShuffleWriter[K, V](
               // Commit by renaming our temporary file to something the fetcher expects
               if (!writer.file.renameTo(output)) {
                 throw new IOException(
-                    s"fail to rename ${writer.file} to $output")
+                  s"fail to rename ${writer.file} to $output"
+                )
               }
             }
           } else {
@@ -136,11 +145,10 @@ private[spark] class HashShuffleWriter[K, V](
     MapStatus(blockManager.shuffleServerId, sizes)
   }
 
-  private def revertWrites(): Unit = {
+  private def revertWrites(): Unit =
     if (shuffle != null && shuffle.writers != null) {
       for (writer <- shuffle.writers) {
         writer.revertPartialWritesAndClose()
       }
     }
-  }
 }

@@ -31,22 +31,18 @@ class DenseMulScalarBenchmark extends BreezeBenchmark {
 
   def timeSmallDVMulScalar(reps: Int) = {
     var sum = 0.0
-    var q = dv2
-    cforRange(0 until reps) { rep =>
-      q = dv :* q
-    }
+    var q   = dv2
+    cforRange(0 until reps)(rep => q = dv :* q)
     q
   }
 
   def timeSmallDVInlineRange(reps: Int) = {
     var result = new Array[Double](dv.length)
-    var b = dv2
+    var b      = dv2
     cforRange(0 until reps) { rep =>
       val ad = dv.data
       val bd = b.data
-      cforRange(0 until dv.length) { i =>
-        result(i) = ad(i) * bd(i)
-      }
+      cforRange(0 until dv.length)(i => result(i) = ad(i) * bd(i))
       b = new DenseVector(result)
       result = new Array[Double](dv.length)
     }
@@ -54,8 +50,8 @@ class DenseMulScalarBenchmark extends BreezeBenchmark {
   }
 
   def timeSmallDVScaleAddInline(reps: Int) = {
-    val dv = this.dv.data
-    var dv2 = this.dv2.data
+    val dv     = this.dv.data
+    var dv2    = this.dv2.data
     var result = new Array[Double](dv.length)
     cforRange(0 until reps) { rep =>
       result = new Array[Double](dv.length)

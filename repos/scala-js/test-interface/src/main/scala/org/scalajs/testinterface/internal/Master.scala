@@ -34,9 +34,9 @@ final class Master(frameworkName: String) extends BridgeBase(frameworkName) {
   // Message handler methods
 
   private def newRunner(data: js.Dynamic): Try[Unit] = {
-    val args = data.args.asInstanceOf[js.Array[String]].toArray
+    val args       = data.args.asInstanceOf[js.Array[String]].toArray
     val remoteArgs = data.remoteArgs.asInstanceOf[js.Array[String]].toArray
-    val loader = new ScalaJSClassLoader(js.Dynamic.global)
+    val loader     = new ScalaJSClassLoader(js.Dynamic.global)
 
     Try(runner = framework.runner(args, remoteArgs, loader))
   }
@@ -70,7 +70,6 @@ final class Master(frameworkName: String) extends BridgeBase(frameworkName) {
 
   // Utility methods
 
-  private def ensureRunnerExists(): Unit = {
+  private def ensureRunnerExists(): Unit =
     if (runner == null) throw new IllegalStateException("No runner created")
-  }
 }

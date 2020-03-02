@@ -5,7 +5,7 @@ import scala.pickling._, scala.pickling.Defaults._, json._
 
 abstract class Tree
 case class Fork(left: Tree, right: Tree) extends Tree
-case class Node(value: Int) extends Tree
+case class Node(value: Int)              extends Tree
 
 class NestedNonPrimitiveSubclassTest extends FunSuite {
   test("main") {
@@ -13,7 +13,7 @@ class NestedNonPrimitiveSubclassTest extends FunSuite {
       Fork(Fork(Fork(Node(1), Node(2)), Node(3)), Fork(Node(4), Node(5)))
     val pckl = treeStructure.pickle
     assert(
-        pckl.value.toString === """
+      pckl.value.toString === """
       |{
       |  "$type": "scala.pickling.nested.non.primitive.subclass.Fork",
       |  "left": {
@@ -46,7 +46,8 @@ class NestedNonPrimitiveSubclassTest extends FunSuite {
       |    }
       |  }
       |}
-    """.stripMargin.trim)
+    """.stripMargin.trim
+    )
     assert(pckl.unpickle[Tree] === treeStructure)
   }
 }

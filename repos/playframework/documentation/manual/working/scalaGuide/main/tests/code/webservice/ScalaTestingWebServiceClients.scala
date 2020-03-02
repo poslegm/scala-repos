@@ -13,11 +13,10 @@ package client {
   class GitHubClient(ws: WSClient, baseUrl: String) {
     @Inject def this(ws: WSClient) = this(ws, "https://api.github.com")
 
-    def repositories(): Future[Seq[String]] = {
+    def repositories(): Future[Seq[String]] =
       ws.url(baseUrl + "/repositories").get().map { response =>
         (response.json \\ "full_name").map(_.as[String])
       }
-    }
   }
 //#client
 }
@@ -49,14 +48,17 @@ package test {
           case GET(p"/repositories") =>
             Action {
               Results.Ok(
-                  Json.arr(Json.obj("full_name" -> "octocat/Hello-World")))
+                Json.arr(Json.obj("full_name" -> "octocat/Hello-World"))
+              )
             }
         } { implicit port =>
           implicit val materializer = Play.current.materializer
           WsTestClient.withClient { client =>
             val result =
-              Await.result(new GitHubClient(client, "").repositories(),
-                           10.seconds)
+              Await.result(
+                new GitHubClient(client, "").repositories(),
+                10.seconds
+              )
             result must_== Seq("octocat/Hello-World")
           }
         }
@@ -73,7 +75,8 @@ import org.specs2.mutable.Specification
 import org.specs2.time.NoTimeConversions
 
 object ScalaTestingWebServiceClients
-    extends Specification with NoTimeConversions {
+    extends Specification
+    with NoTimeConversions {
 
   "webservice testing" should {
     "allow mocking a service" in {
@@ -87,8 +90,7 @@ object ScalaTestingWebServiceClients
       Server.withRouter() {
         case GET(p"/repositories") =>
           Action {
-            Results.Ok(
-                Json.arr(Json.obj("full_name" -> "octocat/Hello-World")))
+            Results.Ok(Json.arr(Json.obj("full_name" -> "octocat/Hello-World")))
           }
       } { implicit port =>
         //#mock-service
@@ -127,7 +129,7 @@ object ScalaTestingWebServiceClients
       import play.core.server.Server
       import play.api.test._
 
-      def withGitHubClient[T](block: GitHubClient => T): T = {
+      def withGitHubClient[T](block: GitHubClient => T): T =
         Server.withRouter() {
           case GET(p"/repositories") =>
             Action {
@@ -139,7 +141,6 @@ object ScalaTestingWebServiceClients
             block(new GitHubClient(client, ""))
           }
         }
-      }
       //#with-github-client
 
       //#with-github-test

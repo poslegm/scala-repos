@@ -21,10 +21,12 @@ trait LinkingUnitJSEnv extends JSEnv {
   val symbolRequirements: SymbolRequirement
 
   /** Prepare a runner for the code in the virtual file. */
-  def jsRunner(preLibs: Seq[ResolvedJSDependency],
-               linkingUnit: LinkingUnit,
-               postLibs: Seq[ResolvedJSDependency],
-               code: VirtualJSFile): JSRunner
+  def jsRunner(
+      preLibs: Seq[ResolvedJSDependency],
+      linkingUnit: LinkingUnit,
+      postLibs: Seq[ResolvedJSDependency],
+      code: VirtualJSFile
+  ): JSRunner
 
   override def loadLibs(libs: Seq[ResolvedJSDependency]): LinkingUnitJSEnv =
     new LinkingUnitLoadedLibs { val loadedLibs = libs }
@@ -52,17 +54,23 @@ trait LinkingUnitJSEnv extends JSEnv {
     new LoadedUnit { val loadedUnit = linkingUnit }
 
   private[jsenv] trait LinkingUnitLoadedLibs
-      extends LoadedLibs with LinkingUnitJSEnv {
+      extends LoadedLibs
+      with LinkingUnitJSEnv {
     val symbolRequirements: SymbolRequirement =
       LinkingUnitJSEnv.this.symbolRequirements
 
-    def jsRunner(preLibs: Seq[ResolvedJSDependency],
-                 linkingUnit: LinkingUnit,
-                 postLibs: Seq[ResolvedJSDependency],
-                 code: VirtualJSFile): JSRunner = {
+    def jsRunner(
+        preLibs: Seq[ResolvedJSDependency],
+        linkingUnit: LinkingUnit,
+        postLibs: Seq[ResolvedJSDependency],
+        code: VirtualJSFile
+    ): JSRunner =
       LinkingUnitJSEnv.this.jsRunner(
-          loadedLibs ++ preLibs, linkingUnit, postLibs, code)
-    }
+        loadedLibs ++ preLibs,
+        linkingUnit,
+        postLibs,
+        code
+      )
   }
 
   private[jsenv] trait LoadedUnit extends JSEnv {
@@ -71,7 +79,9 @@ trait LinkingUnitJSEnv extends JSEnv {
     def name: String = LinkingUnitJSEnv.this.name
 
     def jsRunner(
-        libs: Seq[ResolvedJSDependency], code: VirtualJSFile): JSRunner =
+        libs: Seq[ResolvedJSDependency],
+        code: VirtualJSFile
+    ): JSRunner =
       LinkingUnitJSEnv.this.jsRunner(Nil, loadedUnit, libs, code)
   }
 }

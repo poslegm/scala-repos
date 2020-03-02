@@ -15,20 +15,33 @@ import org.scalajs.testsuite.utils.Platform._
 
 import java.util._
 
-import java.lang.{Double => JDouble, Float => JFloat, Integer => JInteger, Long => JLong, Byte => JByte, Short => JShort, Boolean => JBoolean, String => JString}
+import java.lang.{
+  Double => JDouble,
+  Float => JFloat,
+  Integer => JInteger,
+  Long => JLong,
+  Byte => JByte,
+  Short => JShort,
+  Boolean => JBoolean,
+  String => JString
+}
 
 class FormatterTest {
 
   class HelperClass
   class FormattableClass extends Formattable {
     var frm: Formatter = _
-    var flags: Int = _
-    var width: Int = _
+    var flags: Int     = _
+    var width: Int     = _
     var precision: Int = _
-    var calls = 0
+    var calls          = 0
 
     def formatTo(
-        frm: Formatter, flags: Int, width: Int, precision: Int): Unit = {
+        frm: Formatter,
+        flags: Int,
+        width: Int,
+        precision: Int
+    ): Unit = {
       this.calls += 1
       this.flags = flags
       this.width = width
@@ -37,7 +50,11 @@ class FormatterTest {
     }
 
     def expectCalled(
-        times: Int, flags: Int, width: Int, precision: Int): Unit = {
+        times: Int,
+        flags: Int,
+        width: Int,
+        precision: Int
+    ): Unit = {
       assertEquals(times, this.calls)
       assertEquals(flags, this.flags)
       assertEquals(width, this.width)
@@ -52,27 +69,32 @@ class FormatterTest {
     assertEquals(expected, res)
   }
 
-  def assertFC(expected: String,
-               format: String,
-               flags: Int,
-               width: Int,
-               precision: Int): Unit = {
+  def assertFC(
+      expected: String,
+      format: String,
+      flags: Int,
+      width: Int,
+      precision: Int
+  ): Unit = {
     val fc = new FormattableClass
     assertF(expected, format, fc)
     fc.expectCalled(1, flags, width, precision)
   }
 
   def expectFormatterThrows[T <: Throwable](
-      exeption: Class[T], format: String, args: AnyRef*): Unit = {
+      exeption: Class[T],
+      format: String,
+      args: AnyRef*
+  ): Unit = {
     val fmt = new Formatter()
     assertThrows(exeption, fmt.format(format, args: _*))
   }
 
   // Explicitly define these as `var`'s to avoid any compile-time constant folding
-  var IntMax: Int = Int.MaxValue
-  var IntMin: Int = Int.MinValue
-  var ByteMax: Byte = Byte.MaxValue
-  var ByteMin: Byte = Byte.MinValue
+  var IntMax: Int     = Int.MaxValue
+  var IntMin: Int     = Int.MinValue
+  var ByteMax: Byte   = Byte.MaxValue
+  var ByteMin: Byte   = Byte.MinValue
   var ShortMax: Short = Short.MaxValue
   var ShortMin: Short = Short.MinValue
 
@@ -93,30 +115,32 @@ class FormatterTest {
   @Test def `should_provide_s_conversion`(): Unit = {
     assertFC("foobar", "%s", 0, -1, -1)
     assertFC("foobar", "%-10s", FormattableFlags.LEFT_JUSTIFY, 10, -1)
-    assertFC("foobar",
-             "%#-10.2s",
-             FormattableFlags.LEFT_JUSTIFY | FormattableFlags.ALTERNATE,
-             10,
-             2)
-    assertFC("foobar",
-             "%#10.2S",
-             FormattableFlags.UPPERCASE | FormattableFlags.ALTERNATE,
-             10,
-             2)
+    assertFC(
+      "foobar",
+      "%#-10.2s",
+      FormattableFlags.LEFT_JUSTIFY | FormattableFlags.ALTERNATE,
+      10,
+      2
+    )
+    assertFC(
+      "foobar",
+      "%#10.2S",
+      FormattableFlags.UPPERCASE | FormattableFlags.ALTERNATE,
+      10,
+      2
+    )
     assertF("     hello", "%10s", "hello")
     assertF("hello     ", "%-10s", "hello")
     if (!executingInJVMOnJDK6)
       expectFormatterThrows(classOf[Exception], "%#s", "hello")
   }
 
-  @Test def `should_fail_s_conversions_without_width`(): Unit = {
+  @Test def `should_fail_s_conversions_without_width`(): Unit =
     // Issue #2246
     expectFormatterThrows(classOf[MissingFormatWidthException], "%-s", "abc")
-  }
 
-  @Test def `should_provide_c_conversion`(): Unit = {
+  @Test def `should_provide_c_conversion`(): Unit =
     assertF("!    ", "%-5c", new Character('!'))
-  }
 
   @Test def `should_provide_d_conversion`(): Unit = {
     assertF("5", "%d", new Integer(5))
@@ -214,21 +238,17 @@ class FormatterTest {
     assertF(" NaN", "%04f", new JDouble(Double.NaN))
   }
 
-  @Test def `should_support_%%`(): Unit = {
+  @Test def `should_support_%%`(): Unit =
     assertF("1%2", "%d%%%d", new JInteger(1), new JInteger(2))
-  }
 
-  @Test def `should_support_%n`(): Unit = {
+  @Test def `should_support_%n`(): Unit =
     assertF("1\n2", "%d%n%d", new JInteger(1), new JInteger(2))
-  }
 
-  @Test def `should_survive_null`(): Unit = {
+  @Test def `should_survive_null`(): Unit =
     assertF("null", "%s", null)
-  }
 
-  @Test def `should_allow_f_string_interpolation_to_survive_null`(): Unit = {
+  @Test def `should_allow_f_string_interpolation_to_survive_null`(): Unit =
     assertEquals("null", f"${null}%s")
-  }
 
   @Test def should_allow_positional_arguments(): Unit = {
     assertF("2 1", "%2$d %1$d", new JInteger(1), new JInteger(2))
@@ -252,11 +272,16 @@ class FormatterTest {
 
   @Test def should_fail_with_not_enough_arguments(): Unit = {
     expectFormatterThrows(classOf[MissingFormatArgumentException], "%f")
-    expectFormatterThrows(classOf[MissingFormatArgumentException],
-                          "%d%d%d",
-                          new JInteger(1),
-                          new JInteger(1))
     expectFormatterThrows(
-        classOf[MissingFormatArgumentException], "%10$d", new JInteger(1))
+      classOf[MissingFormatArgumentException],
+      "%d%d%d",
+      new JInteger(1),
+      new JInteger(1)
+    )
+    expectFormatterThrows(
+      classOf[MissingFormatArgumentException],
+      "%10$d",
+      new JInteger(1)
+    )
   }
 }

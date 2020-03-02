@@ -15,7 +15,9 @@ trait JUnitTestBootstrapper {
 }
 
 final class JUnitMethodMetadata(
-    val name: String, annotations: List[Annotation]) {
+    val name: String,
+    annotations: List[Annotation]
+) {
 
   def hasTestAnnotation: Boolean =
     annotations.exists(_.isInstanceOf[org.junit.Test])
@@ -39,15 +41,17 @@ final class JUnitMethodMetadata(
     annotations.collectFirst { case ign: org.junit.Ignore => ign }
 }
 
-final class JUnitClassMetadata(classAnnotations: List[Annotation],
-                               moduleAnnotations: List[Annotation],
-                               classMethods: List[JUnitMethodMetadata],
-                               moduleMethods: List[JUnitMethodMetadata]) {
+final class JUnitClassMetadata(
+    classAnnotations: List[Annotation],
+    moduleAnnotations: List[Annotation],
+    classMethods: List[JUnitMethodMetadata],
+    moduleMethods: List[JUnitMethodMetadata]
+) {
 
   def testMethods: List[JUnitMethodMetadata] = {
     val fixMethodOrderAnnotation = getFixMethodOrderAnnotation
-    val methodSorter = fixMethodOrderAnnotation.value
-    val tests = classMethods.filter(_.hasTestAnnotation)
+    val methodSorter             = fixMethodOrderAnnotation.value
+    val tests                    = classMethods.filter(_.hasTestAnnotation)
     tests.sortWith((a, b) => methodSorter.comparator.lt(a.name, b.name))
   }
 
@@ -63,9 +67,10 @@ final class JUnitClassMetadata(classAnnotations: List[Annotation],
   def afterClassMethod: List[JUnitMethodMetadata] =
     moduleMethods.filter(_.hasAfterClassAnnotation)
 
-  def getFixMethodOrderAnnotation: FixMethodOrder = {
-    classAnnotations.collectFirst {
-      case fmo: FixMethodOrder => fmo
-    }.getOrElse(new FixMethodOrder)
-  }
+  def getFixMethodOrderAnnotation: FixMethodOrder =
+    classAnnotations
+      .collectFirst {
+        case fmo: FixMethodOrder => fmo
+      }
+      .getOrElse(new FixMethodOrder)
 }

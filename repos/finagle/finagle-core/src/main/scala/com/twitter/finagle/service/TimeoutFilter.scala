@@ -29,10 +29,12 @@ object TimeoutFilter {
     * for use in clients.
     */
   def clientModule[Req, Rep]: Stackable[ServiceFactory[Req, Rep]] =
-    new Stack.Module3[TimeoutFilter.Param,
-                      param.Timer,
-                      LatencyCompensation.Compensation,
-                      ServiceFactory[Req, Rep]] {
+    new Stack.Module3[
+      TimeoutFilter.Param,
+      param.Timer,
+      LatencyCompensation.Compensation,
+      ServiceFactory[Req, Rep]
+    ] {
       val role = TimeoutFilter.role
       val description =
         "Apply a timeout-derived deadline to requests; adjust existing deadlines."
@@ -49,8 +51,8 @@ object TimeoutFilter {
           next
         } else {
           val param.Timer(timer) = _timer
-          val exc = new IndividualRequestTimeoutException(timeout)
-          val filter = new TimeoutFilter[Req, Rep](timeout, exc, timer)
+          val exc                = new IndividualRequestTimeoutException(timeout)
+          val filter             = new TimeoutFilter[Req, Rep](timeout, exc, timer)
           filter.andThen(next)
         }
       }
@@ -61,8 +63,10 @@ object TimeoutFilter {
     * for use in servers.
     */
   def serverModule[Req, Rep]: Stackable[ServiceFactory[Req, Rep]] =
-    new Stack.Module2[
-        TimeoutFilter.Param, param.Timer, ServiceFactory[Req, Rep]] {
+    new Stack.Module2[TimeoutFilter.Param, param.Timer, ServiceFactory[
+      Req,
+      Rep
+    ]] {
       val role = TimeoutFilter.role
       val description =
         "Apply a timeout-derived deadline to requests; adjust existing deadlines."
@@ -71,11 +75,11 @@ object TimeoutFilter {
           _timer: param.Timer,
           next: ServiceFactory[Req, Rep]
       ): ServiceFactory[Req, Rep] = {
-        val Param(timeout) = _param
+        val Param(timeout)     = _param
         val param.Timer(timer) = _timer
         if (!timeout.isFinite || timeout <= Duration.Zero) next
         else {
-          val exc = new IndividualRequestTimeoutException(timeout)
+          val exc    = new IndividualRequestTimeoutException(timeout)
           val filter = new TimeoutFilter[Req, Rep](timeout, exc, timer)
           filter.andThen(next)
         }
@@ -105,8 +109,10 @@ object TimeoutFilter {
   *      in the user guide for more details.
   */
 class TimeoutFilter[Req, Rep](
-    timeout: Duration, exception: RequestTimeoutException, timer: Timer)
-    extends SimpleFilter[Req, Rep] {
+    timeout: Duration,
+    exception: RequestTimeoutException,
+    timer: Timer
+) extends SimpleFilter[Req, Rep] {
   def this(timeout: Duration, timer: Timer) =
     this(timeout, new IndividualRequestTimeoutException(timeout), timer)
 

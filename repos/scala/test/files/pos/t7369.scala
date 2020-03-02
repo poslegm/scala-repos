@@ -3,12 +3,12 @@ object Test {
   (null: Tuple1[Boolean]) match {
     case Tuple1(X) =>
     case Tuple1(Y) => // unreachable
-    case _ =>
+    case _         =>
   }
 }
 
 sealed abstract class B;
-case object True extends B;
+case object True  extends B;
 case object False extends B;
 
 object Test2 {
@@ -19,18 +19,17 @@ object Test2 {
   (null: Tuple1[B]) match {
     case Tuple1(X) =>
     case Tuple1(Y) => // no warning
-    case _ =>
+    case _         =>
   }
 }
 
 object Test3 {
   val X, O = true
-  def classify(neighbourhood: (Boolean, Boolean, Boolean)): String = {
+  def classify(neighbourhood: (Boolean, Boolean, Boolean)): String =
     neighbourhood match {
       case (X, X, X) => "middle"
       case (X, X, O) => "right"
       case (O, X, X) => "left"
-      case _ => throw new IllegalArgumentException("Invalid")
+      case _         => throw new IllegalArgumentException("Invalid")
     }
-  }
 }

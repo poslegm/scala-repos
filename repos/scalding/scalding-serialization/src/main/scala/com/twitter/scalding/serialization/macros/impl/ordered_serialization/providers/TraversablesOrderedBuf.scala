@@ -20,7 +20,11 @@ import scala.reflect.macros.Context
 import java.io.InputStream
 
 import com.twitter.scalding._
-import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{CompileTimeLengthTypes, ProductLike, TreeOrderedBuf}
+import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
+  CompileTimeLengthTypes,
+  ProductLike,
+  TreeOrderedBuf
+}
 import CompileTimeLengthTypes._
 import com.twitter.scalding.serialization.OrderedSerialization
 import scala.reflect.ClassTag
@@ -33,13 +37,13 @@ case object DoSort extends ShouldSort
 case object NoSort extends ShouldSort
 
 sealed trait MaybeArray
-case object IsArray extends MaybeArray
+case object IsArray  extends MaybeArray
 case object NotArray extends MaybeArray
 
 object TraversablesOrderedBuf {
   def dispatch(c: Context)(
-      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]])
-    : PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]
+  ): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     case tpe if tpe.erasure =:= c.universe.typeOf[Iterable[Any]] =>
       TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
     case tpe if tpe.erasure =:= c.universe.typeOf[sci.Iterable[Any]] =>
@@ -97,7 +101,8 @@ object TraversablesOrderedBuf {
       buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
       outerType: c.Type,
       maybeSort: ShouldSort,
-      maybeArray: MaybeArray): TreeOrderedBuf[c.type] = {
+      maybeArray: MaybeArray
+  ): TreeOrderedBuf[c.type] = {
 
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(s"fresh_$id"))
@@ -110,8 +115,10 @@ object TraversablesOrderedBuf {
     // it would correspond to if we .toList the Map.
     val innerType =
       if (outerType.asInstanceOf[TypeRefApi].args.size == 2) {
-        val (tpe1, tpe2) = (outerType.asInstanceOf[TypeRefApi].args(0),
-                            outerType.asInstanceOf[TypeRefApi].args(1))
+        val (tpe1, tpe2) = (
+          outerType.asInstanceOf[TypeRefApi].args(0),
+          outerType.asInstanceOf[TypeRefApi].args(1)
+        )
         val containerType = typeOf[Tuple2[Any, Any]].asInstanceOf[TypeRef]
         import compat._
         TypeRef.apply(containerType.pre, containerType.sym, List(tpe1, tpe2))
@@ -124,8 +131,8 @@ object TraversablesOrderedBuf {
     val innerBuf: TreeOrderedBuf[c.type] = dispatcher(innerType)
     // TODO it would be nice to capture one instance of this rather
     // than allocate in every call in the materialized class
-    val ioa = freshT("ioa")
-    val iob = freshT("iob")
+    val ioa      = freshT("ioa")
+    val iob      = freshT("iob")
     val innerOrd = q"""
       new _root_.scala.math.Ordering[${innerBuf.tpe}] {
         def compare(a: ${innerBuf.tpe}, b: ${innerBuf.tpe}) = {
@@ -138,12 +145,14 @@ object TraversablesOrderedBuf {
 
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c
-      override val tpe = outerType
+      override val tpe         = outerType
       override def compareBinary(
-          inputStreamA: ctx.TermName, inputStreamB: ctx.TermName) = {
+          inputStreamA: ctx.TermName,
+          inputStreamB: ctx.TermName
+      ) = {
         val innerCompareFn = freshT("innerCompareFn")
-        val a = freshT("a")
-        val b = freshT("b")
+        val a              = freshT("a")
+        val b              = freshT("b")
         q"""
         val $innerCompareFn = { (a: _root_.java.io.InputStream, b: _root_.java.io.InputStream) =>
           val $a = a
@@ -155,12 +164,12 @@ object TraversablesOrderedBuf {
       }
 
       override def put(inputStream: ctx.TermName, element: ctx.TermName) = {
-        val asArray = freshT("asArray")
-        val bytes = freshT("bytes")
-        val len = freshT("len")
-        val pos = freshT("pos")
+        val asArray      = freshT("asArray")
+        val bytes        = freshT("bytes")
+        val len          = freshT("len")
+        val pos          = freshT("pos")
         val innerElement = freshT("innerElement")
-        val cmpRes = freshT("cmpRes")
+        val cmpRes       = freshT("cmpRes")
 
         maybeSort match {
           case DoSort =>
@@ -192,8 +201,8 @@ object TraversablesOrderedBuf {
       }
       override def hash(element: ctx.TermName): ctx.Tree = {
         val currentHash = freshT("currentHash")
-        val len = freshT("len")
-        val target = freshT("target")
+        val len         = freshT("len")
+        val target      = freshT("target")
         maybeSort match {
           case NoSort =>
             q"""
@@ -227,10 +236,10 @@ object TraversablesOrderedBuf {
       }
 
       override def get(inputStream: ctx.TermName): ctx.Tree = {
-        val len = freshT("len")
-        val firstVal = freshT("firstVal")
+        val len         = freshT("len")
+        val firstVal    = freshT("firstVal")
         val travBuilder = freshT("travBuilder")
-        val iter = freshT("iter")
+        val iter        = freshT("iter")
         val extractionTree = maybeArray match {
           case IsArray =>
             q"""val $travBuilder = new Array[..$innerTypes]($len)
@@ -268,10 +277,12 @@ object TraversablesOrderedBuf {
       }
 
       override def compare(
-          elementA: ctx.TermName, elementB: ctx.TermName): ctx.Tree = {
+          elementA: ctx.TermName,
+          elementB: ctx.TermName
+      ): ctx.Tree = {
 
-        val a = freshT("a")
-        val b = freshT("b")
+        val a         = freshT("a")
+        val b         = freshT("b")
         val cmpFnName = freshT("cmpFnName")
         maybeSort match {
           case DoSort =>
@@ -289,8 +300,7 @@ object TraversablesOrderedBuf {
       override val lazyOuterVariables: Map[String, ctx.Tree] =
         innerBuf.lazyOuterVariables
 
-      override def length(element: Tree): CompileTimeLengthTypes[c.type] = {
-
+      override def length(element: Tree): CompileTimeLengthTypes[c.type] =
         innerBuf.length(q"$element.head") match {
           case const: ConstantLengthCalculation[_] =>
             FastLengthCalculation(c)(q"""{
@@ -328,7 +338,6 @@ object TraversablesOrderedBuf {
               }
             """)
         }
-      }
     }
   }
 }

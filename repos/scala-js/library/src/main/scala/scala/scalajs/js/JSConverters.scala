@@ -49,8 +49,9 @@ object JSConverters extends JSConvertersLowPrioImplicits {
   }
 
   @inline
-  implicit def genTravConvertible2JSRichGenTrav[T, C](coll: C)(
-      implicit ev: C => GenTraversableOnce[T]): JSRichGenTraversableOnce[T] =
+  implicit def genTravConvertible2JSRichGenTrav[T, C](
+      coll: C
+  )(implicit ev: C => GenTraversableOnce[T]): JSRichGenTraversableOnce[T] =
     new JSRichGenTraversableOnce(coll)
 
   /** Special case for scala.Array of [[genTravConvertible2JSRichGenTrav]].
@@ -58,12 +59,14 @@ object JSConverters extends JSConvertersLowPrioImplicits {
     */
   @inline
   implicit def array2JSRichGenTrav[T](
-      arr: scala.Array[T]): JSRichGenTraversableOnce[T] =
+      arr: scala.Array[T]
+  ): JSRichGenTraversableOnce[T] =
     new JSRichGenTraversableOnce(arr)
 
   @inline
   implicit def JSRichFutureThenable[A](
-      f: Future[Thenable[A]]): JSRichFuture[A] =
+      f: Future[Thenable[A]]
+  ): JSRichFuture[A] =
     new JSRichFuture[A](f.asInstanceOf[Future[A | Thenable[A]]])
 
   final class JSRichFuture[A](val self: Future[A | Thenable[A]])
@@ -78,10 +81,12 @@ object JSConverters extends JSConvertersLowPrioImplicits {
       *  The signature of the `toJSPromise` method is only valid
       *  <i>provided that</i> the values of `A` do not have a `then` method.
       */
-    def toJSPromise(implicit executor: ExecutionContext): Promise[A] = {
-      new Promise[A]({
-        (resolve: js.Function1[A | Thenable[A], _],
-        reject: js.Function1[scala.Any, _]) =>
+    def toJSPromise(implicit executor: ExecutionContext): Promise[A] =
+      new Promise[A](
+        (
+            resolve: js.Function1[A | Thenable[A], _],
+            reject: js.Function1[scala.Any, _]
+        ) =>
           self onComplete {
             case scala.util.Success(value) =>
               resolve(value)
@@ -89,10 +94,9 @@ object JSConverters extends JSConvertersLowPrioImplicits {
             case scala.util.Failure(th) =>
               reject(th match {
                 case JavaScriptException(e) => e
-                case _ => th
+                case _                      => th
               })
           }
-      })
-    }
+      )
   }
 }

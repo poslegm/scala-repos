@@ -6,11 +6,11 @@ import scala.tools.reflect.ToolBox
 object Test extends App {
   def fun() = {
     def z() = 2
-    reify { z }
+    reify(z)
   }
 
   val toolbox = cm.mkToolBox()
-  val dyn = toolbox.eval(fun().tree)
-  val foo = dyn.asInstanceOf[Int]
+  val dyn     = toolbox.eval(fun().tree)
+  val foo     = dyn.asInstanceOf[Int]
   println(foo)
 }

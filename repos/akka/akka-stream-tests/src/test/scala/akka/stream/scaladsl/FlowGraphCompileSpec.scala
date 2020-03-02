@@ -34,8 +34,8 @@ class FlowGraphCompileSpec extends AkkaSpec {
   val f5 = Flow[String].transform(op[String, String]).named("f5")
   val f6 = Flow[String].transform(op[String, String]).named("f6")
 
-  val in1 = Source(List("a", "b", "c"))
-  val in2 = Source(List("d", "e", "f"))
+  val in1  = Source(List("a", "b", "c"))
+  val in2  = Source(List("d", "e", "f"))
   val out1 = Sink.asPublisher[String](false)
   val out2 = Sink.head[String]
 
@@ -66,8 +66,7 @@ class FlowGraphCompileSpec extends AkkaSpec {
     }
 
     "build simple balance" in {
-      RunnableGraph.fromGraph(
-          GraphDSL.create() { implicit b ⇒
+      RunnableGraph.fromGraph(GraphDSL.create() { implicit b ⇒
         val balance = b.add(Balance[String](2))
         in1 ~> f1 ~> balance.in
         balance.out(0) ~> f2 ~> out1
@@ -78,8 +77,7 @@ class FlowGraphCompileSpec extends AkkaSpec {
 
     "build simple merge - broadcast" in {
       RunnableGraph
-        .fromGraph(
-            GraphDSL.create() { implicit b ⇒
+        .fromGraph(GraphDSL.create() { implicit b ⇒
           val merge = b.add(Merge[String](2))
           val bcast = b.add(Broadcast[String](2))
           in1 ~> f1 ~> merge.in(0)
@@ -94,8 +92,7 @@ class FlowGraphCompileSpec extends AkkaSpec {
 
     "build simple merge - broadcast with implicits" in {
       RunnableGraph
-        .fromGraph(
-            GraphDSL.create() { implicit b ⇒
+        .fromGraph(GraphDSL.create() { implicit b ⇒
           import GraphDSL.Implicits._
           val merge = b.add(Merge[String](2))
           val bcast = b.add(Broadcast[String](2))
@@ -121,9 +118,8 @@ class FlowGraphCompileSpec extends AkkaSpec {
     "detect cycle in " in {
       pending // FIXME needs cycle detection capability
       intercept[IllegalArgumentException] {
-        RunnableGraph.fromGraph(
-            GraphDSL.create() { implicit b ⇒
-          val merge = b.add(Merge[String](2))
+        RunnableGraph.fromGraph(GraphDSL.create() { implicit b ⇒
+          val merge  = b.add(Merge[String](2))
           val bcast1 = b.add(Broadcast[String](2))
           val bcast2 = b.add(Broadcast[String](2))
           val feedbackLoopBuffer =
@@ -141,9 +137,8 @@ class FlowGraphCompileSpec extends AkkaSpec {
 
     "express complex topologies in a readable way" in {
       RunnableGraph
-        .fromGraph(
-            GraphDSL.create() { implicit b ⇒
-          val merge = b.add(Merge[String](2))
+        .fromGraph(GraphDSL.create() { implicit b ⇒
+          val merge  = b.add(Merge[String](2))
           val bcast1 = b.add(Broadcast[String](2))
           val bcast2 = b.add(Broadcast[String](2))
           val feedbackLoopBuffer =
@@ -173,20 +168,19 @@ class FlowGraphCompileSpec extends AkkaSpec {
     "build wikipedia Topological_sorting" in {
       // see https://en.wikipedia.org/wiki/Topological_sorting#mediaviewer/File:Directed_acyclic_graph.png
       RunnableGraph
-        .fromGraph(
-            GraphDSL.create() { implicit b ⇒
-          val b3 = b.add(Broadcast[String](2))
-          val b7 = b.add(Broadcast[String](2))
-          val b11 = b.add(Broadcast[String](3))
-          val m8 = b.add(Merge[String](2))
-          val m9 = b.add(Merge[String](2))
-          val m10 = b.add(Merge[String](2))
-          val m11 = b.add(Merge[String](2))
-          val in3 = Source(List("b"))
-          val in5 = Source(List("b"))
-          val in7 = Source(List("a"))
-          val out2 = Sink.asPublisher[String](false)
-          val out9 = Sink.asPublisher[String](false)
+        .fromGraph(GraphDSL.create() { implicit b ⇒
+          val b3    = b.add(Broadcast[String](2))
+          val b7    = b.add(Broadcast[String](2))
+          val b11   = b.add(Broadcast[String](3))
+          val m8    = b.add(Merge[String](2))
+          val m9    = b.add(Merge[String](2))
+          val m10   = b.add(Merge[String](2))
+          val m11   = b.add(Merge[String](2))
+          val in3   = Source(List("b"))
+          val in5   = Source(List("b"))
+          val in7   = Source(List("a"))
+          val out2  = Sink.asPublisher[String](false)
+          val out9  = Sink.asPublisher[String](false)
           val out10 = Sink.asPublisher[String](false)
           def f(s: String) =
             Flow[String].transform(op[String, String]).named(s)
@@ -206,8 +200,7 @@ class FlowGraphCompileSpec extends AkkaSpec {
 
     "make it optional to specify flows" in {
       RunnableGraph
-        .fromGraph(
-            GraphDSL.create() { implicit b ⇒
+        .fromGraph(GraphDSL.create() { implicit b ⇒
           val merge = b.add(Merge[String](2))
           val bcast = b.add(Broadcast[String](2))
           import GraphDSL.Implicits._
@@ -221,11 +214,10 @@ class FlowGraphCompileSpec extends AkkaSpec {
 
     "build unzip - zip" in {
       RunnableGraph
-        .fromGraph(
-            GraphDSL.create() { implicit b ⇒
-          val zip = b.add(Zip[Int, String]())
+        .fromGraph(GraphDSL.create() { implicit b ⇒
+          val zip   = b.add(Zip[Int, String]())
           val unzip = b.add(Unzip[Int, String]())
-          val out = Sink.asPublisher[(Int, String)](false)
+          val out   = Sink.asPublisher[(Int, String)](false)
           import GraphDSL.Implicits._
           Source(List(1 -> "a", 2 -> "b", 3 -> "c")) ~> unzip.in
           unzip.out0 ~> Flow[Int].map(_ * 2) ~> zip.in0
@@ -238,10 +230,9 @@ class FlowGraphCompileSpec extends AkkaSpec {
 
     "distinguish between input and output ports" in {
       intercept[IllegalArgumentException] {
-        RunnableGraph.fromGraph(
-            GraphDSL.create() { implicit b ⇒
-          val zip = b.add(Zip[Int, String]())
-          val unzip = b.add(Unzip[Int, String]())
+        RunnableGraph.fromGraph(GraphDSL.create() { implicit b ⇒
+          val zip      = b.add(Zip[Int, String]())
+          val unzip    = b.add(Unzip[Int, String]())
           val wrongOut = Sink.asPublisher[(Int, Int)](false)
           val whatever = Sink.asPublisher[Any](false)
           "Flow(List(1, 2, 3)) ~> zip.left ~> wrongOut" shouldNot compile
@@ -256,21 +247,20 @@ class FlowGraphCompileSpec extends AkkaSpec {
     }
 
     "build with variance" in {
-      RunnableGraph.fromGraph(
-          GraphDSL.create() { implicit b ⇒
+      RunnableGraph.fromGraph(GraphDSL.create() { implicit b ⇒
         import GraphDSL.Implicits._
         val merge = b.add(Merge[Fruit](2))
         Source.fromIterator[Fruit](apples) ~> Flow[Fruit] ~> merge.in(0)
         Source.fromIterator[Apple](apples) ~> Flow[Apple] ~> merge.in(1)
         merge.out ~> Flow[Fruit].map(identity) ~> Sink.fromSubscriber(
-            TestSubscriber.manualProbe[Fruit]())
+          TestSubscriber.manualProbe[Fruit]()
+        )
         ClosedShape
       })
     }
 
     "build with variance when indices are not specified" in {
-      RunnableGraph.fromGraph(
-          GraphDSL.create() { implicit b ⇒
+      RunnableGraph.fromGraph(GraphDSL.create() { implicit b ⇒
         import GraphDSL.Implicits._
         val fruitMerge = b.add(Merge[Fruit](2))
         Source.fromIterator[Fruit](apples) ~> fruitMerge
@@ -305,8 +295,7 @@ class FlowGraphCompileSpec extends AkkaSpec {
     }
 
     "build with implicits and variance" in {
-      RunnableGraph.fromGraph(
-          GraphDSL.create() { implicit b ⇒
+      RunnableGraph.fromGraph(GraphDSL.create() { implicit b ⇒
         def appleSource =
           b.add(Source.fromPublisher(TestPublisher.manualProbe[Apple]()))
         def fruitSource =
@@ -315,8 +304,8 @@ class FlowGraphCompileSpec extends AkkaSpec {
           b add Sink.fromSubscriber(TestSubscriber.manualProbe[Fruit]())
         val outB =
           b add Sink.fromSubscriber(TestSubscriber.manualProbe[Fruit]())
-        val merge = b add Merge[Fruit](11)
-        val unzip = b add Unzip[Int, String]()
+        val merge    = b add Merge[Fruit](11)
+        val unzip    = b add Unzip[Int, String]()
         val whatever = b add Sink.asPublisher[Any](false)
         import GraphDSL.Implicits._
         b.add(Source.fromIterator[Fruit](apples)) ~> merge.in(0)
@@ -335,7 +324,8 @@ class FlowGraphCompileSpec extends AkkaSpec {
         b.add(Source.fromIterator(apples)) ~> Flow[Apple] ~> merge.in(9)
         b.add(Source.fromIterator(apples)) ~> Flow[Apple] ~> outB
         b.add(Source.fromIterator(apples)) ~> Flow[Apple] ~> b.add(
-            Sink.asPublisher[Fruit](false))
+          Sink.asPublisher[Fruit](false)
+        )
         appleSource ~> Flow[Apple] ~> merge.in(10)
 
         Source(List(1 -> "a", 2 -> "b", 3 -> "c")) ~> unzip.in

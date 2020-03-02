@@ -47,8 +47,9 @@ class IndexInt(keys: Vec[Int]) extends Index[Int] {
 
   def without(locs: Array[Int]): Index[Int] = Index(array.remove(keys, locs))
 
-  def concat[B, C](x: Index[B])(
-      implicit wd: Promoter[Int, B, C], mc: ST[C], oc: ORD[C]): Index[C] =
+  def concat[B, C](
+      x: Index[B]
+  )(implicit wd: Promoter[Int, B, C], mc: ST[C], oc: ORD[C]): Index[C] =
     Index(util.Concat.append[Int, B, C](toArray, x.toArray))
 
   def isMonotonic: Boolean = monotonic
@@ -76,9 +77,8 @@ class IndexInt(keys: Vec[Int]) extends Index[Int] {
     JoinerImpl.join(this, other, OuterJoin)
   }
 
-  def slice(from: Int, until: Int, stride: Int): Index[Int] = {
+  def slice(from: Int, until: Int, stride: Int): Index[Int] =
     new IndexInt(keys.slice(from, until, stride))
-  }
 
   // find the first location whereby an insertion would maintain a sorted index
   def lsearch(t: Int): Int = {
@@ -100,18 +100,17 @@ class IndexInt(keys: Vec[Int]) extends Index[Int] {
     else -(binarySearch(keys, t) + 1)
   }
 
-  def map[@spec(Boolean, Int, Long, Double) B : ST : ORD](
-      f: Int => B): Index[B] =
+  def map[@spec(Boolean, Int, Long, Double) B: ST: ORD](f: Int => B): Index[B] =
     Index(VecImpl.map(keys)(f).toArray)
 
   def toArray: Array[Int] = keys.toArray
 
   /**Default equality does an iterative, element-wise equality check of all values. */
-  override def equals(o: Any): Boolean = {
+  override def equals(o: Any): Boolean =
     o match {
       case rv: IndexInt =>
         (this eq rv) || (this.length == rv.length) && {
-          var i = 0
+          var i  = 0
           var eq = true
           while (eq && i < this.length) {
             eq &&= raw(i) == rv.raw(i)
@@ -121,5 +120,4 @@ class IndexInt(keys: Vec[Int]) extends Index[Int] {
         }
       case _ => super.equals(o)
     }
-  }
 }

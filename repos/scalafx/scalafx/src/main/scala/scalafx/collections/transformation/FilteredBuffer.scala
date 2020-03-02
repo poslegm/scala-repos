@@ -45,7 +45,8 @@ object FilteredBuffer {
     * @return JavaFX FilteredList
     */
   implicit def sfxFilteredList2jfx[E](
-      v: FilteredBuffer[E]): jfxct.FilteredList[E] =
+      v: FilteredBuffer[E]
+  ): jfxct.FilteredList[E] =
     if (v != null) v.delegate else null
 }
 
@@ -78,10 +79,13 @@ class FilteredBuffer[E](override val delegate: jfxct.FilteredList[E])
     */
   def this(source: ObservableBuffer[E], predicate: (_ >: E) => Boolean) =
     this(
-        delegate = new jfxct.FilteredList[E](
-              source.delegate, new ju.function.Predicate[E] {
-      override def test(t: E): Boolean = predicate(t)
-    }))
+      delegate = new jfxct.FilteredList[E](
+        source.delegate,
+        new ju.function.Predicate[E] {
+          override def test(t: E): Boolean = predicate(t)
+        }
+      )
+    )
 
   /**
     *
@@ -89,13 +93,14 @@ class FilteredBuffer[E](override val delegate: jfxct.FilteredList[E])
     */
   def predicate: ObjectProperty[ju.function.Predicate[_ >: E]] =
     delegate.predicateProperty
-  def predicate_=(v: ju.function.Predicate[_ >: E]): Unit = {
+  def predicate_=(v: ju.function.Predicate[_ >: E]): Unit =
     ObjectProperty.fillProperty(delegate.predicateProperty, v)
-  }
   def predicate_=(predicate: (E) => Boolean) {
     ObjectProperty.fillProperty(
-        delegate.predicateProperty, new ju.function.Predicate[E] {
-      override def test(t: E): Boolean = predicate(t)
-    })
+      delegate.predicateProperty,
+      new ju.function.Predicate[E] {
+        override def test(t: E): Boolean = predicate(t)
+      }
+    )
   }
 }

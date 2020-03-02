@@ -24,8 +24,8 @@ class Device(f: File) extends Generator { self =>
 
 object Device {
   def apply(path: String): Device = new Device(new File(path))
-  def random: Device = new Device(new File("/dev/random"))
-  def urandom: Device = new Device(new File("/dev/urandom"))
+  def random: Device              = new Device(new File("/dev/random"))
+  def urandom: Device             = new Device(new File("/dev/urandom"))
 }
 
 class CycledFile(f: File) extends Generator { self =>
@@ -39,7 +39,8 @@ class CycledFile(f: File) extends Generator { self =>
   } catch {
     case e: EOFException =>
       throw new IllegalArgumentException(
-          "%s contains less than 8 bytes" format f)
+        "%s contains less than 8 bytes" format f
+      )
   }
 
   def reinit(): Unit = {

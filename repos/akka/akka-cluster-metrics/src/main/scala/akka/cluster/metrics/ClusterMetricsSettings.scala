@@ -35,8 +35,8 @@ case class ClusterMetricsSettings(config: Config) {
     cc.getConfig("supervisor.strategy.configuration")
 
   // Collector.
-  val CollectorEnabled: Boolean = cc.getBoolean("collector.enabled")
-  val CollectorProvider: String = cc.getString("collector.provider")
+  val CollectorEnabled: Boolean  = cc.getBoolean("collector.enabled")
+  val CollectorProvider: String  = cc.getString("collector.provider")
   val CollectorFallback: Boolean = cc.getBoolean("collector.fallback")
   val CollectorSampleInterval: FiniteDuration = {
     cc.getMillisDuration("collector.sample-interval")
@@ -47,5 +47,5 @@ case class ClusterMetricsSettings(config: Config) {
   val CollectorMovingAverageHalfLife: FiniteDuration = {
     cc.getMillisDuration("collector.moving-average-half-life")
   } requiring
-  (_ > Duration.Zero, "collector.moving-average-half-life must be > 0")
+    (_ > Duration.Zero, "collector.moving-average-half-life must be > 0")
 }

@@ -30,7 +30,7 @@ import org.apache.spark.util.Utils
 
 class LibSVMRelationSuite extends SparkFunSuite with MLlibTestSparkContext {
   var tempDir: File = _
-  var path: String = _
+  var path: String  = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -45,13 +45,12 @@ class LibSVMRelationSuite extends SparkFunSuite with MLlibTestSparkContext {
     path = tempDir.toURI.toString
   }
 
-  override def afterAll(): Unit = {
+  override def afterAll(): Unit =
     try {
       Utils.deleteRecursively(tempDir)
     } finally {
       super.afterAll()
     }
-  }
 
   test("select as sparse vector") {
     val df = sqlContext.read.format("libsvm").load(path)
@@ -81,13 +80,13 @@ class LibSVMRelationSuite extends SparkFunSuite with MLlibTestSparkContext {
     val df =
       sqlContext.read.option("numFeatures", "100").format("libsvm").load(path)
     val row1 = df.first()
-    val v = row1.getAs[SparseVector](1)
+    val v    = row1.getAs[SparseVector](1)
     assert(v == Vectors.sparse(100, Seq((0, 1.0), (2, 2.0), (4, 3.0))))
   }
 
   test("write libsvm data and read it again") {
-    val df = sqlContext.read.format("libsvm").load(path)
-    val tempDir2 = Utils.createTempDir()
+    val df        = sqlContext.read.format("libsvm").load(path)
+    val tempDir2  = Utils.createTempDir()
     val writepath = tempDir2.toURI.toString
     // TODO: Remove requirement to coalesce by supporting multiple reads.
     df.coalesce(1)
@@ -96,9 +95,9 @@ class LibSVMRelationSuite extends SparkFunSuite with MLlibTestSparkContext {
       .mode(SaveMode.Overwrite)
       .save(writepath)
 
-    val df2 = sqlContext.read.format("libsvm").load(writepath)
+    val df2  = sqlContext.read.format("libsvm").load(writepath)
     val row1 = df2.first()
-    val v = row1.getAs[SparseVector](1)
+    val v    = row1.getAs[SparseVector](1)
     assert(v == Vectors.sparse(6, Seq((0, 1.0), (2, 2.0), (4, 3.0))))
   }
 

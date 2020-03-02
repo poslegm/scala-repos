@@ -46,14 +46,19 @@ import org.apache.spark.util.Utils
   * @param trees tree ensembles
   */
 @Since("1.2.0")
-class RandomForestModel @Since("1.2.0")(
+class RandomForestModel @Since("1.2.0") (
     @Since("1.2.0") override val algo: Algo,
-    @Since("1.2.0") override val trees: Array[DecisionTreeModel])
-    extends TreeEnsembleModel(algo,
-                              trees,
-                              Array.fill(trees.length)(1.0),
-                              combiningStrategy = if (algo == Classification)
-                                  Vote else Average) with Saveable {
+    @Since("1.2.0") override val trees: Array[DecisionTreeModel]
+) extends TreeEnsembleModel(
+      algo,
+      trees,
+      Array.fill(trees.length)(1.0),
+      combiningStrategy =
+        if (algo == Classification)
+          Vote
+        else Average
+    )
+    with Saveable {
 
   require(trees.forall(_.algo == algo))
 
@@ -64,10 +69,13 @@ class RandomForestModel @Since("1.2.0")(
     *              If the directory already exists, this method throws an exception.
     */
   @Since("1.3.0")
-  override def save(sc: SparkContext, path: String): Unit = {
+  override def save(sc: SparkContext, path: String): Unit =
     TreeEnsembleModel.SaveLoadV1_0.save(
-        sc, path, this, RandomForestModel.SaveLoadV1_0.thisClassName)
-  }
+      sc,
+      path,
+      this,
+      RandomForestModel.SaveLoadV1_0.thisClassName
+    )
 
   override protected def formatVersion: String =
     RandomForestModel.formatVersion
@@ -100,9 +108,10 @@ object RandomForestModel extends Loader[RandomForestModel] {
         new RandomForestModel(Algo.fromString(metadata.algo), trees)
       case _ =>
         throw new Exception(
-            s"RandomForestModel.load did not recognize model" +
+          s"RandomForestModel.load did not recognize model" +
             s" with (className, format version): ($loadedClassName, $version).  Supported:\n" +
-            s"  ($classNameV1_0, 1.0)")
+            s"  ($classNameV1_0, 1.0)"
+        )
     }
   }
 
@@ -121,12 +130,12 @@ object RandomForestModel extends Loader[RandomForestModel] {
   * @param treeWeights tree ensemble weights
   */
 @Since("1.2.0")
-class GradientBoostedTreesModel @Since("1.2.0")(
+class GradientBoostedTreesModel @Since("1.2.0") (
     @Since("1.2.0") override val algo: Algo,
     @Since("1.2.0") override val trees: Array[DecisionTreeModel],
-    @Since("1.2.0") override val treeWeights: Array[Double])
-    extends TreeEnsembleModel(
-        algo, trees, treeWeights, combiningStrategy = Sum) with Saveable {
+    @Since("1.2.0") override val treeWeights: Array[Double]
+) extends TreeEnsembleModel(algo, trees, treeWeights, combiningStrategy = Sum)
+    with Saveable {
 
   require(trees.length == treeWeights.length)
 
@@ -136,10 +145,13 @@ class GradientBoostedTreesModel @Since("1.2.0")(
     *              If the directory already exists, this method throws an exception.
     */
   @Since("1.3.0")
-  override def save(sc: SparkContext, path: String): Unit = {
+  override def save(sc: SparkContext, path: String): Unit =
     TreeEnsembleModel.SaveLoadV1_0.save(
-        sc, path, this, GradientBoostedTreesModel.SaveLoadV1_0.thisClassName)
-  }
+      sc,
+      path,
+      this,
+      GradientBoostedTreesModel.SaveLoadV1_0.thisClassName
+    )
 
   /**
     * Method to compute error or loss for every iteration of gradient boosting.
@@ -150,7 +162,9 @@ class GradientBoostedTreesModel @Since("1.2.0")(
     */
   @Since("1.4.0")
   def evaluateEachIteration(
-      data: RDD[LabeledPoint], loss: Loss): Array[Double] = {
+      data: RDD[LabeledPoint],
+      loss: Loss
+  ): Array[Double] = {
 
     val sc = data.sparkContext
     val remappedData = algo match {
@@ -159,13 +173,17 @@ class GradientBoostedTreesModel @Since("1.2.0")(
       case _ => data
     }
 
-    val numIterations = trees.length
-    val evaluationArray = Array.fill(numIterations)(0.0)
+    val numIterations    = trees.length
+    val evaluationArray  = Array.fill(numIterations)(0.0)
     val localTreeWeights = treeWeights
 
     var predictionAndError =
       GradientBoostedTreesModel.computeInitialPredictionAndError(
-          remappedData, localTreeWeights(0), trees(0), loss)
+        remappedData,
+        localTreeWeights(0),
+        trees(0),
+        loss
+      )
 
     evaluationArray(0) = predictionAndError.values.mean()
 
@@ -173,7 +191,7 @@ class GradientBoostedTreesModel @Since("1.2.0")(
     (1 until numIterations).foreach { nTree =>
       predictionAndError = remappedData.zip(predictionAndError).mapPartitions {
         iter =>
-          val currentTree = broadcastTrees.value(nTree)
+          val currentTree       = broadcastTrees.value(nTree)
           val currentTreeWeight = localTreeWeights(nTree)
           iter.map {
             case (point, (pred, error)) =>
@@ -212,16 +230,17 @@ object GradientBoostedTreesModel extends Loader[GradientBoostedTreesModel] {
     */
   @Since("1.4.0")
   @DeveloperApi
-  def computeInitialPredictionAndError(data: RDD[LabeledPoint],
-                                       initTreeWeight: Double,
-                                       initTree: DecisionTreeModel,
-                                       loss: Loss): RDD[(Double, Double)] = {
+  def computeInitialPredictionAndError(
+      data: RDD[LabeledPoint],
+      initTreeWeight: Double,
+      initTree: DecisionTreeModel,
+      loss: Loss
+  ): RDD[(Double, Double)] =
     data.map { lp =>
-      val pred = initTreeWeight * initTree.predict(lp.features)
+      val pred  = initTreeWeight * initTree.predict(lp.features)
       val error = loss.computeError(pred, lp.label)
       (pred, error)
     }
-  }
 
   /**
     * :: DeveloperApi ::
@@ -237,16 +256,18 @@ object GradientBoostedTreesModel extends Loader[GradientBoostedTreesModel] {
     */
   @Since("1.4.0")
   @DeveloperApi
-  def updatePredictionError(data: RDD[LabeledPoint],
-                            predictionAndError: RDD[(Double, Double)],
-                            treeWeight: Double,
-                            tree: DecisionTreeModel,
-                            loss: Loss): RDD[(Double, Double)] = {
+  def updatePredictionError(
+      data: RDD[LabeledPoint],
+      predictionAndError: RDD[(Double, Double)],
+      treeWeight: Double,
+      tree: DecisionTreeModel,
+      loss: Loss
+  ): RDD[(Double, Double)] = {
 
     val newPredError = data.zip(predictionAndError).mapPartitions { iter =>
       iter.map {
         case (lp, (pred, error)) =>
-          val newPred = pred + tree.predict(lp.features) * treeWeight
+          val newPred  = pred + tree.predict(lp.features) * treeWeight
           val newError = loss.computeError(newPred, lp.label)
           (newPred, newError)
       }
@@ -264,7 +285,9 @@ object GradientBoostedTreesModel extends Loader[GradientBoostedTreesModel] {
     */
   @Since("1.3.0")
   override def load(
-      sc: SparkContext, path: String): GradientBoostedTreesModel = {
+      sc: SparkContext,
+      path: String
+  ): GradientBoostedTreesModel = {
     val (loadedClassName, version, jsonMetadata) =
       Loader.loadMetadata(sc, path)
     val classNameV1_0 = SaveLoadV1_0.thisClassName
@@ -276,12 +299,16 @@ object GradientBoostedTreesModel extends Loader[GradientBoostedTreesModel] {
         val trees =
           TreeEnsembleModel.SaveLoadV1_0.loadTrees(sc, path, metadata.treeAlgo)
         new GradientBoostedTreesModel(
-            Algo.fromString(metadata.algo), trees, metadata.treeWeights)
+          Algo.fromString(metadata.algo),
+          trees,
+          metadata.treeWeights
+        )
       case _ =>
         throw new Exception(
-            s"GradientBoostedTreesModel.load did not recognize model" +
+          s"GradientBoostedTreesModel.load did not recognize model" +
             s" with (className, format version): ($loadedClassName, $version).  Supported:\n" +
-            s"  ($classNameV1_0, 1.0)")
+            s"  ($classNameV1_0, 1.0)"
+        )
     }
   }
 
@@ -304,8 +331,8 @@ private[tree] sealed class TreeEnsembleModel(
     protected val algo: Algo,
     protected val trees: Array[DecisionTreeModel],
     protected val treeWeights: Array[Double],
-    protected val combiningStrategy: EnsembleCombiningStrategy)
-    extends Serializable {
+    protected val combiningStrategy: EnsembleCombiningStrategy
+) extends Serializable {
 
   require(numTrees > 0, "TreeEnsembleModel cannot be created without trees.")
 
@@ -341,7 +368,7 @@ private[tree] sealed class TreeEnsembleModel(
     * @param features array representing a single data point
     * @return predicted category from the trained model
     */
-  def predict(features: Vector): Double = {
+  def predict(features: Vector): Double =
     (algo, combiningStrategy) match {
       case (Regression, Sum) =>
         predictBySumming(features)
@@ -355,10 +382,10 @@ private[tree] sealed class TreeEnsembleModel(
         predictByVoting(features)
       case _ =>
         throw new IllegalArgumentException(
-            "TreeEnsembleModel given unsupported (algo, combiningStrategy) combination: " +
-            s"($algo, $combiningStrategy).")
+          "TreeEnsembleModel given unsupported (algo, combiningStrategy) combination: " +
+            s"($algo, $combiningStrategy)."
+        )
     }
-  }
 
   /**
     * Predict values for the given data set.
@@ -372,14 +399,13 @@ private[tree] sealed class TreeEnsembleModel(
   /**
     * Java-friendly version of [[org.apache.spark.mllib.tree.model.TreeEnsembleModel#predict]].
     */
-  def predict(features: JavaRDD[Vector]): JavaRDD[java.lang.Double] = {
+  def predict(features: JavaRDD[Vector]): JavaRDD[java.lang.Double] =
     predict(features.rdd).toJavaRDD().asInstanceOf[JavaRDD[java.lang.Double]]
-  }
 
   /**
     * Print a summary of the model.
     */
-  override def toString: String = {
+  override def toString: String =
     algo match {
       case Classification =>
         s"TreeEnsembleModel classifier with $numTrees trees\n"
@@ -387,19 +413,21 @@ private[tree] sealed class TreeEnsembleModel(
         s"TreeEnsembleModel regressor with $numTrees trees\n"
       case _ =>
         throw new IllegalArgumentException(
-            s"TreeEnsembleModel given unknown algo parameter: $algo.")
+          s"TreeEnsembleModel given unknown algo parameter: $algo."
+        )
     }
-  }
 
   /**
     * Print the full model to a string.
     */
   def toDebugString: String = {
     val header = toString + "\n"
-    header + trees.zipWithIndex.map {
-      case (tree, treeIndex) =>
-        s"  Tree $treeIndex:\n" + tree.topNode.subtreeToString(4)
-    }.fold("")(_ + _)
+    header + trees.zipWithIndex
+      .map {
+        case (tree, treeIndex) =>
+          s"  Tree $treeIndex:\n" + tree.topNode.subtreeToString(4)
+      }
+      .fold("")(_ + _)
   }
 
   /**
@@ -417,14 +445,19 @@ private[tree] object TreeEnsembleModel extends Logging {
 
   object SaveLoadV1_0 {
 
-    import org.apache.spark.mllib.tree.model.DecisionTreeModel.SaveLoadV1_0.{NodeData, constructTrees}
+    import org.apache.spark.mllib.tree.model.DecisionTreeModel.SaveLoadV1_0.{
+      NodeData,
+      constructTrees
+    }
 
     def thisFormatVersion: String = "1.0"
 
-    case class Metadata(algo: String,
-                        treeAlgo: String,
-                        combiningStrategy: String,
-                        treeWeights: Array[Double])
+    case class Metadata(
+        algo: String,
+        treeAlgo: String,
+        combiningStrategy: String,
+        treeWeights: Array[Double]
+    )
 
     /**
       * Model data for model import/export.
@@ -435,10 +468,12 @@ private[tree] object TreeEnsembleModel extends Logging {
       */
     case class EnsembleNodeData(treeId: Int, node: NodeData)
 
-    def save(sc: SparkContext,
-             path: String,
-             model: TreeEnsembleModel,
-             className: String): Unit = {
+    def save(
+        sc: SparkContext,
+        path: String,
+        model: TreeEnsembleModel,
+        className: String
+    ): Unit = {
       val sqlContext = SQLContext.getOrCreate(sc)
       import sqlContext.implicits._
 
@@ -454,28 +489,35 @@ private[tree] object TreeEnsembleModel extends Logging {
           .getOrElse(Utils.DEFAULT_DRIVER_MEM_MB)
         if (driverMemory <= memThreshold) {
           logWarning(
-              s"$className.save() was called, but it may fail because of too little" +
+            s"$className.save() was called, but it may fail because of too little" +
               s" driver memory (${driverMemory}m)." +
-              s"  If failure occurs, try setting driver-memory ${memThreshold}m (or larger).")
+              s"  If failure occurs, try setting driver-memory ${memThreshold}m (or larger)."
+          )
         }
       } else {
         if (sc.executorMemory <= memThreshold) {
           logWarning(
-              s"$className.save() was called, but it may fail because of too little" +
+            s"$className.save() was called, but it may fail because of too little" +
               s" executor memory (${sc.executorMemory}m)." +
-              s"  If failure occurs try setting executor-memory ${memThreshold}m (or larger).")
+              s"  If failure occurs try setting executor-memory ${memThreshold}m (or larger)."
+          )
         }
       }
 
       // Create JSON metadata.
       implicit val format = DefaultFormats
-      val ensembleMetadata = Metadata(model.algo.toString,
-                                      model.trees(0).algo.toString,
-                                      model.combiningStrategy.toString,
-                                      model.treeWeights)
+      val ensembleMetadata = Metadata(
+        model.algo.toString,
+        model.trees(0).algo.toString,
+        model.combiningStrategy.toString,
+        model.treeWeights
+      )
       val metadata = compact(
-          render(("class" -> className) ~ ("version" -> thisFormatVersion) ~
-              ("metadata" -> Extraction.decompose(ensembleMetadata))))
+        render(
+          ("class"      -> className) ~ ("version" -> thisFormatVersion) ~
+            ("metadata" -> Extraction.decompose(ensembleMetadata))
+        )
+      )
       sc.parallelize(Seq(metadata), 1)
         .saveAsTextFile(Loader.metadataPath(path))
 
@@ -505,13 +547,15 @@ private[tree] object TreeEnsembleModel extends Logging {
       * @param treeAlgo Algorithm for individual trees (which may differ from the ensemble's
       *                 algorithm).
       */
-    def loadTrees(sc: SparkContext,
-                  path: String,
-                  treeAlgo: String): Array[DecisionTreeModel] = {
-      val datapath = Loader.dataPath(path)
+    def loadTrees(
+        sc: SparkContext,
+        path: String,
+        treeAlgo: String
+    ): Array[DecisionTreeModel] = {
+      val datapath   = Loader.dataPath(path)
       val sqlContext = SQLContext.getOrCreate(sc)
-      val nodes = sqlContext.read.parquet(datapath).rdd.map(NodeData.apply)
-      val trees = constructTrees(nodes)
+      val nodes      = sqlContext.read.parquet(datapath).rdd.map(NodeData.apply)
+      val trees      = constructTrees(nodes)
       trees.map(new DecisionTreeModel(_, Algo.fromString(treeAlgo)))
     }
   }

@@ -19,14 +19,14 @@ private[repl] trait SparkImports { self: SparkIMain =>
   import memberHandlers._
 
   def isNoImports = settings.noimports.value
-  def isNoPredef = settings.nopredef.value
+  def isNoPredef  = settings.nopredef.value
 
   /** Synthetic import handlers for the language defined imports. */
   private def makeWildcardImportHandler(sym: Symbol): ImportHandler = {
     val hd :: tl = sym.fullName.split('.').toList map newTermName
     val tree = Import(
-        tl.foldLeft(Ident(hd): Tree)((x, y) => Select(x, y)),
-        ImportSelector.wildList
+      tl.foldLeft(Ident(hd): Tree)((x, y) => Select(x, y)),
+      ImportSelector.wildList
     )
     tree setSymbol sym
     new ImportHandler(tree)
@@ -40,8 +40,8 @@ private[repl] trait SparkImports { self: SparkIMain =>
     languageWildcardSyms map makeWildcardImportHandler
 
   def allImportedNames = importHandlers flatMap (_.importedNames)
-  def importedTerms = onlyTerms(allImportedNames)
-  def importedTypes = onlyTypes(allImportedNames)
+  def importedTerms    = onlyTerms(allImportedNames)
+  def importedTypes    = onlyTypes(allImportedNames)
 
   /** Types which have been wildcard imported, such as:
     *    val x = "abc" ; import x._  // type java.lang.String
@@ -54,17 +54,16 @@ private[repl] trait SparkImports { self: SparkIMain =>
     *  scope twiddling which should be swept away in favor of digging
     *  into the compiler scopes.
     */
-  def sessionWildcards: List[Type] = {
+  def sessionWildcards: List[Type] =
     importHandlers filter (_.importsWildcard) map (_.targetType) distinct
-  }
   def wildcardTypes = languageWildcards ++ sessionWildcards
 
-  def languageSymbols = languageWildcardSyms flatMap membersAtPickler
+  def languageSymbols        = languageWildcardSyms flatMap membersAtPickler
   def sessionImportedSymbols = importHandlers flatMap (_.importedSymbols)
-  def importedSymbols = languageSymbols ++ sessionImportedSymbols
-  def importedTermSymbols = importedSymbols collect { case x: TermSymbol => x }
-  def importedTypeSymbols = importedSymbols collect { case x: TypeSymbol => x }
-  def implicitSymbols = importedSymbols filter (_.isImplicit)
+  def importedSymbols        = languageSymbols ++ sessionImportedSymbols
+  def importedTermSymbols    = importedSymbols collect { case x: TermSymbol => x }
+  def importedTypeSymbols    = importedSymbols collect { case x: TypeSymbol => x }
+  def implicitSymbols        = importedSymbols filter (_.isImplicit)
 
   def importedTermNamed(name: String): Symbol =
     importedTermSymbols find (_.name.toString == name) getOrElse NoSymbol
@@ -80,11 +79,10 @@ private[repl] trait SparkImports { self: SparkIMain =>
 
     lang ++ session
   }
-  def implicitSymbolsBySource: List[(Symbol, List[Symbol])] = {
+  def implicitSymbolsBySource: List[(Symbol, List[Symbol])] =
     importedSymbolsBySource map {
       case (k, vs) => (k, vs filter (_.isImplicit))
     } filterNot (_._2.isEmpty)
-  }
 
   /** Compute imports that allow definitions from previous
     *  requests to be visible in a new request.  Returns
@@ -110,11 +108,16 @@ private[repl] trait SparkImports { self: SparkIMain =>
     * last one imported is actually usable.
     */
   case class SparkComputedImports(
-      prepend: String, append: String, access: String)
+      prepend: String,
+      append: String,
+      access: String
+  )
   def fallback = System.getProperty("spark.repl.fallback", "false").toBoolean
 
   protected def importsCode(
-      wanted: Set[Name], definedClass: Boolean): SparkComputedImports = {
+      wanted: Set[Name],
+      definedClass: Boolean
+  ): SparkComputedImports = {
 
     /** Narrow down the list of requests from which imports
       *  should be taken.  Removes requests which cannot contribute
@@ -127,23 +130,25 @@ private[repl] trait SparkImports { self: SparkIMain =>
       /** Loop through a list of MemberHandlers and select which ones to keep.
         * 'wanted' is the set of names that need to be imported.
         */
-      def select(reqs: List[ReqAndHandler],
-                 wanted: Set[Name]): List[ReqAndHandler] = {
+      def select(
+          reqs: List[ReqAndHandler],
+          wanted: Set[Name]
+      ): List[ReqAndHandler] = {
         // Single symbol imports might be implicits! See bug #1752.  Rather than
         // try to finesse this, we will mimic all imports for now.
         def keepHandler(handler: MemberHandler) = handler match {
           /* This case clause tries to "precisely" import only what is required. And in this
-           * it may miss out on some implicits, because implicits are not known in `wanted`. Thus 
+           * it may miss out on some implicits, because implicits are not known in `wanted`. Thus
            * it is suitable for defining classes. AFAIK while defining classes implicits are not
            * needed.*/
           case h: ImportHandler if definedClass && !fallback =>
             h.importedNames.exists(x => wanted.contains(x))
           case _: ImportHandler => true
-          case x => x.definesImplicit || (x.definedNames exists wanted)
+          case x                => x.definesImplicit || (x.definedNames exists wanted)
         }
 
         reqs match {
-          case Nil => Nil
+          case Nil                                    => Nil
           case rh :: rest if !keepHandler(rh.handler) => select(rest, wanted)
           case rh :: rest =>
             import rh.handler._
@@ -154,13 +159,16 @@ private[repl] trait SparkImports { self: SparkIMain =>
       }
 
       /** Flatten the handlers out and pair each with the original request */
-      select(allReqAndHandlers reverseMap {
-        case (r, h) => ReqAndHandler(r, h)
-      }, wanted).reverse
+      select(
+        allReqAndHandlers reverseMap {
+          case (r, h) => ReqAndHandler(r, h)
+        },
+        wanted
+      ).reverse
     }
 
     val code, trailingBraces, accessPath = new StringBuilder
-    val currentImps = mutable.HashSet[Name]()
+    val currentImps                      = mutable.HashSet[Name]()
 
     // add code for a new object to hold some imports
     def addWrapper() {
@@ -207,8 +215,10 @@ private[repl] trait SparkImports { self: SparkIMain =>
           // classes involved and may fail.
           for (imv <- x.definedNames) {
             val objName = req.lineRep.readPath
-            code.append("import " + objName + ".INSTANCE" + req.accessPath +
-                ".`" + imv + "`\n")
+            code.append(
+              "import " + objName + ".INSTANCE" + req.accessPath +
+                ".`" + imv + "`\n"
+            )
           }
 
         case x =>
@@ -221,7 +231,8 @@ private[repl] trait SparkImports { self: SparkIMain =>
               // Which means already imported
               code.append("val " + valName + " = " + objName + ".INSTANCE;\n")
               code.append(
-                  "import " + valName + req.accessPath + ".`" + imv + "`;\n")
+                "import " + valName + req.accessPath + ".`" + imv + "`;\n"
+              )
             }
             // code.append("val " + valName + " = " + objName + ".INSTANCE;\n")
             // code.append("import " + valName + req.accessPath + ".`" + imv + "`;\n")
@@ -234,7 +245,10 @@ private[repl] trait SparkImports { self: SparkIMain =>
     // redefining the value bound in the last interpreter request.
     addWrapper()
     SparkComputedImports(
-        code.toString, trailingBraces.toString, accessPath.toString)
+      code.toString,
+      trailingBraces.toString,
+      accessPath.toString
+    )
   }
 
   private def allReqAndHandlers =

@@ -14,7 +14,7 @@ trait Aggregator {
 
   private var processing = false
   private val expectList = WorkList.empty[Actor.Receive]
-  private val addBuffer = WorkList.empty[Actor.Receive]
+  private val addBuffer  = WorkList.empty[Actor.Receive]
 
   /**
     * Adds the partial function to the receive set, to be removed on first match.
@@ -43,11 +43,10 @@ trait Aggregator {
     * @param fn The receive function.
     * @return True if the partial function is removed, false if not found.
     */
-  def unexpect(fn: Actor.Receive): Boolean = {
+  def unexpect(fn: Actor.Receive): Boolean =
     if (expectList remove fn) true
     else if (processing && (addBuffer remove fn)) true
     else false
-  }
 
   /**
     * Receive function for handling the aggregations.
@@ -91,7 +90,7 @@ object WorkList {
     */
   class Entry[T](val ref: Option[T], val permanent: Boolean) {
     var next: Entry[T] = null
-    var isDeleted = false
+    var isDeleted      = false
   }
 }
 
@@ -132,7 +131,7 @@ class WorkList[T] {
   def remove(ref: T): Boolean = {
 
     @tailrec
-    def remove(parent: Entry[T], entry: Entry[T]): Boolean = {
+    def remove(parent: Entry[T], entry: Entry[T]): Boolean =
       if (entry.ref.get == ref) {
         parent.next = entry.next // Remove entry
         if (tail == entry) tail = parent
@@ -140,7 +139,6 @@ class WorkList[T] {
         true
       } else if (entry.next != null) remove(entry, entry.next)
       else false
-    }
 
     if (head.next == null) false else remove(head, head.next)
   }
@@ -187,12 +185,11 @@ class WorkList[T] {
     * Removes all entries from this WorkList
     * @return True if at least one entry is removed. False if none is removed.
     */
-  def removeAll() = {
+  def removeAll() =
     if (head.next == null) false
     else {
       head.next = null
       tail = head
       true
     }
-  }
 }

@@ -9,8 +9,8 @@ abstract class BulkSearch {
 }
 
 object BulkSearchInstance extends BulkSearch {
-  type R = UpRow
-  type Rel = UpRelation
+  type R    = UpRow
+  type Rel  = UpRelation
   type Corr = UpCorrespondence
 }
 

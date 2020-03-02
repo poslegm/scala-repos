@@ -20,7 +20,7 @@ import scala.collection.mutable.ArrayBuffer
 abstract class JavaToScalaConversionTestBase
     extends ScalaLightPlatformCodeInsightTestCaseAdapter {
   private val startMarker = "/*start*/"
-  private val endMarker = "/*end*/"
+  private val endMarker   = "/*end*/"
 
   def folderPath: String = baseRootPath() + "conversion/"
 
@@ -29,23 +29,25 @@ abstract class JavaToScalaConversionTestBase
 
     val filePath = folderPath + getTestName(false) + ".java"
     val file = LocalFileSystem.getInstance.findFileByPath(
-        filePath.replace(File.separatorChar, '/'))
+      filePath.replace(File.separatorChar, '/')
+    )
     assert(file != null, "file " + filePath + " not found")
-    val fileText = StringUtil.convertLineSeparators(FileUtil.loadFile(
-            new File(file.getCanonicalPath), CharsetToolkit.UTF8))
+    val fileText = StringUtil.convertLineSeparators(
+      FileUtil.loadFile(new File(file.getCanonicalPath), CharsetToolkit.UTF8)
+    )
     configureFromFileTextAdapter(getTestName(false) + ".java", fileText)
-    val javaFile = getFileAdapter
-    val offset = fileText.indexOf(startMarker)
+    val javaFile    = getFileAdapter
+    val offset      = fileText.indexOf(startMarker)
     val startOffset = if (offset != -1) offset + startMarker.length else 0
 
-    val lastPsi = javaFile.findElementAt(javaFile.getText.length - 1)
+    val lastPsi   = javaFile.findElementAt(javaFile.getText.length - 1)
     var endOffset = fileText.indexOf(endMarker)
     if (endOffset == -1) endOffset = lastPsi.getTextRange.getStartOffset
 
     var elem: PsiElement = javaFile.findElementAt(startOffset)
     assert(elem.getTextRange.getStartOffset == startOffset)
     while (elem.getParent != null && !elem.getParent.isInstanceOf[PsiFile] &&
-    elem.getParent.getTextRange.getStartOffset == startOffset) {
+           elem.getParent.getTextRange.getStartOffset == startOffset) {
       elem = elem.getParent
     }
     val buf = new ArrayBuffer[PsiElement]
@@ -58,7 +60,10 @@ abstract class JavaToScalaConversionTestBase
     val newFile = PsiFileFactory
       .getInstance(getProjectAdapter)
       .createFileFromText(
-          "dummyForJavaToScala.scala", ScalaFileType.SCALA_LANGUAGE, res)
+        "dummyForJavaToScala.scala",
+        ScalaFileType.SCALA_LANGUAGE,
+        res
+      )
     res = inWriteAction {
       CodeStyleManager.getInstance(getProjectAdapter).reformat(newFile).getText
     }

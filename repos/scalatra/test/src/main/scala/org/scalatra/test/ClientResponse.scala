@@ -16,45 +16,40 @@ abstract class ClientResponse {
 
   def body = new String(bodyBytes, charset.getOrElse("ISO-8859-1"))
 
-  def mediaType: Option[String] = {
+  def mediaType: Option[String] =
     header.get("Content-Type") match {
       case Some(contentType) => contentType.split(";").map(_.trim).headOption
-      case _ => None
+      case _                 => None
     }
-  }
 
   def status = statusLine.code
 
   val header = new DefaultMap[String, String] {
-    def get(key: String) = {
+    def get(key: String) =
       headers.get(key) match {
         case Some(values) => Some(values.head)
-        case _ => None
+        case _            => None
       }
-    }
 
-    override def apply(key: String) = {
+    override def apply(key: String) =
       get(key) match {
         case Some(value) => value
-        case _ => null
+        case _           => null
       }
-    }
 
-    def iterator = {
+    def iterator =
       headers.keys.map(name => (name -> this(name))).iterator
-    }
   }
 
-  def charset = {
+  def charset =
     header
       .getOrElse("Content-Type", "")
       .split(";")
       .map(_.trim)
       .find(_.startsWith("charset=")) match {
       case Some(attr) => Some(attr.split("=")(1))
-      case _ => None
+      case _          => None
     }
-  }
 
   def getReason() = statusLine.message
 

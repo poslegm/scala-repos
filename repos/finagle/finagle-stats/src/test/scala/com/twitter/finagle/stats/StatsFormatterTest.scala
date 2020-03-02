@@ -10,13 +10,13 @@ import scala.collection.JavaConverters._
 class StatsFormatterTest extends FunSuite {
 
   private val metrics = Metrics.createDetached()
-  private val sr = new ImmediateMetricsStatsReceiver(metrics)
+  private val sr      = new ImmediateMetricsStatsReceiver(metrics)
 
   private val histo1 = sr.stat("histo1")
   (0 to 100).foreach(histo1.add(_))
 
-  private val values = SampledValues(
-      Map.empty, Map.empty, metrics.sampleHistograms().asScala)
+  private val values =
+    SampledValues(Map.empty, Map.empty, metrics.sampleHistograms().asScala)
 
   test("CommonsMetrics is formatted the same as Metrics.sample") {
     val formatter = StatsFormatter.CommonsMetrics
@@ -24,10 +24,11 @@ class StatsFormatterTest extends FunSuite {
 
     // remove stddev as it is not supported
     assert(
-        formatted == metrics
-          .sample()
-          .asScala
-          .filterKeys(!_.endsWith("stddev")))
+      formatted == metrics
+        .sample()
+        .asScala
+        .filterKeys(!_.endsWith("stddev"))
+    )
 
     assert(formatted("histo1.p50") == 50)
     assert(formatted("histo1.p90") == 90)

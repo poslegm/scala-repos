@@ -10,10 +10,10 @@ private[json] object Impl extends AbstractJSONImpl {
 
   type Repr = Object
 
-  def fromString(x: String): Repr = x
-  def fromNumber(x: Number): Repr = x
-  def fromBoolean(x: Boolean): Repr = java.lang.Boolean.valueOf(x)
-  def fromList(x: List[Repr]): Repr = x.asJava
+  def fromString(x: String): Repr         = x
+  def fromNumber(x: Number): Repr         = x
+  def fromBoolean(x: Boolean): Repr       = java.lang.Boolean.valueOf(x)
+  def fromList(x: List[Repr]): Repr       = x.asJava
   def fromMap(x: Map[String, Repr]): Repr = x.asJava
 
   def toString(x: Repr): String = x.asInstanceOf[String]

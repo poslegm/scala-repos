@@ -13,28 +13,29 @@ object Description {
         start: String,
         separator: String,
         end: String,
-        values: java.lang.Iterable[SelfDescribing]): Description = {
+        values: java.lang.Iterable[SelfDescribing]
+    ): Description =
       this
-    }
 
     override def appendText(text: String): Description = this
 
     override def appendValue(value: AnyRef): Description = this
 
-    override def appendValueList[T](start: String,
-                                    separator: String,
-                                    end: String,
-                                    values: T*): Description = {
+    override def appendValueList[T](
+        start: String,
+        separator: String,
+        end: String,
+        values: T*
+    ): Description =
       this
-    }
 
     override def appendValueList[T](
         start: String,
         separator: String,
         end: String,
-        values: java.lang.Iterable[T]): Description = {
+        values: java.lang.Iterable[T]
+    ): Description =
       this
-    }
 
     override def toString(): String = ""
   }
@@ -48,15 +49,23 @@ trait Description {
   def appendValue(value: AnyRef): Description
 
   def appendValueList[T](
-      start: String, separator: String, end: String, values: T*): Description
+      start: String,
+      separator: String,
+      end: String,
+      values: T*
+  ): Description
 
-  def appendValueList[T](start: String,
-                         separator: String,
-                         end: String,
-                         values: java.lang.Iterable[T]): Description
+  def appendValueList[T](
+      start: String,
+      separator: String,
+      end: String,
+      values: java.lang.Iterable[T]
+  ): Description
 
-  def appendList(start: String,
-                 separator: String,
-                 end: String,
-                 values: java.lang.Iterable[SelfDescribing]): Description
+  def appendList(
+      start: String,
+      separator: String,
+      end: String,
+      values: java.lang.Iterable[SelfDescribing]
+  ): Description
 }

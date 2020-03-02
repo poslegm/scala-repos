@@ -25,23 +25,25 @@ import scala.Some
   * Functionality to assist in TimeSeries related operations
   */
 package object time {
-  val ISO_CHRONO = ISOChronology.getInstance
+  val ISO_CHRONO     = ISOChronology.getInstance
   val ISO_CHRONO_UTC = ISOChronology.getInstanceUTC
 
   val TZ_LOCAL = ISO_CHRONO.getZone
-  val TZ_UTC = ISO_CHRONO_UTC.getZone
+  val TZ_UTC   = ISO_CHRONO_UTC.getZone
 
   /**
     * Convenience factory for constructing a DateTime instance
     */
-  def datetime(y: Int = 0,
-               m: Int = 0,
-               d: Int = 0,
-               h: Int = 0,
-               t: Int = 0,
-               s: Int = 0,
-               ms: Int = 0,
-               zone: DateTimeZone = TZ_LOCAL): DateTime = {
+  def datetime(
+      y: Int = 0,
+      m: Int = 0,
+      d: Int = 0,
+      h: Int = 0,
+      t: Int = 0,
+      s: Int = 0,
+      ms: Int = 0,
+      zone: DateTimeZone = TZ_LOCAL
+  ): DateTime = {
 
     val dt = new DateTime(zone)
 
@@ -52,8 +54,8 @@ package object time {
     new DateTime(Y, M, D, h, t, s, ms, zone)
   }
 
-  private val dfmt1 = "(\\d\\d\\d\\d)(\\d\\d)(\\d\\d)".r // eg 20120205
-  private val dfmt2 = "(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d)".r // eg 2012-02-05
+  private val dfmt1 = "(\\d\\d\\d\\d)(\\d\\d)(\\d\\d)".r       // eg 20120205
+  private val dfmt2 = "(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d)".r     // eg 2012-02-05
   private val dfmt3 = "(\\d{1,2})/(\\d{1,2})/(\\d\\d\\d\\d)".r // eg 2/5/2012
 
   /**
@@ -62,7 +64,7 @@ package object time {
     * @param s    String representing the date
     * @param euro Whether to use the european format, eg 2/5/2012 => 2nd of May, 2012
     */
-  def parsedate(s: String, euro: Boolean = false): Option[DateTime] = {
+  def parsedate(s: String, euro: Boolean = false): Option[DateTime] =
     s match {
       case dfmt1(y, m, d) =>
         Some(new DateTime(y.toInt, m.toInt, d.toInt, 0, 0, 0, 0))
@@ -74,16 +76,18 @@ package object time {
         Some(new DateTime(y.toInt, m.toInt, d.toInt, 0, 0, 0, 0))
       case _ => None
     }
-  }
 
   /**
     * Class providing time accessor methods for Vec and Index containing DateTimes
     */
   protected[saddle] class TimeAccessors[T](
-      times: Vec[Long], chrono: Chronology, cast: Vec[Int] => T) {
+      times: Vec[Long],
+      chrono: Chronology,
+      cast: Vec[Int] => T
+  ) {
     def millisOfSecond = cast(extractor(1L, 1000L))
     def secondOfMinute = cast(extractor(1000L, 60L))
-    def minuteOfHour = cast(extractor(60000L, 60L))
+    def minuteOfHour   = cast(extractor(60000L, 60L))
 
     private def _millisOfDay =
       getField(DateTimeFieldType.millisOfDay.getField(chrono), isTime = true)
@@ -94,28 +98,37 @@ package object time {
     def secondOfDay = cast(_secondOfDay)
     def minuteOfDay =
       cast(
-          getField(
-              DateTimeFieldType.minuteOfDay.getField(chrono), isTime = true))
+        getField(DateTimeFieldType.minuteOfDay.getField(chrono), isTime = true)
+      )
     def clockhourOfDay =
       cast(
-          getField(DateTimeFieldType.clockhourOfDay.getField(chrono),
-                   isTime = true))
+        getField(
+          DateTimeFieldType.clockhourOfDay.getField(chrono),
+          isTime = true
+        )
+      )
     def hourOfHalfday =
       cast(
-          getField(
-              DateTimeFieldType.hourOfHalfday.getField(chrono), isTime = true))
+        getField(
+          DateTimeFieldType.hourOfHalfday.getField(chrono),
+          isTime = true
+        )
+      )
     def clockhourOfHalfday =
       cast(
-          getField(DateTimeFieldType.clockhourOfHalfday.getField(chrono),
-                   isTime = true))
+        getField(
+          DateTimeFieldType.clockhourOfHalfday.getField(chrono),
+          isTime = true
+        )
+      )
     def halfdayOfDay =
       cast(
-          getField(
-              DateTimeFieldType.halfdayOfDay.getField(chrono), isTime = true))
+        getField(DateTimeFieldType.halfdayOfDay.getField(chrono), isTime = true)
+      )
     def hourOfDay =
       cast(
-          getField(
-              DateTimeFieldType.hourOfDay.getField(chrono), isTime = true))
+        getField(DateTimeFieldType.hourOfDay.getField(chrono), isTime = true)
+      )
 
     def dayOfWeek =
       cast(getField(DateTimeFieldType.dayOfWeek.getField(chrono)))
@@ -140,11 +153,12 @@ package object time {
     def era = cast(getField(DateTimeFieldType.era.getField(chrono)))
 
     protected def getField(
-        field: DateTimeField, isTime: Boolean = false): Vec[Int] =
+        field: DateTimeField,
+        isTime: Boolean = false
+    ): Vec[Int] =
       if (chrono != ISO_CHRONO_UTC || !isTime)
-        times.map { (ms: Long) =>
-          field.get(ms)
-        } else getFieldFast(field)
+        times.map((ms: Long) => field.get(ms))
+      else getFieldFast(field)
 
     protected def extractor(unit: Long, range: Long): Vec[Int] = times.map {
       (t: Long) =>
@@ -176,8 +190,8 @@ package object time {
     val (times, chrono: Chronology) = vec match {
       case tv: VecTime => (tv.times, tv.chrono)
       case _ => {
-          val tmp = new VecTime(vec.map(_.getMillis)); (tmp.times, tmp.chrono)
-        }
+        val tmp = new VecTime(vec.map(_.getMillis)); (tmp.times, tmp.chrono)
+      }
     }
     new TimeAccessors(times, chrono, identity)
   }
@@ -186,13 +200,14 @@ package object time {
     * Enrichment methods for Index[DateTime]
     */
   implicit def indexTimeAccessors(
-      ix: Index[DateTime]): TimeAccessors[Index[Int]] = {
+      ix: Index[DateTime]
+  ): TimeAccessors[Index[Int]] = {
     val (times, chrono: Chronology) = ix match {
       case tv: IndexTime => (tv.times.toVec, tv.chrono)
       case _ => {
-          val tmp = new IndexTime(ix.map(_.getMillis));
-          (tmp.times.toVec, tmp.chrono)
-        }
+        val tmp = new IndexTime(ix.map(_.getMillis));
+        (tmp.times.toVec, tmp.chrono)
+      }
     }
 
     new TimeAccessors(times, chrono, Index(_))
@@ -212,9 +227,9 @@ package object time {
 
   // Convenience methods for constructing ReadablePeriod instances
 
-  def years(i: Int) = Years.years(i)
+  def years(i: Int)    = Years.years(i)
   def quarters(i: Int) = Months.months(i * 3)
-  def months(i: Int) = Months.months(i)
-  def weeks(i: Int) = Weeks.weeks(i)
-  def days(i: Int) = Days.days(i)
+  def months(i: Int)   = Months.months(i)
+  def weeks(i: Int)    = Weeks.weeks(i)
+  def days(i: Int)     = Days.days(i)
 }

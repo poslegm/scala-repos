@@ -14,15 +14,40 @@ import java.util.concurrent.TimeUnit
 import scala.reflect.internal.{TreeGen => InternalTreeGen}
 
 abstract class SymbolTable
-    extends macros.Universe with Collections with Names with Symbols with Types
-    with Variances with Kinds with ExistentialsAndSkolems with FlagSets
-    with Scopes with Mirrors with Definitions with Constants with BaseTypeSeqs
-    with InfoTransformers with transform.Transforms with StdNames
-    with AnnotationInfos with AnnotationCheckers with Trees with Printers
-    with Positions with TypeDebugging with Importers with Required
-    with CapturedVariables with StdAttachments with StdCreators
-    with ReificationSupport with PrivateWithin with pickling.Translations
-    with FreshNames with Internals with Reporting {
+    extends macros.Universe
+    with Collections
+    with Names
+    with Symbols
+    with Types
+    with Variances
+    with Kinds
+    with ExistentialsAndSkolems
+    with FlagSets
+    with Scopes
+    with Mirrors
+    with Definitions
+    with Constants
+    with BaseTypeSeqs
+    with InfoTransformers
+    with transform.Transforms
+    with StdNames
+    with AnnotationInfos
+    with AnnotationCheckers
+    with Trees
+    with Printers
+    with Positions
+    with TypeDebugging
+    with Importers
+    with Required
+    with CapturedVariables
+    with StdAttachments
+    with StdCreators
+    with ReificationSupport
+    with PrivateWithin
+    with pickling.Translations
+    with FreshNames
+    with Internals
+    with Reporting {
 
   val gen = new InternalTreeGen {
     val global: SymbolTable.this.type = SymbolTable.this
@@ -32,19 +57,21 @@ abstract class SymbolTable
 
   protected def elapsedMessage(msg: String, start: Long) =
     msg + " in " + (TimeUnit.NANOSECONDS.toMillis(System.nanoTime()) - start) +
-    "ms"
+      "ms"
 
   def informProgress(msg: String) =
     if (settings.verbose) inform("[" + msg + "]")
   def informTime(msg: String, start: Long) =
     informProgress(elapsedMessage(msg, start))
 
-  def shouldLogAtThisPhase = false
-  def isPastTyper = false
+  def shouldLogAtThisPhase           = false
+  def isPastTyper                    = false
   protected def isDeveloper: Boolean = settings.debug
 
-  @deprecated("Use devWarning if this is really a warning; otherwise use log",
-              "2.11.0")
+  @deprecated(
+    "Use devWarning if this is really a warning; otherwise use log",
+    "2.11.0"
+  )
   def debugwarn(msg: => String): Unit = devWarning(msg)
 
   /** Override with final implementation for inlining. */
@@ -63,10 +90,12 @@ abstract class SymbolTable
 
   private[scala] def printCaller[T](msg: String)(result: T) = {
     Console.err.println(
-        "%s: %s\nCalled from: %s".format(
-            msg,
-            result,
-            (new Throwable).getStackTrace.drop(2).take(50).mkString("\n")))
+      "%s: %s\nCalled from: %s".format(
+        msg,
+        result,
+        (new Throwable).getStackTrace.drop(2).take(50).mkString("\n")
+      )
+    )
 
     result
   }
@@ -92,23 +121,26 @@ abstract class SymbolTable
   }
   @inline
   final private[scala] def logResultIf[T](msg: => String, cond: T => Boolean)(
-      result: T): T = {
+      result: T
+  ): T = {
     if (cond(result)) log(msg + ": " + result)
 
     result
   }
   @inline
   final private[scala] def debuglogResultIf[T](
-      msg: => String, cond: T => Boolean)(result: T): T = {
+      msg: => String,
+      cond: T => Boolean
+  )(result: T): T = {
     if (cond(result)) debuglog(msg + ": " + result)
 
     result
   }
 
-  @inline final def findSymbol(xs: TraversableOnce[Symbol])(
-      p: Symbol => Boolean): Symbol = {
+  @inline final def findSymbol(
+      xs: TraversableOnce[Symbol]
+  )(p: Symbol => Boolean): Symbol =
     xs find p getOrElse NoSymbol
-  }
 
   // For too long have we suffered in order to sort NAMES.
   // I'm pretty sure there's a reasonable default for that.
@@ -117,9 +149,10 @@ abstract class SymbolTable
     SimpleNameOrdering.asInstanceOf[Ordering[T]]
 
   private object SimpleNameOrdering extends Ordering[Names#Name] {
-    def compare(n1: Names#Name, n2: Names#Name) = (if (n1 eq n2) 0
-                                                   else
-                                                     n1.toString compareTo n2.toString)
+    def compare(n1: Names#Name, n2: Names#Name) =
+      (if (n1 eq n2) 0
+       else
+         n1.toString compareTo n2.toString)
   }
 
   /** Dump each symbol to stdout after shutdown.
@@ -157,9 +190,9 @@ abstract class SymbolTable
   final val NoRunId = 0
 
   // sigh, this has to be public or enteringPhase doesn't inline.
-  var phStack: List[Phase] = Nil
+  var phStack: List[Phase]    = Nil
   private[this] var ph: Phase = NoPhase
-  private[this] var per = NoPeriod
+  private[this] var per       = NoPeriod
 
   final def atPhaseStack: List[Phase] = phStack
   final def phase: Phase = {
@@ -170,7 +203,7 @@ abstract class SymbolTable
 
   def atPhaseStackMessage = atPhaseStack match {
     case Nil => ""
-    case ps => ps.reverseMap("->" + _).mkString("(", " ", ")")
+    case ps  => ps.reverseMap("->" + _).mkString("(", " ", ")")
   }
 
   final def phase_=(p: Phase) {
@@ -200,10 +233,9 @@ abstract class SymbolTable
   final def phaseId(period: Period): Phase#Id = period & 0xFF
 
   /** The current period. */
-  final def currentPeriod: Period = {
+  final def currentPeriod: Period =
     //assert(per == (currentRunId << 8) + phase.id)
     per
-  }
 
   /** The phase associated with given period. */
   final def phaseOf(period: Period): Phase = phaseWithId(phaseId(period))
@@ -218,7 +250,8 @@ abstract class SymbolTable
   /** Perform given operation at given phase. */
   @inline final def enteringPhase[T](ph: Phase)(op: => T): T = {
     val saved = pushPhase(ph)
-    try op finally popPhase(saved)
+    try op
+    finally popPhase(saved)
   }
 
   final def findPhaseWithName(phaseName: String): Phase = {
@@ -233,10 +266,9 @@ abstract class SymbolTable
     enteringPhase(phase)(body)
   }
 
-  def slowButSafeEnteringPhase[T](ph: Phase)(op: => T): T = {
+  def slowButSafeEnteringPhase[T](ph: Phase)(op: => T): T =
     if (isCompilerUniverse) enteringPhase(ph)(op)
     else op
-  }
 
   @inline final def exitingPhase[T](ph: Phase)(op: => T): T =
     enteringPhase(ph.next)(op)
@@ -259,7 +291,7 @@ abstract class SymbolTable
   final def isValidForBaseClasses(period: Period): Boolean = {
     def noChangeInBaseClasses(it: InfoTransformer, limit: Phase#Id): Boolean =
       (it.pid >= limit || !it.changesBaseClasses &&
-          noChangeInBaseClasses(it.next, limit))
+        noChangeInBaseClasses(it.next, limit))
     period != 0 && runId(period) == currentRunId && {
       val pid = phaseId(period)
       if (phase.id > pid)
@@ -274,8 +306,9 @@ abstract class SymbolTable
       if (!member.isPrivate && !member.isConstructor) {
         // todo: handle overlapping definitions in some way: mark as errors
         // or treat as abstractions. For now the symbol in the package module takes precedence.
-        for (existing <- dest.info.decl(member.name).alternatives) dest.info.decls
-          .unlink(existing)
+        for (existing <- dest.info.decl(member.name).alternatives)
+          dest.info.decls
+            .unlink(existing)
       }
     }
     // enter non-private decls the class
@@ -302,15 +335,15 @@ abstract class SymbolTable
       val method = params.last.owner
       val elemtp = formals.last.typeArgs.head match {
         case RefinedType(List(t1, t2), _)
-            if
-            (t1.typeSymbol.isAbstractType &&
-                t2.typeSymbol == definitions.ObjectClass) =>
+            if (t1.typeSymbol.isAbstractType &&
+              t2.typeSymbol == definitions.ObjectClass) =>
           t1 // drop intersection with Object for abstract types in varargs. UnCurry can handle them.
         case t =>
           t
       }
       val newParams = method.newSyntheticValueParams(
-          formals.init :+ definitions.javaRepeatedType(elemtp))
+        formals.init :+ definitions.javaRepeatedType(elemtp)
+      )
       MethodType(newParams, rtpe)
     case PolyType(tparams, rtpe) =>
       PolyType(tparams, arrayToRepeated(rtpe))
@@ -326,7 +359,7 @@ abstract class SymbolTable
     val pkgModule = pkgClass.packageObject
     def fromSource = pkgModule.rawInfo match {
       case ltp: SymLoader => ltp.fromSource
-      case _ => false
+      case _              => false
     }
     if (pkgModule.isModule && !fromSource) {
       openPackageModule(pkgModule, pkgClass)
@@ -350,9 +383,8 @@ abstract class SymbolTable
       * Removes a cache from the per-run caches. This is useful for testing: it allows running the
       * compiler and then inspect the state of a cache.
       */
-    def unrecordCache[T <: Clearable](cache: T): Unit = {
+    def unrecordCache[T <: Clearable](cache: T): Unit =
       caches = caches.filterNot(_.get eq cache)
-    }
 
     def clearAll() = {
       debuglog("Clearing " + caches.size + " caches.")
@@ -360,35 +392,33 @@ abstract class SymbolTable
       caches = caches.filterNot(_.get == null)
     }
 
-    def newWeakMap[K, V]() = recordCache(mutable.WeakHashMap[K, V]())
-    def newMap[K, V]() = recordCache(mutable.HashMap[K, V]())
-    def newSet[K]() = recordCache(mutable.HashSet[K]())
+    def newWeakMap[K, V]()        = recordCache(mutable.WeakHashMap[K, V]())
+    def newMap[K, V]()            = recordCache(mutable.HashMap[K, V]())
+    def newSet[K]()               = recordCache(mutable.HashSet[K]())
     def newWeakSet[K <: AnyRef]() = recordCache(new WeakHashSet[K]())
 
     def newAnyRefMap[K <: AnyRef, V]() = recordCache(mutable.AnyRefMap[K, V]())
     def newGeneric[T](f: => T): () => T = {
       val NoCached: T = null.asInstanceOf[T]
-      var cached: T = NoCached
+      var cached: T   = NoCached
       var cachedRunId = NoRunId
-      recordCache(
-          new Clearable {
+      recordCache(new Clearable {
         def clear(): Unit = cached = NoCached
       })
-      () =>
-        {
-          if (currentRunId != cachedRunId || cached == NoCached) {
-            cached = f
-            cachedRunId = currentRunId
-          }
-          cached
+      () => {
+        if (currentRunId != cachedRunId || cached == NoCached) {
+          cached = f
+          cachedRunId = currentRunId
         }
+        cached
+      }
     }
   }
 
   /** The set of all installed infotransformers. */
   var infoTransformers = new InfoTransformer {
-    val pid = NoPhase.id
-    val changesBaseClasses = true
+    val pid                                     = NoPhase.id
+    val changesBaseClasses                      = true
     def transform(sym: Symbol, tpe: Type): Type = tpe
   }
 
@@ -405,7 +435,8 @@ abstract class SymbolTable
   /**
     * Adds the `sm` String interpolator to a [[scala.StringContext]].
     */
-  implicit val StringContextStripMarginOps: StringContext => StringContextStripMarginOps =
+  implicit val StringContextStripMarginOps
+      : StringContext => StringContextStripMarginOps =
     util.StringContextStripMarginOps
 }
 

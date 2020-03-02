@@ -13,16 +13,17 @@ import org.scalactic.ConversionCheckedTripleEquals
 import org.scalacheck.Shrink
 
 class GraphMergeSortedSpec
-    extends TwoStreamsSetup with GeneratorDrivenPropertyChecks {
+    extends TwoStreamsSetup
+    with GeneratorDrivenPropertyChecks {
 
   override type Outputs = Int
 
   override def fixture(b: GraphDSL.Builder[_]): Fixture = new Fixture(b) {
     val merge = b.add(new MergeSorted[Outputs])
 
-    override def left: Inlet[Outputs] = merge.in0
+    override def left: Inlet[Outputs]  = merge.in0
     override def right: Inlet[Outputs] = merge.in1
-    override def out: Outlet[Outputs] = merge.out
+    override def out: Outlet[Outputs]  = merge.out
   }
 
   implicit def noShrink[T] =
@@ -34,7 +35,7 @@ class GraphMergeSortedSpec
       val gen = Gen.listOf(Gen.oneOf(false, true))
 
       forAll(gen) { picks ⇒
-        val N = picks.size
+        val N             = picks.size
         val (left, right) = picks.zipWithIndex.partition(_._1)
         Source(left.map(_._2))
           .mergeSorted(Source(right.map(_._2)))

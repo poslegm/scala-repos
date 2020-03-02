@@ -23,16 +23,17 @@ trait Subclassification[K] {
 
 private[akka] object SubclassifiedIndex {
 
-  class Nonroot[K, V](override val root: SubclassifiedIndex[K, V],
-                      val key: K,
-                      _values: Set[V])(implicit sc: Subclassification[K])
+  class Nonroot[K, V](
+      override val root: SubclassifiedIndex[K, V],
+      val key: K,
+      _values: Set[V]
+  )(implicit sc: Subclassification[K])
       extends SubclassifiedIndex[K, V](_values) {
 
-    override def innerAddValue(key: K, value: V): Changes = {
+    override def innerAddValue(key: K, value: V): Changes =
       // break the recursion on super when key is found and transition to recursive add-to-set
       if (sc.isEqual(key, this.key)) addValue(value)
       else super.innerAddValue(key, value)
-    }
 
     private def addValue(value: V): Changes = {
       val kids = subkeys flatMap (_ addValue value)
@@ -43,11 +44,10 @@ private[akka] object SubclassifiedIndex {
     }
 
     // this will return the keys and values to be removed from the cache
-    override def innerRemoveValue(key: K, value: V): Changes = {
+    override def innerRemoveValue(key: K, value: V): Changes =
       // break the recursion on super when key is found and transition to recursive remove-from-set
       if (sc.isEqual(key, this.key)) removeValue(value)
       else super.innerRemoveValue(key, value)
-    }
 
     override def removeValue(value: V): Changes = {
       val kids = subkeys flatMap (_ removeValue value)
@@ -83,7 +83,8 @@ private[akka] object SubclassifiedIndex {
   * scan at each level. Therefore, no value traversals are published.
   */
 private[akka] class SubclassifiedIndex[K, V] private (
-    protected var values: Set[V])(implicit sc: Subclassification[K]) {
+    protected var values: Set[V]
+)(implicit sc: Subclassification[K]) {
 
   import SubclassifiedIndex._
 
@@ -196,10 +197,14 @@ private[akka] class SubclassifiedIndex[K, V] private (
     * Find all subkeys of a given key in the index excluding some subkeys.
     */
   protected final def findSubKeysExcept(
-      key: K, except: Vector[Nonroot[K, V]]): Set[K] =
+      key: K,
+      except: Vector[Nonroot[K, V]]
+  ): Set[K] =
     root.innerFindSubKeys(key, except)
   protected def innerFindSubKeys(
-      key: K, except: Vector[Nonroot[K, V]]): Set[K] =
+      key: K,
+      except: Vector[Nonroot[K, V]]
+  ): Set[K] =
     (Set.empty[K] /: subkeys) { (s, n) ⇒
       if (sc.isEqual(key, n.key)) s
       else

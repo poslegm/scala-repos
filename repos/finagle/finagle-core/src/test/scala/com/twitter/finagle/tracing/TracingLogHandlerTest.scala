@@ -12,12 +12,12 @@ class TracingLogHandlerTest extends FunSuite with BeforeAndAfter {
     val tracer = new BufferingTracer()
     Trace.letTracer(tracer) {
       val handler = new TracingLogHandler
-      val msg1 = "hello"
+      val msg1    = "hello"
       handler.publish(new LogRecord(Level.DEBUG, msg1))
 
       tracer.iterator.next().annotation match {
         case Message(s) => assert(s.trim == msg1)
-        case _ => fail("Message does not match")
+        case _          => fail("Message does not match")
       }
     }
   }

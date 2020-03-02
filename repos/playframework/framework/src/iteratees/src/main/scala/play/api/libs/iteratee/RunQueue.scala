@@ -62,9 +62,8 @@ private[play] final class RunQueue {
     *
     * The operation will execute in the given ExecutionContext.
     */
-  def schedule[A](body: => Future[A])(implicit ec: ExecutionContext): Unit = {
+  def schedule[A](body: => Future[A])(implicit ec: ExecutionContext): Unit =
     schedule(Op(() => body.asInstanceOf[Future[Unit]], ec.prepare))
-  }
 
   /**
     * Schedule a simple synchronous operation to be run. The operation is considered
@@ -84,12 +83,11 @@ private[play] final class RunQueue {
     *
     * The operation will execute in the given ExecutionContext.
     */
-  def scheduleSimple(body: => Unit)(implicit ec: ExecutionContext): Unit = {
+  def scheduleSimple(body: => Unit)(implicit ec: ExecutionContext): Unit =
     schedule {
       body
       Future.successful(())
     }
-  }
 
   /**
     * Schedule a reified operation for execution. If no other operations
@@ -104,7 +102,7 @@ private[play] final class RunQueue {
   private def schedule(op: Op): Unit = {
     val prevState = state.get
     val newState = prevState match {
-      case null => Vector.empty
+      case null    => Vector.empty
       case pending => pending :+ op
     }
     if (state.compareAndSet(prevState, newState)) {
@@ -120,7 +118,7 @@ private[play] final class RunQueue {
 
   private def execute(op: Op): Unit = {
     val f1: Future[Future[Unit]] = Future(op.thunk())(op.ec)
-    val f2: Future[Unit] = f1.flatMap(identity)(Execution.trampoline)
+    val f2: Future[Unit]         = f1.flatMap(identity)(Execution.trampoline)
     f2.onComplete(_ => opExecutionComplete())(Execution.trampoline)
   }
 
@@ -135,15 +133,16 @@ private[play] final class RunQueue {
     val newState = prevState match {
       case null =>
         throw new IllegalStateException(
-            "Can't be inactive, must have a queue of pending elements")
+          "Can't be inactive, must have a queue of pending elements"
+        )
       case pending if pending.isEmpty => null
-      case pending => pending.tail
+      case pending                    => pending.tail
     }
     if (state.compareAndSet(prevState, newState)) {
       prevState match {
         // We have a pending operation to execute
         case pending if !pending.isEmpty => execute(pending.head)
-        case _ =>
+        case _                           =>
       }
     } else opExecutionComplete() // Try again
   }

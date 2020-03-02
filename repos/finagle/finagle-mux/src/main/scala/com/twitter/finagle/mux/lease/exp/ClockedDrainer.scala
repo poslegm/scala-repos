@@ -3,8 +3,19 @@ package com.twitter.finagle.mux.lease.exp
 import com.twitter.app.GlobalFlag
 import com.twitter.conversions.storage.intToStorageUnitableWholeNumber
 import com.twitter.conversions.time._
-import com.twitter.finagle.stats.{StatsReceiver, NullStatsReceiver, DefaultStatsReceiver}
-import com.twitter.util.{Duration, Stopwatch, StorageUnit, Timer, Time, NilStopwatch}
+import com.twitter.finagle.stats.{
+  StatsReceiver,
+  NullStatsReceiver,
+  DefaultStatsReceiver
+}
+import com.twitter.util.{
+  Duration,
+  Stopwatch,
+  StorageUnit,
+  Timer,
+  Time,
+  NilStopwatch
+}
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
@@ -39,52 +50,52 @@ private[finagle] class ClockedDrainer(
     lr: LogsReceiver = NullLogsReceiver,
     statsReceiver: StatsReceiver = NullStatsReceiver,
     verbose: Boolean = false
-)
-    extends Thread("GcDrainer") with Lessor {
+) extends Thread("GcDrainer")
+    with Lessor {
 
   private[this] val lessees =
     Collections.newSetFromMap(new ConcurrentHashMap[Lessee, java.lang.Boolean])
 
   private[this] val requestCount = new AtomicInteger(0)
-  private[this] val narrival = new AtomicInteger(0)
+  private[this] val narrival     = new AtomicInteger(0)
 
-  @volatile private[this] var openFor = Stopwatch.start()
-  @volatile private[this] var closedFor = NilStopwatch.start()
-  @volatile private[this] var forcedGc = 0L
+  @volatile private[this] var openFor             = Stopwatch.start()
+  @volatile private[this] var closedFor           = NilStopwatch.start()
+  @volatile private[this] var forcedGc            = 0L
   @volatile private[this] var genDrained, genOpen = 0L
 
   private[this] def calculateMaxWait: Duration = {
     val rate = coord.counter.rate
-    val r = space.left
+    val r    = space.left
     if (r <= StorageUnit.zero) Duration.Zero
     else if (rate <= 0) 10.milliseconds
     else (r.inBytes / rate).toLong.milliseconds
   }
 
   private object stats {
-    val undrain = statsReceiver.counter("undrain")
-    val drain = statsReceiver.counter("drain")
-    val forcedGcs = statsReceiver.counter("forcedgcs")
-    val naturalGcs = statsReceiver.counter("naturalgcs")
-    val pendingAtGc = statsReceiver.stat("pendingatgc")
+    val undrain        = statsReceiver.counter("undrain")
+    val drain          = statsReceiver.counter("drain")
+    val forcedGcs      = statsReceiver.counter("forcedgcs")
+    val naturalGcs     = statsReceiver.counter("naturalgcs")
+    val pendingAtGc    = statsReceiver.stat("pendingatgc")
     val pendingAtDrain = statsReceiver.stat("pendingatdrain")
 
     val drainTime = statsReceiver.stat("draintime_ms")
 
-    val openTime = statsReceiver.stat("opentime_ms")
+    val openTime   = statsReceiver.stat("opentime_ms")
     val closedTime = statsReceiver.stat("closedtime_ms")
 
     val openForGauge = statsReceiver.addGauge("openfor_ms") {
       openFor() match {
         case Duration.Finite(d) => d.inMilliseconds.toFloat
-        case _ => -1F
+        case _                  => -1f
       }
     }
 
     val closedForGauge = statsReceiver.addGauge("closedfor_ms") {
       closedFor() match {
         case Duration.Finite(d) => d.inMilliseconds.toFloat
-        case _ => -1F
+        case _                  => -1f
       }
     }
 
@@ -94,7 +105,7 @@ private[finagle] class ClockedDrainer(
   }
 
   def npending() = {
-    var s = 0
+    var s    = 0
     val iter = lessees.iterator()
     while (iter.hasNext) s += iter.next().npending()
     s
@@ -144,15 +155,20 @@ private[finagle] class ClockedDrainer(
 
     upkeep("open", init)
 
-    coord.sleepUntilDiscountRemaining(space, { () =>
-      if (verbose) {
-        log.info("AWAIT-DISCOUNT: discount=" + space.discount() + "; clock=" +
-            coord.counter + "; space=" + space)
-      }
+    coord.sleepUntilDiscountRemaining(
+      space,
+      { () =>
+        if (verbose) {
+          log.info(
+            "AWAIT-DISCOUNT: discount=" + space.discount() + "; clock=" +
+              coord.counter + "; space=" + space
+          )
+        }
 
-      // discount (bytes) / rate (bytes / second) == expiry (seconds)
-      issueAll((space.discount.inBytes / coord.counter.rate).toLong.seconds)
-    })
+        // discount (bytes) / rate (bytes / second) == expiry (seconds)
+        issueAll((space.discount.inBytes / coord.counter.rate).toLong.seconds)
+      }
+    )
   }
 
   // DRAINING
@@ -184,9 +200,10 @@ private[finagle] class ClockedDrainer(
 
     if (verbose) {
       log.info(
-          "AWAIT-DRAIN: n=" + npending() + "; clock=" + coord.counter +
+        "AWAIT-DRAIN: n=" + npending() + "; clock=" + coord.counter +
           "; space=" + space + "; maxWaitMs=" + maxWait.inMilliseconds +
-          "; minDiscount=" + space.minDiscount)
+          "; minDiscount=" + space.minDiscount
+      )
     }
 
     coord.sleepUntilFinishedDraining(space, maxWait, npending, log)
@@ -202,16 +219,21 @@ private[finagle] class ClockedDrainer(
     if (coord.counter.info.generation() == generation) {
       val n = npending()
       if (verbose)
-        log.info("FORCE-GC: n=" + n + "; clock=" + coord.counter + "; space=" +
-            space)
+        log.info(
+          "FORCE-GC: n=" + n + "; clock=" + coord.counter + "; space=" +
+            space
+        )
 
       lr.record("byteLeft", coord.counter.info.remaining().inBytes.toString)
 
       forcedGc = 0
-      coord.sleepUntilGc({ () =>
-        forceGc()
-        forcedGc += 1
-      }, 10.milliseconds)
+      coord.sleepUntilGc(
+        { () =>
+          forceGc()
+          forcedGc += 1
+        },
+        10.milliseconds
+      )
 
       stats.pendingAtGc.add(n)
       stats.forcedGcs.incr()
@@ -273,7 +295,7 @@ object drainerDiscountRange
 
 object drainerPercentile extends GlobalFlag(95, "GC drainer cutoff percentile")
 
-object drainerDebug extends GlobalFlag(false, "GC drainer debug log (verbose)")
+object drainerDebug   extends GlobalFlag(false, "GC drainer debug log (verbose)")
 object drainerEnabled extends GlobalFlag(false, "GC drainer enabled")
 
 object nackOnExpiredLease
@@ -288,35 +310,37 @@ private[finagle] object ClockedDrainer {
     if (drainerEnabled()) {
       Coordinator.create() match {
         case None =>
-          log.warning("Failed to acquire a ParNew+CMS Coordinator; cannot " +
-              "construct drainer")
+          log.warning(
+            "Failed to acquire a ParNew+CMS Coordinator; cannot " +
+              "construct drainer"
+          )
           Lessor.nil
         case Some(coord) =>
           val rSnooper = new RequestSnooper(
-              coord.counter,
-              drainerPercentile().toDouble / 100.0,
-              lr
+            coord.counter,
+            drainerPercentile().toDouble / 100.0,
+            lr
           )
 
           val (min, max) = drainerDiscountRange()
           assert(min < max)
 
           val space = new MemorySpace(
-              coord.counter.info,
-              min,
-              max,
-              rSnooper,
-              lr
+            coord.counter.info,
+            min,
+            max,
+            rSnooper,
+            lr
           )
 
           new ClockedDrainer(
-              coord,
-              GarbageCollector.forceNewGc,
-              space,
-              rSnooper,
-              log,
-              lr,
-              DefaultStatsReceiver.scope("gcdrainer")
+            coord,
+            GarbageCollector.forceNewGc,
+            space,
+            rSnooper,
+            log,
+            lr,
+            DefaultStatsReceiver.scope("gcdrainer")
           )
       }
     } else {

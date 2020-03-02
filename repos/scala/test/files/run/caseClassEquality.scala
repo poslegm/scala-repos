@@ -8,12 +8,12 @@ object Test {
     override def canEqual(other: Any) = other.isInstanceOf[C3]
     override def equals(other: Any) = other match {
       case ob: C3 => x == ob.x
-      case _ => false
+      case _      => false
     }
   }
 
   case class CS1(xs: Any*)
-  class CS2(xs: Seq[_]*) extends CS1(xs: _*)
+  class CS2(xs: Seq[_]*)          extends CS1(xs: _*)
   class CS3(xs: IndexedSeq[Int]*) extends CS2(xs: _*)
 
   case class H1(x: Int, y: Double)
@@ -29,8 +29,11 @@ object Test {
     assert(new C3(5) != C1(5))
 
     assert(
-        CS1(List(1d, 2d), Seq[Float](3f, 4f)) == new CS3(IndexedSeq(1, 2),
-                                                         IndexedSeq(3, 4)))
+      CS1(List(1d, 2d), Seq[Float](3f, 4f)) == new CS3(
+        IndexedSeq(1, 2),
+        IndexedSeq(3, 4)
+      )
+    )
 
     assert(H1(5, 10d) == new H2(10d, 5))
     assert(H1(5, 10d).hashCode == new H2(10d, 5).hashCode)

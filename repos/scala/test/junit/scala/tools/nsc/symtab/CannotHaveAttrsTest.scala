@@ -14,8 +14,8 @@ class CannotHaveAttrsTest {
   object symbolTable extends SymbolTableForUnitTesting {
     object CHA extends CannotHaveAttrs {
       def canEqual(that: Any): Boolean = ???
-      def productArity: Int = ???
-      def productElement(n: Int): Any = ???
+      def productArity: Int            = ???
+      def productElement(n: Int): Any  = ???
     }
     val attrlessTrees = List(CHA, EmptyTree, emptyValDef, pendingSuperCall)
   }
@@ -23,9 +23,7 @@ class CannotHaveAttrsTest {
 
   @Test
   def canHaveAttrsIsFalse =
-    attrlessTrees.foreach { t =>
-      assertFalse(t.canHaveAttrs)
-    }
+    attrlessTrees.foreach(t => assertFalse(t.canHaveAttrs))
 
   @Test
   def defaultPosAssignment =
@@ -53,7 +51,7 @@ class CannotHaveAttrsTest {
     val pos = new OffsetPosition(null, 0)
     attrlessTrees.foreach { t =>
       assertThrows[IllegalArgumentException] { t.pos = pos }
-      assertThrows[IllegalArgumentException] { t.setPos(pos) }
+      assertThrows[IllegalArgumentException](t.setPos(pos))
     }
   }
 
@@ -63,13 +61,13 @@ class CannotHaveAttrsTest {
     val tpe = typeOf[Int]
     attrlessTrees.foreach { t =>
       assertThrows[IllegalArgumentException] { t.tpe = tpe }
-      assertThrows[IllegalArgumentException] { t.setType(tpe) }
+      assertThrows[IllegalArgumentException](t.setType(tpe))
     }
   }
 
   class Attach
   @Test
-  def attachmentsAreIgnored = {
+  def attachmentsAreIgnored =
     attrlessTrees.foreach { t =>
       t.setAttachments(NoPosition.update(new Attach))
       assert(t.attachments == NoPosition)
@@ -77,5 +75,4 @@ class CannotHaveAttrsTest {
       assert(t.attachments == NoPosition)
       t.removeAttachment[Attach] // no exception
     }
-  }
 }

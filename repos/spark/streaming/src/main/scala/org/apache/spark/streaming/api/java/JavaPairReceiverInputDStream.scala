@@ -27,10 +27,11 @@ import org.apache.spark.streaming.dstream.ReceiverInputDStream
   * abstract class for defining any input stream that receives data over the network.
   */
 class JavaPairReceiverInputDStream[K, V](
-    val receiverInputDStream: ReceiverInputDStream[(K, V)])(
+    val receiverInputDStream: ReceiverInputDStream[(K, V)]
+)(
     implicit override val kClassTag: ClassTag[K],
-    override implicit val vClassTag: ClassTag[V])
-    extends JavaPairInputDStream[K, V](receiverInputDStream) {}
+    override implicit val vClassTag: ClassTag[V]
+) extends JavaPairInputDStream[K, V](receiverInputDStream) {}
 
 object JavaPairReceiverInputDStream {
 
@@ -38,9 +39,8 @@ object JavaPairReceiverInputDStream {
     * Convert a scala [[org.apache.spark.streaming.dstream.ReceiverInputDStream]] to a Java-friendly
     * [[org.apache.spark.streaming.api.java.JavaReceiverInputDStream]].
     */
-  implicit def fromReceiverInputDStream[K : ClassTag, V : ClassTag](
-      receiverInputDStream: ReceiverInputDStream[(K, V)])
-    : JavaPairReceiverInputDStream[K, V] = {
+  implicit def fromReceiverInputDStream[K: ClassTag, V: ClassTag](
+      receiverInputDStream: ReceiverInputDStream[(K, V)]
+  ): JavaPairReceiverInputDStream[K, V] =
     new JavaPairReceiverInputDStream[K, V](receiverInputDStream)
-  }
 }

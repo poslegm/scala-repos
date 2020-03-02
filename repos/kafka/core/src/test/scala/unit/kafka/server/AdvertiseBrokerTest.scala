@@ -24,9 +24,9 @@ import org.junit.{Test, After, Before}
 
 class AdvertiseBrokerTest extends ZooKeeperTestHarness {
   var server: KafkaServer = null
-  val brokerId = 0
-  val advertisedHostName = "routable-host"
-  val advertisedPort = 1234
+  val brokerId            = 0
+  val advertisedHostName  = "routable-host"
+  val advertisedPort      = 1234
 
   @Before
   override def setUp() {
@@ -49,7 +49,7 @@ class AdvertiseBrokerTest extends ZooKeeperTestHarness {
   @Test
   def testBrokerAdvertiseToZK {
     val brokerInfo = zkUtils.getBrokerInfo(brokerId)
-    val endpoint = brokerInfo.get.endPoints.get(SecurityProtocol.PLAINTEXT).get
+    val endpoint   = brokerInfo.get.endPoints.get(SecurityProtocol.PLAINTEXT).get
     assertEquals(advertisedHostName, endpoint.host)
     assertEquals(advertisedPort, endpoint.port)
   }

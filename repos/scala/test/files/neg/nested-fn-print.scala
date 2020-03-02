@@ -1,5 +1,5 @@
 object Test {
-  var x1: Int => Float => Double = _
+  var x1: Int => Float => Double   = _
   var x2: (Int => Float) => Double = _
   var x3: Int => Double
 

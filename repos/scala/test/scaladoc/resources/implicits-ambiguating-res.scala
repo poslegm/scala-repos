@@ -42,31 +42,31 @@ class C extends A[Double]
 class D extends A[AnyRef]
 
 class X[T] {
-  def conv1: AnyRef = ???
-  def conv2: T = ???
-  def conv3(l: Int): AnyRef = ???
-  def conv4(l: AnyRef): AnyRef = ???
-  def conv5(l: AnyRef): String = ???
+  def conv1: AnyRef                       = ???
+  def conv2: T                            = ???
+  def conv3(l: Int): AnyRef               = ???
+  def conv4(l: AnyRef): AnyRef            = ???
+  def conv5(l: AnyRef): String            = ???
   def conv6(l: String)(m: String): AnyRef = ???
   def conv7(l: AnyRef)(m: AnyRef): AnyRef = ???
-  def conv8(l: AnyRef): AnyRef = ???
-  def conv9(l: String): AnyRef = ???
-  def conv10(l: T): T = ???
-  def conv11(l: T): T = ???
+  def conv8(l: AnyRef): AnyRef            = ???
+  def conv9(l: String): AnyRef            = ???
+  def conv10(l: T): T                     = ???
+  def conv11(l: T): T                     = ???
 }
 
 class Z[T] {
-  def conv1: AnyRef = ???
-  def conv2: T = ???
-  def conv3(p: Int): AnyRef = ???
-  def conv4(p: AnyRef): String = ???
-  def conv5(p: AnyRef): AnyRef = ???
+  def conv1: AnyRef                       = ???
+  def conv2: T                            = ???
+  def conv3(p: Int): AnyRef               = ???
+  def conv4(p: AnyRef): String            = ???
+  def conv5(p: AnyRef): AnyRef            = ???
   def conv6(p: String, q: String): AnyRef = ???
   def conv7(p: AnyRef, q: AnyRef): AnyRef = ???
-  def conv8(p: String): AnyRef = ???
-  def conv9(p: AnyRef): AnyRef = ???
-  def conv10(p: Int): T = ???
-  def conv11(p: String): T = ???
+  def conv8(p: String): AnyRef            = ???
+  def conv9(p: AnyRef): AnyRef            = ???
+  def conv10(p: Int): T                   = ???
+  def conv11(p: String): T                = ???
 }
 
 object A {

@@ -25,7 +25,7 @@ import scala.language.implicitConversions
   */
 trait EngineParamsGenerator {
   protected[this] var epList: Seq[EngineParams] = _
-  protected[this] var epListSet: Boolean = false
+  protected[this] var epListSet: Boolean        = false
 
   /** Returns the list of [[EngineParams]] of this [[EngineParamsGenerator]]. */
   def engineParamsList: Seq[EngineParams] = {

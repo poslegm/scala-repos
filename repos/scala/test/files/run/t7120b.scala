@@ -7,8 +7,8 @@ class C extends Base[String] {
   }
 }
 
-trait BaseHK[M[_], A] { type B = M[A]; }
-object BaseHK { type Id[X] = X }
+trait BaseHK[M[_], A] { type B     = M[A]; }
+object BaseHK         { type Id[X] = X     }
 class CHK extends BaseHK[BaseHK.Id, String] {
   class D {
     def foo[B1 <: B](b: B1) = 0
@@ -16,13 +16,13 @@ class CHK extends BaseHK[BaseHK.Id, String] {
 }
 
 object Test extends App {
-  val c = new C
-  val d = new c.D()
+  val c    = new C
+  val d    = new c.D()
   val meth = d.getClass.getMethods.find(_.getName == "foo").get
   println(meth)
 
-  val chk = new CHK
-  val dhk = new chk.D()
+  val chk    = new CHK
+  val dhk    = new chk.D()
   val methhk = d.getClass.getMethods.find(_.getName == "foo").get
   println(methhk)
 }

@@ -6,7 +6,7 @@ object Test extends Application {
     def apply(x: Y, y: X) = 2
   }
   class A {
-    val foo: C = new C
+    val foo: C          = new C
     def foo(x: X, y: X) = 3
   }
 

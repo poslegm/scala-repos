@@ -5,15 +5,15 @@ object Other {
 
 class NoDeads {
   def y1(arg: Any) = println("foo")
-  def z1 = y1(throw new Exception) // should warn
+  def z1           = y1(throw new Exception) // should warn
 
   def y2[T](arg: T) = println("foo")
-  def z2 = y2(throw new Exception) // should warn
+  def z2            = y2(throw new Exception) // should warn
 
   def y3[T](arg: => T) = println("foo")
-  def z3 = y3(throw new Exception) // should not warn: by name arg
+  def z3               = y3(throw new Exception) // should not warn: by name arg
 
-  def nowarn1 = synchronized { throw new Exception } // should not warn: synchronized should be by name
+  def nowarn1 = synchronized(throw new Exception) // should not warn: synchronized should be by name
 
   def nowarn2: Int = synchronized {
     // should not warn

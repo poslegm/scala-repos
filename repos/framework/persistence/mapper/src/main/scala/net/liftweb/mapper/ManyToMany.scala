@@ -40,9 +40,8 @@ trait ManyToMany extends BaseKeyedMapper {
     * Returns false as soon as the parent or a one-to-many field returns false.
     * If they are all successful returns true.
     */
-  abstract override def save = {
+  abstract override def save =
     super.save && manyToManyFields.forall(_.save)
-  }
 
   /**
     * An override for delete_! to propogate the deletion to all children
@@ -50,9 +49,8 @@ trait ManyToMany extends BaseKeyedMapper {
     * Returns false as soon as the parent or a one-to-many field returns false.
     * If they are all successful returns true.
     */
-  abstract override def delete_! = {
+  abstract override def delete_! =
     super.delete_! && manyToManyFields.forall(_.delete_!)
-  }
 
   /**
     * This is the base class to extend for fields that track many-to-many relationships.
@@ -69,8 +67,8 @@ trait ManyToMany extends BaseKeyedMapper {
       thisField: MappedForeignKey[K, O, _ <: KeyedMapper[_, _]],
       val otherField: MappedForeignKey[K2, O, T2],
       val otherMeta: MetaMapper[T2],
-      val qp: QueryParam[O]*)
-      extends scala.collection.mutable.Buffer[T2] {
+      val qp: QueryParam[O]*
+  ) extends scala.collection.mutable.Buffer[T2] {
 
     def otherFK[A](join: O)(f: MappedForeignKey[K2, O, T2] => A): A =
       otherField.actualField(join) match {
@@ -84,7 +82,7 @@ trait ManyToMany extends BaseKeyedMapper {
     /**
       * Get the list of instances of joinMeta
       */
-    def joins = _joins // read only to the public
+    def joins                           = _joins // read only to the public
     protected var removedJoins: List[O] = Nil
 
     refresh
@@ -95,7 +93,7 @@ trait ManyToMany extends BaseKeyedMapper {
     protected def joinForChild(e: T2): Option[O] =
       joins.find(isJoinForChild(e))
 
-    protected def own(e: T2): O = {
+    protected def own(e: T2): O =
       joinForChild(e) match {
         case None =>
           removedJoins.find {
@@ -117,8 +115,7 @@ trait ManyToMany extends BaseKeyedMapper {
         case Some(join) =>
           join
       }
-    }
-    protected def unown(e: T2) = {
+    protected def unown(e: T2) =
       joinForChild(e) match {
         case Some(join) =>
           removedJoins = join :: removedJoins
@@ -131,7 +128,6 @@ trait ManyToMany extends BaseKeyedMapper {
         case None =>
           None
       }
-    }
 
     /**
       * Get the List backing this Buffer.
@@ -143,15 +139,15 @@ trait ManyToMany extends BaseKeyedMapper {
     def iterator = children.iterator
 
     protected def childAt(n: Int) = children(n)
-    def apply(n: Int) = childAt(n)
+    def apply(n: Int)             = childAt(n)
     def indexOf(e: T2) =
       children.indexWhere(e.eq)
 
     def insertAll(n: Int, traversable: Traversable[T2]) {
       val ownedJoins = traversable map own
-      val n2 = joins.indexWhere(isJoinForChild(children(n)))
-      val before = joins.take(n2)
-      val after = joins.drop(n2)
+      val n2         = joins.indexWhere(isJoinForChild(children(n)))
+      val before     = joins.take(n2)
+      val after      = joins.drop(n2)
 
       _joins = before ++ ownedJoins ++ after
     }
@@ -169,7 +165,7 @@ trait ManyToMany extends BaseKeyedMapper {
     def update(n: Int, newelem: T2) {
       unown(childAt(n)) match {
         case Some(join) =>
-          val n2 = joins.indexOf(join)
+          val n2              = joins.indexOf(join)
           val (before, after) = (joins.take(n2), joins.drop(n2 + 1))
           _joins = before ++ List(own(newelem)) ++ after
         case None =>
@@ -196,11 +192,12 @@ trait ManyToMany extends BaseKeyedMapper {
       */
     def refresh = {
       val by = new Cmp[O, TheKeyType](
-          thisField,
-          OprEnum.Eql,
-          Full(primaryKeyField.get.asInstanceOf[K]),
-          Empty,
-          Empty)
+        thisField,
+        OprEnum.Eql,
+        Full(primaryKeyField.get.asInstanceOf[K]),
+        Empty,
+        Empty
+      )
 
       _joins = joinMeta.findAll((by :: qp.toList): _*)
       all
@@ -223,14 +220,13 @@ trait ManyToMany extends BaseKeyedMapper {
       _joins foreach {
         thisField
           .actualField(_)
-          .asInstanceOf[
-              MappedForeignKey[K, O, X] forSome { type X <: KeyedMapper[K, X] }] set ManyToMany.this.primaryKeyField.get
+          .asInstanceOf[MappedForeignKey[K, O, X] forSome { type X <: KeyedMapper[K, X] }] set ManyToMany.this.primaryKeyField.get
           .asInstanceOf[K]
       }
 
-      removedJoins.forall { _.delete_! } &
-      (// continue saving even if deleting fails
-          children.forall(_.save) && joins.forall(_.save))
+      removedJoins.forall(_.delete_!) &
+        (// continue saving even if deleting fails
+        children.forall(_.save) && joins.forall(_.save))
     }
 
     /**
@@ -238,8 +234,7 @@ trait ManyToMany extends BaseKeyedMapper {
       * marked for removal.
       * Returns true if both succeed, otherwise false
       */
-    def delete_! = {
+    def delete_! =
       removedJoins.forall(_.delete_!) & joins.forall(_.delete_!)
-    }
   }
 }

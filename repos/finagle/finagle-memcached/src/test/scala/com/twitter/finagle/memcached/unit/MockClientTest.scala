@@ -22,15 +22,18 @@ class MockClientTest extends FunSuite {
     val memcache = new MockClient(Map("key" -> "value")).withStrings
 
     assert(
-        Await.result(memcache.set("key", "new value").liftToTry) == Return.Unit)
+      Await.result(memcache.set("key", "new value").liftToTry) == Return.Unit
+    )
     assert(Await.result(memcache.get("key")) == Some("new value"))
 
     assert(
-        Await.result(memcache.set("key2", "value2").liftToTry) == Return.Unit)
+      Await.result(memcache.set("key2", "value2").liftToTry) == Return.Unit
+    )
     assert(Await.result(memcache.get("key2")) == Some("value2"))
 
     assert(
-        Await.result(memcache.set("key2", "value3").liftToTry) == Return.Unit)
+      Await.result(memcache.set("key2", "value3").liftToTry) == Return.Unit
+    )
     assert(Await.result(memcache.get("key2")) == Some("value3"))
   }
 
@@ -91,7 +94,7 @@ class MockClientTest extends FunSuite {
     val memcache =
       new MockClient(Map("key" -> "value", "count" -> "1")).withStrings
 
-    intercept[ClientError] { Await.result(memcache.incr("key")) }
+    intercept[ClientError](Await.result(memcache.incr("key")))
 
     assert(Await.result(memcache.get("key")) == Some("value"))
 
@@ -106,7 +109,7 @@ class MockClientTest extends FunSuite {
     val memcache =
       new MockClient(Map("key" -> "value", "count" -> "1")).withStrings
 
-    intercept[ClientError] { Await.result(memcache.decr("key")) }
+    intercept[ClientError](Await.result(memcache.decr("key")))
 
     assert(Await.result(memcache.get("key")) == Some("value"))
 
@@ -129,7 +132,7 @@ class MockClientTest extends FunSuite {
   }
 
   test("`contents` produces immutable copies") {
-    val memcache = new MockClient()
+    val memcache      = new MockClient()
     val emptyContents = memcache.contents
 
     memcache.withStrings.set("key", "value")

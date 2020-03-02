@@ -41,7 +41,7 @@ import org.scalatra.util.conversion._
   */
 trait Command extends BindingSyntax with ParamsValueReaderProperties {
 
-  type CommandTypeConverterFactory [T] <: TypeConverterFactory[T]
+  type CommandTypeConverterFactory[T] <: TypeConverterFactory[T]
   private[this] var preBindingActions: Seq[BindingAction] = Nil
 
   private[this] var postBindingActions: Seq[BindingAction] = Nil
@@ -57,7 +57,7 @@ trait Command extends BindingSyntax with ParamsValueReaderProperties {
   /**
     * Check whether this command is valid.
     */
-  def isValid = errors.isEmpty
+  def isValid   = errors.isEmpty
   def isInvalid = errors.nonEmpty
 
   /**
@@ -73,18 +73,20 @@ trait Command extends BindingSyntax with ParamsValueReaderProperties {
     _errors = bindings.values.filter(_.isInvalid).toSeq
   }
 
-  implicit def binding2field[T : Manifest : TypeConverterFactory](
-      field: FieldDescriptor[T]): Field[T] = {
+  implicit def binding2field[T: Manifest: TypeConverterFactory](
+      field: FieldDescriptor[T]
+  ): Field[T] =
     new Field(bind(field), this)
-  }
 
-  implicit def autoBind[T : Manifest : TypeConverterFactory](
-      fieldName: String): Field[T] =
+  implicit def autoBind[T: Manifest: TypeConverterFactory](
+      fieldName: String
+  ): Field[T] =
     bind[T](FieldDescriptor[T](fieldName))
 
   implicit def bind[T](field: FieldDescriptor[T])(
       implicit mf: Manifest[T],
-      conv: TypeConverterFactory[T]): FieldDescriptor[T] = {
+      conv: TypeConverterFactory[T]
+  ): FieldDescriptor[T] = {
     val f: FieldDescriptor[T] =
       if (mf.runtimeClass.isAssignableFrom(classOf[Option[_]])) {
         // Yay! not one but 2 casts in the same line
@@ -98,8 +100,9 @@ trait Command extends BindingSyntax with ParamsValueReaderProperties {
     f
   }
 
-  def typeConverterBuilder[I](tc: CommandTypeConverterFactory[_])
-    : PartialFunction[ValueReader[_, _], TypeConverter[I, _]] = {
+  def typeConverterBuilder[I](
+      tc: CommandTypeConverterFactory[_]
+  ): PartialFunction[ValueReader[_, _], TypeConverter[I, _]] = {
     case r: MultiParamsValueReader =>
       tc.resolveMultiParams.asInstanceOf[TypeConverter[I, _]]
     case r: MultiMapHeadViewValueReader[_] =>
@@ -108,7 +111,8 @@ trait Command extends BindingSyntax with ParamsValueReaderProperties {
       tc.resolveStringParams.asInstanceOf[TypeConverter[I, _]]
     case r =>
       throw new BindingException(
-          "No converter found for value reader: " + r.getClass.getSimpleName)
+        "No converter found for value reader: " + r.getClass.getSimpleName
+      )
   }
 
   /**
@@ -125,20 +129,23 @@ trait Command extends BindingSyntax with ParamsValueReaderProperties {
     postBindingActions = postBindingActions :+ (() => action)
   }
 
-  def bindTo[S, I](data: S,
-                   params: MultiParams = MultiMap.empty,
-                   headers: Map[String, String] = Map.empty)(
+  def bindTo[S, I](
+      data: S,
+      params: MultiParams = MultiMap.empty,
+      headers: Map[String, String] = Map.empty
+  )(
       implicit r: S => ValueReader[S, I],
       mi: Manifest[I],
-      multiParams: MultiParams => ValueReader[MultiParams, Seq[String]])
-    : this.type = {
+      multiParams: MultiParams => ValueReader[MultiParams, Seq[String]]
+  ): this.type = {
     doBeforeBindingActions()
 
     bindings = bindings map {
       case (name, b) =>
         val tcf = b.typeConverterFactory
         val cv = typeConverterBuilder(
-            tcf.asInstanceOf[CommandTypeConverterFactory[_]])(data)
+          tcf.asInstanceOf[CommandTypeConverterFactory[_]]
+        )(data)
           .asInstanceOf[TypeConverter[I, b.T]]
         val fieldBinding =
           Binding(b.field, cv, b.typeConverterFactory)(mi, b.valueManifest)
@@ -146,29 +153,37 @@ trait Command extends BindingSyntax with ParamsValueReaderProperties {
         val result = b.field.valueSource match {
           case ValueSource.Body =>
             fieldBinding(
-                data
-                  .read(name)
-                  .right
-                  .map(_ map (_.asInstanceOf[fieldBinding.S])))
+              data
+                .read(name)
+                .right
+                .map(_ map (_.asInstanceOf[fieldBinding.S]))
+            )
           case ValueSource.Header =>
             val tc: TypeConverter[String, _] = tcf.resolveStringParams
             val headersBinding =
-              Binding(b.field,
-                      tc.asInstanceOf[TypeConverter[String, b.T]],
-                      tcf)(manifest[String], b.valueManifest)
+              Binding(
+                b.field,
+                tc.asInstanceOf[TypeConverter[String, b.T]],
+                tcf
+              )(manifest[String], b.valueManifest)
             headersBinding(
-                Right(headers.get(name).map(_.asInstanceOf[headersBinding.S])))
+              Right(headers.get(name).map(_.asInstanceOf[headersBinding.S]))
+            )
           case ValueSource.Path | ValueSource.Query =>
             val pv = typeConverterBuilder(
-                tcf.asInstanceOf[CommandTypeConverterFactory[_]])(params)
+              tcf.asInstanceOf[CommandTypeConverterFactory[_]]
+            )(params)
               .asInstanceOf[TypeConverter[Seq[String], b.T]]
             val paramsBinding = Binding(b.field, pv, b.typeConverterFactory)(
-                manifest[Seq[String]], b.valueManifest)
+              manifest[Seq[String]],
+              b.valueManifest
+            )
             paramsBinding(
-                params
-                  .read(name)
-                  .right
-                  .map(_ map (_.asInstanceOf[paramsBinding.S])))
+              params
+                .read(name)
+                .right
+                .map(_ map (_.asInstanceOf[paramsBinding.S]))
+            )
         }
 
         name -> result
@@ -188,8 +203,8 @@ trait Command extends BindingSyntax with ParamsValueReaderProperties {
   override def toString: String =
     "%s(bindings: [%s])".format(getClass.getName, bindings.mkString(", "))
 
-  private type ExecutorView[S] = (this.type => S) => CommandExecutor[
-      this.type, S]
+  private type ExecutorView[S] =
+    (this.type => S) => CommandExecutor[this.type, S]
   def apply[S](handler: this.type => S)(implicit executor: ExecutorView[S]) =
     handler.execute(this)
   def execute[S](handler: this.type => S)(implicit executor: ExecutorView[S]) =

@@ -8,7 +8,7 @@ import javax.net.ssl._
  * backed by both the native APR/OpenSSL bindings, or pure Java JSSE.
  */
 object Ssl {
-  private[this] val log = Logger.getLogger(getClass.getName)
+  private[this] val log           = Logger.getLogger(getClass.getName)
   private[this] val cacheContexts = true
 
   /**
@@ -31,25 +31,29 @@ object Ssl {
       nextProtos: String
   ): Engine = {
     val nativeInstance = OpenSSL.server(
-        certificatePath,
-        keyPath,
-        caCertPath,
-        ciphers,
-        nextProtos,
-        cacheContexts
+      certificatePath,
+      keyPath,
+      caCertPath,
+      ciphers,
+      nextProtos,
+      cacheContexts
     )
 
     nativeInstance.getOrElse {
-      require(ciphers == null,
-              "'Ciphers' parameter unsupported with JSSE SSL provider")
-      require(nextProtos == null,
-              "'Next Protocols' parameter unsupported with JSSE SSL provider")
+      require(
+        ciphers == null,
+        "'Ciphers' parameter unsupported with JSSE SSL provider"
+      )
+      require(
+        nextProtos == null,
+        "'Next Protocols' parameter unsupported with JSSE SSL provider"
+      )
 
       val jsseInstance = JSSE.server(
-          certificatePath,
-          keyPath,
-          if (caCertPath == null) None else Some(caCertPath),
-          cacheContexts
+        certificatePath,
+        keyPath,
+        if (caCertPath == null) None else Some(caCertPath),
+        cacheContexts
       )
 
       require(jsseInstance.isDefined, "Could not create an SSLEngine")
@@ -94,6 +98,8 @@ object Ssl {
     * N.B.: This is probably a bad idea for anything but testing!
     */
   def clientWithoutCertificateValidation(
-      peerHost: String, peerPort: Int): Engine =
+      peerHost: String,
+      peerPort: Int
+  ): Engine =
     JSSE.clientWithoutCertificateValidation(peerHost, peerPort)
 }

@@ -1,7 +1,7 @@
 object Test {
   // this works.
   class B { final def f(): Unit = () }
-  trait A extends B { def f(): Unit }
+  trait A  extends B { def f(): Unit }
   class BB extends B { def f(): Unit }
 
   // this earns a VerifyError.

@@ -12,9 +12,10 @@ import java.util.concurrent.{CopyOnWriteArrayList, ConcurrentHashMap}
 import java.net.InetSocketAddress
 import akka.config.Supervision._
 
-class SupervisorException private[akka](
-    message: String, cause: Throwable = null)
-    extends AkkaException(message, cause)
+class SupervisorException private[akka] (
+    message: String,
+    cause: Throwable = null
+) extends AkkaException(message, cause)
 
 /**
   * Factory object for creating supervisors declarative. It creates instances of the 'Supervisor' class.
@@ -82,8 +83,8 @@ case class SupervisorFactory(val config: SupervisorConfig) {
   def newInstance: Supervisor = newInstanceFor(config)
 
   def newInstanceFor(config: SupervisorConfig): Supervisor = {
-    val supervisor = new Supervisor(
-        config.restartStrategy, config.maxRestartsHandler)
+    val supervisor =
+      new Supervisor(config.restartStrategy, config.maxRestartsHandler)
     supervisor.configure(config)
     supervisor.start
     supervisor
@@ -104,11 +105,14 @@ case class SupervisorFactory(val config: SupervisorConfig) {
   */
 sealed class Supervisor(
     handler: FaultHandlingStrategy,
-    maxRestartsHandler: (ActorRef,
-    MaximumNumberOfRestartsWithinTimeRangeReached) => Unit) {
+    maxRestartsHandler: (
+        ActorRef,
+        MaximumNumberOfRestartsWithinTimeRangeReached
+    ) => Unit
+) {
   import Supervisor._
 
-  private val _childActors = new ConcurrentHashMap[String, List[ActorRef]]
+  private val _childActors      = new ConcurrentHashMap[String, List[ActorRef]]
   private val _childSupervisors = new CopyOnWriteArrayList[Supervisor]
 
   private[akka] val supervisor =
@@ -116,9 +120,8 @@ sealed class Supervisor(
 
   def uuid = supervisor.uuid
 
-  def start: Supervisor = {
+  def start: Supervisor =
     this
-  }
 
   def shutdown(): Unit = supervisor.stop()
 
@@ -136,9 +139,8 @@ sealed class Supervisor(
 
   def configure(config: SupervisorConfig): Unit = config match {
     case SupervisorConfig(_, servers, _) =>
-      servers.map(
-          server =>
-            server match {
+      servers.map(server =>
+        server match {
           case Supervise(actorRef, lifeCycle, registerAsRemoteService) =>
             actorRef.start()
             val className = actorRef.actor.getClass.getName
@@ -156,7 +158,8 @@ sealed class Supervisor(
             val childSupervisor = Supervisor(supervisorConfig)
             supervisor.link(childSupervisor.supervisor)
             _childSupervisors.add(childSupervisor)
-      })
+        }
+      )
   }
 }
 
@@ -165,11 +168,13 @@ sealed class Supervisor(
   *
   * @author <a href="http://jonasboner.com">Jonas Bon&#233;r</a>
   */
-final class SupervisorActor private[akka](
+final class SupervisorActor private[akka] (
     handler: FaultHandlingStrategy,
-    maxRestartsHandler: (ActorRef,
-    MaximumNumberOfRestartsWithinTimeRangeReached) => Unit)
-    extends Actor {
+    maxRestartsHandler: (
+        ActorRef,
+        MaximumNumberOfRestartsWithinTimeRangeReached
+    ) => Unit
+) extends Actor {
   self.faultHandler = handler
 
   override def postStop(): Unit = {
@@ -186,7 +191,8 @@ final class SupervisorActor private[akka](
       maxRestartsHandler(self, max)
     case unknown =>
       throw new SupervisorException(
-          "SupervisorActor can not respond to messages.\n\tUnknown message [" +
-          unknown + "]")
+        "SupervisorActor can not respond to messages.\n\tUnknown message [" +
+          unknown + "]"
+      )
   }
 }

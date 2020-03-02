@@ -27,8 +27,7 @@ trait PrepJSExports {
       pos: Position,
       isNamed: Boolean,
       ignoreInvalid: Boolean
-  )
-      extends jsInterop.ExportInfo
+  ) extends jsInterop.ExportInfo
 
   /** Generate the exporter for the given DefDef
     *
@@ -37,9 +36,9 @@ trait PrepJSExports {
     */
   def genExportMember(ddef: DefDef): List[Tree] = {
     val baseSym = ddef.symbol
-    val clsSym = baseSym.owner
+    val clsSym  = baseSym.owner
 
-    val exports = exportsOf(baseSym)
+    val exports       = exportsOf(baseSym)
     val ignoreInvalid = exports.forall(_.ignoreInvalid)
 
     // Helper function for errors
@@ -57,11 +56,15 @@ trait PrepJSExports {
     else if (scalaPrimitives.isPrimitive(baseSym))
       err("You may not export a primitive")
     else if (hasIllegalRepeatedParam(baseSym))
-      err(s"In an exported $memType, a *-parameter must come last " +
-          "(through all parameter lists)")
+      err(
+        s"In an exported $memType, a *-parameter must come last " +
+          "(through all parameter lists)"
+      )
     else if (hasIllegalDefaultParam(baseSym))
-      err(s"In an exported $memType, all parameters with defaults " +
-          "must be at the end")
+      err(
+        s"In an exported $memType, all parameters with defaults " +
+          "must be at the end"
+      )
     else if (baseSym.isConstructor) {
       // we can generate constructors entirely in the backend, since they
       // do not need inheritance and such. But we want to check their sanity
@@ -73,7 +76,9 @@ trait PrepJSExports {
         err("You may not export an abstract class")
       else if (clsSym.isLocalToBlock) err("You may not export a local class")
       else if (clsSym.isNestedClass)
-        err(s"You may not export a nested class. $createFactoryInOuterClassHint")
+        err(
+          s"You may not export a nested class. $createFactoryInOuterClassHint"
+        )
       else {
         jsInterop.registerForExport(baseSym, exports)
         Nil
@@ -100,21 +105,22 @@ trait PrepJSExports {
 
   /** Checks and registers class exports on the symbol. */
   def registerClassExports(sym: Symbol): Unit = {
-    assert(!sym.isModuleClass && sym.hasAnnotation(ScalaJSDefinedAnnotation),
-           "Expected a Scala.js-defined JS class")
+    assert(
+      !sym.isModuleClass && sym.hasAnnotation(ScalaJSDefinedAnnotation),
+      "Expected a Scala.js-defined JS class"
+    )
     registerClassOrModuleExportsInternal(sym)
   }
 
   private def registerClassOrModuleExportsInternal(sym: Symbol): Unit = {
     val isMod = sym.isModuleClass
 
-    val exports = exportsOf(sym)
+    val exports       = exportsOf(sym)
     val ignoreInvalid = exports.forall(_.ignoreInvalid)
 
     if (exports.nonEmpty) {
-      def err(msg: String) = {
+      def err(msg: String) =
         if (!ignoreInvalid) reporter.error(exports.head.pos, msg)
-      }
 
       def hasAnyNonPrivateCtor: Boolean =
         sym.info
@@ -124,15 +130,17 @@ trait PrepJSExports {
 
       if (!hasLegalExportVisibility(sym)) {
         err(
-            "You may only export public and protected " +
-            (if (isMod) "objects" else "classes"))
+          "You may only export public and protected " +
+            (if (isMod) "objects" else "classes")
+        )
       } else if (sym.isLocalToBlock) {
         err("You may not export a local " + (if (isMod) "object" else "class"))
       } else if (!sym.owner.hasPackageFlag) {
         err(
-            "You may not export a nested " +
+          "You may not export a nested " +
             (if (isMod) "object"
-             else s"class. $createFactoryInOuterClassHint"))
+             else s"class. $createFactoryInOuterClassHint")
+        )
       } else if (sym.isAbstractClass) {
         err("You may not export an abstract class")
       } else if (!isMod && !hasAnyNonPrivateCtor) {
@@ -143,10 +151,12 @@ trait PrepJSExports {
         for {
           exp <- named if !exp.ignoreInvalid
         } {
-          reporter.error(exp.pos,
-                         "You may not use @JSNamedExport on " +
-                         (if (isMod) "an object"
-                          else "a Scala.js-defined JS class"))
+          reporter.error(
+            exp.pos,
+            "You may not use @JSNamedExport on " +
+              (if (isMod) "an object"
+               else "a Scala.js-defined JS class")
+          )
         }
 
         jsInterop.registerForExport(sym, normal)
@@ -154,10 +164,9 @@ trait PrepJSExports {
     }
   }
 
-  private def createFactoryInOuterClassHint = {
+  private def createFactoryInOuterClassHint =
     "Create an exported factory method in the outer class to work " +
-    "around this limitation."
-  }
+      "around this limitation."
 
   /** retrieves the names a sym should be exported to from its annotations
     *
@@ -172,8 +181,8 @@ trait PrepJSExports {
     val grouped = exports.groupBy(exp => (exp.jsName, exp.isNamed))
 
     for (((jsName, isNamed), exps) <- grouped.toList)
-    // Make sure that we are strict if necessary
-    yield exps.find(!_.ignoreInvalid).getOrElse(exps.head)
+      // Make sure that we are strict if necessary
+      yield exps.find(!_.ignoreInvalid).getOrElse(exps.head)
   }
 
   private def directExportsOf(sym: Symbol): List[ExportInfo] = {
@@ -190,7 +199,7 @@ trait PrepJSExports {
     // Annotations that are directly on the member
     val directAnnots = for {
       annot <- trgSym.annotations if annot.symbol == JSExportAnnotation ||
-              annot.symbol == JSExportNamedAnnotation
+        annot.symbol == JSExportNamedAnnotation
     } yield annot
 
     // Is this a member export (i.e. not a class or module export)?
@@ -206,14 +215,15 @@ trait PrepJSExports {
     for {
       annot <- directAnnots ++ unitAnnots
     } yield {
-      val isNamedExport = annot.symbol == JSExportNamedAnnotation
-      val isExportAll = annot.symbol == JSExportAllAnnotation
+      val isNamedExport   = annot.symbol == JSExportNamedAnnotation
+      val isExportAll     = annot.symbol == JSExportAllAnnotation
       val hasExplicitName = annot.args.nonEmpty
 
       def explicitName = annot.stringArg(0).getOrElse {
         reporter.error(
-            annot.pos,
-            s"The argument to ${annot.symbol.name} must be a literal string")
+          annot.pos,
+          s"The argument to ${annot.symbol.name} must be a literal string"
+        )
         "dummy"
       }
 
@@ -234,29 +244,31 @@ trait PrepJSExports {
         val pos = if (hasExplicitName) annot.args.head.pos else trgSym.pos
 
         reporter.error(
-            pos, "An exported name may not contain a double underscore (`__`)")
+          pos,
+          "An exported name may not contain a double underscore (`__`)"
+        )
       }
 
       // Make sure we do not override the default export of toString
-      def isIllegalToString = {
+      def isIllegalToString =
         isMember && !isNamedExport && name == "toString" &&
-        sym.name != nme.toString_ && sym.tpe.params.isEmpty &&
-        !jsInterop.isJSGetter(sym)
-      }
+          sym.name != nme.toString_ && sym.tpe.params.isEmpty &&
+          !jsInterop.isJSGetter(sym)
 
       if (isIllegalToString) {
         reporter.error(
-            annot.pos,
-            "You may not export a zero-argument " +
-            "method named other than 'toString' under the name 'toString'")
+          annot.pos,
+          "You may not export a zero-argument " +
+            "method named other than 'toString' under the name 'toString'"
+        )
       }
 
-      def isIllegalApplyExport = {
+      def isIllegalApplyExport =
         isMember && !hasExplicitName && sym.name == nme.apply &&
-        !(isExportAll && directAnnots.exists(annot =>
-                  annot.symbol == JSExportAnnotation && annot.args.nonEmpty &&
-                  annot.stringArg(0) == Some("apply")))
-      }
+          !(isExportAll && directAnnots.exists(annot =>
+            annot.symbol == JSExportAnnotation && annot.args.nonEmpty &&
+              annot.stringArg(0) == Some("apply")
+          ))
 
       // Don't allow apply without explicit name
       if (isIllegalApplyExport) {
@@ -264,17 +276,19 @@ trait PrepJSExports {
         val pos = if (isExportAll) trgSym.pos else annot.pos
 
         reporter.warning(
-            pos,
-            "Member cannot be exported to function " +
+          pos,
+          "Member cannot be exported to function " +
             "application. It is available under the name apply instead. " +
             "Add @JSExport(\"apply\") to silence this warning. " +
-            "This will be enforced in 1.0.")
+            "This will be enforced in 1.0."
+        )
       }
 
       if (isNamedExport && jsInterop.isJSProperty(sym)) {
         reporter.error(
-            annot.pos,
-            "You may not export a getter or a setter as a named export")
+          annot.pos,
+          "You may not export a getter or a setter as a named export"
+        )
       }
 
       ExportInfo(name, annot.pos, isNamedExport, ignoreInvalid = false)
@@ -304,12 +318,12 @@ trait PrepJSExports {
 
       val forcingSymInfos = for {
         forcingSym <- trgSym.ancestors
-        annot <- forcingSym.annotations if annot.symbol == trgAnnot
+        annot      <- forcingSym.annotations if annot.symbol == trgAnnot
       } yield {
         val ignoreInvalid = annot
           .constantAtIndex(0)
           .fold(false)(_.booleanValue)
-          (forcingSym, ignoreInvalid)
+        (forcingSym, ignoreInvalid)
       }
 
       // The dominating forcing symbol, is the first that does not ignore
@@ -317,21 +331,22 @@ trait PrepJSExports {
       val forcingSymInfo =
         forcingSymInfos.find(!_._2).orElse(forcingSymInfos.headOption)
 
-      val name = decodedFullName(trgSym)
+      val name      = decodedFullName(trgSym)
       val nameValid = !name.contains("__")
 
       val optExport = for {
         (forcingSym, ignoreInvalid) <- forcingSymInfo if nameValid ||
-                                      !ignoreInvalid
+          !ignoreInvalid
       } yield {
         // Enfore no __ in name
         if (!nameValid) {
           // Get all annotation positions for error message
           reporter.error(
-              sym.pos,
-              s"${trgSym.name} may not have a double underscore (`__`) in " +
+            sym.pos,
+            s"${trgSym.name} may not have a double underscore (`__`) in " +
               "its fully qualified name, since it is forced to be exported by " +
-              s"a @${trgAnnot.name} on $forcingSym")
+              s"a @${trgAnnot.name} on $forcingSym"
+          )
         }
 
         ExportInfo(name, sym.pos, false, ignoreInvalid)
@@ -342,11 +357,10 @@ trait PrepJSExports {
   }
 
   /** Just like sym.fullName, but does not encode components */
-  private def decodedFullName(sym: Symbol): String = {
+  private def decodedFullName(sym: Symbol): String =
     if (sym.isRoot || sym.isRootPackage || sym == NoSymbol) sym.name.decoded
     else if (sym.owner.isEffectiveRoot) sym.name.decoded
     else decodedFullName(sym.effectiveOwner.enclClass) + '.' + sym.name.decoded
-  }
 
   /** generate an exporter for a DefDef including default parameter methods */
   private def genExportDefs(defSym: Symbol, jsName: String, pos: Position) = {
@@ -375,11 +389,11 @@ trait PrepJSExports {
     // Update flags
     expSym.setFlag(Flags.SYNTHETIC)
     expSym.resetFlag(
-        Flags.DEFERRED | // We always have a body
-        Flags.ACCESSOR | // We are never a "direct" accessor
+      Flags.DEFERRED |       // We always have a body
+        Flags.ACCESSOR |     // We are never a "direct" accessor
         Flags.CASEACCESSOR | // And a fortiori not a case accessor
-        Flags.LAZY | // We are not a lazy val (even if we export one)
-        Flags.OVERRIDE // Synthetic methods need not bother with this
+        Flags.LAZY |         // We are not a lazy val (even if we export one)
+        Flags.OVERRIDE       // Synthetic methods need not bother with this
     )
 
     // Remove export annotations
@@ -395,7 +409,7 @@ trait PrepJSExports {
     // Construct exporters for default getters
     val defaultGetters = for {
       (param, i) <- expSym.paramss.flatten.zipWithIndex
-                       if param.hasFlag(Flags.DEFAULTPARAM)
+      if param.hasFlag(Flags.DEFAULTPARAM)
     } yield genExportDefaultGetter(clsSym, defSym, expSym, i + 1, pos)
 
     exporter :: defaultGetters
@@ -405,7 +419,7 @@ trait PrepJSExports {
     *  by GenJSCode again to generate the required JavaScript logic.
     */
   private def genNamedExport(defSym: Symbol, jsName: String, pos: Position) = {
-    val clsSym = defSym.owner
+    val clsSym    = defSym.owner
     val scalaName = jsInterop.scalaExportName(jsName, false)
 
     // Create symbol for the new exporter method
@@ -438,11 +452,13 @@ trait PrepJSExports {
     typer.typedDefDef(DefDef(expSym, Block(call, ph)))
   }
 
-  private def genExportDefaultGetter(clsSym: Symbol,
-                                     trgMethod: Symbol,
-                                     exporter: Symbol,
-                                     paramPos: Int,
-                                     pos: Position) = {
+  private def genExportDefaultGetter(
+      clsSym: Symbol,
+      trgMethod: Symbol,
+      exporter: Symbol,
+      paramPos: Int,
+      pos: Position
+  ) = {
 
     // Get default getter method we'll copy
     val trgGetter =
@@ -466,14 +482,17 @@ trait PrepJSExports {
 
   /** generate a DefDef tree (from [[proxySym]]) that calls [[trgSym]] */
   private def genProxyDefDef(
-      clsSym: Symbol, trgSym: Symbol, proxySym: Symbol, pos: Position) =
+      clsSym: Symbol,
+      trgSym: Symbol,
+      proxySym: Symbol,
+      pos: Position
+  ) =
     atPos(pos) {
 
       // Helper to ascribe repeated argument lists when calling
-      def spliceParam(sym: Symbol) = {
+      def spliceParam(sym: Symbol) =
         if (isRepeated(sym)) Typed(Ident(sym), Ident(tpnme.WILDCARD_STAR))
         else Ident(sym)
-      }
 
       // Construct proxied function call
       val sel: Tree = Select(This(clsSym), trgSym)
@@ -487,9 +506,9 @@ trait PrepJSExports {
   /** changes the return type of the method type tpe to Any. returns new type */
   private def retToAny(tpe: Type): Type = tpe match {
     case MethodType(params, result) => MethodType(params, retToAny(result))
-    case NullaryMethodType(result) => NullaryMethodType(AnyClass.tpe)
-    case PolyType(tparams, result) => PolyType(tparams, retToAny(result))
-    case _ => AnyClass.tpe
+    case NullaryMethodType(result)  => NullaryMethodType(AnyClass.tpe)
+    case PolyType(tparams, result)  => PolyType(tparams, retToAny(result))
+    case _                          => AnyClass.tpe
   }
 
   /** Whether the given symbol has a visibility that allows exporting */

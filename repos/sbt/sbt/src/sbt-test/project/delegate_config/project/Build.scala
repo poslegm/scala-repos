@@ -10,20 +10,21 @@ object B extends Build {
   val newConfig = config("sample")
 
   val sample = SettingKey[Int]("sample")
-  val check = TaskKey[Unit]("check")
+  val check  = TaskKey[Unit]("check")
 
   lazy val root = Project("root", file("."), settings = Nil).settingSets()
   lazy val sub = Project(
-      "sub",
-      file("."),
-      delegates = root :: Nil,
-      configurations = newConfig :: Nil,
-      settings = incSample :: checkTask(4) :: Nil).settingSets(buildScalaFiles)
+    "sub",
+    file("."),
+    delegates = root :: Nil,
+    configurations = newConfig :: Nil,
+    settings = incSample :: checkTask(4) :: Nil
+  ).settingSets(buildScalaFiles)
   override lazy val settings =
     (sample in newConfig := 3) :: checkTask(3) :: Nil
 
   def incSample = sample <<= sample in newConfig apply (_ + 1)
   def checkTask(expected: Int) =
     check <<= sample in newConfig map
-    (i => assert(i == expected, "Expected " + expected + ", got " + i))
+      (i => assert(i == expected, "Expected " + expected + ", got " + i))
 }

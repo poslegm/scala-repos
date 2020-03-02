@@ -58,22 +58,22 @@ import scala.reflect._
 class Preferences(val preferences: SharedPreferences) extends Dynamic {
   def updateDynamic(name: String)(value: Any) {
     value match {
-      case v: String => preferences.edit().putString(name, v).commit()
-      case v: Int => preferences.edit().putInt(name, v).commit()
-      case v: Long => preferences.edit().putLong(name, v).commit()
+      case v: String  => preferences.edit().putString(name, v).commit()
+      case v: Int     => preferences.edit().putInt(name, v).commit()
+      case v: Long    => preferences.edit().putLong(name, v).commit()
       case v: Boolean => preferences.edit().putBoolean(name, v).commit()
-      case v: Float => preferences.edit().putFloat(name, v).commit()
+      case v: Float   => preferences.edit().putFloat(name, v).commit()
       case v: Set[String @unchecked] =>
         preferences.edit().putStringSet(name, v).commit()
     }
   }
 
   def applyDynamic[T](name: String)(defaultVal: T): T = defaultVal match {
-    case v: String => preferences.getString(name, v).asInstanceOf[T]
-    case v: Int => preferences.getInt(name, v).asInstanceOf[T]
-    case v: Long => preferences.getLong(name, v).asInstanceOf[T]
+    case v: String  => preferences.getString(name, v).asInstanceOf[T]
+    case v: Int     => preferences.getInt(name, v).asInstanceOf[T]
+    case v: Long    => preferences.getLong(name, v).asInstanceOf[T]
     case v: Boolean => preferences.getBoolean(name, v).asInstanceOf[T]
-    case v: Float => preferences.getFloat(name, v).asInstanceOf[T]
+    case v: Float   => preferences.getFloat(name, v).asInstanceOf[T]
     case v: Set[String @unchecked] =>
       preferences.getStringSet(name, v).toSet.asInstanceOf[T]
   }
@@ -122,38 +122,38 @@ object Preferences {
 
 class Extra(val activity: SActivity) extends AnyVal with Dynamic {
   def updateDynamic(name: String)(value: Any) {
-    // TODO inline after https://github.com/daniel-trinh/scalariform/issues/44 is fixed 
+    // TODO inline after https://github.com/daniel-trinh/scalariform/issues/44 is fixed
     import android.os.Parcelable
     activity.intent.foreach { i =>
       value match {
         // primitives
         case v: Boolean => i.putExtra(name, v)
-        case v: Byte => i.putExtra(name, v)
-        case v: Char => i.putExtra(name, v)
-        case v: Short => i.putExtra(name, v)
-        case v: Int => i.putExtra(name, v)
-        case v: Long => i.putExtra(name, v)
-        case v: Float => i.putExtra(name, v)
-        case v: Double => i.putExtra(name, v)
+        case v: Byte    => i.putExtra(name, v)
+        case v: Char    => i.putExtra(name, v)
+        case v: Short   => i.putExtra(name, v)
+        case v: Int     => i.putExtra(name, v)
+        case v: Long    => i.putExtra(name, v)
+        case v: Float   => i.putExtra(name, v)
+        case v: Double  => i.putExtra(name, v)
 
         // simple types
-        case v: String => i.putExtra(name, v)
-        case v: CharSequence => i.putExtra(name, v)
-        case v: android.os.Bundle => i.putExtra(name, v)
+        case v: String                => i.putExtra(name, v)
+        case v: CharSequence          => i.putExtra(name, v)
+        case v: android.os.Bundle     => i.putExtra(name, v)
         case v: android.os.Parcelable => i.putExtra(name, v)
 
         // array types
-        case v: Array[Boolean] => i.putExtra(name, v)
-        case v: Array[Byte] => i.putExtra(name, v)
-        case v: Array[Char] => i.putExtra(name, v)
-        case v: Array[Short] => i.putExtra(name, v)
-        case v: Array[Int] => i.putExtra(name, v)
-        case v: Array[Long] => i.putExtra(name, v)
-        case v: Array[Float] => i.putExtra(name, v)
-        case v: Array[Double] => i.putExtra(name, v)
-        case v: Array[String] => i.putExtra(name, v)
+        case v: Array[Boolean]      => i.putExtra(name, v)
+        case v: Array[Byte]         => i.putExtra(name, v)
+        case v: Array[Char]         => i.putExtra(name, v)
+        case v: Array[Short]        => i.putExtra(name, v)
+        case v: Array[Int]          => i.putExtra(name, v)
+        case v: Array[Long]         => i.putExtra(name, v)
+        case v: Array[Float]        => i.putExtra(name, v)
+        case v: Array[Double]       => i.putExtra(name, v)
+        case v: Array[String]       => i.putExtra(name, v)
         case v: Array[CharSequence] => i.putExtra(name, v)
-        case v: Array[Parcelable] => i.putExtra(name, v)
+        case v: Array[Parcelable]   => i.putExtra(name, v)
 
         // other types
         case v: Serializable => i.putExtra(name, v) // must be after arrays
@@ -171,7 +171,7 @@ class Extra(val activity: SActivity) extends AnyVal with Dynamic {
       }
     }
 
-  def remove(name: String) = activity.intent.foreach { _.removeExtra(name) }
+  def remove(name: String) = activity.intent.foreach(_.removeExtra(name))
 }
 
 object Extra {
@@ -246,7 +246,7 @@ trait TraitPreference[This <: android.preference.Preference] {
     */
   @inline def enabled_=(p: Boolean) = { basis.setEnabled(p); basis }
 
-  @inline def enable() = { basis.setEnabled(true); basis }
+  @inline def enable()  = { basis.setEnabled(true); basis }
   @inline def disable() = { basis.setEnabled(false); basis }
 
   /**
@@ -353,7 +353,8 @@ trait TraitPreference[This <: android.preference.Preference] {
     */
   @inline
   def onPreferenceChangeListener(
-      p: android.preference.Preference.OnPreferenceChangeListener) =
+      p: android.preference.Preference.OnPreferenceChangeListener
+  ) =
     onPreferenceChangeListener_=(p)
 
   /**
@@ -361,7 +362,8 @@ trait TraitPreference[This <: android.preference.Preference] {
     */
   @inline
   def onPreferenceChangeListener_=(
-      p: android.preference.Preference.OnPreferenceChangeListener) = {
+      p: android.preference.Preference.OnPreferenceChangeListener
+  ) = {
     basis.setOnPreferenceChangeListener(p); basis
   }
 
@@ -375,7 +377,8 @@ trait TraitPreference[This <: android.preference.Preference] {
     */
   @inline
   def onPreferenceClickListener(
-      p: android.preference.Preference.OnPreferenceClickListener) =
+      p: android.preference.Preference.OnPreferenceClickListener
+  ) =
     onPreferenceClickListener_=(p)
 
   /**
@@ -383,7 +386,8 @@ trait TraitPreference[This <: android.preference.Preference] {
     */
   @inline
   def onPreferenceClickListener_=(
-      p: android.preference.Preference.OnPreferenceClickListener) = {
+      p: android.preference.Preference.OnPreferenceClickListener
+  ) = {
     basis.setOnPreferenceClickListener(p); basis
   }
 
@@ -535,43 +539,51 @@ trait TraitPreference[This <: android.preference.Preference] {
 
   @inline
   def onPreferenceChange(
-      f: (android.preference.Preference, Any) => Boolean): This = {
+      f: (android.preference.Preference, Any) => Boolean
+  ): This = {
     basis.setOnPreferenceChangeListener(
-        new android.preference.Preference.OnPreferenceChangeListener {
-      def onPreferenceChange(
-          p1: android.preference.Preference, p2: Any): Boolean = { f(p1, p2) }
-    })
+      new android.preference.Preference.OnPreferenceChangeListener {
+        def onPreferenceChange(
+            p1: android.preference.Preference,
+            p2: Any
+        ): Boolean = f(p1, p2)
+      }
+    )
     basis
   }
 
   @inline def onPreferenceChange(f: => Boolean): This = {
     basis.setOnPreferenceChangeListener(
-        new android.preference.Preference.OnPreferenceChangeListener {
-      def onPreferenceChange(
-          p1: android.preference.Preference, p2: Any): Boolean = { f }
-    })
+      new android.preference.Preference.OnPreferenceChangeListener {
+        def onPreferenceChange(
+            p1: android.preference.Preference,
+            p2: Any
+        ): Boolean = f
+      }
+    )
     basis
   }
 
   @inline
   def onPreferenceClick(f: android.preference.Preference => Boolean): This = {
     basis.setOnPreferenceClickListener(
-        new android.preference.Preference.OnPreferenceClickListener {
-      def onPreferenceClick(p: android.preference.Preference): Boolean = {
-        f(p)
+      new android.preference.Preference.OnPreferenceClickListener {
+        def onPreferenceClick(p: android.preference.Preference): Boolean =
+          f(p)
       }
-    })
+    )
     basis
   }
 
   @inline def onPreferenceClick(f: => Boolean): This = {
     basis.setOnPreferenceClickListener(
-        new android.preference.Preference.OnPreferenceClickListener {
-      def onPreferenceClick(p: android.preference.Preference): Boolean = { f }
-    })
+      new android.preference.Preference.OnPreferenceClickListener {
+        def onPreferenceClick(p: android.preference.Preference): Boolean = f
+      }
+    )
     basis
   }
-  @inline def setIntent[T : ClassTag](implicit context: Context): Unit =
+  @inline def setIntent[T: ClassTag](implicit context: Context): Unit =
     basis.setIntent(SIntent[T])
 }
 
@@ -597,8 +609,8 @@ object SPreference {
   * Automatically generated enriching class of `[[https://developer.android.com/reference/android/preference/DialogPreference.html android.preference.DialogPreference]]`.
   */
 class RichDialogPreference[This <: android.preference.DialogPreference](
-    val basis: This)
-    extends TraitDialogPreference[This]
+    val basis: This
+) extends TraitDialogPreference[This]
 
 /**
   * Automatically generated helper trait of `[[https://developer.android.com/reference/android/preference/DialogPreference.html android.preference.DialogPreference]]`. This contains several property accessors.
@@ -775,8 +787,8 @@ trait TraitDialogPreference[This <: android.preference.DialogPreference]
   * Automatically generated enriching class of `[[https://developer.android.com/reference/android/preference/EditTextPreference.html android.preference.EditTextPreference]]`.
   */
 class RichEditTextPreference[This <: android.preference.EditTextPreference](
-    val basis: This)
-    extends TraitEditTextPreference[This]
+    val basis: This
+) extends TraitEditTextPreference[This]
 
 /**
   * Automatically generated helper trait of `[[https://developer.android.com/reference/android/preference/EditTextPreference.html android.preference.EditTextPreference]]`. This contains several property accessors.
@@ -816,7 +828,9 @@ class SEditTextPreference()(implicit context: android.content.Context)
 }
 
 object SEditTextPreference {
-  def apply()(implicit context: android.content.Context): SEditTextPreference = {
+  def apply()(
+      implicit context: android.content.Context
+  ): SEditTextPreference = {
     val v = new SEditTextPreference
 
     v

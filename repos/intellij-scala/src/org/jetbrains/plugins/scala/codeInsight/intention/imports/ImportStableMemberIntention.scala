@@ -19,7 +19,10 @@ import org.jetbrains.plugins.scala.lang.psi.api.base.ScReferenceElement
   */
 class ImportStableMemberIntention extends PsiElementBaseIntentionAction {
   override def isAvailable(
-      project: Project, editor: Editor, element: PsiElement): Boolean = {
+      project: Project,
+      editor: Editor,
+      element: PsiElement
+  ): Boolean = {
     val refAtCaret =
       PsiTreeUtil.getParentOfType(element, classOf[ScReferenceElement])
     if (refAtCaret == null) return false
@@ -28,7 +31,10 @@ class ImportStableMemberIntention extends PsiElementBaseIntentionAction {
   }
 
   override def invoke(
-      project: Project, editor: Editor, element: PsiElement): Unit = {
+      project: Project,
+      editor: Editor,
+      element: PsiElement
+  ): Unit = {
     val refAtCaret =
       PsiTreeUtil.getParentOfType(element, classOf[ScReferenceElement])
     if (refAtCaret == null || !checkReference(refAtCaret)) return
@@ -49,9 +55,8 @@ class ImportStableMemberIntention extends PsiElementBaseIntentionAction {
 
   override def getFamilyName: String = ImportStableMemberIntention.familyName
 
-  private def checkReference(ref: ScReferenceElement): Boolean = {
+  private def checkReference(ref: ScReferenceElement): Boolean =
     !isInImport(ref) && resolvesToStablePath(ref) && hasQualifier(ref)
-  }
 }
 
 object ImportStableMemberIntention {

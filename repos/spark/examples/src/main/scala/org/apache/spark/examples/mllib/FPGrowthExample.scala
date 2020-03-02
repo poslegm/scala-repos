@@ -30,10 +30,11 @@ import org.apache.spark.mllib.fpm.FPGrowth
   */
 object FPGrowthExample {
 
-  case class Params(input: String = null,
-                    minSupport: Double = 0.3,
-                    numPartition: Int = -1)
-      extends AbstractParams[Params]
+  case class Params(
+      input: String = null,
+      minSupport: Double = 0.3,
+      numPartition: Int = -1
+  ) extends AbstractParams[Params]
 
   def main(args: Array[String]) {
     val defaultParams = Params()
@@ -47,25 +48,25 @@ object FPGrowthExample {
         .text(s"number of partition, default: ${defaultParams.numPartition}")
         .action((x, c) => c.copy(numPartition = x))
       arg[String]("<input>")
-        .text("input paths to input data set, whose file format is that each line " +
-            "contains a transaction with each item in String and separated by a space")
+        .text(
+          "input paths to input data set, whose file format is that each line " +
+            "contains a transaction with each item in String and separated by a space"
+        )
         .required()
         .action((x, c) => c.copy(input = x))
     }
 
     parser
       .parse(args, defaultParams)
-      .map { params =>
-        run(params)
-      }
+      .map(params => run(params))
       .getOrElse {
         sys.exit(1)
       }
   }
 
   def run(params: Params) {
-    val conf = new SparkConf().setAppName(s"FPGrowthExample with $params")
-    val sc = new SparkContext(conf)
+    val conf         = new SparkConf().setAppName(s"FPGrowthExample with $params")
+    val sc           = new SparkContext(conf)
     val transactions = sc.textFile(params.input).map(_.split(" ")).cache()
 
     println(s"Number of transactions: ${transactions.count()}")

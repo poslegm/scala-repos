@@ -17,7 +17,7 @@ case class SeqMismatchException(id: Int, expected: Int)
 
 object SeqIdFilter {
   val VersionMask = 0xffff0000
-  val Version1 = 0x80010000
+  val Version1    = 0x80010000
 }
 
 /**
@@ -38,7 +38,7 @@ class SeqIdFilter extends SimpleFilter[ThriftClientRequest, Array[Byte]] {
 
   private[this] def get32(buf: Array[Byte], off: Int) =
     ((buf(off + 0) & 0xff) << 24) | ((buf(off + 1) & 0xff) << 16) |
-    ((buf(off + 2) & 0xff) << 8) | (buf(off + 3) & 0xff)
+      ((buf(off + 2) & 0xff) << 8) | (buf(off + 3) & 0xff)
 
   private[this] def put32(buf: Array[Byte], off: Int, x: Int) {
     buf(off) = (x >> 24 & 0xff).toByte
@@ -78,13 +78,14 @@ class SeqIdFilter extends SimpleFilter[ThriftClientRequest, Array[Byte]] {
     Return(currentId)
   }
 
-  def apply(req: ThriftClientRequest,
-            service: Service[ThriftClientRequest, Array[Byte]])
-    : Future[Array[Byte]] =
+  def apply(
+      req: ThriftClientRequest,
+      service: Service[ThriftClientRequest, Array[Byte]]
+  ): Future[Array[Byte]] =
     if (req.oneway) service(req)
     else {
       val reqBuf = req.message.clone()
-      val id = rng.nextInt()
+      val id     = rng.nextInt()
       val givenId = getAndSetId(reqBuf, id) match {
         case Return(id) => id
         case Throw(exc) => return Future.exception(exc)

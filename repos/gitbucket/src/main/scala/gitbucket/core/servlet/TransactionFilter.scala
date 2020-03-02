@@ -21,7 +21,10 @@ class TransactionFilter extends Filter {
   def destroy(): Unit = {}
 
   def doFilter(
-      req: ServletRequest, res: ServletResponse, chain: FilterChain): Unit = {
+      req: ServletRequest,
+      res: ServletResponse,
+      chain: FilterChain
+  ): Unit =
     if (req
           .asInstanceOf[HttpServletRequest]
           .getServletPath()
@@ -42,7 +45,6 @@ class TransactionFilter extends Filter {
         logger.debug("end transaction")
       }
     }
-  }
 }
 
 object Database {

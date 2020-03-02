@@ -10,12 +10,12 @@ class C[T]
 object Covariant {
   class Foo[+A] {
     private[this] var a: A = _
-    def getA: A = a
+    def getA: A            = a
     // allowed
-    private[this] def setA1(a: A) = this.a = a
+    private[this] def setA1(a: A)   = this.a = a
     protected[this] def setA2(a: A) = this.a = a
     // forbidden
-    private def setA3(a: A) = this.a = a
+    private def setA3(a: A)   = this.a = a
     protected def setA4(a: A) = this.a = a
 
     object Baz extends C[A]
@@ -28,8 +28,8 @@ object Covariant {
     }
   }
   class Foo2[+A] {
-    private[this] var a: A = _
-    def getA: A = a
+    private[this] var a: A       = _
+    def getA: A                  = a
     private[this] def setA(a: A) = this.a = a
 
     {
@@ -41,8 +41,8 @@ object Covariant {
     }
   }
   class Foo3[+A] {
-    private[this] var a: A = _
-    def getA: A = a
+    private[this] var a: A       = _
+    def getA: A                  = a
     private[this] def setA(a: A) = this.a = a
 
     private[this] trait Convert[B] {
@@ -77,7 +77,7 @@ object Covariant {
   }
   object ST extends T[String] {
     val x: T[String] { val m: String => String } = ST
-    val m: String => String = (_.substring(1))
+    val m: String => String                      = (_.substring(1))
   }
   val t: T[Any] = ST
   t.x.m(new Object)

@@ -9,7 +9,7 @@ package cmd
 import scala.collection.mutable.ListBuffer
 
 trait CommandLineConfig {
-  def enforceArity: Boolean = true
+  def enforceArity: Boolean     = true
   def onlyKnownOptions: Boolean = true
 }
 
@@ -23,11 +23,11 @@ class CommandLine(val spec: Reference, val originalArgs: List[String])
 
   import spec.{isUnaryOption, isBinaryOption, isExpandOption}
 
-  val Terminator = "--"
+  val Terminator          = "--"
   val ValueForUnaryOption = "true" // so if --opt is given, x(--opt) = true
 
   def mapForUnary(opt: String) = Map(fromOpt(opt) -> ValueForUnaryOption)
-  def errorFn(msg: String) = println(msg)
+  def errorFn(msg: String)     = println(msg)
 
   /** argMap is option -> argument (or "" if it is a unary argument)
     *  residualArgs are what is left after removing the options and their args.
@@ -43,13 +43,12 @@ class CommandLine(val spec: Reference, val originalArgs: List[String])
       /*  Returns Some(List(args)) if this option expands to an
        *  argument list and it's not returning only the same arg.
        */
-      def expand(s1: String) = {
+      def expand(s1: String) =
         if (isExpandOption(s1)) {
           val s2 = spec expandArg s1
           if (s2 == List(s1)) None
           else Some(s2)
         } else None
-      }
 
       /* Assumes known options have all been ruled out already. */
       def isUnknown(opt: String) =
@@ -59,13 +58,14 @@ class CommandLine(val spec: Reference, val originalArgs: List[String])
         }
 
       args match {
-        case Nil => Map()
+        case Nil              => Map()
         case Terminator :: xs => residual(xs)
         case x :: Nil =>
           expand(x) foreach (exp => return loop(exp))
           if (isBinaryOption(x) && enforceArity)
             errorFn(
-                "Option '%s' requires argument, found EOF instead.".format(x))
+              "Option '%s' requires argument, found EOF instead.".format(x)
+            )
 
           if (isUnaryOption(x)) mapForUnary(x)
           else if (isUnknown(x)) Map()
@@ -86,7 +86,7 @@ class CommandLine(val spec: Reference, val originalArgs: List[String])
   }
 
   def apply(arg: String) = argMap(arg)
-  def get(arg: String) = argMap get arg
+  def get(arg: String)   = argMap get arg
   def isSet(arg: String) = argMap contains arg
 
   def getOrElse(arg: String, orElse: => String) =

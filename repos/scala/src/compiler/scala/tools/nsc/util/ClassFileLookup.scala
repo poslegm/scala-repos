@@ -52,7 +52,8 @@ trait ClassRepresentation[T] {
 }
 
 object ClassRepresentation {
-  def unapply[T](classRep: ClassRepresentation[T])
-    : Option[(Option[T], Option[AbstractFile])] =
+  def unapply[T](
+      classRep: ClassRepresentation[T]
+  ): Option[(Option[T], Option[AbstractFile])] =
     Some((classRep.binary, classRep.source))
 }

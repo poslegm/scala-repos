@@ -38,7 +38,11 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.api.java._
-import org.apache.spark.streaming.dstream.{DStream, InputDStream, ReceiverInputDStream}
+import org.apache.spark.streaming.dstream.{
+  DStream,
+  InputDStream,
+  ReceiverInputDStream
+}
 import org.apache.spark.streaming.util.WriteAheadLogUtils
 
 object KafkaUtils {
@@ -62,11 +66,16 @@ object KafkaUtils {
       storageLevel: StorageLevel = StorageLevel.MEMORY_AND_DISK_SER_2
   ): ReceiverInputDStream[(String, String)] = {
     val kafkaParams = Map[String, String](
-        "zookeeper.connect" -> zkQuorum,
-        "group.id" -> groupId,
-        "zookeeper.connection.timeout.ms" -> "10000")
+      "zookeeper.connect"               -> zkQuorum,
+      "group.id"                        -> groupId,
+      "zookeeper.connection.timeout.ms" -> "10000"
+    )
     createStream[String, String, StringDecoder, StringDecoder](
-        ssc, kafkaParams, topics, storageLevel)
+      ssc,
+      kafkaParams,
+      topics,
+      storageLevel
+    )
   }
 
   /**
@@ -83,10 +92,9 @@ object KafkaUtils {
     * @tparam T type of Kafka message value decoder
     * @return DStream of (Kafka message key, Kafka message value)
     */
-  def createStream[K : ClassTag,
-                   V : ClassTag,
-                   U <: Decoder[_]: ClassTag,
-                   T <: Decoder[_]: ClassTag](
+  def createStream[K: ClassTag, V: ClassTag, U <: Decoder[_]: ClassTag, T <: Decoder[
+    _
+  ]: ClassTag](
       ssc: StreamingContext,
       kafkaParams: Map[String, String],
       topics: Map[String, Int],
@@ -94,7 +102,12 @@ object KafkaUtils {
   ): ReceiverInputDStream[(K, V)] = {
     val walEnabled = WriteAheadLogUtils.enableReceiverLog(ssc.conf)
     new KafkaInputDStream[K, V, U, T](
-        ssc, kafkaParams, topics, walEnabled, storageLevel)
+      ssc,
+      kafkaParams,
+      topics,
+      walEnabled,
+      storageLevel
+    )
   }
 
   /**
@@ -112,12 +125,13 @@ object KafkaUtils {
       zkQuorum: String,
       groupId: String,
       topics: JMap[String, JInt]
-  ): JavaPairReceiverInputDStream[String, String] = {
-    createStream(jssc.ssc,
-                 zkQuorum,
-                 groupId,
-                 Map(topics.asScala.mapValues(_.intValue()).toSeq: _*))
-  }
+  ): JavaPairReceiverInputDStream[String, String] =
+    createStream(
+      jssc.ssc,
+      zkQuorum,
+      groupId,
+      Map(topics.asScala.mapValues(_.intValue()).toSeq: _*)
+    )
 
   /**
     * Create an input stream that pulls messages from Kafka Brokers.
@@ -135,13 +149,14 @@ object KafkaUtils {
       groupId: String,
       topics: JMap[String, JInt],
       storageLevel: StorageLevel
-  ): JavaPairReceiverInputDStream[String, String] = {
-    createStream(jssc.ssc,
-                 zkQuorum,
-                 groupId,
-                 Map(topics.asScala.mapValues(_.intValue()).toSeq: _*),
-                 storageLevel)
-  }
+  ): JavaPairReceiverInputDStream[String, String] =
+    createStream(
+      jssc.ssc,
+      zkQuorum,
+      groupId,
+      Map(topics.asScala.mapValues(_.intValue()).toSeq: _*),
+      storageLevel
+    )
 
   /**
     * Create an input stream that pulls messages from Kafka Brokers.
@@ -171,23 +186,25 @@ object KafkaUtils {
       topics: JMap[String, JInt],
       storageLevel: StorageLevel
   ): JavaPairReceiverInputDStream[K, V] = {
-    implicit val keyCmt: ClassTag[K] = ClassTag(keyTypeClass)
+    implicit val keyCmt: ClassTag[K]   = ClassTag(keyTypeClass)
     implicit val valueCmt: ClassTag[V] = ClassTag(valueTypeClass)
 
-    implicit val keyCmd: ClassTag[U] = ClassTag(keyDecoderClass)
+    implicit val keyCmd: ClassTag[U]   = ClassTag(keyDecoderClass)
     implicit val valueCmd: ClassTag[T] = ClassTag(valueDecoderClass)
 
     createStream[K, V, U, T](
-        jssc.ssc,
-        kafkaParams.asScala.toMap,
-        Map(topics.asScala.mapValues(_.intValue()).toSeq: _*),
-        storageLevel)
+      jssc.ssc,
+      kafkaParams.asScala.toMap,
+      Map(topics.asScala.mapValues(_.intValue()).toSeq: _*),
+      storageLevel
+    )
   }
 
   /** get leaders for the given offset ranges, or throw an exception */
   private def leadersForRanges(
-      kc: KafkaCluster, offsetRanges: Array[OffsetRange])
-    : Map[TopicAndPartition, (String, Int)] = {
+      kc: KafkaCluster,
+      offsetRanges: Array[OffsetRange]
+  ): Map[TopicAndPartition, (String, Int)] = {
     val topics =
       offsetRanges.map(o => TopicAndPartition(o.topic, o.partition)).toSet
     val leaders = kc.findLeaders(topics)
@@ -196,10 +213,12 @@ object KafkaUtils {
 
   /** Make sure offsets are available in kafka, or throw an exception */
   private def checkOffsets(
-      kc: KafkaCluster, offsetRanges: Array[OffsetRange]): Unit = {
+      kc: KafkaCluster,
+      offsetRanges: Array[OffsetRange]
+  ): Unit = {
     val topics = offsetRanges.map(_.topicAndPartition).toSet
     val result = for {
-      low <- kc.getEarliestLeaderOffsets(topics).right
+      low  <- kc.getEarliestLeaderOffsets(topics).right
       high <- kc.getLatestLeaderOffsets(topics).right
     } yield {
       offsetRanges.filterNot { o =>
@@ -210,7 +229,8 @@ object KafkaUtils {
     val badRanges = KafkaCluster.checkErrors(result)
     if (!badRanges.isEmpty) {
       throw new SparkException(
-          "Offsets not available on leader: " + badRanges.mkString(","))
+        "Offsets not available on leader: " + badRanges.mkString(",")
+      )
     }
   }
 
@@ -252,21 +272,25 @@ object KafkaUtils {
     * @tparam VD type of Kafka message value decoder
     * @return RDD of (Kafka message key, Kafka message value)
     */
-  def createRDD[K : ClassTag,
-                V : ClassTag,
-                KD <: Decoder[K]: ClassTag,
-                VD <: Decoder[V]: ClassTag](
+  def createRDD[K: ClassTag, V: ClassTag, KD <: Decoder[K]: ClassTag, VD <: Decoder[
+    V
+  ]: ClassTag](
       sc: SparkContext,
       kafkaParams: Map[String, String],
       offsetRanges: Array[OffsetRange]
   ): RDD[(K, V)] = sc.withScope {
     val messageHandler =
       (mmd: MessageAndMetadata[K, V]) => (mmd.key, mmd.message)
-    val kc = new KafkaCluster(kafkaParams)
+    val kc      = new KafkaCluster(kafkaParams)
     val leaders = leadersForRanges(kc, offsetRanges)
     checkOffsets(kc, offsetRanges)
     new KafkaRDD[K, V, KD, VD, (K, V)](
-        sc, kafkaParams, offsetRanges, leaders, messageHandler)
+      sc,
+      kafkaParams,
+      offsetRanges,
+      leaders,
+      messageHandler
+    )
   }
 
   /**
@@ -291,11 +315,9 @@ object KafkaUtils {
     * @tparam R type returned by messageHandler
     * @return RDD of R
     */
-  def createRDD[K : ClassTag,
-                V : ClassTag,
-                KD <: Decoder[K]: ClassTag,
-                VD <: Decoder[V]: ClassTag,
-                R : ClassTag](
+  def createRDD[K: ClassTag, V: ClassTag, KD <: Decoder[K]: ClassTag, VD <: Decoder[
+    V
+  ]: ClassTag, R: ClassTag](
       sc: SparkContext,
       kafkaParams: Map[String, String],
       offsetRanges: Array[OffsetRange],
@@ -316,7 +338,12 @@ object KafkaUtils {
     val cleanedHandler = sc.clean(messageHandler)
     checkOffsets(kc, offsetRanges)
     new KafkaRDD[K, V, KD, VD, R](
-        sc, kafkaParams, offsetRanges, leaderMap, cleanedHandler)
+      sc,
+      kafkaParams,
+      offsetRanges,
+      leaderMap,
+      cleanedHandler
+    )
   }
 
   /**
@@ -348,12 +375,17 @@ object KafkaUtils {
       kafkaParams: JMap[String, String],
       offsetRanges: Array[OffsetRange]
   ): JavaPairRDD[K, V] = jsc.sc.withScope {
-    implicit val keyCmt: ClassTag[K] = ClassTag(keyClass)
-    implicit val valueCmt: ClassTag[V] = ClassTag(valueClass)
-    implicit val keyDecoderCmt: ClassTag[KD] = ClassTag(keyDecoderClass)
+    implicit val keyCmt: ClassTag[K]           = ClassTag(keyClass)
+    implicit val valueCmt: ClassTag[V]         = ClassTag(valueClass)
+    implicit val keyDecoderCmt: ClassTag[KD]   = ClassTag(keyDecoderClass)
     implicit val valueDecoderCmt: ClassTag[VD] = ClassTag(valueDecoderClass)
-    new JavaPairRDD(createRDD[K, V, KD, VD](
-            jsc.sc, Map(kafkaParams.asScala.toSeq: _*), offsetRanges))
+    new JavaPairRDD(
+      createRDD[K, V, KD, VD](
+        jsc.sc,
+        Map(kafkaParams.asScala.toSeq: _*),
+        offsetRanges
+      )
+    )
   }
 
   /**
@@ -390,17 +422,19 @@ object KafkaUtils {
       leaders: JMap[TopicAndPartition, Broker],
       messageHandler: JFunction[MessageAndMetadata[K, V], R]
   ): JavaRDD[R] = jsc.sc.withScope {
-    implicit val keyCmt: ClassTag[K] = ClassTag(keyClass)
-    implicit val valueCmt: ClassTag[V] = ClassTag(valueClass)
-    implicit val keyDecoderCmt: ClassTag[KD] = ClassTag(keyDecoderClass)
+    implicit val keyCmt: ClassTag[K]           = ClassTag(keyClass)
+    implicit val valueCmt: ClassTag[V]         = ClassTag(valueClass)
+    implicit val keyDecoderCmt: ClassTag[KD]   = ClassTag(keyDecoderClass)
     implicit val valueDecoderCmt: ClassTag[VD] = ClassTag(valueDecoderClass)
-    implicit val recordCmt: ClassTag[R] = ClassTag(recordClass)
-    val leaderMap = Map(leaders.asScala.toSeq: _*)
-    createRDD[K, V, KD, VD, R](jsc.sc,
-                               Map(kafkaParams.asScala.toSeq: _*),
-                               offsetRanges,
-                               leaderMap,
-                               messageHandler.call(_))
+    implicit val recordCmt: ClassTag[R]        = ClassTag(recordClass)
+    val leaderMap                              = Map(leaders.asScala.toSeq: _*)
+    createRDD[K, V, KD, VD, R](
+      jsc.sc,
+      Map(kafkaParams.asScala.toSeq: _*),
+      offsetRanges,
+      leaderMap,
+      messageHandler.call(_)
+    )
   }
 
   /**
@@ -439,11 +473,9 @@ object KafkaUtils {
     * @tparam R type returned by messageHandler
     * @return DStream of R
     */
-  def createDirectStream[K : ClassTag,
-                         V : ClassTag,
-                         KD <: Decoder[K]: ClassTag,
-                         VD <: Decoder[V]: ClassTag,
-                         R : ClassTag](
+  def createDirectStream[K: ClassTag, V: ClassTag, KD <: Decoder[K]: ClassTag, VD <: Decoder[
+    V
+  ]: ClassTag, R: ClassTag](
       ssc: StreamingContext,
       kafkaParams: Map[String, String],
       fromOffsets: Map[TopicAndPartition, Long],
@@ -451,7 +483,11 @@ object KafkaUtils {
   ): InputDStream[R] = {
     val cleanedHandler = ssc.sc.clean(messageHandler)
     new DirectKafkaInputDStream[K, V, KD, VD, R](
-        ssc, kafkaParams, fromOffsets, cleanedHandler)
+      ssc,
+      kafkaParams,
+      fromOffsets,
+      cleanedHandler
+    )
   }
 
   /**
@@ -489,20 +525,23 @@ object KafkaUtils {
     * @tparam VD type of Kafka message value decoder
     * @return DStream of (Kafka message key, Kafka message value)
     */
-  def createDirectStream[K : ClassTag,
-                         V : ClassTag,
-                         KD <: Decoder[K]: ClassTag,
-                         VD <: Decoder[V]: ClassTag](
+  def createDirectStream[K: ClassTag, V: ClassTag, KD <: Decoder[K]: ClassTag, VD <: Decoder[
+    V
+  ]: ClassTag](
       ssc: StreamingContext,
       kafkaParams: Map[String, String],
       topics: Set[String]
   ): InputDStream[(K, V)] = {
     val messageHandler = (mmd: MessageAndMetadata[K, V]) =>
       (mmd.key, mmd.message)
-    val kc = new KafkaCluster(kafkaParams)
+    val kc          = new KafkaCluster(kafkaParams)
     val fromOffsets = getFromOffsets(kc, kafkaParams, topics)
     new DirectKafkaInputDStream[K, V, KD, VD, (K, V)](
-        ssc, kafkaParams, fromOffsets, messageHandler)
+      ssc,
+      kafkaParams,
+      fromOffsets,
+      messageHandler
+    )
   }
 
   /**
@@ -557,17 +596,17 @@ object KafkaUtils {
       fromOffsets: JMap[TopicAndPartition, JLong],
       messageHandler: JFunction[MessageAndMetadata[K, V], R]
   ): JavaInputDStream[R] = {
-    implicit val keyCmt: ClassTag[K] = ClassTag(keyClass)
-    implicit val valueCmt: ClassTag[V] = ClassTag(valueClass)
-    implicit val keyDecoderCmt: ClassTag[KD] = ClassTag(keyDecoderClass)
+    implicit val keyCmt: ClassTag[K]           = ClassTag(keyClass)
+    implicit val valueCmt: ClassTag[V]         = ClassTag(valueClass)
+    implicit val keyDecoderCmt: ClassTag[KD]   = ClassTag(keyDecoderClass)
     implicit val valueDecoderCmt: ClassTag[VD] = ClassTag(valueDecoderClass)
-    implicit val recordCmt: ClassTag[R] = ClassTag(recordClass)
-    val cleanedHandler = jssc.sparkContext.clean(messageHandler.call _)
+    implicit val recordCmt: ClassTag[R]        = ClassTag(recordClass)
+    val cleanedHandler                         = jssc.sparkContext.clean(messageHandler.call _)
     createDirectStream[K, V, KD, VD, R](
-        jssc.ssc,
-        Map(kafkaParams.asScala.toSeq: _*),
-        Map(fromOffsets.asScala.mapValues(_.longValue()).toSeq: _*),
-        cleanedHandler
+      jssc.ssc,
+      Map(kafkaParams.asScala.toSeq: _*),
+      Map(fromOffsets.asScala.mapValues(_.longValue()).toSeq: _*),
+      cleanedHandler
     )
   }
 
@@ -619,14 +658,14 @@ object KafkaUtils {
       kafkaParams: JMap[String, String],
       topics: JSet[String]
   ): JavaPairInputDStream[K, V] = {
-    implicit val keyCmt: ClassTag[K] = ClassTag(keyClass)
-    implicit val valueCmt: ClassTag[V] = ClassTag(valueClass)
-    implicit val keyDecoderCmt: ClassTag[KD] = ClassTag(keyDecoderClass)
+    implicit val keyCmt: ClassTag[K]           = ClassTag(keyClass)
+    implicit val valueCmt: ClassTag[V]         = ClassTag(valueClass)
+    implicit val keyDecoderCmt: ClassTag[KD]   = ClassTag(keyDecoderClass)
     implicit val valueDecoderCmt: ClassTag[VD] = ClassTag(valueDecoderClass)
     createDirectStream[K, V, KD, VD](
-        jssc.ssc,
-        Map(kafkaParams.asScala.toSeq: _*),
-        Set(topics.asScala.toSeq: _*)
+      jssc.ssc,
+      Map(kafkaParams.asScala.toSeq: _*),
+      Set(topics.asScala.toSeq: _*)
     )
   }
 }
@@ -643,11 +682,12 @@ object KafkaUtils {
 private[kafka] class KafkaUtilsPythonHelper {
   import KafkaUtilsPythonHelper._
 
-  def createStream(jssc: JavaStreamingContext,
-                   kafkaParams: JMap[String, String],
-                   topics: JMap[String, JInt],
-                   storageLevel: StorageLevel)
-    : JavaPairReceiverInputDStream[Array[Byte], Array[Byte]] = {
+  def createStream(
+      jssc: JavaStreamingContext,
+      kafkaParams: JMap[String, String],
+      topics: JMap[String, JInt],
+      storageLevel: StorageLevel
+  ): JavaPairReceiverInputDStream[Array[Byte], Array[Byte]] =
     KafkaUtils
       .createStream[Array[Byte], Array[Byte], DefaultDecoder, DefaultDecoder](
         jssc,
@@ -657,41 +697,49 @@ private[kafka] class KafkaUtilsPythonHelper {
         classOf[DefaultDecoder],
         kafkaParams,
         topics,
-        storageLevel)
-  }
+        storageLevel
+      )
 
-  def createRDDWithoutMessageHandler(jsc: JavaSparkContext,
-                                     kafkaParams: JMap[String, String],
-                                     offsetRanges: JList[OffsetRange],
-                                     leaders: JMap[TopicAndPartition, Broker])
-    : JavaRDD[(Array[Byte], Array[Byte])] = {
+  def createRDDWithoutMessageHandler(
+      jsc: JavaSparkContext,
+      kafkaParams: JMap[String, String],
+      offsetRanges: JList[OffsetRange],
+      leaders: JMap[TopicAndPartition, Broker]
+  ): JavaRDD[(Array[Byte], Array[Byte])] = {
     val messageHandler = (mmd: MessageAndMetadata[Array[Byte], Array[Byte]]) =>
       (mmd.key, mmd.message)
     new JavaRDD(
-        createRDD(jsc, kafkaParams, offsetRanges, leaders, messageHandler))
+      createRDD(jsc, kafkaParams, offsetRanges, leaders, messageHandler)
+    )
   }
 
   def createRDDWithMessageHandler(
       jsc: JavaSparkContext,
       kafkaParams: JMap[String, String],
       offsetRanges: JList[OffsetRange],
-      leaders: JMap[TopicAndPartition, Broker]): JavaRDD[Array[Byte]] = {
+      leaders: JMap[TopicAndPartition, Broker]
+  ): JavaRDD[Array[Byte]] = {
     val messageHandler = (mmd: MessageAndMetadata[Array[Byte], Array[Byte]]) =>
       new PythonMessageAndMetadata(
-          mmd.topic, mmd.partition, mmd.offset, mmd.key(), mmd.message())
+        mmd.topic,
+        mmd.partition,
+        mmd.offset,
+        mmd.key(),
+        mmd.message()
+      )
     val rdd =
       createRDD(jsc, kafkaParams, offsetRanges, leaders, messageHandler)
         .mapPartitions(picklerIterator)
     new JavaRDD(rdd)
   }
 
-  private def createRDD[V : ClassTag](
+  private def createRDD[V: ClassTag](
       jsc: JavaSparkContext,
       kafkaParams: JMap[String, String],
       offsetRanges: JList[OffsetRange],
       leaders: JMap[TopicAndPartition, Broker],
-      messageHandler: MessageAndMetadata[Array[Byte], Array[Byte]] => V)
-    : RDD[V] = {
+      messageHandler: MessageAndMetadata[Array[Byte], Array[Byte]] => V
+  ): RDD[V] =
     KafkaUtils
       .createRDD[Array[Byte], Array[Byte], DefaultDecoder, DefaultDecoder, V](
         jsc.sc,
@@ -699,76 +747,89 @@ private[kafka] class KafkaUtilsPythonHelper {
         offsetRanges.toArray(new Array[OffsetRange](offsetRanges.size())),
         leaders.asScala.toMap,
         messageHandler
-    )
-  }
+      )
 
   def createDirectStreamWithoutMessageHandler(
       jssc: JavaStreamingContext,
       kafkaParams: JMap[String, String],
       topics: JSet[String],
-      fromOffsets: JMap[TopicAndPartition, JLong])
-    : JavaDStream[(Array[Byte], Array[Byte])] = {
+      fromOffsets: JMap[TopicAndPartition, JLong]
+  ): JavaDStream[(Array[Byte], Array[Byte])] = {
     val messageHandler = (mmd: MessageAndMetadata[Array[Byte], Array[Byte]]) =>
       (mmd.key, mmd.message)
-    new JavaDStream(createDirectStream(
-            jssc, kafkaParams, topics, fromOffsets, messageHandler))
+    new JavaDStream(
+      createDirectStream(jssc, kafkaParams, topics, fromOffsets, messageHandler)
+    )
   }
 
   def createDirectStreamWithMessageHandler(
       jssc: JavaStreamingContext,
       kafkaParams: JMap[String, String],
       topics: JSet[String],
-      fromOffsets: JMap[TopicAndPartition, JLong])
-    : JavaDStream[Array[Byte]] = {
+      fromOffsets: JMap[TopicAndPartition, JLong]
+  ): JavaDStream[Array[Byte]] = {
     val messageHandler = (mmd: MessageAndMetadata[Array[Byte], Array[Byte]]) =>
       new PythonMessageAndMetadata(
-          mmd.topic, mmd.partition, mmd.offset, mmd.key(), mmd.message())
-    val stream = createDirectStream(
-        jssc, kafkaParams, topics, fromOffsets, messageHandler).mapPartitions(
-        picklerIterator)
+        mmd.topic,
+        mmd.partition,
+        mmd.offset,
+        mmd.key(),
+        mmd.message()
+      )
+    val stream =
+      createDirectStream(jssc, kafkaParams, topics, fromOffsets, messageHandler)
+        .mapPartitions(picklerIterator)
     new JavaDStream(stream)
   }
 
-  private def createDirectStream[V : ClassTag](
+  private def createDirectStream[V: ClassTag](
       jssc: JavaStreamingContext,
       kafkaParams: JMap[String, String],
       topics: JSet[String],
       fromOffsets: JMap[TopicAndPartition, JLong],
-      messageHandler: MessageAndMetadata[Array[Byte], Array[Byte]] => V)
-    : DStream[V] = {
+      messageHandler: MessageAndMetadata[Array[Byte], Array[Byte]] => V
+  ): DStream[V] = {
 
     val currentFromOffsets =
       if (!fromOffsets.isEmpty) {
         val topicsFromOffsets = fromOffsets.keySet().asScala.map(_.topic)
         if (topicsFromOffsets != topics.asScala.toSet) {
           throw new IllegalStateException(
-              s"The specified topics: ${topics.asScala.toSet.mkString(" ")} " +
-              s"do not equal to the topic from offsets: ${topicsFromOffsets.mkString(" ")}")
+            s"The specified topics: ${topics.asScala.toSet.mkString(" ")} " +
+              s"do not equal to the topic from offsets: ${topicsFromOffsets.mkString(" ")}"
+          )
         }
-        Map(fromOffsets.asScala.mapValues { _.longValue() }.toSeq: _*)
+        Map(fromOffsets.asScala.mapValues(_.longValue()).toSeq: _*)
       } else {
         val kc = new KafkaCluster(Map(kafkaParams.asScala.toSeq: _*))
-        KafkaUtils.getFromOffsets(kc,
-                                  Map(kafkaParams.asScala.toSeq: _*),
-                                  Set(topics.asScala.toSeq: _*))
+        KafkaUtils.getFromOffsets(
+          kc,
+          Map(kafkaParams.asScala.toSeq: _*),
+          Set(topics.asScala.toSeq: _*)
+        )
       }
 
-    KafkaUtils.createDirectStream[
-        Array[Byte], Array[Byte], DefaultDecoder, DefaultDecoder, V](
+    KafkaUtils
+      .createDirectStream[Array[Byte], Array[Byte], DefaultDecoder, DefaultDecoder, V](
         jssc.ssc,
         Map(kafkaParams.asScala.toSeq: _*),
         Map(currentFromOffsets.toSeq: _*),
-        messageHandler)
+        messageHandler
+      )
   }
 
-  def createOffsetRange(topic: String,
-                        partition: JInt,
-                        fromOffset: JLong,
-                        untilOffset: JLong): OffsetRange =
+  def createOffsetRange(
+      topic: String,
+      partition: JInt,
+      fromOffset: JLong,
+      untilOffset: JLong
+  ): OffsetRange =
     OffsetRange.create(topic, partition, fromOffset, untilOffset)
 
   def createTopicAndPartition(
-      topic: String, partition: JInt): TopicAndPartition =
+      topic: String,
+      partition: JInt
+  ): TopicAndPartition =
     TopicAndPartition(topic, partition)
 
   def createBroker(host: String, port: JInt): Broker = Broker(host, port)
@@ -779,9 +840,10 @@ private[kafka] class KafkaUtilsPythonHelper {
       parentRDDs.filter(rdd => rdd.isInstanceOf[KafkaRDD[_, _, _, _, _]])
 
     require(
-        kafkaRDDs.length == 1,
-        "Cannot get offset ranges, as there may be multiple Kafka RDDs or no Kafka RDD associated" +
-        "with this RDD, please call this method only on a Kafka RDD.")
+      kafkaRDDs.length == 1,
+      "Cannot get offset ranges, as there may be multiple Kafka RDDs or no Kafka RDD associated" +
+        "with this RDD, please call this method only on a Kafka RDD."
+    )
 
     val kafkaRDD = kafkaRDDs.head.asInstanceOf[KafkaRDD[_, _, _, _, _]]
     kafkaRDD.offsetRanges.toSeq.asJava
@@ -803,15 +865,16 @@ private object KafkaUtilsPythonHelper {
 
   initialize()
 
-  def picklerIterator(iter: Iterator[Any]): Iterator[Array[Byte]] = {
+  def picklerIterator(iter: Iterator[Any]): Iterator[Array[Byte]] =
     new SerDeUtil.AutoBatchedPickler(iter)
-  }
 
-  case class PythonMessageAndMetadata(topic: String,
-                                      partition: JInt,
-                                      offset: JLong,
-                                      key: Array[Byte],
-                                      message: Array[Byte])
+  case class PythonMessageAndMetadata(
+      topic: String,
+      partition: JInt,
+      offset: JLong,
+      key: Array[Byte],
+      message: Array[Byte]
+  )
 
   class PythonMessageAndMetadataPickler extends IObjectPickler {
     private val module = "pyspark.streaming.kafka"
@@ -824,8 +887,9 @@ private object KafkaUtilsPythonHelper {
     def pickle(obj: Object, out: OutputStream, pickler: Pickler) {
       if (obj == this) {
         out.write(Opcodes.GLOBAL)
-        out.write(s"$module\nKafkaMessageAndMetadata\n".getBytes(
-                StandardCharsets.UTF_8))
+        out.write(
+          s"$module\nKafkaMessageAndMetadata\n".getBytes(StandardCharsets.UTF_8)
+        )
       } else {
         pickler.save(this)
         val msgAndMetaData = obj.asInstanceOf[PythonMessageAndMetadata]

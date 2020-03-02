@@ -20,7 +20,7 @@ trait SequentialProvider extends Actor {
 
   def logger: lila.log.Logger
 
-  def debug = false
+  def debug     = false
   lazy val name = ornicar.scalalib.Random nextString 4
 
   val windowCount = new lila.common.WindowCount(1 second)
@@ -49,7 +49,7 @@ trait SequentialProvider extends Actor {
 
   def receive = idle
 
-  private val queue = collection.mutable.Queue[Envelope]()
+  private val queue                = collection.mutable.Queue[Envelope]()
   private def dequeue: Option[Any] = Try(queue.dequeue).toOption
 
   private def debugQueue {
@@ -77,9 +77,9 @@ trait SequentialProvider extends Actor {
       case Envelope(msg, replyTo) =>
         (process orElse fallback)(msg)
           .withTimeout(
-              futureTimeout,
-              LilaException(s"Sequential provider timeout: $futureTimeout"))(
-              context.system)
+            futureTimeout,
+            LilaException(s"Sequential provider timeout: $futureTimeout")
+          )(context.system)
           .pipeTo(replyTo) andThenAnyway { self ! Done }
       case x =>
         logger

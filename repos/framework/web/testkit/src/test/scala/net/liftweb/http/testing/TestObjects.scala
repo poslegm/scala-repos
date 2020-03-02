@@ -39,7 +39,7 @@ object MyCode extends TestKit {
 
   for {
     login <- post("/whatever")
-    next <- login.get("/bla")
+    next  <- login.get("/bla")
   } {}
 }
 
@@ -54,6 +54,6 @@ object MyBoxCode extends RequestKit {
 
   for {
     login: TheResponse <- post("/whatever")
-    next <- login.get("/bla")
+    next               <- login.get("/bla")
   } {}
 }

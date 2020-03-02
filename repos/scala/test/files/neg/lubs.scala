@@ -5,9 +5,9 @@ object test1 {
 
   def f = if (1 == 2) new C else new D
 
-  val x1: A[Any] = f
-  val x2: A[A[Any]] = f
-  val x3: A[A[A[Any]]] = f
+  val x1: A[Any]          = f
+  val x2: A[A[Any]]       = f
+  val x3: A[A[A[Any]]]    = f
   val x4: A[A[A[A[Any]]]] = f
 }
 
@@ -19,8 +19,8 @@ object test2 {
 
   def f = if (1 == 2) new C else new D
 
-  val x1: A { type T } = f
-  val x2: A { type T >: Null <: A } = f
+  val x1: A { type T }                                      = f
+  val x2: A { type T >: Null <: A }                         = f
   val x3: A { type T >: Null <: A { type T >: Null <: A } } = f
   val x4: A {
     type T >: Null <: A { type T >: Null <: A { type T >: Null <: A } }

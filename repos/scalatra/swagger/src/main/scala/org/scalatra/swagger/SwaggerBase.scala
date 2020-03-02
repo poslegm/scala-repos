@@ -40,7 +40,7 @@ trait SwaggerBaseBase extends Initializable with ScalatraBase {
       if (fmt != null) format = fmt
       swagger.doc(doc) match {
         case Some(d) ⇒ renderDoc(d.asInstanceOf[ApiType])
-        case _ ⇒ halt(404)
+        case _       ⇒ halt(404)
       }
     }
 
@@ -59,46 +59,48 @@ trait SwaggerBaseBase extends Initializable with ScalatraBase {
   protected def renderDoc(doc: ApiType): JValue = {
     val json =
       docToJson(doc) merge
-      ("basePath" -> fullUrl(
-              "/",
-              includeContextPath = swagger.baseUrlIncludeContextPath,
-              includeServletPath = swagger.baseUrlIncludeServletPath)) ~
-      ("swaggerVersion" -> swagger.swaggerVersion) ~
-      ("apiVersion" -> swagger.apiVersion)
-    val consumes = dontAddOnEmpty("consumes", doc.consumes) _
-    val produces = dontAddOnEmpty("produces", doc.produces) _
-    val protocols = dontAddOnEmpty("protocols", doc.protocols) _
+        ("basePath" -> fullUrl(
+          "/",
+          includeContextPath = swagger.baseUrlIncludeContextPath,
+          includeServletPath = swagger.baseUrlIncludeServletPath
+        )) ~
+          ("swaggerVersion" -> swagger.swaggerVersion) ~
+          ("apiVersion"     -> swagger.apiVersion)
+    val consumes       = dontAddOnEmpty("consumes", doc.consumes) _
+    val produces       = dontAddOnEmpty("produces", doc.produces) _
+    val protocols      = dontAddOnEmpty("protocols", doc.protocols) _
     val authorizations = dontAddOnEmpty("authorizations", doc.authorizations) _
     val jsonDoc =
-      (consumes andThen produces andThen protocols andThen authorizations)(
-          json)
+      (consumes andThen produces andThen protocols andThen authorizations)(json)
     //    println("The rendered json doc:\n" + jackson.prettyJson(jsonDoc))
     jsonDoc
   }
 
   private[this] def dontAddOnEmpty(key: String, value: List[String])(
-      json: JValue) = {
+      json: JValue
+  ) = {
     val v: JValue = if (value.nonEmpty) key -> value else JNothing
     json merge v
   }
 
-  protected def renderIndex(docs: List[ApiType]): JValue = {
-    ("apiVersion" -> swagger.apiVersion) ~
-    ("swaggerVersion" -> swagger.swaggerVersion) ~
-    ("apis" ->
+  protected def renderIndex(docs: List[ApiType]): JValue =
+    ("apiVersion"       -> swagger.apiVersion) ~
+      ("swaggerVersion" -> swagger.swaggerVersion) ~
+      ("apis" ->
         (docs.filter(_.apis.nonEmpty).toList map { doc =>
-              ("path" ->
-                  (url(doc.resourcePath,
-                       includeServletPath = false,
-                       includeContextPath = false) +
-                      (if (includeFormatParameter) ".{format}" else ""))) ~
-              ("description" -> doc.description)
-            })) ~
-    ("authorizations" -> swagger.authorizations.foldLeft(JObject(Nil)) {
-          (acc, auth) =>
-            acc merge JObject(List(auth.`type` -> Extraction.decompose(auth)))
-        }) ~ ("info" -> Option(swagger.apiInfo).map(Extraction.decompose(_)))
-  }
+          ("path" ->
+            (url(
+              doc.resourcePath,
+              includeServletPath = false,
+              includeContextPath = false
+            ) +
+              (if (includeFormatParameter) ".{format}" else ""))) ~
+            ("description" -> doc.description)
+        })) ~
+      ("authorizations" -> swagger.authorizations.foldLeft(JObject(Nil)) {
+        (acc, auth) =>
+          acc merge JObject(List(auth.`type` -> Extraction.decompose(auth)))
+      }) ~ ("info" -> Option(swagger.apiInfo).map(Extraction.decompose(_)))
 
   error {
     case t: Throwable =>

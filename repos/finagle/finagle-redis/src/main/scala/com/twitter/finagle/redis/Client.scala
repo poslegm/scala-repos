@@ -14,12 +14,13 @@ object Client {
     */
   def apply(host: String): Client =
     Client(
-        ClientBuilder()
-          .hosts(host)
-          .hostConnectionLimit(1)
-          .codec(Redis())
-          .daemon(true)
-          .build())
+      ClientBuilder()
+        .hosts(host)
+        .hostConnectionLimit(1)
+        .codec(Redis())
+        .daemon(true)
+        .build()
+    )
 
   /**
     * Construct a client from a single Service.
@@ -29,8 +30,14 @@ object Client {
 }
 
 class Client(service: Service[Command, Reply])
-    extends BaseClient(service) with Keys with Strings with Hashes
-    with SortedSets with Lists with Sets with BtreeSortedSetCommands
+    extends BaseClient(service)
+    with Keys
+    with Strings
+    with Hashes
+    with SortedSets
+    with Lists
+    with Sets
+    with BtreeSortedSetCommands
     with HyperLogLogs
 
 /**
@@ -53,11 +60,12 @@ class BaseClient(service: Service[Command, Reply]) {
     * @param section Optional parameter can be used to select a specific section of information
     * @return ChannelBuffer with collection of \r\n terminated lines if server has info on section
     */
-  def info(section: ChannelBuffer = ChannelBuffers.EMPTY_BUFFER)
-    : Future[Option[ChannelBuffer]] =
+  def info(
+      section: ChannelBuffer = ChannelBuffers.EMPTY_BUFFER
+  ): Future[Option[ChannelBuffer]] =
     doRequest(Info(section)) {
       case BulkReply(message) => Future.value(Some(message))
-      case EmptyBulkReply() => Future.value(None)
+      case EmptyBulkReply()   => Future.value(None)
     }
 
   /**
@@ -102,13 +110,14 @@ class BaseClient(service: Service[Command, Reply]) {
     * Helper function for passing a command to the service
     */
   private[redis] def doRequest[T](
-      cmd: Command)(handler: PartialFunction[Reply, Future[T]]) =
+      cmd: Command
+  )(handler: PartialFunction[Reply, Future[T]]) =
     service(cmd) flatMap
-    (handler orElse {
-          case ErrorReply(message) =>
-            Future.exception(new ServerError(message))
-          case _ => Future.exception(new IllegalStateException)
-        })
+      (handler orElse {
+        case ErrorReply(message) =>
+          Future.exception(new ServerError(message))
+        case _ => Future.exception(new IllegalStateException)
+      })
 
   /**
     * Helper function to convert a Redis multi-bulk reply into a map of pairs
@@ -117,7 +126,7 @@ class BaseClient(service: Service[Command, Reply]) {
     assert(messages.length % 2 == 0, "Odd number of items in response")
     messages.grouped(2).toSeq.flatMap {
       case Seq(a, b) => Some((a, b))
-      case _ => None
+      case _         => None
     }
   }
 }
@@ -162,12 +171,13 @@ object TransactionalClient {
     */
   def apply(host: String): TransactionalClient =
     TransactionalClient(
-        ClientBuilder()
-          .hosts(host)
-          .hostConnectionLimit(1)
-          .codec(Redis())
-          .daemon(true)
-          .buildFactory())
+      ClientBuilder()
+        .hosts(host)
+        .hostConnectionLimit(1)
+        .codec(Redis())
+        .daemon(true)
+        .buildFactory()
+    )
 
   /**
     * Construct a client from a service factory
@@ -182,16 +192,14 @@ object TransactionalClient {
   */
 private[redis] class ConnectedTransactionalClient(
     serviceFactory: ServiceFactory[Command, Reply]
-)
-    extends Client(serviceFactory.toService) with TransactionalClient {
+) extends Client(serviceFactory.toService)
+    with TransactionalClient {
 
-  def transaction(cmds: Seq[Command]): Future[Seq[Reply]] = {
+  def transaction(cmds: Seq[Command]): Future[Seq[Reply]] =
     serviceFactory() flatMap { svc =>
       multi(svc) before {
         val cmdQueue =
-          cmds map { cmd =>
-            svc(cmd)
-          }
+          cmds map { cmd => svc(cmd) }
         Future.collect(cmdQueue).unit before exec(svc)
       } rescue {
         case e =>
@@ -202,23 +210,23 @@ private[redis] class ConnectedTransactionalClient(
         svc.close()
       }
     }
-  }
 
   private def multi(svc: Service[Command, Reply]): Future[Unit] =
     svc(Multi) flatMap {
       case StatusReply(message) => Future.Unit
-      case ErrorReply(message) => Future.exception(new ServerError(message))
-      case _ => Future.exception(new IllegalStateException)
+      case ErrorReply(message)  => Future.exception(new ServerError(message))
+      case _                    => Future.exception(new IllegalStateException)
     }
 
   private def exec(svc: Service[Command, Reply]): Future[Seq[Reply]] =
     svc(Exec) flatMap {
       case MBulkReply(messages) => Future.value(messages)
-      case EmptyMBulkReply() => Future.Nil
+      case EmptyMBulkReply()    => Future.Nil
       case NilMBulkReply() =>
-        Future.exception(new ServerError(
-                "One or more keys were modified before transaction"))
+        Future.exception(
+          new ServerError("One or more keys were modified before transaction")
+        )
       case ErrorReply(message) => Future.exception(new ServerError(message))
-      case _ => Future.exception(new IllegalStateException)
+      case _                   => Future.exception(new IllegalStateException)
     }
 }

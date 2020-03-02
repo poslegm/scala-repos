@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -51,16 +51,17 @@ import scalaz.syntax.std.boolean._
 import shapeless._
 
 object VersionLog {
-  final val lockName = "versionLog"
-  final val logName = "versionLog"
-  final val completedLogName = "completedLog"
+  final val lockName               = "versionLog"
+  final val logName                = "versionLog"
+  final val completedLogName       = "completedLog"
   final val currentVersionFilename = "HEAD"
 
-  final val unsetSentinel = "unset"
+  final val unsetSentinel   = "unset"
   final val unsetSentinelJV = unsetSentinel.serialize.renderCompact
 
   final def currentVersionEntry(
-      dir: File): EitherT[IO, ResourceError, VersionEntry] = {
+      dir: File
+  ): EitherT[IO, ResourceError, VersionEntry] = {
     import ResourceError._
     val currentFile = new File(dir, currentVersionFilename)
     EitherT {
@@ -68,19 +69,22 @@ object VersionLog {
         if (currentFile.exists) {
           for {
             jv <- JParser
-              .parseFromFile(currentFile)
-              .leftMap(ioError)
-              .disjunction
+                   .parseFromFile(currentFile)
+                   .leftMap(ioError)
+                   .disjunction
             version <- jv match {
-              case JString(`unsetSentinel`) =>
-                \/.left(
-                    NotFound("No current data for the path %s exists; it has been archived."
-                          .format(dir)))
-              case other =>
-                other.validated[VersionEntry].disjunction leftMap { err =>
-                  Corrupt(err.message)
-                }
-            }
+                        case JString(`unsetSentinel`) =>
+                          \/.left(
+                            NotFound(
+                              "No current data for the path %s exists; it has been archived."
+                                .format(dir)
+                            )
+                          )
+                        case other =>
+                          other.validated[VersionEntry].disjunction leftMap {
+                            err => Corrupt(err.message)
+                          }
+                      }
           } yield version
         } else {
           \/.left(NotFound("No data found for path %s.".format(dir)))
@@ -90,8 +94,8 @@ object VersionLog {
   }
 
   class LogFiles(val baseDir: File) {
-    val headFile = new File(baseDir, currentVersionFilename)
-    val logFile = new File(baseDir, logName)
+    val headFile      = new File(baseDir, currentVersionFilename)
+    val logFile       = new File(baseDir, logName)
     val completedFile = new File(baseDir, completedLogName)
   }
 
@@ -99,7 +103,8 @@ object VersionLog {
     if (!baseDir.isDirectory) {
       if (!baseDir.mkdirs)
         throw new IllegalStateException(
-            baseDir + " cannot be created as a directory.")
+          baseDir + " cannot be created as a directory."
+        )
     }
 
     val logFiles = new LogFiles(baseDir)
@@ -111,9 +116,9 @@ object VersionLog {
         for {
           jv <- JParser.parseFromFile(headFile).leftMap(Error.thrown)
           version <- jv match {
-            case JString(`unsetSentinel`) => Success(None)
-            case other => other.validated[VersionEntry].map(Some(_))
-          }
+                      case JString(`unsetSentinel`) => Success(None)
+                      case other                    => other.validated[VersionEntry].map(Some(_))
+                    }
         } yield version
       } else {
         Success(None)
@@ -124,8 +129,10 @@ object VersionLog {
         for {
           jvs <- JParser.parseManyFromFile(logFile).leftMap(Error.thrown)
           versions <- jvs.toList
-            .traverse[({ type λ[α] = Validation[Error, α] })#λ, VersionEntry](
-              _.validated[VersionEntry])
+                       .traverse[
+                         ({ type λ[α] = Validation[Error, α] })#λ,
+                         VersionEntry
+                       ](_.validated[VersionEntry])
         } yield versions
       } else {
         Success(Nil)
@@ -136,8 +143,10 @@ object VersionLog {
         for {
           jvs <- JParser.parseManyFromFile(completedFile).leftMap(Error.thrown)
           versions <- jvs.toList
-            .traverse[({ type λ[α] = Validation[Error, α] })#λ, UUID](
-              _.validated[UUID])
+                       .traverse[
+                         ({ type λ[α] = Validation[Error, α] })#λ,
+                         UUID
+                       ](_.validated[UUID])
         } yield versions.toSet
       } else {
         Success(Set.empty)
@@ -152,28 +161,28 @@ object VersionLog {
 /**
   * Track path versions. This class is not thread safe
   */
-class VersionLog(logFiles: VersionLog.LogFiles,
-                 initVersion: Option[VersionEntry],
-                 initAllVersions: List[VersionEntry],
-                 initCompletedVersions: Set[UUID])
-    extends Logging {
+class VersionLog(
+    logFiles: VersionLog.LogFiles,
+    initVersion: Option[VersionEntry],
+    initAllVersions: List[VersionEntry],
+    initCompletedVersions: Set[UUID]
+) extends Logging {
   import VersionLog._
   import logFiles._
 
   private[this] val workLock = FileLock(logFiles.baseDir, lockName)
 
   private[this] var currentVersion: Option[VersionEntry] = initVersion
-  private[this] var allVersions: List[VersionEntry] = initAllVersions
-  private[this] var completedVersions: Set[UUID] = initCompletedVersions
+  private[this] var allVersions: List[VersionEntry]      = initAllVersions
+  private[this] var completedVersions: Set[UUID]         = initCompletedVersions
 
   def current: Option[VersionEntry] = currentVersion
   def find(version: UUID): Option[VersionEntry] =
     allVersions.find(_.id == version)
   def isCompleted(version: UUID) = completedVersions.contains(version)
 
-  def close = {
+  def close =
     workLock.release
-  }
 
   def addVersion(entry: VersionEntry): IO[PrecogUnit] =
     allVersions.find(_ == entry) map { _ =>
@@ -187,37 +196,40 @@ class VersionLog(logFiles: VersionLog.LogFiles,
       }
     }
 
-  def completeVersion(version: UUID): IO[PrecogUnit] = {
+  def completeVersion(version: UUID): IO[PrecogUnit] =
     if (allVersions.exists(_.id == version)) {
       !isCompleted(version) whenM {
         logger.debug("Completing version " + version)
-        IOUtils.writeToFile(version.serialize.renderCompact + "\n",
-                            completedFile)
-      } map { _ =>
-        PrecogUnit
-      }
+        IOUtils.writeToFile(
+          version.serialize.renderCompact + "\n",
+          completedFile
+        )
+      } map { _ => PrecogUnit }
     } else {
-      IO.throwIO(new IllegalStateException(
-              "Cannot make nonexistent version %s current" format version))
+      IO.throwIO(
+        new IllegalStateException(
+          "Cannot make nonexistent version %s current" format version
+        )
+      )
     }
-  }
 
-  def setHead(newHead: UUID): IO[PrecogUnit] = {
+  def setHead(newHead: UUID): IO[PrecogUnit] =
     currentVersion.exists(_.id == newHead) unlessM {
       allVersions.find(_.id == newHead) traverse { entry =>
         logger.debug("Setting HEAD to " + newHead)
         IOUtils.writeToFile(entry.serialize.renderCompact + "\n", headFile) map {
-          _ =>
-            currentVersion = Some(entry);
+          _ => currentVersion = Some(entry);
         }
       } flatMap {
-        _.isEmpty.whenM(IO.throwIO(new IllegalStateException(
-                    "Attempt to set head to nonexistent version %s" format newHead)))
+        _.isEmpty.whenM(
+          IO.throwIO(
+            new IllegalStateException(
+              "Attempt to set head to nonexistent version %s" format newHead
+            )
+          )
+        )
       }
-    } map { _ =>
-      PrecogUnit
-    }
-  }
+    } map { _ => PrecogUnit }
 
   def clearHead = IOUtils.writeToFile(unsetSentinelJV, headFile).map { _ =>
     currentVersion = None
@@ -225,7 +237,10 @@ class VersionLog(logFiles: VersionLog.LogFiles,
 }
 
 case class VersionEntry(
-    id: UUID, typeName: PathData.DataType, timestamp: Instant)
+    id: UUID,
+    typeName: PathData.DataType,
+    timestamp: Instant
+)
 
 object VersionEntry {
   implicit val versionEntryIso =
@@ -233,8 +248,8 @@ object VersionEntry {
 
   val schemaV1 = "id" :: "typeName" :: "timestamp" :: HNil
 
-  implicit val Decomposer: Decomposer[VersionEntry] = decomposerV(
-      schemaV1, Some("1.0".v))
-  implicit val Extractor: Extractor[VersionEntry] = extractorV(
-      schemaV1, Some("1.0".v))
+  implicit val Decomposer: Decomposer[VersionEntry] =
+    decomposerV(schemaV1, Some("1.0".v))
+  implicit val Extractor: Extractor[VersionEntry] =
+    extractorV(schemaV1, Some("1.0".v))
 }

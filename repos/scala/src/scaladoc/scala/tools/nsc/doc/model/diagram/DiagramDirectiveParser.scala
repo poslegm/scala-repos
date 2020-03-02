@@ -70,10 +70,12 @@ trait DiagramDirectiveParser {
       else NoDiagramAtAll
 
     if (template.comment.isDefined)
-      makeDiagramFilter(template,
-                        template.comment.get.inheritDiagram,
-                        defaultFilter,
-                        isInheritanceDiagram = true)
+      makeDiagramFilter(
+        template,
+        template.comment.get.inheritDiagram,
+        defaultFilter,
+        isInheritanceDiagram = true
+      )
     else defaultFilter
   }
 
@@ -83,51 +85,54 @@ trait DiagramDirectiveParser {
       if (template.isPackage || template.isObject) FullDiagram
       else NoDiagramAtAll
     if (template.comment.isDefined)
-      makeDiagramFilter(template,
-                        template.comment.get.contentDiagram,
-                        defaultFilter,
-                        isInheritanceDiagram = false)
+      makeDiagramFilter(
+        template,
+        template.comment.get.contentDiagram,
+        defaultFilter,
+        isInheritanceDiagram = false
+      )
     else defaultFilter
   }
 
-  protected var tFilter = 0l
-  protected var tModel = 0l
+  protected var tFilter = 0L
+  protected var tModel  = 0L
 
   /** Show the entire diagram, no filtering */
   case object FullDiagram extends DiagramFilter {
-    val hideDiagram: Boolean = false
-    val hideIncomingImplicits: Boolean = false
-    val hideOutgoingImplicits: Boolean = false
-    val hideSuperclasses: Boolean = false
-    val hideSubclasses: Boolean = false
-    val hideInheritedNodes: Boolean = false
-    def hideNode(clazz: Node): Boolean = false
+    val hideDiagram: Boolean                          = false
+    val hideIncomingImplicits: Boolean                = false
+    val hideOutgoingImplicits: Boolean                = false
+    val hideSuperclasses: Boolean                     = false
+    val hideSubclasses: Boolean                       = false
+    val hideInheritedNodes: Boolean                   = false
+    def hideNode(clazz: Node): Boolean                = false
     def hideEdge(clazz1: Node, clazz2: Node): Boolean = false
   }
 
   /** Hide the diagram completely, no need for special filtering */
   case object NoDiagramAtAll extends DiagramFilter {
-    val hideDiagram: Boolean = true
-    val hideIncomingImplicits: Boolean = true
-    val hideOutgoingImplicits: Boolean = true
-    val hideSuperclasses: Boolean = true
-    val hideSubclasses: Boolean = true
-    val hideInheritedNodes: Boolean = true
-    def hideNode(clazz: Node): Boolean = true
+    val hideDiagram: Boolean                          = true
+    val hideIncomingImplicits: Boolean                = true
+    val hideOutgoingImplicits: Boolean                = true
+    val hideSuperclasses: Boolean                     = true
+    val hideSubclasses: Boolean                       = true
+    val hideInheritedNodes: Boolean                   = true
+    def hideNode(clazz: Node): Boolean                = true
     def hideEdge(clazz1: Node, clazz2: Node): Boolean = true
   }
 
   /** The AnnotationDiagramFilter trait directs the diagram engine according to an annotation
     *  TODO: Should document the annotation, for now see parseDiagramAnnotation in ModelFactory.scala */
-  case class AnnotationDiagramFilter(hideDiagram: Boolean,
-                                     hideIncomingImplicits: Boolean,
-                                     hideOutgoingImplicits: Boolean,
-                                     hideSuperclasses: Boolean,
-                                     hideSubclasses: Boolean,
-                                     hideInheritedNodes: Boolean,
-                                     hideNodesFilter: List[Pattern],
-                                     hideEdgesFilter: List[(Pattern, Pattern)])
-      extends DiagramFilter {
+  case class AnnotationDiagramFilter(
+      hideDiagram: Boolean,
+      hideIncomingImplicits: Boolean,
+      hideOutgoingImplicits: Boolean,
+      hideSuperclasses: Boolean,
+      hideSubclasses: Boolean,
+      hideInheritedNodes: Boolean,
+      hideNodesFilter: List[Pattern],
+      hideEdgesFilter: List[(Pattern, Pattern)]
+  ) extends DiagramFilter {
 
     private[this] def getName(n: Node): String =
       if (n.tpl.isDefined) n.tpl.get.qualifiedName
@@ -135,12 +140,13 @@ trait DiagramDirectiveParser {
 
     def hideNode(clazz: Node): Boolean = {
       val qualifiedName = getName(clazz)
-      for (hideFilter <- hideNodesFilter) if (hideFilter
-                                                .matcher(qualifiedName)
-                                                .matches) {
-        // println(hideFilter + ".matcher(" + qualifiedName + ").matches = " + hideFilter.matcher(qualifiedName).matches)
-        return true
-      }
+      for (hideFilter <- hideNodesFilter)
+        if (hideFilter
+              .matcher(qualifiedName)
+              .matches) {
+          // println(hideFilter + ".matcher(" + qualifiedName + ").matches = " + hideFilter.matcher(qualifiedName).matches)
+          return true
+        }
       false
     }
 
@@ -160,20 +166,24 @@ trait DiagramDirectiveParser {
   }
 
   // TODO: This could certainly be improved -- right now the only regex is *, but there's no way to match a single identifier
-  private val NodeSpecRegex = "\\\"[A-Za-z\\*][A-Za-z\\.\\*]*\\\""
+  private val NodeSpecRegex   = "\\\"[A-Za-z\\*][A-Za-z\\.\\*]*\\\""
   private val NodeSpecPattern = Pattern.compile(NodeSpecRegex)
   private val EdgeSpecRegex =
     "\\(" + NodeSpecRegex + "\\s*\\->\\s*" + NodeSpecRegex + "\\)"
   // And the composed regexes:
   private val HideNodesRegex = new Regex(
-      "^hideNodes(\\s*" + NodeSpecRegex + ")+$")
+    "^hideNodes(\\s*" + NodeSpecRegex + ")+$"
+  )
   private val HideEdgesRegex = new Regex(
-      "^hideEdges(\\s*" + EdgeSpecRegex + ")+$")
+    "^hideEdges(\\s*" + EdgeSpecRegex + ")+$"
+  )
 
-  private def makeDiagramFilter(template: DocTemplateImpl,
-                                directives: List[String],
-                                defaultFilter: DiagramFilter,
-                                isInheritanceDiagram: Boolean): DiagramFilter =
+  private def makeDiagramFilter(
+      template: DocTemplateImpl,
+      directives: List[String],
+      defaultFilter: DiagramFilter,
+      isInheritanceDiagram: Boolean
+  ): DiagramFilter =
     directives match {
 
       // if there are no specific diagram directives, return the default filter (either FullDiagram or NoDiagramAtAll)
@@ -183,13 +193,13 @@ trait DiagramDirectiveParser {
       // compute the exact filters. By including the annotation, the diagram is automatically added
       case _ =>
         tFilter -= System.currentTimeMillis
-        var hideDiagram0: Boolean = false
-        var hideIncomingImplicits0: Boolean = false
-        var hideOutgoingImplicits0: Boolean = false
-        var hideSuperclasses0: Boolean = false
-        var hideSubclasses0: Boolean = false
-        var hideInheritedNodes0: Boolean = false
-        var hideNodesFilter0: List[Pattern] = Nil
+        var hideDiagram0: Boolean                      = false
+        var hideIncomingImplicits0: Boolean            = false
+        var hideOutgoingImplicits0: Boolean            = false
+        var hideSuperclasses0: Boolean                 = false
+        var hideSubclasses0: Boolean                   = false
+        var hideInheritedNodes0: Boolean               = false
+        var hideNodesFilter0: List[Pattern]            = Nil
         var hideEdgesFilter0: List[(Pattern, Pattern)] = Nil
 
         def warning(message: String) = {
@@ -198,8 +208,9 @@ trait DiagramDirectiveParser {
             if (template.sym.hasPackageFlag) template.sym.packageObject
             else template.sym
           assert(
-              (sym != global.NoSymbol) ||
-              (sym == global.rootMirror.RootPackage))
+            (sym != global.NoSymbol) ||
+              (sym == global.rootMirror.RootPackage)
+          )
           global.reporter.warning(sym.pos, message)
         }
 
@@ -247,12 +258,13 @@ trait DiagramDirectiveParser {
           // don't need to do anything about it
           case _ =>
             warning(
-                "Could not understand diagram annotation in " + template.kind +
+              "Could not understand diagram annotation in " + template.kind +
                 " " + template.qualifiedName + ": unmatched entry \"" + entry +
                 "\".\n" + "  This could be because:\n" +
                 "   - you forgot to separate entries by commas\n" +
                 "   - you used a tag that is not allowed in the current context (like @contentDiagram hideSuperclasses)\n" +
-                "   - you did not use one of the allowed tags (see docs.scala-lang.org for scaladoc annotations)")
+                "   - you did not use one of the allowed tags (see docs.scala-lang.org for scaladoc annotations)"
+            )
         }
         val result =
           if (hideDiagram0) NoDiagramAtAll
@@ -264,19 +276,22 @@ trait DiagramDirectiveParser {
             FullDiagram
           else
             AnnotationDiagramFilter(
-                hideDiagram = hideDiagram0,
-                hideIncomingImplicits = hideIncomingImplicits0,
-                hideOutgoingImplicits = hideOutgoingImplicits0,
-                hideSuperclasses = hideSuperclasses0,
-                hideSubclasses = hideSubclasses0,
-                hideInheritedNodes = hideInheritedNodes0,
-                hideNodesFilter = hideNodesFilter0,
-                hideEdgesFilter = hideEdgesFilter0)
+              hideDiagram = hideDiagram0,
+              hideIncomingImplicits = hideIncomingImplicits0,
+              hideOutgoingImplicits = hideOutgoingImplicits0,
+              hideSuperclasses = hideSuperclasses0,
+              hideSubclasses = hideSubclasses0,
+              hideInheritedNodes = hideInheritedNodes0,
+              hideNodesFilter = hideNodesFilter0,
+              hideEdgesFilter = hideEdgesFilter0
+            )
 
         if (settings.docDiagramsDebug && result != NoDiagramAtAll &&
             result != FullDiagram)
-          settings.printMsg(template.kind + " " + template.qualifiedName +
-              " filter: " + result)
+          settings.printMsg(
+            template.kind + " " + template.qualifiedName +
+              " filter: " + result
+          )
         tFilter += System.currentTimeMillis
 
         result

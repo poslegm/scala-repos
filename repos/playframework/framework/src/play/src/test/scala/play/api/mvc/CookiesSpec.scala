@@ -14,7 +14,7 @@ object CookiesSpec extends Specification {
       val originalCookie = Cookie(name = "cookie", value = "value")
 
       val headerString = Cookies.encodeCookieHeader(Seq(originalCookie))
-      val c = Cookies.fromCookieHeader(Some(headerString))
+      val c            = Cookies.fromCookieHeader(Some(headerString))
 
       c must beAnInstanceOf[Cookies]
     }
@@ -43,8 +43,8 @@ object CookiesSpec extends Specification {
 
   "trait Cookies#get" should {
     val originalCookie = Cookie(name = "cookie", value = "value")
-    def headerString = Cookies.encodeCookieHeader(Seq(originalCookie))
-    def c: Cookies = Cookies.fromCookieHeader(Some(headerString))
+    def headerString   = Cookies.encodeCookieHeader(Seq(originalCookie))
+    def c: Cookies     = Cookies.fromCookieHeader(Some(headerString))
 
     "get a cookie" in withApplication {
       c.get("cookie") must beSome[Cookie].which { cookie =>
@@ -59,8 +59,8 @@ object CookiesSpec extends Specification {
 
   "trait Cookies#apply" should {
     val originalCookie = Cookie(name = "cookie", value = "value")
-    def headerString = Cookies.encodeCookieHeader(Seq(originalCookie))
-    def c: Cookies = Cookies.fromCookieHeader(Some(headerString))
+    def headerString   = Cookies.encodeCookieHeader(Seq(originalCookie))
+    def c: Cookies     = Cookies.fromCookieHeader(Some(headerString))
 
     "apply for a cookie" in withApplication {
       val cookie = c("cookie")
@@ -85,19 +85,17 @@ object CookiesSpec extends Specification {
 
     "contain elements for some cookies" in withApplication {
       val headerString = Cookies.encodeCookieHeader(Seq(cookie1, cookie2))
-      val c: Cookies = Cookies.fromCookieHeader(Some(headerString))
+      val c: Cookies   = Cookies.fromCookieHeader(Some(headerString))
       c must contain(allOf(cookie1, cookie2))
     }
 
     // technically the same as above
     "run a foreach for a cookie" in withApplication {
       val headerString = Cookies.encodeCookieHeader(Seq(cookie1))
-      val c: Cookies = Cookies.fromCookieHeader(Some(headerString))
+      val c: Cookies   = Cookies.fromCookieHeader(Some(headerString))
 
       var myCookie: Cookie = null
-      c.foreach { cookie =>
-        myCookie = cookie
-      }
+      c.foreach(cookie => myCookie = cookie)
       myCookie must beEqualTo(cookie1)
     }
   }
@@ -111,30 +109,32 @@ object CookiesSpec extends Specification {
 
   "merging cookies" should {
     "replace old cookies with new cookies of the same name" in {
-      val originalRequest = FakeRequest().withCookies(
-          Cookie("foo", "fooValue1"), Cookie("bar", "barValue2"))
+      val originalRequest = FakeRequest()
+        .withCookies(Cookie("foo", "fooValue1"), Cookie("bar", "barValue2"))
       val requestWithMoreCookies = originalRequest.withCookies(
-          Cookie("foo", "fooValue2"), Cookie("baz", "bazValue"))
+        Cookie("foo", "fooValue2"),
+        Cookie("baz", "bazValue")
+      )
       val cookies = requestWithMoreCookies.cookies
       cookies.toSet must_== Set(
-          Cookie("foo", "fooValue2"),
-          Cookie("bar", "barValue2"),
-          Cookie("baz", "bazValue")
+        Cookie("foo", "fooValue2"),
+        Cookie("bar", "barValue2"),
+        Cookie("baz", "bazValue")
       )
     }
     "return one cookie for each name" in {
       val cookies = FakeRequest()
         .withCookies(
-            Cookie("foo", "foo1"),
-            Cookie("foo", "foo2"),
-            Cookie("bar", "bar"),
-            Cookie("baz", "baz")
-        )
-        .cookies
-      cookies.toSet must_== Set(
+          Cookie("foo", "foo1"),
           Cookie("foo", "foo2"),
           Cookie("bar", "bar"),
           Cookie("baz", "baz")
+        )
+        .cookies
+      cookies.toSet must_== Set(
+        Cookie("foo", "foo2"),
+        Cookie("bar", "bar"),
+        Cookie("baz", "baz")
       )
     }
   }

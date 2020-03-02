@@ -26,7 +26,7 @@ class OpenHashSetSuite extends SparkFunSuite with Matchers {
 
   test("size for specialized, primitive int") {
     val loadFactor = 0.7
-    val set = new OpenHashSet[Int](64, loadFactor)
+    val set        = new OpenHashSet[Int](64, loadFactor)
     for (i <- 0 until 1024) {
       set.add(i)
     }

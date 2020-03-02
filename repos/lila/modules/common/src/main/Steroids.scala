@@ -4,24 +4,39 @@ import ornicar.scalalib
 import ornicar.scalalib.Zero
 
 trait Steroids
-    extends scalalib.Validation with scalalib.Common with scalalib.Regex
-    with scalalib.OrnicarMonoid.Instances with scalalib.Zero.Syntax
-    with scalalib.Zero.Instances with scalalib.OrnicarOption
-    with scalalib.OrnicarNonEmptyList with scalaz.std.OptionInstances
-    with scalaz.std.OptionFunctions with scalaz.syntax.std.ToOptionIdOps
-    with scalaz.std.ListInstances with scalaz.std.ListFunctions
-    with scalaz.syntax.std.ToListOps with scalaz.std.StringInstances
-    with scalaz.std.TupleInstances with scalaz.syntax.ToIdOps
-    with scalaz.syntax.ToEqualOps with scalaz.syntax.ToApplyOps
-    with scalaz.syntax.ToValidationOps with scalaz.syntax.ToFunctorOps
-    with scalaz.syntax.ToMonoidOps with scalaz.syntax.ToTraverseOps
-    with scalaz.syntax.ToShowOps with BooleanSteroids with OptionSteroids
-    with ListSteroids with JodaTimeSteroids
+    extends scalalib.Validation
+    with scalalib.Common
+    with scalalib.Regex
+    with scalalib.OrnicarMonoid.Instances
+    with scalalib.Zero.Syntax
+    with scalalib.Zero.Instances
+    with scalalib.OrnicarOption
+    with scalalib.OrnicarNonEmptyList
+    with scalaz.std.OptionInstances
+    with scalaz.std.OptionFunctions
+    with scalaz.syntax.std.ToOptionIdOps
+    with scalaz.std.ListInstances
+    with scalaz.std.ListFunctions
+    with scalaz.syntax.std.ToListOps
+    with scalaz.std.StringInstances
+    with scalaz.std.TupleInstances
+    with scalaz.syntax.ToIdOps
+    with scalaz.syntax.ToEqualOps
+    with scalaz.syntax.ToApplyOps
+    with scalaz.syntax.ToValidationOps
+    with scalaz.syntax.ToFunctorOps
+    with scalaz.syntax.ToMonoidOps
+    with scalaz.syntax.ToTraverseOps
+    with scalaz.syntax.ToShowOps
+    with BooleanSteroids
+    with OptionSteroids
+    with ListSteroids
+    with JodaTimeSteroids
 
 trait JodaTimeSteroids {
   import org.joda.time.DateTime
   implicit final class LilaPimpedDateTime(date: DateTime) {
-    def getSeconds: Long = date.getMillis / 1000
+    def getSeconds: Long        = date.getMillis / 1000
     def getDate: java.util.Date = date.toDate
   }
   implicit val dateTimeOrdering: Ordering[DateTime] =
@@ -76,7 +91,7 @@ trait OptionSteroids {
     import scalaz.std.{option => o}
 
     def fold[X](some: A => X, none: => X): X = self match {
-      case None => none
+      case None    => none
       case Some(a) => some(a)
     }
 

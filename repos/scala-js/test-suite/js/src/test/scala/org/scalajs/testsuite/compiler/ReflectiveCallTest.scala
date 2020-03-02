@@ -36,7 +36,7 @@ class ReflectiveCallTest {
     def f(x: ValueType): ValueType = x.value
 
     class StringValue(x: String) {
-      def value: this.type = this
+      def value: this.type            = this
       override def toString(): String = s"StringValue($x)"
     }
 
@@ -154,15 +154,15 @@ class ReflectiveCallTest {
   }
 
   @Test def should_work_with_Arrays(): Unit = {
-    type UPD = { def update(i: Int, x: String): Unit }
-    type APL = { def apply(i: Int): String }
-    type LEN = { def length: Int }
+    type UPD   = { def update(i: Int, x: String): Unit }
+    type APL   = { def apply(i: Int): String }
+    type LEN   = { def length: Int }
     type CLONE = Any { def clone(): Object }
 
     def upd(obj: UPD, i: Int, x: String): Unit = obj.update(i, x)
-    def apl(obj: APL, i: Int): String = obj.apply(i)
-    def len(obj: LEN): Int = obj.length
-    def clone(obj: CLONE): Object = obj.clone
+    def apl(obj: APL, i: Int): String          = obj.apply(i)
+    def len(obj: LEN): Int                     = obj.length
+    def clone(obj: CLONE): Object              = obj.clone
 
     val x = Array("asdf", "foo", "bar")
     val y = clone(x).asInstanceOf[Array[String]]
@@ -175,15 +175,15 @@ class ReflectiveCallTest {
   }
 
   @Test def should_work_with_Arrays_of_primitive_values(): Unit = {
-    type UPD = { def update(i: Int, x: Int): Unit }
-    type APL = { def apply(i: Int): Int }
-    type LEN = { def length: Int }
+    type UPD   = { def update(i: Int, x: Int): Unit }
+    type APL   = { def apply(i: Int): Int }
+    type LEN   = { def length: Int }
     type CLONE = Any { def clone(): Object }
 
     def upd(obj: UPD, i: Int, x: Int): Unit = obj.update(i, x)
-    def apl(obj: APL, i: Int): Int = obj.apply(i)
-    def len(obj: LEN): Int = obj.length
-    def clone(obj: CLONE): Object = obj.clone
+    def apl(obj: APL, i: Int): Int          = obj.apply(i)
+    def len(obj: LEN): Int                  = obj.length
+    def clone(obj: CLONE): Object           = obj.clone
 
     val x = Array(5, 2, 8)
     val y = clone(x).asInstanceOf[Array[Int]]
@@ -208,7 +208,8 @@ class ReflectiveCallTest {
     assertEquals(4, lenA("asdf"))
   }
 
-  @Test def should_properly_generate_forwarders_for_inherited_methods(): Unit = {
+  @Test def should_properly_generate_forwarders_for_inherited_methods()
+      : Unit = {
     trait A {
       def foo: Int
     }
@@ -225,7 +226,8 @@ class ReflectiveCallTest {
   }
 
   @Test
-  def should_be_bug_compatible_with_Scala_JVM_for_inherited_overloads(): Unit = {
+  def should_be_bug_compatible_with_Scala_JVM_for_inherited_overloads()
+      : Unit = {
     class Base {
       def foo(x: Option[Int]): String = "a"
     }
@@ -268,7 +270,7 @@ class ReflectiveCallTest {
       override def clone(): AnyRef = super.clone()
     }
 
-    val b = new B(1)
+    val b      = new B(1)
     val bClone = objCloneTest(b).asInstanceOf[B]
 
     assertFalse(b eq bClone)
@@ -301,7 +303,10 @@ class ReflectiveCallTest {
       def isInfinite(): Boolean
     }
     def test(
-        x: FloatingNumberLike, isNaN: Boolean, isInfinite: Boolean): Unit = {
+        x: FloatingNumberLike,
+        isNaN: Boolean,
+        isInfinite: Boolean
+    ): Unit = {
       assertEquals(isNaN, x.isNaN())
       assertEquals(isInfinite, x.isInfinite())
     }
@@ -329,10 +334,10 @@ class ReflectiveCallTest {
 
   @Test def should_unbox_all_types_of_arguments_issue_899(): Unit = {
     class Foo {
-      def makeInt: Int = 5
+      def makeInt: Int          = 5
       def testInt(x: Int): Unit = assertEquals(5, x)
 
-      def makeRef: Option[String] = Some("hi")
+      def makeRef: Option[String]          = Some("hi")
       def testRef(x: Option[String]): Unit = assertEquals(Some("hi"), x)
     }
 
@@ -341,8 +346,7 @@ class ReflectiveCallTest {
      * methods in structural types.
      */
 
-    def test(
-        foo: {
+    def test(foo: {
       def makeInt: Int
       def testInt(x: Int): Unit
       def makeRef: Option[String]

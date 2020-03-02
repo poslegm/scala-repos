@@ -12,7 +12,8 @@ import akka.cluster.Cluster
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class MetricsExtensionSpec
-    extends AkkaSpec(MetricsConfig.clusterSigarMock) with ImplicitSender
+    extends AkkaSpec(MetricsConfig.clusterSigarMock)
+    with ImplicitSender
     with RedirectLogging {
 
   val cluster = Cluster(system)
@@ -57,18 +58,20 @@ class MetricsExtensionSpec
 
     "verify sigar mock data matches expected ewma data" in {
 
-      val history = metricsView.metricsHistory.reverse.map { _.head }
+      val history = metricsView.metricsHistory.reverse.map(_.head)
 
-      val expected = List((0.700, 0.000, 0.000),
-                          (0.700, 0.018, 0.007),
-                          (0.700, 0.051, 0.020),
-                          (0.700, 0.096, 0.038),
-                          (0.700, 0.151, 0.060),
-                          (0.700, 0.214, 0.085),
-                          (0.700, 0.266, 0.106),
-                          (0.700, 0.309, 0.123),
-                          (0.700, 0.343, 0.137),
-                          (0.700, 0.372, 0.148))
+      val expected = List(
+        (0.700, 0.000, 0.000),
+        (0.700, 0.018, 0.007),
+        (0.700, 0.051, 0.020),
+        (0.700, 0.096, 0.038),
+        (0.700, 0.151, 0.060),
+        (0.700, 0.214, 0.085),
+        (0.700, 0.266, 0.106),
+        (0.700, 0.309, 0.123),
+        (0.700, 0.343, 0.137),
+        (0.700, 0.372, 0.148)
+      )
 
       expected.size should ===(sampleCount)
 
@@ -77,7 +80,8 @@ class MetricsExtensionSpec
           (mockMetrics, expectedData) match {
             case (
                 Cpu(_, _, loadAverageMock, cpuCombinedMock, cpuStolenMock, _),
-                (loadAverageEwma, cpuCombinedEwma, cpuStolenEwma)) ⇒
+                (loadAverageEwma, cpuCombinedEwma, cpuStolenEwma)
+                ) ⇒
               loadAverageMock.get should ===(loadAverageEwma +- epsilon)
               cpuCombinedMock.get should ===(cpuCombinedEwma +- epsilon)
               cpuStolenMock.get should ===(cpuStolenEwma +- epsilon)
@@ -109,9 +113,7 @@ class MetricsExtensionSpec
         size5 should ===(size4)
       }
 
-      (1 to 3) foreach { step ⇒
-        cycle()
-      }
+      (1 to 3) foreach { step ⇒ cycle() }
     }
   }
 }

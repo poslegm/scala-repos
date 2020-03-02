@@ -31,7 +31,7 @@ List(1) ++ List('a')
   // replace indylambda function names by <function0>
   override def eval() = {
     val lines = super.eval
-    val r = """\$\$Lambda.*""".r
+    val r     = """\$\$Lambda.*""".r
     lines.map(l => r.replaceAllIn(l, "<function0>"))
   }
 }

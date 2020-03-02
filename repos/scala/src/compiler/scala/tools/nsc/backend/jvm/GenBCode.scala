@@ -64,30 +64,32 @@ abstract class GenBCode extends BCodeSyncAndTry {
       "Generate bytecode from ASTs using the ASM library"
     override def erasedTypes = true
 
-    private var bytecodeWriter: BytecodeWriter = null
-    private var mirrorCodeGen: JMirrorBuilder = null
+    private var bytecodeWriter: BytecodeWriter    = null
+    private var mirrorCodeGen: JMirrorBuilder     = null
     private var beanInfoCodeGen: JBeanInfoBuilder = null
 
     /* ---------------- q1 ---------------- */
 
     case class Item1(arrivalPos: Int, cd: ClassDef, cunit: CompilationUnit) {
-      def isPoison = { arrivalPos == Int.MaxValue }
+      def isPoison = arrivalPos == Int.MaxValue
     }
     private val poison1 = Item1(Int.MaxValue, null, null)
-    private val q1 = new java.util.LinkedList[Item1]
+    private val q1      = new java.util.LinkedList[Item1]
 
     /* ---------------- q2 ---------------- */
 
-    case class Item2(arrivalPos: Int,
-                     mirror: asm.tree.ClassNode,
-                     plain: asm.tree.ClassNode,
-                     bean: asm.tree.ClassNode,
-                     outFolder: scala.tools.nsc.io.AbstractFile) {
-      def isPoison = { arrivalPos == Int.MaxValue }
+    case class Item2(
+        arrivalPos: Int,
+        mirror: asm.tree.ClassNode,
+        plain: asm.tree.ClassNode,
+        bean: asm.tree.ClassNode,
+        outFolder: scala.tools.nsc.io.AbstractFile
+    ) {
+      def isPoison = arrivalPos == Int.MaxValue
     }
 
     private val poison2 = Item2(Int.MaxValue, null, null, null, null)
-    private val q2 = new _root_.java.util.LinkedList[Item2]
+    private val q2      = new _root_.java.util.LinkedList[Item2]
 
     /* ---------------- q3 ---------------- */
 
@@ -103,23 +105,24 @@ abstract class GenBCode extends BCodeSyncAndTry {
         jclassBytes: Array[Byte]
     )
 
-    case class Item3(arrivalPos: Int,
-                     mirror: SubItem3,
-                     plain: SubItem3,
-                     bean: SubItem3,
-                     outFolder: scala.tools.nsc.io.AbstractFile) {
+    case class Item3(
+        arrivalPos: Int,
+        mirror: SubItem3,
+        plain: SubItem3,
+        bean: SubItem3,
+        outFolder: scala.tools.nsc.io.AbstractFile
+    ) {
 
-      def isPoison = { arrivalPos == Int.MaxValue }
+      def isPoison = arrivalPos == Int.MaxValue
     }
     private val i3comparator = new java.util.Comparator[Item3] {
-      override def compare(a: Item3, b: Item3) = {
+      override def compare(a: Item3, b: Item3) =
         if (a.arrivalPos < b.arrivalPos) -1
         else if (a.arrivalPos == b.arrivalPos) 0
         else 1
-      }
     }
     private val poison3 = Item3(Int.MaxValue, null, null, null, null)
-    private val q3 = new java.util.PriorityQueue[Item3](1000, i3comparator)
+    private val q3      = new java.util.PriorityQueue[Item3](1000, i3comparator)
 
     /*
      *  Pipeline that takes ClassDefs from queue-1, lowers them into an intermediate form, placing them on queue-2
@@ -135,11 +138,13 @@ abstract class GenBCode extends BCodeSyncAndTry {
             q2 add poison2
             return
           } else {
-            try { withCurrentUnit(item.cunit)(visit(item)) } catch {
+            try { withCurrentUnit(item.cunit)(visit(item)) }
+            catch {
               case ex: Throwable =>
                 ex.printStackTrace()
                 error(
-                    s"Error while emitting ${item.cunit.source}\n${ex.getMessage}")
+                  s"Error while emitting ${item.cunit.source}\n${ex.getMessage}"
+                )
             }
           }
         }
@@ -153,7 +158,7 @@ abstract class GenBCode extends BCodeSyncAndTry {
        */
       def visit(item: Item1) {
         val Item1(arrivalPos, cd, cunit) = item
-        val claszSymbol = cd.symbol
+        val claszSymbol                  = cd.symbol
 
         // GenASM checks this before classfiles are emitted, https://github.com/scala/scala/commit/e4d1d930693ac75d8eb64c2c3c69f2fc22bec739
         val lowercaseJavaClassName = claszSymbol.javaClassName.toLowerCase
@@ -162,8 +167,8 @@ abstract class GenBCode extends BCodeSyncAndTry {
             caseInsensitively.put(lowercaseJavaClassName, claszSymbol)
           case Some(dupClassSym) =>
             reporter.warning(
-                claszSymbol.pos,
-                s"Class ${claszSymbol.javaClassName} differs only in case from ${dupClassSym.javaClassName}. " +
+              claszSymbol.pos,
+              s"Class ${claszSymbol.javaClassName} differs only in case from ${dupClassSym.javaClassName}. " +
                 "Such classes will overwrite one another on case-insensitive filesystems."
             )
         }
@@ -179,7 +184,9 @@ abstract class GenBCode extends BCodeSyncAndTry {
             if (claszSymbol.companionClass == NoSymbol) {
               mirrorCodeGen.genMirrorClass(claszSymbol, cunit)
             } else {
-              log(s"No mirror class for module with linked class: ${claszSymbol.fullName}")
+              log(
+                s"No mirror class for module with linked class: ${claszSymbol.fullName}"
+              )
               null
             }
           } else null
@@ -196,10 +203,10 @@ abstract class GenBCode extends BCodeSyncAndTry {
         val beanC =
           if (claszSymbol hasAnnotation BeanInfoAttr) {
             beanInfoCodeGen.genBeanInfoClass(
-                claszSymbol,
-                cunit,
-                fieldSymbols(claszSymbol),
-                methodSymbols(cd)
+              claszSymbol,
+              cunit,
+              fieldSymbols(claszSymbol),
+              methodSymbols(cd)
             )
           } else null
 
@@ -208,8 +215,8 @@ abstract class GenBCode extends BCodeSyncAndTry {
         val item2 = Item2(arrivalPos, mirrorC, plainC, beanC, outF)
 
         q2 add item2 // at the very end of this method so that no Worker2 thread starts mutating before we're done.
-      } // end of method visit(Item1)
-    } // end of class BCodePhase.Worker1
+      }              // end of method visit(Item1)
+    }                // end of class BCodePhase.Worker1
 
     /*
      *  Pipeline that takes ClassNodes from queue-2. The unit of work depends on the optimization level:
@@ -228,13 +235,16 @@ abstract class GenBCode extends BCodeSyncAndTry {
             case Item2(_, mirror, plain, bean, _) =>
               if (mirror != null)
                 byteCodeRepository.add(
-                    mirror, ByteCodeRepository.CompilationUnit)
+                  mirror,
+                  ByteCodeRepository.CompilationUnit
+                )
               if (plain != null)
                 byteCodeRepository.add(
-                    plain, ByteCodeRepository.CompilationUnit)
+                  plain,
+                  ByteCodeRepository.CompilationUnit
+                )
               if (bean != null)
-                byteCodeRepository.add(
-                    bean, ByteCodeRepository.CompilationUnit)
+                byteCodeRepository.add(bean, ByteCodeRepository.CompilationUnit)
           }
         if (settings.YoptBuildCallGraph)
           q2.asScala foreach { item =>
@@ -246,16 +256,18 @@ abstract class GenBCode extends BCodeSyncAndTry {
           closureOptimizer.rewriteClosureApplyInvocations()
       }
 
-      def localOptimizations(classNode: ClassNode): Unit = {
+      def localOptimizations(classNode: ClassNode): Unit =
         BackendStats.timed(BackendStats.methodOptTimer)(
-            localOpt.methodOptimizations(classNode))
-      }
+          localOpt.methodOptimizations(classNode)
+        )
 
       def setInnerClasses(classNode: ClassNode): Unit =
         if (classNode != null) {
           classNode.innerClasses.clear()
           addInnerClasses(
-              classNode, bTypes.backendUtils.collectNestedClasses(classNode))
+            classNode,
+            bTypes.backendUtils.collectNestedClasses(classNode)
+          )
         }
 
       def run() {
@@ -276,14 +288,16 @@ abstract class GenBCode extends BCodeSyncAndTry {
             } catch {
               case e: java.lang.RuntimeException
                   if e.getMessage != null &&
-                  (e.getMessage contains "too large!") =>
+                    (e.getMessage contains "too large!") =>
                 reporter.error(
-                    NoPosition,
-                    s"Could not write class ${item.plain.name} because it exceeds JVM code size limits. ${e.getMessage}")
+                  NoPosition,
+                  s"Could not write class ${item.plain.name} because it exceeds JVM code size limits. ${e.getMessage}"
+                )
               case ex: Throwable =>
                 ex.printStackTrace()
                 error(
-                    s"Error while emitting ${item.plain.name}\n${ex.getMessage}")
+                  s"Error while emitting ${item.plain.name}\n${ex.getMessage}"
+                )
             }
           }
         }
@@ -406,7 +420,9 @@ abstract class GenBCode extends BCodeSyncAndTry {
     private def drainQ3() {
 
       def sendToDisk(
-          cfr: SubItem3, outFolder: scala.tools.nsc.io.AbstractFile) {
+          cfr: SubItem3,
+          outFolder: scala.tools.nsc.io.AbstractFile
+      ) {
         if (cfr != null) {
           val SubItem3(jclassName, jclassBytes) = cfr
           try {
@@ -414,7 +430,11 @@ abstract class GenBCode extends BCodeSyncAndTry {
               if (outFolder == null) null
               else getFileForClassfile(outFolder, jclassName, ".class")
             bytecodeWriter.writeClass(
-                jclassName, jclassName, jclassBytes, outFile)
+              jclassName,
+              jclassName,
+              jclassBytes,
+              outFile
+            )
           } catch {
             case e: FileConflictException =>
               error(s"error writing $jclassName: ${e.getMessage}")
@@ -430,7 +450,7 @@ abstract class GenBCode extends BCodeSyncAndTry {
         val incoming = q3.poll
         moreComing = !incoming.isPoison
         if (moreComing) {
-          val item = incoming
+          val item      = incoming
           val outFolder = item.outFolder
           sendToDisk(item.mirror, outFolder)
           sendToDisk(item.plain, outFolder)
@@ -449,7 +469,7 @@ abstract class GenBCode extends BCodeSyncAndTry {
 
       def gen(tree: Tree) {
         tree match {
-          case EmptyTree => ()
+          case EmptyTree            => ()
           case PackageDef(_, stats) => stats foreach gen
           case cd: ClassDef =>
             q1 add Item1(arrivalPos, cd, cunit)
@@ -460,7 +480,7 @@ abstract class GenBCode extends BCodeSyncAndTry {
       gen(cunit.body)
     }
   } // end of class BCodePhase
-} // end of class GenBCode
+}   // end of class GenBCode
 
 object GenBCode {
   def mkFlags(args: Int*) = args.foldLeft(0)(_ | _)
@@ -469,6 +489,6 @@ object GenBCode {
   final val PublicStaticFinal =
     asm.Opcodes.ACC_PUBLIC | asm.Opcodes.ACC_STATIC | asm.Opcodes.ACC_FINAL
 
-  val CLASS_CONSTRUCTOR_NAME = "<clinit>"
+  val CLASS_CONSTRUCTOR_NAME    = "<clinit>"
   val INSTANCE_CONSTRUCTOR_NAME = "<init>"
 }

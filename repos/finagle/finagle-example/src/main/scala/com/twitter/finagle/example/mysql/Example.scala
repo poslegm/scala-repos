@@ -28,46 +28,60 @@ object SwimmingRecord {
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8"""
 
   val records = List(
-      SwimmingRecord("50 m freestyle",
-                     20.91F,
-                     "Cesar Cielo",
-                     "Brazil",
-                     Date.valueOf("2009-12-18")),
-      SwimmingRecord("100 m freestyle",
-                     46.91F,
-                     "Cesar Cielo",
-                     "Brazil",
-                     Date.valueOf("2009-08-02")),
-      SwimmingRecord("50 m backstroke",
-                     24.04F,
-                     "Liam Tancock",
-                     "Great Britain",
-                     Date.valueOf("2009-08-02")),
-      SwimmingRecord("100 m backstroke",
-                     51.94F,
-                     "Aaron Peirsol",
-                     "United States",
-                     Date.valueOf("2009-07-08")),
-      SwimmingRecord("50 m butterfly",
-                     22.43F,
-                     "Rafael Munoz",
-                     "Spain",
-                     Date.valueOf("2009-05-05")),
-      SwimmingRecord("100 m butterfly",
-                     49.82F,
-                     "Michael Phelps",
-                     "United States",
-                     Date.valueOf("2009-07-29"))
+    SwimmingRecord(
+      "50 m freestyle",
+      20.91f,
+      "Cesar Cielo",
+      "Brazil",
+      Date.valueOf("2009-12-18")
+    ),
+    SwimmingRecord(
+      "100 m freestyle",
+      46.91f,
+      "Cesar Cielo",
+      "Brazil",
+      Date.valueOf("2009-08-02")
+    ),
+    SwimmingRecord(
+      "50 m backstroke",
+      24.04f,
+      "Liam Tancock",
+      "Great Britain",
+      Date.valueOf("2009-08-02")
+    ),
+    SwimmingRecord(
+      "100 m backstroke",
+      51.94f,
+      "Aaron Peirsol",
+      "United States",
+      Date.valueOf("2009-07-08")
+    ),
+    SwimmingRecord(
+      "50 m butterfly",
+      22.43f,
+      "Rafael Munoz",
+      "Spain",
+      Date.valueOf("2009-05-05")
+    ),
+    SwimmingRecord(
+      "100 m butterfly",
+      49.82f,
+      "Michael Phelps",
+      "United States",
+      Date.valueOf("2009-07-29")
+    )
   )
 }
 
 object Example extends App {
-  val host = flag("server",
-                  new InetSocketAddress("localhost", 3306),
-                  "mysql server address")
+  val host = flag(
+    "server",
+    new InetSocketAddress("localhost", 3306),
+    "mysql server address"
+  )
   val username = flag("username", "<user>", "mysql username")
   val password = flag("password", "<password>", "mysql password")
-  val dbname = flag("database", "test", "default database to connect to")
+  val dbname   = flag("database", "test", "default database to connect to")
 
   def main() {
     val client = Mysql.client
@@ -94,9 +108,8 @@ object Example extends App {
     Await.ready(resultFuture)
   }
 
-  def createTable(client: Client): Future[Result] = {
+  def createTable(client: Client): Future[Result] =
     client.query(SwimmingRecord.createTableSQL)
-  }
 
   def insertValues(client: Client): Future[Seq[Result]] = {
     val insertSQL =
@@ -114,11 +127,11 @@ object Example extends App {
       "SELECT * FROM `finagle-mysql-example` WHERE `date` BETWEEN '2009-06-01' AND '2009-08-31'"
     client.select(query) { row =>
       val StringValue(event) = row("event").get
-      val DateValue(date) = row("date").get
-      val StringValue(name) = row("name").get
+      val DateValue(date)    = row("date").get
+      val StringValue(name)  = row("name").get
       val time = row("time").map {
         case FloatValue(f) => f
-        case _ => 0.0F
+        case _             => 0.0f
       }.get
 
       (name, time, date)

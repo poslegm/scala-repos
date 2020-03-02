@@ -29,13 +29,14 @@ object GzipSpec extends Specification {
       val valuesBytes = values.map(_.getBytes("utf-8"))
 
       val result: Array[Byte] = Await.result(
-          Enumerator.enumerate(valuesBytes) &> Gzip.gzip() |>>> Iteratee
-            .consume[Array[Byte]](),
-          Duration.Inf)
+        Enumerator.enumerate(valuesBytes) &> Gzip.gzip() |>>> Iteratee
+          .consume[Array[Byte]](),
+        Duration.Inf
+      )
 
       // Check that it exactly matches the gzip output stream
       val baos = new ByteArrayOutputStream()
-      val os = new GZIPOutputStream(baos)
+      val os   = new GZIPOutputStream(baos)
       valuesBytes.foreach(bytes => os.write(bytes))
       os.close()
       val baosResult = baos.toByteArray
@@ -50,10 +51,11 @@ object GzipSpec extends Specification {
 
       // Check that it can be unzipped
       val bais = new ByteArrayInputStream(result)
-      val is = new GZIPInputStream(bais)
+      val is   = new GZIPInputStream(bais)
       val check: Array[Byte] = Await.result(
-          Enumerator.fromStream(is) |>>> Iteratee.consume[Array[Byte]](),
-          10.seconds)
+        Enumerator.fromStream(is) |>>> Iteratee.consume[Array[Byte]](),
+        10.seconds
+      )
       values.mkString("") must_== new String(check, "utf-8")
     }
 
@@ -80,16 +82,18 @@ object GzipSpec extends Specification {
     }
 
     "gzip multiple large random inputs" in {
-      test(scala.util.Random.nextString(10000),
-           scala.util.Random.nextString(10000),
-           scala.util.Random.nextString(10000))
+      test(
+        scala.util.Random.nextString(10000),
+        scala.util.Random.nextString(10000),
+        scala.util.Random.nextString(10000)
+      )
     }
   }
 
   "gunzip" should {
 
     def gzip(value: String): Array[Byte] = {
-      val baos = new ByteArrayOutputStream()
+      val baos       = new ByteArrayOutputStream()
       val gzipStream = new GZIPOutputStream(baos)
       gzipStream.write(value.getBytes("utf-8"))
       gzipStream.close()
@@ -105,19 +109,22 @@ object GzipSpec extends Specification {
       }
     }
 
-    def test(value: String,
-             gunzip: Enumeratee[Array[Byte], Array[Byte]] = Gzip.gunzip(),
-             chunkSize: Option[Int] = None) = {
+    def test(
+        value: String,
+        gunzip: Enumeratee[Array[Byte], Array[Byte]] = Gzip.gunzip(),
+        chunkSize: Option[Int] = None
+    ) =
       testInput(gzip(value), value, gunzip, chunkSize)
-    }
 
-    def testInput(input: Array[Byte],
-                  expected: String,
-                  gunzip: Enumeratee[Array[Byte], Array[Byte]] = Gzip.gunzip(),
-                  chunkSize: Option[Int] = None) = {
+    def testInput(
+        input: Array[Byte],
+        expected: String,
+        gunzip: Enumeratee[Array[Byte], Array[Byte]] = Gzip.gunzip(),
+        chunkSize: Option[Int] = None
+    ) = {
       val gzipEnumerator = chunkSize match {
         case Some(size) => Enumerator.enumerate(input.grouped(size))
-        case None => Enumerator(input)
+        case None       => Enumerator(input)
       }
       val future =
         gzipEnumerator &> gunzip |>>> Iteratee.consume[Array[Byte]]()

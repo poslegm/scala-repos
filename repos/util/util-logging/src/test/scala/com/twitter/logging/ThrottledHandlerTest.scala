@@ -25,7 +25,9 @@ import com.twitter.util.{TempFolder, Time}
 
 @RunWith(classOf[JUnitRunner])
 class ThrottledHandlerTest
-    extends WordSpec with BeforeAndAfter with TempFolder {
+    extends WordSpec
+    with BeforeAndAfter
+    with TempFolder {
   private var handler: StringHandler = null
 
   "ThrottledHandler" should {
@@ -39,7 +41,7 @@ class ThrottledHandlerTest
     }
 
     "throttle keyed log messages" in {
-      val log = Logger()
+      val log          = Logger()
       val throttledLog = new ThrottledHandler(handler, 1.second, 3)
       Time.withCurrentTimeFrozen { timeCtrl =>
         log.addHandler(throttledLog)
@@ -55,20 +57,22 @@ class ThrottledHandlerTest
         log.error("apple: %s", "done.")
 
         assert(
-            handler.get.split("\n").toList == List(
-                "apple: help!",
-                "apple: help 2!",
-                "orange: orange!",
-                "orange: orange!",
-                "apple: help 3!",
-                "(swallowed 2 repeating messages)",
-                "apple: done."))
+          handler.get.split("\n").toList == List(
+            "apple: help!",
+            "apple: help 2!",
+            "orange: orange!",
+            "orange: orange!",
+            "apple: help 3!",
+            "(swallowed 2 repeating messages)",
+            "apple: done."
+          )
+        )
       }
     }
 
     "log the summary even if nothing more is logged with that name" in {
       Time.withCurrentTimeFrozen { time =>
-        val log = Logger()
+        val log          = Logger()
         val throttledLog = new ThrottledHandler(handler, 1.second, 3)
         log.addHandler(throttledLog)
         log.error("apple: %s", "help!")
@@ -81,12 +85,14 @@ class ThrottledHandlerTest
         log.error("hello.")
 
         assert(
-            handler.get.split("\n").toList == List(
-                "apple: help!",
-                "apple: help!",
-                "apple: help!",
-                "(swallowed 2 repeating messages)",
-                "hello."))
+          handler.get.split("\n").toList == List(
+            "apple: help!",
+            "apple: help!",
+            "apple: help!",
+            "(swallowed 2 repeating messages)",
+            "hello."
+          )
+        )
       }
     }
   }

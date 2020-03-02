@@ -110,7 +110,7 @@ class EventHandlerSpec extends FlatSpec with RunOnApplicationThread {
       children = button
     }
 
-    var groupCounter = 0
+    var groupCounter  = 0
     var buttonCounter = 0
     button.handleEvent(ActionEvent.Action) { () =>
       // Counter is incremented twice to make sure that both instructions are executed, similar to Issue 102

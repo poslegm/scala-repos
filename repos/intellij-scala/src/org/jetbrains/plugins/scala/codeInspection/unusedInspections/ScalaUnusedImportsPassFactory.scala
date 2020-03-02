@@ -3,7 +3,11 @@ package codeInspection
 package unusedInspections
 
 import com.intellij.codeHighlighting._
-import com.intellij.codeInsight.daemon.impl.{DefaultHighlightInfoProcessor, FileStatusMap, HighlightInfoProcessor}
+import com.intellij.codeInsight.daemon.impl.{
+  DefaultHighlightInfoProcessor,
+  FileStatusMap,
+  HighlightInfoProcessor
+}
 import com.intellij.openapi.components.AbstractProjectComponent
 import com.intellij.openapi.editor.{Document, Editor}
 import com.intellij.openapi.project.Project
@@ -16,14 +20,21 @@ import com.intellij.psi.PsiFile
   */
 class ScalaUnusedImportsPassFactory(
     project: Project,
-    highlightingPassRegistrar: TextEditorHighlightingPassRegistrar)
-    extends AbstractProjectComponent(project)
+    highlightingPassRegistrar: TextEditorHighlightingPassRegistrar
+) extends AbstractProjectComponent(project)
     with MainHighlightingPassFactory {
   highlightingPassRegistrar.registerTextEditorHighlightingPass(
-      this, Array[Int](Pass.UPDATE_ALL), null, false, -1)
+    this,
+    Array[Int](Pass.UPDATE_ALL),
+    null,
+    false,
+    -1
+  )
 
   def createHighlightingPass(
-      file: PsiFile, editor: Editor): TextEditorHighlightingPass = {
+      file: PsiFile,
+      editor: Editor
+  ): TextEditorHighlightingPass = {
     val textRange: TextRange =
       FileStatusMap.getDirtyTextRange(editor, Pass.UPDATE_ALL)
     if (textRange == null && ScalaUnusedImportPass.isUpToDate(file))
@@ -36,16 +47,15 @@ class ScalaUnusedImportsPassFactory(
   override def createMainHighlightingPass(
       file: PsiFile,
       document: Document,
-      highlightInfoProcessor: HighlightInfoProcessor)
-    : TextEditorHighlightingPass = {
+      highlightInfoProcessor: HighlightInfoProcessor
+  ): TextEditorHighlightingPass =
     create(file, document, null, highlightInfoProcessor)
-  }
 
-  private def create(file: PsiFile,
-                     document: Document,
-                     editor: Editor,
-                     highlightInfoProcessor: HighlightInfoProcessor)
-    : TextEditorHighlightingPass = {
+  private def create(
+      file: PsiFile,
+      document: Document,
+      editor: Editor,
+      highlightInfoProcessor: HighlightInfoProcessor
+  ): TextEditorHighlightingPass =
     new ScalaUnusedImportPass(file, editor, document, highlightInfoProcessor)
-  }
 }

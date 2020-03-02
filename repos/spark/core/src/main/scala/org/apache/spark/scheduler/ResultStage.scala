@@ -27,14 +27,15 @@ import org.apache.spark.util.CallSite
   * partition, and the set of partition IDs, `partitions`. Some stages may not run on all partitions
   * of the RDD, for actions like first() and lookup().
   */
-private[spark] class ResultStage(id: Int,
-                                 rdd: RDD[_],
-                                 val func: (TaskContext, Iterator[_]) => _,
-                                 val partitions: Array[Int],
-                                 parents: List[Stage],
-                                 firstJobId: Int,
-                                 callSite: CallSite)
-    extends Stage(id, rdd, partitions.length, parents, firstJobId, callSite) {
+private[spark] class ResultStage(
+    id: Int,
+    rdd: RDD[_],
+    val func: (TaskContext, Iterator[_]) => _,
+    val partitions: Array[Int],
+    parents: List[Stage],
+    firstJobId: Int,
+    callSite: CallSite
+) extends Stage(id, rdd, partitions.length, parents, firstJobId, callSite) {
 
   /**
     * The active job for this result stage. Will be empty if the job has already finished
@@ -44,13 +45,11 @@ private[spark] class ResultStage(id: Int,
 
   def activeJob: Option[ActiveJob] = _activeJob
 
-  def setActiveJob(job: ActiveJob): Unit = {
+  def setActiveJob(job: ActiveJob): Unit =
     _activeJob = Option(job)
-  }
 
-  def removeActiveJob(): Unit = {
+  def removeActiveJob(): Unit =
     _activeJob = None
-  }
 
   /**
     * Returns the sequence of partition ids that are missing (i.e. needs to be computed).

@@ -4,11 +4,11 @@ import Gen._
 import Arbitrary._
 
 class Counter(r: Range) {
-  var cnt = 0L
+  var cnt               = 0L
   var last: Option[Int] = None
   val str =
     "Range[" + r.start + ", " + r.end + ", " + r.step +
-    (if (r.isInclusive) "]" else ")")
+      (if (r.isInclusive) "]" else ")")
   def apply(x: Int) = {
     cnt += 1L
     if (cnt % 500000000L == 0L) {
@@ -38,16 +38,16 @@ abstract class RangeTest(kind: String) extends Properties("Range " + kind) {
   def genArbitraryRange =
     for {
       start <- choose(Int.MinValue, Int.MaxValue)
-      end <- choose(Int.MinValue, Int.MaxValue)
-      step <- choose(-Int.MaxValue, Int.MaxValue)
+      end   <- choose(Int.MinValue, Int.MaxValue)
+      step  <- choose(-Int.MaxValue, Int.MaxValue)
     } yield Range(start, end, if (step == 0) 100 else step)
 
   def genBoundaryRange =
     for {
       boundary <- oneOf(Int.MinValue, -1, 0, 1, Int.MaxValue)
-      isStart <- arbitrary[Boolean]
-      size <- choose(1, 100)
-      step <- choose(1, 101)
+      isStart  <- arbitrary[Boolean]
+      size     <- choose(1, 100)
+      step     <- choose(1, 101)
     } yield {
       val signum = if (boundary == 0) 1 else boundary.signum
       if (isStart)
@@ -58,8 +58,8 @@ abstract class RangeTest(kind: String) extends Properties("Range " + kind) {
   def genSmallRange =
     for {
       start <- choose(-100, 100)
-      end <- choose(-100, 100)
-      step <- choose(1, 1)
+      end   <- choose(-100, 100)
+      step  <- choose(1, 1)
     } yield
       if (start < end) Range(start, end, step) else Range(start, end, -step)
 
@@ -67,8 +67,8 @@ abstract class RangeTest(kind: String) extends Properties("Range " + kind) {
 
   def genRangeOpenByOne =
     for {
-      r <- oneOf(genSmallRange, genBoundaryRange) if
-          (r.end.toLong - r.start.toLong).abs <= 10000000L
+      r <- oneOf(genSmallRange, genBoundaryRange)
+      if (r.end.toLong - r.start.toLong).abs <= 10000000L
     } yield
       if (r.start < r.end) Range(r.start, r.end) else Range(r.end, r.start)
 
@@ -76,7 +76,7 @@ abstract class RangeTest(kind: String) extends Properties("Range " + kind) {
 
   def str(r: Range) =
     "Range[" + r.start + ", " + r.end + ", " + r.step +
-    (if (r.isInclusive) "]" else ")")
+      (if (r.isInclusive) "]" else ")")
 
   def expectedSize(r: Range): Long =
     if (r.isInclusive) {
@@ -89,9 +89,9 @@ abstract class RangeTest(kind: String) extends Properties("Range " + kind) {
       (r.end.toLong - r.start.toLong < 0, r.step < 0) match {
         case (true, true) | (false, false) =>
           ((r.end.toLong - r.start.toLong).abs / r.step.abs.toLong +
-              (if ((r.end.toLong -
-                       r.start.toLong).abs % r.step.abs.toLong > 0L) 1L
-               else 0L))
+            (if ((r.end.toLong -
+                   r.start.toLong).abs % r.step.abs.toLong > 0L) 1L
+             else 0L))
         case _ => 0L
       }
     }
@@ -106,7 +106,7 @@ abstract class RangeTest(kind: String) extends Properties("Range " + kind) {
   property("foreach.step") = forAllNoShrink(myGen) { r =>
 //    println("foreach.step "+str(r))
     var allValid = true
-    val cnt = new Counter(r)
+    val cnt      = new Counter(r)
 //    println("--------------------")
 //    println(r)
     r foreach { x =>
@@ -119,9 +119,9 @@ abstract class RangeTest(kind: String) extends Properties("Range " + kind) {
 
   property("foreach.inside.range") = forAll(myGen) { r =>
 //    println("foreach.inside.range "+str(r))
-    var allValid = true
+    var allValid          = true
     var last: Option[Int] = None
-    val cnt = new Counter(r)
+    val cnt               = new Counter(r)
     r foreach { x =>
       cnt(x)
       allValid &&= within(r, x)
@@ -132,7 +132,7 @@ abstract class RangeTest(kind: String) extends Properties("Range " + kind) {
   property("foreach.visited.size") = forAll(myGen) { r =>
 //    println("foreach.visited.size "+str(r))
     var visited = 0L
-    val cnt = new Counter(r)
+    val cnt     = new Counter(r)
     r foreach { x =>
       cnt(x)
       visited += 1L
@@ -150,8 +150,8 @@ abstract class RangeTest(kind: String) extends Properties("Range " + kind) {
 //    println("sum "+str(r))
     val rSum = r.sum
     val expected = r.length match {
-      case 0 => 0
-      case 1 => r.head
+      case 0             => 0
+      case 1             => r.head
       case x if x < 1000 =>
         // Explicit sum, to guard against having the same mistake in both the
         // range implementation and test implementation of sum formula.
@@ -181,36 +181,38 @@ abstract class RangeTest(kind: String) extends Properties("Range " + kind) {
     val mod = 65536
     object mynum extends Numeric[Int] {
       def plus(x: Int, y: Int): Int = (x + y) % mod
-      override def zero = 0
+      override def zero             = 0
 
-      def fromInt(x: Int): Int = ???
-      def minus(x: Int, y: Int): Int = ???
-      def negate(x: Int): Int = ???
-      def times(x: Int, y: Int): Int = ???
-      def toDouble(x: Int): Double = ???
-      def toFloat(x: Int): Float = ???
-      def toInt(x: Int): Int = ((x % mod) + mod * 2) % mod
-      def toLong(x: Int): Long = ???
+      def fromInt(x: Int): Int         = ???
+      def minus(x: Int, y: Int): Int   = ???
+      def negate(x: Int): Int          = ???
+      def times(x: Int, y: Int): Int   = ???
+      def toDouble(x: Int): Double     = ???
+      def toFloat(x: Int): Float       = ???
+      def toInt(x: Int): Int           = ((x % mod) + mod * 2) % mod
+      def toLong(x: Int): Long         = ???
       def compare(x: Int, y: Int): Int = ???
     }
 
-    val rSum = r.sum(mynum)
+    val rSum     = r.sum(mynum)
     val expected = mynum.toInt(r.sum)
 
     (rSum == expected) :| str(r)
   }
 
-  property("length") = forAll(
-      myGen suchThat (r => expectedSize(r).toInt == expectedSize(r))) { r =>
+  property("length") =
+    forAll(myGen suchThat (r => expectedSize(r).toInt == expectedSize(r))) {
+      r =>
 //    println("length "+str(r))
-    (r.length == expectedSize(r)) :| str(r)
-  }
+        (r.length == expectedSize(r)) :| str(r)
+    }
 
-  property("isEmpty") = forAll(
-      myGen suchThat (r => expectedSize(r).toInt == expectedSize(r))) { r =>
+  property("isEmpty") =
+    forAll(myGen suchThat (r => expectedSize(r).toInt == expectedSize(r))) {
+      r =>
 //    println("isEmpty "+str(r))
-    (r.isEmpty == (expectedSize(r) == 0L)) :| str(r)
-  }
+        (r.isEmpty == (expectedSize(r) == 0L)) :| str(r)
+    }
 
   property("contains") = forAll(myGen, arbInt.arbitrary) { (r, x) =>
 //    println("contains "+str(r))
@@ -223,27 +225,31 @@ abstract class RangeTest(kind: String) extends Properties("Range " + kind) {
     ((within(r, x) && multiple(r, x)) == r.contains(x)) :| str(r) + ": " + x
   }
 
-  property("take") = forAll(myGen suchThat
-                            (r => expectedSize(r).toInt == expectedSize(r)),
-                            arbInt.arbitrary) { (r, x) =>
+  property("take") = forAll(
+    myGen suchThat
+      (r => expectedSize(r).toInt == expectedSize(r)),
+    arbInt.arbitrary
+  ) { (r, x) =>
 //    println("take "+str(r))
     val t = r take x
     (t.size == (0 max x min r.size) && t.start == r.start &&
-        t.step == r.step) :| str(r) + " / " + str(t) + ": " + x
+    t.step == r.step) :| str(r) + " / " + str(t) + ": " + x
   }
 
-  property("init") = forAll(
-      myGen suchThat (r => expectedSize(r).toInt == expectedSize(r))) { r =>
+  property("init") =
+    forAll(myGen suchThat (r => expectedSize(r).toInt == expectedSize(r))) {
+      r =>
 //    println("init "+str(r))
-    (r.size == 0) || {
-      val t = r.init
-      (t.size + 1 == r.size) && (t.isEmpty || t.head == r.head)
+        (r.size == 0) || {
+          val t = r.init
+          (t.size + 1 == r.size) && (t.isEmpty || t.head == r.head)
+        }
     }
-  }
 
   property("takeWhile") = forAll(
-      myGen suchThat (r => expectedSize(r).toInt == expectedSize(r)),
-      arbInt.arbitrary) { (r, x) =>
+    myGen suchThat (r => expectedSize(r).toInt == expectedSize(r)),
+    arbInt.arbitrary
+  ) { (r, x) =>
 //    println("takeWhile "+str(r))
     val t = (if (r.step > 0) r takeWhile (_ <= x) else r takeWhile (_ >= x))
     if (r.size == 0) {
@@ -253,14 +259,14 @@ abstract class RangeTest(kind: String) extends Properties("Range " + kind) {
         (if (r.step > 0) Range(r.start, x min r.last, r.step).inclusive
          else Range(r.start, x max r.last, r.step).inclusive)
       (t.start == r.start && t.size == t2.size && t.step == r.step) :| str(r) +
-      " / " + str(t) + " / " + str(t2) + ": " + x
+        " / " + str(t) + " / " + str(t2) + ": " + x
     }
   }
 
   property("reverse.toSet.equal") = forAll(myGen) { r =>
 //    println("reverse.toSet.equal "+str(r))
     val reversed = r.reverse
-    val aresame = r.toSet == reversed.toSet
+    val aresame  = r.toSet == reversed.toSet
     if (!aresame) {
       println(str(r))
       println(r)
@@ -277,7 +283,8 @@ object NormalRangeTest extends RangeTest("normal") {
   def genOne =
     for {
       start <- arbitrary[Int]
-      end <- arbitrary[Int] if (start.toLong - end.toLong).abs < Int.MaxValue.toLong
+      end   <- arbitrary[Int]
+      if (start.toLong - end.toLong).abs < Int.MaxValue.toLong
     } yield Range(start, end, if (start < end) 1 else -1)
   property("by 1.size + 1 == inclusive.size") = forAll(genOne) { r =>
     (r.size + 1 == r.inclusive.size) :| str(r)

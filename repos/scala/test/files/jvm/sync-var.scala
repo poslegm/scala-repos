@@ -4,9 +4,9 @@ import java.util.concurrent.atomic._
 object Test {
   def main(args: Array[String]) {
 
-    val n = 10000
-    val i = new AtomicInteger(n)
-    val j = new AtomicInteger(n)
+    val n   = 10000
+    val i   = new AtomicInteger(n)
+    val j   = new AtomicInteger(n)
     val sum = new AtomicInteger
 
     val q = new scala.concurrent.SyncVar[Int]
@@ -47,7 +47,7 @@ object Test {
 
     summers foreach { _.join() }
 
-    val got = sum.get
+    val got      = sum.get
     val expected = (n + 1) * n / 2
     println(got + " " + expected + " " + (got == expected))
 

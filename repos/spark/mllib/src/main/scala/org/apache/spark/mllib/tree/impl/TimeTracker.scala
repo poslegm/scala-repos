@@ -37,8 +37,9 @@ private[spark] class TimeTracker extends Serializable {
     val currentTime = System.nanoTime()
     if (starts.contains(timerLabel)) {
       throw new RuntimeException(
-          s"TimeTracker.start(timerLabel) called again on" +
-          s" timerLabel = $timerLabel before that timer was stopped.")
+        s"TimeTracker.start(timerLabel) called again on" +
+          s" timerLabel = $timerLabel before that timer was stopped."
+      )
     }
     starts(timerLabel) = currentTime
   }
@@ -50,8 +51,9 @@ private[spark] class TimeTracker extends Serializable {
     val currentTime = System.nanoTime()
     if (!starts.contains(timerLabel)) {
       throw new RuntimeException(
-          s"TimeTracker.stop(timerLabel) called on" +
-          s" timerLabel = $timerLabel, but that timer was not started.")
+        s"TimeTracker.stop(timerLabel) called on" +
+          s" timerLabel = $timerLabel, but that timer was not started."
+      )
     }
     val elapsed = currentTime - starts(timerLabel)
     starts.remove(timerLabel)
@@ -66,10 +68,11 @@ private[spark] class TimeTracker extends Serializable {
   /**
     * Print all timing results in seconds.
     */
-  override def toString: String = {
-    totals.map {
-      case (label, elapsed) =>
-        s"  $label: ${elapsed / 1e9}"
-    }.mkString("\n")
-  }
+  override def toString: String =
+    totals
+      .map {
+        case (label, elapsed) =>
+          s"  $label: ${elapsed / 1e9}"
+      }
+      .mkString("\n")
 }

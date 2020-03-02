@@ -19,14 +19,16 @@ class AddReturnTypeFix(fun: ScFunctionDefinition, tp: ScType)
 
   override def getFamilyName: String = getText
 
-  override def invoke(project: Project, editor: Editor, file: PsiFile): Unit = {
+  override def invoke(project: Project, editor: Editor, file: PsiFile): Unit =
     new AddOnlyStrategy(Option(editor))
       .addTypeAnnotation(tp, fun.getParent, fun.parameterList)
-  }
 
   override def startInWriteAction(): Boolean = true
 
   override def isAvailable(
-      project: Project, editor: Editor, file: PsiFile): Boolean =
+      project: Project,
+      editor: Editor,
+      file: PsiFile
+  ): Boolean =
     fun.returnTypeElement.isEmpty
 }

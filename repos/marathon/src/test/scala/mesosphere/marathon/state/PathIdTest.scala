@@ -131,17 +131,18 @@ class PathIdTest extends FunSpec with GivenWhenThen with Matchers {
   it("can give all parents as sequence") {
     val parents = PathId("/a/b/c/d").allParents
     parents should be(
-        Seq(PathId("/a/b/c"), PathId("/a/b"), PathId("/a"), PathId("/")))
+      Seq(PathId("/a/b/c"), PathId("/a/b"), PathId("/a"), PathId("/"))
+    )
     parents should have size 4
   }
 
   describe("An ordered PathID collection") {
-    val a = PathId("/a")
+    val a  = PathId("/a")
     val aa = a / "a"
     val ab = a / "b"
     val ac = a / "c"
-    val b = PathId("/b")
-    val c = PathId("/c")
+    val b  = PathId("/b")
+    val c  = PathId("/c")
 
     it("can be sorted if all paths are on the same level") {
       SortedSet(a, b, a).toSeq should equal(Seq(a, b))

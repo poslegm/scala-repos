@@ -24,11 +24,12 @@ object ValuePipe extends java.io.Serializable {
   implicit def toTypedPipe[V](v: ValuePipe[V]): TypedPipe[V] = v.toTypedPipe
 
   def fold[T, U, V](l: ValuePipe[T], r: ValuePipe[U])(
-      f: (T, U) => V): ValuePipe[V] =
+      f: (T, U) => V
+  ): ValuePipe[V] =
     l.leftCross(r).collect { case (t, Some(u)) => f(t, u) }
 
   def apply[T](t: T): ValuePipe[T] = LiteralValue(t)
-  def empty: ValuePipe[Nothing] = EmptyValue
+  def empty: ValuePipe[Nothing]    = EmptyValue
 }
 
 /**
@@ -39,7 +40,7 @@ object ValuePipe extends java.io.Serializable {
 sealed trait ValuePipe[+T] extends java.io.Serializable {
   def leftCross[U](that: ValuePipe[U]): ValuePipe[(T, Option[U])] =
     that match {
-      case EmptyValue => map((_, None))
+      case EmptyValue       => map((_, None))
       case LiteralValue(v2) => map((_, Some(v2)))
       // We don't know if a computed value is empty or not. We need to run the MR job:
       case _ => ComputedValue(toTypedPipe.leftCross(that))
@@ -83,7 +84,7 @@ sealed trait ValuePipe[+T] extends java.io.Serializable {
   def toOptionExecution: Execution[Option[T]] =
     toTypedPipe.toIterableExecution.map { it =>
       it.iterator.take(2).toList match {
-        case Nil => None
+        case Nil      => None
         case h :: Nil => Some(h)
         case items =>
           sys.error("More than 1 item in an ValuePipe: " + items.toString)
@@ -93,11 +94,11 @@ sealed trait ValuePipe[+T] extends java.io.Serializable {
   def debug: ValuePipe[T]
 }
 case object EmptyValue extends ValuePipe[Nothing] {
-  override def leftCross[U](that: ValuePipe[U]) = this
+  override def leftCross[U](that: ValuePipe[U])       = this
   override def map[U](fn: Nothing => U): ValuePipe[U] = this
-  override def filter(fn: Nothing => Boolean) = this
-  override def toTypedPipe: TypedPipe[Nothing] = TypedPipe.empty
-  override def toOptionExecution = Execution.from(None)
+  override def filter(fn: Nothing => Boolean)         = this
+  override def toTypedPipe: TypedPipe[Nothing]        = TypedPipe.empty
+  override def toOptionExecution                      = Execution.from(None)
 
   def debug: ValuePipe[Nothing] = {
     println("EmptyValue")
@@ -105,10 +106,10 @@ case object EmptyValue extends ValuePipe[Nothing] {
   }
 }
 case class LiteralValue[T](value: T) extends ValuePipe[T] {
-  override def map[U](fn: T => U) = LiteralValue(fn(value))
+  override def map[U](fn: T => U)       = LiteralValue(fn(value))
   override def filter(fn: T => Boolean) = if (fn(value)) this else EmptyValue
-  override def toTypedPipe = TypedPipe.from(Iterable(value))
-  override def toOptionExecution = Execution.from(Some(value))
+  override def toTypedPipe              = TypedPipe.from(Iterable(value))
+  override def toOptionExecution        = Execution.from(Some(value))
 
   def debug: ValuePipe[T] = map { v =>
     println("LiteralValue(" + v.toString + ")")
@@ -117,7 +118,7 @@ case class LiteralValue[T](value: T) extends ValuePipe[T] {
 }
 case class ComputedValue[T](override val toTypedPipe: TypedPipe[T])
     extends ValuePipe[T] {
-  override def map[U](fn: T => U) = ComputedValue(toTypedPipe.map(fn))
+  override def map[U](fn: T => U)       = ComputedValue(toTypedPipe.map(fn))
   override def filter(fn: T => Boolean) = ComputedValue(toTypedPipe.filter(fn))
 
   def debug: ValuePipe[T] = map { value =>

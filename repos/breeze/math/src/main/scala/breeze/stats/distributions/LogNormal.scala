@@ -15,9 +15,10 @@ import scala.math.sqrt
   *
   * @author dlwh
   **/
-case class LogNormal(
-    mu: Double, sigma: Double)(implicit rand: RandBasis = Rand)
-    extends ContinuousDistr[Double] with Moments[Double, Double] with HasCdf
+case class LogNormal(mu: Double, sigma: Double)(implicit rand: RandBasis = Rand)
+    extends ContinuousDistr[Double]
+    with Moments[Double, Double]
+    with HasCdf
     with HasInverseCdf {
   private val myGaussian = Gaussian(mu, sigma)
   require(sigma > 0, "Sigma must be positive, but got " + sigma)
@@ -25,14 +26,13 @@ case class LogNormal(
   /**
     * Gets one sample from the distribution. Equivalent to sample()
     */
-  def draw(): Double = {
+  def draw(): Double =
     exp(myGaussian.draw())
-  }
 
   def unnormalizedLogPdf(x: Double): Double = {
     if (x <= 0.0) return Double.NegativeInfinity
     val logx = log(x)
-    val rad = (logx - mu) / sigma
+    val rad  = (logx - mu) / sigma
     -(rad * rad / 2) - logx
   }
 
@@ -51,9 +51,8 @@ case class LogNormal(
     */
   def cdf(x: Double) = myGaussian.cdf(log(x))
 
-  override def probability(x: Double, y: Double): Double = {
+  override def probability(x: Double, y: Double): Double =
     myGaussian.probability(log(x), log(y))
-  }
 
   override def toString: String = ScalaRunTime._toString(this)
 
@@ -76,15 +75,15 @@ object LogNormal
 
   def emptySufficientStatistic = Gaussian.emptySufficientStatistic
 
-  def sufficientStatisticFor(t: Double) = {
+  def sufficientStatisticFor(t: Double) =
     SufficientStatistic(1, math.log(t), 0)
-  }
 
   def mle(stats: SufficientStatistic): (Double, Double) = Gaussian.mle(stats)
 
   def distribution(p: (Double, Double)) = new LogNormal(p._1, math.sqrt(p._2))
 
   def likelihoodFunction(
-      stats: SufficientStatistic): DiffFunction[(Double, Double)] =
+      stats: SufficientStatistic
+  ): DiffFunction[(Double, Double)] =
     Gaussian.likelihoodFunction(stats)
 }

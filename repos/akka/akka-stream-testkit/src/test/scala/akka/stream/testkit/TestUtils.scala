@@ -21,32 +21,33 @@ object TestUtils {
   implicit class GeneralDatagramSocket(val s: DatagramSocket)
       extends GeneralSocket {
     def bind(sa: SocketAddress): Unit = s.bind(sa)
-    def close(): Unit = s.close()
-    def getLocalPort: Int = s.getLocalPort
+    def close(): Unit                 = s.close()
+    def getLocalPort: Int             = s.getLocalPort
   }
   implicit class GeneralServerSocket(val s: ServerSocket)
       extends GeneralSocket {
     def bind(sa: SocketAddress): Unit = s.bind(sa)
-    def close(): Unit = s.close()
-    def getLocalPort: Int = s.getLocalPort
+    def close(): Unit                 = s.close()
+    def getLocalPort: Int             = s.getLocalPort
   }
 
   def temporaryServerAddress(
-      address: String = "127.0.0.1", udp: Boolean = false): InetSocketAddress =
+      address: String = "127.0.0.1",
+      udp: Boolean = false
+  ): InetSocketAddress =
     temporaryServerAddresses(1, address, udp).head
 
   def temporaryServerAddresses(
       numberOfAddresses: Int,
       hostname: String = "127.0.0.1",
-      udp: Boolean = false): immutable.IndexedSeq[InetSocketAddress] = {
+      udp: Boolean = false
+  ): immutable.IndexedSeq[InetSocketAddress] =
     Vector.fill(numberOfAddresses) {
       val serverSocket: GeneralSocket =
         if (udp) DatagramChannel.open().socket()
         else ServerSocketChannel.open().socket()
 
       serverSocket.bind(new InetSocketAddress(hostname, 0))
-      (serverSocket,
-       new InetSocketAddress(hostname, serverSocket.getLocalPort))
+      (serverSocket, new InetSocketAddress(hostname, serverSocket.getLocalPort))
     } collect { case (socket, address) ⇒ socket.close(); address }
-  }
 }

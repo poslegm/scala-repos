@@ -40,8 +40,9 @@ class RDDFunctionsSuite extends SparkFunSuite with MLlibTestSparkContext {
         }
       }
       assert(
-          rdd.sliding(7).collect().isEmpty,
-          "Should return an empty RDD if the window size is greater than the number of items.")
+        rdd.sliding(7).collect().isEmpty,
+        "Should return an empty RDD if the window size is greater than the number of items."
+      )
     }
   }
 
@@ -50,7 +51,7 @@ class RDDFunctionsSuite extends SparkFunSuite with MLlibTestSparkContext {
       Seq(Seq(1, 2, 3), Seq.empty[Int], Seq(4), Seq.empty[Int], Seq(5, 6, 7))
     val rdd = sc.parallelize(data, data.length).flatMap(s => s)
     assert(rdd.partitions.length === data.length)
-    val sliding = rdd.sliding(3).collect().toSeq.map(_.toSeq)
+    val sliding  = rdd.sliding(3).collect().toSeq.map(_.toSeq)
     val expected = data.flatMap(x => x).sliding(3).toSeq.map(_.toSeq)
     assert(sliding === expected)
   }

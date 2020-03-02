@@ -24,12 +24,13 @@ import scala.reflect.ClassTag
 import org.apache.spark.{SecurityManager, SparkConf}
 import org.apache.spark.internal.Logging
 
-private[spark] class BroadcastManager(val isDriver: Boolean,
-                                      conf: SparkConf,
-                                      securityManager: SecurityManager)
-    extends Logging {
+private[spark] class BroadcastManager(
+    val isDriver: Boolean,
+    conf: SparkConf,
+    securityManager: SecurityManager
+) extends Logging {
 
-  private var initialized = false
+  private var initialized                        = false
   private var broadcastFactory: BroadcastFactory = null
 
   initialize()
@@ -51,10 +52,9 @@ private[spark] class BroadcastManager(val isDriver: Boolean,
 
   private val nextBroadcastId = new AtomicLong(0)
 
-  def newBroadcast[T : ClassTag](value_ : T, isLocal: Boolean): Broadcast[T] = {
-    broadcastFactory.newBroadcast[T](
-        value_, isLocal, nextBroadcastId.getAndIncrement())
-  }
+  def newBroadcast[T: ClassTag](value_ : T, isLocal: Boolean): Broadcast[T] =
+    broadcastFactory
+      .newBroadcast[T](value_, isLocal, nextBroadcastId.getAndIncrement())
 
   def unbroadcast(id: Long, removeFromDriver: Boolean, blocking: Boolean) {
     broadcastFactory.unbroadcast(id, removeFromDriver, blocking)

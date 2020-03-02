@@ -20,7 +20,7 @@ abstract class GlobalSymbolLoaders extends symtab.SymbolLoaders {
     // if loading during initialization of `definitions` typerPhase is not yet set.
     // in that case we simply load the member at the current phase
     if (currentRun.typerPhase eq null) lookup
-    else enteringTyper { lookup }
+    else enteringTyper(lookup)
   }
 
   protected def compileLate(srcfile: io.AbstractFile): Unit =

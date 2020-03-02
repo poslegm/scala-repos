@@ -58,7 +58,8 @@ object newtype {
     * object of the `Ops` type as an implicit value.
     */
   implicit def newtypeOps[Repr, Ops](t: Newtype[Repr, Ops])(
-      implicit mkOps: Repr => Ops): Ops = t.asInstanceOf[Repr]
+      implicit mkOps: Repr => Ops
+  ): Ops = t.asInstanceOf[Repr]
 }
 
 /**
@@ -123,8 +124,8 @@ class TheMacros(val c: whitebox.Context) {
 
   def implicitlyImpl(tpeSelector: Tree): Tree = {
 
-    val q"${ tpeString: String }" = tpeSelector
-    val dummyNme = c.freshName
+    val q"${tpeString: String}" = tpeSelector
+    val dummyNme                = c.freshName
 
     val tpe = (for {
       parsed <- Try(c.parse(s"{ type $dummyNme = " + tpeString + " }")).toOption
@@ -137,8 +138,10 @@ class TheMacros(val c: whitebox.Context) {
     // Bail for primitives because the resulting trees with type set to Unit
     // will crash the compiler
     if (tpe.typeSymbol.asClass.isPrimitive)
-      c.abort(c.enclosingPosition,
-              s"Primitive type $tpe may not be used in this context")
+      c.abort(
+        c.enclosingPosition,
+        s"Primitive type $tpe may not be used in this context"
+      )
 
     val inferred = c.inferImplicitValue(tpe, silent = true)
     if (inferred.isEmpty)
@@ -163,7 +166,7 @@ trait Lub[-A, -B, Out] extends Serializable {
 
 object Lub {
   implicit def lub[T] = new Lub[T, T, T] {
-    def left(a: T): T = a
+    def left(a: T): T  = a
     def right(b: T): T = b
   }
 }

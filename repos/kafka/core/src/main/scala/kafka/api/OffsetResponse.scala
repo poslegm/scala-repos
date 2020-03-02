@@ -25,36 +25,37 @@ object OffsetResponse {
 
   def readFrom(buffer: ByteBuffer): OffsetResponse = {
     val correlationId = buffer.getInt
-    val numTopics = buffer.getInt
-    val pairs = (1 to numTopics).flatMap(_ =>
-          {
-        val topic = readShortString(buffer)
-        val numPartitions = buffer.getInt
-        (1 to numPartitions).map(_ =>
-              {
-            val partition = buffer.getInt
-            val error = buffer.getShort
-            val numOffsets = buffer.getInt
-            val offsets = (1 to numOffsets).map(_ => buffer.getLong)
-            (TopicAndPartition(topic, partition),
-             PartitionOffsetsResponse(error, offsets))
-        })
-    })
+    val numTopics     = buffer.getInt
+    val pairs = (1 to numTopics).flatMap { _ =>
+      val topic         = readShortString(buffer)
+      val numPartitions = buffer.getInt
+      (1 to numPartitions).map { _ =>
+        val partition  = buffer.getInt
+        val error      = buffer.getShort
+        val numOffsets = buffer.getInt
+        val offsets    = (1 to numOffsets).map(_ => buffer.getLong)
+        (
+          TopicAndPartition(topic, partition),
+          PartitionOffsetsResponse(error, offsets)
+        )
+      }
+    }
     OffsetResponse(correlationId, Map(pairs: _*))
   }
 }
 
 case class PartitionOffsetsResponse(error: Short, offsets: Seq[Long]) {
-  override def toString(): String = {
-    new String("error: " + Errors.forCode(error).exceptionName + " offsets: " +
-        offsets.mkString)
-  }
+  override def toString(): String =
+    new String(
+      "error: " + Errors.forCode(error).exceptionName + " offsets: " +
+        offsets.mkString
+    )
 }
 
 case class OffsetResponse(
     correlationId: Int,
-    partitionErrorAndOffsets: Map[TopicAndPartition, PartitionOffsetsResponse])
-    extends RequestOrResponse() {
+    partitionErrorAndOffsets: Map[TopicAndPartition, PartitionOffsetsResponse]
+) extends RequestOrResponse() {
 
   lazy val offsetsGroupedByTopic = partitionErrorAndOffsets.groupBy(_._1.topic)
 
@@ -64,18 +65,16 @@ case class OffsetResponse(
   val sizeInBytes = {
     4 + /* correlation id */
     4 + /* topic count */
-    offsetsGroupedByTopic.foldLeft(0)((foldedTopics, currTopic) =>
-          {
-        val (topic, errorAndOffsetsMap) = currTopic
-        foldedTopics + shortStringLength(topic) + 4 + /* partition count */
-        errorAndOffsetsMap.foldLeft(0)((foldedPartitions, currPartition) =>
-              {
-            foldedPartitions + 4 + /* partition id */
-            2 + /* partition error */
-            4 + /* offset array length */
-            currPartition._2.offsets.size * 8 /* offset */
-        })
-    })
+    offsetsGroupedByTopic.foldLeft(0) { (foldedTopics, currTopic) =>
+      val (topic, errorAndOffsetsMap) = currTopic
+      foldedTopics + shortStringLength(topic) + 4 + /* partition count */
+      errorAndOffsetsMap.foldLeft(0) { (foldedPartitions, currPartition) =>
+        foldedPartitions + 4 + /* partition id */
+        2 + /* partition error */
+        4 + /* offset array length */
+        currPartition._2.offsets.size * 8 /* offset */
+      }
+    }
   }
 
   def writeTo(buffer: ByteBuffer) {
@@ -95,5 +94,5 @@ case class OffsetResponse(
     }
   }
 
-  override def describe(details: Boolean): String = { toString }
+  override def describe(details: Boolean): String = toString
 }

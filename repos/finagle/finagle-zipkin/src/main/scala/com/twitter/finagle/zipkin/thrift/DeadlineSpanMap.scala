@@ -13,14 +13,16 @@ import scala.collection.mutable.ArrayBuffer
   * is not removed from the map it will expire after the deadline is reached
   * and sent off to scribe despite being incomplete.
   */
-private class DeadlineSpanMap(logSpans: Seq[Span] => Future[Unit],
-                              ttl: Duration,
-                              statsReceiver: StatsReceiver,
-                              timer: Timer) {
+private class DeadlineSpanMap(
+    logSpans: Seq[Span] => Future[Unit],
+    ttl: Duration,
+    statsReceiver: StatsReceiver,
+    timer: Timer
+) {
 
   private[this] val spanMap = new ConcurrentHashMap[TraceId, MutableSpan](64)
 
-  private[this] val timerTask = timer.schedule(ttl / 2) { flush(ttl.ago) }
+  private[this] val timerTask = timer.schedule(ttl / 2)(flush(ttl.ago))
 
   /**
     * Update the mutable span.
@@ -37,7 +39,7 @@ private class DeadlineSpanMap(logSpans: Seq[Span] => Future[Unit],
         span
       } else {
         val newSpan = new MutableSpan(traceId, Time.now)
-        val prev = spanMap.putIfAbsent(traceId, newSpan)
+        val prev    = spanMap.putIfAbsent(traceId, newSpan)
         if (prev == null) newSpan else prev
       }
     }
@@ -60,12 +62,13 @@ private class DeadlineSpanMap(logSpans: Seq[Span] => Future[Unit],
 
     val iter = spanMap.entrySet.iterator
     while (iter.hasNext) {
-      val kv = iter.next()
+      val kv   = iter.next()
       val span = kv.getValue
       if (span.started <= deadline) {
         spanMap.remove(kv.getKey, span)
         span.addAnnotation(
-            ZipkinAnnotation(deadline, "finagle.flush", span.endpoint))
+          ZipkinAnnotation(deadline, "finagle.flush", span.endpoint)
+        )
         ss.append(span.toSpan)
       }
     }
@@ -84,15 +87,15 @@ private class DeadlineSpanMap(logSpans: Seq[Span] => Future[Unit],
 }
 
 private final class MutableSpan(val traceId: TraceId, val started: Time) {
-  private[this] var _isComplete: Boolean = false
-  private[this] var _name: Option[String] = None
+  private[this] var _isComplete: Boolean     = false
+  private[this] var _name: Option[String]    = None
   private[this] var _service: Option[String] = None
-  private[this] var _endpoint: Endpoint = Endpoint.Unknown
+  private[this] var _endpoint: Endpoint      = Endpoint.Unknown
 
-  private[this] val annotations = ArrayBuffer.empty[ZipkinAnnotation]
+  private[this] val annotations       = ArrayBuffer.empty[ZipkinAnnotation]
   private[this] val binaryAnnotations = ArrayBuffer.empty[BinaryAnnotation]
 
-  def endpoint: Endpoint = synchronized { _endpoint }
+  def endpoint: Endpoint = synchronized(_endpoint)
 
   def setName(n: String): MutableSpan = synchronized {
     _name = Some(n)
@@ -107,8 +110,8 @@ private final class MutableSpan(val traceId: TraceId, val started: Time) {
   def addAnnotation(ann: ZipkinAnnotation): MutableSpan = synchronized {
     if (!_isComplete &&
         (ann.value.equals(Constants.CLIENT_RECV) ||
-            ann.value.equals(Constants.SERVER_SEND) ||
-            ann.value.equals(TimeoutFilter.TimeoutAnnotation)))
+        ann.value.equals(Constants.SERVER_SEND) ||
+        ann.value.equals(TimeoutFilter.TimeoutAnnotation)))
       _isComplete = true
 
     annotations.append(ann)
@@ -136,5 +139,5 @@ private final class MutableSpan(val traceId: TraceId, val started: Time) {
     Span(traceId, _service, _name, annotations, binaryAnnotations, _endpoint)
   }
 
-  def isComplete: Boolean = synchronized { _isComplete }
+  def isComplete: Boolean = synchronized(_isComplete)
 }

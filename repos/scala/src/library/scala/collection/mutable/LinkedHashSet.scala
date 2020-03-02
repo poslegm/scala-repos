@@ -39,27 +39,33 @@ import generic._
   */
 @SerialVersionUID(1L)
 class LinkedHashSet[A]
-    extends AbstractSet[A] with Set[A]
-    with GenericSetTemplate[A, LinkedHashSet] with SetLike[A, LinkedHashSet[A]]
-    with HashTable[A, LinkedHashSet.Entry[A]] with Serializable {
+    extends AbstractSet[A]
+    with Set[A]
+    with GenericSetTemplate[A, LinkedHashSet]
+    with SetLike[A, LinkedHashSet[A]]
+    with HashTable[A, LinkedHashSet.Entry[A]]
+    with Serializable {
   override def companion: GenericCompanion[LinkedHashSet] = LinkedHashSet
 
   type Entry = LinkedHashSet.Entry[A]
 
   @transient protected var firstEntry: Entry = null
-  @transient protected var lastEntry: Entry = null
+  @transient protected var lastEntry: Entry  = null
 
   override def size: Int = tableSize
 
   def contains(elem: A): Boolean = findEntry(elem) ne null
 
   @deprecatedOverriding(
-      "+= should not be overridden so it stays consistent with add.", "2.11.0")
+    "+= should not be overridden so it stays consistent with add.",
+    "2.11.0"
+  )
   def +=(elem: A): this.type = { add(elem); this }
 
   @deprecatedOverriding(
-      "-= should not be overridden so it stays consistent with remove.",
-      "2.11.0")
+    "-= should not be overridden so it stays consistent with remove.",
+    "2.11.0"
+  )
   def -=(elem: A): this.type = { remove(elem); this }
 
   override def add(elem: A): Boolean = findOrAddEntry(elem, null) eq null
@@ -78,9 +84,10 @@ class LinkedHashSet[A]
 
   def iterator: Iterator[A] = new AbstractIterator[A] {
     private var cur = firstEntry
-    def hasNext = cur ne null
+    def hasNext     = cur ne null
     def next =
-      if (hasNext) { val res = cur.key; cur = cur.later; res } else
+      if (hasNext) { val res = cur.key; cur = cur.later; res }
+      else
         Iterator.empty.next()
   }
 
@@ -115,9 +122,7 @@ class LinkedHashSet[A]
   }
 
   private def writeObject(out: java.io.ObjectOutputStream) {
-    serializeTo(out, { e =>
-      out.writeObject(e.key)
-    })
+    serializeTo(out, e => out.writeObject(e.key))
   }
 
   private def readObject(in: java.io.ObjectInputStream) {
@@ -140,8 +145,9 @@ object LinkedHashSet extends MutableSetFactory[LinkedHashSet] {
     *  @since 2.10
     */
   private[scala] final class Entry[A](val key: A)
-      extends HashEntry[A, Entry[A]] with Serializable {
+      extends HashEntry[A, Entry[A]]
+      with Serializable {
     var earlier: Entry[A] = null
-    var later: Entry[A] = null
+    var later: Entry[A]   = null
   }
 }

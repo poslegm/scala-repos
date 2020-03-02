@@ -19,14 +19,20 @@ import scala.language.implicitConversions
 class DottyCompiler(scalaInstance: ScalaInstance, compilerJars: CompilerJars)
     extends Compiler {
   override def compile(
-      compilationData: CompilationData, client: Client): Unit = {
+      compilationData: CompilationData,
+      client: Client
+  ): Unit = {
     val cArgs = new CompilerArguments(
-        scalaInstance, ClasspathOptions.javac(compiler = false))
+      scalaInstance,
+      ClasspathOptions.javac(compiler = false)
+    )
     val scalaOptions = compilationData.scalaOptions.flatMap(splitArg)
-    val args: Array[String] = cArgs(compilationData.sources,
-                                    compilationData.classpath,
-                                    Some(compilationData.output),
-                                    scalaOptions).toArray
+    val args: Array[String] = cArgs(
+      compilationData.sources,
+      compilationData.classpath,
+      Some(compilationData.output),
+      scalaOptions
+    ).toArray
 
     val oldOut = System.out
 
@@ -36,36 +42,41 @@ class DottyCompiler(scalaInstance: ScalaInstance, compilerJars: CompilerJars)
       val mainObj =
         Class.forName("dotty.tools.dotc.Main$", true, scalaInstance.loader)
       mainObj.getClassLoader
-      val moduleField = mainObj.getField("MODULE$")
+      val moduleField  = mainObj.getField("MODULE$")
       val mainInstance = moduleField.get(null)
 
       client.progress("compiling")
 
-      val process = mainObj.getMethod("process",
-                                      classOf[Array[String]],
-                                      classOf[SimpleReporter],
-                                      classOf[CompilerCallback])
-      process.invoke(mainInstance,
-                     args,
-                     new ClientDottyReporter(client),
-                     new ClientDottyCallback(client))
+      val process = mainObj.getMethod(
+        "process",
+        classOf[Array[String]],
+        classOf[SimpleReporter],
+        classOf[CompilerCallback]
+      )
+      process.invoke(
+        mainInstance,
+        args,
+        new ClientDottyReporter(client),
+        new ClientDottyCallback(client)
+      )
     } finally {
       System.setOut(oldOut)
     }
   }
 
-  private val emptyPrintStream = new PrintStream(
-      new OutputStream {
+  private val emptyPrintStream = new PrintStream(new OutputStream {
     override def write(b: Int): Unit = {}
   })
 
   //options for these settings should be in the separate entry in the array of compiler arguments
-  val argsToSplit = Set("-target:",
-                        "-g:",
-                        "-Yresolve-term-conflict:",
-                        "-Ylinearizer:",
-                        "-Ystruct-dispatch:",
-                        "-Ybuilder-debug:")
+  val argsToSplit = Set(
+    "-target:",
+    "-g:",
+    "-Yresolve-term-conflict:",
+    "-Ylinearizer:",
+    "-Ystruct-dispatch:",
+    "-Ybuilder-debug:"
+  )
 
   private def splitArg(arg: String): Seq[String] = {
     if (!argsToSplit.exists(arg.startsWith)) return Seq(arg)
@@ -73,21 +84,22 @@ class DottyCompiler(scalaInstance: ScalaInstance, compilerJars: CompilerJars)
     val colonIdx = arg.indexOf(':')
     if (colonIdx > 0 && colonIdx < arg.length - 1 &&
         !arg.charAt(colonIdx + 1).isWhitespace)
-      Seq(arg.substring(0, colonIdx + 1).trim,
-          arg.substring(colonIdx + 1).trim)
+      Seq(arg.substring(0, colonIdx + 1).trim, arg.substring(colonIdx + 1).trim)
     else Seq(arg)
   }
 }
 
 class ClientDottyCallback(client: Client) extends CompilerCallback {
-  private def toJFile(f: AbstractFile) = {
+  private def toJFile(f: AbstractFile) =
     if (f.jfile().isPresent) f.jfile().get()
     else new File(f.path())
-  }
 
   override def onClassGenerated(
-      sourceFile: SourceFile, abstractFile: AbstractFile, s: String): Unit = {
-    val source = toJFile(sourceFile)
+      sourceFile: SourceFile,
+      abstractFile: AbstractFile,
+      s: String
+  ): Unit = {
+    val source    = toJFile(sourceFile)
     val classFile = toJFile(abstractFile)
     client.generated(source, classFile, sourceFile.name())
   }
@@ -106,7 +118,7 @@ class ClientDottyReporter(client: Client) extends SimpleReporter {
 
   //to show duplicated messages, i.e. results of different compiler phases
   private def unique(s: String): String = {
-    val hashCode = s.hashCode
+    val hashCode  = s.hashCode
     val seenTimes = seenMessageHashes.getOrElse(hashCode, 0)
     seenMessageHashes.update(hashCode, seenTimes + 1)
     val invisiblePostfix = " " * seenTimes
@@ -115,10 +127,10 @@ class ClientDottyReporter(client: Client) extends SimpleReporter {
 
   override def report(diagnostic: Diagnostic): Unit = {
     val position = toOption(diagnostic.position())
-    val file = position.map(_.source().path()).map(new File(_))
-    val line = position.map(_.line().toLong + 1)
-    val column = position.map(_.column().toLong + 1)
-    val message = unique(diagnostic.message())
+    val file     = position.map(_.source().path()).map(new File(_))
+    val line     = position.map(_.line().toLong + 1)
+    val column   = position.map(_.column().toLong + 1)
+    val message  = unique(diagnostic.message())
 
     diagnostic.level() match {
       case Diagnostic.ERROR =>

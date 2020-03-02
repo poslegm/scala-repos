@@ -19,18 +19,18 @@ trait Control {
     * @param headers headers to add to the response
     * @param reason the HTTP status reason to set, or null to leave unchanged.
     */
-  def halt[T : Manifest](status: JInteger = null,
-                         body: T = (),
-                         headers: Map[String, String] = Map.empty,
-                         reason: String = null): Nothing = {
+  def halt[T: Manifest](
+      status: JInteger = null,
+      body: T = (),
+      headers: Map[String, String] = Map.empty,
+      reason: String = null
+  ): Nothing = {
     val statusOpt = if (status == null) None else Some(status.intValue)
     throw new HaltException(statusOpt, Some(reason), headers, body)
   }
 
-  def halt(result: ActionResult): Nothing = {
-    halt(
-        result.status.code, result.body, result.headers, result.status.message)
-  }
+  def halt(result: ActionResult): Nothing =
+    halt(result.status.code, result.body, result.headers, result.status.message)
 
   /**
     * Immediately exits from the current route.
@@ -38,10 +38,12 @@ trait Control {
   def pass(): Nothing = throw new PassException
 }
 
-private[scalatra] case class HaltException(status: Option[Int],
-                                           reason: Option[String],
-                                           headers: Map[String, String],
-                                           body: Any)
-    extends Throwable with NoStackTrace
+private[scalatra] case class HaltException(
+    status: Option[Int],
+    reason: Option[String],
+    headers: Map[String, String],
+    body: Any
+) extends Throwable
+    with NoStackTrace
 
 private[scalatra] class PassException extends Throwable with NoStackTrace

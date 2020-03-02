@@ -32,28 +32,29 @@ import breeze.linalg.{squaredDistance, DenseVector, Vector}
   * please refer to org.apache.spark.mllib.clustering.KMeans
   */
 object LocalKMeans {
-  val N = 1000
-  val R = 1000 // Scaling factor
-  val D = 10
-  val K = 10
+  val N            = 1000
+  val R            = 1000 // Scaling factor
+  val D            = 10
+  val K            = 10
   val convergeDist = 0.001
-  val rand = new Random(42)
+  val rand         = new Random(42)
 
   def generateData: Array[DenseVector[Double]] = {
-    def generatePoint(i: Int): DenseVector[Double] = {
-      DenseVector.fill(D) { rand.nextDouble * R }
-    }
+    def generatePoint(i: Int): DenseVector[Double] =
+      DenseVector.fill(D)(rand.nextDouble * R)
     Array.tabulate(N)(generatePoint)
   }
 
   def closestPoint(
-      p: Vector[Double], centers: HashMap[Int, Vector[Double]]): Int = {
-    var index = 0
+      p: Vector[Double],
+      centers: HashMap[Int, Vector[Double]]
+  ): Int = {
+    var index     = 0
     var bestIndex = 0
-    var closest = Double.PositiveInfinity
+    var closest   = Double.PositiveInfinity
 
     for (i <- 1 to centers.size) {
-      val vCurr = centers.get(i).get
+      val vCurr    = centers.get(i).get
       val tempDist = squaredDistance(p, vCurr)
       if (tempDist < closest) {
         closest = tempDist
@@ -65,19 +66,21 @@ object LocalKMeans {
   }
 
   def showWarning() {
-    System.err.println("""WARN: This is a naive implementation of KMeans Clustering and is given as an example!
+    System.err.println(
+      """WARN: This is a naive implementation of KMeans Clustering and is given as an example!
         |Please use the KMeans method found in org.apache.spark.mllib.clustering
         |for more conventional use.
-      """.stripMargin)
+      """.stripMargin
+    )
   }
 
   def main(args: Array[String]) {
 
     showWarning()
 
-    val data = generateData
-    var points = new HashSet[Vector[Double]]
-    var kPoints = new HashMap[Int, Vector[Double]]
+    val data     = generateData
+    var points   = new HashSet[Vector[Double]]
+    var kPoints  = new HashMap[Int, Vector[Double]]
     var tempDist = 1.0
 
     while (points.size < K) {

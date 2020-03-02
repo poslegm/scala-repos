@@ -172,7 +172,7 @@ class UseAsScalaTypesTest {
     @JSExportAll
     class A {
       def m(a: Int, b: String): js.Object = ???
-      def m(b: String): Int = ???
+      def m(b: String): Int               = ???
 
       @JSExport("m")
       def strangeName(a: Int): js.Object = ???
@@ -184,7 +184,7 @@ class UseAsScalaTypesTest {
   @Test def should_support_vals_getters(): Unit = {
     @JSExportAll
     class A {
-      val a: Int = 1
+      val a: Int    = 1
       def b: String = ???
       // Test covariance as well
       def c: js.Array[Int] = ???
@@ -229,7 +229,7 @@ class UseAsScalaTypesTest {
     @JSExportAll
     class A {
       def sum4(a: Int, b: Int = 1, c: Int = 2, d: Int = 3): Int = a + b + c + d
-      def sum2(a: Int, b: Int = 1): Int = a + b
+      def sum2(a: Int, b: Int = 1): Int                         = a + b
     }
 
     js.use(new A).as[JSDefaultArgs]
@@ -250,7 +250,7 @@ class UseAsScalaTypesTest {
     @JSExportAll
     class A {
       def rep(a: Int, b: String*): Unit = ???
-      def rep(a: Int*): Unit = ???
+      def rep(a: Int*): Unit            = ???
     }
 
     js.use(new A).as[JSRepeated]
@@ -274,20 +274,17 @@ class UseAsScalaTypesTest {
     js.use(new B).as[JSBasic]
   }
 
-  @Test def should_support_anonymous_types(): Unit = {
+  @Test def should_support_anonymous_types(): Unit =
     js.use(new { @JSExport def m(a: Int, b: String): js.Object = ??? })
       .as[JSBasic]
-  }
 
-  @Test def should_allow_Nothing(): Unit = {
+  @Test def should_allow_Nothing(): Unit =
     if (false) {
       js.use(???).as[JSBasic]
     }
-  }
 
-  @Test def should_allow_Null(): Unit = {
+  @Test def should_allow_Null(): Unit =
     js.use(null).as[JSBasic]
-  }
 
   // js.use(x).as[T] - Raw JS Types - success cases
 
@@ -301,78 +298,76 @@ class UseAsScalaTypesTest {
     js.use(null: JSGenericInt).as[JSGeneric[Int]]
   }
 
-  @Test def should_support_JS_calls(): Unit = {
+  @Test def should_support_JS_calls(): Unit =
     js.use(null: js.Function0[String]).as[JSApplyString]
-  }
 
-  @Test def should_support_atJSBracketAccess(): Unit = {
+  @Test def should_support_atJSBracketAccess(): Unit =
     js.use(new js.Array[Int](0)).as[JSBracketAccessInt]
-  }
 
-  @Test def should_support_atJSBracketCall(): Unit = {
+  @Test def should_support_atJSBracketCall(): Unit =
     js.use(null: JSBracketCallInt1).as[JSBracketCallInt2]
-  }
 
   // js.use(x).as[T] - general failure cases
 
-  @Test def fails_with_polymorphic_methods(): Unit = {
+  @Test def fails_with_polymorphic_methods(): Unit =
     typeErrorWithMsg(
-        "js.use(new Object).as[JSPolyMethod]",
-        "Polymorphic methods are currently not supported. Offending " +
-        "method: org.scalajs.testsuite.library.UseAsTest.JSPolyMethod.poly")
-  }
+      "js.use(new Object).as[JSPolyMethod]",
+      "Polymorphic methods are currently not supported. Offending " +
+        "method: org.scalajs.testsuite.library.UseAsTest.JSPolyMethod.poly"
+    )
 
-  @Test def fails_with_non_type_refinements(): Unit = {
+  @Test def fails_with_non_type_refinements(): Unit =
     typeErrorWithMsg(
-        "js.use(???).as[JSBasic { def foo: Int }]",
-        "Refinement foo is not a type. Only types may be refined with as.")
-  }
+      "js.use(???).as[JSBasic { def foo: Int }]",
+      "Refinement foo is not a type. Only types may be refined with as."
+    )
 
-  @Test def fails_with_non_trait(): Unit = {
+  @Test def fails_with_non_trait(): Unit =
     typeErrorWithMsg(
-        "js.use(???).as[js.Date]", "Only traits can be used with as")
-  }
+      "js.use(???).as[js.Date]",
+      "Only traits can be used with as"
+    )
 
-  @Test def fails_with_class_parents(): Unit = {
+  @Test def fails_with_class_parents(): Unit =
     typeErrorWithMsg(
-        "js.use(???).as[JSNonClassParent]",
-        "Supertype scala.scalajs.js.Date of trait JSNonClassParent is a " +
-        "class. Cannot be used with as.")
-  }
+      "js.use(???).as[JSNonClassParent]",
+      "Supertype scala.scalajs.js.Date of trait JSNonClassParent is a " +
+        "class. Cannot be used with as."
+    )
 
-  @Test def fails_gracefully_with_existential_types_issue_1841(): Unit = {
+  @Test def fails_gracefully_with_existential_types_issue_1841(): Unit =
     typeErrorWithMsg(
-        "js.use(null: JSTypeMember).as[JSTypeMember]",
-        "Methods with existential types are not supported. Offending " +
+      "js.use(null: JSTypeMember).as[JSTypeMember]",
+      "Methods with existential types are not supported. Offending " +
         "method: org.scalajs.testsuite.library.UseAsTest.JSTypeMember.foo. " +
-        "This is likely caused by an abstract type in the method signature")
-  }
+        "This is likely caused by an abstract type in the method signature"
+    )
 
   // js.use(x).as[T] - Scala Types - failure cases
 
-  @Test def fails_with_apply_in_a_raw_JS_type(): Unit = {
+  @Test def fails_with_apply_in_a_raw_JS_type(): Unit =
     typeErrorWithMsg(
-        "js.use(new Object).as[JSWithApply]",
-        "org.scalajs.testsuite.library.UseAsTest.JSWithApply defines an apply " +
+      "js.use(new Object).as[JSWithApply]",
+      "org.scalajs.testsuite.library.UseAsTest.JSWithApply defines an apply " +
         "method. This cannot be implemented by any Scala exported type, " +
-        "since it would need to chain Function's prototype.")
-  }
+        "since it would need to chain Function's prototype."
+    )
 
-  @Test def fails_with_atJSBracketAccess_in_a_raw_JS_type(): Unit = {
+  @Test def fails_with_atJSBracketAccess_in_a_raw_JS_type(): Unit =
     typeErrorWithMsg(
-        "js.use(new Object).as[JSWithBracketAccess]",
-        "org.scalajs.testsuite.library.UseAsTest.JSWithBracketAccess " +
+      "js.use(new Object).as[JSWithBracketAccess]",
+      "org.scalajs.testsuite.library.UseAsTest.JSWithBracketAccess " +
         "defines a @JSMemberBracketAccess method. Existence of such a " +
-        "method cannot be statically checked for any Scala exported type.")
-  }
+        "method cannot be statically checked for any Scala exported type."
+    )
 
-  @Test def fails_with_atJSBracketCall_in_a_raw_JS_type(): Unit = {
+  @Test def fails_with_atJSBracketCall_in_a_raw_JS_type(): Unit =
     typeErrorWithMsg(
-        "js.use(new Object).as[JSWithBracketCall]",
-        "org.scalajs.testsuite.library.UseAsTest.JSWithBracketCall defines " +
+      "js.use(new Object).as[JSWithBracketCall]",
+      "org.scalajs.testsuite.library.UseAsTest.JSWithBracketCall defines " +
         "a @JSMemberBracketCall method. Existence of such a method cannot " +
-        "be statically checked for any Scala exported type.")
-  }
+        "be statically checked for any Scala exported type."
+    )
 
   @Test def fails_with_a_missing_method_failure(): Unit = {
     class A {
@@ -381,8 +376,9 @@ class UseAsScalaTypesTest {
     }
 
     typeErrorWithMsg(
-        "js.use(new A).as[JSBasic]",
-        "A does not export a method m(Int, String): scala.scalajs.js.Object.")
+      "js.use(new A).as[JSBasic]",
+      "A does not export a method m(Int, String): scala.scalajs.js.Object."
+    )
   }
 
   @Test def fails_with_a_missing_overload_failure(): Unit = {
@@ -392,8 +388,9 @@ class UseAsScalaTypesTest {
     }
 
     typeErrorWithMsg(
-        "js.use(new A).as[JSOverload]",
-        "A does not export a method m(Int): scala.scalajs.js.Object.")
+      "js.use(new A).as[JSOverload]",
+      "A does not export a method m(Int): scala.scalajs.js.Object."
+    )
   }
 
   @Test def fails_with_wrong_argument_types(): Unit = {
@@ -403,8 +400,9 @@ class UseAsScalaTypesTest {
     }
 
     typeErrorWithMsg(
-        "js.use(new A).as[JSBasic]",
-        "A does not export a method m(Int, String): scala.scalajs.js.Object.")
+      "js.use(new A).as[JSBasic]",
+      "A does not export a method m(Int, String): scala.scalajs.js.Object."
+    )
   }
 
   @Test def fails_with_wrong_return_types(): Unit = {
@@ -414,30 +412,35 @@ class UseAsScalaTypesTest {
     }
 
     typeErrorWithMsg(
-        "js.use(new A).as[JSBasic]",
-        "A does not export a method m(Int, String): scala.scalajs.js.Object.")
+      "js.use(new A).as[JSBasic]",
+      "A does not export a method m(Int, String): scala.scalajs.js.Object."
+    )
   }
 
   @Test def fails_with_a_missing_default_argument(): Unit = {
     @JSExportAll
     class A {
       def sum4(a: Int, b: Int = 1, c: Int = 2, d: Int = 3): Int = a + b + c + d
-      def sum2(a: Int, b: Int): Int = a + b // should have default
+      def sum2(a: Int, b: Int): Int                             = a + b // should have default
     }
 
-    typeErrorWithMsg("js.use(new A).as[JSDefaultArgs]",
-                     "A does not export a method sum2(Int, Int = ???): Int.")
+    typeErrorWithMsg(
+      "js.use(new A).as[JSDefaultArgs]",
+      "A does not export a method sum2(Int, Int = ???): Int."
+    )
   }
 
   @Test def fails_with_a_mismatching_repeated_argument(): Unit = {
     @JSExportAll
     class A {
       def rep(a: Int, b: String): Unit = ??? // should be repeated
-      def rep(a: Int*): Unit = ???
+      def rep(a: Int*): Unit           = ???
     }
 
-    typeErrorWithMsg("js.use(new A).as[JSRepeated]",
-                     "A does not export a method rep(Int, String*): Unit.")
+    typeErrorWithMsg(
+      "js.use(new A).as[JSRepeated]",
+      "A does not export a method rep(Int, String*): Unit."
+    )
 
     class B {
       @JSExport
@@ -445,55 +448,58 @@ class UseAsScalaTypesTest {
     }
 
     typeErrorWithMsg(
-        "js.use(new B).as[JSBasic]",
-        "B does not export a method m(Int, String): scala.scalajs.js.Object.")
+      "js.use(new B).as[JSBasic]",
+      "B does not export a method m(Int, String): scala.scalajs.js.Object."
+    )
   }
 
   // js.use(x).as[T] - Raw JS Types - failure cases
 
-  @Test def fails_with_a_missing_apply(): Unit = {
-    typeErrorWithMsg("js.use(new js.Object).as[JSWithApply]",
-                     "scala.scalajs.js.Object does not have a method " +
-                     "<apply>(String): Int. (type is not callable)")
-  }
-
-  @Test def fails_with_a_missing_atJSBracketAccess(): Unit = {
+  @Test def fails_with_a_missing_apply(): Unit =
     typeErrorWithMsg(
-        "js.use(new js.Object).as[JSWithBracketAccess]",
-        "scala.scalajs.js.Object does not have a method " +
+      "js.use(new js.Object).as[JSWithApply]",
+      "scala.scalajs.js.Object does not have a method " +
+        "<apply>(String): Int. (type is not callable)"
+    )
+
+  @Test def fails_with_a_missing_atJSBracketAccess(): Unit =
+    typeErrorWithMsg(
+      "js.use(new js.Object).as[JSWithBracketAccess]",
+      "scala.scalajs.js.Object does not have a method " +
         "<bracketaccess>(String): Int. (type doesn't support member " +
         "selection via []). Add @JSBracketAccess to use a method for " +
-        "member selection.")
-  }
+        "member selection."
+    )
 
-  @Test def fails_with_a_missing_atJSBracketCall(): Unit = {
+  @Test def fails_with_a_missing_atJSBracketCall(): Unit =
     typeErrorWithMsg(
-        "js.use(new js.Object).as[JSWithBracketCall]",
-        "scala.scalajs.js.Object does not have a method " +
+      "js.use(new js.Object).as[JSWithBracketCall]",
+      "scala.scalajs.js.Object does not have a method " +
         "<bracketcall>(String, String): Int. (type doesn't support " +
         "dynamically calling methods). Add @JSBracketCall to use a method " +
-        "for dynamic calls.")
-  }
+        "for dynamic calls."
+    )
 
-  @Test def fails_with_a_missing_method(): Unit = {
-    typeErrorWithMsg("js.use(new js.Object).as[JSBasic]",
-                     "scala.scalajs.js.Object does not have a method " +
-                     "m(Int, String): scala.scalajs.js.Object.")
-  }
-
-  @Test def fails_with_a_missing_overload(): Unit = {
+  @Test def fails_with_a_missing_method(): Unit =
     typeErrorWithMsg(
-        "js.use(null: JSBasic).as[JSOverload]",
-        "org.scalajs.testsuite.library.UseAsTest.JSBasic does not have a " +
-        "method m(Int): scala.scalajs.js.Object.")
-  }
+      "js.use(new js.Object).as[JSBasic]",
+      "scala.scalajs.js.Object does not have a method " +
+        "m(Int, String): scala.scalajs.js.Object."
+    )
 
-  @Test def fails_with_wrongly_typed_generic(): Unit = {
+  @Test def fails_with_a_missing_overload(): Unit =
     typeErrorWithMsg(
-        "js.use(null: JSGeneric[Int]).as[JSGeneric[String]]",
-        "org.scalajs.testsuite.library.UseAsTest.JSGeneric[Int] does not " +
-        "have a getter arr: scala.scalajs.js.Array[String].")
-  }
+      "js.use(null: JSBasic).as[JSOverload]",
+      "org.scalajs.testsuite.library.UseAsTest.JSBasic does not have a " +
+        "method m(Int): scala.scalajs.js.Object."
+    )
+
+  @Test def fails_with_wrongly_typed_generic(): Unit =
+    typeErrorWithMsg(
+      "js.use(null: JSGeneric[Int]).as[JSGeneric[String]]",
+      "org.scalajs.testsuite.library.UseAsTest.JSGeneric[Int] does not " +
+        "have a getter arr: scala.scalajs.js.Array[String]."
+    )
 }
 
 object UseAsTest {
@@ -533,14 +539,14 @@ object UseAsTest {
 
   @js.native
   trait JSOverload extends JSBasic {
-    def m(b: String): Int = js.native
+    def m(b: String): Int    = js.native
     def m(a: Int): js.Object = js.native
   }
 
   @js.native
   trait JSGetters extends js.Object {
-    def a: Int = js.native
-    val b: String = js.native
+    def a: Int       = js.native
+    val b: String    = js.native
     def c: js.Object = js.native
   }
 
@@ -557,8 +563,8 @@ object UseAsTest {
 
   @js.native
   trait JSVars extends js.Object {
-    var a: Int = js.native
-    def b: String = js.native
+    var a: Int               = js.native
+    def b: String            = js.native
     def b_=(x: String): Unit = js.native
 
     @JSName("c")
@@ -568,13 +574,13 @@ object UseAsTest {
   @js.native
   trait JSDefaultArgs extends js.Object {
     def sum4(a: Int, b: Int = ???, c: Int = ???, d: Int = ???): Int = js.native
-    def sum2(a: Int, b: Int = ???): Int = js.native
+    def sum2(a: Int, b: Int = ???): Int                             = js.native
   }
 
   @js.native
   trait JSRepeated extends js.Object {
     def rep(a: Int, b: String*): Unit = js.native
-    def rep(a: Int*): Unit = js.native
+    def rep(a: Int*): Unit            = js.native
   }
 
   @js.native

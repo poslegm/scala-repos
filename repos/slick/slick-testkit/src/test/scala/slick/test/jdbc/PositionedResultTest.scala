@@ -24,7 +24,7 @@ class PositionedResultTest {
         count <= len
       }
       override def getInt(columnIndex: Int): Int = columnIndex
-      override def wasNull(): Boolean = false
+      override def wasNull(): Boolean            = false
     }
     val pr = new PositionedResult(fakeRS) { def close() {} }
     new PositionedResultIterator[Int](pr, limit, true) {

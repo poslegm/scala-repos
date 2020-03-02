@@ -17,7 +17,7 @@ object CordTest extends SpecLite {
 
   "drop() must make cord shorter" in {
     val theString = "While I pondered, weak and weary"
-    val x = Cord(theString)
+    val x         = Cord(theString)
     for (i <- 0 until x.length) {
       val y = x drop i
       y.toString must_== theString.substring(i)

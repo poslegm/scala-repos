@@ -65,9 +65,8 @@ object TaskContext {
   /**
     * An empty task context that does not represent an actual task.
     */
-  private[spark] def empty(): TaskContextImpl = {
+  private[spark] def empty(): TaskContextImpl =
     new TaskContextImpl(0, 0, 0, 0, null, null)
-  }
 }
 
 /**
@@ -100,7 +99,9 @@ abstract class TaskContext extends Serializable {
     * @return false
     */
   @deprecated(
-      "Local execution was removed, so this always returns false", "2.0.0")
+    "Local execution was removed, so this always returns false",
+    "2.0.0"
+  )
   def isRunningLocally(): Boolean
 
   /**
@@ -119,12 +120,10 @@ abstract class TaskContext extends Serializable {
     *
     * Exceptions thrown by the listener will result in failure of the task.
     */
-  def addTaskCompletionListener(f: (TaskContext) => Unit): TaskContext = {
-    addTaskCompletionListener(
-        new TaskCompletionListener {
+  def addTaskCompletionListener(f: (TaskContext) => Unit): TaskContext =
+    addTaskCompletionListener(new TaskCompletionListener {
       override def onTaskCompletion(context: TaskContext): Unit = f(context)
     })
-  }
 
   /**
     * Adds a listener to be executed on task failure.
@@ -136,14 +135,11 @@ abstract class TaskContext extends Serializable {
     * Adds a listener to be executed on task failure.
     * Operations defined here must be idempotent, as `onTaskFailure` can be called multiple times.
     */
-  def addTaskFailureListener(
-      f: (TaskContext, Throwable) => Unit): TaskContext = {
-    addTaskFailureListener(
-        new TaskFailureListener {
-      override def onTaskFailure(
-          context: TaskContext, error: Throwable): Unit = f(context, error)
+  def addTaskFailureListener(f: (TaskContext, Throwable) => Unit): TaskContext =
+    addTaskFailureListener(new TaskFailureListener {
+      override def onTaskFailure(context: TaskContext, error: Throwable): Unit =
+        f(context, error)
     })
-  }
 
   /**
     * The ID of the stage that this task belong to.

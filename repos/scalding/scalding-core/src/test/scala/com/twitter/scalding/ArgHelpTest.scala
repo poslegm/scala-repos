@@ -18,7 +18,7 @@ class ArgHelpTest extends WordSpec with Matchers {
       val helper =
         ArgHelperTest((describeArgs: Seq[DescribedArg]) => helpCalled = true)
 
-      val args = List(OptionalArg("name", "Name of person"))
+      val args   = List(OptionalArg("name", "Name of person"))
       val config = Config.unitTestDefault.setArgs(Args("--help"))
 
       intercept[HelpException] {
@@ -34,7 +34,7 @@ class ArgHelpTest extends WordSpec with Matchers {
       val helper =
         ArgHelperTest((describeArgs: Seq[DescribedArg]) => helpCalled = true)
 
-      val args = List(OptionalArg("name", "Name of person"))
+      val args   = List(OptionalArg("name", "Name of person"))
       val config = Config.unitTestDefault.setArgs(Args(""))
 
       val returnValues =
@@ -52,7 +52,8 @@ class ArgHelpTest extends WordSpec with Matchers {
 
       val args = List(OptionalArg("name", "Name of person"))
       val config = Config.unitTestDefault.setArgs(
-          Args(List("--help", "--name", "Bill", "--phone", "111")))
+        Args(List("--help", "--name", "Bill", "--phone", "111"))
+      )
 
       intercept[HelpException] {
         helper.validatedDescribe(args, job).waitFor(config, Local(true)).get
@@ -63,10 +64,13 @@ class ArgHelpTest extends WordSpec with Matchers {
 
   it should {
     "not fail when all args are described" in {
-      val args = List(OptionalArg("name", "Name of person"),
-                      OptionalArg("phone", "Person's phone"))
+      val args = List(
+        OptionalArg("name", "Name of person"),
+        OptionalArg("phone", "Person's phone")
+      )
       val config = Config.unitTestDefault.setArgs(
-          Args(List("--name", "Bill", "--phone", "111")))
+        Args(List("--name", "Bill", "--phone", "111"))
+      )
 
       val returnValues =
         ArgHelp.validatedDescribe(args, job).waitFor(config, Local(true)).get
@@ -76,10 +80,13 @@ class ArgHelpTest extends WordSpec with Matchers {
 
   it should {
     "fail when all args are not described" in {
-      val args = List(OptionalArg("name", "Name of person"),
-                      OptionalArg("phone", "Person's phone"))
+      val args = List(
+        OptionalArg("name", "Name of person"),
+        OptionalArg("phone", "Person's phone")
+      )
       val config = Config.unitTestDefault.setArgs(
-          Args(List("--name", "Bill", "--phone", "111", "--address", "123")))
+        Args(List("--name", "Bill", "--phone", "111", "--address", "123"))
+      )
 
       intercept[DescriptionValidationException] {
         ArgHelp

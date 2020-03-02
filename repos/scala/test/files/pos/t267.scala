@@ -13,7 +13,7 @@ trait Base {
   }
   class Num(v: Int) extends Exp { self: exp =>
     val value = v
-    def eval = value
+    def eval  = value
   }
 }
 
@@ -27,9 +27,9 @@ object testBase extends App with Base {
   */
 trait BasePlus extends Base {
   class Plus(l: exp, r: exp) extends Exp { self: exp =>
-    val left = l
+    val left  = l
     val right = r
-    def eval = left.eval + right.eval
+    def eval  = left.eval + right.eval
   }
 }
 

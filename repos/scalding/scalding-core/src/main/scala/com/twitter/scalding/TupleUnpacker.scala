@@ -35,7 +35,7 @@ trait TupleUnpacker[T] extends java.io.Serializable {
 }
 
 trait LowPriorityTupleUnpackers {
-  implicit def genericUnpacker[T : Manifest] = new ReflectionTupleUnpacker[T]
+  implicit def genericUnpacker[T: Manifest] = new ReflectionTupleUnpacker[T]
 }
 
 /**
@@ -50,9 +50,7 @@ object ReflectionUtils {
     * order they were declared.
     */
   def fieldsOf[T](c: Class[T]): List[String] =
-    c.getDeclaredFields.map { f =>
-      f.getName
-    }.toList.distinct
+    c.getDeclaredFields.map(f => f.getName).toList.distinct
 
   /**
     * For a given class, give a function that takes
@@ -75,7 +73,8 @@ class ReflectionTupleUnpacker[T](implicit m: Manifest[T])
   // fields, in the declared field order.
   // Lazy because we need this twice or not at all.
   lazy val allFields = new Fields(
-      ReflectionUtils.fieldsOf(m.runtimeClass).toSeq: _*)
+    ReflectionUtils.fieldsOf(m.runtimeClass).toSeq: _*
+  )
 
   /**
     * A helper to check the passed-in
@@ -107,53 +106,47 @@ class ReflectionSetter[T](fields: Fields)(implicit m: Manifest[T])
   def methodMap =
     m.runtimeClass.getDeclaredMethods
     // Keep only methods with 0 parameter types
-    .filter { m =>
-      m.getParameterTypes.length == 0
-    }.groupBy { _.getName }.mapValues { _.head }
+      .filter(m => m.getParameterTypes.length == 0)
+      .groupBy(_.getName)
+      .mapValues(_.head)
 
   // TODO: filter by isAccessible, which somehow seems to fail
   def fieldMap =
-    m.runtimeClass.getDeclaredFields.groupBy { _.getName }.mapValues { _.head }
+    m.runtimeClass.getDeclaredFields.groupBy(_.getName).mapValues(_.head)
 
-  def makeSetters = {
+  def makeSetters =
     (0 until fields.size).map { idx =>
       val fieldName = fields.get(idx).toString
       setterForFieldName(fieldName)
     }
-  }
 
   // This validation makes sure that the setters exist
   // but does not save them in a val (due to serialization issues)
   def validate = makeSetters
 
   override def apply(input: T): Tuple = {
-    val values = setters.map { setFn =>
-      setFn(input)
-    }
+    val values = setters.map(setFn => setFn(input))
     new Tuple(values: _*)
   }
 
   override def arity = fields.size
 
-  private def setterForFieldName(fieldName: String): (T => AnyRef) = {
+  private def setterForFieldName(fieldName: String): (T => AnyRef) =
     getValueFromMethod(createGetter(fieldName))
       .orElse(getValueFromMethod(fieldName))
       .orElse(getValueFromField(fieldName))
-      .getOrElse(throw new TupleUnpackerException("Unrecognized field: " +
-              fieldName + " for class: " + m.runtimeClass.getName))
-  }
+      .getOrElse(
+        throw new TupleUnpackerException(
+          "Unrecognized field: " +
+            fieldName + " for class: " + m.runtimeClass.getName
+        )
+      )
 
-  private def getValueFromField(fieldName: String): Option[(T => AnyRef)] = {
-    fieldMap.get(fieldName).map { f => (x: T) =>
-      f.get(x)
-    }
-  }
+  private def getValueFromField(fieldName: String): Option[(T => AnyRef)] =
+    fieldMap.get(fieldName).map(f => (x: T) => f.get(x))
 
-  private def getValueFromMethod(methodName: String): Option[(T => AnyRef)] = {
-    methodMap.get(methodName).map { m => (x: T) =>
-      m.invoke(x)
-    }
-  }
+  private def getValueFromMethod(methodName: String): Option[(T => AnyRef)] =
+    methodMap.get(methodName).map(m => (x: T) => m.invoke(x))
 
   private def upperFirst(s: String) =
     s.substring(0, 1).toUpperCase + s.substring(1)

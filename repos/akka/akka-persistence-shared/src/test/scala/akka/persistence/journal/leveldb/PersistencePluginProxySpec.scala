@@ -11,7 +11,8 @@ import com.typesafe.config.ConfigFactory
 
 object PersistencePluginProxySpec {
   lazy val config =
-    ConfigFactory.parseString("""
+    ConfigFactory.parseString(
+      """
       akka {
         actor {
           provider = "akka.remote.RemoteActorRefProvider"
@@ -39,30 +40,32 @@ object PersistencePluginProxySpec {
         log-dead-letters-during-shutdown = off
         test.single-expect-default = 10s
       }
-    """)
+    """
+    )
 
   lazy val startTargetConfig =
-    ConfigFactory.parseString("""
+    ConfigFactory.parseString(
+      """
       |akka.extensions = ["akka.persistence.journal.PersistencePluginProxyExtension"]
       |akka.persistence {
       |  journal.proxy.start-target-journal = on
       |  snapshot-store.proxy.start-target-snapshot-store = on
       |}
-    """.stripMargin)
+    """.stripMargin
+    )
 
   def targetAddressConfig(system: ActorSystem) =
-    ConfigFactory.parseString(
-        s"""
+    ConfigFactory.parseString(s"""
       |akka.extensions = ["akka.persistence.Persistence"]
       |akka.persistence.journal.auto-start-journals = [""]
       |akka.persistence.journal.proxy.target-journal-address = "${system
-         .asInstanceOf[ExtendedActorSystem]
-         .provider
-         .getDefaultAddress}"
+                                   .asInstanceOf[ExtendedActorSystem]
+                                   .provider
+                                   .getDefaultAddress}"
       |akka.persistence.snapshot-store.proxy.target-snapshot-store-address = "${system
-         .asInstanceOf[ExtendedActorSystem]
-         .provider
-         .getDefaultAddress}"
+                                   .asInstanceOf[ExtendedActorSystem]
+                                   .provider
+                                   .getDefaultAddress}"
     """.stripMargin)
 
   class ExamplePersistentActor(probe: ActorRef, name: String)
@@ -74,15 +77,14 @@ object PersistencePluginProxySpec {
     }
     override def receiveCommand = {
       case payload ⇒
-        persist(payload) { _ ⇒
-          probe ! payload
-        }
+        persist(payload)(_ ⇒ probe ! payload)
     }
   }
 
   class ExampleApp(probe: ActorRef) extends Actor {
     val p = context.actorOf(
-        Props(classOf[ExamplePersistentActor], probe, context.system.name))
+      Props(classOf[ExamplePersistentActor], probe, context.system.name)
+    )
 
     def receive = {
       case m ⇒ p forward m
@@ -92,14 +94,16 @@ object PersistencePluginProxySpec {
 
 class PersistencePluginProxySpec
     extends AkkaSpec(
-        PersistencePluginProxySpec.startTargetConfig withFallback PersistencePluginProxySpec.config)
+      PersistencePluginProxySpec.startTargetConfig withFallback PersistencePluginProxySpec.config
+    )
     with Cleanup {
   import PersistencePluginProxySpec._
 
   val systemA = ActorSystem("SysA", config)
   val systemB = ActorSystem(
-      "SysB",
-      targetAddressConfig(system) withFallback PersistencePluginProxySpec.config)
+    "SysB",
+    targetAddressConfig(system) withFallback PersistencePluginProxySpec.config
+  )
 
   override protected def afterTermination() {
     shutdown(systemA)

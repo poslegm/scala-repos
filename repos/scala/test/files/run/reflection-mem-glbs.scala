@@ -4,7 +4,7 @@ trait A { type T <: A }
 trait B { type T <: B }
 
 object Test extends MemoryTest {
-  override def maxDelta = 10
+  override def maxDelta     = 10
   override def calcsPerIter = 50000
   override def calc() {
     import scala.reflect.runtime.universe._

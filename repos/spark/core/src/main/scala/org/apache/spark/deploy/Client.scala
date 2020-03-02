@@ -28,7 +28,12 @@ import org.apache.spark.{SecurityManager, SparkConf}
 import org.apache.spark.deploy.DeployMessages._
 import org.apache.spark.deploy.master.{DriverState, Master}
 import org.apache.spark.internal.Logging
-import org.apache.spark.rpc.{RpcAddress, RpcEndpointRef, RpcEnv, ThreadSafeRpcEndpoint}
+import org.apache.spark.rpc.{
+  RpcAddress,
+  RpcEndpointRef,
+  RpcEnv,
+  ThreadSafeRpcEndpoint
+}
 import org.apache.spark.util.{SparkExitCode, ThreadUtils, Utils}
 
 /**
@@ -37,31 +42,33 @@ import org.apache.spark.util.{SparkExitCode, ThreadUtils, Utils}
   * We currently don't support retry if submission fails. In HA mode, client will submit request to
   * all masters and see which one could handle it.
   */
-private class ClientEndpoint(override val rpcEnv: RpcEnv,
-                             driverArgs: ClientArguments,
-                             masterEndpoints: Seq[RpcEndpointRef],
-                             conf: SparkConf)
-    extends ThreadSafeRpcEndpoint with Logging {
+private class ClientEndpoint(
+    override val rpcEnv: RpcEnv,
+    driverArgs: ClientArguments,
+    masterEndpoints: Seq[RpcEndpointRef],
+    conf: SparkConf
+) extends ThreadSafeRpcEndpoint
+    with Logging {
 
   // A scheduled executor used to send messages at the specified time.
   private val forwardMessageThread =
-    ThreadUtils.newDaemonSingleThreadScheduledExecutor(
-        "client-forward-message")
+    ThreadUtils.newDaemonSingleThreadScheduledExecutor("client-forward-message")
   // Used to provide the implicit parameter of `Future` methods.
   private val forwardMessageExecutionContext = ExecutionContext.fromExecutor(
-      forwardMessageThread,
-      t =>
-        t match {
-          case ie: InterruptedException => // Exit normally
-          case e: Throwable =>
-            logError(e.getMessage, e)
-            System.exit(SparkExitCode.UNCAUGHT_EXCEPTION)
-      })
+    forwardMessageThread,
+    t =>
+      t match {
+        case ie: InterruptedException => // Exit normally
+        case e: Throwable =>
+          logError(e.getMessage, e)
+          System.exit(SparkExitCode.UNCAUGHT_EXCEPTION)
+      }
+  )
 
-  private val lostMasters = new HashSet[RpcAddress]
+  private val lostMasters                          = new HashSet[RpcAddress]
   private var activeMasterEndpoint: RpcEndpointRef = null
 
-  override def onStart(): Unit = {
+  override def onStart(): Unit =
     driverArgs.cmd match {
       case "launch" =>
         // TODO: We could add an env variable here and intercept it in `sc.addJar` that would
@@ -71,14 +78,12 @@ private class ClientEndpoint(override val rpcEnv: RpcEnv,
 
         val classPathConf = "spark.driver.extraClassPath"
         val classPathEntries = sys.props.get(classPathConf).toSeq.flatMap {
-          cp =>
-            cp.split(java.io.File.pathSeparator)
+          cp => cp.split(java.io.File.pathSeparator)
         }
 
         val libraryPathConf = "spark.driver.extraLibraryPath"
         val libraryPathEntries = sys.props.get(libraryPathConf).toSeq.flatMap {
-          cp =>
-            cp.split(java.io.File.pathSeparator)
+          cp => cp.split(java.io.File.pathSeparator)
         }
 
         val extraJavaOptsConf = "spark.driver.extraJavaOptions"
@@ -87,37 +92,39 @@ private class ClientEndpoint(override val rpcEnv: RpcEnv,
           .map(Utils.splitCommandString)
           .getOrElse(Seq.empty)
         val sparkJavaOpts = Utils.sparkJavaOpts(conf)
-        val javaOpts = sparkJavaOpts ++ extraJavaOpts
+        val javaOpts      = sparkJavaOpts ++ extraJavaOpts
         val command =
-          new Command(mainClass,
-                      Seq("{{WORKER_URL}}",
-                          "{{USER_JAR}}",
-                          driverArgs.mainClass) ++ driverArgs.driverOptions,
-                      sys.env,
-                      classPathEntries,
-                      libraryPathEntries,
-                      javaOpts)
+          new Command(
+            mainClass,
+            Seq("{{WORKER_URL}}", "{{USER_JAR}}", driverArgs.mainClass) ++ driverArgs.driverOptions,
+            sys.env,
+            classPathEntries,
+            libraryPathEntries,
+            javaOpts
+          )
 
-        val driverDescription = new DriverDescription(driverArgs.jarUrl,
-                                                      driverArgs.memory,
-                                                      driverArgs.cores,
-                                                      driverArgs.supervise,
-                                                      command)
+        val driverDescription = new DriverDescription(
+          driverArgs.jarUrl,
+          driverArgs.memory,
+          driverArgs.cores,
+          driverArgs.supervise,
+          command
+        )
         ayncSendToMasterAndForwardReply[SubmitDriverResponse](
-            RequestSubmitDriver(driverDescription))
+          RequestSubmitDriver(driverDescription)
+        )
 
       case "kill" =>
         val driverId = driverArgs.driverId
         ayncSendToMasterAndForwardReply[KillDriverResponse](
-            RequestKillDriver(driverId))
+          RequestKillDriver(driverId)
+        )
     }
-  }
 
   /**
     * Send the message to master and forward the reply to self asynchronously.
     */
-  private def ayncSendToMasterAndForwardReply[T : ClassTag](
-      message: Any): Unit = {
+  private def ayncSendToMasterAndForwardReply[T: ClassTag](message: Any): Unit =
     for (masterEndpoint <- masterEndpoints) {
       masterEndpoint
         .ask[T](message)
@@ -127,7 +134,6 @@ private class ClientEndpoint(override val rpcEnv: RpcEnv,
             logWarning(s"Error sending messages to master $masterEndpoint", e)
         }(forwardMessageExecutionContext)
     }
-  }
 
   /* Find out driver status then exit the JVM */
   def pollAndReportStatus(driverId: String) {
@@ -145,9 +151,11 @@ private class ClientEndpoint(override val rpcEnv: RpcEnv,
       case true =>
         logInfo(s"State of $driverId is ${statusResponse.state.get}")
         // Worker node, if present
-        (statusResponse.workerId,
-         statusResponse.workerHostPort,
-         statusResponse.state) match {
+        (
+          statusResponse.workerId,
+          statusResponse.workerHostPort,
+          statusResponse.state
+        ) match {
           case (Some(id), Some(hostPort), Some(DriverState.RUNNING)) =>
             logInfo(s"Driver running on $hostPort ($id)")
           case _ =>
@@ -183,7 +191,7 @@ private class ClientEndpoint(override val rpcEnv: RpcEnv,
       }
   }
 
-  override def onDisconnected(remoteAddress: RpcAddress): Unit = {
+  override def onDisconnected(remoteAddress: RpcAddress): Unit =
     if (!lostMasters.contains(remoteAddress)) {
       logError(s"Error connecting to master $remoteAddress.")
       lostMasters += remoteAddress
@@ -195,10 +203,11 @@ private class ClientEndpoint(override val rpcEnv: RpcEnv,
         System.exit(-1)
       }
     }
-  }
 
   override def onNetworkError(
-      cause: Throwable, remoteAddress: RpcAddress): Unit = {
+      cause: Throwable,
+      remoteAddress: RpcAddress
+  ): Unit =
     if (!lostMasters.contains(remoteAddress)) {
       logError(s"Error connecting to master ($remoteAddress).")
       logError(s"Cause was: $cause")
@@ -208,7 +217,6 @@ private class ClientEndpoint(override val rpcEnv: RpcEnv,
         System.exit(-1)
       }
     }
-  }
 
   override def onError(cause: Throwable): Unit = {
     logError(s"Error processing messages, exiting.")
@@ -216,9 +224,8 @@ private class ClientEndpoint(override val rpcEnv: RpcEnv,
     System.exit(-1)
   }
 
-  override def onStop(): Unit = {
+  override def onStop(): Unit =
     forwardMessageThread.shutdownNow()
-  }
 }
 
 /**
@@ -229,29 +236,33 @@ object Client {
     // scalastyle:off println
     if (!sys.props.contains("SPARK_SUBMIT")) {
       println(
-          "WARNING: This client is deprecated and will be removed in a future version of Spark")
+        "WARNING: This client is deprecated and will be removed in a future version of Spark"
+      )
       println("Use ./bin/spark-submit with \"--master spark://host:port\"")
     }
     // scalastyle:on println
 
-    val conf = new SparkConf()
+    val conf       = new SparkConf()
     val driverArgs = new ClientArguments(args)
 
     conf.set("spark.rpc.askTimeout", "10")
     Logger.getRootLogger.setLevel(driverArgs.logLevel)
 
-    val rpcEnv = RpcEnv.create("driverClient",
-                               Utils.localHostName(),
-                               0,
-                               conf,
-                               new SecurityManager(conf))
+    val rpcEnv = RpcEnv.create(
+      "driverClient",
+      Utils.localHostName(),
+      0,
+      conf,
+      new SecurityManager(conf)
+    )
 
     val masterEndpoints = driverArgs.masters
       .map(RpcAddress.fromSparkURL)
       .map(rpcEnv.setupEndpointRef(_, Master.ENDPOINT_NAME))
     rpcEnv.setupEndpoint(
-        "client",
-        new ClientEndpoint(rpcEnv, driverArgs, masterEndpoints, conf))
+      "client",
+      new ClientEndpoint(rpcEnv, driverArgs, masterEndpoints, conf)
+    )
 
     rpcEnv.awaitTermination()
   }

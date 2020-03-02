@@ -1,7 +1,7 @@
 object Serialize {
   @throws(classOf[java.io.IOException])
   def write[A](o: A): Array[Byte] = {
-    val ba = new java.io.ByteArrayOutputStream(512)
+    val ba  = new java.io.ByteArrayOutputStream(512)
     val out = new java.io.ObjectOutputStream(ba)
     out.writeObject(o)
     out.close()
@@ -17,9 +17,7 @@ object Serialize {
 }
 
 object Foo {
-  def obj_foo(x: Int) = { () =>
-    x
-  }
+  def obj_foo(x: Int) = { () => x }
 }
 
 object Test {

@@ -35,45 +35,54 @@ import annotation.tailrec
   *  @define orderDependentFold
   */
 class ListMap[A, B]
-    extends AbstractMap[A, B] with Map[A, B]
-    with MapLike[A, B, ListMap[A, B]] with Serializable {
+    extends AbstractMap[A, B]
+    with Map[A, B]
+    with MapLike[A, B, ListMap[A, B]]
+    with Serializable {
 
   override def empty = ListMap.empty[A, B]
 
   private var elems: List[(A, B)] = List()
-  private var siz: Int = 0
+  private var siz: Int            = 0
 
-  def get(key: A): Option[B] = elems find (_._1 == key) map (_._2)
+  def get(key: A): Option[B]     = elems find (_._1 == key) map (_._2)
   def iterator: Iterator[(A, B)] = elems.iterator
 
   @deprecatedOverriding(
-      "No sensible way to override += as private remove is used in multiple places internally.",
-      "2.11.0")
+    "No sensible way to override += as private remove is used in multiple places internally.",
+    "2.11.0"
+  )
   def +=(kv: (A, B)) = {
     elems = remove(kv._1, elems, List()); elems = kv :: elems; siz += 1; this
   }
 
   @deprecatedOverriding(
-      "No sensible way to override -= as private remove is used in multiple places internally.",
-      "2.11.0")
+    "No sensible way to override -= as private remove is used in multiple places internally.",
+    "2.11.0"
+  )
   def -=(key: A) = { elems = remove(key, elems, List()); this }
 
   @tailrec
   private def remove(
-      key: A, elems: List[(A, B)], acc: List[(A, B)]): List[(A, B)] = {
+      key: A,
+      elems: List[(A, B)],
+      acc: List[(A, B)]
+  ): List[(A, B)] =
     if (elems.isEmpty) acc
-    else if (elems.head._1 == key) { siz -= 1; acc ::: elems.tail } else
+    else if (elems.head._1 == key) { siz -= 1; acc ::: elems.tail }
+    else
       remove(key, elems.tail, elems.head :: acc)
-  }
 
   @deprecatedOverriding(
-      "No sensible way to override as this functionality relies upon access to private methods.",
-      "2.11.0")
+    "No sensible way to override as this functionality relies upon access to private methods.",
+    "2.11.0"
+  )
   override def clear() = { elems = List(); siz = 0 }
 
   @deprecatedOverriding(
-      "No sensible way to override as this functionality relies upon access to private methods.",
-      "2.11.0")
+    "No sensible way to override as this functionality relies upon access to private methods.",
+    "2.11.0"
+  )
   override def size: Int = siz
 }
 

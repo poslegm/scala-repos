@@ -8,7 +8,7 @@ import org.jetbrains.plugins.scala.lang.psi.api.base.ScPatternList
 import org.jetbrains.plugins.scala.lang.psi.api.base.patterns.ScBindingPattern
 import org.jetbrains.plugins.scala.lang.psi.api.expr.ScExpression
 
-/** 
+/**
   * @author Alexander Podkhalyuzin
   * Date: 22.02.2008
   */
@@ -28,9 +28,8 @@ trait ScPatternDefinition extends ScValue {
 
 object ScPatternDefinition {
   object expr {
-    def unapply(definition: ScPatternDefinition): Option[ScExpression] = {
+    def unapply(definition: ScPatternDefinition): Option[ScExpression] =
       if (definition == null) None
       else definition.expr
-    }
   }
 }

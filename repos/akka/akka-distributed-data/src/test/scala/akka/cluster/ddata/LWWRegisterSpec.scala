@@ -27,7 +27,7 @@ class LWWRegisterSpec extends WordSpec with Matchers {
 
     "merge by picking max timestamp" in {
       val clock = new LWWRegister.Clock[String] {
-        val i = Iterator.from(100)
+        val i                                                  = Iterator.from(100)
         override def apply(current: Long, value: String): Long = i.next()
       }
       val r1 = LWWRegister(node1, "A", clock)
@@ -65,13 +65,13 @@ class LWWRegisterSpec extends WordSpec with Matchers {
     }
 
     "have unapply extractor" in {
-      val r1 = LWWRegister(node1, "a", defaultClock)
+      val r1                  = LWWRegister(node1, "a", defaultClock)
       val LWWRegister(value1) = r1
-      val value2: String = value1
+      val value2: String      = value1
       Changed(LWWRegisterKey[String]("key"))(r1) match {
         case c @ Changed(LWWRegisterKey("key")) ⇒
           val LWWRegister(value3) = c.dataValue
-          val value4: String = value3
+          val value4: String      = value3
           value4 should be("a")
       }
     }

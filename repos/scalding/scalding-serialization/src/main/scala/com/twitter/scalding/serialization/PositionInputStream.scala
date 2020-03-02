@@ -21,14 +21,14 @@ import JavaStreamEnrichments._
 object PositionInputStream {
   def apply(in: InputStream): PositionInputStream = in match {
     case p: PositionInputStream => p
-    case nonPos => new PositionInputStream(nonPos)
+    case nonPos                 => new PositionInputStream(nonPos)
   }
 }
 
 class PositionInputStream(val wraps: InputStream) extends InputStream {
-  private[this] var pos: Long = 0L
+  private[this] var pos: Long     = 0L
   private[this] var markPos: Long = -1L
-  def position: Long = pos
+  def position: Long              = pos
 
   override def available = wraps.available
 

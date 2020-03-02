@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -38,21 +38,29 @@ import scalaz.syntax.comonad._
 
 trait RenderStackSpecs extends EvalStackSpecs with Logging {
   type TestStack <: EvalStackLike with ParseEvalStack[Future] with ColumnarTableModule[
-      Future] with MemoryDatasetConsumer[Future]
+    Future
+  ] with MemoryDatasetConsumer[Future]
 
   import stack._
 
   implicit val ntFuture = NaturalTransformation.refl[Future]
 
-  private val dummyAccount = AccountDetails("dummyAccount",
-                                            "nobody@precog.com",
-                                            new DateTime,
-                                            "dummyAPIKey",
-                                            Path.Root,
-                                            AccountPlan.Free)
+  private val dummyAccount = AccountDetails(
+    "dummyAccount",
+    "nobody@precog.com",
+    new DateTime,
+    "dummyAPIKey",
+    Path.Root,
+    AccountPlan.Free
+  )
   private def dummyEvaluationContext =
     EvaluationContext(
-        "dummyAPIKey", dummyAccount, Path.Root, Path.Root, new DateTime)
+      "dummyAPIKey",
+      dummyAccount,
+      Path.Root,
+      Path.Root,
+      new DateTime
+    )
 
   "full stack rendering" should {
     def evalTable(str: String, debug: Boolean = false): Table = {
@@ -68,7 +76,7 @@ trait RenderStackSpecs extends EvalStackSpecs with Logging {
       val tree = forest.head
       tree.errors must beEmpty
       val Right(dag) = decorate(emit(tree))
-      val tableM = evaluator.eval(dag, dummyEvaluationContext, true)
+      val tableM     = evaluator.eval(dag, dummyEvaluationContext, true)
       tableM map {
         _ transform DerefObjectStatic(Leaf(Source), CPathField("value"))
       } copoint
@@ -78,7 +86,7 @@ trait RenderStackSpecs extends EvalStackSpecs with Logging {
       val stream =
         evalTable("(//tutorial/transactions).quantity").renderJson("", ",", "")
       val strings = stream map { _.toString }
-      val str = strings.foldLeft("") { _ + _ } copoint
+      val str     = strings.foldLeft("")(_ + _) copoint
 
       str must contain(",")
     }

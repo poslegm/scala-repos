@@ -34,7 +34,10 @@ import org.apache.spark.util.random.XORShiftRandom
   * Params for [[QuantileDiscretizer]].
   */
 private[feature] trait QuantileDiscretizerBase
-    extends Params with HasInputCol with HasOutputCol with HasSeed {
+    extends Params
+    with HasInputCol
+    with HasOutputCol
+    with HasSeed {
 
   /**
     * Maximum number of buckets (quantiles, or categories) into which data points are grouped. Must
@@ -43,11 +46,12 @@ private[feature] trait QuantileDiscretizerBase
     * @group param
     */
   val numBuckets = new IntParam(
-      this,
-      "numBuckets",
-      "Maximum number of buckets (quantiles, or " +
+    this,
+    "numBuckets",
+    "Maximum number of buckets (quantiles, or " +
       "categories) into which data points are grouped. Must be >= 2.",
-      ParamValidators.gtEq(2))
+    ParamValidators.gtEq(2)
+  )
   setDefault(numBuckets -> 2)
 
   /** @group getParam */
@@ -64,7 +68,8 @@ private[feature] trait QuantileDiscretizerBase
   */
 @Experimental
 final class QuantileDiscretizer(override val uid: String)
-    extends Estimator[Bucketizer] with QuantileDiscretizerBase
+    extends Estimator[Bucketizer]
+    with QuantileDiscretizerBase
     with DefaultParamsWritable {
 
   def this() = this(Identifiable.randomUID("quantileDiscretizer"))
@@ -84,9 +89,11 @@ final class QuantileDiscretizer(override val uid: String)
   override def transformSchema(schema: StructType): StructType = {
     SchemaUtils.checkColumnType(schema, $(inputCol), DoubleType)
     val inputFields = schema.fields
-    require(inputFields.forall(_.name != $(outputCol)),
-            s"Output column ${$(outputCol)} already exists.")
-    val attr = NominalAttribute.defaultAttr.withName($(outputCol))
+    require(
+      inputFields.forall(_.name != $(outputCol)),
+      s"Output column ${$(outputCol)} already exists."
+    )
+    val attr         = NominalAttribute.defaultAttr.withName($(outputCol))
     val outputFields = inputFields :+ attr.toStructField()
     StructType(outputFields)
   }
@@ -97,7 +104,7 @@ final class QuantileDiscretizer(override val uid: String)
       .map { case Row(feature: Double) => feature }
     val candidates =
       QuantileDiscretizer.findSplitCandidates(samples, $(numBuckets) - 1)
-    val splits = QuantileDiscretizer.getSplits(candidates)
+    val splits     = QuantileDiscretizer.getSplits(candidates)
     val bucketizer = new Bucketizer(uid).setSplits(splits)
     copyValues(bucketizer.setParent(this))
   }
@@ -107,7 +114,8 @@ final class QuantileDiscretizer(override val uid: String)
 
 @Since("1.6.0")
 object QuantileDiscretizer
-    extends DefaultParamsReadable[QuantileDiscretizer] with Logging {
+    extends DefaultParamsReadable[QuantileDiscretizer]
+    with Logging {
 
   /**
     * Minimum number of samples required for finding splits, regardless of number of bins.  If
@@ -119,17 +127,23 @@ object QuantileDiscretizer
     * Sampling from the given dataset to collect quantile statistics.
     */
   private[feature] def getSampledInput(
-      dataset: DataFrame, numBins: Int, seed: Long): Array[Row] = {
+      dataset: DataFrame,
+      numBins: Int,
+      seed: Long
+  ): Array[Row] = {
     val totalSamples = dataset.count()
     require(
-        totalSamples > 0,
-        "QuantileDiscretizer requires non-empty input dataset but was given an empty input.")
+      totalSamples > 0,
+      "QuantileDiscretizer requires non-empty input dataset but was given an empty input."
+    )
     val requiredSamples = math.max(numBins * numBins, minSamplesRequired)
-    val fraction = math.min(requiredSamples.toDouble / totalSamples, 1.0)
+    val fraction        = math.min(requiredSamples.toDouble / totalSamples, 1.0)
     dataset
-      .sample(withReplacement = false,
-              fraction,
-              new XORShiftRandom(seed).nextInt())
+      .sample(
+        withReplacement = false,
+        fraction,
+        new XORShiftRandom(seed).nextInt()
+      )
       .collect()
   }
 
@@ -137,7 +151,9 @@ object QuantileDiscretizer
     * Compute split points with respect to the sample distribution.
     */
   private[feature] def findSplitCandidates(
-      samples: Array[Double], numSplits: Int): Array[Double] = {
+      samples: Array[Double],
+      numSplits: Int
+  ): Array[Double] = {
     val valueCountMap = samples.foldLeft(Map.empty[Double, Int]) { (m, x) =>
       m + ((x, m.getOrElse(x, 0) + 1))
     }
@@ -148,8 +164,8 @@ object QuantileDiscretizer
       valueCounts.dropRight(1).map(_._1)
     } else {
       val stride: Double = math.ceil(samples.length.toDouble / (numSplits + 1))
-      val splitsBuilder = mutable.ArrayBuilder.make[Double]
-      var index = 1
+      val splitsBuilder  = mutable.ArrayBuilder.make[Double]
+      var index          = 1
       // currentCount: sum of counts of values that have been visited
       var currentCount = valueCounts(0)._2
       // targetCount: target value for `currentCount`. If `currentCount` is closest value to
@@ -160,7 +176,7 @@ object QuantileDiscretizer
         val previousCount = currentCount
         currentCount += valueCounts(index)._2
         val previousGap = math.abs(previousCount - targetCount)
-        val currentGap = math.abs(currentCount - targetCount)
+        val currentGap  = math.abs(currentCount - targetCount)
         // If adding count of current value to currentCount makes the gap between currentCount and
         // targetCount smaller, previous value is a split threshold.
         if (previousGap < currentGap) {
@@ -198,7 +214,8 @@ object QuantileDiscretizer
       Array(Double.NegativeInfinity, 0, Double.PositiveInfinity)
     } else {
       Array(Double.NegativeInfinity) ++ effectiveValues ++ Array(
-          Double.PositiveInfinity)
+        Double.PositiveInfinity
+      )
     }
   }
 

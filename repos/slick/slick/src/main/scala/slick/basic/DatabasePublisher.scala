@@ -15,12 +15,11 @@ abstract class DatabasePublisher[T] extends Publisher[T] { self =>
   def mapResult[U](f: T => U): DatabasePublisher[U] =
     new DatabasePublisher[U] {
       def subscribe(s: Subscriber[_ >: U]) =
-        self.subscribe(
-            new Subscriber[T] {
+        self.subscribe(new Subscriber[T] {
           def onSubscribe(sn: Subscription): Unit = s.onSubscribe(sn)
-          def onComplete(): Unit = s.onComplete()
-          def onError(t: Throwable): Unit = s.onError(t)
-          def onNext(t: T): Unit = s.onNext(f(t))
+          def onComplete(): Unit                  = s.onComplete()
+          def onError(t: Throwable): Unit         = s.onError(t)
+          def onNext(t: T): Unit                  = s.onNext(f(t))
         })
     }
 
@@ -28,7 +27,7 @@ abstract class DatabasePublisher[T] extends Publisher[T] { self =>
     * The resulting Future completes when all elements have been processed or an error was
     * signaled. */
   def foreach[U](f: T => U)(implicit ec: ExecutionContext): Future[Unit] = {
-    val p = Promise[Unit]()
+    val p                              = Promise[Unit]()
     @volatile var lastMsg: Future[Any] = null
     @volatile var subscr: Subscription = null
     subscribe(new Subscriber[T] {

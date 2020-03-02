@@ -15,7 +15,7 @@ object Test {
   }
 
   BrokenMethod().withFilter(_ => true) // okay
-  BrokenMethod().filter(_ => true) // okay
+  BrokenMethod().filter(_ => true)     // okay
 
   locally {
     import addWithFilter._

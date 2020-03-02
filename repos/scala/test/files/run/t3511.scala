@@ -6,7 +6,7 @@ object Test {
   def main(args: Array[String]) {
     assert(Stream.from(0).view.force.take(5) == List(0, 1, 2, 3, 4))
 
-    val s = Stream.from(0)
+    val s    = Stream.from(0)
     val smap = s.view.map(_ * 2).force.take(5)
     assert(smap == List(0, 2, 4, 6, 8))
 

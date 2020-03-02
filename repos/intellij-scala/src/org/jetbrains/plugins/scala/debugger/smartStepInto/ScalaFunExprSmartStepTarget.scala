@@ -11,23 +11,25 @@ import org.jetbrains.plugins.scala.lang.psi.api.expr._
 /**
   * @author Nikolay.Tropin
   */
-class ScalaFunExprSmartStepTarget(val funExpr: ScExpression,
-                                  val stmts: Seq[ScBlockStatement],
-                                  label: String,
-                                  expressionLines: Range[Integer])
-    extends SmartStepTarget(label, funExpr, true, expressionLines) {
+class ScalaFunExprSmartStepTarget(
+    val funExpr: ScExpression,
+    val stmts: Seq[ScBlockStatement],
+    label: String,
+    expressionLines: Range[Integer]
+) extends SmartStepTarget(label, funExpr, true, expressionLines) {
 
   override def getIcon: Icon = Icons.LAMBDA
 }
 
 object ScalaFunExprSmartStepTarget {
-  def unapply(target: ScalaFunExprSmartStepTarget)
-    : Some[(ScExpression, Seq[ScBlockStatement])] =
+  def unapply(
+      target: ScalaFunExprSmartStepTarget
+  ): Some[(ScExpression, Seq[ScBlockStatement])] =
     Some((target.funExpr, target.stmts))
 }
 
 object FunExpressionTarget {
-  def unapply(expr: ScExpression): Option[(Seq[ScBlockStatement], String)] = {
+  def unapply(expr: ScExpression): Option[(Seq[ScBlockStatement], String)] =
     expr match {
       case e if ScUnderScoreSectionUtil.isUnderscoreFunction(e) =>
         Some(Seq(e), text(e))
@@ -40,27 +42,24 @@ object FunExpressionTarget {
         Some(blockStmts(expr), text(expr))
       case _ => None
     }
-  }
 
-  private def blockStmts(expr: ScExpression): Seq[ScBlockStatement] = {
+  private def blockStmts(expr: ScExpression): Seq[ScBlockStatement] =
     expr match {
       case b: ScBlock => b.statements
-      case e => Seq(e)
+      case e          => Seq(e)
     }
-  }
 
-  private def parameterNameAndType(expr: ScExpression): Option[String] = {
+  private def parameterNameAndType(expr: ScExpression): Option[String] =
     ScalaPsiUtil.parameterOf(expr) match {
       case Some(p) if p.isByName =>
         Some(s"${p.name}: => ${p.paramType.presentableText}")
       case Some(p) => Some(s"${p.name}: ${p.paramType.presentableText}")
-      case _ => None
+      case _       => None
     }
-  }
 
   private def shorten(s: String): String = {
     val trimmed = s.stripPrefix("{").stripSuffix("}").trim
-    val lines = trimmed.lines.toList
+    val lines   = trimmed.lines.toList
     if (lines.size > 1) lines.head + " ..."
     else trimmed
   }

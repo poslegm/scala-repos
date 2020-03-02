@@ -10,9 +10,16 @@ import mesosphere.marathon.io.IO
 import mesosphere.marathon.{Protos, StoreCommandFailedException}
 import mesosphere.util.ThreadPoolContext
 import mesosphere.util.state.zk.ZKStore._
-import mesosphere.util.state.{PersistentEntity, PersistentStore, PersistentStoreManagement}
+import mesosphere.util.state.{
+  PersistentEntity,
+  PersistentStore,
+  PersistentStoreManagement
+}
 import org.apache.zookeeper.KeeperException
-import org.apache.zookeeper.KeeperException.{NoNodeException, NodeExistsException}
+import org.apache.zookeeper.KeeperException.{
+  NoNodeException,
+  NodeExistsException
+}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
@@ -20,10 +27,13 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
 case class CompressionConf(enabled: Boolean, sizeLimit: Long)
 
 class ZKStore(
-    val client: ZkClient, root: ZNode, compressionConf: CompressionConf)
-    extends PersistentStore with PersistentStoreManagement {
+    val client: ZkClient,
+    root: ZNode,
+    compressionConf: CompressionConf
+) extends PersistentStore
+    with PersistentStoreManagement {
 
-  private[this] val log = LoggerFactory.getLogger(getClass)
+  private[this] val log         = LoggerFactory.getLogger(getClass)
   private[this] implicit val ec = ExecutionContext.Implicits.global
 
   /**
@@ -50,9 +60,7 @@ class ZKStore(
     node
       .create(data.toProto(compressionConf).toByteArray)
       .asScala
-      .map { n =>
-        ZKEntity(n, data, Some(0))
-      } //first version after create is 0
+      .map(n => ZKEntity(n, data, Some(0))) //first version after create is 0
       .recover(exceptionTransform(s"Can not create entity $key"))
   }
 
@@ -64,15 +72,14 @@ class ZKStore(
   override def update(entity: PersistentEntity): Future[ZKEntity] = {
     val zk = zkEntity(entity)
     val version = zk.version.getOrElse(
-        throw new StoreCommandFailedException(
-            s"Can not store entity $entity, since there is no version!")
+      throw new StoreCommandFailedException(
+        s"Can not store entity $entity, since there is no version!"
+      )
     )
     zk.node
       .setData(zk.data.toProto(compressionConf).toByteArray, version)
       .asScala
-      .map { data =>
-        zk.copy(version = Some(data.stat.getVersion))
-      }
+      .map(data => zk.copy(version = Some(data.stat.getVersion)))
       .recover(exceptionTransform(s"Can not update entity $entity"))
   }
 
@@ -85,35 +92,33 @@ class ZKStore(
     node
       .exists()
       .asScala
-      .flatMap { d =>
-        node.delete(d.stat.getVersion).asScala.map(_ => true)
-      }
+      .flatMap(d => node.delete(d.stat.getVersion).asScala.map(_ => true))
       .recover { case ex: NoNodeException => false }
       .recover(exceptionTransform(s"Can not delete entity $key"))
   }
 
-  override def allIds(): Future[Seq[ID]] = {
+  override def allIds(): Future[Seq[ID]] =
     root
       .getChildren()
       .asScala
       .map(_.children.map(_.name))
       .recover(exceptionTransform("Can not list all identifiers"))
-  }
 
   private[this] def exceptionTransform[T](
-      errorMessage: String): PartialFunction[Throwable, T] = {
+      errorMessage: String
+  ): PartialFunction[Throwable, T] = {
     case ex: KeeperException =>
       throw new StoreCommandFailedException(errorMessage, ex)
   }
 
-  private[this] def zkEntity(entity: PersistentEntity): ZKEntity = {
+  private[this] def zkEntity(entity: PersistentEntity): ZKEntity =
     entity match {
       case zk: ZKEntity => zk
       case _ =>
         throw new IllegalArgumentException(
-            s"Can not handle this kind of entity: ${entity.getClass}")
+          s"Can not handle this kind of entity: ${entity.getClass}"
+        )
     }
-  }
 
   private[this] def createPath(path: ZNode): Future[ZNode] = {
     def nodeExists(node: ZNode): Future[Boolean] =
@@ -131,12 +136,11 @@ class ZKStore(
         .recover { case ex: NodeExistsException => node }
         .recover(exceptionTransform("Can not create"))
 
-    def createPath(node: ZNode): Future[ZNode] = {
+    def createPath(node: ZNode): Future[ZNode] =
       nodeExists(node).flatMap {
-        case true => Future.successful(node)
+        case true  => Future.successful(node)
         case false => createPath(node.parent).flatMap(_ => createNode(node))
       }
-    }
     createPath(path)
   }
 
@@ -152,7 +156,10 @@ case class ZKEntity(node: ZNode, data: ZKData, version: Option[Int] = None)
 }
 
 case class ZKData(
-    name: String, uuid: UUID, bytes: IndexedSeq[Byte] = Vector.empty) {
+    name: String,
+    uuid: UUID,
+    bytes: IndexedSeq[Byte] = Vector.empty
+) {
   def toProto(compression: CompressionConf): Protos.ZKStoreEntry = {
     val (data, compressed) =
       if (compression.enabled && bytes.length > compression.sizeLimit)
@@ -169,20 +176,24 @@ case class ZKData(
 }
 object ZKData {
   import IO.{gzipUncompress => uncompress}
-  def apply(bytes: Array[Byte]): ZKData = {
+  def apply(bytes: Array[Byte]): ZKData =
     try {
       val proto = Protos.ZKStoreEntry.parseFrom(bytes)
       val content =
         if (proto.getCompressed) uncompress(proto.getValue.toByteArray)
         else proto.getValue.toByteArray
       new ZKData(
-          proto.getName, UUIDUtil.uuid(proto.getUuid.toByteArray), content)
+        proto.getName,
+        UUIDUtil.uuid(proto.getUuid.toByteArray),
+        content
+      )
     } catch {
       case ex: InvalidProtocolBufferException =>
         throw new StoreCommandFailedException(
-            s"Can not deserialize Protobuf from ${bytes.length}", ex)
+          s"Can not deserialize Protobuf from ${bytes.length}",
+          ex
+        )
     }
-  }
 }
 
 object ZKStore {

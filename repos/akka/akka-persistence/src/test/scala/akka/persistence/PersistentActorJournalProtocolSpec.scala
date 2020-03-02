@@ -12,21 +12,23 @@ import akka.persistence.JournalProtocol._
 object PersistentActorJournalProtocolSpec {
 
   val config =
-    ConfigFactory.parseString("""
+    ConfigFactory.parseString(
+      """
 puppet {
   class = "akka.persistence.JournalPuppet"
   max-message-batch-size = 10
 }
 akka.persistence.journal.plugin = puppet
 akka.persistence.snapshot-store.plugin = "akka.persistence.no-snapshot-store"
-""")
+"""
+    )
 
   sealed trait Command
-  case class Persist(id: Int, msgs: Any*) extends Command
+  case class Persist(id: Int, msgs: Any*)      extends Command
   case class PersistAsync(id: Int, msgs: Any*) extends Command
-  case class Multi(cmd: Command*) extends Command
-  case class Echo(id: Int) extends Command
-  case class Fail(ex: Throwable) extends Command
+  case class Multi(cmd: Command*)              extends Command
+  case class Echo(id: Int)                     extends Command
+  case class Fail(ex: Throwable)               extends Command
   case class Done(id: Int, sub: Int)
 
   case class PreStart(name: String)
@@ -53,10 +55,10 @@ akka.persistence.snapshot-store.plugin = "akka.persistence.no-snapshot-store"
     }
 
     val behavior: Receive = {
-      case p: Persist ⇒ P(p)
+      case p: Persist      ⇒ P(p)
       case p: PersistAsync ⇒ PA(p)
-      case Echo(id) ⇒ sender() ! Done(id, 0)
-      case Fail(ex) ⇒ throw ex
+      case Echo(id)        ⇒ sender() ! Done(id, 0)
+      case Fail(ex)        ⇒ throw ex
     }
     val doNothing = (_: Any) ⇒ ()
 
@@ -81,7 +83,7 @@ object JournalPuppet extends ExtensionKey[JournalProbe]
 class JournalProbe(implicit private val system: ExtendedActorSystem)
     extends Extension {
   val probe = TestProbe()
-  val ref = probe.ref
+  val ref   = probe.ref
 }
 
 class JournalPuppet extends Actor {
@@ -94,7 +96,8 @@ class JournalPuppet extends Actor {
 import PersistentActorJournalProtocolSpec._
 
 class PersistentActorJournalProtocolSpec
-    extends AkkaSpec(config) with ImplicitSender {
+    extends AkkaSpec(config)
+    with ImplicitSender {
 
   val journal = JournalPuppet(system).probe
 
@@ -123,8 +126,9 @@ class PersistentActorJournalProtocolSpec
     w.messages.foreach {
       case AtomicWrite(msgs) ⇒
         msgs.foreach(msg ⇒
-              w.persistentActor.tell(
-                  WriteMessageSuccess(msg, w.actorInstanceId), msg.sender))
+          w.persistentActor
+            .tell(WriteMessageSuccess(msg, w.actorInstanceId), msg.sender)
+        )
       case NonPersistentRepr(msg, sender) ⇒ w.persistentActor.tell(msg, sender)
     }
   }

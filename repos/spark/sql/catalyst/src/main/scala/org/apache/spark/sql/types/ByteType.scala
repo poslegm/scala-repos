@@ -36,7 +36,7 @@ class ByteType private () extends IntegralType {
   @transient private[sql] lazy val tag = ScalaReflectionLock.synchronized {
     typeTag[InternalType]
   }
-  private[sql] val numeric = implicitly[Numeric[Byte]]
+  private[sql] val numeric  = implicitly[Numeric[Byte]]
   private[sql] val integral = implicitly[Integral[Byte]]
   private[sql] val ordering = implicitly[Ordering[InternalType]]
 

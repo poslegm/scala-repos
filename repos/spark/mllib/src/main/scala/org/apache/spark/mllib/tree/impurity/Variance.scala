@@ -50,7 +50,10 @@ object Variance extends Impurity {
   @Since("1.0.0")
   @DeveloperApi
   override def calculate(
-      count: Double, sum: Double, sumSquares: Double): Double = {
+      count: Double,
+      sum: Double,
+      sumSquares: Double
+  ): Double = {
     if (count == 0) {
       return 0
     }
@@ -72,17 +75,20 @@ object Variance extends Impurity {
   * Note: Instances of this class do not hold the data; they operate on views of the data.
   */
 private[tree] class VarianceAggregator()
-    extends ImpurityAggregator(statsSize = 3) with Serializable {
+    extends ImpurityAggregator(statsSize = 3)
+    with Serializable {
 
   /**
     * Update stats for one (node, feature, bin) with the given label.
     * @param allStats  Flat stats array, with stats for this (node, feature, bin) contiguous.
     * @param offset    Start index of stats for this (node, feature, bin).
     */
-  def update(allStats: Array[Double],
-             offset: Int,
-             label: Double,
-             instanceWeight: Double): Unit = {
+  def update(
+      allStats: Array[Double],
+      offset: Int,
+      label: Double,
+      instanceWeight: Double
+  ): Unit = {
     allStats(offset) += instanceWeight
     allStats(offset + 1) += instanceWeight * label
     allStats(offset + 2) += instanceWeight * label * label
@@ -93,9 +99,8 @@ private[tree] class VarianceAggregator()
     * @param allStats  Flat stats array, with stats for this (node, feature, bin) contiguous.
     * @param offset    Start index of stats for this (node, feature, bin).
     */
-  def getCalculator(allStats: Array[Double], offset: Int): VarianceCalculator = {
+  def getCalculator(allStats: Array[Double], offset: Int): VarianceCalculator =
     new VarianceCalculator(allStats.view(offset, offset + statsSize).toArray)
-  }
 }
 
 /**
@@ -108,9 +113,10 @@ private[spark] class VarianceCalculator(stats: Array[Double])
     extends ImpurityCalculator(stats) {
 
   require(
-      stats.length == 3,
-      s"VarianceCalculator requires sufficient statistics array stats to be of length 3," +
-      s" but was given array of length ${stats.length}.")
+    stats.length == 3,
+    s"VarianceCalculator requires sufficient statistics array stats to be of length 3," +
+      s" but was given array of length ${stats.length}."
+  )
 
   /**
     * Make a deep copy of this [[ImpurityCalculator]].
@@ -137,7 +143,6 @@ private[spark] class VarianceCalculator(stats: Array[Double])
       stats(1) / count
     }
 
-  override def toString: String = {
+  override def toString: String =
     s"VarianceAggregator(cnt = ${stats(0)}, sum = ${stats(1)}, sum2 = ${stats(2)})"
-  }
 }

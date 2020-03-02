@@ -13,7 +13,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class histogramTest extends FunSuite {
 
-  val testDV = DenseVector(0.0, 0.1, 2.8, 2.9, 5)
+  val testDV      = DenseVector(0.0, 0.1, 2.8, 2.9, 5)
   val testWeights = DenseVector(0.5, 0.5, 1.0, 3.0, 7.0)
 
   test("histogram returns correct values") {

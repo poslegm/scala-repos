@@ -14,25 +14,25 @@ package scala.test.scaladoc.links {
     type T
     type S = String
     class C
-    def foo(i: Int) = 2
-    def foo(s: String) = 3
-    def foo[A[_]](x: A[String]) = 5
-    def foo[A[_ [_]]](x: A[List]) = 6
+    def foo(i: Int)              = 2
+    def foo(s: String)           = 3
+    def foo[A[_]](x: A[String])  = 5
+    def foo[A[_[_]]](x: A[List]) = 6
     val bar: Boolean
     def baz(c: scala.test.scaladoc.links.C) = 7
   }
 
   object Target {
-    type T = Int => Int
-    type S = Int
+    type T     = Int => Int
+    type S     = Int
     type ::[X] = scala.collection.immutable.::[X]
     class C
-    def foo(i: Int) = 2
-    def foo(z: String) = 3
-    def foo[A[_]](x: A[String]) = 5
-    def foo[A[_ [_]]](x: A[List]) = 6
-    val bar: Boolean = false
-    val onlyInObject = 1
+    def foo(i: Int)                         = 2
+    def foo(z: String)                      = 3
+    def foo[A[_]](x: A[String])             = 5
+    def foo[A[_[_]]](x: A[List])            = 6
+    val bar: Boolean                        = false
+    val onlyInObject                        = 1
     def baz(c: scala.test.scaladoc.links.C) = 7
   }
 

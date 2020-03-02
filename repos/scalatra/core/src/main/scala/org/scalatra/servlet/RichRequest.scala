@@ -40,7 +40,7 @@ case class RichRequest(r: HttpServletRequest) extends AttributesMap {
     * Http or Https, depending on the request URL.
     */
   def urlScheme: Scheme = r.getScheme match {
-    case "http" => Http
+    case "http"  => Http
     case "https" => Https
   }
 
@@ -118,15 +118,11 @@ case class RichRequest(r: HttpServletRequest) extends AttributesMap {
 
     def get(name: String): Option[String] = Option(r.getHeader(name))
 
-    private[scalatra] def getMulti(key: String): Seq[String] = {
+    private[scalatra] def getMulti(key: String): Seq[String] =
       get(key).map(_.split(",").toSeq.map(_.trim)).getOrElse(Seq.empty)
-    }
 
-    def iterator: Iterator[(String, String)] = {
-      r.getHeaderNames.asScala map { name =>
-        (name, r.getHeader(name))
-      }
-    }
+    def iterator: Iterator[(String, String)] =
+      r.getHeaderNames.asScala map { name => (name, r.getHeader(name)) }
   }
 
   def header(name: String): Option[String] = Option(r.getHeader(name))
@@ -137,9 +133,8 @@ case class RichRequest(r: HttpServletRequest) extends AttributesMap {
     */
   def characterEncoding: Option[String] = Option(r.getCharacterEncoding)
 
-  def characterEncoding_=(encoding: Option[String]): Unit = {
+  def characterEncoding_=(encoding: Option[String]): Unit =
     r.setCharacterEncoding(encoding getOrElse null)
-  }
 
   /**
     * The content of the Content-Type header, or None if absent.
@@ -150,7 +145,7 @@ case class RichRequest(r: HttpServletRequest) extends AttributesMap {
     * Returns the length, in bytes, of the body, or None if not known.
     */
   def contentLength: Option[Long] = r.getContentLength match {
-    case -1 => None
+    case -1     => None
     case length => Some(length)
   }
 
@@ -163,7 +158,9 @@ case class RichRequest(r: HttpServletRequest) extends AttributesMap {
   def serverName: String = r.getServerName
 
   @deprecated(
-      message = "Use HttpServletRequest.serverName instead", since = "2.0.0")
+    message = "Use HttpServletRequest.serverName instead",
+    since = "2.0.0"
+  )
   def host: String = serverName
 
   /**
@@ -173,7 +170,9 @@ case class RichRequest(r: HttpServletRequest) extends AttributesMap {
   def serverPort: Int = r.getServerPort
 
   @deprecated(
-      message = "Use HttpServletRequest.serverPort instead", since = "2.0.0")
+    message = "Use HttpServletRequest.serverPort instead",
+    since = "2.0.0"
+  )
   def port: String = Integer.toString(r.getServerPort)
 
   /**
@@ -183,7 +182,7 @@ case class RichRequest(r: HttpServletRequest) extends AttributesMap {
     */
   def referrer: Option[String] = r.getHeader("Referer") match {
     case s: String => Some(s)
-    case null => None
+    case null      => None
   }
 
   @deprecated("Use referrer", "2.0.0")
@@ -197,21 +196,22 @@ case class RichRequest(r: HttpServletRequest) extends AttributesMap {
     * @return the message body as a string according to the request's encoding
     * (defult ISO-8859-1).
     */
-  def body: String = {
+  def body: String =
     cachedBody getOrElse {
       val encoding = r.getCharacterEncoding
       val enc =
         if (encoding == null || encoding.trim.length == 0) {
           if (contentType.exists(_ equalsIgnoreCase "application/json"))
-            "UTF-8" else "ISO-8859-1"
+            "UTF-8"
+          else "ISO-8859-1"
         } else encoding
-      val body: String = try {
-        Source.fromInputStream(r.getInputStream, enc).mkString
-      } catch { case e: java.io.IOException => "" }
+      val body: String =
+        try {
+          Source.fromInputStream(r.getInputStream, enc).mkString
+        } catch { case e: java.io.IOException => "" }
       update(cachedBodyKey, body)
       body
     }
-  }
 
   private def cachedBody: Option[String] =
     get(cachedBodyKey).flatMap(_.asInstanceOf[String].blankOption)
@@ -234,7 +234,7 @@ case class RichRequest(r: HttpServletRequest) extends AttributesMap {
     val rr = Option(r.getCookies)
       .getOrElse(Array())
       .toSeq
-      .groupBy { _.getName }
+      .groupBy(_.getName)
       .transform { case (k, v) => v map { _.getValue } }
       .withDefaultValue(Seq.empty)
     MultiMap(rr)
@@ -244,11 +244,10 @@ case class RichRequest(r: HttpServletRequest) extends AttributesMap {
     * Returns a map of cookie names to values.  If multiple values are present
     * for a given cookie, the value is the first cookie of that name.
     */
-  def cookies: CMap[String, String] = {
+  def cookies: CMap[String, String] =
     new MultiMapHeadView[String, String] {
       override protected def multiMap = multiCookies
     }
-  }
 
   protected[scalatra] def attributes: HttpServletRequest = r
 
@@ -270,10 +269,9 @@ case class RichRequest(r: HttpServletRequest) extends AttributesMap {
 
   def locale: Locale = r.getLocale
 
-  def locales: Seq[Locale] = {
+  def locales: Seq[Locale] =
     // Although javadoc says "If the client request doesn't provide an Accept-Language header,
     // this method returns an Enumeration containing one Locale, the default locale for the server.",
     // just to be safe, care about null value here
     Option(r.getLocales).map(_.asScala.toSeq).getOrElse(Nil)
-  }
 }

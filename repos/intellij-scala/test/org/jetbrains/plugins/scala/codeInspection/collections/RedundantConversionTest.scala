@@ -20,40 +20,39 @@ class RedundantConversionTest extends OperationsOnCollectionInspectionTest {
     doTest(s"Seq(1, 2).${START}to[Seq]$END", "Seq(1, 2).to[Seq]", "Seq(1, 2)")
   }
 
-  def test_3(): Unit = {
-    doTest(s"Map(1 -> true).${START}toMap[Int, Boolean]$END",
-           "Map(1 -> true).toMap[Int, Boolean]",
-           "Map(1 -> true)")
-  }
-
-  def test_4(): Unit = {
+  def test_3(): Unit =
     doTest(
-        s"""
+      s"Map(1 -> true).${START}toMap[Int, Boolean]$END",
+      "Map(1 -> true).toMap[Int, Boolean]",
+      "Map(1 -> true)"
+    )
+
+  def test_4(): Unit =
+    doTest(
+      s"""
          |def list() = List(1, 2)
          |list().${START}toList$END
        """.stripMargin,
-        """
+      """
          |def list() = List(1, 2)
          |list().toList
        """.stripMargin,
-        """
+      """
         |def list() = List(1, 2)
         |list()
       """.stripMargin
     )
-  }
 
-  def test_5(): Unit = {
+  def test_5(): Unit =
     doTest(
-        s"""Seq(1) match {
+      s"""Seq(1) match {
         |  case seq => seq.${START}toSeq$END
         |}""".stripMargin,
-        s"""Seq(1) match {
+      s"""Seq(1) match {
           |  case seq => seq.toSeq
           |}""".stripMargin,
-        s"""Seq(1) match {
+      s"""Seq(1) match {
           |  case seq => seq
           |}""".stripMargin
     )
-  }
 }

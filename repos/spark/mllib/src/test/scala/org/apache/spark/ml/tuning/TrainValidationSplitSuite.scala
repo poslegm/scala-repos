@@ -20,7 +20,11 @@ package org.apache.spark.ml.tuning
 import org.apache.spark.SparkFunSuite
 import org.apache.spark.ml.{Estimator, Model}
 import org.apache.spark.ml.classification.LogisticRegression
-import org.apache.spark.ml.evaluation.{BinaryClassificationEvaluator, Evaluator, RegressionEvaluator}
+import org.apache.spark.ml.evaluation.{
+  BinaryClassificationEvaluator,
+  Evaluator,
+  RegressionEvaluator
+}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.param.shared.HasInputCol
 import org.apache.spark.ml.regression.LinearRegression
@@ -30,10 +34,12 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types.StructType
 
 class TrainValidationSplitSuite
-    extends SparkFunSuite with MLlibTestSparkContext {
+    extends SparkFunSuite
+    with MLlibTestSparkContext {
   test("train validation with logistic regression") {
     val dataset = sqlContext.createDataFrame(
-        sc.parallelize(generateLogisticInput(1.0, 1.0, 100, 42), 2))
+      sc.parallelize(generateLogisticInput(1.0, 1.0, 100, 42), 2)
+    )
 
     val lr = new LogisticRegression
     val lrParamMaps = new ParamGridBuilder()
@@ -47,7 +53,7 @@ class TrainValidationSplitSuite
       .setEvaluator(eval)
       .setTrainRatio(0.5)
     val cvModel = cv.fit(dataset)
-    val parent = cvModel.bestModel.parent.asInstanceOf[LogisticRegression]
+    val parent  = cvModel.bestModel.parent.asInstanceOf[LogisticRegression]
     assert(cv.getTrainRatio === 0.5)
     assert(parent.getRegParam === 0.001)
     assert(parent.getMaxIter === 10)
@@ -56,15 +62,19 @@ class TrainValidationSplitSuite
 
   test("train validation with linear regression") {
     val dataset = sqlContext.createDataFrame(
-        sc.parallelize(
-            LinearDataGenerator.generateLinearInput(6.3,
-                                                    Array(4.7, 7.2),
-                                                    Array(0.9, -1.3),
-                                                    Array(0.7, 1.2),
-                                                    100,
-                                                    42,
-                                                    0.1),
-            2))
+      sc.parallelize(
+        LinearDataGenerator.generateLinearInput(
+          6.3,
+          Array(4.7, 7.2),
+          Array(0.9, -1.3),
+          Array(0.7, 1.2),
+          100,
+          42,
+          0.1
+        ),
+        2
+      )
+    )
 
     val trainer = new LinearRegression().setSolver("l-bfgs")
     val lrParamMaps = new ParamGridBuilder()
@@ -78,14 +88,14 @@ class TrainValidationSplitSuite
       .setEvaluator(eval)
       .setTrainRatio(0.5)
     val cvModel = cv.fit(dataset)
-    val parent = cvModel.bestModel.parent.asInstanceOf[LinearRegression]
+    val parent  = cvModel.bestModel.parent.asInstanceOf[LinearRegression]
     assert(parent.getRegParam === 0.001)
     assert(parent.getMaxIter === 10)
     assert(cvModel.validationMetrics.length === lrParamMaps.length)
 
     eval.setMetricName("r2")
     val cvModel2 = cv.fit(dataset)
-    val parent2 = cvModel2.bestModel.parent.asInstanceOf[LinearRegression]
+    val parent2  = cvModel2.bestModel.parent.asInstanceOf[LinearRegression]
     assert(parent2.getRegParam === 0.001)
     assert(parent2.getMaxIter === 10)
     assert(cvModel2.validationMetrics.length === lrParamMaps.length)
@@ -94,7 +104,7 @@ class TrainValidationSplitSuite
   test("transformSchema should check estimatorParamMaps") {
     import TrainValidationSplitSuite._
 
-    val est = new MyEstimator("est")
+    val est  = new MyEstimator("est")
     val eval = new MyEvaluator
     val paramMaps = new ParamGridBuilder()
       .addGrid(est.inputCol, Array("input1", "input2"))
@@ -120,11 +130,11 @@ object TrainValidationSplitSuite {
   abstract class MyModel extends Model[MyModel]
 
   class MyEstimator(override val uid: String)
-      extends Estimator[MyModel] with HasInputCol {
+      extends Estimator[MyModel]
+      with HasInputCol {
 
-    override def fit(dataset: DataFrame): MyModel = {
+    override def fit(dataset: DataFrame): MyModel =
       throw new UnsupportedOperationException
-    }
 
     override def transformSchema(schema: StructType): StructType = {
       require($(inputCol).nonEmpty)
@@ -136,9 +146,8 @@ object TrainValidationSplitSuite {
 
   class MyEvaluator extends Evaluator {
 
-    override def evaluate(dataset: DataFrame): Double = {
+    override def evaluate(dataset: DataFrame): Double =
       throw new UnsupportedOperationException
-    }
 
     override def isLargerBetter: Boolean = true
 

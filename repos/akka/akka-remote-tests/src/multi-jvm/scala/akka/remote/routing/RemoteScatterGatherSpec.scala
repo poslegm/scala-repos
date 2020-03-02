@@ -24,9 +24,9 @@ object RemoteScatterGatherMultiJvmSpec extends MultiNodeConfig {
     }
   }
 
-  val first = role("first")
+  val first  = role("first")
   val second = role("second")
-  val third = role("third")
+  val third  = role("third")
   val fourth = role("fourth")
 
   commonConfig(debugConfig(on = false))
@@ -46,8 +46,10 @@ class RemoteScatterGatherMultiJvmNode3 extends RemoteScatterGatherSpec
 class RemoteScatterGatherMultiJvmNode4 extends RemoteScatterGatherSpec
 
 class RemoteScatterGatherSpec
-    extends MultiNodeSpec(RemoteScatterGatherMultiJvmSpec) with STMultiNodeSpec
-    with ImplicitSender with DefaultTimeout {
+    extends MultiNodeSpec(RemoteScatterGatherMultiJvmSpec)
+    with STMultiNodeSpec
+    with ImplicitSender
+    with DefaultTimeout {
   import RemoteScatterGatherMultiJvmSpec._
 
   def initialParticipants = roles.size
@@ -56,7 +58,8 @@ class RemoteScatterGatherSpec
     "be locally instantiated on a remote node and be able to communicate through its RemoteActorRef" taggedAs LongRunningTest in {
 
       system.eventStream.publish(
-          Mute(EventFilter.warning(pattern = ".*received dead letter from.*")))
+        Mute(EventFilter.warning(pattern = ".*received dead letter from.*"))
+      )
 
       runOn(first, second, third) {
         enterBarrier("start", "broadcast-end", "end", "done")
@@ -65,25 +68,34 @@ class RemoteScatterGatherSpec
       runOn(fourth) {
         enterBarrier("start")
         val actor =
-          system.actorOf(ScatterGatherFirstCompletedPool(
-                             nrOfInstances = 1,
-                             within = 10.seconds).props(Props[SomeActor]),
-                         "service-hello")
+          system.actorOf(
+            ScatterGatherFirstCompletedPool(
+              nrOfInstances = 1,
+              within = 10.seconds
+            ).props(Props[SomeActor]),
+            "service-hello"
+          )
         actor.isInstanceOf[RoutedActorRef] should ===(true)
 
         val connectionCount = 3
-        val iterationCount = 10
+        val iterationCount  = 10
 
         for (i ← 0 until iterationCount; k ← 0 until connectionCount) {
           actor ! "hit"
         }
 
         val replies: Map[Address, Int] = (receiveWhile(
-            5.seconds, messages = connectionCount * iterationCount) {
+          5.seconds,
+          messages = connectionCount * iterationCount
+        ) {
           case ref: ActorRef ⇒ ref.path.address
-        }).foldLeft(Map(node(first).address -> 0,
-                        node(second).address -> 0,
-                        node(third).address -> 0)) {
+        }).foldLeft(
+          Map(
+            node(first).address  -> 0,
+            node(second).address -> 0,
+            node(third).address  -> 0
+          )
+        ) {
           case (replyMap, address) ⇒
             replyMap + (address -> (replyMap(address) + 1))
         }

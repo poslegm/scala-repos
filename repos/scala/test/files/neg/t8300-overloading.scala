@@ -11,6 +11,6 @@ object Test extends App {
   val u: Universe = ???
   import u._
 
-  def foo(name: Name) = ???
+  def foo(name: Name)     = ???
   def foo(name: TermName) = ???
 }

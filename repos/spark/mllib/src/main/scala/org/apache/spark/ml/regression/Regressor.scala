@@ -30,11 +30,13 @@ import org.apache.spark.ml.{PredictionModel, Predictor, PredictorParams}
   * @tparam M  Concrete Model type
   */
 @DeveloperApi
-private[spark] abstract class Regressor[
-    FeaturesType,
-    Learner <: Regressor[FeaturesType, Learner, M],
-    M <: RegressionModel[FeaturesType, M]]
-    extends Predictor[FeaturesType, Learner, M] with PredictorParams {
+private[spark] abstract class Regressor[FeaturesType, Learner <: Regressor[
+  FeaturesType,
+  Learner,
+  M
+], M <: RegressionModel[FeaturesType, M]]
+    extends Predictor[FeaturesType, Learner, M]
+    with PredictorParams {
 
   // TODO: defaultEvaluator (follow-up PR)
 }
@@ -48,9 +50,11 @@ private[spark] abstract class Regressor[
   * @tparam M  Concrete Model type.
   */
 @DeveloperApi
-abstract class RegressionModel[
-    FeaturesType, M <: RegressionModel[FeaturesType, M]]
-    extends PredictionModel[FeaturesType, M] with PredictorParams {
+abstract class RegressionModel[FeaturesType, M <: RegressionModel[
+  FeaturesType,
+  M
+]] extends PredictionModel[FeaturesType, M]
+    with PredictorParams {
 
   // TODO: defaultEvaluator (follow-up PR)
 }

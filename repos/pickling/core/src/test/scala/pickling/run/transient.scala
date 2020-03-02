@@ -13,23 +13,24 @@ class Dependency[T]
 class SparkConf(loadDefaults: Boolean)
 class SparkContext(config: SparkConf)
 
-class RDD[T : ClassTag](
+class RDD[T: ClassTag](
     @transient private var sc: SparkContext,
     @transient private var deps: Seq[Dependency[_]]
 )
 
-class RangePartitioner[K : ClassTag, V](
+class RangePartitioner[K: ClassTag, V](
     @transient val partitions: Int,
     @transient val rdd: RDD[_ <: Product2[K, V]],
-    private var ascending: Boolean = true) {
+    private var ascending: Boolean = true
+) {
   override def toString = s"RangePartitioner(ascending = $ascending)"
 }
 
 class TransientSimpleTest extends FunSuite {
   test("main") {
-    val per = Person("Jenny", 123)
+    val per           = Person("Jenny", 123)
     val p: JSONPickle = per.pickle
-    val up = p.unpickle[Person]
+    val up            = p.unpickle[Person]
     assert(up.ssNumber == 0)
     assert(per.toString == up.toString)
   }
@@ -37,11 +38,11 @@ class TransientSimpleTest extends FunSuite {
 
 class TransientSparkTest extends FunSuite {
   test("main") {
-    val sc = new SparkContext(new SparkConf(true))
-    val rdd = new RDD[(Int, Int)](sc, Seq(new Dependency()))
-    val rp = new RangePartitioner[Int, Int](2, rdd)
+    val sc            = new SparkContext(new SparkConf(true))
+    val rdd           = new RDD[(Int, Int)](sc, Seq(new Dependency()))
+    val rp            = new RangePartitioner[Int, Int](2, rdd)
     val p: JSONPickle = rp.pickle
-    val up = p.unpickle[RangePartitioner[Int, Int]]
+    val up            = p.unpickle[RangePartitioner[Int, Int]]
     assert(rp.toString == up.toString)
   }
 }

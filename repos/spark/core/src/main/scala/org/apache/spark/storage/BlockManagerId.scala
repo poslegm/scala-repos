@@ -34,10 +34,11 @@ import org.apache.spark.util.Utils
   * modified from outside this class.
   */
 @DeveloperApi
-class BlockManagerId private (private var executorId_ : String,
-                              private var host_ : String,
-                              private var port_ : Int)
-    extends Externalizable {
+class BlockManagerId private (
+    private var executorId_ : String,
+    private var host_ : String,
+    private var port_ : Int
+) extends Externalizable {
 
   private def this() = this(null, null, 0) // For deserialization only
 
@@ -59,10 +60,9 @@ class BlockManagerId private (private var executorId_ : String,
 
   def port: Int = port_
 
-  def isDriver: Boolean = {
+  def isDriver: Boolean =
     executorId == SparkContext.DRIVER_IDENTIFIER ||
-    executorId == SparkContext.LEGACY_DRIVER_IDENTIFIER
-  }
+      executorId == SparkContext.LEGACY_DRIVER_IDENTIFIER
 
   override def writeExternal(out: ObjectOutput): Unit =
     Utils.tryOrIOException {

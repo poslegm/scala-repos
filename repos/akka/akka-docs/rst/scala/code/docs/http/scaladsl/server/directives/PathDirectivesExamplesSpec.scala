@@ -150,7 +150,7 @@ class PathDirectivesExamplesSpec extends RoutingSpec {
 
   "pathPrefixTest-" in {
     val route = pathPrefixTest("foo" | "bar") {
-      pathPrefix("foo") { completeWithUnmatchedPath } ~ pathPrefix("bar") {
+      pathPrefix("foo")(completeWithUnmatchedPath) ~ pathPrefix("bar") {
         completeWithUnmatchedPath
       }
     }
@@ -231,7 +231,7 @@ class PathDirectivesExamplesSpec extends RoutingSpec {
 
   "rawPathPrefix-" in {
     val route = pathPrefix("foo") {
-      rawPathPrefix("bar") { completeWithUnmatchedPath } ~ rawPathPrefix("doo") {
+      rawPathPrefix("bar")(completeWithUnmatchedPath) ~ rawPathPrefix("doo") {
         completeWithUnmatchedPath
       }
     }
@@ -293,7 +293,7 @@ class PathDirectivesExamplesSpec extends RoutingSpec {
       // in case the redirect can't be followed automatically:
       responseAs[String] shouldEqual {
         "This and all future requests should be directed to " +
-        "<a href=\"http://example.com/foo/\">this URI</a>."
+          "<a href=\"http://example.com/foo/\">this URI</a>."
       }
     }
 
@@ -342,7 +342,7 @@ class PathDirectivesExamplesSpec extends RoutingSpec {
       // in case the redirect can't be followed automatically:
       responseAs[String] shouldEqual {
         "This and all future requests should be directed to " +
-        "<a href=\"http://example.com/foo\">this URI</a>."
+          "<a href=\"http://example.com/foo\">this URI</a>."
       }
     }
 

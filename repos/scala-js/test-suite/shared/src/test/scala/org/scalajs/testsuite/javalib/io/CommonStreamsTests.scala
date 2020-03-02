@@ -19,7 +19,7 @@ import org.scalajs.testsuite.utils.AssertThrows._
 trait CommonStreamsTests {
 
   def byteArrayInputStreamLikeTests(mkStream: Seq[Int] => InputStream): Unit = {
-    val length = 50
+    val length    = 50
     def newStream = mkStream(1 to length)
 
     @Test def should_provide_read()(): Unit = {
@@ -32,7 +32,7 @@ trait CommonStreamsTests {
 
     @Test def should_provide_read_from_buf(): Unit = {
       val stream = newStream
-      val buf = new Array[Byte](10)
+      val buf    = new Array[Byte](10)
 
       assertEquals(10, stream.read(buf))
       assertEquals(1 to 10, buf)
@@ -48,7 +48,7 @@ trait CommonStreamsTests {
 
     @Test def should_provide_full_argument_read(): Unit = {
       val stream = newStream
-      val buf = new Array[Byte](20)
+      val buf    = new Array[Byte](20)
 
       assertEquals(5, stream.read(buf, 10, 5))
       assertEquals(Seq.fill(10)(0) ++ (1 to 5) ++ Seq.fill(5)(0), buf)
@@ -79,7 +79,7 @@ trait CommonStreamsTests {
       val stream = newStream
 
       def mySkip(n: Int) = for (_ <- 1 to n) assertNotEquals(stream.read(), -1)
-      def check(n: Int) = assertEquals(n, stream.available)
+      def check(n: Int)  = assertEquals(n, stream.available)
 
       check(50)
       mySkip(5)
@@ -108,9 +108,8 @@ trait CommonStreamsTests {
       assertEquals(0, stream.skip(30))
     }
 
-    @Test def should_return_true_from_markSupported(): Unit = {
+    @Test def should_return_true_from_markSupported(): Unit =
       assertTrue(newStream.markSupported)
-    }
 
     @Test def should_provide_no_op_close(): Unit = {
       val stream = newStream

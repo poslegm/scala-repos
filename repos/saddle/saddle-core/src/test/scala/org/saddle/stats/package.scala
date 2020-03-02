@@ -22,8 +22,8 @@ import org.specs2.mutable.Specification
   */
 package object stats extends Specification {
   def areClose(x: Double, y: Double, delta: Double = 1e-9) = {
-    def isNaN = (x.isNaN && y.isNaN) must beTrue
-    def isEq = x must_== y
+    def isNaN  = (x.isNaN && y.isNaN) must beTrue
+    def isEq   = x must_== y
     def isZero = (x.abs must be <= (1e-15)) and (y.abs must be <= (1e-15))
     def isNear = (x / y) must beCloseTo(1d +/- delta)
 

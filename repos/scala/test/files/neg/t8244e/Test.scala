@@ -1,6 +1,6 @@
 class X extends Raw[X] {
   override def t = this
-  def exxx = 0
+  def exxx       = 0
 }
 
 object Test extends App {

@@ -58,9 +58,7 @@ trait Positional { self: Config =>
 
   lazy val validFen =
     variant != chess.variant.FromPosition || {
-      fen ?? { f =>
-        ~(Forsyth <<< f).map(_.situation playable strictFen)
-      }
+      fen ?? { f => ~(Forsyth <<< f).map(_.situation playable strictFen) }
     }
 
   def fenGame(builder: ChessGame => Game): Game = {
@@ -68,24 +66,28 @@ trait Positional { self: Config =>
       fen ifTrue (variant == chess.variant.FromPosition) flatMap Forsyth.<<<
     val (chessGame, state) = baseState.fold(makeGame -> none[SituationPlus]) {
       case sit @ SituationPlus(Situation(board, color), _) =>
-        val game = ChessGame(board = board,
-                             player = color,
-                             turns = sit.turns,
-                             startedAtTurn = sit.turns,
-                             clock = makeClock)
+        val game = ChessGame(
+          board = board,
+          player = color,
+          turns = sit.turns,
+          startedAtTurn = sit.turns,
+          clock = makeClock
+        )
         if (Forsyth.>>(game) == Forsyth.initial)
           makeGame(chess.variant.Standard) -> none
-        else game -> baseState
+        else game                          -> baseState
     }
     val game = builder(chessGame)
     state.fold(game) {
       case sit @ SituationPlus(Situation(board, _), _) =>
-        game.copy(variant = chess.variant.FromPosition,
-                  castleLastMoveTime = game.castleLastMoveTime.copy(
-                        lastMove = board.history.lastMove.map(_.origDest),
-                        castles = board.history.castles
-                    ),
-                  turns = sit.turns)
+        game.copy(
+          variant = chess.variant.FromPosition,
+          castleLastMoveTime = game.castleLastMoveTime.copy(
+            lastMove = board.history.lastMove.map(_.origDest),
+            castles = board.history.castles
+          ),
+          turns = sit.turns
+        )
     }
   }
 }
@@ -93,7 +95,7 @@ trait Positional { self: Config =>
 object Config extends BaseConfig
 
 trait BaseConfig {
-  val variants = List(chess.variant.Standard.id, chess.variant.Chess960.id)
+  val variants       = List(chess.variant.Standard.id, chess.variant.Chess960.id)
   val variantDefault = chess.variant.Standard
 
   val variantsWithFen = variants :+ chess.variant.FromPosition.id
@@ -106,13 +108,13 @@ trait BaseConfig {
 
   val speeds = Speed.all map (_.id)
 
-  private val timeMin = 0
-  private val timeMax = 180
+  private val timeMin             = 0
+  private val timeMax             = 180
   private val acceptableFractions = Set(1 / 2d, 3 / 4d, 3 / 2d)
   def validateTime(t: Double) =
     t >= timeMin && t <= timeMax && (t.isWhole || acceptableFractions(t))
 
-  private val incrementMin = 0
-  private val incrementMax = 180
+  private val incrementMin      = 0
+  private val incrementMax      = 180
   def validateIncrement(i: Int) = i >= incrementMin && i <= incrementMax
 }

@@ -16,9 +16,9 @@ class GraphConcatSpec extends TwoStreamsSetup {
   override def fixture(b: GraphDSL.Builder[_]): Fixture = new Fixture(b) {
     val concat = b add Concat[Outputs]()
 
-    override def left: Inlet[Outputs] = concat.in(0)
+    override def left: Inlet[Outputs]  = concat.in(0)
     override def right: Inlet[Outputs] = concat.in(1)
-    override def out: Outlet[Outputs] = concat.out
+    override def out: Outlet[Outputs]  = concat.out
   }
 
   "Concat" must {
@@ -28,8 +28,7 @@ class GraphConcatSpec extends TwoStreamsSetup {
       val probe = TestSubscriber.manualProbe[Int]()
 
       RunnableGraph
-        .fromGraph(
-            GraphDSL.create() { implicit b ⇒
+        .fromGraph(GraphDSL.create() { implicit b ⇒
           val concat1 = b add Concat[Int]()
           val concat2 = b add Concat[Int]()
 
@@ -57,7 +56,7 @@ class GraphConcatSpec extends TwoStreamsSetup {
     commonTests()
 
     "work with one immediately completed and one nonempty publisher" in assertAllStagesStopped {
-      val subscriber1 = setup(completedPublisher, nonemptyPublisher(1 to 4))
+      val subscriber1   = setup(completedPublisher, nonemptyPublisher(1 to 4))
       val subscription1 = subscriber1.expectSubscription()
       subscription1.request(5)
       subscriber1.expectNext(1)
@@ -66,7 +65,7 @@ class GraphConcatSpec extends TwoStreamsSetup {
       subscriber1.expectNext(4)
       subscriber1.expectComplete()
 
-      val subscriber2 = setup(nonemptyPublisher(1 to 4), completedPublisher)
+      val subscriber2   = setup(nonemptyPublisher(1 to 4), completedPublisher)
       val subscription2 = subscriber2.expectSubscription()
       subscription2.request(5)
       subscriber2.expectNext(1)
@@ -147,7 +146,7 @@ class GraphConcatSpec extends TwoStreamsSetup {
     }
 
     "correctly handle async errors in secondary upstream" in assertAllStagesStopped {
-      val promise = Promise[Int]()
+      val promise    = Promise[Int]()
       val subscriber = TestSubscriber.manualProbe[Int]()
 
       RunnableGraph

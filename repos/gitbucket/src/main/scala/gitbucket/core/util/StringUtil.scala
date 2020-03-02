@@ -40,8 +40,9 @@ object StringUtil {
     */
   def convertFromByteArray(content: Array[Byte]): String =
     IOUtils.toString(
-        new BOMInputStream(new java.io.ByteArrayInputStream(content)),
-        detectEncoding(content))
+      new BOMInputStream(new java.io.ByteArrayInputStream(content)),
+      detectEncoding(content)
+    )
 
   def detectEncoding(content: Array[Byte]): String =
     defining(new UniversalDetector(null)) { detector =>
@@ -49,7 +50,7 @@ object StringUtil {
       detector.dataEnd()
       detector.getDetectedCharset match {
         case null => "UTF-8"
-        case e => e
+        case e    => e
       }
     }
 
@@ -76,13 +77,12 @@ object StringUtil {
     * @param lineSeparator "LF" or "CRLF"
     * @return the converted content
     */
-  def appendNewLine(content: String, lineSeparator: String): String = {
+  def appendNewLine(content: String, lineSeparator: String): String =
     if (lineSeparator == "CRLF") {
       if (content.endsWith("\r\n")) content else content + "\r\n"
     } else {
       if (content.endsWith("\n")) content else content + "\n"
     }
-  }
 
   /**
     * Extract issue id like ```#issueId``` from the given message.

@@ -9,7 +9,7 @@ class GenerateEqualsTest extends ScalaGenerateTestBase {
   val handler = new ScalaGenerateEqualsHandler
 
   def testFindAllFields() {
-    val text = s"""class A (i: Int, val j: Int) {
+    val text   = s"""class A (i: Int, val j: Int) {
                  |  val x = 0$CARET_MARKER
                  |  var y = 0
                  |  private val z = 0
@@ -40,7 +40,7 @@ class GenerateEqualsTest extends ScalaGenerateTestBase {
   }
 
   def testInFinalClass() {
-    val text = s"""final class$CARET_MARKER A (i: Int, val j: Int) {
+    val text   = s"""final class$CARET_MARKER A (i: Int, val j: Int) {
                  |  private val z = 0
                  |}"""
     val result = """final class A (i: Int, val j: Int) {
@@ -62,7 +62,7 @@ class GenerateEqualsTest extends ScalaGenerateTestBase {
   }
 
   def testInAbstract() {
-    val text = s"""abstract class A (i: Int, val j: Int) extends Set[Int] {
+    val text   = s"""abstract class A (i: Int, val j: Int) extends Set[Int] {
                  |  private val z = 0
                  |
                  |$CARET_MARKER}"""
@@ -152,7 +152,7 @@ class GenerateEqualsTest extends ScalaGenerateTestBase {
   }
 
   def testInheritsMethodsFromJavaLangObject() = {
-    val text = s"""class A {
+    val text   = s"""class A {
                  |  val a = 0
                  |}
                  |

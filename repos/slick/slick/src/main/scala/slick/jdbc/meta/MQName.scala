@@ -4,20 +4,23 @@ import slick.jdbc.PositionedResult
 
 /** A qualified name with an optional catalog and schema. */
 case class MQName(
-    catalog: Option[String], schema: Option[String], name: String) {
+    catalog: Option[String],
+    schema: Option[String],
+    name: String
+) {
   override def toString =
     "MQName(" + catalog.map(_ + ".").getOrElse("") +
-    schema.map(_ + ".").getOrElse("") + name + ")"
+      schema.map(_ + ".").getOrElse("") + name + ")"
 
   def catalog_? = catalog.orNull
-  def schema_? = schema.orNull
+  def schema_?  = schema.orNull
 }
 
 object MQName {
   private[meta] def from(r: PositionedResult) = MQName(r.<<, r.<<, r.<<)
 
   private[meta] def optionalFrom(r: PositionedResult) = {
-    val cat = r.nextStringOption
+    val cat    = r.nextStringOption
     val schema = r.nextStringOption
     r.nextStringOption map (MQName(cat, schema, _))
   }

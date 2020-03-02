@@ -27,14 +27,14 @@ object Partial {
 }
 
 object Test {
-  val m = Partial[immutable.TreeMap]
+  val m  = Partial[immutable.TreeMap]
   val m1 = m[String]
   val m2 = m[Int][Int]
 
   val mutableBippy = Partial[mutable.HashMap][String][Int]
   mutableBippy("abc") = 55
 
-  val immutableBippy = Partial[immutable.HashMap].values[Int]
+  val immutableBippy  = Partial[immutable.HashMap].values[Int]
   def make[T](xs: T*) = immutableBippy[T] ++ xs.zipWithIndex
 
   val n0 = Partial[immutable.HashMap][String][Int] ++ Seq(("a", 1))
@@ -57,6 +57,6 @@ class A {
   }
 
   def f() = Foo
-  def g = f()[Int]()[String]()
-  def h = Foo[Foo.type]()[Foo.type]()
+  def g   = f()[Int]()[String]()
+  def h   = Foo[Foo.type]()[Foo.type]()
 }

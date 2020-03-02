@@ -15,12 +15,13 @@ private trait ApertureTesting {
   class Empty extends Exception
 
   protected trait TestBal
-      extends Balancer[Unit, Unit] with Aperture[Unit, Unit] {
-    protected val rng = Rng(12345L)
+      extends Balancer[Unit, Unit]
+      with Aperture[Unit, Unit] {
+    protected val rng            = Rng(12345L)
     protected val emptyException = new Empty
-    protected val maxEffort = 10
-    protected def statsReceiver = NullStatsReceiver
-    protected val minAperture = 1
+    protected val maxEffort      = 10
+    protected def statsReceiver  = NullStatsReceiver
+    protected val minAperture    = 1
 
     protected[this] val maxEffortExhausted =
       statsReceiver.counter("max_effort_exhausted")
@@ -32,8 +33,8 @@ private trait ApertureTesting {
 
     // Expose some protected methods for testing
     def adjustx(n: Int) = adjust(n)
-    def aperturex: Int = aperture
-    def unitsx: Int = units
+    def aperturex: Int  = aperture
+    def unitsx: Int     = units
   }
 
   class Factory(val i: Int) extends ServiceFactory[Unit, Unit] {
@@ -45,8 +46,7 @@ private trait ApertureTesting {
     def apply(conn: ClientConnection) = {
       n += 1
       p += 1
-      Future.value(
-          new Service[Unit, Unit] {
+      Future.value(new Service[Unit, Unit] {
         def apply(unit: Unit) = ???
         override def close(deadline: Time) = {
           p -= 1
@@ -85,9 +85,7 @@ private trait ApertureTesting {
     def apply(i: Int) = factories.getOrElseUpdate(i, new Factory(i))
 
     def range(n: Int): Traversable[ServiceFactory[Unit, Unit]] =
-      Traversable.tabulate(n) { i =>
-        apply(i)
-      }
+      Traversable.tabulate(n)(i => apply(i))
   }
 }
 
@@ -98,7 +96,7 @@ private class ApertureTest extends FunSuite with ApertureTesting {
 
   test("Balance only within the aperture") {
     val counts = new Counts
-    val bal = new Bal
+    val bal    = new Bal
     bal.update(counts.range(10))
     assert(bal.unitsx == 10)
     bal.applyn(100)
@@ -116,7 +114,7 @@ private class ApertureTest extends FunSuite with ApertureTesting {
 
   test("Don't operate outside of aperture range") {
     val counts = new Counts
-    val bal = new Bal
+    val bal    = new Bal
 
     bal.update(counts.range(10))
     bal.adjustx(10000)
@@ -131,7 +129,7 @@ private class ApertureTest extends FunSuite with ApertureTesting {
 
   test("Increase aperture to match available hosts") {
     val counts = new Counts
-    val bal = new Bal
+    val bal    = new Bal
 
     bal.update(counts.range(10))
     bal.adjustx(1)
@@ -161,12 +159,12 @@ private class ApertureTest extends FunSuite with ApertureTesting {
   test("Empty vectors") {
     val bal = new Bal
 
-    intercept[Empty] { Await.result(bal.apply()) }
+    intercept[Empty](Await.result(bal.apply()))
   }
 
   test("Nonavailable vectors") {
     val counts = new Counts
-    val bal = new Bal
+    val bal    = new Bal
 
     bal.update(counts.range(10))
     for (f <- counts) f.status = Status.Closed
@@ -175,7 +173,7 @@ private class ApertureTest extends FunSuite with ApertureTesting {
     // The correctness of this behavior could be argued either way.
     assert(counts.aperture == 1)
     val Seq(badkey) = counts.nonzero.toSeq
-    val goodkey = (badkey + 1) % 10
+    val goodkey     = (badkey + 1) % 10
     counts(goodkey).status = Status.Open
 
     counts.clear()
@@ -190,13 +188,14 @@ private class LoadBandTest extends FunSuite with ApertureTesting {
   val rng = Rng()
 
   class Bal(protected val lowLoad: Double, protected val highLoad: Double)
-      extends TestBal with LoadBand[Unit, Unit] {
+      extends TestBal
+      with LoadBand[Unit, Unit] {
     def this() = this(0.5, 2.0)
     protected def smoothWin = Duration.Zero
   }
 
   class Avg {
-    var n = 0
+    var n   = 0
     var sum = 0
 
     def update(v: Int) {
@@ -209,14 +208,14 @@ private class LoadBandTest extends FunSuite with ApertureTesting {
 
   test("Aperture tracks concurrency") {
     val counts = new Counts
-    val low = 0.5
-    val high = 2.0
-    val bal = new Bal(lowLoad = low, highLoad = high)
+    val low    = 0.5
+    val high   = 2.0
+    val bal    = new Bal(lowLoad = low, highLoad = high)
 
     val numNodes = rng.nextInt(100)
     bal.update(counts.range(numNodes))
 
-    val start = (high + 1).toInt
+    val start       = (high + 1).toInt
     val concurrency = (start to numNodes) ++ ((numNodes - 1) to start by -1)
 
     for (c <- concurrency) {
@@ -230,7 +229,7 @@ private class LoadBandTest extends FunSuite with ApertureTesting {
 
       for (i <- 0 to 1000) {
         counts.clear()
-        val factories = Seq.fill(c) { Await.result(bal.apply()) }
+        val factories = Seq.fill(c)(Await.result(bal.apply()))
         for (f <- counts if f.n > 0) { avgLoad.update(f.p) }
         // no need to avg ap, it's independent of the load distribution
         ap = bal.aperturex

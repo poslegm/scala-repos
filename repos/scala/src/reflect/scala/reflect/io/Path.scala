@@ -46,7 +46,7 @@ object Path {
   }
 
   // not certain these won't be problematic, but looks good so far
-  implicit def string2path(s: String): Path = apply(s)
+  implicit def string2path(s: String): Path   = apply(s)
   implicit def jfile2path(jfile: JFile): Path = apply(jfile)
 
   def onlyDirs(xs: Iterator[Path]): Iterator[Directory] =
@@ -79,7 +79,7 @@ object Path {
     } catch { case ex: SecurityException => new Path(jfile) }
 
   /** Avoiding any shell/path issues by only using alphanumerics. */
-  private[io] def randomPrefix = alphanumeric take 6 mkString ""
+  private[io] def randomPrefix      = alphanumeric take 6 mkString ""
   private[io] def fail(msg: String) = throw FileOperationException(msg)
 }
 import Path._
@@ -89,18 +89,18 @@ import Path._
   *
   *  ''Note:  This library is considered experimental and should not be used unless you know what you are doing.''
   */
-class Path private[io](val jfile: JFile) {
-  val separator = java.io.File.separatorChar
+class Path private[io] (val jfile: JFile) {
+  val separator    = java.io.File.separatorChar
   val separatorStr = java.io.File.separator
 
   // conversions
-  def toFile: File = new File(jfile)
+  def toFile: File           = new File(jfile)
   def toDirectory: Directory = new Directory(jfile)
   def toAbsolute: Path =
     if (isAbsolute) this else Path(jfile.getAbsolutePath())
   def toCanonical: Path = Path(jfile.getCanonicalPath())
-  def toURI: URI = jfile.toURI()
-  def toURL: URL = toURI.toURL()
+  def toURI: URI        = jfile.toURI()
+  def toURL: URL        = toURI.toURL()
 
   /** If this path is absolute, returns it: otherwise, returns an absolute
     *  path made up of root / this.
@@ -114,7 +114,7 @@ class Path private[io](val jfile: JFile) {
   def /(child: Path): Path =
     if (isEmpty) child else new Path(new JFile(jfile, child.path))
   def /(child: Directory): Directory = /(child: Path).toDirectory
-  def /(child: File): File = /(child: Path).toFile
+  def /(child: File): File           = /(child: Path).toFile
 
   /** If this path is a container, recursively iterate over its contents.
     *  The supplied condition is a filter which is applied to each element,
@@ -133,24 +133,27 @@ class Path private[io](val jfile: JFile) {
   def walk: Iterator[Path] = walkFilter(_ => true)
 
   // identity
-  def name: String = jfile.getName()
-  def path: String = jfile.getPath()
+  def name: String    = jfile.getName()
+  def path: String    = jfile.getPath()
   def normalize: Path = Path(jfile.getAbsolutePath())
 
   def resolve(other: Path) =
     if (other.isAbsolute || isEmpty) other else /(other)
   def relativize(other: Path) = {
-    assert(isAbsolute == other.isAbsolute,
-           "Paths not of same type: " + this + ", " + other)
+    assert(
+      isAbsolute == other.isAbsolute,
+      "Paths not of same type: " + this + ", " + other
+    )
 
     def createRelativePath(
-        baseSegs: List[String], otherSegs: List[String]): String = {
+        baseSegs: List[String],
+        otherSegs: List[String]
+    ): String =
       (baseSegs, otherSegs) match {
         case (b :: bs, o :: os) if b == o => createRelativePath(bs, os)
         case (bs, os) =>
           ((".." + separator) * bs.length) + os.mkString(separatorStr)
       }
-    }
 
     Path(createRelativePath(segments, other.segments))
   }
@@ -163,14 +166,14 @@ class Path private[io](val jfile: JFile) {
     */
   def parent: Directory = path match {
     case "" | "." => Directory("..")
-    case _ =>
+    case _        =>
       // the only solution <-- a comment which could have used elaboration
       if (segments.nonEmpty && segments.last == "..") (path / "..").toDirectory
       else
         jfile.getParent match {
           case null =>
             if (isAbsolute)
-              toDirectory // it should be a root. BTW, don't need to worry about relative pathed root
+              toDirectory       // it should be a root. BTW, don't need to worry about relative pathed root
             else Directory(".") // a dir under pwd
           case x =>
             Directory(x)
@@ -210,39 +213,44 @@ class Path private[io](val jfile: JFile) {
     if (isDirectory) Some(f(toDirectory)) else None
 
   // Boolean tests
-  def canRead = jfile.canRead()
+  def canRead  = jfile.canRead()
   def canWrite = jfile.canWrite()
   def exists = {
     if (Statistics.canEnable) Statistics.incCounter(IOStats.fileExistsCount)
-    try jfile.exists() catch { case ex: SecurityException => false }
+    try jfile.exists()
+    catch { case ex: SecurityException => false }
   }
 
   def isFile = {
     if (Statistics.canEnable) Statistics.incCounter(IOStats.fileIsFileCount)
-    try jfile.isFile() catch { case ex: SecurityException => false }
+    try jfile.isFile()
+    catch { case ex: SecurityException => false }
   }
   def isDirectory = {
     if (Statistics.canEnable)
       Statistics.incCounter(IOStats.fileIsDirectoryCount)
-    try jfile.isDirectory() catch {
+    try jfile.isDirectory()
+    catch {
       case ex: SecurityException => jfile.getPath == "."
     }
   }
   def isAbsolute = jfile.isAbsolute()
-  def isEmpty = path.length == 0
+  def isEmpty    = path.length == 0
 
   // Information
   def lastModified = jfile.lastModified()
-  def length = jfile.length()
+  def length       = jfile.length()
 
   // Boolean path comparisons
-  def endsWith(other: Path) = segments endsWith other.segments
-  def isSame(other: Path) = toCanonical == other.toCanonical
+  def endsWith(other: Path)  = segments endsWith other.segments
+  def isSame(other: Path)    = toCanonical == other.toCanonical
   def isFresher(other: Path) = lastModified > other.lastModified
 
   // creations
   def createDirectory(
-      force: Boolean = true, failIfExists: Boolean = false): Directory = {
+      force: Boolean = true,
+      failIfExists: Boolean = false
+  ): Directory = {
     val res = if (force) jfile.mkdirs() else jfile.mkdir()
     if (!res && failIfExists && exists)
       fail("Directory '%s' already exists." format name)
@@ -268,7 +276,7 @@ class Path private[io](val jfile: JFile) {
     if (f.isDirectory)
       f.listFiles match {
         case null =>
-        case xs => xs foreach deleteRecursively
+        case xs   => xs foreach deleteRecursively
       }
     f.delete()
   }
@@ -284,7 +292,7 @@ class Path private[io](val jfile: JFile) {
   override def toString() = path
   override def equals(other: Any) = other match {
     case x: Path => path == x.path
-    case _ => false
+    case _       => false
   }
   override def hashCode() = path.hashCode()
 }

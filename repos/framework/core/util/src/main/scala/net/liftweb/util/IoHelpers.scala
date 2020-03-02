@@ -30,14 +30,16 @@ trait IoHelpers {
     * Execute the specified OS command and return the output of that command
     * in a Full Box if the command succeeds, or a Failure if an error occurs.
     */
-  def exec(cmds: String*): Box[String] = {
+  def exec(cmds: String*): Box[String] =
     try {
       class ReadItAll(in: InputStream, done: String => Unit) extends Runnable {
         def run {
           val br =
-            new BufferedReader(new InputStreamReader(in)) // default to platform character set
+            new BufferedReader(
+              new InputStreamReader(in)
+            ) // default to platform character set
           val lines = new ListBuffer[String]
-          var line = ""
+          var line  = ""
           while (line != null) {
             line = br.readLine
             if (line != null) lines += line
@@ -50,10 +52,10 @@ trait IoHelpers {
 
       var stdOut = ""
       var stdErr = ""
-      val proc = Runtime.getRuntime.exec(cmds.toArray)
-      val t1 = new Thread(new ReadItAll(proc.getInputStream, x => stdOut = x))
+      val proc   = Runtime.getRuntime.exec(cmds.toArray)
+      val t1     = new Thread(new ReadItAll(proc.getInputStream, x => stdOut = x))
       t1.start
-      val t2 = new Thread(new ReadItAll(proc.getErrorStream, x => stdErr = x))
+      val t2  = new Thread(new ReadItAll(proc.getErrorStream, x => stdErr = x))
       val res = proc.waitFor
       t1.join
       t2.join
@@ -62,7 +64,6 @@ trait IoHelpers {
     } catch {
       case e: Throwable => Failure(e.getMessage, Full(e), Empty)
     }
-  }
 
   /**
     * Read all data to the end of the specified Reader and concatenate
@@ -70,7 +71,7 @@ trait IoHelpers {
     */
   def readWholeThing(in: Reader): String = {
     val bos = new StringBuilder
-    val ba = new Array[Char](4096)
+    val ba  = new Array[Char](4096)
 
     def readOnce {
       val len = in.read(ba)
@@ -95,7 +96,7 @@ trait IoHelpers {
     */
   def readWholeStream(in: InputStream): Array[Byte] = {
     val bos = new ByteArrayOutputStream
-    val ba = new Array[Byte](4096)
+    val ba  = new Array[Byte](4096)
 
     def readOnce {
       val len = in.read(ba)
@@ -113,13 +114,12 @@ trait IoHelpers {
   /**
     * Executes by-name function f and then closes the Cloaseables parameters
     */
-  def doClose[T](is: java.io.Closeable*)(f: => T): T = {
+  def doClose[T](is: java.io.Closeable*)(f: => T): T =
     try {
       f
     } finally {
-      is.foreach(stream => tryo { stream.close })
+      is.foreach(stream => tryo(stream.close))
     }
-  }
 }
 
 /**

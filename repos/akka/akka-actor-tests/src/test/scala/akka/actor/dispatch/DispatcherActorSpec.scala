@@ -37,7 +37,8 @@ object DispatcherActorSpec {
       case "Hello" ⇒ sender() ! "World"
       case "Failure" ⇒
         throw new RuntimeException(
-            "Expected exception; to test fault-tolerance")
+          "Expected exception; to test fault-tolerance"
+        )
     }
   }
 
@@ -53,7 +54,8 @@ object DispatcherActorSpec {
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class DispatcherActorSpec
-    extends AkkaSpec(DispatcherActorSpec.config) with DefaultTimeout {
+    extends AkkaSpec(DispatcherActorSpec.config)
+    with DefaultTimeout {
   import DispatcherActorSpec._
 
   private val unit = TimeUnit.MILLISECONDS
@@ -61,8 +63,8 @@ class DispatcherActorSpec
   "A Dispatcher and an Actor" must {
 
     "support tell" in {
-      val actor = system.actorOf(
-          Props[OneWayTestActor].withDispatcher("test-dispatcher"))
+      val actor =
+        system.actorOf(Props[OneWayTestActor].withDispatcher("test-dispatcher"))
       val result = actor ! "OneWay"
       assert(OneWayTestActor.oneWay.await(1, TimeUnit.SECONDS))
       system.stop(actor)
@@ -85,18 +87,15 @@ class DispatcherActorSpec
         def receive = { case "sabotage" ⇒ works.set(false) }
       }).withDispatcher(throughputDispatcher))
 
-      val slowOne = system.actorOf(
-          Props(new Actor {
+      val slowOne = system.actorOf(Props(new Actor {
         def receive = {
           case "hogexecutor" ⇒ { sender() ! "OK"; start.await }
-          case "ping" ⇒ if (works.get) latch.countDown()
+          case "ping"        ⇒ if (works.get) latch.countDown()
         }
       }).withDispatcher(throughputDispatcher))
 
       assert(Await.result(slowOne ? "hogexecutor", timeout.duration) === "OK")
-      (1 to 100) foreach { _ ⇒
-        slowOne ! "ping"
-      }
+      (1 to 100) foreach { _ ⇒ slowOne ! "ping" }
       fastOne ! "sabotage"
       start.countDown()
       latch.await(10, TimeUnit.SECONDS)
@@ -106,7 +105,7 @@ class DispatcherActorSpec
     }
 
     "respect throughput deadline" in {
-      val deadline = 100 millis
+      val deadline             = 100 millis
       val throughputDispatcher = "test-throughput-deadline-dispatcher"
 
       val works = new AtomicBoolean(true)
@@ -114,18 +113,16 @@ class DispatcherActorSpec
       val start = new CountDownLatch(1)
       val ready = new CountDownLatch(1)
 
-      val fastOne = system.actorOf(
-          Props(new Actor {
+      val fastOne = system.actorOf(Props(new Actor {
         def receive = {
           case "ping" ⇒ if (works.get) latch.countDown(); context.stop(self)
         }
       }).withDispatcher(throughputDispatcher))
 
-      val slowOne = system.actorOf(
-          Props(new Actor {
+      val slowOne = system.actorOf(Props(new Actor {
         def receive = {
           case "hogexecutor" ⇒ { ready.countDown(); start.await }
-          case "ping" ⇒ { works.set(false); context.stop(self) }
+          case "ping"        ⇒ { works.set(false); context.stop(self) }
         }
       }).withDispatcher(throughputDispatcher))
 
@@ -133,7 +130,9 @@ class DispatcherActorSpec
       slowOne ! "ping"
       fastOne ! "ping"
       assert(ready.await(2, TimeUnit.SECONDS) === true)
-      Thread.sleep(deadline.toMillis + 10) // wait just a bit more than the deadline
+      Thread.sleep(
+        deadline.toMillis + 10
+      ) // wait just a bit more than the deadline
       start.countDown()
       assert(latch.await(2, TimeUnit.SECONDS) === true)
     }

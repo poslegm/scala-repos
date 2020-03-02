@@ -9,7 +9,7 @@ import org.jetbrains.plugins.scala.base.ScalaLightCodeInsightFixtureTestAdapter
 abstract class OperationsOnCollectionInspectionTest
     extends ScalaLightCodeInsightFixtureTestAdapter {
   val START = ScalaLightCodeInsightFixtureTestAdapter.SELECTION_START
-  val END = ScalaLightCodeInsightFixtureTestAdapter.SELECTION_END
+  val END   = ScalaLightCodeInsightFixtureTestAdapter.SELECTION_END
   val inspectionClass: Class[_ <: OperationOnCollectionInspection]
   def hint: String
   def description: String = hint
@@ -19,10 +19,12 @@ abstract class OperationsOnCollectionInspectionTest
   }
 
   protected def testFix(text: String, result: String, hint: String) {
-    testQuickFix(text.replace("\r", ""),
-                 result.replace("\r", ""),
-                 hint,
-                 inspectionClass)
+    testQuickFix(
+      text.replace("\r", ""),
+      result.replace("\r", ""),
+      hint,
+      inspectionClass
+    )
   }
 
   def doTest(selected: String, text: String, result: String) = {

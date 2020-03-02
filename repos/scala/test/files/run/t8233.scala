@@ -1,5 +1,5 @@
 object Test {
-  def bar(s: String) = s;
+  def bar(s: String)  = s;
   val o: Option[Null] = None
   def nullReference {
     val a: Null = o.get
@@ -24,7 +24,8 @@ object Test {
   }
 
   def main(args: Array[String]): Unit = {
-    try { nullReference } catch { case _: NoSuchElementException => }
+    try { nullReference }
+    catch { case _: NoSuchElementException => }
     literal
     expectedUnitInABranch(true) // Was: VerifyError under GenICode
   }

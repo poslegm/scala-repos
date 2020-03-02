@@ -24,12 +24,14 @@ import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class QueueingHandlerTest
-    extends WordSpec with Eventually with IntegrationPatience {
+    extends WordSpec
+    with Eventually
+    with IntegrationPatience {
 
   class MockHandler extends Handler(BareFormatter, None) {
     def publish(record: javalog.LogRecord) = ()
-    def close() = ()
-    def flush() = ()
+    def close()                            = ()
+    def flush()                            = ()
   }
 
   def freshLogger(): Logger = {
@@ -42,9 +44,9 @@ class QueueingHandlerTest
 
   "QueueingHandler" should {
     "publish" in {
-      val logger = freshLogger()
+      val logger        = freshLogger()
       val stringHandler = new StringHandler(BareFormatter, Some(Logger.INFO))
-      val queueHandler = new QueueingHandler(stringHandler)
+      val queueHandler  = new QueueingHandler(stringHandler)
       logger.addHandler(queueHandler)
 
       logger.warning("oh noes!")
@@ -81,7 +83,7 @@ class QueueingHandlerTest
     }
 
     "flush" in {
-      val logger = freshLogger()
+      val logger     = freshLogger()
       var wasFlushed = false
       val handler = new MockHandler {
         override def flush() { wasFlushed = true }
@@ -96,7 +98,7 @@ class QueueingHandlerTest
     }
 
     "close" in {
-      val logger = freshLogger()
+      val logger    = freshLogger()
       var wasClosed = false
       val handler = new MockHandler {
         override def close() { wasClosed = true }
@@ -113,9 +115,9 @@ class QueueingHandlerTest
     }
 
     "handle exceptions in the underlying handler" in {
-      val logger = freshLogger()
+      val logger              = freshLogger()
       @volatile var mustError = true
-      @volatile var didLog = false
+      @volatile var didLog    = false
       val handler = new MockHandler {
         override def publish(record: javalog.LogRecord) {
           if (mustError) {
@@ -143,7 +145,7 @@ class QueueingHandlerTest
       val handler = new MockHandler {}
 
       val queueHandler = new QueueingHandler(handler)
-      val formatter = new Formatter()
+      val formatter    = new Formatter()
 
       queueHandler.setFormatter(formatter)
 
@@ -162,7 +164,7 @@ class QueueingHandlerTest
         }
       }
       for (infer <- Seq(true, false)) {
-        val logger = freshLogger()
+        val logger        = freshLogger()
         val stringHandler = new StringHandler(formatter, Some(Logger.INFO))
         val queueHandler =
           new QueueingHandler(stringHandler, Int.MaxValue, infer)
@@ -184,6 +186,6 @@ class QueueingHandlerTest
 }
 
 class QueueingHandlerTestHelper {
-  def message = "A message"
+  def message                      = "A message"
   def logSomething(logger: Logger) = logger.info(message)
 }

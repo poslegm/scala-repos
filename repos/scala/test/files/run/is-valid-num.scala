@@ -4,8 +4,9 @@
 object Test {
   def x =
     BigInt(
-        "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
-  def y = BigDecimal("" + (Short.MaxValue + 1) + ".0")
+      "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    )
+  def y  = BigDecimal("" + (Short.MaxValue + 1) + ".0")
   def y1 = BigDecimal("0.1")
   def y2 = BigDecimal("0.5")
 
@@ -168,7 +169,7 @@ object Test {
   }
 
   def checkNonWholeDouble(d: Double) {
-    val f = d.toFloat
+    val f       = d.toFloat
     val isFloat = f == d
 
     if (!d.isInfinity) {
@@ -205,18 +206,18 @@ object Test {
   }
 
   def checkBigInt(bi: BigInt) {
-    val bd = BigDecimal(bi, java.math.MathContext.UNLIMITED)
-    val isByte = bi >= Byte.MinValue && bi <= Byte.MaxValue
+    val bd      = BigDecimal(bi, java.math.MathContext.UNLIMITED)
+    val isByte  = bi >= Byte.MinValue && bi <= Byte.MaxValue
     val isShort = bi >= Short.MinValue && bi <= Short.MaxValue
-    val isChar = bi >= Char.MinValue && bi <= Char.MaxValue
-    val isInt = bi >= Int.MinValue && bi <= Int.MaxValue
-    val isLong = bi >= Long.MinValue && bi <= Long.MaxValue
+    val isChar  = bi >= Char.MinValue && bi <= Char.MaxValue
+    val isInt   = bi >= Int.MinValue && bi <= Int.MaxValue
+    val isLong  = bi >= Long.MinValue && bi <= Long.MaxValue
     val isFloat =
       !bi.toFloat.isInfinity &&
-      bd.compare(BigDecimal(new java.math.BigDecimal(bi.toFloat))) == 0
+        bd.compare(BigDecimal(new java.math.BigDecimal(bi.toFloat))) == 0
     val isDouble =
       !bi.toDouble.isInfinity &&
-      bd.compare(BigDecimal(new java.math.BigDecimal(bi.toDouble))) == 0
+        bd.compare(BigDecimal(new java.math.BigDecimal(bi.toDouble))) == 0
 
     assert(bd.isWhole, bd)
     assert(bd.isBinaryDouble == isDouble, bd)

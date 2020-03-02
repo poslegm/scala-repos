@@ -33,7 +33,9 @@ import org.apache.spark.util.{JsonProtocol, JsonProtocolSuite, Utils}
   */
 class ReplayListenerSuite extends SparkFunSuite with BeforeAndAfter {
   private val fileSystem = Utils.getHadoopFileSystem(
-      "/", SparkHadoopUtil.get.newConfiguration(new SparkConf()))
+    "/",
+    SparkHadoopUtil.get.newConfiguration(new SparkConf())
+  )
   private var testDir: File = _
 
   before {
@@ -46,21 +48,28 @@ class ReplayListenerSuite extends SparkFunSuite with BeforeAndAfter {
 
   test("Simple replay") {
     val logFilePath = Utils.getFilePath(testDir, "events.txt")
-    val fstream = fileSystem.create(logFilePath)
-    val writer = new PrintWriter(fstream)
+    val fstream     = fileSystem.create(logFilePath)
+    val writer      = new PrintWriter(fstream)
     val applicationStart = SparkListenerApplicationStart(
-        "Greatest App (N)ever", None, 125L, "Mickey", None)
+      "Greatest App (N)ever",
+      None,
+      125L,
+      "Mickey",
+      None
+    )
     val applicationEnd = SparkListenerApplicationEnd(1000L)
     // scalastyle:off println
     writer.println(
-        compact(render(JsonProtocol.sparkEventToJson(applicationStart))))
+      compact(render(JsonProtocol.sparkEventToJson(applicationStart)))
+    )
     writer.println(
-        compact(render(JsonProtocol.sparkEventToJson(applicationEnd))))
+      compact(render(JsonProtocol.sparkEventToJson(applicationEnd)))
+    )
     // scalastyle:on println
     writer.close()
 
-    val conf = EventLoggingListenerSuite.getLoggingConf(logFilePath)
-    val logData = fileSystem.open(logFilePath)
+    val conf         = EventLoggingListenerSuite.getLoggingConf(logFilePath)
+    val logData      = fileSystem.open(logFilePath)
     val eventMonster = new EventMonster(conf)
     try {
       val replayer = new ReplayListenerBus()
@@ -70,10 +79,14 @@ class ReplayListenerSuite extends SparkFunSuite with BeforeAndAfter {
       logData.close()
     }
     assert(eventMonster.loggedEvents.size === 2)
-    assert(eventMonster.loggedEvents(0) === JsonProtocol.sparkEventToJson(
-            applicationStart))
-    assert(eventMonster.loggedEvents(1) === JsonProtocol.sparkEventToJson(
-            applicationEnd))
+    assert(
+      eventMonster.loggedEvents(0) === JsonProtocol
+        .sparkEventToJson(applicationStart)
+    )
+    assert(
+      eventMonster.loggedEvents(1) === JsonProtocol
+        .sparkEventToJson(applicationEnd)
+    )
   }
 
   // This assumes the correctness of EventLoggingListener
@@ -104,7 +117,7 @@ class ReplayListenerSuite extends SparkFunSuite with BeforeAndAfter {
     fileSystem.mkdirs(logDirPath)
 
     val conf = EventLoggingListenerSuite.getLoggingConf(logDirPath, codecName)
-    val sc = new SparkContext("local-cluster[2,1,1024]", "Test replay", conf)
+    val sc   = new SparkContext("local-cluster[2,1,1024]", "Test replay", conf)
 
     // Run a few jobs
     sc.parallelize(1 to 100, 1).count()
@@ -138,8 +151,10 @@ class ReplayListenerSuite extends SparkFunSuite with BeforeAndAfter {
     originalEvents.zip(replayedEvents).foreach {
       case (e1, e2) =>
         // Don't compare the JSON here because accumulators in StageInfo may be out of order
-        JsonProtocolSuite.assertEquals(JsonProtocol.sparkEventFromJson(e1),
-                                       JsonProtocol.sparkEventFromJson(e2))
+        JsonProtocolSuite.assertEquals(
+          JsonProtocol.sparkEventFromJson(e1),
+          JsonProtocol.sparkEventFromJson(e2)
+        )
     }
   }
 

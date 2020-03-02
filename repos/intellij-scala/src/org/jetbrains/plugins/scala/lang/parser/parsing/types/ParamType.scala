@@ -19,7 +19,7 @@ import org.jetbrains.plugins.scala.lang.parser.util.ParserUtils._
  */
 
 object ParamType {
-  def parseInner(builder: ScalaPsiBuilder): Boolean = {
+  def parseInner(builder: ScalaPsiBuilder): Boolean =
     builder.getTokenType match {
       case ScalaTokenTypes.tFUNTYPE =>
         builder.advanceLexer() //Ate '=>'
@@ -29,13 +29,12 @@ object ParamType {
         else {
           builder.getTokenText match {
             case "*" => builder.advanceLexer() // Ate '*'
-            case _ => /* nothing needs to be done */
+            case _   => /* nothing needs to be done */
           }
           true
         }
     }
-  }
 
   def parse(builder: ScalaPsiBuilder) =
-    build(ScalaElementTypes.PARAM_TYPE, builder) { parseInner(builder) }
+    build(ScalaElementTypes.PARAM_TYPE, builder)(parseInner(builder))
 }

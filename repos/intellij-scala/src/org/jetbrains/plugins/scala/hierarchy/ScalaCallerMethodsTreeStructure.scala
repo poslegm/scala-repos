@@ -1,7 +1,10 @@
 package org.jetbrains.plugins.scala.hierarchy
 
 import com.intellij.ide.hierarchy.call.CallHierarchyNodeDescriptor
-import com.intellij.ide.hierarchy.{HierarchyNodeDescriptor, HierarchyTreeStructure}
+import com.intellij.ide.hierarchy.{
+  HierarchyNodeDescriptor,
+  HierarchyTreeStructure
+}
 import com.intellij.openapi.project.Project
 import com.intellij.psi._
 import com.intellij.psi.search.SearchScope
@@ -18,13 +21,17 @@ import scala.collection.mutable
   * @author Alexander Podkhalyuzin
   */
 final class ScalaCallerMethodsTreeStructure(
-    project: Project, method: PsiMethod, scopeType: String)
-    extends HierarchyTreeStructure(
-        project,
-        new CallHierarchyNodeDescriptor(project, null, method, true, false)) {
+    project: Project,
+    method: PsiMethod,
+    scopeType: String
+) extends HierarchyTreeStructure(
+      project,
+      new CallHierarchyNodeDescriptor(project, null, method, true, false)
+    ) {
 
   protected def buildChildren(
-      descriptor: HierarchyNodeDescriptor): Array[AnyRef] = {
+      descriptor: HierarchyNodeDescriptor
+  ): Array[AnyRef] = {
     val enclosingElement: PsiMember =
       descriptor.asInstanceOf[CallHierarchyNodeDescriptor].getEnclosingElement
     if (!enclosingElement.isInstanceOf[PsiMethod]) {
@@ -37,17 +44,17 @@ final class ScalaCallerMethodsTreeStructure(
       .asInstanceOf[PsiMethod]
     val containing = baseMethod match {
       case mem: ScMember => mem.getContainingClassLoose
-      case x => x.containingClass
+      case x             => x.containingClass
     }
     val searchScope: SearchScope = getSearchScope(scopeType, containing)
-    val originalClass: PsiClass = method.containingClass
+    val originalClass: PsiClass  = method.containingClass
     assert(originalClass != null)
     val methodsToFind = new mutable.HashSet[PsiMethod]
     methodsToFind += method
     methodsToFind ++= {
       method match {
         case fun: ScFunction => fun.superMethods
-        case _ => method.findDeepestSuperMethods
+        case _               => method.findDeepestSuperMethods
       }
     }
     val methodToDescriptorMap =
@@ -59,7 +66,10 @@ final class ScalaCallerMethodsTreeStructure(
           def process(reference: PsiReference): Boolean = {
             val element: PsiElement = reference.getElement
             val key: PsiMember = PsiTreeUtil.getNonStrictParentOfType(
-                element, classOf[PsiMethod], classOf[PsiClass])
+              element,
+              classOf[PsiMethod],
+              classOf[PsiClass]
+            )
             methodToDescriptorMap synchronized {
               var d: CallHierarchyNodeDescriptor =
                 methodToDescriptorMap.get(key) match {
@@ -70,7 +80,12 @@ final class ScalaCallerMethodsTreeStructure(
                     call
                   case _ =>
                     val newD = new CallHierarchyNodeDescriptor(
-                        myProject, descriptor, element, false, true)
+                      myProject,
+                      descriptor,
+                      element,
+                      false,
+                      true
+                    )
                     methodToDescriptorMap.put(key, newD)
                     newD
                 }
@@ -83,7 +98,6 @@ final class ScalaCallerMethodsTreeStructure(
     methodToDescriptorMap.values.toArray
   }
 
-  override def isAlwaysShowPlus: Boolean = {
+  override def isAlwaysShowPlus: Boolean =
     true
-  }
 }

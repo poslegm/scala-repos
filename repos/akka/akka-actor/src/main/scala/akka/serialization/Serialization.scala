@@ -30,10 +30,10 @@ object Serialization {
     new DynamicVariable[Information](null)
 
   class Settings(val config: Config) {
-    val Serializers: Map[String, String] = configToMap(
-        "akka.actor.serializers")
+    val Serializers: Map[String, String] = configToMap("akka.actor.serializers")
     val SerializationBindings: Map[String, String] = configToMap(
-        "akka.actor.serialization-bindings")
+      "akka.actor.serialization-bindings"
+    )
 
     private final def configToMap(path: String): Map[String, String] = {
       import scala.collection.JavaConverters._
@@ -48,7 +48,9 @@ object Serialization {
     * INTERNAL API
     */
   private[akka] final case class Information(
-      address: Address, system: ActorSystem)
+      address: Address,
+      system: ActorSystem
+  )
 
   /**
     * The serialized path of an actorRef, based on the current transport serialization information.
@@ -68,7 +70,9 @@ object Serialization {
           case null ⇒ path.toSerializationFormat
           case system ⇒
             try path.toSerializationFormatWithAddress(
-                system.provider.getDefaultAddress) catch {
+              system.provider.getDefaultAddress
+            )
+            catch {
               case NonFatal(_) ⇒ path.toSerializationFormat
             }
         }
@@ -77,9 +81,11 @@ object Serialization {
           path.toSerializationFormatWithAddress(address)
         else {
           val provider = originalSystem.provider
-          path.toSerializationFormatWithAddress(provider
-                .getExternalAddressFor(address)
-                .getOrElse(provider.getDefaultAddress))
+          path.toSerializationFormatWithAddress(
+            provider
+              .getExternalAddressFor(address)
+              .getOrElse(provider.getDefaultAddress)
+          )
         }
     }
   }
@@ -93,7 +99,7 @@ class Serialization(val system: ExtendedActorSystem) extends Extension {
   import Serialization._
 
   val settings = new Settings(system.settings.config)
-  val log = Logging(system, getClass.getName)
+  val log      = Logging(system, getClass.getName)
 
   /**
     * Serializes the given AnyRef/java.lang.Object according to the Serialization configuration
@@ -107,16 +113,21 @@ class Serialization(val system: ExtendedActorSystem) extends Extension {
     * using the optional type hint to the Serializer.
     * Returns either the resulting object or an Exception if one was thrown.
     */
-  def deserialize[T](bytes: Array[Byte],
-                     serializerId: Int,
-                     clazz: Option[Class[_ <: T]]): Try[T] =
+  def deserialize[T](
+      bytes: Array[Byte],
+      serializerId: Int,
+      clazz: Option[Class[_ <: T]]
+  ): Try[T] =
     Try {
-      val serializer = try serializerByIdentity(serializerId) catch {
-        case _: NoSuchElementException ⇒
-          throw new NotSerializableException(
+      val serializer =
+        try serializerByIdentity(serializerId)
+        catch {
+          case _: NoSuchElementException ⇒
+            throw new NotSerializableException(
               s"Cannot find serializer with id [$serializerId]. The most probable reason is that the configuration entry " +
-              "akka.actor.serializers is not in synch between the two systems.")
-      }
+                "akka.actor.serializers is not in synch between the two systems."
+            )
+        }
       serializer.fromBinary(bytes, clazz).asInstanceOf[T]
     }
 
@@ -126,14 +137,20 @@ class Serialization(val system: ExtendedActorSystem) extends Extension {
     * Returns either the resulting object or an Exception if one was thrown.
     */
   def deserialize(
-      bytes: Array[Byte], serializerId: Int, manifest: String): Try[AnyRef] =
+      bytes: Array[Byte],
+      serializerId: Int,
+      manifest: String
+  ): Try[AnyRef] =
     Try {
-      val serializer = try serializerByIdentity(serializerId) catch {
-        case _: NoSuchElementException ⇒
-          throw new NotSerializableException(
+      val serializer =
+        try serializerByIdentity(serializerId)
+        catch {
+          case _: NoSuchElementException ⇒
+            throw new NotSerializableException(
               s"Cannot find serializer with id [$serializerId]. The most probable reason is that the configuration entry " +
-              "akka.actor.serializers is not in synch between the two systems.")
-      }
+                "akka.actor.serializers is not in synch between the two systems."
+            )
+        }
       serializer match {
         case s2: SerializerWithStringManifest ⇒ s2.fromBinary(bytes, manifest)
         case s1 ⇒
@@ -144,7 +161,8 @@ class Serialization(val system: ExtendedActorSystem) extends Extension {
                 s1.fromBinary(bytes, Some(classManifest))
               case Failure(e) ⇒
                 throw new NotSerializableException(
-                    s"Cannot find manifest class [$manifest] for serializer with id [$serializerId].")
+                  s"Cannot find manifest class [$manifest] for serializer with id [$serializerId]."
+                )
             }
           }
       }
@@ -179,33 +197,40 @@ class Serialization(val system: ExtendedActorSystem) extends Extension {
     serializerMap.get(clazz) match {
       case null ⇒ // bindings are ordered from most specific to least specific
         def unique(
-            possibilities: immutable.Seq[(Class[_], Serializer)]): Boolean =
+            possibilities: immutable.Seq[(Class[_], Serializer)]
+        ): Boolean =
           possibilities.size == 1 ||
-          (possibilities forall (_._1 isAssignableFrom possibilities(0)._1)) ||
-          (possibilities forall (_._2 == possibilities(0)._2))
+            (possibilities forall (_._1 isAssignableFrom possibilities(0)._1)) ||
+            (possibilities forall (_._2 == possibilities(0)._2))
 
         val ser = bindings filter { _._1 isAssignableFrom clazz } match {
           case Seq() ⇒
             throw new NotSerializableException(
-                "No configured serialization-bindings for class [%s]" format clazz.getName)
+              "No configured serialization-bindings for class [%s]" format clazz.getName
+            )
           case possibilities ⇒
             if (!unique(possibilities))
-              log.warning("Multiple serializers found for " + clazz +
-                  ", choosing first: " + possibilities)
+              log.warning(
+                "Multiple serializers found for " + clazz +
+                  ", choosing first: " + possibilities
+              )
             possibilities(0)._2
         }
         serializerMap.putIfAbsent(clazz, ser) match {
           case null ⇒
             if (shouldWarnAboutJavaSerializer(clazz, ser)) {
               log.warning(
-                  "Using the default Java serializer for class [{}] which is not recommended because of " +
+                "Using the default Java serializer for class [{}] which is not recommended because of " +
                   "performance implications. Use another serializer or disable this warning using the setting " +
                   "'akka.actor.warn-about-java-serializer-usage'",
-                  clazz.getName)
+                clazz.getName
+              )
             }
-            log.debug("Using serializer[{}] for message [{}]",
-                      ser.getClass.getName,
-                      clazz.getName)
+            log.debug(
+              "Using serializer[{}] for message [{}]",
+              ser.getClass.getName,
+              clazz.getName
+            )
             ser
           case some ⇒ some
         }
@@ -218,8 +243,9 @@ class Serialization(val system: ExtendedActorSystem) extends Extension {
     */
   def serializerOf(serializerFQN: String): Try[Serializer] =
     system.dynamicAccess.createInstanceFor[Serializer](
-        serializerFQN,
-        List(classOf[ExtendedActorSystem] -> system)) recoverWith {
+      serializerFQN,
+      List(classOf[ExtendedActorSystem] -> system)
+    ) recoverWith {
       case _: NoSuchMethodException ⇒
         system.dynamicAccess.createInstanceFor[Serializer](serializerFQN, Nil)
     }
@@ -229,19 +255,19 @@ class Serialization(val system: ExtendedActorSystem) extends Extension {
     * By default always contains the following mapping: "java" -> akka.serialization.JavaSerializer
     */
   private val serializers: Map[String, Serializer] =
-    for ((k: String, v: String) ← settings.Serializers) yield
-      k -> serializerOf(v).get
+    for ((k: String, v: String) ← settings.Serializers)
+      yield k -> serializerOf(v).get
 
   /**
     *  bindings is a Seq of tuple representing the mapping from Class to Serializer.
     *  It is primarily ordered by the most specific classes first, and secondly in the configured order.
     */
   private[akka] val bindings: immutable.Seq[ClassSerializer] = sort(
-      for ((k: String, v: String) ← settings.SerializationBindings
-                                       if v != "none" &&
-                                   checkGoogleProtobuf(k)) yield
-        (system.dynamicAccess.getClassFor[Any](k).get, serializers(v)))
-    .to[immutable.Seq]
+    for ((k: String, v: String) ← settings.SerializationBindings
+         if v != "none" &&
+           checkGoogleProtobuf(k))
+      yield (system.dynamicAccess.getClassFor[Any](k).get, serializers(v))
+  ).to[immutable.Seq]
 
   // com.google.protobuf serialization binding is only used if the class can be loaded,
   // i.e. com.google.protobuf dependency has been added in the application project.
@@ -249,18 +275,19 @@ class Serialization(val system: ExtendedActorSystem) extends Extension {
   // include "com.google.protobuf.GeneratedMessage" = proto in configured serialization-bindings.
   private def checkGoogleProtobuf(className: String): Boolean =
     (!className.startsWith("com.google.protobuf") ||
-        system.dynamicAccess.getClassFor[Any](className).isSuccess)
+      system.dynamicAccess.getClassFor[Any](className).isSuccess)
 
   /**
     * Sort so that subtypes always precede their supertypes, but without
     * obeying any order between unrelated subtypes (insert sort).
     */
   private def sort(
-      in: Iterable[ClassSerializer]): immutable.Seq[ClassSerializer] =
-    ( (new ArrayBuffer[ClassSerializer](in.size) /: in) { (buf, ca) ⇒
+      in: Iterable[ClassSerializer]
+  ): immutable.Seq[ClassSerializer] =
+    ((new ArrayBuffer[ClassSerializer](in.size) /: in) { (buf, ca) ⇒
       buf.indexWhere(_._1 isAssignableFrom ca._1) match {
         case -1 ⇒ buf append ca
-        case x ⇒ buf insert (x, ca)
+        case x  ⇒ buf insert (x, ca)
       }
       buf
     }).to[immutable.Seq]
@@ -286,10 +313,11 @@ class Serialization(val system: ExtendedActorSystem) extends Extension {
     settings.config.getBoolean("akka.actor.warn-about-java-serializer-usage")
 
   private def shouldWarnAboutJavaSerializer(
-      serializedClass: Class[_], serializer: Serializer) = {
+      serializedClass: Class[_],
+      serializer: Serializer
+  ) =
     isJavaSerializationWarningEnabled &&
-    serializer.isInstanceOf[JavaSerializer] &&
-    !serializedClass.getName.startsWith("akka.") &&
-    !serializedClass.getName.startsWith("java.lang.")
-  }
+      serializer.isInstanceOf[JavaSerializer] &&
+      !serializedClass.getName.startsWith("akka.") &&
+      !serializedClass.getName.startsWith("java.lang.")
 }

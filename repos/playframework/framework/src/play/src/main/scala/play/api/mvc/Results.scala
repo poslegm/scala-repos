@@ -26,22 +26,30 @@ import scala.collection.immutable.TreeMap
   * @param reasonPhrase the human-readable description of status, e.g. "Ok";
   *   if None, the default phrase for the status will be used
   */
-final class ResponseHeader(val status: Int,
-                           _headers: Map[String, String] = Map.empty,
-                           val reasonPhrase: Option[String] = None) {
-  private[play] def this(status: Int,
-                         _headers: java.util.Map[String, String],
-                         reasonPhrase: Option[String]) =
-    this(status,
-         collection.JavaConversions.mapAsScalaMap(_headers).toMap,
-         reasonPhrase)
+final class ResponseHeader(
+    val status: Int,
+    _headers: Map[String, String] = Map.empty,
+    val reasonPhrase: Option[String] = None
+) {
+  private[play] def this(
+      status: Int,
+      _headers: java.util.Map[String, String],
+      reasonPhrase: Option[String]
+  ) =
+    this(
+      status,
+      collection.JavaConversions.mapAsScalaMap(_headers).toMap,
+      reasonPhrase
+    )
 
   val headers: Map[String, String] =
     TreeMap[String, String]()(CaseInsensitiveOrdered) ++ _headers
 
-  def copy(status: Int = status,
-           headers: Map[String, String] = headers,
-           reasonPhrase: Option[String] = reasonPhrase): ResponseHeader =
+  def copy(
+      status: Int = status,
+      headers: Map[String, String] = headers,
+      reasonPhrase: Option[String] = reasonPhrase
+  ): ResponseHeader =
     new ResponseHeader(status, headers, reasonPhrase)
 
   override def toString = s"$status, $headers"
@@ -59,12 +67,15 @@ object ResponseHeader {
     .withLocale(java.util.Locale.ENGLISH)
     .withZone(DateTimeZone.UTC)
 
-  def apply(status: Int,
-            headers: Map[String, String] = Map.empty,
-            reasonPhrase: Option[String] = None): ResponseHeader =
+  def apply(
+      status: Int,
+      headers: Map[String, String] = Map.empty,
+      reasonPhrase: Option[String] = None
+  ): ResponseHeader =
     new ResponseHeader(status, headers)
   def unapply(
-      rh: ResponseHeader): Option[(Int, Map[String, String], Option[String])] =
+      rh: ResponseHeader
+  ): Option[(Int, Map[String, String], Option[String])] =
     if (rh eq null) None else Some((rh.status, rh.headers, rh.reasonPhrase))
 }
 
@@ -87,22 +98,19 @@ case class Result(header: ResponseHeader, body: HttpEntity) {
     * @param headers the headers to add to this result.
     * @return the new result
     */
-  def withHeaders(headers: (String, String)*): Result = {
+  def withHeaders(headers: (String, String)*): Result =
     copy(header = header.copy(headers = header.headers ++ headers))
-  }
 
   /**
     * Add a header with a DateTime formatted using the default http date format
     * @param headers the headers with a DateTime to add to this result.
     * @return the new result.
     */
-  def withDateHeaders(headers: (String, DateTime)*): Result = {
-    copy(
-        header = header.copy(headers = header.headers ++ headers.map {
+  def withDateHeaders(headers: (String, DateTime)*): Result =
+    copy(header = header.copy(headers = header.headers ++ headers.map {
       case (name, dateTime) =>
         (name, ResponseHeader.httpDateFormat.print(dateTime.getMillis))
     }))
-  }
 
   /**
     * Adds cookies to this result. If the result already contains
@@ -116,14 +124,16 @@ case class Result(header: ResponseHeader, body: HttpEntity) {
     * @param cookies the cookies to add to this result
     * @return the new result
     */
-  def withCookies(cookies: Cookie*): Result = {
+  def withCookies(cookies: Cookie*): Result =
     if (cookies.isEmpty) this
     else {
       withHeaders(
-          SET_COOKIE -> Cookies.mergeSetCookieHeader(
-              header.headers.getOrElse(SET_COOKIE, ""), cookies))
+        SET_COOKIE -> Cookies.mergeSetCookieHeader(
+          header.headers.getOrElse(SET_COOKIE, ""),
+          cookies
+        )
+      )
     }
-  }
 
   /**
     * Discards cookies along this result.
@@ -136,11 +146,13 @@ case class Result(header: ResponseHeader, body: HttpEntity) {
     * @param cookies the cookies to discard along to this result
     * @return the new result
     */
-  def discardingCookies(cookies: DiscardingCookie*): Result = {
+  def discardingCookies(cookies: DiscardingCookie*): Result =
     withHeaders(
-        SET_COOKIE -> Cookies.mergeSetCookieHeader(
-            header.headers.getOrElse(SET_COOKIE, ""), cookies.map(_.toCookie)))
-  }
+      SET_COOKIE -> Cookies.mergeSetCookieHeader(
+        header.headers.getOrElse(SET_COOKIE, ""),
+        cookies.map(_.toCookie)
+      )
+    )
 
   /**
     * Sets a new session for this result.
@@ -153,10 +165,9 @@ case class Result(header: ResponseHeader, body: HttpEntity) {
     * @param session the session to set with this result
     * @return the new result
     */
-  def withSession(session: Session): Result = {
+  def withSession(session: Session): Result =
     if (session.isEmpty) discardingCookies(Session.discard)
     else withCookies(Session.encodeAsCookie(session))
-  }
 
   /**
     * Sets a new session for this result, discarding the existing session.
@@ -238,7 +249,7 @@ case class Result(header: ResponseHeader, body: HttpEntity) {
       .fromCookieHeader(header.headers.get(SET_COOKIE))
       .get(Session.COOKIE_NAME) match {
       case Some(cookie) => Session.decodeFromCookie(Some(cookie))
-      case None => request.session
+      case None         => request.session
     }
 
   /**
@@ -250,8 +261,9 @@ case class Result(header: ResponseHeader, body: HttpEntity) {
     * @param request Current request
     * @return A copy of this result with `values` added to its session scope.
     */
-  def addingToSession(values: (String, String)*)(
-      implicit request: RequestHeader): Result =
+  def addingToSession(
+      values: (String, String)*
+  )(implicit request: RequestHeader): Result =
     withSession(new Session(session.data ++ values.toMap))
 
   /**
@@ -263,22 +275,22 @@ case class Result(header: ResponseHeader, body: HttpEntity) {
     * @param request Current request
     * @return A copy of this result with `keys` removed from its session scope.
     */
-  def removingFromSession(keys: String*)(
-      implicit request: RequestHeader): Result =
+  def removingFromSession(
+      keys: String*
+  )(implicit request: RequestHeader): Result =
     withSession(new Session(session.data -- keys))
 
-  override def toString = {
+  override def toString =
     "Result(" + header + ")"
-  }
 
   /**
     * Returns true if the status code is not 3xx and the application is in Dev mode.
     */
-  private def shouldWarnIfNotRedirect(flash: Flash): Boolean = {
+  private def shouldWarnIfNotRedirect(flash: Flash): Boolean =
     play.api.Play.privateMaybeApplication.exists(app =>
-          (app.mode == play.api.Mode.Dev) && (!flash.isEmpty) &&
-          (header.status < 300 || header.status > 399))
-  }
+      (app.mode == play.api.Mode.Dev) && (!flash.isEmpty) &&
+        (header.status < 300 || header.status > 399)
+    )
 
   /**
     * Logs a redirect warning.
@@ -287,7 +299,9 @@ case class Result(header: ResponseHeader, body: HttpEntity) {
     val status = header.status
     play.api
       .Logger("play")
-      .warn(s"You are using status code '$status' with $methodName, which should only be used with a redirect status!")
+      .warn(
+        s"You are using status code '$status' with $methodName, which should only be used with a redirect status!"
+      )
   }
 
   /**
@@ -303,7 +317,9 @@ case class Result(header: ResponseHeader, body: HttpEntity) {
   * @param encode The transformation function.
   */
 case class Codec(charset: String)(
-    val encode: String => ByteString, val decode: ByteString => String)
+    val encode: String => ByteString,
+    val decode: ByteString => String
+)
 
 /**
   * Default Codec support.
@@ -314,8 +330,10 @@ object Codec {
     * Create a Codec from an encoding already supported by the JVM.
     */
   def javaSupported(charset: String) =
-    Codec(charset)(str => ByteString.apply(str, charset),
-                   bytes => bytes.decodeString(charset))
+    Codec(charset)(
+      str => ByteString.apply(str, charset),
+      bytes => bytes.decodeString(charset)
+    )
 
   /**
     * Codec for UTF-8
@@ -336,7 +354,8 @@ trait LegacyI18nSupport {
     * This class exists only for backward compatibility.
     */
   implicit class ResultWithLang(result: Result)(
-      implicit messagesApi: MessagesApi) {
+      implicit messagesApi: MessagesApi
+  ) {
 
     /**
       * Sets the user's language permanently for future requests by storing it in a cookie.
@@ -387,42 +406,46 @@ trait Results {
     */
   class Status(status: Int)
       extends Result(
-          header = ResponseHeader(status), body = HttpEntity.NoEntity) {
+        header = ResponseHeader(status),
+        body = HttpEntity.NoEntity
+      ) {
 
     /**
       * Set the result's content.
       *
       * @param content The content to send.
       */
-    def apply[C](content: C)(implicit writeable: Writeable[C]): Result = {
+    def apply[C](content: C)(implicit writeable: Writeable[C]): Result =
       Result(
-          header,
-          writeable.toEntity(content)
+        header,
+        writeable.toEntity(content)
       )
-    }
 
-    private def streamFile(file: Source[ByteString, _],
-                           name: String,
-                           length: Long,
-                           inline: Boolean): Result = {
+    private def streamFile(
+        file: Source[ByteString, _],
+        name: String,
+        length: Long,
+        inline: Boolean
+    ): Result =
       Result(
-          ResponseHeader(status,
-                         Map(
-                             CONTENT_DISPOSITION -> {
-                               val dispositionType =
-                                 if (inline) "inline" else "attachment"
-                               dispositionType + "; filename=\"" + name + "\""
-                             }
-                         )),
-          HttpEntity.Streamed(
-              file,
-              Some(length),
-              play.api.libs.MimeTypes
-                .forFileName(name)
-                .orElse(Some(play.api.http.ContentTypes.BINARY))
-            )
+        ResponseHeader(
+          status,
+          Map(
+            CONTENT_DISPOSITION -> {
+              val dispositionType =
+                if (inline) "inline" else "attachment"
+              dispositionType + "; filename=\"" + name + "\""
+            }
+          )
+        ),
+        HttpEntity.Streamed(
+          file,
+          Some(length),
+          play.api.libs.MimeTypes
+            .forFileName(name)
+            .orElse(Some(play.api.http.ContentTypes.BINARY))
         )
-    }
+      )
 
     /**
       * Send a file.
@@ -431,16 +454,20 @@ trait Results {
       * @param inline Use Content-Disposition inline or attachment.
       * @param fileName Function to retrieve the file name. By default the name of the file is used.
       */
-    def sendFile(content: java.io.File,
-                 inline: Boolean = false,
-                 fileName: java.io.File => String = _.getName,
-                 onClose: () => Unit = () => ()): Result = {
-      streamFile(StreamConverters.fromInputStream(
-                     () => Files.newInputStream(content.toPath)),
-                 fileName(content),
-                 content.length,
-                 inline)
-    }
+    def sendFile(
+        content: java.io.File,
+        inline: Boolean = false,
+        fileName: java.io.File => String = _.getName,
+        onClose: () => Unit = () => ()
+    ): Result =
+      streamFile(
+        StreamConverters.fromInputStream(() =>
+          Files.newInputStream(content.toPath)
+        ),
+        fileName(content),
+        content.length,
+        inline
+      )
 
     /**
       * Send a file.
@@ -449,16 +476,18 @@ trait Results {
       * @param inline Use Content-Disposition inline or attachment.
       * @param fileName Function to retrieve the file name. By default the name of the file is used.
       */
-    def sendPath(content: Path,
-                 inline: Boolean = false,
-                 fileName: Path => String = _.getFileName.toString,
-                 onClose: () => Unit = () => ()): Result = {
-      streamFile(StreamConverters.fromInputStream(
-                     () => Files.newInputStream(content)),
-                 fileName(content),
-                 Files.size(content),
-                 inline)
-    }
+    def sendPath(
+        content: Path,
+        inline: Boolean = false,
+        fileName: Path => String = _.getFileName.toString,
+        onClose: () => Unit = () => ()
+    ): Result =
+      streamFile(
+        StreamConverters.fromInputStream(() => Files.newInputStream(content)),
+        fileName(content),
+        Files.size(content),
+        inline
+      )
 
     /**
       * Send the given resource from the given classloader.
@@ -470,13 +499,16 @@ trait Results {
     def sendResource(
         resource: String,
         classLoader: ClassLoader = Results.getClass.getClassLoader,
-        inline: Boolean = true): Result = {
-      val stream = classLoader.getResourceAsStream(resource)
+        inline: Boolean = true
+    ): Result = {
+      val stream   = classLoader.getResourceAsStream(resource)
       val fileName = resource.split('/').last
-      streamFile(StreamConverters.fromInputStream(() => stream),
-                 fileName,
-                 stream.available(),
-                 inline)
+      streamFile(
+        StreamConverters.fromInputStream(() => stream),
+        fileName,
+        stream.available(),
+        inline
+      )
     }
 
     /**
@@ -490,15 +522,16 @@ trait Results {
       *
       * @param content Source providing the content to stream.
       */
-    def chunked[C](content: Source[C, _])(
-        implicit writeable: Writeable[C]): Result = {
+    def chunked[C](
+        content: Source[C, _]
+    )(implicit writeable: Writeable[C]): Result =
       Result(
-          header = header,
-          body = HttpEntity.Chunked(
-                content.map(c => HttpChunk.Chunk(writeable.transform(c))),
-                writeable.contentType)
+        header = header,
+        body = HttpEntity.Chunked(
+          content.map(c => HttpChunk.Chunk(writeable.transform(c))),
+          writeable.contentType
+        )
       )
-    }
 
     /**
       * Feed the content as the response, using chunked transfer encoding.
@@ -512,10 +545,10 @@ trait Results {
       * @param content Enumerator providing the content to stream.
       */
     @deprecated("Use chunked with an Akka streams Source instead", "2.5.0")
-    def chunked[C](content: Enumerator[C])(
-        implicit writeable: Writeable[C]): Result = {
+    def chunked[C](
+        content: Enumerator[C]
+    )(implicit writeable: Writeable[C]): Result =
       chunked(Source.fromPublisher(Streams.enumeratorToPublisher(content)))
-    }
 
     /**
       * Feed the content as the response, closing the connection when done.
@@ -523,28 +556,28 @@ trait Results {
       * @param content Enumerator providing the content to stream.
       */
     @deprecated("Use sendEntity with a Streamed entity instead", "2.5.0")
-    def feed[C](content: Enumerator[C])(
-        implicit writeable: Writeable[C]): Result = {
+    def feed[C](
+        content: Enumerator[C]
+    )(implicit writeable: Writeable[C]): Result =
       Result(
-          header = header,
-          body = HttpEntity.Streamed(
-                Source
-                  .fromPublisher(Streams.enumeratorToPublisher(content))
-                  .map(writeable.transform),
-                None,
-                writeable.contentType)
+        header = header,
+        body = HttpEntity.Streamed(
+          Source
+            .fromPublisher(Streams.enumeratorToPublisher(content))
+            .map(writeable.transform),
+          None,
+          writeable.contentType
+        )
       )
-    }
 
     /**
       * Send an HTTP entity with this status.
       */
-    def sendEntity(entity: HttpEntity): Result = {
+    def sendEntity(entity: HttpEntity): Result =
       Result(
-          header = header,
-          body = entity
+        header = header,
+        body = entity
       )
-    }
   }
 
   /** Generates a ‘200 OK’ result. */
@@ -560,12 +593,12 @@ trait Results {
   val NonAuthoritativeInformation = new Status(NON_AUTHORITATIVE_INFORMATION)
 
   /** Generates a ‘204 NO_CONTENT’ result. */
-  val NoContent = Result(
-      header = ResponseHeader(NO_CONTENT), body = HttpEntity.NoEntity)
+  val NoContent =
+    Result(header = ResponseHeader(NO_CONTENT), body = HttpEntity.NoEntity)
 
   /** Generates a ‘205 RESET_CONTENT’ result. */
-  val ResetContent = Result(
-      header = ResponseHeader(RESET_CONTENT), body = HttpEntity.NoEntity)
+  val ResetContent =
+    Result(header = ResponseHeader(RESET_CONTENT), body = HttpEntity.NoEntity)
 
   /** Generates a ‘206 PARTIAL_CONTENT’ result. */
   val PartialContent = new Status(PARTIAL_CONTENT)
@@ -595,8 +628,8 @@ trait Results {
   def SeeOther(url: String): Result = Redirect(url, SEE_OTHER)
 
   /** Generates a ‘304 NOT_MODIFIED’ result. */
-  val NotModified = Result(
-      header = ResponseHeader(NOT_MODIFIED), body = HttpEntity.NoEntity)
+  val NotModified =
+    Result(header = ResponseHeader(NOT_MODIFIED), body = HttpEntity.NoEntity)
 
   /**
     * Generates a ‘307 TEMPORARY_REDIRECT’ simple result.
@@ -719,19 +752,23 @@ trait Results {
     * @param queryString queryString parameters to add to the queryString
     * @param status HTTP status for redirect, such as SEE_OTHER, MOVED_TEMPORARILY or MOVED_PERMANENTLY
     */
-  def Redirect(url: String,
-               queryString: Map[String, Seq[String]] = Map.empty,
-               status: Int = SEE_OTHER) = {
+  def Redirect(
+      url: String,
+      queryString: Map[String, Seq[String]] = Map.empty,
+      status: Int = SEE_OTHER
+  ) = {
     import java.net.URLEncoder
     val fullUrl =
       url + Option(queryString)
         .filterNot(_.isEmpty)
         .map { params =>
-          (if (url.contains("?")) "&" else "?") + params.toSeq.flatMap {
-            pair =>
-              pair._2.map(
-                  value => (pair._1 + "=" + URLEncoder.encode(value, "utf-8")))
-          }.mkString("&")
+          (if (url.contains("?")) "&" else "?") + params.toSeq
+            .flatMap { pair =>
+              pair._2.map(value =>
+                (pair._1 + "=" + URLEncoder.encode(value, "utf-8"))
+              )
+            }
+            .mkString("&")
         }
         .getOrElse("")
     Status(status).withHeaders(LOCATION -> fullUrl)

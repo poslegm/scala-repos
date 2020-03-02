@@ -52,10 +52,9 @@ object PublishDateExtractor extends Logging {
   /**
     * Helper function to return the minimum of two non-null Java Dates.
     */
-  def minDate(lhs: java.util.Date, rhs: java.util.Date): java.util.Date = {
+  def minDate(lhs: java.util.Date, rhs: java.util.Date): java.util.Date =
     if (lhs.getTime < rhs.getTime) lhs
     else rhs
-  }
 
   /**
     * Helper function to parse ISO 8601 date/time strings safely.
@@ -65,14 +64,16 @@ object PublishDateExtractor extends Logging {
 
     try {
       Option(
-          datatypeFactory
-            .newXMLGregorianCalendar(txt)
-            .toGregorianCalendar
-            .getTime)
+        datatypeFactory
+          .newXMLGregorianCalendar(txt)
+          .toGregorianCalendar
+          .getTime
+      )
     } catch {
       case ex: Exception =>
         info(
-            s"`$txt` could not be parsed to date as it did not meet the ISO 8601 spec")
+          s"`$txt` could not be parsed to date as it did not meet the ISO 8601 spec"
+        )
         None
     }
   }

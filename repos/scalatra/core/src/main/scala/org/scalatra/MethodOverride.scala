@@ -1,6 +1,10 @@
 package org.scalatra
 
-import javax.servlet.http.{HttpServletRequest, HttpServletRequestWrapper, HttpServletResponse}
+import javax.servlet.http.{
+  HttpServletRequest,
+  HttpServletRequestWrapper,
+  HttpServletResponse
+}
 
 import org.scalatra.servlet.ServletApiImplicits
 
@@ -11,9 +15,9 @@ object MethodOverride {
   val ParamName: String = "_method"
 
   val HeaderName: SortedSet[String] = SortedSet(
-      "X-HTTP-METHOD-OVERRIDE",
-      "X-HTTP-METHOD",
-      "X-METHOD-OVERRIDE"
+    "X-HTTP-METHOD-OVERRIDE",
+    "X-HTTP-METHOD",
+    "X-METHOD-OVERRIDE"
   )
 }
 
@@ -25,7 +29,9 @@ object MethodOverride {
 trait MethodOverride extends Handler with ServletApiImplicits {
 
   abstract override def handle(
-      req: HttpServletRequest, res: HttpServletResponse): Unit = {
+      req: HttpServletRequest,
+      res: HttpServletResponse
+  ): Unit = {
     val req2 = req.requestMethod match {
       case Post =>
         new HttpServletRequestWrapper(req) {
@@ -45,7 +51,7 @@ trait MethodOverride extends Handler with ServletApiImplicits {
       val headerKeyOpt = headers.keys.find {
         HeaderName contains _.toUpperCase()
       }
-      headerKeyOpt.flatMap { req.headers get _ }
+      headerKeyOpt.flatMap(req.headers get _)
     }
   }
 }

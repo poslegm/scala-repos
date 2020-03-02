@@ -29,9 +29,9 @@ package object math {
     */
   def random(): Double = java.lang.Math.random()
 
-  def sin(x: Double): Double = java.lang.Math.sin(x)
-  def cos(x: Double): Double = java.lang.Math.cos(x)
-  def tan(x: Double): Double = java.lang.Math.tan(x)
+  def sin(x: Double): Double  = java.lang.Math.sin(x)
+  def cos(x: Double): Double  = java.lang.Math.cos(x)
+  def tan(x: Double): Double  = java.lang.Math.tan(x)
   def asin(x: Double): Double = java.lang.Math.asin(x)
   def acos(x: Double): Double = java.lang.Math.acos(x)
   def atan(x: Double): Double = java.lang.Math.atan(x)
@@ -68,7 +68,7 @@ package object math {
   def log(x: Double): Double = java.lang.Math.log(x)
 
   /** Returns the square root of a `double` value.
-    * 
+    *
     * @param  x the number to take the square root of
     * @return the value √x
     */
@@ -76,7 +76,7 @@ package object math {
   def IEEEremainder(x: Double, y: Double): Double =
     java.lang.Math.IEEEremainder(x, y)
 
-  def ceil(x: Double): Double = java.lang.Math.ceil(x)
+  def ceil(x: Double): Double  = java.lang.Math.ceil(x)
   def floor(x: Double): Double = java.lang.Math.floor(x)
 
   /** Returns the `double` value that is closest in value to the
@@ -109,8 +109,9 @@ package object math {
 
   /** There is no reason to round a `Long`, but this method prevents unintended conversion to `Float` followed by rounding to `Int`. */
   @deprecated(
-      "This is an integer type; there is no reason to round it.  Perhaps you meant to call this with a floating-point value?",
-      "2.11.0")
+    "This is an integer type; there is no reason to round it.  Perhaps you meant to call this with a floating-point value?",
+    "2.11.0"
+  )
   def round(x: Long): Long = x
 
   /** Returns the closest `Int` to the argument.
@@ -127,19 +128,19 @@ package object math {
     */
   def round(x: Double): Long = java.lang.Math.round(x)
 
-  def abs(x: Int): Int = java.lang.Math.abs(x)
-  def abs(x: Long): Long = java.lang.Math.abs(x)
-  def abs(x: Float): Float = java.lang.Math.abs(x)
+  def abs(x: Int): Int       = java.lang.Math.abs(x)
+  def abs(x: Long): Long     = java.lang.Math.abs(x)
+  def abs(x: Float): Float   = java.lang.Math.abs(x)
   def abs(x: Double): Double = java.lang.Math.abs(x)
 
-  def max(x: Int, y: Int): Int = java.lang.Math.max(x, y)
-  def max(x: Long, y: Long): Long = java.lang.Math.max(x, y)
-  def max(x: Float, y: Float): Float = java.lang.Math.max(x, y)
+  def max(x: Int, y: Int): Int          = java.lang.Math.max(x, y)
+  def max(x: Long, y: Long): Long       = java.lang.Math.max(x, y)
+  def max(x: Float, y: Float): Float    = java.lang.Math.max(x, y)
   def max(x: Double, y: Double): Double = java.lang.Math.max(x, y)
 
-  def min(x: Int, y: Int): Int = java.lang.Math.min(x, y)
-  def min(x: Long, y: Long): Long = java.lang.Math.min(x, y)
-  def min(x: Float, y: Float): Float = java.lang.Math.min(x, y)
+  def min(x: Int, y: Int): Int          = java.lang.Math.min(x, y)
+  def min(x: Long, y: Long): Long       = java.lang.Math.min(x, y)
+  def min(x: Float, y: Float): Float    = java.lang.Math.min(x, y)
   def min(x: Double, y: Double): Double = java.lang.Math.min(x, y)
 
   /** Note that these are not pure forwarders to the java versions.
@@ -147,9 +148,9 @@ package object math {
     *  but here it is widened to Long so that each overloaded variant
     *  will return the same numeric type it is passed.
     */
-  def signum(x: Int): Int = java.lang.Integer.signum(x)
-  def signum(x: Long): Long = java.lang.Long.signum(x)
-  def signum(x: Float): Float = java.lang.Math.signum(x)
+  def signum(x: Int): Int       = java.lang.Integer.signum(x)
+  def signum(x: Long): Long     = java.lang.Long.signum(x)
+  def signum(x: Float): Float   = java.lang.Math.signum(x)
   def signum(x: Double): Double = java.lang.Math.signum(x)
 
   // -----------------------------------------------------------------------

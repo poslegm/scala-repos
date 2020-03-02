@@ -26,8 +26,8 @@ class AnnouncerNotFoundException(scheme: String)
   * libraries on the classpath with conflicting scheme definitions.
   */
 class MultipleAnnouncersPerSchemeException(
-    announcers: Map[String, Seq[Announcer]])
-    extends NoStacktrace {
+    announcers: Map[String, Seq[Announcer]]
+) extends NoStacktrace {
   override def getMessage = {
     val msgs =
       announcers map {
@@ -64,14 +64,14 @@ trait Announcer {
 object Announcer {
   private[this] lazy val announcers = {
     val announcers = LoadService[Announcer]()
-    val log = Logger.getLogger(getClass.getName)
+    val log        = Logger.getLogger(getClass.getName)
 
     val dups =
       announcers groupBy (_.scheme) filter { case (_, rs) => rs.size > 1 }
     if (dups.size > 0) throw new MultipleAnnouncersPerSchemeException(dups)
 
-    for (r <- announcers) log.info(
-        "Announcer[%s] = %s(%s)".format(r.scheme, r.getClass.getName, r))
+    for (r <- announcers)
+      log.info("Announcer[%s] = %s(%s)".format(r.scheme, r.getClass.getName, r))
     announcers
   }
 
@@ -82,14 +82,14 @@ object Announcer {
 
   private[this] val _announcements =
     mutable.Set[(InetSocketAddress, List[String])]()
-  def announcements = synchronized { _announcements.toSet }
+  def announcements = synchronized(_announcements.toSet)
 
   def announce(addr: InetSocketAddress, forum: String): Future[Announcement] = {
     val announcement = forum.split("!", 2) match {
       case Array(scheme, name) =>
         announcers.find(_.scheme == scheme) match {
           case Some(announcer) => announcer.announce(addr, name)
-          case None => Future.exception(new AnnouncerNotFoundException(scheme))
+          case None            => Future.exception(new AnnouncerNotFoundException(scheme))
         }
 
       case _ =>
@@ -99,13 +99,13 @@ object Announcer {
     announcement map { ann =>
       val lastForums = ann match {
         case a: ProxyAnnouncement => a.forums
-        case _ => Nil
+        case _                    => Nil
       }
 
       val proxyAnnouncement = new ProxyAnnouncement {
-        val self = ann
+        val self         = ann
         def unannounce() = ann.unannounce()
-        val forums = forum :: lastForums
+        val forums       = forum :: lastForums
       }
 
       synchronized {

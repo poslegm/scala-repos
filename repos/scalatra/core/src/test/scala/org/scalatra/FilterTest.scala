@@ -6,13 +6,13 @@ import org.scalatra.test.scalatest.ScalatraFunSuite
 class ScalatraExpectedFilterException extends RuntimeException
 class FilterTestServlet extends ScalatraServlet {
   var beforeCount = 0
-  var afterCount = 0
+  var afterCount  = 0
 
   before() {
     beforeCount += 1
     params.get("before") match {
       case Some(x) => response.getWriter.write(x)
-      case None =>
+      case None    =>
     }
   }
 
@@ -93,13 +93,13 @@ class FilterTest extends ScalatraFunSuite with BeforeAndAfterEach {
   }
 
   test("before is called exactly once per request to a servlet") {
-    get("/before-counter") { body should equal("1") }
-    get("/before-counter") { body should equal("2") }
+    get("/before-counter")(body should equal("1"))
+    get("/before-counter")(body should equal("2"))
   }
 
   test("before is called exactly once per request to a filter") {
-    get("/before-counter") { header("filterBeforeCount") should equal("1") }
-    get("/before-counter") { header("filterBeforeCount") should equal("2") }
+    get("/before-counter")(header("filterBeforeCount") should equal("1"))
+    get("/before-counter")(header("filterBeforeCount") should equal("2"))
   }
 
   test("before is called when route is not found") {
@@ -125,8 +125,8 @@ class FilterTest extends ScalatraFunSuite with BeforeAndAfterEach {
   }
 
   test("after is called exactly once per request") {
-    get("/after-counter") { body should equal("1") }
-    get("/after-counter") { body should equal("2") }
+    get("/after-counter")(body should equal("1"))
+    get("/after-counter")(body should equal("2"))
   }
 
   test("after is called when route is not found") {

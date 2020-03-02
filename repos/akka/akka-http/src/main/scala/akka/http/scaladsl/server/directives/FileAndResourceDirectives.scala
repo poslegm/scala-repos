@@ -31,8 +31,9 @@ trait FileAndResourceDirectives {
     * Completes GET requests with the content of the given file.
     * If the file cannot be found or read the request is rejected.
     */
-  def getFromFile(fileName: String)(
-      implicit resolver: ContentTypeResolver): Route =
+  def getFromFile(
+      fileName: String
+  )(implicit resolver: ContentTypeResolver): Route =
     getFromFile(new File(fileName))
 
   /**
@@ -55,44 +56,50 @@ trait FileAndResourceDirectives {
               settings ⇒
                 complete {
                   HttpEntity.Default(
-                      contentType,
-                      file.length,
-                      FileIO
-                        .fromFile(file)
-                        .withAttributes(ActorAttributes.dispatcher(
-                                settings.fileIODispatcher)))
+                    contentType,
+                    file.length,
+                    FileIO
+                      .fromFile(file)
+                      .withAttributes(
+                        ActorAttributes.dispatcher(settings.fileIODispatcher)
+                      )
+                  )
                 }
             }
           } else complete(HttpEntity.Empty)
-        } else reject
+        }
+      else reject
     }
 
   private def conditionalFor(length: Long, lastModified: Long): Directive0 =
-    extractSettings.flatMap(
-        settings ⇒
-          if (settings.fileGetConditional) {
+    extractSettings.flatMap(settings ⇒
+      if (settings.fileGetConditional) {
         val tag = java.lang.Long
           .toHexString(lastModified ^ java.lang.Long.reverse(length))
         val lastModifiedDateTime =
           DateTime(math.min(lastModified, System.currentTimeMillis))
         conditional(EntityTag(tag), lastModifiedDateTime)
-      } else pass)
+      } else pass
+    )
 
   /**
     * Completes GET requests with the content of the given class-path resource.
     * If the resource cannot be found or read the Route rejects the request.
     */
-  def getFromResource(resourceName: String)(
-      implicit resolver: ContentTypeResolver): Route =
+  def getFromResource(
+      resourceName: String
+  )(implicit resolver: ContentTypeResolver): Route =
     getFromResource(resourceName, resolver(resourceName))
 
   /**
     * Completes GET requests with the content of the given resource.
     * If the resource is a directory or cannot be found or read the Route rejects the request.
     */
-  def getFromResource(resourceName: String,
-                      contentType: ContentType,
-                      classLoader: ClassLoader = defaultClassLoader): Route =
+  def getFromResource(
+      resourceName: String,
+      contentType: ContentType,
+      classLoader: ClassLoader = defaultClassLoader
+  ): Route =
     if (!resourceName.endsWith("/"))
       get {
         Option(classLoader.getResource(resourceName)) flatMap ResourceFile.apply match {
@@ -103,31 +110,36 @@ trait FileAndResourceDirectives {
                   settings ⇒
                     complete {
                       HttpEntity.Default(
-                          contentType,
-                          length,
-                          StreamConverters
-                            .fromInputStream(() ⇒ url.openStream())
-                            .withAttributes(ActorAttributes.dispatcher(
-                                    settings.fileIODispatcher))) // TODO is this needed? It already uses `val inputStreamSource = name("inputStreamSource") and IODispatcher`
+                        contentType,
+                        length,
+                        StreamConverters
+                          .fromInputStream(() ⇒ url.openStream())
+                          .withAttributes(
+                            ActorAttributes
+                              .dispatcher(settings.fileIODispatcher)
+                          )
+                      ) // TODO is this needed? It already uses `val inputStreamSource = name("inputStreamSource") and IODispatcher`
                     }
                 }
               } else complete(HttpEntity.Empty)
             }
           case _ ⇒ reject // not found or directory
         }
-      } else reject // don't serve the content of resource "directories"
+      }
+    else reject // don't serve the content of resource "directories"
 
   /**
     * Completes GET requests with the content of a file underneath the given directory.
     * If the file cannot be read the Route rejects the request.
     */
-  def getFromDirectory(directoryName: String)(
-      implicit resolver: ContentTypeResolver): Route = {
+  def getFromDirectory(
+      directoryName: String
+  )(implicit resolver: ContentTypeResolver): Route = {
     val base = withTrailingSlash(directoryName)
     extractUnmatchedPath { path ⇒
       extractLog { log ⇒
         fileSystemPath(base, path, log) match {
-          case "" ⇒ reject
+          case ""       ⇒ reject
           case fileName ⇒ getFromFile(fileName)
         }
       }
@@ -138,12 +150,13 @@ trait FileAndResourceDirectives {
     * Completes GET requests with a unified listing of the contents of all given directories.
     * The actual rendering of the directory contents is performed by the in-scope `Marshaller[DirectoryListing]`.
     */
-  def listDirectoryContents(directories: String*)(
-      implicit renderer: DirectoryRenderer): Route =
+  def listDirectoryContents(
+      directories: String*
+  )(implicit renderer: DirectoryRenderer): Route =
     get {
       extractRequestContext { ctx ⇒
-        val path = ctx.unmatchedPath
-        val fullPath = ctx.request.uri.path.toString
+        val path          = ctx.unmatchedPath
+        val fullPath      = ctx.request.uri.path.toString
         val matchedLength = fullPath.lastIndexOf(path.toString)
         require(matchedLength >= 0)
         val pathPrefix = fullPath.substring(0, matchedLength)
@@ -163,9 +176,13 @@ trait FileAndResourceDirectives {
 
         if (dirs.isEmpty) reject
         else
-          complete(DirectoryListing(pathPrefix + pathString,
-                                    isRoot = pathString == "/",
-                                    dirs.flatMap(_.listFiles)))
+          complete(
+            DirectoryListing(
+              pathPrefix + pathString,
+              isRoot = pathString == "/",
+              dirs.flatMap(_.listFiles)
+            )
+          )
       }
     }
 
@@ -174,7 +191,8 @@ trait FileAndResourceDirectives {
     */
   def getFromBrowseableDirectory(directory: String)(
       implicit renderer: DirectoryRenderer,
-      resolver: ContentTypeResolver): Route =
+      resolver: ContentTypeResolver
+  ): Route =
     getFromBrowseableDirectories(directory)
 
   /**
@@ -183,10 +201,11 @@ trait FileAndResourceDirectives {
     */
   def getFromBrowseableDirectories(directories: String*)(
       implicit renderer: DirectoryRenderer,
-      resolver: ContentTypeResolver): Route = {
+      resolver: ContentTypeResolver
+  ): Route =
     directories.map(getFromDirectory).reduceLeft(_ ~ _) ~ listDirectoryContents(
-        directories: _*)
-  }
+      directories: _*
+    )
 
   /**
     * Same as "getFromDirectory" except that the file is not fetched from the file system but rather from a
@@ -194,8 +213,9 @@ trait FileAndResourceDirectives {
     * If the requested resource is itself a directory or cannot be found or read the Route rejects the request.
     */
   def getFromResourceDirectory(
-      directoryName: String, classLoader: ClassLoader = defaultClassLoader)(
-      implicit resolver: ContentTypeResolver): Route = {
+      directoryName: String,
+      classLoader: ClassLoader = defaultClassLoader
+  )(implicit resolver: ContentTypeResolver): Route = {
     val base =
       if (directoryName.isEmpty) "" else withTrailingSlash(directoryName)
 
@@ -220,24 +240,29 @@ object FileAndResourceDirectives extends FileAndResourceDirectives {
 
   private def withTrailingSlash(path: String): String =
     if (path endsWith "/") path else path + '/'
-  private def fileSystemPath(base: String,
-                             path: Uri.Path,
-                             log: LoggingAdapter,
-                             separator: Char = File.separatorChar): String = {
+  private def fileSystemPath(
+      base: String,
+      path: Uri.Path,
+      log: LoggingAdapter,
+      separator: Char = File.separatorChar
+  ): String = {
     import java.lang.StringBuilder
-    @tailrec def rec(p: Uri.Path, result: StringBuilder = new StringBuilder(base))
-      : String =
+    @tailrec def rec(
+        p: Uri.Path,
+        result: StringBuilder = new StringBuilder(base)
+    ): String =
       p match {
-        case Uri.Path.Empty ⇒ result.toString
+        case Uri.Path.Empty       ⇒ result.toString
         case Uri.Path.Slash(tail) ⇒ rec(tail, result.append(separator))
         case Uri.Path.Segment(head, tail) ⇒
           if (head.indexOf('/') >= 0 || head == "..") {
             log.warning(
-                "File-system path for base [{}] and Uri.Path [{}] contains suspicious path segment [{}], " +
+              "File-system path for base [{}] and Uri.Path [{}] contains suspicious path segment [{}], " +
                 "GET access was disallowed",
-                base,
-                path,
-                head)
+              base,
+              path,
+              head
+            )
             ""
           } else rec(tail, result.append(head))
       }
@@ -253,10 +278,10 @@ object FileAndResourceDirectives extends FileAndResourceDirectives {
       case "jar" ⇒
         val path =
           new URI(url.getPath).getPath // remove "file:" prefix and normalize whitespace
-        val bangIndex = path.indexOf('!')
-        val filePath = path.substring(0, bangIndex)
+        val bangIndex    = path.indexOf('!')
+        val filePath     = path.substring(0, bangIndex)
         val resourcePath = path.substring(bangIndex + 2)
-        val jar = new java.util.zip.ZipFile(filePath)
+        val jar          = new java.util.zip.ZipFile(filePath)
         try {
           val entry = jar.getEntry(resourcePath)
           Option(jar.getInputStream(entry)) map { is ⇒
@@ -267,9 +292,11 @@ object FileAndResourceDirectives extends FileAndResourceDirectives {
       case _ ⇒
         val conn = url.openConnection()
         try {
-          conn.setUseCaches(false) // otherwise the JDK will keep the connection open when we close!
+          conn.setUseCaches(
+            false
+          ) // otherwise the JDK will keep the connection open when we close!
           val len = conn.getContentLength
-          val lm = conn.getLastModified
+          val lm  = conn.getLastModified
           Some(ResourceFile(url, len, lm))
         } finally conn.getInputStream.close()
     }
@@ -278,23 +305,26 @@ object FileAndResourceDirectives extends FileAndResourceDirectives {
 
   trait DirectoryRenderer {
     def marshaller(
-        renderVanityFooter: Boolean): ToEntityMarshaller[DirectoryListing]
+        renderVanityFooter: Boolean
+    ): ToEntityMarshaller[DirectoryListing]
   }
   trait LowLevelDirectoryRenderer {
     implicit def defaultDirectoryRenderer: DirectoryRenderer =
       new DirectoryRenderer {
-        def marshaller(renderVanityFooter: Boolean)
-          : ToEntityMarshaller[DirectoryListing] =
+        def marshaller(
+            renderVanityFooter: Boolean
+        ): ToEntityMarshaller[DirectoryListing] =
           DirectoryListing.directoryMarshaller(renderVanityFooter)
       }
   }
   object DirectoryRenderer extends LowLevelDirectoryRenderer {
     implicit def liftMarshaller(
-        implicit _marshaller: ToEntityMarshaller[DirectoryListing])
-      : DirectoryRenderer =
+        implicit _marshaller: ToEntityMarshaller[DirectoryListing]
+    ): DirectoryRenderer =
       new DirectoryRenderer {
-        def marshaller(renderVanityFooter: Boolean)
-          : ToEntityMarshaller[DirectoryListing] = _marshaller
+        def marshaller(
+            renderVanityFooter: Boolean
+        ): ToEntityMarshaller[DirectoryListing] = _marshaller
       }
   }
 }
@@ -310,7 +340,8 @@ object ContentTypeResolver {
     * registry of all defined media-types. By default all non-binary file content is assumed to be UTF-8 encoded.
     */
   implicit val Default: ContentTypeResolver = withDefaultCharset(
-      HttpCharsets.`UTF-8`)
+    HttpCharsets.`UTF-8`
+  )
 
   def withDefaultCharset(charset: HttpCharset): ContentTypeResolver =
     new ContentTypeResolver {
@@ -361,11 +392,12 @@ object DirectoryListing {
       |""".stripMarginWithNewline("\n") split '$'
 
   def directoryMarshaller(
-      renderVanityFooter: Boolean): ToEntityMarshaller[DirectoryListing] =
+      renderVanityFooter: Boolean
+  ): ToEntityMarshaller[DirectoryListing] =
     Marshaller.StringMarshaller.wrapWithEC(MediaTypes.`text/html`) {
       implicit ec ⇒ listing ⇒
         val DirectoryListing(path, isRoot, files) = listing
-        val filesAndNames = files.map(file ⇒ file -> file.getName).sortBy(_._2)
+        val filesAndNames                         = files.map(file ⇒ file -> file.getName).sortBy(_._2)
         val deduped = filesAndNames.zipWithIndex.flatMap {
           case (fan @ (file, name), ix) ⇒
             if (ix == 0 || filesAndNames(ix - 1)._2 != name) Some(fan)
@@ -375,8 +407,10 @@ object DirectoryListing {
           deduped.partition(_._1.isDirectory)
         def maxNameLength(seq: Seq[(File, String)]) =
           if (seq.isEmpty) 0 else seq.map(_._2.length).max
-        val maxNameLen = math.max(maxNameLength(directoryFilesAndNames) + 1,
-                                  maxNameLength(fileFilesAndNames))
+        val maxNameLen = math.max(
+          maxNameLength(directoryFilesAndNames) + 1,
+          maxNameLength(fileFilesAndNames)
+        )
         val sb = new java.lang.StringBuilder
         sb.append(html(0))
           .append(path)
@@ -386,8 +420,10 @@ object DirectoryListing {
         if (!isRoot) {
           val secondToLastSlash =
             path.lastIndexOf('/', path.lastIndexOf('/', path.length - 1) - 1)
-          sb.append("<a href=\"%s/\">../</a>\n" format path.substring(
-                  0, secondToLastSlash))
+          sb.append(
+            "<a href=\"%s/\">../</a>\n" format path
+              .substring(0, secondToLastSlash)
+          )
         }
         def lastModified(file: File) =
           DateTime(file.lastModified).toIsoLikeDateTimeString

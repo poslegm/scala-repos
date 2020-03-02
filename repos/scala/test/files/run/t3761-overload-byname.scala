@@ -1,9 +1,9 @@
 class OverTheTop {
-  def info0(m: String) = m + "!"
+  def info0(m: String)             = m + "!"
   def info0(m: String, args: Any*) = m + " " + args.mkString(" ")
 
   // as reported
-  def info1(m: => String) = m + "!"
+  def info1(m: => String)             = m + "!"
   def info1(m: => String, args: Any*) = m + " " + args.mkString(", ")
 
   // @lrytz
@@ -12,7 +12,7 @@ class OverTheTop {
   def m1(x: => Int, s: String) = 0
   def m1(x: => Int, s: Object) = 1
 
-  def m2(x: => Int, s: String) = 0
+  def m2(x: => Int, s: String)    = 0
   def m2(x: => AnyVal, s: Object) = 1
 
   def m3(x: => Int, s: String) = 0

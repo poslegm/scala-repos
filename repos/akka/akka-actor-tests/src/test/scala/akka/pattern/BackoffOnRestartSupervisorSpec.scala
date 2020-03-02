@@ -13,8 +13,8 @@ import scala.language.postfixOps
 
 object TestActor {
   class TestException(msg: String) extends Exception(msg)
-  class StoppingException extends TestException("stopping exception")
-  class NormalException extends TestException("normal exception")
+  class StoppingException          extends TestException("stopping exception")
+  class NormalException            extends TestException("normal exception")
   def props(probe: ActorRef): Props = Props(new TestActor(probe))
 }
 
@@ -23,11 +23,11 @@ class TestActor(probe: ActorRef) extends Actor {
   probe ! "STARTED"
 
   def receive = {
-    case "DIE" ⇒ context.stop(self)
-    case "THROW" ⇒ throw new TestActor.NormalException
+    case "DIE"                      ⇒ context.stop(self)
+    case "THROW"                    ⇒ throw new TestActor.NormalException
     case "THROW_STOPPING_EXCEPTION" ⇒ throw new TestActor.StoppingException
-    case ("TO_PARENT", msg) ⇒ context.parent ! msg
-    case other ⇒ probe ! other
+    case ("TO_PARENT", msg)         ⇒ context.parent ! msg
+    case other                      ⇒ probe ! other
   }
 }
 
@@ -47,11 +47,13 @@ class BackoffOnRestartSupervisorSpec extends AkkaSpec with ImplicitSender {
 
   def supervisorProps(probeRef: ActorRef) = {
     val options = Backoff
-      .onFailure(TestActor.props(probeRef),
-                 "someChildName",
-                 200 millis,
-                 10 seconds,
-                 0.0)
+      .onFailure(
+        TestActor.props(probeRef),
+        "someChildName",
+        200 millis,
+        10 seconds,
+        0.0
+      )
       .withSupervisorStrategy(OneForOneStrategy() {
         case _: TestActor.StoppingException ⇒ SupervisorStrategy.Stop
       })
@@ -59,7 +61,7 @@ class BackoffOnRestartSupervisorSpec extends AkkaSpec with ImplicitSender {
   }
 
   trait Setup {
-    val probe = TestProbe()
+    val probe      = TestProbe()
     val supervisor = system.actorOf(supervisorProps(probe.ref))
     probe.expectMsg("STARTED")
   }
@@ -67,7 +69,8 @@ class BackoffOnRestartSupervisorSpec extends AkkaSpec with ImplicitSender {
   trait Setup2 {
     val probe = TestProbe()
     val parent = system.actorOf(
-        TestParentActor.props(probe.ref, supervisorProps(probe.ref)))
+      TestParentActor.props(probe.ref, supervisorProps(probe.ref))
+    )
     probe.expectMsg("STARTED")
     val child = probe.lastSender
   }
@@ -133,19 +136,20 @@ class BackoffOnRestartSupervisorSpec extends AkkaSpec with ImplicitSender {
           sender ! "PONG"
       }
 
-      override def postStop(): Unit = {
+      override def postStop(): Unit =
         latch.await(3, TimeUnit.SECONDS)
-      }
     }
 
     "accept commands while child is terminating" in {
       val postStopLatch = new CountDownLatch(1)
       val options = Backoff
-        .onFailure(Props(new SlowlyFailingActor(postStopLatch)),
-                   "someChildName",
-                   1 nanos,
-                   1 nanos,
-                   0.0)
+        .onFailure(
+          Props(new SlowlyFailingActor(postStopLatch)),
+          "someChildName",
+          1 nanos,
+          1 nanos,
+          0.0
+        )
         .withSupervisorStrategy(OneForOneStrategy(loggingEnabled = false) {
           case _: TestActor.StoppingException ⇒ SupervisorStrategy.Stop
         })
@@ -162,7 +166,9 @@ class BackoffOnRestartSupervisorSpec extends AkkaSpec with ImplicitSender {
       expectMsg("THROWN")
 
       child ! "PING"
-      expectNoMsg(100.millis) // Child is in limbo due to latch in postStop. There is no Terminated message yet
+      expectNoMsg(
+        100.millis
+      ) // Child is in limbo due to latch in postStop. There is no Terminated message yet
 
       supervisor ! BackoffSupervisor.GetCurrentChild
       expectMsgType[BackoffSupervisor.CurrentChild].ref should ===(Some(child))

@@ -38,20 +38,21 @@ private[clustering] object LDAUtils {
     * uses [[breeze.numerics.digamma]] which is accurate but expensive.
     */
   private[clustering] def dirichletExpectation(
-      alpha: BDV[Double]): BDV[Double] = {
+      alpha: BDV[Double]
+  ): BDV[Double] =
     digamma(alpha) - digamma(sum(alpha))
-  }
 
   /**
     * Computes [[dirichletExpectation()]] row-wise, assuming each row of alpha are
     * Dirichlet parameters.
     */
   private[clustering] def dirichletExpectation(
-      alpha: BDM[Double]): BDM[Double] = {
-    val rowSum = sum(alpha(breeze.linalg.*, ::))
-    val digAlpha = digamma(alpha)
+      alpha: BDM[Double]
+  ): BDM[Double] = {
+    val rowSum    = sum(alpha(breeze.linalg.*, ::))
+    val digAlpha  = digamma(alpha)
     val digRowSum = digamma(rowSum)
-    val result = digAlpha(::, breeze.linalg.*) - digRowSum
+    val result    = digAlpha(::, breeze.linalg.*) - digRowSum
     result
   }
 }

@@ -30,7 +30,14 @@ import xml._
 import common._
 import json._
 import util.Helpers._
-import util.{SourceFieldMetadata, NamedPF, FieldError, Helpers, CssSel, PassThru}
+import util.{
+  SourceFieldMetadata,
+  NamedPF,
+  FieldError,
+  Helpers,
+  CssSel,
+  PassThru
+}
 import http.{LiftRules, S, SHtml, RequestMemoize, Factory}
 import http.js._
 
@@ -91,15 +98,17 @@ object MapperRules extends Factory {
     * What are the rules and mechanisms for putting quotes around table names?
     */
   val quoteTableName: FactoryMaker[String => String] =
-    new FactoryMaker[String => String](
-        (s: String) => if (s.indexOf(' ') >= 0) '"' + s + '"' else s) {}
+    new FactoryMaker[String => String]((s: String) =>
+      if (s.indexOf(' ') >= 0) '"' + s + '"' else s
+    ) {}
 
   /**
     * What are the rules and mechanisms for putting quotes around column names?
     */
   val quoteColumnName: FactoryMaker[String => String] =
-    new FactoryMaker[String => String](
-        (s: String) => if (s.indexOf(' ') >= 0) '"' + s + '"' else s) {}
+    new FactoryMaker[String => String]((s: String) =>
+      if (s.indexOf(' ') >= 0) '"' + s + '"' else s
+    ) {}
 
   /**
     * Function that determines if foreign key constraints are
@@ -115,10 +124,11 @@ object MapperRules extends Factory {
     * used to easily localize fields based on the locale in the
     * current request
     */
-  val displayNameCalculator: FactoryMaker[
-      (BaseMapper, Locale, String) => String] =
+  val displayNameCalculator
+      : FactoryMaker[(BaseMapper, Locale, String) => String] =
     new FactoryMaker[(BaseMapper, Locale, String) => String](
-        (m: BaseMapper, l: Locale, name: String) => name) {}
+      (m: BaseMapper, l: Locale, name: String) => name
+    ) {}
 
   /**
     * Calculate the name of a column based on the name
@@ -150,28 +160,27 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
 
   private val logger = Logger(classOf[MetaMapper[A]])
 
-  case class FieldHolder(
-      name: String, method: Method, field: MappedField[_, A])
+  case class FieldHolder(name: String, method: Method, field: MappedField[_, A])
 
   type RealType = A
 
-  def beforeValidation: List[A => Unit] = Nil
+  def beforeValidation: List[A => Unit]         = Nil
   def beforeValidationOnCreate: List[A => Unit] = Nil
   def beforeValidationOnUpdate: List[A => Unit] = Nil
-  def afterValidation: List[A => Unit] = Nil
-  def afterValidationOnCreate: List[A => Unit] = Nil
-  def afterValidationOnUpdate: List[A => Unit] = Nil
+  def afterValidation: List[A => Unit]          = Nil
+  def afterValidationOnCreate: List[A => Unit]  = Nil
+  def afterValidationOnUpdate: List[A => Unit]  = Nil
 
-  def beforeSave: List[A => Unit] = Nil
+  def beforeSave: List[A => Unit]     = Nil
   def beforeCreate: List[(A) => Unit] = Nil
   def beforeUpdate: List[(A) => Unit] = Nil
 
-  def afterSave: List[(A) => Unit] = Nil
+  def afterSave: List[(A) => Unit]   = Nil
   def afterCreate: List[(A) => Unit] = Nil
   def afterUpdate: List[(A) => Unit] = Nil
 
   def beforeDelete: List[(A) => Unit] = Nil
-  def afterDelete: List[(A) => Unit] = Nil
+  def afterDelete: List[(A) => Unit]  = Nil
 
   /**
     * If there are model-specific validations to perform, override this
@@ -197,17 +206,29 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     findMapDb(dbId, Nil: _*)(v => Full(v))
 
   def countByInsecureSql(
-      query: String, checkedBy: IHaveValidatedThisSQL): scala.Long =
+      query: String,
+      checkedBy: IHaveValidatedThisSQL
+  ): scala.Long =
     countByInsecureSqlDb(dbDefaultConnectionIdentifier, query, checkedBy)
 
-  def countByInsecureSqlDb(dbId: ConnectionIdentifier,
-                           query: String,
-                           checkedBy: IHaveValidatedThisSQL): scala.Long =
-    DB.use(dbId)(DB.prepareStatement(query, _)(
-            DB.exec(_)(rs => if (rs.next) rs.getLong(1) else 0L)))
+  def countByInsecureSqlDb(
+      dbId: ConnectionIdentifier,
+      query: String,
+      checkedBy: IHaveValidatedThisSQL
+  ): scala.Long =
+    DB.use(dbId)(
+      DB.prepareStatement(query, _)(
+        DB.exec(_)(rs =>
+          if (rs.next) rs.getLong(1)
+          else 0L
+        )
+      )
+    )
 
   def findAllByInsecureSql(
-      query: String, checkedBy: IHaveValidatedThisSQL): List[A] =
+      query: String,
+      checkedBy: IHaveValidatedThisSQL
+  ): List[A] =
     findAllByInsecureSqlDb(dbDefaultConnectionIdentifier, query, checkedBy)
 
   /**
@@ -219,45 +240,46 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     * @return A List of Mapper instances.
     */
   def findAllByPreparedStatement(
-      f: SuperConnection => PreparedStatement): List[A] = {
+      f: SuperConnection => PreparedStatement
+  ): List[A] =
     DB.use(dbDefaultConnectionIdentifier) { conn =>
       findAllByPreparedStatement(dbDefaultConnectionIdentifier, f(conn))
     }
-  }
 
   def findAllByPreparedStatement(
-      dbId: ConnectionIdentifier, stmt: PreparedStatement): List[A] =
+      dbId: ConnectionIdentifier,
+      stmt: PreparedStatement
+  ): List[A] =
     findAllByPreparedStatementDb(dbId, stmt)(a => Full(a))
 
   def findAllByPreparedStatementDb[T](
-      dbId: ConnectionIdentifier, stmt: PreparedStatement)(
-      f: A => Box[T]): List[T] = {
-    DB.exec(stmt) { rs =>
-      createInstances(dbId, rs, Empty, Empty, f)
-    }
-  }
+      dbId: ConnectionIdentifier,
+      stmt: PreparedStatement
+  )(f: A => Box[T]): List[T] =
+    DB.exec(stmt)(rs => createInstances(dbId, rs, Empty, Empty, f))
 
-  def findAllByInsecureSqlDb(dbId: ConnectionIdentifier,
-                             query: String,
-                             checkedBy: IHaveValidatedThisSQL): List[A] =
+  def findAllByInsecureSqlDb(
+      dbId: ConnectionIdentifier,
+      query: String,
+      checkedBy: IHaveValidatedThisSQL
+  ): List[A] =
     findMapByInsecureSqlDb(dbId, query, checkedBy)(a => Full(a))
 
   def findMapByInsecureSql[T](query: String, checkedBy: IHaveValidatedThisSQL)(
-      f: A => Box[T]): List[T] =
+      f: A => Box[T]
+  ): List[T] =
     findMapByInsecureSqlDb(dbDefaultConnectionIdentifier, query, checkedBy)(f)
 
-  def findMapByInsecureSqlDb[T](dbId: ConnectionIdentifier,
-                                query: String,
-                                checkedBy: IHaveValidatedThisSQL)(
-      f: A => Box[T]): List[T] = {
+  def findMapByInsecureSqlDb[T](
+      dbId: ConnectionIdentifier,
+      query: String,
+      checkedBy: IHaveValidatedThisSQL
+  )(f: A => Box[T]): List[T] =
     DB.use(dbId) { conn =>
       DB.prepareStatement(query, conn) { st =>
-        DB.exec(st) { rs =>
-          createInstances(dbId, rs, Empty, Empty, f)
-        }
+        DB.exec(st)(rs => createInstances(dbId, rs, Empty, Empty, f))
       }
     }
-  }
 
   def dbAddTable: Box[() => Unit] = Empty
 
@@ -266,17 +288,20 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
   def count(by: QueryParam[A]*): Long =
     countDb(dbDefaultConnectionIdentifier, by: _*)
 
-  def countDb(dbId: ConnectionIdentifier, by: QueryParam[A]*): Long = {
+  def countDb(dbId: ConnectionIdentifier, by: QueryParam[A]*): Long =
     DB.use(dbId) { conn =>
       val bl = by.toList ::: addlQueryParams.get
       val (query, start, max) = addEndStuffs(
-          addFields("SELECT COUNT(*) FROM " +
-                    MapperRules.quoteTableName.vend(_dbTableNameLC) + "  ",
-                    false,
-                    bl,
-                    conn),
+        addFields(
+          "SELECT COUNT(*) FROM " +
+            MapperRules.quoteTableName.vend(_dbTableNameLC) + "  ",
+          false,
           bl,
-          conn)
+          conn
+        ),
+        bl,
+        conn
+      )
 
       DB.prepareStatement(query, conn) { st =>
         setStatementFields(st, bl, 1, conn)
@@ -286,28 +311,34 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
         }
       }
     }
-  }
 
   //type KeyDude = T forSome {type T}
-  type OtherMapper = KeyedMapper[_, _] // T forSome {type T <: KeyedMapper[KeyDude, T]}
+  type OtherMapper     = KeyedMapper[_, _]     // T forSome {type T <: KeyedMapper[KeyDude, T]}
   type OtherMetaMapper = KeyedMetaMapper[_, _] // T forSome {type T <: KeyedMetaMapper[KeyDude, OtherMapper]}
   //type OtherMapper = KeyedMapper[_, (T forSome {type T})]
   //type OtherMetaMapper = KeyedMetaMapper[_, OtherMapper]
 
-  def findAllFields(fields: scala.collection.Seq[SelectableField],
-                    by: QueryParam[A]*): List[A] =
+  def findAllFields(
+      fields: scala.collection.Seq[SelectableField],
+      by: QueryParam[A]*
+  ): List[A] =
     findMapFieldDb(dbDefaultConnectionIdentifier, fields, by: _*)(v => Full(v))
 
-  def findAllFieldsDb(dbId: ConnectionIdentifier,
-                      fields: Seq[SelectableField],
-                      by: QueryParam[A]*): List[A] =
+  def findAllFieldsDb(
+      dbId: ConnectionIdentifier,
+      fields: Seq[SelectableField],
+      by: QueryParam[A]*
+  ): List[A] =
     findMapFieldDb(dbId, fields, by: _*)(v => Full(v))
 
-  private def dealWithPrecache(ret: List[A], by: Seq[QueryParam[A]]): List[A] = {
+  private def dealWithPrecache(
+      ret: List[A],
+      by: Seq[QueryParam[A]]
+  ): List[A] = {
 
     val precache: List[PreCache[A, _, _]] = by.toList.flatMap {
       case j: PreCache[A, _, _] => List[PreCache[A, _, _]](j)
-      case _ => Nil
+      case _                    => Nil
     }
     for (j <- precache) {
       type FT = j.field.FieldType
@@ -317,29 +348,37 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
         if (!j.deterministic) {
           def filter(in: Seq[FT]): Seq[FT] =
             in.flatMap {
-              case null => Nil
+              case null                           => Nil
               case x: Number if x.longValue == 0L => Nil
-              case x => List(x)
+              case x                              => List(x)
             }
 
           val lst: Set[FT] = Set(
-              filter(ret.map(v =>
-                        v.getSingleton
-                          .getActualField(v, j.field)
-                          .get
-                          .asInstanceOf[FT])): _*)
+            filter(
+              ret.map(v =>
+                v.getSingleton
+                  .getActualField(v, j.field)
+                  .get
+                  .asInstanceOf[FT]
+              )
+            ): _*
+          )
 
           j.field.dbKeyToTable
             .asInstanceOf[MetaMapper[A]]
-            .findAll(ByList(j.field.dbKeyToTable.primaryKeyField
-                              .asInstanceOf[MappedField[FT, A]],
-                            lst.toList))
+            .findAll(
+              ByList(
+                j.field.dbKeyToTable.primaryKeyField
+                  .asInstanceOf[MappedField[FT, A]],
+                lst.toList
+              )
+            )
             .asInstanceOf[List[MT]]
         } else {
           j.field.dbKeyToTable
             .asInstanceOf[MetaMapper[A]]
             .findAll(new InThing[A] {
-              type JoinType = FT
+              type JoinType  = FT
               type InnerType = A
 
               val outerField: MappedField[JoinType, A] =
@@ -374,25 +413,29 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
 
   def findAll(by: QueryParam[A]*): List[A] =
     dealWithPrecache(
-        findMapDb(dbDefaultConnectionIdentifier, by: _*)(v => Full(v)),
-        by)
+      findMapDb(dbDefaultConnectionIdentifier, by: _*)(v => Full(v)),
+      by
+    )
 
   def findAllDb(dbId: ConnectionIdentifier, by: QueryParam[A]*): List[A] =
     dealWithPrecache(findMapDb(dbId, by: _*)(v => Full(v)), by)
 
   def bulkDelete_!!(by: QueryParam[A]*): Boolean =
     bulkDelete_!!(dbDefaultConnectionIdentifier, by: _*)
-  def bulkDelete_!!(dbId: ConnectionIdentifier, by: QueryParam[A]*): Boolean = {
+  def bulkDelete_!!(dbId: ConnectionIdentifier, by: QueryParam[A]*): Boolean =
     DB.use(dbId) { conn =>
       val bl = by.toList ::: addlQueryParams.get
       val (query, start, max) = addEndStuffs(
-          addFields("DELETE FROM " +
-                    MapperRules.quoteTableName.vend(_dbTableNameLC) + " ",
-                    false,
-                    bl,
-                    conn),
+        addFields(
+          "DELETE FROM " +
+            MapperRules.quoteTableName.vend(_dbTableNameLC) + " ",
+          false,
           bl,
-          conn)
+          conn
+        ),
+        bl,
+        conn
+      )
 
       DB.prepareStatement(query, conn) { st =>
         setStatementFields(st, bl, 1, conn)
@@ -400,22 +443,22 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
         true
       }
     }
-  }
 
   private def distinct(in: Seq[QueryParam[A]]): String =
     in.find {
       case Distinct() => true
-      case _ => false
+      case _          => false
     }.isDefined match {
       case false => ""
-      case true => " DISTINCT "
+      case true  => " DISTINCT "
     }
 
   def findMap[T](by: QueryParam[A]*)(f: A => Box[T]) =
     findMapDb(dbDefaultConnectionIdentifier, by: _*)(f)
 
   def findMapDb[T](dbId: ConnectionIdentifier, by: QueryParam[A]*)(
-      f: A => Box[T]): List[T] =
+      f: A => Box[T]
+  ): List[T] =
     findMapFieldDb(dbId, mappedFields, by: _*)(f)
 
   /**
@@ -432,21 +475,25 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     * including and synthetic query parameters
     */
   def buildSelectString(
-      fields: Seq[SelectableField], conn: SuperConnection, by: QueryParam[A]*)
-    : (String, Box[Long], Box[Long], List[QueryParam[A]]) = {
+      fields: Seq[SelectableField],
+      conn: SuperConnection,
+      by: QueryParam[A]*
+  ): (String, Box[Long], Box[Long], List[QueryParam[A]]) = {
     val bl = by.toList ::: addlQueryParams.get
     val selectStatement =
       "SELECT " + distinct(by) + fields.map(_.dbSelectString).mkString(", ") +
-      " FROM " + MapperRules.quoteTableName.vend(_dbTableNameLC) + "  "
+        " FROM " + MapperRules.quoteTableName.vend(_dbTableNameLC) + "  "
 
-    val (str, start, max) = addEndStuffs(
-        addFields(selectStatement, false, bl, conn), bl, conn)
+    val (str, start, max) =
+      addEndStuffs(addFields(selectStatement, false, bl, conn), bl, conn)
     (str, start, max, bl)
   }
 
-  def findMapFieldDb[T](dbId: ConnectionIdentifier,
-                        fields: Seq[SelectableField],
-                        by: QueryParam[A]*)(f: A => Box[T]): List[T] = {
+  def findMapFieldDb[T](
+      dbId: ConnectionIdentifier,
+      fields: Seq[SelectableField],
+      by: QueryParam[A]*
+  )(f: A => Box[T]): List[T] =
     DB.use(dbId) { conn =>
       val (query, start, max, bl) = buildSelectString(fields, conn, by: _*)
       DB.prepareStatement(query, conn) { st =>
@@ -454,7 +501,6 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
         DB.exec(st)(createInstances(dbId, _, start, max, f))
       }
     }
-  }
 
   def create: A = createInstance
 
@@ -463,10 +509,12 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     override val __nameSalt = randomString(10)
   }
 
-  private[mapper] def addFields(what: String,
-                                whereAdded: Boolean,
-                                by: List[QueryParam[A]],
-                                conn: SuperConnection): String = {
+  private[mapper] def addFields(
+      what: String,
+      whereAdded: Boolean,
+      by: List[QueryParam[A]],
+      conn: SuperConnection
+  ): String = {
 
     var wav = whereAdded
 
@@ -475,7 +523,7 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     class DBFuncWrapper(dbFunc: Box[String]) {
       def apply(field: String) = dbFunc match {
         case Full(f) => f + "(" + field + ")"
-        case _ => field
+        case _       => field
       }
     }
 
@@ -485,193 +533,212 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     by match {
       case Nil => what
       case x :: xs => {
-          var updatedWhat = what
-          x match {
-            case Cmp(field, opr, Full(_), _, dbFunc) =>
-              (1 to field.dbColumnCount).foreach { cn =>
-                updatedWhat = updatedWhat + whereOrAnd +
-                dbFunc(MapperRules.quoteColumnName.vend(
-                        field.dbColumnNames(field.name)(cn - 1))) + " " + opr +
+        var updatedWhat = what
+        x match {
+          case Cmp(field, opr, Full(_), _, dbFunc) =>
+            (1 to field.dbColumnCount).foreach { cn =>
+              updatedWhat = updatedWhat + whereOrAnd +
+                dbFunc(
+                  MapperRules.quoteColumnName
+                    .vend(field.dbColumnNames(field.name)(cn - 1))
+                ) + " " + opr +
                 " ? "
-              }
+            }
 
-            case Cmp(field, opr, _, Full(otherField), dbFunc) =>
-              (1 to field.dbColumnCount).foreach { cn =>
-                updatedWhat = updatedWhat + whereOrAnd +
-                dbFunc(MapperRules.quoteColumnName.vend(
-                        field.dbColumnNames(field.name)(cn - 1))) + " " + opr +
+          case Cmp(field, opr, _, Full(otherField), dbFunc) =>
+            (1 to field.dbColumnCount).foreach { cn =>
+              updatedWhat = updatedWhat + whereOrAnd +
+                dbFunc(
+                  MapperRules.quoteColumnName
+                    .vend(field.dbColumnNames(field.name)(cn - 1))
+                ) + " " + opr +
                 " " + MapperRules.quoteColumnName.vend(
-                    otherField.dbColumnNames(otherField.name)(cn - 1))
-              }
+                otherField.dbColumnNames(otherField.name)(cn - 1)
+              )
+            }
 
-            case Cmp(field, opr, Empty, Empty, dbFunc) =>
-              (1 to field.dbColumnCount).foreach(cn =>
-                    updatedWhat = updatedWhat +
-                    whereOrAnd + dbFunc(MapperRules.quoteColumnName.vend(
-                            field.dbColumnNames(field.name)(cn - 1))) + " " +
-                    opr + " ")
+          case Cmp(field, opr, Empty, Empty, dbFunc) =>
+            (1 to field.dbColumnCount).foreach(cn =>
+              updatedWhat = updatedWhat +
+                whereOrAnd + dbFunc(
+                MapperRules.quoteColumnName
+                  .vend(field.dbColumnNames(field.name)(cn - 1))
+              ) + " " +
+                opr + " "
+            )
 
-            // For vals, add "AND $fieldname = ? [OR $fieldname = ?]*" to the query. The number
-            // of fields you add onto the query is equal to vals.length
-            case ByList(field, orgVals) =>
-              val vals =
-                Set(orgVals: _*).toList // faster than list.removeDuplicates
+          // For vals, add "AND $fieldname = ? [OR $fieldname = ?]*" to the query. The number
+          // of fields you add onto the query is equal to vals.length
+          case ByList(field, orgVals) =>
+            val vals =
+              Set(orgVals: _*).toList // faster than list.removeDuplicates
 
-              if (vals.isEmpty)
-                updatedWhat = updatedWhat + whereOrAnd + " 0 = 1 "
-              else
-                updatedWhat = updatedWhat + vals
-                  .map(v =>
-                        MapperRules.quoteColumnName.vend(field._dbColumnNameLC) +
-                      " = ?")
-                  .mkString(whereOrAnd + " (", " OR ", ")")
+            if (vals.isEmpty)
+              updatedWhat = updatedWhat + whereOrAnd + " 0 = 1 "
+            else
+              updatedWhat = updatedWhat + vals
+                .map(v =>
+                  MapperRules.quoteColumnName.vend(field._dbColumnNameLC) +
+                    " = ?"
+                )
+                .mkString(whereOrAnd + " (", " OR ", ")")
 
-            case in: InRaw[A, _] =>
-              updatedWhat = updatedWhat + whereOrAnd +
+          case in: InRaw[A, _] =>
+            updatedWhat = updatedWhat + whereOrAnd +
               (in.rawSql match {
-                    case null | "" => " 0 = 1 "
-                    case sql =>
-                      " " + MapperRules.quoteColumnName.vend(
-                          in.field._dbColumnNameLC) + " IN ( " + sql + " ) "
-                  })
+                case null | "" => " 0 = 1 "
+                case sql =>
+                  " " + MapperRules.quoteColumnName.vend(
+                    in.field._dbColumnNameLC
+                  ) + " IN ( " + sql + " ) "
+              })
 
-            case (in: InThing[A]) =>
-              updatedWhat = updatedWhat + whereOrAnd +
+          case (in: InThing[A]) =>
+            updatedWhat = updatedWhat + whereOrAnd +
               MapperRules.quoteColumnName.vend(in.outerField._dbColumnNameLC) +
               in.inKeyword + "(" + in.innerMeta
-                .addEndStuffs(in.innerMeta.addFields(
-                                  "SELECT " + in.distinct +
-                                  MapperRules.quoteColumnName.vend(
-                                      in.innerField._dbColumnNameLC) +
-                                  " FROM " + MapperRules.quoteTableName.vend(
-                                      in.innerMeta._dbTableNameLC) + " ",
-                                  false,
-                                  in.queryParams,
-                                  conn),
-                              in.queryParams,
-                              conn)
-                ._1 + " ) "
+              .addEndStuffs(
+                in.innerMeta.addFields(
+                  "SELECT " + in.distinct +
+                    MapperRules.quoteColumnName
+                      .vend(in.innerField._dbColumnNameLC) +
+                    " FROM " + MapperRules.quoteTableName
+                    .vend(in.innerMeta._dbTableNameLC) + " ",
+                  false,
+                  in.queryParams,
+                  conn
+                ),
+                in.queryParams,
+                conn
+              )
+              ._1 + " ) "
 
-            // Executes a subquery with {@code query}
-            case BySql(query, _, _ *) =>
-              updatedWhat = updatedWhat + whereOrAnd + " ( " + query + " ) "
-            case _ =>
-          }
-          addFields(updatedWhat, wav, xs, conn)
+          // Executes a subquery with {@code query}
+          case BySql(query, _, _*) =>
+            updatedWhat = updatedWhat + whereOrAnd + " ( " + query + " ) "
+          case _ =>
         }
+        addFields(updatedWhat, wav, xs, conn)
+      }
     }
   }
 
-  private[mapper] def setStatementFields(st: PreparedStatement,
-                                         by: List[QueryParam[A]],
-                                         curPos: Int,
-                                         conn: SuperConnection): Int = {
+  private[mapper] def setStatementFields(
+      st: PreparedStatement,
+      by: List[QueryParam[A]],
+      curPos: Int,
+      conn: SuperConnection
+  ): Int =
     by match {
       case Nil => curPos
       case Cmp(field, _, Full(value), _, _) :: xs =>
-        setPreparedStatementValue(conn,
-                                  st,
-                                  curPos,
-                                  field,
-                                  field.targetSQLType,
-                                  field.convertToJDBCFriendly(value),
-                                  objectSetterFor(field))
+        setPreparedStatementValue(
+          conn,
+          st,
+          curPos,
+          field,
+          field.targetSQLType,
+          field.convertToJDBCFriendly(value),
+          objectSetterFor(field)
+        )
         setStatementFields(st, xs, curPos + 1, conn)
 
       case ByList(field, orgVals) :: xs => {
-          val vals = Set(orgVals: _*).toList
-          var newPos = curPos
-          vals.foreach(
-              v =>
-                {
-              setPreparedStatementValue(conn,
-                                        st,
-                                        newPos,
-                                        field,
-                                        field.targetSQLType,
-                                        field.convertToJDBCFriendly(v),
-                                        objectSetterFor(field))
-              newPos = newPos + 1
-          })
-
-          setStatementFields(st, xs, newPos, conn)
+        val vals   = Set(orgVals: _*).toList
+        var newPos = curPos
+        vals.foreach { v =>
+          setPreparedStatementValue(
+            conn,
+            st,
+            newPos,
+            field,
+            field.targetSQLType,
+            field.convertToJDBCFriendly(v),
+            objectSetterFor(field)
+          )
+          newPos = newPos + 1
         }
+
+        setStatementFields(st, xs, newPos, conn)
+      }
 
       case (in: InThing[A]) :: xs =>
-        val newPos = in.innerMeta.setStatementFields(st,
-                                                     in.queryParams,
-                                                     curPos,
-                                                     conn)
+        val newPos =
+          in.innerMeta.setStatementFields(st, in.queryParams, curPos, conn)
         setStatementFields(st, xs, newPos, conn)
 
-      case BySql(query, who, params @ _ *) :: xs => {
-          params.toList match {
-            case Nil => setStatementFields(st, xs, curPos, conn)
-            case List(i: Int) =>
-              st.setInt(curPos, i)
-              setStatementFields(st, xs, curPos + 1, conn)
-            case List(lo: Long) =>
-              st.setLong(curPos, lo)
-              setStatementFields(st, xs, curPos + 1, conn)
-            case List(s: String) =>
-              st.setString(curPos, s)
-              setStatementFields(st, xs, curPos + 1, conn)
-            // Allow specialization of time-related values based on the input parameter
-            case List(t: java.sql.Timestamp) =>
-              st.setTimestamp(curPos, t)
-              setStatementFields(st, xs, curPos + 1, conn)
-            case List(d: java.sql.Date) =>
-              st.setDate(curPos, d)
-              setStatementFields(st, xs, curPos + 1, conn)
-            case List(t: java.sql.Time) =>
-              st.setTime(curPos, t)
-              setStatementFields(st, xs, curPos + 1, conn)
-            // java.util.Date goes last, since it's a superclass of java.sql.{Date,Time,Timestamp}
-            case List(d: Date) =>
-              st.setTimestamp(curPos, new java.sql.Timestamp(d.getTime))
-              setStatementFields(st, xs, curPos + 1, conn)
-            case List(field: BaseMappedField) =>
-              setPreparedStatementValue(conn,
-                                        st,
-                                        curPos,
-                                        field,
-                                        field.targetSQLType,
-                                        field.jdbcFriendly,
-                                        objectSetterFor(field))
-              setStatementFields(st, xs, curPos + 1, conn)
-            case p :: ps =>
-              setStatementFields(st,
-                                 BySql[A](query, who, p) :: BySql[A](
-                                     query, who, ps: _*) :: xs,
-                                 curPos,
-                                 conn)
-          }
+      case BySql(query, who, params @ _*) :: xs => {
+        params.toList match {
+          case Nil => setStatementFields(st, xs, curPos, conn)
+          case List(i: Int) =>
+            st.setInt(curPos, i)
+            setStatementFields(st, xs, curPos + 1, conn)
+          case List(lo: Long) =>
+            st.setLong(curPos, lo)
+            setStatementFields(st, xs, curPos + 1, conn)
+          case List(s: String) =>
+            st.setString(curPos, s)
+            setStatementFields(st, xs, curPos + 1, conn)
+          // Allow specialization of time-related values based on the input parameter
+          case List(t: java.sql.Timestamp) =>
+            st.setTimestamp(curPos, t)
+            setStatementFields(st, xs, curPos + 1, conn)
+          case List(d: java.sql.Date) =>
+            st.setDate(curPos, d)
+            setStatementFields(st, xs, curPos + 1, conn)
+          case List(t: java.sql.Time) =>
+            st.setTime(curPos, t)
+            setStatementFields(st, xs, curPos + 1, conn)
+          // java.util.Date goes last, since it's a superclass of java.sql.{Date,Time,Timestamp}
+          case List(d: Date) =>
+            st.setTimestamp(curPos, new java.sql.Timestamp(d.getTime))
+            setStatementFields(st, xs, curPos + 1, conn)
+          case List(field: BaseMappedField) =>
+            setPreparedStatementValue(
+              conn,
+              st,
+              curPos,
+              field,
+              field.targetSQLType,
+              field.jdbcFriendly,
+              objectSetterFor(field)
+            )
+            setStatementFields(st, xs, curPos + 1, conn)
+          case p :: ps =>
+            setStatementFields(
+              st,
+              BySql[A](query, who, p) :: BySql[A](query, who, ps: _*) :: xs,
+              curPos,
+              conn
+            )
         }
+      }
       case _ :: xs => {
-          setStatementFields(st, xs, curPos, conn)
-        }
+        setStatementFields(st, xs, curPos, conn)
+      }
     }
-  }
 
   // def find(by: QueryParam): Box[A] = find(List(by))
 
-  private def _addOrdering(in: String, params: List[QueryParam[A]]): String = {
+  private def _addOrdering(in: String, params: List[QueryParam[A]]): String =
     params.flatMap {
       case OrderBy(field, order, nullOrder) =>
-        List(MapperRules.quoteColumnName.vend(field._dbColumnNameLC) + " " +
-            order.sql + " " + (nullOrder.map(_.getSql).openOr("")))
+        List(
+          MapperRules.quoteColumnName.vend(field._dbColumnNameLC) + " " +
+            order.sql + " " + (nullOrder.map(_.getSql).openOr(""))
+        )
       case OrderBySql(sql, _) => List(sql)
-      case _ => Nil
+      case _                  => Nil
     } match {
       case Nil => in
-      case xs => in + " ORDER BY " + xs.mkString(" , ")
+      case xs  => in + " ORDER BY " + xs.mkString(" , ")
     }
-  }
 
   protected def addEndStuffs(
       in: String,
       params: List[QueryParam[A]],
-      conn: SuperConnection): (String, Box[Long], Box[Long]) = {
+      conn: SuperConnection
+  ): (String, Box[Long], Box[Long]) = {
     val tmp = _addOrdering(in, params)
     val max = params.foldRight(Empty.asInstanceOf[Box[Long]]) { (a, b) =>
       a match { case MaxRows(n) => Full(n); case _ => b }
@@ -702,23 +769,30 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
       case _ =>
         thePrimaryKeyField
           .map(im =>
-                DB.use(toDelete.connectionIdentifier) { conn =>
+            DB.use(toDelete.connectionIdentifier) { conn =>
               _beforeDelete(toDelete)
               val ret = DB.prepareStatement(
-                  "DELETE FROM " + MapperRules.quoteTableName.vend(
-                      _dbTableNameLC) + " WHERE " + im + " = ?",
-                  conn) {
-                st =>
-                  val indVal = indexedField(toDelete)
-                  indVal.map { indVal =>
-                    setPreparedStatementValue(
-                        conn, st, 1, indVal, im, objectSetterFor(indVal))
-                    st.executeUpdate == 1
-                  } openOr false
+                "DELETE FROM " + MapperRules.quoteTableName
+                  .vend(_dbTableNameLC) + " WHERE " + im + " = ?",
+                conn
+              ) { st =>
+                val indVal = indexedField(toDelete)
+                indVal.map { indVal =>
+                  setPreparedStatementValue(
+                    conn,
+                    st,
+                    1,
+                    indVal,
+                    im,
+                    objectSetterFor(indVal)
+                  )
+                  st.executeUpdate == 1
+                } openOr false
               }
               _afterDelete(toDelete)
               ret
-          })
+            }
+          )
           .openOr(false)
     }
 
@@ -727,9 +801,8 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
   private[mapper] def ??(meth: Method, inst: A) =
     meth.invoke(inst).asInstanceOf[MappedField[AnyBound, A]]
 
-  def dirty_?(toTest: A): Boolean = mappedFieldList.exists(
-      mft => ??(mft.method, toTest).dirty_?
-  )
+  def dirty_?(toTest: A): Boolean =
+    mappedFieldList.exists(mft => ??(mft.method, toTest).dirty_?)
 
   def indexedField(toSave: A): Box[MappedField[Any, A]] =
     thePrimaryKeyField.map(im => ??(mappedColumns(im.toLowerCase), toSave))
@@ -738,7 +811,8 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     toSave match {
       case x: MetaMapper[_] =>
         throw new MapperException(
-            "Cannot test the MetaMapper singleton for saved status")
+          "Cannot test the MetaMapper singleton for saved status"
+        )
 
       case _ => toSave.persisted_?
     }
@@ -756,7 +830,7 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
 
       for {
         field <- json.obj
-        meth <- _mappedFields.get(field.name)
+        meth  <- _mappedFields.get(field.name)
       } {
         val f = ??(meth, toUpdate)
         f.setFromAny(field.value)
@@ -772,20 +846,22 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     * be used with caution and only exposed as a public method
     * after a security review.
     */
-  protected def encodeAsJSON_!(toEncode: A): JsonAST.JObject = {
+  protected def encodeAsJSON_!(toEncode: A): JsonAST.JObject =
     toEncode.runSafe {
-      JsonAST.JObject(JsonAST.JField(
-              "$persisted",
-              JsonAST.JBool(toEncode.persisted_?)) :: this.mappedFieldList
-            .flatMap(fh => ??(fh.method, toEncode).asJsonField))
+      JsonAST.JObject(
+        JsonAST
+          .JField("$persisted", JsonAST.JBool(toEncode.persisted_?)) :: this.mappedFieldList
+          .flatMap(fh => ??(fh.method, toEncode).asJsonField)
+      )
     }
-  }
 
   /**
     * Decode the fields from a JSON Object.  Should the fields be marked as dirty?
     */
   protected def decodeFromJSON_!(
-      json: JsonAST.JObject, markFieldsAsDirty: Boolean): A = {
+      json: JsonAST.JObject,
+      markFieldsAsDirty: Boolean
+  ): A = {
     val ret: A = createInstance
     import JsonAST._
 
@@ -799,7 +875,7 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
 
       for {
         field <- json.obj
-        meth <- _mappedFields.get(field.name)
+        meth  <- _mappedFields.get(field.name)
       } {
         val f = ??(meth, ret)
         f.setFromAny(field.value)
@@ -810,26 +886,26 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     ret
   }
 
-  def whatToSet(toSave: A): String = {
-    mappedColumns.filter { c =>
-      ??(c._2, toSave).dirty_?
-    }.map { c =>
-      c._1 + " = ?"
-    }.toList.mkString("", ",", "")
-  }
+  def whatToSet(toSave: A): String =
+    mappedColumns
+      .filter(c => ??(c._2, toSave).dirty_?)
+      .map(c => c._1 + " = ?")
+      .toList
+      .mkString("", ",", "")
 
   /**
     * Run the list of field validations, etc.  This is the raw validation,
     * without the notifications.  This method can be over-ridden.
     */
   protected def runValidationList(toValidate: A): List[FieldError] =
-    mappedFieldList.flatMap(f => ??(f.method, toValidate).validate) ::: validation.flatMap {
-      case pf: PartialFunction[A, List[FieldError]] =>
-        if (pf.isDefinedAt(toValidate)) pf(toValidate)
-        else Nil
+    mappedFieldList.flatMap(f => ??(f.method, toValidate).validate) ::: validation
+      .flatMap {
+        case pf: PartialFunction[A, List[FieldError]] =>
+          if (pf.isDefinedAt(toValidate)) pf(toValidate)
+          else Nil
 
-      case f => f(toValidate)
-    }
+        case f => f(toValidate)
+      }
 
   final def validate(toValidate: A): List[FieldError] = {
     logger.debug("Validating dbName=%s, entity=%s".format(dbName, toValidate))
@@ -844,8 +920,10 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     if (saved_?) _afterValidationOnUpdate(toValidate)
     else _afterValidationOnCreate(toValidate)
 
-    logger.debug("Validated dbName=%s, entity=%s, result=%s".format(
-            dbName, toValidate, ret))
+    logger.debug(
+      "Validated dbName=%s, entity=%s, result=%s"
+        .format(dbName, toValidate, ret)
+    )
 
     ret
   }
@@ -853,17 +931,24 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
   val elemName = getClass.getSuperclass.getName.split("\\.").toList.last
 
   def toXml(what: A): Elem =
-    Elem(null, elemName, mappedFieldList.foldRight[MetaData](Null) { (p, md) =>
-      val fld = ??(p.method, what)
-      new UnprefixedAttribute(p.name, Text(fld.toString), md)
-    }, TopScope, true)
+    Elem(
+      null,
+      elemName,
+      mappedFieldList.foldRight[MetaData](Null) { (p, md) =>
+        val fld = ??(p.method, what)
+        new UnprefixedAttribute(p.name, Text(fld.toString), md)
+      },
+      TopScope,
+      true
+    )
 
   /**
     * Returns true if none of the fields are dirty
     */
   def clean_?(toCheck: A): Boolean =
-    mappedColumns.foldLeft(true)(
-        (bool, ptr) => bool && !(??(ptr._2, toCheck).dirty_?))
+    mappedColumns.foldLeft(true)((bool, ptr) =>
+      bool && !(??(ptr._2, toCheck).dirty_?)
+    )
 
   /**
     * Sets a prepared statement value based on the given MappedField's value
@@ -877,20 +962,23 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     * @param columnName The column name to use to retrieve the type and value
     * @param setObj A function that we can delegate to for setObject calls
     */
-  private def setPreparedStatementValue(conn: SuperConnection,
-                                        st: PreparedStatement,
-                                        index: Int,
-                                        field: MappedField[_, A],
-                                        columnName: String,
-                                        setObj: (PreparedStatement, Int,
-                                        AnyRef, Int) => Unit) {
-    setPreparedStatementValue(conn,
-                              st,
-                              index,
-                              field,
-                              field.targetSQLType(columnName),
-                              field.jdbcFriendly(columnName),
-                              setObj)
+  private def setPreparedStatementValue(
+      conn: SuperConnection,
+      st: PreparedStatement,
+      index: Int,
+      field: MappedField[_, A],
+      columnName: String,
+      setObj: (PreparedStatement, Int, AnyRef, Int) => Unit
+  ) {
+    setPreparedStatementValue(
+      conn,
+      st,
+      index,
+      field,
+      field.targetSQLType(columnName),
+      field.jdbcFriendly(columnName),
+      setObj
+    )
   }
 
   /**
@@ -905,14 +993,15 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     * @param value The value itself
     * @param setObj A function that we can delegate to for setObject calls
     */
-  private def setPreparedStatementValue(conn: SuperConnection,
-                                        st: PreparedStatement,
-                                        index: Int,
-                                        field: BaseMappedField,
-                                        columnType: Int,
-                                        value: Object,
-                                        setObj: (PreparedStatement, Int,
-                                        AnyRef, Int) => Unit) {
+  private def setPreparedStatementValue(
+      conn: SuperConnection,
+      st: PreparedStatement,
+      index: Int,
+      field: BaseMappedField,
+      columnType: Int,
+      value: Object,
+      setObj: (PreparedStatement, Int, AnyRef, Int) => Unit
+  ) {
     // Remap the type if the driver wants
     val mappedColumnType = conn.driverType.columnTypeMap(columnType)
 
@@ -921,9 +1010,11 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     mappedColumnType match {
       case Types.VARCHAR =>
         // Set a string with a simple guard for null values
-        st.setString(index,
-                     if (value ne null) value.toString
-                     else value.asInstanceOf[String])
+        st.setString(
+          index,
+          if (value ne null) value.toString
+          else value.asInstanceOf[String]
+        )
 
       // Sybase SQL Anywhere and DB2 choke on using setObject for boolean data
       case Types.BOOLEAN =>
@@ -947,12 +1038,10 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     */
   private def objectSetterFor(field: BaseMappedField) = {
     (st: PreparedStatement, index: Int, value: AnyRef, columnType: Int) =>
-      {
-        if (field.dbIgnoreSQLType_?) {
-          st.setObject(index, value)
-        } else {
-          st.setObject(index, value, columnType)
-        }
+      if (field.dbIgnoreSQLType_?) {
+        st.setObject(index, value)
+      } else {
+        st.setObject(index, value, columnType)
       }
   }
 
@@ -967,18 +1056,18 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
         /**
           * @return true if there was exactly one row in the result set, false if not.
           */
-        def runAppliers(rs: ResultSet): Boolean = {
+        def runAppliers(rs: ResultSet): Boolean =
           try {
             if (rs.next) {
               val meta = rs.getMetaData
               toSave.runSafe {
                 for {
                   indexMap <- thePrimaryKeyField
-                  auto <- primaryKeyAutogenerated if auto
+                  auto     <- primaryKeyAutogenerated if auto
                 } {
                   findApplier(indexMap, rs.getObject(1)) match {
                     case Full(ap) => ap.apply(toSave, rs.getObject(1))
-                    case _ =>
+                    case _        =>
                   }
                 }
               }
@@ -987,19 +1076,17 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
           } finally {
             rs.close
           }
-        }
 
         /**
           * Checks whether the result set has exactly one row.
           */
-        def hasOneRow(rs: ResultSet): Boolean = {
+        def hasOneRow(rs: ResultSet): Boolean =
           try {
             val firstRow = rs.next
             (firstRow && !rs.next)
           } finally {
             rs.close
           }
-        }
 
         if (saved_?(toSave) && clean_?(toSave)) true
         else {
@@ -1012,38 +1099,44 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
                   if (!dirty_?(toSave)) true
                   else {
                     val ret: Boolean = DB.prepareStatement(
-                        "UPDATE " +
+                      "UPDATE " +
                         MapperRules.quoteTableName.vend(_dbTableNameLC) +
                         " SET " + whatToSet(toSave) +
                         " WHERE " + thePrimaryKeyField.openOrThrowException(
-                            "Cross your fingers") + " = ?",
-                        conn) { st =>
+                        "Cross your fingers"
+                      ) + " = ?",
+                      conn
+                    ) { st =>
                       var colNum = 1
 
                       // Here we apply each column's value to the prepared statement
                       for (col <- mappedColumns) {
                         val colVal = ??(col._2, toSave)
                         if (!columnPrimaryKey_?(col._1) && colVal.dirty_?) {
-                          setPreparedStatementValue(conn,
-                                                    st,
-                                                    colNum,
-                                                    colVal,
-                                                    col._1,
-                                                    objectSetterFor(colVal))
+                          setPreparedStatementValue(
+                            conn,
+                            st,
+                            colNum,
+                            colVal,
+                            col._1,
+                            objectSetterFor(colVal)
+                          )
                           colNum = colNum + 1
                         }
                       }
 
                       for {
-                        indVal <- indexedField(toSave)
+                        indVal          <- indexedField(toSave)
                         indexColumnName <- thePrimaryKeyField
                       } {
-                        setPreparedStatementValue(conn,
-                                                  st,
-                                                  colNum,
-                                                  indVal,
-                                                  indexColumnName,
-                                                  objectSetterFor(indVal))
+                        setPreparedStatementValue(
+                          conn,
+                          st,
+                          colNum,
+                          indVal,
+                          indexColumnName,
+                          objectSetterFor(indVal)
+                        )
                       }
 
                       st.executeUpdate
@@ -1058,9 +1151,9 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
 
                 val query =
                   "INSERT INTO " +
-                  MapperRules.quoteTableName.vend(_dbTableNameLC) + " (" +
-                  columnNamesForInsert + ") VALUES (" +
-                  columnQueriesForInsert + ")"
+                    MapperRules.quoteTableName.vend(_dbTableNameLC) + " (" +
+                    columnNamesForInsert + ") VALUES (" +
+                    columnQueriesForInsert + ")"
 
                 def prepStat(st: PreparedStatement) {
                   var colNum = 1
@@ -1070,12 +1163,14 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
                       val colVal = col._2
                         .invoke(toSave)
                         .asInstanceOf[MappedField[AnyRef, A]]
-                      setPreparedStatementValue(conn,
-                                                st,
-                                                colNum,
-                                                colVal,
-                                                col._1,
-                                                objectSetterFor(colVal))
+                      setPreparedStatementValue(
+                        conn,
+                        st,
+                        colNum,
+                        colVal,
+                        col._1,
+                        objectSetterFor(colVal)
+                      )
                       colNum = colNum + 1
                     }
                   }
@@ -1088,13 +1183,14 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
                   .toList
 
                 val ret = conn.driverType.performInsert(
-                    conn,
-                    query,
-                    prepStat,
-                    MapperRules.quoteTableName.vend(_dbTableNameLC),
-                    generatedColumns) {
+                  conn,
+                  query,
+                  prepStat,
+                  MapperRules.quoteTableName.vend(_dbTableNameLC),
+                  generatedColumns
+                ) {
                   case Right(count) => count == 1
-                  case Left(rs) => runAppliers(rs)
+                  case Left(rs)     => runAppliers(rs)
                 }
 
                 _afterCreate(toSave)
@@ -1128,19 +1224,23 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
       .get(name)
       .map(c => (c.dbPrimaryKey_? && c.dbAutogenerated_?)) getOrElse false
 
-  def createInstances(dbId: ConnectionIdentifier,
-                      rs: ResultSet,
-                      start: Box[Long],
-                      omax: Box[Long]): List[A] =
+  def createInstances(
+      dbId: ConnectionIdentifier,
+      rs: ResultSet,
+      start: Box[Long],
+      omax: Box[Long]
+  ): List[A] =
     createInstances(dbId, rs, start, omax, v => Full(v))
 
-  def createInstances[T](dbId: ConnectionIdentifier,
-                         rs: ResultSet,
-                         start: Box[Long],
-                         omax: Box[Long],
-                         f: A => Box[T]): List[T] = {
+  def createInstances[T](
+      dbId: ConnectionIdentifier,
+      rs: ResultSet,
+      start: Box[Long],
+      omax: Box[Long],
+      f: A => Box[T]
+  ): List[T] = {
     var ret = new ListBuffer[T]
-    val bm = buildMapper(rs)
+    val bm  = buildMapper(rs)
     var pos = (start openOr 0L) * -1L
     val max = omax openOr java.lang.Long.MAX_VALUE
 
@@ -1162,84 +1262,82 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
 
   def buildMapper(rs: ResultSet): List[Box[(ResultSet, Int, A) => Unit]] =
     columnNameToMappee.synchronized {
-      val meta = rs.getMetaData
+      val meta   = rs.getMetaData
       val colCnt = meta.getColumnCount
       for {
-        pos <- (1 to colCnt).toList
+        pos    <- (1 to colCnt).toList
         colName = meta.getColumnName(pos).toLowerCase
-      } yield
-        columnNameToMappee.get(colName) match {
-          case None =>
-            val colType = meta.getColumnType(pos)
+      } yield columnNameToMappee.get(colName) match {
+        case None =>
+          val colType = meta.getColumnType(pos)
 
-            Box(mappedColumns.get(colName)).flatMap { fieldInfo =>
-              val setTo = {
-                val tField =
-                  fieldInfo.invoke(this).asInstanceOf[MappedField[AnyRef, A]]
+          Box(mappedColumns.get(colName)).flatMap { fieldInfo =>
+            val setTo = {
+              val tField =
+                fieldInfo.invoke(this).asInstanceOf[MappedField[AnyRef, A]]
 
-                Some(colType match {
-                  case Types.INTEGER | Types.BIGINT => {
-                      val bsl = tField.buildSetLongValue(fieldInfo, colName)
-                      (rs: ResultSet, pos: Int, objInst: A) =>
-                        bsl(objInst, rs.getLong(pos), rs.wasNull)
-                    }
-                  case Types.VARCHAR => {
-                      val bsl = tField.buildSetStringValue(fieldInfo, colName)
-                      (rs: ResultSet, pos: Int, objInst: A) =>
-                        bsl(objInst, rs.getString(pos))
-                    }
-                  case Types.DATE | Types.TIME | Types.TIMESTAMP =>
-                    val bsl = tField.buildSetDateValue(fieldInfo, colName)
-                    (rs: ResultSet, pos: Int, objInst: A) =>
-                      bsl(objInst, rs.getTimestamp(pos))
-                    case Types.BOOLEAN | Types.BIT => {
-                      val bsl = tField.buildSetBooleanValue(fieldInfo, colName)
-                      (rs: ResultSet, pos: Int, objInst: A) =>
-                        bsl(objInst, rs.getBoolean(pos), rs.wasNull)
-                    }
-                  case _ => {
-                      (rs: ResultSet, pos: Int, objInst: A) =>
-                        {
-                          val res = rs.getObject(pos)
-                          findApplier(colName, res).foreach(
-                              f => f(objInst, res))
-                        }
-                    }
-                })
-              }
-
-              columnNameToMappee(colName) = Box(setTo)
-              setTo
+              Some(colType match {
+                case Types.INTEGER | Types.BIGINT => {
+                  val bsl = tField.buildSetLongValue(fieldInfo, colName)
+                  (rs: ResultSet, pos: Int, objInst: A) =>
+                    bsl(objInst, rs.getLong(pos), rs.wasNull)
+                }
+                case Types.VARCHAR => {
+                  val bsl = tField.buildSetStringValue(fieldInfo, colName)
+                  (rs: ResultSet, pos: Int, objInst: A) =>
+                    bsl(objInst, rs.getString(pos))
+                }
+                case Types.DATE | Types.TIME | Types.TIMESTAMP =>
+                  val bsl = tField.buildSetDateValue(fieldInfo, colName)
+                  (rs: ResultSet, pos: Int, objInst: A) =>
+                    bsl(objInst, rs.getTimestamp(pos))
+                case Types.BOOLEAN | Types.BIT => {
+                  val bsl = tField.buildSetBooleanValue(fieldInfo, colName)
+                  (rs: ResultSet, pos: Int, objInst: A) =>
+                    bsl(objInst, rs.getBoolean(pos), rs.wasNull)
+                }
+                case _ => { (rs: ResultSet, pos: Int, objInst: A) =>
+                  val res = rs.getObject(pos)
+                  findApplier(colName, res).foreach(f => f(objInst, res))
+                }
+              })
             }
 
-          case Some(of) => of
-        }
+            columnNameToMappee(colName) = Box(setTo)
+            setTo
+          }
+
+        case Some(of) => of
+      }
     }
 
-  def createInstance(dbId: ConnectionIdentifier,
-                     rs: ResultSet,
-                     mapFuncs: List[Box[(ResultSet, Int, A) => Unit]]): A = {
+  def createInstance(
+      dbId: ConnectionIdentifier,
+      rs: ResultSet,
+      mapFuncs: List[Box[(ResultSet, Int, A) => Unit]]
+  ): A = {
     val ret: A = createInstance.connectionIdentifier(dbId)
 
     ret.persisted_? = true
 
     for {
       (fb, pos) <- mapFuncs.zipWithIndex
-      f <- fb
+      f         <- fb
     } f(rs, pos + 1, ret)
 
     ret
   }
 
   protected def findApplier(
-      name: String, inst: AnyRef): Box[((A, AnyRef) => Unit)] = synchronized {
+      name: String,
+      inst: AnyRef
+  ): Box[((A, AnyRef) => Unit)] = synchronized {
     val clz = inst match {
       case null => null
-      case _ => inst.getClass.asInstanceOf[Class[(C forSome { type C })]]
+      case _    => inst.getClass.asInstanceOf[Class[(C forSome { type C })]]
     }
     val look = (name.toLowerCase, if (clz ne null) Full(clz) else Empty)
-    Box(
-        mappedAppliers.get(look) orElse {
+    Box(mappedAppliers.get(look) orElse {
       val newFunc = createApplier(name, inst)
       mappedAppliers(look) = newFunc
       Some(newFunc)
@@ -1247,7 +1345,9 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
   }
 
   private def createApplier(
-      name: String, inst: AnyRef /*, clz : Class*/ ): (A, AnyRef) => Unit = {
+      name: String,
+      inst: AnyRef /*, clz : Class*/
+  ): (A, AnyRef) => Unit = {
     val accessor =
       mappedColumns.get(name) orElse mappedColumns.get(name.toLowerCase)
     if ((accessor eq null) || accessor == None) {
@@ -1280,21 +1380,21 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     * Above, -name field-, -date field-, and -description field- refer to the
     * actual MappedField objects for those fields.
     */
-  def fieldMapperTransforms(fieldHtml: (BaseOwnedMappedField[A] => NodeSeq),
-                            mappedObject: A): Seq[CssSel] = {
+  def fieldMapperTransforms(
+      fieldHtml: (BaseOwnedMappedField[A] => NodeSeq),
+      mappedObject: A
+  ): Seq[CssSel] =
     mappedFieldList.map { field =>
       s".${field.name}" #> fieldHtml(??(field.method, mappedObject))
     }
-  }
 
-  private[mapper] def checkFieldNames(in: A): Unit = {
-    mappedFieldList.foreach(
-        f =>
-          ??(f.method, in) match {
+  private[mapper] def checkFieldNames(in: A): Unit =
+    mappedFieldList.foreach(f =>
+      ??(f.method, in) match {
         case field if (field.i_name_! eq null) => field.setName_!(f.name)
-        case _ =>
-    })
-  }
+        case _                                 =>
+      }
+    )
 
   /**
     * Get a field by the field name
@@ -1323,7 +1423,9 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
   protected val rootClass = this.getClass.getSuperclass
 
   private val mappedAppliers = new HashMap[
-      (String, Box[Class[(C forSome { type C })]]), (A, AnyRef) => Unit];
+    (String, Box[Class[(C forSome { type C })]]),
+    (A, AnyRef) => Unit
+  ];
 
   private val _mappedFields = new HashMap[String, Method];
 
@@ -1348,8 +1450,7 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
   private var primaryKeyAutogenerated: Box[Boolean] = Empty
 
   this.runSafe {
-    logger.debug(
-        "Initializing MetaMapper for %s".format(internalTableName_$_$))
+    logger.debug("Initializing MetaMapper for %s".format(internalTableName_$_$))
     val tArray = new ListBuffer[FieldHolder]
     def isLifecycle(m: Method) =
       classOf[LifecycleCallbacks].isAssignableFrom(m.getReturnType)
@@ -1369,15 +1470,15 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
           mf.setName_!(v.getName)
           tArray += FieldHolder(mf.name, v, mf)
           for (colName <- mf
-            .dbColumnNames(v.getName)
-            .map(MapperRules.quoteColumnName.vend)
-            .map(_.toLowerCase)) {
+                           .dbColumnNames(v.getName)
+                           .map(MapperRules.quoteColumnName.vend)
+                           .map(_.toLowerCase)) {
             mappedColumnInfo += colName -> mf
-            mappedColumns += colName -> v
+            mappedColumns += colName    -> v
           }
           if (mf.dbPrimaryKey_?) {
-            thePrimaryKeyField = Full(
-                MapperRules.quoteColumnName.vend(mf._dbColumnNameLC))
+            thePrimaryKeyField =
+              Full(MapperRules.quoteColumnName.vend(mf._dbColumnNameLC))
             primaryKeyAutogenerated = Full(mf.dbAutogenerated_?)
           }
 
@@ -1385,25 +1486,27 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
       }
     }
 
-    def findPos(in: AnyRef): Box[Int] = {
+    def findPos(in: AnyRef): Box[Int] =
       tArray.toList.zipWithIndex.filter(mft => in eq mft._1.field) match {
-        case Nil => Empty
+        case Nil     => Empty
         case x :: xs => Full(x._2)
       }
-    }
 
     val resArray = new ListBuffer[FieldHolder];
 
-    fieldOrder.foreach(
-        f => findPos(f).foreach(pos => resArray += tArray.remove(pos)))
+    fieldOrder.foreach(f =>
+      findPos(f).foreach(pos => resArray += tArray.remove(pos))
+    )
 
     tArray.foreach(mft => resArray += mft)
 
     mappedFieldList = resArray.toList
     mappedFieldList.foreach(ae => _mappedFields(ae.name) = ae.method)
 
-    logger.trace("Mapped fields for %s: %s".format(
-            dbName, mappedFieldList.map(_.name).mkString(",")))
+    logger.trace(
+      "Mapped fields for %s: %s"
+        .format(dbName, mappedFieldList.map(_.name).mkString(","))
+    )
   }
 
   val columnNamesForInsert = (mappedColumnInfo
@@ -1413,9 +1516,11 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     .mkString(",")
 
   val columnQueriesForInsert = {
-    (mappedColumnInfo
-      .filter(c => !(c._2.dbPrimaryKey_? && c._2.dbAutogenerated_?))
-      .map(p => "?"))
+    (
+      mappedColumnInfo
+        .filter(c => !(c._2.dbPrimaryKey_? && c._2.dbAutogenerated_?))
+        .map(p => "?")
+      )
       .toList
       .mkString(",")
   }
@@ -1474,33 +1579,35 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
       .filter(_.field.dbDisplay_?)
       .flatMap(mft => displayFieldAsLineElement(??(mft.method, toLine).asHtml))
 
-  def asJs(actual: A): JsExp = {
+  def asJs(actual: A): JsExp =
     JE.JsObj(
-        ("$lift_class", JE.Str(dbTableName)) :: mappedFieldList
-          .map(f => ??(f.method, actual))
-          .filter(_.renderJs_?)
-          .flatMap(_.asJs)
-          .toList ::: actual.suplementalJs(Empty): _*)
-  }
+      ("$lift_class", JE.Str(dbTableName)) :: mappedFieldList
+        .map(f => ??(f.method, actual))
+        .filter(_.renderJs_?)
+        .flatMap(_.asJs)
+        .toList ::: actual.suplementalJs(Empty): _*
+    )
 
   /**
     * Get a list of all the fields
     * @return a list of all the fields
     */
   lazy val doAllFieldNames: Seq[(String, SourceFieldMetadata)] =
-    mappedFieldList.map(
-        fh => fh.name.toLowerCase -> fh.field.sourceInfoMetadata())
+    mappedFieldList.map(fh =>
+      fh.name.toLowerCase -> fh.field.sourceInfoMetadata()
+    )
 
   /**
     * Get a list of all the fields as a map
     * @return a list of all the fields
     */
   lazy val fieldNamesAsMap: Map[String, SourceFieldMetadata] = Map(
-      doAllFieldNames: _*)
+    doAllFieldNames: _*
+  )
 
   def asHtml(toLine: A): NodeSeq =
     Text(internalTableName_$_$) :: Text("={ ") :: (for {
-      mft <- mappedFieldList if mft.field.dbDisplay_?
+      mft  <- mappedFieldList if mft.field.dbDisplay_?
       field = ??(mft.method, toLine)
     } yield {
       <span>{field.displayName}={field.asHtml}&nbsp;</span>
@@ -1522,10 +1629,9 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     mappedFieldList
       .map(e => ??(e.method, toMap))
       .filter(f => f.dbDisplay_? && f.dbIncludeInForm_?)
-      .flatMap(
-          field =>
-            field.toForm.toList
-              .flatMap(form => formatFormLine(Text(field.displayName), form))
+      .flatMap(field =>
+        field.toForm.toList
+          .flatMap(form => formatFormLine(Text(field.displayName), form))
       )
 
   /**
@@ -1539,9 +1645,7 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     mappedFieldList
       .map(e => ??(e.method, toMap))
       .filter(f => f.dbDisplay_?)
-      .flatMap(
-          field => formatFormLine(Text(field.displayName), field.asHtml)
-      )
+      .flatMap(field => formatFormLine(Text(field.displayName), field.asHtml))
 
   /**
     * Get the fields (in order) for displaying a form
@@ -1556,9 +1660,12 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     * @param func called with displayHtml, fieldId, form
     */
   def mapFieldTitleForm[T](
-      toMap: A, func: (NodeSeq, Box[NodeSeq], NodeSeq) => T): List[T] =
+      toMap: A,
+      func: (NodeSeq, Box[NodeSeq], NodeSeq) => T
+  ): List[T] =
     formFields(toMap).flatMap(field =>
-          field.toForm.map(fo => func(field.displayHtml, field.fieldId, fo)))
+      field.toForm.map(fo => func(field.displayHtml, field.fieldId, fo))
+    )
 
   /**
     * flat map the fields titles and forms to generate a list
@@ -1566,13 +1673,13 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     */
   def flatMapFieldTitleForm[T](
       toMap: A,
-      func: (NodeSeq, Box[NodeSeq], NodeSeq) => Seq[T]): List[T] =
-    formFields(toMap).flatMap(
-        field =>
-          field.toForm.toList.flatMap(fo =>
-                func(field.displayHtml,
-                     field.fieldId,
-                     fo)))
+      func: (NodeSeq, Box[NodeSeq], NodeSeq) => Seq[T]
+  ): List[T] =
+    formFields(toMap).flatMap(field =>
+      field.toForm.toList.flatMap(fo =>
+        func(field.displayHtml, field.fieldId, fo)
+      )
+    )
 
   /**
     * flat map the fields titles and forms to generate a list
@@ -1580,10 +1687,12 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     */
   def flatMapFieldTitleForm2[T](
       toMap: A,
-      func: (NodeSeq, MappedField[_, A], NodeSeq) => Seq[T]): List[T] =
+      func: (NodeSeq, MappedField[_, A], NodeSeq) => Seq[T]
+  ): List[T] =
     formFields(toMap).flatMap(field =>
-          field.toForm.toList
-            .flatMap(fo => func(field.displayHtml, field, fo)))
+      field.toForm.toList
+        .flatMap(fo => func(field.displayHtml, field, fo))
+    )
 
   /**
     * Given the prototype field (the field on the Singleton), get the field from the instance
@@ -1593,7 +1702,9 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     * @return the field from the actual object
     */
   def getActualField[T](
-      actual: A, protoField: MappedField[T, A]): MappedField[T, A] =
+      actual: A,
+      protoField: MappedField[T, A]
+  ): MappedField[T, A] =
     ??(_mappedFields(protoField.name), actual).asInstanceOf[MappedField[T, A]]
 
   /**
@@ -1605,8 +1716,12 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     */
   def getActualBaseField(
       actual: A,
-      protoField: BaseOwnedMappedField[A]): BaseOwnedMappedField[A] =
-    ??(_mappedFields(protoField.name), actual) // .asInstanceOf[MappedField[T,A]]
+      protoField: BaseOwnedMappedField[A]
+  ): BaseOwnedMappedField[A] =
+    ??(
+      _mappedFields(protoField.name),
+      actual
+    ) // .asInstanceOf[MappedField[T,A]]
 
   /**
     * The name of the database table.  Override this method if you
@@ -1635,7 +1750,8 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
   } // dbTableName.toLowerCase
 
   private[mapper] lazy val internal_dbTableName = fixTableName(
-      internalTableName_$_$)
+    internalTableName_$_$
+  )
 
   private def setupInstanceForPostCommit(inst: A) {
     afterCommit match {
@@ -1646,30 +1762,28 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
       case pcf =>
         if (!inst.addedPostCommit) {
           DB.appendPostTransaction(
-              inst.connectionIdentifier,
-              dontUse => (clearPCFunc :: pcf).foreach(_ (inst)))
+            inst.connectionIdentifier,
+            dontUse => (clearPCFunc :: pcf).foreach(_(inst))
+          )
           inst.addedPostCommit = true
         }
     }
   }
 
   private def eachField(what: A, toRun: List[(A) => Any])(
-      f: (LifecycleCallbacks) => Any) {
-    mappedCallbacks.foreach(
-        e =>
-          e._2.invoke(what) match {
+      f: (LifecycleCallbacks) => Any
+  ) {
+    mappedCallbacks.foreach(e =>
+      e._2.invoke(what) match {
         case lccb: LifecycleCallbacks => f(lccb)
-        case _ =>
-    })
-    toRun.foreach { tf =>
-      tf(what)
-    }
+        case _                        =>
+      }
+    )
+    toRun.foreach(tf => tf(what))
   }
   private def _beforeValidation(what: A) {
     setupInstanceForPostCommit(what);
-    eachField(what, beforeValidation) { field =>
-      field.beforeValidation
-    }
+    eachField(what, beforeValidation)(field => field.beforeValidation)
   }
   private def _beforeValidationOnCreate(what: A) {
     eachField(what, beforeValidationOnCreate) { field =>
@@ -1682,9 +1796,7 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
     }
   }
   private def _afterValidation(what: A) {
-    eachField(what, afterValidation) { field =>
-      field.afterValidation
-    }
+    eachField(what, afterValidation)(field => field.afterValidation)
   }
   private def _afterValidationOnCreate(what: A) {
     eachField(what, afterValidationOnCreate) { field =>
@@ -1699,47 +1811,31 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
 
   private def _beforeSave(what: A) {
     setupInstanceForPostCommit(what);
-    eachField(what, beforeSave) { field =>
-      field.beforeSave
-    }
+    eachField(what, beforeSave)(field => field.beforeSave)
   }
   private def _beforeCreate(what: A) {
-    eachField(what, beforeCreate) { field =>
-      field.beforeCreate
-    }
+    eachField(what, beforeCreate)(field => field.beforeCreate)
   }
   private def _beforeUpdate(what: A) {
-    eachField(what, beforeUpdate) { field =>
-      field.beforeUpdate
-    }
+    eachField(what, beforeUpdate)(field => field.beforeUpdate)
   }
 
   private def _afterSave(what: A) {
-    eachField(what, afterSave) { field =>
-      field.afterSave
-    }
+    eachField(what, afterSave)(field => field.afterSave)
   }
   private def _afterCreate(what: A) {
-    eachField(what, afterCreate) { field =>
-      field.afterCreate
-    }
+    eachField(what, afterCreate)(field => field.afterCreate)
   }
   private def _afterUpdate(what: A) {
-    eachField(what, afterUpdate) { field =>
-      field.afterUpdate
-    }
+    eachField(what, afterUpdate)(field => field.afterUpdate)
   }
 
   private def _beforeDelete(what: A) {
     setupInstanceForPostCommit(what);
-    eachField(what, beforeDelete) { field =>
-      field.beforeDelete
-    }
+    eachField(what, beforeDelete)(field => field.beforeDelete)
   }
   private def _afterDelete(what: A) {
-    eachField(what, afterDelete) { field =>
-      field.afterDelete
-    }
+    eachField(what, afterDelete)(field => field.afterDelete)
   }
 
   def beforeSchemifier {}
@@ -1750,24 +1846,25 @@ trait MetaMapper[A <: Mapper[A]] extends BaseMetaMapper with Mapper[A] {
   implicit def fieldToItem[T](in: MappedField[T, A]): IndexItem[A] =
     IndexField(in)
   implicit def boundedFieldToItem(
-      in: (MappedField[String, A], Int)): BoundedIndexField[A] =
+      in: (MappedField[String, A], Int)
+  ): BoundedIndexField[A] =
     BoundedIndexField(in._1, in._2)
 
   // protected def getField(inst : Mapper[A], meth : Method) = meth.invoke(inst, null).asInstanceOf[MappedField[AnyRef,A]]
 }
 
 object OprEnum extends Enumeration {
-  val Eql = Value(1, "=")
-  val <> = Value(2, "<>")
-  val >= = Value(3, ">=")
-  val != = <>
-  val <= = Value(4, "<=")
-  val > = Value(5, ">")
-  val < = Value(6, "<")
-  val IsNull = Value(7, "IS NULL")
+  val Eql       = Value(1, "=")
+  val <>        = Value(2, "<>")
+  val >=        = Value(3, ">=")
+  val !=        = <>
+  val <=        = Value(4, "<=")
+  val >         = Value(5, ">")
+  val <         = Value(6, "<")
+  val IsNull    = Value(7, "IS NULL")
   val IsNotNull = Value(8, "IS NOT NULL")
-  val Like = Value(9, "LIKE")
-  val NotLike = Value(10, "NOT LIKE")
+  val Like      = Value(9, "LIKE")
+  val NotLike   = Value(10, "NOT LIKE")
 }
 
 sealed trait BaseIndex[A <: Mapper[A]] {
@@ -1800,13 +1897,15 @@ object UniqueIndex {
 final case class GenericIndex[A <: Mapper[A]](
     createFunc: (String, List[String]) => String,
     validated: IHaveValidatedThisSQL,
-    columns: List[IndexItem[A]])
-    extends BaseIndex[A] // (indexColumns : _*)
+    columns: List[IndexItem[A]]
+) extends BaseIndex[A] // (indexColumns : _*)
 
 object GenericIndex {
-  def apply[A <: Mapper[A]](createFunc: (String, List[String]) => String,
-                            validated: IHaveValidatedThisSQL,
-                            cols: IndexItem[A]*): GenericIndex[A] =
+  def apply[A <: Mapper[A]](
+      createFunc: (String, List[String]) => String,
+      validated: IHaveValidatedThisSQL,
+      cols: IndexItem[A]*
+  ): GenericIndex[A] =
     new GenericIndex[A](createFunc, validated, cols.toList)
 }
 
@@ -1821,24 +1920,27 @@ case class IndexField[A <: Mapper[A], T](field: MappedField[T, A])
     MapperRules.quoteColumnName.vend(field._dbColumnNameLC)
 }
 case class BoundedIndexField[A <: Mapper[A]](
-    field: MappedField[String, A], len: Int)
-    extends IndexItem[A] {
+    field: MappedField[String, A],
+    len: Int
+) extends IndexItem[A] {
   def indexDesc: String =
     MapperRules.quoteColumnName.vend(field._dbColumnNameLC) + "(" + len + ")"
 }
 
 sealed trait QueryParam[O <: Mapper[O]]
-final case class Cmp[O <: Mapper[O], T](field: MappedField[T, O],
-                                        opr: OprEnum.Value,
-                                        value: Box[T],
-                                        otherField: Box[MappedField[T, O]],
-                                        dbFunc: Box[String])
-    extends QueryParam[O]
+final case class Cmp[O <: Mapper[O], T](
+    field: MappedField[T, O],
+    opr: OprEnum.Value,
+    value: Box[T],
+    otherField: Box[MappedField[T, O]],
+    dbFunc: Box[String]
+) extends QueryParam[O]
 
-final case class OrderBy[O <: Mapper[O], T](field: MappedField[T, O],
-                                            order: AscOrDesc,
-                                            nullOrder: Box[NullOrder])
-    extends QueryParam[O]
+final case class OrderBy[O <: Mapper[O], T](
+    field: MappedField[T, O],
+    order: AscOrDesc,
+    nullOrder: Box[NullOrder]
+) extends QueryParam[O]
 
 sealed trait NullOrder {
   def getSql: String
@@ -1852,12 +1954,16 @@ case object NullsLast extends NullOrder {
 
 object OrderBy {
   def apply[O <: Mapper[O], T](
-      field: MappedField[T, O], order: AscOrDesc): OrderBy[O, T] =
+      field: MappedField[T, O],
+      order: AscOrDesc
+  ): OrderBy[O, T] =
     new OrderBy[O, T](field, order, Empty)
 
-  def apply[O <: Mapper[O], T](field: MappedField[T, O],
-                               order: AscOrDesc,
-                               no: NullOrder): OrderBy[O, T] =
+  def apply[O <: Mapper[O], T](
+      field: MappedField[T, O],
+      order: AscOrDesc,
+      no: NullOrder
+  ): OrderBy[O, T] =
     new OrderBy[O, T](field, order, Full(no))
 }
 
@@ -1875,13 +1981,15 @@ case object Descending extends AscOrDesc {
 
 final case class Distinct[O <: Mapper[O]]() extends QueryParam[O]
 
-final case class OrderBySql[O <: Mapper[O]](sql: String,
-                                            checkedBy: IHaveValidatedThisSQL)
-    extends QueryParam[O]
+final case class OrderBySql[O <: Mapper[O]](
+    sql: String,
+    checkedBy: IHaveValidatedThisSQL
+) extends QueryParam[O]
 
 final case class ByList[O <: Mapper[O], T](
-    field: MappedField[T, O], vals: Seq[T])
-    extends QueryParam[O]
+    field: MappedField[T, O],
+    vals: Seq[T]
+) extends QueryParam[O]
 
 /**
   * Represents a query criterion using a parameterized SQL string. Parameters are
@@ -1889,13 +1997,14 @@ final case class ByList[O <: Mapper[O], T](
   * Timestamp parameter. If you want a specific SQL Date/Time type, use the corresponding
   * java.sql.Date, java.sql.Time, or java.sql.Timestamp classes.
   */
-final case class BySql[O <: Mapper[O]](query: String,
-                                       checkedBy: IHaveValidatedThisSQL,
-                                       params: Any*)
-    extends QueryParam[O]
-final case class MaxRows[O <: Mapper[O]](max: Long) extends QueryParam[O]
+final case class BySql[O <: Mapper[O]](
+    query: String,
+    checkedBy: IHaveValidatedThisSQL,
+    params: Any*
+) extends QueryParam[O]
+final case class MaxRows[O <: Mapper[O]](max: Long)   extends QueryParam[O]
 final case class StartAt[O <: Mapper[O]](start: Long) extends QueryParam[O]
-final case class Ignore[O <: Mapper[O]]() extends QueryParam[O]
+final case class Ignore[O <: Mapper[O]]()             extends QueryParam[O]
 
 sealed abstract class InThing[OuterType <: Mapper[OuterType]]
     extends QueryParam[OuterType] {
@@ -1914,10 +2023,10 @@ sealed abstract class InThing[OuterType <: Mapper[OuterType]]
   def distinct: String =
     queryParams.find {
       case Distinct() => true
-      case _ => false
+      case _          => false
     }.isDefined match {
       case false => ""
-      case true => " DISTINCT "
+      case true  => " DISTINCT "
     }
 }
 
@@ -1929,41 +2038,43 @@ sealed abstract class InThing[OuterType <: Mapper[OuterType]]
   * false if the query is not deterministic.  In this case, a SELECT * FROM FK_TABLE WHERE primary_key in (xxx) will
   * be generated
   */
-final case class PreCache[TheType <: Mapper[TheType],
-                          FieldType,
-                          OtherType <: KeyedMapper[FieldType, OtherType]](
+final case class PreCache[TheType <: Mapper[TheType], FieldType, OtherType <: KeyedMapper[
+  FieldType,
+  OtherType
+]](
     field: MappedForeignKey[FieldType, TheType, OtherType],
-    deterministic: Boolean)
-    extends QueryParam[TheType]
+    deterministic: Boolean
+) extends QueryParam[TheType]
 
 object PreCache {
   def apply[TheType <: Mapper[TheType], FieldType, OtherType <: KeyedMapper[
-          FieldType, OtherType]](
-      field: MappedForeignKey[FieldType, TheType, OtherType]) =
+    FieldType,
+    OtherType
+  ]](field: MappedForeignKey[FieldType, TheType, OtherType]) =
     new PreCache(field, true)
 }
 
 final case class InRaw[TheType <: Mapper[TheType], T](
     field: MappedField[T, TheType],
     rawSql: String,
-    checkedBy: IHaveValidatedThisSQL)
-    extends QueryParam[TheType]
+    checkedBy: IHaveValidatedThisSQL
+) extends QueryParam[TheType]
 
 object NotIn {
-  def fk[InnerMapper <: Mapper[InnerMapper],
-         JoinTypeA,
-         Zoom <% QueryParam[InnerMapper],
-         OuterMapper <: KeyedMapper[JoinTypeA, OuterMapper]](
+  def fk[InnerMapper <: Mapper[InnerMapper], JoinTypeA, Zoom <% QueryParam[
+    InnerMapper
+  ], OuterMapper <: KeyedMapper[JoinTypeA, OuterMapper]](
       fielda: MappedForeignKey[JoinTypeA, InnerMapper, OuterMapper],
-      qp: Zoom*): InThing[OuterMapper] = {
+      qp: Zoom*
+  ): InThing[OuterMapper] =
     new InThing[OuterMapper] {
-      type JoinType = JoinTypeA
+      type JoinType  = JoinTypeA
       type InnerType = InnerMapper
 
       val outerField: MappedField[JoinType, OuterMapper] =
         fielda.dbKeyToTable.primaryKeyField
       val innerField: MappedField[JoinType, InnerMapper] = fielda
-      val innerMeta: MetaMapper[InnerMapper] = fielda.fieldOwner.getSingleton
+      val innerMeta: MetaMapper[InnerMapper]             = fielda.fieldOwner.getSingleton
 
       def notIn: Boolean = true
 
@@ -1971,17 +2082,16 @@ object NotIn {
         val r: QueryParam[InnerMapper] = v; r
       }.toList
     }
-  }
 
-  def apply[InnerMapper <: Mapper[InnerMapper],
-            JoinTypeA,
-            Zoom <% QueryParam[InnerMapper],
-            OuterMapper <: Mapper[OuterMapper]](
+  def apply[InnerMapper <: Mapper[InnerMapper], JoinTypeA, Zoom <% QueryParam[
+    InnerMapper
+  ], OuterMapper <: Mapper[OuterMapper]](
       _outerField: MappedField[JoinTypeA, OuterMapper],
       _innerField: MappedField[JoinTypeA, InnerMapper],
-      qp: Zoom*): InThing[OuterMapper] = {
+      qp: Zoom*
+  ): InThing[OuterMapper] =
     new InThing[OuterMapper] {
-      type JoinType = JoinTypeA
+      type JoinType  = JoinTypeA
       type InnerType = InnerMapper
 
       val outerField: MappedField[JoinType, OuterMapper] = _outerField
@@ -1992,29 +2102,26 @@ object NotIn {
       def notIn: Boolean = true
 
       val queryParams: List[QueryParam[InnerMapper]] = {
-        qp.map { v =>
-          val r: QueryParam[InnerMapper] = v; r
-        }.toList
+        qp.map { v => val r: QueryParam[InnerMapper] = v; r }.toList
       }
     }
-  }
 }
 
 object In {
-  def fk[InnerMapper <: Mapper[InnerMapper],
-         JoinTypeA,
-         Zoom <% QueryParam[InnerMapper],
-         OuterMapper <: KeyedMapper[JoinTypeA, OuterMapper]](
+  def fk[InnerMapper <: Mapper[InnerMapper], JoinTypeA, Zoom <% QueryParam[
+    InnerMapper
+  ], OuterMapper <: KeyedMapper[JoinTypeA, OuterMapper]](
       fielda: MappedForeignKey[JoinTypeA, InnerMapper, OuterMapper],
-      qp: Zoom*): InThing[OuterMapper] = {
+      qp: Zoom*
+  ): InThing[OuterMapper] =
     new InThing[OuterMapper] {
-      type JoinType = JoinTypeA
+      type JoinType  = JoinTypeA
       type InnerType = InnerMapper
 
       val outerField: MappedField[JoinType, OuterMapper] =
         fielda.dbKeyToTable.primaryKeyField
       val innerField: MappedField[JoinType, InnerMapper] = fielda
-      val innerMeta: MetaMapper[InnerMapper] = fielda.fieldOwner.getSingleton
+      val innerMeta: MetaMapper[InnerMapper]             = fielda.fieldOwner.getSingleton
 
       def notIn: Boolean = false
 
@@ -2022,17 +2129,16 @@ object In {
         val r: QueryParam[InnerMapper] = v; r
       }.toList
     }
-  }
 
-  def apply[InnerMapper <: Mapper[InnerMapper],
-            JoinTypeA,
-            Zoom <% QueryParam[InnerMapper],
-            OuterMapper <: Mapper[OuterMapper]](
+  def apply[InnerMapper <: Mapper[InnerMapper], JoinTypeA, Zoom <% QueryParam[
+    InnerMapper
+  ], OuterMapper <: Mapper[OuterMapper]](
       _outerField: MappedField[JoinTypeA, OuterMapper],
       _innerField: MappedField[JoinTypeA, InnerMapper],
-      qp: Zoom*): InThing[OuterMapper] = {
+      qp: Zoom*
+  ): InThing[OuterMapper] =
     new InThing[OuterMapper] {
-      type JoinType = JoinTypeA
+      type JoinType  = JoinTypeA
       type InnerType = InnerMapper
 
       val outerField: MappedField[JoinType, OuterMapper] = _outerField
@@ -2043,12 +2149,9 @@ object In {
       def notIn: Boolean = false
 
       val queryParams: List[QueryParam[InnerMapper]] = {
-        qp.map { v =>
-          val r: QueryParam[InnerMapper] = v; r
-        }.toList
+        qp.map { v => val r: QueryParam[InnerMapper] = v; r }.toList
       }
     }
-  }
 }
 
 object Like {
@@ -2067,16 +2170,22 @@ object By {
   def apply[O <: Mapper[O], T, U <% T](field: MappedField[T, O], value: U) =
     Cmp[O, T](field, Eql, Full(value), Empty, Empty)
   def apply[O <: Mapper[O], T](
-      field: MappedNullableField[T, O], value: Box[T]) = value match {
+      field: MappedNullableField[T, O],
+      value: Box[T]
+  ) = value match {
     case Full(x) => Cmp[O, Box[T]](field, Eql, Full(value), Empty, Empty)
-    case _ => NullRef(field)
+    case _       => NullRef(field)
   }
   def apply[O <: Mapper[O], T, Q <: KeyedMapper[T, Q]](
-      field: MappedForeignKey[T, O, Q], value: Q) =
+      field: MappedForeignKey[T, O, Q],
+      value: Q
+  ) =
     Cmp[O, T](field, Eql, Full(value.primaryKeyField.get), Empty, Empty)
 
   def apply[O <: Mapper[O], T, Q <: KeyedMapper[T, Q]](
-      field: MappedForeignKey[T, O, Q], value: Box[Q]) =
+      field: MappedForeignKey[T, O, Q],
+      value: Box[Q]
+  ) =
     value match {
       case Full(v) =>
         Cmp[O, T](field, Eql, Full(v.primaryKeyField.get), Empty, Empty)
@@ -2092,7 +2201,9 @@ object By_>= {
     Cmp[O, T](field, >=, Full(value), Empty, Empty)
 
   def apply[O <: Mapper[O], T](
-      field: MappedField[T, O], otherField: MappedField[T, O]) =
+      field: MappedField[T, O],
+      otherField: MappedField[T, O]
+  ) =
     Cmp[O, T](field, >=, Empty, Full(otherField), Empty)
 }
 
@@ -2104,7 +2215,9 @@ object By_<= {
     Cmp[O, T](field, <=, Full(value), Empty, Empty)
 
   def apply[O <: Mapper[O], T](
-      field: MappedField[T, O], otherField: MappedField[T, O]) =
+      field: MappedField[T, O],
+      otherField: MappedField[T, O]
+  ) =
     Cmp[O, T](field, <=, Empty, Full(otherField), Empty)
 }
 
@@ -2115,16 +2228,22 @@ object NotBy {
     Cmp[O, T](field, <>, Full(value), Empty, Empty)
 
   def apply[O <: Mapper[O], T](
-      field: MappedNullableField[T, O], value: Box[T]) = value match {
+      field: MappedNullableField[T, O],
+      value: Box[T]
+  ) = value match {
     case Full(x) => Cmp[O, Box[T]](field, <>, Full(value), Empty, Empty)
-    case _ => NotNullRef(field)
+    case _       => NotNullRef(field)
   }
 
   def apply[O <: Mapper[O], T, Q <: KeyedMapper[T, Q]](
-      field: MappedForeignKey[T, O, Q], value: Q) =
+      field: MappedForeignKey[T, O, Q],
+      value: Q
+  ) =
     Cmp[O, T](field, <>, Full(value.primaryKeyField.get), Empty, Empty)
   def apply[O <: Mapper[O], T, Q <: KeyedMapper[T, Q]](
-      field: MappedForeignKey[T, O, Q], value: Box[Q]) =
+      field: MappedForeignKey[T, O, Q],
+      value: Box[Q]
+  ) =
     value match {
       case Full(v) =>
         Cmp[O, T](field, <>, Full(v.primaryKeyField.get), Empty, Empty)
@@ -2136,7 +2255,9 @@ object ByRef {
   import OprEnum._
 
   def apply[O <: Mapper[O], T](
-      field: MappedField[T, O], otherField: MappedField[T, O]) =
+      field: MappedField[T, O],
+      otherField: MappedField[T, O]
+  ) =
     Cmp[O, T](field, Eql, Empty, Full(otherField), Empty)
 }
 
@@ -2144,7 +2265,9 @@ object NotByRef {
   import OprEnum._
 
   def apply[O <: Mapper[O], T](
-      field: MappedField[T, O], otherField: MappedField[T, O]) =
+      field: MappedField[T, O],
+      otherField: MappedField[T, O]
+  ) =
     Cmp[O, T](field, <>, Empty, Full(otherField), Empty)
 }
 
@@ -2154,7 +2277,9 @@ object By_> {
   def apply[O <: Mapper[O], T, U <% T](field: MappedField[T, O], value: U) =
     Cmp[O, T](field, >, Full(value), Empty, Empty)
   def apply[O <: Mapper[O], T](
-      field: MappedField[T, O], otherField: MappedField[T, O]) =
+      field: MappedField[T, O],
+      otherField: MappedField[T, O]
+  ) =
     Cmp[O, T](field, >, Empty, Full(otherField), Empty)
 }
 
@@ -2164,7 +2289,9 @@ object By_< {
   def apply[O <: Mapper[O], T, U <% T](field: MappedField[T, O], value: U) =
     Cmp[O, T](field, <, Full(value), Empty, Empty)
   def apply[O <: Mapper[O], T](
-      field: MappedField[T, O], otherField: MappedField[T, O]) =
+      field: MappedField[T, O],
+      otherField: MappedField[T, O]
+  ) =
     Cmp[O, T](field, <, Empty, Full(otherField), Empty)
 }
 
@@ -2181,11 +2308,11 @@ object NotNullRef {
 }
 
 trait LongKeyedMetaMapper[A <: LongKeyedMapper[A]]
-    extends KeyedMetaMapper[Long, A] { self: A =>
-}
+    extends KeyedMetaMapper[Long, A] { self: A => }
 
 trait KeyedMetaMapper[Type, A <: KeyedMapper[Type, A]]
-    extends MetaMapper[A] with KeyedMapper[Type, A] {
+    extends MetaMapper[A]
+    with KeyedMapper[Type, A] {
   self: A with MetaMapper[A] with KeyedMapper[Type, A] =>
 
   private def testProdArity(prod: Product): Boolean = {
@@ -2197,31 +2324,35 @@ trait KeyedMetaMapper[Type, A <: KeyedMapper[Type, A]]
     true
   }
 
-  type Q = MappedForeignKey[AnyBound, A, OO] with MappedField[AnyBound, A] forSome {
-    type OO <: KeyedMapper[AnyBound, OO]
-  }
+  type Q =
+    MappedForeignKey[AnyBound, A, OO] with MappedField[AnyBound, A] forSome {
+      type OO <: KeyedMapper[AnyBound, OO]
+    }
 
   def asSafeJs(actual: A, f: KeyObfuscator): JsExp = {
-    val pk = actual.primaryKeyField
+    val pk    = actual.primaryKeyField
     val first = (pk.name, JE.Str(f.obscure(self, pk.get)))
     JE.JsObj(
-        first :: ("$lift_class", JE.Str(dbTableName)) :: mappedFieldList
-          .map(f => this.??(f.method, actual))
-          .filter(f => !f.dbPrimaryKey_? && f.renderJs_?)
-          .flatMap {
-            case fk0: MappedForeignKey[_, _, _] with MappedField[_, _] =>
-              val fk = fk0.asInstanceOf[Q]
-              val key = f.obscure(fk.dbKeyToTable, fk.get)
-              List(
-                  (fk.name, JE.Str(key)),
-                  (fk.name + "_obj",
-                   JE.AnonFunc(
-                       "index",
-                       JE.JsRaw("return index[" + key.encJs + "];").cmd))
+      first :: ("$lift_class", JE.Str(dbTableName)) :: mappedFieldList
+        .map(f => this.??(f.method, actual))
+        .filter(f => !f.dbPrimaryKey_? && f.renderJs_?)
+        .flatMap {
+          case fk0: MappedForeignKey[_, _, _] with MappedField[_, _] =>
+            val fk  = fk0.asInstanceOf[Q]
+            val key = f.obscure(fk.dbKeyToTable, fk.get)
+            List(
+              (fk.name, JE.Str(key)),
+              (
+                fk.name + "_obj",
+                JE.AnonFunc(
+                  "index",
+                  JE.JsRaw("return index[" + key.encJs + "];").cmd
+                )
               )
-            case x => x.asJs
-          }
-          .toList ::: actual.suplementalJs(Full(f)): _*
+            )
+          case x => x.asJs
+        }
+        .toList ::: actual.suplementalJs(Full(f)): _*
     )
   }
 
@@ -2238,19 +2369,18 @@ trait KeyedMetaMapper[Type, A <: KeyedMapper[Type, A]]
   private def anyToFindString(in: Any): Box[String] =
     in match {
       case Empty | None | null | Failure(_, _, _) => Empty
-      case Full(n) => anyToFindString(n)
-      case Some(n) => anyToFindString(n)
-      case v => Full(v.toString)
+      case Full(n)                                => anyToFindString(n)
+      case Some(n)                                => anyToFindString(n)
+      case v                                      => Full(v.toString)
     }
 
   private object unapplyMemo extends RequestMemoize[Any, Box[A]] {
     override protected def __nameSalt = Helpers.randomString(20)
   }
 
-  def unapply(key: Any): Option[A] = {
+  def unapply(key: Any): Option[A] =
     if (S.inStatefulScope_?) unapplyMemo(key, this.find(key))
     else this.find(key)
-  }
 
   def find(key: Any): Box[A] =
     key match {
@@ -2273,7 +2403,7 @@ trait KeyedMetaMapper[Type, A <: KeyedMapper[Type, A]]
     * Find the element based on the first element of the List
     */
   def find(key: List[String]): Box[A] = key match {
-    case Nil => Empty
+    case Nil    => Empty
     case x :: _ => find(x)
   }
 
@@ -2289,7 +2419,7 @@ trait KeyedMetaMapper[Type, A <: KeyedMapper[Type, A]]
 
   def find(key: String): Box[A] =
     dbStringToKey(key) flatMap
-    (realKey => findDbByKey(selectDbForKey(realKey), realKey))
+      (realKey => findDbByKey(selectDbForKey(realKey), realKey))
 
   def find(dbId: ConnectionIdentifier, key: String): Box[A] =
     dbStringToKey(key) flatMap (realKey => findDbByKey(dbId, realKey))
@@ -2309,24 +2439,30 @@ trait KeyedMetaMapper[Type, A <: KeyedMapper[Type, A]]
   def findDbByKey(dbId: ConnectionIdentifier, key: Type): Box[A] =
     findDbByKey(dbId, mappedFields, key)
 
-  def findDbByKey(dbId: ConnectionIdentifier,
-                  fields: Seq[SelectableField],
-                  key: Type): Box[A] =
+  def findDbByKey(
+      dbId: ConnectionIdentifier,
+      fields: Seq[SelectableField],
+      key: Type
+  ): Box[A] =
     DB.use(dbId) { conn =>
       val field = primaryKeyField
 
       DB.prepareStatement(
-          "SELECT " + fields.map(_.dbSelectString).mkString(", ") + " FROM " +
+        "SELECT " + fields.map(_.dbSelectString).mkString(", ") + " FROM " +
           MapperRules.quoteTableName.vend(_dbTableNameLC) + " WHERE " +
           MapperRules.quoteColumnName.vend(field._dbColumnNameLC) + " = ?",
-          conn) { st =>
+        conn
+      ) { st =>
         if (field.dbIgnoreSQLType_?)
           st.setObject(1, field.makeKeyJDBCFriendly(key))
         else
-          st.setObject(1,
-                       field.makeKeyJDBCFriendly(key),
-                       conn.driverType.columnTypeMap(
-                           field.targetSQLType(field._dbColumnNameLC)))
+          st.setObject(
+            1,
+            field.makeKeyJDBCFriendly(key),
+            conn.driverType.columnTypeMap(
+              field.targetSQLType(field._dbColumnNameLC)
+            )
+          )
         DB.exec(st) { rs =>
           val mi = buildMapper(rs)
           if (rs.next) Full(createInstance(dbId, rs, mi))
@@ -2341,9 +2477,11 @@ trait KeyedMetaMapper[Type, A <: KeyedMapper[Type, A]]
   def findDb(dbId: ConnectionIdentifier, by: QueryParam[A]*): Box[A] =
     findDb(dbId, mappedFields, by: _*)
 
-  def findDb(dbId: ConnectionIdentifier,
-             fields: Seq[SelectableField],
-             by: QueryParam[A]*): Box[A] = {
+  def findDb(
+      dbId: ConnectionIdentifier,
+      fields: Seq[SelectableField],
+      by: QueryParam[A]*
+  ): Box[A] =
     DB.use(dbId) { conn =>
       val (query, start, max, bl) = buildSelectString(fields, conn, by: _*)
       DB.prepareStatement(query, conn) { st =>
@@ -2355,7 +2493,6 @@ trait KeyedMetaMapper[Type, A <: KeyedMapper[Type, A]]
         }
       }
     }
-  }
 
   override def afterSchemifier {
     if (crudSnippets_?) {
@@ -2384,8 +2521,8 @@ trait KeyedMetaMapper[Type, A <: KeyedMapper[Type, A]]
     val Name = internal_dbTableName
 
     NamedPF("crud " + Name) {
-      case Name :: "addForm" :: _ => addFormSnippet
-      case Name :: "editForm" :: _ => editFormSnippet
+      case Name :: "addForm" :: _       => addFormSnippet
+      case Name :: "editForm" :: _      => editFormSnippet
       case Name :: "viewTransform" :: _ => viewTransform
     }
   }
@@ -2406,7 +2543,9 @@ trait KeyedMetaMapper[Type, A <: KeyedMapper[Type, A]]
       "type=submit" #> SHtml.onSubmitUnit(callback _)
 
     val otherTransforms =
-      obj.fieldMapperTransforms(_.toForm openOr Text("")).reverse ++ obj.fieldTransforms.reverse
+      obj
+        .fieldMapperTransforms(_.toForm openOr Text(""))
+        .reverse ++ obj.fieldTransforms.reverse
 
     otherTransforms.foldRight(submitTransform)(_ andThen _) apply html
   }
@@ -2416,25 +2555,23 @@ trait KeyedMetaMapper[Type, A <: KeyedMapper[Type, A]]
     * <code>addSnippetSetup</code> and invokes
     * <code>addSnippetCallback</code> when the form is submitted.
     */
-  def addFormSnippet(html: NodeSeq): NodeSeq = {
+  def addFormSnippet(html: NodeSeq): NodeSeq =
     formSnippet(html, addSnippetSetup, addSnippetCallback _)
-  }
 
   /**
     * Base edit form snippet. Fetches object from
     * <code>editSnippetSetup</code> and invokes
     * <code>editSnippetCallback</code> when the form is submitted.
     */
-  def editFormSnippet(html: NodeSeq): NodeSeq = {
+  def editFormSnippet(html: NodeSeq): NodeSeq =
     formSnippet(html, editSnippetSetup, editSnippetCallback _)
-  }
 
   /**
     * Basic transformation of <code>html</code> to HTML for displaying
     * the object from <code>viewSnippetSetup</code>.
     */
   def viewTransform(html: NodeSeq): NodeSeq = {
-    val name = internal_dbTableName
+    val name   = internal_dbTableName
     val obj: A = viewSnippetSetup
 
     val otherTransforms =
@@ -2449,19 +2586,20 @@ trait KeyedMetaMapper[Type, A <: KeyedMapper[Type, A]]
     * don't have to implement new methods when I commit the CRUD snippets code.
     */
   def objFromIndexedParam: Box[A] = {
-    val found = for (req <- S.request.toList;
-    (param, value :: _) <- req.params;
-    fh <- mappedFieldList if fh.field.dbIndexed_? == true &&
-         fh.name.equals(param)) yield find(value)
+    val found =
+      for (req                 <- S.request.toList;
+           (param, value :: _) <- req.params;
+           fh                  <- mappedFieldList if fh.field.dbIndexed_? == true &&
+             fh.name.equals(param)) yield find(value)
 
-    found.filter(
-        obj =>
-          obj match {
+    found.filter(obj =>
+      obj match {
         case Full(obj) => true
-        case _ => false
-    }) match {
+        case _         => false
+      }
+    ) match {
       case obj :: _ => obj
-      case _ => Empty
+      case _        => Empty
     }
   }
 
@@ -2470,9 +2608,8 @@ trait KeyedMetaMapper[Type, A <: KeyedMapper[Type, A]]
     *
     * @return new mapped object
     */
-  def addSnippetSetup: A = {
+  def addSnippetSetup: A =
     this.create
-  }
 
   /**
     * Default setup behavior for the edit snippet. BROKEN! MUST OVERRIDE IF
@@ -2480,9 +2617,8 @@ trait KeyedMetaMapper[Type, A <: KeyedMapper[Type, A]]
     *
     * @return a mapped object of this metamapper's type
     */
-  def editSnippetSetup: A = {
+  def editSnippetSetup: A =
     objFromIndexedParam.openOrThrowException("Comment says this is broken")
-  }
 
   /**
     * Default setup behavior for the view snippet. BROKEN! MUST OVERRIDE IF
@@ -2490,9 +2626,8 @@ trait KeyedMetaMapper[Type, A <: KeyedMapper[Type, A]]
     *
     * @return a mapped object of this metamapper's type
     */
-  def viewSnippetSetup: A = {
+  def viewSnippetSetup: A =
     objFromIndexedParam.openOrThrowException("Comment says this is broken")
-  }
 
   /**
     * Default callback behavior of the edit snippet. Called when the user
@@ -2512,12 +2647,13 @@ trait KeyedMetaMapper[Type, A <: KeyedMapper[Type, A]]
 }
 
 class KeyObfuscator {
-  private var to: Map[String, Map[Any, String]] = Map.empty
+  private var to: Map[String, Map[Any, String]]   = Map.empty
   private var from: Map[String, Map[String, Any]] = Map.empty
 
   def obscure[KeyType, MetaType <: KeyedMapper[KeyType, MetaType]](
       theType: KeyedMetaMapper[KeyType, MetaType],
-      key: KeyType): String = synchronized {
+      key: KeyType
+  ): String = synchronized {
     val local: Map[Any, String] =
       to.getOrElse(theType._dbTableNameLC, Map.empty)
     local.get(key) match {
@@ -2538,27 +2674,29 @@ class KeyObfuscator {
   }
 
   def obscure[KeyType, MetaType <: KeyedMapper[KeyType, MetaType]](
-      what: KeyedMapper[KeyType, MetaType]): String = {
+      what: KeyedMapper[KeyType, MetaType]
+  ): String =
     obscure(what.getSingleton, what.primaryKeyField.get)
-  }
 
   def apply[KeyType, MetaType <: KeyedMapper[KeyType, MetaType], Q <% KeyType](
       theType: KeyedMetaMapper[KeyType, MetaType],
-      key: Q): String = {
+      key: Q
+  ): String = {
     val k: KeyType = key
     obscure(theType, k)
   }
 
   def apply[KeyType, MetaType <: KeyedMapper[KeyType, MetaType]](
-      what: KeyedMapper[KeyType, MetaType]): String = {
+      what: KeyedMapper[KeyType, MetaType]
+  ): String =
     obscure(what)
-  }
 
   def recover[KeyType, MetaType <: KeyedMapper[KeyType, MetaType]](
       theType: KeyedMetaMapper[KeyType, MetaType],
-      id: String): Box[KeyType] = synchronized {
+      id: String
+  ): Box[KeyType] = synchronized {
     for {
-      map <- from.get(theType._dbTableNameLC)
+      map  <- from.get(theType._dbTableNameLC)
       item <- map.get(id)
     } yield item.asInstanceOf[KeyType]
   }

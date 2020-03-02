@@ -21,37 +21,37 @@ import java.nio.ByteBuffer
 import org.jboss.netty.buffer.{ChannelBuffer, ChannelBuffers}
 
 case class MemcacheRequest(
-    line: List[String], data: Option[ByteBuffer], bytesRead: Int) {
-  override def toString = {
+    line: List[String],
+    data: Option[ByteBuffer],
+    bytesRead: Int
+) {
+  override def toString =
     "<Request: " + line.mkString("[", " ", "]") +
-    (data match {
-          case None => ""
-          case Some(x) => " data=" + x.remaining
-        }) + " read=" + bytesRead + ">"
-  }
+      (data match {
+        case None    => ""
+        case Some(x) => " data=" + x.remaining
+      }) + " read=" + bytesRead + ">"
 }
 
 case class MemcacheResponse(
     line: String,
     data: Option[ByteBuffer] = None
-)
-    extends Codec.Signalling {
-  override def toString = {
+) extends Codec.Signalling {
+  override def toString =
     "<Response: " + line +
-    (data match {
-          case None => ""
-          case Some(x) => " data=" + x.remaining
-        }) + ">"
-  }
+      (data match {
+        case None    => ""
+        case Some(x) => " data=" + x.remaining
+      }) + ">"
 
   val lineData = line.getBytes("ISO-8859-1")
 
-  def writeAscii(): Option[ChannelBuffer] = {
+  def writeAscii(): Option[ChannelBuffer] =
     if (lineData.size > 0) {
       val dataSize =
         if (data.isDefined) (data.get.remaining + MemcacheCodec.END.size)
         else 0
-      val size = lineData.size + MemcacheCodec.CRLF.size + dataSize
+      val size   = lineData.size + MemcacheCodec.CRLF.size + dataSize
       val buffer = ChannelBuffers.buffer(size)
       buffer.writeBytes(lineData)
       buffer.writeBytes(MemcacheCodec.CRLF)
@@ -63,19 +63,20 @@ case class MemcacheResponse(
     } else {
       None
     }
-  }
 }
 
 object MemcacheCodec {
   import Stages._
 
-  val STORAGE_COMMANDS = List(
-      "set", "add", "replace", "append", "prepend", "cas")
-  val END = "\r\nEND\r\n".getBytes
+  val STORAGE_COMMANDS =
+    List("set", "add", "replace", "append", "prepend", "cas")
+  val END  = "\r\nEND\r\n".getBytes
   val CRLF = "\r\n".getBytes
 
   def asciiCodec(
-      bytesReadCounter: Int => Unit, bytesWrittenCounter: Int => Unit) =
+      bytesReadCounter: Int => Unit,
+      bytesWrittenCounter: Int => Unit
+  ) =
     new Codec(readAscii, writeAscii, bytesReadCounter, bytesWrittenCounter)
 
   def asciiCodec() = new Codec(readAscii, writeAscii)
@@ -96,8 +97,13 @@ object MemcacheCodec {
         buffer.readBytes(bytes)
         bytes.flip()
         buffer.skipBytes(2)
-        emit(MemcacheRequest(
-                segments.toList, Some(bytes), line.length + dataBytes + 4))
+        emit(
+          MemcacheRequest(
+            segments.toList,
+            Some(bytes),
+            line.length + dataBytes + 4
+          )
+        )
       }
     } else {
       emit(MemcacheRequest(segments.toList, None, line.length + 2))

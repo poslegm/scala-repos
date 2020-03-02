@@ -28,7 +28,7 @@ object MainBench extends Driver with EvalLoop {
         Statistics.enabled = true
       }
       process(args)
-      val end = System.nanoTime()
+      val end      = System.nanoTime()
       val duration = (end - start) / 1000000
       println(s"${duration}ms")
       times(i) = duration

@@ -1,8 +1,8 @@
 object Test {
   def main(args: Array[String]): Unit = {
-    val z = Array(1, 2, 3, 4)
+    val z            = Array(1, 2, 3, 4)
     val zs: Seq[Int] = z
-    val za: Any = z
+    val za: Any      = z
 
     /*
     Console.println("z  is arr[int]"+z.isInstanceOf[Array[int]])
@@ -24,7 +24,7 @@ object Test {
     Console.println("za  aseq "+ Seq.unapplySeq(za))
      */
     val zl = zs match {
-      case Seq(xs @ _ *) => xs.length
+      case Seq(xs @ _*) => xs.length
     }
     assert(zl == 4)
   }

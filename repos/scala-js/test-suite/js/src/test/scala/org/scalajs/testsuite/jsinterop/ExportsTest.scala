@@ -195,7 +195,7 @@ class ExportsTest {
     }
 
     class Bar extends Foo {
-      val x = 1
+      val x                   = 1
       def method(x: Int): Int = 2 * x
     }
 
@@ -275,7 +275,7 @@ class ExportsTest {
     class UhOh {
       // Something no one should export
       @JSExport
-      def ahem[T : Comparable](x: T)(implicit y: Int): Nothing = ???
+      def ahem[T: Comparable](x: T)(implicit y: Int): Nothing = ???
     }
 
     val x = (new UhOh).asInstanceOf[js.Dynamic]
@@ -322,7 +322,7 @@ class ExportsTest {
 
     // The parameter should be a boxed SomeValueClass
     val valueCls = new SomeValueClass(7)
-    val result = foo.vc(valueCls.asInstanceOf[js.Any])
+    val result   = foo.vc(valueCls.asInstanceOf[js.Any])
     assertEquals("number", js.typeOf(result))
     assertEquals(7, result)
   }
@@ -335,7 +335,7 @@ class ExportsTest {
       def foo(x: SomeValueClass): Int = x.i
     }
 
-    val foo = (new Foo).asInstanceOf[js.Dynamic]
+    val foo      = (new Foo).asInstanceOf[js.Dynamic]
     val valueCls = new SomeValueClass(7)
     assertEquals(7, foo.foo(valueCls.asInstanceOf[js.Any]))
     assertEquals(5, foo.foo("hello"))
@@ -418,7 +418,7 @@ class ExportsTest {
         a + b + c
     }
 
-    val a = new A
+    val a   = new A
     val jsa = a.asInstanceOf[js.Dynamic]
 
     assertEquals(6, jsa.foo())
@@ -528,7 +528,7 @@ class ExportsTest {
 
     val vc1 = new SomeValueClass(1)
     val vc2 = new SomeValueClass(2)
-    val a = (new A).asInstanceOf[js.Dynamic]
+    val a   = (new A).asInstanceOf[js.Dynamic]
 
     assertEquals(3, a.foo(vc1.asInstanceOf[js.Any], vc2.asInstanceOf[js.Any]))
   }
@@ -650,7 +650,8 @@ class ExportsTest {
   }
 
   @Test
-  def exports_for_classes_with_qualified_name_SJSDefinedExportedClass(): Unit = {
+  def exports_for_classes_with_qualified_name_SJSDefinedExportedClass()
+      : Unit = {
     val constr = js.Dynamic.global.qualified.testclass.SJSDefinedExportedClass
     assertJSNotUndefined(constr)
     assertEquals("function", js.typeOf(constr))
@@ -681,8 +682,7 @@ class ExportsTest {
     assertEquals("a", js.Dynamic.newInstance(constr)("a").result)
     assertEquals("a|b", js.Dynamic.newInstance(constr)("a", "b").result)
     assertEquals("a|b|c", js.Dynamic.newInstance(constr)("a", "b", "c").result)
-    assertEquals(
-        "Number: <5>|a", js.Dynamic.newInstance(constr)(5, "a").result)
+    assertEquals("Number: <5>|a", js.Dynamic.newInstance(constr)(5, "a").result)
   }
 
   @Test def export_for_classes_with_default_parameters_in_ctor(): Unit = {
@@ -866,7 +866,7 @@ class ExportsTest {
   @Test def named_constructor_exports(): Unit = {
     import js.Dynamic.{literal => lit}
 
-    val constr = jsPackage.ExportedNamedArgClass
+    val constr  = jsPackage.ExportedNamedArgClass
     val result1 = js.Dynamic.newInstance(constr)(lit(x = 2)).result
     assertEquals("22true", result1)
     val result2 = js.Dynamic.newInstance(constr)(lit(y = "foo")).result
@@ -888,14 +888,14 @@ class ExportsTest {
     class Foo {
       def doBool(x: Boolean): Unit =
         assertTrue((x: Any) == false) // scalastyle:ignore
-      def doChar(x: Char): Unit = assertTrue(x.equals('\0'))
-      def doByte(x: Byte): Unit = assertEquals(0, x)
-      def doShort(x: Short): Unit = assertEquals(0, x)
-      def doInt(x: Int): Unit = assertEquals(0, x)
-      def doLong(x: Long): Unit = assertTrue(x.equals(0L))
-      def doFloat(x: Float): Unit = assertEquals(0.0f, x)
+      def doChar(x: Char): Unit     = assertTrue(x.equals('\0'))
+      def doByte(x: Byte): Unit     = assertEquals(0, x)
+      def doShort(x: Short): Unit   = assertEquals(0, x)
+      def doInt(x: Int): Unit       = assertEquals(0, x)
+      def doLong(x: Long): Unit     = assertTrue(x.equals(0L))
+      def doFloat(x: Float): Unit   = assertEquals(0.0f, x)
       def doDouble(x: Double): Unit = assertEquals(0.0, x)
-      def doUnit(x: Unit): Unit = assertTrue((x: Any) == null)
+      def doUnit(x: Unit): Unit     = assertTrue((x: Any) == null)
     }
 
     val foo = (new Foo).asInstanceOf[js.Dynamic]
@@ -918,14 +918,14 @@ class ExportsTest {
     @JSExportAll
     class Foo {
       def doBool(x: Boolean): Boolean = x
-      def doChar(x: Char): Char = x
-      def doByte(x: Byte): Byte = x
-      def doShort(x: Short): Short = x
-      def doInt(x: Int): Int = x
-      def doLong(x: Long): Long = x
-      def doFloat(x: Float): Float = x
+      def doChar(x: Char): Char       = x
+      def doByte(x: Byte): Byte       = x
+      def doShort(x: Short): Short    = x
+      def doInt(x: Int): Int          = x
+      def doLong(x: Long): Long       = x
+      def doFloat(x: Float): Float    = x
       def doDouble(x: Double): Double = x
-      def doUnit(x: Unit): Unit = x
+      def doUnit(x: Unit): Unit       = x
     }
 
     val foo = (new Foo).asInstanceOf[js.Dynamic]
@@ -1002,13 +1002,12 @@ class ExportsTest {
 
   @Test def `exports_for_classes_ending_in__=_issue_1090`(): Unit = {
     val constr = jsPackage.ExportClassSetterNamed_=
-    val obj = js.Dynamic.newInstance(constr)()
+    val obj    = js.Dynamic.newInstance(constr)()
     assertEquals(obj.x, 1)
   }
 
-  @Test def `exports_for_objects_ending_in__=_issue_1090`(): Unit = {
+  @Test def `exports_for_objects_ending_in__=_issue_1090`(): Unit =
     assertEquals(jsPackage.ExportObjSetterNamed_=().x, 1)
-  }
 
   @Test def should_expose_public_members_of_new_js_Object_issue_1899(): Unit = {
 
@@ -1049,72 +1048,72 @@ class ExportsTest {
     }
 
     def getJSObj(): js.Object = new js.Object {
-      val x1 = "x1"
-      var y1 = "y1"
-      def z1() = "z1"
-      private val x2 = "x2"
-      private var y2 = "y2"
-      private def z2() = "z2"
-      private[this] val x3 = "x3"
-      private[this] var y3 = "y3"
+      val x1                 = "x1"
+      var y1                 = "y1"
+      def z1()               = "z1"
+      private val x2         = "x2"
+      private var y2         = "y2"
+      private def z2()       = "z2"
+      private[this] val x3   = "x3"
+      private[this] var y3   = "y3"
       private[this] def z3() = "z3"
-      def checkOriginalY1() = y1
-      def checkOriginalY2() = y2
-      def checkOriginalY3() = y3
+      def checkOriginalY1()  = y1
+      def checkOriginalY2()  = y2
+      def checkOriginalY3()  = y3
     }
 
     @ScalaJSDefined
     class JSClass extends js.Object
 
     def getJSObj2(): js.Object = new JSClass {
-      val x1 = "x1"
-      var y1 = "y1"
-      def z1() = "z1"
-      private val x2 = "x2"
-      private var y2 = "y2"
-      private def z2() = "z2"
-      private[this] val x3 = "x3"
-      private[this] var y3 = "y3"
+      val x1                 = "x1"
+      var y1                 = "y1"
+      def z1()               = "z1"
+      private val x2         = "x2"
+      private var y2         = "y2"
+      private def z2()       = "z2"
+      private[this] val x3   = "x3"
+      private[this] var y3   = "y3"
       private[this] def z3() = "z3"
-      def checkOriginalY1() = y1
-      def checkOriginalY2() = y2
-      def checkOriginalY3() = y3
+      def checkOriginalY1()  = y1
+      def checkOriginalY2()  = y2
+      def checkOriginalY3()  = y3
     }
 
     @ScalaJSDefined
     abstract class JSAbstractClass extends js.Object
 
     def getJSObj3(): js.Object = new JSAbstractClass {
-      val x1 = "x1"
-      var y1 = "y1"
-      def z1() = "z1"
-      private val x2 = "x2"
-      private var y2 = "y2"
-      private def z2() = "z2"
-      private[this] val x3 = "x3"
-      private[this] var y3 = "y3"
+      val x1                 = "x1"
+      var y1                 = "y1"
+      def z1()               = "z1"
+      private val x2         = "x2"
+      private var y2         = "y2"
+      private def z2()       = "z2"
+      private[this] val x3   = "x3"
+      private[this] var y3   = "y3"
       private[this] def z3() = "z3"
-      def checkOriginalY1() = y1
-      def checkOriginalY2() = y2
-      def checkOriginalY3() = y3
+      def checkOriginalY1()  = y1
+      def checkOriginalY2()  = y2
+      def checkOriginalY3()  = y3
     }
 
     @ScalaJSDefined
     abstract class JSTrait extends js.Object
 
     def getJSObj4(): js.Object = new JSTrait {
-      val x1 = "x1"
-      var y1 = "y1"
-      def z1() = "z1"
-      private val x2 = "x2"
-      private var y2 = "y2"
-      private def z2() = "z2"
-      private[this] val x3 = "x3"
-      private[this] var y3 = "y3"
+      val x1                 = "x1"
+      var y1                 = "y1"
+      def z1()               = "z1"
+      private val x2         = "x2"
+      private var y2         = "y2"
+      private def z2()       = "z2"
+      private[this] val x3   = "x3"
+      private[this] var y3   = "y3"
       private[this] def z3() = "z3"
-      def checkOriginalY1() = y1
-      def checkOriginalY2() = y2
-      def checkOriginalY3() = y3
+      def checkOriginalY1()  = y1
+      def checkOriginalY2()  = y2
+      def checkOriginalY3()  = y3
     }
 
     testExposure(getJSObj())
@@ -1125,22 +1124,23 @@ class ExportsTest {
     // Test that non js.Any classes were unaffected by the fix.
 
     def getObj(): AnyRef = new {
-      val x1 = "x1"
-      var y1 = "y1"
-      def z1() = "z1"
-      private val x2 = "x2"
-      private var y2 = "y2"
-      private def z2() = "z2"
-      private[this] val x3 = "x3"
-      private[this] var y3 = "y3"
+      val x1                 = "x1"
+      var y1                 = "y1"
+      def z1()               = "z1"
+      private val x2         = "x2"
+      private var y2         = "y2"
+      private def z2()       = "z2"
+      private[this] val x3   = "x3"
+      private[this] var y3   = "y3"
       private[this] def z3() = "z3"
     }
 
     import scala.language.reflectiveCalls
 
-    val obj2 = getObj().asInstanceOf[ {
-      val x1: String; var y1: String; def z1(): String
-    }]
+    val obj2 = getObj().asInstanceOf[{
+        val x1: String; var y1: String; def z1(): String
+      }
+    ]
 
     assertThrows(classOf[Throwable], obj2.x1)
     assertThrows(classOf[Throwable], obj2.y1)
@@ -1369,11 +1369,11 @@ class ExportsTest {
     @ScalaJSDefined
     class C extends SJSDefinedAutoExportIgnoreClass { def foo: Int = 3 }
 
-    val a = new A { override def foo: Int = 3 }
-    val b = new B { override def foo: Int = 4 }
-    val c = new C { override def foo: Int = 5 }
-    val d = new AutoExportIgnoreClass with HasBar { def bar: Int = 1 }
-    val e = new AutoExportIgnoreTrait with HasBar { def bar: Int = 1 }
+    val a = new A                                 { override def foo: Int = 3 }
+    val b = new B                                 { override def foo: Int = 4 }
+    val c = new C                                 { override def foo: Int = 5 }
+    val d = new AutoExportIgnoreClass with HasBar { def bar: Int          = 1 }
+    val e = new AutoExportIgnoreTrait with HasBar { def bar: Int          = 1 }
     val f = new SJSDefinedAutoExportIgnoreClass with SJSDefinedHasBar {
       def bar: Int = 1
     }
@@ -1392,14 +1392,16 @@ class ExportsTest {
 }
 
 object ExportNameHolder {
-  final val className = "ConstantFoldedClassExport"
+  final val className  = "ConstantFoldedClassExport"
   final val objectName = "ConstantFoldedObjectExport"
   final val methodName = "myMethod"
 }
 
 @JSExport
 @JSExport("TheExportedObject")
-@JSExport("qualified.testobject.ExportedObject") // purposefully halfway the same as ExportedClass
+@JSExport(
+  "qualified.testobject.ExportedObject"
+) // purposefully halfway the same as ExportedClass
 @JSExport(ExportNameHolder.objectName)
 object ExportedObject {
   @JSExport
@@ -1421,7 +1423,9 @@ protected object ProtectedExportedObject {
 
 @JSExport
 @JSExport("TheExportedClass")
-@JSExport("qualified.testclass.ExportedClass") // purposefully halfway the same as ExportedObject
+@JSExport(
+  "qualified.testclass.ExportedClass"
+) // purposefully halfway the same as ExportedObject
 @JSExport(ExportNameHolder.className)
 class ExportedClass(_x: Int) {
   @JSExport
@@ -1553,7 +1557,8 @@ class SomeValueClass(val i: Int) extends AnyVal
 
 @JSExportNamed
 class ExportedNamedArgClass(x: Int = 1)(y: String = x.toString)(
-    z: Boolean = y != "foo") {
+    z: Boolean = y != "foo"
+) {
   @JSExport
   val result = x + y + z
 }

@@ -8,8 +8,8 @@ import tube.pageTube
 final class Env(config: Config, db: lila.db.Env) {
 
   private val CollectionPage = config getString "collection.page"
-  private val GitUrl = config getString "git.url"
-  private val MarkdownPath = config getString "markdown_path"
+  private val GitUrl         = config getString "git.url"
+  private val MarkdownPath   = config getString "markdown_path"
 
   lazy val api = new Api
 
@@ -29,6 +29,8 @@ final class Env(config: Config, db: lila.db.Env) {
 object Env {
 
   lazy val current =
-    "wiki" boot new Env(config = lila.common.PlayApp loadConfig "wiki",
-                        db = lila.db.Env.current)
+    "wiki" boot new Env(
+      config = lila.common.PlayApp loadConfig "wiki",
+      db = lila.db.Env.current
+    )
 }

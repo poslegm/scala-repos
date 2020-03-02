@@ -31,14 +31,17 @@ object Runner extends Logging {
     env
       .split(',')
       .flatMap(p =>
-            p.split('=') match {
+        p.split('=') match {
           case Array(k, v) => List(k -> v)
-          case _ => Nil
-      })
+          case _           => Nil
+        }
+      )
       .toMap
 
   def argumentValue(
-      arguments: Seq[String], argumentName: String): Option[String] = {
+      arguments: Seq[String],
+      argumentName: String
+  ): Option[String] = {
     val argumentIndex = arguments.indexOf(argumentName)
     try {
       arguments(argumentIndex) // just to make it error out if index is -1
@@ -48,14 +51,17 @@ object Runner extends Logging {
     }
   }
 
-  def handleScratchFile(fileSystem: Option[FileSystem],
-                        uri: Option[URI],
-                        localFile: File): String = {
+  def handleScratchFile(
+      fileSystem: Option[FileSystem],
+      uri: Option[URI],
+      localFile: File
+  ): String = {
     val localFilePath = localFile.getCanonicalPath
     (fileSystem, uri) match {
       case (Some(fs), Some(u)) =>
         val dest = fs.makeQualified(
-            Path.mergePaths(new Path(u), new Path(localFilePath)))
+          Path.mergePaths(new Path(u), new Path(localFilePath))
+        )
         info(s"Copying $localFile to ${dest.toString}")
         fs.copyFromLocalFile(new Path(localFilePath), dest)
         dest.toUri.toString
@@ -63,35 +69,38 @@ object Runner extends Logging {
     }
   }
 
-  def cleanup(fs: Option[FileSystem], uri: Option[URI]): Unit = {
+  def cleanup(fs: Option[FileSystem], uri: Option[URI]): Unit =
     (fs, uri) match {
       case (Some(f), Some(u)) =>
         f.close()
       case _ => Unit
     }
-  }
 
-  def detectFilePaths(fileSystem: Option[FileSystem],
-                      uri: Option[URI],
-                      args: Seq[String]): Seq[String] = {
+  def detectFilePaths(
+      fileSystem: Option[FileSystem],
+      uri: Option[URI],
+      args: Seq[String]
+  ): Seq[String] =
     args map { arg =>
-      val f = try {
-        new File(new URI(arg))
-      } catch {
-        case e: Throwable => new File(arg)
-      }
+      val f =
+        try {
+          new File(new URI(arg))
+        } catch {
+          case e: Throwable => new File(arg)
+        }
       if (f.exists()) {
         handleScratchFile(fileSystem, uri, f)
       } else {
         arg
       }
     }
-  }
 
-  def runOnSpark(className: String,
-                 classArgs: Seq[String],
-                 ca: ConsoleArgs,
-                 extraJars: Seq[URI]): Int = {
+  def runOnSpark(
+      className: String,
+      classArgs: Seq[String],
+      ca: ConsoleArgs,
+      extraJars: Seq[URI]
+  ): Int = {
     // Return error for unsupported cases
     val deployMode = argumentValue(ca.common.sparkPassThrough, "--deploy-mode")
       .getOrElse("client")
@@ -104,7 +113,8 @@ object Runner extends Logging {
         return 1
       case (_, "cluster", m) if m.startsWith("spark://") =>
         error(
-            "Using cluster deploy mode with Spark standalone cluster is not supported")
+          "Using cluster deploy mode with Spark standalone cluster is not supported"
+        )
         return 1
       case _ => Unit
     }
@@ -127,15 +137,15 @@ object Runner extends Logging {
 
     // Local path to PredictionIO assembly JAR
     val mainJar = handleScratchFile(
-        fs,
-        ca.common.scratchUri,
-        console.Console.coreAssembly(ca.common.pioHome.get))
+      fs,
+      ca.common.scratchUri,
+      console.Console.coreAssembly(ca.common.pioHome.get)
+    )
 
     // Extra JARs that are needed by the driver
     val driverClassPathPrefix =
       argumentValue(ca.common.sparkPassThrough, "--driver-class-path") map {
-        v =>
-          Seq(v)
+        v => Seq(v)
       } getOrElse {
         Nil
       }
@@ -155,7 +165,8 @@ object Runner extends Logging {
       }
 
     val sparkSubmitCommand = Seq(
-        Seq(sparkHome, "bin", "spark-submit").mkString(File.separator))
+      Seq(sparkHome, "bin", "spark-submit").mkString(File.separator)
+    )
 
     val sparkSubmitJars =
       if (extraJars.nonEmpty) {
@@ -180,32 +191,37 @@ object Runner extends Logging {
 
     val sparkSubmitKryo =
       if (ca.common.sparkKryo) {
-        Seq("--conf",
-            "spark.serializer=org.apache.spark.serializer.KryoSerializer")
+        Seq(
+          "--conf",
+          "spark.serializer=org.apache.spark.serializer.KryoSerializer"
+        )
       } else {
         Nil
       }
 
     val verbose = if (ca.common.verbose) Seq("--verbose") else Nil
 
-    val sparkSubmit = Seq(sparkSubmitCommand,
-                          ca.common.sparkPassThrough,
-                          Seq("--class", className),
-                          sparkSubmitJars,
-                          sparkSubmitFiles,
-                          sparkSubmitExtraClasspaths,
-                          sparkSubmitKryo,
-                          Seq(mainJar),
-                          detectFilePaths(fs, ca.common.scratchUri, classArgs),
-                          Seq("--env", pioEnvVars),
-                          verbose).flatten.filter(_ != "")
+    val sparkSubmit = Seq(
+      sparkSubmitCommand,
+      ca.common.sparkPassThrough,
+      Seq("--class", className),
+      sparkSubmitJars,
+      sparkSubmitFiles,
+      sparkSubmitExtraClasspaths,
+      sparkSubmitKryo,
+      Seq(mainJar),
+      detectFilePaths(fs, ca.common.scratchUri, classArgs),
+      Seq("--env", pioEnvVars),
+      verbose
+    ).flatten.filter(_ != "")
     info(s"Submission command: ${sparkSubmit.mkString(" ")}")
-    val proc = Process(sparkSubmit,
-                       None,
-                       "CLASSPATH" -> "",
-                       "SPARK_YARN_USER_ENV" -> pioEnvVars).run()
-    Runtime.getRuntime.addShutdownHook(
-        new Thread(new Runnable {
+    val proc = Process(
+      sparkSubmit,
+      None,
+      "CLASSPATH"           -> "",
+      "SPARK_YARN_USER_ENV" -> pioEnvVars
+    ).run()
+    Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
       def run(): Unit = {
         cleanup(fs, ca.common.scratchUri)
         proc.destroy()

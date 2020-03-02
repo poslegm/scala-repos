@@ -28,7 +28,8 @@ import scala.runtime.ScalaRunTime
   */
 case class MultivariateGaussian(
     mean: DenseVector[Double],
-    covariance: DenseMatrix[Double])(implicit rand: RandBasis = Rand)
+    covariance: DenseMatrix[Double]
+)(implicit rand: RandBasis = Rand)
     extends ContinuousDistr[DenseVector[Double]]
     with Moments[DenseVector[Double], DenseMatrix[Double]] {
   def draw() = {
@@ -43,7 +44,7 @@ case class MultivariateGaussian(
 
   override def unnormalizedLogPdf(t: DenseVector[Double]) = {
     val centered = t - mean
-    val slv = covariance \ centered
+    val slv      = covariance \ centered
 
     -(slv dot centered) / 2.0
   }
@@ -56,7 +57,7 @@ case class MultivariateGaussian(
   }
 
   def variance = covariance
-  def mode = mean
+  def mode     = mean
   lazy val entropy = {
     mean.length * log1p(2 * Pi) + sum(log(diag(root)))
   }

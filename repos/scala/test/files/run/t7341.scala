@@ -1,13 +1,12 @@
 object Obj {
-  private var cache: Any = ()
+  private var cache: Any       = ()
   def returning(f: () => Unit) = ()
   def foo {
     returning(() => cache = ())
   }
 
-  def apply(): Any = {
+  def apply(): Any =
     cache
-  }
 }
 
 object Test extends App {

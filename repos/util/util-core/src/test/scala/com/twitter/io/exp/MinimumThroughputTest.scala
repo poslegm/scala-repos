@@ -19,31 +19,31 @@ class MinimumThroughputTest extends FunSuite with MockitoSugar {
   }
 
   test("Reader - faster than min") {
-    val buf = Buf.UsAscii("soylent green is made of...") // 27 bytes
+    val buf    = Buf.UsAscii("soylent green is made of...") // 27 bytes
     val reader = MinimumThroughput.reader(BufReader(buf), 0d, Timer.Nil)
 
     // read from the beginning
     Await.result(reader.read(13)) match {
       case Some(b) => assert(b == Buf.UsAscii("soylent green"))
-      case _ => fail()
+      case _       => fail()
     }
 
     // a no-op read
     Await.result(reader.read(0)) match {
       case Some(b) => assert(b == Buf.Empty)
-      case _ => fail()
+      case _       => fail()
     }
 
     // read to the end
     Await.result(reader.read(20)) match {
       case Some(b) => assert(b == Buf.UsAscii(" is made of..."))
-      case _ => fail()
+      case _       => fail()
     }
 
     // read past the end
     Await.result(reader.read(20)) match {
       case None =>
-      case _ => fail()
+      case _    => fail()
     }
   }
 
@@ -54,7 +54,7 @@ class MinimumThroughputTest extends FunSuite with MockitoSugar {
       // it'd be great if we could just use a mock.
       // the problem was that stubs are evaluated once, eagerly, at creation time.
       val underlying = new Reader {
-        private var reads = 0
+        private var reads   = 0
         def discard(): Unit = ()
         def read(n: Int): Future[Option[Buf]] = {
           reads += 1
@@ -67,14 +67,16 @@ class MinimumThroughputTest extends FunSuite with MockitoSugar {
         }
       }
 
-      val reader = MinimumThroughput.reader(underlying,
-                                            1d, // min bytes per second
-                                            Timer.Nil)
+      val reader = MinimumThroughput.reader(
+        underlying,
+        1d, // min bytes per second
+        Timer.Nil
+      )
 
       // do a read of 1 byte in 0 time — which is ok.
       Await.result(reader.read(1)) match {
         case Some(b) => assert(b == buf.slice(0, 1))
-        case _ => fail()
+        case _       => fail()
       }
 
       val ex = intercept[BelowThroughputException] {
@@ -92,9 +94,11 @@ class MinimumThroughputTest extends FunSuite with MockitoSugar {
     when(underlying.read(1)).thenReturn(Future.never)
 
     val timer = new MockTimer()
-    val reader = MinimumThroughput.reader(underlying,
-                                          1d, // min bytes per second
-                                          timer)
+    val reader = MinimumThroughput.reader(
+      underlying,
+      1d, // min bytes per second
+      timer
+    )
 
     Time.withCurrentTimeFrozen { tc =>
       val f = reader.read(1)
@@ -111,13 +115,15 @@ class MinimumThroughputTest extends FunSuite with MockitoSugar {
   }
 
   test("Reader - failures from underlying reader are untouched") {
-    val ex = new RuntimeException("└[∵┌]└[ ∵ ]┘[┐∵]┘")
+    val ex         = new RuntimeException("└[∵┌]└[ ∵ ]┘[┐∵]┘")
     val underlying = mock[Reader]
     when(underlying.read(1)).thenReturn(Future.exception(ex))
 
-    val reader = MinimumThroughput.reader(underlying,
-                                          1d, // min bytes per second
-                                          Timer.Nil)
+    val reader = MinimumThroughput.reader(
+      underlying,
+      1d, // min bytes per second
+      Timer.Nil
+    )
 
     val thrown = intercept[RuntimeException] {
       Await.result(reader.read(1))
@@ -126,19 +132,21 @@ class MinimumThroughputTest extends FunSuite with MockitoSugar {
   }
 
   test("Reader - pass through EOFs from underlying") {
-    val reader = MinimumThroughput.reader(Reader.Null,
-                                          1d, // min bytes per second
-                                          Timer.Nil)
+    val reader = MinimumThroughput.reader(
+      Reader.Null,
+      1d, // min bytes per second
+      Timer.Nil
+    )
 
     Await.result(reader.read(1)) match {
       case None =>
-      case _ => fail()
+      case _    => fail()
     }
   }
 
   test("Reader - discard is passed through to underlying") {
     val underlying = mock[Reader]
-    val reader = MinimumThroughput.reader(underlying, 1, Timer.Nil)
+    val reader     = MinimumThroughput.reader(underlying, 1, Timer.Nil)
 
     reader.discard()
     verify(underlying).discard()
@@ -148,9 +156,10 @@ class MinimumThroughputTest extends FunSuite with MockitoSugar {
     val buf = Buf.UsAscii("0")
 
     val writer = MinimumThroughput.writer(
-        Writer.fromOutputStream(new ByteArrayOutputStream()),
-        0d,
-        Timer.Nil)
+      Writer.fromOutputStream(new ByteArrayOutputStream()),
+      0d,
+      Timer.Nil
+    )
 
     val w1 = writer.write(buf)
     Await.ready(w1)
@@ -168,7 +177,7 @@ class MinimumThroughputTest extends FunSuite with MockitoSugar {
       // it'd be great if we could just use a mock.
       // the problem was that stubs are evaluated once, eagerly, at creation time.
       val underlying = new Writer {
-        private var writes = 0
+        private var writes               = 0
         def fail(cause: Throwable): Unit = ()
         def write(buf: Buf): Future[Unit] = {
           writes += 1
@@ -181,9 +190,11 @@ class MinimumThroughputTest extends FunSuite with MockitoSugar {
         }
       }
 
-      val writer = MinimumThroughput.writer(underlying,
-                                            1d, // min bytes per second
-                                            Timer.Nil)
+      val writer = MinimumThroughput.writer(
+        underlying,
+        1d, // min bytes per second
+        Timer.Nil
+      )
 
       // do a write of 1 byte in 0 time — which is ok.
       val w1 = writer.write(buf)
@@ -201,11 +212,11 @@ class MinimumThroughputTest extends FunSuite with MockitoSugar {
   }
 
   test("Writer - times out while writing") {
-    val buf = Buf.UsAscii("0")
+    val buf        = Buf.UsAscii("0")
     val underlying = mock[Writer]
     when(underlying.write(buf)).thenReturn(Future.never)
 
-    val timer = new MockTimer()
+    val timer  = new MockTimer()
     val writer = MinimumThroughput.writer(underlying, 1d, timer)
 
     Time.withCurrentTimeFrozen { tc =>
@@ -223,8 +234,8 @@ class MinimumThroughputTest extends FunSuite with MockitoSugar {
   }
 
   test("Writer - failures from underlying writer are untouched") {
-    val buf = Buf.UsAscii("0")
-    val ex = new RuntimeException("ᕕ( ᐛ )ᕗ")
+    val buf        = Buf.UsAscii("0")
+    val ex         = new RuntimeException("ᕕ( ᐛ )ᕗ")
     val underlying = mock[Writer]
     when(underlying.write(buf)).thenReturn(Future.exception(ex))
 

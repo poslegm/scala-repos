@@ -111,13 +111,11 @@ class StringTest {
     assertEquals(-1, "abc\uD834\uDF06def\uD834\uDF06def".lastIndexOf(0x64, -1))
   }
 
-  @Test def toUpperCase(): Unit = {
+  @Test def toUpperCase(): Unit =
     assertEquals("SCALA.JS", "Scala.js".toUpperCase())
-  }
 
-  @Test def toLowerCase(): Unit = {
+  @Test def toLowerCase(): Unit =
     assertEquals("scala.js", "Scala.js".toLowerCase())
-  }
 
   @Test def charAt(): Unit = {
     assertEquals('.', "Scala.js".charAt(5))
@@ -183,22 +181,32 @@ class StringTest {
 
   @Test def split(): Unit = {
     assertArrayEquals(
-        Array[AnyRef]("Sc", "l", ".js"), erased("Scala.js".split("a")))
+      Array[AnyRef]("Sc", "l", ".js"),
+      erased("Scala.js".split("a"))
+    )
     if (!executingInJVM) {
       assertArrayEquals(
-          Array[AnyRef]("", "a", "s", "d", "f"), erased("asdf".split("")))
-      assertArrayEquals(Array[AnyRef]("", "a", "s", "d", "f", ""),
-                        erased("asdf".split("", -1)))
+        Array[AnyRef]("", "a", "s", "d", "f"),
+        erased("asdf".split(""))
+      )
+      assertArrayEquals(
+        Array[AnyRef]("", "a", "s", "d", "f", ""),
+        erased("asdf".split("", -1))
+      )
     }
   }
 
   @Test def split_with_char_as_argument(): Unit = {
     assertArrayEquals(
-        Array[AnyRef]("Scala", "js"), erased("Scala.js".split('.')))
+      Array[AnyRef]("Scala", "js"),
+      erased("Scala.js".split('.'))
+    )
     for (i <- 0 to 32) {
       val c = i.toChar
-      assertArrayEquals(Array[AnyRef]("blah", "blah", "blah", "blah"),
-                        erased(s"blah${c}blah${c}blah${c}blah".split(c)))
+      assertArrayEquals(
+        Array[AnyRef]("blah", "blah", "blah", "blah"),
+        erased(s"blah${c}blah${c}blah${c}blah".split(c))
+      )
     }
   }
 
@@ -219,9 +227,8 @@ class StringTest {
     assertFalse("Scala.js".startsWith("", 9))
   }
 
-  @Test def toCharArray(): Unit = {
+  @Test def toCharArray(): Unit =
     assertEquals('.', "Scala.js".toCharArray()(5))
-  }
 
   @Test def hashCodeTest(): Unit = {
     assertEquals(-1395193631, "a`jkxzcbfaslkjfbkj,289oinkasdf".hashCode())
@@ -239,13 +246,12 @@ class StringTest {
     }
   }
 
-  @Test def concat(): Unit = {
+  @Test def concat(): Unit =
     assertEquals("asdffdsa", "asdf".concat("fdsa"))
-  }
 
   @Test def constructors(): Unit = {
-    val charArray = Array(
-        'a', 'b', 'c', 'd', '\uD834', '\uDF06', 'e', 'f', 'g', 'h', 'i')
+    val charArray =
+      Array('a', 'b', 'c', 'd', '\uD834', '\uDF06', 'e', 'f', 'g', 'h', 'i')
     val codePointArray = Array(65, 0x1D306, 67, 68, 0xD834, 69, 72, 0xDF06)
 
     assertEquals("", new String())
@@ -255,7 +261,9 @@ class StringTest {
     assertEquals("foo", new String("foo"))
     assertEquals("buffer-foo", new String(new StringBuffer("buffer-foo")))
     assertEquals(
-        new String(new java.lang.StringBuilder("builder-foo")), "builder-foo")
+      new String(new java.lang.StringBuilder("builder-foo")),
+      "builder-foo"
+    )
   }
 
   @Test def format(): Unit = {
@@ -269,76 +277,24 @@ class StringTest {
     assertEquals("fffffffd", String.format("%x", new Integer(-3)))
     if (!executingInJVM)
       assertEquals(
-          "fffffffc", String.format("%x", new java.lang.Byte(-4.toByte)))
+        "fffffffc",
+        String.format("%x", new java.lang.Byte(-4.toByte))
+      )
   }
 
   @Test def getBytes(): Unit = {
 
     assertArrayEquals(
-        "hello-world".getBytes(Charset.forName("UTF-8")),
-        Array[Byte](104, 101, 108, 108, 111, 45, 119, 111, 114, 108, 100))
+      "hello-world".getBytes(Charset.forName("UTF-8")),
+      Array[Byte](104, 101, 108, 108, 111, 45, 119, 111, 114, 108, 100)
+    )
     assertArrayEquals(
-        "ᚠᛇᚻ᛫ᛒᛦᚦ᛫ᚠᚱᚩᚠᚢᚱ᛫ᚠᛁᚱᚪ᛫ᚷᛖᚻᚹᛦᛚᚳᚢᛗ".getBytes(Charset.forName("UTF-16")),
-        Array[Byte](-2,
-                    -1,
-                    22,
-                    -96,
-                    22,
-                    -57,
-                    22,
-                    -69,
-                    22,
-                    -21,
-                    22,
-                    -46,
-                    22,
-                    -26,
-                    22,
-                    -90,
-                    22,
-                    -21,
-                    22,
-                    -96,
-                    22,
-                    -79,
-                    22,
-                    -87,
-                    22,
-                    -96,
-                    22,
-                    -94,
-                    22,
-                    -79,
-                    22,
-                    -21,
-                    22,
-                    -96,
-                    22,
-                    -63,
-                    22,
-                    -79,
-                    22,
-                    -86,
-                    22,
-                    -21,
-                    22,
-                    -73,
-                    22,
-                    -42,
-                    22,
-                    -69,
-                    22,
-                    -71,
-                    22,
-                    -26,
-                    22,
-                    -38,
-                    22,
-                    -77,
-                    22,
-                    -94,
-                    22,
-                    -41))
+      "ᚠᛇᚻ᛫ᛒᛦᚦ᛫ᚠᚱᚩᚠᚢᚱ᛫ᚠᛁᚱᚪ᛫ᚷᛖᚻᚹᛦᛚᚳᚢᛗ".getBytes(Charset.forName("UTF-16")),
+      Array[Byte](-2, -1, 22, -96, 22, -57, 22, -69, 22, -21, 22, -46, 22, -26,
+        22, -90, 22, -21, 22, -96, 22, -79, 22, -87, 22, -96, 22, -94, 22, -79,
+        22, -21, 22, -96, 22, -63, 22, -79, 22, -86, 22, -21, 22, -73, 22, -42,
+        22, -69, 22, -71, 22, -26, 22, -38, 22, -77, 22, -94, 22, -41)
+    )
   }
 
   @Test def regionMatches(): Unit = {
@@ -367,9 +323,13 @@ class StringTest {
     assertTrue(testU.regionMatches(true, 0, "xaBcd", 1, 4))
 
     expectThrows(
-        classOf[NullPointerException], test.regionMatches(-1, null, -1, -1))
-    expectThrows(classOf[NullPointerException],
-                 test.regionMatches(true, -1, null, -1, -1))
+      classOf[NullPointerException],
+      test.regionMatches(-1, null, -1, -1)
+    )
+    expectThrows(
+      classOf[NullPointerException],
+      test.regionMatches(true, -1, null, -1, -1)
+    )
 
     // scalastyle:off line.size.limit
     /* If len is negative, you must return true in some cases. See
@@ -406,7 +366,6 @@ class StringTest {
     assertTrue(compare("Java", "Scala") < 0)
   }
 
-  @inline private def erased(array: Array[String]): Array[AnyRef] = {
+  @inline private def erased(array: Array[String]): Array[AnyRef] =
     array.asInstanceOf[Array[AnyRef]]
-  }
 }

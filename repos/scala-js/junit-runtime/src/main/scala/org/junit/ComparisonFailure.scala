@@ -7,25 +7,27 @@ object ComparisonFailure {
   private final val MAX_CONTEXT_LENGTH = 20
 
   private class ComparisonCompactor(
-      private val expected: String, private val actual: String) {
+      private val expected: String,
+      private val actual: String
+  ) {
 
-    private val ELLIPSIS: String = "..."
-    private val DIFF_END: String = "]"
+    private val ELLIPSIS: String   = "..."
+    private val DIFF_END: String   = "]"
     private val DIFF_START: String = "["
 
-    def compact(message: String): String = {
+    def compact(message: String): String =
       if (expected == null || actual == null || expected.equals(actual)) {
         Assert.format(message, expected, actual)
       } else {
-        val extractor = new DiffExtractor()
+        val extractor       = new DiffExtractor()
         val compactedPrefix = extractor.compactPrefix()
         val compactedSuffix = extractor.compactSuffix()
         Assert.format(
-            message,
-            compactedPrefix + extractor.expectedDiff() + compactedSuffix,
-            compactedPrefix + extractor.actualDiff() + compactedSuffix)
+          message,
+          compactedPrefix + extractor.expectedDiff() + compactedSuffix,
+          compactedPrefix + extractor.actualDiff() + compactedSuffix
+        )
       }
-    }
 
     private[junit] def sharedPrefix(): String = {
       val end: Int = Math.min(expected.length, actual.length)
@@ -37,8 +39,10 @@ object ComparisonFailure {
     private def sharedSuffix(prefix: String): String = {
       var suffixLength = 0
       var maxSuffixLength =
-        Math.min(expected.length() - prefix.length(),
-                 actual.length() - prefix.length()) - 1
+        Math.min(
+          expected.length() - prefix.length(),
+          actual.length() - prefix.length()
+        ) - 1
       while (suffixLength <= maxSuffixLength) {
         if (expected.charAt(expected.length() - 1 - suffixLength) != actual
               .charAt(actual.length() - 1 - suffixLength)) {
@@ -58,21 +62,22 @@ object ComparisonFailure {
 
       def actualDiff(): String = extractDiff(actual)
 
-      def compactPrefix(): String = {
+      def compactPrefix(): String =
         if (_sharedPrefix.length() <= MAX_CONTEXT_LENGTH) _sharedPrefix
         else
           ELLIPSIS + _sharedPrefix.substring(
-              _sharedPrefix.length() - MAX_CONTEXT_LENGTH)
-      }
+            _sharedPrefix.length() - MAX_CONTEXT_LENGTH
+          )
 
-      def compactSuffix(): String = {
+      def compactSuffix(): String =
         if (_sharedSuffix.length() <= MAX_CONTEXT_LENGTH) _sharedSuffix
         else _sharedSuffix.substring(0, MAX_CONTEXT_LENGTH) + ELLIPSIS
-      }
 
       private def extractDiff(source: String): String = {
         val sub = source.substring(
-            _sharedPrefix.length(), source.length() - _sharedSuffix.length())
+          _sharedPrefix.length(),
+          source.length() - _sharedSuffix.length()
+        )
         DIFF_START + sub + DIFF_END
       }
     }

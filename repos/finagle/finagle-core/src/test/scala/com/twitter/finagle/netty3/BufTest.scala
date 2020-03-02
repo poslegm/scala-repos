@@ -9,7 +9,8 @@ import org.jboss.netty.buffer.ChannelBuffers
 @RunWith(classOf[JUnitRunner])
 class BufTest extends FunSuite {
   test(
-      "ChannelBufferBuf.slice: slices according to the underlying ChannelBuffer") {
+    "ChannelBufferBuf.slice: slices according to the underlying ChannelBuffer"
+  ) {
     val cb = ChannelBuffers.buffer(128)
     cb.writeBytes(Array[Byte](1, 2, 3, 4, 5, 6, 7, 8, 9))
     val buf = ChannelBufferBuf.Owned(cb)
@@ -27,8 +28,8 @@ class BufTest extends FunSuite {
 
   test("ChannelBufferBuf.Shared.apply") {
     val bytes = Array[Byte](1, 2, 3, 4, 5, 6, 7, 8, 9)
-    val cb = ChannelBuffers.wrappedBuffer(bytes)
-    val buf = ChannelBufferBuf.Shared(cb)
+    val cb    = ChannelBuffers.wrappedBuffer(bytes)
+    val buf   = ChannelBufferBuf.Shared(cb)
     bytes(0) = 0.toByte
     assert(buf == Buf.ByteArray.Owned(Array[Byte](1, 2, 3, 4, 5, 6, 7, 8, 9)))
     cb.clear()
@@ -37,8 +38,8 @@ class BufTest extends FunSuite {
 
   test("ChannelBufferBuf.Direct.apply") {
     val bytes = Array[Byte](1, 2, 3, 4, 5, 6, 7, 8, 9)
-    val cb = ChannelBuffers.wrappedBuffer(bytes)
-    val buf = ChannelBufferBuf.Owned(cb)
+    val cb    = ChannelBuffers.wrappedBuffer(bytes)
+    val buf   = ChannelBufferBuf.Owned(cb)
     bytes(0) = 0.toByte
     assert(buf == Buf.ByteArray.Owned(Array[Byte](0, 2, 3, 4, 5, 6, 7, 8, 9)))
     cb.clear()
@@ -64,20 +65,21 @@ class BufTest extends FunSuite {
   test("ChannelBufferBuf.coerce(ChannelBufferBuf)") {
     val cb =
       ChannelBuffers.wrappedBuffer(Array[Byte](1, 2, 3, 4, 5, 6, 7, 8, 9))
-    val orig = ChannelBufferBuf.Owned(cb)
+    val orig    = ChannelBufferBuf.Owned(cb)
     val coerced = ChannelBufferBuf.coerce(orig)
     assert(coerced eq orig)
   }
 
   test("ChannelBufferBuf.coerce(ByteArray)") {
-    val orig = Buf.ByteArray.Owned(Array[Byte](1, 2, 3, 4, 5, 6, 7, 8, 9))
+    val orig    = Buf.ByteArray.Owned(Array[Byte](1, 2, 3, 4, 5, 6, 7, 8, 9))
     val coerced = ChannelBufferBuf.coerce(orig)
     assert(coerced == orig)
   }
 
   test("ByteArray.coerce(ChannelBufferBuf)") {
-    val orig = ChannelBufferBuf.Owned(ChannelBuffers.wrappedBuffer(
-            Array[Byte](1, 2, 3, 4, 5, 6, 7, 8, 9), 2, 4))
+    val orig = ChannelBufferBuf.Owned(
+      ChannelBuffers.wrappedBuffer(Array[Byte](1, 2, 3, 4, 5, 6, 7, 8, 9), 2, 4)
+    )
     val coerced = Buf.ByteArray.coerce(orig)
     assert(coerced == orig)
     val Buf.ByteArray.Owned(bytes, begin, end) = coerced

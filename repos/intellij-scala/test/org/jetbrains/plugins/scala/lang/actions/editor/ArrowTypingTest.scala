@@ -19,8 +19,10 @@ class ArrowTypingTest extends ScalaLightCodeInsightFixtureTestAdapter {
   private def convertLoadedString(str: String) =
     str
       .replace("$CARET_MARKER", CARET_MARKER)
-      .replace("${ScalaTypedHandler.unicodeCaseArrow}",
-               ScalaTypedHandler.unicodeCaseArrow)
+      .replace(
+        "${ScalaTypedHandler.unicodeCaseArrow}",
+        ScalaTypedHandler.unicodeCaseArrow
+      )
 
   override def getTestDataPath: String =
     TestUtils.getTestDataPath + "/actions/editor/arrows"
@@ -66,10 +68,16 @@ class ArrowTypingTest extends ScalaLightCodeInsightFixtureTestAdapter {
   def testReplaceLambdaArrow() {
     settings.REPLACE_CASE_ARROW_WITH_UNICODE_CHAR = true
 
-    val before1 = convertLoadedString(FileUtil.loadFile(
-            new File(getTestDataPath + s"/${getTestName(true)}Before.test")))
-    val after1 = convertLoadedString(FileUtil.loadFile(
-            new File(getTestDataPath + s"/${getTestName(true)}After.test")))
+    val before1 = convertLoadedString(
+      FileUtil.loadFile(
+        new File(getTestDataPath + s"/${getTestName(true)}Before.test")
+      )
+    )
+    val after1 = convertLoadedString(
+      FileUtil.loadFile(
+        new File(getTestDataPath + s"/${getTestName(true)}After.test")
+      )
+    )
 
     checkGeneratedTextAfterTyping(before1, after1, '>')
   }
@@ -106,7 +114,7 @@ class ArrowTypingTest extends ScalaLightCodeInsightFixtureTestAdapter {
     settings.REPLACE_CASE_ARROW_WITH_UNICODE_CHAR = true
 
     val fileName = s"$getTestDataPath/${getTestName(true)}.test"
-    val text = convertLoadedString(FileUtil.loadFile(new File(fileName)))
+    val text     = convertLoadedString(FileUtil.loadFile(new File(fileName)))
 
     checkGeneratedTextAfterTyping(text, text, '>')
   }

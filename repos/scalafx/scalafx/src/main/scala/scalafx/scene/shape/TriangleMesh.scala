@@ -43,8 +43,9 @@ object TriangleMesh {
   * Wraps [[http://docs.oracle.com/javafx/8/api/javafx/scene/shape/TriangleMesh.html]].
   */
 class TriangleMesh(
-    override val delegate: jfxss.TriangleMesh = new jfxss.TriangleMesh())
-    extends Mesh(delegate) with SFXDelegate[jfxss.TriangleMesh] {
+    override val delegate: jfxss.TriangleMesh = new jfxss.TriangleMesh()
+) extends Mesh(delegate)
+    with SFXDelegate[jfxss.TriangleMesh] {
 
   /**
     * Creates a new instance of `TriangleMesh` class with the specified `VertexFormat`.
@@ -62,9 +63,8 @@ class TriangleMesh(
     */
   def vertexFormat: ObjectProperty[jfxss.VertexFormat] =
     delegate.vertexFormatProperty()
-  def vertexFormat_=(v: VertexFormat): Unit = {
+  def vertexFormat_=(v: VertexFormat): Unit =
     ObjectProperty.fillProperty(vertexFormat, v)
-  }
 
   /** Gets the number of array components representing a single face. */
   def faceElementSize = delegate.getFaceElementSize()

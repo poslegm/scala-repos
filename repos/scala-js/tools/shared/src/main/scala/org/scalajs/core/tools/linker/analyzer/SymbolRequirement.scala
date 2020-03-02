@@ -19,30 +19,35 @@ object SymbolRequirement {
   def factory(originatingComponent: String): Factory =
     new Factory(originatingComponent)
 
-  final class Factory private[SymbolRequirement](origin: String) {
+  final class Factory private[SymbolRequirement] (origin: String) {
     def accessModule(moduleName: String): SymbolRequirement =
       AccessModule(origin, moduleName)
 
     def callOnModule(
-        moduleName: String, methodName: String): SymbolRequirement =
+        moduleName: String,
+        methodName: String
+    ): SymbolRequirement =
       multiple(accessModule(moduleName), callMethod(moduleName, methodName))
 
-    def callOnModule(moduleName: String,
-                     methodName: Traversable[String]): SymbolRequirement = {
+    def callOnModule(
+        moduleName: String,
+        methodName: Traversable[String]
+    ): SymbolRequirement = {
       val methodCalls = methodName.map(callMethod(moduleName, _)).toList
       multipleInternal(accessModule(moduleName) :: methodCalls)
     }
 
     def instantiateClass(
-        className: String, constructor: String): SymbolRequirement = {
+        className: String,
+        constructor: String
+    ): SymbolRequirement =
       InstantiateClass(origin, className, constructor)
-    }
 
     def instantiateClass(
         className: String,
-        constructors: Traversable[String]): SymbolRequirement = {
+        constructors: Traversable[String]
+    ): SymbolRequirement =
       multipleInternal(constructors.toList.map(instantiateClass(className, _)))
-    }
 
     def instanceTests(className: String): SymbolRequirement =
       InstanceTests(origin, className)
@@ -53,26 +58,30 @@ object SymbolRequirement {
     def callMethod(className: String, methodName: String): SymbolRequirement =
       CallMethod(origin, className, methodName, statically = false)
 
-    def callMethods(className: String,
-                    methodNames: Traversable[String]): SymbolRequirement = {
+    def callMethods(
+        className: String,
+        methodNames: Traversable[String]
+    ): SymbolRequirement =
       multipleInternal(methodNames.toList.map(callMethod(className, _)))
-    }
 
     def callMethodStatically(
-        className: String, methodName: String): SymbolRequirement =
+        className: String,
+        methodName: String
+    ): SymbolRequirement =
       CallMethod(origin, className, methodName, statically = true)
 
     def callStaticMethod(
-        className: String, methodName: String): SymbolRequirement =
+        className: String,
+        methodName: String
+    ): SymbolRequirement =
       CallStaticMethod(origin, className, methodName)
 
-    def optional(requirement: SymbolRequirement): SymbolRequirement = {
+    def optional(requirement: SymbolRequirement): SymbolRequirement =
       requirement match {
-        case NoRequirement => NoRequirement
+        case NoRequirement      => NoRequirement
         case optional: Optional => optional
-        case _ => requirement
+        case _                  => requirement
       }
-    }
 
     def multiple(requirements: SymbolRequirement*): SymbolRequirement =
       multipleInternal(requirements.toList)
@@ -82,15 +91,15 @@ object SymbolRequirement {
 
   private def multipleInternal(requirements: List[SymbolRequirement]) = {
     val flattened = requirements.flatMap {
-      case NoRequirement => Nil
+      case NoRequirement          => Nil
       case Multiple(requirements) => requirements
-      case requirement => requirement :: Nil
+      case requirement            => requirement :: Nil
     }
 
     flattened match {
-      case Nil => NoRequirement
+      case Nil      => NoRequirement
       case x :: Nil => x
-      case xs => Multiple(xs)
+      case xs       => Multiple(xs)
     }
   }
 
@@ -98,20 +107,25 @@ object SymbolRequirement {
     case class AccessModule(origin: String, moduleName: String)
         extends SymbolRequirement
     case class InstantiateClass(
-        origin: String, className: String, constructor: String)
-        extends SymbolRequirement
+        origin: String,
+        className: String,
+        constructor: String
+    ) extends SymbolRequirement
     case class InstanceTests(origin: String, className: String)
         extends SymbolRequirement
     case class ClassData(origin: String, className: String)
         extends SymbolRequirement
-    case class CallMethod(origin: String,
-                          className: String,
-                          methodName: String,
-                          statically: Boolean)
-        extends SymbolRequirement
+    case class CallMethod(
+        origin: String,
+        className: String,
+        methodName: String,
+        statically: Boolean
+    ) extends SymbolRequirement
     case class CallStaticMethod(
-        origin: String, className: String, methodName: String)
-        extends SymbolRequirement
+        origin: String,
+        className: String,
+        methodName: String
+    ) extends SymbolRequirement
     case class Optional(requirement: SymbolRequirement)
         extends SymbolRequirement
     case class Multiple(requirements: List[SymbolRequirement])

@@ -30,7 +30,8 @@ import org.apache.spark.storage.memory.MemoryStore
   * @param lock a [[MemoryManager]] instance to synchronize on
   */
 private[memory] class StorageMemoryPool(lock: Object)
-    extends MemoryPool(lock) with Logging {
+    extends MemoryPool(lock)
+    with Logging {
 
   @GuardedBy("lock")
   private[this] var _memoryUsed: Long = 0L
@@ -51,9 +52,8 @@ private[memory] class StorageMemoryPool(lock: Object)
     * Set the [[MemoryStore]] used by this manager to evict cached blocks.
     * This must be set after construction due to initialization ordering constraints.
     */
-  final def setMemoryStore(store: MemoryStore): Unit = {
+  final def setMemoryStore(store: MemoryStore): Unit =
     _memoryStore = store
-  }
 
   /**
     * Acquire N bytes of memory to cache the given block, evicting existing ones if necessary.
@@ -74,9 +74,11 @@ private[memory] class StorageMemoryPool(lock: Object)
     * @param numBytesToFree the amount of space to be freed through evicting blocks
     * @return whether all N bytes were successfully granted.
     */
-  def acquireMemory(blockId: BlockId,
-                    numBytesToAcquire: Long,
-                    numBytesToFree: Long): Boolean = lock.synchronized {
+  def acquireMemory(
+      blockId: BlockId,
+      numBytesToAcquire: Long,
+      numBytesToFree: Long
+  ): Boolean = lock.synchronized {
     assert(numBytesToAcquire >= 0)
     assert(numBytesToFree >= 0)
     assert(memoryUsed <= poolSize)
@@ -95,8 +97,10 @@ private[memory] class StorageMemoryPool(lock: Object)
 
   def releaseMemory(size: Long): Unit = lock.synchronized {
     if (size > _memoryUsed) {
-      logWarning(s"Attempted to release $size bytes of storage " +
-          s"memory when we only have ${_memoryUsed} bytes")
+      logWarning(
+        s"Attempted to release $size bytes of storage " +
+          s"memory when we only have ${_memoryUsed} bytes"
+      )
       _memoryUsed = 0
     } else {
       _memoryUsed -= size

@@ -6,7 +6,11 @@ import org.apache.zookeeper.{CreateMode, KeeperException}
 
 import com.twitter.concurrent.Permit
 import com.twitter.util.Future
-import com.twitter.zk.coordination.ZkAsyncSemaphore.{LackOfConsensusException, PermitMismatchException, PermitNodeException}
+import com.twitter.zk.coordination.ZkAsyncSemaphore.{
+  LackOfConsensusException,
+  PermitMismatchException,
+  PermitNodeException
+}
 import com.twitter.zk.{ZNode, ZkClient}
 
 object ShardCoordinator {
@@ -33,11 +37,11 @@ class ShardCoordinator(zk: ZkClient, path: String, numShards: Int) {
   import ShardCoordinator._
   require(numShards > 0)
 
-  private[this] val separator = "/"
-  private[this] val semaphorePath = Seq(path, "sem").mkString(separator)
+  private[this] val separator       = "/"
+  private[this] val semaphorePath   = Seq(path, "sem").mkString(separator)
   private[this] val shardPathPrefix = Seq(path, "shard-").mkString(separator)
-  private[this] val semaphore = new ZkAsyncSemaphore(
-      zk, semaphorePath, numShards)
+  private[this] val semaphore =
+    new ZkAsyncSemaphore(zk, semaphorePath, numShards)
 
   /**
     * Acquire a permit for a shard (ShardPermit) asynchronously. A ShardPermit contains
@@ -51,12 +55,10 @@ class ShardCoordinator(zk: ZkClient, path: String, numShards: Int) {
     *                                    zookeeper client clobbers the tree location for this
     *                                    ShardCoordinator.
     */
-  def acquire(): Future[ShardPermit] = {
+  def acquire(): Future[ShardPermit] =
     semaphore.acquire flatMap { permit =>
       shardNodes() map { nodes =>
-        nodes map { node =>
-          shardIdOf(node.path)
-        }
+        nodes map { node => shardIdOf(node.path) }
       } map { ids =>
         (0 until numShards) filterNot { ids contains _ }
       } flatMap { availableIds =>
@@ -64,18 +66,21 @@ class ShardCoordinator(zk: ZkClient, path: String, numShards: Int) {
         // a Shard is successfully created (race resolution).
         availableIds.tail
           .foldLeft(createShardNode(availableIds.head, permit)) {
-          (futureShardOption, id) =>
-            futureShardOption flatMap { shardOption =>
-              shardOption match {
-                case Some(shard) => Future.value(shardOption)
-                case None => createShardNode(id, permit)
+            (futureShardOption, id) =>
+              futureShardOption flatMap { shardOption =>
+                shardOption match {
+                  case Some(shard) => Future.value(shardOption)
+                  case None        => createShardNode(id, permit)
+                }
               }
-            }
-        }
+          }
       } flatMap { shardOption =>
         shardOption map { Future.value(_) } getOrElse {
-          Future.exception(new RejectedExecutionException(
-                  "Could not get a shard, polluted zk tree?"))
+          Future.exception(
+            new RejectedExecutionException(
+              "Could not get a shard, polluted zk tree?"
+            )
+          )
         }
       } rescue {
         case err: LackOfConsensusException =>
@@ -83,32 +88,28 @@ class ShardCoordinator(zk: ZkClient, path: String, numShards: Int) {
         case err: PermitMismatchException =>
           Future.exception(SemaphoreError(err))
         case err: PermitNodeException => Future.exception(SemaphoreError(err))
-      } onFailure { err =>
-        permit.release()
-      }
+      } onFailure { err => permit.release() }
     }
-  }
 
   private[this] def createShardNode(
-      id: Int, permit: Permit): Future[Option[Shard]] = {
+      id: Int,
+      permit: Permit
+  ): Future[Option[Shard]] =
     zk(shardPath(id)).create(mode = CreateMode.EPHEMERAL) map { node =>
       Some(Shard(id, node, permit))
     } handle {
       case err: KeeperException.NodeExistsException => None
     }
-  }
 
-  private[this] def shardNodes(): Future[Seq[ZNode]] = {
+  private[this] def shardNodes(): Future[Seq[ZNode]] =
     zk(path).getChildren() map { zop =>
       zop.children filter { child =>
         child.path.startsWith(shardPathPrefix)
       } sortBy (child => shardIdOf(child.path))
     }
-  }
 
-  private[this] def shardIdOf(path: String): Int = {
+  private[this] def shardIdOf(path: String): Int =
     path.substring(shardPathPrefix.length).toInt
-  }
 
   private[this] def shardPath(id: Int) =
     Seq(path, "shard-" + id).mkString(separator)
@@ -122,7 +123,6 @@ sealed trait ShardPermit {
 case class Shard(id: Int, private val node: ZNode, private val permit: Permit)
     extends ShardPermit {
 
-  def release() = {
+  def release() =
     node.delete() ensure { permit.release() }
-  }
 }

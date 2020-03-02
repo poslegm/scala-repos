@@ -24,15 +24,21 @@ import org.apache.spark.ml.util.{DefaultReadWriteTest, MLTestingUtils}
 import org.apache.spark.mllib.util.MLlibTestSparkContext
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions.col
-import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructType}
+import org.apache.spark.sql.types.{
+  DoubleType,
+  StringType,
+  StructField,
+  StructType
+}
 
 class StringIndexerSuite
-    extends SparkFunSuite with MLlibTestSparkContext
+    extends SparkFunSuite
+    with MLlibTestSparkContext
     with DefaultReadWriteTest {
 
   test("params") {
     ParamsSuite.checkParams(new StringIndexer)
-    val model = new StringIndexerModel("indexer", Array("a", "b"))
+    val model           = new StringIndexerModel("indexer", Array("a", "b"))
     val modelWithoutUid = new StringIndexerModel(Array("a", "b"))
     ParamsSuite.checkParams(model)
     ParamsSuite.checkParams(modelWithoutUid)
@@ -40,7 +46,9 @@ class StringIndexerSuite
 
   test("StringIndexer") {
     val data = sc.parallelize(
-        Seq((0, "a"), (1, "b"), (2, "c"), (3, "a"), (4, "a"), (5, "c")), 2)
+      Seq((0, "a"), (1, "b"), (2, "c"), (3, "a"), (4, "a"), (5, "c")),
+      2
+    )
     val df = sqlContext.createDataFrame(data).toDF("id", "label")
     val indexer = new StringIndexer()
       .setInputCol("label")
@@ -58,9 +66,7 @@ class StringIndexerSuite
     val output = transformed
       .select("id", "labelIndex")
       .rdd
-      .map { r =>
-        (r.getInt(0), r.getDouble(1))
-      }
+      .map(r => (r.getInt(0), r.getDouble(1)))
       .collect()
       .toSet
     // a -> 0, b -> 2, c -> 1
@@ -70,10 +76,10 @@ class StringIndexerSuite
   }
 
   test("StringIndexerUnseen") {
-    val data = sc.parallelize(Seq((0, "a"), (1, "b"), (4, "b")), 2)
+    val data  = sc.parallelize(Seq((0, "a"), (1, "b"), (4, "b")), 2)
     val data2 = sc.parallelize(Seq((0, "a"), (1, "b"), (2, "c")), 2)
-    val df = sqlContext.createDataFrame(data).toDF("id", "label")
-    val df2 = sqlContext.createDataFrame(data2).toDF("id", "label")
+    val df    = sqlContext.createDataFrame(data).toDF("id", "label")
+    val df2   = sqlContext.createDataFrame(data2).toDF("id", "label")
     val indexer = new StringIndexer()
       .setInputCol("label")
       .setOutputCol("labelIndex")
@@ -96,9 +102,7 @@ class StringIndexerSuite
     val output = transformed
       .select("id", "labelIndex")
       .rdd
-      .map { r =>
-        (r.getInt(0), r.getDouble(1))
-      }
+      .map(r => (r.getInt(0), r.getDouble(1)))
       .collect()
       .toSet
     // a -> 1, b -> 0
@@ -108,7 +112,9 @@ class StringIndexerSuite
 
   test("StringIndexer with a numeric input column") {
     val data = sc.parallelize(
-        Seq((0, 100), (1, 200), (2, 300), (3, 100), (4, 100), (5, 300)), 2)
+      Seq((0, 100), (1, 200), (2, 300), (3, 100), (4, 100), (5, 300)),
+      2
+    )
     val df = sqlContext.createDataFrame(data).toDF("id", "label")
     val indexer = new StringIndexer()
       .setInputCol("label")
@@ -122,9 +128,7 @@ class StringIndexerSuite
     val output = transformed
       .select("id", "labelIndex")
       .rdd
-      .map { r =>
-        (r.getInt(0), r.getDouble(1))
-      }
+      .map(r => (r.getInt(0), r.getDouble(1)))
       .collect()
       .toSet
     // 100 -> 0, 200 -> 2, 300 -> 1
@@ -134,7 +138,8 @@ class StringIndexerSuite
   }
 
   test(
-      "StringIndexerModel should keep silent if the input column does not exist.") {
+    "StringIndexerModel should keep silent if the input column does not exist."
+  ) {
     val indexerModel = new StringIndexerModel("indexer", Array("a", "b", "c"))
       .setInputCol("label")
       .setOutputCol("labelIndex")
@@ -178,12 +183,14 @@ class StringIndexerSuite
   test("IndexToString.transform") {
     val labels = Array("a", "b", "c")
     val df0 = sqlContext
-      .createDataFrame(Seq(
-              (0, "a"),
-              (1, "b"),
-              (2, "c"),
-              (0, "a")
-          ))
+      .createDataFrame(
+        Seq(
+          (0, "a"),
+          (1, "b"),
+          (2, "c"),
+          (0, "a")
+        )
+      )
       .toDF("index", "expected")
 
     val idxToStr0 = new IndexToString()
@@ -197,7 +204,9 @@ class StringIndexerSuite
 
     val attr = NominalAttribute.defaultAttr.withValues(labels)
     val df1 = df0.select(
-        col("index").as("indexWithAttr", attr.toMetadata()), col("expected"))
+      col("index").as("indexWithAttr", attr.toMetadata()),
+      col("expected")
+    )
 
     val idxToStr1 =
       new IndexToString().setInputCol("indexWithAttr").setOutputCol("actual")
@@ -209,7 +218,9 @@ class StringIndexerSuite
 
   test("StringIndexer, IndexToString are inverses") {
     val data = sc.parallelize(
-        Seq((0, "a"), (1, "b"), (2, "c"), (3, "a"), (4, "a"), (5, "c")), 2)
+      Seq((0, "a"), (1, "b"), (2, "c"), (3, "a"), (4, "a"), (5, "c")),
+      2
+    )
     val df = sqlContext.createDataFrame(data).toDF("id", "label")
     val indexer = new StringIndexer()
       .setInputCol("label")
@@ -233,7 +244,7 @@ class StringIndexerSuite
   test("IndexToString.transformSchema (SPARK-10573)") {
     val idxToStr =
       new IndexToString().setInputCol("input").setOutputCol("output")
-    val inSchema = StructType(Seq(StructField("input", DoubleType)))
+    val inSchema  = StructType(Seq(StructField("input", DoubleType)))
     val outSchema = idxToStr.transformSchema(inSchema)
     assert(outSchema("output").dataType === StringType)
   }

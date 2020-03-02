@@ -5,14 +5,21 @@ import mesosphere.marathon.state.{PathId, AppDefinition, Group, GroupManager}
 import mesosphere.marathon.test.Mockito
 import mesosphere.marathon.upgrade.DeploymentManager.DeploymentStepInfo
 import mesosphere.marathon.upgrade.{DeploymentStep, DeploymentPlan}
-import mesosphere.marathon.{MarathonConf, MarathonSchedulerService, MarathonSpec}
+import mesosphere.marathon.{
+  MarathonConf,
+  MarathonSchedulerService,
+  MarathonSpec
+}
 import org.scalatest.{Matchers, GivenWhenThen}
 
 import scala.concurrent.Future
 import scala.collection.immutable.Seq
 
 class DeploymentsResourceTest
-    extends MarathonSpec with GivenWhenThen with Matchers with Mockito {
+    extends MarathonSpec
+    with GivenWhenThen
+    with Matchers
+    with Mockito {
 
   test("access without authentication is denied") {
     Given("An unauthenticated request")
@@ -21,7 +28,10 @@ class DeploymentsResourceTest
     val targetGroup =
       Group.empty.copy(apps = Set(AppDefinition(PathId("/test"))))
     val deployment = DeploymentStepInfo(
-        DeploymentPlan(Group.empty, targetGroup), DeploymentStep(Seq.empty), 1)
+      DeploymentPlan(Group.empty, targetGroup),
+      DeploymentStep(Seq.empty),
+      1
+    )
     service.listRunningDeployments() returns Future.successful(Seq(deployment))
 
     When(s"the index is fetched")
@@ -43,7 +53,10 @@ class DeploymentsResourceTest
     val targetGroup =
       Group.empty.copy(apps = Set(AppDefinition(PathId("/test"))))
     val deployment = DeploymentStepInfo(
-        DeploymentPlan(Group.empty, targetGroup), DeploymentStep(Seq.empty), 1)
+      DeploymentPlan(Group.empty, targetGroup),
+      DeploymentStep(Seq.empty),
+      1
+    )
     service.listRunningDeployments() returns Future.successful(Seq(deployment))
 
     When(s"one app version is fetched")
@@ -52,11 +65,11 @@ class DeploymentsResourceTest
     cancel.getStatus should be(auth.UnauthorizedStatus)
   }
 
-  var service: MarathonSchedulerService = _
-  var groupManager: GroupManager = _
-  var config: MarathonConf = _
+  var service: MarathonSchedulerService        = _
+  var groupManager: GroupManager               = _
+  var config: MarathonConf                     = _
   var deploymentsResource: DeploymentsResource = _
-  var auth: TestAuthFixture = _
+  var auth: TestAuthFixture                    = _
 
   before {
     auth = new TestAuthFixture
@@ -64,6 +77,11 @@ class DeploymentsResourceTest
     config = mock[MarathonConf]
     service = mock[MarathonSchedulerService]
     deploymentsResource = new DeploymentsResource(
-        service, groupManager, auth.auth, auth.auth, config)
+      service,
+      groupManager,
+      auth.auth,
+      auth.auth,
+      config
+    )
   }
 }

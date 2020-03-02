@@ -34,37 +34,30 @@ class DecompilerTest extends TestCase {
       .slurp()
       .replace("\r", "")
 
-      (Decompiler.decompile(fileName, bytes): @unchecked) match {
+    (Decompiler.decompile(fileName, bytes): @unchecked) match {
       case Some((_, text)) =>
         Assert.assertEquals(expectedResult, text)
     }
   }
 
-  def testPackageObject(): Unit = {
+  def testPackageObject(): Unit =
     doTest("package.class")
-  }
 
-  def testAnnotationArrayArguments(): Unit = {
+  def testAnnotationArrayArguments(): Unit =
     doTest("FlatSpecLike.class")
-  }
 
-  def testAnnotationArguments(): Unit = {
+  def testAnnotationArguments(): Unit =
     doTest("AnnotArgTest.class")
-  }
 
-  def testScl9394(): Unit = {
+  def testScl9394(): Unit =
     doTest("package.class")
-  }
 
-  def testScl9400(): Unit = {
+  def testScl9400(): Unit =
     doTest("KMeansModel.class")
-  }
 
-  def testScl9419(): Unit = {
+  def testScl9419(): Unit =
     doTest("$bar.class")
-  }
 
-  def testScl9457(): Unit = {
+  def testScl9457(): Unit =
     doTest("AnyVaal212.class")
-  }
 }

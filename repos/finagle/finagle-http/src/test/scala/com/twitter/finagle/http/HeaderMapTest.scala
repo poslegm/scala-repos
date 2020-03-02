@@ -8,7 +8,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class HeaderMapTest extends FunSuite {
 
-  private[this] val date = new Date(1441322139353L)
+  private[this] val date          = new Date(1441322139353L)
   private[this] val formattedDate = "Thu, 03 Sep 2015 23:15:39 GMT"
 
   test("get") {
@@ -48,8 +48,12 @@ class HeaderMapTest extends FunSuite {
     request.headers.add("Cookie", "1")
     request.headers.add("Cookie", "2")
 
-    assert(request.headerMap.iterator.toList.sorted == ("Cookie", "1") :: (
-            "Cookie", "2") :: Nil)
+    assert(
+      request.headerMap.iterator.toList.sorted == ("Cookie", "1") :: (
+        "Cookie",
+        "2"
+      ) :: Nil
+    )
   }
 
   test("keys") {

@@ -25,31 +25,31 @@ class IntervalTest extends FunSuite {
   def oc(n1: Double, n2: Double) = Interval.openLower(n1, n2)
   def oo(n1: Double, n2: Double) = Interval.open(n1, n2)
 
-  val e = Interval.empty[Double]
+  val e   = Interval.empty[Double]
   val all = Interval.all[Double]
 
   test("[2, inf] is a superset of empty") {
     assert(Interval.atOrAbove(2).isSupersetOf(Interval.empty[Int]))
   }
-  test("empty is empty") { assert(e.isEmpty) }
-  test("point is point") { assert(Interval.point(2).isPoint) }
-  test("[2,2] is point") { assert(Interval.closed(2, 2).isPoint) }
-  test("[3,2] is empty") { assert(Interval.closed(3, 2).isEmpty) }
+  test("empty is empty")(assert(e.isEmpty))
+  test("point is point")(assert(Interval.point(2).isPoint))
+  test("[2,2] is point")(assert(Interval.closed(2, 2).isPoint))
+  test("[3,2] is empty")(assert(Interval.closed(3, 2).isEmpty))
   test("empty interval is not above -1") {
     assert(!Interval.empty[Int].hasAbove(-1))
   }
   test("empty interval is not below 1") {
     assert(!Interval.empty[Int].hasBelow(1))
   }
-  test("[2] has above 0") { assert(Interval.point(2).hasAbove(0)) }
-  test("[-2] has below 0") { assert(Interval.point(-2).hasBelow(0)) }
+  test("[2] has above 0")(assert(Interval.point(2).hasAbove(0)))
+  test("[-2] has below 0")(assert(Interval.point(-2).hasBelow(0)))
   test("[0, 1] has at or above 1") {
     assert(Interval.closed(0, 1).hasAtOrAbove(1))
   }
   test("[1, 2] has at or above 1") {
     assert(Interval.closed(1, 2).hasAtOrAbove(1))
   }
-  test("[1, 2] has above 1") { assert(Interval.closed(1, 2).hasAtOrAbove(1)) }
+  test("[1, 2] has above 1")(assert(Interval.closed(1, 2).hasAtOrAbove(1)))
   test("(1, 2] has above 1") {
     assert(Interval.openLower(1, 2).hasAtOrAbove(1))
   }
@@ -62,29 +62,29 @@ class IntervalTest extends FunSuite {
   }
 
   val a = cc(0.0, 4.0)
-  test("a.contains(0.0) is true") { assert(a.contains(0.0) === true) }
-  test("a.crosses(0.0) is false") { assert(a.crosses(0.0) === false) }
-  test("a.contains(3.334) is true") { assert(a.contains(3.334) === true) }
-  test("a.contains(8.334) is false") { assert(a.contains(8.334) === false) }
+  test("a.contains(0.0) is true")(assert(a.contains(0.0) === true))
+  test("a.crosses(0.0) is false")(assert(a.crosses(0.0) === false))
+  test("a.contains(3.334) is true")(assert(a.contains(3.334) === true))
+  test("a.contains(8.334) is false")(assert(a.contains(8.334) === false))
 
   val b = cc(-8.0, 2.0)
-  test("b.contains(0.0) is true") { assert(b.contains(0.0) === true) }
-  test("b.crosses(0.0) is true") { assert(b.crosses(0.0) === true) }
+  test("b.contains(0.0) is true")(assert(b.contains(0.0) === true))
+  test("b.crosses(0.0) is true")(assert(b.crosses(0.0) === true))
 
   val c = oc(0.0, 1.0)
-  test("c.contains(0.0) is false") { assert(c.contains(0.0) === false) }
-  test("c.crosses(0.0) is false") { assert(c.crosses(0.0) === false) }
+  test("c.contains(0.0) is false")(assert(c.contains(0.0) === false))
+  test("c.crosses(0.0) is false")(assert(c.crosses(0.0) === false))
 
-  test("[3, 6] -- [3, 6] = nil") { assert(cc(3D, 6D) -- cc(3D, 6D) === Nil) }
+  test("[3, 6] -- [3, 6] = nil")(assert(cc(3d, 6d) -- cc(3d, 6d) === Nil))
   test("[3, 6] -- empty = [3, 6]") {
-    assert(cc(3D, 6D) -- e === List(cc(3D, 6D)))
+    assert(cc(3d, 6d) -- e === List(cc(3d, 6d)))
   }
-  test("[3, 6] -- all = nil") { assert(cc(3D, 6D) -- all === Nil) }
+  test("[3, 6] -- all = nil")(assert(cc(3d, 6d) -- all === Nil))
   test("[3, 6] -- [4, 6] = [3, 4)") {
-    assert(cc(3D, 6D) -- cc(4D, 6D) === List(co(3D, 4D)))
+    assert(cc(3d, 6d) -- cc(4d, 6d) === List(co(3d, 4d)))
   }
   test("[3, 6] -- [4, 5] = [3, 4), (5, 6]") {
-    assert(cc(3D, 6D) -- cc(4D, 5D) === List(co(3D, 4D), oc(5D, 6D)))
+    assert(cc(3d, 6d) -- cc(4d, 5d) === List(co(3d, 4d), oc(5d, 6d)))
   }
 }
 
@@ -92,33 +92,40 @@ class RingIntervalTest extends FunSuite {
   def cc(n1: Double, n2: Double) = Interval.closed(n1, n2)
 
   val a = cc(0.0, 4.0)
-  test("a + a") { assert(a + a === cc(0.0, 8.0)) }
-  test("a - a") { assert(a - a === cc(-4.0, 4.0)) }
-  test("a * a") { assert(a * a === cc(0.0, 16.0)) }
+  test("a + a")(assert(a + a === cc(0.0, 8.0)))
+  test("a - a")(assert(a - a === cc(-4.0, 4.0)))
+  test("a * a")(assert(a * a === cc(0.0, 16.0)))
 
   val b = cc(-8.0, 2.0)
-  test("b + b") { assert(b + b === cc(-16.0, 4.0)) }
-  test("b - b") { assert(b - b === cc(-10.0, 10.0)) }
-  test("b * b") { assert(b * b === cc(-16.0, 64.0)) }
+  test("b + b")(assert(b + b === cc(-16.0, 4.0)))
+  test("b - b")(assert(b - b === cc(-10.0, 10.0)))
+  test("b * b")(assert(b * b === cc(-16.0, 64.0)))
 
   import interval.{Open, Unbound, Closed}
   val c = 4.0
   test("-(c, ∞) =  (-∞, -c)") {
-    assert(-Interval.fromBounds(Open(c), Unbound()) === Interval.fromBounds(
-            Unbound(), Open(-c)))
+    assert(
+      -Interval.fromBounds(Open(c), Unbound()) === Interval
+        .fromBounds(Unbound(), Open(-c))
+    )
   }
   test("-(-∞, c] =  [-c, ∞)") {
-    assert(-Interval.fromBounds(Unbound(), Closed(c)) === Interval.fromBounds(
-            Closed(-c), Unbound()))
+    assert(
+      -Interval.fromBounds(Unbound(), Closed(c)) === Interval
+        .fromBounds(Closed(-c), Unbound())
+    )
   }
   test("(c, ∞) * (-c) =  (-∞, -c * c), c > 0") {
     assert(
-        Interval.fromBounds(Open(c), Unbound()) * (-c) === Interval.fromBounds(
-            Unbound(), Open(-c * c)))
+      Interval.fromBounds(Open(c), Unbound()) * (-c) === Interval
+        .fromBounds(Unbound(), Open(-c * c))
+    )
   }
   test("(-∞, c] * (-c) =  [-c * c, ∞), c > 0") {
-    assert(Interval.fromBounds(Unbound(), Closed(c)) * (-c) === Interval
-          .fromBounds(Closed(-c * c), Unbound()))
+    assert(
+      Interval.fromBounds(Unbound(), Closed(c)) * (-c) === Interval
+        .fromBounds(Closed(-c * c), Unbound())
+    )
   }
   test("Interval multiplication bug #372") {
     val a = Interval(-1, 1)
@@ -162,18 +169,18 @@ class IntervalGeometricPartialOrderTest extends FunSuite {
   test("[2, 3) === [2, 3)") {
     assert(openUpper(2, 3).partialCompare(openUpper(2, 3)) == 0.0)
   }
-  test("[2, 3) < [3, 4]") { assert(openUpper(2, 3) < closed(3, 4)) }
-  test("[2, 3] < (3, 4]") { assert(closed(2, 3) < openLower(3, 4)) }
+  test("[2, 3) < [3, 4]")(assert(openUpper(2, 3) < closed(3, 4)))
+  test("[2, 3] < (3, 4]")(assert(closed(2, 3) < openLower(3, 4)))
   test("[2, 3] cannot be compared to [3, 4]") {
     assert(closed(2, 3).partialCompare(closed(3, 4)).isNaN)
   }
-  test("[3, 4] > [2, 3)") { assert(closed(3, 4) > openUpper(2, 3)) }
-  test("[2, 3) <= [3, 4]") { assert(openUpper(2, 3) <= closed(3, 4)) }
-  test("[3, 4] >= [2, 3)") { assert(closed(3, 4) >= openUpper(2, 3)) }
-  test("not [2, 3] < [3, 4]") { assert(!(closed(2, 3) < closed(3, 4))) }
-  test("not [2, 3] <= [3, 4]") { assert(!(closed(2, 3) <= closed(3, 4))) }
-  test("not [3, 4] > [3, 4]") { assert(!(closed(2, 3) > closed(3, 4))) }
-  test("not [3, 4] >= [3, 4]") { assert(!(closed(2, 3) >= closed(3, 4))) }
+  test("[3, 4] > [2, 3)")(assert(closed(3, 4) > openUpper(2, 3)))
+  test("[2, 3) <= [3, 4]")(assert(openUpper(2, 3) <= closed(3, 4)))
+  test("[3, 4] >= [2, 3)")(assert(closed(3, 4) >= openUpper(2, 3)))
+  test("not [2, 3] < [3, 4]")(assert(!(closed(2, 3) < closed(3, 4))))
+  test("not [2, 3] <= [3, 4]")(assert(!(closed(2, 3) <= closed(3, 4))))
+  test("not [3, 4] > [3, 4]")(assert(!(closed(2, 3) > closed(3, 4))))
+  test("not [3, 4] >= [3, 4]")(assert(!(closed(2, 3) >= closed(3, 4))))
   test("empty.partialCompare(empty) == 0.0") {
     assert(open(2, 2).partialCompare(open(3, 3)) == 0.0)
   }
@@ -196,7 +203,8 @@ class IntervalSubsetPartialOrderTest extends FunSuite {
   import Interval.{openUpper, openLower, closed, open, point}
 
   test(
-      "Minimal and maximal elements of {[1, 3], [3], [2], [1]} by subset partial order") {
+    "Minimal and maximal elements of {[1, 3], [3], [2], [1]} by subset partial order"
+  ) {
     val intervals = Seq(closed(1, 3), point(3), point(2), point(1))
     assert(intervals.pmin.toSet == Set(point(1), point(2), point(3)))
     assert(intervals.pmax.toSet == Set(closed(1, 3)))
@@ -214,7 +222,7 @@ class ContinuousIntervalTest extends FunSuite {
   val d = 4.0
 
   // numerator interval crosses zero
-  test("[-a,b] / [c,d]") { assert(cc(-a, b) / cc(c, d) === cc(-a / c, b / c)) }
+  test("[-a,b] / [c,d]")(assert(cc(-a, b) / cc(c, d) === cc(-a / c, b / c)))
   test("[-a,b] / [-d,-c]") {
     assert(cc(-a, b) / cc(-d, -c) === cc(b / -c, -a / -c))
   }
@@ -223,7 +231,7 @@ class ContinuousIntervalTest extends FunSuite {
   test("[a,b] / [-d,-c]") {
     assert(cc(a, b) / cc(-d, -c) === cc(b / -c, a / -d))
   }
-  test("[a,b] / [c,d]") { assert(cc(a, b) / cc(c, d) === cc(a / d, b / c)) }
+  test("[a,b] / [c,d]")(assert(cc(a, b) / cc(c, d) === cc(a / d, b / c)))
 
   // numerator interval is negative
   test("[-b,-a] / [-d,-c]") {
@@ -237,11 +245,11 @@ class ContinuousIntervalTest extends FunSuite {
 class IntervalReciprocalTest extends FunSuite {
 
   def t(a: Interval[Rational], b: Interval[Rational]): Unit =
-    test(s"[1]/$a = $b") { assert(a.reciprocal === b) }
+    test(s"[1]/$a = $b")(assert(a.reciprocal === b))
 
   def error(a: Interval[Rational]): Unit =
     test(s"[1]/$a = error") {
-      intercept[ArithmeticException] { a.reciprocal }
+      intercept[ArithmeticException](a.reciprocal)
     }
 
   // point(x)
@@ -289,7 +297,7 @@ class IntervalReciprocalTest extends FunSuite {
 
   // below(x)
   error(Interval.below(r"3"))
-  t(Interval.below(r"0"), Interval.below(r"0")) //fixme
+  t(Interval.below(r"0"), Interval.below(r"0"))        //fixme
   t(Interval.below(r"-1"), Interval.open(r"-1", r"0")) //fixme
 
   // atOrBelow(x)
@@ -299,12 +307,12 @@ class IntervalReciprocalTest extends FunSuite {
 }
 
 class IntervalCheck
-    extends PropSpec with Matchers with GeneratorDrivenPropertyChecks {
+    extends PropSpec
+    with Matchers
+    with GeneratorDrivenPropertyChecks {
 
   property("x ⊆ x") {
-    forAll { (x: Interval[Rational]) =>
-      (x isSupersetOf x) shouldBe true
-    }
+    forAll((x: Interval[Rational]) => (x isSupersetOf x) shouldBe true)
   }
 
   property("x ⊆ (x | y) && y ⊆ (x | y)") {
@@ -343,9 +351,7 @@ class IntervalCheck
   }
 
   property("(x -- x) = Ø") {
-    forAll { (x: Interval[Rational]) =>
-      (x -- x) shouldBe Nil
-    }
+    forAll((x: Interval[Rational]) => (x -- x) shouldBe Nil)
   }
 
   property("(x -- (-∞, ∞)) = Ø") {
@@ -368,21 +374,20 @@ class IntervalCheck
                 case 9 => y
                 case _ => x + Rational(rng.nextDouble) * (y - x)
               }
-            case (ValueBound(x), _) =>
+          case (ValueBound(x), _) =>
             () =>
               rng.nextInt(5) match {
                 case 0 => x
                 case _ => x + (Rational(rng.nextGaussian).abs * Long.MaxValue)
               }
-            case (_, ValueBound(y)) =>
+          case (_, ValueBound(y)) =>
             () =>
               rng.nextInt(5) match {
                 case 4 => y
                 case _ => y - (Rational(rng.nextGaussian).abs * Long.MaxValue)
               }
-            case (_, _) =>
-            () =>
-              Rational(rng.nextGaussian) * Long.MaxValue
+          case (_, _) =>
+            () => Rational(rng.nextGaussian) * Long.MaxValue
         }
 
       def nextf(): Rational = {
@@ -395,8 +400,9 @@ class IntervalCheck
 
   val tries = 100
 
-  def testUnop(f: Interval[Rational] => Interval[Rational])(
-      g: Rational => Rational): Unit = {
+  def testUnop(
+      f: Interval[Rational] => Interval[Rational]
+  )(g: Rational => Rational): Unit =
     forAll { (a: Interval[Rational]) =>
       val c: Interval[Rational] = f(a)
       sample(a, tries).foreach { x =>
@@ -405,11 +411,10 @@ class IntervalCheck
         ok shouldBe true
       }
     }
-  }
 
   def testBinop(
-      f: (Interval[Rational], Interval[Rational]) => Interval[Rational])(
-      g: (Rational, Rational) => Rational): Unit = {
+      f: (Interval[Rational], Interval[Rational]) => Interval[Rational]
+  )(g: (Rational, Rational) => Rational): Unit =
     forAll { (a: Interval[Rational], b: Interval[Rational]) =>
       val c: Interval[Rational] = f(a, b)
       sample(a, tries).zip(sample(b, tries)).foreach {
@@ -418,28 +423,27 @@ class IntervalCheck
           if (!b.contains(y)) println("%s does not contain %s" format (b, y))
           val ok = c.contains(g(x, y))
           if (!ok)
-            println("(%s, %s) failed on (%s, %s)" format
-                (a, b, x.toString, y.toString))
+            println(
+              "(%s, %s) failed on (%s, %s)" format
+                (a, b, x.toString, y.toString)
+            )
           ok shouldBe true
       }
     }
-  }
 
-  property("sampled unop abs") { testUnop(_.abs)(_.abs) }
-  property("sampled unop -") { testUnop(-_)(-_) }
-  property("sampled unop pow(2)") { testUnop(_.pow(2))(_.pow(2)) }
-  property("sampled unop pow(3)") { testUnop(_.pow(3))(_.pow(3)) }
+  property("sampled unop abs")(testUnop(_.abs)(_.abs))
+  property("sampled unop -")(testUnop(-_)(-_))
+  property("sampled unop pow(2)")(testUnop(_.pow(2))(_.pow(2)))
+  property("sampled unop pow(3)")(testUnop(_.pow(3))(_.pow(3)))
 
-  property("sampled binop +") { testBinop(_ + _)(_ + _) }
-  property("sampled binop -") { testBinop(_ - _)(_ - _) }
-  property("sampled binop *") { testBinop(_ * _)(_ * _) }
-  property("sampled binop vmin") { testBinop(_ vmin _)(_ min _) }
-  property("sampled binop vmax") { testBinop(_ vmax _)(_ max _) }
+  property("sampled binop +")(testBinop(_ + _)(_ + _))
+  property("sampled binop -")(testBinop(_ - _)(_ - _))
+  property("sampled binop *")(testBinop(_ * _)(_ * _))
+  property("sampled binop vmin")(testBinop(_ vmin _)(_ min _))
+  property("sampled binop vmax")(testBinop(_ vmax _)(_ max _))
 
   property("toString/apply") {
-    forAll { (x: Interval[Rational]) =>
-      Interval(x.toString) shouldBe x
-    }
+    forAll((x: Interval[Rational]) => Interval(x.toString) shouldBe x)
   }
 
   property("points compare as scalars") {
@@ -449,8 +453,9 @@ class IntervalCheck
     forAll { (x: Rational, y: Rational) =>
       val a = Interval.point(x)
       val b = Interval.point(y)
-      PartialOrder[Interval[Rational]].tryCompare(a, b).get shouldBe Order[
-          Rational].compare(x, y)
+      PartialOrder[Interval[Rational]]
+        .tryCompare(a, b)
+        .get shouldBe Order[Rational].compare(x, y)
       val Some(Point(vmin)) = a.pmin(b)
       vmin shouldBe x.min(y)
       val Some(Point(vmax)) = a.pmax(b)
@@ -524,7 +529,9 @@ class IntervalCheck
 }
 
 class IntervalIteratorCheck
-    extends PropSpec with Matchers with GeneratorDrivenPropertyChecks {
+    extends PropSpec
+    with Matchers
+    with GeneratorDrivenPropertyChecks {
 
   property("bounded intervals are ok") {
     forAll { (n1: Rational, n2: Rational, num0: Byte) =>
@@ -532,10 +539,12 @@ class IntervalIteratorCheck
 
       val num = ((num0 & 255) % 13) + 1
 
-      def testEndpoints(interval: Interval[Rational],
-                        step: Rational,
-                        hasLower: Boolean,
-                        hasUpper: Boolean): Unit = {
+      def testEndpoints(
+          interval: Interval[Rational],
+          step: Rational,
+          hasLower: Boolean,
+          hasUpper: Boolean
+      ): Unit = {
         val ns = interval.iterator(step).toSet
         ns(x) shouldBe hasLower
         ns(y) shouldBe hasUpper
@@ -544,8 +553,8 @@ class IntervalIteratorCheck
         ns.size shouldBe (num - 1 + extra)
       }
 
-      val cc = Interval.closed(x, y) // [x, y]
-      val oo = Interval.open(x, y) // (x, y)
+      val cc = Interval.closed(x, y)    // [x, y]
+      val oo = Interval.open(x, y)      // (x, y)
       val oc = Interval.openLower(x, y) // (x, y]
       val co = Interval.openUpper(x, y) // [x, y)
 
@@ -556,10 +565,12 @@ class IntervalIteratorCheck
           Try(xs.iterator(0)).isFailure shouldBe true
         }
       } else {
-        val triples = List((cc, true, true),
-                           (oo, false, false),
-                           (oc, false, true),
-                           (co, true, false))
+        val triples = List(
+          (cc, true, true),
+          (oo, false, false),
+          (oc, false, true),
+          (co, true, false)
+        )
         triples.foreach {
           case (interval, hasLower, hasUpper) =>
             testEndpoints(interval, step, hasLower, hasUpper)
@@ -574,9 +585,9 @@ class IntervalIteratorCheck
       val step0 = s.abs
 
       val cu = Interval.atOrAbove(n) // [n, ∞)
-      val ou = Interval.above(n) // (n, ∞)
+      val ou = Interval.above(n)     // (n, ∞)
       val uc = Interval.atOrBelow(n) // (-∞, n]
-      val uo = Interval.below(n) // (-∞, n)
+      val uo = Interval.below(n)     // (-∞, n)
 
       if (step0.isZero) {
         List(cu, ou, uc, uo).foreach { xs =>
@@ -587,8 +598,8 @@ class IntervalIteratorCheck
           List((cu, true, 1), (ou, false, 1), (uc, true, -1), (uo, false, -1))
         triples.foreach {
           case (interval, hasN, mult) =>
-            val step = step0 * mult
-            val it = interval.iterator(step)
+            val step     = step0 * mult
+            val it       = interval.iterator(step)
             val expected = if (hasN) n else n + step
             it.next() shouldBe expected
             Try(interval.iterator(-step)).isFailure shouldBe true

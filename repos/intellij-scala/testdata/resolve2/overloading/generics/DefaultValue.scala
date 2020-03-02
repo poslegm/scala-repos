@@ -1,6 +1,6 @@
 object Test extends Application {
   class A {
-    def foo[T](x: T) = print(1)
+    def foo[T](x: T)            = print(1)
     def foo(x: Int, e: Int = 1) = print(2)
   }
 

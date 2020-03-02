@@ -29,10 +29,13 @@ private[http] object StreamUtils {
     */
   def byteStringTransformer(
       f: ByteString ⇒ ByteString,
-      finish: () ⇒ ByteString): Stage[ByteString, ByteString] = {
+      finish: () ⇒ ByteString
+  ): Stage[ByteString, ByteString] =
     new PushPullStage[ByteString, ByteString] {
       override def onPush(
-          element: ByteString, ctx: Context[ByteString]): SyncDirective = {
+          element: ByteString,
+          ctx: Context[ByteString]
+      ): SyncDirective = {
         val data = f(element)
         if (data.nonEmpty) ctx.push(data)
         else ctx.pull()
@@ -46,23 +49,28 @@ private[http] object StreamUtils {
         } else ctx.pull()
 
       override def onUpstreamFinish(
-          ctx: Context[ByteString]): TerminationDirective =
+          ctx: Context[ByteString]
+      ): TerminationDirective =
         ctx.absorbTermination()
     }
-  }
 
   def failedPublisher[T](ex: Throwable): Publisher[T] =
     impl.ErrorPublisher(ex, "failed").asInstanceOf[Publisher[T]]
 
   def mapErrorTransformer(
-      f: Throwable ⇒ Throwable): Flow[ByteString, ByteString, NotUsed] = {
+      f: Throwable ⇒ Throwable
+  ): Flow[ByteString, ByteString, NotUsed] = {
     val transformer = new PushStage[ByteString, ByteString] {
       override def onPush(
-          element: ByteString, ctx: Context[ByteString]): SyncDirective =
+          element: ByteString,
+          ctx: Context[ByteString]
+      ): SyncDirective =
         ctx.push(element)
 
       override def onUpstreamFailure(
-          cause: Throwable, ctx: Context[ByteString]): TerminationDirective =
+          cause: Throwable,
+          ctx: Context[ByteString]
+      ): TerminationDirective =
         ctx.fail(f(cause))
     }
 
@@ -70,7 +78,8 @@ private[http] object StreamUtils {
   }
 
   def captureTermination[T, Mat](
-      source: Source[T, Mat]): (Source[T, Mat], Future[Unit]) = {
+      source: Source[T, Mat]
+  ): (Source[T, Mat], Future[Unit]) = {
     val promise = Promise[Unit]()
     val transformer = new PushStage[T, T] {
       def onPush(element: T, ctx: Context[T]) = ctx.push(element)
@@ -87,14 +96,18 @@ private[http] object StreamUtils {
   }
 
   def sliceBytesTransformer(
-      start: Long, length: Long): Flow[ByteString, ByteString, NotUsed] = {
+      start: Long,
+      length: Long
+  ): Flow[ByteString, ByteString, NotUsed] = {
     val transformer = new StatefulStage[ByteString, ByteString] {
 
       def skipping = new State {
         var toSkip = start
 
         override def onPush(
-            element: ByteString, ctx: Context[ByteString]): SyncDirective =
+            element: ByteString,
+            ctx: Context[ByteString]
+        ): SyncDirective =
           if (element.length < toSkip) {
             // keep skipping
             toSkip -= element.length
@@ -110,7 +123,9 @@ private[http] object StreamUtils {
         var remaining: Long = initiallyRemaining
 
         override def onPush(
-            element: ByteString, ctx: Context[ByteString]): SyncDirective = {
+            element: ByteString,
+            ctx: Context[ByteString]
+        ): SyncDirective = {
           val data = element.take(math.min(remaining, Int.MaxValue).toInt)
           remaining -= data.size
           if (remaining <= 0) ctx.pushAndFinish(data)
@@ -124,12 +139,14 @@ private[http] object StreamUtils {
   }
 
   def limitByteChunksStage(
-      maxBytesPerChunk: Int): GraphStage[FlowShape[ByteString, ByteString]] =
+      maxBytesPerChunk: Int
+  ): GraphStage[FlowShape[ByteString, ByteString]] =
     new SimpleLinearGraphStage[ByteString] {
       override def initialAttributes = Attributes.name("limitByteChunksStage")
 
       override def createLogic(
-          inheritedAttributes: Attributes): GraphStageLogic =
+          inheritedAttributes: Attributes
+      ): GraphStageLogic =
         new GraphStageLogic(shape) {
 
           var remaining = ByteString.empty
@@ -181,8 +198,8 @@ private[http] object StreamUtils {
     */
   def oneTimeSource[T, Mat](
       other: Source[T, Mat],
-      errorMsg: String = "One time source can only be instantiated once")
-    : Source[T, Mat] = {
+      errorMsg: String = "One time source can only be instantiated once"
+  ): Source[T, Mat] = {
     val onlyOnceFlag = new AtomicBoolean(false)
     other.mapMaterializedValue { elem ⇒
       if (onlyOnceFlag.get() || !onlyOnceFlag.compareAndSet(false, true))
@@ -191,29 +208,37 @@ private[http] object StreamUtils {
     }
   }
 
-  def oneTimePublisherSink[In](cell: OneTimeWriteCell[Publisher[In]],
-                               name: String): Sink[In, Publisher[In]] =
+  def oneTimePublisherSink[In](
+      cell: OneTimeWriteCell[Publisher[In]],
+      name: String
+  ): Sink[In, Publisher[In]] =
     new Sink[In, Publisher[In]](
-        new OneTimePublisherSink(none, SinkShape(Inlet(name)), cell))
+      new OneTimePublisherSink(none, SinkShape(Inlet(name)), cell)
+    )
   def oneTimeSubscriberSource[Out](
       cell: OneTimeWriteCell[Subscriber[Out]],
-      name: String): Source[Out, Subscriber[Out]] =
+      name: String
+  ): Source[Out, Subscriber[Out]] =
     new Source[Out, Subscriber[Out]](
-        new OneTimeSubscriberSource(none, SourceShape(Outlet(name)), cell))
+      new OneTimeSubscriberSource(none, SourceShape(Outlet(name)), cell)
+    )
 
   /** A copy of PublisherSink that allows access to the publisher through the cell but can only materialized once */
-  private class OneTimePublisherSink[In](attributes: Attributes,
-                                         shape: SinkShape[In],
-                                         cell: OneTimeWriteCell[Publisher[In]])
-      extends PublisherSink[In](attributes, shape) {
+  private class OneTimePublisherSink[In](
+      attributes: Attributes,
+      shape: SinkShape[In],
+      cell: OneTimeWriteCell[Publisher[In]]
+  ) extends PublisherSink[In](attributes, shape) {
     override def create(
-        context: MaterializationContext): (AnyRef, Publisher[In]) = {
+        context: MaterializationContext
+    ): (AnyRef, Publisher[In]) = {
       val results = super.create(context)
       cell.set(results._2)
       results
     }
     override protected def newInstance(
-        shape: SinkShape[In]): SinkModule[In, Publisher[In]] =
+        shape: SinkShape[In]
+    ): SinkModule[In, Publisher[In]] =
       new OneTimePublisherSink[In](attributes, shape, cell)
 
     override def withAttributes(attr: Attributes): OneTimePublisherSink[In] =
@@ -224,11 +249,12 @@ private[http] object StreamUtils {
   private class OneTimeSubscriberSource[Out](
       val attributes: Attributes,
       shape: SourceShape[Out],
-      cell: OneTimeWriteCell[Subscriber[Out]])
-      extends SourceModule[Out, Subscriber[Out]](shape) {
+      cell: OneTimeWriteCell[Subscriber[Out]]
+  ) extends SourceModule[Out, Subscriber[Out]](shape) {
 
     override def create(
-        context: MaterializationContext): (Publisher[Out], Subscriber[Out]) = {
+        context: MaterializationContext
+    ): (Publisher[Out], Subscriber[Out]) = {
       val processor = new Processor[Out, Out] {
         @volatile private var subscriber: Subscriber[_ >: Out] = null
 
@@ -237,7 +263,7 @@ private[http] object StreamUtils {
         override def onError(t: Throwable): Unit = subscriber.onError(t)
         override def onSubscribe(s: Subscription): Unit =
           subscriber.onSubscribe(s)
-        override def onComplete(): Unit = subscriber.onComplete()
+        override def onComplete(): Unit   = subscriber.onComplete()
         override def onNext(t: Out): Unit = subscriber.onNext(t)
       }
       cell.setValue(processor)
@@ -246,10 +272,12 @@ private[http] object StreamUtils {
     }
 
     override protected def newInstance(
-        shape: SourceShape[Out]): SourceModule[Out, Subscriber[Out]] =
+        shape: SourceShape[Out]
+    ): SourceModule[Out, Subscriber[Out]] =
       new OneTimeSubscriberSource[Out](attributes, shape, cell)
     override def withAttributes(
-        attr: Attributes): OneTimeSubscriberSource[Out] =
+        attr: Attributes
+    ): OneTimeSubscriberSource[Out] =
       new OneTimeSubscriberSource[Out](attr, amendShape(attr), cell)
   }
 
@@ -259,7 +287,8 @@ private[http] object StreamUtils {
 
   /** A one time settable cell */
   class OneTimeWriteCell[T <: AnyRef]
-      extends AtomicReference[T] with ReadableCell[T] {
+      extends AtomicReference[T]
+      with ReadableCell[T] {
     def value: T = {
       val value = get()
       require(value != null, "Value wasn't set yet")
@@ -273,24 +302,26 @@ private[http] object StreamUtils {
 
   // TODO: remove after #16394 is cleared
   def recover[A, B >: A](
-      pf: PartialFunction[Throwable, B]): () ⇒ PushPullStage[A, B] = {
+      pf: PartialFunction[Throwable, B]
+  ): () ⇒ PushPullStage[A, B] = {
     val stage = new PushPullStage[A, B] {
-      var recovery: Option[B] = None
+      var recovery: Option[B]                             = None
       def onPush(elem: A, ctx: Context[B]): SyncDirective = ctx.push(elem)
       def onPull(ctx: Context[B]): SyncDirective = recovery match {
-        case None ⇒ ctx.pull()
+        case None    ⇒ ctx.pull()
         case Some(x) ⇒ { recovery = null; ctx.push(x) }
-        case null ⇒ ctx.finish()
+        case null    ⇒ ctx.finish()
       }
       override def onUpstreamFailure(
-          cause: Throwable, ctx: Context[B]): TerminationDirective =
+          cause: Throwable,
+          ctx: Context[B]
+      ): TerminationDirective =
         if (pf isDefinedAt cause) {
           recovery = Some(pf(cause))
           ctx.absorbTermination()
         } else super.onUpstreamFailure(cause, ctx)
     }
-    () ⇒
-      stage
+    () ⇒ stage
   }
 
   /**
@@ -308,7 +339,9 @@ private[http] object StreamUtils {
           ctx.push(elem)
 
         override def onUpstreamFailure(
-            cause: Throwable, ctx: Context[T]): TerminationDirective = {
+            cause: Throwable,
+            ctx: Context[T]
+        ): TerminationDirective = {
           promise.failure(cause)
           ctx.fail(cause)
         }
@@ -319,7 +352,8 @@ private[http] object StreamUtils {
         }
 
         override def onDownstreamFinish(
-            ctx: Context[T]): TerminationDirective = {
+            ctx: Context[T]
+        ): TerminationDirective = {
           promise.success(())
           ctx.finish()
         }
@@ -347,10 +381,14 @@ private[http] object StreamUtils {
     def apply(): OneTimeValve = new OneTimeValve {
       val promise = Promise[Unit]()
       val _source =
-        Source.fromFuture(promise.future).drop(1) // we are only interested in the completion event
+        Source
+          .fromFuture(promise.future)
+          .drop(1) // we are only interested in the completion event
 
       def source[T]: Source[T, NotUsed] =
-        _source.asInstanceOf[Source[T, NotUsed]] // safe, because source won't generate any elements
+        _source.asInstanceOf[
+          Source[T, NotUsed]
+        ] // safe, because source won't generate any elements
       def open(): Unit = promise.success(())
     }
   }
@@ -360,11 +398,13 @@ private[http] object StreamUtils {
   * INTERNAL API
   */
 private[http] class EnhancedByteStringSource[Mat](
-    val byteStringStream: Source[ByteString, Mat])
-    extends AnyVal {
+    val byteStringStream: Source[ByteString, Mat]
+) extends AnyVal {
   def join(implicit materializer: Materializer): Future[ByteString] =
     byteStringStream.runFold(ByteString.empty)(_ ++ _)
-  def utf8String(implicit materializer: Materializer,
-                 ec: ExecutionContext): Future[String] =
+  def utf8String(
+      implicit materializer: Materializer,
+      ec: ExecutionContext
+  ): Future[String] =
     join.map(_.utf8String)
 }

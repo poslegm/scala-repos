@@ -29,7 +29,9 @@ import org.apache.spark.SparkException
   * @param name Name of the endpoint.
   */
 private[spark] case class RpcEndpointAddress(
-    val rpcAddress: RpcAddress, val name: String) {
+    val rpcAddress: RpcAddress,
+    val name: String
+) {
 
   require(name != null, "RpcEndpoint name must be provided.")
 
@@ -47,13 +49,12 @@ private[spark] case class RpcEndpointAddress(
 
 private[spark] object RpcEndpointAddress {
 
-  def apply(host: String, port: Int, name: String): RpcEndpointAddress = {
+  def apply(host: String, port: Int, name: String): RpcEndpointAddress =
     new RpcEndpointAddress(host, port, name)
-  }
 
-  def apply(sparkUrl: String): RpcEndpointAddress = {
+  def apply(sparkUrl: String): RpcEndpointAddress =
     try {
-      val uri = new java.net.URI(sparkUrl)
+      val uri  = new java.net.URI(sparkUrl)
       val host = uri.getHost
       val port = uri.getPort
       val name = uri.getUserInfo
@@ -68,5 +69,4 @@ private[spark] object RpcEndpointAddress {
       case e: java.net.URISyntaxException =>
         throw new SparkException("Invalid Spark URL: " + sparkUrl, e)
     }
-  }
 }

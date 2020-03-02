@@ -30,12 +30,15 @@ import org.json4s.native.Serialization.read
 import org.json4s.native.Serialization.write
 
 class ESEvaluationInstances(
-    client: Client, config: StorageClientConfig, index: String)
-    extends EvaluationInstances with Logging {
+    client: Client,
+    config: StorageClientConfig,
+    index: String
+) extends EvaluationInstances
+    with Logging {
   implicit val formats = DefaultFormats + new EvaluationInstanceSerializer
-  private val estype = "evaluation_instances"
+  private val estype   = "evaluation_instances"
 
-  val indices = client.admin.indices
+  val indices            = client.admin.indices
   val indexExistResponse = indices.prepareExists(index).get
   if (!indexExistResponse.isExists) {
     indices.prepareCreate(index).get
@@ -45,20 +48,20 @@ class ESEvaluationInstances(
   if (!typeExistResponse.isExists) {
     val json =
       (estype ->
-          ("properties" ->
-              ("status" -> ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
-              ("startTime" -> ("type" -> "date")) ~
-              ("endTime" -> ("type" -> "date")) ~
-              ("evaluationClass" -> ("type" -> "string") ~
-                  ("index" -> "not_analyzed")) ~
-              ("engineParamsGeneratorClass" -> ("type" -> "string") ~
-                  ("index" -> "not_analyzed")) ~
-              ("batch" -> ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
-              ("evaluatorResults" -> ("type" -> "string") ~ ("index" -> "no")) ~
-              ("evaluatorResultsHTML" -> ("type" -> "string") ~
-                  ("index" -> "no")) ~
-              ("evaluatorResultsJSON" -> ("type" -> "string") ~
-                  ("index" -> "no"))))
+        ("properties" ->
+          ("status"      -> ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
+            ("startTime" -> ("type" -> "date")) ~
+            ("endTime"   -> ("type" -> "date")) ~
+            ("evaluationClass" -> ("type" -> "string") ~
+              ("index"         -> "not_analyzed")) ~
+            ("engineParamsGeneratorClass" -> ("type" -> "string") ~
+              ("index"                    -> "not_analyzed")) ~
+            ("batch"                      -> ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
+            ("evaluatorResults"           -> ("type" -> "string") ~ ("index" -> "no")) ~
+            ("evaluatorResultsHTML" -> ("type" -> "string") ~
+              ("index"              -> "no")) ~
+            ("evaluatorResultsJSON" -> ("type" -> "string") ~
+              ("index"              -> "no"))))
     indices
       .preparePutMapping(index)
       .setType(estype)
@@ -66,7 +69,7 @@ class ESEvaluationInstances(
       .get
   }
 
-  def insert(i: EvaluationInstance): String = {
+  def insert(i: EvaluationInstance): String =
     try {
       val response = client.prepareIndex(index, estype).setSource(write(i)).get
       response.getId
@@ -75,9 +78,8 @@ class ESEvaluationInstances(
         error(e.getMessage)
         ""
     }
-  }
 
-  def get(id: String): Option[EvaluationInstance] = {
+  def get(id: String): Option[EvaluationInstance] =
     try {
       val response = client.prepareGet(index, estype, id).get
       if (response.isExists) {
@@ -90,9 +92,8 @@ class ESEvaluationInstances(
         error(e.getMessage)
         None
     }
-  }
 
-  def getAll(): Seq[EvaluationInstance] = {
+  def getAll(): Seq[EvaluationInstance] =
     try {
       val builder = client.prepareSearch(index).setTypes(estype)
       ESUtils.getAll[EvaluationInstance](client, builder)
@@ -101,9 +102,8 @@ class ESEvaluationInstances(
         error(e.getMessage)
         Seq()
     }
-  }
 
-  def getCompleted(): Seq[EvaluationInstance] = {
+  def getCompleted(): Seq[EvaluationInstance] =
     try {
       val builder = client
         .prepareSearch(index)
@@ -116,21 +116,18 @@ class ESEvaluationInstances(
         error(e.getMessage)
         Seq()
     }
-  }
 
-  def update(i: EvaluationInstance): Unit = {
+  def update(i: EvaluationInstance): Unit =
     try {
       client.prepareUpdate(index, estype, i.id).setDoc(write(i)).get
     } catch {
       case e: ElasticsearchException => error(e.getMessage)
     }
-  }
 
-  def delete(id: String): Unit = {
+  def delete(id: String): Unit =
     try {
       client.prepareDelete(index, estype, id).get
     } catch {
       case e: ElasticsearchException => error(e.getMessage)
     }
-  }
 }

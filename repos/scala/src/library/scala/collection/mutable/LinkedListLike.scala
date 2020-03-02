@@ -56,12 +56,13 @@ import scala.annotation.tailrec
   *  }}}
   */
 @deprecated(
-    "Low-level linked lists are deprecated due to idiosyncrasies in interface and incomplete features.",
-    "2.11.0")
+  "Low-level linked lists are deprecated due to idiosyncrasies in interface and incomplete features.",
+  "2.11.0"
+)
 trait LinkedListLike[A, This <: Seq[A] with LinkedListLike[A, This]]
     extends SeqLike[A, This] { self =>
 
-  var elem: A = _
+  var elem: A    = _
   var next: This = _
 
   override def isEmpty = next eq this
@@ -141,7 +142,7 @@ trait LinkedListLike[A, This <: Seq[A] with LinkedListLike[A, This]]
   }
 
   override def drop(n: Int): This = {
-    var i = 0
+    var i           = 0
     var these: This = repr
     while (i < n && !these.isEmpty) {
       these = these.next
@@ -156,7 +157,7 @@ trait LinkedListLike[A, This <: Seq[A] with LinkedListLike[A, This]]
     else throw new IndexOutOfBoundsException(n.toString)
   }
 
-  override def apply(n: Int): A = atLocation(n)(_.elem)
+  override def apply(n: Int): A  = atLocation(n)(_.elem)
   def update(n: Int, x: A): Unit = atLocation(n)(_.elem = x)
 
   def get(n: Int): Option[A] = {
@@ -166,7 +167,7 @@ trait LinkedListLike[A, This <: Seq[A] with LinkedListLike[A, This]]
   }
 
   override def iterator: Iterator[A] = new AbstractIterator[A] {
-    var elems = self
+    var elems   = self
     def hasNext = elems.nonEmpty
     def next = {
       val res = elems.elem

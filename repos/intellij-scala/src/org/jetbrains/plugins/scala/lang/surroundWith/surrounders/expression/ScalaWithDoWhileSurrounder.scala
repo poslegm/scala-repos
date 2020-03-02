@@ -17,18 +17,19 @@ import org.jetbrains.plugins.scala.lang.psi.api.expr._
  */
 
 class ScalaWithDoWhileSurrounder extends ScalaExpressionSurrounder {
-  override def getTemplateAsString(elements: Array[PsiElement]): String = {
+  override def getTemplateAsString(elements: Array[PsiElement]): String =
     return "do {" + super.getTemplateAsString(elements) + "} while (true)"
-  }
 
   override def getTemplateDescription = "do / while"
 
-  override def getSurroundSelectionRange(withDoWhileNode: ASTNode): TextRange = {
+  override def getSurroundSelectionRange(
+      withDoWhileNode: ASTNode
+  ): TextRange = {
     val element: PsiElement = withDoWhileNode.getPsi match {
       case x: ScParenthesisedExpr =>
         x.expr match {
           case Some(y) => y
-          case _ => return x.getTextRange
+          case _       => return x.getTextRange
         }
       case x => x
     }
@@ -38,7 +39,7 @@ class ScalaWithDoWhileSurrounder extends ScalaExpressionSurrounder {
       doWhileStmt.getNode.getLastChildNode.getTreePrev
 
     val startOffset = conditionNode.getTextRange.getStartOffset
-    val endOffset = conditionNode.getTextRange.getEndOffset
+    val endOffset   = conditionNode.getTextRange.getEndOffset
 
     return new TextRange(startOffset, endOffset);
   }

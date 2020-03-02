@@ -27,7 +27,7 @@ abstract class Function[-T1, +R] extends PartialFunction[T1, R] {
     * These overrides do nothing but delegate to super. They are necessary for Java
     * compatibility.
     */
-  override def compose[A](g: A => T1): A => R = super.compose(g)
+  override def compose[A](g: A => T1): A => R                = super.compose(g)
   override def andThen[A](g: R => A): PartialFunction[T1, A] = super.andThen(g)
 
   override def isDefinedAt(x: T1) = true
@@ -40,7 +40,7 @@ object Function {
     * returned function are synchronized with the given monitor `m`.
     */
   def synchronizeWith[T, R](m: Object)(f: T => R): T => R =
-    t => m.synchronized { f(t) }
+    t => m.synchronized(f(t))
 
   /**
     * Creates `() => Unit` function from given `Runnable`.
@@ -106,5 +106,5 @@ abstract class Command[-T1] extends (T1 => Unit) {
     * compatibility.
     */
   override def andThen[A](g: (Unit) => A) = super.andThen(g)
-  override def compose[A](g: (A) => T1) = super.compose(g)
+  override def compose[A](g: (A) => T1)   = super.compose(g)
 }

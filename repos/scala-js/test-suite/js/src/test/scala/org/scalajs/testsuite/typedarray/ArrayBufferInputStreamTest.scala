@@ -24,9 +24,8 @@ import org.scalajs.testsuite.utils.AssertThrows._
 /** Tests for our implementation of java.io._ stream classes */
 trait ArrayBufferInputStreamTest {
 
-  def byteArray(a: TraversableOnce[Int]): Array[Byte] = {
+  def byteArray(a: TraversableOnce[Int]): Array[Byte] =
     a.toArray.map(_.toByte)
-  }
 
   def mkStream(seq: Seq[Int]): InputStream
 
@@ -44,7 +43,7 @@ trait ArrayBufferInputStreamTest {
 
   @Test def read_buf(): Unit = {
     val stream = newStream
-    val buf = new Array[Byte](10)
+    val buf    = new Array[Byte](10)
 
     assertEquals(10, stream.read(buf))
     assertArrayEquals(byteArray(1 to 10), buf)
@@ -60,11 +59,13 @@ trait ArrayBufferInputStreamTest {
 
   @Test def read_full_argument(): Unit = {
     val stream = newStream
-    val buf = new Array[Byte](20)
+    val buf    = new Array[Byte](20)
 
     assertEquals(5, stream.read(buf, 10, 5))
     assertArrayEquals(
-        byteArray(Seq.fill(10)(0) ++ (1 to 5) ++ Seq.fill(5)(0)), buf)
+      byteArray(Seq.fill(10)(0) ++ (1 to 5) ++ Seq.fill(5)(0)),
+      buf
+    )
 
     assertEquals(20, stream.read(buf, 0, 20))
     assertArrayEquals(byteArray(6 to 25), buf)
@@ -92,7 +93,7 @@ trait ArrayBufferInputStreamTest {
     val stream = newStream
 
     def mySkip(n: Int) = for (_ <- 1 to n) assertNotEquals(-1, stream.read())
-    def check(n: Int) = assertEquals(n, stream.available)
+    def check(n: Int)  = assertEquals(n, stream.available)
 
     check(50)
     mySkip(5)
@@ -121,9 +122,8 @@ trait ArrayBufferInputStreamTest {
     assertEquals(0L, stream.skip(30))
   }
 
-  @Test def markSupported(): Unit = {
+  @Test def markSupported(): Unit =
     assertTrue(newStream.markSupported)
-  }
 
   @Test def close(): Unit = {
     val stream = newStream
@@ -184,7 +184,7 @@ object ArrayBufferInputStreamWithOffsetTest extends Requires.TypedArray
 class ArrayBufferInputStreamWithOffsetTest extends ArrayBufferInputStreamTest {
   def mkStream(seq: Seq[Int]): InputStream = {
     import js.JSConverters._
-    val off = 100
+    val off  = 100
     val data = new Int8Array(seq.size + off)
     data.set(seq.toJSArray, off)
 

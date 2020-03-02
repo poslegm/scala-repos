@@ -21,12 +21,13 @@ trait MonadPlus[F[_]] extends Monad[F] with ApplicativePlus[F] { self =>
     bind(value)((ta) => T.foldMap(ta)(a => point(a))(monoid[A]))
 
   /** Generalized version of Haskell's `partitionEithers` */
-  def separate[G[_, _], A, B](value: F[G[A, B]])(
-      implicit G: Bifoldable[G]): (F[A], F[B]) = {
+  def separate[G[_, _], A, B](
+      value: F[G[A, B]]
+  )(implicit G: Bifoldable[G]): (F[A], F[B]) = {
     val lefts =
       bind(value)((aa) => G.leftFoldable.foldMap(aa)(a => point(a))(monoid[A]))
-    val rights = bind(value)(
-        (bb) => G.rightFoldable.foldMap(bb)(b => point(b))(monoid[B]))
+    val rights =
+      bind(value)((bb) => G.rightFoldable.foldMap(bb)(b => point(b))(monoid[B]))
     (lefts, rights)
   }
 
@@ -36,7 +37,8 @@ trait MonadPlus[F[_]] extends Monad[F] with ApplicativePlus[F] { self =>
 
   /**The product of MonadPlus `F` and `G`, `[x](F[x], G[x]])`, is a MonadPlus */
   def product[G[_]](
-      implicit G0: MonadPlus[G]): MonadPlus[λ[α => (F[α], G[α])]] =
+      implicit G0: MonadPlus[G]
+  ): MonadPlus[λ[α => (F[α], G[α])]] =
     new ProductMonadPlus[F, G] {
       def F = self
       def G = G0
@@ -49,18 +51,16 @@ trait MonadPlus[F[_]] extends Monad[F] with ApplicativePlus[F] { self =>
       FA.equal(map(empty[A])(f1), empty[A])
 
     /** `empty` short-circuits its right. */
-    def leftZero[A](f: A => F[A])(implicit FA: Equal[F[A]]): Boolean = {
+    def leftZero[A](f: A => F[A])(implicit FA: Equal[F[A]]): Boolean =
       FA.equal(bind(empty[A])(f), empty[A])
-    }
   }
   trait StrongMonadPlusLaw extends MonadPlusLaw {
 
     /** `empty` short-circuits throughout its `join` tree. */
-    def rightZero[A](f: F[A])(implicit FA: Equal[F[A]]): Boolean = {
+    def rightZero[A](f: F[A])(implicit FA: Equal[F[A]]): Boolean =
       FA.equal(bind(f)(_ => empty[A]), empty[A])
-    }
   }
-  def monadPlusLaw = new MonadPlusLaw {}
+  def monadPlusLaw       = new MonadPlusLaw       {}
   def strongMonadPlusLaw = new StrongMonadPlusLaw {}
   ////
   val monadPlusSyntax = new scalaz.syntax.MonadPlusSyntax[F] {

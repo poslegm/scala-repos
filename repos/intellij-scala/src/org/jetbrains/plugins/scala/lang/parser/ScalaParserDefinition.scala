@@ -39,16 +39,16 @@ class ScalaParserDefinition extends ScalaParserDefinitionWrapper {
   def createElement(astNode: ASTNode): PsiElement =
     ScalaPsiCreator.createElement(astNode)
 
-  def createFile(fileViewProvider: FileViewProvider): PsiFile = {
+  def createFile(fileViewProvider: FileViewProvider): PsiFile =
     ScalaFileFactory.EP_NAME.getExtensions.view
       .flatMap(_.createFile(fileViewProvider))
       .headOption
       .getOrElse(new ScalaFileImpl(fileViewProvider))
-  }
 
   override def spaceExistanceTypeBetweenTokens(
       leftNode: ASTNode,
-      rightNode: ASTNode): ParserDefinition.SpaceRequirements = {
+      rightNode: ASTNode
+  ): ParserDefinition.SpaceRequirements = {
     import com.intellij.lang.ParserDefinition._
     if (rightNode.getElementType != ScalaTokenTypes.tWHITE_SPACE_IN_LINE ||
         !rightNode.getText.contains("\n")) {
@@ -60,7 +60,7 @@ class ScalaParserDefinition extends ScalaParserDefinitionWrapper {
     }
     (leftNode.getElementType, rightNode.getElementType) match {
       case (_, ScalaTokenTypes.kIMPORT) => SpaceRequirements.MUST_LINE_BREAK
-      case _ => super.spaceExistanceTypeBetweenTokens(leftNode, rightNode)
+      case _                            => super.spaceExistanceTypeBetweenTokens(leftNode, rightNode)
     }
   }
 }

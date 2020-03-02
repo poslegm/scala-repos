@@ -12,7 +12,7 @@ import org.scalatest.mock.MockitoSugar
 @RunWith(classOf[JUnitRunner])
 class RequestSnooperTest extends FunSuite with MockitoSugar {
   test("RequestSnooper should compute handleBytes reasonably") {
-    val ctr = mock[ByteCounter]
+    val ctr      = mock[ByteCounter]
     val quantile = 0.50
 
     when(ctr.rate()).thenReturn(1)
@@ -20,7 +20,7 @@ class RequestSnooperTest extends FunSuite with MockitoSugar {
     Time.withCurrentTimeFrozen { ctl =>
       when(ctr.lastGc).thenReturn(Time.now - 5.seconds)
 
-      val tmr = new MockTimer()
+      val tmr     = new MockTimer()
       val snooper = new RequestSnooper(ctr, quantile, timer = tmr)
       for (_ <- 0 until 50) snooper.observe(1.second)
       for (_ <- 0 until 50) snooper.observe(2.seconds)
@@ -32,7 +32,7 @@ class RequestSnooperTest extends FunSuite with MockitoSugar {
   }
 
   test("RequestSnooper should discard results that overlap with a gc") {
-    val ctr = mock[ByteCounter]
+    val ctr      = mock[ByteCounter]
     val quantile = 0.50
 
     when(ctr.rate()).thenReturn(1)
@@ -40,7 +40,7 @@ class RequestSnooperTest extends FunSuite with MockitoSugar {
     Time.withCurrentTimeFrozen { ctl =>
       when(ctr.lastGc).thenReturn(Time.now - 5.seconds)
 
-      val tmr = new MockTimer()
+      val tmr     = new MockTimer()
       val snooper = new RequestSnooper(ctr, quantile, timer = tmr)
       for (_ <- 0 until 50) snooper.observe(1.second)
       for (_ <- 0 until 50) snooper.observe(2.seconds)

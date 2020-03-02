@@ -6,10 +6,10 @@ import org.scalatra.test.specs2.MutableScalatraSpec
 import scala.concurrent.Future
 
 class AkkaSupportAfterFilterFilter extends ScalatraFilter with FutureSupport {
-  val system = ActorSystem()
-  var actionTime: Long = _
-  var afterTime: Long = _
-  var afterCount: Long = _
+  val system                           = ActorSystem()
+  var actionTime: Long                 = _
+  var afterTime: Long                  = _
+  var afterCount: Long                 = _
   protected implicit lazy val executor = system.dispatcher
 
   asyncGet("/async") {

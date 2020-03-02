@@ -25,7 +25,10 @@ import breeze.stats.distributions.{Multinomial => BrzMultinomial}
 import org.apache.spark.{SparkException, SparkFunSuite}
 import org.apache.spark.mllib.linalg.{Vector, Vectors}
 import org.apache.spark.mllib.regression.LabeledPoint
-import org.apache.spark.mllib.util.{LocalClusterSparkContext, MLlibTestSparkContext}
+import org.apache.spark.mllib.util.{
+  LocalClusterSparkContext,
+  MLlibTestSparkContext
+}
 import org.apache.spark.mllib.util.TestingUtils._
 import org.apache.spark.util.Utils
 
@@ -43,15 +46,17 @@ object NaiveBayesSuite {
   }
 
   // Generate input of the form Y = (theta * x).argmax()
-  def generateNaiveBayesInput(pi: Array[Double], // 1XC
-                              theta: Array[Array[Double]], // CXD
-                              nPoints: Int,
-                              seed: Int,
-                              modelType: String = Multinomial,
-                              sample: Int = 10): Seq[LabeledPoint] = {
-    val D = theta(0).length
-    val rnd = new Random(seed)
-    val _pi = pi.map(math.pow(math.E, _))
+  def generateNaiveBayesInput(
+      pi: Array[Double],           // 1XC
+      theta: Array[Array[Double]], // CXD
+      nPoints: Int,
+      seed: Int,
+      modelType: String = Multinomial,
+      sample: Int = 10
+  ): Seq[LabeledPoint] = {
+    val D      = theta(0).length
+    val rnd    = new Random(seed)
+    val _pi    = pi.map(math.pow(math.E, _))
     val _theta = theta.map(row => row.map(math.pow(math.E, _)))
 
     for (i <- 0 until nPoints) yield {
@@ -62,7 +67,7 @@ object NaiveBayesSuite {
             if (rnd.nextDouble() < _theta(y)(j)) 1 else 0
           }
         case Multinomial =>
-          val mult = BrzMultinomial(BDV(_theta(y)))
+          val mult     = BrzMultinomial(BDV(_theta(y)))
           val emptyMap = (0 until D).map(x => (x, 0.0)).toMap
           val counts =
             emptyMap ++ mult.sample(sample).groupBy(x => x).map {
@@ -80,17 +85,19 @@ object NaiveBayesSuite {
 
   /** Bernoulli NaiveBayes with binary labels, 3 features */
   private val binaryBernoulliModel = new NaiveBayesModel(
-      labels = Array(0.0, 1.0),
-      pi = Array(0.2, 0.8),
-      theta = Array(Array(0.1, 0.3, 0.6), Array(0.2, 0.4, 0.4)),
-      Bernoulli)
+    labels = Array(0.0, 1.0),
+    pi = Array(0.2, 0.8),
+    theta = Array(Array(0.1, 0.3, 0.6), Array(0.2, 0.4, 0.4)),
+    Bernoulli
+  )
 
   /** Multinomial NaiveBayes with binary labels, 3 features */
   private val binaryMultinomialModel = new NaiveBayesModel(
-      labels = Array(0.0, 1.0),
-      pi = Array(0.2, 0.8),
-      theta = Array(Array(0.1, 0.3, 0.6), Array(0.2, 0.4, 0.4)),
-      Multinomial)
+    labels = Array(0.0, 1.0),
+    pi = Array(0.2, 0.8),
+    theta = Array(Array(0.1, 0.3, 0.6), Array(0.2, 0.4, 0.4)),
+    Multinomial
+  )
 }
 
 class NaiveBayesSuite extends SparkFunSuite with MLlibTestSparkContext {
@@ -106,12 +113,13 @@ class NaiveBayesSuite extends SparkFunSuite with MLlibTestSparkContext {
     assert(numOfPredictions < input.length / 5)
   }
 
-  def validateModelFit(piData: Array[Double],
-                       thetaData: Array[Array[Double]],
-                       model: NaiveBayesModel): Unit = {
-    def closeFit(d1: Double, d2: Double, precision: Double): Boolean = {
+  def validateModelFit(
+      piData: Array[Double],
+      thetaData: Array[Array[Double]],
+      model: NaiveBayesModel
+  ): Unit = {
+    def closeFit(d1: Double, d2: Double, precision: Double): Boolean =
       (d1 - d2).abs <= precision
-    }
     val modelIndex = (0 until piData.length).zip(model.labels.map(_.toInt))
     for (i <- modelIndex) {
       assert(closeFit(math.exp(piData(i._2)), math.exp(model.pi(i._1)), 0.05))
@@ -119,9 +127,12 @@ class NaiveBayesSuite extends SparkFunSuite with MLlibTestSparkContext {
     for (i <- modelIndex) {
       for (j <- 0 until thetaData(i._2).length) {
         assert(
-            closeFit(math.exp(thetaData(i._2)(j)),
-                     math.exp(model.theta(i._1)(j)),
-                     0.05))
+          closeFit(
+            math.exp(thetaData(i._2)(j)),
+            math.exp(model.theta(i._1)(j)),
+            0.05
+          )
+        )
       }
     }
   }
@@ -141,15 +152,20 @@ class NaiveBayesSuite extends SparkFunSuite with MLlibTestSparkContext {
 
   test("Naive Bayes Multinomial") {
     val nPoints = 1000
-    val pi = Array(0.5, 0.1, 0.4).map(math.log)
+    val pi      = Array(0.5, 0.1, 0.4).map(math.log)
     val theta = Array(
-        Array(0.70, 0.10, 0.10, 0.10), // label 0
-        Array(0.10, 0.70, 0.10, 0.10), // label 1
-        Array(0.10, 0.10, 0.70, 0.10) // label 2
+      Array(0.70, 0.10, 0.10, 0.10), // label 0
+      Array(0.10, 0.70, 0.10, 0.10), // label 1
+      Array(0.10, 0.10, 0.70, 0.10)  // label 2
     ).map(_.map(math.log))
 
     val testData = NaiveBayesSuite.generateNaiveBayesInput(
-        pi, theta, nPoints, 42, Multinomial)
+      pi,
+      theta,
+      nPoints,
+      42,
+      Multinomial
+    )
     val testRDD = sc.parallelize(testData, 2)
     testRDD.cache()
 
@@ -157,16 +173,25 @@ class NaiveBayesSuite extends SparkFunSuite with MLlibTestSparkContext {
     validateModelFit(pi, theta, model)
 
     val validationData = NaiveBayesSuite.generateNaiveBayesInput(
-        pi, theta, nPoints, 17, Multinomial)
+      pi,
+      theta,
+      nPoints,
+      17,
+      Multinomial
+    )
     val validationRDD = sc.parallelize(validationData, 2)
 
     // Test prediction on RDD.
     validatePrediction(
-        model.predict(validationRDD.map(_.features)).collect(), validationData)
+      model.predict(validationRDD.map(_.features)).collect(),
+      validationData
+    )
 
     // Test prediction on Array.
     validatePrediction(
-        validationData.map(row => model.predict(row.features)), validationData)
+      validationData.map(row => model.predict(row.features)),
+      validationData
+    )
 
     // Test posteriors
     validationData.map(_.features).foreach { features =>
@@ -185,79 +210,55 @@ class NaiveBayesSuite extends SparkFunSuite with MLlibTestSparkContext {
     * @return posterior class probabilities (in order of labels) for input
     */
   private def expectedMultinomialProbabilities(
-      model: NaiveBayesModel, testData: Vector) = {
+      model: NaiveBayesModel,
+      testData: Vector
+  ) = {
     val piVector = new BDV(model.pi)
     // model.theta is row-major; treat it as col-major representation of transpose, and transpose:
-    val thetaMatrix = new BDM(
-        model.theta(0).length, model.theta.length, model.theta.flatten).t
+    val thetaMatrix =
+      new BDM(model.theta(0).length, model.theta.length, model.theta.flatten).t
     val logClassProbs: BV[Double] =
       piVector + (thetaMatrix * testData.toBreeze)
-    val classProbs = logClassProbs.toArray.map(math.exp)
+    val classProbs    = logClassProbs.toArray.map(math.exp)
     val classProbsSum = classProbs.sum
     classProbs.map(_ / classProbsSum)
   }
 
   test("Naive Bayes Bernoulli") {
     val nPoints = 10000
-    val pi = Array(0.5, 0.3, 0.2).map(math.log)
+    val pi      = Array(0.5, 0.3, 0.2).map(math.log)
     val theta = Array(
-        Array(0.50,
-              0.02,
-              0.02,
-              0.02,
-              0.02,
-              0.02,
-              0.02,
-              0.02,
-              0.02,
-              0.02,
-              0.02,
-              0.40), // label 0
-        Array(0.02,
-              0.70,
-              0.10,
-              0.02,
-              0.02,
-              0.02,
-              0.02,
-              0.02,
-              0.02,
-              0.02,
-              0.02,
-              0.02), // label 1
-        Array(0.02,
-              0.02,
-              0.60,
-              0.02,
-              0.02,
-              0.02,
-              0.02,
-              0.02,
-              0.02,
-              0.02,
-              0.02,
-              0.30) // label 2
+      Array(0.50, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02,
+        0.40), // label 0
+      Array(0.02, 0.70, 0.10, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02,
+        0.02), // label 1
+      Array(0.02, 0.02, 0.60, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02,
+        0.30) // label 2
     ).map(_.map(math.log))
 
-    val testData = NaiveBayesSuite.generateNaiveBayesInput(
-        pi, theta, nPoints, 45, Bernoulli)
+    val testData =
+      NaiveBayesSuite.generateNaiveBayesInput(pi, theta, nPoints, 45, Bernoulli)
     val testRDD = sc.parallelize(testData, 2)
     testRDD.cache()
 
     val model = NaiveBayes.train(testRDD, 1.0, Bernoulli)
     validateModelFit(pi, theta, model)
 
-    val validationData = NaiveBayesSuite.generateNaiveBayesInput(
-        pi, theta, nPoints, 20, Bernoulli)
+    val validationData =
+      NaiveBayesSuite.generateNaiveBayesInput(pi, theta, nPoints, 20, Bernoulli)
     val validationRDD = sc.parallelize(validationData, 2)
 
     // Test prediction on RDD.
     validatePrediction(
-        model.predict(validationRDD.map(_.features)).collect(), validationData)
+      model.predict(validationRDD.map(_.features)).collect(),
+      validationData
+    )
 
     // Test prediction on Array.
     validatePrediction(
-        validationData.map(row => model.predict(row.features)), validationData)
+      validationData.map(row => model.predict(row.features)),
+      validationData
+    )
 
     // Test posteriors
     validationData.map(_.features).foreach { features =>
@@ -276,73 +277,86 @@ class NaiveBayesSuite extends SparkFunSuite with MLlibTestSparkContext {
     * @return posterior class probabilities (in order of labels) for input
     */
   private def expectedBernoulliProbabilities(
-      model: NaiveBayesModel, testData: Vector) = {
+      model: NaiveBayesModel,
+      testData: Vector
+  ) = {
     val piVector = new BDV(model.pi)
-    val thetaMatrix = new BDM(
-        model.theta(0).length, model.theta.length, model.theta.flatten).t
+    val thetaMatrix =
+      new BDM(model.theta(0).length, model.theta.length, model.theta.flatten).t
     val negThetaMatrix = new BDM(
-        model.theta(0).length,
-        model.theta.length,
-        model.theta.flatten.map(v => math.log(1.0 - math.exp(v)))).t
-    val testBreeze = testData.toBreeze
-    val negTestBreeze = new BDV(Array.fill(testBreeze.size)(1.0)) - testBreeze
-    val piTheta: BV[Double] = piVector + (thetaMatrix * testBreeze)
+      model.theta(0).length,
+      model.theta.length,
+      model.theta.flatten.map(v => math.log(1.0 - math.exp(v)))
+    ).t
+    val testBreeze                = testData.toBreeze
+    val negTestBreeze             = new BDV(Array.fill(testBreeze.size)(1.0)) - testBreeze
+    val piTheta: BV[Double]       = piVector + (thetaMatrix * testBreeze)
     val logClassProbs: BV[Double] = piTheta + (negThetaMatrix * negTestBreeze)
-    val classProbs = logClassProbs.toArray.map(math.exp)
-    val classProbsSum = classProbs.sum
+    val classProbs                = logClassProbs.toArray.map(math.exp)
+    val classProbsSum             = classProbs.sum
     classProbs.map(_ / classProbsSum)
   }
 
   test("detect negative values") {
-    val dense = Seq(LabeledPoint(1.0, Vectors.dense(1.0)),
-                    LabeledPoint(0.0, Vectors.dense(-1.0)),
-                    LabeledPoint(1.0, Vectors.dense(1.0)),
-                    LabeledPoint(1.0, Vectors.dense(0.0)))
+    val dense = Seq(
+      LabeledPoint(1.0, Vectors.dense(1.0)),
+      LabeledPoint(0.0, Vectors.dense(-1.0)),
+      LabeledPoint(1.0, Vectors.dense(1.0)),
+      LabeledPoint(1.0, Vectors.dense(0.0))
+    )
     intercept[SparkException] {
       NaiveBayes.train(sc.makeRDD(dense, 2))
     }
     val sparse =
-      Seq(LabeledPoint(1.0, Vectors.sparse(1, Array(0), Array(1.0))),
-          LabeledPoint(0.0, Vectors.sparse(1, Array(0), Array(-1.0))),
-          LabeledPoint(1.0, Vectors.sparse(1, Array(0), Array(1.0))),
-          LabeledPoint(1.0, Vectors.sparse(1, Array.empty, Array.empty)))
+      Seq(
+        LabeledPoint(1.0, Vectors.sparse(1, Array(0), Array(1.0))),
+        LabeledPoint(0.0, Vectors.sparse(1, Array(0), Array(-1.0))),
+        LabeledPoint(1.0, Vectors.sparse(1, Array(0), Array(1.0))),
+        LabeledPoint(1.0, Vectors.sparse(1, Array.empty, Array.empty))
+      )
     intercept[SparkException] {
       NaiveBayes.train(sc.makeRDD(sparse, 2))
     }
     val nan =
-      Seq(LabeledPoint(1.0, Vectors.sparse(1, Array(0), Array(1.0))),
-          LabeledPoint(0.0, Vectors.sparse(1, Array(0), Array(Double.NaN))),
-          LabeledPoint(1.0, Vectors.sparse(1, Array(0), Array(1.0))),
-          LabeledPoint(1.0, Vectors.sparse(1, Array.empty, Array.empty)))
+      Seq(
+        LabeledPoint(1.0, Vectors.sparse(1, Array(0), Array(1.0))),
+        LabeledPoint(0.0, Vectors.sparse(1, Array(0), Array(Double.NaN))),
+        LabeledPoint(1.0, Vectors.sparse(1, Array(0), Array(1.0))),
+        LabeledPoint(1.0, Vectors.sparse(1, Array.empty, Array.empty))
+      )
     intercept[SparkException] {
       NaiveBayes.train(sc.makeRDD(nan, 2))
     }
   }
 
   test("detect non zero or one values in Bernoulli") {
-    val badTrain = Seq(LabeledPoint(1.0, Vectors.dense(1.0)),
-                       LabeledPoint(0.0, Vectors.dense(2.0)),
-                       LabeledPoint(1.0, Vectors.dense(1.0)),
-                       LabeledPoint(1.0, Vectors.dense(0.0)))
+    val badTrain = Seq(
+      LabeledPoint(1.0, Vectors.dense(1.0)),
+      LabeledPoint(0.0, Vectors.dense(2.0)),
+      LabeledPoint(1.0, Vectors.dense(1.0)),
+      LabeledPoint(1.0, Vectors.dense(0.0))
+    )
 
     intercept[SparkException] {
       NaiveBayes.train(sc.makeRDD(badTrain, 2), 1.0, Bernoulli)
     }
 
     val okTrain = Seq(
-        LabeledPoint(1.0, Vectors.dense(1.0)),
-        LabeledPoint(0.0, Vectors.dense(0.0)),
-        LabeledPoint(1.0, Vectors.dense(1.0)),
-        LabeledPoint(1.0, Vectors.dense(1.0)),
-        LabeledPoint(0.0, Vectors.dense(0.0)),
-        LabeledPoint(1.0, Vectors.dense(1.0)),
-        LabeledPoint(1.0, Vectors.dense(1.0))
+      LabeledPoint(1.0, Vectors.dense(1.0)),
+      LabeledPoint(0.0, Vectors.dense(0.0)),
+      LabeledPoint(1.0, Vectors.dense(1.0)),
+      LabeledPoint(1.0, Vectors.dense(1.0)),
+      LabeledPoint(0.0, Vectors.dense(0.0)),
+      LabeledPoint(1.0, Vectors.dense(1.0)),
+      LabeledPoint(1.0, Vectors.dense(1.0))
     )
 
-    val badPredict = Seq(Vectors.dense(1.0),
-                         Vectors.dense(2.0),
-                         Vectors.dense(1.0),
-                         Vectors.dense(0.0))
+    val badPredict = Seq(
+      Vectors.dense(1.0),
+      Vectors.dense(2.0),
+      Vectors.dense(1.0),
+      Vectors.dense(0.0)
+    )
 
     val model = NaiveBayes.train(sc.makeRDD(okTrain, 2), 1.0, Bernoulli)
     intercept[SparkException] {
@@ -352,10 +366,12 @@ class NaiveBayesSuite extends SparkFunSuite with MLlibTestSparkContext {
 
   test("model save/load: 2.0 to 2.0") {
     val tempDir = Utils.createTempDir()
-    val path = tempDir.toURI.toString
+    val path    = tempDir.toURI.toString
 
-    Seq(NaiveBayesSuite.binaryBernoulliModel,
-        NaiveBayesSuite.binaryMultinomialModel).map { model =>
+    Seq(
+      NaiveBayesSuite.binaryBernoulliModel,
+      NaiveBayesSuite.binaryMultinomialModel
+    ).map { model =>
       // Save model, load it back, and compare.
       try {
         model.save(sc, path)
@@ -374,7 +390,7 @@ class NaiveBayesSuite extends SparkFunSuite with MLlibTestSparkContext {
     val model = NaiveBayesSuite.binaryMultinomialModel
 
     val tempDir = Utils.createTempDir()
-    val path = tempDir.toURI.toString
+    val path    = tempDir.toURI.toString
 
     // Save model as version 1.0, load it back, and compare.
     try {
@@ -393,7 +409,8 @@ class NaiveBayesSuite extends SparkFunSuite with MLlibTestSparkContext {
 }
 
 class NaiveBayesClusterSuite
-    extends SparkFunSuite with LocalClusterSparkContext {
+    extends SparkFunSuite
+    with LocalClusterSparkContext {
 
   test("task size should be small in both training and prediction") {
     val m = 10
@@ -402,13 +419,15 @@ class NaiveBayesClusterSuite
       (idx, iter) =>
         val random = new Random(idx)
         iter.map { i =>
-          LabeledPoint(random.nextInt(2),
-                       Vectors.dense(Array.fill(n)(random.nextDouble())))
+          LabeledPoint(
+            random.nextInt(2),
+            Vectors.dense(Array.fill(n)(random.nextDouble()))
+          )
         }
     }
     // If we serialize data directly in the task closure, the size of the serialized task
     // would be greater than 1MB and hence Spark would throw an error.
-    val model = NaiveBayes.train(examples)
+    val model       = NaiveBayes.train(examples)
     val predictions = model.predict(examples.map(_.features))
   }
 }

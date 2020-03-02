@@ -11,7 +11,9 @@ import java.net.{InetSocketAddress, SocketAddress}
   * relinquishes resources that are associated with the server.
   */
 trait ListeningServer
-    extends Closable with Awaitable[Unit] with Group[SocketAddress] {
+    extends Closable
+    with Awaitable[Unit]
+    with Group[SocketAddress] {
 
   /**
     * The address to which this server is bound.
@@ -22,7 +24,7 @@ trait ListeningServer
 
   protected def closeServer(deadline: Time): Future[Unit]
 
-  private[this] var isClosed = false
+  private[this] var isClosed      = false
   private[this] var announcements = List.empty[Future[Announcement]]
 
   /**
@@ -61,8 +63,8 @@ trait ListeningServer
   * }}}
   */
 object NullServer extends ListeningServer with CloseAwaitably {
-  def closeServer(deadline: Time) = closeAwaitably { Future.Done }
-  val boundAddress = new InetSocketAddress(0)
+  def closeServer(deadline: Time) = closeAwaitably(Future.Done)
+  val boundAddress                = new InetSocketAddress(0)
 }
 
 /**
@@ -108,7 +110,9 @@ trait Server[Req, Rep] {
 
   /** $addr */
   def serve(
-      addr: SocketAddress, service: ServiceFactory[Req, Rep]): ListeningServer
+      addr: SocketAddress,
+      service: ServiceFactory[Req, Rep]
+  ): ListeningServer
 
   /** $addr */
   def serve(addr: SocketAddress, service: Service[Req, Rep]): ListeningServer =
@@ -153,18 +157,24 @@ trait Server[Req, Rep] {
   }
 
   /** $serveAndAnnounce */
-  def serveAndAnnounce(name: String,
-                       addr: String,
-                       service: Service[Req, Rep]): ListeningServer =
+  def serveAndAnnounce(
+      name: String,
+      addr: String,
+      service: Service[Req, Rep]
+  ): ListeningServer =
     serveAndAnnounce(name, addr, ServiceFactory.const(service))
 
   /** $serveAndAnnounce */
   def serveAndAnnounce(
-      name: String, service: ServiceFactory[Req, Rep]): ListeningServer =
+      name: String,
+      service: ServiceFactory[Req, Rep]
+  ): ListeningServer =
     serveAndAnnounce(name, ":*", service)
 
   /** $serveAndAnnounce */
   def serveAndAnnounce(
-      name: String, service: Service[Req, Rep]): ListeningServer =
+      name: String,
+      service: Service[Req, Rep]
+  ): ListeningServer =
     serveAndAnnounce(name, ServiceFactory.const(service))
 }

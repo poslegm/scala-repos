@@ -28,10 +28,10 @@ import org.apache.spark.mllib.util.TestingUtils._
 
 class MatricesSuite extends SparkFunSuite {
   test("dense matrix construction") {
-    val m = 3
-    val n = 2
+    val m      = 3
+    val n      = 2
     val values = Array(0.0, 1.0, 2.0, 3.0, 4.0, 5.0)
-    val mat = Matrices.dense(m, n, values).asInstanceOf[DenseMatrix]
+    val mat    = Matrices.dense(m, n, values).asInstanceOf[DenseMatrix]
     assert(mat.numRows === m)
     assert(mat.numCols === n)
     assert(mat.values.eq(values), "should not copy data")
@@ -44,10 +44,10 @@ class MatricesSuite extends SparkFunSuite {
   }
 
   test("sparse matrix construction") {
-    val m = 3
-    val n = 4
-    val values = Array(1.0, 2.0, 4.0, 5.0)
-    val colPtrs = Array(0, 2, 2, 4, 4)
+    val m          = 3
+    val n          = 4
+    val values     = Array(1.0, 2.0, 4.0, 5.0)
+    val colPtrs    = Array(0, 2, 2, 4, 4)
     val rowIndices = Array(1, 2, 1, 2)
     val mat = Matrices
       .sparse(m, n, colPtrs, rowIndices, values)
@@ -58,13 +58,15 @@ class MatricesSuite extends SparkFunSuite {
     assert(mat.colPtrs.eq(colPtrs), "should not copy data")
     assert(mat.rowIndices.eq(rowIndices), "should not copy data")
 
-    val entries: Array[(Int, Int, Double)] = Array((2, 2, 3.0),
-                                                   (1, 0, 1.0),
-                                                   (2, 0, 2.0),
-                                                   (1, 2, 2.0),
-                                                   (2, 2, 2.0),
-                                                   (1, 2, 2.0),
-                                                   (0, 0, 0.0))
+    val entries: Array[(Int, Int, Double)] = Array(
+      (2, 2, 3.0),
+      (1, 0, 1.0),
+      (2, 0, 2.0),
+      (1, 2, 2.0),
+      (2, 2, 2.0),
+      (1, 2, 2.0),
+      (0, 0, 0.0)
+    )
 
     val mat2 = SparseMatrix.fromCOO(m, n, entries)
     assert(mat.toBreeze === mat2.toBreeze)
@@ -83,13 +85,18 @@ class MatricesSuite extends SparkFunSuite {
 
   test("index in matrices incorrect input") {
     val sm = Matrices.sparse(
-        3, 2, Array(0, 2, 3), Array(1, 2, 1), Array(0.0, 1.0, 2.0))
+      3,
+      2,
+      Array(0, 2, 3),
+      Array(1, 2, 1),
+      Array(0.0, 1.0, 2.0)
+    )
     val dm = Matrices.dense(3, 2, Array(0.0, 2.3, 1.4, 3.2, 1.0, 9.1))
     Array(sm, dm).foreach { mat =>
-      intercept[IllegalArgumentException] { mat.index(4, 1) }
-      intercept[IllegalArgumentException] { mat.index(1, 4) }
-      intercept[IllegalArgumentException] { mat.index(-1, 2) }
-      intercept[IllegalArgumentException] { mat.index(1, -2) }
+      intercept[IllegalArgumentException](mat.index(4, 1))
+      intercept[IllegalArgumentException](mat.index(1, 4))
+      intercept[IllegalArgumentException](mat.index(-1, 2))
+      intercept[IllegalArgumentException](mat.index(1, -2))
     }
   }
 
@@ -115,23 +122,23 @@ class MatricesSuite extends SparkFunSuite {
     val m = 3
     val n = 2
 
-    val denseMat = Matrices.dense(m, n, Array(0.0, 1.0, 2.0, 3.0, 4.0, 5.0))
+    val denseMat  = Matrices.dense(m, n, Array(0.0, 1.0, 2.0, 3.0, 4.0, 5.0))
     val denseCopy = denseMat.copy
 
     assert(!denseMat.toArray.eq(denseCopy.toArray))
 
-    val values = Array(1.0, 2.0, 4.0, 5.0)
-    val colPtrs = Array(0, 2, 4)
+    val values     = Array(1.0, 2.0, 4.0, 5.0)
+    val colPtrs    = Array(0, 2, 4)
     val rowIndices = Array(1, 2, 1, 2)
-    val sparseMat = Matrices.sparse(m, n, colPtrs, rowIndices, values)
+    val sparseMat  = Matrices.sparse(m, n, colPtrs, rowIndices, values)
     val sparseCopy = sparseMat.copy
 
     assert(!sparseMat.toArray.eq(sparseCopy.toArray))
   }
 
   test("matrix indexing and updating") {
-    val m = 3
-    val n = 2
+    val m         = 3
+    val n         = 2
     val allValues = Array(0.0, 1.0, 2.0, 3.0, 4.0, 0.0)
 
     val denseMat = new DenseMatrix(m, n, allValues)
@@ -146,9 +153,9 @@ class MatricesSuite extends SparkFunSuite {
     assert(denseMat.values(0) === 10.0)
 
     val sparseValues = Array(1.0, 2.0, 3.0, 4.0)
-    val colPtrs = Array(0, 2, 4)
-    val rowIndices = Array(1, 2, 0, 1)
-    val sparseMat = new SparseMatrix(m, n, colPtrs, rowIndices, sparseValues)
+    val colPtrs      = Array(0, 2, 4)
+    val rowIndices   = Array(1, 2, 0, 1)
+    val sparseMat    = new SparseMatrix(m, n, colPtrs, rowIndices, sparseValues)
 
     assert(sparseMat(0, 1) === 3.0)
     assert(sparseMat(0, 1) === sparseMat.values(2))
@@ -164,11 +171,11 @@ class MatricesSuite extends SparkFunSuite {
   }
 
   test("toSparse, toDense") {
-    val m = 3
-    val n = 2
-    val values = Array(1.0, 2.0, 4.0, 5.0)
-    val allValues = Array(1.0, 2.0, 0.0, 0.0, 4.0, 5.0)
-    val colPtrs = Array(0, 2, 4)
+    val m          = 3
+    val n          = 2
+    val values     = Array(1.0, 2.0, 4.0, 5.0)
+    val allValues  = Array(1.0, 2.0, 0.0, 0.0, 4.0, 5.0)
+    val colPtrs    = Array(0, 2, 4)
     val rowIndices = Array(0, 1, 1, 2)
 
     val spMat1 = new SparseMatrix(m, n, colPtrs, rowIndices, values)
@@ -182,11 +189,11 @@ class MatricesSuite extends SparkFunSuite {
   }
 
   test("map, update") {
-    val m = 3
-    val n = 2
-    val values = Array(1.0, 2.0, 4.0, 5.0)
-    val allValues = Array(1.0, 2.0, 0.0, 0.0, 4.0, 5.0)
-    val colPtrs = Array(0, 2, 4)
+    val m          = 3
+    val n          = 2
+    val values     = Array(1.0, 2.0, 4.0, 5.0)
+    val allValues  = Array(1.0, 2.0, 0.0, 0.0, 4.0, 5.0)
+    val colPtrs    = Array(0, 2, 4)
     val rowIndices = Array(0, 1, 1, 2)
 
     val spMat1 = new SparseMatrix(m, n, colPtrs, rowIndices, values)
@@ -202,23 +209,32 @@ class MatricesSuite extends SparkFunSuite {
 
   test("transpose") {
     val dA = new DenseMatrix(
-        4,
-        3,
-        Array(0.0, 1.0, 0.0, 0.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 3.0))
+      4,
+      3,
+      Array(0.0, 1.0, 0.0, 0.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 3.0)
+    )
     val sA = new SparseMatrix(
-        4, 3, Array(0, 1, 3, 4), Array(1, 0, 2, 3), Array(1.0, 2.0, 1.0, 3.0))
+      4,
+      3,
+      Array(0, 1, 3, 4),
+      Array(1, 0, 2, 3),
+      Array(1.0, 2.0, 1.0, 3.0)
+    )
 
     val dAT = dA.transpose.asInstanceOf[DenseMatrix]
     val sAT = sA.transpose.asInstanceOf[SparseMatrix]
     val dATexpected = new DenseMatrix(
-        3,
-        4,
-        Array(0.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 3.0))
-    val sATexpected = new SparseMatrix(3,
-                                       4,
-                                       Array(0, 1, 2, 3, 4),
-                                       Array(1, 0, 1, 2),
-                                       Array(2.0, 1.0, 1.0, 3.0))
+      3,
+      4,
+      Array(0.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 3.0)
+    )
+    val sATexpected = new SparseMatrix(
+      3,
+      4,
+      Array(0, 1, 2, 3, 4),
+      Array(1, 0, 1, 2),
+      Array(2.0, 1.0, 1.0, 3.0)
+    )
 
     assert(dAT.toBreeze === dATexpected.toBreeze)
     assert(sAT.toBreeze === sATexpected.toBreeze)
@@ -228,28 +244,28 @@ class MatricesSuite extends SparkFunSuite {
     assert(sA(2, 1) === sAT(1, 2))
 
     assert(!dA.toArray.eq(dAT.toArray), "has to have a new array")
-    assert(dA.values.eq(dAT.transpose.asInstanceOf[DenseMatrix].values),
-           "should not copy array")
+    assert(
+      dA.values.eq(dAT.transpose.asInstanceOf[DenseMatrix].values),
+      "should not copy array"
+    )
 
     assert(dAT.toSparse.toBreeze === sATexpected.toBreeze)
     assert(sAT.toDense.toBreeze === dATexpected.toBreeze)
   }
 
   test("foreachActive") {
-    val m = 3
-    val n = 2
-    val values = Array(1.0, 2.0, 4.0, 5.0)
-    val allValues = Array(1.0, 2.0, 0.0, 0.0, 4.0, 5.0)
-    val colPtrs = Array(0, 2, 4)
+    val m          = 3
+    val n          = 2
+    val values     = Array(1.0, 2.0, 4.0, 5.0)
+    val allValues  = Array(1.0, 2.0, 0.0, 0.0, 4.0, 5.0)
+    val colPtrs    = Array(0, 2, 4)
     val rowIndices = Array(0, 1, 1, 2)
 
     val sp = new SparseMatrix(m, n, colPtrs, rowIndices, values)
     val dn = new DenseMatrix(m, n, allValues)
 
     val dnMap = MutableMap[(Int, Int), Double]()
-    dn.foreachActive { (i, j, value) =>
-      dnMap.put((i, j), value)
-    }
+    dn.foreachActive((i, j, value) => dnMap.put((i, j), value))
     assert(dnMap.size === 6)
     assert(dnMap(0, 0) === 1.0)
     assert(dnMap(1, 0) === 2.0)
@@ -259,9 +275,7 @@ class MatricesSuite extends SparkFunSuite {
     assert(dnMap(2, 1) === 5.0)
 
     val spMap = MutableMap[(Int, Int), Double]()
-    sp.foreachActive { (i, j, value) =>
-      spMap.put((i, j), value)
-    }
+    sp.foreachActive((i, j, value) => spMap.put((i, j), value))
     assert(spMap.size === 4)
     assert(spMap(0, 0) === 1.0)
     assert(spMap(1, 0) === 2.0)
@@ -270,19 +284,19 @@ class MatricesSuite extends SparkFunSuite {
   }
 
   test("horzcat, vertcat, eye, speye") {
-    val m = 3
-    val n = 2
-    val values = Array(1.0, 2.0, 4.0, 5.0)
-    val allValues = Array(1.0, 2.0, 0.0, 0.0, 4.0, 5.0)
-    val colPtrs = Array(0, 2, 4)
+    val m          = 3
+    val n          = 2
+    val values     = Array(1.0, 2.0, 4.0, 5.0)
+    val allValues  = Array(1.0, 2.0, 0.0, 0.0, 4.0, 5.0)
+    val colPtrs    = Array(0, 2, 4)
     val rowIndices = Array(0, 1, 1, 2)
     // transposed versions
-    val allValuesT = Array(1.0, 0.0, 2.0, 4.0, 0.0, 5.0)
-    val colPtrsT = Array(0, 1, 3, 4)
+    val allValuesT  = Array(1.0, 0.0, 2.0, 4.0, 0.0, 5.0)
+    val colPtrsT    = Array(0, 1, 3, 4)
     val rowIndicesT = Array(0, 0, 1, 1)
 
-    val spMat1 = new SparseMatrix(m, n, colPtrs, rowIndices, values)
-    val deMat1 = new DenseMatrix(m, n, allValues)
+    val spMat1  = new SparseMatrix(m, n, colPtrs, rowIndices, values)
+    val deMat1  = new DenseMatrix(m, n, allValues)
     val spMat1T = new SparseMatrix(n, m, colPtrsT, rowIndicesT, values)
     val deMat1T = new DenseMatrix(n, m, allValuesT)
 
@@ -295,7 +309,7 @@ class MatricesSuite extends SparkFunSuite {
     val deMat3 = Matrices.eye(2)
     val spMat3 = Matrices.speye(2)
 
-    val spHorz = Matrices.horzcat(Array(spMat1, spMat2))
+    val spHorz  = Matrices.horzcat(Array(spMat1, spMat2))
     val spHorz2 = Matrices.horzcat(Array(spMat1, deMat2))
     val spHorz3 = Matrices.horzcat(Array(deMat1, spMat2))
     val deHorz1 = Matrices.horzcat(Array(deMat1, deMat2))
@@ -331,7 +345,7 @@ class MatricesSuite extends SparkFunSuite {
     assert(deHorz1(1, 4) === 0.0)
 
     // containing transposed matrices
-    val spHorzT = Matrices.horzcat(Array(spMat1TT, spMat2))
+    val spHorzT  = Matrices.horzcat(Array(spMat1TT, spMat2))
     val spHorz2T = Matrices.horzcat(Array(spMat1TT, deMat2))
     val spHorz3T = Matrices.horzcat(Array(deMat1TT, spMat2))
     val deHorz1T = Matrices.horzcat(Array(deMat1TT, deMat2))
@@ -349,7 +363,7 @@ class MatricesSuite extends SparkFunSuite {
       Matrices.horzcat(Array(deMat1, spMat3))
     }
 
-    val spVert = Matrices.vertcat(Array(spMat1, spMat3))
+    val spVert  = Matrices.vertcat(Array(spMat1, spMat3))
     val deVert1 = Matrices.vertcat(Array(deMat1, deMat3))
     val spVert2 = Matrices.vertcat(Array(spMat1, deMat3))
     val spVert3 = Matrices.vertcat(Array(deMat1, spMat3))
@@ -381,7 +395,7 @@ class MatricesSuite extends SparkFunSuite {
     assert(deVert1(4, 1) === 1.0)
 
     // containing transposed matrices
-    val spVertT = Matrices.vertcat(Array(spMat1TT, spMat3))
+    val spVertT  = Matrices.vertcat(Array(spMat1TT, spMat3))
     val deVert1T = Matrices.vertcat(Array(deMat1TT, deMat3))
     val spVert2T = Matrices.vertcat(Array(spMat1TT, deMat3))
     val spVert3T = Matrices.vertcat(Array(deMat1TT, spMat3))
@@ -473,12 +487,12 @@ class MatricesSuite extends SparkFunSuite {
   }
 
   test("MatrixUDT") {
-    val dm1 = new DenseMatrix(2, 2, Array(0.9, 1.2, 2.3, 9.8))
-    val dm2 = new DenseMatrix(3, 2, Array(0.0, 1.21, 2.3, 9.8, 9.0, 0.0))
-    val dm3 = new DenseMatrix(0, 0, Array())
-    val sm1 = dm1.toSparse
-    val sm2 = dm2.toSparse
-    val sm3 = dm3.toSparse
+    val dm1  = new DenseMatrix(2, 2, Array(0.9, 1.2, 2.3, 9.8))
+    val dm2  = new DenseMatrix(3, 2, Array(0.0, 1.21, 2.3, 9.8, 9.0, 0.0))
+    val dm3  = new DenseMatrix(0, 0, Array())
+    val sm1  = dm1.toSparse
+    val sm2  = dm2.toSparse
+    val sm3  = dm3.toSparse
     val mUDT = new MatrixUDT()
     Seq(dm1, dm2, dm3, sm1, sm2, sm3).foreach { mat =>
       assert(mat.toArray === mUDT.deserialize(mUDT.serialize(mat)).toArray)
@@ -509,7 +523,12 @@ class MatricesSuite extends SparkFunSuite {
     assert(dm1.numActives === 6)
 
     val sm1 = Matrices.sparse(
-        3, 2, Array(0, 2, 3), Array(0, 2, 1), Array(0.0, -1.2, 0.0))
+      3,
+      2,
+      Array(0, 2, 3),
+      Array(0, 2, 1),
+      Array(0.0, -1.2, 0.0)
+    )
     assert(sm1.numNonzeros === 1)
     assert(sm1.numActives === 3)
   }

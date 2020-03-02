@@ -22,10 +22,10 @@ import shapeless.test.illTyped
 
 object AnnotationTestsDefinitions {
 
-  case class First() extends saAnnotation
+  case class First()                   extends saAnnotation
   case class Second(i: Int, s: String) extends saAnnotation
 
-  case class Other() extends saAnnotation
+  case class Other()          extends saAnnotation
   case class Last(b: Boolean) extends saAnnotation
 
   case class Unused() extends saAnnotation
@@ -70,10 +70,14 @@ class AnnotationTests {
 
   @Test
   def invalidAnnotation {
-    illTyped(" Annotation[Other, Dummy] ",
-             "could not find implicit value for parameter annotation: .*")
-    illTyped(" Annotation[Dummy, CC] ",
-             "could not find implicit value for parameter annotation: .*")
+    illTyped(
+      " Annotation[Other, Dummy] ",
+      "could not find implicit value for parameter annotation: .*"
+    )
+    illTyped(
+      " Annotation[Dummy, CC] ",
+      "could not find implicit value for parameter annotation: .*"
+    )
   }
 
   @Test
@@ -120,11 +124,17 @@ class AnnotationTests {
 
   @Test
   def invalidAnnotations {
-    illTyped(" Annotations[Dummy, CC] ",
-             "could not find implicit value for parameter annotations: .*")
-    illTyped(" Annotations[Dummy, Base] ",
-             "could not find implicit value for parameter annotations: .*")
-    illTyped(" Annotations[Second, Dummy] ",
-             "could not find implicit value for parameter annotations: .*")
+    illTyped(
+      " Annotations[Dummy, CC] ",
+      "could not find implicit value for parameter annotations: .*"
+    )
+    illTyped(
+      " Annotations[Dummy, Base] ",
+      "could not find implicit value for parameter annotations: .*"
+    )
+    illTyped(
+      " Annotations[Second, Dummy] ",
+      "could not find implicit value for parameter annotations: .*"
+    )
   }
 }

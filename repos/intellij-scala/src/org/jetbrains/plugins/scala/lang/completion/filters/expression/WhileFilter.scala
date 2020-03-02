@@ -25,17 +25,17 @@ class WhileFilter extends ElementFilter {
           case x: ScDoStmt => x
           case x
               if x.isInstanceOf[PsiWhiteSpace] ||
-              x.getNode.getElementType == ScalaTokenTypes.tWHITE_SPACE_IN_LINE =>
+                x.getNode.getElementType == ScalaTokenTypes.tWHITE_SPACE_IN_LINE =>
             x.getPrevSibling match {
               case x: ScDoStmt => x
-              case _ => null
+              case _           => null
             }
           case _ => null
         }
         var text = ""
         if (doStmt == null) {
           while (parent != null &&
-          !parent.isInstanceOf[ScDoStmt]) parent = parent.getParent
+                 !parent.isInstanceOf[ScDoStmt]) parent = parent.getParent
           if (parent == null) return false
           text = parent.getText
           text = Pattern
@@ -51,12 +51,10 @@ class WhileFilter extends ElementFilter {
     false
   }
 
-  def isClassAcceptable(hintClass: java.lang.Class[_]): Boolean = {
+  def isClassAcceptable(hintClass: java.lang.Class[_]): Boolean =
     true
-  }
 
   @NonNls
-  override def toString: String = {
+  override def toString: String =
     "'while' after 'do' keyword filter"
-  }
 }

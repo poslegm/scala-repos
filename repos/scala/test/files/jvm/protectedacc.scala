@@ -27,10 +27,10 @@ package p {
     class A {
       protected val x = 10;
 
-      protected def meth1(x: Int) = x + 1;
-      protected def meth1(x: Double) = x + 1
+      protected def meth1(x: Int)            = x + 1;
+      protected def meth1(x: Double)         = x + 1
       protected def meth2(x: Int)(y: String) = y + (x - 1);
-      protected def meth3 = Array(1, 2)
+      protected def meth3                    = Array(1, 2)
 
       protected def f[a](x: a) = x
 
@@ -82,8 +82,8 @@ package p {
           Console.println("meth1(1) = " + meth1(1));
           Console.println("meth1(1.0) = " + meth1(1.0));
           // test accesses from closures
-          for (x <- 1 until 3) Console.println(
-              "meth2(1)(1) = " + meth2(1)("prefix: "));
+          for (x <- 1 until 3)
+            Console.println("meth2(1)(1) = " + meth2(1)("prefix: "));
 
           Console.println("meth3 = " + meth3.getClass);
 

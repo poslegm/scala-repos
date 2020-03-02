@@ -31,9 +31,9 @@ class BooleanBitSetSuite extends SparkFunSuite {
     // Tests encoder
     // -------------
 
-    val builder = TestCompressibleColumnBuilder(
-        new NoopColumnStats, BOOLEAN, BooleanBitSet)
-    val rows = Seq.fill[InternalRow](count)(makeRandomRow(BOOLEAN))
+    val builder =
+      TestCompressibleColumnBuilder(new NoopColumnStats, BOOLEAN, BooleanBitSet)
+    val rows   = Seq.fill[InternalRow](count)(makeRandomRow(BOOLEAN))
     val values = rows.map(_.getBoolean(0))
 
     rows.foreach(builder.appendFrom(_, 0))
@@ -51,12 +51,14 @@ class BooleanBitSetSuite extends SparkFunSuite {
 
     // 4 extra bytes for compression scheme type ID
     assertResult(headerSize + compressedSize, "Wrong buffer capacity")(
-        buffer.capacity)
+      buffer.capacity
+    )
 
     // Skips column header
     buffer.position(headerSize)
     assertResult(BooleanBitSet.typeId, "Wrong compression scheme ID")(
-        buffer.getInt())
+      buffer.getInt()
+    )
     assertResult(count, "Wrong element count")(buffer.getInt())
 
     var word = 0: Long
@@ -75,7 +77,7 @@ class BooleanBitSetSuite extends SparkFunSuite {
     // Rewinds, skips column header and 4 more bytes for compression scheme ID
     buffer.rewind().position(headerSize + 4)
 
-    val decoder = BooleanBitSet.decoder(buffer, BOOLEAN)
+    val decoder    = BooleanBitSet.decoder(buffer, BOOLEAN)
     val mutableRow = new GenericMutableRow(1)
     if (values.nonEmpty) {
       values.foreach {

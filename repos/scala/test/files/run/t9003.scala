@@ -1,27 +1,27 @@
 object Single {
-  var i = 0
-  def isEmpty = false
-  def get = i
+  var i                       = 0
+  def isEmpty                 = false
+  def get                     = i
   def unapply(a: Single.type) = this
 }
 
 object Product {
-  var i = 0
-  def _1: Int = i
-  def _2: String = ???
-  def productArity = 2
+  var i                        = 0
+  def _1: Int                  = i
+  def _2: String               = ???
+  def productArity             = 2
   def unapply(a: Product.type) = this
-  def isEmpty = false
-  def get: this.type = this
+  def isEmpty                  = false
+  def get: this.type           = this
 }
 
 object Sequence {
-  var i = 0
-  def apply(n: Int): Int = i
-  def length = 2
+  var i                            = 0
+  def apply(n: Int): Int           = i
+  def length                       = 2
   def unapplySeq(a: Sequence.type) = this
-  def isEmpty = false
-  def get = this
+  def isEmpty                      = false
+  def get                          = this
 }
 
 object Test {
@@ -41,7 +41,7 @@ object Test {
     }
 
     Sequence match {
-      case Sequence(i, _ @_ *) =>
+      case Sequence(i, _ @_*) =>
         Sequence.i = 1
         assertZero(i) // okay
     }

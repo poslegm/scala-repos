@@ -16,29 +16,35 @@ class AccessTokenServiceSpec extends FunSuite with ServiceSpecBase {
   test("getAccessTokens") {
     withTestDB { implicit session =>
       val (id, token) = AccessTokenService.generateAccessToken("root", "note")
-      val tokenHash = AccessTokenService.tokenToHash(token)
+      val tokenHash   = AccessTokenService.tokenToHash(token)
 
-      assert(AccessTokenService.getAccessTokens("root") == List(
-              AccessToken(`id`, "root", `tokenHash`, "note")))
+      assert(
+        AccessTokenService.getAccessTokens("root") == List(
+          AccessToken(`id`, "root", `tokenHash`, "note")
+        )
+      )
     }
   }
 
   test("getAccessTokens(root) get root's tokens") {
     withTestDB { implicit session =>
       val (id, token) = AccessTokenService.generateAccessToken("root", "note")
-      val tokenHash = AccessTokenService.tokenToHash(token)
-      val user2 = generateNewAccount("user2")
+      val tokenHash   = AccessTokenService.tokenToHash(token)
+      val user2       = generateNewAccount("user2")
       AccessTokenService.generateAccessToken("user2", "note2")
 
-      assert(AccessTokenService.getAccessTokens("root") == List(
-              AccessToken(`id`, "root", `tokenHash`, "note")))
+      assert(
+        AccessTokenService.getAccessTokens("root") == List(
+          AccessToken(`id`, "root", `tokenHash`, "note")
+        )
+      )
     }
   }
 
   test("deleteAccessToken") {
     withTestDB { implicit session =>
       val (id, token) = AccessTokenService.generateAccessToken("root", "note")
-      val user2 = generateNewAccount("user2")
+      val user2       = generateNewAccount("user2")
       AccessTokenService.generateAccessToken("user2", "note2")
 
       AccessTokenService.deleteAccessToken("root", id)
@@ -58,7 +64,7 @@ class AccessTokenServiceSpec extends FunSuite with ServiceSpecBase {
 
   test("getAccountByAccessToken don't get removed account") {
     withTestDB { implicit session =>
-      val user2 = generateNewAccount("user2")
+      val user2       = generateNewAccount("user2")
       val (id, token) = AccessTokenService.generateAccessToken("user2", "note")
       AccountService.updateAccount(user2.copy(isRemoved = true))
 
@@ -80,7 +86,7 @@ class AccessTokenServiceSpec extends FunSuite with ServiceSpecBase {
 
   test("when update Account.userName then AccessToken.userName changed") {
     withTestDB { implicit session =>
-      val user2 = generateNewAccount("user2")
+      val user2       = generateNewAccount("user2")
       val (id, token) = AccessTokenService.generateAccessToken("user2", "note")
       import gitbucket.core.model.Profile._
       import profile.simple._

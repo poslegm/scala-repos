@@ -30,7 +30,7 @@ class NameTest extends FunSuite {
 
   test("Name.Bound maintains equality as per 'id'") {
     val id1, id2 = new {}
-    val a1, a2 = Var(Addr.Pending)
+    val a1, a2   = Var(Addr.Pending)
 
     assert(Name.Bound(a1, id1) == Name.Bound(a2, id1))
     assert(Name.Bound(a1, id1) != Name.Bound(a1, id2))
@@ -41,7 +41,7 @@ class NameTest extends FunSuite {
   }
 
   test("Name.all maintains equality") {
-    val names = Seq.fill(10) { Name.Bound.singleton(Var(Addr.Pending)) }.toSet
+    val names = Seq.fill(10)(Name.Bound.singleton(Var(Addr.Pending))).toSet
 
     assert(Name.all(names) == Name.all(names))
     assert(Name.all(names) != Name.all(names drop 1))

@@ -9,7 +9,7 @@ object C
 object Test extends App {
   object test1 {
     val m = cm
-    type T = Int
+    type T     = Int
     type Id[X] = X
     println(m.symbolOf[Int]: ru.TypeSymbol)
     println(m.symbolOf[C.type]: ru.TypeSymbol)
@@ -21,7 +21,7 @@ object Test extends App {
 
   object test2 {
     val m: Mirror[ru.type] = cm
-    type T = Int
+    type T     = Int
     type Id[X] = X
     println(m.symbolOf[Int]: ru.TypeSymbol)
     println(m.symbolOf[C.type]: ru.TypeSymbol)
@@ -33,7 +33,8 @@ object Test extends App {
 
   object test3 {
     val m = ru.runtimeMirror(classOf[Int].getClass.getClassLoader)
-    try println(m.symbolOf[C]) catch {
+    try println(m.symbolOf[C])
+    catch {
       case ex: ScalaReflectionException =>
         println(s"exception: ${ex.getMessage}")
     }

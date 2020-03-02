@@ -30,7 +30,8 @@ object UnfoldExamples extends App {
 
   object Unfold {
     implicit def unfold1[F <: Poly, E, S, Out0 <: HList](
-        implicit unfold: UnfoldAux[F, E, S, E, Out0]): Unfold[F, E, S] =
+        implicit unfold: UnfoldAux[F, E, S, E, Out0]
+    ): Unfold[F, E, S] =
       new Unfold[F, E, S] {
         type Out = Out0
         def apply(s: S) = unfold(s)
@@ -38,10 +39,11 @@ object UnfoldExamples extends App {
 
     trait ApplyUnfold[E] {
       def apply[S, L <: HList](f: Poly)(s: S)(
-          implicit unfold: UnfoldAux[f.type, E, S, E, L]) = unfold(s)
+          implicit unfold: UnfoldAux[f.type, E, S, E, L]
+      ) = unfold(s)
     }
 
-    def unfold[E] = new ApplyUnfold[E] {}
+    def unfold[E]       = new ApplyUnfold[E] {}
     def unfold[E](e: E) = new ApplyUnfold[E] {}
   }
 
@@ -59,11 +61,20 @@ object UnfoldExamples extends App {
     // shrink at the same time as the term S (read: seed) grows. The only structure assumed
     // for the (co-)sequence of seeds is that implied by the cases of F.
     implicit def unfold2[
-        F <: Poly, E, S, CoS, SS, OutH, OutT <: HList, PCoS, PCoSV](
+        F <: Poly,
+        E,
+        S,
+        CoS,
+        SS,
+        OutH,
+        OutT <: HList,
+        PCoS,
+        PCoSV
+    ](
         implicit shrink: Case1.Aux[F, PCoS, (PCoSV, CoS)],
         f: Case1.Aux[F, S, (OutH, SS)],
-        ut: UnfoldAux[F, E, SS, PCoS, OutT])
-      : UnfoldAux[F, E, S, CoS, OutH :: OutT] =
+        ut: UnfoldAux[F, E, SS, PCoS, OutT]
+    ): UnfoldAux[F, E, S, CoS, OutH :: OutT] =
       new UnfoldAux[F, E, S, CoS, OutH :: OutT] {
         def apply(s: S): OutH :: OutT = {
           val (outH, sn) = f(s :: HNil)
@@ -92,7 +103,8 @@ object UnfoldExamples extends App {
         implicit fn: Case.Aux[N, (FN, Succ[N])],
         fsn: Case.Aux[Succ[N], (FSN, Succ[Succ[N]])],
         sum: Sum.Aux[FN, FSN, FSSN],
-        fssn: Witness.Aux[FSSN]) =
+        fssn: Witness.Aux[FSSN]
+    ) =
       at[Succ[Succ[N]]](_ => ((fssn.value: FSSN), Succ[Succ[Succ[N]]]))
   }
 

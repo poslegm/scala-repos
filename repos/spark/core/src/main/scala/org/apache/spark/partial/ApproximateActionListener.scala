@@ -34,11 +34,11 @@ private[spark] class ApproximateActionListener[T, U, R](
     rdd: RDD[T],
     func: (TaskContext, Iterator[T]) => U,
     evaluator: ApproximateEvaluator[U, R],
-    timeout: Long)
-    extends JobListener {
+    timeout: Long
+) extends JobListener {
 
-  val startTime = System.currentTimeMillis()
-  val totalTasks = rdd.partitions.length
+  val startTime     = System.currentTimeMillis()
+  val totalTasks    = rdd.partitions.length
   var finishedTasks = 0
   var failure: Option[Exception] =
     None // Set if the job has failed (permanently)
@@ -78,8 +78,7 @@ private[spark] class ApproximateActionListener[T, U, R](
       } else if (finishedTasks == totalTasks) {
         return new PartialResult(evaluator.currentResult(), true)
       } else if (time >= finishTime) {
-        resultObject = Some(
-            new PartialResult(evaluator.currentResult(), false))
+        resultObject = Some(new PartialResult(evaluator.currentResult(), false))
         return resultObject.get
       } else {
         this.wait(finishTime - time)

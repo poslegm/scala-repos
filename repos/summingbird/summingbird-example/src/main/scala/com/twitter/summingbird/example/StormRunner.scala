@@ -21,7 +21,11 @@ import com.twitter.summingbird.Options
 import com.twitter.summingbird.option.CacheSize
 import com.twitter.summingbird.online.MergeableStoreFactory
 import com.twitter.summingbird.storm.{Storm, Executor, StormExecutionConfig}
-import com.twitter.summingbird.online.option.{FlatMapParallelism, SummerParallelism, SourceParallelism}
+import com.twitter.summingbird.online.option.{
+  FlatMapParallelism,
+  SummerParallelism,
+  SourceParallelism
+}
 import backtype.storm.{Config => BTConfig}
 import com.twitter.scalding.Args
 import com.twitter.tormenta.spout.TwitterSpout
@@ -112,27 +116,27 @@ object StormRunner {
     * you all set up if you don't already have memcache installed
     * locally.)
     */
-  def apply(args: Args): StormExecutionConfig = {
+  def apply(args: Args): StormExecutionConfig =
     new StormExecutionConfig {
       override val name = "SummingbirdExample"
 
       // No Ackers
       override def transformConfig(
-          config: Map[String, AnyRef]): Map[String, AnyRef] = {
+          config: Map[String, AnyRef]
+      ): Map[String, AnyRef] =
         config ++ List(
-            (BTConfig.TOPOLOGY_ACKER_EXECUTORS -> (new java.lang.Integer(0))))
-      }
+          (BTConfig.TOPOLOGY_ACKER_EXECUTORS -> (new java.lang.Integer(0)))
+        )
 
       override def getNamedOptions: Map[String, Options] = Map(
-          "DEFAULT" -> Options()
-            .set(SummerParallelism(2))
-            .set(FlatMapParallelism(80))
-            .set(SourceParallelism(16))
-            .set(CacheSize(100))
-        )
+        "DEFAULT" -> Options()
+          .set(SummerParallelism(2))
+          .set(FlatMapParallelism(80))
+          .set(SourceParallelism(16))
+          .set(CacheSize(100))
+      )
       override def graph = wordCount[Storm](spout, storeSupplier)
     }
-  }
 
   /**
     * Once you've got this running in the background, fire up another

@@ -8,7 +8,7 @@ import akka.cluster.UniqueAddress
 import java.math.BigInteger
 
 object GCounter {
-  val empty: GCounter = new GCounter
+  val empty: GCounter   = new GCounter
   def apply(): GCounter = empty
 
   /**
@@ -39,10 +39,12 @@ object GCounter {
   * This class is immutable, i.e. "modifying" methods return a new instance.
   */
 @SerialVersionUID(1L)
-final class GCounter private[akka](
-    private[akka] val state: Map[UniqueAddress, BigInt] = Map.empty)
-    extends ReplicatedData with ReplicatedDataSerialization
-    with RemovedNodePruning with FastMerge {
+final class GCounter private[akka] (
+    private[akka] val state: Map[UniqueAddress, BigInt] = Map.empty
+) extends ReplicatedData
+    with ReplicatedDataSerialization
+    with RemovedNodePruning
+    with FastMerge {
 
   import GCounter.Zero
 
@@ -51,9 +53,7 @@ final class GCounter private[akka](
   /**
     * Scala API: Current total value of the counter.
     */
-  def value: BigInt = state.values.foldLeft(Zero) { (acc, v) ⇒
-    acc + v
-  }
+  def value: BigInt = state.values.foldLeft(Zero)((acc, v) ⇒ acc + v)
 
   /**
     * Java API: Current total value of the counter.
@@ -110,7 +110,9 @@ final class GCounter private[akka](
     state.contains(removedNode)
 
   override def prune(
-      removedNode: UniqueAddress, collapseInto: UniqueAddress): GCounter =
+      removedNode: UniqueAddress,
+      collapseInto: UniqueAddress
+  ): GCounter =
     state.get(removedNode) match {
       case Some(value) ⇒
         new GCounter(state - removedNode).increment(collapseInto, value)
@@ -126,7 +128,7 @@ final class GCounter private[akka](
 
   override def equals(o: Any): Boolean = o match {
     case other: GCounter ⇒ state == other.state
-    case _ ⇒ false
+    case _               ⇒ false
   }
 
   override def hashCode: Int = state.hashCode
@@ -138,4 +140,5 @@ object GCounterKey {
 
 @SerialVersionUID(1L)
 final case class GCounterKey(_id: String)
-    extends Key[GCounter](_id) with ReplicatedDataSerialization
+    extends Key[GCounter](_id)
+    with ReplicatedDataSerialization

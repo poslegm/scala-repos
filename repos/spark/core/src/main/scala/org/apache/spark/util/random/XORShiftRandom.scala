@@ -61,8 +61,8 @@ private[spark] object XORShiftRandom {
 
   /** Hash seeds to have 0/1 bits throughout. */
   private[random] def hashSeed(seed: Long): Long = {
-    val bytes = ByteBuffer.allocate(java.lang.Long.SIZE).putLong(seed).array()
-    val lowBits = MurmurHash3.bytesHash(bytes)
+    val bytes    = ByteBuffer.allocate(java.lang.Long.SIZE).putLong(seed).array()
+    val lowBits  = MurmurHash3.bytesHash(bytes)
     val highBits = MurmurHash3.bytesHash(bytes, lowBits)
     (highBits.toLong << 32) | (lowBits.toLong & 0xFFFFFFFFL)
   }
@@ -89,10 +89,10 @@ private[spark] object XORShiftRandom {
     */
   def benchmark(numIters: Int): Map[String, Long] = {
 
-    val seed = 1L
-    val million = 1e6.toInt
+    val seed     = 1L
+    val million  = 1e6.toInt
     val javaRand = new JavaRandom(seed)
-    val xorRand = new XORShiftRandom(seed)
+    val xorRand  = new XORShiftRandom(seed)
 
     // this is just to warm up the JIT - we're not timing anything
     timeIt(million) {
@@ -102,7 +102,9 @@ private[spark] object XORShiftRandom {
 
     /* Return results as a map instead of just printing to screen
     in case the user wants to do something with them */
-    Map("javaTime" -> timeIt(numIters) { javaRand.nextInt() },
-        "xorTime" -> timeIt(numIters) { xorRand.nextInt() })
+    Map(
+      "javaTime" -> timeIt(numIters)(javaRand.nextInt()),
+      "xorTime"  -> timeIt(numIters)(xorRand.nextInt())
+    )
   }
 }

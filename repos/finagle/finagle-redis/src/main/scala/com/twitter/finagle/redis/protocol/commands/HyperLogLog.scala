@@ -15,8 +15,10 @@ case class PFAdd(key: ChannelBuffer, elements: Seq[ChannelBuffer])
 object PFAdd {
   def apply(args: Seq[Array[Byte]]): PFAdd = args match {
     case head :: tail =>
-      PFAdd(ChannelBuffers.wrappedBuffer(head),
-            tail map ChannelBuffers.wrappedBuffer)
+      PFAdd(
+        ChannelBuffers.wrappedBuffer(head),
+        tail map ChannelBuffers.wrappedBuffer
+      )
 
     case _ =>
       throw ClientError("Invalid use of PFAdd")
@@ -48,8 +50,10 @@ case class PFMerge(destKey: ChannelBuffer, srcKeys: Seq[ChannelBuffer])
 object PFMerge {
   def apply(args: Seq[Array[Byte]]): PFMerge = args match {
     case head :: tail =>
-      PFMerge(ChannelBuffers.wrappedBuffer(head),
-              tail map ChannelBuffers.wrappedBuffer)
+      PFMerge(
+        ChannelBuffers.wrappedBuffer(head),
+        tail map ChannelBuffers.wrappedBuffer
+      )
 
     case _ =>
       throw ClientError("Invalid use of PFMerge")

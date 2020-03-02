@@ -9,7 +9,7 @@ private[sbt] object SbtRefactorings {
   import sbt.internals.parser.SbtParser.{END_OF_LINE, FAKE_FILE}
   import sbt.SessionSettings.{SessionSetting, SbtConfigFile}
 
-  val EMPTY_STRING = ""
+  val EMPTY_STRING         = ""
   val REVERSE_ORDERING_INT = Ordering[Int].reverse
 
   /**
@@ -21,30 +21,34 @@ private[sbt] object SbtRefactorings {
     *                 the first will be replaced and the other will be removed.
     * @return a SbtConfigFile with new lines which represent the contents of the refactored .sbt file.
     */
-  def applySessionSettings(configFile: SbtConfigFile,
-                           commands: Seq[SessionSetting]): SbtConfigFile = {
-    val (file, lines) = configFile
-    val split = SbtParser(FAKE_FILE, lines)
+  def applySessionSettings(
+      configFile: SbtConfigFile,
+      commands: Seq[SessionSetting]
+  ): SbtConfigFile = {
+    val (file, lines)    = configFile
+    val split            = SbtParser(FAKE_FILE, lines)
     val recordedCommands = recordCommands(commands, split)
     val sortedRecordedCommands =
       recordedCommands.sortBy(_._1)(REVERSE_ORDERING_INT)
 
     val newContent = replaceFromBottomToTop(
-        lines.mkString(END_OF_LINE), sortedRecordedCommands)
+      lines.mkString(END_OF_LINE),
+      sortedRecordedCommands
+    )
     (file, newContent.lines.toList)
   }
 
   private def replaceFromBottomToTop(
       modifiedContent: String,
-      sortedRecordedCommands: Seq[(Int, String, String)]) = {
+      sortedRecordedCommands: Seq[(Int, String, String)]
+  ) =
     sortedRecordedCommands.foldLeft(modifiedContent) {
       case (acc, (from, old, replacement)) =>
-        val before = acc.substring(0, from)
-        val after = acc.substring(from + old.length, acc.length)
+        val before    = acc.substring(0, from)
+        val after     = acc.substring(from + old.length, acc.length)
         val afterLast = emptyStringForEmptyString(after)
         before + replacement + afterLast
     }
-  }
 
   private def emptyStringForEmptyString(text: String) = {
     val trimmed = text.trim
@@ -62,7 +66,10 @@ private[sbt] object SbtRefactorings {
     }
 
   private def treesToReplacements(
-      split: SbtParser, name: String, command: Seq[String]) =
+      split: SbtParser,
+      name: String,
+      command: Seq[String]
+  ) =
     split.settingsTrees.foldLeft(Seq.empty[(Int, String, String)]) {
       case (acc, (st, tree)) =>
         val treeName = extractSettingName(tree)

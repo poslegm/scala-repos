@@ -4,7 +4,7 @@ object O {
 }
 
 object NoWarn {
-  O.foo // nowarn
+  O.foo        // nowarn
   O.foo +: Nil // nowarn
   def bar(a: Any, b: Any) = () // nowarn
   bar(b = O.foo, a = ()) // nowarn

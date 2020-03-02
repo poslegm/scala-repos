@@ -73,9 +73,8 @@ private[sql] class TypeCollection(private val types: Seq[AbstractDataType])
   override private[sql] def acceptsType(other: DataType): Boolean =
     types.exists(_.acceptsType(other))
 
-  override private[sql] def simpleString: String = {
+  override private[sql] def simpleString: String =
     types.map(_.simpleString).mkString("(", " or ", ")")
-  }
 }
 
 private[sql] object TypeCollection {
@@ -85,18 +84,20 @@ private[sql] object TypeCollection {
     * that can be mixed into each data type, and perhaps create an [[AbstractDataType]].
     */
   // TODO: Should we consolidate this with RowOrdering.isOrderable?
-  val Ordered = TypeCollection(BooleanType,
-                               ByteType,
-                               ShortType,
-                               IntegerType,
-                               LongType,
-                               FloatType,
-                               DoubleType,
-                               DecimalType,
-                               TimestampType,
-                               DateType,
-                               StringType,
-                               BinaryType)
+  val Ordered = TypeCollection(
+    BooleanType,
+    ByteType,
+    ShortType,
+    IntegerType,
+    LongType,
+    FloatType,
+    DoubleType,
+    DecimalType,
+    TimestampType,
+    DateType,
+    StringType,
+    BinaryType
+  )
 
   /**
     * Types that include numeric types and interval type. They are only used in unary_minus,
@@ -110,7 +111,7 @@ private[sql] object TypeCollection {
   def unapply(typ: AbstractDataType): Option[Seq[AbstractDataType]] =
     typ match {
       case typ: TypeCollection => Some(typ.types)
-      case _ => None
+      case _                   => None
     }
 }
 

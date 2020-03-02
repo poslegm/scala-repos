@@ -2,10 +2,10 @@ package scalaz.example
 
 object SyntaxUsage extends App {
 
-  val o1: Option[Int] = Some(0)
+  val o1: Option[Int]         = Some(0)
   val o2: Option[Option[Int]] = Some(Some(0))
-  val l1: List[String] = List("one")
-  val l2: List[List[String]] = List(List("one"))
+  val l1: List[String]        = List("one")
+  val l2: List[List[String]]  = List(List("one"))
 
   syntax1()
   syntax2()

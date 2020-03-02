@@ -14,11 +14,14 @@ import org.apache.hadoop.fs.{FileSystem, Path}
   * @param fsPath the path inside the file system.
   */
 case class HDFSStorageItem(
-    fs: FileSystem, fsPath: Path, base: String, path: String)
-    extends StorageItem {
+    fs: FileSystem,
+    fsPath: Path,
+    base: String,
+    path: String
+) extends StorageItem {
 
   def store(fn: (OutputStream) => Unit): StorageItem = {
-    IO.using(fs.create(fsPath, true)) { fn }
+    IO.using(fs.create(fsPath, true))(fn)
     this
   }
 
@@ -30,12 +33,12 @@ case class HDFSStorageItem(
     HDFSStorageItem(fs, toPath, base, newPath)
   }
 
-  def url: String = fs.getUri.toString + fsPath.toUri.toString
+  def url: String                = fs.getUri.toString + fsPath.toUri.toString
   def inputStream(): InputStream = fs.open(fsPath)
-  def length: Long = fs.getFileStatus(fsPath).getLen
-  def lastModified: Long = fs.getFileStatus(fsPath).getModificationTime
-  def delete(): Unit = fs.delete(fsPath, true)
-  def exists: Boolean = fs.exists(fsPath)
+  def length: Long               = fs.getFileStatus(fsPath).getLen
+  def lastModified: Long         = fs.getFileStatus(fsPath).getModificationTime
+  def delete(): Unit             = fs.delete(fsPath, true)
+  def exists: Boolean            = fs.exists(fsPath)
 }
 
 /**
@@ -48,7 +51,6 @@ class HDFSStorageProvider(uri: URI, base: String, configuration: Configuration)
     extends StorageProvider {
   val fs = FileSystem.get(uri, configuration)
 
-  override def item(path: String): StorageItem = {
+  override def item(path: String): StorageItem =
     HDFSStorageItem(fs, new Path(base, path), base, path)
-  }
 }

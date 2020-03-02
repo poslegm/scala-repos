@@ -21,7 +21,10 @@ import java.nio.{ByteBuffer, ByteOrder}
 
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.catalyst.InternalRow
-import org.apache.spark.sql.execution.columnar.{ColumnBuilder, NativeColumnBuilder}
+import org.apache.spark.sql.execution.columnar.{
+  ColumnBuilder,
+  NativeColumnBuilder
+}
 import org.apache.spark.sql.types.AtomicType
 
 /**
@@ -41,14 +44,18 @@ import org.apache.spark.sql.types.AtomicType
   * }}}
   */
 private[columnar] trait CompressibleColumnBuilder[T <: AtomicType]
-    extends ColumnBuilder with Logging {
+    extends ColumnBuilder
+    with Logging {
 
   this: NativeColumnBuilder[T] with WithCompressionSchemes =>
 
   var compressionEncoders: Seq[Encoder[T]] = _
 
   abstract override def initialize(
-      initialSize: Int, columnName: String, useCompression: Boolean): Unit = {
+      initialSize: Int,
+      columnName: String,
+      useCompression: Boolean
+  ): Unit = {
 
     compressionEncoders = if (useCompression) {
       schemes.filter(_.supports(columnType)).map(_.encoder[T](columnType))
@@ -58,12 +65,13 @@ private[columnar] trait CompressibleColumnBuilder[T <: AtomicType]
     super.initialize(initialSize, columnName, useCompression)
   }
 
-  protected def isWorthCompressing(encoder: Encoder[T]) = {
+  protected def isWorthCompressing(encoder: Encoder[T]) =
     encoder.compressionRatio < 0.8
-  }
 
   private def gatherCompressibilityStats(
-      row: InternalRow, ordinal: Int): Unit = {
+      row: InternalRow,
+      ordinal: Int
+  ): Unit = {
     var i = 0
     while (i < compressionEncoders.length) {
       compressionEncoders(i).gatherCompressibilityStats(row, ordinal)
@@ -104,7 +112,8 @@ private[columnar] trait CompressibleColumnBuilder[T <: AtomicType]
       .put(nulls)
 
     logDebug(
-        s"Compressor for [$columnName]: $encoder, ratio: ${encoder.compressionRatio}")
+      s"Compressor for [$columnName]: $encoder, ratio: ${encoder.compressionRatio}"
+    )
     encoder.compress(nonNullBuffer, compressedBuffer)
   }
 }

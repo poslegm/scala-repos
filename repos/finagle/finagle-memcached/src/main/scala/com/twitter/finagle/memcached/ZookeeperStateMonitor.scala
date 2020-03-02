@@ -14,8 +14,8 @@ import scala.collection.JavaConversions._
 object ZookeeperStateMonitor {
   val DefaultZkConnectionRetryBackoff =
     (Backoff.exponential(1.second, 2) take 6) ++ Backoff.const(60.seconds)
-  val DefaultFuturePool = FuturePool.unboundedPool
-  val DefaultTimer = new JavaTimer(isDaemon = true)
+  val DefaultFuturePool    = FuturePool.unboundedPool
+  val DefaultTimer         = new JavaTimer(isDaemon = true)
   val DefaultZKWaitTimeout = 10.seconds
 }
 
@@ -55,7 +55,7 @@ trait ZookeeperStateMonitor {
   // zk watcher for connection, data, children event
   private[this] val zkWatcher: Watcher = new Watcher() {
     // NOTE: Ensure that the processing of events is not a blocking operation.
-    override def process(event: WatchedEvent) = {
+    override def process(event: WatchedEvent) =
       event.getState match {
         // actively trying to re-establish the zk connection (hence re-register the zk path
         // data watcher) whenever an zookeeper connection expired or disconnected. We could also
@@ -78,7 +78,6 @@ trait ZookeeperStateMonitor {
           }
         case _ =>
       }
-    }
   }
 
   /**
@@ -94,7 +93,7 @@ trait ZookeeperStateMonitor {
     def scheduleReadCachePoolConfig(
         op: () => Unit,
         backoff: Stream[Duration] = DefaultZkConnectionRetryBackoff
-    ): Unit = {
+    ): Unit =
       DefaultFuturePool {
         op()
       } onFailure { ex =>
@@ -109,13 +108,12 @@ trait ZookeeperStateMonitor {
         zkWorkSucceededCounter.incr()
         loopZookeeperWork
       }
-    }
 
     // get one work item off the broker and schedule it into the future pool
     zookeeperWorkQueue.recv.sync() onSuccess {
       case op: (() => Unit) => {
-          scheduleReadCachePoolConfig(op)
-        }
+        scheduleReadCachePoolConfig(op)
+      }
     }
   }
 
@@ -131,12 +129,13 @@ trait ZookeeperStateMonitor {
 
         // read cache pool config data and leave a node data watch
         val data = zkClient
-          .get(Amount.of(DefaultZKWaitTimeout.inMilliseconds,
-                         Time.MILLISECONDS))
+          .get(
+            Amount.of(DefaultZKWaitTimeout.inMilliseconds, Time.MILLISECONDS)
+          )
           .getData(zkPath, true, null)
 
         applyZKData(data)
-    }
+      }
 
   /**
     * Load the zookeeper node children as well as leaving a children watch, then invoke the
@@ -150,12 +149,13 @@ trait ZookeeperStateMonitor {
 
         // get children list and leave a node children watch
         val children = zkClient
-          .get(Amount.of(DefaultZKWaitTimeout.inMilliseconds,
-                         Time.MILLISECONDS))
+          .get(
+            Amount.of(DefaultZKWaitTimeout.inMilliseconds, Time.MILLISECONDS)
+          )
           .getChildren(zkPath, true, null)
 
         applyZKChildren(children.toList)
-    }
+      }
 
   /**
     * Reconnect to the zookeeper, this maybe invoked when zookeeper connection expired and the
@@ -168,14 +168,16 @@ trait ZookeeperStateMonitor {
 
         // reset watch for node data and children
         val data = zkClient
-          .get(Amount.of(DefaultZKWaitTimeout.inMilliseconds,
-                         Time.MILLISECONDS))
+          .get(
+            Amount.of(DefaultZKWaitTimeout.inMilliseconds, Time.MILLISECONDS)
+          )
           .getData(zkPath, true, null)
         val children = zkClient
-          .get(Amount.of(DefaultZKWaitTimeout.inMilliseconds,
-                         Time.MILLISECONDS))
+          .get(
+            Amount.of(DefaultZKWaitTimeout.inMilliseconds, Time.MILLISECONDS)
+          )
           .getChildren(zkPath, true, null)
-    }
+      }
 
   // Register top-level connection watcher to monitor zk change.
   // This watcher will live across different zk connection

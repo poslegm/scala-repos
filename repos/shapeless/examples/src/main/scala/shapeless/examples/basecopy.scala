@@ -27,10 +27,10 @@ object BaseCopyDemo extends App {
 
   // Sealed family of case classes ...
   sealed trait Base
-  case class Foo(i: Int, b: Boolean) extends Base
+  case class Foo(i: Int, b: Boolean)            extends Base
   case class Bar(i: Int, s: String, b: Boolean) extends Base
   case class Baz(i: Int, b: Boolean, d: Double) extends Base
-  case class Quux(c: Char, i: Int, b: Boolean) extends Base
+  case class Quux(c: Char, i: Int, b: Boolean)  extends Base
 
   // case class copy style functional update through the common super-type ...
   val b1: Base = Foo(23, true)
@@ -107,11 +107,13 @@ object copySyntax {
 }
 
 object openCopySyntax {
-  class CopySyntax[T, BaseFields0](
-      t: OpenFamily[T] { type BaseFields = BaseFields0 }) {
+  class CopySyntax[T, BaseFields0](t: OpenFamily[T] {
+    type BaseFields = BaseFields0
+  }) {
     object copy extends RecordArgs {
-      def applyRecord[R <: HList](r: R)(
-          implicit update: UpdateRepr[BaseFields0, R]): T =
+      def applyRecord[R <: HList](
+          r: R
+      )(implicit update: UpdateRepr[BaseFields0, R]): T =
         t.baseCopy(update(t.baseFields, r))
     }
   }
@@ -134,7 +136,8 @@ object UpdateRepr {
   import ops.record._
 
   implicit def mergeUpdateRepr[T <: HList, R <: HList](
-      implicit merger: Merger.Aux[T, R, T]): UpdateRepr[T, R] =
+      implicit merger: Merger.Aux[T, R, T]
+  ): UpdateRepr[T, R] =
     new UpdateRepr[T, R] {
       def apply(t: T, r: R): T = merger(t, r)
     }
@@ -146,7 +149,8 @@ object UpdateRepr {
 
   implicit def cconsUpdateRepr[H, T <: Coproduct, R <: HList](
       implicit uh: Lazy[UpdateRepr[H, R]],
-      ut: Lazy[UpdateRepr[T, R]]): UpdateRepr[H :+: T, R] =
+      ut: Lazy[UpdateRepr[T, R]]
+  ): UpdateRepr[H :+: T, R] =
     new UpdateRepr[H :+: T, R] {
       def apply(t: H :+: T, r: R): H :+: T = t match {
         case Inl(h) => Inl(uh.value(h, r))
@@ -157,7 +161,8 @@ object UpdateRepr {
   implicit def genProdUpdateRepr[T, R <: HList, Repr <: HList](
       implicit prod: HasProductGeneric[T],
       gen: LabelledGeneric.Aux[T, Repr],
-      update: Lazy[UpdateRepr[Repr, R]]): UpdateRepr[T, R] =
+      update: Lazy[UpdateRepr[Repr, R]]
+  ): UpdateRepr[T, R] =
     new UpdateRepr[T, R] {
       def apply(t: T, r: R): T = gen.from(update.value(gen.to(t), r))
     }
@@ -165,7 +170,8 @@ object UpdateRepr {
   implicit def genCoprodUpdateRepr[T, R <: HList, Repr <: Coproduct](
       implicit coprod: HasCoproductGeneric[T],
       gen: Generic.Aux[T, Repr],
-      update: Lazy[UpdateRepr[Repr, R]]): UpdateRepr[T, R] =
+      update: Lazy[UpdateRepr[Repr, R]]
+  ): UpdateRepr[T, R] =
     new UpdateRepr[T, R] {
       def apply(t: T, r: R): T = gen.from(update.value(gen.to(t), r))
     }

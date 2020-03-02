@@ -7,7 +7,9 @@ import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class CommonsStatsReceiverTest
-    extends FunSuite with BeforeAndAfter with OneInstancePerTest {
+    extends FunSuite
+    with BeforeAndAfter
+    with OneInstancePerTest {
 
   before {
     Stats.flush
@@ -18,7 +20,8 @@ class CommonsStatsReceiverTest
   }
 
   test(
-      "counter should return a new counter object with the given name and reflect incr operations") {
+    "counter should return a new counter object with the given name and reflect incr operations"
+  ) {
     val counter = (new CommonsStatsReceiver()).counter("foo")
     assert(Stats.getVariable("foo").read.asInstanceOf[Long] == 0)
     counter.incr(7)
@@ -50,15 +53,15 @@ class CommonsStatsReceiverTest
 
   test("stat should be memoized") {
     val receiver = new CommonsStatsReceiver()
-    val stat1 = receiver.stat("what")
-    val stat2 = receiver.stat("what")
+    val stat1    = receiver.stat("what")
+    val stat2    = receiver.stat("what")
     assert(stat1 eq stat2)
   }
 
   test("addGauge should work") {
     @volatile var inner = 9.0f
     // val needed here to add a strong ref to the gauge otherwise it will get collected
-    val myGauge = (new CommonsStatsReceiver).addGauge("bam") { inner }
+    val myGauge = (new CommonsStatsReceiver).addGauge("bam")(inner)
     inner = 1.0f
     assert(Stats.getVariable("bam").read.asInstanceOf[Float] == 1.0f)
     inner = 3.14f

@@ -11,21 +11,32 @@ import scala.reflect.internal.util.Statistics
 /** The main attribution phase.
   */
 trait Analyzer
-    extends AnyRef with Contexts with Namers with Typers with Infer
-    with Implicits with EtaExpansion with SyntheticMethods with Unapplies
-    with Macros with NamesDefaults with TypeDiagnostics with ContextErrors
-    with StdAttachments with AnalyzerPlugins {
+    extends AnyRef
+    with Contexts
+    with Namers
+    with Typers
+    with Infer
+    with Implicits
+    with EtaExpansion
+    with SyntheticMethods
+    with Unapplies
+    with Macros
+    with NamesDefaults
+    with TypeDiagnostics
+    with ContextErrors
+    with StdAttachments
+    with AnalyzerPlugins {
   val global: Global
   import global._
 
   object namerFactory extends {
     val global: Analyzer.this.global.type = Analyzer.this.global
   } with SubComponent {
-    val phaseName = "namer"
-    val runsAfter = List[String]("parser")
+    val phaseName      = "namer"
+    val runsAfter      = List[String]("parser")
     val runsRightAfter = None
     def newPhase(_prev: Phase): StdPhase = new StdPhase(_prev) {
-      override val checkable = false
+      override val checkable       = false
       override def keepsTypeParams = false
 
       def apply(unit: CompilationUnit) {
@@ -37,8 +48,8 @@ trait Analyzer
   object packageObjects extends {
     val global: Analyzer.this.global.type = Analyzer.this.global
   } with SubComponent {
-    val phaseName = "packageobjects"
-    val runsAfter = List[String]()
+    val phaseName      = "packageobjects"
+    val runsAfter      = List[String]()
     val runsRightAfter = Some("namer")
 
     def newPhase(_prev: Phase): StdPhase = new StdPhase(_prev) {
@@ -52,7 +63,7 @@ trait Analyzer
               openPackageModule(tree.symbol, tree.symbol.owner)
             }
           case ClassDef(_, _, _, _) => () // make it fast
-          case _ => super.traverse(tree)
+          case _                    => super.traverse(tree)
         }
       }
 
@@ -66,8 +77,8 @@ trait Analyzer
     val global: Analyzer.this.global.type = Analyzer.this.global
   } with SubComponent {
     import scala.reflect.internal.TypesStats.typerNanos
-    val phaseName = "typer"
-    val runsAfter = List[String]()
+    val phaseName      = "typer"
+    val runsAfter      = List[String]()
     val runsRightAfter = Some("packageobjects")
     def newPhase(_prev: Phase): StdPhase = new StdPhase(_prev) {
       override def keepsTypeParams = false

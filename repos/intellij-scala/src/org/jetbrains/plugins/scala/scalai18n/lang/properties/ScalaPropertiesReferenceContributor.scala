@@ -18,36 +18,40 @@ import org.jetbrains.plugins.scala.injection.ScalaPatterns
 class ScalaPropertiesReferenceContributor extends PsiReferenceContributor {
   private final val CLASS_REFERENCE_PROVIDER: JavaClassReferenceProvider =
     new JavaClassReferenceProvider {
-      override def isSoft: Boolean = {
+      override def isSoft: Boolean =
         true
-      }
     }
 
   def registerReferenceProviders(registrar: PsiReferenceRegistrar) {
     registrar.registerReferenceProvider(
-        ScalaPatterns
-          .scalaLiteral()
-          .andNot(ScalaPatterns.interpolatedScalaLiteral()),
-        new ScalaPropertiesReferenceProvider)
+      ScalaPatterns
+        .scalaLiteral()
+        .andNot(ScalaPatterns.interpolatedScalaLiteral()),
+      new ScalaPropertiesReferenceProvider
+    )
     registrar.registerReferenceProvider(
-        ScalaPatterns
-          .scalaLiteral()
-          .withParent(psiNameValuePair.withName(
-                  AnnotationUtil.PROPERTY_KEY_RESOURCE_BUNDLE_PARAMETER)),
-        new ResourceBundleReferenceProvider)
+      ScalaPatterns
+        .scalaLiteral()
+        .withParent(
+          psiNameValuePair
+            .withName(AnnotationUtil.PROPERTY_KEY_RESOURCE_BUNDLE_PARAMETER)
+        ),
+      new ResourceBundleReferenceProvider
+    )
     registrar.registerReferenceProvider(
-        PsiJavaPatterns.psiElement(classOf[PropertyValueImpl]),
-        new PsiReferenceProvider {
-          @NotNull
-          def getReferencesByElement(
-              @NotNull element: PsiElement,
-              @NotNull context: ProcessingContext): Array[PsiReference] = {
-            val text: String = element.getText
-            val words: Array[String] = text.split("\\s")
-            if (words.length != 1) return PsiReference.EMPTY_ARRAY
-            CLASS_REFERENCE_PROVIDER.getReferencesByString(
-                words(0), element, 0)
-          }
-        })
+      PsiJavaPatterns.psiElement(classOf[PropertyValueImpl]),
+      new PsiReferenceProvider {
+        @NotNull
+        def getReferencesByElement(
+            @NotNull element: PsiElement,
+            @NotNull context: ProcessingContext
+        ): Array[PsiReference] = {
+          val text: String         = element.getText
+          val words: Array[String] = text.split("\\s")
+          if (words.length != 1) return PsiReference.EMPTY_ARRAY
+          CLASS_REFERENCE_PROVIDER.getReferencesByString(words(0), element, 0)
+        }
+      }
+    )
   }
 }

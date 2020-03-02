@@ -34,7 +34,7 @@ object Test extends App {
         }
 
         override def toString() = maybeValue match {
-          case None => "Susp(?)"
+          case None        => "Susp(?)"
           case Some(value) => "Susp(" + value + ")"
         }
       }
@@ -44,13 +44,13 @@ object Test extends App {
 
     val s: Susp[Int] = delay { println("evaluating..."); 3 }
 
-    println("s     = " + s) // show that s is unevaluated
-    println("s()   = " + s()) // evaluate s
-    println("s     = " + s) // show that the value is saved
+    println("s     = " + s)       // show that s is unevaluated
+    println("s()   = " + s())     // evaluate s
+    println("s     = " + s)       // show that the value is saved
     println("2 + s = " + (2 + s)) // implicit call to force()
 
-    val sl = delay { Some(3) }
-    val sl1: Susp[Some[Int]] = sl
+    val sl                     = delay(Some(3))
+    val sl1: Susp[Some[Int]]   = sl
     val sl2: Susp[Option[Int]] = sl1 // the type is covariant
 
     println("sl2   = " + sl2)

@@ -5,11 +5,22 @@ package api
 package base
 
 import com.intellij.psi.PsiMethod
-import org.jetbrains.plugins.scala.lang.psi.api.statements.params.{ScParameter, ScParameterClause, ScParameters, ScTypeParamClause}
-import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{ScMember, ScTypeDefinition}
+import org.jetbrains.plugins.scala.lang.psi.api.statements.params.{
+  ScParameter,
+  ScParameterClause,
+  ScParameters,
+  ScTypeParamClause
+}
+import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{
+  ScMember,
+  ScTypeDefinition
+}
 import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiElementFactory
 import org.jetbrains.plugins.scala.lang.psi.types.ScType
-import org.jetbrains.plugins.scala.macroAnnotations.{CachedInsidePsiElement, ModCount}
+import org.jetbrains.plugins.scala.macroAnnotations.{
+  CachedInsidePsiElement,
+  ModCount
+}
 
 /**
   * A member that can be converted to a ScMethodType, ie a method or a constructor.
@@ -27,37 +38,34 @@ trait ScMethodLike extends ScMember with PsiMethod {
     * @return generated type parameters only for constructors
     */
   @CachedInsidePsiElement(this, ModCount.getBlockModificationCount)
-  def getConstructorTypeParameters: Option[ScTypeParamClause] = {
+  def getConstructorTypeParameters: Option[ScTypeParamClause] =
     this match {
       case method: PsiMethod if method.isConstructor =>
         val clazz = method.containingClass
         clazz match {
           case c: ScTypeDefinition =>
-            c.typeParametersClause.map(
-                (typeParamClause: ScTypeParamClause) =>
-                  {
-                val paramClauseText = typeParamClause.getTextByStub
-                ScalaPsiElementFactory
-                  .createTypeParameterClauseFromTextWithContext(
-                    paramClauseText,
-                    typeParamClause.getContext,
-                    typeParamClause)
-            })
+            c.typeParametersClause.map { (typeParamClause: ScTypeParamClause) =>
+              val paramClauseText = typeParamClause.getTextByStub
+              ScalaPsiElementFactory
+                .createTypeParameterClauseFromTextWithContext(
+                  paramClauseText,
+                  typeParamClause.getContext,
+                  typeParamClause
+                )
+            }
           case _ => None
         }
       case _ => None
     }
-  }
 
   /** If this is a primary or auxilliary constructor, return the containing classes type parameter clause */
-  def getClassTypeParameters: Option[ScTypeParamClause] = {
+  def getClassTypeParameters: Option[ScTypeParamClause] =
     if (isConstructor) {
       containingClass match {
         case c: ScTypeDefinition => c.typeParametersClause
-        case _ => None
+        case _                   => None
       }
     } else None
-  }
 
   def effectiveParameterClauses: Seq[ScParameterClause]
 

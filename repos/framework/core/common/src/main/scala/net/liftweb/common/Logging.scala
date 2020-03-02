@@ -53,27 +53,27 @@ import org.slf4j.{MDC => SLF4JMDC, Marker, Logger => SLF4JLogger, LoggerFactory}
   */
 object Logger {
   private[common] lazy val ranSetup: Boolean = {
-    setup.foreach { _ () }
+    setup.foreach(_())
     true
   }
 
   /**
     * This function, if set, will be called before any loggers are created.
-    * 
+    *
     * Useful for initializing the logging backend with a non-default configuration.
-    * 
+    *
     * Helpers exists for [[Log4j log4j]] and [[Logback logback]]:
-    * 
+    *
     * {{{
     * Logger.setup = Full(Log4j.withFile(url)
     * }}}
-    * 
+    *
     * or
     *
     * {{{
     * Logger.setup = Full(Logback.withFile(url))
     * }}}
-    * 
+    *
     */
   var setup: Box[() => Unit] = Empty
 
@@ -85,7 +85,8 @@ object Logger {
 
   def apply(cls: Class[_]): Logger =
     if (ranSetup)
-      new WrappedLogger(LoggerFactory.getLogger(loggerNameFor(cls))) else null
+      new WrappedLogger(LoggerFactory.getLogger(loggerNameFor(cls)))
+    else null
   def apply(name: String): Logger =
     if (ranSetup) new WrappedLogger(LoggerFactory.getLogger(name)) else null
 
@@ -119,20 +120,14 @@ object MDC {
   /**
     * Put a (key,value) pair into the Mapped Diagnostic Context
     */
-  def put(kvs: (String, Any)*) = {
-    kvs foreach { v =>
-      SLF4JMDC.put(v._1, v._2.toString)
-    }
-  }
+  def put(kvs: (String, Any)*) =
+    kvs foreach { v => SLF4JMDC.put(v._1, v._2.toString) }
 
   /**
     * Clear key from the Mapped Diagnostic Context
     */
-  def remove(keys: String*) = {
-    keys foreach { k =>
-      SLF4JMDC.remove(k)
-    }
-  }
+  def remove(keys: String*) =
+    keys foreach { k => SLF4JMDC.remove(k) }
 
   /**
     * Clear all entries from the Mapped Diagnostic Context
@@ -144,12 +139,12 @@ object MDC {
   * `Logger` is a thin wrapper on top of an SLF4J Logger.
   *
   * The main purpose is to utilize Scala features for logging.
-  * 
+  *
   * Note that the dynamic type of "this" is used when this trait is mixed in.
-  * 
+  *
   * This may not always be what you want. If you need the static type, you have
   * to declare your own `Logger`:
-  * 
+  *
   * {{{
   * class MyClass {
   *   val logger = Logger(classOf[MyClass])
@@ -161,7 +156,8 @@ trait Logger {
 
   protected def _logger =
     if (Logger.ranSetup)
-      LoggerFactory.getLogger(Logger.loggerNameFor(this.getClass)) else null
+      LoggerFactory.getLogger(Logger.loggerNameFor(this.getClass))
+    else null
 
   def assertLog(assertion: Boolean, msg: => String) = if (assertion) info(msg)
 
@@ -178,17 +174,15 @@ trait Logger {
     * `Failure`, trace the message concatenated with the `Failure`'s message. If
     * the `Failure` contains an `Exception`, trace that as well.
     */
-  def trace(msg: => AnyRef, box: Box[_]): Unit = {
+  def trace(msg: => AnyRef, box: Box[_]): Unit =
     if (logger.isTraceEnabled) {
       box match {
         case Failure(fmsg, Full(e), _) =>
-          trace(String.valueOf(msg) + ": " + fmsg: AnyRef,
-                e: Throwable)
+          trace(String.valueOf(msg) + ": " + fmsg: AnyRef, e: Throwable)
         case Failure(fmsg, _, _) => trace(String.valueOf(msg) + ": " + fmsg)
-        case _ =>
+        case _                   =>
       }
     }
-  }
 
   def trace(msg: => AnyRef) =
     if (logger.isTraceEnabled) logger.trace(String.valueOf(msg))
@@ -205,16 +199,15 @@ trait Logger {
     * `Failure`, debug the message concatenated with the `Failure`'s message.  If
     * the `Failure` contains an `Exception`, debug that as well.
     */
-  def debug(msg: => AnyRef, box: Box[_]): Unit = {
+  def debug(msg: => AnyRef, box: Box[_]): Unit =
     if (logger.isDebugEnabled) {
       box match {
         case Failure(fmsg, Full(e), _) =>
           debug(String.valueOf(msg) + ": " + fmsg, e)
         case Failure(fmsg, _, _) => debug(String.valueOf(msg) + ": " + fmsg)
-        case _ =>
+        case _                   =>
       }
     }
-  }
 
   def debug(msg: => AnyRef) =
     if (logger.isDebugEnabled) logger.debug(String.valueOf(msg))
@@ -231,16 +224,15 @@ trait Logger {
     * info the message concatenated with the `Failure`'s message.  If the
     * `Failure` contains an `Exception`, info that as well.
     */
-  def info(msg: => AnyRef, box: Box[_]): Unit = {
+  def info(msg: => AnyRef, box: Box[_]): Unit =
     if (logger.isInfoEnabled) {
       box match {
         case Failure(fmsg, Full(e), _) =>
           info(String.valueOf(msg) + ": " + fmsg, e)
         case Failure(fmsg, _, _) => info(String.valueOf(msg) + ": " + fmsg)
-        case _ =>
+        case _                   =>
       }
     }
-  }
   def info(msg: => AnyRef) =
     if (logger.isInfoEnabled) logger.info(String.valueOf(msg))
   def info(msg: => AnyRef, t: => Throwable) =
@@ -256,16 +248,15 @@ trait Logger {
     * warn the message concatenated with the `Failure`'s message.  If the
     * `Failure` contains an `Exception`, warn that as well.
     */
-  def warn(msg: => AnyRef, box: Box[_]): Unit = {
+  def warn(msg: => AnyRef, box: Box[_]): Unit =
     if (logger.isWarnEnabled) {
       box match {
         case Failure(fmsg, Full(e), _) =>
           warn(String.valueOf(msg) + ": " + fmsg, e)
         case Failure(fmsg, _, _) => warn(String.valueOf(msg) + ": " + fmsg)
-        case _ =>
+        case _                   =>
       }
     }
-  }
   def warn(msg: => AnyRef) =
     if (logger.isWarnEnabled) logger.warn(String.valueOf(msg))
   def warn(msg: => AnyRef, t: Throwable) =
@@ -281,16 +272,15 @@ trait Logger {
     * error the message concatenated with the `Failure`'s message.  If the
     * `Failure` contains an `Exception`, error that as well.
     */
-  def error(msg: => AnyRef, box: Box[_]): Unit = {
+  def error(msg: => AnyRef, box: Box[_]): Unit =
     if (logger.isErrorEnabled) {
       box match {
         case Failure(fmsg, Full(e), _) =>
           error(String.valueOf(msg) + ": " + fmsg, e)
         case Failure(fmsg, _, _) => error(String.valueOf(msg) + ": " + fmsg)
-        case _ =>
+        case _                   =>
       }
     }
-  }
 
   def error(msg: => AnyRef) =
     if (logger.isErrorEnabled) logger.error(String.valueOf(msg))
@@ -321,7 +311,7 @@ trait Loggable {
 /**
   * If you mix this into your class, you will get a protected `logger` instance
   * `lazy val` that will be a `[[Logger]]` instance.
-  * 
+  *
   * Useful for mixing into objects that are created before Lift has booted (and
   * thus Logging is not yet configured).
   */
@@ -358,12 +348,11 @@ object Log4j {
     * Configure with the contents of the file at the specified `url` (either
     * `.xml` or `.properties`).
     */
-  def withFile(url: java.net.URL)() = {
+  def withFile(url: java.net.URL)() =
     if (url.getPath.endsWith(".xml")) {
       val domConf = new DOMConfigurator
       domConf.doConfigure(url, LogManager.getLoggerRepository())
     } else PropertyConfigurator.configure(url)
-  }
 
   /**
     * Configure with the specified configuration. `config` must contain a valid
@@ -371,7 +360,7 @@ object Log4j {
     */
   def withConfig(config: String)() = {
     val domConf = new DOMConfigurator
-    val is = new java.io.ByteArrayInputStream(config.getBytes("UTF-8"))
+    val is      = new java.io.ByteArrayInputStream(config.getBytes("UTF-8"))
     domConf.doConfigure(is, LogManager.getLoggerRepository())
   }
 
@@ -393,7 +382,7 @@ object Logback {
     * Configure with the contents of the XML file at the specified `url`.
     */
   def withFile(url: java.net.URL)() = {
-    val lc = LoggerFactory.getILoggerFactory().asInstanceOf[LoggerContext];
+    val lc           = LoggerFactory.getILoggerFactory().asInstanceOf[LoggerContext];
     val configurator = new JoranConfigurator();
     configurator.setContext(lc);
     // the context was probably already configured by default configuration rules

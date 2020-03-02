@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -55,7 +55,7 @@ import scala.collection.immutable.TreeMap
 
 import TableModule._
 
-trait RawJsonStorageModule[M[+ _]] { self =>
+trait RawJsonStorageModule[M[+_]] { self =>
   implicit def M: Monad[M]
 
   protected def projectionData(path: Path) = {
@@ -65,8 +65,8 @@ trait RawJsonStorageModule[M[+ _]] { self =>
 
   private implicit val ordering = IdentitiesOrder.toScalaOrdering
 
-  private val identity = new java.util.concurrent.atomic.AtomicInteger(0)
-  private var projections: Map[Path, List[JValue]] = Map()
+  private val identity                              = new java.util.concurrent.atomic.AtomicInteger(0)
+  private var projections: Map[Path, List[JValue]]  = Map()
   private var structures: Map[Path, Set[ColumnRef]] = Map.empty
 
   private def load(path: Path) = {
@@ -75,10 +75,10 @@ trait RawJsonStorageModule[M[+ _]] { self =>
 
     using(getClass.getResourceAsStream(resourceName)) { in =>
       // FIXME: Refactor as soon as JParser can parse from InputStreams
-      val reader = new InputStreamReader(in)
-      val buffer = new Array[Char](8192)
+      val reader  = new InputStreamReader(in)
+      val buffer  = new Array[Char](8192)
       val builder = new java.lang.StringBuilder
-      var read = 0
+      var read    = 0
       do {
         read = reader.read(buffer)
         if (read >= 0) {
@@ -105,67 +105,77 @@ trait RawJsonStorageModule[M[+ _]] { self =>
   import java.util.regex.Pattern
 
   val reflections = new Reflections(
-      new ConfigurationBuilder()
-        .setUrls(ClasspathHelper.forPackage("test_data"))
-        .setScanners(new ResourcesScanner()))
+    new ConfigurationBuilder()
+      .setUrls(ClasspathHelper.forPackage("test_data"))
+      .setScanners(new ResourcesScanner())
+  )
   val jsonFiles = reflections.getResources(Pattern.compile(".*\\.json"))
-  for (resource <- jsonFiles.asScala) load(
-      Path(resource.replaceAll("test_data/", "").replaceAll("\\.json", "")))
+  for (resource <- jsonFiles.asScala)
+    load(Path(resource.replaceAll("test_data/", "").replaceAll("\\.json", "")))
 
   val vfs: VFSMetadata[M] = new VFSMetadata[M] {
     import com.precog.yggdrasil.metadata._
     import PathMetadata._
     def findDirectChildren(
         apiKey: APIKey,
-        path: Path): EitherT[M, ResourceError, Set[PathMetadata]] =
+        path: Path
+    ): EitherT[M, ResourceError, Set[PathMetadata]] =
       EitherT.right {
         M.point(
-            projections.keySet
-              .filter(_.isDirectChildOf(path))
-              .map(PathMetadata(_, DataOnly(FileContent.XQuirrelData)))
-          )
+          projections.keySet
+            .filter(_.isDirectChildOf(path))
+            .map(PathMetadata(_, DataOnly(FileContent.XQuirrelData)))
+        )
       }
 
     def pathStructure(
         apiKey: APIKey,
         path: Path,
         property: CPath,
-        version: Version): EitherT[M, ResourceError, PathStructure] =
+        version: Version
+    ): EitherT[M, ResourceError, PathStructure] =
       EitherT.right {
         M.point {
           val structs = structures.getOrElse(path, Set.empty[ColumnRef])
-          val types: Map[CType, Long] = structs.collect {
-            // FIXME: This should use real counts
-            case ColumnRef(selector, ctype) if selector.hasPrefix(selector) =>
-              (ctype, 0L)
-          }.groupBy(_._1).map {
-            case (tpe, values) => (tpe, values.map(_._2).sum)
-          }
+          val types: Map[CType, Long] = structs
+            .collect {
+              // FIXME: This should use real counts
+              case ColumnRef(selector, ctype) if selector.hasPrefix(selector) =>
+                (ctype, 0L)
+            }
+            .groupBy(_._1)
+            .map {
+              case (tpe, values) => (tpe, values.map(_._2).sum)
+            }
 
           PathStructure(types, structs.map(_.selector))
         }
       }
 
-    def size(apiKey: APIKey,
-             path: Path,
-             version: Version): EitherT[M, ResourceError, Long] = {
-      EitherT.right(M.point(0l))
-    }
+    def size(
+        apiKey: APIKey,
+        path: Path,
+        version: Version
+    ): EitherT[M, ResourceError, Long] =
+      EitherT.right(M.point(0L))
   }
 }
 
-trait RawJsonColumnarTableStorageModule[M[+ _]]
-    extends RawJsonStorageModule[M] with ColumnarTableModuleTestSupport[M] {
+trait RawJsonColumnarTableStorageModule[M[+_]]
+    extends RawJsonStorageModule[M]
+    with ColumnarTableModuleTestSupport[M] {
   import trans._
   import TableModule._
 
   trait TableCompanion extends ColumnarTableCompanion {
     def apply(slices: StreamT[M, Slice], size: TableSize = UnknownSize) =
       new Table(slices, size)
-    def align(sourceLeft: Table,
-              alignOnL: TransSpec1,
-              sourceRight: Table,
-              alignOnR: TransSpec1): M[(Table, Table)] =
+    def align(
+        sourceLeft: Table,
+        alignOnL: TransSpec1,
+        sourceRight: Table,
+        alignOnR: TransSpec1
+    ): M[(Table, Table)] =
       sys.error("Feature not implemented in test stub.")
     // FIXME: There should be some way to make SingletonTable work here, too
     def singleton(slice: Slice) =
@@ -175,27 +185,30 @@ trait RawJsonColumnarTableStorageModule[M[+ _]]
   class Table(slices: StreamT[M, Slice], size: TableSize)
       extends ColumnarTable(slices, size) {
     import trans._
-    def sort(sortKey: TransSpec1,
-             sortOrder: DesiredSortOrder,
-             unique: Boolean = false) =
+    def sort(
+        sortKey: TransSpec1,
+        sortOrder: DesiredSortOrder,
+        unique: Boolean = false
+    ) =
       sys.error("Feature not implemented in test stub")
 
-    def groupByN(groupKeys: Seq[TransSpec1],
-                 valueSpec: TransSpec1,
-                 sortOrder: DesiredSortOrder = SortAscending,
-                 unique: Boolean = false): M[Seq[Table]] =
+    def groupByN(
+        groupKeys: Seq[TransSpec1],
+        valueSpec: TransSpec1,
+        sortOrder: DesiredSortOrder = SortAscending,
+        unique: Boolean = false
+    ): M[Seq[Table]] =
       sys.error("Feature not implemented in test stub.")
 
     def load(apiKey: APIKey, tpe: JType) = EitherT.right {
       val pathsM = this.reduce {
         new CReducer[Set[Path]] {
-          def reduce(schema: CSchema, range: Range): Set[Path] = {
+          def reduce(schema: CSchema, range: Range): Set[Path] =
             schema.columns(JObjectFixedT(Map("value" -> JTextT))) flatMap {
               case s: StrColumn =>
                 range.filter(s.isDefinedAt).map(i => Path(s(i)))
               case _ => Set()
             }
-          }
         }
       }
 

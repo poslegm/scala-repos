@@ -30,9 +30,9 @@ case class DocFqn(pack: String, typeName: String) {
   def mkString: String = if (pack.isEmpty) typeName else pack + "." + typeName
   def inPackage(prefix: String): Boolean =
     pack == prefix || pack.startsWith(prefix + ".")
-  def javaStdLib: Boolean = inPackage("java") || inPackage("javax")
+  def javaStdLib: Boolean    = inPackage("java") || inPackage("javax")
   def androidStdLib: Boolean = inPackage("android")
-  def scalaStdLib: Boolean = inPackage("scala")
+  def scalaStdLib: Boolean   = inPackage("scala")
 }
 case class DocSig(fqn: DocFqn, member: Option[String])
 
@@ -49,14 +49,16 @@ class Analyzer(
     search: SearchService,
     implicit val config: EnsimeConfig,
     implicit val vfs: EnsimeVFS
-)
-    extends Actor with Stash with ActorLogging with RefactoringHandler {
+) extends Actor
+    with Stash
+    with ActorLogging
+    with RefactoringHandler {
 
   import FileUtils._
 
   private var allFilesMode = false
 
-  private var settings: Settings = _
+  private var settings: Settings             = _
   private var reporter: PresentationReporter = _
 
   protected var scalaCompiler: RichCompilerControl = _
@@ -75,40 +77,38 @@ class Analyzer(
       case None =>
         log.warning("scala-library.jar not present, enabling Odersky mode")
     }
-    settings.classpath.value = config.compileClasspath.mkString(
-        JFile.pathSeparator)
+    settings.classpath.value =
+      config.compileClasspath.mkString(JFile.pathSeparator)
     settings.processArguments(config.compilerArgs, processAll = false)
     presCompLog.debug("Presentation Compiler settings:\n" + settings)
 
     reporter = new PresentationReporter(new ReportHandler {
-      override def messageUser(str: String): Unit = {
+      override def messageUser(str: String): Unit =
         broadcaster ! SendBackgroundMessageEvent(str, 101)
-      }
-      override def clearAllScalaNotes(): Unit = {
+      override def clearAllScalaNotes(): Unit =
         broadcaster ! ClearAllScalaNotesEvent
-      }
-      override def reportScalaNotes(notes: List[Note]): Unit = {
+      override def reportScalaNotes(notes: List[Note]): Unit =
         broadcaster ! NewScalaNotesEvent(isFull = false, notes)
-      }
     })
     reporter.disable() // until we start up
 
     scalaCompiler = makeScalaCompiler()
 
     broadcaster ! SendBackgroundMessageEvent(
-        "Initializing Analyzer. Please wait...")
+      "Initializing Analyzer. Please wait..."
+    )
 
     scalaCompiler.askNotifyWhenReady()
     if (config.sourceMode) scalaCompiler.askReloadAllFiles()
   }
 
   protected def makeScalaCompiler() = new RichPresentationCompiler(
-      config,
-      settings,
-      reporter,
-      self,
-      indexer,
-      search
+    config,
+    settings,
+    reporter,
+    self,
+    indexer,
+    search
   )
 
   protected def restartCompiler(keepLoaded: Boolean): Unit = {
@@ -123,9 +123,8 @@ class Analyzer(
     broadcaster ! CompilerRestartedEvent
   }
 
-  override def postStop(): Unit = {
+  override def postStop(): Unit =
     Try(scalaCompiler.askShutdown())
-  }
 
   def charset: Charset = scalaCompiler.charset
 
@@ -201,7 +200,10 @@ class Analyzer(
       sender ! withExisting(fileInfo) {
         reporter.disable()
         scalaCompiler.askCompletionsAt(
-            pos(fileInfo, point), maxResults, caseSens)
+          pos(fileInfo, point),
+          maxResults,
+          caseSens
+        )
       }
     case UsesOfSymbolAtPointReq(file, point) =>
       sender ! withExisting(file) {
@@ -229,9 +231,11 @@ class Analyzer(
         scalaCompiler.askLoadedTyped(p.source)
         scalaCompiler.askSymbolInfoAt(p).getOrElse(FalseResponse)
       }
-    case SymbolByNameReq(typeFullName: String,
-                         memberName: Option[String],
-                         signatureString: Option[String]) =>
+    case SymbolByNameReq(
+        typeFullName: String,
+        memberName: Option[String],
+        signatureString: Option[String]
+        ) =>
       sender ! scalaCompiler
         .askSymbolByName(typeFullName, memberName, signatureString)
         .getOrElse(FalseResponse)
@@ -239,11 +243,16 @@ class Analyzer(
       val p = pos(file, range)
       scalaCompiler.askLoadedTyped(p.source)
       sender() ! scalaCompiler.askDocSignatureAtPoint(p)
-    case DocUriForSymbolReq(typeFullName: String,
-                            memberName: Option[String],
-                            signatureString: Option[String]) =>
+    case DocUriForSymbolReq(
+        typeFullName: String,
+        memberName: Option[String],
+        signatureString: Option[String]
+        ) =>
       sender() ! scalaCompiler.askDocSignatureForSymbol(
-          typeFullName, memberName, signatureString)
+        typeFullName,
+        memberName,
+        signatureString
+      )
     case InspectPackageByPathReq(path: String) =>
       sender ! scalaCompiler.askPackageByPath(path).getOrElse(FalseResponse)
     case TypeAtPointReq(file, range: OffsetRange) =>
@@ -264,9 +273,9 @@ class Analyzer(
       sender ! SymbolDesignations(f.file, List.empty)
     case SymbolDesignationsReq(f, start, end, tpes) =>
       sender ! withExisting(f) {
-        val sf = createSourceFile(f)
+        val sf         = createSourceFile(f)
         val clampedEnd = math.max(end, start)
-        val pos = new RangePosition(sf, start, start, clampedEnd)
+        val pos        = new RangePosition(sf, start, start, clampedEnd)
         scalaCompiler.askLoadedTyped(pos.source)
         scalaCompiler.askSymbolDesignationsInRegion(pos, tpes)
       }
@@ -293,9 +302,8 @@ class Analyzer(
   def handleReloadFiles(files: List[SourceFileInfo]): RpcResponse = {
     val (existing, missingFiles) = files.partition(FileUtils.exists)
     if (missingFiles.nonEmpty) {
-      val missingFilePaths = missingFiles.map { f =>
-        "\"" + f.file + "\""
-      }.mkString(",")
+      val missingFilePaths =
+        missingFiles.map(f => "\"" + f.file + "\"").mkString(",")
       EnsimeServerError(s"file(s): $missingFilePaths do not exist")
     } else {
       val (javas, scalas) =
@@ -321,10 +329,9 @@ class Analyzer(
     pos(createSourceFile(file), range)
   def pos(file: SourceFileInfo, offset: Int): OffsetPosition =
     pos(createSourceFile(file), offset)
-  def pos(f: SourceFile, range: OffsetRange): OffsetPosition = {
+  def pos(f: SourceFile, range: OffsetRange): OffsetPosition =
     if (range.from == range.to) new OffsetPosition(f, range.from)
     else new RangePosition(f, range.from, range.from, range.to)
-  }
   def pos(f: SourceFile, offset: Int): OffsetPosition =
     new OffsetPosition(f, offset)
 

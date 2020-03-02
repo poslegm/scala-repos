@@ -51,16 +51,18 @@ object DialogsDemo extends JFXApp {
       title = "Dialogs Demo"
       root = new VBox {
         children = Seq(
-            button("Information", informationDialog),
-            button("Without Header Text", withoutHeader),
-            button("Warning", warningDialog),
-            button("Error", errorDialog),
-            button("Exception", exceptionDialog),
-            button("Confirmation", confirmationDialog),
-            button("Confirmation Dialog with Custom Actions",
-                   confirmationWithCustomActions),
-            button("Text Input", textInputDialog),
-            button("Choice", choiceDialog)
+          button("Information", informationDialog),
+          button("Without Header Text", withoutHeader),
+          button("Warning", warningDialog),
+          button("Error", errorDialog),
+          button("Exception", exceptionDialog),
+          button("Confirmation", confirmationDialog),
+          button(
+            "Confirmation Dialog with Custom Actions",
+            confirmationWithCustomActions
+          ),
+          button("Text Input", textInputDialog),
+          button("Choice", choiceDialog)
         )
         spacing = 6
         padding = Insets(10)
@@ -70,48 +72,44 @@ object DialogsDemo extends JFXApp {
   }
 
   def button[R](text: String, action: () => R) = new Button(text) {
-    onAction = handle { action() }
+    onAction = handle(action())
     alignmentInParent = Pos.Center
     hgrow = Priority.Always
     maxWidth = Double.MaxValue
     padding = Insets(7)
   }
 
-  def informationDialog(): Unit = {
+  def informationDialog(): Unit =
     new Alert(AlertType.Information) {
       initOwner(stage)
       title = "Information Dialog."
       headerText = "Look, an Information Dialog"
       contentText = "I have a great message for you!"
     }.showAndWait()
-  }
 
-  def withoutHeader(): Unit = {
+  def withoutHeader(): Unit =
     new Alert(AlertType.Information) {
       initOwner(stage)
       title = "Information Dialog"
       headerText = None
       contentText = "I have a great message for you!"
     }.showAndWait()
-  }
 
-  def warningDialog(): Unit = {
+  def warningDialog(): Unit =
     new Alert(AlertType.Warning) {
       initOwner(stage)
       title = "Warning Dialog"
       headerText = "Look, an Warning Dialog."
       contentText = "Careful with the next step!"
     }.showAndWait()
-  }
 
-  def errorDialog(): Unit = {
+  def errorDialog(): Unit =
     new Alert(AlertType.Error) {
       initOwner(stage)
       title = "Error Dialog"
       headerText = "Look, an Error Dialog."
       contentText = "Ooops, there was an error!"
     }.showAndWait()
-  }
 
   def exceptionDialog(): Unit = {
 
@@ -161,13 +159,13 @@ object DialogsDemo extends JFXApp {
 
     result match {
       case Some(ButtonType.OK) => println("OK")
-      case _ => println("Cancel or closed")
+      case _                   => println("Cancel or closed")
     }
   }
 
   def confirmationWithCustomActions(): Unit = {
-    val ButtonTypeOne = new ButtonType("One")
-    val ButtonTypeTwo = new ButtonType("Two")
+    val ButtonTypeOne   = new ButtonType("One")
+    val ButtonTypeTwo   = new ButtonType("Two")
     val ButtonTypeThree = new ButtonType("Three")
 
     val alert = new Alert(AlertType.Confirmation) {
@@ -177,17 +175,17 @@ object DialogsDemo extends JFXApp {
       contentText = "Choose your option."
       // Note that we override here default dialog buttons, OK and Cancel, with new ones.
       // We could also just add to existing button using `++=`.
-      buttonTypes = Seq(
-          ButtonTypeOne, ButtonTypeTwo, ButtonTypeThree, ButtonType.Cancel)
+      buttonTypes =
+        Seq(ButtonTypeOne, ButtonTypeTwo, ButtonTypeThree, ButtonType.Cancel)
     }
 
     val result = alert.showAndWait()
 
     result match {
-      case Some(ButtonTypeOne) => println("... user chose \"One\"")
-      case Some(ButtonTypeTwo) => println("... user chose \"Two\"")
+      case Some(ButtonTypeOne)   => println("... user chose \"One\"")
+      case Some(ButtonTypeTwo)   => println("... user chose \"Two\"")
       case Some(ButtonTypeThree) => println("... user chose \"Three\"")
-      case _ => println("... user chose CANCEL or closed the dialog")
+      case _                     => println("... user chose CANCEL or closed the dialog")
     }
   }
 
@@ -202,7 +200,7 @@ object DialogsDemo extends JFXApp {
     val result = dialog.showAndWait()
     result match {
       case Some(name) => println("Your name: " + name)
-      case None => println("Dialog was canceled.")
+      case None       => println("Dialog was canceled.")
     }
   }
 
@@ -221,7 +219,7 @@ object DialogsDemo extends JFXApp {
 
     result match {
       case Some(choice) => println("Your choice: " + choice)
-      case None => println("No selection")
+      case None         => println("No selection")
     }
   }
 }

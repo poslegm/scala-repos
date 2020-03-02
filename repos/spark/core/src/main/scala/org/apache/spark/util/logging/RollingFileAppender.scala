@@ -40,8 +40,7 @@ private[spark] class RollingFileAppender(
     val rollingPolicy: RollingPolicy,
     conf: SparkConf,
     bufferSize: Int = RollingFileAppender.DEFAULT_BUFFER_SIZE
-)
-    extends FileAppender(inputStream, activeFile, bufferSize) {
+) extends FileAppender(inputStream, activeFile, bufferSize) {
 
   import RollingFileAppender._
 
@@ -81,8 +80,9 @@ private[spark] class RollingFileAppender(
   private def moveFile() {
     val rolloverSuffix = rollingPolicy.generateRolledOverFileSuffix()
     val rolloverFile = new File(
-        activeFile.getParentFile,
-        activeFile.getName + rolloverSuffix).getAbsoluteFile
+      activeFile.getParentFile,
+      activeFile.getName + rolloverSuffix
+    ).getAbsoluteFile
     logDebug(s"Attempting to rollover file $activeFile to file $rolloverFile")
     if (activeFile.exists) {
       if (!rolloverFile.exists) {
@@ -93,18 +93,20 @@ private[spark] class RollingFileAppender(
         // The resultant file names are long and ugly, so this is used only
         // if there is a name collision. This can be avoided by the using
         // the right pattern such that name collisions do not occur.
-        var i = 0
+        var i                     = 0
         var altRolloverFile: File = null
         do {
           altRolloverFile = new File(
-              activeFile.getParent,
-              s"${activeFile.getName}$rolloverSuffix--$i").getAbsoluteFile
+            activeFile.getParent,
+            s"${activeFile.getName}$rolloverSuffix--$i"
+          ).getAbsoluteFile
           i += 1
         } while (i < 10000 && altRolloverFile.exists)
 
         logWarning(
-            s"Rollover file $rolloverFile already exists, " +
-            s"rolled over $activeFile to file $altRolloverFile")
+          s"Rollover file $rolloverFile already exists, " +
+            s"rolled over $activeFile to file $altRolloverFile"
+        )
         Files.move(activeFile, altRolloverFile)
       }
     } else {
@@ -117,22 +119,24 @@ private[spark] class RollingFileAppender(
     try {
       val rolledoverFiles = activeFile.getParentFile
         .listFiles(new FileFilter {
-          def accept(f: File): Boolean = {
+          def accept(f: File): Boolean =
             f.getName.startsWith(activeFile.getName) && f != activeFile
-          }
         })
         .sorted
       val filesToBeDeleted = rolledoverFiles.take(
-          math.max(0, rolledoverFiles.length - maxRetainedFiles))
+        math.max(0, rolledoverFiles.length - maxRetainedFiles)
+      )
       filesToBeDeleted.foreach { file =>
         logInfo(s"Deleting file executor log file ${file.getAbsolutePath}")
         file.delete()
       }
     } catch {
       case e: Exception =>
-        logError("Error cleaning logs in directory " +
-                 activeFile.getParentFile.getAbsolutePath,
-                 e)
+        logError(
+          "Error cleaning logs in directory " +
+            activeFile.getParentFile.getAbsolutePath,
+          e
+        )
     }
   }
 }
@@ -142,14 +146,14 @@ private[spark] class RollingFileAppender(
   * names of configurations that configure rolling file appenders.
   */
 private[spark] object RollingFileAppender {
-  val STRATEGY_PROPERTY = "spark.executor.logs.rolling.strategy"
-  val STRATEGY_DEFAULT = ""
-  val INTERVAL_PROPERTY = "spark.executor.logs.rolling.time.interval"
-  val INTERVAL_DEFAULT = "daily"
-  val SIZE_PROPERTY = "spark.executor.logs.rolling.maxSize"
-  val SIZE_DEFAULT = (1024 * 1024).toString
+  val STRATEGY_PROPERTY       = "spark.executor.logs.rolling.strategy"
+  val STRATEGY_DEFAULT        = ""
+  val INTERVAL_PROPERTY       = "spark.executor.logs.rolling.time.interval"
+  val INTERVAL_DEFAULT        = "daily"
+  val SIZE_PROPERTY           = "spark.executor.logs.rolling.maxSize"
+  val SIZE_DEFAULT            = (1024 * 1024).toString
   val RETAINED_FILES_PROPERTY = "spark.executor.logs.rolling.maxRetainedFiles"
-  val DEFAULT_BUFFER_SIZE = 8192
+  val DEFAULT_BUFFER_SIZE     = 8192
 
   /**
     * Get the sorted list of rolled over files. This assumes that the all the rolled
@@ -158,7 +162,9 @@ private[spark] object RollingFileAppender {
     * prefixed with `activeFileName`) and appends the active file
     */
   def getSortedRolledOverFiles(
-      directory: String, activeFileName: String): Seq[File] = {
+      directory: String,
+      activeFileName: String
+  ): Seq[File] = {
     val rolledOverFiles =
       new File(directory).getAbsoluteFile.listFiles.filter { file =>
         val fileName = file.getName

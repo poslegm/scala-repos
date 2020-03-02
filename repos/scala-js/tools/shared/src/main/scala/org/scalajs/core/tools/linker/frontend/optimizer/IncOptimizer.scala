@@ -15,23 +15,25 @@ import org.scalajs.core.tools.sem.Semantics
 import org.scalajs.core.tools.javascript.ESLevel
 
 final class IncOptimizer(
-    semantics: Semantics, esLevel: ESLevel, considerPositions: Boolean)
-    extends GenIncOptimizer(semantics, esLevel, considerPositions) {
+    semantics: Semantics,
+    esLevel: ESLevel,
+    considerPositions: Boolean
+) extends GenIncOptimizer(semantics, esLevel, considerPositions) {
 
   private[optimizer] object CollOps extends GenIncOptimizer.AbsCollOps {
-    type Map[K, V] = mutable.Map[K, V]
-    type ParMap[K, V] = mutable.Map[K, V]
-    type AccMap[K, V] = mutable.Map[K, mutable.ListBuffer[V]]
+    type Map[K, V]      = mutable.Map[K, V]
+    type ParMap[K, V]   = mutable.Map[K, V]
+    type AccMap[K, V]   = mutable.Map[K, mutable.ListBuffer[V]]
     type ParIterable[V] = mutable.ListBuffer[V]
-    type Addable[V] = mutable.ListBuffer[V]
+    type Addable[V]     = mutable.ListBuffer[V]
 
-    def emptyAccMap[K, V]: AccMap[K, V] = mutable.Map.empty
-    def emptyMap[K, V]: Map[K, V] = mutable.Map.empty
-    def emptyParMap[K, V]: ParMap[K, V] = mutable.Map.empty
+    def emptyAccMap[K, V]: AccMap[K, V]     = mutable.Map.empty
+    def emptyMap[K, V]: Map[K, V]           = mutable.Map.empty
+    def emptyParMap[K, V]: ParMap[K, V]     = mutable.Map.empty
     def emptyParIterable[V]: ParIterable[V] = mutable.ListBuffer.empty
 
     // Operations on ParMap
-    def put[K, V](map: ParMap[K, V], k: K, v: V): Unit = map.put(k, v)
+    def put[K, V](map: ParMap[K, V], k: K, v: V): Unit   = map.put(k, v)
     def remove[K, V](map: ParMap[K, V], k: K): Option[V] = map.remove(k)
 
     def retain[K, V](map: ParMap[K, V])(p: (K, V) => Boolean): Unit =
@@ -44,13 +46,14 @@ final class IncOptimizer(
     def getAcc[K, V](map: AccMap[K, V], k: K): GenIterable[V] =
       map.getOrElse(k, Nil)
 
-    def parFlatMapKeys[A, B](map: AccMap[A, _])(
-        f: A => GenTraversableOnce[B]): GenIterable[B] =
+    def parFlatMapKeys[A, B](
+        map: AccMap[A, _]
+    )(f: A => GenTraversableOnce[B]): GenIterable[B] =
       map.keys.flatMap(f).toList
 
     // Operations on ParIterable
-    def prepAdd[V](it: ParIterable[V]): Addable[V] = it
-    def add[V](addable: Addable[V], v: V): Unit = addable += v
+    def prepAdd[V](it: ParIterable[V]): Addable[V]        = it
+    def add[V](addable: Addable[V], v: V): Unit           = addable += v
     def finishAdd[V](addable: Addable[V]): ParIterable[V] = addable
   }
 
@@ -63,7 +66,9 @@ final class IncOptimizer(
     methodsToProcess += method
 
   private[optimizer] def newMethodImpl(
-      owner: MethodContainer, encodedName: String): MethodImpl =
+      owner: MethodContainer,
+      encodedName: String
+  ): MethodImpl =
     new SeqMethodImpl(owner, encodedName)
 
   private[optimizer] def processAllTaggedMethods(): Unit = {
@@ -96,13 +101,12 @@ final class IncOptimizer(
 
     def ancestors: List[String] = _ancestors
 
-    def ancestors_=(v: List[String]): Unit = {
+    def ancestors_=(v: List[String]): Unit =
       if (v != _ancestors) {
         _ancestors = v
         ancestorsAskers.foreach(_.tag())
         ancestorsAskers.clear()
       }
-    }
 
     def registerAskAncestors(asker: MethodImpl): Unit =
       ancestorsAskers += asker
@@ -150,7 +154,7 @@ final class IncOptimizer(
     }
 
     private var _registeredTo: List[Unregisterable] = Nil
-    private var tagged = false
+    private var tagged                              = false
 
     protected def registeredTo(intf: Unregisterable): Unit =
       _registeredTo ::= intf

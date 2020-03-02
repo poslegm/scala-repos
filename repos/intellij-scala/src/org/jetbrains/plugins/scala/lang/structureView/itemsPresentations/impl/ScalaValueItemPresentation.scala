@@ -15,17 +15,15 @@ import org.jetbrains.plugins.scala.icons.Icons;
   * Date: 08.05.2008
   */
 class ScalaValueItemPresentation(
-    private val element: PsiElement, isInherited: Boolean)
-    extends ScalaItemPresentation(element) {
-  def getPresentableText: String = {
+    private val element: PsiElement,
+    isInherited: Boolean
+) extends ScalaItemPresentation(element) {
+  def getPresentableText: String =
     ScalaElementPresentation.getPresentableText(myElement)
-  }
 
-  override def getIcon(open: Boolean): Icon = {
+  override def getIcon(open: Boolean): Icon =
     Icons.VAL
-  }
 
-  override def getTextAttributesKey: TextAttributesKey = {
+  override def getTextAttributesKey: TextAttributesKey =
     if (isInherited) CodeInsightColors.NOT_USED_ELEMENT_ATTRIBUTES else null
-  }
 }

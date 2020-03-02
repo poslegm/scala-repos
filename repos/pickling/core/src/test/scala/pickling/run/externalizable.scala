@@ -5,12 +5,13 @@ import scala.pickling._, scala.pickling.Defaults._
 import java.io.{Externalizable, IOException, ObjectInput, ObjectOutput}
 import java.nio.ByteBuffer
 
-class StorageLevel private (private var useDisk_ : Boolean,
-                            private var useMemory_ : Boolean,
-                            private var deserialized_ : Boolean,
-                            @transient private var buf: ByteBuffer,
-                            private var replication_ : Int)
-    extends Externalizable {
+class StorageLevel private (
+    private var useDisk_ : Boolean,
+    private var useMemory_ : Boolean,
+    private var deserialized_ : Boolean,
+    @transient private var buf: ByteBuffer,
+    private var replication_ : Int
+) extends Externalizable {
 
   private def this(x: Boolean, y: Boolean, z: Boolean, r: Int = 1) = {
     this(x, y, z, ByteBuffer.wrap(Array[Byte](1, 2, 3)), r)
@@ -23,26 +24,34 @@ class StorageLevel private (private var useDisk_ : Boolean,
 
   def this() = this(false, true, false) // For deserialization
 
-  def useDisk = useDisk_
-  def useMemory = useMemory_
+  def useDisk      = useDisk_
+  def useMemory    = useMemory_
   def deserialized = deserialized_
-  def replication = replication_
+  def replication  = replication_
 
   override def clone(): StorageLevel =
     new StorageLevel(
-        this.useDisk, this.useMemory, this.deserialized, this.replication)
+      this.useDisk,
+      this.useMemory,
+      this.deserialized,
+      this.replication
+    )
 
   override def equals(other: Any): Boolean = other match {
     case s: StorageLevel =>
       s.useDisk == useDisk && s.useMemory == useMemory &&
-      s.deserialized == deserialized && s.replication == replication
+        s.deserialized == deserialized && s.replication == replication
     case _ =>
       false
   }
 
   override def toString: String =
     "StorageLevel(%b, %b, %b, %d)".format(
-        useDisk, useMemory, deserialized, replication)
+      useDisk,
+      useMemory,
+      deserialized,
+      replication
+    )
 
   def toInt: Int = {
     var ret = 0
@@ -73,25 +82,28 @@ class StorageLevel private (private var useDisk_ : Boolean,
 }
 
 object StorageLevel {
-  val NONE = new StorageLevel(false, false, false)
-  val DISK_ONLY = new StorageLevel(true, false, false)
-  val DISK_ONLY_2 = new StorageLevel(true, false, false, 2)
-  val MEMORY_ONLY = new StorageLevel(false, true, true)
-  val MEMORY_ONLY_2 = new StorageLevel(false, true, true, 2)
-  val MEMORY_ONLY_SER = new StorageLevel(false, true, false)
-  val MEMORY_ONLY_SER_2 = new StorageLevel(false, true, false, 2)
-  val MEMORY_AND_DISK = new StorageLevel(true, true, true)
-  val MEMORY_AND_DISK_2 = new StorageLevel(true, true, true, 2)
-  val MEMORY_AND_DISK_SER = new StorageLevel(true, true, false)
+  val NONE                  = new StorageLevel(false, false, false)
+  val DISK_ONLY             = new StorageLevel(true, false, false)
+  val DISK_ONLY_2           = new StorageLevel(true, false, false, 2)
+  val MEMORY_ONLY           = new StorageLevel(false, true, true)
+  val MEMORY_ONLY_2         = new StorageLevel(false, true, true, 2)
+  val MEMORY_ONLY_SER       = new StorageLevel(false, true, false)
+  val MEMORY_ONLY_SER_2     = new StorageLevel(false, true, false, 2)
+  val MEMORY_AND_DISK       = new StorageLevel(true, true, true)
+  val MEMORY_AND_DISK_2     = new StorageLevel(true, true, true, 2)
+  val MEMORY_AND_DISK_SER   = new StorageLevel(true, true, false)
   val MEMORY_AND_DISK_SER_2 = new StorageLevel(true, true, false, 2)
 
   /** Create a new StorageLevel object */
-  def apply(useDisk: Boolean,
-            useMemory: Boolean,
-            deserialized: Boolean,
-            replication: Int = 1) =
+  def apply(
+      useDisk: Boolean,
+      useMemory: Boolean,
+      deserialized: Boolean,
+      replication: Int = 1
+  ) =
     getCachedStorageLevel(
-        new StorageLevel(useDisk, useMemory, deserialized, replication))
+      new StorageLevel(useDisk, useMemory, deserialized, replication)
+    )
 
   /** Create a new StorageLevel object from its integer representation */
   def apply(flags: Int, replication: Int) =
@@ -113,11 +125,12 @@ object StorageLevel {
   }
 }
 
-class StorageLevel2(private var useDisk_ : Boolean,
-                    private var useMemory_ : Boolean,
-                    private var deserialized_ : Boolean,
-                    private var replication_ : Int)
-    extends Externalizable {
+class StorageLevel2(
+    private var useDisk_ : Boolean,
+    private var useMemory_ : Boolean,
+    private var deserialized_ : Boolean,
+    private var replication_ : Int
+) extends Externalizable {
 
   def toInt: Int = {
     var ret = 0
@@ -177,9 +190,9 @@ class ExternalizableTest extends FunSuite {
   test("main") {
     import json._
 
-    val sl = StorageLevel.MEMORY_ONLY_SER
+    val sl                 = StorageLevel.MEMORY_ONLY_SER
     val pickle: JSONPickle = sl.pickle
-    val up = pickle.unpickle[StorageLevel]
+    val up                 = pickle.unpickle[StorageLevel]
     assert(sl == up)
   }
 
@@ -187,17 +200,17 @@ class ExternalizableTest extends FunSuite {
     import binary._
 
     val obj = new StorageLevel2(false, true, false, 1)
-    val p = obj.pickle
-    val up = p.unpickle[StorageLevel2]
+    val p   = obj.pickle
+    val up  = p.unpickle[StorageLevel2]
     assert(up == obj)
   }
 
   test("writeUTF/readUTF") {
     import json._
 
-    val obj = new StorageLevel3("test", 5)
+    val obj                = new StorageLevel3("test", 5)
     val pickle: JSONPickle = obj.pickle
-    val up = pickle.unpickle[StorageLevel3]
+    val up                 = pickle.unpickle[StorageLevel3]
     assert(up == obj)
   }
 }

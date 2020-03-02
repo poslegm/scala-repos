@@ -15,22 +15,22 @@ class SizeToLengthInspection extends OperationOnCollectionInspection {
 
 object SizeToLength extends SimplificationType {
   override def hint: String = InspectionBundle.message("size.to.length")
-  val `.size` = invocation("size").from(likeCollectionClasses)
+  val `.size`               = invocation("size").from(likeCollectionClasses)
 
-  override def getSimplification(expr: ScExpression): Option[Simplification] = {
+  override def getSimplification(expr: ScExpression): Option[Simplification] =
     expr match {
       case (qual @ ExpressionType(tpe)) `.size` ()
           if isArray(qual) || isString(tpe) =>
         Some(
-            replace(expr)
-              .withText(invocationText(qual, "length"))
-              .highlightFrom(qual))
+          replace(expr)
+            .withText(invocationText(qual, "length"))
+            .highlightFrom(qual)
+        )
       case _ => None
     }
-  }
 
   def isString(tp: ScType) = {
-    val extracted = ScType.extractDesignatorSingletonType(tp).getOrElse(tp)
+    val extracted     = ScType.extractDesignatorSingletonType(tp).getOrElse(tp)
     val canonicalText = extracted.canonicalText
     canonicalText == "_root_.java.lang.String" ||
     canonicalText == "_root_.scala.Predef.String"

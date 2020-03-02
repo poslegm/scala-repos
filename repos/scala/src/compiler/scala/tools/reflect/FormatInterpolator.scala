@@ -16,7 +16,7 @@ abstract class FormatInterpolator {
   import definitions._
   import treeInfo.Applied
 
-  @inline private def truly(body: => Unit): Boolean = { body; true }
+  @inline private def truly(body: => Unit): Boolean   = { body; true }
   @inline private def falsely(body: => Unit): Boolean = { body; false }
 
   private def fail(msg: String) = c.abort(c.enclosingPosition, msg)
@@ -31,8 +31,10 @@ abstract class FormatInterpolator {
         val (p, msg) =
           if (parts.length == 0) (c.prefix.tree.pos, "there are no parts")
           else if (args.length + 1 < parts.length)
-            (if (args.isEmpty) c.enclosingPosition else args.last.pos,
-             because("few"))
+            (
+              if (args.isEmpty) c.enclosingPosition else args.last.pos,
+              because("few")
+            )
           else (args(parts.length - 1).pos, because("many"))
         c.abort(p, msg)
       }
@@ -63,18 +65,20 @@ abstract class FormatInterpolator {
     *  *Legal according to [[http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Formatter.html]]
     */
   def interpolated(parts: List[Tree], args: List[Tree]) = {
-    val fstring = new StringBuilder
-    val evals = ListBuffer[ValDef]()
-    val ids = ListBuffer[Ident]()
+    val fstring  = new StringBuilder
+    val evals    = ListBuffer[ValDef]()
+    val ids      = ListBuffer[Ident]()
     val argStack = Stack(args: _*)
 
     // create a tmp val and add it to the ids passed to format
     def defval(value: Tree, tpe: Type): Unit = {
       val freshName = TermName(c.freshName("arg$"))
-      evals += ValDef(Modifiers(),
-                      freshName,
-                      TypeTree(tpe) setPos value.pos.focus,
-                      value) setPos value.pos
+      evals += ValDef(
+        Modifiers(),
+        freshName,
+        TypeTree(tpe) setPos value.pos.focus,
+        value
+      ) setPos value.pos
       ids += Ident(freshName)
     }
     // Append the nth part to the string builder, possibly prepending an omitted %s first.
@@ -85,12 +89,13 @@ abstract class FormatInterpolator {
         case Literal(Constant(x: String)) => x
         case _ =>
           throw new IllegalArgumentException(
-              "internal error: argument parts must be a list of string literals")
+            "internal error: argument parts must be a list of string literals"
+          )
       }
       def escapeHatch: PartialFunction[Throwable, String] = {
         // trailing backslash, octal escape, or other
         case e: StringContext.InvalidEscapeException =>
-          def errPoint = part.pos withPoint (part.pos.point + e.index)
+          def errPoint         = part.pos withPoint (part.pos.point + e.index)
           def octalOf(c: Char) = Character.digit(c, 8)
           def alt = {
             def altOf(i: Int) = i match {
@@ -101,16 +106,16 @@ abstract class FormatInterpolator {
               case '\r' => "\\r"
               case '\"' =>
                 "${'\"'}" /* avoid lint warn */ +
-                " or a triple-quoted literal \"\"\"with embedded \" or \\u0022\"\"\"" // $" in future
+                  " or a triple-quoted literal \"\"\"with embedded \" or \\u0022\"\"\"" // $" in future
               case '\'' => "'"
               case '\\' => """\\"""
-              case x => "\\u%04x" format x
+              case x    => "\\u%04x" format x
             }
             val suggest = {
               val r = "([0-7]{1,3}).*".r
               (s0 drop e.index + 1) match {
                 case r(n) =>
-                  altOf { (0 /: n) { case (a, o) => (8 * a) + (o - '0') } }
+                  altOf((0 /: n) { case (a, o) => (8 * a) + (o - '0') })
                 case _ => ""
               }
             }
@@ -125,9 +130,10 @@ abstract class FormatInterpolator {
               c.error(errPoint, msg("unsupported"))
               s0
             } else {
-              currentRun.reporting.deprecationWarning(
-                  errPoint, msg("deprecated"))
-              try StringContext.treatEscapes(s0) catch escapeHatch
+              currentRun.reporting
+                .deprecationWarning(errPoint, msg("deprecated"))
+              try StringContext.treatEscapes(s0)
+              catch escapeHatch
             }
           }
           if (e.index == s0.length - 1) {
@@ -140,13 +146,16 @@ abstract class FormatInterpolator {
             s0
           }
       }
-      val s = try StringContext.processEscapes(s0) catch escapeHatch
+      val s =
+        try StringContext.processEscapes(s0)
+        catch escapeHatch
       val ms = fpat findAllMatchIn s
 
       def errorLeading(op: Conversion) =
         op.errorAt(
-            Spec,
-            s"conversions must follow a splice; ${Conversion.literalHelp}")
+          Spec,
+          s"conversions must follow a splice; ${Conversion.literalHelp}"
+        )
 
       def first = n == 0
       // a conversion for the arg is required
@@ -160,7 +169,7 @@ abstract class FormatInterpolator {
           if (!op.isLeading) errorLeading(op)
           op.accepts(arg) match {
             case Some(tpe) => defval(arg, tpe)
-            case None =>
+            case None      =>
           }
         }
         if (ms.hasNext) {
@@ -174,7 +183,7 @@ abstract class FormatInterpolator {
                 s_%()
               }
             case Some(op) => accept(op)
-            case None =>
+            case None     =>
           }
         } else s_%()
       }
@@ -184,8 +193,8 @@ abstract class FormatInterpolator {
           case Some(op) if first && op.hasFlag('<') =>
             op.badFlag('<', "No last arg")
           case Some(op) if op.isLiteral || op.indexed => // OK
-          case Some(op) => errorLeading(op)
-          case None =>
+          case Some(op)                               => errorLeading(op)
+          case None                                   =>
         }
       }
       fstring append s
@@ -201,16 +210,23 @@ abstract class FormatInterpolator {
     else {
       val scalaPackage = Select(Ident(nme.ROOTPKG), TermName("scala"))
       val newStringOps = Select(
-          New(
-              Select(Select(Select(scalaPackage, TermName("collection")),
-                            TermName("immutable")),
-                     TypeName("StringOps"))),
-          termNames.CONSTRUCTOR
+        New(
+          Select(
+            Select(
+              Select(scalaPackage, TermName("collection")),
+              TermName("immutable")
+            ),
+            TypeName("StringOps")
+          )
+        ),
+        termNames.CONSTRUCTOR
       )
       val expr = Apply(
-          Select(Apply(newStringOps, List(Literal(Constant(format)))),
-                 TermName("format")),
-          ids.toList
+        Select(
+          Apply(newStringOps, List(Literal(Constant(format)))),
+          TermName("format")
+        ),
+        ids.toList
       )
       val p = c.macroApplication.pos
       Block(evals.toList, atPos(p.focus)(expr)) setPos p.makeTransparent
@@ -238,22 +254,22 @@ abstract class FormatInterpolator {
     import SpecifierGroups.{Value => SpecGroup, _}
     private def maybeStr(g: SpecGroup) = Option(m group g.id)
     private def maybeInt(g: SpecGroup) = maybeStr(g) map (_.toInt)
-    val index: Option[Int] = maybeInt(Index)
-    val flags: Option[String] = maybeStr(Flags)
-    val width: Option[Int] = maybeInt(Width)
-    val precision: Option[Int] = maybeStr(Precision) map (_.drop(1).toInt)
-    val op: String = maybeStr(CC) getOrElse ""
+    val index: Option[Int]             = maybeInt(Index)
+    val flags: Option[String]          = maybeStr(Flags)
+    val width: Option[Int]             = maybeInt(Width)
+    val precision: Option[Int]         = maybeStr(Precision) map (_.drop(1).toInt)
+    val op: String                     = maybeStr(CC) getOrElse ""
 
     def cc: Char = if ("tT" contains op(0)) op(1) else op(0)
 
-    def indexed: Boolean = index.nonEmpty || hasFlag('<')
+    def indexed: Boolean   = index.nonEmpty || hasFlag('<')
     def isLiteral: Boolean = false
     def isLeading: Boolean = m.start(0) == 0
-    def verify: Boolean = goodFlags && goodIndex
+    def verify: Boolean    = goodFlags && goodIndex
     def accepts(arg: Tree): Option[Type]
 
-    val allFlags = "-#+ 0,(<"
-    def hasFlag(f: Char) = (flags getOrElse "") contains f
+    val allFlags               = "-#+ 0,(<"
+    def hasFlag(f: Char)       = (flags getOrElse "") contains f
     def hasAnyFlag(fs: String) = fs exists (hasFlag)
 
     def badFlag(f: Char, msg: String) = {
@@ -280,7 +296,7 @@ abstract class FormatInterpolator {
       val badFlags =
         (flags getOrElse "") filterNot {
           case '-' | '<' => true
-          case _ => false
+          case _         => false
         }
       badFlags.isEmpty || falsely {
         badFlag(badFlags(0), s"Only '-' allowed for $msg")
@@ -295,7 +311,9 @@ abstract class FormatInterpolator {
     def goodIndex = {
       if (index.nonEmpty && hasFlag('<'))
         c.warning(
-            groupPos(Index), "Argument index ignored if '<' flag is present")
+          groupPos(Index),
+          "Argument index ignored if '<' flag is present"
+        )
       val okRange = index map (i => i > 0 && i <= argc) getOrElse true
       okRange || hasFlag('<') || falsely {
         errorAt(Index, "Argument index out of range")
@@ -309,8 +327,9 @@ abstract class FormatInterpolator {
       */
     def pickAcceptable(arg: Tree, variants: Type*): Option[Type] =
       variants find (arg.tpe <:< _) orElse
-      (variants find (c.inferImplicitView(arg, arg.tpe, _) != EmptyTree)) orElse Some(
-          variants(0))
+        (variants find (c.inferImplicitView(arg, arg.tpe, _) != EmptyTree)) orElse Some(
+        variants(0)
+      )
   }
   object Conversion {
     import SpecifierGroups.{Spec, CC}
@@ -357,7 +376,7 @@ abstract class FormatInterpolator {
     }
     override protected def okFlags = cc match {
       case 's' | 'S' => "-#<"
-      case _ => "-<"
+      case _         => "-<"
     }
   }
   class LiteralXn(val m: Match, val pos: Position, val argc: Int)
@@ -366,12 +385,14 @@ abstract class FormatInterpolator {
     override val isLiteral = true
     override def verify = op match {
       case "%" =>
-        super.verify && noPrecision && truly(width foreach
-            (_ => c.warning(groupPos(Width), "width ignored on literal")))
+        super.verify && noPrecision && truly(
+          width foreach
+            (_ => c.warning(groupPos(Width), "width ignored on literal"))
+        )
       case "n" => noFlags && noWidth && noPrecision
     }
     override protected val okFlags = "-"
-    def accepts(arg: Tree) = None
+    def accepts(arg: Tree)         = None
   }
   class CharacterXn(val m: Match, val pos: Position, val argc: Int)
       extends Conversion {
@@ -384,45 +405,46 @@ abstract class FormatInterpolator {
     override def verify = {
       def d_# =
         (cc == 'd' && hasFlag('#') && truly {
-              badFlag('#', "# not allowed for d conversion")
-            })
+          badFlag('#', "# not allowed for d conversion")
+        })
       def x_comma =
         (cc != 'd' && hasFlag(',') && truly {
-              badFlag(',',
-                      "',' only allowed for d conversion of integral types")
-            })
+          badFlag(',', "',' only allowed for d conversion of integral types")
+        })
       super.verify && noPrecision && !d_# && !x_comma
     }
     override def accepts(arg: Tree) = {
       def isBigInt = arg.tpe <:< tagOfBigInt.tpe
-      val maybeOK = "+ ("
+      val maybeOK  = "+ ("
       def bad_+ = cond(cc) {
         case 'o' | 'x' | 'X' if hasAnyFlag(maybeOK) && !isBigInt =>
           maybeOK filter hasFlag foreach
-          (badf =>
-                badFlag(badf,
-                        s"only use '$badf' for BigInt conversions to o, x, X"))
+            (badf =>
+              badFlag(
+                badf,
+                s"only use '$badf' for BigInt conversions to o, x, X"
+              )
+            )
           true
       }
       if (bad_+) None
       else
-        pickAcceptable(
-            arg, IntTpe, LongTpe, ByteTpe, ShortTpe, tagOfBigInt.tpe)
+        pickAcceptable(arg, IntTpe, LongTpe, ByteTpe, ShortTpe, tagOfBigInt.tpe)
     }
   }
   class FloatingPointXn(val m: Match, val pos: Position, val argc: Int)
       extends Conversion {
     override def verify =
       super.verify &&
-      (cc match {
-            case 'a' | 'A' =>
-              val badFlags = ",(" filter hasFlag
-              noPrecision && badFlags.isEmpty || falsely {
-                badFlags foreach
+        (cc match {
+          case 'a' | 'A' =>
+            val badFlags = ",(" filter hasFlag
+            noPrecision && badFlags.isEmpty || falsely {
+              badFlags foreach
                 (badf => badFlag(badf, s"'$badf' not allowed for a, A"))
-              }
-            case _ => true
-          })
+            }
+          case _ => true
+        })
     def accepts(arg: Tree) =
       pickAcceptable(arg, DoubleTpe, FloatTpe, tagOfBigDecimal.tpe)
   }
@@ -431,21 +453,24 @@ abstract class FormatInterpolator {
     import SpecifierGroups.CC
     def hasCC =
       (op.length == 2 || falsely {
-            errorAt(CC, "Date/time conversion must have two characters")
-          })
+        errorAt(CC, "Date/time conversion must have two characters")
+      })
     def goodCC = ("HIklMSLNpzZsQBbhAaCYyjmdeRTrDFc" contains cc) || falsely {
       errorAtOffset(
-          CC, 1, s"'$cc' doesn't seem to be a date or time conversion")
+        CC,
+        1,
+        s"'$cc' doesn't seem to be a date or time conversion"
+      )
     }
     override def verify =
       super.verify && hasCC && goodCC && noPrecision &&
-      only_-("date/time conversions")
+        only_-("date/time conversions")
     def accepts(arg: Tree) =
       pickAcceptable(arg, LongTpe, tagOfCalendar.tpe, tagOfDate.tpe)
   }
   class ErrorXn(val m: Match, val pos: Position) extends Conversion {
-    val argc = 0
-    override def verify = false
+    val argc               = 0
+    override def verify    = false
     def accepts(arg: Tree) = None
   }
 }

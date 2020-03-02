@@ -1,7 +1,7 @@
 /** Test matrix multiplication with specialization.
   */
 @deprecated("Suppress warnings", since = "2.11")
-class Matrix[@specialized A : ClassManifest](val rows: Int, val cols: Int) {
+class Matrix[@specialized A: ClassManifest](val rows: Int, val cols: Int) {
   private val arr: Array[Array[A]] = Array.ofDim[A](rows, cols)
 
   def apply(i: Int, j: Int): A = {
@@ -16,7 +16,7 @@ class Matrix[@specialized A : ClassManifest](val rows: Int, val cols: Int) {
   }
 
   def rowsIterator: Iterator[Array[A]] = new Iterator[Array[A]] {
-    var idx = 0;
+    var idx     = 0;
     def hasNext = idx < rows
     def next = {
       idx += 1
@@ -51,8 +51,10 @@ object Test {
     }
   }
 
-  def multManifest[@specialized(Int) T](m: Matrix[T], n: Matrix[T])(
-      implicit cm: ClassManifest[T], num: Numeric[T]) {
+  def multManifest[@specialized(Int) T](
+      m: Matrix[T],
+      n: Matrix[T]
+  )(implicit cm: ClassManifest[T], num: Numeric[T]) {
     val p = new Matrix[T](m.rows, n.cols)
     import num._
 

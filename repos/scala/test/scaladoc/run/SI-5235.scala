@@ -58,44 +58,62 @@ object Test extends ScaladocModelTest {
       ._package("scaladoc")
       ._package("SI5235")
 
-    val GenericColl = base._class("GenericColl")
+    val GenericColl  = base._class("GenericColl")
     val SpecificColl = base._package("specific")._trait("SpecificColl")
     val MyCollection = base._package("mycoll")._class("MyCollection")
 
     // check comment text
     val gcComment = extractCommentText(
-        GenericColl._method("reverse").comment.get)
+      GenericColl._method("reverse").comment.get
+    )
     val scComment = extractCommentText(
-        SpecificColl._method("reverse").comment.get)
+      SpecificColl._method("reverse").comment.get
+    )
     val mcComment = extractCommentText(
-        MyCollection._method("reverse").comment.get)
-    assert(gcComment.contains("Returns the reversed GenericColl."),
-           gcComment + ".contains(\"Returns the reversed GenericColl.\")")
-    assert(scComment.contains("Returns the reversed BullSh."),
-           scComment + ".contains(\"Returns the reversed BullSh.\")")
+      MyCollection._method("reverse").comment.get
+    )
     assert(
-        mcComment.contains("Returns the reversed mycoll.MyCollection."),
-        mcComment + ".contains(\"Returns the reversed mycoll.MyCollection.\")")
+      gcComment.contains("Returns the reversed GenericColl."),
+      gcComment + ".contains(\"Returns the reversed GenericColl.\")"
+    )
+    assert(
+      scComment.contains("Returns the reversed BullSh."),
+      scComment + ".contains(\"Returns the reversed BullSh.\")"
+    )
+    assert(
+      mcComment.contains("Returns the reversed mycoll.MyCollection."),
+      mcComment + ".contains(\"Returns the reversed mycoll.MyCollection.\")"
+    )
 
     // check signatures
-    val gcReverse = GenericColl._method("reverse")
-    val scReverse = SpecificColl._method("reverse")
-    val mcReverse = MyCollection._method("reverse")
+    val gcReverse     = GenericColl._method("reverse")
+    val scReverse     = SpecificColl._method("reverse")
+    val mcReverse     = MyCollection._method("reverse")
     val gcReverseType = gcReverse.resultType
     val scReverseType = scReverse.resultType
     val mcReverseType = mcReverse.resultType
-    assert(gcReverseType.name == "GenericColl",
-           gcReverseType.name + " == GenericColl")
+    assert(
+      gcReverseType.name == "GenericColl",
+      gcReverseType.name + " == GenericColl"
+    )
     assert(scReverseType.name == "BullSh", scReverseType.name + " == BullSh")
-    assert(mcReverseType.name == "MyCollection",
-           mcReverseType.name + " == MyCollection")
-    assert(gcReverseType.refEntity(0)._1 == LinkToTpl(GenericColl),
-           gcReverse.qualifiedName + "'s return type has a link to " +
-           GenericColl.qualifiedName)
-    assert(scReverseType.refEntity(0)._1 == Tooltip("BullSh"),
-           scReverseType.refEntity(0)._1 + " == Tooltip(\"BullSh\")")
-    assert(mcReverseType.refEntity(0)._1 == LinkToTpl(MyCollection),
-           mcReverse.qualifiedName + "'s return type has a link to " +
-           MyCollection.qualifiedName)
+    assert(
+      mcReverseType.name == "MyCollection",
+      mcReverseType.name + " == MyCollection"
+    )
+    assert(
+      gcReverseType.refEntity(0)._1 == LinkToTpl(GenericColl),
+      gcReverse.qualifiedName + "'s return type has a link to " +
+        GenericColl.qualifiedName
+    )
+    assert(
+      scReverseType.refEntity(0)._1 == Tooltip("BullSh"),
+      scReverseType.refEntity(0)._1 + " == Tooltip(\"BullSh\")"
+    )
+    assert(
+      mcReverseType.refEntity(0)._1 == LinkToTpl(MyCollection),
+      mcReverse.qualifiedName + "'s return type has a link to " +
+        MyCollection.qualifiedName
+    )
   }
 }

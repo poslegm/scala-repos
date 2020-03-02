@@ -8,13 +8,15 @@ import prop._
 import org.scalacheck._
 
 class SamplingTest
-    extends PropSpec with Matchers with GeneratorDrivenPropertyChecks {
+    extends PropSpec
+    with Matchers
+    with GeneratorDrivenPropertyChecks {
   val rng = spire.random.rng.Lcg64.fromTime()
 
-  val Size = 100
+  val Size  = 100
   val range = (1 to Size)
-  val ns = range.toArray
-  val gen = Gen.chooseNum(1, Size)
+  val ns    = range.toArray
+  val gen   = Gen.chooseNum(1, Size)
 
   def verify(result: Array[Int], n: Int): Unit = {
     result.toSet.size shouldBe n

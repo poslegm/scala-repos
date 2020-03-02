@@ -26,21 +26,25 @@ class SimplifyBooleanExprWithLiteralIntention
   override def getText = "Simplify boolean expression"
 
   def isAvailable(
-      project: Project, editor: Editor, element: PsiElement): Boolean = {
+      project: Project,
+      editor: Editor,
+      element: PsiElement
+  ): Boolean =
     findSimplifiableParent(element).exists {
       case expr =>
         val offset = editor.getCaretModel.getOffset
         offset >= expr.getTextRange.getStartOffset &&
         offset <= expr.getTextRange.getEndOffset
     }
-  }
 
   def invoke(project: Project, editor: Editor, element: PsiElement) {
     findSimplifiableParent(element) match {
       case Some(expr) =>
         inWriteAction {
           expr.replaceExpression(
-              SimplifyBooleanUtil.simplify(expr), removeParenthesis = true)
+            SimplifyBooleanUtil.simplify(expr),
+            removeParenthesis = true
+          )
         }
       case _ =>
     }
@@ -48,7 +52,8 @@ class SimplifyBooleanExprWithLiteralIntention
 
   @tailrec
   private def findSimplifiableParent(
-      element: PsiElement): Option[ScExpression] = element.getParent match {
+      element: PsiElement
+  ): Option[ScExpression] = element.getParent match {
     case expr: ScExpression =>
       if (SimplifyBooleanUtil.canBeSimplified(expr)) Some(expr)
       else findSimplifiableParent(expr)

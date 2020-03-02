@@ -16,13 +16,13 @@ class StateTTests extends CatsSuite {
 
   test("traversing state is stack-safe") {
     val ns = (0 to 100000).toList
-    val x = ns.traverseU(_ => add1)
+    val x  = ns.traverseU(_ => add1)
     x.runS(0).value should ===(100001)
   }
 
   test("State.pure and StateT.pure are consistent") {
     forAll { (s: String, i: Int) =>
-      val state: State[String, Int] = State.pure(i)
+      val state: State[String, Int]  = State.pure(i)
       val stateT: State[String, Int] = StateT.pure(i)
       state.run(s) should ===(stateT.run(s))
     }
@@ -36,7 +36,8 @@ class StateTTests extends CatsSuite {
   test("Singleton and instance inspect are consistent") {
     forAll { (s: String, i: Int) =>
       State.inspect[Int, String](_.toString).run(i) should ===(
-          State.pure[Int, Unit](()).inspect(_.toString).run(i))
+        State.pure[Int, Unit](()).inspect(_.toString).run(i)
+      )
     }
   }
 
@@ -47,9 +48,7 @@ class StateTTests extends CatsSuite {
   }
 
   test("modify identity is a noop") {
-    forAll { (f: StateT[List, Long, Int]) =>
-      f.modify(identity) should ===(f)
-    }
+    forAll((f: StateT[List, Long, Int]) => f.modify(identity) should ===(f))
   }
 
   test("modify modifies state") {
@@ -98,8 +97,8 @@ class StateTTests extends CatsSuite {
 
   test("StateT#transformS modifies state") {
     final case class Env(int: Int, str: String)
-    val x = StateT((x: Int) => Option((x + 1, x)))
-    val xx = x.transformS[Env](_.int, (e, i) => e.copy(int = i))
+    val x     = StateT((x: Int) => Option((x + 1, x)))
+    val xx    = x.transformS[Env](_.int, (e, i) => e.copy(int = i))
     val input = 5
 
     val got = x.run(input)
@@ -112,28 +111,34 @@ class StateTTests extends CatsSuite {
     implicit val iso =
       CartesianTests.Isomorphisms.invariant[StateT[Option, Int, ?]]
     checkAll(
-        "StateT[Option, Int, Int]",
-        MonadStateTests[StateT[Option, Int, ?], Int].monadState[Int, Int, Int])
-    checkAll("MonadState[StateT[Option, ?, ?], Int]",
-             SerializableTests.serializable(
-                 MonadState[StateT[Option, Int, ?], Int]))
+      "StateT[Option, Int, Int]",
+      MonadStateTests[StateT[Option, Int, ?], Int].monadState[Int, Int, Int]
+    )
+    checkAll(
+      "MonadState[StateT[Option, ?, ?], Int]",
+      SerializableTests.serializable(MonadState[StateT[Option, Int, ?], Int])
+    )
   }
 
   {
     implicit val iso = CartesianTests.Isomorphisms.invariant[State[Long, ?]]
-    checkAll("State[Long, ?]",
-             MonadStateTests[State[Long, ?], Long].monadState[Int, Int, Int])
-    checkAll("MonadState[State[Long, ?], Long]",
-             SerializableTests.serializable(MonadState[State[Long, ?], Long]))
+    checkAll(
+      "State[Long, ?]",
+      MonadStateTests[State[Long, ?], Long].monadState[Int, Int, Int]
+    )
+    checkAll(
+      "MonadState[State[Long, ?], Long]",
+      SerializableTests.serializable(MonadState[State[Long, ?], Long])
+    )
   }
 }
 
 object StateTTests extends StateTTestsInstances {
-  implicit def stateEq[S : Eq : Arbitrary, A : Eq]: Eq[State[S, A]] =
+  implicit def stateEq[S: Eq: Arbitrary, A: Eq]: Eq[State[S, A]] =
     stateTEq[Eval, S, A]
 
-  implicit def stateArbitrary[S : Arbitrary, A : Arbitrary]: Arbitrary[State[
-          S, A]] =
+  implicit def stateArbitrary[S: Arbitrary, A: Arbitrary]
+      : Arbitrary[State[S, A]] =
     stateTArbitrary[Eval, S, A]
 
   val add1: State[Int, Int] = State(n => (n + 1, n))
@@ -141,11 +146,14 @@ object StateTTests extends StateTTestsInstances {
 
 sealed trait StateTTestsInstances {
   implicit def stateTArbitrary[F[_]: Applicative, S, A](
-      implicit F: Arbitrary[S => F[(S, A)]]): Arbitrary[StateT[F, S, A]] =
+      implicit F: Arbitrary[S => F[(S, A)]]
+  ): Arbitrary[StateT[F, S, A]] =
     Arbitrary(F.arbitrary.map(f => StateT(f)))
 
-  implicit def stateTEq[F[_], S, A](implicit S: Arbitrary[S],
-                                    FSA: Eq[F[(S, A)]],
-                                    F: FlatMap[F]): Eq[StateT[F, S, A]] =
+  implicit def stateTEq[F[_], S, A](
+      implicit S: Arbitrary[S],
+      FSA: Eq[F[(S, A)]],
+      F: FlatMap[F]
+  ): Eq[StateT[F, S, A]] =
     Eq.by[StateT[F, S, A], S => F[(S, A)]](state => s => state.run(s))
 }

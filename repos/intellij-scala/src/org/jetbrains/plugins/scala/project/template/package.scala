@@ -14,16 +14,16 @@ import scala.reflect.ClassTag
   * @author Pavel Fatin
   */
 package object template {
-  def using[A <: Closeable, B](resource: A)(block: A => B): B = {
+  def using[A <: Closeable, B](resource: A)(block: A => B): B =
     try {
       block(resource)
     } finally {
       resource.close()
     }
-  }
 
   def usingTempFile[T](prefix: String, suffix: Option[String] = None)(
-      block: File => T): T = {
+      block: File => T
+  ): T = {
     val file = FileUtil.createTempFile(prefix, suffix.orNull, true)
     try {
       block(file)
@@ -33,7 +33,8 @@ package object template {
   }
 
   def usingTempDirectory[T](prefix: String, suffix: Option[String] = None)(
-      block: File => T): T = {
+      block: File => T
+  ): T = {
     val directory = FileUtil.createTempDirectory(prefix, suffix.orNull, true)
     try {
       block(directory)
@@ -43,14 +44,18 @@ package object template {
   }
 
   def usingTempDirectoryWithHandler[T, Z](
-      prefix: String, suffix: Option[String] = None)(
+      prefix: String,
+      suffix: Option[String] = None
+  )(
       handler1: PartialFunction[Throwable, T],
-      handler2: PartialFunction[Throwable, Z])(block: File => T): T = {
+      handler2: PartialFunction[Throwable, Z]
+  )(block: File => T): T = {
     val directory = FileUtil.createTempDirectory(prefix, suffix.orNull, true)
 
     try {
       block(directory)
-    } catch handler1 finally {
+    } catch handler1
+    finally {
       try {
         FileUtils.deleteDirectory(directory)
       } catch handler2
@@ -64,12 +69,13 @@ package object template {
     }
   }
 
-  def jarWith[T : ClassTag]: File = {
+  def jarWith[T: ClassTag]: File = {
     val tClass = implicitly[ClassTag[T]].runtimeClass
 
     Option(PathUtil.getJarPathForClass(tClass)).map(new File(_)).getOrElse {
       throw new RuntimeException(
-          "Jar file not found for class " + tClass.getName)
+        "Jar file not found for class " + tClass.getName
+      )
     }
   }
 

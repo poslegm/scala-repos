@@ -34,9 +34,8 @@ class EventLoopSuite extends SparkFunSuite with Timeouts {
     val buffer = new ConcurrentLinkedQueue[Int]
     val eventLoop = new EventLoop[Int]("test") {
 
-      override def onReceive(event: Int): Unit = {
+      override def onReceive(event: Int): Unit =
         buffer.add(event)
-      }
 
       override def onError(e: Throwable): Unit = {}
     }
@@ -63,17 +62,15 @@ class EventLoopSuite extends SparkFunSuite with Timeouts {
   }
 
   test("EventLoop: onError") {
-    val e = new RuntimeException("Oops")
+    val e                                  = new RuntimeException("Oops")
     @volatile var receivedError: Throwable = null
     val eventLoop = new EventLoop[Int]("test") {
 
-      override def onReceive(event: Int): Unit = {
+      override def onReceive(event: Int): Unit =
         throw e
-      }
 
-      override def onError(e: Throwable): Unit = {
+      override def onError(e: Throwable): Unit =
         receivedError = e
-      }
     }
     eventLoop.start()
     eventLoop.post(1)
@@ -83,15 +80,13 @@ class EventLoopSuite extends SparkFunSuite with Timeouts {
     eventLoop.stop()
   }
 
-  test(
-      "EventLoop: error thrown from onError should not crash the event thread") {
-    val e = new RuntimeException("Oops")
+  test("EventLoop: error thrown from onError should not crash the event thread") {
+    val e                                  = new RuntimeException("Oops")
     @volatile var receivedError: Throwable = null
     val eventLoop = new EventLoop[Int]("test") {
 
-      override def onReceive(event: Int): Unit = {
+      override def onReceive(event: Int): Unit =
         throw e
-      }
 
       override def onError(e: Throwable): Unit = {
         receivedError = e
@@ -115,9 +110,8 @@ class EventLoopSuite extends SparkFunSuite with Timeouts {
 
       override def onError(e: Throwable): Unit = {}
 
-      override def onStop(): Unit = {
+      override def onStop(): Unit =
         onStopTimes += 1
-      }
     }
 
     eventLoop.start()
@@ -133,21 +127,19 @@ class EventLoopSuite extends SparkFunSuite with Timeouts {
     @volatile var receivedEventsCount = 0
     val eventLoop = new EventLoop[Int]("test") {
 
-      override def onReceive(event: Int): Unit = {
+      override def onReceive(event: Int): Unit =
         receivedEventsCount += 1
-      }
 
       override def onError(e: Throwable): Unit = {}
     }
     eventLoop.start()
 
-    val threadNum = 5
+    val threadNum            = 5
     val eventsFromEachThread = 100
     (1 to threadNum).foreach { _ =>
       new Thread() {
-        override def run(): Unit = {
+        override def run(): Unit =
           (1 to eventsFromEachThread).foreach(eventLoop.post)
-        }
       }.start()
     }
 
@@ -185,9 +177,8 @@ class EventLoopSuite extends SparkFunSuite with Timeouts {
   test("EventLoop: stop in eventThread") {
     val eventLoop = new EventLoop[Int]("test") {
 
-      override def onReceive(event: Int): Unit = {
+      override def onReceive(event: Int): Unit =
         stop()
-      }
 
       override def onError(e: Throwable): Unit = {}
     }
@@ -202,17 +193,15 @@ class EventLoopSuite extends SparkFunSuite with Timeouts {
     @volatile var onStopCalled: Boolean = false
     val eventLoop = new EventLoop[Int]("test") {
 
-      override def onStart(): Unit = {
+      override def onStart(): Unit =
         stop()
-      }
 
       override def onReceive(event: Int): Unit = {}
 
       override def onError(e: Throwable): Unit = {}
 
-      override def onStop(): Unit = {
+      override def onStop(): Unit =
         onStopCalled = true
-      }
     }
     eventLoop.start()
     eventually(timeout(5 seconds), interval(5 millis)) {
@@ -225,15 +214,13 @@ class EventLoopSuite extends SparkFunSuite with Timeouts {
     @volatile var onStopCalled: Boolean = false
     val eventLoop = new EventLoop[Int]("test") {
 
-      override def onReceive(event: Int): Unit = {
+      override def onReceive(event: Int): Unit =
         stop()
-      }
 
       override def onError(e: Throwable): Unit = {}
 
-      override def onStop(): Unit = {
+      override def onStop(): Unit =
         onStopCalled = true
-      }
     }
     eventLoop.start()
     eventLoop.post(1)
@@ -247,17 +234,14 @@ class EventLoopSuite extends SparkFunSuite with Timeouts {
     @volatile var onStopCalled: Boolean = false
     val eventLoop = new EventLoop[Int]("test") {
 
-      override def onReceive(event: Int): Unit = {
+      override def onReceive(event: Int): Unit =
         throw new RuntimeException("Oops")
-      }
 
-      override def onError(e: Throwable): Unit = {
+      override def onError(e: Throwable): Unit =
         stop()
-      }
 
-      override def onStop(): Unit = {
+      override def onStop(): Unit =
         onStopCalled = true
-      }
     }
     eventLoop.start()
     eventLoop.post(1)

@@ -41,4 +41,6 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class TextFlowSpec
     extends SimpleSFXDelegateSpec[jfxst.TextFlow, TextFlow](
-        classOf[jfxst.TextFlow], classOf[TextFlow])
+      classOf[jfxst.TextFlow],
+      classOf[TextFlow]
+    )

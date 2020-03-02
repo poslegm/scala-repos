@@ -21,8 +21,11 @@ import org.apache.spark.internal.Logging
 import org.apache.spark.util.{Clock, SystemClock}
 
 private[streaming] class RecurringTimer(
-    clock: Clock, period: Long, callback: (Long) => Unit, name: String)
-    extends Logging {
+    clock: Clock,
+    period: Long,
+    callback: (Long) => Unit,
+    name: String
+) extends Logging {
 
   private val thread = new Thread("RecurringTimer - " + name) {
     setDaemon(true)
@@ -31,16 +34,15 @@ private[streaming] class RecurringTimer(
 
   @volatile private var prevTime = -1L
   @volatile private var nextTime = -1L
-  @volatile private var stopped = false
+  @volatile private var stopped  = false
 
   /**
     * Get the time when this timer will fire if it is started right now.
     * The time will be a multiple of this timer's period and more than
     * current system time.
     */
-  def getStartTime(): Long = {
+  def getStartTime(): Long =
     (math.floor(clock.getTimeMillis().toDouble / period) + 1).toLong * period
-  }
 
   /**
     * Get the time when the timer will fire if it is restarted right now.
@@ -66,9 +68,8 @@ private[streaming] class RecurringTimer(
   /**
     * Start at the earliest time it can start based on the period.
     */
-  def start(): Long = {
+  def start(): Long =
     start(getStartTime())
-  }
 
   /**
     * Stop the timer, and return the last time the callback was made.
@@ -116,7 +117,7 @@ private[streaming] object RecurringTimer extends Logging {
 
   def main(args: Array[String]) {
     var lastRecurTime = 0L
-    val period = 1000
+    val period        = 1000
 
     def onRecur(time: Long) {
       val currentTime = System.currentTimeMillis()

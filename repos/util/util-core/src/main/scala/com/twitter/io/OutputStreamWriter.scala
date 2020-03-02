@@ -13,14 +13,14 @@ private[io] class OutputStreamWriter(out: OutputStream, bufsize: Int)
     extends ClosableWriter {
   import com.twitter.io.OutputStreamWriter._
 
-  private[this] val done = new Promise[Unit]
+  private[this] val done    = new Promise[Unit]
   private[this] val writeOp = new AtomicReference[Buf => Future[Unit]](doWrite)
 
   // Byte array reused on each write to avoid multiple allocations.
   private[this] val bytes = new Array[Byte](bufsize)
 
   @tailrec
-  private[this] def drain(buf: Buf): Unit = {
+  private[this] def drain(buf: Buf): Unit =
     if (buf.isEmpty) out.flush()
     else {
       // The source length is min(buf.length, bytes.length).
@@ -32,10 +32,9 @@ private[io] class OutputStreamWriter(out: OutputStream, bufsize: Int)
       // Recurse on the remainder.
       drain(buf.slice(bytes.length, Int.MaxValue))
     }
-  }
 
   private[this] def doWrite: Buf => Future[Unit] =
-    buf => FuturePool.interruptibleUnboundedPool { drain(buf) }
+    buf => FuturePool.interruptibleUnboundedPool(drain(buf))
 
   def write(buf: Buf): Future[Unit] =
     if (done.isDefined) done
@@ -58,7 +57,8 @@ private[io] class OutputStreamWriter(out: OutputStream, bufsize: Int)
     if (done.updateIfEmpty(Throw(CloseExc)))
       FuturePool.unboundedPool {
         out.close()
-      } else Future.Done
+      }
+    else Future.Done
 }
 
 private object OutputStreamWriter {

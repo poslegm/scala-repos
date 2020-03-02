@@ -42,32 +42,35 @@ import org.apache.spark.sql.{Row, SQLContext}
 object CrossValidatorExample {
 
   def main(args: Array[String]) {
-    val conf = new SparkConf().setAppName("CrossValidatorExample")
-    val sc = new SparkContext(conf)
+    val conf       = new SparkConf().setAppName("CrossValidatorExample")
+    val sc         = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
     import sqlContext.implicits._
 
     // Prepare training documents, which are labeled.
     val training = sc.parallelize(
-        Seq(LabeledDocument(0L, "a b c d e spark", 1.0),
-            LabeledDocument(1L, "b d", 0.0),
-            LabeledDocument(2L, "spark f g h", 1.0),
-            LabeledDocument(3L, "hadoop mapreduce", 0.0),
-            LabeledDocument(4L, "b spark who", 1.0),
-            LabeledDocument(5L, "g d a y", 0.0),
-            LabeledDocument(6L, "spark fly", 1.0),
-            LabeledDocument(7L, "was mapreduce", 0.0),
-            LabeledDocument(8L, "e spark program", 1.0),
-            LabeledDocument(9L, "a e c l", 0.0),
-            LabeledDocument(10L, "spark compile", 1.0),
-            LabeledDocument(11L, "hadoop software", 0.0)))
+      Seq(
+        LabeledDocument(0L, "a b c d e spark", 1.0),
+        LabeledDocument(1L, "b d", 0.0),
+        LabeledDocument(2L, "spark f g h", 1.0),
+        LabeledDocument(3L, "hadoop mapreduce", 0.0),
+        LabeledDocument(4L, "b spark who", 1.0),
+        LabeledDocument(5L, "g d a y", 0.0),
+        LabeledDocument(6L, "spark fly", 1.0),
+        LabeledDocument(7L, "was mapreduce", 0.0),
+        LabeledDocument(8L, "e spark program", 1.0),
+        LabeledDocument(9L, "a e c l", 0.0),
+        LabeledDocument(10L, "spark compile", 1.0),
+        LabeledDocument(11L, "hadoop software", 0.0)
+      )
+    )
 
     // Configure an ML pipeline, which consists of three stages: tokenizer, hashingTF, and lr.
     val tokenizer = new Tokenizer().setInputCol("text").setOutputCol("words")
     val hashingTF = new HashingTF()
       .setInputCol(tokenizer.getOutputCol)
       .setOutputCol("features")
-    val lr = new LogisticRegression().setMaxIter(10)
+    val lr       = new LogisticRegression().setMaxIter(10)
     val pipeline = new Pipeline().setStages(Array(tokenizer, hashingTF, lr))
 
     // We now treat the Pipeline as an Estimator, wrapping it in a CrossValidator instance.
@@ -91,10 +94,13 @@ object CrossValidatorExample {
 
     // Prepare test documents, which are unlabeled.
     val test = sc.parallelize(
-        Seq(Document(4L, "spark i j k"),
-            Document(5L, "l m n"),
-            Document(6L, "mapreduce spark"),
-            Document(7L, "apache hadoop")))
+      Seq(
+        Document(4L, "spark i j k"),
+        Document(5L, "l m n"),
+        Document(6L, "mapreduce spark"),
+        Document(7L, "apache hadoop")
+      )
+    )
 
     // Make predictions on test documents. cvModel uses the best model found (lrModel).
     cvModel

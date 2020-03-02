@@ -18,7 +18,7 @@ object Sessions {
   }
 
   // friendly interface to the theory
-  def runSession[S, D : Session[S]#HasDual](session: S, dual: D) =
+  def runSession[S, D: Session[S]#HasDual](session: S, dual: D) =
     ?[Session[S]#HasDual[D]].run(session, dual)
 
   // facts in the theory:
@@ -63,13 +63,18 @@ object Sessions {
     }
 
   def addClient =
-    Out(3, Out(4, {
-      System.out.println("Waiting")
-      In { z: Int =>
-        System.out.println(z)
-        Stop()
-      }
-    }))
+    Out(
+      3,
+      Out(
+        4, {
+          System.out.println("Waiting")
+          In { z: Int =>
+            System.out.println(z)
+            Stop()
+          }
+        }
+      )
+    )
 
   def myRun = runSession(addServer, addClient)
 }

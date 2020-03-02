@@ -11,7 +11,8 @@ object Implicits extends DoubleImplicits with IteratorImplicits {
       extends AnyVal {
     def toMultiMap[Result, A, B](
         implicit view: Coll <:< Traversable[(A, B)],
-        cbf: CanBuildFrom[Coll, B, Result]): Map[A, Result] = {
+        cbf: CanBuildFrom[Coll, B, Result]
+    ): Map[A, Result] = {
       var result = collection.mutable.Map[A, mutable.Builder[B, Result]]()
       result = result.withDefault { a =>
         val r = cbf(__this); result.update(a, r); r
@@ -25,11 +26,10 @@ object Implicits extends DoubleImplicits with IteratorImplicits {
     }
   }
 
-  implicit class scEnrichArray[A, B](val __this: Array[(A, B)])
-      extends AnyVal {
+  implicit class scEnrichArray[A, B](val __this: Array[(A, B)]) extends AnyVal {
     def toMultiMap[Result](
-        implicit cbf: CanBuildFrom[Array[(A, B)], B, Result])
-      : Map[A, Result] = {
+        implicit cbf: CanBuildFrom[Array[(A, B)], B, Result]
+    ): Map[A, Result] = {
       var result = collection.mutable.Map[A, mutable.Builder[B, Result]]()
       result = result.withDefault { a =>
         val r = cbf(__this); result.update(a, r); r
@@ -46,9 +46,8 @@ object Implicits extends DoubleImplicits with IteratorImplicits {
 
 trait DoubleImplicits {
   class RichDouble(x: Double) {
-    def closeTo(y: Double, tol: Double = 1E-5) = {
+    def closeTo(y: Double, tol: Double = 1e-5) =
       (math.abs(x - y) / (math.abs(x) + math.abs(y) + 1e-10) < tol);
-    }
     def isDangerous = x.isNaN || x.isInfinite
   }
 
@@ -64,9 +63,8 @@ trait IteratorImplicits {
         n
       }
 
-      def hasNext = {
+      def hasNext =
         iter.hasNext;
-      }
     }
 
     def takeUpToWhere(f: T => Boolean): Iterator[T] = new Iterator[T] {
@@ -78,9 +76,8 @@ trait IteratorImplicits {
         n
       }
 
-      def hasNext = {
+      def hasNext =
         !done && iter.hasNext;
-      }
     }
 
     def last = {

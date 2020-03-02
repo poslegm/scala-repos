@@ -37,8 +37,8 @@ final class ReentrantGuard {
   */
 class ReadWriteGuard {
   private val rwl = new ReentrantReadWriteLock
-  val readLock = rwl.readLock
-  val writeLock = rwl.writeLock
+  val readLock    = rwl.readLock
+  val writeLock   = rwl.writeLock
 
   def withWriteGuard[T](body: => T): T = {
     writeLock.lock
@@ -66,7 +66,7 @@ class ReadWriteGuard {
 class SimpleLock {
   val acquired = new AtomicBoolean(false)
 
-  def ifPossible(perform: () => Unit): Boolean = {
+  def ifPossible(perform: () => Unit): Boolean =
     if (tryLock()) {
       try {
         perform
@@ -75,9 +75,8 @@ class SimpleLock {
       }
       true
     } else false
-  }
 
-  def ifPossibleYield[T](perform: () => T): Option[T] = {
+  def ifPossibleYield[T](perform: () => T): Option[T] =
     if (tryLock()) {
       try {
         Some(perform())
@@ -85,9 +84,8 @@ class SimpleLock {
         unlock()
       }
     } else None
-  }
 
-  def ifPossibleApply[T, R](value: T)(function: (T) => R): Option[R] = {
+  def ifPossibleApply[T, R](value: T)(function: (T) => R): Option[R] =
     if (tryLock()) {
       try {
         Some(function(value))
@@ -95,16 +93,13 @@ class SimpleLock {
         unlock()
       }
     } else None
-  }
 
-  def tryLock() = {
+  def tryLock() =
     if (acquired.get) false
     else acquired.compareAndSet(false, true)
-  }
 
-  def tryUnlock() = {
+  def tryUnlock() =
     acquired.compareAndSet(true, false)
-  }
 
   def locked = acquired.get
 
@@ -135,34 +130,30 @@ class Switch(startAsOn: Boolean = false) {
     }
 
   def switchOff(action: => Unit): Boolean = transcend(from = true, action)
-  def switchOn(action: => Unit): Boolean = transcend(from = false, action)
+  def switchOn(action: => Unit): Boolean  = transcend(from = false, action)
 
-  def switchOff: Boolean = synchronized { switch.compareAndSet(true, false) }
-  def switchOn: Boolean = synchronized { switch.compareAndSet(false, true) }
+  def switchOff: Boolean = synchronized(switch.compareAndSet(true, false))
+  def switchOn: Boolean  = synchronized(switch.compareAndSet(false, true))
 
-  def ifOnYield[T](action: => T): Option[T] = {
+  def ifOnYield[T](action: => T): Option[T] =
     if (switch.get) Some(action)
     else None
-  }
 
-  def ifOffYield[T](action: => T): Option[T] = {
+  def ifOffYield[T](action: => T): Option[T] =
     if (!switch.get) Some(action)
     else None
-  }
 
-  def ifOn(action: => Unit): Boolean = {
+  def ifOn(action: => Unit): Boolean =
     if (switch.get) {
       action
       true
     } else false
-  }
 
-  def ifOff(action: => Unit): Boolean = {
+  def ifOff(action: => Unit): Boolean =
     if (!switch.get) {
       action
       true
     } else false
-  }
 
   def whileOnYield[T](action: => T): Option[T] = synchronized {
     if (switch.get) Some(action)
@@ -192,6 +183,6 @@ class Switch(startAsOn: Boolean = false) {
     if (switch.get) on else off
   }
 
-  def isOn = switch.get
+  def isOn  = switch.get
   def isOff = !isOn
 }

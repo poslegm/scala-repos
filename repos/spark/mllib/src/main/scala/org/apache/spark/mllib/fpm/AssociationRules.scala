@@ -36,8 +36,9 @@ import org.apache.spark.rdd.RDD
   */
 @Since("1.5.0")
 @Experimental
-class AssociationRules private[fpm](private var minConfidence: Double)
-    extends Logging with Serializable {
+class AssociationRules private[fpm] (private var minConfidence: Double)
+    extends Logging
+    with Serializable {
 
   /**
     * Constructs a default instance with default parameters {minConfidence = 0.8}.
@@ -62,8 +63,9 @@ class AssociationRules private[fpm](private var minConfidence: Double)
     *
     */
   @Since("1.5.0")
-  def run[Item : ClassTag](
-      freqItemsets: RDD[FreqItemset[Item]]): RDD[Rule[Item]] = {
+  def run[Item: ClassTag](
+      freqItemsets: RDD[FreqItemset[Item]]
+  ): RDD[Rule[Item]] = {
     // For candidate rule X => Y, generate (X, (Y, freq(X union Y)))
     val candidates = freqItemsets.flatMap { itemset =>
       val items = itemset.items
@@ -81,10 +83,12 @@ class AssociationRules private[fpm](private var minConfidence: Double)
       .join(freqItemsets.map(x => (x.items.toSeq, x.freq)))
       .map {
         case (antecendent, ((consequent, freqUnion), freqAntecedent)) =>
-          new Rule(antecendent.toArray,
-                   consequent.toArray,
-                   freqUnion,
-                   freqAntecedent)
+          new Rule(
+            antecendent.toArray,
+            consequent.toArray,
+            freqUnion,
+            freqAntecedent
+          )
       }
       .filter(_.confidence >= minConfidence)
   }
@@ -92,7 +96,8 @@ class AssociationRules private[fpm](private var minConfidence: Double)
   /** Java-friendly version of [[run]]. */
   @Since("1.5.0")
   def run[Item](
-      freqItemsets: JavaRDD[FreqItemset[Item]]): JavaRDD[Rule[Item]] = {
+      freqItemsets: JavaRDD[FreqItemset[Item]]
+  ): JavaRDD[Rule[Item]] = {
     val tag = fakeClassTag[Item]
     run(freqItemsets.rdd)(tag)
   }
@@ -114,11 +119,12 @@ object AssociationRules {
     */
   @Since("1.5.0")
   @Experimental
-  class Rule[Item] private[fpm](@Since("1.5.0") val antecedent: Array[Item],
-                                @Since("1.5.0") val consequent: Array[Item],
-                                freqUnion: Double,
-                                freqAntecedent: Double)
-      extends Serializable {
+  class Rule[Item] private[fpm] (
+      @Since("1.5.0") val antecedent: Array[Item],
+      @Since("1.5.0") val consequent: Array[Item],
+      freqUnion: Double,
+      freqAntecedent: Double
+  ) extends Serializable {
 
     /**
       * Returns the confidence of the rule.
@@ -127,33 +133,32 @@ object AssociationRules {
     @Since("1.5.0")
     def confidence: Double = freqUnion.toDouble / freqAntecedent
 
-    require(antecedent.toSet.intersect(consequent.toSet).isEmpty, {
-      val sharedItems = antecedent.toSet.intersect(consequent.toSet)
-      s"A valid association rule must have disjoint antecedent and " +
-      s"consequent but ${sharedItems} is present in both."
-    })
+    require(
+      antecedent.toSet.intersect(consequent.toSet).isEmpty, {
+        val sharedItems = antecedent.toSet.intersect(consequent.toSet)
+        s"A valid association rule must have disjoint antecedent and " +
+          s"consequent but ${sharedItems} is present in both."
+      }
+    )
 
     /**
       * Returns antecedent in a Java List.
       *
       */
     @Since("1.5.0")
-    def javaAntecedent: java.util.List[Item] = {
+    def javaAntecedent: java.util.List[Item] =
       antecedent.toList.asJava
-    }
 
     /**
       * Returns consequent in a Java List.
       *
       */
     @Since("1.5.0")
-    def javaConsequent: java.util.List[Item] = {
+    def javaConsequent: java.util.List[Item] =
       consequent.toList.asJava
-    }
 
-    override def toString: String = {
+    override def toString: String =
       s"${antecedent.mkString("{", ",", "}")} => " +
-      s"${consequent.mkString("{", ",", "}")}: ${confidence}"
-    }
+        s"${consequent.mkString("{", ",", "}")}: ${confidence}"
   }
 }

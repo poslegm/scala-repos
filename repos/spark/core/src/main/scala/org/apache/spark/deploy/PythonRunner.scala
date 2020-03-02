@@ -35,20 +35,21 @@ import org.apache.spark.util.{RedirectThread, Utils}
 object PythonRunner {
   def main(args: Array[String]) {
     val pythonFile = args(0)
-    val pyFiles = args(1)
-    val otherArgs = args.slice(2, args.length)
+    val pyFiles    = args(1)
+    val otherArgs  = args.slice(2, args.length)
     val pythonExec = sys.env.getOrElse(
-        "PYSPARK_DRIVER_PYTHON", sys.env.getOrElse("PYSPARK_PYTHON", "python"))
+      "PYSPARK_DRIVER_PYTHON",
+      sys.env.getOrElse("PYSPARK_PYTHON", "python")
+    )
 
     // Format python file paths before adding them to the PYTHONPATH
     val formattedPythonFile = formatPath(pythonFile)
-    val formattedPyFiles = formatPaths(pyFiles)
+    val formattedPyFiles    = formatPaths(pyFiles)
 
     // Launch a Py4J gateway server for the process to connect to; this will let it see our
     // Java system properties and such
     val gatewayServer = new py4j.GatewayServer(null, 0)
-    val thread = new Thread(
-        new Runnable() {
+    val thread = new Thread(new Runnable() {
       override def run(): Unit = Utils.logUncaughtExceptions {
         gatewayServer.start()
       }
@@ -73,13 +74,19 @@ object PythonRunner {
 
     // Launch Python process
     val builder = new ProcessBuilder(
-        (Seq(pythonExec, formattedPythonFile) ++ otherArgs).asJava)
+      (Seq(pythonExec, formattedPythonFile) ++ otherArgs).asJava
+    )
     val env = builder.environment()
     env.put("PYTHONPATH", pythonPath)
     // This is equivalent to setting the -u flag; we use it because ipython doesn't support -u:
-    env.put("PYTHONUNBUFFERED", "YES") // value is needed to be set to a non-empty string
+    env.put(
+      "PYTHONUNBUFFERED",
+      "YES"
+    ) // value is needed to be set to a non-empty string
     env.put("PYSPARK_GATEWAY_PORT", "" + gatewayServer.getListeningPort)
-    builder.redirectErrorStream(true) // Ugly but needed for stdout and stderr to synchronize
+    builder.redirectErrorStream(
+      true
+    ) // Ugly but needed for stdout and stderr to synchronize
     try {
       val process = builder.start()
 
@@ -105,21 +112,23 @@ object PythonRunner {
   def formatPath(path: String, testWindows: Boolean = false): String = {
     if (Utils.nonLocalPaths(path, testWindows).nonEmpty) {
       throw new IllegalArgumentException(
-          "Launching Python applications through " +
-          s"spark-submit is currently only supported for local files: $path")
+        "Launching Python applications through " +
+          s"spark-submit is currently only supported for local files: $path"
+      )
     }
     // get path when scheme is file.
     val uri = Try(new URI(path)).getOrElse(new File(path).toURI)
     var formattedPath = uri.getScheme match {
-      case null => path
+      case null             => path
       case "file" | "local" => uri.getPath
-      case _ => null
+      case _                => null
     }
 
     // Guard against malformed paths potentially throwing NPE
     if (formattedPath == null) {
       throw new IllegalArgumentException(
-          s"Python file path is malformed: $path")
+        s"Python file path is malformed: $path"
+      )
     }
 
     // In Windows, the drive should not be prefixed with "/"
@@ -134,9 +143,8 @@ object PythonRunner {
     * Format each python file path in the comma-delimited list of paths, so it can be
     * added to the PYTHONPATH correctly.
     */
-  def formatPaths(paths: String, testWindows: Boolean = false): Array[String] = {
+  def formatPaths(paths: String, testWindows: Boolean = false): Array[String] =
     Option(paths).getOrElse("").split(",").filter(_.nonEmpty).map { p =>
       formatPath(p, testWindows)
     }
-  }
 }

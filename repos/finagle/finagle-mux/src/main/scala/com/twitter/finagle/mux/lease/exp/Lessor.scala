@@ -64,9 +64,9 @@ private[twitter] object Lessor {
   }
 
   val nil: Lessor = new Lessor {
-    def register(lessee: Lessee) = ()
+    def register(lessee: Lessee)   = ()
     def unregister(lessee: Lessee) = ()
-    def observe(d: Duration) = ()
-    def observeArrival() = ()
+    def observe(d: Duration)       = ()
+    def observeArrival()           = ()
   }
 }

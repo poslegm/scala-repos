@@ -19,10 +19,12 @@ import scala.util.{Failure, Success}
 
 /** INTERNAL API */
 private[akka] object FileSubscriber {
-  def props(f: File,
-            completionPromise: Promise[IOResult],
-            bufSize: Int,
-            openOptions: Set[StandardOpenOption]) = {
+  def props(
+      f: File,
+      completionPromise: Promise[IOResult],
+      bufSize: Int,
+      openOptions: Set[StandardOpenOption]
+  ) = {
     require(bufSize > 0, "buffer size must be > 0")
     Props(classOf[FileSubscriber], f, completionPromise, bufSize, openOptions)
       .withDeploy(Deploy.local)
@@ -30,14 +32,17 @@ private[akka] object FileSubscriber {
 }
 
 /** INTERNAL API */
-private[akka] class FileSubscriber(f: File,
-                                   completionPromise: Promise[IOResult],
-                                   bufSize: Int,
-                                   openOptions: Set[StandardOpenOption])
-    extends akka.stream.actor.ActorSubscriber with ActorLogging {
+private[akka] class FileSubscriber(
+    f: File,
+    completionPromise: Promise[IOResult],
+    bufSize: Int,
+    openOptions: Set[StandardOpenOption]
+) extends akka.stream.actor.ActorSubscriber
+    with ActorLogging {
 
   override protected val requestStrategy = WatermarkRequestStrategy(
-      highWatermark = bufSize)
+    highWatermark = bufSize
+  )
 
   private var chan: FileChannel = _
 
@@ -65,9 +70,11 @@ private[akka] class FileSubscriber(f: File,
       }
 
     case ActorSubscriberMessage.OnError(ex) ⇒
-      log.error(ex,
-                "Tearing down FileSink({}) due to upstream error",
-                f.getAbsolutePath)
+      log.error(
+        ex,
+        "Tearing down FileSink({}) due to upstream error",
+        f.getAbsolutePath
+      )
       closeAndComplete(IOResult(bytesWritten, Failure(ex)))
       context.stop(self)
 
@@ -86,7 +93,7 @@ private[akka] class FileSubscriber(f: File,
     super.postStop()
   }
 
-  private def closeAndComplete(result: IOResult): Unit = {
+  private def closeAndComplete(result: IOResult): Unit =
     try {
       // close the channel/file before completing the promise, allowing the
       // file to be deleted, which would not work (on some systems) if the
@@ -97,5 +104,4 @@ private[akka] class FileSubscriber(f: File,
       case ex: Exception ⇒
         completionPromise.trySuccess(IOResult(bytesWritten, Failure(ex)))
     }
-  }
 }

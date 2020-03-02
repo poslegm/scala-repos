@@ -13,11 +13,10 @@ object CachedMacroUtil {
   //to analyze caches pass in the following compiler flag: "-Xmacro-settings:analyze-caches"
   val ANALYZE_CACHES: String = "analyze-caches"
 
-  def println(a: Any): Unit = {
+  def println(a: Any): Unit =
     if (debug) {
       Console.println(a)
     }
-  }
 
   def cachesUtilFQN(implicit c: whitebox.Context): c.universe.Tree = {
     import c.universe.Quasiquote
@@ -45,7 +44,8 @@ object CachedMacroUtil {
   }
 
   def psiModificationTrackerFQN(
-      implicit c: whitebox.Context): c.universe.Tree = {
+      implicit c: whitebox.Context
+  ): c.universe.Tree = {
     import c.universe.Quasiquote
     q"_root_.com.intellij.psi.util.PsiModificationTracker"
   }
@@ -65,21 +65,22 @@ object CachedMacroUtil {
     q"_root_.org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiManager"
   }
 
-  def thisFunctionFQN(name: String)(
-      implicit c: whitebox.Context): c.universe.Tree = {
+  def thisFunctionFQN(
+      name: String
+  )(implicit c: whitebox.Context): c.universe.Tree = {
     import c.universe.Quasiquote
     q"""getClass.getName ++ "." ++ $name"""
   }
 
-  def generateTermName(name: String = "")(
-      implicit c: whitebox.Context): c.universe.TermName = {
+  def generateTermName(
+      name: String = ""
+  )(implicit c: whitebox.Context): c.universe.TermName =
     c.universe.TermName(c.freshName(name))
-  }
 
-  def generateTypeName(name: String = "")(
-      implicit c: whitebox.Context): c.universe.TypeName = {
+  def generateTypeName(
+      name: String = ""
+  )(implicit c: whitebox.Context): c.universe.TypeName =
     c.universe.TypeName(c.freshName(name))
-  }
 
   def abort(s: String)(implicit c: whitebox.Context): Nothing =
     c.abort(c.enclosingPosition, s)
@@ -87,7 +88,8 @@ object CachedMacroUtil {
   def transformRhsToAnalyzeCaches(c: whitebox.Context)(
       cacheStatsName: c.universe.TermName,
       retTp: c.universe.Tree,
-      rhs: c.universe.Tree): c.universe.Tree = {
+      rhs: c.universe.Tree
+  ): c.universe.Tree = {
     import c.universe.Quasiquote
     if (analyzeCachesEnabled(c)) {
       val innerCachedFunName = generateTermName("")(c)
@@ -115,8 +117,9 @@ object CachedMacroUtil {
     c.settings.contains(ANALYZE_CACHES)
 
   @tailrec
-  def modCountParamToModTracker(c: whitebox.Context)(
-      tree: c.universe.Tree, psiElement: c.universe.Tree): c.universe.Tree = {
+  def modCountParamToModTracker(
+      c: whitebox.Context
+  )(tree: c.universe.Tree, psiElement: c.universe.Tree): c.universe.Tree = {
     implicit val x: c.type = c
     import c.universe._
     tree match {
@@ -144,8 +147,10 @@ object ModCount extends Enumeration {
   type ModCount = Value
   val getModificationCount = Value("getModificationCount")
   val getOutOfCodeBlockModificationCount = Value(
-      "getOutOfCodeBlockModificationCount")
+    "getOutOfCodeBlockModificationCount"
+  )
   val getJavaStructureModificationCount = Value(
-      "getJavaStructureModificationCount")
+    "getJavaStructureModificationCount"
+  )
   val getBlockModificationCount = Value("getBlockModificationCount")
 }

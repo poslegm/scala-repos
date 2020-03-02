@@ -19,22 +19,24 @@ trait Decoder[T <: Result] extends (Packet => Try[T]) {
   */
 object HandshakeInit extends Decoder[HandshakeInit] {
   def decode(packet: Packet) = {
-    val br = BufferReader(packet.body)
-    val protocol = br.readByte()
+    val br           = BufferReader(packet.body)
+    val protocol     = br.readByte()
     val bytesVersion = br.readNullTerminatedBytes()
-    val threadId = br.readInt()
-    val salt1 = br.take(8)
+    val threadId     = br.readInt()
+    val salt1        = br.take(8)
     br.skip(1) // 1 filler byte always 0x00
 
     // the rest of the fields are optional and protocol version specific
     val capLow = if (br.readable(2)) br.readUnsignedShort() else 0
 
-    require(protocol == 10 && (capLow & Capability.Protocol41) != 0,
-            "unsupported protocol version")
+    require(
+      protocol == 10 && (capLow & Capability.Protocol41) != 0,
+      "unsupported protocol version"
+    )
 
-    val charset = br.readUnsignedByte()
-    val status = br.readShort()
-    val capHigh = br.readUnsignedShort() << 16
+    val charset   = br.readUnsignedByte()
+    val status    = br.readShort()
+    val capHigh   = br.readUnsignedShort() << 16
     val serverCap = Capability(capHigh, capLow)
 
     // auth plugin data. Currently unused but we could verify
@@ -49,13 +51,13 @@ object HandshakeInit extends Decoder[HandshakeInit] {
       else br.readNullTerminatedBytes()
 
     HandshakeInit(
-        protocol,
-        new String(bytesVersion, Charset(charset)),
-        threadId,
-        Array.concat(salt1, salt2),
-        serverCap,
-        charset,
-        status
+      protocol,
+      new String(bytesVersion, Charset(charset)),
+      threadId,
+      Array.concat(salt1, salt2),
+      serverCap,
+      charset,
+      status
     )
   }
 }
@@ -68,8 +70,7 @@ case class HandshakeInit(
     serverCap: Capability,
     charset: Short,
     status: Short
-)
-    extends Result
+) extends Result
 
 /**
   * Represents the OK Packet received from the server. It is sent
@@ -80,11 +81,11 @@ object OK extends Decoder[OK] {
   def decode(packet: Packet) = {
     val br = BufferReader(packet.body, offset = 1)
     OK(
-        br.readLengthCodedBinary(),
-        br.readLengthCodedBinary(),
-        br.readUnsignedShort(),
-        br.readUnsignedShort(),
-        new String(br.takeRest())
+      br.readLengthCodedBinary(),
+      br.readLengthCodedBinary(),
+      br.readUnsignedShort(),
+      br.readUnsignedShort(),
+      new String(br.takeRest())
     )
   }
 }
@@ -95,8 +96,7 @@ case class OK(
     serverStatus: Int,
     warningCount: Int,
     message: String
-)
-    extends Result
+) extends Result
 
 /**
   * Represents the Error Packet received from the server and the data sent along with it.
@@ -105,10 +105,10 @@ case class OK(
 object Error extends Decoder[Error] {
   def decode(packet: Packet) = {
     // start reading after flag byte
-    val br = BufferReader(packet.body, offset = 1)
-    val code = br.readShort()
+    val br    = BufferReader(packet.body, offset = 1)
+    val code  = br.readShort()
     val state = new String(br.take(6))
-    val msg = new String(br.takeRest())
+    val msg   = new String(br.takeRest())
     Error(code, state, msg)
   }
 }
@@ -137,38 +137,38 @@ case class EOF(warnings: Short, serverStatus: Short) extends Result
   */
 object Field extends Decoder[Field] {
   def decode(packet: Packet): Field = {
-    val bw = BufferReader(packet.body)
-    val bytesCatalog = bw.readLengthCodedBytes()
-    val bytesDb = bw.readLengthCodedBytes()
-    val bytesTable = bw.readLengthCodedBytes()
+    val bw             = BufferReader(packet.body)
+    val bytesCatalog   = bw.readLengthCodedBytes()
+    val bytesDb        = bw.readLengthCodedBytes()
+    val bytesTable     = bw.readLengthCodedBytes()
     val bytesOrigTable = bw.readLengthCodedBytes()
-    val bytesName = bw.readLengthCodedBytes()
-    val bytesOrigName = bw.readLengthCodedBytes()
+    val bytesName      = bw.readLengthCodedBytes()
+    val bytesOrigName  = bw.readLengthCodedBytes()
     bw.readLengthCodedBinary() // length of the following fields (always 0x0c)
-    val charset = bw.readShort()
-    val jCharset = Charset(charset)
-    val catalog = new String(bytesCatalog, jCharset)
-    val db = new String(bytesDb, jCharset)
-    val table = new String(bytesTable, jCharset)
+    val charset   = bw.readShort()
+    val jCharset  = Charset(charset)
+    val catalog   = new String(bytesCatalog, jCharset)
+    val db        = new String(bytesDb, jCharset)
+    val table     = new String(bytesTable, jCharset)
     val origTable = new String(bytesOrigTable, jCharset)
-    val name = new String(bytesName, jCharset)
-    val origName = new String(bytesOrigName, jCharset)
-    val length = bw.readInt()
+    val name      = new String(bytesName, jCharset)
+    val origName  = new String(bytesOrigName, jCharset)
+    val length    = bw.readInt()
     val fieldType = bw.readUnsignedByte()
-    val flags = bw.readShort()
-    val decimals = bw.readByte()
+    val flags     = bw.readShort()
+    val decimals  = bw.readByte()
     Field(
-        catalog,
-        db,
-        table,
-        origTable,
-        name,
-        origName,
-        charset,
-        length,
-        fieldType,
-        flags,
-        decimals
+      catalog,
+      db,
+      table,
+      origTable,
+      name,
+      origName,
+      charset,
+      length,
+      fieldType,
+      flags,
+      decimals
     )
   }
 }
@@ -185,9 +185,8 @@ case class Field(
     fieldType: Short,
     flags: Short,
     decimals: Byte
-)
-    extends Result {
-  def id: String = if (name.isEmpty) origName else name
+) extends Result {
+  def id: String        = if (name.isEmpty) origName else name
   override val toString = "Field(%s)".format(id)
 }
 
@@ -199,9 +198,9 @@ case class Field(
   */
 object PrepareOK extends Decoder[PrepareOK] {
   def decode(header: Packet) = {
-    val br = BufferReader(header.body, 1)
-    val stmtId = br.readInt()
-    val numCols = br.readUnsignedShort()
+    val br        = BufferReader(header.body, 1)
+    val stmtId    = br.readInt()
+    val numCols   = br.readUnsignedShort()
     val numParams = br.readUnsignedShort()
     br.skip(1)
     val warningCount = br.readUnsignedShort()
@@ -216,8 +215,7 @@ case class PrepareOK(
     warningCount: Int,
     columns: Seq[Field] = Nil,
     params: Seq[Field] = Nil
-)
-    extends Result
+) extends Result
 
 /**
   * Used internally to synthesize a response from
@@ -241,8 +239,9 @@ object ResultSet {
   ): Try[ResultSet] =
     Try(decode(isBinaryEncoded)(header, fieldPackets, rowPackets))
 
-  def decode(isBinaryEncoded: Boolean)(
-      header: Packet, fieldPackets: Seq[Packet], rowPackets: Seq[Packet]) = {
+  def decode(
+      isBinaryEncoded: Boolean
+  )(header: Packet, fieldPackets: Seq[Packet], rowPackets: Seq[Packet]) = {
     val fields = fieldPackets.map(Field.decode(_)).toIndexedSeq
 
     // A name -> index map used to allow quick lookups for rows based on name.

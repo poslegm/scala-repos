@@ -18,7 +18,7 @@ object GcdBenchmarks extends MyRunner(classOf[GcdBenchmarks])
 
 class GcdBenchmarks extends MyBenchmark {
 
-  var longs: Array[Long] = null
+  var longs: Array[Long]      = null
   var bigs: Array[BigInteger] = null
 
   override def setUp(): Unit = {
@@ -31,8 +31,8 @@ class GcdBenchmarks extends MyBenchmark {
   //def timeXorBuiltinGcdBigInteger(reps:Int) = run(reps)(xorBuiltinGcdBigInteger(bigs))
 
   def xorEuclidGcdLong(data: Array[Long]): Long = {
-    var t = 0L
-    var i = 0
+    var t   = 0L
+    var i   = 0
     val len = data.length - 1
     while (i < len) {
       t ^= euclidGcdLong(data(i), data(i + 1))
@@ -42,8 +42,8 @@ class GcdBenchmarks extends MyBenchmark {
   }
 
   def xorBinaryGcdLong(data: Array[Long]): Long = {
-    var t = 0L
-    var i = 0
+    var t   = 0L
+    var i   = 0
     val len = data.length - 1
     while (i < len) {
       t ^= binaryGcdLong(data(i), data(i + 1))
@@ -53,8 +53,8 @@ class GcdBenchmarks extends MyBenchmark {
   }
 
   def xorBuiltinGcdBigInteger(data: Array[BigInteger]): BigInteger = {
-    var t = BigInteger.ZERO
-    var i = 0
+    var t   = BigInteger.ZERO
+    var i   = 0
     val len = data.length - 1
     while (i < len) {
       t = t.xor(data(i).gcd(data(i + 1)))
@@ -64,19 +64,18 @@ class GcdBenchmarks extends MyBenchmark {
   }
 
   @tailrec
-  final def euclidGcdLong(x: Long, y: Long): Long = {
+  final def euclidGcdLong(x: Long, y: Long): Long =
     if (y == 0L) Math.abs(x) else euclidGcdLong(y, x % y)
-  }
 
   def binaryGcdLong(_x: Long, _y: Long): Long = {
     if (_x == 0L) return _y
     if (_y == 0L) return _x
 
-    var x = Math.abs(_x)
+    var x  = Math.abs(_x)
     var xz = numberOfTrailingZeros(x)
     x >>= xz
 
-    var y = Math.abs(_y)
+    var y  = Math.abs(_y)
     var yz = numberOfTrailingZeros(y)
     y >>= yz
 

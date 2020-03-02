@@ -134,11 +134,13 @@ sealed abstract class Try[+T] extends Product with Serializable {
     *  collection with max size 1.
     */
   @deprecatedInheritance(
-      "You were never supposed to be able to extend this class.", "2.12")
+    "You were never supposed to be able to extend this class.",
+    "2.12"
+  )
   class WithFilter(p: T => Boolean) {
-    def map[U](f: T => U): Try[U] = Try.this filter p map f
+    def map[U](f: T => U): Try[U]          = Try.this filter p map f
     def flatMap[U](f: T => Try[U]): Try[U] = Try.this filter p flatMap f
-    def foreach[U](f: T => U): Unit = Try.this filter p foreach f
+    def foreach[U](f: T => U): Unit        = Try.this filter p foreach f
     def withFilter(q: T => Boolean): WithFilter =
       new WithFilter(x => p(x) && q(x))
   }
@@ -148,14 +150,16 @@ sealed abstract class Try[+T] extends Product with Serializable {
     * This is like `flatMap` for the exception.
     */
   def recoverWith[U >: T](
-      @deprecatedName('f) pf: PartialFunction[Throwable, Try[U]]): Try[U]
+      @deprecatedName('f) pf: PartialFunction[Throwable, Try[U]]
+  ): Try[U]
 
   /**
     * Applies the given function `f` if this is a `Failure`, otherwise returns this if this is a `Success`.
     * This is like map for the exception.
     */
   def recover[U >: T](
-      @deprecatedName('f) pf: PartialFunction[Throwable, U]): Try[U]
+      @deprecatedName('f) pf: PartialFunction[Throwable, U]
+  ): Try[U]
 
   /**
     * Returns `None` if this is a `Failure` or a `Some` containing the value if this is a `Success`.
@@ -211,55 +215,62 @@ object Try {
     * `Failure` object is returned.
     */
   def apply[T](r: => T): Try[T] =
-    try Success(r) catch {
+    try Success(r)
+    catch {
       case NonFatal(e) => Failure(e)
     }
 }
 
 final case class Failure[+T](exception: Throwable) extends Try[T] {
-  override def isFailure: Boolean = true
-  override def isSuccess: Boolean = false
-  override def get: T = throw exception
+  override def isFailure: Boolean                  = true
+  override def isSuccess: Boolean                  = false
+  override def get: T                              = throw exception
   override def getOrElse[U >: T](default: => U): U = default
   override def orElse[U >: T](default: => Try[U]): Try[U] =
-    try default catch { case NonFatal(e) => Failure(e) }
+    try default
+    catch { case NonFatal(e) => Failure(e) }
   override def flatMap[U](f: T => Try[U]): Try[U] = this.asInstanceOf[Try[U]]
   override def flatten[U](implicit ev: T <:< Try[U]): Try[U] =
     this.asInstanceOf[Try[U]]
   override def foreach[U](f: T => U): Unit = ()
   override def transform[U](s: T => Try[U], f: Throwable => Try[U]): Try[U] =
-    try f(exception) catch { case NonFatal(e) => Failure(e) }
+    try f(exception)
+    catch { case NonFatal(e) => Failure(e) }
   override def map[U](f: T => U): Try[U] = this.asInstanceOf[Try[U]]
   override def collect[U](pf: PartialFunction[T, U]): Try[U] =
     this.asInstanceOf[Try[U]]
   override def filter(p: T => Boolean): Try[T] = this
   override def recover[U >: T](
-      @deprecatedName('rescueException) pf: PartialFunction[Throwable, U])
-    : Try[U] =
-    try { if (pf isDefinedAt exception) Success(pf(exception)) else this } catch {
+      @deprecatedName('rescueException) pf: PartialFunction[Throwable, U]
+  ): Try[U] =
+    try { if (pf isDefinedAt exception) Success(pf(exception)) else this }
+    catch {
       case NonFatal(e) => Failure(e)
     }
   override def recoverWith[U >: T](
-      @deprecatedName('f) pf: PartialFunction[Throwable, Try[U]]): Try[U] =
-    try { if (pf isDefinedAt exception) pf(exception) else this } catch {
+      @deprecatedName('f) pf: PartialFunction[Throwable, Try[U]]
+  ): Try[U] =
+    try { if (pf isDefinedAt exception) pf(exception) else this }
+    catch {
       case NonFatal(e) => Failure(e)
     }
-  override def failed: Try[Throwable] = Success(exception)
-  override def toOption: Option[T] = None
-  override def toEither: Either[Throwable, T] = Left(exception)
+  override def failed: Try[Throwable]                     = Success(exception)
+  override def toOption: Option[T]                        = None
+  override def toEither: Either[Throwable, T]             = Left(exception)
   override def fold[U](fa: Throwable => U, fb: T => U): U = fa(exception)
 }
 
 final case class Success[+T](value: T) extends Try[T] {
-  override def isFailure: Boolean = false
-  override def isSuccess: Boolean = true
-  override def get = value
-  override def getOrElse[U >: T](default: => U): U = get
+  override def isFailure: Boolean                         = false
+  override def isSuccess: Boolean                         = true
+  override def get                                        = value
+  override def getOrElse[U >: T](default: => U): U        = get
   override def orElse[U >: T](default: => Try[U]): Try[U] = this
   override def flatMap[U](f: T => Try[U]): Try[U] =
-    try f(value) catch { case NonFatal(e) => Failure(e) }
+    try f(value)
+    catch { case NonFatal(e) => Failure(e) }
   override def flatten[U](implicit ev: T <:< Try[U]): Try[U] = value
-  override def foreach[U](f: T => U): Unit = f(value)
+  override def foreach[U](f: T => U): Unit                   = f(value)
   override def transform[U](s: T => Try[U], f: Throwable => Try[U]): Try[U] =
     this flatMap s
   override def map[U](f: T => U): Try[U] = Try[U](f(value))
@@ -268,25 +279,29 @@ final case class Success[+T](value: T) extends Try[T] {
       if (pf isDefinedAt value) Success(pf(value))
       else
         Failure(
-            new NoSuchElementException("Predicate does not hold for " + value))
+          new NoSuchElementException("Predicate does not hold for " + value)
+        )
     } catch { case NonFatal(e) => Failure(e) }
   override def filter(p: T => Boolean): Try[T] =
     try {
       if (p(value)) this
       else
         Failure(
-            new NoSuchElementException("Predicate does not hold for " + value))
+          new NoSuchElementException("Predicate does not hold for " + value)
+        )
     } catch { case NonFatal(e) => Failure(e) }
   override def recover[U >: T](
-      @deprecatedName('rescueException) pf: PartialFunction[Throwable, U])
-    : Try[U] = this
+      @deprecatedName('rescueException) pf: PartialFunction[Throwable, U]
+  ): Try[U] = this
   override def recoverWith[U >: T](
-      @deprecatedName('f) pf: PartialFunction[Throwable, Try[U]]): Try[U] =
+      @deprecatedName('f) pf: PartialFunction[Throwable, Try[U]]
+  ): Try[U] =
     this
   override def failed: Try[Throwable] =
     Failure(new UnsupportedOperationException("Success.failed"))
-  override def toOption: Option[T] = Some(value)
+  override def toOption: Option[T]            = Some(value)
   override def toEither: Either[Throwable, T] = Right(value)
   override def fold[U](fa: Throwable => U, fb: T => U): U =
-    try { fb(value) } catch { case NonFatal(e) => fa(e) }
+    try { fb(value) }
+    catch { case NonFatal(e) => fa(e) }
 }

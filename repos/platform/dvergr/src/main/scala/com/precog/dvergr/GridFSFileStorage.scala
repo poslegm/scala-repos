@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -40,7 +40,7 @@ object GridFSFileStorage {
 
   private val ServerAndPortPattern = "(.+):(.+)".r
 
-  def apply[M[+ _]: Monad](config: Configuration): GridFSFileStorage[M] = {
+  def apply[M[+_]: Monad](config: Configuration): GridFSFileStorage[M] = {
 
     // Shamefully ripped off from BlueEyes.
 
@@ -53,17 +53,18 @@ object GridFSFileStorage {
 
     val mongo = servers match {
       case x :: Nil => new com.mongodb.Mongo(x)
-      case x :: xs => new com.mongodb.Mongo(servers.asJava)
+      case x :: xs  => new com.mongodb.Mongo(servers.asJava)
       case Nil =>
         sys.error(
-            """MongoServers are not configured. Configure the value 'servers'. Format is '["host1:port1", "host2:port2", ...]'""")
+          """MongoServers are not configured. Configure the value 'servers'. Format is '["host1:port1", "host2:port2", ...]'"""
+        )
     }
 
     apply(mongo.getDB(config[String]("database")))
   }
 
-  def apply[M[+ _]](db: DB)(implicit M0: Monad[M]) = new GridFSFileStorage[M] {
-    val M = M0
+  def apply[M[+_]](db: DB)(implicit M0: Monad[M]) = new GridFSFileStorage[M] {
+    val M      = M0
     val gridFS = new GridFS(db)
   }
 }
@@ -72,7 +73,7 @@ object GridFSFileStorage {
   * A `FileStorage` implementation that uses Mongo's GridFS to store and
   * retrieve files.
   */
-trait GridFSFileStorage[M[+ _]] extends FileStorage[M] {
+trait GridFSFileStorage[M[+_]] extends FileStorage[M] {
   import GridFSFileStorage._
   import scalaz.syntax.monad._
 
@@ -86,7 +87,9 @@ trait GridFSFileStorage[M[+ _]] extends FileStorage[M] {
 
   def save(file: String, data: FileData[M]): M[Unit] =
     M.point {
-      gridFS.remove(file) // Ugly hack to get around Mongo not respecting new content-type.
+      gridFS.remove(
+        file
+      ) // Ugly hack to get around Mongo not respecting new content-type.
       val inFile = gridFS.createFile(file)
       data.mimeType foreach { contentType =>
         inFile.setContentType(contentType.toString)
@@ -99,7 +102,7 @@ trait GridFSFileStorage[M[+ _]] extends FileStorage[M] {
           save(tail)
 
         case None =>
-          M.point { out.close() }
+          M.point(out.close())
       }
 
       save(data.data)
@@ -117,11 +120,12 @@ trait GridFSFileStorage[M[+ _]] extends FileStorage[M] {
         }
       val in0 = file.getInputStream()
 
-      FileData(mimeType, StreamT.unfoldM[M, Array[Byte], InputStream](in0) {
-        in =>
+      FileData(
+        mimeType,
+        StreamT.unfoldM[M, Array[Byte], InputStream](in0) { in =>
           M.point {
             val buffer = new Array[Byte](chunkSize)
-            val len = in.read(buffer)
+            val len    = in.read(buffer)
             if (len < 0) {
               None
             } else if (len < buffer.length) {
@@ -130,7 +134,8 @@ trait GridFSFileStorage[M[+ _]] extends FileStorage[M] {
               Some((buffer, in))
             }
           }
-      })
+        }
+      )
     }
   }
 

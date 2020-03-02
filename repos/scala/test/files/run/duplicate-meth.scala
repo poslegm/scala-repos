@@ -1,9 +1,9 @@
 trait Base {
-  private val secure_# = 10l
+  private val secure_# = 10L
 }
 
 class TestUser extends Base {
-  def clsMeth(x: Int) = x
+  def clsMeth(x: Int)     = x
   private def foo(x: Int) = x
 }
 

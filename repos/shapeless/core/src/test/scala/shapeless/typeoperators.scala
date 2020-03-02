@@ -37,7 +37,7 @@ class TypeOperatorTests {
 
   @Test
   def testImplicitScopeForTaggedType {
-    val x = tag[ATag](1)
+    val x         = tag[ATag](1)
     val s: String = x
     assertEquals(ATag.message, s)
   }
@@ -67,7 +67,7 @@ class TypeOperatorTests {
 
     assertEquals(3, ms.mySize)
 
-    val s2 = "bar"
+    val s2  = "bar"
     val ms2 = MyString(s2)
 
     assertTrue(ms2 eq (s2: AnyRef))
@@ -138,8 +138,8 @@ class TypeOperatorTests {
 
   @Test
   def testTheQuantifiers {
-    def bar0[T, U0](
-        implicit b: Bar[T] { type U = U0 }): Bar[T] { type U = U0 } = {
+    def bar0[T, U0](implicit b: Bar[T] { type U = U0 })
+        : Bar[T] { type U = U0 } = {
       val res = the[Bar[T]]
       res
     }

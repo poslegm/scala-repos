@@ -42,7 +42,7 @@ class RegexPatternTest {
   }
 
   @Test def split(): Unit = {
-    val result = Pattern.compile("[aj]").split("Scala.js")
+    val result   = Pattern.compile("[aj]").split("Scala.js")
     val expected = Array("Sc", "l", ".", "s")
     assertEquals(4, result.length)
     assertArrayEquals(expected, result)
@@ -105,10 +105,12 @@ class RegexPatternTest {
     splitWithLimit("abc", "(?=a)", 2, Array("abc"))
     splitWithLimit("ab", "a", 1, Array("ab"))
 
-    def splitWithLimit(input: String,
-                       regex: String,
-                       limit: Int,
-                       expected: Array[String]): Unit = {
+    def splitWithLimit(
+        input: String,
+        regex: String,
+        limit: Int,
+        expected: Array[String]
+    ): Unit = {
       val result = Pattern.compile(regex).split(input, limit)
       assertArrayEquals(expected, result)
     }
@@ -117,7 +119,7 @@ class RegexPatternTest {
   @Test def flags(): Unit = {
     val pattern0 = Pattern.compile("a")
     val pattern1 = Pattern.compile("a", 0)
-    val flags2 = Pattern.CASE_INSENSITIVE | Pattern.DOTALL
+    val flags2   = Pattern.CASE_INSENSITIVE | Pattern.DOTALL
     val pattern2 = Pattern.compile("a", flags2)
 
     assertEquals(0, pattern0.flags)
@@ -148,7 +150,6 @@ class RegexPatternTest {
     assertEquals("Scala$1&$2.js", splitNoQuote.mkString)
   }
 
-  @Test def compile_should_throw_for_invalid_patterns_issue_1718(): Unit = {
+  @Test def compile_should_throw_for_invalid_patterns_issue_1718(): Unit =
     assertThrows(classOf[Throwable], Pattern.compile("*"))
-  }
 }

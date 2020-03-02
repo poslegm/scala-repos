@@ -33,14 +33,15 @@ import org.apache.spark.storage._
 import org.apache.spark.util.Utils
 
 class IndexShuffleBlockResolverSuite
-    extends SparkFunSuite with BeforeAndAfterEach {
+    extends SparkFunSuite
+    with BeforeAndAfterEach {
 
   @Mock(answer = RETURNS_SMART_NULLS)
   private var blockManager: BlockManager = _
   @Mock(answer = RETURNS_SMART_NULLS)
   private var diskBlockManager: DiskBlockManager = _
 
-  private var tempDir: File = _
+  private var tempDir: File   = _
   private val conf: SparkConf = new SparkConf(loadDefaults = false)
 
   override def beforeEach(): Unit = {
@@ -50,25 +51,23 @@ class IndexShuffleBlockResolverSuite
 
     when(blockManager.diskBlockManager).thenReturn(diskBlockManager)
     when(diskBlockManager.getFile(any[BlockId])).thenAnswer(new Answer[File] {
-      override def answer(invocation: InvocationOnMock): File = {
+      override def answer(invocation: InvocationOnMock): File =
         new File(tempDir, invocation.getArguments.head.toString)
-      }
     })
   }
 
-  override def afterEach(): Unit = {
+  override def afterEach(): Unit =
     try {
       Utils.deleteRecursively(tempDir)
     } finally {
       super.afterEach()
     }
-  }
 
   test("commit shuffle files multiple times") {
     val resolver = new IndexShuffleBlockResolver(conf, blockManager)
-    val lengths = Array[Long](10, 0, 20)
-    val dataTmp = File.createTempFile("shuffle", null, tempDir)
-    val out = new FileOutputStream(dataTmp)
+    val lengths  = Array[Long](10, 0, 20)
+    val dataTmp  = File.createTempFile("shuffle", null, tempDir)
+    val out      = new FileOutputStream(dataTmp)
     Utils.tryWithSafeFinally {
       out.write(new Array[Byte](30))
     } {
@@ -83,7 +82,7 @@ class IndexShuffleBlockResolverSuite
 
     val lengths2 = new Array[Long](3)
     val dataTmp2 = File.createTempFile("shuffle", null, tempDir)
-    val out2 = new FileOutputStream(dataTmp2)
+    val out2     = new FileOutputStream(dataTmp2)
     Utils.tryWithSafeFinally {
       out2.write(Array[Byte](1))
       out2.write(new Array[Byte](29))
@@ -98,7 +97,7 @@ class IndexShuffleBlockResolverSuite
 
     // The dataFile should be the previous one
     val firstByte = new Array[Byte](1)
-    val in = new FileInputStream(dataFile)
+    val in        = new FileInputStream(dataFile)
     Utils.tryWithSafeFinally {
       in.read(firstByte)
     } {
@@ -111,7 +110,7 @@ class IndexShuffleBlockResolverSuite
 
     val lengths3 = Array[Long](10, 10, 15)
     val dataTmp3 = File.createTempFile("shuffle", null, tempDir)
-    val out3 = new FileOutputStream(dataTmp3)
+    val out3     = new FileOutputStream(dataTmp3)
     Utils.tryWithSafeFinally {
       out3.write(Array[Byte](2))
       out3.write(new Array[Byte](34))
@@ -126,7 +125,7 @@ class IndexShuffleBlockResolverSuite
 
     // The dataFile should be the previous one
     val firstByte2 = new Array[Byte](1)
-    val in2 = new FileInputStream(dataFile)
+    val in2        = new FileInputStream(dataFile)
     Utils.tryWithSafeFinally {
       in2.read(firstByte2)
     } {

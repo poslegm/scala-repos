@@ -20,7 +20,8 @@ class UTestTestFramework extends AbstractTestFramework {
   override def generateObjectTests = true
 
   override protected def getLibraryDependencies(
-      scalaVersion: Option[String]): Seq[String] = scalaVersion match {
+      scalaVersion: Option[String]
+  ): Seq[String] = scalaVersion match {
     case Some(v) if v.startsWith("2.11") =>
       Seq("\"com.lihaoyi\" % \"utest_2.11\" % \"latest.integration\"")
     case Some(v) if v.startsWith("2.10") =>
@@ -29,8 +30,10 @@ class UTestTestFramework extends AbstractTestFramework {
   }
 
   override protected def getLibraryResolvers(
-      scalaVersion: Option[String]): Seq[String] = Seq()
+      scalaVersion: Option[String]
+  ): Seq[String] = Seq()
 
   override protected def getAdditionalBuildCommands(
-      scalaVersion: Option[String]): Seq[String] = Seq()
+      scalaVersion: Option[String]
+  ): Seq[String] = Seq()
 }

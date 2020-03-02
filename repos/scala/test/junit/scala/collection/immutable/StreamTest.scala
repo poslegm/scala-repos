@@ -15,7 +15,8 @@ class StreamTest {
   def t6727_and_t6440_and_8627(): Unit = {
     assertTrue(Stream.continually(()).filter(_ => true).take(2) == Seq((), ()))
     assertTrue(
-        Stream.continually(()).filterNot(_ => false).take(2) == Seq((), ()))
+      Stream.continually(()).filterNot(_ => false).take(2) == Seq((), ())
+    )
     assertTrue(Stream(1, 2, 3, 4, 5).filter(_ < 4) == Seq(1, 2, 3))
     assertTrue(Stream(1, 2, 3, 4, 5).filterNot(_ > 4) == Seq(1, 2, 3, 4))
     assertTrue(Stream.from(1).filter(_ > 4).take(3) == Seq(5, 6, 7))
@@ -26,7 +27,9 @@ class StreamTest {
     * GC of the head during processing of the tail.
     */
   def assertStreamOpAllowsGC(
-      op: (=> Stream[Int], Int => Unit) => Any, f: Int => Unit): Unit = {
+      op: (=> Stream[Int], Int => Unit) => Any,
+      f: Int => Unit
+  ): Unit = {
     val msgSuccessGC = "GC success"
     val msgFailureGC = "GC failure"
 
@@ -36,16 +39,18 @@ class StreamTest {
     val ref = WeakReference(Stream.from(1).take(500))
 
     def gcAndThrowIfCollected(n: Int): Unit = {
-      System.gc() // try to GC
+      System.gc()      // try to GC
       Thread.sleep(10) // give it 10 ms
       if (ref.get.isEmpty)
         throw new RuntimeException(msgSuccessGC) // we're done if head collected
       f(n)
     }
 
-    val res = Try { op(ref(), gcAndThrowIfCollected) }.failed // success is indicated by an
+    val res = Try(op(ref(), gcAndThrowIfCollected)).failed // success is indicated by an
     val msg =
-      res.map(_.getMessage).getOrElse(msgFailureGC) // exception with expected message 
+      res
+        .map(_.getMessage)
+        .getOrElse(msgFailureGC) // exception with expected message
     // failure is indicated by no
     assertTrue(msg == msgSuccessGC) // exception, or one with different message
   }
@@ -61,15 +66,15 @@ class StreamTest {
   }
 
   @Test // SI-8990
-  def withFilter_after_first_foreach_allows_GC: Unit = {
+  def withFilter_after_first_foreach_allows_GC: Unit =
     assertStreamOpAllowsGC(_.withFilter(_ > 1).foreach(_), _ => ())
-  }
 
   @Test // SI-8990
-  def withFilter_after_first_withFilter_foreach_allows_GC: Unit = {
+  def withFilter_after_first_withFilter_foreach_allows_GC: Unit =
     assertStreamOpAllowsGC(
-        _.withFilter(_ > 1).withFilter(_ < 100).foreach(_), _ => ())
-  }
+      _.withFilter(_ > 1).withFilter(_ < 100).foreach(_),
+      _ => ()
+    )
 
   @Test // SI-8990
   def withFilter_can_retry_after_exception_thrown_in_filter: Unit = {
@@ -81,7 +86,7 @@ class StreamTest {
       else n > 5
     }
 
-    assertTrue(Try { wf.map(identity) }.isFailure) // throws on n == 5
+    assertTrue(Try(wf.map(identity)).isFailure) // throws on n == 5
 
     shouldThrow = false // won't throw next time
 
@@ -89,8 +94,10 @@ class StreamTest {
   }
 
   /** Test helper to verify that the given Stream operation is properly lazy in the tail */
-  def assertStreamOpLazyInTail(op: (=> Stream[Int]) => Stream[Int],
-                               expectedEvaluated: List[Int]): Unit = {
+  def assertStreamOpLazyInTail(
+      op: (=> Stream[Int]) => Stream[Int],
+      expectedEvaluated: List[Int]
+  ): Unit = {
     // mutable state to record every strict evaluation
     var evaluated: List[Int] = Nil
 
@@ -108,15 +115,12 @@ class StreamTest {
   }
 
   @Test // SI-9134
-  def filter_map_properly_lazy_in_tail: Unit = {
+  def filter_map_properly_lazy_in_tail: Unit =
     assertStreamOpLazyInTail(_.filter(_ % 2 == 0).map(identity), List(1, 2))
-  }
 
   @Test // SI-9134
-  def withFilter_map_properly_lazy_in_tail: Unit = {
-    assertStreamOpLazyInTail(
-        _.withFilter(_ % 2 == 0).map(identity), List(1, 2))
-  }
+  def withFilter_map_properly_lazy_in_tail: Unit =
+    assertStreamOpLazyInTail(_.withFilter(_ % 2 == 0).map(identity), List(1, 2))
 
   @Test
   def test_si9379() {

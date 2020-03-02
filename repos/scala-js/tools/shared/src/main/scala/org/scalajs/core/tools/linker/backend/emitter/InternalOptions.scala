@@ -9,21 +9,21 @@
 package org.scalajs.core.tools.linker.backend.emitter
 
 private[emitter] class InternalOptions private (
-    val optimizeBracketSelects: Boolean) {
+    val optimizeBracketSelects: Boolean
+) {
 
   def withOptimizeBracketSelects(
-      optimizeBracketSelects: Boolean): InternalOptions =
+      optimizeBracketSelects: Boolean
+  ): InternalOptions =
     copy(optimizeBracketSelects = optimizeBracketSelects)
 
   private def copy(
-      optimizeBracketSelects: Boolean = this.optimizeBracketSelects)
-    : InternalOptions = {
+      optimizeBracketSelects: Boolean = this.optimizeBracketSelects
+  ): InternalOptions =
     new InternalOptions(optimizeBracketSelects)
-  }
 }
 
 private[emitter] object InternalOptions {
-  def apply(): InternalOptions = {
+  def apply(): InternalOptions =
     new InternalOptions(optimizeBracketSelects = true)
-  }
 }

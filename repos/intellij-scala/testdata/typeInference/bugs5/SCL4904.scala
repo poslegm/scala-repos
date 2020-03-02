@@ -12,7 +12,7 @@ object G {
   object K {
     import U._
 
-    def foo(x: I) = 1
+    def foo(x: I)   = 1
     def foo(x: Any) = "text"
 
     /*start*/

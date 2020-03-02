@@ -2,7 +2,14 @@ package com.twitter.finagle.service
 
 import com.twitter.finagle.stats.{Counter, StatsReceiver}
 import com.twitter.finagle.util.AsyncLatch
-import com.twitter.finagle.{param, Service, ServiceFactory, ServiceProxy, Stack, Stackable}
+import com.twitter.finagle.{
+  param,
+  Service,
+  ServiceFactory,
+  ServiceProxy,
+  Stack,
+  Stackable
+}
 import com.twitter.util.{Duration, Promise, Future, NullTimerTask, Timer, Time}
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -28,9 +35,8 @@ object ExpiringService {
     * Creates a [[com.twitter.finagle.Stackable]] [[com.twitter.finagle.service.ExpiringService]].
     */
   private[finagle] def module[Req, Rep]: Stackable[ServiceFactory[Req, Rep]] =
-    new Stack.Module3[
-        Param, param.Timer, param.Stats, ServiceFactory[Req, Rep]] {
-      val role = ExpiringService.role
+    new Stack.Module3[Param, param.Timer, param.Stats, ServiceFactory[Req, Rep]] {
+      val role        = ExpiringService.role
       val description = "Expire a service after a certain amount of idle time"
       def make(
           _param: Param,
@@ -38,9 +44,9 @@ object ExpiringService {
           _stats: param.Stats,
           next: ServiceFactory[Req, Rep]
       ) = {
-        val param.Timer(timer) = _timer
+        val param.Timer(timer)                        = _timer
         val ExpiringService.Param(idleTime, lifeTime) = _param
-        val param.Stats(statsReceiver) = _stats
+        val param.Stats(statsReceiver)                = _stats
 
         val idle = if (idleTime.isFinite) Some(idleTime) else None
         val life = if (lifeTime.isFinite) Some(lifeTime) else None
@@ -51,7 +57,12 @@ object ExpiringService {
             next map { service =>
               val closeOnRelease = new CloseOnReleaseService(service)
               new ExpiringService(
-                  closeOnRelease, idle, life, timer, statsReceiver) {
+                closeOnRelease,
+                idle,
+                life,
+                timer,
+                statsReceiver
+              ) {
                 def onExpire() { closeOnRelease.close() }
               }
             }
@@ -75,21 +86,20 @@ abstract class ExpiringService[Req, Rep](
     maxLifeTime: Option[Duration],
     timer: Timer,
     stats: StatsReceiver
-)
-    extends ServiceProxy[Req, Rep](self) {
+) extends ServiceProxy[Req, Rep](self) {
   private[this] var active = true
-  private[this] val latch = new AsyncLatch
+  private[this] val latch  = new AsyncLatch
 
-  private[this] val idleCounter = stats.counter("idle")
-  private[this] val lifeCounter = stats.counter("lifetime")
-  private[this] var idleTask = startTimer(maxIdleTime, idleCounter)
-  private[this] var lifeTask = startTimer(maxLifeTime, lifeCounter)
+  private[this] val idleCounter    = stats.counter("idle")
+  private[this] val lifeCounter    = stats.counter("lifetime")
+  private[this] var idleTask       = startTimer(maxIdleTime, idleCounter)
+  private[this] var lifeTask       = startTimer(maxLifeTime, lifeCounter)
   private[this] val expireFnCalled = new AtomicBoolean(false)
-  private[this] val didExpire = new Promise[Unit]
+  private[this] val didExpire      = new Promise[Unit]
 
   private[this] def startTimer(duration: Option[Duration], counter: Counter) =
     duration map { t: Duration =>
-      timer.schedule(t.fromNow) { expire(counter) }
+      timer.schedule(t.fromNow)(expire(counter))
     } getOrElse { NullTimerTask }
 
   private[this] def expire(counter: Counter) {
@@ -113,12 +123,11 @@ abstract class ExpiringService[Req, Rep](
     }
   }
 
-  private[this] def expired(): Unit = {
+  private[this] def expired(): Unit =
     if (expireFnCalled.compareAndSet(false, true)) {
       didExpire.setDone()
       onExpire()
     }
-  }
 
   protected def onExpire()
 

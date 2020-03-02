@@ -8,7 +8,7 @@ import com.twitter.util.Throwables
   * errors separately so success rate can from valid non cancelled requests.
   */
 object ExceptionStatsHandler {
-  private[stats] val Failures = "failures"
+  private[stats] val Failures        = "failures"
   private[stats] val SourcedFailures = "sourcedfailures"
 
   /**
@@ -33,11 +33,7 @@ object ExceptionStatsHandler {
         Seq(exceptionChain, Nil)
       }
 
-    labels.flatMap { prefix =>
-      suffixes.map { suffix =>
-        prefix ++ suffix
-      }
-    }
+    labels.flatMap(prefix => suffixes.map(suffix => prefix ++ suffix))
   }
 }
 
@@ -59,14 +55,18 @@ trait ExceptionStatsHandler {
 class CategorizingExceptionStatsHandler(
     categorizer: Throwable => Option[String] = _ => None,
     sourceFunction: Throwable => Option[String] = _ => None,
-    rollup: Boolean = true)
-    extends ExceptionStatsHandler {
+    rollup: Boolean = true
+) extends ExceptionStatsHandler {
   import ExceptionStatsHandler._
 
   private[this] val underlying: ExceptionStatsHandler = {
     val mkLabel: Throwable => String = t => categorizer(t).getOrElse(Failures)
     new MultiCategorizingExceptionStatsHandler(
-        mkLabel, _ => Set.empty, sourceFunction, rollup)
+      mkLabel,
+      _ => Set.empty,
+      sourceFunction,
+      rollup
+    )
   }
 
   def record(statsReceiver: StatsReceiver, t: Throwable): Unit =
@@ -123,8 +123,8 @@ private[finagle] class MultiCategorizingExceptionStatsHandler(
     mkLabel: Throwable => String = _ => ExceptionStatsHandler.Failures,
     mkFlags: Throwable => Set[String] = _ => Set.empty,
     mkSource: Throwable => Option[String] = _ => None,
-    rollup: Boolean = true)
-    extends ExceptionStatsHandler {
+    rollup: Boolean = true
+) extends ExceptionStatsHandler {
   import ExceptionStatsHandler._
 
   def record(statsReceiver: StatsReceiver, t: Throwable): Unit = {
@@ -137,14 +137,12 @@ private[finagle] class MultiCategorizingExceptionStatsHandler(
 
     val labels: Seq[Seq[String]] = mkSource(t) match {
       case Some(service) => flagLabels :+ Seq(SourcedFailures, service)
-      case None => flagLabels
+      case None          => flagLabels
     }
 
     val paths: Seq[Seq[String]] = statPaths(t, labels, rollup)
 
     if (flags.nonEmpty) statsReceiver.counter(parentLabel).incr()
-    paths.foreach { path =>
-      statsReceiver.counter(path: _*).incr()
-    }
+    paths.foreach(path => statsReceiver.counter(path: _*).incr())
   }
 }

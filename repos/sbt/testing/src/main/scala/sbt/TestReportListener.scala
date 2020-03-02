@@ -36,29 +36,33 @@ trait TestsListener extends TestReportListener {
 }
 
 /** Provides the overall `result` of a group of tests (a suite) and test counts for each result type. */
-final class SuiteResult(val result: TestResult.Value,
-                        val passedCount: Int,
-                        val failureCount: Int,
-                        val errorCount: Int,
-                        val skippedCount: Int,
-                        val ignoredCount: Int,
-                        val canceledCount: Int,
-                        val pendingCount: Int) {
+final class SuiteResult(
+    val result: TestResult.Value,
+    val passedCount: Int,
+    val failureCount: Int,
+    val errorCount: Int,
+    val skippedCount: Int,
+    val ignoredCount: Int,
+    val canceledCount: Int,
+    val pendingCount: Int
+) {
   def +(other: SuiteResult): SuiteResult = {
     val combinedTestResult = (result, other.result) match {
       case (TestResult.Passed, TestResult.Passed) => TestResult.Passed
-      case (_, TestResult.Error) => TestResult.Error
-      case (TestResult.Error, _) => TestResult.Error
-      case _ => TestResult.Failed
+      case (_, TestResult.Error)                  => TestResult.Error
+      case (TestResult.Error, _)                  => TestResult.Error
+      case _                                      => TestResult.Failed
     }
-    new SuiteResult(combinedTestResult,
-                    passedCount + other.passedCount,
-                    failureCount + other.failureCount,
-                    errorCount + other.errorCount,
-                    skippedCount + other.skippedCount,
-                    ignoredCount + other.ignoredCount,
-                    canceledCount + other.canceledCount,
-                    pendingCount + other.pendingCount)
+    new SuiteResult(
+      combinedTestResult,
+      passedCount + other.passedCount,
+      failureCount + other.failureCount,
+      errorCount + other.errorCount,
+      skippedCount + other.skippedCount,
+      ignoredCount + other.ignoredCount,
+      canceledCount + other.canceledCount,
+      pendingCount + other.pendingCount
+    )
   }
 }
 
@@ -67,19 +71,21 @@ object SuiteResult {
   /** Computes the overall result and counts for a suite with individual test results in `events`. */
   def apply(events: Seq[TEvent]): SuiteResult = {
     def count(status: TStatus) = events.count(_.status == status)
-    new SuiteResult(TestEvent.overallResult(events),
-                    count(TStatus.Success),
-                    count(TStatus.Failure),
-                    count(TStatus.Error),
-                    count(TStatus.Skipped),
-                    count(TStatus.Ignored),
-                    count(TStatus.Canceled),
-                    count(TStatus.Pending))
+    new SuiteResult(
+      TestEvent.overallResult(events),
+      count(TStatus.Success),
+      count(TStatus.Failure),
+      count(TStatus.Error),
+      count(TStatus.Skipped),
+      count(TStatus.Ignored),
+      count(TStatus.Canceled),
+      count(TStatus.Pending)
+    )
   }
-  val Error: SuiteResult = new SuiteResult(
-      TestResult.Error, 0, 0, 0, 0, 0, 0, 0)
-  val Empty: SuiteResult = new SuiteResult(
-      TestResult.Passed, 0, 0, 0, 0, 0, 0, 0)
+  val Error: SuiteResult =
+    new SuiteResult(TestResult.Error, 0, 0, 0, 0, 0, 0, 0)
+  val Empty: SuiteResult =
+    new SuiteResult(TestResult.Passed, 0, 0, 0, 0, 0, 0, 0)
 }
 
 abstract class TestEvent {
@@ -89,7 +95,7 @@ abstract class TestEvent {
 object TestEvent {
   def apply(events: Seq[TEvent]): TestEvent =
     new TestEvent {
-      val result = Some(overallResult(events))
+      val result          = Some(overallResult(events))
       override val detail = events
     }
 
@@ -105,29 +111,43 @@ object TestEvent {
 
 object TestLogger {
   @deprecated(
-      "Doesn't provide for underlying resources to be released.", "0.13.1")
-  def apply(logger: sbt.util.Logger,
-            logTest: TestDefinition => sbt.util.Logger,
-            buffered: Boolean): TestLogger =
+    "Doesn't provide for underlying resources to be released.",
+    "0.13.1"
+  )
+  def apply(
+      logger: sbt.util.Logger,
+      logTest: TestDefinition => sbt.util.Logger,
+      buffered: Boolean
+  ): TestLogger =
     new TestLogger(
-        new TestLogging(
-            wrap(logger), tdef => contentLogger(logTest(tdef), buffered)))
+      new TestLogging(
+        wrap(logger),
+        tdef => contentLogger(logTest(tdef), buffered)
+      )
+    )
 
   @deprecated(
-      "Doesn't provide for underlying resources to be released.", "0.13.1")
+    "Doesn't provide for underlying resources to be released.",
+    "0.13.1"
+  )
   def contentLogger(log: sbt.util.Logger, buffered: Boolean): ContentLogger = {
     val blog = new BufferedLogger(FullLogger(log))
     if (buffered) blog.record()
     new ContentLogger(wrap(blog), () => blog.stopQuietly())
   }
 
-  final class PerTest private[sbt](
-      val log: sbt.util.Logger, val flush: () => Unit, val buffered: Boolean)
+  final class PerTest private[sbt] (
+      val log: sbt.util.Logger,
+      val flush: () => Unit,
+      val buffered: Boolean
+  )
 
-  def make(global: sbt.util.Logger,
-           perTest: TestDefinition => PerTest): TestLogger = {
+  def make(
+      global: sbt.util.Logger,
+      perTest: TestDefinition => PerTest
+  ): TestLogger = {
     def makePerTest(tdef: TestDefinition): ContentLogger = {
-      val per = perTest(tdef)
+      val per  = perTest(tdef)
       val blog = new BufferedLogger(FullLogger(per.log))
       if (per.buffered) blog.record()
       new ContentLogger(wrap(blog), () => { blog.stopQuietly(); per.flush() })
@@ -138,29 +158,31 @@ object TestLogger {
 
   def wrap(logger: sbt.util.Logger): TLogger =
     new TLogger {
-      def error(s: String) = log(Level.Error, s)
-      def warn(s: String) = log(Level.Warn, s)
-      def info(s: String) = log(Level.Info, s)
-      def debug(s: String) = log(Level.Debug, s)
-      def trace(t: Throwable) = logger.trace(t)
+      def error(s: String)                           = log(Level.Error, s)
+      def warn(s: String)                            = log(Level.Warn, s)
+      def info(s: String)                            = log(Level.Info, s)
+      def debug(s: String)                           = log(Level.Debug, s)
+      def trace(t: Throwable)                        = logger.trace(t)
       private def log(level: Level.Value, s: String) = logger.log(level, s)
-      def ansiCodesSupported() = logger.ansiCodesSupported
+      def ansiCodesSupported()                       = logger.ansiCodesSupported
     }
 }
 final class TestLogging(
-    val global: TLogger, val logTest: TestDefinition => ContentLogger)
+    val global: TLogger,
+    val logTest: TestDefinition => ContentLogger
+)
 final class ContentLogger(val log: TLogger, val flush: () => Unit)
 class TestLogger(val logging: TestLogging) extends TestsListener {
   import logging.{global => log, logTest}
 
-  def startGroup(name: String): Unit = ()
+  def startGroup(name: String): Unit    = ()
   def testEvent(event: TestEvent): Unit = ()
   def endGroup(name: String, t: Throwable): Unit = {
     log.trace(t)
     log.error("Could not run test " + name + ": " + t.toString)
   }
   def endGroup(name: String, result: TestResult.Value): Unit = ()
-  def doInit: Unit = ()
+  def doInit: Unit                                           = ()
 
   /** called once, at end of test group. */
   def doComplete(finalResult: TestResult.Value): Unit = ()

@@ -17,7 +17,7 @@ import play.utils.PlayIO
 object FilesSpec extends Specification with After {
 
   val parentDirectory = new File("/tmp/play/specs/")
-  val utf8 = Charset.forName("UTF8")
+  val utf8            = Charset.forName("UTF8")
 
   override def after: Any = {
     parentDirectory.listFiles().foreach(_.delete())
@@ -48,7 +48,7 @@ object FilesSpec extends Specification with After {
       }
 
       "do not replace file when moving with replace disabled" in {
-        val file = new File(parentDirectory, "do-not-replace.txt")
+        val file        = new File(parentDirectory, "do-not-replace.txt")
         val destination = new File(parentDirectory, "already-exists.txt")
 
         writeFile(file, "file that won't be replaced")
@@ -56,30 +56,34 @@ object FilesSpec extends Specification with After {
 
         val to = TemporaryFile(file).moveTo(destination, replace = false)
         new String(java.nio.file.Files.readAllBytes(to.toPath)) must contain(
-            "already exists")
+          "already exists"
+        )
       }
 
       "works when using compile time dependency injection" in {
         val context = ApplicationLoader.createContext(
-            new Environment(new java.io.File("."),
-                            ApplicationLoader.getClass.getClassLoader,
-                            Mode.Test))
+          new Environment(
+            new java.io.File("."),
+            ApplicationLoader.getClass.getClassLoader,
+            Mode.Test
+          )
+        )
         val appLoader = new ApplicationLoader {
-          def load(context: Context) = {
+          def load(context: Context) =
             (new BuiltInComponentsFromContext(context) {
               lazy val router = Router.empty
             }).application
-          }
         }
         val app = appLoader.load(context)
         Play.start(app)
-        val tempFile = try {
-          val tempFile = TemporaryFile()
-          tempFile.file.exists must beTrue
-          tempFile.file
-        } finally {
-          Play.stop(app)
-        }
+        val tempFile =
+          try {
+            val tempFile = TemporaryFile()
+            tempFile.file.exists must beTrue
+            tempFile.file
+          } finally {
+            Play.stop(app)
+          }
         tempFile.exists must beFalse
       }
     }
@@ -91,8 +95,9 @@ object FilesSpec extends Specification with After {
       val file = new File(parentDirectory, "file.txt")
       writeFile(file, "file content")
 
-      retry(new String(PlayIO.readFile(file), utf8) must beEqualTo(
-              "file content"))
+      retry(
+        new String(PlayIO.readFile(file), utf8) must beEqualTo("file content")
+      )
     }
 
     "read file content as a String" in {
@@ -120,7 +125,7 @@ object FilesSpec extends Specification with After {
   }
 
   private def retry[T](block: => T): T = {
-    def step(attempt: Int): T = {
+    def step(attempt: Int): T =
       try {
         block
       } catch {
@@ -128,7 +133,6 @@ object FilesSpec extends Specification with After {
           Thread.sleep(10)
           step(attempt + 1)
       }
-    }
     step(0)
   }
 }

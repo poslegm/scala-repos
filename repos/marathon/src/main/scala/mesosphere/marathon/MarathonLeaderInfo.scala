@@ -14,12 +14,12 @@ import org.slf4j.LoggerFactory
 
 import scala.util.control.NonFatal
 
-class MarathonLeaderInfo @Inject()(
+class MarathonLeaderInfo @Inject() (
     @Named(ModuleNames.CANDIDATE) candidate: Option[Candidate],
     @Named(ModuleNames.LEADER_ATOMIC_BOOLEAN) leader: AtomicBoolean,
     @Named(EventModule.busName) eventStream: EventStream,
-    metrics: MarathonLeaderInfoMetrics)
-    extends LeaderInfo {
+    metrics: MarathonLeaderInfoMetrics
+) extends LeaderInfo {
 
   private[this] val log = LoggerFactory.getLogger(getClass)
 
@@ -29,16 +29,15 @@ class MarathonLeaderInfo @Inject()(
   override def currentLeaderHostPort(): Option[String] =
     metrics.getLeaderDataTimer {
       candidate.flatMap { c =>
-        val maybeLeaderData: Option[Array[Byte]] = try {
-          Option(c.getLeaderData.orNull())
-        } catch {
-          case NonFatal(e) =>
-            log.error("error while getting current leader", e)
-            None
-        }
-        maybeLeaderData.map { data =>
-          new String(data, "UTF-8")
-        }
+        val maybeLeaderData: Option[Array[Byte]] =
+          try {
+            Option(c.getLeaderData.orNull())
+          } catch {
+            case NonFatal(e) =>
+              log.error("error while getting current leader", e)
+              None
+          }
+        maybeLeaderData.map(data => new String(data, "UTF-8"))
       }
     }
 
@@ -58,12 +57,12 @@ class MarathonLeaderInfo @Inject()(
   }
 
   /** Unsubscribe to any leadership change events to this actor ref. */
-  override def unsubscribe(self: ActorRef): Unit = {
+  override def unsubscribe(self: ActorRef): Unit =
     eventStream.unsubscribe(self, classOf[LocalLeadershipEvent])
-  }
 }
 
-class MarathonLeaderInfoMetrics @Inject()(metrics: Metrics) {
-  val getLeaderDataTimer: Timer = metrics.timer(metrics.name(
-          MetricPrefixes.SERVICE, getClass, "current-leader-host-port"))
+class MarathonLeaderInfoMetrics @Inject() (metrics: Metrics) {
+  val getLeaderDataTimer: Timer = metrics.timer(
+    metrics.name(MetricPrefixes.SERVICE, getClass, "current-leader-host-port")
+  )
 }

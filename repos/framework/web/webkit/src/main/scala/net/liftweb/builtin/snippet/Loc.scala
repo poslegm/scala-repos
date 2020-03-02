@@ -29,7 +29,7 @@ import net.liftweb.common._
   * use the render method or the snippet body as locid if not specified.
   *
   * So these are equivalent:
-  * 
+  *
   *   <lift:Loc locid="myid"/>
   *   <lift.Loc.myid/>
   *   <lift:Loc>myid</lift:Loc>
@@ -46,32 +46,28 @@ import net.liftweb.common._
   * <h2>En overskrift</h2>
   *
   * If the locid is not found, it will just render
-  * 
+  *
   * <h2>Some header</h2>
-  * 
+  *
   */
 object Loc extends DispatchSnippet {
   def dispatch: DispatchIt = {
     case "i" =>
-      ns =>
-        i(ns)
-      case s =>
-      ns =>
-        render(s, ns)
+      ns => i(ns)
+    case s =>
+      ns => render(s, ns)
   }
 
-  def i(ns: NodeSeq): NodeSeq = {
+  def i(ns: NodeSeq): NodeSeq =
     ns match {
       case e: Elem => e.copy(child = S.loc(ns.text, Text(ns.text)))
-      case _ => render("i", ns)
+      case _       => render("i", ns)
     }
-  }
 
-  def render(locId: String, kids: NodeSeq): NodeSeq = {
+  def render(locId: String, kids: NodeSeq): NodeSeq =
     S.loc(locId) openOr
-    (S.attr("locid") match {
-          case Full(id) => S.loc(id, kids)
-          case _ => S.loc(kids.text, kids)
-        })
-  }
+      (S.attr("locid") match {
+        case Full(id) => S.loc(id, kids)
+        case _        => S.loc(kids.text, kids)
+      })
 }

@@ -30,7 +30,7 @@ class FooBarImpl extends FooImpl with FooBar[Int] {
   protected var b = 0
 
   override def foo = f
-  def bar = b
+  def bar          = b
 }
 
 class FooBarPlusImpl extends FooBarImpl with FooBarPlus[Int] {

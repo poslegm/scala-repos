@@ -1,5 +1,5 @@
 final class NonNullChar(val get: Char) extends AnyVal {
-  def isEmpty = get == 0.toChar
+  def isEmpty           = get == 0.toChar
   override def toString = if (isEmpty) "NoChar" else s"'$get'"
 }
 object NonNullChar {
@@ -8,11 +8,11 @@ object NonNullChar {
 
 final class SomeProduct extends Product3[String, Int, List[String]] {
   def canEqual(x: Any) = x.isInstanceOf[SomeProduct]
-  def _1 = "abc"
-  def _2 = 5
-  def _3 = List("bippy")
-  def isEmpty = false
-  def get = this
+  def _1               = "abc"
+  def _2               = 5
+  def _3               = List("bippy")
+  def isEmpty          = false
+  def get              = this
 }
 object SomeProduct {
   def unapply(x: SomeProduct) = x
@@ -21,14 +21,14 @@ object SomeProduct {
 object Test {
   def prod(x: SomeProduct): Int = x match {
     case SomeProduct(x, y, z) => x.length + y + z.length
-    case _ => -1
+    case _                    => -1
   }
 
   def f(x: Char): NonNullChar = x match {
     case 'a' => new NonNullChar('a')
     case 'b' => new NonNullChar('b')
     case 'c' => new NonNullChar('c')
-    case _ => NonNullChar.None
+    case _   => NonNullChar.None
   }
   // public char f(char);
   //        0: iload_1
@@ -51,7 +51,7 @@ object Test {
     case 'a' => Some('a')
     case 'b' => Some('b')
     case 'c' => Some('c')
-    case _ => None
+    case _   => None
   }
   // public scala.Option<java.lang.Object> g(char);
   //        0: iload_1

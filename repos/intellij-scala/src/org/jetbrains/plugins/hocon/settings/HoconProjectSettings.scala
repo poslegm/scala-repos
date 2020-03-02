@@ -8,11 +8,11 @@ import com.intellij.util.xmlb.XmlSerializerUtil
 import scala.beans.BeanProperty
 
 @State(
-    name = "HoconProjectSettings",
-    storages = Array(
-          new Storage(StoragePathMacros.WORKSPACE_FILE),
-          new Storage("hocon_settings.xml")
-      )
+  name = "HoconProjectSettings",
+  storages = Array(
+    new Storage(StoragePathMacros.WORKSPACE_FILE),
+    new Storage("hocon_settings.xml")
+  )
 )
 class HoconProjectSettings
     extends PersistentStateComponent[HoconProjectSettings]
@@ -28,7 +28,7 @@ class HoconProjectSettings
     Array(PathManager.getOptionsFile("hocon_project_settings"))
 
   @BeanProperty var classReferencesOnUnquotedStrings = true
-  @BeanProperty var classReferencesOnQuotedStrings = true
+  @BeanProperty var classReferencesOnQuotedStrings   = true
 }
 
 object HoconProjectSettings {

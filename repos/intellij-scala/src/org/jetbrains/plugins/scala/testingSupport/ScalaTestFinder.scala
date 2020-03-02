@@ -17,16 +17,17 @@ import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.ScObject
   */
 class ScalaTestFinder extends JavaTestFinder {
   override def findTestsForClass(
-      element: PsiElement): java.util.Collection[PsiElement] = {
+      element: PsiElement
+  ): java.util.Collection[PsiElement] = {
     val klass: PsiClass = findSourceElement(element)
     if (klass == null) return Collections.emptySet()
     val klassName = klass.getName.replace("$", "\\$")
     val pattern =
       Pattern.compile(".*" + klassName + ".*", Pattern.CASE_INSENSITIVE)
-    val names = new HashSet[String]()
+    val names                      = new HashSet[String]()
     val frameworks: TestFrameworks = TestFrameworks.getInstance
-    val cache = PsiShortNamesCache.getInstance(klass.getProject)
-    val scope: GlobalSearchScope = getSearchScope(klass, false)
+    val cache                      = PsiShortNamesCache.getInstance(klass.getProject)
+    val scope: GlobalSearchScope   = getSearchScope(klass, false)
     cache.getAllClassNames(names)
     val res = new java.util.ArrayList[Pair[_ <: PsiNamedElement, Integer]]()
     import collection.JavaConversions._
@@ -36,9 +37,11 @@ class ScalaTestFinder extends JavaTestFinder {
           if (frameworks.isTestClass(testClass) ||
               frameworks.isPotentialTestClass(testClass)) {
             res.add(
-                Pair.create(testClass,
-                            TestFinderHelper.calcTestNameProximity(
-                                klassName, testClassName)))
+              Pair.create(
+                testClass,
+                TestFinderHelper.calcTestNameProximity(klassName, testClassName)
+              )
+            )
           }
         }
       }
@@ -47,8 +50,7 @@ class ScalaTestFinder extends JavaTestFinder {
     TestFinderHelper.getSortedElements(res, true)
   }
 
-  override def findClassesForTest(element: PsiElement) = {
+  override def findClassesForTest(element: PsiElement) =
     //this is a temporary hack to avoid further duplication - JavaTestFinder locates tests for scala just fine
     new java.util.ArrayList[PsiElement]()
-  }
 }

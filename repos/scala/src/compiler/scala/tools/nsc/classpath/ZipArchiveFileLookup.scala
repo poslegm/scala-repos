@@ -21,7 +21,7 @@ trait ZipArchiveFileLookup[FileEntryType <: ClassRepClassPathEntry]
 
   assert(zipFile != null, "Zip file in ZipArchiveFileLookup cannot be null")
 
-  override def asURLs: Seq[URL] = Seq(zipFile.toURI.toURL)
+  override def asURLs: Seq[URL]                = Seq(zipFile.toURI.toURL)
   override def asClassPathStrings: Seq[String] = Seq(zipFile.getPath)
 
   private val archive = new FileZipArchive(zipFile)
@@ -30,23 +30,23 @@ trait ZipArchiveFileLookup[FileEntryType <: ClassRepClassPathEntry]
     val prefix = PackageNameUtils.packagePrefix(inPackage)
     for {
       dirEntry <- findDirEntry(inPackage).toSeq
-      entry <- dirEntry.iterator if entry.isPackage
+      entry    <- dirEntry.iterator if entry.isPackage
     } yield PackageEntryImpl(prefix + entry.name)
   }
 
   protected def files(inPackage: String): Seq[FileEntryType] =
     for {
       dirEntry <- findDirEntry(inPackage).toSeq
-      entry <- dirEntry.iterator if isRequiredFileType(entry)
+      entry    <- dirEntry.iterator if isRequiredFileType(entry)
     } yield createFileEntry(entry)
 
   override private[nsc] def list(inPackage: String): FlatClassPathEntries = {
     val foundDirEntry = findDirEntry(inPackage)
 
     foundDirEntry map { dirEntry =>
-      val pkgBuf = collection.mutable.ArrayBuffer.empty[PackageEntry]
+      val pkgBuf  = collection.mutable.ArrayBuffer.empty[PackageEntry]
       val fileBuf = collection.mutable.ArrayBuffer.empty[FileEntryType]
-      val prefix = PackageNameUtils.packagePrefix(inPackage)
+      val prefix  = PackageNameUtils.packagePrefix(inPackage)
 
       for (entry <- dirEntry.iterator) {
         if (entry.isPackage) pkgBuf += PackageEntryImpl(prefix + entry.name)

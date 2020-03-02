@@ -36,11 +36,13 @@ object ConcurrentTest extends SpecLite {
   }
 
   def assertCountDown(
-      latch: CountDownLatch, hint: String, timeout: Long = 1000): Prop = {
+      latch: CountDownLatch,
+      hint: String,
+      timeout: Long = 1000
+  ): Prop =
     if (latch.await(timeout, TimeUnit.MILLISECONDS)) ()
     else
       sys.error("Failed to count down within " + timeout + " millis: " + hint)
-  }
 
   def fork(f: => Unit) {
     new Thread {
@@ -52,7 +54,7 @@ object ConcurrentTest extends SpecLite {
 
   final class WithTimeout(timeout: Long) {
     def apply[A](test: => A): A = {
-      val latch = new CountDownLatch(1)
+      val latch               = new CountDownLatch(1)
       @volatile var result: A = null.asInstanceOf[A]
       fork {
         result = test

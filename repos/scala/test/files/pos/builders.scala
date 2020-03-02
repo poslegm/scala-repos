@@ -53,11 +53,11 @@ object builders {
   def main(args: Array[String]): Unit = {
     val x1 = new Iter[Int, List[Int]](List(1, 2, 3))
 //    val x2 = new Iter[Int, Array[Int]](List(1, 2, 3))
-    val x3 = new Iter[Int, Iterable[Int]](List(1, 2, 3))
+    val x3            = new Iter[Int, Iterable[Int]](List(1, 2, 3))
     val y1: List[Int] = x1.map(_ + 1)
 //    val y2: Array[Int] = x2.map (_ + 1)
     val y3: Iterable[Int] = x3.map(_ + 1)
-    val z1: List[Int] = y1
+    val z1: List[Int]     = y1
 //    val z2: Array[Int] = y2
     val z3: Iterable[Int] = y3
     println(z1)

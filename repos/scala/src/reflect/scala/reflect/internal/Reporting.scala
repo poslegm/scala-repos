@@ -44,18 +44,21 @@ trait Reporting { self: Positions =>
     currentRun.reporting.supplementErrorMessage(errorMessage)
 
   @deprecatedOverriding(
-      "This forwards to the corresponding method in reporter -- override reporter instead",
-      "2.11.2")
+    "This forwards to the corresponding method in reporter -- override reporter instead",
+    "2.11.2"
+  )
   def inform(msg: String): Unit = inform(NoPosition, msg)
   @deprecatedOverriding(
-      "This forwards to the corresponding method in reporter -- override reporter instead",
-      "2.11.2")
+    "This forwards to the corresponding method in reporter -- override reporter instead",
+    "2.11.2"
+  )
   def warning(msg: String): Unit = warning(NoPosition, msg)
   // globalError(msg: String) used to abort -- not sure that was a good idea, so I made it more regular
   // (couldn't find any uses that relied on old behavior)
   @deprecatedOverriding(
-      "This forwards to the corresponding method in reporter -- override reporter instead",
-      "2.11.2")
+    "This forwards to the corresponding method in reporter -- override reporter instead",
+    "2.11.2"
+  )
   def globalError(msg: String): Unit = globalError(NoPosition, msg)
 
   def abort(msg: String): Nothing = {
@@ -66,16 +69,19 @@ trait Reporting { self: Positions =>
   }
 
   @deprecatedOverriding(
-      "This forwards to the corresponding method in reporter -- override reporter instead",
-      "2.11.2")
+    "This forwards to the corresponding method in reporter -- override reporter instead",
+    "2.11.2"
+  )
   def inform(pos: Position, msg: String) = reporter.echo(pos, msg)
   @deprecatedOverriding(
-      "This forwards to the corresponding method in reporter -- override reporter instead",
-      "2.11.2")
+    "This forwards to the corresponding method in reporter -- override reporter instead",
+    "2.11.2"
+  )
   def warning(pos: Position, msg: String) = reporter.warning(pos, msg)
   @deprecatedOverriding(
-      "This forwards to the corresponding method in reporter -- override reporter instead",
-      "2.11.2")
+    "This forwards to the corresponding method in reporter -- override reporter instead",
+    "2.11.2"
+  )
   def globalError(pos: Position, msg: String) = reporter.error(pos, msg)
 }
 
@@ -88,7 +94,11 @@ import util.Position
   */
 abstract class Reporter {
   protected def info0(
-      pos: Position, msg: String, severity: Severity, force: Boolean): Unit
+      pos: Position,
+      msg: String,
+      severity: Severity,
+      force: Boolean
+  ): Unit
 
   def echo(pos: Position, msg: String): Unit =
     info0(pos, msg, INFO, force = true)
@@ -105,10 +115,10 @@ abstract class Reporter {
   def count(severity: Severity): Int
   def resetCount(severity: Severity): Unit
 
-  def errorCount: Int = count(ERROR)
+  def errorCount: Int   = count(ERROR)
   def warningCount: Int = count(WARNING)
 
-  def hasErrors: Boolean = count(ERROR) > 0
+  def hasErrors: Boolean   = count(ERROR) > 0
   def hasWarnings: Boolean = count(WARNING) > 0
 
   def reset(): Unit = {
@@ -128,10 +138,10 @@ abstract class ReporterImpl extends Reporter {
   class Severity(val id: Int)(name: String) {
     var count: Int = 0; override def toString = name
   }
-  object INFO extends Severity(0)("INFO")
+  object INFO    extends Severity(0)("INFO")
   object WARNING extends Severity(1)("WARNING")
-  object ERROR extends Severity(2)("ERROR")
+  object ERROR   extends Severity(2)("ERROR")
 
-  def count(severity: Severity): Int = severity.count
+  def count(severity: Severity): Int       = severity.count
   def resetCount(severity: Severity): Unit = severity.count = 0
 }

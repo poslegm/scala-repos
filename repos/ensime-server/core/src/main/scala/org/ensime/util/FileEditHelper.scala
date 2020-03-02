@@ -9,26 +9,30 @@ object FileEditHelper {
 
   import scala.tools.refactoring.common.{Change, TextChange}
 
-  def fromChange(ch: Change): FileEdit = {
+  def fromChange(ch: Change): FileEdit =
     ch match {
       case ch: TextChange => TextEdit(ch.file.file, ch.from, ch.to, ch.text)
-      case _ => throw new UnsupportedOperationException(ch.toString)
+      case _              => throw new UnsupportedOperationException(ch.toString)
     }
-  }
 
-  def applyEdits(ch: List[TextEdit], source: String): String = {
+  def applyEdits(ch: List[TextEdit], source: String): String =
     (source /: ch.sortBy(-_.to)) { (src, change) =>
       src.substring(0, change.from) + change.text + src.substring(change.to)
     }
-  }
 
-  def diffFromTextEdits(ch: List[TextEdit],
-                        source: String,
-                        originalFile: File,
-                        revisedFile: File): String = {
+  def diffFromTextEdits(
+      ch: List[TextEdit],
+      source: String,
+      originalFile: File,
+      revisedFile: File
+  ): String = {
     val newContents = applyEdits(ch, source)
     DiffUtil.compareContents(
-        source.lines.toSeq, newContents.lines.toSeq, originalFile, revisedFile)
+      source.lines.toSeq,
+      newContents.lines.toSeq,
+      originalFile,
+      revisedFile
+    )
   }
 
   //TODO: add diffFromNewFile and diffFromDeleteFile

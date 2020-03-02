@@ -13,20 +13,21 @@
 package object scala {
   type Throwable = java.lang.Throwable
   type Exception = java.lang.Exception
-  type Error = java.lang.Error
+  type Error     = java.lang.Error
 
-  type RuntimeException = java.lang.RuntimeException
-  type NullPointerException = java.lang.NullPointerException
-  type ClassCastException = java.lang.ClassCastException
-  type IndexOutOfBoundsException = java.lang.IndexOutOfBoundsException
+  type RuntimeException               = java.lang.RuntimeException
+  type NullPointerException           = java.lang.NullPointerException
+  type ClassCastException             = java.lang.ClassCastException
+  type IndexOutOfBoundsException      = java.lang.IndexOutOfBoundsException
   type ArrayIndexOutOfBoundsException = java.lang.ArrayIndexOutOfBoundsException
-  type StringIndexOutOfBoundsException = java.lang.StringIndexOutOfBoundsException
+  type StringIndexOutOfBoundsException =
+    java.lang.StringIndexOutOfBoundsException
   type UnsupportedOperationException = java.lang.UnsupportedOperationException
-  type IllegalArgumentException = java.lang.IllegalArgumentException
-  type NoSuchElementException = java.util.NoSuchElementException
-  type NumberFormatException = java.lang.NumberFormatException
-  type AbstractMethodError = java.lang.AbstractMethodError
-  type InterruptedException = java.lang.InterruptedException
+  type IllegalArgumentException      = java.lang.IllegalArgumentException
+  type NoSuchElementException        = java.util.NoSuchElementException
+  type NumberFormatException         = java.lang.NumberFormatException
+  type AbstractMethodError           = java.lang.AbstractMethodError
+  type InterruptedException          = java.lang.InterruptedException
 
   // A dummy used by the specialization annotation.
   val AnyRef = new Specializable {
@@ -65,7 +66,7 @@ package object scala {
 
   type Stream[+A] = scala.collection.immutable.Stream[A]
   val Stream = scala.collection.immutable.Stream
-  val #:: = scala.collection.immutable.Stream.#::
+  val #::    = scala.collection.immutable.Stream.#::
 
   type Vector[+A] = scala.collection.immutable.Vector[A]
   val Vector = scala.collection.immutable.Vector
@@ -102,7 +103,7 @@ package object scala {
   type Ordering[T] = scala.math.Ordering[T]
   val Ordering = scala.math.Ordering
 
-  type PartialOrdering[T] = scala.math.PartialOrdering[T]
+  type PartialOrdering[T]  = scala.math.PartialOrdering[T]
   type PartiallyOrdered[T] = scala.math.PartiallyOrdered[T]
 
   type Either[+A, +B] = scala.util.Either[A, B]
@@ -115,7 +116,7 @@ package object scala {
   val Right = scala.util.Right
 
   // Annotations which we might move to annotation.*
-/*
+  /*
   type SerialVersionUID = annotation.SerialVersionUID
   type deprecated = annotation.deprecated
   type deprecatedName = annotation.deprecatedName

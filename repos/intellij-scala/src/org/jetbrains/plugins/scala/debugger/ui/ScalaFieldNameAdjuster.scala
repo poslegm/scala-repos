@@ -1,6 +1,10 @@
 package org.jetbrains.plugins.scala.debugger.ui
 
-import com.intellij.debugger.ui.tree.{FieldDescriptor, NodeDescriptor, NodeDescriptorNameAdjuster}
+import com.intellij.debugger.ui.tree.{
+  FieldDescriptor,
+  NodeDescriptor,
+  NodeDescriptorNameAdjuster
+}
 import com.sun.jdi.{ClassType, ReferenceType}
 import org.jetbrains.plugins.scala.debugger.evaluation.util.DebuggerUtil
 import org.jetbrains.plugins.scala.debugger.ui.ScalaFieldNameAdjuster.objectSuffix
@@ -12,19 +16,18 @@ import scala.collection.JavaConverters._
   */
 class ScalaFieldNameAdjuster extends NodeDescriptorNameAdjuster {
 
-  override def isApplicable(descriptor: NodeDescriptor): Boolean = {
+  override def isApplicable(descriptor: NodeDescriptor): Boolean =
     descriptor match {
       case fd: FieldDescriptor if fd.getObject != null =>
         DebuggerUtil.isScala(fd.getObject.referenceType()) &&
-        isObscureName(fd.getField.name())
+          isObscureName(fd.getField.name())
       case _ => false
     }
-  }
 
-  override def fixName(name: String, descriptor: NodeDescriptor): String = {
+  override def fixName(name: String, descriptor: NodeDescriptor): String =
     descriptor match {
       case fd: FieldDescriptor =>
-        val field = fd.getField
+        val field    = fd.getField
         val typeName = field.declaringType().name()
 
         def isLocalFromOuterField: Boolean = {
@@ -38,12 +41,11 @@ class ScalaFieldNameAdjuster extends NodeDescriptorNameAdjuster {
         }
 
         def isFieldFromTrait = {
-          def hasMethodForField(ref: ReferenceType) = {
+          def hasMethodForField(ref: ReferenceType) =
             ref
               .methodsByName(name)
               .asScala
               .exists(_.signature().startsWith("()"))
-          }
 
           field.declaringType() match {
             case ct: ClassType =>
@@ -54,9 +56,8 @@ class ScalaFieldNameAdjuster extends NodeDescriptorNameAdjuster {
           }
         }
 
-        def isScalaObject: Boolean = {
+        def isScalaObject: Boolean =
           name.endsWith(objectSuffix)
-        }
 
         def lastPart(name: String) = {
           val stripped = name.stripSuffix(objectSuffix)
@@ -68,7 +69,6 @@ class ScalaFieldNameAdjuster extends NodeDescriptorNameAdjuster {
         else if (nameStartsWithFqn || isFieldFromTrait) lastPart(name)
         else name
     }
-  }
 
   private def isObscureName(s: String) = s != "$outer" && s.contains("$")
 }

@@ -42,9 +42,16 @@ object ReliableProxyDocSpec {
 
   class WatchingProxyParent(targetPath: ActorPath) extends Actor {
     val proxy = context.watch(
-        context
-          .actorOf(
-            ReliableProxy.props(targetPath, 100.millis, reconnectAfter = 500.millis, maxReconnects = 3)))
+      context
+        .actorOf(
+          ReliableProxy.props(
+            targetPath,
+            100.millis,
+            reconnectAfter = 500.millis,
+            maxReconnects = 3
+          )
+        )
+    )
 
     var client: Option[ActorRef] = None
 
@@ -66,14 +73,14 @@ class ReliableProxyDocSpec extends AkkaSpec {
 
     "show usage" in {
       val probe = TestProbe()
-      val a = system.actorOf(Props(classOf[ProxyParent], probe.ref.path))
+      val a     = system.actorOf(Props(classOf[ProxyParent], probe.ref.path))
       a.tell("hello", probe.ref)
       probe.expectMsg("world!")
     }
 
     "show state transitions" in {
       val target = TestProbe().ref
-      val probe = TestProbe()
+      val probe  = TestProbe()
       val a =
         system.actorOf(Props(classOf[ProxyTransitionParent], target.path))
       a.tell("go", probe.ref)
@@ -82,8 +89,8 @@ class ReliableProxyDocSpec extends AkkaSpec {
 
     "show terminated after maxReconnects" in within(5.seconds) {
       val target = system.deadLetters
-      val probe = TestProbe()
-      val a = system.actorOf(Props(classOf[WatchingProxyParent], target.path))
+      val probe  = TestProbe()
+      val a      = system.actorOf(Props(classOf[WatchingProxyParent], target.path))
       a.tell("hello", probe.ref)
       probe.expectMsg("terminated")
     }

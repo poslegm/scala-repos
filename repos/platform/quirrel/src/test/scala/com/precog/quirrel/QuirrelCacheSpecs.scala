@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -27,14 +27,20 @@ import typer._
 import emitter._
 
 object QuirrelCacheSpecs
-    extends Specification with Parser with Compiler with TreeShaker
-    with GroupSolver with LineErrors with RandomLibrarySpec {
+    extends Specification
+    with Parser
+    with Compiler
+    with TreeShaker
+    with GroupSolver
+    with LineErrors
+    with RandomLibrarySpec {
 
   import ast._
 
-  private def findNode[A](root: Expr)(
-      pf: PartialFunction[Expr, A]): Option[A] = {
-    def loop(expr: Expr): Option[A] = {
+  private def findNode[A](
+      root: Expr
+  )(pf: PartialFunction[Expr, A]): Option[A] = {
+    def loop(expr: Expr): Option[A] =
       if (pf.isDefinedAt(expr)) {
         Some(pf(expr))
       } else {
@@ -42,14 +48,13 @@ object QuirrelCacheSpecs
           // special-case Let because its children
           // doesn't return all the sub-exprs
           case Let(_, _, _, c1, c2) => c1 :: c2 :: Nil
-          case e => e.children
+          case e                    => e.children
         }
 
         cs.iterator map loop collectFirst {
           case Some(a) => a
         }
       }
-    }
 
     loop(root)
   }
@@ -116,12 +121,11 @@ object QuirrelCacheSpecs
       result2 must haveSize(1)
       result3 must haveSize(1)
 
-      def varLoc(name: String)(e: Expr) = {
+      def varLoc(name: String)(e: Expr) =
         findNode(e) {
           case Dispatch(loc, Identifier(_, `name`), _) =>
             (loc.lineNum, loc.colNum)
         }
-      }
 
       val root2 = result2.head
       varLoc("a")(root2) must_== Some((5, 1))

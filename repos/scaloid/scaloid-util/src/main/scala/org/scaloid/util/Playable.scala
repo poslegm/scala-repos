@@ -9,7 +9,7 @@ import org.scaloid.common._
   */
 trait Playable {
   protected var _running: Boolean = false
-  protected var _startTime = 0L
+  protected var _startTime        = 0L
 
   def running = _running
 
@@ -82,11 +82,15 @@ abstract class PlayableConnector(activity: SActivity) {
 
   private def startTimer() {
     timer = new Timer()
-    timer.schedule(new TimerTask {
-      def run() {
-        runOnUiThread(updateUI(ON_HEARTBEAT))
-      }
-    }, timerInterval, timerInterval)
+    timer.schedule(
+      new TimerTask {
+        def run() {
+          runOnUiThread(updateUI(ON_HEARTBEAT))
+        }
+      },
+      timerInterval,
+      timerInterval
+    )
   }
 
   activity.onPause {

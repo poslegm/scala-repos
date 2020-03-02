@@ -28,21 +28,19 @@ package docs.serialization {
     def identifier = 1234567
 
     // "toBinary" serializes the given object to an Array of Bytes
-    def toBinary(obj: AnyRef): Array[Byte] = {
+    def toBinary(obj: AnyRef): Array[Byte] =
       // Put the code that serializes the object here
       //#...
       Array[Byte]()
-      //#...
-    }
+    //#...
 
     // "fromBinary" deserializes the given array,
     // using the type hint (if any, see "includeManifest" above)
-    def fromBinary(bytes: Array[Byte], clazz: Option[Class[_]]): AnyRef = {
+    def fromBinary(bytes: Array[Byte], clazz: Option[Class[_]]): AnyRef =
       // Put your code that deserializes here
       //#...
       null
-      //#...
-    }
+    //#...
   }
   //#my-own-serializer
 
@@ -50,8 +48,8 @@ package docs.serialization {
   class MyOwnSerializer2 extends SerializerWithStringManifest {
 
     val CustomerManifest = "customer"
-    val UserManifest = "user"
-    val UTF_8 = StandardCharsets.UTF_8.name()
+    val UserManifest     = "user"
+    val UTF_8            = StandardCharsets.UTF_8.name()
 
     // Pick a unique identifier for your Serializer,
     // you've got a couple of billions to choose from,
@@ -63,21 +61,20 @@ package docs.serialization {
     def manifest(obj: AnyRef): String =
       obj match {
         case _: Customer => CustomerManifest
-        case _: User => UserManifest
+        case _: User     => UserManifest
       }
 
     // "toBinary" serializes the given object to an Array of Bytes
-    def toBinary(obj: AnyRef): Array[Byte] = {
+    def toBinary(obj: AnyRef): Array[Byte] =
       // Put the real code that serializes the object here
       obj match {
         case Customer(name) => name.getBytes(UTF_8)
-        case User(name) => name.getBytes(UTF_8)
+        case User(name)     => name.getBytes(UTF_8)
       }
-    }
 
     // "fromBinary" deserializes the given array,
     // using the type hint
-    def fromBinary(bytes: Array[Byte], manifest: String): AnyRef = {
+    def fromBinary(bytes: Array[Byte], manifest: String): AnyRef =
       // Put the real code that deserializes here
       manifest match {
         case CustomerManifest =>
@@ -85,13 +82,12 @@ package docs.serialization {
         case UserManifest =>
           User(new String(bytes, UTF_8))
       }
-    }
   }
   //#my-own-serializer2
 
   trait MyOwnSerializable
   final case class Customer(name: String) extends MyOwnSerializable
-  final case class User(name: String) extends MyOwnSerializable
+  final case class User(name: String)     extends MyOwnSerializable
 
   class SerializationDocSpec extends AkkaSpec {
     "demonstrate configuration of serialize messages" in {
@@ -104,7 +100,7 @@ package docs.serialization {
       }
       #//#serialize-messages-config
       """)
-      val a = ActorSystem("system", config)
+      val a      = ActorSystem("system", config)
       a.settings.SerializeAllMessages should be(true)
       shutdown(a)
     }
@@ -119,14 +115,15 @@ package docs.serialization {
       }
       #//#serialize-creators-config
       """)
-      val a = ActorSystem("system", config)
+      val a      = ActorSystem("system", config)
       a.settings.SerializeAllCreators should be(true)
       shutdown(a)
     }
 
     "demonstrate configuration of serializers" in {
       val config =
-        ConfigFactory.parseString("""
+        ConfigFactory.parseString(
+          """
       #//#serialize-serializers-config
       akka {
         actor {
@@ -138,14 +135,16 @@ package docs.serialization {
         }
       }
       #//#serialize-serializers-config
-      """)
+      """
+        )
       val a = ActorSystem("system", config)
       shutdown(a)
     }
 
     "demonstrate configuration of serialization-bindings" in {
       val config =
-        ConfigFactory.parseString("""
+        ConfigFactory.parseString(
+          """
       #//#serialization-bindings-config
       akka {
         actor {
@@ -165,12 +164,15 @@ package docs.serialization {
         }
       }
       #//#serialization-bindings-config
-      """)
+      """
+        )
       val a = ActorSystem("system", config)
-      SerializationExtension(a).serializerFor(classOf[String]).getClass should be(
-          classOf[JavaSerializer])
-      SerializationExtension(a).serializerFor(classOf[Customer]).getClass should be(
-          classOf[JavaSerializer])
+      SerializationExtension(a)
+        .serializerFor(classOf[String])
+        .getClass should be(classOf[JavaSerializer])
+      SerializationExtension(a)
+        .serializerFor(classOf[Customer])
+        .getClass should be(classOf[JavaSerializer])
       SerializationExtension(a)
         .serializerFor(classOf[java.lang.Boolean])
         .getClass should be(classOf[MyOwnSerializer])
@@ -228,13 +230,15 @@ package docs.serialization {
       class ExternalAddressExt(system: ExtendedActorSystem) extends Extension {
         def addressFor(remoteAddr: Address): Address =
           system.provider.getExternalAddressFor(remoteAddr) getOrElse
-          (throw new UnsupportedOperationException(
-                  "cannot send to " + remoteAddr))
+            (throw new UnsupportedOperationException(
+              "cannot send to " + remoteAddr
+            ))
       }
 
       def serializeTo(ref: ActorRef, remote: Address): String =
         ref.path.toSerializationFormatWithAddress(
-            ExternalAddress(extendedSystem).addressFor(remote))
+          ExternalAddress(extendedSystem).addressFor(remote)
+        )
       //#external-address
     }
 
@@ -250,7 +254,8 @@ package docs.serialization {
 
       def serializeAkkaDefault(ref: ActorRef): String =
         ref.path.toSerializationFormatWithAddress(
-            ExternalAddress(theActorSystem).addressForAkka)
+          ExternalAddress(theActorSystem).addressForAkka
+        )
       //#external-address-default
     }
   }

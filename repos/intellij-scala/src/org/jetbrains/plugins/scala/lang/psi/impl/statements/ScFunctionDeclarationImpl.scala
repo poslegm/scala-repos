@@ -12,15 +12,22 @@ import org.jetbrains.plugins.scala.lang.parser.ScalaElementTypes
 import org.jetbrains.plugins.scala.lang.psi.api.ScalaElementVisitor
 import org.jetbrains.plugins.scala.lang.psi.api.statements._
 import org.jetbrains.plugins.scala.lang.psi.stubs.ScFunctionStub
-import org.jetbrains.plugins.scala.lang.psi.types.result.{Success, TypeResult, TypingContext}
+import org.jetbrains.plugins.scala.lang.psi.types.result.{
+  Success,
+  TypeResult,
+  TypingContext
+}
 import org.jetbrains.plugins.scala.lang.psi.types.{ScType, Unit}
 
 /**
   * @author Alexander Podkhalyuzin
   */
 class ScFunctionDeclarationImpl private (
-    stub: StubElement[ScFunction], nodeType: IElementType, node: ASTNode)
-    extends ScFunctionImpl(stub, nodeType, node) with ScFunctionDeclaration {
+    stub: StubElement[ScFunction],
+    nodeType: IElementType,
+    node: ASTNode
+) extends ScFunctionImpl(stub, nodeType, node)
+    with ScFunctionDeclaration {
   override def accept(visitor: PsiElementVisitor) {
     visitor match {
       case visitor: ScalaElementVisitor =>
@@ -36,10 +43,9 @@ class ScFunctionDeclarationImpl private (
 
   override def toString: String = "ScFunctionDeclaration: " + name
 
-  def returnTypeInner: TypeResult[ScType] = {
+  def returnTypeInner: TypeResult[ScType] =
     typeElement match {
       case Some(t) => t.getType(TypingContext.empty)
-      case None => Success(Unit, Some(this))
+      case None    => Success(Unit, Some(this))
     }
-  }
 }

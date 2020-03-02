@@ -3,7 +3,7 @@ package benchmark
 
 object BigIntRational {
   val Zero = new BigIntRational(0, 1)
-  val One = new BigIntRational(1, 1)
+  val One  = new BigIntRational(1, 1)
 
   def apply(n: BigInt, d: BigInt): BigIntRational = {
     val gcd = n.gcd(d)
@@ -25,7 +25,7 @@ final class BigIntRational private (val n: BigInt, val d: BigInt) {
     } else {
       val lden: BigInt = d / dgcd
       val rden: BigInt = r.d / dgcd
-      val num: BigInt = rden * n + r.n * lden
+      val num: BigInt  = rden * n + r.n * lden
       val ngcd: BigInt = num.gcd(dgcd)
       if (ngcd == 1) new BigIntRational(num, lden * r.d)
       else new BigIntRational(num / ngcd, (r.d / ngcd) * lden)
@@ -39,7 +39,7 @@ final class BigIntRational private (val n: BigInt, val d: BigInt) {
     } else {
       val lden: BigInt = d / dgcd
       val rden: BigInt = r.d / dgcd
-      val num: BigInt = rden * n - r.n * lden
+      val num: BigInt  = rden * n - r.n * lden
       val ngcd: BigInt = num.gcd(dgcd)
       if (ngcd == 1) new BigIntRational(num, lden * r.d)
       else new BigIntRational(num / ngcd, (r.d / ngcd) * lden)
@@ -53,8 +53,8 @@ final class BigIntRational private (val n: BigInt, val d: BigInt) {
   }
 
   def /(r: BigIntRational): BigIntRational = {
-    val a = n.gcd(r.n)
-    val b = d.gcd(r.d)
+    val a   = n.gcd(r.n)
+    val b   = d.gcd(r.d)
     val num = (n / a) * (r.d / b)
     val den = (d / b) * (r.n / a)
     if (den < BigInt(0)) {

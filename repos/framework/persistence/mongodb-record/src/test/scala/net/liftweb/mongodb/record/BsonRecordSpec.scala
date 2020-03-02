@@ -32,7 +32,7 @@ class BsonRecordSpec extends Specification with MongoTestKit {
   "BsonRecord" should {
     "compare properly with set values" in {
 
-      val subRec = SubSubRecord.createRecord.name("subrecord")
+      val subRec  = SubSubRecord.createRecord.name("subrecord")
       val subRec2 = SubSubRecord.createRecord.name("subrecord")
 
       (subRec == subRec2) must_== true
@@ -43,7 +43,7 @@ class BsonRecordSpec extends Specification with MongoTestKit {
     }
 
     "compare properly with default values" in {
-      val subRec = SubSubRecord.createRecord
+      val subRec  = SubSubRecord.createRecord
       val subRec2 = SubSubRecord.createRecord
 
       (subRec == subRec2) must_== true

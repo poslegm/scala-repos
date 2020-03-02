@@ -20,11 +20,14 @@ object Test extends InteractiveTest {
     def nextId() =
       compiler.NoSymbol
         .newTermSymbol(
-            compiler.TermName("dummy"), compiler.NoPosition, compiler.NoFlags)
+          compiler.TermName("dummy"),
+          compiler.NoPosition,
+          compiler.NoFlags
+        )
         .id
-    val id = nextId()
+    val id   = nextId()
     val tree = compiler.parseTree(sf)
-    val id2 = nextId()
+    val id2  = nextId()
     if (id2 == id + 1) {
       reporter.println("NoNewSymbolsEntered OK")
     } else {
@@ -97,11 +100,10 @@ object Test extends InteractiveTest {
     * the exception of the symbol for the package 'scala'. This is because that symbol will be
     * present in some of the nodes that the compiler generates.
     */
-  private def noSymbolsOrTypes(tree: compiler.Tree): Boolean = {
+  private def noSymbolsOrTypes(tree: compiler.Tree): Boolean =
     tree.forAll { t =>
       (t.symbol == null || t.symbol == compiler.NoSymbol ||
-          t.symbol == compiler.definitions.ScalaPackage // ignore the symbol for the scala package for now
-          ) && (t.tpe == null || t.tpe == compiler.NoType)
+      t.symbol == compiler.definitions.ScalaPackage // ignore the symbol for the scala package for now
+      ) && (t.tpe == null || t.tpe == compiler.NoType)
     }
-  }
 }

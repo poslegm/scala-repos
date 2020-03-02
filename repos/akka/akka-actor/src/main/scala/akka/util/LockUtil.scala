@@ -11,7 +11,8 @@ final class ReentrantGuard extends ReentrantLock {
   @inline
   final def withGuard[T](body: ⇒ T): T = {
     lock()
-    try body finally unlock()
+    try body
+    finally unlock()
   }
 }
 
@@ -24,7 +25,8 @@ class Switch(startAsOn: Boolean = false) {
   protected def transcend(from: Boolean, action: ⇒ Unit): Boolean =
     synchronized {
       if (switch.compareAndSet(from, !from)) {
-        try action catch {
+        try action
+        catch {
           case t: Throwable ⇒
             switch.compareAndSet(!from, from) // revert status
             throw t
@@ -50,12 +52,12 @@ class Switch(startAsOn: Boolean = false) {
   /**
     * Switches the switch off (if on), uses locking
     */
-  def switchOff: Boolean = synchronized { switch.compareAndSet(true, false) }
+  def switchOff: Boolean = synchronized(switch.compareAndSet(true, false))
 
   /**
     * Switches the switch on (if off), uses locking
     */
-  def switchOn: Boolean = synchronized { switch.compareAndSet(false, true) }
+  def switchOn: Boolean = synchronized(switch.compareAndSet(false, true))
 
   /**
     * Executes the provided action and returns its value if the switch is IMMEDIATELY on (i.e. no lock involved)
@@ -72,22 +74,20 @@ class Switch(startAsOn: Boolean = false) {
   /**
     * Executes the provided action and returns if the action was executed or not, if the switch is IMMEDIATELY on (i.e. no lock involved)
     */
-  def ifOn(action: ⇒ Unit): Boolean = {
+  def ifOn(action: ⇒ Unit): Boolean =
     if (switch.get) {
       action
       true
     } else false
-  }
 
   /**
     * Executes the provided action and returns if the action was executed or not, if the switch is IMMEDIATELY off (i.e. no lock involved)
     */
-  def ifOff(action: ⇒ Unit): Boolean = {
+  def ifOff(action: ⇒ Unit): Boolean =
     if (!switch.get) {
       action
       true
     } else false
-  }
 
   /**
     * Executes the provided action and returns its value if the switch is on, waiting for any pending changes to happen before (locking)
@@ -138,7 +138,7 @@ class Switch(startAsOn: Boolean = false) {
   /**
     * Executes the given code while holding this switch’s lock, i.e. protected from concurrent modification of the switch status.
     */
-  def locked[T](code: ⇒ T): T = synchronized { code }
+  def locked[T](code: ⇒ T): T = synchronized(code)
 
   /**
     * Returns whether the switch is IMMEDIATELY on (no locking)

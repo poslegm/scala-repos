@@ -6,12 +6,12 @@ import scala.reflect.ClassTag
   * A "stack" with a bounded size.  If you push a new element on the top
   * when the stack is full, the oldest element gets dropped off the bottom.
   */
-class BoundedStack[A : ClassTag](val maxSize: Int) extends Seq[A] {
-  private val array = new Array[A](maxSize)
-  private var top = 0
+class BoundedStack[A: ClassTag](val maxSize: Int) extends Seq[A] {
+  private val array  = new Array[A](maxSize)
+  private var top    = 0
   private var count_ = 0
 
-  def length = count_
+  def length        = count_
   override def size = count_
 
   def clear() {
@@ -22,10 +22,9 @@ class BoundedStack[A : ClassTag](val maxSize: Int) extends Seq[A] {
   /**
     * Gets the element from the specified index in constant time.
     */
-  def apply(i: Int): A = {
+  def apply(i: Int): A =
     if (i >= count_) throw new IndexOutOfBoundsException(i.toString)
     else array((top + i) % maxSize)
-  }
 
   /**
     * Pushes an element, possibly forcing out the oldest element in the stack.
@@ -74,7 +73,7 @@ class BoundedStack[A : ClassTag](val maxSize: Int) extends Seq[A] {
   /**
     * Removes the top element in the stack.
     */
-  def pop: A = {
+  def pop: A =
     if (count_ == 0) throw new NoSuchElementException
     else {
       val res = array(top)
@@ -82,10 +81,9 @@ class BoundedStack[A : ClassTag](val maxSize: Int) extends Seq[A] {
       count_ -= 1
       res
     }
-  }
 
   override def iterator = new Iterator[A] {
-    var idx = 0
+    var idx     = 0
     def hasNext = idx != count_
     def next = {
       val res = apply(idx)

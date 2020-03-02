@@ -2,7 +2,7 @@ import collection.concurrent.TrieMap
 
 object ConcurrentMapSpec extends Spec {
 
-  val initsz = 500
+  val initsz   = 500
   val secondsz = 750
 
   def test() {
@@ -15,14 +15,14 @@ object ConcurrentMapSpec extends Spec {
     "support put if absent" in {
       val ct = new TrieMap[Wrap, Int]
       for (i <- 0 until initsz) ct.update(new Wrap(i), i)
-      for (i <- 0 until initsz) assert(
-          ct.putIfAbsent(new Wrap(i), -i) == Some(i))
-      for (i <- 0 until initsz) assert(
-          ct.putIfAbsent(new Wrap(i), -i) == Some(i))
-      for (i <- initsz until secondsz) assert(
-          ct.putIfAbsent(new Wrap(i), -i) == None)
-      for (i <- initsz until secondsz) assert(
-          ct.putIfAbsent(new Wrap(i), i) == Some(-i))
+      for (i <- 0 until initsz)
+        assert(ct.putIfAbsent(new Wrap(i), -i) == Some(i))
+      for (i <- 0 until initsz)
+        assert(ct.putIfAbsent(new Wrap(i), -i) == Some(i))
+      for (i <- initsz until secondsz)
+        assert(ct.putIfAbsent(new Wrap(i), -i) == None)
+      for (i <- initsz until secondsz)
+        assert(ct.putIfAbsent(new Wrap(i), i) == Some(-i))
     }
 
     "support remove if mapped to a specific value" in {
@@ -36,14 +36,14 @@ object ConcurrentMapSpec extends Spec {
     "support replace if mapped to a specific value" in {
       val ct = new TrieMap[Wrap, Int]
       for (i <- 0 until initsz) ct.update(new Wrap(i), i)
-      for (i <- 0 until initsz) assert(
-          ct.replace(new Wrap(i), -i - 1, -i - 2) == false)
-      for (i <- 0 until initsz) assert(
-          ct.replace(new Wrap(i), i, -i - 2) == true)
-      for (i <- 0 until initsz) assert(
-          ct.replace(new Wrap(i), i, -i - 2) == false)
-      for (i <- initsz until secondsz) assert(
-          ct.replace(new Wrap(i), i, 0) == false)
+      for (i <- 0 until initsz)
+        assert(ct.replace(new Wrap(i), -i - 1, -i - 2) == false)
+      for (i <- 0 until initsz)
+        assert(ct.replace(new Wrap(i), i, -i - 2) == true)
+      for (i <- 0 until initsz)
+        assert(ct.replace(new Wrap(i), i, -i - 2) == false)
+      for (i <- initsz until secondsz)
+        assert(ct.replace(new Wrap(i), i, 0) == false)
     }
 
     "support replace if present" in {
@@ -51,8 +51,8 @@ object ConcurrentMapSpec extends Spec {
       for (i <- 0 until initsz) ct.update(new Wrap(i), i)
       for (i <- 0 until initsz) assert(ct.replace(new Wrap(i), -i) == Some(i))
       for (i <- 0 until initsz) assert(ct.replace(new Wrap(i), i) == Some(-i))
-      for (i <- initsz until secondsz) assert(
-          ct.replace(new Wrap(i), i) == None)
+      for (i <- initsz until secondsz)
+        assert(ct.replace(new Wrap(i), i) == None)
     }
 
     def assertEqual(a: Any, b: Any) = {
@@ -144,7 +144,7 @@ object ConcurrentMapSpec extends Spec {
       class Modifier(index: Int, offs: Int) extends Thread {
         override def run() {
           for (j <- 0 until sz) {
-            val i = (offs + j) % sz
+            val i       = (offs + j) % sz
             var success = false
             do {
               if (ct.contains(new Wrap(i))) {

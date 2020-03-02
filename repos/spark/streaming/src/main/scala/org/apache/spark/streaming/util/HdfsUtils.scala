@@ -25,7 +25,7 @@ private[streaming] object HdfsUtils {
 
   def getOutputStream(path: String, conf: Configuration): FSDataOutputStream = {
     val dfsPath = new Path(path)
-    val dfs = getFileSystemForPath(dfsPath, conf)
+    val dfs     = getFileSystemForPath(dfsPath, conf)
     // If the file exists and we have append support, append instead of creating a new file
     val stream: FSDataOutputStream = {
       if (dfs.isFile(dfsPath)) {
@@ -34,7 +34,8 @@ private[streaming] object HdfsUtils {
           dfs.append(dfsPath)
         } else {
           throw new IllegalStateException(
-              "File exists and there is no append support!")
+            "File exists and there is no append support!"
+          )
         }
       } else {
         dfs.create(dfsPath)
@@ -45,7 +46,7 @@ private[streaming] object HdfsUtils {
 
   def getInputStream(path: String, conf: Configuration): FSDataInputStream = {
     val dfsPath = new Path(path)
-    val dfs = getFileSystemForPath(dfsPath, conf)
+    val dfs     = getFileSystemForPath(dfsPath, conf)
     if (dfs.isFile(dfsPath)) {
       try {
         dfs.open(dfsPath)
@@ -68,15 +69,18 @@ private[streaming] object HdfsUtils {
   }
 
   /** Get the locations of the HDFS blocks containing the given file segment. */
-  def getFileSegmentLocations(path: String,
-                              offset: Long,
-                              length: Long,
-                              conf: Configuration): Array[String] = {
-    val dfsPath = new Path(path)
-    val dfs = getFileSystemForPath(dfsPath, conf)
+  def getFileSegmentLocations(
+      path: String,
+      offset: Long,
+      length: Long,
+      conf: Configuration
+  ): Array[String] = {
+    val dfsPath    = new Path(path)
+    val dfs        = getFileSystemForPath(dfsPath, conf)
     val fileStatus = dfs.getFileStatus(dfsPath)
     val blockLocs = Option(
-        dfs.getFileBlockLocations(fileStatus, offset, length))
+      dfs.getFileBlockLocations(fileStatus, offset, length)
+    )
     blockLocs.map(_.flatMap(_.getHosts)).getOrElse(Array.empty)
   }
 
@@ -86,14 +90,14 @@ private[streaming] object HdfsUtils {
     val fs = path.getFileSystem(conf)
     fs match {
       case localFs: LocalFileSystem => localFs.getRawFileSystem
-      case _ => fs
+      case _                        => fs
     }
   }
 
   /** Check if the file exists at the given path. */
   def checkFileExists(path: String, conf: Configuration): Boolean = {
     val hdpPath = new Path(path)
-    val fs = getFileSystemForPath(hdpPath, conf)
+    val fs      = getFileSystemForPath(hdpPath, conf)
     fs.isFile(hdpPath)
   }
 }

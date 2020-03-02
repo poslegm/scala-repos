@@ -10,13 +10,16 @@ object Test {
       extends PerturberFn[Int] {
     def apply(xs: TraversableOnce[Int]): TraversableOnce[Int] = f(xs)
     def show(xs: TraversableOnce[Int]): String = {
-      val res = f(xs)
+      val res       = f(xs)
       val resString = "" + res
-      val rest = res.toTraversable
-      val failed = (rest take 100).size == 100
+      val rest      = res.toTraversable
+      val failed    = (rest take 100).size == 100
 
       "%-45s %-30s %s".format(
-          toString, resString, if (failed) "<failed>" else rest.mkString(" "))
+        toString,
+        resString,
+        if (failed) "<failed>" else rest.mkString(" ")
+      )
     }
     def and(g: Perturber): Perturber =
       new Perturber(this.labels ++ g.labels, f andThen g.f)
@@ -28,10 +31,10 @@ object Test {
       new Perturber(List(label), f)
   }
 
-  def naturals = Stream from 1
-  val toV: Perturber = Perturber("view", _.toTraversable.view)
-  val toI: Perturber = Perturber("toIterator", _.toIterator)
-  val toS: Perturber = Perturber("toStream", _.toStream)
+  def naturals        = Stream from 1
+  val toV: Perturber  = Perturber("view", _.toTraversable.view)
+  val toI: Perturber  = Perturber("toIterator", _.toIterator)
+  val toS: Perturber  = Perturber("toStream", _.toStream)
   val toIS: Perturber = Perturber("toIndexedSeq", _.toIndexedSeq)
 
   def p(ps: Perturber*): Perturber =
@@ -40,8 +43,8 @@ object Test {
   def take(n: Int): Perturber = Perturber("take " + n, _.toIterator take n)
   def slice(from: Int, until: Int): Perturber =
     Perturber(
-        "slice(%d, %d)".format(from, until),
-        _.toTraversable.slice(from, until)
+      "slice(%d, %d)".format(from, until),
+      _.toTraversable.slice(from, until)
     )
 
   val fns = List[Perturber](toV, toI, toS, toIS)
@@ -51,7 +54,8 @@ object Test {
   def sdt(n: Int): Perturber = p(slice(n, n * 2), drop(n / 2), take(n / 4))
   def std(n: Int): Perturber = p(slice(n, n * 2), take(n / 2), drop(n / 4))
 
-  val transforms = (fns.permutations map (xs => p(xs take 3: _*))).toList.distinct
+  val transforms =
+    (fns.permutations map (xs => p(xs take 3: _*))).toList.distinct
   def mkOps(n: Int) = List[Perturber](tds(n), dts(n), sdt(n), std(n))
   def runOps(n: Int) = {
     val xs: List[(String, List[String])] =
@@ -66,7 +70,6 @@ object Test {
     ()
   }
 
-  def main(args: Array[String]): Unit = {
+  def main(args: Array[String]): Unit =
     runOps(20)
-  }
 }

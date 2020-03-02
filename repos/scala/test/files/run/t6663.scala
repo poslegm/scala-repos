@@ -1,7 +1,7 @@
 import language.dynamics
 
 class C(v: Any) extends Dynamic {
-  def selectDynamic[T](n: String): Option[T] = Option(v.asInstanceOf[T])
+  def selectDynamic[T](n: String): Option[T]  = Option(v.asInstanceOf[T])
   def applyDynamic[T](n: String)(): Option[T] = Option(v.asInstanceOf[T])
 }
 

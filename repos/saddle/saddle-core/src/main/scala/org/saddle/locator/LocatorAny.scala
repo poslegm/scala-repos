@@ -16,12 +16,15 @@
 package org.saddle.locator
 
 import org.saddle.ST
-import it.unimi.dsi.fastutil.objects.{Object2IntLinkedOpenHashMap, Object2IntOpenHashMap}
+import it.unimi.dsi.fastutil.objects.{
+  Object2IntLinkedOpenHashMap,
+  Object2IntOpenHashMap
+}
 
 /**
   * An object-to-integer hash map, backed by fastutil implementation
   */
-class LocatorAny[T : ST](sz: Int = Locator.INIT_CAPACITY) extends Locator[T] {
+class LocatorAny[T: ST](sz: Int = Locator.INIT_CAPACITY) extends Locator[T] {
   val map = new Object2IntLinkedOpenHashMap[T](sz)
   val cts = new Object2IntOpenHashMap[T](sz)
 
@@ -45,8 +48,8 @@ class LocatorAny[T : ST](sz: Int = Locator.INIT_CAPACITY) extends Locator[T] {
 
   def counts() = {
     val iter = map.keySet().iterator()
-    val res = Array.ofDim[Int](size)
-    var i = 0
+    val res  = Array.ofDim[Int](size)
+    var i    = 0
     while (iter.hasNext) {
       res(i) = cts.getInt(iter.next())
       i += 1
@@ -55,11 +58,11 @@ class LocatorAny[T : ST](sz: Int = Locator.INIT_CAPACITY) extends Locator[T] {
   }
 
   def keys() = {
-    val ks = map.keySet()
-    val it = ks.iterator()
-    val sz = ks.size()
+    val ks     = map.keySet()
+    val it     = ks.iterator()
+    val sz     = ks.size()
     val newArr = implicitly[ST[T]].newArray(sz)
-    var i = 0
+    var i      = 0
     while (i < sz) {
       newArr(i) = it.next()
       i += 1

@@ -17,8 +17,8 @@ class TraitWithAbstractValueTest extends FunSuite {
 
   test("main") {
     val instance = TheClass(1)
-    val p = instance.pickle
-    val up = p.unpickle[TheClass]
+    val p        = instance.pickle
+    val up       = p.unpickle[TheClass]
     assert(instance === up)
   }
 }

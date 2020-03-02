@@ -14,14 +14,17 @@ class SimpleDnsCache extends Dns with PeriodicCacheCleanup {
   import akka.io.SimpleDnsCache._
 
   private val cache = new AtomicReference(
-      new Cache(
-          immutable.SortedSet()(ExpiryEntryOrdering), immutable.Map(), clock))
+    new Cache(
+      immutable.SortedSet()(ExpiryEntryOrdering),
+      immutable.Map(),
+      clock
+    )
+  )
 
   private val nanoBase = System.nanoTime()
 
-  override def cached(name: String): Option[Resolved] = {
+  override def cached(name: String): Option[Resolved] =
     cache.get().get(name)
-  }
 
   protected def clock(): Long = {
     val now = System.nanoTime()
@@ -43,30 +46,33 @@ class SimpleDnsCache extends Dns with PeriodicCacheCleanup {
 }
 
 object SimpleDnsCache {
-  private class Cache(queue: immutable.SortedSet[ExpiryEntry],
-                      cache: immutable.Map[String, CacheEntry],
-                      clock: () ⇒ Long) {
-    def get(name: String): Option[Resolved] = {
+  private class Cache(
+      queue: immutable.SortedSet[ExpiryEntry],
+      cache: immutable.Map[String, CacheEntry],
+      clock: () ⇒ Long
+  ) {
+    def get(name: String): Option[Resolved] =
       for {
         e ← cache.get(name) if e.isValid(clock())
       } yield e.answer
-    }
 
     def put(answer: Resolved, ttlMillis: Long): Cache = {
       val until = clock() + ttlMillis
 
-      new Cache(queue + new ExpiryEntry(answer.name, until),
-                cache + (answer.name -> CacheEntry(answer, until)),
-                clock)
+      new Cache(
+        queue + new ExpiryEntry(answer.name, until),
+        cache + (answer.name -> CacheEntry(answer, until)),
+        clock
+      )
     }
 
     def cleanup(): Cache = {
       val now = clock()
-      var q = queue
-      var c = cache
+      var q   = queue
+      var c   = cache
       while (q.nonEmpty && !q.head.isValid(now)) {
         val minEntry = q.head
-        val name = minEntry.name
+        val name     = minEntry.name
         q -= minEntry
         if (c.get(name).filterNot(_.isValid(now)).isDefined) c -= name
       }
@@ -80,13 +86,12 @@ object SimpleDnsCache {
 
   private class ExpiryEntry(val name: String, val until: Long)
       extends Ordered[ExpiryEntry] {
-    def isValid(clock: Long): Boolean = clock < until
+    def isValid(clock: Long): Boolean            = clock < until
     override def compare(that: ExpiryEntry): Int = -until.compareTo(that.until)
   }
 
   private object ExpiryEntryOrdering extends Ordering[ExpiryEntry] {
-    override def compare(x: ExpiryEntry, y: ExpiryEntry): Int = {
+    override def compare(x: ExpiryEntry, y: ExpiryEntry): Int =
       x.until.compareTo(y.until)
-    }
   }
 }

@@ -12,12 +12,15 @@ import scala.concurrent.{ExecutionContext, Future}
   * Test servlet using ContentEncodingSupport.
   */
 class ContentEncodingSupportTestServlet
-    extends ScalatraServlet with ContentEncodingSupportAppBase {
+    extends ScalatraServlet
+    with ContentEncodingSupportAppBase {
   implicit protected def executor: ExecutionContext = ExecutionContext.global
 }
 
 trait ContentEncodingSupportAppBase
-    extends ScalatraBase with FutureSupport with ContentEncodingSupport {
+    extends ScalatraBase
+    with FutureSupport
+    with ContentEncodingSupport {
   get("/") {
     Helper.body
   }
@@ -45,13 +48,16 @@ class GZipSupportServletTest
 
 /** Abstract test suite, for any encoding. */
 abstract class ContentEncodingSupportTest(e: ContentEncoding)
-    extends ScalatraFunSuite with Matchers {
+    extends ScalatraFunSuite
+    with Matchers {
   implicit val encoding = e
 
   test("should decode request if Content-Encoding is supported") {
-    post("/",
-         Helper.compress(Helper.body),
-         Map("Content-Encoding" -> encoding.name)) {
+    post(
+      "/",
+      Helper.compress(Helper.body),
+      Map("Content-Encoding" -> encoding.name)
+    ) {
       response.body should equal(Helper.body)
     }
   }
@@ -109,7 +115,8 @@ private object Helper {
     val out = new ByteArrayOutputStream()
 
     val zout = new BufferedWriter(
-        new OutputStreamWriter(encoding.encode(out), "UTF-8"))
+      new OutputStreamWriter(encoding.encode(out), "UTF-8")
+    )
     zout.write(str)
     zout.close()
 
@@ -119,10 +126,10 @@ private object Helper {
   /**
     * Uncompresses an array to a string with gzip.
     */
-  def uncompress(bytes: Array[Byte])(
-      implicit encoding: ContentEncoding): String = {
+  def uncompress(
+      bytes: Array[Byte]
+  )(implicit encoding: ContentEncoding): String =
     convertStreamToString(encoding.decode(new ByteArrayInputStream(bytes)))
-  }
 
   /**
     * Returns a string with the content from the input stream.

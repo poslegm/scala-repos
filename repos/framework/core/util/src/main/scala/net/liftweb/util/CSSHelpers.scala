@@ -37,8 +37,8 @@ object CSSHelpers extends ControlHelpers {
     * @return (Box[String], String) - returns the tuple containing the parsing output and the original input (as a String)
     */
   def fixCSS(in: Reader, rootPrefix: String): (Box[String], String) = {
-    val reader = new BufferedReader(in)
-    val res = new StringBuilder;
+    val reader       = new BufferedReader(in)
+    val res          = new StringBuilder;
     var line: String = null;
     try {
       while ({ line = reader.readLine(); line != null }) {
@@ -54,8 +54,9 @@ object CSSHelpers extends ControlHelpers {
 
 object CSSParser {
   @deprecated(
-      "Please use CssUrlPrefixer instead; we are unifying capitalization across Lift.",
-      "3.0")
+    "Please use CssUrlPrefixer instead; we are unifying capitalization across Lift.",
+    "3.0"
+  )
   def apply(prefix: String) = CssUrlPrefixer(prefix)
 }
 
@@ -96,7 +97,7 @@ case class CssUrlPrefixer(prefix: String) extends Parsers {
             case ' ' | '\t' | '\n' | '\r' if (seqDone == 3 || seqDone == 4) =>
               seqDone = 4
             case '(' if (seqDone == 3 || seqDone == 4) => seqDone = 5
-            case _ => seqDone = 0
+            case _                                     => seqDone = 0
           }
           seqDone == 5;
       }
@@ -106,17 +107,18 @@ case class CssUrlPrefixer(prefix: String) extends Parsers {
 
   lazy val spaces = (elem(' ') | elem('\t') | elem('\n') | elem('\r')).*
 
-  def pathWith(additionalCharacters: Char*) = {
-    elem("path",
-         c =>
-           c.isLetterOrDigit || c == '?' || c == '/' || c == '&' || c == '@' ||
-           c == ';' || c == '.' || c == '+' || c == '-' || c == '=' ||
-           c == ':' || c == ' ' || c == '_' || c == '#' ||
-           c == ',' || c == '%' || additionalCharacters.contains(c)).+ ^^ {
+  def pathWith(additionalCharacters: Char*) =
+    elem(
+      "path",
+      c =>
+        c.isLetterOrDigit || c == '?' || c == '/' || c == '&' || c == '@' ||
+          c == ';' || c == '.' || c == '+' || c == '-' || c == '=' ||
+          c == ':' || c == ' ' || c == '_' || c == '#' ||
+          c == ',' || c == '%' || additionalCharacters.contains(c)
+    ).+ ^^ {
       case l =>
         l.mkString("")
     }
-  }
 
   // consider only root relative paths that start with /
   lazy val path = pathWith()
@@ -132,40 +134,40 @@ case class CssUrlPrefixer(prefix: String) extends Parsers {
     // do the parsing per CSS spec http://www.w3.org/TR/REC-CSS2/syndata.html#uri section 4.3.4
     spaces ~> innerUrl <~ (spaces <~ elem(')')) ^^ {
       case urlPath => {
-          val trimmedPath = urlPath.trim
+        val trimmedPath = urlPath.trim
 
-          val updatedPath =
-            if (trimmedPath.charAt(0) == '/') {
-              escapedPrefix + trimmedPath
-            } else {
-              trimmedPath
-            }
+        val updatedPath =
+          if (trimmedPath.charAt(0) == '/') {
+            escapedPrefix + trimmedPath
+          } else {
+            trimmedPath
+          }
 
-          quoteString + updatedPath + quoteString + ")"
-        }
+        quoteString + updatedPath + quoteString + ")"
+      }
     }
   }
 
   // the URL might be wrapped in simple quotes
-  lazy val singleQuotedPath = fullUrl(
-      elem('\'') ~> pathWith('"') <~ elem('\''), "'")
+  lazy val singleQuotedPath =
+    fullUrl(elem('\'') ~> pathWith('"') <~ elem('\''), "'")
   // the URL might be wrapped in double quotes
-  lazy val doubleQuotedPath = fullUrl(
-      elem('\"') ~> pathWith('\'') <~ elem('\"'), "\"")
+  lazy val doubleQuotedPath =
+    fullUrl(elem('\"') ~> pathWith('\'') <~ elem('\"'), "\"")
   // the URL might not be wrapped at all
   lazy val quotelessPath = fullUrl(path, "")
 
   lazy val phrase =
     (((contentParser ~ singleQuotedPath) ||| (contentParser ~ doubleQuotedPath) |||
-            (contentParser ~ quotelessPath)).* ^^ {
-          case l =>
-            l.flatMap(f => f._1 + f._2).mkString("")
-        }) ~ contentParser ^^ {
+      (contentParser ~ quotelessPath)).* ^^ {
+      case l =>
+        l.flatMap(f => f._1 + f._2).mkString("")
+    }) ~ contentParser ^^ {
       case a ~ b =>
         a + b
     }
 
-  def fixCss(cssString: String): Box[String] = {
+  def fixCss(cssString: String): Box[String] =
     phrase(cssString) match {
       case Success(updatedCss, remaining) if remaining.atEnd =>
         Full(updatedCss)
@@ -173,21 +175,22 @@ case class CssUrlPrefixer(prefix: String) extends Parsers {
       case Success(_, remaining) =>
         val remainingString = remaining.source
           .subSequence(
-              remaining.offset,
-              remaining.source.length
+            remaining.offset,
+            remaining.source.length
           )
           .toString
 
         common.Failure(
-            s"Parser did not consume all input. Parser error? Unconsumed:\n$remainingString")
+          s"Parser did not consume all input. Parser error? Unconsumed:\n$remainingString"
+        )
 
       case failure =>
         common.Failure(s"Parse failed with result $failure") ~> failure
     }
-  }
 
   @deprecated(
-      "Please use fixCss instead; we are unifying capitalization across Lift.",
-      "3.0")
+    "Please use fixCss instead; we are unifying capitalization across Lift.",
+    "3.0"
+  )
   def fixCSS(in: String): Box[String] = fixCss(in)
 }

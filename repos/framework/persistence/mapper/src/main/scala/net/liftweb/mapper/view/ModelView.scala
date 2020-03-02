@@ -49,9 +49,8 @@ trait ModelSnippet[T <: Mapper[T]] extends StatefulSnippet {
   /**
     * Action when save is successful. Defaults to using the ModelView's redirectOnSave
     */
-  var onSave = (view: MV[T]) =>
-    {
-      view.redirectOnSave.foreach(redirectTo)
+  var onSave = (view: MV[T]) => {
+    view.redirectOnSave.foreach(redirectTo)
   }
 
   /**
@@ -67,8 +66,8 @@ trait ModelSnippet[T <: Mapper[T]] extends StatefulSnippet {
   def load(entity: T) = view.entity = entity
 
   def dispatch: DispatchIt = {
-    case "list" => list _
-    case "edit" => edit _
+    case "list"      => list _
+    case "edit"      => edit _
     case "newOrEdit" => view.newOrEdit
   }
 
@@ -100,7 +99,7 @@ class ModelView[T <: Mapper[T]](var entity: T, val snippet: ModelSnippet[T]) {
   var redirectOnSave: Option[String] = Some("list")
 
   /**
-    * Loads this entity into the snippet so it can be edited 
+    * Loads this entity into the snippet so it can be edited
     */
   def load = snippet.load(entity)
 
@@ -116,10 +115,9 @@ class ModelView[T <: Mapper[T]](var entity: T, val snippet: ModelSnippet[T]) {
     * existing entity is being edited or a new one is being
     * created.
     */
-  def newOrEdit = {
+  def newOrEdit =
     if (entity.saved_?) ".edit ^^" #> "ignored"
     else ".new ^^" #> "ignored"
-  }
 
   /**
     * This method checks whether the entity
@@ -154,7 +152,8 @@ class ModelView[T <: Mapper[T]](var entity: T, val snippet: ModelSnippet[T]) {
         case e: net.liftweb.mapper.KeyedMapper[_, T] =>
           e.primaryKeyField.toString
         case _ => entity.fieldByName("id").toString
-      } else "<new>"
+      }
+    else "<new>"
 
   /**
     * Returns a CssSel that binds a link to ".edit" to load and edit this entity
@@ -174,13 +173,13 @@ class ModelView[T <: Mapper[T]](var entity: T, val snippet: ModelSnippet[T]) {
     * If the field has a Full toForm implementation then that is used;
     * otherwise its asHtml is called.
     */
-  def edit(name: String) = {
+  def edit(name: String) =
     entity
       .fieldByName(name)
       .map { (field: net.liftweb.mapper.MappedField[_, _]) =>
         s".$name *" #> field.toForm.openOr(field.asHtml)
       }
       .openOrThrowException(
-          "If nobody has complained about this giving a NPE, I'll assume it is safe")
-  }
+        "If nobody has complained about this giving a NPE, I'll assume it is safe"
+      )
 }

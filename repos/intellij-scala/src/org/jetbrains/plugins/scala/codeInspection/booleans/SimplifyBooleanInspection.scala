@@ -4,7 +4,10 @@ package codeInspection.booleans
 import com.intellij.codeInspection.{ProblemHighlightType, ProblemsHolder}
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-import org.jetbrains.plugins.scala.codeInspection.{AbstractFixOnPsiElement, AbstractInspection}
+import org.jetbrains.plugins.scala.codeInspection.{
+  AbstractFixOnPsiElement,
+  AbstractInspection
+}
 import org.jetbrains.plugins.scala.lang.completion.ScalaKeyword
 import org.jetbrains.plugins.scala.lang.psi.api.base.ScLiteral
 import org.jetbrains.plugins.scala.lang.psi.api.expr._
@@ -20,17 +23,18 @@ import scala.Predef._
   *
   */
 class SimplifyBooleanInspection
-    extends AbstractInspection(
-        "SimplifyBoolean", "Simplify boolean expression") {
+    extends AbstractInspection("SimplifyBoolean", "Simplify boolean expression") {
 
   def actionFor(holder: ProblemsHolder): PartialFunction[PsiElement, Any] = {
     case _: ScParenthesisedExpr =>
     //do nothing to avoid many similar expressions
     case expr: ScExpression if SimplifyBooleanUtil.canBeSimplified(expr) =>
-      holder.registerProblem(expr,
-                             "Simplify boolean expression",
-                             ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
-                             new SimplifyBooleanQuickFix(expr))
+      holder.registerProblem(
+        expr,
+        "Simplify boolean expression",
+        ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
+        new SimplifyBooleanQuickFix(expr)
+      )
   }
 }
 
@@ -49,11 +53,10 @@ class SimplifyBooleanQuickFix(expr: ScExpression)
 object SimplifyBooleanUtil {
   val boolInfixOperations = Set("==", "!=", "&&", "&", "||", "|", "^")
 
-  def canBeSimplified(
-      expr: ScExpression, isTopLevel: Boolean = true): Boolean = {
+  def canBeSimplified(expr: ScExpression, isTopLevel: Boolean = true): Boolean =
     expr match {
       case _: ScLiteral if !isTopLevel => booleanConst(expr).isDefined
-      case ScParenthesisedExpr(e) => canBeSimplified(e, isTopLevel)
+      case ScParenthesisedExpr(e)      => canBeSimplified(e, isTopLevel)
       case expression: ScExpression =>
         val children = getScExprChildren(expr)
         val isBooleanOperation = expression match {
@@ -61,27 +64,30 @@ object SimplifyBooleanUtil {
             operation.refName == "!" && isOfBooleanType(operand)
           case ScInfixExpr(left, oper, right) =>
             boolInfixOperations.contains(oper.refName) &&
-            isOfBooleanType(left) && isOfBooleanType(right)
+              isOfBooleanType(left) && isOfBooleanType(right)
           case _ => false
         }
         isBooleanOperation && isOfBooleanType(expr) &&
         children.exists(canBeSimplified(_, isTopLevel = false))
     }
-  }
 
-  def simplify(expr: ScExpression, isTopLevel: Boolean = true): ScExpression = {
+  def simplify(expr: ScExpression, isTopLevel: Boolean = true): ScExpression =
     if (canBeSimplified(expr, isTopLevel) && booleanConst(expr).isEmpty) {
       val exprCopy =
         ScalaPsiElementFactory.createExpressionWithContextFromText(
-            expr.getText, expr.getContext, expr)
+          expr.getText,
+          expr.getContext,
+          expr
+        )
       val children = getScExprChildren(exprCopy)
-      children.foreach(
-          child =>
-            exprCopy.getNode.replaceChild(
-                child.getNode, simplify(child, isTopLevel = false).getNode))
+      children.foreach(child =>
+        exprCopy.getNode.replaceChild(
+          child.getNode,
+          simplify(child, isTopLevel = false).getNode
+        )
+      )
       simplifyTrivially(exprCopy)
     } else expr
-  }
 
   private def isOfBooleanType(expr: ScExpression): Boolean =
     expr
@@ -95,9 +101,9 @@ object SimplifyBooleanUtil {
   private def booleanConst(expr: ScExpression): Option[Boolean] = expr match {
     case literal: ScLiteral =>
       literal.getText match {
-        case "true" => Some(true)
+        case "true"  => Some(true)
         case "false" => Some(false)
-        case _ => None
+        case _       => None
       }
     case _ => None
   }
@@ -107,14 +113,18 @@ object SimplifyBooleanUtil {
       case parenthesized: ScParenthesisedExpr =>
         val copy = parenthesized.copy.asInstanceOf[ScParenthesisedExpr]
         copy.replaceExpression(
-            copy.expr.getOrElse(copy), removeParenthesis = true)
+          copy.expr.getOrElse(copy),
+          removeParenthesis = true
+        )
       case ScPrefixExpr(operation, operand) =>
         if (operation.refName != "!") expr
         else {
           booleanConst(operand) match {
             case Some(bool: Boolean) =>
               ScalaPsiElementFactory.createExpressionFromText(
-                  (!bool).toString, expr.getManager)
+                (!bool).toString,
+                expr.getManager
+              )
             case None => expr
           }
         }
@@ -137,12 +147,15 @@ object SimplifyBooleanUtil {
     }
 
   private def simplifyInfixWithLiteral(
-      value: Boolean, operation: String, expr: ScExpression): ScExpression = {
+      value: Boolean,
+      operation: String,
+      expr: ScExpression
+  ): ScExpression = {
     val manager = expr.getManager
     val text: String = booleanConst(expr) match {
       case Some(bool: Boolean) =>
         val result: Boolean = operation match {
-          case "==" => bool == value
+          case "=="       => bool == value
           case "!=" | "^" => bool != value
           case "&&" | "&" => bool && value
           case "||" | "|" => bool || value
@@ -158,8 +171,8 @@ object SimplifyBooleanUtil {
               .createExpressionFromText("!a", manager)
               .asInstanceOf[ScPrefixExpr]
             val copyExpr = expr.copy.asInstanceOf[ScExpression]
-            negated.operand.replaceExpression(
-                copyExpr, removeParenthesis = true)
+            negated.operand
+              .replaceExpression(copyExpr, removeParenthesis = true)
             negated.getText
           case (true, "||") | (true, "|") =>
             ScalaKeyword.TRUE

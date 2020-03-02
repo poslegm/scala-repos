@@ -24,15 +24,17 @@ object Markdown {
     * @param hasWritePermission true if user has writable to ths given repository
     * @param pages the list of existing Wiki pages
     */
-  def toHtml(markdown: String,
-             repository: RepositoryService.RepositoryInfo,
-             enableWikiLink: Boolean,
-             enableRefsLink: Boolean,
-             enableAnchor: Boolean,
-             enableLineBreaks: Boolean,
-             enableTaskList: Boolean = false,
-             hasWritePermission: Boolean = false,
-             pages: List[String] = Nil)(implicit context: Context): String = {
+  def toHtml(
+      markdown: String,
+      repository: RepositoryService.RepositoryInfo,
+      enableWikiLink: Boolean,
+      enableRefsLink: Boolean,
+      enableAnchor: Boolean,
+      enableLineBreaks: Boolean,
+      enableTaskList: Boolean = false,
+      hasWritePermission: Boolean = false,
+      pages: List[String] = Nil
+  )(implicit context: Context): String = {
 
     // escape task list
     val source = if (enableTaskList) escapeTaskList(markdown) else markdown
@@ -41,14 +43,16 @@ object Markdown {
     options.setSanitize(true)
     options.setBreaks(enableLineBreaks)
 
-    val renderer = new GitBucketMarkedRenderer(options,
-                                               repository,
-                                               enableWikiLink,
-                                               enableRefsLink,
-                                               enableAnchor,
-                                               enableTaskList,
-                                               hasWritePermission,
-                                               pages)
+    val renderer = new GitBucketMarkedRenderer(
+      options,
+      repository,
+      enableWikiLink,
+      enableRefsLink,
+      enableAnchor,
+      enableTaskList,
+      hasWritePermission,
+      pages
+    )
 
     Marked.marked(source, options, renderer)
   }
@@ -64,19 +68,24 @@ object Markdown {
       enableAnchor: Boolean,
       enableTaskList: Boolean,
       hasWritePermission: Boolean,
-      pages: List[String])(implicit val context: Context)
-      extends Renderer(options) with LinkConverter with RequestCache {
+      pages: List[String]
+  )(implicit val context: Context)
+      extends Renderer(options)
+      with LinkConverter
+      with RequestCache {
 
     override def heading(text: String, level: Int, raw: String): String = {
-      val id = generateAnchorName(text)
+      val id  = generateAnchorName(text)
       val out = new StringBuilder()
 
       out.append("<h" + level + " id=\"" + options.getHeaderPrefix + id + "\"")
 
       if (enableAnchor) {
         out.append(" class=\"markdown-head\">")
-        out.append("<a class=\"markdown-anchor-link\" href=\"#" + id +
-            "\"><span class=\"octicon octicon-link\"></span></a>")
+        out.append(
+          "<a class=\"markdown-anchor-link\" href=\"#" + id +
+            "\"><span class=\"octicon octicon-link\"></span></a>"
+        )
         out.append("<a class=\"markdown-anchor\" name=\"" + id + "\"></a>")
       } else {
         out.append(">")
@@ -87,11 +96,10 @@ object Markdown {
       out.toString()
     }
 
-    override def code(code: String, lang: String, escaped: Boolean): String = {
+    override def code(code: String, lang: String, escaped: Boolean): String =
       "<pre class=\"prettyprint" +
-      (if (lang != null) s" ${options.getLangPrefix}${lang}" else "") + "\">" +
-      (if (escaped) code else escape(code, true)) + "</pre>"
-    }
+        (if (lang != null) s" ${options.getLangPrefix}${lang}" else "") + "\">" +
+        (if (escaped) code else escape(code, true)) + "</pre>"
 
     override def list(body: String, ordered: Boolean): String = {
       var listType: String = null
@@ -102,19 +110,18 @@ object Markdown {
       }
       if (body.contains("""class="task-list-item-checkbox"""")) {
         "<" + listType + " class=\"task-list\">\n" + body + "</" + listType +
-        ">\n"
+          ">\n"
       } else {
         "<" + listType + ">\n" + body + "</" + listType + ">\n"
       }
     }
 
-    override def listitem(text: String): String = {
+    override def listitem(text: String): String =
       if (text.contains("""class="task-list-item-checkbox" """)) {
         "<li class=\"task-list-item\">" + text + "</li>\n"
       } else {
         "<li>" + text + "</li>\n"
       }
-    }
 
     override def text(text: String): String = {
       // convert commit id and username to link.
@@ -129,15 +136,13 @@ object Markdown {
       t2
     }
 
-    override def link(href: String, title: String, text: String): String = {
+    override def link(href: String, title: String, text: String): String =
       super.link(fixUrl(href, false), title, text)
-    }
 
-    override def image(href: String, title: String, text: String): String = {
+    override def image(href: String, title: String, text: String): String =
       super.image(fixUrl(href, true), title, text)
-    }
 
-    override def nolink(text: String): String = {
+    override def nolink(text: String): String =
       if (enableWikiLink && text.startsWith("[[") && text.endsWith("]]")) {
         val link = text.replaceAll("(^\\[\\[|\\]\\]$)", "")
 
@@ -151,7 +156,7 @@ object Markdown {
 
         val url =
           repository.httpUrl.replaceFirst("/git/", "/").stripSuffix(".git") +
-          "/wiki/" + StringUtil.urlEncode(page)
+            "/wiki/" + StringUtil.urlEncode(page)
         if (pages.contains(page)) {
           "<a href=\"" + url + "\">" + escape(label) + "</a>"
         } else {
@@ -160,9 +165,8 @@ object Markdown {
       } else {
         escape(text)
       }
-    }
 
-    private def fixUrl(url: String, isImage: Boolean = false): String = {
+    private def fixUrl(url: String, isImage: Boolean = false): String =
       if (url.startsWith("http://") || url.startsWith("https://") ||
           url.startsWith("/")) {
         url
@@ -177,33 +181,32 @@ object Markdown {
             if (paths.length > 3) paths.drop(4).mkString("/")
             else repository.repository.defaultBranch
           repository.httpUrl.replaceFirst("/git/", "/").stripSuffix(".git") +
-          "/blob/" + branch + "/" + url + (if (isImage) "?raw=true" else "")
+            "/blob/" + branch + "/" + url + (if (isImage) "?raw=true" else "")
         } else {
           val paths = context.currentPath.split("/")
           val branch =
             if (paths.length > 3) paths.last
             else repository.repository.defaultBranch
           repository.httpUrl.replaceFirst("/git/", "/").stripSuffix(".git") +
-          "/blob/" + branch + "/" + url + (if (isImage) "?raw=true" else "")
+            "/blob/" + branch + "/" + url + (if (isImage) "?raw=true" else "")
         }
       } else {
         repository.httpUrl.replaceFirst("/git/", "/").stripSuffix(".git") +
-        "/wiki/_blob/" + url
+          "/wiki/_blob/" + url
       }
-    }
   }
 
-  def escapeTaskList(text: String): String = {
+  def escapeTaskList(text: String): String =
     Pattern
       .compile("""^( *)- \[([x| ])\] """, Pattern.MULTILINE)
       .matcher(text)
       .replaceAll("$1* task:$2: ")
-  }
 
   def generateAnchorName(text: String): String = {
     val normalized = Normalizer.normalize(
-        text.replaceAll("<.*>", "").replaceAll("[\\s]", "-"),
-        Normalizer.Form.NFD)
+      text.replaceAll("<.*>", "").replaceAll("[\\s]", "-"),
+      Normalizer.Form.NFD
+    )
     val encoded = StringUtil.urlEncode(normalized)
     encoded.toLowerCase(Locale.ENGLISH)
   }
@@ -212,12 +215,14 @@ object Markdown {
     val disabled = if (hasWritePermission) "" else "disabled"
     text
       .replaceAll(
-          "task:x:",
-          """<input type="checkbox" class="task-list-item-checkbox" checked="checked" """ +
-          disabled + "/>")
+        "task:x:",
+        """<input type="checkbox" class="task-list-item-checkbox" checked="checked" """ +
+          disabled + "/>"
+      )
       .replaceAll(
-          "task: :",
-          """<input type="checkbox" class="task-list-item-checkbox" """ +
-          disabled + "/>")
+        "task: :",
+        """<input type="checkbox" class="task-list-item-checkbox" """ +
+          disabled + "/>"
+      )
   }
 }

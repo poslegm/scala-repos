@@ -16,16 +16,17 @@ import com.intellij.openapi.project.Project
 class ScaladocConfiguration(
     private val form: ScaladocConsoleRunConfigurationForm,
     private val project: Project,
-    private val scope: AnalysisScope)
-    extends ModuleRunProfile {
-  def getModules: Array[Module] = {
+    private val scope: AnalysisScope
+) extends ModuleRunProfile {
+  def getModules: Array[Module] =
     Module.EMPTY_ARRAY
-  }
 
   def getState(
-      executor: Executor, env: ExecutionEnvironment): RunProfileState = {
-    val state: ScaladocCommandLineState = new ScaladocCommandLineState(
-        env, project)
+      executor: Executor,
+      env: ExecutionEnvironment
+  ): RunProfileState = {
+    val state: ScaladocCommandLineState =
+      new ScaladocCommandLineState(env, project)
     state.setAdditionalScaladocFlags(form.getAdditionalFlags)
     state.setScope(scope)
     state.setVerbose(form.isVerbose)

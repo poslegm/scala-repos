@@ -19,12 +19,13 @@ import javax.validation.Validation
   */
 object DynamicFormSpec extends Specification {
   val messagesApi = new DefaultMessagesApi(
-      Environment.simple(),
-      Configuration.reference,
-      new DefaultLangs(Configuration.reference))
+    Environment.simple(),
+    Configuration.reference,
+    new DefaultLangs(Configuration.reference)
+  )
   implicit val messages = messagesApi.preferred(Seq.empty)
-  val jMessagesApi = new play.i18n.MessagesApi(messagesApi)
-  val validator = Validation.buildDefaultValidatorFactory().getValidator()
+  val jMessagesApi      = new play.i18n.MessagesApi(messagesApi)
+  val validator         = Validation.buildDefaultValidatorFactory().getValidator()
 
   "a dynamic form" should {
 
@@ -79,16 +80,16 @@ object DynamicFormSpec extends Specification {
     }
 
     "allow access to the property when filled" in {
-      val form = new DynamicForm(jMessagesApi,
-                                 new Formatters(jMessagesApi),
-                                 validator).fill(Map("foo" -> "bar"))
+      val form =
+        new DynamicForm(jMessagesApi, new Formatters(jMessagesApi), validator)
+          .fill(Map("foo" -> "bar"))
       form.get("foo") must_== "bar"
     }
 
     "allow access to the equivalent of the raw data when filled" in {
-      val form = new DynamicForm(jMessagesApi,
-                                 new Formatters(jMessagesApi),
-                                 validator).fill(Map("foo" -> "bar"))
+      val form =
+        new DynamicForm(jMessagesApi, new Formatters(jMessagesApi), validator)
+          .fill(Map("foo" -> "bar"))
       form("foo").value() must_== "bar"
     }
   }

@@ -17,8 +17,9 @@ import org.scalajs.core.tools.io.IO
   *  JVM for the rest of the project.
   */
 final class PhantomJettyClassLoader(
-    jettyLoader: ClassLoader, parent: ClassLoader)
-    extends ClassLoader(parent) {
+    jettyLoader: ClassLoader,
+    parent: ClassLoader
+) extends ClassLoader(parent) {
 
   def this(loader: ClassLoader) =
     this(loader, ClassLoader.getSystemClassLoader())
@@ -27,14 +28,14 @@ final class PhantomJettyClassLoader(
     *  Basically everything defined in JettyWebsocketManager.
     */
   private val bridgeClasses = Set(
-      "org.scalajs.jsenv.phantomjs.JettyWebsocketManager",
-      "org.scalajs.jsenv.phantomjs.JettyWebsocketManager$WSLogger",
-      "org.scalajs.jsenv.phantomjs.JettyWebsocketManager$ComWebSocketListener",
-      "org.scalajs.jsenv.phantomjs.JettyWebsocketManager$$anon$1",
-      "org.scalajs.jsenv.phantomjs.JettyWebsocketManager$$anon$2"
+    "org.scalajs.jsenv.phantomjs.JettyWebsocketManager",
+    "org.scalajs.jsenv.phantomjs.JettyWebsocketManager$WSLogger",
+    "org.scalajs.jsenv.phantomjs.JettyWebsocketManager$ComWebSocketListener",
+    "org.scalajs.jsenv.phantomjs.JettyWebsocketManager$$anon$1",
+    "org.scalajs.jsenv.phantomjs.JettyWebsocketManager$$anon$2"
   )
 
-  override protected def loadClass(name: String, resolve: Boolean): Class[_] = {
+  override protected def loadClass(name: String, resolve: Boolean): Class[_] =
     if (bridgeClasses.contains(name)) {
       // Load bridgeClasses manually since they must be associated to this
       // class loader, rather than the parent class loader in order to find the
@@ -60,5 +61,4 @@ final class PhantomJettyClassLoader(
           super.loadClass(name, resolve)
       }
     }
-  }
 }

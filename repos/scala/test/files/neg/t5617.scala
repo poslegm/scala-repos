@@ -1,6 +1,6 @@
 trait A {
   def foo(i: Int)(b: String): Int
-  def foo(u: Unit): Int // not reported
+  def foo(u: Unit): Int  // not reported
   def foo(x: Float): Int // not reported
 }
 trait B[X] extends A {

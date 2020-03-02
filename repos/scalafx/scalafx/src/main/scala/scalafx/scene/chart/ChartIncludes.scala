@@ -79,7 +79,8 @@ trait ChartIncludes {
     * @return $SFX $ARCH
     */
   implicit def jfxAreaChart2sfx[X, Y](
-      b: jfxsc.AreaChart[X, Y]): AreaChart[X, Y] =
+      b: jfxsc.AreaChart[X, Y]
+  ): AreaChart[X, Y] =
     if (b != null) new AreaChart[X, Y](b) else null
 
   /**
@@ -90,7 +91,8 @@ trait ChartIncludes {
     * @return $SFX $AXIS
     */
   implicit def jfxAxis2sfx[X](a: jfxsc.Axis[X]): Axis[X] =
-    if (a != null) new Axis[X](a) {} else null
+    if (a != null) new Axis[X](a) {}
+    else null
 
   /**
     * $START$BRCH.html $BRCH$END
@@ -112,7 +114,8 @@ trait ChartIncludes {
     * @return $SFX $BBCH
     */
   implicit def jfxBubbleChart2sfx[X, Y](
-      b: jfxsc.BubbleChart[X, Y]): BubbleChart[X, Y] =
+      b: jfxsc.BubbleChart[X, Y]
+  ): BubbleChart[X, Y] =
     if (b != null) new BubbleChart[X, Y](b) else null
 
   /**
@@ -122,7 +125,8 @@ trait ChartIncludes {
     * @return $SFX $CHAR
     */
   implicit def jfxChart2sfx(c: jfxsc.Chart): Chart =
-    if (c != null) new Chart(c) {} else null
+    if (c != null) new Chart(c) {}
+    else null
 
   /**
     * $START$LNCH.html $LNCH$END
@@ -133,11 +137,13 @@ trait ChartIncludes {
     * @return $SFX $LNCH
     */
   implicit def jfxLineChart2sfx[X, Y](
-      b: jfxsc.LineChart[X, Y]): LineChart[X, Y] =
+      b: jfxsc.LineChart[X, Y]
+  ): LineChart[X, Y] =
     if (b != null) new LineChart[X, Y](b) else null
 
   implicit def jfxLineChartSortingPolicy2sfx(
-      v: jfxsc.LineChart.SortingPolicy): LineChart.SortingPolicy =
+      v: jfxsc.LineChart.SortingPolicy
+  ): LineChart.SortingPolicy =
     LineChart.SortingPolicy.jfxEnum2sfx(v)
 
   /**
@@ -167,7 +173,8 @@ trait ChartIncludes {
     * @return $SFX $SCCH
     */
   implicit def jfxScatterChart2sfx[X, Y](
-      b: jfxsc.ScatterChart[X, Y]): ScatterChart[X, Y] =
+      b: jfxsc.ScatterChart[X, Y]
+  ): ScatterChart[X, Y] =
     if (b != null) new ScatterChart[X, Y](b) else null
 
   /**
@@ -179,7 +186,8 @@ trait ChartIncludes {
     * @return $SFX $STCH
     */
   implicit def jfxStackedAreaChart2sfx[X, Y](
-      b: jfxsc.StackedAreaChart[X, Y]): StackedAreaChart[X, Y] =
+      b: jfxsc.StackedAreaChart[X, Y]
+  ): StackedAreaChart[X, Y] =
     if (b != null) new StackedAreaChart[X, Y](b) else null
 
   /**
@@ -191,7 +199,8 @@ trait ChartIncludes {
     * @return $SFX $SBCH
     */
   implicit def jfxStackedBarChart2sfx[X, Y](
-      b: jfxsc.StackedBarChart[X, Y]): StackedBarChart[X, Y] =
+      b: jfxsc.StackedBarChart[X, Y]
+  ): StackedBarChart[X, Y] =
     if (b != null) new StackedBarChart[X, Y](b) else null
 
   /**
@@ -229,7 +238,8 @@ trait ChartIncludes {
     * @return $SFX $NMDF
     */
   implicit def jfxNumberAxisDefaultFormatter2sfx(
-      b: jfxsc.NumberAxis.DefaultFormatter): DefaultFormatter =
+      b: jfxsc.NumberAxis.DefaultFormatter
+  ): DefaultFormatter =
     if (b != null) new NumberAxis.DefaultFormatter(b) else null
 
   /**
@@ -240,8 +250,10 @@ trait ChartIncludes {
     * @return $SFX $VAAX
     */
   implicit def jfxValueAxis2sfx[X <: Number](
-      a: jfxsc.ValueAxis[X]): ValueAxis[X] =
-    if (a != null) new ValueAxis[X](a) {} else null
+      a: jfxsc.ValueAxis[X]
+  ): ValueAxis[X] =
+    if (a != null) new ValueAxis[X](a) {}
+    else null
 
   /**
     * $START$XYCH.html $XYCH$END
@@ -252,7 +264,8 @@ trait ChartIncludes {
     * @return $SFX $XYCH
     */
   implicit def jfxXYChart2sfx[X, Y](c: jfxsc.XYChart[X, Y]): XYChart[X, Y] =
-    if (c != null) new XYChart[X, Y](c) {} else null
+    if (c != null) new XYChart[X, Y](c) {}
+    else null
 
   /**
     * $START$XYDT.html $XYDT$END
@@ -263,7 +276,8 @@ trait ChartIncludes {
     * @return $SFX $XYDT
     */
   implicit def jfxXYChartData2sfx[X, Y](
-      b: jfxsc.XYChart.Data[X, Y]): Data[X, Y] =
+      b: jfxsc.XYChart.Data[X, Y]
+  ): Data[X, Y] =
     if (b != null) new XYChart.Data[X, Y](b) else null
 
   /**
@@ -275,6 +289,7 @@ trait ChartIncludes {
     * @return $SFX $XYSR
     */
   implicit def jfxXYChartSeries2sfx[X, Y](
-      b: jfxsc.XYChart.Series[X, Y]): Series[X, Y] =
+      b: jfxsc.XYChart.Series[X, Y]
+  ): Series[X, Y] =
     if (b != null) new XYChart.Series[X, Y](b) else null
 }

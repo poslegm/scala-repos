@@ -49,7 +49,7 @@ object test {
 
     // Values with types Q, X.P, i.X, j.Y and j.X as seen from instances of N
     def val_nq: Q = val_nq;
-    def val_np: F { type If = Q } = f[Q](val_nq);
+    def val_np: F { type If  = Q } = f[Q](val_nq);
     def val_nix: G { type Ig = F { type If = Q } } =
       g[F { type If = Q }](val_np);
     def val_njy: G { type Ig = Q; } = g[Q](val_nq);

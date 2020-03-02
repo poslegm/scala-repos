@@ -15,64 +15,66 @@ import breeze.linalg.support.CanTranspose
   */
 object inv extends UFunc {
   implicit def canInvUsingLU_Double[T](
-      implicit luImpl: LU.Impl[T, (DenseMatrix[Double], Array[Int])])
-    : Impl[T, DenseMatrix[Double]] = {
+      implicit luImpl: LU.Impl[T, (DenseMatrix[Double], Array[Int])]
+  ): Impl[T, DenseMatrix[Double]] =
     new Impl[T, DenseMatrix[Double]] {
       def apply(X: T): DenseMatrix[Double] = {
         // Should these type hints be necessary?
         val (m: DenseMatrix[Double], ipiv: Array[Int]) = LU(X)
-        val N = m.rows
-        val lwork = scala.math.max(1, N)
-        val work = Array.ofDim[Double](lwork)
-        val info = new intW(0)
+        val N                                          = m.rows
+        val lwork                                      = scala.math.max(1, N)
+        val work                                       = Array.ofDim[Double](lwork)
+        val info                                       = new intW(0)
         lapack.dgetri(
-            N,
-            m.data,
-            scala.math.max(1, N) /* LDA */,
-            ipiv,
-            work /* workspace */,
-            lwork /* workspace size */,
-            info
+          N,
+          m.data,
+          scala.math.max(1, N) /* LDA */,
+          ipiv,
+          work /* workspace */,
+          lwork /* workspace size */,
+          info
         )
-        assert(info.`val` >= 0,
-               "Malformed argument %d (LAPACK)".format(-info.`val`))
+        assert(
+          info.`val` >= 0,
+          "Malformed argument %d (LAPACK)".format(-info.`val`)
+        )
 
         if (info.`val` > 0) throw new MatrixSingularException
 
         m
       }
     }
-  }
 
   implicit def canInvUsingLU_Float[T](
-      implicit luImpl: LU.Impl[T, (DenseMatrix[Float], Array[Int])])
-    : Impl[T, DenseMatrix[Float]] = {
+      implicit luImpl: LU.Impl[T, (DenseMatrix[Float], Array[Int])]
+  ): Impl[T, DenseMatrix[Float]] =
     new Impl[T, DenseMatrix[Float]] {
       def apply(X: T): DenseMatrix[Float] = {
         // Should these type hints be necessary?
         val (m: DenseMatrix[Float], ipiv: Array[Int]) = LU(X)
-        val N = m.rows
-        val lwork = scala.math.max(1, N)
-        val work = Array.ofDim[Float](lwork)
-        val info = new intW(0)
+        val N                                         = m.rows
+        val lwork                                     = scala.math.max(1, N)
+        val work                                      = Array.ofDim[Float](lwork)
+        val info                                      = new intW(0)
         lapack.sgetri(
-            N,
-            m.data,
-            scala.math.max(1, N) /* LDA */,
-            ipiv,
-            work /* workspace */,
-            lwork /* workspace size */,
-            info
+          N,
+          m.data,
+          scala.math.max(1, N) /* LDA */,
+          ipiv,
+          work /* workspace */,
+          lwork /* workspace size */,
+          info
         )
-        assert(info.`val` >= 0,
-               "Malformed argument %d (LAPACK)".format(-info.`val`))
+        assert(
+          info.`val` >= 0,
+          "Malformed argument %d (LAPACK)".format(-info.`val`)
+        )
 
         if (info.`val` > 0) throw new MatrixSingularException
 
         m
       }
     }
-  }
 }
 
 /**
@@ -89,15 +91,13 @@ object pinv extends UFunc with pinvLowPrio {
 
   @expand
   @expand.valify
-  implicit def pinvFromSVD[@expand.args(Float, Double) T]: Impl[
-      DenseMatrix[T], DenseMatrix[T]] = {
+  implicit def pinvFromSVD[@expand.args(Float, Double) T]
+      : Impl[DenseMatrix[T], DenseMatrix[T]] =
     new Impl[DenseMatrix[T], DenseMatrix[T]] {
       // http://en.wikipedia.org/wiki/Singular_value_decomposition#Applications_of_the_SVD
       override def apply(v: DenseMatrix[T]): DenseMatrix[T] = {
         val svd.SVD(s, svs, d) = svd(v)
-        val vi = svs.map { v =>
-          if (v == 0.0) 0.0f else 1 / v
-        }
+        val vi                 = svs.map(v => if (v == 0.0) 0.0f else 1 / v)
 
         val svDiag = DenseMatrix.tabulate[T](s.cols, d.rows) { (i, j) =>
           if (i == j && i < math.min(s.cols, d.rows)) vi(i)
@@ -107,7 +107,6 @@ object pinv extends UFunc with pinvLowPrio {
         res.t
       }
     }
-  }
 }
 
 trait pinvLowPrio {
@@ -134,12 +133,10 @@ trait pinvLowPrio {
       numericTrans: TransT => NumericOps[TransT],
       mul: OpMulMatrix.Impl2[TransT, T, MulRes],
       numericMulRes: MulRes => NumericOps[MulRes],
-      solve: OpSolveMatrixBy.Impl2[MulRes, TransT, Result])
-    : Impl[T, Result] = {
+      solve: OpSolveMatrixBy.Impl2[MulRes, TransT, Result]
+  ): Impl[T, Result] =
     new Impl[T, Result] {
-      def apply(X: T): Result = {
+      def apply(X: T): Result =
         (X.t * X) \ X.t
-      }
     }
-  }
 }

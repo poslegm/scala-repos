@@ -33,9 +33,8 @@ case class TestException(lineNo: Int) extends Exception
   * (in a single line) up to the number of /n-star/s in the file.
   */
 object SourceMapTest {
-  @BeforeClass def beforeClass(): Unit = {
+  @BeforeClass def beforeClass(): Unit =
     assumeTrue("source-maps", sourceMaps)
-  }
 }
 
 class SourceMapTest {
@@ -54,10 +53,12 @@ class SourceMapTest {
           e.getFileName.replace('\\', '/')
 
         val trace0 = e.getStackTrace.toList
-        val trace1 = trace0.dropWhile(normFileName(_).endsWith(
-                "/scala/scalajs/runtime/StackTrace.scala"))
+        val trace1 = trace0.dropWhile(
+          normFileName(_).endsWith("/scala/scalajs/runtime/StackTrace.scala")
+        )
         val trace2 = trace1.dropWhile(
-            normFileName(_).endsWith("/java/lang/Throwables.scala"))
+          normFileName(_).endsWith("/java/lang/Throwables.scala")
+        )
 
         val topSte = trace2.head
         assertTrue(normFileName(topSte).contains("/SourceMapTest.scala"))
@@ -81,15 +82,12 @@ class SourceMapTest {
     }
   }
 
-  def get(json: JsValue, index: Int) = {
-
+  def get(json: JsValue, index: Int) =
     /**/
     /**/
     json.asInstanceOf[JsArray].value(index).value
-  }
 
-  def get(json: JsValue, index: Int, fieldName: String) = {
-
+  def get(json: JsValue, index: Int, fieldName: String) =
     /**/
     /**/ /***/
     json
@@ -98,7 +96,6 @@ class SourceMapTest {
       .asInstanceOf[JsObject]
       .value(fieldName)
       .value
-  }
   def run() = {
 
     /**/
@@ -185,7 +182,8 @@ class SourceMapTest {
       /**/
       assert(get(json, 8, "comment") == "// /* <!-- --")
       assert(
-          get(json, 8, "jsontext") == "{\"object with 1 member\":[\"array with 1 element\"]}")
+        get(json, 8, "jsontext") == "{\"object with 1 member\":[\"array with 1 element\"]}"
+      )
       assert(get(json, 19) == "rosebud") /**/
     }
     /**/
@@ -209,23 +207,19 @@ sealed trait JsBoolean extends JsValue {
 }
 
 case object JsFalse extends JsBoolean {
-  def value = {
-
+  def value =
     /**/
     false
-  }
 }
 
 case object JsTrue extends JsBoolean {
-  def value = {
-
+  def value =
     /**/
     true
-  }
 }
 
 case object JsNull extends JsValue {
-  def value = { null }
+  def value = null
 }
 
 trait Writer {
@@ -242,12 +236,18 @@ trait Writer {
         /**/
         /**/
         s.charAt(i) match {
-          case '\\' => /**/ sb.append("\\\\") /**/
+          case '\\' =>
+            /**/
+            sb.append("\\\\") /**/
           case '"' => sb.append("\\\"")
-          case '/' => /**/ sb.append("\\/") /**/
+          case '/' =>
+            /**/
+            sb.append("\\/") /**/
           case '\b' => sb.append("\\b")
           case '\t' => sb.append("\\t")
-          case '\n' => /**/ sb.append("\\n") /**/
+          case '\n' =>
+            /**/
+            sb.append("\\n") /**/
           case '\f' => sb.append("\\f")
           case '\r' => sb.append("\\r")
           case c =>
@@ -271,22 +271,19 @@ trait Writer {
 
       /**/
       var first = true
-      kvs.foreach(
-          kv =>
-            {
+      kvs.foreach { kv =>
+        /**/
+        val (k, v) = kv
+        if (first) first = false
+        else sb.append(", ")
 
-          /**/
-          val (k, v) = kv
-          if (first) first = false
-          else sb.append(", ")
+        /**/
+        writeToBuffer(JsString(k), sb)
+        sb.append(": ")
 
-          /**/
-          writeToBuffer(JsString(k), sb)
-          sb.append(": ")
-
-          /**/
-          writeToBuffer(v, sb)
-      })
+        /**/
+        writeToBuffer(v, sb)
+      }
       sb.append("}")
 
     case JsArray(vs) =>
@@ -301,9 +298,9 @@ trait Writer {
       }
       sb.append("]")
     case JsNumber(d) => sb.append(d)
-    case JsFalse => sb.append("false")
-    case JsTrue => sb.append("true")
-    case JsNull => sb.append("null")
+    case JsFalse     => sb.append("false")
+    case JsTrue      => sb.append("true")
+    case JsNull      => sb.append("null")
   }
   /**/
 }
@@ -332,36 +329,36 @@ class Json extends Writer2 {
     /**/
     type CharKind = Int
     val Letter = 0
-    val Digit = 1
-    val Minus = 2
-    val Quote = 3
-    val Colon = 4
-    val Comma = 5
-    val Lbra = 6
-    val Rbra = 7
-    val Larr = 8
-    val Rarr = 9
-    val Blank = 10
-    val Other = 11
-    val Eof = 12
-    val Slash = 13
+    val Digit  = 1
+    val Minus  = 2
+    val Quote  = 3
+    val Colon  = 4
+    val Comma  = 5
+    val Lbra   = 6
+    val Rbra   = 7
+    val Larr   = 8
+    val Rarr   = 9
+    val Blank  = 10
+    val Other  = 11
+    val Eof    = 12
+    val Slash  = 13
 
     // *** Token Kinds
 
     type TokenKind = Int
-    val ID = 0
-    val STRING = 1
-    val NUMBER = 2
-    val BIGNUMBER = 3
+    val ID          = 0
+    val STRING      = 1
+    val NUMBER      = 2
+    val BIGNUMBER   = 3
     val FLOATNUMBER = 4
-    val COLON = 5
-    val COMMA = 6
-    val LOBJ = 7
-    val ROBJ = 8
-    val LARR = 9
-    val RARR = 10
-    val BLANK = 11
-    val EOF = 12
+    val COLON       = 5
+    val COMMA       = 6
+    val LOBJ        = 7
+    val ROBJ        = 8
+    val LARR        = 9
+    val RARR        = 10
+    val BLANK       = 11
+    val EOF         = 12
 
     /**/
     // *** Character => CharKind Map ***
@@ -370,33 +367,43 @@ class Json extends Writer2 {
       case c if 'a'.toInt <= c && c <= 'z'.toInt => Letter
       case c if 'A'.toInt <= c && c <= 'Z'.toInt => Letter
       case c if '0'.toInt <= c && c <= '9'.toInt => Digit
-      case '-' => /**/ Minus
-      case ',' => /**/ Comma
-      case '"' => /**/ Quote
-      case ':' => /**/ Colon
-      case '{' => /**/ Lbra
-      case '}' => Rbra
-      case '[' => Larr
-      case ']' => Rarr
-      case ' ' => Blank
+      case '-'                                   =>
+        /**/
+        Minus
+      case ',' =>
+        /**/
+        Comma
+      case '"' =>
+        /**/
+        Quote
+      case ':' =>
+        /**/
+        Colon
+      case '{' =>
+        /**/
+        Lbra
+      case '}'  => Rbra
+      case '['  => Larr
+      case ']'  => Rarr
+      case ' '  => Blank
       case '\t' => Blank
       case '\n' => Blank
       case '\r' => Blank
-      case '/' => Slash
-      case _ => Other
+      case '/'  => Slash
+      case _    => Other
     }
 
     // *** Character Escapes
     /**/
     val escapeMap = Map[Int, String](
-        '\\'.toInt -> "\\",
-        '/'.toInt -> "/",
-        '\"'.toInt -> "\"",
-        'b'.toInt -> "\b",
-        'f'.toInt -> "\f",
-        'n'.toInt -> "\n",
-        'r'.toInt -> "\r",
-        't'.toInt -> "\t"
+      '\\'.toInt -> "\\",
+      '/'.toInt  -> "/",
+      '\"'.toInt -> "\"",
+      'b'.toInt  -> "\b",
+      'f'.toInt  -> "\f",
+      'n'.toInt  -> "\n",
+      'r'.toInt  -> "\r",
+      't'.toInt  -> "\t"
     )
     // *** Import Shared Data ***
 
@@ -410,13 +417,12 @@ class Json extends Writer2 {
 
     var pos = 0
 
-    var ch: Int = 0
+    var ch: Int          = 0
     var chKind: CharKind = 0
-    var chLinePos: Int = 0
-    var chCharPos: Int = 0
+    var chLinePos: Int   = 0
+    var chCharPos: Int   = 0
 
-    def chNext() = {
-
+    def chNext() =
       /**/
       if (pos < size) {
 
@@ -450,30 +456,28 @@ class Json extends Writer2 {
         pos = size + 1
         chKind = Eof
       }
-    } /**/
+
     /**/
     /**/
     /**/
-    def chError(msg: String): Nothing = {
+    /**/
+    def chError(msg: String): Nothing =
       throw new Json.Exception(msg, s, chLinePos, chCharPos)
-    }
 
     def chMark = pos - 1
 
-    def chSubstr(first: Int, delta: Int = 0) = {
+    def chSubstr(first: Int, delta: Int = 0) =
       s.substring(first, pos - 1 - delta)
-    }
 
     // *** LEXER ***
 
-    var tokenKind = BLANK
+    var tokenKind  = BLANK
     var tokenValue = ""
-    var linePos = 1
-    var charPos = 1
+    var linePos    = 1
+    var charPos    = 1
 
-    def getDigits() = {
+    def getDigits() =
       while (chKind == Digit) chNext()
-    }
 
     def handleDigit() {
       val first = chMark
@@ -518,7 +522,7 @@ class Json extends Writer2 {
           case ('"', 1) => 2
           case ('"', 2) => 3
           case ('"', 3) => 0
-          case _ => 0
+          case _        => 0
         }
 
         chNext()
@@ -572,7 +576,7 @@ class Json extends Writer2 {
                     var code = 0
                     for (i <- 1 to 4) {
                       val ch1 = ch.toChar.toString
-                      val i = "0123456789abcdef".indexOf(ch1.toLowerCase)
+                      val i   = "0123456789abcdef".indexOf(ch1.toLowerCase)
                       if (i == -1) chError("Illegal hex character")
                       code = code * 16 + i
                       chNext()
@@ -598,10 +602,10 @@ class Json extends Writer2 {
 
           case Colon => handle(COLON) /**/
           case Comma => handle(COMMA) /**/
-          case Lbra => handle(LOBJ) /**/
-          case Rbra => handle(ROBJ) /**/
-          case Larr => handle(LARR) /**/
-          case Rarr => handle(RARR) /**/
+          case Lbra  => handle(LOBJ) /**/
+          case Rbra  => handle(ROBJ) /**/
+          case Larr  => handle(LARR) /**/
+          case Rarr  => handle(RARR) /**/
           case Blank =>
             do chNext() while (chKind == Blank)
             tokenKind = BLANK
@@ -624,14 +628,13 @@ class Json extends Writer2 {
     }
 
     /**/
-    def tokenError(msg: String): Nothing = {
+    def tokenError(msg: String): Nothing =
       throw new Json.Exception(msg, s, linePos, charPos)
-    }
 
     /**/
     // *** PARSER ***
 
-    def handleEof() = tokenError("Unexpected eof")
+    def handleEof()                 = tokenError("Unexpected eof")
     def handleUnexpected(i: String) = tokenError(s"Unexpected input: [$i]")
 
     def handleArray(): JsArray = {
@@ -644,9 +647,11 @@ class Json extends Writer2 {
 
         /**/
         tokenKind match {
-          case COMMA => /**/ tokenNext()
+          case COMMA =>
+            /**/
+            tokenNext()
           case RARR => // do nothing
-          case _ => tokenError("Expecting , or ]")
+          case _    => tokenError("Expecting , or ]")
         }
       }
       tokenNext()
@@ -668,8 +673,8 @@ class Json extends Writer2 {
         result = (name -> getJson()) :: result
         tokenKind match {
           case COMMA => tokenNext()
-          case ROBJ => // do nothing
-          case _ => tokenError("Expecting , or }")
+          case ROBJ  => // do nothing
+          case _     => tokenError("Expecting , or }")
         }
       }
       tokenNext()
@@ -691,10 +696,10 @@ class Json extends Writer2 {
       val result: JsValue = kind match {
         case ID =>
           val result: JsValue = tokenValue match {
-            case "true" => JsTrue
+            case "true"  => JsTrue
             case "false" => JsFalse
-            case "null" => JsNull
-            case _ => tokenError("Not true, false, or null")
+            case "null"  => JsNull
+            case _       => tokenError("Not true, false, or null")
           }
 
           tokenNext()
@@ -705,16 +710,16 @@ class Json extends Writer2 {
           tokenNext()
           JsString(result)
 
-        case NUMBER => handleNumber("NUMBER", _.toLong)
-        case BIGNUMBER => handleNumber("BIGNUMBER", _.toDouble)
+        case NUMBER      => handleNumber("NUMBER", _.toLong)
+        case BIGNUMBER   => handleNumber("BIGNUMBER", _.toDouble)
         case FLOATNUMBER => handleNumber("FLOATNUMBER", _.toDouble)
-        case COLON => handleUnexpected(":")
-        case COMMA => handleUnexpected(",")
-        case LOBJ => handleObject()
-        case ROBJ => handleUnexpected("}")
-        case LARR => handleArray()
-        case RARR => handleUnexpected("]")
-        case EOF => handleEof()
+        case COLON       => handleUnexpected(":")
+        case COMMA       => handleUnexpected(",")
+        case LOBJ        => handleObject()
+        case ROBJ        => handleUnexpected("}")
+        case LARR        => handleArray()
+        case RARR        => handleUnexpected("]")
+        case EOF         => handleEof()
       }
       result
     }
@@ -730,10 +735,12 @@ class Json extends Writer2 {
 }
 
 object Json {
-  class Exception(val msg: String,
-                  val input: String,
-                  val line: Int,
-                  val char: Int)
-      extends scala.Exception(
-          s"JsonParse Error: $msg line $line [$char] in $input")
+  class Exception(
+      val msg: String,
+      val input: String,
+      val line: Int,
+      val char: Int
+  ) extends scala.Exception(
+        s"JsonParse Error: $msg line $line [$char] in $input"
+      )
 }

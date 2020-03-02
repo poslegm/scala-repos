@@ -55,9 +55,8 @@ class DateRangeSerializer extends KSerializer[DateRange] {
     out.writeLong(range.end.timestamp, true);
   }
 
-  def read(kser: Kryo, in: Input, cls: Class[DateRange]): DateRange = {
+  def read(kser: Kryo, in: Input, cls: Class[DateRange]): DateRange =
     DateRange(RichDate(in.readLong(true)), RichDate(in.readLong(true)));
-  }
 }
 
 class ArgsSerializer extends KSerializer[Args] {
@@ -79,9 +78,9 @@ class IntFieldSerializer extends KSerializer[IntField[_]] {
     kser.writeClassAndObject(out, a.mf)
   }
   def read(kser: Kryo, in: Input, cls: Class[IntField[_]]): IntField[_] = {
-    val id = in.readInt
+    val id  = in.readInt
     val ord = kser.readClassAndObject(in).asInstanceOf[Ordering[Any]]
-    val mf = kser.readClassAndObject(in).asInstanceOf[Option[Manifest[Any]]]
+    val mf  = kser.readClassAndObject(in).asInstanceOf[Option[Manifest[Any]]]
     IntField[Any](id)(ord, mf)
   }
 }
@@ -94,10 +93,14 @@ class StringFieldSerializer extends KSerializer[StringField[_]] {
     kser.writeClassAndObject(out, a.ord)
     kser.writeClassAndObject(out, a.mf)
   }
-  def read(kser: Kryo, in: Input, cls: Class[StringField[_]]): StringField[_] = {
-    val id = in.readString
+  def read(
+      kser: Kryo,
+      in: Input,
+      cls: Class[StringField[_]]
+  ): StringField[_] = {
+    val id  = in.readString
     val ord = kser.readClassAndObject(in).asInstanceOf[Ordering[Any]]
-    val mf = kser.readClassAndObject(in).asInstanceOf[Option[Manifest[Any]]]
+    val mf  = kser.readClassAndObject(in).asInstanceOf[Option[Manifest[Any]]]
     StringField[Any](id)(ord, mf)
   }
 }

@@ -14,20 +14,18 @@ object Publish extends AutoPlugin {
   override def trigger = allRequirements
 
   override lazy val projectSettings = Seq(
-      crossPaths := false,
-      pomExtra := akkaPomExtra,
-      publishTo := akkaPublishTo.value,
-      credentials ++= akkaCredentials,
-      organizationName := "Lightbend Inc.",
-      organizationHomepage := Some(url("http://www.lightbend.com")),
-      publishMavenStyle := true,
-      pomIncludeRepository := { x =>
-        false
-      },
-      defaultPublishTo := crossTarget.value / "repository"
+    crossPaths := false,
+    pomExtra := akkaPomExtra,
+    publishTo := akkaPublishTo.value,
+    credentials ++= akkaCredentials,
+    organizationName := "Lightbend Inc.",
+    organizationHomepage := Some(url("http://www.lightbend.com")),
+    publishMavenStyle := true,
+    pomIncludeRepository := { x => false },
+    defaultPublishTo := crossTarget.value / "repository"
   )
 
-  def akkaPomExtra = {
+  def akkaPomExtra =
     <inceptionYear>2009</inceptionYear>
     <scm>
       <url>git://github.com/akka/akka.git</url>
@@ -41,7 +39,6 @@ object Publish extends AutoPlugin {
         <url>https://github.com/akka/akka/graphs/contributors</url>
       </developer>
     </developers>
-  }
 
   private def akkaPublishTo = Def.setting {
     sonatypeRepo(version.value) orElse localRepo(defaultPublishTo.value)

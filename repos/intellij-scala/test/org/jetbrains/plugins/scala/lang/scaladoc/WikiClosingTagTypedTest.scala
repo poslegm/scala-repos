@@ -10,7 +10,7 @@ import org.jetbrains.plugins.scala.base.ScalaLightCodeInsightFixtureTestAdapter
 class WikiClosingTagTypedTest extends ScalaLightCodeInsightFixtureTestAdapter {
 
   def testCodeLinkClosingTagInput() {
-    val text = "/** [[java.lang.String" + CARET_MARKER + "]] */"
+    val text        = "/** [[java.lang.String" + CARET_MARKER + "]] */"
     val assumedStub = "/** [[java.lang.String]" + CARET_MARKER + "] */"
 
     checkGeneratedTextAfterTyping(text, assumedStub, ']')
@@ -59,7 +59,7 @@ class WikiClosingTagTypedTest extends ScalaLightCodeInsightFixtureTestAdapter {
   }
 
   def testSuperscriptClosingTagInput() {
-    val text = "/** 2^2" + CARET_MARKER + "^ = 4 */"
+    val text        = "/** 2^2" + CARET_MARKER + "^ = 4 */"
     val assumedStub = "/** 2^2^" + CARET_MARKER + " = 4 */"
 
     checkGeneratedTextAfterTyping(text, assumedStub, '^')
@@ -82,7 +82,7 @@ class WikiClosingTagTypedTest extends ScalaLightCodeInsightFixtureTestAdapter {
   }
 
   def testBoldClosingTag() {
-    val text = "/** '''blah blah blah'" + CARET_MARKER + "'' */"
+    val text        = "/** '''blah blah blah'" + CARET_MARKER + "'' */"
     val assumedStub = "/** '''blah blah blah''" + CARET_MARKER + "' */"
 
     checkGeneratedTextAfterTyping(text, assumedStub, '\'')
@@ -107,7 +107,7 @@ class WikiClosingTagTypedTest extends ScalaLightCodeInsightFixtureTestAdapter {
   }
 
   def testBoldTagEmpty() {
-    val text = "/** '''" + CARET_MARKER + "''' */"
+    val text        = "/** '''" + CARET_MARKER + "''' */"
     val assumedStub = "/** ''''" + CARET_MARKER + "'' */"
 
     checkGeneratedTextAfterTyping(text, assumedStub, '\'')

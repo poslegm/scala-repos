@@ -26,26 +26,27 @@ object WatermarkPool {
   * @see The [[https://twitter.github.io/finagle/guide/Clients.html#watermark-pool user guide]]
   *      for more details.
   */
-class WatermarkPool[Req, Rep](factory: ServiceFactory[Req, Rep],
-                              lowWatermark: Int,
-                              highWatermark: Int = Int.MaxValue,
-                              statsReceiver: StatsReceiver = NullStatsReceiver,
-                              maxWaiters: Int = Int.MaxValue)
-    extends ServiceFactory[Req, Rep] { thePool => // note: avoids `self` as an alias because ServiceProxy has a `self`
+class WatermarkPool[Req, Rep](
+    factory: ServiceFactory[Req, Rep],
+    lowWatermark: Int,
+    highWatermark: Int = Int.MaxValue,
+    statsReceiver: StatsReceiver = NullStatsReceiver,
+    maxWaiters: Int = Int.MaxValue
+) extends ServiceFactory[Req, Rep] { thePool => // note: avoids `self` as an alias because ServiceProxy has a `self`
 
-  private[this] val queue = new ArrayDeque[ServiceWrapper]()
-  private[this] val waiters = new ArrayDeque[Promise[Service[Req, Rep]]]()
-  private[this] var numServices = 0
+  private[this] val queue            = new ArrayDeque[ServiceWrapper]()
+  private[this] val waiters          = new ArrayDeque[Promise[Service[Req, Rep]]]()
+  private[this] var numServices      = 0
   @volatile private[this] var isOpen = true
 
   private[this] val numWaiters = statsReceiver.counter("pool_num_waited")
   private[this] val tooManyWaiters =
     statsReceiver.counter("pool_num_too_many_waiters")
   private[this] val waitersStat = statsReceiver.addGauge("pool_waiters") {
-    thePool.synchronized { waiters.size }
+    thePool.synchronized(waiters.size)
   }
   private[this] val sizeStat = statsReceiver.addGauge("pool_size") {
-    thePool.synchronized { numServices }
+    thePool.synchronized(numServices)
   }
 
   /**
@@ -91,7 +92,7 @@ class WatermarkPool[Req, Rep](factory: ServiceFactory[Req, Rep],
     }
   }
 
-  @tailrec private[this] def dequeue(): Option[Service[Req, Rep]] = {
+  @tailrec private[this] def dequeue(): Option[Service[Req, Rep]] =
     if (queue.isEmpty) {
       None
     } else {
@@ -105,7 +106,6 @@ class WatermarkPool[Req, Rep](factory: ServiceFactory[Req, Rep],
         Some(service)
       }
     }
-  }
 
   def apply(conn: ClientConnection): Future[Service[Req, Rep]] = {
     if (!isOpen) return Future.exception(new ServiceClosedException)
@@ -126,8 +126,10 @@ class WatermarkPool[Req, Rep](factory: ServiceFactory[Req, Rep],
             case _cause =>
               if (thePool.synchronized(waiters.remove(p))) {
                 val failure =
-                  Failure.adapt(new CancelledConnectionException(_cause),
-                                Failure.Restartable | Failure.Interrupted)
+                  Failure.adapt(
+                    new CancelledConnectionException(_cause),
+                    Failure.Restartable | Failure.Interrupted
+                  )
                 p.setException(failure)
               }
           }
@@ -137,8 +139,8 @@ class WatermarkPool[Req, Rep](factory: ServiceFactory[Req, Rep],
 
     // If we reach this point, we've committed to creating a service
     // (numServices was increased by one).
-    val p = new Promise[Service[Req, Rep]]
-    val underlying = factory(conn).map { new ServiceWrapper(_) }
+    val p          = new Promise[Service[Req, Rep]]
+    val underlying = factory(conn).map(new ServiceWrapper(_))
     underlying.respond { res =>
       p.updateIfEmpty(res)
       if (res.isThrow)
@@ -151,7 +153,7 @@ class WatermarkPool[Req, Rep](factory: ServiceFactory[Req, Rep],
       case e =>
         val failure =
           Failure.adapt(e, Failure.Restartable | Failure.Interrupted)
-        if (p.updateIfEmpty(Throw(failure))) underlying.onSuccess { _.close() }
+        if (p.updateIfEmpty(Throw(failure))) underlying.onSuccess(_.close())
     }
     p
   }
@@ -169,7 +171,7 @@ class WatermarkPool[Req, Rep](factory: ServiceFactory[Req, Rep],
     queue.clear()
 
     // Kill the existing waiters.
-    waiters.asScala foreach { _ () = Throw(new ServiceClosedException) }
+    waiters.asScala foreach { _() = Throw(new ServiceClosedException) }
     waiters.clear()
 
     // Close the underlying factory.

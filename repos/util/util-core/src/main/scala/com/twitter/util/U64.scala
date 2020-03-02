@@ -4,7 +4,12 @@
 
 package com.twitter.util
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, DataInputStream, DataOutputStream}
+import java.io.{
+  ByteArrayInputStream,
+  ByteArrayOutputStream,
+  DataInputStream,
+  DataOutputStream
+}
 import scala.language.implicitConversions
 
 class RichU64Long(l64: Long) {
@@ -40,13 +45,12 @@ class RichU64Long(l64: Long) {
 }
 
 class RichU64ByteArray(bytes: Array[Byte]) {
-  private def deSign(b: Byte): Int = {
+  private def deSign(b: Byte): Int =
     if (b < 0) {
       b + 256
     } else {
       b
     }
-  }
 
   // Note: this is padded, so we have lexical ordering.
   def toU64HexString =
@@ -63,12 +67,11 @@ class RichU64ByteArray(bytes: Array[Byte]) {
   * string
   */
 class RichU64String(string: String) {
-  private[this] def validateHexDigit(c: Char): Unit = {
+  private[this] def validateHexDigit(c: Char): Unit =
     if (!(('0' <= c && c <= '9') || ('a' <= c && c <= 'f') ||
-            ('A' <= c && c <= 'F'))) {
+          ('A' <= c && c <= 'F'))) {
       throw new NumberFormatException("For input string: \"" + string + "\"")
     }
-  }
 
   if (string.length > 16) {
     throw new NumberFormatException("Number longer than 16 hex characters")
@@ -79,14 +82,11 @@ class RichU64String(string: String) {
 
   def toU64ByteArray: Array[Byte] = {
     val padded = "0" * (16 - string.length()) + string
-    (0 until 16 by 2)
-      .map(i =>
-            {
-          val parsed = Integer.parseInt(padded.slice(i, i + 2), 16)
-          assert(parsed >= 0)
-          parsed.toByte
-      })
-      .toArray
+    (0 until 16 by 2).map { i =>
+      val parsed = Integer.parseInt(padded.slice(i, i + 2), 16)
+      assert(parsed >= 0)
+      parsed.toByte
+    }.toArray
   }
 
   def toU64Long: Long = (new RichU64ByteArray(toU64ByteArray)).toU64Long
@@ -100,18 +100,19 @@ object U64 {
 
   def u64ToBigint(x: Long): BigInt =
     if ((x & 0x8000000000000000L) != 0L)
-      ( (x & 0x7FFFFFFFFFFFFFFFL): BigInt) + bigInt0x8000000000000000L
+      ((x & 0x7FFFFFFFFFFFFFFFL): BigInt) + bigInt0x8000000000000000L
     else x: BigInt
 
   // compares x < y
   def u64_lt(x: Long, y: Long): Boolean =
     if (x < 0 == y < 0) x < y // signed comparison, straightforward!
-    else x > y // x is less if it doesn't have its high bit set (<0)
+    else x > y                // x is less if it doesn't have its high bit set (<0)
 
   implicit def longToRichU64Long(x: Long): RichU64Long = new RichU64Long(x)
 
   implicit def byteArrayToRichU64ByteArray(
-      bytes: Array[Byte]): RichU64ByteArray = new RichU64ByteArray(bytes)
+      bytes: Array[Byte]
+  ): RichU64ByteArray = new RichU64ByteArray(bytes)
 
   implicit def stringToRichU64String(string: String): RichU64String =
     new RichU64String(string)

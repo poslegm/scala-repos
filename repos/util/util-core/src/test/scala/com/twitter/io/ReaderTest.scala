@@ -11,7 +11,9 @@ import org.scalatest.{FunSuite, Matchers}
 
 @RunWith(classOf[JUnitRunner])
 class ReaderTest
-    extends FunSuite with GeneratorDrivenPropertyChecks with Matchers {
+    extends FunSuite
+    with GeneratorDrivenPropertyChecks
+    with Matchers {
 
   def arr(i: Int, j: Int) = Array.range(i, j).map(_.toByte)
   def buf(i: Int, j: Int) = Buf.ByteArray.Owned(arr(i, j))
@@ -40,7 +42,7 @@ class ReaderTest
 
   def assertWrite(w: Writer, i: Int, j: Int) {
     val buf = Buf.ByteArray.Owned(Array.range(i, j).map(_.toByte))
-    val f = w.write(buf)
+    val f   = w.write(buf)
     assert(f.isDefined)
     assert(Await.result(f.liftToTry) == Return(()))
   }
@@ -55,12 +57,12 @@ class ReaderTest
     val f = r.read(1)
     assert(!f.isDefined)
     r.discard()
-    intercept[Reader.ReaderDiscarded] { Await.result(f) }
+    intercept[Reader.ReaderDiscarded](Await.result(f))
   }
 
   def assertReadWhileReading(r: Reader) {
     val f = r.read(1)
-    intercept[IllegalStateException] { Await.result(r.read(1)) }
+    intercept[IllegalStateException](Await.result(r.read(1)))
     assert(!f.isDefined)
   }
 
@@ -68,9 +70,9 @@ class ReaderTest
     val f = r.read(1)
     assert(!f.isDefined)
     p.setException(new Exception)
-    intercept[Exception] { Await.result(f) }
-    intercept[Exception] { Await.result(r.read(0)) }
-    intercept[Exception] { Await.result(r.read(1)) }
+    intercept[Exception](Await.result(f))
+    intercept[Exception](Await.result(r.read(0)))
+    intercept[Exception](Await.result(r.read(1)))
   }
 
   private def assertReadNone(r: Reader): Unit =
@@ -92,15 +94,15 @@ class ReaderTest
 
   test("Reader.copy - source and destination equality") {
     forAll { (p: Array[Byte], q: Array[Byte], r: Array[Byte]) =>
-      val rw = Reader.writable()
+      val rw  = Reader.writable()
       val bos = new ByteArrayOutputStream
 
       val w = Writer.fromOutputStream(bos, 31)
       val f = Reader.copy(rw, w) ensure w.close()
       val g =
         rw.write(Buf.ByteArray.Owned(p)) before rw
-          .write(Buf.ByteArray.Owned(q)) before rw.write(
-            Buf.ByteArray.Owned(r)) before rw.close()
+          .write(Buf.ByteArray.Owned(q)) before rw.write(Buf.ByteArray.Owned(r)) before rw
+          .close()
 
       Await.result(Future.join(f, g))
 
@@ -117,13 +119,13 @@ class ReaderTest
   test("Writer.fromOutputStream - close") {
     val w = Writer.fromOutputStream(new ByteArrayOutputStream)
     w.close()
-    intercept[IllegalStateException] { Await.result(w.write(Buf.Empty)) }
+    intercept[IllegalStateException](Await.result(w.write(Buf.Empty)))
   }
 
   test("Writer.fromOutputStream - fail") {
     val w = Writer.fromOutputStream(new ByteArrayOutputStream)
     w.fail(new Exception)
-    intercept[Exception] { Await.result(w.write(Buf.Empty)) }
+    intercept[Exception](Await.result(w.write(Buf.Empty)))
   }
 
   test("Writer.fromOutputStream - error") {
@@ -134,7 +136,7 @@ class ReaderTest
       }
     }
     val f = Writer.fromOutputStream(os).write(Buf.Utf8("."))
-    intercept[Exception] { Await.result(f) }
+    intercept[Exception](Await.result(f))
   }
 
   test("Writer.fromOutputStream") {
@@ -166,7 +168,7 @@ class ReaderTest
   }
 
   test("Reader.readAll") {
-    val rw = Reader.writable()
+    val rw  = Reader.writable()
     val all = Reader.readAll(rw)
     assert(!all.isDefined)
     assertWrite(rw, 0, 3)
@@ -213,7 +215,7 @@ class ReaderTest
     val exc = new Exception
     rw.fail(exc)
     assert(rf.isDefined)
-    val exc1 = intercept[Exception] { Await.result(rf) }
+    val exc1 = intercept[Exception](Await.result(rf))
     assert(exc eq exc1)
   }
 
@@ -222,7 +224,7 @@ class ReaderTest
     rw.fail(new Exception)
     val rf = rw.read(10)
     assert(rf.isDefined)
-    intercept[Exception] { Await.result(rf) }
+    intercept[Exception](Await.result(rf))
   }
 
   test("Reader.writable - discard") {
@@ -230,7 +232,7 @@ class ReaderTest
     rw.discard()
     val rf = rw.read(10)
     assert(rf.isDefined)
-    intercept[Reader.ReaderDiscarded] { Await.result(rf) }
+    intercept[Reader.ReaderDiscarded](Await.result(rf))
   }
 
   test("Reader.writable - close") {
@@ -411,9 +413,7 @@ class ReaderTest
   test("Reader.writable - close not satisfied until reads are fulfilled") {
     val rw = Reader.writable()
     val rf = rw.read(6)
-    val cf = rf.flatMap { _ =>
-      rw.close()
-    }
+    val cf = rf.flatMap(_ => rw.close())
     assert(!rf.isDefined)
     assert(!cf.isDone)
 
@@ -478,9 +478,7 @@ class ReaderTest
   test("Reader.concat") {
     forAll { (ss: List[String]) =>
       val readers =
-        ss map { s =>
-          BufReader(Buf.Utf8(s))
-        }
+        ss map { s => BufReader(Buf.Utf8(s)) }
       val buf = Reader.readAll(Reader.concat(AsyncStream.fromSeq(readers)))
       Await.result(buf) should equal(Buf.Utf8(ss.mkString))
     }
@@ -490,7 +488,7 @@ class ReaderTest
     val p = new Promise[Option[Buf]]
     val head = new Reader {
       def read(n: Int) = p
-      def discard() = p.setException(new Reader.ReaderDiscarded)
+      def discard()    = p.setException(new Reader.ReaderDiscarded)
     }
     val reader = Reader.concat(head +:: undefined)
     reader.discard()
@@ -501,7 +499,7 @@ class ReaderTest
     val p = new Promise[Option[Buf]]
     val head = new Reader {
       def read(n: Int) = p
-      def discard() = p.setException(new Reader.ReaderDiscarded)
+      def discard()    = p.setException(new Reader.ReaderDiscarded)
     }
     val reader = Reader.concat(head +:: undefined)
     assertReadWhileReading(reader)
@@ -511,7 +509,7 @@ class ReaderTest
     val p = new Promise[Option[Buf]]
     val head = new Reader {
       def read(n: Int) = p
-      def discard() = p.setException(new Reader.ReaderDiscarded)
+      def discard()    = p.setException(new Reader.ReaderDiscarded)
     }
     val reader = Reader.concat(head +:: undefined)
     assertFailed(reader, p)
@@ -528,8 +526,8 @@ class ReaderTest
       AsyncStream.empty
     }
     val combined = Reader.concat(head +:: tail)
-    val buf = Reader.readAll(combined)
-    intercept[Exception] { Await.result(buf) }
+    val buf      = Reader.readAll(combined)
+    intercept[Exception](Await.result(buf))
     assert(!p.isDefined)
   }
 }

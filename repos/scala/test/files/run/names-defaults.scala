@@ -8,7 +8,10 @@ object Test extends App {
   // re-order using names, call-site evaluation order
   test1(1, "@")
   test1(b = get("$"), a = get(2))
-  test1(a = get(3), b = get("**")) // should not transform into a block. how to test?
+  test1(
+    a = get(3),
+    b = get("**")
+  ) // should not transform into a block. how to test?
   test3(b = get(110), a = get(11))(c = get("\\"), d = get(2.399))
   test3(get(14), get(3920))(d = get("}"), c = get("["))
 
@@ -29,8 +32,8 @@ object Test extends App {
     synchronized(var1 = 30)
     println(var1)
 
-    var var2 = 0
-    def delay(var2: => Int) = { var2 }
+    var var2                = 0
+    def delay(var2: => Int) = var2
     println(delay(var2 = 40))
   }
   val f1: (Int, String) => Unit = test1(_, _); f1(6, "~")
@@ -62,51 +65,51 @@ object Test extends App {
   println(t2.f(28, b = 3.89, c = "ldksfj")) // second
 
   object t3 {
-    def f(a1: Int) = "first"
+    def f(a1: Int)         = "first"
     def f(a2: Int)(b: Int) = "second"
   }
-  println(t3.f(a1 = 10)) // first
+  println(t3.f(a1 = 10))    // first
   println(t3.f(a2 = 20)(1)) // second
 
   object t4 {
     def f(a: Int, b: String = "foo") = "first"
-    def f(a: Int) = "second"
+    def f(a: Int)                    = "second"
   }
-  println(t4.f(109)) // second
+  println(t4.f(109))    // second
   println(t4.f(a = 20)) // second
 
   object t5 {
-    def f(a: Object) = "first"
+    def f(a: Object)        = "first"
     val f: String => String = a => "second"
   }
   println(t5.f(new Sub1())) // first
-  println(t5.f("dfklj")) // second
+  println(t5.f("dfklj"))    // second
 
   object t6 {
     def f(a: String = "sdf", b: Int) = "f"
-    def f(a: Int, b: Int) = "s"
+    def f(a: Int, b: Int)            = "s"
   }
   println(t6.f(b = 289)) // f
 
   object t7 {
     def f(a: Int, b: String*) = "first"
-    def f(a: Int) = "second"
-    def g(a: Sub1, b: Int*) = "third"
-    def g(a: Base) = "fourth"
-    def h(a: Base, b: Int*) = "fifth"
-    def h(a: Sub1) = "sixth"
+    def f(a: Int)             = "second"
+    def g(a: Sub1, b: Int*)   = "third"
+    def g(a: Base)            = "fourth"
+    def h(a: Base, b: Int*)   = "fifth"
+    def h(a: Sub1)            = "sixth"
   }
-  println(t7.f(1)) // second
-  println(t7.f(a = 19)) // second
+  println(t7.f(1))                  // second
+  println(t7.f(a = 19))             // second
   println(t7.f(b = "sl19", a = 28)) // first
-  println(t7.g(new Sub1(), 1, 2)) // third
-  println(t7.g(new Base())) // fourth
-  println(t7.h(new Base())) // fifth
-  println(t7.h(new Sub1())) // sixth
+  println(t7.g(new Sub1(), 1, 2))   // third
+  println(t7.g(new Base()))         // fourth
+  println(t7.h(new Base()))         // fifth
+  println(t7.h(new Sub1()))         // sixth
 
   object t9 {
     def f(a: String, b: Int = 11) = "first"
-    def f(a: Double) = "second"
+    def f(a: Double)              = "second"
   }
   println(t9.f("bla")) // first
 
@@ -145,7 +148,8 @@ object Test extends App {
   val b1 = new B("dklfj")(e = "nixda")
   println(b1.printB)
   val c1 = new C(a = "dlkf", c = new { override def toString() = "struct" })(
-      e = "???")
+    e = "???"
+  )
   println(c1.print)
   val c2 = C("dflkj", c = Some(209): Option[Int])(None, "!!")
   println(c2.print)
@@ -159,10 +163,9 @@ object Test extends App {
   println(mn.foo()())
   println(mn.bar(10))
   // anonymous class
-  println(
-      (new M {
+  println((new M {
     def foo[T >: String](x: Int, y: T)(z: String = "2") = z;
-    def bar(x: Int, y: Double) = x
+    def bar(x: Int, y: Double)                          = x
   }).foo()())
 
   // copy method for case classes
@@ -185,7 +188,10 @@ object Test extends App {
   test5 { argName = 5 }
   println(argName) // should be 5
   val a: Unit =
-    test1(a = 10, b = "2") // local values a and b exist, but it's not ambiguous since they're vals
+    test1(
+      a = 10,
+      b = "2"
+    ) // local values a and b exist, but it's not ambiguous since they're vals
 
   // dependent types and copy method
   val a11 = new A2
@@ -250,7 +256,7 @@ object Test extends App {
   println(multinest)
 
   // #2290
-  def spawn(a: Int, b: => Unit) = { () }
+  def spawn(a: Int, b: => Unit) = ()
   def t {
     spawn(b = { val ttt = 1; ttt }, a = 0)
   }
@@ -292,8 +298,8 @@ object Test extends App {
 
   object t3178 {
     def foo(x: String) = x
-    def foo(x: Int) = x
-    def bar(foo: Int) = foo
+    def foo(x: Int)    = x
+    def bar(foo: Int)  = foo
     bar(foo = 1)
   }
 
@@ -349,10 +355,10 @@ object Test extends App {
 
   object deprNam2 {
     def f(@deprecatedName('s) x: String) = 1
-    def f(s: Object) = 2
+    def f(s: Object)                     = 2
 
     def g(@deprecatedName('x) s: Object) = 3
-    def g(s: String) = 4
+    def g(s: String)                     = 4
   }
   println(deprNam2.f(s = "dlf"))
   println(deprNam2.f(s = new Object))
@@ -360,7 +366,7 @@ object Test extends App {
 
   // #3697
   object t3697 {
-    def a(x: Int*)(s: Int = 3) = s
+    def a(x: Int*)(s: Int = 3)     = s
     def b(a: Int, b: Int, c: Int*) = a + b
   }
   println(t3697.a(Seq(3): _*)())
@@ -404,24 +410,26 @@ object Test extends App {
     inner(c = "/")
   }
   def test5(argName: Unit) = println("test5")
-  def test6(x: Int) = { () =>
-    x
-  }
-  def test7(s: String) = List(1).foreach(_ => println(s))
+  def test6(x: Int)        = { () => x }
+  def test7(s: String)     = List(1).foreach(_ => println(s))
 
   def test8(x: Int = 1)(implicit y: Int, z: String = "kldfj") = z + x + y
-  def test9(implicit x: Int = 1, z: String = "klfj") = z + x
+  def test9(implicit x: Int = 1, z: String = "klfj")          = z + x
 }
 
 class Base {
-  def test1[T1, T2](a: Int = 100, b: T1)(c: T2, d: String = a + ": " + b)(
-      e: T2 = c, f: Int) =
+  def test1[T1, T2](
+      a: Int = 100,
+      b: T1
+  )(c: T2, d: String = a + ": " + b)(e: T2 = c, f: Int) =
     println(a + ": " + d + ", " + b + ", " + c + ", " + e + ", " + f)
 }
 
 class Sub1 extends Base {
-  override def test1[U1, U2](b: Int, a: U1)(m: U2, r: String = "overridden")(
-      o: U2, f: Int = 555) =
+  override def test1[U1, U2](
+      b: Int,
+      a: U1
+  )(m: U2, r: String = "overridden")(o: U2, f: Int = 555) =
     println(b + ": " + r + ", " + a + ", " + m + ", " + o + ", " + f)
 }
 
@@ -454,7 +462,7 @@ abstract class M extends N {
 
 class MN extends M {
   def foo[T >: String](x: Int, y: T)(z: String) = z + x + y
-  def bar(n: Int, m: Double) = n * m
+  def bar(n: Int, m: Double)                    = n * m
 }
 
 case class Factory(x: Int = 1, y: String)(z: String = y)

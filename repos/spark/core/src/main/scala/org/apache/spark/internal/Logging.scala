@@ -35,10 +35,9 @@ private[spark] trait Logging {
   @transient private var log_ : Logger = null
 
   // Method to get the logger name for this object
-  protected def logName = {
+  protected def logName =
     // Ignore trailing $'s in the class names for Scala objects
     this.getClass.getName.stripSuffix("$")
-  }
 
   // Method to get or create the logger for this object
   protected def log: Logger = {
@@ -91,11 +90,10 @@ private[spark] trait Logging {
     if (log.isErrorEnabled) log.error(msg, throwable)
   }
 
-  protected def isTraceEnabled(): Boolean = {
+  protected def isTraceEnabled(): Boolean =
     log.isTraceEnabled
-  }
 
-  protected def initializeLogIfNecessary(isInterpreter: Boolean): Unit = {
+  protected def initializeLogIfNecessary(isInterpreter: Boolean): Unit =
     if (!Logging.initialized) {
       Logging.initLock.synchronized {
         if (!Logging.initialized) {
@@ -103,7 +101,6 @@ private[spark] trait Logging {
         }
       }
     }
-  }
 
   private def initializeLogging(isInterpreter: Boolean): Unit = {
     // Don't use a logger in here, as this is itself occurring during initialization of a logger
@@ -123,7 +120,8 @@ private[spark] trait Logging {
           case Some(url) =>
             PropertyConfigurator.configure(url)
             System.err.println(
-                s"Using Spark's default log4j profile: $defaultLogProps")
+              s"Using Spark's default log4j profile: $defaultLogProps"
+            )
           case None =>
             System.err.println(s"Spark was unable to load $defaultLogProps")
         }
@@ -134,12 +132,12 @@ private[spark] trait Logging {
         // overriding the root logger's config if they're different.
         val rootLogger = LogManager.getRootLogger()
         val replLogger = LogManager.getLogger(logName)
-        val replLevel = Option(replLogger.getLevel()).getOrElse(Level.WARN)
+        val replLevel  = Option(replLogger.getLevel()).getOrElse(Level.WARN)
         if (replLevel != rootLogger.getEffectiveLevel()) {
-          System.err.printf(
-              "Setting default log level to \"%s\".\n", replLevel)
+          System.err.printf("Setting default log level to \"%s\".\n", replLevel)
           System.err.println(
-              "To adjust logging level use sc.setLogLevel(newLevel).")
+            "To adjust logging level use sc.setLogLevel(newLevel)."
+          )
           rootLogger.setLevel(replLevel)
         }
       }
@@ -155,7 +153,7 @@ private[spark] trait Logging {
 
 private object Logging {
   @volatile private var initialized = false
-  val initLock = new Object()
+  val initLock                      = new Object()
   try {
     // We use reflection here to handle the case where users remove the
     // slf4j-to-jul bridge order to route their logs to JUL.

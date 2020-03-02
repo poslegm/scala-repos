@@ -17,15 +17,15 @@ object DisjunctionTest extends SpecLite {
   checkAll(associative.laws[\/])
 
   "fromTryCatchThrowable" in {
-    class Foo extends Throwable
+    class Foo       extends Throwable
     final class Bar extends Foo
     val foo = new Foo
     val bar = new Bar
 
     implicit val equalFoo = Equal.equalA[Foo]
-    implicit val showFoo = Show.showA[Foo]
+    implicit val showFoo  = Show.showA[Foo]
     implicit val equalBar = Equal.equalA[Bar]
-    implicit val showBar = Show.showA[Bar]
+    implicit val showBar  = Show.showA[Bar]
 
     \/.fromTryCatchThrowable[Int, Foo](1) must_=== \/.right(1)
     \/.fromTryCatchThrowable[Int, Foo](throw foo) must_=== \/.left(foo)
@@ -39,10 +39,10 @@ object DisjunctionTest extends SpecLite {
     case object Baz extends Foo
 
     implicit val equalFoo = Equal.equalA[Foo]
-    implicit val showFoo = Show.showA[Foo]
+    implicit val showFoo  = Show.showA[Foo]
 
-    -\/[Foo](Bar).recover({ case Bar => 1 }) must_=== \/-(1)
-    -\/[Foo](Bar).recover({ case Baz => 1 }) must_=== -\/(Bar)
+    -\/[Foo](Bar).recover({ case Bar         => 1 }) must_=== \/-(1)
+    -\/[Foo](Bar).recover({ case Baz         => 1 }) must_=== -\/(Bar)
     \/.right[Foo, Int](1).recover({ case Bar => 4 }) must_=== \/-(1)
   }
 
@@ -52,7 +52,7 @@ object DisjunctionTest extends SpecLite {
     case object Baz extends Foo
 
     implicit val equalFoo = Equal.equalA[Foo]
-    implicit val showFoo = Show.showA[Foo]
+    implicit val showFoo  = Show.showA[Foo]
 
     val barToBaz: PartialFunction[Foo, \/[Foo, Int]] = {
       case Bar => -\/(Baz)
@@ -81,7 +81,9 @@ object DisjunctionTest extends SpecLite {
     import syntax.apply._
 
     3.right[String].validationNel must_=== 3.successNel[String]
-    ("hello".left[Int].validationNel |@| "world".left[Int].validationNel).tupled must_===
-    ("hello".failureNel[Int] |@| "world".failureNel[Int]).tupled
+    ("hello".left[Int].validationNel |@| "world"
+      .left[Int]
+      .validationNel).tupled must_===
+      ("hello".failureNel[Int] |@| "world".failureNel[Int]).tupled
   }
 }

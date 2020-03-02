@@ -28,7 +28,7 @@ class DeadlineSpanMapTest extends FunSuite {
       val span =
         map.update(traceId)(_.setServiceName("service").setName("name"))
       tc.advance(10.seconds) // advance timer
-      timer.tick() // execute scheduled event
+      timer.tick()           // execute scheduled event
 
       // span must have been logged
       assert(spansLogged)

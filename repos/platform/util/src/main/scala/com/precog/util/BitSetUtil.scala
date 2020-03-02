@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -26,20 +26,20 @@ import scala.annotation.tailrec
 object BitSetUtil {
   class BitSetOperations(bs: BitSet) {
     def toUnboxedArray(): Array[Long] = bitSetToArray(bs)
-    def toList(): List[Int] = bitSetToList(bs)
+    def toList(): List[Int]           = bitSetToList(bs)
 
-    def +(elem: Int) = { val b = bs.copy; b.set(elem); b }
-    def -(elem: Int) = { val b = bs.copy; b.clear(elem); b }
-    def &(other: BitSet) = { val b = bs.copy; b.and(other); b }
+    def +(elem: Int)      = { val b = bs.copy; b.set(elem); b }
+    def -(elem: Int)      = { val b = bs.copy; b.clear(elem); b }
+    def &(other: BitSet)  = { val b = bs.copy; b.and(other); b }
     def &~(other: BitSet) = { val b = bs.copy; b.andNot(other); b }
-    def |(other: BitSet) = { val b = bs.copy; b.or(other); b }
+    def |(other: BitSet)  = { val b = bs.copy; b.or(other); b }
     def ++(other: BitSet) = { val b = bs.copy; b.or(other); b }
 
-    def +=(elem: Int) = bs.set(elem)
-    def -=(elem: Int) = bs.clear(elem)
-    def &=(other: BitSet) = bs.and(other)
+    def +=(elem: Int)      = bs.set(elem)
+    def -=(elem: Int)      = bs.clear(elem)
+    def &=(other: BitSet)  = bs.and(other)
     def &~=(other: BitSet) = bs.andNot(other)
-    def |=(other: BitSet) = bs.or(other)
+    def |=(other: BitSet)  = bs.or(other)
     def ++=(other: BitSet) = bs.or(other)
 
     def isEmpty(): Boolean =
@@ -58,7 +58,7 @@ object BitSetUtil {
       }
 
       val ns = bs.getBits
-      var i = ns.length - 1
+      var i  = ns.length - 1
       while (i >= 0) {
         if (ns(i) != 0) return findBit(i * 64, -1)
         i -= 1
@@ -88,8 +88,8 @@ object BitSetUtil {
   def create(): BitSet = new BitSet()
 
   def create(ns: Array[Int]): BitSet = {
-    val bs = new BitSet()
-    var i = 0
+    val bs  = new BitSet()
+    var i   = 0
     val len = ns.length
     while (i < len) {
       bs.set(ns(i))
@@ -120,7 +120,7 @@ object BitSetUtil {
         bits
       }
     } else {
-      var i = from
+      var i    = from
       val bits = new BitSet()
       while (i < to) {
         bits(i - from) = bitset(i)
@@ -166,7 +166,7 @@ object BitSetUtil {
   }
 
   def bitSetToArray(bs: BitSet): Array[Long] = {
-    var j = 0
+    var j   = 0
     val arr = new Array[Long](bs.size)
 
     @tailrec
@@ -190,21 +190,22 @@ object BitSetUtil {
 
   def bitSetToList(bs: BitSet): List[Int] = {
     @tailrec
-    def loopBits(
-        long: Long, bit: Int, base: Int, sofar: List[Int]): List[Int] = {
+    def loopBits(long: Long, bit: Int, base: Int, sofar: List[Int]): List[Int] =
       if (bit < 0) sofar
       else if (((long >> bit) & 1) == 1)
         loopBits(long, bit - 1, base, (base + bit) :: sofar)
       else loopBits(long, bit - 1, base, sofar)
-    }
 
     @tailrec
     def loopLongs(
-        i: Int, longs: Array[Long], base: Int, sofar: List[Int]): List[Int] = {
+        i: Int,
+        longs: Array[Long],
+        base: Int,
+        sofar: List[Int]
+    ): List[Int] =
       if (i < 0) sofar
       else
         loopLongs(i - 1, longs, base - 64, loopBits(longs(i), 63, base, sofar))
-    }
 
     val last = bs.getBitsLength - 1
     loopLongs(last, bs.getBits, last * 64, Nil)

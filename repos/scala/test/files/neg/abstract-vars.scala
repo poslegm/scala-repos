@@ -20,7 +20,7 @@ class Fail5 extends A {
 }
 
 class Success1 extends A {
-  val x: Int = 5
+  val x: Int      = 5
   def x_=(y: Int) = ()
 }
 

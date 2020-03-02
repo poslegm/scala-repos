@@ -15,8 +15,8 @@ class FlowReduceSpec extends AkkaSpec {
   implicit val materializer = ActorMaterializer()
 
   "A Reduce" must {
-    val input = 1 to 100
-    val expected = input.sum
+    val input       = 1 to 100
+    val expected    = input.sum
     val inputSource = Source(input).filter(_ ⇒ true).map(identity)
     val reduceSource =
       inputSource.reduce[Int](_ + _).filter(_ ⇒ true).map(identity)
@@ -34,22 +34,26 @@ class FlowReduceSpec extends AkkaSpec {
 
     "work when using Source.reduce" in assertAllStagesStopped {
       Await.result(reduceSource runWith Sink.head, 3.seconds) should be(
-          expected)
+        expected
+      )
     }
 
     "work when using Sink.reduce" in assertAllStagesStopped {
       Await.result(inputSource runWith reduceSink, 3.seconds) should be(
-          expected)
+        expected
+      )
     }
 
     "work when using Flow.reduce" in assertAllStagesStopped {
       Await.result(inputSource via reduceFlow runWith Sink.head, 3.seconds) should be(
-          expected)
+        expected
+      )
     }
 
     "work when using Source.reduce + Flow.reduce + Sink.reduce" in assertAllStagesStopped {
       Await.result(reduceSource via reduceFlow runWith reduceSink, 3.seconds) should be(
-          expected)
+        expected
+      )
     }
 
     "propagate an error" in assertAllStagesStopped {

@@ -54,11 +54,15 @@ abstract class QueryTest extends PlanTest {
     val outputs = df.collect().map(_.mkString).mkString
     for (key <- keywords) {
       if (exists) {
-        assert(outputs.contains(key),
-               s"Failed for $df ($key doesn't exist in result)")
+        assert(
+          outputs.contains(key),
+          s"Failed for $df ($key doesn't exist in result)"
+        )
       } else {
-        assert(!outputs.contains(key),
-               s"Failed for $df ($key existed in the result)")
+        assert(
+          !outputs.contains(key),
+          s"Failed for $df ($key existed in the result)"
+        )
       }
     }
   }
@@ -75,29 +79,39 @@ abstract class QueryTest extends PlanTest {
     *    which performs a subset of the checks done by this function.
     */
   protected def checkDataset[T](ds: Dataset[T], expectedAnswer: T*): Unit = {
-    checkAnswer(ds.toDF(),
-                sqlContext
-                  .createDataset(expectedAnswer)(ds.unresolvedTEncoder)
-                  .toDF()
-                  .collect()
-                  .toSeq)
+    checkAnswer(
+      ds.toDF(),
+      sqlContext
+        .createDataset(expectedAnswer)(ds.unresolvedTEncoder)
+        .toDF()
+        .collect()
+        .toSeq
+    )
 
     checkDecoding(ds, expectedAnswer: _*)
   }
 
-  protected def checkDecoding[T](ds: => Dataset[T], expectedAnswer: T*): Unit = {
-    val decoded = try ds.collect().toSet catch {
-      case e: Exception =>
-        fail(s"""
+  protected def checkDecoding[T](
+      ds: => Dataset[T],
+      expectedAnswer: T*
+  ): Unit = {
+    val decoded =
+      try ds.collect().toSet
+      catch {
+        case e: Exception =>
+          fail(
+            s"""
              |Exception collecting dataset as objects
              |${ds.resolvedTEncoder}
              |${ds.resolvedTEncoder.fromRowExpression.treeString}
              |${ds.queryExecution}
-           """.stripMargin, e)
-    }
+           """.stripMargin,
+            e
+          )
+      }
 
     // Handle the case where the return type is an array
-    val isArray = decoded.headOption.map(_.getClass.isArray).getOrElse(false)
+    val isArray        = decoded.headOption.map(_.getClass.isArray).getOrElse(false)
     def normalEquality = decoded == expectedAnswer.toSet
     def expectedAsSeq =
       expectedAnswer.map(_.asInstanceOf[Array[_]].toSeq).toSet
@@ -122,20 +136,25 @@ abstract class QueryTest extends PlanTest {
     * @param df the [[DataFrame]] to be executed
     * @param expectedAnswer the expected result in a [[Seq]] of [[Row]]s.
     */
-  protected def checkAnswer(df: => DataFrame, expectedAnswer: Seq[Row]): Unit = {
-    val analyzedDF = try df catch {
-      case ae: AnalysisException =>
-        if (ae.plan.isDefined) {
-          fail(s"""
+  protected def checkAnswer(
+      df: => DataFrame,
+      expectedAnswer: Seq[Row]
+  ): Unit = {
+    val analyzedDF =
+      try df
+      catch {
+        case ae: AnalysisException =>
+          if (ae.plan.isDefined) {
+            fail(s"""
                |Failed to analyze query: $ae
                |${ae.plan.get}
                |
                |${stackTraceToString(ae)}
                |""".stripMargin)
-        } else {
-          throw ae
-        }
-    }
+          } else {
+            throw ae
+          }
+      }
 
     checkJsonFormat(analyzedDF)
 
@@ -143,18 +162,15 @@ abstract class QueryTest extends PlanTest {
 
     QueryTest.checkAnswer(analyzedDF, expectedAnswer) match {
       case Some(errorMessage) => fail(errorMessage)
-      case None =>
+      case None               =>
     }
   }
 
-  protected def checkAnswer(df: => DataFrame, expectedAnswer: Row): Unit = {
+  protected def checkAnswer(df: => DataFrame, expectedAnswer: Row): Unit =
     checkAnswer(df, Seq(expectedAnswer))
-  }
 
-  protected def checkAnswer(
-      df: => DataFrame, expectedAnswer: DataFrame): Unit = {
+  protected def checkAnswer(df: => DataFrame, expectedAnswer: DataFrame): Unit =
     checkAnswer(df, expectedAnswer.collect())
-  }
 
   /**
     * Runs the plan and makes sure the answer is within absTol of the expected result.
@@ -163,12 +179,16 @@ abstract class QueryTest extends PlanTest {
     * @param absTol the absolute tolerance between actual and expected answers.
     */
   protected def checkAggregatesWithTol(
-      dataFrame: DataFrame, expectedAnswer: Seq[Row], absTol: Double): Unit = {
+      dataFrame: DataFrame,
+      expectedAnswer: Seq[Row],
+      absTol: Double
+  ): Unit = {
     // TODO: catch exceptions in data frame execution
     val actualAnswer = dataFrame.collect()
     require(
-        actualAnswer.length == expectedAnswer.length,
-        s"actual num rows ${actualAnswer.length} != expected num of rows ${expectedAnswer.length}")
+      actualAnswer.length == expectedAnswer.length,
+      s"actual num rows ${actualAnswer.length} != expected num of rows ${expectedAnswer.length}"
+    )
 
     actualAnswer.zip(expectedAnswer).foreach {
       case (actualRow, expectedRow) =>
@@ -177,9 +197,11 @@ abstract class QueryTest extends PlanTest {
   }
 
   protected def checkAggregatesWithTol(
-      dataFrame: DataFrame, expectedAnswer: Row, absTol: Double): Unit = {
+      dataFrame: DataFrame,
+      expectedAnswer: Row,
+      absTol: Double
+  ): Unit =
     checkAggregatesWithTol(dataFrame, Seq(expectedAnswer), absTol)
-  }
 
   /**
     * Asserts that a given [[Queryable]] will be executed using the given number of cached results.
@@ -192,64 +214,72 @@ abstract class QueryTest extends PlanTest {
       }
 
     assert(
-        cachedData.size == numCachedTables,
-        s"Expected query to contain $numCachedTables, but it actually had ${cachedData.size}\n" +
-        planWithCaching)
+      cachedData.size == numCachedTables,
+      s"Expected query to contain $numCachedTables, but it actually had ${cachedData.size}\n" +
+        planWithCaching
+    )
   }
 
   private def checkJsonFormat(df: DataFrame): Unit = {
     val logicalPlan = df.queryExecution.analyzed
     // bypass some cases that we can't handle currently.
-    logicalPlan.transform {
-      case _: MapPartitions => return
-      case _: MapGroups => return
-      case _: AppendColumns => return
-      case _: CoGroup => return
-      case _: LogicalRelation => return
-    }.transformAllExpressions {
-      case a: ImperativeAggregate => return
-    }
+    logicalPlan
+      .transform {
+        case _: MapPartitions   => return
+        case _: MapGroups       => return
+        case _: AppendColumns   => return
+        case _: CoGroup         => return
+        case _: LogicalRelation => return
+      }
+      .transformAllExpressions {
+        case a: ImperativeAggregate => return
+      }
 
     // bypass hive tests before we fix all corner cases in hive module.
     if (this.getClass.getName.startsWith("org.apache.spark.sql.hive")) return
 
-    val jsonString = try {
-      logicalPlan.toJSON
-    } catch {
-      case NonFatal(e) =>
-        fail(s"""
+    val jsonString =
+      try {
+        logicalPlan.toJSON
+      } catch {
+        case NonFatal(e) =>
+          fail(s"""
              |Failed to parse logical plan to JSON:
              |${logicalPlan.treeString}
            """.stripMargin, e)
-    }
+      }
 
     // scala function is not serializable to JSON, use null to replace them so that we can compare
     // the plans later.
     val normalized1 = logicalPlan.transformAllExpressions {
-      case udf: ScalaUDF => udf.copy(function = null)
+      case udf: ScalaUDF             => udf.copy(function = null)
       case gen: UserDefinedGenerator => gen.copy(function = null)
     }
 
     // RDDs/data are not serializable to JSON, so we need to collect LogicalPlans that contains
     // these non-serializable stuff, and use these original ones to replace the null-placeholders
     // in the logical plans parsed from JSON.
-    var logicalRDDs = logicalPlan.collect { case l: LogicalRDD => l }
+    var logicalRDDs    = logicalPlan.collect { case l: LogicalRDD    => l }
     var localRelations = logicalPlan.collect { case l: LocalRelation => l }
     var inMemoryRelations = logicalPlan.collect {
       case i: InMemoryRelation => i
     }
 
-    val jsonBackPlan = try {
-      TreeNode.fromJSON[LogicalPlan](jsonString, sqlContext.sparkContext)
-    } catch {
-      case NonFatal(e) =>
-        fail(s"""
+    val jsonBackPlan =
+      try {
+        TreeNode.fromJSON[LogicalPlan](jsonString, sqlContext.sparkContext)
+      } catch {
+        case NonFatal(e) =>
+          fail(
+            s"""
              |Failed to rebuild the logical plan from JSON:
              |${logicalPlan.treeString}
              |
              |${logicalPlan.prettyJson}
-           """.stripMargin, e)
-    }
+           """.stripMargin,
+            e
+          )
+      }
 
     val normalized2 =
       jsonBackPlan transformDown {
@@ -264,14 +294,14 @@ abstract class QueryTest extends PlanTest {
         case l: InMemoryRelation =>
           val origin = inMemoryRelations.head
           inMemoryRelations = inMemoryRelations.drop(1)
-          InMemoryRelation(l.output,
-                           l.useCompression,
-                           l.batchSize,
-                           l.storageLevel,
-                           origin.child,
-                           l.tableName)(origin.cachedColumnBuffers,
-                                        l._statistics,
-                                        origin._batchStats)
+          InMemoryRelation(
+            l.output,
+            l.useCompression,
+            l.batchSize,
+            l.storageLevel,
+            origin.child,
+            l.tableName
+          )(origin.cachedColumnBuffers, l._statistics, origin._batchStats)
       }
 
     assert(logicalRDDs.isEmpty)
@@ -279,11 +309,10 @@ abstract class QueryTest extends PlanTest {
     assert(inMemoryRelations.isEmpty)
 
     if (normalized1 != normalized2) {
-      fail(
-          s"""
+      fail(s"""
            |== FAIL: the logical plan parsed from json does not match the original one ===
            |${sideBySide(logicalPlan.treeString, normalized2.treeString)
-           .mkString("\n")}
+                .mkString("\n")}
           """.stripMargin)
     }
   }
@@ -293,14 +322,17 @@ abstract class QueryTest extends PlanTest {
     */
   def assertEmptyMissingInput(query: Queryable): Unit = {
     assert(
-        query.queryExecution.analyzed.missingInput.isEmpty,
-        s"The analyzed logical plan has missing inputs: ${query.queryExecution.analyzed}")
+      query.queryExecution.analyzed.missingInput.isEmpty,
+      s"The analyzed logical plan has missing inputs: ${query.queryExecution.analyzed}"
+    )
     assert(
-        query.queryExecution.optimizedPlan.missingInput.isEmpty,
-        s"The optimized logical plan has missing inputs: ${query.queryExecution.optimizedPlan}")
+      query.queryExecution.optimizedPlan.missingInput.isEmpty,
+      s"The optimized logical plan has missing inputs: ${query.queryExecution.optimizedPlan}"
+    )
     assert(
-        query.queryExecution.executedPlan.missingInput.isEmpty,
-        s"The physical plan has missing inputs: ${query.queryExecution.executedPlan}")
+      query.queryExecution.executedPlan.missingInput.isEmpty,
+      s"The physical plan has missing inputs: ${query.queryExecution.executedPlan}"
+    )
   }
 }
 
@@ -317,17 +349,19 @@ object QueryTest {
   def checkAnswer(df: DataFrame, expectedAnswer: Seq[Row]): Option[String] = {
     val isSorted = df.logicalPlan.collect { case s: logical.Sort => s }.nonEmpty
 
-    val sparkAnswer = try df.collect().toSeq catch {
-      case e: Exception =>
-        val errorMessage = s"""
+    val sparkAnswer =
+      try df.collect().toSeq
+      catch {
+        case e: Exception =>
+          val errorMessage = s"""
             |Exception thrown while executing query:
             |${df.queryExecution}
             |== Exception ==
             |$e
             |${org.apache.spark.sql.catalyst.util.stackTraceToString(e)}
           """.stripMargin
-        return Some(errorMessage)
-    }
+          return Some(errorMessage)
+      }
 
     sameRows(expectedAnswer, sparkAnswer, isSorted).map { results =>
       s"""
@@ -350,31 +384,38 @@ object QueryTest {
   }
 
   // We need to call prepareRow recursively to handle schemas with struct types.
-  def prepareRow(row: Row): Row = {
-    Row.fromSeq(
-        row.toSeq.map {
-      case null => null
+  def prepareRow(row: Row): Row =
+    Row.fromSeq(row.toSeq.map {
+      case null                    => null
       case d: java.math.BigDecimal => BigDecimal(d)
       // Convert array to Seq for easy equality check.
       case b: Array[_] => b.toSeq
-      case r: Row => prepareRow(r)
-      case o => o
+      case r: Row      => prepareRow(r)
+      case o           => o
     })
-  }
 
-  def sameRows(expectedAnswer: Seq[Row],
-               sparkAnswer: Seq[Row],
-               isSorted: Boolean = false): Option[String] = {
+  def sameRows(
+      expectedAnswer: Seq[Row],
+      sparkAnswer: Seq[Row],
+      isSorted: Boolean = false
+  ): Option[String] = {
     if (prepareAnswer(expectedAnswer, isSorted) != prepareAnswer(
-            sparkAnswer, isSorted)) {
+          sparkAnswer,
+          isSorted
+        )) {
       val errorMessage =
         s"""
          |== Results ==
          |${sideBySide(
-               s"== Correct Answer - ${expectedAnswer.size} ==" +: prepareAnswer(
-                   expectedAnswer, isSorted).map(_.toString()),
-               s"== Spark Answer - ${sparkAnswer.size} ==" +: prepareAnswer(
-                   sparkAnswer, isSorted).map(_.toString())).mkString("\n")}
+             s"== Correct Answer - ${expectedAnswer.size} ==" +: prepareAnswer(
+               expectedAnswer,
+               isSorted
+             ).map(_.toString()),
+             s"== Spark Answer - ${sparkAnswer.size} ==" +: prepareAnswer(
+               sparkAnswer,
+               isSorted
+             ).map(_.toString())
+           ).mkString("\n")}
         """.stripMargin
       return Some(errorMessage)
     }
@@ -388,27 +429,32 @@ object QueryTest {
     * @param absTol the absolute tolerance between actual and expected answers.
     */
   protected def checkAggregatesWithTol(
-      actualAnswer: Row, expectedAnswer: Row, absTol: Double) = {
-    require(actualAnswer.length == expectedAnswer.length,
-            s"actual answer length ${actualAnswer.length} != " +
-            s"expected answer length ${expectedAnswer.length}")
+      actualAnswer: Row,
+      expectedAnswer: Row,
+      absTol: Double
+  ) = {
+    require(
+      actualAnswer.length == expectedAnswer.length,
+      s"actual answer length ${actualAnswer.length} != " +
+        s"expected answer length ${expectedAnswer.length}"
+    )
 
     // TODO: support other numeric types besides Double
     // TODO: support struct types?
     actualAnswer.toSeq.zip(expectedAnswer.toSeq).foreach {
       case (actual: Double, expected: Double) =>
         assert(
-            math.abs(actual - expected) < absTol,
-            s"actual answer $actual not within $absTol of correct answer $expected")
+          math.abs(actual - expected) < absTol,
+          s"actual answer $actual not within $absTol of correct answer $expected"
+        )
       case (actual, expected) =>
         assert(actual == expected, s"$actual did not equal $expected")
     }
   }
 
-  def checkAnswer(df: DataFrame, expectedAnswer: java.util.List[Row]): String = {
+  def checkAnswer(df: DataFrame, expectedAnswer: java.util.List[Row]): String =
     checkAnswer(df, expectedAnswer.asScala) match {
       case Some(errorMessage) => errorMessage
-      case None => null
+      case None               => null
     }
-  }
 }

@@ -35,13 +35,15 @@ import scalafx.delegate.SFXDelegate
 
 object ProgressIndicator {
   implicit def sfxProgressIndicator2jfx(
-      v: ProgressIndicator): jfxsc.ProgressIndicator =
+      v: ProgressIndicator
+  ): jfxsc.ProgressIndicator =
     if (v != null) v.delegate else null
 
   val IndeterminateProgress = jfxsc.ProgressIndicator.INDETERMINATE_PROGRESS
   @deprecated(
-      "Use IndeterminateProgress; INDETERMINATE_PROGRESS will be removed in a future release",
-      "8.0.60-R10")
+    "Use IndeterminateProgress; INDETERMINATE_PROGRESS will be removed in a future release",
+    "8.0.60-R10"
+  )
   val INDETERMINATE_PROGRESS = IndeterminateProgress
 }
 
@@ -49,8 +51,9 @@ object ProgressIndicator {
   * Wraps [[http://docs.oracle.com/javase/8/javafx/api/javafx/scene/control/ProgressIndicator.html]]
   */
 class ProgressIndicator(
-    override val delegate: jfxsc.ProgressIndicator = new jfxsc.ProgressIndicator)
-    extends Control(delegate) with SFXDelegate[jfxsc.ProgressIndicator] {
+    override val delegate: jfxsc.ProgressIndicator = new jfxsc.ProgressIndicator
+) extends Control(delegate)
+    with SFXDelegate[jfxsc.ProgressIndicator] {
 
   /**
     * A flag indicating whether it is possible to determine the progress of the ProgressIndicator.

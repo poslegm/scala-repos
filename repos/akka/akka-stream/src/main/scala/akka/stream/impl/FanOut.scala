@@ -15,11 +15,14 @@ import org.reactivestreams.Subscription
 private[akka] object FanOut {
 
   final case class SubstreamRequestMore(id: Int, demand: Long)
-      extends DeadLetterSuppression with NoSerializationVerificationNeeded
+      extends DeadLetterSuppression
+      with NoSerializationVerificationNeeded
   final case class SubstreamCancel(id: Int)
-      extends DeadLetterSuppression with NoSerializationVerificationNeeded
+      extends DeadLetterSuppression
+      with NoSerializationVerificationNeeded
   final case class SubstreamSubscribePending(id: Int)
-      extends DeadLetterSuppression with NoSerializationVerificationNeeded
+      extends DeadLetterSuppression
+      with NoSerializationVerificationNeeded
 
   class SubstreamSubscription(val parent: ActorRef, val id: Int)
       extends Subscription {
@@ -37,8 +40,9 @@ private[akka] object FanOut {
   }
 
   final case class ExposedPublishers(
-      publishers: immutable.Seq[ActorPublisher[Any]])
-      extends DeadLetterSuppression with NoSerializationVerificationNeeded
+      publishers: immutable.Seq[ActorPublisher[Any]]
+  ) extends DeadLetterSuppression
+      with NoSerializationVerificationNeeded
 
   class OutputBunch(outputCount: Int, impl: ActorRef, pump: Pump) {
     private var bunchCancelled = false
@@ -46,14 +50,14 @@ private[akka] object FanOut {
     private val outputs =
       Array.tabulate(outputCount)(new FanoutOutputs(_, impl, pump))
 
-    private val marked = Array.ofDim[Boolean](outputCount)
-    private var markedCount = 0
-    private val pending = Array.ofDim[Boolean](outputCount)
-    private var markedPending = 0
-    private val cancelled = Array.ofDim[Boolean](outputCount)
+    private val marked          = Array.ofDim[Boolean](outputCount)
+    private var markedCount     = 0
+    private val pending         = Array.ofDim[Boolean](outputCount)
+    private var markedPending   = 0
+    private val cancelled       = Array.ofDim[Boolean](outputCount)
     private var markedCancelled = 0
-    private val completed = Array.ofDim[Boolean](outputCount)
-    private val errored = Array.ofDim[Boolean](outputCount)
+    private val completed       = Array.ofDim[Boolean](outputCount)
+    private val errored         = Array.ofDim[Boolean](outputCount)
 
     override def toString: String =
       s"""|OutputBunch
@@ -110,23 +114,21 @@ private[akka] object FanOut {
         unmarkOutput(output)
       }
 
-    def markOutput(output: Int): Unit = {
+    def markOutput(output: Int): Unit =
       if (!marked(output)) {
         if (cancelled(output)) markedCancelled += 1
         if (pending(output)) markedPending += 1
         marked(output) = true
         markedCount += 1
       }
-    }
 
-    def unmarkOutput(output: Int): Unit = {
+    def unmarkOutput(output: Int): Unit =
       if (marked(output)) {
         if (cancelled(output)) markedCancelled -= 1
         if (pending(output)) markedPending -= 1
         marked(output) = false
         markedCount -= 1
       }
-    }
 
     def markAllOutputs(): Unit = {
       var i = 0
@@ -152,8 +154,10 @@ private[akka] object FanOut {
       while (!(marked(id) && pending(id))) {
         id += 1
         if (id == outputCount) id = 0
-        require(id != preferredId,
-                "Tried to enqueue without waiting for any demand")
+        require(
+          id != preferredId,
+          "Tried to enqueue without waiting for any demand"
+        )
       }
       id
     }
@@ -203,7 +207,7 @@ private[akka] object FanOut {
 
     def demandOrCancelAvailableFor(id: Int) = new TransferState {
       override def isCompleted: Boolean = false
-      override def isReady: Boolean = pending(id) || cancelled(id)
+      override def isReady: Boolean     = pending(id) || cancelled(id)
     }
 
     /**
@@ -224,7 +228,7 @@ private[akka] object FanOut {
       */
     val AnyOfMarkedOutputs = new TransferState {
       override def isCompleted: Boolean = markedCancelled == markedCount
-      override def isReady: Boolean = markedPending > 0
+      override def isReady: Boolean     = markedPending > 0
     }
 
     // FIXME: Eliminate re-wraps
@@ -239,8 +243,9 @@ private[akka] object FanOut {
         case SubstreamRequestMore(id, demand) ⇒
           if (demand < 1) // According to Reactive Streams Spec 3.9, with non-positive demand must yield onError
             error(
-                id,
-                ReactiveStreamsCompliance.numberOfElementsInRequestMustBePositiveException)
+              id,
+              ReactiveStreamsCompliance.numberOfElementsInRequestMustBePositiveException
+            )
           else {
             if (marked(id) && !pending(id)) markedPending += 1
             pending(id) = true
@@ -264,15 +269,18 @@ private[akka] object FanOut {
   * INTERNAL API
   */
 private[akka] abstract class FanOut(
-    val settings: ActorMaterializerSettings, val outputCount: Int)
-    extends Actor with ActorLogging with Pump {
+    val settings: ActorMaterializerSettings,
+    val outputCount: Int
+) extends Actor
+    with ActorLogging
+    with Pump {
   import FanOut._
 
   protected val outputBunch = new OutputBunch(outputCount, self, this)
-  protected val primaryInputs: Inputs = new BatchingInputBuffer(
-      settings.maxInputBufferSize, this) {
-    override def onError(e: Throwable): Unit = fail(e)
-  }
+  protected val primaryInputs: Inputs =
+    new BatchingInputBuffer(settings.maxInputBufferSize, this) {
+      override def onError(e: Throwable): Unit = fail(e)
+    }
 
   override def pumpFinished(): Unit = {
     primaryInputs.cancel()
@@ -319,22 +327,24 @@ private[akka] class Unzip(_settings: ActorMaterializerSettings)
   outputBunch.markAllOutputs()
 
   initialPhase(
-      1,
-      TransferPhase(primaryInputs.NeedsInput && outputBunch.AllOfMarkedOutputs) {
-        () ⇒
-          primaryInputs.dequeueInputElement() match {
-            case (a, b) ⇒
-              outputBunch.enqueue(0, a)
-              outputBunch.enqueue(1, b)
+    1,
+    TransferPhase(primaryInputs.NeedsInput && outputBunch.AllOfMarkedOutputs) {
+      () ⇒
+        primaryInputs.dequeueInputElement() match {
+          case (a, b) ⇒
+            outputBunch.enqueue(0, a)
+            outputBunch.enqueue(1, b)
 
-            case t: akka.japi.Pair[_, _] ⇒
-              outputBunch.enqueue(0, t.first)
-              outputBunch.enqueue(1, t.second)
+          case t: akka.japi.Pair[_, _] ⇒
+            outputBunch.enqueue(0, t.first)
+            outputBunch.enqueue(1, t.second)
 
-            case t ⇒
-              throw new IllegalArgumentException(
-                  s"Unable to unzip elements of type ${t.getClass.getName}, " +
-                  s"can only handle Tuple2 and akka.japi.Pair!")
-          }
-      })
+          case t ⇒
+            throw new IllegalArgumentException(
+              s"Unable to unzip elements of type ${t.getClass.getName}, " +
+                s"can only handle Tuple2 and akka.japi.Pair!"
+            )
+        }
+    }
+  )
 }

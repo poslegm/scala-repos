@@ -26,18 +26,25 @@ import org.apache.spark.annotation.DeveloperApi
   * Operations are not thread-safe.
   */
 @DeveloperApi
-class ShuffleWriteMetrics private (_bytesWritten: Accumulator[Long],
-                                   _recordsWritten: Accumulator[Long],
-                                   _writeTime: Accumulator[Long])
-    extends Serializable {
+class ShuffleWriteMetrics private (
+    _bytesWritten: Accumulator[Long],
+    _recordsWritten: Accumulator[Long],
+    _writeTime: Accumulator[Long]
+) extends Serializable {
 
   private[executor] def this(accumMap: Map[String, Accumulator[_]]) {
-    this(TaskMetrics.getAccum[Long](
-             accumMap, InternalAccumulator.shuffleWrite.BYTES_WRITTEN),
-         TaskMetrics.getAccum[Long](
-             accumMap, InternalAccumulator.shuffleWrite.RECORDS_WRITTEN),
-         TaskMetrics.getAccum[Long](
-             accumMap, InternalAccumulator.shuffleWrite.WRITE_TIME))
+    this(
+      TaskMetrics.getAccum[Long](
+        accumMap,
+        InternalAccumulator.shuffleWrite.BYTES_WRITTEN
+      ),
+      TaskMetrics.getAccum[Long](
+        accumMap,
+        InternalAccumulator.shuffleWrite.RECORDS_WRITTEN
+      ),
+      TaskMetrics
+        .getAccum[Long](accumMap, InternalAccumulator.shuffleWrite.WRITE_TIME)
+    )
   }
 
   /**
@@ -51,12 +58,11 @@ class ShuffleWriteMetrics private (_bytesWritten: Accumulator[Long],
     */
   private[spark] def this() {
     this(
-        InternalAccumulator
-          .createShuffleWriteAccums()
-          .map { a =>
-        (a.name.get, a)
-      }
-          .toMap)
+      InternalAccumulator
+        .createShuffleWriteAccums()
+        .map(a => (a.name.get, a))
+        .toMap
+    )
   }
 
   /**
@@ -74,15 +80,13 @@ class ShuffleWriteMetrics private (_bytesWritten: Accumulator[Long],
     */
   def writeTime: Long = _writeTime.localValue
 
-  private[spark] def incBytesWritten(v: Long): Unit = _bytesWritten.add(v)
+  private[spark] def incBytesWritten(v: Long): Unit   = _bytesWritten.add(v)
   private[spark] def incRecordsWritten(v: Long): Unit = _recordsWritten.add(v)
-  private[spark] def incWriteTime(v: Long): Unit = _writeTime.add(v)
-  private[spark] def decBytesWritten(v: Long): Unit = {
+  private[spark] def incWriteTime(v: Long): Unit      = _writeTime.add(v)
+  private[spark] def decBytesWritten(v: Long): Unit =
     _bytesWritten.setValue(bytesWritten - v)
-  }
-  private[spark] def decRecordsWritten(v: Long): Unit = {
+  private[spark] def decRecordsWritten(v: Long): Unit =
     _recordsWritten.setValue(recordsWritten - v)
-  }
 
   // Legacy methods for backward compatibility.
   // TODO: remove these once we make this class private.

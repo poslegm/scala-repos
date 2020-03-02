@@ -17,25 +17,25 @@ import scala.reflect.runtime.{universe => ru}
 abstract class ReplVals {}
 
 class StdReplVals(final val r: ILoop) extends ReplVals {
-  final lazy val repl = r
-  final lazy val intp = r.intp
-  final lazy val power = r.power
-  final lazy val reader = r.in
-  final lazy val vals = this
+  final lazy val repl                     = r
+  final lazy val intp                     = r.intp
+  final lazy val power                    = r.power
+  final lazy val reader                   = r.in
+  final lazy val vals                     = this
   final lazy val global: intp.global.type = intp.global
-  final lazy val isettings = intp.isettings
-  final lazy val completion = reader.completion
-  final lazy val history = reader.history
-  final lazy val phased = power.phased
-  final lazy val analyzer = global.analyzer
+  final lazy val isettings                = intp.isettings
+  final lazy val completion               = reader.completion
+  final lazy val history                  = reader.history
+  final lazy val phased                   = power.phased
+  final lazy val analyzer                 = global.analyzer
 
   object treedsl extends { val global: intp.global.type = intp.global }
   with ast.TreeDSL {}
 
   final lazy val typer = analyzer.newTyper(
-      analyzer.rootContext(
-          power.unit("").asInstanceOf[analyzer.global.CompilationUnit]
-      )
+    analyzer.rootContext(
+      power.unit("").asInstanceOf[analyzer.global.CompilationUnit]
+    )
   )
   def lastRequest = intp.lastRequest
 
@@ -76,16 +76,16 @@ object ReplVals {
         if (sym eq NoSymbol) NoType
         else appliedType(sym, compilerTypeFromTag(m1).asInstanceOf[Type])
 
-      def apply[M1, M2](
-          implicit m1: ru.TypeTag[M1], m2: ru.TypeTag[M2]): Type =
+      def apply[M1, M2](implicit m1: ru.TypeTag[M1], m2: ru.TypeTag[M2]): Type =
         if (sym eq NoSymbol) NoType
         else
-          appliedType(sym,
-                      compilerTypeFromTag(m1).asInstanceOf[Type],
-                      compilerTypeFromTag(m2).asInstanceOf[Type])
+          appliedType(
+            sym,
+            compilerTypeFromTag(m1).asInstanceOf[Type],
+            compilerTypeFromTag(m2).asInstanceOf[Type]
+          )
     }
 
-    (sym: Symbol) =>
-      new AppliedTypeFromTags(sym)
+    (sym: Symbol) => new AppliedTypeFromTags(sym)
   }
 }

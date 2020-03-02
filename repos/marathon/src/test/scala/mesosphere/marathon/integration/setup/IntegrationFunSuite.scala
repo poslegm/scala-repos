@@ -22,9 +22,9 @@ object IntegrationTag extends Tag("integration")
   */
 trait IntegrationFunSuite extends FunSuite {
   override protected def test(testName: String, testTags: Tag*)(
-      testFun: => Unit): Unit = {
+      testFun: => Unit
+  ): Unit =
     super.test(testName, IntegrationTag +: testTags: _*)(testFun)
-  }
 }
 
 /**
@@ -45,10 +45,10 @@ trait ExternalMarathonIntegrationTest {
   def startMarathon(port: Int, args: String*): Unit = {
     val cwd = new File(".")
     ProcessKeeper.startMarathon(
-        cwd,
-        env,
-        List("--http_port", port.toString, "--zk", config.zk) ++ args.toList,
-        processName = s"marathon_$port"
+      cwd,
+      env,
+      List("--http_port", port.toString, "--zk", config.zk) ++ args.toList,
+      processName = s"marathon_$port"
     )
   }
 
@@ -56,30 +56,31 @@ trait ExternalMarathonIntegrationTest {
 }
 
 object ExternalMarathonIntegrationTest {
-  val listener = mutable.ListBuffer.empty[ExternalMarathonIntegrationTest]
+  val listener     = mutable.ListBuffer.empty[ExternalMarathonIntegrationTest]
   val healthChecks = mutable.ListBuffer.empty[IntegrationHealthCheck]
 }
 
 /**
   * Health check helper to define health behaviour of launched applications
   */
-class IntegrationHealthCheck(val appId: PathId,
-                             val versionId: String,
-                             val port: Int,
-                             var state: Boolean,
-                             var lastUpdate: DateTime = DateTime.now) {
+class IntegrationHealthCheck(
+    val appId: PathId,
+    val versionId: String,
+    val port: Int,
+    var state: Boolean,
+    var lastUpdate: DateTime = DateTime.now
+) {
 
   case class HealthStatusChange(deadLine: Deadline, state: Boolean)
-  private[this] var changes = List.empty[HealthStatusChange]
+  private[this] var changes      = List.empty[HealthStatusChange]
   private[this] var healthAction = (check: IntegrationHealthCheck) => {}
-  var pinged = false
+  var pinged                     = false
 
   def afterDelay(delay: FiniteDuration, state: Boolean) {
     val item = HealthStatusChange(delay.fromNow, state)
-    def insert(ag: List[HealthStatusChange]): List[HealthStatusChange] = {
+    def insert(ag: List[HealthStatusChange]): List[HealthStatusChange] =
       if (ag.isEmpty || item.deadLine < ag.head.deadLine) item :: ag
       else ag.head :: insert(ag.tail)
-    }
     changes = insert(changes)
   }
 

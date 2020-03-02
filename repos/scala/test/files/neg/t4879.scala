@@ -1,6 +1,7 @@
 case class C(d: Double) {}
 case class D[T, U, V](bingo: Int, donkey: String, private val vegas: Set[A])(
-    jehovah: Int) {}
+    jehovah: Int
+) {}
 
 class A {
   def f = (new C(5)) match {

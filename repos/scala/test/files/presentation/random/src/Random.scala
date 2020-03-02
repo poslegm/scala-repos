@@ -15,29 +15,27 @@ import java.util.Random
 object randomclient {
 
   def main(args: Array[String]) {
-    val filter /*?*/ = try {
-      Integer.parseInt(args(0) /*?*/ ) match {
-        case 1 =>
-          x: Int =>
-            x % 2 != 0
+    val filter /*?*/ =
+      try {
+        Integer.parseInt(args(0) /*?*/ ) match {
+          case 1 =>
+            x: Int => x % 2 != 0
           case 2 =>
-          x: Int =>
-            x % 2 == 0
+            x: Int => x % 2 == 0
           case _ =>
-          x: Int =>
-            x != 0
+            x: Int => x != 0
+        }
+      } catch {
+        case _ /*?*/ =>
+          x: Int => x < 100
       }
-    } catch {
-      case _ /*?*/ =>
-        x: Int =>
-          x < 100
-    }
 
     try {
-      val ia = InetAddress.getByName("localhost")
+      val ia     = InetAddress.getByName("localhost")
       val socket = new Socket(ia, 9999)
       val out = new ObjectOutputStream(
-          new DataOutputStream(socket.getOutputStream()))
+        new DataOutputStream(socket.getOutputStream())
+      )
       val in = new DataInputStream(socket.getInputStream())
 
       out.writeObject(filter)
@@ -59,7 +57,7 @@ object randomclient {
 
 object randomserver {
 
-  def main(args: Array[String]): Unit = {
+  def main(args: Array[String]): Unit =
     try {
       val listener = new ServerSocket(9999);
       while (true) new ServerThread(listener.accept()).start();
@@ -69,7 +67,6 @@ object randomserver {
         System.err.println("Could not listen on port: 9999.");
         System.exit(-1)
     }
-  }
 }
 
 case class ServerThread(socket: Socket) extends Thread("ServerThread") {
@@ -79,7 +76,8 @@ case class ServerThread(socket: Socket) extends Thread("ServerThread") {
     try {
       val out = new DataOutputStream(socket.getOutputStream());
       val in = new ObjectInputStream(
-          new DataInputStream(socket.getInputStream()));
+        new DataInputStream(socket.getInputStream())
+      );
 
       val filter = in.readObject().asInstanceOf[Int => Boolean];
 

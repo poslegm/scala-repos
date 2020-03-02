@@ -10,7 +10,7 @@ class TestActorsSpec extends AkkaSpec with ImplicitSender {
   "A EchoActor" must {
     "send back messages unchanged" in {
       val message = "hello world"
-      val echo = system.actorOf(echoActorProps)
+      val echo    = system.actorOf(echoActorProps)
 
       echo ! message
 

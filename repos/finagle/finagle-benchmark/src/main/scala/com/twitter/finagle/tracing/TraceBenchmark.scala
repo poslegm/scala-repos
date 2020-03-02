@@ -13,11 +13,11 @@ import org.openjdk.jmh.infra.Blackhole
 class TraceBenchmark extends StdBenchAnnotations {
 
   private[this] val traceId = TraceId(
-      Some(SpanId(5L)),
-      Some(SpanId(6L)),
-      SpanId(7L),
-      None,
-      Flags.apply()
+    Some(SpanId(5L)),
+    Some(SpanId(6L)),
+    SpanId(7L),
+    None,
+    Flags.apply()
   )
 
   // Note that this needs to == to @OperationsPerInvocation above
@@ -41,21 +41,21 @@ class TraceBenchmark extends StdBenchAnnotations {
 
   @Benchmark
   def contexts1(hole: Blackhole): Unit =
-    Trace.letId(traceId, terminal = false) { contexts0(hole) }
+    Trace.letId(traceId, terminal = false)(contexts0(hole))
 
   @Benchmark
   def contexts2(hole: Blackhole): Unit =
-    clientId.asCurrent { contexts1(hole) }
+    clientId.asCurrent(contexts1(hole))
 
   @Benchmark
   def contexts3(hole: Blackhole): Unit =
-    Contexts.broadcast.let(Deadline, deadline) { contexts2(hole) }
+    Contexts.broadcast.let(Deadline, deadline)(contexts2(hole))
 
   @Benchmark
   def contexts4(hole: Blackhole): Unit =
-    Contexts.broadcast.letClear(Deadline) { contexts3(hole) }
+    Contexts.broadcast.letClear(Deadline)(contexts3(hole))
 
   @Benchmark
   def contexts5(hole: Blackhole): Unit =
-    Trace.letTracer(NullTracer) { contexts4(hole) }
+    Trace.letTracer(NullTracer)(contexts4(hole))
 }

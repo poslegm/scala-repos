@@ -8,11 +8,23 @@ import org.jetbrains.plugins.scala.extensions._
 import org.jetbrains.plugins.scala.lang.psi.ScalaPsiUtil
 import org.jetbrains.plugins.scala.lang.psi.api.base.patterns.ScBindingPattern
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.ScNamedElement
-import org.jetbrains.plugins.scala.lang.psi.api.toplevel.imports.usages.{ImportExprUsed, ImportSelectorUsed, ImportUsed, ImportWildcardSelectorUsed}
+import org.jetbrains.plugins.scala.lang.psi.api.toplevel.imports.usages.{
+  ImportExprUsed,
+  ImportSelectorUsed,
+  ImportUsed,
+  ImportWildcardSelectorUsed
+}
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.packaging.ScPackaging
-import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{ScObject, ScTypeDefinition}
+import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{
+  ScObject,
+  ScTypeDefinition
+}
 import org.jetbrains.plugins.scala.lang.psi.impl.toplevel.synthetic.ScSyntheticClass
-import org.jetbrains.plugins.scala.lang.psi.implicits.ImplicitCollector.{ImplicitState, NoResult, ImplicitResult}
+import org.jetbrains.plugins.scala.lang.psi.implicits.ImplicitCollector.{
+  ImplicitState,
+  NoResult,
+  ImplicitResult
+}
 import org.jetbrains.plugins.scala.lang.psi.types._
 import org.jetbrains.plugins.scala.lang.psi.types.nonvalue.TypeParameter
 
@@ -54,8 +66,8 @@ class ScalaResolveResult(
     val implicitParameters: Seq[ScalaResolveResult] = Seq.empty,
     val implicitReason: ImplicitResult = NoResult,
     val implicitSearchState: Option[ImplicitState] = None,
-    val unresolvedTypeParameters: Option[Seq[TypeParameter]] = None)
-    extends ResolveResult {
+    val unresolvedTypeParameters: Option[Seq[TypeParameter]] = None
+) extends ResolveResult {
   if (element == null) throw new NullPointerException("element is null")
 
   def getElement = element
@@ -65,23 +77,21 @@ class ScalaResolveResult(
   /**
     * this is important to get precedence information
     */
-  def getActualElement = {
+  def getActualElement =
     parentElement match {
       case Some(e) => e
-      case None => element
+      case None    => element
     }
-  }
 
   def isApplicable(withExpectedType: Boolean = false): Boolean =
     if (withExpectedType) problems.isEmpty
     else problems.forall(_ == ExpectedTypeMismatch)
 
-  def isApplicableInternal(withExpectedType: Boolean): Boolean = {
+  def isApplicableInternal(withExpectedType: Boolean): Boolean =
     innerResolveResult match {
       case Some(r) => r.isApplicable(withExpectedType)
-      case None => isApplicable(withExpectedType)
+      case None    => isApplicable(withExpectedType)
     }
-  }
 
   def isValidResult = isAccessible && isApplicable()
 
@@ -107,35 +117,38 @@ class ScalaResolveResult(
       implicitParameters: Seq[ScalaResolveResult] = implicitParameters,
       implicitReason: ImplicitResult = implicitReason,
       implicitSearchState: Option[ImplicitState] = implicitSearchState,
-      unresolvedTypeParameters: Option[Seq[TypeParameter]] = unresolvedTypeParameters)
-    : ScalaResolveResult =
-    new ScalaResolveResult(element,
-                           subst,
-                           importsUsed,
-                           nameShadow,
-                           implicitConversionClass,
-                           problems,
-                           boundClass,
-                           implicitFunction,
-                           implicitType,
-                           defaultParameterUsed,
-                           innerResolveResult,
-                           parentElement,
-                           isNamedParameter,
-                           fromType,
-                           tuplingUsed,
-                           isSetterFunction,
-                           isAssignment,
-                           notCheckedResolveResult,
-                           isAccessible,
-                           resultUndef,
-                           isDynamic = isDynamic,
-                           isForwardReference = isForwardReference,
-                           implicitParameterType = implicitParameterType,
-                           implicitParameters = implicitParameters,
-                           implicitReason = implicitReason,
-                           implicitSearchState = implicitSearchState,
-                           unresolvedTypeParameters = unresolvedTypeParameters)
+      unresolvedTypeParameters: Option[Seq[TypeParameter]] =
+        unresolvedTypeParameters
+  ): ScalaResolveResult =
+    new ScalaResolveResult(
+      element,
+      subst,
+      importsUsed,
+      nameShadow,
+      implicitConversionClass,
+      problems,
+      boundClass,
+      implicitFunction,
+      implicitType,
+      defaultParameterUsed,
+      innerResolveResult,
+      parentElement,
+      isNamedParameter,
+      fromType,
+      tuplingUsed,
+      isSetterFunction,
+      isAssignment,
+      notCheckedResolveResult,
+      isAccessible,
+      resultUndef,
+      isDynamic = isDynamic,
+      isForwardReference = isForwardReference,
+      implicitParameterType = implicitParameterType,
+      implicitParameters = implicitParameters,
+      implicitReason = implicitReason,
+      implicitSearchState = implicitSearchState,
+      unresolvedTypeParameters = unresolvedTypeParameters
+    )
 
   //In valid program we should not have two resolve results with the same element but different substitutor,
   // so factor by element
@@ -150,12 +163,12 @@ class ScalaResolveResult(
 
   override def hashCode: Int =
     element.hashCode + innerResolveResult.hashCode() * 31 +
-    nameShadow.hashCode() * 31 * 31 + implicitFunction.hashCode() * 31 * 31
+      nameShadow.hashCode() * 31 * 31 + implicitFunction.hashCode() * 31 * 31
 
   override def toString = {
     val name = element match {
       case named: ScNamedElement => named.name
-      case it => it.toString
+      case it                    => it.toString
     }
     s"""$name [${problems.mkString(", ")}]"""
   }
@@ -180,19 +193,18 @@ class ScalaResolveResult(
       }
       def getClazzPrecedence(clazz: PsiClass): Int = {
         @tailrec
-        def getPackageName(element: PsiElement): String = {
+        def getPackageName(element: PsiElement): String =
           element match {
             case null => ""
             case o: ScObject if o.isPackageObject =>
-              val qualifier = o.qualifiedName
+              val qualifier             = o.qualifiedName
               val packageSuffix: String = ".`package`"
               if (qualifier.endsWith(packageSuffix))
                 qualifier.substring(0, qualifier.length - packageSuffix.length)
               else qualifier
             case p: ScPackaging => p.fullPackageName
-            case _ => getPackageName(element.getParent)
+            case _              => getPackageName(element.getParent)
           }
-        }
         val q = clazz match {
           case td: ScTypeDefinition =>
             if (td.containingClass != null) return OTHER_MEMBERS
@@ -224,24 +236,27 @@ class ScalaResolveResult(
             return getClazzPrecedence(clazz)
           case memb @ (_: ScBindingPattern | _: PsiMember) =>
             val clazzStub = ScalaPsiUtil.getContextOfType(
-                getActualElement, false, classOf[PsiClass])
+              getActualElement,
+              false,
+              classOf[PsiClass]
+            )
             val clazz: PsiClass = clazzStub match {
               case clazz: PsiClass => clazz
-              case _ => null
+              case _               => null
             }
             //val clazz = PsiTreeUtil.getParentOfType(result.getActualElement, classOf[PsiClass])
             if (clazz == null) return OTHER_MEMBERS
             else {
               clazz.qualifiedName match {
-                case "scala.Predef" => return SCALA_PREDEF
+                case "scala.Predef"               => return SCALA_PREDEF
                 case "scala.LowPriorityImplicits" => return SCALA_PREDEF
-                case "scala" => return SCALA
+                case "scala"                      => return SCALA
                 case _ =>
                   clazz match {
                     case o: ScObject
                         if o.isPackageObject &&
-                        !PsiTreeUtil.isContextAncestor(o, place, false) =>
-                      var q = o.qualifiedName
+                          !PsiTreeUtil.isContextAncestor(o, place, false) =>
+                      var q                     = o.qualifiedName
                       val packageSuffix: String = ".`package`"
                       if (q.endsWith(packageSuffix))
                         q = q.substring(0, q.length - packageSuffix.length)
@@ -263,28 +278,28 @@ class ScalaResolveResult(
       importUsed match {
         case _: ImportWildcardSelectorUsed =>
           getActualElement match {
-            case p: PsiPackage => WILDCARD_IMPORT_PACKAGE
+            case p: PsiPackage                    => WILDCARD_IMPORT_PACKAGE
             case o: ScObject if o.isPackageObject => WILDCARD_IMPORT_PACKAGE
-            case _ => WILDCARD_IMPORT
+            case _                                => WILDCARD_IMPORT
           }
         case _: ImportSelectorUsed =>
           getActualElement match {
-            case p: PsiPackage => IMPORT_PACKAGE
+            case p: PsiPackage                    => IMPORT_PACKAGE
             case o: ScObject if o.isPackageObject => IMPORT_PACKAGE
-            case _ => IMPORT
+            case _                                => IMPORT
           }
         case ImportExprUsed(expr) =>
           if (expr.singleWildcard) {
             getActualElement match {
-              case p: PsiPackage => WILDCARD_IMPORT_PACKAGE
+              case p: PsiPackage                    => WILDCARD_IMPORT_PACKAGE
               case o: ScObject if o.isPackageObject => WILDCARD_IMPORT_PACKAGE
-              case _ => WILDCARD_IMPORT
+              case _                                => WILDCARD_IMPORT
             }
           } else {
             getActualElement match {
-              case p: PsiPackage => IMPORT_PACKAGE
+              case p: PsiPackage                    => IMPORT_PACKAGE
               case o: ScObject if o.isPackageObject => IMPORT_PACKAGE
-              case _ => IMPORT
+              case _                                => IMPORT
             }
           }
       }

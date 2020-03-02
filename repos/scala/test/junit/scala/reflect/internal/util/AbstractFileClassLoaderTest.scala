@@ -17,8 +17,9 @@ class AbstractFileClassLoaderTest {
   implicit def `we love utf8` = UTF8
   implicit class `abs file ops`(f: AbstractFile) {
     def writeContent(s: String): Unit =
-      Streamable.closing(f.bufferedOutput)(
-          os => os write s.getBytes(UTF8.charSet))
+      Streamable.closing(f.bufferedOutput)(os =>
+        os write s.getBytes(UTF8.charSet)
+      )
   }
   implicit class `url slurp`(url: URL) {
     def slurp(): String = Streamable.slurp(url)
@@ -53,7 +54,7 @@ class AbstractFileClassLoaderTest {
 
   @Test
   def afclGetsResourceFromParent(): Unit = {
-    val (fuzz, booz) = fuzzBuzzBooz
+    val (fuzz, booz)   = fuzzBuzzBooz
     val (fuzz_, booz_) = fuzzBuzzBooz
     booz writeContent "hello, world"
     booz_ writeContent "hello, world_"
@@ -92,7 +93,7 @@ class AbstractFileClassLoaderTest {
 
   @Test
   def afclGetsResourcesFromParent(): Unit = {
-    val (fuzz, booz) = fuzzBuzzBooz
+    val (fuzz, booz)   = fuzzBuzzBooz
     val (fuzz_, booz_) = fuzzBuzzBooz
     booz writeContent "hello, world"
     booz_ writeContent "hello, world_"
@@ -114,8 +115,9 @@ class AbstractFileClassLoaderTest {
     val r = x.getResourceAsStream("buzz/booz.class")
     assertNotNull(r)
     assertEquals(
-        "hello, world",
-        Streamable.closing(r)(is => Source.fromInputStream(is).mkString))
+      "hello, world",
+      Streamable.closing(r)(is => Source.fromInputStream(is).mkString)
+    )
   }
 
   @Test
@@ -129,7 +131,7 @@ class AbstractFileClassLoaderTest {
 
   @Test
   def afclGetsClassBytesFromParent(): Unit = {
-    val (fuzz, booz) = fuzzBuzzBooz
+    val (fuzz, booz)   = fuzzBuzzBooz
     val (fuzz_, booz_) = fuzzBuzzBooz
     booz writeContent "hello, world"
     booz_ writeContent "hello, world_"

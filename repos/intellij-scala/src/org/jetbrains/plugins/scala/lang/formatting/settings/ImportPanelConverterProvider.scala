@@ -6,7 +6,10 @@ import java.util
 import java.util.Collections
 
 import com.intellij.conversion._
-import com.intellij.conversion.impl.{ComponentManagerSettingsImpl, ConversionContextImpl}
+import com.intellij.conversion.impl.{
+  ComponentManagerSettingsImpl,
+  ConversionContextImpl
+}
 import com.intellij.openapi.util.JDOMUtil
 import com.intellij.util.SystemProperties
 import org.jdom.Document
@@ -17,23 +20,22 @@ import org.jdom.Document
   */
 class ImportPanelConverterProvider
     extends ConverterProvider("ImportPanelConverterProvider") {
-  override def getConversionDescription: String = {
+  override def getConversionDescription: String =
     "Scala imports settings will be moved to Code Style settings."
-  }
 
   override def createConverter(context: ConversionContext): ProjectConverter = {
     import org.jdom.Element
     val actualSettingsSet = Set(
-        "addFullQualifiedImports",
-        "addImportMostCloseToReference",
-        "classCountToUseImportOnDemand",
-        "importMembersUsingUnderScore",
-        "importShortestPathForAmbiguousReferences",
-        "importsWithPrefix",
-        "sortImports"
+      "addFullQualifiedImports",
+      "addImportMostCloseToReference",
+      "classCountToUseImportOnDemand",
+      "importMembersUsingUnderScore",
+      "importShortestPathForAmbiguousReferences",
+      "importsWithPrefix",
+      "sortImports"
     )
 
-    def getElements: Seq[Element] = {
+    def getElements: Seq[Element] =
       context.getSettingsBaseDir
         .listFiles()
         .find(_.getName == "scala_settings.xml") match {
@@ -50,7 +52,8 @@ class ImportPanelConverterProvider
                     elem.getName == "option" &&
                     elem.getAttribute("name") != null &&
                     actualSettingsSet.contains(
-                        elem.getAttribute("name").getValue)
+                      elem.getAttribute("name").getValue
+                    )
                   }
                 case None => Seq.empty
               }
@@ -58,7 +61,6 @@ class ImportPanelConverterProvider
           }
         case _ => Seq.empty
       }
-    }
 
     new ProjectConverter {
       override def isConversionNeeded: Boolean = {
@@ -67,16 +69,15 @@ class ImportPanelConverterProvider
         getElements.nonEmpty
       }
 
-      override def getAdditionalAffectedFiles: util.Collection[File] = {
+      override def getAdditionalAffectedFiles: util.Collection[File] =
         context.getSettingsBaseDir
           .listFiles()
           .find(_.getName == "codeStyleSettings.xml") match {
           case Some(file) => Collections.singleton(file)
-          case None => Collections.emptyList()
+          case None       => Collections.emptyList()
         }
-      }
 
-      override def processingFinished(): Unit = {
+      override def processingFinished(): Unit =
         context.getSettingsBaseDir
           .listFiles()
           .find(_.getName == "codeStyleSettings.xml") match {
@@ -88,24 +89,26 @@ class ImportPanelConverterProvider
                 val root = settings.getRootElement
                 for {
                   component <- Option(root.getChild("component"))
-                  option <- Option(component.getChild("option"))
-                  value <- Option(option.getChild("value"))
+                  option    <- Option(component.getChild("option"))
+                  value     <- Option(option.getChild("value"))
                 } {
                   var settingsValue = value.getChild("ScalaCodeStyleSettings")
                   if (settingsValue == null) {
                     settingsValue = new Element("ScalaCodeStyleSettings")
                     value.addContent(settingsValue)
                   }
-                  getElements.foreach(
-                      elem => settingsValue.addContent(elem.clone()))
+                  getElements.foreach(elem =>
+                    settingsValue.addContent(elem.clone())
+                  )
                 }
-                JDOMUtil.writeDocument(new Document(root.clone()),
-                                       file,
-                                       SystemProperties.getLineSeparator)
+                JDOMUtil.writeDocument(
+                  new Document(root.clone()),
+                  file,
+                  SystemProperties.getLineSeparator
+                )
             }
           case _ =>
         }
-      }
     }
   }
 }

@@ -45,9 +45,7 @@ object Common {
   def size(f: Hfs, conf: JobConf): Long = {
     val fs = f.getPath.getFileSystem(conf)
     fs.globStatus(f.getPath)
-      .map { s =>
-        fs.getContentSummary(s.getPath).getLength
-      }
+      .map(s => fs.getContentSummary(s.getPath).getLength)
       .sum
   }
 
@@ -55,7 +53,7 @@ object Common {
     val conf = step.getConfig
     unrollTaps(step).flatMap {
       case tap: Hfs => Some(tap.toString -> size(tap, conf))
-      case _ => None
+      case _        => None
     }
   }
 
@@ -63,9 +61,11 @@ object Common {
     inputSizes(step).map(_._2).sum
 }
 
-case class FlowStrategyInfo(flow: Flow[JobConf],
-                            predecessorSteps: Seq[FlowStep[JobConf]],
-                            step: FlowStep[JobConf])
+case class FlowStrategyInfo(
+    flow: Flow[JobConf],
+    predecessorSteps: Seq[FlowStep[JobConf]],
+    step: FlowStep[JobConf]
+)
 
 trait ReducerEstimator {
 
@@ -89,7 +89,7 @@ trait HistoryReducerEstimator extends ReducerEstimator {
   def historyService: HistoryService
 
   override def estimateReducers(info: FlowStrategyInfo): Option[Int] = {
-    val conf = info.step.getConfig
+    val conf       = info.step.getConfig
     val maxHistory = EstimatorConfig.getMaxHistory(conf)
 
     historyService.fetchHistory(info, maxHistory) match {
@@ -108,12 +108,15 @@ trait HistoryReducerEstimator extends ReducerEstimator {
   }
 
   protected def estimateReducers(
-      info: FlowStrategyInfo, history: Seq[FlowStepHistory]): Option[Int]
+      info: FlowStrategyInfo,
+      history: Seq[FlowStepHistory]
+  ): Option[Int]
 }
 
 case class FallbackEstimator(
-    first: ReducerEstimator, fallback: ReducerEstimator)
-    extends ReducerEstimator {
+    first: ReducerEstimator,
+    fallback: ReducerEstimator
+) extends ReducerEstimator {
   private val LOG = LoggerFactory.getLogger(this.getClass)
 
   override def estimateReducers(info: FlowStrategyInfo): Option[Int] =
@@ -134,7 +137,9 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
       }
 
       override def plus(
-          l: ReducerEstimator, r: ReducerEstimator): ReducerEstimator =
+          l: ReducerEstimator,
+          r: ReducerEstimator
+      ): ReducerEstimator =
         FallbackEstimator(l, r)
     }
 
@@ -145,9 +150,11 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
     *
     * Called by Cascading at the start of each job step.
     */
-  final override def apply(flow: Flow[JobConf],
-                           preds: JList[FlowStep[JobConf]],
-                           step: FlowStep[JobConf]): Unit = {
+  final override def apply(
+      flow: Flow[JobConf],
+      preds: JList[FlowStep[JobConf]],
+      step: FlowStep[JobConf]
+  ): Unit = {
 
     val conf = step.getConfig
     // for steps with reduce phase, mapred.reduce.tasks is set in the jobconf at this point
@@ -155,15 +162,18 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
     conf.getNumReduceTasks match {
       case 0 =>
         LOG.info(
-            s"${flow.getName} is a map-only step. Skipping reducer estimation.")
+          s"${flow.getName} is a map-only step. Skipping reducer estimation."
+        )
       case _ => estimate(flow, preds, step)
     }
   }
 
-  private def estimate(flow: Flow[JobConf],
-                       preds: JList[FlowStep[JobConf]],
-                       step: FlowStep[JobConf]): Unit = {
-    val conf = step.getConfig
+  private def estimate(
+      flow: Flow[JobConf],
+      preds: JList[FlowStep[JobConf]],
+      step: FlowStep[JobConf]
+  ): Unit = {
+    val conf            = step.getConfig
     val stepNumReducers = conf.get(Config.HadoopNumReducers)
 
     // whether the reducers have been set explicitly with `withReducers`
@@ -194,7 +204,9 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
 
       // save the estimate in the JobConf which should be saved by hRaven
       conf.setInt(
-          EstimatorConfig.estimatedNumReducers, numReducers.getOrElse(-1))
+        EstimatorConfig.estimatedNumReducers,
+        numReducers.getOrElse(-1)
+      )
 
       // set number of reducers
       if (!setExplicitly || overrideExplicit) {
@@ -207,41 +219,51 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
 /**
   * Info about a prior FlowStep, provided by implementers of HistoryService
   */
-final case class FlowStepHistory(keys: FlowStepKeys,
-                                 submitTime: Long,
-                                 launchTime: Long,
-                                 finishTime: Long,
-                                 totalMaps: Long,
-                                 totalReduces: Long,
-                                 finishedMaps: Long,
-                                 finishedReduces: Long,
-                                 failedMaps: Long,
-                                 failedReduces: Long,
-                                 mapFileBytesRead: Long,
-                                 mapFileBytesWritten: Long,
-                                 reduceFileBytesRead: Long,
-                                 hdfsBytesRead: Long,
-                                 hdfsBytesWritten: Long,
-                                 mapperTimeMillis: Long,
-                                 reducerTimeMillis: Long,
-                                 reduceShuffleBytes: Long,
-                                 cost: Double,
-                                 tasks: Seq[Task])
+final case class FlowStepHistory(
+    keys: FlowStepKeys,
+    submitTime: Long,
+    launchTime: Long,
+    finishTime: Long,
+    totalMaps: Long,
+    totalReduces: Long,
+    finishedMaps: Long,
+    finishedReduces: Long,
+    failedMaps: Long,
+    failedReduces: Long,
+    mapFileBytesRead: Long,
+    mapFileBytesWritten: Long,
+    reduceFileBytesRead: Long,
+    hdfsBytesRead: Long,
+    hdfsBytesWritten: Long,
+    mapperTimeMillis: Long,
+    reducerTimeMillis: Long,
+    reduceShuffleBytes: Long,
+    cost: Double,
+    tasks: Seq[Task]
+)
 
-final case class FlowStepKeys(jobName: String,
-                              user: String,
-                              priority: String,
-                              status: String,
-                              version: String,
-                              queue: String)
+final case class FlowStepKeys(
+    jobName: String,
+    user: String,
+    priority: String,
+    status: String,
+    version: String,
+    queue: String
+)
 
 final case class Task(
-    taskType: String, status: String, startTime: Long, finishTime: Long)
+    taskType: String,
+    status: String,
+    startTime: Long,
+    finishTime: Long
+)
 
 /**
   * Provider of information about prior runs.
   */
 trait HistoryService {
   def fetchHistory(
-      info: FlowStrategyInfo, maxHistory: Int): Try[Seq[FlowStepHistory]]
+      info: FlowStrategyInfo,
+      maxHistory: Int
+  ): Try[Seq[FlowStepHistory]]
 }

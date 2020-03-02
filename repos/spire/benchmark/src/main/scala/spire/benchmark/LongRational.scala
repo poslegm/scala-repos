@@ -5,7 +5,7 @@ import spire.implicits._
 
 object LongRational {
   val Zero = new LongRational(0, 1)
-  val One = new LongRational(1, 1)
+  val One  = new LongRational(1, 1)
 
   def apply(n: Long, d: Long): LongRational = {
     val div = gcd(n, d)
@@ -31,7 +31,7 @@ final class LongRational private (val n: Long, val d: Long) {
     } else {
       val lden: Long = d / dgcd
       val rden: Long = r.d / dgcd
-      val num: Long = rden * n + r.n * lden
+      val num: Long  = rden * n + r.n * lden
       val ngcd: Long = gcd(num, dgcd)
       if (ngcd == 1) new LongRational(num, lden * r.d)
       else new LongRational(num / ngcd, (r.d / ngcd) * lden)
@@ -45,7 +45,7 @@ final class LongRational private (val n: Long, val d: Long) {
     } else {
       val lden: Long = d / dgcd
       val rden: Long = r.d / dgcd
-      val num: Long = rden * n - r.n * lden
+      val num: Long  = rden * n - r.n * lden
       val ngcd: Long = gcd(num, dgcd)
       if (ngcd == 1) new LongRational(num, lden * r.d)
       else new LongRational(num / ngcd, (r.d / ngcd) * lden)
@@ -59,8 +59,8 @@ final class LongRational private (val n: Long, val d: Long) {
   }
 
   def /(r: LongRational): LongRational = {
-    val a = gcd(n, r.n)
-    val b = gcd(d, r.d)
+    val a   = gcd(n, r.n)
+    val b   = gcd(d, r.d)
     val num = (n / a) * (r.d / b)
     val den = (d / b) * (r.n / a)
     if (den < 0L) {
@@ -75,7 +75,9 @@ final class LongRational private (val n: Long, val d: Long) {
       LongRational.One
     } else if (exp < 0) {
       new LongRational(
-          d pow java.lang.Math.abs(exp), n pow java.lang.Math.abs(exp))
+        d pow java.lang.Math.abs(exp),
+        n pow java.lang.Math.abs(exp)
+      )
     } else {
       new LongRational(n pow exp, d pow exp)
     }

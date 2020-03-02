@@ -3,7 +3,7 @@ import scala.tools.partest.ReplTest
 object Test extends ReplTest {
   // so we can provide the ambiguities, rather than relying in Predef implicits
   override def extraSettings = "-Yno-predef"
-  override def code = """
+  override def code          = """
 class M[A]
 implicit def ma0[A](a: A): M[A] = null
 implicit def ma1[A](a: A): M[A] = null

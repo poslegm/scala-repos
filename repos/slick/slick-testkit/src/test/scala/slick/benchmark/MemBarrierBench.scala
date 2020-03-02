@@ -20,9 +20,9 @@ object MemBarrierBench extends App {
     }
   }
 
-  var count = 0L
+  var count                   = 0L
   @volatile var volatileCount = 0L
-  val atomicCount = new AtomicLong(0L)
+  val atomicCount             = new AtomicLong(0L)
 
   def pushLocalCounting(n: Long, s: Subscr[Unit]): Unit = {
     var i = 0L

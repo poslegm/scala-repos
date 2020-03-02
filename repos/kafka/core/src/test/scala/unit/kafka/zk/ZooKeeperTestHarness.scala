@@ -5,7 +5,7 @@
   * The ASF licenses this file to You under the Apache License, Version 2.0
   * (the "License"); you may not use this file except in compliance with
   * the License.  You may obtain a copy of the License at
-  * 
+  *
   *    http://www.apache.org/licenses/LICENSE-2.0
   *
   * Unless required by applicable law or agreed to in writing, software
@@ -30,7 +30,7 @@ object FourLetterWords {
     val hostAddress =
       if (host != null) new InetSocketAddress(host, port)
       else new InetSocketAddress(InetAddress.getByName(null), port)
-    val sock = new Socket()
+    val sock                   = new Socket()
     var reader: BufferedReader = null
     sock.connect(hostAddress, timeout)
     try {
@@ -39,8 +39,8 @@ object FourLetterWords {
       outstream.flush
     } catch {
       case e: SocketTimeoutException => {
-          throw new IOException("Exception while sending 4lw")
-        }
+        throw new IOException("Exception while sending 4lw")
+      }
     } finally {
       sock.close
       if (reader != null) reader.close
@@ -50,11 +50,11 @@ object FourLetterWords {
 
 trait ZooKeeperTestHarness extends JUnitSuite with Logging {
   var zookeeper: EmbeddedZookeeper = null
-  var zkPort: Int = -1
-  var zkUtils: ZkUtils = null
-  val zkConnectionTimeout = 6000
-  val zkSessionTimeout = 6000
-  def zkConnect: String = "127.0.0.1:" + zkPort
+  var zkPort: Int                  = -1
+  var zkUtils: ZkUtils             = null
+  val zkConnectionTimeout          = 6000
+  val zkSessionTimeout             = 6000
+  def zkConnect: String            = "127.0.0.1:" + zkPort
   def confFile: String =
     System.getProperty(JaasUtils.JAVA_LOGIN_CONFIG_PARAM, "")
 
@@ -62,10 +62,12 @@ trait ZooKeeperTestHarness extends JUnitSuite with Logging {
   def setUp() {
     zookeeper = new EmbeddedZookeeper()
     zkPort = zookeeper.port
-    zkUtils = ZkUtils(zkConnect,
-                      zkSessionTimeout,
-                      zkConnectionTimeout,
-                      JaasUtils.isZkSecurityEnabled())
+    zkUtils = ZkUtils(
+      zkConnect,
+      zkSessionTimeout,
+      zkConnectionTimeout,
+      JaasUtils.isZkSecurityEnabled()
+    )
   }
 
   @After
@@ -79,9 +81,9 @@ trait ZooKeeperTestHarness extends JUnitSuite with Logging {
         FourLetterWords.sendStat("127.0.0.1", zkPort, 3000)
       } catch {
         case _: Throwable => {
-            info("Server is down")
-            isDown = true
-          }
+          info("Server is down")
+          isDown = true
+        }
       }
     }
     Configuration.setConfiguration(null)

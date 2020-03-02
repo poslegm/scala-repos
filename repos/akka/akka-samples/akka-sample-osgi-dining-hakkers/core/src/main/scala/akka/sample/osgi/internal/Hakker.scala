@@ -102,16 +102,23 @@ class Hakker(name: String, chair: Int) extends Actor {
   //and start eating, or the other chopstick was busy, and the hakker goes
   //back to think about how he should obtain his chopsticks :-)
   def waiting_for(
-      left: ActorRef, right: ActorRef, waitingForLeft: Boolean): Receive = {
+      left: ActorRef,
+      right: ActorRef,
+      waitingForLeft: Boolean
+  ): Receive = {
     case Taken(`left`) if waitingForLeft =>
-      log.info("%s has picked up %s and %s and starts to eat".format(
-              name, left.path.name, right.path.name))
+      log.info(
+        "%s has picked up %s and %s and starts to eat"
+          .format(name, left.path.name, right.path.name)
+      )
       pubStateChange("waiting", "eating")
       become(eating(left, right) orElse (managementEvents))
       system.scheduler.scheduleOnce(5 seconds, self, Think)
     case Taken(`right`) if !waitingForLeft =>
-      log.info("%s has picked up %s and %s and starts to eat".format(
-              name, left.path.name, right.path.name))
+      log.info(
+        "%s has picked up %s and %s and starts to eat"
+          .format(name, left.path.name, right.path.name)
+      )
       pubStateChange("waiting", "eating")
       become(eating(left, right) orElse (managementEvents))
       system.scheduler.scheduleOnce(5 seconds, self, Think)
@@ -165,7 +172,7 @@ class Hakker(name: String, chair: Int) extends Actor {
   }
 
   def managementEvents: Receive = {
-    case state: CurrentClusterState => state.leader foreach updateTable
+    case state: CurrentClusterState         => state.leader foreach updateTable
     case LeaderChanged(Some(leaderAddress)) => updateTable(leaderAddress)
     case SubscribeToHakkerStateChanges =>
       subscribers += sender()
@@ -178,9 +185,8 @@ class Hakker(name: String, chair: Int) extends Actor {
     case Identify => identify("Initializing")
   }
 
-  def identify(busyWith: String): Unit = {
+  def identify(busyWith: String): Unit =
     sender() ! Identification(name, busyWith)
-  }
 
   def updateTable(leaderAdress: Address): Unit = {
     pubStateChange("-", "waiting")

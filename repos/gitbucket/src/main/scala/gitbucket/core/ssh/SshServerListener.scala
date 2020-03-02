@@ -18,7 +18,8 @@ object SshServer {
   private def configure(sshAddress: SshAddress, baseUrl: String) = {
     server.setPort(sshAddress.port)
     val provider = new SimpleGeneratorHostKeyProvider(
-        new File(s"${Directory.GitBucketHome}/gitbucket.ser"))
+      new File(s"${Directory.GitBucketHome}/gitbucket.ser")
+    )
     provider.setAlgorithm("RSA")
     provider.setOverwriteAllowed(false)
     server.setKeyPairProvider(provider)
@@ -27,20 +28,18 @@ object SshServer {
     server.setShellFactory(new NoShell(sshAddress))
   }
 
-  def start(sshAddress: SshAddress, baseUrl: String) = {
+  def start(sshAddress: SshAddress, baseUrl: String) =
     if (active.compareAndSet(false, true)) {
       configure(sshAddress, baseUrl)
       server.start()
       logger.info(s"Start SSH Server Listen on ${server.getPort}")
     }
-  }
 
-  def stop() = {
+  def stop() =
     if (active.compareAndSet(true, false)) {
       server.stop(true)
       logger.info("SSH Server is stopped.")
     }
-  }
 
   def isActive = active.get
 }
@@ -52,7 +51,8 @@ object SshServer {
  * git clone ssh://username@host_or_ip:29418/owner/repository_name.git
  */
 class SshServerListener
-    extends ServletContextListener with SystemSettingsService {
+    extends ServletContextListener
+    with SystemSettingsService {
 
   private val logger = LoggerFactory.getLogger(classOf[SshServerListener])
 
@@ -60,15 +60,15 @@ class SshServerListener
     val settings = loadSystemSettings()
     if (settings.sshAddress.isDefined && settings.baseUrl.isEmpty) {
       logger.error(
-          "Could not start SshServer because the baseUrl is not configured.")
+        "Could not start SshServer because the baseUrl is not configured."
+      )
     }
     for {
       sshAddress <- settings.sshAddress
-      baseUrl <- settings.baseUrl
+      baseUrl    <- settings.baseUrl
     } SshServer.start(sshAddress, baseUrl)
   }
 
-  override def contextDestroyed(sce: ServletContextEvent): Unit = {
+  override def contextDestroyed(sce: ServletContextEvent): Unit =
     SshServer.stop()
-  }
 }

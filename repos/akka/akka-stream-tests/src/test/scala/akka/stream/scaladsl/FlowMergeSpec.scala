@@ -27,7 +27,7 @@ class FlowMergeSpec extends BaseTwoStreamsSetup {
       val source1 = Source(0 to 3)
       val source2 = Source(List[Int]())
       val source3 = Source(4 to 9)
-      val probe = TestSubscriber.manualProbe[Int]()
+      val probe   = TestSubscriber.manualProbe[Int]()
 
       source1
         .merge(source2)
@@ -52,13 +52,13 @@ class FlowMergeSpec extends BaseTwoStreamsSetup {
     commonTests()
 
     "work with one immediately completed and one nonempty publisher" in assertAllStagesStopped {
-      val subscriber1 = setup(completedPublisher, nonemptyPublisher(1 to 4))
+      val subscriber1   = setup(completedPublisher, nonemptyPublisher(1 to 4))
       val subscription1 = subscriber1.expectSubscription()
       subscription1.request(4)
       (1 to 4).foreach(subscriber1.expectNext)
       subscriber1.expectComplete()
 
-      val subscriber2 = setup(nonemptyPublisher(1 to 4), completedPublisher)
+      val subscriber2   = setup(nonemptyPublisher(1 to 4), completedPublisher)
       val subscription2 = subscriber2.expectSubscription()
       subscription2.request(4)
       (1 to 4).foreach(subscriber2.expectNext)
@@ -92,8 +92,8 @@ class FlowMergeSpec extends BaseTwoStreamsSetup {
     }
 
     "pass along early cancellation" in assertAllStagesStopped {
-      val up1 = TestPublisher.manualProbe[Int]()
-      val up2 = TestPublisher.manualProbe[Int]()
+      val up1  = TestPublisher.manualProbe[Int]()
+      val up2  = TestPublisher.manualProbe[Int]()
       val down = TestSubscriber.manualProbe[Int]()
 
       val (graphSubscriber1, graphSubscriber2) = Source

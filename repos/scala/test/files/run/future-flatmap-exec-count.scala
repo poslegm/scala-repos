@@ -13,7 +13,7 @@ object Test {
     val ec = new TestExecutionContext(ExecutionContext.Implicits.global)
 
     {
-      val p = Promise[Int]()
+      val p  = Promise[Int]()
       val fp = p.future
       println("mapping")
       val mapped = fp.map(x => x)(ec)
@@ -23,11 +23,9 @@ object Test {
 
     {
       println("flatmapping")
-      val p = Promise[Int]()
-      val fp = p.future
-      val flatMapped = fp.flatMap({ (x: Int) =>
-        Future.successful(2 * x)
-      })(ec)
+      val p          = Promise[Int]()
+      val fp         = p.future
+      val flatMapped = fp.flatMap({ (x: Int) => Future.successful(2 * x) })(ec)
       p.success(0)
       await(flatMapped)
     }

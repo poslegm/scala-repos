@@ -14,7 +14,7 @@ import scala.concurrent.{Future, Promise}
 
 class CompositionDocSpec extends AkkaSpec {
 
-  implicit val ec = system.dispatcher
+  implicit val ec           = system.dispatcher
   implicit val materializer = ActorMaterializer()
 
   "nonnested flow" in {
@@ -33,18 +33,18 @@ class CompositionDocSpec extends AkkaSpec {
   "nested flow" in {
     //#nested-flow
     val nestedSource = Source
-      .single(0) // An atomic source
-      .map(_ + 1) // an atomic processing stage
+      .single(0)             // An atomic source
+      .map(_ + 1)            // an atomic processing stage
       .named("nestedSource") // wraps up the current Source and gives it a name
 
     val nestedFlow = Flow[Int]
-      .filter(_ != 0) // an atomic processing stage
-      .map(_ - 2) // another atomic processing stage
+      .filter(_ != 0)      // an atomic processing stage
+      .map(_ - 2)          // another atomic processing stage
       .named("nestedFlow") // wraps up the Flow, and gives it a name
 
     val nestedSink = nestedFlow
       .to(Sink.fold(0)(_ + _)) // wire an atomic sink to the nestedFlow
-      .named("nestedSink") // wrap it up
+      .named("nestedSink")     // wrap it up
 
     // Create a RunnableGraph
     val runnableGraph = nestedSource.to(nestedSink)
@@ -53,18 +53,18 @@ class CompositionDocSpec extends AkkaSpec {
 
   "reusing components" in {
     val nestedSource = Source
-      .single(0) // An atomic source
-      .map(_ + 1) // an atomic processing stage
+      .single(0)             // An atomic source
+      .map(_ + 1)            // an atomic processing stage
       .named("nestedSource") // wraps up the current Source and gives it a name
 
     val nestedFlow = Flow[Int]
-      .filter(_ != 0) // an atomic processing stage
-      .map(_ - 2) // another atomic processing stage
+      .filter(_ != 0)      // an atomic processing stage
+      .map(_ - 2)          // another atomic processing stage
       .named("nestedFlow") // wraps up the Flow, and gives it a name
 
     val nestedSink = nestedFlow
       .to(Sink.fold(0)(_ + _)) // wire an atomic sink to the nestedFlow
-      .named("nestedSink") // wrap it up
+      .named("nestedSink")     // wrap it up
 
     //#reuse
     // Create a RunnableGraph from our components
@@ -169,11 +169,11 @@ class CompositionDocSpec extends AkkaSpec {
   "closed graph" in {
     //#embed-closed
     val closed1 = Source.single(0).to(Sink.foreach(println))
-    val closed2 = RunnableGraph.fromGraph(
-        GraphDSL.create() { implicit builder =>
-      val embeddedClosed: ClosedShape = builder.add(closed1)
-      // …
-      embeddedClosed
+    val closed2 = RunnableGraph.fromGraph(GraphDSL.create() {
+      implicit builder =>
+        val embeddedClosed: ClosedShape = builder.add(closed1)
+        // …
+        embeddedClosed
     })
     //#embed-closed
   }
@@ -218,13 +218,16 @@ class CompositionDocSpec extends AkkaSpec {
 
     //#mat-combine-4
     case class MyClass(
-        private val p: Promise[Option[Int]], conn: OutgoingConnection) {
+        private val p: Promise[Option[Int]],
+        conn: OutgoingConnection
+    ) {
       def close() = p.trySuccess(None)
     }
 
-    def f(p: Promise[Option[Int]],
-          rest: (Future[OutgoingConnection],
-          Future[String])): Future[MyClass] = {
+    def f(
+        p: Promise[Option[Int]],
+        rest: (Future[OutgoingConnection], Future[String])
+    ): Future[MyClass] = {
 
       val connFuture = rest._1
       connFuture.map(MyClass(p, _))
@@ -240,15 +243,18 @@ class CompositionDocSpec extends AkkaSpec {
     //#attributes-inheritance
     import Attributes._
     val nestedSource =
-      Source.single(0).map(_ + 1).named("nestedSource") // Wrap, no inputBuffer set
+      Source
+        .single(0)
+        .map(_ + 1)
+        .named("nestedSource") // Wrap, no inputBuffer set
 
     val nestedFlow = Flow[Int]
       .filter(_ != 0)
       .via(Flow[Int].map(_ - 2).withAttributes(inputBuffer(4, 4))) // override
-      .named("nestedFlow") // Wrap, no inputBuffer set
+      .named("nestedFlow")                                         // Wrap, no inputBuffer set
 
     val nestedSink = nestedFlow
-      .to(Sink.fold(0)(_ + _)) // wire an atomic sink to the nestedFlow
+      .to(Sink.fold(0)(_ + _))                                  // wire an atomic sink to the nestedFlow
       .withAttributes(name("nestedSink") and inputBuffer(3, 3)) // override
     //#attributes-inheritance
   }

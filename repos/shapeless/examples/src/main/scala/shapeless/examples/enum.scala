@@ -52,7 +52,7 @@ object ShapelessEnumDemo extends App {
   sealed trait WeekDay
   object WeekDay {
     val Mon, Tue, Wed, Thu, Fri, Sat, Sun = new WeekDay {}
-    val values: Set[WeekDay] = Values
+    val values: Set[WeekDay]              = Values
   }
 
   import WeekDay._
@@ -69,7 +69,7 @@ object ShapelessEnumDemo extends App {
       false // compile time non-exhaustive match warning/error without this case
   }
 
-  assert(!isWeekend(Mon)) // 
+  assert(!isWeekend(Mon)) //
 }
 
 // Infrastructure for the above. Original version due to Travis Brown,
@@ -88,7 +88,9 @@ object Values {
 
   object MkValues {
     implicit def values[T, Repr <: Coproduct](
-        implicit gen: Generic.Aux[T, Repr], v: Aux[T, Repr]): MkValues[T] =
+        implicit gen: Generic.Aux[T, Repr],
+        v: Aux[T, Repr]
+    ): MkValues[T] =
       new MkValues[T] { def values = v.values }
 
     trait Aux[T, Repr] {
@@ -100,7 +102,9 @@ object Values {
         new Aux[A, CNil] { def values = Nil }
 
       implicit def cconsAux[T, L <: T, R <: Coproduct](
-          implicit l: Witness.Aux[L], r: Aux[T, R]): Aux[T, L :+: R] =
+          implicit l: Witness.Aux[L],
+          r: Aux[T, R]
+      ): Aux[T, L :+: R] =
         new Aux[T, L :+: R] { def values = l.value :: r.values }
     }
   }

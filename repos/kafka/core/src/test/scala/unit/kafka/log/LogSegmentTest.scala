@@ -33,8 +33,8 @@ class LogSegmentTest {
 
   /* create a segment with the given base offset */
   def createSegment(offset: Long): LogSegment = {
-    val msFile = TestUtils.tempFile()
-    val ms = new FileMessageSet(msFile)
+    val msFile  = TestUtils.tempFile()
+    val ms      = new FileMessageSet(msFile)
     val idxFile = TestUtils.tempFile()
     idxFile.delete()
     val idx = new OffsetIndex(idxFile, offset, 1000)
@@ -44,12 +44,12 @@ class LogSegmentTest {
   }
 
   /* create a ByteBufferMessageSet for the given messages starting from the given offset */
-  def messages(offset: Long, messages: String*): ByteBufferMessageSet = {
+  def messages(offset: Long, messages: String*): ByteBufferMessageSet =
     new ByteBufferMessageSet(
-        compressionCodec = NoCompressionCodec,
-        offsetCounter = new LongRef(offset),
-        messages = messages.map(s => new Message(s.getBytes)): _*)
-  }
+      compressionCodec = NoCompressionCodec,
+      offsetCounter = new LongRef(offset),
+      messages = messages.map(s => new Message(s.getBytes)): _*
+    )
 
   @After
   def teardown() {
@@ -64,10 +64,12 @@ class LogSegmentTest {
     */
   @Test
   def testReadOnEmptySegment() {
-    val seg = createSegment(40)
+    val seg  = createSegment(40)
     val read = seg.read(startOffset = 40, maxSize = 300, maxOffset = None)
     assertNull(
-        "Read beyond the last offset in the segment should be null", read)
+      "Read beyond the last offset in the segment should be null",
+      read
+    )
   }
 
   /**
@@ -77,7 +79,7 @@ class LogSegmentTest {
   @Test
   def testReadBeforeFirstOffset() {
     val seg = createSegment(40)
-    val ms = messages(50, "hello", "there", "little", "bee")
+    val ms  = messages(50, "hello", "there", "little", "bee")
     seg.append(50, ms)
     val read =
       seg.read(startOffset = 41, maxSize = 300, maxOffset = None).messageSet
@@ -91,17 +93,21 @@ class LogSegmentTest {
   @Test
   def testMaxOffset() {
     val baseOffset = 50
-    val seg = createSegment(baseOffset)
-    val ms = messages(baseOffset, "hello", "there", "beautiful")
+    val seg        = createSegment(baseOffset)
+    val ms         = messages(baseOffset, "hello", "there", "beautiful")
     seg.append(baseOffset, ms)
     def validate(offset: Long) =
-      assertEquals(ms.filter(_.offset == offset).toList,
-                   seg
-                     .read(startOffset = offset,
-                           maxSize = 1024,
-                           maxOffset = Some(offset + 1))
-                     .messageSet
-                     .toList)
+      assertEquals(
+        ms.filter(_.offset == offset).toList,
+        seg
+          .read(
+            startOffset = offset,
+            maxSize = 1024,
+            maxOffset = Some(offset + 1)
+          )
+          .messageSet
+          .toList
+      )
     validate(50)
     validate(51)
     validate(52)
@@ -113,11 +119,13 @@ class LogSegmentTest {
   @Test
   def testReadAfterLast() {
     val seg = createSegment(40)
-    val ms = messages(50, "hello", "there")
+    val ms  = messages(50, "hello", "there")
     seg.append(50, ms)
     val read = seg.read(startOffset = 52, maxSize = 200, maxOffset = None)
     assertNull(
-        "Read beyond the last offset in the segment should give null", read)
+      "Read beyond the last offset in the segment should give null",
+      read
+    )
   }
 
   /**
@@ -127,7 +135,7 @@ class LogSegmentTest {
   @Test
   def testReadFromGap() {
     val seg = createSegment(40)
-    val ms = messages(50, "hello", "there")
+    val ms  = messages(50, "hello", "there")
     seg.append(50, ms)
     val ms2 = messages(60, "alpha", "beta")
     seg.append(60, ms2)
@@ -141,7 +149,7 @@ class LogSegmentTest {
     */
   @Test
   def testTruncate() {
-    val seg = createSegment(40)
+    val seg    = createSegment(40)
     var offset = 40
     for (i <- 0 until 30) {
       val ms1 = messages(offset, "hello")
@@ -189,14 +197,18 @@ class LogSegmentTest {
     */
   @Test
   def testChangeFileSuffixes() {
-    val seg = createSegment(40)
-    val logFile = seg.log.file
+    val seg       = createSegment(40)
+    val logFile   = seg.log.file
     val indexFile = seg.index.file
     seg.changeFileSuffixes("", ".deleted")
     assertEquals(
-        logFile.getAbsolutePath + ".deleted", seg.log.file.getAbsolutePath)
+      logFile.getAbsolutePath + ".deleted",
+      seg.log.file.getAbsolutePath
+    )
     assertEquals(
-        indexFile.getAbsolutePath + ".deleted", seg.index.file.getAbsolutePath)
+      indexFile.getAbsolutePath + ".deleted",
+      seg.index.file.getAbsolutePath
+    )
     assertTrue(seg.log.file.exists)
     assertTrue(seg.index.file.exists)
   }
@@ -212,8 +224,8 @@ class LogSegmentTest {
     val indexFile = seg.index.file
     TestUtils.writeNonsenseToFile(indexFile, 5, indexFile.length.toInt)
     seg.recover(64 * 1024)
-    for (i <- 0 until 100) assertEquals(
-        i, seg.read(i, Some(i + 1), 1024).messageSet.head.offset)
+    for (i <- 0 until 100)
+      assertEquals(i, seg.read(i, Some(i + 1), 1024).messageSet.head.offset)
   }
 
   /**
@@ -224,38 +236,46 @@ class LogSegmentTest {
     val messagesAppended = 20
     for (iteration <- 0 until 10) {
       val seg = createSegment(0)
-      for (i <- 0 until messagesAppended) seg.append(
-          i, messages(i, i.toString))
+      for (i <- 0 until messagesAppended) seg.append(i, messages(i, i.toString))
       val offsetToBeginCorruption = TestUtils.random.nextInt(messagesAppended)
       // start corrupting somewhere in the middle of the chosen record all the way to the end
       val position =
         seg.log.searchFor(offsetToBeginCorruption, 0).position +
-        TestUtils.random.nextInt(15)
+          TestUtils.random.nextInt(15)
       TestUtils.writeNonsenseToFile(
-          seg.log.file, position, seg.log.file.length.toInt - position)
+        seg.log.file,
+        position,
+        seg.log.file.length.toInt - position
+      )
       seg.recover(64 * 1024)
-      assertEquals("Should have truncated off bad messages.",
-                   (0 until offsetToBeginCorruption).toList,
-                   seg.log.map(_.offset).toList)
+      assertEquals(
+        "Should have truncated off bad messages.",
+        (0 until offsetToBeginCorruption).toList,
+        seg.log.map(_.offset).toList
+      )
       seg.delete()
     }
   }
 
   /* create a segment with   pre allocate */
-  def createSegment(offset: Long,
-                    fileAlreadyExists: Boolean = false,
-                    initFileSize: Int = 0,
-                    preallocate: Boolean = false): LogSegment = {
+  def createSegment(
+      offset: Long,
+      fileAlreadyExists: Boolean = false,
+      initFileSize: Int = 0,
+      preallocate: Boolean = false
+  ): LogSegment = {
     val tempDir = TestUtils.tempDir()
-    val seg = new LogSegment(tempDir,
-                             offset,
-                             10,
-                             1000,
-                             0,
-                             SystemTime,
-                             fileAlreadyExists = fileAlreadyExists,
-                             initFileSize = initFileSize,
-                             preallocate = preallocate)
+    val seg = new LogSegment(
+      tempDir,
+      offset,
+      10,
+      1000,
+      0,
+      SystemTime,
+      fileAlreadyExists = fileAlreadyExists,
+      initFileSize = initFileSize,
+      preallocate = preallocate
+    )
     segments += seg
     seg
   }
@@ -264,7 +284,7 @@ class LogSegmentTest {
   @Test
   def testCreateWithInitFileSizeAppendMessage() {
     val seg = createSegment(40, false, 512 * 1024 * 1024, true)
-    val ms = messages(50, "hello", "there")
+    val ms  = messages(50, "hello", "there")
     seg.append(50, ms)
     val ms2 = messages(60, "alpha", "beta")
     seg.append(60, ms2)
@@ -277,7 +297,16 @@ class LogSegmentTest {
   def testCreateWithInitFileSizeClearShutdown() {
     val tempDir = TestUtils.tempDir()
     val seg = new LogSegment(
-        tempDir, 40, 10, 1000, 0, SystemTime, false, 512 * 1024 * 1024, true)
+      tempDir,
+      40,
+      10,
+      1000,
+      0,
+      SystemTime,
+      false,
+      512 * 1024 * 1024,
+      true
+    )
 
     val ms = messages(50, "hello", "there")
     seg.append(50, ms)
@@ -285,7 +314,7 @@ class LogSegmentTest {
     seg.append(60, ms2)
     val read = seg.read(startOffset = 55, maxSize = 200, maxOffset = None)
     assertEquals(ms2.toList, read.messageSet.toList)
-    val oldSize = seg.log.sizeInBytes()
+    val oldSize     = seg.log.sizeInBytes()
     val oldPosition = seg.log.channel.position
     val oldFileSize = seg.log.file.length
     assertEquals(512 * 1024 * 1024, oldFileSize)
@@ -294,13 +323,22 @@ class LogSegmentTest {
     assertEquals(oldSize, seg.log.file.length)
 
     val segReopen = new LogSegment(
-        tempDir, 40, 10, 1000, 0, SystemTime, true, 512 * 1024 * 1024, true)
+      tempDir,
+      40,
+      10,
+      1000,
+      0,
+      SystemTime,
+      true,
+      512 * 1024 * 1024,
+      true
+    )
     segments += segReopen
 
     val readAgain =
       segReopen.read(startOffset = 55, maxSize = 200, maxOffset = None)
     assertEquals(ms2.toList, readAgain.messageSet.toList)
-    val size = segReopen.log.sizeInBytes()
+    val size     = segReopen.log.sizeInBytes()
     val position = segReopen.log.channel.position
     val fileSize = segReopen.log.file.length
     assertEquals(oldPosition, position)

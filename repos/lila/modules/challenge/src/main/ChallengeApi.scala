@@ -10,12 +10,14 @@ import lila.hub.actorApi.SendTo
 import lila.memo.{MixedCache, AsyncCache}
 import lila.user.{User, UserRepo}
 
-final class ChallengeApi(repo: ChallengeRepo,
-                         joiner: Joiner,
-                         jsonView: JsonView,
-                         socketHub: ActorRef,
-                         userRegister: ActorSelection,
-                         lilaBus: lila.common.Bus) {
+final class ChallengeApi(
+    repo: ChallengeRepo,
+    joiner: Joiner,
+    jsonView: JsonView,
+    socketHub: ActorRef,
+    userRegister: ActorSelection,
+    lilaBus: lila.common.Bus
+) {
 
   import Challenge._
 
@@ -44,7 +46,7 @@ final class ChallengeApi(repo: ChallengeRepo,
     repo statusById id flatMap {
       case Some(Status.Created) => repo setSeen id
       case Some(Status.Offline) =>
-        (repo setSeenAgain id) >> byId(id).flatMap { _ ?? uncacheAndNotify }
+        (repo setSeenAgain id) >> byId(id).flatMap(_ ?? uncacheAndNotify)
       case _ => fuccess(socketReload(id))
     }
 
@@ -62,28 +64,31 @@ final class ChallengeApi(repo: ChallengeRepo,
   def rematchOf(game: Game, user: User): Fu[Boolean] =
     Pov.ofUserId(game, user.id) ?? { pov =>
       for {
-        initialFen <- GameRepo initialFen pov.game
+        initialFen       <- GameRepo initialFen pov.game
         challengerOption <- pov.player.userId ?? UserRepo.byId
-        destUserOption <- pov.opponent.userId ?? UserRepo.byId
+        destUserOption   <- pov.opponent.userId ?? UserRepo.byId
         success <- (destUserOption |@| challengerOption).tupled ?? {
-          case (destUser, challenger) =>
-            create(
-                Challenge.make(
-                    variant = pov.game.variant,
-                    initialFen = initialFen,
-                    timeControl = (pov.game.clock, pov.game.daysPerTurn) match {
-                  case (Some(clock), _) =>
-                    TimeControl.Clock(clock.limit, clock.increment)
-                  case (_, Some(days)) => TimeControl.Correspondence(days)
-                  case _ => TimeControl.Unlimited
-                },
-                    mode = pov.game.mode,
-                    color = (!pov.color).name,
-                    challenger = Right(challenger),
-                    destUser = Some(destUser),
-                    rematchOf = pov.game.id.some
-                )) inject true
-        }
+                    case (destUser, challenger) =>
+                      create(
+                        Challenge.make(
+                          variant = pov.game.variant,
+                          initialFen = initialFen,
+                          timeControl =
+                            (pov.game.clock, pov.game.daysPerTurn) match {
+                              case (Some(clock), _) =>
+                                TimeControl.Clock(clock.limit, clock.increment)
+                              case (_, Some(days)) =>
+                                TimeControl.Correspondence(days)
+                              case _ => TimeControl.Unlimited
+                            },
+                          mode = pov.game.mode,
+                          color = (!pov.color).name,
+                          challenger = Right(challenger),
+                          destUser = Some(destUser),
+                          rematchOf = pov.game.id.some
+                        )
+                      ) inject true
+                  }
       } yield success
     }
 
@@ -91,8 +96,7 @@ final class ChallengeApi(repo: ChallengeRepo,
 
   private[challenge] def sweep: Funit =
     repo.realTimeUnseenSince(DateTime.now minusSeconds 10, max = 50).flatMap {
-      cs =>
-        lila.common.Future.applySequentially(cs)(offline).void
+      cs => lila.common.Future.applySequentially(cs)(offline).void
     } >> repo.expiredIds(max = 50).flatMap { ids =>
       lila.common.Future.applySequentially(ids)(remove).void
     }
@@ -100,10 +104,9 @@ final class ChallengeApi(repo: ChallengeRepo,
   private def remove(id: Challenge.ID) =
     repo.remove(id) >> countInFor.remove(id)
 
-  private def uncacheAndNotify(c: Challenge) = {
+  private def uncacheAndNotify(c: Challenge) =
     (c.destUserId ?? countInFor.remove) >>- (c.destUserId ?? notify) >>-
-    (c.challengerUserId ?? notify) >>- socketReload(c.id)
-  }
+      (c.challengerUserId ?? notify) >>- socketReload(c.id)
 
   private def socketReload(id: Challenge.ID) {
     socketHub ! Tell(id, Socket.Reload)
@@ -112,7 +115,9 @@ final class ChallengeApi(repo: ChallengeRepo,
   private def notify(userId: User.ID) {
     allFor(userId) foreach { all =>
       userRegister ! SendTo(
-          userId, lila.socket.Socket.makeMessage("challenges", jsonView(all)))
+        userId,
+        lila.socket.Socket.makeMessage("challenges", jsonView(all))
+      )
     }
   }
 }

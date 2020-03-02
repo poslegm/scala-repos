@@ -88,8 +88,8 @@ trait CompilerControl { self: Global =>
   /** Locates smallest context that encloses position as an optional value.
     */
   def locateContext(pos: Position): Option[Context] =
-    for (unit <- getUnit(pos.source); cx <- locateContext(unit.contexts, pos)) yield
-      cx
+    for (unit <- getUnit(pos.source); cx <- locateContext(unit.contexts, pos))
+      yield cx
 
   /** Returns the smallest context that contains given `pos`, throws FatalError if none exists.
     */
@@ -108,7 +108,7 @@ trait CompilerControl { self: Global =>
   def askReload(sources: List[SourceFile], response: Response[Unit]) = {
     val superseeded = scheduler.dequeueAll {
       case ri: ReloadItem if ri.sources == sources => Some(ri)
-      case _ => None
+      case _                                       => None
     }
     superseeded.foreach(_.response.set(()))
     postWorkItem(new ReloadItem(sources, response))
@@ -117,9 +117,8 @@ trait CompilerControl { self: Global =>
   /** Removes source files and toplevel symbols, and issues a new typer run.
     *  Returns () to syncvar `response` on completion.
     */
-  def askFilesDeleted(sources: List[SourceFile], response: Response[Unit]) = {
+  def askFilesDeleted(sources: List[SourceFile], response: Response[Unit]) =
     postWorkItem(new FilesDeletedItem(sources, response))
-  }
 
   /** Sets sync var `response` to the smallest fully attributed tree that encloses position `pos`.
     *  Note: Unlike for most other ask... operations, the source file belonging to `pos` needs not be loaded.
@@ -134,10 +133,14 @@ trait CompilerControl { self: Global =>
     *  @see  SI-6578
     */
   @deprecated(
-      "Use `askLoadedTyped` instead to avoid race conditions in the typechecker",
-      "2.10.1")
+    "Use `askLoadedTyped` instead to avoid race conditions in the typechecker",
+    "2.10.1"
+  )
   def askType(
-      source: SourceFile, forceReload: Boolean, response: Response[Tree]) =
+      source: SourceFile,
+      forceReload: Boolean,
+      response: Response[Tree]
+  ) =
     postWorkItem(new AskTypeItem(source, forceReload, response))
 
   /** Sets sync var `response` to the position of the definition of the given link in
@@ -152,7 +155,10 @@ trait CompilerControl { self: Global =>
     *  is unloaded, it stays that way.
     */
   def askLinkPos(
-      sym: Symbol, source: SourceFile, response: Response[Position]) =
+      sym: Symbol,
+      source: SourceFile,
+      response: Response[Position]
+  ) =
     postWorkItem(new AskLinkPosItem(sym, source, response))
 
   /** Sets sync var `response` to doc comment information for a given symbol.
@@ -167,18 +173,22 @@ trait CompilerControl { self: Global =>
     *                      the (expanded, raw, position) triplet for a comment, otherwise ("", "", NoPosition).
     *  Note: This operation does not automatically load sources that are not yet loaded.
     */
-  def askDocComment(sym: Symbol,
-                    source: SourceFile,
-                    site: Symbol,
-                    fragments: List[(Symbol, SourceFile)],
-                    response: Response[(String, String, Position)]): Unit =
+  def askDocComment(
+      sym: Symbol,
+      source: SourceFile,
+      site: Symbol,
+      fragments: List[(Symbol, SourceFile)],
+      response: Response[(String, String, Position)]
+  ): Unit =
     postWorkItem(new AskDocCommentItem(sym, source, site, fragments, response))
 
   @deprecated("Use method that accepts fragments", "2.10.2")
-  def askDocComment(sym: Symbol,
-                    site: Symbol,
-                    source: SourceFile,
-                    response: Response[(String, String, Position)]): Unit =
+  def askDocComment(
+      sym: Symbol,
+      site: Symbol,
+      source: SourceFile,
+      response: Response[(String, String, Position)]
+  ): Unit =
     askDocComment(sym, source, site, (sym, source) :: Nil, response)
 
   /** Sets sync var `response` to list of members that are visible
@@ -211,13 +221,14 @@ trait CompilerControl { self: Global =>
     *                   If the unit corresponding to `source` has been removed in the meantime
     *                   the a NoSuchUnitError is raised in the response.
     */
-  def askLoadedTyped(source: SourceFile,
-                     keepLoaded: Boolean,
-                     response: Response[Tree]): Unit =
+  def askLoadedTyped(
+      source: SourceFile,
+      keepLoaded: Boolean,
+      response: Response[Tree]
+  ): Unit =
     postWorkItem(new AskLoadedTypedItem(source, keepLoaded, response))
 
-  final def askLoadedTyped(
-      source: SourceFile, response: Response[Tree]): Unit =
+  final def askLoadedTyped(source: SourceFile, response: Response[Tree]): Unit =
     askLoadedTyped(source, false, response)
 
   /** If source if not yet loaded, get an outline view with askParseEntered.
@@ -225,13 +236,13 @@ trait CompilerControl { self: Global =>
     *  In both cases, set response to parsed (and possibly typechecked) tree.
     *  @param keepSrcLoaded If set to `true`, source file will be kept as a loaded unit afterwards.
     */
-  def askStructure(keepSrcLoaded: Boolean)(
-      source: SourceFile, response: Response[Tree]) = {
+  def askStructure(
+      keepSrcLoaded: Boolean
+  )(source: SourceFile, response: Response[Tree]) =
     getUnit(source) match {
       case Some(_) => askLoadedTyped(source, keepSrcLoaded, response)
-      case None => askParsedEntered(source, keepSrcLoaded, response)
+      case None    => askParsedEntered(source, keepSrcLoaded, response)
     }
-  }
 
   /** Set sync var `response` to the parse tree of `source` with all top-level symbols entered.
     *  @param source       The source file to be analyzed
@@ -241,7 +252,10 @@ trait CompilerControl { self: Global =>
     *  @param response     The response.
     */
   def askParsedEntered(
-      source: SourceFile, keepLoaded: Boolean, response: Response[Tree]) =
+      source: SourceFile,
+      keepLoaded: Boolean,
+      response: Response[Tree]
+  ) =
     postWorkItem(new AskParsedEnteredItem(source, keepLoaded, response))
 
   /** Cancels current compiler run and start a fresh one where everything will be re-typechecked
@@ -257,9 +271,8 @@ trait CompilerControl { self: Global =>
     *  This method is thread-safe and as such can safely run outside of the presentation
     *  compiler thread.
     */
-  def parseTree(source: SourceFile): Tree = {
+  def parseTree(source: SourceFile): Tree =
     newUnitParser(new CompilationUnit(source)).parse()
-  }
 
   /** Asks for a computation to be done quickly on the presentation compiler thread */
   def ask[A](op: () => A): A =
@@ -271,13 +284,14 @@ trait CompilerControl { self: Global =>
   def askForResponse[A](op: () => A): Response[A] = {
     val r = new Response[A]
     if (self.onCompilerThread) {
-      try { r set op() } catch { case exc: Throwable => r raise exc }
+      try { r set op() }
+      catch { case exc: Throwable => r raise exc }
       r
     } else {
       val ir = scheduler askDoQuickly op
       ir onComplete {
         case Left(result) => r set result
-        case Right(exc) => r raise exc
+        case Right(exc)   => r raise exc
       }
       r
     }
@@ -292,7 +306,7 @@ trait CompilerControl { self: Global =>
     val sym: Symbol
     val tpe: Type
     val accessible: Boolean
-    def implicitlyAdded = false
+    def implicitlyAdded        = false
     def symNameDropLocal: Name = sym.name.dropLocal
 
     private def accessible_s = if (accessible) "" else "[inaccessible] "
@@ -304,20 +318,24 @@ trait CompilerControl { self: Global =>
     def infoString = s"$accessible_s${sym.defStringSeenAs(tpe)}"
   }
 
-  case class TypeMember(sym: Symbol,
-                        tpe: Type,
-                        accessible: Boolean,
-                        inherited: Boolean,
-                        viaView: Symbol)
-      extends Member {
+  case class TypeMember(
+      sym: Symbol,
+      tpe: Type,
+      accessible: Boolean,
+      inherited: Boolean,
+      viaView: Symbol
+  ) extends Member {
     // should be a case class parameter, but added as a var instead to preserve compatibility with the IDE
-    var prefix: Type = NoType
+    var prefix: Type             = NoType
     override def implicitlyAdded = viaView != NoSymbol
   }
 
   case class ScopeMember(
-      sym: Symbol, tpe: Type, accessible: Boolean, viaImport: Tree)
-      extends Member {
+      sym: Symbol,
+      tpe: Type,
+      accessible: Boolean,
+      viaImport: Tree
+  ) extends Member {
     // should be a case class parameter, but added as a var instead to preserve compatibility with the IDE
     var prefix: Type = NoType
   }
@@ -333,7 +351,7 @@ trait CompilerControl { self: Global =>
 
   case class ReloadItem(sources: List[SourceFile], response: Response[Unit])
       extends WorkItem {
-    def apply() = reload(sources, response)
+    def apply()           = reload(sources, response)
     override def toString = "reload " + sources
 
     def raiseMissing() =
@@ -341,9 +359,10 @@ trait CompilerControl { self: Global =>
   }
 
   case class FilesDeletedItem(
-      sources: List[SourceFile], response: Response[Unit])
-      extends WorkItem {
-    def apply() = filesDeleted(sources, response)
+      sources: List[SourceFile],
+      response: Response[Unit]
+  ) extends WorkItem {
+    def apply()           = filesDeleted(sources, response)
     override def toString = "files deleted " + sources
 
     def raiseMissing() =
@@ -352,7 +371,7 @@ trait CompilerControl { self: Global =>
 
   case class AskTypeAtItem(pos: Position, response: Response[Tree])
       extends WorkItem {
-    def apply() = self.getTypedTreeAt(pos, response)
+    def apply()           = self.getTypedTreeAt(pos, response)
     override def toString = "typeat " + pos.source + " " + pos.show
 
     def raiseMissing() =
@@ -360,9 +379,11 @@ trait CompilerControl { self: Global =>
   }
 
   case class AskTypeItem(
-      source: SourceFile, forceReload: Boolean, response: Response[Tree])
-      extends WorkItem {
-    def apply() = self.getTypedTree(source, forceReload, response)
+      source: SourceFile,
+      forceReload: Boolean,
+      response: Response[Tree]
+  ) extends WorkItem {
+    def apply()           = self.getTypedTree(source, forceReload, response)
     override def toString = "typecheck"
 
     def raiseMissing() =
@@ -370,9 +391,10 @@ trait CompilerControl { self: Global =>
   }
 
   case class AskTypeCompletionItem(
-      pos: Position, response: Response[List[Member]])
-      extends WorkItem {
-    def apply() = self.getTypeCompletion(pos, response)
+      pos: Position,
+      response: Response[List[Member]]
+  ) extends WorkItem {
+    def apply()           = self.getTypeCompletion(pos, response)
     override def toString = "type completion " + pos.source + " " + pos.show
 
     def raiseMissing() =
@@ -380,9 +402,10 @@ trait CompilerControl { self: Global =>
   }
 
   case class AskScopeCompletionItem(
-      pos: Position, response: Response[List[Member]])
-      extends WorkItem {
-    def apply() = self.getScopeCompletion(pos, response)
+      pos: Position,
+      response: Response[List[Member]]
+  ) extends WorkItem {
+    def apply()           = self.getScopeCompletion(pos, response)
     override def toString = "scope completion " + pos.source + " " + pos.show
 
     def raiseMissing() =
@@ -400,33 +423,38 @@ trait CompilerControl { self: Global =>
   }
 
   case class AskLinkPosItem(
-      sym: Symbol, source: SourceFile, response: Response[Position])
-      extends WorkItem {
-    def apply() = self.getLinkPos(sym, source, response)
+      sym: Symbol,
+      source: SourceFile,
+      response: Response[Position]
+  ) extends WorkItem {
+    def apply()           = self.getLinkPos(sym, source, response)
     override def toString = "linkpos " + sym + " in " + source
 
     def raiseMissing() =
       response raise new MissingResponse
   }
 
-  case class AskDocCommentItem(sym: Symbol,
-                               source: SourceFile,
-                               site: Symbol,
-                               fragments: List[(Symbol, SourceFile)],
-                               response: Response[(String, String, Position)])
-      extends WorkItem {
+  case class AskDocCommentItem(
+      sym: Symbol,
+      source: SourceFile,
+      site: Symbol,
+      fragments: List[(Symbol, SourceFile)],
+      response: Response[(String, String, Position)]
+  ) extends WorkItem {
     def apply() = self.getDocComment(sym, source, site, fragments, response)
     override def toString =
       "doc comment " + sym + " in " + source + " with fragments:" +
-      fragments.mkString("(", ",", ")")
+        fragments.mkString("(", ",", ")")
 
     def raiseMissing() =
       response raise new MissingResponse
   }
 
   case class AskLoadedTypedItem(
-      source: SourceFile, keepLoaded: Boolean, response: Response[Tree])
-      extends WorkItem {
+      source: SourceFile,
+      keepLoaded: Boolean,
+      response: Response[Tree]
+  ) extends WorkItem {
     def apply() =
       self.waitLoadedTyped(source, response, keepLoaded, this.onCompilerThread)
     override def toString = "wait loaded & typed " + source
@@ -436,11 +464,12 @@ trait CompilerControl { self: Global =>
   }
 
   case class AskParsedEnteredItem(
-      source: SourceFile, keepLoaded: Boolean, response: Response[Tree])
-      extends WorkItem {
+      source: SourceFile,
+      keepLoaded: Boolean,
+      response: Response[Tree]
+  ) extends WorkItem {
     def apply() =
-      self.getParsedEntered(
-          source, keepLoaded, response, this.onCompilerThread)
+      self.getParsedEntered(source, keepLoaded, response, this.onCompilerThread)
     override def toString =
       "getParsedEntered " + source + ", keepLoaded = " + keepLoaded
 
@@ -456,17 +485,16 @@ trait CompilerControl { self: Global =>
 
     override def postWorkItem(action: Action) = synchronized {
       action match {
-        case w: WorkItem => w.raiseMissing()
+        case w: WorkItem    => w.raiseMissing()
         case e: EmptyAction => // do nothing
-        case _ => println("don't know what to do with this " + action.getClass)
+        case _              => println("don't know what to do with this " + action.getClass)
       }
     }
 
-    override def doQuickly[A](op: () => A): A = {
+    override def doQuickly[A](op: () => A): A =
       throw new FailedInterrupt(
-          new Exception(
-              "Posted a work item to a compiler that's shutting down"))
-    }
+        new Exception("Posted a work item to a compiler that's shutting down")
+      )
 
     override def askDoQuickly[A](op: () => A): InterruptReq { type R = A } = {
       val ir = new InterruptReq {

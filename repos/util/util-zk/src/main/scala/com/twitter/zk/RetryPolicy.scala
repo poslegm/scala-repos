@@ -13,11 +13,11 @@ trait RetryPolicy {
 /** Matcher for connection-related KeeperExceptions. */
 object KeeperConnectionException {
   def unapply(e: KeeperException) = e match {
-    case e: KeeperException.ConnectionLossException => Some(e)
-    case e: KeeperException.SessionExpiredException => Some(e)
-    case e: KeeperException.SessionMovedException => Some(e)
+    case e: KeeperException.ConnectionLossException   => Some(e)
+    case e: KeeperException.SessionExpiredException   => Some(e)
+    case e: KeeperException.SessionMovedException     => Some(e)
     case e: KeeperException.OperationTimeoutException => Some(e)
-    case e => None
+    case e                                            => None
   }
 }
 
@@ -26,12 +26,11 @@ object RetryPolicy {
   /** Retries an operation a fixed number of times without back-off. */
   case class Basic(retries: Int) extends RetryPolicy {
     def apply[T](op: => Future[T]): Future[T] = {
-      def retry(tries: Int): Future[T] = {
+      def retry(tries: Int): Future[T] =
         op rescue {
           case KeeperConnectionException(_) if (tries > 0) =>
             retry(tries - 1)
         }
-      }
       retry(retries)
     }
   }
@@ -52,16 +51,17 @@ object RetryPolicy {
     require(factor >= 1)
 
     def apply[T](op: => Future[T]): Future[T] = {
-      def retry(delay: Duration): Future[T] = {
+      def retry(delay: Duration): Future[T] =
         op rescue {
           case KeeperConnectionException(_) =>
             timer
               .doLater(delay) {
-                retry((delay.inNanoseconds * factor).toLong.nanoseconds min maximum)
+                retry(
+                  (delay.inNanoseconds * factor).toLong.nanoseconds min maximum
+                )
               }
               .flatten
         }
-      }
       retry(base)
     }
   }

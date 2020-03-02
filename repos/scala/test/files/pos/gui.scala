@@ -3,15 +3,17 @@ object Geom {
   case class Point(x: Int, y: Int) extends Shape
   case class Rectangle(ll: Point, ur: Point) extends Shape {
     def inset(delta: Int) =
-      Rectangle(Point(ll.x - delta, ll.y - delta),
-                Point(ur.x + delta, ur.y + delta));
+      Rectangle(
+        Point(ll.x - delta, ll.y - delta),
+        Point(ur.x + delta, ur.y + delta)
+      );
   }
 }
 
 object Color {
   type Color = Int
   val black = 0x000000
-  val grey = 0x808080
+  val grey  = 0x808080
 }
 
 trait Screen {
@@ -42,9 +44,9 @@ object GUI {
   }
 
   class Label(scr: Screen, p: Geom.Point, name: String) extends Glyph {
-    private var origin = p
-    def getRect = Geom.Rectangle(origin, origin).inset(10);
-    def setLoc(p: Geom.Point) = { origin = p }
+    private var origin        = p
+    def getRect               = Geom.Rectangle(origin, origin).inset(10);
+    def setLoc(p: Geom.Point) = origin = p
   }
 
   trait Ctl {
@@ -57,9 +59,10 @@ object GUI {
   }
 
   abstract class Button(scr: Screen, p: Geom.Point, name: String)
-      extends Glyph with MouseCtl {
+      extends Glyph
+      with MouseCtl {
     var enabled: Boolean = false
-    val label = new Label(scr, p, name)
+    val label            = new Label(scr, p, name)
 
     /* Glyph methods */
     override def draw() {
@@ -68,11 +71,11 @@ object GUI {
       label.draw();
     }
     def setLoc(p: Geom.Point) = label.setLoc(p);
-    def getRect = label.getRect.inset(-2);
+    def getRect               = label.getRect.inset(-2);
 
     /* Ctl methods */
     def enable(b: Boolean): this.type = { enabled = b; draw(); this }
-    def getGlyph = label
+    def getGlyph                      = label
     final def mouseDown(p: Geom.Point) {
       if (enabled) doit() else Console.println("button is disabled");
     }

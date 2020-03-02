@@ -19,8 +19,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
   */
 class DelayedFactory[Req, Rep](
     underlyingF: Future[ServiceFactory[Req, Rep]]
-)
-    extends ServiceFactory[Req, Rep] {
+) extends ServiceFactory[Req, Rep] {
   private[this] def wrapped(): Future[ServiceFactory[Req, Rep]] =
     safelyInterruptible(underlyingF)
 
@@ -47,22 +46,18 @@ class DelayedFactory[Req, Rep](
   }
 
   def apply(conn: ClientConnection): Future[Service[Req, Rep]] =
-    wrapped flatMap { fac =>
-      fac(conn)
-    }
+    wrapped flatMap { fac => fac(conn) }
 
-  override def close(deadline: Time): Future[Unit] = {
+  override def close(deadline: Time): Future[Unit] =
     if (underlyingF.isDefined)
-      wrapped flatMap { svc =>
-        svc.close(deadline)
-      } else {
+      wrapped flatMap { svc => svc.close(deadline) }
+    else {
       underlyingF.onSuccess(_.close(deadline))
       val exc = new ServiceClosedException
       underlyingF.raise(exc)
       for (p <- q.asScala) p.raise(exc)
       Future.Done
     }
-  }
 
   override def status: Status =
     if (underlyingF.isDefined) Await.result(underlyingF).status
@@ -86,7 +81,7 @@ object DelayedFactory {
 
     val ref = new ServiceFactoryRef[Req, Rep](delayed)
     underlying respond {
-      case Throw(e) => ref() = new FailingFactory(e)
+      case Throw(e)    => ref() = new FailingFactory(e)
       case Return(fac) => ref() = fac
     }
     ref

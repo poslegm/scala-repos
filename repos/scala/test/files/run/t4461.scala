@@ -5,16 +5,15 @@ import scala.collection.script._
 object Test {
   def main(args: Array[String]) {
     val buf = new ArrayBuffer[Int] with ObservableBuffer[Int]
-    buf.subscribe(
-        new Subscriber[Message[Int], ObservableBuffer[Int]] {
+    buf.subscribe(new Subscriber[Message[Int], ObservableBuffer[Int]] {
       def notify(pub: ObservableBuffer[Int], event: Message[Int]) =
         println(event)
     })
 
-    buf += 1 // works
-    buf ++= Array(2) // works
-    buf ++= ArrayBuffer(3, 4) // works
-    buf ++= List(5) // works
+    buf += 1                                  // works
+    buf ++= Array(2)                          // works
+    buf ++= ArrayBuffer(3, 4)                 // works
+    buf ++= List(5)                           // works
     buf ++= collection.immutable.Vector(6, 7) // works
     buf.insertAll(7, List(8, 9, 10))
     0 +=: buf

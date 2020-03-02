@@ -7,12 +7,13 @@ trait Parsers { self: Context =>
   import global._
 
   def parse(code: String) = {
-    val sreporter = new StoreReporter()
+    val sreporter   = new StoreReporter()
     val oldReporter = global.reporter
     try {
       global.reporter = sreporter
       val parser = newUnitParser(
-          new CompilationUnit(newSourceFile(code, "<macro>")))
+        new CompilationUnit(newSourceFile(code, "<macro>"))
+      )
       val tree = gen.mkTreeOrBlock(parser.parseStatsOrPackages())
       sreporter.infos.foreach {
         case sreporter.Info(pos, msg, sreporter.ERROR) =>

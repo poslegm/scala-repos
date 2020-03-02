@@ -122,52 +122,47 @@ trait HtmlHelpers extends CssBindImplicits {
     * return the first value found in which the function evaluates
     * to Full
     */
-  def findBox[T](nodes: Seq[Node])(f: Elem => Box[T]): Box[T] = {
+  def findBox[T](nodes: Seq[Node])(f: Elem => Box[T]): Box[T] =
     nodes.view.flatMap {
       case Group(g) => findBox(g)(f)
-      case e: Elem => f(e) or findBox(e.child)(f)
-      case _ => Empty
+      case e: Elem  => f(e) or findBox(e.child)(f)
+      case _        => Empty
     }.headOption
-  }
 
   /**
     * Given a NodeSeq and a function that returns an Option[T],
     * return the first value found in which the function evaluates
     * to Some
     */
-  def findOption[T](nodes: Seq[Node])(f: Elem => Option[T]): Option[T] = {
+  def findOption[T](nodes: Seq[Node])(f: Elem => Option[T]): Option[T] =
     nodes.view.flatMap {
       case Group(g) => findOption(g)(f)
-      case e: Elem => f(e) orElse findOption(e.child)(f)
-      case _ => None
+      case e: Elem  => f(e) orElse findOption(e.child)(f)
+      case _        => None
     }.headOption
-  }
 
   /**
     * Given an id value, find the Elem with the specified id
     */
-  def findId(nodes: Seq[Node], id: String): Option[Elem] = {
+  def findId(nodes: Seq[Node], id: String): Option[Elem] =
     findOption(nodes) { e =>
       e.attribute("id").filter(_.text == id).map(i => e)
     }
-  }
 
   /**
     * Finds the first `Elem` in the NodeSeq (or any children)
     * that has an ID attribute and return the value of that attribute.
     */
-  def findId(ns: NodeSeq): Box[String] = {
+  def findId(ns: NodeSeq): Box[String] =
     findBox(ns)(_.attribute("id").map(_.text))
-  }
 
   // Modifying things
 
   /**
     * Remove all the <head> elements, just leaving their child elements.
     */
-  def stripHead(in: NodeSeq): NodeSeq = {
+  def stripHead(in: NodeSeq): NodeSeq =
     ("head" #> ((ns: NodeSeq) => ns.asInstanceOf[Elem].child)).apply(in)
-  }
 
   /**
     * Remove an attribute from the specified element.
@@ -176,9 +171,8 @@ trait HtmlHelpers extends CssBindImplicits {
     * @param elem the element
     * @return the element sans the named attribute
     */
-  def removeAttribute(name: String, element: Elem): Elem = {
+  def removeAttribute(name: String, element: Elem): Elem =
     element.copy(attributes = removeAttribute(name, element.attributes))
-  }
 
   /**
     * Remove an attribute from the specified list of existing attributes.
@@ -187,12 +181,11 @@ trait HtmlHelpers extends CssBindImplicits {
     * @param existingAttributes a list of existing attributes
     * @return the attributes list sans the named attribute
     */
-  def removeAttribute(name: String, existingAttributes: MetaData): MetaData = {
+  def removeAttribute(name: String, existingAttributes: MetaData): MetaData =
     existingAttributes.filter {
       case up: UnprefixedAttribute => up.key != name
-      case _ => true
+      case _                       => true
     }
-  }
 
   /**
     * Adds the specified <code>cssClass</code> to the existing class
@@ -202,34 +195,31 @@ trait HtmlHelpers extends CssBindImplicits {
     * If <code>cssClass</code> is not <code>Full</code>, returns the
     * passed Elem unchanged.
     */
-  def addCssClass(cssClass: Box[String], elem: Elem): Elem = {
+  def addCssClass(cssClass: Box[String], elem: Elem): Elem =
     cssClass match {
       case Full(css) => addCssClass(css, elem)
-      case _ => elem
+      case _         => elem
     }
-  }
 
   /**
     * Adds the specified <code>cssClass</code> to the existing class
     * attribute of an Elem or creates the class attribute with that class
     * if it does not exist.
     */
-  def addCssClass(cssClass: String, elem: Elem): Elem = {
+  def addCssClass(cssClass: String, elem: Elem): Elem =
     elem.attribute("class") match {
       case Some(existingClasses) =>
-        def attributesWithUpdatedClass(existingAttributes: MetaData) = {
+        def attributesWithUpdatedClass(existingAttributes: MetaData) =
           new UnprefixedAttribute(
-              "class",
-              existingClasses.text.trim + " " + cssClass.trim,
-              removeAttribute("class", existingAttributes)
+            "class",
+            existingClasses.text.trim + " " + cssClass.trim,
+            removeAttribute("class", existingAttributes)
           )
-        }
 
         elem.copy(attributes = attributesWithUpdatedClass(elem.attributes))
 
       case _ => elem % new UnprefixedAttribute("class", cssClass, Null)
     }
-  }
 
   // Ensures unique ids, but provides a way to selectively recurse through
   // subelements or not by invoking a `processElement` function when an
@@ -237,9 +227,10 @@ trait HtmlHelpers extends CssBindImplicits {
   // found as well as the duplicate id stripping function, and the
   // caller can decide whether to ensure uniqueness at only one level or
   // whether to recurse through children.
-  private def ensureUniqueIdHelper(in: Seq[NodeSeq],
-                                   processElement: (Elem,
-                                   (Node) => Node) => Elem): Seq[NodeSeq] = {
+  private def ensureUniqueIdHelper(
+      in: Seq[NodeSeq],
+      processElement: (Elem, (Node) => Node) => Elem
+  ): Seq[NodeSeq] = {
     var ids: Set[String] = Set()
 
     def stripDuplicateId(node: Node): Node = node match {
@@ -247,18 +238,18 @@ trait HtmlHelpers extends CssBindImplicits {
       case element: Elem =>
         element.attribute("id") match {
           case Some(id) => {
-              if (ids.contains(id.text)) {
-                processElement(
-                    element.copy(attributes = removeAttribute(
-                              "id", element.attributes)),
-                    stripDuplicateId _
-                )
-              } else {
-                ids += id.text
+            if (ids.contains(id.text)) {
+              processElement(
+                element
+                  .copy(attributes = removeAttribute("id", element.attributes)),
+                stripDuplicateId _
+              )
+            } else {
+              ids += id.text
 
-                processElement(element, stripDuplicateId _)
-              }
+              processElement(element, stripDuplicateId _)
             }
+          }
 
           case _ => element
         }
@@ -274,20 +265,20 @@ trait HtmlHelpers extends CssBindImplicits {
     * are unique.  If there's a duplicate, that Elem will be returned
     * without an id
     */
-  def ensureUniqueId(in: Seq[NodeSeq]): Seq[NodeSeq] = {
+  def ensureUniqueId(in: Seq[NodeSeq]): Seq[NodeSeq] =
     ensureUniqueIdHelper(in, (element, _) => element)
-  }
 
   /**
     * For a list of NodeSeq, ensure that the the id of all Elems are
     * unique, recursively.  If there's a duplicate, that Elem will be
     * returned without an id.
     */
-  def deepEnsureUniqueId(in: NodeSeq): NodeSeq = {
-    ensureUniqueIdHelper(List(in), { (element, stripUniqueId) =>
-      element.copy(child = element.child.map(stripUniqueId))
-    }).head
-  }
+  def deepEnsureUniqueId(in: NodeSeq): NodeSeq =
+    ensureUniqueIdHelper(
+      List(in),
+      (element, stripUniqueId) =>
+        element.copy(child = element.child.map(stripUniqueId))
+    ).head
 
   /**
     * Ensure that the first Element has the specified ID
@@ -298,12 +289,12 @@ trait HtmlHelpers extends CssBindImplicits {
     ns.map {
       case x if found => x
       case element: Elem => {
-          val meta = removeAttribute("id", element.attributes)
+        val meta = removeAttribute("id", element.attributes)
 
-          found = true
+        found = true
 
-          element.copy(attributes = new UnprefixedAttribute("id", id, meta))
-        }
+        element.copy(attributes = new UnprefixedAttribute("id", id, meta))
+      }
 
       case x => x
     }
@@ -311,21 +302,22 @@ trait HtmlHelpers extends CssBindImplicits {
 
   // Misc
 
-  def errorDiv(body: NodeSeq): Box[NodeSeq] = {
+  def errorDiv(body: NodeSeq): Box[NodeSeq] =
     Props.mode match {
       case Props.RunModes.Development | Props.RunModes.Test =>
-        Full(<div class="snippeterror" style="display: block; padding: 4px; margin: 8px; border: 2px solid red">
+        Full(
+          <div class="snippeterror" style="display: block; padding: 4px; margin: 8px; border: 2px solid red">
              {body}
           <i>note: this error is displayed in the browser because
           your application is running in "development" or "test" mode.If you
           set the system property run.mode=production, this error will not
           be displayed, but there will be errors in the output logs.
           </i>
-          </div>)
+          </div>
+        )
 
       case _ => Empty
     }
-  }
 
   /**
     * Make a MetaData instance from a key and a value. If key contains a colon, this
@@ -336,7 +328,11 @@ trait HtmlHelpers extends CssBindImplicits {
     key.indexOf(":") match {
       case x if x > 0 =>
         new PrefixedAttribute(
-            key.substring(0, x), key.substring(x + 1), value, rest)
+          key.substring(0, x),
+          key.substring(x + 1),
+          value,
+          rest
+        )
 
       case _ => new UnprefixedAttribute(key, value, rest)
     }
@@ -349,12 +345,12 @@ trait HtmlHelpers extends CssBindImplicits {
   def pairsToMetaData(in: List[String]): MetaData = in match {
     case Nil => Null
     case x :: xs => {
-        val rest = pairsToMetaData(xs)
-        x.charSplit('=').map(Helpers.urlDecode) match {
-          case Nil => rest
-          case x :: Nil => makeMetaData(x, "", rest)
-          case x :: y :: _ => makeMetaData(x, y, rest)
-        }
+      val rest = pairsToMetaData(xs)
+      x.charSplit('=').map(Helpers.urlDecode) match {
+        case Nil         => rest
+        case x :: Nil    => makeMetaData(x, "", rest)
+        case x :: y :: _ => makeMetaData(x, y, rest)
       }
+    }
   }
 }

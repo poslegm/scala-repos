@@ -1,9 +1,9 @@
 object SCL4150 {
   class U[T]
-  class JK extends U[Int]
+  class JK   extends U[Int]
   class B[T] extends JK
   trait Z[T]
-  trait C[T] extends Z[Int]
+  trait C[T]    extends Z[Int]
   class A[T, K] extends B[T] with C[T]
   def foo[T[_], H](t: T[H]): T[H] = exit()
 

@@ -14,11 +14,11 @@ class NamesTest {
 
   val h1 = newTermName("hai")
   val h2 = newTermName("hai")
-  val f = newTermName("fisch")
+  val f  = newTermName("fisch")
 
   val h1y = h1.toTypeName
   val h2y = newTypeName("hai")
-  val fy = newTypeName("fisch")
+  val fy  = newTypeName("fisch")
 
   val uy = newTypeName("uhu")
   val u =
@@ -56,17 +56,21 @@ class NamesTest {
     assert(lookupTypeName("uhu".toCharArray) eq uy)
 
     assertThrows[AssertionError](
-        lookupTypeName("dog".toCharArray), _ contains "not yet created")
+      lookupTypeName("dog".toCharArray),
+      _ contains "not yet created"
+    )
     val d = newTermName("dog")
     assertThrows[AssertionError](
-        lookupTypeName("dog".toCharArray), _ contains "not yet created")
+      lookupTypeName("dog".toCharArray),
+      _ contains "not yet created"
+    )
     val dy = d.toTypeName
     assert(lookupTypeName("dog".toCharArray) eq dy)
   }
 
   @Test
   def emptyName() {
-    val z = newTermName("")
+    val z  = newTermName("")
     val zy = z.toTypeName
     assertEquals(z.toString, "")
     assertEquals(zy.toString, "")

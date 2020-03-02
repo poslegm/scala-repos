@@ -12,7 +12,7 @@ class ReplaceDoWhileWithWhileIntentionTest extends ScalaIntentionTestBase {
   def familyName: String = ReplaceDoWhileWithWhileIntention.familyName
 
   def testReplaceDoWhile() {
-    val text = """
+    val text       = """
         |class X {
         |  val flag: Boolean
         |
@@ -42,7 +42,7 @@ class ReplaceDoWhileWithWhileIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testReplaceDoWhile2() {
-    val text = """
+    val text       = """
         |class X {
         |  val flag: Boolean
         |
@@ -72,7 +72,7 @@ class ReplaceDoWhileWithWhileIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testReplaceDoWhile3() {
-    val text = """
+    val text       = """
         |class X {
         |  val flag: Boolean
         |
@@ -102,7 +102,7 @@ class ReplaceDoWhileWithWhileIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testReplaceDoWhile4() {
-    val text = """
+    val text       = """
         |class X {
         |  val flag: Boolean
         |
@@ -132,7 +132,7 @@ class ReplaceDoWhileWithWhileIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testReplaceDoWhile5() {
-    val text = """
+    val text       = """
         |class X {
         |  val flag: Boolean
         |
@@ -162,7 +162,7 @@ class ReplaceDoWhileWithWhileIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testReplaceDoWhile6() {
-    val text = """
+    val text       = """
         |class X {
         |  val flag: Boolean
         |
@@ -186,7 +186,7 @@ class ReplaceDoWhileWithWhileIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testReplaceDoWhile7() {
-    val text = """
+    val text       = """
         |class X {
         |  val flag: Boolean
         |
@@ -209,7 +209,7 @@ class ReplaceDoWhileWithWhileIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testReplaceDoWhile8() {
-    val text = """
+    val text       = """
         |class X {
         |  1 match {
         |  case 1 =>
@@ -234,7 +234,7 @@ class ReplaceDoWhileWithWhileIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testReplaceDoWhile9() {
-    val text = """
+    val text       = """
         |do println("")
         |while (true)
       """

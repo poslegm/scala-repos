@@ -32,10 +32,10 @@ class MurmurHash[@specialized(Int, Long, Float, Double) T](seed: Int)
     extends (T => Unit) {
   import MurmurHash._
 
-  private var h = startHash(seed)
-  private var c = hiddenMagicA
-  private var k = hiddenMagicB
-  private var hashed = false
+  private var h         = startHash(seed)
+  private var c         = hiddenMagicA
+  private var k         = hiddenMagicB
+  private var hashed    = false
   private var hashvalue = h
 
   /** Begin a new hash using the same seed. */
@@ -92,12 +92,12 @@ object MurmurHash {
   final private val visibleMixer = 0x52dce729
   final private val hiddenMixerA = 0x7b7d159c
   final private val hiddenMixerB = 0x6bce6396
-  final private val finalMixer1 = 0x85ebca6b
-  final private val finalMixer2 = 0xc2b2ae35
+  final private val finalMixer1  = 0x85ebca6b
+  final private val finalMixer2  = 0xc2b2ae35
 
   // Arbitrary values used for hashing certain classes
   final private val seedString = 0xf7ca7fd2
-  final private val seedArray = 0x3c074a61
+  final private val seedArray  = 0x3c074a61
 
   /** The first 23 magic integers from the first stream are stored here */
   val storedMagicA =
@@ -124,9 +124,8 @@ object MurmurHash {
     *  @param magicB    a magic integer from a different stream
     *  @return          the updated hash value
     */
-  def extendHash(hash: Int, value: Int, magicA: Int, magicB: Int) = {
+  def extendHash(hash: Int, value: Int, magicA: Int, magicB: Int) =
     (hash ^ rotl(value * magicA, 11) * magicB) * 3 + visibleMixer
-  }
 
   /** Given a magic integer from the first stream, compute the next */
   def nextMagicA(magicA: Int) = magicA * 5 + hiddenMixerA
@@ -182,16 +181,14 @@ object MurmurHash {
     */
   def symmetricHash[T](xs: scala.collection.TraversableOnce[T], seed: Int) = {
     var a, b, n = 0
-    var c = 1
-    xs.seq.foreach(
-        i =>
-          {
-        val h = i.##
-        a += h
-        b ^= h
-        if (h != 0) c *= h
-        n += 1
-    })
+    var c       = 1
+    xs.seq.foreach { i =>
+      val h = i.##
+      a += h
+      b ^= h
+      if (h != 0) c *= h
+      n += 1
+    }
     var h = startHash(seed * n)
     h = extendHash(h, a, storedMagicA(0), storedMagicB(0))
     h = extendHash(h, b, storedMagicA(1), storedMagicB(1))

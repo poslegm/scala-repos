@@ -4,7 +4,7 @@ object Test {
       def a: Any = a // warn
       val b: Any = b // warn
 
-      def c: Any = this.c // warn
+      def c: Any = this.c   // warn
       def d: Any = C.this.d // warn
     }
 
@@ -24,8 +24,8 @@ object Test {
 
     // no warnings below
     new {
-      def a: Any = { println(""); a }
-      val b: Any = { println(""); b }
+      def a: Any         = { println(""); a }
+      val b: Any         = { println(""); b }
       def c(i: Int): Any = c(i - 0)
     }
 

@@ -21,7 +21,7 @@ trait EtaExpansion { self: Analyzer =>
   object etaExpansion {
     private def isMatch(vparam: ValDef, arg: Tree) = arg match {
       case Ident(name) => vparam.name == name
-      case _ => false
+      case _           => false
     }
 
     def unapply(tree: Tree): Option[(List[ValDef], Tree, List[Tree])] =
@@ -103,7 +103,9 @@ trait EtaExpansion { self: Analyzer =>
           treeCopy.TypeApply(tree, liftoutPrefix(fn), args).clearType()
         case Select(qual, name) =>
           val name = tree.symbol.name // account for renamed imports, SI-7233
-          treeCopy.Select(tree, liftout(qual, byName = false), name).clearType() setSymbol NoSymbol
+          treeCopy
+            .Select(tree, liftout(qual, byName = false), name)
+            .clearType() setSymbol NoSymbol
         case Ident(name) =>
           tree
       }
@@ -115,16 +117,18 @@ trait EtaExpansion { self: Analyzer =>
     def expand(tree: Tree, tpe: Type): Tree = tpe match {
       case mt @ MethodType(paramSyms, restpe) if !mt.isImplicit =>
         val params: List[(ValDef, Boolean)] = paramSyms.map { sym =>
-          val origTpe = sym.tpe
+          val origTpe    = sym.tpe
           val isRepeated = definitions.isRepeatedParamType(origTpe)
           // SI-4176 Don't leak A* in eta-expanded function types. See t4176b.scala
           val droppedStarTpe =
             if (settings.etaExpandKeepsStar) origTpe
             else dropIllegalStarTypes(origTpe)
-          val valDef = ValDef(Modifiers(SYNTHETIC | PARAM),
-                              sym.name.toTermName,
-                              TypeTree(droppedStarTpe),
-                              EmptyTree)
+          val valDef = ValDef(
+            Modifiers(SYNTHETIC | PARAM),
+            sym.name.toTermName,
+            TypeTree(droppedStarTpe),
+            EmptyTree
+          )
           (valDef, isRepeated)
         }
         atPos(tree.pos.makeTransparent) {

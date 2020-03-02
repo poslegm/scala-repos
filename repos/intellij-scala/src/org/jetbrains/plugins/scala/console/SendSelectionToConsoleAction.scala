@@ -31,14 +31,14 @@ class SendSelectionToConsoleAction extends AnAction {
 
     try {
       val context = e.getDataContext
-      val file = CommonDataKeys.PSI_FILE.getData(context)
+      val file    = CommonDataKeys.PSI_FILE.getData(context)
       if (file == null) {
         disable()
         return
       }
-      val editor = CommonDataKeys.EDITOR.getData(context)
+      val editor       = CommonDataKeys.EDITOR.getData(context)
       val hasSelection = editor.getSelectionModel.hasSelection
-      val console = ScalaConsoleInfo.getConsole(file.getProject)
+      val console      = ScalaConsoleInfo.getConsole(file.getProject)
 
       if (!hasSelection || console == null) {
         disable()
@@ -59,7 +59,7 @@ class SendSelectionToConsoleAction extends AnAction {
 
       file match {
         case _: ScalaFile => enable()
-        case _ => disable()
+        case _            => disable()
       }
     } catch {
       case e: Exception => disable()
@@ -68,18 +68,18 @@ class SendSelectionToConsoleAction extends AnAction {
 
   def actionPerformed(e: AnActionEvent) {
     val context = e.getDataContext
-    val editor = CommonDataKeys.EDITOR.getData(context)
+    val editor  = CommonDataKeys.EDITOR.getData(context)
     val project = CommonDataKeys.PROJECT.getData(context)
 
     if (editor == null || project == null) return
     val selectedText = editor.getSelectionModel.getSelectedText
-    val console = ScalaConsoleInfo.getConsole(project)
+    val console      = ScalaConsoleInfo.getConsole(project)
     if (console != null) sendSelection(console, selectedText)
   }
 
   def sendSelection(console: ScalaLanguageConsole, text: String) {
-    val consoleEditor = console.getConsoleEditor
-    val controller = ScalaConsoleInfo.getController(console.getProject)
+    val consoleEditor  = console.getConsoleEditor
+    val controller     = ScalaConsoleInfo.getController(console.getProject)
     val processHandler = ScalaConsoleInfo.getProcessHandler(console.getProject)
 
     if (consoleEditor != null) {
@@ -88,8 +88,8 @@ class SendSelectionToConsoleAction extends AnAction {
 
       extensions.inWriteAction {
         val range: TextRange = new TextRange(0, document.getTextLength)
-        consoleEditor.getSelectionModel.setSelection(
-            range.getStartOffset, range.getEndOffset)
+        consoleEditor.getSelectionModel
+          .setSelection(range.getStartOffset, range.getEndOffset)
         console.addToHistory(range, console.getConsoleEditor, true)
         controller.addToHistory(text)
 
@@ -99,20 +99,19 @@ class SendSelectionToConsoleAction extends AnAction {
 
       text
         .split('\n')
-        .foreach(line =>
-              {
-            if (line != "") {
-              val outputStream: OutputStream = processHandler.getProcessInput
-              try {
-                val bytes: Array[Byte] = (line + "\n").getBytes
-                outputStream.write(bytes)
-                outputStream.flush()
-              } catch {
-                case e: IOException => //ignore
-              }
+        .foreach { line =>
+          if (line != "") {
+            val outputStream: OutputStream = processHandler.getProcessInput
+            try {
+              val bytes: Array[Byte] = (line + "\n").getBytes
+              outputStream.write(bytes)
+              outputStream.flush()
+            } catch {
+              case e: IOException => //ignore
             }
-            console.textSent(line + "\n")
-        })
+          }
+          console.textSent(line + "\n")
+        }
     }
   }
 }

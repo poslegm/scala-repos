@@ -105,8 +105,9 @@ trait CSRFTokenSigner {
   * It is also not used anywhere internally to the Play code base.
   */
 @deprecated(
-    message = "This method is deprecated and will be removed in future versions.",
-    since = "2.5.0")
+  message = "This method is deprecated and will be removed in future versions.",
+  since = "2.5.0"
+)
 trait AESCrypter {
 
   /**
@@ -129,8 +130,10 @@ trait AESCrypter {
     * @return An hexadecimal encrypted string.
     */
   @deprecated(
-      message = "This method is deprecated and will be removed in future versions.",
-      since = "2.5.0")
+    message =
+      "This method is deprecated and will be removed in future versions.",
+    since = "2.5.0"
+  )
   def encryptAES(value: String): String
 
   /**
@@ -154,8 +157,10 @@ trait AESCrypter {
     * @return An hexadecimal encrypted string.
     */
   @deprecated(
-      message = "This method is deprecated and will be removed in future versions.",
-      since = "2.5.0")
+    message =
+      "This method is deprecated and will be removed in future versions.",
+    since = "2.5.0"
+  )
   def encryptAES(value: String, privateKey: String): String
 
   /**
@@ -173,8 +178,10 @@ trait AESCrypter {
     * @return The decrypted String.
     */
   @deprecated(
-      message = "This method is deprecated and will be removed in future versions.",
-      since = "2.5.0")
+    message =
+      "This method is deprecated and will be removed in future versions.",
+    since = "2.5.0"
+  )
   def decryptAES(value: String): String
 
   /**
@@ -195,8 +202,10 @@ trait AESCrypter {
     * @return The decrypted String.
     */
   @deprecated(
-      message = "This method is deprecated and will be removed in future versions.",
-      since = "2.5.0")
+    message =
+      "This method is deprecated and will be removed in future versions.",
+    since = "2.5.0"
+  )
   def decryptAES(value: String, privateKey: String): String
 }
 
@@ -207,11 +216,12 @@ trait AESCrypter {
   * @param throwable The Throwable associated with the exception.
   */
 class CryptoException(
-    val message: String = null, val throwable: Throwable = null)
-    extends RuntimeException(message, throwable)
+    val message: String = null,
+    val throwable: Throwable = null
+) extends RuntimeException(message, throwable)
 
 @Singleton
-class CookieSignerProvider @Inject()(config: CryptoConfig)
+class CookieSignerProvider @Inject() (config: CryptoConfig)
     extends Provider[CookieSigner] {
   lazy val get: CookieSigner = new HMACSHA1CookieSigner(config)
 }
@@ -219,7 +229,7 @@ class CookieSignerProvider @Inject()(config: CryptoConfig)
 /**
   * Uses an HMAC-SHA1 for signing cookies.
   */
-class HMACSHA1CookieSigner @Inject()(config: CryptoConfig)
+class HMACSHA1CookieSigner @Inject() (config: CryptoConfig)
     extends CookieSigner {
 
   /**
@@ -233,8 +243,9 @@ class HMACSHA1CookieSigner @Inject()(config: CryptoConfig)
     * @return A hexadecimal encoded signature.
     */
   def sign(message: String, key: Array[Byte]): String = {
-    val mac = config.provider.fold(Mac.getInstance("HmacSHA1"))(
-        p => Mac.getInstance("HmacSHA1", p))
+    val mac = config.provider.fold(Mac.getInstance("HmacSHA1"))(p =>
+      Mac.getInstance("HmacSHA1", p)
+    )
     mac.init(new SecretKeySpec(key, "HmacSHA1"))
     Codecs.toHexString(mac.doFinal(message.getBytes("utf-8")))
   }
@@ -248,22 +259,21 @@ class HMACSHA1CookieSigner @Inject()(config: CryptoConfig)
     * @param message The message to sign.
     * @return A hexadecimal encoded signature.
     */
-  def sign(message: String): String = {
+  def sign(message: String): String =
     sign(message, config.secret.getBytes("utf-8"))
-  }
 }
 
 @Singleton
-class CSRFTokenSignerProvider @Inject()(signer: CookieSigner)
+class CSRFTokenSignerProvider @Inject() (signer: CookieSigner)
     extends Provider[CSRFTokenSigner] {
-  lazy val get: CSRFTokenSigner = new DefaultCSRFTokenSigner(
-      signer, Clock.systemUTC())
+  lazy val get: CSRFTokenSigner =
+    new DefaultCSRFTokenSigner(signer, Clock.systemUTC())
 }
 
 /**
   * This class is used for generating random tokens for CSRF.
   */
-class DefaultCSRFTokenSigner @Inject()(signer: CookieSigner, clock: Clock)
+class DefaultCSRFTokenSigner @Inject() (signer: CookieSigner, clock: Clock)
     extends CSRFTokenSigner {
 
   // If you're running on an older version of Windows, you may be using
@@ -283,7 +293,7 @@ class DefaultCSRFTokenSigner @Inject()(signer: CookieSigner, clock: Clock)
     * @return The signed token
     */
   def signToken(token: String): String = {
-    val nonce = clock.millis()
+    val nonce  = clock.millis()
     val joined = nonce + "-" + token
     signer.sign(joined) + "-" + joined
   }
@@ -294,14 +304,13 @@ class DefaultCSRFTokenSigner @Inject()(signer: CookieSigner, clock: Clock)
     * @param token The signed token to extract.
     * @return The verified raw token, or None if the token isn't valid.
     */
-  def extractSignedToken(token: String): Option[String] = {
+  def extractSignedToken(token: String): Option[String] =
     token.split("-", 3) match {
       case Array(signature, nonce, raw)
           if constantTimeEquals(signature, signer.sign(nonce + "-" + raw)) =>
         Some(raw)
       case _ => None
     }
-  }
 
   /**
     * Generate a cryptographically secure token
@@ -320,12 +329,11 @@ class DefaultCSRFTokenSigner @Inject()(signer: CookieSigner, clock: Clock)
   /**
     * Compare two signed tokens
     */
-  def compareSignedTokens(tokenA: String, tokenB: String): Boolean = {
+  def compareSignedTokens(tokenA: String, tokenB: String): Boolean =
     (for {
       rawA <- extractSignedToken(tokenA)
       rawB <- extractSignedToken(tokenB)
     } yield CSRFTokenSigner.constantTimeEquals(rawA, rawB)).getOrElse(false)
-  }
 
   /**
     * Constant time equals method.
@@ -345,7 +353,7 @@ object CSRFTokenSigner {
     * Given a length that both Strings are equal to, this method will always run in constant time.  This prevents
     * timing attacks.
     */
-  def constantTimeEquals(a: String, b: String): Boolean = {
+  def constantTimeEquals(a: String, b: String): Boolean =
     if (a.length != b.length) {
       false
     } else {
@@ -355,11 +363,10 @@ object CSRFTokenSigner {
       }
       equal == 0
     }
-  }
 }
 
 @Singleton
-class AESCrypterProvider @Inject()(config: CryptoConfig)
+class AESCrypterProvider @Inject() (config: CryptoConfig)
     extends Provider[AESCrypter] {
   lazy val get = new AESCTRCrypter(config)
 }
@@ -367,16 +374,15 @@ class AESCrypterProvider @Inject()(config: CryptoConfig)
 /**
   * Symmetric encryption using AES/CTR/NoPadding.
   */
-class AESCTRCrypter @Inject()(config: CryptoConfig) extends AESCrypter {
+class AESCTRCrypter @Inject() (config: CryptoConfig) extends AESCrypter {
 
-  def encryptAES(value: String): String = {
+  def encryptAES(value: String): String =
     encryptAES(value, config.secret)
-  }
 
   @deprecated("This method will be removed in future versions ", "2.5.0")
   def encryptAES(value: String, privateKey: String): String = {
     val skeySpec = secretKeyWithSha256(privateKey, "AES")
-    val cipher = getCipherWithConfiguredProvider(config.aesTransformation)
+    val cipher   = getCipherWithConfiguredProvider(config.aesTransformation)
     cipher.init(Cipher.ENCRYPT_MODE, skeySpec)
     val encryptedValue = cipher.doFinal(value.getBytes("utf-8"))
     // return a formatted, versioned encrypted string
@@ -384,7 +390,7 @@ class AESCTRCrypter @Inject()(config: CryptoConfig) extends AESCrypter {
     // '1-*' represents an encrypted payload without an IV
     Option(cipher.getIV()) match {
       case Some(iv) => s"2-${Base64.encodeBase64String(iv ++ encryptedValue)}"
-      case None => s"1-${Base64.encodeBase64String(encryptedValue)}"
+      case None     => s"1-${Base64.encodeBase64String(encryptedValue)}"
     }
   }
 
@@ -396,73 +402,71 @@ class AESCTRCrypter @Inject()(config: CryptoConfig) extends AESCrypter {
     messageDigest.update(privateKey.getBytes("utf-8"))
     // max allowed length in bits / (8 bits to a byte)
     val maxAllowedKeyLength = Cipher.getMaxAllowedKeyLength(algorithm) / 8
-    val raw = messageDigest.digest().slice(0, maxAllowedKeyLength)
+    val raw                 = messageDigest.digest().slice(0, maxAllowedKeyLength)
     new SecretKeySpec(raw, algorithm)
   }
 
   /**
     * Gets a Cipher with a configured provider, and a configurable AES transformation method.
     */
-  private def getCipherWithConfiguredProvider(transformation: String): Cipher = {
+  private def getCipherWithConfiguredProvider(transformation: String): Cipher =
     config.provider.fold(Cipher.getInstance(transformation)) { p =>
       Cipher.getInstance(transformation, p)
     }
-  }
 
   @deprecated("This method will be removed in future versions ", "2.5.0")
-  def decryptAES(value: String): String = {
+  def decryptAES(value: String): String =
     decryptAES(value, config.secret)
-  }
 
   @deprecated("This method will be removed in future versions ", "2.5.0")
   def decryptAES(value: String, privateKey: String): String = {
     val seperator = "-"
-    val sepIndex = value.indexOf(seperator)
+    val sepIndex  = value.indexOf(seperator)
     if (sepIndex < 0) {
       decryptAESVersion0(value, privateKey)
     } else {
       val version = value.substring(0, sepIndex)
-      val data = value.substring(sepIndex + 1, value.length())
+      val data    = value.substring(sepIndex + 1, value.length())
       version match {
         case "1" => {
-            decryptAESVersion1(data, privateKey)
-          }
+          decryptAESVersion1(data, privateKey)
+        }
         case "2" => {
-            decryptAESVersion2(data, privateKey)
-          }
+          decryptAESVersion2(data, privateKey)
+        }
         case _ => {
-            throw new CryptoException("Unknown version")
-          }
+          throw new CryptoException("Unknown version")
+        }
       }
     }
   }
 
   /** Backward compatible AES ECB mode decryption support. */
   private def decryptAESVersion0(value: String, privateKey: String): String = {
-    val raw = privateKey.substring(0, 16).getBytes("utf-8")
+    val raw      = privateKey.substring(0, 16).getBytes("utf-8")
     val skeySpec = new SecretKeySpec(raw, "AES")
-    val cipher = getCipherWithConfiguredProvider("AES")
+    val cipher   = getCipherWithConfiguredProvider("AES")
     cipher.init(Cipher.DECRYPT_MODE, skeySpec)
     new String(cipher.doFinal(Codecs.hexStringToByte(value)))
   }
 
   /** V1 decryption algorithm (No IV). */
   private def decryptAESVersion1(value: String, privateKey: String): String = {
-    val data = Base64.decodeBase64(value)
+    val data     = Base64.decodeBase64(value)
     val skeySpec = secretKeyWithSha256(privateKey, "AES")
-    val cipher = getCipherWithConfiguredProvider(config.aesTransformation)
+    val cipher   = getCipherWithConfiguredProvider(config.aesTransformation)
     cipher.init(Cipher.DECRYPT_MODE, skeySpec)
     new String(cipher.doFinal(data), "utf-8")
   }
 
   /** V2 decryption algorithm (IV present). */
   private def decryptAESVersion2(value: String, privateKey: String): String = {
-    val data = Base64.decodeBase64(value)
-    val skeySpec = secretKeyWithSha256(privateKey, "AES")
-    val cipher = getCipherWithConfiguredProvider(config.aesTransformation)
+    val data      = Base64.decodeBase64(value)
+    val skeySpec  = secretKeyWithSha256(privateKey, "AES")
+    val cipher    = getCipherWithConfiguredProvider(config.aesTransformation)
     val blockSize = cipher.getBlockSize
-    val iv = data.slice(0, blockSize)
-    val payload = data.slice(blockSize, data.size)
+    val iv        = data.slice(0, blockSize)
+    val payload   = data.slice(blockSize, data.size)
     cipher.init(Cipher.DECRYPT_MODE, skeySpec, new IvParameterSpec(iv))
     new String(cipher.doFinal(payload), "utf-8")
   }
@@ -479,13 +483,16 @@ case class CryptoConfig(
     secret: String,
     provider: Option[String] = None,
     @deprecated(
-        "This field is deprecated and will be removed in future versions",
-        "2.5.0") aesTransformation: String = "AES/CTR/NoPadding")
+      "This field is deprecated and will be removed in future versions",
+      "2.5.0"
+    ) aesTransformation: String = "AES/CTR/NoPadding"
+)
 
 @Singleton
-class CryptoConfigParser @Inject()(
-    environment: Environment, configuration: Configuration)
-    extends Provider[CryptoConfig] {
+class CryptoConfigParser @Inject() (
+    environment: Environment,
+    configuration: Configuration
+) extends Provider[CryptoConfig] {
 
   lazy val get = {
 
@@ -517,35 +524,42 @@ class CryptoConfigParser @Inject()(
      * To achieve 4, using the location of application.conf to generate the secret should ensure this.
      */
     val secret = config.getDeprecated[Option[String]](
-        "play.crypto.secret", "application.secret") match {
+      "play.crypto.secret",
+      "application.secret"
+    ) match {
       case (Some("changeme") | Some(Blank()) | None)
           if environment.mode == Mode.Prod =>
         logger.error(
-            "The application secret has not been set, and we are in prod mode. Your application is not secure.")
+          "The application secret has not been set, and we are in prod mode. Your application is not secure."
+        )
         logger.error(
-            "To set the application secret, please read http://playframework.com/documentation/latest/ApplicationSecret")
+          "To set the application secret, please read http://playframework.com/documentation/latest/ApplicationSecret"
+        )
         throw new PlayException(
-            "Configuration error", "Application secret not set")
+          "Configuration error",
+          "Application secret not set"
+        )
       case Some("changeme") | Some(Blank()) | None =>
         val appConfLocation = environment.resource("application.conf")
         // Try to generate a stable secret. Security is not the issue here, since this is just for tests and dev mode.
         val secret = appConfLocation.fold(
-            // No application.conf?  Oh well, just use something hard coded.
-            "she sells sea shells on the sea shore"
+          // No application.conf?  Oh well, just use something hard coded.
+          "she sells sea shells on the sea shore"
         )(_.toString)
         val md5Secret = DigestUtils.md5Hex(secret)
         logger.debug(
-            s"Generated dev mode secret $md5Secret for app at ${appConfLocation
-          .getOrElse("unknown location")}")
+          s"Generated dev mode secret $md5Secret for app at ${appConfLocation
+            .getOrElse("unknown location")}"
+        )
         md5Secret
       case Some(s) => s
     }
 
-    val provider = config.get[Option[String]]("play.crypto.provider")
+    val provider       = config.get[Option[String]]("play.crypto.provider")
     val transformation = config.get[String]("play.crypto.aes.transformation")
 
     CryptoConfig(secret, provider, transformation)
   }
-  private val Blank = """\s*""".r
+  private val Blank  = """\s*""".r
   private val logger = Logger(classOf[CryptoConfigParser])
 }

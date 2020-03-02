@@ -17,7 +17,8 @@
 package kafka.javaapi
 
 class TopicMetadataResponse(
-    private val underlying: kafka.api.TopicMetadataResponse) {
+    private val underlying: kafka.api.TopicMetadataResponse
+) {
   def sizeInBytes: Int = underlying.sizeInBytes
 
   def topicsMetadata: java.util.List[kafka.javaapi.TopicMetadata] = {

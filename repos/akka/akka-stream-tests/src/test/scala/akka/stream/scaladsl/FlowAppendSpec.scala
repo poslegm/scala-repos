@@ -13,7 +13,7 @@ import akka.testkit.AkkaSpec
 
 class FlowAppendSpec extends AkkaSpec with River {
 
-  val settings = ActorMaterializerSettings(system)
+  val settings              = ActorMaterializerSettings(system)
   implicit val materializer = ActorMaterializer(settings)
 
   "Flow" should {
@@ -41,20 +41,19 @@ class FlowAppendSpec extends AkkaSpec with River {
 
 trait River { self: Matchers ⇒
 
-  val elements = 1 to 10
+  val elements  = 1 to 10
   val otherFlow = Flow[Int].map(_.toString)
 
-  def riverOf[T](flowConstructor: Subscriber[T] ⇒ Unit)(
-      implicit system: ActorSystem) = {
+  def riverOf[T](
+      flowConstructor: Subscriber[T] ⇒ Unit
+  )(implicit system: ActorSystem) = {
     val subscriber = TestSubscriber.manualProbe[T]()
 
     flowConstructor(subscriber)
 
     val subscription = subscriber.expectSubscription()
     subscription.request(elements.size)
-    elements.foreach { el ⇒
-      subscriber.expectNext() shouldBe el.toString
-    }
+    elements.foreach(el ⇒ subscriber.expectNext() shouldBe el.toString)
     subscription.request(1)
     subscriber.expectComplete()
   }

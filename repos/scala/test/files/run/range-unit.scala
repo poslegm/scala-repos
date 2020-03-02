@@ -4,9 +4,9 @@ object Test {
   // ha ha, I always forget math.abs(Int.MinValue) == Int.MinValue
   val numbers =
     (
-        ((-3 to 3) ++ List(17, 127, Int.MaxValue, Int.MinValue + 1)).distinct
-          .sortBy(n => (math.abs(n), n))
-    ) :+ Int.MinValue
+      ((-3 to 3) ++ List(17, 127, Int.MaxValue, Int.MinValue + 1)).distinct
+        .sortBy(n => (math.abs(n), n))
+      ) :+ Int.MinValue
 
   // reducing output a little
   val endpoints = numbers filterNot Set(-3, -2, 2, 17, 127)
@@ -26,13 +26,12 @@ object Test {
     }
   }
 
-  def run[T](body: => Range): List[Any] = {
+  def run[T](body: => Range): List[Any] =
     try {
       val r = body;
       if (r.isEmpty) List(r.length)
       else List(num(r.length), num(r.head), num(r.last))
     } catch { case e: IllegalArgumentException => List("---\n    " + e) }
-  }
 
   def runGroup(label: String, f: (Int, Int, Int) => Range) {
     println(">>> " + label + " <<<\n")

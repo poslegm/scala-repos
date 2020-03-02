@@ -9,8 +9,8 @@ case class Evt(data: String)
 
 case class ExampleState(events: List[String] = Nil) {
   def updated(evt: Evt): ExampleState = copy(evt.data :: events)
-  def size: Int = events.length
-  override def toString: String = events.reverse.toString
+  def size: Int                       = events.length
+  override def toString: String       = events.reverse.toString
 }
 
 class ExamplePersistentActor extends PersistentActor {
@@ -25,7 +25,7 @@ class ExamplePersistentActor extends PersistentActor {
     state.size
 
   val receiveRecover: Receive = {
-    case evt: Evt => updateState(evt)
+    case evt: Evt                                 => updateState(evt)
     case SnapshotOffer(_, snapshot: ExampleState) => state = snapshot
   }
 
@@ -36,7 +36,7 @@ class ExamplePersistentActor extends PersistentActor {
         updateState(event)
         context.system.eventStream.publish(event)
       }
-    case "snap" => saveSnapshot(state)
+    case "snap"  => saveSnapshot(state)
     case "print" => println(state)
   }
 }

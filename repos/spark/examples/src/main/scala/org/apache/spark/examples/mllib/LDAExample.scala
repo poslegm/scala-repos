@@ -23,8 +23,18 @@ import scopt.OptionParser
 
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, RegexTokenizer, StopWordsRemover}
-import org.apache.spark.mllib.clustering.{DistributedLDAModel, EMLDAOptimizer, LDA, OnlineLDAOptimizer}
+import org.apache.spark.ml.feature.{
+  CountVectorizer,
+  CountVectorizerModel,
+  RegexTokenizer,
+  StopWordsRemover
+}
+import org.apache.spark.mllib.clustering.{
+  DistributedLDAModel,
+  EMLDAOptimizer,
+  LDA,
+  OnlineLDAOptimizer
+}
 import org.apache.spark.mllib.linalg.Vector
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SQLContext}
@@ -38,17 +48,18 @@ import org.apache.spark.sql.{Row, SQLContext}
   */
 object LDAExample {
 
-  private case class Params(input: Seq[String] = Seq.empty,
-                            k: Int = 20,
-                            maxIterations: Int = 10,
-                            docConcentration: Double = -1,
-                            topicConcentration: Double = -1,
-                            vocabSize: Int = 10000,
-                            stopwordFile: String = "",
-                            algorithm: String = "em",
-                            checkpointDir: Option[String] = None,
-                            checkpointInterval: Int = 10)
-      extends AbstractParams[Params]
+  private case class Params(
+      input: Seq[String] = Seq.empty,
+      k: Int = 20,
+      maxIterations: Int = 10,
+      docConcentration: Double = -1,
+      topicConcentration: Double = -1,
+      vocabSize: Int = 10000,
+      stopwordFile: String = "",
+      algorithm: String = "em",
+      checkpointDir: Option[String] = None,
+      checkpointInterval: Int = 10
+  ) extends AbstractParams[Params]
 
   def main(args: Array[String]) {
     val defaultParams = Params()
@@ -60,40 +71,57 @@ object LDAExample {
         .action((x, c) => c.copy(k = x))
       opt[Int]("maxIterations")
         .text(
-            s"number of iterations of learning. default: ${defaultParams.maxIterations}")
+          s"number of iterations of learning. default: ${defaultParams.maxIterations}"
+        )
         .action((x, c) => c.copy(maxIterations = x))
       opt[Double]("docConcentration")
-        .text(s"amount of topic smoothing to use (> 1.0) (-1=auto)." +
-            s"  default: ${defaultParams.docConcentration}")
+        .text(
+          s"amount of topic smoothing to use (> 1.0) (-1=auto)." +
+            s"  default: ${defaultParams.docConcentration}"
+        )
         .action((x, c) => c.copy(docConcentration = x))
       opt[Double]("topicConcentration")
-        .text(s"amount of term (word) smoothing to use (> 1.0) (-1=auto)." +
-            s"  default: ${defaultParams.topicConcentration}")
+        .text(
+          s"amount of term (word) smoothing to use (> 1.0) (-1=auto)." +
+            s"  default: ${defaultParams.topicConcentration}"
+        )
         .action((x, c) => c.copy(topicConcentration = x))
       opt[Int]("vocabSize")
-        .text(s"number of distinct word types to use, chosen by frequency. (-1=all)" +
-            s"  default: ${defaultParams.vocabSize}")
+        .text(
+          s"number of distinct word types to use, chosen by frequency. (-1=all)" +
+            s"  default: ${defaultParams.vocabSize}"
+        )
         .action((x, c) => c.copy(vocabSize = x))
       opt[String]("stopwordFile")
-        .text(s"filepath for a list of stopwords. Note: This must fit on a single machine." +
-            s"  default: ${defaultParams.stopwordFile}")
+        .text(
+          s"filepath for a list of stopwords. Note: This must fit on a single machine." +
+            s"  default: ${defaultParams.stopwordFile}"
+        )
         .action((x, c) => c.copy(stopwordFile = x))
       opt[String]("algorithm")
-        .text(s"inference algorithm to use. em and online are supported." +
-            s" default: ${defaultParams.algorithm}")
+        .text(
+          s"inference algorithm to use. em and online are supported." +
+            s" default: ${defaultParams.algorithm}"
+        )
         .action((x, c) => c.copy(algorithm = x))
       opt[String]("checkpointDir")
-        .text(s"Directory for checkpointing intermediate results." +
+        .text(
+          s"Directory for checkpointing intermediate results." +
             s"  Checkpointing helps with recovery and eliminates temporary shuffle files on disk." +
-            s"  default: ${defaultParams.checkpointDir}")
+            s"  default: ${defaultParams.checkpointDir}"
+        )
         .action((x, c) => c.copy(checkpointDir = Some(x)))
       opt[Int]("checkpointInterval")
-        .text(s"Iterations between each checkpoint.  Only used if checkpointDir is set." +
-            s" default: ${defaultParams.checkpointInterval}")
+        .text(
+          s"Iterations between each checkpoint.  Only used if checkpointDir is set." +
+            s" default: ${defaultParams.checkpointInterval}"
+        )
         .action((x, c) => c.copy(checkpointInterval = x))
       arg[String]("<input>...")
-        .text("input paths (directories) to plain text corpora." +
-            "  Each text file line should hold 1 document.")
+        .text(
+          "input paths (directories) to plain text corpora." +
+            "  Each text file line should hold 1 document."
+        )
         .unbounded()
         .required()
         .action((x, c) => c.copy(input = c.input :+ x))
@@ -101,9 +129,7 @@ object LDAExample {
 
     parser
       .parse(args, defaultParams)
-      .map { params =>
-        run(params)
-      }
+      .map(params => run(params))
       .getOrElse {
         parser.showUsageAsError
         sys.exit(1)
@@ -112,17 +138,17 @@ object LDAExample {
 
   private def run(params: Params) {
     val conf = new SparkConf().setAppName(s"LDAExample with $params")
-    val sc = new SparkContext(conf)
+    val sc   = new SparkContext(conf)
 
     Logger.getRootLogger.setLevel(Level.WARN)
 
     // Load documents, and prepare them for LDA.
     val preprocessStart = System.nanoTime()
-    val (corpus, vocabArray, actualNumTokens) = preprocess(
-        sc, params.input, params.vocabSize, params.stopwordFile)
+    val (corpus, vocabArray, actualNumTokens) =
+      preprocess(sc, params.input, params.vocabSize, params.stopwordFile)
     corpus.cache()
-    val actualCorpusSize = corpus.count()
-    val actualVocabSize = vocabArray.length
+    val actualCorpusSize  = corpus.count()
+    val actualVocabSize   = vocabArray.length
     val preprocessElapsed = (System.nanoTime() - preprocessStart) / 1e9
 
     println()
@@ -144,7 +170,8 @@ object LDAExample {
           .setMiniBatchFraction(0.05 + 1.0 / actualCorpusSize)
       case _ =>
         throw new IllegalArgumentException(
-            s"Only em, online are supported but got ${params.algorithm}.")
+          s"Only em, online are supported but got ${params.algorithm}."
+        )
     }
 
     lda
@@ -158,8 +185,8 @@ object LDAExample {
       sc.setCheckpointDir(params.checkpointDir.get)
     }
     val startTime = System.nanoTime()
-    val ldaModel = lda.run(corpus)
-    val elapsed = (System.nanoTime() - startTime) / 1e9
+    val ldaModel  = lda.run(corpus)
+    val elapsed   = (System.nanoTime() - startTime) / 1e9
 
     println(s"Finished training LDA model.  Summary:")
     println(s"\t Training time: $elapsed sec")
@@ -201,7 +228,8 @@ object LDAExample {
       sc: SparkContext,
       paths: Seq[String],
       vocabSize: Int,
-      stopwordFile: String): (RDD[(Long, Vector)], Array[String], Long) = {
+      stopwordFile: String
+  ): (RDD[(Long, Vector)], Array[String], Long) = {
 
     val sqlContext = SQLContext.getOrCreate(sc)
     import sqlContext.implicits._
@@ -223,7 +251,8 @@ object LDAExample {
     val stopWordsRemover =
       new StopWordsRemover().setInputCol("rawTokens").setOutputCol("tokens")
     stopWordsRemover.setStopWords(
-        stopWordsRemover.getStopWords ++ customizedStopWords)
+      stopWordsRemover.getStopWords ++ customizedStopWords
+    )
     val countVectorizer = new CountVectorizer()
       .setVocabSize(vocabSize)
       .setInputCol("tokens")
@@ -241,9 +270,14 @@ object LDAExample {
       .zipWithIndex()
       .map(_.swap)
 
-      (documents,
-       model.stages(2).asInstanceOf[CountVectorizerModel].vocabulary, // vocabulary
-       documents.map(_._2.numActives).sum().toLong) // total token count
+    (
+      documents,
+      model
+        .stages(2)
+        .asInstanceOf[CountVectorizerModel]
+        .vocabulary, // vocabulary
+      documents.map(_._2.numActives).sum().toLong
+    ) // total token count
   }
 }
 // scalastyle:on println

@@ -11,7 +11,7 @@ import scala.language.implicitConversions
   *  lines of text entered, types and terms defined, etc.
   */
 package object session {
-  type JIterator[T] = java.util.Iterator[T]
+  type JIterator[T]     = java.util.Iterator[T]
   type JListIterator[T] = java.util.ListIterator[T]
 
   private[interpreter] implicit def charSequenceFix(x: CharSequence): String =

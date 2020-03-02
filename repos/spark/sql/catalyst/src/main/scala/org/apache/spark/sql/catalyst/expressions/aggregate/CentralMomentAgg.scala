@@ -50,16 +50,16 @@ abstract class CentralMomentAgg(child: Expression)
     */
   protected def momentOrder: Int
 
-  override def children: Seq[Expression] = Seq(child)
-  override def nullable: Boolean = true
-  override def dataType: DataType = DoubleType
+  override def children: Seq[Expression]         = Seq(child)
+  override def nullable: Boolean                 = true
+  override def dataType: DataType                = DoubleType
   override def inputTypes: Seq[AbstractDataType] = Seq(DoubleType)
 
-  protected val n = AttributeReference("n", DoubleType, nullable = false)()
+  protected val n   = AttributeReference("n", DoubleType, nullable = false)()
   protected val avg = AttributeReference("avg", DoubleType, nullable = false)()
-  protected val m2 = AttributeReference("m2", DoubleType, nullable = false)()
-  protected val m3 = AttributeReference("m3", DoubleType, nullable = false)()
-  protected val m4 = AttributeReference("m4", DoubleType, nullable = false)()
+  protected val m2  = AttributeReference("m2", DoubleType, nullable = false)()
+  protected val m3  = AttributeReference("m3", DoubleType, nullable = false)()
+  protected val m4  = AttributeReference("m4", DoubleType, nullable = false)()
 
   private def trimHigherOrder[T](expressions: Seq[T]) =
     expressions.take(momentOrder + 1)
@@ -70,13 +70,13 @@ abstract class CentralMomentAgg(child: Expression)
     Array.fill(momentOrder + 1)(Literal(0.0))
 
   override val updateExpressions: Seq[Expression] = {
-    val newN = n + Literal(1.0)
-    val delta = child - avg
+    val newN   = n + Literal(1.0)
+    val delta  = child - avg
     val deltaN = delta / newN
     val newAvg = avg + deltaN
-    val newM2 = m2 + delta * (delta - deltaN)
+    val newM2  = m2 + delta * (delta - deltaN)
 
-    val delta2 = delta * delta
+    val delta2  = delta * delta
     val deltaN2 = deltaN * deltaN
     val newM3 =
       if (momentOrder >= 3) {
@@ -87,27 +87,28 @@ abstract class CentralMomentAgg(child: Expression)
     val newM4 =
       if (momentOrder >= 4) {
         m4 - Literal(4.0) * deltaN * newM3 - Literal(6.0) * deltaN2 * newM2 +
-        delta * (delta * delta2 - deltaN * deltaN2)
+          delta * (delta * delta2 - deltaN * deltaN2)
       } else {
         Literal(0.0)
       }
 
     trimHigherOrder(
-        Seq(
-            If(IsNull(child), n, newN),
-            If(IsNull(child), avg, newAvg),
-            If(IsNull(child), m2, newM2),
-            If(IsNull(child), m3, newM3),
-            If(IsNull(child), m4, newM4)
-        ))
+      Seq(
+        If(IsNull(child), n, newN),
+        If(IsNull(child), avg, newAvg),
+        If(IsNull(child), m2, newM2),
+        If(IsNull(child), m3, newM3),
+        If(IsNull(child), m4, newM4)
+      )
+    )
   }
 
   override val mergeExpressions: Seq[Expression] = {
 
-    val n1 = n.left
-    val n2 = n.right
-    val newN = n1 + n2
-    val delta = avg.right - avg.left
+    val n1     = n.left
+    val n2     = n.right
+    val newN   = n1 + n2
+    val delta  = avg.right - avg.left
     val deltaN = If(newN === Literal(0.0), Literal(0.0), delta / newN)
     val newAvg = avg.left + deltaN * n2
 
@@ -118,7 +119,7 @@ abstract class CentralMomentAgg(child: Expression)
     val newM3 =
       if (momentOrder >= 3) {
         m3.left + m3.right + deltaN * deltaN * delta * n1 * n2 * (n1 - n2) +
-        Literal(3.0) * deltaN * (n1 * m2.right - n2 * m2.left)
+          Literal(3.0) * deltaN * (n1 * m2.right - n2 * m2.left)
       } else {
         Literal(0.0)
       }
@@ -126,9 +127,9 @@ abstract class CentralMomentAgg(child: Expression)
     val newM4 =
       if (momentOrder >= 4) {
         m4.left + m4.right + deltaN * deltaN * deltaN * delta * n1 * n2 *
-        (n1 * n1 - n1 * n2 + n2 * n2) + Literal(6.0) * deltaN * deltaN *
-        (n1 * n1 * m2.right + n2 * n2 * m2.left) + Literal(4.0) * deltaN *
-        (n1 * m3.right - n2 * m3.left)
+          (n1 * n1 - n1 * n2 + n2 * n2) + Literal(6.0) * deltaN * deltaN *
+          (n1 * n1 * m2.right + n2 * n2 * m2.left) + Literal(4.0) * deltaN *
+          (n1 * m3.right - n2 * m3.left)
       } else {
         Literal(0.0)
       }
@@ -155,11 +156,11 @@ case class StddevSamp(child: Expression) extends CentralMomentAgg(child) {
   override protected def momentOrder = 2
 
   override val evaluateExpression: Expression = {
-    If(n === Literal(0.0),
-       Literal.create(null, DoubleType),
-       If(n === Literal(1.0),
-          Literal(Double.NaN),
-          Sqrt(m2 / (n - Literal(1.0)))))
+    If(
+      n === Literal(0.0),
+      Literal.create(null, DoubleType),
+      If(n === Literal(1.0), Literal(Double.NaN), Sqrt(m2 / (n - Literal(1.0))))
+    )
   }
 
   override def prettyName: String = "stddev_samp"
@@ -183,9 +184,11 @@ case class VarianceSamp(child: Expression) extends CentralMomentAgg(child) {
   override protected def momentOrder = 2
 
   override val evaluateExpression: Expression = {
-    If(n === Literal(0.0),
-       Literal.create(null, DoubleType),
-       If(n === Literal(1.0), Literal(Double.NaN), m2 / (n - Literal(1.0))))
+    If(
+      n === Literal(0.0),
+      Literal.create(null, DoubleType),
+      If(n === Literal(1.0), Literal(Double.NaN), m2 / (n - Literal(1.0)))
+    )
   }
 
   override def prettyName: String = "var_samp"
@@ -198,11 +201,15 @@ case class Skewness(child: Expression) extends CentralMomentAgg(child) {
   override protected def momentOrder = 3
 
   override val evaluateExpression: Expression = {
-    If(n === Literal(0.0),
-       Literal.create(null, DoubleType),
-       If(m2 === Literal(0.0),
-          Literal(Double.NaN),
-          Sqrt(n) * m3 / Sqrt(m2 * m2 * m2)))
+    If(
+      n === Literal(0.0),
+      Literal.create(null, DoubleType),
+      If(
+        m2 === Literal(0.0),
+        Literal(Double.NaN),
+        Sqrt(n) * m3 / Sqrt(m2 * m2 * m2)
+      )
+    )
   }
 }
 
@@ -211,11 +218,15 @@ case class Kurtosis(child: Expression) extends CentralMomentAgg(child) {
   override protected def momentOrder = 4
 
   override val evaluateExpression: Expression = {
-    If(n === Literal(0.0),
-       Literal.create(null, DoubleType),
-       If(m2 === Literal(0.0),
-          Literal(Double.NaN),
-          n * m4 / (m2 * m2) - Literal(3.0)))
+    If(
+      n === Literal(0.0),
+      Literal.create(null, DoubleType),
+      If(
+        m2 === Literal(0.0),
+        Literal(Double.NaN),
+        n * m4 / (m2 * m2) - Literal(3.0)
+      )
+    )
   }
 
   override def prettyName: String = "kurtosis"

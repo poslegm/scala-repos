@@ -15,12 +15,12 @@ trait CollectionsOnSynchronizedMapTest extends CollectionsOnMapsTest {
 
   def originalFactory: MapFactory
 
-  def factory: MapFactory = {
+  def factory: MapFactory =
     new MapFactory {
       override def implementationName: String =
         s"synchronizedMap(${originalFactory.implementationName})"
 
-      def empty[K : ClassTag, V : ClassTag]: ju.Map[K, V] =
+      def empty[K: ClassTag, V: ClassTag]: ju.Map[K, V] =
         ju.Collections.synchronizedMap(originalFactory.empty[K, V])
 
       override def allowsNullKeys: Boolean =
@@ -29,7 +29,6 @@ trait CollectionsOnSynchronizedMapTest extends CollectionsOnMapsTest {
       override def allowsNullValues: Boolean =
         originalFactory.allowsNullValues
     }
-  }
 }
 
 trait CollectionsOnSynchronizedSortedMapTest
@@ -37,12 +36,12 @@ trait CollectionsOnSynchronizedSortedMapTest
 
   def originalFactory: SortedMapFactory
 
-  def factory: SortedMapFactory = {
+  def factory: SortedMapFactory =
     new SortedMapFactory {
       override def implementationName: String =
         s"synchronizedSortedMap(${originalFactory.implementationName})"
 
-      def empty[K : ClassTag, V : ClassTag]: ju.SortedMap[K, V] =
+      def empty[K: ClassTag, V: ClassTag]: ju.SortedMap[K, V] =
         ju.Collections.synchronizedSortedMap(originalFactory.empty[K, V])
 
       override def allowsNullKeys: Boolean =
@@ -51,7 +50,6 @@ trait CollectionsOnSynchronizedSortedMapTest
       override def allowsNullValues: Boolean =
         originalFactory.allowsNullValues
     }
-  }
 }
 
 class CollectionsOnSynchronizedMapOnHashMapTest

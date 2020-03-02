@@ -22,10 +22,9 @@ class FactorialBackend extends Actor with ActorLogging {
   }
 
   def factorial(n: Int): BigInt = {
-    @tailrec def factorialAcc(acc: BigInt, n: Int): BigInt = {
+    @tailrec def factorialAcc(acc: BigInt, n: Int): BigInt =
       if (n <= 1) acc
       else factorialAcc(acc * n, n - 1)
-    }
     factorialAcc(BigInt(1), n)
   }
 }
@@ -37,8 +36,7 @@ object FactorialBackend {
     val port = if (args.isEmpty) "0" else args(0)
     val config = ConfigFactory
       .parseString(s"akka.remote.netty.tcp.port=$port")
-      .withFallback(
-          ConfigFactory.parseString("akka.cluster.roles = [backend]"))
+      .withFallback(ConfigFactory.parseString("akka.cluster.roles = [backend]"))
       .withFallback(ConfigFactory.load("factorial"))
 
     val system = ActorSystem("ClusterSystem", config)

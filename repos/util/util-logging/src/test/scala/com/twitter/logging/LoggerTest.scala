@@ -19,7 +19,13 @@ package com.twitter.logging
 import com.twitter.conversions.time._
 import com.twitter.util.TempFolder
 import java.net.InetSocketAddress
-import java.util.concurrent.{Callable, CountDownLatch, Executors, Future, TimeUnit}
+import java.util.concurrent.{
+  Callable,
+  CountDownLatch,
+  Executors,
+  Future,
+  TimeUnit
+}
 import java.util.{logging => javalog}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -29,9 +35,10 @@ import scala.collection.mutable
 @RunWith(classOf[JUnitRunner])
 class LoggerTest extends WordSpec with TempFolder with BeforeAndAfter {
   val logLevel = Logger.levelNames(
-      Option[String](System.getenv("log")).getOrElse("FATAL").toUpperCase)
+    Option[String](System.getenv("log")).getOrElse("FATAL").toUpperCase
+  )
 
-  private val logger = Logger.get("")
+  private val logger                  = Logger.get("")
   private var oldLevel: javalog.Level = _
 
   before {
@@ -76,13 +83,12 @@ class LoggerTest extends WordSpec with TempFolder with BeforeAndAfter {
     * Verify that the logger set up with `traceLogger` has received a log line with the given
     * substring somewhere inside it.
     */
-  def mustLog(substring: String) = {
-    assert(logLines().filter { _ contains substring }.size > 0)
-  }
+  def mustLog(substring: String) =
+    assert(logLines().filter(_ contains substring).size > 0)
 
   class LoggerSpecHelper {
     var myHandler: Handler = null
-    var log: Logger = null
+    var log: Logger        = null
 
     val timeFrozenFormatter = new Formatter(timezone = Some("UTC"))
     val timeFrozenHandler = new StringHandler(timeFrozenFormatter, None) {
@@ -113,7 +119,7 @@ class LoggerTest extends WordSpec with TempFolder with BeforeAndAfter {
     }
 
     "not execute string creation and concatenation" in {
-      val logger = Logger.get("lazyTest1")
+      val logger   = Logger.get("lazyTest1")
       var executed = false
       def function() = {
         executed = true
@@ -138,32 +144,38 @@ class LoggerTest extends WordSpec with TempFolder with BeforeAndAfter {
 
     "make sure compiles with normal string case" in {
       //in some cases, if debugLazy definition was changed, the below would no longer compile
-      val logger = Logger.get("lazyTest3")
+      val logger   = Logger.get("lazyTest3")
       val executed = true
       logger.debugLazy("hi there" + executed + "cool")
     }
 
     "provide level name and value maps" in {
       assert(
-          Logger.levels == Map(Level.ALL.value -> Level.ALL,
-                               Level.TRACE.value -> Level.TRACE,
-                               Level.DEBUG.value -> Level.DEBUG,
-                               Level.INFO.value -> Level.INFO,
-                               Level.WARNING.value -> Level.WARNING,
-                               Level.ERROR.value -> Level.ERROR,
-                               Level.CRITICAL.value -> Level.CRITICAL,
-                               Level.FATAL.value -> Level.FATAL,
-                               Level.OFF.value -> Level.OFF))
+        Logger.levels == Map(
+          Level.ALL.value      -> Level.ALL,
+          Level.TRACE.value    -> Level.TRACE,
+          Level.DEBUG.value    -> Level.DEBUG,
+          Level.INFO.value     -> Level.INFO,
+          Level.WARNING.value  -> Level.WARNING,
+          Level.ERROR.value    -> Level.ERROR,
+          Level.CRITICAL.value -> Level.CRITICAL,
+          Level.FATAL.value    -> Level.FATAL,
+          Level.OFF.value      -> Level.OFF
+        )
+      )
       assert(
-          Logger.levelNames == Map("ALL" -> Level.ALL,
-                                   "TRACE" -> Level.TRACE,
-                                   "DEBUG" -> Level.DEBUG,
-                                   "INFO" -> Level.INFO,
-                                   "WARNING" -> Level.WARNING,
-                                   "ERROR" -> Level.ERROR,
-                                   "CRITICAL" -> Level.CRITICAL,
-                                   "FATAL" -> Level.FATAL,
-                                   "OFF" -> Level.OFF))
+        Logger.levelNames == Map(
+          "ALL"      -> Level.ALL,
+          "TRACE"    -> Level.TRACE,
+          "DEBUG"    -> Level.DEBUG,
+          "INFO"     -> Level.INFO,
+          "WARNING"  -> Level.WARNING,
+          "ERROR"    -> Level.ERROR,
+          "CRITICAL" -> Level.CRITICAL,
+          "FATAL"    -> Level.FATAL,
+          "OFF"      -> Level.OFF
+        )
+      )
     }
 
     "figure out package names" in {
@@ -203,14 +215,13 @@ class LoggerTest extends WordSpec with TempFolder with BeforeAndAfter {
 
     "get multi-threaded return the same value" in {
       val numThreads = 10
-      val latch = new CountDownLatch(1)
+      val latch      = new CountDownLatch(1)
 
       // queue up the workers
       val executorService = Executors.newFixedThreadPool(numThreads)
-      val futureResults = new mutable.ListBuffer[Future[Logger]]
+      val futureResults   = new mutable.ListBuffer[Future[Logger]]
       for (i <- 0.until(numThreads)) {
-        val future = executorService.submit(
-            new Callable[Logger]() {
+        val future = executorService.submit(new Callable[Logger]() {
           def call(): Logger = {
             latch.await(10, TimeUnit.SECONDS)
             return Logger.get("concurrencyTest")
@@ -246,26 +257,25 @@ class LoggerTest extends WordSpec with TempFolder with BeforeAndAfter {
     }
 
     "configure logging" should {
-      def before(): Unit = {
+      def before(): Unit =
         Logger.clearHandlers()
-      }
 
       "file handler" in {
         withTempFolder {
           val log: Logger = LoggerFactory(
-              node = "com.twitter",
-              level = Some(Level.DEBUG),
-              handlers = FileHandler(
-                    filename = folderName + "/test.log",
-                    rollPolicy = Policy.Never,
-                    append = false,
-                    level = Some(Level.INFO),
-                    formatter = new Formatter(
-                          useFullPackageNames = true,
-                          truncateAt = 1024,
-                          prefix = "%s <HH:mm> %s"
-                      )
-                ) :: Nil
+            node = "com.twitter",
+            level = Some(Level.DEBUG),
+            handlers = FileHandler(
+              filename = folderName + "/test.log",
+              rollPolicy = Policy.Never,
+              append = false,
+              level = Some(Level.INFO),
+              formatter = new Formatter(
+                useFullPackageNames = true,
+                truncateAt = 1024,
+                prefix = "%s <HH:mm> %s"
+              )
+            ) :: Nil
           ).apply()
 
           assert(log.getLevel == Level.DEBUG)
@@ -275,9 +285,9 @@ class LoggerTest extends WordSpec with TempFolder with BeforeAndAfter {
           assert(handler.append == false)
           assert(handler.getLevel == Level.INFO)
           val formatter = handler.formatter
-          assert(formatter.formatPrefix(javalog.Level.WARNING,
-                                        "10:55",
-                                        "hello") == "WARNING 10:55 hello")
+          assert(
+            formatter.formatPrefix(javalog.Level.WARNING, "10:55", "hello") == "WARNING 10:55 hello"
+          )
           assert(log.name == "com.twitter")
           assert(formatter.truncateAt == 1024)
           assert(formatter.useFullPackageNames == true)
@@ -289,21 +299,24 @@ class LoggerTest extends WordSpec with TempFolder with BeforeAndAfter {
         "syslog handler" in {
           withTempFolder {
             val log: Logger = LoggerFactory(
-                node = "com.twitter",
-                handlers = SyslogHandler(
-                      formatter = new SyslogFormatter(
-                            serverName = Some("elmo"),
-                            priority = 128
-                        ),
-                      server = "example.com",
-                      port = 212
-                  ) :: Nil
+              node = "com.twitter",
+              handlers = SyslogHandler(
+                formatter = new SyslogFormatter(
+                  serverName = Some("elmo"),
+                  priority = 128
+                ),
+                server = "example.com",
+                port = 212
+              ) :: Nil
             ).apply()
 
             assert(log.getHandlers.length == 1)
             val h = log.getHandlers()(0).asInstanceOf[SyslogHandler]
             assert(
-                h.dest.asInstanceOf[InetSocketAddress].getHostName == "example.com")
+              h.dest
+                .asInstanceOf[InetSocketAddress]
+                .getHostName == "example.com"
+            )
             assert(h.dest.asInstanceOf[InetSocketAddress].getPort == 212)
             val formatter = h.formatter.asInstanceOf[SyslogFormatter]
             assert(formatter.serverName == Some("elmo"))
@@ -316,39 +329,39 @@ class LoggerTest extends WordSpec with TempFolder with BeforeAndAfter {
         withTempFolder {
           val factories =
             LoggerFactory(
-                level = Some(Level.INFO),
-                handlers = ThrottledHandler(
-                      duration = 60.seconds,
-                      maxToDisplay = 10,
-                      handler = FileHandler(
-                            filename = folderName + "/production.log",
-                            rollPolicy = Policy.SigHup,
-                            formatter = new Formatter(
-                                  truncateStackTracesAt = 100
-                              )
-                        )
-                  ) :: Nil
+              level = Some(Level.INFO),
+              handlers = ThrottledHandler(
+                duration = 60.seconds,
+                maxToDisplay = 10,
+                handler = FileHandler(
+                  filename = folderName + "/production.log",
+                  rollPolicy = Policy.SigHup,
+                  formatter = new Formatter(
+                    truncateStackTracesAt = 100
+                  )
+                )
+              ) :: Nil
             ) :: LoggerFactory(
-                node = "w3c",
-                level = Some(Level.OFF),
-                useParents = false
+              node = "w3c",
+              level = Some(Level.OFF),
+              useParents = false
             ) :: LoggerFactory(
-                node = "stats",
-                level = Some(Level.INFO),
-                useParents = false,
-                handlers = ScribeHandler(
-                      formatter = BareFormatter,
-                      maxMessagesToBuffer = 100,
-                      category = "cuckoo_json"
-                  ) :: Nil
+              node = "stats",
+              level = Some(Level.INFO),
+              useParents = false,
+              handlers = ScribeHandler(
+                formatter = BareFormatter,
+                maxMessagesToBuffer = 100,
+                category = "cuckoo_json"
+              ) :: Nil
             ) :: LoggerFactory(
-                node = "bad_jobs",
-                level = Some(Level.INFO),
-                useParents = false,
-                handlers = FileHandler(
-                      filename = folderName + "/bad_jobs.log",
-                      rollPolicy = Policy.Never
-                  ) :: Nil
+              node = "bad_jobs",
+              level = Some(Level.INFO),
+              useParents = false,
+              handlers = FileHandler(
+                filename = folderName + "/bad_jobs.log",
+                rollPolicy = Policy.Never
+              ) :: Nil
             ) :: Nil
 
           Logger.configure(factories)
@@ -389,9 +402,8 @@ class LoggerTest extends WordSpec with TempFolder with BeforeAndAfter {
     "java logging" should {
       val logger = javalog.Logger.getLogger("")
 
-      def before() = {
+      def before() =
         traceLogger(Level.INFO)
-      }
 
       "single arg calls" in {
         before()
@@ -401,9 +413,11 @@ class LoggerTest extends WordSpec with TempFolder with BeforeAndAfter {
 
       "varargs calls" in {
         before()
-        logger.log(javalog.Level.INFO,
-                   "V1={0}, V2={1}",
-                   Array[AnyRef]("A", "B"))
+        logger.log(
+          javalog.Level.INFO,
+          "V1={0}, V2={1}",
+          Array[AnyRef]("A", "B")
+        )
         mustLog("V1=A, V2=B")
       }
 

@@ -13,24 +13,31 @@ import org.jetbrains.plugins.scala.settings.ScalaApplicationSettings
 class ScalaOverrideImplementTest
     extends ScalaLightPlatformCodeInsightTestCaseAdapter {
 
-  def runTest(methodName: String,
-              fileText: String,
-              expectedText: String,
-              isImplement: Boolean,
-              needsInferType: Boolean = true) {
+  def runTest(
+      methodName: String,
+      fileText: String,
+      expectedText: String,
+      isImplement: Boolean,
+      needsInferType: Boolean = true
+  ) {
     configureFromFileTextAdapter(
-        "dummy.scala", fileText.replace("\r", "").stripMargin.trim)
-    ScalaApplicationSettings.getInstance.SPECIFY_RETURN_TYPE_EXPLICITLY = needsInferType
-    ScalaOIUtil.invokeOverrideImplement(getProjectAdapter,
-                                        getEditorAdapter,
-                                        getFileAdapter,
-                                        isImplement,
-                                        methodName)
+      "dummy.scala",
+      fileText.replace("\r", "").stripMargin.trim
+    )
+    ScalaApplicationSettings.getInstance.SPECIFY_RETURN_TYPE_EXPLICITLY =
+      needsInferType
+    ScalaOIUtil.invokeOverrideImplement(
+      getProjectAdapter,
+      getEditorAdapter,
+      getFileAdapter,
+      isImplement,
+      methodName
+    )
     checkResultByText(expectedText.replace("\r", "").stripMargin.trim)
   }
 
   def testFoo() {
-    val fileText = """
+    val fileText           = """
         |package test
         |
         |class Foo extends b {
@@ -40,7 +47,7 @@ class ScalaOverrideImplementTest
         |  def foo(x: b): b
         |}
       """
-    val expectedText = """
+    val expectedText       = """
         |package test
         |
         |class Foo extends b {
@@ -51,13 +58,13 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = true
-    val needsInferType = true
+    val isImplement        = true
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
   def testEmptyLinePos() {
-    val fileText = """
+    val fileText           = """
         |package test
         |class Empty extends b {
         |  def foo(): Int = 3
@@ -71,7 +78,7 @@ class ScalaOverrideImplementTest
         |  def too: b
         |}
       """
-    val expectedText = """
+    val expectedText       = """
         |package test
         |class Empty extends b {
         |  def foo(): Int = 3
@@ -83,13 +90,13 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "too"
-    val isImplement = true
-    val needsInferType = true
+    val isImplement        = true
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
   def testNewLineBetweenMethods() {
-    val fileText = """
+    val fileText           = """
         |package test
         |
         |class MethodsNewLine extends b {
@@ -99,7 +106,7 @@ class ScalaOverrideImplementTest
         |  def too: b
         |}
       """
-    val expectedText = """
+    val expectedText       = """
         |package test
         |
         |class MethodsNewLine extends b {
@@ -112,13 +119,13 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "too"
-    val isImplement = true
-    val needsInferType = true
+    val isImplement        = true
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
   def testNewLineUpper() {
-    val fileText = """
+    val fileText           = """
         |package test
         |
         |class UpperNewLine extends b {
@@ -129,7 +136,7 @@ class ScalaOverrideImplementTest
         |  def too: b
         |}
       """
-    val expectedText = """
+    val expectedText       = """
         |package test
         |
         |class UpperNewLine extends b {
@@ -143,8 +150,8 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "too"
-    val isImplement = true
-    val needsInferType = true
+    val isImplement        = true
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
@@ -176,13 +183,13 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = false
-    val needsInferType = true
+    val isImplement        = false
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
   def testImplementTypeAlias() {
-    val fileText = """
+    val fileText           = """
         |package Y
         |trait Aa {
         |  type K
@@ -193,7 +200,7 @@ class ScalaOverrideImplementTest
         |  def y(): Int = 3
         |}
       """
-    val expectedText = """
+    val expectedText       = """
         |package Y
         |trait Aa {
         |  type K
@@ -207,13 +214,13 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "K"
-    val isImplement = true
-    val needsInferType = true
+    val isImplement        = true
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
   def testOverrideValue() {
-    val fileText = """
+    val fileText           = """
         |package test
         |
         |class A {
@@ -224,7 +231,7 @@ class ScalaOverrideImplementTest
         |  <caret>
         |}
       """
-    val expectedText = """
+    val expectedText       = """
         |package test
         |
         |class A {
@@ -236,13 +243,13 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = false
-    val needsInferType = true
+    val isImplement        = false
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
   def testOverrideVar() {
-    val fileText = """
+    val fileText           = """
         |package test
         |
         |class A {
@@ -254,7 +261,7 @@ class ScalaOverrideImplementTest
         |  def y(): Int = 3
         |}
       """
-    val expectedText = """
+    val expectedText       = """
         |package test
         |
         |class A {
@@ -269,13 +276,13 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = false
-    val needsInferType = true
+    val isImplement        = false
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
   def testImplementFromSelfType() {
-    val fileText = """
+    val fileText           = """
         |package test
         |
         |trait A {
@@ -286,7 +293,7 @@ class ScalaOverrideImplementTest
         |  <caret>
         |}
       """
-    val expectedText = """
+    val expectedText       = """
         |package test
         |
         |trait A {
@@ -298,8 +305,8 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = true
-    val needsInferType = true
+    val isImplement        = true
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
@@ -328,13 +335,13 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = false
-    val needsInferType = true
+    val isImplement        = false
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
   def testTypeAlias() {
-    val fileText = """
+    val fileText           = """
         |class ImplementTypeAlias extends b {
         |  <caret>
         |}
@@ -342,7 +349,7 @@ class ScalaOverrideImplementTest
         |  type L
         |}
       """
-    val expectedText = """
+    val expectedText       = """
         |class ImplementTypeAlias extends b {
         |  type L = <selection>this.type</selection>
         |}
@@ -351,13 +358,13 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "L"
-    val isImplement = true
-    val needsInferType = true
+    val isImplement        = true
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
   def testVal() {
-    val fileText = """
+    val fileText           = """
         |package test
         |
         |class Val extends b {
@@ -367,7 +374,7 @@ class ScalaOverrideImplementTest
         |  val too: b
         |}
       """
-    val expectedText = """
+    val expectedText       = """
         |package test
         |
         |class Val extends b {
@@ -378,13 +385,13 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "too"
-    val isImplement = true
-    val needsInferType = true
+    val isImplement        = true
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
   def testVar() {
-    val fileText = """
+    val fileText           = """
         |package test
         |
         |class Var extends b {
@@ -394,7 +401,7 @@ class ScalaOverrideImplementTest
         |  var too: b
         |}
       """
-    val expectedText = """
+    val expectedText       = """
         |package test
         |
         |class Var extends b {
@@ -405,8 +412,8 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "too"
-    val isImplement = true
-    val needsInferType = true
+    val isImplement        = true
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
@@ -425,8 +432,8 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "putAll"
-    val isImplement = true
-    val needsInferType = true
+    val isImplement        = true
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
@@ -451,8 +458,8 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = false
-    val needsInferType = true
+    val isImplement        = false
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
@@ -477,13 +484,13 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = false
-    val needsInferType = true
+    val isImplement        = false
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
   def testSimpleTypeParam() {
-    val fileText = """
+    val fileText           = """
         |abstract class A {
         |  def foo[T](x: T): T
         |}
@@ -491,7 +498,7 @@ class ScalaOverrideImplementTest
         |  <caret>
         |}
       """
-    val expectedText = """
+    val expectedText       = """
         |abstract class A {
         |  def foo[T](x: T): T
         |}
@@ -500,13 +507,13 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = true
-    val needsInferType = true
+    val isImplement        = true
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
   def testSCL1997() {
-    val fileText = """
+    val fileText           = """
         |package test
         |
         |trait Foo {
@@ -517,7 +524,7 @@ class ScalaOverrideImplementTest
         |  <caret>
         |}
       """
-    val expectedText = """
+    val expectedText       = """
         |package test
         |
         |trait Foo {
@@ -529,8 +536,8 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = true
-    val needsInferType = true
+    val isImplement        = true
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
@@ -559,8 +566,8 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "m"
-    val isImplement = true
-    val needsInferType = true
+    val isImplement        = true
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
@@ -585,8 +592,8 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = false
-    val needsInferType = true
+    val isImplement        = false
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
@@ -615,8 +622,8 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "doSmth"
-    val isImplement = false
-    val needsInferType = true
+    val isImplement        = false
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
@@ -643,13 +650,13 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = false
-    val needsInferType = true
+    val isImplement        = false
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
   def testSCL2052B() {
-    val fileText = """
+    val fileText           = """
         |class A {
         |  type ID[X] = X
         |  val foo: ID[Int] = null
@@ -659,7 +666,7 @@ class ScalaOverrideImplementTest
         |  <caret>
         |}
       """
-    val expectedText = """
+    val expectedText       = """
         |class A {
         |  type ID[X] = X
         |  val foo: ID[Int] = null
@@ -670,8 +677,8 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = false
-    val needsInferType = true
+    val isImplement        = false
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
@@ -698,8 +705,8 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = false
-    val needsInferType = true
+    val isImplement        = false
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
@@ -728,8 +735,8 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = false
-    val needsInferType = true
+    val isImplement        = false
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
@@ -780,13 +787,13 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = true
-    val needsInferType = true
+    val isImplement        = true
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
   def testUnitReturn() {
-    val fileText = """
+    val fileText           = """
         |package test
         |
         |class Foo extends b {
@@ -796,7 +803,7 @@ class ScalaOverrideImplementTest
         |  def foo(x: b): Unit
         |}
       """
-    val expectedText = """
+    val expectedText       = """
         |package test
         |
         |class Foo extends b {
@@ -807,8 +814,8 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = true
-    val needsInferType = true
+    val isImplement        = true
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
@@ -835,8 +842,8 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = false
-    val needsInferType = true
+    val isImplement        = false
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
@@ -863,8 +870,8 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = false
-    val needsInferType = true
+    val isImplement        = false
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
@@ -889,8 +896,8 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = false
-    val needsInferType = false
+    val isImplement        = false
+    val needsInferType     = false
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
@@ -915,13 +922,13 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = false
-    val needsInferType = false
+    val isImplement        = false
+    val needsInferType     = false
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
   def testProtectedMethod() {
-    val fileText = """
+    val fileText           = """
         |abstract class A {
         |  protected def foo(): Unit
         |}
@@ -930,7 +937,7 @@ class ScalaOverrideImplementTest
         |  <caret>
         |}
       """
-    val expectedText = """
+    val expectedText       = """
         |abstract class A {
         |  protected def foo(): Unit
         |}
@@ -940,20 +947,20 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = true
-    val needsInferType = false
+    val isImplement        = true
+    val needsInferType     = false
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
   def testProtectedMethodNoBody() {
-    val fileText = """
+    val fileText           = """
         |abstract class A {
         |  protected def foo(): Unit
         |}
         |
         |class B<caret> extends A
       """
-    val expectedText = """
+    val expectedText       = """
         |abstract class A {
         |  protected def foo(): Unit
         |}
@@ -963,8 +970,8 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = true
-    val needsInferType = false
+    val isImplement        = true
+    val needsInferType     = false
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 
@@ -987,8 +994,8 @@ class ScalaOverrideImplementTest
         |}
       """
     val methodName: String = "foo"
-    val isImplement = false
-    val needsInferType = true
+    val isImplement        = false
+    val needsInferType     = true
     runTest(methodName, fileText, expectedText, isImplement, needsInferType)
   }
 }

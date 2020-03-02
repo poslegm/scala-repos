@@ -38,7 +38,7 @@ object Test extends ScaladocModelTest {
       .getPath
       .split("!")(0)
     val scalaLibPath = new URI(scalaLibUri).getPath
-    val externalArg = s"$scalaLibPath#$scalaURL"
+    val externalArg  = s"$scalaLibPath#$scalaURL"
     "-no-link-warnings -doc-external-doc " + externalArg
   }
 
@@ -62,14 +62,14 @@ object Test extends ScaladocModelTest {
 
     val expectedUrls = collection.mutable
       .Set[String](
-          "scala.collection.Map",
-          "scala.collection.immutable.::",
-          "scala.Int",
-          "scala.Predef$",
-          "scala.Int@toLong:Long",
-          "scala.package",
-          "scala.package@AbstractMethodError=AbstractMethodError",
-          "scala.Predef$@String=String"
+        "scala.collection.Map",
+        "scala.collection.immutable.::",
+        "scala.Int",
+        "scala.Predef$",
+        "scala.Int@toLong:Long",
+        "scala.package",
+        "scala.package@AbstractMethodError=AbstractMethodError",
+        "scala.Predef$@String=String"
       )
       .map(scalaURL + "/index.html#" + _)
 
@@ -79,7 +79,9 @@ object Test extends ScaladocModelTest {
       case _ => false
     }
 
-    assert(countLinks(test.comment.get, isExpectedExternalLink) == 8,
-           countLinks(test.comment.get, isExpectedExternalLink) + " == 8")
+    assert(
+      countLinks(test.comment.get, isExpectedExternalLink) == 8,
+      countLinks(test.comment.get, isExpectedExternalLink) + " == 8"
+    )
   }
 }

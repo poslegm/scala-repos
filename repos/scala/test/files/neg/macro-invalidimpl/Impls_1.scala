@@ -15,7 +15,7 @@ trait MacroHelpers {
 }
 
 object Impls5 {
-  def foo(c: Context)(x: c.Expr[Any]) = ???
+  def foo(c: Context)(x: c.Expr[Any])                 = ???
   def foo(c: Context)(x: c.Expr[Any], y: c.Expr[Any]) = ???
 }
 

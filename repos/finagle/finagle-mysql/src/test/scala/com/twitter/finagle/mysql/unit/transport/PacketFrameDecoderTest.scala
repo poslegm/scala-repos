@@ -9,8 +9,8 @@ import org.scalatest.mock.MockitoSugar
 
 @RunWith(classOf[JUnitRunner])
 class PacketFrameDecoderTest extends FunSuite with MockitoSugar {
-  val ctx = mock[ChannelHandlerContext]
-  val c = mock[Channel]
+  val ctx          = mock[ChannelHandlerContext]
+  val c            = mock[Channel]
   val frameDecoder = new PacketFrameDecoder
 
   test("ignore incomplete packets") {

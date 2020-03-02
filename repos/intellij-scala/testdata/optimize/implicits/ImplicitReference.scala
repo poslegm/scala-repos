@@ -2,7 +2,8 @@ package goo
 
 object ImplicitReferenceObject {
   implicit def string2ImplicitReferenceClass(
-      s: String): ImplicitReferenceClass = new ImplicitReferenceClass()
+      s: String
+  ): ImplicitReferenceClass = new ImplicitReferenceClass()
 }
 
 class ImplicitReferenceClass {

@@ -81,9 +81,9 @@ package object sys {
     *  @return   an IndexedSeq containing the threads.
     */
   def allThreads(): IndexedSeq[Thread] = {
-    val num = Thread.activeCount()
+    val num    = Thread.activeCount()
     val tarray = new Array[Thread](num)
-    val got = Thread.enumerate(tarray)
+    val got    = Thread.enumerate(tarray)
 
     tarray take got
   }

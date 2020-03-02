@@ -53,8 +53,8 @@ trait RefactoringHandler { self: Analyzer =>
 
   def handleRefactorPrepareRequest(req: PrepareRefactorReq): RpcResponse = {
     val procedureId = req.procId
-    val refactor = req.params
-    val result = scalaCompiler.askPrepareRefactor(procedureId, refactor)
+    val refactor    = req.params
+    val result      = scalaCompiler.askPrepareRefactor(procedureId, refactor)
 
     result match {
       case Right(effect: RefactorEffect) =>
@@ -67,23 +67,23 @@ trait RefactoringHandler { self: Analyzer =>
   }
 
   def handleRefactorRequest(req: RefactorReq): RpcResponse = {
-    val cs = charset
+    val cs          = charset
     val procedureId = req.procId
-    val refactor = req.params
-    val result = scalaCompiler.askPrepareRefactor(procedureId, refactor)
+    val refactor    = req.params
+    val result      = scalaCompiler.askPrepareRefactor(procedureId, refactor)
 
     result match {
       case Right(effect: RefactorEffect) => {
-          FileUtils.writeDiffChanges(effect.changes, cs) match {
-            case Right(f) =>
-              new RefactorDiffEffect(
-                  effect.procedureId,
-                  effect.refactorType,
-                  f
-              )
-            case Left(err) => RefactorFailure(effect.procedureId, err.toString)
-          }
+        FileUtils.writeDiffChanges(effect.changes, cs) match {
+          case Right(f) =>
+            new RefactorDiffEffect(
+              effect.procedureId,
+              effect.refactorType,
+              f
+            )
+          case Left(err) => RefactorFailure(effect.procedureId, err.toString)
         }
+      }
       case Left(failure) =>
         failure
     }
@@ -95,11 +95,13 @@ trait RefactoringHandler { self: Analyzer =>
       case Some(effect: RefactorEffect) =>
         scalaCompiler.askExecRefactor(procedureId, req.tpe, effect) match {
           case Right(success) => success
-          case Left(failure) => failure
+          case Left(failure)  => failure
         }
       case None =>
         RefactorFailure(
-            procedureId, "No effect found for procId " + procedureId)
+          procedureId,
+          "No effect found for procId " + procedureId
+        )
     }
   }
 
@@ -108,7 +110,7 @@ trait RefactoringHandler { self: Analyzer =>
     VoidResponse
   }
 
-  def handleExpandselection(file: File, start: Int, stop: Int): FileRange = {
+  def handleExpandselection(file: File, start: Int, stop: Int): FileRange =
     FileUtils.readFile(file, charset) match {
       case Right(contents) =>
         val selectionRange = Range(start, stop - start)
@@ -120,27 +122,28 @@ trait RefactoringHandler { self: Analyzer =>
         }
       case Left(e) => throw e
     }
-  }
 
   def handleFormatFiles(files: List[File]): Unit = {
     val cs = charset
-    val changeList = files.map { f =>
-      FileUtils.readFile(f, cs) match {
-        case Right(contents) =>
-          Try(ScalaFormatter.format(contents, config.formattingPrefs))
-            .map((f, contents, _))
-        case Left(e) => throw e
+    val changeList = files
+      .map { f =>
+        FileUtils.readFile(f, cs) match {
+          case Right(contents) =>
+            Try(ScalaFormatter.format(contents, config.formattingPrefs))
+              .map((f, contents, _))
+          case Left(e) => throw e
+        }
       }
-    }.collect {
-      case Success((f, contents, formatted)) =>
-        TextEdit(f, 0, contents.length, formatted)
-    }
+      .collect {
+        case Success((f, contents, formatted)) =>
+          TextEdit(f, 0, contents.length, formatted)
+      }
     FileUtils.writeChanges(changeList, cs)
   }
 
   def handleFormatFile(fileInfo: SourceFileInfo): String = {
     val sourceFile = createSourceFile(fileInfo)
-    val contents = sourceFile.content.mkString
+    val contents   = sourceFile.content.mkString
     ScalaFormatter.format(contents, config.formattingPrefs)
   }
 }
@@ -150,98 +153,104 @@ trait RefactoringControl { self: RichCompilerControl with RefactoringImpl =>
   def askPrepareRefactor(
       procId: Int,
       refactor: RefactorDesc
-  ): Either[RefactorFailure, RefactorEffect] = {
+  ): Either[RefactorFailure, RefactorEffect] =
     askOption(prepareRefactor(procId, refactor))
       .getOrElse(Left(RefactorFailure(procId, "Refactor call failed")))
-  }
 
   def askExecRefactor(
       procId: Int,
       tpe: RefactorType,
       effect: RefactorEffect
-  ): Either[RefactorFailure, RefactorResult] = {
+  ): Either[RefactorFailure, RefactorResult] =
     askOption(execRefactor(procId, tpe, effect)).getOrElse(
-        Left(RefactorFailure(procId, "Refactor exec call failed."))
+      Left(RefactorFailure(procId, "Refactor exec call failed."))
     ) match {
       case Right(result) =>
         // Reload all files touched by refactoring, so subsequent refactorings
         // will see consistent state.
         askReloadFiles(
-            result.touchedFiles.map(f => createSourceFile(f.getPath)))
+          result.touchedFiles.map(f => createSourceFile(f.getPath))
+        )
         Right(result)
       case Left(failure) => Left(failure)
     }
-  }
 }
 
 trait RefactoringImpl { self: RichPresentationCompiler =>
 
   import org.ensime.util.FileUtils._
 
-  protected def doRename(procId: Int,
-                         tpe: RefactorType,
-                         name: String,
-                         file: File,
-                         start: Int,
-                         end: Int) =
+  protected def doRename(
+      procId: Int,
+      tpe: RefactorType,
+      name: String,
+      file: File,
+      start: Int,
+      end: Int
+  ) =
     new RefactoringEnvironment(file.getPath, start, end) {
       val refactoring = new Rename with GlobalIndexes {
-        val global = RefactoringImpl.this
-        val invalidSet = toBeRemoved.synchronized { toBeRemoved.toSet }
-        val cuIndexes = this.global.activeUnits().map { u =>
-          CompilationUnitIndex(u.body)
-        }
+        val global     = RefactoringImpl.this
+        val invalidSet = toBeRemoved.synchronized(toBeRemoved.toSet)
+        val cuIndexes =
+          this.global.activeUnits().map(u => CompilationUnitIndex(u.body))
         val index = GlobalIndex(cuIndexes.toList)
       }
       val result = performRefactoring(procId, tpe, name)
     }.result
 
-  protected def doExtractMethod(procId: Int,
-                                tpe: RefactorType,
-                                name: String,
-                                file: File,
-                                start: Int,
-                                end: Int) =
+  protected def doExtractMethod(
+      procId: Int,
+      tpe: RefactorType,
+      name: String,
+      file: File,
+      start: Int,
+      end: Int
+  ) =
     new RefactoringEnvironment(file.getPath, start, end) {
       val refactoring = new ExtractMethod with GlobalIndexes {
         val global = RefactoringImpl.this
-        val cuIndexes = this.global.activeUnits().map { u =>
-          CompilationUnitIndex(u.body)
-        }
+        val cuIndexes =
+          this.global.activeUnits().map(u => CompilationUnitIndex(u.body))
         val index = GlobalIndex(cuIndexes.toList)
       }
       val result = performRefactoring(procId, tpe, name)
     }.result
 
-  protected def doExtractLocal(procId: Int,
-                               tpe: RefactorType,
-                               name: String,
-                               file: File,
-                               start: Int,
-                               end: Int) =
+  protected def doExtractLocal(
+      procId: Int,
+      tpe: RefactorType,
+      name: String,
+      file: File,
+      start: Int,
+      end: Int
+  ) =
     new RefactoringEnvironment(file.getPath, start, end) {
       val refactoring = new ExtractLocal with GlobalIndexes {
         val global = RefactoringImpl.this
-        val cuIndexes = this.global.activeUnits().map { u =>
-          CompilationUnitIndex(u.body)
-        }
+        val cuIndexes =
+          this.global.activeUnits().map(u => CompilationUnitIndex(u.body))
         val index = GlobalIndex(cuIndexes.toList)
       }
       val result = performRefactoring(procId, tpe, name)
     }.result
 
   protected def doInlineLocal(
-      procId: Int, tpe: RefactorType, file: File, start: Int, end: Int) =
+      procId: Int,
+      tpe: RefactorType,
+      file: File,
+      start: Int,
+      end: Int
+  ) =
     new RefactoringEnvironment(file.getPath, start, end) {
       val refactoring = new InlineLocal with GlobalIndexes {
         val global = RefactoringImpl.this
-        val cuIndexes = this.global.activeUnits().map { u =>
-          CompilationUnitIndex(u.body)
-        }
+        val cuIndexes =
+          this.global.activeUnits().map(u => CompilationUnitIndex(u.body))
         val index = GlobalIndex(cuIndexes.toList)
       }
-      val result = performRefactoring(
-          procId, tpe, new refactoring.RefactoringParameters())
+      val result =
+        performRefactoring(procId, tpe, new refactoring.RefactoringParameters())
     }.result
 
   protected def doOrganizeImports(procId: Int, tpe: RefactorType, file: File) =
@@ -251,18 +260,19 @@ trait RefactoringImpl { self: RichPresentationCompiler =>
       }
 
       val result = performRefactoring(
-          procId,
-          tpe,
-          new refactoring.RefactoringParameters(
-              options = List(
-                    refactoring.SortImports,
-                    refactoring.SortImportSelectors,
-                    refactoring.CollapseImports,
-                    refactoring.SimplifyWildcards,
-                    refactoring.RemoveDuplicates,
-                    refactoring.GroupImports(List("java", "scala"))
-                )
-          ))
+        procId,
+        tpe,
+        new refactoring.RefactoringParameters(
+          options = List(
+            refactoring.SortImports,
+            refactoring.SortImportSelectors,
+            refactoring.CollapseImports,
+            refactoring.SimplifyWildcards,
+            refactoring.RemoveDuplicates,
+            refactoring.GroupImports(List("java", "scala"))
+          )
+        )
+      )
     }.result
 
   private def using[A, R <: { def close(): Unit }](r: R)(f: R => A): A = {
@@ -275,15 +285,24 @@ trait RefactoringImpl { self: RichPresentationCompiler =>
   }
 
   protected def doAddImport(
-      procId: Int, tpe: RefactorType, qualName: String, file: File) = {
+      procId: Int,
+      tpe: RefactorType,
+      qualName: String,
+      file: File
+  ) = {
     val refactoring = new AddImportStatement {
       val global = RefactoringImpl.this
     }
 
-    val af = AbstractFile.getFile(file.getPath)
+    val af            = AbstractFile.getFile(file.getPath)
     val modifications = refactoring.addImport(af, qualName)
-    Right(new RefactorEffect(
-            procId, tpe, modifications.map(FileEditHelper.fromChange)))
+    Right(
+      new RefactorEffect(
+        procId,
+        tpe,
+        modifications.map(FileEditHelper.fromChange)
+      )
+    )
   }
 
   protected def reloadAndType(f: File) =
@@ -291,7 +310,8 @@ trait RefactoringImpl { self: RichPresentationCompiler =>
 
   protected def prepareRefactor(
       procId: Int,
-      refactor: RefactorDesc): Either[RefactorFailure, RefactorEffect] = {
+      refactor: RefactorDesc
+  ): Either[RefactorFailure, RefactorEffect] = {
 
     val tpe = refactor.refactorType
 

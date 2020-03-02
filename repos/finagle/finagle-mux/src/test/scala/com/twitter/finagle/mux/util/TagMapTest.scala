@@ -12,16 +12,15 @@ class TagMapTest extends FunSuite with GeneratorDrivenPropertyChecks {
   val min = 8
   val max = 10000
 
-  implicit val genTagSet: Arbitrary[TagSet] = Arbitrary(
-      for {
+  implicit val genTagSet: Arbitrary[TagSet] = Arbitrary(for {
     start <- Gen.choose(0, max)
-    end <- Gen.choose(start, max - min)
+    end   <- Gen.choose(start, max - min)
   } yield TagSet(start to end + min))
 
   test("map tags to elems") {
     forAll { set: TagSet =>
       val range = set.range
-      val ints = TagMap[java.lang.Integer](set)
+      val ints  = TagMap[java.lang.Integer](set)
       for (i <- range) assert(ints.map(-i) == Some(i))
       for (i <- range) assert(ints.unmap(i) == Some(-i))
     }
@@ -31,7 +30,7 @@ class TagMapTest extends FunSuite with GeneratorDrivenPropertyChecks {
     forAll { set: TagSet =>
       val range = set.range
       val right = range.last + 1
-      val ints = TagMap[java.lang.Integer](set)
+      val ints  = TagMap[java.lang.Integer](set)
       assert(ints.unmap(right) == None)
       val left = range.start - 1
       assert(ints.unmap(left) == None)
@@ -41,13 +40,11 @@ class TagMapTest extends FunSuite with GeneratorDrivenPropertyChecks {
   test("iterate over the mapping") {
     forAll { set: TagSet =>
       val range = set.range
-      val ints = TagMap[java.lang.Integer](set)
+      val ints  = TagMap[java.lang.Integer](set)
 
       for (i <- range) assert(ints.map(-i) == Some(i))
 
-      assert(ints.sameElements(range.map { i =>
-        (i, -i)
-      }))
+      assert(ints.sameElements(range.map(i => (i, -i))))
 
       ints.unmap(3 + range.start)
       ints.unmap(8 + range.start)

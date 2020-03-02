@@ -29,7 +29,7 @@ object Lcg64 extends GeneratorCompanion[Lcg64, Long] {
 
   def fromBytes(bytes: Array[Byte]): Lcg64 =
     new Lcg64(Pack.longFromBytes(bytes))
-  def fromSeed(seed: Long): Lcg64 = new Lcg64(seed)
+  def fromSeed(seed: Long): Lcg64                     = new Lcg64(seed)
   def fromTime(time: Long = System.nanoTime()): Lcg64 = new Lcg64(time)
 
   def step(n: Long): Long = 6364136223846793005L * n + 1442695040888963407L

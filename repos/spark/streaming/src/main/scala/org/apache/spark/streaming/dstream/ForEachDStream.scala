@@ -31,12 +31,11 @@ import org.apache.spark.streaming.scheduler.Job
   *                           by `foreachFunc` will be displayed in the UI; only the scope and
   *                           callsite of `DStream.foreachRDD` will be displayed.
   */
-private[streaming] class ForEachDStream[T : ClassTag](
+private[streaming] class ForEachDStream[T: ClassTag](
     parent: DStream[T],
     foreachFunc: (RDD[T], Time) => Unit,
     displayInnerRDDOps: Boolean
-)
-    extends DStream[Unit](parent.ssc) {
+) extends DStream[Unit](parent.ssc) {
 
   override def dependencies: List[DStream[_]] = List(parent)
 
@@ -44,15 +43,14 @@ private[streaming] class ForEachDStream[T : ClassTag](
 
   override def compute(validTime: Time): Option[RDD[Unit]] = None
 
-  override def generateJob(time: Time): Option[Job] = {
+  override def generateJob(time: Time): Option[Job] =
     parent.getOrCompute(time) match {
       case Some(rdd) =>
         val jobFunc = () =>
           createRDDWithLocalProperties(time, displayInnerRDDOps) {
             foreachFunc(rdd, time)
-        }
+          }
         Some(new Job(time, jobFunc))
       case None => None
     }
-  }
 }

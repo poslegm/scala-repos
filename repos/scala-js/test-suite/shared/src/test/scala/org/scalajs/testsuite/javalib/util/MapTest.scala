@@ -145,7 +145,7 @@ trait MapTest {
     assertTrue(mp.isEmpty)
   }
 
-  @Test def should_put_or_fail_on_null_keys(): Unit = {
+  @Test def should_put_or_fail_on_null_keys(): Unit =
     if (factory.allowsNullKeys) {
       val mp = factory.empty[String, String]
       mp.put(null, "one")
@@ -154,9 +154,8 @@ trait MapTest {
       val mp = factory.empty[String, String]
       expectThrows(classOf[NullPointerException], mp.put(null, "one"))
     }
-  }
 
-  @Test def should_put_or_fail_on_null_values(): Unit = {
+  @Test def should_put_or_fail_on_null_values(): Unit =
     if (factory.allowsNullValues) {
       val mp = factory.empty[String, String]
       mp.put("one", null)
@@ -165,7 +164,6 @@ trait MapTest {
       val mp = factory.empty[String, String]
       expectThrows(classOf[NullPointerException], mp.put("one", null))
     }
-  }
 
   @Test def should_be_cleared_with_one_operation(): Unit = {
     val mp = factory.empty[String, String]
@@ -254,19 +252,19 @@ trait MapTest {
       assertEquals("y", mp.get(null))
       assertEquals("y", mp.get("X"))
     } else {
-      expectThrows(classOf[NullPointerException],
-                   mp.putAll(mutableMapAsJavaMap(nullMap)))
+      expectThrows(
+        classOf[NullPointerException],
+        mp.putAll(mutableMapAsJavaMap(nullMap))
+      )
     }
   }
 
   class SimpleQueryableMap[K, V](inner: mu.HashMap[K, V])
       extends ju.AbstractMap[K, V] {
-    def entrySet(): java.util.Set[java.util.Map.Entry[K, V]] = {
-      setAsJavaSet(
-          inner.map {
+    def entrySet(): java.util.Set[java.util.Map.Entry[K, V]] =
+      setAsJavaSet(inner.map {
         case (k, v) => new ju.AbstractMap.SimpleImmutableEntry(k, v)
       }.toSet)
-    }
   }
 
   @Test def values_should_mirror_the_related_map_size(): Unit = {
@@ -294,10 +292,10 @@ trait MapTest {
 
     assertTrue(values.isEmpty)
 
-    val hm1 = mu.HashMap("ONE" -> "one", "TWO" -> "two")
-    val hm2 = mu.HashMap("ONE" -> null, "TWO" -> "two")
+    val hm1 = mu.HashMap("ONE"          -> "one", "TWO" -> "two")
+    val hm2 = mu.HashMap("ONE"          -> null, "TWO"  -> "two")
     val hm3 = mu.HashMap((null: String) -> "one", "TWO" -> "two")
-    val hm4 = mu.HashMap((null: String) -> null, "TWO" -> "two")
+    val hm4 = mu.HashMap((null: String) -> null, "TWO"  -> "two")
 
     assertEquals(2, new SimpleQueryableMap(hm1).values.size)
     assertEquals(2, new SimpleQueryableMap(hm2).values.size)
@@ -349,8 +347,8 @@ trait MapTest {
     assertTrue(numValues.contains(-0.0))
     assertTrue(numValues.contains(Double.NaN))
 
-    val hm1 = mu.HashMap(1.0 -> null, 2.0 -> 2.0)
-    val hm2 = mu.HashMap((null: Any) -> 1.0, 2.0 -> 2.0)
+    val hm1 = mu.HashMap(1.0         -> null, 2.0 -> 2.0)
+    val hm2 = mu.HashMap((null: Any) -> 1.0, 2.0  -> 2.0)
     val hm3 = mu.HashMap((null: Any) -> null, 2.0 -> 2.0)
 
     assertFalse(new SimpleQueryableMap(hm1).values.contains(1.0))
@@ -441,10 +439,10 @@ trait MapTest {
 
     assertTrue(keySet.isEmpty)
 
-    val hm1 = mu.HashMap("ONE" -> "one", "TWO" -> "two")
-    val hm2 = mu.HashMap("ONE" -> null, "TWO" -> "two")
+    val hm1 = mu.HashMap("ONE"          -> "one", "TWO" -> "two")
+    val hm2 = mu.HashMap("ONE"          -> null, "TWO"  -> "two")
     val hm3 = mu.HashMap((null: String) -> "one", "TWO" -> "two")
-    val hm4 = mu.HashMap((null: String) -> null, "TWO" -> "two")
+    val hm4 = mu.HashMap((null: String) -> null, "TWO"  -> "two")
 
     assertEquals(2, new SimpleQueryableMap(hm1).keySet.size)
     assertEquals(2, new SimpleQueryableMap(hm2).keySet.size)
@@ -496,8 +494,8 @@ trait MapTest {
     assertTrue(numkeySet.contains(-0.0))
     assertTrue(numkeySet.contains(Double.NaN))
 
-    val hm1 = mu.HashMap(1.0 -> null, 2.0 -> 2.0)
-    val hm2 = mu.HashMap((null: Any) -> 1.0, 2.0 -> 2.0)
+    val hm1 = mu.HashMap(1.0         -> null, 2.0 -> 2.0)
+    val hm2 = mu.HashMap((null: Any) -> 1.0, 2.0  -> 2.0)
     val hm3 = mu.HashMap((null: Any) -> null, 2.0 -> 2.0)
 
     assertTrue(new SimpleQueryableMap(hm1).keySet.contains(1.0))
@@ -573,7 +571,7 @@ object MapFactory {
 trait MapFactory {
   def implementationName: String
 
-  def empty[K : ClassTag, V : ClassTag]: ju.Map[K, V]
+  def empty[K: ClassTag, V: ClassTag]: ju.Map[K, V]
 
   def allowsNullKeys: Boolean
 

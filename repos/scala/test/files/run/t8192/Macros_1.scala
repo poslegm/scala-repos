@@ -4,7 +4,7 @@ import java.io._
 
 object Macros {
   def impl(c: Context) = {
-    var messages = List[String]()
+    var messages             = List[String]()
     def println(msg: String) = messages :+= msg
 
     import c.universe._
@@ -13,7 +13,8 @@ object Macros {
         val internal =
           c.universe.asInstanceOf[scala.reflect.internal.SymbolTable]
         internal.definitions.fullyInitializeSymbol(
-            sym.asInstanceOf[internal.Symbol])
+          sym.asInstanceOf[internal.Symbol]
+        )
       }
       def defString(sym: Symbol): String = {
         val internal =

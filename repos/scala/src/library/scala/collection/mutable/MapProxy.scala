@@ -21,8 +21,9 @@ package mutable
   *  @since   1
   */
 @deprecated(
-    "Proxying is deprecated due to lack of use and compiler-level support.",
-    "2.11.0")
+  "Proxying is deprecated due to lack of use and compiler-level support.",
+  "2.11.0"
+)
 trait MapProxy[A, B] extends Map[A, B] with MapProxyLike[A, B, Map[A, B]] {
   private def newProxy[B1 >: B](newSelf: Map[A, B1]): MapProxy[A, B1] =
     new MapProxy[A, B1] { val self = newSelf }
@@ -42,5 +43,5 @@ trait MapProxy[A, B] extends Map[A, B] with MapProxyLike[A, B, Map[A, B]] {
   override def -(key: A) = newProxy(self - key)
 
   override def +=(kv: (A, B)) = { self += kv; this }
-  override def -=(key: A) = { self -= key; this }
+  override def -=(key: A)     = { self -= key; this }
 }

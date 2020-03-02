@@ -4,7 +4,10 @@ import com.intellij.debugger.DebuggerBundle
 import com.intellij.debugger.engine.evaluation.EvaluationContextImpl
 import com.intellij.debugger.engine.evaluation.expression.{Evaluator, Modifier}
 import com.intellij.debugger.impl.DebuggerUtilsEx
-import com.intellij.debugger.ui.impl.watch.{FieldDescriptorImpl, NodeDescriptorImpl}
+import com.intellij.debugger.ui.impl.watch.{
+  FieldDescriptorImpl,
+  NodeDescriptorImpl
+}
 import com.intellij.openapi.project.Project
 import com.sun.jdi._
 import org.jetbrains.plugins.scala.debugger.evaluation.EvaluationException
@@ -14,12 +17,13 @@ import org.jetbrains.plugins.scala.debugger.evaluation.util.DebuggerUtil
   * User: Alefas
   * Date: 12.10.11
   */
-case class ScalaFieldEvaluator(objectEvaluator: Evaluator,
-                               _fieldName: String,
-                               classPrivateThisField: Boolean = false)
-    extends Evaluator {
+case class ScalaFieldEvaluator(
+    objectEvaluator: Evaluator,
+    _fieldName: String,
+    classPrivateThisField: Boolean = false
+) extends Evaluator {
   private var myEvaluatedQualifier: AnyRef = null
-  private var myEvaluatedField: Field = null
+  private var myEvaluatedField: Field      = null
 
   private val fieldName = DebuggerUtil.withoutBackticks(_fieldName)
 
@@ -85,7 +89,9 @@ case class ScalaFieldEvaluator(objectEvaluator: Evaluator,
   }
 
   private def evaluateField(
-      obj: AnyRef, context: EvaluationContextImpl): AnyRef = {
+      obj: AnyRef,
+      context: EvaluationContextImpl
+  ): AnyRef =
     obj match {
       case refType: ReferenceType =>
         var field: Field = findField(refType, context)
@@ -94,8 +100,9 @@ case class ScalaFieldEvaluator(objectEvaluator: Evaluator,
         }
         if (field == null || !field.isStatic) {
           throw EvaluationException(
-              DebuggerBundle.message(
-                  "evaluation.error.no.static.field", fieldName))
+            DebuggerBundle
+              .message("evaluation.error.no.static.field", fieldName)
+          )
         }
         myEvaluatedField = field
         myEvaluatedQualifier = refType
@@ -103,17 +110,19 @@ case class ScalaFieldEvaluator(objectEvaluator: Evaluator,
       case objRef: ObjectReference =>
         val refType: ReferenceType = objRef.referenceType
         if (!(refType.isInstanceOf[ClassType] ||
-                refType.isInstanceOf[ArrayType])) {
+              refType.isInstanceOf[ArrayType])) {
           throw EvaluationException(
-              DebuggerBundle.message(
-                  "evaluation.error.class.or.array.expected", fieldName))
+            DebuggerBundle
+              .message("evaluation.error.class.or.array.expected", fieldName)
+          )
         }
         objRef match {
           case arrayRef: ArrayReference if "length" == fieldName =>
             return DebuggerUtilsEx.createValue(
-                context.getDebugProcess.getVirtualMachineProxy,
-                "int",
-                arrayRef.length)
+              context.getDebugProcess.getVirtualMachineProxy,
+              "int",
+              arrayRef.length
+            )
           case _ =>
         }
         var field: Field = findField(refType, context)
@@ -122,8 +131,9 @@ case class ScalaFieldEvaluator(objectEvaluator: Evaluator,
         }
         if (field == null) {
           throw EvaluationException(
-              DebuggerBundle.message(
-                  "evaluation.error.no.instance.field", fieldName))
+            DebuggerBundle
+              .message("evaluation.error.no.instance.field", fieldName)
+          )
         }
         myEvaluatedQualifier = if (field.isStatic) refType else objRef
         myEvaluatedField = field
@@ -131,24 +141,21 @@ case class ScalaFieldEvaluator(objectEvaluator: Evaluator,
       case null => throw EvaluationException(new NullPointerException)
       case _ =>
         throw EvaluationException(
-            DebuggerBundle.message(
-                "evaluation.error.evaluating.field", fieldName))
+          DebuggerBundle.message("evaluation.error.evaluating.field", fieldName)
+        )
     }
-  }
 
   def getModifier: Modifier = {
     var modifier: Modifier = null
     if (myEvaluatedField != null &&
         (myEvaluatedQualifier.isInstanceOf[ClassType] ||
-            myEvaluatedQualifier.isInstanceOf[ObjectReference])) {
+        myEvaluatedQualifier.isInstanceOf[ObjectReference])) {
       modifier = new Modifier {
-        def canInspect: Boolean = {
+        def canInspect: Boolean =
           myEvaluatedQualifier.isInstanceOf[ObjectReference]
-        }
 
-        def canSetValue: Boolean = {
+        def canSetValue: Boolean =
           true
-        }
 
         def setValue(value: Value) {
           if (myEvaluatedQualifier.isInstanceOf[ReferenceType]) {
@@ -162,17 +169,15 @@ case class ScalaFieldEvaluator(objectEvaluator: Evaluator,
           }
         }
 
-        def getExpectedType: Type = {
+        def getExpectedType: Type =
           myEvaluatedField.`type`
-        }
 
-        def getInspectItem(project: Project): NodeDescriptorImpl = {
+        def getInspectItem(project: Project): NodeDescriptorImpl =
           myEvaluatedQualifier match {
             case reference: ObjectReference =>
               new FieldDescriptorImpl(project, reference, myEvaluatedField)
             case _ => null
           }
-        }
       }
     }
     modifier

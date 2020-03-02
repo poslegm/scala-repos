@@ -38,7 +38,7 @@ object Test {
   def testModel(root: Package) = {
     import access._
     val obj = root._object("Test")
-    val c = obj.comment.get
+    val c   = obj.comment.get
 
     test(c.authors.isEmpty, s"expected no authors, found: ${c.authors}")
     test(!c.since.isDefined, s"expected no since tag, found: ${c.since}")
@@ -49,16 +49,22 @@ object Test {
     // deprecated stays
     test(c.deprecated.isDefined, s"expected deprecated tag, found none")
     test(c.example.isEmpty, s"expected no example, found: ${c.example}")
-    test(!c.constructor.isDefined,
-         s"expected no constructor tag, found: ${c.constructor}")
+    test(
+      !c.constructor.isDefined,
+      s"expected no constructor tag, found: ${c.constructor}"
+    )
 
     val method = obj._method("foo")
-    val mc = method.comment.get
+    val mc     = method.comment.get
 
-    test(mc.valueParams.isEmpty,
-         s"expected empty value params, found: ${mc.valueParams}")
-    test(mc.typeParams.isEmpty,
-         s"expected empty type params, found: ${mc.typeParams}")
+    test(
+      mc.valueParams.isEmpty,
+      s"expected empty value params, found: ${mc.valueParams}"
+    )
+    test(
+      mc.typeParams.isEmpty,
+      s"expected empty type params, found: ${mc.typeParams}"
+    )
     test(!mc.result.isDefined, s"expected no result tag, found: ${mc.result}")
     // throws stay
     test(!mc.throws.isEmpty, s"expected an exception tag, found: ${mc.throws}")

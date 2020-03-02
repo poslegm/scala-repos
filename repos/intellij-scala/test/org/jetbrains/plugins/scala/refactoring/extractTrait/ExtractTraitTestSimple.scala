@@ -8,12 +8,12 @@ package refactoring.extractTrait
 class ExtractTraitTestSimple extends ExtractTraitTestBase {
 
   def testDef() {
-    val text = """
+    val text       = """
         |trait A {<caret>
         |  def a() = 1
         |}
         |""".stripMargin
-    val result = """
+    val result     = """
         |trait A extends ExtractedTrait
         |
         |trait ExtractedTrait {
@@ -37,12 +37,12 @@ class ExtractTraitTestSimple extends ExtractTraitTestBase {
   }
 
   def testDef2() {
-    val text = """
+    val text       = """
         |trait A {<caret>
         |  def a(i: Int): Int = 1
         |}
         |""".stripMargin
-    val result = """
+    val result     = """
         |trait A extends ExtractedTrait
         |
         |trait ExtractedTrait {
@@ -66,13 +66,13 @@ class ExtractTraitTestSimple extends ExtractTraitTestBase {
   }
 
   def testValAndVar() {
-    val text = """
+    val text       = """
         |trait A {<caret>
         |  val a = 1
         |  var b = 2
         |}
         |""".stripMargin
-    val result = """
+    val result     = """
         |trait A extends ExtractedTrait
         |
         |trait ExtractedTrait {
@@ -120,7 +120,7 @@ class ExtractTraitTestSimple extends ExtractTraitTestBase {
   }
 
   def testDontExtractConstructor() {
-    val text = """
+    val text   = """
         |class A {<caret>
         |
         |  def this(i: Int) {
@@ -151,7 +151,7 @@ class ExtractTraitTestSimple extends ExtractTraitTestBase {
   }
 
   def testDontExtractPrivateMethods() {
-    val text = """
+    val text   = """
         |class A {<caret>
         |  private def foo() {}
         |
@@ -176,7 +176,7 @@ class ExtractTraitTestSimple extends ExtractTraitTestBase {
   }
 
   def testDontExtractTypeDefs() {
-    val text = """
+    val text   = """
         |class A {<caret>
         |
         |  class Inner
@@ -203,13 +203,13 @@ class ExtractTraitTestSimple extends ExtractTraitTestBase {
   }
 
   def testTypeAlias() {
-    val text = """
+    val text       = """
         |trait A {<caret>
         |  type T = Int
         |  type S <: String
         |}
         |""".stripMargin
-    val result = """
+    val result     = """
         |trait A extends ExtractedTrait
         |
         |trait ExtractedTrait {

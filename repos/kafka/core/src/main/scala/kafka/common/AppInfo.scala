@@ -22,7 +22,7 @@ import org.apache.kafka.common.utils.AppInfoParser
 
 object AppInfo extends KafkaMetricsGroup {
   private var isRegistered = false
-  private val lock = new Object()
+  private val lock         = new Object()
 
   def registerInfo(): Unit = {
     lock.synchronized {
@@ -31,17 +31,21 @@ object AppInfo extends KafkaMetricsGroup {
       }
     }
 
-    newGauge("Version", new Gauge[String] {
-      def value = {
-        AppInfoParser.getVersion()
+    newGauge(
+      "Version",
+      new Gauge[String] {
+        def value =
+          AppInfoParser.getVersion()
       }
-    })
+    )
 
-    newGauge("CommitID", new Gauge[String] {
-      def value = {
-        AppInfoParser.getCommitId();
+    newGauge(
+      "CommitID",
+      new Gauge[String] {
+        def value =
+          AppInfoParser.getCommitId();
       }
-    })
+    )
 
     lock.synchronized {
       isRegistered = true

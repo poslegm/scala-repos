@@ -12,7 +12,7 @@ private class MonitorOutput(val inStream: InputStream, broadcaster: ActorRef)
     extends Thread {
 
   val log = LoggerFactory.getLogger("MonitorOutput")
-  val in = new InputStreamReader(inStream)
+  val in  = new InputStreamReader(inStream)
 
   @volatile var finished = false
 

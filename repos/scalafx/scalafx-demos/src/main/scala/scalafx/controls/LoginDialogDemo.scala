@@ -44,7 +44,7 @@ object LoginDialogDemo extends JFXApp {
       title = "Custom Dialog Demo"
       content = new VBox {
         children = new Button("Show Login Dialog") {
-          onAction = handle { onShowLoginDialog() }
+          onAction = handle(onShowLoginDialog())
         }
         padding = Insets(top = 24, right = 64, bottom = 24, left = 64)
       }
@@ -61,7 +61,8 @@ object LoginDialogDemo extends JFXApp {
       title = "Login Dialog"
       headerText = "Look, a Custom Login Dialog"
       graphic = new ImageView(
-          this.getClass.getResource("login_icon.png").toString)
+        this.getClass.getResource("login_icon.png").toString
+      )
     }
 
     // Set the button types.
@@ -111,7 +112,7 @@ object LoginDialogDemo extends JFXApp {
 
     result match {
       case Some(Result(u, p)) => println("Username=" + u + ", Password=" + p)
-      case None => println("Dialog returned: None")
+      case None               => println("Dialog returned: None")
     }
   }
 }

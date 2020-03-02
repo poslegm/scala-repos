@@ -24,32 +24,43 @@ private[persistence] trait LeveldbRecovery extends AsyncRecovery {
     context.system.dispatchers.lookup(replayDispatcherId)
 
   def asyncReadHighestSequenceNr(
-      persistenceId: String, fromSequenceNr: Long): Future[Long] = {
+      persistenceId: String,
+      fromSequenceNr: Long
+  ): Future[Long] = {
     val nid = numericId(persistenceId)
     Future(readHighestSequenceNr(nid))(replayDispatcher)
   }
 
-  def asyncReplayMessages(persistenceId: String,
-                          fromSequenceNr: Long,
-                          toSequenceNr: Long,
-                          max: Long)(
-      replayCallback: PersistentRepr ⇒ Unit): Future[Unit] = {
+  def asyncReplayMessages(
+      persistenceId: String,
+      fromSequenceNr: Long,
+      toSequenceNr: Long,
+      max: Long
+  )(replayCallback: PersistentRepr ⇒ Unit): Future[Unit] = {
     val nid = numericId(persistenceId)
-    Future(replayMessages(nid, fromSequenceNr: Long, toSequenceNr, max: Long)(
-            replayCallback))(replayDispatcher)
+    Future(
+      replayMessages(nid, fromSequenceNr: Long, toSequenceNr, max: Long)(
+        replayCallback
+      )
+    )(replayDispatcher)
   }
 
   def replayMessages(
-      persistenceId: Int, fromSequenceNr: Long, toSequenceNr: Long, max: Long)(
-      replayCallback: PersistentRepr ⇒ Unit): Unit = {
+      persistenceId: Int,
+      fromSequenceNr: Long,
+      toSequenceNr: Long,
+      max: Long
+  )(replayCallback: PersistentRepr ⇒ Unit): Unit = {
     @scala.annotation.tailrec
-    def go(iter: DBIterator,
-           key: Key,
-           ctr: Long,
-           replayCallback: PersistentRepr ⇒ Unit) {
+    def go(
+        iter: DBIterator,
+        key: Key,
+        ctr: Long,
+        replayCallback: PersistentRepr ⇒ Unit
+    ) {
       if (iter.hasNext) {
         val nextEntry = iter.next()
-        val nextKey = keyFromBytes(nextEntry.getKey)
+        val nextKey   = keyFromBytes(nextEntry.getKey)
         if (nextKey.sequenceNr > toSequenceNr) {
           // end iteration here
         } else if (isDeletionKey(nextKey)) {
@@ -68,17 +79,16 @@ private[persistence] trait LeveldbRecovery extends AsyncRecovery {
 
     // need to have this to be able to read journal created with 2.3.x, which
     // supported deletion of individual events
-    def deletion(iter: DBIterator, key: Key): Boolean = {
+    def deletion(iter: DBIterator, key: Key): Boolean =
       if (iter.hasNext) {
         val nextEntry = iter.peekNext()
-        val nextKey = keyFromBytes(nextEntry.getKey)
+        val nextKey   = keyFromBytes(nextEntry.getKey)
         if (key.persistenceId == nextKey.persistenceId &&
             key.sequenceNr == nextKey.sequenceNr && isDeletionKey(nextKey)) {
           iter.next()
           true
         } else false
       } else false
-    }
 
     withIterator { iter ⇒
       val startKey =
@@ -89,30 +99,41 @@ private[persistence] trait LeveldbRecovery extends AsyncRecovery {
   }
 
   def asyncReplayTaggedMessages(
-      tag: String, fromSequenceNr: Long, toSequenceNr: Long, max: Long)(
-      replayCallback: ReplayedTaggedMessage ⇒ Unit): Future[Unit] = {
+      tag: String,
+      fromSequenceNr: Long,
+      toSequenceNr: Long,
+      max: Long
+  )(replayCallback: ReplayedTaggedMessage ⇒ Unit): Future[Unit] = {
     val tagNid = tagNumericId(tag)
     Future(
-        replayTaggedMessages(
-            tag, tagNid, fromSequenceNr: Long, toSequenceNr, max: Long)(
-            replayCallback))(replayDispatcher)
+      replayTaggedMessages(
+        tag,
+        tagNid,
+        fromSequenceNr: Long,
+        toSequenceNr,
+        max: Long
+      )(replayCallback)
+    )(replayDispatcher)
   }
 
-  def replayTaggedMessages(tag: String,
-                           tagNid: Int,
-                           fromSequenceNr: Long,
-                           toSequenceNr: Long,
-                           max: Long)(
-      replayCallback: ReplayedTaggedMessage ⇒ Unit): Unit = {
+  def replayTaggedMessages(
+      tag: String,
+      tagNid: Int,
+      fromSequenceNr: Long,
+      toSequenceNr: Long,
+      max: Long
+  )(replayCallback: ReplayedTaggedMessage ⇒ Unit): Unit = {
 
     @scala.annotation.tailrec
-    def go(iter: DBIterator,
-           key: Key,
-           ctr: Long,
-           replayCallback: ReplayedTaggedMessage ⇒ Unit) {
+    def go(
+        iter: DBIterator,
+        key: Key,
+        ctr: Long,
+        replayCallback: ReplayedTaggedMessage ⇒ Unit
+    ) {
       if (iter.hasNext) {
         val nextEntry = iter.next()
-        val nextKey = keyFromBytes(nextEntry.getKey)
+        val nextKey   = keyFromBytes(nextEntry.getKey)
         if (nextKey.sequenceNr > toSequenceNr) {
           // end iteration here
         } else if (key.persistenceId == nextKey.persistenceId) {
@@ -137,7 +158,7 @@ private[persistence] trait LeveldbRecovery extends AsyncRecovery {
     val ro = leveldbSnapshot()
     try {
       leveldb.get(keyToBytes(counterKey(persistenceId)), ro) match {
-        case null ⇒ 0L
+        case null  ⇒ 0L
         case bytes ⇒ counterFromBytes(bytes)
       }
     } finally {

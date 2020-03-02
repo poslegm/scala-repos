@@ -16,7 +16,12 @@
   */
 package kafka.utils.timer
 
-import java.util.concurrent.{CountDownLatch, ExecutorService, Executors, TimeUnit}
+import java.util.concurrent.{
+  CountDownLatch,
+  ExecutorService,
+  Executors,
+  TimeUnit
+}
 
 import org.junit.Assert._
 import java.util.concurrent.atomic._
@@ -27,18 +32,18 @@ import scala.util.Random
 
 class TimerTest {
 
-  private class TestTask(override val expirationMs: Long,
-                         id: Int,
-                         latch: CountDownLatch,
-                         output: ArrayBuffer[Int])
-      extends TimerTask {
+  private class TestTask(
+      override val expirationMs: Long,
+      id: Int,
+      latch: CountDownLatch,
+      output: ArrayBuffer[Int]
+  ) extends TimerTask {
     private[this] val completed = new AtomicBoolean(false)
-    def run(): Unit = {
+    def run(): Unit =
       if (completed.compareAndSet(false, true)) {
-        output.synchronized { output += id }
+        output.synchronized(output += id)
         latch.countDown()
       }
-    }
   }
 
   private[this] var executor: ExecutorService = null
@@ -57,10 +62,12 @@ class TimerTest {
   @Test
   def testAlreadyExpiredTask(): Unit = {
     val startTime = System.currentTimeMillis()
-    val timer = new Timer(taskExecutor = executor,
-                          tickMs = 1,
-                          wheelSize = 3,
-                          startMs = startTime)
+    val timer = new Timer(
+      taskExecutor = executor,
+      tickMs = 1,
+      wheelSize = 3,
+      startMs = startTime
+    )
     val output = new ArrayBuffer[Int]()
 
     val latches = (-5 until 0).map { i =>
@@ -70,27 +77,33 @@ class TimerTest {
     }
 
     latches.take(5).foreach { latch =>
-      assertEquals("already expired tasks should run immediately",
-                   true,
-                   latch.await(3, TimeUnit.SECONDS))
+      assertEquals(
+        "already expired tasks should run immediately",
+        true,
+        latch.await(3, TimeUnit.SECONDS)
+      )
     }
 
-    assertEquals("output of already expired tasks",
-                 Set(-5, -4, -3, -2, -1),
-                 output.toSet)
+    assertEquals(
+      "output of already expired tasks",
+      Set(-5, -4, -3, -2, -1),
+      output.toSet
+    )
   }
 
   @Test
   def testTaskExpiration(): Unit = {
     val startTime = System.currentTimeMillis()
-    val timer = new Timer(taskExecutor = executor,
-                          tickMs = 1,
-                          wheelSize = 3,
-                          startMs = startTime)
+    val timer = new Timer(
+      taskExecutor = executor,
+      tickMs = 1,
+      wheelSize = 3,
+      startMs = startTime
+    )
     val output = new ArrayBuffer[Int]()
 
     val tasks = new ArrayBuffer[TestTask]()
-    val ids = new ArrayBuffer[Int]()
+    val ids   = new ArrayBuffer[Int]()
 
     val latches =
       (0 until 5).map { i =>
@@ -113,15 +126,11 @@ class TimerTest {
       }
 
     // randomly submit requests
-    Random.shuffle(tasks.toSeq).foreach { task =>
-      timer.add(task)
-    }
+    Random.shuffle(tasks.toSeq).foreach(task => timer.add(task))
 
     while (timer.advanceClock(1000)) {}
 
-    latches.foreach { latch =>
-      latch.await()
-    }
+    latches.foreach(latch => latch.await())
 
     assertEquals("output should match", ids.sorted, output.toSeq)
   }

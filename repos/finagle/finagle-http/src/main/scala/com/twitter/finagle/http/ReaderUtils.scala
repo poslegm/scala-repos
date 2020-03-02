@@ -20,7 +20,8 @@ private[http] object ReaderUtils {
 
     case invalid =>
       val exc = new IllegalArgumentException(
-          "invalid message \"%s\"".format(invalid))
+        "invalid message \"%s\"".format(invalid)
+      )
       Future.exception(exc)
   }
 
@@ -39,15 +40,14 @@ private[http] object ReaderUtils {
       r: Reader,
       // TODO Find a better number for bufSize, e.g. 32KiB - Buf overhead
       bufSize: Int = Int.MaxValue
-  ): Future[Unit] = {
+  ): Future[Unit] =
     r.read(bufSize) flatMap {
       case None =>
         trans.write(HttpChunk.LAST_CHUNK)
       case Some(buf) =>
         trans.write(chunkOfBuf(buf)) transform {
           case Return(_) => streamChunks(trans, r, bufSize)
-          case _ => Future(r.discard())
+          case _         => Future(r.discard())
         }
     }
-  }
 }

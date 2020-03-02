@@ -27,15 +27,20 @@ import Seq.fill
   *  @tparam Coll the type of the underlying collection containing the elements.
   *  @tparam This the type of the view itself
   */
-trait SeqViewLike[
-    +A, +Coll, +This <: SeqView[A, Coll] with SeqViewLike[A, Coll, This]]
-    extends Seq[A] with SeqLike[A, This]
-    with IterableView[A, Coll] with IterableViewLike[A, Coll, This] {
+trait SeqViewLike[+A, +Coll, +This <: SeqView[A, Coll] with SeqViewLike[
+  A,
+  Coll,
+  This
+]] extends Seq[A]
+    with SeqLike[A, This]
+    with IterableView[A, Coll]
+    with IterableViewLike[A, Coll, This] {
   self =>
 
   /** Explicit instantiation of the `Transformed` trait to reduce class file size in subclasses. */
   private[collection] abstract class AbstractTransformed[+B]
-      extends Seq[B] with super [IterableViewLike].Transformed[B]
+      extends Seq[B]
+      with super[IterableViewLike].Transformed[B]
       with Transformed[B]
 
   trait Transformed[+B] extends SeqView[B, Coll] with super.Transformed[B] {
@@ -45,12 +50,12 @@ trait SeqViewLike[
   }
 
   trait EmptyView extends Transformed[Nothing] with super.EmptyView {
-    final override def length = 0
+    final override def length        = 0
     final override def apply(n: Int) = Nil(n)
   }
 
   trait Forced[B] extends super.Forced[B] with Transformed[B] {
-    def length = forced.length
+    def length          = forced.length
     def apply(idx: Int) = forced.apply(idx)
   }
 
@@ -66,7 +71,7 @@ trait SeqViewLike[
   }
 
   trait Mapped[B] extends super.Mapped[B] with Transformed[B] {
-    def length = self.length
+    def length             = self.length
     def apply(idx: Int): B = mapping(self(idx))
   }
 
@@ -75,7 +80,7 @@ trait SeqViewLike[
       val index = new Array[Int](self.length + 1)
       index(0) = 0
       for (i <- 0 until self.length) // note that if the mapping returns a list, performance is bad, bad
-      index(i + 1) = index(i) + mapping(self(i)).seq.size
+        index(i + 1) = index(i) + mapping(self(i)).seq.size
       index
     }
     protected[this] def findRow(idx: Int, lo: Int, hi: Int): Int = {
@@ -95,14 +100,14 @@ trait SeqViewLike[
 
   trait Appended[B >: A] extends super.Appended[B] with Transformed[B] {
     protected[this] lazy val restSeq = rest.toSeq
-    def length = self.length + restSeq.length
+    def length                       = self.length + restSeq.length
     def apply(idx: Int) =
       if (idx < self.length) self(idx) else restSeq(idx - self.length)
   }
 
   trait Prepended[B >: A] extends super.Prepended[B] with Transformed[B] {
     protected[this] lazy val fstSeq = fst.toSeq
-    def length: Int = fstSeq.length + self.length
+    def length: Int                 = fstSeq.length + self.length
     def apply(idx: Int): B =
       if (idx < fstSeq.length) fstSeq(idx)
       else self.apply(idx - fstSeq.length)
@@ -118,13 +123,13 @@ trait SeqViewLike[
       }
       arr take len
     }
-    def length = index.length
+    def length          = index.length
     def apply(idx: Int) = self(index(idx))
   }
 
   trait TakenWhile extends super.TakenWhile with Transformed[A] {
     protected[this] lazy val len = self prefixLength pred
-    def length = len
+    def length                   = len
     def apply(idx: Int) =
       if (idx < len) self(idx)
       else throw new IndexOutOfBoundsException(idx.toString)
@@ -132,7 +137,7 @@ trait SeqViewLike[
 
   trait DroppedWhile extends super.DroppedWhile with Transformed[A] {
     protected[this] lazy val start = self prefixLength pred
-    def length = self.length - start
+    def length                     = self.length - start
     def apply(idx: Int) =
       if (idx >= 0) self(idx + start)
       else throw new IndexOutOfBoundsException(idx.toString)
@@ -148,18 +153,21 @@ trait SeqViewLike[
   }
 
   trait ZippedAll[A1 >: A, B]
-      extends super.ZippedAll[A1, B] with Transformed[(A1, B)] {
+      extends super.ZippedAll[A1, B]
+      with Transformed[(A1, B)] {
     protected[this] lazy val thatSeq = other.seq.toSeq
-    def length: Int = self.length max thatSeq.length
+    def length: Int                  = self.length max thatSeq.length
     def apply(idx: Int) =
-      (if (idx < self.length) self.apply(idx) else thisElem,
-       if (idx < thatSeq.length) thatSeq.apply(idx) else thatElem)
+      (
+        if (idx < self.length) self.apply(idx) else thisElem,
+        if (idx < thatSeq.length) thatSeq.apply(idx) else thatElem
+      )
   }
 
   trait Reversed extends Transformed[A] {
-    override def iterator: Iterator[A] = createReversedIterator
-    def length: Int = self.length
-    def apply(idx: Int): A = self.apply(length - 1 - idx)
+    override def iterator: Iterator[A]                = createReversedIterator
+    def length: Int                                   = self.length
+    def apply(idx: Int): A                            = self.apply(length - 1 - idx)
     final override protected[this] def viewIdentifier = "R"
 
     private def createReversedIterator = {
@@ -180,8 +188,8 @@ trait SeqViewLike[
     override def iterator: Iterator[B] =
       self.iterator patch (from, patch.iterator, replaced)
     def length: Int = {
-      val len = self.length
-      val pre = math.min(from, len)
+      val len  = self.length
+      val pre  = math.min(from, len)
       val post = math.max(0, len - pre - replaced)
       pre + plen + post
     }
@@ -200,16 +208,19 @@ trait SeqViewLike[
   protected override def newForced[B](xs: => GenSeq[B]): Transformed[B] =
     new { val forced = xs } with AbstractTransformed[B] with Forced[B]
   protected override def newAppended[B >: A](
-      that: GenTraversable[B]): Transformed[B] =
+      that: GenTraversable[B]
+  ): Transformed[B] =
     new { val rest = that } with AbstractTransformed[B] with Appended[B]
   protected override def newPrepended[B >: A](
-      that: GenTraversable[B]): Transformed[B] =
+      that: GenTraversable[B]
+  ): Transformed[B] =
     new { protected[this] val fst = that } with AbstractTransformed[B]
-    with Prepended[B]
+      with Prepended[B]
   protected override def newMapped[B](f: A => B): Transformed[B] =
     new { val mapping = f } with AbstractTransformed[B] with Mapped[B]
   protected override def newFlatMapped[B](
-      f: A => GenTraversableOnce[B]): Transformed[B] =
+      f: A => GenTraversableOnce[B]
+  ): Transformed[B] =
     new { val mapping = f } with AbstractTransformed[B] with FlatMapped[B]
   protected override def newFiltered(p: A => Boolean): Transformed[A] =
     new { val pred = p } with AbstractTransformed[A] with Filtered
@@ -220,24 +231,29 @@ trait SeqViewLike[
   protected override def newTakenWhile(p: A => Boolean): Transformed[A] =
     new { val pred = p } with AbstractTransformed[A] with TakenWhile
   protected override def newZipped[B](
-      that: GenIterable[B]): Transformed[(A, B)] =
+      that: GenIterable[B]
+  ): Transformed[(A, B)] =
     new { val other = that } with AbstractTransformed[(A, B)] with Zipped[B]
   protected override def newZippedAll[A1 >: A, B](
       that: GenIterable[B],
       _thisElem: A1,
-      _thatElem: B): Transformed[(A1, B)] =
+      _thatElem: B
+  ): Transformed[(A1, B)] =
     new {
-      val other = that
+      val other    = that
       val thisElem = _thisElem
       val thatElem = _thatElem
     } with AbstractTransformed[(A1, B)] with ZippedAll[A1, B]
   protected def newReversed: Transformed[A] =
     new AbstractTransformed[A] with Reversed
   protected def newPatched[B >: A](
-      _from: Int, _patch: GenSeq[B], _replaced: Int): Transformed[B] =
+      _from: Int,
+      _patch: GenSeq[B],
+      _replaced: Int
+  ): Transformed[B] =
     new {
-      val from = _from
-      val patch = _patch
+      val from     = _from
+      val patch    = _patch
       val replaced = _replaced
     } with AbstractTransformed[B] with Patched[B]
 
@@ -250,10 +266,11 @@ trait SeqViewLike[
   override def reverse: This = newReversed.asInstanceOf[This]
 
   override def patch[B >: A, That](from: Int, patch: GenSeq[B], replaced: Int)(
-      implicit bf: CanBuildFrom[This, B, That]): That = {
+      implicit bf: CanBuildFrom[This, B, That]
+  ): That = {
     // Be careful to not evaluate the entire sequence!  Patch should work (slowly, perhaps) on infinite streams.
     val nonNegFrom = math.max(0, from)
-    val nonNegRep = math.max(0, replaced)
+    val nonNegRep  = math.max(0, replaced)
     newPatched(nonNegFrom, patch, nonNegRep).asInstanceOf[That]
 // was:    val b = bf(repr)
 //    if (b.isInstanceOf[NoBuilder[_]]) newPatched(from, patch, replaced).asInstanceOf[That]
@@ -261,29 +278,35 @@ trait SeqViewLike[
   }
 
   override def padTo[B >: A, That](len: Int, elem: B)(
-      implicit bf: CanBuildFrom[This, B, That]): That =
+      implicit bf: CanBuildFrom[This, B, That]
+  ): That =
     patch(length, fill(len - length)(elem), 0)
 
-  override def reverseMap[B, That](f: A => B)(
-      implicit bf: CanBuildFrom[This, B, That]): That =
+  override def reverseMap[B, That](
+      f: A => B
+  )(implicit bf: CanBuildFrom[This, B, That]): That =
     reverse map f
 
   override def updated[B >: A, That](index: Int, elem: B)(
-      implicit bf: CanBuildFrom[This, B, That]): That = {
+      implicit bf: CanBuildFrom[This, B, That]
+  ): That = {
     require(0 <= index && index < length) // !!! can't call length like this.
     patch(index, List(elem), 1)(bf)
   }
 
-  override def +:[B >: A, That](elem: B)(
-      implicit bf: CanBuildFrom[This, B, That]): That =
+  override def +:[B >: A, That](
+      elem: B
+  )(implicit bf: CanBuildFrom[This, B, That]): That =
     newPrepended(elem :: Nil).asInstanceOf[That]
 
-  override def :+[B >: A, That](elem: B)(
-      implicit bf: CanBuildFrom[This, B, That]): That =
+  override def :+[B >: A, That](
+      elem: B
+  )(implicit bf: CanBuildFrom[This, B, That]): That =
     ++(Iterator.single(elem))(bf)
 
-  override def union[B >: A, That](that: GenSeq[B])(
-      implicit bf: CanBuildFrom[This, B, That]): That =
+  override def union[B >: A, That](
+      that: GenSeq[B]
+  )(implicit bf: CanBuildFrom[This, B, That]): That =
     newForced(thisSeq union that).asInstanceOf[That]
 
   override def diff[B >: A](that: GenSeq[B]): This =

@@ -8,10 +8,10 @@ import play.api.Configuration
 
 object DefaultEvolutionsConfigParserSpec extends Specification {
 
-  def parse(config: (String, Any)*): EvolutionsConfig = {
+  def parse(config: (String, Any)*): EvolutionsConfig =
     new DefaultEvolutionsConfigParser(
-        Configuration.reference ++ Configuration.from(config.toMap)).get
-  }
+      Configuration.reference ++ Configuration.from(config.toMap)
+    ).get
 
   def test(key: String)(read: EvolutionsDatasourceConfig => Boolean) = {
     read(parse(key -> true).forDatasource("default")) must_== true
@@ -21,19 +21,27 @@ object DefaultEvolutionsConfigParserSpec extends Specification {
   def testN(key: String)(read: EvolutionsDatasourceConfig => Boolean) = {
     // This ensures that the config for default is detected, ensuring that a configuration based fallback is used
     val fooConfig = "play.evolutions.db.default.foo" -> "foo"
-    read(parse(s"play.evolutions.$key" -> true, fooConfig)
-          .forDatasource("default")) must_== true
-    read(parse(s"play.evolutions.$key" -> false, fooConfig)
-          .forDatasource("default")) must_== false
+    read(
+      parse(s"play.evolutions.$key" -> true, fooConfig)
+        .forDatasource("default")
+    ) must_== true
+    read(
+      parse(s"play.evolutions.$key" -> false, fooConfig)
+        .forDatasource("default")
+    ) must_== false
   }
 
   def testNString(key: String)(read: EvolutionsDatasourceConfig => String) = {
     // This ensures that the config for default is detected, ensuring that a configuration based fallback is used
     val fooConfig = "play.evolutions.db.default.foo" -> "foo"
-    read(parse(s"play.evolutions.$key" -> "", fooConfig)
-          .forDatasource("default")) must_== ""
-    read(parse(s"play.evolutions.$key" -> "something", fooConfig)
-          .forDatasource("default")) must_== "something"
+    read(
+      parse(s"play.evolutions.$key" -> "", fooConfig)
+        .forDatasource("default")
+    ) must_== ""
+    read(
+      parse(s"play.evolutions.$key" -> "something", fooConfig)
+        .forDatasource("default")
+    ) must_== "something"
   }
 
   val default = parse().forDatasource("default")

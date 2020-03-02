@@ -31,11 +31,12 @@ import scala.util.Random
 
 /** Elasticsearch implementation of AccessKeys. */
 class ESAccessKeys(client: Client, config: StorageClientConfig, index: String)
-    extends AccessKeys with Logging {
+    extends AccessKeys
+    with Logging {
   implicit val formats = DefaultFormats.lossless
-  private val estype = "accesskeys"
+  private val estype   = "accesskeys"
 
-  val indices = client.admin.indices
+  val indices            = client.admin.indices
   val indexExistResponse = indices.prepareExists(index).get
   if (!indexExistResponse.isExists) {
     indices.prepareCreate(index).get
@@ -45,9 +46,9 @@ class ESAccessKeys(client: Client, config: StorageClientConfig, index: String)
   if (!typeExistResponse.isExists) {
     val json =
       (estype ->
-          ("properties" ->
-              ("key" -> ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
-              ("events" -> ("type" -> "string") ~ ("index" -> "not_analyzed"))))
+        ("properties" ->
+          ("key"      -> ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
+            ("events" -> ("type" -> "string") ~ ("index" -> "not_analyzed"))))
     indices
       .preparePutMapping(index)
       .setType(estype)
@@ -61,7 +62,7 @@ class ESAccessKeys(client: Client, config: StorageClientConfig, index: String)
     Some(key)
   }
 
-  def get(key: String): Option[AccessKey] = {
+  def get(key: String): Option[AccessKey] =
     try {
       val response = client.prepareGet(index, estype, key).get()
       Some(read[AccessKey](response.getSourceAsString))
@@ -71,9 +72,8 @@ class ESAccessKeys(client: Client, config: StorageClientConfig, index: String)
         None
       case e: NullPointerException => None
     }
-  }
 
-  def getAll(): Seq[AccessKey] = {
+  def getAll(): Seq[AccessKey] =
     try {
       val builder = client.prepareSearch(index).setTypes(estype)
       ESUtils.getAll[AccessKey](client, builder)
@@ -82,9 +82,8 @@ class ESAccessKeys(client: Client, config: StorageClientConfig, index: String)
         error(e.getMessage)
         Seq[AccessKey]()
     }
-  }
 
-  def getByAppid(appid: Int): Seq[AccessKey] = {
+  def getByAppid(appid: Int): Seq[AccessKey] =
     try {
       val builder = client
         .prepareSearch(index)
@@ -96,9 +95,8 @@ class ESAccessKeys(client: Client, config: StorageClientConfig, index: String)
         error(e.getMessage)
         Seq[AccessKey]()
     }
-  }
 
-  def update(accessKey: AccessKey): Unit = {
+  def update(accessKey: AccessKey): Unit =
     try {
       client
         .prepareIndex(index, estype, accessKey.key)
@@ -108,14 +106,12 @@ class ESAccessKeys(client: Client, config: StorageClientConfig, index: String)
       case e: ElasticsearchException =>
         error(e.getMessage)
     }
-  }
 
-  def delete(key: String): Unit = {
+  def delete(key: String): Unit =
     try {
       client.prepareDelete(index, estype, key).get
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)
     }
-  }
 }

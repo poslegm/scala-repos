@@ -28,23 +28,22 @@ import org.scalajs.testsuite.utils.Platform._
 class ReflectionTest {
   import ReflectionTest._
 
-  def implicitClassTagTest[A : ClassTag](x: Any): Boolean = x match {
+  def implicitClassTagTest[A: ClassTag](x: Any): Boolean = x match {
     case x: A => true
-    case _ => false
+    case _    => false
   }
 
-  @Test def java_lang_Class_getName_under_normal_circumstances(): Unit = {
+  @Test def java_lang_Class_getName_under_normal_circumstances(): Unit =
     assertEquals("scala.Some", classOf[scala.Some[_]].getName)
-  }
 
-  @Test def should_append_$_to_class_name_of_objects(): Unit = {
-    assertEquals("org.scalajs.testsuite.compiler.ReflectionTest$TestObject$",
-                 TestObject.getClass.getName)
-  }
+  @Test def should_append_$_to_class_name_of_objects(): Unit =
+    assertEquals(
+      "org.scalajs.testsuite.compiler.ReflectionTest$TestObject$",
+      TestObject.getClass.getName
+    )
 
-  @Test def java_lang_Class_getName_renamed_through_semantics(): Unit = {
+  @Test def java_lang_Class_getName_renamed_through_semantics(): Unit =
     assertEquals("renamed.test.Class", classOf[RenamedTestClass].getName)
-  }
 
   @Test def should_support_isInstance(): Unit = {
     class A
@@ -84,13 +83,17 @@ class ReflectionTest {
 
   @Test def isInstance_for_raw_JS_traits_should_fail(): Unit = {
     assertThrows(
-        classOf[Exception], classOf[ReflectionTestRawJSTrait].isInstance(5))
+      classOf[Exception],
+      classOf[ReflectionTestRawJSTrait].isInstance(5)
+    )
 
     val ct = classTag[ReflectionTestRawJSTrait]
     assertThrows(classOf[Exception], ct.unapply(new AnyRef))
 
-    assertThrows(classOf[Exception],
-                 implicitClassTagTest[ReflectionTestRawJSTrait](new AnyRef))
+    assertThrows(
+      classOf[Exception],
+      implicitClassTagTest[ReflectionTestRawJSTrait](new AnyRef)
+    )
   }
 
   @Test def getClass_for_normal_types(): Unit = {
@@ -130,14 +133,17 @@ class ReflectionTest {
 
   @Test def getSuperclass_issue_1489(): Unit = {
     assertEquals(
-        classOf[SomeParentClass], classOf[SomeChildClass].getSuperclass)
+      classOf[SomeParentClass],
+      classOf[SomeChildClass].getSuperclass
+    )
     assertNull(classOf[AnyRef].getSuperclass)
     assertEquals(classOf[AnyRef], classOf[String].getSuperclass)
     assertEquals(classOf[Number], classOf[Integer].getSuperclass)
 
     assertEquals(
-        "org.scalajs.testsuite.compiler.ReflectionTest$ParentClassWhoseDataIsNotAccessedDirectly",
-        classOf[ChildClassWhoseDataIsAccessedDirectly].getSuperclass.getName)
+      "org.scalajs.testsuite.compiler.ReflectionTest$ParentClassWhoseDataIsNotAccessedDirectly",
+      classOf[ChildClassWhoseDataIsAccessedDirectly].getSuperclass.getName
+    )
   }
 
   @Test def cast_positive(): Unit = {
@@ -145,7 +151,7 @@ class ReflectionTest {
     assertEquals("hello", classOf[String].cast("hello"))
     assertEquals(List(1, 2), classOf[Seq[_]].cast(List(1, 2)))
     classOf[Serializable].cast(Array(3)) // should not throw
-    classOf[Cloneable].cast(Array(3)) // should not throw
+    classOf[Cloneable].cast(Array(3))    // should not throw
     classOf[Object].cast(js.Array(3, 4)) // should not throw
   }
 

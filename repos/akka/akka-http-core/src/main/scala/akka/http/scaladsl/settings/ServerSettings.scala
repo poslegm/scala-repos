@@ -23,7 +23,7 @@ import scala.language.implicitConversions
 /**
   * Public API but not intended for subclassing
   */
-abstract class ServerSettings private[akka]()
+abstract class ServerSettings private[akka] ()
     extends akka.http.javadsl.settings.ServerSettings {
   self: ServerSettingsImpl ⇒
   def serverHeader: Option[Server]
@@ -43,18 +43,18 @@ abstract class ServerSettings private[akka]()
 
   /* Java APIs */
 
-  override def getBacklog = backlog
-  override def getDefaultHostHeader = defaultHostHeader.asJava
-  override def getPipeliningLimit = pipeliningLimit
+  override def getBacklog                           = backlog
+  override def getDefaultHostHeader                 = defaultHostHeader.asJava
+  override def getPipeliningLimit                   = pipeliningLimit
   override def getParserSettings: js.ParserSettings = parserSettings
-  override def getMaxConnections = maxConnections
-  override def getTransparentHeadRequests = transparentHeadRequests
-  override def getResponseHeaderSizeHint = responseHeaderSizeHint
-  override def getVerboseErrorMessages = verboseErrorMessages
-  override def getSocketOptions = socketOptions.asJava
+  override def getMaxConnections                    = maxConnections
+  override def getTransparentHeadRequests           = transparentHeadRequests
+  override def getResponseHeaderSizeHint            = responseHeaderSizeHint
+  override def getVerboseErrorMessages              = verboseErrorMessages
+  override def getSocketOptions                     = socketOptions.asJava
   override def getServerHeader =
     OptionConverters.toJava(serverHeader.map(_.asJava))
-  override def getTimeouts = timeouts
+  override def getTimeouts            = timeouts
   override def getRawRequestUriHeader = rawRequestUriHeader
   override def getRemoteAddressHeader = remoteAddressHeader
   override def getWebsocketRandomFactory = new Supplier[Random] {
@@ -81,10 +81,12 @@ abstract class ServerSettings private[akka]()
   override def withBacklog(newValue: Int): ServerSettings =
     self.copy(backlog = newValue)
   override def withSocketOptions(
-      newValue: java.lang.Iterable[SocketOption]): ServerSettings =
+      newValue: java.lang.Iterable[SocketOption]
+  ): ServerSettings =
     self.copy(socketOptions = newValue.asScala.toList)
   override def withWebsocketRandomFactory(
-      newValue: java.util.function.Supplier[Random]): ServerSettings =
+      newValue: java.util.function.Supplier[Random]
+  ): ServerSettings =
     self.copy(websocketRandomFactory = () ⇒ newValue.get())
 
   // overloads for Scala idiomatic use
@@ -98,8 +100,7 @@ abstract class ServerSettings private[akka]()
     self.copy(parserSettings = newValue)
   def withWebsocketRandomFactory(newValue: () ⇒ Random): ServerSettings =
     self.copy(websocketRandomFactory = newValue)
-  def withSocketOptions(
-      newValue: immutable.Seq[SocketOption]): ServerSettings =
+  def withSocketOptions(newValue: immutable.Seq[SocketOption]): ServerSettings =
     self.copy(socketOptions = newValue)
 }
 
@@ -110,10 +111,12 @@ object ServerSettings extends SettingsCompanion[ServerSettings] {
     override def withIdleTimeout(newValue: Duration): ServerSettings.Timeouts =
       self.copy(idleTimeout = newValue)
     override def withRequestTimeout(
-        newValue: Duration): ServerSettings.Timeouts =
+        newValue: Duration
+    ): ServerSettings.Timeouts =
       self.copy(requestTimeout = newValue)
     override def withBindTimeout(
-        newValue: FiniteDuration): ServerSettings.Timeouts =
+        newValue: FiniteDuration
+    ): ServerSettings.Timeouts =
       self.copy(bindTimeout = newValue)
   }
 

@@ -35,45 +35,54 @@ object Scheduler {
   /**
     * Schedules to send the specified message to the receiver after initialDelay and then repeated after delay
     */
-  def schedule(receiver: ActorRef,
-               message: AnyRef,
-               initialDelay: Long,
-               delay: Long,
-               timeUnit: TimeUnit): ScheduledFuture[AnyRef] = {
+  def schedule(
+      receiver: ActorRef,
+      message: AnyRef,
+      initialDelay: Long,
+      delay: Long,
+      timeUnit: TimeUnit
+  ): ScheduledFuture[AnyRef] =
     try {
       service
-        .scheduleAtFixedRate(new Runnable { def run = receiver ! message },
-                             initialDelay,
-                             delay,
-                             timeUnit)
+        .scheduleAtFixedRate(
+          new Runnable { def run = receiver ! message },
+          initialDelay,
+          delay,
+          timeUnit
+        )
         .asInstanceOf[ScheduledFuture[AnyRef]]
     } catch {
       case e: Exception =>
         val error = SchedulerException(
-            message + " could not be scheduled on " + receiver, e)
+          message + " could not be scheduled on " + receiver,
+          e
+        )
         EventHandler.error(error, this, "%s @ %s".format(receiver, message))
         throw error
     }
-  }
 
   /**
     * Schedules to run specified function to the receiver after initialDelay and then repeated after delay,
     * avoid blocking operations since this is executed in the schedulers thread
     */
-  def schedule(f: () => Unit,
-               initialDelay: Long,
-               delay: Long,
-               timeUnit: TimeUnit): ScheduledFuture[AnyRef] =
+  def schedule(
+      f: () => Unit,
+      initialDelay: Long,
+      delay: Long,
+      timeUnit: TimeUnit
+  ): ScheduledFuture[AnyRef] =
     schedule(new Runnable { def run = f() }, initialDelay, delay, timeUnit)
 
   /**
     * Schedules to run specified runnable to the receiver after initialDelay and then repeated after delay,
     * avoid blocking operations since this is executed in the schedulers thread
     */
-  def schedule(runnable: Runnable,
-               initialDelay: Long,
-               delay: Long,
-               timeUnit: TimeUnit): ScheduledFuture[AnyRef] = {
+  def schedule(
+      runnable: Runnable,
+      initialDelay: Long,
+      delay: Long,
+      timeUnit: TimeUnit
+  ): ScheduledFuture[AnyRef] =
     try {
       service
         .scheduleAtFixedRate(runnable, initialDelay, delay, timeUnit)
@@ -84,45 +93,54 @@ object Scheduler {
         EventHandler.error(error, this, error.getMessage)
         throw error
     }
-  }
 
   /**
     * Schedules to send the specified message to the receiver after delay
     */
-  def scheduleOnce(receiver: ActorRef,
-                   message: AnyRef,
-                   delay: Long,
-                   timeUnit: TimeUnit): ScheduledFuture[AnyRef] = {
+  def scheduleOnce(
+      receiver: ActorRef,
+      message: AnyRef,
+      delay: Long,
+      timeUnit: TimeUnit
+  ): ScheduledFuture[AnyRef] =
     try {
       service
         .schedule(
-            new Runnable { def run = receiver ! message }, delay, timeUnit)
+          new Runnable { def run = receiver ! message },
+          delay,
+          timeUnit
+        )
         .asInstanceOf[ScheduledFuture[AnyRef]]
     } catch {
       case e: Exception =>
         val error = SchedulerException(
-            message + " could not be scheduleOnce'd on " + receiver, e)
+          message + " could not be scheduleOnce'd on " + receiver,
+          e
+        )
         EventHandler.error(e, this, receiver + " @ " + message)
         throw error
     }
-  }
 
   /**
     * Schedules a function to be run after delay,
     * avoid blocking operations since the runnable is executed in the schedulers thread
     */
-  def scheduleOnce(f: () => Unit,
-                   delay: Long,
-                   timeUnit: TimeUnit): ScheduledFuture[AnyRef] =
+  def scheduleOnce(
+      f: () => Unit,
+      delay: Long,
+      timeUnit: TimeUnit
+  ): ScheduledFuture[AnyRef] =
     scheduleOnce(new Runnable { def run = f() }, delay, timeUnit)
 
   /**
     * Schedules a runnable to be run after delay,
     * avoid blocking operations since the runnable is executed in the schedulers thread
     */
-  def scheduleOnce(runnable: Runnable,
-                   delay: Long,
-                   timeUnit: TimeUnit): ScheduledFuture[AnyRef] = {
+  def scheduleOnce(
+      runnable: Runnable,
+      delay: Long,
+      timeUnit: TimeUnit
+  ): ScheduledFuture[AnyRef] =
     try {
       service
         .schedule(runnable, delay, timeUnit)
@@ -133,7 +151,6 @@ object Scheduler {
         EventHandler.error(e, this, error.getMessage)
         throw error
     }
-  }
 
   def shutdown() {
     synchronized {
@@ -144,8 +161,8 @@ object Scheduler {
   def restart() {
     synchronized {
       shutdown()
-      service = Executors.newSingleThreadScheduledExecutor(
-          SchedulerThreadFactory)
+      service =
+        Executors.newSingleThreadScheduledExecutor(SchedulerThreadFactory)
     }
   }
 }

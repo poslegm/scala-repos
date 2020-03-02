@@ -15,52 +15,53 @@ class HealthCheckActor(
     marathonScheduler: MarathonScheduler,
     healthCheck: HealthCheck,
     taskTracker: TaskTracker,
-    eventBus: EventStream)
-    extends Actor with ActorLogging {
+    eventBus: EventStream
+) extends Actor
+    with ActorLogging {
 
   import context.dispatcher
   import mesosphere.marathon.health.HealthCheckActor.{GetTaskHealth, _}
   import mesosphere.marathon.health.HealthCheckWorker.HealthCheckJob
 
   var nextScheduledCheck: Option[Cancellable] = None
-  var taskHealth = Map[Task.Id, Health]()
+  var taskHealth                              = Map[Task.Id, Health]()
 
   val workerProps = Props[HealthCheckWorkerActor]
 
   override def preStart(): Unit = {
     log.info(
-        "Starting health check actor for app [{}] version [{}] and healthCheck [{}]",
-        app.id,
-        app.version,
-        healthCheck
+      "Starting health check actor for app [{}] version [{}] and healthCheck [{}]",
+      app.id,
+      app.version,
+      healthCheck
     )
     scheduleNextHealthCheck()
   }
 
   override def preRestart(reason: Throwable, message: Option[Any]): Unit =
     log.info(
-        "Restarting health check actor for app [{}] version [{}] and healthCheck [{}]",
-        app.id,
-        app.version,
-        healthCheck
+      "Restarting health check actor for app [{}] version [{}] and healthCheck [{}]",
+      app.id,
+      app.version,
+      healthCheck
     )
 
   override def postStop(): Unit = {
-    nextScheduledCheck.forall { _.cancel() }
+    nextScheduledCheck.forall(_.cancel())
     log.info(
-        "Stopped health check actor for app [{}] version [{}] and healthCheck [{}]",
-        app.id,
-        app.version,
-        healthCheck
+      "Stopped health check actor for app [{}] version [{}] and healthCheck [{}]",
+      app.id,
+      app.version,
+      healthCheck
     )
   }
 
   def purgeStatusOfDoneTasks(): Unit = {
     log.debug(
-        "Purging health status of done tasks for app [{}] version [{}] and healthCheck [{}]",
-        app.id,
-        app.version,
-        healthCheck
+      "Purging health status of done tasks for app [{}] version [{}] and healthCheck [{}]",
+      app.id,
+      app.version,
+      healthCheck
     )
     val activeTaskIds =
       taskTracker.appTasksLaunchedSync(app.id).map(_.taskId).toSet
@@ -72,15 +73,15 @@ class HealthCheckActor(
   def scheduleNextHealthCheck(): Unit =
     if (healthCheck.protocol != Protocol.COMMAND) {
       log.debug(
-          "Scheduling next health check for app [{}] version [{}] and healthCheck [{}]",
-          app.id,
-          app.version,
-          healthCheck
+        "Scheduling next health check for app [{}] version [{}] and healthCheck [{}]",
+        app.id,
+        app.version,
+        healthCheck
       )
       nextScheduledCheck = Some(
-          context.system.scheduler.scheduleOnce(healthCheck.interval) {
-            self ! Tick
-          }
+        context.system.scheduler.scheduleOnce(healthCheck.interval) {
+          self ! Tick
+        }
       )
     }
 
@@ -99,33 +100,32 @@ class HealthCheckActor(
 
   def checkConsecutiveFailures(task: Task, health: Health): Unit = {
     val consecutiveFailures = health.consecutiveFailures
-    val maxFailures = healthCheck.maxConsecutiveFailures
+    val maxFailures         = healthCheck.maxConsecutiveFailures
 
     // ignore failures if maxFailures == 0
     if (consecutiveFailures >= maxFailures && maxFailures > 0) {
       log.info(
-          s"Detected unhealthy ${task.taskId} of app [${app.id}] version [${app.version}] on host ${task.agentInfo.host}"
+        s"Detected unhealthy ${task.taskId} of app [${app.id}] version [${app.version}] on host ${task.agentInfo.host}"
       )
 
       // kill the task
       marathonSchedulerDriverHolder.driver.foreach { driver =>
         log.info(
-            s"Send kill request for ${task.taskId} on host ${task.agentInfo.host} to driver")
+          s"Send kill request for ${task.taskId} on host ${task.agentInfo.host} to driver"
+        )
         driver.killTask(task.taskId.mesosTaskId)
       }
     }
   }
 
-  def ignoreFailures(task: Task, health: Health): Boolean = {
+  def ignoreFailures(task: Task, health: Health): Boolean =
     // Ignore failures during the grace period, until the task becomes green
     // for the first time.  Also ignore failures while the task is staging.
     task.launched.fold(true) { launched =>
       health.firstSuccess.isEmpty && launched.status.startedAt.fold(true) {
-        startedAt =>
-          startedAt + healthCheck.gracePeriod > Timestamp.now()
+        startedAt => startedAt + healthCheck.gracePeriod > Timestamp.now()
       }
     }
-  }
 
   //TODO: fix style issue and enable this scalastyle check
   //scalastyle:off cyclomatic.complexity method.length
@@ -142,10 +142,12 @@ class HealthCheckActor(
       scheduleNextHealthCheck()
 
     case result: HealthResult if result.version == app.version =>
-      log.info("Received health result for app [{}] version [{}]: [{}]",
-               app.id,
-               app.version,
-               result)
+      log.info(
+        "Received health result for app [{}] version [{}]: [{}]",
+        app.id,
+        app.version,
+        result
+      )
       val taskId = result.taskId
       val health = taskHealth.getOrElse(taskId, Health(taskId))
 
@@ -159,8 +161,7 @@ class HealthCheckActor(
                 // Don't update health
                 health
               } else {
-                eventBus.publish(
-                    FailedHealthCheck(app.id, taskId, healthCheck))
+                eventBus.publish(FailedHealthCheck(app.id, taskId, healthCheck))
                 checkConsecutiveFailures(task, health)
                 health.update(result)
               }
@@ -174,10 +175,12 @@ class HealthCheckActor(
 
       if (health.alive != newHealth.alive) {
         eventBus.publish(
-            HealthStatusChanged(appId = app.id,
-                                taskId = taskId,
-                                version = result.version,
-                                alive = newHealth.alive)
+          HealthStatusChanged(
+            appId = app.id,
+            taskId = taskId,
+            version = result.version,
+            alive = newHealth.alive
+          )
         )
       }
 

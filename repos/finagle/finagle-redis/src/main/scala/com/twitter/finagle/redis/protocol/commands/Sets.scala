@@ -15,8 +15,10 @@ case class SAdd(key: ChannelBuffer, values: Seq[ChannelBuffer])
 object SAdd {
   def apply(args: Seq[Array[Byte]]): SAdd = args match {
     case head :: tail =>
-      SAdd(ChannelBuffers.wrappedBuffer(head),
-           tail map ChannelBuffers.wrappedBuffer)
+      SAdd(
+        ChannelBuffers.wrappedBuffer(head),
+        tail map ChannelBuffers.wrappedBuffer
+      )
     case _ =>
       throw ClientError("Invalid use of SAdd")
   }
@@ -29,13 +31,13 @@ case class SMembers(key: ChannelBuffer) extends StrictKeyCommand {
 }
 
 object SMembers {
-  def apply(args: Seq[Array[Byte]]): SMembers = {
+  def apply(args: Seq[Array[Byte]]): SMembers =
     SMembers(GetMonadArg(args, CommandBytes.SMEMBERS))
-  }
 }
 
 case class SIsMember(key: ChannelBuffer, value: ChannelBuffer)
-    extends StrictKeyCommand with StrictValueCommand {
+    extends StrictKeyCommand
+    with StrictValueCommand {
   val command = Commands.SISMEMBER
   override def toChannelBuffer =
     RedisCodec.toUnifiedFormat(Seq(CommandBytes.SISMEMBER, key, value))
@@ -44,8 +46,10 @@ case class SIsMember(key: ChannelBuffer, value: ChannelBuffer)
 object SIsMember {
   def apply(args: Seq[Array[Byte]]): SIsMember = {
     val list = Commands.trimList(args, 2, Commands.SISMEMBER)
-    SIsMember(ChannelBuffers.wrappedBuffer(list(0)),
-              ChannelBuffers.wrappedBuffer(list(1)))
+    SIsMember(
+      ChannelBuffers.wrappedBuffer(list(0)),
+      ChannelBuffers.wrappedBuffer(list(1))
+    )
   }
 }
 
@@ -70,8 +74,10 @@ case class SRem(key: ChannelBuffer, values: List[ChannelBuffer])
 object SRem {
   def apply(args: Seq[Array[Byte]]): SRem = args match {
     case head :: tail =>
-      SRem(ChannelBuffers.wrappedBuffer(head),
-           tail map ChannelBuffers.wrappedBuffer)
+      SRem(
+        ChannelBuffers.wrappedBuffer(head),
+        tail map ChannelBuffers.wrappedBuffer
+      )
     case _ => throw ClientError("Invalid use of SRem")
   }
 }
@@ -92,8 +98,9 @@ case class SRandMember(key: ChannelBuffer, count: Option[Int] = None)
   val command = Commands.SRANDMEMBER
   override def toChannelBuffer = {
     val commands =
-      Seq(CommandBytes.SRANDMEMBER, key) ++ count.map(
-          c => StringToChannelBuffer(c.toString))
+      Seq(CommandBytes.SRANDMEMBER, key) ++ count.map(c =>
+        StringToChannelBuffer(c.toString)
+      )
     RedisCodec.toUnifiedFormat(commands)
   }
 }

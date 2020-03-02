@@ -34,7 +34,7 @@ trait JSNumberOps extends Any {
     * MDN
     */
   def toFixed(fractionDigits: Int): String = native
-  def toFixed(): String = native
+  def toFixed(): String                    = native
 
   /**
     * Returns a string representing a Number object in exponential notation with one
@@ -51,7 +51,7 @@ trait JSNumberOps extends Any {
     * MDN
     */
   def toExponential(fractionDigits: Int): String = native
-  def toExponential(): String = native
+  def toExponential(): String                    = native
 
   /**
     * Returns a string representing a Number object in fixed-point or exponential
@@ -65,7 +65,7 @@ trait JSNumberOps extends Any {
     * MDN
     */
   def toPrecision(precision: Int): String = native
-  def toPrecision(): String = native
+  def toPrecision(): String               = native
 }
 
 object JSNumberOps {
@@ -90,17 +90,21 @@ object JSNumberOps {
    * number operations on a Long by error.
    */
 
-  @deprecated("A Long is converted to Double to perform JavaScript " +
-              "operations. This is almost certainly not what you want. " +
-              "Use `.toDouble` explicitly if you need it.",
-              "0.6.0")
+  @deprecated(
+    "A Long is converted to Double to perform JavaScript " +
+      "operations. This is almost certainly not what you want. " +
+      "Use `.toDouble` explicitly if you need it.",
+    "0.6.0"
+  )
   implicit def enableJSNumberOps(x: Long): JSNumberOps =
     x.toDouble.asInstanceOf[JSNumberOps]
 
-  @deprecated("A Long is converted to Double to perform JavaScript " +
-              "operations. This is almost certainly not what you want. " +
-              "Use `.toDouble` explicitly if you need it.",
-              "0.6.0")
+  @deprecated(
+    "A Long is converted to Double to perform JavaScript " +
+      "operations. This is almost certainly not what you want. " +
+      "Use `.toDouble` explicitly if you need it.",
+    "0.6.0"
+  )
   implicit def enableJSNumberExtOps(x: Long): ExtOps =
     new ExtOps(x.toDouble.asInstanceOf[Dynamic])
 }

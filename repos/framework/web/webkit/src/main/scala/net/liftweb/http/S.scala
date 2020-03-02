@@ -88,13 +88,14 @@ object S extends S {
     * @see # findCookie
     */
   case class CookieHolder(
-      inCookies: List[HTTPCookie], outCookies: List[HTTPCookie]) {
+      inCookies: List[HTTPCookie],
+      outCookies: List[HTTPCookie]
+  ) {
     def add(in: HTTPCookie) =
       CookieHolder(inCookies, in :: outCookies.filter(_.name != in.name))
 
-    def delete(name: String) = {
+    def delete(name: String) =
       add(HTTPCookie(name, "").setMaxAge(0))
-    }
 
     def delete(old: HTTPCookie) =
       add(old.setMaxAge(0).setValue(""))
@@ -107,12 +108,12 @@ object S extends S {
       new PFPromoter[A, B](() => pf)
 
     implicit def fromFunc[A, B](
-        pff: () => PartialFunction[A, B]): PFPromoter[A, B] =
+        pff: () => PartialFunction[A, B]
+    ): PFPromoter[A, B] =
       new PFPromoter[A, B](pff)
   }
 
-  private[http] class ProxyFuncHolder(
-      proxyTo: AFuncHolder, _owner: Box[String])
+  private[http] class ProxyFuncHolder(proxyTo: AFuncHolder, _owner: Box[String])
       extends AFuncHolder {
     def this(proxyTo: AFuncHolder) = this(proxyTo, Empty)
 
@@ -135,11 +136,14 @@ object S extends S {
     *  Impersonates a function that will be called when uploading files
     */
   private final class BinFuncHolder(
-      val func: FileParamHolder => Any, val owner: Box[String])
-      extends AFuncHolder with Serializable {
+      val func: FileParamHolder => Any,
+      val owner: Box[String]
+  ) extends AFuncHolder
+      with Serializable {
     def apply(in: List[String]) {
       logger.info(
-          "You attempted to call a 'File Upload' function with a normal parameter.  Did you forget to 'enctype' to 'multipart/form-data'?")
+        "You attempted to call a 'File Upload' function with a normal parameter.  Did you forget to 'enctype' to 'multipart/form-data'?"
+      )
     }
 
     override def apply(in: FileParamHolder) = func(in)
@@ -167,8 +171,10 @@ object S extends S {
     * takes a String as the only parameter and returns an Any.
     */
   private final class SFuncHolder(
-      val func: String => Any, val owner: Box[String])
-      extends AFuncHolder with Serializable {
+      val func: String => Any,
+      val owner: Box[String]
+  ) extends AFuncHolder
+      with Serializable {
     def this(func: String => Any) = this(func, Empty)
 
     def apply(in: List[String]): Any = in.headOption.toList.map(func(_))
@@ -187,8 +193,10 @@ object S extends S {
     * takes a List[String] as the only parameter and returns an Any.
     */
   private final class LFuncHolder(
-      val func: List[String] => Any, val owner: Box[String])
-      extends AFuncHolder with Serializable {
+      val func: List[String] => Any,
+      val owner: Box[String]
+  ) extends AFuncHolder
+      with Serializable {
     def apply(in: List[String]): Any = func(in)
   }
 
@@ -204,7 +212,8 @@ object S extends S {
     * takes zero arguments and returns an Any.
     */
   private final class NFuncHolder(val func: () => Any, val owner: Box[String])
-      extends AFuncHolder with Serializable {
+      extends AFuncHolder
+      with Serializable {
     def apply(in: List[String]): Any = in.headOption.toList.map(s => func())
   }
 
@@ -212,14 +221,14 @@ object S extends S {
     * Abstrats a function that is executed on HTTP requests from client.
     */
   sealed trait AFuncHolder
-      extends Function1[List[String], Any] with Serializable {
+      extends Function1[List[String], Any]
+      with Serializable {
     def owner: Box[String]
 
     def apply(in: List[String]): Any
 
-    def apply(in: FileParamHolder): Any = {
+    def apply(in: FileParamHolder): Any =
       error("Attempt to apply file upload to a non-file upload handler")
-    }
 
     def supportsFileParams_? : Boolean = false
 
@@ -241,16 +250,16 @@ object S extends S {
     * We create one of these dudes and put it
     */
   private[http] final case class PageStateHolder(
-      owner: Box[String], session: LiftSession)
-      extends AFuncHolder {
+      owner: Box[String],
+      session: LiftSession
+  ) extends AFuncHolder {
     private val loc = S.location
     private val snapshot: Function1[Function0[Any], Any] =
       RequestVarHandler.generateSnapshotRestorer()
     override def sessionLife: Boolean = false
 
-    def apply(in: List[String]): Any = {
+    def apply(in: List[String]): Any =
       error("You shouldn't really be calling apply on this dude...")
-    }
 
     def runInContext[T](f: => T): T = {
       val ret = snapshot(() => f).asInstanceOf[T]
@@ -271,9 +280,9 @@ object S extends S {
       LFuncHolder(f)
 
     implicit def boolToAF(f: Boolean => Any): AFuncHolder =
-      LFuncHolder(
-          lst =>
-            f(lst.foldLeft(false)((v, str) => v || Helpers.toBoolean(str))))
+      LFuncHolder(lst =>
+        f(lst.foldLeft(false)((v, str) => v || Helpers.toBoolean(str)))
+      )
   }
 }
 
@@ -336,8 +345,9 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     * @see # attrs
     * @see # attr
     */
-  private val _attrs = new ThreadGlobal[(MetaData, List[(Either[
-              String, (String, String)], String)])]
+  private val _attrs = new ThreadGlobal[
+    (MetaData, List[(Either[String, (String, String)], String)])
+  ]
 
   /**
     * Holds the per-request LiftSession instance.
@@ -357,11 +367,11 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
   private val _resBundle = new ThreadGlobal[List[ResourceBundle]]
   private[http] object _statefulSnip
       extends RequestVar[Map[String, DispatchSnippet]](Map())
-  private val _responseHeaders = new ThreadGlobal[ResponseInfoHolder]
-  private val _responseCookies = new ThreadGlobal[CookieHolder]
-  private val _lifeTime = new ThreadGlobal[Boolean]
-  private val autoCleanUp = new ThreadGlobal[Boolean]
-  private val _oneShot = new ThreadGlobal[Boolean]
+  private val _responseHeaders      = new ThreadGlobal[ResponseInfoHolder]
+  private val _responseCookies      = new ThreadGlobal[CookieHolder]
+  private val _lifeTime             = new ThreadGlobal[Boolean]
+  private val autoCleanUp           = new ThreadGlobal[Boolean]
+  private val _oneShot              = new ThreadGlobal[Boolean]
   private val _disableTestFuncNames = new ThreadGlobal[Boolean]
   private object _originalRequest extends RequestVar[Box[Req]](Empty)
 
@@ -406,7 +416,8 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
       extends TransientRequestVar(new ListBuffer[(String, Long)])
   private object p_notice
       extends TransientRequestVar(
-          new ListBuffer[(NoticeType.Value, NodeSeq, Box[String])])
+        new ListBuffer[(NoticeType.Value, NodeSeq, Box[String])]
+      )
 
   /**
     * This method returns true if the S object has been initialized for our current scope. If
@@ -436,9 +447,7 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
 
   def location: Box[sitemap.Loc[_]] = CurrentLocation.is or {
     //try again in case CurrentLocation was accessed before the request was available
-    request flatMap { r =>
-      CurrentLocation(r.location)
-    }
+    request flatMap { r => CurrentLocation(r.location) }
   }
 
   /**
@@ -469,7 +478,7 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     */
   def receivedCookies: List[HTTPCookie] =
     for (rc <- Box.legacyNullTest(_responseCookies.value).toList;
-    c <- rc.inCookies) yield c.clone().asInstanceOf[HTTPCookie]
+         c  <- rc.inCookies) yield c.clone().asInstanceOf[HTTPCookie]
 
   /**
     * Finds a cookie with the given name that was sent in the request.
@@ -488,8 +497,9 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     Box
       .legacyNullTest(_responseCookies.value)
       .flatMap(rc =>
-            Box(rc.inCookies.filter(_.name == name))
-              .map(_.clone().asInstanceOf[HTTPCookie]))
+        Box(rc.inCookies.filter(_.name == name))
+          .map(_.clone().asInstanceOf[HTTPCookie])
+      )
 
   /**
     * Get the cookie value for the given cookie
@@ -497,7 +507,7 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
   def cookieValue(name: String): Box[String] =
     for {
       cookie <- findCookie(name)
-      value <- cookie.value
+      value  <- cookie.value
     } yield value
 
   def currentCometActor: Box[LiftCometActor] = CurrentCometActor.box
@@ -591,8 +601,9 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
   // TODO: Is this used anywhere? - DCB
   def templateFromTemplateAttr: Box[NodeSeq] =
     for (templateName <- attr("template") ?~ "Template Attribute missing";
-    tmplList = templateName.roboSplit("/");
-    template <- Templates(tmplList) ?~ "couldn't find template") yield template
+         tmplList      = templateName.roboSplit("/");
+         template     <- Templates(tmplList) ?~ "couldn't find template")
+      yield template
 
   /**
     * Returns the Locale for this request based on the LiftRules.localeCalculator
@@ -633,12 +644,11 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
   /**
     * Get the current instance of HtmlProperties
     */
-  def htmlProperties: HtmlProperties = {
+  def htmlProperties: HtmlProperties =
     session.map(_.requestHtmlProperties.is) openOr LiftRules.htmlProperties
       .vend(
         S.request openOr Req.nil
-    )
-  }
+      )
 
   /**
     * Return a List of the LiftRules.DispatchPF functions that are set for this
@@ -660,7 +670,7 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     */
   def highLevelSessionDispatchList: List[DispatchHolder] =
     session map
-    (_.highLevelSessionDispatcher.toList.map(t => DispatchHolder(t._1, t._2))) openOr Nil
+      (_.highLevelSessionDispatcher.toList.map(t => DispatchHolder(t._1, t._2))) openOr Nil
 
   /**
     * Adds a dispatch function for the current session, as opposed to a global
@@ -847,12 +857,13 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     * receive updates on the page currently being rendered or on the page
     * that invoked the currently running callback.
     */
-  def addComet(cometActor: LiftCometActor): Unit = {
+  def addComet(cometActor: LiftCometActor): Unit =
     requestCometVersions.set(
-        requestCometVersions.is + CVP(cometActor.uniqueId,
-                                      cometActor.lastRenderTime)
+      requestCometVersions.is + CVP(
+        cometActor.uniqueId,
+        cometActor.lastRenderTime
+      )
     )
-  }
 
   /**
     * As with {findOrBuildComet[T]}, but specify the type as a `String`. If the
@@ -871,17 +882,20 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
       cometHtml: NodeSeq = NodeSeq.Empty,
       cometAttributes: Map[String, String] = Map.empty,
       receiveUpdatesOnPage: Boolean = false
-  ): Box[LiftCometActor] = {
+  ): Box[LiftCometActor] =
     for {
       session <- session ?~ "Comet lookup and creation requires a session."
       cometActor <- session.findOrCreateComet(
-          cometType, cometName, cometHtml, cometAttributes)
+                     cometType,
+                     cometName,
+                     cometHtml,
+                     cometAttributes
+                   )
     } yield {
       if (receiveUpdatesOnPage) addComet(cometActor)
 
       cometActor
     }
-  }
 
   /**
     * Find or build a comet actor of the given type `T` with the given
@@ -899,17 +913,19 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
       cometHtml: NodeSeq,
       cometAttributes: Map[String, String],
       receiveUpdatesOnPage: Boolean
-  )(implicit cometManifest: Manifest[T]): Box[T] = {
+  )(implicit cometManifest: Manifest[T]): Box[T] =
     for {
       session <- session ?~ "Comet lookup and creation requires a session."
       cometActor <- session.findOrCreateComet[T](
-          cometName, cometHtml, cometAttributes)
+                     cometName,
+                     cometHtml,
+                     cometAttributes
+                   )
     } yield {
       if (receiveUpdatesOnPage) addComet(cometActor)
 
       cometActor
     }
-  }
 
   /**
     * Sometimes it's helpful to accumulate JavaScript as part of servicing
@@ -956,21 +972,21 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
 
     if (cometVersions.nonEmpty) {
       List(
-          js.JE
-            .Call(
-                "lift.registerComets",
-                js.JE.JsObj(
-                    cometVersions.toList.map {
-                      case CometVersionPair(guid, version) =>
-                        (guid, js.JE.Num(version))
-                    }: _*
-                ),
-                // Don't kick off a new comet request client-side if we're responding
-                // to a comet request right now.
-                !currentCometActor.isDefined
-            )
-            .cmd
-        )
+        js.JE
+          .Call(
+            "lift.registerComets",
+            js.JE.JsObj(
+              cometVersions.toList.map {
+                case CometVersionPair(guid, version) =>
+                  (guid, js.JE.Num(version))
+              }: _*
+            ),
+            // Don't kick off a new comet request client-side if we're responding
+            // to a comet request right now.
+            !currentCometActor.isDefined
+          )
+          .cmd
+      )
     } else {
       Nil
     }
@@ -987,7 +1003,8 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     val globalJs = _globalJsToAppend.is.toList
     val postPageJs = S.session.toList.flatMap { session =>
       session.postPageJavaScript(
-          RenderVersion.get :: currentCometActor.map(_.uniqueId).toList)
+        RenderVersion.get :: currentCometActor.map(_.uniqueId).toList
+      )
     }
     val cometJs = commandsForComets
 
@@ -1048,16 +1065,18 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
   def loc(str: String): Box[NodeSeq] =
     resourceBundles
       .flatMap(r =>
-            tryo(r.getObject(str) match {
+        tryo(r.getObject(str) match {
           case null =>
-            LiftRules.localizationLookupFailureNotice.foreach(_ (str, locale)); Empty
-          case s: String => Full(LiftRules.localizeStringToXml(s))
-          case g: Group => Full(g)
-          case e: Elem => Full(e)
-          case n: Node => Full(n)
+            LiftRules.localizationLookupFailureNotice.foreach(_(str, locale));
+            Empty
+          case s: String   => Full(LiftRules.localizeStringToXml(s))
+          case g: Group    => Full(g)
+          case e: Elem     => Full(e)
+          case n: Node     => Full(n)
           case ns: NodeSeq => Full(ns)
-          case x => Full(Text(x.toString))
-        }).flatMap(s => s))
+          case x           => Full(Text(x.toString))
+        }).flatMap(s => s)
+      )
       .find(e => true)
 
   /**
@@ -1107,45 +1126,53 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
   def resourceBundles: List[ResourceBundle] =
     resourceBundles(locale) ++ liftCoreResourceBundle.toList
 
-  def resourceBundles(loc: Locale): List[ResourceBundle] = {
+  def resourceBundles(loc: Locale): List[ResourceBundle] =
     _resBundle.box match {
       case Full(Nil) => {
-          _resBundle.set(
-              LiftRules.resourceForCurrentLoc.vend() ::: LiftRules.resourceNames
-                .flatMap(name =>
-                    tryo {
-              if (Props.devMode) {
-                tryo {
-                  val clz = this.getClass.getClassLoader
-                    .loadClass("java.util.ResourceBundle")
-                  val meth = clz.getDeclaredMethods.filter { m =>
-                    m.getName == "clearCache" &&
-                    m.getParameterTypes.length == 0
-                  }.toList.head
-                  meth.invoke(null)
+        _resBundle.set(
+          LiftRules.resourceForCurrentLoc.vend() ::: LiftRules.resourceNames
+            .flatMap(name =>
+              tryo {
+                if (Props.devMode) {
+                  tryo {
+                    val clz = this.getClass.getClassLoader
+                      .loadClass("java.util.ResourceBundle")
+                    val meth = clz.getDeclaredMethods
+                      .filter { m =>
+                        m.getName == "clearCache" &&
+                        m.getParameterTypes.length == 0
+                      }
+                      .toList
+                      .head
+                    meth.invoke(null)
+                  }
                 }
-              }
-              List(ResourceBundle.getBundle(name, loc))
-            }.openOr(
-                        NamedPF
-                          .applyBox((name, loc),
-                                    LiftRules.resourceBundleFactories.toList)
-                          .map(List(_)) openOr Nil
-                  )))
-          _resBundle.value
-        }
+                List(ResourceBundle.getBundle(name, loc))
+              }.openOr(
+                NamedPF
+                  .applyBox(
+                    (name, loc),
+                    LiftRules.resourceBundleFactories.toList
+                  )
+                  .map(List(_)) openOr Nil
+              )
+            )
+        )
+        _resBundle.value
+      }
       case Full(bundles) => bundles
       case _ =>
         throw new IllegalStateException(
-            "Attempted to use resource bundles outside of an initialized S scope. " +
+          "Attempted to use resource bundles outside of an initialized S scope. " +
             "S only usable when initialized, such as during request processing. " +
-            "Did you call S.? from Boot?")
+            "Did you call S.? from Boot?"
+        )
     }
-  }
 
   private object _liftCoreResBundle
-      extends RequestVar[Box[ResourceBundle]](tryo(ResourceBundle.getBundle(
-                  LiftRules.liftCoreResourceName, locale)))
+      extends RequestVar[Box[ResourceBundle]](
+        tryo(ResourceBundle.getBundle(LiftRules.liftCoreResourceName, locale))
+      )
 
   /**
     * Get the lift core resource bundle for the current locale as defined by the
@@ -1205,22 +1232,27 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
   def ?(str: String, params: Any*): String =
     if (params.length == 0) ?(str)
     else
-      String.format(locale, ?(str), params.flatMap {
-        case s: AnyRef => List(s)
-        case _ => Nil
-      }.toArray: _*)
+      String.format(
+        locale,
+        ?(str),
+        params.flatMap {
+          case s: AnyRef => List(s)
+          case _         => Nil
+        }.toArray: _*
+      )
 
   private def ?!(str: String, resBundle: List[ResourceBundle]): String =
     resBundle
       .flatMap(r =>
-            tryo(r.getObject(str) match {
-          case s: String => Full(s)
-          case n: Node => Full(n.text)
+        tryo(r.getObject(str) match {
+          case s: String   => Full(s)
+          case n: Node     => Full(n.text)
           case ns: NodeSeq => Full(ns.text)
-          case _ => Empty
-        }).flatMap(s => s))
+          case _           => Empty
+        }).flatMap(s => s)
+      )
       .find(s => true) getOrElse {
-      LiftRules.localizationLookupFailureNotice.foreach(_ (str, locale));
+      LiftRules.localizationLookupFailureNotice.foreach(_(str, locale));
       str
     }
 
@@ -1283,7 +1315,7 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     */
   def queryString: Box[String] =
     for {
-      req <- request
+      req         <- request
       queryString <- req.request.queryString
     } yield queryString
 
@@ -1302,11 +1334,16 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
       logger.error("An error occurred while running error handlers", t)
       logger.error("Original error causing error handlers to be run", orig)
     } {
-      NamedPF.applyBox((Props.mode, req, orig),
-                       LiftRules.exceptionHandler.toList);
-    } openOr Full(PlainTextResponse(
-            "An error has occurred while processing an error using the functions in LiftRules.exceptionHandler. Check the log for details.",
-            500))
+      NamedPF.applyBox(
+        (Props.mode, req, orig),
+        LiftRules.exceptionHandler.toList
+      );
+    } openOr Full(
+      PlainTextResponse(
+        "An error has occurred while processing an error using the functions in LiftRules.exceptionHandler. Check the log for details.",
+        500
+      )
+    )
   }
 
   private object _skipXmlHeader extends TransientRequestVar(false)
@@ -1427,7 +1464,8 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
 
   private[http] object oldNotices
       extends TransientRequestVar[
-          Seq[(NoticeType.Value, NodeSeq, Box[String])]](Nil)
+        Seq[(NoticeType.Value, NodeSeq, Box[String])]
+      ](Nil)
 
   /**
     * Initialize the current request session. Generally this is handled by Lift during request
@@ -1438,7 +1476,7 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     * @param session the LiftSession for this request
     * @param f Function to execute within the scope of the request and session
     */
-  def init[B](request: Box[Req], session: LiftSession)(f: => B): B = {
+  def init[B](request: Box[Req], session: LiftSession)(f: => B): B =
     if (inS.value) f
     else {
       if (request.map(_.stateless_?).openOr(false)) {
@@ -1447,28 +1485,27 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
         _init(request, session)(() => f)
       }
     }
-  }
 
-  def statelessInit[B](request: Req)(f: => B): B = {
+  def statelessInit[B](request: Req)(f: => B): B =
     session match {
       case Full(s) if s.stateful_? => {
-          throw new StateInStatelessException(
-              "Attempt to initialize a stateless session within the context " +
-              "of a stateful session")
-        }
+        throw new StateInStatelessException(
+          "Attempt to initialize a stateless session within the context " +
+            "of a stateful session"
+        )
+      }
 
       case Full(_) => f
 
       case _ => {
-          val fakeSess = LiftRules.statelessSession.vend.apply(request)
-          try {
-            _init(Box !! request, fakeSess)(() => f)
-          } finally {
-            // ActorPing.schedule(() => fakeSess.doShutDown(), 0 seconds)
-          }
+        val fakeSess = LiftRules.statelessSession.vend.apply(request)
+        try {
+          _init(Box !! request, fakeSess)(() => f)
+        } finally {
+          // ActorPing.schedule(() => fakeSess.doShutDown(), 0 seconds)
         }
+      }
     }
-  }
 
   /**
     * The current LiftSession.
@@ -1515,15 +1552,14 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     * Register a stateful snippet for a given class name.  Only registers if the name
     * is not already set.
     */
-  def addSnippetForClass(cls: String, inst: DispatchSnippet): Unit = {
+  def addSnippetForClass(cls: String, inst: DispatchSnippet): Unit =
     if (!_statefulSnip.is.contains(cls)) {
       inst match {
         case si: StatefulSnippet => si.addName(cls) // addresses
-        case _ =>
+        case _                   =>
       }
       _statefulSnip.set(_statefulSnip.is.updated(cls, inst))
     }
-  }
 
   /**
     * Register a stateful snippet for a given class name.  The addSnippetForClass
@@ -1532,7 +1568,7 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
   def overrideSnippetForClass(cls: String, inst: DispatchSnippet): Unit = {
     inst match {
       case si: StatefulSnippet => si.addName(cls) // addresses
-      case _ =>
+      case _                   =>
     }
     _statefulSnip.set(_statefulSnip.is.updated(cls, inst))
   }
@@ -1540,8 +1576,8 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
   private[http] def unsetSnippetForClass(cls: String): Unit =
     _statefulSnip.set(_statefulSnip.is - cls)
 
-  private var _queryAnalyzer: List[
-      (Box[Req], Long, List[(String, Long)]) => Any] = Nil
+  private var _queryAnalyzer
+      : List[(Box[Req], Long, List[(String, Long)]) => Any] = Nil
 
   /**
     * Add a query analyzer (passed queries for analysis or logging). The analyzer
@@ -1558,7 +1594,7 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
 
   private def doAround[B](ar: List[LoanWrapper])(f: => B): B =
     ar match {
-      case Nil => f
+      case Nil     => f
       case x :: xs => x(doAround(xs)(f))
     }
 
@@ -1633,7 +1669,7 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
       f()
     } finally {
       val time = millis - begin
-      _queryAnalyzer.foreach(_ (request, time, queryLog))
+      _queryAnalyzer.foreach(_(request, time, queryLog))
     }
   }
 
@@ -1652,9 +1688,7 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
   def setHeader(name: String, value: String) {
     Box
       .legacyNullTest(_responseHeaders.value)
-      .foreach(
-          rh => rh.headers = rh.headers + (name -> value)
-      )
+      .foreach(rh => rh.headers = rh.headers + (name -> value))
   }
 
   /**
@@ -1675,17 +1709,15 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     * @see # getResponseHeader ( String )
     * @see # getRequestHeader ( String )
     */
-  def getResponseHeaders(in: List[(String, String)]): List[(String, String)] = {
+  def getResponseHeaders(in: List[(String, String)]): List[(String, String)] =
     Box
       .legacyNullTest(_responseHeaders.value)
-      .map(
-          rh =>
-            rh.headers.iterator.toList ::: in.filter {
-              case (n, v) => !rh.headers.contains(n)
-          }
+      .map(rh =>
+        rh.headers.iterator.toList ::: in.filter {
+          case (n, v) => !rh.headers.contains(n)
+        }
       )
       .openOr(Nil)
-  }
 
   /**
     * Returns the current set value of the given HTTP response header as a Box. If
@@ -1698,14 +1730,11 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     * @see # getResponseHeaders ( List[ ( String, String ) ] )
     * @see # getRequestHeader ( String )
     */
-  def getResponseHeader(name: String): Box[String] = {
+  def getResponseHeader(name: String): Box[String] =
     Box
       .legacyNullTest(_responseHeaders.value)
-      .map(
-          rh => Box(rh.headers.get(name))
-      )
+      .map(rh => Box(rh.headers.get(name)))
       .openOr(Empty)
-  }
 
   /**
     * Returns the current value of the given HTTP request header as a Box. This is
@@ -1722,7 +1751,7 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     */
   def getRequestHeader(name: String): Box[String] =
     for (req <- request;
-    hdr <- req.header(name)) yield hdr
+         hdr <- req.header(name)) yield hdr
 
   /**
     * Sets the document type for the response. If this is not set, the DocType for Lift responses
@@ -1735,9 +1764,7 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
   def setDocType(what: Box[String]) {
     Box
       .legacyNullTest(_responseHeaders.value)
-      .foreach(
-          rh => rh.docType = what
-      )
+      .foreach(rh => rh.docType = what)
   }
 
   /**
@@ -1750,9 +1777,7 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
   def getDocType: (Boolean, Box[String]) =
     Box
       .legacyNullTest(_responseHeaders.value)
-      .map(
-          rh => (rh.overrodeDocType, rh.docType)
-      )
+      .map(rh => (rh.overrodeDocType, rh.docType))
       .openOr((false, Empty))
 
   private object _skipDocType extends TransientRequestVar(false)
@@ -1791,10 +1816,10 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     */
   def statefulRequest_? : Boolean = session match {
     case Full(s) => s.stateful_?
-    case _ => false
+    case _       => false
   }
 
-  private def _nest2InnerInit[B](f: () => B): B = {
+  private def _nest2InnerInit[B](f: () => B): B =
     __functionMap.doWith(Map()) {
       doAround(aroundRequest) {
         try {
@@ -1802,10 +1827,10 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
             val req = this.request
             session match {
               case Full(s) if s.stateful_? =>
-                LiftRules.earlyInStateful.toList.foreach(_ (req))
+                LiftRules.earlyInStateful.toList.foreach(_(req))
 
               case Full(s) =>
-                LiftRules.earlyInStateless.toList.foreach(_ (req))
+                LiftRules.earlyInStateless.toList.foreach(_(req))
 
               case _ =>
             }
@@ -1816,24 +1841,24 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
         }
       }
     }
-  }
 
-  private def doStatefulRewrite(old: Box[Req]): Box[Req] = {
+  private def doStatefulRewrite(old: Box[Req]): Box[Req] =
     // Don't even try to rewrite Req.nil
     old.map { req =>
       if (statefulRequest_? && req.path.partPath.nonEmpty &&
           (req.request ne null)) {
-        Req(req,
-            S.sessionRewriter.map(_.rewrite) ::: LiftRules.statefulRewrite.toList,
-            Nil,
-            LiftRules.statelessReqTest.toList)
+        Req(
+          req,
+          S.sessionRewriter.map(_.rewrite) ::: LiftRules.statefulRewrite.toList,
+          Nil,
+          LiftRules.statelessReqTest.toList
+        )
       } else {
         req
       }
     }
-  }
 
-  private def _innerInit[B](request: Box[Req], f: () => B): B = {
+  private def _innerInit[B](request: Box[Req], f: () => B): B =
     _lifeTime.doWith(false) {
       _attrs.doWith((Null, Nil)) {
         _resBundle.doWith(Nil) {
@@ -1850,43 +1875,42 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
         }
       }
     }
-  }
 
-  private[http] def withReq[T](req: Box[Req])(f: => T): T = {
+  private[http] def withReq[T](req: Box[Req])(f: => T): T =
     CurrentReq.doWith(req openOr null) {
       _request.doWith(req openOr null) {
         f
       }
     }
-  }
 
   /**
     * @return a List[Cookie] even if the underlying request's Cookies are null.
     */
   private def getCookies(request: Box[HTTPRequest]): List[HTTPCookie] =
-    for (r <- (request).toList;
-    ca <- Box.legacyNullTest(r.cookies).toList;
-    c <- ca) yield c
+    for (r  <- (request).toList;
+         ca <- Box.legacyNullTest(r.cookies).toList;
+         c  <- ca) yield c
 
-  private def _init[B](request: Box[Req], session: LiftSession)(
-      f: () => B): B = {
+  private def _init[B](request: Box[Req], session: LiftSession)(f: () => B): B =
     this._request.doWith(request.openOr(null)) {
       _sessionInfo.doWith(session) {
         _responseHeaders.doWith(new ResponseInfoHolder) {
           TransientRequestVarHandler(
+            Full(session),
+            RequestVarHandler(
               Full(session),
-              RequestVarHandler(
-                  Full(session),
-                  _responseCookies.doWith(
-                      CookieHolder(getCookies(containerRequest), Nil)) {
-                    if (Props.devMode)
-                      LiftRules.siteMap // materialize the sitemap very early
-                    _innerInit(request, f)
-                  }))
+              _responseCookies.doWith(
+                CookieHolder(getCookies(containerRequest), Nil)
+              ) {
+                if (Props.devMode)
+                  LiftRules.siteMap // materialize the sitemap very early
+                _innerInit(request, f)
+              }
+            )
+          )
         }
       }
     }
-  }
 
   /**
     * This method is a convenience accessor for LiftRules.loggedInTest. You can define your own
@@ -1958,7 +1982,7 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     */
   def attrs: List[(Either[String, (String, String)], String)] =
     _attrs.value match {
-      case null => Nil
+      case null            => Nil
       case (current, full) => full
     }
 
@@ -1977,15 +2001,19 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     *
     */
   def prefixedAttrsToMap(
-      prefix: String, start: Map[String, String]): Map[String, String] =
-    attrs.reverse.flatMap {
-      case (Right((pre, name)), value) if pre == prefix => List((name, value))
-      case (Left(name), value) if name.startsWith(prefix + ":") =>
-        List(name.substring(prefix.length + 1) -> value)
-      case _ => Nil
-    }.foldRight(start) {
-      case ((name, value), at) => at + (name -> value)
-    }
+      prefix: String,
+      start: Map[String, String]
+  ): Map[String, String] =
+    attrs.reverse
+      .flatMap {
+        case (Right((pre, name)), value) if pre == prefix => List((name, value))
+        case (Left(name), value) if name.startsWith(prefix + ":") =>
+          List(name.substring(prefix.length + 1) -> value)
+        case _ => Nil
+      }
+      .foldRight(start) {
+        case ((name, value), at) => at + (name -> value)
+      }
 
   /**
     * Returns the S attributes that are prefixed by 'prefix' parameter as a Map[String, String]
@@ -2025,7 +2053,9 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     *
     */
   def prefixedAttrsToMetaData(
-      prefix: String, start: Map[String, String]): MetaData =
+      prefix: String,
+      start: Map[String, String]
+  ): MetaData =
     mapToAttrs(prefixedAttrsToMap(prefix, start))
 
   /**
@@ -2062,9 +2092,9 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     * @see # prefixedAttrsToMap ( String, Map )
     */
   def attrsFlattenToMap: Map[String, String] = Map.empty ++ attrs.flatMap {
-    case (Left(key), value) => List((key, value))
+    case (Left(key), value)            => List((key, value))
     case (Right((prefix, key)), value) => List((prefix + ":" + key, value))
-    case _ => Nil
+    case _                             => Nil
   }
 
   /**
@@ -2100,7 +2130,7 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     * @see # attrsToMetaData
     *
     */
-  def attrsToMetaData(predicate: String => Boolean): MetaData = {
+  def attrsToMetaData(predicate: String => Boolean): MetaData =
     attrs.foldLeft[MetaData](Null) {
       case (md, (Left(name), value)) if (predicate(name)) =>
         new UnprefixedAttribute(name, value, md)
@@ -2108,7 +2138,6 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
         new PrefixedAttribute(prefix, name, value, md)
       case _ => Null
     }
-  }
 
   /**
     * Converts S.attrs attributes to a MetaData object that can be used to add
@@ -2143,9 +2172,8 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     * @see # attrsToMetaData
     *
     */
-  def currentAttrsToMetaData(predicate: String => Boolean): MetaData = {
+  def currentAttrsToMetaData(predicate: String => Boolean): MetaData =
     currentAttrs.filter(a => predicate(a.key))
-  }
 
   /**
     * Find and process a template. This can be used to load a template from within some other Lift processing,
@@ -2159,10 +2187,12 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     * @see TempalateFinder # apply
     */
   def runTemplate(
-      path: List[String], snips: (String, NodeSeq => NodeSeq)*): Box[NodeSeq] =
+      path: List[String],
+      snips: (String, NodeSeq => NodeSeq)*
+  ): Box[NodeSeq] =
     mapSnippetsWith(snips: _*) {
       for {
-        t <- Templates(path) ?~ ("Couldn't find template " + path)
+        t    <- Templates(path) ?~ ("Couldn't find template " + path)
         sess <- session ?~ "No current session"
       } yield sess.processSurroundAndInclude(path.mkString("/", "/", ""), t)
     }
@@ -2177,7 +2207,9 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     * @return a Full Box containing the processed template, or a Failure if the template could not be found.
     */
   def eval(
-      template: NodeSeq, snips: (String, NodeSeq => NodeSeq)*): Box[NodeSeq] =
+      template: NodeSeq,
+      snips: (String, NodeSeq => NodeSeq)*
+  ): Box[NodeSeq] =
     mapSnippetsWith(snips: _*) {
       for {
         sess <- session ?~ "No current session"
@@ -2219,16 +2251,20 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     type Info = String
 
     protected def findAttr(key: String): Option[Info] =
-      attrs.find {
-        case (Left(v), _) if v == key => true
-        case _ => false
-      }.map(_._2)
+      attrs
+        .find {
+          case (Left(v), _) if v == key => true
+          case _                        => false
+        }
+        .map(_._2)
 
     protected def findAttr(prefix: String, key: String): Option[Info] =
-      attrs.find {
-        case (Right((p, n)), _) if (p == prefix && n == key) => true
-        case _ => false
-      }.map(_._2)
+      attrs
+        .find {
+          case (Right((p, n)), _) if (p == prefix && n == key) => true
+          case _                                               => false
+        }
+        .map(_._2)
 
     protected def convert[T](in: Option[T]): Box[T] = Box(in)
 
@@ -2256,21 +2292,19 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     * @tparam T the return type of the code block
     * @return the return value of the code block
     */
-  def clearAttrs[T](f: => T): T = {
+  def clearAttrs[T](f: => T): T =
     _attrs.doWith((Null, Nil))(f)
-  }
 
   /**
     * A function that will eagerly evaluate a template.
     */
   def eagerEval: NodeSeq => NodeSeq =
-    ns =>
-      {
-        S.session match {
-          case Full(session) =>
-            session.processSurroundAndInclude("Eager Eval", ns)
-          case _ => ns
-        }
+    ns => {
+      S.session match {
+        case Full(session) =>
+          session.processSurroundAndInclude("Eager Eval", ns)
+        case _ => ns
+      }
     }
 
   /**
@@ -2282,10 +2316,9 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     * @param session the LiftSession for this request
     * @param f A function to execute within the scope of the session
     */
-  def initIfUninitted[B](session: LiftSession)(f: => B): B = {
+  def initIfUninitted[B](session: LiftSession)(f: => B): B =
     if (inS.value) f
     else init(Empty, session)(f)
-  }
 
   /**
     * Retrieves the attributes from the most recently executed
@@ -2305,7 +2338,7 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     * helper object simplifies things considerably.
     */
   def currentAttrs: MetaData = _attrs.value match {
-    case null => Null
+    case null            => Null
     case (current, full) => current
   }
 
@@ -2318,7 +2351,7 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     val currentStack = _attrs.value._2
     val newFrame = attrs.toList.map {
       case pa: PrefixedAttribute => (Right(pa.pre, pa.key), pa.value.text)
-      case m => (Left(m.key), m.value.text)
+      case m                     => (Left(m.key), m.value.text)
     }
 
     _attrs.doWith((attrs, newFrame ::: currentStack))(f)
@@ -2360,10 +2393,11 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     type Info = String
 
     protected def findAttr(key: String): Option[Info] =
-      currentAttrs.toList.find { _.key == key }.map(_.value.text)
+      currentAttrs.toList.find(_.key == key).map(_.value.text)
 
     protected def findAttr(prefix: String, key: String): Option[Info] =
-      currentAttrs.toList.find { _.prefixedKey == (prefix + ":" + key) }
+      currentAttrs.toList
+        .find(_.prefixedKey == (prefix + ":" + key))
         .map(_.value.text)
 
     protected def convert[T](in: Option[T]): Box[T] = Box(in)
@@ -2404,10 +2438,9 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     *
     */
   def getSessionAttribute(what: String): Box[String] =
-    containerSession.flatMap(
-        _.attribute(what) match {
+    containerSession.flatMap(_.attribute(what) match {
       case s: String => Full(s)
-      case _ => Empty
+      case _         => Empty
     })
 
   /**
@@ -2506,7 +2539,8 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
       case Full(s) if s.stateful_? => f
       case _ =>
         throw new StateInStatelessException(
-            "Accessing function map information outside of a stateful session")
+          "Accessing function map information outside of a stateful session"
+        )
     }
 
   /**
@@ -2661,7 +2695,7 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
   private def updateFunctionMap(name: String, value: AFuncHolder) {
     __functionMap.box match {
       case Full(old) => __functionMap.set(old + ((name, value)))
-      case _ =>
+      case _         =>
     }
   }
 
@@ -2669,14 +2703,16 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     * Associates a name with a function impersonated by AFuncHolder. These are basically functions
     * that are executed when a request contains the 'name' request parameter.
     */
-  def addFunctionMap(name: String, value: AFuncHolder) = {
+  def addFunctionMap(name: String, value: AFuncHolder) =
     testFunctionMap {
       (autoCleanUp.box, _oneShot.box) match {
         case (Full(true), _) => {
-            updateFunctionMap(name, new S.ProxyFuncHolder(value) {
+          updateFunctionMap(
+            name,
+            new S.ProxyFuncHolder(value) {
               var shot = false
 
-              override def apply(in: List[String]): Any = {
+              override def apply(in: List[String]): Any =
                 synchronized {
                   if (!shot) {
                     shot = true
@@ -2686,9 +2722,8 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
                     js.JsCmds.Noop
                   }
                 }
-              }
 
-              override def apply(in: FileParamHolder): Any = {
+              override def apply(in: FileParamHolder): Any =
                 synchronized {
                   if (!shot) {
                     shot = true
@@ -2698,24 +2733,29 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
                     js.JsCmds.Noop
                   }
                 }
-              }
-            })
-          }
+            }
+          )
+        }
 
         case (_, Full(true)) => {
-            updateFunctionMap(name, new S.ProxyFuncHolder(value) {
+          updateFunctionMap(
+            name,
+            new S.ProxyFuncHolder(value) {
               var shot = false
               lazy val theFuture: LAFuture[Any] = {
                 S.session.map(_.removeFunction(name))
                 val future: LAFuture[Any] = new LAFuture
 
-                updateFunctionMap(name, new S.ProxyFuncHolder(value) {
-                  override def apply(in: List[String]): Any =
-                    future.get(5000).openOrThrowException("legacy code")
+                updateFunctionMap(
+                  name,
+                  new S.ProxyFuncHolder(value) {
+                    override def apply(in: List[String]): Any =
+                      future.get(5000).openOrThrowException("legacy code")
 
-                  override def apply(in: FileParamHolder): Any =
-                    future.get(5000).openOrThrowException("legacy code")
-                })
+                    override def apply(in: FileParamHolder): Any =
+                      future.get(5000).openOrThrowException("legacy code")
+                  }
+                )
 
                 future
               }
@@ -2758,31 +2798,30 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
                   }
                 }
               }
-            })
-          }
+            }
+          )
+        }
 
         case _ =>
           updateFunctionMap(name, value)
       }
     }
-  }
 
   /**
     * Decorates an URL with jsessionid parameter in case cookies are disabled from the container. Also
     * it appends general purpose parameters defined by LiftRules.urlDecorate
     */
-  def encodeURL(url: String) = {
-    URLRewriter.rewriteFunc map (_ (url)) openOr url
-  }
+  def encodeURL(url: String) =
+    URLRewriter.rewriteFunc map (_(url)) openOr url
 
   private[http] object _formGroup extends TransientRequestVar[Box[Int]](Empty)
-  private object formItemNumber extends TransientRequestVar[Int](0)
+  private object formItemNumber   extends TransientRequestVar[Int](0)
 
   private def notLiftOrScala(in: StackTraceElement): Boolean =
     in.getClassName match {
       case s if s.startsWith("net.liftweb") => false
-      case s if s.startsWith("scala") => false
-      case _ => true
+      case s if s.startsWith("scala")       => false
+      case _                                => true
     }
 
   def disableTestFuncNames_? : Boolean = _disableTestFuncNames.box openOr false
@@ -2802,25 +2841,26 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
   /** Generates a func-name based on the location in the call-site source code. */
   def generatePredictableFuncName: String = {
     val bump: Long = ((_formGroup.is openOr 0) + 1000L) * 100000L
-    val num: Int = formItemNumber.is
+    val num: Int   = formItemNumber.is
     formItemNumber.set(num + 1)
     import java.text._
     val prefix: String =
       new DecimalFormat("00000000000000000").format(bump + num)
     // take the first 2 non-Lift/non-Scala stack frames for use as hash issue 174
     "f" + prefix + "_" + Helpers.hashHex(
-        (new Exception).getStackTrace.toList
-          .filter(notLiftOrScala)
-          .take(2)
-          .map(_.toString)
-          .mkString(","))
+      (new Exception).getStackTrace.toList
+        .filter(notLiftOrScala)
+        .take(2)
+        .map(_.toString)
+        .mkString(",")
+    )
   }
 
   /** Standard func-name logic. This is the default routine. */
   def generateFuncName: String =
     _formGroup.is match {
       case Full(x) => Helpers.nextFuncName(x.toLong * 100000L)
-      case _ => Helpers.nextFuncName
+      case _       => Helpers.nextFuncName
     }
 
   def formGroup[T](group: Int)(f: => T): T = {
@@ -2854,7 +2894,9 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     * @return ( JsonCall, JsCmd )
     */
   def createJsonFunc(
-      onError: JsCmd, f: PFPromoter[JValue, JsCmd]): (JsonCall, JsCmd) =
+      onError: JsCmd,
+      f: PFPromoter[JValue, JsCmd]
+  ): (JsonCall, JsCmd) =
     createJsonFunc(Empty, Full(onError), f)
 
   /**
@@ -2867,9 +2909,11 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     *
     * @return ( JsonCall, JsCmd )
     */
-  def createJsonFunc(name: Box[String],
-                     onError: Box[JsCmd],
-                     pfp: PFPromoter[JValue, JsCmd]): (JsonCall, JsCmd) = {
+  def createJsonFunc(
+      name: Box[String],
+      onError: Box[JsCmd],
+      pfp: PFPromoter[JValue, JsCmd]
+  ): (JsonCall, JsCmd) =
     functionLifespan(true) {
       val key = formFuncName
 
@@ -2878,34 +2922,36 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
       def jsonCallback(in: List[String]): JsCmd = {
         val f = pfp.pff()
         for {
-          line <- in
+          line   <- in
           parsed <- JsonParser.parseOpt(line) if f.isDefinedAt(parsed)
         } yield f(parsed)
       }.foldLeft(JsCmds.Noop)(_ & _)
 
       val onErrorFunc: String =
         onError.map(f =>
-              JsCmds.Run("function onError_" + key + "() {" + f.toJsCmd + """
+          JsCmds.Run("function onError_" + key + "() {" + f.toJsCmd + """
   }
 
-   """).toJsCmd) openOr ""
+   """).toJsCmd
+        ) openOr ""
 
       val onErrorParam = onError.map(f => "onError_" + key) openOr "null"
 
       val af: AFuncHolder = jsonCallback _
       addFunctionMap(key, af)
 
-      (JsonCall(key),
-       JsCmds.Run(
-           name
-             .map(
-                 n => onErrorFunc + "/* JSON Func " + n + " $$ " + key + " */")
-             .openOr("") + "function " + key + "(obj) {lift.ajax(" +
-           "'" + key + "='+ encodeURIComponent(" +
-           LiftRules.jsArtifacts.jsonStringify(JE.JsRaw("obj")).toJsCmd +
-           "), null," + onErrorParam + ");}"))
+      (
+        JsonCall(key),
+        JsCmds.Run(
+          name
+            .map(n => onErrorFunc + "/* JSON Func " + n + " $$ " + key + " */")
+            .openOr("") + "function " + key + "(obj) {lift.ajax(" +
+            "'" + key + "='+ encodeURIComponent(" +
+            LiftRules.jsArtifacts.jsonStringify(JE.JsRaw("obj")).toJsCmd +
+            "), null," + onErrorParam + ");}"
+        )
+      )
     }
-  }
 
   /**
     * Returns the JsCmd that holds the notices markup
@@ -2921,19 +2967,17 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     * this request is submitted to server the function will be executed and then
     * it is automatically cleaned up from functions caches.
     */
-  def mapFuncToURI(uri: String, f: () => Unit): String = {
+  def mapFuncToURI(uri: String, f: () => Unit): String =
     session map (_ attachRedirectFunc (uri, Box.legacyNullTest(f))) openOr uri
-  }
 
   /**
     * Execute code synchronized to the current session object
     */
-  def synchronizeForSession[T](f: => T): T = {
+  def synchronizeForSession[T](f: => T): T =
     session match {
       case Full(s) => s.synchronized(f)
-      case _ => f
+      case _       => f
     }
-  }
 
   /**
     * Maps a function with an random generated and name
@@ -2952,7 +2996,7 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     */
   def contextFuncBuilder(f: S.AFuncHolder): S.AFuncHolder = S.session match {
     case Full(s) => s.contextFuncBuilder(f)
-    case _ => f
+    case _       => f
   }
 
   def render(xhtml: NodeSeq, httpRequest: HTTPRequest): NodeSeq = {
@@ -2961,11 +3005,13 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
 
     if (inS.value) doRender(session.openOrThrowException("legacy code"))
     else {
-      val req = Req(httpRequest,
-                    LiftRules.statelessRewrite.toList,
-                    Nil,
-                    LiftRules.statelessReqTest.toList,
-                    System.nanoTime)
+      val req = Req(
+        httpRequest,
+        LiftRules.statelessRewrite.toList,
+        Nil,
+        LiftRules.statelessReqTest.toList,
+        System.nanoTime
+      )
 
       CurrentReq.doWith(req) {
         val ses: LiftSession =
@@ -2977,10 +3023,12 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
             case _ =>
               val ret = LiftSession(httpRequest.session, req.contextPath)
               ret.fixSessionTime()
-              SessionMaster.addSession(ret,
-                                       req,
-                                       httpRequest.userAgent,
-                                       SessionMaster.getIpFromReq(req))
+              SessionMaster.addSession(
+                ret,
+                req,
+                httpRequest.userAgent,
+                SessionMaster.getIpFromReq(req)
+              )
               ret
           }
 
@@ -2996,14 +3044,18 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     * return a JsCmd to be sent back to the browser. Note that if the
     * passed JSON does not parse, the function will not be invoked.
     */
-  def jsonFmapFunc[T](in: JValue => JsCmd)(f: String => T)(
-      implicit dummy: AvoidTypeErasureIssues1): T = {
+  def jsonFmapFunc[T](
+      in: JValue => JsCmd
+  )(f: String => T)(implicit dummy: AvoidTypeErasureIssues1): T = {
     import json._
 
     val name = formFuncName
-    addFunctionMap(name,
-                   SFuncHolder((s: String) =>
-                         JsonParser.parseOpt(s).map(in) getOrElse JsCmds.Noop))
+    addFunctionMap(
+      name,
+      SFuncHolder((s: String) =>
+        JsonParser.parseOpt(s).map(in) getOrElse JsCmds.Noop
+      )
+    )
     f(name)
   }
 
@@ -3019,16 +3071,17 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     * Returns the HTTP parameter having 'n' name
     */
   def param(n: String): Box[String] =
-    paramsForComet.get.get(n).flatMap(_.headOption) orElse request.flatMap(
-        r => Box(r.param(n)))
+    paramsForComet.get.get(n).flatMap(_.headOption) orElse request.flatMap(r =>
+      Box(r.param(n))
+    )
 
   /**
     * Set the paramsForComet and run the function
     */
-  private[http] def doCometParams[T](map: Map[String, List[String]])(
-      f: => T): T = {
+  private[http] def doCometParams[T](
+      map: Map[String, List[String]]
+  )(f: => T): T =
     paramsForComet.doWith(map)(f)
-  }
 
   /**
     * Sets an ERROR notice as a plain text
@@ -3164,8 +3217,9 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     * @param id - the lookup id
     * @param f - the function that returns the messages
     */
-  def messagesById(id: String)(
-      f: => List[(NodeSeq, Box[String])]): List[NodeSeq] =
+  def messagesById(
+      id: String
+  )(f: => List[(NodeSeq, Box[String])]): List[NodeSeq] =
     f filter (_._2 map (_ equals id) openOr false) map (_._1)
 
   /**
@@ -3181,11 +3235,10 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     *
     * @param f - the function that returns the messages
     */
-  def noIdMessages(f: => List[(NodeSeq, Box[String])]): List[NodeSeq] = {
+  def noIdMessages(f: => List[(NodeSeq, Box[String])]): List[NodeSeq] =
     f.collect {
       case (message, Empty) => message
     }
-  }
 
   /**
     * Returns the messages that are associated with any id.
@@ -3194,7 +3247,8 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     * @param f - the function that returns the messages
     */
   def idMessages(
-      f: => List[(NodeSeq, Box[String])]): List[(String, List[NodeSeq])] = {
+      f: => List[(NodeSeq, Box[String])]
+  ): List[(String, List[NodeSeq])] = {
     val res = new HashMap[String, List[NodeSeq]]
     f.filter(_._2.isEmpty == false)
       .foreach(_ match {
@@ -3219,22 +3273,18 @@ trait S extends HasParams with Loggable with UserAgentCalculator {
     *            is invoked asynchronously in the context of a different thread.
     *
     */
-  def respondAsync(f: => Box[LiftResponse]): () => Box[LiftResponse] = {
-    RestContinuation.async { reply =>
-      reply(f.openOr(EmptyResponse))
-    }
-  }
+  def respondAsync(f: => Box[LiftResponse]): () => Box[LiftResponse] =
+    RestContinuation.async(reply => reply(f.openOr(EmptyResponse)))
 
   /**
     * If you bind functions (i.e. using SHtml helpers) inside the closure passed to callOnce,
     * after your function is invoked, it will be automatically removed from functions cache so
     * that it cannot be invoked again.
     */
-  def callOnce[T](f: => T): T = {
+  def callOnce[T](f: => T): T =
     autoCleanUp.doWith(true) {
       f
     }
-  }
 
   /**
     * All functions created inside the oneShot scope
@@ -3263,7 +3313,7 @@ object NoticeType extends Serializable {
     def styleTag: String = lowerCaseTitle + "_class"
   }
 
-  object Notice extends Value("Notice")
+  object Notice  extends Value("Notice")
   object Warning extends Value("Warning")
-  object Error extends Value("Error")
+  object Error   extends Value("Error")
 }

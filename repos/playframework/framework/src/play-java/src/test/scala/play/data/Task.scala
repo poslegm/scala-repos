@@ -9,7 +9,7 @@ import scala.annotation.meta.field
 
 class Task {
 
-  type Min = play.data.validation.Constraints.Min @field
+  type Min      = play.data.validation.Constraints.Min @field
   type Required = play.data.validation.Constraints.Required @field
   type DateTime = play.data.format.Formats.DateTime @field
 

@@ -26,11 +26,11 @@ object AuthRole {
   }
 
   def apply(roleNames: String*): List[Role] =
-    roleNames.toList.map(
-        n =>
-          new Role {
+    roleNames.toList.map(n =>
+      new Role {
         def name = n
-    })
+      }
+    )
 
   def apply(roleName: String, roles: Role*): Role =
     new Role {
@@ -44,7 +44,7 @@ object AuthRole {
   * will have access to requested resource.
   */
 trait Role {
-  private var parent: Box[Role] = Empty
+  private var parent: Box[Role]  = Empty
   private var childs: List[Role] = Nil
 
   /**
@@ -84,12 +84,12 @@ trait Role {
   def getRoleByName(roleName: String): Box[Role] =
     (this.name == roleName) match {
       case false =>
-        childs.find(
-            role =>
-              role.getRoleByName(roleName) match {
-            case Empty => false
+        childs.find(role =>
+          role.getRoleByName(roleName) match {
+            case Empty       => false
             case theRole @ _ => return theRole
-        })
+          }
+        )
         Empty
       case _ => Full(this)
     }
@@ -97,28 +97,26 @@ trait Role {
   /**
     * Removes the child Role
     */
-  def removeRoleByName(roleName: String): Box[Role] = {
+  def removeRoleByName(roleName: String): Box[Role] =
     getRoleByName(roleName).map(_.detach) openOr Empty
-  }
 
   /**
     * Removes this Role from its parent
     */
-  def detach: Box[Role] = {
+  def detach: Box[Role] =
     this.parent.map {
       case p =>
         p.childs = p.childs.filter(role => role.name != this.name)
         this.parent = Empty
         this
     }
-  }
 
   /**
     * Verifies if this Role is a child of a role having the name <i>roleName</i>
     */
   def isChildOf(roleName: String): Boolean = (this.name == roleName) match {
     case true => return true
-    case _ => this.parent.map(_ isChildOf (roleName)) openOr false
+    case _    => this.parent.map(_ isChildOf (roleName)) openOr false
   }
 
   /**

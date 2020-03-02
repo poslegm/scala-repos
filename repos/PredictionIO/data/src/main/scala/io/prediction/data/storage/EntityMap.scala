@@ -58,20 +58,20 @@ class EntityIdIxMap(val idToIx: BiMap[String, Long]) extends Serializable {
 /** :: Experimental :: */
 @Experimental
 object EntityIdIxMap {
-  def apply(keys: RDD[String]): EntityIdIxMap = {
+  def apply(keys: RDD[String]): EntityIdIxMap =
     new EntityIdIxMap(BiMap.stringLong(keys))
-  }
 }
 
 /** :: Experimental :: */
 @Experimental
 class EntityMap[A](
-    val idToData: Map[String, A], override val idToIx: BiMap[String, Long])
-    extends EntityIdIxMap(idToIx) {
+    val idToData: Map[String, A],
+    override val idToIx: BiMap[String, Long]
+) extends EntityIdIxMap(idToIx) {
 
   def this(idToData: Map[String, A]) = this(
-      idToData,
-      BiMap.stringLong(idToData.keySet)
+    idToData,
+    BiMap.stringLong(idToData.keySet)
   )
 
   def data(id: String): A = idToData(id)
@@ -93,7 +93,6 @@ class EntityMap[A](
     new EntityMap[A](idToData.filterKeys(newIdToIx.contains(_)), newIdToIx)
   }
 
-  override def toString: String = {
+  override def toString: String =
     s"idToData: ${idToData.toString} " + s"idToix: ${idToIx.toString}"
-  }
 }

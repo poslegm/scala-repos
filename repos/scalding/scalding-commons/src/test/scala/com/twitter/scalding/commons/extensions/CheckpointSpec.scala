@@ -28,23 +28,19 @@ class CheckpointJob(args: Args) extends Job(args) {
 
   def in0 = Checkpoint[(Int, Int, Int)]("c0", ('x0, 'y0, 's0)) {
     Tsv("input0").read.mapTo((0, 1, 2) -> ('x0, 'y0, 's0)) {
-      x: (Int, Int, Int) =>
-        x
+      x: (Int, Int, Int) => x
     }
   }
   def in1 = Checkpoint[(Int, Int, Int)]("c1", ('x1, 'y1, 's1)) {
     Tsv("input1").read.mapTo((0, 1, 2) -> ('x1, 'y1, 's1)) {
-      x: (Int, Int, Int) =>
-        x
+      x: (Int, Int, Int) => x
     }
   }
   def out = Checkpoint[(Int, Int, Int)]("c2", ('x0, 'x1, 'score)) {
     in0
       .joinWithSmaller('y0 -> 'y1, in1)
-      .map(('s0, 's1) -> 'score) { v: (Int, Int) =>
-        v._1 * v._2
-      }
-      .groupBy('x0, 'x1) { _.sum[Double]('score) }
+      .map(('s0, 's1) -> 'score) { v: (Int, Int) => v._1 * v._2 }
+      .groupBy('x0, 'x1)(_.sum[Double]('score))
   }
 
   out.write(Tsv("output"))
@@ -83,8 +79,7 @@ class CheckpointSpec extends WordSpec {
     val out = Set((0, 1, 2.0), (0, 0, 1.0), (1, 1, 4.0), (2, 1, 8.0))
 
     // Verifies output when passed as a callback to JobTest.sink().
-    def verifyOutput[A](
-        expectedOutput: Set[A], actualOutput: Buffer[A]): Unit =
+    def verifyOutput[A](expectedOutput: Set[A], actualOutput: Buffer[A]): Unit =
       assert(actualOutput.toSet === expectedOutput)
 
     // Runs a test in both local test and hadoop test mode, verifies the final
@@ -154,8 +149,7 @@ class TypedCheckpointSpec extends WordSpec {
     val out = Set((0, 1, 2.0), (0, 0, 1.0), (1, 1, 4.0), (2, 1, 8.0))
 
     // Verifies output when passed as a callback to JobTest.sink().
-    def verifyOutput[A](
-        expectedOutput: Set[A], actualOutput: Buffer[A]): Unit =
+    def verifyOutput[A](expectedOutput: Set[A], actualOutput: Buffer[A]): Unit =
       assert(actualOutput.toSet === expectedOutput)
 
     // Runs a test in both local test and hadoop test mode, verifies the final
@@ -165,7 +159,8 @@ class TypedCheckpointSpec extends WordSpec {
       test
         .arg("checkpoint.format", "tsv")
         .sink[(Int, Int, Double)](TypedTsv[(Int, Int, Double)]("output"))(
-            verifyOutput(out, _))
+          verifyOutput(out, _)
+        )
         .run
         .runHadoop
         .finish

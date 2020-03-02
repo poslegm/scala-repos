@@ -145,7 +145,10 @@ class JavaDoubleRDD(val srdd: RDD[scala.Double])
     * Return a sampled subset of this RDD.
     */
   def sample(
-      withReplacement: Boolean, fraction: JDouble, seed: Long): JavaDoubleRDD =
+      withReplacement: Boolean,
+      fraction: JDouble,
+      seed: Long
+  ): JavaDoubleRDD =
     fromRDD(srdd.sample(withReplacement, fraction, seed))
 
   /**
@@ -212,7 +215,9 @@ class JavaDoubleRDD(val srdd: RDD[scala.Double])
 
   /** Return the approximate mean of the elements in this RDD. */
   def meanApprox(
-      timeout: Long, confidence: JDouble): PartialResult[BoundedDouble] =
+      timeout: Long,
+      confidence: JDouble
+  ): PartialResult[BoundedDouble] =
     srdd.meanApprox(timeout, confidence)
 
   /**
@@ -225,7 +230,9 @@ class JavaDoubleRDD(val srdd: RDD[scala.Double])
     * Approximate operation to return the sum within a timeout.
     */
   def sumApprox(
-      timeout: Long, confidence: JDouble): PartialResult[BoundedDouble] =
+      timeout: Long,
+      confidence: JDouble
+  ): PartialResult[BoundedDouble] =
     srdd.sumApprox(timeout, confidence)
 
   /**
@@ -264,13 +271,11 @@ class JavaDoubleRDD(val srdd: RDD[scala.Double])
     * the maximum value of the last position and all NaN entries will be counted
     * in that bucket.
     */
-  def histogram(buckets: Array[scala.Double]): Array[Long] = {
+  def histogram(buckets: Array[scala.Double]): Array[Long] =
     srdd.histogram(buckets, false)
-  }
 
-  def histogram(buckets: Array[JDouble], evenBuckets: Boolean): Array[Long] = {
+  def histogram(buckets: Array[JDouble], evenBuckets: Boolean): Array[Long] =
     srdd.histogram(buckets.map(_.toDouble), evenBuckets)
-  }
 
   /** Assign a name to this RDD */
   def setName(name: String): JavaDoubleRDD = {

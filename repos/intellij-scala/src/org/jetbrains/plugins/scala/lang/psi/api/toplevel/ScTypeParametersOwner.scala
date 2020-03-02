@@ -10,12 +10,11 @@ import org.jetbrains.plugins.scala.lang.parser.ScalaElementTypes
 import org.jetbrains.plugins.scala.lang.psi.api.statements.params._
 
 trait ScTypeParametersOwner extends ScalaPsiElement {
-  def typeParameters: Seq[ScTypeParam] = {
+  def typeParameters: Seq[ScTypeParam] =
     typeParametersClause match {
       case Some(clause) => clause.typeParameters
-      case _ => Seq.empty
+      case _            => Seq.empty
     }
-  }
 
   def typeParametersClause: Option[ScTypeParamClause] = {
     this match {
@@ -23,8 +22,9 @@ trait ScTypeParametersOwner extends ScalaPsiElement {
         val stub = st.getStub
         if (stub != null) {
           val array = stub.getChildrenByType(
-              ScalaElementTypes.TYPE_PARAM_CLAUSE,
-              JavaArrayFactoryUtil.ScTypeParamClauseFactory)
+            ScalaElementTypes.TYPE_PARAM_CLAUSE,
+            JavaArrayFactoryUtil.ScTypeParamClauseFactory
+          )
           if (array.length == 0) {
             return None
           } else {
@@ -37,10 +37,12 @@ trait ScTypeParametersOwner extends ScalaPsiElement {
   }
 
   import com.intellij.psi.scope.PsiScopeProcessor
-  override def processDeclarations(processor: PsiScopeProcessor,
-                                   state: ResolveState,
-                                   lastParent: PsiElement,
-                                   place: PsiElement): Boolean = {
+  override def processDeclarations(
+      processor: PsiScopeProcessor,
+      state: ResolveState,
+      lastParent: PsiElement,
+      place: PsiElement
+  ): Boolean = {
     if (lastParent != null) {
       var i = 0
       while (i < typeParameters.length) {

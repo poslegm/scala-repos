@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-14 Miles Sabin 
+ * Copyright (c) 2011-14 Miles Sabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,17 +61,17 @@ object get extends (Option ~> Id) {
 
 /** Polymorphic addition with type specific cases. */
 object plus extends Poly2 {
-  implicit val caseInt = at[Int, Int](_ + _)
-  implicit val caseDouble = at[Double, Double](_ + _)
-  implicit val caseString = at[String, String](_ + _)
+  implicit val caseInt     = at[Int, Int](_ + _)
+  implicit val caseDouble  = at[Double, Double](_ + _)
+  implicit val caseString  = at[String, String](_ + _)
   implicit def caseList[T] = at[List[T], List[T]](_ ::: _)
 }
 
 /** Polymorphic zero with type specific cases. */
 object zero extends Poly0 {
-  implicit val zeroInt = at(0)
-  implicit val zeroDouble = at(0.0)
-  implicit val zeroString = at("")
+  implicit val zeroInt     = at(0)
+  implicit val zeroDouble  = at(0.0)
+  implicit val zeroString  = at("")
   implicit def zeroList[T] = at[List[T]](Nil)
 }
 
@@ -81,14 +81,16 @@ class PolyTests {
   }
 
   object size extends Poly1 {
-    implicit def default[T] = at[T](_ => 1)
-    implicit def caseInt = at[Int](_ => 1)
-    implicit def caseString = at[String](_.length)
+    implicit def default[T]  = at[T](_ => 1)
+    implicit def caseInt     = at[Int](_ => 1)
+    implicit def caseString  = at[String](_.length)
     implicit def caseList[T] = at[List[T]](_.length)
     implicit def caseOption[T](implicit st: Case.Aux[T, Int]) =
       at[Option[T]](t => 1 + (t map size).getOrElse(0))
     implicit def caseTuple[T, U](
-        implicit st: Case.Aux[T, Int], su: Case.Aux[U, Int]) = at[(T, U)] {
+        implicit st: Case.Aux[T, Int],
+        su: Case.Aux[U, Int]
+    ) = at[(T, U)] {
       case (t, u) => size(t) + size(u)
     }
   }
@@ -118,7 +120,7 @@ class PolyTests {
     val st = size((23, "foo"))
     assertEquals(4, st)
 
-    val ls = List("foo", "bar", "baz")
+    val ls  = List("foo", "bar", "baz")
     val lss = ls map size
     typed[List[Int]](lss)
     assertEquals(List(3, 3, 3), lss)
@@ -141,7 +143,7 @@ class PolyTests {
     assertEquals(Set("foo"), s2)
 
     def app[G[_]](f: Int => G[Int]) = f(23)
-    val as = app(singleton)
+    val as                          = app(singleton)
     typed[Set[Int]](as)
     assertEquals(Set(23), as)
 
@@ -194,15 +196,20 @@ class PolyTests {
 
     val m1 = pairMap(singleton)
     typed[(List[Set[Int]], List[Set[String]])](m1)
-    assertEquals((List(Set(1), Set(2), Set(3)),
-                  List(Set("foo"), Set("bar"), Set("baz"))),
-                 m1)
+    assertEquals(
+      (List(Set(1), Set(2), Set(3)), List(Set("foo"), Set("bar"), Set("baz"))),
+      m1
+    )
 
     val m2 = pairMap(list)
     typed[(List[List[Int]], List[List[String]])](m2)
-    assertEquals((List(List(1), List(2), List(3)),
-                  List(List("foo"), List("bar"), List("baz"))),
-                 m2)
+    assertEquals(
+      (
+        List(List(1), List(2), List(3)),
+        List(List("foo"), List("bar"), List("baz"))
+      ),
+      m2
+    )
 
     val l5 = List(1, 2, 3)
     val l6 = l5 map option
@@ -224,8 +231,9 @@ class PolyTests {
     typed[Int :: Int :: Int :: Int :: Int :: Int :: HNil](l9)
     assertEquals(1 :: 3 :: 4 :: 4 :: 4 :: 1 :: HNil, l9)
 
-    def hlistMap(f: Poly)(
-        implicit mapper: Mapper[f.type, Int :: String :: HNil]) =
+    def hlistMap(
+        f: Poly
+    )(implicit mapper: Mapper[f.type, Int :: String :: HNil]) =
       (23 :: "foo" :: HNil) map f
 
     val hm1 = hlistMap(singleton)
@@ -280,7 +288,7 @@ class PolyTests {
   // Polymophic function value with type-specific cases for two
   // argument types. Result type is dependent on argument type
   object bidi extends Poly1 {
-    implicit val caseInt = at[Int](_.toString)
+    implicit val caseInt    = at[Int](_.toString)
     implicit val caseString = at[String](_.toInt)
   }
 
@@ -294,7 +302,7 @@ class PolyTests {
     typed[Int](bs)
     assertEquals(23, bs)
 
-    val lis = 1 :: "2" :: 3 :: "4" :: HNil
+    val lis  = 1 :: "2" :: 3 :: "4" :: HNil
     val blis = lis map bidi
     typed[String :: Int :: String :: Int :: HNil](blis)
     assertEquals("1" :: 2 :: "3" :: 4 :: HNil, blis)

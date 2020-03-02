@@ -10,7 +10,7 @@ object MacroImpl {
 
   def toName(c: MacroCtx)(value: c.Expr[_]): c.Expr[String] = {
     import c.universe._
-    val valRep = show(value.tree)
+    val valRep       = show(value.tree)
     val valueRepTree = Literal(Constant(valRep))
     c.Expr[String](valueRepTree)
   }

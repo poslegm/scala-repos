@@ -4,7 +4,11 @@ package decompiler
 import java.io.IOException
 
 import com.intellij.lang.LanguageParserDefinitions
-import com.intellij.openapi.project.{DefaultProjectFactory, Project, ProjectManager}
+import com.intellij.openapi.project.{
+  DefaultProjectFactory,
+  Project,
+  ProjectManager
+}
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.compiled.ClsStubBuilder
 import com.intellij.psi.stubs.{PsiFileStub, PsiFileStubImpl}
@@ -22,7 +26,7 @@ import scala.reflect.NameTransformer
   * @author ilyas
   */
 object ScClsStubBuilder {
-  def canBeProcessed(file: VirtualFile): Boolean = {
+  def canBeProcessed(file: VirtualFile): Boolean =
     try {
       canBeProcessed(file, file.contentsToByteArray())
     } catch {
@@ -30,13 +34,14 @@ object ScClsStubBuilder {
       case u: UnsupportedOperationException =>
         false //why we need to handle this?
     }
-  }
 
   private def canBeProcessed(
-      file: VirtualFile, bytes: => Array[Byte]): Boolean = {
+      file: VirtualFile,
+      bytes: => Array[Byte]
+  ): Boolean = {
     if (DecompilerUtil.isScalaFile(file, bytes)) return true
     val fileName: String = file.getNameWithoutExtension
-    val parent = file.getParent
+    val parent           = file.getParent
 
     def split(str: String): Option[(String, String)] = {
       val index = str.indexOf('$')
@@ -59,7 +64,7 @@ object ScClsStubBuilder {
 
     split(fileName) match {
       case Some((prefix, suffix)) => go(prefix, suffix)
-      case _ => false
+      case _                      => false
     }
   }
 }
@@ -67,24 +72,29 @@ object ScClsStubBuilder {
 class ScClsStubBuilder extends ClsStubBuilder {
   override def getStubVersion: Int = StubVersion.STUB_VERSION
 
-  override def buildFileStub(content: FileContent): PsiFileStub[ScalaFile] = {
+  override def buildFileStub(content: FileContent): PsiFileStub[ScalaFile] =
     if (isInnerClass(content.getFile)) null
     else
-      buildFileStub(content.getFile,
-                    content.getContent,
-                    ProjectManager.getInstance().getDefaultProject)
-  }
+      buildFileStub(
+        content.getFile,
+        content.getContent,
+        ProjectManager.getInstance().getDefaultProject
+      )
 
-  private def buildFileStub(vFile: VirtualFile,
-                            bytes: Array[Byte],
-                            project: Project): PsiFileStub[ScalaFile] = {
+  private def buildFileStub(
+      vFile: VirtualFile,
+      bytes: Array[Byte],
+      project: Project
+  ): PsiFileStub[ScalaFile] = {
     val result = DecompilerUtil.decompile(vFile, bytes)
     val source = result.sourceName
-    val text = result.sourceText
+    val text   = result.sourceText
     val file = ScalaPsiElementFactory.createScalaFile(
-        text.replace("\r", ""),
-        PsiManager.getInstance(
-            DefaultProjectFactory.getInstance().getDefaultProject))
+      text.replace("\r", ""),
+      PsiManager.getInstance(
+        DefaultProjectFactory.getInstance().getDefaultProject
+      )
+    )
 
     val adj = file.asInstanceOf[CompiledFileAdjuster]
     adj.setCompiled(c = true)
@@ -106,7 +116,7 @@ class ScClsStubBuilder extends ClsStubBuilder {
 
   private def isInnerClass(file: VirtualFile): Boolean = {
     if (file.getExtension != "class") return false
-    val name: String = file.getNameWithoutExtension
+    val name: String        = file.getNameWithoutExtension
     val parent: VirtualFile = file.getParent
     isInner(name, new ParentDirectory(parent))
   }
@@ -119,17 +129,23 @@ class ScClsStubBuilder extends ClsStubBuilder {
   }
 
   @tailrec
-  private def isInner(name: String, from: Int, directory: Directory): Boolean = {
+  private def isInner(
+      name: String,
+      from: Int,
+      directory: Directory
+  ): Boolean = {
     val index: Int = name.indexOf('$', from)
     index != -1 &&
     (containsPart(directory, name, index) ||
-        isInner(name, index + 1, directory))
+    isInner(name, index + 1, directory))
   }
 
   private def containsPart(
-      directory: Directory, name: String, endIndex: Int): Boolean = {
+      directory: Directory,
+      name: String,
+      endIndex: Int
+  ): Boolean =
     endIndex > 0 && directory.contains(name.substring(0, endIndex))
-  }
 
   private trait Directory {
     def contains(name: String): Boolean
@@ -139,8 +155,9 @@ class ScClsStubBuilder extends ClsStubBuilder {
     def contains(name: String): Boolean = {
       if (dir == null) return false
       !dir.getChildren.forall(child =>
-            child.getExtension != "class" ||
-            NameTransformer.decode(child.getNameWithoutExtension) == name)
+        child.getExtension != "class" ||
+          NameTransformer.decode(child.getNameWithoutExtension) == name
+      )
     }
   }
 }

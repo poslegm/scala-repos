@@ -23,8 +23,9 @@ import scala.reflect.ClassTag
   * An append-only, non-threadsafe, array-backed vector that is optimized for primitive types.
   */
 private[spark] class PrimitiveVector[
-    @specialized(Long, Int, Double) V : ClassTag](initialSize: Int = 64) {
-  private var _numElements = 0
+    @specialized(Long, Int, Double) V: ClassTag
+](initialSize: Int = 64) {
+  private var _numElements     = 0
   private var _array: Array[V] = _
 
   // NB: This must be separate from the declaration, otherwise the specialized parent class
@@ -51,7 +52,7 @@ private[spark] class PrimitiveVector[
   def size: Int = _numElements
 
   def iterator: Iterator[V] = new Iterator[V] {
-    var index = 0
+    var index                     = 0
     override def hasNext: Boolean = index < _numElements
     override def next(): V = {
       if (!hasNext) {
@@ -79,9 +80,8 @@ private[spark] class PrimitiveVector[
   }
 
   /** Return a trimmed version of the underlying array. */
-  def toArray: Array[V] = {
+  def toArray: Array[V] =
     copyArrayWithLength(size)
-  }
 
   private def copyArrayWithLength(length: Int): Array[V] = {
     val copy = new Array[V](length)

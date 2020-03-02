@@ -33,13 +33,13 @@ private[macroimpls] trait Compat210Component {
   }
 
   implicit final class TypeCompat(self: Type) {
-    def dealias: Type = self.normalize
+    def dealias: Type      = self.normalize
     def decls: MemberScope = self.declarations
   }
 
   implicit final class SymbolCompat(self: Symbol) {
     def isConstructor: Boolean = self.isMethod && self.asMethod.isConstructor
-    def info: Type = self.typeSignature
+    def info: Type             = self.typeSignature
   }
 
   implicit final class AnnotationCompat(self: Annotation) {

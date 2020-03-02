@@ -22,6 +22,6 @@ object Test extends ScaladocModelTest {
     class Test2[T] extends Test[Int]
   """
 
-  def scaladocSettings = ""
+  def scaladocSettings         = ""
   def testModel(root: Package) = ()
 }

@@ -9,12 +9,14 @@ import scala.concurrent.{Future, Await, Promise}
 import scala.concurrent.duration._
 
 class PromiseActorTest
-    extends MarathonActorSupport with MarathonSpec with BeforeAndAfterAll
+    extends MarathonActorSupport
+    with MarathonSpec
+    with BeforeAndAfterAll
     with Matchers {
 
   test("Success") {
     val promise = Promise[Any]()
-    val ref = TestActorRef(Props(classOf[PromiseActor], promise))
+    val ref     = TestActorRef(Props(classOf[PromiseActor], promise))
 
     ref ! 'Test
 
@@ -33,7 +35,7 @@ class PromiseActorTest
 
   test("Status.Success") {
     val promise = Promise[Any]()
-    val ref = TestActorRef(Props(classOf[PromiseActor], promise))
+    val ref     = TestActorRef(Props(classOf[PromiseActor], promise))
 
     ref ! Status.Success('Test)
 
@@ -52,8 +54,8 @@ class PromiseActorTest
 
   test("Status.Failure") {
     val promise = Promise[Any]()
-    val ref = TestActorRef(Props(classOf[PromiseActor], promise))
-    val ex = new Exception("test")
+    val ref     = TestActorRef(Props(classOf[PromiseActor], promise))
+    val ex      = new Exception("test")
 
     ref ! Status.Failure(ex)
 

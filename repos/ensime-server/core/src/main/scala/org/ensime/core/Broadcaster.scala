@@ -34,7 +34,7 @@ class Broadcaster extends Actor with ActorLogging {
   import Broadcaster.{Register, Unregister, Persist}
 
   var subscribers = Set.empty[ActorRef]
-  var persistant = ListSet.empty[(ActorRef, Any)] // preserves order
+  var persistant  = ListSet.empty[(ActorRef, Any)] // preserves order
 
   def receive = {
     case Register =>

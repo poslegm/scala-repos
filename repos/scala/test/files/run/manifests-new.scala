@@ -16,19 +16,20 @@ object Test {
       implicit ev1: TypeTag[T],
       ev2: TypeTag[U],
       ev3: TypeTag[CC[T]],
-      ev4: TypeTag[CC[U]]) {
+      ev4: TypeTag[CC[U]]
+  ) {
 
-    def elements = List(ev1.tpe <:< ev2.tpe, ev2.tpe <:< ev1.tpe)
+    def elements   = List(ev1.tpe <:< ev2.tpe, ev2.tpe <:< ev1.tpe)
     def containers = List(ev3.tpe <:< ev4.tpe, ev4.tpe <:< ev3.tpe)
 
     def isUnrelated = typeCompare[T, U] == NONE
-    def isSame = typeCompare[T, U] == SAME
-    def isSub = typeCompare[T, U] == SUB
-    def isSuper = typeCompare[T, U] == SUPER
+    def isSame      = typeCompare[T, U] == SAME
+    def isSub       = typeCompare[T, U] == SUB
+    def isSuper     = typeCompare[T, U] == SUPER
 
-    def showsCovariance = (elements == containers)
+    def showsCovariance     = (elements == containers)
     def showsContravariance = (elements == containers.reverse)
-    def showsInvariance = containers forall (_ == isSame)
+    def showsInvariance     = containers forall (_ == isSame)
 
     def allContainerVariances =
       List(showsCovariance, showsInvariance, showsContravariance)
@@ -47,59 +48,65 @@ object Test {
         }
   }
 
-  def showsCovariance[T, U, CC[_]](implicit ev1: TypeTag[T],
-                                   ev2: TypeTag[U],
-                                   ev3: TypeTag[CC[T]],
-                                   ev4: TypeTag[CC[U]]) =
+  def showsCovariance[T, U, CC[_]](
+      implicit ev1: TypeTag[T],
+      ev2: TypeTag[U],
+      ev3: TypeTag[CC[T]],
+      ev4: TypeTag[CC[U]]
+  ) =
     new VarianceTester[T, U, CC](CO) showsExpectedVariance
 
-  def showsInvariance[T, U, CC[_]](implicit ev1: TypeTag[T],
-                                   ev2: TypeTag[U],
-                                   ev3: TypeTag[CC[T]],
-                                   ev4: TypeTag[CC[U]]) =
+  def showsInvariance[T, U, CC[_]](
+      implicit ev1: TypeTag[T],
+      ev2: TypeTag[U],
+      ev3: TypeTag[CC[T]],
+      ev4: TypeTag[CC[U]]
+  ) =
     new VarianceTester[T, U, CC](IN) showsExpectedVariance
 
-  def showsContravariance[T, U, CC[_]](implicit ev1: TypeTag[T],
-                                       ev2: TypeTag[U],
-                                       ev3: TypeTag[CC[T]],
-                                       ev4: TypeTag[CC[U]]) =
+  def showsContravariance[T, U, CC[_]](
+      implicit ev1: TypeTag[T],
+      ev2: TypeTag[U],
+      ev3: TypeTag[CC[T]],
+      ev4: TypeTag[CC[U]]
+  ) =
     new VarianceTester[T, U, CC](CONTRA) showsExpectedVariance
 
   def typeCompare[T, U](implicit ev1: TypeTag[T], ev2: TypeTag[U]) =
     (ev1.tpe <:< ev2.tpe, ev2.tpe <:< ev1.tpe) match {
-      case (true, true) => SAME
-      case (true, false) => SUB
-      case (false, true) => SUPER
+      case (true, true)   => SAME
+      case (true, false)  => SUB
+      case (false, true)  => SUPER
       case (false, false) => NONE
     }
 
-  def assertAnyRef[T : TypeTag] =
+  def assertAnyRef[T: TypeTag] =
     List(
-        typeOf[T] <:< typeOf[Any],
-        typeOf[T] <:< typeOf[AnyRef],
-        !(typeOf[T] <:< typeOf[AnyVal])
+      typeOf[T] <:< typeOf[Any],
+      typeOf[T] <:< typeOf[AnyRef],
+      !(typeOf[T] <:< typeOf[AnyVal])
     ) foreach (assert(_, "assertAnyRef"))
 
-  def assertAnyVal[T : TypeTag] =
+  def assertAnyVal[T: TypeTag] =
     List(
-        typeOf[T] <:< typeOf[Any],
-        !(typeOf[T] <:< typeOf[AnyRef]),
-        typeOf[T] <:< typeOf[AnyVal]
+      typeOf[T] <:< typeOf[Any],
+      !(typeOf[T] <:< typeOf[AnyRef]),
+      typeOf[T] <:< typeOf[AnyVal]
     ) foreach (assert(_, "assertAnyVal"))
 
-  def assertSameType[T : TypeTag, U : TypeTag] =
+  def assertSameType[T: TypeTag, U: TypeTag] =
     assert(typeCompare[T, U] == SAME, "assertSameType")
-  def assertSuperType[T : TypeTag, U : TypeTag] =
+  def assertSuperType[T: TypeTag, U: TypeTag] =
     assert(typeCompare[T, U] == SUPER, "assertSuperType")
-  def assertSubType[T : TypeTag, U : TypeTag] =
+  def assertSubType[T: TypeTag, U: TypeTag] =
     assert(typeCompare[T, U] == SUB, "assertSubType")
-  def assertNoRelationship[T : TypeTag, U : TypeTag] =
+  def assertNoRelationship[T: TypeTag, U: TypeTag] =
     assert(typeCompare[T, U] == NONE, "assertNoRelationship")
 
-  def testVariancesVia[T : TypeTag, U : TypeTag] = assert(
-      typeCompare[T, U] == SUB &&
+  def testVariancesVia[T: TypeTag, U: TypeTag] = assert(
+    typeCompare[T, U] == SUB &&
       showsCovariance[T, U, List] && showsInvariance[T, U, Set],
-      "testVariancesVia"
+    "testVariancesVia"
   )
 
   def runAllTests = {

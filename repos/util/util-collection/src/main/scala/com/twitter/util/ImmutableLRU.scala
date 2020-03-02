@@ -10,10 +10,13 @@ object ImmutableLRU {
   /**
     * Build an immutable LRU key/value store that cannot grow larger than `maxSize`
     */
-  def apply[K, V](maxSize: Int): ImmutableLRU[K, V] = {
+  def apply[K, V](maxSize: Int): ImmutableLRU[K, V] =
     new ImmutableLRU(
-        maxSize, 0, Map.empty[K, (Long, V)], SortedMap.empty[Long, K])
-  }
+      maxSize,
+      0,
+      Map.empty[K, (Long, V)],
+      SortedMap.empty[Long, K]
+    )
 }
 
 /**
@@ -25,7 +28,11 @@ object ImmutableLRU {
 // is used to determine the Least-Recently-Used key in "map" by taking
 // the minimum index.
 class ImmutableLRU[K, V] private (
-    maxSize: Int, idx: Long, map: Map[K, (Long, V)], ord: SortedMap[Long, K]) {
+    maxSize: Int,
+    idx: Long,
+    map: Map[K, (Long, V)],
+    ord: SortedMap[Long, K]
+) {
 
   // Scala's SortedMap requires a key ordering; ImmutableLRU doesn't
   // care about pulling a minimum value out of the SortedMap, so the
@@ -52,10 +59,10 @@ class ImmutableLRU[K, V] private (
     */
   def +(kv: (K, V)): (Option[K], ImmutableLRU[K, V]) = {
     val (key, value) = kv
-    val newIdx = idx + 1
-    val newMap = map + (key -> ((newIdx, value)))
+    val newIdx       = idx + 1
+    val newMap       = map + (key -> ((newIdx, value)))
     // Now update the ordered cache:
-    val baseOrd = map.get(key).map { case (id, _) => ord - id }.getOrElse(ord)
+    val baseOrd       = map.get(key).map { case (id, _) => ord - id }.getOrElse(ord)
     val ordWithNewKey = baseOrd + (newIdx -> key)
     // Do we need to remove an old key:
     val (evicts, finalMap, finalOrd) =
@@ -99,5 +106,5 @@ class ImmutableLRU[K, V] private (
       }
       .getOrElse((None, this))
 
-  override def toString = { "ImmutableLRU(" + map.toList.mkString(",") + ")" }
+  override def toString = "ImmutableLRU(" + map.toList.mkString(",") + ")"
 }

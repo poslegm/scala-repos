@@ -25,7 +25,7 @@ package common
   *
   * {{{
   * import net.liftweb.common.HLists._
-  * 
+  *
   * trait Base
   * case class Type1(value: String) extends Base
   * case class Type2(otherValue: String) extends Base
@@ -119,21 +119,19 @@ object HLists {
     */
   implicit final class HListMethods[ListSoFar <: HList](hlist: ListSoFar)
       extends AnyRef {
-    def :+:[T](v: T): :+:[T, ListSoFar] = {
+    def :+:[T](v: T): :+:[T, ListSoFar] =
       HLists.:+:(v, hlist)
-    }
 
     /**
       * The length of this HList; note that this is O(n) in the list of elements.
       */
-    def length: Int = {
+    def length: Int =
       hlist match {
         case HNil =>
           0
         case head :+: rest =>
           1 + rest.length
       }
-    }
   }
 }
 
@@ -155,10 +153,14 @@ object ExcludeThisType {
   implicit def nsub[A, B]: A ExcludeThisType B = null
 
   implicit def `This type was excluded because it was explicitly excluded`[
-      A, B >: A]: A ExcludeThisType B = unexpected
+      A,
+      B >: A
+  ]: A ExcludeThisType B = unexpected
 
   implicit def `Ignore me, I only exist to cause the compiler to fail`[
-      A, B >: A]: A ExcludeThisType B = unexpected
+      A,
+      B >: A
+  ]: A ExcludeThisType B = unexpected
 
   // Type alias for context bound
   type exclude[T] = {

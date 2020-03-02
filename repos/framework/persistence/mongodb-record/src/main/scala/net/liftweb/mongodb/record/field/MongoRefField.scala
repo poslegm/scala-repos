@@ -59,7 +59,7 @@ trait MongoRefField[RefType <: MongoRecord[RefType], MyType]
     _obj
   }
 
-  def cached_? : Boolean = synchronized { _calcedObj }
+  def cached_? : Boolean = synchronized(_calcedObj)
 
   def primeObj(obj: Box[RefType]) = synchronized {
     _obj = obj
@@ -67,7 +67,7 @@ trait MongoRefField[RefType <: MongoRecord[RefType], MyType]
   }
 
   private var _obj: Box[RefType] = Empty
-  private var _calcedObj = false
+  private var _calcedObj         = false
 
   override def setBox(in: Box[MyType]): Box[MyType] = synchronized {
     _calcedObj = false // invalidate the cache
@@ -80,59 +80,62 @@ trait MongoRefField[RefType <: MongoRecord[RefType], MyType]
   /** Label for the selection item representing Empty, show when this field is optional. Defaults to the empty string. */
   def emptyOptionLabel: String = ""
 
-  def buildDisplayList: List[(Box[MyType], String)] = {
+  def buildDisplayList: List[(Box[MyType], String)] =
     if (optional_?) (Empty, emptyOptionLabel) :: options else options
-  }
 
   private def elem =
     SHtml.selectObj[Box[MyType]](
-        buildDisplayList,
-        Full(valueBox),
-        setBox(_)
+      buildDisplayList,
+      Full(valueBox),
+      setBox(_)
     ) % ("tabindex" -> tabIndex.toString)
 
   override def toForm =
     if (options.length > 0)
       uniqueFieldId match {
         case Full(id) => Full(elem % ("id" -> id))
-        case _ => Full(elem)
-      } else Empty
+        case _        => Full(elem)
+      }
+    else Empty
 }
 
-class ObjectIdRefField[
-    OwnerType <: BsonRecord[OwnerType], RefType <: MongoRecord[RefType]](
+class ObjectIdRefField[OwnerType <: BsonRecord[OwnerType], RefType <: MongoRecord[
+  RefType
+]](
     rec: OwnerType,
     val refMeta: MongoMetaRecord[RefType]
-)
-    extends ObjectIdField[OwnerType](rec)
+) extends ObjectIdField[OwnerType](rec)
     with MongoRefField[RefType, ObjectId] {}
 
-class UUIDRefField[
-    OwnerType <: BsonRecord[OwnerType], RefType <: MongoRecord[RefType]](
+class UUIDRefField[OwnerType <: BsonRecord[OwnerType], RefType <: MongoRecord[
+  RefType
+]](
     rec: OwnerType,
     val refMeta: MongoMetaRecord[RefType]
-)
-    extends UUIDField[OwnerType](rec) with MongoRefField[RefType, UUID] {}
+) extends UUIDField[OwnerType](rec)
+    with MongoRefField[RefType, UUID] {}
 
-class StringRefField[
-    OwnerType <: BsonRecord[OwnerType], RefType <: MongoRecord[RefType]](
+class StringRefField[OwnerType <: BsonRecord[OwnerType], RefType <: MongoRecord[
+  RefType
+]](
     rec: OwnerType,
     val refMeta: MongoMetaRecord[RefType],
     maxLen: Int
-)
-    extends StringField[OwnerType](rec, maxLen)
+) extends StringField[OwnerType](rec, maxLen)
     with MongoRefField[RefType, String] {}
 
-class IntRefField[
-    OwnerType <: BsonRecord[OwnerType], RefType <: MongoRecord[RefType]](
+class IntRefField[OwnerType <: BsonRecord[OwnerType], RefType <: MongoRecord[
+  RefType
+]](
     rec: OwnerType,
     val refMeta: MongoMetaRecord[RefType]
-)
-    extends IntField[OwnerType](rec) with MongoRefField[RefType, Int] {}
+) extends IntField[OwnerType](rec)
+    with MongoRefField[RefType, Int] {}
 
-class LongRefField[
-    OwnerType <: BsonRecord[OwnerType], RefType <: MongoRecord[RefType]](
+class LongRefField[OwnerType <: BsonRecord[OwnerType], RefType <: MongoRecord[
+  RefType
+]](
     rec: OwnerType,
     val refMeta: MongoMetaRecord[RefType]
-)
-    extends LongField[OwnerType](rec) with MongoRefField[RefType, Long] {}
+) extends LongField[OwnerType](rec)
+    with MongoRefField[RefType, Long] {}

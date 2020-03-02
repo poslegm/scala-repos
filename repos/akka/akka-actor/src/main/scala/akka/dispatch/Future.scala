@@ -5,7 +5,13 @@ package akka.dispatch
 
 import scala.runtime.{BoxedUnit, AbstractPartialFunction}
 import akka.japi.{Function ⇒ JFunc, Option ⇒ JOption, Procedure}
-import scala.concurrent.{Future, Promise, ExecutionContext, ExecutionContextExecutor, ExecutionContextExecutorService}
+import scala.concurrent.{
+  Future,
+  Promise,
+  ExecutionContext,
+  ExecutionContextExecutor,
+  ExecutionContextExecutorService
+}
 import java.lang.{Iterable ⇒ JIterable}
 import java.util.{LinkedList ⇒ JLinkedList}
 import java.util.concurrent.{Executor, ExecutorService, Callable}
@@ -38,7 +44,8 @@ object ExecutionContexts {
     */
   def fromExecutor(
       executor: Executor,
-      errorReporter: Procedure[Throwable]): ExecutionContextExecutor =
+      errorReporter: Procedure[Throwable]
+  ): ExecutionContextExecutor =
     ExecutionContext.fromExecutor(executor, errorReporter.apply)
 
   /**
@@ -49,7 +56,8 @@ object ExecutionContexts {
     * @return a new ExecutionContext
     */
   def fromExecutorService(
-      executorService: ExecutorService): ExecutionContextExecutorService =
+      executorService: ExecutorService
+  ): ExecutionContextExecutorService =
     ExecutionContext.fromExecutorService(executorService)
 
   /**
@@ -62,7 +70,8 @@ object ExecutionContexts {
     */
   def fromExecutorService(
       executorService: ExecutorService,
-      errorReporter: Procedure[Throwable]): ExecutionContextExecutorService =
+      errorReporter: Procedure[Throwable]
+  ): ExecutionContextExecutorService =
     ExecutionContext.fromExecutorService(executorService, errorReporter.apply)
 
   /**
@@ -78,14 +87,17 @@ object ExecutionContexts {
     * non-throwing in order to save a round-trip to the thread pool.
     */
   private[akka] object sameThreadExecutionContext
-      extends ExecutionContext with BatchingExecutor {
+      extends ExecutionContext
+      with BatchingExecutor {
     override protected def unbatchedExecute(runnable: Runnable): Unit =
       runnable.run()
     override protected def resubmitOnBlock: Boolean =
       false // No point since we execute on same thread
     override def reportFailure(t: Throwable): Unit =
       throw new IllegalStateException(
-          "exception in sameThreadExecutionContext", t)
+        "exception in sameThreadExecutionContext",
+        t
+      )
   }
 }
 
@@ -136,9 +148,11 @@ object Futures {
   /**
     * Returns a Future that will hold the optional result of the first Future with a result that matches the predicate
     */
-  def find[T <: AnyRef](futures: JIterable[Future[T]],
-                        predicate: JFunc[T, java.lang.Boolean],
-                        executor: ExecutionContext): Future[JOption[T]] = {
+  def find[T <: AnyRef](
+      futures: JIterable[Future[T]],
+      predicate: JFunc[T, java.lang.Boolean],
+      executor: ExecutionContext
+  ): Future[JOption[T]] = {
     implicit val ec = executor
     Future.find[T](futures.asScala)(predicate.apply(_))(executor) map JOption.fromScalaOption
   }
@@ -147,7 +161,9 @@ object Futures {
     * Returns a Future to the result of the first future in the list that is completed
     */
   def firstCompletedOf[T <: AnyRef](
-      futures: JIterable[Future[T]], executor: ExecutionContext): Future[T] =
+      futures: JIterable[Future[T]],
+      executor: ExecutionContext
+  ): Future[T] =
     Future.firstCompletedOf(futures.asScala)(executor)
 
   /**
@@ -156,26 +172,32 @@ object Futures {
     * the result will be the first failure of any of the futures, or any failure in the actual fold,
     * or the result of the fold.
     */
-  def fold[T <: AnyRef, R <: AnyRef](zero: R,
-                                     futures: JIterable[Future[T]],
-                                     fun: akka.japi.Function2[R, T, R],
-                                     executor: ExecutionContext): Future[R] =
+  def fold[T <: AnyRef, R <: AnyRef](
+      zero: R,
+      futures: JIterable[Future[T]],
+      fun: akka.japi.Function2[R, T, R],
+      executor: ExecutionContext
+  ): Future[R] =
     Future.fold(futures.asScala)(zero)(fun.apply)(executor)
 
   /**
     * Reduces the results of the supplied futures and binary function.
     */
-  def reduce[T <: AnyRef, R >: T](futures: JIterable[Future[T]],
-                                  fun: akka.japi.Function2[R, T, R],
-                                  executor: ExecutionContext): Future[R] =
+  def reduce[T <: AnyRef, R >: T](
+      futures: JIterable[Future[T]],
+      fun: akka.japi.Function2[R, T, R],
+      executor: ExecutionContext
+  ): Future[R] =
     Future.reduce[T, R](futures.asScala)(fun.apply)(executor)
 
   /**
     * Simple version of [[#traverse]]. Transforms a JIterable[Future[A]] into a Future[JIterable[A]].
     * Useful for reducing many Futures into a single Future.
     */
-  def sequence[A](in: JIterable[Future[A]],
-                  executor: ExecutionContext): Future[JIterable[A]] = {
+  def sequence[A](
+      in: JIterable[Future[A]],
+      executor: ExecutionContext
+  ): Future[JIterable[A]] = {
     implicit val d = executor
     in.asScala.foldLeft(Future(new JLinkedList[A]())) { (fr, fa) ⇒
       for (r ← fr; a ← fa) yield { r add a; r }
@@ -187,9 +209,11 @@ object Futures {
     * This is useful for performing a parallel map. For example, to apply a function to all items of a list
     * in parallel.
     */
-  def traverse[A, B](in: JIterable[A],
-                     fn: JFunc[A, Future[B]],
-                     executor: ExecutionContext): Future[JIterable[B]] = {
+  def traverse[A, B](
+      in: JIterable[A],
+      fn: JFunc[A, Future[B]],
+      executor: ExecutionContext
+  ): Future[JIterable[B]] = {
     implicit val d = executor
     in.asScala.foldLeft(Future(new JLinkedList[B]())) { (fr, a) ⇒
       val fb = fn(a)
@@ -216,13 +240,13 @@ object japi {
   @deprecated("Do not use this directly, use 'Recover'", "2.0")
   class RecoverBridge[+T] extends AbstractPartialFunction[Throwable, T] {
     override final def isDefinedAt(t: Throwable): Boolean = true
-    override final def apply(t: Throwable): T = internal(t)
-    protected def internal(result: Throwable): T = null.asInstanceOf[T]
+    override final def apply(t: Throwable): T             = internal(t)
+    protected def internal(result: Throwable): T          = null.asInstanceOf[T]
   }
 
   @deprecated("Do not use this directly, use subclasses of this", "2.0")
   class BooleanFunctionBridge[-T] extends scala.Function1[T, Boolean] {
-    override final def apply(t: T): Boolean = internal(t)
+    override final def apply(t: T): Boolean    = internal(t)
     protected def internal(result: T): Boolean = false
   }
 
@@ -241,7 +265,7 @@ object japi {
       internal(d.asInstanceOf[T]); BoxedUnit.UNIT
     }
     override final def apply(t: T): BoxedUnit = { internal(t); BoxedUnit.UNIT }
-    protected def internal(result: T): Unit = ()
+    protected def internal(result: T): Unit   = ()
   }
 }
 
@@ -401,5 +425,6 @@ abstract class Mapper[-T, +R] extends scala.runtime.AbstractFunction1[T, R] {
   @throws(classOf[Throwable])
   def checkedApply(parameter: T): R =
     throw new UnsupportedOperationException(
-        "Mapper.checkedApply has not been implemented")
+      "Mapper.checkedApply has not been implemented"
+    )
 }

@@ -18,25 +18,26 @@ import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiElementFactory
   */
 class ScImportSelectorStubImpl[ParentPsi <: PsiElement](
     parent: StubElement[ParentPsi],
-    elemType: IStubElementType[
-        _ <: StubElement[_ <: PsiElement], _ <: PsiElement])
-    extends StubBaseWrapper[ScImportSelector](parent, elemType)
+    elemType: IStubElementType[_ <: StubElement[_ <: PsiElement], _ <: PsiElement]
+) extends StubBaseWrapper[ScImportSelector](parent, elemType)
     with ScImportSelectorStub {
-  var referenceText: StringRef = _
-  var name: StringRef = _
+  var referenceText: StringRef                                           = _
+  var name: StringRef                                                    = _
   private var myReference: SofterReference[ScStableCodeReferenceElement] = null
-  var aliasImport: Boolean = false
+  var aliasImport: Boolean                                               = false
 
-  def this(parent: StubElement[ParentPsi],
-           elemType: IStubElementType[
-               _ <: StubElement[_ <: PsiElement], _ <: PsiElement],
-           refText: String,
-           importedName: String,
-           isAliasedImport: Boolean) {
+  def this(
+      parent: StubElement[ParentPsi],
+      elemType: IStubElementType[_ <: StubElement[_ <: PsiElement], _ <: PsiElement],
+      refText: String,
+      importedName: String,
+      isAliasedImport: Boolean
+  ) {
     this(
-        parent,
-        elemType
-          .asInstanceOf[IStubElementType[StubElement[PsiElement], PsiElement]])
+      parent,
+      elemType
+        .asInstanceOf[IStubElementType[StubElement[PsiElement], PsiElement]]
+    )
     this.referenceText = StringRef.fromString(refText)
     this.name = StringRef.fromString(importedName)
     this.aliasImport = isAliasedImport
@@ -54,7 +55,10 @@ class ScImportSelectorStubImpl[ParentPsi <: PsiElement](
       if (referenceText == StringRef.fromString("")) null
       else
         ScalaPsiElementFactory.createReferenceFromText(
-            StringRef.toString(referenceText), getPsi, null)
+          StringRef.toString(referenceText),
+          getPsi,
+          null
+        )
     myReference = new SofterReference[ScStableCodeReferenceElement](res)
     res
   }

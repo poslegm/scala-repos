@@ -55,7 +55,7 @@ object Moop2 {
     println(5: String)
   }
   object ob2 {
-    implicit def f1(x: Int): String = "Int"
+    implicit def f1(x: Int): String  = "Int"
     implicit def f2(x: Long): String = "Long"
 
     println(5: String)
@@ -79,13 +79,13 @@ object Moop3 {
     println(5: String)
   }
   object ob2 {
-    implicit val f1: Int => String = _ => "Int"
+    implicit val f1: Int => String   = _ => "Int"
     implicit def f2(x: Long): String = "Long"
 
     println(5: String)
   }
   object ob3 {
-    implicit val f1: Int => String = _ => "Int"
+    implicit val f1: Int => String  = _ => "Int"
     implicit val f2: Long => String = _ => "Long"
 
     println(5: String)

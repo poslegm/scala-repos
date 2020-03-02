@@ -56,7 +56,7 @@ abstract class SubComponent {
   def newPhase(prev: Phase): Phase
 
   private var ownPhaseCache: WeakReference[Phase] = new WeakReference(null)
-  private var ownPhaseRunId = global.NoRunId
+  private var ownPhaseRunId                       = global.NoRunId
 
   @inline final def beforeOwnPhase[T](op: => T) =
     global.enteringPhase(ownPhase)(op)
@@ -64,7 +64,7 @@ abstract class SubComponent {
     global.exitingPhase(ownPhase)(op)
 
   /** The phase corresponding to this subcomponent in the current compiler run */
-  def ownPhase: Phase = {
+  def ownPhase: Phase =
     ownPhaseCache.get match {
       case Some(phase) if ownPhaseRunId == global.currentRunId =>
         phase
@@ -74,15 +74,14 @@ abstract class SubComponent {
         ownPhaseRunId = global.currentRunId
         phase
     }
-  }
 
   /** The phase defined by this subcomponent. Can be called only after phase is installed by newPhase. */
   //  lazy val ownPhase: Phase = global.currentRun.phaseNamed(phaseName)
 
   /** A standard phase template */
   abstract class StdPhase(prev: Phase) extends global.GlobalPhase(prev) {
-    def name = phaseName
-    override def newFlags = phaseNewFlags
+    def name               = phaseName
+    override def newFlags  = phaseNewFlags
     override def nextFlags = phaseNextFlags
   }
 }

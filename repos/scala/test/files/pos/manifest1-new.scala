@@ -15,7 +15,7 @@ object Test {
   foo(c.x)
   abstract class D { type T; implicit val m: TypeTag[T]; val x: T }
   val stringm = implicitly[TypeTag[String]]
-  val d: D = new D { type T = String; val m = stringm; val x = "x" }
+  val d: D    = new D { type T = String; val m = stringm; val x = "x" }
   import d.m
   foo(d.x)
 }

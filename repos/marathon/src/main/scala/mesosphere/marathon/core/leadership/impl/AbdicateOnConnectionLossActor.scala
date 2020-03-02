@@ -8,25 +8,26 @@ import org.apache.zookeeper.{ZooKeeper, WatchedEvent, Watcher}
 import AbdicateOnConnectionLossActor._
 
 private[leadership] object AbdicateOnConnectionLossActor {
-  def props(zk: ZooKeeperClient, leader: LeadershipAbdication): Props = {
+  def props(zk: ZooKeeperClient, leader: LeadershipAbdication): Props =
     Props(new AbdicateOnConnectionLossActor(zk, leader))
-  }
 
   private val connectionDropped = Set(
-      Watcher.Event.KeeperState.Disconnected,
-      Watcher.Event.KeeperState.Expired
+    Watcher.Event.KeeperState.Disconnected,
+    Watcher.Event.KeeperState.Expired
   )
 }
 
 /**
   * Register as ZK Listener and abdicates leadership on connection loss.
   */
-private[impl] class AbdicateOnConnectionLossActor(zk: ZooKeeperClient,
-                                                  leader: LeadershipAbdication)
-    extends Actor with ActorLogging {
+private[impl] class AbdicateOnConnectionLossActor(
+    zk: ZooKeeperClient,
+    leader: LeadershipAbdication
+) extends Actor
+    with ActorLogging {
 
   private[impl] val watcher = new Watcher {
-    val reference = self
+    val reference                                   = self
     override def process(event: WatchedEvent): Unit = reference ! event
   }
 
@@ -44,7 +45,8 @@ private[impl] class AbdicateOnConnectionLossActor(zk: ZooKeeperClient,
 
   def disconnected(event: WatchedEvent): Unit = {
     log.warning(
-        s"ZooKeeper connection has been dropped. Abdicate Leadership: $event")
+      s"ZooKeeper connection has been dropped. Abdicate Leadership: $event"
+    )
     leader.abdicateLeadership()
   }
 

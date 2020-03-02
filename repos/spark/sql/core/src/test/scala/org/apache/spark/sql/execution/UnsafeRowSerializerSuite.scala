@@ -51,18 +51,18 @@ class UnsafeRowSerializerSuite extends SparkFunSuite with LocalSparkContext {
 
   private def unsafeRowConverter(schema: Array[DataType]): Row => UnsafeRow = {
     val converter = UnsafeProjection.create(schema)
-    (row: Row) =>
-      {
-        converter(
-            CatalystTypeConverters
-              .convertToCatalyst(row)
-              .asInstanceOf[InternalRow])
-      }
+    (row: Row) => {
+      converter(
+        CatalystTypeConverters
+          .convertToCatalyst(row)
+          .asInstanceOf[InternalRow]
+      )
+    }
   }
 
   test("toUnsafeRow() test helper method") {
     // This currently doesnt work because the generic getter throws an exception.
-    val row = Row("Hello", 123)
+    val row       = Row("Hello", 123)
     val unsafeRow = toUnsafeRow(row, Array(StringType, IntegerType))
     assert(row.getString(0) === unsafeRow.getUTF8String(0).toString)
     assert(row.getInt(1) === unsafeRow.getInt(1))
@@ -72,8 +72,8 @@ class UnsafeRowSerializerSuite extends SparkFunSuite with LocalSparkContext {
     val rows = Seq(Row("Hello", 1), Row("World", 2))
     val unsafeRows =
       rows.map(row => toUnsafeRow(row, Array(StringType, IntegerType)))
-    val serializer = new UnsafeRowSerializer(numFields = 2).newInstance()
-    val baos = new ByteArrayOutputStream()
+    val serializer       = new UnsafeRowSerializer(numFields = 2).newInstance()
+    val baos             = new ByteArrayOutputStream()
     val serializerStream = serializer.serializeStream(baos)
     for (unsafeRow <- unsafeRows) {
       serializerStream.writeKey(0)
@@ -95,7 +95,7 @@ class UnsafeRowSerializerSuite extends SparkFunSuite with LocalSparkContext {
   }
 
   test("close empty input stream") {
-    val input = new ClosableByteArrayInputStream(Array.empty)
+    val input      = new ClosableByteArrayInputStream(Array.empty)
     val serializer = new UnsafeRowSerializer(numFields = 2).newInstance()
     val deserializerIter =
       serializer.deserializeStream(input).asKeyValueIterator
@@ -117,18 +117,24 @@ class UnsafeRowSerializerSuite extends SparkFunSuite with LocalSparkContext {
       sc = new SparkContext("local", "test", conf)
       outputFile = File.createTempFile("test-unsafe-row-serializer-spill", "")
       // prepare data
-      val converter = unsafeRowConverter(Array(IntegerType))
-      val data = (1 to 10000).iterator.map { i =>
-        (i, converter(Row(i)))
-      }
+      val converter         = unsafeRowConverter(Array(IntegerType))
+      val data              = (1 to 10000).iterator.map(i => (i, converter(Row(i))))
       val taskMemoryManager = new TaskMemoryManager(sc.env.memoryManager, 0)
       val taskContext = new TaskContextImpl(
-          0, 0, 0, 0, taskMemoryManager, null, InternalAccumulator.create(sc))
+        0,
+        0,
+        0,
+        0,
+        taskMemoryManager,
+        null,
+        InternalAccumulator.create(sc)
+      )
 
       val sorter = new ExternalSorter[Int, UnsafeRow, UnsafeRow](
-          taskContext,
-          partitioner = Some(new HashPartitioner(10)),
-          serializer = new UnsafeRowSerializer(numFields = 1))
+        taskContext,
+        partitioner = Some(new HashPartitioner(10)),
+        serializer = new UnsafeRowSerializer(numFields = 1)
+      )
 
       // Ensure we spilled something and have to merge them later
       assert(sorter.numSpills === 0)
@@ -155,15 +161,16 @@ class UnsafeRowSerializerSuite extends SparkFunSuite with LocalSparkContext {
   test("SPARK-10403: unsafe row serializer with SortShuffleManager") {
     val conf = new SparkConf().set("spark.shuffle.manager", "sort")
     sc = new SparkContext("local", "test", conf)
-    val row = Row("Hello", 123)
+    val row       = Row("Hello", 123)
     val unsafeRow = toUnsafeRow(row, Array(StringType, IntegerType))
     val rowsRDD = sc
       .parallelize(Seq((0, unsafeRow), (1, unsafeRow), (0, unsafeRow)))
       .asInstanceOf[RDD[Product2[Int, InternalRow]]]
     val dependency = new ShuffleDependency[Int, InternalRow, InternalRow](
-        rowsRDD,
-        new PartitionIdPassthrough(2),
-        new UnsafeRowSerializer(2))
+      rowsRDD,
+      new PartitionIdPassthrough(2),
+      new UnsafeRowSerializer(2)
+    )
     val shuffled = new ShuffledRowRDD(dependency)
     shuffled.count()
   }

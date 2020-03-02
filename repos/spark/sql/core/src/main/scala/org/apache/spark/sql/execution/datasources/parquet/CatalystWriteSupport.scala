@@ -49,7 +49,8 @@ import org.apache.spark.sql.types._
   * argument.
   */
 private[parquet] class CatalystWriteSupport
-    extends WriteSupport[InternalRow] with Logging {
+    extends WriteSupport[InternalRow]
+    with Logging {
   // A `ValueWriter` is responsible for writing a field of an `InternalRow` to the record consumer.
   // Here we are using `SpecializedGetters` rather than `InternalRow` so that we can directly access
   // data in `ArrayData` without the help of `SpecificMutableRow`.
@@ -79,8 +80,7 @@ private[parquet] class CatalystWriteSupport
     this.schema = StructType.fromString(schemaString)
     this.writeLegacyParquetFormat = {
       // `SQLConf.PARQUET_WRITE_LEGACY_FORMAT` should always be explicitly set in ParquetRelation
-      assert(
-          configuration.get(SQLConf.PARQUET_WRITE_LEGACY_FORMAT.key) != null)
+      assert(configuration.get(SQLConf.PARQUET_WRITE_LEGACY_FORMAT.key) != null)
       configuration.get(SQLConf.PARQUET_WRITE_LEGACY_FORMAT.key).toBoolean
     }
     this.rootFieldWriters = schema.map(_.dataType).map(makeWriter)
@@ -99,19 +99,19 @@ private[parquet] class CatalystWriteSupport
     new WriteContext(messageType, metadata)
   }
 
-  override def prepareForWrite(recordConsumer: RecordConsumer): Unit = {
+  override def prepareForWrite(recordConsumer: RecordConsumer): Unit =
     this.recordConsumer = recordConsumer
-  }
 
-  override def write(row: InternalRow): Unit = {
+  override def write(row: InternalRow): Unit =
     consumeMessage {
       writeFields(row, schema, rootFieldWriters)
     }
-  }
 
-  private def writeFields(row: InternalRow,
-                          schema: StructType,
-                          fieldWriters: Seq[ValueWriter]): Unit = {
+  private def writeFields(
+      row: InternalRow,
+      schema: StructType,
+      fieldWriters: Seq[ValueWriter]
+  ): Unit = {
     var i = 0
     while (i < row.numFields) {
       if (!row.isNullAt(i)) {
@@ -123,80 +123,79 @@ private[parquet] class CatalystWriteSupport
     }
   }
 
-  private def makeWriter(dataType: DataType): ValueWriter = {
+  private def makeWriter(dataType: DataType): ValueWriter =
     dataType match {
       case BooleanType =>
         (row: SpecializedGetters, ordinal: Int) =>
           recordConsumer.addBoolean(row.getBoolean(ordinal))
 
-        case ByteType =>
+      case ByteType =>
         (row: SpecializedGetters, ordinal: Int) =>
           recordConsumer.addInteger(row.getByte(ordinal))
 
-        case ShortType =>
+      case ShortType =>
         (row: SpecializedGetters, ordinal: Int) =>
           recordConsumer.addInteger(row.getShort(ordinal))
 
-        case IntegerType | DateType =>
+      case IntegerType | DateType =>
         (row: SpecializedGetters, ordinal: Int) =>
           recordConsumer.addInteger(row.getInt(ordinal))
 
-        case LongType =>
+      case LongType =>
         (row: SpecializedGetters, ordinal: Int) =>
           recordConsumer.addLong(row.getLong(ordinal))
 
-        case FloatType =>
+      case FloatType =>
         (row: SpecializedGetters, ordinal: Int) =>
           recordConsumer.addFloat(row.getFloat(ordinal))
 
-        case DoubleType =>
+      case DoubleType =>
         (row: SpecializedGetters, ordinal: Int) =>
           recordConsumer.addDouble(row.getDouble(ordinal))
 
-        case StringType =>
+      case StringType =>
         (row: SpecializedGetters, ordinal: Int) =>
           recordConsumer.addBinary(
-              Binary.fromByteArray(row.getUTF8String(ordinal).getBytes))
+            Binary.fromByteArray(row.getUTF8String(ordinal).getBytes)
+          )
 
-        case TimestampType =>
+      case TimestampType =>
+        (row: SpecializedGetters, ordinal: Int) => {
+          // TODO Writes `TimestampType` values as `TIMESTAMP_MICROS` once parquet-mr implements it
+          // Currently we only support timestamps stored as INT96, which is compatible with Hive
+          // and Impala.  However, INT96 is to be deprecated.  We plan to support `TIMESTAMP_MICROS`
+          // defined in the parquet-format spec.  But up until writing, the most recent parquet-mr
+          // version (1.8.1) hasn't implemented it yet.
+
+          // NOTE: Starting from Spark 1.5, Spark SQL `TimestampType` only has microsecond
+          // precision.  Nanosecond parts of timestamp values read from INT96 are simply stripped.
+          val (julianDay, timeOfDayNanos) =
+            DateTimeUtils.toJulianDay(row.getLong(ordinal))
+          val buf = ByteBuffer.wrap(timestampBuffer)
+          buf
+            .order(ByteOrder.LITTLE_ENDIAN)
+            .putLong(timeOfDayNanos)
+            .putInt(julianDay)
+          recordConsumer.addBinary(Binary.fromByteArray(timestampBuffer))
+        }
+
+      case BinaryType =>
         (row: SpecializedGetters, ordinal: Int) =>
-          {
-            // TODO Writes `TimestampType` values as `TIMESTAMP_MICROS` once parquet-mr implements it
-            // Currently we only support timestamps stored as INT96, which is compatible with Hive
-            // and Impala.  However, INT96 is to be deprecated.  We plan to support `TIMESTAMP_MICROS`
-            // defined in the parquet-format spec.  But up until writing, the most recent parquet-mr
-            // version (1.8.1) hasn't implemented it yet.
+          recordConsumer.addBinary(Binary.fromByteArray(row.getBinary(ordinal)))
 
-            // NOTE: Starting from Spark 1.5, Spark SQL `TimestampType` only has microsecond
-            // precision.  Nanosecond parts of timestamp values read from INT96 are simply stripped.
-            val (julianDay, timeOfDayNanos) =
-              DateTimeUtils.toJulianDay(row.getLong(ordinal))
-            val buf = ByteBuffer.wrap(timestampBuffer)
-            buf
-              .order(ByteOrder.LITTLE_ENDIAN)
-              .putLong(timeOfDayNanos)
-              .putInt(julianDay)
-            recordConsumer.addBinary(Binary.fromByteArray(timestampBuffer))
-          }
-
-        case BinaryType =>
-        (row: SpecializedGetters, ordinal: Int) =>
-          recordConsumer.addBinary(
-              Binary.fromByteArray(row.getBinary(ordinal)))
-
-        case DecimalType.Fixed(precision, scale) =>
+      case DecimalType.Fixed(precision, scale) =>
         makeDecimalWriter(precision, scale)
 
       case t: StructType =>
         val fieldWriters = t
           .map(_.dataType)
           .map(makeWriter)
-          (row: SpecializedGetters, ordinal: Int) =>
-            consumeGroup {
-              writeFields(row.getStruct(ordinal, t.length), t, fieldWriters)
-            }
+        (row: SpecializedGetters, ordinal: Int) =>
+          consumeGroup {
+            writeFields(row.getStruct(ordinal, t.length), t, fieldWriters)
+          }
 
-        case t: ArrayType => makeArrayWriter(t)
+      case t: ArrayType => makeArrayWriter(t)
 
       case t: MapType => makeMapWriter(t)
 
@@ -205,38 +204,35 @@ private[parquet] class CatalystWriteSupport
       // TODO Adds IntervalType support
       case _ => sys.error(s"Unsupported data type $dataType.")
     }
-  }
 
   private def makeDecimalWriter(precision: Int, scale: Int): ValueWriter = {
     assert(
-        precision <= DecimalType.MAX_PRECISION,
-        s"Decimal precision $precision exceeds max precision ${DecimalType.MAX_PRECISION}")
+      precision <= DecimalType.MAX_PRECISION,
+      s"Decimal precision $precision exceeds max precision ${DecimalType.MAX_PRECISION}"
+    )
 
     val numBytes = minBytesForPrecision(precision)
 
-    val int32Writer = (row: SpecializedGetters, ordinal: Int) =>
-      {
-        val unscaledLong =
-          row.getDecimal(ordinal, precision, scale).toUnscaledLong
-        recordConsumer.addInteger(unscaledLong.toInt)
+    val int32Writer = (row: SpecializedGetters, ordinal: Int) => {
+      val unscaledLong =
+        row.getDecimal(ordinal, precision, scale).toUnscaledLong
+      recordConsumer.addInteger(unscaledLong.toInt)
     }
 
-    val int64Writer = (row: SpecializedGetters, ordinal: Int) =>
-      {
-        val unscaledLong =
-          row.getDecimal(ordinal, precision, scale).toUnscaledLong
-        recordConsumer.addLong(unscaledLong)
+    val int64Writer = (row: SpecializedGetters, ordinal: Int) => {
+      val unscaledLong =
+        row.getDecimal(ordinal, precision, scale).toUnscaledLong
+      recordConsumer.addLong(unscaledLong)
     }
 
-    val binaryWriterUsingUnscaledLong = (row: SpecializedGetters,
-    ordinal: Int) =>
-      {
+    val binaryWriterUsingUnscaledLong =
+      (row: SpecializedGetters, ordinal: Int) => {
         // When the precision is low enough (<= 18) to squeeze the decimal value into a `Long`, we
         // can build a fixed-length byte array with length `numBytes` using the unscaled `Long`
         // value and the `decimalBuffer` for better performance.
         val unscaled = row.getDecimal(ordinal, precision, scale).toUnscaledLong
-        var i = 0
-        var shift = 8 * (numBytes - 1)
+        var i        = 0
+        var shift    = 8 * (numBytes - 1)
 
         while (i < numBytes) {
           decimalBuffer(i) = (unscaled >> shift).toByte
@@ -245,14 +241,14 @@ private[parquet] class CatalystWriteSupport
         }
 
         recordConsumer.addBinary(
-            Binary.fromByteArray(decimalBuffer, 0, numBytes))
-    }
+          Binary.fromByteArray(decimalBuffer, 0, numBytes)
+        )
+      }
 
-    val binaryWriterUsingUnscaledBytes = (row: SpecializedGetters,
-    ordinal: Int) =>
-      {
+    val binaryWriterUsingUnscaledBytes =
+      (row: SpecializedGetters, ordinal: Int) => {
         val decimal = row.getDecimal(ordinal, precision, scale)
-        val bytes = decimal.toJavaBigDecimal.unscaledValue().toByteArray
+        val bytes   = decimal.toJavaBigDecimal.unscaledValue().toByteArray
         val fixedLengthBytes =
           if (bytes.length == numBytes) {
             // If the length of the underlying byte array of the unscaled `BigInteger` happens to be
@@ -264,15 +260,25 @@ private[parquet] class CatalystWriteSupport
             // fixed-length byte array.
             val signByte = if (bytes.head < 0) -1: Byte else 0: Byte
             util.Arrays.fill(
-                decimalBuffer, 0, numBytes - bytes.length, signByte)
+              decimalBuffer,
+              0,
+              numBytes - bytes.length,
+              signByte
+            )
             System.arraycopy(
-                bytes, 0, decimalBuffer, numBytes - bytes.length, bytes.length)
+              bytes,
+              0,
+              decimalBuffer,
+              numBytes - bytes.length,
+              bytes.length
+            )
             decimalBuffer
           }
 
         recordConsumer.addBinary(
-            Binary.fromByteArray(fixedLengthBytes, 0, numBytes))
-    }
+          Binary.fromByteArray(fixedLengthBytes, 0, numBytes)
+        )
+      }
 
     writeLegacyParquetFormat match {
       // Standard mode, 1 <= precision <= 9, writes as INT32
@@ -294,47 +300,47 @@ private[parquet] class CatalystWriteSupport
     val elementWriter = makeWriter(arrayType.elementType)
 
     def threeLevelArrayWriter(
-        repeatedGroupName: String, elementFieldName: String): ValueWriter =
-      (row: SpecializedGetters, ordinal: Int) =>
-        {
-          val array = row.getArray(ordinal)
-          consumeGroup {
-            // Only creates the repeated field if the array is non-empty.
-            if (array.numElements() > 0) {
-              consumeField(repeatedGroupName, 0) {
-                var i = 0
-                while (i < array.numElements()) {
-                  consumeGroup {
-                    // Only creates the element field if the current array element is not null.
-                    if (!array.isNullAt(i)) {
-                      consumeField(elementFieldName, 0) {
-                        elementWriter.apply(array, i)
-                      }
+        repeatedGroupName: String,
+        elementFieldName: String
+    ): ValueWriter =
+      (row: SpecializedGetters, ordinal: Int) => {
+        val array = row.getArray(ordinal)
+        consumeGroup {
+          // Only creates the repeated field if the array is non-empty.
+          if (array.numElements() > 0) {
+            consumeField(repeatedGroupName, 0) {
+              var i = 0
+              while (i < array.numElements()) {
+                consumeGroup {
+                  // Only creates the element field if the current array element is not null.
+                  if (!array.isNullAt(i)) {
+                    consumeField(elementFieldName, 0) {
+                      elementWriter.apply(array, i)
                     }
                   }
-                  i += 1
                 }
+                i += 1
               }
             }
           }
+        }
       }
 
     def twoLevelArrayWriter(repeatedFieldName: String): ValueWriter =
-      (row: SpecializedGetters, ordinal: Int) =>
-        {
-          val array = row.getArray(ordinal)
-          consumeGroup {
-            // Only creates the repeated field if the array is non-empty.
-            if (array.numElements() > 0) {
-              consumeField(repeatedFieldName, 0) {
-                var i = 0
-                while (i < array.numElements()) {
-                  elementWriter.apply(array, i)
-                  i += 1
-                }
+      (row: SpecializedGetters, ordinal: Int) => {
+        val array = row.getArray(ordinal)
+        consumeGroup {
+          // Only creates the repeated field if the array is non-empty.
+          if (array.numElements() > 0) {
+            consumeField(repeatedFieldName, 0) {
+              var i = 0
+              while (i < array.numElements()) {
+                elementWriter.apply(array, i)
+                i += 1
               }
             }
           }
+        }
       }
 
     (writeLegacyParquetFormat, arrayType.containsNull) match {
@@ -349,7 +355,9 @@ private[parquet] class CatalystWriteSupport
         //     }
         //   }
         threeLevelArrayWriter(
-            repeatedGroupName = "list", elementFieldName = "element")
+          repeatedGroupName = "list",
+          elementFieldName = "element"
+        )
 
       case (legacyMode @ true, nullableElements @ true) =>
         // Legacy mode, with nullable elements:
@@ -362,7 +370,9 @@ private[parquet] class CatalystWriteSupport
         //     }
         //   }
         threeLevelArrayWriter(
-            repeatedGroupName = "bag", elementFieldName = "array")
+          repeatedGroupName = "bag",
+          elementFieldName = "array"
+        )
 
       case (legacyMode @ true, nullableElements @ false) =>
         // Legacy mode, with non-nullable elements:
@@ -376,7 +386,7 @@ private[parquet] class CatalystWriteSupport
   }
 
   private def makeMapWriter(mapType: MapType): ValueWriter = {
-    val keyWriter = makeWriter(mapType.keyType)
+    val keyWriter   = makeWriter(mapType.keyType)
     val valueWriter = makeWriter(mapType.valueType)
     val repeatedGroupName =
       if (writeLegacyParquetFormat) {
@@ -403,36 +413,35 @@ private[parquet] class CatalystWriteSupport
         "key_value"
       }
 
-    (row: SpecializedGetters, ordinal: Int) =>
-      {
-        val map = row.getMap(ordinal)
-        val keyArray = map.keyArray()
-        val valueArray = map.valueArray()
+    (row: SpecializedGetters, ordinal: Int) => {
+      val map        = row.getMap(ordinal)
+      val keyArray   = map.keyArray()
+      val valueArray = map.valueArray()
 
-        consumeGroup {
-          // Only creates the repeated field if the map is non-empty.
-          if (map.numElements() > 0) {
-            consumeField(repeatedGroupName, 0) {
-              var i = 0
-              while (i < map.numElements()) {
-                consumeGroup {
-                  consumeField("key", 0) {
-                    keyWriter.apply(keyArray, i)
-                  }
+      consumeGroup {
+        // Only creates the repeated field if the map is non-empty.
+        if (map.numElements() > 0) {
+          consumeField(repeatedGroupName, 0) {
+            var i = 0
+            while (i < map.numElements()) {
+              consumeGroup {
+                consumeField("key", 0) {
+                  keyWriter.apply(keyArray, i)
+                }
 
-                  // Only creates the "value" field if the value if non-empty
-                  if (!map.valueArray().isNullAt(i)) {
-                    consumeField("value", 1) {
-                      valueWriter.apply(valueArray, i)
-                    }
+                // Only creates the "value" field if the value if non-empty
+                if (!map.valueArray().isNullAt(i)) {
+                  consumeField("value", 1) {
+                    valueWriter.apply(valueArray, i)
                   }
                 }
-                i += 1
               }
+              i += 1
             }
           }
         }
       }
+    }
   }
 
   private def consumeMessage(f: => Unit): Unit = {
@@ -461,7 +470,8 @@ private[parquet] object CatalystWriteSupport {
     schema.map(_.name).foreach(CatalystSchemaConverter.checkFieldName)
     configuration.set(SPARK_ROW_SCHEMA, schema.json)
     configuration.setIfUnset(
-        ParquetOutputFormat.WRITER_VERSION,
-        ParquetProperties.WriterVersion.PARQUET_1_0.toString)
+      ParquetOutputFormat.WRITER_VERSION,
+      ParquetProperties.WriterVersion.PARQUET_1_0.toString
+    )
   }
 }

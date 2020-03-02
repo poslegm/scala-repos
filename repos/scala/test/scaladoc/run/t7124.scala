@@ -17,6 +17,6 @@ object Test extends ScaladocModelTest {
     val p = root._class("Test")._method("print")
 
     println(p.annotations) // no annotations
-    println(p.flags) // a 'macro' flag
+    println(p.flags)       // a 'macro' flag
   }
 }

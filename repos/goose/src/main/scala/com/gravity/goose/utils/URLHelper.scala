@@ -40,27 +40,29 @@ object URLHelper extends Logging {
 
     val finalURL =
       if (urlToCrawl.contains("#!"))
-        ESCAPED_FRAGMENT_REPLACEMENT.replaceAll(urlToCrawl) else urlToCrawl
+        ESCAPED_FRAGMENT_REPLACEMENT.replaceAll(urlToCrawl)
+      else urlToCrawl
 
     try {
-      val url = new URL(finalURL)
+      val url      = new URL(finalURL)
       val linkhash = HashUtils.md5(finalURL)
       Some(ParsingCandidate(finalURL, linkhash, url))
     } catch {
       case e: MalformedURLException => {
-          warn("{0} - is a malformed URL and cannot be processed", urlToCrawl)
-          None
-        }
+        warn("{0} - is a malformed URL and cannot be processed", urlToCrawl)
+        None
+      }
       case unknown: Exception => {
-          critical(
-              "Unable to process URL: {0} due to an unexpected exception:\n\tException Type: {1}\n\tException Message: {2}\n\tException Stack:\n{3}",
-              urlToCrawl,
-              unknown.getClass.getCanonicalName,
-              unknown.getMessage,
-              unknown.getStackTraceString)
+        critical(
+          "Unable to process URL: {0} due to an unexpected exception:\n\tException Type: {1}\n\tException Message: {2}\n\tException Stack:\n{3}",
+          urlToCrawl,
+          unknown.getClass.getCanonicalName,
+          unknown.getMessage,
+          unknown.getStackTraceString
+        )
 
-          None
-        }
+        None
+      }
     }
   }
 
@@ -94,10 +96,9 @@ object URLHelper extends Logging {
     }
   }
 
-  def tryToHttpGet(url: String): Option[HttpGet] = {
+  def tryToHttpGet(url: String): Option[HttpGet] =
     tryToURI(url) match {
       case Some(uri) => Some(new HttpGet(uri))
-      case None => None
+      case None      => None
     }
-  }
 }

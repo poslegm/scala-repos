@@ -41,8 +41,8 @@ trait App extends Closable with CloseAwaitably {
   /** The [[com.twitter.app.Flags]] instance associated with this application */
   //failfastOnFlagsNotParsed is called in the ctor of App.scala here which is a bad idea
   //as things like this can happen http://stackoverflow.com/questions/18138397/calling-method-from-constructor
-  val flag: Flags = new Flags(
-      name, includeGlobal = true, failfastOnFlagsNotParsed)
+  val flag: Flags =
+    new Flags(name, includeGlobal = true, failfastOnFlagsNotParsed)
 
   private var _args = Array[String]()
 
@@ -68,7 +68,7 @@ trait App extends Closable with CloseAwaitably {
     System.exit(1)
   }
 
-  private val inits: mutable.Buffer[() => Unit] = mutable.Buffer.empty
+  private val inits: mutable.Buffer[() => Unit]    = mutable.Buffer.empty
   private val premains: mutable.Buffer[() => Unit] = mutable.Buffer.empty
   private val exits: ConcurrentLinkedQueue[Closable] =
     new ConcurrentLinkedQueue
@@ -78,16 +78,14 @@ trait App extends Closable with CloseAwaitably {
   /**
     * Invoke `f` before anything else (including flag parsing).
     */
-  protected final def init(f: => Unit): Unit = {
+  protected final def init(f: => Unit): Unit =
     inits += (() => f)
-  }
 
   /**
     * Invoke `f` right before the user's main is invoked.
     */
-  protected final def premain(f: => Unit): Unit = {
+  protected final def premain(f: => Unit): Unit =
     premains += (() => f)
-  }
 
   /** Minimum duration to allow for exits to be processed. */
   final val MinGrace: Duration = 1.second
@@ -107,16 +105,15 @@ trait App extends Closable with CloseAwaitably {
   /**
     * Close `closable` when shutdown is requested. Closables are closed in parallel.
     */
-  protected final def closeOnExit(closable: Closable): Unit = {
+  protected final def closeOnExit(closable: Closable): Unit =
     exits.add(closable)
-  }
 
   /**
     * Invoke `f` when shutdown is requested. Exit hooks run in parallel and are
     * executed after all postmains complete. The thread resumes when all exit
     * hooks complete or `closeDeadline` expires.
     */
-  protected final def onExit(f: => Unit): Unit = {
+  protected final def onExit(f: => Unit): Unit =
     closeOnExit {
       Closable.make { deadline =>
         // close() ensures that this deadline is sane
@@ -125,14 +122,12 @@ trait App extends Closable with CloseAwaitably {
         FuturePool.unboundedPool(f).within(exitTimer, deadline - Time.now)
       }
     }
-  }
 
   /**
     * Invoke `f` after the user's main has exited.
     */
-  protected final def postmain(f: => Unit): Unit = {
+  protected final def postmain(f: => Unit): Unit =
     postmains.add(() => f)
-  }
 
   /**
     * Notify the application that it may stop running.
@@ -143,7 +138,7 @@ trait App extends Closable with CloseAwaitably {
     Closable.all(exits.asScala.toSeq: _*).close(closeDeadline)
   }
 
-  final def main(args: Array[String]): Unit = {
+  final def main(args: Array[String]): Unit =
     try {
       nonExitingMain(args)
     } catch {
@@ -155,7 +150,6 @@ trait App extends Closable with CloseAwaitably {
         e.printStackTrace()
         exitOnError("Exception thrown in main on startup")
     }
-  }
 
   final def nonExitingMain(args: Array[String]): Unit = {
     App.register(this)
@@ -174,13 +168,16 @@ trait App extends Closable with CloseAwaitably {
     for (f <- premains) f()
 
     // Get a main() if it's defined. It's possible to define traits that only use pre/post mains.
-    val mainMethod = try Some(getClass.getMethod("main")) catch {
-      case _: NoSuchMethodException => None
-    }
+    val mainMethod =
+      try Some(getClass.getMethod("main"))
+      catch {
+        case _: NoSuchMethodException => None
+      }
 
     // Invoke main() if it exists.
     mainMethod foreach { method =>
-      try method.invoke(this) catch {
+      try method.invoke(this)
+      catch {
         case e: InvocationTargetException => throw e.getCause
       }
     }
@@ -211,6 +208,7 @@ object App {
   private[app] def register(app: App): Unit =
     ref.getAndSet(Some(app)).foreach { existing =>
       log.warning(
-          s"Multiple com.twitter.app.App main methods called. ${existing.name}, then ${app.name}")
+        s"Multiple com.twitter.app.App main methods called. ${existing.name}, then ${app.name}"
+      )
     }
 }

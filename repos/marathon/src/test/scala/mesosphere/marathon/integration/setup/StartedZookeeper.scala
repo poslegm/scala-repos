@@ -9,7 +9,7 @@ trait StartedZookeeper extends BeforeAndAfterAllConfigMap {
   self: IntegrationFunSuite =>
 
   private var configOption: Option[IntegrationTestConfig] = None
-  def config: IntegrationTestConfig = configOption.get
+  def config: IntegrationTestConfig                       = configOption.get
 
   override protected def beforeAll(configMap: ConfigMap): Unit = {
     super.beforeAll(configMap)

@@ -16,14 +16,17 @@ import akka.testkit._
 
 object InitialHeartbeatMultiJvmSpec extends MultiNodeConfig {
   val controller = role("controller")
-  val first = role("first")
-  val second = role("second")
+  val first      = role("first")
+  val second     = role("second")
 
   commonConfig(
-      debugConfig(on = false)
-        .withFallback(ConfigFactory.parseString("""
-      akka.cluster.failure-detector.threshold = 4"""))
-        .withFallback(MultiNodeClusterSpec.clusterConfig))
+    debugConfig(on = false)
+      .withFallback(
+        ConfigFactory.parseString("""
+      akka.cluster.failure-detector.threshold = 4""")
+      )
+      .withFallback(MultiNodeClusterSpec.clusterConfig)
+  )
 
   testTransport(on = true)
 }
@@ -43,27 +46,33 @@ abstract class InitialHeartbeatSpec
   "A member" must {
 
     "detect failure even though no heartbeats have been received" taggedAs LongRunningTest in {
-      val firstAddress = address(first)
+      val firstAddress  = address(first)
       val secondAddress = address(second)
       awaitClusterUp(first)
 
       runOn(first) {
         within(10 seconds) {
-          awaitAssert({
-            cluster.sendCurrentClusterState(testActor)
-            expectMsgType[CurrentClusterState].members.map(_.address) should contain(
-                secondAddress)
-          }, interval = 50.millis)
+          awaitAssert(
+            {
+              cluster.sendCurrentClusterState(testActor)
+              expectMsgType[CurrentClusterState].members
+                .map(_.address) should contain(secondAddress)
+            },
+            interval = 50.millis
+          )
         }
       }
       runOn(second) {
         cluster.join(first)
         within(10 seconds) {
-          awaitAssert({
-            cluster.sendCurrentClusterState(testActor)
-            expectMsgType[CurrentClusterState].members.map(_.address) should contain(
-                firstAddress)
-          }, interval = 50.millis)
+          awaitAssert(
+            {
+              cluster.sendCurrentClusterState(testActor)
+              expectMsgType[CurrentClusterState].members
+                .map(_.address) should contain(firstAddress)
+            },
+            interval = 50.millis
+          )
         }
       }
       enterBarrier("second-joined")

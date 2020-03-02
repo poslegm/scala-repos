@@ -30,29 +30,33 @@ private[spark] class SumEvaluator(totalOutputs: Int, confidence: Double)
     extends ApproximateEvaluator[StatCounter, BoundedDouble] {
 
   var outputsMerged = 0
-  var counter = new StatCounter
+  var counter       = new StatCounter
 
   override def merge(outputId: Int, taskResult: StatCounter) {
     outputsMerged += 1
     counter.merge(taskResult)
   }
 
-  override def currentResult(): BoundedDouble = {
+  override def currentResult(): BoundedDouble =
     if (outputsMerged == totalOutputs) {
       new BoundedDouble(counter.sum, 1.0, counter.sum, counter.sum)
     } else if (outputsMerged == 0) {
       new BoundedDouble(
-          0, 0.0, Double.NegativeInfinity, Double.PositiveInfinity)
+        0,
+        0.0,
+        Double.NegativeInfinity,
+        Double.PositiveInfinity
+      )
     } else {
-      val p = outputsMerged.toDouble / totalOutputs
-      val meanEstimate = counter.mean
-      val meanVar = counter.sampleVariance / counter.count
+      val p             = outputsMerged.toDouble / totalOutputs
+      val meanEstimate  = counter.mean
+      val meanVar       = counter.sampleVariance / counter.count
       val countEstimate = (counter.count + 1 - p) / p
-      val countVar = (counter.count + 1) * (1 - p) / (p * p)
-      val sumEstimate = meanEstimate * countEstimate
+      val countVar      = (counter.count + 1) * (1 - p) / (p * p)
+      val sumEstimate   = meanEstimate * countEstimate
       val sumVar =
         (meanEstimate * meanEstimate * countVar) +
-        (countEstimate * countEstimate * meanVar) + (meanVar * countVar)
+          (countEstimate * countEstimate * meanVar) + (meanVar * countVar)
       val sumStdev = math.sqrt(sumVar)
       val confFactor = {
         if (counter.count > 100) {
@@ -64,9 +68,8 @@ private[spark] class SumEvaluator(totalOutputs: Int, confidence: Double)
             .inverseCumulativeProbability(1 - (1 - confidence) / 2)
         }
       }
-      val low = sumEstimate - confFactor * sumStdev
+      val low  = sumEstimate - confFactor * sumStdev
       val high = sumEstimate + confFactor * sumStdev
       new BoundedDouble(sumEstimate, confidence, low, high)
     }
-  }
 }

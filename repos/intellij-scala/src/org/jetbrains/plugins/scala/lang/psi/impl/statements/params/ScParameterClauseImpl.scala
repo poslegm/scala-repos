@@ -23,10 +23,11 @@ import org.jetbrains.plugins.scala.lang.psi.stubs.ScParamClauseStub
   * @author Alexander Podkhalyuzin
   * Date: 22.02.2008
   */
-class ScParameterClauseImpl private (stub: StubElement[ScParameterClause],
-                                     nodeType: IElementType,
-                                     node: ASTNode)
-    extends ScalaStubBasedElementImpl(stub, nodeType, node)
+class ScParameterClauseImpl private (
+    stub: StubElement[ScParameterClause],
+    nodeType: IElementType,
+    node: ASTNode
+) extends ScalaStubBasedElementImpl(stub, nodeType, node)
     with ScParameterClause {
 
   def this(node: ASTNode) = { this(null, null, node) }
@@ -36,16 +37,17 @@ class ScParameterClauseImpl private (stub: StubElement[ScParameterClause],
   }
   override def toString: String = "ParametersClause"
 
-  def parameters: Seq[ScParameter] = {
+  def parameters: Seq[ScParameter] =
     getStubOrPsiChildren[ScParameter](
-        TokenSets.PARAMETERS, JavaArrayFactoryUtil.ScParameterFactory)
-  }
+      TokenSets.PARAMETERS,
+      JavaArrayFactoryUtil.ScParameterFactory
+    )
 
   @volatile
   private var synthClause: Option[ScParameterClause] = None
   @volatile
   private var synthClauseModCount: Long = -1
-  private val SYNTH_LOCK = new Object()
+  private val SYNTH_LOCK                = new Object()
 
   override def effectiveParameters: Seq[ScParameter] = {
     if (!isImplicit) return parameters
@@ -59,7 +61,7 @@ class ScParameterClauseImpl private (stub: StubElement[ScParameterClause],
             case p: ScPrimaryConstructor =>
               p.containingClass match {
                 case c: ScClass => c
-                case _ => return parameters
+                case _          => return parameters
               }
             case _ => return parameters
           }
@@ -70,9 +72,10 @@ class ScParameterClauseImpl private (stub: StubElement[ScParameterClause],
             //it's important for all calculations to have the same psi here
             if (synthClauseModCount == modCount) return synthClause
             synthClause = ScalaPsiUtil.syntheticParamClause(
-                typeParametersOwner,
-                clauses,
-                typeParametersOwner.isInstanceOf[ScClass])
+              typeParametersOwner,
+              clauses,
+              typeParametersOwner.isInstanceOf[ScClass]
+            )
             synthClauseModCount = modCount
             synthClause
           }
@@ -120,11 +123,12 @@ class ScParameterClauseImpl private (stub: StubElement[ScParameterClause],
     this
   }
 
-  override def owner: PsiElement = {
-    ScalaPsiUtil.getContextOfType(this,
-                                  true,
-                                  classOf[ScFunctionExpr],
-                                  classOf[ScFunction],
-                                  classOf[ScPrimaryConstructor])
-  }
+  override def owner: PsiElement =
+    ScalaPsiUtil.getContextOfType(
+      this,
+      true,
+      classOf[ScFunctionExpr],
+      classOf[ScFunction],
+      classOf[ScPrimaryConstructor]
+    )
 }

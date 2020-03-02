@@ -15,9 +15,8 @@ class MysqlBuilderTest extends FunSuite with IntegrationClient {
     Trace.enable()
     var annotations: List[Annotation] = Nil
     val mockTracer = new Tracer {
-      def record(record: Record) = {
+      def record(record: Record) =
         annotations ::= record.annotation
-      }
       def sampleTrace(traceId: TraceId): Option[Boolean] = Some(true)
     }
 
@@ -25,7 +24,7 @@ class MysqlBuilderTest extends FunSuite with IntegrationClient {
     if (isAvailable) {
       val username = p.getProperty("username", "<user>")
       val password = p.getProperty("password", null)
-      val db = p.getProperty("db", "test")
+      val db       = p.getProperty("db", "test")
       val client = Mysql.client
         .configured(param.Label("myclient"))
         .configured(param.Tracer(mockTracer))
@@ -39,9 +38,9 @@ class MysqlBuilderTest extends FunSuite with IntegrationClient {
       Await.ready(client.ping())
 
       val mysqlTraces = annotations.collect {
-        case Annotation.BinaryAnnotation("mysql.query", "SELECT 1") => ()
+        case Annotation.BinaryAnnotation("mysql.query", "SELECT 1")   => ()
         case Annotation.BinaryAnnotation("mysql.prepare", "SELECT ?") => ()
-        case Annotation.Message("mysql.PingRequest") => ()
+        case Annotation.Message("mysql.PingRequest")                  => ()
       }
 
       assert(mysqlTraces.nonEmpty, "missing traces")

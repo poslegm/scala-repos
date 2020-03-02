@@ -8,13 +8,16 @@ import scala.concurrent.Promise
 import scala.util.Try
 
 class MetricsTimerTest
-    extends FunSuite with Matchers with GivenWhenThen with ScalaFutures {
+    extends FunSuite
+    with Matchers
+    with GivenWhenThen
+    with ScalaFutures {
   test("time crashing call") {
     When("doing the call (but the future is delayed)")
-    val metrics = new Metrics(new MetricRegistry)
-    val timer = metrics.timer("timer")
+    val metrics                   = new Metrics(new MetricRegistry)
+    val timer                     = metrics.timer("timer")
     val failure: RuntimeException = new scala.RuntimeException("failed")
-    val attempt = Try(timer.timeFuture(throw failure))
+    val attempt                   = Try(timer.timeFuture(throw failure))
 
     Then("we get the expected metric results")
     timer.timer.getCount should be(1)
@@ -27,9 +30,9 @@ class MetricsTimerTest
   test("time delayed successful future") {
     When("doing the call (but the future is delayed)")
     val metrics = new Metrics(new MetricRegistry)
-    val timer = metrics.timer("timer")
+    val timer   = metrics.timer("timer")
     val promise = Promise[Unit]()
-    val result = timer.timeFuture(promise.future)
+    val result  = timer.timeFuture(promise.future)
 
     Then("the call has not yet been registered")
     timer.timer.getCount should be(0)
@@ -48,9 +51,9 @@ class MetricsTimerTest
   test("time delayed failed future") {
     When("doing the call (but the future is delayed)")
     val metrics = new Metrics(new MetricRegistry)
-    val timer = metrics.timer("timer")
+    val timer   = metrics.timer("timer")
     val promise = Promise[Unit]()
-    val result = timer.timeFuture(promise.future)
+    val result  = timer.timeFuture(promise.future)
 
     Then("the call has not yet been registered")
     timer.timer.getCount should be(0)

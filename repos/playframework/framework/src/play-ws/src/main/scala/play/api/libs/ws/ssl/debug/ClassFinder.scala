@@ -34,7 +34,7 @@ trait ClassFinder {
   def findClasses: Set[Class[_]] = {
     logger.debug(s"findClasses: using initialResource = ${initialResource}")
 
-    val classSet = scala.collection.mutable.Set[Class[_]]()
+    val classSet                 = scala.collection.mutable.Set[Class[_]]()
     val classLoader: ClassLoader = Thread.currentThread.getContextClassLoader
 
     val urlToSource: URL = this.getClass.getResource(initialResource)
@@ -45,9 +45,9 @@ trait ClassFinder {
 
     logger.debug(s"findClasses: Loading from ${jarURLString}")
 
-    val jar: URL = new URL(jarURLString)
+    val jar: URL                     = new URL(jarURLString)
     val jarConnection: URLConnection = jar.openConnection
-    val jis: JarInputStream = new JarInputStream(jarConnection.getInputStream)
+    val jis: JarInputStream          = new JarInputStream(jarConnection.getInputStream)
     try {
       var je: JarEntry = jis.getNextJarEntry
       while (je != null) {

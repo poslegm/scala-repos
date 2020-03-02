@@ -18,7 +18,11 @@
 package org.apache.spark.sql.catalyst.optimizer
 
 import org.apache.spark.sql.catalyst.SimpleCatalystConf
-import org.apache.spark.sql.catalyst.analysis.{Analyzer, EmptyFunctionRegistry, SimpleCatalog}
+import org.apache.spark.sql.catalyst.analysis.{
+  Analyzer,
+  EmptyFunctionRegistry,
+  SimpleCatalog
+}
 import org.apache.spark.sql.catalyst.dsl.expressions._
 import org.apache.spark.sql.catalyst.dsl.plans._
 import org.apache.spark.sql.catalyst.expressions._
@@ -27,9 +31,9 @@ import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.catalyst.rules._
 
 class EliminateSortsSuite extends PlanTest {
-  val conf = new SimpleCatalystConf(
-      caseSensitiveAnalysis = true, orderByOrdinal = false)
-  val catalog = new SimpleCatalog(conf)
+  val conf =
+    new SimpleCatalystConf(caseSensitiveAnalysis = true, orderByOrdinal = false)
+  val catalog  = new SimpleCatalog(conf)
   val analyzer = new Analyzer(catalog, EmptyFunctionRegistry, conf)
 
   object Optimize extends RuleExecutor[LogicalPlan] {
@@ -41,8 +45,8 @@ class EliminateSortsSuite extends PlanTest {
   test("Empty order by clause") {
     val x = testRelation
 
-    val query = x.orderBy()
-    val optimized = Optimize.execute(query.analyze)
+    val query         = x.orderBy()
+    val optimized     = Optimize.execute(query.analyze)
     val correctAnswer = x.analyze
 
     comparePlans(optimized, correctAnswer)
@@ -51,8 +55,8 @@ class EliminateSortsSuite extends PlanTest {
   test("All the SortOrder are no-op") {
     val x = testRelation
 
-    val query = x.orderBy(SortOrder(3, Ascending), SortOrder(-1, Ascending))
-    val optimized = Optimize.execute(analyzer.execute(query))
+    val query         = x.orderBy(SortOrder(3, Ascending), SortOrder(-1, Ascending))
+    val optimized     = Optimize.execute(analyzer.execute(query))
     val correctAnswer = analyzer.execute(x)
 
     comparePlans(optimized, correctAnswer)
@@ -61,8 +65,8 @@ class EliminateSortsSuite extends PlanTest {
   test("Partial order-by clauses contain no-op SortOrder") {
     val x = testRelation
 
-    val query = x.orderBy(SortOrder(3, Ascending), 'a.asc)
-    val optimized = Optimize.execute(analyzer.execute(query))
+    val query         = x.orderBy(SortOrder(3, Ascending), 'a.asc)
+    val optimized     = Optimize.execute(analyzer.execute(query))
     val correctAnswer = analyzer.execute(x.orderBy('a.asc))
 
     comparePlans(optimized, correctAnswer)

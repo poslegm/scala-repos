@@ -17,20 +17,29 @@ object WriteAggregatorSpec {
 
   val key = GSetKey[String]("a")
 
-  def writeAggregatorProps(data: GSet[String],
-                           consistency: Replicator.WriteConsistency,
-                           probes: Map[Address, ActorRef],
-                           nodes: Set[Address],
-                           replyTo: ActorRef): Props =
+  def writeAggregatorProps(
+      data: GSet[String],
+      consistency: Replicator.WriteConsistency,
+      probes: Map[Address, ActorRef],
+      nodes: Set[Address],
+      replyTo: ActorRef
+  ): Props =
     Props(new TestWriteAggregator(data, consistency, probes, nodes, replyTo))
 
-  class TestWriteAggregator(data: GSet[String],
-                            consistency: Replicator.WriteConsistency,
-                            probes: Map[Address, ActorRef],
-                            nodes: Set[Address],
-                            replyTo: ActorRef)
-      extends WriteAggregator(
-          key, DataEnvelope(data), consistency, None, nodes, replyTo) {
+  class TestWriteAggregator(
+      data: GSet[String],
+      consistency: Replicator.WriteConsistency,
+      probes: Map[Address, ActorRef],
+      nodes: Set[Address],
+      replyTo: ActorRef
+  ) extends WriteAggregator(
+        key,
+        DataEnvelope(data),
+        consistency,
+        None,
+        nodes,
+        replyTo
+      ) {
 
     override def replica(address: Address): ActorSelection =
       context.actorSelection(probes(address).path)
@@ -56,10 +65,13 @@ object WriteAggregatorSpec {
 }
 
 class WriteAggregatorSpec
-    extends AkkaSpec("""
+    extends AkkaSpec(
+      """
       akka.actor.provider = "akka.cluster.ClusterActorRefProvider"
       akka.remote.netty.tcp.port=0
-      """) with ImplicitSender {
+      """
+    )
+    with ImplicitSender {
 
   val nodeA = Address("akka.tcp", "Sys", "a", 2552)
   val nodeB = nodeA.copy(host = Some("b"))
@@ -68,22 +80,28 @@ class WriteAggregatorSpec
   // 4 replicas + the local => 5
   val nodes = Set(nodeA, nodeB, nodeC, nodeD)
 
-  val data = GSet.empty + "A" + "B"
-  val timeout = 3.seconds.dilated
-  val writeTwo = WriteTo(2, timeout)
+  val data          = GSet.empty + "A" + "B"
+  val timeout       = 3.seconds.dilated
+  val writeTwo      = WriteTo(2, timeout)
   val writeMajority = WriteMajority(timeout)
 
   def probes(probe: ActorRef): Map[Address, ActorRef] =
     nodes.toSeq
-      .map(
-          _ -> system.actorOf(WriteAggregatorSpec.writeAckAdapterProps(probe)))
+      .map(_ -> system.actorOf(WriteAggregatorSpec.writeAckAdapterProps(probe)))
       .toMap
 
   "WriteAggregator" must {
     "send to at least N/2+1 replicas when WriteMajority" in {
       val probe = TestProbe()
-      val aggr = system.actorOf(WriteAggregatorSpec.writeAggregatorProps(
-              data, writeMajority, probes(probe.ref), nodes, testActor))
+      val aggr = system.actorOf(
+        WriteAggregatorSpec.writeAggregatorProps(
+          data,
+          writeMajority,
+          probes(probe.ref),
+          nodes,
+          testActor
+        )
+      )
 
       probe.expectMsgType[Write]
       probe.lastSender ! WriteAck
@@ -96,8 +114,15 @@ class WriteAggregatorSpec
 
     "send to more when no immediate reply" in {
       val probe = TestProbe()
-      val aggr = system.actorOf(WriteAggregatorSpec.writeAggregatorProps(
-              data, writeMajority, probes(probe.ref), nodes, testActor))
+      val aggr = system.actorOf(
+        WriteAggregatorSpec.writeAggregatorProps(
+          data,
+          writeMajority,
+          probes(probe.ref),
+          nodes,
+          testActor
+        )
+      )
 
       probe.expectMsgType[Write]
       // no reply
@@ -115,8 +140,15 @@ class WriteAggregatorSpec
 
     "timeout when less than required acks" in {
       val probe = TestProbe()
-      val aggr = system.actorOf(WriteAggregatorSpec.writeAggregatorProps(
-              data, writeMajority, probes(probe.ref), nodes, testActor))
+      val aggr = system.actorOf(
+        WriteAggregatorSpec.writeAggregatorProps(
+          data,
+          writeMajority,
+          probes(probe.ref),
+          nodes,
+          testActor
+        )
+      )
 
       probe.expectMsgType[Write]
       // no reply

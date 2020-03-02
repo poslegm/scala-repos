@@ -104,11 +104,11 @@ package object cell {
     * @tparam C  Derivated type from JavaFX Cell
     */
   trait UpdatableCell[C <: jfxsc.Cell[T], T] extends SFXDelegate[C] {
-    /* IMPLEMENTATION NOTE: 
-     * Unlike to what happened with other traits of this package object, it was not possible create a type like 
-     * "type Updated[T] = { def updateItem(item: T, empty: Boolean): Unit }". In this case, the compiler shows this 
-     * error message: "Parameter type in structural refinement may not refer to an abstract type defined outside that 
-     * refinement". The only way for which was possible implement the trait was create an internal type in which 
+    /* IMPLEMENTATION NOTE:
+     * Unlike to what happened with other traits of this package object, it was not possible create a type like
+     * "type Updated[T] = { def updateItem(item: T, empty: Boolean): Unit }". In this case, the compiler shows this
+     * error message: "Parameter type in structural refinement may not refer to an abstract type defined outside that
+     * refinement". The only way for which was possible implement the trait was create an internal type in which
      * updateItem method from JavaFX class receive a item of type Any instead type T.
      */
 
@@ -162,8 +162,8 @@ package object cell {
     * @tparam T The type of the elements contained within the inner element inside the Cell.
     */
   private[cell] implicit def selectedBooleanPropertyToGetSelectedProperty[T](
-      selectedProperty: T => ObservableValue[Boolean, java.lang.Boolean])
-    : jfxu.Callback[T, jfxbv.ObservableValue[java.lang.Boolean]] =
+      selectedProperty: T => ObservableValue[Boolean, java.lang.Boolean]
+  ): jfxu.Callback[T, jfxbv.ObservableValue[java.lang.Boolean]] =
     new jfxu.Callback[T, jfxbv.ObservableValue[java.lang.Boolean]] {
       def call(x: T) = selectedProperty(x)
     }
@@ -174,8 +174,9 @@ package object cell {
     * @tparam J Original Java type used by converter.
     */
   type StateSelectable[J] = {
-    def selectedStateCallbackProperty(): jfxbp.ObjectProperty[jfxu.Callback[
-            J, jfxbv.ObservableValue[java.lang.Boolean]]]
+    def selectedStateCallbackProperty(): jfxbp.ObjectProperty[
+      jfxu.Callback[J, jfxbv.ObservableValue[java.lang.Boolean]]
+    ]
   }
 
   /**
@@ -197,7 +198,8 @@ package object cell {
       */
     def selectedStateCallback = delegate.selectedStateCallbackProperty()
     def selectedStateCallback_=(
-        v: J => ObservableValue[Boolean, java.lang.Boolean]) {
+        v: J => ObservableValue[Boolean, java.lang.Boolean]
+    ) {
       selectedStateCallback() = v
     }
   }

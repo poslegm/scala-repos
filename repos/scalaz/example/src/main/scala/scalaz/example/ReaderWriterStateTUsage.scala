@@ -56,10 +56,10 @@ object CABRunLengthEncoder {
   // The State we will carry in the Monad during our computation
   case class RunLengthState(
       lastToken: Option[Token], // what is the last char we've seen
-      length: Int, // how many of that char have we seen
-      input: List[Token] // remaining input
+      length: Int,              // how many of that char have we seen
+      input: List[Token]        // remaining input
   ) {
-    def incLength = this.copy(length = length + 1)
+    def incLength          = this.copy(length = length + 1)
     def newToken(t: Token) = RunLengthState(Some(t), 0, input)
     def uncons: (Token, RunLengthState) =
       (input.head, this.copy(input = input.tail))
@@ -82,8 +82,8 @@ object CABRunLengthEncoder {
   import Token._
   import Free.Trampoline
 
-  type RunLength[A] = ReaderWriterStateT[
-      Trampoline, RunLengthConfig, Cord, RunLengthState, A]
+  type RunLength[A] =
+    ReaderWriterStateT[Trampoline, RunLengthConfig, Cord, RunLengthState, A]
 
   // At its essence the RWST monad transformer is a wrap around a function with the following shape:
   // (ReaderType, StateType) => Monad[WriterType, Result, StateType]
@@ -109,7 +109,7 @@ object CABRunLengthEncoder {
     .rwstMonad[Trampoline, RunLengthConfig, Cord, RunLengthState]
   import rle._
 
-  /** 
+  /**
     * with the above syntax imported, we can perform the same
     * computation as above, but use a for comprehension
     */
@@ -119,7 +119,7 @@ object CABRunLengthEncoder {
     // take a token off the input, getting
     // a token and a new state
     (nextTok, newState) = oldState.uncons
-    _ <- put(newState) // store the new state
+    _                  <- put(newState) // store the new state
   } yield nextTok // return the token
 
   /**
@@ -146,11 +146,12 @@ object CABRunLengthEncoder {
     */
   def emit: RunLength[Unit] =
     for {
-      state <- get
+      state  <- get
       config <- ask
       _ <- state.lastToken.cata(
-          none = point(()), // nothing to emit
-          some = writeOutput(_, state.length, config.minRun))
+            none = point(()), // nothing to emit
+            some = writeOutput(_, state.length, config.minRun)
+          )
     } yield ()
 
   /**
@@ -159,10 +160,10 @@ object CABRunLengthEncoder {
   def maybeEmit: RunLength[Unit] =
     for {
       state <- get
-      next <- readToken
+      next  <- readToken
       _ <- {
         if (state.lastToken.map(_ == next) getOrElse (false))
-          // Same token as last, so we just increment our counter 
+          // Same token as last, so we just increment our counter
           modify(_.incLength)
         else
           // its a new token, so emit the previous, then change
@@ -174,7 +175,7 @@ object CABRunLengthEncoder {
     } yield ()
 
   def encode(minRun: Int, input: List[Token]): String = {
-    val config = RunLengthConfig(minRun)
+    val config       = RunLengthConfig(minRun)
     val initialState = RunLengthState.initial(input)
     val (output, result, finalState) =
       untilM_(maybeEmit, done).run(config, initialState).run
@@ -185,7 +186,7 @@ object CABRunLengthEncoder {
 object ReaderWriterStateTUsage extends App {
 
   val inputTokens = List(A, B, C, A, A, B, B, B, B, C, A, A, A, C, C, C, C, B)
-  val encoded = CABRunLengthEncoder.encode(2, inputTokens)
+  val encoded     = CABRunLengthEncoder.encode(2, inputTokens)
 
   println("encoded " + inputTokens.mkString + " as " + encoded)
 }

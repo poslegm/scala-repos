@@ -20,12 +20,12 @@ import java.util.concurrent.atomic.{AtomicReference, AtomicInteger}
 
 class AtomicStateTransformer[T](initState: T) {
   private val curState = new AtomicReference(initState)
-  def get: T = curState.get
+  def get: T           = curState.get
 
   //oper cannot side effect (or re-running might break things).
   @annotation.tailrec
   final def updateWithState[S](oper: T => (S, T)): (S, T) = {
-    val oldState = curState.get
+    val oldState      = curState.get
     val (s, newState) = oper(oldState)
     if (curState.compareAndSet(oldState, newState)) {
       (s, newState)
@@ -35,14 +35,12 @@ class AtomicStateTransformer[T](initState: T) {
   }
 
   final def update(oper: T => T): T =
-    updateWithState({ x: T =>
-      (Unit, oper(x))
-    })._2
+    updateWithState({ x: T => (Unit, oper(x)) })._2
 }
 
 object InflightTuples {
   private val data = new AtomicInteger(0)
-  def incr = data.incrementAndGet
+  def incr         = data.incrementAndGet
 
   def decr = data.decrementAndGet
 
@@ -67,9 +65,9 @@ case class InputState[T](state: T) {
       if (failed) throw new Exception("Cannot increment when already failed")
       this.copy(counter = counter + by)
     }
-    def incr = incrBy(1)
-    def decr = decrBy(1)
-    def doAck = (counter == 0 && !failed)
+    def incr         = incrBy(1)
+    def decr         = decrBy(1)
+    def doAck        = (counter == 0 && !failed)
     def invalidState = counter < 0
   }
 
@@ -80,15 +78,17 @@ case class InputState[T](state: T) {
   def fanOut(by: Int) = {
     require(by >= 0, "Invalid fanout: %d, by should be >= 0".format(by))
     require(
-        stateTracking.get.counter == 1,
-        "You can only call fanOut once, and must do it before acking the tuple.")
+      stateTracking.get.counter == 1,
+      "You can only call fanOut once, and must do it before acking the tuple."
+    )
     val incrementAmount = by - 1
-    val newS = stateTracking.update(_.incrBy(incrementAmount))
+    val newS            = stateTracking.update(_.incrBy(incrementAmount))
     // If we incremented on something that was 0 or negative
     // And not in a failed state, then this is an error
     if ((newS.counter - incrementAmount <= 0) && !newS.failed) {
       throw new Exception(
-          "Invalid call on an inputstate, we had already decremented to 0 and not failed.")
+        "Invalid call on an inputstate, we had already decremented to 0 and not failed."
+      )
     }
     this
   }
@@ -113,6 +113,8 @@ case class InputState[T](state: T) {
   override def toString: String = {
     val curState = stateTracking.get
     "Input State Wrapper(count: %d, failed: %s)".format(
-        curState.counter, curState.failed.toString)
+      curState.counter,
+      curState.failed.toString
+    )
   }
 }

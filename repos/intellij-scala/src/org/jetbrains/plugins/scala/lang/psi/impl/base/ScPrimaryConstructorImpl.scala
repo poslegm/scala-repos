@@ -29,8 +29,8 @@ import org.jetbrains.plugins.scala.lang.psi.stubs.ScPrimaryConstructorStub
 class ScPrimaryConstructorImpl private (
     stub: StubElement[ScPrimaryConstructor],
     nodeType: IElementType,
-    node: ASTNode)
-    extends ScalaStubBasedElementImpl(stub, nodeType, node)
+    node: ASTNode
+) extends ScalaStubBasedElementImpl(stub, nodeType, node)
     with ScPrimaryConstructor {
   def this(node: ASTNode) = { this(null, null, node) }
   def this(stub: ScPrimaryConstructorStub) = {
@@ -42,15 +42,13 @@ class ScPrimaryConstructorImpl private (
   //todo rewrite me!
   override def hasModifier: Boolean = false
 
-  def getClassNameText: String = {
+  def getClassNameText: String =
     getNode.getTreeParent.getPsi.asInstanceOf[ScTypeDefinition].name
-  }
 
   override def toString: String = "PrimaryConstructor"
 
-  def parameterList: ScParameters = {
+  def parameterList: ScParameters =
     getStubOrPsiChild(ScalaElementTypes.PARAM_CLAUSES)
-  }
 
   override def getName: String = this.containingClass.name
 

@@ -20,7 +20,10 @@ package org.apache.spark.examples.mllib
 
 import org.apache.spark.{SparkConf, SparkContext}
 // $example on$
-import org.apache.spark.mllib.regression.{IsotonicRegression, IsotonicRegressionModel}
+import org.apache.spark.mllib.regression.{
+  IsotonicRegression,
+  IsotonicRegressionModel
+}
 // $example off$
 
 object IsotonicRegressionExample {
@@ -28,7 +31,7 @@ object IsotonicRegressionExample {
   def main(args: Array[String]): Unit = {
 
     val conf = new SparkConf().setAppName("IsotonicRegressionExample")
-    val sc = new SparkContext(conf)
+    val sc   = new SparkContext(conf)
     // $example on$
     val data = sc.textFile("data/mllib/sample_isotonic_regression_data.txt")
 
@@ -37,13 +40,13 @@ object IsotonicRegressionExample {
       val parts = line
         .split(',')
         .map(_.toDouble)
-        (parts(0), parts(1), 1.0)
+      (parts(0), parts(1), 1.0)
     }
 
     // Split data into training (60%) and test (40%) sets.
-    val splits = parsedData.randomSplit(Array(0.6, 0.4), seed = 11L)
+    val splits   = parsedData.randomSplit(Array(0.6, 0.4), seed = 11L)
     val training = splits(0)
-    val test = splits(1)
+    val test     = splits(1)
 
     // Create isotonic regression model from training data.
     // Isotonic parameter defaults to true so it is only shown for demonstration
@@ -56,9 +59,11 @@ object IsotonicRegressionExample {
     }
 
     // Calculate mean squared error between predicted and real labels.
-    val meanSquaredError = predictionAndLabel.map {
-      case (p, l) => math.pow((p - l), 2)
-    }.mean()
+    val meanSquaredError = predictionAndLabel
+      .map {
+        case (p, l) => math.pow((p - l), 2)
+      }
+      .mean()
     println("Mean Squared Error = " + meanSquaredError)
 
     // Save and load model

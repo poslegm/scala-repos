@@ -15,9 +15,8 @@ trait ThriftSerializer extends StringEncoder {
     baos.toByteArray
   }
 
-  def toBytes(obj: TBase[_, _]): Array[Byte] = {
+  def toBytes(obj: TBase[_, _]): Array[Byte] =
     toBytes(obj, 32) // default initial size of ByteArrayOutputStream
-  }
 
   def fromInputStream(obj: TBase[_, _], stream: InputStream): Unit =
     obj.read(protocolFactory.getProtocol(new TIOStreamTransport(stream)))
@@ -45,7 +44,9 @@ class JsonThriftSerializer extends ThriftSerializer {
     val newObj =
       new MappingJsonFactory().createParser(bytes).readValueAs(obj.getClass)
     binarySerializer.fromBytes(
-        obj, binarySerializer.toBytes(newObj.asInstanceOf[TBase[_, _]]))
+      obj,
+      binarySerializer.toBytes(newObj.asInstanceOf[TBase[_, _]])
+    )
   }
 }
 
@@ -55,8 +56,7 @@ class JsonThriftSerializer extends ThriftSerializer {
   * @note an implementation using `com.twitter.finagle.thrift.Protocols.binaryFactory`
   *       instead of this is recommended.
   */
-class BinaryThriftSerializer
-    extends ThriftSerializer with Base64StringEncoder {
+class BinaryThriftSerializer extends ThriftSerializer with Base64StringEncoder {
   override def protocolFactory = new TBinaryProtocol.Factory
 }
 
@@ -64,6 +64,7 @@ class BinaryThriftSerializer
   * A thread-safe [[ThriftSerializer]] that uses [[TCompactProtocol]].
   */
 class CompactThriftSerializer
-    extends ThriftSerializer with Base64StringEncoder {
+    extends ThriftSerializer
+    with Base64StringEncoder {
   override def protocolFactory = new TCompactProtocol.Factory
 }

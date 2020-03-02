@@ -27,15 +27,16 @@ import org.apache.kafka.common.utils.Time
   * @param callback Callback to trigger after delayTimeMs milliseconds
   */
 private[server] class ThrottledResponse(
-    val time: Time, val throttleTimeMs: Int, callback: Int => Unit)
-    extends Delayed {
+    val time: Time,
+    val throttleTimeMs: Int,
+    callback: Int => Unit
+) extends Delayed {
   val endTime = time.milliseconds + throttleTimeMs
 
   def execute() = callback(throttleTimeMs)
 
-  override def getDelay(unit: TimeUnit): Long = {
+  override def getDelay(unit: TimeUnit): Long =
     unit.convert(endTime - time.milliseconds, TimeUnit.MILLISECONDS)
-  }
 
   override def compareTo(d: Delayed): Int = {
     val other = d.asInstanceOf[ThrottledResponse]

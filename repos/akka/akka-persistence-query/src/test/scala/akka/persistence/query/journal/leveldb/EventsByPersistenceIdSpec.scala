@@ -26,7 +26,8 @@ object EventsByPersistenceIdSpec {
 }
 
 class EventsByPersistenceIdSpec
-    extends AkkaSpec(EventsByPersistenceIdSpec.config) with Cleanup
+    extends AkkaSpec(EventsByPersistenceIdSpec.config)
+    with Cleanup
     with ImplicitSender {
 
   implicit val mat = ActorMaterializer()(system)
@@ -45,9 +46,8 @@ class EventsByPersistenceIdSpec
     ref
   }
 
-  def setupEmpty(persistenceId: String): ActorRef = {
+  def setupEmpty(persistenceId: String): ActorRef =
     system.actorOf(TestActor.props(persistenceId))
-  }
 
   "Leveldb query EventsByPersistenceId" must {
 

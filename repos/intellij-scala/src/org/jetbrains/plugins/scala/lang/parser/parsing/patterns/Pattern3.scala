@@ -21,17 +21,17 @@ object Pattern3 {
   def parse(builder: ScalaPsiBuilder): Boolean = {
     type Stack[X] = _root_.scala.collection.mutable.Stack[X]
     val markerStack = new Stack[PsiBuilder.Marker]
-    val opStack = new Stack[String]
+    val opStack     = new Stack[String]
     //val infixMarker = builder.mark
     var backupMarker = builder.mark
-    var count = 0
+    var count        = 0
     if (!SimplePattern.parse(builder)) {
       //infixMarker.drop
       backupMarker.drop()
       return false
     }
     while (builder.getTokenType == ScalaTokenTypes.tIDENTIFIER &&
-    builder.getTokenText != "|") {
+           builder.getTokenText != "|") {
       count = count + 1
       val s = builder.getTokenText
 
@@ -84,8 +84,8 @@ object Pattern3 {
   import org.jetbrains.plugins.scala.lang.parser.util.ParserUtils.priority
 
   //compares two operators a id2 b id1 c
-  private def compar(id1: String, id2: String, builder: PsiBuilder): Boolean = {
-    if (priority(id1) < priority(id2)) true //  a * b + c  =((a * b) + c)
+  private def compar(id1: String, id2: String, builder: PsiBuilder): Boolean =
+    if (priority(id1) < priority(id2)) true       //  a * b + c  =((a * b) + c)
     else if (priority(id1) > priority(id2)) false //  a + b * c = (a + (b * c))
     else if (associate(id1) == associate(id2))
       if (associate(id1) == -1) true
@@ -94,14 +94,12 @@ object Pattern3 {
       builder error ErrMsg("wrong.type.associativity")
       false
     }
-  }
   private def opeq(id1: String, id2: String): Boolean =
     priority(id1) == priority(id2)
   //Associations of operator
-  private def associate(id: String): Int = {
+  private def associate(id: String): Int =
     id.charAt(id.length - 1) match {
       case ':' => -1 // right
-      case _ => +1 // left
+      case _   => +1 // left
     }
-  }
 }

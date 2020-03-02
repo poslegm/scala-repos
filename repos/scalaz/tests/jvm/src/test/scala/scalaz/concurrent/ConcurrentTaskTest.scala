@@ -21,15 +21,18 @@ object ConcurrentTaskTest extends SpecLite {
     "correctly use threads when forked and flatmapped" in {
       @volatile var q = Queue[(Int, String)]()
 
-      val forked = "forked-thread"
+      val forked  = "forked-thread"
       val current = Thread.currentThread().getName
 
       def enqueue(taskId: Int) =
         q = q.enqueue((taskId, Thread.currentThread().getName))
 
-      val es = Executors.newFixedThreadPool(1, new ThreadFactory {
-        def newThread(p1: Runnable) = new Thread(p1, forked)
-      })
+      val es = Executors.newFixedThreadPool(
+        1,
+        new ThreadFactory {
+          def newThread(p1: Runnable) = new Thread(p1, forked)
+        }
+      )
 
       val sync = new SyncVar[Boolean]
 
@@ -41,11 +44,10 @@ object ConcurrentTaskTest extends SpecLite {
         _ <- fork(now(enqueue(5)))(es)
         _ <- now(enqueue(6))
         _ <- fork(delay(enqueue(7)))(es)
-      } yield ()).unsafePerformAsync(_ =>
-            {
-          enqueue(8)
-          sync.put(true)
-      })
+      } yield ()).unsafePerformAsync { _ =>
+        enqueue(8)
+        sync.put(true)
+      }
       enqueue(9)
 
       sync.get(5000) must_== Some(true)
@@ -64,8 +66,8 @@ object ConcurrentTaskTest extends SpecLite {
     }
 
     "complete even when interrupted" in {
-      val t = Task.fork(Task.delay(Thread.sleep(3000)))
-      val sync = new SyncVar[Throwable \/ Unit]
+      val t         = Task.fork(Task.delay(Thread.sleep(3000)))
+      val sync      = new SyncVar[Throwable \/ Unit]
       val interrupt = t.unsafePerformAsyncInterruptibly(sync.put)
       Thread.sleep(1000)
       interrupt()

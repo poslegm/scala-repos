@@ -1,6 +1,11 @@
 package com.twitter.finagle.stats
 
-import com.twitter.common.metrics.{Histogram, HistogramInterface, Percentile, Snapshot}
+import com.twitter.common.metrics.{
+  Histogram,
+  HistogramInterface,
+  Percentile,
+  Snapshot
+}
 import com.twitter.conversions.time._
 import com.twitter.util.{Duration, Time}
 import java.util.concurrent.atomic.AtomicReference
@@ -16,8 +21,8 @@ import java.util.concurrent.atomic.AtomicReference
 private[stats] class MetricsBucketedHistogram(
     name: String,
     percentiles: Array[Double] = Histogram.DEFAULT_QUANTILES,
-    latchPeriod: Duration = MetricsBucketedHistogram.DefaultLatchPeriod)
-    extends HistogramInterface {
+    latchPeriod: Duration = MetricsBucketedHistogram.DefaultLatchPeriod
+) extends HistogramInterface {
   assert(name.length > 0)
 
   private[this] val nextSnapAfter = new AtomicReference(Time.Undefined)
@@ -46,7 +51,9 @@ private[stats] class MetricsBucketedHistogram(
 
     if (Time.Undefined eq nextSnapAfter.get) {
       nextSnapAfter.compareAndSet(
-          Time.Undefined, JsonExporter.startOfNextMinute)
+        Time.Undefined,
+        JsonExporter.startOfNextMinute
+      )
     }
 
     current.synchronized {
@@ -62,30 +69,33 @@ private[stats] class MetricsBucketedHistogram(
       new Snapshot {
         // need to capture these variables from `snap` while we have a lock.
         val _count = snap.count
-        val _sum = snap.sum
-        val _max = snap.max
-        val _min = snap.min
-        val _avg = snap.avg
+        val _sum   = snap.sum
+        val _max   = snap.max
+        val _min   = snap.min
+        val _avg   = snap.avg
         val ps = new Array[Percentile](
-            MetricsBucketedHistogram.this.percentiles.length)
+          MetricsBucketedHistogram.this.percentiles.length
+        )
         var i = 0
         while (i < ps.length) {
           ps(i) = new Percentile(
-              MetricsBucketedHistogram.this.percentiles(i), snap.quantiles(i))
+            MetricsBucketedHistogram.this.percentiles(i),
+            snap.quantiles(i)
+          )
           i += 1
         }
-        override def count(): Long = _count
-        override def max(): Long = _max
+        override def count(): Long                    = _count
+        override def max(): Long                      = _max
         override def percentiles(): Array[Percentile] = ps
-        override def avg(): Double = _avg
-        override def stddev(): Double = 0.0 // unsupported
-        override def min(): Long = _min
-        override def sum(): Long = _sum
+        override def avg(): Double                    = _avg
+        override def stddev(): Double                 = 0.0 // unsupported
+        override def min(): Long                      = _min
+        override def sum(): Long                      = _sum
 
         override def toString: String = {
-          val _ps = ps.map { p =>
-            s"p${p.getQuantile}=${p.getValue}"
-          }.mkString("[", ", ", "]")
+          val _ps = ps
+            .map(p => s"p${p.getQuantile}=${p.getValue}")
+            .mkString("[", ", ", "]")
 
           s"Snapshot(count=${_count}, max=${_max}, min=${_min}, avg=${_avg}, sum=${_sum}, %s=${_ps})"
         }
@@ -108,11 +118,11 @@ private object MetricsBucketedHistogram {
     * by the MetricsBucketedHistogram that owns a given instance.
     */
   private final class MutableSnapshot(percentiles: Array[Double]) {
-    var count = 0L
-    var sum = 0L
-    var max = 0L
-    var min = 0L
-    var avg = 0.0
+    var count     = 0L
+    var sum       = 0L
+    var max       = 0L
+    var min       = 0L
+    var avg       = 0.0
     var quantiles = new Array[Long](percentiles.length)
 
     def recomputeFrom(histo: BucketedHistogram): Unit = {

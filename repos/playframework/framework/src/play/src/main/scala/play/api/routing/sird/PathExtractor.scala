@@ -33,7 +33,7 @@ class PathExtractor(regex: Regex, partDescriptors: Seq[PathPart.Value]) {
   def unapplySeq(uri: URI): Option[List[String]] =
     Option(uri.getRawPath).flatMap(extract)
 
-  private def extract(path: String): Option[List[String]] = {
+  private def extract(path: String): Option[List[String]] =
     regex.unapplySeq(path).map { parts =>
       parts.zip(partDescriptors).map {
         case (part, PathPart.Decoded) =>
@@ -41,7 +41,6 @@ class PathExtractor(regex: Regex, partDescriptors: Seq[PathPart.Value]) {
         case (part, PathPart.Raw) => part
       }
     }
-  }
 }
 
 object PathExtractor {
@@ -57,30 +56,33 @@ object PathExtractor {
   /**
     * Lookup the PathExtractor from the cache, or create and store a new one if not found.
     */
-  def cached(parts: Seq[String]): PathExtractor = {
-    cache.getOrElseUpdate(parts, {
+  def cached(parts: Seq[String]): PathExtractor =
+    cache.getOrElseUpdate(
+      parts, {
 
-      // "parse" the path
-      val (regexParts, descs) = parts.tail.map {
-        part =>
-          if (part.startsWith("*")) {
-            // It's a .* matcher
-            "(.*)" + Pattern.quote(part.drop(1)) -> PathPart.Raw
-          } else if (part.startsWith("<") && part.contains(">")) {
-            // It's a regex matcher
-            val splitted = part.split(">", 2)
-            val regex = splitted(0).drop(1)
-            "(" + regex + ")" + Pattern.quote(splitted(1)) -> PathPart.Raw
-          } else {
-            // It's an ordinary path part matcher
-            "([^/]*)" + Pattern.quote(part) -> PathPart.Decoded
-          }
-      }.unzip
+        // "parse" the path
+        val (regexParts, descs) = parts.tail.map {
+          part =>
+            if (part.startsWith("*")) {
+              // It's a .* matcher
+              "(.*)" + Pattern.quote(part.drop(1)) -> PathPart.Raw
+            } else if (part.startsWith("<") && part.contains(">")) {
+              // It's a regex matcher
+              val splitted = part.split(">", 2)
+              val regex    = splitted(0).drop(1)
+              "(" + regex + ")" + Pattern.quote(splitted(1)) -> PathPart.Raw
+            } else {
+              // It's an ordinary path part matcher
+              "([^/]*)" + Pattern.quote(part) -> PathPart.Decoded
+            }
+        }.unzip
 
-      new PathExtractor(
-          regexParts.mkString(Pattern.quote(parts.head), "", "/?").r, descs)
-    })
-  }
+        new PathExtractor(
+          regexParts.mkString(Pattern.quote(parts.head), "", "/?").r,
+          descs
+        )
+      }
+    )
 }
 
 /**

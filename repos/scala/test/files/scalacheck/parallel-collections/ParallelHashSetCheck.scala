@@ -25,7 +25,7 @@ abstract class ParallelHashSetCheck[T](tp: String)
   def tasksupport: TaskSupport
 
   def ofSize(vals: Seq[Gen[T]], sz: Int) = {
-    val hm = new mutable.HashSet[T]
+    val hm  = new mutable.HashSet[T]
     val gen = vals(rnd.nextInt(vals.size))
     for (i <- 0 until sz) hm += sample(gen)
     hm
@@ -44,7 +44,9 @@ abstract class ParallelHashSetCheck[T](tp: String)
 }
 
 class IntParallelHashSetCheck(val tasksupport: TaskSupport)
-    extends ParallelHashSetCheck[Int]("Int") with IntOperators with IntValues {
+    extends ParallelHashSetCheck[Int]("Int")
+    with IntOperators
+    with IntValues {
   override def printDataStructureDebugInfo(ds: AnyRef) = ds match {
     case pm: ParHashSet[t] =>
       println("Mutable parallel hash set")
@@ -53,7 +55,9 @@ class IntParallelHashSetCheck(val tasksupport: TaskSupport)
   }
 
   override def checkDataStructureInvariants(
-      orig: Traversable[Int], ds: AnyRef) = ds match {
+      orig: Traversable[Int],
+      ds: AnyRef
+  ) = ds match {
     // case pm: ParHashSet[t] if 1 == 0 =>
     //   // for an example of how not to write code proceed below
     //   val invs = pm.brokenInvariants

@@ -34,7 +34,7 @@ class C {
 
   // various simplifications are too simple
   case class N(currentUser: String = "anon")
-  val n = N("fun")
+  val n     = N("fun")
   def nudel = Option(n).getOrElse(N()).copy()
 }
 

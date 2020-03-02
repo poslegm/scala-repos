@@ -24,7 +24,12 @@ import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
 
 import org.apache.spark.annotation.Since
-import org.apache.spark.mllib.linalg.{DenseVector, SparseVector, Vector, Vectors}
+import org.apache.spark.mllib.linalg.{
+  DenseVector,
+  SparseVector,
+  Vector,
+  Vectors
+}
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.stat.Statistics
 import org.apache.spark.mllib.util.{Loader, Saveable}
@@ -38,14 +43,15 @@ import org.apache.spark.sql.{Row, SQLContext}
   * @param selectedFeatures list of indices to select (filter). Must be ordered asc
   */
 @Since("1.3.0")
-class ChiSqSelectorModel @Since("1.3.0")(
-    @Since("1.3.0") val selectedFeatures: Array[Int])
-    extends VectorTransformer with Saveable {
+class ChiSqSelectorModel @Since("1.3.0") (
+    @Since("1.3.0") val selectedFeatures: Array[Int]
+) extends VectorTransformer
+    with Saveable {
 
   require(isSorted(selectedFeatures), "Array has to be sorted asc")
 
   protected def isSorted(array: Array[Int]): Boolean = {
-    var i = 1
+    var i   = 1
     val len = array.length
     while (i < len) {
       if (array(i) < array(i - 1)) return false
@@ -61,9 +67,8 @@ class ChiSqSelectorModel @Since("1.3.0")(
     * @return transformed vector.
     */
   @Since("1.3.0")
-  override def transform(vector: Vector): Vector = {
+  override def transform(vector: Vector): Vector =
     compress(vector, selectedFeatures)
-  }
 
   /**
     * Returns a vector with features filtered.
@@ -72,15 +77,15 @@ class ChiSqSelectorModel @Since("1.3.0")(
     * @param features vector
     * @param filterIndices indices of features to filter, must be ordered asc
     */
-  private def compress(features: Vector, filterIndices: Array[Int]): Vector = {
+  private def compress(features: Vector, filterIndices: Array[Int]): Vector =
     features match {
       case SparseVector(size, indices, values) =>
-        val newSize = filterIndices.length
-        val newValues = new ArrayBuilder.ofDouble
-        val newIndices = new ArrayBuilder.ofInt
-        var i = 0
-        var j = 0
-        var indicesIdx = 0
+        val newSize          = filterIndices.length
+        val newValues        = new ArrayBuilder.ofDouble
+        val newIndices       = new ArrayBuilder.ofInt
+        var i                = 0
+        var j                = 0
+        var indicesIdx       = 0
         var filterIndicesIdx = 0
         while (i < indices.length && j < filterIndices.length) {
           indicesIdx = indices(i)
@@ -105,23 +110,21 @@ class ChiSqSelectorModel @Since("1.3.0")(
         Vectors.dense(filterIndices.map(i => values(i)))
       case other =>
         throw new UnsupportedOperationException(
-            s"Only sparse and dense vectors are supported but got ${other.getClass}.")
+          s"Only sparse and dense vectors are supported but got ${other.getClass}."
+        )
     }
-  }
 
   @Since("1.6.0")
-  override def save(sc: SparkContext, path: String): Unit = {
+  override def save(sc: SparkContext, path: String): Unit =
     ChiSqSelectorModel.SaveLoadV1_0.save(sc, this, path)
-  }
 
   override protected def formatVersion: String = "1.0"
 }
 
 object ChiSqSelectorModel extends Loader[ChiSqSelectorModel] {
   @Since("1.6.0")
-  override def load(sc: SparkContext, path: String): ChiSqSelectorModel = {
+  override def load(sc: SparkContext, path: String): ChiSqSelectorModel =
     ChiSqSelectorModel.SaveLoadV1_0.load(sc, path)
-  }
 
   private[feature] object SaveLoadV1_0 {
 
@@ -133,12 +136,16 @@ object ChiSqSelectorModel extends Loader[ChiSqSelectorModel] {
     private[feature] val thisClassName =
       "org.apache.spark.mllib.feature.ChiSqSelectorModel"
 
-    def save(sc: SparkContext, model: ChiSqSelectorModel, path: String): Unit = {
+    def save(
+        sc: SparkContext,
+        model: ChiSqSelectorModel,
+        path: String
+    ): Unit = {
       val sqlContext = SQLContext.getOrCreate(sc)
       import sqlContext.implicits._
       val metadata = compact(
-          render(
-              ("class" -> thisClassName) ~ ("version" -> thisFormatVersion)))
+        render(("class" -> thisClassName) ~ ("version" -> thisFormatVersion))
+      )
       sc.parallelize(Seq(metadata), 1)
         .saveAsTextFile(Loader.metadataPath(path))
 
@@ -150,8 +157,8 @@ object ChiSqSelectorModel extends Loader[ChiSqSelectorModel] {
     }
 
     def load(sc: SparkContext, path: String): ChiSqSelectorModel = {
-      implicit val formats = DefaultFormats
-      val sqlContext = SQLContext.getOrCreate(sc)
+      implicit val formats                     = DefaultFormats
+      val sqlContext                           = SQLContext.getOrCreate(sc)
       val (className, formatVersion, metadata) = Loader.loadMetadata(sc, path)
       assert(className == thisClassName)
       assert(formatVersion == thisFormatVersion)
@@ -162,9 +169,11 @@ object ChiSqSelectorModel extends Loader[ChiSqSelectorModel] {
       // Check schema explicitly since erasure makes it hard to use match-case for checking.
       Loader.checkSchema[Data](dataFrame.schema)
 
-      val features = dataArray.rdd.map {
-        case Row(feature: Int) => (feature)
-      }.collect()
+      val features = dataArray.rdd
+        .map {
+          case Row(feature: Int) => (feature)
+        }
+        .collect()
 
       return new ChiSqSelectorModel(features)
     }
@@ -179,7 +188,7 @@ object ChiSqSelectorModel extends Loader[ChiSqSelectorModel] {
   *                       select all features.
   */
 @Since("1.3.0")
-class ChiSqSelector @Since("1.3.0")(@Since("1.3.0") val numTopFeatures: Int)
+class ChiSqSelector @Since("1.3.0") (@Since("1.3.0") val numTopFeatures: Int)
     extends Serializable {
 
   /**

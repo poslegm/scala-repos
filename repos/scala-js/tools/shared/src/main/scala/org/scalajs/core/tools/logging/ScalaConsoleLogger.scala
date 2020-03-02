@@ -8,7 +8,7 @@ class ScalaConsoleLogger(minLevel: Level = Level.Debug) extends Logger {
     else scala.Console.out.println(message)
   }
   def success(message: => String): Unit = info(message)
-  def trace(t: => Throwable): Unit =
+  def trace(t: => Throwable): Unit      =
     // This is error level, so no checking
     t.printStackTrace()
 }

@@ -27,7 +27,7 @@ import java.util.Random
 
 object TcpConnectionSpec {
   case class Ack(i: Int) extends Event
-  object Ack extends Ack(0)
+  object Ack             extends Ack(0)
   final case class Registration(channel: SelectableChannel, initialOps: Int)
       extends NoSerializationVerificationNeeded
 }
@@ -49,8 +49,9 @@ class TcpConnectionSpec extends AkkaSpec("""
     val serverSocket = ServerSocketChannel.open()
     serverSocket.socket.bind(new InetSocketAddress("127.0.0.1", 0))
     try {
-      val clientSocket = SocketChannel.open(new InetSocketAddress(
-              "127.0.0.1", serverSocket.socket().getLocalPort))
+      val clientSocket = SocketChannel.open(
+        new InetSocketAddress("127.0.0.1", serverSocket.socket().getLocalPort)
+      )
       val clientSocketOnServer = acceptServerSideConnection(serverSocket)
       clientSocketOnServer.socket.setSoLinger(true, 0)
       clientSocketOnServer.close()
@@ -66,8 +67,9 @@ class TcpConnectionSpec extends AkkaSpec("""
     serverSocket.socket.bind(new InetSocketAddress("127.0.0.1", 0))
     try {
       serverSocket.close()
-      val clientSocket = SocketChannel.open(new InetSocketAddress(
-              "127.0.0.1", serverSocket.socket().getLocalPort))
+      val clientSocket = SocketChannel.open(
+        new InetSocketAddress("127.0.0.1", serverSocket.socket().getLocalPort)
+      )
       clientSocket.finishConnect()
       clientSocket.write(ByteBuffer.allocate(1))
       null
@@ -77,10 +79,14 @@ class TcpConnectionSpec extends AkkaSpec("""
   }
 
   "An outgoing connection" must {
-    info("Connection reset by peer message expected is " +
-        ConnectionResetByPeerMessage)
-    info("Connection refused message prefix expected is " +
-        ConnectionRefusedMessagePrefix)
+    info(
+      "Connection reset by peer message expected is " +
+        ConnectionResetByPeerMessage
+    )
+    info(
+      "Connection refused message prefix expected is " +
+        ConnectionRefusedMessagePrefix
+    )
     // common behavior
 
     "set socket options before connecting" in new LocalServerTest() {
@@ -98,7 +104,9 @@ class TcpConnectionSpec extends AkkaSpec("""
         val connectionActor =
           createConnectionActor(options = Vector(SO.KeepAlive(false)))
         val clientChannel = connectionActor.underlyingActor.channel
-        clientChannel.socket.getKeepAlive should ===(true) // only set after connection is established
+        clientChannel.socket.getKeepAlive should ===(
+          true
+        ) // only set after connection is established
         EventFilter.warning(pattern = "registration timeout", occurrences = 1) intercept {
           selector.send(connectionActor, ChannelConnectable)
           clientChannel.socket.getKeepAlive should ===(false)
@@ -123,23 +131,27 @@ class TcpConnectionSpec extends AkkaSpec("""
     "forward incoming data as Received messages instantly as long as more data is available" in new EstablishedConnectionTest() {
       // to make sure enough data gets through
       override lazy val connectionActor = createConnectionActor(
-          options = List(Inet.SO.ReceiveBufferSize(1000000)))
+        options = List(Inet.SO.ReceiveBufferSize(1000000))
+      )
       run {
         val bufferSize = Tcp(system).Settings.DirectBufferSize
-        val DataSize = bufferSize + 1500
-        val bigData = new Array[Byte](DataSize)
-        val buffer = ByteBuffer.wrap(bigData)
+        val DataSize   = bufferSize + 1500
+        val bigData    = new Array[Byte](DataSize)
+        val buffer     = ByteBuffer.wrap(bigData)
 
         serverSideChannel.socket.setSendBufferSize(150000)
         val wrote = serverSideChannel.write(buffer)
         wrote should ===(DataSize)
 
-        expectNoMsg(1000.millis) // data should have been transferred fully by now
+        expectNoMsg(
+          1000.millis
+        ) // data should have been transferred fully by now
 
         selector.send(connectionActor, ChannelReadable)
 
         connectionHandler.expectMsgType[Received].data.length should ===(
-            bufferSize)
+          bufferSize
+        )
         connectionHandler.expectMsgType[Received].data.length should ===(1500)
       }
     }
@@ -149,19 +161,25 @@ class TcpConnectionSpec extends AkkaSpec("""
         val serverSideChannel = acceptServerSideConnection(localServerChannel)
 
         serverSideChannel.write(
-            ByteBuffer.wrap("immediatedata".getBytes("ASCII")))
+          ByteBuffer.wrap("immediatedata".getBytes("ASCII"))
+        )
         serverSideChannel.configureBlocking(false)
         interestCallReceiver.expectMsg(OP_CONNECT)
 
         selector.send(connectionActor, ChannelConnectable)
         userHandler.expectMsg(
-            Connected(serverAddress,
-                      clientSideChannel.socket.getLocalSocketAddress
-                        .asInstanceOf[InetSocketAddress]))
+          Connected(
+            serverAddress,
+            clientSideChannel.socket.getLocalSocketAddress
+              .asInstanceOf[InetSocketAddress]
+          )
+        )
 
         userHandler.send(connectionActor, Register(userHandler.ref))
-        userHandler.expectMsgType[Received].data.decodeString("ASCII") should ===(
-            "immediatedata")
+        userHandler
+          .expectMsgType[Received]
+          .data
+          .decodeString("ASCII") should ===("immediatedata")
         ignoreWindowsWorkaroundForTicket15766()
         interestCallReceiver.expectMsg(OP_READ)
       }
@@ -173,7 +191,7 @@ class TcpConnectionSpec extends AkkaSpec("""
 
         // reply to write commander with Ack
         val ackedWrite = Write(ByteString("testdata"), Ack)
-        val buffer = ByteBuffer.allocate(100)
+        val buffer     = ByteBuffer.allocate(100)
         serverSideChannel.read(buffer) should ===(0)
         writer.send(connectionActor, ackedWrite)
         writer.expectMsg(Ack)
@@ -196,14 +214,14 @@ class TcpConnectionSpec extends AkkaSpec("""
     "send big buffers to network correctly" in new EstablishedConnectionTest() {
       run {
         val bufferSize = 512 * 1024 // 256kB are too few
-        val random = new Random(0)
-        val testBytes = new Array[Byte](bufferSize)
+        val random     = new Random(0)
+        val testBytes  = new Array[Byte](bufferSize)
         random.nextBytes(testBytes)
         val testData = ByteString(testBytes)
 
         val writer = TestProbe()
 
-        val write = Write(testData, Ack)
+        val write  = Write(testData, Ack)
         val buffer = ByteBuffer.allocate(bufferSize)
         serverSideChannel.read(buffer) should ===(0)
         writer.send(connectionActor, write)
@@ -257,8 +275,10 @@ class TcpConnectionSpec extends AkkaSpec("""
         val size = math.min(testFile.length(), 100000000).toInt
 
         val writer = TestProbe()
-        writer.send(connectionActor,
-                    WriteFile(testFile.getAbsolutePath, 0, size, Ack))
+        writer.send(
+          connectionActor,
+          WriteFile(testFile.getAbsolutePath, 0, size, Ack)
+        )
         pullFromServerSide(size, 1000000)
         writer.expectMsg(Ack)
       }
@@ -269,7 +289,9 @@ class TcpConnectionSpec extends AkkaSpec("""
         val writer = TestProbe()
         val compoundWrite =
           Write(ByteString("test1"), Ack(1)) +: Write(ByteString("test2")) +: Write(
-              ByteString.empty, Ack(3)) +: Write(ByteString("test4"), Ack(4))
+            ByteString.empty,
+            Ack(3)
+          ) +: Write(ByteString("test4"), Ack(4))
 
         // reply to write commander with Ack
         val buffer = ByteBuffer.allocate(100)
@@ -299,10 +321,13 @@ class TcpConnectionSpec extends AkkaSpec("""
      */
     "stop writing in cases of backpressure and resume afterwards" in new EstablishedConnectionTest() {
       override lazy val connectionActor = createConnectionActor(
-          options = List(Inet.SO.ReceiveBufferSize(1000000)))
+        options = List(Inet.SO.ReceiveBufferSize(1000000))
+      )
       run {
-        info("Currently ignored as SO_SNDBUF is usually a lower bound on the send buffer so the test fails as no real " +
-            "backpressure present.")
+        info(
+          "Currently ignored as SO_SNDBUF is usually a lower bound on the send buffer so the test fails as no real " +
+            "backpressure present."
+        )
         pending
         ignoreIfWindows()
         object Ack1 extends Event
@@ -372,16 +397,18 @@ class TcpConnectionSpec extends AkkaSpec("""
 
     "respect pull mode" in new EstablishedConnectionTest(pullMode = true) {
       // override config to decrease default buffer size
-      val config = ConfigFactory.load(ConfigFactory
-            .parseString("akka.io.tcp.direct-buffer-size = 1k")
-            .withFallback(AkkaSpec.testConf))
+      val config = ConfigFactory.load(
+        ConfigFactory
+          .parseString("akka.io.tcp.direct-buffer-size = 1k")
+          .withFallback(AkkaSpec.testConf)
+      )
       override implicit def system: ActorSystem =
         ActorSystem("respectPullModeTest", config)
 
       try run {
         val maxBufferSize = 1 * 1024
-        val ts = "t" * maxBufferSize
-        val us = "u" * (maxBufferSize / 2)
+        val ts            = "t" * maxBufferSize
+        val us            = "u" * (maxBufferSize / 2)
 
         // send a batch that is bigger than the default buffer to make sure we don't recurse and
         // send more than one Received messages
@@ -391,8 +418,10 @@ class TcpConnectionSpec extends AkkaSpec("""
         connectionActor ! ResumeReading
         interestCallReceiver.expectMsg(OP_READ)
         selector.send(connectionActor, ChannelReadable)
-        connectionHandler.expectMsgType[Received].data.decodeString("ASCII") should ===(
-            ts)
+        connectionHandler
+          .expectMsgType[Received]
+          .data
+          .decodeString("ASCII") should ===(ts)
 
         interestCallReceiver.expectNoMsg(100.millis)
         connectionHandler.expectNoMsg(100.millis)
@@ -400,8 +429,10 @@ class TcpConnectionSpec extends AkkaSpec("""
         connectionActor ! ResumeReading
         interestCallReceiver.expectMsg(OP_READ)
         selector.send(connectionActor, ChannelReadable)
-        connectionHandler.expectMsgType[Received].data.decodeString("ASCII") should ===(
-            us)
+        connectionHandler
+          .expectMsgType[Received]
+          .data
+          .decodeString("ASCII") should ===(us)
 
         // make sure that after reading all pending data we don't yet register for reading more data
         interestCallReceiver.expectNoMsg(100.millis)
@@ -414,13 +445,15 @@ class TcpConnectionSpec extends AkkaSpec("""
         interestCallReceiver.expectMsg(OP_READ)
         selector.send(connectionActor, ChannelReadable)
 
-        connectionHandler.expectMsgType[Received].data.decodeString("ASCII") should ===(
-            vs)
+        connectionHandler
+          .expectMsgType[Received]
+          .data
+          .decodeString("ASCII") should ===(vs)
       } finally system.terminate()
     }
 
     "close the connection and reply with `Closed` upon reception of a `Close` command" in new EstablishedConnectionTest()
-    with SmallRcvBuffer {
+      with SmallRcvBuffer {
       run {
         // we should test here that a pending write command is properly finished first
 
@@ -484,7 +517,7 @@ class TcpConnectionSpec extends AkkaSpec("""
      * SO_SNDBUF to 0."
      */
     "close the connection and reply with `ConfirmedClosed` upon reception of an `ConfirmedClose` command (simplified)" in new EstablishedConnectionTest()
-    with SmallRcvBuffer {
+      with SmallRcvBuffer {
       run {
         // we should test here that a pending write command is properly finished first
 
@@ -515,7 +548,7 @@ class TcpConnectionSpec extends AkkaSpec("""
     }
 
     "close the connection and reply with `ConfirmedClosed` upon reception of an `ConfirmedClose` command" in new EstablishedConnectionTest()
-    with SmallRcvBuffer {
+      with SmallRcvBuffer {
       run {
         ignoreIfWindows()
 
@@ -538,7 +571,8 @@ class TcpConnectionSpec extends AkkaSpec("""
 
         val buffer = ByteBuffer.allocate(1)
         serverSelectionKey should be(
-            selectedAs(SelectionKey.OP_READ, 2.seconds))
+          selectedAs(SelectionKey.OP_READ, 2.seconds)
+        )
         serverSideChannel.read(buffer) should ===(-1)
 
         closeServerSideAndWaitForClientReadable()
@@ -562,9 +596,12 @@ class TcpConnectionSpec extends AkkaSpec("""
     }
 
     "report when peer closed the connection but allow further writes and acknowledge normal close" in new EstablishedConnectionTest(
-        keepOpenOnPeerClosed = true) {
+      keepOpenOnPeerClosed = true
+    ) {
       run {
-        closeServerSideAndWaitForClientReadable(fullClose = false) // send EOF (fin) from the server side
+        closeServerSideAndWaitForClientReadable(fullClose =
+          false
+        ) // send EOF (fin) from the server side
 
         selector.send(connectionActor, ChannelReadable)
         connectionHandler.expectMsg(PeerClosed)
@@ -580,9 +617,12 @@ class TcpConnectionSpec extends AkkaSpec("""
     }
 
     "report when peer closed the connection but allow further writes and acknowledge confirmed close" in new EstablishedConnectionTest(
-        keepOpenOnPeerClosed = true) {
+      keepOpenOnPeerClosed = true
+    ) {
       run {
-        closeServerSideAndWaitForClientReadable(fullClose = false) // send EOF (fin) from the server side
+        closeServerSideAndWaitForClientReadable(fullClose =
+          false
+        ) // send EOF (fin) from the server side
 
         selector.send(connectionActor, ChannelReadable)
         connectionHandler.expectMsg(PeerClosed)
@@ -634,7 +674,9 @@ class TcpConnectionSpec extends AkkaSpec("""
         val sel = SelectorProvider.provider().openSelector()
         try {
           val key = clientSideChannel.register(
-              sel, SelectionKey.OP_CONNECT | SelectionKey.OP_READ)
+            sel,
+            SelectionKey.OP_CONNECT | SelectionKey.OP_READ
+          )
           // This timeout should be large enough to work on Windows
           sel.select(3000)
 
@@ -662,11 +704,14 @@ class TcpConnectionSpec extends AkkaSpec("""
 
     "report failed connection attempt when timing out" in new UnacceptedConnectionTest() {
       override lazy val connectionActor = createConnectionActor(
-          serverAddress = UnboundAddress, timeout = Option(100.millis))
+        serverAddress = UnboundAddress,
+        timeout = Option(100.millis)
+      )
       run {
         connectionActor.toString should not be ("")
-        userHandler.expectMsg(CommandFailed(
-                Connect(UnboundAddress, timeout = Option(100.millis))))
+        userHandler.expectMsg(
+          CommandFailed(Connect(UnboundAddress, timeout = Option(100.millis)))
+        )
         watch(connectionActor)
         expectTerminated(connectionActor)
       }
@@ -678,9 +723,12 @@ class TcpConnectionSpec extends AkkaSpec("""
 
         selector.send(connectionActor, ChannelConnectable)
         userHandler.expectMsg(
-            Connected(serverAddress,
-                      clientSideChannel.socket.getLocalSocketAddress
-                        .asInstanceOf[InetSocketAddress]))
+          Connected(
+            serverAddress,
+            clientSideChannel.socket.getLocalSocketAddress
+              .asInstanceOf[InetSocketAddress]
+          )
+        )
 
         watch(connectionActor)
         expectTerminated(connectionActor)
@@ -704,8 +752,10 @@ class TcpConnectionSpec extends AkkaSpec("""
         watch(connectionActor)
         EventFilter[DeathPactException](occurrences = 1) intercept {
           system.stop(connectionHandler.ref)
-          val deaths = Set(expectMsgType[Terminated].actor,
-                           expectMsgType[Terminated].actor)
+          val deaths = Set(
+            expectMsgType[Terminated].actor,
+            expectMsgType[Terminated].actor
+          )
           deaths should ===(Set(connectionHandler.ref, connectionActor))
         }
       }
@@ -714,7 +764,7 @@ class TcpConnectionSpec extends AkkaSpec("""
     "support ResumeWriting (backed up)" in new EstablishedConnectionTest() {
       run {
         val writer = TestProbe()
-        val write = writeCmd(NoAck)
+        val write  = writeCmd(NoAck)
 
         // fill up the write buffer until NACK
         var written = 0
@@ -752,7 +802,7 @@ class TcpConnectionSpec extends AkkaSpec("""
     "support ResumeWriting (queue flushed)" in new EstablishedConnectionTest() {
       run {
         val writer = TestProbe()
-        val write = writeCmd(NoAck)
+        val write  = writeCmd(NoAck)
 
         // fill up the write buffer until NACK
         var written = 0
@@ -786,10 +836,11 @@ class TcpConnectionSpec extends AkkaSpec("""
     }
 
     "support useResumeWriting==false (backed up)" in new EstablishedConnectionTest(
-        useResumeWriting = false) {
+      useResumeWriting = false
+    ) {
       run {
         val writer = TestProbe()
-        val write = writeCmd(NoAck)
+        val write  = writeCmd(NoAck)
 
         // fill up the write buffer until NACK
         var written = 0
@@ -820,10 +871,11 @@ class TcpConnectionSpec extends AkkaSpec("""
     }
 
     "support useResumeWriting==false (queue flushed)" in new EstablishedConnectionTest(
-        useResumeWriting = false) {
+      useResumeWriting = false
+    ) {
       run {
         val writer = TestProbe()
-        val write = writeCmd(NoAck)
+        val write  = writeCmd(NoAck)
 
         // fill up the write buffer until NACK
         var written = 0
@@ -871,7 +923,8 @@ class TcpConnectionSpec extends AkkaSpec("""
   /////////////////////////////////////// TEST SUPPORT ////////////////////////////////////////////////
 
   def acceptServerSideConnection(
-      localServer: ServerSocketChannel): SocketChannel = {
+      localServer: ServerSocketChannel
+  ): SocketChannel = {
     @volatile var serverSideChannel: SocketChannel = null
     awaitCond {
       serverSideChannel = localServer.accept()
@@ -885,32 +938,31 @@ class TcpConnectionSpec extends AkkaSpec("""
     /** Allows overriding the system used */
     implicit def system: ActorSystem = thisSpecs.system
 
-    val serverAddress = temporaryServerAddress()
+    val serverAddress      = temporaryServerAddress()
     val localServerChannel = ServerSocketChannel.open()
-    val userHandler = TestProbe()
-    val selector = TestProbe()
+    val userHandler        = TestProbe()
+    val selector           = TestProbe()
 
     var registerCallReceiver = TestProbe()
     var interestCallReceiver = TestProbe()
 
-    def ignoreWindowsWorkaroundForTicket15766(): Unit = {
+    def ignoreWindowsWorkaroundForTicket15766(): Unit =
       // Due to the Windows workaround of #15766 we need to set an OP_CONNECT to reliably detect connection resets
       if (Helpers.isWindows) interestCallReceiver.expectMsg(OP_CONNECT)
-    }
 
-    def run(body: ⇒ Unit): Unit = {
+    def run(body: ⇒ Unit): Unit =
       try {
         setServerSocketOptions()
         localServerChannel.socket.bind(serverAddress)
         localServerChannel.configureBlocking(false)
         body
       } finally localServerChannel.close()
-    }
 
     def register(channel: SelectableChannel, initialOps: Int)(
-        implicit channelActor: ActorRef): Unit =
-      registerCallReceiver.ref.tell(
-          Registration(channel, initialOps), channelActor)
+        implicit channelActor: ActorRef
+    ): Unit =
+      registerCallReceiver.ref
+        .tell(Registration(channel, initialOps), channelActor)
 
     def setServerSocketOptions() = ()
 
@@ -918,16 +970,21 @@ class TcpConnectionSpec extends AkkaSpec("""
         serverAddress: InetSocketAddress = serverAddress,
         options: immutable.Seq[SocketOption] = Nil,
         timeout: Option[FiniteDuration] = None,
-        pullMode: Boolean = false): TestActorRef[TcpOutgoingConnection] = {
+        pullMode: Boolean = false
+    ): TestActorRef[TcpOutgoingConnection] = {
       val ref = createConnectionActorWithoutRegistration(
-          serverAddress, options, timeout, pullMode)
+        serverAddress,
+        options,
+        timeout,
+        pullMode
+      )
       ref ! newChannelRegistration
       ref
     }
 
     def newChannelRegistration: ChannelRegistration =
       new ChannelRegistration {
-        def enableInterest(op: Int): Unit = interestCallReceiver.ref ! op
+        def enableInterest(op: Int): Unit  = interestCallReceiver.ref ! op
         def disableInterest(op: Int): Unit = interestCallReceiver.ref ! -op
       }
 
@@ -935,18 +992,24 @@ class TcpConnectionSpec extends AkkaSpec("""
         serverAddress: InetSocketAddress = serverAddress,
         options: immutable.Seq[SocketOption] = Nil,
         timeout: Option[FiniteDuration] = None,
-        pullMode: Boolean = false): TestActorRef[TcpOutgoingConnection] =
+        pullMode: Boolean = false
+    ): TestActorRef[TcpOutgoingConnection] =
       TestActorRef(
-          new TcpOutgoingConnection(Tcp(system),
-                                    this,
-                                    userHandler.ref,
-                                    Connect(serverAddress,
-                                            options = options,
-                                            timeout = timeout,
-                                            pullMode = pullMode)) {
-        override def postRestart(reason: Throwable): Unit =
-          context.stop(self) // ensure we never restart
-      })
+        new TcpOutgoingConnection(
+          Tcp(system),
+          this,
+          userHandler.ref,
+          Connect(
+            serverAddress,
+            options = options,
+            timeout = timeout,
+            pullMode = pullMode
+          )
+        ) {
+          override def postRestart(reason: Throwable): Unit =
+            context.stop(self) // ensure we never restart
+        }
+      )
   }
 
   trait SmallRcvBuffer {
@@ -958,8 +1021,8 @@ class TcpConnectionSpec extends AkkaSpec("""
   abstract class UnacceptedConnectionTest(pullMode: Boolean = false)
       extends LocalServerTest {
     // lazy init since potential exceptions should not be triggered in the constructor but during execution of `run`
-    private[io] lazy val connectionActor = createConnectionActor(
-        serverAddress, pullMode = pullMode)
+    private[io] lazy val connectionActor =
+      createConnectionActor(serverAddress, pullMode = pullMode)
     // calling .underlyingActor ensures that the actor is actually created at this point
     lazy val clientSideChannel = connectionActor.underlyingActor.channel
 
@@ -973,24 +1036,23 @@ class TcpConnectionSpec extends AkkaSpec("""
   abstract class EstablishedConnectionTest(
       keepOpenOnPeerClosed: Boolean = false,
       useResumeWriting: Boolean = true,
-      pullMode: Boolean = false)
-      extends UnacceptedConnectionTest(pullMode) {
+      pullMode: Boolean = false
+  ) extends UnacceptedConnectionTest(pullMode) {
 
     // lazy init since potential exceptions should not be triggered in the constructor but during execution of `run`
-    lazy val serverSideChannel = acceptServerSideConnection(localServerChannel)
-    lazy val connectionHandler = TestProbe()
-    lazy val nioSelector = SelectorProvider.provider().openSelector()
+    lazy val serverSideChannel  = acceptServerSideConnection(localServerChannel)
+    lazy val connectionHandler  = TestProbe()
+    lazy val nioSelector        = SelectorProvider.provider().openSelector()
     lazy val clientSelectionKey = registerChannel(clientSideChannel, "client")
     lazy val serverSelectionKey = registerChannel(serverSideChannel, "server")
-    lazy val defaultbuffer = ByteBuffer.allocate(TestSize)
+    lazy val defaultbuffer      = ByteBuffer.allocate(TestSize)
 
-    def windowsWorkaroundToDetectAbort(): Unit = {
+    def windowsWorkaroundToDetectAbort(): Unit =
       // Due to a Windows quirk we need to set an OP_CONNECT to reliably detect connection resets, see #1576
       if (Helpers.isWindows) {
         serverSelectionKey.interestOps(OP_CONNECT)
         nioSelector.select(10)
       }
-    }
 
     override def ignoreWindowsWorkaroundForTicket15766(): Unit = {
       super.ignoreWindowsWorkaroundForTicket15766()
@@ -1005,14 +1067,21 @@ class TcpConnectionSpec extends AkkaSpec("""
         interestCallReceiver.expectMsg(OP_CONNECT)
         selector.send(connectionActor, ChannelConnectable)
         userHandler.expectMsg(
-            Connected(serverAddress,
-                      clientSideChannel.socket.getLocalSocketAddress
-                        .asInstanceOf[InetSocketAddress]))
+          Connected(
+            serverAddress,
+            clientSideChannel.socket.getLocalSocketAddress
+              .asInstanceOf[InetSocketAddress]
+          )
+        )
 
-        userHandler.send(connectionActor,
-                         Register(connectionHandler.ref,
-                                  keepOpenOnPeerClosed,
-                                  useResumeWriting))
+        userHandler.send(
+          connectionActor,
+          Register(
+            connectionHandler.ref,
+            keepOpenOnPeerClosed,
+            useResumeWriting
+          )
+        )
         ignoreWindowsWorkaroundForTicket15766()
         if (!pullMode) interestCallReceiver.expectMsg(OP_READ)
 
@@ -1031,11 +1100,13 @@ class TcpConnectionSpec extends AkkaSpec("""
       Write(ByteString(Array.fill[Byte](TestSize)(0)), ack)
 
     def closeServerSideAndWaitForClientReadable(
-        fullClose: Boolean = true): Unit = {
+        fullClose: Boolean = true
+    ): Unit = {
       if (fullClose) serverSideChannel.close()
       else serverSideChannel.socket.shutdownOutput()
       checkFor(clientSelectionKey, OP_READ, 3.seconds.toMillis.toInt) should ===(
-          true)
+        true
+      )
     }
 
     def registerChannel(channel: SocketChannel, name: String): SelectionKey = {
@@ -1044,8 +1115,7 @@ class TcpConnectionSpec extends AkkaSpec("""
       res
     }
 
-    def checkFor(
-        key: SelectionKey, interest: Int, millis: Int = 100): Boolean =
+    def checkFor(key: SelectionKey, interest: Int, millis: Int = 100): Boolean =
       if (key.isValid) {
         key.interestOps(interest)
         nioSelector.selectedKeys().clear()
@@ -1057,7 +1127,9 @@ class TcpConnectionSpec extends AkkaSpec("""
       } else false
 
     def openSelectorFor(
-        channel: SocketChannel, interests: Int): (Selector, SelectionKey) = {
+        channel: SocketChannel,
+        interests: Int
+    ): (Selector, SelectionKey) = {
       val sel = SelectorProvider.provider().openSelector()
       val key = channel.register(sel, interests)
       (sel, key)
@@ -1069,10 +1141,12 @@ class TcpConnectionSpec extends AkkaSpec("""
     @tailrec final def pullFromServerSide(
         remaining: Int,
         remainingTries: Int = 1000,
-        into: ByteBuffer = defaultbuffer): Unit =
+        into: ByteBuffer = defaultbuffer
+    ): Unit =
       if (remainingTries <= 0)
         throw new AssertionError(
-            "Pulling took too many loops,  remaining data: " + remaining)
+          "Pulling took too many loops,  remaining data: " + remaining
+        )
       else if (remaining > 0) {
         if (interestCallReceiver.msgAvailable) {
           interestCallReceiver.expectMsg(OP_WRITE)
@@ -1092,9 +1166,10 @@ class TcpConnectionSpec extends AkkaSpec("""
             serverSideChannel.read(into) match {
               case -1 ⇒
                 throw new IllegalStateException(
-                    "Connection was closed unexpectedly with remaining bytes " +
-                    remaining)
-              case 0 ⇒ throw new IllegalStateException("Made no progress")
+                  "Connection was closed unexpectedly with remaining bytes " +
+                    remaining
+                )
+              case 0     ⇒ throw new IllegalStateException("Made no progress")
               case other ⇒ other
             }
           } else 0
@@ -1109,7 +1184,7 @@ class TcpConnectionSpec extends AkkaSpec("""
 
       selector.send(connectionActor, ChannelReadable)
 
-      val gotReceived = connectionHandler.expectMsgType[Received]
+      val gotReceived    = connectionHandler.expectMsgType[Received]
       val receivedString = gotReceived.data.decodeString("ASCII")
       data.startsWith(receivedString) should ===(true)
       if (receivedString.length < data.length)
@@ -1122,21 +1197,24 @@ class TcpConnectionSpec extends AkkaSpec("""
       clientSideChannel should not be ('open)
     }
 
-    def selectedAs(
-        interest: Int, duration: Duration): BeMatcher[SelectionKey] =
+    def selectedAs(interest: Int, duration: Duration): BeMatcher[SelectionKey] =
       new BeMatcher[SelectionKey] {
         def apply(key: SelectionKey) =
-          MatchResult(checkFor(key, interest, duration.toMillis.toInt),
-                      "%s key was not selected for %s after %s" format
-                      (key.attachment(), interestsDesc(interest), duration),
-                      "%s key was selected for %s after %s" format
-                      (key.attachment(), interestsDesc(interest), duration))
+          MatchResult(
+            checkFor(key, interest, duration.toMillis.toInt),
+            "%s key was not selected for %s after %s" format
+              (key.attachment(), interestsDesc(interest), duration),
+            "%s key was selected for %s after %s" format
+              (key.attachment(), interestsDesc(interest), duration)
+          )
       }
 
-    val interestsNames = Seq(OP_ACCEPT -> "accepting",
-                             OP_CONNECT -> "connecting",
-                             OP_READ -> "reading",
-                             OP_WRITE -> "writing")
+    val interestsNames = Seq(
+      OP_ACCEPT  -> "accepting",
+      OP_CONNECT -> "connecting",
+      OP_READ    -> "reading",
+      OP_WRITE   -> "writing"
+    )
     def interestsDesc(interests: Int): String =
       interestsNames
         .filter(i ⇒ (i._1 & interests) != 0)
@@ -1144,7 +1222,8 @@ class TcpConnectionSpec extends AkkaSpec("""
         .mkString(", ")
 
     def abortClose(channel: SocketChannel): Unit = {
-      try channel.socket.setSoLinger(true, 0) // causes the following close() to send TCP RST
+      try channel.socket
+        .setSoLinger(true, 0) // causes the following close() to send TCP RST
       catch {
         case NonFatal(e) ⇒
           // setSoLinger can fail due to http://bugs.sun.com/view_bug.do?bug_id=6799574

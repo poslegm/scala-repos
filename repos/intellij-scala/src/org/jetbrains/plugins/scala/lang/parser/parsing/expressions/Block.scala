@@ -21,7 +21,7 @@ object Block {
 
   def parse(builder: ScalaPsiBuilder) {
     if (!ResultExpr.parse(builder) && BlockStat.parse(builder)) {
-      var hasSemicolon = false
+      var hasSemicolon   = false
       var rollbackMarker = builder.mark()
 
       def updateSemicolon() {
@@ -57,7 +57,7 @@ object Block {
     var i: Int = 0
 
     var tts: List[IElementType] = Nil
-    var continue = true
+    var continue                = true
 
     while (continue) {
       if (ResultExpr.parse(builder)) {
@@ -82,9 +82,11 @@ object Block {
   def parse(builder: ScalaPsiBuilder, hasBrace: Boolean): Boolean =
     parse(builder, hasBrace, needNode = false)
 
-  def parse(builder: ScalaPsiBuilder,
-            hasBrace: Boolean,
-            needNode: Boolean): Boolean = {
+  def parse(
+      builder: ScalaPsiBuilder,
+      hasBrace: Boolean,
+      needNode: Boolean
+  ): Boolean = {
     if (hasBrace) {
       val blockMarker = builder.mark
       builder.getTokenType match {
@@ -99,7 +101,7 @@ object Block {
       builder.restoreNewlinesState
       blockMarker.done(ScalaElementTypes.BLOCK_EXPR)
     } else {
-      val bm = builder.mark()
+      val bm    = builder.mark()
       val count = parseImpl(builder)
       if (count > 1) {
         bm.done(ScalaElementTypes.BLOCK)

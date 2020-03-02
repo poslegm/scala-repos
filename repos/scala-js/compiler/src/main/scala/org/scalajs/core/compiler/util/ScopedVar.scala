@@ -9,7 +9,7 @@ class ScopedVar[A](init: A) {
 
   def this()(implicit ev: Null <:< A) = this(ev(null))
 
-  def get: A = value
+  def get: A                         = value
   def :=(newValue: A): Assignment[A] = new Assignment(this, newValue)
 }
 
@@ -23,15 +23,15 @@ object ScopedVar {
   }
 
   private class AssignmentStackElement[T](scVar: ScopedVar[T], oldValue: T) {
-    private[ScopedVar] def pop(): Unit = {
+    private[ScopedVar] def pop(): Unit =
       scVar.value = oldValue
-    }
   }
 
   implicit def toValue[T](scVar: ScopedVar[T]): T = scVar.get
 
   def withScopedVars[T](ass: Assignment[_]*)(body: => T): T = {
     val stack = ass.map(_.push())
-    try body finally stack.reverse.foreach(_.pop())
+    try body
+    finally stack.reverse.foreach(_.pop())
   }
 }

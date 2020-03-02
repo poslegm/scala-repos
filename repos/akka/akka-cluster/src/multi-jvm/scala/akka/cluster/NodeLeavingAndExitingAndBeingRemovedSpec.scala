@@ -12,16 +12,18 @@ import scala.concurrent.duration._
 
 object NodeLeavingAndExitingAndBeingRemovedMultiJvmSpec
     extends MultiNodeConfig {
-  val first = role("first")
+  val first  = role("first")
   val second = role("second")
-  val third = role("third")
+  val third  = role("third")
 
   commonConfig(
-      debugConfig(on = false)
-        .withFallback(ConfigFactory.parseString(
-                "akka.cluster.auto-down-unreachable-after = 0s"))
-        .withFallback(
-            MultiNodeClusterSpec.clusterConfigWithFailureDetectorPuppet))
+    debugConfig(on = false)
+      .withFallback(
+        ConfigFactory
+          .parseString("akka.cluster.auto-down-unreachable-after = 0s")
+      )
+      .withFallback(MultiNodeClusterSpec.clusterConfigWithFailureDetectorPuppet)
+  )
 }
 
 class NodeLeavingAndExitingAndBeingRemovedMultiJvmNode1
@@ -55,11 +57,11 @@ abstract class NodeLeavingAndExitingAndBeingRemovedSpec
           // verify that the 'second' node is no longer part of the 'members'/'unreachable' set
           awaitAssert {
             clusterView.members.map(_.address) should not contain
-            (address(second))
+              (address(second))
           }
           awaitAssert {
             clusterView.unreachableMembers.map(_.address) should not contain
-            (address(second))
+              (address(second))
           }
         }
 

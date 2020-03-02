@@ -10,38 +10,38 @@ object fasta {
 
     val ALU =
       "GGCCGGGCGCGGTGGCTCACGCCTGTAATCCCAGCACTTTGG" +
-      "GAGGCCGAGGCGGGCGGATCACCTGAGGTCAGGAGTTCGAGA" +
-      "CCAGCCTGGCCAACATGGTGAAACCCCGTCTCTACTAAAAAT" +
-      "ACAAAAATTAGCCGGGCGTGGTGGCGCGCGCCTGTAATCCCA" +
-      "GCTACTCGGGAGGCTGAGGCAGGAGAATCGCTTGAACCCGGG" +
-      "AGGCGGAGGTTGCAGTGAGCCGAGATCGCGCCACTGCACTCC" +
-      "AGCCTGGGCGACAGAGCGAGACTCCGTCTCAAAAA"
+        "GAGGCCGAGGCGGGCGGATCACCTGAGGTCAGGAGTTCGAGA" +
+        "CCAGCCTGGCCAACATGGTGAAACCCCGTCTCTACTAAAAAT" +
+        "ACAAAAATTAGCCGGGCGTGGTGGCGCGCGCCTGTAATCCCA" +
+        "GCTACTCGGGAGGCTGAGGCAGGAGAATCGCTTGAACCCGGG" +
+        "AGGCGGAGGTTGCAGTGAGCCGAGATCGCGCCACTGCACTCC" +
+        "AGCCTGGGCGACAGAGCGAGACTCCGTCTCAAAAA"
 
     val _IUB = Array(
-        ('a', 0.27),
-        ('c', 0.12),
-        ('g', 0.12),
-        ('t', 0.27),
-        ('B', 0.02),
-        ('D', 0.02),
-        ('H', 0.02),
-        ('K', 0.02),
-        ('M', 0.02),
-        ('N', 0.02),
-        ('R', 0.02),
-        ('S', 0.02),
-        ('V', 0.02),
-        ('W', 0.02),
-        ('Y', 0.02)
+      ('a', 0.27),
+      ('c', 0.12),
+      ('g', 0.12),
+      ('t', 0.27),
+      ('B', 0.02),
+      ('D', 0.02),
+      ('H', 0.02),
+      ('K', 0.02),
+      ('M', 0.02),
+      ('N', 0.02),
+      ('R', 0.02),
+      ('S', 0.02),
+      ('V', 0.02),
+      ('W', 0.02),
+      ('Y', 0.02)
     )
 
     val IUB = makeCumulative(_IUB)
 
     val _HomoSapiens = Array(
-        ('a', 0.3029549426680),
-        ('c', 0.1979883004921),
-        ('g', 0.1975473066391),
-        ('t', 0.3015094502008)
+      ('a', 0.3029549426680),
+      ('c', 0.1979883004921),
+      ('g', 0.1975473066391),
+      ('t', 0.3015094502008)
     )
 
     val HomoSapiens = makeCumulative(_HomoSapiens)
@@ -64,11 +64,12 @@ object fasta {
   def makeCumulative(a: Array[Tuple2[Char, Double]]) = {
     var cp = 0.0
     a map
-    (frequency =>
-          frequency match {
-            case (code, percent) =>
-              cp = cp + percent; new Frequency(code.toByte, cp)
-        })
+      (frequency =>
+        frequency match {
+          case (code, percent) =>
+            cp = cp + percent; new Frequency(code.toByte, cp)
+        }
+      )
   }
 }
 
@@ -84,13 +85,13 @@ class Frequency(_code: Byte, _percent: Double) {
 class FastaOutputStream(out: OutputStream) extends BufferedOutputStream(out) {
 
   private val LineLength = 60
-  private val nl = '\n'.toByte
+  private val nl         = '\n'.toByte
 
-  def writeDescription(desc: String) = { write((">" + desc + "\n").getBytes) }
+  def writeDescription(desc: String) = write((">" + desc + "\n").getBytes)
 
   def writeRepeatingSequence(_alu: String, length: Int) = {
     val alu = _alu.getBytes
-    var n = length; var k = 0; val kn = alu.length;
+    var n   = length; var k = 0; val kn = alu.length;
 
     while (n > 0) {
       val m = if (n < LineLength) n else LineLength
@@ -99,7 +100,8 @@ class FastaOutputStream(out: OutputStream) extends BufferedOutputStream(out) {
       while (i < m) {
         if (k == kn) k = 0
         val b = alu(k)
-        if (count < buf.length) { buf(count) = b; count = count + 1 } else {
+        if (count < buf.length) { buf(count) = b; count = count + 1 }
+        else {
           write(b)
         } // flush buffer
         k = k + 1
@@ -119,13 +121,15 @@ class FastaOutputStream(out: OutputStream) extends BufferedOutputStream(out) {
       var i = 0
       while (i < m) {
         val b = selectRandom(distribution)
-        if (count < buf.length) { buf(count) = b; count = count + 1 } else {
+        if (count < buf.length) { buf(count) = b; count = count + 1 }
+        else {
           write(b)
         } // flush buffer
         i = i + 1
       }
 
-      if (count < buf.length) { buf(count) = nl; count = count + 1 } else {
+      if (count < buf.length) { buf(count) = nl; count = count + 1 }
+      else {
         write(nl)
       } // flush buffer
       n = n - LineLength
@@ -146,9 +150,9 @@ class FastaOutputStream(out: OutputStream) extends BufferedOutputStream(out) {
 }
 
 object RandomNumber {
-  private val IM = 139968
-  private val IA = 3877
-  private val IC = 29573
+  private val IM   = 139968
+  private val IA   = 3877
+  private val IC   = 29573
   private var seed = 42
 
   def scaledTo(max: Double) = {

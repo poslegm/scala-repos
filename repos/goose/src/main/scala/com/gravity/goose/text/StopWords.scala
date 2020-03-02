@@ -29,21 +29,22 @@ object StopWords {
 
   // the confusing pattern below is basically just match any non-word character excluding white-space.
   private val PUNCTUATION: StringReplacement = StringReplacement.compile(
-      "[^\\p{Ll}\\p{Lu}\\p{Lt}\\p{Lo}\\p{Nd}\\p{Pc}\\s]", string.empty)
+    "[^\\p{Ll}\\p{Lu}\\p{Lt}\\p{Lo}\\p{Nd}\\p{Pc}\\s]",
+    string.empty
+  )
 
   val STOP_WORDS = FileHelper
     .loadResourceFile("stopwords-en.txt", StopWords.getClass)
     .split(sys.props("line.separator"))
     .toSet
 
-  def removePunctuation(str: String): String = {
+  def removePunctuation(str: String): String =
     PUNCTUATION.replaceAll(str)
-  }
 
   def getStopWordCount(content: String): WordStats = {
 
     if (string.isNullOrEmpty(content)) return WordStats.EMPTY
-    val ws: WordStats = new WordStats
+    val ws: WordStats         = new WordStats
     val strippedInput: String = removePunctuation(content)
 
     val candidateWords: Array[String] =
@@ -51,12 +52,10 @@ object StopWords {
 
     val overlappingStopWords: List[String] = new ArrayList[String]
 
-    candidateWords.foreach(
-        w =>
-          {
-        if (STOP_WORDS.contains(w.toLowerCase))
-          overlappingStopWords.add(w.toLowerCase)
-    })
+    candidateWords.foreach { w =>
+      if (STOP_WORDS.contains(w.toLowerCase))
+        overlappingStopWords.add(w.toLowerCase)
+    }
     ws.setWordCount(candidateWords.length)
     ws.setStopWordCount(overlappingStopWords.size)
     ws.setStopWords(overlappingStopWords)

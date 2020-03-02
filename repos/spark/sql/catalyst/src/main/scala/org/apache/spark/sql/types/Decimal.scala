@@ -33,12 +33,12 @@ final class Decimal extends Ordered[Decimal] with Serializable {
   import org.apache.spark.sql.types.Decimal._
 
   private var decimalVal: BigDecimal = null
-  private var longVal: Long = 0L
-  private var _precision: Int = 1
-  private var _scale: Int = 0
+  private var longVal: Long          = 0L
+  private var _precision: Int        = 1
+  private var _scale: Int            = 0
 
   def precision: Int = _precision
-  def scale: Int = _scale
+  def scale: Int     = _scale
 
   /**
     * Set this Decimal to the given Long. Will have precision 20 and scale 0.
@@ -75,7 +75,8 @@ final class Decimal extends Ordered[Decimal] with Serializable {
   def set(unscaled: Long, precision: Int, scale: Int): Decimal = {
     if (setOrNull(unscaled, precision, scale) == null) {
       throw new IllegalArgumentException(
-          "Unscaled value too large for precision")
+        "Unscaled value too large for precision"
+      )
     }
     this
   }
@@ -112,8 +113,9 @@ final class Decimal extends Ordered[Decimal] with Serializable {
   def set(decimal: BigDecimal, precision: Int, scale: Int): Decimal = {
     this.decimalVal = decimal.setScale(scale, ROUND_HALF_UP)
     require(
-        decimalVal.precision <= precision,
-        s"Decimal precision ${decimalVal.precision} exceeds max precision $precision")
+      decimalVal.precision <= precision,
+      s"Decimal precision ${decimalVal.precision} exceeds max precision $precision"
+    )
     this.longVal = 0L
     this._precision = precision
     this._scale = scale
@@ -142,52 +144,47 @@ final class Decimal extends Ordered[Decimal] with Serializable {
     this
   }
 
-  def toBigDecimal: BigDecimal = {
+  def toBigDecimal: BigDecimal =
     if (decimalVal.ne(null)) {
       decimalVal
     } else {
       BigDecimal(longVal, _scale)
     }
-  }
 
-  def toJavaBigDecimal: java.math.BigDecimal = {
+  def toJavaBigDecimal: java.math.BigDecimal =
     if (decimalVal.ne(null)) {
       decimalVal.underlying()
     } else {
       java.math.BigDecimal.valueOf(longVal, _scale)
     }
-  }
 
-  def toUnscaledLong: Long = {
+  def toUnscaledLong: Long =
     if (decimalVal.ne(null)) {
       decimalVal.underlying().unscaledValue().longValue()
     } else {
       longVal
     }
-  }
 
   override def toString: String = toBigDecimal.toString()
 
   @DeveloperApi
-  def toDebugString: String = {
+  def toDebugString: String =
     if (decimalVal.ne(null)) {
       s"Decimal(expanded,$decimalVal,$precision,$scale})"
     } else {
       s"Decimal(compact,$longVal,$precision,$scale})"
     }
-  }
 
   def toDouble: Double = toBigDecimal.doubleValue()
 
   def toFloat: Float = toBigDecimal.floatValue()
 
-  def toLong: Long = {
+  def toLong: Long =
     if (decimalVal.eq(null)) {
       longVal / POW_10(_scale)
     } else {
       decimalVal.longValue()
     }
-  }
 
   def toInt: Int = toLong.toInt
 
@@ -200,9 +197,8 @@ final class Decimal extends Ordered[Decimal] with Serializable {
     *
     * @return true if successful, false if overflow would occur
     */
-  def changePrecision(precision: Int, scale: Int): Boolean = {
+  def changePrecision(precision: Int, scale: Int): Boolean =
     changePrecision(precision, scale, ROUND_HALF_UP)
-  }
 
   /**
     * Update precision and scale while keeping our value the same, and return true if successful.
@@ -212,7 +208,8 @@ final class Decimal extends Ordered[Decimal] with Serializable {
   private[sql] def changePrecision(
       precision: Int,
       scale: Int,
-      roundMode: BigDecimal.RoundingMode.Value): Boolean = {
+      roundMode: BigDecimal.RoundingMode.Value
+  ): Boolean = {
     // fast path for UnsafeProjection
     if (precision == this.precision && scale == this.scale) {
       return true
@@ -221,7 +218,7 @@ final class Decimal extends Ordered[Decimal] with Serializable {
     if (decimalVal.eq(null)) {
       if (scale < _scale) {
         // Easier case: we just need to divide our scale down
-        val diff = _scale - scale
+        val diff          = _scale - scale
         val droppedDigits = longVal % POW_10(diff)
         longVal /= POW_10(diff)
         if (math.abs(droppedDigits) * 2 >= POW_10(diff)) {
@@ -231,7 +228,7 @@ final class Decimal extends Ordered[Decimal] with Serializable {
         // We might be able to multiply longVal by a power of 10 and not overflow, but if not,
         // switch to using a BigDecimal
         val diff = scale - _scale
-        val p = POW_10(math.max(MAX_LONG_DIGITS - diff, 0))
+        val p    = POW_10(math.max(MAX_LONG_DIGITS - diff, 0))
         if (diff <= MAX_LONG_DIGITS && longVal > -p && longVal < p) {
           // Multiplying longVal by POW_10(diff) will still keep it below MAX_LONG_DIGITS
           longVal *= POW_10(diff)
@@ -267,15 +264,15 @@ final class Decimal extends Ordered[Decimal] with Serializable {
 
   override def clone(): Decimal = new Decimal().set(this)
 
-  override def compare(other: Decimal): Int = {
+  override def compare(other: Decimal): Int =
     if (decimalVal.eq(null) && other.decimalVal.eq(null) &&
         _scale == other._scale) {
       if (longVal < other.longVal) -1
-      else if (longVal == other.longVal) 0 else 1
+      else if (longVal == other.longVal) 0
+      else 1
     } else {
       toBigDecimal.compare(other.toBigDecimal)
     }
-  }
 
   override def equals(other: Any): Boolean = other match {
     case d: Decimal =>
@@ -289,25 +286,29 @@ final class Decimal extends Ordered[Decimal] with Serializable {
   def isZero: Boolean =
     if (decimalVal.ne(null)) decimalVal == BIG_DEC_ZERO else longVal == 0
 
-  def +(that: Decimal): Decimal = {
+  def +(that: Decimal): Decimal =
     if (decimalVal.eq(null) && that.decimalVal.eq(null) &&
         scale == that.scale) {
       Decimal(
-          longVal + that.longVal, Math.max(precision, that.precision), scale)
+        longVal + that.longVal,
+        Math.max(precision, that.precision),
+        scale
+      )
     } else {
       Decimal(toBigDecimal + that.toBigDecimal)
     }
-  }
 
-  def -(that: Decimal): Decimal = {
+  def -(that: Decimal): Decimal =
     if (decimalVal.eq(null) && that.decimalVal.eq(null) &&
         scale == that.scale) {
       Decimal(
-          longVal - that.longVal, Math.max(precision, that.precision), scale)
+        longVal - that.longVal,
+        Math.max(precision, that.precision),
+        scale
+      )
     } else {
       Decimal(toBigDecimal - that.toBigDecimal)
     }
-  }
 
   // HiveTypeCoercion will take care of the precision, scale of result
   def *(that: Decimal): Decimal =
@@ -324,13 +325,12 @@ final class Decimal extends Ordered[Decimal] with Serializable {
 
   def remainder(that: Decimal): Decimal = this % that
 
-  def unary_- : Decimal = {
+  def unary_- : Decimal =
     if (decimalVal.ne(null)) {
       Decimal(-decimalVal, precision, scale)
     } else {
       Decimal(-longVal, precision, scale)
     }
-  }
 
   def abs: Decimal = if (this.compare(Decimal.ZERO) < 0) this.unary_- else this
 
@@ -339,9 +339,10 @@ final class Decimal extends Ordered[Decimal] with Serializable {
     else {
       val value = this.clone()
       value.changePrecision(
-          DecimalType.bounded(precision - scale + 1, 0).precision,
-          0,
-          ROUND_FLOOR)
+        DecimalType.bounded(precision - scale + 1, 0).precision,
+        0,
+        ROUND_FLOOR
+      )
       value
     }
 
@@ -350,9 +351,10 @@ final class Decimal extends Ordered[Decimal] with Serializable {
     else {
       val value = this.clone()
       value.changePrecision(
-          DecimalType.bounded(precision - scale + 1, 0).precision,
-          0,
-          ROUND_CEILING)
+        DecimalType.bounded(precision - scale + 1, 0).precision,
+        0,
+        ROUND_CEILING
+      )
       value
     }
 }
@@ -360,7 +362,7 @@ final class Decimal extends Ordered[Decimal] with Serializable {
 object Decimal {
   val ROUND_HALF_UP = BigDecimal.RoundingMode.HALF_UP
   val ROUND_CEILING = BigDecimal.RoundingMode.CEILING
-  val ROUND_FLOOR = BigDecimal.RoundingMode.FLOOR
+  val ROUND_FLOOR   = BigDecimal.RoundingMode.FLOOR
 
   /** Maximum number of decimal digits a Int can represent */
   val MAX_INT_DIGITS = 9
@@ -373,11 +375,11 @@ object Decimal {
 
   private val BIG_DEC_ZERO = BigDecimal(0)
 
-  private val MATH_CONTEXT = new MathContext(
-      DecimalType.MAX_PRECISION, RoundingMode.HALF_UP)
+  private val MATH_CONTEXT =
+    new MathContext(DecimalType.MAX_PRECISION, RoundingMode.HALF_UP)
 
   private[sql] val ZERO = Decimal(0)
-  private[sql] val ONE = Decimal(1)
+  private[sql] val ONE  = Decimal(1)
 
   def apply(value: Double): Decimal = new Decimal().set(value)
 
@@ -417,28 +419,30 @@ object Decimal {
 
   /** Common methods for Decimal evidence parameters */
   private[sql] trait DecimalIsConflicted extends Numeric[Decimal] {
-    override def plus(x: Decimal, y: Decimal): Decimal = x + y
+    override def plus(x: Decimal, y: Decimal): Decimal  = x + y
     override def times(x: Decimal, y: Decimal): Decimal = x * y
     override def minus(x: Decimal, y: Decimal): Decimal = x - y
-    override def negate(x: Decimal): Decimal = -x
-    override def toDouble(x: Decimal): Double = x.toDouble
-    override def toFloat(x: Decimal): Float = x.toFloat
-    override def toInt(x: Decimal): Int = x.toInt
-    override def toLong(x: Decimal): Long = x.toLong
-    override def fromInt(x: Int): Decimal = new Decimal().set(x)
-    override def compare(x: Decimal, y: Decimal): Int = x.compare(y)
+    override def negate(x: Decimal): Decimal            = -x
+    override def toDouble(x: Decimal): Double           = x.toDouble
+    override def toFloat(x: Decimal): Float             = x.toFloat
+    override def toInt(x: Decimal): Int                 = x.toInt
+    override def toLong(x: Decimal): Long               = x.toLong
+    override def fromInt(x: Int): Decimal               = new Decimal().set(x)
+    override def compare(x: Decimal, y: Decimal): Int   = x.compare(y)
   }
 
   /** A [[scala.math.Fractional]] evidence parameter for Decimals. */
   private[sql] object DecimalIsFractional
-      extends DecimalIsConflicted with Fractional[Decimal] {
+      extends DecimalIsConflicted
+      with Fractional[Decimal] {
     override def div(x: Decimal, y: Decimal): Decimal = x / y
   }
 
   /** A [[scala.math.Integral]] evidence parameter for Decimals. */
   private[sql] object DecimalAsIfIntegral
-      extends DecimalIsConflicted with Integral[Decimal] {
+      extends DecimalIsConflicted
+      with Integral[Decimal] {
     override def quot(x: Decimal, y: Decimal): Decimal = x / y
-    override def rem(x: Decimal, y: Decimal): Decimal = x % y
+    override def rem(x: Decimal, y: Decimal): Decimal  = x % y
   }
 }

@@ -17,26 +17,28 @@ import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class ThriftClientFinagleServerTest
-    extends FunSuite with BeforeAndAfter with OneInstancePerTest {
+    extends FunSuite
+    with BeforeAndAfter
+    with OneInstancePerTest {
 
   val somewayPromise = new Promise[Unit]
   val processor = new B.ServiceIface {
-    def add(a: Int, b: Int) = Future.exception(new AnException)
-    def add_one(a: Int, b: Int) = Future.Void
-    def multiply(a: Int, b: Int) = Future { a / b }
+    def add(a: Int, b: Int)      = Future.exception(new AnException)
+    def add_one(a: Int, b: Int)  = Future.Void
+    def multiply(a: Int, b: Int) = Future(a / b)
     def complex_return(someString: String) =
       someString match {
         case "throwAnException" =>
           throw new Exception("msg")
         case _ =>
-          Future { new SomeStruct(123, someString) }
+          Future(new SomeStruct(123, someString))
       }
     def someway() = {
       somewayPromise() = Return.Unit
       Future.Void
     }
 
-    def show_me_your_dtab() = Future.value("")
+    def show_me_your_dtab()      = Future.value("")
     def show_me_your_dtab_size() = Future.value(0)
   }
 
@@ -48,10 +50,10 @@ class ThriftClientFinagleServerTest
   val serverAddr = server.boundAddress.asInstanceOf[InetSocketAddress]
 
   val (client, transport) = {
-    val socket = new TSocket(
-        serverAddr.getHostName, serverAddr.getPort, 1000 /*ms*/ )
+    val socket =
+      new TSocket(serverAddr.getHostName, serverAddr.getPort, 1000 /*ms*/ )
     val transport = new TFramedTransport(socket)
-    val protocol = new TBinaryProtocol(transport)
+    val protocol  = new TBinaryProtocol(transport)
     (new B.Client(protocol), transport)
   }
   transport.open()
@@ -65,7 +67,7 @@ class ThriftClientFinagleServerTest
   }
 
   test("thrift client with finagle server should propagate exceptions") {
-    val exc = intercept[AnException] { client.add(1, 2) }
+    val exc = intercept[AnException](client.add(1, 2))
     assert(exc != null)
   }
 
@@ -78,7 +80,8 @@ class ThriftClientFinagleServerTest
       client.multiply(1, 0 /*div by zero*/ )
     }
     assert(
-        exc.getMessage() == "Internal error processing multiply: 'java.lang.ArithmeticException: / by zero'")
+      exc.getMessage() == "Internal error processing multiply: 'java.lang.ArithmeticException: / by zero'"
+    )
   }
 
   test("treat synchronous exceptions as transport exceptions") {
@@ -86,7 +89,8 @@ class ThriftClientFinagleServerTest
       client.complex_return("throwAnException")
     }
     assert(
-        exc.getMessage() == "Internal error processing complex_return: 'java.lang.Exception: msg'")
+      exc.getMessage() == "Internal error processing complex_return: 'java.lang.Exception: msg'"
+    )
   }
 
   test("handle one-way calls") {
@@ -100,19 +104,19 @@ class ThriftClientFinagleServerTest
       val socket =
         new TSocket(serverAddr.getHostName, serverAddr.getPort, 1000 /*ms*/ )
       val transport = new TFramedTransport(socket)
-      val protocol = new TBinaryProtocol(transport)
+      val protocol  = new TBinaryProtocol(transport)
       (new F.Client(protocol), transport)
     }
     transport.open()
 
-    val exc = intercept[TApplicationException] { client.another_method(123) }
+    val exc = intercept[TApplicationException](client.another_method(123))
     assert(exc.getMessage() == "Invalid method name: 'another_method'")
   }
 
   test("make sure we measure protocol negotiation latency") {
     Time.withCurrentTimeFrozen { timeControl =>
       val statsReceiver = new InMemoryStatsReceiver
-      val name = "thrift_client"
+      val name          = "thrift_client"
       val service: Service[ThriftClientRequest, Array[Byte]] = ClientBuilder()
         .hosts(serverAddr)
         .name(name)

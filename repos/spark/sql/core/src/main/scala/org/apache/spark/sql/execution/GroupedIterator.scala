@@ -18,20 +18,28 @@
 package org.apache.spark.sql.execution
 
 import org.apache.spark.sql.catalyst.InternalRow
-import org.apache.spark.sql.catalyst.expressions.{Ascending, Attribute, Expression, SortOrder}
-import org.apache.spark.sql.catalyst.expressions.codegen.{GenerateOrdering, GenerateUnsafeProjection}
+import org.apache.spark.sql.catalyst.expressions.{
+  Ascending,
+  Attribute,
+  Expression,
+  SortOrder
+}
+import org.apache.spark.sql.catalyst.expressions.codegen.{
+  GenerateOrdering,
+  GenerateUnsafeProjection
+}
 
 object GroupedIterator {
-  def apply(input: Iterator[InternalRow],
-            keyExpressions: Seq[Expression],
-            inputSchema: Seq[Attribute])
-    : Iterator[(InternalRow, Iterator[InternalRow])] = {
+  def apply(
+      input: Iterator[InternalRow],
+      keyExpressions: Seq[Expression],
+      inputSchema: Seq[Attribute]
+  ): Iterator[(InternalRow, Iterator[InternalRow])] =
     if (input.hasNext) {
       new GroupedIterator(input.buffered, keyExpressions, inputSchema)
     } else {
       Iterator.empty
     }
-  }
 }
 
 /**
@@ -63,13 +71,14 @@ object GroupedIterator {
   *                            to `next()`.
   * @param inputSchema The schema of the rows in the `input` iterator.
   */
-class GroupedIterator private (input: BufferedIterator[InternalRow],
-                               groupingExpressions: Seq[Expression],
-                               inputSchema: Seq[Attribute])
-    extends Iterator[(InternalRow, Iterator[InternalRow])] {
+class GroupedIterator private (
+    input: BufferedIterator[InternalRow],
+    groupingExpressions: Seq[Expression],
+    inputSchema: Seq[Attribute]
+) extends Iterator[(InternalRow, Iterator[InternalRow])] {
 
   /** Compares two input rows and returns 0 if they are in the same group. */
-  val sortOrder = groupingExpressions.map(SortOrder(_, Ascending))
+  val sortOrder   = groupingExpressions.map(SortOrder(_, Ascending))
   val keyOrdering = GenerateOrdering.generate(sortOrder, inputSchema)
 
   /** Creates a row containing only the key for a given input row. */
@@ -117,7 +126,7 @@ class GroupedIterator private (input: BufferedIterator[InternalRow],
       // Skip to next group.
       // currentRow may be overwritten by `hasNext`, so we should compare them first.
       while (keyOrdering.compare(currentGroup, currentRow) == 0 &&
-      input.hasNext) {
+             input.hasNext) {
         currentRow = input.next()
       }
 
@@ -133,7 +142,7 @@ class GroupedIterator private (input: BufferedIterator[InternalRow],
     }
   }
 
-  private def createGroupValuesIterator(): Iterator[InternalRow] = {
+  private def createGroupValuesIterator(): Iterator[InternalRow] =
     new Iterator[InternalRow] {
       def hasNext: Boolean = currentRow != null || fetchNextRowInGroup()
 
@@ -164,5 +173,4 @@ class GroupedIterator private (input: BufferedIterator[InternalRow],
         }
       }
     }
-  }
 }

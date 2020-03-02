@@ -50,20 +50,26 @@ trait ClassHelpers { self: ControlHelpers =>
     *
     * @return a Box, either containing the found class or an Empty can.
     */
-  def findClass[C <: AnyRef](name: String,
-                             where: List[String],
-                             modifiers: List[Function1[String, String]],
-                             targetType: Class[C]): Box[Class[C]] =
-    (for (place <- where.view;
-    mod <- modifiers.view;
-    fullName = place + "." + mod(name);
-    ignore = List(classOf[ClassNotFoundException],
-                  classOf[ClassCastException],
-                  classOf[NoClassDefFoundError]);
-    klass <- tryo(ignore)(Class
-          .forName(fullName)
-          .asSubclass(targetType)
-          .asInstanceOf[Class[C]])) yield klass).headOption
+  def findClass[C <: AnyRef](
+      name: String,
+      where: List[String],
+      modifiers: List[Function1[String, String]],
+      targetType: Class[C]
+  ): Box[Class[C]] =
+    (for (place   <- where.view;
+          mod     <- modifiers.view;
+          fullName = place + "." + mod(name);
+          ignore = List(
+            classOf[ClassNotFoundException],
+            classOf[ClassCastException],
+            classOf[NoClassDefFoundError]
+          );
+          klass <- tryo(ignore)(
+                    Class
+                      .forName(fullName)
+                      .asSubclass(targetType)
+                      .asInstanceOf[Class[C]]
+                  )) yield klass).headOption
 
   /**
     * General method to in find a class according to its type, its name, a list of possible
@@ -78,8 +84,10 @@ trait ClassHelpers { self: ControlHelpers =>
     * @return a Box, either containing the found class or an Empty can.
     */
   def findType[C <: AnyRef](
-      name: String, where: List[String], modifiers: List[String => String])(
-      implicit m: Manifest[C]): Box[Class[C]] =
+      name: String,
+      where: List[String],
+      modifiers: List[String => String]
+  )(implicit m: Manifest[C]): Box[Class[C]] =
     findClass(name, where, modifiers, m.runtimeClass.asInstanceOf[Class[C]])
 
   /**
@@ -93,9 +101,11 @@ trait ClassHelpers { self: ControlHelpers =>
     *
     * @return a Box, either containing the found class or an Empty can.
     */
-  def findClass(name: String,
-                where: List[String],
-                modifiers: List[String => String]): Box[Class[AnyRef]] =
+  def findClass(
+      name: String,
+      where: List[String],
+      modifiers: List[String => String]
+  ): Box[Class[AnyRef]] =
     findType[AnyRef](name, where, modifiers)
 
   /**
@@ -109,7 +119,10 @@ trait ClassHelpers { self: ControlHelpers =>
     * @return a Box, either containing the found class or an Empty can.
     */
   def findClass[C <: AnyRef](
-      name: String, where: List[String], targetType: Class[C]): Box[Class[C]] =
+      name: String,
+      where: List[String],
+      targetType: Class[C]
+  ): Box[Class[C]] =
     findClass(name, where, nameModifiers, targetType)
 
   /**
@@ -123,7 +136,8 @@ trait ClassHelpers { self: ControlHelpers =>
     * @return a Box, either containing the found class or an Empty can.
     */
   def findType[C <: AnyRef](name: String, where: List[String])(
-      implicit m: Manifest[C]): Box[Class[C]] =
+      implicit m: Manifest[C]
+  ): Box[Class[C]] =
     findType[C](name, where, nameModifiers)
 
   /**
@@ -147,10 +161,11 @@ trait ClassHelpers { self: ControlHelpers =>
     *
     * @return a Box, either containing the found class or an Empty can.
     */
-  def findType[C <: AnyRef](where: List[(String, List[String])])(
-      implicit m: Manifest[C]): Box[Class[C]] =
+  def findType[C <: AnyRef](
+      where: List[(String, List[String])]
+  )(implicit m: Manifest[C]): Box[Class[C]] =
     (for ((name, packages) <- where;
-    klass <- findType[C](name, packages)) yield klass).headOption
+          klass            <- findType[C](name, packages)) yield klass).headOption
 
   /**
     * Find a class given a list of possible names and corresponding packages, turning underscored
@@ -166,10 +181,9 @@ trait ClassHelpers { self: ControlHelpers =>
   /**
     * @return true if the method is public and has no parameters
     */
-  def callableMethod_?(meth: Method) = {
+  def callableMethod_?(meth: Method) =
     meth != null && meth.getParameterTypes.length == 0 &&
-    isPublic(meth.getModifiers)
-  }
+      isPublic(meth.getModifiers)
 
   /**
     * Is the clz an instance of (assignable from) any of the classes in the list
@@ -191,14 +205,13 @@ trait ClassHelpers { self: ControlHelpers =>
     *
     * @return true if the method exists on the class and is callable
     */
-  def classHasControllerMethod(clz: Class[_], name: String): Boolean = {
+  def classHasControllerMethod(clz: Class[_], name: String): Boolean =
     tryo {
       clz match {
         case null => false
-        case _ => callableMethod_?(clz.getDeclaredMethod(name))
+        case _    => callableMethod_?(clz.getDeclaredMethod(name))
       }
     } openOr false
-  }
 
   /**
     * Invoke a controller method (parameterless, public) on a class
@@ -208,19 +221,18 @@ trait ClassHelpers { self: ControlHelpers =>
     *
     * @return the result of the method invocation or throws the root exception causing an error
     */
-  def invokeControllerMethod(clz: Class[_], meth: String) = {
+  def invokeControllerMethod(clz: Class[_], meth: String) =
     try {
       clz.getMethod(meth).invoke(clz.newInstance)
     } catch {
       case c: InvocationTargetException => {
-          def findRoot(e: Throwable) {
-            if (e.getCause == null || e.getCause == e) throw e
-            else findRoot(e.getCause)
-          }
-          findRoot(c)
+        def findRoot(e: Throwable) {
+          if (e.getCause == null || e.getCause == e) throw e
+          else findRoot(e.getCause)
         }
+        findRoot(c)
+      }
     }
-  }
 
   /**
     * Invoke the given method for the given class, with no params.
@@ -247,18 +259,25 @@ trait ClassHelpers { self: ControlHelpers =>
     *
     * @return a Box containing the value returned by the method
     */
-  def invokeMethod[C](clz: Class[C],
-                      inst: AnyRef,
-                      meth: String,
-                      params: Array[AnyRef]): Box[Any] = {
+  def invokeMethod[C](
+      clz: Class[C],
+      inst: AnyRef,
+      meth: String,
+      params: Array[AnyRef]
+  ): Box[Any] =
     _invokeMethod(clz, inst, meth, params, Empty) or _invokeMethod(
-        clz,
-        inst,
-        StringHelpers.camelify(meth),
-        params,
-        Empty) or _invokeMethod(
-        clz, inst, StringHelpers.camelifyMethod(meth), params, Empty)
-  }
+      clz,
+      inst,
+      StringHelpers.camelify(meth),
+      params,
+      Empty
+    ) or _invokeMethod(
+      clz,
+      inst,
+      StringHelpers.camelifyMethod(meth),
+      params,
+      Empty
+    )
 
   /**
     * Invoke the given method for the given class, with some parameters and their types
@@ -273,19 +292,26 @@ trait ClassHelpers { self: ControlHelpers =>
     *
     * @return a Box containing the value returned by the method
     */
-  def invokeMethod[C](clz: Class[C],
-                      inst: AnyRef,
-                      meth: String,
-                      params: Array[AnyRef],
-                      ptypes: Array[Class[_]]): Box[Any] = {
+  def invokeMethod[C](
+      clz: Class[C],
+      inst: AnyRef,
+      meth: String,
+      params: Array[AnyRef],
+      ptypes: Array[Class[_]]
+  ): Box[Any] =
     _invokeMethod(clz, inst, meth, params, Full(ptypes)) or _invokeMethod(
-        clz,
-        inst,
-        StringHelpers.camelify(meth),
-        params,
-        Full(ptypes)) or _invokeMethod(
-        clz, inst, StringHelpers.camelifyMethod(meth), params, Full(ptypes))
-  }
+      clz,
+      inst,
+      StringHelpers.camelify(meth),
+      params,
+      Full(ptypes)
+    ) or _invokeMethod(
+      clz,
+      inst,
+      StringHelpers.camelifyMethod(meth),
+      params,
+      Full(ptypes)
+    )
 
   /**
     * Invoke the given method for the given class, with the given params.
@@ -299,11 +325,13 @@ trait ClassHelpers { self: ControlHelpers =>
     *
     * @return a Box containing the value returned by the method
     */
-  private def _invokeMethod[C](clz: Class[C],
-                               inst: AnyRef,
-                               meth: String,
-                               params: Array[AnyRef],
-                               ptypes: Box[Array[Class[_]]]): Box[Any] = {
+  private def _invokeMethod[C](
+      clz: Class[C],
+      inst: AnyRef,
+      meth: String,
+      params: Array[AnyRef],
+      ptypes: Box[Array[Class[_]]]
+  ): Box[Any] = {
     // try to find a method matching the given parameters
     def possibleMethods: List[Method] = {
       /*
@@ -313,21 +341,24 @@ trait ClassHelpers { self: ControlHelpers =>
        */
       def alternateMethods: List[Method] =
         clz.getDeclaredMethods.toList.filter(m =>
-              m.getName.equals(meth) && isPublic(m.getModifiers) &&
-              m.getParameterTypes.length == params.length)
+          m.getName.equals(meth) && isPublic(m.getModifiers) &&
+            m.getParameterTypes.length == params.length
+        )
       methCacheLock.read {
         def key = (clz.getName, meth, params.length)
         if (Props.productionMode && methodCache.contains(key)) {
           methodCache(key)
         } else {
 
-          val ret = try {
-            val classes: Array[Class[_]] = ptypes openOr params.map(_.getClass)
-            List(clz.getMethod(meth, classes: _*))
-          } catch {
-            case e: NullPointerException => Nil
-            case e: NoSuchMethodException => alternateMethods
-          }
+          val ret =
+            try {
+              val classes: Array[Class[_]] =
+                ptypes openOr params.map(_.getClass)
+              List(clz.getMethod(meth, classes: _*))
+            } catch {
+              case e: NullPointerException  => Nil
+              case e: NoSuchMethodException => alternateMethods
+            }
           if (Props.productionMode) {
             methCacheLock.upgrade(methodCache(key) = ret)
           }
@@ -348,31 +379,33 @@ trait ClassHelpers { self: ControlHelpers =>
      */
     possibleMethods.iterator
       .filter(m => inst != null || isStatic(m.getModifiers))
-      .map((m: Method) => tryo { m.invoke(inst, params: _*) })
+      .map((m: Method) => tryo(m.invoke(inst, params: _*)))
       .find((x: Box[Any]) =>
-            x match {
-          case result @ Full(_) => true
-          case Failure(_, Full(c: IllegalAccessException), _) => false
+        x match {
+          case result @ Full(_)                                 => true
+          case Failure(_, Full(c: IllegalAccessException), _)   => false
           case Failure(_, Full(c: IllegalArgumentException), _) => false
           case Failure(_, Full(c), _) =>
             if (c.getCause != null) throw c.getCause else throw c
           case _ => false
-      }) match {
+        }
+      ) match {
       case Some(result @ Full(_)) => result
-      case _ => Failure("invokeMethod " + meth, Empty, Empty)
+      case _                      => Failure("invokeMethod " + meth, Empty, Empty)
     }
   }
 
   private val methCacheLock = new ConcurrentLock
   private val methodCache: LRU[(String, String, Int), List[Method]] = new LRU(
-      5000)
+    5000
+  )
 
   /**
     * Create a new instance of a class
     *
     * @return a Full can with the instance or a Failure if the instance can't be created
     */
-  def instantiate[C](clz: Class[C]): Box[C] = tryo { clz.newInstance }
+  def instantiate[C](clz: Class[C]): Box[C] = tryo(clz.newInstance)
 
   /**
     * Create a function (the 'invoker') which will trigger any public, parameterless method
@@ -392,27 +425,25 @@ trait ClassHelpers { self: ControlHelpers =>
     on match {
       case null => Empty
       case instance => {
-          controllerMethods(instance).toList match {
-            case Nil => Empty
-            case x :: xs =>
-              Full(
-                  () =>
-                    {
-                  try {
-                    Full(x.invoke(instance))
-                  } catch {
-                    case e: InvocationTargetException => throw e.getCause
-                  }
-              })
-          }
+        controllerMethods(instance).toList match {
+          case Nil => Empty
+          case x :: xs =>
+            Full { () =>
+              try {
+                Full(x.invoke(instance))
+              } catch {
+                case e: InvocationTargetException => throw e.getCause
+              }
+            }
         }
+      }
     }
   }
 
   def classHierarchy(in: Class[_]): List[Class[_]] = {
     import scala.collection.mutable._
     val ret: ListBuffer[Class[_]] = new ListBuffer
-    var c: Class[_] = in
+    var c: Class[_]               = in
     ret += c
     while (c.getSuperclass != null) {
       val sc: Class[_] = c.getSuperclass

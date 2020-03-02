@@ -23,7 +23,10 @@ import com.twitter.chill.Externalizer
 import com.twitter.elephantbird.cascading2.scheme.LzoBinaryScheme
 import com.twitter.elephantbird.mapreduce.input.combine.DelegateCombineFileInputFormat
 import com.twitter.elephantbird.mapreduce.io.{BinaryConverter, GenericWritable}
-import com.twitter.elephantbird.mapreduce.input.{BinaryConverterProvider, MultiInputFormat}
+import com.twitter.elephantbird.mapreduce.input.{
+  BinaryConverterProvider,
+  MultiInputFormat
+}
 import com.twitter.elephantbird.mapreduce.output.LzoGenericBlockOutputFormat
 import com.twitter.elephantbird.mapred.output.DeprecatedOutputFormatWrapper
 
@@ -62,21 +65,23 @@ private[source] object SourceConfigBinaryConverterProvider {
 }
 private[source] class SourceConfigBinaryConverterProvider[M]
     extends ConfigBinaryConverterProvider[M](
-        SourceConfigBinaryConverterProvider.ProviderConfKey)
+      SourceConfigBinaryConverterProvider.ProviderConfKey
+    )
 
 private[source] object SinkConfigBinaryConverterProvider {
   val ProviderConfKey = "com.twitter.scalding.lzo.converter.provider.sink"
 }
 private[source] class SinkConfigBinaryConverterProvider[M]
     extends ConfigBinaryConverterProvider[M](
-        SinkConfigBinaryConverterProvider.ProviderConfKey)
+      SinkConfigBinaryConverterProvider.ProviderConfKey
+    )
 
 /**
   * Provides BinaryConverter serialized in JobConf.
   */
 private[source] class ConfigBinaryConverterProvider[M](
-    private[this] val confKey: String)
-    extends BinaryConverterProvider[M] {
+    private[this] val confKey: String
+) extends BinaryConverterProvider[M] {
   private[this] var cached: Option[(String, BinaryConverter[M])] = None
 
   override def getConverter(conf: Configuration): BinaryConverter[M] = {
@@ -86,7 +91,7 @@ private[source] class ConfigBinaryConverterProvider[M](
       case Some((d, conv)) if d == data => conv
       case _ =>
         val extern = ExternalizerSerializer.inj.invert(data).get
-        val conv = extern.get.asInstanceOf[BinaryConverter[M]]
+        val conv   = extern.get.asInstanceOf[BinaryConverter[M]]
         cached = Some((data, conv))
         conv
     }
@@ -94,21 +99,24 @@ private[source] class ConfigBinaryConverterProvider[M](
 }
 
 object LzoGenericScheme {
-  def apply[M : ClassTag](conv: BinaryConverter[M]): LzoGenericScheme[M] =
+  def apply[M: ClassTag](conv: BinaryConverter[M]): LzoGenericScheme[M] =
     new LzoGenericScheme(
-        conv, implicitly[ClassTag[M]].runtimeClass.asInstanceOf[Class[M]])
+      conv,
+      implicitly[ClassTag[M]].runtimeClass.asInstanceOf[Class[M]]
+    )
 
-  def apply[M](
-      conv: BinaryConverter[M], clazz: Class[M]): LzoGenericScheme[M] =
+  def apply[M](conv: BinaryConverter[M], clazz: Class[M]): LzoGenericScheme[M] =
     new LzoGenericScheme(conv, clazz)
 
   /**
     * From a Binary Converter passed in configure in the JobConf using of that by ElephantBird
     */
-  def setConverter[M](conv: BinaryConverter[M],
-                      conf: JobConf,
-                      confKey: String,
-                      overrideConf: Boolean = false): Unit = {
+  def setConverter[M](
+      conv: BinaryConverter[M],
+      conf: JobConf,
+      confKey: String,
+      overrideConf: Boolean = false
+  ): Unit =
     if ((conf.get(confKey) == null) || overrideConf) {
       val extern = Externalizer(conv)
       try {
@@ -118,12 +126,12 @@ object LzoGenericScheme {
       } catch {
         case e: Exception =>
           throw new RuntimeException(
-              "Unable to roundtrip the BinaryConverter in the Externalizer.",
-              e)
+            "Unable to roundtrip the BinaryConverter in the Externalizer.",
+            e
+          )
       }
       conf.set(confKey, ExternalizerSerializer.inj(extern))
     }
-  }
 }
 
 /**
@@ -139,28 +147,44 @@ class LzoGenericScheme[M](@transient conv: BinaryConverter[M], clazz: Class[M])
   override def sourceConfInit(
       fp: FlowProcess[JobConf],
       tap: Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]],
-      conf: JobConf): Unit = {
+      conf: JobConf
+  ): Unit = {
 
     LzoGenericScheme.setConverter(
-        conv, conf, SourceConfigBinaryConverterProvider.ProviderConfKey)
+      conv,
+      conf,
+      SourceConfigBinaryConverterProvider.ProviderConfKey
+    )
     MultiInputFormat.setClassConf(clazz, conf)
     MultiInputFormat.setGenericConverterClassConf(
-        classOf[SourceConfigBinaryConverterProvider[_]], conf)
+      classOf[SourceConfigBinaryConverterProvider[_]],
+      conf
+    )
 
     DelegateCombineFileInputFormat.setDelegateInputFormat(
-        conf, classOf[MultiInputFormat[_]])
+      conf,
+      classOf[MultiInputFormat[_]]
+    )
   }
 
   override def sinkConfInit(
       fp: FlowProcess[JobConf],
       tap: Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]],
-      conf: JobConf): Unit = {
+      conf: JobConf
+  ): Unit = {
     LzoGenericScheme.setConverter(
-        conv, conf, SinkConfigBinaryConverterProvider.ProviderConfKey)
+      conv,
+      conf,
+      SinkConfigBinaryConverterProvider.ProviderConfKey
+    )
     LzoGenericBlockOutputFormat.setClassConf(clazz, conf)
     LzoGenericBlockOutputFormat.setGenericConverterClassConf(
-        classOf[SinkConfigBinaryConverterProvider[_]], conf)
+      classOf[SinkConfigBinaryConverterProvider[_]],
+      conf
+    )
     DeprecatedOutputFormatWrapper.setOutputFormat(
-        classOf[LzoGenericBlockOutputFormat[_]], conf)
+      classOf[LzoGenericBlockOutputFormat[_]],
+      conf
+    )
   }
 }

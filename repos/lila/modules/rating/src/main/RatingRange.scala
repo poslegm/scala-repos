@@ -14,7 +14,7 @@ object RatingRange {
   val min = 800
   val max = 2900
 
-  val broad = RatingRange(min, max)
+  val broad   = RatingRange(min, max)
   val default = broad
 
   // ^\d{3,4}\-\d{3,4}$
@@ -22,7 +22,7 @@ object RatingRange {
     for {
       min ← parseIntOption(from takeWhile ('-' !=)) if acceptable(min)
       max ← parseIntOption(from dropWhile ('-' !=) tail) if acceptable(max)
-           if min <= max
+      if min <= max
     } yield RatingRange(min, max)
 
   def orDefault(from: String) = apply(from) | default

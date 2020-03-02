@@ -4,8 +4,8 @@ class ReturnSeveralOutput1 {
 
     val x = i
     if (true) return x
-    val y = "a"
-    val z = 1
+    val y  = "a"
+    val z  = 1
     val zz = "1"
     /*end*/
     println(x + y + z + zz)

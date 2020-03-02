@@ -14,7 +14,8 @@ import scala.concurrent.Await
 
 //#frontend
 class FactorialFrontend(upToN: Int, repeat: Boolean)
-    extends Actor with ActorLogging {
+    extends Actor
+    with ActorLogging {
 
   val backend =
     context.actorOf(FromConfig.props(), name = "factorialBackendRouter")
@@ -55,11 +56,14 @@ object FactorialFrontend {
 
     val system = ActorSystem("ClusterSystem", config)
     system.log.info(
-        "Factorials will start when 2 backend members in the cluster.")
+      "Factorials will start when 2 backend members in the cluster."
+    )
     //#registerOnUp
     Cluster(system) registerOnMemberUp {
-      system.actorOf(Props(classOf[FactorialFrontend], upToN, true),
-                     name = "factorialFrontend")
+      system.actorOf(
+        Props(classOf[FactorialFrontend], upToN, true),
+        name = "factorialFrontend"
+      )
     }
     //#registerOnUp
 
@@ -75,10 +79,9 @@ object FactorialFrontend {
       // We must spawn a separate thread to not block current thread,
       // since that would have blocked the shutdown of the ActorSystem.
       new Thread {
-        override def run(): Unit = {
+        override def run(): Unit =
           if (Try(Await.ready(system.whenTerminated, 10.seconds)).isFailure)
             System.exit(-1)
-        }
       }.start()
     }
     //#registerOnRemoved

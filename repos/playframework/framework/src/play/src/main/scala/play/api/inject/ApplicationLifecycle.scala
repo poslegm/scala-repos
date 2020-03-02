@@ -62,12 +62,10 @@ trait ApplicationLifecycle {
     * The stop hook should redeem the returned future when it is finished shutting down.  It is acceptable to stop
     * immediately and return a successful future.
     */
-  def addStopHook(hook: Callable[_ <: CompletionStage[_]]): Unit = {
-    addStopHook(
-        () =>
-          FutureConverters.toScala(
-              hook.call().asInstanceOf[CompletionStage[_]]))
-  }
+  def addStopHook(hook: Callable[_ <: CompletionStage[_]]): Unit =
+    addStopHook(() =>
+      FutureConverters.toScala(hook.call().asInstanceOf[CompletionStage[_]])
+    )
 }
 
 /**
@@ -75,7 +73,7 @@ trait ApplicationLifecycle {
   */
 @Singleton
 class DefaultApplicationLifecycle extends ApplicationLifecycle {
-  private val mutex = new Object()
+  private val mutex           = new Object()
   @volatile private var hooks = List.empty[() => Future[_]]
 
   def addStopHook(hook: () => Future[_]) = mutex.synchronized {

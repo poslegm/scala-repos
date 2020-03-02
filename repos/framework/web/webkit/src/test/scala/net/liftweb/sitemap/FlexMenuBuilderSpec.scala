@@ -27,7 +27,7 @@ object FlexMenuBuilderSpec extends WebSpec(FlexMenuBuilderSpecBoot.boot _) {
   val html1 = <div data-lift="MenuBuilder.builder?group=hometabsv2"></div>
 
   "FlexMenuBuilder" should {
-    val testUrl = "http://foo.com/help"
+    val testUrl     = "http://foo.com/help"
     val testUrlPath = "http://foo.com/index1"
 
     "Link to Self" withSFor (testUrl) in {
@@ -52,13 +52,12 @@ object FlexMenuBuilderSpec extends WebSpec(FlexMenuBuilderSpecBoot.boot _) {
 
     "Add css class to item in the path" withSFor (testUrlPath) in {
       object MenuBuilder extends FlexMenuBuilder {
-        override def updateForPath(nodes: Elem, path: Boolean): Elem = {
+        override def updateForPath(nodes: Elem, path: Boolean): Elem =
           if (path) {
             nodes % S.mapToAttrs(Map("class" -> "active"))
           } else {
             nodes
           }
-        }
       }
       val itemInPath: NodeSeq =
         <ul><li><a href="/index">Home</a></li><li class="active"><a href="/help">Help</a><ul><li class="active"><span>Home1</span></li><li><a href="/index2">Home2</a></li></ul></li><li><a href="/help2">Help2</a></li></ul>
@@ -68,13 +67,12 @@ object FlexMenuBuilderSpec extends WebSpec(FlexMenuBuilderSpecBoot.boot _) {
 
     "Add css class to the current item" withSFor (testUrl) in {
       object MenuBuilder extends FlexMenuBuilder {
-        override def updateForCurrent(nodes: Elem, current: Boolean): Elem = {
+        override def updateForCurrent(nodes: Elem, current: Boolean): Elem =
           if (current) {
             nodes % S.mapToAttrs(Map("class" -> "active"))
           } else {
             nodes
           }
-        }
       }
       val itemInPath: NodeSeq =
         <ul><li><a href="/index">Home</a></li><li class="active"><span>Help</span></li><li><a href="/help2">Help2</a></li></ul>
@@ -91,10 +89,10 @@ object FlexMenuBuilderSpec extends WebSpec(FlexMenuBuilderSpecBoot.boot _) {
 object FlexMenuBuilderSpecBoot {
   def boot() {
     def siteMap = SiteMap(
-        Menu.i("Home") / "index",
-        Menu.i("Help") / "help" submenus
+      Menu.i("Home") / "index",
+      Menu.i("Help") / "help" submenus
         (Menu.i("Home1") / "index1", Menu.i("Home2") / "index2"),
-        Menu.i("Help2") / "help2" submenus
+      Menu.i("Help2") / "help2" submenus
         (Menu.i("Home3") / "index3", Menu.i("Home4") / "index4")
     )
     LiftRules.setSiteMap(siteMap)

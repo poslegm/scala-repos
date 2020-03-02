@@ -19,7 +19,11 @@ package org.apache.spark.sql.catalyst.expressions
 import java.util.Comparator
 
 import org.apache.spark.sql.catalyst.analysis.TypeCheckResult
-import org.apache.spark.sql.catalyst.expressions.codegen.{CodegenContext, CodegenFallback, ExprCode}
+import org.apache.spark.sql.catalyst.expressions.codegen.{
+  CodegenContext,
+  CodegenFallback,
+  ExprCode
+}
 import org.apache.spark.sql.catalyst.util.{ArrayData, GenericArrayData, MapData}
 import org.apache.spark.sql.types._
 
@@ -27,19 +31,19 @@ import org.apache.spark.sql.types._
   * Given an array or map, returns its size.
   */
 case class Size(child: Expression)
-    extends UnaryExpression with ExpectsInputTypes {
+    extends UnaryExpression
+    with ExpectsInputTypes {
   override def dataType: DataType = IntegerType
   override def inputTypes: Seq[AbstractDataType] =
     Seq(TypeCollection(ArrayType, MapType))
 
   override def nullSafeEval(value: Any): Int = child.dataType match {
     case _: ArrayType => value.asInstanceOf[ArrayData].numElements()
-    case _: MapType => value.asInstanceOf[MapData].numElements()
+    case _: MapType   => value.asInstanceOf[MapData].numElements()
   }
 
-  override def genCode(ctx: CodegenContext, ev: ExprCode): String = {
+  override def genCode(ctx: CodegenContext, ev: ExprCode): String =
     nullSafeCodeGen(ctx, ev, c => s"${ev.value} = ($c).numElements();")
-  }
 }
 
 /**
@@ -47,13 +51,15 @@ case class Size(child: Expression)
   * the array elements and returns it.
   */
 case class SortArray(base: Expression, ascendingOrder: Expression)
-    extends BinaryExpression with ExpectsInputTypes with CodegenFallback {
+    extends BinaryExpression
+    with ExpectsInputTypes
+    with CodegenFallback {
 
   def this(e: Expression) = this(e, Literal(true))
 
-  override def left: Expression = base
-  override def right: Expression = ascendingOrder
-  override def dataType: DataType = base.dataType
+  override def left: Expression                  = base
+  override def right: Expression                 = ascendingOrder
+  override def dataType: DataType                = base.dataType
   override def inputTypes: Seq[AbstractDataType] = Seq(ArrayType, BooleanType)
 
   override def checkInputDataTypes(): TypeCheckResult = base.dataType match {
@@ -61,10 +67,12 @@ case class SortArray(base: Expression, ascendingOrder: Expression)
       TypeCheckResult.TypeCheckSuccess
     case ArrayType(dt, _) =>
       TypeCheckResult.TypeCheckFailure(
-          s"$prettyName does not support sorting array of type ${dt.simpleString}")
+        s"$prettyName does not support sorting array of type ${dt.simpleString}"
+      )
     case _ =>
       TypeCheckResult.TypeCheckFailure(
-          s"$prettyName only supports array input.")
+        s"$prettyName only supports array input."
+      )
   }
 
   @transient
@@ -79,7 +87,7 @@ case class SortArray(base: Expression, ascendingOrder: Expression)
     }
 
     new Comparator[Any]() {
-      override def compare(o1: Any, o2: Any): Int = {
+      override def compare(o1: Any, o2: Any): Int =
         if (o1 == null && o2 == null) {
           0
         } else if (o1 == null) {
@@ -89,7 +97,6 @@ case class SortArray(base: Expression, ascendingOrder: Expression)
         } else {
           ordering.compare(o1, o2)
         }
-      }
     }
   }
 
@@ -105,7 +112,7 @@ case class SortArray(base: Expression, ascendingOrder: Expression)
     }
 
     new Comparator[Any]() {
-      override def compare(o1: Any, o2: Any): Int = {
+      override def compare(o1: Any, o2: Any): Int =
         if (o1 == null && o2 == null) {
           0
         } else if (o1 == null) {
@@ -115,13 +122,12 @@ case class SortArray(base: Expression, ascendingOrder: Expression)
         } else {
           -ordering.compare(o1, o2)
         }
-      }
     }
   }
 
   override def nullSafeEval(array: Any, ascending: Any): Any = {
     val elementType = base.dataType.asInstanceOf[ArrayType].elementType
-    val data = array.asInstanceOf[ArrayData].toArray[AnyRef](elementType)
+    val data        = array.asInstanceOf[ArrayData].toArray[AnyRef](elementType)
     if (elementType != NullType) {
       java.util.Arrays
         .sort(data, if (ascending.asInstanceOf[Boolean]) lt else gt)
@@ -136,7 +142,8 @@ case class SortArray(base: Expression, ascendingOrder: Expression)
   * Checks if the array (left) has the element (right)
   */
 case class ArrayContains(left: Expression, right: Expression)
-    extends BinaryExpression with ImplicitCastInputTypes {
+    extends BinaryExpression
+    with ImplicitCastInputTypes {
 
   override def dataType: DataType = BooleanType
 
@@ -145,40 +152,42 @@ case class ArrayContains(left: Expression, right: Expression)
     case _ =>
       left.dataType match {
         case n @ ArrayType(element, _) => Seq(n, element)
-        case _ => Seq()
+        case _                         => Seq()
       }
   }
 
-  override def checkInputDataTypes(): TypeCheckResult = {
+  override def checkInputDataTypes(): TypeCheckResult =
     if (right.dataType == NullType) {
       TypeCheckResult.TypeCheckFailure(
-          "Null typed values cannot be used as arguments")
+        "Null typed values cannot be used as arguments"
+      )
     } else if (!left.dataType.isInstanceOf[ArrayType] || left.dataType
                  .asInstanceOf[ArrayType]
                  .elementType != right.dataType) {
       TypeCheckResult.TypeCheckFailure(
-          "Arguments must be an array followed by a value of same type as the array members")
+        "Arguments must be an array followed by a value of same type as the array members"
+      )
     } else {
       TypeCheckResult.TypeCheckSuccess
     }
-  }
 
-  override def nullable: Boolean = {
+  override def nullable: Boolean =
     left.nullable || right.nullable ||
-    left.dataType.asInstanceOf[ArrayType].containsNull
-  }
+      left.dataType.asInstanceOf[ArrayType].containsNull
 
   override def nullSafeEval(arr: Any, value: Any): Any = {
     var hasNull = false
     arr
       .asInstanceOf[ArrayData]
-      .foreach(right.dataType,
-               (i, v) =>
-                 if (v == null) {
-                   hasNull = true
-                 } else if (v == value) {
-                   return true
-               })
+      .foreach(
+        right.dataType,
+        (i, v) =>
+          if (v == null) {
+            hasNull = true
+          } else if (v == value) {
+            return true
+          }
+      )
     if (hasNull) {
       null
     } else {
@@ -186,14 +195,14 @@ case class ArrayContains(left: Expression, right: Expression)
     }
   }
 
-  override def genCode(ctx: CodegenContext, ev: ExprCode): String = {
-    nullSafeCodeGen(ctx,
-                    ev,
-                    (arr, value) =>
-                      {
-                        val i = ctx.freshName("i")
-                        val getValue = ctx.getValue(arr, right.dataType, i)
-                        s"""
+  override def genCode(ctx: CodegenContext, ev: ExprCode): String =
+    nullSafeCodeGen(
+      ctx,
+      ev,
+      (arr, value) => {
+        val i        = ctx.freshName("i")
+        val getValue = ctx.getValue(arr, right.dataType, i)
+        s"""
       for (int $i = 0; $i < $arr.numElements(); $i ++) {
         if ($arr.isNullAt($i)) {
           ${ev.isNull} = true;
@@ -204,8 +213,8 @@ case class ArrayContains(left: Expression, right: Expression)
         }
       }
      """
-                    })
-  }
+      }
+    )
 
   override def prettyName: String = "array_contains"
 }

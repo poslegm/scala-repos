@@ -21,15 +21,20 @@ private[akka] object CachingConfig {
     val config: Config
   }
   final case class ValuePathEntry(
-      valid: Boolean, exists: Boolean, config: Config = emptyConfig)
-      extends PathEntry
+      valid: Boolean,
+      exists: Boolean,
+      config: Config = emptyConfig
+  ) extends PathEntry
   final case class StringPathEntry(
-      valid: Boolean, exists: Boolean, config: Config, value: String)
-      extends PathEntry
+      valid: Boolean,
+      exists: Boolean,
+      config: Config,
+      value: String
+  ) extends PathEntry
 
-  val invalidPathEntry = ValuePathEntry(false, true)
+  val invalidPathEntry     = ValuePathEntry(false, true)
   val nonExistingPathEntry = ValuePathEntry(true, false)
-  val emptyPathEntry = ValuePathEntry(true, true)
+  val emptyPathEntry       = ValuePathEntry(true, true)
 }
 
 /**
@@ -48,32 +53,34 @@ private[akka] class CachingConfig(_config: Config) extends Config {
   private val (config: Config, entryMap: ConcurrentHashMap[String, PathEntry]) =
     _config match {
       case cc: CachingConfig ⇒ (cc.config, cc.entryMap)
-      case _ ⇒ (_config, new ConcurrentHashMap[String, PathEntry])
+      case _                 ⇒ (_config, new ConcurrentHashMap[String, PathEntry])
     }
 
   private def getPathEntry(path: String): PathEntry =
     entryMap.get(path) match {
       case null ⇒
-        val ne = Try { config.hasPath(path) } match {
-          case Failure(e) ⇒ invalidPathEntry
+        val ne = Try(config.hasPath(path)) match {
+          case Failure(e)     ⇒ invalidPathEntry
           case Success(false) ⇒ nonExistingPathEntry
           case _ ⇒
-            Try { config.getValue(path) } match {
+            Try(config.getValue(path)) match {
               case Failure(e) ⇒
                 emptyPathEntry
               case Success(v) ⇒
                 if (v.valueType() == ConfigValueType.STRING)
-                  StringPathEntry(true,
-                                  true,
-                                  v.atKey("cached"),
-                                  v.unwrapped().asInstanceOf[String])
+                  StringPathEntry(
+                    true,
+                    true,
+                    v.atKey("cached"),
+                    v.unwrapped().asInstanceOf[String]
+                  )
                 else ValuePathEntry(true, true, v.atKey("cached"))
             }
         }
 
         entryMap.putIfAbsent(path, ne) match {
           case null ⇒ ne
-          case e ⇒ e
+          case e    ⇒ e
         }
 
       case e ⇒ e
@@ -122,13 +129,12 @@ private[akka] class CachingConfig(_config: Config) extends Config {
 
   def getDouble(path: String) = config.getDouble(path)
 
-  def getString(path: String) = {
+  def getString(path: String) =
     getPathEntry(path) match {
       case StringPathEntry(_, _, _, string) ⇒
         string
       case e ⇒ e.config.getString("cached")
     }
-  }
 
   def getObject(path: String) = config.getObject(path)
 

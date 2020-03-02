@@ -41,23 +41,25 @@ private[python] object Converter extends Logging {
 
   def getInstance(
       converterClass: Option[String],
-      defaultConverter: Converter[Any, Any]): Converter[Any, Any] = {
-    converterClass.map { cc =>
-      Try {
-        val c = Utils
-          .classForName(cc)
-          .newInstance()
-          .asInstanceOf[Converter[Any, Any]]
-        logInfo(s"Loaded converter: $cc")
-        c
-      } match {
-        case Success(c) => c
-        case Failure(err) =>
-          logError(s"Failed to load converter: $cc")
-          throw err
+      defaultConverter: Converter[Any, Any]
+  ): Converter[Any, Any] =
+    converterClass
+      .map { cc =>
+        Try {
+          val c = Utils
+            .classForName(cc)
+            .newInstance()
+            .asInstanceOf[Converter[Any, Any]]
+          logInfo(s"Loaded converter: $cc")
+          c
+        } match {
+          case Success(c) => c
+          case Failure(err) =>
+            logError(s"Failed to load converter: $cc")
+            throw err
+        }
       }
-    }.getOrElse { defaultConverter }
-  }
+      .getOrElse(defaultConverter)
 }
 
 /**
@@ -65,26 +67,26 @@ private[python] object Converter extends Logging {
   * Other objects are passed through without conversion.
   */
 private[python] class WritableToJavaConverter(
-    conf: Broadcast[SerializableConfiguration])
-    extends Converter[Any, Any] {
+    conf: Broadcast[SerializableConfiguration]
+) extends Converter[Any, Any] {
 
   /**
     * Converts a [[org.apache.hadoop.io.Writable]] to the underlying primitive, String or
     * object representation
     */
-  private def convertWritable(writable: Writable): Any = {
+  private def convertWritable(writable: Writable): Any =
     writable match {
-      case iw: IntWritable => iw.get()
-      case dw: DoubleWritable => dw.get()
-      case lw: LongWritable => lw.get()
-      case fw: FloatWritable => fw.get()
-      case t: Text => t.toString
+      case iw: IntWritable     => iw.get()
+      case dw: DoubleWritable  => dw.get()
+      case lw: LongWritable    => lw.get()
+      case fw: FloatWritable   => fw.get()
+      case t: Text             => t.toString
       case bw: BooleanWritable => bw.get()
       case byw: BytesWritable =>
         val bytes = new Array[Byte](byw.getLength)
         System.arraycopy(byw.getBytes(), 0, bytes, 0, byw.getLength)
         bytes
-      case n: NullWritable => null
+      case n: NullWritable   => null
       case aw: ArrayWritable =>
         // Due to erasure, all arrays appear as Object[] and they get pickled to Python tuples.
         // Since we can't determine element types for empty arrays, we will not attempt to
@@ -98,18 +100,16 @@ private[python] class WritableToJavaConverter(
         }
         map
       case w: Writable => WritableUtils.clone(w, conf.value.value)
-      case other => other
+      case other       => other
     }
-  }
 
-  override def convert(obj: Any): Any = {
+  override def convert(obj: Any): Any =
     obj match {
       case writable: Writable =>
         convertWritable(writable)
       case _ =>
         obj
     }
-  }
 }
 
 /**
@@ -119,23 +119,22 @@ private[python] class WritableToJavaConverter(
   * [[org.apache.spark.api.python.DoubleArrayToWritableConverter]] for an example. They are used in
   * PySpark RDD `saveAsNewAPIHadoopFile` doctest.
   */
-private[python] class JavaToWritableConverter
-    extends Converter[Any, Writable] {
+private[python] class JavaToWritableConverter extends Converter[Any, Writable] {
 
   /**
     * Converts common data types to [[org.apache.hadoop.io.Writable]]. Note that array types are not
     * supported out-of-the-box.
     */
-  private def convertToWritable(obj: Any): Writable = {
+  private def convertToWritable(obj: Any): Writable =
     obj match {
       case i: java.lang.Integer => new IntWritable(i)
-      case d: java.lang.Double => new DoubleWritable(d)
-      case l: java.lang.Long => new LongWritable(l)
-      case f: java.lang.Float => new FloatWritable(f)
-      case s: java.lang.String => new Text(s)
+      case d: java.lang.Double  => new DoubleWritable(d)
+      case l: java.lang.Long    => new LongWritable(l)
+      case f: java.lang.Float   => new FloatWritable(f)
+      case s: java.lang.String  => new Text(s)
       case b: java.lang.Boolean => new BooleanWritable(b)
-      case aob: Array[Byte] => new BytesWritable(aob)
-      case null => NullWritable.get()
+      case aob: Array[Byte]     => new BytesWritable(aob)
+      case null                 => NullWritable.get()
       case map: java.util.Map[_, _] =>
         val mapWritable = new MapWritable()
         map.asScala.foreach {
@@ -144,19 +143,19 @@ private[python] class JavaToWritableConverter
         }
         mapWritable
       case array: Array[Any] => {
-          val arrayWriteable = new ArrayWritable(classOf[Writable])
-          arrayWriteable.set(array.map(convertToWritable(_)))
-          arrayWriteable
-        }
+        val arrayWriteable = new ArrayWritable(classOf[Writable])
+        arrayWriteable.set(array.map(convertToWritable(_)))
+        arrayWriteable
+      }
       case other =>
         throw new SparkException(
-            s"Data of type ${other.getClass.getName} cannot be used")
+          s"Data of type ${other.getClass.getName} cannot be used"
+        )
     }
-  }
 
   override def convert(obj: Any): Writable = obj match {
     case writable: Writable => writable
-    case other => convertToWritable(other)
+    case other              => convertToWritable(other)
   }
 }
 
@@ -189,9 +188,9 @@ private[python] object PythonHadoopUtil {
   def convertRDD[K, V](
       rdd: RDD[(K, V)],
       keyConverter: Converter[Any, Any],
-      valueConverter: Converter[Any, Any]): RDD[(Any, Any)] = {
+      valueConverter: Converter[Any, Any]
+  ): RDD[(Any, Any)] =
     rdd.map {
       case (k, v) => (keyConverter.convert(k), valueConverter.convert(v))
     }
-  }
 }

@@ -51,44 +51,40 @@ abstract class PersistenceEngine {
     * Gives all objects, matching a prefix. This defines how objects are
     * read/deserialized back.
     */
-  def read[T : ClassTag](prefix: String): Seq[T]
+  def read[T: ClassTag](prefix: String): Seq[T]
 
-  final def addApplication(app: ApplicationInfo): Unit = {
+  final def addApplication(app: ApplicationInfo): Unit =
     persist("app_" + app.id, app)
-  }
 
-  final def removeApplication(app: ApplicationInfo): Unit = {
+  final def removeApplication(app: ApplicationInfo): Unit =
     unpersist("app_" + app.id)
-  }
 
-  final def addWorker(worker: WorkerInfo): Unit = {
+  final def addWorker(worker: WorkerInfo): Unit =
     persist("worker_" + worker.id, worker)
-  }
 
-  final def removeWorker(worker: WorkerInfo): Unit = {
+  final def removeWorker(worker: WorkerInfo): Unit =
     unpersist("worker_" + worker.id)
-  }
 
-  final def addDriver(driver: DriverInfo): Unit = {
+  final def addDriver(driver: DriverInfo): Unit =
     persist("driver_" + driver.id, driver)
-  }
 
-  final def removeDriver(driver: DriverInfo): Unit = {
+  final def removeDriver(driver: DriverInfo): Unit =
     unpersist("driver_" + driver.id)
-  }
 
   /**
     * Returns the persisted data sorted by their respective ids (which implies that they're
     * sorted by time of creation).
     */
-  final def readPersistedData(rpcEnv: RpcEnv)
-    : (Seq[ApplicationInfo], Seq[DriverInfo], Seq[WorkerInfo]) = {
+  final def readPersistedData(
+      rpcEnv: RpcEnv
+  ): (Seq[ApplicationInfo], Seq[DriverInfo], Seq[WorkerInfo]) =
     rpcEnv.deserialize { () =>
-      (read[ApplicationInfo]("app_"),
-       read[DriverInfo]("driver_"),
-       read[WorkerInfo]("worker_"))
+      (
+        read[ApplicationInfo]("app_"),
+        read[DriverInfo]("driver_"),
+        read[WorkerInfo]("worker_")
+      )
     }
-  }
 
   def close() {}
 }
@@ -99,5 +95,5 @@ private[master] class BlackHolePersistenceEngine extends PersistenceEngine {
 
   override def unpersist(name: String): Unit = {}
 
-  override def read[T : ClassTag](name: String): Seq[T] = Nil
+  override def read[T: ClassTag](name: String): Seq[T] = Nil
 }

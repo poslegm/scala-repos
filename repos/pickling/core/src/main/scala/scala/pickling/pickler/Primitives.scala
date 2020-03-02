@@ -29,28 +29,30 @@ trait PrimitivePicklers {
     PrimitivePickler[Unit]
 }
 
-class PrimitivePickler[T : FastTypeTag](name: String)
+class PrimitivePickler[T: FastTypeTag](name: String)
     extends AutoRegister[T](name) {
   def pickle(picklee: T, builder: PBuilder): Unit = {
     builder.beginEntry(picklee, tag)
     builder.endEntry()
   }
-  def unpickle(tag: String, reader: PReader): Any = {
+  def unpickle(tag: String, reader: PReader): Any =
     try {
       // TODO - beginEntry/endEntry?
       reader.readPrimitive()
     } catch {
       case PicklingException(msg, cause) =>
         throw PicklingException(
-            s"""error in unpickle of primitive unpickler '$name':
+          s"""error in unpickle of primitive unpickler '$name':
                                    |tag in unpickle: '${tag}'
                                    |message:
-                                   |$msg""".stripMargin, cause)
+                                   |$msg""".stripMargin,
+          cause
+        )
     }
-  }
 }
 object PrimitivePickler {
-  def apply[A : FastTypeTag]: Pickler[A] with Unpickler[A] =
+  def apply[A: FastTypeTag]: Pickler[A] with Unpickler[A] =
     new PrimitivePickler[A](
-        FastTypeTag.valueTypeName(implicitly[FastTypeTag[A]]))
+      FastTypeTag.valueTypeName(implicitly[FastTypeTag[A]])
+    )
 }

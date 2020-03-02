@@ -28,13 +28,12 @@ private[spark] trait CatalystConf {
     * Returns the [[Resolver]] for the current configuration, which can be used to determin if two
     * identifiers are equal.
     */
-  def resolver: Resolver = {
+  def resolver: Resolver =
     if (caseSensitiveAnalysis) {
       caseSensitiveResolution
     } else {
       caseInsensitiveResolution
     }
-  }
 }
 
 /**
@@ -42,15 +41,14 @@ private[spark] trait CatalystConf {
   * relations are already filled in and the analyser needs only to resolve attribute references.
   */
 object EmptyConf extends CatalystConf {
-  override def caseSensitiveAnalysis: Boolean = {
+  override def caseSensitiveAnalysis: Boolean =
     throw new UnsupportedOperationException
-  }
-  override def orderByOrdinal: Boolean = {
+  override def orderByOrdinal: Boolean =
     throw new UnsupportedOperationException
-  }
 }
 
 /** A CatalystConf that can be used for local testing. */
 case class SimpleCatalystConf(
-    caseSensitiveAnalysis: Boolean, orderByOrdinal: Boolean = true)
-    extends CatalystConf {}
+    caseSensitiveAnalysis: Boolean,
+    orderByOrdinal: Boolean = true
+) extends CatalystConf {}

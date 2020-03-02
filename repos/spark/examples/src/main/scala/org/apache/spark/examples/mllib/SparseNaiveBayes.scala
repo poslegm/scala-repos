@@ -34,11 +34,12 @@ import org.apache.spark.mllib.util.MLUtils
   */
 object SparseNaiveBayes {
 
-  case class Params(input: String = null,
-                    minPartitions: Int = 0,
-                    numFeatures: Int = -1,
-                    lambda: Double = 1.0)
-      extends AbstractParams[Params]
+  case class Params(
+      input: String = null,
+      minPartitions: Int = 0,
+      numFeatures: Int = -1,
+      lambda: Double = 1.0
+  ) extends AbstractParams[Params]
 
   def main(args: Array[String]) {
     val defaultParams = Params()
@@ -62,9 +63,7 @@ object SparseNaiveBayes {
 
     parser
       .parse(args, defaultParams)
-      .map { params =>
-        run(params)
-      }
+      .map(params => run(params))
       .getOrElse {
         sys.exit(1)
       }
@@ -72,7 +71,7 @@ object SparseNaiveBayes {
 
   def run(params: Params) {
     val conf = new SparkConf().setAppName(s"SparseNaiveBayes with $params")
-    val sc = new SparkContext(conf)
+    val sc   = new SparkContext(conf)
 
     Logger.getRootLogger.setLevel(Level.WARN)
 
@@ -81,22 +80,26 @@ object SparseNaiveBayes {
       else sc.defaultMinPartitions
 
     val examples = MLUtils.loadLibSVMFile(
-        sc, params.input, params.numFeatures, minPartitions)
+      sc,
+      params.input,
+      params.numFeatures,
+      minPartitions
+    )
     // Cache examples because it will be used in both training and evaluation.
     examples.cache()
 
-    val splits = examples.randomSplit(Array(0.8, 0.2))
+    val splits   = examples.randomSplit(Array(0.8, 0.2))
     val training = splits(0)
-    val test = splits(1)
+    val test     = splits(1)
 
     val numTraining = training.count()
-    val numTest = test.count()
+    val numTest     = test.count()
 
     println(s"numTraining = $numTraining, numTest = $numTest.")
 
     val model = new NaiveBayes().setLambda(params.lambda).run(training)
 
-    val prediction = model.predict(test.map(_.features))
+    val prediction         = model.predict(test.map(_.features))
     val predictionAndLabel = prediction.zip(test.map(_.label))
     val accuracy =
       predictionAndLabel.filter(x => x._1 == x._2).count().toDouble / numTest

@@ -19,18 +19,19 @@ class TlsFilterTest extends FunSuite {
 
   test("filter") {
     val host = "test.host"
-    val tls = new TlsFilter(host)
-    val req = Request(Http11, Get, "/")
-    val p = new Promise[Request]
+    val tls  = new TlsFilter(host)
+    val req  = Request(Http11, Get, "/")
+    val p    = new Promise[Request]
     (tls andThen svc(p))(req)
     assert(Await.result(p).headerMap.get("Host") == Some(host))
   }
 
   test("module") {
     val host = "test.host"
-    val p = new Promise[Request]
+    val p    = new Promise[Request]
     val stk = TlsFilter.module.toStack(
-        Stack.Leaf(TlsFilter.role, ServiceFactory.const(svc(p))))
+      Stack.Leaf(TlsFilter.role, ServiceFactory.const(svc(p)))
+    )
     val fac =
       stk.make(Stack.Params.empty + Transporter.TLSHostname(Some(host)))
     Await.result(fac())(Request(Http11, Get, "/"))

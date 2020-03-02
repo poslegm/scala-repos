@@ -30,27 +30,27 @@ object UnsafeProjectionBenchmark {
 
   def generateRows(schema: StructType, numRows: Int): Array[InternalRow] = {
     val generator = RandomDataGenerator.forType(schema, nullable = false).get
-    val encoder = RowEncoder(schema)
+    val encoder   = RowEncoder(schema)
     (1 to numRows)
       .map(_ => encoder.toRow(generator().asInstanceOf[Row]).copy())
       .toArray
   }
 
   def main(args: Array[String]) {
-    val iters = 1024 * 16
+    val iters   = 1024 * 16
     val numRows = 1024 * 16
 
     val benchmark = new Benchmark("unsafe projection", iters * numRows)
 
-    val schema1 = new StructType().add("l", LongType, false)
-    val attrs1 = schema1.toAttributes
-    val rows1 = generateRows(schema1, numRows)
+    val schema1     = new StructType().add("l", LongType, false)
+    val attrs1      = schema1.toAttributes
+    val rows1       = generateRows(schema1, numRows)
     val projection1 = UnsafeProjection.create(attrs1, attrs1)
 
     benchmark.addCase("single long") { _ =>
       for (_ <- 1 to iters) {
         var sum = 0L
-        var i = 0
+        var i   = 0
         while (i < numRows) {
           sum += projection1(rows1(i)).getLong(0)
           i += 1
@@ -58,15 +58,15 @@ object UnsafeProjectionBenchmark {
       }
     }
 
-    val schema2 = new StructType().add("l", LongType, true)
-    val attrs2 = schema2.toAttributes
-    val rows2 = generateRows(schema2, numRows)
+    val schema2     = new StructType().add("l", LongType, true)
+    val attrs2      = schema2.toAttributes
+    val rows2       = generateRows(schema2, numRows)
     val projection2 = UnsafeProjection.create(attrs2, attrs2)
 
     benchmark.addCase("single nullable long") { _ =>
       for (_ <- 1 to iters) {
         var sum = 0L
-        var i = 0
+        var i   = 0
         while (i < numRows) {
           sum += projection2(rows2(i)).getLong(0)
           i += 1
@@ -82,14 +82,14 @@ object UnsafeProjectionBenchmark {
       .add("long", LongType, false)
       .add("float", FloatType, false)
       .add("double", DoubleType, false)
-    val attrs3 = schema3.toAttributes
-    val rows3 = generateRows(schema3, numRows)
+    val attrs3      = schema3.toAttributes
+    val rows3       = generateRows(schema3, numRows)
     val projection3 = UnsafeProjection.create(attrs3, attrs3)
 
     benchmark.addCase("7 primitive types") { _ =>
       for (_ <- 1 to iters) {
         var sum = 0L
-        var i = 0
+        var i   = 0
         while (i < numRows) {
           sum += projection3(rows3(i)).getLong(0)
           i += 1
@@ -105,14 +105,14 @@ object UnsafeProjectionBenchmark {
       .add("long", LongType, true)
       .add("float", FloatType, true)
       .add("double", DoubleType, true)
-    val attrs4 = schema4.toAttributes
-    val rows4 = generateRows(schema4, numRows)
+    val attrs4      = schema4.toAttributes
+    val rows4       = generateRows(schema4, numRows)
     val projection4 = UnsafeProjection.create(attrs4, attrs4)
 
     benchmark.addCase("7 nullable primitive types") { _ =>
       for (_ <- 1 to iters) {
         var sum = 0L
-        var i = 0
+        var i   = 0
         while (i < numRows) {
           sum += projection4(rows4(i)).getLong(0)
           i += 1

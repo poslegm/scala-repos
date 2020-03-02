@@ -47,11 +47,9 @@ trait StringHelper { self: NumberHelper =>
   def markdownLinks(text: String) = Html {
     nl2br {
       markdownLinkRegex.replaceAllIn(
-          escape(text),
-          m =>
-            {
-              s"""<a href="${m group 2}">${m group 1}</a>"""
-          })
+        escape(text),
+        m => s"""<a href="${m group 2}">${m group 1}</a>"""
+      )
     }
   }
 
@@ -60,13 +58,13 @@ trait StringHelper { self: NumberHelper =>
 
   def addLinks(text: String) =
     urlRegex.replaceAllIn(
-        text,
-        m =>
-          {
-            val url = delocalize(quoteReplacement(m group 1))
-            val target = if (url contains netDomain) "" else " target='blank'"
-            s"""<a$target rel="nofollow" href="${prependHttp(url)}">$url</a>"""
-        })
+      text,
+      m => {
+        val url    = delocalize(quoteReplacement(m group 1))
+        val target = if (url contains netDomain) "" else " target='blank'"
+        s"""<a$target rel="nofollow" href="${prependHttp(url)}">$url</a>"""
+      }
+    )
 
   private def prependHttp(url: String): String =
     url startsWith "http" fold (url, "http://" + url)
@@ -81,19 +79,19 @@ trait StringHelper { self: NumberHelper =>
   }
 
   def when(cond: Boolean, str: String) = cond ?? str
-  def strong(x: Int): String = strong(x.toString)
-  def strong(x: String): String = s"<strong>$x</strong>"
+  def strong(x: Int): String           = strong(x.toString)
+  def strong(x: String): String        = s"<strong>$x</strong>"
 
   private val NumberFirstRegex = """^(\d+)\s(.+)$""".r
-  private val NumberLastRegex = """^(.+)\s(\d+)$""".r
+  private val NumberLastRegex  = """^(.+)\s(\d+)$""".r
   def splitNumber(s: String)(implicit ctx: UserContext): Html = Html {
     s match {
       case NumberFirstRegex(number, text) =>
-        "<strong>%s</strong><br />%s".format(
-            (~parseIntOption(number)).localize, text)
+        "<strong>%s</strong><br />%s"
+          .format((~parseIntOption(number)).localize, text)
       case NumberLastRegex(text, number) =>
-        "%s<br /><strong>%s</strong>".format(
-            text, (~parseIntOption(number)).localize)
+        "%s<br /><strong>%s</strong>"
+          .format(text, (~parseIntOption(number)).localize)
       case h => h.replace("\n", "<br />")
     }
   }

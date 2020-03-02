@@ -19,7 +19,7 @@ object Perverse {
     val macroPos = c.macroApplication.pos
     val text =
       macroPos.source.lineToString(macroPos.line - 1) substring macroPos.column
-    val tt = Literal(Constant(text))
+    val tt   = Literal(Constant(text))
     val tree = q"t8013.Perverse.pervert($tt)"
     c.Expr[String](tree)
   }

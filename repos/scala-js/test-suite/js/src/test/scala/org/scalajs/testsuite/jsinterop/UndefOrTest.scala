@@ -18,7 +18,7 @@ import org.scalajs.testsuite.utils.JSAssert._
 class UndefOrTest {
 
   def some[A](v: A): js.UndefOr[A] = v
-  def none[A]: js.UndefOr[A] = js.undefined
+  def none[A]: js.UndefOr[A]       = js.undefined
 
   // scala.scalajs.js.UndefOr[A]
 
@@ -51,10 +51,13 @@ class UndefOrTest {
     assertEquals("ok", none[String].getOrElse("ok"))
 
     var defaultComputed = false
-    assertEquals("test", some("test") getOrElse {
-      defaultComputed = true
-      "ko"
-    })
+    assertEquals(
+      "test",
+      some("test") getOrElse {
+        defaultComputed = true
+        "ko"
+      }
+    )
     assertFalse(defaultComputed)
   }
 
@@ -124,15 +127,16 @@ class UndefOrTest {
   }
 
   @Test def collect(): Unit = {
-    assertEquals("ok", some("hello") collect {
-      case "hello" => "ok"
-    })
-    assertTrue(
-        js.isUndefined(some("hello") collect {
+    assertEquals(
+      "ok",
+      some("hello") collect {
+        case "hello" => "ok"
+      }
+    )
+    assertTrue(js.isUndefined(some("hello") collect {
       case "notthis" => "ko"
     }))
-    assertTrue(
-        js.isUndefined(none[String] collect {
+    assertTrue(js.isUndefined(none[String] collect {
       case "hello" => "ko"
     }))
   }
@@ -143,9 +147,12 @@ class UndefOrTest {
       witness += 1
       true
     }
-    assertEquals("ok", some("hello") collect {
-      case x @ "hello" if guard(x) => "ok"
-    })
+    assertEquals(
+      "ok",
+      some("hello") collect {
+        case x @ "hello" if guard(x) => "ok"
+      }
+    )
     assertEquals(1, witness)
   }
 

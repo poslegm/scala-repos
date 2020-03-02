@@ -3,7 +3,10 @@ package org.jetbrains.plugins.scala.lang.completion.lookups
 import java.util
 
 import com.intellij.codeInsight.completion.InsertionContext
-import com.intellij.codeInsight.lookup.{LookupElementDecorator, LookupElementPresentation}
+import com.intellij.codeInsight.lookup.{
+  LookupElementDecorator,
+  LookupElementPresentation
+}
 import gnu.trove.THashSet
 import org.jetbrains.plugins.scala.lang.completion.handlers.ScalaInsertHandler
 
@@ -12,11 +15,12 @@ import org.jetbrains.plugins.scala.lang.completion.handlers.ScalaInsertHandler
   * @since 31.03.12
   */
 class ScalaChainLookupElement(
-    val prefix: ScalaLookupItem, val element: ScalaLookupItem)
-    extends LookupElementDecorator[ScalaLookupItem](element) {
+    val prefix: ScalaLookupItem,
+    val element: ScalaLookupItem
+) extends LookupElementDecorator[ScalaLookupItem](element) {
   override def getAllLookupStrings: util.Set[String] = {
     val strings: util.Set[String] = getDelegate.getAllLookupStrings
-    val result: THashSet[String] = new THashSet[String]
+    val result: THashSet[String]  = new THashSet[String]
     result.addAll(strings)
     result.add(getLookupString)
     result
@@ -36,21 +40,22 @@ class ScalaChainLookupElement(
     element.renderElement(presentation)
     element.someSmartCompletion = old
     presentation.setItemText(
-        prefixPresentation.getItemText + "." + presentation.getItemText)
+      prefixPresentation.getItemText + "." + presentation.getItemText
+    )
     if (element.someSmartCompletion) {
       presentation.setItemText("Some(" + presentation.getItemText + ")")
     }
   }
 
   override def handleInsert(context: InsertionContext) {
-    val editor = context.getEditor
+    val editor     = context.getEditor
     val caretModel = editor.getCaretModel
     val offsetForPrefix =
       caretModel.getOffset + (if (element.someSmartCompletion) 5 else 0) -
-      element.getLookupString.length - 1
+        element.getLookupString.length - 1
     element.handleInsert(context)
-    val document = context.getDocument
-    val status = ScalaInsertHandler.getItemParametersAndAccessorStatus(prefix)
+    val document  = context.getDocument
+    val status    = ScalaInsertHandler.getItemParametersAndAccessorStatus(prefix)
     val addParams = status._1 >= 0 && (status._1 > 0 || !status._3)
     if (addParams) {
       document.insertString(offsetForPrefix, "()")

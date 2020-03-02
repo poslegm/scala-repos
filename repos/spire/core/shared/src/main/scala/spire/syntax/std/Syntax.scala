@@ -32,5 +32,6 @@ trait SeqSyntax {
   implicit def seqOps[@sp A, CC[A] <: Iterable[A]](lhs: CC[A]): SeqOps[A, CC] =
     new SeqOps[A, CC](lhs)
   implicit def indexedSeqOps[@sp A, CC[A] <: IndexedSeq[A]](
-      lhs: CC[A]): IndexedSeqOps[A, CC] = new IndexedSeqOps[A, CC](lhs)
+      lhs: CC[A]
+  ): IndexedSeqOps[A, CC] = new IndexedSeqOps[A, CC](lhs)
 }

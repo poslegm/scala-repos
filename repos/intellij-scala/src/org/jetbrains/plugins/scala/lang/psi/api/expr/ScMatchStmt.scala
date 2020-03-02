@@ -4,7 +4,10 @@ package psi
 package api
 package expr
 
-import org.jetbrains.plugins.scala.lang.psi.api.base.patterns.{ScCaseClause, ScCaseClauses}
+import org.jetbrains.plugins.scala.lang.psi.api.base.patterns.{
+  ScCaseClause,
+  ScCaseClauses
+}
 import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiElementFactory
 
 /**
@@ -39,7 +42,6 @@ trait ScMatchStmt extends ScExpression {
 }
 
 object ScMatchStmt {
-  def unapply(ms: ScMatchStmt): Option[(ScExpression, ScCaseClauses)] = {
+  def unapply(ms: ScMatchStmt): Option[(ScExpression, ScCaseClauses)] =
     ms.expr.flatMap(Some(_, ms.getCaseClauses))
-  }
 }

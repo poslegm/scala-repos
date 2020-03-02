@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -59,7 +59,7 @@ trait ManagedMongoJobManagerModule {
 
     val timeout =
       config[Long]("mongo.timeout", default.queryTimeout.duration.toMillis)
-    val jobs = config[String]("mongo.jobsCollection", default.jobs)
+    val jobs     = config[String]("mongo.jobsCollection", default.jobs)
     val messages = config[String]("mongo.messagesCollection", default.messages)
 
     val settings = MongoJobManagerSettings(timeout, jobs, messages)
@@ -71,24 +71,30 @@ trait ManagedMongoJobManagerModule {
 }
 
 case class MongoJobManagerSettings(
-    queryTimeout: Timeout, jobs: String, messages: String)
+    queryTimeout: Timeout,
+    jobs: String,
+    messages: String
+)
 object MongoJobManagerSettings {
-  val default: MongoJobManagerSettings = MongoJobManagerSettings(
-      5000, "jobs", "jog_messages")
+  val default: MongoJobManagerSettings =
+    MongoJobManagerSettings(5000, "jobs", "jog_messages")
 }
 
-final class MongoJobManager(database: Database,
-                            settings: MongoJobManagerSettings,
-                            fs0: FileStorage[Future])(
-    implicit executionContext: ExecutionContext)
+final class MongoJobManager(
+    database: Database,
+    settings: MongoJobManagerSettings,
+    fs0: FileStorage[Future]
+)(implicit executionContext: ExecutionContext)
     extends JobManager[Future]
-    with JobStateManager[Future] with JobResultManager[Future] with Logging {
+    with JobStateManager[Future]
+    with JobResultManager[Future]
+    with Logging {
 
   import JobManager._
   import JobState._
 
-  protected val fs = fs0
-  implicit val M = new FutureMonad(executionContext)
+  protected val fs          = fs0
+  implicit val M            = new FutureMonad(executionContext)
   implicit val queryTimeout = settings.queryTimeout
 
   // Ensure proper indices for job/message lookup
@@ -100,56 +106,66 @@ final class MongoJobManager(database: Database,
   private def newJobId(): String =
     UUID.randomUUID().toString.toLowerCase.replace("-", "")
 
-  def createJob(apiKey: APIKey,
-                name: String,
-                jobType: String,
-                data: Option[JValue],
-                started: Option[DateTime]): Future[Job] = {
+  def createJob(
+      apiKey: APIKey,
+      name: String,
+      jobType: String,
+      data: Option[JValue],
+      started: Option[DateTime]
+  ): Future[Job] = {
     val start = System.nanoTime
-    val id = newJobId()
+    val id    = newJobId()
     val state = started map (Started(_, NotStarted)) getOrElse NotStarted
-    val job = Job(id, apiKey, name, jobType, data, state)
+    val job   = Job(id, apiKey, name, jobType, data, state)
     database(insert(job.serialize.asInstanceOf[JObject]).into(settings.jobs)) map {
       _ =>
-        logger.info("Job %s created in %f ms".format(
-                id, (System.nanoTime - start) / 1000000.0))
+        logger.info(
+          "Job %s created in %f ms"
+            .format(id, (System.nanoTime - start) / 1000000.0)
+        )
         job
     }
   }
 
-  def findJob(jobId: JobId): Future[Option[Job]] = {
+  def findJob(jobId: JobId): Future[Option[Job]] =
     database(selectOne().from(settings.jobs).where("id" === jobId)) map {
       _ map (_.deserialize[Job])
     }
-  }
 
-  def listJobs(apiKey: APIKey): Future[Seq[Job]] = {
+  def listJobs(apiKey: APIKey): Future[Seq[Job]] =
     database(selectAll.from(settings.jobs).where("apiKey" === apiKey)) map {
       _.map(_.deserialize[Job]).toList
     }
-  }
 
-  def updateStatus(jobId: JobId,
-                   prevStatusId: Option[StatusId],
-                   msg: String,
-                   progress: BigDecimal,
-                   unit: String,
-                   extra: Option[JValue]): Future[Either[String, Status]] = {
+  def updateStatus(
+      jobId: JobId,
+      prevStatusId: Option[StatusId],
+      msg: String,
+      progress: BigDecimal,
+      unit: String,
+      extra: Option[JValue]
+  ): Future[Either[String, Status]] = {
 
     val start = System.nanoTime
     nextMessageId(jobId) flatMap { statusId =>
       prevStatusId match {
         case Some(prevId) =>
-          database(selectAndUpdate(settings.jobs)
-                .set(JPath("status") set statusId)
-                .where("id" === jobId && "status" === prevId)) flatMap {
+          database(
+            selectAndUpdate(settings.jobs)
+              .set(JPath("status") set statusId)
+              .where("id" === jobId && "status" === prevId)
+          ) flatMap {
             case Some(_) => // Success
-              val status = Status(jobId, statusId, msg, progress, unit, extra)
+              val status  = Status(jobId, statusId, msg, progress, unit, extra)
               val message = Status.toMessage(status)
-              database(insert(message.serialize.asInstanceOf[JObject])
-                    .into(settings.messages)) map { _ =>
-                logger.trace("Job %s updated in %f ms".format(
-                        jobId, (System.nanoTime - start) / 1000.0))
+              database(
+                insert(message.serialize.asInstanceOf[JObject])
+                  .into(settings.messages)
+              ) map { _ =>
+                logger.trace(
+                  "Job %s updated in %f ms"
+                    .format(jobId, (System.nanoTime - start) / 1000.0)
+                )
                 Right(status)
               }
 
@@ -160,69 +176,68 @@ final class MongoJobManager(database: Database,
           }
 
         case None =>
-          val status = Status(jobId, statusId, msg, progress, unit, extra)
+          val status  = Status(jobId, statusId, msg, progress, unit, extra)
           val message = Status.toMessage(status)
           database {
             upsert(settings.jobs)
               .set(JPath("status") set statusId)
               .where("id" === jobId)
           } flatMap { _ =>
-            database(insert(message.serialize.asInstanceOf[JObject])
-                  .into(settings.messages))
-          } map { _ =>
-            Right(status)
-          }
+            database(
+              insert(message.serialize.asInstanceOf[JObject])
+                .into(settings.messages)
+            )
+          } map { _ => Right(status) }
       }
     }
   }
 
-  def getStatus(jobId: JobId): Future[Option[Status]] = {
-
+  def getStatus(jobId: JobId): Future[Option[Status]] =
     // TODO: Get Job object, find current status ID, then use that as since.
     // It'll include at least the last status, but rarely much more.
-
     listMessages(jobId, channels.Status, None) map
-    (_.lastOption flatMap (Status.fromMessage(_)))
-  }
+      (_.lastOption flatMap (Status.fromMessage(_)))
 
-  private def nextMessageId(jobId: JobId): Future[Long] = {
+  private def nextMessageId(jobId: JobId): Future[Long] =
     database(
-        selectAndUpsert(settings.jobs)
-          .set(JPath("sequence") inc 1)
-          .where("id" === jobId)
-          .returnNew(true)) map {
+      selectAndUpsert(settings.jobs)
+        .set(JPath("sequence") inc 1)
+        .where("id" === jobId)
+        .returnNew(true)
+    ) map {
       case Some(obj) =>
         (obj \ "sequence").validated[Long] getOrElse sys.error(
-            "Expected an integral sequence number.")
+          "Expected an integral sequence number."
+        )
       case None =>
         sys.error("Sequence number doesn't exist. This shouldn't happen.")
     }
-  }
 
-  def listChannels(jobId: JobId): Future[Seq[String]] = {
+  def listChannels(jobId: JobId): Future[Seq[String]] =
     database {
       distinct("channel").from(settings.messages).where("jobId" === jobId)
     } map
-    (_.collect {
-          case JString(channel) => channel
-        }.toList)
-  }
+      (_.collect {
+        case JString(channel) => channel
+      }.toList)
 
   def addMessage(
-      jobId: JobId, channel: String, value: JValue): Future[Message] = {
+      jobId: JobId,
+      channel: String,
+      value: JValue
+  ): Future[Message] =
     nextMessageId(jobId) flatMap { id =>
       val message = Message(jobId, id, channel, value)
       database {
         insert(message.serialize.asInstanceOf[JObject]).into(settings.messages)
-      } map { _ =>
-        message
-      }
+      } map { _ => message }
     }
-  }
 
-  def listMessages(jobId: JobId,
-                   channel: String,
-                   since: Option[MessageId]): Future[Seq[Message]] = {
+  def listMessages(
+      jobId: JobId,
+      channel: String,
+      since: Option[MessageId]
+  ): Future[Seq[Message]] = {
     val filter0 = "jobId" === jobId && "channel" === channel
     val filter =
       since map { id =>
@@ -233,8 +248,9 @@ final class MongoJobManager(database: Database,
     } map { _.map(_.deserialize[Message]).toList }
   }
 
-  protected def transition(jobId: JobId)(
-      t: JobState => Either[String, JobState]): Future[Either[String, Job]] = {
+  protected def transition(
+      jobId: JobId
+  )(t: JobState => Either[String, JobState]): Future[Either[String, Job]] =
     findJob(jobId) flatMap {
       case Some(job) =>
         t(job.state) match {
@@ -244,16 +260,13 @@ final class MongoJobManager(database: Database,
               update(settings.jobs)
                 .set(newJob.serialize.asInstanceOf[JObject])
                 .where("id" === job.id)
-            } map { _ =>
-              Right(newJob)
-            }
+            } map { _ => Right(newJob) }
 
           case Left(error) =>
-            Future { Left(error) }
+            Future(Left(error))
         }
 
       case None =>
-        Future { Left("Cannot find job with ID '%s'." format jobId) }
+        Future(Left("Cannot find job with ID '%s'." format jobId))
     }
-  }
 }

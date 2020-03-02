@@ -2,7 +2,7 @@ abstract class AbsCell {
   type T = Node
   val init: T
   private var value: T = init
-  def get: T = value
+  def get: T           = value
   def set(x: T) { value = x }
 
   class Node {

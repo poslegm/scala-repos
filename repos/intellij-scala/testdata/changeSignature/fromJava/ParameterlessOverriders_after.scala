@@ -9,13 +9,13 @@ object Test {
 
   object Test2 extends ParameterlessOverriders {
     override val bar = 1
-    val x = bar
+    val x            = bar
     (this bar)
   }
 
   class Test3 extends ParameterlessOverriders {
     override var bar = 1
-    val x = bar
+    val x            = bar
   }
 
   trait Test4 extends ParameterlessOverriders {

@@ -12,7 +12,7 @@ import org.jetbrains.plugins.scala.lang.parser._
 import org.jetbrains.plugins.scala.lang.psi.api.base.types._
 import org.jetbrains.plugins.scala.lang.psi.api.expr._
 
-/** 
+/**
   * @author Alexander Podkhalyuzin
   * Date: 22.05.2008
   */
@@ -26,25 +26,23 @@ class ValueDefinitionFilter extends ElementFilter {
       parent.getParent match {
         case _: ScGenerator | _: ScEnumerator | _: ScExistentialClause =>
           if ((leaf.getPrevSibling == null ||
-                  leaf.getPrevSibling.getPrevSibling == null ||
-                  leaf.getPrevSibling.getPrevSibling.getNode.getElementType != ScalaTokenTypes.kDEF) &&
+              leaf.getPrevSibling.getPrevSibling == null ||
+              leaf.getPrevSibling.getPrevSibling.getNode.getElementType != ScalaTokenTypes.kDEF) &&
               (parent.getPrevSibling == null ||
-                  parent.getPrevSibling.getPrevSibling == null ||
-                  (parent.getPrevSibling.getPrevSibling.getNode.getElementType != ScalaElementTypes.MATCH_STMT ||
-                      !parent.getPrevSibling.getPrevSibling.getLastChild
-                        .isInstanceOf[PsiErrorElement]))) return true
+              parent.getPrevSibling.getPrevSibling == null ||
+              (parent.getPrevSibling.getPrevSibling.getNode.getElementType != ScalaElementTypes.MATCH_STMT ||
+              !parent.getPrevSibling.getPrevSibling.getLastChild
+                .isInstanceOf[PsiErrorElement]))) return true
         case _ =>
       }
     }
     false
   }
 
-  def isClassAcceptable(hintClass: java.lang.Class[_]): Boolean = {
+  def isClassAcceptable(hintClass: java.lang.Class[_]): Boolean =
     true
-  }
 
   @NonNls
-  override def toString: String = {
+  override def toString: String =
     "val keyword filter"
-  }
 }

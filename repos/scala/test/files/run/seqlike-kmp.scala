@@ -1,6 +1,6 @@
 object Test {
-  val source = 0 to 99
-  val idxes = (-1 to 2) ++ (97 to 100)
+  val source            = 0 to 99
+  val idxes             = (-1 to 2) ++ (97 to 100)
   def str(xs: Seq[Int]) = xs.mkString("(", ", ", ")")
 
   def f(tgt: Seq[Int]) = {
@@ -18,9 +18,8 @@ object Test {
     }
   }
 
-  def g(idx: Int, len: Int) = {
+  def g(idx: Int, len: Int) =
     f(source.slice(idx, idx + len))
-  }
 
   def main(args: Array[String]): Unit = {
     g(97, 1)

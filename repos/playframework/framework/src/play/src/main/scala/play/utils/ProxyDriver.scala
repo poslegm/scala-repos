@@ -15,6 +15,6 @@ class ProxyDriver(proxied: Driver) extends Driver {
   def getMinorVersion() = proxied.getMinorVersion
   def getPropertyInfo(user: String, properties: java.util.Properties) =
     proxied.getPropertyInfo(user, properties)
-  def jdbcCompliant() = proxied.jdbcCompliant
+  def jdbcCompliant()           = proxied.jdbcCompliant
   def getParentLogger(): Logger = null
 }

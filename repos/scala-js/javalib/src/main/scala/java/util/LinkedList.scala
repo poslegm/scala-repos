@@ -4,7 +4,10 @@ import scala.annotation.tailrec
 import scala.collection.JavaConversions._
 
 class LinkedList[E]()
-    extends AbstractSequentialList[E] with List[E] with Deque[E] with Cloneable
+    extends AbstractSequentialList[E]
+    with List[E]
+    with Deque[E]
+    with Cloneable
     with Serializable {
 
   def this(c: Collection[_ <: E]) = {
@@ -24,15 +27,13 @@ class LinkedList[E]()
    */
   private var _size: Double = 0
 
-  def getFirst(): E = {
+  def getFirst(): E =
     if (isEmpty()) throw new NoSuchElementException()
     else peekFirst()
-  }
 
-  def getLast(): E = {
+  def getLast(): E =
     if (isEmpty()) throw new NoSuchElementException()
     else peekLast()
-  }
 
   def removeFirst(): E = {
     if (isEmpty()) throw new NoSuchElementException()
@@ -97,7 +98,7 @@ class LinkedList[E]()
     _removeOccurrence(listIterator, o)
 
   override def addAll(c: Collection[_ <: E]): Boolean = {
-    val iter = c.iterator
+    val iter    = c.iterator
     val changed = iter.hasNext()
     while (iter.hasNext()) addLast(iter.next())
 
@@ -110,7 +111,7 @@ class LinkedList[E]()
     _size = 0
   }
 
-  private def getNodeAt(index: Int): Node[E] = {
+  private def getNodeAt(index: Int): Node[E] =
     if (index == 0) head
     else if (index == size - 1) last
     else {
@@ -124,7 +125,6 @@ class LinkedList[E]()
       }
       current
     }
-  }
 
   override def get(index: Int): E = {
     checkIndexInBounds(index)
@@ -133,13 +133,13 @@ class LinkedList[E]()
 
   override def set(index: Int, element: E): E = {
     checkIndexInBounds(index)
-    val node = getNodeAt(index)
+    val node     = getNodeAt(index)
     val oldValue = node.value
     node.value = element
     oldValue
   }
 
-  private def addNode(nextNode: Node[E], e: E): Unit = {
+  private def addNode(nextNode: Node[E], e: E): Unit =
     if (nextNode eq head) addFirst(e)
     else if (nextNode eq null) addLast(e)
     else {
@@ -149,14 +149,13 @@ class LinkedList[E]()
 
       _size += 1
     }
-  }
 
   override def add(index: Int, element: E): Unit = {
     checkIndexOnBounds(index)
     addNode(getNodeAt(index), element)
   }
 
-  private def removeNode(node: Node[E]): E = {
+  private def removeNode(node: Node[E]): E =
     if (node eq head) removeFirst()
     else if (node eq last) removeLast()
     else {
@@ -167,7 +166,6 @@ class LinkedList[E]()
 
       node.value
     }
-  }
 
   override def remove(index: Int): E = {
     checkIndexInBounds(index)
@@ -244,7 +242,7 @@ class LinkedList[E]()
     new ListIterator[E] {
 
       private var last: Double = -1
-      private var i: Double = index
+      private var i: Double    = index
 
       private var currentNode: Node[E] =
         if (index == size) null else getNodeAt(index)
@@ -322,16 +320,15 @@ class LinkedList[E]()
         last = -1
       }
 
-      private def checkThatHasLast(): Unit = {
+      private def checkThatHasLast(): Unit =
         if (last == -1) throw new IllegalStateException()
-      }
     }
   }
 
-  def descendingIterator(): Iterator[E] = {
+  def descendingIterator(): Iterator[E] =
     new Iterator[E] {
 
-      private var removeEnabled = false
+      private var removeEnabled     = false
       private var nextNode: Node[E] = LinkedList.this.last
 
       def hasNext(): Boolean =
@@ -354,7 +351,6 @@ class LinkedList[E]()
         else removeNode(nextNode.next)
       }
     }
-  }
 
   override def clone(): AnyRef =
     new LinkedList[E](this)
@@ -362,7 +358,9 @@ class LinkedList[E]()
 
 object LinkedList {
 
-  protected[LinkedList] final class Node[T](var value: T,
-                                            var prev: Node[T] = null,
-                                            var next: Node[T] = null)
+  protected[LinkedList] final class Node[T](
+      var value: T,
+      var prev: Node[T] = null,
+      var next: Node[T] = null
+  )
 }

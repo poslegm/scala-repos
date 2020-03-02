@@ -31,8 +31,9 @@ import org.apache.spark.sql.DataFrame
   * @param predictionAndLabels an RDD of (prediction, label) pairs.
   */
 @Since("1.1.0")
-class MulticlassMetrics @Since("1.1.0")(
-    predictionAndLabels: RDD[(Double, Double)]) {
+class MulticlassMetrics @Since("1.1.0") (
+    predictionAndLabels: RDD[(Double, Double)]
+) {
 
   /**
     * An auxiliary constructor taking a DataFrame.
@@ -44,18 +45,27 @@ class MulticlassMetrics @Since("1.1.0")(
   private lazy val labelCountByClass: Map[Double, Long] =
     predictionAndLabels.values.countByValue()
   private lazy val labelCount: Long = labelCountByClass.values.sum
-  private lazy val tpByClass: Map[Double, Int] = predictionAndLabels.map {
-    case (prediction, label) =>
-      (label, if (label == prediction) 1 else 0)
-  }.reduceByKey(_ + _).collectAsMap()
-  private lazy val fpByClass: Map[Double, Int] = predictionAndLabels.map {
-    case (prediction, label) =>
-      (prediction, if (prediction != label) 1 else 0)
-  }.reduceByKey(_ + _).collectAsMap()
-  private lazy val confusions = predictionAndLabels.map {
-    case (prediction, label) =>
-      ((label, prediction), 1)
-  }.reduceByKey(_ + _).collectAsMap()
+  private lazy val tpByClass: Map[Double, Int] = predictionAndLabels
+    .map {
+      case (prediction, label) =>
+        (label, if (label == prediction) 1 else 0)
+    }
+    .reduceByKey(_ + _)
+    .collectAsMap()
+  private lazy val fpByClass: Map[Double, Int] = predictionAndLabels
+    .map {
+      case (prediction, label) =>
+        (prediction, if (prediction != label) 1 else 0)
+    }
+    .reduceByKey(_ + _)
+    .collectAsMap()
+  private lazy val confusions = predictionAndLabels
+    .map {
+      case (prediction, label) =>
+        ((label, prediction), 1)
+    }
+    .reduceByKey(_ + _)
+    .collectAsMap()
 
   /**
     * Returns confusion matrix:
@@ -65,9 +75,9 @@ class MulticlassMetrics @Since("1.1.0")(
     */
   @Since("1.1.0")
   def confusionMatrix: Matrix = {
-    val n = labels.length
+    val n      = labels.length
     val values = Array.ofDim[Double](n * n)
-    var i = 0
+    var i      = 0
     while (i < n) {
       var j = 0
       while (j < n) {
@@ -124,8 +134,8 @@ class MulticlassMetrics @Since("1.1.0")(
     */
   @Since("1.1.0")
   def fMeasure(label: Double, beta: Double): Double = {
-    val p = precision(label)
-    val r = recall(label)
+    val p        = precision(label)
+    val r        = recall(label)
     val betaSqrd = beta * beta
     if (p + r == 0) 0 else (1 + betaSqrd) * p * r / (betaSqrd * p + r)
   }

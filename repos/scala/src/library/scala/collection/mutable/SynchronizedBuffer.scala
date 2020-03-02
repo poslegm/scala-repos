@@ -24,8 +24,9 @@ import script._
   *  @define coll synchronized buffer
   */
 @deprecated(
-    "Synchronization via traits is deprecated as it is inherently unreliable.  Consider java.util.concurrent.ConcurrentLinkedQueue as an alternative.",
-    "2.11.0")
+  "Synchronization via traits is deprecated as it is inherently unreliable.  Consider java.util.concurrent.ConcurrentLinkedQueue as an alternative.",
+  "2.11.0"
+)
 trait SynchronizedBuffer[A] extends Buffer[A] {
 
   import scala.collection.Traversable
@@ -102,7 +103,7 @@ trait SynchronizedBuffer[A] extends Buffer[A] {
     *  @param xs the traversable object.
     */
   override def ++=:(xs: TraversableOnce[A]): this.type =
-    synchronized[this.type] { super.++=:(xs) }
+    synchronized[this.type](super.++=:(xs))
 
   /** Prepend an element to this list.
     *

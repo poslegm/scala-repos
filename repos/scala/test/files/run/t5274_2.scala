@@ -16,8 +16,8 @@ object Test extends App {
 
       def sort1(l: Int, r: Int) {
         val pivot = a((l + r) / 2)
-        var i = l
-        var j = r
+        var i     = l
+        var j     = r
         while (i <= j) {
           while (a(i) < pivot) i += 1
           while (a(j) > pivot) j -= 1

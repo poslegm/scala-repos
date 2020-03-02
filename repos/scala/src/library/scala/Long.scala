@@ -557,6 +557,6 @@ object Long extends AnyValCompanion {
 
   /** Language mandated coercions from Long to "wider" types. */
   import scala.language.implicitConversions
-  implicit def long2float(x: Long): Float = x.toFloat
+  implicit def long2float(x: Long): Float   = x.toFloat
   implicit def long2double(x: Long): Double = x.toDouble
 }

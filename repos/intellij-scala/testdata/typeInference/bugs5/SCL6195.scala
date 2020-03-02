@@ -13,11 +13,10 @@ object SCL6195 {
   type BlahWithC = Blah with C
 
   def foo(x: BlahWithC) = 1
-  def foo(x: Int) = "text"
+  def foo(x: Int)       = "text"
 
   /*start*/
-  foo(
-      new Blah(2, 2) with C with D {
+  foo(new Blah(2, 2) with C with D {
     val c = 2
     val d = 6
   }) /*end*/

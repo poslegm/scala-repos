@@ -13,14 +13,14 @@ class ReplaceEqualsOrEqualityInInfixExprIntentionTest
   val familyName = ReplaceEqualsOrEqualityInInfixExprIntention.familyName
 
   def testReplaceQuality() {
-    val text = "if (a ==<caret> b) return"
+    val text       = "if (a ==<caret> b) return"
     val resultText = "if (a <caret>equals b) return"
 
     doTest(text, resultText)
   }
 
   def testReplaceQuality2() {
-    val text = "if (a <caret>equals false) return"
+    val text       = "if (a <caret>equals false) return"
     val resultText = "if (a <caret>== false) return"
 
     doTest(text, resultText)

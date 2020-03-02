@@ -20,10 +20,12 @@ import lila.socket.actorApi.{Connected => _, _}
 import lila.socket.{SocketActor, History, Historical}
 import makeTimeout.short
 
-private[lobby] final class Socket(val history: History[Messadata],
-                                  router: akka.actor.ActorSelection,
-                                  uidTtl: FiniteDuration)
-    extends SocketActor[Member](uidTtl) with Historical[Member, Messadata] {
+private[lobby] final class Socket(
+    val history: History[Messadata],
+    router: akka.actor.ActorSelection,
+    uidTtl: FiniteDuration
+) extends SocketActor[Member](uidTtl)
+    with Historical[Member, Messadata] {
 
   override val startsOnApplicationBoot = true
 
@@ -45,7 +47,7 @@ private[lobby] final class Socket(val history: History[Messadata],
 
     case Join(uid, user, blocks, mobile) =>
       val (enumerator, channel) = Concurrent.broadcast[JsValue]
-      val member = Member(channel, user, blocks, uid, mobile)
+      val member                = Member(channel, user, blocks, uid, mobile)
       addMember(uid, member)
       sender ! Connected(enumerator, member)
 
@@ -74,7 +76,9 @@ private[lobby] final class Socket(val history: History[Messadata],
 
     case JoinSeek(userId, seek, game, creatorColor) =>
       membersByUserId(seek.user.id) foreach notifyPlayerStart(
-          game, creatorColor)
+        game,
+        creatorColor
+      )
       membersByUserId(userId) foreach notifyPlayerStart(game, !creatorColor)
 
     case HookIds(ids) => notifyVersion("hli", ids mkString ",", Messadata())
@@ -90,14 +94,16 @@ private[lobby] final class Socket(val history: History[Messadata],
   }
 
   private def notifyPlayerStart(game: lila.game.Game, color: chess.Color) =
-    notifyMember("redirect",
-                 Json
-                   .obj(
-                       "id" -> (game fullIdOf color),
-                       "url" -> playerUrl(game fullIdOf color),
-                       "cookie" -> AnonCookie.json(game, color)
-                   )
-                   .noNull) _
+    notifyMember(
+      "redirect",
+      Json
+        .obj(
+          "id"     -> (game fullIdOf color),
+          "url"    -> playerUrl(game fullIdOf color),
+          "cookie" -> AnonCookie.json(game, color)
+        )
+        .noNull
+    ) _
 
   protected def shouldSkipMessageFor(message: Message, member: Member) =
     message.metadata.hook ?? { hook =>

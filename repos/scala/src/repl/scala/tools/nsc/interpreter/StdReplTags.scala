@@ -6,10 +6,10 @@ import scala.reflect.runtime.{universe => ru}
 
 trait StdReplTags extends StdTags {
   lazy val tagOfStdReplVals = tagOfStaticClass[StdReplVals]
-  lazy val tagOfIMain = tagOfStaticClass[IMain]
+  lazy val tagOfIMain       = tagOfStaticClass[IMain]
 }
 
 object StdReplTags extends StdTags with StdReplTags {
   val u: ru.type = ru
-  val m = u.runtimeMirror(getClass.getClassLoader)
+  val m          = u.runtimeMirror(getClass.getClassLoader)
 }

@@ -9,18 +9,17 @@ import org.jetbrains.plugins.scala.settings._
   */
 class EnablePerformanceProblemsQuickFix(project: Project)
     extends LocalQuickFix {
-  val settings = ScalaProjectSettings.getInstance(project)
+  val settings       = ScalaProjectSettings.getInstance(project)
   val ignoreSettings = settings.isIgnorePerformance
 
-  def applyFix(project: Project, descriptor: ProblemDescriptor): Unit = {
+  def applyFix(project: Project, descriptor: ProblemDescriptor): Unit =
     settings.setIgnorePerformance(!ignoreSettings)
-  }
 
   val enable: String = if (!ignoreSettings) "Enable" else "Disable"
   def getName: String =
     enable + " setting, solving resolve problems " +
-    (if (!ignoreSettings) "(this can cause editor performance problems"
-     else "(this can improve editor performance") + ")."
+      (if (!ignoreSettings) "(this can cause editor performance problems"
+       else "(this can improve editor performance") + ")."
 
   def getFamilyName: String = enable + " setting"
 }

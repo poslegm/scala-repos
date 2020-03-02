@@ -54,14 +54,13 @@ object Status {
   /** Indicates a test was declared as pending. */
   final val Pending = new Status("Pending", 6)
 
-  private[this] val _values: Array[Status] = Array(
-      Success, Error, Failure, Skipped, Ignored, Canceled, Pending)
+  private[this] val _values: Array[Status] =
+    Array(Success, Error, Failure, Skipped, Ignored, Canceled, Pending)
 
   def values(): Array[Status] = _values.clone()
 
-  def valueOf(name: String): Status = {
+  def valueOf(name: String): Status =
     _values.find(_.name == name).getOrElse {
       throw new IllegalArgumentException("No enum const Status." + name)
     }
-  }
 }

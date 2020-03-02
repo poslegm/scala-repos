@@ -3,7 +3,11 @@ package commands
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-import org.joda.time.format.{DateTimeFormat, DateTimeFormatter, ISODateTimeFormat}
+import org.joda.time.format.{
+  DateTimeFormat,
+  DateTimeFormatter,
+  ISODateTimeFormat
+}
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatra.util.RicherString._
 
@@ -30,13 +34,12 @@ object JodaDateFormats extends DateParser {
   trait DateFormat extends DateParser {
     def dateTimeFormat: DateTimeFormatter
 
-    def parse(s: String) = {
+    def parse(s: String) =
       s.blankOption flatMap { s ⇒
         catching(classOf[IllegalArgumentException]) opt {
           dateTimeFormat parseDateTime s
         }
       }
-    }
   }
 
   object Iso8601 extends DateFormat {
@@ -49,10 +52,10 @@ object JodaDateFormats extends DateParser {
   }
 
   object HttpDate extends DateFormat {
-    val pattern = "EEE, dd MMM yyyy HH:mm:ss zzz"
+    val pattern        = "EEE, dd MMM yyyy HH:mm:ss zzz"
     val dateTimeFormat = DateTimeFormat.forPattern(pattern)
 
-    override def parse(s: String) = {
+    override def parse(s: String) =
       s.blankOption flatMap { s ⇒
         allCatch opt {
           // I couldn't get this to work with joda time
@@ -71,6 +74,5 @@ object JodaDateFormats extends DateParser {
           new DateTime(df.parse(s))
         }
       }
-    }
   }
 }

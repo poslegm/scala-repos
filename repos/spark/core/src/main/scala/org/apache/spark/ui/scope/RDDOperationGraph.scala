@@ -33,14 +33,20 @@ import org.apache.spark.storage.StorageLevel
   * nodes and children clusters. Additionally, a graph may also have edges that enter or exit
   * the graph from nodes that belong to adjacent graphs.
   */
-private[ui] case class RDDOperationGraph(edges: Seq[RDDOperationEdge],
-                                         outgoingEdges: Seq[RDDOperationEdge],
-                                         incomingEdges: Seq[RDDOperationEdge],
-                                         rootCluster: RDDOperationCluster)
+private[ui] case class RDDOperationGraph(
+    edges: Seq[RDDOperationEdge],
+    outgoingEdges: Seq[RDDOperationEdge],
+    incomingEdges: Seq[RDDOperationEdge],
+    rootCluster: RDDOperationCluster
+)
 
 /** A node in an RDDOperationGraph. This represents an RDD. */
 private[ui] case class RDDOperationNode(
-    id: Int, name: String, cached: Boolean, callsite: String)
+    id: Int,
+    name: String,
+    cached: Boolean,
+    callsite: String
+)
 
 /**
   * A directed edge connecting two nodes in an RDDOperationGraph.
@@ -55,26 +61,25 @@ private[ui] case class RDDOperationEdge(fromId: Int, toId: Int)
   * stages, jobs, or any higher level construct. A cluster may be nested inside of other clusters.
   */
 private[ui] class RDDOperationCluster(
-    val id: String, private var _name: String) {
-  private val _childNodes = new ListBuffer[RDDOperationNode]
+    val id: String,
+    private var _name: String
+) {
+  private val _childNodes    = new ListBuffer[RDDOperationNode]
   private val _childClusters = new ListBuffer[RDDOperationCluster]
 
-  def name: String = _name
-  def setName(n: String): Unit = { _name = n }
+  def name: String             = _name
+  def setName(n: String): Unit = _name = n
 
-  def childNodes: Seq[RDDOperationNode] = _childNodes.iterator.toSeq
+  def childNodes: Seq[RDDOperationNode]       = _childNodes.iterator.toSeq
   def childClusters: Seq[RDDOperationCluster] = _childClusters.iterator.toSeq
-  def attachChildNode(childNode: RDDOperationNode): Unit = {
+  def attachChildNode(childNode: RDDOperationNode): Unit =
     _childNodes += childNode
-  }
-  def attachChildCluster(childCluster: RDDOperationCluster): Unit = {
+  def attachChildCluster(childCluster: RDDOperationCluster): Unit =
     _childClusters += childCluster
-  }
 
   /** Return all the nodes which are cached. */
-  def getCachedNodes: Seq[RDDOperationNode] = {
+  def getCachedNodes: Seq[RDDOperationNode] =
     _childNodes.filter(_.cached) ++ _childClusters.flatMap(_.getCachedNodes)
-  }
 }
 
 private[ui] object RDDOperationGraph extends Logging {
@@ -115,11 +120,14 @@ private[ui] object RDDOperationGraph extends Logging {
 
       // TODO: differentiate between the intention to cache an RDD and whether it's actually cached
       val node = nodes.getOrElseUpdate(
+        rdd.id,
+        RDDOperationNode(
           rdd.id,
-          RDDOperationNode(rdd.id,
-                           rdd.name,
-                           rdd.storageLevel != StorageLevel.NONE,
-                           rdd.callSite))
+          rdd.name,
+          rdd.storageLevel != StorageLevel.NONE,
+          rdd.callSite
+        )
+      )
 
       if (rdd.scope.isEmpty) {
         // This RDD has no encompassing scope, so we put it directly in the root cluster
@@ -128,20 +136,21 @@ private[ui] object RDDOperationGraph extends Logging {
       } else {
         // Otherwise, this RDD belongs to an inner cluster,
         // which may be nested inside of other clusters
-        val rddScopes = rdd.scope.map { scope =>
-          scope.getAllScopes
-        }.getOrElse(Seq.empty)
+        val rddScopes =
+          rdd.scope.map(scope => scope.getAllScopes).getOrElse(Seq.empty)
         val rddClusters = rddScopes.map { scope =>
-          val clusterId = scope.id
+          val clusterId   = scope.id
           val clusterName = scope.name.replaceAll("\\n", "\\\\n")
           clusters.getOrElseUpdate(
-              clusterId, new RDDOperationCluster(clusterId, clusterName))
+            clusterId,
+            new RDDOperationCluster(clusterId, clusterName)
+          )
         }
         // Build the cluster hierarchy for this RDD
         rddClusters.sliding(2).foreach { pc =>
           if (pc.size == 2) {
             val parentCluster = pc(0)
-            val childCluster = pc(1)
+            val childCluster  = pc(1)
             parentCluster.attachChildCluster(childCluster)
           }
         }
@@ -165,9 +174,9 @@ private[ui] object RDDOperationGraph extends Logging {
     edges.foreach {
       case e: RDDOperationEdge =>
         val fromThisGraph = nodes.contains(e.fromId)
-        val toThisGraph = nodes.contains(e.toId)
+        val toThisGraph   = nodes.contains(e.toId)
         (fromThisGraph, toThisGraph) match {
-          case (true, true) => internalEdges += e
+          case (true, true)  => internalEdges += e
           case (true, false) => outgoingEdges += e
           case (false, true) => incomingEdges += e
           // should never happen
@@ -209,15 +218,16 @@ private[ui] object RDDOperationGraph extends Logging {
   }
 
   /** Update the dot representation of the RDDOperationGraph in cluster to subgraph. */
-  private def makeDotSubgraph(subgraph: StringBuilder,
-                              cluster: RDDOperationCluster,
-                              indent: String): Unit = {
+  private def makeDotSubgraph(
+      subgraph: StringBuilder,
+      cluster: RDDOperationCluster,
+      indent: String
+  ): Unit = {
     subgraph
       .append(indent)
       .append(s"subgraph cluster${cluster.id} {\n")
       .append(indent)
-      .append(
-          s"""  label="${StringEscapeUtils.escapeJava(cluster.name)}";\n""")
+      .append(s"""  label="${StringEscapeUtils.escapeJava(cluster.name)}";\n""")
     cluster.childNodes.foreach { node =>
       subgraph.append(indent).append(s"  ${makeDotNode(node)};\n")
     }

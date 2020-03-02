@@ -42,12 +42,13 @@ object LogLoss extends Loss {
     * @return Loss gradient
     */
   @Since("1.2.0")
-  override def gradient(prediction: Double, label: Double): Double = {
+  override def gradient(prediction: Double, label: Double): Double =
     -4.0 * label / (1.0 + math.exp(2.0 * label * prediction))
-  }
 
   override private[spark] def computeError(
-      prediction: Double, label: Double): Double = {
+      prediction: Double,
+      label: Double
+  ): Double = {
     val margin = 2.0 * label * prediction
     // The following is equivalent to 2.0 * log(1 + exp(-margin)) but more numerically stable.
     2.0 * MLUtils.log1pExp(-margin)

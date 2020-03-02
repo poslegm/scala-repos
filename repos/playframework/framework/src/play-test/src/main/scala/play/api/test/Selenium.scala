@@ -55,9 +55,8 @@ case class TestBrowser(webDriver: WebDriver, baseUrl: Option[String])
     val wait =
       new FluentWait[WebDriver](webDriver).withTimeout(timeout, timeUnit)
     val f = new Function[WebDriver, T]() {
-      def apply(driver: WebDriver): T = {
+      def apply(driver: WebDriver): T =
         block
-      }
     }
     wait.until(f)
   }
@@ -107,7 +106,9 @@ object TestBrowser {
     * @param baseUrl The default base URL that will be used for relative URLs
     */
   def of[WEBDRIVER <: WebDriver](
-      webDriver: Class[WEBDRIVER], baseUrl: Option[String] = None) =
+      webDriver: Class[WEBDRIVER],
+      baseUrl: Option[String] = None
+  ) =
     TestBrowser(WebDriverFactory(webDriver), baseUrl)
 }
 
@@ -123,7 +124,7 @@ object WebDriverFactory {
     // Driver-specific configuration
     driver match {
       case htmlunit: HtmlUnitDriver => htmlunit.setJavascriptEnabled(true)
-      case _ =>
+      case _                        =>
     }
     driver
   }

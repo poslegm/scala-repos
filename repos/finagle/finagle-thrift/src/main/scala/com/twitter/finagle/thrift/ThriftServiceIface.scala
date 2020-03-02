@@ -13,8 +13,8 @@ import org.apache.thrift.transport.TMemoryInputTransport
 
 object maxReusableBufferSize
     extends GlobalFlag[StorageUnit](
-        16.kilobytes,
-        "Max size (bytes) for ThriftServiceIface reusable transport buffer"
+      16.kilobytes,
+      "Max size (bytes) for ThriftServiceIface reusable transport buffer"
     )
 
 /**
@@ -53,16 +53,20 @@ trait MethodIfaceBuilder[ServiceIface, MethodIface] {
 
 object ThriftMethodStats {
   def apply(stats: StatsReceiver): ThriftMethodStats =
-    ThriftMethodStats(stats.counter("requests"),
-                      stats.counter("success"),
-                      stats.counter("failures"),
-                      stats.scope("failures"))
+    ThriftMethodStats(
+      stats.counter("requests"),
+      stats.counter("success"),
+      stats.counter("failures"),
+      stats.scope("failures")
+    )
 }
 
-case class ThriftMethodStats(requestsCounter: Counter,
-                             successCounter: Counter,
-                             failuresCounter: Counter,
-                             failuresScope: StatsReceiver)
+case class ThriftMethodStats(
+    requestsCounter: Counter,
+    successCounter: Counter,
+    failuresCounter: Counter,
+    failuresScope: StatsReceiver
+)
 
 /**
   * Construct Service interface for a thrift method.
@@ -112,9 +116,8 @@ object ThriftServiceIface {
       thriftService: Service[ThriftClientRequest, Array[Byte]],
       pf: TProtocolFactory,
       stats: StatsReceiver
-  ): Service[method.Args, method.Result] = {
+  ): Service[method.Args, method.Result] =
     statsFilter(method, stats) andThen thriftCodecFilter(method, pf) andThen thriftService
-  }
 
   /**
     * A [[Filter]] that updates success and failure stats for a thrift method.
@@ -125,7 +128,8 @@ object ThriftServiceIface {
       stats: StatsReceiver
   ): SimpleFilter[method.Args, method.Result] = {
     val methodStats = ThriftMethodStats(
-        stats.scope(method.serviceName).scope(method.name))
+      stats.scope(method.serviceName).scope(method.name)
+    )
     new SimpleFilter[method.Args, method.Result] {
       def apply(
           args: method.Args,
@@ -175,7 +179,7 @@ object ThriftServiceIface {
       def apply(
           args: method.Args,
           service: Service[method.Args, method.Result]
-      ): Future[method.SuccessType] = {
+      ): Future[method.SuccessType] =
         service(args).flatMap { response: method.Result =>
           response.firstException() match {
             case Some(exception) =>
@@ -187,14 +191,14 @@ object ThriftServiceIface {
                   Future.value(result)
                 case None =>
                   Future.exception(
-                      new TApplicationException(
-                          TApplicationException.MISSING_RESULT,
-                          s"Thrift method '${method.name}' failed: missing result"
-                      ))
+                    new TApplicationException(
+                      TApplicationException.MISSING_RESULT,
+                      s"Thrift method '${method.name}' failed: missing result"
+                    )
+                  )
               }
           }
         }
-      }
     }
 
   private[this] val tlReusableBuffer =
@@ -208,12 +212,11 @@ object ThriftServiceIface {
     buf
   }
 
-  private[this] def resetBuffer(trans: TReusableMemoryTransport): Unit = {
+  private[this] def resetBuffer(trans: TReusableMemoryTransport): Unit =
     if (trans.currentCapacity > maxReusableBufferSize().inBytes) {
       resetCounter.incr()
       tlReusableBuffer.remove()
     }
-  }
 
   private def encodeRequest(
       methodName: String,
@@ -221,7 +224,7 @@ object ThriftServiceIface {
       pf: TProtocolFactory,
       oneway: Boolean
   ): ThriftClientRequest = {
-    val buf = getReusableBuffer()
+    val buf   = getReusableBuffer()
     val oprot = pf.getProtocol(buf)
 
     oprot.writeMessageBegin(new TMessage(methodName, TMessageType.CALL, 0))
@@ -240,7 +243,7 @@ object ThriftServiceIface {
       pf: TProtocolFactory
   ): T = {
     val iprot = pf.getProtocol(new TMemoryInputTransport(resBytes))
-    val msg = iprot.readMessageBegin()
+    val msg   = iprot.readMessageBegin()
     if (msg.`type` == TMessageType.EXCEPTION) {
       val exception = TApplicationException.read(iprot)
       iprot.readMessageEnd()

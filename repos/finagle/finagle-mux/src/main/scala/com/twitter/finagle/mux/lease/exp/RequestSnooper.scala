@@ -23,15 +23,15 @@ private[lease] class RequestSnooper(
     timer: Timer = DefaultTimer.twitter
 ) {
   private[this] val histo = {
-    val clk = new ClockFromTimer(timer)
+    val clk         = new ClockFromTimer(timer)
     val granularity = CommonTime.MILLISECONDS
 
     new WindowedApproxHistogram(
-        Amount.of(1.minute.inMilliseconds, granularity),
-        5,
-        // TODO: switch to precision
-        Amount.of(100.kilobytes.inBytes, Data.BYTES),
-        clk
+      Amount.of(1.minute.inMilliseconds, granularity),
+      5,
+      // TODO: switch to precision
+      Amount.of(100.kilobytes.inBytes, Data.BYTES),
+      clk
     )
   }
 
@@ -65,13 +65,11 @@ private[lease] class RequestSnooper(
   * [[com.twitter.util.Time]]
   */
 private[lease] class ClockFromTimer(timer: Timer) extends Clock {
-  def nowMillis(): Long = {
+  def nowMillis(): Long =
     Time.now.inMilliseconds
-  }
 
-  def nowNanos(): Long = {
+  def nowNanos(): Long =
     Time.now.inNanoseconds
-  }
 
   def waitFor(millis: Long) {
     val p = Promise[Unit]

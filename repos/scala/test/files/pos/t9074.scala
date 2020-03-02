@@ -4,11 +4,11 @@ package blam {
 
     trait F[T] {
       def f(d: Double, t: T): T = ???
-      def f(d: Int, t: T): T = ???
+      def f(d: Int, t: T): T    = ???
       def f(d: String, t: T): T = ???
 
       def g[A](a: T): T = ???
-      def g(a: Int) = ???
+      def g(a: Int)     = ???
     }
   }
 

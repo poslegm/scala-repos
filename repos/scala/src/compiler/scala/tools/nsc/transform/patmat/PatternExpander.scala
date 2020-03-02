@@ -41,10 +41,13 @@ trait PatternExpander[Pattern, Type] {
     *  sequenceType is Seq[T], elementType is T, repeatedType is T*.
     */
   sealed case class Repeated(
-      sequenceType: Type, elementType: Type, repeatedType: Type) {
+      sequenceType: Type,
+      elementType: Type,
+      repeatedType: Type
+  ) {
     def exists = elementType != NoType
 
-    def elementList = if (exists) elementType :: Nil else Nil
+    def elementList  = if (exists) elementType :: Nil else Nil
     def sequenceList = if (exists) sequenceType :: Nil else Nil
     def repeatedList = if (exists) repeatedType :: Nil else Nil
 
@@ -55,12 +58,12 @@ trait PatternExpander[Pattern, Type] {
   }
 
   final case class Patterns(fixed: List[Pattern], star: Pattern) {
-    def hasStar = star != NoPattern
-    def starArity = if (hasStar) 1 else 0
+    def hasStar      = star != NoPattern
+    def starArity    = if (hasStar) 1 else 0
     def nonStarArity = fixed.length
-    def totalArity = nonStarArity + starArity
+    def totalArity   = nonStarArity + starArity
     def starPatterns = if (hasStar) star :: Nil else Nil
-    def all = fixed ::: starPatterns
+    def all          = fixed ::: starPatterns
 
     override def toString = all mkString ", "
   }
@@ -88,10 +91,12 @@ trait PatternExpander[Pattern, Type] {
     *  @param  fixed     The non-sequence types which are extracted
     *  @param  repeated  The sequence type which is extracted
     */
-  final case class Extractor(whole: Type,
-                             fixed: List[Type],
-                             repeated: Repeated,
-                             typeOfSinglePattern: Type) {
+  final case class Extractor(
+      whole: Type,
+      fixed: List[Type],
+      repeated: Repeated,
+      typeOfSinglePattern: Type
+  ) {
     require(whole != NoType, s"expandTypes($whole, $fixed, $repeated)")
 
     /** A pattern with arity-1 that doesn't match the arity of the Product-like result of the `get` method,
@@ -111,12 +116,12 @@ trait PatternExpander[Pattern, Type] {
     def asSinglePattern: Extractor = copy(fixed = List(typeOfSinglePattern))
 
     def productArity = fixed.length
-    def hasSeq = repeated.exists
-    def elementType = repeated.elementType
+    def hasSeq       = repeated.exists
+    def elementType  = repeated.elementType
     def sequenceType = repeated.sequenceType
-    def allTypes = fixed ::: repeated.sequenceList
+    def allTypes     = fixed ::: repeated.sequenceList
     def varargsTypes = fixed ::: repeated.repeatedList
-    def isErroneous = allTypes contains NoType
+    def isErroneous  = allTypes contains NoType
 
     private def typeStrings =
       fixed.map("" + _) ::: (if (hasSeq) List("" + repeated) else Nil)
@@ -125,9 +130,9 @@ trait PatternExpander[Pattern, Type] {
       if (isErroneous) "<error>"
       else
         typeStrings match {
-          case Nil => "Boolean"
+          case Nil       => "Boolean"
           case tp :: Nil => tp
-          case tps => tps.mkString("(", ", ", ")")
+          case tps       => tps.mkString("(", ", ", ")")
         }
     override def toString = "%s => %s".format(whole, offeringString)
   }
@@ -146,20 +151,20 @@ trait PatternExpander[Pattern, Type] {
   final case class Aligned(patterns: Patterns, extractor: Extractor) {
     def elementArity = patterns.nonStarArity - productArity
     def productArity = extractor.productArity
-    def starArity = patterns.starArity
-    def totalArity = patterns.totalArity
+    def starArity    = patterns.starArity
+    def totalArity   = patterns.totalArity
 
-    def wholeType = extractor.whole
-    def sequenceType = extractor.sequenceType
-    def productTypes = extractor.fixed
-    def extractedTypes = extractor.allTypes
+    def wholeType            = extractor.whole
+    def sequenceType         = extractor.sequenceType
+    def productTypes         = extractor.fixed
+    def extractedTypes       = extractor.allTypes
     def typedNonStarPatterns = products ::: elements
-    def typedPatterns = typedNonStarPatterns ::: stars
+    def typedPatterns        = typedNonStarPatterns ::: stars
 
-    def isBool = !isSeq && productArity == 0
+    def isBool   = !isSeq && productArity == 0
     def isSingle = !isSeq && totalArity == 1
-    def isStar = patterns.hasStar
-    def isSeq = extractor.hasSeq
+    def isStar   = patterns.hasStar
+    def isSeq    = extractor.hasSeq
 
     private def typedAsElement(pat: Pattern) =
       TypedPat(pat, extractor.elementType)
@@ -167,9 +172,9 @@ trait PatternExpander[Pattern, Type] {
       TypedPat(pat, extractor.sequenceType)
     private def productPats = patterns.fixed take productArity
     private def elementPats = patterns.fixed drop productArity
-    private def products = (productPats, productTypes).zipped map TypedPat
-    private def elements = elementPats map typedAsElement
-    private def stars = patterns.starPatterns map typedAsSequence
+    private def products    = (productPats, productTypes).zipped map TypedPat
+    private def elements    = elementPats map typedAsElement
+    private def stars       = patterns.starPatterns map typedAsSequence
 
     override def toString = s"""
       |Aligned {

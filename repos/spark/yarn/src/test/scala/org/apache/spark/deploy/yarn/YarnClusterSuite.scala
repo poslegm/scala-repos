@@ -34,7 +34,11 @@ import org.scalatest.concurrent.Eventually._
 import org.apache.spark._
 import org.apache.spark.internal.Logging
 import org.apache.spark.launcher._
-import org.apache.spark.scheduler.{SparkListener, SparkListenerApplicationStart, SparkListenerExecutorAdded}
+import org.apache.spark.scheduler.{
+  SparkListener,
+  SparkListenerApplicationStart,
+  SparkListenerExecutorAdded
+}
 import org.apache.spark.scheduler.cluster.ExecutorInfo
 import org.apache.spark.tags.ExtendedYarnTest
 import org.apache.spark.util.Utils
@@ -141,9 +145,11 @@ class YarnClusterSuite extends BaseYarnClusterSuite {
 
   private def testBasicYarnApp(clientMode: Boolean): Unit = {
     val result = File.createTempFile("result", null, tempDir)
-    val finalState = runSpark(clientMode,
-                              mainClassName(YarnClusterDriver.getClass),
-                              appArgs = Seq(result.getAbsolutePath()))
+    val finalState = runSpark(
+      clientMode,
+      mainClassName(YarnClusterDriver.getClass),
+      appArgs = Seq(result.getAbsolutePath())
+    )
     checkResult(finalState, result)
   }
 
@@ -155,12 +161,14 @@ class YarnClusterSuite extends BaseYarnClusterSuite {
     // creates the pyspark archive. Instead, let's use PYSPARK_ARCHIVES_PATH to point at the
     // needed locations.
     val sparkHome = sys.props("spark.test.home")
-    val pythonPath = Seq(
-        s"$sparkHome/python/lib/py4j-0.9.2-src.zip", s"$sparkHome/python")
-    val extraEnv = Map("PYSPARK_ARCHIVES_PATH" -> pythonPath
-                         .map("local:" + _)
-                         .mkString(File.pathSeparator),
-                       "PYTHONPATH" -> pythonPath.mkString(File.pathSeparator))
+    val pythonPath =
+      Seq(s"$sparkHome/python/lib/py4j-0.9.2-src.zip", s"$sparkHome/python")
+    val extraEnv = Map(
+      "PYSPARK_ARCHIVES_PATH" -> pythonPath
+        .map("local:" + _)
+        .mkString(File.pathSeparator),
+      "PYTHONPATH" -> pythonPath.mkString(File.pathSeparator)
+    )
 
     val moduleDir =
       if (clientMode) {
@@ -181,11 +189,13 @@ class YarnClusterSuite extends BaseYarnClusterSuite {
       Seq(pyModule.getAbsolutePath(), mod2Archive.getPath()).mkString(",")
     val result = File.createTempFile("result", null, tempDir)
 
-    val finalState = runSpark(clientMode,
-                              primaryPyFile.getAbsolutePath(),
-                              sparkArgs = Seq("--py-files" -> pyFiles),
-                              appArgs = Seq(result.getAbsolutePath()),
-                              extraEnv = extraEnv)
+    val finalState = runSpark(
+      clientMode,
+      primaryPyFile.getAbsolutePath(),
+      sparkArgs = Seq("--py-files" -> pyFiles),
+      appArgs = Seq(result.getAbsolutePath()),
+      extraEnv = extraEnv
+    )
     checkResult(finalState, result)
   }
 
@@ -194,25 +204,30 @@ class YarnClusterSuite extends BaseYarnClusterSuite {
     val originalJar =
       TestUtils.createJarWithFiles(Map("test.resource" -> "ORIGINAL"), tempDir)
     val userJar = TestUtils.createJarWithFiles(
-        Map("test.resource" -> "OVERRIDDEN"), tempDir)
-    val driverResult = File.createTempFile("driver", null, tempDir)
+      Map("test.resource" -> "OVERRIDDEN"),
+      tempDir
+    )
+    val driverResult   = File.createTempFile("driver", null, tempDir)
     val executorResult = File.createTempFile("executor", null, tempDir)
     val finalState = runSpark(
-        clientMode,
-        mainClassName(YarnClasspathTest.getClass),
-        appArgs = Seq(driverResult.getAbsolutePath(),
-                      executorResult.getAbsolutePath()),
-        extraClassPath = Seq(originalJar.getPath()),
-        extraJars = Seq("local:" + userJar.getPath()),
-        extraConf = Map("spark.driver.userClassPathFirst" -> "true",
-                        "spark.executor.userClassPathFirst" -> "true"))
+      clientMode,
+      mainClassName(YarnClasspathTest.getClass),
+      appArgs =
+        Seq(driverResult.getAbsolutePath(), executorResult.getAbsolutePath()),
+      extraClassPath = Seq(originalJar.getPath()),
+      extraJars = Seq("local:" + userJar.getPath()),
+      extraConf = Map(
+        "spark.driver.userClassPathFirst"   -> "true",
+        "spark.executor.userClassPathFirst" -> "true"
+      )
+    )
     checkResult(finalState, driverResult, "OVERRIDDEN")
     checkResult(finalState, executorResult, "OVERRIDDEN")
   }
 }
 
 private[spark] class SaveExecutorInfo extends SparkListener {
-  val addedExecutorInfos = mutable.Map[String, ExecutorInfo]()
+  val addedExecutorInfos                                 = mutable.Map[String, ExecutorInfo]()
   var driverLogs: Option[collection.Map[String, String]] = None
 
   override def onExecutorAdded(executor: SparkListenerExecutorAdded) {
@@ -220,9 +235,9 @@ private[spark] class SaveExecutorInfo extends SparkListener {
   }
 
   override def onApplicationStart(
-      appStart: SparkListenerApplicationStart): Unit = {
+      appStart: SparkListenerApplicationStart
+  ): Unit =
     driverLogs = appStart.driverLogs
-  }
 }
 
 private object YarnClusterDriver extends Logging with Matchers {
@@ -242,11 +257,13 @@ private object YarnClusterDriver extends Logging with Matchers {
     }
 
     val sc = new SparkContext(
-        new SparkConf()
-          .set("spark.extraListeners", classOf[SaveExecutorInfo].getName)
-          .setAppName(
-              "yarn \"test app\" 'with quotes' and \\back\\slashes and $dollarSigns"))
-    val conf = sc.getConf
+      new SparkConf()
+        .set("spark.extraListeners", classOf[SaveExecutorInfo].getName)
+        .setAppName(
+          "yarn \"test app\" 'with quotes' and \\back\\slashes and $dollarSigns"
+        )
+    )
+    val conf   = sc.getConf
     val status = new File(args(0))
     var result = "failure"
     try {
@@ -262,12 +279,10 @@ private object YarnClusterDriver extends Logging with Matchers {
     // verify log urls are present
     val listeners = sc.listenerBus.findListenersByClass[SaveExecutorInfo]
     assert(listeners.size === 1)
-    val listener = listeners(0)
+    val listener      = listeners(0)
     val executorInfos = listener.addedExecutorInfos.values
     assert(executorInfos.nonEmpty)
-    executorInfos.foreach { info =>
-      assert(info.logUrlMap.nonEmpty)
-    }
+    executorInfos.foreach(info => assert(info.logUrlMap.nonEmpty))
 
     // If we are running in yarn-cluster mode, verify that driver logs links and present and are
     // in the expected format.
@@ -281,10 +296,12 @@ private object YarnClusterDriver extends Logging with Matchers {
       // Ensure that this is a valid URL, else this will throw an exception
       new URL(urlStr)
       val containerId = YarnSparkHadoopUtil.get.getContainerId
-      val user = Utils.getCurrentUserName()
+      val user        = Utils.getCurrentUserName()
       assert(
-          urlStr.endsWith(
-              s"/node/containerlogs/$containerId/$user/stderr?start=-4096"))
+        urlStr.endsWith(
+          s"/node/containerlogs/$containerId/$user/stderr?start=-4096"
+        )
+      )
     }
   }
 }
@@ -316,9 +333,7 @@ private object YarnClasspathTest extends Logging {
     readResource(args(0))
     val sc = new SparkContext(new SparkConf())
     try {
-      sc.parallelize(Seq(1)).foreach { x =>
-        readResource(args(1))
-      }
+      sc.parallelize(Seq(1)).foreach(x => readResource(args(1)))
     } finally {
       sc.stop()
     }
@@ -328,9 +343,9 @@ private object YarnClasspathTest extends Logging {
   private def readResource(resultPath: String): Unit = {
     var result = "failure"
     try {
-      val ccl = Thread.currentThread().getContextClassLoader()
+      val ccl      = Thread.currentThread().getContextClassLoader()
       val resource = ccl.getResourceAsStream("test.resource")
-      val bytes = ByteStreams.toByteArray(resource)
+      val bytes    = ByteStreams.toByteArray(resource)
       result = new String(bytes, 0, bytes.length, StandardCharsets.UTF_8)
     } catch {
       case t: Throwable =>

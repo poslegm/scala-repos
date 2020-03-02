@@ -27,7 +27,9 @@ trait OptimalSizeExploringResizer extends Resizer {
     * @param messageCounter
     */
   def reportMessageCount(
-      currentRoutees: immutable.IndexedSeq[Routee], messageCounter: Long): Unit
+      currentRoutees: immutable.IndexedSeq[Routee],
+      messageCounter: Long
+  ): Unit
 }
 
 case object OptimalSizeExploringResizer {
@@ -41,7 +43,9 @@ case object OptimalSizeExploringResizer {
     * INTERNAL API
     */
   private[routing] case class UnderUtilizationStreak(
-      start: LocalDateTime, highestUtilization: Int)
+      start: LocalDateTime,
+      highestUtilization: Int
+  )
 
   /**
     * INTERNAL API
@@ -50,7 +54,8 @@ case object OptimalSizeExploringResizer {
       underutilizationStreak: Option[UnderUtilizationStreak] = None,
       messageCount: Long = 0,
       totalQueueLength: Int = 0,
-      checkTime: Long = 0)
+      checkTime: Long = 0
+  )
 
   /**
     * INTERNAL API
@@ -59,20 +64,21 @@ case object OptimalSizeExploringResizer {
 
   def apply(resizerCfg: Config): OptimalSizeExploringResizer =
     DefaultOptimalSizeExploringResizer(
-        lowerBound = resizerCfg.getInt("lower-bound"),
-        upperBound = resizerCfg.getInt("upper-bound"),
-        chanceOfScalingDownWhenFull = resizerCfg.getDouble(
-              "chance-of-ramping-down-when-full"),
-        actionInterval = resizerCfg.getDuration("action-interval").asScala,
-        downsizeAfterUnderutilizedFor = resizerCfg
-            .getDuration("downsize-after-underutilized-for")
-            .asScala,
-        numOfAdjacentSizesToConsiderDuringOptimization = resizerCfg.getInt(
-              "optimization-range"),
-        exploreStepSize = resizerCfg.getDouble("explore-step-size"),
-        explorationProbability = resizerCfg.getDouble("chance-of-exploration"),
-        weightOfLatestMetric = resizerCfg.getDouble("weight-of-latest-metric"),
-        downsizeRatio = resizerCfg.getDouble("downsize-ratio"))
+      lowerBound = resizerCfg.getInt("lower-bound"),
+      upperBound = resizerCfg.getInt("upper-bound"),
+      chanceOfScalingDownWhenFull =
+        resizerCfg.getDouble("chance-of-ramping-down-when-full"),
+      actionInterval = resizerCfg.getDuration("action-interval").asScala,
+      downsizeAfterUnderutilizedFor = resizerCfg
+        .getDuration("downsize-after-underutilized-for")
+        .asScala,
+      numOfAdjacentSizesToConsiderDuringOptimization =
+        resizerCfg.getInt("optimization-range"),
+      exploreStepSize = resizerCfg.getDouble("explore-step-size"),
+      explorationProbability = resizerCfg.getDouble("chance-of-exploration"),
+      weightOfLatestMetric = resizerCfg.getDouble("weight-of-latest-metric"),
+      downsizeRatio = resizerCfg.getDouble("downsize-ratio")
+    )
 }
 
 /**
@@ -131,8 +137,8 @@ case class DefaultOptimalSizeExploringResizer(
     downsizeRatio: Double = 0.8,
     downsizeAfterUnderutilizedFor: Duration = 72.hours,
     explorationProbability: Double = 0.4,
-    weightOfLatestMetric: Double = 0.5)
-    extends OptimalSizeExploringResizer {
+    weightOfLatestMetric: Double = 0.5
+) extends OptimalSizeExploringResizer {
 
   /**
     * Leave package accessible for testing purpose
@@ -154,32 +160,44 @@ case class DefaultOptimalSizeExploringResizer(
   private def checkParamAsProbability(value: Double, paramName: String): Unit =
     if (value < 0 || value > 1)
       throw new IllegalArgumentException(
-          s"$paramName must be between 0 and 1 (inclusive), was: [%s]".format(
-              value))
+        s"$paramName must be between 0 and 1 (inclusive), was: [%s]"
+          .format(value)
+      )
 
   private def checkParamAsPositiveNum(value: Double, paramName: String): Unit =
     checkParamLowerBound(value, 0, paramName)
 
   private def checkParamLowerBound(
-      value: Double, lowerBound: Double, paramName: String): Unit =
+      value: Double,
+      lowerBound: Double,
+      paramName: String
+  ): Unit =
     if (value < lowerBound)
       throw new IllegalArgumentException(
-          s"$paramName must be >= $lowerBound, was: [%s]".format(value))
+        s"$paramName must be >= $lowerBound, was: [%s]".format(value)
+      )
 
   checkParamAsPositiveNum(lowerBound, "lowerBound")
   checkParamAsPositiveNum(upperBound, "upperBound")
   if (upperBound < lowerBound)
     throw new IllegalArgumentException(
-        "upperBound must be >= lowerBound, was: [%s] < [%s]".format(
-            upperBound, lowerBound))
+      "upperBound must be >= lowerBound, was: [%s] < [%s]"
+        .format(upperBound, lowerBound)
+    )
 
-  checkParamLowerBound(numOfAdjacentSizesToConsiderDuringOptimization,
-                       2,
-                       "numOfAdjacentSizesToConsiderDuringOptimization")
+  checkParamLowerBound(
+    numOfAdjacentSizesToConsiderDuringOptimization,
+    2,
+    "numOfAdjacentSizesToConsiderDuringOptimization"
+  )
   checkParamAsProbability(
-      chanceOfScalingDownWhenFull, "chanceOfScalingDownWhenFull")
-  checkParamAsPositiveNum(numOfAdjacentSizesToConsiderDuringOptimization,
-                          "numOfAdjacentSizesToConsiderDuringOptimization")
+    chanceOfScalingDownWhenFull,
+    "chanceOfScalingDownWhenFull"
+  )
+  checkParamAsPositiveNum(
+    numOfAdjacentSizesToConsiderDuringOptimization,
+    "numOfAdjacentSizesToConsiderDuringOptimization"
+  )
   checkParamAsPositiveNum(exploreStepSize, "exploreStepSize")
   checkParamAsPositiveNum(downsizeRatio, "downsizeRatio")
   checkParamAsProbability(explorationProbability, "explorationProbability")
@@ -187,12 +205,13 @@ case class DefaultOptimalSizeExploringResizer(
 
   private val actionInternalNanos = actionInterval.toNanos
 
-  def isTimeForResize(messageCounter: Long): Boolean = {
+  def isTimeForResize(messageCounter: Long): Boolean =
     System.nanoTime() > record.checkTime + actionInternalNanos
-  }
 
-  def reportMessageCount(currentRoutees: immutable.IndexedSeq[Routee],
-                         messageCounter: Long): Unit = {
+  def reportMessageCount(
+      currentRoutees: immutable.IndexedSeq[Routee],
+      messageCounter: Long
+  ): Unit = {
     val (newPerfLog, newRecord) = updatedStats(currentRoutees, messageCounter)
 
     performanceLog = newPerfLog
@@ -201,8 +220,9 @@ case class DefaultOptimalSizeExploringResizer(
 
   private[routing] def updatedStats(
       currentRoutees: immutable.IndexedSeq[Routee],
-      messageCounter: Long): (PerformanceLog, ResizeRecord) = {
-    val now = LocalDateTime.now
+      messageCounter: Long
+  ): (PerformanceLog, ResizeRecord) = {
+    val now         = LocalDateTime.now
     val currentSize = currentRoutees.length
 
     val messagesInRoutees =
@@ -211,14 +231,14 @@ case class DefaultOptimalSizeExploringResizer(
           a.underlying match {
             case cell: ActorCell ⇒
               cell.mailbox.numberOfMessages +
-              (if (cell.currentMessage != null) 1 else 0)
+                (if (cell.currentMessage != null) 1 else 0)
             case cell ⇒ cell.numberOfMessages
           }
         case x ⇒ 0
       }
 
     val totalQueueLength = messagesInRoutees.sum
-    val utilized = messagesInRoutees.count(_ > 0)
+    val utilized         = messagesInRoutees.count(_ > 0)
 
     val fullyUtilized = utilized == currentSize
 
@@ -226,26 +246,29 @@ case class DefaultOptimalSizeExploringResizer(
       if (fullyUtilized) None
       else
         Some(
-            UnderUtilizationStreak(
-                record.underutilizationStreak.fold(now)(_.start),
-                Math.max(record.underutilizationStreak
-                           .fold(0)(_.highestUtilization),
-                         utilized)))
+          UnderUtilizationStreak(
+            record.underutilizationStreak.fold(now)(_.start),
+            Math.max(
+              record.underutilizationStreak
+                .fold(0)(_.highestUtilization),
+              utilized
+            )
+          )
+        )
 
     val newPerformanceLog: PerformanceLog =
       if (fullyUtilized && record.underutilizationStreak.isEmpty &&
           record.checkTime > 0) {
         val totalMessageReceived = messageCounter - record.messageCount
-        val queueSizeChange = record.totalQueueLength - totalQueueLength
-        val totalProcessed = queueSizeChange + totalMessageReceived
+        val queueSizeChange      = record.totalQueueLength - totalQueueLength
+        val totalProcessed       = queueSizeChange + totalMessageReceived
         if (totalProcessed > 0) {
           val duration =
             Duration.fromNanos(System.nanoTime() - record.checkTime)
           val last: Duration = duration / totalProcessed
           //exponentially decrease the weight of old last metrics data
-          val toUpdate = performanceLog.get(currentSize).fold(last) {
-            oldSpeed ⇒
-              (oldSpeed * (1.0 - weightOfLatestMetric)) +
+          val toUpdate = performanceLog.get(currentSize).fold(last) { oldSpeed ⇒
+            (oldSpeed * (1.0 - weightOfLatestMetric)) +
               (last * weightOfLatestMetric)
           }
           performanceLog + (currentSize → toUpdate)
@@ -253,20 +276,22 @@ case class DefaultOptimalSizeExploringResizer(
       } else performanceLog
 
     val newRecord = record.copy(
-        underutilizationStreak = newUnderutilizationStreak,
-        messageCount = messageCounter,
-        totalQueueLength = totalQueueLength,
-        checkTime = System.nanoTime())
+      underutilizationStreak = newUnderutilizationStreak,
+      messageCount = messageCounter,
+      totalQueueLength = totalQueueLength,
+      checkTime = System.nanoTime()
+    )
 
     (newPerformanceLog, newRecord)
   }
 
   def resize(currentRoutees: immutable.IndexedSeq[Routee]): Int = {
     val currentSize = currentRoutees.length
-    val now = LocalDateTime.now
+    val now         = LocalDateTime.now
     val proposedChange =
-      if (record.underutilizationStreak.fold(false)(_.start.isBefore(
-                  now.minus(downsizeAfterUnderutilizedFor.asJava)))) {
+      if (record.underutilizationStreak.fold(false)(
+            _.start.isBefore(now.minus(downsizeAfterUnderutilizedFor.asJava))
+          )) {
         val downsizeTo =
           (record.underutilizationStreak.get.highestUtilization * downsizeRatio).toInt
         Math.min(downsizeTo - currentSize, 0)
@@ -279,14 +304,14 @@ case class DefaultOptimalSizeExploringResizer(
         else optimize(currentSize)
       }
     Math.max(lowerBound, Math.min(proposedChange + currentSize, upperBound)) -
-    currentSize
+      currentSize
   }
 
   private def optimize(currentSize: PoolSize): Int = {
 
     val adjacentDispatchWaits: Map[PoolSize, Duration] = {
       def adjacency = (size: Int) ⇒ Math.abs(currentSize - size)
-      val sizes = performanceLog.keys.toSeq
+      val sizes     = performanceLog.keys.toSeq
       val numOfSizesEachSide =
         numOfAdjacentSizesToConsiderDuringOptimization / 2
       val leftBoundary = sizes
@@ -307,14 +332,16 @@ case class DefaultOptimalSizeExploringResizer(
     }
 
     val optimalSize = adjacentDispatchWaits.minBy(_._2)._1
-    val movement = (optimalSize - currentSize) / 2.0
+    val movement    = (optimalSize - currentSize) / 2.0
     if (movement < 0) Math.floor(movement).toInt
     else Math.ceil(movement).toInt
   }
 
   private def explore(currentSize: PoolSize): Int = {
     val change = Math.max(
-        1, random.nextInt(Math.ceil(currentSize * exploreStepSize).toInt))
+      1,
+      random.nextInt(Math.ceil(currentSize * exploreStepSize).toInt)
+    )
     if (random.nextDouble() < chanceOfScalingDownWhenFull) -change
     else change
   }

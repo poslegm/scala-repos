@@ -29,7 +29,7 @@ object CompileTimeLengthTypes {
     def apply(c: Context)(tree: c.Tree): FastLengthCalculation[c.type] =
       new FastLengthCalculation[c.type] {
         override val ctx: c.type = c
-        override val t: c.Tree = tree
+        override val t: c.Tree   = tree
       }
   }
 
@@ -39,7 +39,7 @@ object CompileTimeLengthTypes {
     def apply(c: Context)(tree: c.Tree): MaybeLengthCalculation[c.type] =
       new MaybeLengthCalculation[c.type] {
         override val ctx: c.type = c
-        override val t: c.Tree = tree
+        override val t: c.Tree   = tree
       }
   }
 
@@ -48,7 +48,7 @@ object CompileTimeLengthTypes {
   object ConstantLengthCalculation {
     def apply(c: Context)(intArg: Int): ConstantLengthCalculation[c.type] =
       new ConstantLengthCalculation[c.type] {
-        override val toInt = intArg
+        override val toInt       = intArg
         override val ctx: c.type = c
         override val t: c.Tree = {
           import c.universe._
@@ -63,7 +63,7 @@ object CompileTimeLengthTypes {
   }
 
   object NoLengthCalculationAvailable {
-    def apply(c: Context): NoLengthCalculationAvailable[c.type] = {
+    def apply(c: Context): NoLengthCalculationAvailable[c.type] =
       new NoLengthCalculationAvailable[c.type] {
         override val ctx: c.type = c
         override def t = {
@@ -71,7 +71,6 @@ object CompileTimeLengthTypes {
           q"""_root_.scala.sys.error("no length available")"""
         }
       }
-    }
   }
 
   trait NoLengthCalculationAvailable[C <: Context]

@@ -25,14 +25,14 @@ class HeaderDirectivesSpec extends RoutingSpec with Inside {
     }
 
     "reject with an empty rejection set if no matching request header is present" in {
-      Get("/abc") ~> myHeaderValue { echoComplete } ~> check {
+      Get("/abc") ~> myHeaderValue(echoComplete) ~> check {
         rejections shouldEqual Nil
       }
     }
 
     "reject with a MalformedHeaderRejection if the extract function throws an exception" in {
       Get("/abc") ~> addHeader(Connection("close")) ~> {
-        (headerValuePF { case _ ⇒ sys.error("Naah!") }) { echoComplete }
+        (headerValuePF { case _ ⇒ sys.error("Naah!") })(echoComplete)
       } ~> check {
         inside(rejection) {
           case MalformedHeaderRejection("Connection", "Naah!", _) ⇒
@@ -121,7 +121,7 @@ class HeaderDirectivesSpec extends RoutingSpec with Inside {
   "The optionalHeaderValue directive" should {
     lazy val myHeaderValue = optionalHeaderValue {
       case Connection(tokens) ⇒ Some(tokens.head)
-      case _ ⇒ None
+      case _                  ⇒ None
     }
 
     "extract the respective header value if a matching request header is present" in {
@@ -133,7 +133,7 @@ class HeaderDirectivesSpec extends RoutingSpec with Inside {
     }
 
     "extract None if no matching request header is present" in {
-      Get("/abc") ~> myHeaderValue { echoComplete } ~> check {
+      Get("/abc") ~> myHeaderValue(echoComplete) ~> check {
         responseAs[String] shouldEqual "None"
       }
     }
@@ -143,7 +143,7 @@ class HeaderDirectivesSpec extends RoutingSpec with Inside {
         val myHeaderValue = optionalHeaderValue {
           case _ ⇒ sys.error("Naaah!")
         }
-        myHeaderValue { echoComplete }
+        myHeaderValue(echoComplete)
       } ~> check {
         inside(rejection) {
           case MalformedHeaderRejection("Connection", "Naaah!", _) ⇒

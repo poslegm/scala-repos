@@ -41,8 +41,7 @@ import scala.collection.JavaConverters._
   * bin/akka org.app.BootApp
   * }}}
   */
-@deprecated(
-    "Microkernel is deprecated. Use ordinary main class instead", "2.4")
+@deprecated("Microkernel is deprecated. Use ordinary main class instead", "2.4")
 trait Bootable {
 
   /**
@@ -62,7 +61,9 @@ trait Bootable {
   * Main class for running the microkernel.
   */
 @deprecated(
-    "Microkernel is deprecated. Use ordinary main class instead.", "2.4")
+  "Microkernel is deprecated. Use ordinary main class instead.",
+  "2.4"
+)
 object Main {
   private val quiet = getBoolean("akka.kernel.quiet")
 
@@ -98,9 +99,9 @@ object Main {
     log("Successfully started Akka")
   }
 
-  private def createClassLoader(): ClassLoader = {
+  private def createClassLoader(): ClassLoader =
     if (ActorSystem.GlobalHome.isDefined) {
-      val home = ActorSystem.GlobalHome.get
+      val home   = ActorSystem.GlobalHome.get
       val deploy = new File(home, "deploy")
       if (deploy.exists) {
         loadDeployJars(deploy)
@@ -112,7 +113,6 @@ object Main {
       log("[warning] Akka home is not defined")
       Thread.currentThread.getContextClassLoader
     }
-  }
 
   private def loadDeployJars(deploy: File): ClassLoader = {
     val jars = deploy.listFiles.filter(_.getName.endsWith(".jar"))
@@ -129,14 +129,12 @@ object Main {
 
     val urls = (jars ++ nestedJars) map { _.toURI.toURL }
 
-    urls foreach { url ⇒
-      log("Deploying " + url)
-    }
+    urls foreach { url ⇒ log("Deploying " + url) }
 
     new URLClassLoader(urls, Thread.currentThread.getContextClassLoader)
   }
 
-  private def addShutdownHook(bootables: immutable.Seq[Bootable]): Unit = {
+  private def addShutdownHook(bootables: immutable.Seq[Bootable]): Unit =
     Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
       def run = {
         log("")
@@ -150,7 +148,6 @@ object Main {
         log("Successfully shut down Akka")
       }
     }))
-  }
 
   private def banner =
     """

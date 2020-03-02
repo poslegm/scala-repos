@@ -14,7 +14,7 @@ class TestTapFactoryTest extends WordSpec with Matchers {
       // Map of sources to use when creating the tap-- does not contain testSource
       val emptySourceMap = Map[Source, Buffer[Tuple]]()
 
-      val testMode = Test { emptySourceMap.get(_) }
+      val testMode       = Test(emptySourceMap.get(_))
       val testTapFactory = TestTapFactory(testSource, new Fields())
 
       def createIllegalTap(): Tap[Any, Any, Any] =
@@ -25,7 +25,7 @@ class TestTapFactoryTest extends WordSpec with Matchers {
       the[IllegalArgumentException] thrownBy {
         createIllegalTap()
       } should have message
-      ("requirement failed: " +
+        ("requirement failed: " +
           TestTapFactory.sourceNotFoundError.format(testSource))
     }
   }

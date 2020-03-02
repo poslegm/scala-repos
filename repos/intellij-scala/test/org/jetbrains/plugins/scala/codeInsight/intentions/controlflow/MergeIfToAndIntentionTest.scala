@@ -11,7 +11,7 @@ class MergeIfToAndIntentionTest extends ScalaIntentionTestBase {
   val familyName = MergeIfToAndIntention.familyName
 
   def testMergeIfToAnd() {
-    val text = """
+    val text       = """
         |class MergeIfToAnd {
         |  def mthd() {
         |    val a: Int = 0
@@ -38,7 +38,7 @@ class MergeIfToAndIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testMergeIfToAnd2() {
-    val text = """
+    val text       = """
         |class MergeIfToAnd {
         |  def mthd() {
         |    val a: Int = 0
@@ -61,7 +61,7 @@ class MergeIfToAndIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testMergeIfToAnd3() {
-    val text = """
+    val text       = """
         |class MergeIfToAnd {
         |  def mthd() {
         |    val a: Int = 0
@@ -85,7 +85,7 @@ class MergeIfToAndIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testMergeIfToAnd4() {
-    val text = """
+    val text       = """
         |class MergeIfToAnd {
         |  def mthd() {
         |    val a: Int = 0

@@ -8,7 +8,10 @@ import com.intellij.psi.PsiElement
 import org.jetbrains.plugins.scala.lang.lexer.ScalaTokenTypes
 import org.jetbrains.plugins.scala.lang.psi.api.base.ScReferenceElement
 import org.jetbrains.plugins.scala.lang.psi.api.expr.ScMethodCall
-import org.jetbrains.plugins.scala.lang.psi.api.statements.params.{ScArguments, ScParameterClause}
+import org.jetbrains.plugins.scala.lang.psi.api.statements.params.{
+  ScArguments,
+  ScParameterClause
+}
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.templates.ScExtendsBlock
 
 /**
@@ -16,10 +19,12 @@ import org.jetbrains.plugins.scala.lang.psi.api.toplevel.templates.ScExtendsBloc
   * Date: 10.09.2008
   */
 class ScalaWordSelectioner extends ExtendWordSelectionHandlerBase {
-  override def select(e: PsiElement,
-                      editorText: CharSequence,
-                      cursorOffset: Int,
-                      editor: Editor): java.util.List[TextRange] = {
+  override def select(
+      e: PsiElement,
+      editorText: CharSequence,
+      cursorOffset: Int,
+      editor: Editor
+  ): java.util.List[TextRange] = {
     val result = super.select(e, editorText, cursorOffset, editor)
     e match {
       //case for selecting parameters without parenthesises
@@ -32,7 +37,7 @@ class ScalaWordSelectioner extends ExtendWordSelectionHandlerBase {
             if (Set(ScalaTokenTypes.tRPARENTHESIS, ScalaTokenTypes.tRSQBRACKET)
                   .contains(
                     e.getNode.getLastChildNode.getElementType
-                )) range.getEndOffset - 1
+                  )) range.getEndOffset - 1
             else range.getEndOffset
           result.add(new TextRange(start, end))
         }
@@ -41,12 +46,13 @@ class ScalaWordSelectioner extends ExtendWordSelectionHandlerBase {
         val start: Int = e.getTextRange.getStartOffset
         var end: Int = ext.templateBody match {
           case Some(x) => x.getTextRange.getStartOffset
-          case None => e.getTextRange.getEndOffset
+          case None    => e.getTextRange.getEndOffset
         }
         result.add(new TextRange(start, end))
         def isEmptyChar(c: Char): Boolean = c == ' ' || c == '\n'
-        while (isEmptyChar(ext.getContainingFile.getText.charAt(end - 1))) end = end -
-        1
+        while (isEmptyChar(ext.getContainingFile.getText.charAt(end - 1)))
+          end = end -
+            1
         if (start <= end) result.add(new TextRange(start, end))
       //case for references
       case x: ScReferenceElement =>
@@ -59,35 +65,38 @@ class ScalaWordSelectioner extends ExtendWordSelectionHandlerBase {
         if (x.getParent.isInstanceOf[ScMethodCall]) result.clear()
         x.qualifier match {
           case Some(qual) => {
-              //get ranges for previos qualifier
-              val ranges = select(qual, editorText, cursorOffset, editor)
-                .toArray(new Array[TextRange](0))
-              for (fRange <- ranges
-                                if fRange.getEndOffset == qual.getTextRange.getEndOffset) {
-                //cancatenating ranges
-                val tRange = new TextRange(
-                    if (fRange.getStartOffset != fRange.getEndOffset)
-                      fRange.getStartOffset
-                    else {
-                      //if we have dummy range we must find td letter to concatenate ranges
-                      var end = fRange.getEndOffset
-                      var flag = true
-                      while (flag) {
-                        editorText.charAt(end) match {
-                          case ' ' | '.' | '\n' => end += 1
-                          case _ => flag = false
-                        }
-                      }
-                      end
-                    },
-                    offset)
-                result.add(tRange)
-              }
-              //adding dummy range for recursion
-              result.add(new TextRange(offset, offset))
+            //get ranges for previos qualifier
+            val ranges = select(qual, editorText, cursorOffset, editor)
+              .toArray(new Array[TextRange](0))
+            for (fRange <- ranges
+                 if fRange.getEndOffset == qual.getTextRange.getEndOffset) {
+              //cancatenating ranges
+              val tRange = new TextRange(
+                if (fRange.getStartOffset != fRange.getEndOffset)
+                  fRange.getStartOffset
+                else {
+                  //if we have dummy range we must find td letter to concatenate ranges
+                  var end  = fRange.getEndOffset
+                  var flag = true
+                  while (flag) {
+                    editorText.charAt(end) match {
+                      case ' ' | '.' | '\n' => end += 1
+                      case _                => flag = false
+                    }
+                  }
+                  end
+                },
+                offset
+              )
+              result.add(tRange)
             }
+            //adding dummy range for recursion
+            result.add(new TextRange(offset, offset))
+          }
           case None =>
-            result.add(new TextRange(offset, offset)) //adding dummy range for recursion
+            result.add(
+              new TextRange(offset, offset)
+            ) //adding dummy range for recursion
         }
       case x: ScMethodCall =>
         x.getEffectiveInvokedExpr match {
@@ -99,13 +108,12 @@ class ScalaWordSelectioner extends ExtendWordSelectionHandlerBase {
     }
     result
   }
-  def canSelect(e: PsiElement): Boolean = {
+  def canSelect(e: PsiElement): Boolean =
     e match {
       case _: ScParameterClause | _: ScArguments => true
-      case _: ScExtendsBlock => true
-      case _: ScReferenceElement => true
-      case _: ScMethodCall => true
-      case _ => false
+      case _: ScExtendsBlock                     => true
+      case _: ScReferenceElement                 => true
+      case _: ScMethodCall                       => true
+      case _                                     => false
     }
-  }
 }

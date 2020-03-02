@@ -17,8 +17,8 @@ object Sessions {
   // would be nice if we could introduce a universal quantification over BDual that is not part of the
   // type parameter list
   sealed case class In[A, B <: Session, BDual <: Session](recv: A => B)(
-      implicit dual: B <:< Session { type Dual = BDual })
-      extends Session {
+      implicit dual: B <:< Session { type Dual = BDual }
+  ) extends Session {
     type Dual = Out[A, BDual]
 
     def run(dp: Dual): Unit = recv(dp.data) run dp.cont
@@ -39,13 +39,18 @@ object Sessions {
     }
 
   def addClient =
-    Out(3, Out(4, {
-      System.out.println("Waiting")
-      In { z: Int =>
-        System.out.println(z)
-        Stop()
-      }
-    }))
+    Out(
+      3,
+      Out(
+        4, {
+          System.out.println("Waiting")
+          In { z: Int =>
+            System.out.println(z)
+            Stop()
+          }
+        }
+      )
+    )
 
   def myRun = addServer run addClient
 }

@@ -16,7 +16,9 @@ package distributions
  limitations under the License.
  */
 
-import org.apache.commons.math3.random.{EmpiricalDistribution => ApacheEmpiricalDistribution}
+import org.apache.commons.math3.random.{
+  EmpiricalDistribution => ApacheEmpiricalDistribution
+}
 
 /**
   * The Weibull-distribution - ratio of two scaled chi^2 variables
@@ -25,8 +27,8 @@ import org.apache.commons.math3.random.{EmpiricalDistribution => ApacheEmpirical
   */
 class VariableKernelEmpiricalDistribution(
     data: Array[Double],
-    binCount: Int = ApacheEmpiricalDistribution.DEFAULT_BIN_COUNT)
-    extends ApacheContinuousDistribution {
+    binCount: Int = ApacheEmpiricalDistribution.DEFAULT_BIN_COUNT
+) extends ApacheContinuousDistribution {
   def this(data: breeze.linalg.DenseVector[Double]) = this(data.data)
   protected final val inner = new ApacheEmpiricalDistribution(binCount)
   inner.load(data)
@@ -34,4 +36,6 @@ class VariableKernelEmpiricalDistribution(
 
 object VariableKernelEmpiricalDistribution
     extends ContinuousDistributionUFuncProvider[
-        Double, VariableKernelEmpiricalDistribution]
+      Double,
+      VariableKernelEmpiricalDistribution
+    ]

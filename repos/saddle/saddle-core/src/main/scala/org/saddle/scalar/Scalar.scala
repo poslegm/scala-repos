@@ -27,7 +27,7 @@ sealed abstract class Scalar[+T] {
   def isNA: Boolean
   def get: T
 
-  @inline final def map[B : ST](f: T => B): Scalar[B] =
+  @inline final def map[B: ST](f: T => B): Scalar[B] =
     if (isNA) NA else Value(f(get))
 
   @inline final def flatMap[B](f: T => Scalar[B]): Scalar[B] =
@@ -46,59 +46,57 @@ object Scalar {
     *  @param  x the value
     *  @return Value(value) if value not null or NA primitive; otherwise NA
     *  */
-  def apply[T : ST](x: T): Scalar[T] =
+  def apply[T: ST](x: T): Scalar[T] =
     if (x == null || implicitly[ST[T]].isMissing(x)) NA else Value(x)
 
   /**
     * Provides comparisons of Scalars, where NA always evaluates as less than non-NA
     */
-  implicit def ord[T : ORD] = new ORD[Scalar[T]] {
+  implicit def ord[T: ORD] = new ORD[Scalar[T]] {
     def compare(x: Scalar[T], y: Scalar[T]): Int = (x, y) match {
       case (NA, NA) => 0
-      case (NA, _) => -1
-      case (_, NA) => 1
-      case (_, _) => implicitly[ORD[T]].compare(x.get, y.get)
+      case (NA, _)  => -1
+      case (_, NA)  => 1
+      case (_, _)   => implicitly[ORD[T]].compare(x.get, y.get)
     }
   }
 
   /**
     * Provides implicit boxing of primitive to scalar
     */
-  implicit def scalarBox[T : ST](el: T): Scalar[T] = Scalar(el)
+  implicit def scalarBox[T: ST](el: T): Scalar[T] = Scalar(el)
 
   /**
     * Provides implicit unboxing from double scalar to primitive
     */
-  implicit def scalarUnboxD(ds: Scalar[Double]): Double = {
+  implicit def scalarUnboxD(ds: Scalar[Double]): Double =
     if (ds.isNA) Double.NaN else ds.get
-  }
 
   /**
     * Provides implicit unboxing from float scalar to primitive
     */
-  implicit def scalarUnboxF(ds: Scalar[Float]): Float = {
+  implicit def scalarUnboxF(ds: Scalar[Float]): Float =
     if (ds.isNA) Float.NaN else ds.get
-  }
 
   /**
     * Scalar is isomorphic to Option
     */
   implicit def scalarToOption[T](sc: Scalar[T]): Option[T] =
     if (sc.isNA) None else Some(sc.get)
-  implicit def optionToScalar[T : ST](op: Option[T]): Scalar[T] =
-    op.map { Scalar(_) } getOrElse NA
+  implicit def optionToScalar[T: ST](op: Option[T]): Scalar[T] =
+    op.map(Scalar(_)) getOrElse NA
 }
 
-case class Value[+T : ST](el: T) extends Scalar[T] {
+case class Value[+T: ST](el: T) extends Scalar[T] {
   def isNA = implicitly[ST[T]].isMissing(el)
-  def get = el
+  def get  = el
 
   override def toString = el.toString
 }
 
 case object NA extends Scalar[Nothing] {
   def isNA = true
-  def get = throw new NoSuchElementException("NA.get")
+  def get  = throw new NoSuchElementException("NA.get")
 
   override def toString = "NA"
 }

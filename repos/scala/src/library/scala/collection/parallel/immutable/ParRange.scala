@@ -44,8 +44,8 @@ class ParRange(val range: Range) extends ParSeq[Int] with Serializable {
 
   class ParRangeIterator(range: Range = self.range) extends SeqSplitter[Int] {
     override def toString = "ParRangeIterator(over: " + range + ")"
-    private var ind = 0
-    private val len = range.length
+    private var ind       = 0
+    private val len       = range.length
 
     final def remaining = len - ind
 
@@ -63,13 +63,13 @@ class ParRange(val range: Range) extends ParSeq[Int] with Serializable {
     def dup = new ParRangeIterator(rangeleft)
 
     def split = {
-      val rleft = rangeleft
+      val rleft    = rangeleft
       val elemleft = rleft.length
       if (elemleft < 2) Seq(new ParRangeIterator(rleft))
       else
         Seq(
-            new ParRangeIterator(rleft.take(elemleft / 2)),
-            new ParRangeIterator(rleft.drop(elemleft / 2))
+          new ParRangeIterator(rleft.take(elemleft / 2)),
+          new ParRangeIterator(rleft.drop(elemleft / 2))
         )
     }
 
@@ -98,7 +98,9 @@ class ParRange(val range: Range) extends ParSeq[Int] with Serializable {
     /* transformers */
 
     override def map2combiner[S, That](
-        f: Int => S, cb: Combiner[S, That]): Combiner[S, That] = {
+        f: Int => S,
+        cb: Combiner[S, That]
+    ): Combiner[S, That] = {
       while (hasNext) {
         cb += f(next)
       }
@@ -110,7 +112,7 @@ class ParRange(val range: Range) extends ParSeq[Int] with Serializable {
 object ParRange {
   def apply(start: Int, end: Int, step: Int, inclusive: Boolean) =
     new ParRange(
-        if (inclusive) new Range.Inclusive(start, end, step)
-        else new Range(start, end, step)
+      if (inclusive) new Range.Inclusive(start, end, step)
+      else new Range(start, end, step)
     )
 }

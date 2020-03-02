@@ -21,37 +21,36 @@ import scala.collection.mutable.HashSet
 import util.FatLazy
 import common._
 
-class HasManyThrough[From <: KeyedMapper[ThroughType, From],
-                     To <: Mapper[To],
-                     Through <: Mapper[Through],
-                     ThroughType <: Any](
+class HasManyThrough[From <: KeyedMapper[ThroughType, From], To <: Mapper[To], Through <: Mapper[
+  Through
+], ThroughType <: Any](
     owner: From,
     otherSingleton: MetaMapper[To],
     through: MetaMapper[Through],
     throughFromField: MappedField[ThroughType, Through],
-    throughToField: MappedField[ThroughType, Through])
-    extends LifecycleCallbacks {
+    throughToField: MappedField[ThroughType, Through]
+) extends LifecycleCallbacks {
   private var theSetList: Seq[ThroughType] = Nil
 
   private val others = FatLazy[List[To]] {
     DB.use(owner.connectionIdentifier) { conn =>
       val query =
         "SELECT DISTINCT " + otherSingleton._dbTableNameLC + ".* FROM " +
-        otherSingleton._dbTableNameLC + "," + through._dbTableNameLC +
-        " WHERE " + otherSingleton._dbTableNameLC + "." + otherSingleton
+          otherSingleton._dbTableNameLC + "," + through._dbTableNameLC +
+          " WHERE " + otherSingleton._dbTableNameLC + "." + otherSingleton
           .indexedField(otherSingleton.asInstanceOf[To])
           .openOrThrowException("legacy code")
           ._dbColumnNameLC + " = " + through._dbTableNameLC + "." +
-        throughToField._dbColumnNameLC + " AND " + through._dbTableNameLC +
-        "." + throughFromField._dbColumnNameLC + " = ?"
+          throughToField._dbColumnNameLC + " AND " + through._dbTableNameLC +
+          "." + throughFromField._dbColumnNameLC + " = ?"
       DB.prepareStatement(query, conn) { st =>
         owner.getSingleton.indexedField(owner).map { indVal =>
           if (indVal.dbIgnoreSQLType_?) st.setObject(1, indVal.jdbcFriendly)
           else st.setObject(1, indVal.jdbcFriendly, indVal.targetSQLType)
 
           DB.exec(st) { rs =>
-            otherSingleton.createInstances(
-                owner.connectionIdentifier, rs, Empty, Empty)
+            otherSingleton
+              .createInstances(owner.connectionIdentifier, rs, Empty, Empty)
           }
         } openOr Nil
       }
@@ -71,8 +70,7 @@ class HasManyThrough[From <: KeyedMapper[ThroughType, From],
 
   override def beforeDelete {
     through.findAll(By(throughFromField, owner.primaryKeyField.get)).foreach {
-      toDelete =>
-        toDelete.delete_!
+      toDelete => toDelete.delete_!
     }
   }
 

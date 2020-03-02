@@ -31,9 +31,10 @@ import org.apache.spark.annotation.DeveloperApi
   */
 @DeveloperApi
 private[spark] class OpenHashMap[
-    K : ClassTag, @specialized(Long, Int, Double) V : ClassTag](
-    initialCapacity: Int)
-    extends Iterable[(K, V)] with Serializable {
+    K: ClassTag, @specialized(Long, Int, Double) V: ClassTag
+](initialCapacity: Int)
+    extends Iterable[(K, V)]
+    with Serializable {
 
   def this() = this(64)
 
@@ -48,22 +49,21 @@ private[spark] class OpenHashMap[
 
   // Treat the null key differently so we can use nulls in "data" to represent empty items.
   private var haveNullValue = false
-  private var nullValue: V = null.asInstanceOf[V]
+  private var nullValue: V  = null.asInstanceOf[V]
 
   override def size: Int =
     if (haveNullValue) _keySet.size + 1 else _keySet.size
 
   /** Tests whether this map contains a binding for a key. */
-  def contains(k: K): Boolean = {
+  def contains(k: K): Boolean =
     if (k == null) {
       haveNullValue
     } else {
       _keySet.getPos(k) != OpenHashSet.INVALID_POS
     }
-  }
 
   /** Get the value for a given key */
-  def apply(k: K): V = {
+  def apply(k: K): V =
     if (k == null) {
       nullValue
     } else {
@@ -74,7 +74,6 @@ private[spark] class OpenHashMap[
         _values(pos)
       }
     }
-  }
 
   /** Set the value for a key */
   def update(k: K, v: V) {
@@ -95,7 +94,7 @@ private[spark] class OpenHashMap[
     *
     * @return the newly updated value.
     */
-  def changeValue(k: K, defaultValue: => V, mergeValue: (V) => V): V = {
+  def changeValue(k: K, defaultValue: => V, mergeValue: (V) => V): V =
     if (k == null) {
       if (haveNullValue) {
         nullValue = mergeValue(nullValue)
@@ -116,10 +115,9 @@ private[spark] class OpenHashMap[
         _values(pos)
       }
     }
-  }
 
   override def iterator: Iterator[(K, V)] = new Iterator[(K, V)] {
-    var pos = -1
+    var pos              = -1
     var nextPair: (K, V) = computeNextPair()
 
     /** Get the next value we should return from next(), or null if we're finished iterating */
@@ -156,14 +154,12 @@ private[spark] class OpenHashMap[
   // to the "private" variables).
   // They also should have been val's. We use var's because there is a Scala compiler bug that
   // would throw illegal access error at runtime if they are declared as val's.
-  protected var grow = (newCapacity: Int) =>
-    {
-      _oldValues = _values
-      _values = new Array[V](newCapacity)
+  protected var grow = (newCapacity: Int) => {
+    _oldValues = _values
+    _values = new Array[V](newCapacity)
   }
 
-  protected var move = (oldPos: Int, newPos: Int) =>
-    {
-      _values(newPos) = _oldValues(oldPos)
+  protected var move = (oldPos: Int, newPos: Int) => {
+    _values(newPos) = _oldValues(oldPos)
   }
 }

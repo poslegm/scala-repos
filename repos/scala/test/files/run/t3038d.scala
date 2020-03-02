@@ -1,6 +1,6 @@
 trait Foo {
   @transient protected var load = 1
-  @transient protected var a = 12
+  @transient protected var a    = 12
 
   protected def init[B](in: java.io.ObjectInputStream) {
     in.defaultReadObject
@@ -18,8 +18,8 @@ trait Foo {
 
 class Bar extends Foo with Serializable {
   @transient protected var first: Any = null
-  def size = a
-  @transient var second: Any = null
+  def size                            = a
+  @transient var second: Any          = null
 
   def checkMember { if (first == null) print("") }
 
@@ -49,9 +49,9 @@ object Test {
   }
 
   def main(args: Array[String]) {
-    val a1 = new Bar()
+    val a1                      = new Bar()
     val serialized: Array[Byte] = toBytes(a1)
-    val deserialized: Bar = toObject(serialized)
+    val deserialized: Bar       = toObject(serialized)
     deserialized.size
     deserialized.checkMember
   }

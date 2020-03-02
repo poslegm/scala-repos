@@ -14,11 +14,13 @@ object BTypesTest extends ClearAfterClass.Clearable {
   var compiler = {
     val comp = newCompiler(extraArgs = "-Yopt:l:none")
     new comp.Run() // initializes some of the compiler
-    comp.exitingDelambdafy(comp.scalaPrimitives.init()) // needed: it's only done when running the backend, and we don't actually run the compiler
+    comp.exitingDelambdafy(
+      comp.scalaPrimitives.init()
+    ) // needed: it's only done when running the backend, and we don't actually run the compiler
     comp.exitingDelambdafy(comp.genBCode.bTypes.initializeCoreBTypes())
     comp
   }
-  def clear(): Unit = { compiler = null }
+  def clear(): Unit = compiler = null
 }
 
 @RunWith(classOf[JUnit4])
@@ -31,18 +33,18 @@ class BTypesTest extends ClearAfterClass {
   def classBTFS(sym: compiler.Symbol) =
     compiler.exitingDelambdafy(classBTypeFromSymbol(sym))
 
-  def jlo = compiler.definitions.ObjectClass
-  def jls = compiler.definitions.StringClass
-  def o = classBTFS(jlo)
-  def s = classBTFS(jls)
-  def oArr = ArrayBType(o)
+  def jlo    = compiler.definitions.ObjectClass
+  def jls    = compiler.definitions.StringClass
+  def o      = classBTFS(jlo)
+  def s      = classBTFS(jls)
+  def oArr   = ArrayBType(o)
   def method = MethodBType(List(oArr, INT, DOUBLE, s), UNIT)
 
   @Test
   def classBTypesEquality() {
     val s1 = classBTFS(jls)
     val s2 = classBTFS(jls)
-    val o = classBTFS(jlo)
+    val o  = classBTFS(jlo)
     assertEquals(s1, s2)
     assertEquals(s1.hashCode, s2.hashCode)
     assert(s1 != o)

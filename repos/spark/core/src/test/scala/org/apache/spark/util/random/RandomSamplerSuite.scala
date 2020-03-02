@@ -53,7 +53,7 @@ class RandomSamplerSuite extends SparkFunSuite with Matchers {
     */
   // This D value is the precomputed KS statistic for p-value 0.1, sample size 1000:
   val sampleSize = 1000
-  val D = 0.0544280747619
+  val D          = 0.0544280747619
 
   // I'm not a big fan of fixing seeds, but unit testing based on running statistical tests
   // will always fail with some nonzero probability, so I'll fix the seed to prevent these
@@ -73,10 +73,8 @@ class RandomSamplerSuite extends SparkFunSuite with Matchers {
     val rng = new PoissonDistribution(f)
     rng.reseedRandomGenerator(rngSeed.nextLong)
     data.flatMap { v =>
-      {
-        val rep = rng.sample()
-        if (rep == 0) Iterator.empty else Iterator.fill(rep)(v)
-      }
+      val rep = rng.sample()
+      if (rep == 0) Iterator.empty else Iterator.fill(rep)(v)
     }
   }
 
@@ -84,26 +82,25 @@ class RandomSamplerSuite extends SparkFunSuite with Matchers {
   // This function assumes input data is integers sampled from the sequence of
   // increasing integers: {0, 1, 2, ...}.  This works because that is how I generate them,
   // and the samplers preserve their input order
-  def gaps(data: Iterator[Int]): Iterator[Int] = {
-    data.sliding(2).withPartial(false).map { x =>
-      x(1) - x(0)
-    }
-  }
+  def gaps(data: Iterator[Int]): Iterator[Int] =
+    data.sliding(2).withPartial(false).map(x => x(1) - x(0))
 
   // Returns the cumulative distribution from a histogram
   def cumulativeDist(hist: Array[Int]): Array[Double] = {
     val n = hist.sum.toDouble
     assert(n > 0.0)
-    hist.scanLeft(0)(_ + _).drop(1).map { _.toDouble / n }
+    hist.scanLeft(0)(_ + _).drop(1).map(_.toDouble / n)
   }
 
   // Returns aligned cumulative distributions from two arrays of data
-  def cumulants(d1: Array[Int],
-                d2: Array[Int],
-                ss: Int = sampleSize): (Array[Double], Array[Double]) = {
+  def cumulants(
+      d1: Array[Int],
+      d2: Array[Int],
+      ss: Int = sampleSize
+  ): (Array[Double], Array[Double]) = {
     assert(math.min(d1.length, d2.length) > 0)
     assert(math.min(d1.min, d2.min) >= 0)
-    val m = 1 + math.max(d1.max, d2.max)
+    val m  = 1 + math.max(d1.max, d2.max)
     val h1 = Array.fill[Int](m)(0)
     val h2 = Array.fill[Int](m)(0)
     for (v <- d1) { h1(v) += 1 }
@@ -122,19 +119,22 @@ class RandomSamplerSuite extends SparkFunSuite with Matchers {
     assert(cdf2(n - 1) == 1.0)
     cdf1
       .zip(cdf2)
-      .map { x =>
-        Math.abs(x._1 - x._2)
-      }
+      .map(x => Math.abs(x._1 - x._2))
       .max
   }
 
   // Returns the median KS 'D' statistic between two samples, over (m) sampling trials
   def medianKSD(
-      data1: => Iterator[Int], data2: => Iterator[Int], m: Int = 5): Double = {
+      data1: => Iterator[Int],
+      data2: => Iterator[Int],
+      m: Int = 5
+  ): Double = {
     val t = Array
       .fill[Double](m) {
-        val (c1, c2) = cumulants(data1.take(sampleSize).toArray,
-                                 data2.take(sampleSize).toArray)
+        val (c1, c2) = cumulants(
+          data1.take(sampleSize).toArray,
+          data2.take(sampleSize).toArray
+        )
         KSD(c1, c2)
       }
       .sorted
@@ -143,39 +143,48 @@ class RandomSamplerSuite extends SparkFunSuite with Matchers {
   }
 
   test("utilities") {
-    val s1 = Array(0, 1, 1, 0, 2)
-    val s2 = Array(1, 0, 3, 2, 1)
+    val s1       = Array(0, 1, 1, 0, 2)
+    val s2       = Array(1, 0, 3, 2, 1)
     val (c1, c2) = cumulants(s1, s2, ss = 5)
     c1 should be(Array(0.4, 0.8, 1.0, 1.0))
     c2 should be(Array(0.2, 0.6, 0.8, 1.0))
     KSD(c1, c2) should be(0.2 +- 0.000001)
     KSD(c2, c1) should be(KSD(c1, c2))
     gaps(List(0, 1, 1, 2, 4, 11).iterator).toArray should be(
-        Array(1, 0, 1, 2, 7))
+      Array(1, 0, 1, 2, 7)
+    )
   }
 
   test("sanity check medianKSD against references") {
     var d: Double = 0.0
 
     // should be statistically same, i.e. fail to reject null hypothesis strongly
-    d = medianKSD(gaps(sample(Iterator.from(0), 0.5)),
-                  gaps(sample(Iterator.from(0), 0.5)))
+    d = medianKSD(
+      gaps(sample(Iterator.from(0), 0.5)),
+      gaps(sample(Iterator.from(0), 0.5))
+    )
     d should be < D
 
     // should be statistically different - null hypothesis will have high D value,
     // corresponding to low p-value that rejects the null hypothesis
-    d = medianKSD(gaps(sample(Iterator.from(0), 0.4)),
-                  gaps(sample(Iterator.from(0), 0.5)))
+    d = medianKSD(
+      gaps(sample(Iterator.from(0), 0.4)),
+      gaps(sample(Iterator.from(0), 0.5))
+    )
     d should be > D
 
     // same!
-    d = medianKSD(gaps(sampleWR(Iterator.from(0), 0.5)),
-                  gaps(sampleWR(Iterator.from(0), 0.5)))
+    d = medianKSD(
+      gaps(sampleWR(Iterator.from(0), 0.5)),
+      gaps(sampleWR(Iterator.from(0), 0.5))
+    )
     d should be < D
 
     // different!
-    d = medianKSD(gaps(sampleWR(Iterator.from(0), 0.5)),
-                  gaps(sampleWR(Iterator.from(0), 0.6)))
+    d = medianKSD(
+      gaps(sampleWR(Iterator.from(0), 0.5)),
+      gaps(sampleWR(Iterator.from(0), 0.6))
+    )
     d should be > D
   }
 
@@ -187,27 +196,35 @@ class RandomSamplerSuite extends SparkFunSuite with Matchers {
 
     var sampler: RandomSampler[Int, Int] = new BernoulliSampler[Int](0.5)
     sampler.setSeed(rngSeed.nextLong)
-    d = medianKSD(gaps(sampler.sample(Iterator.from(0))),
-                  gaps(sample(Iterator.from(0), 0.5)))
+    d = medianKSD(
+      gaps(sampler.sample(Iterator.from(0))),
+      gaps(sample(Iterator.from(0), 0.5))
+    )
     d should be < D
 
     sampler = new BernoulliSampler[Int](0.7)
     sampler.setSeed(rngSeed.nextLong)
-    d = medianKSD(gaps(sampler.sample(Iterator.from(0))),
-                  gaps(sample(Iterator.from(0), 0.7)))
+    d = medianKSD(
+      gaps(sampler.sample(Iterator.from(0))),
+      gaps(sample(Iterator.from(0), 0.7))
+    )
     d should be < D
 
     sampler = new BernoulliSampler[Int](0.9)
     sampler.setSeed(rngSeed.nextLong)
-    d = medianKSD(gaps(sampler.sample(Iterator.from(0))),
-                  gaps(sample(Iterator.from(0), 0.9)))
+    d = medianKSD(
+      gaps(sampler.sample(Iterator.from(0))),
+      gaps(sample(Iterator.from(0), 0.9))
+    )
     d should be < D
 
     // sampling at different frequencies should show up as statistically different:
     sampler = new BernoulliSampler[Int](0.5)
     sampler.setSeed(rngSeed.nextLong)
-    d = medianKSD(gaps(sampler.sample(Iterator.from(0))),
-                  gaps(sample(Iterator.from(0), 0.6)))
+    d = medianKSD(
+      gaps(sampler.sample(Iterator.from(0))),
+      gaps(sample(Iterator.from(0), 0.6))
+    )
     d should be > D
   }
 
@@ -219,27 +236,35 @@ class RandomSamplerSuite extends SparkFunSuite with Matchers {
 
     var sampler: RandomSampler[Int, Int] = new BernoulliSampler[Int](0.01)
     sampler.setSeed(rngSeed.nextLong)
-    d = medianKSD(gaps(sampler.sample(Iterator.from(0))),
-                  gaps(sample(Iterator.from(0), 0.01)))
+    d = medianKSD(
+      gaps(sampler.sample(Iterator.from(0))),
+      gaps(sample(Iterator.from(0), 0.01))
+    )
     d should be < D
 
     sampler = new BernoulliSampler[Int](0.1)
     sampler.setSeed(rngSeed.nextLong)
-    d = medianKSD(gaps(sampler.sample(Iterator.from(0))),
-                  gaps(sample(Iterator.from(0), 0.1)))
+    d = medianKSD(
+      gaps(sampler.sample(Iterator.from(0))),
+      gaps(sample(Iterator.from(0), 0.1))
+    )
     d should be < D
 
     sampler = new BernoulliSampler[Int](0.3)
     sampler.setSeed(rngSeed.nextLong)
-    d = medianKSD(gaps(sampler.sample(Iterator.from(0))),
-                  gaps(sample(Iterator.from(0), 0.3)))
+    d = medianKSD(
+      gaps(sampler.sample(Iterator.from(0))),
+      gaps(sample(Iterator.from(0), 0.3))
+    )
     d should be < D
 
     // sampling at different frequencies should show up as statistically different:
     sampler = new BernoulliSampler[Int](0.3)
     sampler.setSeed(rngSeed.nextLong)
-    d = medianKSD(gaps(sampler.sample(Iterator.from(0))),
-                  gaps(sample(Iterator.from(0), 0.4)))
+    d = medianKSD(
+      gaps(sampler.sample(Iterator.from(0))),
+      gaps(sample(Iterator.from(0), 0.4))
+    )
     d should be > D
   }
 
@@ -252,12 +277,12 @@ class RandomSamplerSuite extends SparkFunSuite with Matchers {
     sampler = new BernoulliSampler[Int](1.0)
     sampler.sample(data.iterator).toArray should be(data)
 
-    sampler = new BernoulliSampler[Int](
-        0.0 - (RandomSampler.roundingEpsilon / 2.0))
+    sampler =
+      new BernoulliSampler[Int](0.0 - (RandomSampler.roundingEpsilon / 2.0))
     sampler.sample(data.iterator).toArray should be(Array.empty[Int])
 
-    sampler = new BernoulliSampler[Int](
-        1.0 + (RandomSampler.roundingEpsilon / 2.0))
+    sampler =
+      new BernoulliSampler[Int](1.0 + (RandomSampler.roundingEpsilon / 2.0))
     sampler.sample(data.iterator).toArray should be(data)
   }
 
@@ -266,31 +291,40 @@ class RandomSamplerSuite extends SparkFunSuite with Matchers {
     RandomSampler.defaultMaxGapSamplingFraction should be(0.4)
 
     var d: Double = 0.0
-    var sampler = new BernoulliSampler[Int](0.1)
+    var sampler   = new BernoulliSampler[Int](0.1)
     sampler.setSeed(rngSeed.nextLong)
 
     // Array iterator (indexable type)
     d = medianKSD(
-        gaps(sampler.sample(
-                Iterator.from(0).take(20 * sampleSize).toArray.iterator)),
-        gaps(sample(Iterator.from(0), 0.1)))
+      gaps(
+        sampler.sample(Iterator.from(0).take(20 * sampleSize).toArray.iterator)
+      ),
+      gaps(sample(Iterator.from(0), 0.1))
+    )
     d should be < D
 
     // ArrayBuffer iterator (indexable type)
-    d = medianKSD(gaps(
-                      sampler.sample(Iterator
-                            .from(0)
-                            .take(20 * sampleSize)
-                            .to[ArrayBuffer]
-                            .iterator)),
-                  gaps(sample(Iterator.from(0), 0.1)))
+    d = medianKSD(
+      gaps(
+        sampler.sample(
+          Iterator
+            .from(0)
+            .take(20 * sampleSize)
+            .to[ArrayBuffer]
+            .iterator
+        )
+      ),
+      gaps(sample(Iterator.from(0), 0.1))
+    )
     d should be < D
 
     // List iterator (non-indexable type)
     d = medianKSD(
-        gaps(sampler.sample(
-                Iterator.from(0).take(20 * sampleSize).toList.iterator)),
-        gaps(sample(Iterator.from(0), 0.1)))
+      gaps(
+        sampler.sample(Iterator.from(0).take(20 * sampleSize).toList.iterator)
+      ),
+      gaps(sample(Iterator.from(0), 0.1))
+    )
     d should be < D
   }
 
@@ -298,17 +332,21 @@ class RandomSamplerSuite extends SparkFunSuite with Matchers {
     // Tests expect maximum gap sampling fraction to be this value
     RandomSampler.defaultMaxGapSamplingFraction should be(0.4)
 
-    var d = 0.0
+    var d       = 0.0
     var sampler = new BernoulliSampler[Int](0.1).clone
     sampler.setSeed(rngSeed.nextLong)
-    d = medianKSD(gaps(sampler.sample(Iterator.from(0))),
-                  gaps(sample(Iterator.from(0), 0.1)))
+    d = medianKSD(
+      gaps(sampler.sample(Iterator.from(0))),
+      gaps(sample(Iterator.from(0), 0.1))
+    )
     d should be < D
 
     sampler = new BernoulliSampler[Int](0.9).clone
     sampler.setSeed(rngSeed.nextLong)
-    d = medianKSD(gaps(sampler.sample(Iterator.from(0))),
-                  gaps(sample(Iterator.from(0), 0.9)))
+    d = medianKSD(
+      gaps(sampler.sample(Iterator.from(0))),
+      gaps(sample(Iterator.from(0), 0.9))
+    )
     d should be < D
   }
 
@@ -316,21 +354,25 @@ class RandomSamplerSuite extends SparkFunSuite with Matchers {
     RandomSampler.defaultMaxGapSamplingFraction should be(0.4)
 
     var d: Double = 0.0
-    var sampler1 = new BernoulliSampler[Int](0.2)
-    var sampler2 = new BernoulliSampler[Int](0.2)
+    var sampler1  = new BernoulliSampler[Int](0.2)
+    var sampler2  = new BernoulliSampler[Int](0.2)
 
     // distributions should be identical if seeds are set same
     sampler1.setSeed(73)
     sampler2.setSeed(73)
-    d = medianKSD(gaps(sampler1.sample(Iterator.from(0))),
-                  gaps(sampler2.sample(Iterator.from(0))))
+    d = medianKSD(
+      gaps(sampler1.sample(Iterator.from(0))),
+      gaps(sampler2.sample(Iterator.from(0)))
+    )
     d should be(0.0)
 
     // should be different for different seeds
     sampler1.setSeed(73)
     sampler2.setSeed(37)
-    d = medianKSD(gaps(sampler1.sample(Iterator.from(0))),
-                  gaps(sampler2.sample(Iterator.from(0))))
+    d = medianKSD(
+      gaps(sampler1.sample(Iterator.from(0))),
+      gaps(sampler2.sample(Iterator.from(0)))
+    )
     d should be > 0.0
     d should be < D
 
@@ -340,15 +382,19 @@ class RandomSamplerSuite extends SparkFunSuite with Matchers {
     // distributions should be identical if seeds are set same
     sampler1.setSeed(73)
     sampler2.setSeed(73)
-    d = medianKSD(gaps(sampler1.sample(Iterator.from(0))),
-                  gaps(sampler2.sample(Iterator.from(0))))
+    d = medianKSD(
+      gaps(sampler1.sample(Iterator.from(0))),
+      gaps(sampler2.sample(Iterator.from(0)))
+    )
     d should be(0.0)
 
     // should be different for different seeds
     sampler1.setSeed(73)
     sampler2.setSeed(37)
-    d = medianKSD(gaps(sampler1.sample(Iterator.from(0))),
-                  gaps(sampler2.sample(Iterator.from(0))))
+    d = medianKSD(
+      gaps(sampler1.sample(Iterator.from(0))),
+      gaps(sampler2.sample(Iterator.from(0)))
+    )
     d should be > 0.0
     d should be < D
   }
@@ -361,27 +407,35 @@ class RandomSamplerSuite extends SparkFunSuite with Matchers {
 
     var sampler = new PoissonSampler[Int](0.5)
     sampler.setSeed(rngSeed.nextLong)
-    d = medianKSD(gaps(sampler.sample(Iterator.from(0))),
-                  gaps(sampleWR(Iterator.from(0), 0.5)))
+    d = medianKSD(
+      gaps(sampler.sample(Iterator.from(0))),
+      gaps(sampleWR(Iterator.from(0), 0.5))
+    )
     d should be < D
 
     sampler = new PoissonSampler[Int](0.7)
     sampler.setSeed(rngSeed.nextLong)
-    d = medianKSD(gaps(sampler.sample(Iterator.from(0))),
-                  gaps(sampleWR(Iterator.from(0), 0.7)))
+    d = medianKSD(
+      gaps(sampler.sample(Iterator.from(0))),
+      gaps(sampleWR(Iterator.from(0), 0.7))
+    )
     d should be < D
 
     sampler = new PoissonSampler[Int](0.9)
     sampler.setSeed(rngSeed.nextLong)
-    d = medianKSD(gaps(sampler.sample(Iterator.from(0))),
-                  gaps(sampleWR(Iterator.from(0), 0.9)))
+    d = medianKSD(
+      gaps(sampler.sample(Iterator.from(0))),
+      gaps(sampleWR(Iterator.from(0), 0.9))
+    )
     d should be < D
 
     // sampling at different frequencies should show up as statistically different:
     sampler = new PoissonSampler[Int](0.5)
     sampler.setSeed(rngSeed.nextLong)
-    d = medianKSD(gaps(sampler.sample(Iterator.from(0))),
-                  gaps(sampleWR(Iterator.from(0), 0.6)))
+    d = medianKSD(
+      gaps(sampler.sample(Iterator.from(0))),
+      gaps(sampleWR(Iterator.from(0), 0.6))
+    )
     d should be > D
   }
 
@@ -393,27 +447,35 @@ class RandomSamplerSuite extends SparkFunSuite with Matchers {
 
     var sampler = new PoissonSampler[Int](0.01)
     sampler.setSeed(rngSeed.nextLong)
-    d = medianKSD(gaps(sampler.sample(Iterator.from(0))),
-                  gaps(sampleWR(Iterator.from(0), 0.01)))
+    d = medianKSD(
+      gaps(sampler.sample(Iterator.from(0))),
+      gaps(sampleWR(Iterator.from(0), 0.01))
+    )
     d should be < D
 
     sampler = new PoissonSampler[Int](0.1)
     sampler.setSeed(rngSeed.nextLong)
-    d = medianKSD(gaps(sampler.sample(Iterator.from(0))),
-                  gaps(sampleWR(Iterator.from(0), 0.1)))
+    d = medianKSD(
+      gaps(sampler.sample(Iterator.from(0))),
+      gaps(sampleWR(Iterator.from(0), 0.1))
+    )
     d should be < D
 
     sampler = new PoissonSampler[Int](0.3)
     sampler.setSeed(rngSeed.nextLong)
-    d = medianKSD(gaps(sampler.sample(Iterator.from(0))),
-                  gaps(sampleWR(Iterator.from(0), 0.3)))
+    d = medianKSD(
+      gaps(sampler.sample(Iterator.from(0))),
+      gaps(sampleWR(Iterator.from(0), 0.3))
+    )
     d should be < D
 
     // sampling at different frequencies should show up as statistically different:
     sampler = new PoissonSampler[Int](0.3)
     sampler.setSeed(rngSeed.nextLong)
-    d = medianKSD(gaps(sampler.sample(Iterator.from(0))),
-                  gaps(sampleWR(Iterator.from(0), 0.4)))
+    d = medianKSD(
+      gaps(sampler.sample(Iterator.from(0))),
+      gaps(sampleWR(Iterator.from(0), 0.4))
+    )
     d should be > D
   }
 
@@ -423,8 +485,8 @@ class RandomSamplerSuite extends SparkFunSuite with Matchers {
     var sampler = new PoissonSampler[Int](0.0)
     sampler.sample(data.iterator).toArray should be(Array.empty[Int])
 
-    sampler = new PoissonSampler[Int](
-        0.0 - (RandomSampler.roundingEpsilon / 2.0))
+    sampler =
+      new PoissonSampler[Int](0.0 - (RandomSampler.roundingEpsilon / 2.0))
     sampler.sample(data.iterator).toArray should be(Array.empty[Int])
 
     // sampling with replacement has no upper bound on sampling fraction
@@ -437,31 +499,40 @@ class RandomSamplerSuite extends SparkFunSuite with Matchers {
     RandomSampler.defaultMaxGapSamplingFraction should be(0.4)
 
     var d: Double = 0.0
-    var sampler = new PoissonSampler[Int](0.1)
+    var sampler   = new PoissonSampler[Int](0.1)
     sampler.setSeed(rngSeed.nextLong)
 
     // Array iterator (indexable type)
     d = medianKSD(
-        gaps(sampler.sample(
-                Iterator.from(0).take(20 * sampleSize).toArray.iterator)),
-        gaps(sampleWR(Iterator.from(0), 0.1)))
+      gaps(
+        sampler.sample(Iterator.from(0).take(20 * sampleSize).toArray.iterator)
+      ),
+      gaps(sampleWR(Iterator.from(0), 0.1))
+    )
     d should be < D
 
     // ArrayBuffer iterator (indexable type)
-    d = medianKSD(gaps(
-                      sampler.sample(Iterator
-                            .from(0)
-                            .take(20 * sampleSize)
-                            .to[ArrayBuffer]
-                            .iterator)),
-                  gaps(sampleWR(Iterator.from(0), 0.1)))
+    d = medianKSD(
+      gaps(
+        sampler.sample(
+          Iterator
+            .from(0)
+            .take(20 * sampleSize)
+            .to[ArrayBuffer]
+            .iterator
+        )
+      ),
+      gaps(sampleWR(Iterator.from(0), 0.1))
+    )
     d should be < D
 
     // List iterator (non-indexable type)
     d = medianKSD(
-        gaps(sampler.sample(
-                Iterator.from(0).take(20 * sampleSize).toList.iterator)),
-        gaps(sampleWR(Iterator.from(0), 0.1)))
+      gaps(
+        sampler.sample(Iterator.from(0).take(20 * sampleSize).toList.iterator)
+      ),
+      gaps(sampleWR(Iterator.from(0), 0.1))
+    )
     d should be < D
   }
 
@@ -469,17 +540,21 @@ class RandomSamplerSuite extends SparkFunSuite with Matchers {
     // Tests expect maximum gap sampling fraction to be this value
     RandomSampler.defaultMaxGapSamplingFraction should be(0.4)
 
-    var d = 0.0
+    var d       = 0.0
     var sampler = new PoissonSampler[Int](0.1).clone
     sampler.setSeed(rngSeed.nextLong)
-    d = medianKSD(gaps(sampler.sample(Iterator.from(0))),
-                  gaps(sampleWR(Iterator.from(0), 0.1)))
+    d = medianKSD(
+      gaps(sampler.sample(Iterator.from(0))),
+      gaps(sampleWR(Iterator.from(0), 0.1))
+    )
     d should be < D
 
     sampler = new PoissonSampler[Int](0.9).clone
     sampler.setSeed(rngSeed.nextLong)
-    d = medianKSD(gaps(sampler.sample(Iterator.from(0))),
-                  gaps(sampleWR(Iterator.from(0), 0.9)))
+    d = medianKSD(
+      gaps(sampler.sample(Iterator.from(0))),
+      gaps(sampleWR(Iterator.from(0), 0.9))
+    )
     d should be < D
   }
 
@@ -487,21 +562,25 @@ class RandomSamplerSuite extends SparkFunSuite with Matchers {
     RandomSampler.defaultMaxGapSamplingFraction should be(0.4)
 
     var d: Double = 0.0
-    var sampler1 = new PoissonSampler[Int](0.2)
-    var sampler2 = new PoissonSampler[Int](0.2)
+    var sampler1  = new PoissonSampler[Int](0.2)
+    var sampler2  = new PoissonSampler[Int](0.2)
 
     // distributions should be identical if seeds are set same
     sampler1.setSeed(73)
     sampler2.setSeed(73)
-    d = medianKSD(gaps(sampler1.sample(Iterator.from(0))),
-                  gaps(sampler2.sample(Iterator.from(0))))
+    d = medianKSD(
+      gaps(sampler1.sample(Iterator.from(0))),
+      gaps(sampler2.sample(Iterator.from(0)))
+    )
     d should be(0.0)
 
     // should be different for different seeds
     sampler1.setSeed(73)
     sampler2.setSeed(37)
-    d = medianKSD(gaps(sampler1.sample(Iterator.from(0))),
-                  gaps(sampler2.sample(Iterator.from(0))))
+    d = medianKSD(
+      gaps(sampler1.sample(Iterator.from(0))),
+      gaps(sampler2.sample(Iterator.from(0)))
+    )
     d should be > 0.0
     d should be < D
 
@@ -511,15 +590,19 @@ class RandomSamplerSuite extends SparkFunSuite with Matchers {
     // distributions should be identical if seeds are set same
     sampler1.setSeed(73)
     sampler2.setSeed(73)
-    d = medianKSD(gaps(sampler1.sample(Iterator.from(0))),
-                  gaps(sampler2.sample(Iterator.from(0))))
+    d = medianKSD(
+      gaps(sampler1.sample(Iterator.from(0))),
+      gaps(sampler2.sample(Iterator.from(0)))
+    )
     d should be(0.0)
 
     // should be different for different seeds
     sampler1.setSeed(73)
     sampler2.setSeed(37)
-    d = medianKSD(gaps(sampler1.sample(Iterator.from(0))),
-                  gaps(sampler2.sample(Iterator.from(0))))
+    d = medianKSD(
+      gaps(sampler1.sample(Iterator.from(0))),
+      gaps(sampler2.sample(Iterator.from(0)))
+    )
     d should be > 0.0
     d should be < D
   }
@@ -529,20 +612,24 @@ class RandomSamplerSuite extends SparkFunSuite with Matchers {
 
     var sampler = new BernoulliCellSampler[Int](0.1, 0.2)
     sampler.setSeed(rngSeed.nextLong)
-    d = medianKSD(gaps(sampler.sample(Iterator.from(0))),
-                  gaps(sample(Iterator.from(0), 0.1)))
+    d = medianKSD(
+      gaps(sampler.sample(Iterator.from(0))),
+      gaps(sample(Iterator.from(0), 0.1))
+    )
     d should be < D
 
     sampler = new BernoulliCellSampler[Int](0.1, 0.2, true)
     sampler.setSeed(rngSeed.nextLong)
-    d = medianKSD(gaps(sampler.sample(Iterator.from(0))),
-                  gaps(sample(Iterator.from(0), 0.9)))
+    d = medianKSD(
+      gaps(sampler.sample(Iterator.from(0))),
+      gaps(sample(Iterator.from(0), 0.9))
+    )
     d should be < D
   }
 
   test("bernoulli partitioning boundary cases") {
     val data = (1 to 100).toArray
-    val d = RandomSampler.roundingEpsilon / 2.0
+    val d    = RandomSampler.roundingEpsilon / 2.0
 
     var sampler = new BernoulliCellSampler[Int](0.0, 0.0)
     sampler.sample(data.iterator).toArray should be(Array.empty[Int])

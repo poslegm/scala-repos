@@ -10,9 +10,10 @@ import org.jetbrains.plugins.scala.testingSupport.scalatest.ScalaTestTestCase
 trait WordSpecFileStructureViewTest extends ScalaTestTestCase {
   private val className = "WordSpecViewTest"
 
-  def addWordSpecViewTest(): Unit = {
-    addFileToProject(className + ".scala",
-                     """
+  def addWordSpecViewTest(): Unit =
+    addFileToProject(
+      className + ".scala",
+      """
         |import org.scalatest._
         |
         |class WordSpecViewTest extends WordSpec {
@@ -33,19 +34,21 @@ trait WordSpecFileStructureViewTest extends ScalaTestTestCase {
         |    "ignore2" ignore pending
         |  }
         |}
-      """.stripMargin)
-  }
+      """.stripMargin
+    )
 
   def testWordSpecNormal(): Unit = {
     addWordSpecViewTest()
-    runFileStructureViewTest(className,
-                             normalStatusId,
-                             "\"parent1\"",
-                             "\"child1\"",
-                             "\"child2\"",
-                             "\"parent2\"",
-                             "\"child3\"",
-                             "\"child4\"")
+    runFileStructureViewTest(
+      className,
+      normalStatusId,
+      "\"parent1\"",
+      "\"child1\"",
+      "\"child2\"",
+      "\"parent2\"",
+      "\"child3\"",
+      "\"child4\""
+    )
   }
 
   def testWordSpecHierarchy(): Unit = {

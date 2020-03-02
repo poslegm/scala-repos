@@ -28,7 +28,7 @@ object WorkflowContext extends Logging {
       sparkEnv: Map[String, String] = Map(),
       mode: String = ""
   ): SparkContext = {
-    val conf = new SparkConf()
+    val conf   = new SparkConf()
     val prefix = if (mode == "") "PredictionIO" else s"PredictionIO ${mode}"
     conf.setAppName(s"${prefix}: ${batch}")
     debug(s"Executor environment received: ${executorEnv}")

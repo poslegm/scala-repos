@@ -52,26 +52,27 @@ class ServiceRegistry extends Actor with ActorLogging {
   import akka.cluster.ddata.Replicator._
   import ServiceRegistry._
 
-  val replicator = DistributedData(context.system).replicator
+  val replicator       = DistributedData(context.system).replicator
   implicit val cluster = Cluster(context.system)
 
-  var keys = Set.empty[ServiceKey]
+  var keys     = Set.empty[ServiceKey]
   var services = Map.empty[String, Set[ActorRef]]
-  var leader = false
+  var leader   = false
 
   def serviceKey(serviceName: String): ServiceKey =
     ServiceKey("service:" + serviceName)
 
   override def preStart(): Unit = {
     replicator ! Subscribe(AllServicesKey, self)
-    cluster.subscribe(self,
-                      ClusterEvent.InitialStateAsEvents,
-                      classOf[ClusterEvent.LeaderChanged])
+    cluster.subscribe(
+      self,
+      ClusterEvent.InitialStateAsEvents,
+      classOf[ClusterEvent.LeaderChanged]
+    )
   }
 
-  override def postStop(): Unit = {
+  override def postStop(): Unit =
     cluster.unsubscribe(self)
-  }
 
   def receive = {
     case Register(name, service) ⇒
@@ -89,7 +90,10 @@ class ServiceRegistry extends Actor with ActorLogging {
     case c @ Changed(AllServicesKey) ⇒
       val newKeys = c.get(AllServicesKey).elements
       log.debug(
-          "Services changed, added: {}, all: {}", (newKeys -- keys), newKeys)
+        "Services changed, added: {}, all: {}",
+        (newKeys -- keys),
+        newKeys
+      )
       (newKeys -- keys).foreach { dKey ⇒
         // subscribe to get notifications of when services with this name are added or removed
         replicator ! Subscribe(dKey, self)
@@ -97,7 +101,7 @@ class ServiceRegistry extends Actor with ActorLogging {
       keys = newKeys
 
     case c @ Changed(ServiceKey(serviceName)) ⇒
-      val name = serviceName.split(":").tail.mkString
+      val name        = serviceName.split(":").tail.mkString
       val newServices = c.get(serviceKey(name)).elements
       log.debug("Services changed for name [{}]: {}", name, newServices)
       services = services.updated(name, newServices)

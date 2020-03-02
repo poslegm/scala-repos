@@ -10,43 +10,50 @@ import com.intellij.refactoring.ui.AbstractMemberSelectionTable
 import com.intellij.ui.RowIcon
 import com.intellij.util.{IconUtil, VisibilityIcons}
 import org.jetbrains.plugins.scala.lang.psi.api.statements.ScFunction
-import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{ScMember, ScObject}
+import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{
+  ScMember,
+  ScObject
+}
 
 /**
   * Nikolay.Tropin
   * 8/20/13
   */
 abstract class ScalaMemberSelectionTableBase[
-    M <: PsiElement, I <: ScalaMemberInfoBase[M]](
+    M <: PsiElement,
+    I <: ScalaMemberInfoBase[M]
+](
     memberInfos: java.util.Collection[I],
     memberInfoModel: MemberInfoModel[M, I],
-    abstractColumnHeader: String)
-    extends AbstractMemberSelectionTable[M, I](
-        memberInfos, memberInfoModel, abstractColumnHeader) {
+    abstractColumnHeader: String
+) extends AbstractMemberSelectionTable[M, I](
+      memberInfos,
+      memberInfoModel,
+      abstractColumnHeader
+    ) {
 
-  def getAbstractColumnValue(memberInfo: I): AnyRef = {
+  def getAbstractColumnValue(memberInfo: I): AnyRef =
     memberInfo.getMember match {
       case member: ScMember if member.containingClass.isInstanceOf[ScObject] =>
         null
       case member: ScMember
           if member.hasAbstractModifier &&
-          myMemberInfoModel.isFixedAbstract(memberInfo) != null =>
+            myMemberInfoModel.isFixedAbstract(memberInfo) != null =>
         myMemberInfoModel.isFixedAbstract(memberInfo)
       case _ if !myMemberInfoModel.isAbstractEnabled(memberInfo) =>
         val res: java.lang.Boolean =
           myMemberInfoModel.isAbstractWhenDisabled(memberInfo)
         res
       case _ if memberInfo.isToAbstract => java.lang.Boolean.TRUE
-      case _ => java.lang.Boolean.FALSE
+      case _                            => java.lang.Boolean.FALSE
     }
-  }
 
   def isAbstractColumnEditable(rowIndex: Int): Boolean = {
     val info: I = myMemberInfos.get(rowIndex)
     info.getMember match {
       case member: ScMember
           if member.hasAbstractModifier &&
-          myMemberInfoModel.isFixedAbstract(info) == java.lang.Boolean.TRUE =>
+            myMemberInfoModel.isFixedAbstract(info) == java.lang.Boolean.TRUE =>
         false
       case _ => info.isChecked && myMemberInfoModel.isAbstractEnabled(info)
     }
@@ -59,8 +66,10 @@ abstract class ScalaMemberSelectionTableBase[
           case mods: PsiModifierList =>
             VisibilityIcons.setVisibilityIcon(mods, icon)
           case _ =>
-            icon.setIcon(IconUtil.getEmptyIcon(true),
-                         AbstractMemberSelectionTable.VISIBILITY_ICON_POSITION)
+            icon.setIcon(
+              IconUtil.getEmptyIcon(true),
+              AbstractMemberSelectionTable.VISIBILITY_ICON_POSITION
+            )
         }
       case _ =>
     }

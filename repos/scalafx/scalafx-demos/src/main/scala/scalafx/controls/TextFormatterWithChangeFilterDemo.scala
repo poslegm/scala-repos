@@ -62,9 +62,8 @@ object TextFormatterWithChangeFilterDemo extends JFXApp {
         else s
       Message(r)
     }
-    override def toString(v: Message): String = {
+    override def toString(v: Message): String =
       prompt + v.text
-    }
   }
 
   // Filter the change restoring prompt if it was removed and correcting caret position
@@ -90,12 +89,11 @@ object TextFormatterWithChangeFilterDemo extends JFXApp {
   val textField = new TextField {
     text = prompt
     textFormatter = formatter
-    onAction = (a: ActionEvent) =>
-      {
-        val str = text()
-        val message = converter.fromString(str) + "\n"
-        outputTextArea.text = message + outputTextArea.text()
-        text() = ""
+    onAction = (a: ActionEvent) => {
+      val str     = text()
+      val message = converter.fromString(str) + "\n"
+      outputTextArea.text = message + outputTextArea.text()
+      text() = ""
     }
   }
 
@@ -106,15 +104,16 @@ object TextFormatterWithChangeFilterDemo extends JFXApp {
         spacing = 6
         padding = Insets(10)
         children = Seq(
-            new Label(
-                "Example of using `TextFormatter` to ensure that the input field includes prompt text \"> \".") {
-              wrapText = true
-            },
-            new Label("Type message at the prompt. Press \"Enter\" to send."),
-            new BorderPane {
-              top = textField
-              center = outputTextArea
-            }
+          new Label(
+            "Example of using `TextFormatter` to ensure that the input field includes prompt text \"> \"."
+          ) {
+            wrapText = true
+          },
+          new Label("Type message at the prompt. Press \"Enter\" to send."),
+          new BorderPane {
+            top = textField
+            center = outputTextArea
+          }
         )
       }
     }

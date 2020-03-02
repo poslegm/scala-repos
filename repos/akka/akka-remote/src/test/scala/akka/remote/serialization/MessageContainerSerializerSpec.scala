@@ -19,23 +19,28 @@ class MessageContainerSerializerSpec extends AkkaSpec {
 
     "resolve serializer for ActorSelectionMessage" in {
       ser.serializerFor(classOf[ActorSelectionMessage]).getClass should ===(
-          classOf[MessageContainerSerializer])
+        classOf[MessageContainerSerializer]
+      )
     }
 
     "serialize and de-serialize ActorSelectionMessage" in {
       verifySerialization(
-          ActorSelectionMessage("hello",
-                                Vector(SelectChildName("user"),
-                                       SelectChildName("a"),
-                                       SelectChildName("b"),
-                                       SelectParent,
-                                       SelectChildPattern("*"),
-                                       SelectChildName("c")),
-                                wildcardFanOut = true))
+        ActorSelectionMessage(
+          "hello",
+          Vector(
+            SelectChildName("user"),
+            SelectChildName("a"),
+            SelectChildName("b"),
+            SelectParent,
+            SelectChildPattern("*"),
+            SelectChildName("c")
+          ),
+          wildcardFanOut = true
+        )
+      )
     }
 
-    def verifySerialization(msg: AnyRef): Unit = {
+    def verifySerialization(msg: AnyRef): Unit =
       ser.deserialize(ser.serialize(msg).get, msg.getClass).get should ===(msg)
-    }
   }
 }

@@ -11,35 +11,41 @@ class ReplaceToWithUntilTest extends OperationsOnCollectionInspectionTest {
 
   override def hint: String = InspectionBundle.message("replace.to.with.until")
 
-  def testInfix(): Unit = {
-    doTest(s"""
+  def testInfix(): Unit =
+    doTest(
+      s"""
          |val x = 42
          |0 ${START}to x - 1$END
-       """.stripMargin, """
+       """.stripMargin,
+      """
         |val x = 42
         |0 to x - 1
-      """.stripMargin, """
+      """.stripMargin,
+      """
         |val x = 42
         |0 until x
-      """.stripMargin)
-  }
+      """.stripMargin
+    )
 
-  def testCall(): Unit = {
-    doTest(s"""
+  def testCall(): Unit =
+    doTest(
+      s"""
          |val x = 42
          |0.${START}to(x - 1)$END
-       """.stripMargin, """
+       """.stripMargin,
+      """
         |val x = 42
         |0.to(x - 1)
-      """.stripMargin, """
+      """.stripMargin,
+      """
         |val x = 42
         |0.until(x)
-      """.stripMargin)
-  }
+      """.stripMargin
+    )
 
-  def testOtherTo(): Unit = {
+  def testOtherTo(): Unit =
     checkTextHasNoErrors(
-        s"""
+      s"""
          |class A {
          |  def to(i: Int): Int = i
          |}
@@ -49,5 +55,4 @@ class ReplaceToWithUntilTest extends OperationsOnCollectionInspectionTest {
          |a to x - 1
        """.stripMargin
     )
-  }
 }

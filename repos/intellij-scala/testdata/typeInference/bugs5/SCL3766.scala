@@ -16,7 +16,7 @@ trait Factory {
 
 object ServiceFactory extends Factory {
   implicit object systemClock extends FactoryMaker(() => 1)
-  implicit object login extends FactoryMaker(() => 1)
+  implicit object login       extends FactoryMaker(() => 1)
 }
 
 object Login {

@@ -17,21 +17,21 @@ trait RemoteResourceOwner {
   protected val port: Int
 
   protected val currentDirectory = System.getProperty("user.dir")
-  protected val serverAlias = "compile-server"
+  protected val serverAlias      = "compile-server"
 
   def send(command: String, arguments: Seq[String], client: Client) {
     val encodedArgs =
       arguments.map(s => Base64Converter.encode(s.getBytes("UTF-8")))
     using(new Socket(address, port)) { socket =>
-      using(new DataOutputStream(
-              new BufferedOutputStream(socket.getOutputStream))) { output =>
+      using(
+        new DataOutputStream(new BufferedOutputStream(socket.getOutputStream))
+      ) { output =>
         createChunks(command, encodedArgs).foreach(_.writeTo(output))
         output.flush()
         if (client != null) {
-          using(new DataInputStream(
-                  new BufferedInputStream(socket.getInputStream))) { input =>
-            handle(input, client)
-          }
+          using(
+            new DataInputStream(new BufferedInputStream(socket.getInputStream))
+          )(input => handle(input, client))
         }
       }
     }
@@ -55,7 +55,9 @@ trait RemoteResourceOwner {
                 if (s.length > 50) s.substring(0, 50) + "..." else s
               }
               client.message(
-                  Kind.ERROR, "Unable to read an event from: " + chars)
+                Kind.ERROR,
+                "Unable to read an event from: " + chars
+              )
               client.trace(e)
           }
         // Main server class redirects all (unexpected) stdout data to stderr.
@@ -70,12 +72,11 @@ trait RemoteResourceOwner {
     }
   }
 
-  protected def createChunks(command: String, args: Seq[String]): Seq[Chunk] = {
+  protected def createChunks(command: String, args: Seq[String]): Seq[Chunk] =
     args.map(s => Chunk(NGConstants.CHUNKTYPE_ARGUMENT.toChar, toBytes(s))) :+ Chunk(
-        NGConstants.CHUNKTYPE_WORKINGDIRECTORY.toChar,
-        toBytes(currentDirectory)) :+ Chunk(
-        NGConstants.CHUNKTYPE_COMMAND.toChar, toBytes(command))
-  }
+      NGConstants.CHUNKTYPE_WORKINGDIRECTORY.toChar,
+      toBytes(currentDirectory)
+    ) :+ Chunk(NGConstants.CHUNKTYPE_COMMAND.toChar, toBytes(command))
 
   private def toBytes(s: String) = s.getBytes
 

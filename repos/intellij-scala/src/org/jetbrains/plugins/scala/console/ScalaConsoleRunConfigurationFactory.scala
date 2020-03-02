@@ -1,7 +1,11 @@
 package org.jetbrains.plugins.scala
 package console
 
-import com.intellij.execution.configurations.{ConfigurationFactory, ConfigurationType, RunConfiguration}
+import com.intellij.execution.configurations.{
+  ConfigurationFactory,
+  ConfigurationType,
+  RunConfiguration
+}
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.scala.project._
 
@@ -11,12 +15,13 @@ import org.jetbrains.plugins.scala.project._
   */
 class ScalaConsoleRunConfigurationFactory(val typez: ConfigurationType)
     extends ConfigurationFactory(typez) {
-  def createTemplateConfiguration(project: Project): RunConfiguration = {
+  def createTemplateConfiguration(project: Project): RunConfiguration =
     new ScalaConsoleRunConfiguration(project, this, "")
-  }
 
   override def createConfiguration(
-      name: String, template: RunConfiguration): RunConfiguration = {
+      name: String,
+      template: RunConfiguration
+  ): RunConfiguration = {
     val configuration = super
       .createConfiguration(name, template)
       .asInstanceOf[ScalaConsoleRunConfiguration]

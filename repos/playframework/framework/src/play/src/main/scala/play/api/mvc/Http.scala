@@ -109,8 +109,8 @@ package play.api.mvc {
       val u = new URI(uri)
       (u.getHost, u.getPort) match {
         case (h, p) if h != null && p > 0 => s"$h:$p"
-        case (h, _) if h != null => h
-        case _ => headers.get(HeaderNames.HOST).getOrElse("")
+        case (h, _) if h != null          => h
+        case _                            => headers.get(HeaderNames.HOST).getOrElse("")
       }
     }
 
@@ -141,10 +141,9 @@ package play.api.mvc {
       *
       * @return true if `mimeType` matches the Accept header, otherwise false
       */
-    def accepts(mimeType: String): Boolean = {
+    def accepts(mimeType: String): Boolean =
       acceptedTypes.isEmpty ||
-      acceptedTypes.find(_.accepts(mimeType)).isDefined
-    }
+        acceptedTypes.find(_.accepts(mimeType)).isDefined
 
     /**
       * The HTTP cookies.
@@ -185,8 +184,8 @@ package play.api.mvc {
       * Returns the charset of the request for text-based body
       */
     lazy val charset: Option[String] = for {
-      mt <- mediaType
-      param <- mt.parameters.find(_._1.equalsIgnoreCase("charset"))
+      mt      <- mediaType
+      param   <- mt.parameters.find(_._1.equalsIgnoreCase("charset"))
       charset <- param._2
     } yield charset
 
@@ -195,9 +194,8 @@ package play.api.mvc {
       *
       * @return the tagged request
       */
-    def withTag(tagName: String, tagValue: String): RequestHeader = {
+    def withTag(tagName: String, tagValue: String): RequestHeader =
       copy(tags = tags + (tagName -> tagValue))
-    }
 
     /**
       * Copy the request.
@@ -213,47 +211,51 @@ package play.api.mvc {
         headers: Headers = this.headers,
         remoteAddress: => String = this.remoteAddress,
         secure: => Boolean = this.secure,
-        clientCertificateChain: Option[Seq[X509Certificate]] = this.clientCertificateChain)
-      : RequestHeader = {
-      val (_id,
-           _tags,
-           _uri,
-           _path,
-           _method,
-           _version,
-           _queryString,
-           _headers,
-           _remoteAddress,
-           _secure,
-           _clientCertificateChain) = (id,
-                                       tags,
-                                       uri,
-                                       path,
-                                       method,
-                                       version,
-                                       queryString,
-                                       headers,
-                                       () => remoteAddress,
-                                       () => secure,
-                                       clientCertificateChain)
+        clientCertificateChain: Option[Seq[X509Certificate]] =
+          this.clientCertificateChain
+    ): RequestHeader = {
+      val (
+        _id,
+        _tags,
+        _uri,
+        _path,
+        _method,
+        _version,
+        _queryString,
+        _headers,
+        _remoteAddress,
+        _secure,
+        _clientCertificateChain
+      ) = (
+        id,
+        tags,
+        uri,
+        path,
+        method,
+        version,
+        queryString,
+        headers,
+        () => remoteAddress,
+        () => secure,
+        clientCertificateChain
+      )
       new RequestHeader {
-        override val id = _id
-        override val tags = _tags
-        override val uri = _uri
-        override val path = _path
-        override val method = _method
-        override val version = _version
-        override val queryString = _queryString
-        override val headers = _headers
-        override lazy val remoteAddress = _remoteAddress()
-        override lazy val secure = _secure()
+        override val id                     = _id
+        override val tags                   = _tags
+        override val uri                    = _uri
+        override val path                   = _path
+        override val method                 = _method
+        override val version                = _version
+        override val queryString            = _queryString
+        override val headers                = _headers
+        override lazy val remoteAddress     = _remoteAddress()
+        override lazy val secure            = _secure()
         override val clientCertificateChain = _clientCertificateChain
       }
     }
 
-    override def toString = {
+    override def toString =
       method + " " + uri
-    }
   }
 
   object RequestHeader {
@@ -264,18 +266,19 @@ package play.api.mvc {
       * @return The items of an Accept* header, with their q-value.
       */
     private[play] def acceptHeader(
-        headers: Headers, headerName: String): Seq[(Double, String)] = {
+        headers: Headers,
+        headerName: String
+    ): Seq[(Double, String)] =
       for {
         header <- headers.get(headerName).toList
         value0 <- header.split(',')
-        value = value0.trim
+        value   = value0.trim
       } yield {
         RequestHeader.qPattern.findFirstMatchIn(value) match {
           case Some(m) => (m.group(1).toDouble, m.before.toString)
-          case None => (1.0, value) // “The default value is q=1.”
+          case None    => (1.0, value) // “The default value is q=1.”
         }
       }
-    }
   }
 
   private[play] class RequestHeaderImpl(
@@ -289,8 +292,8 @@ package play.api.mvc {
       override val headers: Headers,
       override val remoteAddress: String,
       override val secure: Boolean,
-      override val clientCertificateChain: Option[Seq[X509Certificate]])
-      extends RequestHeader {}
+      override val clientCertificateChain: Option[Seq[X509Certificate]]
+  ) extends RequestHeader {}
 
   /**
     * The complete HTTP request.
@@ -309,16 +312,16 @@ package play.api.mvc {
       * Transform the request body.
       */
     def map[B](f: A => B): Request[B] = new Request[B] {
-      override def id = self.id
-      override def tags = self.tags
-      override def uri = self.uri
-      override def path = self.path
-      override def method = self.method
-      override def version = self.version
-      override def queryString = self.queryString
-      override def headers = self.headers
-      override def remoteAddress = self.remoteAddress
-      override def secure = self.secure
+      override def id                     = self.id
+      override def tags                   = self.tags
+      override def uri                    = self.uri
+      override def path                   = self.path
+      override def method                 = self.method
+      override def version                = self.version
+      override def queryString            = self.queryString
+      override def headers                = self.headers
+      override def remoteAddress          = self.remoteAddress
+      override def secure                 = self.secure
       override def clientCertificateChain = self.clientCertificateChain
 
       override lazy val body = f(self.body)
@@ -338,24 +341,24 @@ package play.api.mvc {
       override val headers: Headers,
       override val remoteAddress: String,
       override val secure: Boolean,
-      override val clientCertificateChain: Option[Seq[X509Certificate]])
-      extends Request[A] {}
+      override val clientCertificateChain: Option[Seq[X509Certificate]]
+  ) extends Request[A] {}
 
   object Request {
 
     def apply[A](rh: RequestHeader, a: A): Request[A] = new Request[A] {
-      override def id = rh.id
-      override def tags = rh.tags
-      override def uri = rh.uri
-      override def path = rh.path
-      override def method = rh.method
-      override def version = rh.version
-      override def queryString = rh.queryString
-      override def headers = rh.headers
-      override lazy val remoteAddress = rh.remoteAddress
-      override lazy val secure = rh.secure
+      override def id                     = rh.id
+      override def tags                   = rh.tags
+      override def uri                    = rh.uri
+      override def path                   = rh.path
+      override def method                 = rh.method
+      override def version                = rh.version
+      override def queryString            = rh.queryString
+      override def headers                = rh.headers
+      override lazy val remoteAddress     = rh.remoteAddress
+      override lazy val secure            = rh.secure
       override val clientCertificateChain = rh.clientCertificateChain
-      override val body = a
+      override val body                   = a
     }
   }
 
@@ -363,17 +366,17 @@ package play.api.mvc {
     * Wrap an existing request. Useful to extend a request.
     */
   class WrappedRequest[+A](request: Request[A]) extends Request[A] {
-    override def id = request.id
-    override def tags = request.tags
-    override def body = request.body
-    override def headers = request.headers
-    override def queryString = request.queryString
-    override def path = request.path
-    override def uri = request.uri
-    override def method = request.method
-    override def version = request.version
-    override def remoteAddress = request.remoteAddress
-    override def secure = request.secure
+    override def id                     = request.id
+    override def tags                   = request.tags
+    override def body                   = request.body
+    override def headers                = request.headers
+    override def queryString            = request.queryString
+    override def path                   = request.path
+    override def uri                    = request.uri
+    override def method                 = request.method
+    override def version                = request.version
+    override def remoteAddress          = request.remoteAddress
+    override def secure                 = request.secure
     override def clientCertificateChain = request.clientCertificateChain
   }
 
@@ -412,7 +415,7 @@ package play.api.mvc {
       */
     def absoluteURL(secure: Boolean)(implicit request: RequestHeader): String =
       "http" + (if (secure) "s" else "") + "://" + request.host + this.url +
-      this.appendFragment
+        this.appendFragment
 
     /**
       * Transform this call to an WebSocket URL.
@@ -431,8 +434,7 @@ package play.api.mvc {
     /**
       * Transform this call to an WebSocket URL.
       */
-    def webSocketURL(secure: Boolean)(
-        implicit request: RequestHeader): String =
+    def webSocketURL(secure: Boolean)(implicit request: RequestHeader): String =
       "ws" + (if (secure) "s" else "") + "://" + request.host + this.url
   }
 
@@ -461,9 +463,8 @@ package play.api.mvc {
     def apply(key: String): String =
       get(key).getOrElse(scala.sys.error("Header doesn't exist"))
 
-    override def equals(other: Any) = {
+    override def equals(other: Any) =
       other.isInstanceOf[Headers] && toMap == other.asInstanceOf[Headers].toMap
-    }
 
     /**
       * Optionally returns the first header value associated with a key.
@@ -475,12 +476,13 @@ package play.api.mvc {
       */
     def getAll(key: String): Seq[String] = toMap.getOrElse(key, Nil)
 
-    override def hashCode = {
-      toMap.map {
-        case (name, value) =>
-          name.toLowerCase(Locale.ENGLISH) -> value
-      }.hashCode()
-    }
+    override def hashCode =
+      toMap
+        .map {
+          case (name, value) =>
+            name.toLowerCase(Locale.ENGLISH) -> value
+        }
+        .hashCode()
 
     /**
       * Retrieve all header keys
@@ -581,10 +583,12 @@ package play.api.mvc {
       * Encodes the data as a `String`.
       */
     def encode(data: Map[String, String]): String = {
-      val encoded = data.map {
-        case (k, v) =>
-          URLEncoder.encode(k, "UTF-8") + "=" + URLEncoder.encode(v, "UTF-8")
-      }.mkString("&")
+      val encoded = data
+        .map {
+          case (k, v) =>
+            URLEncoder.encode(k, "UTF-8") + "=" + URLEncoder.encode(v, "UTF-8")
+        }
+        .mkString("&")
       if (isSigned) cookieSigner.sign(encoded) + "-" + encoded
       else encoded
     }
@@ -594,20 +598,19 @@ package play.api.mvc {
       */
     def decode(data: String): Map[String, String] = {
 
-      def urldecode(data: String) = {
+      def urldecode(data: String) =
         data
           .split("&")
           .map(_.split("=", 2))
           .map(p =>
-                URLDecoder.decode(p(0), "UTF-8") -> URLDecoder.decode(
-                    p(1), "UTF-8"))
+            URLDecoder.decode(p(0), "UTF-8") -> URLDecoder.decode(p(1), "UTF-8")
+          )
           .toMap
-      }
 
       // Do not change this unless you understand the security issues behind timing attacks.
       // This method intentionally runs in constant time if the two strings have the same length.
       // If it didn't, it would be vulnerable to a timing attack.
-      def safeEquals(a: String, b: String) = {
+      def safeEquals(a: String, b: String) =
         if (a.length != b.length) {
           false
         } else {
@@ -617,12 +620,11 @@ package play.api.mvc {
           }
           equal == 0
         }
-      }
 
       try {
         if (isSigned) {
           val splitted = data.split("-", 2)
-          val message = splitted.tail.mkString("-")
+          val message  = splitted.tail.mkString("-")
           if (safeEquals(splitted(0), cookieSigner.sign(message)))
             urldecode(message)
           else Map.empty[String, String]
@@ -644,9 +646,8 @@ package play.api.mvc {
     /**
       * Decodes the data from a `Cookie`.
       */
-    def decodeCookieToMap(cookie: Option[Cookie]): Map[String, String] = {
+    def decodeCookieToMap(cookie: Option[Cookie]): Map[String, String] =
       serialize(decodeFromCookie(cookie))
-    }
 
     /**
       * Decodes the data from a `Cookie`.
@@ -741,13 +742,13 @@ package play.api.mvc {
 
     def COOKIE_NAME = config.cookieName
 
-    val emptyCookie = new Session
-    override val isSigned = true
-    override def secure = config.secure
-    override def maxAge = config.maxAge.map(_.toSeconds.toInt)
-    override def httpOnly = config.httpOnly
-    override def path = httpConfiguration.context
-    override def domain = config.domain
+    val emptyCookie           = new Session
+    override val isSigned     = true
+    override def secure       = config.secure
+    override def maxAge       = config.maxAge.map(_.toSeconds.toInt)
+    override def httpOnly     = config.httpOnly
+    override def path         = httpConfiguration.context
+    override def domain       = config.domain
     override def cookieSigner = play.api.libs.Crypto.crypto
 
     def deserialize(data: Map[String, String]) = new Session(data)
@@ -811,15 +812,15 @@ package play.api.mvc {
     * Helper utilities to manage the Flash cookie.
     */
   object Flash extends CookieBaker[Flash] {
-    private def config: FlashConfiguration = httpConfiguration.flash
+    private def config: FlashConfiguration          = httpConfiguration.flash
     private def sessionConfig: SessionConfiguration = httpConfiguration.session
 
     def COOKIE_NAME = config.cookieName
 
-    override def path = httpConfiguration.context
-    override def secure = config.secure
-    override def httpOnly = config.httpOnly
-    override def domain = sessionConfig.domain
+    override def path         = httpConfiguration.context
+    override def secure       = config.secure
+    override def httpOnly     = config.httpOnly
+    override def domain       = sessionConfig.domain
     override def cookieSigner = play.api.libs.Crypto.crypto
 
     val emptyCookie = new Flash
@@ -840,13 +841,15 @@ package play.api.mvc {
     * @param secure whether this cookie is secured, sent only for HTTPS requests
     * @param httpOnly whether this cookie is HTTP only, i.e. not accessible from client-side JavaScipt code
     */
-  case class Cookie(name: String,
-                    value: String,
-                    maxAge: Option[Int] = None,
-                    path: String = "/",
-                    domain: Option[String] = None,
-                    secure: Boolean = false,
-                    httpOnly: Boolean = true)
+  case class Cookie(
+      name: String,
+      value: String,
+      maxAge: Option[Int] = None,
+      path: String = "/",
+      domain: Option[String] = None,
+      secure: Boolean = false,
+      httpOnly: Boolean = true
+  )
 
   /**
     * A cookie to be discarded.  This contains only the data necessary for discarding a cookie.
@@ -856,10 +859,12 @@ package play.api.mvc {
     * @param domain the cookie domain
     * @param secure whether this cookie is secured
     */
-  case class DiscardingCookie(name: String,
-                              path: String = "/",
-                              domain: Option[String] = None,
-                              secure: Boolean = false) {
+  case class DiscardingCookie(
+      name: String,
+      path: String = "/",
+      domain: Option[String] = None,
+      secure: Boolean = false
+  ) {
     def toCookie = Cookie(name, "", Some(-86400), path, domain, secure)
   }
 
@@ -892,7 +897,7 @@ package play.api.mvc {
       * header values, comma, is used in the dates in the Expires attribute of a cookie value. So we synthesise our own
       * separator, that we use here, and before we send the cookie back to the client.
       */
-    val SetCookieHeaderSeparator = ";;"
+    val SetCookieHeaderSeparator      = ";;"
     val SetCookieHeaderSeparatorRegex = SetCookieHeaderSeparator.r
 
     import scala.collection.JavaConverters._
@@ -905,17 +910,17 @@ package play.api.mvc {
     def fromSetCookieHeader(header: Option[String]): Cookies = header match {
       case Some(headerValue) =>
         fromMap(
-            decodeSetCookieHeader(headerValue)
-              .groupBy(_.name)
-              .mapValues(_.head)
-          )
+          decodeSetCookieHeader(headerValue)
+            .groupBy(_.name)
+            .mapValues(_.head)
+        )
       case None => fromMap(Map.empty)
     }
 
     def fromCookieHeader(header: Option[String]): Cookies = header match {
       case Some(headerValue) =>
         fromMap(
-            decodeCookieHeader(headerValue).groupBy(_.name).mapValues(_.head)
+          decodeCookieHeader(headerValue).groupBy(_.name).mapValues(_.head)
         )
       case None => fromMap(Map.empty)
     }
@@ -957,8 +962,7 @@ package play.api.mvc {
       */
     def encodeCookieHeader(cookies: Seq[Cookie]): String = {
       val encoder = config.clientEncoder
-      encoder.encode(
-          cookies.map { cookie =>
+      encoder.encode(cookies.map { cookie =>
         new DefaultCookie(cookie.name, cookie.value)
       }.asJava)
     }
@@ -969,30 +973,31 @@ package play.api.mvc {
       * @param cookieHeader the Set-Cookie header value
       * @return decoded cookies
       */
-    def decodeSetCookieHeader(cookieHeader: String): Seq[Cookie] = {
+    def decodeSetCookieHeader(cookieHeader: String): Seq[Cookie] =
       Try {
         val decoder = config.clientDecoder
         SetCookieHeaderSeparatorRegex.split(cookieHeader).toSeq.flatMap {
           cookieString =>
-            Option(decoder.decode(cookieString.trim)).map(
-                cookie =>
-                  Cookie(
-                      cookie.name,
-                      cookie.value,
-                      if (cookie.maxAge == Integer.MIN_VALUE)
-                        None else Some(cookie.maxAge),
-                      Option(cookie.path).getOrElse("/"),
-                      Option(cookie.domain),
-                      cookie.isSecure,
-                      cookie.isHttpOnly
-                ))
+            Option(decoder.decode(cookieString.trim)).map(cookie =>
+              Cookie(
+                cookie.name,
+                cookie.value,
+                if (cookie.maxAge == Integer.MIN_VALUE)
+                  None
+                else Some(cookie.maxAge),
+                Option(cookie.path).getOrElse("/"),
+                Option(cookie.domain),
+                cookie.isSecure,
+                cookie.isHttpOnly
+              )
+            )
         }
       }.getOrElse {
         logger.debug(
-            s"Couldn't decode the Cookie header containing: $cookieHeader")
+          s"Couldn't decode the Cookie header containing: $cookieHeader"
+        )
         Seq.empty
       }
-    }
 
     /**
       * Decodes a Cookie header value as a proper cookie set.
@@ -1000,24 +1005,24 @@ package play.api.mvc {
       * @param cookieHeader the Cookie header value
       * @return decoded cookies
       */
-    def decodeCookieHeader(cookieHeader: String): Seq[Cookie] = {
+    def decodeCookieHeader(cookieHeader: String): Seq[Cookie] =
       Try {
         config.serverDecoder
           .decode(cookieHeader)
           .asScala
           .map { cookie =>
             Cookie(
-                cookie.name,
-                cookie.value
+              cookie.name,
+              cookie.value
             )
           }
           .toSeq
       }.getOrElse {
         logger.debug(
-            s"Couldn't decode the Cookie header containing: $cookieHeader")
+          s"Couldn't decode the Cookie header containing: $cookieHeader"
+        )
         Nil
       }
-    }
 
     /**
       * Merges an existing Set-Cookie header with new cookie values
@@ -1027,7 +1032,9 @@ package play.api.mvc {
       * @return a valid Set-Cookie header value
       */
     def mergeSetCookieHeader(
-        cookieHeader: String, cookies: Seq[Cookie]): String = {
+        cookieHeader: String,
+        cookies: Seq[Cookie]
+    ): String = {
       val tupledCookies =
         (decodeSetCookieHeader(cookieHeader) ++ cookies).map { c =>
           // See rfc6265#section-4.1.2
@@ -1048,7 +1055,10 @@ package play.api.mvc {
       * @param cookies the new cookies to encode
       * @return a valid Cookie header value
       */
-    def mergeCookieHeader(cookieHeader: String, cookies: Seq[Cookie]): String = {
+    def mergeCookieHeader(
+        cookieHeader: String,
+        cookies: Seq[Cookie]
+    ): String = {
       val tupledCookies = (decodeCookieHeader(cookieHeader) ++ cookies)
         .map(cookie => cookie.name -> cookie)
       // Put cookies in a map

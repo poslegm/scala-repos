@@ -1,8 +1,8 @@
 class a {
 
-  var aa: Int = 5
+  var aa: Int    = 5
   var bb: String = "qwerty"
-  var ccc = null
+  var ccc        = null
 
   /**
     * @param <testref>a

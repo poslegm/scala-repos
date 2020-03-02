@@ -1,8 +1,8 @@
 class Foo(x: Int) {}
 case class Bar(y: Int) extends Foo(y);
 
-trait T {}
-trait U {}
+trait T   {}
+trait U   {}
 class C() {}
 
 trait T1;

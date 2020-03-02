@@ -17,9 +17,8 @@ import org.jetbrains.plugins.scala.lang.psi.impl.expr._
  * Surrounds expression with while: while { <Cursor> } { Expression }
  */
 class ScalaWithWhileSurrounder extends ScalaExpressionSurrounder {
-  override def getTemplateAsString(elements: Array[PsiElement]): String = {
+  override def getTemplateAsString(elements: Array[PsiElement]): String =
     "while (true) {" + super.getTemplateAsString(elements) + "}"
-  }
 
   override def getTemplateDescription = "while"
 
@@ -28,7 +27,7 @@ class ScalaWithWhileSurrounder extends ScalaExpressionSurrounder {
       case x: ScParenthesisedExpr =>
         x.expr match {
           case Some(y) => y
-          case _ => return x.getTextRange
+          case _       => return x.getTextRange
         }
       case x => x
     }
@@ -40,7 +39,7 @@ class ScalaWithWhileSurrounder extends ScalaExpressionSurrounder {
     }
 
     val startOffset = conditionNode.getTextRange.getStartOffset
-    val endOffset = conditionNode.getTextRange.getEndOffset
+    val endOffset   = conditionNode.getTextRange.getEndOffset
 
     new TextRange(startOffset, endOffset);
   }

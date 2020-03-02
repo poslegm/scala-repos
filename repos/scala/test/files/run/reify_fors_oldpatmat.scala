@@ -10,9 +10,9 @@ object Test extends App {
         *  a list out of them.
         */
       val persons = List(
-          new Person("Bob", 17),
-          new Person("John", 40),
-          new Person("Richard", 68)
+        new Person("Bob", 17),
+        new Person("John", 40),
+        new Person("Richard", 68)
       )
 
       /** A Person class. 'val' constructor parameters become
@@ -28,8 +28,7 @@ object Test extends App {
       /** Return an iterator over persons older than 20, given
         *  an iterator over persons.
         */
-      def olderThan20(xs: Iterator[Person]): Iterator[String] = {
-
+      def olderThan20(xs: Iterator[Person]): Iterator[String] =
         // The first expression is called a 'generator' and makes
         // 'p' take values from 'xs'. The second expression is
         // called a 'filter' and it is a boolean expression which
@@ -38,7 +37,6 @@ object Test extends App {
         // for each 'p' which satisfies the filters and used to assemble
         // the resulting iterator
         for (p <- xs if p.age > 20) yield p.name
-      }
     }
 
     /** Some functions over lists of numbers which demonstrate
@@ -54,18 +52,14 @@ object Test extends App {
       def isPrime(n: Int) = divisors(n).length == 2
 
       /** Return pairs of numbers whose sum is prime. */
-      def findNums(n: Int): Iterable[(Int, Int)] = {
-
+      def findNums(n: Int): Iterable[(Int, Int)] =
         // a for comprehension using two generators
         for (i <- 1 until n;
-        j <- 1 until (i - 1); if isPrime(i + j)) yield (i, j)
-      }
+             j <- 1 until (i - 1); if isPrime(i + j)) yield (i, j)
 
       /** Return the sum of the elements of 'xs'. */
       def sum(xs: List[Double]): Double =
-        xs.foldLeft(0.0) { (x, y) =>
-          x + y
-        }
+        xs.foldLeft(0.0)((x, y) => x + y)
 
       /** Return the sum of pairwise product of the two lists. */
       def scalProd(xs: List[Double], ys: List[Double]) =
@@ -76,16 +70,15 @@ object Test extends App {
         if (xs.isEmpty) xs
         else
           xs.head :: removeDuplicates(
-              for (x <- xs.tail if x != xs.head) yield x)
+            for (x <- xs.tail if x != xs.head) yield x
+          )
     }
 
     // import all members of object 'persons' in the current scope
     import Persons._
 
     print("Persons over 20:")
-    olderThan20(persons) foreach { x =>
-      print(" " + x)
-    }
+    olderThan20(persons) foreach { x => print(" " + x) }
     println
 
     import Numeric._
@@ -93,9 +86,7 @@ object Test extends App {
     println("divisors(34) = " + divisors(34))
 
     print("findNums(15) =")
-    findNums(15) foreach { x =>
-      print(" " + x)
-    }
+    findNums(15) foreach { x => print(" " + x) }
     println
 
     val xs = List(3.5, 5.0, 4.5)

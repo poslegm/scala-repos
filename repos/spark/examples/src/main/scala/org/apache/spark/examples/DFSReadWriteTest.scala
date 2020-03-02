@@ -38,21 +38,21 @@ import org.apache.spark.{SparkConf, SparkContext}
 object DFSReadWriteTest {
 
   private var localFilePath: File = new File(".")
-  private var dfsDirPath: String = ""
+  private var dfsDirPath: String  = ""
 
   private val NPARAMS = 2
 
   private def readFile(filename: String): List[String] = {
     val lineIter: Iterator[String] = fromFile(filename).getLines()
-    val lineList: List[String] = lineIter.toList
+    val lineList: List[String]     = lineIter.toList
     lineList
   }
 
   private def printUsage(): Unit = {
     val usage: String =
       "DFS Read-Write Test\n" + "\n" + "Usage: localFile dfsDir\n" + "\n" +
-      "localFile - (string) local file to use in test\n" +
-      "dfsDir - (string) DFS directory for read/write tests\n"
+        "localFile - (string) local file to use in test\n" +
+        "dfsDir - (string) DFS directory for read/write tests\n"
 
     println(usage)
   }
@@ -82,7 +82,7 @@ object DFSReadWriteTest {
     dfsDirPath = args(i)
   }
 
-  def runLocalWordCount(fileContents: List[String]): Int = {
+  def runLocalWordCount(fileContents: List[String]): Int =
     fileContents
       .flatMap(_.split(" "))
       .flatMap(_.split("\t"))
@@ -91,13 +91,12 @@ object DFSReadWriteTest {
       .mapValues(_.size)
       .values
       .sum
-  }
 
   def main(args: Array[String]): Unit = {
     parseArgs(args)
 
     println("Performing local word count")
-    val fileContents = readFile(localFilePath.toString())
+    val fileContents   = readFile(localFilePath.toString())
     val localWordCount = runLocalWordCount(fileContents)
 
     println("Creating SparkConf")
@@ -108,7 +107,7 @@ object DFSReadWriteTest {
 
     println("Writing local file to DFS")
     val dfsFilename = dfsDirPath + "/dfs_read_write_test"
-    val fileRDD = sc.parallelize(fileContents)
+    val fileRDD     = sc.parallelize(fileContents)
     fileRDD.saveAsTextFile(dfsFilename)
 
     println("Reading file from DFS and running Word Count")
@@ -127,12 +126,14 @@ object DFSReadWriteTest {
 
     if (localWordCount == dfsWordCount) {
       println(
-          s"Success! Local Word Count ($localWordCount) " +
-          s"and DFS Word Count ($dfsWordCount) agree.")
+        s"Success! Local Word Count ($localWordCount) " +
+          s"and DFS Word Count ($dfsWordCount) agree."
+      )
     } else {
       println(
-          s"Failure! Local Word Count ($localWordCount) " +
-          s"and DFS Word Count ($dfsWordCount) disagree.")
+        s"Failure! Local Word Count ($localWordCount) " +
+          s"and DFS Word Count ($dfsWordCount) disagree."
+      )
     }
   }
 }

@@ -1,11 +1,11 @@
 class C[T] extends D[T] {
-  private def c1 = 0
+  private def c1       = 0
   private[this] def c2 = 0
 }
 
 trait D[T] { self: C[T] =>
 
-  private def d1 = 0
+  private def d1       = 0
   private[this] def d2 = 0
 
   c1 // a member, but inaccessible.

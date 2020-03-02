@@ -30,14 +30,14 @@ class HadoopFsRelationSuite extends QueryTest with SharedSQLContext {
       sqlContext.range(1000).write.parquet(dir.toString)
       // ignore hidden files
       val allFiles = dir.listFiles(new FilenameFilter {
-        override def accept(dir: File, name: String): Boolean = {
+        override def accept(dir: File, name: String): Boolean =
           !name.startsWith(".")
-        }
       })
       val totalSize = allFiles.map(_.length()).sum
-      val df = sqlContext.read.parquet(dir.toString)
-      assert(df.queryExecution.logical.statistics.sizeInBytes === BigInt(
-              totalSize))
+      val df        = sqlContext.read.parquet(dir.toString)
+      assert(
+        df.queryExecution.logical.statistics.sizeInBytes === BigInt(totalSize)
+      )
     }
   }
 }

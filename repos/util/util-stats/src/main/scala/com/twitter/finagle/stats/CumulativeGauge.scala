@@ -65,9 +65,7 @@ private[finagle] abstract class CumulativeGauge {
 
   def getValue: Float = {
     var sum = 0f
-    get().foreach { g =>
-      sum += g.f()
-    }
+    get().foreach(g => sum += g.f())
     sum
   }
 
@@ -87,30 +85,30 @@ trait StatsReceiverWithCumulativeGauges extends StatsReceiver { self =>
   private[this] val gauges =
     new ConcurrentHashMap[Seq[String], CumulativeGauge]()
 
-  def registerLargeGaugeLinter(rules: Rules): Unit = {
+  def registerLargeGaugeLinter(rules: Rules): Unit =
     rules.add(
-        Rule(
-            Category.Performance,
-            "Large CumulativeGauges",
-            "Identifies CumulativeGauges which are backed by very large numbers (100k+) " +
-            "of Gauges. Indicative of a leak or code registering the same gauge more " +
-            s"often than expected. (For $toString)"
-        ) {
-      val largeCgs = gauges.asScala.flatMap {
-        case (ks, cg) =>
-          if (cg.totalSize >= 100000) Some(ks -> cg.totalSize)
-          else None
+      Rule(
+        Category.Performance,
+        "Large CumulativeGauges",
+        "Identifies CumulativeGauges which are backed by very large numbers (100k+) " +
+          "of Gauges. Indicative of a leak or code registering the same gauge more " +
+          s"often than expected. (For $toString)"
+      ) {
+        val largeCgs = gauges.asScala.flatMap {
+          case (ks, cg) =>
+            if (cg.totalSize >= 100000) Some(ks -> cg.totalSize)
+            else None
+        }
+        if (largeCgs.isEmpty) {
+          Nil
+        } else {
+          largeCgs.map {
+            case (ks, size) =>
+              Issue(ks.mkString("/") + "=" + size)
+          }.toSeq
+        }
       }
-      if (largeCgs.isEmpty) {
-        Nil
-      } else {
-        largeCgs.map {
-          case (ks, size) =>
-            Issue(ks.mkString("/") + "=" + size)
-        }.toSeq
-      }
-    })
-  }
+    )
 
   /**
     * The StatsReceiver implements these. They provide the cumulated

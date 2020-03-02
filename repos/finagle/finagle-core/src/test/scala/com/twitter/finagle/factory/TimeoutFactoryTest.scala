@@ -15,7 +15,7 @@ import scala.language.reflectiveCalls
 class TimeoutFactoryTest extends FunSuite with MockitoSugar {
 
   trait TimeoutFactoryHelper {
-    val timer = new MockTimer
+    val timer      = new MockTimer
     val underlying = mock[ServiceFactory[String, String]]
     when(underlying.close(any[Time])).thenReturn(Future.Done)
     val promise = new Promise[Service[String, String]] {
@@ -23,9 +23,9 @@ class TimeoutFactoryTest extends FunSuite with MockitoSugar {
       setInterruptHandler { case exc => interrupted = Some(exc) }
     }
     when(underlying(any[ClientConnection])).thenReturn(promise)
-    val timeout = 1.second
+    val timeout   = 1.second
     val exception = new ServiceTimeoutException(timeout)
-    val factory = new TimeoutFactory(underlying, 1.second, exception, timer)
+    val factory   = new TimeoutFactory(underlying, 1.second, exception, timer)
   }
 
   trait AfterHelper extends TimeoutFactoryHelper {
@@ -51,18 +51,19 @@ class TimeoutFactoryTest extends FunSuite with MockitoSugar {
   }
 
   test(
-      "TimeoutFactory after the timeout should interrupt the underlying promise with a TimeoutException") {
+    "TimeoutFactory after the timeout should interrupt the underlying promise with a TimeoutException"
+  ) {
     new AfterHelper {
-      assert(
-          promise.interrupted forall {
+      assert(promise.interrupted forall {
         case _: java.util.concurrent.TimeoutException => true
-        case _ => false
+        case _                                        => false
       })
     }
   }
 
   test(
-      "TimeoutFactory before the timeout should pass the successfully created service through") {
+    "TimeoutFactory before the timeout should pass the successfully created service through"
+  ) {
     new TimeoutFactoryHelper {
       val res = factory()
       assert(!res.isDefined)

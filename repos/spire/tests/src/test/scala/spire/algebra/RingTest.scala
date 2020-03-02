@@ -20,7 +20,7 @@ class RingTest extends FunSuite {
     *
     *   a=-3  b=3  c=-9
     */
-  def runWith[@sp A : Ring : ClassTag](cls: String)(a: A, b: A, c: A): Unit = {
+  def runWith[@sp A: Ring: ClassTag](cls: String)(a: A, b: A, c: A): Unit = {
 
     val m = implicitly[ClassTag[A]]
 
@@ -65,7 +65,7 @@ class RingTest extends FunSuite {
   }
 
   implicit val mc: MathContext = MathContext.DECIMAL128
-  implicit val jetDim = JetDim(7)
+  implicit val jetDim          = JetDim(7)
 
   // here's where we actually run all the tests, for each type we care about.
   runWith[Int]("Int")(-3, 3, -9)
@@ -78,9 +78,10 @@ class RingTest extends FunSuite {
   // commented out due to specialization bug
   runWith[Complex[Double]]("Complex[Double]")(-3, 3, -9)
   runWith[Complex[BigDecimal]]("Complex[BigDecimal]")(
-      Complex(BigDecimal(-3), BigDecimal(0)),
-      Complex(BigDecimal(3), BigDecimal(0)),
-      Complex(BigDecimal(-9), BigDecimal(0)))
+    Complex(BigDecimal(-3), BigDecimal(0)),
+    Complex(BigDecimal(3), BigDecimal(0)),
+    Complex(BigDecimal(-9), BigDecimal(0))
+  )
   runWith[Jet[Double]]("Jet[Double]")(Jet(-3), Jet(3), Jet(-9))
 
   {
@@ -93,31 +94,31 @@ class RingTest extends FunSuite {
       private def binop(s1: String, s2: String)(f: (Int, Int) => Int): String =
         toX(f(fromX(s1), fromX(s2)))
 
-      def negate(a: String) = unop(a)(-_)
-      def one = "x"
-      def plus(a: String, b: String) = binop(a, b)(_ + _)
+      def negate(a: String)           = unop(a)(-_)
+      def one                         = "x"
+      def plus(a: String, b: String)  = binop(a, b)(_ + _)
       def times(a: String, b: String) = binop(a, b)(_ * _)
-      def zero = ""
+      def zero                        = ""
     }
 
     def x(n: Int) = xIsRing.fromInt(n)
 
     implicit object xIsRing extends XRing
 
-    test("fromInt(-12)") { assert(xIsRing.fromInt(-12) === x(-12)) }
-    test("fromInt(0)") { assert(xIsRing.fromInt(0) === x(0)) }
-    test("fromInt(33)") { assert(xIsRing.fromInt(33) === x(33)) }
+    test("fromInt(-12)")(assert(xIsRing.fromInt(-12) === x(-12)))
+    test("fromInt(0)")(assert(xIsRing.fromInt(0) === x(0)))
+    test("fromInt(33)")(assert(xIsRing.fromInt(33) === x(33)))
 
-    test("2 ** 0") { assert(x(2) ** 0 === x(1)) }
-    test("2 ** 1") { assert(x(2) ** 1 === x(2)) }
-    test("2 ** 2") { assert(x(2) ** 2 === x(4)) }
-    test("2 ** 3") { assert(x(2) ** 3 === x(8)) }
-    test("2 ** 4") { assert(x(2) ** 4 === x(16)) }
+    test("2 ** 0")(assert(x(2) ** 0 === x(1)))
+    test("2 ** 1")(assert(x(2) ** 1 === x(2)))
+    test("2 ** 2")(assert(x(2) ** 2 === x(4)))
+    test("2 ** 3")(assert(x(2) ** 3 === x(8)))
+    test("2 ** 4")(assert(x(2) ** 4 === x(16)))
 
-    test("3 ** 0") { assert(x(3) ** 0 === x(1)) }
-    test("3 ** 1") { assert(x(3) ** 1 === x(3)) }
-    test("3 ** 2") { assert(x(3) ** 2 === x(9)) }
-    test("3 ** 3") { assert(x(3) ** 3 === x(27)) }
-    test("3 ** 4") { assert(x(3) ** 4 === x(81)) }
+    test("3 ** 0")(assert(x(3) ** 0 === x(1)))
+    test("3 ** 1")(assert(x(3) ** 1 === x(3)))
+    test("3 ** 2")(assert(x(3) ** 2 === x(9)))
+    test("3 ** 3")(assert(x(3) ** 3 === x(27)))
+    test("3 ** 4")(assert(x(3) ** 4 === x(81)))
   }
 }

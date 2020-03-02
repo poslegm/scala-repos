@@ -10,9 +10,9 @@ import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.channel._
 
 object Decoder {
-  private val END = "END": ChannelBuffer
-  private val ITEM = "ITEM": ChannelBuffer
-  private val STAT = "STAT": ChannelBuffer
+  private val END   = "END": ChannelBuffer
+  private val ITEM  = "ITEM": ChannelBuffer
+  private val STAT  = "STAT": ChannelBuffer
   private val VALUE = "VALUE": ChannelBuffer
 
   private val EmptyValueLines = ValueLines(Seq.empty)
@@ -27,10 +27,11 @@ class Decoder extends AbstractDecoder with StateMachine {
   case class AwaitingResponseOrEnd(valuesSoFar: Seq[TokensWithData])
       extends State
   case class AwaitingStatsOrEnd(valuesSoFar: Seq[Tokens]) extends State
-  case class AwaitingData(valuesSoFar: Seq[TokensWithData],
-                          tokens: Seq[ChannelBuffer],
-                          bytesNeeded: Int)
-      extends State
+  case class AwaitingData(
+      valuesSoFar: Seq[TokensWithData],
+      tokens: Seq[ChannelBuffer],
+      bytesNeeded: Int
+  ) extends State
 
   final protected[memcached] def start() {
     state = AwaitingResponse
@@ -48,9 +49,11 @@ class Decoder extends AbstractDecoder with StateMachine {
       }
   }
 
-  def decode(ctx: ChannelHandlerContext,
-             channel: Channel,
-             buffer: ChannelBuffer): Decoding = {
+  def decode(
+      ctx: ChannelHandlerContext,
+      channel: Channel,
+      buffer: ChannelBuffer
+  ): Decoding =
     state match {
       case AwaitingResponse =>
         decodeLine(buffer, needsData)(awaitingResponseContinue)
@@ -61,7 +64,8 @@ class Decoder extends AbstractDecoder with StateMachine {
             StatLines(linesSoFar)
           } else if (isStats(tokens)) {
             awaitStatsOrEnd(
-                linesSoFar :+ Tokens(tokens.map(ChannelBufferBuf.Owned(_))))
+              linesSoFar :+ Tokens(tokens.map(ChannelBufferBuf.Owned(_)))
+            )
             NeedMoreData
           } else {
             throw new ServerError("Invalid reply from STATS command")
@@ -70,9 +74,10 @@ class Decoder extends AbstractDecoder with StateMachine {
       case AwaitingData(valuesSoFar, tokens, bytesNeeded) =>
         decodeData(bytesNeeded, buffer) { data =>
           awaitResponseOrEnd(
-              valuesSoFar :+ TokensWithData(
-                  tokens.map(ChannelBufferBuf.Owned(_)),
-                  ChannelBufferBuf.Owned(data))
+            valuesSoFar :+ TokensWithData(
+              tokens.map(ChannelBufferBuf.Owned(_)),
+              ChannelBufferBuf.Owned(data)
+            )
           )
           NeedMoreData
         }
@@ -83,34 +88,30 @@ class Decoder extends AbstractDecoder with StateMachine {
           } else NeedMoreData
         }
     }
-  }
 
   final protected[memcached] def awaitData(
-      tokens: Seq[ChannelBuffer], bytesNeeded: Int): Unit = {
+      tokens: Seq[ChannelBuffer],
+      bytesNeeded: Int
+  ): Unit =
     state match {
       case AwaitingResponse =>
         awaitData(Nil, tokens, bytesNeeded)
       case AwaitingResponseOrEnd(valuesSoFar) =>
         awaitData(valuesSoFar, tokens, bytesNeeded)
     }
-  }
 
   private[this] def awaitData(
       valuesSoFar: Seq[TokensWithData],
       tokens: Seq[ChannelBuffer],
       bytesNeeded: Int
-  ): Unit = {
+  ): Unit =
     state = AwaitingData(valuesSoFar, tokens, bytesNeeded)
-  }
 
-  private[this] def awaitResponseOrEnd(
-      valuesSoFar: Seq[TokensWithData]): Unit = {
+  private[this] def awaitResponseOrEnd(valuesSoFar: Seq[TokensWithData]): Unit =
     state = AwaitingResponseOrEnd(valuesSoFar)
-  }
 
-  private[this] def awaitStatsOrEnd(valuesSoFar: Seq[Tokens]): Unit = {
+  private[this] def awaitStatsOrEnd(valuesSoFar: Seq[Tokens]): Unit =
     state = AwaitingStatsOrEnd(valuesSoFar)
-  }
 
   private[this] def isEnd(tokens: Seq[ChannelBuffer]) =
     tokens.length == 1 && tokens.head == END

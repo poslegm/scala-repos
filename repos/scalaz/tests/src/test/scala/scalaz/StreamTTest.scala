@@ -14,19 +14,17 @@ object StreamTTest extends SpecLite {
 
   "fromStream / asStream" ! forAll {
     import Id._
-    (as: Stream[Int]) =>
-      StreamT.fromStream[Id, Int](as).asStream must_=== (as)
+    (as: Stream[Int]) => StreamT.fromStream[Id, Int](as).asStream must_=== (as)
   }
 
   "asStream" should {
     "be lazy" in {
       var highestTouched = 0
 
-      val s1 = StreamT.unfold(1)(i =>
-            {
-          highestTouched = math.max(i, highestTouched)
-          if (i < 100) Some((i, i + 1)) else None
-      })
+      val s1 = StreamT.unfold(1) { i =>
+        highestTouched = math.max(i, highestTouched)
+        if (i < 100) Some((i, i + 1)) else None
+      }
 
       val s2 = s1.asStream
 
@@ -47,7 +45,7 @@ object StreamTTest extends SpecLite {
 
   "filter none" ! forAll { (ass: StreamT[Stream, Int]) =>
     val filtered = ass.filter(_ => false)
-    val isEmpty = filtered.isEmpty
+    val isEmpty  = filtered.isEmpty
     isEmpty.forall(_ == true)
   }
 
@@ -62,14 +60,14 @@ object StreamTTest extends SpecLite {
   "mapM" ! forAll { (s: Stream[Int], l: List[Int]) =>
     val s0 = s map (_ + 1)
     StreamT.fromStream(List(s, s0)).mapM(i => l.map(_ + i)).toStream must_==
-    (Traverse[Stream].traverse(s)(i => l.map(_ + i)) ::: Traverse[Stream]
-          .traverse(s0)(i => l.map(_ + i)))
+      (Traverse[Stream].traverse(s)(i => l.map(_ + i)) ::: Traverse[Stream]
+        .traverse(s0)(i => l.map(_ + i)))
   }
 
   "foldMap" ! forAll { (s: Stream[Int]) =>
     import scalaz.Scalaz._
     StreamT.fromStream(s.some).foldMap(_.toString) must_==
-    (s.foldMap(_.toString))
+      (s.foldMap(_.toString))
   }
 
   checkAll(equal.laws[StreamTOpt[Int]])
@@ -78,19 +76,19 @@ object StreamTTest extends SpecLite {
   checkAll(foldable.laws[StreamTOpt])
 
   object instances {
-    def semigroup[F[_]: Functor, A] = Semigroup[StreamT[F, A]]
+    def semigroup[F[_]: Functor, A]  = Semigroup[StreamT[F, A]]
     def monoid[F[_]: Applicative, A] = Monoid[StreamT[F, A]]
-    def functor[F[_]: Functor] = Functor[StreamT[F, ?]]
-    def bind[F[_]: Functor] = Bind[StreamT[F, ?]]
-    def plus[F[_]: Functor] = Plus[StreamT[F, ?]]
-    def monad[F[_]: Applicative] = Monad[StreamT[F, ?]]
+    def functor[F[_]: Functor]       = Functor[StreamT[F, ?]]
+    def bind[F[_]: Functor]          = Bind[StreamT[F, ?]]
+    def plus[F[_]: Functor]          = Plus[StreamT[F, ?]]
+    def monad[F[_]: Applicative]     = Monad[StreamT[F, ?]]
     def monadPlus[F[_]: Applicative] = MonadPlus[StreamT[F, ?]]
-    def foldable[F[_]: Foldable] = Foldable[StreamT[F, ?]]
+    def foldable[F[_]: Foldable]     = Foldable[StreamT[F, ?]]
 
     // checking absence of ambiguity
     def semigroup[F[_]: Applicative, A] = Semigroup[StreamT[F, A]]
-    def functor[F[_]: Applicative] = Functor[StreamT[F, ?]]
-    def bind[F[_]: Applicative] = Bind[StreamT[F, ?]]
-    def plus[F[_]: Applicative] = Plus[StreamT[F, ?]]
+    def functor[F[_]: Applicative]      = Functor[StreamT[F, ?]]
+    def bind[F[_]: Applicative]         = Bind[StreamT[F, ?]]
+    def plus[F[_]: Applicative]         = Plus[StreamT[F, ?]]
   }
 }

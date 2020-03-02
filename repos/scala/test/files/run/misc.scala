@@ -35,7 +35,7 @@ object Test {
 
   class MyClass() {
     override def toString() = "=== MyClass::toString ===";
-    def test() = Console.println("=== MyClass::test ===");
+    def test()              = Console.println("=== MyClass::test ===");
   }
 
   class MySubclass() extends MyClass() {
@@ -44,7 +44,7 @@ object Test {
 
   def foobar = {
     42;
-    42l;
+    42L;
     23.5f;
     23.5;
     "Hello";
@@ -120,7 +120,7 @@ object Test {
     def getX = x;
   }
   case class Y(y: Int, z: Int) extends X(y + z) {
-    def getY = y;
+    def getY  = y;
     def getAA = this.y;
   }
 
@@ -148,9 +148,8 @@ object Test {
   {
     class X() {
 
-      def foo = {
+      def foo =
         Console.println("X::foo");
-      }
     }
 
     class Y() extends X() {
@@ -180,7 +179,7 @@ object Test {
 
       case class Y(b: Int) extends X() {
         override def toString() = "";
-        def bar = a + b;
+        def bar                 = a + b;
       }
 
       def foo = Y(2).bar
@@ -197,7 +196,7 @@ object Test {
 
       case class Y(b: Int) extends X() {
         override def toString() = "";
-        def bar = a + b;
+        def bar                 = a + b;
       }
 
       def foo = Y(2).bar
@@ -213,12 +212,13 @@ object Test {
   case class Foo(i: Int, j: Char, c: Bar);
 
   Console.println(
-      true // Foo(3,'a',Bar()).caseElement( -1 ) == null // throws Exception now
+    true // Foo(3,'a',Bar()).caseElement( -1 ) == null // throws Exception now
       && Foo(3, 'a', Bar()).productElement(0) == 3 &&
       Foo(3, 'a', Bar()).productElement(1) == 'a' &&
       Foo(3, 'a', Bar()).productElement(2) == Bar() &&
       true // Foo(3,'a',Bar()).caseElement( 3 ) == null // throws Exception now
-      && Bar().productArity == 0 && Foo(3, 'a', Bar()).productArity == 3);
+      && Bar().productArity == 0 && Foo(3, 'a', Bar()).productArity == 3
+  );
 
 //############################################################################
 

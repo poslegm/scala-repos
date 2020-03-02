@@ -8,7 +8,7 @@ sealed trait MA[M[_], A] {
 
 object test {
   implicit def ListMA[A](l: List[A]): MA[List, A] = sys.error("stub")
-  implicit val ao: Applicative[Option] = sys.error("stub")
+  implicit val ao: Applicative[Option]            = sys.error("stub")
 
   /* This compiles OK:
   (Nil: List[Option[Int]]).sequence3(): Option[List[Int]]

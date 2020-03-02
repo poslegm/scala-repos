@@ -41,23 +41,25 @@ import org.apache.spark.util.Utils
 // Note: Changes to the format in this file should be kept in sync with
 // org.apache.spark.network.shuffle.ExternalShuffleBlockResolver#getSortBasedShuffleBlockData().
 private[spark] class IndexShuffleBlockResolver(
-    conf: SparkConf, _blockManager: BlockManager = null)
-    extends ShuffleBlockResolver with Logging {
+    conf: SparkConf,
+    _blockManager: BlockManager = null
+) extends ShuffleBlockResolver
+    with Logging {
 
   private lazy val blockManager =
     Option(_blockManager).getOrElse(SparkEnv.get.blockManager)
 
   private val transportConf = SparkTransportConf.fromSparkConf(conf, "shuffle")
 
-  def getDataFile(shuffleId: Int, mapId: Int): File = {
+  def getDataFile(shuffleId: Int, mapId: Int): File =
     blockManager.diskBlockManager.getFile(
-        ShuffleDataBlockId(shuffleId, mapId, NOOP_REDUCE_ID))
-  }
+      ShuffleDataBlockId(shuffleId, mapId, NOOP_REDUCE_ID)
+    )
 
-  private def getIndexFile(shuffleId: Int, mapId: Int): File = {
+  private def getIndexFile(shuffleId: Int, mapId: Int): File =
     blockManager.diskBlockManager.getFile(
-        ShuffleIndexBlockId(shuffleId, mapId, NOOP_REDUCE_ID))
-  }
+      ShuffleIndexBlockId(shuffleId, mapId, NOOP_REDUCE_ID)
+    )
 
   /**
     * Remove data file and index file that contain the output data from one map.
@@ -83,19 +85,23 @@ private[spark] class IndexShuffleBlockResolver(
     * If so, return the partition lengths in the data file. Otherwise return null.
     */
   private def checkIndexAndDataFile(
-      index: File, data: File, blocks: Int): Array[Long] = {
+      index: File,
+      data: File,
+      blocks: Int
+  ): Array[Long] = {
     // the index file should have `block + 1` longs as offset.
     if (index.length() != (blocks + 1) * 8) {
       return null
     }
     val lengths = new Array[Long](blocks)
     // Read the lengths of blocks
-    val in = try {
-      new DataInputStream(new BufferedInputStream(new FileInputStream(index)))
-    } catch {
-      case e: IOException =>
-        return null
-    }
+    val in =
+      try {
+        new DataInputStream(new BufferedInputStream(new FileInputStream(index)))
+      } catch {
+        case e: IOException =>
+          return null
+      }
     try {
       // Convert the offsets into lengths of each block
       var offset = in.readLong()
@@ -134,14 +140,17 @@ private[spark] class IndexShuffleBlockResolver(
     *
     * Note: the `lengths` will be updated to match the existing index file if use the existing ones.
     * */
-  def writeIndexFileAndCommit(shuffleId: Int,
-                              mapId: Int,
-                              lengths: Array[Long],
-                              dataTmp: File): Unit = {
+  def writeIndexFileAndCommit(
+      shuffleId: Int,
+      mapId: Int,
+      lengths: Array[Long],
+      dataTmp: File
+  ): Unit = {
     val indexFile = getIndexFile(shuffleId, mapId)
-    val indexTmp = Utils.tempFileWith(indexFile)
+    val indexTmp  = Utils.tempFileWith(indexFile)
     val out = new DataOutputStream(
-        new BufferedOutputStream(new FileOutputStream(indexTmp)))
+      new BufferedOutputStream(new FileOutputStream(indexTmp))
+    )
     Utils.tryWithSafeFinally {
       // We take in lengths of each block, need to convert it to offsets.
       var offset = 0L
@@ -179,12 +188,14 @@ private[spark] class IndexShuffleBlockResolver(
         }
         if (!indexTmp.renameTo(indexFile)) {
           throw new IOException(
-              "fail to rename file " + indexTmp + " to " + indexFile)
+            "fail to rename file " + indexTmp + " to " + indexFile
+          )
         }
         if (dataTmp != null && dataTmp.exists() &&
             !dataTmp.renameTo(dataFile)) {
           throw new IOException(
-              "fail to rename file " + dataTmp + " to " + dataFile)
+            "fail to rename file " + dataTmp + " to " + dataFile
+          )
         }
       }
     }
@@ -198,13 +209,14 @@ private[spark] class IndexShuffleBlockResolver(
     val in = new DataInputStream(new FileInputStream(indexFile))
     try {
       ByteStreams.skipFully(in, blockId.reduceId * 8)
-      val offset = in.readLong()
+      val offset     = in.readLong()
       val nextOffset = in.readLong()
       new FileSegmentManagedBuffer(
-          transportConf,
-          getDataFile(blockId.shuffleId, blockId.mapId),
-          offset,
-          nextOffset - offset)
+        transportConf,
+        getDataFile(blockId.shuffleId, blockId.mapId),
+        offset,
+        nextOffset - offset
+      )
     } finally {
       in.close()
     }

@@ -41,14 +41,16 @@ import scalafx.testutil.SimpleSFXDelegateSpec
   */
 @RunWith(classOf[JUnitRunner])
 class MultipleSelectionModelSpec[T]
-    extends SimpleSFXDelegateSpec[
-        jfxsc.MultipleSelectionModel[T], MultipleSelectionModel[T]](
-        classOf[jfxsc.MultipleSelectionModel[T]],
-        classOf[MultipleSelectionModel[T]]) {
+    extends SimpleSFXDelegateSpec[jfxsc.MultipleSelectionModel[T], MultipleSelectionModel[
+      T
+    ]](
+      classOf[jfxsc.MultipleSelectionModel[T]],
+      classOf[MultipleSelectionModel[T]]
+    ) {
 
   class SimpleMultipleSelectionModel extends jfxsc.MultipleSelectionModel[T] {
     def getSelectedIndices: jfxc.ObservableList[java.lang.Integer] = null
-    def getSelectedItems: jfxc.ObservableList[T] = null
+    def getSelectedItems: jfxc.ObservableList[T]                   = null
     def selectAll() {}
     def selectFirst() {}
     def selectIndices(index: Int, indices: Int*) {}
@@ -56,7 +58,7 @@ class MultipleSelectionModelSpec[T]
     def clearAndSelect(index: Int) {}
     def clearSelection() {}
     def clearSelection(index: Int) {}
-    def isEmpty: Boolean = false
+    def isEmpty: Boolean                = false
     def isSelected(index: Int): Boolean = false
     def select(index: Int) {}
     def select(obj: T) {}

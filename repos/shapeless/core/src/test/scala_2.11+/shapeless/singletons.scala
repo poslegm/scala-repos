@@ -39,7 +39,7 @@ class SingletonTypes211Tests {
   def testSingletonWitness {
     trait Bound
     object Foo extends Bound
-    val bar = "bar"
+    val bar  = "bar"
     val wFoo = Witness(Foo)
     val wBar = Witness(bar)
 
@@ -49,11 +49,11 @@ class SingletonTypes211Tests {
 
   class PathDependentSingleton1 {
     val o: AnyRef = new Object {}
-    val wO = Witness(o)
+    val wO        = Witness(o)
     type OT = wO.T
     implicitly[OT =:= o.type]
 
-    val x0: OT = wO.value
+    val x0: OT     = wO.value
     val x1: o.type = wO.value
 
     val x2 = wO.value
@@ -63,11 +63,11 @@ class SingletonTypes211Tests {
 
   object PathDependentSingleton2 {
     val o: AnyRef = new Object {}
-    val wO = Witness(o)
+    val wO        = Witness(o)
     type OT = wO.T
     implicitly[OT =:= o.type]
 
-    val x0: OT = wO.value
+    val x0: OT     = wO.value
     val x1: o.type = wO.value
 
     val x2 = wO.value

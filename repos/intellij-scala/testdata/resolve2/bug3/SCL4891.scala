@@ -1,6 +1,6 @@
 object Tag {
   type Tagged[U] = { type Tag = U }
-  type @@[T, U] = T with Tagged[U]
+  type @@[T, U]  = T with Tagged[U]
   @inline def apply[A, T](a: A): A @@ T = a.asInstanceOf[A @@ T]
 }
 
@@ -12,8 +12,8 @@ object Test {
 
   val s: Tagged[_MyId] = sys.exit()
 
-  val x: MyId = Tag[Long, _MyId](1)
-  def foo(x: MyId) = 1
+  val x: MyId        = Tag[Long, _MyId](1)
+  def foo(x: MyId)   = 1
   def foo(z: String) = 2
 
   /*line: 18*/

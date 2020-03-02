@@ -15,7 +15,9 @@ object mpow extends UFunc {
       requireSquareMatrix(m)
       val Eig(real, imag, evectors) = eig(m)
       require(
-          norm(imag, 1.0) == 0.0, "We cannot handle complex eigenvalues yet.")
+        norm(imag, 1.0) == 0.0,
+        "We cannot handle complex eigenvalues yet."
+      )
       val exped = new DenseVector(real.data.map(scala.math.pow(_, exp)))
 
       (evectors.t \ (evectors * diag(exped)).t).t
@@ -24,8 +26,7 @@ object mpow extends UFunc {
 
   implicit object implDM_Double_Int
       extends Impl2[DenseMatrix[Double], Int, DenseMatrix[Double]] {
-    def apply(m: DenseMatrix[Double], exp: Int): DenseMatrix[Double] = {
+    def apply(m: DenseMatrix[Double], exp: Int): DenseMatrix[Double] =
       implDM_Double_Double(m, exp.toDouble)
-    }
   }
 }

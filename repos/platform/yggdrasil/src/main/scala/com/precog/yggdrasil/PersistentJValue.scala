@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -38,16 +38,15 @@ object PersistentJValue {
       bytes
     }
 
-    def unapply(bytes: Array[Byte]): Option[Array[Byte]] = {
+    def unapply(bytes: Array[Byte]): Option[Array[Byte]] =
       if (bytes.length > 0 && bytes(bytes.length - 1) == Flag) {
         Some(Arrays.copyOf(bytes, bytes.length - 1))
       } else {
         None
       }
-    }
   }
 
-  object Update extends Message(1: Byte)
+  object Update  extends Message(1: Byte)
   object Written extends Message(2: Byte)
 
   private def open(baseDir: File, fileName: String): Logger = {
@@ -67,7 +66,7 @@ final case class PersistentJValue(baseDir: File, fileName: String)
     extends Logging {
   import PersistentJValue._
 
-  private val log = open(baseDir, fileName)
+  private val log        = open(baseDir, fileName)
   private val file: File = new File(baseDir, fileName)
   private var jv: JValue = JUndefined
 
@@ -83,7 +82,7 @@ final case class PersistentJValue(baseDir: File, fileName: String)
 
   private def flush() {
     val rawJson = jv.renderCompact.getBytes("UTF-8")
-    val mark = log.put(Update(rawJson), true)
+    val mark    = log.put(Update(rawJson), true)
 
     val out = new FileOutputStream(file)
     out.write(rawJson)
@@ -94,16 +93,17 @@ final case class PersistentJValue(baseDir: File, fileName: String)
   }
 
   private def replay() {
-    var pending: Option[Array[Byte]] = None
+    var pending: Option[Array[Byte]]    = None
     var lastUpdate: Option[Array[Byte]] = None
 
     log.replay(new ReplayListener {
-      def getLogRecord: LogRecord = new LogRecord(1024 * 64)
+      def getLogRecord: LogRecord         = new LogRecord(1024 * 64)
       def onError(ex: LogException): Unit = throw ex
       def onRecord(rec: LogRecord): Unit = rec.`type` match {
         case LogRecordType.END_OF_LOG =>
           logger.debug(
-              "Versions TX log replay complete in " + baseDir.getCanonicalPath)
+            "Versions TX log replay complete in " + baseDir.getCanonicalPath
+          )
 
         case LogRecordType.USER =>
           val bytes = rec.getFields()(0)

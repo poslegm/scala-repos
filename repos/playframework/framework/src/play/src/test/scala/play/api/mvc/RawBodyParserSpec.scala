@@ -22,7 +22,7 @@ import scala.concurrent.duration.Duration
 
 object RawBodyParserSpec extends Specification with AfterAll {
 
-  implicit val system = ActorSystem("content-types-spec")
+  implicit val system       = ActorSystem("content-types-spec")
   implicit val materializer = ActorMaterializer()(system)
 
   def afterAll(): Unit = {
@@ -35,10 +35,11 @@ object RawBodyParserSpec extends Specification with AfterAll {
   def parse(
       body: ByteString,
       memoryThreshold: Int = config.maxMemoryBuffer,
-      maxLength: Long = config.maxDiskBuffer): Either[Result, RawBuffer] = {
-    val request = FakeRequest(method = "GET", "/x")
+      maxLength: Long = config.maxDiskBuffer
+  ): Either[Result, RawBuffer] = {
+    val request    = FakeRequest(method = "GET", "/x")
     val bodyParser = new BodyParsers {}
-    val parser = bodyParser.parse.raw(memoryThreshold, maxLength)
+    val parser     = bodyParser.parse.raw(memoryThreshold, maxLength)
     Await.result(parser(request).run(Source.single(body)), Duration.Inf)
   }
 
@@ -58,9 +59,9 @@ object RawBodyParserSpec extends Specification with AfterAll {
       val body = ByteString("lorem ipsum")
       parse(body, memoryThreshold = 1) must beRight.like {
         case rawBuffer =>
-          rawBuffer.push(ByteString(
-                  "This fails because the stream was closed!")) must throwA[
-              IOException]
+          rawBuffer.push(
+            ByteString("This fails because the stream was closed!")
+          ) must throwA[IOException]
       }
     }
 

@@ -13,6 +13,6 @@ class Test {
       println(bar)
     }
   }
-  val inner = new Inner
+  val inner                   = new Inner
   private[this] final var bar = true
 }

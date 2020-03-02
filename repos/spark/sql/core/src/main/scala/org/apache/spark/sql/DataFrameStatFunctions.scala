@@ -34,7 +34,7 @@ import org.apache.spark.util.sketch.{BloomFilter, CountMinSketch}
   * @since 1.4.0
   */
 @Experimental
-final class DataFrameStatFunctions private[sql](df: DataFrame) {
+final class DataFrameStatFunctions private[sql] (df: DataFrame) {
 
   /**
     * Calculates the approximate quantiles of a numerical column of a DataFrame.
@@ -63,14 +63,15 @@ final class DataFrameStatFunctions private[sql](df: DataFrame) {
     *
     * @since 2.0.0
     */
-  def approxQuantile(col: String,
-                     probabilities: Array[Double],
-                     relativeError: Double): Array[Double] = {
+  def approxQuantile(
+      col: String,
+      probabilities: Array[Double],
+      relativeError: Double
+  ): Array[Double] =
     StatFunctions
       .multipleApproxQuantiles(df, Seq(col), probabilities, relativeError)
       .head
       .toArray
-  }
 
   /**
     * Python-friendly version of [[approxQuantile()]]
@@ -78,9 +79,9 @@ final class DataFrameStatFunctions private[sql](df: DataFrame) {
   private[spark] def approxQuantile(
       col: String,
       probabilities: List[Double],
-      relativeError: Double): java.util.List[Double] = {
+      relativeError: Double
+  ): java.util.List[Double] =
     approxQuantile(col, probabilities.toArray, relativeError).toList.asJava
-  }
 
   /**
     * Calculate the sample covariance of two numerical columns of a DataFrame.
@@ -97,9 +98,8 @@ final class DataFrameStatFunctions private[sql](df: DataFrame) {
     *
     * @since 1.4.0
     */
-  def cov(col1: String, col2: String): Double = {
+  def cov(col1: String, col2: String): Double =
     StatFunctions.calculateCov(df, Seq(col1, col2))
-  }
 
   /**
     * Calculates the correlation of two columns of a DataFrame. Currently only supports the Pearson
@@ -120,9 +120,11 @@ final class DataFrameStatFunctions private[sql](df: DataFrame) {
     * @since 1.4.0
     */
   def corr(col1: String, col2: String, method: String): Double = {
-    require(method == "pearson",
-            "Currently only the calculation of the Pearson Correlation " +
-            "coefficient is supported.")
+    require(
+      method == "pearson",
+      "Currently only the calculation of the Pearson Correlation " +
+        "coefficient is supported."
+    )
     StatFunctions.pearsonCorrelation(df, Seq(col1, col2))
   }
 
@@ -142,9 +144,8 @@ final class DataFrameStatFunctions private[sql](df: DataFrame) {
     *
     * @since 1.4.0
     */
-  def corr(col1: String, col2: String): Double = {
+  def corr(col1: String, col2: String): Double =
     corr(col1, col2, "pearson")
-  }
 
   /**
     * Computes a pair-wise frequency table of the given columns. Also known as a contingency table.
@@ -178,9 +179,8 @@ final class DataFrameStatFunctions private[sql](df: DataFrame) {
     *
     * @since 1.4.0
     */
-  def crosstab(col1: String, col2: String): DataFrame = {
+  def crosstab(col1: String, col2: String): DataFrame =
     StatFunctions.crossTabulate(df, col1, col2)
-  }
 
   /**
     * Finding frequent items for columns, possibly with false positives. Using the
@@ -224,9 +224,8 @@ final class DataFrameStatFunctions private[sql](df: DataFrame) {
     *
     * @since 1.4.0
     */
-  def freqItems(cols: Array[String], support: Double): DataFrame = {
+  def freqItems(cols: Array[String], support: Double): DataFrame =
     FrequentItems.singlePassFreqItems(df, cols, support)
-  }
 
   /**
     * Finding frequent items for columns, possibly with false positives. Using the
@@ -242,9 +241,8 @@ final class DataFrameStatFunctions private[sql](df: DataFrame) {
     *
     * @since 1.4.0
     */
-  def freqItems(cols: Array[String]): DataFrame = {
+  def freqItems(cols: Array[String]): DataFrame =
     FrequentItems.singlePassFreqItems(df, cols, 0.01)
-  }
 
   /**
     * (Scala-specific) Finding frequent items for columns, possibly with false positives. Using the
@@ -285,9 +283,8 @@ final class DataFrameStatFunctions private[sql](df: DataFrame) {
     *
     * @since 1.4.0
     */
-  def freqItems(cols: Seq[String], support: Double): DataFrame = {
+  def freqItems(cols: Seq[String], support: Double): DataFrame =
     FrequentItems.singlePassFreqItems(df, cols, support)
-  }
 
   /**
     * (Scala-specific) Finding frequent items for columns, possibly with false positives. Using the
@@ -303,9 +300,8 @@ final class DataFrameStatFunctions private[sql](df: DataFrame) {
     *
     * @since 1.4.0
     */
-  def freqItems(cols: Seq[String]): DataFrame = {
+  def freqItems(cols: Seq[String]): DataFrame =
     FrequentItems.singlePassFreqItems(df, cols, 0.01)
-  }
 
   /**
     * Returns a stratified sample without replacement based on the fraction given on each stratum.
@@ -333,9 +329,14 @@ final class DataFrameStatFunctions private[sql](df: DataFrame) {
     * @since 1.5.0
     */
   def sampleBy[T](
-      col: String, fractions: Map[T, Double], seed: Long): DataFrame = {
-    require(fractions.values.forall(p => p >= 0.0 && p <= 1.0),
-            s"Fractions must be in [0, 1], but got $fractions.")
+      col: String,
+      fractions: Map[T, Double],
+      seed: Long
+  ): DataFrame = {
+    require(
+      fractions.values.forall(p => p >= 0.0 && p <= 1.0),
+      s"Fractions must be in [0, 1], but got $fractions."
+    )
     import org.apache.spark.sql.functions.{rand, udf}
     val c = Column(col)
     val r = rand(seed)
@@ -357,9 +358,11 @@ final class DataFrameStatFunctions private[sql](df: DataFrame) {
     * @since 1.5.0
     */
   def sampleBy[T](
-      col: String, fractions: ju.Map[T, jl.Double], seed: Long): DataFrame = {
+      col: String,
+      fractions: ju.Map[T, jl.Double],
+      seed: Long
+  ): DataFrame =
     sampleBy(col, fractions.asScala.toMap.asInstanceOf[Map[T, Double]], seed)
-  }
 
   /**
     * Builds a Count-min Sketch over a specified column.
@@ -372,9 +375,12 @@ final class DataFrameStatFunctions private[sql](df: DataFrame) {
     * @since 2.0.0
     */
   def countMinSketch(
-      colName: String, depth: Int, width: Int, seed: Int): CountMinSketch = {
+      colName: String,
+      depth: Int,
+      width: Int,
+      seed: Int
+  ): CountMinSketch =
     countMinSketch(Column(colName), depth, width, seed)
-  }
 
   /**
     * Builds a Count-min Sketch over a specified column.
@@ -386,12 +392,13 @@ final class DataFrameStatFunctions private[sql](df: DataFrame) {
     * @return a [[CountMinSketch]] over column `colName`
     * @since 2.0.0
     */
-  def countMinSketch(colName: String,
-                     eps: Double,
-                     confidence: Double,
-                     seed: Int): CountMinSketch = {
+  def countMinSketch(
+      colName: String,
+      eps: Double,
+      confidence: Double,
+      seed: Int
+  ): CountMinSketch =
     countMinSketch(Column(colName), eps, confidence, seed)
-  }
 
   /**
     * Builds a Count-min Sketch over a specified column.
@@ -404,9 +411,12 @@ final class DataFrameStatFunctions private[sql](df: DataFrame) {
     * @since 2.0.0
     */
   def countMinSketch(
-      col: Column, depth: Int, width: Int, seed: Int): CountMinSketch = {
+      col: Column,
+      depth: Int,
+      width: Int,
+      seed: Int
+  ): CountMinSketch =
     countMinSketch(col, CountMinSketch.create(depth, width, seed))
-  }
 
   /**
     * Builds a Count-min Sketch over a specified column.
@@ -418,50 +428,47 @@ final class DataFrameStatFunctions private[sql](df: DataFrame) {
     * @return a [[CountMinSketch]] over column `colName`
     * @since 2.0.0
     */
-  def countMinSketch(col: Column,
-                     eps: Double,
-                     confidence: Double,
-                     seed: Int): CountMinSketch = {
+  def countMinSketch(
+      col: Column,
+      eps: Double,
+      confidence: Double,
+      seed: Int
+  ): CountMinSketch =
     countMinSketch(col, CountMinSketch.create(eps, confidence, seed))
-  }
 
   private def countMinSketch(
-      col: Column, zero: CountMinSketch): CountMinSketch = {
+      col: Column,
+      zero: CountMinSketch
+  ): CountMinSketch = {
     val singleCol = df.select(col)
-    val colType = singleCol.schema.head.dataType
+    val colType   = singleCol.schema.head.dataType
 
     val updater: (CountMinSketch, InternalRow) => Unit = colType match {
       // For string type, we can get bytes of our `UTF8String` directly, and call the `addBinary`
       // instead of `addString` to avoid unnecessary conversion.
       case StringType =>
-        (sketch, row) =>
-          sketch.addBinary(row.getUTF8String(0).getBytes)
-        case ByteType =>
-        (sketch, row) =>
-          sketch.addLong(row.getByte(0))
-        case ShortType =>
-        (sketch, row) =>
-          sketch.addLong(row.getShort(0))
-        case IntegerType =>
-        (sketch, row) =>
-          sketch.addLong(row.getInt(0))
-        case LongType =>
-        (sketch, row) =>
-          sketch.addLong(row.getLong(0))
-        case _ =>
+        (sketch, row) => sketch.addBinary(row.getUTF8String(0).getBytes)
+      case ByteType =>
+        (sketch, row) => sketch.addLong(row.getByte(0))
+      case ShortType =>
+        (sketch, row) => sketch.addLong(row.getShort(0))
+      case IntegerType =>
+        (sketch, row) => sketch.addLong(row.getInt(0))
+      case LongType =>
+        (sketch, row) => sketch.addLong(row.getLong(0))
+      case _ =>
         throw new IllegalArgumentException(
-            s"Count-min Sketch only supports string type and integral types, " +
+          s"Count-min Sketch only supports string type and integral types, " +
             s"and does not support type $colType."
         )
     }
 
     singleCol.queryExecution.toRdd.aggregate(zero)(
-        (sketch: CountMinSketch, row: InternalRow) =>
-          {
-            updater(sketch, row)
-            sketch
-        },
-        (sketch1, sketch2) => sketch1.mergeInPlace(sketch2)
+      (sketch: CountMinSketch, row: InternalRow) => {
+        updater(sketch, row)
+        sketch
+      },
+      (sketch1, sketch2) => sketch1.mergeInPlace(sketch2)
     )
   }
 
@@ -474,10 +481,11 @@ final class DataFrameStatFunctions private[sql](df: DataFrame) {
     * @since 2.0.0
     */
   def bloomFilter(
-      colName: String, expectedNumItems: Long, fpp: Double): BloomFilter = {
-    buildBloomFilter(
-        Column(colName), BloomFilter.create(expectedNumItems, fpp))
-  }
+      colName: String,
+      expectedNumItems: Long,
+      fpp: Double
+  ): BloomFilter =
+    buildBloomFilter(Column(colName), BloomFilter.create(expectedNumItems, fpp))
 
   /**
     * Builds a Bloom filter over a specified column.
@@ -488,9 +496,11 @@ final class DataFrameStatFunctions private[sql](df: DataFrame) {
     * @since 2.0.0
     */
   def bloomFilter(
-      col: Column, expectedNumItems: Long, fpp: Double): BloomFilter = {
+      col: Column,
+      expectedNumItems: Long,
+      fpp: Double
+  ): BloomFilter =
     buildBloomFilter(col, BloomFilter.create(expectedNumItems, fpp))
-  }
 
   /**
     * Builds a Bloom filter over a specified column.
@@ -501,10 +511,14 @@ final class DataFrameStatFunctions private[sql](df: DataFrame) {
     * @since 2.0.0
     */
   def bloomFilter(
-      colName: String, expectedNumItems: Long, numBits: Long): BloomFilter = {
+      colName: String,
+      expectedNumItems: Long,
+      numBits: Long
+  ): BloomFilter =
     buildBloomFilter(
-        Column(colName), BloomFilter.create(expectedNumItems, numBits))
-  }
+      Column(colName),
+      BloomFilter.create(expectedNumItems, numBits)
+    )
 
   /**
     * Builds a Bloom filter over a specified column.
@@ -515,50 +529,47 @@ final class DataFrameStatFunctions private[sql](df: DataFrame) {
     * @since 2.0.0
     */
   def bloomFilter(
-      col: Column, expectedNumItems: Long, numBits: Long): BloomFilter = {
+      col: Column,
+      expectedNumItems: Long,
+      numBits: Long
+  ): BloomFilter =
     buildBloomFilter(col, BloomFilter.create(expectedNumItems, numBits))
-  }
 
   private def buildBloomFilter(col: Column, zero: BloomFilter): BloomFilter = {
     val singleCol = df.select(col)
-    val colType = singleCol.schema.head.dataType
+    val colType   = singleCol.schema.head.dataType
 
     require(
-        colType == StringType || colType.isInstanceOf[IntegralType],
-        s"Bloom filter only supports string type and integral types, but got $colType.")
+      colType == StringType || colType.isInstanceOf[IntegralType],
+      s"Bloom filter only supports string type and integral types, but got $colType."
+    )
 
     val updater: (BloomFilter, InternalRow) => Unit = colType match {
       // For string type, we can get bytes of our `UTF8String` directly, and call the `putBinary`
       // instead of `putString` to avoid unnecessary conversion.
       case StringType =>
-        (filter, row) =>
-          filter.putBinary(row.getUTF8String(0).getBytes)
-        case ByteType =>
-        (filter, row) =>
-          filter.putLong(row.getByte(0))
-        case ShortType =>
-        (filter, row) =>
-          filter.putLong(row.getShort(0))
-        case IntegerType =>
-        (filter, row) =>
-          filter.putLong(row.getInt(0))
-        case LongType =>
-        (filter, row) =>
-          filter.putLong(row.getLong(0))
-        case _ =>
+        (filter, row) => filter.putBinary(row.getUTF8String(0).getBytes)
+      case ByteType =>
+        (filter, row) => filter.putLong(row.getByte(0))
+      case ShortType =>
+        (filter, row) => filter.putLong(row.getShort(0))
+      case IntegerType =>
+        (filter, row) => filter.putLong(row.getInt(0))
+      case LongType =>
+        (filter, row) => filter.putLong(row.getLong(0))
+      case _ =>
         throw new IllegalArgumentException(
-            s"Bloom filter only supports string type and integral types, " +
+          s"Bloom filter only supports string type and integral types, " +
             s"and does not support type $colType."
         )
     }
 
     singleCol.queryExecution.toRdd.aggregate(zero)(
-        (filter: BloomFilter, row: InternalRow) =>
-          {
-            updater(filter, row)
-            filter
-        },
-        (filter1, filter2) => filter1.mergeInPlace(filter2)
+      (filter: BloomFilter, row: InternalRow) => {
+        updater(filter, row)
+        filter
+      },
+      (filter1, filter2) => filter1.mergeInPlace(filter2)
     )
   }
 }

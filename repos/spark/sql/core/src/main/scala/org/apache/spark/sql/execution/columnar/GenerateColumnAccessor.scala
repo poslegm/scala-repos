@@ -20,16 +20,22 @@ package org.apache.spark.sql.execution.columnar
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.expressions._
-import org.apache.spark.sql.catalyst.expressions.codegen.{CodeFormatter, CodeGenerator, UnsafeRowWriter}
+import org.apache.spark.sql.catalyst.expressions.codegen.{
+  CodeFormatter,
+  CodeGenerator,
+  UnsafeRowWriter
+}
 import org.apache.spark.sql.types._
 
 /**
   * An Iterator to walk through the InternalRows from a CachedBatch
   */
 abstract class ColumnarIterator extends Iterator[InternalRow] {
-  def initialize(input: Iterator[CachedBatch],
-                 columnTypes: Array[DataType],
-                 columnIndexes: Array[Int]): Unit
+  def initialize(
+      input: Iterator[CachedBatch],
+      columnTypes: Array[DataType],
+      columnIndexes: Array[Int]
+  ): Unit
 }
 
 /**
@@ -41,15 +47,15 @@ class MutableUnsafeRow(val writer: UnsafeRowWriter)
     extends GenericMutableRow(null) {
 
   override def isNullAt(i: Int): Boolean = writer.isNullAt(i)
-  override def setNullAt(i: Int): Unit = writer.setNullAt(i)
+  override def setNullAt(i: Int): Unit   = writer.setNullAt(i)
 
   override def setBoolean(i: Int, v: Boolean): Unit = writer.write(i, v)
-  override def setByte(i: Int, v: Byte): Unit = writer.write(i, v)
-  override def setShort(i: Int, v: Short): Unit = writer.write(i, v)
-  override def setInt(i: Int, v: Int): Unit = writer.write(i, v)
-  override def setLong(i: Int, v: Long): Unit = writer.write(i, v)
-  override def setFloat(i: Int, v: Float): Unit = writer.write(i, v)
-  override def setDouble(i: Int, v: Double): Unit = writer.write(i, v)
+  override def setByte(i: Int, v: Byte): Unit       = writer.write(i, v)
+  override def setShort(i: Int, v: Short): Unit     = writer.write(i, v)
+  override def setInt(i: Int, v: Int): Unit         = writer.write(i, v)
+  override def setLong(i: Int, v: Long): Unit       = writer.write(i, v)
+  override def setFloat(i: Int, v: Float): Unit     = writer.write(i, v)
+  override def setDouble(i: Int, v: Double): Unit   = writer.write(i, v)
 
   // the writer will be used directly to avoid creating wrapper objects
   override def setDecimal(i: Int, v: Decimal, precision: Int): Unit =
@@ -64,38 +70,40 @@ class MutableUnsafeRow(val writer: UnsafeRowWriter)
   * Generates bytecode for an [[ColumnarIterator]] for columnar cache.
   */
 object GenerateColumnAccessor
-    extends CodeGenerator[Seq[DataType], ColumnarIterator] with Logging {
+    extends CodeGenerator[Seq[DataType], ColumnarIterator]
+    with Logging {
 
   protected def canonicalize(in: Seq[DataType]): Seq[DataType] = in
   protected def bind(
-      in: Seq[DataType], inputSchema: Seq[Attribute]): Seq[DataType] = in
+      in: Seq[DataType],
+      inputSchema: Seq[Attribute]
+  ): Seq[DataType] = in
 
   protected def create(columnTypes: Seq[DataType]): ColumnarIterator = {
-    val ctx = newCodeGenContext()
+    val ctx       = newCodeGenContext()
     val numFields = columnTypes.size
     val (initializeAccessors, extractors) = columnTypes.zipWithIndex.map {
       case (dt, index) =>
         val accessorName = ctx.freshName("accessor")
         val accessorCls = dt match {
-          case NullType => classOf[NullColumnAccessor].getName
-          case BooleanType => classOf[BooleanColumnAccessor].getName
-          case ByteType => classOf[ByteColumnAccessor].getName
-          case ShortType => classOf[ShortColumnAccessor].getName
-          case IntegerType | DateType => classOf[IntColumnAccessor].getName
+          case NullType                 => classOf[NullColumnAccessor].getName
+          case BooleanType              => classOf[BooleanColumnAccessor].getName
+          case ByteType                 => classOf[ByteColumnAccessor].getName
+          case ShortType                => classOf[ShortColumnAccessor].getName
+          case IntegerType | DateType   => classOf[IntColumnAccessor].getName
           case LongType | TimestampType => classOf[LongColumnAccessor].getName
-          case FloatType => classOf[FloatColumnAccessor].getName
-          case DoubleType => classOf[DoubleColumnAccessor].getName
-          case StringType => classOf[StringColumnAccessor].getName
-          case BinaryType => classOf[BinaryColumnAccessor].getName
+          case FloatType                => classOf[FloatColumnAccessor].getName
+          case DoubleType               => classOf[DoubleColumnAccessor].getName
+          case StringType               => classOf[StringColumnAccessor].getName
+          case BinaryType               => classOf[BinaryColumnAccessor].getName
           case dt: DecimalType if dt.precision <= Decimal.MAX_LONG_DIGITS =>
             classOf[CompactDecimalColumnAccessor].getName
-          case dt: DecimalType => classOf[DecimalColumnAccessor].getName
+          case dt: DecimalType    => classOf[DecimalColumnAccessor].getName
           case struct: StructType => classOf[StructColumnAccessor].getName
-          case array: ArrayType => classOf[ArrayColumnAccessor].getName
-          case t: MapType => classOf[MapColumnAccessor].getName
+          case array: ArrayType   => classOf[ArrayColumnAccessor].getName
+          case t: MapType         => classOf[MapColumnAccessor].getName
         }
-        ctx.addMutableState(
-            accessorCls, accessorName, s"$accessorName = null;")
+        ctx.addMutableState(accessorCls, accessorName, s"$accessorName = null;")
 
         val createCode = dt match {
           case t if ctx.isPrimitiveType(dt) =>

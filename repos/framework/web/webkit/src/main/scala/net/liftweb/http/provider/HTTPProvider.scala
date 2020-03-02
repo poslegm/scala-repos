@@ -52,25 +52,30 @@ trait HTTPProvider {
     * @param resp - the response object
     * @param chain - function to be executed in case this request is supposed to not be processed by Lift
     */
-  protected def service(req: HTTPRequest, resp: HTTPResponse)(chain: => Unit) = {
+  protected def service(req: HTTPRequest, resp: HTTPResponse)(
+      chain: => Unit
+  ) = {
     tryo {
-      LiftRules.early.toList.foreach(_ (req))
+      LiftRules.early.toList.foreach(_(req))
     }
 
     CurrentHTTPReqResp.doWith(req -> resp) {
-      val newReq = Req(req,
-                       LiftRules.statelessRewrite.toList,
-                       Nil,
-                       LiftRules.statelessReqTest.toList,
-                       System.nanoTime)
+      val newReq = Req(
+        req,
+        LiftRules.statelessRewrite.toList,
+        Nil,
+        LiftRules.statelessReqTest.toList,
+        System.nanoTime
+      )
 
       CurrentReq.doWith(newReq) {
         URLRewriter.doWith(url =>
-              NamedPF.applyBox(
-                  resp.encodeUrl(url),
-                  LiftRules.urlDecorate.toList) openOr resp.encodeUrl(url)) {
+          NamedPF
+            .applyBox(resp.encodeUrl(url), LiftRules.urlDecorate.toList) openOr resp
+            .encodeUrl(url)
+        ) {
           if (!(isLiftRequest_?(newReq) &&
-                  actualServlet.service(newReq, resp))) {
+                actualServlet.service(newReq, resp))) {
             chain
           }
         }
@@ -81,7 +86,7 @@ trait HTTPProvider {
   /**
     * Executes Lift's Boot and makes necessary initializations
     */
-  protected def bootLift(loader: Box[String]): Unit = {
+  protected def bootLift(loader: Box[String]): Unit =
     try {
       val b: Bootable =
         loader.map(b => Class.forName(b).newInstance.asInstanceOf[Bootable]) openOr DefaultBootstrap
@@ -90,38 +95,46 @@ trait HTTPProvider {
     } catch {
       case e: Exception =>
         logger.error(
-            "------------------------------------------------------------------")
+          "------------------------------------------------------------------"
+        )
         logger.error(
-            "------------------------------------------------------------------")
+          "------------------------------------------------------------------"
+        )
         logger.error(
-            "------------------------------------------------------------------")
+          "------------------------------------------------------------------"
+        )
         logger.error(
-            "------------------------------------------------------------------")
+          "------------------------------------------------------------------"
+        )
         logger.error(
-            "********** Failed to Boot! Your application may not run properly",
-            e);
+          "********** Failed to Boot! Your application may not run properly",
+          e
+        );
         logger.error(
-            "------------------------------------------------------------------")
+          "------------------------------------------------------------------"
+        )
         logger.error(
-            "------------------------------------------------------------------")
+          "------------------------------------------------------------------"
+        )
         logger.error(
-            "------------------------------------------------------------------")
+          "------------------------------------------------------------------"
+        )
         logger.error(
-            "------------------------------------------------------------------")
+          "------------------------------------------------------------------"
+        )
         logger.error(
-            "------------------------------------------------------------------")
+          "------------------------------------------------------------------"
+        )
     } finally {
       postBoot
 
       actualServlet = new LiftServlet(context)
       actualServlet.init
     }
-  }
 
   private def preBoot() {
     // do this stateless
-    LiftRules.statelessDispatch.prepend(
-        NamedPF("Classpath service") {
+    LiftRules.statelessDispatch.prepend(NamedPF("Classpath service") {
       case r @ Req(mainPath :: subPath, suffx, _)
           if (mainPath == LiftRules.resourceServerPath) =>
         ResourceServer.findResourceInClasspath(r, r.path.wholePath.drop(1))
@@ -138,8 +151,10 @@ trait HTTPProvider {
       }
     } catch {
       case _: Exception =>
-        logger.error("LiftWeb core resource bundle for locale " +
-            Locale.getDefault() + ", was not found ! ")
+        logger.error(
+          "LiftWeb core resource bundle for locale " +
+            Locale.getDefault() + ", was not found ! "
+        )
     } finally {
       LiftRules.bootFinished()
     }
@@ -147,21 +162,20 @@ trait HTTPProvider {
 
   private def liftHandled(in: String): Boolean =
     (in.indexOf(".") == -1) || in.endsWith(".html") || in.endsWith(".xhtml") ||
-    in.endsWith(".htm") || in.endsWith(".xml") || in.endsWith(".liftjs") ||
-    in.endsWith(".liftcss")
+      in.endsWith(".htm") || in.endsWith(".xml") || in.endsWith(".liftjs") ||
+      in.endsWith(".liftcss")
 
   /**
     * Tests if a request should be handled by Lift or passed to the container to be executed by other potential filters or servlets.
     */
-  protected def isLiftRequest_?(session: Req): Boolean = {
+  protected def isLiftRequest_?(session: Req): Boolean =
     NamedPF.applyBox(session, LiftRules.liftRequest.toList) match {
       case Full(b) => b
       case _ =>
         session.path.endSlash ||
-        (session.path.wholePath.takeRight(1) match {
-              case Nil => true
-              case x :: xs => liftHandled(x)
-            }) || context.resource(session.uri) == null
+          (session.path.wholePath.takeRight(1) match {
+            case Nil     => true
+            case x :: xs => liftHandled(x)
+          }) || context.resource(session.uri) == null
     }
-  }
 }

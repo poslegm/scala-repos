@@ -26,7 +26,7 @@ trait SequentialActor extends Actor {
 
     case Done =>
       dequeue match {
-        case None => context become idle
+        case None      => context become idle
         case Some(msg) => processThenDone(msg)
       }
 
@@ -37,7 +37,7 @@ trait SequentialActor extends Actor {
 
   def onFailure(e: Exception) {}
 
-  private val queue = collection.mutable.Queue[Any]()
+  private val queue                = collection.mutable.Queue[Any]()
   private def dequeue: Option[Any] = Try(queue.dequeue).toOption
 
   private case object Done
@@ -55,11 +55,12 @@ trait SequentialActor extends Actor {
         futureTimeout
           .fold(future) { timeout =>
             future.withTimeout(
-                timeout, LilaException(s"Sequential actor timeout: $timeout"))(
-                context.system)
+              timeout,
+              LilaException(s"Sequential actor timeout: $timeout")
+            )(context.system)
           }
           .addFailureEffect(onFailure)
-          .andThenAnyway { self ! Done }
+          .andThenAnyway(self ! Done)
     }
   }
 }

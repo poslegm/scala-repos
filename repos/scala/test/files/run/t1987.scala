@@ -3,11 +3,11 @@
 
 package foo {
   package object bar {
-    def duh(n: Long) = println("long")
+    def duh(n: Long)   = println("long")
     def duh(n: Double) = println("double")
 
     def duh2(n: Double) = println("double")
-    def duh2(n: Long) = println("long")
+    def duh2(n: Long)   = println("long")
   }
   package bar {
     object Main {
@@ -28,12 +28,12 @@ package foo {
 
 package bip {
   trait Duh {
-    def duh(n: Long) = println("long")
+    def duh(n: Long)   = println("long")
     def duh(n: Double) = println("double")
   }
   trait Duh2 {
     def duh2(n: Double) = println("double")
-    def duh2(n: Long) = println("long")
+    def duh2(n: Long)   = println("long")
   }
 
   package object bar extends Duh with Duh2 {}

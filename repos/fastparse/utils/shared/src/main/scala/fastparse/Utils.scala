@@ -14,10 +14,12 @@ object MacroUtils {
     * Char predicates that are unfeasible at runtime, e.g. because they're too
     * slow or because they don't work in Scala.js
     */
-  def preCompute(pred: Char => Boolean): fastparse.Utils.CharBitSet = macro preComputeImpl
+  def preCompute(pred: Char => Boolean): fastparse.Utils.CharBitSet =
+    macro preComputeImpl
 
-  def preComputeImpl(c: Compat.Context)(
-      pred: c.Expr[Char => Boolean]): c.Expr[Utils.CharBitSet] = {
+  def preComputeImpl(
+      c: Compat.Context
+  )(pred: c.Expr[Char => Boolean]): c.Expr[Utils.CharBitSet] = {
     import c.universe._
     val evaled =
       c.eval(c.Expr[Char => Boolean](c.resetLocalAttrs(pred.tree.duplicate)))
@@ -38,11 +40,11 @@ object Utils {
   def literalize(s: String, unicode: Boolean = true) = {
     val sb = new StringBuilder
     sb.append('"')
-    var i = 0
+    var i   = 0
     val len = s.length
     while (i < len) {
       (s.charAt(i): @switch) match {
-        case '"' => sb.append("\\\"")
+        case '"'  => sb.append("\\\"")
         case '\\' => sb.append("\\\\")
         case '\b' => sb.append("\\b")
         case '\f' => sb.append("\\f")
@@ -61,22 +63,8 @@ object Utils {
 
   object CharBitSet {
     val hexChars = Seq(
-        '0',
-        '1',
-        '2',
-        '3',
-        '4',
-        '5',
-        '6',
-        '7',
-        '8',
-        '9',
-        'a',
-        'b',
-        'c',
-        'd',
-        'e',
-        'f'
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e',
+      'f'
     )
     def hex2Int(hex: String): Int = {
       var res = 0
@@ -103,8 +91,8 @@ object Utils {
     }
     def compute(chars: Seq[Char]) = {
       val first = chars.min
-      val last = chars.max
-      val span = last - first
+      val last  = chars.max
+      val span  = last - first
       val array = new Array[Int](span / 32 + 1)
       for (c <- chars) array((c - first) >> 5) |= 1 << ((c - first) & 31)
       (first, last, array)
@@ -126,13 +114,12 @@ object Utils {
     */
   final class CharBitSet(array: Array[Int], first: Int, last: Int)
       extends (Char => Boolean) {
-    def apply(c: Char) = {
+    def apply(c: Char) =
       if (c > last || c < first) false
       else {
         val offset = c - first
         (array(offset >> 5) & 1 << (offset & 31)) != 0
       }
-    }
   }
 
   /**
@@ -142,7 +129,7 @@ object Utils {
   final class TrieNode(strings: Seq[String]) {
 
     val (min, max, arr) = {
-      val children = strings.filter(!_.isEmpty).groupBy(_ (0)).map {
+      val children = strings.filter(!_.isEmpty).groupBy(_(0)).map {
         case (k, ss) => k -> new TrieNode(ss.map(_.tail))
       }
       if (children.size == 0) (0.toChar, 0.toChar, new Array[TrieNode](0))
@@ -155,17 +142,16 @@ object Utils {
       }
     }
     val word: Boolean = strings.exists(_.isEmpty) || arr.isEmpty
-    def apply(c: Char): TrieNode = {
+    def apply(c: Char): TrieNode =
       if (c > max || c < min) null
       else arr(c - min)
-    }
 
     /**
       * Returns the length of the matching string, or -1 if not found
       */
     def query(input: String, index: Int): Int = {
       @tailrec
-      def rec(offset: Int, currentNode: TrieNode, currentRes: Int): Int = {
+      def rec(offset: Int, currentNode: TrieNode, currentRes: Int): Int =
         if (index + offset >= input.length) currentRes
         else {
           val char = input(index + offset)
@@ -173,13 +159,12 @@ object Utils {
           if (next == null) currentRes
           else
             rec(
-                offset + 1,
-                next,
-                if (next.word) offset
-                else currentRes
+              offset + 1,
+              next,
+              if (next.word) offset
+              else currentRes
             )
         }
-      }
       rec(0, this, -1)
     }
   }

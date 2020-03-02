@@ -41,7 +41,7 @@ import util.SourceFieldMetadataRep
 abstract class MappedPoliteString[T <: Mapper[T]](towner: T, theMaxLen: Int)
     extends MappedString[T](towner, theMaxLen) {
   override def defaultValue = ""
-  override def setFilter = crop _ :: super.setFilter
+  override def setFilter    = crop _ :: super.setFilter
 }
 
 /**
@@ -60,9 +60,10 @@ trait HasApplyBoxString[T] {
   def apply(x: String): T
 }
 abstract class MappedString[T <: Mapper[T]](val fieldOwner: T, val maxLen: Int)
-    extends MappedField[String, T] with net.liftweb.util.StringValidators
+    extends MappedField[String, T]
+    with net.liftweb.util.StringValidators
     with HasApplyBoxString[T] {
-  private val data: FatLazy[String] = FatLazy(defaultValue) // defaultValue
+  private val data: FatLazy[String]    = FatLazy(defaultValue) // defaultValue
   private val orgData: FatLazy[String] = FatLazy(defaultValue) // defaultValue
 
   def dbFieldClass = classOf[String]
@@ -75,45 +76,49 @@ abstract class MappedString[T <: Mapper[T]](val fieldOwner: T, val maxLen: Int)
     * @return the source field metadata for the field
     */
   def sourceInfoMetadata(): SourceFieldMetadata { type ST = String } =
-    SourceFieldMetadataRep(name, manifest, new FieldConverter {
+    SourceFieldMetadataRep(
+      name,
+      manifest,
+      new FieldConverter {
 
-      /**
-        * The type of the field
-        */
-      type T = String
+        /**
+          * The type of the field
+          */
+        type T = String
 
-      /**
-        * Convert the field to a String
-        * @param v the field value
-        * @return the string representation of the field value
-        */
-      def asString(v: T): String = v
+        /**
+          * Convert the field to a String
+          * @param v the field value
+          * @return the string representation of the field value
+          */
+        def asString(v: T): String = v
 
-      /**
-        * Convert the field into NodeSeq, if possible
-        * @param v the field value
-        * @return a NodeSeq if the field can be represented as one
-        */
-      def asNodeSeq(v: T): Box[NodeSeq] = Full(Text(v))
+        /**
+          * Convert the field into NodeSeq, if possible
+          * @param v the field value
+          * @return a NodeSeq if the field can be represented as one
+          */
+        def asNodeSeq(v: T): Box[NodeSeq] = Full(Text(v))
 
-      /**
-        * Convert the field into a JSON value
-        * @param v the field value
-        * @return the JSON representation of the field
-        */
-      def asJson(v: T): Box[JValue] = Full(JsonAST.JString(v))
+        /**
+          * Convert the field into a JSON value
+          * @param v the field value
+          * @return the JSON representation of the field
+          */
+        def asJson(v: T): Box[JValue] = Full(JsonAST.JString(v))
 
-      /**
-        * If the field can represent a sequence of SourceFields,
-        * get that
-        * @param v the field value
-        * @return the field as a sequence of SourceFields
-        */
-      def asSeq(v: T): Box[Seq[SourceFieldInfo]] = Empty
-    })
+        /**
+          * If the field can represent a sequence of SourceFields,
+          * get that
+          * @param v the field value
+          * @return the field as a sequence of SourceFields
+          */
+        def asSeq(v: T): Box[Seq[SourceFieldInfo]] = Empty
+      }
+    )
 
   protected def valueTypeToBoxString(in: String): Box[String] = Full(in)
-  protected def boxStrToValType(in: Box[String]): String = in openOr ""
+  protected def boxStrToValType(in: Box[String]): String      = in openOr ""
 
   protected def real_i_set_!(value: String): String = {
     if (!data.defined_? || value != data.get) {
@@ -131,16 +136,15 @@ abstract class MappedString[T <: Mapper[T]](val fieldOwner: T, val maxLen: Int)
   def defaultValue = ""
 
   override def writePermission_? = true
-  override def readPermission_? = true
+  override def readPermission_?  = true
 
-  protected def i_is_! = data.get
+  protected def i_is_!  = data.get
   protected def i_was_! = orgData.get
 
   def asJsonValue: Box[JsonAST.JValue] =
-    Full(
-        get match {
+    Full(get match {
       case null => JsonAST.JNull
-      case str => JsonAST.JString(str)
+      case str  => JsonAST.JString(str)
     })
 
   /**
@@ -151,43 +155,41 @@ abstract class MappedString[T <: Mapper[T]](val fieldOwner: T, val maxLen: Int)
   }
 
   override def _toForm: Box[Elem] =
-    fmapFunc({ s: List[String] =>
-      this.setFromAny(s)
-    }) { name =>
-      Full(
-          appendFieldId(<input type={formInputType} maxlength={maxLen.toString}
+    fmapFunc({ s: List[String] => this.setFromAny(s) }) { name =>
+      Full(appendFieldId(<input type={formInputType} maxlength={maxLen.toString}
                        name={name}
-                       value={get match {case null => "" case s => s.toString}}/>))
+                       value={
+        get match {
+          case null => ""
+          case s    => s.toString
+        }
+      }/>))
     }
 
-  protected def i_obscure_!(in: String): String = {
+  protected def i_obscure_!(in: String): String =
     ""
-  }
 
-  override def toForm: Box[Elem] = {
-
+  override def toForm: Box[Elem] =
     super.toForm match {
       case Full(IsElem(elem)) => Full(elem)
       case _ =>
         Empty
     }
-  }
 
-  override def setFromAny(in: Any): String = {
+  override def setFromAny(in: Any): String =
     in match {
-      case JsonAST.JNull => this.set(null)
-      case seq: Seq[_] if !seq.isEmpty => seq.map(setFromAny).apply(0)
-      case (s: String) :: _ => this.set(s)
-      case s :: _ => this.setFromAny(s)
-      case JsonAST.JString(v) => this.set(v)
-      case null => this.set(null)
-      case s: String => this.set(s)
-      case Some(s: String) => this.set(s)
-      case Full(s: String) => this.set(s)
+      case JsonAST.JNull                   => this.set(null)
+      case seq: Seq[_] if !seq.isEmpty     => seq.map(setFromAny).apply(0)
+      case (s: String) :: _                => this.set(s)
+      case s :: _                          => this.setFromAny(s)
+      case JsonAST.JString(v)              => this.set(v)
+      case null                            => this.set(null)
+      case s: String                       => this.set(s)
+      case Some(s: String)                 => this.set(s)
+      case Full(s: String)                 => this.set(s)
       case None | Empty | Failure(_, _, _) => this.set(null)
-      case o => this.set(o.toString)
+      case o                               => this.set(o.toString)
     }
-  }
 
   override def apply(v: String): T = super.apply(v)
 
@@ -202,43 +204,75 @@ abstract class MappedString[T <: Mapper[T]](val fieldOwner: T, val maxLen: Int)
     this.orgData() = in
   }
 
-  def buildSetActualValue(accessor: Method,
-                          inst: AnyRef,
-                          columnName: String): (T, AnyRef) => Unit =
+  def buildSetActualValue(
+      accessor: Method,
+      inst: AnyRef,
+      columnName: String
+  ): (T, AnyRef) => Unit =
     (inst, v) =>
-      doField(inst, accessor, {
-        case f: MappedString[T] =>
-          f.wholeSet(if (v eq null) null else v.toString)
-      })
+      doField(
+        inst,
+        accessor,
+        {
+          case f: MappedString[T] =>
+            f.wholeSet(if (v eq null) null else v.toString)
+        }
+      )
 
   def buildSetLongValue(
-      accessor: Method, columnName: String): (T, Long, Boolean) => Unit =
+      accessor: Method,
+      columnName: String
+  ): (T, Long, Boolean) => Unit =
     (inst, v, isNull) =>
-      doField(inst, accessor, {
-        case f: MappedString[T] => f.wholeSet(if (isNull) null else v.toString)
-      })
+      doField(
+        inst,
+        accessor,
+        {
+          case f: MappedString[T] =>
+            f.wholeSet(if (isNull) null else v.toString)
+        }
+      )
 
   def buildSetStringValue(
-      accessor: Method, columnName: String): (T, String) => Unit =
+      accessor: Method,
+      columnName: String
+  ): (T, String) => Unit =
     (inst, v) =>
-      doField(inst, accessor, {
-        case f: MappedString[T] => f.wholeSet(if (v eq null) null else v)
-      })
+      doField(
+        inst,
+        accessor,
+        {
+          case f: MappedString[T] => f.wholeSet(if (v eq null) null else v)
+        }
+      )
 
   def buildSetDateValue(
-      accessor: Method, columnName: String): (T, Date) => Unit =
+      accessor: Method,
+      columnName: String
+  ): (T, Date) => Unit =
     (inst, v) =>
-      doField(inst, accessor, {
-        case f: MappedString[T] =>
-          f.wholeSet(if (v eq null) null else v.toString)
-      })
+      doField(
+        inst,
+        accessor,
+        {
+          case f: MappedString[T] =>
+            f.wholeSet(if (v eq null) null else v.toString)
+        }
+      )
 
   def buildSetBooleanValue(
-      accessor: Method, columnName: String): (T, Boolean, Boolean) => Unit =
+      accessor: Method,
+      columnName: String
+  ): (T, Boolean, Boolean) => Unit =
     (inst, v, isNull) =>
-      doField(inst, accessor, {
-        case f: MappedString[T] => f.wholeSet(if (isNull) null else v.toString)
-      })
+      doField(
+        inst,
+        accessor,
+        {
+          case f: MappedString[T] =>
+            f.wholeSet(if (isNull) null else v.toString)
+        }
+      )
 
   /**
     * Make sure that the field is unique in the database
@@ -247,7 +281,7 @@ abstract class MappedString[T <: Mapper[T]](val fieldOwner: T, val maxLen: Int)
     fieldOwner.getSingleton
       .findAll(By(this, value))
       .filter(!_.comparePrimaryKeys(this.fieldOwner)) match {
-      case Nil => Nil
+      case Nil    => Nil
       case x :: _ => List(FieldError(this, Text(msg))) // issue 179
     }
 
@@ -260,9 +294,9 @@ abstract class MappedString[T <: Mapper[T]](val fieldOwner: T, val maxLen: Int)
 
 private[mapper] object IsElem {
   def unapply(in: NodeSeq): Option[Elem] = in match {
-    case e: Elem => Some(e)
+    case e: Elem      => Some(e)
     case Seq(e: Elem) => Some(e)
-    case _ => None
+    case _            => None
   }
 }
 

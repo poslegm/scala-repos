@@ -7,17 +7,19 @@ import scala.concurrent.duration._
 import lila.db.BSON.BSONJodaDateTimeHandler
 import lila.db.Implicits._
 
-private final class Cleaner(repo: FishnetRepo,
-                            moveDb: MoveDB,
-                            analysisColl: Coll,
-                            monitor: Monitor,
-                            scheduler: lila.common.Scheduler) {
+private final class Cleaner(
+    repo: FishnetRepo,
+    moveDb: MoveDB,
+    analysisColl: Coll,
+    monitor: Monitor,
+    scheduler: lila.common.Scheduler
+) {
 
   import BSONHandlers._
 
-  private val moveTimeout = 3.seconds
+  private val moveTimeout                 = 3.seconds
   private def analysisTimeout(plies: Int) = plies * 6.seconds + 3.seconds
-  private def analysisTimeoutBase = analysisTimeout(20)
+  private def analysisTimeoutBase         = analysisTimeout(20)
 
   private def durationAgo(d: FiniteDuration) =
     DateTime.now.minusSeconds(d.toSeconds.toInt)
@@ -34,10 +36,13 @@ private final class Cleaner(repo: FishnetRepo,
 
   private def cleanAnalysis: Funit =
     analysisColl
-      .find(BSONDocument(
-              "acquired.date" -> BSONDocument(
-                  "$lt" -> durationAgo(analysisTimeoutBase))
-          ))
+      .find(
+        BSONDocument(
+          "acquired.date" -> BSONDocument(
+            "$lt" -> durationAgo(analysisTimeoutBase)
+          )
+        )
+      )
       .sort(BSONDocument("acquired.date" -> 1))
       .cursor[Work.Analysis]()
       .collect[List](100)
@@ -45,11 +50,13 @@ private final class Cleaner(repo: FishnetRepo,
         _.filter { ana =>
           ana.acquiredAt.??(_ isBefore durationAgo(analysisTimeout(ana.nbPly)))
         }.map { ana =>
-          repo.updateOrGiveUpAnalysis(ana.timeout) >>- {
-            clientTimeout(ana)
-            logger.warn(s"Timeout analysis ${ana.game.id}")
+            repo.updateOrGiveUpAnalysis(ana.timeout) >>- {
+              clientTimeout(ana)
+              logger.warn(s"Timeout analysis ${ana.game.id}")
+            }
           }
-        }.sequenceFu.void
+          .sequenceFu
+          .void
       } andThenAnyway scheduleAnalysis
 
   private def clientTimeout(work: Work) =
@@ -60,7 +67,7 @@ private final class Cleaner(repo: FishnetRepo,
       }
     }
 
-  private def scheduleMoves = scheduler.once(1 second)(cleanMoves)
+  private def scheduleMoves    = scheduler.once(1 second)(cleanMoves)
   private def scheduleAnalysis = scheduler.once(5 second)(cleanAnalysis)
 
   scheduler.once(3 seconds)(cleanMoves)

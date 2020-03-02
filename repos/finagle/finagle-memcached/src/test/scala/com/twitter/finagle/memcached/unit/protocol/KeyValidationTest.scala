@@ -13,12 +13,11 @@ class KeyValidationTest extends FunSuite {
 
   private class BasicKeyValidation(
       override val keys: Seq[Buf]
-  )
-      extends KeyValidation
+  ) extends KeyValidation
 
   test("reject invalid key that is too long") {
     val length = 251
-    val key = "x" * length
+    val key    = "x" * length
 
     val x = intercept[IllegalArgumentException] {
       new BasicKeyValidation(Seq(Buf.Utf8(key)))
@@ -30,18 +29,20 @@ class KeyValidationTest extends FunSuite {
   test("reject invalid key with whitespace or control chars") {
     val bads =
       Seq(
-          "hi withwhitespace",
-          "anda\rcarraigereturn",
-          "yo\u0000ihaveacontrolchar",
-          "andheres\nanewline"
+        "hi withwhitespace",
+        "anda\rcarraigereturn",
+        "yo\u0000ihaveacontrolchar",
+        "andheres\nanewline"
       ) map { Buf.Utf8(_) }
 
     bads foreach { bad =>
       val x = intercept[IllegalArgumentException] {
         new BasicKeyValidation(Seq(bad))
       }
-      assert(x.getMessage.contains(
-              "key cannot have whitespace or control characters"))
+      assert(
+        x.getMessage
+          .contains("key cannot have whitespace or control characters")
+      )
     }
   }
 }

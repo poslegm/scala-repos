@@ -63,8 +63,9 @@ trait Reducible[F[_]] extends Foldable[F] { self =>
   /**
     * Overriden from Foldable[_] for efficiency.
     */
-  override def reduceLeftToOption[A, B](fa: F[A])(f: A => B)(
-      g: (B, A) => B): Option[B] =
+  override def reduceLeftToOption[A, B](
+      fa: F[A]
+  )(f: A => B)(g: (B, A) => B): Option[B] =
     Some(reduceLeftTo(fa)(f)(g))
 
   /**
@@ -72,13 +73,15 @@ trait Reducible[F[_]] extends Foldable[F] { self =>
     * with every other value using the given function `g`.
     */
   def reduceRightTo[A, B](fa: F[A])(f: A => B)(
-      g: (A, Eval[B]) => Eval[B]): Eval[B]
+      g: (A, Eval[B]) => Eval[B]
+  ): Eval[B]
 
   /**
     * Overriden from `Foldable[_]` for efficiency.
     */
-  override def reduceRightToOption[A, B](fa: F[A])(f: A => B)(
-      g: (A, Eval[B]) => Eval[B]): Eval[Option[B]] =
+  override def reduceRightToOption[A, B](
+      fa: F[A]
+  )(f: A => B)(g: (A, Eval[B]) => Eval[B]): Eval[Option[B]] =
     reduceRightTo(fa)(f)(g).map(Option(_))
 
   /**
@@ -91,8 +94,9 @@ trait Reducible[F[_]] extends Foldable[F] { self =>
     * difference is that we only need `Apply[G]` here, since we don't
     * need to call `Applicative#pure` for a starting value.
     */
-  def traverse1_[G[_], A, B](fa: F[A])(f: A => G[B])(
-      implicit G: Apply[G]): G[Unit] =
+  def traverse1_[G[_], A, B](
+      fa: F[A]
+  )(f: A => G[B])(implicit G: Apply[G]): G[Unit] =
     G.map(reduceLeftTo(fa)(f)((x, y) => G.map2(x, f(y))((_, b) => b)))(_ => ())
 
   /**
@@ -124,23 +128,23 @@ trait Reducible[F[_]] extends Foldable[F] { self =>
   * values), this class is able to reduce `F[G[A]]` values.
   */
 trait CompositeReducible[F[_], G[_]]
-    extends Reducible[λ[α => F[G[α]]]] with CompositeFoldable[F, G] {
+    extends Reducible[λ[α => F[G[α]]]]
+    with CompositeFoldable[F, G] {
   implicit def F: Reducible[F]
   implicit def G: Reducible[G]
 
-  override def reduceLeftTo[A, B](fga: F[G[A]])(f: A => B)(g: (B, A) => B): B = {
+  override def reduceLeftTo[A, B](
+      fga: F[G[A]]
+  )(f: A => B)(g: (B, A) => B): B = {
     def toB(ga: G[A]): B = G.reduceLeftTo(ga)(f)(g)
-    F.reduceLeftTo(fga)(toB) { (b, ga) =>
-      G.foldLeft(ga, b)(g)
-    }
+    F.reduceLeftTo(fga)(toB)((b, ga) => G.foldLeft(ga, b)(g))
   }
 
-  override def reduceRightTo[A, B](fga: F[G[A]])(f: A => B)(
-      g: (A, Eval[B]) => Eval[B]): Eval[B] = {
+  override def reduceRightTo[A, B](
+      fga: F[G[A]]
+  )(f: A => B)(g: (A, Eval[B]) => Eval[B]): Eval[B] = {
     def toB(ga: G[A]): B = G.reduceRightTo(ga)(f)(g).value
-    F.reduceRightTo(fga)(toB) { (ga, lb) =>
-      G.foldRight(ga, lb)(g)
-    }
+    F.reduceRightTo(fga)(toB)((ga, lb) => G.foldRight(ga, lb)(g))
   }
 }
 
@@ -160,8 +164,9 @@ abstract class NonEmptyReducible[F[_], G[_]](implicit G: Foldable[G])
     G.foldLeft(ga, f(b, a))(f)
   }
 
-  def foldRight[A, B](
-      fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
+  def foldRight[A, B](fa: F[A], lb: Eval[B])(
+      f: (A, Eval[B]) => Eval[B]
+  ): Eval[B] =
     Always(split(fa)).flatMap {
       case (a, ga) =>
         f(a, G.foldRight(ga, lb)(f))
@@ -173,12 +178,13 @@ abstract class NonEmptyReducible[F[_], G[_]](implicit G: Foldable[G])
   }
 
   def reduceRightTo[A, B](
-      fa: F[A])(f: A => B)(g: (A, Eval[B]) => Eval[B]): Eval[B] =
+      fa: F[A]
+  )(f: A => B)(g: (A, Eval[B]) => Eval[B]): Eval[B] =
     Always(split(fa)).flatMap {
       case (a, ga) =>
         G.reduceRightToOption(ga)(f)(g).flatMap {
           case Some(b) => g(a, Now(b))
-          case None => Later(f(a))
+          case None    => Later(f(a))
         }
     }
 }

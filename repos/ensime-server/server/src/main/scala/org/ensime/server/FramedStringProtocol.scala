@@ -16,7 +16,7 @@ trait FramedStringProtocol extends Protocol with SLF4JLogging {
     if (value.isEmpty)
       throw new IllegalStateException("Message to send is empty")
 
-    val data = ByteString(value, "UTF-8")
+    val data   = ByteString(value, "UTF-8")
     val header = ByteString("%06x".format(data.length), "UTF-8")
 
     val message = header ++ data
@@ -29,8 +29,7 @@ trait FramedStringProtocol extends Protocol with SLF4JLogging {
 
   val headerLen = 6
 
-  protected def tryReadString(
-      bytes: ByteString): (Option[String], ByteString) = {
+  protected def tryReadString(bytes: ByteString): (Option[String], ByteString) =
     if (bytes.length < headerLen) (None, bytes) // header is incomplete
     else {
       val header = bytes.take(headerLen)
@@ -47,8 +46,7 @@ trait FramedStringProtocol extends Protocol with SLF4JLogging {
         val msgUTF8 = messageBytes
           .drop(headerLen)
           .utf8String
-          (Some(msgUTF8), remainingBytes)
+        (Some(msgUTF8), remainingBytes)
       }
     }
-  }
 }

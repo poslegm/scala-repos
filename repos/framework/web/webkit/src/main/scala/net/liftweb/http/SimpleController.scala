@@ -30,24 +30,23 @@ trait SimpleController {
 
   def httpRequest: HTTPRequest
 
-  def param(name: String): Box[String] = {
+  def param(name: String): Box[String] =
     request.params.get(name) match {
       case None => Empty
       case Some(nl) =>
         nl.take(1) match {
           case Nil => Empty
-          case l => Full(l.head)
+          case l   => Full(l.head)
         }
     }
-  }
 
   def post_? : Boolean = request.post_?
 
   def get(name: String): Box[String] =
     httpRequest.session.attribute(name) match {
-      case null => Empty
+      case null      => Empty
       case n: String => Full(n)
-      case _ => Empty
+      case _         => Empty
     }
 
   def set(name: String, value: String) {

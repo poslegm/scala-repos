@@ -2,7 +2,11 @@ package com.twitter.finagle.mux
 
 import com.twitter.conversions.time._
 import com.twitter.finagle.Status
-import com.twitter.finagle.stats.{MultiCategorizingExceptionStatsHandler, NullStatsReceiver, StatsReceiver}
+import com.twitter.finagle.stats.{
+  MultiCategorizingExceptionStatsHandler,
+  NullStatsReceiver,
+  StatsReceiver
+}
 import com.twitter.finagle.util._
 import com.twitter.util._
 import java.util.concurrent.atomic.AtomicReference
@@ -43,16 +47,16 @@ private class ThresholdFailureDetector(
     closeTimeout: Duration = 4.seconds,
     nanoTime: () => Long = System.nanoTime,
     statsReceiver: StatsReceiver = NullStatsReceiver,
-    implicit val timer: Timer = DefaultTimer.twitter)
-    extends FailureDetector {
+    implicit val timer: Timer = DefaultTimer.twitter
+) extends FailureDetector {
   require(windowSize > 0)
   private[this] val failureHandler =
     new MultiCategorizingExceptionStatsHandler()
   private[this] val pingLatencyStat = statsReceiver.stat("ping_latency_us")
-  private[this] val closeCounter = statsReceiver.counter("close")
-  private[this] val pingCounter = statsReceiver.counter("ping")
-  private[this] val busyCounter = statsReceiver.counter("marked_busy")
-  private[this] val revivalCounter = statsReceiver.counter("revivals")
+  private[this] val closeCounter    = statsReceiver.counter("close")
+  private[this] val pingCounter     = statsReceiver.counter("ping")
+  private[this] val busyCounter     = statsReceiver.counter("marked_busy")
+  private[this] val revivalCounter  = statsReceiver.counter("revivals")
 
   private[this] val maxPingNs: WindowedMax = new WindowedMax(windowSize)
   // The timestamp of the last ping, in nanoseconds.
@@ -60,27 +64,26 @@ private class ThresholdFailureDetector(
 
   // start as busy, and become open after receiving the first ping response
   private[this] val state: AtomicReference[Status] = new AtomicReference(
-      Status.Busy)
+    Status.Busy
+  )
 
   private[this] val onBusyTimeout: Throwable => Unit = x =>
     x match {
       case _: TimeoutException => markBusy()
-      case _ =>
-  }
+      case _                   =>
+    }
 
   def status: Status = state.get
 
-  private[this] def markBusy(): Unit = {
+  private[this] def markBusy(): Unit =
     if (state.compareAndSet(Status.Open, Status.Busy)) {
       busyCounter.incr()
     }
-  }
 
-  private[this] def markOpen(): Unit = {
+  private[this] def markOpen(): Unit =
     if (state.compareAndSet(Status.Busy, Status.Open)) {
       revivalCounter.incr()
     }
-  }
 
   private[this] def markClosed(): Unit = {
     closeCounter.incr()
@@ -92,7 +95,7 @@ private class ThresholdFailureDetector(
     timestampNs = nanoTime()
     val p = ping()
 
-    val max = maxPingNs.get
+    val max         = maxPingNs.get
     val busyTimeout = (threshold * max).toLong.nanoseconds
 
     p.within(busyTimeout).onFailure(onBusyTimeout)
@@ -126,8 +129,8 @@ private class ThresholdFailureDetector(
   */
 private[mux] class WindowedMax(windowSize: Int) {
   @volatile private[this] var currentMax: Long = Long.MinValue
-  private[this] val buf: Array[Long] = Array.fill(windowSize)(Long.MinValue)
-  private[this] var index: Int = 0
+  private[this] val buf: Array[Long]           = Array.fill(windowSize)(Long.MinValue)
+  private[this] var index: Int                 = 0
 
   // Amortized 0(1)
   def add(value: Long): Unit = synchronized {
@@ -141,7 +144,7 @@ private[mux] class WindowedMax(windowSize: Int) {
 
     // We should recalculate currentMax if it was evicted from the window.
     if (prev == currentMax && currentMax != value) {
-      var i = 0
+      var i       = 0
       var nextMax = Long.MinValue
       while (i < windowSize) {
         val v = buf(i)

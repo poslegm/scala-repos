@@ -21,14 +21,16 @@ object Test {
   private def test1(tmpDir: File) {
     def testOptions(inFile: File, outDirName: String, opts: String*) {
       val outDir = createDir(tmpDir, outDirName)
-      val args = Array.concat(Array("-d", outDir.getPath, inFile.getPath),
-                              opts.toArray: Array[String])
+      val args = Array.concat(
+        Array("-d", outDir.getPath, inFile.getPath),
+        opts.toArray: Array[String]
+      )
       if (MainDoc.main0(args)) {
         for (name <- List("all-classes.html", "index.html")) {
           val outFile = new File(outDir, name)
-          val n = outFile.length.toInt
-          val in = new FileReader(outFile)
-          val cbuf = new Array[Char](n)
+          val n       = outFile.length.toInt
+          val in      = new FileReader(outFile)
+          val cbuf    = new Array[Char](n)
           in.read(cbuf, 0, n)
           println(new String(cbuf))
         }
@@ -36,7 +38,7 @@ object Test {
       }
     }
     val inFile = {
-      val f = new File(tmpDir.getPath, "docgenerator1.scala")
+      val f      = new File(tmpDir.getPath, "docgenerator1.scala")
       val writer = new FileWriter(f)
       writer.write(code1, 0, code1.length)
       writer.close
@@ -85,20 +87,20 @@ object Foo2 {
 }
 """
     val inFile = {
-      val f = new File(tmpDir.getPath, "docgenerator2.scala")
+      val f      = new File(tmpDir.getPath, "docgenerator2.scala")
       val writer = new FileWriter(f)
       writer.write(code, 0, code.length)
       writer.close
       f
     }
     val outDir = createDir(tmpDir, "annots1")
-    val args = Array.concat(Array("-d", outDir.getPath, inFile.getPath))
+    val args   = Array.concat(Array("-d", outDir.getPath, inFile.getPath))
     if (MainDoc.main0(args)) {
       for (name <- List("all-classes.html", "index.html")) {
         val outFile = new File(outDir, name)
-        val n = outFile.length.toInt
-        val in = new FileReader(outFile)
-        val cbuf = new Array[Char](n)
+        val n       = outFile.length.toInt
+        val in      = new FileReader(outFile)
+        val cbuf    = new Array[Char](n)
         in.read(cbuf, 0, n)
         println(new String(cbuf))
       }
@@ -135,7 +137,7 @@ object Foo2 {
         run compile command.files
         object generator extends DefaultDocDriver {
           lazy val global: compiler.type = compiler
-          lazy val settings = docSettings
+          lazy val settings              = docSettings
         }
         generator process run.units
         reporter.printSummary()

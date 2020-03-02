@@ -45,82 +45,82 @@ class TupleTests {
   type BBBB = (Boolean, Boolean, Boolean, Boolean)
 
   trait Fruit
-  case class Apple() extends Fruit
-  case class Pear() extends Fruit
+  case class Apple()  extends Fruit
+  case class Pear()   extends Fruit
   case class Banana() extends Fruit
 
   type PWS = Product with Serializable with Fruit
 
   type YYYY = (Any, Any, Any, Any)
-  type FF = (Fruit, Fruit)
-  type AP = (Apple, Pear)
-  type BP = (Banana, Pear)
-  type AF = (Apple, Fruit)
+  type FF   = (Fruit, Fruit)
+  type AP   = (Apple, Pear)
+  type BP   = (Banana, Pear)
+  type AF   = (Apple, Fruit)
   type FFFF = (Fruit, Fruit, Fruit, Fruit)
   type APAP = (Apple, Pear, Apple, Pear)
   type APBP = (Apple, Pear, Banana, Pear)
-  type APB = (Apple, Pear, Banana)
+  type APB  = (Apple, Pear, Banana)
   type PBPA = (Pear, Banana, Pear, Apple)
   type PABP = (Pear, Apple, Banana, Pear)
 
-  val a: Apple = Apple()
-  val p: Pear = Pear()
+  val a: Apple  = Apple()
+  val p: Pear   = Pear()
   val b: Banana = Banana()
-  val f: Fruit = new Fruit {}
+  val f: Fruit  = new Fruit {}
 
-  val ap: AP = (a, p)
-  val bp: BP = (b, p)
+  val ap: AP     = (a, p)
+  val bp: BP     = (b, p)
   val apap: APAP = (a, p, a, p)
   val apbp: APBP = (a, p, b, p)
-  val apapList = List(a, p, a, p)
-  val apbpList = List(a, p, b, p)
-  val apapArray = Array(a, p, a, p)
-  val apbpArray = Array(a, p, b, p)
+  val apapList   = List(a, p, a, p)
+  val apbpList   = List(a, p, b, p)
+  val apapArray  = Array(a, p, a, p)
+  val apbpArray  = Array(a, p, b, p)
 
   trait Ctv[-T]
 
-  val ci: Ctv[Int] = new Ctv[Int] {}
+  val ci: Ctv[Int]    = new Ctv[Int] {}
   val cs: Ctv[String] = new Ctv[String] {}
   val cd: Ctv[Double] = new Ctv[Double] {}
-  val cicscicicdList = List(ci, cs, ci, ci, cd)
+  val cicscicicdList  = List(ci, cs, ci, ci, cd)
   val cicscicicdArray = Array(ci, cs, ci, ci, cd)
-  val cicscicicd = (ci, cs, ci, ci, cd)
+  val cicscicicd      = (ci, cs, ci, ci, cd)
 
   trait M[T]
 
-  val mi: M[Int] = new M[Int] {}
-  val ms: M[String] = new M[String] {}
-  val md: M[Double] = new M[Double] {}
-  val mimsmimimdList = List(mi, ms, mi, mi, md)
+  val mi: M[Int]      = new M[Int] {}
+  val ms: M[String]   = new M[String] {}
+  val md: M[Double]   = new M[Double] {}
+  val mimsmimimdList  = List(mi, ms, mi, mi, md)
   val mimsmimimdArray = Array(mi, ms, mi, mi, md)
-  val mimsmimimd = (mi, ms, mi, mi, md)
+  val mimsmimimd      = (mi, ms, mi, mi, md)
 
   import language.existentials
-  val mExist: M[_] = new M[Double] {}
-  val mimsmimemdList = List(mi, ms, mi, mExist, md)
+  val mExist: M[_]    = new M[Double] {}
+  val mimsmimemdList  = List(mi, ms, mi, mExist, md)
   val mimsmimemdArray = Array[M[_]](mi, ms, mi, mExist, md)
-  val mimsmimemd = (mi, ms, mi, mExist, md)
+  val mimsmimemd      = (mi, ms, mi, mExist, md)
 
   trait M2[A, B]
 
-  val m2i: M2[Int, Unit] = new M2[Int, Unit] {}
+  val m2i: M2[Int, Unit]    = new M2[Int, Unit] {}
   val m2s: M2[String, Unit] = new M2[String, Unit] {}
   val m2d: M2[Double, Unit] = new M2[Double, Unit] {}
-  val m2im2sm2im2im2dList = List(m2i, m2s, m2i, m2i, m2d)
-  val m2im2sm2im2im2dArray = Array(m2i, m2s, m2i, m2i, m2d)
-  val m2im2sm2im2im2d = (m2i, m2s, m2i, m2i, m2d)
+  val m2im2sm2im2im2dList   = List(m2i, m2s, m2i, m2i, m2d)
+  val m2im2sm2im2im2dArray  = Array(m2i, m2s, m2i, m2i, m2d)
+  val m2im2sm2im2im2d       = (m2i, m2s, m2i, m2i, m2d)
 
-  val m2iExist: M2[Int, _] = new M2[Int, Unit] {}
+  val m2iExist: M2[Int, _]    = new M2[Int, Unit]    {}
   val m2sExist: M2[String, _] = new M2[String, Unit] {}
   val m2dExist: M2[Double, _] = new M2[Double, Unit] {}
-  val m2eim2esm2eim2eem2edList = List(
-      m2iExist, m2sExist, m2iExist, m2iExist, m2dExist)
-  val m2eim2esm2eim2eem2edArray = Array(
-      m2iExist, m2sExist, m2iExist, m2iExist, m2dExist)
+  val m2eim2esm2eim2eem2edList =
+    List(m2iExist, m2sExist, m2iExist, m2iExist, m2dExist)
+  val m2eim2esm2eim2eem2edArray =
+    Array(m2iExist, m2sExist, m2iExist, m2iExist, m2dExist)
   val m2eim2esm2eim2eem2ed = (m2iExist, m2sExist, m2iExist, m2iExist, m2dExist)
 
   object mkString extends (Any -> String)(_.toString)
-  object fruit extends (Fruit -> Fruit)(f => f)
+  object fruit    extends (Fruit -> Fruit)(f => f)
 
   trait incInt0 extends Poly1 {
     implicit def default[T] = at[T](t => ())
@@ -263,7 +263,7 @@ class TupleTests {
     typed[PBPA](pbpa)
     assertEquals((p, b, p, a), pbpa)
 
-    val al = Tuple1(a)
+    val al  = Tuple1(a)
     val ral = al.reverse
     typed[Tuple1[Apple]](ral)
     assertEquals(Tuple1(a), ral)
@@ -289,7 +289,7 @@ class TupleTests {
   def testToSizedList {
     def equalInferredTypes[A, B](a: A, b: B)(implicit eq: A =:= B) {}
 
-    val unit = ()
+    val unit  = ()
     val sunit = unit.toSized[List]
     assertEquals(0, sunit.length)
     val expectedUnsized = List.empty[Nothing]
@@ -328,11 +328,14 @@ class TupleTests {
     assertEquals(m2im2sm2im2im2dList, sizedM2im2sm2im2im2d.unsized)
 
     val sizedM2eim2esm2eim2eem2ed = m2eim2esm2eim2eem2ed.toSized[List]
-    assertEquals(Nat toInt m2eim2esm2eim2eem2ed.length,
-                 sizedM2eim2esm2eim2eem2ed.length)
+    assertEquals(
+      Nat toInt m2eim2esm2eim2eem2ed.length,
+      sizedM2eim2esm2eim2eem2ed.length
+    )
     // equalInferredTypes(m2eim2esm2eim2eem2edList, sizedM2eim2esm2eim2eem2ed.unsized)
     typed[List[M2[_ >: Double with Int with String, _]]](
-        sizedM2eim2esm2eim2eem2ed.unsized)
+      sizedM2eim2esm2eim2eem2ed.unsized
+    )
     assertEquals(m2eim2esm2eim2eem2edList, sizedM2eim2esm2eim2eem2ed.unsized)
   }
 
@@ -340,7 +343,9 @@ class TupleTests {
   def testToSizedArray {
     def assertArrayEquals2[T](arr1: Array[T], arr2: Array[T]) =
       assertArrayEquals(
-          arr1.asInstanceOf[Array[Object]], arr2.asInstanceOf[Array[Object]])
+        arr1.asInstanceOf[Array[Object]],
+        arr2.asInstanceOf[Array[Object]]
+      )
 
     def equalInferredTypes[A, B](a: A, b: B)(implicit eq: A =:= B) {}
 
@@ -376,8 +381,10 @@ class TupleTests {
     // equalInferredTypes(mimsmimemdArray, sizedMimsmimemd.unsized)
     // typed[Array[M[_]]](sizedMimsmimemd.unsized)
     // The line above compiles when mimsmimemd is an HList, not when it it a tuple...
-    assertArrayEquals2(mimsmimemdArray.map(x => x: Any),
-                       sizedMimsmimemd.unsized.map(x => x: Any))
+    assertArrayEquals2(
+      mimsmimemdArray.map(x => x: Any),
+      sizedMimsmimemd.unsized.map(x => x: Any)
+    )
 
     val sizedM2im2sm2im2im2d = m2im2sm2im2im2d.toSized[Array]
     assertEquals(Nat toInt m2im2sm2im2im2d.length, sizedM2im2sm2im2im2d.length)
@@ -385,12 +392,16 @@ class TupleTests {
     assertArrayEquals2(m2im2sm2im2im2dArray, sizedM2im2sm2im2im2d.unsized)
 
     val sizedM2eim2esm2eim2eem2ed = m2eim2esm2eim2eem2ed.toSized[Array]
-    assertEquals(Nat toInt m2eim2esm2eim2eem2ed.length,
-                 sizedM2eim2esm2eim2eem2ed.length)
+    assertEquals(
+      Nat toInt m2eim2esm2eim2eem2ed.length,
+      sizedM2eim2esm2eim2eem2ed.length
+    )
     // equalInferredTypes(m2eim2esm2eim2eem2edArray, sizedM2eim2esm2eim2eem2ed.unsized)
     // typed[Array[M2[_ >: Double with Int with String, _]]](sizedM2eim2esm2eim2eem2ed.unsized)  // Same remark as above
-    assertArrayEquals2(m2eim2esm2eim2eem2edArray.map(x => x: Any),
-                       sizedM2eim2esm2eim2eem2ed.unsized.map(x => x: Any))
+    assertArrayEquals2(
+      m2eim2esm2eim2eem2edArray.map(x => x: Any),
+      sizedM2eim2esm2eim2eem2ed.unsized.map(x => x: Any)
+    )
   }
 
   @Test
@@ -426,8 +437,9 @@ class TupleTests {
     val u4 = getUnifier((a, a, a))
     typed[Unifier.Aux[(Apple, Apple, Apple), (Apple, Apple, Apple)]](u4)
     val u5 = getUnifier((a, a, a, a))
-    typed[Unifier.Aux[
-            (Apple, Apple, Apple, Apple), (Apple, Apple, Apple, Apple)]](u5)
+    typed[
+      Unifier.Aux[(Apple, Apple, Apple, Apple), (Apple, Apple, Apple, Apple)]
+    ](u5)
     //val u6 = getUnifier((a, p))
     //typed[Unifier.Aux[(Apple, Pear), (Fruit, Fruit)]](u6)
     val u7 = getUnifier((a, f))
@@ -443,7 +455,7 @@ class TupleTests {
     val u11 = getUnifier(apbp)
     typed[Unifier.Aux[APBP, (PWS, PWS, PWS, PWS)]](u11)
 
-    val invar1 = (Set(23), Set("foo"))
+    val invar1  = (Set(23), Set("foo"))
     val uinvar1 = invar1.unify
     typed[(Set[_ >: Int with String], Set[_ >: Int with String])](uinvar1)
 
@@ -528,7 +540,7 @@ class TupleTests {
   def testToCoproduct {
     import ops.tuple._
 
-    type PISB = (Int, String, Boolean)
+    type PISB  = (Int, String, Boolean)
     type CISBa = Int :+: String :+: Boolean :+: CNil
     val CISBb = ToCoproduct[PISB]
     implicitly[CISBa =:= CISBb.Out]
@@ -540,7 +552,7 @@ class TupleTests {
   def testToSum {
     import ops.tuple._
 
-    type PISB = (Int, String, Boolean)
+    type PISB  = (Int, String, Boolean)
     type CISBa = Int :+: String :+: Boolean :+: CNil
     val SISBa = ToSum[PISB]
     implicitly[CISBa =:= SISBa.Out]
@@ -620,7 +632,9 @@ class TupleTests {
   def testToTraversableArray {
     def assertArrayEquals2[T](arr1: Array[T], arr2: Array[T]) =
       assertArrayEquals(
-          arr1.asInstanceOf[Array[Object]], arr2.asInstanceOf[Array[Object]])
+        arr1.asInstanceOf[Array[Object]],
+        arr2.asInstanceOf[Array[Object]]
+      )
 
     val empty = ().to[Array]
     typed[Array[Nothing]](empty)
@@ -669,7 +683,9 @@ class TupleTests {
     // typed[Array[M[_]]](mWithEx)
     // The line above compiles when mimsmimemd is an HList, not when it it a tuple, as in testToSizedArray
     assertArrayEquals2(
-        mimsmimemdArray.map(x => x: Any), mWithEx.map(x => x: Any))
+      mimsmimemdArray.map(x => x: Any),
+      mWithEx.map(x => x: Any)
+    )
 
     val m2 = m2im2sm2im2im2d.to[Array]
     equalInferredTypes(m2im2sm2im2im2dArray, m2)
@@ -681,7 +697,9 @@ class TupleTests {
     // typed[Array[M2[_ >: Int with String with Double, _]]](m2e)
     // Same remark as above
     assertArrayEquals2(
-        m2eim2esm2eim2eem2edArray.map(x => x: Any), m2e.map(x => x: Any))
+      m2eim2esm2eim2eem2edArray.map(x => x: Any),
+      m2e.map(x => x: Any)
+    )
   }
 
   @Test
@@ -694,7 +712,9 @@ class TupleTests {
 
     def assertArrayEquals2[T](arr1: Array[T], arr2: Array[T]) =
       assertArrayEquals(
-          arr1.asInstanceOf[Array[Object]], arr2.asInstanceOf[Array[Object]])
+        arr1.asInstanceOf[Array[Object]],
+        arr2.asInstanceOf[Array[Object]]
+      )
 
     val empty = ().toArray
     typed[Array[Nothing]](empty)
@@ -753,7 +773,9 @@ class TupleTests {
     // typed[Array[M2[_ >: Int with String with Double, _]]](m2e)
     // The line above compiles when mimsmimemd is an HList, not when it is a tuple...
     assertArrayEquals2(
-        m2eim2esm2eim2eem2edArray.map(x => x: Any), m2e.map(x => x: Any))
+      m2eim2esm2eim2eem2edArray.map(x => x: Any),
+      m2e.map(x => x: Any)
+    )
   }
 
   @Test
@@ -805,28 +827,28 @@ class TupleTests {
     assertEquals(5L, at6)
 
     val sn2 = (
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-        16,
-        17,
-        18,
-        19,
-        20,
-        21
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21
     )
 
     val at21 = sn2(_21)
@@ -867,28 +889,28 @@ class TupleTests {
     assertEquals(5L, at6)
 
     val sn2 = (
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-        16,
-        17,
-        18,
-        19,
-        20,
-        21
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21
     )
 
     val at21 = sn2(21)
@@ -1222,7 +1244,7 @@ class TupleTests {
 
   @Test
   def testSplitLeft {
-    val sl = (1, true, "foo", 2.0)
+    val sl  = (1, true, "foo", 2.0)
     val sl2 = (23, 3.0, "foo", (), "bar", true, 5L)
 
     val (sp1, sp2) = sl.splitLeft[String]
@@ -1248,7 +1270,7 @@ class TupleTests {
 
   @Test
   def testSplitRight {
-    val sl = (1, true, "foo", 2.0)
+    val sl  = (1, true, "foo", 2.0)
     val sl2 = (23, 3.0, "foo", (), "bar", true, 5L)
 
     val (srp1, srp2) = sl.splitRight[String]
@@ -1294,8 +1316,8 @@ class TupleTests {
 
     val z2 = l3.zipOne(l4)
     typed[
-        ((Int, String, Double), (Int, String, Double), (Int, String, Double))](
-        z2)
+      ((Int, String, Double), (Int, String, Double), (Int, String, Double))
+    ](z2)
     assertEquals(((1, "a", 1.0), (2, "b", 2.0), (3, "c", 3.0)), z2)
 
     val mc2 = l3.mapConst(())
@@ -1308,14 +1330,14 @@ class TupleTests {
 
     val t3 = z2.transpose
     typed[
-        ((Int, Int, Int), (String, String, String), (Double, Double, Double))](
-        t3)
+      ((Int, Int, Int), (String, String, String), (Double, Double, Double))
+    ](t3)
     assertEquals(((1, 2, 3), ("a", "b", "c"), (1.0, 2.0, 3.0)), t3)
 
     val t4 = t3.transpose
     typed[
-        ((Int, String, Double), (Int, String, Double), (Int, String, Double))](
-        t4)
+      ((Int, String, Double), (Int, String, Double), (Int, String, Double))
+    ](t4)
     assertEquals(z2, t4)
   }
 
@@ -1344,9 +1366,9 @@ class TupleTests {
     typed[((Int, String, Double), (Int, String, Double))](u2)
     assertEquals(((1, "a", 1.0), (2, "b", 2.0)), u2)
 
-    val intInc: Int => Int = _ + 1
+    val intInc: Int => Int          = _ + 1
     val stringInc: String => String = _ + "*"
-    val doubleInc: Double => Int = _.toInt + 1
+    val doubleInc: Double => Int    = _.toInt + 1
 
     val l3 = (intInc, stringInc, doubleInc)
 
@@ -1460,8 +1482,8 @@ class TupleTests {
 
   @Test
   def testZipConst {
-    val l1 = (1, true, "a")
-    val c1 = 5
+    val l1  = (1, true, "a")
+    val c1  = 5
     val zl1 = l1 zipConst c1
     typed[((Int, Int), (Boolean, Int), (String, Int))](zl1)
     assertEquals(((1, c1), (true, c1), ("a", c1)), zl1)
@@ -1479,13 +1501,13 @@ class TupleTests {
   def testZipWithIndex {
 
     // Unit zipWithIndex
-    val l1 = ()
+    val l1  = ()
     val zl1 = ().zipWithIndex
     typed[Unit](zl1)
     assertEquals((), zl1)
 
     // Tuple zipWithIndex
-    val l2 = (1, true, "a")
+    val l2  = (1, true, "a")
     val zl2 = l2.zipWithIndex
     typed[((Int, _0), (Boolean, _1), (String, _2))](zl2)
     assertEquals(((1, _0), (true, _1), ("a", _2)), zl2)
@@ -1507,7 +1529,7 @@ class TupleTests {
     object empty extends Poly1
 
     object complex extends Poly1 {
-      implicit val caseInt = at[Int](_.toDouble)
+      implicit val caseInt    = at[Int](_.toDouble)
       implicit val caseString = at[String](_ => 1)
     }
 
@@ -1560,15 +1582,17 @@ class TupleTests {
   def testPermutations {
     assertEquals(((1, "foo"), ("foo", 1)), (1, "foo").permutations)
 
-    assertEquals((
-                     (1, "foo", 2.0),
-                     ("foo", 1, 2.0),
-                     ("foo", 2.0, 1),
-                     (1, 2.0, "foo"),
-                     (2.0, 1, "foo"),
-                     (2.0, "foo", 1)
-                 ),
-                 (1, "foo", 2.0).permutations)
+    assertEquals(
+      (
+        (1, "foo", 2.0),
+        ("foo", 1, 2.0),
+        ("foo", 2.0, 1),
+        (1, 2.0, "foo"),
+        (2.0, 1, "foo"),
+        (2.0, "foo", 1)
+      ),
+      (1, "foo", 2.0).permutations
+    )
   }
 
   @Test
@@ -1669,14 +1693,14 @@ class TupleTests {
   }
 
   object smear extends Poly {
-    implicit val caseIntInt = use((x: Int, y: Int) => x + y)
+    implicit val caseIntInt    = use((x: Int, y: Int) => x + y)
     implicit val caseStringInt = use((x: String, y: Int) => x.toInt + y)
     implicit val caseIntString = use((x: Int, y: String) => x + y.toInt)
   }
 
   @Test
   def testScanLeft {
-    val in = (1, "2", 3)
+    val in  = (1, "2", 3)
     val out = in.scanLeft(1)(smear)
 
     typed[(Int, Int, Int, Int)](out)
@@ -1685,7 +1709,7 @@ class TupleTests {
 
   @Test
   def testScanRight {
-    val in = (1, "2", 3)
+    val in  = (1, "2", 3)
     val out = in.scanRight(1)(smear)
 
     typed[(Int, Int, Int, Int)](out)
@@ -1773,16 +1797,16 @@ class TupleTests {
     {
       val twoByThree = Tuple.fill(2, 3)(None)
       typed[
-          ((None.type, None.type, None.type), (None.type, None.type, None.type))](
-          twoByThree)
+        ((None.type, None.type, None.type), (None.type, None.type, None.type))
+      ](twoByThree)
       assertEquals(((None, None, None), (None, None, None)), twoByThree)
     }
 
     {
       val twoByThree = Tuple.fill[None.type](2, 3)(None)
       typed[
-          ((None.type, None.type, None.type), (None.type, None.type, None.type))](
-          twoByThree)
+        ((None.type, None.type, None.type), (None.type, None.type, None.type))
+      ](twoByThree)
       assertEquals(((None, None, None), (None, None, None)), twoByThree)
     }
   }
@@ -1793,7 +1817,7 @@ class TupleTests {
 
     {
       //single patch w/ nothing removed
-      val out = in.patch(1, (4, 5), 0)
+      val out  = in.patch(1, (4, 5), 0)
       val out2 = in.patch[_1, _0]((4, 5))
 
       typed[(Int, Int, Int, String, Int)](out)
@@ -1803,7 +1827,7 @@ class TupleTests {
 
     {
       //single patch w/ 2 elements removed
-      val out = in.patch(1, (3, 4), 2)
+      val out  = in.patch(1, (3, 4), 2)
       val out2 = in.patch[_1, _2]((3, 4))
 
       typed[(Int, Int, Int)](out)
@@ -1813,7 +1837,7 @@ class TupleTests {
 
     {
       //essentially append
-      val out = in.patch(3, (4, 5, "six"), 0)
+      val out  = in.patch(3, (4, 5, "six"), 0)
       val out2 = in.patch[_3, _0]((4, 5, "six"))
 
       typed[(Int, String, Int, Int, Int, String)](out)
@@ -1823,8 +1847,8 @@ class TupleTests {
 
     {
       //several patched w/ everything from original removed
-      val sub = (4, "five", "six")
-      val out = in.patch(0, sub, 3)
+      val sub  = (4, "five", "six")
+      val out  = in.patch(0, sub, 3)
       val out2 = in.patch[_0, _3]((4, "five", "six"))
 
       typed[(Int, String, String)](out)
@@ -1843,7 +1867,8 @@ class TupleTests {
     def range[R <: HList, OutL <: HList](a: Nat, b: Nat)(
         implicit range: ops.nat.Range.Aux[a.N, b.N, R],
         mapper: ops.hlist.Mapper.Aux[toInt.type, R, OutL],
-        tupler: ops.hlist.Tupler[OutL]): tupler.Out = tupler(mapper(range()))
+        tupler: ops.hlist.Tupler[OutL]
+    ): tupler.Out = tupler(mapper(range()))
 
     // Note: Slightly different method signature in Tuple211Tests
 
@@ -1852,39 +1877,39 @@ class TupleTests {
 
     // partition a Tuple of 4 items into 2 (4/2) tuples of 2 items
     assertEquals(
-        ((0, 1), (2, 3)),
-        range(0, 4) group (2, 2)
+      ((0, 1), (2, 3)),
+      range(0, 4) group (2, 2)
     )
 
     // partition a Tuple of 5 items into 2 (5/2) tuples of 2 items
     // the last item does not make a complete partition and is dropped.
     assertEquals(
-        ((0, 1), (2, 3)),
-        range(0, 5) group (2, 2)
+      ((0, 1), (2, 3)),
+      range(0, 5) group (2, 2)
     )
 
     // uses the step to select the starting point for each partition
     assertEquals(
-        ((0, 1), (4, 5)),
-        range(0, 6) group (2, 4)
+      ((0, 1), (4, 5)),
+      range(0, 6) group (2, 4)
     )
 
     // if the step is smaller than the partition size, items will be reused
     assertEquals(
-        ((0, 1), (1, 2), (2, 3)),
-        range(0, 4) group (2, 1)
+      ((0, 1), (1, 2), (2, 3)),
+      range(0, 4) group (2, 1)
     )
 
     // when there are not enough items to fill the last partition, a pad can be supplied.
     assertEquals(
-        ((0, 1), (2, 3), (4, 'a')),
-        range(0, 5) group (2, 2, Tuple1('a'))
+      ((0, 1), (2, 3), (4, 'a')),
+      range(0, 5) group (2, 2, Tuple1('a'))
     )
 
     // but only as many pad elements are used as necessary to fill the final partition.
     assertEquals(
-        ((0, 1), (2, 3), (4, 'a')),
-        range(0, 5) group (2, 2, ('a', 'b', 'c'))
+      ((0, 1), (2, 3), (4, 'a')),
+      range(0, 5) group (2, 2, ('a', 'b', 'c'))
     )
   }
 

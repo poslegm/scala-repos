@@ -13,9 +13,10 @@ abstract class Specs2FileStructureViewTest extends Specs2TestCase {
     runFileStructureViewTest("SpecsFileStrctureViewTest", status, tests: _*)
   }
 
-  protected def prepareFile(): Unit = {
-    addFileToProject("SpecsFileStrctureViewTest.scala",
-                     """|import org.specs2.mutable.Specification
+  protected def prepareFile(): Unit =
+    addFileToProject(
+      "SpecsFileStrctureViewTest.scala",
+      """|import org.specs2.mutable.Specification
         |
         |class SpecsFileStrctureViewTest extends Specification {
         |
@@ -46,8 +47,8 @@ abstract class Specs2FileStructureViewTest extends Specs2TestCase {
         |    }
         |  }
         |}
-      """.stripMargin)
-  }
+      """.stripMargin
+    )
 
   def testShouldView(): Unit =
     prepareAndRunTestInner(normalStatusId, "\"parent\"")
@@ -69,6 +70,9 @@ abstract class Specs2FileStructureViewTest extends Specs2TestCase {
   def testHierarchy(): Unit = {
     prepareFile()
     runFileStructureViewTest(
-        "SpecsFileStrctureViewTest", "\"child1\"", Some("\"parent\""))
+      "SpecsFileStrctureViewTest",
+      "\"child1\"",
+      Some("\"parent\"")
+    )
   }
 }

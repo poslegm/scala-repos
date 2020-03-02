@@ -7,17 +7,17 @@ import util._
 import Buildable._
 
 object Test extends Properties("TreeMap") {
-  def genTreeMap[A : Arbitrary : Ordering, B : Arbitrary]: Gen[TreeMap[A, B]] =
+  def genTreeMap[A: Arbitrary: Ordering, B: Arbitrary]: Gen[TreeMap[A, B]] =
     for {
-      keys <- listOf(arbitrary[A])
+      keys   <- listOf(arbitrary[A])
       values <- listOfN(keys.size, arbitrary[B])
     } yield TreeMap(keys zip values: _*)
-  implicit def arbTreeMap[A : Arbitrary : Ordering, B : Arbitrary] =
+  implicit def arbTreeMap[A: Arbitrary: Ordering, B: Arbitrary] =
     Arbitrary(genTreeMap[A, B])
 
   property("foreach/iterator consistency") = forAll {
     (subject: TreeMap[Int, String]) =>
-      val it = subject.iterator
+      val it         = subject.iterator
       var consistent = true
       subject.foreach { element =>
         consistent &&= it.hasNext && element == it.next
@@ -25,22 +25,23 @@ object Test extends Properties("TreeMap") {
       consistent
   }
 
-  property("worst-case tree height is iterable") = forAll(
-      choose(0, 10), arbitrary[Boolean]) { (n: Int, even: Boolean) =>
-    /*
-     * According to "Ralf Hinze. Constructing red-black trees" [http://www.cs.ox.ac.uk/ralf.hinze/publications/#P5]
-     * you can construct a skinny tree of height 2n by inserting the elements [1 .. 2^(n+1) - 2] and a tree of height
-     * 2n+1 by inserting the elements [1 .. 3 * 2^n - 2], both in reverse order.
-     *
-     * Since we allocate a fixed size buffer in the iterator (based on the tree size) we need to ensure
-     * it is big enough for these worst-case trees.
-     */
-    val highest = if (even) (1 << (n + 1)) - 2 else 3 * (1 << n) - 2
-    val values = (1 to highest).reverse
-    val subject = TreeMap(values zip values: _*)
-    val it = subject.iterator
-    try { while (it.hasNext) it.next; true } catch { case _ => false }
-  }
+  property("worst-case tree height is iterable") =
+    forAll(choose(0, 10), arbitrary[Boolean]) { (n: Int, even: Boolean) =>
+      /*
+       * According to "Ralf Hinze. Constructing red-black trees" [http://www.cs.ox.ac.uk/ralf.hinze/publications/#P5]
+       * you can construct a skinny tree of height 2n by inserting the elements [1 .. 2^(n+1) - 2] and a tree of height
+       * 2n+1 by inserting the elements [1 .. 3 * 2^n - 2], both in reverse order.
+       *
+       * Since we allocate a fixed size buffer in the iterator (based on the tree size) we need to ensure
+       * it is big enough for these worst-case trees.
+       */
+      val highest = if (even) (1 << (n + 1)) - 2 else 3 * (1 << n) - 2
+      val values  = (1 to highest).reverse
+      val subject = TreeMap(values zip values: _*)
+      val it      = subject.iterator
+      try { while (it.hasNext) it.next; true }
+      catch { case _ => false }
+    }
 
   property("sorted") = forAll { (subject: TreeMap[Int, String]) =>
     (subject.size >= 3) ==> {
@@ -107,15 +108,15 @@ object Test extends Properties("TreeMap") {
   }
 
   property("splitAt") = forAll { (subject: TreeMap[Int, String]) =>
-    val n = choose(-1, subject.size + 1).sample.get
+    val n                = choose(-1, subject.size + 1).sample.get
     val (prefix, suffix) = subject.splitAt(n)
     prefix == subject.take(n) && suffix == subject.drop(n)
   }
 
   def genSliceParms =
     for {
-      tree <- genTreeMap[Int, String]
-      from <- choose(0, tree.size)
+      tree  <- genTreeMap[Int, String]
+      from  <- choose(0, tree.size)
       until <- choose(from, tree.size)
     } yield (tree, from, until)
 
@@ -144,7 +145,7 @@ object Test extends Properties("TreeMap") {
 
   property("from is inclusive") = forAll { (subject: TreeMap[Int, String]) =>
     subject.nonEmpty ==> {
-      val n = choose(0, subject.size - 1).sample.get
+      val n    = choose(0, subject.size - 1).sample.get
       val from = subject.drop(n).firstKey
       subject.from(from).firstKey == from &&
       subject.from(from).forall(_._1 >= from)
@@ -153,7 +154,7 @@ object Test extends Properties("TreeMap") {
 
   property("to is inclusive") = forAll { (subject: TreeMap[Int, String]) =>
     subject.nonEmpty ==> {
-      val n = choose(0, subject.size - 1).sample.get
+      val n  = choose(0, subject.size - 1).sample.get
       val to = subject.drop(n).firstKey
       subject.to(to).lastKey == to && subject.to(to).forall(_._1 <= to)
     }
@@ -161,7 +162,7 @@ object Test extends Properties("TreeMap") {
 
   property("until is exclusive") = forAll { (subject: TreeMap[Int, String]) =>
     subject.size > 1 ==> {
-      val n = choose(1, subject.size - 1).sample.get
+      val n     = choose(1, subject.size - 1).sample.get
       val until = subject.drop(n).firstKey
       subject.until(until).lastKey == subject.take(n).lastKey &&
       subject.until(until).forall(_._1 <= until)
@@ -170,7 +171,7 @@ object Test extends Properties("TreeMap") {
 
   property("remove single") = forAll { (subject: TreeMap[Int, String]) =>
     subject.nonEmpty ==> {
-      val key = oneOf(subject.keys.toSeq).sample.get
+      val key     = oneOf(subject.keys.toSeq).sample.get
       val removed = subject - key
       subject.contains(key) && !removed.contains(key) &&
       subject.size - 1 == removed.size

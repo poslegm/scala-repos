@@ -9,12 +9,10 @@ import org.apache.spark.mllib.regression.LabeledPoint
 
 class PreparedData(
     val labeledPoints: RDD[LabeledPoint]
-)
-    extends Serializable
+) extends Serializable
 
 class Preparator extends PPreparator[TrainingData, PreparedData] {
 
-  def prepare(sc: SparkContext, trainingData: TrainingData): PreparedData = {
+  def prepare(sc: SparkContext, trainingData: TrainingData): PreparedData =
     new PreparedData(trainingData.labeledPoints)
-  }
 }

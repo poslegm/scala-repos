@@ -10,15 +10,15 @@ object NullStatsReceiver extends NullStatsReceiver {
   * required.
   */
 class NullStatsReceiver extends StatsReceiver {
-  val repr = this
+  val repr            = this
   override def isNull = true
 
-  private[this] val NullCounter = new Counter { def incr(delta: Int) {} }
-  private[this] val NullStat = new Stat { def add(value: Float) {} }
-  private[this] val NullGauge = new Gauge { def remove() {} }
+  private[this] val NullCounter = new Counter { def incr(delta: Int) {}  }
+  private[this] val NullStat    = new Stat    { def add(value: Float) {} }
+  private[this] val NullGauge   = new Gauge   { def remove() {}          }
 
-  def counter(name: String*) = NullCounter
-  def stat(name: String*) = NullStat
+  def counter(name: String*)               = NullCounter
+  def stat(name: String*)                  = NullStat
   def addGauge(name: String*)(f: => Float) = NullGauge
 
   override def provideGauge(name: String*)(f: => Float): Unit = ()

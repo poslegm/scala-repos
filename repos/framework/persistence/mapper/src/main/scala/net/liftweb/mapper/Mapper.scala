@@ -35,26 +35,26 @@ trait BaseMapper extends FieldContainer {
 }
 
 trait Mapper[A <: Mapper[A]]
-    extends BaseMapper with Serializable with SourceInfo { self: A =>
+    extends BaseMapper
+    with Serializable
+    with SourceInfo { self: A =>
   type MapperType = A
 
-  private var was_deleted_? = false
+  private var was_deleted_?                                     = false
   private var dbConnectionIdentifier: Box[ConnectionIdentifier] = Empty
-  private[mapper] var addedPostCommit = false
-  @volatile private[mapper] var persisted_? = false
+  private[mapper] var addedPostCommit                           = false
+  @volatile private[mapper] var persisted_?                     = false
 
   def getSingleton: MetaMapper[A];
-  final def safe_? : Boolean = {
+  final def safe_? : Boolean =
     util.Safe.safe_?(System.identityHashCode(this))
-  }
 
   def dbName: String = getSingleton.dbName
 
   implicit def thisToMappee(in: Mapper[A]): A = this.asInstanceOf[A]
 
-  def runSafe[T](f: => T): T = {
+  def runSafe[T](f: => T): T =
     util.Safe.runSafe(System.identityHashCode(this))(f)
-  }
 
   def connectionIdentifier(id: ConnectionIdentifier): A = {
     if (id != getSingleton.dbDefaultConnectionIdentifier ||
@@ -64,7 +64,8 @@ trait Mapper[A <: Mapper[A]]
 
   def connectionIdentifier = dbConnectionIdentifier openOr calcDbId
 
-  def dbCalculateConnectionIdentifier: PartialFunction[A, ConnectionIdentifier] =
+  def dbCalculateConnectionIdentifier
+      : PartialFunction[A, ConnectionIdentifier] =
     Map.empty
 
   private def calcDbId =
@@ -89,19 +90,16 @@ trait Mapper[A <: Mapper[A]]
     this
   }
 
-  def save(): Boolean = {
+  def save(): Boolean =
     runSafe {
       getSingleton.save(this)
     }
-  }
 
-  def htmlLine: NodeSeq = {
+  def htmlLine: NodeSeq =
     getSingleton.doHtmlLine(this)
-  }
 
-  def asHtml: NodeSeq = {
+  def asHtml: NodeSeq =
     getSingleton.asHtml(this)
-  }
 
   /**
     * If the instance calculates any additional
@@ -110,11 +108,10 @@ trait Mapper[A <: Mapper[A]]
     */
   def suplementalJs(ob: Box[KeyObfuscator]): List[(String, JsExp)] = Nil
 
-  def validate: List[FieldError] = {
+  def validate: List[FieldError] =
     runSafe {
       getSingleton.validate(this)
     }
-  }
 
   /**
     * Returns the instance in a Full Box if the instance is valid, otherwise
@@ -139,10 +136,9 @@ trait Mapper[A <: Mapper[A]]
   def findSourceField(name: String): Box[SourceFieldInfo] =
     for {
       mf <- getSingleton.fieldNamesAsMap.get(name.toLowerCase)
-      f <- fieldByName[mf.ST](name)
-    } yield
-      SourceFieldInfoRep[mf.ST](f.get.asInstanceOf[mf.ST], mf)
-        .asInstanceOf[SourceFieldInfo]
+      f  <- fieldByName[mf.ST](name)
+    } yield SourceFieldInfoRep[mf.ST](f.get.asInstanceOf[mf.ST], mf)
+      .asInstanceOf[SourceFieldInfo]
 
   /**
     * Get a list of all the fields
@@ -154,14 +150,13 @@ trait Mapper[A <: Mapper[A]]
   /**
     * Delete the model from the RDBMS
     */
-  def delete_! : Boolean = {
+  def delete_! : Boolean =
     if (!db_can_delete_?) false
     else
       runSafe {
         was_deleted_? = getSingleton.delete_!(this)
         was_deleted_?
       }
-  }
 
   /**
     * Get the fields (in order) for displaying a form
@@ -176,23 +171,26 @@ trait Mapper[A <: Mapper[A]]
     * @param func called with displayHtml, fieldId, form
     */
   def mapFieldTitleForm[T](
-      func: (NodeSeq, Box[NodeSeq], NodeSeq) => T): List[T] =
+      func: (NodeSeq, Box[NodeSeq], NodeSeq) => T
+  ): List[T] =
     getSingleton.mapFieldTitleForm(this, func)
 
   /**
     * flat map the fields titles and forms to generate a list
     * @param func called with displayHtml, fieldId, form
     */
-  def flatMapFieldTitleForm[T](func: (NodeSeq, Box[NodeSeq],
-      NodeSeq) => scala.collection.Seq[T]): List[T] =
+  def flatMapFieldTitleForm[T](
+      func: (NodeSeq, Box[NodeSeq], NodeSeq) => scala.collection.Seq[T]
+  ): List[T] =
     getSingleton.flatMapFieldTitleForm(this, func)
 
   /**
     * flat map the fields titles and forms to generate a list
     * @param func called with displayHtml, fieldId, form
     */
-  def flatMapFieldTitleForm2[T](func: (NodeSeq, MappedField[_, A],
-      NodeSeq) => scala.collection.Seq[T]): List[T] =
+  def flatMapFieldTitleForm2[T](
+      func: (NodeSeq, MappedField[_, A], NodeSeq) => scala.collection.Seq[T]
+  ): List[T] =
     getSingleton.flatMapFieldTitleForm2(this, func)
 
   /**
@@ -204,14 +202,14 @@ trait Mapper[A <: Mapper[A]]
     * @return the form
     */
   def toForm(button: Box[String], onSuccess: String): NodeSeq =
-    toForm(button,
-           (what: A) =>
-             {
-               what.validate match {
-                 case Nil => what.save; S.redirectTo(onSuccess)
-                 case xs => S.error(xs)
-               }
-           })
+    toForm(
+      button,
+      (what: A) =>
+        what.validate match {
+          case Nil => what.save; S.redirectTo(onSuccess)
+          case xs  => S.error(xs)
+        }
+    )
 
   /**
     * Present the model as a HTML using the same formatting as toForm
@@ -231,16 +229,20 @@ trait Mapper[A <: Mapper[A]]
   def toForm(button: Box[String], f: A => Any): NodeSeq =
     getSingleton.toForm(this) ++ S
       .fmapFunc((ignore: List[String]) => f(this)) { (name: String) =>
-      ( <input type='hidden' name={name} value="n/a" />)
-    } ++
-    (button.map(b =>
-              getSingleton.formatFormElement(
-                  <xml:group>&nbsp;</xml:group>,
-                  <input type="submit" value={b}/>)) openOr scala.xml.Text(""))
+        (<input type='hidden' name={name} value="n/a" />)
+      } ++
+      (button.map(b =>
+        getSingleton.formatFormElement(
+          <xml:group>&nbsp;</xml:group>,
+          <input type="submit" value={b}/>
+        )
+      ) openOr scala.xml.Text(""))
 
-  def toForm(button: Box[String],
-             redoSnippet: NodeSeq => NodeSeq,
-             onSuccess: A => Unit): NodeSeq = {
+  def toForm(
+      button: Box[String],
+      redoSnippet: NodeSeq => NodeSeq,
+      onSuccess: A => Unit
+  ): NodeSeq = {
     val snipName = S.currentSnippet
     def doSubmit() {
       this.validate match {
@@ -251,13 +253,15 @@ trait Mapper[A <: Mapper[A]]
       }
     }
 
-    getSingleton.toForm(this) ++ S.fmapFunc(
-        (ignore: List[String]) => doSubmit())(
-        name => <input type='hidden' name={name} value="n/a" />) ++
-    (button.map(b =>
-              getSingleton.formatFormElement(
-                  <xml:group>&nbsp;</xml:group>,
-                  <input type="submit" value={b}/>)) openOr scala.xml.Text(""))
+    getSingleton.toForm(this) ++ S.fmapFunc((ignore: List[String]) =>
+      doSubmit()
+    )(name => <input type='hidden' name={name} value="n/a" />) ++
+      (button.map(b =>
+        getSingleton.formatFormElement(
+          <xml:group>&nbsp;</xml:group>,
+          <input type="submit" value={b}/>
+        )
+      ) openOr scala.xml.Text(""))
   }
 
   def saved_? : Boolean = getSingleton.saved_?(this)
@@ -283,15 +287,14 @@ trait Mapper[A <: Mapper[A]]
     ret.toString
   }
 
-  def toXml: Elem = {
+  def toXml: Elem =
     getSingleton.toXml(this)
-  }
 
   def checkNames {
     runSafe {
       getSingleton match {
         case null =>
-        case s => s.checkFieldNames(this)
+        case s    => s.checkFieldNames(this)
       }
     }
   }
@@ -316,10 +319,9 @@ trait Mapper[A <: Mapper[A]]
     * into a fully-bound form that will interact with this instance.
     */
   def fieldMapperTransforms(
-      fieldTransform: (BaseOwnedMappedField[A] => NodeSeq))
-    : scala.collection.Seq[CssSel] = {
+      fieldTransform: (BaseOwnedMappedField[A] => NodeSeq)
+  ): scala.collection.Seq[CssSel] =
     getSingleton.fieldMapperTransforms(fieldTransform, this)
-  }
 
   private var fieldTransforms_i: scala.collection.Seq[CssSel] = Vector()
 
@@ -348,16 +350,15 @@ trait Mapper[A <: Mapper[A]]
 }
 
 trait LongKeyedMapper[OwnerType <: LongKeyedMapper[OwnerType]]
-    extends KeyedMapper[Long, OwnerType] with BaseLongKeyedMapper {
-  self: OwnerType =>
-}
+    extends KeyedMapper[Long, OwnerType]
+    with BaseLongKeyedMapper { self: OwnerType => }
 
 trait BaseKeyedMapper extends BaseMapper {
   type TheKeyType
   type KeyedMapperType <: KeyedMapper[TheKeyType, KeyedMapperType]
 
-  def primaryKeyField: MappedField[TheKeyType, MapperType] with IndexedField[
-      TheKeyType]
+  def primaryKeyField
+      : MappedField[TheKeyType, MapperType] with IndexedField[TheKeyType]
 
   /**
     * Delete the model from the RDBMS
@@ -401,7 +402,7 @@ trait CreatedTrait { self: BaseMapper =>
   protected class MyCreatedAt(obj: self.type)
       extends MappedDateTime[MapperType](obj.asInstanceOf[MapperType]) {
     override def defaultValue = Helpers.now
-    override def dbIndexed_? = createdAtIndexed_?
+    override def dbIndexed_?  = createdAtIndexed_?
   }
 }
 
@@ -434,7 +435,7 @@ trait UpdatedTrait { self: BaseMapper =>
       with LifecycleCallbacks {
     override def beforeSave() { super.beforeSave; this.set(Helpers.now) }
     override def defaultValue = Helpers.now
-    override def dbIndexed_? = updatedAtIndexed_?
+    override def dbIndexed_?  = updatedAtIndexed_?
   }
 }
 
@@ -446,13 +447,14 @@ trait CreatedUpdated extends CreatedTrait with UpdatedTrait {
 }
 
 trait KeyedMapper[KeyType, OwnerType <: KeyedMapper[KeyType, OwnerType]]
-    extends Mapper[OwnerType] with BaseKeyedMapper { self: OwnerType =>
+    extends Mapper[OwnerType]
+    with BaseKeyedMapper { self: OwnerType =>
 
-  type TheKeyType = KeyType
+  type TheKeyType      = KeyType
   type KeyedMapperType = OwnerType
 
-  def primaryKeyField: MappedField[KeyType, OwnerType] with IndexedField[
-      KeyType]
+  def primaryKeyField
+      : MappedField[KeyType, OwnerType] with IndexedField[KeyType]
   def getSingleton: KeyedMetaMapper[KeyType, OwnerType];
 
   override def comparePrimaryKeys(other: OwnerType) =
@@ -465,16 +467,15 @@ trait KeyedMapper[KeyType, OwnerType <: KeyedMapper[KeyType, OwnerType]]
 
   override def hashCode(): Int = primaryKeyField.get.hashCode
 
-  override def equals(other: Any): Boolean = {
+  override def equals(other: Any): Boolean =
     other match {
       case null => false
       case km: KeyedMapper[_, _]
           if this.getClass.isAssignableFrom(km.getClass) ||
-          km.getClass.isAssignableFrom(this.getClass) =>
+            km.getClass.isAssignableFrom(this.getClass) =>
         this.primaryKeyField == km.primaryKeyField
       case k => super.equals(k)
     }
-  }
 }
 
 /**
@@ -489,10 +490,11 @@ object StopValidationOnError {
       def apply(in: T): List[FieldError] = f(in)
     }
 
-  def apply[T](f: PartialFunction[T, List[FieldError]])
-    : PartialFunction[T, List[FieldError]] with StopValidationOnError[T] =
+  def apply[T](
+      f: PartialFunction[T, List[FieldError]]
+  ): PartialFunction[T, List[FieldError]] with StopValidationOnError[T] =
     new PartialFunction[T, List[FieldError]] with StopValidationOnError[T] {
       def apply(in: T): List[FieldError] = f(in)
-      def isDefinedAt(in: T): Boolean = f.isDefinedAt(in)
+      def isDefinedAt(in: T): Boolean    = f.isDefinedAt(in)
     }
 }

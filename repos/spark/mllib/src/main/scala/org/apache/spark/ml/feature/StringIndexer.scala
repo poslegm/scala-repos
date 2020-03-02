@@ -35,21 +35,27 @@ import org.apache.spark.util.collection.OpenHashMap
   * Base trait for [[StringIndexer]] and [[StringIndexerModel]].
   */
 private[feature] trait StringIndexerBase
-    extends Params with HasInputCol with HasOutputCol with HasHandleInvalid {
+    extends Params
+    with HasInputCol
+    with HasOutputCol
+    with HasHandleInvalid {
 
   /** Validates and transforms the input schema. */
   protected def validateAndTransformSchema(schema: StructType): StructType = {
-    val inputColName = $(inputCol)
+    val inputColName  = $(inputCol)
     val inputDataType = schema(inputColName).dataType
     require(
-        inputDataType == StringType || inputDataType.isInstanceOf[NumericType],
-        s"The input column $inputColName must be either string type or numeric type, " +
-        s"but got $inputDataType.")
-    val inputFields = schema.fields
+      inputDataType == StringType || inputDataType.isInstanceOf[NumericType],
+      s"The input column $inputColName must be either string type or numeric type, " +
+        s"but got $inputDataType."
+    )
+    val inputFields   = schema.fields
     val outputColName = $(outputCol)
-    require(inputFields.forall(_.name != outputColName),
-            s"Output column $outputColName already exists.")
-    val attr = NominalAttribute.defaultAttr.withName($(outputCol))
+    require(
+      inputFields.forall(_.name != outputColName),
+      s"Output column $outputColName already exists."
+    )
+    val attr         = NominalAttribute.defaultAttr.withName($(outputCol))
     val outputFields = inputFields :+ attr.toStructField()
     StructType(outputFields)
   }
@@ -66,7 +72,8 @@ private[feature] trait StringIndexerBase
   */
 @Experimental
 class StringIndexer(override val uid: String)
-    extends Estimator[StringIndexerModel] with StringIndexerBase
+    extends Estimator[StringIndexerModel]
+    with StringIndexerBase
     with DefaultParamsWritable {
 
   def this() = this(Identifiable.randomUID("strIdx"))
@@ -91,9 +98,8 @@ class StringIndexer(override val uid: String)
     copyValues(new StringIndexerModel(uid, labels).setParent(this))
   }
 
-  override def transformSchema(schema: StructType): StructType = {
+  override def transformSchema(schema: StructType): StructType =
     validateAndTransformSchema(schema)
-  }
 
   override def copy(extra: ParamMap): StringIndexer = defaultCopy(extra)
 }
@@ -117,7 +123,9 @@ object StringIndexer extends DefaultParamsReadable[StringIndexer] {
   */
 @Experimental
 class StringIndexerModel(override val uid: String, val labels: Array[String])
-    extends Model[StringIndexerModel] with StringIndexerBase with MLWritable {
+    extends Model[StringIndexerModel]
+    with StringIndexerBase
+    with MLWritable {
 
   import StringIndexerModel._
 
@@ -125,9 +133,9 @@ class StringIndexerModel(override val uid: String, val labels: Array[String])
     this(Identifiable.randomUID("strIdx"), labels)
 
   private val labelToIndex: OpenHashMap[String, Double] = {
-    val n = labels.length
+    val n   = labels.length
     val map = new OpenHashMap[String, Double](n)
-    var i = 0
+    var i   = 0
     while (i < n) {
       map.update(labels(i), i)
       i += 1
@@ -148,8 +156,9 @@ class StringIndexerModel(override val uid: String, val labels: Array[String])
   override def transform(dataset: DataFrame): DataFrame = {
     if (!dataset.schema.fieldNames.contains($(inputCol))) {
       logInfo(
-          s"Input column ${$(inputCol)} does not exist during transformation. " +
-          "Skip StringIndexerModel.")
+        s"Input column ${$(inputCol)} does not exist during transformation. " +
+          "Skip StringIndexerModel."
+      )
       return dataset
     }
     validateAndTransformSchema(dataset.schema)
@@ -169,26 +178,25 @@ class StringIndexerModel(override val uid: String, val labels: Array[String])
     // If we are skipping invalid records, filter them out.
     val filteredDataset = (getHandleInvalid) match {
       case "skip" => {
-          val filterer = udf { label: String =>
-            labelToIndex.contains(label)
-          }
-          dataset.where(filterer(dataset($(inputCol))))
-        }
+        val filterer = udf { label: String => labelToIndex.contains(label) }
+        dataset.where(filterer(dataset($(inputCol))))
+      }
       case _ => dataset
     }
-    filteredDataset.select(col("*"),
-                           indexer(dataset($(inputCol)).cast(StringType))
-                             .as($(outputCol), metadata))
+    filteredDataset.select(
+      col("*"),
+      indexer(dataset($(inputCol)).cast(StringType))
+        .as($(outputCol), metadata)
+    )
   }
 
-  override def transformSchema(schema: StructType): StructType = {
+  override def transformSchema(schema: StructType): StructType =
     if (schema.fieldNames.contains($(inputCol))) {
       validateAndTransformSchema(schema)
     } else {
       // If the input column does not exist during transformation, we skip StringIndexerModel.
       schema
     }
-  }
 
   override def copy(extra: ParamMap): StringIndexerModel = {
     val copied = new StringIndexerModel(uid, labels)
@@ -203,14 +211,14 @@ class StringIndexerModel(override val uid: String, val labels: Array[String])
 object StringIndexerModel extends MLReadable[StringIndexerModel] {
 
   private[StringIndexerModel] class StringIndexModelWriter(
-      instance: StringIndexerModel)
-      extends MLWriter {
+      instance: StringIndexerModel
+  ) extends MLWriter {
 
     private case class Data(labels: Array[String])
 
     override protected def saveImpl(path: String): Unit = {
       DefaultParamsWriter.saveMetadata(instance, path, sc)
-      val data = Data(instance.labels)
+      val data     = Data(instance.labels)
       val dataPath = new Path(path, "data").toString
       sqlContext
         .createDataFrame(Seq(data))
@@ -227,9 +235,9 @@ object StringIndexerModel extends MLReadable[StringIndexerModel] {
     override def load(path: String): StringIndexerModel = {
       val metadata = DefaultParamsReader.loadMetadata(path, sc, className)
       val dataPath = new Path(path, "data").toString
-      val data = sqlContext.read.parquet(dataPath).select("labels").head()
-      val labels = data.getAs[Seq[String]](0).toArray
-      val model = new StringIndexerModel(metadata.uid, labels)
+      val data     = sqlContext.read.parquet(dataPath).select("labels").head()
+      val labels   = data.getAs[Seq[String]](0).toArray
+      val model    = new StringIndexerModel(metadata.uid, labels)
       DefaultParamsReader.getAndSetParams(model, metadata)
       model
     }
@@ -253,8 +261,10 @@ object StringIndexerModel extends MLReadable[StringIndexerModel] {
   * @see [[StringIndexer]] for converting strings into indices
   */
 @Experimental
-class IndexToString private[ml](override val uid: String)
-    extends Transformer with HasInputCol with HasOutputCol
+class IndexToString private[ml] (override val uid: String)
+    extends Transformer
+    with HasInputCol
+    with HasOutputCol
     with DefaultParamsWritable {
 
   def this() =
@@ -276,25 +286,30 @@ class IndexToString private[ml](override val uid: String)
     * @group param
     */
   final val labels: StringArrayParam = new StringArrayParam(
-      this,
-      "labels",
-      "Optional array of labels specifying index-string mapping." +
-      " If not provided or if empty, then metadata from inputCol is used instead.")
+    this,
+    "labels",
+    "Optional array of labels specifying index-string mapping." +
+      " If not provided or if empty, then metadata from inputCol is used instead."
+  )
   setDefault(labels, Array.empty[String])
 
   /** @group getParam */
   final def getLabels: Array[String] = $(labels)
 
   override def transformSchema(schema: StructType): StructType = {
-    val inputColName = $(inputCol)
+    val inputColName  = $(inputCol)
     val inputDataType = schema(inputColName).dataType
-    require(inputDataType.isInstanceOf[NumericType],
-            s"The input column $inputColName must be a numeric type, " +
-            s"but got $inputDataType.")
-    val inputFields = schema.fields
+    require(
+      inputDataType.isInstanceOf[NumericType],
+      s"The input column $inputColName must be a numeric type, " +
+        s"but got $inputDataType."
+    )
+    val inputFields   = schema.fields
     val outputColName = $(outputCol)
-    require(inputFields.forall(_.name != outputColName),
-            s"Output column $outputColName already exists.")
+    require(
+      inputFields.forall(_.name != outputColName),
+      s"Output column $outputColName already exists."
+    )
     val outputFields = inputFields :+ StructField($(outputCol), StringType)
     StructType(outputFields)
   }
@@ -322,13 +337,13 @@ class IndexToString private[ml](override val uid: String)
     }
     val outputColName = $(outputCol)
     dataset.select(
-        col("*"),
-        indexer(dataset($(inputCol)).cast(DoubleType)).as(outputColName))
+      col("*"),
+      indexer(dataset($(inputCol)).cast(DoubleType)).as(outputColName)
+    )
   }
 
-  override def copy(extra: ParamMap): IndexToString = {
+  override def copy(extra: ParamMap): IndexToString =
     defaultCopy(extra)
-  }
 }
 
 @Since("1.6.0")

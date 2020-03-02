@@ -42,8 +42,8 @@ class TokenBucketTest extends FunSuite {
       assert(b.tryGet(50)) // -50 + 100 = 0
       assert(b.tryGet(50)) // -100 + 100 = 0
       assert(!b.tryGet(1)) // nope, at 0
-      b.put(1) // now at -99 + 100 = 1
-      assert(b.tryGet(1)) // back to 0
+      b.put(1)             // now at -99 + 100 = 1
+      assert(b.tryGet(1))  // back to 0
 
       tc.advance(1.second)
       // This is what you get for eating

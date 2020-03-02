@@ -4,7 +4,7 @@ object Main {
     def apply(u: Int => Int): Boolean = false
   }
   implicit def toRichA(a: A): RichA = null
-  val a = new A()
+  val a                             = new A()
   a(z => /*start*/ z /*end*/ )
 }
 //Int

@@ -4,7 +4,7 @@ object TrampolineUsage extends App {
 
   import scalaz._, Scalaz._, Free._
 
-  def quickSort[F[_]: Applicative, T : Order](xs: List[T]): Free[F, List[T]] = {
+  def quickSort[F[_]: Applicative, T: Order](xs: List[T]): Free[F, List[T]] =
     xs match {
       case Nil =>
         return_ {
@@ -19,10 +19,8 @@ object TrampolineUsage extends App {
           } yield ls ::: (x :: rs)
         }
     }
-  }
 
-  def runQuickSort[F[_]: Applicative : Comonad, T : Order](
-      xs: List[T]): List[T] =
+  def runQuickSort[F[_]: Applicative: Comonad, T: Order](xs: List[T]): List[T] =
     quickSort[F, T](xs).go(f => Comonad[F].copoint(f))(Applicative[F])
 
   val xs = List.fill(32)(util.Random.nextInt())

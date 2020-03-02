@@ -19,7 +19,7 @@ private[akka] case object EmptyPublisher extends Publisher[Nothing] {
     } catch {
       case _: SpecViolation ⇒ // nothing we can do
     }
-  def apply[T]: Publisher[T] = this.asInstanceOf[Publisher[T]]
+  def apply[T]: Publisher[T]    = this.asInstanceOf[Publisher[T]]
   override def toString: String = "already-completed-publisher"
 }
 
@@ -39,7 +39,7 @@ private[akka] final case class ErrorPublisher(t: Throwable, name: String)
     } catch {
       case _: SpecViolation ⇒ // nothing we can do
     }
-  def apply[T]: Publisher[T] = this.asInstanceOf[Publisher[T]]
+  def apply[T]: Publisher[T]    = this.asInstanceOf[Publisher[T]]
   override def toString: String = name
 }
 
@@ -47,7 +47,9 @@ private[akka] final case class ErrorPublisher(t: Throwable, name: String)
   * INTERNAL API
   */
 private[akka] final case class MaybePublisher[T](
-    promise: Promise[Option[T]], name: String)(implicit ec: ExecutionContext)
+    promise: Promise[Option[T]],
+    name: String
+)(implicit ec: ExecutionContext)
     extends Publisher[T] {
   import ReactiveStreamsCompliance._
 
@@ -96,14 +98,14 @@ private[akka] final case class MaybePublisher[T](
   */
 private[akka] case object CancelledSubscription extends Subscription {
   override def request(elements: Long): Unit = ()
-  override def cancel(): Unit = ()
+  override def cancel(): Unit                = ()
 }
 
 private[akka] final class CancellingSubscriber[T] extends Subscriber[T] {
-  override def onError(t: Throwable): Unit = ()
+  override def onError(t: Throwable): Unit        = ()
   override def onSubscribe(s: Subscription): Unit = s.cancel()
-  override def onComplete(): Unit = ()
-  override def onNext(t: T): Unit = ()
+  override def onComplete(): Unit                 = ()
+  override def onNext(t: T): Unit                 = ()
 }
 
 /**
@@ -113,9 +115,10 @@ private[akka] case object RejectAdditionalSubscribers
     extends Publisher[Nothing] {
   import ReactiveStreamsCompliance._
   override def subscribe(subscriber: Subscriber[_ >: Nothing]): Unit =
-    try rejectAdditionalSubscriber(subscriber, "Publisher") catch {
+    try rejectAdditionalSubscriber(subscriber, "Publisher")
+    catch {
       case _: SpecViolation ⇒ // nothing we can do
     }
-  def apply[T]: Publisher[T] = this.asInstanceOf[Publisher[T]]
+  def apply[T]: Publisher[T]    = this.asInstanceOf[Publisher[T]]
   override def toString: String = "already-subscribed-publisher"
 }

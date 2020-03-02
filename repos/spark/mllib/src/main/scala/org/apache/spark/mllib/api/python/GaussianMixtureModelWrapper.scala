@@ -28,7 +28,7 @@ import org.apache.spark.mllib.linalg.{Vector, Vectors}
   */
 private[python] class GaussianMixtureModelWrapper(model: GaussianMixtureModel) {
   val weights: Vector = Vectors.dense(model.weights)
-  val k: Int = weights.size
+  val k: Int          = weights.size
 
   /**
     * Returns gaussians as a List of Vectors and Matrices corresponding each MultivariateGaussian
@@ -40,9 +40,8 @@ private[python] class GaussianMixtureModelWrapper(model: GaussianMixtureModel) {
     SerDe.dumps(JavaConverters.seqAsJavaListConverter(modelGaussians).asJava)
   }
 
-  def predictSoft(point: Vector): Vector = {
+  def predictSoft(point: Vector): Vector =
     Vectors.dense(model.predictSoft(point))
-  }
 
   def save(sc: SparkContext, path: String): Unit = model.save(sc, path)
 }

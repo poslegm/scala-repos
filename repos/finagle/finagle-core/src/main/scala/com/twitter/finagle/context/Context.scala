@@ -14,7 +14,7 @@ import scala.collection.mutable
   * in a linked list; context lookup requires a linear search.
   */
 trait Context {
-  type Key [A]
+  type Key[A]
 
   sealed trait Env {
 
@@ -61,11 +61,11 @@ trait Context {
     * An empty environment. No keys are present.
     */
   object Empty extends Env {
-    def apply[A](key: Key[A]) = throw new NoSuchElementException
-    def get[A](key: Key[A]) = None
+    def apply[A](key: Key[A])                         = throw new NoSuchElementException
+    def get[A](key: Key[A])                           = None
     def getOrElse[A](key: Key[A], orElse: () => A): A = orElse()
-    def contains[A](key: Key[A]) = false
-    override def toString = "<empty com.twitter.finagle.context.Env>"
+    def contains[A](key: Key[A])                      = false
+    override def toString                             = "<empty com.twitter.finagle.context.Env>"
   }
 
   /**
@@ -139,7 +139,7 @@ trait Context {
 
   private[finagle] def env: Env = local() match {
     case Some(env) => env
-    case None => Empty
+    case None      => Empty
   }
 
   /**
@@ -180,7 +180,8 @@ trait Context {
     * Bind two keys and values in the scope of `fn`.
     */
   def let[A, B, R](key1: Key[A], value1: A, key2: Key[B], value2: B)(
-      fn: => R): R =
+      fn: => R
+  ): R =
     local.let(env.bound(key1, value1).bound(key2, value2))(fn)
 
   /**
@@ -264,7 +265,7 @@ final class MarshalledContext extends Context {
       extends Env {
     @volatile private var cachedEnv: Env = null
 
-    private def env[A](key: Key[A]): Env = {
+    private def env[A](key: Key[A]): Env =
       if (cachedEnv != null) cachedEnv
       else if (key.marshalId != marshalId) next
       else
@@ -277,9 +278,8 @@ final class MarshalledContext extends Context {
             // Should we log some warnings?
             next
         }
-    }
 
-    def apply[A](key: Key[A]): A = env(key).apply(key)
+    def apply[A](key: Key[A]): A       = env(key).apply(key)
     def get[A](key: Key[A]): Option[A] = env(key).get(key)
     def getOrElse[A](key: Key[A], orElse: () => A): A =
       env(key).getOrElse(key, orElse)
@@ -364,7 +364,7 @@ final class MarshalledContext extends Context {
 
     private[this] def copy(buf: Buf): Buf = buf match {
       case ChannelBufferBuf(cb) => Buf.ByteBuffer.Shared(cb.toByteBuffer)
-      case _ => buf
+      case _                    => buf
     }
   }
 }
