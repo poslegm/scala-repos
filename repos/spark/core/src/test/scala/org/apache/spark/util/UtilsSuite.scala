@@ -511,7 +511,8 @@ class UtilsSuite extends SparkFunSuite with ResetSystemProperties with Logging {
         .nonLocalPaths("local:/C:/some/path.jar", testWindows = true) === Array.empty
     )
     assert(
-      Utils.nonLocalPaths("local:///C:/some/path.jar", testWindows = true) === Array.empty
+      Utils
+        .nonLocalPaths("local:///C:/some/path.jar", testWindows = true) === Array.empty
     )
     assert(
       Utils.nonLocalPaths(

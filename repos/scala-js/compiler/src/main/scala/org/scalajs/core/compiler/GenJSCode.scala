@@ -465,7 +465,10 @@ abstract class GenJSCode
 
       // Generate fields (and add to methods + ctors)
       val generatedMembers = {
-        genClassFields(cd) ::: genJSClassConstructor(sym, constructorTrees.toList) :: genJSClassDispatchers(
+        genClassFields(cd) ::: genJSClassConstructor(
+          sym,
+          constructorTrees.toList
+        ) :: genJSClassDispatchers(
           sym,
           dispatchMethodNames.result().distinct
         ) ::: generatedMethods.toList ::: exports

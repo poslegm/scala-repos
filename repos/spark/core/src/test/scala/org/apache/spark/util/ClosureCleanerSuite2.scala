@@ -162,9 +162,7 @@ class ClosureCleanerSuite2
       (1 to i).map(x => x + 1).filter(x => x > 5)
     }
     val closure4 = (j: Int) => {
-      (1 to j).flatMap { x =>
-        (1 to x).flatMap(y => (1 to y).map(z => z + 1))
-      }
+      (1 to j).flatMap(x => (1 to x).flatMap(y => (1 to y).map(z => z + 1)))
     }
     val inner1 = getInnerClosureClasses(closure1)
     val inner2 = getInnerClosureClasses(closure2)
@@ -553,9 +551,7 @@ class ClosureCleanerSuite2
     // This is non-serializable no matter how many levels we nest it
     val closure5 = (m: Int) => {
       (1 to m).foreach { x =>
-        (1 to x).foreach { y =>
-          (1 to y).foreach(z => someSerializableValue)
-        }
+        (1 to x).foreach(y => (1 to y).foreach(z => someSerializableValue))
       }
     }
 

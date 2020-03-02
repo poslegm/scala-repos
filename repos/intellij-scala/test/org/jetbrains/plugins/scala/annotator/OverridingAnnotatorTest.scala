@@ -23,7 +23,8 @@ class OverridingAnnotatorTest extends SimpleTestCase {
 
   def testSyntheticUnapply(): Unit =
     assertMatches(
-      messages("""
+      messages(
+        """
         |trait Test {
         |  trait Tree
         |  trait Name
@@ -40,7 +41,8 @@ class OverridingAnnotatorTest extends SimpleTestCase {
         |    case Select(a, b) => // cannot resolve extractor
         |  }
         |}
-      """.stripMargin)
+      """.stripMargin
+      )
     ) {
       case Nil =>
     }

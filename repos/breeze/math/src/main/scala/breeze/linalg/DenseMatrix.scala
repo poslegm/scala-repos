@@ -1116,10 +1116,9 @@ object DenseMatrix
     */
   implicit def canMapCols[V, Res: ClassTag: Zero](
       implicit implSet: OpSet.InPlaceImpl2[DenseVector[Res], DenseVector[Res]]
-  )
-      : CanCollapseAxis[DenseMatrix[V], _1.type, DenseVector[V], DenseVector[
-        Res
-      ], DenseMatrix[Res]] =
+  ): CanCollapseAxis[DenseMatrix[V], _1.type, DenseVector[V], DenseVector[
+    Res
+  ], DenseMatrix[Res]] =
     new CanCollapseAxis[DenseMatrix[V], Axis._1.type, DenseVector[V], DenseVector[
       Res
     ], DenseMatrix[Res]] {

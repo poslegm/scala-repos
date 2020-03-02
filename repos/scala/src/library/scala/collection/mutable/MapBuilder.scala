@@ -22,7 +22,8 @@ package mutable
   *  @since 2.8
   */
 class MapBuilder[
-    A, B,
+    A,
+    B,
     Coll <: scala.collection.GenMap[A, B] with scala.collection.GenMapLike[
       A,
       B,

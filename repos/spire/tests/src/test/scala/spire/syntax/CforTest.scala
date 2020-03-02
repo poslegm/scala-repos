@@ -17,9 +17,7 @@ class CforTest extends SpireProperties {
 
   property("nested cfor") {
     val s = mutable.Set.empty[Int]
-    cfor(0)(_ < 10, _ + 1) { x =>
-      cfor(10)(_ < 100, _ + 10)(y => s.add(x + y))
-    }
+    cfor(0)(_ < 10, _ + 1)(x => cfor(10)(_ < 100, _ + 10)(y => s.add(x + y)))
     s shouldBe (10 to 99).toSet
   }
 

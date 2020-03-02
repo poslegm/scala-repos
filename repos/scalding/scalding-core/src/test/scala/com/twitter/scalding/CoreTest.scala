@@ -603,9 +603,8 @@ class MergeTest extends WordSpec with Matchers {
     }
     val big   = parsed.filter(_._1 > 0.5)
     val small = parsed.filter(_._1 <= 0.5)
-    val golden = (big ++ small).groupBy(_._1).mapValues { itup =>
-      (itup.map(_._2).max)
-    }
+    val golden =
+      (big ++ small).groupBy(_._1).mapValues(itup => (itup.map(_._2).max))
     //Now we have the expected input and output:
     JobTest(new MergeTestJob(_))
       .arg("in", "fakeInput")
@@ -1454,7 +1453,8 @@ class ForceToDiskTest extends WordSpec with Matchers {
       .sink[(Int, Int, Int)](Tsv("out")) { outBuf =>
         (idx + ": run correctly when combined with joinWithTiny") in {
           outBuf should have size 2000
-          val correct = (1 to 1000).flatMap(y => List((1, 1, y), (-1, 1, y))).sorted
+          val correct =
+            (1 to 1000).flatMap(y => List((1, 1, y), (-1, 1, y))).sorted
           outBuf.toList.sorted shouldBe correct
         }
         idx += 1

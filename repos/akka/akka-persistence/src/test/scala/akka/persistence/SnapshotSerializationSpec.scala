@@ -69,8 +69,8 @@ class SnapshotSerializationSpec
         "leveldb",
         "SnapshotSerializationSpec",
         serialization = "off",
-        extraConfig =
-          Some("""
+        extraConfig = Some(
+          """
     akka.actor {
       serializers {
         my-snapshot = "akka.persistence.SnapshotSerializationSpec$MySerializer"
@@ -79,7 +79,8 @@ class SnapshotSerializationSpec
         "akka.persistence.SnapshotSerializationSpec$SerializationMarker" = my-snapshot
       }
     }
-  """)
+  """
+        )
       )
     )
     with ImplicitSender {

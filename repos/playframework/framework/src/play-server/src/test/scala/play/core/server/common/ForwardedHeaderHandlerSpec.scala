@@ -142,15 +142,15 @@ class ForwardedHeaderHandlerSpec extends Specification {
       handler(
         version("rfc7239") ++ trustedProxies("192.168.1.1/24", "127.0.0.1")
       ).remoteConnection(
-          localhost,
-          false,
-          headers("""
+        localhost,
+        false,
+        headers("""
           |Forwarded: for="_gazonk"
           |Forwarded: For="[2001:db8:cafe::17]:4711"
           |Forwarded: for=192.0.2.60;proto=http;by=203.0.113.43
           |Forwarded: for=192.168.1.10, for=127.0.0.1
         """.stripMargin)
-        ) mustEqual ConnectionInfo(addr("192.0.2.60"), false)
+      ) mustEqual ConnectionInfo(addr("192.0.2.60"), false)
     }
 
     "get first untrusted proxy protocol with rfc7239 with trusted localhost proxy" in {
@@ -171,15 +171,15 @@ class ForwardedHeaderHandlerSpec extends Specification {
       handler(
         version("rfc7239") ++ trustedProxies("192.168.1.1/24", "127.0.0.1")
       ).remoteConnection(
-          localhost,
-          false,
-          headers("""
+        localhost,
+        false,
+        headers("""
           |Forwarded: for="_gazonk"
           |Forwarded: For="[2001:db8:cafe::17]:4711"
           |Forwarded: for=192.0.2.60;proto=https;by=203.0.113.43
           |Forwarded: for=192.168.1.10, for=127.0.0.1
         """.stripMargin)
-        ) mustEqual ConnectionInfo(addr("192.0.2.60"), true)
+      ) mustEqual ConnectionInfo(addr("192.0.2.60"), true)
     }
 
     "handle IPv6 addresses with rfc7239" in {
@@ -208,26 +208,26 @@ class ForwardedHeaderHandlerSpec extends Specification {
       handler(
         version("rfc7239") ++ trustedProxies("192.168.1.1/24", "127.0.0.1")
       ).remoteConnection(
-          localhost,
-          false,
-          headers("""
+        localhost,
+        false,
+        headers("""
           |Forwarded: for="_gazonk"
           |Forwarded: for=192.168.1.10, for=127.0.0.1
         """.stripMargin)
-        ) mustEqual ConnectionInfo(addr("192.168.1.10"), false)
+      ) mustEqual ConnectionInfo(addr("192.168.1.10"), false)
     }
 
     "ignore unknown addresses with rfc7239" in {
       handler(
         version("rfc7239") ++ trustedProxies("192.168.1.1/24", "127.0.0.1")
       ).remoteConnection(
-          localhost,
-          false,
-          headers("""
+        localhost,
+        false,
+        headers("""
           |Forwarded: for=unknown
           |Forwarded: for=192.168.1.10, for=127.0.0.1
         """.stripMargin)
-        ) mustEqual ConnectionInfo(addr("192.168.1.10"), false)
+      ) mustEqual ConnectionInfo(addr("192.168.1.10"), false)
     }
 
     "ignore rfc7239 header with empty addresses" in {
@@ -241,39 +241,39 @@ class ForwardedHeaderHandlerSpec extends Specification {
       handler(
         version("rfc7239") ++ trustedProxies("192.168.1.1/24", "127.0.0.1")
       ).remoteConnection(
-          localhost,
-          false,
-          headers("""
+        localhost,
+        false,
+        headers("""
           |Forwarded: for=, for=
           |Forwarded: for=192.168.1.10, for=127.0.0.1
         """.stripMargin)
-        ) mustEqual ConnectionInfo(addr("192.168.1.10"), false)
+      ) mustEqual ConnectionInfo(addr("192.168.1.10"), false)
     }
 
     "ignore rfc7239 header field with missing = sign" in {
       handler(
         version("rfc7239") ++ trustedProxies("192.168.1.1/24", "127.0.0.1")
       ).remoteConnection(
-          localhost,
-          false,
-          headers("""
+        localhost,
+        false,
+        headers("""
           |Forwarded: for
           |Forwarded: for=192.168.1.10, for=127.0.0.1
         """.stripMargin)
-        ) mustEqual ConnectionInfo(addr("192.168.1.10"), false)
+      ) mustEqual ConnectionInfo(addr("192.168.1.10"), false)
     }
 
     "ignore rfc7239 header field with two == signs" in {
       handler(
         version("rfc7239") ++ trustedProxies("192.168.1.1/24", "127.0.0.1")
       ).remoteConnection(
-          localhost,
-          false,
-          headers("""
+        localhost,
+        false,
+        headers("""
           |Forwarded: for==
           |Forwarded: for=192.168.1.10, for=127.0.0.1
         """.stripMargin)
-        ) mustEqual ConnectionInfo(addr("192.168.1.10"), false)
+      ) mustEqual ConnectionInfo(addr("192.168.1.10"), false)
     }
 
     // This quotation handling is not RFC-compliant but we want to make sure we
@@ -282,13 +282,13 @@ class ForwardedHeaderHandlerSpec extends Specification {
       handler(
         version("rfc7239") ++ trustedProxies("192.168.1.1/24", "127.0.0.1")
       ).remoteConnection(
-          localhost,
-          false,
-          headers("""
+        localhost,
+        false,
+        headers("""
           |Forwarded: for==
           |Forwarded: for=192.168.1.10, for=127.0.0.1
         """.stripMargin)
-        ) mustEqual ConnectionInfo(addr("192.168.1.10"), false)
+      ) mustEqual ConnectionInfo(addr("192.168.1.10"), false)
     }
 
     // This quotation handling is not RFC-compliant but we want to make sure we
@@ -297,13 +297,13 @@ class ForwardedHeaderHandlerSpec extends Specification {
       handler(
         version("rfc7239") ++ trustedProxies("192.168.1.1/24", "127.0.0.1")
       ).remoteConnection(
-          localhost,
-          false,
-          headers("""
+        localhost,
+        false,
+        headers("""
           |Forwarded: for=""
           |Forwarded: for=192.168.1.10, for=127.0.0.1
         """.stripMargin)
-        ) mustEqual ConnectionInfo(addr("192.168.1.10"), false)
+      ) mustEqual ConnectionInfo(addr("192.168.1.10"), false)
     }
 
     // This quotation handling is not RFC-compliant but we want to make sure we
@@ -312,16 +312,16 @@ class ForwardedHeaderHandlerSpec extends Specification {
       handler(
         version("rfc7239") ++ trustedProxies("192.168.1.1/24", "127.0.0.1")
       ).remoteConnection(
-          localhost,
-          false,
-          headers(
-            """
+        localhost,
+        false,
+        headers(
+          """
           |Forwarded: for=""" + '"' + '"' +
-              '"' + """
+            '"' + """
           |Forwarded: for=192.168.1.10, for=127.0.0.1
         """.stripMargin
-          )
-        ) mustEqual ConnectionInfo(addr("192.168.1.10"), false)
+        )
+      ) mustEqual ConnectionInfo(addr("192.168.1.10"), false)
     }
 
     "default to trusting IPv4 and IPv6 localhost with x-forwarded when there is no config" in {
@@ -350,51 +350,51 @@ class ForwardedHeaderHandlerSpec extends Specification {
       handler(
         version("x-forwarded") ++ trustedProxies("192.168.1.1/24", "127.0.0.1")
       ).remoteConnection(
-          localhost,
-          false,
-          headers("""
+        localhost,
+        false,
+        headers("""
           |X-Forwarded-For: 203.0.113.43, 192.168.1.43
           |X-Forwarded-Proto: https, http
         """.stripMargin)
-        ) mustEqual ConnectionInfo(addr("203.0.113.43"), true)
+      ) mustEqual ConnectionInfo(addr("203.0.113.43"), true)
     }
 
     "not treat the first x-forwarded entry as a proxy even if it is in trustedProxies range" in {
       handler(
         version("x-forwarded") ++ trustedProxies("192.168.1.1/24", "127.0.0.1")
       ).remoteConnection(
-          localhost,
-          true,
-          headers("""
+        localhost,
+        true,
+        headers("""
           |X-Forwarded-For: 192.168.1.2, 192.168.1.3
           |X-Forwarded-Proto: http, http
         """.stripMargin)
-        ) mustEqual ConnectionInfo(addr("192.168.1.2"), false)
+      ) mustEqual ConnectionInfo(addr("192.168.1.2"), false)
     }
 
     "assume http protocol with x-forwarded when proto list is missing" in {
       handler(
         version("x-forwarded") ++ trustedProxies("192.168.1.1/24", "127.0.0.1")
       ).remoteConnection(
-          localhost,
-          false,
-          headers("""
+        localhost,
+        false,
+        headers("""
           |X-Forwarded-For: 203.0.113.43
         """.stripMargin)
-        ) mustEqual ConnectionInfo(addr("203.0.113.43"), false)
+      ) mustEqual ConnectionInfo(addr("203.0.113.43"), false)
     }
 
     "assume http protocol with x-forwarded when proto list is shorter than for list" in {
       handler(
         version("x-forwarded") ++ trustedProxies("192.168.1.1/24", "127.0.0.1")
       ).remoteConnection(
-          localhost,
-          false,
-          headers("""
+        localhost,
+        false,
+        headers("""
           |X-Forwarded-For: 203.0.113.43, 192.168.1.43
           |X-Forwarded-Proto: https
         """.stripMargin)
-        ) mustEqual ConnectionInfo(addr("203.0.113.43"), false)
+      ) mustEqual ConnectionInfo(addr("203.0.113.43"), false)
     }
 
     "assume http protocol with x-forwarded when proto list is shorter than for list and all addresses are trusted" in {
@@ -413,13 +413,13 @@ class ForwardedHeaderHandlerSpec extends Specification {
       handler(
         version("x-forwarded") ++ trustedProxies("192.168.1.1/24", "127.0.0.1")
       ).remoteConnection(
-          localhost,
-          false,
-          headers("""
+        localhost,
+        false,
+        headers("""
           |X-Forwarded-For: 203.0.113.43, 192.168.1.43
           |X-Forwarded-Proto: https, https, https
         """.stripMargin)
-        ) mustEqual ConnectionInfo(addr("203.0.113.43"), false)
+      ) mustEqual ConnectionInfo(addr("203.0.113.43"), false)
     }
 
     "assume http protocol with x-forwarded when proto is unrecognized" in {

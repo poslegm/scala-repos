@@ -145,7 +145,8 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
 
     val queryFeatures: Vector[Array[Double]] = queryList.toVector
     // productFeatures may not contain the requested item
-    .map(item => productFeatures.get(item)).flatten
+      .map(item => productFeatures.get(item))
+      .flatten
 
     val whiteList: Option[Set[Int]] =
       query.whiteList.map(set => set.map(model.itemStringIntMap.get(_)).flatten)

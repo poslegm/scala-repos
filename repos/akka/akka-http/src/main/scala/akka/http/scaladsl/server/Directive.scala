@@ -65,9 +65,9 @@ abstract class Directive[L](implicit val ev: Tuple[L]) {
     * (which will then we wrapped into a [[scala.Tuple1]]).
     */
   def tmap[R](f: L ⇒ R)(implicit tupler: Tupler[R]): Directive[tupler.Out] =
-    Directive[tupler.Out] { inner ⇒
-      tapply(values ⇒ inner(tupler(f(values))))
-    }(tupler.OutIsTuple)
+    Directive[tupler.Out](inner ⇒ tapply(values ⇒ inner(tupler(f(values)))))(
+      tupler.OutIsTuple
+    )
 
   /**
     * Flatmaps this directive using the given function.

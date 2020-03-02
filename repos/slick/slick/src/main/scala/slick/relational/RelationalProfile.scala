@@ -112,12 +112,11 @@ trait RelationalProfile
     def findBy[P](f: (T => Rep[P]))(
         implicit ashape: Shape[ColumnsShapeLevel, Rep[P], P, Rep[P]],
         pshape: Shape[ColumnsShapeLevel, P, P, _]
-    )
-        : CompiledFunction[Rep[P] => Query[T, U, Seq], Rep[P], P, Query[
-          T,
-          U,
-          Seq
-        ], Seq[U]] = {
+    ): CompiledFunction[Rep[P] => Query[T, U, Seq], Rep[P], P, Query[
+      T,
+      U,
+      Seq
+    ], Seq[U]] = {
       import self.api._
       Compiled { (p: Rep[P]) =>
         (q: Query[T, U, Seq]).filter(table =>

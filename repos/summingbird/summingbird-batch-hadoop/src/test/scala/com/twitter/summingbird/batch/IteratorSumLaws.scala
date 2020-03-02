@@ -41,8 +41,8 @@ object IteratorSumLaws extends Properties("IteratorSumLaws") {
   property("groupedSum works like groupBy + sum on sorted values") = forAll {
     (in: List[(Int, Long)]) =>
       val sorted = in.sorted
-      groupedSum(sorted.iterator).toMap == in.groupBy(_._1).mapValues {
-        kvs => kvs.map(_._2).sum
+      groupedSum(sorted.iterator).toMap == in.groupBy(_._1).mapValues { kvs =>
+        kvs.map(_._2).sum
       }
   }
   property("partials passes through keys-values") = forAll {

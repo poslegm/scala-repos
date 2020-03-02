@@ -360,7 +360,9 @@ trait JdbcActionComponent extends SqlActionComponent { self: JdbcProfile =>
       *                      set, poviding you with a chance to insert additional rows after
       *                      seeing all results. Only `end` (to check for this special event) and
       *                      `insert` may be called in the ResultSetMutator in this case. */
-    def mutate(sendEndMarker: Boolean = false): ProfileAction[Nothing, Streaming[
+    def mutate(
+        sendEndMarker: Boolean = false
+    ): ProfileAction[Nothing, Streaming[
       ResultSetMutator[T]
     ], Effect.Read with Effect.Write] = {
       val sql = tree

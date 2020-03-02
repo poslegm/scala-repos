@@ -52,9 +52,10 @@ case class LeastSquaresRegressionResult(
 }
 
 object leastSquares extends UFunc {
-  implicit val matrixVectorWithWorkArray: Impl3[DenseMatrix[Double], DenseVector[
-    Double
-  ], Array[Double], LeastSquaresRegressionResult] =
+  implicit val matrixVectorWithWorkArray
+      : Impl3[DenseMatrix[Double], DenseVector[
+        Double
+      ], Array[Double], LeastSquaresRegressionResult] =
     new Impl3[DenseMatrix[Double], DenseVector[Double], Array[Double], LeastSquaresRegressionResult] {
       def apply(
           data: DenseMatrix[Double],
@@ -68,9 +69,10 @@ object leastSquares extends UFunc {
         )
     }
 
-  implicit val matrixVectorSpecifiedWork: Impl3[DenseMatrix[Double], DenseVector[
-    Double
-  ], Int, LeastSquaresRegressionResult] =
+  implicit val matrixVectorSpecifiedWork
+      : Impl3[DenseMatrix[Double], DenseVector[
+        Double
+      ], Int, LeastSquaresRegressionResult] =
     new Impl3[DenseMatrix[Double], DenseVector[Double], Int, LeastSquaresRegressionResult] {
       def apply(
           data: DenseMatrix[Double],
@@ -100,9 +102,10 @@ object leastSquares extends UFunc {
 }
 
 object leastSquaresDestructive extends UFunc {
-  implicit val matrixVectorWithWorkArray: Impl3[DenseMatrix[Double], DenseVector[
-    Double
-  ], Array[Double], LeastSquaresRegressionResult] =
+  implicit val matrixVectorWithWorkArray
+      : Impl3[DenseMatrix[Double], DenseVector[
+        Double
+      ], Array[Double], LeastSquaresRegressionResult] =
     new Impl3[DenseMatrix[Double], DenseVector[Double], Array[Double], LeastSquaresRegressionResult] {
       def apply(
           data: DenseMatrix[Double],
@@ -112,9 +115,10 @@ object leastSquaresDestructive extends UFunc {
         leastSquaresImplementation.doLeastSquares(data, outputs, workArray)
     }
 
-  implicit val matrixVectorSpecifiedWork: Impl3[DenseMatrix[Double], DenseVector[
-    Double
-  ], Int, LeastSquaresRegressionResult] =
+  implicit val matrixVectorSpecifiedWork
+      : Impl3[DenseMatrix[Double], DenseVector[
+        Double
+      ], Int, LeastSquaresRegressionResult] =
     new Impl3[DenseMatrix[Double], DenseVector[Double], Int, LeastSquaresRegressionResult] {
       def apply(
           data: DenseMatrix[Double],

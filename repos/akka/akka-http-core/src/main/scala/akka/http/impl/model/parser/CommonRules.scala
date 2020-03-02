@@ -25,9 +25,13 @@ private[parser] trait CommonRules {
   // http://tools.ietf.org/html/rfc7230#section-3.2.3
   // ******************************************************************************************
 
-  def OWS = rule(zeroOrMore(optional(CRLF) ~ oneOrMore(WSP))) // extended with `obs-fold`
+  def OWS =
+    rule(
+      zeroOrMore(optional(CRLF) ~ oneOrMore(WSP))
+    ) // extended with `obs-fold`
 
-  def RWS = rule(oneOrMore(optional(CRLF) ~ oneOrMore(WSP))) // extended with `obs-fold`
+  def RWS =
+    rule(oneOrMore(optional(CRLF) ~ oneOrMore(WSP))) // extended with `obs-fold`
 
   // ******************************************************************************************
   // http://tools.ietf.org/html/rfc7230#section-3.2.6
@@ -145,7 +149,10 @@ private[parser] trait CommonRules {
   // http://tools.ietf.org/html/rfc7231#section-5.3.1
   // ******************************************************************************************
 
-  def weight = rule(ws(';') ~ ws('q') ~ ws('=') ~ qvalue) // a bit more lenient than the spec
+  def weight =
+    rule(
+      ws(';') ~ ws('q') ~ ws('=') ~ qvalue
+    ) // a bit more lenient than the spec
 
   def qvalue = rule {
     // a bit more lenient than the spec

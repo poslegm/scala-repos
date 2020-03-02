@@ -277,7 +277,8 @@ trait TypedPipe[+T] extends Serializable {
     * The latter creates 1 map/reduce phase rather than 2
     */
   @annotation.implicitNotFound(
-    msg = "For distinct method to work, the type in TypedPipe must have an Ordering."
+    msg =
+      "For distinct method to work, the type in TypedPipe must have an Ordering."
   )
   def distinct(implicit ord: Ordering[_ >: T]): TypedPipe[T] =
     asKeys(ord.asInstanceOf[Ordering[T]]).sum.keys
@@ -286,7 +287,8 @@ trait TypedPipe[+T] extends Serializable {
     * Returns the set of distinct elements identified by a given lambda extractor in the TypedPipe
     */
   @annotation.implicitNotFound(
-    msg = "For distinctBy method to work, the type to distinct on in the TypedPipe must have an Ordering."
+    msg =
+      "For distinctBy method to work, the type to distinct on in the TypedPipe must have an Ordering."
   )
   def distinctBy[U](fn: T => U, numReducers: Option[Int] = None)(
       implicit ord: Ordering[_ >: U]
@@ -388,7 +390,9 @@ trait TypedPipe[+T] extends Serializable {
 
   /** flatten an Iterable */
   def flatten[U](implicit ev: T <:< TraversableOnce[U]): TypedPipe[U] =
-    flatMap(_.asInstanceOf[TraversableOnce[U]]) // don't use ev which may not be serializable
+    flatMap(
+      _.asInstanceOf[TraversableOnce[U]]
+    ) // don't use ev which may not be serializable
 
   /**
     * flatten just the values

@@ -27,7 +27,9 @@ case class ScalaCompilerSettings(
   def toXml: Seq[Node] =
     when(compileOrder != DefaultComipileOrder)(
       <option name="compilerOrder" value={compileOrder}/>
-    ) ++ when(!warnings)(<option name="warnings" value={warnings.toString}/>) ++ when(deprecationWarnings)(
+    ) ++ when(!warnings)(<option name="warnings" value={warnings.toString}/>) ++ when(
+      deprecationWarnings
+    )(
       <option name="deprecationWarnings" value={deprecationWarnings.toString}/>
     ) ++ when(uncheckedWarnings)(<option name="uncheckedWarnings" value={
       uncheckedWarnings.toString

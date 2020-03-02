@@ -343,9 +343,11 @@ private object TestUserClosuresActuallyCleaned {
       }
       .count()
   def testForeach(rdd: RDD[Int]): Unit =
-    rdd.foreach(_ => return)
+    rdd.foreach(_ => return
+    )
   def testForeachPartition(rdd: RDD[Int]): Unit =
-    rdd.foreachPartition(_ => return)
+    rdd.foreachPartition(_ => return
+    )
   def testReduce(rdd: RDD[Int]): Unit =
     rdd.reduce { case (_, _) => return; 1 }
   def testTreeReduce(rdd: RDD[Int]): Unit =
@@ -394,9 +396,11 @@ private object TestUserClosuresActuallyCleaned {
 
   // Test async RDD actions
   def testForeachAsync(rdd: RDD[Int]): Unit =
-    rdd.foreachAsync(_ => return)
+    rdd.foreachAsync(_ => return
+    )
   def testForeachPartitionAsync(rdd: RDD[Int]): Unit =
-    rdd.foreachPartitionAsync(_ => return)
+    rdd.foreachPartitionAsync(_ => return
+    )
 
   // Test SparkContext runJob
   def testRunJob1(sc: SparkContext): Unit = {

@@ -446,27 +446,26 @@ trait Tuples {
         _16: (P => PP) = identity[P] _,
         _17: (Q => QQ) = identity[Q] _,
         _18: (R => RR) = identity[R] _
-    )
-        : (
-            AA,
-            BB,
-            CC,
-            DD,
-            EE,
-            FF,
-            GG,
-            HH,
-            II,
-            JJ,
-            KK,
-            LL,
-            MM,
-            NN,
-            OO,
-            PP,
-            QQ,
-            RR
-        ) =
+    ): (
+        AA,
+        BB,
+        CC,
+        DD,
+        EE,
+        FF,
+        GG,
+        HH,
+        II,
+        JJ,
+        KK,
+        LL,
+        MM,
+        NN,
+        OO,
+        PP,
+        QQ,
+        RR
+    ) =
       (
         _1(value._1),
         _2(value._2),

@@ -5,9 +5,7 @@ import spire.implicits._
 
 class Loops {
   def nested(): Unit =
-    cfor(0)(_ < 5, _ + 1) { y =>
-      cfor(0)(_ < 3, _ + 1)(x => println((x, y)))
-    }
+    cfor(0)(_ < 5, _ + 1)(y => cfor(0)(_ < 3, _ + 1)(x => println((x, y))))
 
   def simple(): Unit =
     cfor(0)(_ < 10, _ + 1)(i => println(i))

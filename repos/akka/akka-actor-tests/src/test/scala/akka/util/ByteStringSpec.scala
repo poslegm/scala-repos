@@ -482,14 +482,10 @@ class ByteStringSpec extends WordSpec with Matchers with Checkers {
         }
       }
       "calling dropWhile" in {
-        check { (a: ByteString, b: Byte) ⇒
-          likeVector(a)(_.dropWhile(_ != b))
-        }
+        check((a: ByteString, b: Byte) ⇒ likeVector(a)(_.dropWhile(_ != b)))
       }
       "calling indexWhere" in {
-        check { (a: ByteString, b: Byte) ⇒
-          likeVector(a)(_.indexWhere(_ == b))
-        }
+        check((a: ByteString, b: Byte) ⇒ likeVector(a)(_.indexWhere(_ == b)))
       }
       "calling indexOf" in {
         check((a: ByteString, b: Byte) ⇒ likeVector(a)(_.indexOf(b)))
@@ -610,9 +606,7 @@ class ByteStringSpec extends WordSpec with Matchers with Checkers {
         }
       }
       "calling indexWhere" in {
-        check { (a: ByteString, b: Byte) ⇒
-          likeVecIt(a)(_.indexWhere(_ == b))
-        }
+        check((a: ByteString, b: Byte) ⇒ likeVecIt(a)(_.indexWhere(_ == b)))
       }
       "calling indexOf" in {
         check((a: ByteString, b: Byte) ⇒ likeVecIt(a)(_.indexOf(b)))

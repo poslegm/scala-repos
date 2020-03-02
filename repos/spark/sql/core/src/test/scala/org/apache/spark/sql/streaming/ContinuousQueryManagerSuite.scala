@@ -235,7 +235,9 @@ class ContinuousQueryManagerSuite
       )
 
       // After that query is stopped, awaitAnyTerm should throw exception
-      eventually(Timeout(streamingTimeout))(require(!q3.isActive)) // wait for query to stop
+      eventually(Timeout(streamingTimeout))(
+        require(!q3.isActive)
+      ) // wait for query to stop
       testAwaitAnyTermination(
         ExpectException[SparkException],
         awaitTimeout = 100 milliseconds,

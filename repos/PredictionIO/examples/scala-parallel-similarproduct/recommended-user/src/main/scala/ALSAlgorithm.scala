@@ -136,7 +136,8 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
 
     val queryFeatures: Vector[Array[Double]] = queryList.toVector
     // similarUserFeatures may not contain the requested user
-    .map(similarUser => similarUserFeatures.get(similarUser)).flatten
+      .map(similarUser => similarUserFeatures.get(similarUser))
+      .flatten
 
     val whiteList: Option[Set[Int]] = query.whiteList.map(set =>
       set.map(model.similarUserStringIntMap.get).flatten

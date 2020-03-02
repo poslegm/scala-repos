@@ -84,8 +84,8 @@ class TypedSimilarityTest extends WordSpec with Matchers {
 
   def cosineOf(es: Seq[(Int, Int)]): Map[(Int, Int), Double] = {
     // Get followers of each node:
-    val matrix: Map[Int, Map[Int, Double]] = es.groupBy(_._2).mapValues {
-      seq => seq.map { case (from, to) => (from, 1.0) }.toMap
+    val matrix: Map[Int, Map[Int, Double]] = es.groupBy(_._2).mapValues { seq =>
+      seq.map { case (from, to) => (from, 1.0) }.toMap
     }
     for ((k1, v1) <- matrix if (k1 % 2 == 0);
          (k2, v2) <- matrix if (k2 % 2 == 1))
@@ -96,8 +96,8 @@ class TypedSimilarityTest extends WordSpec with Matchers {
 
   def weightedCosineOf(es: Seq[(Int, Int, Double)]): Map[(Int, Int), Double] = {
     // Get followers of each node:
-    val matrix: Map[Int, Map[Int, Double]] = es.groupBy(_._2).mapValues {
-      seq => seq.map { case (from, to, weight) => (from, weight) }.toMap
+    val matrix: Map[Int, Map[Int, Double]] = es.groupBy(_._2).mapValues { seq =>
+      seq.map { case (from, to, weight) => (from, weight) }.toMap
     }
     for ((k1, v1) <- matrix if (k1 % 2 == 0);
          (k2, v2) <- matrix if (k2 % 2 == 1))

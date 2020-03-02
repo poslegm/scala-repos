@@ -105,9 +105,7 @@ trait IndexedContsTFunctions {
       M: Monad[M]
   ): IndexedContsT[W, M, R, O, A] =
     IndexedContsT { k0 =>
-      (f { a =>
-        IndexedContsT(k1 => M.bind(W.copoint(k0)(a))(W.copoint(k1)))
-      }).run_
+      (f { a => IndexedContsT(k1 => M.bind(W.copoint(k0)(a))(W.copoint(k1))) }).run_
     }
 
   def reset[W[_], M[_], R, O, A](v: IndexedContsT[W, M, A, O, O])(

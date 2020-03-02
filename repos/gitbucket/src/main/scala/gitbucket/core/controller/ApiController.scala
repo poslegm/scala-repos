@@ -301,47 +301,46 @@ trait ApiControllerBase extends ControllerBase {
     * https://developer.github.com/v3/issues/labels/#update-a-label
     */
   patch("/api/v3/repos/:owner/:repository/labels/:labelName")(
-    collaboratorsOnly {
-      repository =>
-        (for {
-          data <- extractFromJsonBody[CreateALabel] if data.isValid
-        } yield {
-          LockUtil.lock(RepositoryName(repository).fullName) {
-            getLabel(repository.owner, repository.name, params("labelName"))
-              .map {
-                label =>
-                  if (getLabel(repository.owner, repository.name, data.name).isEmpty) {
-                    updateLabel(
-                      repository.owner,
-                      repository.name,
-                      label.labelId,
-                      data.name,
-                      data.color
+    collaboratorsOnly { repository =>
+      (for {
+        data <- extractFromJsonBody[CreateALabel] if data.isValid
+      } yield {
+        LockUtil.lock(RepositoryName(repository).fullName) {
+          getLabel(repository.owner, repository.name, params("labelName"))
+            .map {
+              label =>
+                if (getLabel(repository.owner, repository.name, data.name).isEmpty) {
+                  updateLabel(
+                    repository.owner,
+                    repository.name,
+                    label.labelId,
+                    data.name,
+                    data.color
+                  )
+                  JsonFormat(
+                    ApiLabel(
+                      getLabel(
+                        repository.owner,
+                        repository.name,
+                        label.labelId
+                      ).get,
+                      RepositoryName(repository)
                     )
-                    JsonFormat(
-                      ApiLabel(
-                        getLabel(
-                          repository.owner,
-                          repository.name,
-                          label.labelId
-                        ).get,
-                        RepositoryName(repository)
+                  )
+                } else {
+                  // TODO ApiError should support errors field to enhance compatibility of GitHub API
+                  UnprocessableEntity(
+                    ApiError(
+                      "Validation Failed",
+                      Some(
+                        "https://developer.github.com/v3/issues/labels/#create-a-label"
                       )
                     )
-                  } else {
-                    // TODO ApiError should support errors field to enhance compatibility of GitHub API
-                    UnprocessableEntity(
-                      ApiError(
-                        "Validation Failed",
-                        Some(
-                          "https://developer.github.com/v3/issues/labels/#create-a-label"
-                        )
-                      )
-                    )
-                  }
-              } getOrElse NotFound()
-          }
-        }) getOrElse NotFound()
+                  )
+                }
+            } getOrElse NotFound()
+        }
+      }) getOrElse NotFound()
     }
   )
 
