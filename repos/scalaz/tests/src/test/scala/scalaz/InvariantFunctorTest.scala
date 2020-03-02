@@ -15,7 +15,7 @@ object InvariantFunctorTest extends SpecLite {
 
   "xmap iso" in {
     val succI: Int <=> Int = new IsoSet[Int, Int] {
-      def to = (_: Int) + 1
+      def to   = (_: Int) + 1
       def from = (_: Int) - 1
     }
     some(1) xmapi succI must_=== (some(2))
@@ -29,5 +29,5 @@ object InvariantFunctorTest extends SpecLite {
 
   case class Num(x: Int)
   implicit val showNum = Show.showA[Num]
-  implicit val eqNum = Equal.equalA[Num]
+  implicit val eqNum   = Equal.equalA[Num]
 }

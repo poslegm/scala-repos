@@ -32,7 +32,7 @@ object ControlHelpersSpec extends Specification {
     "return a Full can if the tested block doesn't throw an exception" in {
       tryo { "valid" } must_== Full("valid")
     }
-    val exception = new RuntimeException("ko")
+    val exception    = new RuntimeException("ko")
     def failureBlock = { throw exception; () }
 
     "return a Failure if the tested block throws an exception" in {
@@ -58,13 +58,13 @@ object ControlHelpersSpec extends Specification {
       success
     }
     "don't trigger a callback if the tested block doesn't throw an exception" in {
-      var x = false
+      var x        = false
       val callback = (e: Throwable) => { x = true }
       tryo(callback) { "valid" }
       x must_== false
     }
     "don't trigger a callback if the tested block doesn't throw an exception, even with an ignore list" in {
-      var x = false
+      var x        = false
       val callback = (e: Throwable) => { x = true }
       tryo(List(classOf[RuntimeException]), Full(callback)) { "valid" }
       x must_== false

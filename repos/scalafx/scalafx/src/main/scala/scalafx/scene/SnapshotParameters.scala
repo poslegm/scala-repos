@@ -37,7 +37,8 @@ import scalafx.scene.transform.Transform
 
 object SnapshotParameters {
   implicit def sfxSnapshotParameters2jfx(
-      sp: SnapshotParameters): jfxs.SnapshotParameters =
+      sp: SnapshotParameters
+  ): jfxs.SnapshotParameters =
     if (sp != null) sp.delegate else null
 }
 
@@ -47,8 +48,8 @@ object SnapshotParameters {
   * @since 2.2
   */
 class SnapshotParameters(
-    override val delegate: jfxs.SnapshotParameters = new jfxs.SnapshotParameters)
-    extends SFXDelegate[jfxs.SnapshotParameters] {
+    override val delegate: jfxs.SnapshotParameters = new jfxs.SnapshotParameters
+) extends SFXDelegate[jfxs.SnapshotParameters] {
 
   /**
     * The current camera.

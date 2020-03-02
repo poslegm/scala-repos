@@ -36,15 +36,19 @@ private[finagle] object LatencyHistogram {
   *
   * @param now the current time. for testing.
   */
-private[finagle] class LatencyHistogram(clipDuration: Long,
-                                        error: Double,
-                                        history: Long,
-                                        slices: Int,
-                                        now: () => Long) {
+private[finagle] class LatencyHistogram(
+    clipDuration: Long,
+    error: Double,
+    history: Long,
+    slices: Int,
+    now: () => Long
+) {
 
   require(clipDuration.toInt > 0)
-  require(error >= 0.0 && error <= 1.0,
-          s"error must be between [0.0, 1.0], was $error")
+  require(
+    error >= 0.0 && error <= 1.0,
+    s"error must be between [0.0, 1.0], was $error"
+  )
 
   /** size of each "bucket" */
   private[this] val width: Int =
@@ -70,8 +74,8 @@ private[finagle] class LatencyHistogram(clipDuration: Long,
 
     // The number of samples before the request quantile.
     val target = n.sum() * which / 100 + 1
-    var i = 0
-    var sum = 0L
+    var i      = 0
+    var sum    = 0L
     do {
       sum += tab(i).sum()
       i += 1

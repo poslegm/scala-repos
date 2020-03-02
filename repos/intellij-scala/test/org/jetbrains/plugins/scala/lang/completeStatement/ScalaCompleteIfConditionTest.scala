@@ -7,7 +7,7 @@ package lang.completeStatement
   */
 class ScalaCompleteIfConditionTest extends ScalaCompleteStatementTestBase {
   def testIfCondition1() {
-    val fileText = """
+    val fileText   = """
         |class B {
         |  def method() {
         |    if <caret>
@@ -28,7 +28,7 @@ class ScalaCompleteIfConditionTest extends ScalaCompleteStatementTestBase {
   }
 
   def testIfCondition2() {
-    val fileText = """
+    val fileText   = """
         |class B {
         |  def method() {
         |    if<caret>
@@ -49,7 +49,7 @@ class ScalaCompleteIfConditionTest extends ScalaCompleteStatementTestBase {
   }
 
   def testIfCondition3() {
-    val fileText = """
+    val fileText   = """
         |class B {
         |  def method() {
         |    if (<caret>
@@ -70,7 +70,7 @@ class ScalaCompleteIfConditionTest extends ScalaCompleteStatementTestBase {
   }
 
   def testIfCondition4() {
-    val fileText = """
+    val fileText   = """
         |class B {
         |  def method() {
         |    if (true<caret>) {
@@ -92,7 +92,7 @@ class ScalaCompleteIfConditionTest extends ScalaCompleteStatementTestBase {
   }
 
   def testIfCondition5() {
-    val fileText = """
+    val fileText   = """
         |class B {
         |  def method() {
         |    if (true) {<caret>
@@ -113,7 +113,7 @@ class ScalaCompleteIfConditionTest extends ScalaCompleteStatementTestBase {
   }
 
   def testIfCondition6() {
-    val fileText = """
+    val fileText   = """
         |class B {
         |  def method() {
         |    if (true<caret>) {
@@ -137,7 +137,7 @@ class ScalaCompleteIfConditionTest extends ScalaCompleteStatementTestBase {
   }
 
   def testIfCondition7() {
-    val fileText = """
+    val fileText   = """
         |class B {
         |  def method() {
         |    if ()<caret>
@@ -159,7 +159,7 @@ class ScalaCompleteIfConditionTest extends ScalaCompleteStatementTestBase {
 
   def testIfConditionJava() {
     //WHAT THE _?!
-    val fileText = """
+    val fileText   = """
         |class B {
         |    public static void main(String[] args) {
         |        if <caret>
@@ -179,7 +179,7 @@ class ScalaCompleteIfConditionTest extends ScalaCompleteStatementTestBase {
   }
 
   def testIfCondition2Java() {
-    val fileText = """
+    val fileText   = """
         |class B {
         |    public static void main(String[] args) {
         |        if ()<caret>

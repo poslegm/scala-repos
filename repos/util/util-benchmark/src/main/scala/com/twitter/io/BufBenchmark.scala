@@ -12,20 +12,20 @@ class BufBenchmark extends StdBenchAnnotations {
   @Param(Array("1000"))
   var size: Int = 1000
 
-  private[this] var byteArrayBuf: Buf = _
+  private[this] var byteArrayBuf: Buf  = _
   private[this] var byteBufferBuf: Buf = _
-  private[this] var concatBuf: Buf = _
-  private[this] var all: Array[Buf] = _
+  private[this] var concatBuf: Buf     = _
+  private[this] var all: Array[Buf]    = _
 
   private[this] var string: String = _
   private[this] var stringBuf: Buf = _
 
   @Setup(Level.Iteration)
   def setup(): Unit = {
-    val cap = size * 2
+    val cap   = size * 2
     val start = cap / 4
-    val end = start + size
-    val raw = 0.until(cap).map(_.toByte).toArray
+    val end   = start + size
+    val raw   = 0.until(cap).map(_.toByte).toArray
 
     val bb = java.nio.ByteBuffer.wrap(raw, start, size)
 

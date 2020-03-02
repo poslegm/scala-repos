@@ -22,8 +22,8 @@ object ShowExamples extends App {
   import ShowSyntax._
 
   sealed trait Super
-  case class Foo(i: Int, s: String) extends Super
-  case class Bar(i: Int) extends Super
+  case class Foo(i: Int, s: String)     extends Super
+  case class Bar(i: Int)                extends Super
   case class BarRec(i: Int, rec: Super) extends Super
 
   object Super {
@@ -31,11 +31,11 @@ object ShowExamples extends App {
   }
 
   sealed trait MutualA
-  case class MutualA1(x: Int) extends MutualA
+  case class MutualA1(x: Int)     extends MutualA
   case class MutualA2(b: MutualB) extends MutualA
 
   sealed trait MutualB
-  case class MutualB1(x: Int) extends MutualB
+  case class MutualB1(x: Int)     extends MutualB
   case class MutualB2(b: MutualA) extends MutualB
 
   object MutualA {
@@ -101,7 +101,10 @@ object Show extends LabelledTypeClassCompanion[Show] {
     }
 
     def coproduct[L, R <: Coproduct](
-        name: String, sl: => Show[L], sr: => Show[R]) = new Show[L :+: R] {
+        name: String,
+        sl: => Show[L],
+        sr: => Show[R]
+    ) = new Show[L :+: R] {
       def show(lr: L :+: R) = lr match {
         case Inl(l) => s"$name(${sl.show(l)})"
         case Inr(r) => s"${sr.show(r)}"

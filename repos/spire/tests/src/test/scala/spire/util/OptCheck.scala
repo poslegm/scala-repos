@@ -7,8 +7,8 @@ import spire.algebra.Eq
 class OptCheck extends FunSuite {
 
   def customToString[A](nullbox: Opt[A]): String = nullbox.toString
-  def intToString(nullbox: Opt[Int]): String = nullbox.toString
-  def strToString(nullbox: Opt[String]): String = nullbox.toString
+  def intToString(nullbox: Opt[Int]): String     = nullbox.toString
+  def strToString(nullbox: Opt[String]): String  = nullbox.toString
 
   test("Opt.empty") {
     assert(Opt.empty[Int].isEmpty)
@@ -80,11 +80,11 @@ class OptCheck extends FunSuite {
   test("Name-based extractor") {
     Opt(2) match {
       case Opt(x) => // success
-      case _ => fail()
+      case _      => fail()
     }
     Opt.empty[Int] match {
       case Opt(x) => fail()
-      case _ => // success
+      case _      => // success
     }
   }
 

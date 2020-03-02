@@ -4,9 +4,9 @@ object Test {
     val one = "1"
     val two = "2"
 
-    val raw = raw"\n$one\n$two\n"
+    val raw     = raw"\n$one\n$two\n"
     val escaped = s"\n$one\n$two\n"
-    val buggy = "\\n1\n2\n"
+    val buggy   = "\\n1\n2\n"
     val correct = "\\n1\\n2\\n"
 
     assert(raw != escaped, "Raw strings should not be escaped.")

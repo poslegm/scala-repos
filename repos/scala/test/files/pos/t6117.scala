@@ -1,7 +1,7 @@
 package test
 
 trait ImportMe {
-  def foo(i: Int) = 1
+  def foo(i: Int)    = 1
   def foo(s: String) = 2
 }
 

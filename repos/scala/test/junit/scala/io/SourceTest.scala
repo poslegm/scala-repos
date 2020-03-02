@@ -13,7 +13,7 @@ import java.io.{Console => _, _}
 class SourceTest {
 
   private implicit val `our codec` = Codec.UTF8
-  private val charSet = Codec.UTF8.charSet.name
+  private val charSet              = Codec.UTF8.charSet.name
 
   private def sampler = """
     |Big-endian and little-endian approaches aren't
@@ -52,7 +52,7 @@ class SourceTest {
     } while (s.ch != '\n')
     s.next()
     val out = new ByteArrayOutputStream
-    val ps = new PrintStream(out, true, charSet)
+    val ps  = new PrintStream(out, true, charSet)
     s.reportError(s.pos, "That doesn't sound right.", ps)
     assertEquals("0030: THAT DOESN'T SOUND RIGHT.", out.toString(charSet))
   }
@@ -62,15 +62,15 @@ class SourceTest {
       override val iter = {
         val r = new InputStreamReader(is, codec.decoder)
         Iterator continually (codec wrap r.read()) takeWhile (_ != -1) map
-        (_.toChar)
+          (_.toChar)
       }
       override def report(pos: Int, msg: String, out: PrintStream): Unit = {
         out print f"$pos%04x: ${msg.toUpperCase}"
       }
       private[this] var _pos: Int = _
-      override def pos = _pos
+      override def pos            = _pos
       private[this] var _ch: Char = _
-      override def ch = _ch
+      override def ch             = _ch
       override def next = {
         _ch = iter.next()
         _pos += 1
@@ -84,7 +84,7 @@ class SourceTest {
     } while (s.ch != '\n')
     s.next()
     val out = new ByteArrayOutputStream
-    val ps = new PrintStream(out, true, charSet)
+    val ps  = new PrintStream(out, true, charSet)
     s.reportError(s.pos, "That doesn't sound right.", ps)
     assertEquals("0030: THAT DOESN'T SOUND RIGHT.", out.toString(charSet))
   }

@@ -8,7 +8,7 @@ object Test extends App {
     val next = list.asScala ++ List(4, 5, 6)
     assert(next != list.asScala)
 
-    val raw = list.asScala
+    val raw    = list.asScala
     val cloned = raw.clone
     list.add(1)
     assert(raw != cloned)
@@ -22,7 +22,7 @@ object Test extends App {
     val next = set.asScala ++ Set(4, 5, 6)
     assert(next != set.asScala)
 
-    val raw = set.asScala
+    val raw    = set.asScala
     val cloned = raw.clone
     set.add(4)
     assert(raw != cloned)
@@ -36,7 +36,7 @@ object Test extends App {
     val next = map.asScala ++ Map(4 -> 4, 5 -> 5, 6 -> 6)
     assert(next != map.asScala)
 
-    val raw = map.asScala
+    val raw    = map.asScala
     val cloned = raw.clone
     map.put(4, 4)
     assert(raw != cloned)

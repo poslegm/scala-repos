@@ -32,15 +32,17 @@ object DriverSubmissionTest {
     }
     val numSecondsToSleep = args(0).toInt
 
-    val env = System.getenv()
+    val env        = System.getenv()
     val properties = Utils.getSystemProperties
 
     println("Environment variables containing SPARK_TEST:")
-    env.asScala.filter { case (k, _) => k.contains("SPARK_TEST") }
+    env.asScala
+      .filter { case (k, _) => k.contains("SPARK_TEST") }
       .foreach(println)
 
     println("System properties containing spark.test:")
-    properties.filter { case (k, _) => k.toString.contains("spark.test") }
+    properties
+      .filter { case (k, _) => k.toString.contains("spark.test") }
       .foreach(println)
 
     for (i <- 1 until numSecondsToSleep) {

@@ -25,7 +25,11 @@ import org.apache.spark.annotation.Experimental
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 import org.apache.spark.sql.catalyst.plans.logical.{InsertIntoTable, Project}
-import org.apache.spark.sql.execution.datasources.{BucketSpec, CreateTableUsingAsSelect, DataSource}
+import org.apache.spark.sql.execution.datasources.{
+  BucketSpec,
+  CreateTableUsingAsSelect,
+  DataSource
+}
 import org.apache.spark.sql.execution.datasources.jdbc.JdbcUtils
 import org.apache.spark.sql.execution.streaming.StreamExecution
 import org.apache.spark.sql.sources.HadoopFsRelation
@@ -38,7 +42,7 @@ import org.apache.spark.sql.sources.HadoopFsRelation
   * @since 1.4.0
   */
 @Experimental
-final class DataFrameWriter private[sql](df: DataFrame) {
+final class DataFrameWriter private[sql] (df: DataFrame) {
 
   /**
     * Specifies the behavior when data or table already exists. Options include:
@@ -65,13 +69,15 @@ final class DataFrameWriter private[sql](df: DataFrame) {
     */
   def mode(saveMode: String): DataFrameWriter = {
     this.mode = saveMode.toLowerCase match {
-      case "overwrite" => SaveMode.Overwrite
-      case "append" => SaveMode.Append
-      case "ignore" => SaveMode.Ignore
+      case "overwrite"         => SaveMode.Overwrite
+      case "append"            => SaveMode.Append
+      case "ignore"            => SaveMode.Ignore
       case "error" | "default" => SaveMode.ErrorIfExists
       case _ =>
-        throw new IllegalArgumentException(s"Unknown save mode: $saveMode. " +
-            "Accepted modes are 'overwrite', 'append', 'ignore', 'error'.")
+        throw new IllegalArgumentException(
+          s"Unknown save mode: $saveMode. " +
+            "Accepted modes are 'overwrite', 'append', 'ignore', 'error'."
+        )
     }
     this
   }
@@ -125,7 +131,9 @@ final class DataFrameWriter private[sql](df: DataFrame) {
     *
     * @since 1.4.0
     */
-  def options(options: scala.collection.Map[String, String]): DataFrameWriter = {
+  def options(
+      options: scala.collection.Map[String, String]
+  ): DataFrameWriter = {
     this.extraOptions ++= options
     this
   }
@@ -173,7 +181,10 @@ final class DataFrameWriter private[sql](df: DataFrame) {
     */
   @scala.annotation.varargs
   def bucketBy(
-      numBuckets: Int, colName: String, colNames: String*): DataFrameWriter = {
+      numBuckets: Int,
+      colName: String,
+      colNames: String*
+  ): DataFrameWriter = {
     this.numBuckets = Option(numBuckets)
     this.bucketColumnNames = Option(colName +: colNames)
     this
@@ -210,11 +221,12 @@ final class DataFrameWriter private[sql](df: DataFrame) {
   def save(): Unit = {
     assertNotBucketed()
     val dataSource = DataSource(
-        df.sqlContext,
-        className = source,
-        partitionColumns = partitioningColumns.getOrElse(Nil),
-        bucketSpec = getBucketSpec,
-        options = extraOptions.toMap)
+      df.sqlContext,
+      className = source,
+      partitionColumns = partitioningColumns.getOrElse(Nil),
+      bucketSpec = getBucketSpec,
+      options = extraOptions.toMap
+    )
 
     dataSource.write(mode, df)
   }
@@ -250,15 +262,17 @@ final class DataFrameWriter private[sql](df: DataFrame) {
     */
   def startStream(): ContinuousQuery = {
     val dataSource = DataSource(
-        df.sqlContext,
-        className = source,
-        options = extraOptions.toMap,
-        partitionColumns = normalizedParCols.getOrElse(Nil))
+      df.sqlContext,
+      className = source,
+      options = extraOptions.toMap,
+      partitionColumns = normalizedParCols.getOrElse(Nil)
+    )
 
     df.sqlContext.sessionState.continuousQueryManager.startQuery(
-        extraOptions.getOrElse("queryName", StreamExecution.nextName),
-        df,
-        dataSource.createSink())
+      extraOptions.getOrElse("queryName", StreamExecution.nextName),
+      df,
+      dataSource.createSink()
+    )
   }
 
   /**
@@ -271,7 +285,8 @@ final class DataFrameWriter private[sql](df: DataFrame) {
     */
   def insertInto(tableName: String): Unit = {
     insertInto(
-        df.sqlContext.sessionState.sqlParser.parseTableIdentifier(tableName))
+      df.sqlContext.sessionState.sqlParser.parseTableIdentifier(tableName)
+    )
   }
 
   private def insertInto(tableIdent: TableIdentifier): Unit = {
@@ -283,63 +298,68 @@ final class DataFrameWriter private[sql](df: DataFrame) {
     // A partitioned relation's schema can be different from the input logicalPlan, since
     // partition columns are all moved after data columns. We Project to adjust the ordering.
     // TODO: this belongs to the analyzer.
-    val input = normalizedParCols.map { parCols =>
-      val (inputPartCols, inputDataCols) = df.logicalPlan.output.partition {
-        attr =>
-          parCols.contains(attr.name)
+    val input = normalizedParCols
+      .map { parCols =>
+        val (inputPartCols, inputDataCols) = df.logicalPlan.output.partition {
+          attr => parCols.contains(attr.name)
+        }
+        Project(inputDataCols ++ inputPartCols, df.logicalPlan)
       }
-      Project(inputDataCols ++ inputPartCols, df.logicalPlan)
-    }.getOrElse(df.logicalPlan)
+      .getOrElse(df.logicalPlan)
 
     df.sqlContext
-      .executePlan(InsertIntoTable(
-              UnresolvedRelation(tableIdent),
-              partitions.getOrElse(Map.empty[String, Option[String]]),
-              input,
-              overwrite,
-              ifNotExists = false))
+      .executePlan(
+        InsertIntoTable(
+          UnresolvedRelation(tableIdent),
+          partitions.getOrElse(Map.empty[String, Option[String]]),
+          input,
+          overwrite,
+          ifNotExists = false
+        )
+      )
       .toRdd
   }
 
   private def normalizedParCols: Option[Seq[String]] =
-    partitioningColumns.map { cols =>
-      cols.map(normalize(_, "Partition"))
-    }
+    partitioningColumns.map { cols => cols.map(normalize(_, "Partition")) }
 
   private def normalizedBucketColNames: Option[Seq[String]] =
-    bucketColumnNames.map { cols =>
-      cols.map(normalize(_, "Bucketing"))
-    }
+    bucketColumnNames.map { cols => cols.map(normalize(_, "Bucketing")) }
 
   private def normalizedSortColNames: Option[Seq[String]] =
-    sortColumnNames.map { cols =>
-      cols.map(normalize(_, "Sorting"))
-    }
+    sortColumnNames.map { cols => cols.map(normalize(_, "Sorting")) }
 
   private def getBucketSpec: Option[BucketSpec] = {
     if (sortColumnNames.isDefined) {
       require(
-          numBuckets.isDefined, "sortBy must be used together with bucketBy")
+        numBuckets.isDefined,
+        "sortBy must be used together with bucketBy"
+      )
     }
 
     for {
       n <- numBuckets
     } yield {
-      require(n > 0 && n < 100000,
-              "Bucket number must be greater than 0 and less than 100000.")
+      require(
+        n > 0 && n < 100000,
+        "Bucket number must be greater than 0 and less than 100000."
+      )
 
       // partitionBy columns cannot be used in bucketBy
       if (normalizedParCols.nonEmpty && normalizedBucketColNames.get.toSet
             .intersect(normalizedParCols.get.toSet)
             .nonEmpty) {
         throw new AnalysisException(
-            s"bucketBy columns '${bucketColumnNames.get.mkString(", ")}' should not be part of " +
-            s"partitionBy columns '${partitioningColumns.get.mkString(", ")}'")
+          s"bucketBy columns '${bucketColumnNames.get.mkString(", ")}' should not be part of " +
+            s"partitionBy columns '${partitioningColumns.get.mkString(", ")}'"
+        )
       }
 
-      BucketSpec(n,
-                 normalizedBucketColNames.get,
-                 normalizedSortColNames.getOrElse(Nil))
+      BucketSpec(
+        n,
+        normalizedBucketColNames.get,
+        normalizedSortColNames.getOrElse(Nil)
+      )
     }
   }
 
@@ -352,15 +372,19 @@ final class DataFrameWriter private[sql](df: DataFrame) {
     val validColumnNames = df.logicalPlan.output.map(_.name)
     validColumnNames
       .find(df.sqlContext.sessionState.analyzer.resolver(_, columnName))
-      .getOrElse(throw new AnalysisException(
-              s"$columnType column $columnName not found in " +
-              s"existing columns (${validColumnNames.mkString(", ")})"))
+      .getOrElse(
+        throw new AnalysisException(
+          s"$columnType column $columnName not found in " +
+            s"existing columns (${validColumnNames.mkString(", ")})"
+        )
+      )
   }
 
   private def assertNotBucketed(): Unit = {
     if (numBuckets.isDefined || sortColumnNames.isDefined) {
       throw new IllegalArgumentException(
-          "Currently we don't support writing bucketed data to this data source.")
+        "Currently we don't support writing bucketed data to this data source."
+      )
     }
   }
 
@@ -384,7 +408,8 @@ final class DataFrameWriter private[sql](df: DataFrame) {
     */
   def saveAsTable(tableName: String): Unit = {
     saveAsTable(
-        df.sqlContext.sessionState.sqlParser.parseTableIdentifier(tableName))
+      df.sqlContext.sessionState.sqlParser.parseTableIdentifier(tableName)
+    )
   }
 
   private def saveAsTable(tableIdent: TableIdentifier): Unit = {
@@ -400,14 +425,15 @@ final class DataFrameWriter private[sql](df: DataFrame) {
 
       case _ =>
         val cmd = CreateTableUsingAsSelect(
-            tableIdent,
-            source,
-            temporary = false,
-            partitioningColumns.map(_.toArray).getOrElse(Array.empty[String]),
-            getBucketSpec,
-            mode,
-            extraOptions.toMap,
-            df.logicalPlan)
+          tableIdent,
+          source,
+          temporary = false,
+          partitioningColumns.map(_.toArray).getOrElse(Array.empty[String]),
+          getBucketSpec,
+          mode,
+          extraOptions.toMap,
+          df.logicalPlan
+        )
         df.sqlContext.executePlan(cmd).toRdd
     }
   }
@@ -428,7 +454,10 @@ final class DataFrameWriter private[sql](df: DataFrame) {
     * @since 1.4.0
     */
   def jdbc(
-      url: String, table: String, connectionProperties: Properties): Unit = {
+      url: String,
+      table: String,
+      connectionProperties: Properties
+  ): Unit = {
     val props = new Properties()
     extraOptions.foreach {
       case (key, value) =>
@@ -456,8 +485,8 @@ final class DataFrameWriter private[sql](df: DataFrame) {
 
       // Create the table if the table didn't exist.
       if (!tableExists) {
-        val schema = JdbcUtils.schemaString(df, url)
-        val sql = s"CREATE TABLE $table ($schema)"
+        val schema    = JdbcUtils.schemaString(df, url)
+        val sql       = s"CREATE TABLE $table ($schema)"
         val statement = conn.createStatement
         try {
           statement.executeUpdate(sql)

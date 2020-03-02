@@ -3,7 +3,7 @@ import acyclic.file
 
 /**
   * Something which contains an operator precedence, which can be used
-  * to correctly wrap other things which contain lower precedences in 
+  * to correctly wrap other things which contain lower precedences in
   * parentheses when stringifying.
   */
 trait Precedence {
@@ -19,16 +19,16 @@ object Precedence {
     if (s.opPred >= selfOpPred) s.toString
     else "(" + s + ")"
   }
-  val Letters = 0
-  val | = 1
-  val ^ = 2
-  val & = 3
-  val <> = 4
-  val =! = 5
-  val `:` = 6
-  val +- = 7
-  val */% = 8
-  val OtherOp = 9
+  val Letters  = 0
+  val |        = 1
+  val ^        = 2
+  val &        = 3
+  val <>       = 4
+  val =!       = 5
+  val `:`      = 6
+  val +-       = 7
+  val */%      = 8
+  val OtherOp  = 9
   val PrefixOp = 10
-  val Max = 11
+  val Max      = 11
 }

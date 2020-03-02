@@ -16,8 +16,7 @@ object WSSpec extends PlaySpecification {
 
   "WS.url().post(InputStream)" should {
 
-    val uploadApp = FakeApplication(
-        withRoutes = {
+    val uploadApp = FakeApplication(withRoutes = {
       case ("POST", "/") =>
         Action { request =>
           request.body.asRaw.fold[Result](BadRequest) { raw =>
@@ -46,8 +45,9 @@ object WSSpec extends PlaySpecification {
   "withRequestFilter" should {
 
     class CallbackRequestFilter(
-        callList: scala.collection.mutable.Buffer[Int], value: Int)
-        extends WSRequestFilter {
+        callList: scala.collection.mutable.Buffer[Int],
+        value: Int
+    ) extends WSRequestFilter {
       override def apply(executor: WSRequestExecutor): WSRequestExecutor = {
         callList.append(value)
         executor
@@ -55,7 +55,7 @@ object WSSpec extends PlaySpecification {
     }
 
     "work with one request filter" in new WithServer() {
-      val client = app.injector.instanceOf(classOf[play.libs.ws.WSClient])
+      val client   = app.injector.instanceOf(classOf[play.libs.ws.WSClient])
       val callList = scala.collection.mutable.ArrayBuffer[Int]()
       val responseFuture = client
         .url(s"http://example.com:$testServerPort")
@@ -65,7 +65,7 @@ object WSSpec extends PlaySpecification {
     }
 
     "work with three request filter" in new WithServer() {
-      val client = app.injector.instanceOf(classOf[play.libs.ws.WSClient])
+      val client   = app.injector.instanceOf(classOf[play.libs.ws.WSClient])
       val callList = scala.collection.mutable.ArrayBuffer[Int]()
       val responseFuture = client
         .url(s"http://localhost:${testServerPort}")

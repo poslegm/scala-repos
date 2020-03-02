@@ -15,11 +15,12 @@ object FSMTransitionSpec {
   }
 
   class SendAnyTransitionFSM(target: ActorRef)
-      extends Actor with FSM[Int, Int] {
+      extends Actor
+      with FSM[Int, Int] {
     startWith(0, 0)
     when(0) {
       case Event("stay", _) ⇒ stay()
-      case Event(_, _) ⇒ goto(0)
+      case Event(_, _)      ⇒ goto(0)
     }
     onTransition { case from -> to ⇒ target ! (from -> to) }
 
@@ -95,7 +96,7 @@ class FSMTransitionSpec extends AkkaSpec with ImplicitSender {
 
     "not fail when listener goes away" in {
       val forward = system.actorOf(Props(new Forwarder(testActor)))
-      val fsm = system.actorOf(Props(new MyFSM(testActor)))
+      val fsm     = system.actorOf(Props(new MyFSM(testActor)))
 
       within(1 second) {
         fsm ! FSM.SubscribeTransitionCallBack(forward)
@@ -120,7 +121,7 @@ class FSMTransitionSpec extends AkkaSpec with ImplicitSender {
     "trigger transition event when goto() the same state" in {
       import FSM.Transition
       val forward = system.actorOf(Props(new Forwarder(testActor)))
-      val fsm = system.actorOf(Props(new OtherFSM(testActor)))
+      val fsm     = system.actorOf(Props(new OtherFSM(testActor)))
 
       within(1 second) {
         fsm ! FSM.SubscribeTransitionCallBack(forward)
@@ -136,7 +137,7 @@ class FSMTransitionSpec extends AkkaSpec with ImplicitSender {
 
     "not trigger transition event on stay()" in {
       val forward = system.actorOf(Props(new Forwarder(testActor)))
-      val fsm = system.actorOf(Props(new OtherFSM(testActor)))
+      val fsm     = system.actorOf(Props(new OtherFSM(testActor)))
 
       within(1 second) {
         fsm ! FSM.SubscribeTransitionCallBack(forward)

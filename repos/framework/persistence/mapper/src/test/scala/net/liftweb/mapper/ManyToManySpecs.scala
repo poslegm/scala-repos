@@ -48,8 +48,8 @@ object ManyToManySpec extends Specification {
     person.companies ++= companies
     person.save
     // Break some joins
-    companies(3).delete_! // delete "4"
-    companies(6).delete_! // delete "7"
+    companies(3).delete_!    // delete "4"
+    companies(6).delete_!    // delete "7"
     person.companies.refresh // reload joins so joinEntity.company.obj isn't cached
     person
   }
@@ -64,7 +64,7 @@ object ManyToManySpec extends Specification {
     "handle missing joins in insertAll" in {
       setupDB
       val person = createPerson
-      val c = new Company
+      val c      = new Company
       c.name() = "new"
       c.save
       person.companies.insertAll(7, Seq(c))
@@ -75,14 +75,14 @@ object ManyToManySpec extends Specification {
 
     "count unsaved children" in {
       setupDB
-      val person = new Person
+      val person  = new Person
       val company = new Company
       person.companies += company
       person.companies.length must_== 1
     }
     "count saved children" in {
       setupDB
-      val person = new Person
+      val person  = new Person
       val company = new Company
       company.save
       person.companies += company
@@ -98,7 +98,7 @@ object ManyToManySpec extends Specification {
 //     }
     "count saved children of a saved entity" in {
       setupDB
-      val person = new Person
+      val person  = new Person
       val company = new Company
       company.save
       person.companies += company
@@ -123,7 +123,11 @@ class Person extends LongKeyedMapper[Person] with IdPK with ManyToMany {
   def getSingleton = Person
   object companies
       extends MappedManyToMany(
-          PersonCompany, PersonCompany.person, PersonCompany.company, Company)
+        PersonCompany,
+        PersonCompany.person,
+        PersonCompany.company,
+        Company
+      )
 }
 object Person extends Person with LongKeyedMetaMapper[Person]
 
@@ -135,7 +139,7 @@ object Company extends Company with LongKeyedMetaMapper[Company]
 
 class PersonCompany extends Mapper[PersonCompany] {
   def getSingleton = PersonCompany
-  object person extends MappedLongForeignKey(this, Person)
+  object person  extends MappedLongForeignKey(this, Person)
   object company extends MappedLongForeignKey(this, Company)
 
   override def toString =

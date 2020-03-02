@@ -8,9 +8,9 @@ class Plugin(val global: Global) extends NscPlugin {
   import analyzer._
   import scala.reflect.internal.Mode
 
-  val name = "isBlackbox"
+  val name        = "isBlackbox"
   val description = "A sample analyzer plugin that overrides isBlackbox."
-  val components = Nil
+  val components  = Nil
   addMacroPlugin(MacroPlugin)
 
   object MacroPlugin extends MacroPlugin {

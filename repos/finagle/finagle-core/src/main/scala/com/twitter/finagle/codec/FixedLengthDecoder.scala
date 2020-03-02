@@ -15,15 +15,17 @@ import scala.reflect.ClassTag
   *       This implies a use-case where a single thread exclusively processes a
   *       byte stream.
   */
-private[finagle] class FixedLengthDecoder[T : ClassTag](
-    frameSize: Int, decodeFrame: Buf => T)
-    extends FrameDecoder[T] {
+private[finagle] class FixedLengthDecoder[T: ClassTag](
+    frameSize: Int,
+    decodeFrame: Buf => T
+) extends FrameDecoder[T] {
 
   if (frameSize < 1)
     throw new IllegalArgumentException(
-        s"frameSize must be greater than zero, saw: $frameSize")
+      s"frameSize must be greater than zero, saw: $frameSize"
+    )
 
-  private[this] var accumulated: Buf = Buf.Empty
+  private[this] var accumulated: Buf        = Buf.Empty
   private[this] val NoFrames: IndexedSeq[T] = IndexedSeq.empty[T]
 
   /**
@@ -38,8 +40,8 @@ private[finagle] class FixedLengthDecoder[T : ClassTag](
       NoFrames
     } else {
       // length >= frameSize
-      val result = new Array[T](length / frameSize)
-      var sliceIdx = 0
+      val result    = new Array[T](length / frameSize)
+      var sliceIdx  = 0
       var resultIdx = 0
       while (sliceIdx + frameSize <= length) {
         val slice = merged.slice(sliceIdx, sliceIdx + frameSize)

@@ -2,15 +2,15 @@ import scala.runtime.ScalaRunTime.stringOf
 
 final class ArrayOpt[T](val xs: Array[T]) extends AnyVal {
   def isEmpty = xs == null
-  def get = xs
+  def get     = xs
 }
 
 object Bip {
   def mkInts(xs: Array[Short]) = xs map (_.toInt)
   def unapplySeq(x: Any): ArrayOpt[Int] = x match {
-    case xs: Array[Int] => new ArrayOpt(xs)
+    case xs: Array[Int]   => new ArrayOpt(xs)
     case xs: Array[Short] => new ArrayOpt(mkInts(xs))
-    case _ => new ArrayOpt(null)
+    case _                => new ArrayOpt(null)
   }
   // public int[] unapplySeq(java.lang.Object);
   //      0: aload_1
@@ -43,9 +43,9 @@ object Bip {
 
 object Test {
   def f(x: Any) = x match {
-    case Bip(a, b, c) => s"Bip($a, $b, $c)"
-    case Bip(a, b, c @ _ *) => s"Bip($a, $b, c @ ${stringOf(c)}: _*)"
-    case _ => "" + x.getClass
+    case Bip(a, b, c)      => s"Bip($a, $b, $c)"
+    case Bip(a, b, c @ _*) => s"Bip($a, $b, c @ ${stringOf(c)}: _*)"
+    case _                 => "" + x.getClass
   }
 
   def main(args: Array[String]): Unit = {

@@ -20,7 +20,7 @@ object TcpLeakApp extends App {
     akka.log-dead-letters = on
     akka.io.tcp.trace-logging = on""")
   implicit val system = ActorSystem("ServerTest", testConf)
-  implicit val fm = ActorMaterializer()
+  implicit val fm     = ActorMaterializer()
 
   import system.dispatcher
 
@@ -29,25 +29,38 @@ object TcpLeakApp extends App {
     .named("TCP-outgoingConnection")
   List
     .fill(100)(
-        Source
-          .single(ByteString("FOO"))
-          .log("outerFlow-beforeTcpFlow")
-          .withAttributes(ActorAttributes.logLevels(
-                  Logging.DebugLevel, Logging.ErrorLevel, Logging.ErrorLevel))
-          .via(tcpFlow)
-          .log("outerFlow-afterTcpFlow")
-          .withAttributes(ActorAttributes.logLevels(
-                  Logging.DebugLevel, Logging.ErrorLevel, Logging.ErrorLevel))
-          .toMat(Sink.head)(Keep.right)
-          .run())
+      Source
+        .single(ByteString("FOO"))
+        .log("outerFlow-beforeTcpFlow")
+        .withAttributes(
+          ActorAttributes.logLevels(
+            Logging.DebugLevel,
+            Logging.ErrorLevel,
+            Logging.ErrorLevel
+          )
+        )
+        .via(tcpFlow)
+        .log("outerFlow-afterTcpFlow")
+        .withAttributes(
+          ActorAttributes.logLevels(
+            Logging.DebugLevel,
+            Logging.ErrorLevel,
+            Logging.ErrorLevel
+          )
+        )
+        .toMat(Sink.head)(Keep.right)
+        .run()
+    )
     .last
     .onComplete {
       case error ⇒
         println(s"Error: $error")
         Thread.sleep(10000)
-        println("===================== \n\n" +
+        println(
+          "===================== \n\n" +
             system.asInstanceOf[ActorSystemImpl].printTree +
-            "\n\n========================")
+            "\n\n========================"
+        )
     }
 
   readLine()

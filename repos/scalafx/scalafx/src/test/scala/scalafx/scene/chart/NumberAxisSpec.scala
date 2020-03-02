@@ -42,5 +42,7 @@ import scalafx.testutil.{RunOnApplicationThread, SimpleSFXDelegateSpec}
 @RunWith(classOf[JUnitRunner])
 class NumberAxisSpec
     extends SimpleSFXDelegateSpec[jfxsc.NumberAxis, NumberAxis](
-        classOf[jfxsc.NumberAxis], classOf[NumberAxis])
+      classOf[jfxsc.NumberAxis],
+      classOf[NumberAxis]
+    )
     with RunOnApplicationThread

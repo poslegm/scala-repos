@@ -42,12 +42,12 @@ import spire.algebra.lattice.Heyting
   * it will be boxed.
   */
 class Trilean(val value: Int) extends AnyVal { lhs =>
-  def isTrue: Boolean = value == -1
-  def isFalse: Boolean = value == 0
+  def isTrue: Boolean    = value == -1
+  def isFalse: Boolean   = value == 0
   def isUnknown: Boolean = value == 1
 
-  def isKnown: Boolean = value != 1
-  def isNotTrue: Boolean = value != -1
+  def isKnown: Boolean    = value != 1
+  def isNotTrue: Boolean  = value != -1
   def isNotFalse: Boolean = value != 0
 
   def fold[A](f: Boolean => A)(unknown: => A): A =
@@ -127,8 +127,8 @@ class Trilean(val value: Int) extends AnyVal { lhs =>
 }
 
 object Trilean {
-  final val True: Trilean = new Trilean(-1)
-  final val False: Trilean = new Trilean(0)
+  final val True: Trilean    = new Trilean(-1)
+  final val False: Trilean   = new Trilean(0)
   final val Unknown: Trilean = new Trilean(1)
 
   final def apply(b: Boolean): Trilean =
@@ -142,8 +142,7 @@ object Trilean {
 
   final def liftPf[A](p0: PartialFunction[A, Boolean]): A => Trilean = {
     val p = p0.andThen(Trilean(_))
-    (a: A) =>
-      p.applyOrElse(a, (_: A) => Unknown)
+    (a: A) => p.applyOrElse(a, (_: A) => Unknown)
   }
 
   final def testRef[A <: AnyRef](a: A)(f: A => Boolean): Trilean =
@@ -166,10 +165,10 @@ object Trilean {
 }
 
 class TrileanAlgebra extends Heyting[Trilean] {
-  def one: Trilean = Trilean.True
-  def zero: Trilean = Trilean.False
-  def complement(a: Trilean): Trilean = !a
+  def one: Trilean                         = Trilean.True
+  def zero: Trilean                        = Trilean.False
+  def complement(a: Trilean): Trilean      = !a
   def and(a: Trilean, b: Trilean): Trilean = a & b
-  def or(a: Trilean, b: Trilean): Trilean = a | b
+  def or(a: Trilean, b: Trilean): Trilean  = a | b
   def imp(a: Trilean, b: Trilean): Trilean = a imp b
 }

@@ -36,8 +36,9 @@ object DeadlineFilter {
     require(tolerance >= Duration.Zero, "tolerance must be greater than zero")
 
     require(
-        maxRejectPercentage >= 0.0 && maxRejectPercentage <= 1.0,
-        s"maxRejectPercentage must be between 0.0 and 1.0: $maxRejectPercentage")
+      maxRejectPercentage >= 0.0 && maxRejectPercentage <= 1.0,
+      s"maxRejectPercentage must be between 0.0 and 1.0: $maxRejectPercentage"
+    )
 
     def mk(): (Param, Stack.Param[Param]) =
       (this, Param.param)
@@ -52,9 +53,11 @@ object DeadlineFilter {
     * [[com.twitter.finagle.service.DeadlineFilter]].
     */
   def module[Req, Rep]: Stackable[ServiceFactory[Req, Rep]] =
-    new Stack.Module2[
-        param.Stats, DeadlineFilter.Param, ServiceFactory[Req, Rep]] {
-      val role = DeadlineFilter.role
+    new Stack.Module2[param.Stats, DeadlineFilter.Param, ServiceFactory[
+      Req,
+      Rep
+    ]] {
+      val role        = DeadlineFilter.role
       val description = "Reject requests when their deadline has passed"
 
       def make(
@@ -63,15 +66,16 @@ object DeadlineFilter {
           next: ServiceFactory[Req, Rep]
       ) = {
         val Param(tolerance, maxRejectPercentage) = _param
-        val param.Stats(statsReceiver) = _stats
+        val param.Stats(statsReceiver)            = _stats
 
         if (maxRejectPercentage <= 0.0) next
         else
-          new DeadlineFilter(tolerance,
-                             DefaultRejectPeriod,
-                             maxRejectPercentage,
-                             statsReceiver.scope("admission_control",
-                                                 "deadline")).andThen(next)
+          new DeadlineFilter(
+            tolerance,
+            DefaultRejectPeriod,
+            maxRejectPercentage,
+            statsReceiver.scope("admission_control", "deadline")
+          ).andThen(next)
       }
     }
 }
@@ -102,22 +106,25 @@ private[finagle] class DeadlineFilter[Req, Rep](
     rejectPeriod: Duration,
     maxRejectPercentage: Double,
     statsReceiver: StatsReceiver,
-    nowMillis: () => Long = Stopwatch.systemMillis)
-    extends SimpleFilter[Req, Rep] {
+    nowMillis: () => Long = Stopwatch.systemMillis
+) extends SimpleFilter[Req, Rep] {
 
   require(tolerance >= Duration.Zero, "tolerance must be greater than zero")
-  require(rejectPeriod.inSeconds >= 1 && rejectPeriod.inSeconds <= 60,
-          s"rejectPeriod must be [1 second, 60 seconds]: $rejectPeriod")
   require(
-      maxRejectPercentage <= 1.0,
-      s"maxRejectPercentage must be between 0.0 and 1.0: $maxRejectPercentage")
+    rejectPeriod.inSeconds >= 1 && rejectPeriod.inSeconds <= 60,
+    s"rejectPeriod must be [1 second, 60 seconds]: $rejectPeriod"
+  )
+  require(
+    maxRejectPercentage <= 1.0,
+    s"maxRejectPercentage must be between 0.0 and 1.0: $maxRejectPercentage"
+  )
 
   private[this] val exceededStat = statsReceiver.counter("exceeded")
   private[this] val beyondToleranceStat =
     statsReceiver.counter("exceeded_beyond_tolerance")
-  private[this] val rejectedStat = statsReceiver.counter("rejected")
+  private[this] val rejectedStat    = statsReceiver.counter("rejected")
   private[this] val transitTimeStat = statsReceiver.stat("transit_latency_ms")
-  private[this] val budgetTimeStat = statsReceiver.stat("deadline_budget_ms")
+  private[this] val budgetTimeStat  = statsReceiver.stat("deadline_budget_ms")
 
   private[this] val serviceDeposit =
     DeadlineFilter.RejectBucketScaleFactor.toInt
@@ -133,7 +140,7 @@ private[finagle] class DeadlineFilter[Req, Rep](
       now: Time
   ) =
     s"exceeded request deadline of ${deadline.deadline - deadline.timestamp} " +
-    s"by $elapsed. Deadline expired at ${deadline.deadline} and now it is $now."
+      s"by $elapsed. Deadline expired at ${deadline.deadline} and now it is $now."
 
   // The request is rejected if the set deadline has expired, the elapsed time
   // since expiry is less than `tolerance`, and there are at least
@@ -145,11 +152,12 @@ private[finagle] class DeadlineFilter[Req, Rep](
   def apply(request: Req, service: Service[Req, Rep]): Future[Rep] =
     Deadline.current match {
       case Some(deadline) =>
-        val now = Time.now
+        val now       = Time.now
         val remaining = deadline.deadline - now
 
         transitTimeStat.add(
-            (now - deadline.timestamp).max(Duration.Zero).inMilliseconds)
+          (now - deadline.timestamp).max(Duration.Zero).inMilliseconds
+        )
         budgetTimeStat.add(remaining.max(Duration.Zero).inMilliseconds)
 
         // Exceeded the deadline within tolerance, and there are enough

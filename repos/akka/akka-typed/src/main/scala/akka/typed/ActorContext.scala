@@ -132,7 +132,10 @@ trait ActorContext[T] {
     * handle.
     */
   def schedule[U](
-      delay: FiniteDuration, target: ActorRef[U], msg: U): untyped.Cancellable
+      delay: FiniteDuration,
+      target: ActorRef[U],
+      msg: U
+  ): untyped.Cancellable
 
   /**
     * This Actor’s execution context. It can be used to run asynchronous tasks
@@ -156,10 +159,10 @@ trait ActorContext[T] {
   * See [[EffectfulActorContext]] for more advanced uses.
   */
 class StubbedActorContext[T](val name: String, override val props: Props[T])(
-    override implicit val system: ActorSystem[Nothing])
-    extends ActorContext[T] {
+    override implicit val system: ActorSystem[Nothing]
+) extends ActorContext[T] {
 
-  val inbox = Inbox.sync[T](name)
+  val inbox         = Inbox.sync[T](name)
   override val self = inbox.ref
 
   private var _children = TreeMap.empty[String, Inbox.SyncInbox[_]]
@@ -178,7 +181,8 @@ class StubbedActorContext[T](val name: String, override val props: Props[T])(
     _children get name match {
       case Some(_) ⇒
         throw new untyped.InvalidActorNameException(
-            s"actor name $name is already taken")
+          s"actor name $name is already taken"
+        )
       case None ⇒
         val i = Inbox.sync[U](name)
         _children += name -> i
@@ -193,7 +197,8 @@ class StubbedActorContext[T](val name: String, override val props: Props[T])(
     _children get name match {
       case Some(_) ⇒
         throw new untyped.InvalidActorNameException(
-            s"actor name $name is already taken")
+          s"actor name $name is already taken"
+        )
       case None ⇒
         val i = Inbox.sync[Any](name)
         _children += name -> i
@@ -202,20 +207,22 @@ class StubbedActorContext[T](val name: String, override val props: Props[T])(
   override def stop(child: ActorRef[Nothing]): Boolean = {
     // removal is asynchronous, so don’t do it here; explicit removeInbox needed from outside
     _children.get(child.path.name) match {
-      case None ⇒ false
+      case None        ⇒ false
       case Some(inbox) ⇒ inbox.ref == child
     }
   }
-  def watch[U](other: ActorRef[U]): ActorRef[U] = other
-  def watch(other: akka.actor.ActorRef): other.type = other
-  def unwatch[U](other: ActorRef[U]): ActorRef[U] = other
+  def watch[U](other: ActorRef[U]): ActorRef[U]       = other
+  def watch(other: akka.actor.ActorRef): other.type   = other
+  def unwatch[U](other: ActorRef[U]): ActorRef[U]     = other
   def unwatch(other: akka.actor.ActorRef): other.type = other
-  def setReceiveTimeout(d: Duration): Unit = ()
+  def setReceiveTimeout(d: Duration): Unit            = ()
 
-  def schedule[U](delay: FiniteDuration,
-                  target: ActorRef[U],
-                  msg: U): untyped.Cancellable = new untyped.Cancellable {
-    def cancel() = false
+  def schedule[U](
+      delay: FiniteDuration,
+      target: ActorRef[U],
+      msg: U
+  ): untyped.Cancellable = new untyped.Cancellable {
+    def cancel()    = false
     def isCancelled = true
   }
   implicit def executionContext: ExecutionContextExecutor =
@@ -229,13 +236,13 @@ class StubbedActorContext[T](val name: String, override val props: Props[T])(
 
 /*
  * TODO
- * 
+ *
  * Currently running a behavior requires that the context stays the same, since
  * the behavior may well close over it and thus a change might not be effective
  * at all. Another issue is that there is genuine state within the context that
  * is coupled to the behavior’s state: if child actors were created then
  * migrating a behavior into a new context will not work.
- * 
+ *
  * This note is about remembering the reasons behind this restriction and
  * proposes an ActorContextProxy as a (broken) half-solution. Another avenue
  * by which a solution may be explored is for Pure behaviors in that they

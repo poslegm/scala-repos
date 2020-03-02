@@ -31,8 +31,11 @@ import json._
 
 package mongoclienttestdocs {
   case class SessCollection(
-      _id: ObjectId, name: String, dbtype: String, count: Int)
-      extends MongoDocument[SessCollection] {
+      _id: ObjectId,
+      name: String,
+      dbtype: String,
+      count: Int
+  ) extends MongoDocument[SessCollection] {
 
     def meta = SessCollection
   }
@@ -58,7 +61,7 @@ class MongoDocumentMongoClientSpec extends Specification with MongoTestKit {
 
     checkMongoIsRunning
 
-    val tc = SessCollection(ObjectId.get, "MongoSession", "db", 1)
+    val tc  = SessCollection(ObjectId.get, "MongoSession", "db", 1)
     val tc2 = SessCollection(ObjectId.get, "MongoSession", "db", 1)
     val tc3 = SessCollection(ObjectId.get, "MongoDB", "db", 1)
 

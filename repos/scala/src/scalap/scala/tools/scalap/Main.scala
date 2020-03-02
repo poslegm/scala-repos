@@ -26,21 +26,23 @@ import scalax.rules.scalasig._
   * @author Matthias Zenger, Stephane Micheloud, Burak Emir, Ilya Sergey
   */
 class Main {
-  val SCALA_SIG = "ScalaSig"
-  val SCALA_SIG_ANNOTATION = "Lscala/reflect/ScalaSignature;"
+  val SCALA_SIG                 = "ScalaSig"
+  val SCALA_SIG_ANNOTATION      = "Lscala/reflect/ScalaSignature;"
   val SCALA_LONG_SIG_ANNOTATION = "Lscala/reflect/ScalaLongSignature;"
-  val BYTES_VALUE = "bytes"
+  val BYTES_VALUE               = "bytes"
 
   val versionMsg = "Scala classfile decoder %s -- %s\n".format(
-      Properties.versionString, Properties.copyrightString)
+    Properties.versionString,
+    Properties.copyrightString
+  )
 
   /**Verbose program run?
     */
-  var verbose = false
+  var verbose       = false
   var printPrivates = false
 
   def isScalaFile(bytes: Array[Byte]): Boolean = {
-    val byteCode = ByteCode(bytes)
+    val byteCode  = ByteCode(bytes)
     val classFile = ClassFileParser.parse(byteCode)
     classFile.attribute("ScalaSig").isDefined
   }
@@ -51,7 +53,7 @@ class Main {
     */
   def processJavaClassFile(clazz: Classfile): Unit = {
     // construct a new output stream writer
-    val out = new OutputStreamWriter(Console.out)
+    val out    = new OutputStreamWriter(Console.out)
     val writer = new JavaWriter(clazz, out)
     // print the class
     writer.printClass()
@@ -62,9 +64,9 @@ class Main {
     s != null && (s.endsWith(".package") || s == "package")
 
   def parseScalaSignature(scalaSig: ScalaSig, isPackageObject: Boolean) = {
-    val baos = new ByteArrayOutputStream
+    val baos   = new ByteArrayOutputStream
     val stream = new PrintStream(baos)
-    val syms = scalaSig.topLevelClasses ++ scalaSig.topLevelObjects
+    val syms   = scalaSig.topLevelClasses ++ scalaSig.topLevelObjects
 
     syms.head.parent match {
       // Partial match
@@ -91,12 +93,12 @@ class Main {
   }
 
   def decompileScala(bytes: Array[Byte], isPackageObject: Boolean): String = {
-    val byteCode = ByteCode(bytes)
+    val byteCode  = ByteCode(bytes)
     val classFile = ClassFileParser.parse(byteCode)
 
     ScalaSigParser.parse(classFile) match {
       case Some(scalaSig) => parseScalaSignature(scalaSig, isPackageObject)
-      case None => ""
+      case None           => ""
     }
   }
 
@@ -104,11 +106,12 @@ class Main {
     *  class denoted by `classname`.
     */
   def process(args: Arguments, path: ClassFileLookup[AbstractFile])(
-      classname: String): Unit = {
+      classname: String
+  ): Unit = {
     // find the classfile
     val encName = classname match {
       case "scala.AnyRef" => "java.lang.Object"
-      case _ =>
+      case _              =>
         // we have to encode every fragment of a name separately, otherwise the NameTransformer
         // will encode using unicode escaping dot separators as well
         // we can afford allocations because this is not a performance critical code
@@ -118,8 +121,10 @@ class Main {
     path.findClassFile(encName) match {
       case Some(classFile) =>
         if (verbose) {
-          Console.println(Console.BOLD + "FILENAME" + Console.RESET + " = " +
-              classFile.path)
+          Console.println(
+            Console.BOLD + "FILENAME" + Console.RESET + " = " +
+              classFile.path
+          )
         }
         val bytes = classFile.toByteArray
         if (isScalaFile(bytes)) {
@@ -142,16 +147,16 @@ class Main {
 object Main extends Main {
 
   private object opts {
-    val cp = "-cp"
-    val help = "-help"
-    val classpath = "-classpath"
+    val cp              = "-cp"
+    val help            = "-help"
+    val classpath       = "-classpath"
     val showPrivateDefs = "-private"
-    val verbose = "-verbose"
-    val version = "-version"
+    val verbose         = "-verbose"
+    val version         = "-version"
 
-    val classPathImplType = "-YclasspathImpl"
+    val classPathImplType           = "-YclasspathImpl"
     val disableFlatClassPathCaching = "-YdisableFlatCpCaching"
-    val logClassPath = "-Ylog-classpath"
+    val logClassPath                = "-Ylog-classpath"
   }
 
   /** Prints usage information for scalap. */
@@ -183,20 +188,23 @@ object Main extends Main {
       // construct a custom class path
       val cpArg =
         List(opts.classpath, opts.cp) map arguments.getArgument reduceLeft
-        (_ orElse _)
+          (_ orElse _)
 
       val settings = new Settings()
 
       arguments getArgument opts.classPathImplType foreach settings.YclasspathImpl.tryToSetFromPropertyValue
-      settings.YdisableFlatCpCaching.value = arguments contains opts.disableFlatClassPathCaching
+      settings.YdisableFlatCpCaching.value =
+        arguments contains opts.disableFlatClassPathCaching
       settings.Ylogcp.value = arguments contains opts.logClassPath
 
       val path = createClassPath(cpArg, settings)
 
       // print the classpath if output is verbose
       if (verbose)
-        Console.println(Console.BOLD + "CLASSPATH" + Console.RESET + " = " +
-            path.asClassPathString)
+        Console.println(
+          Console.BOLD + "CLASSPATH" + Console.RESET + " = " +
+            path.asClassPathString
+        )
 
       // process all given classes
       arguments.getOthers foreach process(arguments, path)
@@ -223,10 +231,13 @@ object Main extends Main {
         settings.YclasspathImpl.value match {
           case ClassPathRepresentationType.Flat =>
             AggregateFlatClassPath(
-                new FlatClassPathFactory(settings).classesInExpandedPath(cp))
+              new FlatClassPathFactory(settings).classesInExpandedPath(cp)
+            )
           case ClassPathRepresentationType.Recursive =>
-            new JavaClassPath(DefaultJavaContext.classesInExpandedPath(cp),
-                              DefaultJavaContext)
+            new JavaClassPath(
+              DefaultJavaContext.classesInExpandedPath(cp),
+              DefaultJavaContext
+            )
         }
       case _ =>
         settings.classpath.value = "." // include '.' in the default classpath SI-6669

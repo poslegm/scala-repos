@@ -17,13 +17,13 @@ object O {
     override type YTag = ExampleTagY
   }
   sealed trait ExampleTagY extends TypeTag
-  type Example = AnyRef @@ ExampleTag
+  type Example  = AnyRef @@ ExampleTag
   type ExampleY = String @@ ExampleTagY
 
   val ExampleF = new F[ExampleTag]
 
   def foo1(y: ExampleY) = 1
-  def foo1(s: String) = s
+  def foo1(s: String)   = s
 
   /*start*/
   foo1(ExampleF()) /*end*/

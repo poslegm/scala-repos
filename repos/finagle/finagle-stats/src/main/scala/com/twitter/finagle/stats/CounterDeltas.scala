@@ -44,7 +44,7 @@ private[stats] class CounterDeltas {
     val next = new JHashMap[String, Last](newCounters.size)
     newCounters.asScala.foreach {
       case (k, v) =>
-        val last = lasts.get(k)
+        val last    = lasts.get(k)
         val current = v.longValue
         val delta =
           if (last == null) current

@@ -31,7 +31,9 @@ class DictionaryEncodingSuite extends SparkFunSuite {
   testDictionaryEncoding(new StringColumnStats, STRING)
 
   def testDictionaryEncoding[T <: AtomicType](
-      columnStats: ColumnStats, columnType: NativeColumnType[T]) {
+      columnStats: ColumnStats,
+      columnType: NativeColumnType[T]
+  ) {
 
     val typeName = columnType.getClass.getSimpleName.stripSuffix("$")
 
@@ -54,9 +56,12 @@ class DictionaryEncodingSuite extends SparkFunSuite {
       // -------------
 
       val builder = TestCompressibleColumnBuilder(
-          columnStats, columnType, DictionaryEncoding)
-      val (values, rows) = makeUniqueValuesAndSingleValueRows(
-          columnType, uniqueValueCount)
+        columnStats,
+        columnType,
+        DictionaryEncoding
+      )
+      val (values, rows) =
+        makeUniqueValuesAndSingleValueRows(columnType, uniqueValueCount)
       val dictValues = stableDistinct(inputSeq)
 
       inputSeq.foreach(i => builder.appendFrom(rows(i), 0))
@@ -68,7 +73,7 @@ class DictionaryEncodingSuite extends SparkFunSuite {
           }
         }
       } else {
-        val buffer = builder.build()
+        val buffer     = builder.build()
         val headerSize = CompressionScheme.columnHeaderSize(buffer)
         // 4 extra bytes for dictionary size
         val dictionarySize = 4 + rows.map(columnType.actualSize(_, 0)).sum
@@ -76,12 +81,14 @@ class DictionaryEncodingSuite extends SparkFunSuite {
         val compressedSize = 4 + dictionarySize + 2 * inputSeq.length
         // 4 extra bytes for compression scheme type ID
         assertResult(headerSize + compressedSize, "Wrong buffer capacity")(
-            buffer.capacity)
+          buffer.capacity
+        )
 
         // Skips column header
         buffer.position(headerSize)
         assertResult(DictionaryEncoding.typeId, "Wrong compression scheme ID")(
-            buffer.getInt())
+          buffer.getInt()
+        )
 
         val dictionary = buildDictionary(buffer).toMap
 
@@ -93,7 +100,8 @@ class DictionaryEncodingSuite extends SparkFunSuite {
 
         inputSeq.foreach { i =>
           assertResult(i.toShort, "Wrong column element value")(
-              buffer.getShort())
+            buffer.getShort()
+          )
         }
 
         // -------------
@@ -103,7 +111,7 @@ class DictionaryEncodingSuite extends SparkFunSuite {
         // Rewinds, skips column header and 4 more bytes for compression scheme ID
         buffer.rewind().position(headerSize + 4)
 
-        val decoder = DictionaryEncoding.decoder(buffer, columnType)
+        val decoder    = DictionaryEncoding.decoder(buffer, columnType)
         val mutableRow = new GenericMutableRow(1)
 
         if (inputSeq.nonEmpty) {
@@ -129,8 +137,10 @@ class DictionaryEncodingSuite extends SparkFunSuite {
     }
 
     test(s"$DictionaryEncoding with $typeName: dictionary overflow") {
-      skeleton(DictionaryEncoding.MAX_DICT_SIZE + 1,
-               0 to DictionaryEncoding.MAX_DICT_SIZE)
+      skeleton(
+        DictionaryEncoding.MAX_DICT_SIZE + 1,
+        0 to DictionaryEncoding.MAX_DICT_SIZE
+      )
     }
   }
 }

@@ -13,27 +13,28 @@ package object runtime {
 
   def wrapJavaScriptException(e: Any): Throwable = e match {
     case e: Throwable => e
-    case _ => js.JavaScriptException(e)
+    case _            => js.JavaScriptException(e)
   }
 
   def unwrapJavaScriptException(th: Throwable): Any = th match {
     case js.JavaScriptException(e) => e
-    case _ => th
+    case _                         => th
   }
 
   def cloneObject(from: js.Object): js.Object = {
-    val fromDyn = from.asInstanceOf[js.Dynamic]
-    val result = js.Dynamic.newInstance(fromDyn.constructor)()
-    val fromDict = from.asInstanceOf[js.Dictionary[js.Any]]
+    val fromDyn    = from.asInstanceOf[js.Dynamic]
+    val result     = js.Dynamic.newInstance(fromDyn.constructor)()
+    val fromDict   = from.asInstanceOf[js.Dictionary[js.Any]]
     val resultDict = result.asInstanceOf[js.Dictionary[js.Any]]
     for (key <- fromDict.keys) resultDict(key) = fromDict(key)
     result
   }
 
   @inline final def genTraversableOnce2jsArray[A](
-      col: GenTraversableOnce[A]): js.Array[A] = {
+      col: GenTraversableOnce[A]
+  ): js.Array[A] = {
     col match {
-      case col: js.ArrayOps[A] => col.result()
+      case col: js.ArrayOps[A]     => col.result()
       case col: js.WrappedArray[A] => col.array
       case _ =>
         val result = new js.Array[A]
@@ -43,7 +44,8 @@ package object runtime {
   }
 
   final def jsTupleArray2jsObject(
-      tuples: js.Array[(String, js.Any)]): js.Object with js.Dynamic = {
+      tuples: js.Array[(String, js.Any)]
+  ): js.Object with js.Dynamic = {
     val result = js.Dynamic.literal()
     for ((name, value) <- tuples) result.updateDynamic(name)(value)
     result
@@ -77,7 +79,8 @@ package object runtime {
     *  `js.ConstructorTag.materialize`.
     */
   def newConstructorTag[T <: js.Any](
-      constructor: js.Dynamic): js.ConstructorTag[T] =
+      constructor: js.Dynamic
+  ): js.ConstructorTag[T] =
     new js.ConstructorTag[T](constructor)
 
   /** Returns an array of the enumerable properties in an object's prototype
@@ -90,16 +93,16 @@ package object runtime {
     if (obj == null || js.isUndefined(obj)) {
       js.Array()
     } else {
-      val result = new js.Array[String]
+      val result      = new js.Array[String]
       val alreadySeen = js.Dictionary.empty[Boolean]
 
       @tailrec
       def loop(obj: js.Object): Unit = {
         if (obj != null) {
           // Add own enumerable properties that have not been seen yet
-          val enumProps = js.Object.keys(obj)
+          val enumProps    = js.Object.keys(obj)
           val enumPropsLen = enumProps.length
-          var i = 0
+          var i            = 0
           while (i < enumPropsLen) {
             val prop = enumProps(i)
             if (!alreadySeen.get(prop).isDefined) result.push(prop)
@@ -109,9 +112,9 @@ package object runtime {
           /* Add all own properties to the alreadySeen set, including
            * non-enumerable ones.
            */
-          val allProps = js.Object.getOwnPropertyNames(obj)
+          val allProps    = js.Object.getOwnPropertyNames(obj)
           val allPropsLen = allProps.length
-          var j = 0
+          var j           = 0
           while (j < allPropsLen) {
             alreadySeen(allProps(j)) = true
             j += 1
@@ -161,15 +164,15 @@ package object runtime {
     if (v.isNaN || v == 0.0 || v.isInfinite) {
       v
     } else {
-      val LN2 = 0.6931471805599453
-      val ebits = 8
-      val fbits = 23
-      val bias = (1 << (ebits - 1)) - 1
-      val twoPowFbits = (1 << fbits).toDouble
-      val SubnormalThreshold = 1.1754943508222875E-38 // pow(2, 1-bias)
+      val LN2                = 0.6931471805599453
+      val ebits              = 8
+      val fbits              = 23
+      val bias               = (1 << (ebits - 1)) - 1
+      val twoPowFbits        = (1 << fbits).toDouble
+      val SubnormalThreshold = 1.1754943508222875e-38 // pow(2, 1-bias)
 
       val isNegative = v < 0
-      val av = if (isNegative) -v else v
+      val av         = if (isNegative) -v else v
 
       val absResult =
         if (av >= SubnormalThreshold) {
@@ -180,7 +183,7 @@ package object runtime {
             Double.PositiveInfinity
           } else {
             val twoPowE0 = pow(2, e0)
-            val f0 = Bits.roundToEven(av / twoPowE0 * twoPowFbits)
+            val f0       = Bits.roundToEven(av / twoPowE0 * twoPowFbits)
             if (f0 / twoPowFbits >= 2) {
               //val e = e0 + 1.0 // not used
               val f = 1.0
@@ -196,7 +199,7 @@ package object runtime {
             } else {
               // Normalized case 2
               // val e = e0 // not used
-              val f = f0
+              val f       = f0
               val twoPowE = twoPowE0
               twoPowE * (1.0 + (f - twoPowFbits) / twoPowFbits)
             }

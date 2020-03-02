@@ -92,10 +92,11 @@ private[coordinator] case object Dead extends GroupState {
 
 private object GroupMetadata {
   private val validPreviousStates: Map[GroupState, Set[GroupState]] = Map(
-      Dead -> Set(Stable, PreparingRebalance, AwaitingSync),
-      AwaitingSync -> Set(PreparingRebalance),
-      Stable -> Set(AwaitingSync),
-      PreparingRebalance -> Set(Stable, AwaitingSync))
+    Dead               -> Set(Stable, PreparingRebalance, AwaitingSync),
+    AwaitingSync       -> Set(PreparingRebalance),
+    Stable             -> Set(AwaitingSync),
+    PreparingRebalance -> Set(Stable, AwaitingSync)
+  )
 }
 
 /**
@@ -106,10 +107,12 @@ case class GroupOverview(groupId: String, protocolType: String)
 /**
   * Case class used to represent group metadata for the DescribeGroup API
   */
-case class GroupSummary(state: String,
-                        protocolType: String,
-                        protocol: String,
-                        members: List[MemberSummary])
+case class GroupSummary(
+    state: String,
+    protocolType: String,
+    protocol: String,
+    members: List[MemberSummary]
+)
 
 /**
   * Group contains the following metadata:
@@ -126,18 +129,20 @@ case class GroupSummary(state: String,
   */
 @nonthreadsafe
 private[coordinator] class GroupMetadata(
-    val groupId: String, val protocolType: String) {
+    val groupId: String,
+    val protocolType: String
+) {
 
-  private val members = new mutable.HashMap[String, MemberMetadata]
+  private val members           = new mutable.HashMap[String, MemberMetadata]
   private var state: GroupState = Stable
-  var generationId = 0
-  var leaderId: String = null
-  var protocol: String = null
+  var generationId              = 0
+  var leaderId: String          = null
+  var protocol: String          = null
 
-  def is(groupState: GroupState) = state == groupState
+  def is(groupState: GroupState)  = state == groupState
   def not(groupState: GroupState) = state != groupState
-  def has(memberId: String) = members.contains(memberId)
-  def get(memberId: String) = members(memberId)
+  def has(memberId: String)       = members.contains(memberId)
+  def get(memberId: String)       = members(memberId)
 
   def add(memberId: String, member: MemberMetadata) {
     assert(supportsProtocols(member.protocols))
@@ -220,7 +225,8 @@ private[coordinator] class GroupMetadata(
   def currentMemberMetadata: Map[String, Array[Byte]] = {
     if (is(Dead) || is(PreparingRebalance))
       throw new IllegalStateException(
-          "Cannot obtain member metadata for group in state %s".format(state))
+        "Cannot obtain member metadata for group in state %s".format(state)
+      )
     members.map {
       case (memberId, memberMetadata) =>
         (memberId, memberMetadata.metadata(protocol))
@@ -238,7 +244,11 @@ private[coordinator] class GroupMetadata(
         member.summaryNoMetadata()
       }.toList
       GroupSummary(
-          state.toString, protocolType, GroupCoordinator.NoProtocol, members)
+        state.toString,
+        protocolType,
+        GroupCoordinator.NoProtocol,
+        members
+      )
     }
   }
 
@@ -249,16 +259,22 @@ private[coordinator] class GroupMetadata(
   private def assertValidTransition(targetState: GroupState) {
     if (!GroupMetadata.validPreviousStates(targetState).contains(state))
       throw new IllegalStateException(
-          "Group %s should be in the %s states before moving to %s state. Instead it is in %s state"
-            .format(
-              groupId,
-              GroupMetadata.validPreviousStates(targetState).mkString(","),
-              targetState,
-              state))
+        "Group %s should be in the %s states before moving to %s state. Instead it is in %s state"
+          .format(
+            groupId,
+            GroupMetadata.validPreviousStates(targetState).mkString(","),
+            targetState,
+            state
+          )
+      )
   }
 
   override def toString = {
     "[%s,%s,%s,%s]".format(
-        groupId, protocolType, currentState.toString, members)
+      groupId,
+      protocolType,
+      currentState.toString,
+      members
+    )
   }
 }

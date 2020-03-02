@@ -17,7 +17,14 @@
 
 package org.apache.spark.mllib.stat.distribution
 
-import breeze.linalg.{diag, eigSym, max, DenseMatrix => DBM, DenseVector => DBV, Vector => BV}
+import breeze.linalg.{
+  diag,
+  eigSym,
+  max,
+  DenseMatrix => DBM,
+  DenseVector => DBV,
+  Vector => BV
+}
 
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.mllib.linalg.{Matrices, Matrix, Vector, Vectors}
@@ -35,13 +42,16 @@ import org.apache.spark.mllib.util.MLUtils
   */
 @Since("1.3.0")
 @DeveloperApi
-class MultivariateGaussian @Since("1.3.0")(
-    @Since("1.3.0") val mu: Vector, @Since("1.3.0") val sigma: Matrix)
-    extends Serializable {
+class MultivariateGaussian @Since("1.3.0") (
+    @Since("1.3.0") val mu: Vector,
+    @Since("1.3.0") val sigma: Matrix
+) extends Serializable {
 
   require(sigma.numCols == sigma.numRows, "Covariance matrix must be square")
-  require(mu.size == sigma.numCols,
-          "Mean vector length must match covariance matrix size")
+  require(
+    mu.size == sigma.numCols,
+    "Mean vector length must match covariance matrix size"
+  )
 
   private val breezeMu = mu.toBreeze.toDenseVector
 
@@ -85,7 +95,7 @@ class MultivariateGaussian @Since("1.3.0")(
   /** Returns the log-density of this multivariate Gaussian at given point, x */
   private[mllib] def logpdf(x: BV[Double]): Double = {
     val delta = x - breezeMu
-    val v = rootSigmaInv * delta
+    val v     = rootSigmaInv * delta
     u + v.t * v * -0.5
   }
 
@@ -132,15 +142,19 @@ class MultivariateGaussian @Since("1.3.0")(
 
       // calculate the root-pseudo-inverse of the diagonal matrix of singular values
       // by inverting the square root of all non-zero values
-      val pinvS = diag(new DBV(
-              d.map(v => if (v > tol) math.sqrt(1.0 / v) else 0.0).toArray))
+      val pinvS = diag(
+        new DBV(d.map(v => if (v > tol) math.sqrt(1.0 / v) else 0.0).toArray)
+      )
 
-      (pinvS * u.t,
-       -0.5 * (mu.size * math.log(2.0 * math.Pi) + logPseudoDetSigma))
+      (
+        pinvS * u.t,
+        -0.5 * (mu.size * math.log(2.0 * math.Pi) + logPseudoDetSigma)
+      )
     } catch {
       case uex: UnsupportedOperationException =>
         throw new IllegalArgumentException(
-            "Covariance matrix has no non-zero singular values")
+          "Covariance matrix has no non-zero singular values"
+        )
     }
   }
 }

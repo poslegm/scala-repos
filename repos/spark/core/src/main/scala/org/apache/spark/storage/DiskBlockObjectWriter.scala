@@ -42,18 +42,19 @@ private[spark] class DiskBlockObjectWriter(
     // These write metrics concurrently shared with other active DiskBlockObjectWriters who
     // are themselves performing writes. All updates must be relative.
     writeMetrics: ShuffleWriteMetrics,
-    val blockId: BlockId = null)
-    extends OutputStream with Logging {
+    val blockId: BlockId = null
+) extends OutputStream
+    with Logging {
 
   /** The file channel, used for repositioning / truncating the file. */
-  private var channel: FileChannel = null
-  private var bs: OutputStream = null
-  private var fos: FileOutputStream = null
+  private var channel: FileChannel         = null
+  private var bs: OutputStream             = null
+  private var fos: FileOutputStream        = null
   private var ts: TimeTrackingOutputStream = null
-  private var objOut: SerializationStream = null
-  private var initialized = false
-  private var hasBeenClosed = false
-  private var commitAndCloseHasBeenCalled = false
+  private var objOut: SerializationStream  = null
+  private var initialized                  = false
+  private var hasBeenClosed                = false
+  private var commitAndCloseHasBeenCalled  = false
 
   /**
     * Cursors used to represent positions in the file.
@@ -70,9 +71,9 @@ private[spark] class DiskBlockObjectWriter(
     * -----: Current writes to the underlying file.
     * xxxxx: Existing contents of the file.
     */
-  private val initialPosition = file.length()
+  private val initialPosition     = file.length()
   private var finalPosition: Long = -1
-  private var reportedPosition = initialPosition
+  private var reportedPosition    = initialPosition
 
   /**
     * Keep track of number of records written and also use this to periodically
@@ -83,7 +84,8 @@ private[spark] class DiskBlockObjectWriter(
   def open(): DiskBlockObjectWriter = {
     if (hasBeenClosed) {
       throw new IllegalStateException(
-          "Writer already closed. Cannot be reopened.")
+        "Writer already closed. Cannot be reopened."
+      )
     }
     fos = new FileOutputStream(file, true)
     ts = new TimeTrackingOutputStream(writeMetrics, fos)
@@ -167,9 +169,11 @@ private[spark] class DiskBlockObjectWriter(
       }
     } catch {
       case e: Exception =>
-        logError("Uncaught exception while reverting partial writes to file " +
-                 file,
-                 e)
+        logError(
+          "Uncaught exception while reverting partial writes to file " +
+            file,
+          e
+        )
         file
     }
   }
@@ -217,7 +221,8 @@ private[spark] class DiskBlockObjectWriter(
   def fileSegment(): FileSegment = {
     if (!commitAndCloseHasBeenCalled) {
       throw new IllegalStateException(
-          "fileSegment() is only valid after commitAndClose() has been called")
+        "fileSegment() is only valid after commitAndClose() has been called"
+      )
     }
     new FileSegment(file, initialPosition, finalPosition - initialPosition)
   }

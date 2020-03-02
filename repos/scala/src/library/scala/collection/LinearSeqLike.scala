@@ -38,11 +38,12 @@ trait LinearSeqLike[+A, +Repr <: LinearSeqLike[A, Repr]]
   def seq: LinearSeq[A]
 
   override def hashCode() =
-    scala.util.hashing.MurmurHash3.seqHash(seq) // TODO - can we get faster via "linearSeqHash" ?
+    scala.util.hashing.MurmurHash3
+      .seqHash(seq) // TODO - can we get faster via "linearSeqHash" ?
 
   override /*IterableLike*/
   def iterator: Iterator[A] = new AbstractIterator[A] {
-    var these = self
+    var these            = self
     def hasNext: Boolean = !these.isEmpty
     def next(): A =
       if (hasNext) {
@@ -65,8 +66,9 @@ trait LinearSeqLike[+A, +Repr <: LinearSeqLike[A, Repr]]
     }
   }
 
-  @tailrec override final def corresponds[B](that: GenSeq[B])(
-      p: (A, B) => Boolean): Boolean = {
+  @tailrec override final def corresponds[B](
+      that: GenSeq[B]
+  )(p: (A, B) => Boolean): Boolean = {
     if (this.isEmpty) that.isEmpty
     else that.nonEmpty && p(head, that.head) && (tail corresponds that.tail)(p)
   }

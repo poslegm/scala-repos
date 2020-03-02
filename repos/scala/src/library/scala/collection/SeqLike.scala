@@ -59,8 +59,10 @@ import scala.math.Ordering
   *  @define orderDependentFold
   */
 trait SeqLike[+A, +Repr]
-    extends Any with IterableLike[A, Repr]
-    with GenSeqLike[A, Repr] with Parallelizable[A, ParSeq[A]] {
+    extends Any
+    with IterableLike[A, Repr]
+    with GenSeqLike[A, Repr]
+    with Parallelizable[A, ParSeq[A]] {
   self =>
 
   override protected[this] def thisCollection: Seq[A] =
@@ -90,7 +92,7 @@ trait SeqLike[+A, +Repr]
   def lengthCompare(len: Int): Int = {
     if (len < 0) 1
     else {
-      var i = 0
+      var i  = 0
       val it = iterator
       while (it.hasNext) {
         if (i == len) return if (it.hasNext) 1 else 0
@@ -110,14 +112,14 @@ trait SeqLike[+A, +Repr]
   override def size = length
 
   def segmentLength(p: A => Boolean, from: Int): Int = {
-    var i = 0
+    var i  = 0
     val it = iterator.drop(from)
     while (it.hasNext && p(it.next())) i += 1
     i
   }
 
   def indexWhere(p: A => Boolean, from: Int): Int = {
-    var i = from
+    var i  = from
     val it = iterator.drop(from)
     while (it.hasNext) {
       if (p(it.next())) return i
@@ -128,7 +130,7 @@ trait SeqLike[+A, +Repr]
   }
 
   def lastIndexWhere(p: A => Boolean, end: Int): Int = {
-    var i = length - 1
+    var i  = length - 1
     val it = reverseIterator
     while (it.hasNext && { val elem = it.next(); (i > end || !p(elem)) }) i -= 1
     i
@@ -162,15 +164,15 @@ trait SeqLike[+A, +Repr]
 
   private class PermutationsItr extends AbstractIterator[Repr] {
     private[this] val (elms, idxs) = init()
-    private var _hasNext = true
+    private var _hasNext           = true
 
     def hasNext = _hasNext
     def next(): Repr = {
       if (!hasNext) Iterator.empty.next()
 
       val forcedElms = new mutable.ArrayBuffer[A](elms.size) ++= elms
-      val result = (self.newBuilder ++= forcedElms).result()
-      var i = idxs.length - 2
+      val result     = (self.newBuilder ++= forcedElms).result()
+      var i          = idxs.length - 2
       while (i >= 0 && idxs(i) >= idxs(i + 1)) i -= 1
 
       if (i < 0) _hasNext = false
@@ -180,7 +182,7 @@ trait SeqLike[+A, +Repr]
         swap(i, j)
 
         val len = (idxs.length - i) / 2
-        var k = 1
+        var k   = 1
         while (k <= len) {
           swap(i + k, idxs.length - k)
           k += 1
@@ -200,7 +202,7 @@ trait SeqLike[+A, +Repr]
     private[this] def init() = {
       val m = mutable.HashMap[A, Int]()
       val (es, is) = (thisCollection map
-          (e => (e, m.getOrElseUpdate(e, m.size))) sortBy (_._2)).unzip
+        (e => (e, m.getOrElseUpdate(e, m.size))) sortBy (_._2)).unzip
 
       (es.toBuffer, is.toArray)
     }
@@ -211,8 +213,8 @@ trait SeqLike[+A, +Repr]
     // (1) nums(0) + .. + nums(length-1) = n
     // (2) 0 <= nums(i) <= cnts(i), where 0 <= i <= cnts.length-1
     private val (elms, cnts, nums) = init()
-    private val offs = cnts.scanLeft(0)(_ + _)
-    private var _hasNext = true
+    private val offs               = cnts.scanLeft(0)(_ + _)
+    private var _hasNext           = true
 
     def hasNext = _hasNext
     def next(): Repr = {
@@ -220,8 +222,9 @@ trait SeqLike[+A, +Repr]
 
       /* Calculate this result. */
       val buf = self.newBuilder
-      for (k <- 0 until nums.length; j <- 0 until nums(k)) buf +=
-        elms(offs(k) + j)
+      for (k <- 0 until nums.length; j <- 0 until nums(k))
+        buf +=
+          elms(offs(k) + j)
       val res = buf.result()
 
       /* Prepare for the next call to next. */
@@ -253,7 +256,7 @@ trait SeqLike[+A, +Repr]
 
       // e => (e, weight(e))
       val (es, is) = (thisCollection map
-          (e => (e, m.getOrElseUpdate(e, m.size))) sortBy (_._2)).unzip
+        (e => (e, m.getOrElseUpdate(e, m.size))) sortBy (_._2)).unzip
       val cs = new Array[Int](m.size)
       is foreach (i => cs(i) += 1)
       val ns = new Array[Int](cs.length)
@@ -276,8 +279,9 @@ trait SeqLike[+A, +Repr]
     b.result()
   }
 
-  def reverseMap[B, That](f: A => B)(
-      implicit bf: CanBuildFrom[Repr, B, That]): That = {
+  def reverseMap[B, That](
+      f: A => B
+  )(implicit bf: CanBuildFrom[Repr, B, That]): That = {
     var xs: List[A] = List()
     for (x <- this) xs = x :: xs
     val b = bf(repr)
@@ -329,17 +333,24 @@ trait SeqLike[+A, +Repr]
     */
   def indexOfSlice[B >: A](that: GenSeq[B], from: Int): Int =
     if (this.hasDefiniteSize && that.hasDefiniteSize) {
-      val l = length
-      val tl = that.length
+      val l           = length
+      val tl          = that.length
       val clippedFrom = math.max(0, from)
       if (from > l) -1
       else if (tl < 1) clippedFrom
       else if (l < tl) -1
       else
         SeqLike.kmpSearch(
-            thisCollection, clippedFrom, l, that.seq, 0, tl, forward = true)
+          thisCollection,
+          clippedFrom,
+          l,
+          that.seq,
+          0,
+          tl,
+          forward = true
+        )
     } else {
-      var i = from
+      var i         = from
       var s: Seq[A] = thisCollection drop i
       while (!s.isEmpty) {
         if (s startsWith that) return i
@@ -366,8 +377,8 @@ trait SeqLike[+A, +Repr]
     *           match the elements of sequence `that`, or `-1` of no such subsequence exists.
     */
   def lastIndexOfSlice[B >: A](that: GenSeq[B], end: Int): Int = {
-    val l = length
-    val tl = that.length
+    val l        = length
+    val tl       = that.length
     val clippedL = math.min(l - tl, end)
 
     if (end < 0) -1
@@ -375,7 +386,14 @@ trait SeqLike[+A, +Repr]
     else if (l < tl) -1
     else
       SeqLike.kmpSearch(
-          thisCollection, 0, clippedL + tl, that.seq, 0, tl, forward = false)
+        thisCollection,
+        0,
+        clippedL + tl,
+        that.seq,
+        0,
+        tl,
+        forward = false
+      )
   }
 
   /** Tests whether this $coll contains a given sequence as a slice.
@@ -416,8 +434,9 @@ trait SeqLike[+A, +Repr]
     *    @return       a new $coll which contains all elements of this $coll
     *                  followed by all elements of `that`.
     */
-  override def union[B >: A, That](that: GenSeq[B])(
-      implicit bf: CanBuildFrom[Repr, B, That]): That =
+  override def union[B >: A, That](
+      that: GenSeq[B]
+  )(implicit bf: CanBuildFrom[Repr, B, That]): That =
     this ++ that
 
   /** Computes the multiset difference between this $coll and another sequence.
@@ -442,7 +461,7 @@ trait SeqLike[+A, +Repr]
     */
   def diff[B >: A](that: GenSeq[B]): Repr = {
     val occ = occCounts(that.seq)
-    val b = newBuilder
+    val b   = newBuilder
     for (x <- this) {
       val ox = occ(x) // Avoid multiple map lookups
       if (ox == 0) b += x
@@ -473,7 +492,7 @@ trait SeqLike[+A, +Repr]
     */
   def intersect[B >: A](that: GenSeq[B]): Repr = {
     val occ = occCounts(that.seq)
-    val b = newBuilder
+    val b   = newBuilder
     for (x <- this) {
       val ox = occ(x) // Avoid multiple map lookups
       if (ox > 0) {
@@ -496,7 +515,7 @@ trait SeqLike[+A, +Repr]
     *  @return  A new $coll which contains the first occurrence of every element of this $coll.
     */
   def distinct: Repr = {
-    val b = newBuilder
+    val b    = newBuilder
     val seen = mutable.HashSet[A]()
     for (x <- this) {
       if (!seen(x)) {
@@ -508,9 +527,10 @@ trait SeqLike[+A, +Repr]
   }
 
   def patch[B >: A, That](from: Int, patch: GenSeq[B], replaced: Int)(
-      implicit bf: CanBuildFrom[Repr, B, That]): That = {
-    val b = bf(repr)
-    var i = 0
+      implicit bf: CanBuildFrom[Repr, B, That]
+  ): That = {
+    val b  = bf(repr)
+    var i  = 0
     val it = this.iterator
     while (i < from && it.hasNext) {
       b += it.next()
@@ -527,10 +547,11 @@ trait SeqLike[+A, +Repr]
   }
 
   def updated[B >: A, That](index: Int, elem: B)(
-      implicit bf: CanBuildFrom[Repr, B, That]): That = {
+      implicit bf: CanBuildFrom[Repr, B, That]
+  ): That = {
     if (index < 0) throw new IndexOutOfBoundsException(index.toString)
-    val b = bf(repr)
-    var i = 0
+    val b  = bf(repr)
+    var i  = 0
     val it = this.iterator
     while (i < index && it.hasNext) {
       b += it.next()
@@ -543,16 +564,18 @@ trait SeqLike[+A, +Repr]
     b.result()
   }
 
-  def +:[B >: A, That](elem: B)(
-      implicit bf: CanBuildFrom[Repr, B, That]): That = {
+  def +:[B >: A, That](
+      elem: B
+  )(implicit bf: CanBuildFrom[Repr, B, That]): That = {
     val b = bf(repr)
     b += elem
     b ++= thisCollection
     b.result()
   }
 
-  def :+[B >: A, That](elem: B)(
-      implicit bf: CanBuildFrom[Repr, B, That]): That = {
+  def :+[B >: A, That](
+      elem: B
+  )(implicit bf: CanBuildFrom[Repr, B, That]): That = {
     val b = bf(repr)
     b ++= thisCollection
     b += elem
@@ -560,7 +583,8 @@ trait SeqLike[+A, +Repr]
   }
 
   def padTo[B >: A, That](len: Int, elem: B)(
-      implicit bf: CanBuildFrom[Repr, B, That]): That = {
+      implicit bf: CanBuildFrom[Repr, B, That]
+  ): That = {
     val b = bf(repr)
     val L = length
     b.sizeHint(math.max(L, len))
@@ -634,12 +658,14 @@ trait SeqLike[+A, +Repr]
     */
   def sorted[B >: A](implicit ord: Ordering[B]): Repr = {
     val len = this.length
-    val b = newBuilder
+    val b   = newBuilder
     if (len == 1) b ++= this
     else if (len > 1) {
       b.sizeHint(len)
       val arr =
-        new Array[AnyRef](len) // Previously used ArraySeq for more compact but slower code
+        new Array[AnyRef](
+          len
+        ) // Previously used ArraySeq for more compact but slower code
       var i = 0
       for (x <- this) {
         arr(i) = x.asInstanceOf[AnyRef]
@@ -670,16 +696,16 @@ trait SeqLike[+A, +Repr]
 
   override def view = new SeqView[A, Repr] {
     protected lazy val underlying = self.repr
-    override def iterator = self.iterator
-    override def length = self.length
-    override def apply(idx: Int) = self.apply(idx)
+    override def iterator         = self.iterator
+    override def length           = self.length
+    override def apply(idx: Int)  = self.apply(idx)
   }
 
   override def view(from: Int, until: Int) = view.slice(from, until)
 
   /* Need to override string, so that it's not the Function1's string that gets mixed in.
    */
-  override def toString = super [IterableLike].toString
+  override def toString = super[IterableLike].toString
 }
 
 /** The companion object for trait `SeqLike`.
@@ -697,34 +723,39 @@ object SeqLike {
     *  @return Target packed in an IndexedSeq (taken from iterator unless W already is an IndexedSeq)
     */
   private def kmpOptimizeWord[B](
-      W: Seq[B], n0: Int, n1: Int, forward: Boolean) = W match {
+      W: Seq[B],
+      n0: Int,
+      n1: Int,
+      forward: Boolean
+  ) = W match {
     case iso: IndexedSeq[_] =>
       // Already optimized for indexing--use original (or custom view of original)
       if (forward && n0 == 0 && n1 == W.length) iso.asInstanceOf[IndexedSeq[B]]
       else if (forward)
         new AbstractSeq[B] with IndexedSeq[B] {
-          val length = n1 - n0
+          val length        = n1 - n0
           def apply(x: Int) = iso(n0 + x).asInstanceOf[B]
-        } else
+        }
+      else
         new AbstractSeq[B] with IndexedSeq[B] {
-          def length = n1 - n0
+          def length        = n1 - n0
           def apply(x: Int) = iso(n1 - 1 - x).asInstanceOf[B]
         }
     case _ =>
       // W is probably bad at indexing.  Pack in array (in correct orientation)
       // Would be marginally faster to special-case each direction
       new AbstractSeq[B] with IndexedSeq[B] {
-        private[this] val Warr = new Array[AnyRef](n1 - n0)
+        private[this] val Warr  = new Array[AnyRef](n1 - n0)
         private[this] val delta = if (forward) 1 else -1
-        private[this] val done = if (forward) n1 - n0 else -1
-        val wit = W.iterator.drop(n0)
-        var i = if (forward) 0 else (n1 - n0 - 1)
+        private[this] val done  = if (forward) n1 - n0 else -1
+        val wit                 = W.iterator.drop(n0)
+        var i                   = if (forward) 0 else (n1 - n0 - 1)
         while (i != done) {
           Warr(i) = wit.next().asInstanceOf[AnyRef]
           i += delta
         }
 
-        val length = n1 - n0
+        val length        = n1 - n0
         def apply(x: Int) = Warr(x).asInstanceOf[B]
       }
   }
@@ -772,13 +803,15 @@ object SeqLike {
     *  @param  forward Direction of search (from beginning==true, from end==false)
     *  @return Index of start of sequence if found, -1 if not (relative to beginning of S, not m0).
     */
-  private def kmpSearch[B](S: Seq[B],
-                           m0: Int,
-                           m1: Int,
-                           W: Seq[B],
-                           n0: Int,
-                           n1: Int,
-                           forward: Boolean): Int = {
+  private def kmpSearch[B](
+      S: Seq[B],
+      m0: Int,
+      m1: Int,
+      W: Seq[B],
+      n0: Int,
+      n1: Int,
+      forward: Boolean
+  ): Int = {
     // Check for redundant case when target has single valid element
     def clipR(x: Int, y: Int) = if (x < y) x else -1
     def clipL(x: Int, y: Int) = if (x > y) x else -1
@@ -799,10 +832,10 @@ object SeqLike {
       S match {
         case xs: IndexedSeq[_] =>
           // We can index into S directly; it should be adequately fast
-          val Wopt = kmpOptimizeWord(W, n0, n1, forward)
-          val T = kmpJumpTable(Wopt, n1 - n0)
-          var i, m = 0
-          val zero = if (forward) m0 else m1 - 1
+          val Wopt  = kmpOptimizeWord(W, n0, n1, forward)
+          val T     = kmpJumpTable(Wopt, n1 - n0)
+          var i, m  = 0
+          val zero  = if (forward) m0 else m1 - 1
           val delta = if (forward) 1 else -1
           while (i + m < m1 - m0) {
             if (Wopt(i) == S(zero + delta * (i + m))) {
@@ -819,12 +852,14 @@ object SeqLike {
           // We had better not index into S directly!
           val iter = S.iterator.drop(m0)
           val Wopt = kmpOptimizeWord(W, n0, n1, forward = true)
-          val T = kmpJumpTable(Wopt, n1 - n0)
+          val T    = kmpJumpTable(Wopt, n1 - n0)
           val cache =
-            new Array[AnyRef](n1 - n0) // Ring buffer--need a quick way to do a look-behind
+            new Array[AnyRef](
+              n1 - n0
+            ) // Ring buffer--need a quick way to do a look-behind
           var largest = 0
-          var i, m = 0
-          var answer = -1
+          var i, m    = 0
+          var answer  = -1
           while (m + m0 + n1 - n0 <= m1) {
             while (i + m >= largest) {
               cache(largest % (n1 - n0)) = iter.next().asInstanceOf[AnyRef]
@@ -881,18 +916,18 @@ object SeqLike {
   ): Int = {
     // Fiddle with variables to match previous behavior and use kmpSearch
     // Doing LOTS of max/min, both clearer and faster to use math._
-    val slen = source.length
+    val slen        = source.length
     val clippedFrom = math.max(0, fromIndex)
-    val s0 = math.min(slen, sourceOffset + clippedFrom)
-    val s1 = math.min(slen, s0 + sourceCount)
-    val tlen = target.length
-    val t0 = math.min(tlen, targetOffset)
-    val t1 = math.min(tlen, t0 + targetCount)
+    val s0          = math.min(slen, sourceOffset + clippedFrom)
+    val s1          = math.min(slen, s0 + sourceCount)
+    val tlen        = target.length
+    val t0          = math.min(tlen, targetOffset)
+    val t1          = math.min(tlen, t0 + targetCount)
 
     // Error checking
     if (clippedFrom > slen - sourceOffset)
-      -1 // Cannot return an index in range
-    else if (t1 - t0 < 1) s0 // Empty, matches first available position
+      -1                           // Cannot return an index in range
+    else if (t1 - t0 < 1) s0       // Empty, matches first available position
     else if (s1 - s0 < t1 - t0) -1 // Source is too short to find target
     else {
       // Nontrivial search
@@ -917,24 +952,23 @@ object SeqLike {
   ): Int = {
     // Fiddle with variables to match previous behavior and use kmpSearch
     // Doing LOTS of max/min, both clearer and faster to use math._
-    val slen = source.length
-    val tlen = target.length
-    val s0 = math.min(slen, sourceOffset)
-    val s1 = math.min(slen, s0 + sourceCount)
+    val slen        = source.length
+    val tlen        = target.length
+    val s0          = math.min(slen, sourceOffset)
+    val s1          = math.min(slen, s0 + sourceCount)
     val clippedFrom = math.min(s1 - s0, fromIndex)
-    val t0 = math.min(tlen, targetOffset)
-    val t1 = math.min(tlen, t0 + targetCount)
-    val fixed_s1 = math.min(s1, s0 + clippedFrom + (t1 - t0) - 1)
+    val t0          = math.min(tlen, targetOffset)
+    val t1          = math.min(tlen, t0 + targetCount)
+    val fixed_s1    = math.min(s1, s0 + clippedFrom + (t1 - t0) - 1)
 
     // Error checking
     if (clippedFrom < 0) -1 // Cannot return an index in range
     else if (t1 - t0 < 1)
-      s0 + clippedFrom // Empty, matches last available position
+      s0 + clippedFrom                   // Empty, matches last available position
     else if (fixed_s1 - s0 < t1 - t0) -1 // Source is too short to find target
     else {
       // Nontrivial search
-      val ans = kmpSearch(
-          source, s0, fixed_s1, target, t0, t1, forward = false)
+      val ans = kmpSearch(source, s0, fixed_s1, target, t0, t1, forward = false)
       if (ans < 0) ans else ans - s0
     }
   }

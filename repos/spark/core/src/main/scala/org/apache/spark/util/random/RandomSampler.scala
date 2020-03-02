@@ -37,7 +37,9 @@ import org.apache.spark.annotation.DeveloperApi
   */
 @DeveloperApi
 trait RandomSampler[T, U]
-    extends Pseudorandom with Cloneable with Serializable {
+    extends Pseudorandom
+    with Cloneable
+    with Serializable {
 
   /** take a random sample */
   def sample(items: Iterator[T]): Iterator[U]
@@ -91,16 +93,24 @@ private[spark] object RandomSampler {
   */
 @DeveloperApi
 class BernoulliCellSampler[T](
-    lb: Double, ub: Double, complement: Boolean = false)
-    extends RandomSampler[T, T] {
+    lb: Double,
+    ub: Double,
+    complement: Boolean = false
+) extends RandomSampler[T, T] {
 
   /** epsilon slop to avoid failure from floating point jitter. */
-  require(lb <= (ub + RandomSampler.roundingEpsilon),
-          s"Lower bound ($lb) must be <= upper bound ($ub)")
-  require(lb >= (0.0 - RandomSampler.roundingEpsilon),
-          s"Lower bound ($lb) must be >= 0.0")
-  require(ub <= (1.0 + RandomSampler.roundingEpsilon),
-          s"Upper bound ($ub) must be <= 1.0")
+  require(
+    lb <= (ub + RandomSampler.roundingEpsilon),
+    s"Lower bound ($lb) must be <= upper bound ($ub)"
+  )
+  require(
+    lb >= (0.0 - RandomSampler.roundingEpsilon),
+    s"Lower bound ($lb) must be >= 0.0"
+  )
+  require(
+    ub <= (1.0 + RandomSampler.roundingEpsilon),
+    s"Upper bound ($ub) must be <= 1.0"
+  )
 
   private val rng: Random = new XORShiftRandom
 
@@ -146,13 +156,15 @@ class BernoulliCellSampler[T](
   * @tparam T item type
   */
 @DeveloperApi
-class BernoulliSampler[T : ClassTag](fraction: Double)
+class BernoulliSampler[T: ClassTag](fraction: Double)
     extends RandomSampler[T, T] {
 
   /** epsilon slop to avoid failure from floating point jitter */
-  require(fraction >= (0.0 - RandomSampler.roundingEpsilon) &&
-          fraction <= (1.0 + RandomSampler.roundingEpsilon),
-          s"Sampling fraction ($fraction) must be on interval [0, 1]")
+  require(
+    fraction >= (0.0 - RandomSampler.roundingEpsilon) &&
+      fraction <= (1.0 + RandomSampler.roundingEpsilon),
+    s"Sampling fraction ($fraction) must be on interval [0, 1]"
+  )
 
   private val rng: Random = RandomSampler.newDefaultRNG
 
@@ -166,9 +178,7 @@ class BernoulliSampler[T : ClassTag](fraction: Double)
     } else if (fraction <= RandomSampler.defaultMaxGapSamplingFraction) {
       new GapSamplingIterator(items, fraction, rng, RandomSampler.rngEpsilon)
     } else {
-      items.filter { _ =>
-        rng.nextDouble() <= fraction
-      }
+      items.filter { _ => rng.nextDouble() <= fraction }
     }
   }
 
@@ -184,20 +194,24 @@ class BernoulliSampler[T : ClassTag](fraction: Double)
   * @tparam T item type
   */
 @DeveloperApi
-class PoissonSampler[T : ClassTag](
-    fraction: Double, useGapSamplingIfPossible: Boolean)
-    extends RandomSampler[T, T] {
+class PoissonSampler[T: ClassTag](
+    fraction: Double,
+    useGapSamplingIfPossible: Boolean
+) extends RandomSampler[T, T] {
 
   def this(fraction: Double) = this(fraction, useGapSamplingIfPossible = true)
 
   /** Epsilon slop to avoid failure from floating point jitter. */
-  require(fraction >= (0.0 - RandomSampler.roundingEpsilon),
-          s"Sampling fraction ($fraction) must be >= 0")
+  require(
+    fraction >= (0.0 - RandomSampler.roundingEpsilon),
+    s"Sampling fraction ($fraction) must be >= 0"
+  )
 
   // PoissonDistribution throws an exception when fraction <= 0
   // If fraction is <= 0, Iterator.empty is used below, so we can use any placeholder value.
   private val rng = new PoissonDistribution(
-      if (fraction > 0.0) fraction else 1.0)
+    if (fraction > 0.0) fraction else 1.0
+  )
   private val rngGap = RandomSampler.newDefaultRNG
 
   override def setSeed(seed: Long) {
@@ -211,7 +225,11 @@ class PoissonSampler[T : ClassTag](
     } else if (useGapSamplingIfPossible &&
                fraction <= RandomSampler.defaultMaxGapSamplingFraction) {
       new GapSamplingReplacementIterator(
-          items, fraction, rngGap, RandomSampler.rngEpsilon)
+        items,
+        fraction,
+        rngGap,
+        RandomSampler.rngEpsilon
+      )
     } else {
       items.flatMap { item =>
         val count = rng.sample()
@@ -224,37 +242,36 @@ class PoissonSampler[T : ClassTag](
     new PoissonSampler[T](fraction, useGapSamplingIfPossible)
 }
 
-private[spark] class GapSamplingIterator[T : ClassTag](
+private[spark] class GapSamplingIterator[T: ClassTag](
     var data: Iterator[T],
     f: Double,
     rng: Random = RandomSampler.newDefaultRNG,
-    epsilon: Double = RandomSampler.rngEpsilon)
-    extends Iterator[T] {
+    epsilon: Double = RandomSampler.rngEpsilon
+) extends Iterator[T] {
 
-  require(f > 0.0 && f < 1.0,
-          s"Sampling fraction ($f) must reside on open interval (0, 1)")
+  require(
+    f > 0.0 && f < 1.0,
+    s"Sampling fraction ($f) must reside on open interval (0, 1)"
+  )
   require(epsilon > 0.0, s"epsilon ($epsilon) must be > 0")
 
   /** implement efficient linear-sequence drop until Scala includes fix for jira SI-8835. */
   private val iterDrop: Int => Unit = {
-    val arrayClass = Array.empty[T].iterator.getClass
+    val arrayClass       = Array.empty[T].iterator.getClass
     val arrayBufferClass = ArrayBuffer.empty[T].iterator.getClass
     data.getClass match {
       case `arrayClass` =>
-        (n: Int) =>
-          { data = data.drop(n) }
-        case `arrayBufferClass` =>
-        (n: Int) =>
-          { data = data.drop(n) }
-        case _ =>
-        (n: Int) =>
-          {
-            var j = 0
-            while (j < n && data.hasNext) {
-              data.next()
-              j += 1
-            }
+        (n: Int) => { data = data.drop(n) }
+      case `arrayBufferClass` =>
+        (n: Int) => { data = data.drop(n) }
+      case _ =>
+        (n: Int) => {
+          var j = 0
+          while (j < n && data.hasNext) {
+            data.next()
+            j += 1
           }
+        }
     }
   }
 
@@ -282,41 +299,38 @@ private[spark] class GapSamplingIterator[T : ClassTag](
   // work reliably.
 }
 
-private[spark] class GapSamplingReplacementIterator[T : ClassTag](
+private[spark] class GapSamplingReplacementIterator[T: ClassTag](
     var data: Iterator[T],
     f: Double,
     rng: Random = RandomSampler.newDefaultRNG,
-    epsilon: Double = RandomSampler.rngEpsilon)
-    extends Iterator[T] {
+    epsilon: Double = RandomSampler.rngEpsilon
+) extends Iterator[T] {
 
   require(f > 0.0, s"Sampling fraction ($f) must be > 0")
   require(epsilon > 0.0, s"epsilon ($epsilon) must be > 0")
 
   /** implement efficient linear-sequence drop until scala includes fix for jira SI-8835. */
   private val iterDrop: Int => Unit = {
-    val arrayClass = Array.empty[T].iterator.getClass
+    val arrayClass       = Array.empty[T].iterator.getClass
     val arrayBufferClass = ArrayBuffer.empty[T].iterator.getClass
     data.getClass match {
       case `arrayClass` =>
-        (n: Int) =>
-          { data = data.drop(n) }
-        case `arrayBufferClass` =>
-        (n: Int) =>
-          { data = data.drop(n) }
-        case _ =>
-        (n: Int) =>
-          {
-            var j = 0
-            while (j < n && data.hasNext) {
-              data.next()
-              j += 1
-            }
+        (n: Int) => { data = data.drop(n) }
+      case `arrayBufferClass` =>
+        (n: Int) => { data = data.drop(n) }
+      case _ =>
+        (n: Int) => {
+          var j = 0
+          while (j < n && data.hasNext) {
+            data.next()
+            j += 1
           }
+        }
     }
   }
 
   /** current sampling value, and its replication factor, as we are sampling with replacement. */
-  private var v: T = _
+  private var v: T     = _
   private var rep: Int = 0
 
   override def hasNext: Boolean = data.hasNext || rep > 0
@@ -355,7 +369,7 @@ private[spark] class GapSamplingReplacementIterator[T : ClassTag](
     // simulate that the standard poisson sampling
     // gave us at least one iteration, for a sample of >= 1
     var pp = q + ((1.0 - q) * rng.nextDouble())
-    var r = 1
+    var r  = 1
 
     // now continue with standard poisson sampling algorithm
     pp *= rng.nextDouble()

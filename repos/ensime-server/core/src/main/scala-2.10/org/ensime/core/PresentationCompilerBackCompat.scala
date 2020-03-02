@@ -31,6 +31,6 @@ trait PositionBackCompat {
 
     // I wish we could override `start` and `end`
     def startOrCursor: Int = pos.startOrPoint
-    def endOrCursor: Int = pos.endOrPoint
+    def endOrCursor: Int   = pos.endOrPoint
   }
 }

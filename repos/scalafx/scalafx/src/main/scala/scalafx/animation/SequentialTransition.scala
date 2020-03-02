@@ -50,7 +50,8 @@ object SequentialTransition extends AnimationStatics {
     * @return JavaFX $ST extracted from `v`.
     */
   implicit def sfxSequentialTransition2jfx(
-      v: SequentialTransition): jfxa.SequentialTransition =
+      v: SequentialTransition
+  ): jfxa.SequentialTransition =
     if (v != null) v.delegate else null
 }
 
@@ -66,8 +67,10 @@ object SequentialTransition extends AnimationStatics {
   * @define DV Default value:
   */
 class SequentialTransition(
-    override val delegate: jfxa.SequentialTransition = new jfxa.SequentialTransition)
-    extends Transition(delegate) with SFXDelegate[jfxa.SequentialTransition] {
+    override val delegate: jfxa.SequentialTransition =
+      new jfxa.SequentialTransition
+) extends Transition(delegate)
+    with SFXDelegate[jfxa.SequentialTransition] {
 
   // CONSTRUCTORS
 

@@ -12,10 +12,10 @@ trait Trait[-A, +B, C] {
     def f4(x: E): Unit = ()
     def f5(x: F): Unit = ()
 
-    def f6(): A = ???
-    def f7(): B = ???
-    def f8(): C = ???
-    def f9(): D = ???
+    def f6(): A  = ???
+    def f7(): B  = ???
+    def f8(): C  = ???
+    def f9(): D  = ???
     def f10(): E = ???
     def f11(): F = ???
 
@@ -93,22 +93,22 @@ trait Trait[-A, +B, C] {
     def f82(): F => E = null
     def f83(): F => F = null
 
-    def f84(x: A): A = ???
-    def f85(x: A): B = ???
-    def f86(x: A): C = ???
-    def f87(x: A): D = ???
-    def f88(x: A): E = ???
-    def f89(x: A): F = ???
-    def f90(x: B): A = ???
-    def f91(x: B): B = ???
-    def f92(x: B): C = ???
-    def f93(x: B): D = ???
-    def f94(x: B): E = ???
-    def f95(x: B): F = ???
-    def f96(x: C): A = ???
-    def f97(x: C): B = ???
-    def f98(x: C): C = ???
-    def f99(x: C): D = ???
+    def f84(x: A): A  = ???
+    def f85(x: A): B  = ???
+    def f86(x: A): C  = ???
+    def f87(x: A): D  = ???
+    def f88(x: A): E  = ???
+    def f89(x: A): F  = ???
+    def f90(x: B): A  = ???
+    def f91(x: B): B  = ???
+    def f92(x: B): C  = ???
+    def f93(x: B): D  = ???
+    def f94(x: B): E  = ???
+    def f95(x: B): F  = ???
+    def f96(x: C): A  = ???
+    def f97(x: C): B  = ???
+    def f98(x: C): C  = ???
+    def f99(x: C): D  = ???
     def f100(x: C): E = ???
     def f101(x: C): F = ???
     def f102(x: D): A = ???
@@ -130,15 +130,15 @@ trait Trait[-A, +B, C] {
     def f118(x: F): E = ???
     def f119(x: F): F = ???
 
-    object O1 extends Cov[A]
-    object O2 extends Cov[B]
-    object O3 extends Cov[C]
-    object O4 extends Cov[D]
-    object O5 extends Cov[E]
-    object O6 extends Cov[F]
-    object O7 extends Con[A]
-    object O8 extends Con[B]
-    object O9 extends Con[C]
+    object O1  extends Cov[A]
+    object O2  extends Cov[B]
+    object O3  extends Cov[C]
+    object O4  extends Cov[D]
+    object O5  extends Cov[E]
+    object O6  extends Cov[F]
+    object O7  extends Con[A]
+    object O8  extends Con[B]
+    object O9  extends Con[C]
     object O10 extends Con[D]
     object O11 extends Con[E]
     object O12 extends Con[F]
@@ -161,10 +161,10 @@ trait Trait2[-A, +B, C] {
     def f4(x: E): Unit = ()
     def f5(x: F): Unit = ()
 
-    def f6(): A = ???
-    def f7(): B = ???
-    def f8(): C = ???
-    def f9(): D = ???
+    def f6(): A  = ???
+    def f7(): B  = ???
+    def f8(): C  = ???
+    def f9(): D  = ???
     def f10(): E = ???
     def f11(): F = ???
 
@@ -242,22 +242,22 @@ trait Trait2[-A, +B, C] {
     def f82(): F => E = null
     def f83(): F => F = null
 
-    def f84(x: A): A = ???
-    def f85(x: A): B = ???
-    def f86(x: A): C = ???
-    def f87(x: A): D = ???
-    def f88(x: A): E = ???
-    def f89(x: A): F = ???
-    def f90(x: B): A = ???
-    def f91(x: B): B = ???
-    def f92(x: B): C = ???
-    def f93(x: B): D = ???
-    def f94(x: B): E = ???
-    def f95(x: B): F = ???
-    def f96(x: C): A = ???
-    def f97(x: C): B = ???
-    def f98(x: C): C = ???
-    def f99(x: C): D = ???
+    def f84(x: A): A  = ???
+    def f85(x: A): B  = ???
+    def f86(x: A): C  = ???
+    def f87(x: A): D  = ???
+    def f88(x: A): E  = ???
+    def f89(x: A): F  = ???
+    def f90(x: B): A  = ???
+    def f91(x: B): B  = ???
+    def f92(x: B): C  = ???
+    def f93(x: B): D  = ???
+    def f94(x: B): E  = ???
+    def f95(x: B): F  = ???
+    def f96(x: C): A  = ???
+    def f97(x: C): B  = ???
+    def f98(x: C): C  = ???
+    def f99(x: C): D  = ???
     def f100(x: C): E = ???
     def f101(x: C): F = ???
     def f102(x: D): A = ???
@@ -279,15 +279,15 @@ trait Trait2[-A, +B, C] {
     def f118(x: F): E = ???
     def f119(x: F): F = ???
 
-    object O1 extends Cov[A]
-    object O2 extends Cov[B]
-    object O3 extends Cov[C]
-    object O4 extends Cov[D]
-    object O5 extends Cov[E]
-    object O6 extends Cov[F]
-    object O7 extends Con[A]
-    object O8 extends Con[B]
-    object O9 extends Con[C]
+    object O1  extends Cov[A]
+    object O2  extends Cov[B]
+    object O3  extends Cov[C]
+    object O4  extends Cov[D]
+    object O5  extends Cov[E]
+    object O6  extends Cov[F]
+    object O7  extends Con[A]
+    object O8  extends Con[B]
+    object O9  extends Con[C]
     object O10 extends Con[D]
     object O11 extends Con[E]
     object O12 extends Con[F]

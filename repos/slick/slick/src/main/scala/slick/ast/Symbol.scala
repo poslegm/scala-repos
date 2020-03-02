@@ -19,11 +19,13 @@ trait TypeSymbol extends Symbol
 trait TermSymbol extends Symbol
 
 /** A named symbol which refers to an (aliased or unaliased) field. */
-case class FieldSymbol(
-    name: String)(val options: Seq[ColumnOption[_]], val tpe: Type)
-    extends TermSymbol {
+case class FieldSymbol(name: String)(
+    val options: Seq[ColumnOption[_]],
+    val tpe: Type
+) extends TermSymbol {
   def findColumnOption[T <: ColumnOption[_]](
-      implicit ct: ClassTag[T]): Option[T] =
+      implicit ct: ClassTag[T]
+  ): Option[T] =
     options.find(ct.runtimeClass.isInstance _).asInstanceOf[Option[T]]
 }
 
@@ -67,9 +69,10 @@ trait DefNode extends Node {
   protected[this] def rebuildWithSymbols(gen: ConstArray[TermSymbol]): Node
 
   final def mapScopedChildren(
-      f: (Option[TermSymbol], Node) => Node): Self with DefNode = {
+      f: (Option[TermSymbol], Node) => Node
+  ): Self with DefNode = {
     val gens = generators
-    val ch = children
+    val ch   = children
     val all = ch.zipWithIndex.map[(Option[TermSymbol], Node)] {
       case (ch, idx) =>
         val o = if (idx < gens.length) Some(gens(idx)._1) else None
@@ -81,18 +84,20 @@ trait DefNode extends Node {
     else this
   }
   final def mapSymbols(f: TermSymbol => TermSymbol): Node = {
-    val s = generators.map(_._1)
+    val s  = generators.map(_._1)
     val s2 = s.endoMap(f)
     if (s2 eq s) this else rebuildWithSymbols(s2)
   }
 }
 
 /** Provides names for symbols */
-class SymbolNamer(treeSymbolPrefix: String,
-                  typeSymbolPrefix: String,
-                  parent: Option[SymbolNamer] = None) {
+class SymbolNamer(
+    treeSymbolPrefix: String,
+    typeSymbolPrefix: String,
+    parent: Option[SymbolNamer] = None
+) {
   private var curSymbolId = 1
-  private val map = new HashMap[Symbol, String]
+  private val map         = new HashMap[Symbol, String]
 
   def create(prefix: String) = {
     curSymbolId += 1
@@ -103,8 +108,7 @@ class SymbolNamer(treeSymbolPrefix: String,
     map.get(s) orElse parent.flatMap(_.get(s))
 
   def apply(s: Symbol): String =
-    get(s).getOrElse(
-        s match {
+    get(s).getOrElse(s match {
       case a: AnonSymbol =>
         val n = create(treeSymbolPrefix)
         update(a, n)

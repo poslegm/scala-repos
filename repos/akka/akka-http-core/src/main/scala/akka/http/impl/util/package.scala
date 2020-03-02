@@ -20,22 +20,24 @@ import akka.util.ByteString
 import akka.actor._
 
 package object util {
-  private[http] val UTF8 = Charset.forName("UTF8")
-  private[http] val ASCII = Charset.forName("ASCII")
+  private[http] val UTF8     = Charset.forName("UTF8")
+  private[http] val ASCII    = Charset.forName("ASCII")
   private[http] val ISO88591 = Charset.forName("ISO-8859-1")
 
   private[http] val EmptyByteArray = Array.empty[Byte]
 
   private[http] def actorSystem(
-      implicit refFactory: ActorRefFactory): ExtendedActorSystem =
+      implicit refFactory: ActorRefFactory
+  ): ExtendedActorSystem =
     refFactory match {
-      case x: ActorContext ⇒ actorSystem(x.system)
+      case x: ActorContext        ⇒ actorSystem(x.system)
       case x: ExtendedActorSystem ⇒ x
-      case _ ⇒ throw new IllegalStateException
+      case _                      ⇒ throw new IllegalStateException
     }
 
   private[http] implicit def enhanceByteArray(
-      array: Array[Byte]): EnhancedByteArray = new EnhancedByteArray(array)
+      array: Array[Byte]
+  ): EnhancedByteArray = new EnhancedByteArray(array)
   private[http] implicit def enhanceConfig(config: Config): EnhancedConfig =
     new EnhancedConfig(config)
   private[http] implicit def enhanceString_(s: String): EnhancedString =
@@ -43,16 +45,17 @@ package object util {
   private[http] implicit def enhanceRegex(regex: Regex): EnhancedRegex =
     new EnhancedRegex(regex)
   private[http] implicit def enhanceByteStrings(
-      byteStrings: TraversableOnce[ByteString])
-    : EnhancedByteStringTraversableOnce =
+      byteStrings: TraversableOnce[ByteString]
+  ): EnhancedByteStringTraversableOnce =
     new EnhancedByteStringTraversableOnce(byteStrings)
   private[http] implicit def enhanceByteStringsMat[Mat](
-      byteStrings: Source[ByteString, Mat]): EnhancedByteStringSource[Mat] =
+      byteStrings: Source[ByteString, Mat]
+  ): EnhancedByteStringSource[Mat] =
     new EnhancedByteStringSource(byteStrings)
 
   private[http] def printEvent[T](marker: String): Flow[T, T, NotUsed] =
     Flow[T].transform(() ⇒
-          new PushPullStage[T, T] {
+      new PushPullStage[T, T] {
         override def onPush(element: T, ctx: Context[T]): SyncDirective = {
           println(s"$marker: $element")
           ctx.push(element)
@@ -62,7 +65,9 @@ package object util {
           ctx.pull()
         }
         override def onUpstreamFailure(
-            cause: Throwable, ctx: Context[T]): TerminationDirective = {
+            cause: Throwable,
+            ctx: Context[T]
+        ): TerminationDirective = {
           println(s"$marker: Error $cause")
           super.onUpstreamFailure(cause, ctx)
         }
@@ -71,25 +76,31 @@ package object util {
           super.onUpstreamFinish(ctx)
         }
         override def onDownstreamFinish(
-            ctx: Context[T]): TerminationDirective = {
+            ctx: Context[T]
+        ): TerminationDirective = {
           println(s"$marker: Cancel")
           super.onDownstreamFinish(ctx)
         }
-    })
+      }
+    )
 
   private[this] var eventStreamLogger: ActorRef = _
-  private[http] def installEventStreamLoggerFor(channel: Class[_])(
-      implicit system: ActorSystem): Unit = {
+  private[http] def installEventStreamLoggerFor(
+      channel: Class[_]
+  )(implicit system: ActorSystem): Unit = {
     synchronized {
       if (eventStreamLogger == null)
         eventStreamLogger = system.actorOf(
-            Props[util.EventStreamLogger]().withDeploy(Deploy.local),
-            name = "event-stream-logger")
+          Props[util.EventStreamLogger]().withDeploy(Deploy.local),
+          name = "event-stream-logger"
+        )
     }
     system.eventStream.subscribe(eventStreamLogger, channel)
   }
   private[http] def installEventStreamLoggerFor[T](
-      implicit ct: ClassTag[T], system: ActorSystem): Unit =
+      implicit ct: ClassTag[T],
+      system: ActorSystem
+  ): Unit =
     installEventStreamLoggerFor(ct.runtimeClass)
 
   private[http] implicit class AddFutureAwaitResult[T](future: Future[T]) {
@@ -101,8 +112,9 @@ package object util {
         case Success(t) ⇒ t
         case Failure(ex) ⇒
           throw new RuntimeException(
-              "Trying to await result of failed Future, see the cause for the original problem.",
-              ex)
+            "Trying to await result of failed Future, see the cause for the original problem.",
+            ex
+          )
       }
     }
   }
@@ -130,8 +142,8 @@ package util {
     * Maps error with the provided function if it is defined for an error or, otherwise, passes it on unchanged.
     */
   private[http] final case class MapError[T](
-      f: PartialFunction[Throwable, Throwable])
-      extends SimpleLinearGraphStage[T] {
+      f: PartialFunction[Throwable, Throwable]
+  ) extends SimpleLinearGraphStage[T] {
     override def createLogic(attr: Attributes) =
       new GraphStageLogic(shape) with InHandler with OutHandler {
         override def onPush(): Unit = push(out, grab(in))
@@ -147,51 +159,59 @@ package util {
   }
 
   private[http] class ToStrict(
-      timeout: FiniteDuration, contentType: ContentType)
-      extends GraphStage[FlowShape[ByteString, HttpEntity.Strict]] {
+      timeout: FiniteDuration,
+      contentType: ContentType
+  ) extends GraphStage[FlowShape[ByteString, HttpEntity.Strict]] {
 
-    val in = Inlet[ByteString]("in")
+    val in  = Inlet[ByteString]("in")
     val out = Outlet[HttpEntity.Strict]("out")
 
     override def initialAttributes = Attributes.name("ToStrict")
 
     override val shape = FlowShape(in, out)
 
-    override def createLogic(
-        inheritedAttributes: Attributes): GraphStageLogic =
+    override def createLogic(inheritedAttributes: Attributes): GraphStageLogic =
       new TimerGraphStageLogic(shape) {
-        val bytes = ByteString.newBuilder
+        val bytes               = ByteString.newBuilder
         private var emptyStream = false
 
         override def preStart(): Unit =
           scheduleOnce("ToStrictTimeoutTimer", timeout)
 
-        setHandler(out, new OutHandler {
-          override def onPull(): Unit = {
-            if (emptyStream) {
-              push(out, HttpEntity.Strict(contentType, ByteString.empty))
-              completeStage()
-            } else pull(in)
+        setHandler(
+          out,
+          new OutHandler {
+            override def onPull(): Unit = {
+              if (emptyStream) {
+                push(out, HttpEntity.Strict(contentType, ByteString.empty))
+                completeStage()
+              } else pull(in)
+            }
           }
-        })
+        )
 
-        setHandler(in, new InHandler {
-          override def onPush(): Unit = {
-            bytes ++= grab(in)
-            pull(in)
+        setHandler(
+          in,
+          new InHandler {
+            override def onPush(): Unit = {
+              bytes ++= grab(in)
+              pull(in)
+            }
+            override def onUpstreamFinish(): Unit = {
+              if (isAvailable(out)) {
+                push(out, HttpEntity.Strict(contentType, bytes.result()))
+                completeStage()
+              } else emptyStream = true
+            }
           }
-          override def onUpstreamFinish(): Unit = {
-            if (isAvailable(out)) {
-              push(out, HttpEntity.Strict(contentType, bytes.result()))
-              completeStage()
-            } else emptyStream = true
-          }
-        })
+        )
 
         override def onTimer(key: Any): Unit =
           failStage(
-              new java.util.concurrent.TimeoutException(
-                  s"HttpEntity.toStrict timed out after $timeout while still waiting for outstanding data"))
+            new java.util.concurrent.TimeoutException(
+              s"HttpEntity.toStrict timed out after $timeout while still waiting for outstanding data"
+            )
+          )
       }
 
     override def toString = "ToStrict"

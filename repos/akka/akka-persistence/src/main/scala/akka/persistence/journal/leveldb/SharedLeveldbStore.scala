@@ -28,11 +28,12 @@ class SharedLeveldbStore extends {
       // TODO it would be nice to DRY this with AsyncWriteJournal, but this is using
       //      AsyncWriteProxy message protocol
       val atomicWriteCount = messages.count(_.isInstanceOf[AtomicWrite])
-      val prepared = Try(preparePersistentBatch(messages))
+      val prepared         = Try(preparePersistentBatch(messages))
       val writeResult = (prepared match {
         case Success(prep) ⇒
           // in case the asyncWriteMessages throws
-          try asyncWriteMessages(prep) catch {
+          try asyncWriteMessages(prep)
+          catch {
             case NonFatal(e) ⇒ Future.failed(e)
           }
         case f @ Failure(_) ⇒
@@ -41,8 +42,9 @@ class SharedLeveldbStore extends {
       }).map { results ⇒
         if (results.nonEmpty && results.size != atomicWriteCount)
           throw new IllegalStateException(
-              "asyncWriteMessages returned invalid number of results. " +
-              s"Expected [${prepared.get.size}], but got [${results.size}]")
+            "asyncWriteMessages returned invalid number of results. " +
+              s"Expected [${prepared.get.size}], but got [${results.size}]"
+          )
         results
       }
 
@@ -54,10 +56,10 @@ class SharedLeveldbStore extends {
     case ReplayMessages(persistenceId, fromSequenceNr, toSequenceNr, max) ⇒
       // TODO it would be nice to DRY this with AsyncWriteJournal, but this is using
       //      AsyncWriteProxy message protocol
-      val replyTo = sender()
+      val replyTo                   = sender()
       val readHighestSequenceNrFrom = math.max(0L, fromSequenceNr - 1)
-      asyncReadHighestSequenceNr(persistenceId, readHighestSequenceNrFrom).flatMap {
-        highSeqNr ⇒
+      asyncReadHighestSequenceNr(persistenceId, readHighestSequenceNrFrom)
+        .flatMap { highSeqNr ⇒
           if (highSeqNr == 0L || max == 0L) Future.successful(highSeqNr)
           else {
             val toSeqNr = math.min(toSequenceNr, highSeqNr)
@@ -67,10 +69,11 @@ class SharedLeveldbStore extends {
                   adaptFromJournal(p).foreach(replyTo ! _)
             }.map(_ ⇒ highSeqNr)
           }
-      }.map { highSeqNr ⇒
-        ReplaySuccess(highSeqNr)
-      }.recover {
-        case e ⇒ ReplayFailure(e)
-      }.pipeTo(replyTo)
+        }
+        .map { highSeqNr ⇒ ReplaySuccess(highSeqNr) }
+        .recover {
+          case e ⇒ ReplayFailure(e)
+        }
+        .pipeTo(replyTo)
   }
 }

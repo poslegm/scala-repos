@@ -12,21 +12,28 @@ import org.scalatest.{Matchers, GivenWhenThen}
 import org.scalatest.concurrent.ScalaFutures
 
 class TaskCreationHandlerAndUpdaterDelegateTest
-    extends MarathonActorSupport with MarathonSpec with Mockito
-    with GivenWhenThen with ScalaFutures with Matchers {
+    extends MarathonActorSupport
+    with MarathonSpec
+    with Mockito
+    with GivenWhenThen
+    with ScalaFutures
+    with Matchers {
 
   test("Created succeeds") {
-    val f = new Fixture
+    val f             = new Fixture
     val appId: PathId = PathId("/test")
-    val task = MarathonTestHelper.mininimalTask(appId)
+    val task          = MarathonTestHelper.mininimalTask(appId)
 
     When("created is called")
     val create = f.delegate.created(task)
 
     Then("an update operation is requested")
     f.taskTrackerProbe.expectMsg(
-        TaskTrackerActor.ForwardTaskOp(
-            f.timeoutFromNow, task.taskId, TaskOpProcessor.Action.Update(task))
+      TaskTrackerActor.ForwardTaskOp(
+        f.timeoutFromNow,
+        task.taskId,
+        TaskOpProcessor.Action.Update(task)
+      )
     )
 
     When("the request is acknowledged")
@@ -36,17 +43,20 @@ class TaskCreationHandlerAndUpdaterDelegateTest
   }
 
   test("Created fails") {
-    val f = new Fixture
+    val f             = new Fixture
     val appId: PathId = PathId("/test")
-    val task = MarathonTestHelper.mininimalTask(appId)
+    val task          = MarathonTestHelper.mininimalTask(appId)
 
     When("created is called")
     val create = f.delegate.created(task)
 
     Then("an update operation is requested")
     f.taskTrackerProbe.expectMsg(
-        TaskTrackerActor.ForwardTaskOp(
-            f.timeoutFromNow, task.taskId, TaskOpProcessor.Action.Update(task))
+      TaskTrackerActor.ForwardTaskOp(
+        f.timeoutFromNow,
+        task.taskId,
+        TaskOpProcessor.Action.Update(task)
+      )
     )
 
     When("the response is an error")
@@ -60,17 +70,20 @@ class TaskCreationHandlerAndUpdaterDelegateTest
   }
 
   test("Terminated succeeds") {
-    val f = new Fixture
+    val f             = new Fixture
     val appId: PathId = PathId("/test")
-    val task = MarathonTestHelper.mininimalTask(appId)
+    val task          = MarathonTestHelper.mininimalTask(appId)
 
     When("terminated is called")
     val terminated = f.delegate.terminated(task.taskId)
 
     Then("an expunge operation is requested")
     f.taskTrackerProbe.expectMsg(
-        TaskTrackerActor.ForwardTaskOp(
-            f.timeoutFromNow, task.taskId, TaskOpProcessor.Action.Expunge)
+      TaskTrackerActor.ForwardTaskOp(
+        f.timeoutFromNow,
+        task.taskId,
+        TaskOpProcessor.Action.Expunge
+      )
     )
 
     When("the request is acknowledged")
@@ -80,17 +93,20 @@ class TaskCreationHandlerAndUpdaterDelegateTest
   }
 
   test("Terminated fails") {
-    val f = new Fixture
+    val f             = new Fixture
     val appId: PathId = PathId("/test")
-    val task = MarathonTestHelper.mininimalTask(appId)
+    val task          = MarathonTestHelper.mininimalTask(appId)
 
     When("terminated is called")
     val terminated = f.delegate.terminated(task.taskId)
 
     Then("an expunge operation is requested")
     f.taskTrackerProbe.expectMsg(
-        TaskTrackerActor.ForwardTaskOp(
-            f.timeoutFromNow, task.taskId, TaskOpProcessor.Action.Expunge)
+      TaskTrackerActor.ForwardTaskOp(
+        f.timeoutFromNow,
+        task.taskId,
+        TaskOpProcessor.Action.Expunge
+      )
     )
 
     When("the response is an error")
@@ -99,15 +115,16 @@ class TaskCreationHandlerAndUpdaterDelegateTest
     Then("The reply is the value of task")
     terminated.failed.futureValue.getMessage should include(appId.toString)
     terminated.failed.futureValue.getMessage should include(
-        task.taskId.idString)
+      task.taskId.idString
+    )
     terminated.failed.futureValue.getMessage should include("Expunge")
     terminated.failed.futureValue.getCause should be(cause)
   }
 
   test("StatusUpdate succeeds") {
-    val f = new Fixture
+    val f             = new Fixture
     val appId: PathId = PathId("/test")
-    val taskId = "task1"
+    val taskId        = "task1"
 
     val update = TaskStatus
       .newBuilder()
@@ -119,10 +136,11 @@ class TaskCreationHandlerAndUpdaterDelegateTest
 
     Then("an update operation is requested")
     f.taskTrackerProbe.expectMsg(
-        TaskTrackerActor.ForwardTaskOp(
-            f.timeoutFromNow,
-            Task.Id(taskId),
-            TaskOpProcessor.Action.UpdateStatus(update))
+      TaskTrackerActor.ForwardTaskOp(
+        f.timeoutFromNow,
+        Task.Id(taskId),
+        TaskOpProcessor.Action.UpdateStatus(update)
+      )
     )
 
     When("the request is acknowledged")
@@ -132,9 +150,9 @@ class TaskCreationHandlerAndUpdaterDelegateTest
   }
 
   test("StatusUpdate fails") {
-    val f = new Fixture
+    val f             = new Fixture
     val appId: PathId = PathId("/test")
-    val taskId = Task.Id.forApp(appId)
+    val taskId        = Task.Id.forApp(appId)
 
     val update =
       TaskStatus.newBuilder().setTaskId(taskId.mesosTaskId).buildPartial()
@@ -144,10 +162,11 @@ class TaskCreationHandlerAndUpdaterDelegateTest
 
     Then("an update operation is requested")
     f.taskTrackerProbe.expectMsg(
-        TaskTrackerActor.ForwardTaskOp(
-            f.timeoutFromNow,
-            taskId,
-            TaskOpProcessor.Action.UpdateStatus(update))
+      TaskTrackerActor.ForwardTaskOp(
+        f.timeoutFromNow,
+        taskId,
+        TaskOpProcessor.Action.UpdateStatus(update)
+      )
     )
 
     When("the response is an error")
@@ -161,12 +180,15 @@ class TaskCreationHandlerAndUpdaterDelegateTest
   }
 
   class Fixture {
-    lazy val clock = ConstantClock()
-    lazy val config = MarathonTestHelper.defaultConfig()
+    lazy val clock            = ConstantClock()
+    lazy val config           = MarathonTestHelper.defaultConfig()
     lazy val taskTrackerProbe = TestProbe()
     lazy val delegate = new TaskCreationHandlerAndUpdaterDelegate(
-        clock, config, taskTrackerProbe.ref)
+      clock,
+      config,
+      taskTrackerProbe.ref
+    )
     lazy val timeoutDuration = delegate.timeout.duration
-    def timeoutFromNow = clock.now() + timeoutDuration
+    def timeoutFromNow       = clock.now() + timeoutDuration
   }
 }

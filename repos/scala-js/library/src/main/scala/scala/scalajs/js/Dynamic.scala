@@ -47,20 +47,20 @@ sealed trait Dynamic extends Any with scala.Dynamic {
   def unary_-(): Dynamic = native
   def unary_~(): Dynamic = native
 
-  def +(that: Dynamic): Dynamic = native
-  def -(that: Dynamic): Dynamic = native
-  def *(that: Dynamic): Dynamic = native
-  def /(that: Dynamic): Dynamic = native
-  def %(that: Dynamic): Dynamic = native
-  def <<(that: Dynamic): Dynamic = native
-  def >>(that: Dynamic): Dynamic = native
+  def +(that: Dynamic): Dynamic   = native
+  def -(that: Dynamic): Dynamic   = native
+  def *(that: Dynamic): Dynamic   = native
+  def /(that: Dynamic): Dynamic   = native
+  def %(that: Dynamic): Dynamic   = native
+  def <<(that: Dynamic): Dynamic  = native
+  def >>(that: Dynamic): Dynamic  = native
   def >>>(that: Dynamic): Dynamic = native
-  def &(that: Dynamic): Dynamic = native
-  def |(that: Dynamic): Dynamic = native
-  def ^(that: Dynamic): Dynamic = native
+  def &(that: Dynamic): Dynamic   = native
+  def |(that: Dynamic): Dynamic   = native
+  def ^(that: Dynamic): Dynamic   = native
 
-  def <(that: Dynamic): Dynamic = native
-  def >(that: Dynamic): Dynamic = native
+  def <(that: Dynamic): Dynamic  = native
+  def >(that: Dynamic): Dynamic  = native
   def <=(that: Dynamic): Dynamic = native
   def >=(that: Dynamic): Dynamic = native
 
@@ -68,7 +68,7 @@ sealed trait Dynamic extends Any with scala.Dynamic {
   def ||(that: Dynamic): Dynamic = native
 
   // Work around the annoying implicits in Predef in Scala 2.10.
-  def x: Dynamic = native
+  def x: Dynamic            = native
   def x_=(value: Any): Unit = native
 }
 
@@ -95,7 +95,8 @@ object Dynamic {
       *  js.Dynamic.literal(name1 = "value", name2 = "value")
       */
     def applyDynamicNamed(name: String)(
-        fields: (String, Any)*): Object with Dynamic = sys.error("stub")
+        fields: (String, Any)*
+    ): Object with Dynamic = sys.error("stub")
 
     /** literal creation like this:
       *  js.Dynamic.literal("name1" -> "value", "name2" -> "value")
@@ -105,6 +106,7 @@ object Dynamic {
       *  be routed to the `def apply`, rather than def dynamic version.
       */
     def applyDynamic(name: String)(
-        fields: (String, Any)*): Object with Dynamic = sys.error("stub")
+        fields: (String, Any)*
+    ): Object with Dynamic = sys.error("stub")
   }
 }

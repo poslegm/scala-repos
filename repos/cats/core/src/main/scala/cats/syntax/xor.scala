@@ -8,6 +8,6 @@ trait XorSyntax {
 }
 
 final class XorIdOps[A](val a: A) extends AnyVal {
-  def left[B]: A Xor B = Xor.Left(a)
+  def left[B]: A Xor B  = Xor.Left(a)
   def right[B]: B Xor A = Xor.Right(a)
 }

@@ -18,7 +18,7 @@ trait TreesApi extends TreesBase {
 class Universe extends TreesApi {
   abstract class Tree
   case class Apply(x: Int) extends Tree
-  object Apply extends ApplyExtractor
+  object Apply             extends ApplyExtractor
   def Apply(x: String) = Apply(x.toInt)
 }
 

@@ -88,7 +88,7 @@ private[hashing] class MurmurHash3 {
     */
   final def unorderedHash(xs: TraversableOnce[Any], seed: Int): Int = {
     var a, b, n = 0
-    var c = 1
+    var c       = 1
     xs foreach { x =>
       val h = x.##
       a += h
@@ -132,7 +132,7 @@ private[hashing] class MurmurHash3 {
     */
   final def bytesHash(data: Array[Byte], seed: Int): Int = {
     var len = data.length
-    var h = seed
+    var h   = seed
 
     // Body
     var i = 0
@@ -162,8 +162,8 @@ private[hashing] class MurmurHash3 {
   }
 
   final def listHash(xs: scala.collection.immutable.List[_], seed: Int): Int = {
-    var n = 0
-    var h = seed
+    var n     = 0
+    var h     = seed
     var elems = xs
     while (!elems.isEmpty) {
       val head = elems.head
@@ -198,21 +198,21 @@ private[hashing] class MurmurHash3 {
   * @see [[https://github.com/aappleby/smhasher]]
   */
 object MurmurHash3 extends MurmurHash3 {
-  final val arraySeed = 0x3c074a61
-  final val stringSeed = 0xf7ca7fd2
-  final val productSeed = 0xcafebabe
-  final val symmetricSeed = 0xb592f7ae
+  final val arraySeed       = 0x3c074a61
+  final val stringSeed      = 0xf7ca7fd2
+  final val productSeed     = 0xcafebabe
+  final val symmetricSeed   = 0xb592f7ae
   final val traversableSeed = 0xe73a8b15
-  final val seqSeed = "Seq".hashCode
-  final val mapSeed = "Map".hashCode
-  final val setSeed = "Set".hashCode
+  final val seqSeed         = "Seq".hashCode
+  final val mapSeed         = "Map".hashCode
+  final val setSeed         = "Set".hashCode
 
   def arrayHash[@specialized T](a: Array[T]): Int = arrayHash(a, arraySeed)
-  def bytesHash(data: Array[Byte]): Int = bytesHash(data, arraySeed)
+  def bytesHash(data: Array[Byte]): Int           = bytesHash(data, arraySeed)
   def orderedHash(xs: TraversableOnce[Any]): Int =
     orderedHash(xs, symmetricSeed)
   def productHash(x: Product): Int = productHash(x, productSeed)
-  def stringHash(x: String): Int = stringHash(x, stringSeed)
+  def stringHash(x: String): Int   = stringHash(x, stringSeed)
   def unorderedHash(xs: TraversableOnce[Any]): Int =
     unorderedHash(xs, traversableSeed)
 
@@ -220,11 +220,11 @@ object MurmurHash3 extends MurmurHash3 {
     */
   def seqHash(xs: scala.collection.Seq[_]): Int = xs match {
     case xs: List[_] => listHash(xs, seqSeed)
-    case xs => orderedHash(xs, seqSeed)
+    case xs          => orderedHash(xs, seqSeed)
   }
 
   def mapHash(xs: scala.collection.Map[_, _]): Int = unorderedHash(xs, mapSeed)
-  def setHash(xs: scala.collection.Set[_]): Int = unorderedHash(xs, setSeed)
+  def setHash(xs: scala.collection.Set[_]): Int    = unorderedHash(xs, setSeed)
 
   class ArrayHashing[@specialized T] extends Hashing[Array[T]] {
     def hash(a: Array[T]) = arrayHash(a)

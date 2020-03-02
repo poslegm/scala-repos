@@ -44,6 +44,8 @@ package object api {
   // using the mechanism implemented in `scala.tools.reflect.FastTrack`
   // todo. once we have implicit macros for tag generation, we can remove these anchors
   private[scala] def materializeWeakTypeTag[T](
-      u: ApiUniverse): u.WeakTypeTag[T] = macro ???
-  private[scala] def materializeTypeTag[T](u: ApiUniverse): u.TypeTag[T] = macro ???
+      u: ApiUniverse
+  ): u.WeakTypeTag[T] = macro ???
+  private[scala] def materializeTypeTag[T](u: ApiUniverse): u.TypeTag[T] =
+    macro ???
 }

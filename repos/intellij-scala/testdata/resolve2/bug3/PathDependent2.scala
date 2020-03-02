@@ -18,10 +18,11 @@ trait K { self: Z =>
 
   x match {
     case U(u) =>
-      /* line: 26 */ foo(u)
+      /* line: 26 */
+      foo(u)
   }
 
-  def foo(t: T) = 1
+  def foo(t: T)   = 1
   def foo(u: Int) = 2
 
   case class S(a: I) {}

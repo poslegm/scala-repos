@@ -36,6 +36,7 @@ object LFirstServing {
 
   /** Returns an instance of [[LFirstServing]]. */
   def apply[Q, P](
-      a: Class[_ <: BaseAlgorithm[_, _, Q, P]]): Class[LFirstServing[Q, P]] =
+      a: Class[_ <: BaseAlgorithm[_, _, Q, P]]
+  ): Class[LFirstServing[Q, P]] =
     classOf[LFirstServing[Q, P]]
 }

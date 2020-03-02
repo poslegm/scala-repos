@@ -27,19 +27,21 @@ import scala.collection.JavaConversions._
 object Upgrade {
 
   def main(args: Array[String]) {
-    val fromAppId = args(0).toInt
-    val toAppId = args(1).toInt
-    val batchSize = args.lift(2).map(_.toInt).getOrElse(100)
+    val fromAppId     = args(0).toInt
+    val toAppId       = args(1).toInt
+    val batchSize     = args.lift(2).map(_.toInt).getOrElse(100)
     val fromNamespace = args.lift(3).getOrElse("predictionio_eventdata")
 
     upgrade(fromAppId, toAppId, batchSize, fromNamespace)
   }
 
   /* For upgrade from 0.8.0 or 0.8.1 to 0.8.2 only */
-  def upgrade(fromAppId: Int,
-              toAppId: Int,
-              batchSize: Int,
-              fromNamespace: String) {
+  def upgrade(
+      fromAppId: Int,
+      toAppId: Int,
+      batchSize: Int,
+      fromNamespace: String
+  ) {
 
     val events = Storage.getLEvents().asInstanceOf[HBLEvents]
 
@@ -49,8 +51,9 @@ object Upgrade {
 
     val newTableName = newTable.getName().getNameAsString()
     println(
-        s"Copying data from ${fromNamespace}:events for app ID ${fromAppId}" +
-        s" to new HBase table ${newTableName}...")
+      s"Copying data from ${fromNamespace}:events for app ID ${fromAppId}" +
+        s" to new HBase table ${newTableName}..."
+    )
 
     HB_0_8_0
       .getByAppId(events.client.connection, fromNamespace, fromAppId)

@@ -35,7 +35,7 @@ object DescriptorParser {
         throw new Exception("Failed to parse descriptor type: ", other)
     }
   }
-  val PackageNamePredicate = CharPredicate.All -- ";/ "
+  val PackageNamePredicate   = CharPredicate.All -- ";/ "
   val ClassNameCharPredicate = CharPredicate.All -- ";/ "
 }
 
@@ -65,7 +65,7 @@ class DescriptorParser(val input: ParserInput) extends Parser {
         case 'D' => Double
         case 'V' => Void
         case '[' => Array
-        case _ => MISMATCH
+        case _   => MISMATCH
       }
     }
   }
@@ -80,24 +80,21 @@ class DescriptorParser(val input: ParserInput) extends Parser {
 
   private def Package: Rule1[PackageName] = rule {
     zeroOrMore(capture(oneOrMore(DescriptorParser.PackageNamePredicate)) ~ '/') ~> {
-      seq: Seq[String] =>
-        PackageName(seq.toList)
+      seq: Seq[String] => PackageName(seq.toList)
     }
   }
 
   private def Array: Rule1[DescriptorType] = rule {
-    '[' ~ Type ~> { c =>
-      ArrayDescriptor(c)
-    }
+    '[' ~ Type ~> { c => ArrayDescriptor(c) }
   }
 
   private def Boolean: Rule1[ClassName] = rule { 'Z' ~ push(PrimitiveBoolean) }
-  private def Byte: Rule1[ClassName] = rule { 'B' ~ push(PrimitiveByte) }
-  private def Char: Rule1[ClassName] = rule { 'C' ~ push(PrimitiveChar) }
-  private def Short: Rule1[ClassName] = rule { 'S' ~ push(PrimitiveShort) }
-  private def Int: Rule1[ClassName] = rule { 'I' ~ push(PrimitiveInt) }
-  private def Long: Rule1[ClassName] = rule { 'J' ~ push(PrimitiveLong) }
-  private def Float: Rule1[ClassName] = rule { 'F' ~ push(PrimitiveFloat) }
-  private def Double: Rule1[ClassName] = rule { 'D' ~ push(PrimitiveDouble) }
-  private def Void: Rule1[ClassName] = rule { 'V' ~ push(PrimitiveVoid) }
+  private def Byte: Rule1[ClassName]    = rule { 'B' ~ push(PrimitiveByte) }
+  private def Char: Rule1[ClassName]    = rule { 'C' ~ push(PrimitiveChar) }
+  private def Short: Rule1[ClassName]   = rule { 'S' ~ push(PrimitiveShort) }
+  private def Int: Rule1[ClassName]     = rule { 'I' ~ push(PrimitiveInt) }
+  private def Long: Rule1[ClassName]    = rule { 'J' ~ push(PrimitiveLong) }
+  private def Float: Rule1[ClassName]   = rule { 'F' ~ push(PrimitiveFloat) }
+  private def Double: Rule1[ClassName]  = rule { 'D' ~ push(PrimitiveDouble) }
+  private def Void: Rule1[ClassName]    = rule { 'V' ~ push(PrimitiveVoid) }
 }

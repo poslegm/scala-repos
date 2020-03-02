@@ -31,13 +31,15 @@ import org.apache.spark.util.collection.OpenHashSet
   *
   * TODO Clean up the metadata files periodically
   */
-class FileStreamSource(sqlContext: SQLContext,
-                       metadataPath: String,
-                       path: String,
-                       dataSchema: Option[StructType],
-                       providerName: String,
-                       dataFrameBuilder: Array[String] => DataFrame)
-    extends Source with Logging {
+class FileStreamSource(
+    sqlContext: SQLContext,
+    metadataPath: String,
+    path: String,
+    dataSchema: Option[StructType],
+    providerName: String,
+    dataFrameBuilder: Array[String] => DataFrame
+) extends Source
+    with Logging {
 
   private val fs = FileSystem.get(sqlContext.sparkContext.hadoopConfiguration)
   private val metadataLog =
@@ -76,7 +78,7 @@ class FileStreamSource(sqlContext: SQLContext,
     */
   private def fetchMaxOffset(): LongOffset = synchronized {
     val filesPresent = fetchAllFiles()
-    val newFiles = new ArrayBuffer[String]()
+    val newFiles     = new ArrayBuffer[String]()
     filesPresent.foreach { file =>
       if (!seenFiles.contains(file)) {
         logDebug(s"new file: $file")
@@ -113,8 +115,8 @@ class FileStreamSource(sqlContext: SQLContext,
     */
   override def getNextBatch(start: Option[Offset]): Option[Batch] = {
     val startId = start.map(_.asInstanceOf[LongOffset].offset).getOrElse(-1L)
-    val end = fetchMaxOffset()
-    val endId = end.offset
+    val end     = fetchMaxOffset()
+    val endId   = end.offset
 
     if (startId + 1 <= endId) {
       val files = metadataLog.get(Some(startId + 1), endId).map(_._2).flatten

@@ -32,7 +32,12 @@ import org.apache.hadoop.hive.common.{HiveInterruptCallback, HiveInterruptUtils}
 import org.apache.hadoop.hive.conf.HiveConf
 import org.apache.hadoop.hive.ql.Driver
 import org.apache.hadoop.hive.ql.exec.Utilities
-import org.apache.hadoop.hive.ql.processors.{AddResourceProcessor, CommandProcessor, CommandProcessorFactory, SetProcessor}
+import org.apache.hadoop.hive.ql.processors.{
+  AddResourceProcessor,
+  CommandProcessor,
+  CommandProcessorFactory,
+  SetProcessor
+}
 import org.apache.hadoop.hive.ql.session.SessionState
 import org.apache.thrift.transport.TSocket
 
@@ -46,8 +51,8 @@ import org.apache.spark.util.ShutdownHookManager
   * has dropped its support.
   */
 private[hive] object SparkSQLCLIDriver extends Logging {
-  private var prompt = "spark-sql"
-  private var continuedPrompt = "".padTo(prompt.length, ' ')
+  private var prompt             = "spark-sql"
+  private var continuedPrompt    = "".padTo(prompt.length, ' ')
   private var transport: TSocket = _
 
   installSignalHandler()
@@ -102,7 +107,7 @@ private[hive] object SparkSQLCLIDriver extends Logging {
     // Set all properties specified via command line.
     val conf: HiveConf = sessionState.getConf
     sessionState.cmdProperties.entrySet().asScala.foreach { item =>
-      val key = item.getKey.toString
+      val key   = item.getKey.toString
       val value = item.getValue.toString
       // We do not propagate metastore options to the execution copy of hive.
       if (key != "javax.jdo.option.ConnectionURL") {
@@ -114,9 +119,7 @@ private[hive] object SparkSQLCLIDriver extends Logging {
     SessionState.start(sessionState)
 
     // Clean up after we exit
-    ShutdownHookManager.addShutdownHook { () =>
-      SparkSQLEnv.stop()
-    }
+    ShutdownHookManager.addShutdownHook { () => SparkSQLEnv.stop() }
 
     val remoteMode = isRemoteMode(sessionState)
     // "-h" option has been passed, so connect to Hive thrift server.
@@ -124,11 +127,11 @@ private[hive] object SparkSQLCLIDriver extends Logging {
       // Hadoop-20 and above - we need to augment classpath using hiveconf
       // components.
       // See also: code in ExecDriver.java
-      var loader = conf.getClassLoader
+      var loader  = conf.getClassLoader
       val auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS)
       if (StringUtils.isNotBlank(auxJars)) {
-        loader = Utilities.addToClassPath(
-            loader, StringUtils.split(auxJars, ","))
+        loader =
+          Utilities.addToClassPath(loader, StringUtils.split(auxJars, ","))
       }
       conf.setClassLoader(loader)
       Thread.currentThread().setContextClassLoader(loader)
@@ -186,14 +189,16 @@ private[hive] object SparkSQLCLIDriver extends Logging {
         reader.setHistory(new FileHistory(new File(historyFile)))
       } else {
         logWarning(
-            "WARNING: Directory for Hive history file: " + historyDirectory +
-            " does not exist.   History will not be available during this session.")
+          "WARNING: Directory for Hive history file: " + historyDirectory +
+            " does not exist.   History will not be available during this session."
+        )
       }
     } catch {
       case e: Exception =>
         logWarning(
-            "WARNING: Encountered an error while trying to initialize Hive's " +
-            "history file.  History will not be available during this session.")
+          "WARNING: Encountered an error while trying to initialize Hive's " +
+            "history file.  History will not be available during this session."
+        )
         logWarning(e.getMessage)
     }
 
@@ -205,8 +210,10 @@ private[hive] object SparkSQLCLIDriver extends Logging {
             h.flush()
           } catch {
             case e: IOException =>
-              logWarning("WARNING: Failed to write command history file: " +
-                  e.getMessage)
+              logWarning(
+                "WARNING: Failed to write command history file: " +
+                  e.getMessage
+              )
           }
         case _ =>
       }
@@ -221,21 +228,25 @@ private[hive] object SparkSQLCLIDriver extends Logging {
      */
     transport = null
 
-    var ret = 0
+    var ret    = 0
     var prefix = ""
     val currentDB = ReflectionUtils.invokeStatic(
-        classOf[CliDriver],
-        "getFormattedDb",
-        classOf[HiveConf] -> conf,
-        classOf[CliSessionState] -> sessionState)
+      classOf[CliDriver],
+      "getFormattedDb",
+      classOf[HiveConf]        -> conf,
+      classOf[CliSessionState] -> sessionState
+    )
 
     def promptWithCurrentDB: String = s"$prompt$currentDB"
     def continuedPromptWithDBSpaces: String =
       continuedPrompt + ReflectionUtils.invokeStatic(
-          classOf[CliDriver], "spacesForString", classOf[String] -> currentDB)
+        classOf[CliDriver],
+        "spacesForString",
+        classOf[String] -> currentDB
+      )
 
     var currentPrompt = promptWithCurrentDB
-    var line = reader.readLine(currentPrompt + "> ")
+    var line          = reader.readLine(currentPrompt + "> ")
 
     while (line != null) {
       if (!line.startsWith("--")) {
@@ -291,10 +302,10 @@ private[hive] class SparkSQLCLIDriver extends CliDriver with Logging {
   }
 
   override def processCmd(cmd: String): Int = {
-    val cmd_trimmed: String = cmd.trim()
-    val cmd_lower = cmd_trimmed.toLowerCase(Locale.ENGLISH)
+    val cmd_trimmed: String   = cmd.trim()
+    val cmd_lower             = cmd_trimmed.toLowerCase(Locale.ENGLISH)
     val tokens: Array[String] = cmd_trimmed.split("\\s+")
-    val cmd_1: String = cmd_trimmed.substring(tokens(0).length()).trim()
+    val cmd_1: String         = cmd_trimmed.substring(tokens(0).length()).trim()
     if (cmd_lower.equals("quit") || cmd_lower.equals("exit")) {
       sessionState.close()
       System.exit(0)
@@ -304,13 +315,13 @@ private[hive] class SparkSQLCLIDriver extends CliDriver with Logging {
         isRemoteMode) {
       val start = System.currentTimeMillis()
       super.processCmd(cmd)
-      val end = System.currentTimeMillis()
+      val end               = System.currentTimeMillis()
       val timeTaken: Double = (end - start) / 1000.0
       console.printInfo(s"Time taken: $timeTaken seconds")
       0
     } else {
-      var ret = 0
-      val hconf = conf.asInstanceOf[HiveConf]
+      var ret                    = 0
+      val hconf                  = conf.asInstanceOf[HiveConf]
       val proc: CommandProcessor = CommandProcessorFactory.get(tokens, hconf)
 
       if (proc != null) {
@@ -320,14 +331,14 @@ private[hive] class SparkSQLCLIDriver extends CliDriver with Logging {
           val driver = new SparkSQLDriver
 
           driver.init()
-          val out = sessionState.out
-          val err = sessionState.err
+          val out         = sessionState.out
+          val err         = sessionState.err
           val start: Long = System.currentTimeMillis()
           if (sessionState.getIsVerbose) {
             out.println(cmd)
           }
-          val rc = driver.run(cmd)
-          val end = System.currentTimeMillis()
+          val rc                = driver.run(cmd)
+          val end               = System.currentTimeMillis()
           val timeTaken: Double = (end - start) / 1000.0
 
           ret = rc.getResponseCode
@@ -345,7 +356,9 @@ private[hive] class SparkSQLCLIDriver extends CliDriver with Logging {
           val res = new JArrayList[String]()
 
           if (HiveConf.getBoolVar(
-                  conf, HiveConf.ConfVars.HIVE_CLI_PRINT_HEADER)) {
+                conf,
+                HiveConf.ConfVars.HIVE_CLI_PRINT_HEADER
+              )) {
             // Print the column names.
             Option(driver.getSchema.getFieldSchemas).foreach { fields =>
               out.println(fields.asScala.map(_.getName).mkString("\t"))
@@ -364,9 +377,10 @@ private[hive] class SparkSQLCLIDriver extends CliDriver with Logging {
           } catch {
             case e: IOException =>
               console.printError(
-                  s"""Failed with exception ${e.getClass.getName}: ${e.getMessage}
+                s"""Failed with exception ${e.getClass.getName}: ${e.getMessage}
                    |${org.apache.hadoop.util.StringUtils.stringifyException(e)}
-                 """.stripMargin)
+                 """.stripMargin
+              )
               ret = 1
           }
 

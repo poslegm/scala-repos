@@ -4,14 +4,19 @@ import com.twitter.concurrent.NamedPoolThreadFactory
 import com.twitter.conversions.time._
 import com.twitter.util._
 import java.lang.management.ManagementFactory
-import java.util.concurrent.{ConcurrentHashMap, Executors, ScheduledExecutorService, TimeUnit}
+import java.util.concurrent.{
+  ConcurrentHashMap,
+  Executors,
+  ScheduledExecutorService,
+  TimeUnit
+}
 import java.util.logging.{Level, Logger}
 import scala.collection.JavaConverters._
 
 /**
   * Information about the Heap
   *
-  * @param allocated Estimated number of bytes 
+  * @param allocated Estimated number of bytes
   * that have been allocated so far (into eden)
   *
   * @param tenuringThreshold How many times an Object
@@ -28,30 +33,37 @@ case class Heap(
 
 /**
   * Information about the JVM's safepoint
-  * 
-  * @param syncTimeMillis Cumulative time, in milliseconds, spent 
+  *
+  * @param syncTimeMillis Cumulative time, in milliseconds, spent
   * getting all threads to safepoint states
-  * 
-  * @param totalTimeMillis Cumulative time, in milliseconds, that the 
+  *
+  * @param totalTimeMillis Cumulative time, in milliseconds, that the
   * application has been stopped for safepoint operations
-  * 
-  * @param count The number of safepoints taken place since 
+  *
+  * @param count The number of safepoints taken place since
   * the JVM started
   */
 case class Safepoint(syncTimeMillis: Long, totalTimeMillis: Long, count: Long)
 
 case class PoolState(
-    numCollections: Long, capacity: StorageUnit, used: StorageUnit) {
+    numCollections: Long,
+    capacity: StorageUnit,
+    used: StorageUnit
+) {
   def -(other: PoolState) = PoolState(
-      numCollections = this.numCollections - other.numCollections,
-      capacity = other.capacity,
-      used = this.used + other.capacity - other.used + other.capacity *
-        (this.numCollections - other.numCollections - 1)
+    numCollections = this.numCollections - other.numCollections,
+    capacity = other.capacity,
+    used = this.used + other.capacity - other.used + other.capacity *
+      (this.numCollections - other.numCollections - 1)
   )
 
   override def toString =
     "PoolState(n=%d,remaining=%s[%s of %s])".format(
-        numCollections, capacity - used, used, capacity)
+      numCollections,
+      capacity - used,
+      used,
+      capacity
+    )
 }
 
 /**
@@ -71,9 +83,9 @@ trait Pool {
     */
   def estimateAllocRate(period: Duration, timer: Timer): Future[Long] = {
     val elapsed = Stopwatch.start()
-    val begin = state()
+    val begin   = state()
     timer.doLater(period) {
-      val end = state()
+      val end      = state()
       val interval = elapsed()
       ((end - begin).used.inBytes * 1000) / interval.inMilliseconds
     }
@@ -127,7 +139,7 @@ trait Jvm {
   def metaspaceUsage: Option[Jvm.MetaspaceUsage]
 
   /**
-    * Gets the time spent at safepoints (totalTimeMillis), the time getting 
+    * Gets the time spent at safepoints (totalTimeMillis), the time getting
     * to safepoints (syncTimeMillis), and safepoints reached (count).
     */
   def safepoint: Safepoint
@@ -143,10 +155,10 @@ trait Jvm {
     * but they are svelte.
     */
   def foreachGc(f: Gc => Unit) {
-    val Period = 1.second
-    val LogPeriod = 30.minutes
+    val Period                      = 1.second
+    val LogPeriod                   = 30.minutes
     @volatile var missedCollections = 0L
-    @volatile var lastLog = Time.epoch
+    @volatile var lastLog           = Time.epoch
 
     val lastByName =
       new ConcurrentHashMap[String, java.lang.Long](16, 0.75f, 1)
@@ -161,8 +173,10 @@ trait Jvm {
           missedCollections += count - 1 - lastCount
           if (missedCollections > 0 && Time.now - lastLog > LogPeriod) {
             if (log.isLoggable(Level.FINE)) {
-              log.fine("Missed %d collections for %s due to sampling".format(
-                      missedCollections, name))
+              log.fine(
+                "Missed %d collections for %s due to sampling"
+                  .format(missedCollections, name)
+              )
             }
             lastLog = Time.now
             missedCollections = 0
@@ -174,10 +188,12 @@ trait Jvm {
       }
     }
 
-    executor.scheduleAtFixedRate(new Runnable { def run() = sample() },
-                                 0 /*initial delay*/,
-                                 Period.inMilliseconds,
-                                 TimeUnit.MILLISECONDS)
+    executor.scheduleAtFixedRate(
+      new Runnable { def run() = sample() },
+      0 /*initial delay*/,
+      Period.inMilliseconds,
+      TimeUnit.MILLISECONDS
+    )
   }
 
   /**
@@ -197,8 +213,7 @@ trait Jvm {
         buffer = (gc :: buffer).takeWhile(_.timestamp > floor)
     }
 
-    (since: Time) =>
-      buffer.takeWhile(_.timestamp > since)
+    (since: Time) => buffer.takeWhile(_.timestamp > since)
   }
 
   def forceGc(): Unit
@@ -213,11 +228,12 @@ trait Jvm {
   def mainClassName: String = {
     val mainClass = for {
       (_, stack) <- Thread.getAllStackTraces().asScala.find {
-        case (t, s) => t.getName == "main"
-      }
+                     case (t, s) => t.getName == "main"
+                   }
       frame <- stack.reverse.find { elem =>
-        !(elem.getClassName.startsWith("scala.tools.nsc.MainGenericRunner"))
-      }
+                !(elem.getClassName
+                  .startsWith("scala.tools.nsc.MainGenericRunner"))
+              }
     } yield frame.getClassName
 
     mainClass.getOrElse("unknown")
@@ -234,23 +250,28 @@ object Jvm {
     *
     * @note this is fragile as the RuntimeMXBean doesn't specify the name format.
     */
-  lazy val ProcessId: Option[Int] = try {
-    ManagementFactory.getRuntimeMXBean.getName
-      .split("@")
-      .headOption
-      .map(_.toInt)
-  } catch {
-    case NonFatal(t) =>
-      log.log(Level.WARNING, "failed to find process id", t)
-      None
-  }
+  lazy val ProcessId: Option[Int] =
+    try {
+      ManagementFactory.getRuntimeMXBean.getName
+        .split("@")
+        .headOption
+        .map(_.toInt)
+    } catch {
+      case NonFatal(t) =>
+        log.log(Level.WARNING, "failed to find process id", t)
+        None
+    }
 
   private lazy val executor = Executors.newScheduledThreadPool(
-      1, new NamedPoolThreadFactory("util-jvm-timer", true))
+    1,
+    new NamedPoolThreadFactory("util-jvm-timer", true)
+  )
 
-  private lazy val _jvm = try new Hotspot catch {
-    case NonFatal(_) => NilJvm
-  }
+  private lazy val _jvm =
+    try new Hotspot
+    catch {
+      case NonFatal(_) => NilJvm
+    }
 
   private val log = Logger.getLogger(getClass.getName)
 
@@ -269,9 +290,11 @@ object Jvm {
     *        It can grow beyond this, up to `maxCapacity`, if needed.
     * @param maxCapacity the maximum size that the metaspace can grow to.
     */
-  case class MetaspaceUsage(used: StorageUnit,
-                            capacity: StorageUnit,
-                            maxCapacity: StorageUnit)
+  case class MetaspaceUsage(
+      used: StorageUnit,
+      capacity: StorageUnit,
+      maxCapacity: StorageUnit
+  )
 }
 
 /**

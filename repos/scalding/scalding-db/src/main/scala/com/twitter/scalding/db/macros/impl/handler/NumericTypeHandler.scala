@@ -16,18 +16,19 @@ object NumericTypeHandler {
       defaultValue: Option[c.Expr[String]],
       annotationInfo: List[(c.universe.Type, Option[Int])],
       nullable: Boolean,
-      numericType: String): scala.util.Try[List[ColumnFormat[c.type]]] = {
+      numericType: String
+  ): scala.util.Try[List[ColumnFormat[c.type]]] = {
     import c.universe._
 
     val helper = new {
-      val ctx: c.type = c
-      val cfieldName = fieldName
+      val ctx: c.type     = c
+      val cfieldName      = fieldName
       val cannotationInfo = annotationInfo
     } with AnnotationHelper
 
     val extracted = for {
       (nextHelper, sizeAnno) <- helper.sizeAnnotation
-      _ <- nextHelper.validateFinished
+      _                      <- nextHelper.validateFinished
     } yield (sizeAnno)
 
     extracted.flatMap { t =>
@@ -35,8 +36,11 @@ object NumericTypeHandler {
         case WithSize(s) if s > 0 =>
           Success(List(ColumnFormat(c)(accessorTree, numericType, Some(s))))
         case WithSize(s) =>
-          Failure(new Exception(
-                  s"Int field $fieldName, has a size defined that is <= 0."))
+          Failure(
+            new Exception(
+              s"Int field $fieldName, has a size defined that is <= 0."
+            )
+          )
         case WithoutSize =>
           Success(List(ColumnFormat(c)(accessorTree, numericType, None)))
       }

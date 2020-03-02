@@ -67,8 +67,10 @@ class JSFileBuilder(val name: String, protected val outputWriter: Writer)
 }
 
 class JSFileBuilderWithSourceMapWriter(
-    n: String, ow: Writer, protected val sourceMapWriter: SourceMapWriter)
-    extends JSFileBuilder(n, ow) {
+    n: String,
+    ow: Writer,
+    protected val sourceMapWriter: SourceMapWriter
+) extends JSFileBuilder(n, ow) {
 
   override def addLine(line: String): Unit = {
     super.addLine(line)
@@ -77,15 +79,16 @@ class JSFileBuilderWithSourceMapWriter(
 
   private final val NotSelected = -1
 
-  override def addPartsOfFile(file: VirtualJSFile)(
-      selector: String => Boolean): Unit = {
+  override def addPartsOfFile(
+      file: VirtualJSFile
+  )(selector: String => Boolean): Unit = {
     val br = new BufferedReader(file.reader)
     try {
       // Select lines, and remember offsets
-      val offsets = new mutable.ArrayBuffer[Int] // (maybe NotSelected)
+      val offsets             = new mutable.ArrayBuffer[Int] // (maybe NotSelected)
       val selectedLineLengths = new mutable.ArrayBuffer[Int]
-      var line: String = br.readLine()
-      var selectedCount = 0
+      var line: String        = br.readLine()
+      var selectedCount       = 0
       while (line != null) {
         if (selector(line)) {
           super.addLine(line) // super call not to advance line in source map
@@ -136,12 +139,12 @@ class JSFileBuilderWithSourceMap(
     n: String,
     ow: Writer,
     sourceMapOutputWriter: Writer,
-    relativizeSourceMapBasePath: Option[URI] = None)
-    extends JSFileBuilderWithSourceMapWriter(
-        n,
-        ow,
-        new SourceMapWriter(
-            sourceMapOutputWriter, n, relativizeSourceMapBasePath)) {
+    relativizeSourceMapBasePath: Option[URI] = None
+) extends JSFileBuilderWithSourceMapWriter(
+      n,
+      ow,
+      new SourceMapWriter(sourceMapOutputWriter, n, relativizeSourceMapBasePath)
+    ) {
 
   override def complete(): Unit = {
     addLine("//# sourceMappingURL=" + name + ".map")

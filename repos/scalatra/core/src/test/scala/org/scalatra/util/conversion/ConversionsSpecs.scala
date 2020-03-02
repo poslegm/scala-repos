@@ -53,7 +53,8 @@ class ConversionsSpecs extends Specification {
     object Impl extends DefaultImplicitConversions {
 
       def testFor[T](source: String, expected: Option[T])(
-          implicit t: TypeConverter[String, T]) = {
+          implicit t: TypeConverter[String, T]
+      ) = {
         t(source) must_== expected
       }
     }
@@ -73,8 +74,8 @@ class ConversionsSpecs extends Specification {
 
       val dateConverter = Impl.stringToDate("S") // milliseconds
 
-      val cal = Calendar.getInstance
-      val currentMs = cal.get(Calendar.MILLISECOND)
+      val cal                     = Calendar.getInstance
+      val currentMs               = cal.get(Calendar.MILLISECOND)
       val converted: Option[Date] = dateConverter(currentMs.toString)
 
       converted aka "The converted Date value" must beSome[Date]
@@ -88,13 +89,17 @@ class ConversionsSpecs extends Specification {
 
       import Impl._
 
-      def testConversion[T](args: (String, Seq[T]))(
-          implicit mf: Manifest[T], t: TypeConverter[String, T]) = {
+      def testConversion[T](
+          args: (String, Seq[T])
+      )(implicit mf: Manifest[T], t: TypeConverter[String, T]) = {
         val (source, expected) = args
-        Impl.stringToSeq(t).apply(source).get must containAllOf(expected).inOrder
+        Impl
+          .stringToSeq(t)
+          .apply(source)
+          .get must containAllOf(expected).inOrder
       }
 
-      testConversion("1,2,3" -> List(1, 2, 3))
+      testConversion("1,2,3"    -> List(1, 2, 3))
       testConversion("a,b,c,,e" -> List("a", "b", "c", "", "e"))
 
       case class B(v: Int)

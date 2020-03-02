@@ -16,14 +16,14 @@ class SerializableResultSpec extends PlaySpecification {
       val inWrapper = new SerializableResult(result)
       import java.io._
       val baos = new ByteArrayOutputStream()
-      val oos = new ObjectOutputStream(baos)
+      val oos  = new ObjectOutputStream(baos)
       oos.writeObject(inWrapper)
       oos.flush()
       oos.close()
       baos.close()
-      val bytes = baos.toByteArray
-      val bais = new ByteArrayInputStream(bytes)
-      val ois = new ObjectInputStream(bais)
+      val bytes      = baos.toByteArray
+      val bais       = new ByteArrayInputStream(bytes)
+      val ois        = new ObjectInputStream(bais)
       val outWrapper = ois.readObject().asInstanceOf[SerializableResult]
       ois.close()
       bais.close()
@@ -44,16 +44,20 @@ class SerializableResultSpec extends PlaySpecification {
 
     "serialize and deserialize statūs" in {
       checkSerialization(
-          Results.Ok("x").withHeaders(CONTENT_TYPE -> "text/banana"))
+        Results.Ok("x").withHeaders(CONTENT_TYPE -> "text/banana")
+      )
       checkSerialization(Results.NotFound)
     }
     "serialize and deserialize simple Results" in {
       checkSerialization(Results.Ok("hello!"))
       checkSerialization(
-          Results.Ok("hello!").withHeaders(CONTENT_TYPE -> "text/banana"))
-      checkSerialization(Results
-            .Ok("hello!")
-            .withHeaders(CONTENT_TYPE -> "text/banana", "X-Foo" -> "bar"))
+        Results.Ok("hello!").withHeaders(CONTENT_TYPE -> "text/banana")
+      )
+      checkSerialization(
+        Results
+          .Ok("hello!")
+          .withHeaders(CONTENT_TYPE -> "text/banana", "X-Foo" -> "bar")
+      )
     }
   }
 }

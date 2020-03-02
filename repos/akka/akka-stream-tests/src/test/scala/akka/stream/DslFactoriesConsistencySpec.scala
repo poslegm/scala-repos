@@ -10,21 +10,23 @@ class DslFactoriesConsistencySpec extends WordSpec with Matchers {
 
   // configuration //
 
-  val scalaIgnore = Set("equals",
-                        "hashCode",
-                        "notify",
-                        "notifyAll",
-                        "wait",
-                        "toString",
-                        "getClass",
-                        "shape")
+  val scalaIgnore = Set(
+    "equals",
+    "hashCode",
+    "notify",
+    "notifyAll",
+    "wait",
+    "toString",
+    "getClass",
+    "shape"
+  )
 
   val javaIgnore = Set("adapt") // the scaladsl -> javadsl bridge
 
   val `scala -> java aliases` =
-    ("apply" -> "create") :: ("apply" -> "of") :: ("apply" -> "from") ::
-    ("apply" -> "fromGraph") :: ("apply" -> "fromIterator") ::
-    ("apply" -> "fromFunctions") :: Nil
+    ("apply"   -> "create") :: ("apply" -> "of") :: ("apply" -> "from") ::
+      ("apply" -> "fromGraph") :: ("apply" -> "fromIterator") ::
+      ("apply" -> "fromFunctions") :: Nil
 
   // format: OFF
   val `scala -> java types` =
@@ -59,15 +61,19 @@ class DslFactoriesConsistencySpec extends WordSpec with Matchers {
 
   val graph = classOf[Graph[_, _]]
 
-  case class TestCase(name: String,
-                      sClass: Option[Class[_]],
-                      jClass: Option[Class[_]],
-                      jFactory: Option[Class[_]])
+  case class TestCase(
+      name: String,
+      sClass: Option[Class[_]],
+      jClass: Option[Class[_]],
+      jFactory: Option[Class[_]]
+  )
   object TestCase {
-    def apply(name: String,
-              sClass: Class[_],
-              jClass: Class[_],
-              jFactory: Class[_]): TestCase =
+    def apply(
+        name: String,
+        sClass: Class[_],
+        jClass: Class[_],
+        jFactory: Class[_]
+    ): TestCase =
       TestCase(name, Some(sClass), Some(jClass), Some(jFactory))
 
     def apply(name: String, sClass: Class[_], jClass: Class[_]): TestCase =
@@ -75,45 +81,57 @@ class DslFactoriesConsistencySpec extends WordSpec with Matchers {
   }
 
   val testCases = Seq(
-      TestCase("Source", scaladsl.Source.getClass, javadsl.Source.getClass),
-      TestCase("Flow", scaladsl.Flow.getClass, javadsl.Flow.getClass),
-      TestCase("Sink", scaladsl.Sink.getClass, javadsl.Sink.getClass),
-      TestCase(
-          "BidiFlow", scaladsl.BidiFlow.getClass, javadsl.BidiFlow.getClass),
-      TestCase("GraphDSL",
-               scaladsl.GraphDSL.getClass,
-               javadsl.GraphDSL.getClass,
-               classOf[javadsl.GraphCreate]),
-      TestCase("ZipWith",
-               Some(scaladsl.ZipWith.getClass),
-               None,
-               Some(javadsl.ZipWith.getClass)),
-      TestCase("Merge", scaladsl.Merge.getClass, javadsl.Merge.getClass),
-      TestCase("MergePreferred",
-               scaladsl.MergePreferred.getClass,
-               javadsl.MergePreferred.getClass),
-      TestCase("Broadcast",
-               scaladsl.Broadcast.getClass,
-               javadsl.Broadcast.getClass),
-      TestCase("Balance", scaladsl.Balance.getClass, javadsl.Balance.getClass),
-      TestCase("Zip", scaladsl.Zip.getClass, javadsl.Zip.getClass),
-      TestCase("UnZip", scaladsl.Unzip.getClass, javadsl.Unzip.getClass),
-      TestCase("Concat", scaladsl.Concat.getClass, javadsl.Concat.getClass),
-      TestCase("FileIO", scaladsl.FileIO.getClass, javadsl.FileIO.getClass),
-      TestCase("StreamConverters",
-               scaladsl.StreamConverters.getClass,
-               javadsl.StreamConverters.getClass))
+    TestCase("Source", scaladsl.Source.getClass, javadsl.Source.getClass),
+    TestCase("Flow", scaladsl.Flow.getClass, javadsl.Flow.getClass),
+    TestCase("Sink", scaladsl.Sink.getClass, javadsl.Sink.getClass),
+    TestCase("BidiFlow", scaladsl.BidiFlow.getClass, javadsl.BidiFlow.getClass),
+    TestCase(
+      "GraphDSL",
+      scaladsl.GraphDSL.getClass,
+      javadsl.GraphDSL.getClass,
+      classOf[javadsl.GraphCreate]
+    ),
+    TestCase(
+      "ZipWith",
+      Some(scaladsl.ZipWith.getClass),
+      None,
+      Some(javadsl.ZipWith.getClass)
+    ),
+    TestCase("Merge", scaladsl.Merge.getClass, javadsl.Merge.getClass),
+    TestCase(
+      "MergePreferred",
+      scaladsl.MergePreferred.getClass,
+      javadsl.MergePreferred.getClass
+    ),
+    TestCase(
+      "Broadcast",
+      scaladsl.Broadcast.getClass,
+      javadsl.Broadcast.getClass
+    ),
+    TestCase("Balance", scaladsl.Balance.getClass, javadsl.Balance.getClass),
+    TestCase("Zip", scaladsl.Zip.getClass, javadsl.Zip.getClass),
+    TestCase("UnZip", scaladsl.Unzip.getClass, javadsl.Unzip.getClass),
+    TestCase("Concat", scaladsl.Concat.getClass, javadsl.Concat.getClass),
+    TestCase("FileIO", scaladsl.FileIO.getClass, javadsl.FileIO.getClass),
+    TestCase(
+      "StreamConverters",
+      scaladsl.StreamConverters.getClass,
+      javadsl.StreamConverters.getClass
+    )
+  )
 
   "Java DSL" must provide {
     testCases foreach {
       case TestCase(name, Some(sClass), jClass, jFactoryOption) ⇒
         name which {
           s"allows creating the same ${name}s as Scala DSL" in {
-            runSpec(getSMethods(sClass),
-                    jClass.toList.flatMap(getJMethods) ++ jFactoryOption.toList
-                      .flatMap(f ⇒
-                          getJMethods(f).map(
-                              unspecializeName andThen curryLikeJava)))
+            runSpec(
+              getSMethods(sClass),
+              jClass.toList.flatMap(getJMethods) ++ jFactoryOption.toList
+                .flatMap(f ⇒
+                  getJMethods(f).map(unspecializeName andThen curryLikeJava)
+                )
+            )
           }
         }
     }
@@ -135,55 +153,74 @@ class DslFactoriesConsistencySpec extends WordSpec with Matchers {
       .toList
 
   private def toMethod(m: java.lang.reflect.Method): Method =
-    Method(m.getName,
-           List(m.getParameterTypes: _*),
-           m.getReturnType,
-           m.getDeclaringClass)
+    Method(
+      m.getName,
+      List(m.getParameterTypes: _*),
+      m.getReturnType,
+      m.getDeclaringClass
+    )
 
-  private case class Ignore(cls: Class[_] ⇒ Boolean,
-                            name: String ⇒ Boolean,
-                            parameters: Int ⇒ Boolean,
-                            paramTypes: List[Class[_]] ⇒ Boolean)
+  private case class Ignore(
+      cls: Class[_] ⇒ Boolean,
+      name: String ⇒ Boolean,
+      parameters: Int ⇒ Boolean,
+      paramTypes: List[Class[_]] ⇒ Boolean
+  )
 
   private def ignore(m: Method): Boolean = {
     val ignores = Seq(
-        // private scaladsl method
-        Ignore(_ == akka.stream.scaladsl.Source.getClass,
-               _ == "apply",
-               _ == 1,
-               _ == List(classOf[akka.stream.impl.SourceModule[_, _]])),
-        // corresponding matches on java side would need to have Function23
-        Ignore(_ == akka.stream.scaladsl.Source.getClass,
-               _ == "apply",
-               _ == 24,
-               _ ⇒ true),
-        Ignore(_ == akka.stream.scaladsl.Flow.getClass,
-               _ == "apply",
-               _ == 24,
-               _ ⇒ true),
-        Ignore(_ == akka.stream.scaladsl.Sink.getClass,
-               _ == "apply",
-               _ == 24,
-               _ ⇒ true),
-        Ignore(_ == akka.stream.scaladsl.BidiFlow.getClass,
-               _ == "apply",
-               _ == 24,
-               _ ⇒ true),
-        Ignore(_ == akka.stream.scaladsl.GraphDSL.getClass,
-               _ == "runnable",
-               _ == 24,
-               _ ⇒ true),
-        Ignore(_ == akka.stream.scaladsl.GraphDSL.getClass,
-               _ == "create",
-               _ == 24,
-               _ ⇒ true),
-        // all generated methods like scaladsl.Sink$.akka$stream$scaladsl$Sink$$newOnCompleteStage$1
-        Ignore(_ ⇒ true, _.contains("$"), _ ⇒ true, _ ⇒ true))
+      // private scaladsl method
+      Ignore(
+        _ == akka.stream.scaladsl.Source.getClass,
+        _ == "apply",
+        _ == 1,
+        _ == List(classOf[akka.stream.impl.SourceModule[_, _]])
+      ),
+      // corresponding matches on java side would need to have Function23
+      Ignore(
+        _ == akka.stream.scaladsl.Source.getClass,
+        _ == "apply",
+        _ == 24,
+        _ ⇒ true
+      ),
+      Ignore(
+        _ == akka.stream.scaladsl.Flow.getClass,
+        _ == "apply",
+        _ == 24,
+        _ ⇒ true
+      ),
+      Ignore(
+        _ == akka.stream.scaladsl.Sink.getClass,
+        _ == "apply",
+        _ == 24,
+        _ ⇒ true
+      ),
+      Ignore(
+        _ == akka.stream.scaladsl.BidiFlow.getClass,
+        _ == "apply",
+        _ == 24,
+        _ ⇒ true
+      ),
+      Ignore(
+        _ == akka.stream.scaladsl.GraphDSL.getClass,
+        _ == "runnable",
+        _ == 24,
+        _ ⇒ true
+      ),
+      Ignore(
+        _ == akka.stream.scaladsl.GraphDSL.getClass,
+        _ == "create",
+        _ == 24,
+        _ ⇒ true
+      ),
+      // all generated methods like scaladsl.Sink$.akka$stream$scaladsl$Sink$$newOnCompleteStage$1
+      Ignore(_ ⇒ true, _.contains("$"), _ ⇒ true, _ ⇒ true)
+    )
 
     ignores.foldLeft(false) {
       case (acc, i) ⇒
         acc ||
-        (i.cls(m.declaringClass) && i.name(m.name) &&
+          (i.cls(m.declaringClass) && i.name(m.name) &&
             i.parameters(m.parameterTypes.length) &&
             i.paramTypes(m.parameterTypes))
     }
@@ -204,9 +241,11 @@ class DslFactoriesConsistencySpec extends WordSpec with Matchers {
     */
   private val curryLikeJava: PartialFunction[Method, Method] = {
     case m if m.parameterTypes.size > 1 ⇒
-      m.copy(name = m.name.filter(Character.isLetter),
-             parameterTypes = m.parameterTypes.dropRight(1) :+ classOf[
-                   akka.japi.function.Function[_, _]])
+      m.copy(
+        name = m.name.filter(Character.isLetter),
+        parameterTypes = m.parameterTypes
+          .dropRight(1) :+ classOf[akka.japi.function.Function[_, _]]
+      )
     case m ⇒ m
   }
 
@@ -214,48 +253,40 @@ class DslFactoriesConsistencySpec extends WordSpec with Matchers {
     var warnings = 0
 
     val results = for {
-      s ← sMethods
-      j ← jMethods
+      s      ← sMethods
+      j      ← jMethods
       result = delegationCheck(s, j)
     } yield {
       result
     }
 
     for {
-      row ← results.groupBy(_.s)
+      row     ← results.groupBy(_.s)
       matches = row._2.filter(_.matches)
     } {
       if (matches.length == 0) {
         warnings += 1
         alert("No match for " + row._1)
-        row._2 foreach { m ⇒
-          alert(s" > ${m.j.toString}: ${m.reason}")
-        }
+        row._2 foreach { m ⇒ alert(s" > ${m.j.toString}: ${m.reason}") }
       } else if (matches.length == 1) {
         info(
-            "Matched: Scala:" + row._1.name + "(" +
+          "Matched: Scala:" + row._1.name + "(" +
             row._1.parameterTypes.map(_.getName).mkString(",") + "): " +
             returnTypeString(row._1) + " == " + "Java:" + matches.head.j.name +
             "(" + matches.head.j.parameterTypes.map(_.getName).mkString(",") +
-            "): " + returnTypeString(matches.head.j))
+            "): " + returnTypeString(matches.head.j)
+        )
       } else {
         warnings += 1
         alert("Multiple matches for " + row._1 + "!")
-        matches foreach { m ⇒
-          alert(s" > ${m.j.toString}")
-        }
+        matches foreach { m ⇒ alert(s" > ${m.j.toString}") }
       }
     }
 
     if (warnings > 0) {
-      jMethods foreach { m ⇒
-        info("  java: " + m + ": " + returnTypeString(m))
-      }
-      sMethods foreach { m ⇒
-        info(" scala: " + m + ": " + returnTypeString(m))
-      }
-      fail(
-          "Warnings were issued! Fix name / type mappings or delegation code!")
+      jMethods foreach { m ⇒ info("  java: " + m + ": " + returnTypeString(m)) }
+      sMethods foreach { m ⇒ info(" scala: " + m + ": " + returnTypeString(m)) }
+      fail("Warnings were issued! Fix name / type mappings or delegation code!")
     }
   }
 
@@ -263,10 +294,12 @@ class DslFactoriesConsistencySpec extends WordSpec with Matchers {
     m.returnType.getName.drop("akka.stream.".length)
 
   import language.existentials
-  case class Method(name: String,
-                    parameterTypes: List[Class[_]],
-                    returnType: Class[_],
-                    declaringClass: Class[_])
+  case class Method(
+      name: String,
+      parameterTypes: List[Class[_]],
+      returnType: Class[_],
+      declaringClass: Class[_]
+  )
 
   sealed trait MatchResult {
     def j: Method
@@ -285,10 +318,12 @@ class DslFactoriesConsistencySpec extends WordSpec with Matchers {
         if (typeMatch(s.parameterTypes, j.parameterTypes))
           if (returnTypeMatch(s.returnType, j.returnType)) Match(s, j)
           else
-            MatchFailure(s,
-                         j,
-                         "Return types don't match! " + s.returnType + ", " +
-                         j.returnType)
+            MatchFailure(
+              s,
+              j,
+              "Return types don't match! " + s.returnType + ", " +
+                j.returnType
+            )
         else MatchFailure(s, j, "Types of parameters don't match!")
       else MatchFailure(s, j, "Same name, but different number of parameters!")
     } else {
@@ -298,9 +333,9 @@ class DslFactoriesConsistencySpec extends WordSpec with Matchers {
 
   def nameMatch(scalaName: String, javaName: String): Boolean =
     (scalaName, javaName) match {
-      case (s, j) if s == j ⇒ true
+      case (s, j) if s == j                        ⇒ true
       case t if `scala -> java aliases` contains t ⇒ true
-      case t ⇒ false
+      case t                                       ⇒ false
     }
 
   /**
@@ -309,18 +344,20 @@ class DslFactoriesConsistencySpec extends WordSpec with Matchers {
     */
   def returnTypeMatch(s: Class[_], j: Class[_]): Boolean =
     (sSource.isAssignableFrom(s) && jSource.isAssignableFrom(j)) ||
-    (sSink.isAssignableFrom(s) && jSink.isAssignableFrom(j)) ||
-    (sFlow.isAssignableFrom(s) && jFlow.isAssignableFrom(j)) ||
-    (sRunnableGraph.isAssignableFrom(s) &&
+      (sSink.isAssignableFrom(s) && jSink.isAssignableFrom(j)) ||
+      (sFlow.isAssignableFrom(s) && jFlow.isAssignableFrom(j)) ||
+      (sRunnableGraph.isAssignableFrom(s) &&
         jRunnableGraph.isAssignableFrom(j)) ||
-    (graph.isAssignableFrom(s) && graph.isAssignableFrom(j))
+      (graph.isAssignableFrom(s) && graph.isAssignableFrom(j))
 
   def typeMatch(
-      scalaParams: List[Class[_]], javaParams: List[Class[_]]): Boolean =
+      scalaParams: List[Class[_]],
+      javaParams: List[Class[_]]
+  ): Boolean =
     (scalaParams.toList, javaParams.toList) match {
-      case (s, j) if s == j ⇒ true
+      case (s, j) if s == j                     ⇒ true
       case (s, j) if s.zip(j).forall(typeMatch) ⇒ true
-      case _ ⇒ false
+      case _                                    ⇒ false
     }
 
   def typeMatch(p: (Class[_], Class[_])): Boolean =

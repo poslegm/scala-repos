@@ -5,7 +5,7 @@ object SCL6730 {
 
   class RDFGraph {
     def addTriples(triples: Set[RDFTriple]): RDFGraph = new RDFGraph
-    def insertTriple(triple: RDFTriple): RDFGraph = new RDFGraph
+    def insertTriple(triple: RDFTriple): RDFGraph     = new RDFGraph
   }
 
   case class Exists(fn: BNodeId => RDFGraph)(implicit seed: BNodeId)

@@ -20,23 +20,25 @@ import org.scalajs.core.tools.javascript.ESLevel
 import ConcurrencyUtils._
 
 final class ParIncOptimizer(
-    semantics: Semantics, esLevel: ESLevel, considerPositions: Boolean)
-    extends GenIncOptimizer(semantics, esLevel, considerPositions) {
+    semantics: Semantics,
+    esLevel: ESLevel,
+    considerPositions: Boolean
+) extends GenIncOptimizer(semantics, esLevel, considerPositions) {
 
   private[optimizer] object CollOps extends GenIncOptimizer.AbsCollOps {
-    type Map[K, V] = TrieMap[K, V]
-    type ParMap[K, V] = ParTrieMap[K, V]
-    type AccMap[K, V] = TrieMap[K, AtomicAcc[V]]
+    type Map[K, V]      = TrieMap[K, V]
+    type ParMap[K, V]   = ParTrieMap[K, V]
+    type AccMap[K, V]   = TrieMap[K, AtomicAcc[V]]
     type ParIterable[V] = ParArray[V]
-    type Addable[V] = AtomicAcc[V]
+    type Addable[V]     = AtomicAcc[V]
 
-    def emptyAccMap[K, V]: AccMap[K, V] = TrieMap.empty
-    def emptyMap[K, V]: Map[K, V] = TrieMap.empty
-    def emptyParMap[K, V]: ParMap[K, V] = ParTrieMap.empty
+    def emptyAccMap[K, V]: AccMap[K, V]     = TrieMap.empty
+    def emptyMap[K, V]: Map[K, V]           = TrieMap.empty
+    def emptyParMap[K, V]: ParMap[K, V]     = ParTrieMap.empty
     def emptyParIterable[V]: ParIterable[V] = ParArray.empty
 
     // Operations on ParMap
-    def put[K, V](map: ParMap[K, V], k: K, v: V): Unit = map.put(k, v)
+    def put[K, V](map: ParMap[K, V], k: K, v: V): Unit   = map.put(k, v)
     def remove[K, V](map: ParMap[K, V], k: K): Option[V] = map.remove(k)
 
     def retain[K, V](map: ParMap[K, V])(p: (K, V) => Boolean): Unit = {
@@ -53,8 +55,9 @@ final class ParIncOptimizer(
     def getAcc[K, V](map: AccMap[K, V], k: K): GenIterable[V] =
       map.get(k).fold[Iterable[V]](Nil)(_.removeAll()).toParArray
 
-    def parFlatMapKeys[A, B](map: AccMap[A, _])(
-        f: A => GenTraversableOnce[B]): GenIterable[B] =
+    def parFlatMapKeys[A, B](
+        map: AccMap[A, _]
+    )(f: A => GenTraversableOnce[B]): GenIterable[B] =
       map.keys.flatMap(f).toParArray
 
     // Operations on ParIterable
@@ -77,7 +80,9 @@ final class ParIncOptimizer(
     methodsToProcess += method
 
   private[optimizer] def newMethodImpl(
-      owner: MethodContainer, encodedName: String): MethodImpl =
+      owner: MethodContainer,
+      encodedName: String
+  ): MethodImpl =
     new ParMethodImpl(owner, encodedName)
 
   private[optimizer] def processAllTaggedMethods(): Unit = {
@@ -89,8 +94,8 @@ final class ParIncOptimizer(
   private class ParInterfaceType(encName: String)
       extends InterfaceType(encName) {
     private val ancestorsAskers = TrieSet.empty[MethodImpl]
-    private val dynamicCallers = TrieMap.empty[String, TrieSet[MethodImpl]]
-    private val staticCallers = TrieMap.empty[String, TrieSet[MethodImpl]]
+    private val dynamicCallers  = TrieMap.empty[String, TrieSet[MethodImpl]]
+    private val staticCallers   = TrieMap.empty[String, TrieSet[MethodImpl]]
     private val callersOfStatic = TrieMap.empty[String, TrieSet[MethodImpl]]
 
     private var _ancestors: List[String] = encodedName :: Nil
@@ -188,7 +193,7 @@ final class ParIncOptimizer(
     }
 
     private val _registeredTo = AtomicAcc.empty[Unregisterable]
-    private val tagged = new AtomicBoolean(false)
+    private val tagged        = new AtomicBoolean(false)
 
     protected def registeredTo(intf: Unregisterable): Unit =
       _registeredTo += intf
@@ -198,7 +203,7 @@ final class ParIncOptimizer(
     }
 
     protected def protectTag(): Boolean = !tagged.getAndSet(true)
-    protected def resetTag(): Unit = tagged.set(false)
+    protected def resetTag(): Unit      = tagged.set(false)
   }
 }
 

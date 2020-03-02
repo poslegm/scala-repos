@@ -19,8 +19,8 @@ trait Integral[T] extends Numeric[T] {
   def rem(x: T, y: T): T
 
   class IntegralOps(lhs: T) extends Ops(lhs) {
-    def /(rhs: T) = quot(lhs, rhs)
-    def %(rhs: T) = rem(lhs, rhs)
+    def /(rhs: T)  = quot(lhs, rhs)
+    def %(rhs: T)  = rem(lhs, rhs)
     def /%(rhs: T) = (quot(lhs, rhs), rem(lhs, rhs))
   }
   override implicit def mkNumericOps(lhs: T): IntegralOps =
@@ -34,8 +34,9 @@ object Integral {
       *  bumping into one another when searching for this implicit, so they
       *  are exiled into their own companions.
       */
-    implicit def infixIntegralOps[T](x: T)(
-        implicit num: Integral[T]): Integral[T]#IntegralOps =
+    implicit def infixIntegralOps[T](
+        x: T
+    )(implicit num: Integral[T]): Integral[T]#IntegralOps =
       new num.IntegralOps(x)
   }
   object Implicits extends ExtraImplicits

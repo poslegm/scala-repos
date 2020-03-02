@@ -45,7 +45,7 @@ object Utils {
       sys.env.getOrElse("PIO_FS_TMPDIR", System.getProperty("java.io.tmpdir"))
     val modelFile = tmpdir + File.separator + id
     (new File(tmpdir)).mkdirs
-    val fos = new FileOutputStream(modelFile)
+    val fos  = new FileOutputStream(modelFile)
     val kryo = KryoInstantiator.newKryoInjection
     fos.write(kryo(model))
     fos.close
@@ -62,9 +62,9 @@ object Utils {
     val tmpdir =
       sys.env.getOrElse("PIO_FS_TMPDIR", System.getProperty("java.io.tmpdir"))
     val modelFile = tmpdir + File.separator + id
-    val src = Source.fromFile(modelFile)(scala.io.Codec.ISO8859)
-    val kryo = KryoInstantiator.newKryoInjection
-    val m = kryo.invert(src.map(_.toByte).toArray).get
+    val src       = Source.fromFile(modelFile)(scala.io.Codec.ISO8859)
+    val kryo      = KryoInstantiator.newKryoInjection
+    val m         = kryo.invert(src.map(_.toByte).toArray).get
     src.close
     m
   }

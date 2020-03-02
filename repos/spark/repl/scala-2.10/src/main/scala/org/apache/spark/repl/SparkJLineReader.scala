@@ -24,20 +24,23 @@ import io.Streamable.slurp
   */
 private[repl] class SparkJLineReader(_completion: => Completion)
     extends InteractiveReader {
-  val interactive = true
+  val interactive   = true
   val consoleReader = new JLineConsoleReader()
 
-  lazy val completion = _completion
+  lazy val completion            = _completion
   lazy val history: JLineHistory = new SparkJLineHistory
 
   private def term = consoleReader.getTerminal()
-  def reset() = term.reset()
-  def init() = term.init()
+  def reset()      = term.reset()
+  def init()       = term.init()
 
   def scalaToJline(tc: ScalaCompleter): Completer = new Completer {
     def complete(
-        _buf: String, cursor: Int, candidates: JList[CharSequence]): Int = {
-      val buf = if (_buf == null) "" else _buf
+        _buf: String,
+        cursor: Int,
+        candidates: JList[CharSequence]
+    ): Int = {
+      val buf                                  = if (_buf == null) "" else _buf
       val Candidates(newCursor, newCandidates) = tc.complete(buf, cursor)
       newCandidates foreach (candidates add _)
       newCursor
@@ -54,7 +57,7 @@ private[repl] class SparkJLineReader(_completion: => Completion)
       this.flush()
       this.readVirtualKey()
     }
-    def eraseLine() = consoleReader.resetPromptLine("", "", 0)
+    def eraseLine()                = consoleReader.resetPromptLine("", "", 0)
     def redrawLineAndFlush(): Unit = { flush(); drawLine(); flush() }
     // override def readLine(prompt: String): String
 
@@ -64,7 +67,9 @@ private[repl] class SparkJLineReader(_completion: => Completion)
 
       if (completion ne NoCompletion) {
         val argCompletor: ArgumentCompleter = new ArgumentCompleter(
-            new JLineDelimiter, scalaToJline(completion.completer()))
+          new JLineDelimiter,
+          scalaToJline(completion.completer())
+        )
         argCompletor setStrict false
 
         this addCompleter argCompletor
@@ -73,13 +78,13 @@ private[repl] class SparkJLineReader(_completion: => Completion)
     }
   }
 
-  def currentLine = consoleReader.getCursorBuffer.buffer.toString
+  def currentLine  = consoleReader.getCursorBuffer.buffer.toString
   def redrawLine() = consoleReader.redrawLineAndFlush()
-  def eraseLine() = consoleReader.eraseLine()
+  def eraseLine()  = consoleReader.eraseLine()
   // Alternate implementation, not sure if/when I need this.
   // def eraseLine() = while (consoleReader.delete()) { }
   def readOneLine(prompt: String) = consoleReader readLine prompt
-  def readOneKey(prompt: String) = consoleReader readOneKey prompt
+  def readOneKey(prompt: String)  = consoleReader readOneKey prompt
 }
 
 /** Changes the default history file to not collide with the scala repl's. */
@@ -88,5 +93,6 @@ private[repl] class SparkJLineHistory extends JLineFileHistory {
 
   def defaultFileName = ".spark_history"
   override protected lazy val historyFile = File(
-      Path(userHome) / defaultFileName)
+    Path(userHome) / defaultFileName
+  )
 }

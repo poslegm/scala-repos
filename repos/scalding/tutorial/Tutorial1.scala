@@ -39,7 +39,7 @@ Check the output:
   **/
 class Tutorial1(args: Args) extends Job(args) {
 
-  val input = TextLine("tutorial/data/hello.txt")
+  val input  = TextLine("tutorial/data/hello.txt")
   val output = TextLine("tutorial/data/output1.txt")
 
   /**

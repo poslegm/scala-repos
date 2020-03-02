@@ -13,27 +13,28 @@ import org.scalatest.mock.MockitoSugar
 import scala.util.Random
 
 @RunWith(classOf[JUnitRunner])
-class BackupRequestFilterTest
-    extends FunSuite with MockitoSugar with Matchers {
+class BackupRequestFilterTest extends FunSuite with MockitoSugar with Matchers {
   def quantile(ds: Seq[Duration], which: Int) = {
     val sorted = ds.sorted
     sorted(which * sorted.size / 100)
   }
 
   def newCtx() = new {
-    val maxDuration = 10.seconds
-    val timer = new MockTimer
+    val maxDuration   = 10.seconds
+    val timer         = new MockTimer
     val statsReceiver = new InMemoryStatsReceiver
-    val underlying = mock[Service[String, String]]
+    val underlying    = mock[Service[String, String]]
     when(underlying.close(anyObject())).thenReturn(Future.Done)
-    val filter = new BackupRequestFilter[String, String](95,
-                                                         maxDuration,
-                                                         timer,
-                                                         statsReceiver,
-                                                         Duration.Top,
-                                                         Stopwatch.timeMillis,
-                                                         1,
-                                                         0.05)
+    val filter = new BackupRequestFilter[String, String](
+      95,
+      maxDuration,
+      timer,
+      statsReceiver,
+      Duration.Top,
+      Stopwatch.timeMillis,
+      1,
+      0.05
+    )
     val service = filter andThen underlying
 
     def cutoff() =
@@ -59,7 +60,7 @@ class BackupRequestFilterTest
         tc.advance(l)
         p.setValue("ok")
         assert(f.poll == Some(Return("ok")))
-        val ideal = quantile(latencies take i + 1, 95)
+        val ideal  = quantile(latencies take i + 1, 95)
         val actual = cutoff()
         BackupRequestFilter.defaultError(maxDuration) match {
           case 0.0 =>
@@ -67,7 +68,8 @@ class BackupRequestFilterTest
           case error =>
             val epsilon = maxDuration.inMillis * error
             actual.inMillis.toDouble should be(
-                ideal.inMillis.toDouble +- epsilon)
+              ideal.inMillis.toDouble +- epsilon
+            )
         }
       }
     }
@@ -217,7 +219,8 @@ class BackupRequestFilterTest
   }
 
   test(
-      "return backup request response when original fails after backup is issued") {
+    "return backup request response when original fails after backup is issued"
+  ) {
     Time.withCurrentTimeFrozen { tc =>
       val ctx = newCtx()
       import ctx._

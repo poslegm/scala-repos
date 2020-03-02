@@ -14,13 +14,15 @@ import scala.collection.immutable
 final case class LeaderElectionMultiNodeConfig(failureDetectorPuppet: Boolean)
     extends MultiNodeConfig {
   val controller = role("controller")
-  val first = role("first")
-  val second = role("second")
-  val third = role("third")
-  val fourth = role("fourth")
+  val first      = role("first")
+  val second     = role("second")
+  val third      = role("third")
+  val fourth     = role("fourth")
 
-  commonConfig(debugConfig(on = false).withFallback(
-          MultiNodeClusterSpec.clusterConfig(failureDetectorPuppet)))
+  commonConfig(
+    debugConfig(on = false)
+      .withFallback(MultiNodeClusterSpec.clusterConfig(failureDetectorPuppet))
+  )
 }
 
 class LeaderElectionWithFailureDetectorPuppetMultiJvmNode1
@@ -46,8 +48,9 @@ class LeaderElectionWithAccrualFailureDetectorMultiJvmNode5
     extends LeaderElectionSpec(failureDetectorPuppet = false)
 
 abstract class LeaderElectionSpec(
-    multiNodeConfig: LeaderElectionMultiNodeConfig)
-    extends MultiNodeSpec(multiNodeConfig) with MultiNodeClusterSpec {
+    multiNodeConfig: LeaderElectionMultiNodeConfig
+) extends MultiNodeSpec(multiNodeConfig)
+    with MultiNodeClusterSpec {
 
   def this(failureDetectorPuppet: Boolean) =
     this(LeaderElectionMultiNodeConfig(failureDetectorPuppet))
@@ -73,10 +76,10 @@ abstract class LeaderElectionSpec(
     def shutdownLeaderAndVerifyNewLeader(alreadyShutdown: Int): Unit = {
       val currentRoles = sortedRoles.drop(alreadyShutdown)
       currentRoles.size should be >= (2)
-      val leader = currentRoles.head
-      val aUser = currentRoles.last
+      val leader         = currentRoles.head
+      val aUser          = currentRoles.last
       val remainingRoles = currentRoles.tail
-      val n = "-" + (alreadyShutdown + 1)
+      val n              = "-" + (alreadyShutdown + 1)
 
       myself match {
 
@@ -84,10 +87,12 @@ abstract class LeaderElectionSpec(
           val leaderAddress = address(leader)
           enterBarrier("before-shutdown" + n)
           testConductor.exit(leader, 0).await
-          enterBarrier("after-shutdown" + n,
-                       "after-unavailable" + n,
-                       "after-down" + n,
-                       "completed" + n)
+          enterBarrier(
+            "after-shutdown" + n,
+            "after-unavailable" + n,
+            "after-down" + n,
+            "completed" + n
+          )
 
         case `leader` ⇒
           enterBarrier("before-shutdown" + n, "after-shutdown" + n)
@@ -100,16 +105,18 @@ abstract class LeaderElectionSpec(
           // detect failure
           markNodeAsUnavailable(leaderAddress)
           awaitAssert(
-              clusterView.unreachableMembers.map(_.address) should contain(
-                  leaderAddress))
+            clusterView.unreachableMembers
+              .map(_.address) should contain(leaderAddress)
+          )
           enterBarrier("after-unavailable" + n)
 
           // user marks the shutdown leader as DOWN
           cluster.down(leaderAddress)
           // removed
           awaitAssert(
-              clusterView.unreachableMembers.map(_.address) should not contain
-              (leaderAddress))
+            clusterView.unreachableMembers.map(_.address) should not contain
+              (leaderAddress)
+          )
           enterBarrier("after-down" + n, "completed" + n)
 
         case _ if remainingRoles.contains(myself) ⇒
@@ -118,8 +125,9 @@ abstract class LeaderElectionSpec(
           enterBarrier("before-shutdown" + n, "after-shutdown" + n)
 
           awaitAssert(
-              clusterView.unreachableMembers.map(_.address) should contain(
-                  leaderAddress))
+            clusterView.unreachableMembers
+              .map(_.address) should contain(leaderAddress)
+          )
           enterBarrier("after-unavailable" + n)
 
           enterBarrier("after-down" + n)
@@ -133,13 +141,15 @@ abstract class LeaderElectionSpec(
     }
 
     "be able to 're-elect' a single leader after leader has left" taggedAs LongRunningTest in within(
-        30 seconds) {
+      30 seconds
+    ) {
       shutdownLeaderAndVerifyNewLeader(alreadyShutdown = 0)
       enterBarrier("after-2")
     }
 
     "be able to 're-elect' a single leader after leader has left (again)" taggedAs LongRunningTest in within(
-        30 seconds) {
+      30 seconds
+    ) {
       shutdownLeaderAndVerifyNewLeader(alreadyShutdown = 1)
       enterBarrier("after-3")
     }

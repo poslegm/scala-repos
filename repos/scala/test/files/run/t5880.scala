@@ -11,7 +11,7 @@ object Test {
 
     // chi square test
     val groups = 10
-    val hits = new Array[Int](groups)
+    val hits   = new Array[Int](groups)
     def hit(hc: Int) {
       val bucket = math.abs(hc) / (Int.MaxValue / groups)
       hits(bucket) += 1
@@ -22,8 +22,10 @@ object Test {
       diffs.sum.toDouble / expected
     }
     def ChiSquare = {
-      val diffs = for (i <- 0 until groups) yield (hits(i) - expected) *
-      (hits(i) - expected)
+      val diffs =
+        for (i <- 0 until groups)
+          yield (hits(i) - expected) *
+            (hits(i) - expected)
       diffs.sum.toDouble / expected
     }
 

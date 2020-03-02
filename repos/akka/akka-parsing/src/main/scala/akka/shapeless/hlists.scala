@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-13 Miles Sabin 
+ * Copyright (c) 2011-13 Miles Sabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ final case class ::[+H, +T <: HList](head: H, tail: T) extends HList {
   * @author Miles Sabin
   */
 sealed trait HNil extends HList {
-  def ::[H](h: H) = akka.shapeless.::(h, this)
+  def ::[H](h: H)       = akka.shapeless.::(h, this)
   override def toString = "HNil"
 }
 

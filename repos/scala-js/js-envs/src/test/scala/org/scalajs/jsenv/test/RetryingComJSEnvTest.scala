@@ -29,21 +29,27 @@ class RetryingComJSEnvTest extends JSEnvTest with ComTests {
   private final class FailingEnv(baseEnv: ComJSEnv) extends ComJSEnv {
     def name: String = s"FailingJSEnv of ${baseEnv.name}"
 
-    private[this] var fails = 0
+    private[this] var fails         = 0
     private[this] var failedReceive = false
 
     def jsRunner(
-        libs: Seq[ResolvedJSDependency], code: VirtualJSFile): JSRunner = {
+        libs: Seq[ResolvedJSDependency],
+        code: VirtualJSFile
+    ): JSRunner = {
       baseEnv.jsRunner(libs, code)
     }
 
-    def asyncRunner(libs: Seq[ResolvedJSDependency],
-                    code: VirtualJSFile): AsyncJSRunner = {
+    def asyncRunner(
+        libs: Seq[ResolvedJSDependency],
+        code: VirtualJSFile
+    ): AsyncJSRunner = {
       baseEnv.asyncRunner(libs, code)
     }
 
     def comRunner(
-        libs: Seq[ResolvedJSDependency], code: VirtualJSFile): ComJSRunner = {
+        libs: Seq[ResolvedJSDependency],
+        code: VirtualJSFile
+    ): ComJSRunner = {
       new FailingComJSRunner(baseEnv.comRunner(libs, code))
     }
 
@@ -53,7 +59,8 @@ class RetryingComJSEnvTest extends JSEnvTest with ComTests {
     }
 
     private class FailingComJSRunner(baseRunner: ComJSRunner)
-        extends DummyJSRunner with ComJSRunner {
+        extends DummyJSRunner
+        with ComJSRunner {
 
       def future: Future[Unit] = baseRunner.future
 

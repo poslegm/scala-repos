@@ -7,17 +7,17 @@ import com.twitter.util.events.Sink
 object ImmediateMetricsStatsReceiver {
   def newHistogramInterface(name: String): HistogramInterface = {
     new HistogramInterface {
-      private[this] val hist = new ApproximateHistogram()
+      private[this] val hist  = new ApproximateHistogram()
       private[this] val stats = new Statistics()
 
       override def snapshot(): Snapshot = synchronized {
         new Snapshot {
-          override def avg(): Double = stats.mean()
-          override def count(): Long = stats.populationSize()
-          override def min(): Long = stats.min()
-          override def max(): Long = stats.max()
+          override def avg(): Double    = stats.mean()
+          override def count(): Long    = stats.populationSize()
+          override def min(): Long      = stats.min()
+          override def max(): Long      = stats.max()
           override def stddev(): Double = stats.standardDeviation()
-          override def sum(): Long = stats.sum()
+          override def sum(): Long      = stats.sum()
 
           override def percentiles(): Array[Percentile] = {
             val quantiles = Histogram.DEFAULT_QUANTILES
@@ -50,9 +50,10 @@ object ImmediateMetricsStatsReceiver {
   */
 class ImmediateMetricsStatsReceiver(registry: Metrics)
     extends MetricsStatsReceiver(
-        registry,
-        Sink.default,
-        ImmediateMetricsStatsReceiver.newHistogramInterface) {
+      registry,
+      Sink.default,
+      ImmediateMetricsStatsReceiver.newHistogramInterface
+    ) {
 
   def this() = this(MetricsStatsReceiver.defaultRegistry)
 }

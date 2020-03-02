@@ -1,11 +1,11 @@
 trait TFn1B {
   type In
   type Out
-  type Apply [T <: In] <: Out
+  type Apply[T <: In] <: Out
 }
 
 trait TFn1[I, O] extends TFn1B {
-  type In = I
+  type In  = I
   type Out = O
 }
 

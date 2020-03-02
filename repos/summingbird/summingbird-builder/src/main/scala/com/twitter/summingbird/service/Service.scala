@@ -25,11 +25,14 @@ import com.twitter.summingbird.scalding.Service
   */
 case class CompoundService[Key, Joined](
     offline: Option[Service[Key, Joined]],
-    online: Option[() => ReadableStore[Key, Joined]])
+    online: Option[() => ReadableStore[Key, Joined]]
+)
 
 object CompoundService {
-  def apply[K, J](offline: Service[K, J],
-                  online: => ReadableStore[K, J]): CompoundService[K, J] =
+  def apply[K, J](
+      offline: Service[K, J],
+      online: => ReadableStore[K, J]
+  ): CompoundService[K, J] =
     CompoundService(Some(offline), Some(() => online))
   def fromOffline[K, J](offline: Service[K, J]): CompoundService[K, J] =
     CompoundService(Some(offline), None)

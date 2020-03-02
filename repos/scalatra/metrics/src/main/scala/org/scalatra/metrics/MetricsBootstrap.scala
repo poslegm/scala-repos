@@ -12,5 +12,5 @@ trait MetricsBootstrap {
 
 object MetricsRegistries {
   val healthCheckRegistry = new HealthCheckRegistry()
-  val metricRegistry = new MetricRegistry()
+  val metricRegistry      = new MetricRegistry()
 }

@@ -24,9 +24,11 @@ class EncoderSpec extends WordSpec with CodecSpecSupport {
       val request = HttpRequest(POST, entity = HttpEntity(smallText))
       val encoded = DummyEncoder.encode(request)
       encoded.headers shouldEqual List(
-          `Content-Encoding`(DummyEncoder.encoding))
-      encoded.entity.toStrict(1.second).awaitResult(1.second) shouldEqual HttpEntity(
-          dummyCompress(smallText))
+        `Content-Encoding`(DummyEncoder.encoding)
+      )
+      encoded.entity
+        .toStrict(1.second)
+        .awaitResult(1.second) shouldEqual HttpEntity(dummyCompress(smallText))
     }
   }
 
@@ -37,16 +39,16 @@ class EncoderSpec extends WordSpec with CodecSpecSupport {
 
   case object DummyEncoder extends Encoder {
     val messageFilter = Encoder.DefaultFilter
-    val encoding = HttpEncodings.compress
+    val encoding      = HttpEncodings.compress
     def newCompressor = DummyCompressor
   }
 
   case object DummyCompressor extends Compressor {
     def compress(input: ByteString) = input ++ ByteString("compressed")
-    def flush() = ByteString.empty
-    def finish() = ByteString.empty
+    def flush()                     = ByteString.empty
+    def finish()                    = ByteString.empty
 
-    def compressAndFlush(input: ByteString): ByteString = compress(input)
+    def compressAndFlush(input: ByteString): ByteString  = compress(input)
     def compressAndFinish(input: ByteString): ByteString = compress(input)
   }
 }

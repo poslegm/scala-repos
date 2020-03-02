@@ -14,35 +14,39 @@ import org.jetbrains.plugins.scala.conversion.ast.ModifierType.ModifierType
 class SimplePrintVisitor extends IntermediateTreeVisitor {
   override def visit(node: IntermediateNode): Unit = {
     node match {
-      case m: MainConstruction => m.children.foreach(visit)
+      case m: MainConstruction          => m.children.foreach(visit)
       case t @ TypeConstruction(inType) => visitType(t, inType)
       case ParametrizedConstruction(inType, parts) =>
         visitParametrizedType(inType, parts)
       case ArrayConstruction(inType) => visitArrayType(inType)
-      case TypeParameters(data) => visitTypeParameters(data)
+      case TypeParameters(data)      => visitTypeParameters(data)
       case TypeParameterConstruction(name, typez) =>
         visitTypeParameterConstruction(name, typez)
       case AnnotaionConstruction(inAnnotation, attributes, name) =>
         visitAnnotation(inAnnotation, attributes, name)
       case b @ BlockConstruction(statements) => visitBlock(b, statements)
-      case ClassConstruction(name,
-                             primaryConstructor,
-                             bodyElements,
-                             modifiers,
-                             typeParams,
-                             initalizers,
-                             classType,
-                             companion,
-                             extendsList) =>
-        visitClass(name,
-                   primaryConstructor,
-                   bodyElements,
-                   modifiers,
-                   typeParams,
-                   initalizers,
-                   classType,
-                   companion,
-                   extendsList)
+      case ClassConstruction(
+          name,
+          primaryConstructor,
+          bodyElements,
+          modifiers,
+          typeParams,
+          initalizers,
+          classType,
+          companion,
+          extendsList
+          ) =>
+        visitClass(
+          name,
+          primaryConstructor,
+          bodyElements,
+          modifiers,
+          typeParams,
+          initalizers,
+          classType,
+          companion,
+          extendsList
+        )
       case AnonymousClass(mType, args, body, extendsList) =>
         visitAnonymousClass(mType, args, body, extendsList)
       case Enum(name, modifiers, enumConstants: Seq[String]) =>
@@ -54,7 +58,10 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
       case ArrayInitializer(expresions: Seq[IntermediateNode]) =>
         visitArrayInitalizer(expresions)
       case BinaryExpressionConstruction(
-          firstPart, secondPart, operation: String) =>
+          firstPart,
+          secondPart,
+          operation: String
+          ) =>
         visitBinary(firstPart, secondPart, operation)
       case ClassObjectAccess(expression) => visitClassObjAccess(expression)
       case InstanceOfConstruction(operand, mtype) =>
@@ -63,10 +70,10 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
         visitQualifiedExpression(qualifier, identifier)
       case MethodCallExpression(name, method, args) =>
         visitMethodCall(name, method, args)
-      case ExpressionList(data) => visitExpressionList(data)
-      case ThisExpression(value) => visitWithExtraWord(value, "this")
-      case SuperExpression(value) => visitWithExtraWord(value, "super")
-      case LiteralExpression(literal) => printer.append(literal)
+      case ExpressionList(data)           => visitExpressionList(data)
+      case ThisExpression(value)          => visitWithExtraWord(value, "this")
+      case SuperExpression(value)         => visitWithExtraWord(value, "super")
+      case LiteralExpression(literal)     => printer.append(literal)
       case ParenthesizedExpression(value) => visitParenthizedExpression(value)
       case NewExpression(mtype, arrayInitalizer, arrayDimension) =>
         visitNewExpression(mtype, arrayInitalizer, arrayDimension)
@@ -77,8 +84,7 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
       case PrefixExpression(operand, signType, canBeSimplified) =>
         visitPrefixPostfix(operand, signType, canBeSimplified)
       case PostfixExpression(operand, signType, canBeSimplified) =>
-        visitPrefixPostfix(
-            operand, signType, canBeSimplified, isPostfix = true)
+        visitPrefixPostfix(operand, signType, canBeSimplified, isPostfix = true)
       case FieldConstruction(modifiers, name, ftype, isVar, initalaizer) =>
         visitVariable(modifiers, name, ftype, isVar, initalaizer)
       case LocalVariable(modifiers, name, ftype, isVar, initalaizer) =>
@@ -88,7 +94,13 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
       case PrimaryConstruction(params, superCall, body, modifiers) =>
         visitPrimaryConstructor(params, superCall, body, modifiers)
       case MethodConstruction(
-          modifiers, name, typeParams, params, body, retType) =>
+          modifiers,
+          name,
+          typeParams,
+          params,
+          body,
+          retType
+          ) =>
         visitMethod(modifiers, name, typeParams, params, body, retType)
       case m @ ModifiersConstruction(annotations, modifiers) =>
         visitModifiers(m, annotations, modifiers)
@@ -104,7 +116,7 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
       case IfStatement(condition, thenBranch, elseBranch) =>
         visitIfStatement(condition, thenBranch, elseBranch)
       case ReturnStatement(value) => visitWithExtraWord(Some(value), "return ")
-      case ThrowStatement(value) => visitWithExtraWord(Some(value), "throw ")
+      case ThrowStatement(value)  => visitWithExtraWord(Some(value), "throw ")
       case AssertStatement(condition, description) =>
         visitAssert(condition, description)
       case ImportStatement(importValue, onDemand) =>
@@ -113,18 +125,28 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
       case PackageStatement(value) =>
         visitWithExtraWord(Some(value), "package ")
       case ForeachStatement(
-          iterParamName, iteratedValue, body, isJavaCollection) =>
+          iterParamName,
+          iteratedValue,
+          body,
+          isJavaCollection
+          ) =>
         visitForEach(iterParamName, iteratedValue, body, isJavaCollection)
-      case WhileStatement(
-          initialization, condition, body, update, whileType) =>
+      case WhileStatement(initialization, condition, body, update, whileType) =>
         visitWhile(initialization, condition, body, update, whileType)
-      case TryCatchStatement(resourcesList,
-                             tryBlock,
-                             catchStatements,
-                             finallyStatements,
-                             arrow) =>
+      case TryCatchStatement(
+          resourcesList,
+          tryBlock,
+          catchStatements,
+          finallyStatements,
+          arrow
+          ) =>
         visitTryCatch(
-            resourcesList, tryBlock, catchStatements, finallyStatements, arrow)
+          resourcesList,
+          tryBlock,
+          catchStatements,
+          finallyStatements,
+          arrow
+        )
       case SwitchStatemtnt(expession, body) =>
         visitSwitchStatement(expession, body)
       case SwitchLabelStatement(caseValue, arrow) =>
@@ -134,14 +156,15 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
       case ExpressionListStatement(exprs) =>
         visitExpressionListStatement(exprs)
       case NotSupported(n, msg) => visitNotSupported(n, msg)
-      case EmptyConstruction() =>
+      case EmptyConstruction()  =>
     }
   }
 
   def visitAnnotation(
       inAnnotation: Boolean,
       attributes: Seq[(Option[String], Option[IntermediateNode])],
-      name: Option[IntermediateNode]): PrettyPrinter = {
+      name: Option[IntermediateNode]
+  ): PrettyPrinter = {
     if (inAnnotation) {
       printer.append("new ")
     } else {
@@ -178,45 +201,55 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
     printer.space()
   }
 
-  def visitBlock(node: BlockConstruction,
-                 statements: Seq[IntermediateNode]): PrettyPrinter = {
+  def visitBlock(
+      node: BlockConstruction,
+      statements: Seq[IntermediateNode]
+  ): PrettyPrinter = {
     printer.append("{\n")
-    printWithSeparator(node.beforeStatements.toSeq,
-                       "\n",
-                       "",
-                       "\n",
-                       node.beforeStatements.nonEmpty)
+    printWithSeparator(
+      node.beforeStatements.toSeq,
+      "\n",
+      "",
+      "\n",
+      node.beforeStatements.nonEmpty
+    )
     printWithSeparator(statements, "\n", "", "\n", statements.nonEmpty)
     printer.append("}")
   }
 
-  def visitClass(name: String,
-                 primaryConstructor: Option[IntermediateNode],
-                 bodyElements: Seq[IntermediateNode],
-                 modifiers: IntermediateNode,
-                 typeParams: Option[Seq[IntermediateNode]],
-                 initalizers: Option[Seq[IntermediateNode]],
-                 classType: ClassType,
-                 companion: IntermediateNode,
-                 extendsList: Option[Seq[IntermediateNode]]): PrettyPrinter = {
+  def visitClass(
+      name: String,
+      primaryConstructor: Option[IntermediateNode],
+      bodyElements: Seq[IntermediateNode],
+      modifiers: IntermediateNode,
+      typeParams: Option[Seq[IntermediateNode]],
+      initalizers: Option[Seq[IntermediateNode]],
+      classType: ClassType,
+      companion: IntermediateNode,
+      extendsList: Option[Seq[IntermediateNode]]
+  ): PrettyPrinter = {
     if (companion.isInstanceOf[ClassConstruction]) {
       visit(companion)
       printer.newLine()
     }
 
     visit(modifiers)
-    printer.append(
-        classType match {
-      case ClassType.CLASS => "class "
-      case ClassType.OBJECT => "object "
+    printer.append(classType match {
+      case ClassType.CLASS     => "class "
+      case ClassType.OBJECT    => "object "
       case ClassType.INTERFACE => "trait "
-      case _ => ""
+      case _                   => ""
     })
 
     printer.append(escapeKeyword(name))
     if (typeParams.isDefined)
       printWithSeparator(
-          typeParams.get, ", ", "[", "]", typeParams.get.nonEmpty)
+        typeParams.get,
+        ", ",
+        "[",
+        "]",
+        typeParams.get.nonEmpty
+      )
 
     if (primaryConstructor.isDefined) {
       printer.space()
@@ -245,14 +278,21 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
     printWithSeparator(bodyElements, "\n", "", "")
     if (initalizers.isDefined)
       printWithSeparator(
-          initalizers.get, "\n", "\ntry ", "\n", initalizers.get.nonEmpty)
+        initalizers.get,
+        "\n",
+        "\ntry ",
+        "\n",
+        initalizers.get.nonEmpty
+      )
     printer.append("}")
   }
 
-  def visitAnonymousClass(mType: IntermediateNode,
-                          args: IntermediateNode,
-                          body: Seq[IntermediateNode],
-                          extendsList: Seq[IntermediateNode]) = {
+  def visitAnonymousClass(
+      mType: IntermediateNode,
+      args: IntermediateNode,
+      body: Seq[IntermediateNode],
+      extendsList: Seq[IntermediateNode]
+  ) = {
     visit(mType)
     printer.append("(")
     visit(args)
@@ -265,9 +305,11 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
     printWithSeparator(body, " ", "{ ", "}")
   }
 
-  def visitEnum(name: String,
-                modifiers: IntermediateNode,
-                enumConstants: Seq[String]): PrettyPrinter = {
+  def visitEnum(
+      name: String,
+      modifiers: IntermediateNode,
+      enumConstants: Seq[String]
+  ): PrettyPrinter = {
     visit(modifiers)
     printer.append("object ")
     printer.append(escapeKeyword(name))
@@ -289,18 +331,22 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
     printer.append("\n}")
   }
 
-  def visitArrayAccess(expression: IntermediateNode,
-                       idxExpression: IntermediateNode): PrettyPrinter = {
+  def visitArrayAccess(
+      expression: IntermediateNode,
+      idxExpression: IntermediateNode
+  ): PrettyPrinter = {
     visit(expression)
     printer.append("(")
     visit(idxExpression)
     printer.append(")")
   }
 
-  def visitCastType(c: ClassCast,
-                    operand: IntermediateNode,
-                    castType: IntermediateNode,
-                    isPrimitive: Boolean): PrettyPrinter = {
+  def visitCastType(
+      c: ClassCast,
+      operand: IntermediateNode,
+      castType: IntermediateNode,
+      isPrimitive: Boolean
+  ): PrettyPrinter = {
     visit(operand)
     if (c.canSimplify) {
       printer.append(".to")
@@ -317,9 +363,11 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
     printWithSeparator(expresions, ", ", "Array(", ")")
   }
 
-  def visitBinary(firstPart: IntermediateNode,
-                  secondPart: IntermediateNode,
-                  operation: String) = {
+  def visitBinary(
+      firstPart: IntermediateNode,
+      secondPart: IntermediateNode,
+      operation: String
+  ) = {
     visit(firstPart)
     printer.append(" ")
     printer.append(operation)
@@ -341,7 +389,9 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
   }
 
   def visitQualifiedExpression(
-      qualifier: IntermediateNode, identifier: IntermediateNode) = {
+      qualifier: IntermediateNode,
+      identifier: IntermediateNode
+  ) = {
     if (qualifier != null) {
       visit(qualifier)
       visit(identifier)
@@ -350,7 +400,10 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
   }
 
   def visitMethodCall(
-      name: String, method: IntermediateNode, args: IntermediateNode) = {
+      name: String,
+      method: IntermediateNode,
+      args: IntermediateNode
+  ) = {
     visit(method)
     if (args != null) visit(args)
     printer
@@ -371,21 +424,25 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
     printer.append(")")
   }
 
-  def visitNewExpression(mtype: IntermediateNode,
-                         arrayInitalizer: Seq[IntermediateNode],
-                         arrayDimension: Seq[IntermediateNode]) = {
+  def visitNewExpression(
+      mtype: IntermediateNode,
+      arrayInitalizer: Seq[IntermediateNode],
+      arrayDimension: Seq[IntermediateNode]
+  ) = {
     if (arrayInitalizer.nonEmpty) {
       visit(mtype)
       printWithSeparator(arrayInitalizer, ", ", "(", ")")
     } else {
       printer.append("new ")
       visit(mtype)
-      printWithSeparator(arrayDimension,
-                         ", ",
-                         "(",
-                         ")",
-                         arrayDimension != null && arrayDimension.nonEmpty &&
-                         !arrayDimension.head.isInstanceOf[ExpressionList])
+      printWithSeparator(
+        arrayDimension,
+        ", ",
+        "(",
+        ")",
+        arrayDimension != null && arrayDimension.nonEmpty &&
+          !arrayDimension.head.isInstanceOf[ExpressionList]
+      )
     }
   }
 
@@ -398,10 +455,12 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
     printWithSeparator(args, " " + operation + " ")
   }
 
-  def visitPrefixPostfix(operand: IntermediateNode,
-                         signType: String,
-                         canBeSimplified: Boolean,
-                         isPostfix: Boolean = false): Unit = {
+  def visitPrefixPostfix(
+      operand: IntermediateNode,
+      signType: String,
+      canBeSimplified: Boolean,
+      isPostfix: Boolean = false
+  ): Unit = {
     signType match {
       case "++" =>
         if (!canBeSimplified) {
@@ -433,11 +492,13 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
     }
   }
 
-  def visitVariable(modifiers: IntermediateNode,
-                    name: String,
-                    ftype: IntermediateNode,
-                    isVar: Boolean,
-                    initalaizer: Option[IntermediateNode]) = {
+  def visitVariable(
+      modifiers: IntermediateNode,
+      name: String,
+      ftype: IntermediateNode,
+      isVar: Boolean,
+      initalaizer: Option[IntermediateNode]
+  ) = {
     visit(modifiers)
 
     if (isVar) {
@@ -453,18 +514,19 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
     if (initalaizer.isDefined) {
       visit(initalaizer.get)
     } else {
-      printer.append(
-          ftype match {
+      printer.append(ftype match {
         case tc: TypeConstruction => tc.getDefaultTypeValue
-        case _ => "null"
+        case _                    => "null"
       })
     }
   }
 
-  def visitConstructor(modifiers: IntermediateNode,
-                       typeParams: Seq[IntermediateNode],
-                       params: IntermediateNode,
-                       body: Option[IntermediateNode]) = {
+  def visitConstructor(
+      modifiers: IntermediateNode,
+      typeParams: Seq[IntermediateNode],
+      params: IntermediateNode,
+      body: Option[IntermediateNode]
+  ) = {
     printer.append("def ")
     printer.append("this")
     if (typeParams.nonEmpty) {
@@ -475,12 +537,14 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
     if (body.isDefined) visit(body.get)
   }
 
-  def visitMethod(modifiers: IntermediateNode,
-                  name: String,
-                  typeParams: Seq[IntermediateNode],
-                  params: IntermediateNode,
-                  body: Option[IntermediateNode],
-                  retType: IntermediateNode) = {
+  def visitMethod(
+      modifiers: IntermediateNode,
+      name: String,
+      typeParams: Seq[IntermediateNode],
+      params: IntermediateNode,
+      body: Option[IntermediateNode],
+      retType: IntermediateNode
+  ) = {
     visit(modifiers)
     printer.append("def ")
     printer.append(escapeKeyword(name))
@@ -501,10 +565,12 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
     }
   }
 
-  def visitPrimaryConstructor(params: Seq[(String, IntermediateNode, Boolean)],
-                              superCall: IntermediateNode,
-                              body: Seq[IntermediateNode],
-                              modifiers: IntermediateNode) = {
+  def visitPrimaryConstructor(
+      params: Seq[(String, IntermediateNode, Boolean)],
+      superCall: IntermediateNode,
+      body: Seq[IntermediateNode],
+      modifiers: IntermediateNode
+  ) = {
     visit(modifiers)
     printer.space()
     if (params.nonEmpty) {
@@ -524,9 +590,11 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
     printer.space()
   }
 
-  def visitModifiers(modifiersConstruction: ModifiersConstruction,
-                     annotations: Seq[IntermediateNode],
-                     modifiers: Seq[IntermediateNode]) = {
+  def visitModifiers(
+      modifiersConstruction: ModifiersConstruction,
+      annotations: Seq[IntermediateNode],
+      modifiers: Seq[IntermediateNode]
+  ) = {
     for (a <- annotations) {
       visit(a)
       printer.space()
@@ -536,8 +604,7 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
     val sortModifiers =
       modifiers.collect {
         case m: Modifier
-            if !modifiersConstruction.accessModifiers.contains(
-                m.modificator) =>
+            if !modifiersConstruction.accessModifiers.contains(m.modificator) =>
           m
       } ++ modifiers.collect {
         case m: Modifier
@@ -547,7 +614,8 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
 
     for (m <- sortModifiers) {
       if (!modifiersConstruction.withoutList.contains(
-              m.asInstanceOf[Modifier].modificator)) {
+            m.asInstanceOf[Modifier].modificator
+          )) {
         visit(m)
         printer.space()
       }
@@ -556,13 +624,13 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
 
   def visitSimpleModifier(mtype: ModifierType) = {
     printer.append(mtype match {
-      case ModifierType.ABSTRACT => "abstract"
-      case ModifierType.PUBLIC => "public"
+      case ModifierType.ABSTRACT  => "abstract"
+      case ModifierType.PUBLIC    => "public"
       case ModifierType.PROTECTED => "protected"
-      case ModifierType.PRIVATE => "private"
-      case ModifierType.OVERRIDE => "override"
-      case ModifierType.FINAL => "final"
-      case _ => ""
+      case ModifierType.PRIVATE   => "private"
+      case ModifierType.OVERRIDE  => "override"
+      case ModifierType.FINAL     => "final"
+      case _                      => ""
     })
   }
 
@@ -584,10 +652,12 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
     }
   }
 
-  def visitParameters(modifiers: IntermediateNode,
-                      name: String,
-                      scCompType: IntermediateNode,
-                      isArray: Boolean) = {
+  def visitParameters(
+      modifiers: IntermediateNode,
+      name: String,
+      scCompType: IntermediateNode,
+      isArray: Boolean
+  ) = {
     visit(modifiers)
     printer.append(escapeKeyword(name))
     printer.append(": ")
@@ -601,9 +671,11 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
     printWithSeparator(list, ", ", "(", ")", list.nonEmpty)
   }
 
-  def visitIfStatement(condition: Option[IntermediateNode],
-                       thenBranch: Option[IntermediateNode],
-                       elseBranch: Option[IntermediateNode]) = {
+  def visitIfStatement(
+      condition: Option[IntermediateNode],
+      thenBranch: Option[IntermediateNode],
+      elseBranch: Option[IntermediateNode]
+  ) = {
 
     printer.append("if")
     printer.space()
@@ -622,8 +694,10 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
     }
   }
 
-  def visitAssert(condition: Option[IntermediateNode],
-                  description: Option[IntermediateNode]) = {
+  def visitAssert(
+      condition: Option[IntermediateNode],
+      description: Option[IntermediateNode]
+  ) = {
     printer.append("assert (")
     if (condition.isDefined) visit(condition.get)
     if (description.isDefined) {
@@ -648,11 +722,13 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
     }
   }
 
-  def visitWhile(initialization: Option[IntermediateNode],
-                 condition: Option[IntermediateNode],
-                 body: Option[IntermediateNode],
-                 update: Option[IntermediateNode],
-                 whileType: Int) = {
+  def visitWhile(
+      initialization: Option[IntermediateNode],
+      condition: Option[IntermediateNode],
+      body: Option[IntermediateNode],
+      update: Option[IntermediateNode],
+      whileType: Int
+  ) = {
     def printDoWhile(): PrettyPrinter = {
       printer.append("do {\n")
       if (body.isDefined) visit(body.get)
@@ -696,11 +772,13 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
     }
   }
 
-  def visitTryCatch(resourcesList: Seq[(String, IntermediateNode)],
-                    tryBlock: Option[IntermediateNode],
-                    catchStatements: Seq[(IntermediateNode, IntermediateNode)],
-                    finallyStatements: Option[Seq[IntermediateNode]],
-                    arrow: String) = {
+  def visitTryCatch(
+      resourcesList: Seq[(String, IntermediateNode)],
+      tryBlock: Option[IntermediateNode],
+      catchStatements: Seq[(IntermediateNode, IntermediateNode)],
+      finallyStatements: Option[Seq[IntermediateNode]],
+      arrow: String
+  ) = {
     if (resourcesList != null && resourcesList.nonEmpty) {
       printer.append("try {\n")
       printWithSeparator(resourcesList.map(_._2), "\n", "", "\n")
@@ -749,14 +827,18 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
   }
 
   def visitSwitchStatement(
-      expession: Option[IntermediateNode], body: Option[IntermediateNode]) = {
+      expession: Option[IntermediateNode],
+      body: Option[IntermediateNode]
+  ) = {
     if (expession.isDefined) visit(expession.get)
     printer.append(" match ")
     if (body.isDefined) visit(body.get)
   }
 
   def visitSwitchLabelStatement(
-      caseValue: Option[IntermediateNode], arrow: String) = {
+      caseValue: Option[IntermediateNode],
+      arrow: String
+  ) = {
     printer.append("case ")
     if (caseValue.isDefined) visit(caseValue.get)
     printer.append(s" $arrow ")
@@ -771,7 +853,9 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
   }
 
   def visitSynchronizedStatement(
-      lock: Option[IntermediateNode], body: Option[IntermediateNode]) = {
+      lock: Option[IntermediateNode],
+      body: Option[IntermediateNode]
+  ) = {
     if (lock.isDefined) visit(lock.get)
     printer.append(" synchronized ")
     if (body.isDefined) visit(body.get)
@@ -781,10 +865,12 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
     printWithSeparator(exprs, "\n")
   }
 
-  def visitForEach(iterParamName: String,
-                   iteratedValue: Option[IntermediateNode],
-                   body: Option[IntermediateNode],
-                   isJavaCollection: Boolean) = {
+  def visitForEach(
+      iterParamName: String,
+      iteratedValue: Option[IntermediateNode],
+      body: Option[IntermediateNode],
+      isJavaCollection: Boolean
+  ) = {
     if (isJavaCollection) {
       printer.append("import scala.collection.JavaConversions._\n")
     }
@@ -797,19 +883,21 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
     if (body.isDefined) visit(body.get)
   }
 
-  def visitJavaCodeRef(statement: JavaCodeReferenceStatement,
-                       qualifier: Option[IntermediateNode],
-                       parametrList: Option[IntermediateNode],
-                       name: String) = {
+  def visitJavaCodeRef(
+      statement: JavaCodeReferenceStatement,
+      qualifier: Option[IntermediateNode],
+      parametrList: Option[IntermediateNode],
+      name: String
+  ) = {
     if (qualifier.isDefined) {
       visit(qualifier.get)
       printer.append(".")
     }
     val begin = printer.length
     name match {
-      case "this" => printer.append(name)
+      case "this"  => printer.append(name)
       case "super" => printer.append(name)
-      case _ => printer.append(escapeKeyword(name))
+      case _       => printer.append(escapeKeyword(name))
     }
     val range = new TextRange(begin, printer.length)
     rangedElementsMap.put(statement, range)
@@ -830,12 +918,17 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
   }
 
   def visitParametrizedType(
-      iNode: IntermediateNode, parts: Seq[IntermediateNode]) = {
+      iNode: IntermediateNode,
+      parts: Seq[IntermediateNode]
+  ) = {
     visit(iNode)
     printWithSeparator(parts, ", ", "[", "]", parts.nonEmpty)
   }
 
-  def printWithSeparator(seq: Seq[IntermediateNode], separator: String): Unit = {
+  def printWithSeparator(
+      seq: Seq[IntermediateNode],
+      separator: String
+  ): Unit = {
     if (seq != null && seq.nonEmpty) {
       val it = seq.iterator
       while (it.hasNext) {
@@ -845,20 +938,24 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
     }
   }
 
-  def printWithSeparator(seq: Seq[IntermediateNode],
-                         separator: String,
-                         before: String,
-                         after: String,
-                         needAppend: Boolean): Unit = {
+  def printWithSeparator(
+      seq: Seq[IntermediateNode],
+      separator: String,
+      before: String,
+      after: String,
+      needAppend: Boolean
+  ): Unit = {
     if (needAppend) printer.append(before)
     printWithSeparator(seq, separator)
     if (needAppend) printer.append(after)
   }
 
-  def printWithSeparator(seq: Seq[IntermediateNode],
-                         separator: String,
-                         before: String,
-                         after: String): Unit = {
+  def printWithSeparator(
+      seq: Seq[IntermediateNode],
+      separator: String,
+      before: String,
+      after: String
+  ): Unit = {
     printWithSeparator(seq, separator, before, after, needAppend = true)
   }
 
@@ -867,7 +964,9 @@ class SimplePrintVisitor extends IntermediateTreeVisitor {
   }
 
   def visitTypeParameterConstruction(
-      name: String, typez: Seq[IntermediateNode]) = {
+      name: String,
+      typez: Seq[IntermediateNode]
+  ) = {
     printer.append(escapeKeyword(name))
     if (typez.nonEmpty) {
       printer.append(" <: ")

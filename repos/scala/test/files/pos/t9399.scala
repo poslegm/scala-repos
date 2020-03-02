@@ -1,7 +1,7 @@
 sealed abstract class TA
 sealed abstract class TB extends TA
-case object A extends TA
-case object B extends TB
+case object A            extends TA
+case object B            extends TB
 
 sealed trait C
 case class CTA(id: Int, da: TA) extends C

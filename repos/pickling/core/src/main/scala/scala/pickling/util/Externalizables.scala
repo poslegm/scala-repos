@@ -23,10 +23,20 @@ object Externalizables {
     */
   def genOutput[T]: ArrayObjectOutput = macro genOutputImpl[T]
 
-  def genInputImpl[T : c.WeakTypeTag](c: Context)(
-      arg: c.Expr[T]): c.Expr[ObjectInput] = {
+  def genInputImpl[T: c.WeakTypeTag](
+      c: Context
+  )(arg: c.Expr[T]): c.Expr[ObjectInput] = {
     import c.universe._
-    import definitions.{BooleanTpe, ByteTpe, CharTpe, DoubleTpe, FloatTpe, IntTpe, LongTpe, ShortTpe}
+    import definitions.{
+      BooleanTpe,
+      ByteTpe,
+      CharTpe,
+      DoubleTpe,
+      FloatTpe,
+      IntTpe,
+      LongTpe,
+      ShortTpe
+    }
 
     val tag = weakTypeTag[T]
 
@@ -104,7 +114,7 @@ object Externalizables {
       }
     }
 
-    val dummyName = c.fresh(newTypeName("DummyObjectInput"))
+    val dummyName      = c.fresh(newTypeName("DummyObjectInput"))
     val instance: Tree = q"""
       class $dummyName(..$params) extends java.io.ObjectInput {
         var state = -1
@@ -137,9 +147,18 @@ object Externalizables {
     c.Expr[ObjectInput](instance)
   }
 
-  def genOutputImpl[T : c.WeakTypeTag](c: Context): c.Expr[ArrayObjectOutput] = {
+  def genOutputImpl[T: c.WeakTypeTag](c: Context): c.Expr[ArrayObjectOutput] = {
     import c.universe._
-    import definitions.{BooleanTpe, ByteTpe, CharTpe, DoubleTpe, FloatTpe, IntTpe, LongTpe, ShortTpe}
+    import definitions.{
+      BooleanTpe,
+      ByteTpe,
+      CharTpe,
+      DoubleTpe,
+      FloatTpe,
+      IntTpe,
+      LongTpe,
+      ShortTpe
+    }
 
     val tag = weakTypeTag[T]
 
@@ -155,15 +174,17 @@ object Externalizables {
        writeChar(int v)
        ...
      */
-    val storage = Map(BooleanTpe -> BooleanTpe,
-                      ByteTpe -> IntTpe,
-                      CharTpe -> IntTpe,
-                      DoubleTpe -> DoubleTpe,
-                      FloatTpe -> FloatTpe,
-                      IntTpe -> IntTpe,
-                      LongTpe -> LongTpe,
-                      ShortTpe -> IntTpe,
-                      typeOf[AnyRef] -> typeOf[Any])
+    val storage = Map(
+      BooleanTpe     -> BooleanTpe,
+      ByteTpe        -> IntTpe,
+      CharTpe        -> IntTpe,
+      DoubleTpe      -> DoubleTpe,
+      FloatTpe       -> FloatTpe,
+      IntTpe         -> IntTpe,
+      LongTpe        -> LongTpe,
+      ShortTpe       -> IntTpe,
+      typeOf[AnyRef] -> typeOf[Any]
+    )
 
     /* Byte, Byte, Array[Byte], Byte, Long, Object
           0,    1,           2,    3,    4,      5
@@ -213,19 +234,19 @@ object Externalizables {
     val fields =
       (for (targ <- storage.keys) yield {
         val TypeRef(_, classSym, _) = targ
-        val tpestr = classSym.name.toString.toLowerCase
-        val name = newTermName(tpestr + "Arr")
-        val storageTpe = storage(targ)
-        val size = perType.getOrElse(targ, List[Int]()).size
+        val tpestr                  = classSym.name.toString.toLowerCase
+        val name                    = newTermName(tpestr + "Arr")
+        val storageTpe              = storage(targ)
+        val size                    = perType.getOrElse(targ, List[Int]()).size
         q"val $name: Array[$storageTpe] = Array.ofDim[$storageTpe]($size)"
       }) ++ Seq(
-          // implementation restriction: only store a single array
-          q"val arrByteArr: Array[Array[Byte]] = Array.ofDim[Array[Byte]](1)", {
-            val storageTpe = storage(typeOf[AnyRef])
-            q"val anyRefArr: Array[$storageTpe] = Array.ofDim[$storageTpe](${perType
-              .getOrElse(typeOf[AnyRef], List[Int]())
-              .size})"
-          }
+        // implementation restriction: only store a single array
+        q"val arrByteArr: Array[Array[Byte]] = Array.ofDim[Array[Byte]](1)", {
+          val storageTpe = storage(typeOf[AnyRef])
+          q"val anyRefArr: Array[$storageTpe] = Array.ofDim[$storageTpe](${perType
+            .getOrElse(typeOf[AnyRef], List[Int]())
+            .size})"
+        }
       )
 
     def finalTree(tpe: Type, tpeName: String): Tree =
@@ -255,7 +276,9 @@ object Externalizables {
         def flush(): Unit = ???
         def write(x1: Array[Byte],x2: Int,x3: Int): Unit = ???
         def write(x: Array[Byte]): Unit = ${finalTree(
-        typeOf[Array[Byte]], "arrByte")}
+      typeOf[Array[Byte]],
+      "arrByte"
+    )}
         def write(x: Int): Unit = ???
         def writeObject(x: Any): Unit = ${finalTree(typeOf[AnyRef], "anyRef")}
       }

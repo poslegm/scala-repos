@@ -17,7 +17,7 @@ sealed trait AuthorizedAction[+Resource]
 case object CreateApp extends AuthorizedAction[AppDefinition]
 case object UpdateApp extends AuthorizedAction[AppDefinition]
 case object DeleteApp extends AuthorizedAction[AppDefinition]
-case object ViewApp extends AuthorizedAction[AppDefinition]
+case object ViewApp   extends AuthorizedAction[AppDefinition]
 
 /**
   * The following objects will be passed to the Authorizer when an action affects group, in order to identify which CRUD
@@ -26,4 +26,4 @@ case object ViewApp extends AuthorizedAction[AppDefinition]
 case object CreateGroup extends AuthorizedAction[Group]
 case object UpdateGroup extends AuthorizedAction[Group]
 case object DeleteGroup extends AuthorizedAction[Group]
-case object ViewGroup extends AuthorizedAction[Group]
+case object ViewGroup   extends AuthorizedAction[Group]

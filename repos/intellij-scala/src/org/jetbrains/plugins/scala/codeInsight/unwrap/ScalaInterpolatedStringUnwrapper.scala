@@ -27,15 +27,17 @@ class ScalaInterpolatedStringUnwrapper extends ScalaUnwrapper {
     ScalaBundle.message("unwrap.interpolated.string.injection")
 
   override def collectAffectedElements(
-      e: PsiElement, toExtract: util.List[PsiElement]) =
+      e: PsiElement,
+      toExtract: util.List[PsiElement]
+  ) =
     forInjection[PsiElement](e) { (expr, lit) =>
       super.collectAffectedElements(expr, toExtract)
       lit
     }(e)
 
   private def forInjection[T](e: PsiElement)(
-      ifInjection: (ScExpression, ScInterpolatedStringLiteral) => T)(
-      ifNot: => T): T = {
+      ifInjection: (ScExpression, ScInterpolatedStringLiteral) => T
+  )(ifNot: => T): T = {
     e match {
       case (expr: ScExpression) childOf (lit: ScInterpolatedStringLiteral) =>
         ifInjection(expr, lit)

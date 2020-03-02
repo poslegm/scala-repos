@@ -6,8 +6,8 @@ import slick.ast.{FieldSymbol, BaseTypedType}
 /** A JdbcType object represents a Scala type that can be used as a column type in the database.
   * Implicit JdbcTypes for the standard types are provided by the profile. */
 trait JdbcType[
-    @specialized(Byte, Short, Int, Long, Char, Float, Double, Boolean) T]
-    extends BaseTypedType[T] { self =>
+    @specialized(Byte, Short, Int, Long, Char, Float, Double, Boolean) T
+] extends BaseTypedType[T] { self =>
 
   /** The constant from java.sql.Types that is used for setting parameters of the type to NULL. */
   def sqlType: Int
@@ -25,7 +25,7 @@ trait JdbcType[
   final def setOption(v: Option[T], p: PreparedStatement, idx: Int): Unit =
     v match {
       case Some(v) => setValue(v, p, idx)
-      case None => setNull(p, idx)
+      case None    => setNull(p, idx)
     }
 
   /** Get a result column of the type. For reference types, SQL NULL values

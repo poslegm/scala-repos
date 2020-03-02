@@ -16,7 +16,7 @@ import scala.collection.mutable.{Buffer => SBuffer}
 object Buffer {
   val NullLength =
     -1 // denotes a SQL NULL value when reading a length coded binary.
-  val EmptyString = new String
+  val EmptyString    = new String
   val EmptyByteArray = new Array[Byte](0)
 
   /**
@@ -40,7 +40,9 @@ object Buffer {
   def fromChannelBuffer(cb: ChannelBuffer): Buffer = {
     require(cb != null)
     require(
-        cb.order == ByteOrder.LITTLE_ENDIAN, "Invalid ChannelBuffer ByteOrder")
+      cb.order == ByteOrder.LITTLE_ENDIAN,
+      "Invalid ChannelBuffer ByteOrder"
+    )
     new Buffer { val underlying = cb }
   }
 }
@@ -131,8 +133,9 @@ trait BufferReader extends Buffer {
     * @return a null-terminated String starting at offset.
     */
   def readNullTerminatedString(
-      charset: JCharset = Charset.defaultCharset): String = {
-    val start = offset
+      charset: JCharset = Charset.defaultCharset
+  ): String = {
+    val start  = offset
     var length = 0
 
     while (readByte() != 0x00) length += 1
@@ -160,7 +163,8 @@ trait BufferReader extends Buffer {
     * offset.
     */
   def readLengthCodedString(
-      charset: JCharset = Charset.defaultCharset): String = {
+      charset: JCharset = Charset.defaultCharset
+  ): String = {
     val length = readLengthCodedBinary().toInt
     if (length == Buffer.NullLength) null
     else if (length == 0) Buffer.EmptyString
@@ -207,21 +211,22 @@ object BufferReader {
     * BufferReader implementation backed by a Netty ChannelBuffer.
     */
   private[this] class Netty3BufferReader(val underlying: ChannelBuffer)
-      extends BufferReader with Buffer {
-    def offset = underlying.readerIndex
+      extends BufferReader
+      with Buffer {
+    def offset               = underlying.readerIndex
     def readable(width: Int) = underlying.readableBytes >= width
 
-    def readByte(): Byte = underlying.readByte()
+    def readByte(): Byte          = underlying.readByte()
     def readUnsignedByte(): Short = underlying.readUnsignedByte()
-    def readShort(): Short = underlying.readShort()
-    def readUnsignedShort(): Int = underlying.readUnsignedShort()
-    def readInt24(): Int = underlying.readMedium()
-    def readUnsignedInt24(): Int = underlying.readUnsignedMedium()
-    def readInt(): Int = underlying.readInt()
-    def readUnsignedInt(): Long = underlying.readUnsignedInt()
-    def readLong(): Long = underlying.readLong()
-    def readFloat() = underlying.readFloat()
-    def readDouble() = underlying.readDouble()
+    def readShort(): Short        = underlying.readShort()
+    def readUnsignedShort(): Int  = underlying.readUnsignedShort()
+    def readInt24(): Int          = underlying.readMedium()
+    def readUnsignedInt24(): Int  = underlying.readUnsignedMedium()
+    def readInt(): Int            = underlying.readInt()
+    def readUnsignedInt(): Long   = underlying.readUnsignedInt()
+    def readLong(): Long          = underlying.readLong()
+    def readFloat()               = underlying.readFloat()
+    def readDouble()              = underlying.readDouble()
 
     def skip(n: Int) = underlying.skipBytes(n)
 
@@ -280,9 +285,7 @@ trait BufferWriter extends Buffer {
     * @param b Byte used to fill.
     */
   def fill(n: Int, b: Byte) = {
-    (offset until offset + n) foreach { j =>
-      writeByte(b)
-    }
+    (offset until offset + n) foreach { j => writeByte(b) }
     this
   }
 
@@ -364,8 +367,9 @@ object BufferWriter {
     * BufferWriter implementation backed by a Netty ChannelBuffer.
     */
   private[this] class Netty3BufferWriter(val underlying: ChannelBuffer)
-      extends BufferWriter with Buffer {
-    def offset = underlying.writerIndex
+      extends BufferWriter
+      with Buffer {
+    def offset                            = underlying.writerIndex
     def writable(width: Int = 1): Boolean = underlying.writableBytes >= width
 
     def writeBoolean(b: Boolean): BufferWriter =

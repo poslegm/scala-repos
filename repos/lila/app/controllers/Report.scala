@@ -11,12 +11,10 @@ import lila.user.{User => UserModel, UserRepo}
 object Report extends LilaController {
 
   private def forms = Env.report.forms
-  private def api = Env.report.api
+  private def api   = Env.report.api
 
   def list = Secure(_.SeeReport) { implicit ctx => _ =>
-    api unprocessedAndRecent 50 map { reports =>
-      html.report.list(reports)
-    }
+    api unprocessedAndRecent 50 map { reports => html.report.list(reports) }
   }
 
   def process(id: String) = Secure(_.SeeReport) { implicit ctx => me =>
@@ -36,16 +34,17 @@ object Report extends LilaController {
   def create = AuthBody { implicit ctx => implicit me =>
     implicit val req = ctx.body
     forms.create.bindFromRequest.fold(
-        err =>
-          get("username") ?? UserRepo.named flatMap { user =>
-            forms.anyCaptcha map { captcha =>
-              BadRequest(html.report.form(err, user, captcha))
-            }
+      err =>
+        get("username") ?? UserRepo.named flatMap { user =>
+          forms.anyCaptcha map { captcha =>
+            BadRequest(html.report.form(err, user, captcha))
+          }
         },
-        data =>
-          api.create(data, me) map { report =>
-            Redirect(routes.Report.thanks(data.user.username))
-        })
+      data =>
+        api.create(data, me) map { report =>
+          Redirect(routes.Report.thanks(data.user.username))
+        }
+    )
   }
 
   def thanks(reported: String) = Auth { implicit ctx => implicit me =>

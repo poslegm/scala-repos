@@ -27,10 +27,10 @@ class TestLatch(count: Int = 1)(implicit system: ActorSystem)
     extends Awaitable[Unit] {
   private var latch = new CountDownLatch(count)
 
-  def countDown() = latch.countDown()
+  def countDown()     = latch.countDown()
   def isOpen: Boolean = latch.getCount == 0
-  def open() = while (!isOpen) countDown()
-  def reset() = latch = new CountDownLatch(count)
+  def open()          = while (!isOpen) countDown()
+  def reset()         = latch = new CountDownLatch(count)
 
   @throws(classOf[TimeoutException])
   def ready(atMost: Duration)(implicit permit: CanAwait) = {
@@ -38,13 +38,15 @@ class TestLatch(count: Int = 1)(implicit system: ActorSystem)
       case f: FiniteDuration ⇒ f
       case _ ⇒
         throw new IllegalArgumentException(
-            "TestLatch does not support waiting for " + atMost)
+          "TestLatch does not support waiting for " + atMost
+        )
     }
     val opened = latch.await(waitTime.dilated.toNanos, TimeUnit.NANOSECONDS)
     if (!opened)
       throw new TimeoutException(
-          "Timeout of %s with time factor of %s" format
-          (atMost.toString, TestKitExtension(system).TestTimeFactor))
+        "Timeout of %s with time factor of %s" format
+          (atMost.toString, TestKitExtension(system).TestTimeFactor)
+      )
     this
   }
   @throws(classOf[Exception])

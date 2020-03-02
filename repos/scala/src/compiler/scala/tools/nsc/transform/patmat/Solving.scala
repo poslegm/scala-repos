@@ -184,7 +184,7 @@ trait Solving extends Logic {
             // (o -> op1) /\ (o -> op2) ... (o -> opx) /\ (!op1 \/ !op2 \/... \/ !opx \/ o)
             // (!o \/ op1) /\ (!o \/ op2) ... (!o \/ opx) /\ (!op1 \/ !op2 \/... \/ !opx \/ o)
             val new_bv = bv - constTrue // ignore `True`
-            val o = newLiteral() // auxiliary Tseitin variable
+            val o      = newLiteral()   // auxiliary Tseitin variable
             new_bv.map(op => addClauseProcessed(clause(op, -o)))
             o
           }
@@ -202,7 +202,7 @@ trait Solving extends Logic {
             // (op1 -> o) /\ (op2 -> o) ... (opx -> o) /\ (op1 \/ op2 \/... \/ opx \/ !o)
             // (!op1 \/ o) /\ (!op2 \/ o) ... (!opx \/ o) /\ (op1 \/ op2 \/... \/ opx \/ !o)
             val new_bv = bv - constFalse // ignore `False`
-            val o = newLiteral() // auxiliary Tseitin variable
+            val o      = newLiteral()    // auxiliary Tseitin variable
             addClauseProcessed(new_bv + (-o))
             o
           }
@@ -219,7 +219,7 @@ trait Solving extends Logic {
           */
         def atMostOne(ops: List[Sym]) {
           (ops: @unchecked) match {
-            case hd :: Nil => convertSym(hd)
+            case hd :: Nil  => convertSym(hd)
             case x1 :: tail =>
               // sequential counter: 3n-4 clauses
               // pairwise encoding: n*(n-1)/2 clauses
@@ -272,8 +272,8 @@ trait Solving extends Logic {
       object ToLiteral {
         def unapply(f: Prop): Option[Lit] = f match {
           case Not(ToLiteral(lit)) => Some(-lit)
-          case sym: Sym => Some(symbolMapping.lit(sym))
-          case _ => None
+          case sym: Sym            => Some(symbolMapping.lit(sym))
+          case _                   => None
         }
       }
 
@@ -291,7 +291,7 @@ trait Solving extends Logic {
           case False =>
             Some(Array(clause())) // empty clause can't be satisfied
           case ToLiteral(lit) => Some(Array(clause(lit)))
-          case _ => None
+          case _              => None
         }
       }
 
@@ -331,7 +331,7 @@ trait Solving extends Logic {
               ops.exists(doesFormulaExceedSize)
             }
           case Not(a) => doesFormulaExceedSize(a)
-          case _ => false
+          case _      => false
         }
       }
 
@@ -342,8 +342,8 @@ trait Solving extends Logic {
 
       // collect all variables since after simplification / CNF conversion
       // they could have been removed from the formula
-      val symbolMapping = new SymbolMapping(gatherSymbols(p))
-      val cnfExtractor = new AlreadyInCNF(symbolMapping)
+      val symbolMapping  = new SymbolMapping(gatherSymbols(p))
+      val cnfExtractor   = new AlreadyInCNF(symbolMapping)
       val cnfTransformer = new TransformToCnf(symbolMapping)
 
       def cnfFor(prop: Prop): Solvable = {
@@ -374,8 +374,8 @@ trait Solving extends Logic {
 
     def cnfString(f: Array[Clause]): String = {
       val lits: Array[List[String]] = f map (_.map(_.toString).toList)
-      val xss: List[List[String]] = lits toList
-      val aligned: String = alignAcrossRows(xss, "\\/", " /\\\n")
+      val xss: List[List[String]]   = lits toList
+      val aligned: String           = alignAcrossRows(xss, "\\/", " /\\\n")
       aligned
     }
 
@@ -391,7 +391,7 @@ trait Solving extends Logic {
 
     // this model contains the auxiliary variables as well
     type TseitinModel = Set[Lit]
-    val EmptyTseitinModel = Set.empty[Lit]
+    val EmptyTseitinModel            = Set.empty[Lit]
     val NoTseitinModel: TseitinModel = null
 
     // returns all solutions, if any (TODO: better infinite recursion backstop -- detect fixpoint??)
@@ -413,7 +413,9 @@ trait Solving extends Logic {
       }
 
       final case class TseitinSolution(
-          model: TseitinModel, unassigned: List[Int]) {
+          model: TseitinModel,
+          unassigned: List[Int]
+      ) {
         def projectToSolution(symForVar: Map[Int, Sym]) =
           Solution(projectToModel(model, symForVar), unassigned map symForVar)
       }
@@ -421,8 +423,8 @@ trait Solving extends Logic {
       def findAllModels(
           clauses: Array[Clause],
           models: List[TseitinSolution],
-          recursionDepthAllowed: Int = AnalysisBudget.maxDPLLdepth)
-        : List[TseitinSolution] =
+          recursionDepthAllowed: Int = AnalysisBudget.maxDPLLdepth
+      ): List[TseitinSolution] =
         if (recursionDepthAllowed == 0) {
           uncheckedWarning(pos, AnalysisBudget.recursionDepthReached)
           models
@@ -438,16 +440,19 @@ trait Solving extends Logic {
             debug.patmat("unassigned " + unassigned + " in " + model)
 
             val solution = TseitinSolution(model, unassigned)
-            val negated = negateModel(model)
-            findAllModels(clauses :+ negated,
-                          solution :: models,
-                          recursionDepthAllowed - 1)
+            val negated  = negateModel(model)
+            findAllModels(
+              clauses :+ negated,
+              solution :: models,
+              recursionDepthAllowed - 1
+            )
           } else models
         }
 
       val tseitinSolutions = findAllModels(solvable.cnf, Nil)
       tseitinSolutions.map(
-          _.projectToSolution(solvable.symbolMapping.symForVar))
+        _.projectToSolution(solvable.symbolMapping.symForVar)
+      )
     }
 
     private def withLit(res: TseitinModel, l: Lit): TseitinModel = {
@@ -460,19 +465,24 @@ trait Solving extends Logic {
       *  Clauses can be simplified by dropping the negation of the literal we're making true
       *  (since False \/ X == X)
       */
-    private def dropUnit(clauses: Array[Clause], unitLit: Lit): Array[Clause] = {
-      val negated = -unitLit
+    private def dropUnit(
+        clauses: Array[Clause],
+        unitLit: Lit
+    ): Array[Clause] = {
+      val negated    = -unitLit
       val simplified = new ArrayBuffer[Clause](clauses.size)
       clauses foreach {
         case trivial if trivial contains unitLit => // drop
-        case clause => simplified += clause - negated
+        case clause                              => simplified += clause - negated
       }
       simplified.toArray
     }
 
     def findModelFor(solvable: Solvable): Model = {
       projectToModel(
-          findTseitinModelFor(solvable.cnf), solvable.symbolMapping.symForVar)
+        findTseitinModelFor(solvable.cnf),
+        solvable.symbolMapping.symForVar
+      )
     }
 
     def findTseitinModelFor(clauses: Array[Clause]): TseitinModel = {
@@ -497,10 +507,10 @@ trait Solving extends Logic {
               // partition symbols according to whether they appear in positive and/or negative literals
               val pos = new mutable.HashSet[Int]()
               val neg = new mutable.HashSet[Int]()
-              mforeach(clauses)(
-                  lit =>
-                    if (lit.positive) pos += lit.variable
-                    else neg += lit.variable)
+              mforeach(clauses)(lit =>
+                if (lit.positive) pos += lit.variable
+                else neg += lit.variable
+              )
 
               // appearing in both positive and negative
               val impures = pos intersect neg
@@ -519,8 +529,10 @@ trait Solving extends Logic {
               } else {
                 val split = clauses.head.head
                 // debug.patmat("split: "+ split)
-                orElse(findTseitinModelFor(clauses :+ clause(split)),
-                       findTseitinModelFor(clauses :+ clause(-split)))
+                orElse(
+                  findTseitinModelFor(clauses :+ clause(split)),
+                  findTseitinModelFor(clauses :+ clause(-split))
+                )
               }
           }
 
@@ -529,7 +541,9 @@ trait Solving extends Logic {
     }
 
     private def projectToModel(
-        model: TseitinModel, symForVar: Map[Int, Sym]): Model =
+        model: TseitinModel,
+        symForVar: Map[Int, Sym]
+    ): Model =
       if (model == NoTseitinModel) NoModel
       else if (model == EmptyTseitinModel) EmptyModel
       else {

@@ -19,7 +19,7 @@ package kafka.utils
 import org.apache.log4j.Logger
 
 trait Logging {
-  val loggerName = this.getClass.getName
+  val loggerName  = this.getClass.getName
   lazy val logger = Logger.getLogger(loggerName)
 
   protected var logIdent: String = null

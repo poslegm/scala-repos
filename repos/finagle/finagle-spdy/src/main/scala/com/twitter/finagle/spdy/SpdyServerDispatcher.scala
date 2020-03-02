@@ -6,9 +6,10 @@ import com.twitter.finagle.transport.Transport
 import com.twitter.util.{Closable, Local, Time}
 import org.jboss.netty.handler.codec.http.{HttpRequest, HttpResponse}
 
-class SpdyServerDispatcher(trans: Transport[HttpResponse, HttpRequest],
-                           service: Service[HttpRequest, HttpResponse])
-    extends Closable {
+class SpdyServerDispatcher(
+    trans: Transport[HttpResponse, HttpRequest],
+    service: Service[HttpRequest, HttpResponse]
+) extends Closable {
   private[this] def loop(): Unit = {
     trans.read() onFailure { exc =>
       service.close()
@@ -23,9 +24,7 @@ class SpdyServerDispatcher(trans: Transport[HttpResponse, HttpRequest],
       }
     } flatMap { rep =>
       trans.write(rep)
-    } onFailure { _ =>
-      trans.close()
-    }
+    } onFailure { _ => trans.close() }
   }
 
   Local.letClear { loop() }

@@ -5,7 +5,7 @@
   * The ASF licenses this file to You under the Apache License, Version 2.0
   * (the "License"); you may not use this file except in compliance with
   * the License.  You may obtain a copy of the License at
-  * 
+  *
   *    http://www.apache.org/licenses/LICENSE-2.0
   *
   * Unless required by applicable law or agreed to in writing, software
@@ -20,18 +20,18 @@ package kafka.utils
   * Some common constants
   */
 object Time {
-  val NsPerUs = 1000
-  val UsPerMs = 1000
-  val MsPerSec = 1000
-  val NsPerMs = NsPerUs * UsPerMs
-  val NsPerSec = NsPerMs * MsPerSec
-  val UsPerSec = UsPerMs * MsPerSec
-  val SecsPerMin = 60
+  val NsPerUs     = 1000
+  val UsPerMs     = 1000
+  val MsPerSec    = 1000
+  val NsPerMs     = NsPerUs * UsPerMs
+  val NsPerSec    = NsPerMs * MsPerSec
+  val UsPerSec    = UsPerMs * MsPerSec
+  val SecsPerMin  = 60
   val MinsPerHour = 60
   val HoursPerDay = 24
   val SecsPerHour = SecsPerMin * MinsPerHour
-  val SecsPerDay = SecsPerHour * HoursPerDay
-  val MinsPerDay = MinsPerHour * HoursPerDay
+  val SecsPerDay  = SecsPerHour * HoursPerDay
+  val MinsPerDay  = MinsPerHour * HoursPerDay
 }
 
 /**

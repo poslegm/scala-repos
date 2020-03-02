@@ -17,11 +17,14 @@ object ReplicatedMetricsSpec extends MultiNodeConfig {
   val node2 = role("node-2")
   val node3 = role("node-3")
 
-  commonConfig(ConfigFactory.parseString("""
+  commonConfig(
+    ConfigFactory
+      .parseString("""
     akka.loglevel = INFO
     akka.actor.provider = "akka.cluster.ClusterActorRefProvider"
     akka.log-dead-letters-during-shutdown = off
-    """))
+    """)
+  )
 }
 
 class ReplicatedMetricsSpecMultiJvmNode1 extends ReplicatedMetricsSpec
@@ -29,7 +32,8 @@ class ReplicatedMetricsSpecMultiJvmNode2 extends ReplicatedMetricsSpec
 class ReplicatedMetricsSpecMultiJvmNode3 extends ReplicatedMetricsSpec
 
 class ReplicatedMetricsSpec
-    extends MultiNodeSpec(ReplicatedMetricsSpec) with STMultiNodeSpec
+    extends MultiNodeSpec(ReplicatedMetricsSpec)
+    with STMultiNodeSpec
     with ImplicitSender {
   import ReplicatedMetricsSpec._
   import ReplicatedMetrics._
@@ -64,8 +68,7 @@ class ReplicatedMetricsSpec
       val probe = TestProbe()
       system.eventStream.subscribe(probe.ref, classOf[UsedHeap])
       awaitAssert {
-        probe.expectMsgType[UsedHeap](1.second).percentPerNode.size should be(
-            3)
+        probe.expectMsgType[UsedHeap](1.second).percentPerNode.size should be(3)
       }
       probe.expectMsgType[UsedHeap].percentPerNode.size should be(3)
       probe.expectMsgType[UsedHeap].percentPerNode.size should be(3)
@@ -82,10 +85,15 @@ class ReplicatedMetricsSpec
         system.eventStream.subscribe(probe.ref, classOf[UsedHeap])
         awaitAssert {
           probe.expectMsgType[UsedHeap](1.second).percentPerNode.size should be(
-              2)
+            2
+          )
         }
-        probe.expectMsgType[UsedHeap].percentPerNode.asScala.toMap should not contain
-        (nodeKey(node3Address))
+        probe
+          .expectMsgType[UsedHeap]
+          .percentPerNode
+          .asScala
+          .toMap should not contain
+          (nodeKey(node3Address))
       }
       enterBarrier("after-3")
     }

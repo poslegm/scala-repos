@@ -40,8 +40,8 @@ trait JodaTimeTypedField extends TypedField[DateTime] with JodaHelpers {
 
   def setFromString(s: String): Box[DateTime] = s match {
     case null | "" if optional_? => setBox(Empty)
-    case null | "" => setBox(Failure(notOptionalErrorMessage))
-    case other => setBox(toDateTime(other))
+    case null | ""               => setBox(Failure(notOptionalErrorMessage))
+    case other                   => setBox(toDateTime(other))
   }
 
   private def elem =
@@ -55,7 +55,7 @@ trait JodaTimeTypedField extends TypedField[DateTime] with JodaHelpers {
   def toForm: Box[NodeSeq] =
     uniqueFieldId match {
       case Full(id) => Full(elem % ("id" -> id))
-      case _ => Full(elem)
+      case _        => Full(elem)
     }
 
   def asJs = valueBox.map(v => Num(v.getMillis)) openOr JsNull
@@ -63,21 +63,21 @@ trait JodaTimeTypedField extends TypedField[DateTime] with JodaHelpers {
   protected def asJInt(encode: MyType => BigInt): JValue =
     valueBox.map(v => JInt(encode(v))) openOr (JNothing: JValue)
 
-  def asJValue: JValue = asJInt(v => v.getMillis)
-  def setFromJValue(jvalue: JValue) = setFromJInt(jvalue) { v =>
-    toDateTime(v)
-  }
+  def asJValue: JValue              = asJInt(v => v.getMillis)
+  def setFromJValue(jvalue: JValue) = setFromJInt(jvalue) { v => toDateTime(v) }
 
-  protected def setFromJInt(jvalue: JValue)(
-      decode: BigInt => Box[MyType]): Box[MyType] = jvalue match {
+  protected def setFromJInt(
+      jvalue: JValue
+  )(decode: BigInt => Box[MyType]): Box[MyType] = jvalue match {
     case JNothing | JNull if optional_? => setBox(Empty)
-    case JInt(n) => setBox(decode(n))
-    case other => setBox(FieldHelpers.expectedA("JInt", other))
+    case JInt(n)                        => setBox(decode(n))
+    case other                          => setBox(FieldHelpers.expectedA("JInt", other))
   }
 }
 
 class JodaTimeField[OwnerType <: Record[OwnerType]](rec: OwnerType)
-    extends Field[DateTime, OwnerType] with MandatoryTypedField[DateTime]
+    extends Field[DateTime, OwnerType]
+    with MandatoryTypedField[DateTime]
     with JodaTimeTypedField {
 
   def owner = rec
@@ -91,7 +91,8 @@ class JodaTimeField[OwnerType <: Record[OwnerType]](rec: OwnerType)
 }
 
 class OptionalJodaTimeField[OwnerType <: Record[OwnerType]](rec: OwnerType)
-    extends Field[DateTime, OwnerType] with OptionalTypedField[DateTime]
+    extends Field[DateTime, OwnerType]
+    with OptionalTypedField[DateTime]
     with JodaTimeTypedField {
 
   def owner = rec

@@ -19,7 +19,7 @@ private[typed] class ActorAdapter[T](_initialBehavior: () ⇒ Behavior[T])
   import Behavior._
 
   var behavior = _initialBehavior()
-  val ctx = new ActorContextAdapter[T](context)
+  val ctx      = new ActorContextAdapter[T](context)
 
   def receive = LoggingReceive {
     case akka.actor.Terminated(ref) ⇒
@@ -42,7 +42,7 @@ private[typed] class ActorAdapter[T](_initialBehavior: () ⇒ Behavior[T])
 
   override def unhandled(msg: Any): Unit = msg match {
     case Terminated(ref) ⇒ throw new DeathPactException(ref.untypedRef)
-    case other ⇒ super.unhandled(other)
+    case other           ⇒ super.unhandled(other)
   }
 
   override val supervisorStrategy = a.OneForOneStrategy() {
@@ -52,10 +52,10 @@ private[typed] class ActorAdapter[T](_initialBehavior: () ⇒ Behavior[T])
       val f = Failed(ex, ActorRef(sender()))
       next(behavior.management(ctx, f), f)
       f.getDecision match {
-        case Resume ⇒ s.Resume
+        case Resume  ⇒ s.Resume
         case Restart ⇒ s.Restart
-        case Stop ⇒ s.Stop
-        case _ ⇒ s.Escalate
+        case Stop    ⇒ s.Stop
+        case _       ⇒ s.Escalate
       }
   }
 
@@ -75,15 +75,15 @@ private[typed] class ActorAdapter[T](_initialBehavior: () ⇒ Behavior[T])
 private[typed] class ActorContextAdapter[T](ctx: akka.actor.ActorContext)
     extends ActorContext[T] {
   import Ops._
-  def self = ActorRef(ctx.self)
-  def props = Props(ctx.props)
-  val system = ActorSystem(ctx.system)
-  def children = ctx.children.map(ActorRef(_))
-  def child(name: String) = ctx.child(name).map(ActorRef(_))
-  def spawnAnonymous[U](props: Props[U]) = ctx.spawn(props)
+  def self                                    = ActorRef(ctx.self)
+  def props                                   = Props(ctx.props)
+  val system                                  = ActorSystem(ctx.system)
+  def children                                = ctx.children.map(ActorRef(_))
+  def child(name: String)                     = ctx.child(name).map(ActorRef(_))
+  def spawnAnonymous[U](props: Props[U])      = ctx.spawn(props)
   def spawn[U](props: Props[U], name: String) = ctx.spawn(props, name)
-  def actorOf(props: a.Props) = ctx.actorOf(props)
-  def actorOf(props: a.Props, name: String) = ctx.actorOf(props, name)
+  def actorOf(props: a.Props)                 = ctx.actorOf(props)
+  def actorOf(props: a.Props, name: String)   = ctx.actorOf(props, name)
   def stop(child: ActorRef[Nothing]) =
     child.untypedRef match {
       case f: akka.actor.FunctionRef ⇒
@@ -98,20 +98,23 @@ private[typed] class ActorContextAdapter[T](ctx: akka.actor.ActorContext)
             false // none of our business
         }
     }
-  def watch[U](other: ActorRef[U]) = { ctx.watch(other.untypedRef); other }
-  def watch(other: a.ActorRef) = { ctx.watch(other); other }
-  def unwatch[U](other: ActorRef[U]) = { ctx.unwatch(other.untypedRef); other }
-  def unwatch(other: a.ActorRef) = { ctx.unwatch(other); other }
-  def setReceiveTimeout(d: Duration) = ctx.setReceiveTimeout(d)
+  def watch[U](other: ActorRef[U])               = { ctx.watch(other.untypedRef); other }
+  def watch(other: a.ActorRef)                   = { ctx.watch(other); other }
+  def unwatch[U](other: ActorRef[U])             = { ctx.unwatch(other.untypedRef); other }
+  def unwatch(other: a.ActorRef)                 = { ctx.unwatch(other); other }
+  def setReceiveTimeout(d: Duration)             = ctx.setReceiveTimeout(d)
   def executionContext: ExecutionContextExecutor = ctx.dispatcher
   def schedule[U](
-      delay: FiniteDuration, target: ActorRef[U], msg: U): a.Cancellable = {
+      delay: FiniteDuration,
+      target: ActorRef[U],
+      msg: U
+  ): a.Cancellable = {
     import ctx.dispatcher
     ctx.system.scheduler.scheduleOnce(delay, target.untypedRef, msg)
   }
   def spawnAdapter[U](f: U ⇒ T) = {
     val cell = ctx.asInstanceOf[akka.actor.ActorCell]
-    val ref = cell.addFunctionRef((_, msg) ⇒ ctx.self ! f(msg.asInstanceOf[U]))
+    val ref  = cell.addFunctionRef((_, msg) ⇒ ctx.self ! f(msg.asInstanceOf[U]))
     ActorRef[U](ref)
   }
 }

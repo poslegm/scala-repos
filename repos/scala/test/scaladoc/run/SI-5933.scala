@@ -32,7 +32,7 @@ object Test extends ScaladocModelTest {
     // get the quick access implicit defs in scope (_package(s), _class(es), _trait(s), object(s) _method(s), _value(s))
     import access._
 
-    val Test = rootPackage._object("Test")
+    val Test  = rootPackage._object("Test")
     val test1 = Test._method("test1")
     val test2 = Test._method("test2")
 
@@ -40,7 +40,9 @@ object Test extends ScaladocModelTest {
       assert(s1 == s2, s1 + " == " + s2)
 
     assertEqual(test1.valueParams(0)(0).defaultValue.get.expression, "lx")
-    assertEqual(test2.valueParams(0)(0).defaultValue.get.expression,
-                "lx match { case 0 => 1; case 3 => 4 }")
+    assertEqual(
+      test2.valueParams(0)(0).defaultValue.get.expression,
+      "lx match { case 0 => 1; case 3 => 4 }"
+    )
   }
 }

@@ -72,7 +72,7 @@ object ClosableLazySpec extends Specification {
 
     "throw an exception when accessed after being closed" in {
       val cl = new ClosableLazy[String, Int] {
-        protected def create() = ("oof", () => 1)
+        protected def create()       = ("oof", () => 1)
         protected def closeNotNeeded = -1
       }
       cl.get must_== "oof"
@@ -87,13 +87,16 @@ object ClosableLazySpec extends Specification {
         lazy val cl: ClosableLazy[String, Unit] =
           new ClosableLazy[String, Unit] {
             protected def create() = {
-              ("banana", { () =>
-                val getResult = Future[String] {
-                  cl.get()
+              (
+                "banana",
+                { () =>
+                  val getResult = Future[String] {
+                    cl.get()
+                  }
+                  getResultPromise.completeWith(getResult)
+                  Await.result(getResult, Duration(2, MINUTES))
                 }
-                getResultPromise.completeWith(getResult)
-                Await.result(getResult, Duration(2, MINUTES))
-              })
+              )
             }
             protected def closeNotNeeded = ()
           }
@@ -105,7 +108,8 @@ object ClosableLazySpec extends Specification {
       // because the ClosableLazy is closed. Use a long duration so this will work
       // on slow machines.
       Await.result(getResultPromise.future, Duration(1, MINUTES)) must throwAn[
-          IllegalStateException]
+        IllegalStateException
+      ]
     }
   }
 }

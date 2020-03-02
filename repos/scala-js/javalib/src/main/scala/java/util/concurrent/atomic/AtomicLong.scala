@@ -1,7 +1,8 @@
 package java.util.concurrent.atomic
 
 class AtomicLong(private[this] var value: Long)
-    extends Number with Serializable {
+    extends Number
+    with Serializable {
   def this() = this(0L)
 
   final def get(): Long = value
@@ -56,8 +57,8 @@ class AtomicLong(private[this] var value: Long)
   override def toString(): String =
     value.toString()
 
-  def intValue(): Int = value.toInt
-  def longValue(): Long = value
-  def floatValue(): Float = value.toFloat
+  def intValue(): Int       = value.toInt
+  def longValue(): Long     = value
+  def floatValue(): Float   = value.toFloat
   def doubleValue(): Double = value.toDouble
 }

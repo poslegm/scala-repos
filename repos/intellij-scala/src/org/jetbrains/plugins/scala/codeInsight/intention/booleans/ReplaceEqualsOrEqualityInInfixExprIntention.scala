@@ -24,7 +24,10 @@ class ReplaceEqualsOrEqualityInInfixExprIntention
   def getFamilyName = ReplaceEqualsOrEqualityInInfixExprIntention.familyName
 
   def isAvailable(
-      project: Project, editor: Editor, element: PsiElement): Boolean = {
+      project: Project,
+      editor: Editor,
+      element: PsiElement
+  ): Boolean = {
     val infixExpr: ScInfixExpr =
       PsiTreeUtil.getParentOfType(element, classOf[ScInfixExpr], false)
     if (infixExpr == null) return false
@@ -34,7 +37,7 @@ class ReplaceEqualsOrEqualityInInfixExprIntention
     if (oper != "equals" && oper != "==") return false
 
     val range: TextRange = infixExpr.operation.nameId.getTextRange
-    val offset = editor.getCaretModel.getOffset
+    val offset           = editor.getCaretModel.getOffset
     if (!(range.getStartOffset <= offset && offset <= range.getEndOffset))
       return false
 
@@ -51,7 +54,7 @@ class ReplaceEqualsOrEqualityInInfixExprIntention
 
     val start = infixExpr.getTextRange.getStartOffset
 
-    val expr = new StringBuilder
+    val expr        = new StringBuilder
     val replaceOper = Map("equals" -> "==", "==" -> "equals")
     expr
       .append(infixExpr.getBaseExpr.getText)
@@ -61,7 +64,9 @@ class ReplaceEqualsOrEqualityInInfixExprIntention
       .append(infixExpr.getArgExpr.getText)
 
     val newInfixExpr = ScalaPsiElementFactory.createExpressionFromText(
-        expr.toString(), element.getManager)
+      expr.toString(),
+      element.getManager
+    )
 
     val size =
       newInfixExpr

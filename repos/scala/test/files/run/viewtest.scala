@@ -4,9 +4,7 @@ object Test extends App {
   println(xs)
 
   val ys =
-    List(1, 2, 3).view map { x =>
-      println("mapping " + x); x + 1
-    }
+    List(1, 2, 3).view map { x => println("mapping " + x); x + 1 }
   println("ys defined")
   println(ys.head)
   println(ys.tail)
@@ -14,10 +12,10 @@ object Test extends App {
   println(ys)
   println(ys.force)
 
-  val zs = Array(1, 2, 3).view
+  val zs                           = Array(1, 2, 3).view
   val as: SeqView[Int, Array[Int]] = zs map (_ + 1)
-  val bs: Array[Int] = as.force
-  val cs = zs.reverse
+  val bs: Array[Int]               = as.force
+  val cs                           = zs.reverse
   cs(0) += 1
   assert(cs.force.deep == Array(4, 2, 1).deep)
   assert(zs(2) == 4)

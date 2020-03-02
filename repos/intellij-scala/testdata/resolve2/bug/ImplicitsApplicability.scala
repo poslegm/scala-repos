@@ -17,7 +17,7 @@ object ImplicitsApplicability {
   (new T). /* */ u
 
   def foo(s: String) = 45
-  def foo(t: T) = 0
+  def foo(t: T)      = 0
   // Search scope of implicit view should be the parts of the U => T
   /* */
   foo(new U)

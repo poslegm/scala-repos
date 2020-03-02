@@ -9,13 +9,13 @@ private[common] case class Subnet(ip: InetAddress, cidr: Option[Int] = None) {
 
   private def remainderOfMask =
     for {
-      m <- cidr
+      m      <- cidr
       result <- maskBits(m % 8)
     } yield result
 
   private def maskBits(leadingBits: Int) = leadingBits match {
     case i if i < 1 || i > 7 => None
-    case i => Some(~(0xff >>> leadingBits))
+    case i                   => Some(~(0xff >>> leadingBits))
   }
 
   def isInRange(otherIp: InetAddress) = {

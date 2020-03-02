@@ -27,7 +27,8 @@ import math._
   * @param p the probability of any one being true
   */
 case class Binomial(n: Int, p: Double)(implicit rand: RandBasis = Rand)
-    extends DiscreteDistr[Int] with Moments[Double, Double] {
+    extends DiscreteDistr[Int]
+    with Moments[Double, Double] {
   type Distr = Gamma
   require(n > 0, "n must be positive!")
   require(p >= 0.0, "p must be non-negative!")
@@ -42,7 +43,8 @@ case class Binomial(n: Int, p: Double)(implicit rand: RandBasis = Rand)
     else if (p == 1) logI(k == n)
     else {
       lgamma(n + 1) - lgamma(k + 1) - lgamma(n - k + 1) + k * log(p) + (n - k) * log(
-          1 - p)
+        1 - p
+      )
     }
   }
 
@@ -56,9 +58,9 @@ case class Binomial(n: Int, p: Double)(implicit rand: RandBasis = Rand)
         j += 1
       }
     } else if (np < 1.0) {
-      val g = exp(-np)
-      var t = 1.0
-      var j = 0
+      val g  = exp(-np)
+      var t  = 1.0
+      var j  = 0
       var ok = true
       while (j < n && ok) {
         t *= rand.uniform.draw()
@@ -77,7 +79,7 @@ case class Binomial(n: Int, p: Double)(implicit rand: RandBasis = Rand)
         } while (bnl < 0.0 || bnl >= (n + 1.0))
         bnl = floor(bnl)
         t = 1.2 * sq * (1.0 + y * y) * exp(
-            nfact - breeze.numerics.lgamma(bnl + 1.0) -
+          nfact - breeze.numerics.lgamma(bnl + 1.0) -
             breeze.numerics.lgamma(n - bnl + 1.0) +
             bnl * plog + (n - bnl) * pclog
         )
@@ -92,16 +94,16 @@ case class Binomial(n: Int, p: Double)(implicit rand: RandBasis = Rand)
   // data for the generator {
   private val nfact = breeze.numerics.lgamma(n + 1.0)
 
-  private val pc = 1.0 - pp
-  private val plog = log(pp)
+  private val pc    = 1.0 - pp
+  private val plog  = log(pp)
   private val pclog = log(pc)
 
   private val sq = sqrt(2.0 * np * pc)
   //}
 
-  def mean = n * p
+  def mean     = n * p
   def variance = mean * (1 - p)
-  def mode = math.floor((n + 1) * p)
+  def mode     = math.floor((n + 1) * p)
 
   /** with an additive O(1/n) term */
   def entropy = .5 * math.log(2 * math.Pi * variance)

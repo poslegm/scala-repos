@@ -22,7 +22,8 @@ import kafka.common.TopicAndPartition
 import collection.JavaConversions
 
 class OffsetCommitResponse(
-    private val underlying: kafka.api.OffsetCommitResponse) {
+    private val underlying: kafka.api.OffsetCommitResponse
+) {
 
   def errors: java.util.Map[TopicAndPartition, Short] = {
     import JavaConversions._

@@ -19,10 +19,10 @@ final class EmailAddress(disposable: DisposableEmailDomain) {
       // gmail addresses
       case Array(name, domain) if isGmail(domain) =>
         name
-          .replace(".", "") // remove all dots
+          .replace(".", "")  // remove all dots
           .takeWhile('+' !=) // skip everything after the first +
           .some
-          .filter(_.nonEmpty) // make sure something remains
+          .filter(_.nonEmpty)              // make sure something remains
           .map(radix => s"$radix@$domain") // okay
 
       // disposable addresses
@@ -40,9 +40,9 @@ final class EmailAddress(disposable: DisposableEmailDomain) {
   private def isTakenBy(email: String, forUser: Option[User]): Option[String] =
     validate(email) ?? { e =>
       (lila.user.UserRepo.idByEmail(e) awaitSeconds 2, forUser) match {
-        case (None, _) => none
+        case (None, _)                  => none
         case (Some(userId), Some(user)) => userId != user.id option userId
-        case (someUserId, _) => someUserId
+        case (someUserId, _)            => someUserId
       }
     }
 

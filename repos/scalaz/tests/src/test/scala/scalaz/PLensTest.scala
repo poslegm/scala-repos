@@ -12,7 +12,7 @@ object PLensTest extends SpecLite {
 
   object instances {
     def category = Category[PLens]
-    def choice = Choice[PLens]
-    def split = Split[PLens]
+    def choice   = Choice[PLens]
+    def split    = Split[PLens]
   }
 }

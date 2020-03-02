@@ -18,13 +18,13 @@ object M0 {
 
   def test = {
     val isort: List[Int] => List[Int] = quicksort[Int]((x, y) => x < y);
-    val list0 = List(6, 3, 1, 8, 7, 1, 2, 5, 8, 4, 3, 4, 8);
-    val list1 = quicksort[Int]((x, y) => x < y)(list0);
-    val list2 = quicksort[Int]((x, y) => x < y)(list1);
-    val list3 = isort(list0);
-    val list4 = isort(list1);
-    val list5 = quicksort[Int]((x, y) => x >= y)(list0);
-    val list6 = quicksort[Int]((x, y) => x >= y)(list1);
+    val list0                         = List(6, 3, 1, 8, 7, 1, 2, 5, 8, 4, 3, 4, 8);
+    val list1                         = quicksort[Int]((x, y) => x < y)(list0);
+    val list2                         = quicksort[Int]((x, y) => x < y)(list1);
+    val list3                         = isort(list0);
+    val list4                         = isort(list1);
+    val list5                         = quicksort[Int]((x, y) => x >= y)(list0);
+    val list6                         = quicksort[Int]((x, y) => x >= y)(list1);
 
     Console.println("list0 = " + list0);
     Console.println("list1 = " + list1);
@@ -44,7 +44,8 @@ object M1 {
   def mergesort[a](less: (a, a) => Boolean)(xs: Array[a]): Unit = {
 
     def While(c: => Boolean)(b: => Unit): Unit =
-      if (c) { b; While(c)(b) } else ();
+      if (c) { b; While(c)(b) }
+      else ();
 
     def swap(i: Int, j: Int): Unit = {
       val t = xs(i);
@@ -55,8 +56,8 @@ object M1 {
 
     def sort1(l: Int, r: Int): Unit = {
       val pivot = xs((l + r) / 2);
-      var i = l;
-      var j = r;
+      var i     = l;
+      var j     = r;
       While(i <= j) {
         While(less(xs(i), pivot)) { i = i + 1 }
         While(less(pivot, xs(j))) { j = j - 1 }
@@ -148,7 +149,10 @@ object M3 {
     else (v.head * w.head) + dotproduct(v.tail, w.tail)
   }
 
-  def matrixTimesVector(m: List[List[Double]], v: List[Double]): List[Double] = {
+  def matrixTimesVector(
+      m: List[List[Double]],
+      v: List[Double]
+  ): List[Double] = {
     m.map(row => dotproduct(row, v))
   }
 
@@ -158,7 +162,9 @@ object M3 {
   }
 
   def matrixTimesMatrix(
-      m1: List[List[Double]], m2: List[List[Double]]): List[List[Double]] = {
+      m1: List[List[Double]],
+      m2: List[List[Double]]
+  ): List[List[Double]] = {
     val columns = transpose(m2);
     m1.map(row => matrixTimesVector(columns, row))
   }

@@ -33,13 +33,15 @@ object IntroSpec {
     //#chatroom-protocol
     sealed trait Command
     final case class GetSession(
-        screenName: String, replyTo: ActorRef[SessionEvent])
-        extends Command
+        screenName: String,
+        replyTo: ActorRef[SessionEvent]
+    ) extends Command
     //#chatroom-protocol
     //#chatroom-behavior
     private final case class PostSessionMessage(
-        screenName: String, message: String)
-        extends Command
+        screenName: String,
+        message: String
+    ) extends Command
     //#chatroom-behavior
     //#chatroom-protocol
 
@@ -89,7 +91,7 @@ class IntroSpec extends TypedSpec {
 
     for {
       greeting <- future.recover { case ex => ex.getMessage }
-      done <- { println(s"result: $greeting"); system.terminate() }
+      done     <- { println(s"result: $greeting"); system.terminate() }
     } println("system terminated")
     //#hello-world
   }
@@ -114,7 +116,7 @@ class IntroSpec extends TypedSpec {
     //#chatroom-main
     val main: Behavior[Unit] = Full {
       case Sig(ctx, PreStart) ⇒
-        val chatRoom = ctx.spawn(Props(ChatRoom.behavior), "chatroom")
+        val chatRoom   = ctx.spawn(Props(ChatRoom.behavior), "chatroom")
         val gabblerRef = ctx.spawn(Props(gabbler), "gabbler")
         ctx.watch(gabblerRef)
         chatRoom ! GetSession("ol’ Gabbler", gabblerRef)

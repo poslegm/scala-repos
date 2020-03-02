@@ -15,8 +15,8 @@ trait CompilationUnits { global: Global =>
     */
   object NoCompilationUnit extends CompilationUnit(NoSourceFile) {
     override lazy val isJava = false
-    override def exists = false
-    override def toString() = "NoCompilationUnit"
+    override def exists      = false
+    override def toString()  = "NoCompilationUnit"
   }
 
   /** One unit of compilation that has been submitted to the compiler.
@@ -97,12 +97,14 @@ trait CompilationUnits { global: Global =>
       }
       def get(sym: Symbol): Option[Tree] =
         debuglogResultIf[Option[Tree]](
-            s"found synthetic for $sym in $self", _.isDefined) {
+          s"found synthetic for $sym in $self",
+          _.isDefined
+        ) {
           map get sym
         }
       def keys: Iterable[Symbol] = map.keys
-      def clear(): Unit = map.clear()
-      override def toString = map.toString
+      def clear(): Unit          = map.clear()
+      override def toString      = map.toString
     }
 
     // namer calls typer.computeType(rhs) on DefDef / ValDef when tpt is empty. the result
@@ -131,24 +133,28 @@ trait CompilationUnits { global: Global =>
     @deprecated("Call global.reporter.echo directly instead.", "2.11.2")
     final def echo(pos: Position, msg: String): Unit = reporter.echo(pos, msg)
     @deprecated(
-        "Call global.reporter.error (or typer.context.error) directly instead.",
-        "2.11.2")
+      "Call global.reporter.error (or typer.context.error) directly instead.",
+      "2.11.2"
+    )
     final def error(pos: Position, msg: String): Unit =
       reporter.error(pos, msg)
     @deprecated(
-        "Call global.reporter.warning (or typer.context.warning) directly instead.",
-        "2.11.2")
+      "Call global.reporter.warning (or typer.context.warning) directly instead.",
+      "2.11.2"
+    )
     final def warning(pos: Position, msg: String): Unit =
       reporter.warning(pos, msg)
 
     @deprecated(
-        "Call global.currentRun.reporting.deprecationWarning directly instead.",
-        "2.11.2")
+      "Call global.currentRun.reporting.deprecationWarning directly instead.",
+      "2.11.2"
+    )
     final def deprecationWarning(pos: Position, msg: String): Unit =
       currentRun.reporting.deprecationWarning(pos, msg)
     @deprecated(
-        "Call global.currentRun.reporting.uncheckedWarning directly instead.",
-        "2.11.2")
+      "Call global.currentRun.reporting.uncheckedWarning directly instead.",
+      "2.11.2"
+    )
     final def uncheckedWarning(pos: Position, msg: String): Unit =
       currentRun.reporting.uncheckedWarning(pos, msg)
 

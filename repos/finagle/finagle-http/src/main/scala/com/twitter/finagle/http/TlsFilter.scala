@@ -1,7 +1,13 @@
 package com.twitter.finagle.http
 
 import com.twitter.finagle.client.Transporter
-import com.twitter.finagle.{ServiceFactory, Service, Stack, Stackable, SimpleFilter}
+import com.twitter.finagle.{
+  ServiceFactory,
+  Service,
+  Stack,
+  Stackable,
+  SimpleFilter
+}
 import com.twitter.util.Future
 
 /**
@@ -18,12 +24,16 @@ object TlsFilter {
   val role = Stack.Role("HttpTlsHost")
 
   def module: Stackable[ServiceFactory[Request, Response]] =
-    new Stack.Module1[
-        Transporter.TLSHostname, ServiceFactory[Request, Response]] {
-      val role = TlsFilter.role
+    new Stack.Module1[Transporter.TLSHostname, ServiceFactory[
+      Request,
+      Response
+    ]] {
+      val role        = TlsFilter.role
       val description = "Add host headers to TLS-enabled requests"
-      def make(tlsHostname: Transporter.TLSHostname,
-               next: ServiceFactory[Request, Response]) =
+      def make(
+          tlsHostname: Transporter.TLSHostname,
+          next: ServiceFactory[Request, Response]
+      ) =
         tlsHostname match {
           case Transporter.TLSHostname(Some(host)) =>
             new TlsFilter(host) andThen next

@@ -12,23 +12,24 @@ import scala.collection.mutable
 
 object Factors {
   val zero = Factors(Map.empty, Zero)
-  val one = Factors(Map.empty, Positive)
+  val one  = Factors(Map.empty, Positive)
 
-  def apply(n: Long): Factors = factor(SafeLong(n))
-  def apply(n: BigInt): Factors = factor(SafeLong(n))
+  def apply(n: Long): Factors     = factor(SafeLong(n))
+  def apply(n: BigInt): Factors   = factor(SafeLong(n))
   def apply(n: SafeLong): Factors = factor(n)
-  def apply(s: String): Factors = factor(SafeLong(s))
+  def apply(s: String): Factors   = factor(SafeLong(s))
 }
 
 case class Factors(factors: Map[SafeLong, Int], sign: Sign)
-    extends Iterable[(SafeLong, Int)] with Ordered[Factors] { lhs =>
+    extends Iterable[(SafeLong, Int)]
+    with Ordered[Factors] { lhs =>
 
   private[prime] def prod(m: Map[SafeLong, Int]): SafeLong =
     m.foldLeft(SafeLong.one) { case (t, (p, e)) => t * p.pow(e) }
 
   lazy val value: SafeLong = sign match {
     case Positive => prod(factors)
-    case Zero => SafeLong.zero
+    case Zero     => SafeLong.zero
     case Negative => -prod(factors)
   }
 
@@ -38,7 +39,7 @@ case class Factors(factors: Map[SafeLong, Int], sign: Sign)
       else factors.toSeq.sorted.map { case (p, e) => s"$p^$e" }.mkString(" * ")
     sign match {
       case Positive => s"($terms)"
-      case Zero => "(0)"
+      case Zero     => "(0)"
       case Negative => s"-($terms)"
     }
   }
@@ -63,7 +64,7 @@ case class Factors(factors: Map[SafeLong, Int], sign: Sign)
   def compare(rhs: Int): Int =
     sign match {
       case Positive =>
-        var t = SafeLong.one
+        var t  = SafeLong.one
         val it = iterator
         while (it.hasNext && t <= rhs) {
           val (p, e) = it.next(); t *= (p ** e)
@@ -72,7 +73,7 @@ case class Factors(factors: Map[SafeLong, Int], sign: Sign)
       case Zero =>
         rhs.signum
       case Negative =>
-        var t = -SafeLong.one
+        var t  = -SafeLong.one
         val it = iterator
         while (it.hasNext && t >= rhs) {
           val (p, e) = it.next(); t *= (p ** e)
@@ -81,23 +82,29 @@ case class Factors(factors: Map[SafeLong, Int], sign: Sign)
     }
 
   def gcd(rhs: Factors): Factors =
-    Factors(lhs.factors.flatMap {
-      case (p, le) =>
-        rhs.factors.get(p).map(re => (p, le min re))
-    }, Positive)
+    Factors(
+      lhs.factors.flatMap {
+        case (p, le) =>
+          rhs.factors.get(p).map(re => (p, le min re))
+      },
+      Positive
+    )
 
   def lcm(rhs: Factors): Factors =
-    Factors(lhs.factors.foldLeft(rhs.factors) {
-      case (fs, (p, e)) =>
-        fs.updated(p, fs.getOrElse(p, 0) max e)
-    }, Positive)
+    Factors(
+      lhs.factors.foldLeft(rhs.factors) {
+        case (fs, (p, e)) =>
+          fs.updated(p, fs.getOrElse(p, 0) max e)
+      },
+      Positive
+    )
 
   def unary_-(): Factors = Factors(factors, -sign)
 
-  def +(rhs: Factors): Factors = Factors(lhs.value + rhs.value)
+  def +(rhs: Factors): Factors  = Factors(lhs.value + rhs.value)
   def +(rhs: SafeLong): Factors = Factors(lhs.value + rhs)
 
-  def -(rhs: Factors): Factors = Factors(lhs.value - rhs.value)
+  def -(rhs: Factors): Factors  = Factors(lhs.value - rhs.value)
   def -(rhs: SafeLong): Factors = Factors(lhs.value - rhs)
 
   def *(rhs: Factors): Factors =
@@ -105,8 +112,9 @@ case class Factors(factors: Map[SafeLong, Int], sign: Sign)
   def *(rhs: SafeLong): Factors =
     lhs * Factors(rhs)
 
-  private[prime] def qm(rhs: Factors)
-    : (Int, Map[SafeLong, Int], Map[SafeLong, Int], Map[SafeLong, Int]) = {
+  private[prime] def qm(
+      rhs: Factors
+  ): (Int, Map[SafeLong, Int], Map[SafeLong, Int], Map[SafeLong, Int]) = {
     val sign = (lhs.sign * rhs.sign).toInt
     val (nn, dd) =
       (lhs.factors - rhs.factors).filter(_._2 != 0).partition(_._2 > 0)
@@ -172,7 +180,7 @@ case class Factors(factors: Map[SafeLong, Int], sign: Sign)
     } else {
       val sign = lhs.sign match {
         case Negative if (rhs & 1) == 0 => Positive
-        case sign => sign
+        case sign                       => sign
       }
       Factors(lhs.factors.map { case (p, e) => (p, e * rhs) }, sign)
     }

@@ -28,7 +28,8 @@ import breeze.optimize.DiffFunction
  * @param numYes the probability of true
  */
 class Bernoulli(p: Double, rand: RandBasis = Rand)
-    extends DiscreteDistr[Boolean] with Moments[Double, Double] {
+    extends DiscreteDistr[Boolean]
+    with Moments[Double, Double] {
   require(p >= 0.0)
   require(p <= 1.0)
   def probabilityOf(b: Boolean) = if (b) p else (1 - p)
@@ -39,10 +40,10 @@ class Bernoulli(p: Double, rand: RandBasis = Rand)
 
   override def toString() = "Bernoulli(" + p + ")"
 
-  def mean = p
+  def mean     = p
   def variance = p * (1 - p)
-  def mode = I(p >= 0.5)
-  def entropy = -p * math.log(p) - (1 - p) * math.log1p(-p)
+  def mode     = I(p >= 0.5)
+  def entropy  = -p * math.log(p) - (1 - p) * math.log1p(-p)
 }
 
 object Bernoulli
@@ -80,10 +81,10 @@ object Bernoulli
   def likelihoodFunction(stats: SufficientStatistic) =
     new DiffFunction[Double] {
       val SufficientStatistic(yes, num) = stats
-      val no = num - yes
+      val no                            = num - yes
       def calculate(p: Double) = {
         import math._
-        val obj = yes * log(p) + no * log1p(-p)
+        val obj  = yes * log(p) + no * log1p(-p)
         val grad = yes / p - no / (1 - p)
         (-obj, -grad)
       }

@@ -17,7 +17,8 @@ trait PlusEmpty[F[_]] extends Plus[F] { self =>
 
   /**The product of PlusEmpty `F` and `G`, `[x](F[x], G[x]])`, is a PlusEmpty */
   def product[G[_]](
-      implicit G0: PlusEmpty[G]): PlusEmpty[λ[α => (F[α], G[α])]] =
+      implicit G0: PlusEmpty[G]
+  ): PlusEmpty[λ[α => (F[α], G[α])]] =
     new ProductPlusEmpty[F, G] {
       implicit def F = self
       implicit def G = G0
@@ -28,7 +29,7 @@ trait PlusEmpty[F[_]] extends Plus[F] { self =>
   def monoid[A]: Monoid[F[A]] =
     new Monoid[F[A]] {
       def append(f1: F[A], f2: => F[A]): F[A] = plus(f1, f2)
-      def zero: F[A] = empty[A]
+      def zero: F[A]                          = empty[A]
     }
 
   trait EmptyLaw extends PlusLaw {
@@ -53,13 +54,13 @@ object PlusEmpty {
 
   ////
   implicit def liftPlusEmpty[M[_], N[_]](
-      implicit M: Monad[M], P: PlusEmpty[N]): PlusEmpty[λ[α => M[N[α]]]] =
+      implicit M: Monad[M],
+      P: PlusEmpty[N]
+  ): PlusEmpty[λ[α => M[N[α]]]] =
     new PlusEmpty[λ[α => M[N[α]]]] {
       def empty[A] = M.point(P.empty[A])
       def plus[A](a: M[N[A]], b: => M[N[A]]): M[N[A]] =
-        M.bind(a) { a0 =>
-          M.map(b) { P.plus(a0, _) }
-        }
+        M.bind(a) { a0 => M.map(b) { P.plus(a0, _) } }
     }
   ////
 }

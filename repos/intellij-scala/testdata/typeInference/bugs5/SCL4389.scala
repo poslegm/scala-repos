@@ -1,7 +1,7 @@
 object SCL4389 {
   object Keys {
     val libraryDependencies: SettingKey[Seq[ModuleID]] = null
-    val scalaVersion: SettingKey[String] = null
+    val scalaVersion: SettingKey[String]               = null
   }
 
   class ModuleID

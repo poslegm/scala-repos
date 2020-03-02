@@ -11,7 +11,7 @@ package transform
 abstract class SampleTransform extends Transform {
   // inherits abstract value `global` and class `Phase` from Transform
 
-  import global._ // the global environment
+  import global._    // the global environment
   import typer.typed // method to type trees
 
   /** the following two members override abstract members in Transform */
@@ -32,18 +32,25 @@ abstract class SampleTransform extends Transform {
           // A hypothetical transformation, which replaces
           // {super} by {super.sample}
           treeCopy.Block(
-              // `copy` is the usual lazy tree copier
-              tree1,
-              defs,
-              typed( // `typed` assigns types to its tree argument
-                  atPos(tree1.pos)( // `atPos` fills in position of its tree argument
-                      Select(
-                          // The `Select` factory method is defined in class `Trees`
-                          sup,
-                          currentOwner.newValue(
-                              // creates a new term symbol owned by `currentowner`
-                              newTermName("sample"), // The standard term name creator
-                              tree1.pos)))))
+            // `copy` is the usual lazy tree copier
+            tree1,
+            defs,
+            typed( // `typed` assigns types to its tree argument
+              atPos(
+                tree1.pos
+              )( // `atPos` fills in position of its tree argument
+                Select(
+                  // The `Select` factory method is defined in class `Trees`
+                  sup,
+                  currentOwner.newValue(
+                    // creates a new term symbol owned by `currentowner`
+                    newTermName("sample"), // The standard term name creator
+                    tree1.pos
+                  )
+                )
+              )
+            )
+          )
         case _ =>
           tree1
       }

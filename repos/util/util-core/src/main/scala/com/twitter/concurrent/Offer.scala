@@ -51,7 +51,7 @@ trait Offer[+T] { self =>
     prepare() flatMap { tx =>
       tx.ack() flatMap {
         case Tx.Commit(v) => Future.value(v)
-        case Tx.Abort => sync()
+        case Tx.Abort     => sync()
       }
     }
 
@@ -74,7 +74,7 @@ trait Offer[+T] { self =>
         import Tx.{Commit, Abort}
         def ack() = tx.ack() map {
           case Commit(t) => Commit(f(t))
-          case Abort => Abort
+          case Abort     => Abort
         }
 
         def nack() { tx.nack() }
@@ -91,9 +91,7 @@ trait Offer[+T] { self =>
   /**
     * Like {{map}}, but to a constant (call-by-name).
     */
-  def const[U](f: => U): Offer[U] = map { _ =>
-    f
-  }
+  def const[U](f: => U): Offer[U] = map { _ => f }
 
   /**
     * Java-friendly analog of `const()`.
@@ -119,9 +117,7 @@ trait Offer[+T] { self =>
       val ourTx = self.prepare()
       if (ourTx.isDefined) ourTx
       else {
-        ourTx foreach { tx =>
-          tx.nack()
-        }
+        ourTx foreach { tx => tx.nack() }
         ourTx.raise(LostSynchronization)
         other.prepare()
       }
@@ -148,9 +144,7 @@ trait Offer[+T] { self =>
     * closure.  Convenient for loops.
     */
   def andThen(f: => Unit) {
-    sync() onSuccess { _ =>
-      f
-    }
+    sync() onSuccess { _ => f }
   }
 
   /**
@@ -223,16 +217,18 @@ object Offer {
     * Package-exposed for testing.
     */
   private[concurrent] def choose[T](
-      random: Option[Random], evs: Seq[Offer[T]]): Offer[T] = {
+      random: Option[Random],
+      evs: Seq[Offer[T]]
+  ): Offer[T] = {
     if (evs.isEmpty) Offer.never
     else
       new Offer[T] {
         def prepare(): Future[Tx[T]] = {
           // to avoid unnecessary allocations we do a bunch of manual looping and shuffling
           val inputSize = evs.size
-          val prepd = new Array[Future[Tx[T]]](inputSize)
-          val iter = evs.iterator
-          var i = 0
+          val prepd     = new Array[Future[Tx[T]]](inputSize)
+          val iter      = evs.iterator
+          var i         = 0
           while (i < inputSize) {
             prepd(i) = iter.next().prepare()
             i += 1
@@ -245,7 +241,7 @@ object Offer {
               while (i > 1) {
                 // i starts at evs.size
                 val nextPos = r.nextInt(i)
-                val tmp = prepd(i - 1)
+                val tmp     = prepd(i - 1)
                 prepd(i - 1) = prepd(nextPos)
                 prepd(nextPos) = tmp
                 i -= 1
@@ -260,15 +256,15 @@ object Offer {
           }
 
           def updateLosers(
-              winPos: Int, prepd: Array[Future[Tx[T]]]): Future[Tx[T]] = {
+              winPos: Int,
+              prepd: Array[Future[Tx[T]]]
+          ): Future[Tx[T]] = {
             val winner = prepd(winPos)
-            var j = 0
+            var j      = 0
             while (j < prepd.length) {
               val loser = prepd(j)
               if (loser ne winner) {
-                loser onSuccess { tx =>
-                  tx.nack()
-                }
+                loser onSuccess { tx => tx.nack() }
                 loser.raise(LostSynchronization)
               }
               j += 1
@@ -304,7 +300,7 @@ object Offer {
       def prepare() = {
         if (deadline <= Time.now) FutureTxUnit
         else {
-          val p = new Promise[Tx[Unit]]
+          val p    = new Promise[Tx[Unit]]
           val task = timer.schedule(deadline) { p.setValue(Tx.Unit) }
           p.setInterruptHandler { case _cause => task.cancel() }
           p

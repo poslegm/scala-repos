@@ -29,13 +29,13 @@ sealed abstract class RepresentableInstances {
   /** The identity representable. */
   implicit def readerRepresentable[E]: Representable[E => ?, E] =
     new Representable[E => ?, E] {
-      def rep[A](f: E => A) = f
+      def rep[A](f: E => A)   = f
       def unrep[A](f: E => A) = f
     }
 
   implicit def curryRepresentable[E]: Representable[E => ?, (E, Unit)] =
     new Representable[E => ?, (E, Unit)] {
-      def rep[A](f: ((E, Unit)) => A): E => A = e => f((e, ()))
+      def rep[A](f: ((E, Unit)) => A): E => A   = e => f((e, ()))
       def unrep[A](f: E => A): ((E, Unit)) => A = e => f(e._1)
     }
 

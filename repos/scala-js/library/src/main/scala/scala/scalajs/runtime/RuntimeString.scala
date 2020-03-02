@@ -23,12 +23,12 @@ private[runtime] object RuntimeString {
     */
   @js.native
   private trait SpecialJSStringOps extends js.Any {
-    def length: Int = js.native
+    def length: Int                 = js.native
     def charCodeAt(index: Int): Int = js.native
 
     def toLowerCase(): String = js.native
     def toUpperCase(): String = js.native
-    def trim(): String = js.native
+    def trim(): String        = js.native
   }
 
   private def specialJSStringOps(s: String): SpecialJSStringOps =
@@ -60,7 +60,7 @@ private[runtime] object RuntimeString {
     if (endIndex > thiz.length || beginIndex < 0 || endIndex < beginIndex)
       throw new IndexOutOfBoundsException
     var res = endIndex - beginIndex
-    var i = beginIndex
+    var i   = beginIndex
     val end = endIndex - 1
     while (i < end) {
       if (Character.isSurrogatePair(thiz.charAt(i), thiz.charAt(i + 1)))
@@ -73,7 +73,7 @@ private[runtime] object RuntimeString {
   def hashCode(thiz: String): Int = {
     var res = 0
     var mul = 1 // holds pow(31, length-i-1)
-    var i = thiz.length - 1
+    var i   = thiz.length - 1
     while (i >= 0) {
       res += thiz.charAt(i) * mul
       mul *= 31
@@ -86,7 +86,7 @@ private[runtime] object RuntimeString {
   def compareTo(thiz: String, anotherString: String): Int = {
     if (thiz.equals(anotherString)) 0
     else if ((thiz.asInstanceOf[js.Dynamic] < anotherString
-                   .asInstanceOf[js.Dynamic]).asInstanceOf[Boolean]) -1
+               .asInstanceOf[js.Dynamic]).asInstanceOf[Boolean]) -1
     else 1
   }
 
@@ -121,18 +121,20 @@ private[runtime] object RuntimeString {
     res
   }
 
-  def getChars(thiz: String,
-               srcBegin: Int,
-               srcEnd: Int,
-               dst: Array[Char],
-               dstBegin: Int): Unit = {
+  def getChars(
+      thiz: String,
+      srcBegin: Int,
+      srcEnd: Int,
+      dst: Array[Char],
+      dstBegin: Int
+  ): Unit = {
     if (srcEnd > thiz.length || // first test uses thiz
         srcBegin < 0 || srcEnd < 0 || srcBegin > srcEnd) {
       throw new StringIndexOutOfBoundsException("Index out of Bound")
     }
 
     val offset = dstBegin - srcBegin
-    var i = srcBegin
+    var i      = srcBegin
     while (i < srcEnd) {
       dst(i + offset) = thiz.charAt(i)
       i += 1
@@ -194,12 +196,14 @@ private[runtime] object RuntimeString {
   /* Both regionMatches ported from
    * https://github.com/gwtproject/gwt/blob/master/user/super/com/google/gwt/emul/java/lang/String.java
    */
-  def regionMatches(thiz: String,
-                    ignoreCase: Boolean,
-                    toffset: Int,
-                    other: String,
-                    ooffset: Int,
-                    len: Int): Boolean = {
+  def regionMatches(
+      thiz: String,
+      ignoreCase: Boolean,
+      toffset: Int,
+      other: String,
+      ooffset: Int,
+      len: Int
+  ): Boolean = {
     checkNull(thiz)
     if (other == null) {
       throw new NullPointerException()
@@ -209,18 +213,20 @@ private[runtime] object RuntimeString {
     } else if (len <= 0) {
       true
     } else {
-      val left = thiz.substring(toffset, toffset + len)
+      val left  = thiz.substring(toffset, toffset + len)
       val right = other.substring(ooffset, ooffset + len)
       if (ignoreCase) left.equalsIgnoreCase(right) else left == right
     }
   }
 
   @inline
-  def regionMatches(thiz: String,
-                    toffset: Int,
-                    other: String,
-                    ooffset: Int,
-                    len: Int): Boolean = {
+  def regionMatches(
+      thiz: String,
+      toffset: Int,
+      other: String,
+      ooffset: Int,
+      len: Int
+  ): Boolean = {
     regionMatches(thiz, false, toffset, other, ooffset, len)
   }
 
@@ -230,7 +236,10 @@ private[runtime] object RuntimeString {
 
   @inline
   def replace(
-      thiz: String, target: CharSequence, replacement: CharSequence): String =
+      thiz: String,
+      target: CharSequence,
+      replacement: CharSequence
+  ): String =
     thiz.jsSplit(target.toString).join(replacement.toString)
 
   def replaceAll(thiz: String, regex: String, replacement: String): String = {
@@ -259,7 +268,7 @@ private[runtime] object RuntimeString {
   @inline
   def startsWith(thiz: String, prefix: String, toffset: Int): Boolean = {
     (toffset <= thiz.length && toffset >= 0 &&
-        thiz.jsSubstring(toffset, toffset + prefix.length) == prefix)
+    thiz.jsSubstring(toffset, toffset + prefix.length) == prefix)
   }
 
   @inline
@@ -277,7 +286,7 @@ private[runtime] object RuntimeString {
   def toCharArray(thiz: String): Array[Char] = {
     val length = thiz.length
     val result = new Array[Char](length)
-    var i = 0
+    var i      = 0
     while (i < length) {
       result(i) = thiz.charAt(i)
       i += 1
@@ -310,7 +319,7 @@ private[runtime] object RuntimeString {
       throw new StringIndexOutOfBoundsException
 
     val charCodes = new js.Array[Int]
-    var i = offset
+    var i         = offset
     while (i != end) {
       charCodes += value(i).toInt
       i += 1
@@ -330,14 +339,20 @@ private[runtime] object RuntimeString {
   def newString(bytes: Array[Byte], offset: Int, length: Int): String =
     newString(bytes, offset, length, Charset.defaultCharset)
 
-  def newString(bytes: Array[Byte],
-                offset: Int,
-                length: Int,
-                charsetName: String): String =
+  def newString(
+      bytes: Array[Byte],
+      offset: Int,
+      length: Int,
+      charsetName: String
+  ): String =
     newString(bytes, offset, length, Charset.forName(charsetName))
 
   def newString(
-      bytes: Array[Byte], offset: Int, length: Int, charset: Charset): String =
+      bytes: Array[Byte],
+      offset: Int,
+      length: Int,
+      charset: Charset
+  ): String =
     charset.decode(ByteBuffer.wrap(bytes, offset, length)).toString()
 
   def newString(codePoints: Array[Int], offset: Int, count: Int): String = {
@@ -346,7 +361,7 @@ private[runtime] object RuntimeString {
       throw new StringIndexOutOfBoundsException
 
     val charCodes = new js.Array[Int]
-    var i = offset
+    var i         = offset
     while (i != end) {
       val cp = codePoints(i)
       if (cp < 0 || cp > Character.MAX_CODE_POINT)
@@ -375,13 +390,13 @@ private[runtime] object RuntimeString {
   // Static methods (aka methods on the companion object)
 
   def valueOf(value: Boolean): String = value.toString()
-  def valueOf(value: Char): String = value.toString()
-  def valueOf(value: Byte): String = value.toString()
-  def valueOf(value: Short): String = value.toString()
-  def valueOf(value: Int): String = value.toString()
-  def valueOf(value: Long): String = value.toString()
-  def valueOf(value: Float): String = value.toString()
-  def valueOf(value: Double): String = value.toString()
+  def valueOf(value: Char): String    = value.toString()
+  def valueOf(value: Byte): String    = value.toString()
+  def valueOf(value: Short): String   = value.toString()
+  def valueOf(value: Int): String     = value.toString()
+  def valueOf(value: Long): String    = value.toString()
+  def valueOf(value: Float): String   = value.toString()
+  def valueOf(value: Double): String  = value.toString()
 
   def valueOf(value: Object): String =
     if (value eq null) "null" else value.toString()

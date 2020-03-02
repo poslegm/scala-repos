@@ -177,8 +177,8 @@ class IntTest {
 object IntTest {
 
   // final val without type ascription to make sure these are constant-folded
-  final val MinVal = Int.MinValue
-  final val MaxVal = Int.MaxValue
+  final val MinVal       = Int.MinValue
+  final val MaxVal       = Int.MaxValue
   final val AlmostMinVal = Int.MinValue + 43
   final val AlmostMaxVal = Int.MaxValue - 36
 }

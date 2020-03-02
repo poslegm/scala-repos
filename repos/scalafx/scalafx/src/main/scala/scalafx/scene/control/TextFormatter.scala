@@ -46,7 +46,8 @@ object TextFormatter {
     * @return JavaFX TextFormatter
     */
   implicit def sfxTextFormatter2jfx[V](
-      v: TextFormatter[V]): jfxsc.TextFormatter[V] =
+      v: TextFormatter[V]
+  ): jfxsc.TextFormatter[V] =
     if (v != null) v.delegate else null
 
   /**
@@ -58,7 +59,8 @@ object TextFormatter {
 
   object Change {
     implicit def sfxTextFormatterChange2jfx[V](
-        v: Change): jfxsc.TextFormatter.Change =
+        v: Change
+    ): jfxsc.TextFormatter.Change =
       if (v != null) v.delegate else null
   }
 
@@ -196,11 +198,12 @@ object TextFormatter {
   }
 
   private def toUnaryOperator(
-      op: (TextFormatter.Change) => TextFormatter.Change)
-    : UnaryOperator[jfxsc.TextFormatter.Change] =
+      op: (TextFormatter.Change) => TextFormatter.Change
+  ): UnaryOperator[jfxsc.TextFormatter.Change] =
     new UnaryOperator[jfxsc.TextFormatter.Change] {
       override def apply(
-          a: jfxsc.TextFormatter.Change): jfxsc.TextFormatter.Change =
+          a: jfxsc.TextFormatter.Change
+      ): jfxsc.TextFormatter.Change =
         op(new TextFormatter.Change(a))
     }
 }
@@ -230,8 +233,9 @@ class TextFormatter[V](override val delegate: jfxsc.TextFormatter[V])
     * @param filter The filter that can modify the change.
     */
   def this(filter: (TextFormatter.Change) => TextFormatter.Change) =
-    this(delegate = new jfxsc.TextFormatter(
-              TextFormatter.toUnaryOperator(filter)))
+    this(
+      delegate = new jfxsc.TextFormatter(TextFormatter.toUnaryOperator(filter))
+    )
 
   /**
     * Creates a new Formatter with the provided filter, value converter and default value.
@@ -239,9 +243,11 @@ class TextFormatter[V](override val delegate: jfxsc.TextFormatter[V])
     * @param defaultValue the default value.
     * @param filter The filter to use in this formatter or null
     */
-  def this(valueConverter: jfxu.StringConverter[V],
-           defaultValue: V,
-           filter: UnaryOperator[jfxsc.TextFormatter.Change]) =
+  def this(
+      valueConverter: jfxu.StringConverter[V],
+      defaultValue: V,
+      filter: UnaryOperator[jfxsc.TextFormatter.Change]
+  ) =
     this(new jfxsc.TextFormatter(valueConverter, defaultValue, filter))
 
   /**
@@ -250,13 +256,18 @@ class TextFormatter[V](override val delegate: jfxsc.TextFormatter[V])
     * @param defaultValue the default value.
     * @param filter The filter that can modify the change.
     */
-  def this(valueConverter: jfxu.StringConverter[V],
-           defaultValue: V,
-           filter: (TextFormatter.Change) => TextFormatter.Change) =
+  def this(
+      valueConverter: jfxu.StringConverter[V],
+      defaultValue: V,
+      filter: (TextFormatter.Change) => TextFormatter.Change
+  ) =
     this(
-        new jfxsc.TextFormatter(valueConverter,
-                                defaultValue,
-                                TextFormatter.toUnaryOperator(filter)))
+      new jfxsc.TextFormatter(
+        valueConverter,
+        defaultValue,
+        TextFormatter.toUnaryOperator(filter)
+      )
+    )
 
   /**
     * Creates a new Formatter with the provided value converter and default value.
@@ -288,5 +299,5 @@ class TextFormatter[V](override val delegate: jfxsc.TextFormatter[V])
     * `valueConverter`, the value is set by the control, when the text is committed.
     */
   def value: ObjectProperty[V] = delegate.valueProperty
-  def value_=(v: V): Unit = { delegate.valueProperty.setValue(v) }
+  def value_=(v: V): Unit      = { delegate.valueProperty.setValue(v) }
 }

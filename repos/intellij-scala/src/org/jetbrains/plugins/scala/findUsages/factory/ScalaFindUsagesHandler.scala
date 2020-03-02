@@ -3,7 +3,11 @@ package findUsages.factory
 
 import java.util
 
-import com.intellij.find.findUsages.{AbstractFindUsagesDialog, FindUsagesHandler, FindUsagesOptions}
+import com.intellij.find.findUsages.{
+  AbstractFindUsagesDialog,
+  FindUsagesHandler,
+  FindUsagesOptions
+}
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi._
@@ -16,8 +20,16 @@ import org.jetbrains.plugins.scala.lang.psi.ScalaPsiUtil
 import org.jetbrains.plugins.scala.lang.psi.api.base.ScPrimaryConstructor
 import org.jetbrains.plugins.scala.lang.psi.api.base.patterns.ScCaseClause
 import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScEnumerator, ScGenerator}
-import org.jetbrains.plugins.scala.lang.psi.api.statements.params.{ScParameter, ScTypeParam}
-import org.jetbrains.plugins.scala.lang.psi.api.statements.{ScFunction, ScTypeAlias, ScValue, ScVariable}
+import org.jetbrains.plugins.scala.lang.psi.api.statements.params.{
+  ScParameter,
+  ScTypeParam
+}
+import org.jetbrains.plugins.scala.lang.psi.api.statements.{
+  ScFunction,
+  ScTypeAlias,
+  ScValue,
+  ScVariable
+}
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.ScTypedDefinition
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef._
 import org.jetbrains.plugins.scala.lang.psi.impl.search.ScalaOverridingMemberSearcher
@@ -31,12 +43,14 @@ import _root_.scala.collection.mutable
   * Date: 17.08.2009
   */
 class ScalaFindUsagesHandler(
-    element: PsiElement, factory: ScalaFindUsagesHandlerFactory)
-    extends FindUsagesHandler(element) {
+    element: PsiElement,
+    factory: ScalaFindUsagesHandlerFactory
+) extends FindUsagesHandler(element) {
 
   override def getPrimaryElements: Array[PsiElement] = Array(element)
   override def getStringsToSearch(
-      element: PsiElement): util.Collection[String] = {
+      element: PsiElement
+  ): util.Collection[String] = {
     val result: util.Set[String] = new util.HashSet[String]()
     element match {
       case t: ScTrait =>
@@ -45,7 +59,7 @@ class ScalaFindUsagesHandler(
         result.add(t.fakeCompanionClass.getName)
         t.fakeCompanionModule match {
           case Some(o) => result.add(o.getName)
-          case _ =>
+          case _       =>
         }
       case o: ScObject =>
         result.add(o.name)
@@ -54,7 +68,7 @@ class ScalaFindUsagesHandler(
         result.add(c.name)
         c.fakeCompanionModule match {
           case Some(o) => result.add(o.getName)
-          case _ =>
+          case _       =>
         }
       case named: PsiNamedElement =>
         val name = named.name
@@ -78,13 +92,15 @@ class ScalaFindUsagesHandler(
   }
 
   override def getFindUsagesOptions(
-      dataContext: DataContext): FindUsagesOptions = {
+      dataContext: DataContext
+  ): FindUsagesOptions = {
     element match {
       case t: ScTypeDefinition => factory.typeDefinitionOptions
       case ScalaPsiUtil.inNameContext(m: ScMember) if !m.isLocal =>
         factory.memberOptions
       case _: ScParameter | _: ScTypeParam | ScalaPsiUtil.inNameContext(
-          _: ScMember | _: ScCaseClause | _: ScGenerator | _: ScEnumerator) =>
+            _: ScMember | _: ScCaseClause | _: ScGenerator | _: ScEnumerator
+          ) =>
         factory.localOptions
       case _ => super.getFindUsagesOptions(dataContext)
     }
@@ -95,14 +111,14 @@ class ScalaFindUsagesHandler(
       case t: ScObject =>
         t.fakeCompanionClass match {
           case Some(clazz) => Array(clazz)
-          case _ => Array.empty
+          case _           => Array.empty
         }
       case t: ScTrait => Array(t.fakeCompanionClass)
       case f: ScFunction
           if Seq("apply", "unapply", "unapplySeq").contains(f.name) =>
         f.containingClass match {
           case obj: ScObject if obj.isSyntheticObject => Array(obj)
-          case _ => Array.empty
+          case _                                      => Array.empty
         }
       case t: ScTypedDefinition =>
         t.getBeanMethods.toArray ++ {
@@ -116,12 +132,14 @@ class ScalaFindUsagesHandler(
               Array(IS_GETTER, SETTER)
             case _ => Array.empty
           }
-          a.map(
-              role =>
-                t.getTypedDefinitionWrapper(isStatic = false,
-                                            isInterface = false,
-                                            role = role,
-                                            cClass = None))
+          a.map(role =>
+            t.getTypedDefinitionWrapper(
+              isStatic = false,
+              isInterface = false,
+              role = role,
+              cClass = None
+            )
+          )
         }
       case _ => Array.empty
     }
@@ -130,25 +148,33 @@ class ScalaFindUsagesHandler(
   override def getFindUsagesDialog(
       isSingleFile: Boolean,
       toShowInNewTab: Boolean,
-      mustOpenInNewTab: Boolean): AbstractFindUsagesDialog = {
+      mustOpenInNewTab: Boolean
+  ): AbstractFindUsagesDialog = {
     element match {
       case t: ScTypeDefinition =>
-        new ScalaTypeDefinitionUsagesDialog(t,
-                                            getProject,
-                                            getFindUsagesOptions,
-                                            toShowInNewTab,
-                                            mustOpenInNewTab,
-                                            isSingleFile,
-                                            this)
+        new ScalaTypeDefinitionUsagesDialog(
+          t,
+          getProject,
+          getFindUsagesOptions,
+          toShowInNewTab,
+          mustOpenInNewTab,
+          isSingleFile,
+          this
+        )
       case _ =>
         super.getFindUsagesDialog(
-            isSingleFile, toShowInNewTab, mustOpenInNewTab)
+          isSingleFile,
+          toShowInNewTab,
+          mustOpenInNewTab
+        )
     }
   }
 
-  override def processUsagesInText(element: PsiElement,
-                                   processor: Processor[UsageInfo],
-                                   searchScope: GlobalSearchScope): Boolean = {
+  override def processUsagesInText(
+      element: PsiElement,
+      processor: Processor[UsageInfo],
+      searchScope: GlobalSearchScope
+  ): Boolean = {
     val nonScalaTextProcessor = new Processor[UsageInfo] {
       override def process(t: UsageInfo): Boolean = {
         if (t.getFile.getFileType == ScalaFileType.SCALA_FILE_TYPE) true
@@ -158,9 +184,11 @@ class ScalaFindUsagesHandler(
     super.processUsagesInText(element, nonScalaTextProcessor, searchScope)
   }
 
-  override def processElementUsages(element: PsiElement,
-                                    processor: Processor[UsageInfo],
-                                    options: FindUsagesOptions): Boolean = {
+  override def processElementUsages(
+      element: PsiElement,
+      processor: Processor[UsageInfo],
+      options: FindUsagesOptions
+  ): Boolean = {
     if (!super.processElementUsages(element, processor, options)) return false
     options match {
       case s: ScalaTypeDefinitionFindUsagesOptions
@@ -218,12 +246,11 @@ class ScalaFindUsagesHandler(
           val res = new mutable.HashSet[PsiClass]()
           ClassInheritorsSearch
             .search(clazz, true)
-            .forEach(
-                new Processor[PsiClass] {
+            .forEach(new Processor[PsiClass] {
               def process(t: PsiClass): Boolean = {
                 t match {
                   case p: PsiClassWrapper =>
-                  case _ => res += t
+                  case _                  => res += t
                 }
                 true
               }
@@ -240,7 +267,9 @@ class ScalaFindUsagesHandler(
       element match {
         case function: ScFunction if !function.isLocal =>
           for (elem <- ScalaOverridingMemberSearcher.search(
-              function, deep = true)) {
+                        function,
+                        deep = true
+                      )) {
             val processed =
               super.processElementUsages(elem, processor, options)
             if (!processed) return false
@@ -252,5 +281,7 @@ class ScalaFindUsagesHandler(
   }
 
   override def isSearchForTextOccurencesAvailable(
-      psiElement: PsiElement, isSingleFile: Boolean): Boolean = !isSingleFile
+      psiElement: PsiElement,
+      isSingleFile: Boolean
+  ): Boolean = !isSingleFile
 }

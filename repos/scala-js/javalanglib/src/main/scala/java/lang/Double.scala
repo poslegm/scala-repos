@@ -13,11 +13,11 @@ final class Double private () extends Number with Comparable[Double] {
   @inline def doubleValue(): scala.Double =
     this.asInstanceOf[scala.Double]
 
-  @inline override def byteValue(): scala.Byte = doubleValue.toByte
+  @inline override def byteValue(): scala.Byte   = doubleValue.toByte
   @inline override def shortValue(): scala.Short = doubleValue.toShort
-  @inline def intValue(): scala.Int = doubleValue.toInt
-  @inline def longValue(): scala.Long = doubleValue.toLong
-  @inline def floatValue(): scala.Float = doubleValue.toFloat
+  @inline def intValue(): scala.Int              = doubleValue.toInt
+  @inline def longValue(): scala.Long            = doubleValue.toLong
+  @inline def floatValue(): scala.Float          = doubleValue.toFloat
 
   override def equals(that: Any): scala.Boolean = that match {
     case that: Double =>
@@ -45,15 +45,15 @@ final class Double private () extends Number with Comparable[Double] {
 }
 
 object Double {
-  final val TYPE = classOf[scala.Double]
+  final val TYPE              = classOf[scala.Double]
   final val POSITIVE_INFINITY = 1.0 / 0.0
   final val NEGATIVE_INFINITY = 1.0 / -0.0
-  final val NaN = 0.0 / 0.0
-  final val MAX_VALUE = scala.Double.MaxValue
-  final val MIN_VALUE = scala.Double.MinPositiveValue
-  final val MAX_EXPONENT = 1023
-  final val MIN_EXPONENT = -1022
-  final val SIZE = 64
+  final val NaN               = 0.0 / 0.0
+  final val MAX_VALUE         = scala.Double.MaxValue
+  final val MIN_VALUE         = scala.Double.MinPositiveValue
+  final val MAX_EXPONENT      = 1023
+  final val MIN_EXPONENT      = -1022
+  final val SIZE              = 64
 
   @inline def valueOf(doubleValue: scala.Double): Double =
     new Double(doubleValue)
@@ -61,15 +61,16 @@ object Double {
   @inline def valueOf(s: String): Double = valueOf(parseDouble(s))
 
   private[this] lazy val doubleStrPat = new js.RegExp(
-      "^" + "[\\x00-\\x20]*" + // optional whitespace
-      "[+-]?" + // optional sign
-      "(NaN|Infinity|" + // special cases
-      "(\\d+\\.?\\d*|" + // literal w/  leading digit
-      "\\.\\d+)" + // literal w/o leading digit
-      "([eE][+-]?\\d+)?" + // optional exponent
-      ")[fFdD]?" + // optional float / double specifier (ignored)
-      "[\\x00-\\x20]*" + // optional whitespace
-      "$")
+    "^" + "[\\x00-\\x20]*" + // optional whitespace
+      "[+-]?" +              // optional sign
+      "(NaN|Infinity|" +     // special cases
+      "(\\d+\\.?\\d*|" +     // literal w/  leading digit
+      "\\.\\d+)" +           // literal w/o leading digit
+      "([eE][+-]?\\d+)?" +   // optional exponent
+      ")[fFdD]?" +           // optional float / double specifier (ignored)
+      "[\\x00-\\x20]*" +     // optional whitespace
+      "$"
+  )
 
   def parseDouble(s: String): scala.Double = {
     if (doubleStrPat.test(s))

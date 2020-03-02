@@ -5,12 +5,12 @@ import scala.tools.reflect.ToolBox
 
 object Test extends App {
   val code = reify {
-    val x = 2
+    val x     = 2
     val inner = reify { x }
     inner.splice
   };
 
-  val toolbox = cm.mkToolBox()
+  val toolbox   = cm.mkToolBox()
   val evaluated = toolbox.eval(code.tree)
   println("evaluated = " + evaluated)
 }

@@ -20,7 +20,8 @@ import java.nio.ByteBuffer
 import kafka.cluster.BrokerEndPoint
 
 class GroupCoordinatorResponse(
-    private val underlying: kafka.api.GroupCoordinatorResponse) {
+    private val underlying: kafka.api.GroupCoordinatorResponse
+) {
 
   def errorCode = underlying.errorCode
 
@@ -46,5 +47,6 @@ class GroupCoordinatorResponse(
 object GroupCoordinatorResponse {
   def readFrom(buffer: ByteBuffer) =
     new GroupCoordinatorResponse(
-        kafka.api.GroupCoordinatorResponse.readFrom(buffer))
+      kafka.api.GroupCoordinatorResponse.readFrom(buffer)
+    )
 }

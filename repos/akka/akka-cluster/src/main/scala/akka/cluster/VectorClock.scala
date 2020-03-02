@@ -28,21 +28,19 @@ private[cluster] object VectorClock {
     private def hash(name: String): String = {
       val digester = MessageDigest.getInstance("MD5")
       digester update name.getBytes("UTF-8")
-      digester.digest.map { h ⇒
-        "%02x".format(0xFF & h)
-      }.mkString
+      digester.digest.map { h ⇒ "%02x".format(0xFF & h) }.mkString
     }
   }
 
   object Timestamp {
-    final val Zero = 0L
+    final val Zero      = 0L
     final val EndMarker = Long.MinValue
   }
 
   sealed trait Ordering
-  case object After extends Ordering
-  case object Before extends Ordering
-  case object Same extends Ordering
+  case object After      extends Ordering
+  case object Before     extends Ordering
+  case object Same       extends Ordering
   case object Concurrent extends Ordering
 
   /**
@@ -70,7 +68,8 @@ private[cluster] object VectorClock {
 @SerialVersionUID(1L)
 final case class VectorClock(
     versions: TreeMap[VectorClock.Node, Long] = TreeMap
-        .empty[VectorClock.Node, Long]) {
+      .empty[VectorClock.Node, Long]
+) {
 
   import VectorClock._
 
@@ -115,17 +114,23 @@ final case class VectorClock(
     * If you send in the ordering FullOrder, you will get a full comparison.
     */
   private final def compareOnlyTo(
-      that: VectorClock, order: Ordering): Ordering = {
+      that: VectorClock,
+      order: Ordering
+  ): Ordering = {
     def nextOrElse[T](iter: Iterator[T], default: T): T =
       if (iter.hasNext) iter.next() else default
 
-    def compare(i1: Iterator[(Node, Long)],
-                i2: Iterator[(Node, Long)],
-                requestedOrder: Ordering): Ordering = {
+    def compare(
+        i1: Iterator[(Node, Long)],
+        i2: Iterator[(Node, Long)],
+        requestedOrder: Ordering
+    ): Ordering = {
       @tailrec
-      def compareNext(nt1: (Node, Long),
-                      nt2: (Node, Long),
-                      currentOrder: Ordering): Ordering =
+      def compareNext(
+          nt1: (Node, Long),
+          nt2: (Node, Long),
+          currentOrder: Ordering
+      ): Ordering =
         if ((requestedOrder ne FullOrder) && (currentOrder ne Same) &&
             (currentOrder ne requestedOrder)) currentOrder
         else if ((nt1 eq cmpEndMarker) && (nt2 eq cmpEndMarker)) currentOrder
@@ -143,23 +148,29 @@ final case class VectorClock(
             // both nodes exist compare the timestamps
             // same timestamp so just continue with the next nodes
             if (nt1._2 == nt2._2)
-              compareNext(nextOrElse(i1, cmpEndMarker),
-                          nextOrElse(i2, cmpEndMarker),
-                          currentOrder)
+              compareNext(
+                nextOrElse(i1, cmpEndMarker),
+                nextOrElse(i2, cmpEndMarker),
+                currentOrder
+              )
             else if (nt1._2 < nt2._2) {
               // t1 is less than t2, so i1 can only be Before
               if (currentOrder eq After) Concurrent
               else
-                compareNext(nextOrElse(i1, cmpEndMarker),
-                            nextOrElse(i2, cmpEndMarker),
-                            Before)
+                compareNext(
+                  nextOrElse(i1, cmpEndMarker),
+                  nextOrElse(i2, cmpEndMarker),
+                  Before
+                )
             } else {
               // t2 is less than t1, so i1 can only be After
               if (currentOrder eq Before) Concurrent
               else
-                compareNext(nextOrElse(i1, cmpEndMarker),
-                            nextOrElse(i2, cmpEndMarker),
-                            After)
+                compareNext(
+                  nextOrElse(i1, cmpEndMarker),
+                  nextOrElse(i2, cmpEndMarker),
+                  After
+                )
             }
           } else if (nc < 0) {
             // this node only exists in i1 so i1 can only be After
@@ -173,14 +184,19 @@ final case class VectorClock(
         }
 
       compareNext(
-          nextOrElse(i1, cmpEndMarker), nextOrElse(i2, cmpEndMarker), Same)
+        nextOrElse(i1, cmpEndMarker),
+        nextOrElse(i2, cmpEndMarker),
+        Same
+      )
     }
 
     if ((this eq that) || (this.versions eq that.versions)) Same
     else
-      compare(this.versions.iterator,
-              that.versions.iterator,
-              if (order eq Concurrent) FullOrder else order)
+      compare(
+        this.versions.iterator,
+        that.versions.iterator,
+        if (order eq Concurrent) FullOrder else order
+      )
   }
 
   /**
@@ -216,6 +232,7 @@ final case class VectorClock(
     else this
 
   override def toString =
-    versions.map { case ((n, t)) ⇒ n + " -> " + t }
+    versions
+      .map { case ((n, t)) ⇒ n + " -> " + t }
       .mkString("VectorClock(", ", ", ")")
 }

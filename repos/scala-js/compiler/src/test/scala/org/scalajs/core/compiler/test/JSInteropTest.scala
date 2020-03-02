@@ -96,8 +96,8 @@ class JSInteropTest extends DirectTest with TestHelpers {
   def noInnerClassTraitObject: Unit = {
 
     for {
-      outer <- Seq("class", "trait")
-      inner <- Seq("class", "trait", "object")
+      outer           <- Seq("class", "trait")
+      inner           <- Seq("class", "trait", "object")
       innerSJSDefined <- Seq(false, true)
     } yield {
       val innerLine =
@@ -291,8 +291,8 @@ class JSInteropTest extends DirectTest with TestHelpers {
     val inners = List("trait", "class", "object")
 
     for {
-      outer <- outers
-      inner <- inners
+      outer           <- outers
+      inner           <- inners
       outerSJSDefined <- Seq(false, true)
     } yield {
       val outerLine =

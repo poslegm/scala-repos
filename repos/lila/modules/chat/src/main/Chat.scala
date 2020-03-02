@@ -27,21 +27,24 @@ case class MixedChat(id: ChatId, lines: List[Line]) extends Chat[Line] {
 
   def forUser(u: Option[User]) =
     u.??(_.troll)
-      .fold(this, copy(lines = lines filter {
-        case l: UserLine => !l.troll
-        case l: PlayerLine => true
-      }))
+      .fold(
+        this,
+        copy(lines = lines filter {
+          case l: UserLine   => !l.troll
+          case l: PlayerLine => true
+        })
+      )
 }
 
 object Chat {
 
   import lila.db.BSON
 
-  def makeUser(id: ChatId) = UserChat(id, Nil)
+  def makeUser(id: ChatId)  = UserChat(id, Nil)
   def makeMixed(id: ChatId) = MixedChat(id, Nil)
 
   object BSONFields {
-    val id = "_id"
+    val id    = "_id"
     val lines = "l"
   }
 

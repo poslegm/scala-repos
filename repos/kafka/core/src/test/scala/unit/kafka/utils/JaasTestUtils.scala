@@ -20,19 +20,19 @@ object JaasTestUtils {
   // ZooKeeper vals
   val zkServerContextName = "Server"
   val zkClientContextName = "Client"
-  val userSuperPasswd = "adminpasswd"
-  val user = "fpj"
-  val userPasswd = "fpjsecret"
-  val zkModule = "org.apache.zookeeper.server.auth.DigestLoginModule"
+  val userSuperPasswd     = "adminpasswd"
+  val user                = "fpj"
+  val userPasswd          = "fpjsecret"
+  val zkModule            = "org.apache.zookeeper.server.auth.DigestLoginModule"
   //Kafka vals
   val kafkaServerContextName = "KafkaServer"
   val kafkaClientContextName = "KafkaClient"
-  val kafkaServerPrincipal = "client@EXAMPLE.COM"
-  val kafkaClientPrincipal = "kafka/localhost@EXAMPLE.COM"
-  val kafkaModule = "com.sun.security.auth.module.Krb5LoginModule"
+  val kafkaServerPrincipal   = "client@EXAMPLE.COM"
+  val kafkaClientPrincipal   = "kafka/localhost@EXAMPLE.COM"
+  val kafkaModule            = "com.sun.security.auth.module.Krb5LoginModule"
 
   def genZkFile: String = {
-    val jaasFile = java.io.File.createTempFile("jaas", ".conf")
+    val jaasFile         = java.io.File.createTempFile("jaas", ".conf")
     val jaasOutputStream = new java.io.FileOutputStream(jaasFile)
     writeZkToOutputStream(jaasOutputStream)
     jaasOutputStream.close()
@@ -41,7 +41,7 @@ object JaasTestUtils {
   }
 
   def genKafkaFile(keytabLocation: String): String = {
-    val jaasFile = java.io.File.createTempFile("jaas", ".conf")
+    val jaasFile         = java.io.File.createTempFile("jaas", ".conf")
     val jaasOutputStream = new java.io.FileOutputStream(jaasFile)
     writeKafkaToOutputStream(jaasOutputStream, keytabLocation)
     jaasOutputStream.close()
@@ -50,7 +50,7 @@ object JaasTestUtils {
   }
 
   def genZkAndKafkaFile(keytabLocation: String): String = {
-    val jaasFile = java.io.File.createTempFile("jaas", ".conf")
+    val jaasFile         = java.io.File.createTempFile("jaas", ".conf")
     val jaasOutputStream = new java.io.FileOutputStream(jaasFile)
     writeKafkaToOutputStream(jaasOutputStream, keytabLocation)
     jaasOutputStream.write("\n\n".getBytes)
@@ -61,34 +61,43 @@ object JaasTestUtils {
   }
 
   private def writeZkToOutputStream(
-      jaasOutputStream: java.io.FileOutputStream) {
+      jaasOutputStream: java.io.FileOutputStream
+  ) {
     jaasOutputStream.write(
-        s"$zkServerContextName {\n\t$zkModule required\n".getBytes)
+      s"$zkServerContextName {\n\t$zkModule required\n".getBytes
+    )
     jaasOutputStream.write(s"""\tuser_super="$userSuperPasswd"\n""".getBytes)
     jaasOutputStream.write(s"""\tuser_$user="$userPasswd";\n};\n\n""".getBytes)
     jaasOutputStream.write(
-        s"""$zkClientContextName {\n\t$zkModule required\n""".getBytes)
+      s"""$zkClientContextName {\n\t$zkModule required\n""".getBytes
+    )
     jaasOutputStream.write(s"""\tusername="$user"\n""".getBytes)
     jaasOutputStream.write(s"""\tpassword="$userPasswd";\n};""".getBytes)
   }
 
   private def writeKafkaToOutputStream(
-      jaasOutputStream: java.io.FileOutputStream, keytabLocation: String) {
+      jaasOutputStream: java.io.FileOutputStream,
+      keytabLocation: String
+  ) {
     jaasOutputStream.write(
-        s"$kafkaClientContextName {\n\t$kafkaModule required debug=true\n".getBytes)
+      s"$kafkaClientContextName {\n\t$kafkaModule required debug=true\n".getBytes
+    )
     jaasOutputStream.write(s"\tuseKeyTab=true\n".getBytes)
     jaasOutputStream.write(s"\tstoreKey=true\n".getBytes)
     jaasOutputStream.write(s"""\tserviceName="kafka"\n""".getBytes)
     jaasOutputStream.write(s"""\tkeyTab="$keytabLocation"\n""".getBytes)
     jaasOutputStream.write(
-        s"""\tprincipal="$kafkaServerPrincipal";\n};\n\n""".getBytes)
+      s"""\tprincipal="$kafkaServerPrincipal";\n};\n\n""".getBytes
+    )
     jaasOutputStream.write(
-        s"""$kafkaServerContextName {\n\t$kafkaModule required debug=true\n""".getBytes)
+      s"""$kafkaServerContextName {\n\t$kafkaModule required debug=true\n""".getBytes
+    )
     jaasOutputStream.write(s"\tuseKeyTab=true\n".getBytes)
     jaasOutputStream.write(s"\tstoreKey=true\n".getBytes)
     jaasOutputStream.write(s"""\tserviceName="kafka"\n""".getBytes)
     jaasOutputStream.write(s"""\tkeyTab="$keytabLocation"\n""".getBytes)
     jaasOutputStream.write(
-        s"""\tprincipal="$kafkaClientPrincipal";\n};""".getBytes)
+      s"""\tprincipal="$kafkaClientPrincipal";\n};""".getBytes
+    )
   }
 }

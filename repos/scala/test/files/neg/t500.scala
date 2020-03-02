@@ -5,7 +5,7 @@ object Magic {
   }
   def magic[X, Y](v: X): Y = {
     val o: O[X, Y] = null;
-    val i: o.I = new o.I();
+    val i: o.I     = new o.I();
     i.magic(v);
   }
 }

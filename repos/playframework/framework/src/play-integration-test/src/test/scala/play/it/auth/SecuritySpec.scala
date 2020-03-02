@@ -14,14 +14,12 @@ object SecuritySpec extends PlaySpecification {
 
   "AuthenticatedBuilder" should {
     "block unauthenticated requests" in withApplication {
-      status(TestAction { req =>
-        Results.Ok(req.user)
-      }(FakeRequest())) must_== UNAUTHORIZED
+      status(TestAction { req => Results.Ok(req.user) }(FakeRequest())) must_== UNAUTHORIZED
     }
     "allow authenticated requests" in withApplication {
-      val result = TestAction { req =>
-        Results.Ok(req.user)
-      }(FakeRequest().withSession("username" -> "john"))
+      val result = TestAction { req => Results.Ok(req.user) }(
+        FakeRequest().withSession("username" -> "john")
+      )
       status(result) must_== OK
       contentAsString(result) must_== "john"
     }
@@ -42,19 +40,27 @@ object SecuritySpec extends PlaySpecification {
     req.session.get("user") map (User(_))
 
   class AuthenticatedDbRequest[A](
-      val user: User, val conn: Connection, request: Request[A])
-      extends WrappedRequest[A](request)
+      val user: User,
+      val conn: Connection,
+      request: Request[A]
+  ) extends WrappedRequest[A](request)
 
   object Authenticated extends ActionBuilder[AuthenticatedDbRequest] {
     def invokeBlock[A](
         request: Request[A],
-        block: (AuthenticatedDbRequest[A]) => Future[Result]) = {
+        block: (AuthenticatedDbRequest[A]) => Future[Result]
+    ) = {
       AuthenticatedBuilder(req => getUserFromRequest(req))
-        .authenticate(request, { authRequest: AuthenticatedRequest[A, User] =>
-        DB.withConnection { conn =>
-          block(new AuthenticatedDbRequest[A](authRequest.user, conn, request))
-        }
-      })
+        .authenticate(
+          request,
+          { authRequest: AuthenticatedRequest[A, User] =>
+            DB.withConnection { conn =>
+              block(
+                new AuthenticatedDbRequest[A](authRequest.user, conn, request)
+              )
+            }
+          }
+        )
     }
   }
 

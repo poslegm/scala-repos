@@ -28,7 +28,7 @@ class ComparatorTestOnJDK8 {
     }
 
     val comparator = new IntComparator
-    val reversed = comparator.reversed()
+    val reversed   = comparator.reversed()
 
     assertEquals(0, reversed.compare(5, 5))
     assertTrue(reversed.compare(3, 1) < 0)

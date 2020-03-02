@@ -22,20 +22,24 @@ import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
 import scala.collection.mutable.ArrayBuffer
 
 import org.apache.spark.internal.Logging
-import org.apache.spark.streaming.dstream.{DStream, InputDStream, ReceiverInputDStream}
+import org.apache.spark.streaming.dstream.{
+  DStream,
+  InputDStream,
+  ReceiverInputDStream
+}
 import org.apache.spark.streaming.scheduler.Job
 import org.apache.spark.util.Utils
 
 final private[streaming] class DStreamGraph extends Serializable with Logging {
 
-  private val inputStreams = new ArrayBuffer[InputDStream[_]]()
+  private val inputStreams  = new ArrayBuffer[InputDStream[_]]()
   private val outputStreams = new ArrayBuffer[DStream[_]]()
 
   var rememberDuration: Duration = null
-  var checkpointInProgress = false
+  var checkpointInProgress       = false
 
-  var zeroTime: Time = null
-  var startTime: Time = null
+  var zeroTime: Time          = null
+  var startTime: Time         = null
   var batchDuration: Duration = null
 
   def start(time: Time) {
@@ -69,8 +73,9 @@ final private[streaming] class DStreamGraph extends Serializable with Logging {
   def setBatchDuration(duration: Duration) {
     this.synchronized {
       require(
-          batchDuration == null,
-          s"Batch duration already set as $batchDuration. Cannot set it again.")
+        batchDuration == null,
+        s"Batch duration already set as $batchDuration. Cannot set it again."
+      )
       batchDuration = duration
     }
   }
@@ -78,8 +83,9 @@ final private[streaming] class DStreamGraph extends Serializable with Logging {
   def remember(duration: Duration) {
     this.synchronized {
       require(
-          rememberDuration == null,
-          s"Remember duration already set as $rememberDuration. Cannot set it again.")
+        rememberDuration == null,
+        s"Remember duration already set as $rememberDuration. Cannot set it again."
+      )
       rememberDuration = duration
     }
   }
@@ -168,8 +174,10 @@ final private[streaming] class DStreamGraph extends Serializable with Logging {
       require(batchDuration != null, "Batch duration has not been set")
       // assert(batchDuration >= Milliseconds(100), "Batch duration of " + batchDuration +
       // " is very low")
-      require(getOutputStreams().nonEmpty,
-              "No output operations registered, so nothing to execute")
+      require(
+        getOutputStreams().nonEmpty,
+        "No output operations registered, so nothing to execute"
+      )
     }
   }
 

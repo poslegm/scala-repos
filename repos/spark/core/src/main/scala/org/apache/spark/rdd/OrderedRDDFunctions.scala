@@ -42,9 +42,11 @@ import org.apache.spark.internal.Logging
   *   rdd.sortByKey()
   * }}}
   */
-class OrderedRDDFunctions[K : Ordering : ClassTag, V : ClassTag, P <: Product2[
-        K, V]: ClassTag] @DeveloperApi()(self: RDD[P])
-    extends Logging with Serializable {
+class OrderedRDDFunctions[
+    K: Ordering: ClassTag, V: ClassTag, P <: Product2[K, V]: ClassTag
+] @DeveloperApi() (self: RDD[P])
+    extends Logging
+    with Serializable {
   private val ordering = implicitly[Ordering[K]]
 
   /**
@@ -54,8 +56,10 @@ class OrderedRDDFunctions[K : Ordering : ClassTag, V : ClassTag, P <: Product2[
     * order of the keys).
     */
   // TODO: this currently doesn't work on P other than Tuple2!
-  def sortByKey(ascending: Boolean = true,
-                numPartitions: Int = self.partitions.length): RDD[(K, V)] =
+  def sortByKey(
+      ascending: Boolean = true,
+      numPartitions: Int = self.partitions.length
+  ): RDD[(K, V)] =
     self.withScope {
       val part = new RangePartitioner(numPartitions, self, ascending)
       new ShuffledRDD[K, V, V](self, part)
@@ -70,7 +74,8 @@ class OrderedRDDFunctions[K : Ordering : ClassTag, V : ClassTag, P <: Product2[
     * because it can push the sorting down into the shuffle machinery.
     */
   def repartitionAndSortWithinPartitions(
-      partitioner: Partitioner): RDD[(K, V)] = self.withScope {
+      partitioner: Partitioner
+  ): RDD[(K, V)] = self.withScope {
     new ShuffledRDD[K, V, V](self, partitioner).setKeyOrdering(ordering)
   }
 
@@ -87,12 +92,12 @@ class OrderedRDDFunctions[K : Ordering : ClassTag, V : ClassTag, P <: Product2[
 
     val rddToFilter: RDD[P] = self.partitioner match {
       case Some(rp: RangePartitioner[K, V]) => {
-          val partitionIndicies =
-            (rp.getPartition(lower), rp.getPartition(upper)) match {
-              case (l, u) => Math.min(l, u) to Math.max(l, u)
-            }
-          PartitionPruningRDD.create(self, partitionIndicies.contains)
-        }
+        val partitionIndicies =
+          (rp.getPartition(lower), rp.getPartition(upper)) match {
+            case (l, u) => Math.min(l, u) to Math.max(l, u)
+          }
+        PartitionPruningRDD.create(self, partitionIndicies.contains)
+      }
       case _ =>
         self
     }

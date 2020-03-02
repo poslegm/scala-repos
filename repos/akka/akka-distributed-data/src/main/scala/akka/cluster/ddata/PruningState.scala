@@ -13,14 +13,16 @@ import akka.cluster.UniqueAddress
 private[akka] object PruningState {
   sealed trait PruningPhase
   final case class PruningInitialized(seen: Set[Address]) extends PruningPhase
-  case object PruningPerformed extends PruningPhase
+  case object PruningPerformed                            extends PruningPhase
 }
 
 /**
   * INTERNAL API
   */
 private[akka] final case class PruningState(
-    owner: UniqueAddress, phase: PruningState.PruningPhase) {
+    owner: UniqueAddress,
+    phase: PruningState.PruningPhase
+) {
   import PruningState._
 
   def merge(that: PruningState): PruningState =
@@ -31,7 +33,9 @@ private[akka] final case class PruningState(
         if (this.owner == that.owner)
           copy(phase = PruningInitialized(thisSeen union thatSeen))
         else if (Member.addressOrdering.compare(
-                     this.owner.address, that.owner.address) > 0) that
+                   this.owner.address,
+                   that.owner.address
+                 ) > 0) that
         else this
     }
 

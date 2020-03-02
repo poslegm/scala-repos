@@ -9,9 +9,11 @@ trait RingAlgebra[V, @sp R] extends Any with Module[V, R] with Rng[V]
 
 object RingAlgebra {
   implicit def ZAlgebra[A](
-      implicit vector0: Ring[A], scalar0: Ring[Int]): ZAlgebra[A] =
+      implicit vector0: Ring[A],
+      scalar0: Ring[Int]
+  ): ZAlgebra[A] =
     new ZAlgebra[A] {
-      val vector: Ring[A] = vector0
+      val vector: Ring[A]   = vector0
       val scalar: Ring[Int] = scalar0
     }
 }
@@ -24,12 +26,12 @@ trait ZAlgebra[V] extends Any with RingAlgebra[V, Int] with Ring[V] {
   implicit def vector: Ring[V]
   implicit def scalar: Ring[Int]
 
-  def zero: V = vector.zero
-  def one: V = vector.one
-  def negate(v: V): V = vector.negate(v)
-  def plus(v: V, w: V): V = vector.plus(v, w)
+  def zero: V                       = vector.zero
+  def one: V                        = vector.one
+  def negate(v: V): V               = vector.negate(v)
+  def plus(v: V, w: V): V           = vector.plus(v, w)
   override def minus(v: V, w: V): V = vector.minus(v, w)
-  def times(v: V, w: V): V = vector.times(v, w)
+  def times(v: V, w: V): V          = vector.times(v, w)
 
   def timesl(r: Int, v: V): V = vector.times(vector.fromInt(r), v)
 
@@ -41,4 +43,6 @@ trait ZAlgebra[V] extends Any with RingAlgebra[V, Int] with Ring[V] {
   * complex numbers.
   */
 trait FieldAlgebra[V, @sp(Float, Double) F]
-    extends Any with RingAlgebra[V, F] with VectorSpace[V, F]
+    extends Any
+    with RingAlgebra[V, F]
+    with VectorSpace[V, F]

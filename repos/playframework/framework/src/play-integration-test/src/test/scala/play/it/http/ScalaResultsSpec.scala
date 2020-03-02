@@ -14,7 +14,7 @@ object ScalaResultsSpec extends PlaySpecification {
 
     Session.decode("  ").isEmpty must be_==(true)
 
-    val data = Map("user" -> "kiki", "langs" -> "fr:en:de")
+    val data           = Map("user" -> "kiki", "langs" -> "fr:en:de")
     val encodedSession = Session.encode(data)
     val decodedSession = Session.decode(encodedSession)
 
@@ -43,7 +43,7 @@ object ScalaResultsSpec extends PlaySpecification {
   }
 
   "ignore session cookies that have been tampered with" in withApplication() {
-    val data = Map("user" -> "alice")
+    val data           = Map("user" -> "alice")
     val encodedSession = Session.encode(data)
     // Change a value in the session
     val maliciousSession =
@@ -56,7 +56,8 @@ object ScalaResultsSpec extends PlaySpecification {
     "set session on right path" in withFooPath {
       Cookies
         .decodeSetCookieHeader(
-            Ok.withSession("user" -> "alice").header.headers("Set-Cookie"))
+          Ok.withSession("user" -> "alice").header.headers("Set-Cookie")
+        )
         .head
         .path must_== "/foo"
     }
@@ -71,7 +72,8 @@ object ScalaResultsSpec extends PlaySpecification {
     "set flash on right path" in withFooPath {
       Cookies
         .decodeSetCookieHeader(
-            Ok.flashing("user" -> "alice").header.headers("Set-Cookie"))
+          Ok.flashing("user" -> "alice").header.headers("Set-Cookie")
+        )
         .head
         .path must_== "/foo"
     }
@@ -83,7 +85,8 @@ object ScalaResultsSpec extends PlaySpecification {
     "set session on right domain" in withFooDomain {
       Cookies
         .decodeSetCookieHeader(
-            Ok.withSession("user" -> "alice").header.headers("Set-Cookie"))
+          Ok.withSession("user" -> "alice").header.headers("Set-Cookie")
+        )
         .head
         .domain must beSome(".foo.com")
     }
@@ -100,7 +103,8 @@ object ScalaResultsSpec extends PlaySpecification {
     "set session as secure" in withSecureSession {
       Cookies
         .decodeSetCookieHeader(
-            Ok.withSession("user" -> "alice").header.headers("Set-Cookie"))
+          Ok.withSession("user" -> "alice").header.headers("Set-Cookie")
+        )
         .head
         .secure must_== true
     }
@@ -115,7 +119,7 @@ object ScalaResultsSpec extends PlaySpecification {
 
   def withApplication[T](config: (String, Any)*)(block: => T): T =
     running(
-        _.configure(Map(config: _*) + ("play.crypto.secret" -> "foo"))
+      _.configure(Map(config: _*) + ("play.crypto.secret" -> "foo"))
     )(_ => block)
 
   def withFooPath[T](block: => T) =

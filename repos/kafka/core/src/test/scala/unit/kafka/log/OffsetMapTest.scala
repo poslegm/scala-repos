@@ -5,7 +5,7 @@
   * The ASF licenses this file to You under the Apache License, Version 2.0
   * (the "License"); you may not use this file except in compliance with
   * the License.  You may obtain a copy of the License at
-  * 
+  *
   *    http://www.apache.org/licenses/LICENSE-2.0
   *
   * Unless required by applicable law or agreed to in writing, software
@@ -57,14 +57,16 @@ object OffsetMapTest {
       System.err.println("USAGE: java OffsetMapTest size load")
       System.exit(1)
     }
-    val test = new OffsetMapTest()
-    val size = args(0).toInt
-    val load = args(1).toDouble
-    val start = System.nanoTime
-    val map = test.validateMap(size, load)
+    val test       = new OffsetMapTest()
+    val size       = args(0).toInt
+    val load       = args(1).toDouble
+    val start      = System.nanoTime
+    val map        = test.validateMap(size, load)
     val ellapsedMs = (System.nanoTime - start) / 1000.0 / 1000.0
-    println(map.size + " entries in map of size " + map.slots + " in " +
-        ellapsedMs + " ms")
+    println(
+      map.size + " entries in map of size " + map.slots + " in " +
+        ellapsedMs + " ms"
+    )
     println("Collision rate: %.1f%%".format(100 * map.collisionRate))
   }
 }

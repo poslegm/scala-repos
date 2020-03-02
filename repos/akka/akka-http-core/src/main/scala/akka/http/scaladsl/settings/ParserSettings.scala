@@ -19,7 +19,7 @@ import scala.compat.java8.OptionConverters
 /**
   * Public API but not intended for subclassing
   */
-abstract class ParserSettings private[akka]()
+abstract class ParserSettings private[akka] ()
     extends akka.http.javadsl.settings.ParserSettings {
   self: ParserSettingsImpl ⇒
   def maxUriLength: Int
@@ -48,17 +48,18 @@ abstract class ParserSettings private[akka]()
   override def getMaxChunkExtLength = maxChunkExtLength
   override def getUriParsingMode: akka.http.javadsl.model.Uri.ParsingMode =
     uriParsingMode
-  override def getMaxHeaderCount = maxHeaderCount
-  override def getMaxContentLength = maxContentLength
-  override def getMaxHeaderValueLength = maxHeaderValueLength
+  override def getMaxHeaderCount              = maxHeaderCount
+  override def getMaxContentLength            = maxContentLength
+  override def getMaxHeaderValueLength        = maxHeaderValueLength
   override def getIncludeTlsSessionInfoHeader = includeTlsSessionInfoHeader
-  override def getIllegalHeaderWarnings = illegalHeaderWarnings
-  override def getMaxHeaderNameLength = maxHeaderNameLength
-  override def getMaxChunkSize = maxChunkSize
-  override def getMaxResponseReasonLength = maxResponseReasonLength
-  override def getMaxUriLength = maxUriLength
-  override def getMaxMethodLength = maxMethodLength
-  override def getErrorLoggingVerbosity: js.ParserSettings.ErrorLoggingVerbosity =
+  override def getIllegalHeaderWarnings       = illegalHeaderWarnings
+  override def getMaxHeaderNameLength         = maxHeaderNameLength
+  override def getMaxChunkSize                = maxChunkSize
+  override def getMaxResponseReasonLength     = maxResponseReasonLength
+  override def getMaxUriLength                = maxUriLength
+  override def getMaxMethodLength             = maxMethodLength
+  override def getErrorLoggingVerbosity
+      : js.ParserSettings.ErrorLoggingVerbosity =
     errorLoggingVerbosity
 
   override def getCustomMethods =
@@ -95,17 +96,20 @@ abstract class ParserSettings private[akka]()
   override def withIllegalHeaderWarnings(newValue: Boolean): ParserSettings =
     self.copy(illegalHeaderWarnings = newValue)
   override def withIncludeTlsSessionInfoHeader(
-      newValue: Boolean): ParserSettings =
+      newValue: Boolean
+  ): ParserSettings =
     self.copy(includeTlsSessionInfoHeader = newValue)
 
   // overloads for idiomatic Scala use
   def withUriParsingMode(newValue: Uri.ParsingMode): ParserSettings =
     self.copy(uriParsingMode = newValue)
   def withCookieParsingMode(
-      newValue: ParserSettings.CookieParsingMode): ParserSettings =
+      newValue: ParserSettings.CookieParsingMode
+  ): ParserSettings =
     self.copy(cookieParsingMode = newValue)
   def withErrorLoggingVerbosity(
-      newValue: ParserSettings.ErrorLoggingVerbosity): ParserSettings =
+      newValue: ParserSettings.ErrorLoggingVerbosity
+  ): ParserSettings =
     self.copy(errorLoggingVerbosity = newValue)
   def withHeaderValueCacheLimits(newValue: Map[String, Int]): ParserSettings =
     self.copy(headerValueCacheLimits = newValue)
@@ -124,29 +128,30 @@ object ParserSettings extends SettingsCompanion[ParserSettings] {
       extends akka.http.javadsl.settings.ParserSettings.CookieParsingMode
   object CookieParsingMode {
     case object RFC6265 extends CookieParsingMode
-    case object Raw extends CookieParsingMode
+    case object Raw     extends CookieParsingMode
 
     def apply(mode: String): CookieParsingMode = mode.toRootLowerCase match {
       case "rfc6265" ⇒ RFC6265
-      case "raw" ⇒ Raw
+      case "raw"     ⇒ Raw
     }
   }
 
   trait ErrorLoggingVerbosity
       extends akka.http.javadsl.settings.ParserSettings.ErrorLoggingVerbosity
   object ErrorLoggingVerbosity {
-    case object Off extends ErrorLoggingVerbosity
+    case object Off    extends ErrorLoggingVerbosity
     case object Simple extends ErrorLoggingVerbosity
-    case object Full extends ErrorLoggingVerbosity
+    case object Full   extends ErrorLoggingVerbosity
 
     def apply(string: String): ErrorLoggingVerbosity =
       string.toRootLowerCase match {
-        case "off" ⇒ Off
+        case "off"    ⇒ Off
         case "simple" ⇒ Simple
-        case "full" ⇒ Full
+        case "full"   ⇒ Full
         case x ⇒
           throw new IllegalArgumentException(
-              s"[$x] is not a legal `error-logging-verbosity` setting")
+            s"[$x] is not a legal `error-logging-verbosity` setting"
+          )
       }
   }
 

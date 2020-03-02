@@ -31,8 +31,7 @@ import org.apache.spark.serializer.Serializer
 class CustomRecoveryModeFactory(
     conf: SparkConf,
     serializer: Serializer
-)
-    extends StandaloneRecoveryModeFactory(conf, serializer) {
+) extends StandaloneRecoveryModeFactory(conf, serializer) {
 
   CustomRecoveryModeFactory.instantiationAttempts += 1
 
@@ -48,7 +47,8 @@ class CustomRecoveryModeFactory(
     * Create an instance of LeaderAgent that decides who gets elected as master.
     */
   override def createLeaderElectionAgent(
-      master: LeaderElectable): LeaderElectionAgent =
+      master: LeaderElectable
+  ): LeaderElectionAgent =
     new CustomLeaderElectionAgent(master)
 }
 
@@ -69,7 +69,7 @@ class CustomPersistenceEngine(serializer: Serializer)
   override def persist(name: String, obj: Object): Unit = {
     CustomPersistenceEngine.persistAttempts += 1
     val serialized = serializer.newInstance().serialize(obj)
-    val bytes = new Array[Byte](serialized.remaining())
+    val bytes      = new Array[Byte](serialized.remaining())
     serialized.get(bytes)
     data += name -> bytes
   }
@@ -86,18 +86,19 @@ class CustomPersistenceEngine(serializer: Serializer)
     * Gives all objects, matching a prefix. This defines how objects are
     * read/deserialized back.
     */
-  override def read[T : ClassTag](prefix: String): Seq[T] = {
+  override def read[T: ClassTag](prefix: String): Seq[T] = {
     CustomPersistenceEngine.readAttempts += 1
-    val results = for ((name, bytes) <- data; if name.startsWith(prefix)) yield
-      serializer.newInstance().deserialize[T](ByteBuffer.wrap(bytes))
+    val results =
+      for ((name, bytes) <- data; if name.startsWith(prefix))
+        yield serializer.newInstance().deserialize[T](ByteBuffer.wrap(bytes))
     results.toSeq
   }
 }
 
 object CustomPersistenceEngine {
-  @volatile var persistAttempts = 0
+  @volatile var persistAttempts   = 0
   @volatile var unpersistAttempts = 0
-  @volatile var readAttempts = 0
+  @volatile var readAttempts      = 0
 
   @volatile var lastInstance: Option[CustomPersistenceEngine] = None
 }

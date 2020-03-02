@@ -3,5 +3,7 @@ trait Growable[T]
 trait Sizing
 
 object Test {
-  null.isInstanceOf[LazyCombiner[_, _, _]] // issued an existential feature warning
+  null.isInstanceOf[
+    LazyCombiner[_, _, _]
+  ] // issued an existential feature warning
 }

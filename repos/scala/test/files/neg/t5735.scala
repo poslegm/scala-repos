@@ -3,5 +3,5 @@ abstract class Base {
 }
 class Clazz extends Base {
   def a(x: Int): Int = 2
-  val z: Int = a
+  val z: Int         = a
 }

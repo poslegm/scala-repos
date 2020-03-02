@@ -11,7 +11,7 @@ class SplitElseIfIntentionTest extends ScalaIntentionTestBase {
   val familyName = SplitElseIfIntention.familyName
 
   def testSplitElseIf() {
-    val text = """
+    val text       = """
         |class SplitElseIf {
         |  def mthd {
         |    val a: Int = 0
@@ -46,7 +46,7 @@ class SplitElseIfIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testSplitElseIf2() {
-    val text = """
+    val text       = """
         |class SplitElseIf {
         |  def mthd {
         |    val a: Int = 0
@@ -78,7 +78,7 @@ class SplitElseIfIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testSplitElseIf3() {
-    val text = """
+    val text       = """
         |class SplitElseIf {
         |  def mthd {
         |    val a: Int = 0
@@ -106,7 +106,7 @@ class SplitElseIfIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testSplitElseIf4() {
-    val text = """
+    val text       = """
         |class SplitElseIf {
         |  def mthd {
         |    val a: Int = 0

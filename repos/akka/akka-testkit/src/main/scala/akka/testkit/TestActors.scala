@@ -30,6 +30,6 @@ object TestActors {
     }
   }
 
-  val echoActorProps = Props[EchoActor]()
+  val echoActorProps                   = Props[EchoActor]()
   def forwardActorProps(ref: ActorRef) = Props(classOf[ForwardActor], ref)
 }

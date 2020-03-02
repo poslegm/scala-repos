@@ -32,11 +32,12 @@ import org.apache.spark.rdd.RDD
   *   partitions, corresponding to partition ranges [0, 1], [2, 3] and [4] of the parent partitioner.
   */
 class CoalescedPartitioner(
-    val parent: Partitioner, val partitionStartIndices: Array[Int])
-    extends Partitioner {
+    val parent: Partitioner,
+    val partitionStartIndices: Array[Int]
+) extends Partitioner {
 
   @transient private lazy val parentPartitionMapping: Array[Int] = {
-    val n = parent.numPartitions
+    val n      = parent.numPartitions
     val result = new Array[Int](n)
     for (i <- 0 until partitionStartIndices.length) {
       val start = partitionStartIndices(i)
@@ -59,15 +60,17 @@ class CoalescedPartitioner(
   override def equals(other: Any): Boolean = other match {
     case c: CoalescedPartitioner =>
       c.parent == parent &&
-      Arrays.equals(c.partitionStartIndices, partitionStartIndices)
+        Arrays.equals(c.partitionStartIndices, partitionStartIndices)
     case _ =>
       false
   }
 }
 
 private[spark] class CustomShuffledRDDPartition(
-    val index: Int, val startIndexInParent: Int, val endIndexInParent: Int)
-    extends Partition {
+    val index: Int,
+    val startIndexInParent: Int,
+    val endIndexInParent: Int
+) extends Partition {
 
   override def hashCode(): Int = index
 }
@@ -76,9 +79,10 @@ private[spark] class CustomShuffledRDDPartition(
   * A special ShuffledRDD that supports a ShuffleDependency object from outside and launching reduce
   * tasks that read multiple map output partitions.
   */
-class CustomShuffledRDD[K, V, C](var dependency: ShuffleDependency[K, V, C],
-                                 partitionStartIndices: Array[Int])
-    extends RDD[(K, C)](dependency.rdd.context, Seq(dependency)) {
+class CustomShuffledRDD[K, V, C](
+    var dependency: ShuffleDependency[K, V, C],
+    partitionStartIndices: Array[Int]
+) extends RDD[(K, C)](dependency.rdd.context, Seq(dependency)) {
 
   def this(dep: ShuffleDependency[K, V, C]) = {
     this(dep, (0 until dep.partitioner.numPartitions).toArray)
@@ -87,8 +91,9 @@ class CustomShuffledRDD[K, V, C](var dependency: ShuffleDependency[K, V, C],
   override def getDependencies: Seq[Dependency[_]] = List(dependency)
 
   override val partitioner = {
-    Some(new CoalescedPartitioner(
-            dependency.partitioner, partitionStartIndices))
+    Some(
+      new CoalescedPartitioner(dependency.partitioner, partitionStartIndices)
+    )
   }
 
   override def getPartitions: Array[Partition] = {
@@ -105,10 +110,12 @@ class CustomShuffledRDD[K, V, C](var dependency: ShuffleDependency[K, V, C],
   override def compute(p: Partition, context: TaskContext): Iterator[(K, C)] = {
     val part = p.asInstanceOf[CustomShuffledRDDPartition]
     SparkEnv.get.shuffleManager
-      .getReader(dependency.shuffleHandle,
-                 part.startIndexInParent,
-                 part.endIndexInParent,
-                 context)
+      .getReader(
+        dependency.shuffleHandle,
+        part.startIndexInParent,
+        part.endIndexInParent,
+        context
+      )
       .read()
       .asInstanceOf[Iterator[(K, C)]]
   }

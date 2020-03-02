@@ -43,9 +43,12 @@ import java.io.{ObjectOutputStream, ObjectInputStream}
 @SerialVersionUID(3419063961353022662L)
 final class ListBuffer[A]
     extends AbstractBuffer[A]
-    with Buffer[A] with GenericTraversableTemplate[A, ListBuffer]
+    with Buffer[A]
+    with GenericTraversableTemplate[A, ListBuffer]
     with BufferLike[A, ListBuffer[A]]
-    with ReusableBuilder[A, List[A]] with SeqForwarder[A] with Serializable {
+    with ReusableBuilder[A, List[A]]
+    with SeqForwarder[A]
+    with Serializable {
   override def companion: GenericCompanion[ListBuffer] = ListBuffer
 
   import scala.collection.Traversable
@@ -57,10 +60,10 @@ final class ListBuffer[A]
     *  If len == 0, start.isEmpty
     *  If len > 0, start.nonEmpty
     */
-  private var start: List[A] = Nil
-  private var last0: ::[A] = _
+  private var start: List[A]    = Nil
+  private var last0: ::[A]      = _
   private var exported: Boolean = false
-  private var len = 0
+  private var len               = 0
 
   protected def underlying: List[A] = start
 
@@ -141,7 +144,7 @@ final class ListBuffer[A]
       start = newElem
     } else {
       var cursor = start
-      var i = 1
+      var i      = 1
       while (i < n) {
         cursor = cursor.tail
         i += 1
@@ -175,7 +178,7 @@ final class ListBuffer[A]
 
   override def ++=(xs: TraversableOnce[A]): this.type = xs match {
     case x: AnyRef if x eq this => this ++= (this take size)
-    case _ => super.++=(xs)
+    case _                      => super.++=(xs)
   }
 
   override def ++=:(xs: TraversableOnce[A]): this.type =
@@ -229,7 +232,7 @@ final class ListBuffer[A]
       }
     } else {
       var cursor = start
-      var i = 1
+      var i      = 1
       while (i < n) {
         cursor = cursor.tail
         i += 1
@@ -264,13 +267,15 @@ final class ListBuffer[A]
   override def remove(n: Int, count: Int) {
     if (count < 0)
       throw new IllegalArgumentException(
-          "removing negative number of elements: " + count.toString)
+        "removing negative number of elements: " + count.toString
+      )
     else if (count == 0) return // Nothing to do
     if (n < 0 || n > len - count)
       throw new IndexOutOfBoundsException(
-          "at " + n.toString + " deleting " + count.toString)
+        "at " + n.toString + " deleting " + count.toString
+      )
     if (exported) copy()
-    val n1 = n max 0
+    val n1     = n max 0
     val count1 = count min (len - n1)
     if (n1 == 0) {
       var c = count1
@@ -280,7 +285,7 @@ final class ListBuffer[A]
       }
     } else {
       var cursor = start
-      var i = 1
+      var i      = 1
       while (i < n1) {
         cursor = cursor.tail
         i += 1
@@ -344,7 +349,7 @@ final class ListBuffer[A]
       start = start.tail
     } else {
       var cursor = start
-      var i = 1
+      var i      = 1
       while (i < n) {
         cursor = cursor.tail
         i += 1
@@ -415,7 +420,7 @@ final class ListBuffer[A]
   private def copy() {
     if (isEmpty) return
     var cursor = start
-    val limit = last0.tail
+    val limit  = last0.tail
     clear()
     while (cursor ne limit) {
       this += cursor.head
@@ -425,7 +430,7 @@ final class ListBuffer[A]
 
   override def equals(that: Any): Boolean = that match {
     case that: ListBuffer[_] => this.start equals that.start
-    case _ => super.equals(that)
+    case _                   => super.equals(that)
   }
 
   /** Returns a clone of this buffer.

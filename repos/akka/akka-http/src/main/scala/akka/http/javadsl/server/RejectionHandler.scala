@@ -33,7 +33,9 @@ abstract class RejectionHandler {
     * The default implementation does not handle the rejection.
     */
   def handleMethodRejection(
-      ctx: RequestContext, supported: HttpMethod): RouteResult =
+      ctx: RequestContext,
+      supported: HttpMethod
+  ): RouteResult =
     passRejection()
 
   /**
@@ -41,24 +43,30 @@ abstract class RejectionHandler {
     * Signals that the request was rejected because the Uri scheme is unsupported.
     */
   def handleSchemeRejection(
-      ctx: RequestContext, supported: String): RouteResult = passRejection()
+      ctx: RequestContext,
+      supported: String
+  ): RouteResult = passRejection()
 
   /**
     * Callback called to handle rejection created by parameter filters.
     * Signals that the request was rejected because a query parameter was not found.
     */
   def handleMissingQueryParamRejection(
-      ctx: RequestContext, parameterName: String): RouteResult =
+      ctx: RequestContext,
+      parameterName: String
+  ): RouteResult =
     passRejection()
 
   /**
     * Callback called to handle rejection created by parameter filters.
     * Signals that the request was rejected because a query parameter could not be interpreted.
     */
-  def handleMalformedQueryParamRejection(ctx: RequestContext,
-                                         parameterName: String,
-                                         errorMsg: String,
-                                         cause: Throwable): RouteResult =
+  def handleMalformedQueryParamRejection(
+      ctx: RequestContext,
+      parameterName: String,
+      errorMsg: String,
+      cause: Throwable
+  ): RouteResult =
     passRejection()
 
   /**
@@ -66,16 +74,20 @@ abstract class RejectionHandler {
     * Signals that the request was rejected because a form field was not found.
     */
   def handleMissingFormFieldRejection(
-      ctx: RequestContext, fieldName: String): RouteResult = passRejection()
+      ctx: RequestContext,
+      fieldName: String
+  ): RouteResult = passRejection()
 
   /**
     * Callback called to handle rejection created by form field filters.
     * Signals that the request was rejected because a form field could not be interpreted.
     */
-  def handleMalformedFormFieldRejection(ctx: RequestContext,
-                                        fieldName: String,
-                                        errorMsg: String,
-                                        cause: Throwable): RouteResult =
+  def handleMalformedFormFieldRejection(
+      ctx: RequestContext,
+      fieldName: String,
+      errorMsg: String,
+      cause: Throwable
+  ): RouteResult =
     passRejection()
 
   /**
@@ -83,16 +95,20 @@ abstract class RejectionHandler {
     * Signals that the request was rejected because a required header could not be found.
     */
   def handleMissingHeaderRejection(
-      ctx: RequestContext, headerName: String): RouteResult = passRejection()
+      ctx: RequestContext,
+      headerName: String
+  ): RouteResult = passRejection()
 
   /**
     * Callback called to handle rejection created by header directives.
     * Signals that the request was rejected because a header value is malformed.
     */
-  def handleMalformedHeaderRejection(ctx: RequestContext,
-                                     headerName: String,
-                                     errorMsg: String,
-                                     cause: Throwable): RouteResult =
+  def handleMalformedHeaderRejection(
+      ctx: RequestContext,
+      headerName: String,
+      errorMsg: String,
+      cause: Throwable
+  ): RouteResult =
     passRejection()
 
   /**
@@ -101,14 +117,17 @@ abstract class RejectionHandler {
     */
   def handleUnsupportedRequestContentTypeRejection(
       ctx: RequestContext,
-      supported: jl.Iterable[ContentTypeRange]): RouteResult = passRejection()
+      supported: jl.Iterable[ContentTypeRange]
+  ): RouteResult = passRejection()
 
   /**
     * Callback called to handle rejection created by decoding filters.
     * Signals that the request was rejected because the requests content encoding is unsupported.
     */
   def handleUnsupportedRequestEncodingRejection(
-      ctx: RequestContext, supported: HttpEncoding): RouteResult =
+      ctx: RequestContext,
+      supported: HttpEncoding
+  ): RouteResult =
     passRejection()
 
   /**
@@ -119,7 +138,8 @@ abstract class RejectionHandler {
   def handleUnsatisfiableRangeRejection(
       ctx: RequestContext,
       unsatisfiableRanges: jl.Iterable[ByteRange],
-      actualEntityLength: Long): RouteResult = passRejection()
+      actualEntityLength: Long
+  ): RouteResult = passRejection()
 
   /**
     * Callback called to handle rejection created by range directives.
@@ -127,7 +147,9 @@ abstract class RejectionHandler {
     * indicates a broken client or a denial of service attack.
     */
   def handleTooManyRangesRejection(
-      ctx: RequestContext, maxRanges: Int): RouteResult = passRejection()
+      ctx: RequestContext,
+      maxRanges: Int
+  ): RouteResult = passRejection()
 
   /**
     * Callback called to handle rejection created by unmarshallers.
@@ -137,7 +159,10 @@ abstract class RejectionHandler {
     * will usually trigger a `ValidationRejection` instead.
     */
   def handleMalformedRequestContentRejection(
-      ctx: RequestContext, message: String, cause: Throwable): RouteResult =
+      ctx: RequestContext,
+      message: String,
+      cause: Throwable
+  ): RouteResult =
     passRejection()
 
   /**
@@ -153,7 +178,9 @@ abstract class RejectionHandler {
     * content type is accepted by the client.
     */
   def handleUnacceptedResponseContentTypeRejection(
-      ctx: RequestContext, supported: jl.Iterable[String]): RouteResult =
+      ctx: RequestContext,
+      supported: jl.Iterable[String]
+  ): RouteResult =
     passRejection()
 
   /**
@@ -162,7 +189,9 @@ abstract class RejectionHandler {
     * content encoding is accepted by the client
     */
   def handleUnacceptedResponseEncodingRejection(
-      ctx: RequestContext, supported: jl.Iterable[HttpEncoding]): RouteResult =
+      ctx: RequestContext,
+      supported: jl.Iterable[HttpEncoding]
+  ): RouteResult =
     passRejection()
 
   /**
@@ -175,7 +204,8 @@ abstract class RejectionHandler {
   def handleAuthenticationFailedRejection(
       ctx: RequestContext,
       credentialsMissing: Boolean,
-      challenge: HttpChallenge): RouteResult = passRejection()
+      challenge: HttpChallenge
+  ): RouteResult = passRejection()
 
   /**
     * Callback called to handle rejection created by the 'authorize' directive.
@@ -189,20 +219,25 @@ abstract class RejectionHandler {
     * Signals that the request was rejected because a cookie was not found.
     */
   def handleMissingCookieRejection(
-      ctx: RequestContext, cookieName: String): RouteResult = passRejection()
+      ctx: RequestContext,
+      cookieName: String
+  ): RouteResult = passRejection()
 
   /**
     * Callback called to handle rejection created when a websocket request was expected but none was found.
     */
   def handleExpectedWebSocketRequestRejection(
-      ctx: RequestContext): RouteResult = passRejection()
+      ctx: RequestContext
+  ): RouteResult = passRejection()
 
   /**
     * Callback called to handle rejection created when a websocket request was not handled because none
     * of the given subprotocols was supported.
     */
   def handleUnsupportedWebSocketSubprotocolRejection(
-      ctx: RequestContext, supportedProtocol: String): RouteResult =
+      ctx: RequestContext,
+      supportedProtocol: String
+  ): RouteResult =
     passRejection()
 
   /**
@@ -211,21 +246,28 @@ abstract class RejectionHandler {
     * It signals that an expected value was semantically invalid.
     */
   def handleValidationRejection(
-      ctx: RequestContext, message: String, cause: Throwable): RouteResult =
+      ctx: RequestContext,
+      message: String,
+      cause: Throwable
+  ): RouteResult =
     passRejection()
 
   /**
     * Callback called to handle any custom rejection defined by the application.
     */
   def handleCustomRejection(
-      ctx: RequestContext, rejection: CustomRejection): RouteResult =
+      ctx: RequestContext,
+      rejection: CustomRejection
+  ): RouteResult =
     passRejection()
 
   /**
     * Callback called to handle any other Scala rejection that is not covered by this class.
     */
   def handleCustomScalaRejection(
-      ctx: RequestContext, rejection: Rejection): RouteResult = passRejection()
+      ctx: RequestContext,
+      rejection: Rejection
+  ): RouteResult = passRejection()
 
   /**
     * Use the RouteResult returned by this method in handler implementations to signal that a rejection was not handled

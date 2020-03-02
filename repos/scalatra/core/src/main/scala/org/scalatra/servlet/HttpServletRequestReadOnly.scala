@@ -18,8 +18,8 @@ import javax.servlet.http.{HttpServletRequestWrapper, HttpServletRequest}
   * @param originalRequest the original HttpServletRequest to wrap
   */
 case class HttpServletRequestReadOnly(
-    private val originalRequest: HttpServletRequest)
-    extends HttpServletRequestWrapper(originalRequest) {
+    private val originalRequest: HttpServletRequest
+) extends HttpServletRequestWrapper(originalRequest) {
 
   override val getAuthType: String = originalRequest.getAuthType
 

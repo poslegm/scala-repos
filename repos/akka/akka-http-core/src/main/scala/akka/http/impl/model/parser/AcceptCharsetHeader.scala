@@ -13,13 +13,13 @@ private[parser] trait AcceptCharsetHeader {
   // http://tools.ietf.org/html/rfc7231#section-5.3.3
   def `accept-charset` = rule {
     oneOrMore(`charset-range-decl`).separatedBy(listSep) ~ EOI ~>
-    (`Accept-Charset`(_))
+      (`Accept-Charset`(_))
   }
 
   def `charset-range-decl` = rule {
     `charset-range-def` ~ optional(weight) ~> { (range, optQ) ⇒
       optQ match {
-        case None ⇒ range
+        case None    ⇒ range
         case Some(q) ⇒ range withQValue q
       }
     }
@@ -27,6 +27,6 @@ private[parser] trait AcceptCharsetHeader {
 
   def `charset-range-def` = rule {
     ws('*') ~ push(HttpCharsetRange.`*`) | token ~>
-    (s ⇒ HttpCharsetRange(getCharset(s)))
+      (s ⇒ HttpCharsetRange(getCharset(s)))
   }
 }

@@ -24,7 +24,11 @@ import org.apache.log4j.{Level, Logger}
 import scopt.OptionParser
 
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.mllib.recommendation.{ALS, MatrixFactorizationModel, Rating}
+import org.apache.spark.mllib.recommendation.{
+  ALS,
+  MatrixFactorizationModel,
+  Rating
+}
 import org.apache.spark.rdd.RDD
 
 /**
@@ -38,15 +42,16 @@ import org.apache.spark.rdd.RDD
   */
 object MovieLensALS {
 
-  case class Params(input: String = null,
-                    kryo: Boolean = false,
-                    numIterations: Int = 20,
-                    lambda: Double = 1.0,
-                    rank: Int = 10,
-                    numUserBlocks: Int = -1,
-                    numProductBlocks: Int = -1,
-                    implicitPrefs: Boolean = false)
-      extends AbstractParams[Params]
+  case class Params(
+      input: String = null,
+      kryo: Boolean = false,
+      numIterations: Int = 20,
+      lambda: Double = 1.0,
+      rank: Int = 10,
+      numUserBlocks: Int = -1,
+      numProductBlocks: Int = -1,
+      implicitPrefs: Boolean = false
+  ) extends AbstractParams[Params]
 
   def main(args: Array[String]) {
     val defaultParams = Params()
@@ -66,11 +71,14 @@ object MovieLensALS {
         .text("use Kryo serialization")
         .action((_, c) => c.copy(kryo = true))
       opt[Int]("numUserBlocks")
-        .text(s"number of user blocks, default: ${defaultParams.numUserBlocks} (auto)")
+        .text(
+          s"number of user blocks, default: ${defaultParams.numUserBlocks} (auto)"
+        )
         .action((x, c) => c.copy(numUserBlocks = x))
       opt[Int]("numProductBlocks")
         .text(
-            s"number of product blocks, default: ${defaultParams.numProductBlocks} (auto)")
+          s"number of product blocks, default: ${defaultParams.numProductBlocks} (auto)"
+        )
         .action((x, c) => c.copy(numProductBlocks = x))
       opt[Unit]("implicitPrefs")
         .text("use implicit preference")
@@ -79,14 +87,16 @@ object MovieLensALS {
         .required()
         .text("input paths to a MovieLens dataset of ratings")
         .action((x, c) => c.copy(input = x))
-      note("""
+      note(
+        """
           |For example, the following command runs this app on a synthetic dataset:
           |
           | bin/spark-submit --class org.apache.spark.examples.mllib.MovieLensALS \
           |  examples/target/scala-*/spark-examples-*.jar \
           |  --rank 5 --numIterations 20 --lambda 1.0 --kryo \
           |  data/mllib/sample_movielens_data.txt
-        """.stripMargin)
+        """.stripMargin
+      )
     }
 
     parser.parse(args, defaultParams).map { params =>
@@ -136,13 +146,14 @@ object MovieLensALS {
       .cache()
 
     val numRatings = ratings.count()
-    val numUsers = ratings.map(_.user).distinct().count()
-    val numMovies = ratings.map(_.product).distinct().count()
+    val numUsers   = ratings.map(_.user).distinct().count()
+    val numMovies  = ratings.map(_.product).distinct().count()
 
     println(
-        s"Got $numRatings ratings from $numUsers users on $numMovies movies.")
+      s"Got $numRatings ratings from $numUsers users on $numMovies movies."
+    )
 
-    val splits = ratings.randomSplit(Array(0.8, 0.2))
+    val splits   = ratings.randomSplit(Array(0.8, 0.2))
     val training = splits(0).cache()
     val test =
       if (params.implicitPrefs) {
@@ -153,14 +164,15 @@ object MovieLensALS {
          * the confidence. The error is the difference between prediction and either 1 or 0,
          * depending on whether r is positive or negative.
          */
-        splits(1).map(
-            x => Rating(x.user, x.product, if (x.rating > 0) 1.0 else 0.0))
+        splits(1).map(x =>
+          Rating(x.user, x.product, if (x.rating > 0) 1.0 else 0.0)
+        )
       } else {
         splits(1)
       }.cache()
 
     val numTraining = training.count()
-    val numTest = test.count()
+    val numTest     = test.count()
     println(s"Training: $numTraining, test: $numTest.")
 
     ratings.unpersist(blocking = false)
@@ -182,9 +194,11 @@ object MovieLensALS {
   }
 
   /** Compute RMSE (Root Mean Squared Error). */
-  def computeRmse(model: MatrixFactorizationModel,
-                  data: RDD[Rating],
-                  implicitPrefs: Boolean): Double = {
+  def computeRmse(
+      model: MatrixFactorizationModel,
+      data: RDD[Rating],
+      implicitPrefs: Boolean
+  ): Double = {
 
     def mapPredictedRating(r: Double): Double = {
       if (implicitPrefs) math.max(math.min(r, 1.0), 0.0) else r
@@ -192,11 +206,13 @@ object MovieLensALS {
 
     val predictions: RDD[Rating] =
       model.predict(data.map(x => (x.user, x.product)))
-    val predictionsAndRatings = predictions.map { x =>
-      ((x.user, x.product), mapPredictedRating(x.rating))
-    }.join(data.map(x => ((x.user, x.product), x.rating))).values
+    val predictionsAndRatings = predictions
+      .map { x => ((x.user, x.product), mapPredictedRating(x.rating)) }
+      .join(data.map(x => ((x.user, x.product), x.rating)))
+      .values
     math.sqrt(
-        predictionsAndRatings.map(x => (x._1 - x._2) * (x._1 - x._2)).mean())
+      predictionsAndRatings.map(x => (x._1 - x._2) * (x._1 - x._2)).mean()
+    )
   }
 }
 // scalastyle:on println

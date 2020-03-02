@@ -65,7 +65,8 @@ class FlowInterleaveSpec extends BaseTwoStreamsSetup {
 
     "not work with segmentSize = 0" in assertAllStagesStopped {
       an[IllegalArgumentException] mustBe thrownBy(
-          Source(0 to 2).interleave(Source(3 to 5), 0).runWith(Sink.head))
+        Source(0 to 2).interleave(Source(3 to 5), 0).runWith(Sink.head)
+      )
     }
 
     "not work when segmentSize > than stream elements" in assertAllStagesStopped {
@@ -76,7 +77,7 @@ class FlowInterleaveSpec extends BaseTwoStreamsSetup {
       probe
         .expectSubscription()
         .request(25)
-        (0 to 15).foreach(probe.expectNext)
+      (0 to 15).foreach(probe.expectNext)
       probe.expectComplete()
 
       val probe2 = TestSubscriber.manualProbe[Int]()
@@ -86,7 +87,7 @@ class FlowInterleaveSpec extends BaseTwoStreamsSetup {
       probe2
         .expectSubscription()
         .request(100)
-        (1 to 10).foreach(probe2.expectNext)
+      (1 to 10).foreach(probe2.expectNext)
       (21 to 25).foreach(probe2.expectNext)
       (11 to 20).foreach(probe2.expectNext)
       probe2.expectComplete()
@@ -95,13 +96,13 @@ class FlowInterleaveSpec extends BaseTwoStreamsSetup {
     commonTests()
 
     "work with one immediately completed and one nonempty publisher" in assertAllStagesStopped {
-      val subscriber1 = setup(completedPublisher, nonemptyPublisher(1 to 4))
+      val subscriber1   = setup(completedPublisher, nonemptyPublisher(1 to 4))
       val subscription1 = subscriber1.expectSubscription()
       subscription1.request(4)
       (1 to 4).foreach(subscriber1.expectNext)
       subscriber1.expectComplete()
 
-      val subscriber2 = setup(nonemptyPublisher(1 to 4), completedPublisher)
+      val subscriber2   = setup(nonemptyPublisher(1 to 4), completedPublisher)
       val subscription2 = subscriber2.expectSubscription()
       subscription2.request(4)
       (1 to 4).foreach(subscriber2.expectNext)
@@ -125,12 +126,12 @@ class FlowInterleaveSpec extends BaseTwoStreamsSetup {
     }
 
     "work with one immediately failed and one nonempty publisher" in {
-      val subscriber1 = setup(failedPublisher, nonemptyPublisher(1 to 4))
+      val subscriber1   = setup(failedPublisher, nonemptyPublisher(1 to 4))
       val subscription1 = subscriber1.expectSubscription()
       subscription1.request(4)
       subscriber1.expectError(TestException)
 
-      val subscriber2 = setup(nonemptyPublisher(1 to 4), failedPublisher)
+      val subscriber2   = setup(nonemptyPublisher(1 to 4), failedPublisher)
       val subscription2 = subscriber2.expectSubscription()
       subscription2.request(4)
       subscriber2.expectNextOrError(1, TestException).isLeft ||
@@ -145,8 +146,8 @@ class FlowInterleaveSpec extends BaseTwoStreamsSetup {
     }
 
     "pass along early cancellation" in assertAllStagesStopped {
-      val up1 = TestPublisher.manualProbe[Int]()
-      val up2 = TestPublisher.manualProbe[Int]()
+      val up1  = TestPublisher.manualProbe[Int]()
+      val up2  = TestPublisher.manualProbe[Int]()
       val down = TestSubscriber.manualProbe[Int]()
 
       val (graphSubscriber1, graphSubscriber2) = Source

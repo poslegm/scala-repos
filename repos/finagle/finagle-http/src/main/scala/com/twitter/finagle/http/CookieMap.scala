@@ -1,6 +1,10 @@
 package com.twitter.finagle.http
 
-import org.jboss.netty.handler.codec.http.{HttpHeaders, CookieDecoder => NettyCookieDecoder, CookieEncoder => NettyCookieEncoder}
+import org.jboss.netty.handler.codec.http.{
+  HttpHeaders,
+  CookieDecoder => NettyCookieDecoder,
+  CookieEncoder => NettyCookieEncoder
+}
 import scala.collection.mutable
 import scala.collection.JavaConverters._
 
@@ -24,7 +28,7 @@ class CookieMap(message: Message)
   /**
     * Checks if there was a parse error. Invalid cookies are ignored.
     */
-  def isValid = _isValid
+  def isValid                = _isValid
   private[this] var _isValid = true
 
   private[this] val cookieHeaderName =
@@ -70,7 +74,7 @@ class CookieMap(message: Message)
   def iterator: Iterator[(String, Cookie)] =
     for {
       (name, cookies) <- underlying.iterator
-      cookie <- cookies
+      cookie          <- cookies
     } yield (name, cookie)
 
   /**
@@ -168,7 +172,7 @@ class CookieMap(message: Message)
 
   for {
     cookieHeader <- message.headers.getAll(cookieHeaderName).asScala
-    cookie <- decodeCookies(cookieHeader)
+    cookie       <- decodeCookies(cookieHeader)
   } {
     add(cookie)
   }

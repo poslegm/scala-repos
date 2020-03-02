@@ -20,11 +20,14 @@ object ServiceRegistrySpec extends MultiNodeConfig {
   val node2 = role("node-2")
   val node3 = role("node-3")
 
-  commonConfig(ConfigFactory.parseString("""
+  commonConfig(
+    ConfigFactory
+      .parseString("""
     akka.loglevel = INFO
     akka.actor.provider = "akka.cluster.ClusterActorRefProvider"
     akka.log-dead-letters-during-shutdown = off
-    """))
+    """)
+  )
 
   class Service extends Actor {
     def receive = {
@@ -38,14 +41,15 @@ class ServiceRegistrySpecMultiJvmNode2 extends ServiceRegistrySpec
 class ServiceRegistrySpecMultiJvmNode3 extends ServiceRegistrySpec
 
 class ServiceRegistrySpec
-    extends MultiNodeSpec(ServiceRegistrySpec) with STMultiNodeSpec
+    extends MultiNodeSpec(ServiceRegistrySpec)
+    with STMultiNodeSpec
     with ImplicitSender {
   import ServiceRegistrySpec._
   import ServiceRegistry._
 
   override def initialParticipants = roles.size
 
-  val cluster = Cluster(system)
+  val cluster  = Cluster(system)
   val registry = system.actorOf(ServiceRegistry.props)
 
   def join(from: RoleName, to: RoleName): Unit = {
@@ -77,8 +81,12 @@ class ServiceRegistrySpec
       awaitAssert {
         val probe = TestProbe()
         registry.tell(new Lookup("a"), probe.ref)
-        probe.expectMsgType[Bindings].services.asScala.map(_.path.name).toSet should be(
-            Set("a1"))
+        probe
+          .expectMsgType[Bindings]
+          .services
+          .asScala
+          .map(_.path.name)
+          .toSet should be(Set("a1"))
       }
 
       enterBarrier("after-2")
@@ -101,8 +109,12 @@ class ServiceRegistrySpec
           .map(_.path.name)
           .toSet should be(Set("a1", "a2"))
         registry.tell(new Lookup("a"), probe.ref)
-        probe.expectMsgType[Bindings].services.asScala.map(_.path.name).toSet should be(
-            Set("a1", "a2"))
+        probe
+          .expectMsgType[Bindings]
+          .services
+          .asScala
+          .map(_.path.name)
+          .toSet should be(Set("a1", "a2"))
       }
 
       enterBarrier("after-4")
@@ -131,8 +143,12 @@ class ServiceRegistrySpec
           .map(_.path.name)
           .toSet should be(Set("a1"))
         registry.tell(new Lookup("a"), probe.ref)
-        probe.expectMsgType[Bindings].services.asScala.map(_.path.name).toSet should be(
-            Set("a1"))
+        probe
+          .expectMsgType[Bindings]
+          .services
+          .asScala
+          .map(_.path.name)
+          .toSet should be(Set("a1"))
       }
 
       enterBarrier("after-5")
@@ -149,8 +165,12 @@ class ServiceRegistrySpec
         val probe = TestProbe()
         for (i ← 100 until 200) {
           registry.tell(new Lookup("a" + i), probe.ref)
-          probe.expectMsgType[Bindings].services.asScala.map(_.path.name).toSet should be(
-              roles.map(_.name + "_" + i).toSet)
+          probe
+            .expectMsgType[Bindings]
+            .services
+            .asScala
+            .map(_.path.name)
+            .toSet should be(roles.map(_.name + "_" + i).toSet)
         }
       }
 

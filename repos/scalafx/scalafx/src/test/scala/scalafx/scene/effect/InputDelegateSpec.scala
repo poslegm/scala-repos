@@ -37,18 +37,16 @@ trait InputDelegateSpec[D <: InputDelegate[_]] extends FlatSpec {
   protected val inputDelegate: D
 
   it should "allow observe changes in Input Effect" in {
-    var changed = false
+    var changed      = false
     val initialInput = new Lighting
-    val finalInput = new ColorInput
+    val finalInput   = new ColorInput
 
     inputDelegate.input = initialInput
 
-    inputDelegate.input.onChange(
-        (ov, oldInput, newInput) =>
-          {
-        oldInput should be(initialInput.delegate)
-        newInput should be(finalInput.delegate)
-        changed = true
+    inputDelegate.input.onChange((ov, oldInput, newInput) => {
+      oldInput should be(initialInput.delegate)
+      newInput should be(finalInput.delegate)
+      changed = true
     })
 
     inputDelegate.input = finalInput

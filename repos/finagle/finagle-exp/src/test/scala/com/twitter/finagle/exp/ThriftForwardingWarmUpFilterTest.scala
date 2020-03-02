@@ -15,15 +15,15 @@ import org.scalatest.mock.MockitoSugar
 class ThriftForwardingWarmUpFilterTest extends FunSuite with MockitoSugar {
 
   def newCtx() = new {
-    val service = mock[Service[Array[Byte], Array[Byte]]]
-    val forwardService = mock[Service[ThriftClientRequest, Array[Byte]]]
-    val numRequests = 9
-    val duration = 4.seconds
+    val service              = mock[Service[Array[Byte], Array[Byte]]]
+    val forwardService       = mock[Service[ThriftClientRequest, Array[Byte]]]
+    val numRequests          = 9
+    val duration             = 4.seconds
     val bypassedClientPrefix = "bypassMe"
     val filter = new ThriftForwardingWarmUpFilter(
-        duration,
-        forwardService,
-        isBypassClient = { _.name.startsWith(bypassedClientPrefix) }
+      duration,
+      forwardService,
+      isBypassClient = { _.name.startsWith(bypassedClientPrefix) }
     )
     val req = new Array[Byte](1)
     val rep = new Array[Byte](2)
@@ -44,8 +44,7 @@ class ThriftForwardingWarmUpFilterTest extends FunSuite with MockitoSugar {
         mockService(forwardService)
         filter(req, service)
         sendRequests()
-        verify(forwardService, times(numRequests + 1))(
-            any[ThriftClientRequest])
+        verify(forwardService, times(numRequests + 1))(any[ThriftClientRequest])
       }
     }
   }

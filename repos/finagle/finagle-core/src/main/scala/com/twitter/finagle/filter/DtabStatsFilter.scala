@@ -11,7 +11,7 @@ object DtabStatsFilter {
     */
   def module[Req, Rep]: Stackable[ServiceFactory[Req, Rep]] =
     new Stack.Module1[param.Stats, ServiceFactory[Req, Rep]] {
-      val role = DtabStatsFilter.role
+      val role        = DtabStatsFilter.role
       val description = "Report dtab statistics"
       def make(_stats: param.Stats, next: ServiceFactory[Req, Rep]) = {
         val param.Stats(statsReceiver) = _stats

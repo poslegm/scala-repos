@@ -15,47 +15,48 @@ import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.ScTemplateDefin
   */
 class ScTemplateDefinitionStubImpl[ParentPsi <: PsiElement](
     parent: StubElement[ParentPsi],
-    elemType: IStubElementType[
-        _ <: StubElement[_ <: PsiElement], _ <: PsiElement])
-    extends StubBaseWrapper[ScTemplateDefinition](parent, elemType)
+    elemType: IStubElementType[_ <: StubElement[_ <: PsiElement], _ <: PsiElement]
+) extends StubBaseWrapper[ScTemplateDefinition](parent, elemType)
     with ScTemplateDefinitionStub {
 
-  var myName: String = _
-  var myQualName: String = _
-  var myJavaQualName: String = _
-  var mySourceFileName: String = _
-  var myMethodNames: Array[String] = Array[String]()
-  var myJavaName: String = _
+  var myName: String                       = _
+  var myQualName: String                   = _
+  var myJavaQualName: String               = _
+  var mySourceFileName: String             = _
+  var myMethodNames: Array[String]         = Array[String]()
+  var myJavaName: String                   = _
   var myAdditionalJavaNames: Array[String] = Array.empty
-  private var _isScriptFileClass: Boolean = _
-  private var _isPackageObject: Boolean = _
-  private var _isDeprecated: Boolean = _
-  private var _isImplicitObject: Boolean = _
-  private var _isImplicitClass: Boolean = _
-  private var local: Boolean = false
-  private var visibleInJava: Boolean = false
+  private var _isScriptFileClass: Boolean  = _
+  private var _isPackageObject: Boolean    = _
+  private var _isDeprecated: Boolean       = _
+  private var _isImplicitObject: Boolean   = _
+  private var _isImplicitClass: Boolean    = _
+  private var local: Boolean               = false
+  private var visibleInJava: Boolean       = false
 
-  def this(parent: StubElement[ParentPsi],
-           elemType: IStubElementType[
-               _ <: StubElement[_ <: PsiElement], _ <: PsiElement],
-           name: String,
-           qualName: String,
-           javaQualName: String,
-           sourceFileName: String,
-           methodNames: Array[String],
-           isPackageObject: Boolean,
-           isScriptFileClass: Boolean,
-           isDeprecated: Boolean,
-           isImplicitObject: Boolean,
-           isImplicitClass: Boolean,
-           javaName: String,
-           additionalJavaNames: Array[String],
-           isLocal: Boolean,
-           visibleInJava: Boolean) {
+  def this(
+      parent: StubElement[ParentPsi],
+      elemType: IStubElementType[_ <: StubElement[_ <: PsiElement], _ <: PsiElement],
+      name: String,
+      qualName: String,
+      javaQualName: String,
+      sourceFileName: String,
+      methodNames: Array[String],
+      isPackageObject: Boolean,
+      isScriptFileClass: Boolean,
+      isDeprecated: Boolean,
+      isImplicitObject: Boolean,
+      isImplicitClass: Boolean,
+      javaName: String,
+      additionalJavaNames: Array[String],
+      isLocal: Boolean,
+      visibleInJava: Boolean
+  ) {
     this(
-        parent,
-        elemType
-          .asInstanceOf[IStubElementType[StubElement[PsiElement], PsiElement]])
+      parent,
+      elemType
+        .asInstanceOf[IStubElementType[StubElement[PsiElement], PsiElement]]
+    )
     mySourceFileName = sourceFileName
     myName = name
     myQualName = qualName
@@ -72,27 +73,29 @@ class ScTemplateDefinitionStubImpl[ParentPsi <: PsiElement](
     this.visibleInJava = visibleInJava
   }
 
-  def this(parent: StubElement[ParentPsi],
-           elemType: IStubElementType[
-               _ <: StubElement[_ <: PsiElement], _ <: PsiElement],
-           name: StringRef,
-           qualName: StringRef,
-           javaQualName: StringRef,
-           sourceFileName: StringRef,
-           methodNames: Array[StringRef],
-           isPackageObject: Boolean,
-           isScriptFileClass: Boolean,
-           isDeprecated: Boolean,
-           isImplicitObject: Boolean,
-           isImplicitClass: Boolean,
-           javaName: StringRef,
-           additionalJavaNames: Array[StringRef],
-           isLocal: Boolean,
-           visibleInJava: Boolean) {
+  def this(
+      parent: StubElement[ParentPsi],
+      elemType: IStubElementType[_ <: StubElement[_ <: PsiElement], _ <: PsiElement],
+      name: StringRef,
+      qualName: StringRef,
+      javaQualName: StringRef,
+      sourceFileName: StringRef,
+      methodNames: Array[StringRef],
+      isPackageObject: Boolean,
+      isScriptFileClass: Boolean,
+      isDeprecated: Boolean,
+      isImplicitObject: Boolean,
+      isImplicitClass: Boolean,
+      javaName: StringRef,
+      additionalJavaNames: Array[StringRef],
+      isLocal: Boolean,
+      visibleInJava: Boolean
+  ) {
     this(
-        parent,
-        elemType
-          .asInstanceOf[IStubElementType[StubElement[PsiElement], PsiElement]])
+      parent,
+      elemType
+        .asInstanceOf[IStubElementType[StubElement[PsiElement], PsiElement]]
+    )
     mySourceFileName = StringRef.toString(sourceFileName)
     myName = StringRef.toString(name)
     myQualName = StringRef.toString(qualName)
@@ -134,15 +137,15 @@ class ScTemplateDefinitionStubImpl[ParentPsi <: PsiElement](
   def isImplicitClass: Boolean = _isImplicitClass
 
   //todo PsiClassStub methods
-  def getLanguageLevel: LanguageLevel = LanguageLevel.JDK_1_5
-  def isEnum: Boolean = false
-  def isInterface: Boolean = false
-  def isAnonymous: Boolean = false
+  def getLanguageLevel: LanguageLevel    = LanguageLevel.JDK_1_5
+  def isEnum: Boolean                    = false
+  def isInterface: Boolean               = false
+  def isAnonymous: Boolean               = false
   def isAnonymousInQualifiedNew: Boolean = false
-  def isAnnotationType: Boolean = false
-  def hasDeprecatedAnnotation: Boolean = false
+  def isAnnotationType: Boolean          = false
+  def hasDeprecatedAnnotation: Boolean   = false
   def isEnumConstantInitializer: Boolean = false
-  def getBaseClassReferenceText: String = null
+  def getBaseClassReferenceText: String  = null
   def additionalJavaNames: Array[String] = myAdditionalJavaNames
-  def javaName: String = myJavaName
+  def javaName: String                   = myJavaName
 }

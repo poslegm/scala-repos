@@ -45,10 +45,10 @@ trait TypedSource[+T] extends java.io.Serializable {
     val self =
       this // compiler generated self can cause problems with serialization
     new TypedSource[U] {
-      override def sourceFields = self.sourceFields
-      def converter[V >: U]: TupleConverter[V] = self.converter.andThen(fn)
+      override def sourceFields                        = self.sourceFields
+      def converter[V >: U]: TupleConverter[V]         = self.converter.andThen(fn)
       def read(implicit fd: FlowDef, mode: Mode): Pipe = self.read
-      override def andThen[U1](fn2: U => U1) = self.andThen(fn.andThen(fn2))
+      override def andThen[U1](fn2: U => U1)           = self.andThen(fn.andThen(fn2))
     }
   }
 }

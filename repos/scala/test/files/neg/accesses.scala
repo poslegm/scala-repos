@@ -20,7 +20,7 @@ abstract class OK2 extends A {
   def f5(): Unit
 }
 abstract class Err1 extends A {
-  private def f2(): Unit = ()
+  private def f2(): Unit     = ()
   private[p2] def f3(): Unit = ()
   private[p2] def f4(): Unit
   protected[p2] def f5(): Unit

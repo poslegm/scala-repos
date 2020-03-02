@@ -22,9 +22,9 @@ trait Order[@sp A] extends Any with PartialOrder[A] { self =>
 
   def partialCompare(x: A, y: A): Double = compare(x, y).toDouble
 
-  override def eqv(x: A, y: A): Boolean = compare(x, y) == 0
-  override def gt(x: A, y: A): Boolean = compare(x, y) > 0
-  override def lt(x: A, y: A): Boolean = compare(x, y) < 0
+  override def eqv(x: A, y: A): Boolean   = compare(x, y) == 0
+  override def gt(x: A, y: A): Boolean    = compare(x, y) > 0
+  override def lt(x: A, y: A): Boolean    = compare(x, y) < 0
   override def gteqv(x: A, y: A): Boolean = compare(x, y) >= 0
   override def lteqv(x: A, y: A): Boolean = compare(x, y) <= 0
 

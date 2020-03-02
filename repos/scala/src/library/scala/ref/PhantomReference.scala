@@ -21,7 +21,11 @@ class PhantomReference[+T <: AnyRef](value: T, queue: ReferenceQueue[T])
   *  @author Philipp Haller
   */
 private class PhantomReferenceWithWrapper[T <: AnyRef](
-    value: T, queue: ReferenceQueue[T], val wrapper: PhantomReference[T])
-    extends java.lang.ref.PhantomReference[T](
-        value, queue.underlying.asInstanceOf[java.lang.ref.ReferenceQueue[T]])
+    value: T,
+    queue: ReferenceQueue[T],
+    val wrapper: PhantomReference[T]
+) extends java.lang.ref.PhantomReference[T](
+      value,
+      queue.underlying.asInstanceOf[java.lang.ref.ReferenceQueue[T]]
+    )
     with ReferenceWithWrapper[T]

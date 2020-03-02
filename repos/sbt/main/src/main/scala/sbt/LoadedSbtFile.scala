@@ -15,23 +15,28 @@ private[sbt] final class LoadedSbtFile(
     // TODO - we may want to expose a simpler interface on top of here for the set command,
     // rather than what we have now...
     val definitions: DefinedSbtValues,
-    val generatedFiles: Seq[File]) {
+    val generatedFiles: Seq[File]
+) {
   // We still use merge for now.  We track originating sbt file in an alternative manner.
   def merge(o: LoadedSbtFile): LoadedSbtFile =
-    new LoadedSbtFile(settings ++ o.settings,
-                      projects ++ o.projects,
-                      importedDefs ++ o.importedDefs,
-                      manipulations,
-                      definitions zip o.definitions,
-                      generatedFiles ++ o.generatedFiles)
+    new LoadedSbtFile(
+      settings ++ o.settings,
+      projects ++ o.projects,
+      importedDefs ++ o.importedDefs,
+      manipulations,
+      definitions zip o.definitions,
+      generatedFiles ++ o.generatedFiles
+    )
 
   def clearProjects =
-    new LoadedSbtFile(settings,
-                      Nil,
-                      importedDefs,
-                      manipulations,
-                      definitions,
-                      generatedFiles)
+    new LoadedSbtFile(
+      settings,
+      Nil,
+      importedDefs,
+      manipulations,
+      definitions,
+      generatedFiles
+    )
 }
 
 /**
@@ -39,23 +44,22 @@ private[sbt] final class LoadedSbtFile(
   * which we can reference in other settings.
   */
 private[sbt] final class DefinedSbtValues(
-    val sbtFiles: Seq[compiler.EvalDefinitions]) {
+    val sbtFiles: Seq[compiler.EvalDefinitions]
+) {
 
   def values(parent: ClassLoader): Seq[Any] =
     sbtFiles flatMap (_ values parent)
 
   def classloader(parent: ClassLoader): ClassLoader =
-    sbtFiles.foldLeft(parent) { (cl, e) =>
-      e.loader(cl)
-    }
+    sbtFiles.foldLeft(parent) { (cl, e) => e.loader(cl) }
 
   def imports: Seq[String] = {
     // TODO - Sanity check duplicates and such, so users get a nice warning rather
     // than explosion.
     for {
       file <- sbtFiles
-      m = file.enclosingModule
-      v <- file.valNames
+      m    = file.enclosingModule
+      v    <- file.valNames
     } yield s"import ${m}.${v}"
   }
   def generated: Seq[File] =

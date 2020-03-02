@@ -38,7 +38,7 @@ class DoubleType private () extends FractionalType {
   @transient private[sql] lazy val tag = ScalaReflectionLock.synchronized {
     typeTag[InternalType]
   }
-  private[sql] val numeric = implicitly[Numeric[Double]]
+  private[sql] val numeric    = implicitly[Numeric[Double]]
   private[sql] val fractional = implicitly[Fractional[Double]]
   private[sql] val ordering = new Ordering[Double] {
     override def compare(x: Double, y: Double): Int =

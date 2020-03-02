@@ -14,28 +14,30 @@ trait Types extends Core {
   }
   val Dcl: P0 = {
     P(
-        Pass ~
-        ((`val` | `var`) ~/ ValVarDef | `def` ~/ FunDef | `type` ~/ TypeDef))
+      Pass ~
+        ((`val` | `var`) ~/ ValVarDef | `def` ~/ FunDef | `type` ~/ TypeDef)
+    )
   }
 
   val Mod: P0 = P(LocalMod | AccessMod | `override`)
 
   val ExistentialClause = P(`forSome` ~/ `{` ~ Dcl.repX(1, Semis) ~ `}`)
-  val PostfixType = P(InfixType ~ (`=>` ~/ Type | ExistentialClause).?)
-  val Type: P0 = P(`=>`.? ~~ PostfixType ~ TypeBounds ~ `*`.?)
+  val PostfixType       = P(InfixType ~ (`=>` ~/ Type | ExistentialClause).?)
+  val Type: P0          = P(`=>`.? ~~ PostfixType ~ TypeBounds ~ `*`.?)
 
   // Can't cut after `Id` because it may be a `*`, in which case
   // we may need to backtrack and settle for the `*`-postfix rather than
   // an infix type
   val InfixType = P(
-      CompoundType ~~ (NotNewline ~ Id ~~ OneNLMax ~ CompoundType).repX)
+    CompoundType ~~ (NotNewline ~ Id ~~ OneNLMax ~ CompoundType).repX
+  )
 
   val CompoundType = {
     val Refinement = P(OneNLMax ~ `{` ~/ Dcl.repX(sep = Semis) ~ `}`)
-    val NamedType = P((Pass ~ AnnotType).rep(1, `with`.~/))
+    val NamedType  = P((Pass ~ AnnotType).rep(1, `with`.~/))
     P(NamedType ~~ Refinement.? | Refinement)
   }
-  val NLAnnot = P(NotNewline ~ Annot)
+  val NLAnnot   = P(NotNewline ~ Annot)
   val AnnotType = P(SimpleType ~~ NLAnnot.repX)
 
   val TypeId = P(StableId)
@@ -50,9 +52,9 @@ trait Types extends Core {
   val TypeArgs = P("[" ~/ Type.rep(sep = ",".~/) ~ "]")
 
   val FunSig: P0 = {
-    val FunArg = P(Annot.rep ~ Id ~ (`:` ~/ Type).? ~ (`=` ~/ TypeExpr).?)
-    val Args = P(FunArg.rep(1, ",".~/))
-    val FunArgs = P(OneNLMax ~ "(" ~/ (Pass ~ `implicit`).? ~ Args.? ~ ")")
+    val FunArg      = P(Annot.rep ~ Id ~ (`:` ~/ Type).? ~ (`=` ~/ TypeExpr).?)
+    val Args        = P(FunArg.rep(1, ",".~/))
+    val FunArgs     = P(OneNLMax ~ "(" ~/ (Pass ~ `implicit`).? ~ Args.? ~ ")")
     val FunTypeArgs = P("[" ~/ (Annot.rep ~ TypeArg).rep(1, ",".~/) ~ "]")
     P((Id | `this`) ~ (Pass ~ FunTypeArgs).? ~~ FunArgs.rep)
   }
@@ -64,12 +66,13 @@ trait Types extends Core {
   }
 
   val Annot: P0 = P(
-      `@` ~/ SimpleType ~ ("(" ~/ (Exprs ~ (`:` ~/ `_*`).?).? ~ ")").rep)
+    `@` ~/ SimpleType ~ ("(" ~/ (Exprs ~ (`:` ~/ `_*`).?).? ~ ")").rep
+  )
 
   val TypeArgList: P0 = {
     val Variant: P0 = P(Annot.rep ~ CharIn("+-").? ~ TypeArg)
     P("[" ~/ Variant.rep(1, ",".~/) ~ "]")
   }
-  val Exprs: P0 = P(TypeExpr.rep(1, ",".~/))
+  val Exprs: P0   = P(TypeExpr.rep(1, ",".~/))
   val TypeDef: P0 = P(Id ~ TypeArgList.? ~ (`=` ~/ Type | TypeBounds))
 }

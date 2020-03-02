@@ -43,7 +43,7 @@ object ColumnarBatchBenchmark {
     // Accessing a java array.
     val javaArray = { i: Int =>
       val data = new Array[Int](count)
-      var sum = 0L
+      var sum  = 0L
       for (n <- 0L until iters) {
         var i = 0
         while (i < count) {
@@ -61,7 +61,7 @@ object ColumnarBatchBenchmark {
     // Accessing ByteBuffers
     val byteBufferUnsafe = { i: Int =>
       val data = ByteBuffer.allocate(count * 4)
-      var sum = 0L
+      var sum  = 0L
       for (n <- 0L until iters) {
         var i = 0
         while (i < count) {
@@ -80,7 +80,7 @@ object ColumnarBatchBenchmark {
     // Accessing offheap byte buffers
     val directByteBuffer = { i: Int =>
       val data = ByteBuffer.allocateDirect(count * 4).asIntBuffer()
-      var sum = 0L
+      var sum  = 0L
       for (n <- 0L until iters) {
         var i = 0
         while (i < count) {
@@ -100,7 +100,7 @@ object ColumnarBatchBenchmark {
     // Accessing ByteBuffer using the typed APIs
     val byteBufferApi = { i: Int =>
       val data = ByteBuffer.allocate(count * 4)
-      var sum = 0L
+      var sum  = 0L
       for (n <- 0L until iters) {
         var i = 0
         while (i < count) {
@@ -120,10 +120,10 @@ object ColumnarBatchBenchmark {
     // Using unsafe memory
     val unsafeBuffer = { i: Int =>
       val data: Long = Platform.allocateMemory(count * 4)
-      var sum = 0L
+      var sum        = 0L
       for (n <- 0L until iters) {
         var ptr = data
-        var i = 0
+        var i   = 0
         while (i < count) {
           Platform.putInt(null, ptr, i)
           ptr += 4
@@ -186,7 +186,7 @@ object ColumnarBatchBenchmark {
       var sum = 0L
       for (n <- 0L until iters) {
         var addr = col.valuesNativeAddress()
-        var i = 0
+        var i    = 0
         while (i < count) {
           Platform.putInt(null, addr, i)
           addr += 4
@@ -206,10 +206,10 @@ object ColumnarBatchBenchmark {
     // Access by going through a batch of unsafe rows.
     val unsafeRowOnheap = { i: Int =>
       val buffer = new Array[Byte](count * 16)
-      var sum = 0L
+      var sum    = 0L
       for (n <- 0L until iters) {
         val row = new UnsafeRow(1)
-        var i = 0
+        var i   = 0
         while (i < count) {
           row.pointTo(buffer, Platform.BYTE_ARRAY_OFFSET + i * 16, 16)
           row.setInt(0, i)
@@ -227,10 +227,10 @@ object ColumnarBatchBenchmark {
     // Access by going through a batch of unsafe rows.
     val unsafeRowOffheap = { i: Int =>
       val buffer = Platform.allocateMemory(count * 16)
-      var sum = 0L
+      var sum    = 0L
       for (n <- 0L until iters) {
         val row = new UnsafeRow(1)
-        var i = 0
+        var i   = 0
         while (i < count) {
           row.pointTo(null, buffer + i * 16, 16)
           row.setInt(0, i)
@@ -298,11 +298,11 @@ object ColumnarBatchBenchmark {
   }
 
   def booleanAccess(iters: Int): Unit = {
-    val count = 8 * 1024
+    val count     = 8 * 1024
     val benchmark = new Benchmark("Boolean Read/Write", iters * count)
     benchmark.addCase("Bitset") { i: Int =>
       {
-        val b = new BitSet(count)
+        val b   = new BitSet(count)
         var sum = 0L
         for (n <- 0L until iters) {
           var i = 0
@@ -321,7 +321,7 @@ object ColumnarBatchBenchmark {
 
     benchmark.addCase("Byte Array") { i: Int =>
       {
-        val b = new Array[Byte](count)
+        val b   = new Array[Byte](count)
         var sum = 0L
         for (n <- 0L until iters) {
           var i = 0
@@ -348,13 +348,13 @@ object ColumnarBatchBenchmark {
   }
 
   def stringAccess(iters: Long): Unit = {
-    val chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    val chars  = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     val random = new Random(0)
 
     def randomString(min: Int, max: Int): String = {
       val len = random.nextInt(max - min) + min
-      val sb = new StringBuilder(len)
-      var i = 0
+      val sb  = new StringBuilder(len)
+      var i   = 0
       while (i < len) {
         sb.append(chars.charAt(random.nextInt(chars.length())));
         i += 1
@@ -364,7 +364,7 @@ object ColumnarBatchBenchmark {
 
     val minString = 3
     val maxString = 32
-    val count = 4 * 1000
+    val count     = 4 * 1000
 
     val data = Seq
       .fill(count)(randomString(minString, maxString))
@@ -373,7 +373,7 @@ object ColumnarBatchBenchmark {
 
     def column(memoryMode: MemoryMode) = { i: Int =>
       val column = ColumnVector.allocate(count, BinaryType, memoryMode)
-      var sum = 0L
+      var sum    = 0L
       for (n <- 0L until iters) {
         var i = 0
         while (i < count) {

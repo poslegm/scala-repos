@@ -26,7 +26,7 @@ class PcgXshRr64_32 private (private var state: Long, private var inc: Long)
 
     state = oldState * 6364136223846793005L + inc
     val xorShifted = (((oldState >>> 18) ^ oldState) >>> 27).toInt
-    val rot = (oldState >>> 59).toInt
+    val rot        = (oldState >>> 59).toInt
     Integer.rotateRight(xorShifted, rot)
   }
 
@@ -69,12 +69,13 @@ object PcgXshRr64_32 extends GeneratorCompanion[PcgXshRr64_32, PcgSeed64] {
   }
 
   private[this] val streamUniquifier = new AtomicLong(
-      System.identityHashCode(PcgXshRr64_32))
+    System.identityHashCode(PcgXshRr64_32)
+  )
 
   @tailrec
   private[this] def nextStreamId(): Long = {
     val current = streamUniquifier.get()
-    val next = current * 181783497276652981L
+    val next    = current * 181783497276652981L
     if (streamUniquifier.compareAndSet(current, next)) {
       next
     } else {

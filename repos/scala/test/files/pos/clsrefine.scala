@@ -13,10 +13,10 @@ package scalac.util {
     val y1, y2: Y;
     type X1 = Y;
     type X2 = Y;
-    val x1 = y1;
-    val x2 = y2;
+    val x1                   = y1;
+    val x2                   = y2;
     def f(x: Y, xs: B): Unit = {}
-    def g() = f(y1, this);
+    def g()                  = f(y1, this);
   }
 
   object test {

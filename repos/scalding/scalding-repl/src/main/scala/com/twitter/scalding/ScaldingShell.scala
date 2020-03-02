@@ -49,9 +49,7 @@ trait BaseScaldingShell extends MainGenericRunner {
 
   protected def replState: BaseReplState = ReplState
 
-  protected def scaldingREPLProvider: () => ILoop = { () =>
-    new ScaldingILoop
-  }
+  protected def scaldingREPLProvider: () => ILoop = { () => new ScaldingILoop }
 
   /**
     * The main entry point for executing the REPL.
@@ -87,15 +85,15 @@ trait BaseScaldingShell extends MainGenericRunner {
     scaldingREPL = Some(repl)
     replState.mode = mode
     replState.customConfig = replState.customConfig ++
-    (mode match {
-          case _: HadoopMode => cfg
-          case _ => Config.empty
-        })
+      (mode match {
+        case _: HadoopMode => cfg
+        case _             => Config.empty
+      })
 
     // if in Hdfs mode, store the mode to enable switching between Local and Hdfs
     mode match {
       case m @ Hdfs(_, _) => replState.storedHdfsMode = Some(m)
-      case _ => ()
+      case _              => ()
     }
 
     replState.printModeBanner()
@@ -116,7 +114,7 @@ trait BaseScaldingShell extends MainGenericRunner {
     * @return a Mode for the job (e.g. local, hdfs), config and the non-hadoop params
     */
   def parseModeArgs(args: Array[String]): ShellArgs = {
-    val a = nonHadoopArgsFrom(args)
+    val a    = nonHadoopArgsFrom(args)
     val mode = Mode(Args(a), conf)
     ShellArgs(Config.defaultFrom(mode), mode, a.toList)
   }
@@ -142,8 +140,9 @@ trait BaseScaldingShell extends MainGenericRunner {
     scaldingREPL.map { repl =>
       val virtualDirectory = repl.virtualDirectory
       val tempJar = new File(
-          Files.createTempDir(),
-          "scalding-repl-session-" + System.currentTimeMillis() + ".jar")
+        Files.createTempDir(),
+        "scalding-repl-session-" + System.currentTimeMillis() + ".jar"
+      )
       createJar(virtualDirectory.asInstanceOf[VirtualDirectory], tempJar)
     }
   }
@@ -156,7 +155,9 @@ trait BaseScaldingShell extends MainGenericRunner {
     * @return the jarFile specified and written.
     */
   private def createJar(
-      virtualDirectory: VirtualDirectory, jarFile: File): File = {
+      virtualDirectory: VirtualDirectory,
+      jarFile: File
+  ): File = {
     val jarStream = new JarOutputStream(new FileOutputStream(jarFile))
     try {
       addVirtualDirectoryToJar(virtualDirectory, "", jarStream)
@@ -176,16 +177,22 @@ trait BaseScaldingShell extends MainGenericRunner {
     * @param jarStream for writing the jar file.
     */
   private def addVirtualDirectoryToJar(
-      dir: VirtualDirectory, entryPath: String, jarStream: JarOutputStream) {
+      dir: VirtualDirectory,
+      entryPath: String,
+      jarStream: JarOutputStream
+  ) {
     dir.foreach { file =>
       if (file.isDirectory) {
         // Recursively descend into subdirectories, adjusting the package name as we do.
-        val dirPath = entryPath + file.name + "/"
+        val dirPath         = entryPath + file.name + "/"
         val entry: JarEntry = new JarEntry(dirPath)
         jarStream.putNextEntry(entry)
         jarStream.closeEntry()
         addVirtualDirectoryToJar(
-            file.asInstanceOf[VirtualDirectory], dirPath, jarStream)
+          file.asInstanceOf[VirtualDirectory],
+          dirPath,
+          jarStream
+        )
       } else if (file.hasExtension("class")) {
         // Add class files as an entry in the jar file and write the class to the jar.
         val entry: JarEntry = new JarEntry(entryPath + file.name)

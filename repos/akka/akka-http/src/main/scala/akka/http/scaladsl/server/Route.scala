@@ -27,7 +27,8 @@ object Route {
       implicit routingSettings: RoutingSettings,
       parserSettings: ParserSettings = null,
       rejectionHandler: RejectionHandler = RejectionHandler.default,
-      exceptionHandler: ExceptionHandler = null): Route = {
+      exceptionHandler: ExceptionHandler = null
+  ): Route = {
     import directives.ExecutionDirectives._
     handleExceptions(ExceptionHandler.seal(exceptionHandler)) {
       handleRejections(rejectionHandler.seal) {
@@ -48,8 +49,8 @@ object Route {
       routingLog: RoutingLog,
       executionContext: ExecutionContextExecutor = null,
       rejectionHandler: RejectionHandler = RejectionHandler.default,
-      exceptionHandler: ExceptionHandler = null)
-    : Flow[HttpRequest, HttpResponse, NotUsed] =
+      exceptionHandler: ExceptionHandler = null
+  ): Flow[HttpRequest, HttpResponse, NotUsed] =
     Flow[HttpRequest].mapAsync(1)(asyncHandler(route))
 
   /**
@@ -62,8 +63,8 @@ object Route {
       routingLog: RoutingLog,
       executionContext: ExecutionContextExecutor = null,
       rejectionHandler: RejectionHandler = RejectionHandler.default,
-      exceptionHandler: ExceptionHandler = null)
-    : HttpRequest ⇒ Future[HttpResponse] = {
+      exceptionHandler: ExceptionHandler = null
+  ): HttpRequest ⇒ Future[HttpResponse] = {
     val effectiveEC =
       if (executionContext ne null) executionContext
       else materializer.executionContext
@@ -77,14 +78,18 @@ object Route {
       val sealedRoute = seal(route)
       request ⇒
         sealedRoute(
-            new RequestContextImpl(request,
-                                   routingLog.requestLog(request),
-                                   routingSettings,
-                                   effectiveParserSettings)).fast.map {
+          new RequestContextImpl(
+            request,
+            routingLog.requestLog(request),
+            routingSettings,
+            effectiveParserSettings
+          )
+        ).fast.map {
           case RouteResult.Complete(response) ⇒ response
           case RouteResult.Rejected(rejected) ⇒
             throw new IllegalStateException(
-                s"Unhandled rejections '$rejected', unsealed RejectionHandler?!")
+              s"Unhandled rejections '$rejected', unsealed RejectionHandler?!"
+            )
         }
     }
   }

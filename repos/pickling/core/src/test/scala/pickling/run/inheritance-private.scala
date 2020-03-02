@@ -9,13 +9,14 @@ trait Person {
 }
 
 class Employee {
-  private var salary: Int = 0
+  private var salary: Int       = 0
   def setSalary(newSalary: Int) = salary = newSalary
-  def exposeSalary = salary
+  def exposeSalary              = salary
 }
 
 case class Firefighter(val name: String, val age: Int, val since: Int)
-    extends Employee with Person
+    extends Employee
+    with Person
 object Firefighter {
   implicit val fpickler = PicklerUnpickler.generate[Firefighter]
 }
@@ -27,7 +28,7 @@ class InheritancePrivateTest extends FunSuite {
 
     val pickleF = (f: Firefighter).pickle
     assert(
-        pickleF.value === """
+      pickleF.value === """
       |{
       |  "$type": "scala.pickling.inheritance.private.Firefighter",
       |  "name": "Jeff",
@@ -35,7 +36,8 @@ class InheritancePrivateTest extends FunSuite {
       |  "since": 1990,
       |  "salary": 30000
       |}
-    """.trim.stripMargin)
+    """.trim.stripMargin
+    )
     val uf = pickleF.unpickle[Firefighter]
     assert(uf === f)
     assert(uf.exposeSalary === 30000)
@@ -47,7 +49,7 @@ class InheritancePrivateTest extends FunSuite {
 
     val pickleE = (f: Employee).pickle
     assert(
-        pickleE.value === """
+      pickleE.value === """
       |{
       |  "$type": "scala.pickling.inheritance.private.Firefighter",
       |  "name": "Jeff",
@@ -55,7 +57,8 @@ class InheritancePrivateTest extends FunSuite {
       |  "since": 1990,
       |  "salary": 30000
       |}
-    """.trim.stripMargin)
+    """.trim.stripMargin
+    )
     val ue = pickleE.unpickle[Employee]
     assert(ue === f)
     assert(ue.exposeSalary === 30000)
@@ -67,7 +70,7 @@ class InheritancePrivateTest extends FunSuite {
 
     val pickleP = (f: Person).pickle
     assert(
-        pickleP.value === """
+      pickleP.value === """
       |{
       |  "$type": "scala.pickling.inheritance.private.Firefighter",
       |  "name": "Jeff",
@@ -75,7 +78,8 @@ class InheritancePrivateTest extends FunSuite {
       |  "since": 1990,
       |  "salary": 30000
       |}
-    """.trim.stripMargin)
+    """.trim.stripMargin
+    )
     assert(pickleP.unpickle[Person] === f)
   }
 }

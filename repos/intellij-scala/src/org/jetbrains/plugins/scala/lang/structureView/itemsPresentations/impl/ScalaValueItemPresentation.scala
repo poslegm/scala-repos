@@ -15,8 +15,9 @@ import org.jetbrains.plugins.scala.icons.Icons;
   * Date: 08.05.2008
   */
 class ScalaValueItemPresentation(
-    private val element: PsiElement, isInherited: Boolean)
-    extends ScalaItemPresentation(element) {
+    private val element: PsiElement,
+    isInherited: Boolean
+) extends ScalaItemPresentation(element) {
   def getPresentableText: String = {
     ScalaElementPresentation.getPresentableText(myElement)
   }

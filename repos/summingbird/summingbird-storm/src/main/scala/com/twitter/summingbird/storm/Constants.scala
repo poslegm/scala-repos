@@ -24,19 +24,22 @@ import com.twitter.summingbird.online.OnlineDefaultConstants
   * Here we can override ones from online, or add more that are more Storm specific
   */
 object Constants extends OnlineDefaultConstants {
-  val AGG_KEY = "aggKey"
-  val AGG_VALUE = "aggValue"
-  val AGG_BATCH = "aggBatchID"
+  val AGG_KEY     = "aggKey"
+  val AGG_VALUE   = "aggValue"
+  val AGG_BATCH   = "aggBatchID"
   val RETURN_INFO = "return-info"
 
-  val VALUE_FIELD = "value"
+  val VALUE_FIELD  = "value"
   val GROUP_BY_SUM = "groupBySum"
 
-  val DEFAULT_SPOUT_STORM_METRICS = SpoutStormMetrics(None)
-  val DEFAULT_FM_STORM_METRICS = FlatMapStormMetrics(None)
-  val DEFAULT_SUMMER_STORM_METRICS = SummerStormMetrics(None)
+  val DEFAULT_SPOUT_STORM_METRICS        = SpoutStormMetrics(None)
+  val DEFAULT_FM_STORM_METRICS           = FlatMapStormMetrics(None)
+  val DEFAULT_SUMMER_STORM_METRICS       = SummerStormMetrics(None)
   val DEFAULT_FM_PREFER_LOCAL_DEPENDENCY = PreferLocalDependency(false)
-  val DEFAULT_ACK_ON_ENTRY = AckOnEntry(false)
+  val DEFAULT_ACK_ON_ENTRY               = AckOnEntry(false)
   val DEFAULT_MAX_EXECUTE_PER_SEC = MaxExecutePerSecond(
-      lowerBound = Int.MaxValue, upperBound = Int.MaxValue, rampUptimeMS = 0L)
+    lowerBound = Int.MaxValue,
+    upperBound = Int.MaxValue,
+    rampUptimeMS = 0L
+  )
 }

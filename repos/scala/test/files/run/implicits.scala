@@ -11,15 +11,15 @@ class C(x: String) {
   class Inner {}
 
   object Inner {
-    val s: String = x
+    val s: String                               = x
     implicit def Inner2String(x: Inner): String = s
   }
 }
 
 object Test extends App {
   import A.B._
-  val c = new C("OK")
-  val i = new c.Inner
+  val c         = new C("OK")
+  val i         = new c.Inner
   val s: String = i
   Console.println(s)
   Console.println(2: String)

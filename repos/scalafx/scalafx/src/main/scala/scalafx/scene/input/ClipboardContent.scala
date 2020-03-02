@@ -40,7 +40,8 @@ import scalafx.scene.image.ImageIncludes.jfxImage2sfx
 
 object ClipboardContent {
   implicit def sfxClipboardContent2jfx(
-      c: ClipboardContent): jfxsi.ClipboardContent =
+      c: ClipboardContent
+  ): jfxsi.ClipboardContent =
     if (c != null) c.delegate else null
 
   def apply[T <: AnyRef](arg: Map[DataFormat, T]): ClipboardContent = {
@@ -99,8 +100,8 @@ object ClipboardContent {
   * @define ORIGINALDOC Original Documentation]].
   */
 class ClipboardContent(
-    override val delegate: jfxsi.ClipboardContent = new jfxsi.ClipboardContent)
-    extends JMapWrapperLike[jfxsi.DataFormat, AnyRef, ClipboardContent]
+    override val delegate: jfxsi.ClipboardContent = new jfxsi.ClipboardContent
+) extends JMapWrapperLike[jfxsi.DataFormat, AnyRef, ClipboardContent]
     with SFXDelegate[jfxsi.ClipboardContent] {
 
   override def underlying: java.util.Map[jfxsi.DataFormat, AnyRef] = delegate

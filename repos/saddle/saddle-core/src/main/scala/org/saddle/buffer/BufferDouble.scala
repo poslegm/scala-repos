@@ -19,8 +19,8 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrays
 import org.saddle.Buffer
 
 class BufferDouble(sz: Int = Buffer.INIT_CAPACITY) extends Buffer[Double] {
-  var list = Array.ofDim[Double](sz)
-  var count = 0
+  var list   = Array.ofDim[Double](sz)
+  var count  = 0
   var remain = sz
 
   def apply(loc: Int) = list(loc)
@@ -41,5 +41,5 @@ class BufferDouble(sz: Int = Buffer.INIT_CAPACITY) extends Buffer[Double] {
 
 object BufferDouble {
   def apply(sz: Int) = new BufferDouble(sz)
-  def apply() = new BufferDouble()
+  def apply()        = new BufferDouble()
 }

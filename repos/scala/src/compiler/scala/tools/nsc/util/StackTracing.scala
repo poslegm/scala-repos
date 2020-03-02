@@ -16,8 +16,9 @@ private[util] trait StackTracing extends Any {
     *  @param e the exception
     *  @param p the predicate to select the prefix
     */
-  def stackTracePrefixString(e: Throwable)(
-      p: StackTraceElement => Boolean): String = {
+  def stackTracePrefixString(
+      e: Throwable
+  )(p: StackTraceElement => Boolean): String = {
     import collection.mutable.{ArrayBuffer, ListBuffer}
     import compat.Platform.EOL
     import util.Properties.isJavaAtLeast
@@ -25,8 +26,8 @@ private[util] trait StackTracing extends Any {
     val sb = ListBuffer.empty[String]
 
     type TraceRelation = String
-    val Self = new TraceRelation("")
-    val CausedBy = new TraceRelation("Caused by: ")
+    val Self       = new TraceRelation("")
+    val CausedBy   = new TraceRelation("Caused by: ")
     val Suppressed = new TraceRelation("Suppressed: ")
 
     val suppressable = isJavaAtLeast("1.7")
@@ -47,16 +48,18 @@ private[util] trait StackTracing extends Any {
 
     val seen = new ArrayBuffer[Throwable](16)
     def unseen(t: Throwable) = {
-      def inSeen = seen exists (_ eq t)
+      def inSeen      = seen exists (_ eq t)
       val interesting = (t != null) && !inSeen
       if (interesting) seen += t
       interesting
     }
 
-    def print(e: Throwable,
-              r: TraceRelation,
-              share: Array[StackTraceElement],
-              indents: Int): Unit = if (unseen(e)) {
+    def print(
+        e: Throwable,
+        r: TraceRelation,
+        share: Array[StackTraceElement],
+        indents: Int
+    ): Unit = if (unseen(e)) {
       val trace = e.getStackTrace
       val frames =
         (if (share.nonEmpty) {
@@ -65,8 +68,8 @@ private[util] trait StackTracing extends Any {
              trace.reverse dropWhile (spare.hasNext && spare.next == _)
            trimmed.reverse
          } else trace)
-      val prefix = frames takeWhile p
-      val margin = indent * indents
+      val prefix   = frames takeWhile p
+      val margin   = indent * indents
       val indented = margin + indent
       sb append s"${margin}${r}${header(e)}"
       prefix foreach (f => sb append s"${indented}at $f")
@@ -78,8 +81,8 @@ private[util] trait StackTracing extends Any {
       if (suppressable) {
         import scala.language.reflectiveCalls
         type Suppressing = { def getSuppressed(): Array[Throwable] }
-        for (s <- e.asInstanceOf[Suppressing].getSuppressed) print(
-            s, Suppressed, frames, indents + 1)
+        for (s <- e.asInstanceOf[Suppressing].getSuppressed)
+          print(s, Suppressed, frames, indents + 1)
       }
     }
     print(e, Self, share = Array.empty, indents = 0)

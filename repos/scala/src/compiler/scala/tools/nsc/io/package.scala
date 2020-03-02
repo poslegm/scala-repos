@@ -20,11 +20,11 @@ package object io {
   type PlainFile = scala.reflect.io.PlainFile
   val Streamable = scala.reflect.io.Streamable
   type VirtualDirectory = scala.reflect.io.VirtualDirectory
-  type VirtualFile = scala.reflect.io.VirtualFile
-  type ZipArchive = scala.reflect.io.ZipArchive
+  type VirtualFile      = scala.reflect.io.VirtualFile
+  type ZipArchive       = scala.reflect.io.ZipArchive
 
   type JManifest = java.util.jar.Manifest
-  type JFile = java.io.File
+  type JFile     = java.io.File
 
   implicit def enrichManifest(m: JManifest): Jar.WManifest = Jar.WManifest(m)
 }

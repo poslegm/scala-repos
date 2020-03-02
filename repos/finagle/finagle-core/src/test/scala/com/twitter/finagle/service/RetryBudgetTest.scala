@@ -51,7 +51,7 @@ class RetryBudgetTest extends FunSuite with Matchers {
       if (minRetries == 0) assert(!rb.tryWithdraw())
 
       // use a decent sized number so we see less effects from fractions
-      val nReqs = 10000
+      val nReqs   = 10000
       var retried = 0
       0.until(nReqs).foreach { i =>
         withClue(s"request $i:") {
@@ -120,16 +120,14 @@ class RetryBudgetTest extends FunSuite with Matchers {
     // Slightly simpler than `testBudgetNoMin` in that it runs all
     // the `request`s up front then checks the end-state.
     val percent = 2.0
-    val rb = newRetryBudget(maxPercentOver = percent)
+    val rb      = newRetryBudget(maxPercentOver = percent)
 
     // check initial conditions
     assert(0 == rb.balance)
     assert(!rb.tryWithdraw())
 
     val nReqs = 10000
-    0.until(nReqs).foreach { _ =>
-      rb.deposit()
-    }
+    0.until(nReqs).foreach { _ => rb.deposit() }
 
     val expectedRetries = (nReqs * percent).toInt
     assert(expectedRetries == rb.balance)

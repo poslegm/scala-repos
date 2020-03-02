@@ -27,8 +27,8 @@ object OfferBenchmark {
   }
 
   private class SimpleTx[T](t: T) extends Tx[T] {
-    private val futAck = Future.value(Commit(t))
-    override def nack(): Unit = ()
+    private val futAck                    = Future.value(Commit(t))
+    override def nack(): Unit             = ()
     override def ack(): Future[Result[T]] = futAck
   }
 
@@ -37,7 +37,7 @@ object OfferBenchmark {
     @Param(Array("3", "10", "100"))
     var numToChooseFrom: Int = 3
 
-    val rng = new Random(3102957159L)
+    val rng    = new Random(3102957159L)
     val rngOpt = Some(rng)
 
     // N.B. Traditionally you'd put this type of setup inside of a benchmark setup method per invocation
@@ -45,9 +45,9 @@ object OfferBenchmark {
     // using Invocation setup methods:
     // http://hg.openjdk.java.net/code-tools/jmh/file/bdfc7d3a6ebf/jmh-core/src/main/java/org/openjdk/jmh/annotations/Level.java#l50
     def toChooseFrom(): Seq[Offer[Int]] = {
-      val ps = new ArrayBuffer[Promise[Tx[Int]]](numToChooseFrom)
+      val ps  = new ArrayBuffer[Promise[Tx[Int]]](numToChooseFrom)
       val ofs = new ArrayBuffer[Offer[Int]](numToChooseFrom)
-      var i = 0
+      var i   = 0
       while (i < numToChooseFrom) {
         val p = new Promise[Tx[Int]]
         ps += p

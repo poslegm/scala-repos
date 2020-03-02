@@ -40,7 +40,9 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class LightBaseSpec
     extends SimpleSFXDelegateSpec[jfxs.LightBase, LightBase](
-        classOf[jfxs.LightBase], classOf[LightBase]) {
+      classOf[jfxs.LightBase],
+      classOf[LightBase]
+    ) {
 
   override protected def getScalaClassInstance =
     new AmbientLight(getJavaClassInstance) {}

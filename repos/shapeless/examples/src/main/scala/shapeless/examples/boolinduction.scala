@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 Miles Sabin 
+ * Copyright (c) 2013 Miles Sabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ object BooleanInduction extends App {
   // Some preliminaries ...
 
   val (wTrue, wFalse) = (true.witness, false.witness)
-  type True = wTrue.T
+  type True  = wTrue.T
   type False = wFalse.T
 
   trait If[C <: Boolean, A, B] { type T; def apply(a: A, b: B): T }
@@ -42,20 +42,25 @@ object BooleanInduction extends App {
   // bool-induction P pt pf true = pt
   // bool-induction P pt pf false = pf
 
-  def boolInduction[P <: { type Case [_ <: Boolean] <: { type T } }, PT, PF](
-      p: P)(t: PT)(f: PF)(x: Witness.Lt[Boolean])(implicit pt: p.Case[True] {
-    type T = PT
-  }, pf: p.Case[False] { type T = PF }, sel: If[x.T, PT, PF]): sel.T =
+  def boolInduction[P <: { type Case[_ <: Boolean] <: { type T } }, PT, PF](
+      p: P
+  )(t: PT)(f: PF)(x: Witness.Lt[Boolean])(
+      implicit pt: p.Case[True] {
+        type T = PT
+      },
+      pf: p.Case[False] { type T = PF },
+      sel: If[x.T, PT, PF]
+  ): sel.T =
     sel(t, f)
 
   // In use ...
 
   object si {
     trait Case[B <: Boolean] { type T }
-    implicit val sit = new Case[True] { type T = String }
-    implicit val sif = new Case[False] { type T = Int }
+    implicit val sit = new Case[True]  { type T = String }
+    implicit val sif = new Case[False] { type T = Int    }
   }
 
   val bt: String = boolInduction(si)("foo")(23)(true)
-  val bf: Int = boolInduction(si)("foo")(23)(false)
+  val bf: Int    = boolInduction(si)("foo")(23)(false)
 }

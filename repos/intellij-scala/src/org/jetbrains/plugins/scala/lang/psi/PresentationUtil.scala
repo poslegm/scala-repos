@@ -28,14 +28,18 @@ object PresentationUtil {
         val buffer = new StringBuilder("")
         buffer.append("(")
         if (clause.isImplicit) buffer.append("implicit ")
-        buffer.append(clause.parameters
-              .map(presentationString(_, substitutor))
-              .mkString(", "))
+        buffer.append(
+          clause.parameters
+            .map(presentationString(_, substitutor))
+            .mkString(", ")
+        )
         buffer.append(")")
         buffer.toString()
       case param: ScParameter =>
         ScalaDocumentationProvider.parseParameter(
-            param, presentationString(_, substitutor))
+          param,
+          presentationString(_, substitutor)
+        )
       case param: Parameter =>
         val builder = new StringBuilder
         builder.append(param.name)
@@ -48,7 +52,9 @@ object PresentationUtil {
         presentationString(tp.getComponentType, substitutor) + "*"
       case tp: PsiType =>
         presentationString(
-            ScType.create(tp, DecompilerUtil.obtainProject), substitutor)
+          ScType.create(tp, DecompilerUtil.obtainProject),
+          substitutor
+        )
       case tp: ScTypeParamClause =>
         tp.typeParameters
           .map(t => presentationString(t, substitutor))
@@ -60,21 +66,21 @@ object PresentationUtil {
         param.lowerBound foreach {
           case psi.types.Nothing =>
           case tp: ScType =>
-            paramText = paramText + " >: " + presentationString(tp,
-                                                                substitutor)
+            paramText = paramText + " >: " + presentationString(tp, substitutor)
         }
         param.upperBound foreach {
           case psi.types.Any =>
           case tp: ScType =>
-            paramText = paramText + " <: " + presentationString(tp,
-                                                                substitutor)
+            paramText = paramText + " <: " + presentationString(tp, substitutor)
         }
         param.viewBound foreach { (tp: ScType) =>
           paramText = paramText + " <% " + presentationString(tp, substitutor)
         }
         param.contextBound foreach { (tp: ScType) =>
           paramText = paramText + " : " + presentationString(
-              ScTypeUtil.stripTypeArgs(substitutor.subst(tp)), substitutor)
+            ScTypeUtil.stripTypeArgs(substitutor.subst(tp)),
+            substitutor
+          )
         }
         paramText
       case param: PsiTypeParameter =>
@@ -87,7 +93,7 @@ object PresentationUtil {
           .mkString("(", ", ", ")")
       case param: PsiParameter =>
         val buffer: StringBuilder = new StringBuilder("")
-        val list = param.getModifierList
+        val list                  = param.getModifierList
         if (list == null) return ""
         val lastSize = buffer.length
         for (a <- list.getAnnotations) {
@@ -101,7 +107,9 @@ object PresentationUtil {
           buffer.append(name)
         }
         buffer.append(": ")
-        buffer.append(presentationString(param.getType, substitutor)) //todo: create param type, java.lang.Object => Any
+        buffer.append(
+          presentationString(param.getType, substitutor)
+        ) //todo: create param type, java.lang.Object => Any
         buffer.toString()
       case fun: ScFunction =>
         val buffer: StringBuilder = new StringBuilder("")
@@ -116,7 +124,7 @@ object PresentationUtil {
         buffer.append(fun.name)
         fun.typeParametersClause match {
           case Some(tpc) => buffer.append(presentationString(tpc))
-          case _ =>
+          case _         =>
         }
         buffer
           .append(presentationString(fun.paramClauses, substitutor))
@@ -124,8 +132,8 @@ object PresentationUtil {
         buffer.append(presentationString(fun.returnType.getOrAny, substitutor))
         buffer.toString()
       case elem: PsiElement => elem.getText
-      case null => ""
-      case _ => obj.toString
+      case null             => ""
+      case _                => obj.toString
     }
     res.replace(ScalaUtils.typeParameter, "T")
   }

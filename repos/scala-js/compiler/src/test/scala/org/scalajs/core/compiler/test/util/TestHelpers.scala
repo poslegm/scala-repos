@@ -14,7 +14,7 @@ trait TestHelpers extends DirectTest {
   private[this] val errBuffer = new CharArrayWriter
 
   override def newReporter(settings: Settings): Reporter = {
-    val in = new BufferedReader(new StringReader(""))
+    val in  = new BufferedReader(new StringReader(""))
     val out = new PrintWriter(errBuffer)
     new ConsoleReporter(settings, in, out)
   }
@@ -27,11 +27,13 @@ trait TestHelpers extends DirectTest {
 
     def hasErrors(expected: String): Unit = {
       val reps = repResult {
-        assertFalse(
-            "snippet shouldn't compile", compileString(preamble + code))
+        assertFalse("snippet shouldn't compile", compileString(preamble + code))
       }
       assertEquals(
-          "should have right errors", expected.stripMargin.trim, reps.trim)
+        "should have right errors",
+        expected.stripMargin.trim,
+        reps.trim
+      )
     }
 
     def hasWarns(expected: String): Unit = {
@@ -39,7 +41,10 @@ trait TestHelpers extends DirectTest {
         assertTrue("snippet should compile", compileString(preamble + code))
       }
       assertEquals(
-          "should have right warnings", expected.stripMargin.trim, reps.trim)
+        "should have right warnings",
+        expected.stripMargin.trim,
+        reps.trim
+      )
     }
 
     def hasNoWarns(): Unit = {

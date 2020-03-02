@@ -11,13 +11,13 @@ object Test extends App {
   def test(tag: TypeTag[_]) =
     try {
       val fout = new ByteArrayOutputStream()
-      val out = new ObjectOutputStream(fout)
+      val out  = new ObjectOutputStream(fout)
       out.writeObject(tag)
       out.close()
       fout.close()
 
-      val fin = new ByteArrayInputStream(fout.toByteArray)
-      val in = new ObjectInputStream(fin)
+      val fin   = new ByteArrayInputStream(fout.toByteArray)
+      val in    = new ObjectInputStream(fin)
       val retag = in.readObject().asInstanceOf[ru.TypeTag[_]].in(cm)
       in.close()
       fin.close()

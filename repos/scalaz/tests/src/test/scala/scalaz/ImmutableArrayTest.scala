@@ -7,14 +7,13 @@ object ImmutableArrayTest extends SpecLite {
 
   "Issue #525" in {
     val xs =
-      ImmutableArray.fromArray(Array(1)) ++ ImmutableArray.fromArray(
-          Array("a"))
+      ImmutableArray.fromArray(Array(1)) ++ ImmutableArray.fromArray(Array("a"))
     xs.toArray.toList must_== (Array(1, "a").toList)
   }
 
   "Issue #812" in {
     val xs = ImmutableArray.fromArray(Array("test"))
-    val t = xs.tail
+    val t  = xs.tail
     t.toArray.toList must_== (Array().toList)
   }
 

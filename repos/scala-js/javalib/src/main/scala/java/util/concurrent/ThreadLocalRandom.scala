@@ -55,10 +55,10 @@ class ThreadLocalRandom extends Random {
      */
 
     var offset = 0L
-    var n = _n
+    var n      = _n
 
     while (n >= Integer.MAX_VALUE) {
-      val bits = next(2)
+      val bits  = next(2)
       val halfn = n >>> 1
       val nextn =
         if ((bits & 2) == 0) halfn

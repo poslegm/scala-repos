@@ -11,23 +11,23 @@ class C private (private var x: Int, private var y: String) {
 
   override def equals(other: Any): Boolean =
     other.isInstanceOf[C] && other.asInstanceOf[C].x == x &&
-    other.asInstanceOf[C].y == y
+      other.asInstanceOf[C].y == y
 }
 
 class PrivatePublicCtorsTest extends FunSuite {
   test("main") {
-    val c = new C
+    val c                  = new C
     val pickle: JSONPickle = c.pickle
-    val newC = pickle.unpickle[C]
+    val newC               = pickle.unpickle[C]
     assert(c == newC)
   }
 }
 
 class RuntimePrivatePublicCtorsTest extends FunSuite {
   test("main") {
-    val c = new C
+    val c             = new C
     val p: JSONPickle = (c: Any).pickle
-    val up = p.unpickle[Any]
+    val up            = p.unpickle[Any]
     assert(c == up)
   }
 }

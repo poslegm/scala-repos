@@ -9,7 +9,7 @@ object SCL3905 {
 
   class A
   def blip(a: String): A = null
-  val conv = (a: A) => Seq("")
+  val conv               = (a: A) => Seq("")
 
   Seq(""). /*resolved: true*/ flatMap { a =>
     implicit val conv1 = conv

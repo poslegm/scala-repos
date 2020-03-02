@@ -9,7 +9,7 @@ object Test extends App {
     2 match { case Extractor(x) => x }
   }
   println(extractor.eval)
-  val tb = cm.mkToolBox()
+  val tb         = cm.mkToolBox()
   val textractor = tb.typecheck(extractor.tree)
   println(textractor)
   val rtextractor = tb.untypecheck(textractor)

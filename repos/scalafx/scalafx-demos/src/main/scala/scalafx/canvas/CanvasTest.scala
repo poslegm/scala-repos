@@ -32,7 +32,13 @@ import scalafx.scene.Scene
 import scalafx.scene.canvas.Canvas
 import scalafx.scene.effect.DropShadow
 import scalafx.scene.paint.Stop.sfxStop2jfx
-import scalafx.scene.paint.{Color, CycleMethod, LinearGradient, RadialGradient, Stop}
+import scalafx.scene.paint.{
+  Color,
+  CycleMethod,
+  LinearGradient,
+  RadialGradient,
+  Stop
+}
 
 /**
   * Example adapted from code showed in [[http://docs.oracle.com/javafx/2/canvas/jfxpub-canvas.htm]].
@@ -40,7 +46,7 @@ import scalafx.scene.paint.{Color, CycleMethod, LinearGradient, RadialGradient, 
 object CanvasTest extends JFXApp {
 
   val canvas = new Canvas(200, 200)
-  val gc = canvas.graphicsContext2D
+  val gc     = canvas.graphicsContext2D
 
   /*
    * Moves the canvas to a new location within the Scene. This is accomplished
@@ -70,14 +76,15 @@ object CanvasTest extends JFXApp {
    */
   //  drawRadialGradient(Color.Red, Color.Yellow)
   gc.fill = new RadialGradient(
-      0,
-      0,
-      0.5,
-      0.5,
-      0.1,
-      true,
-      CycleMethod.Reflect,
-      List(Stop(0.0, Color.Red), Stop(1.0, Color.Yellow)))
+    0,
+    0,
+    0.5,
+    0.5,
+    0.1,
+    true,
+    CycleMethod.Reflect,
+    List(Stop(0.0, Color.Red), Stop(1.0, Color.Yellow))
+  )
   gc.fillPath()
 
   /*
@@ -86,13 +93,14 @@ object CanvasTest extends JFXApp {
    */
   //  drawLinearGradient(Color.Blue, Color.Green)
   val lg = new LinearGradient(
-      0,
-      0,
-      1,
-      1,
-      true,
-      CycleMethod.Reflect,
-      List(Stop(0.0, Color.Blue), Stop(1.0, Color.Green)))
+    0,
+    0,
+    1,
+    1,
+    true,
+    CycleMethod.Reflect,
+    List(Stop(0.0, Color.Blue), Stop(1.0, Color.Green))
+  )
   gc.stroke = lg
   gc.lineWidth = 20
   gc.strokePath()

@@ -28,7 +28,7 @@ import org.apache.spark.streaming.scheduler._
 
 class StreamingJobProgressListenerSuite extends TestSuiteBase with Matchers {
 
-  val input = (1 to 4).map(Seq(_)).toSeq
+  val input     = (1 to 4).map(Seq(_)).toSeq
   val operation = (d: DStream[Int]) => d.map(x => x)
 
   var ssc: StreamingContext = _
@@ -41,35 +41,51 @@ class StreamingJobProgressListenerSuite extends TestSuiteBase with Matchers {
   }
 
   private def createJobStart(
-      batchTime: Time, outputOpId: Int, jobId: Int): SparkListenerJobStart = {
+      batchTime: Time,
+      outputOpId: Int,
+      jobId: Int
+  ): SparkListenerJobStart = {
     val properties = new Properties()
     properties.setProperty(
-        JobScheduler.BATCH_TIME_PROPERTY_KEY, batchTime.milliseconds.toString)
+      JobScheduler.BATCH_TIME_PROPERTY_KEY,
+      batchTime.milliseconds.toString
+    )
     properties.setProperty(
-        JobScheduler.OUTPUT_OP_ID_PROPERTY_KEY, outputOpId.toString)
-    SparkListenerJobStart(jobId = jobId,
-                          0L, // unused
-                          Nil, // unused
-                          properties)
+      JobScheduler.OUTPUT_OP_ID_PROPERTY_KEY,
+      outputOpId.toString
+    )
+    SparkListenerJobStart(
+      jobId = jobId,
+      0L,  // unused
+      Nil, // unused
+      properties
+    )
   }
 
   override def batchDuration: Duration = Milliseconds(100)
 
-  test("onBatchSubmitted, onBatchStarted, onBatchCompleted, " +
-      "onReceiverStarted, onReceiverError, onReceiverStopped") {
+  test(
+    "onBatchSubmitted, onBatchStarted, onBatchCompleted, " +
+      "onReceiverStarted, onReceiverError, onReceiverStopped"
+  ) {
     ssc = setupStreams(input, operation)
     val listener = new StreamingJobProgressListener(ssc)
 
     val streamIdToInputInfo = Map(
-        0 -> StreamInputInfo(0, 300L),
-        1 -> StreamInputInfo(
-            1, 300L, Map(StreamInputInfo.METADATA_KEY_DESCRIPTION -> "test")))
+      0 -> StreamInputInfo(0, 300L),
+      1 -> StreamInputInfo(
+        1,
+        300L,
+        Map(StreamInputInfo.METADATA_KEY_DESCRIPTION -> "test")
+      )
+    )
 
     // onBatchSubmitted
     val batchInfoSubmitted =
       BatchInfo(Time(1000), streamIdToInputInfo, 1000, None, None, Map.empty)
     listener.onBatchSubmitted(
-        StreamingListenerBatchSubmitted(batchInfoSubmitted))
+      StreamingListenerBatchSubmitted(batchInfoSubmitted)
+    )
     listener.waitingBatches should be(List(BatchUIData(batchInfoSubmitted)))
     listener.runningBatches should be(Nil)
     listener.retainedCompletedBatches should be(Nil)
@@ -81,7 +97,13 @@ class StreamingJobProgressListenerSuite extends TestSuiteBase with Matchers {
 
     // onBatchStarted
     val batchInfoStarted = BatchInfo(
-        Time(1000), streamIdToInputInfo, 1000, Some(2000), None, Map.empty)
+      Time(1000),
+      streamIdToInputInfo,
+      1000,
+      Some(2000),
+      None,
+      Map.empty
+    )
     listener.onBatchStarted(StreamingListenerBatchStarted(batchInfoStarted))
     listener.waitingBatches should be(Nil)
     listener.runningBatches should be(List(BatchUIData(batchInfoStarted)))
@@ -112,29 +134,42 @@ class StreamingJobProgressListenerSuite extends TestSuiteBase with Matchers {
     batchUIData.get.processingDelay should be(batchInfoStarted.processingDelay)
     batchUIData.get.totalDelay should be(batchInfoStarted.totalDelay)
     batchUIData.get.streamIdToInputInfo should be(
-        Map(0 -> StreamInputInfo(0, 300L),
-            1 -> StreamInputInfo(
-                1,
-                300L,
-                Map(StreamInputInfo.METADATA_KEY_DESCRIPTION -> "test"))))
+      Map(
+        0 -> StreamInputInfo(0, 300L),
+        1 -> StreamInputInfo(
+          1,
+          300L,
+          Map(StreamInputInfo.METADATA_KEY_DESCRIPTION -> "test")
+        )
+      )
+    )
     batchUIData.get.numRecords should be(600)
     batchUIData.get.outputOpIdSparkJobIdPairs should be
-    Seq(OutputOpIdAndSparkJobId(0, 0),
-        OutputOpIdAndSparkJobId(0, 1),
-        OutputOpIdAndSparkJobId(1, 0),
-        OutputOpIdAndSparkJobId(1, 1))
+    Seq(
+      OutputOpIdAndSparkJobId(0, 0),
+      OutputOpIdAndSparkJobId(0, 1),
+      OutputOpIdAndSparkJobId(1, 0),
+      OutputOpIdAndSparkJobId(1, 1)
+    )
 
     // onBatchCompleted
     val batchInfoCompleted = BatchInfo(
-        Time(1000), streamIdToInputInfo, 1000, Some(2000), None, Map.empty)
+      Time(1000),
+      streamIdToInputInfo,
+      1000,
+      Some(2000),
+      None,
+      Map.empty
+    )
     listener.onBatchCompleted(
-        StreamingListenerBatchCompleted(batchInfoCompleted))
+      StreamingListenerBatchCompleted(batchInfoCompleted)
+    )
     listener.waitingBatches should be(Nil)
     listener.runningBatches should be(Nil)
     listener.retainedCompletedBatches should be(
-        List(BatchUIData(batchInfoCompleted)))
-    listener.lastCompletedBatch should be(
-        Some(BatchUIData(batchInfoCompleted)))
+      List(BatchUIData(batchInfoCompleted))
+    )
+    listener.lastCompletedBatch should be(Some(BatchUIData(batchInfoCompleted)))
     listener.numUnprocessedBatches should be(0)
     listener.numTotalCompletedBatches should be(1)
     listener.numTotalProcessedRecords should be(600)
@@ -143,7 +178,8 @@ class StreamingJobProgressListenerSuite extends TestSuiteBase with Matchers {
     // onReceiverStarted
     val receiverInfoStarted = ReceiverInfo(0, "test", true, "localhost", "0")
     listener.onReceiverStarted(
-        StreamingListenerReceiverStarted(receiverInfoStarted))
+      StreamingListenerReceiverStarted(receiverInfoStarted)
+    )
     listener.receiverInfo(0) should be(Some(receiverInfoStarted))
     listener.receiverInfo(1) should be(None)
 
@@ -157,7 +193,8 @@ class StreamingJobProgressListenerSuite extends TestSuiteBase with Matchers {
     // onReceiverStopped
     val receiverInfoStopped = ReceiverInfo(2, "test", true, "localhost", "2")
     listener.onReceiverStopped(
-        StreamingListenerReceiverStopped(receiverInfoStopped))
+      StreamingListenerReceiverStopped(receiverInfoStopped)
+    )
     listener.receiverInfo(0) should be(Some(receiverInfoStarted))
     listener.receiverInfo(1) should be(Some(receiverInfoError))
     listener.receiverInfo(2) should be(Some(receiverInfoStopped))
@@ -166,18 +203,25 @@ class StreamingJobProgressListenerSuite extends TestSuiteBase with Matchers {
 
   test("Remove the old completed batches when exceeding the limit") {
     ssc = setupStreams(input, operation)
-    val limit = ssc.conf.getInt("spark.streaming.ui.retainedBatches", 1000)
+    val limit    = ssc.conf.getInt("spark.streaming.ui.retainedBatches", 1000)
     val listener = new StreamingJobProgressListener(ssc)
 
     val streamIdToInputInfo =
       Map(0 -> StreamInputInfo(0, 300L), 1 -> StreamInputInfo(1, 300L))
 
     val batchInfoCompleted = BatchInfo(
-        Time(1000), streamIdToInputInfo, 1000, Some(2000), None, Map.empty)
+      Time(1000),
+      streamIdToInputInfo,
+      1000,
+      Some(2000),
+      None,
+      Map.empty
+    )
 
     for (_ <- 0 until (limit + 10)) {
       listener.onBatchCompleted(
-          StreamingListenerBatchCompleted(batchInfoCompleted))
+        StreamingListenerBatchCompleted(batchInfoCompleted)
+      )
     }
 
     listener.retainedCompletedBatches.size should be(limit)
@@ -186,19 +230,22 @@ class StreamingJobProgressListenerSuite extends TestSuiteBase with Matchers {
 
   test("out-of-order onJobStart and onBatchXXX") {
     ssc = setupStreams(input, operation)
-    val limit = ssc.conf.getInt("spark.streaming.ui.retainedBatches", 1000)
+    val limit    = ssc.conf.getInt("spark.streaming.ui.retainedBatches", 1000)
     val listener = new StreamingJobProgressListener(ssc)
 
     // fulfill completedBatchInfos
     for (i <- 0 until limit) {
-      val batchInfoCompleted = BatchInfo(Time(1000 + i * 100),
-                                         Map.empty,
-                                         1000 + i * 100,
-                                         Some(2000 + i * 100),
-                                         None,
-                                         Map.empty)
+      val batchInfoCompleted = BatchInfo(
+        Time(1000 + i * 100),
+        Map.empty,
+        1000 + i * 100,
+        Some(2000 + i * 100),
+        None,
+        Map.empty
+      )
       listener.onBatchCompleted(
-          StreamingListenerBatchCompleted(batchInfoCompleted))
+        StreamingListenerBatchCompleted(batchInfoCompleted)
+      )
       val jobStart =
         createJobStart(Time(1000 + i * 100), outputOpId = 0, jobId = 1)
       listener.onJobStart(jobStart)
@@ -209,39 +256,48 @@ class StreamingJobProgressListenerSuite extends TestSuiteBase with Matchers {
       createJobStart(Time(1000 + limit * 100), outputOpId = 0, jobId = 0)
     listener.onJobStart(jobStart)
 
-    val batchInfoSubmitted = BatchInfo(Time(1000 + limit * 100),
-                                       Map.empty,
-                                       (1000 + limit * 100),
-                                       None,
-                                       None,
-                                       Map.empty)
+    val batchInfoSubmitted = BatchInfo(
+      Time(1000 + limit * 100),
+      Map.empty,
+      (1000 + limit * 100),
+      None,
+      None,
+      Map.empty
+    )
     listener.onBatchSubmitted(
-        StreamingListenerBatchSubmitted(batchInfoSubmitted))
+      StreamingListenerBatchSubmitted(batchInfoSubmitted)
+    )
 
     // We still can see the info retrieved from onJobStart
     val batchUIData = listener.getBatchUIData(Time(1000 + limit * 100))
     batchUIData should not be None
     batchUIData.get.batchTime should be(batchInfoSubmitted.batchTime)
     batchUIData.get.schedulingDelay should be(
-        batchInfoSubmitted.schedulingDelay)
+      batchInfoSubmitted.schedulingDelay
+    )
     batchUIData.get.processingDelay should be(
-        batchInfoSubmitted.processingDelay)
+      batchInfoSubmitted.processingDelay
+    )
     batchUIData.get.totalDelay should be(batchInfoSubmitted.totalDelay)
     batchUIData.get.streamIdToInputInfo should be(Map.empty)
     batchUIData.get.numRecords should be(0)
     batchUIData.get.outputOpIdSparkJobIdPairs.toSeq should be(
-        Seq(OutputOpIdAndSparkJobId(0, 0)))
+      Seq(OutputOpIdAndSparkJobId(0, 0))
+    )
 
     // A lot of "onBatchCompleted"s happen before "onJobStart"
     for (i <- limit + 1 to limit * 2) {
-      val batchInfoCompleted = BatchInfo(Time(1000 + i * 100),
-                                         Map.empty,
-                                         1000 + i * 100,
-                                         Some(2000 + i * 100),
-                                         None,
-                                         Map.empty)
+      val batchInfoCompleted = BatchInfo(
+        Time(1000 + i * 100),
+        Map.empty,
+        1000 + i * 100,
+        Some(2000 + i * 100),
+        None,
+        Map.empty
+      )
       listener.onBatchCompleted(
-          StreamingListenerBatchCompleted(batchInfoCompleted))
+        StreamingListenerBatchCompleted(batchInfoCompleted)
+      )
     }
 
     for (i <- limit + 1 to limit * 2) {
@@ -252,7 +308,7 @@ class StreamingJobProgressListenerSuite extends TestSuiteBase with Matchers {
 
     // We should not leak memory
     listener.batchTimeToOutputOpIdSparkJobIdPair.size() should be <=
-    (listener.waitingBatches.size + listener.runningBatches.size +
+      (listener.waitingBatches.size + listener.runningBatches.size +
         listener.retainedCompletedBatches.size + 10)
   }
 
@@ -270,11 +326,18 @@ class StreamingJobProgressListenerSuite extends TestSuiteBase with Matchers {
       val batchInfoSubmitted =
         BatchInfo(Time(1000), streamIdToInputInfo, 1000, None, None, Map.empty)
       listener.onBatchSubmitted(
-          StreamingListenerBatchSubmitted(batchInfoSubmitted))
+        StreamingListenerBatchSubmitted(batchInfoSubmitted)
+      )
 
       // onBatchStarted
       val batchInfoStarted = BatchInfo(
-          Time(1000), streamIdToInputInfo, 1000, Some(2000), None, Map.empty)
+        Time(1000),
+        streamIdToInputInfo,
+        1000,
+        Some(2000),
+        None,
+        Map.empty
+      )
       listener.onBatchStarted(StreamingListenerBatchStarted(batchInfoStarted))
 
       // onJobStart
@@ -292,16 +355,23 @@ class StreamingJobProgressListenerSuite extends TestSuiteBase with Matchers {
 
       // onBatchCompleted
       val batchInfoCompleted = BatchInfo(
-          Time(1000), streamIdToInputInfo, 1000, Some(2000), None, Map.empty)
+        Time(1000),
+        streamIdToInputInfo,
+        1000,
+        Some(2000),
+        None,
+        Map.empty
+      )
       listener.onBatchCompleted(
-          StreamingListenerBatchCompleted(batchInfoCompleted))
+        StreamingListenerBatchCompleted(batchInfoCompleted)
+      )
     }
 
     listener.waitingBatches.size should be(0)
     listener.runningBatches.size should be(0)
     listener.retainedCompletedBatches.size should be(limit)
     listener.batchTimeToOutputOpIdSparkJobIdPair.size() should be <=
-    (listener.waitingBatches.size + listener.runningBatches.size +
+      (listener.waitingBatches.size + listener.runningBatches.size +
         listener.retainedCompletedBatches.size + 10)
   }
 }

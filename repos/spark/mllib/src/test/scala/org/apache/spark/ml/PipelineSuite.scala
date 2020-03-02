@@ -35,23 +35,24 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types.StructType
 
 class PipelineSuite
-    extends SparkFunSuite with MLlibTestSparkContext
+    extends SparkFunSuite
+    with MLlibTestSparkContext
     with DefaultReadWriteTest {
 
   abstract class MyModel extends Model[MyModel]
 
   test("pipeline") {
-    val estimator0 = mock[Estimator[MyModel]]
-    val model0 = mock[MyModel]
+    val estimator0   = mock[Estimator[MyModel]]
+    val model0       = mock[MyModel]
     val transformer1 = mock[Transformer]
-    val estimator2 = mock[Estimator[MyModel]]
-    val model2 = mock[MyModel]
+    val estimator2   = mock[Estimator[MyModel]]
+    val model2       = mock[MyModel]
     val transformer3 = mock[Transformer]
-    val dataset0 = mock[DataFrame]
-    val dataset1 = mock[DataFrame]
-    val dataset2 = mock[DataFrame]
-    val dataset3 = mock[DataFrame]
-    val dataset4 = mock[DataFrame]
+    val dataset0     = mock[DataFrame]
+    val dataset1     = mock[DataFrame]
+    val dataset2     = mock[DataFrame]
+    val dataset3     = mock[DataFrame]
+    val dataset4     = mock[DataFrame]
 
     when(estimator0.copy(any[ParamMap])).thenReturn(estimator0)
     when(model0.copy(any[ParamMap])).thenReturn(model0)
@@ -87,8 +88,8 @@ class PipelineSuite
 
   test("pipeline with duplicate stages") {
     val estimator = mock[Estimator[MyModel]]
-    val pipeline = new Pipeline().setStages(Array(estimator, estimator))
-    val dataset = mock[DataFrame]
+    val pipeline  = new Pipeline().setStages(Array(estimator, estimator))
+    val dataset   = mock[DataFrame]
     intercept[IllegalArgumentException] {
       pipeline.fit(dataset)
     }
@@ -96,22 +97,24 @@ class PipelineSuite
 
   test("PipelineModel.copy") {
     val hashingTF = new HashingTF().setNumFeatures(100)
-    val model = new PipelineModel("pipeline", Array[Transformer](hashingTF))
-    val copied = model.copy(ParamMap(hashingTF.numFeatures -> 10))
-    require(copied.stages(0).asInstanceOf[HashingTF].getNumFeatures === 10,
-            "copy should handle extra stage params")
+    val model     = new PipelineModel("pipeline", Array[Transformer](hashingTF))
+    val copied    = model.copy(ParamMap(hashingTF.numFeatures -> 10))
+    require(
+      copied.stages(0).asInstanceOf[HashingTF].getNumFeatures === 10,
+      "copy should handle extra stage params"
+    )
   }
 
   test("pipeline model constructors") {
     val transform0 = mock[Transformer]
-    val model1 = mock[MyModel]
+    val model1     = mock[MyModel]
 
-    val stages = Array(transform0, model1)
+    val stages         = Array(transform0, model1)
     val pipelineModel0 = new PipelineModel("pipeline0", stages)
     assert(pipelineModel0.uid === "pipeline0")
     assert(pipelineModel0.stages === stages)
 
-    val stagesAsList = stages.toList.asJava
+    val stagesAsList   = stages.toList.asJava
     val pipelineModel1 = new PipelineModel("pipeline1", stagesAsList)
     assert(pipelineModel1.uid === "pipeline1")
     assert(pipelineModel1.stages === stages)
@@ -119,7 +122,7 @@ class PipelineSuite
 
   test("Pipeline read/write") {
     val writableStage = new WritableStage("writableStage").setIntParam(56)
-    val pipeline = new Pipeline().setStages(Array(writableStage))
+    val pipeline      = new Pipeline().setStages(Array(writableStage))
 
     val pipeline2 = testDefaultReadWrite(pipeline, testParams = false)
     assert(pipeline2.getStages.length === 1)
@@ -129,10 +132,11 @@ class PipelineSuite
   }
 
   test("Pipeline read/write with non-Writable stage") {
-    val unWritableStage = new UnWritableStage("unwritableStage")
+    val unWritableStage    = new UnWritableStage("unwritableStage")
     val unWritablePipeline = new Pipeline().setStages(Array(unWritableStage))
     withClue(
-        "Pipeline.write should fail when Pipeline contains non-Writable stage") {
+      "Pipeline.write should fail when Pipeline contains non-Writable stage"
+    ) {
       intercept[UnsupportedOperationException] {
         unWritablePipeline.write
       }
@@ -142,7 +146,9 @@ class PipelineSuite
   test("PipelineModel read/write") {
     val writableStage = new WritableStage("writableStage").setIntParam(56)
     val pipeline = new PipelineModel(
-        "pipeline_89329327", Array(writableStage.asInstanceOf[Transformer]))
+      "pipeline_89329327",
+      Array(writableStage.asInstanceOf[Transformer])
+    )
 
     val pipeline2 = testDefaultReadWrite(pipeline, testParams = false)
     assert(pipeline2.stages.length === 1)
@@ -152,10 +158,13 @@ class PipelineSuite
   }
 
   test("PipelineModel read/write: getStagePath") {
-    val stageUid = "myStage"
+    val stageUid  = "myStage"
     val stagesDir = new Path("pipeline", "stages").toString
     def testStage(
-        stageIdx: Int, numStages: Int, expectedPrefix: String): Unit = {
+        stageIdx: Int,
+        numStages: Int,
+        expectedPrefix: String
+    ): Unit = {
       val path =
         SharedReadWrite.getStagePath(stageUid, stageIdx, numStages, stagesDir)
       val expected =
@@ -172,9 +181,12 @@ class PipelineSuite
   test("PipelineModel read/write with non-Writable stage") {
     val unWritableStage = new UnWritableStage("unwritableStage")
     val unWritablePipeline = new PipelineModel(
-        "pipeline_328957", Array(unWritableStage.asInstanceOf[Transformer]))
+      "pipeline_328957",
+      Array(unWritableStage.asInstanceOf[Transformer])
+    )
     withClue(
-        "PipelineModel.write should fail when PipelineModel contains non-Writable stage") {
+      "PipelineModel.write should fail when PipelineModel contains non-Writable stage"
+    ) {
       intercept[UnsupportedOperationException] {
         unWritablePipeline.write
       }
@@ -184,10 +196,12 @@ class PipelineSuite
   test("pipeline validateParams") {
     val df = sqlContext
       .createDataFrame(
-          Seq((1, Vectors.dense(0.0, 1.0, 4.0), 1.0),
-              (2, Vectors.dense(1.0, 0.0, 4.0), 2.0),
-              (3, Vectors.dense(1.0, 0.0, 5.0), 3.0),
-              (4, Vectors.dense(0.0, 0.0, 5.0), 4.0))
+        Seq(
+          (1, Vectors.dense(0.0, 1.0, 4.0), 1.0),
+          (2, Vectors.dense(1.0, 0.0, 4.0), 2.0),
+          (3, Vectors.dense(1.0, 0.0, 5.0), 3.0),
+          (4, Vectors.dense(0.0, 0.0, 5.0), 4.0)
+        )
       )
       .toDF("id", "features", "label")
 
@@ -205,7 +219,8 @@ class PipelineSuite
 
 /** Used to test [[Pipeline]] with [[MLWritable]] stages */
 class WritableStage(override val uid: String)
-    extends Transformer with MLWritable {
+    extends Transformer
+    with MLWritable {
 
   final val intParam: IntParam = new IntParam(this, "intParam", "doc")
 

@@ -23,7 +23,7 @@ import org.junit.Test
 
 class ByteBoundedBlockingQueueTest {
   val sizeFunction = (a: String) => a.length
-  val queue = new ByteBoundedBlockingQueue[String](5, 15, Some(sizeFunction))
+  val queue        = new ByteBoundedBlockingQueue[String](5, 15, Some(sizeFunction))
 
   @Test
   def testByteBoundedBlockingQueue() {

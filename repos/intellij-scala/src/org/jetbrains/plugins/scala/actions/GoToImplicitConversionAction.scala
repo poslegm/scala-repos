@@ -46,7 +46,7 @@ object GoToImplicitConversionAction {
 class GoToImplicitConversionAction
     extends AnAction("Go to implicit conversion action") {
   private var hint: LightBulbHint = null
-  private val hintAlarm: Alarm = new Alarm
+  private val hintAlarm: Alarm    = new Alarm
 
   override def update(e: AnActionEvent) {
     ScalaActionUtil.enableAndShowIfInScalaFile(e)
@@ -55,7 +55,7 @@ class GoToImplicitConversionAction
   def actionPerformed(e: AnActionEvent) {
     val context = e.getDataContext
     val project = CommonDataKeys.PROJECT.getData(context)
-    val editor = CommonDataKeys.EDITOR.getData(context)
+    val editor  = CommonDataKeys.EDITOR.getData(context)
     if (project == null || editor == null) return
     val file = PsiUtilBase.getPsiFileInEditor(editor, project)
     if (!file.isInstanceOf[ScalaFile]) return
@@ -71,15 +71,17 @@ class GoToImplicitConversionAction
           else if (conv1._2.isDefined) conv1
           else if (additionalExpression.isDefined) {
             val conv3 = additionalExpression.get._1.getImplicitConversions(
-                fromUnder = false,
-                expectedOption = Some(additionalExpression.get._2))
+              fromUnder = false,
+              expectedOption = Some(additionalExpression.get._2)
+            )
             if (conv3._2.isDefined) conv3
             else conv1
           } else conv1
         } else if (additionalExpression.isDefined) {
           val conv3 = additionalExpression.get._1.getImplicitConversions(
-              fromUnder = false,
-              expectedOption = Some(additionalExpression.get._2))
+            fromUnder = false,
+            expectedOption = Some(additionalExpression.get._2)
+          )
           if (conv3._2.isDefined) conv3
           else expr.getImplicitConversions(fromUnder = false)
         } else expr.getImplicitConversions(fromUnder = false)
@@ -87,10 +89,10 @@ class GoToImplicitConversionAction
       val functions = implicitConversions._1
       if (functions.isEmpty) return true
       val conversionFun = implicitConversions._2.orNull
-      val model = JListCompatibility.createDefaultListModel()
-      val firstPart = implicitConversions._3.sortBy(_.name)
-      val secondPart = implicitConversions._4.sortBy(_.name)
-      var actualIndex = -1
+      val model         = JListCompatibility.createDefaultListModel()
+      val firstPart     = implicitConversions._3.sortBy(_.name)
+      val secondPart    = implicitConversions._4.sortBy(_.name)
+      var actualIndex   = -1
       //todo actualIndex should be another if conversionFun is not one
       for (element <- firstPart) {
         val elem = new Parameters(element, expr, editor, firstPart, secondPart)
@@ -102,21 +104,22 @@ class GoToImplicitConversionAction
         JListCompatibility.addElement(model, elem)
         if (element == conversionFun) actualIndex = model.indexOf(elem)
       }
-      val list = JListCompatibility.createJListFromModel(model)
+      val list     = JListCompatibility.createJListFromModel(model)
       val renderer = new ScImplicitFunctionListCellRenderer(conversionFun)
-      val font = editor.getColorsScheme.getFont(EditorFontType.PLAIN)
+      val font     = editor.getColorsScheme.getFont(EditorFontType.PLAIN)
       renderer.setFont(font)
       list.setFont(font)
       JListCompatibility.setCellRenderer(list, renderer)
       list.getSelectionModel.addListSelectionListener(
-          new ListSelectionListener {
-        def valueChanged(e: ListSelectionEvent) {
-          hintAlarm.cancelAllRequests
-          val item = list.getSelectedValue.asInstanceOf[Parameters]
-          if (item == null) return
-          updateHint(item, project)
+        new ListSelectionListener {
+          def valueChanged(e: ListSelectionEvent) {
+            hintAlarm.cancelAllRequests
+            val item = list.getSelectedValue.asInstanceOf[Parameters]
+            if (item == null) return
+            updateHint(item, project)
+          }
         }
-      })
+      )
       JListCompatibility.GoToImplicitConversionAction.setList(list)
 
       val builder = JBPopupFactory.getInstance.createListPopupBuilder(list)
@@ -133,10 +136,10 @@ class GoToImplicitConversionAction
               case f: ScFunction =>
                 f.getSyntheticNavigationElement match {
                   case Some(n: NavigatablePsiElement) => n.navigate(true)
-                  case _ => f.navigate(true)
+                  case _                              => f.navigate(true)
                 }
               case n: NavigatablePsiElement => n.navigate(true)
-              case _ => //do nothing
+              case _                        => //do nothing
             }
           }
         })
@@ -158,9 +161,14 @@ class GoToImplicitConversionAction
 
     if (editor.getSelectionModel.hasSelection) {
       val selectionStart = editor.getSelectionModel.getSelectionStart
-      val selectionEnd = editor.getSelectionModel.getSelectionEnd
+      val selectionEnd   = editor.getSelectionModel.getSelectionEnd
       val opt = ScalaRefactoringUtil.getExpression(
-          project, editor, file, selectionStart, selectionEnd)
+        project,
+        editor,
+        file,
+        selectionStart,
+        selectionEnd
+      )
       opt match {
         case Some((expr, _)) =>
           if (forExpr(expr)) return
@@ -171,35 +179,36 @@ class GoToImplicitConversionAction
       val element: PsiElement = file.findElementAt(offset) match {
         case w: PsiWhiteSpace
             if w.getTextRange.getStartOffset == offset &&
-            w.getText.contains("\n") =>
+              w.getText.contains("\n") =>
           file.findElementAt(offset - 1)
         case p => p
       }
       def getExpressions(guard: Boolean): Array[ScExpression] = {
-        val res = new ArrayBuffer[ScExpression]
+        val res    = new ArrayBuffer[ScExpression]
         var parent = element
         while (parent != null) {
           parent match {
             case expr: ScReferenceExpression if guard =>
               expr.getContext match {
                 case postf: ScPostfixExpr if postf.operation == expr =>
-                case pref: ScPrefixExpr if pref.operation == expr =>
-                case inf: ScInfixExpr if inf.operation == expr =>
-                case _ => res += expr
+                case pref: ScPrefixExpr if pref.operation == expr    =>
+                case inf: ScInfixExpr if inf.operation == expr       =>
+                case _                                               => res += expr
               }
             case expr: ScExpression
                 if guard ||
-                expr.getImplicitConversions(fromUnder = false)._2.isDefined ||
-                (ScUnderScoreSectionUtil.isUnderscoreFunction(expr) && expr
-                      .getImplicitConversions(fromUnder = true)
-                      ._2
-                      .isDefined) ||
-                (expr.getAdditionalExpression.isDefined &&
+                  expr.getImplicitConversions(fromUnder = false)._2.isDefined ||
+                  (ScUnderScoreSectionUtil.isUnderscoreFunction(expr) && expr
+                    .getImplicitConversions(fromUnder = true)
+                    ._2
+                    .isDefined) ||
+                  (expr.getAdditionalExpression.isDefined &&
                     expr.getAdditionalExpression.get._1
                       .getImplicitConversions(
-                          fromUnder = false,
-                          expectedOption = Some(
-                                expr.getAdditionalExpression.get._2))
+                        fromUnder = false,
+                        expectedOption =
+                          Some(expr.getAdditionalExpression.get._2)
+                      )
                       ._2
                       .isDefined) =>
               res += expr
@@ -216,7 +225,9 @@ class GoToImplicitConversionAction
       }
       def chooseExpression(expr: ScExpression) {
         editor.getSelectionModel.setSelection(
-            expr.getTextRange.getStartOffset, expr.getTextRange.getEndOffset)
+          expr.getTextRange.getStartOffset,
+          expr.getTextRange.getEndOffset
+        )
         forExpr(expr)
       }
       if (expressions.length == 0) editor.getSelectionModel.selectLineAtCaret()
@@ -224,14 +235,14 @@ class GoToImplicitConversionAction
         chooseExpression(expressions(0))
       } else {
         ScalaRefactoringUtil.showChooser(
-            editor,
-            expressions,
-            (elem: ScExpression) => chooseExpression(elem),
-            "Expressions",
-            (expr: ScExpression) =>
-              {
-                ScalaRefactoringUtil.getShortText(expr)
-            })
+          editor,
+          expressions,
+          (elem: ScExpression) => chooseExpression(elem),
+          "Expressions",
+          (expr: ScExpression) => {
+            ScalaRefactoringUtil.getShortText(expr)
+          }
+        )
       }
     }
   }
@@ -247,15 +258,21 @@ class GoToImplicitConversionAction
       GoToImplicitConversionAction.getList.repaint()
     }
 
-    hintAlarm.addRequest(new Runnable {
-      def run() {
-        hint = new LightBulbHint(
-            element.getEditor, project, element.getOldExpression)
-        hint.createHint(element.getFirstPart, element.getSecondPart)
-        GoToImplicitConversionAction.getList.add(hint, 20, 0)
-        hint.setBulbLayout()
-      }
-    }, 500)
+    hintAlarm.addRequest(
+      new Runnable {
+        def run() {
+          hint = new LightBulbHint(
+            element.getEditor,
+            project,
+            element.getOldExpression
+          )
+          hint.createHint(element.getFirstPart, element.getSecondPart)
+          GoToImplicitConversionAction.getList.add(hint, 20, 0)
+          hint.setBulbLayout()
+        }
+      },
+      500
+    )
   }
 
   class LightBulbHint(editor: Editor, project: Project, expr: ScExpression)
@@ -264,23 +281,28 @@ class GoToImplicitConversionAction
       BorderFactory.createEmptyBorder(4, 4, 4, 4)
     private final val ACTIVE_BORDER: Border =
       BorderFactory.createCompoundBorder(
-          BorderFactory.createLineBorder(Color.BLACK, 1),
-          BorderFactory.createEmptyBorder(3, 3, 3, 3))
+        BorderFactory.createLineBorder(Color.BLACK, 1),
+        BorderFactory.createEmptyBorder(3, 3, 3, 3)
+      )
     private final val INDENT = 20
 
     def createHint(
-        firstPart: Seq[PsiNamedElement], secondPart: Seq[PsiNamedElement]) {
+        firstPart: Seq[PsiNamedElement],
+        secondPart: Seq[PsiNamedElement]
+    ) {
       setOpaque(false)
       setBorder(INACTIVE_BORDER)
       setIcon(IconLoader.findIcon("/actions/intentionBulb.png"))
 
       val toolTipText: String = KeymapUtil.getFirstKeyboardShortcutText(
-          ActionManager.getInstance.getAction(
-              IdeActions.ACTION_SHOW_INTENTION_ACTIONS))
+        ActionManager.getInstance
+          .getAction(IdeActions.ACTION_SHOW_INTENTION_ACTIONS)
+      )
 
       if (toolTipText.length > 0) {
         setToolTipText(
-            CodeInsightBundle.message("lightbulb.tooltip", toolTipText))
+          CodeInsightBundle.message("lightbulb.tooltip", toolTipText)
+        )
       }
 
       addMouseListener(new MouseAdapter {
@@ -298,16 +320,18 @@ class GoToImplicitConversionAction
               .asInstanceOf[Parameters]
             val function: ScFunction = tuple.getNewExpression match {
               case fun: ScFunction => fun
-              case _ => null
+              case _               => null
             }
             if (function == null) return
 
-            IntentionUtils.showMakeExplicitPopup(project,
-                                                 expr,
-                                                 function,
-                                                 editor,
-                                                 secondPart,
-                                                 getCurrentItemBounds _)
+            IntentionUtils.showMakeExplicitPopup(
+              project,
+              expr,
+              function,
+              editor,
+              secondPart,
+              getCurrentItemBounds _
+            )
           }
         }
       })
@@ -318,7 +342,8 @@ class GoToImplicitConversionAction
         val bounds: Rectangle = getCurrentItemBounds
         setSize(getPreferredSize)
         setLocation(
-            new Point(bounds.x + bounds.width - getWidth - INDENT, bounds.y))
+          new Point(bounds.x + bounds.width - getWidth - INDENT, bounds.y)
+        )
       }
     }
 

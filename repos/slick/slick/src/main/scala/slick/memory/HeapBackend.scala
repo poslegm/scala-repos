@@ -18,34 +18,36 @@ import slick.util.Logging
 
 /** A simple database engine that stores data in heap data structures. */
 trait HeapBackend extends RelationalBackend with Logging {
-  type This = HeapBackend
-  type Database = DatabaseDef
-  type Session = SessionDef
-  type DatabaseFactory = DatabaseFactoryDef
-  type Context = BasicActionContext
+  type This             = HeapBackend
+  type Database         = DatabaseDef
+  type Session          = SessionDef
+  type DatabaseFactory  = DatabaseFactoryDef
+  type Context          = BasicActionContext
   type StreamingContext = BasicStreamingActionContext
 
-  val Database = new DatabaseFactoryDef
+  val Database             = new DatabaseFactoryDef
   val backend: HeapBackend = this
 
   def createDatabase(config: Config, path: String): Database =
     Database.apply(ExecutionContext.global)
 
-  class DatabaseDef(
-      protected val synchronousExecutionContext: ExecutionContext)
+  class DatabaseDef(protected val synchronousExecutionContext: ExecutionContext)
       extends super.DatabaseDef {
     protected[this] def createDatabaseActionContext[T](
-        _useSameThread: Boolean): Context =
+        _useSameThread: Boolean
+    ): Context =
       new BasicActionContext { val useSameThread = _useSameThread }
 
     protected[this] def createStreamingDatabaseActionContext[T](
-        s: Subscriber[_ >: T], useSameThread: Boolean): StreamingContext =
+        s: Subscriber[_ >: T],
+        useSameThread: Boolean
+    ): StreamingContext =
       new BasicStreamingActionContext(s, useSameThread, DatabaseDef.this)
 
-    protected val tables = new HashMap[String, HeapTable]
-    def createSession(): Session = new SessionDef(this)
+    protected val tables                = new HashMap[String, HeapTable]
+    def createSession(): Session        = new SessionDef(this)
     override def shutdown: Future[Unit] = Future.successful(())
-    def close: Unit = ()
+    def close: Unit                     = ()
     def getTable(name: String): HeapTable = synchronized {
       tables
         .get(name)
@@ -55,7 +57,8 @@ trait HeapBackend extends RelationalBackend with Logging {
         name: String,
         columns: IndexedSeq[HeapBackend.Column],
         indexes: IndexedSeq[Index],
-        constraints: IndexedSeq[Constraint]): HeapTable = synchronized {
+        constraints: IndexedSeq[Constraint]
+    ): HeapTable = synchronized {
       if (tables.contains(name))
         throw new SlickException(s"Table $name already exists")
       val t = new HeapTable(name, columns, indexes, constraints)
@@ -74,15 +77,16 @@ trait HeapBackend extends RelationalBackend with Logging {
   def createEmptyDatabase: Database = {
     def err =
       throw new SlickException("Unsupported operation for empty heap database")
-    new DatabaseDef(
-        new ExecutionContext {
+    new DatabaseDef(new ExecutionContext {
       def reportFailure(t: Throwable) = err
       def execute(runnable: Runnable) = err
     }) {
-      override def createTable(name: String,
-                               columns: IndexedSeq[HeapBackend.Column],
-                               indexes: IndexedSeq[Index],
-                               constraints: IndexedSeq[Constraint]) = err
+      override def createTable(
+          name: String,
+          columns: IndexedSeq[HeapBackend.Column],
+          indexes: IndexedSeq[Index],
+          constraints: IndexedSeq[Constraint]
+      ) = err
     }
   }
 
@@ -99,21 +103,25 @@ trait HeapBackend extends RelationalBackend with Logging {
 
     def rollback() =
       throw new SlickException(
-          "HeapBackend does not currently support transactions")
+        "HeapBackend does not currently support transactions"
+      )
 
     def force() {}
 
     def withTransaction[T](f: => T) =
       throw new SlickException(
-          "HeapBackend does not currently support transactions")
+        "HeapBackend does not currently support transactions"
+      )
   }
 
   type Row = IndexedSeq[Any]
 
-  class HeapTable(val name: String,
-                  val columns: IndexedSeq[HeapBackend.Column],
-                  indexes: IndexedSeq[Index],
-                  constraints: IndexedSeq[Constraint]) {
+  class HeapTable(
+      val name: String,
+      val columns: IndexedSeq[HeapBackend.Column],
+      indexes: IndexedSeq[Index],
+      constraints: IndexedSeq[Constraint]
+  ) {
     protected val data: ArrayBuffer[Row] = new ArrayBuffer[Row]
 
     def rows: Iterable[Row] = data
@@ -145,28 +153,38 @@ trait HeapBackend extends RelationalBackend with Logging {
         case (z, c) =>
           if (c.isUnique)
             z andThen createUniquenessVerifier(
-                "<unique column " + c.sym.name + ">", Vector(c.sym))
+              "<unique column " + c.sym.name + ">",
+              Vector(c.sym)
+            )
           else z
       }
     }
 
     protected def createConstraintVerifier(cons: Constraint) = cons match {
       case PrimaryKey(name, columns) =>
-        createUniquenessVerifier(name, columns.map {
-          case Select(_, f: FieldSymbol) => f
-        })
+        createUniquenessVerifier(
+          name,
+          columns.map {
+            case Select(_, f: FieldSymbol) => f
+          }
+        )
       case _ => Verifier.empty
     }
 
     protected def createIndexVerifier(idx: Index) =
       if (!idx.unique) Verifier.empty
       else
-        createUniquenessVerifier(idx.name, idx.on.map {
-          case Select(_, f: FieldSymbol) => f
-        })
+        createUniquenessVerifier(
+          idx.name,
+          idx.on.map {
+            case Select(_, f: FieldSymbol) => f
+          }
+        )
 
     protected def createUniquenessVerifier(
-        name: String, on: IndexedSeq[FieldSymbol]): Verifier = {
+        name: String,
+        on: IndexedSeq[FieldSymbol]
+    ): Verifier = {
       val columns: IndexedSeq[Int] = on.map(columnIndexes)
       val extract: (Row => Any) =
         if (columns.length == 1) (r: Row) => r(columns.head)
@@ -177,8 +195,9 @@ trait HeapBackend extends RelationalBackend with Logging {
           val e = extract(row)
           if (hash contains e)
             throw new SlickException(
-                "Uniqueness constraint " + name +
-                " violated. Duplicate data: " + e)
+              "Uniqueness constraint " + name +
+                " violated. Duplicate data: " + e
+            )
         }
         def inserted(row: Row) { hash += extract(row) }
       }
@@ -204,7 +223,7 @@ trait HeapBackend extends RelationalBackend with Logging {
 
   object Verifier {
     val empty: Verifier = new Verifier {
-      def verify(row: Row) = ()
+      def verify(row: Row)   = ()
       def inserted(row: Row) = ()
     }
   }
@@ -218,9 +237,11 @@ object HeapBackend extends HeapBackend {
     private[this] val autoInc = sym.options.collectFirst {
       case ColumnOption.AutoInc => new AtomicLong()
     }
-    val isUnique = sym.options.collectFirst {
-      case ColumnOption.PrimaryKey => true
-    }.getOrElse(false)
+    val isUnique = sym.options
+      .collectFirst {
+        case ColumnOption.PrimaryKey => true
+      }
+      .getOrElse(false)
     def createDefault: Any = autoInc match {
       case Some(a) =>
         val i = a.incrementAndGet()
@@ -228,7 +249,8 @@ object HeapBackend extends HeapBackend {
         else if (tpe == ScalaBaseType.intType) i.toInt
         else
           throw new SlickException(
-              "Only Long and Int types are allowed for AutoInc columns")
+            "Only Long and Int types are allowed for AutoInc columns"
+          )
       case None => default.getOrElse(null)
     }
   }

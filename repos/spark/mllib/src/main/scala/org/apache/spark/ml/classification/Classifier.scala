@@ -30,12 +30,14 @@ import org.apache.spark.sql.types.{DataType, StructType}
   * (private[spark]) Params for classification.
   */
 private[spark] trait ClassifierParams
-    extends PredictorParams with HasRawPredictionCol {
+    extends PredictorParams
+    with HasRawPredictionCol {
 
   override protected def validateAndTransformSchema(
       schema: StructType,
       fitting: Boolean,
-      featuresDataType: DataType): StructType = {
+      featuresDataType: DataType
+  ): StructType = {
     val parentSchema =
       super.validateAndTransformSchema(schema, fitting, featuresDataType)
     SchemaUtils.appendColumn(parentSchema, $(rawPredictionCol), new VectorUDT)
@@ -53,10 +55,11 @@ private[spark] trait ClassifierParams
   * @tparam M  Concrete Model type
   */
 @DeveloperApi
-abstract class Classifier[FeaturesType,
-                          E <: Classifier[FeaturesType, E, M],
-                          M <: ClassificationModel[FeaturesType, M]]
-    extends Predictor[FeaturesType, E, M] with ClassifierParams {
+abstract class Classifier[FeaturesType, E <: Classifier[FeaturesType, E, M], M <: ClassificationModel[
+  FeaturesType,
+  M
+]] extends Predictor[FeaturesType, E, M]
+    with ClassifierParams {
 
   /** @group setParam */
   def setRawPredictionCol(value: String): E =
@@ -75,9 +78,11 @@ abstract class Classifier[FeaturesType,
   * @tparam M  Concrete Model type
   */
 @DeveloperApi
-abstract class ClassificationModel[
-    FeaturesType, M <: ClassificationModel[FeaturesType, M]]
-    extends PredictionModel[FeaturesType, M] with ClassifierParams {
+abstract class ClassificationModel[FeaturesType, M <: ClassificationModel[
+  FeaturesType,
+  M
+]] extends PredictionModel[FeaturesType, M]
+    with ClassifierParams {
 
   /** @group setParam */
   def setRawPredictionCol(value: String): M =
@@ -100,14 +105,16 @@ abstract class ClassificationModel[
 
     // Output selected columns only.
     // This is a bit complicated since it tries to avoid repeated computation.
-    var outputData = dataset
+    var outputData    = dataset
     var numColsOutput = 0
     if (getRawPredictionCol != "") {
       val predictRawUDF = udf { (features: Any) =>
         predictRaw(features.asInstanceOf[FeaturesType])
       }
       outputData = outputData.withColumn(
-          getRawPredictionCol, predictRawUDF(col(getFeaturesCol)))
+        getRawPredictionCol,
+        predictRawUDF(col(getFeaturesCol))
+      )
       numColsOutput += 1
     }
     if (getPredictionCol != "") {
@@ -125,8 +132,10 @@ abstract class ClassificationModel[
     }
 
     if (numColsOutput == 0) {
-      logWarning(s"$uid: ClassificationModel.transform() was called as NOOP" +
-          " since no output columns were set.")
+      logWarning(
+        s"$uid: ClassificationModel.transform() was called as NOOP" +
+          " since no output columns were set."
+      )
     }
     outputData
   }

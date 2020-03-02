@@ -10,10 +10,10 @@ import org.jetbrains.plugins.scala.lang.psi.api.statements.ScTypeAlias
   * on 9/7/15
   */
 class IntroduceTypeAliasData {
-  var currentScope: ScopeItem = null
-  var initialTypeElement: TextRange = null
-  var possibleScopes: Array[ScopeItem] = null
-  var typeAliasInfo: (PsiFile, TextRange) = null
+  var currentScope: ScopeItem              = null
+  var initialTypeElement: TextRange        = null
+  var possibleScopes: Array[ScopeItem]     = null
+  var typeAliasInfo: (PsiFile, TextRange)  = null
   var isCallModalDialogInProgress: Boolean = false
 
   def setTypeAlias(inTypeAlias: ScTypeAlias) = {
@@ -51,10 +51,11 @@ class IntroduceTypeAliasData {
 
   def getNamedElement: ScTypeAlias = {
     val element = PsiTreeUtil.findElementOfClassAtOffset(
-        typeAliasInfo._1,
-        typeAliasInfo._2.getStartOffset,
-        classOf[ScTypeAlias],
-        false)
+      typeAliasInfo._1,
+      typeAliasInfo._2.getStartOffset,
+      classOf[ScTypeAlias],
+      false
+    )
 
     element match {
       case typeAlias: ScTypeAlias =>

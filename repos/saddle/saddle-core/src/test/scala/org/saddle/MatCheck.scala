@@ -57,9 +57,7 @@ class MatCheck extends Specification with ScalaCheck {
     }
 
     "isSquare works" in {
-      forAll { (m: Mat[Double]) =>
-        m.isSquare must_== (m.numRows == m.numCols)
-      }
+      forAll { (m: Mat[Double]) => m.isSquare must_== (m.numRows == m.numCols) }
     }
 
     "map works" in {
@@ -67,13 +65,17 @@ class MatCheck extends Specification with ScalaCheck {
         val data = m.contents
         m.map(_ + 1.0) must_== Mat(m.numRows, m.numCols, data.map(_ + 1.0))
         m.map(d => 5.0) must_==
-          Mat(m.numRows,
-              m.numCols,
-              (data.map(d => if (d.isNaN) na.to[Double] else 5.0)))
+          Mat(
+            m.numRows,
+            m.numCols,
+            (data.map(d => if (d.isNaN) na.to[Double] else 5.0))
+          )
         m.map(d => 5) must_==
-          Mat[Int](m.numRows,
-                   m.numCols,
-                   data.map(d => if (d.isNaN) na.to[Int] else 5))
+          Mat[Int](
+            m.numRows,
+            m.numCols,
+            data.map(d => if (d.isNaN) na.to[Int] else 5)
+          )
       }
     }
 
@@ -84,8 +86,9 @@ class MatCheck extends Specification with ScalaCheck {
         val res = m.T
         res.numCols must_== m.numRows
         res.numRows must_== m.numCols
-        for (i <- Range(0, m.numRows); j <- Range(0, m.numCols)) m.at(i, j) must_==
-          res.at(j, i)
+        for (i <- Range(0, m.numRows); j <- Range(0, m.numCols))
+          m.at(i, j) must_==
+            res.at(j, i)
         res.T must_== m
       }
     }
@@ -121,8 +124,8 @@ class MatCheck extends Specification with ScalaCheck {
           val loc = Set(i: _*)
           val res = m.withoutRows(i: _*)
           res.numRows must_== (m.numRows - loc.size)
-          val exp = for (j <- 0 until m.numRows if !loc.contains(j)) yield
-            m.row(j)
+          val exp =
+            for (j <- 0 until m.numRows if !loc.contains(j)) yield m.row(j)
           res must_== Mat(exp: _*).T
         }
       }
@@ -135,17 +138,15 @@ class MatCheck extends Specification with ScalaCheck {
           val loc = Set(i: _*)
           val res = m.withoutCols(i: _*)
           res.numCols must_== (m.numCols - loc.size)
-          val exp = for (j <- 0 until m.numCols if !loc.contains(j)) yield
-            m.col(j)
+          val exp =
+            for (j <- 0 until m.numCols if !loc.contains(j)) yield m.col(j)
           res must_== Mat(exp: _*)
         }
       }
     }
 
     "rowsWithNA works (no NA)" in {
-      forAll { (m: Mat[Double]) =>
-        m.rowsWithNA must_== Set.empty[Double]
-      }
+      forAll { (m: Mat[Double]) => m.rowsWithNA must_== Set.empty[Double] }
     }
 
     "rowsWithNA works (with NA)" in {
@@ -160,23 +161,20 @@ class MatCheck extends Specification with ScalaCheck {
 
     "dropRowsWithNA works" in {
       implicit val arbMat = Arbitrary(MatArbitraries.matDoubleWithNA)
-      forAll { (m: Mat[Double]) =>
-        m.dropRowsWithNA must_== m.rdropNA.toMat
-      }
+      forAll { (m: Mat[Double]) => m.dropRowsWithNA must_== m.rdropNA.toMat }
     }
 
     "dropColsWithNA works" in {
       implicit val arbMat = Arbitrary(MatArbitraries.matDoubleWithNA)
-      forAll { (m: Mat[Double]) =>
-        m.dropColsWithNA must_== m.dropNA.toMat
-      }
+      forAll { (m: Mat[Double]) => m.dropColsWithNA must_== m.dropNA.toMat }
     }
 
     "cols works" in {
       forAll { (m: Mat[Double]) =>
         val data = m.T.contents
-        val exp = for (i <- IndexedSeq(Range(0, m.numCols): _*)) yield
-          Vec(data).slice(i * m.numRows, (i + 1) * m.numRows)
+        val exp =
+          for (i <- IndexedSeq(Range(0, m.numCols): _*))
+            yield Vec(data).slice(i * m.numRows, (i + 1) * m.numRows)
         m.cols() must_== exp
       }
     }
@@ -184,15 +182,16 @@ class MatCheck extends Specification with ScalaCheck {
     "rows works" in {
       forAll { (m: Mat[Double]) =>
         val data = m.contents
-        val exp = for (i <- IndexedSeq(Range(0, m.numRows): _*)) yield
-          Vec(data).slice(i * m.numCols, (i + 1) * m.numCols)
+        val exp =
+          for (i <- IndexedSeq(Range(0, m.numRows): _*))
+            yield Vec(data).slice(i * m.numCols, (i + 1) * m.numCols)
         m.rows() must_== exp
       }
     }
 
     "col works" in {
       forAll { (m: Mat[Double]) =>
-        val idx = Gen.choose(0, m.numCols - 1)
+        val idx  = Gen.choose(0, m.numCols - 1)
         val data = m.T.contents
         forAll(idx) { i =>
           m.col(i) must_== Vec(data).slice(i * m.numRows, (i + 1) * m.numRows)
@@ -202,7 +201,7 @@ class MatCheck extends Specification with ScalaCheck {
 
     "row works" in {
       forAll { (m: Mat[Double]) =>
-        val idx = Gen.choose(0, m.numRows - 1)
+        val idx  = Gen.choose(0, m.numRows - 1)
         val data = m.contents
         forAll(idx) { i =>
           m.row(i) must_== Vec(data).slice(i * m.numCols, (i + 1) * m.numCols)
@@ -253,8 +252,8 @@ class MatCheck extends Specification with ScalaCheck {
           MatMath.cov(ma) must throwAn[IllegalArgumentException]
         } else {
           val aCov = new Covariance(ma.rows().map(_.toArray).toArray)
-          val exp = aCov.getCovarianceMatrix
-          val res = MatMath.cov(ma).contents
+          val exp  = aCov.getCovarianceMatrix
+          val res  = MatMath.cov(ma).contents
 
           Vec(res) must BeCloseToVec(Vec(flatten(exp.getData)), 1e-9)
         }
@@ -263,8 +262,6 @@ class MatCheck extends Specification with ScalaCheck {
   }
 
   "serialization works" in {
-    forAll { ma: Mat[Double] =>
-      ma must_== serializedCopy(ma)
-    }
+    forAll { ma: Mat[Double] => ma must_== serializedCopy(ma) }
   }
 }

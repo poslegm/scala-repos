@@ -13,8 +13,8 @@ package settings
 abstract class MutableSettings extends AbsSettings {
 
   type Setting <: SettingValue
-  type BooleanSetting <: Setting { type T = Boolean }
-  type IntSetting <: Setting { type T = Int }
+  type BooleanSetting <: Setting { type T     = Boolean }
+  type IntSetting <: Setting { type T         = Int }
   type MultiStringSetting <: Setting { type T = List[String] }
 
   // basically this is a value which remembers if it's been modified
@@ -23,9 +23,9 @@ abstract class MutableSettings extends AbsSettings {
     protected var setByUser: Boolean = false
 
     def postSetHook(): Unit = ()
-    def isDefault = !setByUser
-    def isSetByUser = setByUser
-    def value: T = v
+    def isDefault           = !setByUser
+    def isSetByUser         = setByUser
+    def value: T            = v
     def value_=(arg: T) = {
       setByUser = true
       v = arg
@@ -65,5 +65,6 @@ object MutableSettings {
 
   /** Support the common use case, `if (settings.debug) println("Hello, martin.")` */
   @inline implicit def reflectSettingToBoolean(
-      s: MutableSettings#BooleanSetting): Boolean = s.value
+      s: MutableSettings#BooleanSetting
+  ): Boolean = s.value
 }

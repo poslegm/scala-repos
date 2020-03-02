@@ -40,7 +40,7 @@ final class ServerClientIntegrationSuite extends RedisClientTest {
       assert(info.contains("# Clients") == true)
 
       val cpuCB = StringToChannelBuffer("cpu")
-      val cpu = new String(Await.result(client.info(cpuCB)).get.array, "UTF8")
+      val cpu   = new String(Await.result(client.info(cpuCB)).get.array, "UTF8")
       assert(cpu.contains("# CPU") == true)
       assert(cpu.contains("used_cpu_sys:") == true)
       assert(cpu.contains("redis_version:") == false)

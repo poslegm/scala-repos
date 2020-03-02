@@ -35,7 +35,7 @@ object RichDate {
     cal
   }
 
-  implicit def apply(d: Date): RichDate = RichDate(d.getTime)
+  implicit def apply(d: Date): RichDate     = RichDate(d.getTime)
   implicit def apply(d: Calendar): RichDate = RichDate(d.getTime)
 
   /**
@@ -43,8 +43,9 @@ object RichDate {
     * We allow either date, date with time in minutes, date with time down to seconds.
     * The separator between date and time can be a space or "T".
     */
-  implicit def apply(str: String)(
-      implicit tz: TimeZone, dp: DateParser): RichDate =
+  implicit def apply(
+      str: String
+  )(implicit tz: TimeZone, dp: DateParser): RichDate =
     dp.parse(str).get
 
   /* If the format is one of the truncated DateOps formats, we can do
@@ -53,16 +54,16 @@ object RichDate {
   def upperBound(s: String)(implicit tz: TimeZone, dp: DateParser) = {
     val end = apply(s)
     (DateOps.getFormatObject(s) match {
-      case Some(DateOps.Format.DATE_WITHOUT_DASH) => end + Days(1)
-      case Some(DateOps.Format.DATE_WITH_DASH) => end + Days(1)
-      case Some(DateOps.Format.DATEHOUR_WITHOUT_DASH) => end + Hours(1)
-      case Some(DateOps.Format.DATEHOUR_WITH_DASH) => end + Hours(1)
-      case Some(DateOps.Format.DATETIME_WITHOUT_DASH) => end + Minutes(1)
-      case Some(DateOps.Format.DATETIME_WITH_DASH) => end + Minutes(1)
+      case Some(DateOps.Format.DATE_WITHOUT_DASH)         => end + Days(1)
+      case Some(DateOps.Format.DATE_WITH_DASH)            => end + Days(1)
+      case Some(DateOps.Format.DATEHOUR_WITHOUT_DASH)     => end + Hours(1)
+      case Some(DateOps.Format.DATEHOUR_WITH_DASH)        => end + Hours(1)
+      case Some(DateOps.Format.DATETIME_WITHOUT_DASH)     => end + Minutes(1)
+      case Some(DateOps.Format.DATETIME_WITH_DASH)        => end + Minutes(1)
       case Some(DateOps.Format.DATETIME_HMS_WITHOUT_DASH) => end + Seconds(1)
-      case Some(DateOps.Format.DATETIME_HMS_WITH_DASH) => end + Seconds(1)
-      case Some(DateOps.Format.DATETIME_HMSM_WITH_DASH) => end + Millisecs(2)
-      case None => Days(1).floorOf(end + Days(1))
+      case Some(DateOps.Format.DATETIME_HMS_WITH_DASH)    => end + Seconds(1)
+      case Some(DateOps.Format.DATETIME_HMSM_WITH_DASH)   => end + Millisecs(2)
+      case None                                           => Days(1).floorOf(end + Days(1))
     }) - Millisecs(1)
   }
 
@@ -95,9 +96,9 @@ case class RichDate(val timestamp: Long) extends Ordered[RichDate] {
   //True of the other is a RichDate with equal value, or a Date equal to value
   override def equals(that: Any) =
     that match {
-      case d: Date => d.getTime == timestamp
+      case d: Date      => d.getTime == timestamp
       case RichDate(ts) => ts == timestamp
-      case _ => false
+      case _            => false
     }
 
   /**
@@ -125,7 +126,7 @@ case class RichDate(val timestamp: Long) extends Ordered[RichDate] {
     * Use SimpleDateFormat to print the string
     */
   def toString(fmt: String)(implicit tz: TimeZone): String = {
-    val cal = toCalendar(tz)
+    val cal   = toCalendar(tz)
     val sdfmt = new SimpleDateFormat(fmt)
     sdfmt.setCalendar(cal)
     sdfmt.format(cal.getTime)

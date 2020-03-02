@@ -15,25 +15,31 @@ import scala.reflect.macros.whitebox
   * Date: 9/28/15.
   */
 class CachedWithRecursionGuard[T](
-    element: Any, defaultValue: => Any, dependecyItem: Object)
-    extends StaticAnnotation {
-  def macroTransform(annottees: Any*) = macro CachedWithRecursionGuard.cachedWithRecursionGuardImpl
+    element: Any,
+    defaultValue: => Any,
+    dependecyItem: Object
+) extends StaticAnnotation {
+  def macroTransform(annottees: Any*) =
+    macro CachedWithRecursionGuard.cachedWithRecursionGuardImpl
 }
 
 object CachedWithRecursionGuard {
   import CachedMacroUtil._
-  def cachedWithRecursionGuardImpl(c: whitebox.Context)(
-      annottees: c.Tree*): c.Expr[Any] = {
+  def cachedWithRecursionGuardImpl(
+      c: whitebox.Context
+  )(annottees: c.Tree*): c.Expr[Any] = {
     import c.universe._
     implicit val x: c.type = c
 
     def parameters: (Tree, Tree, Tree, Tree) = c.prefix.tree match {
       case q"new CachedWithRecursionGuard[$t](..$params)"
           if params.length == 3 =>
-        (params.head,
-         params(1),
-         modCountParamToModTracker(c)(params(2), params.head),
-         t)
+        (
+          params.head,
+          params(1),
+          modCountParamToModTracker(c)(params(2), params.head),
+          t
+        )
       case _ => abort("Wrong annotation parameters!")
     }
 
@@ -46,12 +52,12 @@ object CachedWithRecursionGuard {
         }
 
         //generated names
-        val cachedFunName = TermName(c.freshName("cachedFun"))
-        val keyId = c.freshName(name.toString + "cacheKey")
-        val keyVarName = TermName(c.freshName(name.toString + "Key"))
+        val cachedFunName  = TermName(c.freshName("cachedFun"))
+        val keyId          = c.freshName(name.toString + "cacheKey")
+        val keyVarName     = TermName(c.freshName(name.toString + "Key"))
         val cacheStatsName = TermName(c.freshName("cacheStats"))
-        val analyzeCaches = CachedMacroUtil.analyzeCachesEnabled(c)
-        val defdefFQN = q"""getClass.getName ++ "." ++ ${name.toString}"""
+        val analyzeCaches  = CachedMacroUtil.analyzeCachesEnabled(c)
+        val defdefFQN      = q"""getClass.getName ++ "." ++ ${name.toString}"""
 
         val provider = TypeName("MyProvider")
 
@@ -69,8 +75,7 @@ object CachedWithRecursionGuard {
           $cachesUtilFQN.incrementModCountForFunsWithModifiedReturn()
           $cachesUtilFQN.getWithRecursionPreventingWithRollback[$providerType, $retTp]($element, $keyVarName, $builder, $defaultValue)
           """
-        val updatedDef = DefDef(
-            mods, name, tpParams, params, retTp, updatedRhs)
+        val updatedDef = DefDef(mods, name, tpParams, params, retTp, updatedRhs)
         val res = q"""
           private val $keyVarName = $cachesUtilFQN.getOrCreateKey[$keyTypeFQN[$cachedValueTypeFQN[$retTp]]]($keyId)
 

@@ -16,7 +16,7 @@ object Test {
     } with TreeInfo
   }
   abstract class SymbolTable extends Trees
-  abstract class Global extends SymbolTable
+  abstract class Global      extends SymbolTable
   trait Analyzer {
     val global: Global
   }

@@ -22,8 +22,11 @@ import org.scalatest.{BeforeAndAfter, FunSuite, Tag}
 
 @RunWith(classOf[JUnitRunner])
 class EndToEndTest
-    extends FunSuite with Eventually with IntegrationPatience
-    with BeforeAndAfter with AssertionsForJUnit {
+    extends FunSuite
+    with Eventually
+    with IntegrationPatience
+    with BeforeAndAfter
+    with AssertionsForJUnit {
 
   var saveBase: Dtab = Dtab.empty
 
@@ -45,7 +48,7 @@ class EndToEndTest
 
   test("Discard request properly sent") {
     @volatile var handled = false
-    val p = Promise[Response]()
+    val p                 = Promise[Response]()
     p.setInterruptHandler {
       case t: Throwable =>
         handled = true
@@ -53,13 +56,17 @@ class EndToEndTest
 
     val svc = Service.mk[Request, Response](_ => p)
 
-    val q0, q1 = new AsyncQueue[Message]
+    val q0, q1      = new AsyncQueue[Message]
     val clientTrans = new QueueTransport[Message, Message](q0, q1)
     val serverTrans = new QueueTransport[Message, Message](q1, q0)
 
     val server = ServerDispatcher.newRequestResponse(serverTrans, svc)
     val session = new ClientSession(
-        clientTrans, FailureDetector.NullConfig, "test", NullStatsReceiver)
+      clientTrans,
+      FailureDetector.NullConfig,
+      "test",
+      NullStatsReceiver
+    )
     val client = ClientDispatcher.newRequestResponse(session)
 
     val f = client(Request(Path.empty, Buf.Empty))
@@ -70,12 +77,15 @@ class EndToEndTest
   }
 
   test("Dtab propagation") {
-    val server = Mux.serve("localhost:*", Service.mk[Request, Response] { _ =>
-      val stringer = new StringWriter
-      val printer = new PrintWriter(stringer)
-      Dtab.local.print(printer)
-      Future.value(Response(Buf.Utf8(stringer.toString)))
-    })
+    val server = Mux.serve(
+      "localhost:*",
+      Service.mk[Request, Response] { _ =>
+        val stringer = new StringWriter
+        val printer  = new PrintWriter(stringer)
+        Dtab.local.print(printer)
+        Future.value(Response(Buf.Utf8(stringer.toString)))
+      }
+    )
 
     val client = Mux.newService(server)
 
@@ -86,7 +96,8 @@ class EndToEndTest
           Await.result(client(Request(Path.empty, Buf.Empty)), 30.seconds)
         val Buf.Utf8(str) = rsp.body
         assert(
-            str == "Dtab(2)\n\t/foo => /bar\n\t/web => /$/inet/twitter.com/80\n")
+          str == "Dtab(2)\n\t/foo => /bar\n\t/web => /$/inet/twitter.com/80\n"
+        )
       }
     }
     Await.result(server.close())
@@ -94,16 +105,19 @@ class EndToEndTest
   }
 
   test("(no) Dtab propagation") {
-    val server = Mux.serve("localhost:*", Service.mk[Request, Response] { _ =>
-      val buf = ChannelBuffers.buffer(4)
-      buf.writeInt(Dtab.local.size)
-      Future.value(Response(ChannelBufferBuf.Owned(buf)))
-    })
+    val server = Mux.serve(
+      "localhost:*",
+      Service.mk[Request, Response] { _ =>
+        val buf = ChannelBuffers.buffer(4)
+        buf.writeInt(Dtab.local.size)
+        Future.value(Response(ChannelBufferBuf.Owned(buf)))
+      }
+    )
 
     val client = Mux.newService(server)
 
     val payload = Await.result(client(Request.empty), 30.seconds).body
-    val cb = BufChannelBuffer(payload)
+    val cb      = BufChannelBuffer(payload)
 
     assert(cb.readableBytes() === 4)
     assert(cb.readInt() === 0)
@@ -112,8 +126,7 @@ class EndToEndTest
   }
 
   def assertAnnotationsInOrder(tracer: Seq[Record], annos: Seq[Annotation]) {
-    assert(
-        tracer.collect {
+    assert(tracer.collect {
       case Record(_, _, ann, _) if annos.contains(ann) => ann
     } == annos)
   }
@@ -121,19 +134,22 @@ class EndToEndTest
   test("trace propagation") {
     val tracer = new BufferingTracer
 
-    var count: Int = 0
+    var count: Int                         = 0
     var client: Service[Request, Response] = null
 
     val server = Mux.server
       .configured(param.Tracer(tracer))
       .configured(param.Label("theServer"))
-      .serve("localhost:*", new Service[Request, Response] {
-        def apply(req: Request) = {
-          count += 1
-          if (count >= 1) Future.value(Response(req.body))
-          else client(req)
+      .serve(
+        "localhost:*",
+        new Service[Request, Response] {
+          def apply(req: Request) = {
+            count += 1
+            if (count >= 1) Future.value(Response(req.body))
+            else client(req)
+          }
         }
-      })
+      )
 
     client = Mux.client
       .configured(param.Tracer(tracer))
@@ -143,17 +159,18 @@ class EndToEndTest
     Await.result(client(Request.empty), 30.seconds)
 
     assertAnnotationsInOrder(
-        tracer.toSeq,
-        Seq(
-            Annotation.ServiceName("theClient"),
-            Annotation.ClientSend(),
-            Annotation.BinaryAnnotation("clnt/mux/enabled", true),
-            Annotation.ServiceName("theServer"),
-            Annotation.ServerRecv(),
-            Annotation.BinaryAnnotation("srv/mux/enabled", true),
-            Annotation.ServerSend(),
-            Annotation.ClientRecv()
-        ))
+      tracer.toSeq,
+      Seq(
+        Annotation.ServiceName("theClient"),
+        Annotation.ClientSend(),
+        Annotation.BinaryAnnotation("clnt/mux/enabled", true),
+        Annotation.ServiceName("theServer"),
+        Annotation.ServerRecv(),
+        Annotation.BinaryAnnotation("srv/mux/enabled", true),
+        Annotation.ServerSend(),
+        Annotation.ClientRecv()
+      )
+    )
 
     Await.result(server.close(), 30.seconds)
     Await.result(client.close(), 30.seconds)
@@ -172,9 +189,12 @@ class EndToEndTest
 
     val a, b = Mux.serve("localhost:*", service)
     val client = Mux.newService(
-        Name.bound(Address(a.boundAddress.asInstanceOf[InetSocketAddress]),
-                   Address(b.boundAddress.asInstanceOf[InetSocketAddress])),
-        "client")
+      Name.bound(
+        Address(a.boundAddress.asInstanceOf[InetSocketAddress]),
+        Address(b.boundAddress.asInstanceOf[InetSocketAddress])
+      ),
+      "client"
+    )
 
     assert(n.get == 0)
     assert(Await.result(client(Request.empty), 30.seconds).body.isEmpty)
@@ -259,7 +279,7 @@ EOF
 
       // We need to reserve a port here because we're going to be
       // rebinding the server.
-      val port = nextPort()
+      val port   = nextPort()
       val client = Mux.newService(s"localhost:$port")
       var server = Mux.serve(s"localhost:$port", echo)
 
@@ -298,9 +318,12 @@ EOF
 
       val server = Mux.server
         .configured(Lessor.Param(lessor))
-        .serve("localhost:*", new Service[mux.Request, mux.Response] {
-          def apply(req: Request) = ???
-        })
+        .serve(
+          "localhost:*",
+          new Service[mux.Request, mux.Response] {
+            def apply(req: Request) = ???
+          }
+        )
 
       val sr = new InMemoryStatsReceiver
 
@@ -310,18 +333,18 @@ EOF
 
       val Some((_, available)) = sr.gauges.find {
         case (_ +: Seq("loadbalancer", "available"), value) => true
-        case _ => false
+        case _                                              => false
       }
 
       val Some((_, leaseDuration)) = sr.gauges.find {
         case (_ +: Seq("mux", "current_lease_ms"), value) => true
-        case _ => false
+        case _                                            => false
       }
 
       val leaseCtr: () => Int = { () =>
         val Some((_, ctr)) = sr.counters.find {
           case (_ +: Seq("mux", "leased"), value) => true
-          case _ => false
+          case _                                  => false
         }
         ctr
       }

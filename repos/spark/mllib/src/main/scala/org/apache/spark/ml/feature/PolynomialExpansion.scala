@@ -46,10 +46,12 @@ class PolynomialExpansion(override val uid: String)
     * Default: 2
     * @group param
     */
-  val degree = new IntParam(this,
-                            "degree",
-                            "the polynomial degree to expand (>= 1)",
-                            ParamValidators.gtEq(1))
+  val degree = new IntParam(
+    this,
+    "degree",
+    "the polynomial degree to expand (>= 1)",
+    ParamValidators.gtEq(1)
+  )
 
   setDefault(degree -> 2)
 
@@ -90,12 +92,14 @@ object PolynomialExpansion extends DefaultParamsReadable[PolynomialExpansion] {
   private def getPolySize(numFeatures: Int, degree: Int): Int =
     choose(numFeatures + degree, degree)
 
-  private def expandDense(values: Array[Double],
-                          lastIdx: Int,
-                          degree: Int,
-                          multiplier: Double,
-                          polyValues: Array[Double],
-                          curPolyIdx: Int): Int = {
+  private def expandDense(
+      values: Array[Double],
+      lastIdx: Int,
+      degree: Int,
+      multiplier: Double,
+      polyValues: Array[Double],
+      curPolyIdx: Int
+  ): Int = {
     if (multiplier == 0.0) {
       // do nothing
     } else if (degree == 0 || lastIdx < 0) {
@@ -104,14 +108,14 @@ object PolynomialExpansion extends DefaultParamsReadable[PolynomialExpansion] {
         polyValues(curPolyIdx) = multiplier
       }
     } else {
-      val v = values(lastIdx)
+      val v        = values(lastIdx)
       val lastIdx1 = lastIdx - 1
-      var alpha = multiplier
-      var i = 0
+      var alpha    = multiplier
+      var i        = 0
       var curStart = curPolyIdx
       while (i <= degree && alpha != 0.0) {
-        curStart = expandDense(
-            values, lastIdx1, degree - i, alpha, polyValues, curStart)
+        curStart =
+          expandDense(values, lastIdx1, degree - i, alpha, polyValues, curStart)
         i += 1
         alpha *= v
       }
@@ -119,15 +123,17 @@ object PolynomialExpansion extends DefaultParamsReadable[PolynomialExpansion] {
     curPolyIdx + getPolySize(lastIdx + 1, degree)
   }
 
-  private def expandSparse(indices: Array[Int],
-                           values: Array[Double],
-                           lastIdx: Int,
-                           lastFeatureIdx: Int,
-                           degree: Int,
-                           multiplier: Double,
-                           polyIndices: mutable.ArrayBuilder[Int],
-                           polyValues: mutable.ArrayBuilder[Double],
-                           curPolyIdx: Int): Int = {
+  private def expandSparse(
+      indices: Array[Int],
+      values: Array[Double],
+      lastIdx: Int,
+      lastFeatureIdx: Int,
+      degree: Int,
+      multiplier: Double,
+      polyIndices: mutable.ArrayBuilder[Int],
+      polyValues: mutable.ArrayBuilder[Double],
+      curPolyIdx: Int
+  ): Int = {
     if (multiplier == 0.0) {
       // do nothing
     } else if (degree == 0 || lastIdx < 0) {
@@ -138,22 +144,24 @@ object PolynomialExpansion extends DefaultParamsReadable[PolynomialExpansion] {
       }
     } else {
       // Skip all zeros at the tail.
-      val v = values(lastIdx)
-      val lastIdx1 = lastIdx - 1
+      val v               = values(lastIdx)
+      val lastIdx1        = lastIdx - 1
       val lastFeatureIdx1 = indices(lastIdx) - 1
-      var alpha = multiplier
-      var curStart = curPolyIdx
-      var i = 0
+      var alpha           = multiplier
+      var curStart        = curPolyIdx
+      var i               = 0
       while (i <= degree && alpha != 0.0) {
-        curStart = expandSparse(indices,
-                                values,
-                                lastIdx1,
-                                lastFeatureIdx1,
-                                degree - i,
-                                alpha,
-                                polyIndices,
-                                polyValues,
-                                curStart)
+        curStart = expandSparse(
+          indices,
+          values,
+          lastIdx1,
+          lastFeatureIdx1,
+          degree - i,
+          alpha,
+          polyIndices,
+          polyValues,
+          curStart
+        )
         i += 1
         alpha *= v
       }
@@ -162,38 +170,40 @@ object PolynomialExpansion extends DefaultParamsReadable[PolynomialExpansion] {
   }
 
   private def expand(dv: DenseVector, degree: Int): DenseVector = {
-    val n = dv.size
-    val polySize = getPolySize(n, degree)
+    val n          = dv.size
+    val polySize   = getPolySize(n, degree)
     val polyValues = new Array[Double](polySize - 1)
     expandDense(dv.values, n - 1, degree, 1.0, polyValues, -1)
     new DenseVector(polyValues)
   }
 
   private def expand(sv: SparseVector, degree: Int): SparseVector = {
-    val polySize = getPolySize(sv.size, degree)
-    val nnz = sv.values.length
+    val polySize    = getPolySize(sv.size, degree)
+    val nnz         = sv.values.length
     val nnzPolySize = getPolySize(nnz, degree)
     val polyIndices = mutable.ArrayBuilder.make[Int]
     polyIndices.sizeHint(nnzPolySize - 1)
     val polyValues = mutable.ArrayBuilder.make[Double]
     polyValues.sizeHint(nnzPolySize - 1)
-    expandSparse(sv.indices,
-                 sv.values,
-                 nnz - 1,
-                 sv.size - 1,
-                 degree,
-                 1.0,
-                 polyIndices,
-                 polyValues,
-                 -1)
+    expandSparse(
+      sv.indices,
+      sv.values,
+      nnz - 1,
+      sv.size - 1,
+      degree,
+      1.0,
+      polyIndices,
+      polyValues,
+      -1
+    )
     new SparseVector(polySize - 1, polyIndices.result(), polyValues.result())
   }
 
   private[feature] def expand(v: Vector, degree: Int): Vector = {
     v match {
-      case dv: DenseVector => expand(dv, degree)
+      case dv: DenseVector  => expand(dv, degree)
       case sv: SparseVector => expand(sv, degree)
-      case _ => throw new IllegalArgumentException
+      case _                => throw new IllegalArgumentException
     }
   }
 

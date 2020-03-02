@@ -34,10 +34,19 @@ import java.util
   * @see <a href="http://en.wikipedia.org/wiki/Well_Equidistributed_Long-period_Linear">WELL @ Wikipedia</a>
   * @author <a href="mailto:dusan.kysel@gmail.com">Dušan Kysel</a>
   */
-final class Well19937a protected[random](state: Array[Int], i0: Int)
+final class Well19937a protected[random] (state: Array[Int], i0: Int)
     extends IntBasedGenerator {
 
-  import Well19937a.{UpperMask, LowerMask, R, BYTES, mat0pos, mat0neg, mat1, mat3pos}
+  import Well19937a.{
+    UpperMask,
+    LowerMask,
+    R,
+    BYTES,
+    mat0pos,
+    mat0neg,
+    mat1,
+    mat3pos
+  }
 
   private var i: Int = i0
 
@@ -45,11 +54,9 @@ final class Well19937a protected[random](state: Array[Int], i0: Int)
 
   def getSeedBytes(): Array[Byte] = {
     val bytes = new Array[Byte](BYTES)
-    val bb = ByteBuffer.wrap(bytes)
+    val bb    = ByteBuffer.wrap(bytes)
 
-    cfor(0)(_ < R, _ + 1) { i =>
-      bb.putInt(state(i))
-    }
+    cfor(0)(_ < R, _ + 1) { i => bb.putInt(state(i)) }
     bb.putInt(i)
     bytes
   }
@@ -59,9 +66,7 @@ final class Well19937a protected[random](state: Array[Int], i0: Int)
       if (bytes.length < BYTES) util.Arrays.copyOf(bytes, BYTES) else bytes
     val bb = ByteBuffer.wrap(bs)
 
-    cfor(0)(_ < R, _ + 1) { i =>
-      state(i) = bb.getInt
-    }
+    cfor(0)(_ < R, _ + 1) { i => state(i) = bb.getInt }
     i = bb.getInt
   }
 
@@ -74,8 +79,8 @@ final class Well19937a protected[random](state: Array[Int], i0: Int)
     val z2: Int = mat3pos(9, state(vm2(i))) ^ mat0pos(1, state(vm3(i)))
 
     state(i) = z1 ^ z2
-    state(vrm1(i)) = mat1(z0) ^ mat0neg(-9, z1) ^ mat0neg(-21, z2) ^ mat0pos(
-        21, state(i))
+    state(vrm1(i)) =
+      mat1(z0) ^ mat0neg(-9, z1) ^ mat0neg(-21, z2) ^ mat0pos(21, state(i))
     i = vrm1(i)
 
     state(i)
@@ -113,7 +118,7 @@ object Well19937a extends GeneratorCompanion[Well19937a, (Array[Int], Int)] {
 
   @inline private final def mat0pos(t: Int, v: Int) = v ^ (v >>> t)
   @inline private final def mat0neg(t: Int, v: Int) = v ^ (v << -t)
-  @inline private final def mat1(v: Int) = v
+  @inline private final def mat1(v: Int)            = v
   @inline private final def mat3pos(t: Int, v: Int) = v >>> t
 
   def randomSeed(): (Array[Int], Int) =

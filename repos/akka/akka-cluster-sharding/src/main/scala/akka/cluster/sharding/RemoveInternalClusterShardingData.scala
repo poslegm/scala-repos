@@ -60,25 +60,27 @@ object RemoveInternalClusterShardingData {
   def main(args: Array[String]): Unit = {
     if (args.isEmpty)
       println(
-          "Specify the Cluster Sharding type names to remove in program arguments")
+        "Specify the Cluster Sharding type names to remove in program arguments"
+      )
     else {
-      val system = ActorSystem("RemoveInternalClusterShardingData")
+      val system          = ActorSystem("RemoveInternalClusterShardingData")
       val remove2dot3Data = (args(0) == "-2.3")
-      val typeNames = if (remove2dot3Data) args.tail.toSet else args.toSet
+      val typeNames       = if (remove2dot3Data) args.tail.toSet else args.toSet
       if (typeNames.isEmpty)
         println(
-            "Specify the Cluster Sharding type names to remove in program arguments")
+          "Specify the Cluster Sharding type names to remove in program arguments"
+        )
       else {
         val journalPluginId = system.settings.config
           .getString("akka.cluster.sharding.journal-plugin-id")
         import system.dispatcher
-        remove(system,
-               journalPluginId,
-               typeNames,
-               terminateSystem = true,
-               remove2dot3Data).onComplete { _ ⇒
-          system.terminate()
-        }
+        remove(
+          system,
+          journalPluginId,
+          typeNames,
+          terminateSystem = true,
+          remove2dot3Data
+        ).onComplete { _ ⇒ system.terminate() }
       }
     }
   }
@@ -87,11 +89,13 @@ object RemoveInternalClusterShardingData {
     * API corresponding to the [[#main]] method as described in the
     * [[RemoveInternalClusterShardingData$ RemoveInternalClusterShardingData companion object]]
     */
-  def remove(system: ActorSystem,
-             journalPluginId: String,
-             typeNames: Set[String],
-             terminateSystem: Boolean,
-             remove2dot3Data: Boolean): Future[Unit] = {
+  def remove(
+      system: ActorSystem,
+      journalPluginId: String,
+      typeNames: Set[String],
+      terminateSystem: Boolean,
+      remove2dot3Data: Boolean
+  ): Future[Unit] = {
 
     val resolvedJournalPluginId =
       if (journalPluginId == "")
@@ -104,31 +108,46 @@ object RemoveInternalClusterShardingData {
 
     val completion = Promise[Unit]()
     system.actorOf(
-        props(journalPluginId, typeNames, completion, remove2dot3Data),
-        name = "removeInternalClusterShardingData")
+      props(journalPluginId, typeNames, completion, remove2dot3Data),
+      name = "removeInternalClusterShardingData"
+    )
     completion.future
   }
 
   /**
     * INTERNAL API: `Props` for [[RemoveInternalClusterShardingData]] actor.
     */
-  private[akka] def props(journalPluginId: String,
-                          typeNames: Set[String],
-                          completion: Promise[Unit],
-                          remove2dot3Data: Boolean): Props =
-    Props(new RemoveInternalClusterShardingData(
-            journalPluginId, typeNames, completion, remove2dot3Data))
-      .withDeploy(Deploy.local)
+  private[akka] def props(
+      journalPluginId: String,
+      typeNames: Set[String],
+      completion: Promise[Unit],
+      remove2dot3Data: Boolean
+  ): Props =
+    Props(
+      new RemoveInternalClusterShardingData(
+        journalPluginId,
+        typeNames,
+        completion,
+        remove2dot3Data
+      )
+    ).withDeploy(Deploy.local)
 
   /**
     * INTERNAL API
     */
   private[akka] object RemoveOnePersistenceId {
-    def props(journalPluginId: String,
-              persistenceId: String,
-              replyTo: ActorRef): Props =
-      Props(new RemoveOnePersistenceId(
-              journalPluginId, persistenceId: String, replyTo))
+    def props(
+        journalPluginId: String,
+        persistenceId: String,
+        replyTo: ActorRef
+    ): Props =
+      Props(
+        new RemoveOnePersistenceId(
+          journalPluginId,
+          persistenceId: String,
+          replyTo
+        )
+      )
 
     case class Result(removals: Try[Removals])
     case class Removals(events: Boolean, snapshots: Boolean)
@@ -142,8 +161,8 @@ object RemoveInternalClusterShardingData {
   private[akka] class RemoveOnePersistenceId(
       override val journalPluginId: String,
       override val persistenceId: String,
-      replyTo: ActorRef)
-      extends PersistentActor {
+      replyTo: ActorRef
+  ) extends PersistentActor {
 
     import RemoveInternalClusterShardingData.RemoveOnePersistenceId._
 
@@ -179,7 +198,7 @@ object RemoveInternalClusterShardingData {
       }: Receive).orElse(handleFailure)
 
     def handleFailure: Receive = {
-      case DeleteMessagesFailure(cause, _) ⇒ failure(cause)
+      case DeleteMessagesFailure(cause, _)  ⇒ failure(cause)
       case DeleteSnapshotsFailure(_, cause) ⇒ failure(cause)
     }
 
@@ -198,19 +217,21 @@ object RemoveInternalClusterShardingData {
 /**
   * @see [[RemoveInternalClusterShardingData$ RemoveInternalClusterShardingData companion object]]
   */
-class RemoveInternalClusterShardingData(journalPluginId: String,
-                                        typeNames: Set[String],
-                                        completion: Promise[Unit],
-                                        remove2dot3Data: Boolean)
-    extends Actor with ActorLogging {
+class RemoveInternalClusterShardingData(
+    journalPluginId: String,
+    typeNames: Set[String],
+    completion: Promise[Unit],
+    remove2dot3Data: Boolean
+) extends Actor
+    with ActorLogging {
   import RemoveInternalClusterShardingData._
   import RemoveOnePersistenceId.Result
 
-  var currentPid: String = _
+  var currentPid: String   = _
   var currentRef: ActorRef = _
   var remainingPids =
     typeNames.map(persistenceId) ++
-    (if (remove2dot3Data) typeNames.map(persistenceId2dot3) else Set.empty)
+      (if (remove2dot3Data) typeNames.map(persistenceId2dot3) else Set.empty)
 
   def persistenceId(typeName: String): String =
     s"/sharding/${typeName}Coordinator"
@@ -226,7 +247,8 @@ class RemoveInternalClusterShardingData(journalPluginId: String,
     currentPid = remainingPids.head
     log.info("Removing data for persistenceId [{}]", currentPid)
     currentRef = context.actorOf(
-        RemoveOnePersistenceId.props(journalPluginId, currentPid, self))
+      RemoveOnePersistenceId.props(journalPluginId, currentPid, self)
+    )
     context.watch(currentRef)
     remainingPids -= currentPid
   }

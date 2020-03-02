@@ -9,27 +9,27 @@ import org.scalatest.FunSuite
 
 sealed trait Fruit
 
-sealed trait RedOrOrangeFruit extends Fruit
-final case class Apple(kind: String) extends RedOrOrangeFruit
+sealed trait RedOrOrangeFruit             extends Fruit
+final case class Apple(kind: String)      extends RedOrOrangeFruit
 final case class Orange(ripeness: String) extends RedOrOrangeFruit
-final case class Banana(something: Int) extends Fruit
+final case class Banana(something: Int)   extends Fruit
 
 final case class Cucumber(something: Int) // does not extend Fruit but same shape as Banana
 
 object Fruit {
-  implicit val pickler = Pickler.generate[Fruit]
+  implicit val pickler   = Pickler.generate[Fruit]
   implicit val unpickler = Unpickler.generate[Fruit]
 }
 
 class SealedTraitStaticTest extends FunSuite {
 
   test("main") {
-    val apple = Apple("Fuji")
+    val apple       = Apple("Fuji")
     val appleString = (apple: Fruit).pickle.value
     assert(JSONPickle(appleString).unpickle[Fruit] == apple)
     assert(JSONPickle(appleString).unpickle[Apple] == apple)
 
-    val banana = Banana(42)
+    val banana       = Banana(42)
     val bananaString = (banana: Fruit).pickle.value
     assert(JSONPickle(bananaString).unpickle[Fruit] == banana)
     assert(JSONPickle(bananaString).unpickle[Banana] == banana)
@@ -40,7 +40,8 @@ class SealedTraitStaticTest extends FunSuite {
       val f =
         JSONPickle(bananaString.replace("Banana", "Cucumber")).unpickle[Fruit]
       throw new Exception(
-          s"Should have thrown on unpickle but instead parsed $f")
+        s"Should have thrown on unpickle but instead parsed $f"
+      )
     } catch {
       case PicklingException(message, cause) =>
         if (!message.contains("Cucumber not recognized"))
@@ -58,7 +59,8 @@ class SealedTraitStaticTest extends FunSuite {
     try {
       val a = JSONPickle(bananaString).unpickle[Apple]
       throw new Exception(
-          s"Should have thrown on unpickle but instead parsed $a")
+        s"Should have thrown on unpickle but instead parsed $a"
+      )
     } catch {
       case PicklingException(message, cause) =>
         if (!message.contains("No field 'kind'"))

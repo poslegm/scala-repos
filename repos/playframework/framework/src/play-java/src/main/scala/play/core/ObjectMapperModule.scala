@@ -21,12 +21,12 @@ import scala.concurrent.Future
 class ObjectMapperModule extends Module {
 
   def bindings(environment: Environment, configuration: Configuration) = Seq(
-      bind[ObjectMapper].toProvider[ObjectMapperProvider].eagerly()
+    bind[ObjectMapper].toProvider[ObjectMapperProvider].eagerly()
   )
 }
 
 @Singleton
-class ObjectMapperProvider @Inject()(lifecycle: ApplicationLifecycle)
+class ObjectMapperProvider @Inject() (lifecycle: ApplicationLifecycle)
     extends Provider[ObjectMapper] {
   lazy val get = {
     val objectMapper = Json.newDefaultMapper()

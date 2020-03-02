@@ -72,12 +72,10 @@ class FlashMapTest extends FunSuite with Matchers with BeforeAndAfterEach {
 
   test("iterated keys are removed on sweep") {
     val keys = Set("1", "2")
-    keys foreach { k =>
-      flash(k) = true
-    }
+    keys foreach { k => flash(k) = true }
     // Iteration order is unspecified
     val (gottenKey, _) = flash.iterator.next
-    val ungottenKey = (keys - gottenKey).head
+    val ungottenKey    = (keys - gottenKey).head
     flash.sweep()
     flash.get(gottenKey) should equal(None)
     flash.get(ungottenKey) should equal(Some(true))

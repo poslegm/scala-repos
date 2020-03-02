@@ -11,10 +11,10 @@ object Test {
 
   def firstDigit(x: Int): Int =
     x match {
-      case 0 => 0
-      case _ if (x < 0) => firstDigit(-x)
+      case 0             => 0
+      case _ if (x < 0)  => firstDigit(-x)
       case _ if (x < 10) => x
-      case _ => firstDigit(x / 10)
+      case _             => firstDigit(x / 10)
     }
 
   {
@@ -22,7 +22,7 @@ object Test {
 
     val input = L.range(0, 20)
     val oddFirstTimesTwo = for {
-      x <- input
+      x  <- input
       xf = firstDigit(x) if xf % 2 == 1
     } yield x * 2
     println(oddFirstTimesTwo)
@@ -33,9 +33,9 @@ object Test {
 
     val input = L.range(0, 20)
     val oddFirstTimesTwo = for {
-      x <- input
-      xf = firstDigit(x)
-      yf = x - firstDigit(x) / 10
+      x      <- input
+      xf     = firstDigit(x)
+      yf     = x - firstDigit(x) / 10
       (a, b) = (xf - yf, xf + yf) if xf % 2 == 1
     } yield a + b
     println(oddFirstTimesTwo)
@@ -47,7 +47,7 @@ object Test {
     //   val input: Queue = Queue.Empty[int].incl(L.range(0,20))
     val input = L.range(0, 20).iterator
     val oddFirstTimesTwo = for {
-      x <- input
+      x  <- input
       xf = firstDigit(x) if xf % 2 == 1
     } yield x * 2
     println(oddFirstTimesTwo.toList)
@@ -58,7 +58,7 @@ object Test {
 
     val input = L.range(0, 20)
     val oddFirstTimesTwo = for {
-      x <- input
+      x  <- input
       xf = firstDigit(x) if xf % 2 == 1
     } yield xf * 2
     println(oddFirstTimesTwo)
@@ -75,7 +75,7 @@ object Test {
 
     val input = L.range(0, 20)
     for {
-      x <- input
+      x  <- input
       xf = fdct(x) if xf % 2 == 1
     } yield xf
 

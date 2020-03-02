@@ -10,18 +10,18 @@ import org.jetbrains.plugins.scala.settings.ScalaApplicationSettings
   * 7/16/13
   */
 class IntroduceFieldSettings[T <: PsiElement](ifc: IntroduceFieldContext[T]) {
-  private val scalaSettings = ScalaApplicationSettings.getInstance()
-  private[this] var isVar = scalaSettings.INTRODUCE_FIELD_IS_VAR
-  private[this] var replAll = scalaSettings.INTRODUCE_FIELD_REPLACE_ALL
+  private val scalaSettings  = ScalaApplicationSettings.getInstance()
+  private[this] var isVar    = scalaSettings.INTRODUCE_FIELD_IS_VAR
+  private[this] var replAll  = scalaSettings.INTRODUCE_FIELD_REPLACE_ALL
   private[this] var visLevel = scalaSettings.INTRODUCE_FIELD_VISIBILITY
   private[this] var explType = scalaSettings.INTRODUCE_FIELD_EXPLICIT_TYPE
   private[this] var initInDecl =
     scalaSettings.INTRODUCE_FIELD_INITIALIZE_IN_DECLARATION
   private[this] var initInDeclEn: Boolean = true
-  private[this] var initLocEn: Boolean = true
+  private[this] var initLocEn: Boolean    = true
 
-  var replaceAllChbEnabled: Boolean = ifc.occurrences.length > 1
-  var defineVarChbEnabled: Boolean = true
+  var replaceAllChbEnabled: Boolean   = ifc.occurrences.length > 1
+  var defineVarChbEnabled: Boolean    = true
   var explicitTypeChbEnabled: Boolean = true
 
   val canBeInitInDeclaration: Boolean = ifc.canBeInitInDecl
@@ -32,7 +32,7 @@ class IntroduceFieldSettings[T <: PsiElement](ifc: IntroduceFieldContext[T]) {
   val canBeInitLocally: Boolean =
     canBeInitLocalIfReplaceAll || canBeInitLocalOneOccurrence
 
-  var name: String = ifc.possibleNames(0)
+  var name: String   = ifc.possibleNames(0)
   var scType: ScType = ifc.types(0)
   def setName(s: String) { name = s }
   def setType(t: ScType) { scType = t }
@@ -62,7 +62,7 @@ class IntroduceFieldSettings[T <: PsiElement](ifc: IntroduceFieldContext[T]) {
   def replaceAll_=(value: Boolean) {
     replAll = value
     initLocallyEnabled = replaceAll && canBeInitLocalIfReplaceAll ||
-    !replaceAll && canBeInitLocalOneOccurrence
+      !replaceAll && canBeInitLocalOneOccurrence
   }
   def setReplaceAll(value: Boolean) { replaceAll = value }
 

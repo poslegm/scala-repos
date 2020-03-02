@@ -6,7 +6,8 @@ import com.codahale.metrics._
 import nl.grons.metrics.scala._
 
 trait MetricsSupport
-    extends nl.grons.metrics.scala.InstrumentedBuilder with MetricsBootstrap {
+    extends nl.grons.metrics.scala.InstrumentedBuilder
+    with MetricsBootstrap {
   implicit def metricRegistry: MetricRegistry
 
   def metricName(name: String) = MetricName(name)
@@ -16,7 +17,7 @@ trait MetricsSupport
   def gauge[A](name: String)(thunk: => A) = metrics.gauge(name) {
     new Callable[A] { def call(): A = thunk }
   }
-  def counter(name: String) = metrics.counter(name)
+  def counter(name: String)   = metrics.counter(name)
   def histogram(name: String) = metrics.histogram(name)
-  def meter(name: String) = metrics.meter(name)
+  def meter(name: String)     = metrics.meter(name)
 }

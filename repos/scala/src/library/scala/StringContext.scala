@@ -63,8 +63,9 @@ case class StringContext(parts: String*) {
   def checkLengths(args: Seq[Any]): Unit =
     if (parts.length != args.length + 1)
       throw new IllegalArgumentException(
-          "wrong number of arguments (" + args.length +
-          ") for interpolated string with " + parts.length + " parts")
+        "wrong number of arguments (" + args.length +
+          ") for interpolated string with " + parts.length + " parts"
+      )
 
   /** The simple string interpolator.
     *
@@ -116,10 +117,13 @@ case class StringContext(parts: String*) {
     */
   def raw(args: Any*): String = standardInterpolator(identity, args)
 
-  def standardInterpolator(process: String => String, args: Seq[Any]): String = {
+  def standardInterpolator(
+      process: String => String,
+      args: Seq[Any]
+  ): String = {
     checkLengths(args)
-    val pi = parts.iterator
-    val ai = args.iterator
+    val pi   = parts.iterator
+    val ai   = args.iterator
     val bldr = new JLSBuilder(process(pi.next()))
     while (ai.hasNext) {
       bldr append ai.next
@@ -176,14 +180,15 @@ object StringContext {
     *  @param  index   The index of the offending backslash character in `str`.
     */
   class InvalidEscapeException(
-      str: String, @deprecatedName('idx) val index: Int)
-      extends IllegalArgumentException(
-          s"""invalid escape ${
-            require(index >= 0 && index < str.length)
-            val ok = """[\b, \t, \n, \f, \r, \\, \", \']"""
-            if (index == str.length - 1) "at terminal"
-            else s"'\\${str(index + 1)}' not one of $ok at"
-          } index $index in "$str". Use \\\\ for literal \\."""
+      str: String,
+      @deprecatedName('idx) val index: Int
+  ) extends IllegalArgumentException(
+        s"""invalid escape ${
+          require(index >= 0 && index < str.length)
+          val ok = """[\b, \t, \n, \f, \r, \\, \", \']"""
+          if (index == str.length - 1) "at terminal"
+          else s"'\\${str(index + 1)}' not one of $ok at"
+        } index $index in "$str". Use \\\\ for literal \\."""
       )
 
   /** Expands standard Scala escape sequences in a string.
@@ -213,18 +218,18 @@ object StringContext {
           var idx = next + 1
           if (idx >= len) throw new InvalidEscapeException(str, next)
           val c = str(idx) match {
-            case 'b' => '\b'
-            case 't' => '\t'
-            case 'n' => '\n'
-            case 'f' => '\f'
-            case 'r' => '\r'
-            case '"' => '"'
+            case 'b'  => '\b'
+            case 't'  => '\t'
+            case 'n'  => '\n'
+            case 'f'  => '\f'
+            case 'r'  => '\r'
+            case '"'  => '"'
             case '\'' => '\''
             case '\\' => '\\'
             case o if '0' <= o && o <= '7' =>
               if (strict) throw new InvalidEscapeException(str, next)
               val leadch = str(idx)
-              var oct = leadch - '0'
+              var oct    = leadch - '0'
               idx += 1
               if (idx < len && '0' <= str(idx) && str(idx) <= '7') {
                 oct = oct * 8 + str(idx) - '0'
@@ -251,7 +256,7 @@ object StringContext {
     }
     str indexOf '\\' match {
       case -1 => str
-      case i => replace(i)
+      case i  => replace(i)
     }
   }
 }

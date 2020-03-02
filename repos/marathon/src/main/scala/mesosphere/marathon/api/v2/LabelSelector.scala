@@ -8,8 +8,10 @@ import scala.util.control.NonFatal
 import scala.util.parsing.combinator.RegexParsers
 
 case class LabelSelector(
-    key: String, fn: String => Boolean, value: List[String])
-    extends AppSelector {
+    key: String,
+    fn: String => Boolean,
+    value: List[String]
+) extends AppSelector {
   def matches(app: AppDefinition): Boolean =
     app.labels.contains(key) && fn(app.labels(key))
 }
@@ -60,9 +62,9 @@ class LabelSelectorParsers extends RegexParsers {
   }
 
   def set: Parser[List[String]] = "(" ~> repsep(term, ",") <~ ")"
-  def setOp: Parser[String] = """(in|notin)""".r
+  def setOp: Parser[String]     = """(in|notin)""".r
   def setSelector: Parser[LabelSelector] = term ~ setOp ~ set ^^ {
-    case label ~ "in" ~ set => LabelSelector(label, set.contains, set)
+    case label ~ "in" ~ set    => LabelSelector(label, set.contains, set)
     case label ~ "notin" ~ set => LabelSelector(label, !set.contains(_), set)
   }
 
@@ -86,7 +88,8 @@ class LabelSelectorParsers extends RegexParsers {
   def parsed(in: String): LabelSelectors = parseSelectors(in) match {
     case Left(message) =>
       throw new IllegalArgumentException(
-          s"Can not parse label selector $in. Reason: $message")
+        s"Can not parse label selector $in. Reason: $message"
+      )
     case Right(selectors) => selectors
   }
 }

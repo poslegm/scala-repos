@@ -18,14 +18,18 @@ import akka.testkit._
 import akka.testkit.TestEvent._
 
 object RemoteDeploymentDeathWatchMultiJvmSpec extends MultiNodeConfig {
-  val first = role("first")
+  val first  = role("first")
   val second = role("second")
-  val third = role("third")
+  val third  = role("third")
 
-  commonConfig(debugConfig(on = false).withFallback(ConfigFactory.parseString("""
+  commonConfig(
+    debugConfig(on = false).withFallback(
+      ConfigFactory.parseString("""
       akka.loglevel = INFO
       akka.remote.log-remote-lifecycle-events = off
-      """)))
+      """)
+    )
+  )
 
   deployOn(second, """/hello.remote = "@third@" """)
 
@@ -55,13 +59,14 @@ class RemoteDeploymentDeathWatchSlowMultiJvmNode3
     extends RemoteDeploymentNodeDeathWatchSlowSpec
 abstract class RemoteDeploymentNodeDeathWatchSlowSpec
     extends RemoteDeploymentDeathWatchSpec {
-  override def scenario = "slow"
+  override def scenario      = "slow"
   override def sleep(): Unit = Thread.sleep(3000)
 }
 
 abstract class RemoteDeploymentDeathWatchSpec
     extends MultiNodeSpec(RemoteDeploymentDeathWatchMultiJvmSpec)
-    with STMultiNodeSpec with ImplicitSender {
+    with STMultiNodeSpec
+    with ImplicitSender {
 
   import RemoteDeploymentDeathWatchMultiJvmSpec._
 
@@ -74,7 +79,8 @@ abstract class RemoteDeploymentDeathWatchSpec
   "An actor system that deploys actors on another node" must {
 
     "be able to shutdown when remote node crash" taggedAs LongRunningTest in within(
-        20 seconds) {
+      20 seconds
+    ) {
       runOn(second) {
         // remote deployment to third
         val hello = system.actorOf(Props[Hello], "hello")
@@ -87,12 +93,16 @@ abstract class RemoteDeploymentDeathWatchSpec
         // if the remote deployed actor is not removed the system will not shutdown
 
         val timeout = remainingOrDefault
-        try Await.ready(system.whenTerminated, timeout) catch {
+        try Await.ready(system.whenTerminated, timeout)
+        catch {
           case _: TimeoutException ⇒
-            fail("Failed to stop [%s] within [%s] \n%s".format(
-                    system.name,
-                    timeout,
-                    system.asInstanceOf[ActorSystemImpl].printTree))
+            fail(
+              "Failed to stop [%s] within [%s] \n%s".format(
+                system.name,
+                timeout,
+                system.asInstanceOf[ActorSystemImpl].printTree
+              )
+            )
         }
       }
 

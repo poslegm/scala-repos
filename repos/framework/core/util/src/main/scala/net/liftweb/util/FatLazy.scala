@@ -108,7 +108,7 @@ class FatLazy[T](f: => T) {
   * the pattern. Thus, the LZ pattern match.
   */
 object LZ {
-  def apply[T](f: => T): LZ[T] = new LZ(f)
+  def apply[T](f: => T): LZ[T]         = new LZ(f)
   def unapply[T](in: LZ[T]): Option[T] = Some(in.get)
 
   // implicit def lazyToT[T](in: LazyMatcher[T]): T = in.get
@@ -120,7 +120,7 @@ object LZ {
   * @param f - a value to be evaluated lazily
   */
 class LZ[T](f: => T) {
-  lazy val get = f
+  lazy val get          = f
   override def toString = "LZ(" + get + ")"
 }
 
@@ -139,7 +139,7 @@ object ThreadLazy {
   */
 class ThreadLazy[TheType](theFunc: => TheType) extends LoanWrapper {
   private val calced = new ThreadGlobal[Boolean]
-  private val value = new ThreadGlobal[TheType]
+  private val value  = new ThreadGlobal[TheType]
 
   /**
     * Save the current cached lazy value, if any, evaluate the specified

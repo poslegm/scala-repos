@@ -37,18 +37,26 @@ abstract class BinaryOutput {
   }
 
   protected val chunkSize = 1024
-  protected val chunk = Array.ofDim[Byte](chunkSize)
+  protected val chunk     = Array.ofDim[Byte](chunkSize)
 
   protected def putArrayByChunk[T <: AnyVal](
-      arr: Array[T], offset: Long, eltSize: Int) {
+      arr: Array[T],
+      offset: Long,
+      eltSize: Int
+  ) {
     val nbrElt = arr.length
     putInt(nbrElt)
     var srcOffset = offset //UnsafeMemory.byteArrayOffset
-    var toCopy = nbrElt * eltSize
+    var toCopy    = nbrElt * eltSize
     while (toCopy > 0) {
       val byteLen = math.min(chunkSize, toCopy)
       UnsafeMemory.unsafe.copyMemory(
-          arr, srcOffset, chunk, UnsafeMemory.byteArrayOffset, byteLen)
+        arr,
+        srcOffset,
+        chunk,
+        UnsafeMemory.byteArrayOffset,
+        byteLen
+      )
       toCopy -= byteLen
       srcOffset += byteLen
       putBytes(chunk, byteLen)
@@ -91,27 +99,27 @@ class ByteBufferOutput(buffer: java.nio.ByteBuffer) extends BinaryOutput {
       throw new java.nio.BufferOverflowException()
   }
 
-  def putByte(value: Byte) = buffer.put(value)
-  def putChar(value: Char) = buffer.putChar(value)
-  def putShort(value: Short) = buffer.putShort(value)
-  def putInt(value: Int) = buffer.putInt(value)
-  def putLong(value: Long) = buffer.putLong(value)
-  def putFloat(value: Float) = buffer.putFloat(value)
-  def putDouble(value: Double) = buffer.putDouble(value)
+  def putByte(value: Byte)                   = buffer.put(value)
+  def putChar(value: Char)                   = buffer.putChar(value)
+  def putShort(value: Short)                 = buffer.putShort(value)
+  def putInt(value: Int)                     = buffer.putInt(value)
+  def putLong(value: Long)                   = buffer.putLong(value)
+  def putFloat(value: Float)                 = buffer.putFloat(value)
+  def putDouble(value: Double)               = buffer.putDouble(value)
   def putBytes(value: Array[Byte], len: Int) = buffer.put(value, 0, len)
 }
 
 class StreamOutput(stream: java.io.OutputStream) extends BinaryOutput {
-  val ds = new java.io.DataOutputStream(stream)
+  val ds                  = new java.io.DataOutputStream(stream)
   def result: Array[Byte] = null
   def ensureCapacity(capacity: Int) {}
-  def putByte(value: Byte) = ds.writeByte(value)
-  def putChar(value: Char) = ds.writeChar(value)
-  def putShort(value: Short) = ds.writeShort(value)
-  def putInt(value: Int) = ds.writeInt(value)
-  def putLong(value: Long) = ds.writeLong(value)
-  def putFloat(value: Float) = ds.writeFloat(value)
-  def putDouble(value: Double) = ds.writeDouble(value)
+  def putByte(value: Byte)                   = ds.writeByte(value)
+  def putChar(value: Char)                   = ds.writeChar(value)
+  def putShort(value: Short)                 = ds.writeShort(value)
+  def putInt(value: Int)                     = ds.writeInt(value)
+  def putLong(value: Long)                   = ds.writeLong(value)
+  def putFloat(value: Float)                 = ds.writeFloat(value)
+  def putDouble(value: Double)               = ds.writeDouble(value)
   def putBytes(value: Array[Byte], len: Int) = ds.write(value, 0, len)
 }
 
@@ -126,7 +134,7 @@ class ByteArrayOutput(buffer: java.io.ByteArrayOutputStream)
 class FixedByteArrayOutput(capacity: Int) extends BinaryOutput {
 
   private val head = Array.ofDim[Byte](capacity)
-  private var pos = 0
+  private var pos  = 0
 
   override def result = head
 
@@ -187,12 +195,20 @@ class FixedByteArrayOutput(capacity: Int) extends BinaryOutput {
 
   //a single chunk
   override protected def putArrayByChunk[T <: AnyVal](
-      arr: Array[T], offset: Long, eltSize: Int) {
-    val nbrElt = arr.length
+      arr: Array[T],
+      offset: Long,
+      eltSize: Int
+  ) {
+    val nbrElt  = arr.length
     var byteLen = nbrElt * eltSize
     putInt(nbrElt)
     UnsafeMemory.unsafe.copyMemory(
-        arr, offset, head, UnsafeMemory.byteArrayOffset + pos, byteLen)
+      arr,
+      offset,
+      head,
+      UnsafeMemory.byteArrayOffset + pos,
+      byteLen
+    )
     pos += byteLen
   }
 }
@@ -201,7 +217,7 @@ class FixedByteArrayOutput(capacity: Int) extends BinaryOutput {
 //TODO that might be dangerous in terms of security (exfiltrate data through the preAlloc array)
 object FastByteArrayOutput {
 
-  private val lock = new java.util.concurrent.locks.ReentrantLock()
+  private val lock     = new java.util.concurrent.locks.ReentrantLock()
   private var preAlloc = Array.ofDim[Byte](64 * 1024 * 1024) // 64 MB
 
   def get = {
@@ -229,14 +245,14 @@ class FastByteArrayOutput(initialCapacity: Int = 10 * 1024 * 1024)
     extends BinaryOutput {
 
   override protected val chunkSize = 1024 * 1024
-  override protected val chunk = null
-  private val allowedWaste = 512
+  override protected val chunk     = null
+  private val allowedWaste         = 512
 
-  private var pos = 0 //current position in the head
+  private var pos               = 0 //current position in the head
   private var head: Array[Byte] = null
   private var preA: Array[Byte] = null
-  private var chunks = List[(Int, Array[Byte])]()
-  private var stored = 0 //current size
+  private var chunks            = List[(Int, Array[Byte])]()
+  private var stored            = 0 //current size
 
   def init() {
     val h = FastByteArrayOutput.get
@@ -252,11 +268,11 @@ class FastByteArrayOutput(initialCapacity: Int = 10 * 1024 * 1024)
   init()
 
   def result = {
-    val size = pos + stored
+    val size   = pos + stored
     val toCopy = ((pos -> head) :: chunks).reverse
-    var idx = 0
+    var idx    = 0
     val target = Array.ofDim[Byte](size)
-    val off = UnsafeMemory.byteArrayOffset
+    val off    = UnsafeMemory.byteArrayOffset
     for ((size, arr) <- toCopy) {
       UnsafeMemory.unsafe.copyMemory(arr, off, target, off + idx, size)
       idx += size
@@ -273,13 +289,13 @@ class FastByteArrayOutput(initialCapacity: Int = 10 * 1024 * 1024)
 
   def ensureCapacity(capacity: Int) {
     val avail = head.size - pos
-    val need = capacity - avail
+    val need  = capacity - avail
     if (need > 0) {
       if (pos == 0) {
         head = Array.ofDim[Byte](capacity)
       } else if (avail > allowedWaste && head.size != chunkSize) {
         val newHead = Array.ofDim[Byte](math.max(chunkSize, need))
-        val off = UnsafeMemory.byteArrayOffset
+        val off     = UnsafeMemory.byteArrayOffset
         UnsafeMemory.unsafe.copyMemory(head, off, newHead, off, pos)
         head = newHead
       } else {
@@ -352,13 +368,21 @@ class FastByteArrayOutput(initialCapacity: Int = 10 * 1024 * 1024)
 
   //a single chunk
   override protected def putArrayByChunk[T <: AnyVal](
-      arr: Array[T], offset: Long, eltSize: Int) {
-    val nbrElt = arr.length
+      arr: Array[T],
+      offset: Long,
+      eltSize: Int
+  ) {
+    val nbrElt  = arr.length
     var byteLen = nbrElt * eltSize
     ensureCapacity(byteLen + 4)
     putInt(nbrElt)
     UnsafeMemory.unsafe.copyMemory(
-        arr, offset, head, UnsafeMemory.byteArrayOffset + pos, byteLen)
+      arr,
+      offset,
+      head,
+      UnsafeMemory.byteArrayOffset + pos,
+      byteLen
+    )
     pos += byteLen
   }
 }

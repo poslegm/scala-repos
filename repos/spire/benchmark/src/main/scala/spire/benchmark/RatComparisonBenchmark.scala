@@ -22,11 +22,11 @@ class RatComparisonBenchmarks extends MyBenchmark {
   @Param(Array("100"))
   var size: Int = 0
 
-  var spires: Array[Rational] = null
-  var aps: Array[Aprational] = null
+  var spires: Array[Rational]       = null
+  var aps: Array[Aprational]        = null
   var jscis: Array[number.Rational] = null
 
-  var nums: Array[Int] = null
+  var nums: Array[Int]   = null
   var denoms: Array[Int] = null
 
   override protected def setUp(): Unit = {
@@ -40,8 +40,8 @@ class RatComparisonBenchmarks extends MyBenchmark {
       spires(i) = Rational(nums(i), denoms(i))
       aps(i) = new Aprational(new Apint(nums(i)), new Apint(denoms(i)))
       jscis(i) = number.Rational.valueOf(
-          number.LargeInteger.valueOf(nums(i)),
-          number.LargeInteger.valueOf(denoms(i))
+        number.LargeInteger.valueOf(nums(i)),
+        number.LargeInteger.valueOf(denoms(i))
       )
     }
 
@@ -50,25 +50,25 @@ class RatComparisonBenchmarks extends MyBenchmark {
   }
 
   def spireToAp(r: Rational) = new Aprational(
-      new Apint(r.numerator.toBigInt.bigInteger),
-      new Apint(r.denominator.toBigInt.bigInteger)
+    new Apint(r.numerator.toBigInt.bigInteger),
+    new Apint(r.denominator.toBigInt.bigInteger)
   )
 
   def spireToJsci(r: Rational) = number.Rational.valueOf(
-      number.LargeInteger.valueOf(r.numerator.toBigInt.bigInteger),
-      number.LargeInteger.valueOf(r.denominator.toBigInt.bigInteger)
+    number.LargeInteger.valueOf(r.numerator.toBigInt.bigInteger),
+    number.LargeInteger.valueOf(r.denominator.toBigInt.bigInteger)
   )
 
   // this is slow... it probably takes as long as one full run of the benchmark
   def verify() = {
     val len = size
-    var i = 0
+    var i   = 0
 
     var t1 = Rational(0, 1)
     var t2 = new Aprational(new Apint(0), new Apint(1))
     val t3 = number.Rational.valueOf(
-        number.LargeInteger.valueOf(0),
-        number.LargeInteger.valueOf(1)
+      number.LargeInteger.valueOf(0),
+      number.LargeInteger.valueOf(1)
     )
 
     while (i < len) {
@@ -97,8 +97,8 @@ class RatComparisonBenchmarks extends MyBenchmark {
 
   def timeBuildSpire(reps: Int) = run(reps) {
     val len = size
-    val ns = Array.ofDim[Rational](len)
-    var i = 0
+    val ns  = Array.ofDim[Rational](len)
+    var i   = 0
     while (i < len) {
       ns(i) = Rational(nums(i), denoms(i))
       i += 1
@@ -108,8 +108,8 @@ class RatComparisonBenchmarks extends MyBenchmark {
 
   def timeBuildAp(reps: Int) = run(reps) {
     val len = size
-    val ns = Array.ofDim[Aprational](len)
-    var i = 0
+    val ns  = Array.ofDim[Aprational](len)
+    var i   = 0
     while (i < len) {
       ns(i) = new Aprational(new Apint(nums(i)), new Apint(denoms(i)))
       i += 1
@@ -119,12 +119,12 @@ class RatComparisonBenchmarks extends MyBenchmark {
 
   def timeBuildJsci(reps: Int) = run(reps) {
     val len = size
-    val ns = Array.ofDim[number.Rational](len)
-    var i = 0
+    val ns  = Array.ofDim[number.Rational](len)
+    var i   = 0
     while (i < len) {
       ns(i) = number.Rational.valueOf(
-          number.LargeInteger.valueOf(nums(i)),
-          number.LargeInteger.valueOf(denoms(i))
+        number.LargeInteger.valueOf(nums(i)),
+        number.LargeInteger.valueOf(denoms(i))
       )
       i += 1
     }
@@ -132,25 +132,25 @@ class RatComparisonBenchmarks extends MyBenchmark {
   }
 
   def timeSumSpire(reps: Int) = run(reps) {
-    val len = size
+    val len   = size
     var total = Rational(0, 1)
-    var i = 0
+    var i     = 0
     while (i < len) { total += spires(i); i += 1 }
     total
   }
 
   def timeSumAp(reps: Int) = run(reps) {
-    val len = size
+    val len   = size
     var total = new Aprational(new Apint(0), new Apint(1))
-    var i = 0
+    var i     = 0
     while (i < len) { total = total.add(aps(i)); i += 1 }
     total
   }
 
   def timeSumJsci(reps: Int) = run(reps) {
-    val len = size
+    val len   = size
     var total = number.Rational.ZERO
-    var i = 0
+    var i     = 0
     while (i < len) { total = total.plus(jscis(i)); i += 1 }
     total
   }

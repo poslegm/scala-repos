@@ -5,7 +5,13 @@ package akka.actor.dungeon
 
 import scala.collection.immutable
 
-import akka.actor.{InvalidActorNameException, ChildStats, ChildRestartStats, ChildNameReserved, ActorRef}
+import akka.actor.{
+  InvalidActorNameException,
+  ChildStats,
+  ChildRestartStats,
+  ChildNameReserved,
+  ActorRef
+}
 import akka.util.Collections.{EmptyImmutableSeq, PartialImmutableValuesIterable}
 
 /**
@@ -30,7 +36,7 @@ private[akka] trait ChildrenContainer {
   def unreserve(name: String): ChildrenContainer
 
   def isTerminating: Boolean = false
-  def isNormal: Boolean = true
+  def isNormal: Boolean      = true
 }
 
 /**
@@ -45,9 +51,10 @@ private[akka] object ChildrenContainer {
   case object UserRequest extends SuspendReason
   // careful with those system messages, all handling to be taking place in ActorCell.scala!
   final case class Recreation(cause: Throwable)
-      extends SuspendReason with WaitingForChildren
+      extends SuspendReason
+      with WaitingForChildren
   final case class Creation() extends SuspendReason with WaitingForChildren
-  case object Termination extends SuspendReason
+  case object Termination     extends SuspendReason
 
   class ChildRestartsIterable(stats: immutable.MapLike[_, ChildStats, _])
       extends PartialImmutableValuesIterable[ChildStats, ChildRestartStats] {
@@ -71,12 +78,14 @@ private[akka] object ChildrenContainer {
   trait EmptyChildrenContainer extends ChildrenContainer {
     val emptyStats = immutable.TreeMap.empty[String, ChildStats]
     override def add(
-        name: String, stats: ChildRestartStats): ChildrenContainer =
+        name: String,
+        stats: ChildRestartStats
+    ): ChildrenContainer =
       new NormalChildrenContainer(emptyStats.updated(name, stats))
-    override def remove(child: ActorRef): ChildrenContainer = this
-    override def getByName(name: String): Option[ChildRestartStats] = None
+    override def remove(child: ActorRef): ChildrenContainer           = this
+    override def getByName(name: String): Option[ChildRestartStats]   = None
     override def getByRef(actor: ActorRef): Option[ChildRestartStats] = None
-    override def children: immutable.Iterable[ActorRef] = EmptyImmutableSeq
+    override def children: immutable.Iterable[ActorRef]               = EmptyImmutableSeq
     override def stats: immutable.Iterable[ChildRestartStats] =
       EmptyImmutableSeq
     override def shallDie(actor: ActorRef): ChildrenContainer = this
@@ -99,13 +108,16 @@ private[akka] object ChildrenContainer {
     */
   object TerminatedChildrenContainer extends EmptyChildrenContainer {
     override def add(
-        name: String, stats: ChildRestartStats): ChildrenContainer = this
+        name: String,
+        stats: ChildRestartStats
+    ): ChildrenContainer = this
     override def reserve(name: String): ChildrenContainer =
       throw new IllegalStateException(
-          "cannot reserve actor name '" + name + "': already terminated")
+        "cannot reserve actor name '" + name + "': already terminated"
+      )
     override def isTerminating: Boolean = true
-    override def isNormal: Boolean = false
-    override def toString = "terminated"
+    override def isNormal: Boolean      = false
+    override def toString               = "terminated"
   }
 
   /**
@@ -118,7 +130,9 @@ private[akka] object ChildrenContainer {
       extends ChildrenContainer {
 
     override def add(
-        name: String, stats: ChildRestartStats): ChildrenContainer =
+        name: String,
+        stats: ChildRestartStats
+    ): ChildrenContainer =
       new NormalChildrenContainer(c.updated(name, stats))
 
     override def remove(child: ActorRef): ChildrenContainer =
@@ -145,13 +159,14 @@ private[akka] object ChildrenContainer {
     override def reserve(name: String): ChildrenContainer =
       if (c contains name)
         throw new InvalidActorNameException(
-            s"actor name [$name] is not unique!")
+          s"actor name [$name] is not unique!"
+        )
       else new NormalChildrenContainer(c.updated(name, ChildNameReserved))
 
     override def unreserve(name: String): ChildrenContainer =
       c.get(name) match {
         case Some(ChildNameReserved) ⇒ NormalChildrenContainer(c - name)
-        case _ ⇒ this
+        case _                       ⇒ this
       }
 
     override def toString =
@@ -178,11 +193,13 @@ private[akka] object ChildrenContainer {
   final case class TerminatingChildrenContainer(
       c: immutable.TreeMap[String, ChildStats],
       toDie: Set[ActorRef],
-      reason: SuspendReason)
-      extends ChildrenContainer {
+      reason: SuspendReason
+  ) extends ChildrenContainer {
 
     override def add(
-        name: String, stats: ChildRestartStats): ChildrenContainer =
+        name: String,
+        stats: ChildRestartStats
+    ): ChildrenContainer =
       copy(c.updated(name, stats))
 
     override def remove(child: ActorRef): ChildrenContainer = {
@@ -190,8 +207,9 @@ private[akka] object ChildrenContainer {
       if (t.isEmpty)
         reason match {
           case Termination ⇒ TerminatedChildrenContainer
-          case _ ⇒ NormalChildrenContainer(c - child.path.name)
-        } else copy(c - child.path.name, t)
+          case _           ⇒ NormalChildrenContainer(c - child.path.name)
+        }
+      else copy(c - child.path.name, t)
     }
 
     override def getByName(name: String): Option[ChildStats] = c.get(name)
@@ -215,28 +233,32 @@ private[akka] object ChildrenContainer {
     override def reserve(name: String): ChildrenContainer = reason match {
       case Termination ⇒
         throw new IllegalStateException(
-            "cannot reserve actor name '" + name + "': terminating")
+          "cannot reserve actor name '" + name + "': terminating"
+        )
       case _ ⇒
         if (c contains name)
           throw new InvalidActorNameException(
-              s"actor name [$name] is not unique!")
+            s"actor name [$name] is not unique!"
+          )
         else copy(c = c.updated(name, ChildNameReserved))
     }
 
     override def unreserve(name: String): ChildrenContainer =
       c.get(name) match {
         case Some(ChildNameReserved) ⇒ copy(c = c - name)
-        case _ ⇒ this
+        case _                       ⇒ this
       }
 
     override def isTerminating: Boolean = reason == Termination
-    override def isNormal: Boolean = reason == UserRequest
+    override def isNormal: Boolean      = reason == UserRequest
 
     override def toString =
       if (c.size > 20) c.size + " children"
       else
-        c.mkString("children (" + toDie.size + " terminating):\n    ",
-                   "\n    ",
-                   "\n") + toDie
+        c.mkString(
+          "children (" + toDie.size + " terminating):\n    ",
+          "\n    ",
+          "\n"
+        ) + toDie
   }
 }

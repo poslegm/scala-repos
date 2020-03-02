@@ -5,7 +5,7 @@ import scala.tools.reflect.ToolBox
 
 object Test extends App {
   val code = {
-    val x = 2
+    val x     = 2
     val outer = reify { x }
     reify {
       val x = 42
@@ -13,7 +13,7 @@ object Test extends App {
     };
   }
 
-  val toolbox = cm.mkToolBox()
+  val toolbox   = cm.mkToolBox()
   val evaluated = toolbox.eval(code.tree)
   println("evaluated = " + evaluated)
 }

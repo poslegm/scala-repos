@@ -39,27 +39,29 @@ package object file {
     // sadly not able to provide a prefix. If we really need the
     // support we could re-implement the Guava method.
     val dir = Files.createTempDir().canon
-    try a(dir) finally dir.tree.reverse.foreach(_.delete())
+    try a(dir)
+    finally dir.tree.reverse.foreach(_.delete())
   }
 
   def withTempFile[T](a: File => T): T = {
     val file = JFile.createTempFile("ensime-", ".tmp").canon
-    try a(file) finally file.delete()
+    try a(file)
+    finally file.delete()
   }
 
   implicit class RichFile(val file: File) extends AnyVal {
 
     def /(sub: String): File = new File(file, sub)
 
-    def isScala: Boolean = file.getName.toLowerCase.endsWith(".scala")
-    def isJava: Boolean = file.getName.toLowerCase.endsWith(".java")
+    def isScala: Boolean     = file.getName.toLowerCase.endsWith(".scala")
+    def isJava: Boolean      = file.getName.toLowerCase.endsWith(".java")
     def isClassfile: Boolean = file.getName.toLowerCase.endsWith(".class")
-    def isJar: Boolean = file.getName.toLowerCase.endsWith(".jar")
+    def isJar: Boolean       = file.getName.toLowerCase.endsWith(".jar")
 
     def parts: List[String] =
       file.getPath
         .split(
-            Pattern.quote(JFile.separator)
+          Pattern.quote(JFile.separator)
         )
         .toList
         .filterNot(Set("", "."))
@@ -111,7 +113,8 @@ package object file {
       * @return the canonical form of `file`, falling back to the absolute file.
       */
     def canon =
-      try file.getCanonicalFile catch {
+      try file.getCanonicalFile
+      catch {
         case t: Throwable => file.getAbsoluteFile
       }
   }

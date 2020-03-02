@@ -29,19 +29,29 @@ private[ui] class EnvironmentPage(parent: EnvironmentTab)
 
   def render(request: HttpServletRequest): Seq[Node] = {
     val runtimeInformationTable = UIUtils.listingTable(
-        propertyHeader, jvmRow, listener.jvmInformation, fixedWidth = true)
-    val sparkPropertiesTable = UIUtils.listingTable(propertyHeader,
-                                                    propertyRow,
-                                                    listener.sparkProperties,
-                                                    fixedWidth = true)
-    val systemPropertiesTable = UIUtils.listingTable(propertyHeader,
-                                                     propertyRow,
-                                                     listener.systemProperties,
-                                                     fixedWidth = true)
-    val classpathEntriesTable = UIUtils.listingTable(classPathHeaders,
-                                                     classPathRow,
-                                                     listener.classpathEntries,
-                                                     fixedWidth = true)
+      propertyHeader,
+      jvmRow,
+      listener.jvmInformation,
+      fixedWidth = true
+    )
+    val sparkPropertiesTable = UIUtils.listingTable(
+      propertyHeader,
+      propertyRow,
+      listener.sparkProperties,
+      fixedWidth = true
+    )
+    val systemPropertiesTable = UIUtils.listingTable(
+      propertyHeader,
+      propertyRow,
+      listener.systemProperties,
+      fixedWidth = true
+    )
+    val classpathEntriesTable = UIUtils.listingTable(
+      classPathHeaders,
+      classPathRow,
+      listener.classpathEntries,
+      fixedWidth = true
+    )
     val content = <span>
         <h4>Runtime Information</h4> {runtimeInformationTable}
         <h4>Spark Properties</h4> {sparkPropertiesTable}
@@ -52,7 +62,7 @@ private[ui] class EnvironmentPage(parent: EnvironmentTab)
     UIUtils.headerSparkPage("Environment", content, parent)
   }
 
-  private def propertyHeader = Seq("Name", "Value")
+  private def propertyHeader   = Seq("Name", "Value")
   private def classPathHeaders = Seq("Resource", "Source")
   private def jvmRow(kv: (String, String)) =
     <tr><td>{kv._1}</td><td>{kv._2}</td></tr>

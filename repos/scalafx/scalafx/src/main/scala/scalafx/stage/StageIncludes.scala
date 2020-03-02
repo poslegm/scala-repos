@@ -66,7 +66,8 @@ trait StageIncludes {
     * @return $SFX $DC
     */
   implicit def jfxDirectoryChooser2sfx(
-      dc: jfxs.DirectoryChooser): DirectoryChooser =
+      dc: jfxs.DirectoryChooser
+  ): DirectoryChooser =
     if (dc != null) new DirectoryChooser(dc) else null
 
   /**
@@ -85,7 +86,8 @@ trait StageIncludes {
     * @return $SFX $FE
     */
   implicit def jfxFileChooserExtensionFilter2sfx(
-      ef: jfxs.FileChooser.ExtensionFilter): ExtensionFilter =
+      ef: jfxs.FileChooser.ExtensionFilter
+  ): ExtensionFilter =
     if (ef != null) new FileChooser.ExtensionFilter(ef) else null
 
   /**
@@ -95,7 +97,8 @@ trait StageIncludes {
     * @return $SFX $PW
     */
   implicit def jfxPopupWindow2sfx(pw: jfxs.PopupWindow): PopupWindow =
-    if (pw != null) new PopupWindow(pw) {} else null
+    if (pw != null) new PopupWindow(pw) {}
+    else null
 
   /**
     * $START$PWAL.html $PWAL$END
@@ -104,7 +107,8 @@ trait StageIncludes {
     * @return $SFX $PWAL
     */
   implicit def jfxPopupWindowAnchorLocation2sfx(
-      v: jfxs.PopupWindow.AnchorLocation): AnchorLocation =
+      v: jfxs.PopupWindow.AnchorLocation
+  ): AnchorLocation =
     PopupWindow.AnchorLocation.jfxEnum2sfx(v)
 
   /**
@@ -159,7 +163,8 @@ trait StageIncludes {
     * @return $SFX $WN
     */
   implicit def jfxWindow2sfx(w: jfxs.Window): Window =
-    if (w != null) new Window(w) {} else null
+    if (w != null) new Window(w) {}
+    else null
 
   /**
     * $START$WE.html $WE$END
@@ -168,5 +173,6 @@ trait StageIncludes {
     * @return $SFX $WE
     */
   implicit def jfxWindowEvent2sfx(we: jfxs.WindowEvent): WindowEvent =
-    if (we != null) new WindowEvent(we) {} else null
+    if (we != null) new WindowEvent(we) {}
+    else null
 }

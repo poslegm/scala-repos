@@ -14,7 +14,7 @@ object Test1253 {
   // compile-only
   def foo(t: (Int, String)) = t match {
     case (1, "") => throw new Exception
-    case (r, _) => throw new Exception(r.toString)
+    case (r, _)  => throw new Exception(r.toString)
   }
 }
 
@@ -32,7 +32,7 @@ object t1261 {
   sealed trait Elem
   case class Foo() extends Elem
   case class Bar() extends Elem
-  trait Row extends Elem
+  trait Row        extends Elem
   object Row {
     def unapply(r: Row) = true
 
@@ -48,14 +48,14 @@ object t1261 {
 
 sealed abstract class Tree
 case class Node(l: Tree, v: Int, r: Tree) extends Tree
-case object EmptyTree extends Tree
+case object EmptyTree                     extends Tree
 
 object Ticket335 {
   // compile-only
   def runTest() {
     (EmptyTree: Tree @unchecked) match {
       case Node(_, v, _) if (v == 0) => 0
-      case EmptyTree => 2
+      case EmptyTree                 => 2
     }
   }
 }
@@ -71,7 +71,7 @@ object TestIfOpt {
     case _ if true =>
       tok.matching match {
         case Some(other) => Some(other)
-        case _ => None
+        case _           => None
       }
   }
 }
@@ -106,7 +106,7 @@ class Test806_818 {
   // t811
   trait Core {
     trait NodeImpl
-    trait OtherImpl extends NodeImpl
+    trait OtherImpl       extends NodeImpl
     trait DoubleQuoteImpl extends NodeImpl
     def asDQ(node: OtherImpl) = node match {
       case dq: DoubleQuoteImpl => dq
@@ -119,7 +119,7 @@ class Test806_818 {
     trait IfImpl
     private def coerceIf(node: Node) = node match {
       case node: IfImpl => node // var node is of type Node with IfImpl!
-      case _ => null
+      case _            => null
     }
   }
 }
@@ -127,15 +127,15 @@ class Test806_818 {
 object Ticket495bis {
   def signum(x: Int): Int =
     x match {
-      case 0 => 0
+      case 0          => 0
       case _ if x < 0 => -1
       case _ if x > 0 => 1
     }
   def pair_m(x: Int, y: Int) =
     (x, y) match {
-      case (_, 0) => 0
+      case (_, 0)  => 0
       case (-1, _) => -1
-      case (_, _) => 1
+      case (_, _)  => 1
     }
 }
 
@@ -149,16 +149,15 @@ object Ticket522 {
       new InternalApply[Y, Z](fun, arg)
 
     def unapply[X](
-        arg: Term[X]): Option[(Y => Z, Y)] forSome { type Y; type Z } =
+        arg: Term[X]
+    ): Option[(Y => Z, Y)] forSome { type Y; type Z } =
       arg match {
         case i: InternalApply[y, z] => Some(i.fun, i.arg)
-        case _ => None
+        case _                      => None
       }
   }
 
-  App({ x: Int =>
-    x
-  }, 5) match {
+  App({ x: Int => x }, 5) match {
     case App(arg, a) =>
   }
 }

@@ -26,7 +26,8 @@ trait ZippedTraversable2[+El1, +El2] extends Any {
 }
 object ZippedTraversable2 {
   implicit def zippedTraversable2ToTraversable[El1, El2](
-      zz: ZippedTraversable2[El1, El2]): Traversable[(El1, El2)] = {
+      zz: ZippedTraversable2[El1, El2]
+  ): Traversable[(El1, El2)] = {
     new scala.collection.AbstractTraversable[(El1, El2)] {
       def foreach[U](f: ((El1, El2)) => U): Unit =
         zz foreach Function.untupled(f)
@@ -35,8 +36,9 @@ object ZippedTraversable2 {
 }
 
 final class Tuple2Zipped[El1, Repr1, El2, Repr2](
-    val colls: (TraversableLike[El1, Repr1], IterableLike[El2, Repr2]))
-    extends AnyVal with ZippedTraversable2[El1, El2] {
+    val colls: (TraversableLike[El1, Repr1], IterableLike[El2, Repr2])
+) extends AnyVal
+    with ZippedTraversable2[El1, El2] {
   // This would be better as "private def coll1 = colls._1" but
   // SI-6215 precludes private methods in value classes.
   def map[B, To](f: (El1, El2) => B)(implicit cbf: CBF[Repr1, B, To]): To = {
@@ -52,9 +54,10 @@ final class Tuple2Zipped[El1, Repr1, El2, Repr2](
     b.result()
   }
 
-  def flatMap[B, To](f: (El1, El2) => TraversableOnce[B])(
-      implicit cbf: CBF[Repr1, B, To]): To = {
-    val b = cbf(colls._1.repr)
+  def flatMap[B, To](
+      f: (El1, El2) => TraversableOnce[B]
+  )(implicit cbf: CBF[Repr1, B, To]): To = {
+    val b      = cbf(colls._1.repr)
     val elems2 = colls._2.iterator
 
     for (el1 <- colls._1) {
@@ -65,11 +68,12 @@ final class Tuple2Zipped[El1, Repr1, El2, Repr2](
     b.result()
   }
 
-  def filter[To1, To2](
-      f: (El1, El2) => Boolean)(implicit cbf1: CBF[Repr1, El1, To1],
-                                cbf2: CBF[Repr2, El2, To2]): (To1, To2) = {
-    val b1 = cbf1(colls._1.repr)
-    val b2 = cbf2(colls._2.repr)
+  def filter[To1, To2](f: (El1, El2) => Boolean)(
+      implicit cbf1: CBF[Repr1, El1, To1],
+      cbf2: CBF[Repr2, El2, To2]
+  ): (To1, To2) = {
+    val b1     = cbf1(colls._1.repr)
+    val b2     = cbf2(colls._2.repr)
     val elems2 = colls._2.iterator
 
     for (el1 <- colls._1) {
@@ -114,15 +118,13 @@ final class Tuple2Zipped[El1, Repr1, El2, Repr2](
 
 object Tuple2Zipped {
   final class Ops[T1, T2](val x: (T1, T2)) extends AnyVal {
-    def invert[El1,
-               CC1[X] <: TraversableOnce[X],
-               El2,
-               CC2[X] <: TraversableOnce[X],
-               That](
+    def invert[El1, CC1[X] <: TraversableOnce[X], El2, CC2[X] <: TraversableOnce[
+      X
+    ], That](
         implicit w1: T1 <:< CC1[El1],
         w2: T2 <:< CC2[El2],
-        bf: scala.collection.generic.CanBuildFrom[CC1[_], (El1, El2), That])
-      : That = {
+        bf: scala.collection.generic.CanBuildFrom[CC1[_], (El1, El2), That]
+    ): That = {
       val buf = bf(x._1)
       val it1 = x._1.toIterator
       val it2 = x._2.toIterator
@@ -133,7 +135,7 @@ object Tuple2Zipped {
 
     def zipped[El1, Repr1, El2, Repr2](
         implicit w1: T1 => TraversableLike[El1, Repr1],
-        w2: T2 => IterableLike[El2, Repr2])
-      : Tuple2Zipped[El1, Repr1, El2, Repr2] = new Tuple2Zipped((x._1, x._2))
+        w2: T2 => IterableLike[El2, Repr2]
+    ): Tuple2Zipped[El1, Repr1, El2, Repr2] = new Tuple2Zipped((x._1, x._2))
   }
 }

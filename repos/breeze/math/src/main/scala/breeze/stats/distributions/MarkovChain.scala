@@ -2,18 +2,18 @@ package breeze.stats.distributions;
 
 /*
  Copyright 2009 David Hall, Daniel Ramage
- 
+
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
- You may obtain a copy of the License at 
- 
+ You may obtain a copy of the License at
+
  http://www.apache.org/licenses/LICENSE-2.0
- 
+
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
- limitations under the License. 
+ limitations under the License.
  */
 
 import scala.collection.mutable.ArrayBuffer;
@@ -29,7 +29,7 @@ import math._;
 object MarkovChain {
 
   /**
-    * Given an initial state and an arbitrary Markov transition, return a sampler 
+    * Given an initial state and an arbitrary Markov transition, return a sampler
     * for doing mcmc
     */
   def apply[T](init: T)(resample: T => Rand[T]): Process[T] = new Process[T] {
@@ -45,7 +45,7 @@ object MarkovChain {
   }
 
   /**
-    * Combinators for creating transition kernels from other kernels or things 
+    * Combinators for creating transition kernels from other kernels or things
     * that are not quite transition kernels.
     * A kernel is a fn of type T=&lt;Rand[T]
     */
@@ -59,17 +59,13 @@ object MarkovChain {
       /**
         * Sequence two transitions together. This is Kliesli arrow composition.
         */
-      def >=>[V](k2: T => Rand[V]) = { (t: T) =>
-        k1(t).flatMap(k2);
-      }
+      def >=>[V](k2: T => Rand[V]) = { (t: T) => k1(t).flatMap(k2); }
 
       /**
         * Sequence two transitions together, in reverse order
         * This is Kliesli arrow composition.
         */
-      def <=<[V](k2: V => Rand[T]) = { (t: V) =>
-        k2(t).flatMap(k1);
-      }
+      def <=<[V](k2: V => Rand[T]) = { (t: V) => k2(t).flatMap(k1); }
 
       /**
         * Promotes a kernel to map over sequence.
@@ -84,13 +80,11 @@ object MarkovChain {
         * T=&lt;Rand[U] becomes Seq[T]=&lt;Rand[Collection[U]]
         */
       def promoteIterable: Iterable[T] => Rand[Iterable[T]] = {
-        (t: Iterable[T]) =>
-          promote(t.map(k1));
+        (t: Iterable[T]) => promote(t.map(k1));
       }
 
       def lensed[U](implicit lens: Isomorphism[T, U]): U => Rand[U] = {
-        (u: U) =>
-          k1(lens.backward(u)).map(lens.forward _)
+        (u: U) => k1(lens.backward(u)).map(lens.forward _)
       }
     }
 
@@ -130,8 +124,7 @@ object MarkovChain {
         * T=&lt;Rand[U] becomes Seq[T]=&lt;Rand[Collection[U]]
         */
       def promoteIterable: (C, Iterable[T]) => Rand[Iterable[U]] = {
-        (c: C, t: Iterable[T]) =>
-          promote(t.map(t => k1(c, t)));
+        (c: C, t: Iterable[T]) => promote(t.map(t => k1(c, t)));
       }
     }
 
@@ -142,21 +135,24 @@ object MarkovChain {
       * Tupleization of nearly-transition kernels to produce a transition kernel for tuples
       */
     def promoteTuple[A, B, C, D](
-        k1: (A, B) => Rand[C], k2: (C, B) => Rand[D]) = { (t: (A, B)) =>
+        k1: (A, B) => Rand[C],
+        k2: (C, B) => Rand[D]
+    ) = { (t: (A, B)) =>
       for (c <- k1(t._1, t._2);
-      d <- k2(c, t._2)) yield (c, d);
+           d <- k2(c, t._2)) yield (c, d);
     }
 
     /**
       * Tupleization of nearly-transition kernels to produce a kernel for tuples
       */
-    def promoteTuple[T1, T2, T3, U1, U2, U3](k1: (T1, T2, T3) => Rand[U1],
-                                             k2: (U1, T2, T3) => Rand[U2],
-                                             k3: (U1, U2, T3) => Rand[U3]) = {
-      (t: (T1, T2, T3)) =>
-        for (c <- k1(t._1, t._2, t._3);
-        d <- k2(c, t._2, t._3);
-        e <- k3(c, d, t._3)) yield (c, d, e);
+    def promoteTuple[T1, T2, T3, U1, U2, U3](
+        k1: (T1, T2, T3) => Rand[U1],
+        k2: (U1, T2, T3) => Rand[U2],
+        k3: (U1, U2, T3) => Rand[U3]
+    ) = { (t: (T1, T2, T3)) =>
+      for (c <- k1(t._1, t._2, t._3);
+           d <- k2(c, t._2, t._3);
+           e <- k3(c, d, t._3)) yield (c, d, e);
     }
 
     /**
@@ -166,27 +162,29 @@ object MarkovChain {
         k1: (T1, T2, T3, T4) => Rand[U1],
         k2: (U1, T2, T3, T4) => Rand[U2],
         k3: (U1, U2, T3, T4) => Rand[U3],
-        k4: (U1, U2, U3, T4) => Rand[U4]) = { (t: (T1, T2, T3, T4)) =>
+        k4: (U1, U2, U3, T4) => Rand[U4]
+    ) = { (t: (T1, T2, T3, T4)) =>
       for (c <- k1(t._1, t._2, t._3, t._4);
-      d <- k2(c, t._2, t._3, t._4);
-      e <- k3(c, d, t._3, t._4);
-      f <- k4(c, d, e, t._4)) yield (c, d, e, f);
+           d <- k2(c, t._2, t._3, t._4);
+           e <- k3(c, d, t._3, t._4);
+           f <- k4(c, d, e, t._4)) yield (c, d, e, f);
     }
 
     /**
       * Creates a transition kernel over a sequence, given the ability to do one index at a time.
       * Useful for sequence models with a markov assumption.
       */
-    def seqKernel[T](trans: (Seq[T], Int) => Rand[T]): Seq[T] => Rand[Seq[T]] = {
-      (seq: Seq[T]) =>
-        fromBody {
-          val arrbuf = new ArrayBuffer[T];
-          arrbuf ++= seq;
-          (0 until seq.length).foldLeft(arrbuf) { (buf, i) =>
-            buf(i) = trans(buf, i).draw;
-            buf
-          }
+    def seqKernel[T](
+        trans: (Seq[T], Int) => Rand[T]
+    ): Seq[T] => Rand[Seq[T]] = { (seq: Seq[T]) =>
+      fromBody {
+        val arrbuf = new ArrayBuffer[T];
+        arrbuf ++= seq;
+        (0 until seq.length).foldLeft(arrbuf) { (buf, i) =>
+          buf(i) = trans(buf, i).draw;
+          buf
         }
+      }
     }
   }
 
@@ -202,13 +200,14 @@ object MarkovChain {
       * @param proposal the <b>symmetric</b> proposal distribution generator
       *
       */
-    def metropolis[T](proposal: T => Rand[T])(logMeasure: T => Double)(
-        implicit rand: RandBasis = Rand) = { t: T =>
-      for (next <- proposal(t);
-      newLL = logMeasure(next);
-      oldLL = logMeasure(t);
-      a = min(1, exp(newLL - oldLL));
-      u <- rand.uniform) yield if (u < a) next else t;
+    def metropolis[T](
+        proposal: T => Rand[T]
+    )(logMeasure: T => Double)(implicit rand: RandBasis = Rand) = { t: T =>
+      for (next  <- proposal(t);
+           newLL = logMeasure(next);
+           oldLL = logMeasure(t);
+           a     = min(1, exp(newLL - oldLL));
+           u     <- rand.uniform) yield if (u < a) next else t;
     }
 
     /**
@@ -216,16 +215,17 @@ object MarkovChain {
       * @param proposal the proposal distribution generator
       *
       */
-    def metropolisHastings[T](proposal: T => (Density[T] with Rand[T]))(
-        logMeasure: T => Double)(implicit rand: RandBasis = Rand) = { t: T =>
+    def metropolisHastings[T](
+        proposal: T => (Density[T] with Rand[T])
+    )(logMeasure: T => Double)(implicit rand: RandBasis = Rand) = { t: T =>
       val prop = proposal(t);
-      for (next <- prop;
-      newLL = logMeasure(next);
-      newP = prop.logApply(next);
-      oldLL = logMeasure(t);
-      oldP = prop.logApply(t);
-      a = min(1, exp(newLL + newP - oldLL - oldP));
-      u <- rand.uniform) yield if (u < a) next else t;
+      for (next  <- prop;
+           newLL = logMeasure(next);
+           newP  = prop.logApply(next);
+           oldLL = logMeasure(t);
+           oldP  = prop.logApply(t);
+           a     = min(1, exp(newLL + newP - oldLL - oldP));
+           u     <- rand.uniform) yield if (u < a) next else t;
     }
 
     /**
@@ -235,54 +235,54 @@ object MarkovChain {
       * @return a slice sampler
       */
     def slice(logMeasure: Double => Double, valid: Double => Boolean)(
-        implicit rand: RandBasis = Rand) = {
+        implicit rand: RandBasis = Rand
+    ) = {
       val WINDOW = 2;
-      val M = 10;
-      (last: Double) =>
-        {
-          new Rand[Double] {
-            def draw() = {
-              // How bad are we willing to tolerate?
-              val prop = log(rand.uniform.draw) + logMeasure(last);
-              val u = rand.uniform.draw;
-              // Find the boundaries
-              var left = last - WINDOW * u;
-              if (!valid(left)) left = last;
-              var right = left + WINDOW;
+      val M      = 10;
+      (last: Double) => {
+        new Rand[Double] {
+          def draw() = {
+            // How bad are we willing to tolerate?
+            val prop = log(rand.uniform.draw) + logMeasure(last);
+            val u    = rand.uniform.draw;
+            // Find the boundaries
+            var left = last - WINDOW * u;
+            if (!valid(left)) left = last;
+            var right = left + WINDOW;
 
-              var j: Int = (rand.uniform.draw() * M).asInstanceOf[Int];
-              var k = (M - 1) - j;
+            var j: Int = (rand.uniform.draw() * M).asInstanceOf[Int];
+            var k      = (M - 1) - j;
 
-              while (prop < logMeasure(left) && j > 0 &&
-              valid(left - WINDOW)) {
-                left = left - WINDOW;
-                j -= 1;
-              }
-
-              if (!valid(right)) right = last;
-              else
-                while (prop < logMeasure(right) && k > 0 &&
-                valid(right + WINDOW)) {
-                  right = right + WINDOW;
-                  k -= 1;
-                }
-              var happy = false;
-              var next = Double.NaN;
-              while (!happy) {
-                next = left + rand.uniform.draw * (right - left);
-                if (prop <= logMeasure(next)) {
-                  happy = true;
-                } else if (next < last) {
-                  //close the window
-                  left = next;
-                } else {
-                  right = next;
-                }
-              }
-              next;
+            while (prop < logMeasure(left) && j > 0 &&
+                   valid(left - WINDOW)) {
+              left = left - WINDOW;
+              j -= 1;
             }
+
+            if (!valid(right)) right = last;
+            else
+              while (prop < logMeasure(right) && k > 0 &&
+                     valid(right + WINDOW)) {
+                right = right + WINDOW;
+                k -= 1;
+              }
+            var happy = false;
+            var next  = Double.NaN;
+            while (!happy) {
+              next = left + rand.uniform.draw * (right - left);
+              if (prop <= logMeasure(next)) {
+                happy = true;
+              } else if (next < last) {
+                //close the window
+                left = next;
+              } else {
+                right = next;
+              }
+            }
+            next;
           }
         }
+      }
     }
   }
 
@@ -295,7 +295,9 @@ object MarkovChain {
     * @param proposal the <b>symmetric</b> proposal distribution generator
     *
     */
-  def metropolis[T](init: T, proposal: T => Rand[T])(logMeasure: T => Double) = {
+  def metropolis[T](init: T, proposal: T => Rand[T])(
+      logMeasure: T => Double
+  ) = {
     MarkovChain(init)(Kernels.metropolis(proposal)(logMeasure))
   }
 
@@ -308,7 +310,8 @@ object MarkovChain {
     *
     */
   def metropolisHastings[T](init: T, proposal: T => (Density[T] with Rand[T]))(
-      logMeasure: T => Double) = {
+      logMeasure: T => Double
+  ) = {
     MarkovChain(init) { Kernels.metropolisHastings(proposal) { logMeasure } };
   }
 
@@ -319,7 +322,10 @@ object MarkovChain {
     * @return a slice sampler
     */
   def slice(
-      init: Double, logMeasure: Double => Double, valid: Double => Boolean) = {
+      init: Double,
+      logMeasure: Double => Double,
+      valid: Double => Boolean
+  ) = {
     MarkovChain(init)(Kernels.slice(logMeasure, valid));
   }
 }

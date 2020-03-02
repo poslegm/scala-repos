@@ -45,9 +45,10 @@ import scalafx.util.StringConverter
   * @param delegate JavaFx StringConverter to be wrapped.
   */
 abstract class StringConverterDelegate[
-    J <: java.lang.Object, S <: Any, C <: jfxu.StringConverter[J]] protected (
-    override val delegate: C)
-    extends StringConverter[S] with SFXDelegate[C] {
+    J <: java.lang.Object, S <: Any, C <: jfxu.StringConverter[J]
+] protected (override val delegate: C)
+    extends StringConverter[S]
+    with SFXDelegate[C] {
 
   def fromString(string: String): S =
     delegate.fromString(string).asInstanceOf[S]
@@ -67,6 +68,6 @@ abstract class StringConverterDelegate[
   * @param delegate JavaFx StringConverter to be wrapped.
   */
 abstract class StringConverterJavaToJavaDelegate[
-    J <: java.lang.Object, C <: jfxu.StringConverter[J]] protected (
-    override val delegate: C)
+    J <: java.lang.Object, C <: jfxu.StringConverter[J]
+] protected (override val delegate: C)
     extends StringConverterDelegate[J, J, C](delegate)

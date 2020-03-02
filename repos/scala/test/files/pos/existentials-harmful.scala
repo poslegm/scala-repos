@@ -3,7 +3,7 @@
 
 object ExistentialsConsideredHarmful {
   class Animal(val name: String)
-  object Dog extends Animal("Dog")
+  object Dog   extends Animal("Dog")
   object Sheep extends Animal("Sheep")
 
   trait Tools[A] {

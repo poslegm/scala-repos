@@ -32,16 +32,18 @@ object AtmosphereClient {
     }
   }
 
-  def broadcast(path: String,
-                message: OutboundMessage,
-                filter: ClientFilter = new Everyone)(
-      implicit executionContext: ExecutionContext) = {
+  def broadcast(
+      path: String,
+      message: OutboundMessage,
+      filter: ClientFilter = new Everyone
+  )(implicit executionContext: ExecutionContext) = {
     lookup(path) foreach { _.broadcast(message, filter) }
   }
 
   def broadcastAll(
-      message: OutboundMessage, filter: ClientFilter = new Everyone)(
-      implicit executionContext: ExecutionContext) = {
+      message: OutboundMessage,
+      filter: ClientFilter = new Everyone
+  )(implicit executionContext: ExecutionContext) = {
     lookupAll() foreach {
       _ broadcast (message, filter)
     }
@@ -60,7 +62,7 @@ object AtmosphereClient {
 trait AtmosphereClient extends AtmosphereClientFilters {
 
   @volatile private[atmosphere] var resource: AtmosphereResource = _
-  @transient private[this] val internalLogger = Logger[AtmosphereClient]
+  @transient private[this] val internalLogger                    = Logger[AtmosphereClient]
   @transient private[this] def broadcaster =
     resource.getBroadcaster.asInstanceOf[ScalatraBroadcaster]
 
@@ -78,7 +80,8 @@ trait AtmosphereClient extends AtmosphereClientFilters {
   def servletContext: ServletContext = scalatraContext.servletContext
 
   def receiveWithScalatraContext(
-      scalatraContext: ScalatraContext): AtmoReceive = {
+      scalatraContext: ScalatraContext
+  ): AtmoReceive = {
     this.scalatraContext = scalatraContext
     receive
   }
@@ -98,16 +101,18 @@ trait AtmosphereClient extends AtmosphereClientFilters {
     * A convenience method which sends a message only to the current client,
     * using a broadcast filter.  This is the same as calling `broadcast(message, to = Me)`
     */
-  final def send(msg: OutboundMessage)(
-      implicit executionContext: ExecutionContext) =
+  final def send(
+      msg: OutboundMessage
+  )(implicit executionContext: ExecutionContext) =
     broadcast(msg, to = Me)(executionContext)
 
   /**
     * A convenience method which sends a message only to the current client,
     * using a broadcast filter.
     */
-  final def !(msg: OutboundMessage)(
-      implicit executionContext: ExecutionContext) =
+  final def !(
+      msg: OutboundMessage
+  )(implicit executionContext: ExecutionContext) =
     send(msg)(executionContext)
 
   /**
@@ -116,7 +121,8 @@ trait AtmosphereClient extends AtmosphereClientFilters {
     * deliver the message to by applying a filter.
     */
   final def broadcast(msg: OutboundMessage, to: ClientFilter = Others)(
-      implicit executionContext: ExecutionContext) = {
+      implicit executionContext: ExecutionContext
+  ) = {
     if (resource == null)
       internalLogger.warn("The resource is null, can't publish")
 
@@ -132,6 +138,7 @@ trait AtmosphereClient extends AtmosphereClientFilters {
     * deliver the message to by applying a filter.
     */
   final def ><(msg: OutboundMessage, to: ClientFilter = Others)(
-      implicit executionContext: ExecutionContext) =
+      implicit executionContext: ExecutionContext
+  ) =
     broadcast(msg, to)(executionContext)
 }

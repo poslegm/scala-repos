@@ -172,12 +172,12 @@ package object saddle {
       */
     def to[T](implicit fn: na.type => T): T = fn(this)
 
-    implicit def naToByte(v: na.type): Byte = scalar.ScalarTagByte.missing
-    implicit def naToChar(v: na.type): Char = scalar.ScalarTagChar.missing
+    implicit def naToByte(v: na.type): Byte   = scalar.ScalarTagByte.missing
+    implicit def naToChar(v: na.type): Char   = scalar.ScalarTagChar.missing
     implicit def naToShort(v: na.type): Short = scalar.ScalarTagShort.missing
 
-    implicit def naToInt(v: na.type): Int = scalar.ScalarTagInt.missing
-    implicit def naToLong(v: na.type): Long = scalar.ScalarTagLong.missing
+    implicit def naToInt(v: na.type): Int     = scalar.ScalarTagInt.missing
+    implicit def naToLong(v: na.type): Long   = scalar.ScalarTagLong.missing
     implicit def naToFloat(v: na.type): Float = scalar.ScalarTagFloat.missing
     implicit def naToDouble(v: na.type): Double =
       scalar.ScalarTagDouble.missing
@@ -201,7 +201,7 @@ package object saddle {
     * @param s  A value of type Seq[T]
     * @tparam T Type of elements of Vec
     */
-  implicit def seqToVec[T : ST](s: Seq[T]) = new {
+  implicit def seqToVec[T: ST](s: Seq[T]) = new {
     def toVec: Vec[T] = Vec(s: _*)
   }
 
@@ -218,7 +218,7 @@ package object saddle {
     * @param ix A value of type Seq[X]
     * @tparam X Type of index elements
     */
-  implicit def seqToIndex[X : ST : ORD](ix: Seq[X]) = new {
+  implicit def seqToIndex[X: ST: ORD](ix: Seq[X]) = new {
     def toIndex: Index[X] = Index(ix: _*)
   }
 
@@ -236,7 +236,7 @@ package object saddle {
     * @tparam T Type of data elements of Series
     * @tparam X Type of index elements of Series
     */
-  implicit def seqToSeries[T : ST, X : ST : ORD](s: Seq[(X, T)]) = new {
+  implicit def seqToSeries[T: ST, X: ST: ORD](s: Seq[(X, T)]) = new {
     def toSeries: Series[X, T] = Series(s: _*)
   }
 
@@ -262,8 +262,9 @@ package object saddle {
     * @tparam RX Type of row index elements of Frame
     * @tparam CX Type of col index elements of Frame
     */
-  implicit def seqToFrame[RX : ST : ORD, CX : ST : ORD, T : ST](
-      s: Seq[(RX, CX, T)]) = new {
+  implicit def seqToFrame[RX: ST: ORD, CX: ST: ORD, T: ST](
+      s: Seq[(RX, CX, T)]
+  ) = new {
     def toFrame: Frame[RX, CX, T] = {
       val grp = s.map { case (r, c, v) => ((r, c), v) }
       grp.toSeries.pivot

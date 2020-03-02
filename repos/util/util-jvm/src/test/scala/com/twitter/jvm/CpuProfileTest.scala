@@ -13,9 +13,9 @@ class CpuProfileTest extends FunSuite {
 
     // record() calls Time.now 3 times initially, and then 3 times on every loop iteration.
     val times: Stream[Int] = (0 #:: Stream.from(0)).flatMap(x => List(x, x, x))
-    val iter = times.iterator
-    val start = Time.now
-    def nextTime: Time = start + iter.next().milliseconds * 10
+    val iter               = times.iterator
+    val start              = Time.now
+    def nextTime: Time     = start + iter.next().milliseconds * 10
 
     val t = new Thread("CpuProfileTest") {
       override def run() {
@@ -45,9 +45,13 @@ class CpuProfileTest extends FunSuite {
 
     assert(CpuProfile.isRunnable(newElem("foo", "bar")))
 
-    assert(!CpuProfile.isRunnable(
-            newElem("sun.nio.ch.EPollArrayWrapper", "epollWait")))
-    assert(!CpuProfile.isRunnable(
-            newElem("sun.nio.ch.KQueueArrayWrapper", "kevent0")))
+    assert(
+      !CpuProfile
+        .isRunnable(newElem("sun.nio.ch.EPollArrayWrapper", "epollWait"))
+    )
+    assert(
+      !CpuProfile
+        .isRunnable(newElem("sun.nio.ch.KQueueArrayWrapper", "kevent0"))
+    )
   }
 }

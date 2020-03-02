@@ -33,11 +33,11 @@ trait Creators {
     */
   trait Act extends Actor {
 
-    private[this] var preStartFun: () ⇒ Unit = null
-    private[this] var postStopFun: () ⇒ Unit = null
+    private[this] var preStartFun: () ⇒ Unit                         = null
+    private[this] var postStopFun: () ⇒ Unit                         = null
     private[this] var preRestartFun: (Throwable, Option[Any]) ⇒ Unit = null
-    private[this] var postRestartFun: Throwable ⇒ Unit = null
-    private[this] var strategy: SupervisorStrategy = null
+    private[this] var postRestartFun: Throwable ⇒ Unit               = null
+    private[this] var strategy: SupervisorStrategy                   = null
 
     /**
       * @see [[akka.actor.OneForOneStrategy]]
@@ -159,11 +159,12 @@ trait Creators {
     *        either be an [[akka.actor.ActorSystem]] or an [[akka.actor.ActorContext]],
     *        where the latter is always implicitly available within an [[akka.actor.Actor]].
     */
-  def actor[T <: Actor : ClassTag](ctor: ⇒ T)(
-      implicit factory: ActorRefFactory): ActorRef = {
+  def actor[T <: Actor: ClassTag](
+      ctor: ⇒ T
+  )(implicit factory: ActorRefFactory): ActorRef = {
     // configure dispatcher/mailbox based on runtime class
     val classOfActor = implicitly[ClassTag[T]].runtimeClass
-    val props = mkProps(classOfActor, () ⇒ ctor)
+    val props        = mkProps(classOfActor, () ⇒ ctor)
     factory.actorOf(props)
   }
 
@@ -179,11 +180,12 @@ trait Creators {
     *        either be an [[akka.actor.ActorSystem]] or an [[akka.actor.ActorContext]],
     *        where the latter is always implicitly available within an [[akka.actor.Actor]].
     */
-  def actor[T <: Actor : ClassTag](name: String)(ctor: ⇒ T)(
-      implicit factory: ActorRefFactory): ActorRef = {
+  def actor[T <: Actor: ClassTag](
+      name: String
+  )(ctor: ⇒ T)(implicit factory: ActorRefFactory): ActorRef = {
     // configure dispatcher/mailbox based on runtime class
     val classOfActor = implicitly[ClassTag[T]].runtimeClass
-    val props = mkProps(classOfActor, () ⇒ ctor)
+    val props        = mkProps(classOfActor, () ⇒ ctor)
 
     if (name == null) factory.actorOf(props)
     else factory.actorOf(props, name)
@@ -201,8 +203,9 @@ trait Creators {
     *        either be an [[akka.actor.ActorSystem]] or an [[akka.actor.ActorContext]],
     *        where the latter is always implicitly available within an [[akka.actor.Actor]].
     */
-  def actor[T <: Actor : ClassTag](factory: ActorRefFactory, name: String)(
-      ctor: ⇒ T): ActorRef =
+  def actor[T <: Actor: ClassTag](factory: ActorRefFactory, name: String)(
+      ctor: ⇒ T
+  ): ActorRef =
     actor(name)(ctor)(implicitly[ClassTag[T]], factory)
 
   /**
@@ -216,7 +219,8 @@ trait Creators {
     *        either be an [[akka.actor.ActorSystem]] or an [[akka.actor.ActorContext]],
     *        where the latter is always implicitly available within an [[akka.actor.Actor]].
     */
-  def actor[T <: Actor : ClassTag](factory: ActorRefFactory)(
-      ctor: ⇒ T): ActorRef =
+  def actor[T <: Actor: ClassTag](
+      factory: ActorRefFactory
+  )(ctor: ⇒ T): ActorRef =
     actor(null: String)(ctor)(implicitly[ClassTag[T]], factory)
 }

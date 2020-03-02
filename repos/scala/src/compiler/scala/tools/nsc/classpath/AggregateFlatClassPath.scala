@@ -33,21 +33,23 @@ case class AggregateFlatClassPath(aggregates: Seq[FlatClassPath])
   }
 
   override def findClass(
-      className: String): Option[ClassRepresentation[AbstractFile]] = {
+      className: String
+  ): Option[ClassRepresentation[AbstractFile]] = {
     val (pkg, simpleClassName) =
       PackageNameUtils.separatePkgAndClassNames(className)
 
     @tailrec
     def findEntry[T <: ClassRepClassPathEntry](
         aggregates: Seq[FlatClassPath],
-        getEntries: FlatClassPath => Seq[T]): Option[T] =
+        getEntries: FlatClassPath => Seq[T]
+    ): Option[T] =
       if (aggregates.nonEmpty) {
         val entry = getEntries(aggregates.head).find(_.name == simpleClassName)
         if (entry.isDefined) entry
         else findEntry(aggregates.tail, getEntries)
       } else None
 
-    val classEntry = findEntry(aggregates, classesGetter(pkg))
+    val classEntry  = findEntry(aggregates, classesGetter(pkg))
     val sourceEntry = findEntry(aggregates, sourcesGetter(pkg))
 
     mergeClassesAndSources(classEntry.toList, sourceEntry.toList).headOption
@@ -74,9 +76,10 @@ case class AggregateFlatClassPath(aggregates: Seq[FlatClassPath])
 
   override private[nsc] def list(inPackage: String): FlatClassPathEntries = {
     val (packages, classesAndSources) = aggregates.map(_.list(inPackage)).unzip
-    val distinctPackages = packages.flatten.distinct
+    val distinctPackages              = packages.flatten.distinct
     val distinctClassesAndSources = mergeClassesAndSources(
-        classesAndSources: _*)
+      classesAndSources: _*
+    )
     FlatClassPathEntries(distinctPackages, distinctClassesAndSources)
   }
 
@@ -86,27 +89,28 @@ case class AggregateFlatClassPath(aggregates: Seq[FlatClassPath])
     * entries for the same class it always would use the first entry of each type found on a classpath.
     */
   private def mergeClassesAndSources(
-      entries: Seq[ClassRepClassPathEntry]*): Seq[ClassRepClassPathEntry] = {
+      entries: Seq[ClassRepClassPathEntry]*
+  ): Seq[ClassRepClassPathEntry] = {
     // based on the implementation from MergedClassPath
-    var count = 0
-    val indices = collection.mutable.HashMap[String, Int]()
+    var count         = 0
+    val indices       = collection.mutable.HashMap[String, Int]()
     val mergedEntries = new ArrayBuffer[ClassRepClassPathEntry](1024)
 
     for {
       partOfEntries <- entries
-      entry <- partOfEntries
+      entry         <- partOfEntries
     } {
       val name = entry.name
       if (indices contains name) {
-        val index = indices(name)
+        val index    = indices(name)
         val existing = mergedEntries(index)
 
         if (existing.binary.isEmpty && entry.binary.isDefined)
-          mergedEntries(index) = ClassAndSourceFilesEntry(
-              entry.binary.get, existing.source.get)
+          mergedEntries(index) =
+            ClassAndSourceFilesEntry(entry.binary.get, existing.source.get)
         if (existing.source.isEmpty && entry.source.isDefined)
-          mergedEntries(index) = ClassAndSourceFilesEntry(
-              existing.binary.get, entry.source.get)
+          mergedEntries(index) =
+            ClassAndSourceFilesEntry(existing.binary.get, entry.source.get)
       } else {
         indices(name) = count
         mergedEntries += entry
@@ -117,11 +121,12 @@ case class AggregateFlatClassPath(aggregates: Seq[FlatClassPath])
   }
 
   private def getDistinctEntries[EntryType <: ClassRepClassPathEntry](
-      getEntries: FlatClassPath => Seq[EntryType]): Seq[EntryType] = {
-    val seenNames = collection.mutable.HashSet[String]()
+      getEntries: FlatClassPath => Seq[EntryType]
+  ): Seq[EntryType] = {
+    val seenNames     = collection.mutable.HashSet[String]()
     val entriesBuffer = new ArrayBuffer[EntryType](1024)
     for {
-      cp <- aggregates
+      cp    <- aggregates
       entry <- getEntries(cp) if !seenNames.contains(entry.name)
     } {
       entriesBuffer += entry

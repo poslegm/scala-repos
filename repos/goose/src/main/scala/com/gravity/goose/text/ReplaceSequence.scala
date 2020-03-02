@@ -76,7 +76,8 @@ object ReplaceSequence {
     */
   def create(firstPattern: String, replaceWith: String): ReplaceSequence = {
     val result: ReplaceSequence = new ReplaceSequence(
-        StringReplacement.compile(firstPattern, replaceWith))
+      StringReplacement.compile(firstPattern, replaceWith)
+    )
     result
   }
 }

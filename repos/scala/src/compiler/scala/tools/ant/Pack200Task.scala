@@ -33,13 +33,13 @@ class Pack200Task extends ScalaMatchingTask {
 \*============================================================================*/
 
   var destdir: Option[File] = None
-  var srcdir: Option[File] = None
+  var srcdir: Option[File]  = None
 
-  var effort = 9
-  var keepFileOrder = false
+  var effort               = 9
+  var keepFileOrder        = false
   var keepModificationTime = false
-  var repack = false
-  var segmentLimit = -1
+  var repack               = false
+  var segmentLimit         = -1
 
   var packFileSuffix = ".pack"
 
@@ -50,8 +50,7 @@ class Pack200Task extends ScalaMatchingTask {
   def setDir(dir: File) {
     if (dir.exists && dir.isDirectory) srcdir = Some(dir)
     else
-      buildError(
-          "Please specify a valid directory with Jar files for packing.")
+      buildError("Please specify a valid directory with Jar files for packing.")
   }
 
   /** A level from 0 (none) to 9 (max) of effort for applying Pack200 */
@@ -83,7 +82,8 @@ class Pack200Task extends ScalaMatchingTask {
     if (file != null && file.exists && file.isDirectory) destdir = Some(file)
     else
       buildError(
-          "The destination directory is invalid: " + file.getAbsolutePath)
+        "The destination directory is invalid: " + file.getAbsolutePath
+      )
   }
 
   def setSuffix(s: String) { packFileSuffix = s }
@@ -96,11 +96,11 @@ class Pack200Task extends ScalaMatchingTask {
     * @return The list of JAR files */
   private def getFileList: List[File] = {
     var files: List[File] = Nil
-    val fs = getImplicitFileSet
-    val ds = fs.getDirectoryScanner(getProject())
-    val dir = fs.getDir(getProject())
+    val fs                = getImplicitFileSet
+    val ds                = fs.getDirectoryScanner(getProject())
+    val dir               = fs.getDir(getProject())
     for (filename <- ds.getIncludedFiles()
-                        if filename.toLowerCase.endsWith(".jar")) {
+         if filename.toLowerCase.endsWith(".jar")) {
       val file = new File(dir, filename)
       if (files.exists(file.equals(_)) == false) files = file :: files
     }
@@ -135,7 +135,7 @@ class Pack200Task extends ScalaMatchingTask {
 
     // Setup the packer
     val packer = Pack200.newPacker
-    val p = packer.properties
+    val p      = packer.properties
     p.put(EFFORT, effort.toString)
     p.put(SEGMENT_LIMIT, segmentLimit.toString)
     p.put(KEEP_FILE_ORDER, if (keepFileOrder) TRUE else FALSE)
@@ -145,10 +145,9 @@ class Pack200Task extends ScalaMatchingTask {
       if (repack) {
         val repackedFile = new File(packDir, file.getName)
         if (file.lastModified > repackedFile.lastModified) {
-          println(
-              "Repacking " + file.toString + " to " + repackedFile.toString)
+          println("Repacking " + file.toString + " to " + repackedFile.toString)
           val tmpFile = new File(packDir, file.getName + ".tmp")
-          val os = makeOutputStream(tmpFile)
+          val os      = makeOutputStream(tmpFile)
           packer.pack(new JarFile(file), os)
           os.close()
           val jos = makeJarOutputStream(repackedFile)

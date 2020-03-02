@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-14 Miles Sabin 
+ * Copyright (c) 2011-14 Miles Sabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,8 +74,8 @@ class SizedTests {
     val nl2d = l2.sized(3)
     assertTrue(nl2d.isEmpty)
 
-    val h2 = nl2c.get.head
-    val t2 = nl2c.get.tail
+    val h2  = nl2c.get.head
+    val t2  = nl2c.get.tail
     val t2b = nl2c.get.tail.tail
 
     illTyped("""
@@ -91,8 +91,8 @@ class SizedTests {
     val nl3d = l3.sized(3)
     assertTrue(nl3d.isDefined)
 
-    val h3 = nl3d.get.head
-    val t3 = nl3d.get.tail
+    val h3  = nl3d.get.head
+    val t3  = nl3d.get.tail
     val t3b = nl3d.get.tail.tail
     val t3c = nl3d.get.tail.tail.tail
 
@@ -134,15 +134,15 @@ class SizedTests {
     typed[Sized[List[Int], _6]](cl.get)
     assertEquals(List(1, 2, 3, 4, 5, 6), cl.get.unsized)
 
-    val s = cl.get.size
+    val s     = cl.get.size
     val evens = cl.get.filter(_ % 2 == 0)
 
     val p = cl.get match {
-      case Sized(a, b, _ *) => {
-          typed[Int](a)
-          typed[Int](b)
-          (a - b, a + b)
-        }
+      case Sized(a, b, _*) => {
+        typed[Int](a)
+        typed[Int](b)
+        (a - b, a + b)
+      }
       case _ => (9, 10)
     }
     typed[(Int, Int)](p)
@@ -209,67 +209,67 @@ class SizedTests {
   }
 
   trait Fruit
-  case class Apple() extends Fruit
-  case class Pear() extends Fruit
+  case class Apple()  extends Fruit
+  case class Pear()   extends Fruit
   case class Banana() extends Fruit
 
-  val a: Apple = Apple()
-  val p: Pear = Pear()
+  val a: Apple  = Apple()
+  val p: Pear   = Pear()
   val b: Banana = Banana()
 
-  val apap = a :: p :: a :: p :: HNil
-  val apapList = a :: p :: a :: p :: Nil
+  val apap      = a :: p :: a :: p :: HNil
+  val apapList  = a :: p :: a :: p :: Nil
   val apapSized = Sized[List](a, p, a, p)
 
-  val apbp = a :: p :: b :: p :: HNil
-  val apbpList = a :: p :: b :: p :: Nil
+  val apbp      = a :: p :: b :: p :: HNil
+  val apbpList  = a :: p :: b :: p :: Nil
   val apbpSized = Sized[List](a, p, b, p)
 
   val si = Set.empty[Int]
   val ss = Set.empty[String]
   val sd = Set.empty[Double]
 
-  val sisssisisd = si :: ss :: si :: si :: sd :: HNil
-  val sisssisisdList = si :: ss :: si :: si :: sd :: Nil
+  val sisssisisd      = si :: ss :: si :: si :: sd :: HNil
+  val sisssisisdList  = si :: ss :: si :: si :: sd :: Nil
   val sisssisisdSized = Sized[List](si, ss, si, si, sd)
 
   trait Ctv[-T]
 
-  val ci: Ctv[Int] = new Ctv[Int] {}
+  val ci: Ctv[Int]    = new Ctv[Int]    {}
   val cs: Ctv[String] = new Ctv[String] {}
   val cd: Ctv[Double] = new Ctv[Double] {}
 
-  val cicscicicd = ci :: cs :: ci :: ci :: cd :: HNil
-  val cicscicicdList = ci :: cs :: ci :: ci :: cd :: Nil
+  val cicscicicd      = ci :: cs :: ci :: ci :: cd :: HNil
+  val cicscicicdList  = ci :: cs :: ci :: ci :: cd :: Nil
   val cicscicicdSized = Sized[List](ci, cs, ci, ci, cd)
 
   trait M[T]
 
-  val mi: M[Int] = new M[Int] {}
+  val mi: M[Int]    = new M[Int]    {}
   val ms: M[String] = new M[String] {}
   val md: M[Double] = new M[Double] {}
 
-  val mimsmimimd = mi :: ms :: mi :: mi :: md :: HNil
-  val mimsmimimdList = mi :: ms :: mi :: mi :: md :: Nil
+  val mimsmimimd      = mi :: ms :: mi :: mi :: md :: HNil
+  val mimsmimimdList  = mi :: ms :: mi :: mi :: md :: Nil
   val mimsmimimdSized = Sized[List](mi, ms, mi, mi, md)
 
   import language.existentials
-  val mExist: M[_] = new M[Double] {}
-  val mimsmimemd = mi :: ms :: mi :: mExist :: md :: HNil
-  val mimsmimemdList = mi :: ms :: mi :: mExist :: md :: Nil
+  val mExist: M[_]    = new M[Double] {}
+  val mimsmimemd      = mi :: ms :: mi :: mExist :: md :: HNil
+  val mimsmimemdList  = mi :: ms :: mi :: mExist :: md :: Nil
   val mimsmimemdSized = Sized[List](mi, ms, mi, mExist, md)
 
   trait M2[A, B]
 
-  val m2i: M2[Int, Unit] = new M2[Int, Unit] {}
+  val m2i: M2[Int, Unit]    = new M2[Int, Unit]    {}
   val m2s: M2[String, Unit] = new M2[String, Unit] {}
   val m2d: M2[Double, Unit] = new M2[Double, Unit] {}
 
-  val m2im2sm2im2im2d = m2i :: m2s :: m2i :: m2i :: m2d :: HNil
-  val m2im2sm2im2im2dList = m2i :: m2s :: m2i :: m2i :: m2d :: Nil
+  val m2im2sm2im2im2d      = m2i :: m2s :: m2i :: m2i :: m2d :: HNil
+  val m2im2sm2im2im2dList  = m2i :: m2s :: m2i :: m2i :: m2d :: Nil
   val m2im2sm2im2im2dSized = Sized[List](m2i, m2s, m2i, m2i, m2d)
 
-  val m2iExist: M2[Int, _] = new M2[Int, Unit] {}
+  val m2iExist: M2[Int, _]    = new M2[Int, Unit]    {}
   val m2sExist: M2[String, _] = new M2[String, Unit] {}
   val m2dExist: M2[Double, _] = new M2[Double, Unit] {}
 
@@ -344,16 +344,11 @@ class SizedTests {
     // equalInferredTypes(m2im2sm2im2im2dList.head, hlM2im2sm2im2im2d(Nat._2))
     // equalInferredTypes(m2im2sm2im2im2dList.head, hlM2im2sm2im2im2d(Nat._3))
     // equalInferredTypes(m2im2sm2im2im2dList.head, hlM2im2sm2im2im2d(Nat._4))
-    typed[M2[_ >: Double with Int with String, Unit]](
-        hlM2im2sm2im2im2d(Nat._0))
-    typed[M2[_ >: Double with Int with String, Unit]](
-        hlM2im2sm2im2im2d(Nat._1))
-    typed[M2[_ >: Double with Int with String, Unit]](
-        hlM2im2sm2im2im2d(Nat._2))
-    typed[M2[_ >: Double with Int with String, Unit]](
-        hlM2im2sm2im2im2d(Nat._3))
-    typed[M2[_ >: Double with Int with String, Unit]](
-        hlM2im2sm2im2im2d(Nat._4))
+    typed[M2[_ >: Double with Int with String, Unit]](hlM2im2sm2im2im2d(Nat._0))
+    typed[M2[_ >: Double with Int with String, Unit]](hlM2im2sm2im2im2d(Nat._1))
+    typed[M2[_ >: Double with Int with String, Unit]](hlM2im2sm2im2im2d(Nat._2))
+    typed[M2[_ >: Double with Int with String, Unit]](hlM2im2sm2im2im2d(Nat._3))
+    typed[M2[_ >: Double with Int with String, Unit]](hlM2im2sm2im2im2d(Nat._4))
     assertEquals(m2im2sm2im2im2d, hlM2im2sm2im2im2d)
 
     val hlM2eim2esm2eim2eem2ed = m2eim2esm2eim2eem2edSized.toHList
@@ -364,15 +359,20 @@ class SizedTests {
     // equalInferredTypes(m2eim2esm2eim2eem2edList.head, hlM2eim2esm2eim2eem2ed(Nat._3))
     // equalInferredTypes(m2eim2esm2eim2eem2edList.head, hlM2eim2esm2eim2eem2ed(Nat._4))
     typed[M2[_ >: Double with Int with String, _]](
-        hlM2eim2esm2eim2eem2ed(Nat._0))
+      hlM2eim2esm2eim2eem2ed(Nat._0)
+    )
     typed[M2[_ >: Double with Int with String, _]](
-        hlM2eim2esm2eim2eem2ed(Nat._1))
+      hlM2eim2esm2eim2eem2ed(Nat._1)
+    )
     typed[M2[_ >: Double with Int with String, _]](
-        hlM2eim2esm2eim2eem2ed(Nat._2))
+      hlM2eim2esm2eim2eem2ed(Nat._2)
+    )
     typed[M2[_ >: Double with Int with String, _]](
-        hlM2eim2esm2eim2eem2ed(Nat._3))
+      hlM2eim2esm2eim2eem2ed(Nat._3)
+    )
     typed[M2[_ >: Double with Int with String, _]](
-        hlM2eim2esm2eim2eem2ed(Nat._4))
+      hlM2eim2esm2eim2eem2ed(Nat._4)
+    )
     assertEquals(m2eim2esm2eim2eem2ed, hlM2eim2esm2eim2eem2ed)
   }
 

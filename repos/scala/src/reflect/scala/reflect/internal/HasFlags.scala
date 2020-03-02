@@ -65,7 +65,7 @@ trait HasFlags {
   /** The printable representation of this entity's flags and access boundary,
     *  restricted to flags in the given mask.
     */
-  def flagString: String = flagString(flagMask)
+  def flagString: String             = flagString(flagMask)
   def flagString(mask: Long): String = calculateFlagString(flags & mask)
 
   /** The default mask determining which flags to display.
@@ -83,48 +83,48 @@ trait HasFlags {
   def hasAccessorFlag = hasFlag(ACCESSOR)
   def hasDefault =
     hasFlag(DEFAULTPARAM) &&
-    hasFlag(METHOD | PARAM) // Second condition disambiguates with TRAIT
-  def hasJavaEnumFlag = hasFlag(JAVA_ENUM)
+      hasFlag(METHOD | PARAM) // Second condition disambiguates with TRAIT
+  def hasJavaEnumFlag       = hasFlag(JAVA_ENUM)
   def hasJavaAnnotationFlag = hasFlag(JAVA_ANNOTATION)
   @deprecated("Use isLocalToThis instead", "2.11.0")
-  def hasLocalFlag = hasFlag(LOCAL)
-  def isLocalToThis = hasFlag(LOCAL)
-  def hasModuleFlag = hasFlag(MODULE)
-  def hasPackageFlag = hasFlag(PACKAGE)
-  def hasStableFlag = hasFlag(STABLE)
-  def hasStaticFlag = hasFlag(STATIC)
+  def hasLocalFlag       = hasFlag(LOCAL)
+  def isLocalToThis      = hasFlag(LOCAL)
+  def hasModuleFlag      = hasFlag(MODULE)
+  def hasPackageFlag     = hasFlag(PACKAGE)
+  def hasStableFlag      = hasFlag(STABLE)
+  def hasStaticFlag      = hasFlag(STATIC)
   def isAbstractOverride = hasFlag(ABSOVERRIDE)
-  def isAnyOverride = hasFlag(OVERRIDE | ABSOVERRIDE)
-  def isCase = hasFlag(CASE)
-  def isCaseAccessor = hasFlag(CASEACCESSOR)
-  def isDeferred = hasFlag(DEFERRED)
-  def isFinal = hasFlag(FINAL)
-  def isArtifact = hasFlag(ARTIFACT)
-  def isImplicit = hasFlag(IMPLICIT)
-  def isInterface = hasFlag(INTERFACE)
-  def isJavaDefined = hasFlag(JAVA)
-  def isLabel = hasAllFlags(LABEL | METHOD) && !hasAccessorFlag
-  def isLazy = hasFlag(LAZY)
-  def isLifted = hasFlag(LIFTED)
-  def isMacro = hasFlag(MACRO)
-  def isMutable = hasFlag(MUTABLE)
-  def isOverride = hasFlag(OVERRIDE)
-  def isParamAccessor = hasFlag(PARAMACCESSOR)
-  def isPrivate = hasFlag(PRIVATE)
+  def isAnyOverride      = hasFlag(OVERRIDE | ABSOVERRIDE)
+  def isCase             = hasFlag(CASE)
+  def isCaseAccessor     = hasFlag(CASEACCESSOR)
+  def isDeferred         = hasFlag(DEFERRED)
+  def isFinal            = hasFlag(FINAL)
+  def isArtifact         = hasFlag(ARTIFACT)
+  def isImplicit         = hasFlag(IMPLICIT)
+  def isInterface        = hasFlag(INTERFACE)
+  def isJavaDefined      = hasFlag(JAVA)
+  def isLabel            = hasAllFlags(LABEL | METHOD) && !hasAccessorFlag
+  def isLazy             = hasFlag(LAZY)
+  def isLifted           = hasFlag(LIFTED)
+  def isMacro            = hasFlag(MACRO)
+  def isMutable          = hasFlag(MUTABLE)
+  def isOverride         = hasFlag(OVERRIDE)
+  def isParamAccessor    = hasFlag(PARAMACCESSOR)
+  def isPrivate          = hasFlag(PRIVATE)
   @deprecated("Use `hasPackageFlag` instead", "2.11.0")
-  def isPackage = hasFlag(PACKAGE)
-  def isPrivateLocal = hasAllFlags(PrivateLocal)
-  def isProtected = hasFlag(PROTECTED)
-  def isProtectedLocal = hasAllFlags(ProtectedLocal)
-  def isPublic = hasNoFlags(PRIVATE | PROTECTED) && !hasAccessBoundary
-  def isSealed = hasFlag(SEALED)
-  def isSpecialized = hasFlag(SPECIALIZED)
-  def isSuperAccessor = hasFlag(SUPERACCESSOR)
-  def isSynthetic = hasFlag(SYNTHETIC)
-  def isTrait = hasFlag(TRAIT) && !hasFlag(PARAM)
+  def isPackage          = hasFlag(PACKAGE)
+  def isPrivateLocal     = hasAllFlags(PrivateLocal)
+  def isProtected        = hasFlag(PROTECTED)
+  def isProtectedLocal   = hasAllFlags(ProtectedLocal)
+  def isPublic           = hasNoFlags(PRIVATE | PROTECTED) && !hasAccessBoundary
+  def isSealed           = hasFlag(SEALED)
+  def isSpecialized      = hasFlag(SPECIALIZED)
+  def isSuperAccessor    = hasFlag(SUPERACCESSOR)
+  def isSynthetic        = hasFlag(SYNTHETIC)
+  def isTrait            = hasFlag(TRAIT) && !hasFlag(PARAM)
   def isTraitOrInterface = isTrait || isInterface
 
-  def isDeferredOrJavaDefault = hasFlag(DEFERRED | JAVA_DEFAULTMETHOD)
+  def isDeferredOrJavaDefault  = hasFlag(DEFERRED | JAVA_DEFAULTMETHOD)
   def isDeferredNotJavaDefault = isDeferred && !hasFlag(JAVA_DEFAULTMETHOD)
 
   def flagBitsToString(bits: Long): String = {
@@ -132,7 +132,7 @@ trait HasFlags {
     if (bits == 0L) ""
     else {
       var sb: StringBuilder = null
-      var i = 0
+      var i                 = 0
       while (i <= MaxBitPosition) {
         val flag = Flags.rawFlagPickledOrder(i)
         if ((bits & flag) != 0L) {
@@ -162,7 +162,7 @@ trait HasFlags {
     else "private[" + pw + "]"
   }
   protected def calculateFlagString(basis: Long): String = {
-    val access = accessString
+    val access    = accessString
     val nonAccess = flagBitsToString(basis & ~AccessFlags)
 
     if (access == "") nonAccess

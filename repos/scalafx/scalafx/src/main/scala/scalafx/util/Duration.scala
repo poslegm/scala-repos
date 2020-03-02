@@ -42,14 +42,16 @@ object Duration {
 
   private[util] class DurationHelper(d: Double) {
     def ms = apply(d)
-    def s = new Duration(jfxu.Duration.seconds(d))
-    def m = new Duration(jfxu.Duration.minutes(d))
-    def h = new Duration(jfxu.Duration.hours(d))
+    def s  = new Duration(jfxu.Duration.seconds(d))
+    def m  = new Duration(jfxu.Duration.minutes(d))
+    def h  = new Duration(jfxu.Duration.hours(d))
   }
 
   def Indefinite = new Duration(jfxu.Duration.INDEFINITE)
-  @deprecated("Use Indefinite; INDEFINITE will be removed in a future release",
-              "8.0.60-R10")
+  @deprecated(
+    "Use Indefinite; INDEFINITE will be removed in a future release",
+    "8.0.60-R10"
+  )
   def INDEFINITE = Indefinite
 
   def One = new Duration(jfxu.Duration.ONE)
@@ -58,12 +60,16 @@ object Duration {
 
   def Unknown = new Duration(jfxu.Duration.UNKNOWN)
   @deprecated(
-      "Use Unknown; UNKNOWN will be removed in a future release", "8.0.60-R10")
+    "Use Unknown; UNKNOWN will be removed in a future release",
+    "8.0.60-R10"
+  )
   def UNKNOWN = Unknown
 
   def Zero = new Duration(jfxu.Duration.ZERO)
   @deprecated(
-      "Use Zero; ZERO will be removed in a future release", "8.0.60-R10")
+    "Use Zero; ZERO will be removed in a future release",
+    "8.0.60-R10"
+  )
   def ZERO = Zero
 }
 
@@ -76,7 +82,8 @@ object Duration {
   * @define D `Duration`
   */
 class Duration(override val delegate: jfxu.Duration)
-    extends SFXDelegate[jfxu.Duration] with Ordered[Duration] {
+    extends SFXDelegate[jfxu.Duration]
+    with Ordered[Duration] {
 
   /**
     * The constructor of $D
@@ -98,13 +105,13 @@ class Duration(override val delegate: jfxu.Duration)
   def /(d: jfxu.Duration) = delegate.toMillis / d.toMillis
 
   override def compare(that: Duration) = delegate.compareTo(that)
-  def <(d: jfxu.Duration) = delegate.lessThan(d)
-  def <=(d: jfxu.Duration) = delegate.lessThanOrEqualTo(d)
-  def >(d: jfxu.Duration) = delegate.greaterThan(d)
-  def >=(d: jfxu.Duration) = delegate.greaterThanOrEqualTo(d)
+  def <(d: jfxu.Duration)              = delegate.lessThan(d)
+  def <=(d: jfxu.Duration)             = delegate.lessThanOrEqualTo(d)
+  def >(d: jfxu.Duration)              = delegate.greaterThan(d)
+  def >=(d: jfxu.Duration)             = delegate.greaterThanOrEqualTo(d)
 
-  def ==(d: jfxu.Duration) = delegate.equals(d)
-  def !=(d: jfxu.Duration) = !delegate.equals(d)
+  def ==(d: jfxu.Duration)  = delegate.equals(d)
+  def !=(d: jfxu.Duration)  = !delegate.equals(d)
   def ===(d: jfxu.Duration) = delegate.equals(d)
   def =!=(d: jfxu.Duration) = !delegate.equals(d)
 

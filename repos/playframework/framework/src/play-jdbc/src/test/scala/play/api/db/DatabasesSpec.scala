@@ -14,14 +14,20 @@ object DatabasesSpec extends Specification {
 
     "create database" in new WithDatabase {
       val db = Databases(
-          name = "test", driver = "org.h2.Driver", url = "jdbc:h2:mem:test")
+        name = "test",
+        driver = "org.h2.Driver",
+        url = "jdbc:h2:mem:test"
+      )
       db.name must_== "test"
       db.url must_== "jdbc:h2:mem:test"
     }
 
     "create database with named arguments" in new WithDatabase {
       val db = Databases(
-          name = "test", driver = "org.h2.Driver", url = "jdbc:h2:mem:test")
+        name = "test",
+        driver = "org.h2.Driver",
+        url = "jdbc:h2:mem:test"
+      )
       db.name must_== "test"
       db.url must_== "jdbc:h2:mem:test"
     }
@@ -34,9 +40,11 @@ object DatabasesSpec extends Specification {
 
     "create database with log sql" in new WithDatabase {
       val config = Map("logSql" -> "true")
-      val db = Databases(driver = "org.h2.Driver",
-                         url = "jdbc:h2:mem:default",
-                         config = config)
+      val db = Databases(
+        driver = "org.h2.Driver",
+        url = "jdbc:h2:mem:default",
+        config = config
+      )
       db.dataSource must beAnInstanceOf[LogSqlDataSource]
     }
 
@@ -64,10 +72,11 @@ object DatabasesSpec extends Specification {
     }
 
     "supply connections" in new WithDatabase {
-      val db = Databases.inMemory(name = "test-connection")
+      val db         = Databases.inMemory(name = "test-connection")
       val connection = db.getConnection
       connection.createStatement.execute(
-          "create table test (id bigint not null, name varchar(255))")
+        "create table test (id bigint not null, name varchar(255))"
+      )
       connection.close()
     }
 
@@ -79,9 +88,11 @@ object DatabasesSpec extends Specification {
 
       try {
         c1.createStatement.execute(
-            "create table test (id bigint not null, name varchar(255))")
+          "create table test (id bigint not null, name varchar(255))"
+        )
         c1.createStatement.execute(
-            "insert into test (id, name) values (1, 'alice')")
+          "insert into test (id, name) values (1, 'alice')"
+        )
         val results = c2.createStatement.executeQuery("select * from test")
         results.next must beTrue
         results.next must beFalse
@@ -96,9 +107,11 @@ object DatabasesSpec extends Specification {
 
       db.withConnection { c =>
         c.createStatement.execute(
-            "create table test (id bigint not null, name varchar(255))")
+          "create table test (id bigint not null, name varchar(255))"
+        )
         c.createStatement.execute(
-            "insert into test (id, name) values (1, 'alice')")
+          "insert into test (id, name) values (1, 'alice')"
+        )
         val results = c.createStatement.executeQuery("select * from test")
         results.next must beTrue
         results.next must beFalse
@@ -110,9 +123,11 @@ object DatabasesSpec extends Specification {
 
       db.withTransaction { c =>
         c.createStatement.execute(
-            "create table test (id bigint not null, name varchar(255))")
+          "create table test (id bigint not null, name varchar(255))"
+        )
         c.createStatement.execute(
-            "insert into test (id, name) values (1, 'alice')")
+          "insert into test (id, name) values (1, 'alice')"
+        )
       }
 
       db.withConnection { c =>
@@ -123,7 +138,8 @@ object DatabasesSpec extends Specification {
 
       db.withTransaction { c =>
         c.createStatement.execute(
-            "insert into test (id, name) values (2, 'bob')")
+          "insert into test (id, name) values (2, 'bob')"
+        )
         throw new RuntimeException("boom")
         success
       } must throwA[RuntimeException](message = "boom")
@@ -146,9 +162,11 @@ object DatabasesSpec extends Specification {
 
     "not supply connections after shutdown a database with log sql" in {
       val config = Map("logSql" -> "true")
-      val db = Databases(driver = "org.h2.Driver",
-                         url = "jdbc:h2:mem:default",
-                         config = config)
+      val db = Databases(
+        driver = "org.h2.Driver",
+        url = "jdbc:h2:mem:default",
+        config = config
+      )
 
       db.getConnection.close()
       db.shutdown()

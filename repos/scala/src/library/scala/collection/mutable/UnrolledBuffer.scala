@@ -44,8 +44,9 @@ import scala.reflect.ClassTag
   */
 @SerialVersionUID(1L)
 @deprecatedInheritance(
-    "UnrolledBuffer is not designed to enable meaningful subclassing.",
-    "2.11.0")
+  "UnrolledBuffer is not designed to enable meaningful subclassing.",
+  "2.11.0"
+)
 class UnrolledBuffer[T](implicit val tag: ClassTag[T])
     extends scala.collection.mutable.AbstractBuffer[T]
     with scala.collection.mutable.Buffer[T]
@@ -57,13 +58,13 @@ class UnrolledBuffer[T](implicit val tag: ClassTag[T])
 
   @transient private var headptr = newUnrolled
   @transient private var lastptr = headptr
-  @transient private var sz = 0
+  @transient private var sz      = 0
 
-  private[collection] def headPtr = headptr
+  private[collection] def headPtr                      = headptr
   private[collection] def headPtr_=(head: Unrolled[T]) = headptr = head
-  private[collection] def lastPtr = lastptr
+  private[collection] def lastPtr                      = lastptr
   private[collection] def lastPtr_=(last: Unrolled[T]) = lastptr = last
-  private[collection] def size_=(s: Int) = sz = s
+  private[collection] def size_=(s: Int)               = sz = s
 
   protected[this] override def newBuilder = new UnrolledBuffer[T]
 
@@ -72,13 +73,13 @@ class UnrolledBuffer[T](implicit val tag: ClassTag[T])
   // The below would allow more flexible behavior without requiring inheritance
   // that is risky because all the important internals are private.
   // private var myLengthPolicy: Int => Int = x => x
-  // 
+  //
   // /** Specifies how the array lengths should vary.
-  //   * 
+  //   *
   //   *  By default,  `UnrolledBuffer` uses arrays of a fixed size.  A length
   //   *  policy can be given that changes this scheme to, for instance, an
   //   *  exponential growth.
-  //   * 
+  //   *
   //   *  @param nextLength   computes the length of the next array from the length of the latest one
   //   */
   // def setLengthPolicy(nextLength: Int => Int): Unit = { myLengthPolicy = nextLength }
@@ -122,7 +123,7 @@ class UnrolledBuffer[T](implicit val tag: ClassTag[T])
   }
 
   def iterator: Iterator[T] = new AbstractIterator[T] {
-    var pos: Int = -1
+    var pos: Int          = -1
     var node: Unrolled[T] = headptr
     scan()
 
@@ -206,7 +207,8 @@ object UnrolledBuffer extends ClassTagTraversableFactory[UnrolledBuffer] {
 
   /** $genericCanBuildFromInfo */
   implicit def canBuildFrom[T](
-      implicit t: ClassTag[T]): CanBuildFrom[Coll, T, UnrolledBuffer[T]] =
+      implicit t: ClassTag[T]
+  ): CanBuildFrom[Coll, T, UnrolledBuffer[T]] =
     new GenericCanBuildFrom[T]
   def newBuilder[T](implicit t: ClassTag[T]): Builder[T, UnrolledBuffer[T]] =
     new UnrolledBuffer[T]
@@ -218,11 +220,12 @@ object UnrolledBuffer extends ClassTagTraversableFactory[UnrolledBuffer] {
 
   /** Unrolled buffer node.
     */
-  class Unrolled[T : ClassTag] private[collection](
+  class Unrolled[T: ClassTag] private[collection] (
       var size: Int,
       var array: Array[T],
       var next: Unrolled[T],
-      val buff: UnrolledBuffer[T] = null) {
+      val buff: UnrolledBuffer[T] = null
+  ) {
     private[collection] def this() =
       this(0, new Array[T](unrolledlength), null, null)
     private[collection] def this(b: UnrolledBuffer[T]) =
@@ -243,10 +246,10 @@ object UnrolledBuffer extends ClassTagTraversableFactory[UnrolledBuffer] {
       }
     def foreach[U](f: T => U) {
       var unrolled = this
-      var i = 0
+      var i        = 0
       while (unrolled ne null) {
         val chunkarr = unrolled.array
-        val chunksz = unrolled.size
+        val chunksz  = unrolled.size
         while (i < chunksz) {
           val elem = chunkarr(i)
           f(elem)
@@ -309,7 +312,7 @@ object UnrolledBuffer extends ClassTagTraversableFactory[UnrolledBuffer] {
     }
     protected def tryMergeWithNext() =
       if (next != null && (size + next.size) <
-          (array.length * waterline / waterlineDelim)) {
+            (array.length * waterline / waterlineDelim)) {
         // copy the next array, then discard the next node
         Array.copy(next.array, 0, array, size, next.size)
         size = size + next.size
@@ -317,9 +320,11 @@ object UnrolledBuffer extends ClassTagTraversableFactory[UnrolledBuffer] {
         if (next eq null) true else false // checks if last node was thrown out
       } else false
 
-    @tailrec final def insertAll(idx: Int,
-                                 t: scala.collection.Traversable[T],
-                                 buffer: UnrolledBuffer[T]): Unit = {
+    @tailrec final def insertAll(
+        idx: Int,
+        t: scala.collection.Traversable[T],
+        buffer: UnrolledBuffer[T]
+    ): Unit = {
       if (idx < size) {
         // divide this node at the appropriate position and insert all into head
         // update new next
@@ -367,9 +372,11 @@ object UnrolledBuffer extends ClassTagTraversableFactory[UnrolledBuffer] {
     override def toString =
       array
         .take(size)
-        .mkString("Unrolled@%08x".format(System.identityHashCode(this)) + "[" +
-                  size + "/" + array.length + "](",
-                  ", ",
-                  ")") + " -> " + (if (next ne null) next.toString else "")
+        .mkString(
+          "Unrolled@%08x".format(System.identityHashCode(this)) + "[" +
+            size + "/" + array.length + "](",
+          ", ",
+          ")"
+        ) + " -> " + (if (next ne null) next.toString else "")
   }
 }

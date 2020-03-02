@@ -4,8 +4,8 @@ import scala.reflect.runtime.{currentMirror => cm}
 import scala.tools.reflect.{ToolBox}
 
 object Test extends App {
-  val toolBox = cm.mkToolBox()
-  val x = 21
+  val toolBox      = cm.mkToolBox()
+  val x            = 21
   val runtimeMacro = q"""object RuntimeMacro {
       import scala.reflect.macros.whitebox.Context
       import scala.language.experimental.macros
@@ -17,6 +17,6 @@ object Test extends App {
         c.Expr[Int](q"$$x + $$y")
       }
     }"""
-  val s = toolBox.define(runtimeMacro)
+  val s            = toolBox.define(runtimeMacro)
   println(toolBox.eval(q"$s.add(21)"))
 }

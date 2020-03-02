@@ -34,7 +34,7 @@ case class MeanAndVariance(mean: Double, variance: Double, count: Long) {
   def stdDev: Double = math.sqrt(variance)
 
   def +(other: MeanAndVariance): MeanAndVariance = {
-    val d = other.mean - this.mean
+    val d       = other.mean - this.mean
     val newMean = this.mean + d * other.count / (other.count + this.count)
 
     val m2a = this.variance * (this.count - 1)
@@ -42,7 +42,7 @@ case class MeanAndVariance(mean: Double, variance: Double, count: Long) {
 
     val m2x =
       m2a + m2b + d * d * (other.count * this.count) /
-      (other.count + this.count)
+        (other.count + this.count)
 
     val newVariance = m2x / (other.count + this.count - 1)
 
@@ -54,12 +54,12 @@ object accumulateAndCount extends UFunc {
   @expand
   implicit def reduce[T, @expand.args(Double, Complex, Float) Scalar](
       implicit iter: CanTraverseValues[T, Scalar],
-      @expand.sequence[Scalar](0.0, Complex.zero, 0.0f) zero: Scalar)
-    : Impl[T, (Scalar, Int)] = new Impl[T, (Scalar, Int)] {
+      @expand.sequence[Scalar](0.0, Complex.zero, 0.0f) zero: Scalar
+  ): Impl[T, (Scalar, Int)] = new Impl[T, (Scalar, Int)] {
     def apply(v: T): (Scalar, Int) = {
       val visit = new ValuesVisitor[Scalar] {
         var sum = zero
-        var n = 0
+        var n   = 0
         def visit(a: Scalar): Unit = {
           sum += a
           n += 1
@@ -86,11 +86,12 @@ trait DescriptiveStats {
     @expand
     implicit def reduce[@expand.args(Float, Double, Complex) S, T](
         implicit iter: CanTraverseValues[T, S],
-        @expand.sequence[S](0f, 0d, Complex.zero) z: S): Impl[T, S] =
+        @expand.sequence[S](0f, 0d, Complex.zero) z: S
+    ): Impl[T, S] =
       new Impl[T, S] {
         def apply(v: T): S = {
           val visit = new ValuesVisitor[S] {
-            var mu: S = z
+            var mu: S   = z
             var n: Long = 0
 
             def visit(y: S): Unit = {
@@ -119,12 +120,13 @@ trait DescriptiveStats {
   object meanAndVariance extends UFunc {
     @expand
     implicit def reduce[@expand.args(Float, Double) S, T](
-        implicit iter: CanTraverseValues[T, S]): Impl[T, MeanAndVariance] =
+        implicit iter: CanTraverseValues[T, S]
+    ): Impl[T, MeanAndVariance] =
       new Impl[T, MeanAndVariance] {
         def apply(v: T): MeanAndVariance = {
           val visit = new ValuesVisitor[S] {
-            var mu: S = 0
-            var s: S = 0
+            var mu: S   = 0
+            var s: S    = 0
             var n: Long = 0
 
             def visit(y: S): Unit = {
@@ -155,8 +157,8 @@ trait DescriptiveStats {
     */
   object variance extends UFunc {
     implicit def reduceDouble[T](
-        implicit mv: meanAndVariance.Impl[T, MeanAndVariance])
-      : Impl[T, Double] = new Impl[T, Double] {
+        implicit mv: meanAndVariance.Impl[T, MeanAndVariance]
+    ): Impl[T, Double] = new Impl[T, Double] {
       def apply(v: T): Double = mv(v).variance
     }
   }
@@ -166,7 +168,8 @@ trait DescriptiveStats {
     */
   object stddev extends UFunc {
     implicit def reduceDouble[T](
-        implicit vari: variance.Impl[T, Double]): Impl[T, Double] =
+        implicit vari: variance.Impl[T, Double]
+    ): Impl[T, Double] =
       new Impl[T, Double] {
         def apply(v: T): Double = scala.math.sqrt(vari(v))
       }
@@ -178,46 +181,46 @@ trait DescriptiveStats {
   object median extends UFunc {
 
     @expand
-    implicit def reduce[@expand.args(Int, Long, Double, Float) T]: Impl[
-        DenseVector[T], T] =
+    implicit def reduce[@expand.args(Int, Long, Double, Float) T]
+        : Impl[DenseVector[T], T] =
       new Impl[DenseVector[T], T] {
         def apply(v: DenseVector[T]): T = {
           if (isOdd(v.length)) {
             quickSelect(v.toArray, (v.length - 1) / 2)
           } else {
-            val tempArray: Array[T] = v.toArray.clone()
+            val tempArray: Array[T]  = v.toArray.clone()
             val secondMedianPosition = v.length / 2
             //quickSelectImpl does not clone the array, allowing us to access intermediate semi-sorted results for reuse in the second calculation
             (quickSelectImpl(tempArray, secondMedianPosition) +
-                quickSelectImpl(tempArray, secondMedianPosition - 1)) / 2
+              quickSelectImpl(tempArray, secondMedianPosition - 1)) / 2
           }
         }
       }
 
     @expand
-    implicit def reduceSeq[@expand.args(Int, Long, Double, Float) T]: Impl[
-        Seq[T], T] =
+    implicit def reduceSeq[@expand.args(Int, Long, Double, Float) T]
+        : Impl[Seq[T], T] =
       new Impl[Seq[T], T] {
         def apply(v: Seq[T]): T = { median(DenseVector(v.toArray)) }
       }
 
     @expand
-    implicit def reduceM[@expand.args(Int, Long, Double) T]: Impl[
-        DenseMatrix[T], Double] =
+    implicit def reduceM[@expand.args(Int, Long, Double) T]
+        : Impl[DenseMatrix[T], Double] =
       new Impl[DenseMatrix[T], Double] {
         def apply(m: DenseMatrix[T]) = median(m.toDenseVector)
       }
   }
 
   object covmat extends UFunc {
-    implicit val matrixCovariance: Impl[
-        DenseMatrix[Double], DenseMatrix[Double]] =
+    implicit val matrixCovariance
+        : Impl[DenseMatrix[Double], DenseMatrix[Double]] =
       new Impl[DenseMatrix[Double], DenseMatrix[Double]] {
         def apply(data: DenseMatrix[Double]) = cov(data)
       }
 
-    implicit val sequenceCovariance: Impl[
-        Seq[DenseVector[Double]], DenseMatrix[Double]] =
+    implicit val sequenceCovariance
+        : Impl[Seq[DenseVector[Double]], DenseMatrix[Double]] =
       new Impl[Seq[DenseVector[Double]], DenseMatrix[Double]] {
         /*
          * We roughly follow the two_pass_covariance algorithm from here: http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Covariance
@@ -225,45 +228,40 @@ trait DescriptiveStats {
          */
         def apply(data: Seq[DenseVector[Double]]): DenseMatrix[Double] = {
           data.headOption
-            .map(firstRow =>
-                  {
-                val result =
-                  new DenseMatrix[Double](firstRow.size, firstRow.size)
-                val dataSize = firstRow.size
-                //First compute the mean
-                var mean = firstRow.copy
-                var numRows: Long = 1
-                data.tail.foreach(x =>
-                      {
-                    numRows += 1
-                    if (mean.size != x.size) {
-                      throw new IllegalArgumentException(
-                          "Attempting to compute covariance of dataset where elements have different sizes")
-                    }
-                    cfor(0)(i => i < firstRow.size, i => i + 1)(i =>
-                          {
-                        mean(i) = mean(i) + x(i)
-                    })
-                })
-                val numRowsD = numRows.toDouble
-                mean = mean / numRowsD
-
-                //Second compute the covariance
-                data.foreach {
-                  x =>
-                    cfor(0)(i => i < dataSize, i => i + 1)(i =>
-                          {
-                        val a = x(i) - mean(i)
-                        cfor(0)(j => j < dataSize, j => j + 1)(j =>
-                              {
-                            val b = x(j) - mean(j)
-                            result(i, j) = result(i, j) +
-                            (a * b / (numRowsD - 1)) //Use
-                        })
-                    })
+            .map(firstRow => {
+              val result =
+                new DenseMatrix[Double](firstRow.size, firstRow.size)
+              val dataSize = firstRow.size
+              //First compute the mean
+              var mean          = firstRow.copy
+              var numRows: Long = 1
+              data.tail.foreach(x => {
+                numRows += 1
+                if (mean.size != x.size) {
+                  throw new IllegalArgumentException(
+                    "Attempting to compute covariance of dataset where elements have different sizes"
+                  )
                 }
+                cfor(0)(i => i < firstRow.size, i => i + 1)(i => {
+                  mean(i) = mean(i) + x(i)
+                })
+              })
+              val numRowsD = numRows.toDouble
+              mean = mean / numRowsD
 
-                result
+              //Second compute the covariance
+              data.foreach { x =>
+                cfor(0)(i => i < dataSize, i => i + 1)(i => {
+                  val a = x(i) - mean(i)
+                  cfor(0)(j => j < dataSize, j => j + 1)(j => {
+                    val b = x(j) - mean(j)
+                    result(i, j) = result(i, j) +
+                      (a * b / (numRowsD - 1)) //Use
+                  })
+                })
+              }
+
+              result
             })
             .getOrElse(new DenseMatrix[Double](0, 0))
         }
@@ -272,27 +270,23 @@ trait DescriptiveStats {
 
   object corrcoeff extends UFunc {
     implicit def matrixCorrelation[T](
-        implicit covarianceCalculator: covmat.Impl[T, DenseMatrix[Double]])
-      : Impl[T, DenseMatrix[Double]] = new Impl[T, DenseMatrix[Double]] {
+        implicit covarianceCalculator: covmat.Impl[T, DenseMatrix[Double]]
+    ): Impl[T, DenseMatrix[Double]] = new Impl[T, DenseMatrix[Double]] {
       def apply(data: T) = {
         val covariance = covarianceCalculator(data)
-        val d = new Array[Double](covariance.rows)
-        cfor(0)(i => i < covariance.rows, i => i + 1)(i =>
-              {
-            d(i) = math.sqrt(covariance(i, i))
+        val d          = new Array[Double](covariance.rows)
+        cfor(0)(i => i < covariance.rows, i => i + 1)(i => {
+          d(i) = math.sqrt(covariance(i, i))
         })
 
-        cfor(0)(i => i < covariance.rows, i => i + 1)(
-            i =>
-              {
-            cfor(0)(j => j < covariance.rows, j => j + 1)(j =>
-                  {
-                if (i != j) {
-                  covariance(i, j) /= (d(i) * d(j))
-                } else {
-                  covariance(i, j) = 1.0
-                }
-            })
+        cfor(0)(i => i < covariance.rows, i => i + 1)(i => {
+          cfor(0)(j => j < covariance.rows, j => j + 1)(j => {
+            if (i != j) {
+              covariance(i, j) /= (d(i) * d(j))
+            } else {
+              covariance(i, j) = 1.0
+            }
+          })
         })
         covariance
       }
@@ -303,8 +297,8 @@ trait DescriptiveStats {
     @expand
     implicit def reduce[T, @expand.args(Double, Complex, Float, Int) Scalar](
         implicit iter: CanTraverseValues[T, Scalar],
-        @expand.sequence[Scalar](Double.NaN, Complex.nan, 0.0f, 0) initialValue: Scalar)
-      : Impl[T, ModeResult[Scalar]] =
+        @expand.sequence[Scalar](Double.NaN, Complex.nan, 0.0f, 0) initialValue: Scalar
+    ): Impl[T, ModeResult[Scalar]] =
       new Impl[T, ModeResult[Scalar]] {
         def apply(v: T): ModeResult[Scalar] = {
           val visitor = new ModeVisitor[Scalar](initialValue)
@@ -315,12 +309,12 @@ trait DescriptiveStats {
   }
 
   private class ModeVisitor[@expand.args(Double, Complex, Float, Int) Scalar](
-      initialValue: Scalar)
-      extends ValuesVisitor[Scalar] {
+      initialValue: Scalar
+  ) extends ValuesVisitor[Scalar] {
 
     val frequencyCounts = mutable.Map[Scalar, Int]()
-    var maxFrequency = 0
-    var runningMode = initialValue
+    var maxFrequency    = 0
+    var runningMode     = initialValue
 
     def visit(value: Scalar): Unit = recordOccurrences(value, 1)
 
@@ -348,8 +342,8 @@ trait DescriptiveStats {
   object digitize extends UFunc {
 
     @expand
-    implicit def arrayVersion[@expand.args(Int, Long, Double, Float) T]: Impl2[
-        Array[T], Array[Double], Array[Int]] =
+    implicit def arrayVersion[@expand.args(Int, Long, Double, Float) T]
+        : Impl2[Array[T], Array[Double], Array[Int]] =
       new Impl2[Array[T], Array[Double], Array[Int]] {
         def apply(x: Array[T], bins: Array[Double]): Array[Int] = {
           val vecResult = digitize(DenseVector(x), DenseVector(bins))
@@ -358,34 +352,34 @@ trait DescriptiveStats {
       }
 
     @expand
-    implicit def vecVersion[@expand.args(Int, Long, Double, Float) T]: Impl2[
-        DenseVector[T], DenseVector[Double], DenseVector[Int]] =
+    implicit def vecVersion[@expand.args(Int, Long, Double, Float) T]
+        : Impl2[DenseVector[T], DenseVector[Double], DenseVector[Int]] =
       new Impl2[DenseVector[T], DenseVector[Double], DenseVector[Int]] {
         def apply(
-            x: DenseVector[T], bins: DenseVector[Double]): DenseVector[Int] = {
+            x: DenseVector[T],
+            bins: DenseVector[Double]
+        ): DenseVector[Int] = {
           errorCheckBins(bins)
           val result = new DenseVector[Int](x.length)
-          cfor(0)(i => i < x.length, i => i + 1)(i =>
-                {
-              result(i) = bins.length
-              var j = bins.length - 1
-              while (j >= 0) {
-                if (x(i) <= bins(j)) {
-                  result(i) = j
-                } else {
-                  j = -1
-                }
-                j -= 1
+          cfor(0)(i => i < x.length, i => i + 1)(i => {
+            result(i) = bins.length
+            var j = bins.length - 1
+            while (j >= 0) {
+              if (x(i) <= bins(j)) {
+                result(i) = j
+              } else {
+                j = -1
               }
+              j -= 1
+            }
           })
           result
         }
       }
 
     private def errorCheckBins(bins: DenseVector[Double]) {
-      cfor(0)(i => i < bins.length - 1, i => i + 1)(i =>
-            {
-          require(bins(i) < bins(i + 1))
+      cfor(0)(i => i < bins.length - 1, i => i + 1)(i => {
+        require(bins(i) < bins(i + 1))
       })
     }
   }
@@ -408,24 +402,26 @@ trait DescriptiveStats {
     import breeze.linalg._
 
     @expand
-    implicit def vecVersion[@expand.args(Double, Complex, Float) T]: Impl2[
-        DenseVector[Int], DenseVector[T], DenseVector[T]] =
+    implicit def vecVersion[@expand.args(Double, Complex, Float) T]
+        : Impl2[DenseVector[Int], DenseVector[T], DenseVector[T]] =
       new Impl2[DenseVector[Int], DenseVector[T], DenseVector[T]] {
         def apply(
-            x: DenseVector[Int], weights: DenseVector[T]): DenseVector[T] = {
+            x: DenseVector[Int],
+            weights: DenseVector[T]
+        ): DenseVector[T] = {
           require(min(x) >= 0)
           require(x.length == weights.length)
           val result = new DenseVector[T](max(x) + 1)
-          cfor(0)(i => i < x.length, i => i + 1)(i =>
-                {
-              result(x(i)) = result(x(i)) + weights(i)
+          cfor(0)(i => i < x.length, i => i + 1)(i => {
+            result(x(i)) = result(x(i)) + weights(i)
           })
           result
         }
       }
 
     implicit def reduce[T](
-        implicit iter: CanTraverseValues[T, Int]): Impl[T, DenseVector[Int]] =
+        implicit iter: CanTraverseValues[T, Int]
+    ): Impl[T, DenseVector[Int]] =
       new Impl[T, DenseVector[Int]] {
         def apply(x: T): DenseVector[Int] = {
           require(min(x) >= 0)
@@ -454,17 +450,18 @@ trait DescriptiveStats {
       import breeze.linalg._
 
       @expand
-      implicit def vecVersion[@expand.args(Double, Complex, Float) T]: Impl2[
-          DenseVector[Int], DenseVector[T], SparseVector[T]] =
+      implicit def vecVersion[@expand.args(Double, Complex, Float) T]
+          : Impl2[DenseVector[Int], DenseVector[T], SparseVector[T]] =
         new Impl2[DenseVector[Int], DenseVector[T], SparseVector[T]] {
-          def apply(x: DenseVector[Int],
-                    weights: DenseVector[T]): SparseVector[T] = {
+          def apply(
+              x: DenseVector[Int],
+              weights: DenseVector[T]
+          ): SparseVector[T] = {
             require(min(x) >= 0)
             require(x.length == weights.length)
             val counter = Counter[Int, T]()
-            cfor(0)(i => i < x.length, i => i + 1)(i =>
-                  {
-                counter.update(x(i), counter(x(i)) + weights(i))
+            cfor(0)(i => i < x.length, i => i + 1)(i => {
+              counter.update(x(i), counter(x(i)) + weights(i))
             })
             val builder = new VectorBuilder[T](max(x) + 1)
             counter.iterator.foreach(x => builder.add(x._1, x._2))
@@ -472,8 +469,9 @@ trait DescriptiveStats {
           }
         }
 
-      implicit def reduce[T](implicit iter: CanTraverseValues[T, Int])
-        : Impl[T, SparseVector[Int]] =
+      implicit def reduce[T](
+          implicit iter: CanTraverseValues[T, Int]
+      ): Impl[T, SparseVector[Int]] =
         new Impl[T, SparseVector[Int]] {
           def apply(x: T): SparseVector[Int] = {
             require(min(x) >= 0)
@@ -527,21 +525,22 @@ object DescriptiveStats {
     * </p>
     */
   def meanAndCov[T](it1: TraversableOnce[T], it2: TraversableOnce[T])(
-      implicit frac: Fractional[T]) = {
+      implicit frac: Fractional[T]
+  ) = {
     implicit def t(it: TraversableOnce[T]) =
       it.toIterable //convert to an iterable for zip operation
     import frac.mkNumericOps
     //mu1(n-1), mu2(n-1), Cov(n-1), n-1
     val (mu1, mu2, c, n) = (it1, it2).zipped
       .foldLeft((frac.zero, frac.zero, frac.zero, frac.zero)) { (acc, y) =>
-      val (oldMu1, oldMu2, oldC, oldN) = acc
-      val newN = oldN + frac.fromInt(1)
-      val newMu1 = oldMu1 + ((y._1 - oldMu1) / newN)
-      val newMu2 = oldMu2 + ((y._2 - oldMu2) / newN)
-      val newC =
-        oldC + ((y._1 - oldMu1) * (y._2 - newMu2)) //compute covariance in single pass
-      (newMu1, newMu2, newC, newN)
-    }
+        val (oldMu1, oldMu2, oldC, oldN) = acc
+        val newN                         = oldN + frac.fromInt(1)
+        val newMu1                       = oldMu1 + ((y._1 - oldMu1) / newN)
+        val newMu2                       = oldMu2 + ((y._2 - oldMu2) / newN)
+        val newC =
+          oldC + ((y._1 - oldMu1) * (y._2 - newMu2)) //compute covariance in single pass
+        (newMu1, newMu2, newC, newN)
+      }
     if (n == 1) (mu1, mu2, 0) else (mu1, mu2, c / (n - frac.fromInt(1)))
   }
 

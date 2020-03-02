@@ -26,18 +26,19 @@ object quantity {
       Duration(a.getValue.longValue, translateUnit(a.getUnit))
 
     def translateUnit(unit: CommonTime): TimeUnit = unit match {
-      case CommonTime.DAYS => TimeUnit.DAYS
-      case CommonTime.HOURS => TimeUnit.HOURS
-      case CommonTime.MINUTES => TimeUnit.MINUTES
+      case CommonTime.DAYS         => TimeUnit.DAYS
+      case CommonTime.HOURS        => TimeUnit.HOURS
+      case CommonTime.MINUTES      => TimeUnit.MINUTES
       case CommonTime.MICROSECONDS => TimeUnit.MICROSECONDS
       case CommonTime.MILLISECONDS => TimeUnit.MILLISECONDS
-      case CommonTime.NANOSECONDS => TimeUnit.NANOSECONDS
-      case CommonTime.SECONDS => TimeUnit.SECONDS
+      case CommonTime.NANOSECONDS  => TimeUnit.NANOSECONDS
+      case CommonTime.SECONDS      => TimeUnit.SECONDS
     }
   }
 
   /** Implicit conversion of Amount to DurationAmountAdapter */
   implicit def commonDuration(
-      a: Amount[java.lang.Long, CommonTime]): DurationAmountAdapter =
+      a: Amount[java.lang.Long, CommonTime]
+  ): DurationAmountAdapter =
     new DurationAmountAdapter(a)
 }

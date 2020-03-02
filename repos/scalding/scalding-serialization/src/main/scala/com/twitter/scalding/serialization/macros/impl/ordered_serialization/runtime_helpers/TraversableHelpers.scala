@@ -22,12 +22,13 @@ object TraversableHelpers {
   import com.twitter.scalding.serialization.JavaStreamEnrichments._
 
   final def rawCompare(inputStreamA: InputStream, inputStreamB: InputStream)(
-      consume: (InputStream, InputStream) => Int): Int = {
+      consume: (InputStream, InputStream) => Int
+  ): Int = {
     val lenA = inputStreamA.readPosVarInt
     val lenB = inputStreamB.readPosVarInt
 
-    val minLen = math.min(lenA, lenB)
-    var incr = 0
+    val minLen  = math.min(lenA, lenB)
+    var incr    = 0
     var curIncr = 0
     while (incr < minLen && curIncr == 0) {
       curIncr = consume(inputStreamA, inputStreamB)
@@ -39,7 +40,8 @@ object TraversableHelpers {
   }
 
   final def iteratorCompare[T](iteratorA: Iterator[T], iteratorB: Iterator[T])(
-      implicit ord: Ordering[T]): Int = {
+      implicit ord: Ordering[T]
+  ): Int = {
     @annotation.tailrec
     def result: Int =
       if (iteratorA.isEmpty) {
@@ -58,7 +60,8 @@ object TraversableHelpers {
   }
 
   final def iteratorEquiv[T](iteratorA: Iterator[T], iteratorB: Iterator[T])(
-      implicit eq: Equiv[T]): Boolean = {
+      implicit eq: Equiv[T]
+  ): Boolean = {
     @annotation.tailrec
     def result: Boolean =
       if (iteratorA.isEmpty) iteratorB.isEmpty
@@ -79,27 +82,32 @@ object TraversableHelpers {
     * sort case
     */
   final def sortedCompare[T](travA: Iterable[T], travB: Iterable[T])(
-      implicit ord: Ordering[T]): Int = {
-    def compare(startA: Int,
-                endA: Int,
-                a: Buffer[T],
-                startB: Int,
-                endB: Int,
-                b: Buffer[T]): Int =
+      implicit ord: Ordering[T]
+  ): Int = {
+    def compare(
+        startA: Int,
+        endA: Int,
+        a: Buffer[T],
+        startB: Int,
+        endB: Int,
+        b: Buffer[T]
+    ): Int =
       if (startA == endA) {
-        if (startB == endB) 0 // both empty
-        else -1 // empty is smaller than non-empty
+        if (startB == endB) 0      // both empty
+        else -1                    // empty is smaller than non-empty
       } else if (startB == endB) 1 // non-empty is bigger than empty
       else {
         @annotation.tailrec
-        def partition(pivot: T,
-                      pivotStart: Int,
-                      pivotEnd: Int,
-                      endX: Int,
-                      x: Buffer[T]): (Int, Int) = {
+        def partition(
+            pivot: T,
+            pivotStart: Int,
+            pivotEnd: Int,
+            endX: Int,
+            x: Buffer[T]
+        ): (Int, Int) = {
           if (pivotEnd >= endX) (pivotStart, pivotEnd)
           else {
-            val t = x(pivotEnd)
+            val t   = x(pivotEnd)
             val cmp = ord.compare(t, pivot)
             if (cmp == 0) {
               // the pivot section grows by 1 to include test
@@ -107,7 +115,7 @@ object TraversableHelpers {
             } else if (cmp > 0) {
               // test is bigger, swap it with the end and move the end down:
               val newEnd = endX - 1
-              val end = x(newEnd)
+              val end    = x(newEnd)
               x(newEnd) = t
               x(pivotEnd) = end
               // now try again:
@@ -122,7 +130,7 @@ object TraversableHelpers {
             }
           }
         }
-        val pivot = a(startA)
+        val pivot      = a(startA)
         val (aps, ape) = partition(pivot, startA, startA + 1, endA, a)
         val (bps, bpe) = partition(pivot, startB, startB, endB, b)
 
@@ -131,7 +139,7 @@ object TraversableHelpers {
         if (asublen != bsublen) {
           // comparing to the longer is enough
           // because one of them will then include pivots which are larger
-          val longer = math.max(asublen, bsublen)
+          val longer                 = math.max(asublen, bsublen)
           def extend(s: Int, e: Int) = math.min(s + longer, e)
 
           if (asublen != 0) {
@@ -139,24 +147,28 @@ object TraversableHelpers {
              * We can safely recurse because startA does not hold pivot, so we won't
              * do the same algorithm
              */
-            compare(startA,
-                    extend(startA, endA),
-                    a,
-                    startB,
-                    extend(startB, endB),
-                    b)
+            compare(
+              startA,
+              extend(startA, endA),
+              a,
+              startB,
+              extend(startB, endB),
+              b
+            )
           } else {
             /*
              * We know that startB does not have the pivot, because if it did, bsublen == 0
              * and both are equal, which is not true in this branch.
              * we can reverse the recursion to ensure we get a different pivot
              */
-            -compare(startB,
-                     extend(startB, endB),
-                     b,
-                     startA,
-                     extend(startA, endA),
-                     a)
+            -compare(
+              startB,
+              extend(startB, endB),
+              b,
+              startA,
+              extend(startA, endA),
+              a
+            )
           }
         } else {
           // the prefixes are the same size
@@ -165,11 +177,11 @@ object TraversableHelpers {
           else {
             // we need to look into the pivot area. We don't need to check
             // for equality on the overlapped pivot range
-            val apsize = ape - aps
-            val bpsize = bpe - bps
+            val apsize   = ape - aps
+            val bpsize   = bpe - bps
             val minpsize = math.min(apsize, bpsize)
-            val acheck = aps + minpsize
-            val bcheck = bps + minpsize
+            val acheck   = aps + minpsize
+            val bcheck   = bps + minpsize
             if (apsize != bpsize && acheck < endA && bcheck < endB) {
               // exactly one of them has a pivot value
               ord.compare(a(acheck), b(bcheck))

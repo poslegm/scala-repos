@@ -31,7 +31,7 @@ object ThrottledHandler {
     * Generates a HandlerFactory that returns a ThrottledHandler
     * NOTE: ThrottledHandler emits plain-text messages regarding any throttling it does.
     * This means that using it to wrap any logger which you expect to produce easily parseable,
-    * well-structured logs (as opposed to just plain text logs) will break your format. 
+    * well-structured logs (as opposed to just plain text logs) will break your format.
     * Specifically, wrapping ScribeHandler with ThrottledHandler is usually a bug.
     *
     * @param handler
@@ -54,7 +54,7 @@ object ThrottledHandler {
 /**
   * NOTE: ThrottledHandler emits plain-text messages regarding any throttling it does.
   * This means that using it to wrap any logger which you expect to produce easily parseable,
-  * well-structured logs (as opposed to just plain text logs) will break your format. 
+  * well-structured logs (as opposed to just plain text logs) will break your format.
   * Specifically, DO NOT wrap Thrift Scribing loggers with ThrottledHandler.
   * @param handler
   * Wrapped handler.
@@ -70,12 +70,11 @@ class ThrottledHandler(
     handler: Handler,
     val duration: Duration,
     val maxToDisplay: Int
-)
-    extends ProxyHandler(handler) {
+) extends ProxyHandler(handler) {
 
   private class Throttle(startTime: Time, name: String, level: javalog.Level) {
     private[this] var expired = false
-    private[this] var count = 0
+    private[this] var count   = 0
 
     override def toString =
       "Throttle: startTime=" + startTime + " count=" + count
@@ -107,15 +106,16 @@ class ThrottledHandler(
 
     private[this] def publishSwallowed() {
       val throttledRecord = new javalog.LogRecord(
-          level,
-          "(swallowed %d repeating messages)".format(count - maxToDisplay))
+        level,
+        "(swallowed %d repeating messages)".format(count - maxToDisplay)
+      )
       throttledRecord.setLoggerName(name)
       doPublish(throttledRecord)
     }
   }
 
   private val lastFlushCheck = new AtomicReference(Time.epoch)
-  private val throttleMap = new mutable.HashMap[String, Throttle]
+  private val throttleMap    = new mutable.HashMap[String, Throttle]
 
   @deprecated("Use flushThrottled() instead", "5.3.13")
   def reset() {
@@ -139,7 +139,7 @@ class ThrottledHandler(
     * attach an exception and stack trace.
     */
   override def publish(record: javalog.LogRecord) {
-    val now = Time.now
+    val now  = Time.now
     val last = lastFlushCheck.get
 
     if (now - last > 1.second && lastFlushCheck.compareAndSet(last, now)) {
@@ -148,14 +148,14 @@ class ThrottledHandler(
 
     val key = record match {
       case r: LazyLogRecordUnformatted => r.preformatted
-      case _ => record.getMessage
+      case _                           => record.getMessage
     }
     @tailrec
     def tryPublish() {
       val throttle = synchronized {
         throttleMap.getOrElseUpdate(
-            key,
-            new Throttle(now, record.getLoggerName(), record.getLevel())
+          key,
+          new Throttle(now, record.getLoggerName(), record.getLevel())
         )
       }
 

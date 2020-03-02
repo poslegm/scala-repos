@@ -16,12 +16,13 @@ import akka.actor.PoisonPill
 
 object AttemptSysMsgRedeliveryMultiJvmSpec extends MultiNodeConfig {
 
-  val first = role("first")
+  val first  = role("first")
   val second = role("second")
-  val third = role("third")
+  val third  = role("third")
 
   commonConfig(
-      debugConfig(on = false).withFallback(MultiNodeClusterSpec.clusterConfig))
+    debugConfig(on = false).withFallback(MultiNodeClusterSpec.clusterConfig)
+  )
 
   testTransport(on = true)
 
@@ -38,7 +39,9 @@ class AttemptSysMsgRedeliveryMultiJvmNode3 extends AttemptSysMsgRedeliverySpec
 
 class AttemptSysMsgRedeliverySpec
     extends MultiNodeSpec(AttemptSysMsgRedeliveryMultiJvmSpec)
-    with MultiNodeClusterSpec with ImplicitSender with DefaultTimeout {
+    with MultiNodeClusterSpec
+    with ImplicitSender
+    with DefaultTimeout {
   import AttemptSysMsgRedeliveryMultiJvmSpec._
 
   "AttemptSysMsgRedelivery" must {

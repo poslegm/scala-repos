@@ -29,19 +29,21 @@ import org.apache.spark.internal.Logging
 private[spark] object SparkCuratorUtil extends Logging {
 
   private val ZK_CONNECTION_TIMEOUT_MILLIS = 15000
-  private val ZK_SESSION_TIMEOUT_MILLIS = 60000
-  private val RETRY_WAIT_MILLIS = 5000
-  private val MAX_RECONNECT_ATTEMPTS = 3
+  private val ZK_SESSION_TIMEOUT_MILLIS    = 60000
+  private val RETRY_WAIT_MILLIS            = 5000
+  private val MAX_RECONNECT_ATTEMPTS       = 3
 
   def newClient(
       conf: SparkConf,
-      zkUrlConf: String = "spark.deploy.zookeeper.url"): CuratorFramework = {
+      zkUrlConf: String = "spark.deploy.zookeeper.url"
+  ): CuratorFramework = {
     val ZK_URL = conf.get(zkUrlConf)
     val zk = CuratorFrameworkFactory.newClient(
-        ZK_URL,
-        ZK_SESSION_TIMEOUT_MILLIS,
-        ZK_CONNECTION_TIMEOUT_MILLIS,
-        new ExponentialBackoffRetry(RETRY_WAIT_MILLIS, MAX_RECONNECT_ATTEMPTS))
+      ZK_URL,
+      ZK_SESSION_TIMEOUT_MILLIS,
+      ZK_CONNECTION_TIMEOUT_MILLIS,
+      new ExponentialBackoffRetry(RETRY_WAIT_MILLIS, MAX_RECONNECT_ATTEMPTS)
+    )
     zk.start()
     zk
   }

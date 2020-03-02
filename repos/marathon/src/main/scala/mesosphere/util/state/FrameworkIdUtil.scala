@@ -12,7 +12,10 @@ import scala.concurrent.{Await, Future}
   * Utility class for keeping track of a framework ID
   */
 class FrameworkIdUtil(
-    mStore: EntityStore[FrameworkId], timeout: Duration, key: String = "id") {
+    mStore: EntityStore[FrameworkId],
+    timeout: Duration,
+    key: String = "id"
+) {
 
   private[this] val log = LoggerFactory.getLogger(getClass)
 
@@ -22,9 +25,7 @@ class FrameworkIdUtil(
   def store(proto: FrameworkID): FrameworkId = {
     log.info(s"Store framework id: $proto")
     val frameworkId = FrameworkId(proto.getValue)
-    Await.result(mStore.modify(key) { _ =>
-      frameworkId
-    }, timeout)
+    Await.result(mStore.modify(key) { _ => frameworkId }, timeout)
   }
   def expunge(): Future[Boolean] = {
     log.info(s"Expunge framework id!")

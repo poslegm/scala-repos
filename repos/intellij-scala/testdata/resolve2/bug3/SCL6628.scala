@@ -1,6 +1,6 @@
 object SCL6628 {
   def foo(x: Int => Any) = 123
-  def foo(x: Int) = 444
+  def foo(x: Int)        = 444
 
   case class A(x: Int)
 

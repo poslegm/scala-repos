@@ -19,10 +19,10 @@ object ImplicitProblem {
 
   def main(args: Array[String]) {
     println(depth(nullval[M[Int]])) // (1) this works
-    println(nullval[M[Int]].eval) // (2) this works
+    println(nullval[M[Int]].eval)   // (2) this works
 
     type m = M[Int]
     println(depth(nullval[m])) // (3) this doesn't compile on 2.7.RC1
-    println(nullval[m].eval) // (4) this works
+    println(nullval[m].eval)   // (4) this works
   }
 }

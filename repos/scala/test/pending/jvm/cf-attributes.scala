@@ -76,8 +76,10 @@ trait Test1 {
     for (c <- cls.getDeclaredClasses) {
       mods = AccessFlags.asString(c.getModifiers)
       kind = if (c.isInterface) "interface" else "class"
-      println("  " + mods + kind + " " + c.getName + " of class " +
-          c.getEnclosingClass.getName)
+      println(
+        "  " + mods + kind + " " + c.getName + " of class " +
+          c.getEnclosingClass.getName
+      )
     }
   }
   def printClass(cls: Class[_]) {
@@ -99,23 +101,25 @@ trait Test2 {
   //   in.close()
   // }
   def printClass(name: String) {
-    try { printClass(Class.forName(name)) } catch {
+    try { printClass(Class.forName(name)) }
+    catch {
       case e: Exception => println(e)
     }
   }
   def printClass(cls: Class[_]) {
     println("\n[[ " + cls.getName + " ]]");
-    try { printInnerClasses(cls) } catch { case e: Exception => println(e) }
+    try { printInnerClasses(cls) }
+    catch { case e: Exception => println(e) }
   }
 }
 
 object AccessFlags {
-  val ACC_PUBLIC = 0x0001
-  val ACC_PRIVATE = 0x0002
+  val ACC_PUBLIC    = 0x0001
+  val ACC_PRIVATE   = 0x0002
   val ACC_PROTECTED = 0x0004
-  val ACC_STATIC = 0x0008
-  val ACC_FINAL = 0x0010
-  val ACC_ABSTRACT = 0x0400
+  val ACC_STATIC    = 0x0008
+  val ACC_FINAL     = 0x0010
+  val ACC_ABSTRACT  = 0x0400
 
   def asString(accessFlags: Int): String = {
     val buf = new StringBuilder()

@@ -39,4 +39,6 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class CylinderSpec
     extends SimpleSFXDelegateSpec[jfxss.Cylinder, Cylinder](
-        classOf[jfxss.Cylinder], classOf[Cylinder])
+      classOf[jfxss.Cylinder],
+      classOf[Cylinder]
+    )

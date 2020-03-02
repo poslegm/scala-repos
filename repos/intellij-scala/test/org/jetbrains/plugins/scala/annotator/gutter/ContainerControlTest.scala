@@ -7,11 +7,11 @@ class ContainerControlTest extends LineMarkerTestBase {
   protected override def getBasePath =
     super.getBasePath + "/container/control/"
 
-  def testDo() = doTest()
-  def testFor() = doTest()
-  def testIf() = doTest()
+  def testDo()       = doTest()
+  def testFor()      = doTest()
+  def testIf()       = doTest()
   def testIterator() = doTest()
-  def testMatch() = doTest()
-  def testTry() = doTest()
-  def testWhile() = doTest()
+  def testMatch()    = doTest()
+  def testTry()      = doTest()
+  def testWhile()    = doTest()
 }

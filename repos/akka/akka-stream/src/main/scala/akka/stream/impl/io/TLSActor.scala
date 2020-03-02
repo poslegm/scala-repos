@@ -25,50 +25,58 @@ import akka.stream.TLSProtocol._
   */
 private[akka] object TLSActor {
 
-  def props(settings: ActorMaterializerSettings,
-            sslContext: SSLContext,
-            firstSession: NegotiateNewSession,
-            role: TLSRole,
-            closing: TLSClosing,
-            hostInfo: Option[(String, Int)],
-            tracing: Boolean = false): Props =
+  def props(
+      settings: ActorMaterializerSettings,
+      sslContext: SSLContext,
+      firstSession: NegotiateNewSession,
+      role: TLSRole,
+      closing: TLSClosing,
+      hostInfo: Option[(String, Int)],
+      tracing: Boolean = false
+  ): Props =
     Props(
-        new TLSActor(settings,
-                     sslContext,
-                     firstSession,
-                     role,
-                     closing,
-                     hostInfo,
-                     tracing)).withDeploy(Deploy.local)
+      new TLSActor(
+        settings,
+        sslContext,
+        firstSession,
+        role,
+        closing,
+        hostInfo,
+        tracing
+      )
+    ).withDeploy(Deploy.local)
 
-  final val TransportIn = 0
+  final val TransportIn  = 0
   final val TransportOut = 0
 
   final val UserOut = 1
-  final val UserIn = 1
+  final val UserIn  = 1
 }
 
 /**
   * INTERNAL API.
   */
-private[akka] class TLSActor(settings: ActorMaterializerSettings,
-                             sslContext: SSLContext,
-                             firstSession: NegotiateNewSession,
-                             role: TLSRole,
-                             closing: TLSClosing,
-                             hostInfo: Option[(String, Int)],
-                             tracing: Boolean)
-    extends Actor with ActorLogging with Pump {
+private[akka] class TLSActor(
+    settings: ActorMaterializerSettings,
+    sslContext: SSLContext,
+    firstSession: NegotiateNewSession,
+    role: TLSRole,
+    closing: TLSClosing,
+    hostInfo: Option[(String, Int)],
+    tracing: Boolean
+) extends Actor
+    with ActorLogging
+    with Pump {
 
   import TLSActor._
 
   protected val outputBunch = new OutputBunch(outputCount = 2, self, this)
   outputBunch.markAllOutputs()
 
-  protected val inputBunch = new InputBunch(
-      inputCount = 2, settings.maxInputBufferSize, this) {
-    override def onError(input: Int, e: Throwable): Unit = fail(e)
-  }
+  protected val inputBunch =
+    new InputBunch(inputCount = 2, settings.maxInputBufferSize, this) {
+      override def onError(input: Int, e: Throwable): Unit = fail(e)
+    }
 
   /**
     * The SSLEngine needs bite-sized chunks of data but we get arbitrary ByteString
@@ -80,7 +88,7 @@ private[akka] class TLSActor(settings: ActorMaterializerSettings,
   class ChoppingBlock(idx: Int, name: String) extends TransferState {
     override def isReady: Boolean =
       buffer.nonEmpty || inputBunch.isPending(idx) ||
-      inputBunch.isDepleted(idx)
+        inputBunch.isDepleted(idx)
     override def isCompleted: Boolean = inputBunch.isCancelled(idx)
 
     private var buffer = ByteString.empty
@@ -103,18 +111,20 @@ private[akka] class TLSActor(settings: ActorMaterializerSettings,
         buffer = inputBunch.dequeue(idx) match {
           // this class handles both UserIn and TransportIn
           case bs: ByteString ⇒ bs
-          case SendBytes(bs) ⇒ bs
+          case SendBytes(bs)  ⇒ bs
           case n: NegotiateNewSession ⇒
             setNewSessionParameters(n)
             ByteString.empty
         }
         if (tracing)
           log.debug(
-              s"chopping from new chunk of ${buffer.size} into $name (${b.position})")
+            s"chopping from new chunk of ${buffer.size} into $name (${b.position})"
+          )
       } else {
         if (tracing)
           log.debug(
-              s"chopping from old chunk of ${buffer.size} into $name (${b.position})")
+            s"chopping from old chunk of ${buffer.size} into $name (${b.position})"
+          )
       }
       val copied = buffer.copyToBuffer(b)
       buffer = buffer.drop(copied)
@@ -151,9 +161,9 @@ private[akka] class TLSActor(settings: ActorMaterializerSettings,
    * an OVERFLOW signal that also is an UNDERFLOW; avoid unnecessary copying by
    * increasing this buffer size to host up to two packets
    */
-  val userOutBuffer = ByteBuffer.allocate(16665 * 2 + 2048)
+  val userOutBuffer     = ByteBuffer.allocate(16665 * 2 + 2048)
   val transportInBuffer = ByteBuffer.allocate(16665 + 2048)
-  val userInBuffer = ByteBuffer.allocate(16665 + 2048)
+  val userInBuffer      = ByteBuffer.allocate(16665 + 2048)
 
   val userInChoppingBlock = new ChoppingBlock(UserIn, "UserIn")
   userInChoppingBlock.prepare(userInBuffer)
@@ -161,13 +171,13 @@ private[akka] class TLSActor(settings: ActorMaterializerSettings,
   transportInChoppingBlock.prepare(transportInBuffer)
 
   // ssl-config
-  val sslConfig = AkkaSSLConfig(context.system)
+  val sslConfig        = AkkaSSLConfig(context.system)
   val hostnameVerifier = sslConfig.hostnameVerifier
 
   val engine: SSLEngine = {
     val e = hostInfo match {
       case Some((hostname, port)) ⇒ sslContext.createSSLEngine(hostname, port)
-      case None ⇒ sslContext.createSSLEngine()
+      case None                   ⇒ sslContext.createSSLEngine()
     }
     sslConfig.sslEngineConfigurator.configure(e, sslContext)
     e.setUseClientMode(role == Client)
@@ -187,13 +197,13 @@ private[akka] class TLSActor(settings: ActorMaterializerSettings,
 
   def applySessionParameters(params: NegotiateNewSession): Unit = {
     params.enabledCipherSuites foreach
-    (cs ⇒ engine.setEnabledCipherSuites(cs.toArray))
+      (cs ⇒ engine.setEnabledCipherSuites(cs.toArray))
     params.enabledProtocols foreach (p ⇒ engine.setEnabledProtocols(p.toArray))
     params.clientAuth match {
       case Some(TLSClientAuth.None) ⇒ engine.setNeedClientAuth(false)
       case Some(TLSClientAuth.Want) ⇒ engine.setWantClientAuth(true)
       case Some(TLSClientAuth.Need) ⇒ engine.setNeedClientAuth(true)
-      case _ ⇒ // do nothing
+      case _                        ⇒ // do nothing
     }
     params.sslParameters foreach { p ⇒
       hostInfo foreach { case (host, _) ⇒ applySNI(host, p) }
@@ -236,38 +246,38 @@ private[akka] class TLSActor(settings: ActorMaterializerSettings,
    */
 
   var lastHandshakeStatus: HandshakeStatus = _
-  var corkUser = true
+  var corkUser                             = true
 
   val engineNeedsWrap = new TransferState {
-    def isReady = lastHandshakeStatus == NEED_WRAP
+    def isReady     = lastHandshakeStatus == NEED_WRAP
     def isCompleted = engine.isOutboundDone
   }
 
   val engineInboundOpen = new TransferState {
-    def isReady = true
+    def isReady     = true
     def isCompleted = engine.isInboundDone
   }
 
   val userHasData = new TransferState {
     def isReady =
       !corkUser && userInChoppingBlock.isReady &&
-      lastHandshakeStatus != NEED_UNWRAP
+        lastHandshakeStatus != NEED_UNWRAP
     def isCompleted =
       inputBunch.isCancelled(UserIn) || inputBunch.isDepleted(UserIn)
   }
 
   val userOutCancelled = new TransferState {
-    def isReady = outputBunch.isCancelled(UserOut)
+    def isReady     = outputBunch.isCancelled(UserOut)
     def isCompleted = engine.isInboundDone || outputBunch.isErrored(UserOut)
   }
 
   // bidirectional case
   val outbound =
     (userHasData || engineNeedsWrap) &&
-    outputBunch.demandAvailableFor(TransportOut)
+      outputBunch.demandAvailableFor(TransportOut)
   val inbound =
     (transportInChoppingBlock && outputBunch.demandAvailableFor(UserOut)) ||
-    userOutCancelled
+      userOutCancelled
 
   // half-closed
   val outboundHalfClosed =
@@ -285,14 +295,17 @@ private[akka] class TLSActor(settings: ActorMaterializerSettings,
 
   val flushingOutbound = TransferPhase(outboundHalfClosed) { () ⇒
     if (tracing) log.debug("flushingOutbound")
-    try doWrap() catch { case ex: SSLException ⇒ nextPhase(completedPhase) }
+    try doWrap()
+    catch { case ex: SSLException ⇒ nextPhase(completedPhase) }
   }
 
   val awaitingClose = TransferPhase(
-      inputBunch.inputsAvailableFor(TransportIn) && engineInboundOpen) { () ⇒
+    inputBunch.inputsAvailableFor(TransportIn) && engineInboundOpen
+  ) { () ⇒
     if (tracing) log.debug("awaitingClose")
     transportInChoppingBlock.chopInto(transportInBuffer)
-    try doUnwrap(ignoreOutput = true) catch {
+    try doUnwrap(ignoreOutput = true)
+    catch {
       case ex: SSLException ⇒ nextPhase(completedPhase)
     }
   }
@@ -302,7 +315,8 @@ private[akka] class TLSActor(settings: ActorMaterializerSettings,
     val continue = doInbound(isOutboundClosed = true, inbound)
     if (continue && outboundHalfClosed.isReady) {
       if (tracing) log.debug("outboundClosed continue")
-      try doWrap() catch { case ex: SSLException ⇒ nextPhase(completedPhase) }
+      try doWrap()
+      catch { case ex: SSLException ⇒ nextPhase(completedPhase) }
     }
   }
 
@@ -320,11 +334,14 @@ private[akka] class TLSActor(settings: ActorMaterializerSettings,
     else nextPhase(flushingOutbound)
 
   private def doInbound(
-      isOutboundClosed: Boolean, inboundState: TransferState): Boolean =
+      isOutboundClosed: Boolean,
+      inboundState: TransferState
+  ): Boolean =
     if (inputBunch.isDepleted(TransportIn) &&
         transportInChoppingBlock.isEmpty) {
       if (tracing) log.debug("closing inbound")
-      try engine.closeInbound() catch {
+      try engine.closeInbound()
+      catch {
         case ex: SSLException ⇒ outputBunch.enqueue(UserOut, SessionTruncated)
       }
       completeOrFlush()
@@ -336,7 +353,8 @@ private[akka] class TLSActor(settings: ActorMaterializerSettings,
         nextPhase(inboundClosed)
       } else {
         if (tracing) log.debug("closing inbound due to UserOut cancellation")
-        engine.closeOutbound() // this is the correct way of shutting down the engine
+        engine
+          .closeOutbound() // this is the correct way of shutting down the engine
         lastHandshakeStatus = engine.getHandshakeStatus
         nextPhase(flushingOutbound)
       }
@@ -371,7 +389,8 @@ private[akka] class TLSActor(settings: ActorMaterializerSettings,
       nextPhase(completedPhase)
     } else if (outbound.isReady) {
       if (userHasData.isReady) userInChoppingBlock.chopInto(userInBuffer)
-      try doWrap() catch {
+      try doWrap()
+      catch {
         case ex: SSLException ⇒
           if (tracing) log.debug(s"SSLException during doWrap: $ex")
           fail(ex, closeTransport = false)
@@ -405,7 +424,8 @@ private[akka] class TLSActor(settings: ActorMaterializerSettings,
     lastHandshakeStatus = result.getHandshakeStatus
     if (tracing)
       log.debug(
-          s"wrap: status=${result.getStatus} handshake=$lastHandshakeStatus remaining=${userInBuffer.remaining} out=${transportOutBuffer.position}")
+        s"wrap: status=${result.getStatus} handshake=$lastHandshakeStatus remaining=${userInBuffer.remaining} out=${transportOutBuffer.position}"
+      )
     if (lastHandshakeStatus == FINISHED) handshakeFinished()
     runDelegatedTasks()
     result.getStatus match {
@@ -428,7 +448,8 @@ private[akka] class TLSActor(settings: ActorMaterializerSettings,
     lastHandshakeStatus = result.getHandshakeStatus
     if (tracing)
       log.debug(
-          s"unwrap: status=${result.getStatus} handshake=$lastHandshakeStatus remaining=${transportInBuffer.remaining} out=${userOutBuffer.position}")
+        s"unwrap: status=${result.getStatus} handshake=$lastHandshakeStatus remaining=${transportInBuffer.remaining} out=${userOutBuffer.position}"
+      )
     runDelegatedTasks()
     result.getStatus match {
       case OK ⇒
@@ -478,9 +499,11 @@ private[akka] class TLSActor(settings: ActorMaterializerSettings,
     hostInfo.map(_._1) match {
       case Some(hostname) if !hostnameVerifier.verify(hostname, session) ⇒
         fail(
-            new ConnectionException(
-                s"Hostname verification failed! Expected session to be for $hostname"),
-            closeTransport = true)
+          new ConnectionException(
+            s"Hostname verification failed! Expected session to be for $hostname"
+          ),
+          closeTransport = true
+        )
       case _ ⇒
         currentSession = session
         corkUser = false
@@ -515,7 +538,8 @@ private[akka] class TLSActor(settings: ActorMaterializerSettings,
     outputBunch.complete()
     if (tracing)
       log.debug(
-          s"STOP Outbound Closed: ${engine.isOutboundDone} Inbound closed: ${engine.isInboundDone}")
+        s"STOP Outbound Closed: ${engine.isOutboundDone} Inbound closed: ${engine.isInboundDone}"
+      )
     context.stop(self)
   }
 }

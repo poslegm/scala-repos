@@ -12,14 +12,14 @@ import headers._
 class CacheConditionDirectivesSpec extends RoutingSpec {
 
   "the `conditional` directive" should {
-    val timestamp = DateTime.now - 2000
+    val timestamp         = DateTime.now - 2000
     val ifUnmodifiedSince = `If-Unmodified-Since`(timestamp)
-    val ifModifiedSince = `If-Modified-Since`(timestamp)
-    val tag = EntityTag("fresh")
-    val responseHeaders = List(ETag(tag), `Last-Modified`(timestamp))
+    val ifModifiedSince   = `If-Modified-Since`(timestamp)
+    val tag               = EntityTag("fresh")
+    val responseHeaders   = List(ETag(tag), `Last-Modified`(timestamp))
 
     def taggedAndTimestamped = conditional(tag, timestamp) { completeOk }
-    def weak = conditional(tag.copy(weak = true), timestamp) { completeOk }
+    def weak                 = conditional(tag.copy(weak = true), timestamp) { completeOk }
 
     "return OK for new resources" in {
       Get() ~> taggedAndTimestamped ~> check {
@@ -38,7 +38,8 @@ class CacheConditionDirectivesSpec extends RoutingSpec {
         headers should contain theSameElementsAs (responseHeaders)
       }
       Get() ~> `If-None-Match`(EntityTag("old")) ~> `If-Modified-Since`(
-          timestamp - 1000) ~> taggedAndTimestamped ~> check {
+        timestamp - 1000
+      ) ~> taggedAndTimestamped ~> check {
         status shouldEqual OK
         headers should contain theSameElementsAs (responseHeaders)
       }
@@ -103,12 +104,12 @@ class CacheConditionDirectivesSpec extends RoutingSpec {
       Get() ~> `If-None-Match`(tag) ~> weak ~> check {
         status shouldEqual NotModified
         headers should contain theSameElementsAs
-        (List(ETag(weakTag), `Last-Modified`(timestamp)))
+          (List(ETag(weakTag), `Last-Modified`(timestamp)))
       }
       Get() ~> `If-None-Match`(weakTag) ~> weak ~> check {
         status shouldEqual NotModified
         headers should contain theSameElementsAs
-        (List(ETag(weakTag), `Last-Modified`(timestamp)))
+          (List(ETag(weakTag), `Last-Modified`(timestamp)))
       }
     }
 

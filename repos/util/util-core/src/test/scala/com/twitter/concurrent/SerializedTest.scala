@@ -11,8 +11,8 @@ class SerializedTest extends WordSpec with Serialized {
   "Serialized" should {
     "runs blocks, one at a time, in the order received" in {
       val t1CallsSerializedFirst = new CountDownLatch(1)
-      val t1FinishesWork = new CountDownLatch(1)
-      val orderOfExecution = new collection.mutable.ListBuffer[Thread]
+      val t1FinishesWork         = new CountDownLatch(1)
+      val orderOfExecution       = new collection.mutable.ListBuffer[Thread]
 
       val t1 = new Thread {
         override def run {

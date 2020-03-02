@@ -21,7 +21,7 @@ package object test2 {
 package test2 {
   package classes {
     class A
-    class B { def b = "" }
+    class B     { def b = "" }
     object test { (new A).b }
   }
 }
@@ -30,7 +30,7 @@ package test2 {
 package test3 {
   class A
   object A { implicit def toB(a: A): B = null }
-  class B { def b = "" }
+  class B  { def b                     = ""   }
 }
 
 // TEST4 - Nested type's companion object

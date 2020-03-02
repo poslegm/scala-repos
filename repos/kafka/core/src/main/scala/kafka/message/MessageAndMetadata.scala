@@ -28,7 +28,8 @@ case class MessageAndMetadata[K, V](
     timestamp: Long = Message.NoTimestamp,
     timestampType: TimestampType = TimestampType.CREATE_TIME,
     keyDecoder: Decoder[K],
-    valueDecoder: Decoder[V]) {
+    valueDecoder: Decoder[V]
+) {
 
   /**
     * Return the decoded message key and payload

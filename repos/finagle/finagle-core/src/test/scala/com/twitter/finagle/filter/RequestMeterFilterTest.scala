@@ -24,7 +24,7 @@ class RequestMeterFilterTest extends FunSuite with MockitoSugar {
     val timer = new MockTimer
     Time.withCurrentTimeFrozen { ctl =>
       val meter = AsyncMeter.perSecond(1, 1)(timer)
-      val svc = new RequestMeterFilter(meter).andThen(echoSvc)
+      val svc   = new RequestMeterFilter(meter).andThen(echoSvc)
 
       assert(Await.result(svc(1)) == 1)
     }
@@ -34,7 +34,7 @@ class RequestMeterFilterTest extends FunSuite with MockitoSugar {
     val timer = new MockTimer
     Time.withCurrentTimeFrozen { ctl =>
       val meter = AsyncMeter.perSecond(1, 1)(timer)
-      val svc = new RequestMeterFilter(meter).andThen(echoSvc)
+      val svc   = new RequestMeterFilter(meter).andThen(echoSvc)
 
       val f1 = svc(1)
       assert(f1.isDefined)
@@ -71,14 +71,14 @@ class RequestMeterFilterTest extends FunSuite with MockitoSugar {
 
   test("service failures are not wrapped as rejected") {
     val timer = new MockTimer
-    val exc = new Exception("app exc")
+    val exc   = new Exception("app exc")
     val excSvc = new Service[Int, Int] {
       def apply(req: Int) = Future.exception(exc)
     }
     Time.withCurrentTimeFrozen { ctl =>
       val meter = AsyncMeter.perSecond(1, 1)(timer)
-      val svc = new RequestMeterFilter(meter) andThen excSvc
-      val e = intercept[Exception] { Await.result(svc(1)) }
+      val svc   = new RequestMeterFilter(meter) andThen excSvc
+      val e     = intercept[Exception] { Await.result(svc(1)) }
       assert(e == exc)
     }
   }

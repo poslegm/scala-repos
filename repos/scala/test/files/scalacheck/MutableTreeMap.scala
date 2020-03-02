@@ -14,8 +14,8 @@ package scala.collection.mutable {
 
   trait Generators {
 
-    def genRedBlackTree[A : Arbitrary : Ordering, B : Arbitrary]: Gen[
-        RB.Tree[A, B]] = {
+    def genRedBlackTree[A: Arbitrary: Ordering, B: Arbitrary]
+        : Gen[RB.Tree[A, B]] = {
       import org.scalacheck.Gen._
       for { entries <- listOf(arbitrary[(A, B)]) } yield {
         val tree = RB.Tree.empty[A, B]
@@ -26,23 +26,24 @@ package scala.collection.mutable {
 
     // Note: in scalacheck 1.12.2 tree maps can be automatically generated without the need for custom
     // machinery
-    def genTreeMap[A : Arbitrary : Ordering, B : Arbitrary]: Gen[
-        mutable.TreeMap[A, B]] = {
+    def genTreeMap[A: Arbitrary: Ordering, B: Arbitrary]
+        : Gen[mutable.TreeMap[A, B]] = {
       import org.scalacheck.Gen._
       for {
-        keys <- listOf(arbitrary[A])
+        keys   <- listOf(arbitrary[A])
         values <- listOfN(keys.size, arbitrary[B])
       } yield mutable.TreeMap(keys zip values: _*)
     }
 
-    implicit def arbRedBlackTree[A : Arbitrary : Ordering, B : Arbitrary] =
+    implicit def arbRedBlackTree[A: Arbitrary: Ordering, B: Arbitrary] =
       Arbitrary(genRedBlackTree[A, B])
-    implicit def arbTreeMap[A : Arbitrary : Ordering, B : Arbitrary] =
+    implicit def arbTreeMap[A: Arbitrary: Ordering, B: Arbitrary] =
       Arbitrary(genTreeMap[A, B])
   }
 
   object RedBlackTreeProperties
-      extends Properties("mutable.RedBlackTree") with Generators {
+      extends Properties("mutable.RedBlackTree")
+      with Generators {
     type K = String
     type V = Int
 
@@ -50,28 +51,23 @@ package scala.collection.mutable {
       RB.isValid(tree)
     }
 
-    property("insert") = forAll {
-      (tree: RB.Tree[K, V], entries: Seq[(K, V)]) =>
-        entries.foreach { case (k, v) => RB.insert(tree, k, v) }
-        RB.isValid(tree) && entries.toMap.forall {
-          case (k, v) => RB.get(tree, k) == Some(v)
-        }
+    property("insert") = forAll { (tree: RB.Tree[K, V], entries: Seq[(K, V)]) =>
+      entries.foreach { case (k, v) => RB.insert(tree, k, v) }
+      RB.isValid(tree) && entries.toMap.forall {
+        case (k, v) => RB.get(tree, k) == Some(v)
+      }
     }
 
     property("delete") = forAll { (tree: RB.Tree[K, V], ks: Seq[K]) =>
-      ks.foreach { k =>
-        RB.delete(tree, k)
-      }
-      RB.isValid(tree) && ks.toSet.forall { k =>
-        RB.get(tree, k) == None
-      }
+      ks.foreach { k => RB.delete(tree, k) }
+      RB.isValid(tree) && ks.toSet.forall { k => RB.get(tree, k) == None }
     }
 
     property("insert & delete") = forAll {
       (tree: RB.Tree[K, V], ops: Seq[Either[(K, V), K]]) =>
         ops.foreach {
           case Left((k, v)) => RB.insert(tree, k, v)
-          case Right(k) => RB.delete(tree, k)
+          case Right(k)     => RB.delete(tree, k)
         }
         RB.isValid(tree)
     }
@@ -90,7 +86,8 @@ package scala.collection.mutable {
   }
 
   object MutableTreeMapProperties
-      extends Properties("mutable.TreeMap") with Generators {
+      extends Properties("mutable.TreeMap")
+      with Generators {
     type K = String
     type V = Int
 
@@ -103,7 +100,7 @@ package scala.collection.mutable {
       allEntries.forall {
         case (k, v) =>
           map.contains(k) == entries.contains(k) &&
-          map.get(k) == entries.get(k)
+            map.get(k) == entries.get(k)
       }
     }
 
@@ -114,9 +111,9 @@ package scala.collection.mutable {
     }
 
     property("+=") = forAll { (map: mutable.TreeMap[K, V], k: K, v: V) =>
-      val oldSize = map.size
+      val oldSize            = map.size
       val containedKeyBefore = map.contains(k)
-      val newExpectedSize = if (containedKeyBefore) oldSize else oldSize + 1
+      val newExpectedSize    = if (containedKeyBefore) oldSize else oldSize + 1
 
       map += (k -> v)
       map.contains(k) && map.get(k) == Some(v) && map.size == newExpectedSize
@@ -130,9 +127,9 @@ package scala.collection.mutable {
     }
 
     property("-=") = forAll { (map: mutable.TreeMap[K, V], k: K) =>
-      val oldSize = map.size
+      val oldSize            = map.size
       val containedKeyBefore = map.contains(k)
-      val newExpectedSize = if (containedKeyBefore) oldSize - 1 else oldSize
+      val newExpectedSize    = if (containedKeyBefore) oldSize - 1 else oldSize
 
       map -= k
       !map.contains(k) && map.get(k) == None && map.size == newExpectedSize
@@ -197,11 +194,11 @@ package scala.collection.mutable {
 
     property("serializable") = forAll { (map: mutable.TreeMap[K, V]) =>
       val bytesOut = new ByteArrayOutputStream()
-      val out = new ObjectOutputStream(bytesOut)
+      val out      = new ObjectOutputStream(bytesOut)
       out.writeObject(map)
       val bytes = bytesOut.toByteArray
 
-      val in = new ObjectInputStream(new ByteArrayInputStream(bytes))
+      val in      = new ObjectInputStream(new ByteArrayInputStream(bytes))
       val sameMap = in.readObject().asInstanceOf[mutable.TreeMap[K, V]]
       map.iterator.toSeq == sameMap.iterator.toSeq
     }
@@ -213,7 +210,7 @@ package scala.collection.mutable {
 
         ops.foreach {
           case Left((k, v)) => imap += k -> v; mmap += k -> v
-          case Right(k) => imap -= k; mmap -= k
+          case Right(k)     => imap -= k; mmap -= k
         }
 
         imap.toList == mmap.toList
@@ -221,7 +218,8 @@ package scala.collection.mutable {
   }
 
   object MutableTreeMapViewProperties
-      extends Properties("mutable.TreeMapView") with Generators {
+      extends Properties("mutable.TreeMapView")
+      with Generators {
     type K = String
     type V = Int
 
@@ -231,11 +229,13 @@ package scala.collection.mutable {
       from.fold(true)(_ <= key) && until.fold(true)(_ > key)
 
     def entriesInView[This <: TraversableOnce[(K, V)], That](
-        entries: This, from: Option[K], until: Option[K])(
-        implicit bf: CanBuildFrom[This, (K, V), That]) = {
+        entries: This,
+        from: Option[K],
+        until: Option[K]
+    )(implicit bf: CanBuildFrom[This, (K, V), That]) = {
       (bf.apply(entries) ++= entries.filter {
-            case (k, _) => in(k, from, until)
-          }).result()
+        case (k, _) => in(k, from, until)
+      }).result()
     }
 
     property("get, contains") = forAll {
@@ -249,8 +249,8 @@ package scala.collection.mutable {
         allEntries.forall {
           case (k, v) =>
             mapView.contains(k) == (in(k, from, until) && entries.contains(k)) &&
-            mapView.get(k) ==
-            (if (in(k, from, until)) entries.get(k) else None)
+              mapView.get(k) ==
+                (if (in(k, from, until)) entries.get(k) else None)
         }
     }
 
@@ -261,18 +261,21 @@ package scala.collection.mutable {
 
         val mapView = map.rangeImpl(from, until)
         mapView.size == entriesInView(entries, from, until).size &&
-        mapView.isEmpty == !entries.exists { kv =>
-          in(kv._1, from, until)
-        }
+        mapView.isEmpty == !entries.exists { kv => in(kv._1, from, until) }
     }
 
     property("+=") = forAll {
-      (map: mutable.TreeMap[K, V], k: K, v: V, from: Option[K],
-      until: Option[K]) =>
-        val oldSize = map.size
+      (
+          map: mutable.TreeMap[K, V],
+          k: K,
+          v: V,
+          from: Option[K],
+          until: Option[K]
+      ) =>
+        val oldSize            = map.size
         val containedKeyBefore = map.contains(k)
-        val newExpectedSize = if (containedKeyBefore) oldSize else oldSize + 1
-        val isInRange = in(k, from, until)
+        val newExpectedSize    = if (containedKeyBefore) oldSize else oldSize + 1
+        val isInRange          = in(k, from, until)
 
         val mapView = map.rangeImpl(from, until)
         mapView += (k -> v)
@@ -283,22 +286,26 @@ package scala.collection.mutable {
     }
 
     property("++=") = forAll {
-      (map: mutable.TreeMap[K, V], entries: Seq[(K, V)], from: Option[K],
-      until: Option[K]) =>
+      (
+          map: mutable.TreeMap[K, V],
+          entries: Seq[(K, V)],
+          from: Option[K],
+          until: Option[K]
+      ) =>
         val mapView = map.rangeImpl(from, until)
         mapView ++= entries
         entries.toMap.forall {
           case (k, v) =>
             map.get(k) == Some(v) && mapView.get(k) ==
-            (if (in(k, from, until)) Some(v) else None)
+              (if (in(k, from, until)) Some(v) else None)
         }
     }
 
     property("-=") = forAll {
       (map: mutable.TreeMap[K, V], k: K, from: Option[K], until: Option[K]) =>
-        val oldSize = map.size
+        val oldSize            = map.size
         val containedKeyBefore = map.contains(k)
-        val newExpectedSize = if (containedKeyBefore) oldSize - 1 else oldSize
+        val newExpectedSize    = if (containedKeyBefore) oldSize - 1 else oldSize
 
         val mapView = map.rangeImpl(from, until)
         mapView -= k
@@ -309,13 +316,15 @@ package scala.collection.mutable {
     }
 
     property("--=") = forAll {
-      (map: mutable.TreeMap[K, V], ks: Seq[K], from: Option[K],
-      until: Option[K]) =>
+      (
+          map: mutable.TreeMap[K, V],
+          ks: Seq[K],
+          from: Option[K],
+          until: Option[K]
+      ) =>
         val mapView = map.rangeImpl(from, until)
         mapView --= ks
-        ks.toSet.forall { k =>
-          map.get(k) == None && mapView.get(k) == None
-        }
+        ks.toSet.forall { k => map.get(k) == None && mapView.get(k) == None }
     }
 
     property("iterator") = forAll {
@@ -332,10 +341,11 @@ package scala.collection.mutable {
         val map = mutable.TreeMap[K, V]()
         map ++= entries
 
-        val mapView = map.rangeImpl(from, until)
+        val mapView  = map.rangeImpl(from, until)
         val newLower = Some(from.fold(k)(ord.max(_, k)))
-        mapView.iteratorFrom(k).toSeq == entriesInView(
-            entries, newLower, until).toSeq.sorted
+        mapView
+          .iteratorFrom(k)
+          .toSeq == entriesInView(entries, newLower, until).toSeq.sorted
     }
 
     property("keysIteratorFrom") = forAll {
@@ -343,10 +353,13 @@ package scala.collection.mutable {
         val map = mutable.TreeMap[K, V]()
         map ++= entries
 
-        val mapView = map.rangeImpl(from, until)
+        val mapView  = map.rangeImpl(from, until)
         val newLower = Some(from.fold(k)(ord.max(_, k)))
         mapView.keysIteratorFrom(k).toSeq == entriesInView(
-            entries, newLower, until).toSeq.sorted.map(_._1)
+          entries,
+          newLower,
+          until
+        ).toSeq.sorted.map(_._1)
     }
 
     property("valuesIteratorFrom") = forAll {
@@ -354,17 +367,21 @@ package scala.collection.mutable {
         val map = mutable.TreeMap[K, V]()
         map ++= entries
 
-        val mapView = map.rangeImpl(from, until)
+        val mapView  = map.rangeImpl(from, until)
         val newLower = Some(from.fold(k)(ord.max(_, k)))
         mapView.valuesIteratorFrom(k).toSeq == entriesInView(
-            entries, newLower, until).toSeq.sorted.map(_._2)
+          entries,
+          newLower,
+          until
+        ).toSeq.sorted.map(_._2)
     }
 
     property("headOption") = forAll {
       (map: mutable.TreeMap[K, V], from: Option[K], until: Option[K]) =>
         val mapView = map.rangeImpl(from, until)
         mapView.headOption == Try(
-            entriesInView(map.iterator, from, until).next()).toOption
+          entriesInView(map.iterator, from, until).next()
+        ).toOption
     }
 
     property("lastOption") = forAll {
@@ -385,11 +402,11 @@ package scala.collection.mutable {
         val mapView = map.rangeImpl(from, until)
 
         val bytesOut = new ByteArrayOutputStream()
-        val out = new ObjectOutputStream(bytesOut)
+        val out      = new ObjectOutputStream(bytesOut)
         out.writeObject(mapView)
         val bytes = bytesOut.toByteArray
 
-        val in = new ObjectInputStream(new ByteArrayInputStream(bytes))
+        val in          = new ObjectInputStream(new ByteArrayInputStream(bytes))
         val sameMapView = in.readObject().asInstanceOf[mutable.TreeMap[K, V]]
         mapView.iterator.toSeq == sameMapView.iterator.toSeq
     }

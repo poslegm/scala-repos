@@ -28,16 +28,16 @@ import org.apache.spark.sql.SQLContext
 object ChiSqSelectorExample {
   def main(args: Array[String]) {
     val conf = new SparkConf().setAppName("ChiSqSelectorExample")
-    val sc = new SparkContext(conf)
+    val sc   = new SparkContext(conf)
 
     val sqlContext = SQLContext.getOrCreate(sc)
     import sqlContext.implicits._
 
     // $example on$
     val data = Seq(
-        (7, Vectors.dense(0.0, 0.0, 18.0, 1.0), 1.0),
-        (8, Vectors.dense(0.0, 1.0, 12.0, 0.0), 0.0),
-        (9, Vectors.dense(1.0, 0.0, 15.0, 0.1), 0.0)
+      (7, Vectors.dense(0.0, 0.0, 18.0, 1.0), 1.0),
+      (8, Vectors.dense(0.0, 1.0, 12.0, 0.0), 0.0),
+      (9, Vectors.dense(1.0, 0.0, 15.0, 0.1), 0.0)
     )
 
     val df = sc.parallelize(data).toDF("id", "features", "clicked")

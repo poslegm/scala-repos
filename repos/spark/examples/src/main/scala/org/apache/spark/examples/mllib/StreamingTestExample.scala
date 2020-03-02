@@ -47,13 +47,15 @@ object StreamingTestExample {
   def main(args: Array[String]) {
     if (args.length != 3) {
       // scalastyle:off println
-      System.err.println("Usage: StreamingTestExample " +
-          "<dataDir> <batchDuration> <numBatchesTimeout>")
+      System.err.println(
+        "Usage: StreamingTestExample " +
+          "<dataDir> <batchDuration> <numBatchesTimeout>"
+      )
       // scalastyle:on println
       System.exit(1)
     }
-    val dataDir = args(0)
-    val batchDuration = Seconds(args(1).toLong)
+    val dataDir           = args(0)
+    val batchDuration     = Seconds(args(1).toLong)
     val numBatchesTimeout = args(2).toInt
 
     val conf =
@@ -68,10 +70,11 @@ object StreamingTestExample {
     val data = ssc
       .textFileStream(dataDir)
       .map(line =>
-            line.split(",") match {
+        line.split(",") match {
           case Array(label, value) =>
             BinarySample(label.toBoolean, value.toDouble)
-      })
+        }
+      )
 
     val streamingTest = new StreamingTest()
       .setPeacePeriod(0)

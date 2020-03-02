@@ -91,7 +91,7 @@ object Scheduler extends Scheduler {
   }
 
   def submit(r: Runnable) = self.submit(r)
-  def flush() = self.flush()
+  def flush()             = self.flush()
 
   def numDispatches = self.numDispatches
 
@@ -118,8 +118,8 @@ class LocalScheduler(lifo: Boolean) extends Scheduler {
     */
   private class Activation extends Scheduler with Iterator[Runnable] {
     private[this] var r0, r1, r2: Runnable = null
-    private[this] val rs = new ArrayDeque[Runnable]
-    private[this] var running = false
+    private[this] val rs                   = new ArrayDeque[Runnable]
+    private[this] var running              = false
 
     // This is safe: there's only one updater.
     @volatile var numDispatches = 0L
@@ -205,7 +205,7 @@ class LocalScheduler(lifo: Boolean) extends Scheduler {
 
   // Scheduler implementation:
   def submit(r: Runnable): Unit = get().submit(r)
-  def flush(): Unit = get().flush()
+  def flush(): Unit             = get().flush()
 
   private[this] def activationsSum(f: Activation => Long): Long =
     activations.synchronized { activations.keysIterator.map(f).sum }
@@ -225,7 +225,7 @@ trait ExecutorScheduler { self: Scheduler =>
   val executorFactory: ThreadFactory => ExecutorService
 
   protected val threadGroup: ThreadGroup = new ThreadGroup(name)
-  @volatile private[this] var threads = Set[Thread]()
+  @volatile private[this] var threads    = Set[Thread]()
 
   protected val threadFactory = new ThreadFactory {
     private val n = new AtomicInteger(1)
@@ -242,7 +242,7 @@ trait ExecutorScheduler { self: Scheduler =>
     // threads. Since this is used only for monitoring purposes, we
     // don't try too hard.
     val threads = new Array[Thread](threadGroup.activeCount * 2)
-    val n = threadGroup.enumerate(threads)
+    val n       = threadGroup.enumerate(threads)
     threads take n
   }
 
@@ -267,8 +267,8 @@ trait ExecutorScheduler { self: Scheduler =>
 class ThreadPoolScheduler(
     val name: String,
     val executorFactory: ThreadFactory => ExecutorService
-)
-    extends Scheduler with ExecutorScheduler {
+) extends Scheduler
+    with ExecutorScheduler {
   def this(name: String) = this(name, Executors.newCachedThreadPool(_))
 }
 
@@ -284,8 +284,8 @@ class ThreadPoolScheduler(
 class BridgedThreadPoolScheduler(
     val name: String,
     val executorFactory: ThreadFactory => ExecutorService
-)
-    extends Scheduler with ExecutorScheduler {
+) extends Scheduler
+    with ExecutorScheduler {
   private[this] val local = new LocalScheduler
 
   def this(name: String) = this(name, Executors.newCachedThreadPool(_))
@@ -293,12 +293,12 @@ class BridgedThreadPoolScheduler(
   override def submit(r: Runnable) {
     if (Thread.currentThread.getThreadGroup == threadGroup) local.submit(r)
     else
-      try executor.execute(
-          new Runnable {
+      try executor.execute(new Runnable {
         def run() {
           BridgedThreadPoolScheduler.this.submit(r)
         }
-      }) catch {
+      })
+      catch {
         case _: RejectedExecutionException => local.submit(r)
       }
   }

@@ -32,9 +32,9 @@ private[play] abstract class ClosableLazy[T >: Null <: AnyRef, C] {
   protected type CloseFunction = (() => C)
 
   @volatile
-  private var value: T = null
+  private var value: T                     = null
   private var closeFunction: CloseFunction = null
-  private var hasBeenClosed: Boolean = false
+  private var hasBeenClosed: Boolean       = false
 
   /**
     * Get the value. Calling this method may allocate resources, such as a thread pool.
@@ -48,15 +48,18 @@ private[play] abstract class ClosableLazy[T >: Null <: AnyRef, C] {
     synchronized {
       if (hasBeenClosed)
         throw new IllegalStateException(
-            "Can't get ClosableLazy value after it has been closed")
+          "Can't get ClosableLazy value after it has been closed"
+        )
       if (value == null) {
         val (v, cf): (T, CloseFunction) = create()
         if (v == null)
           throw new IllegalStateException(
-              "Can't initialize ClosableLazy to a null value")
+            "Can't initialize ClosableLazy to a null value"
+          )
         if (cf == null)
           throw new IllegalStateException(
-              "Can't initialize ClosableLazy's close function to a null value")
+            "Can't initialize ClosableLazy's close function to a null value"
+          )
         value = v
         closeFunction = cf
         v

@@ -16,7 +16,7 @@ object Test {
   }
   def apply() = {
     def y(x: Int) = x.toString
-    var x = y(42)
+    var x         = y(42)
     assert({ () =>
       x
     }.apply == "42")
@@ -67,13 +67,17 @@ object Test {
     "42"
   }
   def tryFinally() = {
-    var x = try { "42" } finally ()
+    var x =
+      try { "42" }
+      finally ()
     assert({ () =>
       x
     }.apply == "42")
   }
   def tryCatch() = {
-    var x = try { "42" } catch { case _: Throwable => "43" }
+    var x =
+      try { "42" }
+      catch { case _: Throwable => "43" }
     assert({ () =>
       x
     }.apply == "42")
@@ -93,7 +97,7 @@ object Test {
   def matchCase() = {
     var x = 100 match {
       case 100 => "42"
-      case _ => "43"
+      case _   => "43"
     }
     assert({ () =>
       x
@@ -110,7 +114,9 @@ object Test {
   }
   def labelDef() = {
     var x = 100 match {
-      case 100 => try "42" finally ()
+      case 100 =>
+        try "42"
+        finally ()
     }
     assert({ () =>
       x
@@ -119,7 +125,10 @@ object Test {
   def nested() = {
     var x = {
       val y = 42
-      if (true) try "42" catch { case _: Throwable => "43" } else "44"
+      if (true)
+        try "42"
+        catch { case _: Throwable => "43" }
+      else "44"
     }
     assert({ () =>
       x

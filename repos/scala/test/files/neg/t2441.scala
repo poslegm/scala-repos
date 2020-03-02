@@ -9,6 +9,6 @@ object B {
 class B extends A {
   private class Bippy
 
-  override def f = Some(new B.Y)
+  override def f            = Some(new B.Y)
   override def g: Option[X] = Some(new B.Y)
 }

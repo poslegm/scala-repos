@@ -36,7 +36,7 @@ trait Tx[+T] {
   */
 object Tx {
   sealed trait Result[+T]
-  case object Abort extends Result[Nothing]
+  case object Abort              extends Result[Nothing]
   case class Commit[T](value: T) extends Result[T]
 
   /**
@@ -67,8 +67,8 @@ object Tx {
     */
   val Unit = const(())
 
-  object AlreadyDone extends Exception("Tx is already done")
-  object AlreadyAckd extends Exception("Tx was already ackd")
+  object AlreadyDone  extends Exception("Tx is already done")
+  object AlreadyAckd  extends Exception("Tx was already ackd")
   object AlreadyNackd extends Exception("Tx was already nackd")
 
   /**
@@ -78,23 +78,26 @@ object Tx {
     */
   def twoParty[T](msg: T): (Tx[Unit], Tx[T]) = {
     sealed trait State
-    case object Idle extends State
+    case object Idle                                       extends State
     case class Ackd(who: AnyRef, confirm: Boolean => Unit) extends State
-    case class Nackd(who: AnyRef) extends State
-    case object Done extends State
+    case class Nackd(who: AnyRef)                          extends State
+    case object Done                                       extends State
 
     var state: State = Idle
-    val lock = new {}
+    val lock         = new {}
 
     class Party[U](msg: U) extends Tx[U] {
       def ack(): Future[Result[U]] = lock.synchronized {
         state match {
           case Idle =>
             val p = new Promise[Result[U]]
-            state = Ackd(this, {
-              case true => p.setValue(Commit(msg))
-              case false => p.setValue(Abort)
-            })
+            state = Ackd(
+              this,
+              {
+                case true  => p.setValue(Commit(msg))
+                case false => p.setValue(Abort)
+              }
+            )
             p
 
           case Ackd(who, confirm) if who ne this =>
@@ -120,7 +123,7 @@ object Tx {
       def nack() {
         lock.synchronized {
           state match {
-            case Idle => state = Nackd(this)
+            case Idle                      => state = Nackd(this)
             case Nackd(who) if who ne this => state = Done
             case Ackd(who, confirm) if who ne this =>
               confirm(false)

@@ -34,14 +34,16 @@ import org.apache.spark.sql.types.{StructField, StructType}
   * Params for [[PCA]] and [[PCAModel]].
   */
 private[feature] trait PCAParams
-    extends Params with HasInputCol with HasOutputCol {
+    extends Params
+    with HasInputCol
+    with HasOutputCol {
 
   /**
     * The number of principal components.
     * @group param
     */
-  final val k: IntParam = new IntParam(
-      this, "k", "the number of principal components")
+  final val k: IntParam =
+    new IntParam(this, "k", "the number of principal components")
 
   /** @group getParam */
   def getK: Int = $(k)
@@ -53,7 +55,9 @@ private[feature] trait PCAParams
   */
 @Experimental
 class PCA(override val uid: String)
-    extends Estimator[PCAModel] with PCAParams with DefaultParamsWritable {
+    extends Estimator[PCAModel]
+    with PCAParams
+    with DefaultParamsWritable {
 
   def this() = this(Identifiable.randomUID("pca"))
 
@@ -73,19 +77,24 @@ class PCA(override val uid: String)
     transformSchema(dataset.schema, logging = true)
     val input =
       dataset.select($(inputCol)).rdd.map { case Row(v: Vector) => v }
-    val pca = new feature.PCA(k = $(k))
+    val pca      = new feature.PCA(k = $(k))
     val pcaModel = pca.fit(input)
     copyValues(
-        new PCAModel(uid, pcaModel.pc, pcaModel.explainedVariance)
-          .setParent(this))
+      new PCAModel(uid, pcaModel.pc, pcaModel.explainedVariance)
+        .setParent(this)
+    )
   }
 
   override def transformSchema(schema: StructType): StructType = {
     val inputType = schema($(inputCol)).dataType
-    require(inputType.isInstanceOf[VectorUDT],
-            s"Input column ${$(inputCol)} must be a vector column")
-    require(!schema.fieldNames.contains($(outputCol)),
-            s"Output column ${$(outputCol)} already exists.")
+    require(
+      inputType.isInstanceOf[VectorUDT],
+      s"Input column ${$(inputCol)} must be a vector column"
+    )
+    require(
+      !schema.fieldNames.contains($(outputCol)),
+      s"Output column ${$(outputCol)} already exists."
+    )
     val outputFields =
       schema.fields :+ StructField($(outputCol), new VectorUDT, false)
     StructType(outputFields)
@@ -110,10 +119,13 @@ object PCA extends DefaultParamsReadable[PCA] {
   *                          each principal component.
   */
 @Experimental
-class PCAModel private[ml](override val uid: String,
-                           val pc: DenseMatrix,
-                           val explainedVariance: DenseVector)
-    extends Model[PCAModel] with PCAParams with MLWritable {
+class PCAModel private[ml] (
+    override val uid: String,
+    val pc: DenseMatrix,
+    val explainedVariance: DenseVector
+) extends Model[PCAModel]
+    with PCAParams
+    with MLWritable {
 
   import PCAModel._
 
@@ -131,16 +143,20 @@ class PCAModel private[ml](override val uid: String,
   override def transform(dataset: DataFrame): DataFrame = {
     transformSchema(dataset.schema, logging = true)
     val pcaModel = new feature.PCAModel($(k), pc, explainedVariance)
-    val pcaOp = udf { pcaModel.transform _ }
+    val pcaOp    = udf { pcaModel.transform _ }
     dataset.withColumn($(outputCol), pcaOp(col($(inputCol))))
   }
 
   override def transformSchema(schema: StructType): StructType = {
     val inputType = schema($(inputCol)).dataType
-    require(inputType.isInstanceOf[VectorUDT],
-            s"Input column ${$(inputCol)} must be a vector column")
-    require(!schema.fieldNames.contains($(outputCol)),
-            s"Output column ${$(outputCol)} already exists.")
+    require(
+      inputType.isInstanceOf[VectorUDT],
+      s"Input column ${$(inputCol)} must be a vector column"
+    )
+    require(
+      !schema.fieldNames.contains($(outputCol)),
+      s"Output column ${$(outputCol)} already exists."
+    )
     val outputFields =
       schema.fields :+ StructField($(outputCol), new VectorUDT, false)
     StructType(outputFields)
@@ -164,7 +180,7 @@ object PCAModel extends MLReadable[PCAModel] {
 
     override protected def saveImpl(path: String): Unit = {
       DefaultParamsWriter.saveMetadata(instance, path, sc)
-      val data = Data(instance.pc, instance.explainedVariance)
+      val data     = Data(instance.pc, instance.explainedVariance)
       val dataPath = new Path(path, "data").toString
       sqlContext
         .createDataFrame(Seq(data))
@@ -211,9 +227,10 @@ object PCAModel extends MLReadable[PCAModel] {
           val Row(pc: DenseMatrix) =
             sqlContext.read.parquet(dataPath).select("pc").head()
           new PCAModel(
-              metadata.uid,
-              pc,
-              Vectors.dense(Array.empty[Double]).asInstanceOf[DenseVector])
+            metadata.uid,
+            pc,
+            Vectors.dense(Array.empty[Double]).asInstanceOf[DenseVector]
+          )
         }
       DefaultParamsReader.getAndSetParams(model, metadata)
       model

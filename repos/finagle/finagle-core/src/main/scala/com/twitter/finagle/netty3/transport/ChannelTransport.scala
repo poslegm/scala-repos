@@ -2,7 +2,12 @@ package com.twitter.finagle.netty3.transport
 
 import com.twitter.concurrent.AsyncQueue
 import com.twitter.finagle.transport.Transport
-import com.twitter.finagle.{CancelledWriteException, ChannelClosedException, ChannelException, Status}
+import com.twitter.finagle.{
+  CancelledWriteException,
+  ChannelClosedException,
+  ChannelException,
+  Status
+}
 import com.twitter.util.{Future, NonFatal, Promise, Return, Time}
 import java.net.SocketAddress
 import java.security.cert.Certificate
@@ -11,7 +16,8 @@ import org.jboss.netty.channel._
 import org.jboss.netty.handler.ssl.SslHandler
 
 class ChannelTransport[In, Out](ch: Channel)
-    extends Transport[In, Out] with ChannelUpstreamHandler {
+    extends Transport[In, Out]
+    with ChannelUpstreamHandler {
   private[this] var nneed = 0
   private[this] def need(n: Int): Unit = synchronized {
     nneed += n
@@ -23,7 +29,7 @@ class ChannelTransport[In, Out](ch: Channel)
 
   ch.getPipeline.addLast("finagleTransportBridge", this)
 
-  private[this] val readq = new AsyncQueue[Out]
+  private[this] val readq  = new AsyncQueue[Out]
   private[this] val failed = new AtomicBoolean(false)
 
   private[this] val readInterruptHandler: PartialFunction[Throwable, Unit] = {
@@ -54,7 +60,7 @@ class ChannelTransport[In, Out](ch: Channel)
 
       case e: ChannelStateEvent
           if e.getState == ChannelState.OPEN &&
-          e.getValue != java.lang.Boolean.TRUE =>
+            e.getValue != java.lang.Boolean.TRUE =>
         fail(new ChannelClosedException(ch.getRemoteAddress))
 
       case e: ChannelStateEvent if e.getState == ChannelState.INTEREST_OPS =>
@@ -74,7 +80,7 @@ class ChannelTransport[In, Out](ch: Channel)
 
       case e: ChannelStateEvent
           if e.getState == ChannelState.CONNECTED &&
-          e.getValue == java.lang.Boolean.TRUE =>
+            e.getValue == java.lang.Boolean.TRUE =>
         need(0)
 
       case e: ExceptionEvent =>
@@ -148,7 +154,7 @@ class ChannelTransport[In, Out](ch: Channel)
     closep.unit
   }
 
-  def localAddress: SocketAddress = ch.getLocalAddress()
+  def localAddress: SocketAddress  = ch.getLocalAddress()
   def remoteAddress: SocketAddress = ch.getRemoteAddress()
 
   val peerCertificate: Option[Certificate] =
@@ -162,7 +168,7 @@ class ChannelTransport[In, Out](ch: Channel)
         }
     }
 
-  private[this] val closep = new Promise[Throwable]
+  private[this] val closep       = new Promise[Throwable]
   val onClose: Future[Throwable] = closep
 
   override def toString = s"Transport<channel=$ch, onClose=$closep>"

@@ -7,8 +7,8 @@ object Test {
     def foo(x: Boolean) = ""
   }
 
-  val a = new A
-  implicit def c2fun = (c: C) => (x: String) => ""
+  val a                    = new A
+  implicit def c2fun       = (c: C) => (x: String) => ""
   implicit def a2b: A => B = p => new B
   a. /* line: 4 */ foo("")
 }

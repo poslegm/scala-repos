@@ -56,12 +56,14 @@ trait Bind[F[_]] extends Apply[F] { self =>
       * combined changes.
       */
     def associativeBind[A, B, C](fa: F[A], f: A => F[B], g: B => F[C])(
-        implicit FC: Equal[F[C]]): Boolean =
+        implicit FC: Equal[F[C]]
+    ): Boolean =
       FC.equal(bind(bind(fa)(f))(g), bind(fa)((a: A) => bind(f(a))(g)))
 
     /** `ap` is consistent with `bind`. */
     def apLikeDerived[A, B](fa: F[A], f: F[A => B])(
-        implicit FB: Equal[F[B]]): Boolean =
+        implicit FB: Equal[F[B]]
+    ): Boolean =
       FB.equal(ap(fa)(f), bind(f)(f => map(fa)(f)))
   }
   def bindLaw = new BindLaw {}

@@ -23,7 +23,10 @@ import com.twitter.summingbird.batch._
 import com.twitter.summingbird.batch.state.HDFSState
 import com.twitter.summingbird.option.JobId
 import com.twitter.summingbird.SummingbirdRuntimeStats
-import com.twitter.summingbird.scalding.store.{VersionedBatchStore, InitialBatchedStore}
+import com.twitter.summingbird.scalding.store.{
+  VersionedBatchStore,
+  InitialBatchedStore
+}
 import com.twitter.bijection._
 import com.twitter.scalding.commons.source.VersionedKeyValSource
 
@@ -40,7 +43,14 @@ import org.scalacheck.Properties
 import org.apache.hadoop.conf.Configuration
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable.{ArrayBuffer, Buffer, HashMap => MutableHashMap, Map => MutableMap, SynchronizedBuffer, SynchronizedMap}
+import scala.collection.mutable.{
+  ArrayBuffer,
+  Buffer,
+  HashMap => MutableHashMap,
+  Map => MutableMap,
+  SynchronizedBuffer,
+  SynchronizedMap
+}
 import scala.util.{Try => ScalaTry}
 
 import cascading.scheme.local.{TextDelimited => CLTextDelimited}
@@ -68,25 +78,27 @@ class VersionedBatchedStoreTest extends WordSpec {
 
     if (!(temp.delete())) {
       throw new java.io.IOException(
-          "Could not delete temp file: " + temp.getAbsolutePath());
+        "Could not delete temp file: " + temp.getAbsolutePath()
+      );
     }
 
     if (!(temp.mkdir())) {
       throw new java.io.IOException(
-          "Could not create temp directory: " + temp.getAbsolutePath());
+        "Could not create temp directory: " + temp.getAbsolutePath()
+      );
     }
 
     temp
   }
 
-  def sample[T : Arbitrary]: T = Arbitrary.arbitrary[T].sample.get
+  def sample[T: Arbitrary]: T = Arbitrary.arbitrary[T].sample.get
 
   "The VersionedBatchStore" should {
 
     "support a multiple summer job with one store already satisfied" in {
-      val rangeMax = 1000
+      val rangeMax            = 1000
       val original: List[Int] = (0 until rangeMax).toList // Input Data
-      implicit val batcher = new MillisecondBatcher(20L)
+      implicit val batcher    = new MillisecondBatcher(20L)
 
       val lastExpectedWriteBatch = 1000
 
@@ -111,26 +123,29 @@ class VersionedBatchedStoreTest extends WordSpec {
       val packFn = { (bid: BatchID, kv: (Int, Int)) =>
         ((bid.id, kv._1), kv._2)
       }
-      val unpackFn = { kv: ((Long, Int), Int) =>
-        (kv._1._2, kv._2)
-      }
+      val unpackFn = { kv: ((Long, Int), Int) => (kv._1._2, kv._2) }
       implicit val tupEncoder: Injection[(Long, Int), Array[Byte]] =
         Bufferable.injectionOf[(Long, Int)]
-      val conf = new org.apache.hadoop.conf.Configuration
-      implicit val config = Config.hadoopWithDefaults(conf)
+      val conf                = new org.apache.hadoop.conf.Configuration
+      implicit val config     = Config.hadoopWithDefaults(conf)
       implicit val mode: Mode = Hdfs(true, conf)
 
       def buildStore(
           ): (String, batch.BatchedStore[Int, Int], Long => Map[Int, Int]) = {
         val rootFolder = createTempDirectory().getAbsolutePath
-        val testStoreVBS = VersionedBatchStore[Int, Int, (Long, Int), Int](
-            rootFolder, 1)(packFn)(unpackFn)
+        val testStoreVBS =
+          VersionedBatchStore[Int, Int, (Long, Int), Int](rootFolder, 1)(
+            packFn
+          )(unpackFn)
         val testStore = new InitialBatchedStore(
-            batcher.batchOf(Timestamp(inWithTime.head._1)), testStoreVBS)
+          batcher.batchOf(Timestamp(inWithTime.head._1)),
+          testStoreVBS
+        )
         val testStoreReader = { version: Long =>
           VersionedKeyValSource[(Long, Int), Int](
-              rootFolder,
-              sourceVersion = Some(version)).toIterator.map(unpackFn).toMap
+            rootFolder,
+            sourceVersion = Some(version)
+          ).toIterator.map(unpackFn).toMap
         }
         (rootFolder, testStore, testStoreReader)
       }
@@ -149,11 +164,12 @@ class VersionedBatchedStoreTest extends WordSpec {
       {
         val tail = TestGraphs
           .multipleSummerJob[Scalding, (Long, Int), Int, Int, Int, Int, Int](
-            source, testStoreA, testStoreB)({ t =>
-          fnA(t._2)
-        }, fnB, fnC)
+            source,
+            testStoreA,
+            testStoreB
+          )({ t => fnA(t._2) }, fnB, fnC)
         val scald = Scalding("scalaCheckMultipleSumJob")
-        val ws = new LoopState(intr)
+        val ws    = new LoopState(intr)
         scald.run(ws, mode, scald.plan(tail))
         assert(!ws.failed, "Job failed")
       }
@@ -162,11 +178,12 @@ class VersionedBatchedStoreTest extends WordSpec {
       {
         val tail = TestGraphs
           .multipleSummerJob[Scalding, (Long, Int), Int, Int, Int, Int, Int](
-            source, testStoreC, testStoreB)({ t =>
-          fnA(t._2)
-        }, fnB, fnC)
+            source,
+            testStoreC,
+            testStoreB
+          )({ t => fnA(t._2) }, fnB, fnC)
         val scald = Scalding("scalaCheckMultipleSumJob")
-        val ws = new LoopState(intr)
+        val ws    = new LoopState(intr)
         scald.run(ws, mode, scald.plan(tail))
         assert(!ws.failed, "Job failed")
       }
@@ -176,11 +193,12 @@ class VersionedBatchedStoreTest extends WordSpec {
       {
         val tail = TestGraphs
           .multipleSummerJob[Scalding, (Long, Int), Int, Int, Int, Int, Int](
-            source, testStoreC, testStoreB)({ t =>
-          fnA(t._2)
-        }, fnB, fnC)
+            source,
+            testStoreC,
+            testStoreB
+          )({ t => fnA(t._2) }, fnB, fnC)
         val scald = Scalding("scalaCheckMultipleSumJob")
-        val ws = new LoopState(intr)
+        val ws    = new LoopState(intr)
         scald.run(ws, mode, scald.plan(tail))
         assert(!ws.failed, "Job failed")
       }
@@ -188,27 +206,39 @@ class VersionedBatchedStoreTest extends WordSpec {
       // Now check that the inMemory == matches the hadoop job we ran
 
       assert(
-          TestUtil.compareMaps(original,
-                               inMemoryA,
-                               testStoreAReader(lastExpectedWriteBatch),
-                               "StoreA") == true)
+        TestUtil.compareMaps(
+          original,
+          inMemoryA,
+          testStoreAReader(lastExpectedWriteBatch),
+          "StoreA"
+        ) == true
+      )
       assert(
-          TestUtil.compareMaps(original,
-                               inMemoryB,
-                               testStoreBReader(lastExpectedWriteBatch),
-                               "StoreB") == true)
+        TestUtil.compareMaps(
+          original,
+          inMemoryB,
+          testStoreBReader(lastExpectedWriteBatch),
+          "StoreB"
+        ) == true
+      )
       assert(
-          TestUtil.compareMaps(original,
-                               inMemoryA,
-                               testStoreCReader(lastExpectedWriteBatch),
-                               "StoreC") == true)
+        TestUtil.compareMaps(
+          original,
+          inMemoryA,
+          testStoreCReader(lastExpectedWriteBatch),
+          "StoreC"
+        ) == true
+      )
 
       // Now for total sanity just compare store's A and C's output. it should be identical
       assert(
-          TestUtil.compareMaps(original,
-                               testStoreAReader(lastExpectedWriteBatch),
-                               testStoreCReader(lastExpectedWriteBatch),
-                               "StoreC vs StoreA") == true)
+        TestUtil.compareMaps(
+          original,
+          testStoreAReader(lastExpectedWriteBatch),
+          testStoreCReader(lastExpectedWriteBatch),
+          "StoreC vs StoreA"
+        ) == true
+      )
     }
   }
 }

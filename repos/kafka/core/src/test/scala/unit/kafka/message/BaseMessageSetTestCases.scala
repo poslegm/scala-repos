@@ -5,7 +5,7 @@
   * The ASF licenses this file to You under the Apache License, Version 2.0
   * (the "License"); you may not use this file except in compliance with
   * the License.  You may obtain a copy of the License at
-  * 
+  *
   *    http://www.apache.org/licenses/LICENSE-2.0
   *
   * Unless required by applicable law or agreed to in writing, software
@@ -25,9 +25,11 @@ import org.junit.Test
 
 trait BaseMessageSetTestCases extends JUnitSuite {
 
-  val messages = Array(new Message("abcd".getBytes),
-                       new Message("efgh".getBytes),
-                       new Message("ijkl".getBytes))
+  val messages = Array(
+    new Message("abcd".getBytes),
+    new Message("efgh".getBytes),
+    new Message("ijkl".getBytes)
+  )
 
   def createMessageSet(messages: Seq[Message]): MessageSet
 
@@ -46,12 +48,16 @@ trait BaseMessageSetTestCases extends JUnitSuite {
 
   @Test
   def testSizeInBytes() {
-    assertEquals("Empty message set should have 0 bytes.",
-                 0,
-                 createMessageSet(Array[Message]()).sizeInBytes)
-    assertEquals("Predicted size should equal actual size.",
-                 MessageSet.messageSetSize(messages),
-                 createMessageSet(messages).sizeInBytes)
+    assertEquals(
+      "Empty message set should have 0 bytes.",
+      0,
+      createMessageSet(Array[Message]()).sizeInBytes
+    )
+    assertEquals(
+      "Predicted size should equal actual size.",
+      MessageSet.messageSetSize(messages),
+      createMessageSet(messages).sizeInBytes
+    )
   }
 
   @Test
@@ -64,12 +70,14 @@ trait BaseMessageSetTestCases extends JUnitSuite {
   def testWriteToWithMessageSet(set: MessageSet) {
     // do the write twice to ensure the message set is restored to its original state
     for (i <- List(0, 1)) {
-      val file = tempFile()
+      val file    = tempFile()
       val channel = new RandomAccessFile(file, "rw").getChannel()
       val written = set.writeTo(channel, 0, 1024)
-      assertEquals("Expect to write the number of bytes in the set.",
-                   set.sizeInBytes,
-                   written)
+      assertEquals(
+        "Expect to write the number of bytes in the set.",
+        set.sizeInBytes,
+        written
+      )
       val newSet = new FileMessageSet(file, channel)
       checkEquals(set.iterator, newSet.iterator)
     }

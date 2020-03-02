@@ -8,8 +8,7 @@ import akka.AkkaException
 import scala.util.control.NoStackTrace
 
 object SwitchableLoggedBehaviorSpec {
-  object TestException
-      extends AkkaException("Test exception") with NoStackTrace
+  object TestException extends AkkaException("Test exception") with NoStackTrace
 }
 
 class SwitchableLoggedBehaviorSpec extends AkkaSpec with DefaultTimeout {
@@ -17,7 +16,9 @@ class SwitchableLoggedBehaviorSpec extends AkkaSpec with DefaultTimeout {
 
   private def defaultBehavior =
     new SwitchableLoggedBehavior[Unit, Int](
-        (_) ⇒ Promise.successful(3).future, (_) ⇒ ())
+      (_) ⇒ Promise.successful(3).future,
+      (_) ⇒ ()
+    )
 
   "A SwitchableLoggedBehavior" must {
 
@@ -36,7 +37,7 @@ class SwitchableLoggedBehaviorSpec extends AkkaSpec with DefaultTimeout {
       behavior.push((_) ⇒ Promise.failed(TestException).future)
       behavior(()).value match {
         case Some(Failure(`TestException`)) ⇒
-        case _ ⇒ fail("Expected exception")
+        case _                              ⇒ fail("Expected exception")
       }
     }
 
@@ -54,7 +55,7 @@ class SwitchableLoggedBehaviorSpec extends AkkaSpec with DefaultTimeout {
 
       behavior(()).value match {
         case Some(Failure(e)) if e eq TestException ⇒
-        case _ ⇒ fail("Expected exception")
+        case _                                      ⇒ fail("Expected exception")
       }
     }
 
@@ -84,9 +85,9 @@ class SwitchableLoggedBehaviorSpec extends AkkaSpec with DefaultTimeout {
     }
 
     "enable delayed completition" in {
-      val behavior = defaultBehavior
+      val behavior       = defaultBehavior
       val controlPromise = behavior.pushDelayed
-      val f = behavior(())
+      val f              = behavior(())
 
       f.isCompleted should ===(false)
       controlPromise.success(())
@@ -97,7 +98,9 @@ class SwitchableLoggedBehaviorSpec extends AkkaSpec with DefaultTimeout {
     "log calls and parametrers" in {
       val logPromise = Promise[Int]()
       val behavior = new SwitchableLoggedBehavior[Int, Int](
-          (i) ⇒ Promise.successful(3).future, (i) ⇒ logPromise.success(i))
+        (i) ⇒ Promise.successful(3).future,
+        (i) ⇒ logPromise.success(i)
+      )
 
       behavior(11)
       Await.result(logPromise.future, timeout.duration) should ===(11)

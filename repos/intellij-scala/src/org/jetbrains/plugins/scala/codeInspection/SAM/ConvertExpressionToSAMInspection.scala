@@ -5,7 +5,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import org.jetbrains.plugins.scala.codeInspection.SAM.ConvertExpressionToSAMInspection._
-import org.jetbrains.plugins.scala.codeInspection.{AbstractFixOnPsiElement, AbstractInspection, InspectionBundle}
+import org.jetbrains.plugins.scala.codeInspection.{
+  AbstractFixOnPsiElement,
+  AbstractInspection,
+  InspectionBundle
+}
 import org.jetbrains.plugins.scala.lang.psi.ScalaPsiUtil
 import org.jetbrains.plugins.scala.lang.psi.api.expr.ScNewTemplateDefinition
 import org.jetbrains.plugins.scala.lang.psi.api.statements.ScFunctionDefinition
@@ -20,7 +24,8 @@ import org.jetbrains.plugins.scala.lang.psi.types.ScType
 class ConvertExpressionToSAMInspection
     extends AbstractInspection(inspectionId, inspectionName) {
   override def actionFor(
-      holder: ProblemsHolder): PartialFunction[PsiElement, Any] = {
+      holder: ProblemsHolder
+  ): PartialFunction[PsiElement, Any] = {
     case param: ScNewTemplateDefinition if ScalaPsiUtil.isSAMEnabled(param) =>
       for (expected <- param.expectedTypes()) {
         inspectAccordingToExpectedType(expected, param, holder)
@@ -30,7 +35,8 @@ class ConvertExpressionToSAMInspection
   private def inspectAccordingToExpectedType(
       expected: ScType,
       definition: ScNewTemplateDefinition,
-      holder: ProblemsHolder) {
+      holder: ProblemsHolder
+  ) {
     ScalaPsiUtil.toSAMType(expected, definition.getResolveScope) match {
       case Some(expectedMethodType) =>
         definition.members match {
@@ -49,18 +55,21 @@ class ConvertExpressionToSAMInspection
                   res.append(funBody.getText)
                   res.toString()
                 }
-                val fix = new ReplaceExpressionWithSAMQuickFix(
-                    definition, replacement)
+                val fix =
+                  new ReplaceExpressionWithSAMQuickFix(definition, replacement)
                 val extendsBlock = definition.extendsBlock
                 val lBraceInParent = extendsBlock.templateBody.map(
-                    _.startOffsetInParent + extendsBlock.startOffsetInParent)
+                  _.startOffsetInParent + extendsBlock.startOffsetInParent
+                )
                 val rangeInElement: TextRange =
                   lBraceInParent.map(new TextRange(0, _)).orNull
-                holder.registerProblem(definition,
-                                       inspectionName,
-                                       ProblemHighlightType.LIKE_UNUSED_SYMBOL,
-                                       rangeInElement,
-                                       fix)
+                holder.registerProblem(
+                  definition,
+                  inspectionName,
+                  ProblemHighlightType.LIKE_UNUSED_SYMBOL,
+                  rangeInElement,
+                  fix
+                )
               case _ =>
             }
           case _ =>
@@ -73,7 +82,7 @@ class ConvertExpressionToSAMInspection
   private def cleanedParamsText(paramClause: ScParameterClause) = {
     val parameters = paramClause.parameters
     val namesWithTypes = parameters.map { p =>
-      val name = p.name
+      val name     = p.name
       val typeText = p.typeElement.map(_.getText).getOrElse("")
       s"$name: $typeText"
     }
@@ -81,19 +90,20 @@ class ConvertExpressionToSAMInspection
   }
 }
 
-class ReplaceExpressionWithSAMQuickFix(
-    elem: PsiElement, replacement: => String)
+class ReplaceExpressionWithSAMQuickFix(elem: PsiElement, replacement: => String)
     extends AbstractFixOnPsiElement(inspectionName, elem) {
 
   override def doApplyFix(project: Project): Unit = {
     val element = getElement
     if (!element.isValid) return
-    element.replace(ScalaPsiElementFactory.createExpressionFromText(
-            replacement, element.getManager))
+    element.replace(
+      ScalaPsiElementFactory
+        .createExpressionFromText(replacement, element.getManager)
+    )
   }
 }
 
 object ConvertExpressionToSAMInspection {
   val inspectionName = InspectionBundle.message("convert.expression.to.sam")
-  val inspectionId = "ConvertExpressionToSAM"
+  val inspectionId   = "ConvertExpressionToSAM"
 }

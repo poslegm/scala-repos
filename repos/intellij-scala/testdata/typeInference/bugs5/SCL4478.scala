@@ -3,7 +3,7 @@ trait test {
     def m = 1
   }
   def top[Item <: Map[Item, Int]](t: List[Item]) = t.head
-  implicit def f(t: String): List[Tree] = sys.error("todo")
+  implicit def f(t: String): List[Tree]          = sys.error("todo")
 
   top(null.asInstanceOf[List[Tree]]).m
   /*start*/

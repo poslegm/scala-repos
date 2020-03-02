@@ -53,8 +53,10 @@ import org.apache.spark.util.Utils
   * All other methods of the WriteAheadLog interface will be passed on to the wrapped WriteAheadLog.
   */
 private[util] class BatchedWriteAheadLog(
-    val wrappedLog: WriteAheadLog, conf: SparkConf)
-    extends WriteAheadLog with Logging {
+    val wrappedLog: WriteAheadLog,
+    conf: SparkConf
+) extends WriteAheadLog
+    with Logging {
 
   import BatchedWriteAheadLog._
 
@@ -62,7 +64,7 @@ private[util] class BatchedWriteAheadLog(
 
   // Whether the writer thread is active
   @volatile private var active: Boolean = true
-  private val buffer = new ArrayBuffer[Record]()
+  private val buffer                    = new ArrayBuffer[Record]()
 
   private val batchedWriterThread = startBatchedWriterThread()
 
@@ -71,7 +73,9 @@ private[util] class BatchedWriteAheadLog(
     * until the record is properly written by the parent.
     */
   override def write(
-      byteBuffer: ByteBuffer, time: Long): WriteAheadLogRecordHandle = {
+      byteBuffer: ByteBuffer,
+      time: Long
+  ): WriteAheadLogRecordHandle = {
     val promise = Promise[WriteAheadLogRecordHandle]()
     val putSuccessfully = synchronized {
       if (active) {
@@ -82,12 +86,15 @@ private[util] class BatchedWriteAheadLog(
       }
     }
     if (putSuccessfully) {
-      Await.result(promise.future,
-                   WriteAheadLogUtils.getBatchingTimeout(conf).milliseconds)
+      Await.result(
+        promise.future,
+        WriteAheadLogUtils.getBatchingTimeout(conf).milliseconds
+      )
     } else {
       throw new IllegalStateException(
-          "close() was called on BatchedWriteAheadLog before " +
-          s"write request with time $time could be fulfilled.")
+        "close() was called on BatchedWriteAheadLog before " +
+          s"write request with time $time could be fulfilled."
+      )
     }
   }
 
@@ -98,8 +105,9 @@ private[util] class BatchedWriteAheadLog(
     */
   override def read(segment: WriteAheadLogRecordHandle): ByteBuffer = {
     throw new UnsupportedOperationException(
-        "read() is not supported for BatchedWriteAheadLog " +
-        "as the data may require de-aggregation.")
+      "read() is not supported for BatchedWriteAheadLog " +
+        "as the data may require de-aggregation."
+    )
   }
 
   /**
@@ -124,7 +132,8 @@ private[util] class BatchedWriteAheadLog(
     */
   override def close(): Unit = {
     logInfo(
-        s"BatchedWriteAheadLog shutting down at time: ${System.currentTimeMillis()}.")
+      s"BatchedWriteAheadLog shutting down at time: ${System.currentTimeMillis()}."
+    )
     synchronized {
       active = false
     }
@@ -133,28 +142,33 @@ private[util] class BatchedWriteAheadLog(
     while (!walWriteQueue.isEmpty) {
       val Record(_, time, promise) = walWriteQueue.poll()
       promise.failure(
-          new IllegalStateException(
-              "close() was called on BatchedWriteAheadLog " +
-              s"before write request with time $time could be fulfilled."))
+        new IllegalStateException(
+          "close() was called on BatchedWriteAheadLog " +
+            s"before write request with time $time could be fulfilled."
+        )
+      )
     }
     wrappedLog.close()
   }
 
   /** Start the actual log writer on a separate thread. */
   private def startBatchedWriterThread(): Thread = {
-    val thread = new Thread(new Runnable {
-      override def run(): Unit = {
-        while (active) {
-          try {
-            flushRecords()
-          } catch {
-            case NonFatal(e) =>
-              logWarning("Encountered exception in Batched Writer Thread.", e)
+    val thread = new Thread(
+      new Runnable {
+        override def run(): Unit = {
+          while (active) {
+            try {
+              flushRecords()
+            } catch {
+              case NonFatal(e) =>
+                logWarning("Encountered exception in Batched Writer Thread.", e)
+            }
           }
+          logInfo("BatchedWriteAheadLog Writer thread exiting.")
         }
-        logInfo("BatchedWriteAheadLog Writer thread exiting.")
-      }
-    }, "BatchedWriteAheadLog Writer")
+      },
+      "BatchedWriteAheadLog Writer"
+    )
     thread.setDaemon(true)
     thread.start()
     thread
@@ -206,15 +220,21 @@ private[util] object BatchedWriteAheadLog {
     * with the timestamp for the write request of the record, and the promise that will block the
     * write request, while a separate thread is actually performing the write.
     */
-  case class Record(data: ByteBuffer,
-                    time: Long,
-                    promise: Promise[WriteAheadLogRecordHandle])
+  case class Record(
+      data: ByteBuffer,
+      time: Long,
+      promise: Promise[WriteAheadLogRecordHandle]
+  )
 
   /** Aggregate multiple serialized ReceivedBlockTrackerLogEvents in a single ByteBuffer. */
   def aggregate(records: Seq[Record]): ByteBuffer = {
-    ByteBuffer.wrap(Utils.serialize[Array[Array[Byte]]](records
-              .map(record => JavaUtils.bufferToArray(record.data))
-              .toArray))
+    ByteBuffer.wrap(
+      Utils.serialize[Array[Array[Byte]]](
+        records
+          .map(record => JavaUtils.bufferToArray(record.data))
+          .toArray
+      )
+    )
   }
 
   /**

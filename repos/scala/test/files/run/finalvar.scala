@@ -4,7 +4,7 @@ object Final {
 }
 
 class A {
-  var x = 1
+  var x  = 1
   def y0 = x
   def y1 = this.x
   def y2 = (this: A).x
@@ -12,7 +12,7 @@ class A {
 
 class B extends A {
   override def x = 2
-  def z = super.x
+  def z          = super.x
 }
 
 object Test {

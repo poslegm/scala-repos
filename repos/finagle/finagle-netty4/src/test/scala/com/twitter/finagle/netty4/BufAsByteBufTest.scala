@@ -13,15 +13,16 @@ import org.scalatest.{BeforeAndAfter, FunSuite}
 
 @RunWith(classOf[JUnitRunner])
 class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
-  private[this] val Capacity = 4096 // Must be even
-  private[this] val BlockSize = 128
-  private[this] var seed: Long = 0
-  private[this] var random: Random = null
+  private[this] val Capacity        = 4096 // Must be even
+  private[this] val BlockSize       = 128
+  private[this] var seed: Long      = 0
+  private[this] var random: Random  = null
   private[this] var buffer: ByteBuf = null
 
   before {
     buffer = BufAsByteBuf.Owned(
-        Buf.ByteArray.Owned(Array.fill[Byte](Capacity)(0.toByte)))
+      Buf.ByteArray.Owned(Array.fill[Byte](Capacity)(0.toByte))
+    )
     seed = System.currentTimeMillis()
     random = new Random(seed)
   }
@@ -324,7 +325,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("test random unsigned byte access") {
-    val bytes = new Array[Byte](Capacity)
+    val bytes   = new Array[Byte](Capacity)
     val wrapped = Unpooled.wrappedBuffer(bytes)
     0.until(Capacity).foreach { i =>
       val value = random.nextInt().asInstanceOf[Byte]
@@ -340,7 +341,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("test random short access") {
-    val bytes = new Array[Byte](Capacity)
+    val bytes   = new Array[Byte](Capacity)
     val wrapped = Unpooled.wrappedBuffer(bytes)
     0.until(Capacity, 2).foreach { i =>
       val value = random.nextInt().asInstanceOf[Short]
@@ -356,7 +357,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("test random unsigned short access") {
-    val bytes = new Array[Byte](Capacity)
+    val bytes   = new Array[Byte](Capacity)
     val wrapped = Unpooled.wrappedBuffer(bytes)
     0.until(Capacity, 2).foreach { i =>
       val value = random.nextInt().asInstanceOf[Short]
@@ -372,7 +373,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("test random medium access") {
-    val bytes = new Array[Byte](Capacity)
+    val bytes   = new Array[Byte](Capacity)
     val wrapped = Unpooled.wrappedBuffer(bytes)
     0.until(Capacity - 2, 3).foreach { i =>
       val value = random.nextInt()
@@ -388,7 +389,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("test random unsigned medium access") {
-    val bytes = new Array[Byte](Capacity)
+    val bytes   = new Array[Byte](Capacity)
     val wrapped = Unpooled.wrappedBuffer(bytes)
     0.until(Capacity - 2, 3).foreach { i =>
       val value = random.nextInt()
@@ -404,7 +405,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("test random int access") {
-    val bytes = new Array[Byte](Capacity)
+    val bytes   = new Array[Byte](Capacity)
     val wrapped = Unpooled.wrappedBuffer(bytes)
     0.until(Capacity - 3, 4).foreach { i =>
       val value = random.nextInt()
@@ -420,7 +421,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("test random unsigned int access") {
-    val bytes = new Array[Byte](Capacity)
+    val bytes   = new Array[Byte](Capacity)
     val wrapped = Unpooled.wrappedBuffer(bytes)
     0.until(Capacity - 3, 4).foreach { i =>
       val value = random.nextInt()
@@ -436,7 +437,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("test random long access") {
-    val bytes = new Array[Byte](Capacity)
+    val bytes   = new Array[Byte](Capacity)
     val wrapped = Unpooled.wrappedBuffer(bytes)
     0.until(Capacity - 7, 8).foreach { i =>
       val value = random.nextLong()
@@ -458,7 +459,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential byte access") {
-    val bytes = new Array[Byte](Capacity)
+    val bytes   = new Array[Byte](Capacity)
     val wrapped = Unpooled.wrappedBuffer(bytes)
     wrapped.writerIndex(0)
     0.until(Capacity).foreach { i =>
@@ -481,7 +482,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential unsigned byte access") {
-    val bytes = new Array[Byte](Capacity)
+    val bytes   = new Array[Byte](Capacity)
     val wrapped = Unpooled.wrappedBuffer(bytes)
     wrapped.writerIndex(0)
     0.until(Capacity).foreach { i =>
@@ -504,7 +505,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential short access") {
-    val bytes = new Array[Byte](Capacity)
+    val bytes   = new Array[Byte](Capacity)
     val wrapped = Unpooled.wrappedBuffer(bytes)
     wrapped.writerIndex(0)
     0.until(Capacity, 2).foreach { i =>
@@ -527,7 +528,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential unsigned short access") {
-    val bytes = new Array[Byte](Capacity)
+    val bytes   = new Array[Byte](Capacity)
     val wrapped = Unpooled.wrappedBuffer(bytes)
     wrapped.writerIndex(0)
     0.until(Capacity, 2).foreach { i =>
@@ -550,7 +551,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential medium access") {
-    val bytes = new Array[Byte](Capacity)
+    val bytes   = new Array[Byte](Capacity)
     val wrapped = Unpooled.wrappedBuffer(bytes)
     wrapped.writerIndex(0)
     val limit = Capacity / 3 * 3
@@ -573,7 +574,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential unsigned medium access") {
-    val bytes = new Array[Byte](Capacity)
+    val bytes   = new Array[Byte](Capacity)
     val wrapped = Unpooled.wrappedBuffer(bytes)
     wrapped.writerIndex(0)
     val limit = Capacity / 3 * 3
@@ -596,7 +597,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential int access") {
-    val bytes = new Array[Byte](Capacity)
+    val bytes   = new Array[Byte](Capacity)
     val wrapped = Unpooled.wrappedBuffer(bytes)
     wrapped.writerIndex(0)
     0.until(Capacity, 4).foreach { i =>
@@ -618,7 +619,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential unsigned int access") {
-    val bytes = new Array[Byte](Capacity)
+    val bytes   = new Array[Byte](Capacity)
     val wrapped = Unpooled.wrappedBuffer(bytes)
     wrapped.writerIndex(0)
     0.until(Capacity, 4).foreach { i =>
@@ -640,7 +641,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential long access") {
-    val bytes = new Array[Byte](Capacity)
+    val bytes   = new Array[Byte](Capacity)
     val wrapped = Unpooled.wrappedBuffer(bytes)
     wrapped.writerIndex(0)
     0.until(Capacity, 8).foreach { i =>
@@ -662,9 +663,9 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("byte array transfer") {
-    val bytes = new Array[Byte](Capacity)
+    val bytes   = new Array[Byte](Capacity)
     val wrapped = Unpooled.wrappedBuffer(bytes)
-    val value = new Array[Byte](BlockSize * 2)
+    val value   = new Array[Byte](BlockSize * 2)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       random.nextBytes(value)
       wrapped.setBytes(i, value, random.nextInt(BlockSize), BlockSize)
@@ -684,9 +685,9 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("random byte array transfer 1") {
-    val bytes = new Array[Byte](Capacity)
+    val bytes   = new Array[Byte](Capacity)
     val wrapped = Unpooled.wrappedBuffer(bytes)
-    val value = new Array[Byte](BlockSize)
+    val value   = new Array[Byte](BlockSize)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       random.nextBytes(value)
       wrapped.setBytes(i, value)
@@ -695,7 +696,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
 
     random.setSeed(seed)
     val expectedValueContent = new Array[Byte](BlockSize)
-    val expectedValue = Unpooled.wrappedBuffer(expectedValueContent)
+    val expectedValue        = Unpooled.wrappedBuffer(expectedValueContent)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       random.nextBytes(expectedValueContent)
       wrappedBuf.getBytes(i, value)
@@ -706,9 +707,9 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("random byte array transfer 2") {
-    val bytes = new Array[Byte](Capacity)
+    val bytes   = new Array[Byte](Capacity)
     val wrapped = Unpooled.wrappedBuffer(bytes)
-    val value = new Array[Byte](BlockSize * 2)
+    val value   = new Array[Byte](BlockSize * 2)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       random.nextBytes(value)
       wrapped.setBytes(i, value, random.nextInt(BlockSize), BlockSize)
@@ -717,7 +718,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
 
     random.setSeed(seed)
     val expectedValueContent = new Array[Byte](BlockSize * 2)
-    val expectedValue = Unpooled.wrappedBuffer(expectedValueContent)
+    val expectedValue        = Unpooled.wrappedBuffer(expectedValueContent)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       random.nextBytes(expectedValueContent)
       val valueOffset = random.nextInt(BlockSize)
@@ -729,10 +730,10 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("random heap buffer transfer 1") {
-    val bytes = new Array[Byte](Capacity)
-    val wrapped = Unpooled.wrappedBuffer(bytes)
+    val bytes        = new Array[Byte](Capacity)
+    val wrapped      = Unpooled.wrappedBuffer(bytes)
     val valueContent = new Array[Byte](BlockSize)
-    val value = Unpooled.wrappedBuffer(valueContent)
+    val value        = Unpooled.wrappedBuffer(valueContent)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       random.nextBytes(valueContent)
       value.setIndex(0, BlockSize)
@@ -744,7 +745,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
 
     random.setSeed(seed)
     val expectedValueContent = new Array[Byte](BlockSize)
-    val expectedValue = Unpooled.wrappedBuffer(expectedValueContent)
+    val expectedValue        = Unpooled.wrappedBuffer(expectedValueContent)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       random.nextBytes(expectedValueContent)
       value.clear()
@@ -758,10 +759,10 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("random heap buffer transfer 2") {
-    val bytes = new Array[Byte](Capacity)
-    val wrapped = Unpooled.wrappedBuffer(bytes)
+    val bytes        = new Array[Byte](Capacity)
+    val wrapped      = Unpooled.wrappedBuffer(bytes)
     val valueContent = new Array[Byte](BlockSize * 2)
-    val value = Unpooled.wrappedBuffer(valueContent)
+    val value        = Unpooled.wrappedBuffer(valueContent)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       random.nextBytes(valueContent)
       wrapped.setBytes(i, value, random.nextInt(BlockSize), BlockSize)
@@ -770,7 +771,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
 
     random.setSeed(seed)
     val expectedValueContent = new Array[Byte](BlockSize * 2)
-    val expectedValue = Unpooled.wrappedBuffer(expectedValueContent)
+    val expectedValue        = Unpooled.wrappedBuffer(expectedValueContent)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       random.nextBytes(expectedValueContent)
       val valueOffset = random.nextInt(BlockSize)
@@ -782,10 +783,10 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("random direct buffer transfer") {
-    val bytes = new Array[Byte](Capacity)
+    val bytes   = new Array[Byte](Capacity)
     val wrapped = Unpooled.wrappedBuffer(bytes)
-    val tmp = new Array[Byte](BlockSize * 2)
-    val value = Unpooled.directBuffer(BlockSize * 2)
+    val tmp     = new Array[Byte](BlockSize * 2)
+    val value   = Unpooled.directBuffer(BlockSize * 2)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       random.nextBytes(tmp)
       value.setBytes(0, tmp, 0, value.capacity)
@@ -807,9 +808,9 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("random ByteBuffer transfer") {
-    val bytes = new Array[Byte](Capacity)
+    val bytes   = new Array[Byte](Capacity)
     val wrapped = Unpooled.wrappedBuffer(bytes)
-    val value = ByteBuffer.allocate(BlockSize * 2)
+    val value   = ByteBuffer.allocate(BlockSize * 2)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       random.nextBytes(value.array())
       value.clear().position(random.nextInt(BlockSize))
@@ -833,10 +834,10 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential Array[Byte] transfer 1") {
-    val bytes = new Array[Byte](Capacity)
-    val wrapped = Unpooled.wrappedBuffer(bytes)
+    val bytes      = new Array[Byte](Capacity)
+    val wrapped    = Unpooled.wrappedBuffer(bytes)
     val wrappedBuf = BufAsByteBuf.Owned(Buf.ByteArray.Owned(bytes))
-    val value = new Array[Byte](BlockSize)
+    val value      = new Array[Byte](BlockSize)
     wrapped.writerIndex(0)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       random.nextBytes(value)
@@ -858,10 +859,10 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential Array[Byte] transfer 2") {
-    val bytes = new Array[Byte](Capacity)
-    val wrapped = Unpooled.wrappedBuffer(bytes)
+    val bytes      = new Array[Byte](Capacity)
+    val wrapped    = Unpooled.wrappedBuffer(bytes)
     val wrappedBuf = BufAsByteBuf.Owned(Buf.ByteArray.Owned(bytes))
-    val value = new Array[Byte](BlockSize * 2)
+    val value      = new Array[Byte](BlockSize * 2)
     wrapped.writerIndex(0)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       random.nextBytes(value)
@@ -885,11 +886,11 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential heap buffer transfer 1") {
-    val bytes = new Array[Byte](Capacity)
-    val wrapped = Unpooled.wrappedBuffer(bytes)
-    val wrappedBuf = BufAsByteBuf.Owned(Buf.ByteArray.Owned(bytes))
+    val bytes        = new Array[Byte](Capacity)
+    val wrapped      = Unpooled.wrappedBuffer(bytes)
+    val wrappedBuf   = BufAsByteBuf.Owned(Buf.ByteArray.Owned(bytes))
     val valueContent = new Array[Byte](BlockSize * 2)
-    val value = Unpooled.wrappedBuffer(valueContent)
+    val value        = Unpooled.wrappedBuffer(valueContent)
     wrapped.writerIndex(0)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       random.nextBytes(valueContent)
@@ -901,7 +902,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
 
     random.setSeed(seed)
     val expectedValueContent = new Array[Byte](BlockSize * 2)
-    val expectedValue = Unpooled.wrappedBuffer(expectedValueContent)
+    val expectedValue        = Unpooled.wrappedBuffer(expectedValueContent)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       random.nextBytes(expectedValueContent)
       val valueOffset = random.nextInt(BlockSize)
@@ -917,11 +918,11 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential heap buffer transfer 2") {
-    val bytes = new Array[Byte](Capacity)
-    val wrapped = Unpooled.wrappedBuffer(bytes)
-    val wrappedBuf = BufAsByteBuf.Owned(Buf.ByteArray.Owned(bytes))
+    val bytes        = new Array[Byte](Capacity)
+    val wrapped      = Unpooled.wrappedBuffer(bytes)
+    val wrappedBuf   = BufAsByteBuf.Owned(Buf.ByteArray.Owned(bytes))
     val valueContent = new Array[Byte](BlockSize * 2)
-    val value = Unpooled.wrappedBuffer(valueContent)
+    val value        = Unpooled.wrappedBuffer(valueContent)
     wrapped.writerIndex(0)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       random.nextBytes(valueContent)
@@ -936,7 +937,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
 
     random.setSeed(seed)
     val expectedValueContent = new Array[Byte](BlockSize * 2)
-    val expectedValue = Unpooled.wrappedBuffer(expectedValueContent)
+    val expectedValue        = Unpooled.wrappedBuffer(expectedValueContent)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       random.nextBytes(expectedValueContent)
       val valueOffset = random.nextInt(BlockSize)
@@ -954,11 +955,11 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential direct buffer transfer 1") {
-    val bytes = new Array[Byte](Capacity)
-    val wrapped = Unpooled.wrappedBuffer(bytes)
-    val wrappedBuf = BufAsByteBuf.Owned(Buf.ByteArray.Owned(bytes))
+    val bytes        = new Array[Byte](Capacity)
+    val wrapped      = Unpooled.wrappedBuffer(bytes)
+    val wrappedBuf   = BufAsByteBuf.Owned(Buf.ByteArray.Owned(bytes))
     val valueContent = new Array[Byte](BlockSize * 2)
-    val value = Unpooled.directBuffer(BlockSize * 2)
+    val value        = Unpooled.directBuffer(BlockSize * 2)
     wrapped.writerIndex(0)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       random.nextBytes(valueContent)
@@ -971,7 +972,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
 
     random.setSeed(seed)
     val expectedValueContent = new Array[Byte](BlockSize * 2)
-    val expectedValue = Unpooled.wrappedBuffer(expectedValueContent)
+    val expectedValue        = Unpooled.wrappedBuffer(expectedValueContent)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       random.nextBytes(expectedValueContent)
       val valueOffset = random.nextInt(BlockSize)
@@ -988,11 +989,11 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential direct buffer transfer 2") {
-    val bytes = new Array[Byte](Capacity)
-    val wrapped = Unpooled.wrappedBuffer(bytes)
-    val wrappedBuf = BufAsByteBuf.Owned(Buf.ByteArray.Owned(bytes))
+    val bytes        = new Array[Byte](Capacity)
+    val wrapped      = Unpooled.wrappedBuffer(bytes)
+    val wrappedBuf   = BufAsByteBuf.Owned(Buf.ByteArray.Owned(bytes))
     val valueContent = new Array[Byte](BlockSize * 2)
-    val value = Unpooled.directBuffer(BlockSize * 2)
+    val value        = Unpooled.directBuffer(BlockSize * 2)
     wrapped.writerIndex(0)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       random.nextBytes(valueContent)
@@ -1009,7 +1010,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
 
     random.setSeed(seed)
     val expectedValueContent = new Array[Byte](BlockSize * 2)
-    val expectedValue = Unpooled.wrappedBuffer(expectedValueContent)
+    val expectedValue        = Unpooled.wrappedBuffer(expectedValueContent)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       random.nextBytes(expectedValueContent)
       value.setBytes(0, valueContent)
@@ -1028,11 +1029,11 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential ByteBuffer-backed heap buffer transfer 1") {
-    val bytes = new Array[Byte](Capacity)
-    val wrapped = Unpooled.wrappedBuffer(bytes)
-    val wrappedBuf = BufAsByteBuf.Owned(Buf.ByteArray.Owned(bytes))
+    val bytes        = new Array[Byte](Capacity)
+    val wrapped      = Unpooled.wrappedBuffer(bytes)
+    val wrappedBuf   = BufAsByteBuf.Owned(Buf.ByteArray.Owned(bytes))
     val valueContent = new Array[Byte](BlockSize * 2)
-    val value = Unpooled.wrappedBuffer(ByteBuffer.allocate(BlockSize * 2))
+    val value        = Unpooled.wrappedBuffer(ByteBuffer.allocate(BlockSize * 2))
     value.writerIndex(0)
     wrapped.writerIndex(0)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
@@ -1046,7 +1047,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
 
     random.setSeed(seed)
     val expectedValueContent = new Array[Byte](BlockSize * 2)
-    val expectedValue = Unpooled.wrappedBuffer(expectedValueContent)
+    val expectedValue        = Unpooled.wrappedBuffer(expectedValueContent)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       random.nextBytes(expectedValueContent)
       val valueOffset = random.nextInt(BlockSize)
@@ -1063,11 +1064,11 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential ByteBuffer-backed heap buffer transfer 2") {
-    val bytes = new Array[Byte](Capacity)
-    val wrapped = Unpooled.wrappedBuffer(bytes)
-    val wrappedBuf = BufAsByteBuf.Owned(Buf.ByteArray.Owned(bytes))
+    val bytes        = new Array[Byte](Capacity)
+    val wrapped      = Unpooled.wrappedBuffer(bytes)
+    val wrappedBuf   = BufAsByteBuf.Owned(Buf.ByteArray.Owned(bytes))
     val valueContent = new Array[Byte](BlockSize * 2)
-    val value = Unpooled.wrappedBuffer(ByteBuffer.allocate(BlockSize * 2))
+    val value        = Unpooled.wrappedBuffer(ByteBuffer.allocate(BlockSize * 2))
     value.writerIndex(0)
     wrapped.writerIndex(0)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
@@ -1085,7 +1086,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
 
     random.setSeed(seed)
     val expectedValueContent = new Array[Byte](BlockSize * 2)
-    val expectedValue = Unpooled.wrappedBuffer(expectedValueContent)
+    val expectedValue        = Unpooled.wrappedBuffer(expectedValueContent)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       random.nextBytes(expectedValueContent)
       value.setBytes(0, valueContent)
@@ -1104,8 +1105,8 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential ByteBuffer transfer") {
-    val bytes = new Array[Byte](Capacity)
-    val wrapped = Unpooled.wrappedBuffer(bytes)
+    val bytes      = new Array[Byte](Capacity)
+    val wrapped    = Unpooled.wrappedBuffer(bytes)
     val wrappedBuf = BufAsByteBuf.Owned(Buf.ByteArray.Owned(bytes))
     wrapped.writerIndex(0)
     val value = ByteBuffer.allocate(BlockSize * 2)
@@ -1130,8 +1131,8 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential copied buffer transfer") {
-    val bytes = new Array[Byte](Capacity)
-    val wrapped = Unpooled.wrappedBuffer(bytes)
+    val bytes      = new Array[Byte](Capacity)
+    val wrapped    = Unpooled.wrappedBuffer(bytes)
     val wrappedBuf = BufAsByteBuf.Owned(Buf.ByteArray.Owned(bytes))
     wrapped.writerIndex(0)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
@@ -1153,8 +1154,8 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential slice") {
-    val bytes = new Array[Byte](Capacity)
-    val wrapped = Unpooled.wrappedBuffer(bytes)
+    val bytes      = new Array[Byte](Capacity)
+    val wrapped    = Unpooled.wrappedBuffer(bytes)
     val wrappedBuf = BufAsByteBuf.Owned(Buf.ByteArray.Owned(bytes))
     wrapped.writerIndex(0)
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
@@ -1193,13 +1194,11 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("discardReadBytes") {
-    val bytes = new Array[Byte](Capacity)
-    val wrapped = Unpooled.wrappedBuffer(bytes)
+    val bytes      = new Array[Byte](Capacity)
+    val wrapped    = Unpooled.wrappedBuffer(bytes)
     val wrappedBuf = BufAsByteBuf.Owned(Buf.ByteArray.Owned(bytes))
     wrapped.writerIndex(0)
-    0.until(Capacity, 4).foreach { i =>
-      wrapped.writeInt(i)
-    }
+    0.until(Capacity, 4).foreach { i => wrapped.writeInt(i) }
     wrappedBuf.readByte()
     intercept[ReadOnlyBufferException] {
       wrappedBuf.discardReadBytes()
@@ -1215,7 +1214,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
     }
 
     val wrappedBuf = BufAsByteBuf.Owned(Buf.ByteArray.Owned(bytes))
-    val out = new ByteArrayOutputStream()
+    val out        = new ByteArrayOutputStream()
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       wrappedBuf.getBytes(i, out, BlockSize)
     }
@@ -1234,7 +1233,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
     assert(buffer.writerIndex() == 0)
 
     val wrappedBuf = BufAsByteBuf.Owned(Buf.ByteArray.Owned(bytes))
-    val out = new ByteArrayOutputStream()
+    val out        = new ByteArrayOutputStream()
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       assert(i == wrappedBuf.readerIndex)
       wrappedBuf.readBytes(out, BlockSize)
@@ -1294,13 +1293,21 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
     assertEquals(0, buffer.slice(1, buffer.capacity - 2).readerIndex)
 
     assertEquals(
-        buffer.capacity, buffer.slice(0, buffer.capacity).writerIndex())
-    assertEquals(buffer.capacity - 1,
-                 buffer.slice(0, buffer.capacity - 1).writerIndex())
-    assertEquals(buffer.capacity - 1,
-                 buffer.slice(1, buffer.capacity - 1).writerIndex())
-    assertEquals(buffer.capacity - 2,
-                 buffer.slice(1, buffer.capacity - 2).writerIndex())
+      buffer.capacity,
+      buffer.slice(0, buffer.capacity).writerIndex()
+    )
+    assertEquals(
+      buffer.capacity - 1,
+      buffer.slice(0, buffer.capacity - 1).writerIndex()
+    )
+    assertEquals(
+      buffer.capacity - 1,
+      buffer.slice(1, buffer.capacity - 1).writerIndex()
+    )
+    assertEquals(
+      buffer.capacity - 2,
+      buffer.slice(1, buffer.capacity - 2).writerIndex()
+    )
   }
 
   test("equals") {
@@ -1309,7 +1316,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
 
     val value = new Array[Byte](32)
     random.nextBytes(value)
-    val bytes = Arrays.copyOf(value, Capacity)
+    val bytes      = Arrays.copyOf(value, Capacity)
     val wrappedBuf = BufAsByteBuf.Owned(Buf.ByteArray.Owned(bytes))
     wrappedBuf.setIndex(0, value.length)
 
@@ -1334,7 +1341,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
       value(0) = (value(0) - 1).asInstanceOf[Byte]
     }
 
-    val bytes = Arrays.copyOf(value, Capacity)
+    val bytes      = Arrays.copyOf(value, Capacity)
     val wrappedBuf = BufAsByteBuf.Owned(Buf.ByteArray.Owned(bytes))
     wrappedBuf.setIndex(0, value.length)
 
@@ -1347,12 +1354,11 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
     value(0) = (value(0) + 1).asInstanceOf[Byte]
 
     assert(wrappedBuf.compareTo(Unpooled.wrappedBuffer(value, 0, 31)) > 0)
-    assert(
-        wrappedBuf.slice(0, 31).compareTo(Unpooled.wrappedBuffer(value)) < 0)
+    assert(wrappedBuf.slice(0, 31).compareTo(Unpooled.wrappedBuffer(value)) < 0)
   }
 
   test("toString") {
-    val msg = "Hello, World!"
+    val msg        = "Hello, World!"
     val wrappedBuf = BufAsByteBuf.Owned(Buf.Utf8(msg))
     assert("Hello, World!" == wrappedBuf.toString(CharsetUtil.UTF_8))
   }
@@ -1379,8 +1385,10 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
     random.nextBytes(value)
     val wrappedBuf = BufAsByteBuf.Owned(Buf.ByteArray.Owned(value))
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
-      assertEquals(ByteBuffer.wrap(value, i, BlockSize),
-                   wrappedBuf.nioBuffer(i, BlockSize))
+      assertEquals(
+        ByteBuffer.wrap(value, i, BlockSize),
+        wrappedBuf.nioBuffer(i, BlockSize)
+      )
     }
   }
 
@@ -1390,7 +1398,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
     val wrappedBuf = BufAsByteBuf.Owned(Buf.ByteArray.Owned(value))
 
     val nioBuffers = wrappedBuf.nioBuffers()
-    var length = 0
+    var length     = 0
     for (b <- nioBuffers) {
       length = length + b.remaining
     }
@@ -1411,7 +1419,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
 
     0.until(Capacity - BlockSize + 1, BlockSize).foreach { i =>
       val nioBuffers = wrappedBuf.nioBuffers(i, BlockSize)
-      val nioBuffer = ByteBuffer.allocate(BlockSize)
+      val nioBuffer  = ByteBuffer.allocate(BlockSize)
       for (b <- nioBuffers) {
         nioBuffer.put(b)
       }
@@ -1436,8 +1444,8 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   }
 
   test("hashCode") {
-    val a = Array[Byte](1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5)
-    val b = Array[Byte](6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9)
+    val a   = Array[Byte](1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5)
+    val b   = Array[Byte](6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9)
     val cbA = Unpooled.buffer(15)
     val cbB = Unpooled.directBuffer(15)
     cbA.writeBytes(a)
@@ -1465,7 +1473,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   def testConstructAndExtract(name: String, buf: Buf): Unit = {
     test(s"construct and extract BufAsByteBuf.Owned from $name") {
       val bytes = Buf.ByteArray.Owned.extract(buf)
-      val bb = BufAsByteBuf.Owned(buf)
+      val bb    = BufAsByteBuf.Owned(buf)
       assert(bb.readableBytes == bytes.length)
       val wrappedBytes = new Array[Byte](buf.length)
       bb.getBytes(0, wrappedBytes)
@@ -1474,7 +1482,7 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
 
     test(s"construct and extract BufAsByteBuf.Shared from $name") {
       val bytes = Buf.ByteArray.Shared.extract(buf)
-      val bb = BufAsByteBuf.Shared(buf)
+      val bb    = BufAsByteBuf.Shared(buf)
       assert(bb.readableBytes == bytes.length)
       val wrappedBytes = new Array[Byte](buf.length)
       bb.getBytes(0, wrappedBytes)
@@ -1485,14 +1493,14 @@ class BufAsByteBufTest extends FunSuite with BeforeAndAfter {
   testConstructAndExtract("empty Buf", Buf.Empty)
 
   testConstructAndExtract(
-      "Buf.ByteArray",
-      Buf.ByteArray.Owned(Array[Byte](0, 1, 2, 3, 4))
+    "Buf.ByteArray",
+    Buf.ByteArray.Owned(Array[Byte](0, 1, 2, 3, 4))
   )
 
   testConstructAndExtract(
-      "Buf.ByteBuffer",
-      Buf.ByteBuffer.Owned(
-          ByteBuffer.wrap(Array[Byte](0, 1, 2, 3, 4))
-      )
+    "Buf.ByteBuffer",
+    Buf.ByteBuffer.Owned(
+      ByteBuffer.wrap(Array[Byte](0, 1, 2, 3, 4))
+    )
   )
 }

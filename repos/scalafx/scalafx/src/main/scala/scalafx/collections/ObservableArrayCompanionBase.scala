@@ -50,9 +50,10 @@ import scala.language.implicitConversions
   * @constructor Create new base $OA.
   */
 private[collections] abstract class ObservableArrayCompanionBase[
-    V : ClassTag,
+    V: ClassTag,
     T <: ObservableArray[V, T, D],
-    D <: jfxc.ObservableArray[D]] {
+    D <: jfxc.ObservableArray[D]
+] {
 
   // TODO: Enter link when JavaFX 8 API Docs are available on-line.
   /**

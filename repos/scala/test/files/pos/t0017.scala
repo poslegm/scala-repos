@@ -1,5 +1,5 @@
 class Quantity {
-  def getValue = 0;
+  def getValue               = 0;
   def connect(c: Constraint) = c.newValue;
 }
 

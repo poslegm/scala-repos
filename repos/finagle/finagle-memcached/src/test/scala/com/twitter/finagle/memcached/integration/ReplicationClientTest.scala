@@ -2,7 +2,11 @@ package com.twitter.finagle.memcached.integration
 
 import com.twitter.common.application.ShutdownRegistry.ShutdownRegistryImpl
 import com.twitter.common.zookeeper.testing.ZooKeeperTestServer
-import com.twitter.common.zookeeper.{ServerSets, ZooKeeperClient, ZooKeeperUtils}
+import com.twitter.common.zookeeper.{
+  ServerSets,
+  ZooKeeperClient,
+  ZooKeeperUtils
+}
 import com.twitter.conversions.time._
 import com.twitter.finagle.builder.ClientBuilder
 import com.twitter.finagle.cacheresolver.{CachePoolCluster, CachePoolConfig}
@@ -26,13 +30,13 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
     * Note: This integration test requires a real Memcached server to run.
     */
   var shutdownRegistry: ShutdownRegistryImpl = null
-  var firstTestServerPool = List[TestMemcachedServer]()
-  var secondTestServerPool = List[TestMemcachedServer]()
+  var firstTestServerPool                    = List[TestMemcachedServer]()
+  var secondTestServerPool                   = List[TestMemcachedServer]()
 
-  val firstPoolPath = "/cache/test/silly-cache-1"
-  val secondPoolPath = "/cache/test/silly-cache-2"
+  val firstPoolPath                        = "/cache/test/silly-cache-1"
+  val secondPoolPath                       = "/cache/test/silly-cache-2"
   var zookeeperServer: ZooKeeperTestServer = null
-  var zookeeperClient: ZooKeeperClient = null
+  var zookeeperClient: ZooKeeperClient     = null
 
   override def beforeEach() {
     // start zookeeper server and create zookeeper client
@@ -42,13 +46,17 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
 
     // connect to zookeeper server
     zookeeperClient = zookeeperServer.createClient(
-        ZooKeeperClient.digestCredentials("user", "pass"))
+      ZooKeeperClient.digestCredentials("user", "pass")
+    )
 
     // start two memcached server and join the cluster
     val firstPoolCluster = new ZookeeperServerSetCluster(
-        ServerSets.create(zookeeperClient,
-                          ZooKeeperUtils.EVERYONE_READ_CREATOR_ALL,
-                          firstPoolPath))
+      ServerSets.create(
+        zookeeperClient,
+        ZooKeeperUtils.EVERYONE_READ_CREATOR_ALL,
+        firstPoolPath
+      )
+    )
     (0 to 1) foreach { _ =>
       TestMemcachedServer.start() match {
         case Some(server) =>
@@ -59,9 +67,12 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
     }
 
     val secondPoolCluster = new ZookeeperServerSetCluster(
-        ServerSets.create(zookeeperClient,
-                          ZooKeeperUtils.EVERYONE_READ_CREATOR_ALL,
-                          secondPoolPath))
+      ServerSets.create(
+        zookeeperClient,
+        ZooKeeperUtils.EVERYONE_READ_CREATOR_ALL,
+        secondPoolPath
+      )
+    )
     (0 to 1) foreach { _ =>
       TestMemcachedServer.start() match {
         case Some(server) =>
@@ -73,7 +84,8 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
 
     // set cache pool config node data
     val cachePoolConfig: CachePoolConfig = new CachePoolConfig(
-        cachePoolSize = 2)
+      cachePoolSize = 2
+    )
     val output: ByteArrayOutputStream = new ByteArrayOutputStream
     CachePoolConfig.jsonCodec.serialize(cachePoolConfig, output)
     zookeeperClient.get().setData(firstPoolPath, output.toByteArray, -1)
@@ -81,7 +93,8 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
 
     // a separate client which only does zk discovery for integration test
     zookeeperClient = zookeeperServer.createClient(
-        ZooKeeperClient.digestCredentials("user", "pass"))
+      ZooKeeperClient.digestCredentials("user", "pass")
+    )
   }
 
   override def afterEach() {
@@ -100,24 +113,32 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       // create my cluster client solely based on a zk client and a path
       val mycluster1 =
         CachePoolCluster.newZkCluster(firstPoolPath, zookeeperClient)
-      Await.result(mycluster1.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster1.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
       val mycluster2 =
         CachePoolCluster.newZkCluster(secondPoolPath, zookeeperClient)
-      Await.result(mycluster2.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster2.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
 
       val client1 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster1))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
       val client2 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster2))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
@@ -126,35 +147,40 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       // consistent
       assert(Await.result(replicatedClient.getOne("foo")) == None)
       assert(
-          Await.result(replicatedClient.set("foo", Buf.Utf8("bar"))) == ConsistentReplication(
-              ()))
-      assert(Await.result(replicatedClient.getOne("foo")) == Some(
-              Buf.Utf8("bar")))
+        Await.result(replicatedClient.set("foo", Buf.Utf8("bar"))) == ConsistentReplication(
+          ()
+        )
+      )
+      assert(
+        Await.result(replicatedClient.getOne("foo")) == Some(Buf.Utf8("bar"))
+      )
 
       // inconsistent data
 
       Await.result(client2.set("client2-only", Buf.Utf8("test")))
-      assert(Await.result(replicatedClient.getOne("client2-only")) == Some(
-              Buf.Utf8("test")))
+      assert(
+        Await.result(replicatedClient.getOne("client2-only")) == Some(
+          Buf.Utf8("test")
+        )
+      )
 
       // inconsistent replica state
       firstTestServerPool(0).stop()
       firstTestServerPool(1).stop()
-      assert(
-          Await.result(replicatedClient.set("foo", Buf.Utf8("baz"))) match {
+      assert(Await.result(replicatedClient.set("foo", Buf.Utf8("baz"))) match {
         case InconsistentReplication(Seq(Throw(_), Return(()))) => true
-        case _ => false
+        case _                                                  => false
       })
-      assert(Await.result(replicatedClient.getOne("foo")) == Some(
-              Buf.Utf8("baz")))
+      assert(
+        Await.result(replicatedClient.getOne("foo")) == Some(Buf.Utf8("baz"))
+      )
 
       // all failed
       secondTestServerPool(0).stop()
       secondTestServerPool(1).stop()
-      assert(
-          Await.result(replicatedClient.set("foo", Buf.Utf8("baz"))) match {
+      assert(Await.result(replicatedClient.set("foo", Buf.Utf8("baz"))) match {
         case FailedReplication(Seq(Throw(_), Throw(_))) => true
-        case _ => false
+        case _                                          => false
       })
       intercept[WriteException] {
         Await.result(replicatedClient.getOne("foo"))
@@ -166,24 +192,32 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       // create my cluster client solely based on a zk client and a path
       val mycluster1 =
         CachePoolCluster.newZkCluster(firstPoolPath, zookeeperClient)
-      Await.result(mycluster1.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster1.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
       val mycluster2 =
         CachePoolCluster.newZkCluster(secondPoolPath, zookeeperClient)
-      Await.result(mycluster2.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster2.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
 
       val client1 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster1))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
       val client2 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster2))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
@@ -191,31 +225,36 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
 
       // consistent
       assert(
-          Await.result(replicatedClient.getAll("foo")) == ConsistentReplication(
-              None))
+        Await
+          .result(replicatedClient.getAll("foo")) == ConsistentReplication(None)
+      )
       assert(
-          Await.result(replicatedClient.set("foo", Buf.Utf8("bar"))) == ConsistentReplication(
-              ()))
+        Await.result(replicatedClient.set("foo", Buf.Utf8("bar"))) == ConsistentReplication(
+          ()
+        )
+      )
       assert(
-          Await.result(replicatedClient.getAll("foo")) == ConsistentReplication(
-              Some(Buf.Utf8("bar"))))
+        Await.result(replicatedClient.getAll("foo")) == ConsistentReplication(
+          Some(Buf.Utf8("bar"))
+        )
+      )
 
       // inconsistent data
       Await.result(client2.set("client2-only", Buf.Utf8("test")))
       assert(
-          Await.result(replicatedClient.getAll("client2-only")) == InconsistentReplication(
-              Seq(Return(None), Return(Some(Buf.Utf8("test"))))))
+        Await.result(replicatedClient.getAll("client2-only")) == InconsistentReplication(
+          Seq(Return(None), Return(Some(Buf.Utf8("test"))))
+        )
+      )
 
       // inconsistent replica state
       firstTestServerPool(0).stop()
       firstTestServerPool(1).stop()
-      assert(
-          Await.result(replicatedClient.set("foo", Buf.Utf8("baz"))) match {
+      assert(Await.result(replicatedClient.set("foo", Buf.Utf8("baz"))) match {
         case InconsistentReplication(Seq(Throw(_), Return(()))) => true
-        case _ => false
+        case _                                                  => false
       })
-      assert(
-          Await.result(replicatedClient.getAll("foo")) match {
+      assert(Await.result(replicatedClient.getAll("foo")) match {
         case InconsistentReplication(Seq(Throw(_), Return(Some(v)))) =>
           v equals Buf.Utf8("baz")
         case _ => false
@@ -224,15 +263,13 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       // all failed
       secondTestServerPool(0).stop()
       secondTestServerPool(1).stop()
-      assert(
-          Await.result(replicatedClient.set("foo", Buf.Utf8("baz"))) match {
+      assert(Await.result(replicatedClient.set("foo", Buf.Utf8("baz"))) match {
         case FailedReplication(Seq(Throw(_), Throw(_))) => true
-        case _ => false
+        case _                                          => false
       })
-      assert(
-          Await.result(replicatedClient.getAll("foo")) match {
+      assert(Await.result(replicatedClient.getAll("foo")) match {
         case FailedReplication(Seq(Throw(_), Throw(_))) => true
-        case _ => false
+        case _                                          => false
       })
     }
 
@@ -241,24 +278,32 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       // create my cluster client solely based on a zk client and a path
       val mycluster1 =
         CachePoolCluster.newZkCluster(firstPoolPath, zookeeperClient)
-      Await.result(mycluster1.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster1.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
       val mycluster2 =
         CachePoolCluster.newZkCluster(secondPoolPath, zookeeperClient)
-      Await.result(mycluster2.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster2.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
 
       val client1 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster1))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
       val client2 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster2))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
@@ -266,26 +311,33 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
 
       // consistent
       assert(
-          Await.result(replicatedClient.delete("empty-key")) == ConsistentReplication(
-              false))
+        Await
+          .result(replicatedClient.delete("empty-key")) == ConsistentReplication(
+          false
+        )
+      )
 
       assert(
-          Await.result(replicatedClient.set("foo", Buf.Utf8("bar"))) == ConsistentReplication(
-              ()))
+        Await.result(replicatedClient.set("foo", Buf.Utf8("bar"))) == ConsistentReplication(
+          ()
+        )
+      )
       assert(
-          Await.result(replicatedClient.getAll("foo")) == ConsistentReplication(
-              Some(Buf.Utf8("bar"))))
+        Await.result(replicatedClient.getAll("foo")) == ConsistentReplication(
+          Some(Buf.Utf8("bar"))
+        )
+      )
       assert(
-          Await.result(replicatedClient.delete("foo")) == ConsistentReplication(
-              true))
+        Await
+          .result(replicatedClient.delete("foo")) == ConsistentReplication(true)
+      )
 
       // inconsistent data
-      assert(
-          Await.result(client2.add("client2-only", Buf.Utf8("bar"))) == true)
-      assert(
-          Await.result(replicatedClient.delete("client2-only")) match {
+      assert(Await.result(client2.add("client2-only", Buf.Utf8("bar"))) == true)
+      assert(Await.result(replicatedClient.delete("client2-only")) match {
         case InconsistentReplication(
-            Seq(Return(JBoolean.FALSE), Return(JBoolean.TRUE))) =>
+            Seq(Return(JBoolean.FALSE), Return(JBoolean.TRUE))
+            ) =>
           true
         case _ => false
       })
@@ -294,8 +346,7 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       Await.result(client2.set("client2-only", Buf.Utf8("bar")))
       firstTestServerPool(0).stop()
       firstTestServerPool(1).stop()
-      assert(
-          Await.result(replicatedClient.delete("client2-only")) match {
+      assert(Await.result(replicatedClient.delete("client2-only")) match {
         case InconsistentReplication(Seq(Throw(_), Return(JBoolean.TRUE))) =>
           true
         case _ => false
@@ -304,10 +355,9 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       // all failed
       secondTestServerPool(0).stop()
       secondTestServerPool(1).stop()
-      assert(
-          Await.result(replicatedClient.delete("client2-only")) match {
+      assert(Await.result(replicatedClient.delete("client2-only")) match {
         case FailedReplication(Seq(Throw(_), Throw(_))) => true
-        case _ => false
+        case _                                          => false
       })
     }
 
@@ -316,24 +366,32 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       // create my cluster client solely based on a zk client and a path
       val mycluster1 =
         CachePoolCluster.newZkCluster(firstPoolPath, zookeeperClient)
-      Await.result(mycluster1.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster1.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
       val mycluster2 =
         CachePoolCluster.newZkCluster(secondPoolPath, zookeeperClient)
-      Await.result(mycluster2.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster2.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
 
       val client1 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster1))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
       val client2 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster2))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
@@ -341,111 +399,155 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
 
       // consistent
       assert(
-          Await.result(replicatedClient.set("foo", Buf.Utf8("bar"))) == ConsistentReplication(
-              ()))
+        Await.result(replicatedClient.set("foo", Buf.Utf8("bar"))) == ConsistentReplication(
+          ()
+        )
+      )
       assert(
-          Await.result(replicatedClient.getsAll("foo")) == ConsistentReplication(
-              Some((Buf.Utf8("bar"),
-                    RCasUnique(Seq(Buf.Utf8("1"), Buf.Utf8("1")))))))
+        Await.result(replicatedClient.getsAll("foo")) == ConsistentReplication(
+          Some((Buf.Utf8("bar"), RCasUnique(Seq(Buf.Utf8("1"), Buf.Utf8("1")))))
+        )
+      )
       Await.result(client1.set("foo", Buf.Utf8("bar")))
       assert(
-          Await.result(replicatedClient.getsAll("foo")) == ConsistentReplication(
-              Some((Buf.Utf8("bar"),
-                    RCasUnique(Seq(Buf.Utf8("2"), Buf.Utf8("1")))))))
+        Await.result(replicatedClient.getsAll("foo")) == ConsistentReplication(
+          Some((Buf.Utf8("bar"), RCasUnique(Seq(Buf.Utf8("2"), Buf.Utf8("1")))))
+        )
+      )
       assert(
-          Await.result(replicatedClient.checkAndSet(
-                  "foo",
-                  Buf.Utf8("baz"),
-                  Seq(Buf.Utf8("2"), Buf.Utf8("1")))) == ConsistentReplication(
-              CasResult.Stored))
+        Await.result(
+          replicatedClient.checkAndSet(
+            "foo",
+            Buf.Utf8("baz"),
+            Seq(Buf.Utf8("2"), Buf.Utf8("1"))
+          )
+        ) == ConsistentReplication(CasResult.Stored)
+      )
       assert(
-          Await.result(replicatedClient.checkAndSet(
-                  "foo",
-                  Buf.Utf8("baz"),
-                  Seq(Buf.Utf8("3"), Buf.Utf8("2")))) == ConsistentReplication(
-              CasResult.Stored))
+        Await.result(
+          replicatedClient.checkAndSet(
+            "foo",
+            Buf.Utf8("baz"),
+            Seq(Buf.Utf8("3"), Buf.Utf8("2"))
+          )
+        ) == ConsistentReplication(CasResult.Stored)
+      )
       Await.result(client1.set("foo", Buf.Utf8("bar")))
       Await.result(client2.set("foo", Buf.Utf8("bar")))
       assert(
-          Await.result(replicatedClient.checkAndSet(
-                  "foo",
-                  Buf.Utf8("baz"),
-                  Seq(Buf.Utf8("4"), Buf.Utf8("3")))) == ConsistentReplication(
-              CasResult.NotFound))
+        Await.result(
+          replicatedClient.checkAndSet(
+            "foo",
+            Buf.Utf8("baz"),
+            Seq(Buf.Utf8("4"), Buf.Utf8("3"))
+          )
+        ) == ConsistentReplication(CasResult.NotFound)
+      )
       assert(
-          Await.result(replicatedClient.delete("foo")) == ConsistentReplication(
-              true))
+        Await
+          .result(replicatedClient.delete("foo")) == ConsistentReplication(true)
+      )
       assert(
-          Await.result(replicatedClient.getsAll("foo")) == ConsistentReplication(
-              None))
+        Await.result(replicatedClient.getsAll("foo")) == ConsistentReplication(
+          None
+        )
+      )
 
       // inconsistent data
       Await.result(client1.set("foo", Buf.Utf8("bar")))
       Await.result(client2.set("foo", Buf.Utf8("baz")))
       assert(
-          Await.result(replicatedClient.getsAll("foo")) == InconsistentReplication(
-              Seq(Return(Some((Buf.Utf8("bar"), SCasUnique(Buf.Utf8("6"))))),
-                  Return(Some((Buf.Utf8("baz"), SCasUnique(Buf.Utf8("5"))))))))
+        Await
+          .result(replicatedClient.getsAll("foo")) == InconsistentReplication(
+          Seq(
+            Return(Some((Buf.Utf8("bar"), SCasUnique(Buf.Utf8("6"))))),
+            Return(Some((Buf.Utf8("baz"), SCasUnique(Buf.Utf8("5")))))
+          )
+        )
+      )
       assert(Await.result(client1.delete("foo")) == true)
       assert(
-          Await.result(replicatedClient.getsAll("foo")) == InconsistentReplication(
-              Seq(Return(None),
-                  Return(Some((Buf.Utf8("baz"), SCasUnique(Buf.Utf8("5"))))))))
+        Await
+          .result(replicatedClient.getsAll("foo")) == InconsistentReplication(
+          Seq(
+            Return(None),
+            Return(Some((Buf.Utf8("baz"), SCasUnique(Buf.Utf8("5")))))
+          )
+        )
+      )
       assert(
-          Await.result(replicatedClient.checkAndSet(
-                  "foo",
-                  Buf.Utf8("bar"),
-                  Seq(Buf.Utf8("7"), Buf.Utf8("5")))) match {
-        case InconsistentReplication(
-            Seq(Throw(_), Return(CasResult.NotFound))) =>
-          true
-        case _ => false
-      })
+        Await.result(
+          replicatedClient.checkAndSet(
+            "foo",
+            Buf.Utf8("bar"),
+            Seq(Buf.Utf8("7"), Buf.Utf8("5"))
+          )
+        ) match {
+          case InconsistentReplication(
+              Seq(Throw(_), Return(CasResult.NotFound))
+              ) =>
+            true
+          case _ => false
+        }
+      )
       Await.result(client1.set("foo", Buf.Utf8("bar")))
       assert(
-          Await.result(replicatedClient.checkAndSet(
-                  "foo",
-                  Buf.Utf8("bar"),
-                  Seq(Buf.Utf8("6"), Buf.Utf8("6")))) == InconsistentReplication(
-              Seq(Return(CasResult.Exists), Return(CasResult.Stored))))
+        Await.result(
+          replicatedClient.checkAndSet(
+            "foo",
+            Buf.Utf8("bar"),
+            Seq(Buf.Utf8("6"), Buf.Utf8("6"))
+          )
+        ) == InconsistentReplication(
+          Seq(Return(CasResult.Exists), Return(CasResult.Stored))
+        )
+      )
 
       // inconsistent replica state
       firstTestServerPool(0).stop()
       firstTestServerPool(1).stop()
-      assert(
-          Await.result(replicatedClient.getsAll("foo")) match {
+      assert(Await.result(replicatedClient.getsAll("foo")) match {
         case InconsistentReplication(
-            Seq(Throw(_), Return(Some((v, SCasUnique(_)))))) =>
+            Seq(Throw(_), Return(Some((v, SCasUnique(_)))))
+            ) =>
           v equals Buf.Utf8("bar")
         case _ => false
       })
       assert(
-          Await.result(replicatedClient.checkAndSet(
-                  "foo",
-                  Buf.Utf8("bar"),
-                  Seq(Buf.Utf8("7"), Buf.Utf8("7")))) match {
-        case InconsistentReplication(
-            Seq(Throw(_), Return(CasResult.Stored))) =>
-          true
-        case _ => false
-      })
+        Await.result(
+          replicatedClient.checkAndSet(
+            "foo",
+            Buf.Utf8("bar"),
+            Seq(Buf.Utf8("7"), Buf.Utf8("7"))
+          )
+        ) match {
+          case InconsistentReplication(
+              Seq(Throw(_), Return(CasResult.Stored))
+              ) =>
+            true
+          case _ => false
+        }
+      )
 
       // all failed
       secondTestServerPool(0).stop()
       secondTestServerPool(1).stop()
-      assert(
-          Await.result(replicatedClient.getsAll("foo")) match {
+      assert(Await.result(replicatedClient.getsAll("foo")) match {
         case FailedReplication(Seq(Throw(_), Throw(_))) => true
-        case _ => false
+        case _                                          => false
       })
       assert(
-          Await.result(replicatedClient.checkAndSet(
-                  "foo",
-                  Buf.Utf8("bar"),
-                  Seq(Buf.Utf8("7"), Buf.Utf8("7")))) match {
-        case FailedReplication(Seq(Throw(_), Throw(_))) => true
-        case _ => false
-      })
+        Await.result(
+          replicatedClient.checkAndSet(
+            "foo",
+            Buf.Utf8("bar"),
+            Seq(Buf.Utf8("7"), Buf.Utf8("7"))
+          )
+        ) match {
+          case FailedReplication(Seq(Throw(_), Throw(_))) => true
+          case _                                          => false
+        }
+      )
     }
 
   if (!sys.props.contains("SKIP_FLAKY")) // CSL-1712
@@ -453,24 +555,32 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       // create my cluster client solely based on a zk client and a path
       val mycluster1 =
         CachePoolCluster.newZkCluster(firstPoolPath, zookeeperClient)
-      Await.result(mycluster1.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster1.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
       val mycluster2 =
         CachePoolCluster.newZkCluster(secondPoolPath, zookeeperClient)
-      Await.result(mycluster2.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster2.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
 
       val client1 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster1))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
       val client2 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster2))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
@@ -478,79 +588,101 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
 
       // consistent
       assert(
-          Await.result(replicatedClient.add("foo", Buf.Utf8("bar"))) == ConsistentReplication(
-              true))
+        Await.result(replicatedClient.add("foo", Buf.Utf8("bar"))) == ConsistentReplication(
+          true
+        )
+      )
       assert(
-          Await.result(replicatedClient.getAll("foo")) == ConsistentReplication(
-              Some(Buf.Utf8("bar"))))
+        Await.result(replicatedClient.getAll("foo")) == ConsistentReplication(
+          Some(Buf.Utf8("bar"))
+        )
+      )
 
       assert(
-          Await.result(replicatedClient.replace("foo", Buf.Utf8("baz"))) == ConsistentReplication(
-              true))
+        Await.result(replicatedClient.replace("foo", Buf.Utf8("baz"))) == ConsistentReplication(
+          true
+        )
+      )
       assert(
-          Await.result(replicatedClient.getAll("foo")) == ConsistentReplication(
-              Some(Buf.Utf8("baz"))))
+        Await.result(replicatedClient.getAll("foo")) == ConsistentReplication(
+          Some(Buf.Utf8("baz"))
+        )
+      )
 
       assert(
-          Await.result(replicatedClient.add("foo", Buf.Utf8("bar"))) == ConsistentReplication(
-              false))
+        Await.result(replicatedClient.add("foo", Buf.Utf8("bar"))) == ConsistentReplication(
+          false
+        )
+      )
       assert(
-          Await.result(replicatedClient.replace(
-                  "no-such-key", Buf.Utf8("test"))) == ConsistentReplication(
-              false))
+        Await
+          .result(replicatedClient.replace("no-such-key", Buf.Utf8("test"))) == ConsistentReplication(
+          false
+        )
+      )
 
       // inconsistent data
       assert(
-          Await.result(client1.add("client1-only", Buf.Utf8("test"))) == true)
+        Await.result(client1.add("client1-only", Buf.Utf8("test"))) == true
+      )
       assert(
-          Await.result(client2.add("client2-only", Buf.Utf8("test"))) == true)
-      assert(Await.result(
-              replicatedClient.add("client2-only", Buf.Utf8("test"))) match {
-        case InconsistentReplication(
-            Seq(Return(JBoolean.TRUE), Return(JBoolean.FALSE))) =>
-          true
-        case _ => false
-      })
+        Await.result(client2.add("client2-only", Buf.Utf8("test"))) == true
+      )
       assert(
-          Await.result(replicatedClient.replace("client1-only",
-                                                Buf.Utf8("test"))) match {
-        case InconsistentReplication(
-            Seq(Return(JBoolean.TRUE), Return(JBoolean.FALSE))) =>
-          true
-        case _ => false
-      })
+        Await
+          .result(replicatedClient.add("client2-only", Buf.Utf8("test"))) match {
+          case InconsistentReplication(
+              Seq(Return(JBoolean.TRUE), Return(JBoolean.FALSE))
+              ) =>
+            true
+          case _ => false
+        }
+      )
+      assert(
+        Await.result(replicatedClient.replace("client1-only", Buf.Utf8("test"))) match {
+          case InconsistentReplication(
+              Seq(Return(JBoolean.TRUE), Return(JBoolean.FALSE))
+              ) =>
+            true
+          case _ => false
+        }
+      )
 
       // inconsistent replica state
       firstTestServerPool(0).stop()
       firstTestServerPool(1).stop()
-      assert(Await.result(
-              replicatedClient.add("client2-only", Buf.Utf8("test"))) match {
-        case InconsistentReplication(Seq(Throw(_), Return(JBoolean.FALSE))) =>
-          true
-        case _ => false
-      })
       assert(
-          Await.result(replicatedClient.replace("client1-only",
-                                                Buf.Utf8("test"))) match {
-        case InconsistentReplication(Seq(Throw(_), Return(JBoolean.FALSE))) =>
-          true
-        case _ => false
-      })
+        Await
+          .result(replicatedClient.add("client2-only", Buf.Utf8("test"))) match {
+          case InconsistentReplication(Seq(Throw(_), Return(JBoolean.FALSE))) =>
+            true
+          case _ => false
+        }
+      )
+      assert(
+        Await.result(replicatedClient.replace("client1-only", Buf.Utf8("test"))) match {
+          case InconsistentReplication(Seq(Throw(_), Return(JBoolean.FALSE))) =>
+            true
+          case _ => false
+        }
+      )
 
       // all failed
       secondTestServerPool(0).stop()
       secondTestServerPool(1).stop()
-      assert(Await.result(
-              replicatedClient.add("client2-only", Buf.Utf8("test"))) match {
-        case FailedReplication(Seq(Throw(_), Throw(_))) => true
-        case _ => false
-      })
       assert(
-          Await.result(replicatedClient.replace("client1-only",
-                                                Buf.Utf8("test"))) match {
-        case FailedReplication(Seq(Throw(_), Throw(_))) => true
-        case _ => false
-      })
+        Await
+          .result(replicatedClient.add("client2-only", Buf.Utf8("test"))) match {
+          case FailedReplication(Seq(Throw(_), Throw(_))) => true
+          case _                                          => false
+        }
+      )
+      assert(
+        Await.result(replicatedClient.replace("client1-only", Buf.Utf8("test"))) match {
+          case FailedReplication(Seq(Throw(_), Throw(_))) => true
+          case _                                          => false
+        }
+      )
     }
 
   if (!sys.props.contains("SKIP_FLAKY")) // CSL-1712
@@ -558,24 +690,32 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       // create my cluster client solely based on a zk client and a path
       val mycluster1 =
         CachePoolCluster.newZkCluster(firstPoolPath, zookeeperClient)
-      Await.result(mycluster1.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster1.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
       val mycluster2 =
         CachePoolCluster.newZkCluster(secondPoolPath, zookeeperClient)
-      Await.result(mycluster2.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster2.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
 
       val client1 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster1))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
       val client2 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster2))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
@@ -583,44 +723,64 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
 
       // consistent
       assert(
-          Await.result(replicatedClient.set("foo", Buf.Utf8("1"))) == ConsistentReplication(
-              ()))
+        Await.result(replicatedClient.set("foo", Buf.Utf8("1"))) == ConsistentReplication(
+          ()
+        )
+      )
       assert(
-          Await.result(replicatedClient.getAll("foo")) == ConsistentReplication(
-              Some(Buf.Utf8("1"))))
+        Await.result(replicatedClient.getAll("foo")) == ConsistentReplication(
+          Some(Buf.Utf8("1"))
+        )
+      )
       assert(
-          Await.result(replicatedClient.incr("foo", 2)) == ConsistentReplication(
-              Some(3L)))
+        Await.result(replicatedClient.incr("foo", 2)) == ConsistentReplication(
+          Some(3L)
+        )
+      )
       assert(
-          Await.result(replicatedClient.getAll("foo")) == ConsistentReplication(
-              Some(Buf.Utf8("3"))))
+        Await.result(replicatedClient.getAll("foo")) == ConsistentReplication(
+          Some(Buf.Utf8("3"))
+        )
+      )
       assert(
-          Await.result(replicatedClient.decr("foo", 1)) == ConsistentReplication(
-              Some(2L)))
+        Await.result(replicatedClient.decr("foo", 1)) == ConsistentReplication(
+          Some(2L)
+        )
+      )
       assert(
-          Await.result(replicatedClient.getAll("foo")) == ConsistentReplication(
-              Some(Buf.Utf8("2"))))
+        Await.result(replicatedClient.getAll("foo")) == ConsistentReplication(
+          Some(Buf.Utf8("2"))
+        )
+      )
 
       // inconsistent data
       assert(Await.result(client1.incr("foo", 1)) == Some(3L))
       assert(
-          Await.result(replicatedClient.incr("foo", 1)) == InconsistentReplication(
-              Seq(Return(Some(4L)), Return(Some(3L)))))
+        Await
+          .result(replicatedClient.incr("foo", 1)) == InconsistentReplication(
+          Seq(Return(Some(4L)), Return(Some(3L)))
+        )
+      )
       assert(Await.result(client2.decr("foo", 1)) == Some(2L))
       assert(
-          Await.result(replicatedClient.decr("foo", 1)) == InconsistentReplication(
-              Seq(Return(Some(3L)), Return(Some(1L)))))
+        Await
+          .result(replicatedClient.decr("foo", 1)) == InconsistentReplication(
+          Seq(Return(Some(3L)), Return(Some(1L)))
+        )
+      )
 
       assert(Await.result(client1.delete("foo")) == true)
       assert(
-          Await.result(replicatedClient.incr("foo", 1)) == InconsistentReplication(
-              Seq(Return(None), Return(Some(2L)))))
+        Await
+          .result(replicatedClient.incr("foo", 1)) == InconsistentReplication(
+          Seq(Return(None), Return(Some(2L)))
+        )
+      )
 
       // inconsistent replica state
       firstTestServerPool(0).stop()
       firstTestServerPool(1).stop()
-      assert(
-          Await.result(replicatedClient.decr("foo", 1)) match {
+      assert(Await.result(replicatedClient.decr("foo", 1)) match {
         case InconsistentReplication(Seq(Throw(_), Return(Some(v)))) =>
           v equals 1L
         case _ => false
@@ -629,10 +789,9 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       // all failed
       secondTestServerPool(0).stop()
       secondTestServerPool(1).stop()
-      assert(
-          Await.result(replicatedClient.decr("foo", 1)) match {
+      assert(Await.result(replicatedClient.decr("foo", 1)) match {
         case FailedReplication(Seq(Throw(_), Throw(_))) => true
-        case _ => false
+        case _                                          => false
       })
     }
 
@@ -641,24 +800,32 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       // create my cluster client solely based on a zk client and a path
       val mycluster1 =
         CachePoolCluster.newZkCluster(firstPoolPath, zookeeperClient)
-      Await.result(mycluster1.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster1.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
       val mycluster2 =
         CachePoolCluster.newZkCluster(secondPoolPath, zookeeperClient)
-      Await.result(mycluster2.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster2.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
 
       val client1 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster1))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
       val client2 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster2))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
@@ -685,8 +852,7 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
 
       (0 until count).foreach { n =>
         {
-          assert(
-              Await.result(replicatedClient.getAll("foo" + n)) match {
+          assert(Await.result(replicatedClient.getAll("foo" + n)) match {
             case InconsistentReplication(Seq(Throw(_), Return(Some(v)))) =>
               val Buf.Utf8(res) = v
               res equals "bar" + n
@@ -701,65 +867,76 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       // create my cluster client solely based on a zk client and a path
       val mycluster1 =
         CachePoolCluster.newZkCluster(firstPoolPath, zookeeperClient)
-      Await.result(mycluster1.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster1.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
       val mycluster2 =
         CachePoolCluster.newZkCluster(secondPoolPath, zookeeperClient)
-      Await.result(mycluster2.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster2.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
 
       val client1 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster1))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
       val client2 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster2))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
       val replicatedClient = new BaseReplicationClient(Seq(client1, client2))
 
       assert(
-          Await.result(replicatedClient.set("foo", Buf.Utf8("bar"))) == ConsistentReplication(
-              ()))
+        Await.result(replicatedClient.set("foo", Buf.Utf8("bar"))) == ConsistentReplication(
+          ()
+        )
+      )
       assert(
-          Await.result(replicatedClient.getAll("foo")) == ConsistentReplication(
-              Some(Buf.Utf8("bar"))))
+        Await.result(replicatedClient.getAll("foo")) == ConsistentReplication(
+          Some(Buf.Utf8("bar"))
+        )
+      )
 
       // primary pool down
       firstTestServerPool(0).stop()
       firstTestServerPool(1).stop()
 
-      assert(
-          Await.result(replicatedClient.getAll("foo")) match {
+      assert(Await.result(replicatedClient.getAll("foo")) match {
         case InconsistentReplication(Seq(Throw(_), Return(Some(v)))) =>
           v equals Buf.Utf8("bar")
         case _ => false
       })
-      assert(
-          Await.result(replicatedClient.set("foo", Buf.Utf8("baz"))) match {
+      assert(Await.result(replicatedClient.set("foo", Buf.Utf8("baz"))) match {
         case InconsistentReplication(Seq(Throw(_), Return(()))) => true
-        case _ => false
+        case _                                                  => false
       })
 
       // bring back primary pool
       TestMemcachedServer.start(Some(firstTestServerPool(0).address))
       TestMemcachedServer.start(Some(firstTestServerPool(1).address))
 
-      assert(
-          Await.result(replicatedClient.getAll("foo")) match {
+      assert(Await.result(replicatedClient.getAll("foo")) match {
         case InconsistentReplication(Seq(Return(None), Return(Some(v)))) =>
           v equals Buf.Utf8("baz")
         case _ => false
       })
       assert(
-          Await.result(replicatedClient.set("foo", Buf.Utf8("baz"))) == ConsistentReplication(
-              ()))
+        Await.result(replicatedClient.set("foo", Buf.Utf8("baz"))) == ConsistentReplication(
+          ()
+        )
+      )
     }
 
   if (!sys.props.contains("SKIP_FLAKY")) // CSL-1712
@@ -767,24 +944,32 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       // create my cluster client solely based on a zk client and a path
       val mycluster1 =
         CachePoolCluster.newZkCluster(firstPoolPath, zookeeperClient)
-      Await.result(mycluster1.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster1.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
       val mycluster2 =
         CachePoolCluster.newZkCluster(secondPoolPath, zookeeperClient)
-      Await.result(mycluster2.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster2.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
 
       val client1 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster1))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
       val client2 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster2))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
@@ -792,11 +977,13 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
 
       intercept[UnsupportedOperationException] {
         Await.result(
-            replicatedClient.append("not-supported", Buf.Utf8("value")))
+          replicatedClient.append("not-supported", Buf.Utf8("value"))
+        )
       }
       intercept[UnsupportedOperationException] {
         Await.result(
-            replicatedClient.prepend("not-supported", Buf.Utf8("value")))
+          replicatedClient.prepend("not-supported", Buf.Utf8("value"))
+        )
       }
     }
 
@@ -805,24 +992,32 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       // create my cluster client solely based on a zk client and a path
       val mycluster1 =
         CachePoolCluster.newZkCluster(firstPoolPath, zookeeperClient)
-      Await.result(mycluster1.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster1.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
       val mycluster2 =
         CachePoolCluster.newZkCluster(secondPoolPath, zookeeperClient)
-      Await.result(mycluster2.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster2.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
 
       val client1 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster1))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
       val client2 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster2))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
@@ -831,8 +1026,7 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       // consistent
       assert(Await.result(replicatedClient.get("foo")) == None)
       Await.result(replicatedClient.set("foo", Buf.Utf8("bar")))
-      assert(
-          Await.result(replicatedClient.get("foo")) == Some(Buf.Utf8("bar")))
+      assert(Await.result(replicatedClient.get("foo")) == Some(Buf.Utf8("bar")))
       assert(Await.result(client1.get("foo")) == Some(Buf.Utf8("bar")))
       assert(Await.result(client2.get("foo")) == Some(Buf.Utf8("bar")))
 
@@ -840,19 +1034,29 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       Await.result(client2.set("client2-only", Buf.Utf8("test")))
       assert(Await.result(client1.get("client2-only")) == None)
       assert(
-          Await.result(client2.get("client2-only")) == Some(Buf.Utf8("test")))
-      assert(Await.result(replicatedClient.get("client2-only")) == Some(
-              Buf.Utf8("test")))
+        Await.result(client2.get("client2-only")) == Some(Buf.Utf8("test"))
+      )
+      assert(
+        Await.result(replicatedClient.get("client2-only")) == Some(
+          Buf.Utf8("test")
+        )
+      )
 
       // set overwrites existing data
-      Await.result(
-          replicatedClient.set("client2-only", Buf.Utf8("test-again")))
-      assert(Await.result(replicatedClient.get("client2-only")) == Some(
-              Buf.Utf8("test-again")))
-      assert(Await.result(client1.get("client2-only")) == Some(
-              Buf.Utf8("test-again")))
-      assert(Await.result(client1.get("client2-only")) == Some(
-              Buf.Utf8("test-again")))
+      Await.result(replicatedClient.set("client2-only", Buf.Utf8("test-again")))
+      assert(
+        Await.result(replicatedClient.get("client2-only")) == Some(
+          Buf.Utf8("test-again")
+        )
+      )
+      assert(
+        Await
+          .result(client1.get("client2-only")) == Some(Buf.Utf8("test-again"))
+      )
+      assert(
+        Await
+          .result(client1.get("client2-only")) == Some(Buf.Utf8("test-again"))
+      )
 
       // inconsistent replica state
       firstTestServerPool(0).stop()
@@ -877,24 +1081,32 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       // create my cluster client solely based on a zk client and a path
       val mycluster1 =
         CachePoolCluster.newZkCluster(firstPoolPath, zookeeperClient)
-      Await.result(mycluster1.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster1.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
       val mycluster2 =
         CachePoolCluster.newZkCluster(secondPoolPath, zookeeperClient)
-      Await.result(mycluster2.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster2.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
 
       val client1 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster1))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
       val client2 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster2))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
@@ -903,8 +1115,11 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       // consistent
       assert(Await.result(replicatedClient.gets("foo")) == None)
       Await.result(replicatedClient.set("foo", Buf.Utf8("bar")))
-      assert(Await.result(replicatedClient.gets("foo")) == Some(
-              (Buf.Utf8("bar"), Buf.Utf8("1|1"))))
+      assert(
+        Await.result(replicatedClient.gets("foo")) == Some(
+          (Buf.Utf8("bar"), Buf.Utf8("1|1"))
+        )
+      )
 
       // inconsistent data
       Await.result(client1.set("inconsistent-key", Buf.Utf8("client1")))
@@ -912,15 +1127,19 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       assert(Await.result(replicatedClient.gets("inconsistent-key")) == None)
 
       // cas overwrites existing data
-      assert(Await.result(replicatedClient.cas(
-                  "foo", Buf.Utf8("baz"), Buf.Utf8("1|1"))) == true)
+      assert(
+        Await.result(
+          replicatedClient.cas("foo", Buf.Utf8("baz"), Buf.Utf8("1|1"))
+        ) == true
+      )
 
       // inconsistent replica state
       firstTestServerPool(0).stop()
       firstTestServerPool(1).stop()
       intercept[SimpleReplicationFailure] {
         Await.result(
-            replicatedClient.cas("foo", Buf.Utf8("baz"), Buf.Utf8("2|3")))
+          replicatedClient.cas("foo", Buf.Utf8("baz"), Buf.Utf8("2|3"))
+        )
       }
       intercept[SimpleReplicationFailure] {
         Await.result(replicatedClient.gets("foo"))
@@ -932,24 +1151,32 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       // create my cluster client solely based on a zk client and a path
       val mycluster1 =
         CachePoolCluster.newZkCluster(firstPoolPath, zookeeperClient)
-      Await.result(mycluster1.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster1.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
       val mycluster2 =
         CachePoolCluster.newZkCluster(secondPoolPath, zookeeperClient)
-      Await.result(mycluster2.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster2.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
 
       val client1 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster1))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
       val client2 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster2))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
@@ -959,8 +1186,7 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       assert(Await.result(replicatedClient.delete("empty-key")) == false)
 
       Await.result(replicatedClient.set("foo", Buf.Utf8("bar")))
-      assert(
-          Await.result(replicatedClient.get("foo")) == Some(Buf.Utf8("bar")))
+      assert(Await.result(replicatedClient.get("foo")) == Some(Buf.Utf8("bar")))
       assert(Await.result(client1.get("foo")) == Some(Buf.Utf8("bar")))
       assert(Await.result(client1.get("foo")) == Some(Buf.Utf8("bar")))
       assert(Await.result(replicatedClient.delete("foo")) == true)
@@ -968,18 +1194,15 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       assert(Await.result(client2.get("foo")) == None)
 
       // inconsistent data
-      assert(
-          Await.result(client2.add("client2-only", Buf.Utf8("bar"))) == true)
+      assert(Await.result(client2.add("client2-only", Buf.Utf8("bar"))) == true)
       assert(Await.result(client1.get("client2-only")) == None)
-      assert(
-          Await.result(client2.get("client2-only")) == Some(Buf.Utf8("bar")))
+      assert(Await.result(client2.get("client2-only")) == Some(Buf.Utf8("bar")))
       assert(Await.result(replicatedClient.delete("client2-only")) == false)
 
       // inconsistent replica state
       Await.result(client2.set("client2-only", Buf.Utf8("bar")))
       assert(Await.result(client1.get("client2-only")) == None)
-      assert(
-          Await.result(client2.get("client2-only")) == Some(Buf.Utf8("bar")))
+      assert(Await.result(client2.get("client2-only")) == Some(Buf.Utf8("bar")))
       firstTestServerPool(0).stop()
       firstTestServerPool(1).stop()
       intercept[SimpleReplicationFailure] {
@@ -997,57 +1220,72 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       // create my cluster client solely based on a zk client and a path
       val mycluster1 =
         CachePoolCluster.newZkCluster(firstPoolPath, zookeeperClient)
-      Await.result(mycluster1.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster1.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
       val mycluster2 =
         CachePoolCluster.newZkCluster(secondPoolPath, zookeeperClient)
-      Await.result(mycluster2.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster2.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
 
       val client1 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster1))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
       val client2 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster2))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
       val replicatedClient = new SimpleReplicationClient(Seq(client1, client2))
 
       // consistent
-      assert(
-          Await.result(replicatedClient.add("foo", Buf.Utf8("bar"))) == true)
-      assert(
-          Await.result(replicatedClient.get("foo")) == Some(Buf.Utf8("bar")))
+      assert(Await.result(replicatedClient.add("foo", Buf.Utf8("bar"))) == true)
+      assert(Await.result(replicatedClient.get("foo")) == Some(Buf.Utf8("bar")))
       assert(Await.result(client1.get("foo")) == Some(Buf.Utf8("bar")))
       assert(Await.result(client2.get("foo")) == Some(Buf.Utf8("bar")))
 
       assert(
-          Await.result(replicatedClient.replace("foo", Buf.Utf8("baz"))) == true)
+        Await.result(replicatedClient.replace("foo", Buf.Utf8("baz"))) == true
+      )
       assert(Await.result(client1.get("foo")) == Some(Buf.Utf8("baz")))
       assert(Await.result(client2.get("foo")) == Some(Buf.Utf8("baz")))
 
       assert(
-          Await.result(replicatedClient.add("foo", Buf.Utf8("bar"))) == false)
+        Await.result(replicatedClient.add("foo", Buf.Utf8("bar"))) == false
+      )
 
-      assert(Await.result(replicatedClient.replace("no-such-key",
-                                                   Buf.Utf8("test"))) == false)
+      assert(
+        Await
+          .result(replicatedClient.replace("no-such-key", Buf.Utf8("test"))) == false
+      )
 
       // inconsistent data
       assert(
-          Await.result(client1.add("client1-only", Buf.Utf8("test"))) == true)
+        Await.result(client1.add("client1-only", Buf.Utf8("test"))) == true
+      )
       assert(
-          Await.result(client2.add("client2-only", Buf.Utf8("test"))) == true)
-      assert(Await.result(
-              replicatedClient.add("client2-only", Buf.Utf8("test"))) == false)
-      assert(Await.result(replicatedClient.replace("client1-only",
-                                                   Buf.Utf8("test"))) == false)
+        Await.result(client2.add("client2-only", Buf.Utf8("test"))) == true
+      )
+      assert(
+        Await.result(replicatedClient.add("client2-only", Buf.Utf8("test"))) == false
+      )
+      assert(
+        Await
+          .result(replicatedClient.replace("client1-only", Buf.Utf8("test"))) == false
+      )
 
       // inconsistent replica state
       firstTestServerPool(0).stop()
@@ -1056,8 +1294,7 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
         Await.result(replicatedClient.add("client2-only", Buf.Utf8("test")))
       }
       intercept[SimpleReplicationFailure] {
-        Await.result(
-            replicatedClient.replace("client1-only", Buf.Utf8("test")))
+        Await.result(replicatedClient.replace("client1-only", Buf.Utf8("test")))
       }
     }
 
@@ -1066,24 +1303,32 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       // create my cluster client solely based on a zk client and a path
       val mycluster1 =
         CachePoolCluster.newZkCluster(firstPoolPath, zookeeperClient)
-      Await.result(mycluster1.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster1.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
       val mycluster2 =
         CachePoolCluster.newZkCluster(secondPoolPath, zookeeperClient)
-      Await.result(mycluster2.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster2.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
 
       val client1 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster1))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
       val client2 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster2))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
@@ -1117,24 +1362,32 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       // create my cluster client solely based on a zk client and a path
       val mycluster1 =
         CachePoolCluster.newZkCluster(firstPoolPath, zookeeperClient)
-      Await.result(mycluster1.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster1.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
       val mycluster2 =
         CachePoolCluster.newZkCluster(secondPoolPath, zookeeperClient)
-      Await.result(mycluster2.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster2.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
 
       val client1 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster1))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
       val client2 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster2))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
@@ -1149,12 +1402,17 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
 
       (0 until count).foreach { n =>
         {
-          assert(Await.result(replicatedClient.get("foo" + n)) == Some(
-                  Buf.Utf8("bar" + n)))
-          assert(Await.result(client1.get("foo" + n)) == Some(
-                  Buf.Utf8("bar" + n)))
-          assert(Await.result(client2.get("foo" + n)) == Some(
-                  Buf.Utf8("bar" + n)))
+          assert(
+            Await.result(replicatedClient.get("foo" + n)) == Some(
+              Buf.Utf8("bar" + n)
+            )
+          )
+          assert(
+            Await.result(client1.get("foo" + n)) == Some(Buf.Utf8("bar" + n))
+          )
+          assert(
+            Await.result(client2.get("foo" + n)) == Some(Buf.Utf8("bar" + n))
+          )
         }
       }
 
@@ -1164,8 +1422,11 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
 
       (0 until count).foreach { n =>
         {
-          assert(Await.result(replicatedClient.get("foo" + n)) == Some(
-                  Buf.Utf8("bar" + n)))
+          assert(
+            Await.result(replicatedClient.get("foo" + n)) == Some(
+              Buf.Utf8("bar" + n)
+            )
+          )
         }
       }
     }
@@ -1175,32 +1436,39 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       // create my cluster client solely based on a zk client and a path
       val mycluster1 =
         CachePoolCluster.newZkCluster(firstPoolPath, zookeeperClient)
-      Await.result(mycluster1.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster1.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
       val mycluster2 =
         CachePoolCluster.newZkCluster(secondPoolPath, zookeeperClient)
-      Await.result(mycluster2.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster2.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
 
       val client1 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster1))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
       val client2 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster2))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
       val replicatedClient = new SimpleReplicationClient(Seq(client1, client2))
 
       Await.result(replicatedClient.set("foo", Buf.Utf8("bar")))
-      assert(
-          Await.result(replicatedClient.get("foo")) == Some(Buf.Utf8("bar")))
+      assert(Await.result(replicatedClient.get("foo")) == Some(Buf.Utf8("bar")))
       assert(Await.result(client1.get("foo")) == Some(Buf.Utf8("bar")))
       assert(Await.result(client2.get("foo")) == Some(Buf.Utf8("bar")))
 
@@ -1208,8 +1476,7 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       firstTestServerPool(0).stop()
       firstTestServerPool(1).stop()
 
-      assert(
-          Await.result(replicatedClient.get("foo")) == Some(Buf.Utf8("bar")))
+      assert(Await.result(replicatedClient.get("foo")) == Some(Buf.Utf8("bar")))
       intercept[SimpleReplicationFailure] {
         Await.result(replicatedClient.set("foo", Buf.Utf8("baz")))
       }
@@ -1218,8 +1485,7 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       TestMemcachedServer.start(Some(firstTestServerPool(0).address))
       TestMemcachedServer.start(Some(firstTestServerPool(1).address))
 
-      assert(
-          Await.result(replicatedClient.get("foo")) == Some(Buf.Utf8("baz")))
+      assert(Await.result(replicatedClient.get("foo")) == Some(Buf.Utf8("baz")))
       assert(Await.result(client1.get("foo")) == None)
       assert(Await.result(client2.get("foo")) == Some(Buf.Utf8("baz")))
       Await.result(replicatedClient.set("foo", Buf.Utf8("baz")))
@@ -1230,24 +1496,32 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
       // create my cluster client solely based on a zk client and a path
       val mycluster1 =
         CachePoolCluster.newZkCluster(firstPoolPath, zookeeperClient)
-      Await.result(mycluster1.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster1.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
       val mycluster2 =
         CachePoolCluster.newZkCluster(secondPoolPath, zookeeperClient)
-      Await.result(mycluster2.ready) // give it sometime for the cluster to get the initial set of memberships
+      Await.result(
+        mycluster2.ready
+      ) // give it sometime for the cluster to get the initial set of memberships
 
       val client1 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster1))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
       val client2 = KetamaClientBuilder()
-        .clientBuilder(ClientBuilder()
-              .hostConnectionLimit(1)
-              .codec(Memcached())
-              .failFast(false))
+        .clientBuilder(
+          ClientBuilder()
+            .hostConnectionLimit(1)
+            .codec(Memcached())
+            .failFast(false)
+        )
         .group(Group.fromCluster(mycluster2))
         .failureAccrualParams(Int.MaxValue, 0.seconds)
         .build()
@@ -1255,11 +1529,13 @@ class ReplicationClientTest extends FunSuite with BeforeAndAfterEach {
 
       intercept[UnsupportedOperationException] {
         Await.result(
-            replicatedClient.append("not-supported", Buf.Utf8("value")))
+          replicatedClient.append("not-supported", Buf.Utf8("value"))
+        )
       }
       intercept[UnsupportedOperationException] {
         Await.result(
-            replicatedClient.prepend("not-supported", Buf.Utf8("value")))
+          replicatedClient.prepend("not-supported", Buf.Utf8("value"))
+        )
       }
     }
 }

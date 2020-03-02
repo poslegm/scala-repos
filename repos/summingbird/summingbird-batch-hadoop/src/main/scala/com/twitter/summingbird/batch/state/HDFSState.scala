@@ -28,10 +28,12 @@ import org.slf4j.LoggerFactory
   */
 object HDFSState {
 
-  case class Config(rootPath: String,
-                    conf: Configuration,
-                    startTime: Option[Timestamp],
-                    numBatches: Long)
+  case class Config(
+      rootPath: String,
+      conf: Configuration,
+      startTime: Option[Timestamp],
+      numBatches: Long
+  )
 
   /**
     * Returns a new HDFSState tuned to the given state path. Each run
@@ -40,10 +42,12 @@ object HDFSState {
     * Pass in a startTime to restart the process from the specified
     * time.
     */
-  def apply(path: String,
-            conf: Configuration = new Configuration,
-            startTime: Option[Timestamp] = None,
-            numBatches: Long = 1)(implicit b: Batcher): HDFSState =
+  def apply(
+      path: String,
+      conf: Configuration = new Configuration,
+      startTime: Option[Timestamp] = None,
+      numBatches: Long = 1
+  )(implicit b: Batcher): HDFSState =
     HDFSState(Config(path, conf, startTime, numBatches))
 
   /**
@@ -59,13 +63,15 @@ class HDFSState(val config: HDFSState.Config)(implicit val batcher: Batcher)
 }
 
 class HDFSCheckpointStore(val config: HDFSState.Config)(
-    implicit val batcher: Batcher)
-    extends CheckpointStore[Iterable[BatchID]] {
+    implicit val batcher: Batcher
+) extends CheckpointStore[Iterable[BatchID]] {
 
   @transient private val logger = LoggerFactory.getLogger(classOf[HDFSState])
 
   protected lazy val versionedStore = new FileVersionTracking(
-      config.rootPath, FileSystem.get(new URI(config.rootPath), config.conf))
+    config.rootPath,
+    FileSystem.get(new URI(config.rootPath), config.conf)
+  )
 
   private def version(b: BatchID) =
     batcher.earliestTimeOf(b).milliSinceEpoch
@@ -73,8 +79,9 @@ class HDFSCheckpointStore(val config: HDFSState.Config)(
   val startBatch: InclusiveLower[BatchID] = config.startTime
     .map(batcher.batchOf(_))
     .orElse {
-      val mostRecentB = versionedStore.mostRecentVersion.map(
-          t => batcher.batchOf(Timestamp(t)).next)
+      val mostRecentB = versionedStore.mostRecentVersion.map(t =>
+        batcher.batchOf(Timestamp(t)).next
+      )
       logger.info("Most recent batch found on disk: " + mostRecentB.toString)
       mostRecentB
     }
@@ -86,23 +93,22 @@ class HDFSCheckpointStore(val config: HDFSState.Config)(
     }
 
   val endBatch: ExclusiveUpper[BatchID] = ExclusiveUpper(
-      startBatch.lower + config.numBatches)
+    startBatch.lower + config.numBatches
+  )
 
   override def checkpointBatchStart(
-      intersection: Intersection[InclusiveLower, ExclusiveUpper, Timestamp])
-    : Iterable[BatchID] =
+      intersection: Intersection[InclusiveLower, ExclusiveUpper, Timestamp]
+  ): Iterable[BatchID] =
     BatchID.toIterable(batcher.batchesCoveredBy(intersection))
 
   override def checkpointSuccessfulRun(runningBatches: Iterable[BatchID]) =
-    runningBatches.foreach { b =>
-      versionedStore.succeedVersion(version(b))
-    }
+    runningBatches.foreach { b => versionedStore.succeedVersion(version(b)) }
 
   override def checkpointFailure(
-      runningBatches: Iterable[BatchID], err: Throwable) =
-    runningBatches.foreach { b =>
-      versionedStore.deleteVersion(version(b))
-    }
+      runningBatches: Iterable[BatchID],
+      err: Throwable
+  ) =
+    runningBatches.foreach { b => versionedStore.deleteVersion(version(b)) }
 
   override def checkpointPlanFailure(err: Throwable) = throw err
 }

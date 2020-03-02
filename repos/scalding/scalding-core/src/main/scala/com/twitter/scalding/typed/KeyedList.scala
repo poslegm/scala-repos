@@ -28,7 +28,8 @@ object KeyedListLike {
 
   /** KeyedListLike items are implicitly convertable to TypedPipe */
   implicit def toTypedPipe[K, V, S[K, +V] <: KeyedListLike[K, V, S]](
-      keyed: KeyedListLike[K, V, S]): TypedPipe[(K, V)] = keyed.toTypedPipe
+      keyed: KeyedListLike[K, V, S]
+  ): TypedPipe[(K, V)] = keyed.toTypedPipe
 }
 
 /**
@@ -136,21 +137,14 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
     * and out of cascading/hadoop types.
     */
   def filter(fn: ((K, T)) => Boolean): This[K, T] =
-    mapGroup { (k: K, items: Iterator[T]) =>
-      items.filter { t =>
-        fn((k, t))
-      }
-    }
+    mapGroup { (k: K, items: Iterator[T]) => items.filter { t => fn((k, t)) } }
 
   /**
     * flatten the values
     * Useful after sortedTake, for instance
     */
   def flattenValues[U](implicit ev: T <:< TraversableOnce[U]): This[K, U] =
-    mapValueStream(
-        _.flatMap { us =>
-      us.asInstanceOf[TraversableOnce[U]]
-    })
+    mapValueStream(_.flatMap { us => us.asInstanceOf[TraversableOnce[U]] })
 
   /**
     * This is just short hand for mapValueStream(identity), it makes sure the
@@ -180,27 +174,21 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
     * but for Grouped we can avoid resorting to mapValueStream
     */
   def mapValues[V](fn: T => V): This[K, V] =
-    mapGroup { (_, iter) =>
-      iter.map(fn)
-    }
+    mapGroup { (_, iter) => iter.map(fn) }
 
   /**
     * Similar to mapValues, but works like flatMap, returning a collection of outputs
     * for each value input.
     */
   def flatMapValues[V](fn: T => TraversableOnce[V]): This[K, V] =
-    mapGroup { (_, iter) =>
-      iter.flatMap(fn)
-    }
+    mapGroup { (_, iter) => iter.flatMap(fn) }
 
   /**
     * Use this when you don't care about the key for the group,
     * otherwise use mapGroup
     */
   def mapValueStream[V](smfn: Iterator[T] => Iterator[V]): This[K, V] =
-    mapGroup { (k: K, items: Iterator[T]) =>
-      smfn(items)
-    }
+    mapGroup { (k: K, items: Iterator[T]) => smfn(items) }
 
   /**
     * Add all items according to the implicit Semigroup
@@ -224,8 +212,9 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
     * Take the largest k things according to the implicit ordering.
     * Useful for top-k without having to call ord.reverse
     */
-  def sortedReverseTake(k: Int)(
-      implicit ord: Ordering[_ >: T]): This[K, Seq[T]] =
+  def sortedReverseTake(
+      k: Int
+  )(implicit ord: Ordering[_ >: T]): This[K, Seq[T]] =
     sortedTake(k)(ord.reverse)
 
   /**
@@ -237,7 +226,7 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
   def sortedTake(k: Int)(implicit ord: Ordering[_ >: T]): This[K, Seq[T]] = {
     // cast because Ordering is not contravariant, but could be (and this cast is safe)
     val ordT: Ordering[T] = ord.asInstanceOf[Ordering[T]]
-    val mon = new PriorityQueueMonoid[T](k)(ordT)
+    val mon               = new PriorityQueueMonoid[T](k)(ordT)
     mapValues(mon.build(_))
       .sum(mon) // results in a PriorityQueue
       // scala can't infer the type, possibly due to the view bound on TypedPipe
@@ -245,8 +234,9 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
   }
 
   /** Like the above, but with a less than operation for the ordering */
-  def sortWithTake[U >: T](k: Int)(
-      lessThan: (U, U) => Boolean): This[K, Seq[T]] =
+  def sortWithTake[U >: T](
+      k: Int
+  )(lessThan: (U, U) => Boolean): This[K, Seq[T]] =
     sortedTake(k)(Ordering.fromLessThan(lessThan))
 
   /** For each key, Return the product of all the values */
@@ -254,9 +244,7 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
 
   /** For each key, count the number of values that satisfy a predicate */
   def count(fn: T => Boolean): This[K, Long] =
-    mapValues { t =>
-      if (fn(t)) 1L else 0L
-    }.sum
+    mapValues { t => if (fn(t)) 1L else 0L }.sum
 
   /** For each key, check to see if a predicate is true for all Values*/
   def forall(fn: T => Boolean): This[K, Boolean] =
@@ -301,15 +289,11 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
     * the fold for each key
     */
   def foldWithKey[V](fn: K => Fold[T, V]): This[K, V] =
-    mapGroup { (k, vs) =>
-      Iterator(fn(k).overTraversable(vs))
-    }
+    mapGroup { (k, vs) => Iterator(fn(k).overTraversable(vs)) }
 
   /** For each key, fold the values. see scala.collection.Iterable.foldLeft */
   def foldLeft[B](z: B)(fn: (B, T) => B): This[K, B] =
-    mapValueStream { stream =>
-      Iterator(stream.foldLeft(z)(fn))
-    }
+    mapValueStream { stream => Iterator(stream.foldLeft(z)(fn)) }
 
   /** For each key, scanLeft the values. see scala.collection.Iterable.scanLeft */
   def scanLeft[B](z: B)(fn: (B, T) => B): This[K, B] =
@@ -333,9 +317,7 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
 
   /** For each key, give the number of values */
   def size: This[K, Long] =
-    mapValues { x =>
-      1L
-    }.sum
+    mapValues { x => 1L }.sum
 
   /**
     * For each key, give the number of unique values. WARNING: May OOM.

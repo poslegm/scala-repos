@@ -6,9 +6,10 @@ import scala.scalajs.js.typedarray._
   *  DataInputStream implementation using JavaScript typed arrays.
   */
 class DataInputStream(in: InputStream)
-    extends FilterInputStream(in) with DataInput {
+    extends FilterInputStream(in)
+    with DataInput {
 
-  private var pushedBack: Int = -1
+  private var pushedBack: Int     = -1
   private var pushedBackMark: Int = -1
 
   // -- ArrayBufferInputStream mode helpers --
@@ -17,7 +18,7 @@ class DataInputStream(in: InputStream)
   // creating byte arrays first
   private val inArrayBufferStream = in match {
     case in: ArrayBufferInputStream => in
-    case _ => null
+    case _                          => null
   }
   private val hasArrayBuffer = inArrayBufferStream != null
   private val bufDataView = {
@@ -28,9 +29,9 @@ class DataInputStream(in: InputStream)
   }
 
   private def consumePos(n: Int) = {
-    val off = if (pushedBack != -1) 1 else 0
+    val off       = if (pushedBack != -1) 1 else 0
     val resultPos = inArrayBufferStream.pos - off
-    val toSkip = n - off
+    val toSkip    = n - off
     if (in.skip(toSkip) != toSkip) eof()
     resultPos
   }
@@ -39,9 +40,9 @@ class DataInputStream(in: InputStream)
   // Due to the method readLine, we need to be able to push back a byte (if we
   // read a \r and the following byte is NOT a \n). We implement this here.
   // We also provide a method to create an ad-hoc data view of the next n bytes
-  private val convBufLen = 8
-  private val convBuf = new ArrayBuffer(convBufLen)
-  private val convInView = new Int8Array(convBuf)
+  private val convBufLen  = 8
+  private val convBuf     = new ArrayBuffer(convBufLen)
+  private val convInView  = new Int8Array(convBuf)
   private val convOutView = new DataView(convBuf)
   private def view(len: Int) = {
     assert(len <= convBufLen)
@@ -56,7 +57,7 @@ class DataInputStream(in: InputStream)
   }
 
   // General Helpers
-  private def eof() = throw new EOFException()
+  private def eof()            = throw new EOFException()
   private def pushBack(v: Int) = { pushedBack = v }
 
   // Methods on DataInput
@@ -90,7 +91,7 @@ class DataInputStream(in: InputStream)
       throw new IndexOutOfBoundsException()
 
     var remaining = len
-    var offset = off
+    var offset    = off
     while (remaining > 0) {
       val readCount = read(b, offset, remaining)
       if (readCount == -1) eof()
@@ -146,8 +147,8 @@ class DataInputStream(in: InputStream)
 
   def readUTF(): String = {
     val length = readShort()
-    var res = ""
-    var i = 0
+    var res    = ""
+    var i      = 0
 
     def badFormat(msg: String) = throw new UTFDataFormatException(msg)
 
@@ -190,7 +191,8 @@ class DataInputStream(in: InputStream)
 
           if ((c & 0xC0) != 0x80) // 10xxxxxx
             badFormat(
-                f"Expected 3 bytes, found: $b%#02x, $c%#02x (init: $a%#02x)")
+              f"Expected 3 bytes, found: $b%#02x, $c%#02x (init: $a%#02x)"
+            )
 
           (((a & 0x0F) << 12) | ((b & 0x3F) << 6) | (c & 0x3F)).toChar
         } else {

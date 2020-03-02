@@ -3,11 +3,11 @@ import scala.reflect.runtime.universe._
 
 object DeprecationProps extends QuasiquoteProperties("deprecation") {
   val tname = TypeName("Foo")
-  val tpt = tq"Foo"
-  val tpe = typeOf[Int]
-  val sym = tpe.typeSymbol.asType
+  val tpt   = tq"Foo"
+  val tpe   = typeOf[Int]
+  val sym   = tpe.typeSymbol.asType
   val argss = List(q"x") :: List(q"y") :: Nil
-  val args = q"x" :: q"y" :: Nil
+  val args  = q"x" :: q"y" :: Nil
 
   property("new tpt argss") = test {
     assert(q"new $tpt(...$argss)" ≈ New(tpt, argss))
@@ -38,15 +38,15 @@ object DeprecationProps extends QuasiquoteProperties("deprecation") {
   }
 
   property("casedef pat body") = test {
-    val pat = pq"foo"
+    val pat  = pq"foo"
     val body = q"bar"
     assert(cq"$pat => $body" ≈ CaseDef(pat, body))
   }
 
   property("try body cases") = test {
-    val cases = (pq"a", q"b") :: (pq"c", q"d") :: Nil
+    val cases    = (pq"a", q"b") :: (pq"c", q"d") :: Nil
     val newcases = cases.map { case (pat, body) => cq"$pat => $body" }
-    val body = q"foo"
+    val body     = q"foo"
     assert(q"try $body catch { case ..$newcases }" ≈ Try(body, cases: _*))
   }
 }

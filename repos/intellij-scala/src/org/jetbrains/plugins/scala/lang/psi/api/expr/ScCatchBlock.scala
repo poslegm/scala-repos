@@ -21,9 +21,9 @@ trait ScCatchBlock extends ScalaPsiElement {
 object ScCatchBlock {
   def unapply(catchBlock: ScCatchBlock): Option[ScCaseClauses] = {
     for {
-      expr <- catchBlock.expression
+      expr  <- catchBlock.expression
       child = PsiTreeUtil.findChildOfType(expr, classOf[ScCaseClauses])
-          if child != null
+      if child != null
     } yield child
   }
 }

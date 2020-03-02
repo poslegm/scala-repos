@@ -21,11 +21,15 @@ class InteractiveStatusDisplay extends TopComponentDisplayable {
   private val myPanel = new JPanel()
 
   private val successIcon = createAnimatedIcon(
-      InteractiveStatusDisplay.MY_COMPILE_ACTION, MY_OK_ICON, ICON_STEP_COUNT)
+    InteractiveStatusDisplay.MY_COMPILE_ACTION,
+    MY_OK_ICON,
+    ICON_STEP_COUNT
+  )
   private val failIcon = createAnimatedIcon(
-      InteractiveStatusDisplay.MY_COMPILE_ACTION,
-      MY_ERROR_ICON,
-      ICON_STEP_COUNT)
+    InteractiveStatusDisplay.MY_COMPILE_ACTION,
+    MY_ERROR_ICON,
+    ICON_STEP_COUNT
+  )
 
   private var current: AnimatedIcon = null
 
@@ -61,7 +65,7 @@ class InteractiveStatusDisplay extends TopComponentDisplayable {
       })
   }
 
-  private def isBorderEnabled = false //right now we don't need it (?) 
+  private def isBorderEnabled = false //right now we don't need it (?)
 
   private def setCurrentIcon(icon: AnimatedIcon) {
     if (current == icon) return
@@ -79,16 +83,19 @@ class InteractiveStatusDisplay extends TopComponentDisplayable {
     new ScalableIconComponent(icon)
 
   private def createAnimatedIcon(
-      icon1: Icon, icon2: Icon, steps: Int): AnimatedIcon = {
-    val pi2 = Math.PI * 2
+      icon1: Icon,
+      icon2: Icon,
+      steps: Int
+  ): AnimatedIcon = {
+    val pi2  = Math.PI * 2
     val step = pi2 / steps
 
     val i = new AnimatedIcon(
-        "Compiling...",
-        (for (i <- 0 to steps) yield
-          new RotatedIcon(icon1, step * i)).toArray[Icon],
-        icon2,
-        ICON_CYCLE_LENGTH
+      "Compiling...",
+      (for (i <- 0 to steps) yield new RotatedIcon(icon1, step * i))
+        .toArray[Icon],
+      icon2,
+      ICON_CYCLE_LENGTH
     )
     i.resume()
     i
@@ -96,15 +103,15 @@ class InteractiveStatusDisplay extends TopComponentDisplayable {
 }
 
 object InteractiveStatusDisplay {
-  private val MY_ERROR_ICON = AllIcons.General.Error
-  private val MY_OK_ICON = AllIcons.General.InspectionsOK
+  private val MY_ERROR_ICON     = AllIcons.General.Error
+  private val MY_OK_ICON        = AllIcons.General.InspectionsOK
   private val MY_COMPILE_ACTION = AllIcons.Actions.ForceRefresh
-  private val EMPTY_ICON = EmptyIcon.ICON_18
+  private val EMPTY_ICON        = EmptyIcon.ICON_18
 
   private val ICON_CYCLE_LENGTH = 1300
-  private val ICON_STEP_COUNT = 10
+  private val ICON_STEP_COUNT   = 10
 
-  private val OK_BORDER = new LineBorder(Color.GREEN)
+  private val OK_BORDER    = new LineBorder(Color.GREEN)
   private val ERROR_BORDER = new LineBorder(Color.RED)
   private val OTHER_BORDER = new LineBorder(Color.LIGHT_GRAY)
 

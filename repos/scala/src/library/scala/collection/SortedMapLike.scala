@@ -20,12 +20,14 @@ import generic._
   *  @version 2.8
   *  @since   2.8
   */
-trait SortedMapLike[
-    A, +B, +This <: SortedMapLike[A, B, This] with SortedMap[A, B]]
-    extends Sorted[A, This] with MapLike[A, B, This] { self =>
+trait SortedMapLike[A, +B, +This <: SortedMapLike[A, B, This] with SortedMap[
+  A,
+  B
+]] extends Sorted[A, This]
+    with MapLike[A, B, This] { self =>
 
   def firstKey: A = head._1
-  def lastKey: A = last._1
+  def lastKey: A  = last._1
 
   implicit def ordering: Ordering[A]
 
@@ -35,8 +37,9 @@ trait SortedMapLike[
   override def keySet: SortedSet[A] = new DefaultKeySortedSet
 
   protected class DefaultKeySortedSet
-      extends super.DefaultKeySet with SortedSet[A] {
-    implicit def ordering = self.ordering
+      extends super.DefaultKeySet
+      with SortedSet[A] {
+    implicit def ordering                 = self.ordering
     override def +(elem: A): SortedSet[A] = (SortedSet[A]() ++ this + elem)
     override def -(elem: A): SortedSet[A] = (SortedSet[A]() ++ this - elem)
     override def rangeImpl(from: Option[A], until: Option[A]): SortedSet[A] = {
@@ -71,7 +74,10 @@ trait SortedMapLike[
     *  @param elems the remaining elements to add.
     */
   override def +[B1 >: B](
-      elem1: (A, B1), elem2: (A, B1), elems: (A, B1)*): SortedMap[A, B1] = {
+      elem1: (A, B1),
+      elem2: (A, B1),
+      elems: (A, B1)*
+  ): SortedMap[A, B1] = {
     var m = this + elem1 + elem2
     for (e <- elems) m = m + e
     m
@@ -81,7 +87,9 @@ trait SortedMapLike[
     new FilteredKeys(p) with SortedMap.Default[A, B] {
       implicit def ordering: Ordering[A] = self.ordering
       override def rangeImpl(
-          from: Option[A], until: Option[A]): SortedMap[A, B] =
+          from: Option[A],
+          until: Option[A]
+      ): SortedMap[A, B] =
         self.rangeImpl(from, until).filterKeys(p)
       override def iteratorFrom(start: A) = self iteratorFrom start filter {
         case (k, _) => p(k)
@@ -96,7 +104,9 @@ trait SortedMapLike[
     new MappedValues(f) with SortedMap.Default[A, C] {
       implicit def ordering: Ordering[A] = self.ordering
       override def rangeImpl(
-          from: Option[A], until: Option[A]): SortedMap[A, C] =
+          from: Option[A],
+          until: Option[A]
+      ): SortedMap[A, C] =
         self.rangeImpl(from, until).mapValues(f)
       override def iteratorFrom(start: A) = (self iteratorFrom start) map {
         case (k, v) => (k, f(v))

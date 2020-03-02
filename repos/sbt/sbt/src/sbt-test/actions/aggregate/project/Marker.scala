@@ -4,7 +4,7 @@ import Import._
 import Project.Initialize
 
 trait Marker {
-  final lazy val Mark = TaskKey[Unit]("mark")
+  final lazy val Mark                    = TaskKey[Unit]("mark")
   final def mark: Initialize[Task[Unit]] = mark(baseDirectory)
   final def mark(project: Reference): Initialize[Task[Unit]] =
     mark(baseDirectory in project)

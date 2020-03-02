@@ -29,15 +29,15 @@ final class Symbol private (val name: String) extends Serializable {
   override def toString(): String = "'" + name
 
   @throws(classOf[java.io.ObjectStreamException])
-  private def readResolve(): Any = Symbol.apply(name)
-  override def hashCode = name.hashCode()
+  private def readResolve(): Any  = Symbol.apply(name)
+  override def hashCode           = name.hashCode()
   override def equals(other: Any) = this eq other.asInstanceOf[AnyRef]
 }
 
 // Modified to use Scala.js specific cache
 object Symbol extends JSUniquenessCache[Symbol] {
-  override def apply(name: String): Symbol = super.apply(name)
-  protected def valueFromKey(name: String): Symbol = new Symbol(name)
+  override def apply(name: String): Symbol                = super.apply(name)
+  protected def valueFromKey(name: String): Symbol        = new Symbol(name)
   protected def keyFromValue(sym: Symbol): Option[String] = Some(sym.name)
 }
 

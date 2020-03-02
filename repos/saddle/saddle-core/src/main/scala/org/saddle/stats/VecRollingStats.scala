@@ -27,8 +27,8 @@ import org.saddle.scalar._
   * window.
   */
 class VecRollingStats[
-    @spec(Int, Long, Double) A : ST : Vec2Stats : AddOp : SubOp : NUM](
-    v: Vec[A]) {
+    @spec(Int, Long, Double) A: ST: Vec2Stats: AddOp: SubOp: NUM
+](v: Vec[A]) {
 
   /**
     * Rolling count; compute count of number of elements in Vec over a sliding window, ignoring
@@ -62,12 +62,12 @@ class VecRollingStats[
     new RollingMedian[A](winSz, v).evaluate
 }
 
-class RollingCount[@spec(Int, Long, Double) A : ST : Vec2Stats : NUM]
+class RollingCount[@spec(Int, Long, Double) A: ST: Vec2Stats: NUM]
     extends Function1[Vec[A], Int] {
-  var i = 0
-  var s = 0
+  var i  = 0
+  var s  = 0
   val sa = implicitly[ST[A]]
-  var p = Scalar(sa.zero)
+  var p  = Scalar(sa.zero)
 
   def apply(v: Vec[A]): Int = {
     if (i == 0) {
@@ -83,15 +83,14 @@ class RollingCount[@spec(Int, Long, Double) A : ST : Vec2Stats : NUM]
   }
 }
 
-class RollingSum[
-    @spec(Int, Long, Double) A : ST : AddOp : SubOp : Vec2Stats : NUM]
+class RollingSum[@spec(Int, Long, Double) A: ST: AddOp: SubOp: Vec2Stats: NUM]
     extends Function1[Vec[A], A] {
-  var i = 0
-  val sa = implicitly[ST[A]]
+  var i   = 0
+  val sa  = implicitly[ST[A]]
   val add = implicitly[AddOp[A]]
   val sub = implicitly[SubOp[A]]
-  var s = sa.zero
-  var p = Scalar(sa.zero)
+  var s   = sa.zero
+  var p   = Scalar(sa.zero)
 
   def apply(v: Vec[A]): A = {
     if (i == 0) {
@@ -107,13 +106,13 @@ class RollingSum[
   }
 }
 
-class RollingMean[@spec(Int, Long, Double) A : ST : Vec2Stats : NUM]
+class RollingMean[@spec(Int, Long, Double) A: ST: Vec2Stats: NUM]
     extends Function1[Vec[A], Double] {
-  var i = 0
-  var s = 0d
-  var c = 0
+  var i  = 0
+  var s  = 0d
+  var c  = 0
   val sa = implicitly[ST[A]]
-  var p = Scalar(sa.zero)
+  var p  = Scalar(sa.zero)
 
   def apply(v: Vec[A]): Double = {
     if (i == 0) {
@@ -136,8 +135,10 @@ class RollingMean[@spec(Int, Long, Double) A : ST : Vec2Stats : NUM]
   }
 }
 
-class RollingMedian[@spec(Int, Long, Double) A : ST : Vec2Stats : NUM](
-    winSz: Int, origv: Vec[A]) {
+class RollingMedian[@spec(Int, Long, Double) A: ST: Vec2Stats: NUM](
+    winSz: Int,
+    origv: Vec[A]
+) {
   val sa = implicitly[ST[A]]
 
   val len = origv.length

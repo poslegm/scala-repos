@@ -3,7 +3,7 @@ trait H2Driver {
 }
 
 object Config {
-  val driver: H2Driver = ???
+  val driver: H2Driver           = ???
   def driver(app: Any): H2Driver = ???
 }
 

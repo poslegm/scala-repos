@@ -14,25 +14,24 @@ object ModeledCustomHeaderSpec {
 
   //#modeled-api-key-custom-header
   object ApiTokenHeader extends ModeledCustomHeaderCompanion[ApiTokenHeader] {
-    def renderInRequests = false
-    def renderInResponses = false
-    override val name = "apiKey"
+    def renderInRequests              = false
+    def renderInResponses             = false
+    override val name                 = "apiKey"
     override def parse(value: String) = Try(new ApiTokenHeader(value))
   }
   final class ApiTokenHeader(token: String)
       extends ModeledCustomHeader[ApiTokenHeader] {
-    def renderInRequests = false
-    def renderInResponses = false
-    override val companion = ApiTokenHeader
+    def renderInRequests       = false
+    def renderInResponses      = false
+    override val companion     = ApiTokenHeader
     override def value: String = token
   }
   //#modeled-api-key-custom-header
 
-  object DifferentHeader
-      extends ModeledCustomHeaderCompanion[DifferentHeader] {
-    def renderInRequests = false
+  object DifferentHeader extends ModeledCustomHeaderCompanion[DifferentHeader] {
+    def renderInRequests  = false
     def renderInResponses = false
-    override val name = "different"
+    override val name     = "different"
     override def parse(value: String) =
       if (value contains " ")
         Failure(new Exception("Contains illegal whitespace!"))
@@ -40,10 +39,10 @@ object ModeledCustomHeaderSpec {
   }
   final class DifferentHeader(token: String)
       extends ModeledCustomHeader[DifferentHeader] {
-    def renderInRequests = false
-    def renderInResponses = false
+    def renderInRequests   = false
+    def renderInResponses  = false
     override val companion = DifferentHeader
-    override def value = token
+    override def value     = token
   }
 }
 
@@ -87,12 +86,10 @@ class ModeledCustomHeaderSpec extends RoutingSpec {
       //#matching-in-routes
       def extractFromCustomHeader = headerValuePF {
         case t @ ApiTokenHeader(token) ⇒ s"extracted> $t"
-        case raw: RawHeader ⇒ s"raw> $raw"
+        case raw: RawHeader            ⇒ s"raw> $raw"
       }
 
-      val routes = extractFromCustomHeader { s ⇒
-        complete(s)
-      }
+      val routes = extractFromCustomHeader { s ⇒ complete(s) }
 
       Get().withHeaders(RawHeader("apiKey", "TheKey")) ~> routes ~> check {
         status should ===(StatusCodes.OK)
@@ -117,7 +114,8 @@ class ModeledCustomHeaderSpec extends RoutingSpec {
       }
 
       ex.getMessage should ===(
-          "Unable to construct custom header by parsing: 'Hello world'")
+        "Unable to construct custom header by parsing: 'Hello world'"
+      )
       ex.getCause.getMessage should include("whitespace")
     }
   }

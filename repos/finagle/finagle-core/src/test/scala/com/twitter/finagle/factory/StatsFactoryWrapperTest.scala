@@ -13,8 +13,8 @@ import org.scalatest.mock.MockitoSugar
 @RunWith(classOf[JUnitRunner])
 class StatsFactoryWrapperTest extends FunSuite with MockitoSugar {
   val underlying = mock[ServiceFactory[Int, Int]]
-  val rex = new RuntimeException
-  val t = new Throwable(rex)
+  val rex        = new RuntimeException
+  val t          = new Throwable(rex)
 
   test("report exceptions on Service creation failure") {
     val receiver = new InMemoryStatsReceiver

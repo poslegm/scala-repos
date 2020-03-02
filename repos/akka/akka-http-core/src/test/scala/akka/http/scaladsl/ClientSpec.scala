@@ -22,7 +22,7 @@ class ClientSpec extends WordSpec with Matchers {
     windows-connection-abort-workaround-enabled = auto
     akka.log-dead-letters = OFF
     akka.http.server.request-timeout = infinite""")
-  implicit val system = ActorSystem(getClass.getSimpleName, testConf)
+  implicit val system       = ActorSystem(getClass.getSimpleName, testConf)
   implicit val materializer = ActorMaterializer()
 
   "HTTP Client" should {

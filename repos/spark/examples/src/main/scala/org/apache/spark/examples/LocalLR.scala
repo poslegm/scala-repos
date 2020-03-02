@@ -30,11 +30,11 @@ import breeze.linalg.{DenseVector, Vector}
   * org.apache.spark.mllib.classification.LogisticRegressionWithLBFGS based on your needs.
   */
 object LocalLR {
-  val N = 10000 // Number of data points
-  val D = 10 // Number of dimensions
-  val R = 0.7 // Scaling factor
+  val N          = 10000 // Number of data points
+  val D          = 10 // Number of dimensions
+  val R          = 0.7 // Scaling factor
   val ITERATIONS = 5
-  val rand = new Random(42)
+  val rand       = new Random(42)
 
   case class DataPoint(x: Vector[Double], y: Double)
 
@@ -48,11 +48,13 @@ object LocalLR {
   }
 
   def showWarning() {
-    System.err.println("""WARN: This is a naive implementation of Logistic Regression and is given as an example!
+    System.err.println(
+      """WARN: This is a naive implementation of Logistic Regression and is given as an example!
         |Please use either org.apache.spark.mllib.classification.LogisticRegressionWithSGD or
         |org.apache.spark.mllib.classification.LogisticRegressionWithLBFGS
         |for more conventional use.
-      """.stripMargin)
+      """.stripMargin
+    )
   }
 
   def main(args: Array[String]) {

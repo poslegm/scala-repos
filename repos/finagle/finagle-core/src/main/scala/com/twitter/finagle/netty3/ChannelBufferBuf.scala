@@ -35,15 +35,15 @@ class ChannelBufferBuf(protected val underlying: ChannelBuffer) extends Buf {
 
   override def equals(other: Any): Boolean = other match {
     case ChannelBufferBuf(otherCB) => underlying.equals(otherCB)
-    case other: Buf => Buf.equals(this, other)
-    case _ => false
+    case other: Buf                => Buf.equals(this, other)
+    case _                         => false
   }
 
   protected def unsafeByteArrayBuf: Option[Buf.ByteArray] =
     if (underlying.hasArray) {
       val bytes = underlying.array
       val begin = underlying.arrayOffset + underlying.readerIndex
-      val end = begin + underlying.readableBytes
+      val end   = begin + underlying.readableBytes
       Some(new Buf.ByteArray(bytes, begin, end))
     } else None
 }
@@ -61,10 +61,10 @@ object ChannelBufferBuf {
     */
   def coerce(buf: Buf): ChannelBufferBuf = buf match {
     case buf: ChannelBufferBuf => buf
-    case buf if buf.isEmpty => ChannelBufferBuf.Empty
+    case buf if buf.isEmpty    => ChannelBufferBuf.Empty
     case buf =>
       val Buf.ByteArray.Owned(bytes, begin, end) = Buf.ByteArray.coerce(buf)
-      val cb = ChannelBuffers.wrappedBuffer(bytes, begin, end - begin)
+      val cb                                     = ChannelBuffers.wrappedBuffer(bytes, begin, end - begin)
       new ChannelBufferBuf(cb)
   }
 
@@ -88,8 +88,8 @@ object ChannelBufferBuf {
       */
     def apply(cb: ChannelBuffer): Buf = cb match {
       case cb if cb.readableBytes == 0 => Buf.Empty
-      case BufChannelBuffer(buf) => buf
-      case cb => new ChannelBufferBuf(cb)
+      case BufChannelBuffer(buf)       => buf
+      case cb                          => new ChannelBufferBuf(cb)
     }
 
     /** Extract the buffer's underlying ChannelBuffer. It should not be mutated. */

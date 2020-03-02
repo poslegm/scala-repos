@@ -88,17 +88,17 @@ object Predef extends LowPriorityImplicits with DeprecatedPredef {
     *  example [[http://docs.oracle.com/javase/8/docs/api/java/lang/String.html]]) or
     *  are added implicitly through [[scala.collection.immutable.StringOps]].
     */
-  type String = java.lang.String
+  type String   = java.lang.String
   type Class[T] = java.lang.Class[T]
 
   // miscellaneous -----------------------------------------------------
-  scala.`package` // to force scala package object to be seen.
+  scala.`package`                 // to force scala package object to be seen.
   scala.collection.immutable.List // to force Nil, :: to be seen.
 
   type Function[-A, +B] = Function1[A, B]
 
   type Map[A, +B] = immutable.Map[A, B]
-  type Set[A] = immutable.Set[A]
+  type Set[A]     = immutable.Set[A]
   val Map = immutable.Map
   val Set = immutable.Set
 
@@ -238,7 +238,7 @@ object Predef extends LowPriorityImplicits with DeprecatedPredef {
   type Pair[+A, +B] = Tuple2[A, B]
   @deprecated("Use built-in tuple syntax or Tuple2 instead", "2.11.0")
   object Pair {
-    def apply[A, B](x: A, y: B) = Tuple2(x, y)
+    def apply[A, B](x: A, y: B)                              = Tuple2(x, y)
     def unapply[A, B](x: Tuple2[A, B]): Option[Tuple2[A, B]] = Some(x)
   }
 
@@ -246,7 +246,7 @@ object Predef extends LowPriorityImplicits with DeprecatedPredef {
   type Triple[+A, +B, +C] = Tuple3[A, B, C]
   @deprecated("Use built-in tuple syntax or Tuple3 instead", "2.11.0")
   object Triple {
-    def apply[A, B, C](x: A, y: B, z: C) = Tuple3(x, y, z)
+    def apply[A, B, C](x: A, y: B, z: C)                              = Tuple3(x, y, z)
     def unapply[A, B, C](x: Tuple3[A, B, C]): Option[Tuple3[A, B, C]] = Some(x)
   }
 
@@ -254,13 +254,13 @@ object Predef extends LowPriorityImplicits with DeprecatedPredef {
 
   implicit final class ArrowAssoc[A](private val self: A) extends AnyVal {
     @inline def ->[B](y: B): Tuple2[A, B] = Tuple2(self, y)
-    def →[B](y: B): Tuple2[A, B] = ->(y)
+    def →[B](y: B): Tuple2[A, B]          = ->(y)
   }
 
   implicit final class Ensuring[A](private val self: A) extends AnyVal {
-    def ensuring(cond: Boolean): A = { assert(cond); self }
+    def ensuring(cond: Boolean): A              = { assert(cond); self }
     def ensuring(cond: Boolean, msg: => Any): A = { assert(cond, msg); self }
-    def ensuring(cond: A => Boolean): A = { assert(cond(self)); self }
+    def ensuring(cond: A => Boolean): A         = { assert(cond(self)); self }
     def ensuring(cond: A => Boolean, msg: => Any): A = {
       assert(cond(self), msg); self
     }
@@ -288,9 +288,9 @@ object Predef extends LowPriorityImplicits with DeprecatedPredef {
   }
 
   implicit final class SeqCharSequence(
-      val __sequenceOfChars: scala.collection.IndexedSeq[Char])
-      extends CharSequence {
-    def length: Int = __sequenceOfChars.length
+      val __sequenceOfChars: scala.collection.IndexedSeq[Char]
+  ) extends CharSequence {
+    def length: Int              = __sequenceOfChars.length
     def charAt(index: Int): Char = __sequenceOfChars(index)
     def subSequence(start: Int, end: Int): CharSequence =
       new SeqCharSequence(__sequenceOfChars.slice(start, end))
@@ -299,7 +299,7 @@ object Predef extends LowPriorityImplicits with DeprecatedPredef {
 
   implicit final class ArrayCharSequence(val __arrayOfChars: Array[Char])
       extends CharSequence {
-    def length: Int = __arrayOfChars.length
+    def length: Int              = __arrayOfChars.length
     def charAt(index: Int): Char = __arrayOfChars(index)
     def subSequence(start: Int, end: Int): CharSequence =
       new runtime.ArrayCharSequence(__arrayOfChars, start, end)
@@ -309,10 +309,10 @@ object Predef extends LowPriorityImplicits with DeprecatedPredef {
   implicit val StringCanBuildFrom: CanBuildFrom[String, Char, String] =
     new CanBuildFrom[String, Char, String] {
       def apply(from: String) = apply()
-      def apply() = mutable.StringBuilder.newBuilder
+      def apply()             = mutable.StringBuilder.newBuilder
     }
 
-  @inline implicit def augmentString(x: String): StringOps = new StringOps(x)
+  @inline implicit def augmentString(x: String): StringOps   = new StringOps(x)
   @inline implicit def unaugmentString(x: StringOps): String = x.repr
 
   // printing -----------------------------------------------------------
@@ -359,64 +359,74 @@ object Predef extends LowPriorityImplicits with DeprecatedPredef {
 
   implicit def genericArrayOps[T](xs: Array[T]): ArrayOps[T] =
     (xs match {
-      case x: Array[AnyRef] => refArrayOps[AnyRef](x)
+      case x: Array[AnyRef]  => refArrayOps[AnyRef](x)
       case x: Array[Boolean] => booleanArrayOps(x)
-      case x: Array[Byte] => byteArrayOps(x)
-      case x: Array[Char] => charArrayOps(x)
-      case x: Array[Double] => doubleArrayOps(x)
-      case x: Array[Float] => floatArrayOps(x)
-      case x: Array[Int] => intArrayOps(x)
-      case x: Array[Long] => longArrayOps(x)
-      case x: Array[Short] => shortArrayOps(x)
-      case x: Array[Unit] => unitArrayOps(x)
-      case null => null
+      case x: Array[Byte]    => byteArrayOps(x)
+      case x: Array[Char]    => charArrayOps(x)
+      case x: Array[Double]  => doubleArrayOps(x)
+      case x: Array[Float]   => floatArrayOps(x)
+      case x: Array[Int]     => intArrayOps(x)
+      case x: Array[Long]    => longArrayOps(x)
+      case x: Array[Short]   => shortArrayOps(x)
+      case x: Array[Unit]    => unitArrayOps(x)
+      case null              => null
     }).asInstanceOf[ArrayOps[T]]
 
   // TODO: when we remove, these should we drop the underscores from the new generation below? (For source compatibility in case someone was shadowing these.)
   @deprecated(
-      "For binary compatibility only. Release new partest and remove in M3.",
-      "2.12.0-M2")
+    "For binary compatibility only. Release new partest and remove in M3.",
+    "2.12.0-M2"
+  )
   def booleanArrayOps(xs: Array[Boolean]): ArrayOps[Boolean] =
     new ArrayOps.ofBoolean(xs)
   @deprecated(
-      "For binary compatibility only. Release new partest and remove in M3.",
-      "2.12.0-M2")
+    "For binary compatibility only. Release new partest and remove in M3.",
+    "2.12.0-M2"
+  )
   def byteArrayOps(xs: Array[Byte]): ArrayOps[Byte] = new ArrayOps.ofByte(xs)
   @deprecated(
-      "For binary compatibility only. Release new partest and remove in M3.",
-      "2.12.0-M2")
+    "For binary compatibility only. Release new partest and remove in M3.",
+    "2.12.0-M2"
+  )
   def charArrayOps(xs: Array[Char]): ArrayOps[Char] = new ArrayOps.ofChar(xs)
   @deprecated(
-      "For binary compatibility only. Release new partest and remove in M3.",
-      "2.12.0-M2")
+    "For binary compatibility only. Release new partest and remove in M3.",
+    "2.12.0-M2"
+  )
   def doubleArrayOps(xs: Array[Double]): ArrayOps[Double] =
     new ArrayOps.ofDouble(xs)
   @deprecated(
-      "For binary compatibility only. Release new partest and remove in M3.",
-      "2.12.0-M2")
+    "For binary compatibility only. Release new partest and remove in M3.",
+    "2.12.0-M2"
+  )
   def floatArrayOps(xs: Array[Float]): ArrayOps[Float] =
     new ArrayOps.ofFloat(xs)
   @deprecated(
-      "For binary compatibility only. Release new partest and remove in M3.",
-      "2.12.0-M2")
+    "For binary compatibility only. Release new partest and remove in M3.",
+    "2.12.0-M2"
+  )
   def intArrayOps(xs: Array[Int]): ArrayOps[Int] = new ArrayOps.ofInt(xs)
   @deprecated(
-      "For binary compatibility only. Release new partest and remove in M3.",
-      "2.12.0-M2")
+    "For binary compatibility only. Release new partest and remove in M3.",
+    "2.12.0-M2"
+  )
   def longArrayOps(xs: Array[Long]): ArrayOps[Long] = new ArrayOps.ofLong(xs)
   @deprecated(
-      "For binary compatibility only. Release new partest and remove in M3.",
-      "2.12.0-M2")
+    "For binary compatibility only. Release new partest and remove in M3.",
+    "2.12.0-M2"
+  )
   def refArrayOps[T <: AnyRef](xs: Array[T]): ArrayOps[T] =
     new ArrayOps.ofRef[T](xs)
   @deprecated(
-      "For binary compatibility only. Release new partest and remove in M3.",
-      "2.12.0-M2")
+    "For binary compatibility only. Release new partest and remove in M3.",
+    "2.12.0-M2"
+  )
   def shortArrayOps(xs: Array[Short]): ArrayOps[Short] =
     new ArrayOps.ofShort(xs)
   @deprecated(
-      "For binary compatibility only. Release new partest and remove in M3.",
-      "2.12.0-M2")
+    "For binary compatibility only. Release new partest and remove in M3.",
+    "2.12.0-M2"
+  )
   def unitArrayOps(xs: Array[Unit]): ArrayOps[Unit] = new ArrayOps.ofUnit(xs)
 
   implicit def _booleanArrayOps(xs: Array[Boolean]): ArrayOps.ofBoolean =
@@ -459,12 +469,12 @@ object Predef extends LowPriorityImplicits with DeprecatedPredef {
   implicit def boolean2Boolean(x: Boolean): java.lang.Boolean =
     x.asInstanceOf[java.lang.Boolean]
 
-  implicit def Byte2byte(x: java.lang.Byte): Byte = x.asInstanceOf[Byte]
+  implicit def Byte2byte(x: java.lang.Byte): Byte     = x.asInstanceOf[Byte]
   implicit def Short2short(x: java.lang.Short): Short = x.asInstanceOf[Short]
   implicit def Character2char(x: java.lang.Character): Char =
     x.asInstanceOf[Char]
   implicit def Integer2int(x: java.lang.Integer): Int = x.asInstanceOf[Int]
-  implicit def Long2long(x: java.lang.Long): Long = x.asInstanceOf[Long]
+  implicit def Long2long(x: java.lang.Long): Long     = x.asInstanceOf[Long]
   implicit def Float2float(x: java.lang.Float): Float = x.asInstanceOf[Float]
   implicit def Double2double(x: java.lang.Double): Double =
     x.asInstanceOf[Double]
@@ -603,13 +613,13 @@ private[scala] abstract class LowPriorityImplicits {
     *  Even inlined, every call site does a no-op retrieval of Predef's MODULE$
     *  because maybe loading Predef has side effects!
     */
-  @inline implicit def byteWrapper(x: Byte) = new runtime.RichByte(x)
-  @inline implicit def shortWrapper(x: Short) = new runtime.RichShort(x)
-  @inline implicit def intWrapper(x: Int) = new runtime.RichInt(x)
-  @inline implicit def charWrapper(c: Char) = new runtime.RichChar(c)
-  @inline implicit def longWrapper(x: Long) = new runtime.RichLong(x)
-  @inline implicit def floatWrapper(x: Float) = new runtime.RichFloat(x)
-  @inline implicit def doubleWrapper(x: Double) = new runtime.RichDouble(x)
+  @inline implicit def byteWrapper(x: Byte)       = new runtime.RichByte(x)
+  @inline implicit def shortWrapper(x: Short)     = new runtime.RichShort(x)
+  @inline implicit def intWrapper(x: Int)         = new runtime.RichInt(x)
+  @inline implicit def charWrapper(c: Char)       = new runtime.RichChar(c)
+  @inline implicit def longWrapper(x: Long)       = new runtime.RichLong(x)
+  @inline implicit def floatWrapper(x: Float)     = new runtime.RichFloat(x)
+  @inline implicit def doubleWrapper(x: Double)   = new runtime.RichDouble(x)
   @inline implicit def booleanWrapper(x: Boolean) = new runtime.RichBoolean(x)
 
   implicit def genericWrapArray[T](xs: Array[T]): WrappedArray[T] =
@@ -649,10 +659,10 @@ private[scala] abstract class LowPriorityImplicits {
   implicit def unwrapString(ws: WrappedString): String =
     if (ws ne null) ws.self else null
 
-  implicit def fallbackStringCanBuildFrom[T]: CanBuildFrom[
-      String, T, immutable.IndexedSeq[T]] =
+  implicit def fallbackStringCanBuildFrom[T]
+      : CanBuildFrom[String, T, immutable.IndexedSeq[T]] =
     new CanBuildFrom[String, T, immutable.IndexedSeq[T]] {
       def apply(from: String) = immutable.IndexedSeq.newBuilder[T]
-      def apply() = immutable.IndexedSeq.newBuilder[T]
+      def apply()             = immutable.IndexedSeq.newBuilder[T]
     }
 }

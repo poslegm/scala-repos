@@ -53,8 +53,8 @@ trait BaseParsers extends RegexParsers {
   def ows: Parser[String] = Parser { in =>
     if (in.atEnd) Success("test", in)
     else {
-      var i = in.offset
-      val s = in.source
+      var i   = in.offset
+      val s   = in.source
       val end = s.length
       //process chars as long as it is whitespace
       while (i < end && (s.charAt(i) == ' ' || s.charAt(i) == '\t')) {
@@ -79,8 +79,10 @@ trait BaseParsers extends RegexParsers {
     } else {
       val source = in.source
       val offset = in.offset
-      Success(source.subSequence(offset, source.length).toString,
-              in.drop(source.length - offset))
+      Success(
+        source.subSequence(offset, source.length).toString,
+        in.drop(source.length - offset)
+      )
     }
   }
 
@@ -100,8 +102,7 @@ trait BaseParsers extends RegexParsers {
   def oneOf(lookup: Set[Char]): Parser[String] = Parser { in =>
     if (lookup.contains(in.first)) Success(in.first.toString, in.rest)
     else
-      Failure(
-          "Expected one of " + lookup + " but found '" + in.first + "'", in)
+      Failure("Expected one of " + lookup + " but found '" + in.first + "'", in)
   }
 
   /**
@@ -112,8 +113,9 @@ trait BaseParsers extends RegexParsers {
     if (lookup.contains(in.first)) Success(lookup(in.first), in.rest)
     else
       Failure(
-          "Expected one of " + lookup.keys + " but found '" + in.first + "'",
-          in)
+        "Expected one of " + lookup.keys + " but found '" + in.first + "'",
+        in
+      )
   }
 
   /**
@@ -126,9 +128,11 @@ trait BaseParsers extends RegexParsers {
     if (offset == 0) {
       Failure("No chars before current char, cannot look behind.", in)
     } else if (!cs.contains(source.charAt(offset - 1))) {
-      Failure("Previous char was '" + source.charAt(offset - 1) +
-              "' expected one of " + cs,
-              in)
+      Failure(
+        "Previous char was '" + source.charAt(offset - 1) +
+          "' expected one of " + cs,
+        in
+      )
     } else {
       Success((), in)
     }
@@ -147,15 +151,17 @@ trait BaseParsers extends RegexParsers {
     val c = in.first
     if (begin <= c && c <= end) Success(c, in.rest)
     else
-      Failure(verboseString(c) + " not in range " + verboseString(begin) +
-              " - " + verboseString(end),
-              in)
+      Failure(
+        verboseString(c) + " not in range " + verboseString(begin) +
+          " - " + verboseString(end),
+        in
+      )
   }
 
   def ranges(rs: SortedMap[Char, Char]): Parser[Char] = Parser { in =>
     if (in.atEnd) Failure("End of input.", in)
     else {
-      val c = in.first
+      val c                            = in.first
       val lower: SortedMap[Char, Char] = rs.to(c)
       val (begin: Char, end: Char) =
         if (lower.isEmpty)
@@ -164,15 +170,17 @@ trait BaseParsers extends RegexParsers {
 
       if (begin <= c && c <= end) Success(c, in.rest)
       else
-        Failure(verboseString(c) + " not in range " + verboseString(begin) +
-                " - " + verboseString(end),
-                in)
+        Failure(
+          verboseString(c) + " not in range " + verboseString(begin) +
+            " - " + verboseString(end),
+          in
+        )
     }
   }
 
   /**
     * Succeeds if the given parsers succeeds and the given function is defined at the parse result.
-    * Returns the result of the method applied to the given parsers result. 
+    * Returns the result of the method applied to the given parsers result.
     */
   def acceptMatch[S, T](f: PartialFunction[S, T])(p: Parser[S]): Parser[T] =
     Parser { in =>
@@ -182,7 +190,7 @@ trait BaseParsers extends RegexParsers {
         case Success(result, _) =>
           Failure("Function not defined at " + result, in)
         case Failure(msg, _) => Failure(msg, in)
-        case Error(msg, _) => Error(msg, in)
+        case Error(msg, _)   => Error(msg, in)
       }
     }
 
@@ -232,29 +240,32 @@ trait BaseParsers extends RegexParsers {
   }
 
   val xmlNameStartCharRanges: SortedMap[Char, Char] = SortedMap(
-      ':' -> ':',
-      'A' -> 'Z',
-      '_' -> '_',
-      'a' -> 'z',
-      '\u00C0' -> '\u00D6',
-      '\u00D8' -> '\u00F6',
-      '\u00F8' -> '\u02FF',
-      '\u0370' -> '\u037D',
-      '\u037F' -> '\u1FFF',
-      '\u200C' -> '\u200D',
-      '\u2070' -> '\u218F',
-      '\u2C00' -> '\u2FEF',
-      '\u3001' -> '\uD7FF',
-      '\uF900' -> '\uFDCF',
-      '\uFDF0' -> '\uFFFD') //'\u10000' -> '\uEFFFF'
+    ':'      -> ':',
+    'A'      -> 'Z',
+    '_'      -> '_',
+    'a'      -> 'z',
+    '\u00C0' -> '\u00D6',
+    '\u00D8' -> '\u00F6',
+    '\u00F8' -> '\u02FF',
+    '\u0370' -> '\u037D',
+    '\u037F' -> '\u1FFF',
+    '\u200C' -> '\u200D',
+    '\u2070' -> '\u218F',
+    '\u2C00' -> '\u2FEF',
+    '\u3001' -> '\uD7FF',
+    '\uF900' -> '\uFDCF',
+    '\uFDF0' -> '\uFFFD'
+  ) //'\u10000' -> '\uEFFFF'
 
   val xmlNameCharRanges: SortedMap[Char, Char] =
-    xmlNameStartCharRanges ++ SortedMap('-' -> '-',
-                                        '.' -> '.',
-                                        '0' -> '9',
-                                        '\u00b7' -> '\u00b7',
-                                        '\u0300' -> '\u0369',
-                                        '\u203F' -> '\u2040')
+    xmlNameStartCharRanges ++ SortedMap(
+      '-'      -> '-',
+      '.'      -> '.',
+      '0'      -> '9',
+      '\u00b7' -> '\u00b7',
+      '\u0300' -> '\u0369',
+      '\u203F' -> '\u2040'
+    )
 
   /**Parser for one char that starts an XML name.
     * According to W3C specs except that range #x10000 to #xEFFFF
@@ -278,7 +289,7 @@ trait BaseParsers extends RegexParsers {
     */
   def xmlAttrVal: Parser[String] =
     ('"' ~> ((not('"') ~> aChar) *) <~ '"' ^^ { '"' + _.mkString + '"' }) |
-    ('\'' ~> ((not('\'') ~> aChar) *) <~ '\'' ^^ { '\'' + _.mkString + '\'' })
+      ('\'' ~> ((not('\'') ~> aChar) *) <~ '\'' ^^ { '\'' + _.mkString + '\'' })
 
   /** Parses an XML Attribute with simplified value handling like xmlAttrVal.
     */
@@ -305,8 +316,7 @@ trait BaseParsers extends RegexParsers {
     parseAll(p, in) match {
       case Success(t, _) => t
       case e: NoSuccess =>
-        throw new IllegalArgumentException(
-            "Could not parse '" + in + "': " + e)
+        throw new IllegalArgumentException("Could not parse '" + in + "': " + e)
     }
   }
 }

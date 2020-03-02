@@ -41,7 +41,7 @@ object ListSet extends ImmutableSetFactory[ListSet] {
       extends ReusableBuilder[Elem, ListSet[Elem]] {
     def this() = this(empty[Elem])
     protected val elems = (new mutable.ListBuffer[Elem] ++= initial).reverse
-    protected val seen = new mutable.HashSet[Elem] ++= initial
+    protected val seen  = new mutable.HashSet[Elem] ++= initial
 
     def +=(x: Elem): this.type = {
       if (!seen(x)) {
@@ -50,7 +50,7 @@ object ListSet extends ImmutableSetFactory[ListSet] {
       }
       this
     }
-    def clear() = { elems.clear(); seen.clear() }
+    def clear()  = { elems.clear(); seen.clear() }
     def result() = elems.foldLeft(empty[Elem])(_ unchecked_+ _)
   }
 }
@@ -71,11 +71,15 @@ object ListSet extends ImmutableSetFactory[ListSet] {
   *  @define willNotTerminateInf
   */
 @deprecatedInheritance(
-    "The semantics of immutable collections makes inheriting from ListSet error-prone.",
-    "2.11.0")
+  "The semantics of immutable collections makes inheriting from ListSet error-prone.",
+  "2.11.0"
+)
 class ListSet[A]
-    extends AbstractSet[A] with Set[A] with GenericSetTemplate[A, ListSet]
-    with SetLike[A, ListSet[A]] with Serializable {
+    extends AbstractSet[A]
+    with Set[A]
+    with GenericSetTemplate[A, ListSet]
+    with SetLike[A, ListSet[A]]
+    with Serializable {
   self =>
   override def companion: GenericCompanion[ListSet] = ListSet
 
@@ -83,7 +87,7 @@ class ListSet[A]
     *
     *  @return number of set elements.
     */
-  override def size: Int = 0
+  override def size: Int        = 0
   override def isEmpty: Boolean = true
 
   /** Checks if this set contains element `elem`.
@@ -122,7 +126,7 @@ class ListSet[A]
     */
   def iterator: Iterator[A] = new AbstractIterator[A] {
     var that: ListSet[A] = self
-    def hasNext = that.nonEmpty
+    def hasNext          = that.nonEmpty
     def next: A =
       if (hasNext) {
         val res = that.head
@@ -148,7 +152,8 @@ class ListSet[A]
   /** Represents an entry in the `ListSet`.
     */
   protected class Node(override val head: A)
-      extends ListSet[A] with Serializable {
+      extends ListSet[A]
+      with Serializable {
     override private[ListSet] def unchecked_outer = self
 
     /** Returns the number of elements in this set.

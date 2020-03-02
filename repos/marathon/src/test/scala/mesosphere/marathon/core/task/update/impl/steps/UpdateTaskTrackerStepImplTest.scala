@@ -14,7 +14,10 @@ import scala.concurrent.Future
 import MarathonTestHelper.Implicits._
 
 class UpdateTaskTrackerStepImplTest
-    extends FunSuite with Matchers with ScalaFutures with Mockito
+    extends FunSuite
+    with Matchers
+    with ScalaFutures
+    with Mockito
     with GivenWhenThen {
   test("name") {
     new Fixture().step.name should equal("updateTaskTracker")
@@ -27,15 +30,17 @@ class UpdateTaskTrackerStepImplTest
     val existingTask = runningMarathonTask
     val status =
       runningTaskStatus.toBuilder.setState(TaskState.TASK_RUNNING).build()
-    f.taskUpdater.statusUpdate(appId, status).asInstanceOf[Future[Unit]] returns Future
+    f.taskUpdater
+      .statusUpdate(appId, status)
+      .asInstanceOf[Future[Unit]] returns Future
       .successful(())
 
     When("processUpdate is called")
     f.step
       .processUpdate(
-          updateTimestamp,
-          existingTask,
-          status
+        updateTimestamp,
+        existingTask,
+        status
       )
       .futureValue
 
@@ -53,15 +58,17 @@ class UpdateTaskTrackerStepImplTest
     val existingTask = stagedMarathonTask
     val status =
       runningTaskStatus.toBuilder.setState(TaskState.TASK_RUNNING).build()
-    f.taskUpdater.statusUpdate(appId, status).asInstanceOf[Future[Unit]] returns Future
+    f.taskUpdater
+      .statusUpdate(appId, status)
+      .asInstanceOf[Future[Unit]] returns Future
       .failed(new RuntimeException("I'm broken"))
 
     When("processUpdate is called")
     val eventualFailure = f.step
       .processUpdate(
-          updateTimestamp,
-          existingTask,
-          status
+        updateTimestamp,
+        existingTask,
+        status
       )
       .failed
       .futureValue
@@ -76,13 +83,13 @@ class UpdateTaskTrackerStepImplTest
     f.verifyNoMoreInteractions()
   }
 
-  private[this] val slaveId = SlaveID.newBuilder().setValue("slave1")
-  private[this] val appId = PathId("/test")
-  private[this] val taskId = Task.Id.forApp(appId)
-  private[this] val host = "some.host.local"
-  private[this] val portsList = Seq(10, 11, 12)
-  private[this] val version = Timestamp(1)
-  private[this] val updateTimestamp = Timestamp(100)
+  private[this] val slaveId           = SlaveID.newBuilder().setValue("slave1")
+  private[this] val appId             = PathId("/test")
+  private[this] val taskId            = Task.Id.forApp(appId)
+  private[this] val host              = "some.host.local"
+  private[this] val portsList         = Seq(10, 11, 12)
+  private[this] val version           = Timestamp(1)
+  private[this] val updateTimestamp   = Timestamp(100)
   private[this] val taskStatusMessage = "some update"
 
   private[this] val runningTaskStatus = TaskStatus
@@ -103,8 +110,8 @@ class UpdateTaskTrackerStepImplTest
 
   class Fixture {
     lazy val taskUpdater = mock[TaskUpdater]
-    lazy val driver = mock[SchedulerDriver]
-    lazy val driverOpt = Some(driver)
+    lazy val driver      = mock[SchedulerDriver]
+    lazy val driverOpt   = Some(driver)
     lazy val driverHolder = {
       val ret = new MarathonSchedulerDriverHolder
       ret.driver = driverOpt

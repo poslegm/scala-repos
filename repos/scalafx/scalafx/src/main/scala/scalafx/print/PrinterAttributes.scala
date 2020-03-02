@@ -46,7 +46,8 @@ object PrinterAttributes {
     * @return JavaFX PrinterAttributes
     */
   implicit def sfxPrinterAttributes2jfx(
-      pa: PrinterAttributes): jfxp.PrinterAttributes =
+      pa: PrinterAttributes
+  ): jfxp.PrinterAttributes =
     if (pa != null) pa.delegate else null
 }
 

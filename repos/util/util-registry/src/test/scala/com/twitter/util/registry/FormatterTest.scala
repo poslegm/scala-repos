@@ -20,28 +20,34 @@ class FormatterTest extends FunSuite {
 
   test("add should handle empties") {
     assert(
-        Formatter.add(Map.empty, Seq.empty, "big") == Map(
-            Formatter.Eponymous -> "big")
+      Formatter.add(Map.empty, Seq.empty, "big") == Map(
+        Formatter.Eponymous -> "big"
+      )
     )
   }
 
   test(
-      "add should handle putting an entry in an existing map if nothing's there") {
+    "add should handle putting an entry in an existing map if nothing's there"
+  ) {
     assert(
-        Formatter.add(Map.empty, Seq("it's"), "big") == Map("it's" -> "big")
+      Formatter.add(Map.empty, Seq("it's"), "big") == Map("it's" -> "big")
     )
   }
 
   test(
-      "add should handle putting recursive entries in an existing map if nothing's there") {
-    val actual = Formatter.add(Map.empty, Seq("it's", "very"), "big")
+    "add should handle putting recursive entries in an existing map if nothing's there"
+  ) {
+    val actual   = Formatter.add(Map.empty, Seq("it's", "very"), "big")
     val expected = Map("it's" -> Map("very" -> "big"))
     assert(actual == expected)
   }
 
   test("add should handle colliding prefixes") {
     val actual = Formatter.add(
-        Map("it's" -> Map("not" -> "small")), Seq("it's", "very"), "big")
+      Map("it's" -> Map("not" -> "small")),
+      Seq("it's", "very"),
+      "big"
+    )
     val expected = Map("it's" -> Map("very" -> "big", "not" -> "small"))
     assert(actual == expected)
   }
@@ -71,8 +77,8 @@ class FormatterTest extends FunSuite {
   }
 
   test("makeMap should make a map") {
-    val seq = Seq("my", "spoon", "is", "too")
-    val value = "big"
+    val seq    = Seq("my", "spoon", "is", "too")
+    val value  = "big"
     val actual = Formatter.makeMap(seq, value)
 
     val expected =
@@ -81,7 +87,7 @@ class FormatterTest extends FunSuite {
   }
 
   test("makeMap should fail on empties") {
-    val seq = Seq.empty
+    val seq   = Seq.empty
     val value = "big"
     val actual = intercept[Exception with NoStacktrace] {
       Formatter.makeMap(seq, value)

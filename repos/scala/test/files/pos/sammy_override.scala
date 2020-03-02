@@ -4,5 +4,5 @@ trait IntConsumer {
 
 object Test {
   def anyConsumer(x: Any): Unit = ???
-  val f: IntConsumer = anyConsumer
+  val f: IntConsumer            = anyConsumer
 }

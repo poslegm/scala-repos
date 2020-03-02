@@ -19,9 +19,9 @@ class GuavaCacheTest extends AbstractFutureCacheTest {
     CacheBuilder
       .newBuilder()
       .build(
-          new CacheLoader[String, Future[Int]] {
-            override def load(k: String): Future[Int] = new Promise[Int]
-          }
+        new CacheLoader[String, Future[Int]] {
+          override def load(k: String): Future[Int] = new Promise[Int]
+        }
       )
 
   test("GuavaCache#fromLoadingCache is interrupt safe") {
@@ -36,12 +36,12 @@ class GuavaCacheTest extends AbstractFutureCacheTest {
   }
 
   def interruptSafe(fCache: (String => Future[Int])) {
-    val f = fCache("key")
+    val f   = fCache("key")
     val exn = new Exception
     f.raise(exn)
 
     val f2 = fCache("key")
-    val p = new Promise[Int]
+    val p  = new Promise[Int]
     p.become(f2)
 
     assert(p.isInterrupted == None)

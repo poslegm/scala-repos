@@ -36,7 +36,7 @@ private trait P2C[Req, Rep] { self: Balancer[Req, Rep] =>
     def needsRebuild: Boolean =
       sawDown || (down.nonEmpty && down.exists(nodeUp))
 
-    def rebuild(): This = new Distributor(vector)
+    def rebuild(): This                  = new Distributor(vector)
     def rebuild(vec: Vector[Node]): This = new Distributor(vec)
 
     // TODO: consider consolidating some of this code with `Aperture.Distributor.pick`
@@ -45,7 +45,7 @@ private trait P2C[Req, Rep] { self: Balancer[Req, Rep] =>
 
       // if all nodes are down, we might as well try to send requests somewhere
       // as our view of the world may be out of date.
-      val vec = if (up.isEmpty) down else up
+      val vec  = if (up.isEmpty) down else up
       val size = vec.size
 
       if (size == 1) vec.head

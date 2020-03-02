@@ -4,12 +4,12 @@ import scala.util._
 class NotUsedNameClash {
   //Both packages have `Random` class
   def foo(): Unit = {
-    val d: Date = null
-    val t: Timer = null
+    val d: Date                = null
+    val t: Timer               = null
     val e: Enumeration[String] = null
-    val uuid: UUID = null
-    val l: Locale = null
-    val tr: Try = null
+    val uuid: UUID             = null
+    val l: Locale              = null
+    val tr: Try                = null
   }
 }
 

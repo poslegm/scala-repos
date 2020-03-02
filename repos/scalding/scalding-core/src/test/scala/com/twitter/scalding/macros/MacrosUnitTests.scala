@@ -33,28 +33,37 @@ import scala.reflect.runtime.universe._
 // We avoid nesting these just to avoid any complications in the serialization test
 case class SampleClassA(x: Int, y: String)
 case class SampleClassB(a1: SampleClassA, a2: SampleClassA, y: String)
-case class SampleClassC(a: SampleClassA,
-                        b: SampleClassB,
-                        c: SampleClassA,
-                        d: SampleClassB,
-                        e: SampleClassB)
+case class SampleClassC(
+    a: SampleClassA,
+    b: SampleClassB,
+    c: SampleClassA,
+    d: SampleClassB,
+    e: SampleClassB
+)
 case class SampleClassD(a: Option[SampleClassC])
 case class SampleClassE(
-    a: String, b: Boolean, c: Short, d: Int, e: Long, f: Float, g: Double)
+    a: String,
+    b: Boolean,
+    c: Short,
+    d: Int,
+    e: Long,
+    f: Float,
+    g: Double
+)
 case class SampleClassF(a: Option[Int])
 case class SampleClassG(a: java.util.Date)
 
 case class SampleClassFail(a: Option[Option[Int]])
 
 object MacroProperties extends Properties("TypeDescriptor.roundTrip") {
-  def roundTrip[T : Arbitrary : TypeDescriptor]: Prop = forAll { t: T =>
-    val setter = implicitly[TypeDescriptor[T]].setter
+  def roundTrip[T: Arbitrary: TypeDescriptor]: Prop = forAll { t: T =>
+    val setter    = implicitly[TypeDescriptor[T]].setter
     val converter = implicitly[TypeDescriptor[T]].converter
-    val fields = implicitly[TypeDescriptor[T]].fields
+    val fields    = implicitly[TypeDescriptor[T]].fields
     converter(new TupleEntry(fields, setter(t))) == t
   }
 
-  def propertyFor[T : TypeTag : Arbitrary : TypeDescriptor]: Unit = {
+  def propertyFor[T: TypeTag: Arbitrary: TypeDescriptor]: Unit = {
     property(typeTag[T].tpe.toString) = roundTrip[T]
   }
 
@@ -74,23 +83,25 @@ class MacrosUnitTests extends WordSpec with Matchers {
 
   private val dummy = new TupleConverter[Nothing] {
     def apply(te: TupleEntry) = sys.error("dummy")
-    override val arity = 1
+    override val arity        = 1
   }
 
   private val dummy2 = new TypeDescriptor[Nothing] {
-    def setter = sys.error("dummy")
+    def setter    = sys.error("dummy")
     def converter = sys.error("dummy")
-    def fields = sys.error("dummy")
+    def fields    = sys.error("dummy")
   }
 
   def isMacroTupleConverterAvailable[T](
       implicit proof: TupleConverter[T] = dummy
-          .asInstanceOf[TupleConverter[T]]) =
+        .asInstanceOf[TupleConverter[T]]
+  ) =
     proof.isInstanceOf[MacroGenerated]
 
   def isMacroTypeDescriptorAvailable[T](
       implicit proof: TypeDescriptor[T] = dummy2
-          .asInstanceOf[TypeDescriptor[T]]) =
+        .asInstanceOf[TypeDescriptor[T]]
+  ) =
     proof.isInstanceOf[MacroGenerated]
 
   def mgConv[T](te: TupleEntry)(implicit conv: TupleConverter[T]): T =
@@ -98,12 +109,14 @@ class MacrosUnitTests extends WordSpec with Matchers {
   def mgSet[T](t: T)(implicit set: TupleSetter[T]): TupleEntry =
     new TupleEntry(isMg(set)(t))
 
-  def shouldRoundTrip[T : IsCaseClass : TupleSetter : TupleConverter](t: T) {
+  def shouldRoundTrip[T: IsCaseClass: TupleSetter: TupleConverter](t: T) {
     t shouldBe mgConv(mgSet(t))
   }
 
-  def shouldRoundTripOther[T : IsCaseClass : TupleSetter : TupleConverter](
-      te: TupleEntry, t: T) {
+  def shouldRoundTripOther[T: IsCaseClass: TupleSetter: TupleConverter](
+      te: TupleEntry,
+      t: T
+  ) {
     val inter = mgConv(te)
     inter shouldBe t
     mgSet(inter) shouldBe te
@@ -241,17 +254,23 @@ class MacrosUnitTests extends WordSpec with Matchers {
   "MacroGenerated TupleSetter and TupleConverter" should {
     "round trip class -> tupleentry -> class" in {
       shouldRoundTrip(SampleClassA(100, "onehundred"))
-      shouldRoundTrip(SampleClassB(SampleClassA(100, "onehundred"),
-                                   SampleClassA(-1, "zero"),
-                                   "what"))
+      shouldRoundTrip(
+        SampleClassB(
+          SampleClassA(100, "onehundred"),
+          SampleClassA(-1, "zero"),
+          "what"
+        )
+      )
       val a = SampleClassA(73, "hrmA1")
       val b = SampleClassB(a, a, "hrmB1")
       val c =
-        SampleClassC(a,
-                     b,
-                     SampleClassA(123980, "heyA2"),
-                     SampleClassB(a, SampleClassA(-1, "zeroA3"), "zooB2"),
-                     b)
+        SampleClassC(
+          a,
+          b,
+          SampleClassA(123980, "heyA2"),
+          SampleClassB(a, SampleClassA(-1, "zeroA3"), "zooB2"),
+          b
+        )
       shouldRoundTrip(b)
       shouldRoundTrip(c)
       shouldRoundTrip(SampleClassD(Some(c)))
@@ -265,19 +284,19 @@ class MacrosUnitTests extends WordSpec with Matchers {
     }
 
     "Case Class should form expected tuple" in {
-      val input = SampleClassC(SampleClassA(1, "asdf"),
-                               SampleClassB(SampleClassA(2, "bcdf"),
-                                            SampleClassA(5, "jkfs"),
-                                            "wetew"),
-                               SampleClassA(9, "xcmv"),
-                               SampleClassB(SampleClassA(23, "ck"),
-                                            SampleClassA(13, "dafk"),
-                                            "xcv"),
-                               SampleClassB(SampleClassA(34, "were"),
-                                            SampleClassA(654, "power"),
-                                            "adsfmx"))
+      val input = SampleClassC(
+        SampleClassA(1, "asdf"),
+        SampleClassB(SampleClassA(2, "bcdf"), SampleClassA(5, "jkfs"), "wetew"),
+        SampleClassA(9, "xcmv"),
+        SampleClassB(SampleClassA(23, "ck"), SampleClassA(13, "dafk"), "xcv"),
+        SampleClassB(
+          SampleClassA(34, "were"),
+          SampleClassA(654, "power"),
+          "adsfmx"
+        )
+      )
       val setter = implicitly[TupleSetter[SampleClassC]]
-      val tup = setter(input)
+      val tup    = setter(input)
       assert(tup.size == 19)
       assert(tup.getInteger(0) === 1)
       assert(tup.getString(18) === "adsfmx")
@@ -288,7 +307,7 @@ class MacrosUnitTests extends WordSpec with Matchers {
       a_tup.setInteger(0, 100)
       a_tup.setString(1, "onehundred")
       val a_te = new TupleEntry(a_tup)
-      val a = SampleClassA(100, "onehundred")
+      val a    = SampleClassA(100, "onehundred")
       shouldRoundTripOther(a_te, a)
 
       val b_tup = CTuple.size(5)
@@ -298,7 +317,7 @@ class MacrosUnitTests extends WordSpec with Matchers {
       b_tup.setString(3, "onehundred")
       b_tup.setString(4, "what")
       val b_te = new TupleEntry(b_tup)
-      val b = SampleClassB(a, a, "what")
+      val b    = SampleClassB(a, a, "what")
       shouldRoundTripOther(b_te, b)
 
       val c_tup = CTuple.size(19)
@@ -327,7 +346,7 @@ class MacrosUnitTests extends WordSpec with Matchers {
       c_tup.setString(18, "what")
 
       val c_te = new TupleEntry(c_tup)
-      val c = SampleClassC(a, b, a, b, b)
+      val c    = SampleClassC(a, b, a, b, b)
       shouldRoundTripOther(c_te, c)
     }
 
@@ -335,11 +354,14 @@ class MacrosUnitTests extends WordSpec with Matchers {
       val fields = Macros.toFields[SampleClassB]
       assert(fields.size === 5)
       assert(
-          fields.getTypes === Array[java.lang.reflect.Type](classOf[Int],
-                                                            classOf[String],
-                                                            classOf[Int],
-                                                            classOf[String],
-                                                            classOf[String]))
+        fields.getTypes === Array[java.lang.reflect.Type](
+          classOf[Int],
+          classOf[String],
+          classOf[Int],
+          classOf[String],
+          classOf[String]
+        )
+      )
       val names = List("a1.x", "a1.y", "a2.x", "a2.y", "y")
       names.zipWithIndex.foreach {
         case (name, indx) =>
@@ -350,26 +372,34 @@ class MacrosUnitTests extends WordSpec with Matchers {
     "Case Class should form expected Fields with Options" in {
       val fields = Macros.toFields[SampleClassD]
       assert(fields.size === 19)
-      assert(fields.getTypes === Array
-            .fill[java.lang.reflect.Type](19)(classOf[java.lang.Object]))
+      assert(
+        fields.getTypes === Array
+          .fill[java.lang.reflect.Type](19)(classOf[java.lang.Object])
+      )
     }
 
     "Case Class should form expected Fields with Unknown types" in {
       val fields = Macros.toFieldsWithUnknown[SampleClassG]
       assert(fields.size === 1)
-      assert(fields.getTypes === Array[java.lang.reflect.Type](
-              classOf[java.util.Date]))
+      assert(
+        fields.getTypes === Array[java.lang.reflect.Type](
+          classOf[java.util.Date]
+        )
+      )
     }
 
     "Case Class should form expected Indexed Fields" in {
       val fields = Macros.toIndexedFields[SampleClassB]
       assert(fields.size === 5)
       assert(
-          fields.getTypes === Array[java.lang.reflect.Type](classOf[Int],
-                                                            classOf[String],
-                                                            classOf[Int],
-                                                            classOf[String],
-                                                            classOf[String]))
+        fields.getTypes === Array[java.lang.reflect.Type](
+          classOf[Int],
+          classOf[String],
+          classOf[Int],
+          classOf[String],
+          classOf[String]
+        )
+      )
       val names = (0 until fields.size)
       names.zipWithIndex.foreach {
         case (name, indx) =>

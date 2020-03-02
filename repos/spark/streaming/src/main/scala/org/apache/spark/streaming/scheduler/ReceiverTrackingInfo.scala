@@ -21,9 +21,11 @@ import org.apache.spark.rpc.RpcEndpointRef
 import org.apache.spark.scheduler.{ExecutorCacheTaskLocation, TaskLocation}
 import org.apache.spark.streaming.scheduler.ReceiverState._
 
-private[streaming] case class ReceiverErrorInfo(lastErrorMessage: String = "",
-                                                lastError: String = "",
-                                                lastErrorTime: Long = -1L)
+private[streaming] case class ReceiverErrorInfo(
+    lastErrorMessage: String = "",
+    lastError: String = "",
+    lastErrorTime: Long = -1L
+)
 
 /**
   * Class having information about a receiver.
@@ -43,16 +45,17 @@ private[streaming] case class ReceiverTrackingInfo(
     runningExecutor: Option[ExecutorCacheTaskLocation],
     name: Option[String] = None,
     endpoint: Option[RpcEndpointRef] = None,
-    errorInfo: Option[ReceiverErrorInfo] = None) {
+    errorInfo: Option[ReceiverErrorInfo] = None
+) {
 
   def toReceiverInfo: ReceiverInfo = ReceiverInfo(
-      receiverId,
-      name.getOrElse(""),
-      state == ReceiverState.ACTIVE,
-      location = runningExecutor.map(_.host).getOrElse(""),
-      executorId = runningExecutor.map(_.executorId).getOrElse(""),
-      lastErrorMessage = errorInfo.map(_.lastErrorMessage).getOrElse(""),
-      lastError = errorInfo.map(_.lastError).getOrElse(""),
-      lastErrorTime = errorInfo.map(_.lastErrorTime).getOrElse(-1L)
+    receiverId,
+    name.getOrElse(""),
+    state == ReceiverState.ACTIVE,
+    location = runningExecutor.map(_.host).getOrElse(""),
+    executorId = runningExecutor.map(_.executorId).getOrElse(""),
+    lastErrorMessage = errorInfo.map(_.lastErrorMessage).getOrElse(""),
+    lastError = errorInfo.map(_.lastError).getOrElse(""),
+    lastErrorTime = errorInfo.map(_.lastErrorTime).getOrElse(-1L)
   )
 }

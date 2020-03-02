@@ -37,10 +37,10 @@ private[rest] abstract class SubmitRestProtocolRequest
   * A request to launch a new application in the REST application submission protocol.
   */
 private[rest] class CreateSubmissionRequest extends SubmitRestProtocolRequest {
-  var appResource: String = null
-  var mainClass: String = null
-  var appArgs: Array[String] = null
-  var sparkProperties: Map[String, String] = null
+  var appResource: String                       = null
+  var mainClass: String                         = null
+  var appArgs: Array[String]                    = null
+  var sparkProperties: Map[String, String]      = null
   var environmentVariables: Map[String, String] = null
 
   protected override def doValidate(): Unit = {
@@ -69,11 +69,15 @@ private[rest] class CreateSubmissionRequest extends SubmitRestProtocolRequest {
 
   /** Assert that a Spark property can be converted to a certain type. */
   private def assertProperty[T](
-      key: String, valueType: String, convert: (String => T)): Unit = {
+      key: String,
+      valueType: String,
+      convert: (String => T)
+  ): Unit = {
     sparkProperties.get(key).foreach { value =>
       Try(convert(value)).getOrElse {
         throw new SubmitRestProtocolException(
-            s"Property '$key' expected $valueType value: actual was '$value'.")
+          s"Property '$key' expected $valueType value: actual was '$value'."
+        )
       }
     }
   }

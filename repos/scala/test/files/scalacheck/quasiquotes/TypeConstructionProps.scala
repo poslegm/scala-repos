@@ -2,8 +2,7 @@ import org.scalacheck._, Prop._, Gen._, Arbitrary._
 import scala.reflect.runtime.universe._, Flag._,
 internal.reificationSupport.ScalaDot
 
-object TypeConstructionProps
-    extends QuasiquoteProperties("type construction") {
+object TypeConstructionProps extends QuasiquoteProperties("type construction") {
   property("bare idents contain type names") = test {
     tq"x" ≈ Ident(TypeName("x"))
   }
@@ -15,7 +14,7 @@ object TypeConstructionProps
 
   property("tuple type") = test {
     val empty = List[Tree]()
-    val ts = List(tq"t1", tq"t2")
+    val ts    = List(tq"t1", tq"t2")
     assert(tq"(..$empty)" ≈ ScalaDot(TypeName("Unit")))
     assert(tq"(..$ts)" ≈ tq"scala.Tuple2[t1, t2]")
     assert(tq"(t0, ..$ts)" ≈ tq"scala.Tuple3[t0, t1, t2]")
@@ -33,7 +32,7 @@ object TypeConstructionProps
 
   property("function type") = test {
     val argtpes = tq"A" :: tq"B" :: Nil
-    val restpe = tq"C"
+    val restpe  = tq"C"
     assert(tq"..$argtpes => $restpe" ≈ tq"(A, B) => C")
   }
 

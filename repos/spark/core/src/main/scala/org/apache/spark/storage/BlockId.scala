@@ -38,15 +38,15 @@ sealed abstract class BlockId {
   // convenience methods
   def asRDDId: Option[RDDBlockId] =
     if (isRDD) Some(asInstanceOf[RDDBlockId]) else None
-  def isRDD: Boolean = isInstanceOf[RDDBlockId]
-  def isShuffle: Boolean = isInstanceOf[ShuffleBlockId]
+  def isRDD: Boolean       = isInstanceOf[RDDBlockId]
+  def isShuffle: Boolean   = isInstanceOf[ShuffleBlockId]
   def isBroadcast: Boolean = isInstanceOf[BroadcastBlockId]
 
   override def toString: String = name
-  override def hashCode: Int = name.hashCode
+  override def hashCode: Int    = name.hashCode
   override def equals(other: Any): Boolean = other match {
     case o: BlockId => getClass == o.getClass && name.equals(o.name)
-    case _ => false
+    case _          => false
   }
 }
 
@@ -112,14 +112,14 @@ private[spark] case class TestBlockId(id: String) extends BlockId {
 
 @DeveloperApi
 object BlockId {
-  val RDD = "rdd_([0-9]+)_([0-9]+)".r
-  val SHUFFLE = "shuffle_([0-9]+)_([0-9]+)_([0-9]+)".r
-  val SHUFFLE_DATA = "shuffle_([0-9]+)_([0-9]+)_([0-9]+).data".r
+  val RDD           = "rdd_([0-9]+)_([0-9]+)".r
+  val SHUFFLE       = "shuffle_([0-9]+)_([0-9]+)_([0-9]+)".r
+  val SHUFFLE_DATA  = "shuffle_([0-9]+)_([0-9]+)_([0-9]+).data".r
   val SHUFFLE_INDEX = "shuffle_([0-9]+)_([0-9]+)_([0-9]+).index".r
-  val BROADCAST = "broadcast_([0-9]+)([_A-Za-z0-9]*)".r
-  val TASKRESULT = "taskresult_([0-9]+)".r
-  val STREAM = "input-([0-9]+)-([0-9]+)".r
-  val TEST = "test_(.*)".r
+  val BROADCAST     = "broadcast_([0-9]+)([_A-Za-z0-9]*)".r
+  val TASKRESULT    = "taskresult_([0-9]+)".r
+  val STREAM        = "input-([0-9]+)-([0-9]+)".r
+  val TEST          = "test_(.*)".r
 
   /** Converts a BlockId "name" String back into a BlockId. */
   def apply(id: String): BlockId = id match {

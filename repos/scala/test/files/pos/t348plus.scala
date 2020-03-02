@@ -4,7 +4,7 @@ trait Foo {
   type bar <: Bar;
   abstract class Bar;
   case class Baz(r: bar) extends Bar;
-  case object NoBar extends Bar;
+  case object NoBar      extends Bar;
 }
 object Test extends App {
   object ConcreteFooBar extends Foo {

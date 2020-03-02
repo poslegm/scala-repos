@@ -20,7 +20,7 @@ trait Scopes extends api.Scopes { self: SymbolTable =>
     def symbol = NoSymbol
   }
   case class LookupInaccessible(symbol: Symbol, msg: String) extends NameLookup
-  case object LookupNotFound extends NameLookup { def symbol = NoSymbol }
+  case object LookupNotFound                                 extends NameLookup { def symbol = NoSymbol }
 
   class ScopeEntry(val sym: Symbol, val owner: Scope) {
 
@@ -32,9 +32,9 @@ trait Scopes extends api.Scopes { self: SymbolTable =>
       */
     var next: ScopeEntry = null
 
-    def depth = owner.nestingLevel
+    def depth                    = owner.nestingLevel
     override def hashCode(): Int = sym.name.start
-    override def toString() = s"$sym (depth=$depth)"
+    override def toString()      = s"$sym (depth=$depth)"
   }
 
   private def newScopeEntry(sym: Symbol, owner: Scope): ScopeEntry = {
@@ -52,7 +52,7 @@ trait Scopes extends api.Scopes { self: SymbolTable =>
     *  This is necessary because when run from reflection every scope needs to have a
     *  SynchronizedScope as mixin.
     */
-  class Scope protected[Scopes]() extends ScopeApi with MemberScopeApi {
+  class Scope protected[Scopes] () extends ScopeApi with MemberScopeApi {
 
     private[scala] var elems: ScopeEntry = _
 
@@ -67,7 +67,7 @@ trait Scopes extends api.Scopes { self: SymbolTable =>
     /** a cache for all elements, to be used by symbol iterator.
       */
     private var elemsCache: List[Symbol] = null
-    private var cachedSize = -1
+    private var cachedSize               = -1
     private def flushElemsCache() {
       elemsCache = null
       cachedSize = -1
@@ -129,8 +129,10 @@ trait Scopes extends api.Scopes { self: SymbolTable =>
     /** enter a symbol, asserting that no symbol with same name exists in scope
       */
     def enterUnique(sym: Symbol) {
-      assert(lookup(sym.name) == NoSymbol,
-             (sym.fullLocationString, lookup(sym.name).fullLocationString))
+      assert(
+        lookup(sym.name) == NoSymbol,
+        (sym.fullLocationString, lookup(sym.name).fullLocationString)
+      )
       enter(sym)
     }
 
@@ -152,7 +154,7 @@ trait Scopes extends api.Scopes { self: SymbolTable =>
           enterInHash(e)
         } else {
           var entries: List[ScopeEntry] = List()
-          var ee = e
+          var ee                        = e
           while (ee ne null) {
             entries = ee :: entries
             ee = ee.next
@@ -164,8 +166,8 @@ trait Scopes extends api.Scopes { self: SymbolTable =>
 
     def rehash(sym: Symbol, newname: Name) {
       if (hashtable ne null) {
-        val index = sym.name.start & HASHMASK
-        var e1 = hashtable(index)
+        val index         = sym.name.start & HASHMASK
+        var e1            = hashtable(index)
         var e: ScopeEntry = null
         if (e1 != null) {
           if (e1.sym == sym) {
@@ -199,7 +201,7 @@ trait Scopes extends api.Scopes { self: SymbolTable =>
       }
       if (hashtable ne null) {
         val index = e.sym.name.start & HASHMASK
-        var e1 = hashtable(index)
+        var e1    = hashtable(index)
         if (e1 == e) {
           hashtable(index) = e.tail
         } else {
@@ -245,7 +247,7 @@ trait Scopes extends api.Scopes { self: SymbolTable =>
         // in an understandable fashion (unexpectedly overloaded symbol) rather
         // than a non-deterministic bizarre one (see any bug involving overloads
         // in package objects.)
-        val alts = lookupAll(name).toList
+        val alts   = lookupAll(name).toList
         def alts_s = alts map (s => s.defString) mkString " <and> "
         devWarning(s"scope lookup of $name found multiple symbols: $alts_s")
         // FIXME - how is one supposed to create an overloaded symbol without
@@ -268,16 +270,20 @@ trait Scopes extends api.Scopes { self: SymbolTable =>
     /** Returns an iterator yielding every symbol with given name in this scope.
       */
     def lookupAll(name: Name): Iterator[Symbol] = new Iterator[Symbol] {
-      var e = lookupEntry(name)
+      var e                = lookupEntry(name)
       def hasNext: Boolean = e ne null
-      def next(): Symbol = try e.sym finally e = lookupNextEntry(e)
+      def next(): Symbol =
+        try e.sym
+        finally e = lookupNextEntry(e)
     }
 
     def lookupAllEntries(name: Name): Iterator[ScopeEntry] =
       new Iterator[ScopeEntry] {
-        var e = lookupEntry(name)
+        var e                = lookupEntry(name)
         def hasNext: Boolean = e ne null
-        def next(): ScopeEntry = try e finally e = lookupNextEntry(e)
+        def next(): ScopeEntry =
+          try e
+          finally e = lookupNextEntry(e)
       }
 
     def lookupUnshadowedEntries(name: Name): Iterator[ScopeEntry] = {
@@ -285,7 +291,7 @@ trait Scopes extends api.Scopes { self: SymbolTable =>
         case null => Iterator.empty
         case e =>
           lookupAllEntries(name) filter
-          (e1 => (e eq e1) || (e.depth == e1.depth && e.sym != e1.sym))
+            (e1 => (e eq e1) || (e.depth == e1.depth && e.sym != e1.sym))
       }
     }
 
@@ -298,12 +304,12 @@ trait Scopes extends api.Scopes { self: SymbolTable =>
       var e: ScopeEntry = null
       if (hashtable ne null) {
         e = hashtable(name.start & HASHMASK)
-        while ( (e ne null) && e.sym.name != name) {
+        while ((e ne null) && e.sym.name != name) {
           e = e.tail
         }
       } else {
         e = elems
-        while ( (e ne null) && e.sym.name != name) {
+        while ((e ne null) && e.sym.name != name) {
           e = e.next
         }
       }
@@ -318,9 +324,9 @@ trait Scopes extends api.Scopes { self: SymbolTable =>
     def lookupNextEntry(entry: ScopeEntry): ScopeEntry = {
       var e = entry
       if (hashtable ne null)
-        do { e = e.tail } while ( (e ne null) && e.sym.name != entry.sym.name)
+        do { e = e.tail } while ((e ne null) && e.sym.name != entry.sym.name)
       else
-        do { e = e.next } while ( (e ne null) && e.sym.name != entry.sym.name)
+        do { e = e.next } while ((e ne null) && e.sym.name != entry.sym.name)
       e
     }
 
@@ -330,7 +336,7 @@ trait Scopes extends api.Scopes { self: SymbolTable =>
       */
     def isSameScope(other: Scope) =
       ((size == other.size) // optimization - size is cached
-          && (this isSubScope other) && (other isSubScope this))
+        && (this isSubScope other) && (other isSubScope this))
 
     def isSubScope(other: Scope) = {
       def scopeContainsSym(sym: Symbol): Boolean = {
@@ -351,9 +357,9 @@ trait Scopes extends api.Scopes { self: SymbolTable =>
     override def toList: List[Symbol] = {
       if (elemsCache eq null) {
         var symbols: List[Symbol] = Nil
-        var count = 0
-        var e = elems
-        while ( (e ne null) && e.owner == this) {
+        var count                 = 0
+        var e                     = elems
+        while ((e ne null) && e.owner == this) {
           count += 1
           symbols ::= e.sym
           e = e.next
@@ -425,7 +431,7 @@ trait Scopes extends api.Scopes { self: SymbolTable =>
   private[scala] def newFindMemberScope: Scope = new Scope() {
     override def sorted = {
       val members = toList
-      val owners = members.map(_.owner).distinct
+      val owners  = members.map(_.owner).distinct
       val grouped = members groupBy (_.owner)
       owners.flatMap(owner => grouped(owner).reverse)
     }

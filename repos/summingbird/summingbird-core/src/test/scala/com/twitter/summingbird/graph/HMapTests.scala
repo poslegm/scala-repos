@@ -41,9 +41,7 @@ object HMapTests extends Properties("HMap") {
 
   implicit def hmapGen: Gen[HMap[Key, Value]] =
     Gen.listOf(zip(keyGen, valGen)).map { list =>
-      list.foldLeft(HMap.empty[Key, Value]) { (hm, kv) =>
-        hm + kv
-      }
+      list.foldLeft(HMap.empty[Key, Value]) { (hm, kv) => hm + kv }
     }
 
   implicit def arb[T](implicit g: Gen[T]): Arbitrary[T] = Arbitrary(g)
@@ -51,7 +49,7 @@ object HMapTests extends Properties("HMap") {
   property("adding a pair works") = forAll {
     (hmap: HMap[Key, Value], k: Key[Int], v: Value[Int]) =>
       val initContains = hmap.contains(k)
-      val added = hmap + (k -> v)
+      val added        = hmap + (k -> v)
       // Adding puts the item in, and does not change the initial
       (added.get(k) == Some(v)) && (initContains == hmap.contains(k)) &&
       (initContains == hmap.get(k).isDefined)
@@ -59,7 +57,7 @@ object HMapTests extends Properties("HMap") {
   property("removing a key works") = forAll {
     (hmap: HMap[Key, Value], k: Key[Int]) =>
       val initContains = hmap.get(k).isDefined
-      val next = hmap - k
+      val next         = hmap - k
       // Adding puts the item in, and does not change the initial
       (!next.contains(k)) && (initContains == hmap.contains(k)) &&
       (next.get(k) == None)
@@ -67,13 +65,13 @@ object HMapTests extends Properties("HMap") {
 
   property("keysOf works") = forAll {
     (hmap: HMap[Key, Value], k: Key[Int], v: Value[Int]) =>
-      val initKeys = hmap.keysOf(v)
-      val added = hmap + (k -> v)
+      val initKeys  = hmap.keysOf(v)
+      val added     = hmap + (k -> v)
       val finalKeys = added.keysOf(v)
       val sizeIsConsistent = (finalKeys -- initKeys).size match {
-        case 0 => hmap.contains(k) // initially present
+        case 0 => hmap.contains(k)  // initially present
         case 1 => !hmap.contains(k) // initially absent
-        case _ => false // we can't change the count by more than 1.
+        case _ => false             // we can't change the count by more than 1.
       }
 
       sizeIsConsistent && added.contains(k)
@@ -85,7 +83,7 @@ object HMapTests extends Properties("HMap") {
     }
     hmap.updateFirst(partial) match {
       case Some((updated, k)) => updated.get(k) == Some(Value(0))
-      case None => true
+      case None               => true
     }
   }
 
@@ -100,16 +98,15 @@ object HMapTests extends Properties("HMap") {
     collected == mapCollected
   }
 
-  property("collectValues works") = forAll {
-    (map: Map[Key[Int], Value[Int]]) =>
-      val hm = map.foldLeft(HMap.empty[Key, Value])(_ + _)
-      val partial = new GenPartial[Value, Value] {
-        def apply[T] = { case Value(v) if v < 0 => Value(v * v) }
-      }
-      val collected =
-        hm.collectValues(partial).map { case Value(v) => v }.toSet
-      val mapCollected =
-        map.values.collect(partial.apply[Int]).map { case Value(v) => v }.toSet
-      collected == mapCollected
+  property("collectValues works") = forAll { (map: Map[Key[Int], Value[Int]]) =>
+    val hm = map.foldLeft(HMap.empty[Key, Value])(_ + _)
+    val partial = new GenPartial[Value, Value] {
+      def apply[T] = { case Value(v) if v < 0 => Value(v * v) }
+    }
+    val collected =
+      hm.collectValues(partial).map { case Value(v) => v }.toSet
+    val mapCollected =
+      map.values.collect(partial.apply[Int]).map { case Value(v) => v }.toSet
+    collected == mapCollected
   }
 }

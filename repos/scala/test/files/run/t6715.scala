@@ -1,7 +1,7 @@
 import scala.reflect.runtime.universe._
 
 class A {
-  def $$ = 1
+  def $$     = 1
   def $times = 1
 }
 

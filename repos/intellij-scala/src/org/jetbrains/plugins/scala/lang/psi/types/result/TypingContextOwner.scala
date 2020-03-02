@@ -42,7 +42,7 @@ object TypingContext {
   val empty = new TypingContext { def visited = Set() }
 
   val undefined = new TypingContext {
-    def visited = Set()
+    def visited              = Set()
     override def isUndefined = true
   }
 }

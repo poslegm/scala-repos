@@ -28,7 +28,7 @@ trait IndexedSeqOptimized[+A, +Repr] extends Any with IndexedSeqLike[A, Repr] {
 
   override /*IterableLike*/
   def foreach[U](f: A => U): Unit = {
-    var i = 0
+    var i   = 0
     val len = length
     while (i < len) { f(this(i)); i += 1 }
   }
@@ -81,11 +81,12 @@ trait IndexedSeqOptimized[+A, +Repr] extends Any with IndexedSeqLike[A, Repr] {
     else super.reduceRight(op)
 
   override /*IterableLike*/
-  def zip[A1 >: A, B, That](that: GenIterable[B])(
-      implicit bf: CanBuildFrom[Repr, (A1, B), That]): That = that match {
+  def zip[A1 >: A, B, That](
+      that: GenIterable[B]
+  )(implicit bf: CanBuildFrom[Repr, (A1, B), That]): That = that match {
     case that: IndexedSeq[_] =>
-      val b = bf(repr)
-      var i = 0
+      val b   = bf(repr)
+      var i   = 0
       val len = this.length min that.length
       b.sizeHint(len)
       while (i < len) {
@@ -99,8 +100,9 @@ trait IndexedSeqOptimized[+A, +Repr] extends Any with IndexedSeqLike[A, Repr] {
 
   override /*IterableLike*/
   def zipWithIndex[A1 >: A, That](
-      implicit bf: CanBuildFrom[Repr, (A1, Int), That]): That = {
-    val b = bf(repr)
+      implicit bf: CanBuildFrom[Repr, (A1, Int), That]
+  ): That = {
+    val b   = bf(repr)
     val len = length
     b.sizeHint(len)
     var i = 0
@@ -113,10 +115,10 @@ trait IndexedSeqOptimized[+A, +Repr] extends Any with IndexedSeqLike[A, Repr] {
 
   override /*IterableLike*/
   def slice(from: Int, until: Int): Repr = {
-    val lo = math.max(from, 0)
-    val hi = math.min(math.max(until, 0), length)
+    val lo    = math.max(from, 0)
+    val hi    = math.min(math.max(until, 0), length)
     val elems = math.max(hi - lo, 0)
-    val b = newBuilder
+    val b     = newBuilder
     b.sizeHint(elems)
 
     var i = lo
@@ -178,8 +180,8 @@ trait IndexedSeqOptimized[+A, +Repr] extends Any with IndexedSeqLike[A, Repr] {
 
   override /*IterableLike*/
   def copyToArray[B >: A](xs: Array[B], start: Int, len: Int) {
-    var i = 0
-    var j = start
+    var i   = 0
+    var j   = start
     val end = length min len min (xs.length - start)
     while (i < end) {
       xs(j) = this(i)
@@ -196,7 +198,7 @@ trait IndexedSeqOptimized[+A, +Repr] extends Any with IndexedSeqLike[A, Repr] {
   override /*SeqLike*/
   def segmentLength(p: A => Boolean, from: Int): Int = {
     val len = length
-    var i = from
+    var i   = from
     while (i < len && p(this(i))) i += 1
     i - from
   }
@@ -230,7 +232,7 @@ trait IndexedSeqOptimized[+A, +Repr] extends Any with IndexedSeqLike[A, Repr] {
 
   override /*SeqLike*/
   def reverseIterator: Iterator[A] = new AbstractIterator[A] {
-    private var i = self.length
+    private var i        = self.length
     def hasNext: Boolean = 0 < i
     def next(): A =
       if (0 < i) {
@@ -242,8 +244,8 @@ trait IndexedSeqOptimized[+A, +Repr] extends Any with IndexedSeqLike[A, Repr] {
   override /*SeqLike*/
   def startsWith[B](that: GenSeq[B], offset: Int): Boolean = that match {
     case that: IndexedSeq[_] =>
-      var i = offset
-      var j = 0
+      var i       = offset
+      var j       = 0
       val thisLen = length
       val thatLen = that.length
       while (i < thisLen && j < thatLen && this(i) == that(j)) {
@@ -252,8 +254,8 @@ trait IndexedSeqOptimized[+A, +Repr] extends Any with IndexedSeqLike[A, Repr] {
       }
       j == thatLen
     case _ =>
-      var i = offset
-      val thisLen = length
+      var i         = offset
+      val thisLen   = length
       val thatElems = that.iterator
       while (i < thisLen && thatElems.hasNext) {
         if (this(i) != thatElems.next()) return false

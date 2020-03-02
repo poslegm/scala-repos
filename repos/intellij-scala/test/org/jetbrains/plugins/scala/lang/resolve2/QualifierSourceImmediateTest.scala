@@ -16,7 +16,7 @@ class QualifierSourceImmediateTest extends ResolveTestBase {
   def testCaseObject() = doTest()
   //TODO
 //  def testCaseObjectSyntetic = doTest
-  def testClass() = doTest()
+  def testClass()  = doTest()
   def testObject() = doTest()
-  def testTrait() = doTest()
+  def testTrait()  = doTest()
 }

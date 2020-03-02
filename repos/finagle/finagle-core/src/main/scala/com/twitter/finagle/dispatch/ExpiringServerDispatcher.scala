@@ -16,8 +16,13 @@ object ExpiringServerDispatcher {
   ): (Transport[In, Out], Service[Req, Rep]) => Closable =
     (transport: Transport[In, Out], service: Service[Req, Rep]) =>
       new ExpiringService(
-          service, maxIdleTime, maxLifeTime, timer, statsReceiver) {
+        service,
+        maxIdleTime,
+        maxLifeTime,
+        timer,
+        statsReceiver
+      ) {
         private[this] val dispatcher = newDispatcher(transport, this)
         protected def onExpire() { dispatcher.close(Time.now) }
-    }
+      }
 }

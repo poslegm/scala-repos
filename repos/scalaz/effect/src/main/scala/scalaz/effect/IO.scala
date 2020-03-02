@@ -12,7 +12,8 @@ import std.function._
 
 sealed abstract class IO[A] {
   private[effect] def apply(
-      rw: Tower[IvoryTower]): Trampoline[(Tower[IvoryTower], A)]
+      rw: Tower[IvoryTower]
+  ): Trampoline[(Tower[IvoryTower], A)]
 
   import IO._
 
@@ -54,19 +55,19 @@ sealed abstract class IO[A] {
 
   /** Continues this action with the given function. */
   def map[B](f: A => B): IO[B] =
-    io(
-        rw =>
-          apply(rw) map {
+    io(rw =>
+      apply(rw) map {
         case (nw, a) => (nw, f(a))
-    })
+      }
+    )
 
   /** Continues this action with the given action. */
   def flatMap[B](f: A => IO[B]): IO[B] =
-    io(
-        rw =>
-          apply(rw) flatMap {
+    io(rw =>
+      apply(rw) flatMap {
         case (nw, a) => f(a)(nw)
-    })
+      }
+    )
 
   /** Lift this action to a given IO-like monad. */
   def liftIO[M[_]](implicit m: MonadIO[M]): M[A] =
@@ -74,23 +75,24 @@ sealed abstract class IO[A] {
 
   /** Executes the handler if an exception is raised. */
   def except(handler: Throwable => IO[A]): IO[A] =
-    io(
-        rw =>
-          try { Free.pure(this(rw).run) } catch {
+    io(rw =>
+      try { Free.pure(this(rw).run) }
+      catch {
         case e: Throwable => handler(e)(rw)
-    })
+      }
+    )
 
   /**
     * Executes the handler for exceptions that are raised and match the given predicate.
     * Other exceptions are rethrown.
     */
   def catchSome[B](p: Throwable => Option[B], handler: B => IO[A]): IO[A] =
-    except(
-        e =>
-          p(e) match {
+    except(e =>
+      p(e) match {
         case Some(z) => handler(z)
-        case None => throw e
-    })
+        case None    => throw e
+      }
+    )
 
   /**
     * Returns a disjunction result which is right if no exception was raised, or left if an
@@ -106,11 +108,12 @@ sealed abstract class IO[A] {
   /**Like "finally", but only performs the final action if there was an exception. */
   def onException[B](action: IO[B]): IO[A] =
     this except
-    (e =>
-          for {
-            _ <- action
-            a <- (throw e): IO[A]
-          } yield a)
+      (e =>
+        for {
+          _ <- action
+          a <- (throw e): IO[A]
+        } yield a
+      )
 
   /**
     * Applies the "during" action, calling "after" regardless of whether there was an exception.
@@ -141,11 +144,12 @@ sealed abstract class IO[A] {
       r <- during(a) onException after(a)
     } yield r
 
-  def bracketIO[M[_], B](after: A => IO[Unit])(
-      during: A => M[B])(implicit m: MonadControlIO[M]): M[B] =
-    controlIO(
-        (runInIO: RunInBase[M, IO]) =>
-          bracket(after)(runInIO.apply compose during))
+  def bracketIO[M[_], B](
+      after: A => IO[Unit]
+  )(during: A => M[B])(implicit m: MonadControlIO[M]): M[B] =
+    controlIO((runInIO: RunInBase[M, IO]) =>
+      bracket(after)(runInIO.apply compose during)
+    )
 
   /** An automatic resource management. */
   def using[C](f: A => IO[C])(implicit resource: Resource[A]) =
@@ -165,24 +169,25 @@ sealed abstract class IOInstances0 extends IOInstances1 {
   implicit def IOMonoid[A](implicit A: Monoid[A]): Monoid[IO[A]] =
     Monoid.liftMonoid[IO, A](ioMonad, A)
 
-  implicit val ioMonadIO: MonadIO[IO] = new MonadIO[IO] with IOLiftIO
-  with IOMonad
+  implicit val ioMonadIO: MonadIO[IO] =
+    new MonadIO[IO] with IOLiftIO with IOMonad
 }
 
 sealed abstract class IOInstances extends IOInstances0 {
   implicit val ioMonadCatchIO: MonadCatchIO[IO] = new IOMonadCatchIO
-  with IOLiftIO with IOMonad
+    with IOLiftIO
+    with IOMonad
 
   implicit val ioCatchable: Catchable[IO] = new Catchable[IO] {
     def attempt[A](f: IO[A]): IO[Throwable \/ A] = f.catchLeft
-    def fail[A](err: Throwable): IO[A] = IO(throw err)
+    def fail[A](err: Throwable): IO[A]           = IO(throw err)
   }
 }
 
 private trait IOMonad extends Monad[IO] with BindRec[IO] {
-  def point[A](a: => A): IO[A] = IO(a)
-  override def map[A, B](fa: IO[A])(f: A => B) = fa map f
-  def bind[A, B](fa: IO[A])(f: A => IO[B]): IO[B] = fa flatMap f
+  def point[A](a: => A): IO[A]                        = IO(a)
+  override def map[A, B](fa: IO[A])(f: A => B)        = fa map f
+  def bind[A, B](fa: IO[A])(f: A => IO[B]): IO[B]     = fa flatMap f
   def tailrecM[A, B](f: A => IO[A \/ B])(a: A): IO[B] = IO.tailrecM(f)(a)
 }
 
@@ -203,55 +208,54 @@ object IO extends IOInstances {
 
   /** Writes a character to standard output. */
   def putChar(c: Char): IO[Unit] =
-    io(
-        rw =>
-          return_(rw -> {
+    io(rw =>
+      return_(rw -> {
         print(c)
         ()
-      }))
+      })
+    )
 
   /** Writes a string to standard output. */
   def putStr(s: String): IO[Unit] =
-    io(
-        rw =>
-          return_(rw -> {
+    io(rw =>
+      return_(rw -> {
         print(s)
         ()
-      }))
+      })
+    )
 
   /** Writes a string to standard output, followed by a newline.*/
   def putStrLn(s: String): IO[Unit] =
-    io(
-        rw =>
-          return_(rw -> {
+    io(rw =>
+      return_(rw -> {
         println(s)
         ()
-      }))
+      })
+    )
 
   /** Reads a line of standard input. */
   def readLn: IO[String] = IO(readLine())
 
   def put[A](a: A)(implicit S: Show[A]): IO[Unit] =
-    io(
-        rw =>
-          return_(rw -> {
+    io(rw =>
+      return_(rw -> {
         print(S shows a)
         ()
-      }))
+      })
+    )
 
   def putLn[A](a: A)(implicit S: Show[A]): IO[Unit] =
-    io(
-        rw =>
-          return_(rw -> {
+    io(rw =>
+      return_(rw -> {
         println(S shows a)
         ()
-      }))
+      })
+    )
 
   type RunInBase[M[_], Base[_]] = Forall[λ[α => M[α] => Base[M[α]]]]
 
   /** Construct an IO action from a world-transition function. */
-  def io[A](
-      f: Tower[IvoryTower] => Trampoline[(Tower[IvoryTower], A)]): IO[A] =
+  def io[A](f: Tower[IvoryTower] => Trampoline[(Tower[IvoryTower], A)]): IO[A] =
     new IO[A] {
       private[effect] def apply(rw: Tower[IvoryTower]) = Free(() => f(rw))
     }
@@ -264,14 +268,15 @@ object IO extends IOInstances {
   def throwIO[A](e: Throwable): IO[A] = IO(throw e)
 
   def idLiftControl[M[_], A](
-      f: RunInBase[M, M] => M[A])(implicit m: Monad[M]): M[A] =
-    f(
-        new RunInBase[M, M] {
+      f: RunInBase[M, M] => M[A]
+  )(implicit m: Monad[M]): M[A] =
+    f(new RunInBase[M, M] {
       def apply[B] = (x: M[B]) => m.point(x)
     })
 
-  def controlIO[M[_], A](f: RunInBase[M, IO] => IO[M[A]])(
-      implicit M: MonadControlIO[M]): M[A] =
+  def controlIO[M[_], A](
+      f: RunInBase[M, IO] => IO[M[A]]
+  )(implicit M: MonadControlIO[M]): M[A] =
     M.join(M.liftControlIO(f))
 
   /**
@@ -279,14 +284,17 @@ object IO extends IOInstances {
     * all registered finalizers will be performed if they're not duplicated to a parent region.
     */
   def onExit[S, P[_]: MonadIO](
-      finalizer: IO[Unit]): RegionT[S, P, FinalizerHandle[RegionT[S, P, ?]]] =
+      finalizer: IO[Unit]
+  ): RegionT[S, P, FinalizerHandle[RegionT[S, P, ?]]] =
     regionT(
-        kleisli(hsIORef =>
-              (for {
-        refCntIORef <- newIORef(1)
-        h = refCountedFinalizer(finalizer, refCntIORef)
-        _ <- hsIORef.mod(h :: _)
-      } yield finalizerHandle[RegionT[S, P, ?]](h)).liftIO[P]))
+      kleisli(hsIORef =>
+        (for {
+          refCntIORef <- newIORef(1)
+          h           = refCountedFinalizer(finalizer, refCntIORef)
+          _           <- hsIORef.mod(h :: _)
+        } yield finalizerHandle[RegionT[S, P, ?]](h)).liftIO[P]
+      )
+    )
 
   /**
     * Execute a region inside its parent region P. All resources which have been opened in the given
@@ -301,28 +309,28 @@ object IO extends IOInstances {
       for {
         hs <- hsIORef.read
         _ <- hs.foldRight[IO[Unit]](IO.ioUnit) {
-          case (r, o) =>
-            for {
-              refCnt <- r.refcount.mod(_ - 1)
-              _ <- if (refCnt == 0) r.finalizer else IO.ioUnit
-            } yield ()
-        }
+              case (r, o) =>
+                for {
+                  refCnt <- r.refcount.mod(_ - 1)
+                  _      <- if (refCnt == 0) r.finalizer else IO.ioUnit
+                } yield ()
+            }
       } yield ()
     newIORef(List[RefCountedFinalizer]())
       .bracketIO(after)(s => r.apply.value.run(s))
   }
 
   def tailrecM[A, B](f: A => IO[A \/ B])(a: A): IO[B] =
-    io(
-        rw =>
-          BindRec[Trampoline]
-            .tailrecM[(Tower[IvoryTower], A), (Tower[IvoryTower], B)] {
-        case (nw0, x) =>
-          f(x)(nw0).map {
-            case (nw1, e) =>
-              e.bimap((nw1, _), (nw1, _))
-          }
-      }((rw, a)))
+    io(rw =>
+      BindRec[Trampoline]
+        .tailrecM[(Tower[IvoryTower], A), (Tower[IvoryTower], B)] {
+          case (nw0, x) =>
+            f(x)(nw0).map {
+              case (nw1, e) =>
+                e.bimap((nw1, _), (nw1, _))
+            }
+        }((rw, a))
+    )
 
   /** An IO action is an ST action. */
   implicit def IOToST[A](io: IO[A]): ST[IvoryTower, A] =

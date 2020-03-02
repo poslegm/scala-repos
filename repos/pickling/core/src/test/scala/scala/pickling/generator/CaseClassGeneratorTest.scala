@@ -20,8 +20,8 @@ class CaseClassGeneratorTest extends FunSuite {
 
   test("simple") {
     implicit val pu = PicklingMacros.genPicklerUnpickler[SimpleCaseClass]
-    val x = SimpleCaseClass(1, "hi")
-    val y = x.pickle.unpickle[SimpleCaseClass]
+    val x           = SimpleCaseClass(1, "hi")
+    val y           = x.pickle.unpickle[SimpleCaseClass]
     assert(x == y)
   }
 
@@ -45,7 +45,7 @@ class CaseClassGeneratorTest extends FunSuite {
 
   test("nestedVar") {
     implicit val pu = PicklingMacros.genPicklerUnpickler[NestedVarCaseClass]
-    val x = NestedVarCaseClass(1)
+    val x           = NestedVarCaseClass(1)
     x.y = 2
     val y = x.pickle.unpickle[NestedVarCaseClass]
     assert(x == y)
@@ -54,14 +54,14 @@ class CaseClassGeneratorTest extends FunSuite {
 
   test("nestedCaseClass") {
     val outer = new NestedCaseClassHolder()
-    val x = outer.NestedCaseClass(5)
-    val y = x.pickle.unpickle[outer.NestedCaseClass]
+    val x     = outer.NestedCaseClass(5)
+    val y     = x.pickle.unpickle[outer.NestedCaseClass]
     assert(x == y)
   }
   test("nestedValCaseClass") {
     implicit val pu = PicklingMacros.genPicklerUnpickler[NestedValCaseClass]
-    val x = NestedValCaseClass(5)
-    val y = x.pickle.unpickle[NestedValCaseClass]
+    val x           = NestedValCaseClass(5)
+    val y           = x.pickle.unpickle[NestedValCaseClass]
     assert(x == y)
   }
   test("protectedMember") {
@@ -97,19 +97,19 @@ class CaseClassGeneratorTest extends FunSuite {
   test("extendedCaseClass") {
     implicit val pu = {
       // TODO - We use runtime generation here because we don't have a sufficient algorithm to handle final/serializable but NON-case class classes.
-      implicit val nested: Pickler[OpenCaseClassSub] with Unpickler[
-          OpenCaseClassSub] = {
+      implicit val nested
+          : Pickler[OpenCaseClassSub] with Unpickler[OpenCaseClassSub] = {
         val cls = classOf[OpenCaseClassSub]
         import scala.pickling.internal.currentRuntime
         val key = FastTypeTag[OpenCaseClassSub]
         PicklerUnpickler(
-            currentRuntime.picklers
-              .genPickler(cls.getClassLoader, cls, key)
-              .asInstanceOf[Pickler[OpenCaseClassSub]],
-            currentRuntime.picklers
-              .genUnpickler(currentRuntime.currentMirror, key.key)
-              .asInstanceOf[Unpickler[OpenCaseClassSub]]
-          )
+          currentRuntime.picklers
+            .genPickler(cls.getClassLoader, cls, key)
+            .asInstanceOf[Pickler[OpenCaseClassSub]],
+          currentRuntime.picklers
+            .genUnpickler(currentRuntime.currentMirror, key.key)
+            .asInstanceOf[Unpickler[OpenCaseClassSub]]
+        )
       }
       PicklingMacros.genPicklerUnpickler[OpenCaseClass]
     }
@@ -117,7 +117,7 @@ class CaseClassGeneratorTest extends FunSuite {
     val y = x.pickle.unpickle[OpenCaseClass]
     assert(x == y)
     val x1: OpenCaseClass = new OpenCaseClassSub(1, 2)
-    val y1 = x1.pickle.unpickle[OpenCaseClass]
+    val y1                = x1.pickle.unpickle[OpenCaseClass]
     assert(x1 == y1)
   }
 
@@ -129,7 +129,7 @@ class CaseClassGeneratorTest extends FunSuite {
       PicklingMacros.genPicklerUnpickler[OpenCaseClass]
     }
     implicit val pu2 = PicklingMacros.genPicklerUnpickler[Other]
-    val x = OpenCaseClass(1)
+    val x            = OpenCaseClass(1)
     // Because we ignore subclasses, we shouldn't freak about subclass tags, because we ignore them. Only the
     // "shape" of the pickle should matter.
     val y = x.pickle.unpickle[Other]
@@ -170,9 +170,9 @@ final case class NestedPrivateVarCaseClass(x: Int) {
   private var y = NestedPrivateVarCaseClass.globalY
   override def equals(x: Any): Boolean =
     x match {
-      case null => false
+      case null                         => false
       case x: NestedPrivateVarCaseClass => (x.y == y) && (x.x == x.x)
-      case _ => false
+      case _                            => false
     }
   override def toString = s"NestedPrivateVarCaseClass($x) { var y = $y }"
 }
@@ -186,7 +186,7 @@ object NestedPrivateVarCaseClass {
 
 // Case 11 - nested private[this]
 final case class NestedPrivateThisCaseClass(x: Int) {
-  private[this] val y = NestedPrivateThisCaseClass.globalY
+  private[this] val y   = NestedPrivateThisCaseClass.globalY
   override def toString = s"NestedPrivateThisCaseClass($x) { var y = $y }"
 }
 object NestedPrivateThisCaseClass {
@@ -203,7 +203,7 @@ final class OpenCaseClassSub(x: Int, var y: Int) extends OpenCaseClass(x) {
   override def equals(other: Any): Boolean =
     other match {
       case value: OpenCaseClassSub => (value.y == y) && (value.x == x)
-      case _ => false
+      case _                       => false
     }
   override def toString = s"OpenCaseClassSub($x, $y)"
 }

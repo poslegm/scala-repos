@@ -14,15 +14,17 @@ sealed abstract class FreeAp[F[_], A] {
     */
   def foldMap[G[_]: Applicative](f: F ~> G): G[A] =
     this match {
-      case Pure(x) => Applicative[G].pure(x)
+      case Pure(x)  => Applicative[G].pure(x)
       case x @ Ap() => Applicative[G].ap(f(x.v()))(x.k() foldMap f)
     }
 
   /** Provides access to the first instruction of this program, if present */
   def para[B](
-      pure: A => B, ap: λ[α => (F[α], FreeAp[F, α => A])] ~> λ[α => B]): B =
+      pure: A => B,
+      ap: λ[α => (F[α], FreeAp[F, α => A])] ~> λ[α => B]
+  ): B =
     this match {
-      case Pure(x) => pure(x)
+      case Pure(x)  => pure(x)
       case x @ Ap() => ap(x.v() -> x.k())
     }
 
@@ -39,7 +41,7 @@ sealed abstract class FreeAp[F[_], A] {
     *   })
     * }}}
     */
-  def analyze[M : Monoid](f: F ~> λ[α => M]): M =
+  def analyze[M: Monoid](f: F ~> λ[α => M]): M =
     foldMap[Const[M, ?]](new (F ~> Const[M, ?]) {
       def apply[X](x: F[X]): Const[M, X] = Const(f(x))
     }).getConst
@@ -48,7 +50,7 @@ sealed abstract class FreeAp[F[_], A] {
     * The natural transformation from `FreeAp[F,_]` to `FreeAp[G,_]`
     */
   def hoist[G[_]](f: F ~> G): FreeAp[G, A] = this match {
-    case Pure(a) => Pure(a)
+    case Pure(a)  => Pure(a)
     case x @ Ap() => FreeAp(f(x.v()), x.k() hoist f)
   }
 
@@ -57,7 +59,7 @@ sealed abstract class FreeAp[F[_], A] {
     * `Applicative` instance for `F`.
     */
   def retract(implicit F: Applicative[F]): F[A] = this match {
-    case Pure(a) => Applicative[F].pure(a)
+    case Pure(a)  => Applicative[F].pure(a)
     case x @ Ap() => Applicative[F].ap(x.v())(x.k().retract)
   }
 
@@ -78,7 +80,7 @@ sealed abstract class FreeAp[F[_], A] {
 
   /** Append a function to the end of this program */
   def map[B](f: A => B): FreeAp[F, B] = this match {
-    case Pure(a) => Pure(f(a))
+    case Pure(a)  => Pure(f(a))
     case x @ Ap() => FreeAp(x.v(), x.k().map(f compose _))
   }
 }
@@ -86,7 +88,7 @@ sealed abstract class FreeAp[F[_], A] {
 object FreeAp {
   implicit def freeInstance[F[_]]: Applicative[FreeAp[F, ?]] =
     new Applicative[FreeAp[F, ?]] {
-      def point[A](a: => A) = FreeAp.point(a)
+      def point[A](a: => A)                                       = FreeAp.point(a)
       def ap[A, B](fa: => FreeAp[F, A])(ff: => FreeAp[F, A => B]) = fa ap ff
     }
 
@@ -100,8 +102,9 @@ object FreeAp {
   def lift[F[_], A](x: => F[A]): FreeAp[F, A] = FreeAp(x, Pure((a: A) => a))
 
   /** A version of `lift` that infers the nested type constructor. */
-  def liftU[FA](x: => FA)(
-      implicit FA: Unapply[Functor, FA]): FreeAp[FA.M, FA.A] =
+  def liftU[FA](
+      x: => FA
+  )(implicit FA: Unapply[Functor, FA]): FreeAp[FA.M, FA.A] =
     lift(FA(x))
 
   private[scalaz] case class Pure[F[_], A](a: A) extends FreeAp[F, A]
@@ -115,7 +118,9 @@ object FreeAp {
     * Add an effect to the front of a program that produces a continuation for it.
     */
   def apply[F[_], A, B](
-      value: => F[A], function: => FreeAp[F, A => B]): FreeAp[F, B] =
+      value: => F[A],
+      function: => FreeAp[F, A => B]
+  ): FreeAp[F, B] =
     new Ap[F, B] {
       type I = A
       val v = () => value

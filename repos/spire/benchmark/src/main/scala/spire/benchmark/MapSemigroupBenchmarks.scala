@@ -24,10 +24,13 @@ class MapSemigroupBenchmarks extends MyBenchmark with BenchmarkData {
     * Original code from Algebird, though without the isNonZero stuff. That is
     * not, in general, deciable.
     */
-  def algebirdAdd[K, V](x: Map[K, V], y: Map[K, V])(
-      implicit semigroup: Semigroup[V], eq: Eq[V]): Map[K, V] = {
+  def algebirdAdd[K, V](
+      x: Map[K, V],
+      y: Map[K, V]
+  )(implicit semigroup: Semigroup[V], eq: Eq[V]): Map[K, V] = {
     val (big, small, bigOnLeft) =
-      if (x.size > y.size) { (x, y, true) } else { (y, x, false) }
+      if (x.size > y.size) { (x, y, true) }
+      else { (y, x, false) }
     small.foldLeft(big) { (oldMap, kv) =>
       val newV = big
         .get(kv._1)
@@ -41,26 +44,35 @@ class MapSemigroupBenchmarks extends MyBenchmark with BenchmarkData {
   }
 
   @inline private final def add[K, V](
-      x: Map[K, V], y: Map[K, V], flip: Boolean)(
-      implicit semigroup: Semigroup[V]): Map[K, V] = {
+      x: Map[K, V],
+      y: Map[K, V],
+      flip: Boolean
+  )(implicit semigroup: Semigroup[V]): Map[K, V] = {
     y.foldLeft(x) {
       case (z, kv) =>
         z +
-        ((kv._1, (x get kv._1) match {
-              case Some(u) =>
-                if (flip) semigroup.op(kv._2, u) else semigroup.op(u, kv._2)
-              case None => kv._2
-            }))
+          (
+            (
+              kv._1,
+              (x get kv._1) match {
+                case Some(u) =>
+                  if (flip) semigroup.op(kv._2, u) else semigroup.op(u, kv._2)
+                case None => kv._2
+              }
+            )
+          )
     }
   }
 
   def bulkAdd[K, V](x: Map[K, V], y: Map[K, V])(
-      implicit semigroup: Semigroup[V]): Map[K, V] = {
+      implicit semigroup: Semigroup[V]
+  ): Map[K, V] = {
     if (x.size < y.size) add(y, x, true) else add(x, y, false)
   }
 
   def spireAdd[K, V](x: Map[K, V], y: Map[K, V])(
-      implicit rng: Rng[Map[K, V]]): Map[K, V] = rng.plus(x, y)
+      implicit rng: Rng[Map[K, V]]
+  ): Map[K, V] = rng.plus(x, y)
 
   val numMaps = 1000
 
@@ -74,26 +86,18 @@ class MapSemigroupBenchmarks extends MyBenchmark with BenchmarkData {
 
   def genMaps(gen: Int => (Int, Int)): Array[Map[Int, Int]] = {
     val arr = new Array[Map[Int, Int]](numMaps)
-    var i = 0
-    (0 until numMaps) foreach { i =>
-      arr(i) = Map((1 to mapSize) map gen: _*)
-    }
+    var i   = 0
+    (0 until numMaps) foreach { i => arr(i) = Map((1 to mapSize) map gen: _*) }
     arr
   }
 
   override protected def setUp(): Unit = {
     if (mapType == "random") {
-      maps = genMaps { i =>
-        (nextInt, nextInt)
-      }
+      maps = genMaps { i => (nextInt, nextInt) }
     } else if (mapType == "sparse") {
-      maps = genMaps { i =>
-        (nextInt(mapSize), nextInt)
-      }
+      maps = genMaps { i => (nextInt(mapSize), nextInt) }
     } else if (mapType == "dense") {
-      maps = genMaps { i =>
-        (i, nextInt)
-      }
+      maps = genMaps { i => (i, nextInt) }
     } else {
       sys.error("What are you doing to me!")
     }
@@ -104,7 +108,7 @@ class MapSemigroupBenchmarks extends MyBenchmark with BenchmarkData {
   }
 
   def timeAlgebirdMapAdd(reps: Int) = run(reps) {
-    var i = 1
+    var i     = 1
     var total = 0
     while (i < numMaps) {
       total += algebirdAdd(maps(i - 1), maps(i)).size
@@ -113,7 +117,7 @@ class MapSemigroupBenchmarks extends MyBenchmark with BenchmarkData {
   }
 
   def timeBulkMapAdd(reps: Int) = run(reps) {
-    var i = 1
+    var i     = 1
     var total = 0
     while (i < numMaps) {
       total += bulkAdd(maps(i - 1), maps(i)).size
@@ -122,7 +126,7 @@ class MapSemigroupBenchmarks extends MyBenchmark with BenchmarkData {
   }
 
   def timeSpireAdd(reps: Int) = run(reps) {
-    var i = 1
+    var i     = 1
     var total = 0
     while (i < numMaps) {
       total += spireAdd(maps(i - 1), maps(i)).size

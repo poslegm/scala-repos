@@ -27,15 +27,15 @@ import org.apache.spark.{SparkConf, SparkContext}
   * Transitive closure on a graph.
   */
 object SparkTC {
-  val numEdges = 200
+  val numEdges    = 200
   val numVertices = 100
-  val rand = new Random(42)
+  val rand        = new Random(42)
 
   def generateGraph: Seq[(Int, Int)] = {
     val edges: mutable.Set[(Int, Int)] = mutable.Set.empty
     while (edges.size < numEdges) {
       val from = rand.nextInt(numVertices)
-      val to = rand.nextInt(numVertices)
+      val to   = rand.nextInt(numVertices)
       if (from != to) edges.+=((from, to))
     }
     edges.toSeq
@@ -43,9 +43,9 @@ object SparkTC {
 
   def main(args: Array[String]) {
     val sparkConf = new SparkConf().setAppName("SparkTC")
-    val spark = new SparkContext(sparkConf)
-    val slices = if (args.length > 0) args(0).toInt else 2
-    var tc = spark.parallelize(generateGraph, slices).cache()
+    val spark     = new SparkContext(sparkConf)
+    val slices    = if (args.length > 0) args(0).toInt else 2
+    var tc        = spark.parallelize(generateGraph, slices).cache()
 
     // Linear transitive closure: each round grows paths by one edge,
     // by joining the graph's edges with the already-discovered paths.
@@ -56,7 +56,7 @@ object SparkTC {
     val edges = tc.map(x => (x._2, x._1))
 
     // This join is iterated until a fixed point is reached.
-    var oldCount = 0L
+    var oldCount  = 0L
     var nextCount = tc.count()
     do {
       oldCount = nextCount

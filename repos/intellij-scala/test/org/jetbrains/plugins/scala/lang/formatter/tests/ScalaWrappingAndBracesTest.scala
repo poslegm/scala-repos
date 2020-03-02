@@ -19,7 +19,8 @@ class ScalaWrappingAndBracesTest extends AbstractScalaFormatterTestBase {
   }
    */
   def testInfixExpressionWrapAsNeeded() {
-    getCommonSettings.BINARY_OPERATION_WRAP = CommonCodeStyleSettings.WRAP_AS_NEEDED
+    getCommonSettings.BINARY_OPERATION_WRAP =
+      CommonCodeStyleSettings.WRAP_AS_NEEDED
     getSettings.setRightMargin(null, 20)
     getIndentOptions.CONTINUATION_INDENT_SIZE = 2
     val before =
@@ -44,7 +45,8 @@ class ScalaWrappingAndBracesTest extends AbstractScalaFormatterTestBase {
   }
 
   def testInfixPatternWrapAsNeeded() {
-    getCommonSettings.BINARY_OPERATION_WRAP = CommonCodeStyleSettings.WRAP_AS_NEEDED
+    getCommonSettings.BINARY_OPERATION_WRAP =
+      CommonCodeStyleSettings.WRAP_AS_NEEDED
     getSettings.setRightMargin(null, 20)
     getIndentOptions.CONTINUATION_INDENT_SIZE = 2
     val before = """
@@ -52,7 +54,7 @@ List(1, 2) match {
   case x :: y :: z :: Nil =>
 }
 """.replace("\r", "")
-    val after = """
+    val after  = """
 List(1, 2) match {
   case x :: y ::
     z :: Nil =>
@@ -62,13 +64,14 @@ List(1, 2) match {
   }
 
   def testInfixTypeWrapAsNeeded() {
-    getCommonSettings.BINARY_OPERATION_WRAP = CommonCodeStyleSettings.WRAP_AS_NEEDED
+    getCommonSettings.BINARY_OPERATION_WRAP =
+      CommonCodeStyleSettings.WRAP_AS_NEEDED
     getSettings.setRightMargin(null, 20)
     getIndentOptions.CONTINUATION_INDENT_SIZE = 2
     val before = """
 val x: T + T + T + T + T
 """.replace("\r", "")
-    val after = """
+    val after  = """
 val x: T + T + T +
   T + T
 """.replace("\r", "")
@@ -76,13 +79,14 @@ val x: T + T + T +
   }
 
   def testInfixExprWrapAlways() {
-    getCommonSettings.BINARY_OPERATION_WRAP = CommonCodeStyleSettings.WRAP_ALWAYS
+    getCommonSettings.BINARY_OPERATION_WRAP =
+      CommonCodeStyleSettings.WRAP_ALWAYS
     getSettings.setRightMargin(null, 20)
     getIndentOptions.CONTINUATION_INDENT_SIZE = 2
     val before = """
 2 + 3 + 4 * 6 + (7 + 9 * 10) - 8 - 4
 """.replace("\r", "")
-    val after = """
+    val after  = """
 2 +
   3 +
   4 *
@@ -97,14 +101,15 @@ val x: T + T + T +
   }
 
   def testInfixExprWrapAllIfLong() {
-    getCommonSettings.BINARY_OPERATION_WRAP = CommonCodeStyleSettings.WRAP_ON_EVERY_ITEM
+    getCommonSettings.BINARY_OPERATION_WRAP =
+      CommonCodeStyleSettings.WRAP_ON_EVERY_ITEM
     getSettings.setRightMargin(null, 20)
     getIndentOptions.CONTINUATION_INDENT_SIZE = 2
     val before = """
 2 + 2 + 2 + 2 + 2 + 2
 2 + 2 + 2 + 2 + 2
 """.replace("\r", "")
-    val after = """
+    val after  = """
 2 +
   2 +
   2 +
@@ -117,14 +122,15 @@ val x: T + T + T +
   }
 
   def testInfixExprDoNotWrap() {
-    getCommonSettings.BINARY_OPERATION_WRAP = CommonCodeStyleSettings.DO_NOT_WRAP
+    getCommonSettings.BINARY_OPERATION_WRAP =
+      CommonCodeStyleSettings.DO_NOT_WRAP
     getSettings.setRightMargin(null, 20)
     getIndentOptions.CONTINUATION_INDENT_SIZE = 2
     val before = """
 2 + 2 + 2 + 2 + 2 + 2
 2 + 2 + 2 + 2 + 2
 """.replace("\r", "")
-    val after = """
+    val after  = """
 2 + 2 + 2 + 2 + 2 + 2
 2 + 2 + 2 + 2 + 2
 """.replace("\r", "")
@@ -139,7 +145,7 @@ val i = 2 + 2 +
  6 + 7 *
  8
 """.replace("\r", "")
-    val after = """
+    val after  = """
 val i = 2 + 2 +
         3 + 5 +
         6 + 7 *
@@ -149,7 +155,8 @@ val i = 2 + 2 +
   }
 
   def testBinaryParentExpressionWrap() {
-    getCommonSettings.BINARY_OPERATION_WRAP = CommonCodeStyleSettings.WRAP_AS_NEEDED
+    getCommonSettings.BINARY_OPERATION_WRAP =
+      CommonCodeStyleSettings.WRAP_AS_NEEDED
     getCommonSettings.PARENTHESES_EXPRESSION_LPAREN_WRAP = true
     getCommonSettings.PARENTHESES_EXPRESSION_RPAREN_WRAP = true
     getSettings.setRightMargin(null, 20)
@@ -158,7 +165,7 @@ val i = 2 + 2 +
 (2 +
 2)
 """.replace("\r", "")
-    val after = """
+    val after  = """
 (
   2333333333333333 +
     2
@@ -176,7 +183,7 @@ val i = 2 + 2 +
     val before = """
 foo(1, 2, 3)
 """.replace("\r", "")
-    val after = """
+    val after  = """
 foo(1,
   2,
   3)
@@ -191,7 +198,7 @@ foo(1,
 2,
 3)
 """.replace("\r", "")
-    val after = """
+    val after  = """
 foo(1,
     2,
     3)
@@ -207,7 +214,7 @@ foo(1,
 2,
 3)
 """.replace("\r", "")
-    val after = """
+    val after  = """
 foo(
   1,
   2,
@@ -218,11 +225,12 @@ foo(
   }
 
   def testMethodCallChainWrap() {
-    getCommonSettings.METHOD_CALL_CHAIN_WRAP = CommonCodeStyleSettings.WRAP_ALWAYS
+    getCommonSettings.METHOD_CALL_CHAIN_WRAP =
+      CommonCodeStyleSettings.WRAP_ALWAYS
     val before = """
 foo(1, 2).foo(1, 2).foo(1, 2)
 """.replace("\r", "")
-    val after = """
+    val after  = """
 foo(1, 2)
   .foo(1, 2)
   .foo(1, 2)
@@ -240,7 +248,7 @@ foo.
 foo
 .foo
 """.replace("\r", "")
-    val after = """
+    val after  = """
 val x = foo.
         foo.goo.
         foo(1, 2, 3).
@@ -253,7 +261,8 @@ val x = foo.
 
   def testBraceStyle() {
     getCommonSettings.CLASS_BRACE_STYLE = CommonCodeStyleSettings.NEXT_LINE
-    getCommonSettings.METHOD_BRACE_STYLE = CommonCodeStyleSettings.NEXT_LINE_SHIFTED
+    getCommonSettings.METHOD_BRACE_STYLE =
+      CommonCodeStyleSettings.NEXT_LINE_SHIFTED
     getCommonSettings.BRACE_STYLE = CommonCodeStyleSettings.NEXT_LINE_IF_WRAPPED
     val before = """
 class A {
@@ -267,7 +276,7 @@ class A {
 class B extends A {
 }
 """.replace("\r", "")
-    val after = """
+    val after  = """
 class A
 {
   def foo =

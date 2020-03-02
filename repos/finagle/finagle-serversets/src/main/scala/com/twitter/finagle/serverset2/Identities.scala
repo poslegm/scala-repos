@@ -38,8 +38,8 @@ trait Identity {
   * `priority`: 99
   */
 class UserIdentity extends Identity {
-  val scheme = "user"
-  val id = Some(System.getProperty("user.name"))
+  val scheme   = "user"
+  val id       = Some(System.getProperty("user.name"))
   val priority = 99
 }
 
@@ -51,7 +51,7 @@ class UserIdentity extends Identity {
 private[finagle] object Identities {
   private def filter(c: Identity): Option[String] = c.id match {
     case Some(id) => Some("/%s/%s".format(c.scheme, id))
-    case _ => None
+    case _        => None
   }
 
   /**

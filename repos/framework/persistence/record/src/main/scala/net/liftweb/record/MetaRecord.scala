@@ -40,7 +40,7 @@ import Helpers._
   */
 trait MetaRecord[BaseRecord <: Record[BaseRecord]] { self: BaseRecord =>
 
-  private var fieldList: List[FieldHolder] = Nil
+  private var fieldList: List[FieldHolder]       = Nil
   private var fieldMap: Map[String, FieldHolder] = Map.empty
 
   private var lifecycleCallbacks: List[(String, Method)] = Nil
@@ -109,7 +109,8 @@ trait MetaRecord[BaseRecord <: Record[BaseRecord]] { self: BaseRecord =>
   }
 
   def introspect(rec: BaseRecord, methods: Array[Method])(
-      f: (Method, Field[_, BaseRecord]) => Any): Unit = {
+      f: (Method, Field[_, BaseRecord]) => Any
+  ): Unit = {
 
     // find all the potential fields
     val potentialFields = methods.toList.filter(isField)
@@ -145,7 +146,7 @@ trait MetaRecord[BaseRecord <: Record[BaseRecord]] { self: BaseRecord =>
     val methods = rootClass.getMethods
 
     lifecycleCallbacks = (for (v <- methods if v.getName != "meta" &&
-                                   isLifecycle(v)) yield (v.getName, v)).toList
+                                 isLifecycle(v)) yield (v.getName, v)).toList
 
     introspect(this, methods) {
       case (v, mf) => tArray += FieldHolder(mf.name, v, mf)
@@ -190,7 +191,8 @@ trait MetaRecord[BaseRecord <: Record[BaseRecord]] { self: BaseRecord =>
   def createWithMutableField[FieldType](
       original: BaseRecord,
       field: Field[FieldType, BaseRecord],
-      newValue: Box[FieldType]): BaseRecord = {
+      newValue: Box[FieldType]
+  ): BaseRecord = {
     val rec = createRecord
 
     for (fh <- fieldList) {
@@ -266,7 +268,7 @@ trait MetaRecord[BaseRecord <: Record[BaseRecord]] { self: BaseRecord =>
     def fromJFields(jfields: List[JField]): Box[Unit] = {
       for {
         jfield <- jfields
-        field <- rec.fieldByName(jfield.name)
+        field  <- rec.fieldByName(jfield.name)
       } field.setFromJValue(jfield.value)
 
       Full(())
@@ -274,7 +276,7 @@ trait MetaRecord[BaseRecord <: Record[BaseRecord]] { self: BaseRecord =>
 
     jvalue match {
       case JObject(jfields) => fromJFields(jfields)
-      case other => expectedA("JObject", other)
+      case other            => expectedA("JObject", other)
     }
   }
 
@@ -296,8 +298,9 @@ trait MetaRecord[BaseRecord <: Record[BaseRecord]] { self: BaseRecord =>
     setFieldsFromJValue(inst, JsonParser.parse(json))
 
   def foreachCallback(inst: BaseRecord, f: LifecycleCallbacks => Any) {
-    lifecycleCallbacks.foreach(
-        m => f(m._2.invoke(inst).asInstanceOf[LifecycleCallbacks]))
+    lifecycleCallbacks.foreach(m =>
+      f(m._2.invoke(inst).asInstanceOf[LifecycleCallbacks])
+    )
   }
 
   /**
@@ -312,7 +315,8 @@ trait MetaRecord[BaseRecord <: Record[BaseRecord]] { self: BaseRecord =>
       case Full(template) => toForm(inst, template)
       case _ =>
         fieldList.flatMap(
-            _.field(inst).toForm.openOr(NodeSeq.Empty) ++ Text("\n"))
+          _.field(inst).toForm.openOr(NodeSeq.Empty) ++ Text("\n")
+        )
     }
   }
 
@@ -357,18 +361,20 @@ trait MetaRecord[BaseRecord <: Record[BaseRecord]] { self: BaseRecord =>
 
       case elem: Elem =>
         elem.copy(
-            child = toForm(inst, elem.child.flatMap(n => toForm(inst, n))))
+          child = toForm(inst, elem.child.flatMap(n => toForm(inst, n)))
+        )
 
       case s: Seq[_] =>
-        s.flatMap(
-            e =>
-              e match {
+        s.flatMap(e =>
+          e match {
             case elem: Elem =>
-              elem.copy(child = toForm(
-                        inst, elem.child.flatMap(n => toForm(inst, n))))
+              elem.copy(child =
+                toForm(inst, elem.child.flatMap(n => toForm(inst, n)))
+              )
 
             case x => x
-        })
+          }
+        )
     }
   }
 
@@ -380,7 +386,9 @@ trait MetaRecord[BaseRecord <: Record[BaseRecord]] { self: BaseRecord =>
     * @return Box[The Field] (Empty if the field is not found)
     */
   def fieldByName(
-      fieldName: String, inst: BaseRecord): Box[Field[_, BaseRecord]] = {
+      fieldName: String,
+      inst: BaseRecord
+  ): Box[Field[_, BaseRecord]] = {
     Box(fieldMap.get(fieldName).map(_.field(inst)))
   }
 
@@ -392,7 +400,8 @@ trait MetaRecord[BaseRecord <: Record[BaseRecord]] { self: BaseRecord =>
     * @param func - a PartialFunction for associating a request with a user-provided function and the proper Record
     */
   def prependDispatch(
-      func: PartialFunction[Req, BaseRecord => Box[LiftResponse]]) = {
+      func: PartialFunction[Req, BaseRecord => Box[LiftResponse]]
+  ) = {
     LiftRules.dispatch.prepend(makeFunc(func))
   }
 
@@ -404,20 +413,21 @@ trait MetaRecord[BaseRecord <: Record[BaseRecord]] { self: BaseRecord =>
     * @param func - a PartialFunction for associating a request with a user-provided function and the proper Record
     */
   def appendDispatch(
-      func: PartialFunction[Req, BaseRecord => Box[LiftResponse]]) = {
+      func: PartialFunction[Req, BaseRecord => Box[LiftResponse]]
+  ) = {
     LiftRules.dispatch.append(makeFunc(func))
   }
 
   private def makeFunc(
-      func: PartialFunction[Req, BaseRecord => Box[LiftResponse]]) =
+      func: PartialFunction[Req, BaseRecord => Box[LiftResponse]]
+  ) =
     new PartialFunction[Req, () => Box[LiftResponse]] {
 
       def isDefinedAt(r: Req): Boolean = func.isDefinedAt(r)
 
       def apply(r: Req): () => Box[LiftResponse] = {
         val rec = fromReq(r)
-        () =>
-          func(r)(rec)
+        () => func(r)(rec)
       }
     }
 
@@ -453,7 +463,7 @@ trait MetaRecord[BaseRecord <: Record[BaseRecord]] { self: BaseRecord =>
     */
   def setFieldsFromRecord(inst: BaseRecord, rec: BaseRecord) {
     for {
-      fh <- fieldList
+      fh  <- fieldList
       fld <- rec.fieldByName(fh.name)
     } {
       fh.field(inst).setFromAny(fld.valueBox)
@@ -491,7 +501,10 @@ trait MetaRecord[BaseRecord <: Record[BaseRecord]] { self: BaseRecord =>
     fieldList.map(_.field(rec))
 
   case class FieldHolder(
-      name: String, method: Method, metaField: Field[_, BaseRecord]) {
+      name: String,
+      method: Method,
+      metaField: Field[_, BaseRecord]
+  ) {
     def field(inst: BaseRecord): Field[_, BaseRecord] =
       method.invoke(inst).asInstanceOf[Field[_, BaseRecord]]
   }

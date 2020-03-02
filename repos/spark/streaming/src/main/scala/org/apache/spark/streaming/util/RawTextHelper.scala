@@ -26,10 +26,11 @@ private[streaming] object RawTextHelper {
     * Splits lines and counts the words.
     */
   def splitAndCountPartitions(
-      iter: Iterator[String]): Iterator[(String, Long)] = {
+      iter: Iterator[String]
+  ): Iterator[(String, Long)] = {
     val map = new OpenHashMap[String, Long]
-    var i = 0
-    var j = 0
+    var i   = 0
+    var j   = 0
     while (iter.hasNext) {
       val s = iter.next()
       i = 0
@@ -61,12 +62,12 @@ private[streaming] object RawTextHelper {
   def topK(data: Iterator[(String, Long)], k: Int): Iterator[(String, Long)] = {
     val taken = new Array[(String, Long)](k)
 
-    var i = 0
-    var len = 0
-    var done = false
+    var i                     = 0
+    var len                   = 0
+    var done                  = false
     var value: (String, Long) = null
-    var swap: (String, Long) = null
-    var count = 0
+    var swap: (String, Long)  = null
+    var count                 = 0
 
     while (data.hasNext) {
       value = data.next()

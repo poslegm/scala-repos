@@ -2,7 +2,11 @@ package slick.sql
 
 import slick.basic.{BasicStreamingAction, BasicAction}
 import slick.compiler.QueryCompiler
-import slick.relational.{RelationalActionComponent, RelationalTableComponent, RelationalProfile}
+import slick.relational.{
+  RelationalActionComponent,
+  RelationalTableComponent,
+  RelationalProfile
+}
 
 import scala.language.higherKinds
 import slick.dbio._
@@ -12,12 +16,16 @@ import slick.util.DumpInfo
 
 /** Abstract profile for SQL-based databases. */
 trait SqlProfile
-    extends RelationalProfile with SqlTableComponent with SqlActionComponent
-    /* internal: */ with SqlUtilsComponent {
+    extends RelationalProfile
+    with SqlTableComponent
+    with SqlActionComponent
+    /* internal: */
+    with SqlUtilsComponent {
 
   @deprecated(
-      "Use the Profile object directly instead of calling `.profile` on it",
-      "3.2")
+    "Use the Profile object directly instead of calling `.profile` on it",
+    "3.2"
+  )
   override val profile: SqlProfile = this
 
   override protected def computeQueryCompiler =
@@ -58,34 +66,38 @@ trait SqlProfile
     override def ++(other: DDL): DDL = new DDL {
       protected lazy val createPhase1 = self.createPhase1 ++ other.createPhase1
       protected lazy val createPhase2 = self.createPhase2 ++ other.createPhase2
-      protected lazy val dropPhase1 = other.dropPhase1 ++ self.dropPhase1
-      protected lazy val dropPhase2 = other.dropPhase2 ++ self.dropPhase2
+      protected lazy val dropPhase1   = other.dropPhase1 ++ self.dropPhase1
+      protected lazy val dropPhase2   = other.dropPhase2 ++ self.dropPhase2
     }
 
     override def hashCode() =
-      Vector(self.createPhase1,
-             self.createPhase2,
-             self.dropPhase1,
-             self.dropPhase2).hashCode
+      Vector(
+        self.createPhase1,
+        self.createPhase2,
+        self.dropPhase1,
+        self.dropPhase2
+      ).hashCode
 
     override def equals(o: Any) = o match {
       case ddl: DDL =>
         self.createPhase1 == ddl.createPhase1 &&
-        self.createPhase2 == ddl.createPhase2 &&
-        self.dropPhase1 == ddl.dropPhase1 && self.dropPhase2 == ddl.dropPhase2
+          self.createPhase2 == ddl.createPhase2 &&
+          self.dropPhase1 == ddl.dropPhase1 && self.dropPhase2 == ddl.dropPhase2
       case _ => false
     }
   }
 
   object DDL {
-    def apply(create1: Iterable[String],
-              create2: Iterable[String],
-              drop1: Iterable[String],
-              drop2: Iterable[String]): DDL = new DDL {
+    def apply(
+        create1: Iterable[String],
+        create2: Iterable[String],
+        drop1: Iterable[String],
+        drop2: Iterable[String]
+    ): DDL = new DDL {
       protected def createPhase1 = create1
       protected def createPhase2 = create2
-      protected def dropPhase1 = drop1
-      protected def dropPhase2 = drop2
+      protected def dropPhase1   = drop1
+      protected def dropPhase2   = drop2
     }
 
     def apply(create1: Iterable[String], drop2: Iterable[String]): DDL =
@@ -100,7 +112,7 @@ object SqlProfile {
 
   /** Extra column options for SqlProfile */
   object ColumnOption {
-    case object NotNull extends ColumnOption[Nothing]
+    case object NotNull  extends ColumnOption[Nothing]
     case object Nullable extends ColumnOption[Nothing]
 
     /** Type as expected by the DBMS, e.g. VARCHAR or VARCHAR(254). Note that Slick's model omits
@@ -126,14 +138,14 @@ trait SqlUtilsComponent { self: SqlProfile =>
 
   def quoteTableName(t: TableNode): String = t.schemaName match {
     case Some(s) => quoteIdentifier(s) + "." + quoteIdentifier(t.tableName)
-    case None => quoteIdentifier(t.tableName)
+    case None    => quoteIdentifier(t.tableName)
   }
 
   def likeEncode(s: String) = {
     val b = new StringBuilder
     for (c <- s) c match {
       case '%' | '_' | '^' => b append '^' append c
-      case _ => b append c
+      case _               => b append c
     }
     b.toString
   }
@@ -157,15 +169,17 @@ trait SqlTableComponent extends RelationalTableComponent {
 trait SqlActionComponent extends RelationalActionComponent {
   this: SqlProfile =>
 
-  type ProfileAction [+R, +S <: NoStream, -E <: Effect] <: SqlAction[R, S, E]
-  type StreamingProfileAction [+R, +T, -E <: Effect] <: SqlStreamingAction[
-      R, T, E] with ProfileAction[R, Streaming[T], E]
+  type ProfileAction[+R, +S <: NoStream, -E <: Effect] <: SqlAction[R, S, E]
+  type StreamingProfileAction[+R, +T, -E <: Effect] <: SqlStreamingAction[
+    R,
+    T,
+    E
+  ] with ProfileAction[R, Streaming[T], E]
 }
 
-trait SqlAction[+R, +S <: NoStream, -E <: Effect]
-    extends BasicAction[R, S, E] {
+trait SqlAction[+R, +S <: NoStream, -E <: Effect] extends BasicAction[R, S, E] {
 
-  type ResultAction [+R, +S <: NoStream, -E <: Effect] <: SqlAction[R, S, E]
+  type ResultAction[+R, +S <: NoStream, -E <: Effect] <: SqlAction[R, S, E]
 
   /** Return the SQL statements that will be executed for this Action */
   def statements: Iterable[String]
@@ -175,12 +189,15 @@ trait SqlAction[+R, +S <: NoStream, -E <: Effect]
   def overrideStatements(statements: Iterable[String]): ResultAction[R, S, E]
 
   def getDumpInfo =
-    DumpInfo(DumpInfo.simpleNameFor(getClass),
-             mainInfo = statements.mkString("[", "; ", "]"))
+    DumpInfo(
+      DumpInfo.simpleNameFor(getClass),
+      mainInfo = statements.mkString("[", "; ", "]")
+    )
 }
 
 trait SqlStreamingAction[+R, +T, -E <: Effect]
-    extends BasicStreamingAction[R, T, E] with SqlAction[R, Streaming[T], E]
+    extends BasicStreamingAction[R, T, E]
+    with SqlAction[R, Streaming[T], E]
 
 trait FixedSqlAction[+R, +S <: NoStream, -E <: Effect]
     extends SqlAction[R, S, E] {
@@ -188,4 +205,5 @@ trait FixedSqlAction[+R, +S <: NoStream, -E <: Effect]
 }
 
 trait FixedSqlStreamingAction[+R, +T, -E <: Effect]
-    extends SqlStreamingAction[R, T, E] with FixedSqlAction[R, Streaming[T], E]
+    extends SqlStreamingAction[R, T, E]
+    with FixedSqlAction[R, Streaming[T], E]

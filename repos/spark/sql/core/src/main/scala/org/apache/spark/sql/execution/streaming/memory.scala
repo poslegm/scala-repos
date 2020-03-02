@@ -33,7 +33,7 @@ object MemoryStream {
   protected val currentBlockId = new AtomicInteger(0)
   protected val memoryStreamId = new AtomicInteger(0)
 
-  def apply[A : Encoder](implicit sqlContext: SQLContext): MemoryStream[A] =
+  def apply[A: Encoder](implicit sqlContext: SQLContext): MemoryStream[A] =
     new MemoryStream[A](memoryStreamId.getAndIncrement(), sqlContext)
 }
 
@@ -42,12 +42,13 @@ object MemoryStream {
   * is primarily intended for use in unit tests as it can only replay data when the object is still
   * available.
   */
-case class MemoryStream[A : Encoder](id: Int, sqlContext: SQLContext)
-    extends Source with Logging {
-  protected val encoder = encoderFor[A]
+case class MemoryStream[A: Encoder](id: Int, sqlContext: SQLContext)
+    extends Source
+    with Logging {
+  protected val encoder     = encoderFor[A]
   protected val logicalPlan = StreamingRelation(this)
-  protected val output = logicalPlan.output
-  protected val batches = new ArrayBuffer[Dataset[A]]
+  protected val output      = logicalPlan.output
+  protected val batches     = new ArrayBuffer[Dataset[A]]
 
   protected var currentOffset: LongOffset = new LongOffset(-1)
 
@@ -81,15 +82,17 @@ case class MemoryStream[A : Encoder](id: Int, sqlContext: SQLContext)
   override def getNextBatch(start: Option[Offset]): Option[Batch] =
     synchronized {
       val newBlocks = batches.drop(
-          start
-            .map(_.asInstanceOf[LongOffset])
-            .getOrElse(LongOffset(-1))
-            .offset
-            .toInt + 1)
+        start
+          .map(_.asInstanceOf[LongOffset])
+          .getOrElse(LongOffset(-1))
+          .offset
+          .toInt + 1
+      )
 
       if (newBlocks.nonEmpty) {
         logDebug(
-            s"Running [$start, $currentOffset] on blocks ${newBlocks.mkString(", ")}")
+          s"Running [$start, $currentOffset] on blocks ${newBlocks.mkString(", ")}"
+        )
         val df = newBlocks
           .map(_.toDF())
           .reduceOption(_ unionAll _)
@@ -144,11 +147,15 @@ class MemorySink(schema: StructType) extends Sink with Logging {
   }
 
   def toDebugString: String = synchronized {
-    batches.map { b =>
-      val dataStr = try b.data.collect().mkString(" ") catch {
-        case NonFatal(e) => "[Error converting to string]"
+    batches
+      .map { b =>
+        val dataStr =
+          try b.data.collect().mkString(" ")
+          catch {
+            case NonFatal(e) => "[Error converting to string]"
+          }
+        s"${b.end}: $dataStr"
       }
-      s"${b.end}: $dataStr"
-    }.mkString("\n")
+      .mkString("\n")
   }
 }

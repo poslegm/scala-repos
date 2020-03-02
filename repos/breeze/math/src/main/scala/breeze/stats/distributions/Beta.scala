@@ -31,7 +31,9 @@ import scala.math._
   * @param b the number of pseudo-observations for false
   */
 class Beta(a: Double, b: Double)(implicit rand: RandBasis = Rand)
-    extends ContinuousDistr[Double] with Moments[Double, Double] with HasCdf {
+    extends ContinuousDistr[Double]
+    with Moments[Double, Double]
+    with HasCdf {
   require(a > 0.0)
   require(b > 0.0)
 
@@ -46,11 +48,15 @@ class Beta(a: Double, b: Double)(implicit rand: RandBasis = Rand)
     require(x <= 1)
     x match {
       case 0.0 =>
-        if (a > 1) { 0 } else if (a == 1) { normalizer } else {
+        if (a > 1) { 0 }
+        else if (a == 1) { normalizer }
+        else {
           Double.PositiveInfinity
         }
       case 1.0 =>
-        if (b > 1) { 0 } else if (b == 1) { normalizer } else {
+        if (b > 1) { 0 }
+        else if (b == 1) { normalizer }
+        else {
           Double.PositiveInfinity
         }
       case x => math.exp(logPdf(x))
@@ -78,7 +84,7 @@ class Beta(a: Double, b: Double)(implicit rand: RandBasis = Rand)
           //        val X = math.pow(U, 1.0 / a)
           val logX = math.log(U) / a
           //        val Y = math.pow(V, 1.0 / b)
-          val logY = math.log(V) / b
+          val logY   = math.log(V) / b
           val logSum = softmax(logX, logY)
           if (logSum <= 0.0) {
             return math.exp(logX - logSum)
@@ -95,8 +101,8 @@ class Beta(a: Double, b: Double)(implicit rand: RandBasis = Rand)
         if (U > 0 && V > 0) {
           // Performing the computations in the log-domain
           // The exponentiation may fail if a or b are really small
-          val X = math.pow(U, 1.0 / a)
-          val Y = math.pow(V, 1.0 / b)
+          val X   = math.pow(U, 1.0 / a)
+          val Y   = math.pow(V, 1.0 / b)
           val sum = X + Y
           if (sum <= 1.0) {
             return X / sum
@@ -113,12 +119,13 @@ class Beta(a: Double, b: Double)(implicit rand: RandBasis = Rand)
     }
   }
 
-  def mean = a / (a + b)
+  def mean     = a / (a + b)
   def variance = (a * b) / ((a + b) * (a + b) * (a + b + 1))
-  def mode = (a - 1) / (a + b - 2)
+  def mode     = (a - 1) / (a + b - 2)
   def entropy =
     logNormalizer - (a - 1) * digamma(a) - (b - 1) * digamma(b) + (a + b - 2) * digamma(
-        a + b)
+      a + b
+    )
 
   // Probability that x < a <= Y
   override def cdf(x: Double): Double = {
@@ -134,9 +141,9 @@ object Beta
       extends distributions.SufficientStatistic[SufficientStatistic] {
     def *(weight: Double) = SufficientStatistic(n * weight, meanLog, meanLog1M)
     def +(t: SufficientStatistic) = {
-      val delta = t.meanLog - meanLog
-      val newMeanLog = meanLog + delta * (t.n / (t.n + n))
-      val logDelta = t.meanLog1M - meanLog1M
+      val delta        = t.meanLog - meanLog
+      val newMeanLog   = meanLog + delta * (t.n / (t.n + n))
+      val logDelta     = t.meanLog1M - meanLog1M
       val newMeanLog1M = meanLog1M + logDelta * (t.n / (t.n + n))
       SufficientStatistic(n + t.n, newMeanLog, newMeanLog1M)
     }
@@ -149,10 +156,10 @@ object Beta
 
   def mle(stats: SufficientStatistic): (Double, Double) = {
     import breeze.linalg.DenseVector.TupleIsomorphisms._
-    val lensed = likelihoodFunction(stats).throughLens[DenseVector[Double]]
-    val startingA = stats.meanLog.abs // MoM would include variance, meh.
-    val startingB = stats.meanLog1M.abs // MoM would include variance, meh
-    val result = minimize(lensed, DenseVector(startingA, startingB))
+    val lensed       = likelihoodFunction(stats).throughLens[DenseVector[Double]]
+    val startingA    = stats.meanLog.abs // MoM would include variance, meh.
+    val startingB    = stats.meanLog1M.abs // MoM would include variance, meh
+    val result       = minimize(lensed, DenseVector(startingA, startingB))
     val res @ (a, b) = (result(0), result(1))
     res
   }
@@ -160,7 +167,8 @@ object Beta
   def distribution(ab: Parameter) = new Beta(ab._1, ab._2)
 
   def likelihoodFunction(
-      stats: SufficientStatistic): DiffFunction[(Double, Double)] =
+      stats: SufficientStatistic
+  ): DiffFunction[(Double, Double)] =
     new DiffFunction[(Double, Double)] {
       import stats.n
       def calculate(x: (Double, Double)) = {
@@ -169,7 +177,7 @@ object Beta
         else {
           val obj =
             n *
-            (lgamma(a) + lgamma(b) - lgamma(a + b) - (a - 1) * stats.meanLog -
+              (lgamma(a) + lgamma(b) - lgamma(a + b) - (a - 1) * stats.meanLog -
                 (b - 1) * stats.meanLog1M)
           val gradA = n * (digamma(a) - digamma(a + b) - stats.meanLog)
           val gradB = n * (digamma(b) - digamma(a + b) - stats.meanLog1M)

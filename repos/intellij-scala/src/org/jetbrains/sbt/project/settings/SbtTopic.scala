@@ -8,4 +8,6 @@ import com.intellij.util.messages.Topic
   */
 object SbtTopic
     extends Topic[SbtProjectSettingsListener](
-        "SBT-specific settings", classOf[SbtProjectSettingsListener])
+      "SBT-specific settings",
+      classOf[SbtProjectSettingsListener]
+    )

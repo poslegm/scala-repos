@@ -38,7 +38,7 @@ class AA {
   class BB {
     def m = 2;
     class CC {
-      def m = 3;
+      def m  = 3;
       def am = AA.this.m;
       def bm = BB.this.m;
     }
@@ -56,10 +56,10 @@ class BBB extends AAA {
 class AAA1 extends AAA {
   override def f = 111;
   class BBB1 extends BBB {
-    override def f = AAA1. super.f;
+    override def f = AAA1.super.f;
   }
   class BBB2 extends BBB {
-    override def f = BBB2. super.f;
+    override def f = BBB2.super.f;
   }
   class BBB3 extends BBB {
     override def f = super.f;
@@ -81,7 +81,7 @@ object Test {
     Console.println("cc.am = " + cc.am);
     Console.println("cc.bm = " + cc.bm);
 
-    val aaa = new AAA1;
+    val aaa  = new AAA1;
     val bbb1 = new aaa.BBB1;
     val bbb2 = new aaa.BBB2;
     val bbb3 = new aaa.BBB3;

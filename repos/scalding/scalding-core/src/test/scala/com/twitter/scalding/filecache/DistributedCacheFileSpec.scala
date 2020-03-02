@@ -26,7 +26,8 @@ import scala.collection.mutable
 // TODO: fix? is it worth having the dep on mockito just for this?
 class DistributedCacheFileSpec extends WordSpec with Matchers {
   case class UnknownMode(buffers: Map[Source, mutable.Buffer[Tuple]])
-      extends TestMode with CascadingLocal
+      extends TestMode
+      with CascadingLocal
   /*
   val conf = smartMock[Configuration]
 
@@ -46,9 +47,9 @@ class DistributedCacheFileSpec extends WordSpec with Matchers {
   lazy val testMode = smartMock[Test]
   lazy val localMode = smartMock[Local]
    */
-  val uriString = "hdfs://foo.example:1234/path/to/the/stuff/thefilename.blah"
-  val uri = new URI(uriString)
-  val hashHex = URIHasher(uri)
+  val uriString      = "hdfs://foo.example:1234/path/to/the/stuff/thefilename.blah"
+  val uri            = new URI(uriString)
+  val hashHex        = URIHasher(uri)
   val hashedFilename = hashHex + "-thefilename.blah"
 
   "DistributedCacheFile" should {

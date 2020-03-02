@@ -27,8 +27,8 @@ import org.saddle.array.Sorter
   * Long ScalarTag
   */
 object ScalarTagLong extends ScalarTag[Long] {
-  def missing: Long = Long.MinValue
-  def isMissing(v: Long): Boolean = v == Long.MinValue
+  def missing: Long                = Long.MinValue
+  def isMissing(v: Long): Boolean  = v == Long.MinValue
   def notMissing(v: Long): Boolean = v != Long.MinValue
 
   def compare(x: Long, y: Long)(implicit ev: ORD[Long]) =
@@ -37,18 +37,18 @@ object ScalarTagLong extends ScalarTag[Long] {
   def toDouble(t: Long)(implicit ev: NUM[Long]) =
     if (isMissing(t)) ScalarTagDouble.missing else t.asInstanceOf[Double]
 
-  def zero(implicit ev: NUM[Long]) = 0L
-  def one(implicit ev: NUM[Long]) = 1L
-  def inf(implicit ev: NUM[Long]) = Long.MaxValue
+  def zero(implicit ev: NUM[Long])   = 0L
+  def one(implicit ev: NUM[Long])    = 1L
+  def inf(implicit ev: NUM[Long])    = Long.MaxValue
   def negInf(implicit ev: NUM[Long]) = Long.MinValue
 
   def show(v: Long) = if (isMissing(v)) "%s" format "NA" else "%d" format v
 
   override def runtimeClass = classOf[Long]
 
-  def makeBuf(sz: Int = Buffer.INIT_CAPACITY) = new BufferLong(sz)
-  def makeLoc(sz: Int = Buffer.INIT_CAPACITY) = new LocatorLong(sz)
-  def makeVec(arr: Array[Long]) = new VecLong(arr)
+  def makeBuf(sz: Int = Buffer.INIT_CAPACITY)   = new BufferLong(sz)
+  def makeLoc(sz: Int = Buffer.INIT_CAPACITY)   = new LocatorLong(sz)
+  def makeVec(arr: Array[Long])                 = new VecLong(arr)
   def makeMat(r: Int, c: Int, arr: Array[Long]) = new MatLong(r, c, arr)
   def makeIndex(vec: Vec[Long])(implicit ord: ORD[Long]): Index[Long] =
     new IndexLong(vec)

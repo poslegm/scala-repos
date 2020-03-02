@@ -20,7 +20,7 @@ object AppliedType {
       (AppliedType(typename, List()), rem)
     } else {
       // parse type arguments
-      var typeArgs = List[AppliedType]()
+      var typeArgs  = List[AppliedType]()
       var remaining = rem
 
       while (remaining.startsWith("[") || remaining.startsWith(",")) {
@@ -30,8 +30,10 @@ object AppliedType {
         remaining = rem
       }
 
-      (AppliedType(typename, typeArgs),
-       if (remaining.startsWith("]")) remaining.substring(1) else remaining)
+      (
+        AppliedType(typename, typeArgs),
+        if (remaining.startsWith("]")) remaining.substring(1) else remaining
+      )
     }
   }
 

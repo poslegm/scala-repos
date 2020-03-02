@@ -40,7 +40,7 @@ object LinkingInfo {
 
   object Semantics {
     final val Compliant = 0
-    final val Fatal = 1
+    final val Fatal     = 1
     final val Unchecked = 2
   }
 }

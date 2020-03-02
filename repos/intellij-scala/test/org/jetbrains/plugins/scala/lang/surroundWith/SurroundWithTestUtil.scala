@@ -8,27 +8,29 @@ package surroundWith
   */
 object SurroundWithTestUtil {
   val startMarker = "<start>"
-  val endMarkers: Array[String] = Array[String]("<if>",
-                                                "<else>",
-                                                "<while>",
-                                                "<do>",
-                                                "<for>",
-                                                "<yield>",
-                                                "<catch>",
-                                                "<finally>",
-                                                "<try>",
-                                                "<braces>",
-                                                "<match>",
-                                                "<parenthesis>",
-                                                "<if_cond>",
-                                                "<else_cond>",
-                                                "<unary>")
+  val endMarkers: Array[String] = Array[String](
+    "<if>",
+    "<else>",
+    "<while>",
+    "<do>",
+    "<for>",
+    "<yield>",
+    "<catch>",
+    "<finally>",
+    "<try>",
+    "<braces>",
+    "<match>",
+    "<parenthesis>",
+    "<if_cond>",
+    "<else_cond>",
+    "<unary>"
+  )
   def prepareFile(text: String): (String, Integer, Integer, Integer) = {
     var workingText = text
-    val start = text.indexOf(startMarker)
-    val t = endMarkers.indexWhere(text.indexOf(_) != -1)
-    val s: String = endMarkers(t)
-    val end = text.indexOf(s) - startMarker.length
+    val start       = text.indexOf(startMarker)
+    val t           = endMarkers.indexWhere(text.indexOf(_) != -1)
+    val s: String   = endMarkers(t)
+    val end         = text.indexOf(s) - startMarker.length
     workingText = removeMarker(workingText, startMarker)
     workingText = removeMarker(workingText, s)
     (workingText, start, end, t)

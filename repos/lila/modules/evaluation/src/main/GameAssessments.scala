@@ -3,10 +3,12 @@ package lila.evaluation
 import chess.Color
 
 case class PlayerAssessments(
-    white: Option[PlayerAssessment], black: Option[PlayerAssessment]) {
+    white: Option[PlayerAssessment],
+    black: Option[PlayerAssessment]
+) {
   def color(c: Color) = c match {
     case Color.White => white
-    case _ => black
+    case _           => black
   }
 }
 
@@ -34,27 +36,27 @@ object GameAssessment {
     }
   case object Cheating extends GameAssessment {
     val description: String = "Cheating"
-    val emoticon: String = ">:("
-    val id = 5
+    val emoticon: String    = ">:("
+    val id                  = 5
   }
   case object LikelyCheating extends GameAssessment {
     val description: String = "Likely cheating"
-    val emoticon: String = ":("
-    val id = 4
+    val emoticon: String    = ":("
+    val id                  = 4
   }
   case object Unclear extends GameAssessment {
     val description: String = "Unclear"
-    val emoticon: String = ":|"
-    val id = 3
+    val emoticon: String    = ":|"
+    val id                  = 3
   }
   case object UnlikelyCheating extends GameAssessment {
     val description: String = "Unlikely cheating"
-    val emoticon: String = ":)"
-    val id = 2
+    val emoticon: String    = ":)"
+    val id                  = 2
   }
   case object NotCheating extends GameAssessment {
     val description: String = "Not cheating"
-    val emoticon: String = ":D"
-    val id = 1
+    val emoticon: String    = ":D"
+    val id                  = 1
   }
 }

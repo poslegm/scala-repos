@@ -46,33 +46,40 @@ object ExternalSystemDataDsl {
   trait ModuleAttribute
   trait LibraryAttribute
 
-  val name = new Attribute[String]("name") with ProjectAttribute
-  with ModuleAttribute with LibraryAttribute
+  val name = new Attribute[String]("name")
+    with ProjectAttribute
+    with ModuleAttribute
+    with LibraryAttribute
   val ideDirectoryPath = new Attribute[String]("ideDirectoryPath")
-  with ProjectAttribute
+    with ProjectAttribute
   val linkedProjectPath = new Attribute[String]("linkedProjectPath")
-  with ProjectAttribute
+    with ProjectAttribute
   val moduleFileDirectoryPath =
     new Attribute[String]("moduleFileDirectoryPath") with ModuleAttribute
   val externalConfigPath = new Attribute[String]("externalConfigPath")
-  with ModuleAttribute
+    with ModuleAttribute
   val libraries = new Attribute[Seq[library]]("libraries")
-  with ProjectAttribute with ModuleAttribute
+    with ProjectAttribute
+    with ModuleAttribute
   val modules = new Attribute[Seq[module]]("modules") with ProjectAttribute
   val moduleDependencies = new Attribute[Seq[module]]("moduleDependencies")
-  with ModuleAttribute
+    with ModuleAttribute
   val libraryDependencies = new Attribute[Seq[library]]("libraryDependencies")
-  with ModuleAttribute
+    with ModuleAttribute
 
   val arbitraryNodes = new Attribute[Seq[Node[_]]]("arbitraryNodes")
-  with ProjectAttribute with ModuleAttribute with LibraryAttribute
+    with ProjectAttribute
+    with ModuleAttribute
+    with LibraryAttribute
 
   class project {
 
     def build: ProjectNode = {
-      val node = new ProjectNode(attributes.getOrFail(name),
-                                 attributes.getOrFail(ideDirectoryPath),
-                                 attributes.getOrFail(linkedProjectPath))
+      val node = new ProjectNode(
+        attributes.getOrFail(name),
+        attributes.getOrFail(ideDirectoryPath),
+        attributes.getOrFail(linkedProjectPath)
+      )
 
       val moduleToNode = {
         val allModules = attributes.get(modules).getOrElse(Seq.empty)
@@ -93,38 +100,46 @@ object ExternalSystemDataDsl {
     }
 
     private def createModuleDependencies(
-        moduleToNode: Map[module, ModuleNode]): Unit =
+        moduleToNode: Map[module, ModuleNode]
+    ): Unit =
       moduleToNode.foreach {
         case (module, moduleNode) =>
           module.getModuleDependencies.foreach { dependency =>
             moduleToNode.get(dependency).foreach { dependencyModuleNode =>
-              moduleNode.add(
-                  new ModuleDependencyNode(moduleNode, dependencyModuleNode))
+              moduleNode
+                .add(new ModuleDependencyNode(moduleNode, dependencyModuleNode))
             }
           }
       }
 
     private def createLibraryDependencies(
         moduleToNode: Map[module, ModuleNode],
-        libraryToNode: Map[library, LibraryNode]): Unit =
+        libraryToNode: Map[library, LibraryNode]
+    ): Unit =
       moduleToNode.foreach {
         case (module, moduleNode) =>
           module.getLibraryDependencies.foreach { dependency =>
             libraryToNode.get(dependency).foreach { libraryNode =>
-              moduleNode.add(new LibraryDependencyNode(
-                      moduleNode, libraryNode, LibraryLevel.PROJECT))
+              moduleNode.add(
+                new LibraryDependencyNode(
+                  moduleNode,
+                  libraryNode,
+                  LibraryLevel.PROJECT
+                )
+              )
             }
           }
       }
 
     private val attributes = new AttributeMap
 
-    protected implicit def defineAttribute[T : Manifest](
-        attribute: Attribute[T] with ProjectAttribute): AttributeDef[T] =
+    protected implicit def defineAttribute[T: Manifest](
+        attribute: Attribute[T] with ProjectAttribute
+    ): AttributeDef[T] =
       new AttributeDef(attribute, attributes)
     protected implicit def defineAttributeSeq[T](
-        attribute: Attribute[Seq[T]] with ProjectAttribute)(
-        implicit m: Manifest[Seq[T]]): AttributeSeqDef[T] =
+        attribute: Attribute[Seq[T]] with ProjectAttribute
+    )(implicit m: Manifest[Seq[T]]): AttributeSeqDef[T] =
       new AttributeSeqDef(attribute, attributes)
   }
 
@@ -132,16 +147,18 @@ object ExternalSystemDataDsl {
     val typeId: String
 
     def build: ModuleNode = {
-      val node = new ModuleNode(typeId,
-                                attributes.getOrFail(name),
-                                attributes.getOrFail(name),
-                                attributes.getOrFail(moduleFileDirectoryPath),
-                                attributes.getOrFail(externalConfigPath))
+      val node = new ModuleNode(
+        typeId,
+        attributes.getOrFail(name),
+        attributes.getOrFail(name),
+        attributes.getOrFail(moduleFileDirectoryPath),
+        attributes.getOrFail(externalConfigPath)
+      )
       attributes.get(libraries).foreach { libs =>
         libs.map(_.build).foreach { libNode =>
           node.add(libNode)
-          node.add(
-              new LibraryDependencyNode(node, libNode, LibraryLevel.MODULE))
+          node
+            .add(new LibraryDependencyNode(node, libNode, LibraryLevel.MODULE))
         }
       }
       attributes.get(arbitraryNodes).foreach(node.addAll)
@@ -156,12 +173,13 @@ object ExternalSystemDataDsl {
 
     private val attributes = new AttributeMap
 
-    protected implicit def defineAttribute[T : Manifest](
-        attribute: Attribute[T] with ModuleAttribute): AttributeDef[T] =
+    protected implicit def defineAttribute[T: Manifest](
+        attribute: Attribute[T] with ModuleAttribute
+    ): AttributeDef[T] =
       new AttributeDef(attribute, attributes)
     protected implicit def defineAttributeSeq[T](
-        attribute: Attribute[Seq[T]] with ModuleAttribute)(
-        implicit m: Manifest[Seq[T]]): AttributeSeqDef[T] =
+        attribute: Attribute[Seq[T]] with ModuleAttribute
+    )(implicit m: Manifest[Seq[T]]): AttributeSeqDef[T] =
       new AttributeSeqDef(attribute, attributes)
   }
 
@@ -178,12 +196,13 @@ object ExternalSystemDataDsl {
 
     private val attributes = new AttributeMap
 
-    protected implicit def defineAttribute[T : Manifest](
-        attribute: Attribute[T] with LibraryAttribute): AttributeDef[T] =
+    protected implicit def defineAttribute[T: Manifest](
+        attribute: Attribute[T] with LibraryAttribute
+    ): AttributeDef[T] =
       new AttributeDef(attribute, attributes)
     protected implicit def defineAttributeSeq[T](
-        attribute: Attribute[Seq[T]] with LibraryAttribute)(
-        implicit m: Manifest[Seq[T]]): AttributeSeqDef[T] =
+        attribute: Attribute[Seq[T]] with LibraryAttribute
+    )(implicit m: Manifest[Seq[T]]): AttributeSeqDef[T] =
       new AttributeSeqDef(attribute, attributes)
   }
 }

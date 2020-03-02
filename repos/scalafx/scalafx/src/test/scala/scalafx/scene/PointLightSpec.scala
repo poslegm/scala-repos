@@ -40,4 +40,6 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class PointLightSpec
     extends SimpleSFXDelegateSpec[jfxs.PointLight, PointLight](
-        classOf[jfxs.PointLight], classOf[PointLight])
+      classOf[jfxs.PointLight],
+      classOf[PointLight]
+    )

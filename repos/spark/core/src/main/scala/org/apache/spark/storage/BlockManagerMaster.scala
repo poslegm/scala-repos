@@ -27,10 +27,11 @@ import org.apache.spark.rpc.RpcEndpointRef
 import org.apache.spark.storage.BlockManagerMessages._
 import org.apache.spark.util.{RpcUtils, ThreadUtils}
 
-private[spark] class BlockManagerMaster(var driverEndpoint: RpcEndpointRef,
-                                        conf: SparkConf,
-                                        isDriver: Boolean)
-    extends Logging {
+private[spark] class BlockManagerMaster(
+    var driverEndpoint: RpcEndpointRef,
+    conf: SparkConf,
+    isDriver: Boolean
+) extends Logging {
 
   val timeout = RpcUtils.askRpcTimeout(conf)
 
@@ -41,21 +42,26 @@ private[spark] class BlockManagerMaster(var driverEndpoint: RpcEndpointRef,
   }
 
   /** Register the BlockManager's id with the driver. */
-  def registerBlockManager(blockManagerId: BlockManagerId,
-                           maxMemSize: Long,
-                           slaveEndpoint: RpcEndpointRef): Unit = {
+  def registerBlockManager(
+      blockManagerId: BlockManagerId,
+      maxMemSize: Long,
+      slaveEndpoint: RpcEndpointRef
+  ): Unit = {
     logInfo("Trying to register BlockManager")
     tell(RegisterBlockManager(blockManagerId, maxMemSize, slaveEndpoint))
     logInfo("Registered BlockManager")
   }
 
-  def updateBlockInfo(blockManagerId: BlockManagerId,
-                      blockId: BlockId,
-                      storageLevel: StorageLevel,
-                      memSize: Long,
-                      diskSize: Long): Boolean = {
-    val res = driverEndpoint.askWithRetry[Boolean](UpdateBlockInfo(
-            blockManagerId, blockId, storageLevel, memSize, diskSize))
+  def updateBlockInfo(
+      blockManagerId: BlockManagerId,
+      blockId: BlockId,
+      storageLevel: StorageLevel,
+      memSize: Long,
+      diskSize: Long
+  ): Boolean = {
+    val res = driverEndpoint.askWithRetry[Boolean](
+      UpdateBlockInfo(blockManagerId, blockId, storageLevel, memSize, diskSize)
+    )
     logDebug(s"Updated info of block $blockId")
     res
   }
@@ -66,9 +72,12 @@ private[spark] class BlockManagerMaster(var driverEndpoint: RpcEndpointRef,
   }
 
   /** Get locations of multiple blockIds from the driver */
-  def getLocations(blockIds: Array[BlockId]): IndexedSeq[Seq[BlockManagerId]] = {
+  def getLocations(
+      blockIds: Array[BlockId]
+  ): IndexedSeq[Seq[BlockManagerId]] = {
     driverEndpoint.askWithRetry[IndexedSeq[Seq[BlockManagerId]]](
-        GetLocationsMultipleBlockIds(blockIds))
+      GetLocationsMultipleBlockIds(blockIds)
+    )
   }
 
   /**
@@ -86,7 +95,8 @@ private[spark] class BlockManagerMaster(var driverEndpoint: RpcEndpointRef,
 
   def getExecutorEndpointRef(executorId: String): Option[RpcEndpointRef] = {
     driverEndpoint.askWithRetry[Option[RpcEndpointRef]](
-        GetExecutorEndpointRef(executorId))
+      GetExecutorEndpointRef(executorId)
+    )
   }
 
   /**
@@ -125,15 +135,20 @@ private[spark] class BlockManagerMaster(var driverEndpoint: RpcEndpointRef,
 
   /** Remove all blocks belonging to the given broadcast. */
   def removeBroadcast(
-      broadcastId: Long, removeFromMaster: Boolean, blocking: Boolean) {
+      broadcastId: Long,
+      removeFromMaster: Boolean,
+      blocking: Boolean
+  ) {
     val future = driverEndpoint.askWithRetry[Future[Seq[Int]]](
-        RemoveBroadcast(broadcastId, removeFromMaster))
+      RemoveBroadcast(broadcastId, removeFromMaster)
+    )
     future.onFailure {
       case e: Exception =>
         logWarning(
-            s"Failed to remove broadcast $broadcastId" +
+          s"Failed to remove broadcast $broadcastId" +
             s" with removeFromMaster = $removeFromMaster - ${e.getMessage}",
-            e)
+          e
+        )
     }(ThreadUtils.sameThread)
     if (blocking) {
       timeout.awaitResult(future)
@@ -165,7 +180,8 @@ private[spark] class BlockManagerMaster(var driverEndpoint: RpcEndpointRef,
     */
   def getBlockStatus(
       blockId: BlockId,
-      askSlaves: Boolean = true): Map[BlockManagerId, BlockStatus] = {
+      askSlaves: Boolean = true
+  ): Map[BlockManagerId, BlockStatus] = {
     val msg = GetBlockStatus(blockId, askSlaves)
     /*
      * To avoid potential deadlocks, the use of Futures is necessary, because the master endpoint
@@ -175,24 +191,27 @@ private[spark] class BlockManagerMaster(var driverEndpoint: RpcEndpointRef,
     val response = driverEndpoint
       .askWithRetry[Map[BlockManagerId, Future[Option[BlockStatus]]]](msg)
     val (blockManagerIds, futures) = response.unzip
-    implicit val sameThread = ThreadUtils.sameThread
-    val cbf = implicitly[CanBuildFrom[Iterable[Future[Option[BlockStatus]]],
-                                      Option[BlockStatus],
-                                      Iterable[Option[BlockStatus]]]]
+    implicit val sameThread        = ThreadUtils.sameThread
+    val cbf =
+      implicitly[CanBuildFrom[Iterable[Future[Option[BlockStatus]]], Option[
+        BlockStatus
+      ], Iterable[Option[BlockStatus]]]]
     val blockStatus = timeout.awaitResult(
-        Future.sequence[Option[BlockStatus], Iterable](futures)(
-            cbf, ThreadUtils.sameThread))
+      Future.sequence[Option[BlockStatus], Iterable](futures)(
+        cbf,
+        ThreadUtils.sameThread
+      )
+    )
     if (blockStatus == null) {
       throw new SparkException(
-          "BlockManager returned null for BlockStatus query: " + blockId)
+        "BlockManager returned null for BlockStatus query: " + blockId
+      )
     }
     blockManagerIds
       .zip(blockStatus)
       .flatMap {
         case (blockManagerId, status) =>
-          status.map { s =>
-            (blockManagerId, s)
-          }
+          status.map { s => (blockManagerId, s) }
       }
       .toMap
   }
@@ -206,8 +225,10 @@ private[spark] class BlockManagerMaster(var driverEndpoint: RpcEndpointRef,
     * by all block managers.
     */
   def getMatchingBlockIds(
-      filter: BlockId => Boolean, askSlaves: Boolean): Seq[BlockId] = {
-    val msg = GetMatchingBlockIds(filter, askSlaves)
+      filter: BlockId => Boolean,
+      askSlaves: Boolean
+  ): Seq[BlockId] = {
+    val msg    = GetMatchingBlockIds(filter, askSlaves)
     val future = driverEndpoint.askWithRetry[Future[Seq[BlockId]]](msg)
     timeout.awaitResult(future)
   }
@@ -233,7 +254,8 @@ private[spark] class BlockManagerMaster(var driverEndpoint: RpcEndpointRef,
   private def tell(message: Any) {
     if (!driverEndpoint.askWithRetry[Boolean](message)) {
       throw new SparkException(
-          "BlockManagerMasterEndpoint returned false, expected true.")
+        "BlockManagerMasterEndpoint returned false, expected true."
+      )
     }
   }
 }

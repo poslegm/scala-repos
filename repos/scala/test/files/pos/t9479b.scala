@@ -1,6 +1,6 @@
 trait Predefs {
   def bridge(p: String): Unit = ???
-  def bridge(p: Any): Unit = ???
+  def bridge(p: Any): Unit    = ???
 }
 
 package object molecule extends Predefs

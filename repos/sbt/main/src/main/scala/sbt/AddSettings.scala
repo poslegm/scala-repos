@@ -20,11 +20,13 @@ object AddSettings {
   private[sbt] final class DefaultSbtFiles(val include: File => Boolean)
       extends AddSettings
   private[sbt] final class SbtFiles(val files: Seq[File]) extends AddSettings
-  private[sbt] final object BuildScalaFiles extends AddSettings
+  private[sbt] final object BuildScalaFiles               extends AddSettings
 
   /** Adds all settings from autoplugins. */
   val autoPlugins: AddSettings =
-    new AutoPlugins(const(true)) // Note: We do not expose fine-grained autoplugins because
+    new AutoPlugins(
+      const(true)
+    ) // Note: We do not expose fine-grained autoplugins because
   // it's dangerous to control at that level right now.
   // Leaving the hook in place in case we need to expose
   // it, but most likely it will remain locked out
@@ -56,35 +58,36 @@ object AddSettings {
   def seq(autos: AddSettings*): AddSettings = new Sequence(autos)
 
   /** The default inclusion of settings. */
-  val allDefaults: AddSettings = seq(autoPlugins,
-                                     buildScalaFiles,
-                                     userSettings,
-                                     nonAutoPlugins,
-                                     defaultSbtFiles)
+  val allDefaults: AddSettings = seq(
+    autoPlugins,
+    buildScalaFiles,
+    userSettings,
+    nonAutoPlugins,
+    defaultSbtFiles
+  )
 
   /** Combines two automatic setting configurations. */
   def append(a: AddSettings, b: AddSettings): AddSettings = (a, b) match {
     case (sa: Sequence, sb: Sequence) => seq(sa.sequence ++ sb.sequence: _*)
-    case (sa: Sequence, _) => seq(sa.sequence :+ b: _*)
-    case (_, sb: Sequence) => seq(a +: sb.sequence: _*)
-    case _ => seq(a, b)
+    case (sa: Sequence, _)            => seq(sa.sequence :+ b: _*)
+    case (_, sb: Sequence)            => seq(a +: sb.sequence: _*)
+    case _                            => seq(a, b)
   }
 
   def clearSbtFiles(a: AddSettings): AddSettings =
     tx(a) {
       case _: DefaultSbtFiles | _: SbtFiles => None
-      case x => Some(x)
+      case x                                => Some(x)
     } getOrElse seq()
 
-  private[sbt] def tx(a: AddSettings)(
-      f: AddSettings => Option[AddSettings]): Option[AddSettings] = a match {
+  private[sbt] def tx(
+      a: AddSettings
+  )(f: AddSettings => Option[AddSettings]): Option[AddSettings] = a match {
     case s: Sequence =>
-      s.sequence.flatMap { b =>
-        tx(b)(f)
-      } match {
-        case Seq() => None
+      s.sequence.flatMap { b => tx(b)(f) } match {
+        case Seq()  => None
         case Seq(x) => Some(x)
-        case ss => Some(new Sequence(ss))
+        case ss     => Some(new Sequence(ss))
       }
     case x => f(x)
   }

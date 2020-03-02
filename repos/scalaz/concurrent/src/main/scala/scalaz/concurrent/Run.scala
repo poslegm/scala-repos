@@ -11,7 +11,7 @@ trait Run[F] { self =>
 
   // derived functions
   def contramap[B](f: B => F): Run[B] = new Run[B] {
-    def run(a: B) = self.run(f(a))
+    def run(a: B)          = self.run(f(a))
     def strategy: Strategy = self.strategy
   }
 }
@@ -19,7 +19,7 @@ trait Run[F] { self =>
 object Run {
   def apply[A](c: A => Unit)(implicit s: Strategy): Run[A] = new Run[A] {
     def run(a: A) = c(a)
-    val strategy = s
+    val strategy  = s
   }
 
   implicit def RunFrom[A](e: Run[A]): A => Unit = e.run _

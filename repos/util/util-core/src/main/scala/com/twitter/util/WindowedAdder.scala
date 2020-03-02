@@ -28,17 +28,20 @@ private[twitter] object WindowedAdder {
   }
 }
 
-private[twitter] class WindowedAdder private[WindowedAdder](
-    window: Long, N: Int, now: () => Long) {
-  private[this] val writer = new LongAdder()
+private[twitter] class WindowedAdder private[WindowedAdder] (
+    window: Long,
+    N: Int,
+    now: () => Long
+) {
+  private[this] val writer        = new LongAdder()
   @volatile private[this] var gen = 0
-  private[this] val expiredGen = new AtomicInteger(gen)
+  private[this] val expiredGen    = new AtomicInteger(gen)
 
   // Since we only write into the head bucket, we simply maintain
   // counts in an array; these are written to rarely, but are read
   // often.
-  private[this] val buf = new Array[Long](N)
-  @volatile private[this] var i = 0
+  private[this] val buf           = new Array[Long](N)
+  @volatile private[this] var i   = 0
   @volatile private[this] var old = now()
 
   private[this] def expired(): Unit = {
@@ -82,9 +85,9 @@ private[twitter] class WindowedAdder private[WindowedAdder](
   /** Retrieve the current sum of the adder */
   def sum(): Long = {
     if ((now() - old) >= window) expired()
-    val _ = gen // Barrier.
+    val _   = gen // Barrier.
     var sum = writer.sum()
-    var i = 0
+    var i   = 0
     while (i < N) {
       sum += buf(i)
       i += 1

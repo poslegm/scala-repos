@@ -46,15 +46,20 @@ class LoadServiceTest extends FunSuite with MockitoSugar {
     val simple = new SimpleRegistry
     GlobalRegistry.withRegistry(simple) {
       assert(LoadService[Resolver]().nonEmpty)
-      assert(GlobalRegistry.get.toSet == Set(
-              Entry(Seq("loadservice", "com.twitter.finagle.Resolver"),
-                    "com.twitter.finagle.TestResolver,com.twitter.finagle.TestAsyncInetResolver")
-          ))
+      assert(
+        GlobalRegistry.get.toSet == Set(
+          Entry(
+            Seq("loadservice", "com.twitter.finagle.Resolver"),
+            "com.twitter.finagle.TestResolver,com.twitter.finagle.TestAsyncInetResolver"
+          )
+        )
+      )
     }
   }
 
   test(
-      "LoadService should only load 1 instance of T, even when there's multiple occurence of T") {
+    "LoadService should only load 1 instance of T, even when there's multiple occurence of T"
+  ) {
     val randomIfaces = LoadService[LoadServiceRandomInterface]()
     assert(randomIfaces.size == 1)
   }
@@ -69,18 +74,23 @@ class LoadServiceTest extends FunSuite with MockitoSugar {
     GlobalRegistry.withRegistry(simple) {
       val randomIfaces = LoadService[LoadServiceMaybeInterface]()
       assert(
-          GlobalRegistry.get.toSet == Set(
-              Entry(Seq("loadservice",
-                        "com.twitter.finagle.util.LoadServiceMaybeInterface"),
-                    "com.twitter.finagle.util.LoadServiceGoodClass")
-          ))
+        GlobalRegistry.get.toSet == Set(
+          Entry(
+            Seq(
+              "loadservice",
+              "com.twitter.finagle.util.LoadServiceMaybeInterface"
+            ),
+            "com.twitter.finagle.util.LoadServiceGoodClass"
+          )
+        )
+      )
     }
   }
 
   test("LoadService shouldn't fail on un-readable dir") {
     val loader = mock[ClassLoader]
-    val buf = mutable.Buffer.empty[ClassPath.Info]
-    val rand = new Random()
+    val buf    = mutable.Buffer.empty[ClassPath.Info]
+    val rand   = new Random()
 
     val f =
       File.createTempFile("tmp", "__finagle_loadservice" + rand.nextInt(10000))
@@ -95,8 +105,8 @@ class LoadServiceTest extends FunSuite with MockitoSugar {
 
   test("LoadService shouldn't fail on un-readable sub-dir") {
     val loader = mock[ClassLoader]
-    val buf = mutable.Buffer.empty[ClassPath.Info]
-    val rand = new Random()
+    val buf    = mutable.Buffer.empty[ClassPath.Info]
+    val rand   = new Random()
 
     val f =
       File.createTempFile("tmp", "__finagle_loadservice" + rand.nextInt(10000))
@@ -126,8 +136,10 @@ class LoadServiceTest extends FunSuite with MockitoSugar {
 
     // Get the result
     val announcers: Seq[Any] = future.get()
-    assert(announcers.exists(_.getClass.getName.endsWith("FooAnnouncer")),
-           "Non-URLClassloader found announcer was not discovered")
+    assert(
+      announcers.exists(_.getClass.getName.endsWith("FooAnnouncer")),
+      "Non-URLClassloader found announcer was not discovered"
+    )
     executor.shutdown()
   }
 
@@ -137,14 +149,14 @@ class LoadServiceTest extends FunSuite with MockitoSugar {
     import Attributes.Name._
     val jarFile = File.createTempFile("test", ".jar")
     try {
-      val manifest = new Manifest
+      val manifest   = new Manifest
       val attributes = manifest.getMainAttributes
       attributes.put(MANIFEST_VERSION, "1.0")
       attributes.put(CLASS_PATH, jarFile.getName)
       val jos = new JarOutputStream(new FileOutputStream(jarFile), manifest)
       jos.close
       val loader = mock[ClassLoader]
-      val buf = mutable.Buffer.empty[ClassPath.Info]
+      val buf    = mutable.Buffer.empty[ClassPath.Info]
       ClassPath.browseUri(jarFile.toURI, loader, buf)
     } finally {
       jarFile.delete
@@ -158,7 +170,7 @@ class LoadServiceTest extends FunSuite with MockitoSugar {
     val jar1 = File.createTempFile("test", ".jar")
     val jar2 = File.createTempFile("test", ".jar")
     try {
-      val manifest = new Manifest
+      val manifest   = new Manifest
       val attributes = manifest.getMainAttributes
       attributes.put(MANIFEST_VERSION, "1.0")
       attributes.put(CLASS_PATH, jar2.getName)
@@ -166,7 +178,7 @@ class LoadServiceTest extends FunSuite with MockitoSugar {
       attributes.put(CLASS_PATH, jar1.getName)
       new JarOutputStream(new FileOutputStream(jar2), manifest).close
       val loader = mock[ClassLoader]
-      val buf = mutable.Buffer.empty[ClassPath.Info]
+      val buf    = mutable.Buffer.empty[ClassPath.Info]
       ClassPath.browseUri(jar1.toURI, loader, buf)
     } finally {
       jar1.delete
@@ -175,7 +187,8 @@ class LoadServiceTest extends FunSuite with MockitoSugar {
   }
 
   test(
-      "LoadService should ignore packages according to ignoredPaths GlobalFlag") {
+    "LoadService should ignore packages according to ignoredPaths GlobalFlag"
+  ) {
     loadServiceIgnoredPaths.let(Seq("foo/", "/bar")) {
       assert(ClassPath.ignoredPackages.takeRight(2) == Seq("foo/", "/bar"))
     }
@@ -183,8 +196,8 @@ class LoadServiceTest extends FunSuite with MockitoSugar {
 
   test("LoadService should respect Denied if provided") {
     val denied1and2 = Set(
-        "com.twitter.finagle.util.LoadServiceMultipleImpls1",
-        "com.twitter.finagle.util.LoadServiceMultipleImpls2"
+      "com.twitter.finagle.util.LoadServiceMultipleImpls1",
+      "com.twitter.finagle.util.LoadServiceMultipleImpls2"
     )
     loadServiceDenied.let(denied1and2) {
       val loaded = LoadService[LoadServiceMultipleImpls]()
@@ -198,14 +211,13 @@ class LoadServiceCallable extends Callable[Seq[Any]] {
   override def call(): Seq[Any] = LoadService[Announcer]()
 }
 
-class MetaInfCodedClassloader(parent: ClassLoader)
-    extends ClassLoader(parent) {
+class MetaInfCodedClassloader(parent: ClassLoader) extends ClassLoader(parent) {
   override def loadClass(name: String): Class[_] = {
     if (name.startsWith("com.twitter.finagle")) {
       try {
-        val path = name.replaceAll("\\.", "/") + ".class"
+        val path            = name.replaceAll("\\.", "/") + ".class"
         val is: InputStream = getClass.getClassLoader.getResourceAsStream(path)
-        val buf = ByteStreams.toByteArray(is)
+        val buf             = ByteStreams.toByteArray(is)
 
         defineClass(name, buf, 0, buf.length)
       } catch {
@@ -235,5 +247,7 @@ class FooAnnouncer extends Announcer {
   override val scheme: String = "foo"
 
   override def announce(
-      addr: InetSocketAddress, name: String): Future[Announcement] = null
+      addr: InetSocketAddress,
+      name: String
+  ): Future[Announcement] = null
 }

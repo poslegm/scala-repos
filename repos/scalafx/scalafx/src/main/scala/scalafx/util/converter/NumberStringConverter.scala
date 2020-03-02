@@ -34,14 +34,14 @@ import scala.language.implicitConversions
 
 object NumberStringConverter {
   implicit def sfxNumberStringConverter2jfx(
-      c: NumberStringConverter): jfxuc.NumberStringConverter =
+      c: NumberStringConverter
+  ): jfxuc.NumberStringConverter =
     if (c != null) c.delegate else null
 }
 
 class NumberStringConverter(
-    delegate: jfxuc.NumberStringConverter = new jfxuc.NumberStringConverter)
-    extends NumberStringConverterDelegate[jfxuc.NumberStringConverter](
-        delegate) {
+    delegate: jfxuc.NumberStringConverter = new jfxuc.NumberStringConverter
+) extends NumberStringConverterDelegate[jfxuc.NumberStringConverter](delegate) {
 
   def this(locale: Locale) = this(new jfxuc.NumberStringConverter(locale))
 

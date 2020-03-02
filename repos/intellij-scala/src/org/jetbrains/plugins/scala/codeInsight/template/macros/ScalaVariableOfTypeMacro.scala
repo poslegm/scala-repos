@@ -34,18 +34,23 @@ class ScalaVariableOfTypeMacro extends Macro {
 
   override def calculateLookupItems(
       exprs: Array[Expression],
-      context: ExpressionContext): Array[LookupElement] = {
-    calculateLookupItems(exprs.map(_.calculateResult(context).toString),
-                         context,
-                         showOne = false)
+      context: ExpressionContext
+  ): Array[LookupElement] = {
+    calculateLookupItems(
+      exprs.map(_.calculateResult(context).toString),
+      context,
+      showOne = false
+    )
   }
-  def calculateLookupItems(exprs: Array[String],
-                           context: ExpressionContext,
-                           showOne: Boolean): Array[LookupElement] = {
+  def calculateLookupItems(
+      exprs: Array[String],
+      context: ExpressionContext,
+      showOne: Boolean
+  ): Array[LookupElement] = {
     if (!validExprs(exprs)) return null
     val offset = context.getStartOffset
     val editor = context.getEditor
-    val array = new ArrayBuffer[LookupElement]
+    val array  = new ArrayBuffer[LookupElement]
     val file = PsiDocumentManager
       .getInstance(editor.getProject)
       .getPsiFile(editor.getDocument)
@@ -57,24 +62,30 @@ class ScalaVariableOfTypeMacro extends Macro {
         val element = file.findElementAt(offset)
         val variants = MacroUtil
           .getVariablesForScope(element)
-          .filter(r =>
-                {
-              val clazz =
-                PsiTreeUtil.getParentOfType(r.element, classOf[PsiClass])
-              if (clazz == null) true
-              else {
-                clazz.qualifiedName match {
-                  case "scala.Predef" => false
-                  case "scala" => false
-                  case _ => true
-                }
+          .filter(r => {
+            val clazz =
+              PsiTreeUtil.getParentOfType(r.element, classOf[PsiClass])
+            if (clazz == null) true
+            else {
+              clazz.qualifiedName match {
+                case "scala.Predef" => false
+                case "scala"        => false
+                case _              => true
               }
+            }
           })
         for (variant <- variants) {
           variant.getElement match {
             case typed: ScTypedDefinition =>
-              for (t <- typed.getType(TypingContext.empty)) addLookupItems(
-                  exprs, context, variant, t, file.getProject, array)
+              for (t <- typed.getType(TypingContext.empty))
+                addLookupItems(
+                  exprs,
+                  context,
+                  variant,
+                  t,
+                  file.getProject,
+                  array
+                )
             case _ =>
           }
         }
@@ -85,7 +96,9 @@ class ScalaVariableOfTypeMacro extends Macro {
   }
 
   def calculateResult(
-      exprs: Array[Expression], context: ExpressionContext): Result = {
+      exprs: Array[Expression],
+      context: ExpressionContext
+  ): Result = {
     if (!validExprs(exprs)) return null
     val offset = context.getStartOffset
     val editor = context.getEditor
@@ -100,24 +113,24 @@ class ScalaVariableOfTypeMacro extends Macro {
         val element = file.findElementAt(offset)
         val variants = MacroUtil
           .getVariablesForScope(element)
-          .filter(r =>
-                {
-              val clazz =
-                PsiTreeUtil.getParentOfType(r.element, classOf[PsiClass])
-              if (clazz == null) true
-              else {
-                clazz.qualifiedName match {
-                  case "scala.Predef" => false
-                  case "scala" => false
-                  case _ => true
-                }
+          .filter(r => {
+            val clazz =
+              PsiTreeUtil.getParentOfType(r.element, classOf[PsiClass])
+            if (clazz == null) true
+            else {
+              clazz.qualifiedName match {
+                case "scala.Predef" => false
+                case "scala"        => false
+                case _              => true
               }
+            }
           })
         for (variant <- variants) {
           variant.getElement match {
             case typed: ScTypedDefinition =>
-              for (t <- typed.getType(TypingContext.empty)) getResult(
-                  exprs, context, variant, t, file.getProject).map(return _)
+              for (t <- typed.getType(TypingContext.empty))
+                getResult(exprs, context, variant, t, file.getProject)
+                  .map(return _)
             case _ =>
           }
         }
@@ -130,7 +143,9 @@ class ScalaVariableOfTypeMacro extends Macro {
     context.isInstanceOf[ScalaCodeContextType]
 
   override def calculateQuickResult(
-      p1: Array[Expression], p2: ExpressionContext): Result = null
+      p1: Array[Expression],
+      p2: ExpressionContext
+  ): Result = null
 
   def getDescription: String =
     CodeInsightBundle.message("macro.variable.of.type")
@@ -146,11 +161,13 @@ class ScalaVariableOfTypeMacro extends Macro {
 
   def validExprsCount(exprsCount: Int): Boolean = exprsCount != 0
 
-  def getResult(exprs: Array[Expression],
-                context: ExpressionContext,
-                variant: ScalaResolveResult,
-                scType: ScType,
-                project: Project): Option[Result] = {
+  def getResult(
+      exprs: Array[Expression],
+      context: ExpressionContext,
+      variant: ScalaResolveResult,
+      scType: ScType,
+      project: Project
+  ): Option[Result] = {
     exprs.apply(0).calculateResult(context).toString match {
       case "" =>
         Some(new TextResult(variant.getElement.name))
@@ -168,20 +185,23 @@ class ScalaVariableOfTypeMacro extends Macro {
       case _ =>
         exprs
           .find(expr =>
-                (ScType.extractClassType(scType, Some(project)) match {
+            (ScType.extractClassType(scType, Some(project)) match {
               case Some((x, _)) => x.qualifiedName
-              case None => ""
-            }) == expr.calculateResult(context).toString)
+              case None         => ""
+            }) == expr.calculateResult(context).toString
+          )
           .map(_ => new TextResult(variant.getElement.name))
     }
   }
 
-  def addLookupItems(exprs: Array[String],
-                     context: ExpressionContext,
-                     variant: ScalaResolveResult,
-                     scType: ScType,
-                     project: Project,
-                     array: ArrayBuffer[LookupElement]) {
+  def addLookupItems(
+      exprs: Array[String],
+      context: ExpressionContext,
+      variant: ScalaResolveResult,
+      scType: ScType,
+      project: Project,
+      array: ArrayBuffer[LookupElement]
+  ) {
     exprs.apply(0) match {
       case "" =>
         val item = LookupElementBuilder
@@ -191,23 +211,29 @@ class ScalaVariableOfTypeMacro extends Macro {
       case ScalaVariableOfTypeMacro.iterableId
           if scType.canonicalText.startsWith("_root_.scala.Array") =>
         array += LookupElementBuilder.create(
-            variant.getElement, variant.getElement.name)
+          variant.getElement,
+          variant.getElement.name
+        )
       case ScalaVariableOfTypeMacro.iterableId =>
         ScType.extractClass(scType) match {
           case Some(x: ScTypeDefinition)
               if x.functionsByName("foreach").nonEmpty =>
             array += LookupElementBuilder.create(
-                variant.getElement, variant.getElement.name)
+              variant.getElement,
+              variant.getElement.name
+            )
           case _ =>
         }
       case _ =>
         for (expr <- exprs) {
           if ((ScType.extractClass(scType) match {
                 case Some(x) => x.qualifiedName
-                case None => ""
+                case None    => ""
               }) == expr)
             array += LookupElementBuilder.create(
-                variant.getElement, variant.getElement.name)
+              variant.getElement,
+              variant.getElement.name
+            )
         }
     }
   }

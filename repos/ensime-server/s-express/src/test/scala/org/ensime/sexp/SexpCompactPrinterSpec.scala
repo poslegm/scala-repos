@@ -6,7 +6,7 @@ import org.ensime.util.EnsimeSpec
 
 class SexpCompactPrinterSpec extends EnsimeSpec {
 
-  private val foo = SexpString("foo")
+  private val foo    = SexpString("foo")
   private val foosym = SexpSymbol("foo")
   private val barsym = SexpSymbol("bar")
   private def assertPrinter(sexp: Sexp, expect: String): Unit = {
@@ -24,7 +24,9 @@ class SexpCompactPrinterSpec extends EnsimeSpec {
 
   it should "output lists of lists" in {
     assertPrinter(
-        SexpList(SexpList(foo), SexpList(foo)), """(("foo") ("foo"))""")
+      SexpList(SexpList(foo), SexpList(foo)),
+      """(("foo") ("foo"))"""
+    )
   }
 
   it should "output cons" in {

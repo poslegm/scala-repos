@@ -23,7 +23,10 @@ class DeMorganLawIntention extends PsiElementBaseIntentionAction {
   def getFamilyName = DeMorganLawIntention.familyName
 
   def isAvailable(
-      project: Project, editor: Editor, element: PsiElement): Boolean = {
+      project: Project,
+      editor: Editor,
+      element: PsiElement
+  ): Boolean = {
     val infixExpr: ScInfixExpr =
       PsiTreeUtil.getParentOfType(element, classOf[ScInfixExpr], false)
     if (infixExpr == null) return false
@@ -33,7 +36,7 @@ class DeMorganLawIntention extends PsiElementBaseIntentionAction {
     if (oper != "||" && oper != "&&") return false
 
     val range: TextRange = infixExpr.operation.nameId.getTextRange
-    val offset = editor.getCaretModel.getOffset
+    val offset           = editor.getCaretModel.getOffset
     if (!(range.getStartOffset <= offset && offset <= range.getEndOffset))
       return false
 
@@ -53,7 +56,7 @@ class DeMorganLawIntention extends PsiElementBaseIntentionAction {
     val start = infixExpr.getTextRange.getStartOffset
     val diff =
       editor.getCaretModel.getOffset -
-      infixExpr.operation.nameId.getTextRange.getStartOffset
+        infixExpr.operation.nameId.getTextRange.getStartOffset
 
     val buf = new StringBuilder
     buf
@@ -64,7 +67,10 @@ class DeMorganLawIntention extends PsiElementBaseIntentionAction {
       .append(IntentionUtils.negate(infixExpr.getArgExpr))
 
     val res = IntentionUtils.negateAndValidateExpression(
-        infixExpr, element.getManager, buf)
+      infixExpr,
+      element.getManager,
+      buf
+    )
 
     inWriteAction {
       res._1.replaceExpression(res._2, true)

@@ -6,14 +6,14 @@ object callccInterpreter {
     * A continuation monad.
     */
   case class M[A](in: (A => Answer) => Answer) {
-    def bind[B](k: A => M[B]) = M[B](c => in(a => k(a) in c))
-    def map[B](f: A => B): M[B] = bind(x => unitM(f(x)))
+    def bind[B](k: A => M[B])          = M[B](c => in(a => k(a) in c))
+    def map[B](f: A => B): M[B]        = bind(x => unitM(f(x)))
     def flatMap[B](f: A => M[B]): M[B] = bind(f)
   }
 
   def unitM[A](a: A) /*?*/ = M[A](c => c(a))
 
-  def id[A] /*?*/ = (x: A) => x
+  def id[A] /*?*/              = (x: A) => x
   def showM(m: M[Value]) /*?*/ = (m in id).toString()
 
   def callCC[A](h: (A => M[A]) => M[A]) =
@@ -22,12 +22,12 @@ object callccInterpreter {
   type Name = String
 
   trait Term
-  case class Var(x: Name) extends Term
-  case class Con(n: int) extends Term
-  case class Add(l: Term, r: Term) extends Term
-  case class Lam(x: Name, body: Term) extends Term
+  case class Var(x: Name)              extends Term
+  case class Con(n: int)               extends Term
+  case class Add(l: Term, r: Term)     extends Term
+  case class Lam(x: Name, body: Term)  extends Term
   case class App(fun: Term, arg: Term) extends Term
-  case class Ccc(x: Name, t: Term) extends Term
+  case class Ccc(x: Name, t: Term)     extends Term
 
   trait Value
   case object Wrong extends Value {
@@ -43,18 +43,18 @@ object callccInterpreter {
   type Environment = List[Tuple2[Name, Value]]
 
   def lookup(x: Name, e: Environment): M[Value] = e match {
-    case List() => unitM(Wrong)
+    case List()       => unitM(Wrong)
     case (y, b) :: e1 => if (x == y) unitM(b) else lookup(x, e1)
   }
 
   def add(a: Value, b: Value) /*?*/ = (a, b) match {
     case (Num(m), Num(n)) => this. /*!*/ unitM(Num(m + n))
-    case _ => unitM(Wrong)
+    case _                => unitM(Wrong)
   }
 
   def apply(a: Value, b: Value): M[Value] = a match {
     case Fun(k) => k(b)
-    case _ => unitM(Wrong)
+    case _      => unitM(Wrong)
   }
 
   def interp(t: Term, e: Environment): M[Value] = t match {

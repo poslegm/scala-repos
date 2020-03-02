@@ -32,6 +32,7 @@ trait GenericClassTagTraversableTemplate[+A, +CC[X] <: Traversable[X]]
     classTagCompanion
   @deprecated("use genericClassTagBuilder instead", "2.10.0")
   def genericClassManifestBuilder[B](
-      implicit manifest: ClassManifest[B]): Builder[B, CC[B]] =
+      implicit manifest: ClassManifest[B]
+  ): Builder[B, CC[B]] =
     genericClassTagBuilder[B](manifest)
 }

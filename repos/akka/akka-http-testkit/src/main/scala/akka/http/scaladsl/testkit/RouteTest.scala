@@ -21,12 +21,18 @@ import akka.http.scaladsl.util.FastFuture
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.unmarshalling._
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.headers.{Upgrade, `Sec-WebSocket-Protocol`, Host}
+import akka.http.scaladsl.model.headers.{
+  Upgrade,
+  `Sec-WebSocket-Protocol`,
+  Host
+}
 import FastFuture._
 
 trait RouteTest
-    extends RequestBuilding with WSTestRequestBuilding
-    with RouteTestResultComponent with MarshallingTestUtils {
+    extends RequestBuilding
+    with WSTestRequestBuilding
+    with RouteTestResultComponent
+    with MarshallingTestUtils {
   this: TestFrameworkInterface ⇒
 
   /** Override to supply a custom ActorSystem */
@@ -44,8 +50,8 @@ trait RouteTest
       else ConfigFactory.parseString(source)
     config.withFallback(ConfigFactory.load())
   }
-  implicit val system = createActorSystem()
-  implicit def executor = system.dispatcher
+  implicit val system       = createActorSystem()
+  implicit def executor     = system.dispatcher
   implicit val materializer = ActorMaterializer()
 
   def cleanUp(): Unit = system.terminate()
@@ -63,48 +69,54 @@ trait RouteTest
     if (dynRR.value ne null) dynRR.value.response
     else "<not available anymore>"
 
-  def handled: Boolean = result.handled
-  def response: HttpResponse = result.response
-  def responseEntity: HttpEntity = result.entity
+  def handled: Boolean                                  = result.handled
+  def response: HttpResponse                            = result.response
+  def responseEntity: HttpEntity                        = result.entity
   def chunks: immutable.Seq[HttpEntity.ChunkStreamPart] = result.chunks
-  def entityAs[T : FromEntityUnmarshaller : ClassTag](
-      implicit timeout: Duration = 1.second): T = {
+  def entityAs[T: FromEntityUnmarshaller: ClassTag](
+      implicit timeout: Duration = 1.second
+  ): T = {
     def msg(e: Throwable) =
       s"Could not unmarshal entity to type '${implicitly[ClassTag[T]]}' for `entityAs` assertion: $e\n\nResponse was: $responseSafe"
-    Await.result(Unmarshal(responseEntity)
-                   .to[T]
-                   .fast
-                   .recover[T] { case error ⇒ failTest(msg(error)) },
-                 timeout)
+    Await.result(
+      Unmarshal(responseEntity)
+        .to[T]
+        .fast
+        .recover[T] { case error ⇒ failTest(msg(error)) },
+      timeout
+    )
   }
-  def responseAs[T : FromResponseUnmarshaller : ClassTag](
-      implicit timeout: Duration = 1.second): T = {
+  def responseAs[T: FromResponseUnmarshaller: ClassTag](
+      implicit timeout: Duration = 1.second
+  ): T = {
     def msg(e: Throwable) =
       s"Could not unmarshal response to type '${implicitly[ClassTag[T]]}' for `responseAs` assertion: $e\n\nResponse was: $responseSafe"
-    Await.result(Unmarshal(response)
-                   .to[T]
-                   .fast
-                   .recover[T] { case error ⇒ failTest(msg(error)) },
-                 timeout)
+    Await.result(
+      Unmarshal(response)
+        .to[T]
+        .fast
+        .recover[T] { case error ⇒ failTest(msg(error)) },
+      timeout
+    )
   }
-  def contentType: ContentType = responseEntity.contentType
-  def mediaType: MediaType = contentType.mediaType
+  def contentType: ContentType           = responseEntity.contentType
+  def mediaType: MediaType               = contentType.mediaType
   def charsetOption: Option[HttpCharset] = contentType.charsetOption
   def charset: HttpCharset =
     charsetOption getOrElse sys.error("Binary entity does not have charset")
-  def headers: immutable.Seq[HttpHeader] = response.headers
-  def header[T <: HttpHeader : ClassTag]: Option[T] = response.header[T]
+  def headers: immutable.Seq[HttpHeader]           = response.headers
+  def header[T <: HttpHeader: ClassTag]: Option[T] = response.header[T]
   def header(name: String): Option[HttpHeader] =
     response.headers.find(_.is(name.toLowerCase))
   def status: StatusCode = response.status
 
   def closingExtension: String = chunks.lastOption match {
     case Some(HttpEntity.LastChunk(extension, _)) ⇒ extension
-    case _ ⇒ ""
+    case _                                        ⇒ ""
   }
   def trailer: immutable.Seq[HttpHeader] = chunks.lastOption match {
     case Some(HttpEntity.LastChunk(_, trailer)) ⇒ trailer
-    case _ ⇒ Nil
+    case _                                      ⇒ Nil
   }
 
   def rejections: immutable.Seq[Rejection] = result.rejections
@@ -117,7 +129,7 @@ trait RouteTest
 
   def isWebSocketUpgrade: Boolean =
     status == StatusCodes.SwitchingProtocols &&
-    header[Upgrade].exists(_.hasWebSocket)
+      header[Upgrade].exists(_.hasWebSocket)
 
   /**
     * Asserts that the received response is a WebSocket upgrade response and the extracts
@@ -128,7 +140,7 @@ trait RouteTest
       failTest("Response was no WebSocket Upgrade response")
     header[`Sec-WebSocket-Protocol`] match {
       case Some(`Sec-WebSocket-Protocol`(Seq(protocol))) ⇒ body(protocol)
-      case _ ⇒ failTest("No WebSocket protocol found in response.")
+      case _                                             ⇒ failTest("No WebSocket protocol found in response.")
     }
   }
 
@@ -176,24 +188,28 @@ trait RouteTest
         materializer: Materializer,
         routingLog: RoutingLog,
         rejectionHandler: RejectionHandler = RejectionHandler.default,
-        exceptionHandler: ExceptionHandler = null) =
+        exceptionHandler: ExceptionHandler = null
+    ) =
       new TildeArrow[RequestContext, Future[RouteResult]] {
         type Out = RouteTestResult
         def apply(request: HttpRequest, route: Route): Out = {
           val routeTestResult = new RouteTestResult(timeout.duration)
           val effectiveRequest = request.withEffectiveUri(
-              securedConnection = defaultHostInfo.securedConnection,
-              defaultHostHeader = defaultHostInfo.host)
+            securedConnection = defaultHostInfo.securedConnection,
+            defaultHostHeader = defaultHostInfo.host
+          )
           val ctx = new RequestContextImpl(
-              effectiveRequest,
-              routingLog.requestLog(effectiveRequest),
-              routingSettings)
+            effectiveRequest,
+            routingLog.requestLog(effectiveRequest),
+            routingSettings
+          )
           val sealedExceptionHandler = ExceptionHandler.seal(exceptionHandler)
           val semiSealedRoute = // sealed for exceptions but not for rejections
-          Directives.handleExceptions(sealedExceptionHandler)(route)
+            Directives.handleExceptions(sealedExceptionHandler)(route)
           val deferrableRouteResult = semiSealedRoute(ctx)
           deferrableRouteResult.fast.foreach(routeTestResult.handleResult)(
-              executionContext)
+            executionContext
+          )
           routeTestResult
         }
       }

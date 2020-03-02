@@ -2,9 +2,7 @@
   *  impl classes, as well as anonymous classes.
   */
 trait Test1 {
-  def testFunc(i: Int): Unit = { (i: Int) =>
-    i + 5
-  }
+  def testFunc(i: Int): Unit = { (i: Int) => i + 5 }
 }
 
 /* getName
@@ -23,7 +21,7 @@ abstract class Foo {
 }
 
 object Test extends App {
-  val foo = new Foo {}
+  val foo = new Foo     {}
   val bar = new foo.Bar {}
   println(foo)
   println(bar)

@@ -5,8 +5,14 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.{JavaPsiFacade, PsiElement, PsiMethod}
 import org.jetbrains.plugins.scala.lang.psi.ScalaPsiUtil
 import org.jetbrains.plugins.scala.lang.psi.api.statements.ScAnnotationsHolder
-import org.jetbrains.plugins.scala.lang.psi.api.toplevel.{ScModifierListOwner, ScTypedDefinition}
-import org.jetbrains.plugins.scala.lang.psi.types.result.{Success, TypingContext}
+import org.jetbrains.plugins.scala.lang.psi.api.toplevel.{
+  ScModifierListOwner,
+  ScTypedDefinition
+}
+import org.jetbrains.plugins.scala.lang.psi.types.result.{
+  Success,
+  TypingContext
+}
 
 /**
   * @author Alefas
@@ -15,19 +21,24 @@ import org.jetbrains.plugins.scala.lang.psi.types.result.{Success, TypingContext
 class StaticPsiTypedDefinitionWrapper(
     val typedDefinition: ScTypedDefinition,
     role: PsiTypedDefinitionWrapper.DefinitionRole.DefinitionRole,
-    containingClass: PsiClassWrapper)
-    extends {
+    containingClass: PsiClassWrapper
+) extends {
   val elementFactory =
     JavaPsiFacade.getInstance(typedDefinition.getProject).getElementFactory
   val methodText = StaticPsiTypedDefinitionWrapper.methodText(
-      typedDefinition, role, containingClass)
+    typedDefinition,
+    role,
+    containingClass
+  )
   val method: PsiMethod = {
     try {
       elementFactory.createMethodFromText(methodText, containingClass)
     } catch {
       case e: Exception =>
         elementFactory.createMethodFromText(
-            "public void FAILED_TO_DECOMPILE_METHOD() {}", containingClass)
+          "public void FAILED_TO_DECOMPILE_METHOD() {}",
+          containingClass
+        )
     }
   }
 } with LightMethodAdapter(typedDefinition.getManager, method, containingClass)
@@ -55,9 +66,11 @@ with LightScalaMethod {
 object StaticPsiTypedDefinitionWrapper {
   import org.jetbrains.plugins.scala.lang.psi.light.PsiTypedDefinitionWrapper.DefinitionRole._
 
-  def methodText(b: ScTypedDefinition,
-                 role: DefinitionRole,
-                 containingClass: PsiClassWrapper): String = {
+  def methodText(
+      b: ScTypedDefinition,
+      role: DefinitionRole,
+      containingClass: PsiClassWrapper
+  ): String = {
     val builder = new StringBuilder
 
     ScalaPsiUtil.nameContext(b) match {
@@ -71,20 +84,21 @@ object StaticPsiTypedDefinitionWrapper {
       case _ if role == SETTER || role == EQ => builder.append("void")
       case Success(tp, _) =>
         builder.append(
-            JavaConversionUtil.typeText(tp, b.getProject, b.getResolveScope))
+          JavaConversionUtil.typeText(tp, b.getProject, b.getResolveScope)
+        )
       case _ => builder.append("java.lang.Object")
     }
 
-    val qualName = containingClass.getQualifiedName
+    val qualName  = containingClass.getQualifiedName
     val paramText = qualName.substring(0, qualName.length() - 6) + " This"
 
     builder.append(" ")
     val name = role match {
       case SIMPLE_ROLE => b.getName
-      case GETTER => "get" + b.getName.capitalize
-      case IS_GETTER => "is" + b.getName.capitalize
-      case SETTER => "set" + b.getName.capitalize
-      case EQ => b.getName + "_$eq"
+      case GETTER      => "get" + b.getName.capitalize
+      case IS_GETTER   => "is" + b.getName.capitalize
+      case SETTER      => "set" + b.getName.capitalize
+      case EQ          => b.getName + "_$eq"
     }
     builder.append(name)
 
@@ -95,7 +109,8 @@ object StaticPsiTypedDefinitionWrapper {
       result match {
         case Success(tp, _) =>
           builder.append(
-              JavaConversionUtil.typeText(tp, b.getProject, b.getResolveScope))
+            JavaConversionUtil.typeText(tp, b.getProject, b.getResolveScope)
+          )
         case _ => builder.append("java.lang.Object")
       }
       builder.append(" ").append(b.getName).append(")")

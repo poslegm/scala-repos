@@ -35,7 +35,5 @@ case class CacheSize(lowerBound: Int, fuzz: Double = 0.2)
     else 0
 
   def size: Option[Int] =
-    Some(lowerBound).filter { _ > 0 }.map { s =>
-      s + getFuzz(s)
-    }
+    Some(lowerBound).filter { _ > 0 }.map { s => s + getFuzz(s) }
 }

@@ -30,7 +30,7 @@ object ZigguratGenerator {
   def main(a: Array[String]) = {
 
     val g: spire.random.Generator = spire.random.rng.Well512a.fromTime()
-    def samples = 200000
+    def samples                   = 200000
     def generate(d: spire.random.Generator => Double, n: Int) =
       Array.tabulate(n)(x => d(g))
 

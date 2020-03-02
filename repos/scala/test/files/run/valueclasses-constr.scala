@@ -9,7 +9,7 @@ package test1 {
   }
 
   final class TOD(val secondsOfDay: Int) extends AnyVal {
-    def hours = secondsOfDay / 3600
+    def hours   = secondsOfDay / 3600
     def minutes = (secondsOfDay / 60) % 60
     def seconds = secondsOfDay % 60
 
@@ -26,8 +26,8 @@ package test2 {
     }
   }
 
-  final class TOD private[test2](val secondsOfDay: Int) extends AnyVal {
-    def hours = secondsOfDay / 3600
+  final class TOD private[test2] (val secondsOfDay: Int) extends AnyVal {
+    def hours   = secondsOfDay / 3600
     def minutes = (secondsOfDay / 60) % 60
     def seconds = secondsOfDay % 60
 
@@ -50,7 +50,7 @@ package test3 {
   }
 
   final class TOD private (val secondsOfDay: Int) extends AnyVal {
-    def hours = secondsOfDay / 3600
+    def hours   = secondsOfDay / 3600
     def minutes = (secondsOfDay / 60) % 60
     def seconds = secondsOfDay % 60
 

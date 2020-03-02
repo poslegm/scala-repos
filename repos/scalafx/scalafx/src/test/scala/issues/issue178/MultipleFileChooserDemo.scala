@@ -52,7 +52,7 @@ object MultipleFileChooserDemo extends JFXApp {
         children = new Button {
           text = "Open file chooser and select multiple files or Cancel"
           onAction = handle {
-            val fc = new FileChooser()
+            val fc        = new FileChooser()
             val selection = fc.showOpenMultipleDialog(stage)
 
             println("Selection: " + selection)

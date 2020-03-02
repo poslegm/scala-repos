@@ -5,7 +5,7 @@ class B {
 
 class C {
   def foo(a: Int, b: Int = 0) = 0
-  def foo() = 0
+  def foo()                   = 0
 }
 
 object Test {

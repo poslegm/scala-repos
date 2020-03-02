@@ -9,7 +9,7 @@ import scala.collection.mutable.Stack
 object revcomp {
   def main(args: Array[String]) = {
     val out = new FastaOutputStream(System.out)
-    val in = new FastaInputStream(System.in)
+    val in  = new FastaInputStream(System.in)
 
     out.writeReverseComplement(in.readSequenceStack)
     out.writeReverseComplement(in.readSequenceStack)
@@ -23,20 +23,21 @@ object revcomp {
 trait FastaByteStream {
   val nl = '\n'.toByte
 
-  type Line = Array[Byte]
+  type Line      = Array[Byte]
   type LineStack = Stack[Line]
 }
 
 // extend the Java BufferedInputStream class
 
 final class FastaInputStream(in: InputStream)
-    extends BufferedInputStream(in) with FastaByteStream {
+    extends BufferedInputStream(in)
+    with FastaByteStream {
 
   val gt = '>'.toByte
   val sc = ';'.toByte
 
   def readSequenceStack(): Tuple2[Line, LineStack] = {
-    var header: Line = null
+    var header: Line     = null
     val lines: LineStack = new Stack
 
     var line = readLine()
@@ -62,7 +63,7 @@ final class FastaInputStream(in: InputStream)
     var bytes: Line = null
     if (in == null) bytes
     else {
-      mark(128) // mark the start of the line
+      mark(128)              // mark the start of the line
       if (count == 0) read() // fill buffer
 
       var i = markpos
@@ -87,13 +88,14 @@ final class FastaInputStream(in: InputStream)
 // extend the Java BufferedOutputStream class
 
 final class FastaOutputStream(in: OutputStream)
-    extends BufferedOutputStream(in) with FastaByteStream {
+    extends BufferedOutputStream(in)
+    with FastaByteStream {
 
   private val IUB = IUBCodeComplements
 
   private def IUBCodeComplements() = {
-    val code = "ABCDGHKMNRSTVWYabcdghkmnrstvwy".getBytes
-    val comp = "TVGHCDMKNYSABWRTVGHCDMKNYSABWR".getBytes
+    val code             = "ABCDGHKMNRSTVWYabcdghkmnrstvwy".getBytes
+    val comp             = "TVGHCDMKNYSABWRTVGHCDMKNYSABWR".getBytes
     val iub: Array[Byte] = new Array('z'.toByte)
 
     for (indexValue <- code zip comp) indexValue match {
@@ -121,27 +123,28 @@ final class FastaOutputStream(in: OutputStream)
     sequence match {
       case (header, lines) => {
 
-          write(header); write(nl)
+        write(header); write(nl)
 
-          val k = if (lines.isEmpty) 0 else lines.top.length
-          val LineLength = 60
-          val isSplitLine = k < LineLength
-          var isFirstLine = true
+        val k           = if (lines.isEmpty) 0 else lines.top.length
+        val LineLength  = 60
+        val isSplitLine = k < LineLength
+        var isFirstLine = true
 
-          while (!lines.isEmpty) {
-            val line = lines.pop
-            inplaceComplementReverse(line)
+        while (!lines.isEmpty) {
+          val line = lines.pop
+          inplaceComplementReverse(line)
 
-            if (isSplitLine) {
-              if (isFirstLine) { write(line); isFirstLine = false } else {
-                write(line, 0, LineLength - k); write(nl);
-                write(line, LineLength - k, k)
-              }
-            } else { write(line); write(nl) }
-          }
-
-          if (isSplitLine && !isFirstLine) write(nl)
+          if (isSplitLine) {
+            if (isFirstLine) { write(line); isFirstLine = false }
+            else {
+              write(line, 0, LineLength - k); write(nl);
+              write(line, LineLength - k, k)
+            }
+          } else { write(line); write(nl) }
         }
+
+        if (isSplitLine && !isFirstLine) write(nl)
+      }
     }
   }
 }

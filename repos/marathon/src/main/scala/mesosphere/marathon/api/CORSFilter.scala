@@ -7,7 +7,7 @@ import mesosphere.marathon.{MarathonConf}
 
 import scala.collection.JavaConverters._
 
-class CORSFilter @Inject()(config: MarathonConf) extends Filter {
+class CORSFilter @Inject() (config: MarathonConf) extends Filter {
 
   // Map access_control_allow_origin flag into separate headers
   lazy val maybeOrigins: Option[Seq[String]] =
@@ -17,9 +17,11 @@ class CORSFilter @Inject()(config: MarathonConf) extends Filter {
 
   override def init(filterConfig: FilterConfig): Unit = {}
 
-  override def doFilter(request: ServletRequest,
-                        response: ServletResponse,
-                        chain: FilterChain): Unit = {
+  override def doFilter(
+      request: ServletRequest,
+      response: ServletResponse,
+      chain: FilterChain
+  ): Unit = {
 
     response match {
       case httpResponse: HttpServletResponse if maybeOrigins.isDefined =>
@@ -37,11 +39,15 @@ class CORSFilter @Inject()(config: MarathonConf) extends Filter {
           .asScala
           .flatMap(_.split(","))
 
-        httpResponse.setHeader("Access-Control-Allow-Headers",
-                               accessControlRequestHeaders.mkString(", "))
+        httpResponse.setHeader(
+          "Access-Control-Allow-Headers",
+          accessControlRequestHeaders.mkString(", ")
+        )
 
         httpResponse.setHeader(
-            "Access-Control-Allow-Methods", "GET, HEAD, OPTIONS")
+          "Access-Control-Allow-Methods",
+          "GET, HEAD, OPTIONS"
+        )
         httpResponse.setHeader("Access-Control-Max-Age", "86400")
 
       case _ => // Ignore other responses

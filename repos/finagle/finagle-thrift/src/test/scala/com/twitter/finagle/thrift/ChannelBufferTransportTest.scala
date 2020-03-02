@@ -11,7 +11,7 @@ import org.scalatest.junit.JUnitRunner
 class ChannelBufferTransportTest extends FunSuite with MockitoSugar {
 
   class ChannelContext {
-    val buf = mock[ChannelBuffer]
+    val buf    = mock[ChannelBuffer]
     lazy val t = new ChannelBufferToTransport(buf)
   }
   val bb = "hello".getBytes
@@ -30,8 +30,7 @@ class ChannelBufferTransportTest extends FunSuite with MockitoSugar {
     verify(buf).writeBytes(bb, 1, 2)
   }
 
-  test(
-      "ChannelBufferToTransport reads bytes from the underlying ChannelBuffer") {
+  test("ChannelBufferToTransport reads bytes from the underlying ChannelBuffer") {
     val c = new ChannelContext
     import c._
 

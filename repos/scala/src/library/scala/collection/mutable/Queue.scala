@@ -30,8 +30,10 @@ import generic._
   *  @define willNotTerminateInf
   */
 class Queue[A]
-    extends MutableList[A] with LinearSeqOptimized[A, Queue[A]]
-    with GenericTraversableTemplate[A, Queue] with Cloneable[Queue[A]]
+    extends MutableList[A]
+    with LinearSeqOptimized[A, Queue[A]]
+    with GenericTraversableTemplate[A, Queue]
+    with Cloneable[Queue[A]]
     with Serializable {
   override def companion: GenericCompanion[Queue] = Queue
 
@@ -85,7 +87,7 @@ class Queue[A]
     }
 
   private def removeFromList(p: A => Boolean): Option[A] = {
-    var leftlst = first0
+    var leftlst        = first0
     var res: Option[A] = None
     while (leftlst.next.nonEmpty && !p(leftlst.next.elem)) {
       leftlst = leftlst.next
@@ -120,7 +122,9 @@ class Queue[A]
   }
 
   private def removeAllFromList(
-      p: A => Boolean, res: ArrayBuffer[A]): ArrayBuffer[A] = {
+      p: A => Boolean,
+      res: ArrayBuffer[A]
+  ): ArrayBuffer[A] = {
     var leftlst = first0
     while (leftlst.next.nonEmpty) {
       if (p(leftlst.next.elem)) {
@@ -137,10 +141,13 @@ class Queue[A]
     *  That element is unlinked from the list. If no element satisfies `p`, return None.
     */
   @deprecated(
-      "extractFirst inappropriately exposes implementation details.  Use dequeue or dequeueAll.",
-      "2.11.0")
+    "extractFirst inappropriately exposes implementation details.  Use dequeue or dequeueAll.",
+    "2.11.0"
+  )
   def extractFirst(
-      start: LinkedList[A], p: A => Boolean): Option[LinkedList[A]] = {
+      start: LinkedList[A],
+      p: A => Boolean
+  ): Option[LinkedList[A]] = {
     if (isEmpty) None
     else {
       var cell = start

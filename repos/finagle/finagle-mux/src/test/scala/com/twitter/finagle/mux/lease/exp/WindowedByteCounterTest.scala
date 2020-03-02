@@ -10,22 +10,27 @@ import scala.util.Random
 
 @RunWith(classOf[JUnitRunner])
 class WindowedByteCounterTest
-    extends FunSuite with Eventually with IntegrationPatience {
+    extends FunSuite
+    with Eventually
+    with IntegrationPatience {
 
   trait ByteCounterHelper {
     val fakePool = new FakeMemoryPool(
-        new FakeMemoryUsage(StorageUnit.zero, StorageUnit.zero))
+      new FakeMemoryUsage(StorageUnit.zero, StorageUnit.zero)
+    )
     val fakeBean = new FakeGarbageCollectorMXBean(0, 0)
-    val nfo = new JvmInfo(fakePool, fakeBean)
+    val nfo      = new JvmInfo(fakePool, fakeBean)
   }
 
   // cleans up thread
   private[this] def withCounter(
-      fakeBean: FakeGarbageCollectorMXBean, fakePool: FakeMemoryPool)(
+      fakeBean: FakeGarbageCollectorMXBean,
+      fakePool: FakeMemoryPool
+  )(
       fn: (ByteCounter, () => Unit) => Unit
   ): Unit = {
     Time.withCurrentTimeFrozen { ctl =>
-      val nfo = new JvmInfo(fakePool, fakeBean)
+      val nfo     = new JvmInfo(fakePool, fakeBean)
       val counter = new WindowedByteCounter(nfo, Local.save())
       counter.start()
       eventually {
@@ -33,7 +38,7 @@ class WindowedByteCounterTest
       }
 
       @volatile var closed = false
-      @volatile var prev = 0
+      @volatile var prev   = 0
       val nextPeriod = { () =>
         eventually {
           assert(counter.getState == Thread.State.TIMED_WAITING)
@@ -97,7 +102,9 @@ class WindowedByteCounterTest
         }
 
         assert(
-            counter.rate() == (WindowedByteCounter.N.kilobytes).inBytes / WindowedByteCounter.W.inMilliseconds)
+          counter
+            .rate() == (WindowedByteCounter.N.kilobytes).inBytes / WindowedByteCounter.W.inMilliseconds
+        )
     }
   }
 
@@ -114,16 +121,22 @@ class WindowedByteCounterTest
         }
 
         assert(
-            counter.rate() == (WindowedByteCounter.N.kilobytes).inBytes / WindowedByteCounter.W.inMilliseconds)
+          counter
+            .rate() == (WindowedByteCounter.N.kilobytes).inBytes / WindowedByteCounter.W.inMilliseconds
+        )
 
         for (i <- 1 to WindowedByteCounter.N) {
-          fakePool.setSnapshot(usage.copy(
-                  used = WindowedByteCounter.N.kilobytes + (i * 2).kilobytes))
+          fakePool.setSnapshot(
+            usage
+              .copy(used = WindowedByteCounter.N.kilobytes + (i * 2).kilobytes)
+          )
           nextPeriod()
         }
 
-        assert(counter.rate() ==
-            (2 * (WindowedByteCounter.N.kilobytes).inBytes / WindowedByteCounter.W.inMilliseconds))
+        assert(
+          counter.rate() ==
+            (2 * (WindowedByteCounter.N.kilobytes).inBytes / WindowedByteCounter.W.inMilliseconds)
+        )
     }
   }
 
@@ -134,8 +147,8 @@ class WindowedByteCounterTest
     withCounter(fakeBean, fakePool) {
       case (counter, nextPeriod) =>
         val usage = new FakeMemoryUsage(0.bytes, 10.megabytes)
-        var x = StorageUnit.zero
-        val rand = new Random(0)
+        var x     = StorageUnit.zero
+        val rand  = new Random(0)
 
         for (i <- 0 until WindowedByteCounter.N) {
           x += rand.nextInt(100).kilobytes
@@ -144,7 +157,8 @@ class WindowedByteCounterTest
         }
 
         assert(
-            counter.rate() == x.inBytes / WindowedByteCounter.W.inMilliseconds)
+          counter.rate() == x.inBytes / WindowedByteCounter.W.inMilliseconds
+        )
     }
   }
 
@@ -155,7 +169,7 @@ class WindowedByteCounterTest
     withCounter(fakeBean, fakePool) {
       case (counter, nextPeriod) =>
         val usage = new FakeMemoryUsage(0.bytes, 10.megabytes)
-        var x = StorageUnit.zero
+        var x     = StorageUnit.zero
 
         for (i <- 0 until WindowedByteCounter.N / 2) {
           x += 1.kilobytes
@@ -176,7 +190,9 @@ class WindowedByteCounterTest
         }
 
         assert(
-            counter.rate() == WindowedByteCounter.N.kilobytes.inBytes / WindowedByteCounter.W.inMilliseconds)
+          counter
+            .rate() == WindowedByteCounter.N.kilobytes.inBytes / WindowedByteCounter.W.inMilliseconds
+        )
     }
   }
 
@@ -187,7 +203,7 @@ class WindowedByteCounterTest
     withCounter(fakeBean, fakePool) {
       case (counter, nextPeriod) =>
         val usage = new FakeMemoryUsage(0.bytes, 10.megabytes)
-        var x = StorageUnit.zero
+        var x     = StorageUnit.zero
 
         assert(counter.lastGc == Time.now)
 

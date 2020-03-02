@@ -4,6 +4,6 @@ trait A {
 }
 
 class B extends A {
-  def f(x: Int): Unit = ();
+  def f(x: Int): Unit    = ();
   def f(x: String): Unit = ();
 }

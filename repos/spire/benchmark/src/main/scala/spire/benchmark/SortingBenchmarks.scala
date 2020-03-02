@@ -18,8 +18,9 @@ import com.google.caliper.Param
 object SortingBenchmarks extends MyRunner(classOf[SortingBenchmarks])
 
 final class FakeComplex[@sp(Float, Double) T](val real: T, val imag: T)(
-    implicit f: Fractional[T], t: Trig[T])
-    extends Ordered[FakeComplex[T]] {
+    implicit f: Fractional[T],
+    t: Trig[T]
+) extends Ordered[FakeComplex[T]] {
   def compare(b: FakeComplex[T]): Int = {
     if (f.lt(real, b.real)) -1
     else if (f.gt(real, b.real)) 1
@@ -54,11 +55,11 @@ class SortingBenchmarks extends MyBenchmark with BenchmarkData {
   @Param(Array("random"))
   var layout: String = null
 
-  var is: Array[Int] = null
-  var js: Array[Long] = null
-  var fs: Array[Float] = null
-  var ds: Array[Double] = null
-  var cs: Array[Complex[Double]] = null
+  var is: Array[Int]                  = null
+  var js: Array[Long]                 = null
+  var fs: Array[Float]                = null
+  var ds: Array[Double]               = null
+  var cs: Array[Complex[Double]]      = null
   var cs2: Array[FakeComplex[Double]] = null
 
   override protected def setUp(): Unit = {
@@ -100,7 +101,7 @@ class SortingBenchmarks extends MyBenchmark with BenchmarkData {
       val arr = ds.clone; scala.util.Sorting.quickSort(arr); arr.length
     } else if (typ == "complex") {
       implicit val ordering = Order.ordering(lexicographic)
-      val arr = cs.clone; scala.util.Sorting.quickSort(arr); arr.length
+      val arr               = cs.clone; scala.util.Sorting.quickSort(arr); arr.length
     }
   }
 

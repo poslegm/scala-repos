@@ -24,9 +24,7 @@ object StatsScoping {
     def mk(): (Scoper, Stack.Param[Scoper]) = (this, Scoper.param)
   }
   object Scoper {
-    implicit val param = Stack.Param(Scoper { (stats, _) =>
-      stats
-    })
+    implicit val param = Stack.Param(Scoper { (stats, _) => stats })
   }
 
   def module[Req, Rep]: Stackable[ServiceFactory[Req, Rep]] =
@@ -34,17 +32,19 @@ object StatsScoping {
       val role = Role
       val description =
         "May modify stats scoping based on the destination address"
-      val parameters = Seq(implicitly[Stack.Param[AddrMetadata]],
-                           implicitly[Stack.Param[Scoper]],
-                           implicitly[Stack.Param[Stats]])
+      val parameters = Seq(
+        implicitly[Stack.Param[AddrMetadata]],
+        implicitly[Stack.Param[Scoper]],
+        implicitly[Stack.Param[Stats]]
+      )
 
       def make(params: Stack.Params, next: Stack[ServiceFactory[Req, Rep]]) = {
         val AddrMetadata(metadata) = params[AddrMetadata]
-        val Stats(stats) = params[Stats]
-        val Scoper(scoper) = params[Scoper]
+        val Stats(stats)           = params[Stats]
+        val Scoper(scoper)         = params[Scoper]
 
         val scoped = scoper(stats, metadata)
-        val stack = next.make(params + Stats(scoped))
+        val stack  = next.make(params + Stats(scoped))
         Stack.Leaf(this, stack)
       }
     }

@@ -30,16 +30,16 @@ class SubstreamSubscriptionTimeoutSpec(conf: String) extends AkkaSpec(conf) {
     this(300.millis)
   }
 
-  val settings = ActorMaterializerSettings(system).withInputBuffer(
-      initialSize = 2, maxSize = 2)
+  val settings = ActorMaterializerSettings(system)
+    .withInputBuffer(initialSize = 2, maxSize = 2)
 
-  implicit val dispatcher = system.dispatcher
+  implicit val dispatcher   = system.dispatcher
   implicit val materializer = ActorMaterializer(settings)
 
   "groupBy and splitwhen" must {
 
     "timeout and cancel substream publishers when no-one subscribes to them after some time (time them out)" in assertAllStagesStopped {
-      val subscriber = TestSubscriber.manualProbe[(Int, Source[Int, _])]()
+      val subscriber     = TestSubscriber.manualProbe[(Int, Source[Int, _])]()
       val publisherProbe = TestPublisher.probe[Int]()
       val publisher = Source
         .fromPublisher(publisherProbe)
@@ -86,7 +86,7 @@ class SubstreamSubscriptionTimeoutSpec(conf: String) extends AkkaSpec(conf) {
 
     "timeout and stop groupBy parent actor if none of the substreams are actually consumed" in assertAllStagesStopped {
       val publisherProbe = TestPublisher.probe[Int]()
-      val subscriber = TestSubscriber.manualProbe[(Int, Source[Int, _])]()
+      val subscriber     = TestSubscriber.manualProbe[(Int, Source[Int, _])]()
       val publisher = Source
         .fromPublisher(publisherProbe)
         .groupBy(2, _ % 2)
@@ -107,7 +107,7 @@ class SubstreamSubscriptionTimeoutSpec(conf: String) extends AkkaSpec(conf) {
 
     "not timeout and cancel substream publishers when they have been subscribed to" in {
       val publisherProbe = TestPublisher.probe[Int]()
-      val subscriber = TestSubscriber.manualProbe[(Int, Source[Int, _])]()
+      val subscriber     = TestSubscriber.manualProbe[(Int, Source[Int, _])]()
       val publisher = Source
         .fromPublisher(publisherProbe)
         .groupBy(2, _ % 2)

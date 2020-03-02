@@ -34,7 +34,7 @@ object Inbox {
     def receiveAll(): immutable.Seq[T] = {
       @tailrec def rec(acc: List[T]): List[T] = q.poll() match {
         case null ⇒ acc.reverse
-        case x ⇒ rec(x :: acc)
+        case x    ⇒ rec(x :: acc)
       }
       rec(Nil)
     }

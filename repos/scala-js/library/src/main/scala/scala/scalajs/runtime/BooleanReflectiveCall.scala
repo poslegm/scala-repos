@@ -27,7 +27,7 @@ class BooleanReflectiveCall(value: Boolean) {
   def !=(x: Boolean): Boolean = value != x
   def ||(x: Boolean): Boolean = value || x
   def &&(x: Boolean): Boolean = value && x
-  def |(x: Boolean): Boolean = value | x
-  def &(x: Boolean): Boolean = value & x
-  def ^(x: Boolean): Boolean = value ^ x
+  def |(x: Boolean): Boolean  = value | x
+  def &(x: Boolean): Boolean  = value & x
+  def ^(x: Boolean): Boolean  = value ^ x
 }

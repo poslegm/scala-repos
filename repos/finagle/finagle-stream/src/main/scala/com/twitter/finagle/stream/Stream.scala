@@ -13,8 +13,8 @@ import org.jboss.netty.handler.codec.http.{HttpClientCodec, HttpServerCodec}
   * Don't release the underlying service until the response has completed.
   */
 private[stream] class DelayedReleaseService[Req](
-    self: Service[Req, StreamResponse])
-    extends ServiceProxy[Req, StreamResponse](self) {
+    self: Service[Req, StreamResponse]
+) extends ServiceProxy[Req, StreamResponse](self) {
   @volatile private[this] var done: Future[Unit] = Future.Done
 
   override def apply(req: Req) = {
@@ -25,17 +25,15 @@ private[stream] class DelayedReleaseService[Req](
       done = p
       self(req) map { res =>
         new StreamResponse {
-          def info = res.info
+          def info     = res.info
           def messages = res.messages
-          def error = res.error
+          def error    = res.error
           def release() {
             p.setDone()
             res.release()
           }
         }
-      } onFailure { _ =>
-        p.setDone()
-      }
+      } onFailure { _ => p.setDone() }
     }
   }
 
@@ -44,11 +42,11 @@ private[stream] class DelayedReleaseService[Req](
 }
 
 object Stream {
-  def apply[Req : RequestType](): Stream[Req] = new Stream()
-  def get[Req : RequestType](): Stream[Req] = apply()
+  def apply[Req: RequestType](): Stream[Req] = new Stream()
+  def get[Req: RequestType](): Stream[Req]   = apply()
 }
 
-class Stream[Req : RequestType] extends CodecFactory[Req, StreamResponse] {
+class Stream[Req: RequestType] extends CodecFactory[Req, StreamResponse] {
   def server: Server = Function.const {
     new Codec[Req, StreamResponse] {
       def pipelineFactory = new ChannelPipelineFactory {
@@ -61,7 +59,8 @@ class Stream[Req : RequestType] extends CodecFactory[Req, StreamResponse] {
 
       override def newServerDispatcher(
           transport: Transport[Any, Any],
-          service: Service[Req, StreamResponse]): Closable =
+          service: Service[Req, StreamResponse]
+      ): Closable =
         new StreamServerDispatcher(transport, service)
     }
   }
@@ -81,9 +80,9 @@ class Stream[Req : RequestType] extends CodecFactory[Req, StreamResponse] {
           params: Stack.Params
       ): Service[Req, StreamResponse] =
         new StreamClientDispatcher(
-            trans,
-            params[param.Stats].statsReceiver
-              .scope(GenSerialClientDispatcher.StatsScope)
+          trans,
+          params[param.Stats].statsReceiver
+            .scope(GenSerialClientDispatcher.StatsScope)
         )
 
       // TODO: remove when the Meta[_] patch lands.
@@ -94,7 +93,9 @@ class Stream[Req : RequestType] extends CodecFactory[Req, StreamResponse] {
 
       // TODO: remove when ChannelTransport is the default for clients.
       override def newClientTransport(
-          ch: Channel, statsReceiver: StatsReceiver): Transport[Any, Any] =
+          ch: Channel,
+          statsReceiver: StatsReceiver
+      ): Transport[Any, Any] =
         new ChannelTransport(ch)
     }
   }
@@ -114,7 +115,7 @@ final class Header private (val key: String, val value: String) {
   override def toString: String = s"Header($key, $value)"
   override def equals(o: Any): Boolean = o match {
     case h: Header => h.key == key && h.value == value
-    case _ => false
+    case _         => false
   }
 }
 

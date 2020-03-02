@@ -21,8 +21,8 @@ trait Logic extends Debugging {
     if (cols.isEmpty || cols.tails.isEmpty) cols map toString
     else {
       val colLens = cols map (c => toString(c).length)
-      val maxLen = max(colLens)
-      val avgLen = colLens.sum / colLens.length
+      val maxLen  = max(colLens)
+      val avgLen  = colLens.sum / colLens.length
       val goalLen = maxLen min avgLen * 2
       def pad(s: String) = {
         val toAdd = ((goalLen - s.length) max 0) + 2
@@ -33,11 +33,16 @@ trait Logic extends Debugging {
   }
 
   def alignAcrossRows(
-      xss: List[List[Any]], sep: String, lineSep: String = "\n"): String = {
+      xss: List[List[Any]],
+      sep: String,
+      lineSep: String = "\n"
+  ): String = {
     val maxLen = max(xss map (_.length))
     val padded = xss map (xs => xs ++ List.fill(maxLen - xs.length)(null))
-    padded.transpose.map(alignedColumns).transpose map (_.mkString(sep)) mkString
-    (lineSep)
+    padded.transpose
+      .map(alignedColumns)
+      .transpose map (_.mkString(sep)) mkString
+      (lineSep)
   }
 
   // ftp://ftp.cis.upenn.edu/pub/cis511/public_html/Spring04/chap3.pdf
@@ -126,13 +131,14 @@ trait Logic extends Debugging {
     // mutually exclusive (i.e., not more than one symbol is set)
     final case class AtMostOne(ops: List[Sym]) extends Prop
 
-    case object True extends Prop
+    case object True  extends Prop
     case object False extends Prop
 
     // symbols are propositions
-    final class Sym private[PropositionalLogic](
-        val variable: Var, val const: Const)
-        extends Prop {
+    final class Sym private[PropositionalLogic] (
+        val variable: Var,
+        val const: Const
+    ) extends Prop {
 
       override def equals(other: scala.Any): Boolean = other match {
         case that: Sym =>
@@ -155,7 +161,7 @@ trait Logic extends Debugging {
         val newSym = new Sym(variable, const)
         (uniques findEntryOrUpdate newSym)
       }
-      def nextSymId = { _symId += 1; _symId }; private var _symId = 0
+      def nextSymId                           = { _symId += 1; _symId }; private var _symId = 0
       implicit val SymOrdering: Ordering[Sym] = Ordering.by(_.id)
     }
 
@@ -185,23 +191,23 @@ trait Logic extends Debugging {
         ops.size < 10 && ops.combinations(2).exists {
           case Seq(a, Not(b)) if a == b => true
           case Seq(Not(a), b) if a == b => true
-          case _ => false
+          case _                        => false
         }
 
       // push negation inside formula
       def negationNormalFormNot(p: Prop): Prop = p match {
         case And(ops) => Or(ops.map(negationNormalFormNot)) // De'Morgan
-        case Or(ops) => And(ops.map(negationNormalFormNot)) // De'Morgan
-        case Not(p) => negationNormalForm(p)
-        case True => False
-        case False => True
-        case s: Sym => Not(s)
+        case Or(ops)  => And(ops.map(negationNormalFormNot)) // De'Morgan
+        case Not(p)   => negationNormalForm(p)
+        case True     => False
+        case False    => True
+        case s: Sym   => Not(s)
       }
 
       def negationNormalForm(p: Prop): Prop = p match {
-        case And(ops) => And(ops.map(negationNormalForm))
-        case Or(ops) => Or(ops.map(negationNormalForm))
-        case Not(negated) => negationNormalFormNot(negated)
+        case And(ops)                                 => And(ops.map(negationNormalForm))
+        case Or(ops)                                  => Or(ops.map(negationNormalForm))
+        case Not(negated)                             => negationNormalFormNot(negated)
         case True | False | (_: Sym) | (_: AtMostOne) => p
       }
 
@@ -213,16 +219,16 @@ trait Logic extends Debugging {
           // build up Set in order to remove duplicates
           val opsFlattened = ops.flatMap {
             case And(fv) => fv
-            case f => Set(f)
+            case f       => Set(f)
           }.toSeq
 
           if (hasImpureAtom(opsFlattened) || opsFlattened.contains(False)) {
             False
           } else {
             opsFlattened match {
-              case Seq() => True
+              case Seq()  => True
               case Seq(f) => f
-              case ops => And(ops: _*)
+              case ops    => And(ops: _*)
             }
           }
         case Or(fv) =>
@@ -231,16 +237,16 @@ trait Logic extends Debugging {
 
           val opsFlattened = ops.flatMap {
             case Or(fv) => fv
-            case f => Set(f)
+            case f      => Set(f)
           }.toSeq
 
           if (hasImpureAtom(opsFlattened) || opsFlattened.contains(True)) {
             True
           } else {
             opsFlattened match {
-              case Seq() => False
+              case Seq()  => False
               case Seq(f) => f
-              case ops => Or(ops: _*)
+              case ops    => Or(ops: _*)
             }
           }
         case Not(Not(a)) =>
@@ -257,17 +263,17 @@ trait Logic extends Debugging {
 
     trait PropTraverser {
       def apply(x: Prop): Unit = x match {
-        case And(ops) => ops foreach apply
-        case Or(ops) => ops foreach apply
-        case Not(a) => apply(a)
-        case Eq(a, b) => applyVar(a); applyConst(b)
-        case s: Sym => applySymbol(s)
+        case And(ops)       => ops foreach apply
+        case Or(ops)        => ops foreach apply
+        case Not(a)         => apply(a)
+        case Eq(a, b)       => applyVar(a); applyConst(b)
+        case s: Sym         => applySymbol(s)
         case AtMostOne(ops) => ops.foreach(applySymbol)
-        case _ =>
+        case _              =>
       }
-      def applyVar(x: Var): Unit = {}
+      def applyVar(x: Var): Unit     = {}
       def applyConst(x: Const): Unit = {}
-      def applySymbol(x: Sym): Unit = {}
+      def applySymbol(x: Sym): Unit  = {}
     }
 
     def gatherVariables(p: Prop): Set[Var] = {
@@ -290,15 +296,15 @@ trait Logic extends Debugging {
       def apply(x: Prop): Prop = x match {
         // TODO: mapConserve
         case And(ops) => And(ops map apply)
-        case Or(ops) => Or(ops map apply)
-        case Not(a) => Not(apply(a))
-        case p => p
+        case Or(ops)  => Or(ops map apply)
+        case Not(a)   => Not(apply(a))
+        case p        => p
       }
     }
 
     // to govern how much time we spend analyzing matches for unreachability/exhaustivity
     object AnalysisBudget {
-      val maxDPLLdepth = global.settings.YpatmatExhaustdepth.value
+      val maxDPLLdepth   = global.settings.YpatmatExhaustdepth.value
       val maxFormulaSize = 100 * math.min(Int.MaxValue / 100, maxDPLLdepth)
 
       private def advice =
@@ -312,7 +318,8 @@ trait Logic extends Debugging {
 
       object formulaSizeExceeded
           extends Exception(
-              s"The analysis required more space than allowed.\n$advice")
+            s"The analysis required more space than allowed.\n$advice"
+          )
     }
 
     // TODO: remove since deprecated
@@ -340,7 +347,9 @@ trait Logic extends Debugging {
     //       V1 = Nil implies -(V2 = Ci) for all Ci in V2's domain (i.e., it is unassignable)
     // may throw an AnalysisBudget.Exception
     def removeVarEq(
-        props: List[Prop], modelNull: Boolean = false): (Prop, List[Prop]) = {
+        props: List[Prop],
+        modelNull: Boolean = false
+    ): (Prop, List[Prop]) = {
       val start =
         if (Statistics.canEnable) Statistics.startTimer(patmatAnaVarEq)
         else null
@@ -359,7 +368,7 @@ trait Logic extends Debugging {
       object rewriteEqualsToProp extends PropMap {
         override def apply(p: Prop) = p match {
           case Eq(v, c) => v.propForEqualsTo(c)
-          case _ => super.apply(p)
+          case _        => super.apply(p)
         }
       }
 
@@ -368,7 +377,7 @@ trait Logic extends Debugging {
 
       val pure = props map (p => rewriteEqualsToProp(p))
 
-      val eqAxioms = mutable.ArrayBuffer[Prop]()
+      val eqAxioms                  = mutable.ArrayBuffer[Prop]()
       @inline def addAxiom(p: Prop) = eqAxioms += p
 
       debug.patmat("removeVarEq vars: " + vars)
@@ -378,9 +387,7 @@ trait Logic extends Debugging {
         // exactly one of the types (and whatever it implies, imposed separately) must be chosen
         // consider X ::= A | B | C, and A => B
         // coverage is formulated as: A \/ B \/ C and the implications are
-        v.domainSyms foreach { dsyms =>
-          addAxiom(\/(dsyms))
-        }
+        v.domainSyms foreach { dsyms => addAxiom(\/(dsyms)) }
 
         // when this variable cannot be null the equality corresponding to the type test `(x: T)`, where T is x's static type,
         // is always true; when the variable may be null we use the implication `(x != null) => (x: T)` for the axiom
@@ -438,13 +445,16 @@ trait Logic extends Debugging {
     def findModelFor(solvable: Solvable): Model
 
     def findAllModelsFor(
-        solvable: Solvable, pos: Position = NoPosition): List[Solution]
+        solvable: Solvable,
+        pos: Position = NoPosition
+    ): List[Solution]
   }
 }
 
 trait ScalaLogic extends Interface with Logic with TreeAndTypeAnalysis {
   trait TreesAndTypesDomain
-      extends PropositionalLogic with CheckableTreeAndTypeAnalysis {
+      extends PropositionalLogic
+      with CheckableTreeAndTypeAnalysis {
     type Type = global.Type
     type Tree = global.Tree
     import global.definitions.ConstantNull
@@ -456,12 +466,12 @@ trait ScalaLogic extends Interface with Logic with TreeAndTypeAnalysis {
 
     object Var extends VarExtractor {
       private var _nextId = 0
-      def nextId = { _nextId += 1; _nextId }
+      def nextId          = { _nextId += 1; _nextId }
 
-      def resetUniques() = { _nextId = 0; uniques.clear() }
-      private val uniques = new mutable.HashMap[Tree, Var]
+      def resetUniques()      = { _nextId = 0; uniques.clear() }
+      private val uniques     = new mutable.HashMap[Tree, Var]
       def apply(x: Tree): Var = uniques getOrElseUpdate (x, new Var(x, x.tpe))
-      def unapply(v: Var) = Some(v.path)
+      def unapply(v: Var)     = Some(v.path)
     }
     class Var(val path: Tree, staticTp: Type) extends AbsVar {
       private[this] val id: Int = Var.nextId
@@ -510,11 +520,13 @@ trait ScalaLogic extends Interface with Logic with TreeAndTypeAnalysis {
 
       lazy val groupedDomains: List[Set[Sym]] = {
         val subtypes = enumerateSubtypes(staticTp, grouped = true)
-        subtypes.map { subTypes =>
-          val syms =
-            subTypes.flatMap(tpe => symForEqualsTo.get(TypeConst(tpe))).toSet
-          if (mayBeNull) syms + symForEqualsTo(NullConst) else syms
-        }.filter(_.nonEmpty)
+        subtypes
+          .map { subTypes =>
+            val syms =
+              subTypes.flatMap(tpe => symForEqualsTo.get(TypeConst(tpe))).toSet
+            if (mayBeNull) syms + symForEqualsTo(NullConst) else syms
+          }
+          .filter(_.nonEmpty)
       }
 
       // populate equalitySyms
@@ -550,8 +562,10 @@ trait ScalaLogic extends Interface with Logic with TreeAndTypeAnalysis {
         def implies(lower: Const, upper: Const): Boolean =
           // values and null
           lower == upper || // type implication
-          (lower != NullConst && !upper.isValue && instanceOfTpImplies(
-                  if (lower.isValue) lower.wideTp else lower.tp, upper.tp))
+            (lower != NullConst && !upper.isValue && instanceOfTpImplies(
+              if (lower.isValue) lower.wideTp else lower.tp,
+              upper.tp
+            ))
 
         // if(r) debug.patmat("implies    : "+(lower, lower.tp, upper, upper.tp))
         // else  debug.patmat("NOT implies: "+(lower, upper))
@@ -580,8 +594,8 @@ trait ScalaLogic extends Interface with Logic with TreeAndTypeAnalysis {
           *        V = String, but we don't model that.
           */
         def excludes(a: Const, b: Const): Boolean = {
-          val bothInDomain = domain exists (d => d(a) && d(b))
-          val eitherIsNull = a == NullConst || b == NullConst
+          val bothInDomain  = domain exists (d => d(a) && d(b))
+          val eitherIsNull  = a == NullConst || b == NullConst
           val bothAreValues = a.isValue && b.isValue
           bothInDomain && (eitherIsNull || bothAreValues) && (a != b)
         }
@@ -633,9 +647,10 @@ trait ScalaLogic extends Interface with Logic with TreeAndTypeAnalysis {
           // (nor the positive implications -B \/ A, or -A \/ B, which would entail the equality axioms falsifying the whole formula)
           val todo =
             equalitySyms filterNot
-            (b =>
-                  (b.const == sym.const) ||
-                  excludedPair(ExcludedPair(b.const, sym.const)))
+              (b =>
+                (b.const == sym.const) ||
+                  excludedPair(ExcludedPair(b.const, sym.const))
+              )
           val (excluded, notExcluded) =
             todo partition (b => excludes(sym.const, b.const))
           val implied = notExcluded filter (b => implies(sym.const, b.const))
@@ -676,7 +691,15 @@ trait ScalaLogic extends Interface with Logic with TreeAndTypeAnalysis {
       override def toString = "V" + id
     }
 
-    import global.{ConstantType, SingletonType, Literal, Ident, singleType, TypeBounds, NoSymbol}
+    import global.{
+      ConstantType,
+      SingletonType,
+      Literal,
+      Ident,
+      singleType,
+      TypeBounds,
+      NoSymbol
+    }
     import global.definitions._
 
     // all our variables range over types
@@ -688,18 +711,19 @@ trait ScalaLogic extends Interface with Logic with TreeAndTypeAnalysis {
       }
 
       private var _nextTypeId = 0
-      def nextTypeId = { _nextTypeId += 1; _nextTypeId }
+      def nextTypeId          = { _nextTypeId += 1; _nextTypeId }
 
       private var _nextValueId = 0
-      def nextValueId = { _nextValueId += 1; _nextValueId }
+      def nextValueId          = { _nextValueId += 1; _nextValueId }
 
       private val uniques = new mutable.HashMap[Type, Const]
       private[TreesAndTypesDomain] def unique(
-          tp: Type, mkFresh: => Const): Const =
+          tp: Type,
+          mkFresh: => Const
+      ): Const =
         uniques
           .get(tp)
-          .getOrElse(
-              uniques.find { case (oldTp, oldC) => oldTp =:= tp } match {
+          .getOrElse(uniques.find { case (oldTp, oldC) => oldTp =:= tp } match {
             case Some((_, c)) =>
               debug.patmat("unique const: " + ((tp, c)))
               c
@@ -733,8 +757,7 @@ trait ScalaLogic extends Interface with Logic with TreeAndTypeAnalysis {
               // duplicate, don't mutate old tree (TODO: use a map tree -> type instead?)
               val treeWithNarrowedType =
                 t.duplicate setType freshExistentialSubtype(t.tpe)
-              debug.patmat(
-                  "uniqued: " + ((t, t.tpe, treeWithNarrowedType.tpe)))
+              debug.patmat("uniqued: " + ((t, t.tpe, treeWithNarrowedType.tpe)))
               trees += treeWithNarrowedType
               treeWithNarrowedType.tpe
           }
@@ -778,8 +801,8 @@ trait ScalaLogic extends Interface with Logic with TreeAndTypeAnalysis {
       /*private[this] val id: Int = */
       Const.nextTypeId
 
-      val wideTp = widenToClass(tp)
-      def isValue = false
+      val wideTp            = widenToClass(tp)
+      def isValue           = false
       override def toString = tp.toString //+"#"+ id
     }
 
@@ -788,9 +811,9 @@ trait ScalaLogic extends Interface with Logic with TreeAndTypeAnalysis {
       def fromType(tp: Type) = {
         assert(tp.isInstanceOf[SingletonType])
         val toString = tp match {
-          case ConstantType(c) => c.escapedStringValue
+          case ConstantType(c)                  => c.escapedStringValue
           case _ if tp.typeSymbol.isModuleClass => tp.typeSymbol.name.toString
-          case _ => tp.toString
+          case _                                => tp.toString
         }
         Const.unique(tp, new ValueConst(tp, tp.widen, toString))
       }
@@ -817,19 +840,20 @@ trait ScalaLogic extends Interface with Logic with TreeAndTypeAnalysis {
 
           val toString =
             if (hasStableSymbol(p)) p.symbol.name.toString // tp.toString
-            else p.toString //+"#"+ id
+            else p.toString                                //+"#"+ id
 
-          Const.unique(narrowTp,
-                       new ValueConst(
-                           narrowTp,
-                           checkableType(wideTp),
-                           toString)) // must make wide type checkable so that it is comparable to types from TypeConst
+          Const.unique(
+            narrowTp,
+            new ValueConst(narrowTp, checkableType(wideTp), toString)
+          ) // must make wide type checkable so that it is comparable to types from TypeConst
         }
       }
     }
     sealed class ValueConst(
-        val tp: Type, val wideTp: Type, override val toString: String)
-        extends Const {
+        val tp: Type,
+        val wideTp: Type,
+        override val toString: String
+    ) extends Const {
       // debug.patmat("VC"+(tp, wideTp, toString))
       assert(!(tp =:= ConstantNull)) // TODO: assert(!tp.isStable)
       /*private[this] val id: Int = */
@@ -838,10 +862,10 @@ trait ScalaLogic extends Interface with Logic with TreeAndTypeAnalysis {
     }
 
     case object NullConst extends Const {
-      def tp = ConstantNull
+      def tp     = ConstantNull
       def wideTp = ConstantNull
 
-      def isValue = true
+      def isValue           = true
       override def toString = "null"
     }
   }

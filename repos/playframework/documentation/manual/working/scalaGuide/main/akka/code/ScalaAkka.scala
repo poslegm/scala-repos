@@ -55,15 +55,17 @@ package scalaguide.akka {
       }
 
       "allow binding actors" in new WithApplication(
-          _.bindings(new modules.MyModule).configure("my.config" -> "foo")) {
+        _.bindings(new modules.MyModule).configure("my.config" -> "foo")
+      ) {
         _ =>
         import injection._
         val controller = app.injector.instanceOf[Application]
         contentAsString(controller.getConfig(FakeRequest())) must_== "foo"
       }
 
-      "allow binding actor factories" in new WithApplication(_.bindings(
-              new factorymodules.MyModule).configure("my.config" -> "foo")) {
+      "allow binding actor factories" in new WithApplication(
+        _.bindings(new factorymodules.MyModule).configure("my.config" -> "foo")
+      ) {
         _ =>
         import play.api.inject.bind
         import akka.actor._
@@ -76,23 +78,30 @@ package scalaguide.akka {
           app.injector.instanceOf(bind[ActorRef].qualifiedWith("parent-actor"))
         val futureConfig = for {
           child <- (actor ? actors.ParentActor.GetChild("my.config"))
-            .mapTo[ActorRef]
+                    .mapTo[ActorRef]
           config <- (child ? actors.ConfiguredChildActor.GetConfig)
-            .mapTo[String]
+                     .mapTo[String]
         } yield config
         await(futureConfig) must_== "foo"
       }
 
       "allow using the scheduler" in withActorSystem { system =>
         import akka.actor._
-        val testActor = system.actorOf(Props(new Actor() {
-          def receive = { case _: String => }
-        }), name = "testActor")
+        val testActor = system.actorOf(
+          Props(new Actor() {
+            def receive = { case _: String => }
+          }),
+          name = "testActor"
+        )
         //#schedule-actor
         import scala.concurrent.duration._
 
         val cancellable = system.scheduler.schedule(
-            0.microseconds, 300.microseconds, testActor, "tick")
+          0.microseconds,
+          300.microseconds,
+          testActor,
+          "tick"
+        )
         //#schedule-actor
         ok
       }
@@ -121,13 +130,13 @@ package scalaguide.akka {
     import actors.HelloActor
 
     @Singleton
-    class Application @Inject()(system: ActorSystem) extends Controller {
+    class Application @Inject() (system: ActorSystem) extends Controller {
 
       val helloActor = system.actorOf(HelloActor.props, "hello-actor")
 
       //...
     }
-//#controller  
+//#controller
   }
 
   package injection {
@@ -142,9 +151,9 @@ package scalaguide.akka {
     import scala.concurrent.duration._
 
     @Singleton
-    class Application @Inject()(
-        @Named("configured-actor") configuredActor: ActorRef)(
-        implicit ec: ExecutionContext)
+    class Application @Inject() (
+        @Named("configured-actor") configuredActor: ActorRef
+    )(implicit ec: ExecutionContext)
         extends Controller {
 
       implicit val timeout: Timeout = 5.seconds
@@ -218,7 +227,7 @@ package scalaguide.akka {
       case object GetConfig
     }
 
-    class ConfiguredActor @Inject()(configuration: Configuration)
+    class ConfiguredActor @Inject() (configuration: Configuration)
         extends Actor {
       import ConfiguredActor._
 
@@ -245,9 +254,10 @@ package scalaguide.akka {
       }
     }
 
-    class ConfiguredChildActor @Inject()(
-        configuration: Configuration, @Assisted key: String)
-        extends Actor {
+    class ConfiguredChildActor @Inject() (
+        configuration: Configuration,
+        @Assisted key: String
+    ) extends Actor {
       import ConfiguredChildActor._
 
       val config = configuration.getString(key).getOrElse("none")
@@ -268,10 +278,10 @@ package scalaguide.akka {
       case class GetChild(key: String)
     }
 
-    class ParentActor @Inject()(
+    class ParentActor @Inject() (
         childFactory: ConfiguredChildActor.Factory
-    )
-        extends Actor with InjectedActorSupport {
+    ) extends Actor
+        with InjectedActorSupport {
       import ParentActor._
 
       def receive = {

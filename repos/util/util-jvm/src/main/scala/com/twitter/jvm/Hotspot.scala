@@ -28,16 +28,19 @@ class Hotspot extends Jvm {
     ObjectName.getInstance("com.sun.management:type=HotSpotDiagnostic")
 
   private[this] val jvm: VMManagement = {
-    val fld = try {
-      // jdk5/6 have jvm field in ManagementFactory class
-      Class.forName("sun.management.ManagementFactory").getDeclaredField("jvm")
-    } catch {
-      case _: NoSuchFieldException =>
-        // jdk7 moves jvm field to ManagementFactoryHelper class
+    val fld =
+      try {
+        // jdk5/6 have jvm field in ManagementFactory class
         Class
-          .forName("sun.management.ManagementFactoryHelper")
+          .forName("sun.management.ManagementFactory")
           .getDeclaredField("jvm")
-    }
+      } catch {
+        case _: NoSuchFieldException =>
+          // jdk7 moves jvm field to ManagementFactoryHelper class
+          Class
+            .forName("sun.management.ManagementFactoryHelper")
+            .getDeclaredField("jvm")
+      }
     fld.setAccessible(true)
     fld.get(null).asInstanceOf[VMManagement]
   }
@@ -46,10 +49,12 @@ class Hotspot extends Jvm {
     try Some {
       val o = ManagementFactory
         .getPlatformMBeanServer()
-        .invoke(DiagnosticBean,
-                "getVMOption",
-                Array(name),
-                Array("java.lang.String"))
+        .invoke(
+          DiagnosticBean,
+          "getVMOption",
+          Array(name),
+          Array("java.lang.String")
+        )
       o.asInstanceOf[CompositeDataSupport].get("value").asInstanceOf[String]
     } catch {
       case _: IllegalArgumentException =>
@@ -63,9 +68,7 @@ class Hotspot extends Jvm {
 
   private[this] def counters(pat: String) = {
     val cs = jvm.getInternalCounters(pat).asScala
-    cs.map { c =>
-      c.getName() -> c
-    }.toMap
+    cs.map { c => c.getName() -> c }.toMap
   }
 
   private[this] def counter(name: String): Option[Counter] =
@@ -83,14 +86,14 @@ class Hotspot extends Jvm {
       cs.get("sun.gc.collector.%d.%s".format(which, what))
 
     for {
-      invocations <- get("invocations").map(long)
+      invocations    <- get("invocations").map(long)
       lastEntryTicks <- get("lastEntryTime").map(long)
-      name <- get("name").map(_.getValue().toString)
-      time <- get("time").map(long)
-      freq <- cs.get("sun.os.hrt.frequency").map(long)
-      duration = ticksToDuration(time, freq)
-      lastEntryTime = ticksToDuration(lastEntryTicks, freq)
-      kind = "%d.%s".format(which, name)
+      name           <- get("name").map(_.getValue().toString)
+      time           <- get("time").map(long)
+      freq           <- cs.get("sun.os.hrt.frequency").map(long)
+      duration       = ticksToDuration(time, freq)
+      lastEntryTime  = ticksToDuration(lastEntryTicks, freq)
+      kind           = "%d.%s".format(which, name)
     } yield Gc(invocations, kind, epoch + lastEntryTime, duration)
   }
 
@@ -98,8 +101,8 @@ class Hotspot extends Jvm {
     val cs = counters("")
     val heap = for {
       invocations <- cs.get("sun.gc.collector.0.invocations").map(long)
-      capacity <- cs.get("sun.gc.generation.0.space.0.capacity").map(long)
-      used <- cs.get("sun.gc.generation.0.space.0.used").map(long)
+      capacity    <- cs.get("sun.gc.generation.0.space.0.capacity").map(long)
+      used        <- cs.get("sun.gc.generation.0.space.0.used").map(long)
     } yield {
       val allocated = invocations * capacity + used
       // This is a somewhat poor estimate, since for example the
@@ -110,7 +113,7 @@ class Hotspot extends Jvm {
 
       val ageHisto = for {
         thresh <- tenuringThreshold.toSeq
-        i <- 1L to thresh
+        i      <- 1L to thresh
         bucket <- cs.get("sun.gc.generation.0.agetable.bytes.%02d".format(i))
       } yield long(bucket)
 
@@ -118,46 +121,50 @@ class Hotspot extends Jvm {
     }
 
     val timestamp = for {
-      freq <- cs.get("sun.os.hrt.frequency").map(long)
+      freq  <- cs.get("sun.os.hrt.frequency").map(long)
       ticks <- cs.get("sun.os.hrt.ticks").map(long)
     } yield epoch + ticksToDuration(ticks, freq)
 
     // TODO: include causes for GCs?
-    Snapshot(timestamp.getOrElse(Time.epoch),
-             heap.getOrElse(Heap(0, 0, Seq())),
-             getGc(0, cs).toSeq ++ getGc(1, cs).toSeq)
+    Snapshot(
+      timestamp.getOrElse(Time.epoch),
+      heap.getOrElse(Heap(0, 0, Seq())),
+      getGc(0, cs).toSeq ++ getGc(1, cs).toSeq
+    )
   }
 
   private[this] object NilSafepointBean {
-    def getSafepointSyncTime = 0L
+    def getSafepointSyncTime  = 0L
     def getTotalSafepointTime = 0L
-    def getSafepointCount = 0L
+    def getSafepointCount     = 0L
   }
 
   private val log = Logger.getLogger(getClass.getName)
 
   private[this] val safepointBean = {
-    val runtimeBean = try {
-      Class
-        .forName("sun.management.ManagementFactory")
-        .getMethod("getHotspotRuntimeMBean")
-        .invoke(null)
-      // jdk 6 has HotspotRuntimeMBean in the ManagementFactory class
-    } catch {
-      case _: Throwable =>
+    val runtimeBean =
+      try {
         Class
-          .forName("sun.management.ManagementFactoryHelper")
+          .forName("sun.management.ManagementFactory")
           .getMethod("getHotspotRuntimeMBean")
           .invoke(null)
-      // jdks 7 and 8 have HotspotRuntimeMBean in the ManagementFactoryHelper class
-    }
+        // jdk 6 has HotspotRuntimeMBean in the ManagementFactory class
+      } catch {
+        case _: Throwable =>
+          Class
+            .forName("sun.management.ManagementFactoryHelper")
+            .getMethod("getHotspotRuntimeMBean")
+            .invoke(null)
+        // jdks 7 and 8 have HotspotRuntimeMBean in the ManagementFactoryHelper class
+      }
 
     def asSafepointBean(x: AnyRef) = {
-      x.asInstanceOf[ {
-        def getSafepointSyncTime: Long;
-        def getTotalSafepointTime: Long;
-        def getSafepointCount: Long
-      }]
+      x.asInstanceOf[{
+          def getSafepointSyncTime: Long;
+          def getTotalSafepointTime: Long;
+          def getSafepointCount: Long
+        }
+      ]
     }
     try {
       asSafepointBean(runtimeBean)
@@ -170,12 +177,14 @@ class Hotspot extends Jvm {
   }
 
   def safepoint: Safepoint = {
-    val syncTime = safepointBean.getSafepointSyncTime
-    val totalTime = safepointBean.getTotalSafepointTime
+    val syncTime          = safepointBean.getSafepointSyncTime
+    val totalTime         = safepointBean.getTotalSafepointTime
     val safepointsReached = safepointBean.getSafepointCount
-    Safepoint(syncTimeMillis = syncTime,
-              totalTimeMillis = totalTime,
-              count = safepointsReached)
+    Safepoint(
+      syncTimeMillis = syncTime,
+      totalTimeMillis = totalTime,
+      count = safepointsReached
+    )
   }
 
   val edenPool: Pool = new Pool {
@@ -183,8 +192,8 @@ class Hotspot extends Jvm {
       val cs = counters("")
       val state = for {
         invocations <- cs.get("sun.gc.collector.0.invocations").map(long)
-        capacity <- cs.get("sun.gc.generation.0.space.0.capacity").map(long)
-        used <- cs.get("sun.gc.generation.0.space.0.used").map(long)
+        capacity    <- cs.get("sun.gc.generation.0.space.0.capacity").map(long)
+        used        <- cs.get("sun.gc.generation.0.space.0.used").map(long)
       } yield PoolState(invocations, capacity.bytes, used.bytes)
 
       state getOrElse NilJvm.edenPool.state()
@@ -194,8 +203,8 @@ class Hotspot extends Jvm {
   def metaspaceUsage: Option[Jvm.MetaspaceUsage] = {
     val cs = counters("")
     for {
-      used <- cs.get("sun.gc.metaspace.used").map(long)
-      cap <- cs.get("sun.gc.metaspace.capacity").map(long)
+      used   <- cs.get("sun.gc.metaspace.used").map(long)
+      cap    <- cs.get("sun.gc.metaspace.capacity").map(long)
       maxCap <- cs.get("sun.gc.metaspace.maxCapacity").map(long)
     } yield Jvm.MetaspaceUsage(used.bytes, cap.bytes, maxCap.bytes)
   }

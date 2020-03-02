@@ -29,9 +29,9 @@ sealed abstract class HMap[K[_], V[_]] {
     "H%s".format(map)
 
   override def equals(that: Any): Boolean = that match {
-    case null => false
+    case null          => false
     case h: HMap[_, _] => map.equals(h.map)
-    case _ => false
+    case _             => false
   }
   override def hashCode = map.hashCode
 
@@ -45,8 +45,9 @@ sealed abstract class HMap[K[_], V[_]] {
 
   def contains[T](id: K[T]): Boolean = get(id).isDefined
 
-  def filter(pred: GenFunction[Pair, ({ type BoolT[T] = Boolean })#BoolT])
-    : HMap[K, V] = {
+  def filter(
+      pred: GenFunction[Pair, ({ type BoolT[T] = Boolean })#BoolT]
+  ): HMap[K, V] = {
     val filtered =
       map.asInstanceOf[Map[K[Any], V[Any]]].filter(pred.apply[Any])
     HMap.from[K, V](filtered.asInstanceOf[Map[K[_], V[_]]])

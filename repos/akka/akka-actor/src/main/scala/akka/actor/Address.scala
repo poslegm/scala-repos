@@ -18,10 +18,12 @@ import scala.collection.immutable
   * information with an address, then this must be done externally.
   */
 @SerialVersionUID(1L)
-final case class Address private (protocol: String,
-                                  system: String,
-                                  host: Option[String],
-                                  port: Option[Int]) {
+final case class Address private (
+    protocol: String,
+    system: String,
+    host: Option[String],
+    port: Option[Int]
+) {
   // Please note that local/non-local distinction must be preserved:
   // host.isDefined == hasGlobalScope
   // host.isEmpty == hasLocalScope
@@ -92,7 +94,7 @@ private[akka] trait PathUtils {
     @tailrec
     def rec(pos: Int, acc: List[String]): List[String] = {
       val from = s.lastIndexOf('/', pos - 1)
-      val sub = s.substring(from + 1, pos)
+      val sub  = s.substring(from + 1, pos)
       val l =
         if ((fragment ne null) && acc.isEmpty) sub + "#" + fragment :: acc
         else sub :: acc
@@ -126,7 +128,8 @@ object RelativeActorPath extends PathUtils {
   */
 object AddressFromURIString {
   def unapply(addr: String): Option[Address] =
-    try unapply(new URI(addr)) catch { case _: URISyntaxException ⇒ None }
+    try unapply(new URI(addr))
+    catch { case _: URISyntaxException ⇒ None }
 
   def unapply(uri: URI): Option[Address] =
     if (uri eq null) None
@@ -141,10 +144,10 @@ object AddressFromURIString {
       if (uri.getHost == null || uri.getPort == -1) None
       else
         Some(
-            if (uri.getUserInfo == null) Address(uri.getScheme, uri.getHost)
-            else
-              Address(
-                  uri.getScheme, uri.getUserInfo, uri.getHost, uri.getPort))
+          if (uri.getUserInfo == null) Address(uri.getScheme, uri.getHost)
+          else
+            Address(uri.getScheme, uri.getUserInfo, uri.getHost, uri.getPort)
+        )
     }
 
   /**
@@ -152,7 +155,7 @@ object AddressFromURIString {
     */
   def apply(addr: String): Address = addr match {
     case AddressFromURIString(address) ⇒ address
-    case _ ⇒ throw new MalformedURLException(addr)
+    case _                             ⇒ throw new MalformedURLException(addr)
   }
 
   /**

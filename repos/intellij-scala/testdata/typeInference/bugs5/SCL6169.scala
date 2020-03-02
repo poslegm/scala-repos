@@ -5,8 +5,8 @@ object SCL6169 {
 
       def should(s: String) = 123
     }
-    val a = new AWord
-    def a[T : Manifest] = new AWord
+    val a              = new AWord
+    def a[T: Manifest] = new AWord
   }
 
   object B extends A {

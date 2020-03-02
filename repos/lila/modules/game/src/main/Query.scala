@@ -50,7 +50,7 @@ object Query {
 
   def clock(c: Boolean) = Json.obj(F.clock -> $exists(c))
 
-  def user(u: String) = Json.obj(F.playerUids -> u)
+  def user(u: String)       = Json.obj(F.playerUids -> u)
   def users(u: Seq[String]) = Json.obj(F.playerUids -> $in(u))
 
   val noAi = Json.obj("p0.ai" -> $exists(false), "p1.ai" -> $exists(false))
@@ -59,7 +59,7 @@ object Query {
 
   def recentlyPlaying(u: String) =
     nowPlaying(u) ++ Json.obj(
-        F.updatedAt -> $gt($date(DateTime.now minusMinutes 5))
+      F.updatedAt -> $gt($date(DateTime.now minusMinutes 5))
     )
 
   // use the us index
@@ -67,7 +67,7 @@ object Query {
 
   def loss(u: String) =
     user(u) ++ Json.obj(F.status -> $in(Status.finishedWithWinner map (_.id))) ++ Json
-      .obj(F.winnerId -> ($ne(u) ++ $exists(true)))
+      .obj(F.winnerId            -> ($ne(u) ++ $exists(true)))
 
   def opponents(u1: User, u2: User) =
     Json.obj(F.playerUids -> $all(List(u1, u2).sortBy(_.count.game).map(_.id)))
@@ -86,10 +86,11 @@ object Query {
     Json.obj(F.variant -> v.standard.fold($exists(false), v.id))
 
   lazy val notHordeOrSincePawnsAreWhite = $or(
-      Seq(
-          Json.obj(F.variant -> $ne(chess.variant.Horde.id)),
-          sinceHordePawnsAreWhite
-      ))
+    Seq(
+      Json.obj(F.variant -> $ne(chess.variant.Horde.id)),
+      sinceHordePawnsAreWhite
+    )
+  )
 
   lazy val sinceHordePawnsAreWhite =
     Json.obj(F.createdAt -> $gt($date(hordeWhitePawnsSince)))
@@ -102,8 +103,8 @@ object Query {
   def createdSince(d: DateTime) =
     Json.obj(F.createdAt -> $gt($date(d)))
 
-  val sortCreated = $sort desc F.createdAt
-  val sortChronological = $sort asc F.createdAt
+  val sortCreated           = $sort desc F.createdAt
+  val sortChronological     = $sort asc F.createdAt
   val sortAntiChronological = $sort desc F.createdAt
-  val sortUpdatedNoIndex = $sort desc F.updatedAt
+  val sortUpdatedNoIndex    = $sort desc F.updatedAt
 }

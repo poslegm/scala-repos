@@ -15,8 +15,8 @@ class FailureDetectorPuppet(config: Config, ev: EventStream)
     extends FailureDetector {
 
   trait Status
-  object Up extends Status
-  object Down extends Status
+  object Up      extends Status
+  object Down    extends Status
   object Unknown extends Status
 
   private val status: AtomicReference[Status] = new AtomicReference(Unknown)
@@ -27,7 +27,7 @@ class FailureDetectorPuppet(config: Config, ev: EventStream)
 
   override def isAvailable: Boolean = status.get match {
     case Unknown | Up ⇒ true
-    case Down ⇒ false
+    case Down         ⇒ false
   }
 
   override def isMonitoring: Boolean = status.get != Unknown

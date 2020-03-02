@@ -29,14 +29,14 @@ object MappedDateSpec extends Specification {
 
   "MappedDate" should {
     "handle a Number in setFromAny" in {
-      val dog = Dog2.create
+      val dog         = Dog2.create
       val currentDate = new java.util.Date()
       dog.createdTime.setFromAny(BigInt(currentDate.getTime))
       dog.createdTime.get mustEqual currentDate
     }
 
     "handle a full Box in setFromAny" in {
-      val dog = Dog2.create
+      val dog      = Dog2.create
       val someDate = new java.util.Date(1000)
       dog.createdTime.setFromAny(Full(someDate))
       dog.createdTime.get mustEqual someDate

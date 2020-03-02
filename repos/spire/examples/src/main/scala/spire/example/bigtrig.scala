@@ -64,7 +64,7 @@ object TrigTest {
   }
 
   val verbose: Boolean = false
-  val check: Boolean = true
+  val check: Boolean   = true
 
   val start: Int = 10
   val limit: Int = 1000
@@ -94,13 +94,13 @@ object TrigTest {
     test("cos(1)", mc => spire.math.cos(BigDecimal(1, mc)), cos1String)
 
   def aptest(name: String, f: Int => Apfloat, s: String): Unit = {
-    var i = start
+    var i  = start
     val t0 = System.currentTimeMillis()
     println(s"testing $name")
     while (i < limit) {
       if (verbose) println("  trying i=%s" format i)
       implicit val mc = new MathContext(i)
-      val seen = f(i)
+      val seen        = f(i)
       if (check) {
         val want = new Apfloat(s, i)
         val d =
@@ -121,13 +121,13 @@ object TrigTest {
   }
 
   def test(name: String, f: MathContext => BigDecimal, s: String): Unit = {
-    var i = start
+    var i  = start
     val t0 = System.currentTimeMillis()
     println(s"testing $name")
     while (i < limit) {
       if (verbose) println("  trying i=%s" format i)
       implicit val mc = new MathContext(i)
-      val seen = f(mc)
+      val seen        = f(mc)
       if (check) {
         val want = BigDecimal(s, mc)
         if ((seen - want).abs > seen.ulp) {

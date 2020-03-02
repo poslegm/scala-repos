@@ -22,12 +22,14 @@ object EventSourceSpec extends Specification {
 
     "format an event with an id" in {
       Event("foo", Some("42"), None).formatted must equalTo(
-          "id: 42\ndata: foo\n\n")
+        "id: 42\ndata: foo\n\n"
+      )
     }
 
     "format an event with a name" in {
       Event("foo", None, Some("message")).formatted must equalTo(
-          "event: message\ndata: foo\n\n")
+        "event: message\ndata: foo\n\n"
+      )
     }
 
     "split data by lines" in {
@@ -52,8 +54,8 @@ object EventSourceSpec extends Specification {
 
     "be writeable as a response body using an Akka Source" in {
       val stringSource = Source(Vector("foo", "bar", "baz"))
-      val flow = stringSource via EventSource.flow
-      val result = Results.Ok.chunked(flow)
+      val flow         = stringSource via EventSource.flow
+      val result       = Results.Ok.chunked(flow)
       result.body.contentType must beSome(ContentTypes.EVENT_STREAM)
     }
   }

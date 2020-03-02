@@ -16,9 +16,9 @@ import java.util.concurrent.{ConcurrentHashMap, ConcurrentLinkedQueue}
 @deprecated("use finagle's BufferingPool", "6.2.x")
 class ConcurrentPool[K, V] {
   type Queue = ConcurrentLinkedQueue[V]
-  type Map = ConcurrentHashMap[K, Queue]
+  type Map   = ConcurrentHashMap[K, Queue]
 
-  val map = new Map
+  val map        = new Map
   val deathQueue = new ConcurrentLinkedQueue[Tuple2[K, Queue]]
 
   def doPut(k: K, v: V) {

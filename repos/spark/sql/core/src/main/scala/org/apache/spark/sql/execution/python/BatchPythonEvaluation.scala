@@ -25,7 +25,12 @@ import org.apache.spark.TaskContext
 import org.apache.spark.api.python.PythonRunner
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.InternalRow
-import org.apache.spark.sql.catalyst.expressions.{Attribute, GenericMutableRow, JoinedRow, UnsafeProjection}
+import org.apache.spark.sql.catalyst.expressions.{
+  Attribute,
+  GenericMutableRow,
+  JoinedRow,
+  UnsafeProjection
+}
 import org.apache.spark.sql.execution.SparkPlan
 import org.apache.spark.sql.types.{StructField, StructType}
 
@@ -40,16 +45,18 @@ import org.apache.spark.sql.types.{StructField, StructType}
   * slow, this could lead to the queue growing unbounded and eventually run out of memory.
   */
 case class BatchPythonEvaluation(
-    udf: PythonUDF, output: Seq[Attribute], child: SparkPlan)
-    extends SparkPlan {
+    udf: PythonUDF,
+    output: Seq[Attribute],
+    child: SparkPlan
+) extends SparkPlan {
 
   def children: Seq[SparkPlan] = child :: Nil
 
   protected override def doExecute(): RDD[InternalRow] = {
-    val inputRDD = child.execute().map(_.copy())
+    val inputRDD   = child.execute().map(_.copy())
     val bufferSize = inputRDD.conf.getInt("spark.buffer.size", 65536)
-    val reuseWorker = inputRDD.conf.getBoolean(
-        "spark.python.worker.reuse", defaultValue = true)
+    val reuseWorker =
+      inputRDD.conf.getBoolean("spark.python.worker.reuse", defaultValue = true)
 
     inputRDD.mapPartitions { iter =>
       EvaluatePython.registerPicklers() // register pickler for Row
@@ -58,9 +65,9 @@ case class BatchPythonEvaluation(
       // combine input with output from Python.
       val queue = new java.util.concurrent.ConcurrentLinkedQueue[InternalRow]()
 
-      val pickle = new Pickler
+      val pickle     = new Pickler
       val currentRow = newMutableProjection(udf.children, child.output)()
-      val fields = udf.children.map(_.dataType)
+      val fields     = udf.children.map(_.dataType)
       val schema =
         new StructType(fields.map(t => new StructField("", t, true)).toArray)
 
@@ -78,23 +85,25 @@ case class BatchPythonEvaluation(
 
       // Output iterator for results from Python.
       val outputIterator = new PythonRunner(
-          udf.func,
-          bufferSize,
-          reuseWorker
+        udf.func,
+        bufferSize,
+        reuseWorker
       ).compute(inputIterator, context.partitionId(), context)
 
-      val unpickle = new Unpickler
-      val row = new GenericMutableRow(1)
-      val joined = new JoinedRow
+      val unpickle   = new Unpickler
+      val row        = new GenericMutableRow(1)
+      val joined     = new JoinedRow
       val resultProj = UnsafeProjection.create(output, output)
 
-      outputIterator.flatMap { pickedResult =>
-        val unpickledBatch = unpickle.loads(pickedResult)
-        unpickledBatch.asInstanceOf[java.util.ArrayList[Any]].asScala
-      }.map { result =>
-        row(0) = EvaluatePython.fromJava(result, udf.dataType)
-        resultProj(joined(queue.poll(), row))
-      }
+      outputIterator
+        .flatMap { pickedResult =>
+          val unpickledBatch = unpickle.loads(pickedResult)
+          unpickledBatch.asInstanceOf[java.util.ArrayList[Any]].asScala
+        }
+        .map { result =>
+          row(0) = EvaluatePython.fromJava(result, udf.dataType)
+          resultProj(joined(queue.poll(), row))
+        }
     }
   }
 }

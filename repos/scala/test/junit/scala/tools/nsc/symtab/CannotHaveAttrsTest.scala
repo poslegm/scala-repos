@@ -14,8 +14,8 @@ class CannotHaveAttrsTest {
   object symbolTable extends SymbolTableForUnitTesting {
     object CHA extends CannotHaveAttrs {
       def canEqual(that: Any): Boolean = ???
-      def productArity: Int = ???
-      def productElement(n: Int): Any = ???
+      def productArity: Int            = ???
+      def productElement(n: Int): Any  = ???
     }
     val attrlessTrees = List(CHA, EmptyTree, emptyValDef, pendingSuperCall)
   }
@@ -23,9 +23,7 @@ class CannotHaveAttrsTest {
 
   @Test
   def canHaveAttrsIsFalse =
-    attrlessTrees.foreach { t =>
-      assertFalse(t.canHaveAttrs)
-    }
+    attrlessTrees.foreach { t => assertFalse(t.canHaveAttrs) }
 
   @Test
   def defaultPosAssignment =

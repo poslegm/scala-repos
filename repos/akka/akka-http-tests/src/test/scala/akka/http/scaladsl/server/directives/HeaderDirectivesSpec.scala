@@ -121,7 +121,7 @@ class HeaderDirectivesSpec extends RoutingSpec with Inside {
   "The optionalHeaderValue directive" should {
     lazy val myHeaderValue = optionalHeaderValue {
       case Connection(tokens) ⇒ Some(tokens.head)
-      case _ ⇒ None
+      case _                  ⇒ None
     }
 
     "extract the respective header value if a matching request header is present" in {

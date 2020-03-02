@@ -6,30 +6,37 @@ import java.io._
 import java.util.Date
 
 object Serbench extends Benchmark {
-  val classes = List(
-      classOf[Project], classOf[Team], classOf[Employee], classOf[Language])
+  val classes =
+    List(classOf[Project], classOf[Team], classOf[Employee], classOf[Language])
   val project = Project(
-      "test",
-      new Date,
-      Some(Language("Scala", 2.75)),
-      List(Team("QA", List(Employee("John Doe", 5), Employee("Mike", 3))),
-           Team("Impl",
-                List(Employee("Mark", 4),
-                     Employee("Mary", 5),
-                     Employee("Nick Noob", 1)))))
+    "test",
+    new Date,
+    Some(Language("Scala", 2.75)),
+    List(
+      Team("QA", List(Employee("John Doe", 5), Employee("Mike", 3))),
+      Team(
+        "Impl",
+        List(Employee("Mark", 4), Employee("Mary", 5), Employee("Nick Noob", 1))
+      )
+    )
+  )
 
   val jvalueProject = {
-    ("name" -> "test") ~ ("startDate" -> new Date().getTime) ~
-    ("lang" -> (("name" -> "Scala") ~ ("version" -> 2.75))) ~
-    ("teams" -> List(
-            ("role" -> "QA") ~
-            ("members" -> List(("name" -> "John Doe") ~ ("experience" -> 5),
-                               ("name" -> "Mike") ~ ("experience" -> 3))),
-            ("role" -> "Impl") ~
-            ("members" -> List(("name" -> "Mark") ~ ("experience" -> 4),
-                               ("name" -> "Mary") ~ ("experience" -> 5),
-                               ("name" -> "Nick Noob") ~ ("experience" -> 1)))
-        ))
+    ("name"   -> "test") ~ ("startDate" -> new Date().getTime) ~
+      ("lang" -> (("name"               -> "Scala") ~ ("version" -> 2.75))) ~
+      ("teams" -> List(
+        ("role" -> "QA") ~
+          ("members" -> List(
+            ("name" -> "John Doe") ~ ("experience" -> 5),
+            ("name" -> "Mike") ~ ("experience"     -> 3)
+          )),
+        ("role" -> "Impl") ~
+          ("members" -> List(
+            ("name" -> "Mark") ~ ("experience"      -> 4),
+            ("name" -> "Mary") ~ ("experience"      -> 5),
+            ("name" -> "Nick Noob") ~ ("experience" -> 1)
+          ))
+      ))
   }
 
   lazy val bigJValue = {
@@ -79,15 +86,18 @@ object Serbench extends Benchmark {
 
   def serialize(project: Project) = {
     val baos = new ByteArrayOutputStream()
-    val oos = new ObjectOutputStream(baos)
+    val oos  = new ObjectOutputStream(baos)
     oos.writeObject(project)
     baos.toByteArray
   }
 
   case class Project(
-      name: String, startDate: Date, lang: Option[Language], teams: List[Team])
-      extends Serializable
-  case class Language(name: String, version: Double) extends Serializable
+      name: String,
+      startDate: Date,
+      lang: Option[Language],
+      teams: List[Team]
+  ) extends Serializable
+  case class Language(name: String, version: Double)     extends Serializable
   case class Team(role: String, members: List[Employee]) extends Serializable
-  case class Employee(name: String, experience: Int) extends Serializable
+  case class Employee(name: String, experience: Int)     extends Serializable
 }

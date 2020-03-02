@@ -22,8 +22,8 @@ object ParserUtils {
     if (len == 0) return false
 
     val start = cb.readerIndex()
-    val end = start + len
-    var i = start
+    val end   = start + len
+    var i     = start
     while (i < end) {
       val b = cb.getByte(i)
       if (b < '0' || b > '9') return false
@@ -39,7 +39,7 @@ object ParserUtils {
     if (buf.isEmpty) false
     else {
       val Buf.ByteArray.Owned(bytes, begin, end) = Buf.ByteArray.coerce(buf)
-      var i = begin
+      var i                                      = begin
       while (i < end) {
         if (bytes(i) < '0' || bytes(i) > '9') return false
         i += 1

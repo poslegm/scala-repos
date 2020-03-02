@@ -29,11 +29,14 @@ import org.apache.spark.sql.types.{DataType, StructType}
   * (private[classification])  Params for probabilistic classification.
   */
 private[classification] trait ProbabilisticClassifierParams
-    extends ClassifierParams with HasProbabilityCol with HasThresholds {
+    extends ClassifierParams
+    with HasProbabilityCol
+    with HasThresholds {
   override protected def validateAndTransformSchema(
       schema: StructType,
       fitting: Boolean,
-      featuresDataType: DataType): StructType = {
+      featuresDataType: DataType
+  ): StructType = {
     val parentSchema =
       super.validateAndTransformSchema(schema, fitting, featuresDataType)
     SchemaUtils.appendColumn(parentSchema, $(probabilityCol), new VectorUDT)
@@ -53,8 +56,9 @@ private[classification] trait ProbabilisticClassifierParams
 abstract class ProbabilisticClassifier[
     FeaturesType,
     E <: ProbabilisticClassifier[FeaturesType, E, M],
-    M <: ProbabilisticClassificationModel[FeaturesType, M]]
-    extends Classifier[FeaturesType, E, M] with ProbabilisticClassifierParams {
+    M <: ProbabilisticClassificationModel[FeaturesType, M]
+] extends Classifier[FeaturesType, E, M]
+    with ProbabilisticClassifierParams {
 
   /** @group setParam */
   def setProbabilityCol(value: String): E =
@@ -76,8 +80,9 @@ abstract class ProbabilisticClassifier[
   */
 @DeveloperApi
 abstract class ProbabilisticClassificationModel[
-    FeaturesType, M <: ProbabilisticClassificationModel[FeaturesType, M]]
-    extends ClassificationModel[FeaturesType, M]
+    FeaturesType,
+    M <: ProbabilisticClassificationModel[FeaturesType, M]
+] extends ClassificationModel[FeaturesType, M]
     with ProbabilisticClassifierParams {
 
   /** @group setParam */
@@ -102,22 +107,25 @@ abstract class ProbabilisticClassificationModel[
     transformSchema(dataset.schema, logging = true)
     if (isDefined(thresholds)) {
       require(
-          $(thresholds).length == numClasses,
-          this.getClass.getSimpleName +
+        $(thresholds).length == numClasses,
+        this.getClass.getSimpleName +
           ".transform() called with non-matching numClasses and thresholds.length." +
-          s" numClasses=$numClasses, but thresholds has length ${$(thresholds).length}")
+          s" numClasses=$numClasses, but thresholds has length ${$(thresholds).length}"
+      )
     }
 
     // Output selected columns only.
     // This is a bit complicated since it tries to avoid repeated computation.
-    var outputData = dataset
+    var outputData    = dataset
     var numColsOutput = 0
     if ($(rawPredictionCol).nonEmpty) {
       val predictRawUDF = udf { (features: Any) =>
         predictRaw(features.asInstanceOf[FeaturesType])
       }
       outputData = outputData.withColumn(
-          getRawPredictionCol, predictRawUDF(col(getFeaturesCol)))
+        getRawPredictionCol,
+        predictRawUDF(col(getFeaturesCol))
+      )
       numColsOutput += 1
     }
     if ($(probabilityCol).nonEmpty) {
@@ -151,8 +159,9 @@ abstract class ProbabilisticClassificationModel[
 
     if (numColsOutput == 0) {
       this.logWarning(
-          s"$uid: ProbabilisticClassificationModel.transform() was called as NOOP" +
-          " since no output columns were set.")
+        s"$uid: ProbabilisticClassificationModel.transform() was called as NOOP" +
+          " since no output columns were set."
+      )
     }
     outputData
   }
@@ -230,7 +239,7 @@ private[ml] object ProbabilisticClassificationModel {
   def normalizeToProbabilitiesInPlace(v: DenseVector): Unit = {
     val sum = v.values.sum
     if (sum != 0) {
-      var i = 0
+      var i    = 0
       val size = v.size
       while (i < size) {
         v.values(i) /= sum

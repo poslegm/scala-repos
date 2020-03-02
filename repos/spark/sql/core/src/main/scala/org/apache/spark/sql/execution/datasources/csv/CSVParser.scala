@@ -20,7 +20,12 @@ package org.apache.spark.sql.execution.datasources.csv
 import java.io.{ByteArrayOutputStream, OutputStreamWriter, StringReader}
 import java.nio.charset.StandardCharsets
 
-import com.univocity.parsers.csv.{CsvParser, CsvParserSettings, CsvWriter, CsvWriterSettings}
+import com.univocity.parsers.csv.{
+  CsvParser,
+  CsvParserSettings,
+  CsvWriter,
+  CsvWriterSettings
+}
 
 import org.apache.spark.internal.Logging
 
@@ -30,11 +35,14 @@ import org.apache.spark.internal.Logging
   * @param params Parameters object
   * @param headers headers for the columns
   */
-private[sql] abstract class CsvReader(params: CSVOptions, headers: Seq[String]) {
+private[sql] abstract class CsvReader(
+    params: CSVOptions,
+    headers: Seq[String]
+) {
 
   protected lazy val parser: CsvParser = {
     val settings = new CsvParserSettings()
-    val format = settings.getFormat
+    val format   = settings.getFormat
     format.setDelimiter(params.delimiter)
     format.setLineSeparator(params.rowSeparator)
     format.setQuote(params.quote)
@@ -62,7 +70,7 @@ private[sql] abstract class CsvReader(params: CSVOptions, headers: Seq[String]) 
 private[sql] class LineCsvWriter(params: CSVOptions, headers: Seq[String])
     extends Logging {
   private val writerSettings = new CsvWriterSettings
-  private val format = writerSettings.getFormat
+  private val format         = writerSettings.getFormat
 
   format.setDelimiter(params.delimiter)
   format.setLineSeparator(params.rowSeparator)
@@ -77,9 +85,9 @@ private[sql] class LineCsvWriter(params: CSVOptions, headers: Seq[String])
   writerSettings.setHeaders(headers: _*)
 
   def writeRow(row: Seq[String], includeHeader: Boolean): String = {
-    val buffer = new ByteArrayOutputStream()
+    val buffer       = new ByteArrayOutputStream()
     val outputWriter = new OutputStreamWriter(buffer, StandardCharsets.UTF_8)
-    val writer = new CsvWriter(outputWriter, writerSettings)
+    val writer       = new CsvWriter(outputWriter, writerSettings)
 
     if (includeHeader) {
       writer.writeHeaders()
@@ -120,8 +128,11 @@ private[sql] class LineCsvReader(params: CSVOptions)
   * @param headers headers for the columns
   */
 private[sql] class BulkCsvReader(
-    iter: Iterator[String], params: CSVOptions, headers: Seq[String])
-    extends CsvReader(params, headers) with Iterator[Array[String]] {
+    iter: Iterator[String],
+    params: CSVOptions,
+    headers: Seq[String]
+) extends CsvReader(params, headers)
+    with Iterator[Array[String]] {
 
   private val reader = new StringIteratorReader(iter)
   parser.beginParsing(reader)
@@ -153,10 +164,10 @@ private[sql] class BulkCsvReader(
 private class StringIteratorReader(val iter: Iterator[String])
     extends java.io.Reader {
 
-  private var next: Long = 0
+  private var next: Long   = 0
   private var length: Long = 0 // length of input so far
-  private var start: Long = 0
-  private var str: String = null // current string from iter
+  private var start: Long  = 0
+  private var str: String  = null // current string from iter
 
   /**
     * fetch next string from iter, if done with current one
@@ -207,16 +218,28 @@ private class StringIteratorReader(val iter: Iterator[String])
         n = Math.min(length - next, len).toInt // lesser of amount of input available or buf size
         if (n == length - next) {
           str.getChars(
-              (next - start).toInt, (next - start + n - 1).toInt, cbuf, off)
+            (next - start).toInt,
+            (next - start + n - 1).toInt,
+            cbuf,
+            off
+          )
           cbuf(off + n - 1) = '\n'
         } else {
           str.getChars(
-              (next - start).toInt, (next - start + n).toInt, cbuf, off)
+            (next - start).toInt,
+            (next - start + n).toInt,
+            cbuf,
+            off
+          )
         }
         next += n
         if (n < len) {
           val m =
-            read(cbuf, off + n, len - n) // have more space, fetch more input from iter
+            read(
+              cbuf,
+              off + n,
+              len - n
+            ) // have more space, fetch more input from iter
           if (m != -1) n += m
         }
       }

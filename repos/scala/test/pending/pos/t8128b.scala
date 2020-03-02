@@ -1,5 +1,5 @@
 class Optiony[X] { def isEmpty = true; def get: X = ??? }
-class Seqy[X] { def head: X = ???; def length = 0; def apply(i: Int): X = ??? }
+class Seqy[X]    { def head: X = ???; def length  = 0; def apply(i: Int): X = ??? }
 
 object G {
   def unapply(m: Any): Optiony[_] = ???
@@ -13,6 +13,6 @@ object Test {
   (0: Any) match {
     case G(v) => v
     case H(v) => v
-    case _ =>
+    case _    =>
   }
 }

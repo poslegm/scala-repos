@@ -18,12 +18,14 @@ class StepBuilderPerfTest extends Specification {
   // val iterations = 1
 
   def runOne(withOpening: Boolean)(moves: List[String]) =
-    StepBuilder("abcd1234",
-                moves,
-                chess.variant.Standard,
-                None,
-                format.Forsyth.initial,
-                withOpening = withOpening)
+    StepBuilder(
+      "abcd1234",
+      moves,
+      chess.variant.Standard,
+      None,
+      format.Forsyth.initial,
+      withOpening = withOpening
+    )
   def run(withOpening: Boolean) { gameMoves foreach runOne(withOpening) }
 
   def runTests(withOpening: Boolean) = {
@@ -38,7 +40,7 @@ class StepBuilderPerfTest extends Specification {
       println(s"$nb games in $duration ms")
       duration
     }
-    val nbGames = iterations * nb
+    val nbGames    = iterations * nb
     val moveMicros = (1000 * durations.sum) / nbGames
     println(s"Average = $moveMicros microseconds per game")
     println(s"          ${1000000 / moveMicros} games per second")

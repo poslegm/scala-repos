@@ -23,8 +23,8 @@ import org.scalajs.testsuite.utils.Platform._
 class IntJSTest {
 
   // final val without type ascription to make sure these are constant-folded
-  final val MinVal = Int.MinValue
-  final val MaxVal = Int.MaxValue
+  final val MinVal       = Int.MinValue
+  final val MaxVal       = Int.MaxValue
   final val AlmostMinVal = Int.MinValue + 43
   final val AlmostMaxVal = Int.MaxValue - 36
 
@@ -35,13 +35,13 @@ class IntJSTest {
       assertEquals(expected, a % b)
 
     test(654, 56, 654 % 56)
-    test(0, 25, 0 % 25)
+    test(0, 25, 0     % 25)
     test(-36, 13, -36 % 13)
     test(-55, -6, -55 % -6)
 
-    test(MinVal, 1, MinVal % 1)
+    test(MinVal, 1, MinVal  % 1)
     test(MinVal, -1, MinVal % -1)
-    test(MaxVal, 1, MaxVal % 1)
+    test(MaxVal, 1, MaxVal  % 1)
     test(MaxVal, -1, MaxVal % -1)
 
     test(MaxVal, MinVal, MaxVal % MinVal)
@@ -49,11 +49,11 @@ class IntJSTest {
     test(MinVal, MaxVal, MinVal % MaxVal)
     test(MinVal, MinVal, MinVal % MinVal)
 
-    test(AlmostMaxVal, 2, AlmostMaxVal % 2)
-    test(AlmostMaxVal, 5, AlmostMaxVal % 5)
-    test(AlmostMaxVal, -7, AlmostMaxVal % -7)
-    test(AlmostMaxVal, -14, AlmostMaxVal % -14)
-    test(AlmostMinVal, 100, AlmostMinVal % 100)
+    test(AlmostMaxVal, 2, AlmostMaxVal    % 2)
+    test(AlmostMaxVal, 5, AlmostMaxVal    % 5)
+    test(AlmostMaxVal, -7, AlmostMaxVal   % -7)
+    test(AlmostMaxVal, -14, AlmostMaxVal  % -14)
+    test(AlmostMinVal, 100, AlmostMinVal  % 100)
     test(AlmostMaxVal, -123, AlmostMaxVal % -123)
   }
 }

@@ -10,7 +10,7 @@ package model
 /** An type that represents visibility of members. */
 sealed trait Visibility {
   def isProtected: Boolean = false
-  def isPublic: Boolean = false
+  def isPublic: Boolean    = false
 }
 
 /** The visibility of `private[this]` members. */

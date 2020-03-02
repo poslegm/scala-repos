@@ -3,7 +3,7 @@ object forceDelay {
 
   class Susp[+A](lazyValue: => A) extends Function0[A] {
     private var func: () => Any = () => lazyValue
-    private var value: Any = null
+    private var value: Any      = null
 
     override def apply() = {
       if (func != null) {
@@ -18,7 +18,7 @@ object forceDelay {
       else "Susp(?)"
   }
 
-  def delay[A](value: => A) = new Susp[A](value)
+  def delay[A](value: => A)            = new Susp[A](value)
   implicit def force[A](s: Susp[A]): A = s()
 }
 

@@ -8,7 +8,7 @@ object Cls {
 
 object test {
   val c: M[Option] = new M[Option] {}
-  new Cls(c) // does not infer.
+  new Cls(c)         // does not infer.
   new Cls[Option](c) // okay
-  Cls(c) // okay
+  Cls(c)             // okay
 }

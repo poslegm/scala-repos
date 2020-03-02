@@ -9,7 +9,7 @@ class UnresolvedTest extends ResolveTestBase {
   }
 
   def testNamedParameter() = doTest()
-  def testFunction() = doTest()
-  def testRef() = doTest()
-  def testType() = doTest()
+  def testFunction()       = doTest()
+  def testRef()            = doTest()
+  def testType()           = doTest()
 }

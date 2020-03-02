@@ -25,6 +25,6 @@ object SeqView {
   implicit def canBuildFrom[A]: CanBuildFrom[Coll, A, SeqView[A, Seq[_]]] =
     new CanBuildFrom[Coll, A, SeqView[A, Seq[_]]] {
       def apply(from: Coll) = new NoBuilder
-      def apply() = new NoBuilder
+      def apply()           = new NoBuilder
     }
 }

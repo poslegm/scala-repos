@@ -1,10 +1,10 @@
 class Bar(val x: Int) extends AnyVal {
-  def f: String = f(0)
+  def f: String                 = f(0)
   private def f(x: Int): String = ""
 }
 
 class Baz(val x: Int) extends AnyVal {
-  def f: String = "123"
+  def f: String                 = "123"
   private def f(x: Int): String = ""
 }
 object Baz {

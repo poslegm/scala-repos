@@ -30,8 +30,8 @@ import scala.concurrent.{Future, ExecutionContext => ConcurrentExecutionContext}
 trait BaseReplState {
 
   /** required for switching to hdfs local mode */
-  private val mr1Key = "mapred.job.tracker"
-  private val mr2Key = "mapreduce.framework.name"
+  private val mr1Key  = "mapred.job.tracker"
+  private val mr2Key  = "mapreduce.framework.name"
   private val mrLocal = "local"
 
   /** Implicit flowDef for this Scalding shell session. */
@@ -63,7 +63,8 @@ trait BaseReplState {
       case Some(hdfsMode) => mode = hdfsMode
       case None =>
         println(
-            "To use HDFS/Hadoop mode, you must *start* the repl in hadoop mode to get the hadoop configuration from the hadoop command.")
+          "To use HDFS/Hadoop mode, you must *start* the repl in hadoop mode to get the hadoop configuration from the hadoop command."
+        )
     }
   }
 
@@ -84,18 +85,18 @@ trait BaseReplState {
   private[scalding] def printModeBanner(): Unit = {
     val (modeString, homeDir) = mode match {
       case localMode: Local => {
-          (localMode.toString, System.getProperty("user.dir"))
-        }
+        (localMode.toString, System.getProperty("user.dir"))
+      }
       case hdfsMode: Hdfs => {
-          val defaultFs = FileSystem.get(hdfsMode.jobConf)
-          val m = customConfig.get(mr2Key) match {
-            case Some("local") =>
-              s"${hdfsMode.getClass.getSimpleName}Local(${hdfsMode.strict})"
-            case _ =>
-              s"${hdfsMode.getClass.getSimpleName}(${hdfsMode.strict})"
-          }
-          (m, defaultFs.getWorkingDirectory.toString)
+        val defaultFs = FileSystem.get(hdfsMode.jobConf)
+        val m = customConfig.get(mr2Key) match {
+          case Some("local") =>
+            s"${hdfsMode.getClass.getSimpleName}Local(${hdfsMode.strict})"
+          case _ =>
+            s"${hdfsMode.getClass.getSimpleName}(${hdfsMode.strict})"
         }
+        (m, defaultFs.getWorkingDirectory.toString)
+      }
     }
     println(s"${Console.GREEN}#### Scalding mode: ${modeString}")
     println(s"#### User home: ${homeDir}${Console.RESET}")
@@ -104,7 +105,7 @@ trait BaseReplState {
   private def modeHadoopConf: Configuration = {
     mode match {
       case hdfsMode: Hdfs => hdfsMode.jobConf
-      case _ => new Configuration(false)
+      case _              => new Configuration(false)
     }
   }
 
@@ -201,8 +202,9 @@ trait BaseReplState {
   /*
    * Starts the Execution, but does not wait for the result
    */
-  def asyncExecute[T](execution: Execution[T])(
-      implicit ec: ConcurrentExecutionContext): Future[T] =
+  def asyncExecute[T](
+      execution: Execution[T]
+  )(implicit ec: ConcurrentExecutionContext): Future[T] =
     execution.run(executionConfig, mode)
 
   /*
@@ -239,8 +241,9 @@ object ReplImplicits extends FieldConversions {
     * @param source to convert to a RichPipe.
     * @return a RichPipe wrapping the result of reading the specified Source.
     */
-  implicit def sourceToRichPipe(source: Source)(
-      implicit flowDef: FlowDef, mode: Mode): RichPipe =
+  implicit def sourceToRichPipe(
+      source: Source
+  )(implicit flowDef: FlowDef, mode: Mode): RichPipe =
     RichPipe(source.read(flowDef, mode))
 
   /**
@@ -251,9 +254,9 @@ object ReplImplicits extends FieldConversions {
     * @param converter implicitly retrieved and used to convert the specified iterable into a Source.
     * @return a Source backed by the specified iterable.
     */
-  implicit def iterableToSource[T](iterable: Iterable[T])(
-      implicit setter: TupleSetter[T],
-      converter: TupleConverter[T]): Source = {
+  implicit def iterableToSource[T](
+      iterable: Iterable[T]
+  )(implicit setter: TupleSetter[T], converter: TupleConverter[T]): Source = {
     IterableSource[T](iterable)(setter, converter)
   }
 
@@ -269,7 +272,8 @@ object ReplImplicits extends FieldConversions {
       implicit setter: TupleSetter[T],
       converter: TupleConverter[T],
       flowDef: FlowDef,
-      mode: Mode): Pipe = {
+      mode: Mode
+  ): Pipe = {
     iterableToSource(iterable)(setter, converter).read
   }
 
@@ -286,7 +290,8 @@ object ReplImplicits extends FieldConversions {
       implicit setter: TupleSetter[T],
       converter: TupleConverter[T],
       flowDef: FlowDef,
-      mode: Mode): RichPipe = {
+      mode: Mode
+  ): RichPipe = {
     RichPipe(iterableToPipe(iterable)(setter, converter, flowDef, mode))
   }
 
@@ -294,25 +299,29 @@ object ReplImplicits extends FieldConversions {
     * Convert KeyedListLike to enriched ShellTypedPipe
     * (e.g. allows .snapshot to be called on Grouped, CoGrouped, etc)
     */
-  implicit def keyedListLikeToShellTypedPipe[
-      K, V, T[K, +V] <: KeyedListLike[K, V, T]](kll: KeyedListLike[K, V, T])(
-      implicit state: BaseReplState) =
+  implicit def keyedListLikeToShellTypedPipe[K, V, T[K, +V] <: KeyedListLike[
+    K,
+    V,
+    T
+  ]](kll: KeyedListLike[K, V, T])(implicit state: BaseReplState) =
     new ShellTypedPipe(kll.toTypedPipe)(state)
 
   /**
     * Enrich TypedPipe for the shell
     * (e.g. allows .snapshot to be called on it)
     */
-  implicit def typedPipeToShellTypedPipe[T](pipe: TypedPipe[T])(
-      implicit state: BaseReplState): ShellTypedPipe[T] =
+  implicit def typedPipeToShellTypedPipe[T](
+      pipe: TypedPipe[T]
+  )(implicit state: BaseReplState): ShellTypedPipe[T] =
     new ShellTypedPipe[T](pipe)(state)
 
   /**
     * Enrich ValuePipe for the shell
     * (e.g. allows .toOption to be called on it)
     */
-  implicit def valuePipeToShellValuePipe[T](pipe: ValuePipe[T])(
-      implicit state: BaseReplState): ShellValuePipe[T] =
+  implicit def valuePipeToShellValuePipe[T](
+      pipe: ValuePipe[T]
+  )(implicit state: BaseReplState): ShellValuePipe[T] =
     new ShellValuePipe[T](pipe)(state)
 }
 
@@ -334,6 +343,6 @@ object ReplImplicitContext {
   implicit def flowDefImpl = ReplState.flowDef
 
   /** Defaults to running in local mode if no mode is specified. */
-  implicit def modeImpl = ReplState.mode
+  implicit def modeImpl   = ReplState.mode
   implicit def configImpl = ReplState.config
 }

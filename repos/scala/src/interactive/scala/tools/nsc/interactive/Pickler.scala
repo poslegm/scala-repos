@@ -127,7 +127,9 @@ object Pickler {
       case s @ UnpickleSuccess(x) => s
       case f: UnpickleFailure =>
         throw new MalformedInput(
-            f.rd, "Unrecoverable unpickle failure:\n" + f.errMsg)
+          f.rd,
+          "Unrecoverable unpickle failure:\n" + f.errMsg
+        )
     }
   }
 
@@ -144,13 +146,12 @@ object Pickler {
     */
   class UnpickleFailure(msg: => String, val rd: Lexer)
       extends Unpickled[Nothing] {
-    def errMsg = msg
+    def errMsg            = msg
     override def toString = "Failure at " + rd.tokenPos + ":\n" + msg
   }
 
   private def errorExpected(rd: Lexer, msg: => String) =
-    new UnpickleFailure("expected: " + msg + "\n" + "found   : " + rd.token,
-                        rd)
+    new UnpickleFailure("expected: " + msg + "\n" + "found   : " + rd.token, rd)
 
   private def nextSuccess[T](rd: Lexer, result: T) = {
     rd.nextToken()
@@ -159,7 +160,7 @@ object Pickler {
 
   /** The implicit `Pickler` value for type `T`. Equivalent to `implicitly[Pickler[T]]`.
     */
-  def pkl[T : Pickler] = implicitly[Pickler[T]]
+  def pkl[T: Pickler] = implicitly[Pickler[T]]
 
   /** A class representing `~`-pairs */
   case class ~[+S, +T](fst: S, snd: T)
@@ -199,7 +200,7 @@ object Pickler {
   def wrappedPickler[S, T](p: Pickler[S])(in: S => T)(out: T => S) =
     new Pickler[T] {
       def pickle(wr: Writer, x: T) = p.pickle(wr, out(x))
-      def unpickle(rd: Lexer) = p.unpickle(rd) map in
+      def unpickle(rd: Lexer)      = p.unpickle(rd) map in
     }
 
   /** Same as `p.cond(condition)`
@@ -207,7 +208,7 @@ object Pickler {
   def conditionalPickler[T](p: Pickler[T], condition: Any => Boolean) =
     new CondPickler[T](condition) {
       def pickle(wr: Writer, x: T) = p.pickle(wr, x)
-      def unpickle(rd: Lexer) = p.unpickle(rd)
+      def unpickle(rd: Lexer)      = p.unpickle(rd)
     }
 
   /** Same as `p ~ q`
@@ -221,21 +222,24 @@ object Pickler {
     }
     def unpickle(rd: Lexer) =
       for (x <- p.unpickle(rd);
-      y <- { rd.accept(','); qq.unpickle(rd).requireSuccess }) yield x ~ y
+           y <- { rd.accept(','); qq.unpickle(rd).requireSuccess }) yield x ~ y
   }
 
   /** Same as `p | q`
     */
   def eitherPickler[T, U <: T, V <: T](
-      p: CondPickler[U], q: => CondPickler[V]) =
+      p: CondPickler[U],
+      q: => CondPickler[V]
+  ) =
     new CondPickler[T](x => p.canPickle(x) || q.canPickle(x)) {
       lazy val qq = q
       override def tryPickle(wr: Writer, x: Any): Boolean =
         p.tryPickle(wr, x) || qq.tryPickle(wr, x)
       def pickle(wr: Writer, x: T) =
         require(
-            tryPickle(wr, x),
-            "no pickler found for " + x + " of class " + x.getClass.getName)
+          tryPickle(wr, x),
+          "no pickler found for " + x + " of class " + x.getClass.getName
+        )
       def unpickle(rd: Lexer) = p.unpickle(rd) orElse qq.unpickle(rd)
     }
 
@@ -244,11 +248,10 @@ object Pickler {
     *  Example: Object scala.None would be represented as `scala.None$()`.
     */
   def singletonPickler[T <: AnyRef](x: T): CondPickler[T] =
-    unitPickler.wrapped { _ =>
-      x
-    } { x =>
-      ()
-    }.labelled(x.getClass.getName).cond(x eq _.asInstanceOf[AnyRef])
+    unitPickler
+      .wrapped { _ => x } { x => () }
+      .labelled(x.getClass.getName)
+      .cond(x eq _.asInstanceOf[AnyRef])
 
   /** A pickler the handles instances of classes that have an empty constructor.
     *  It represents than as `$new ( <name of class> )`.
@@ -273,7 +276,7 @@ object Pickler {
     *  What's usually done instead is that the iterator pickler is wrapped and labelled
     *  to handle other kinds of sequences.
     */
-  implicit def iterPickler[T : Pickler]: Pickler[Iterator[T]] =
+  implicit def iterPickler[T: Pickler]: Pickler[Iterator[T]] =
     new Pickler[Iterator[T]] {
       lazy val p = pkl[T]
       def pickle(wr: Writer, xs: Iterator[T]) {
@@ -303,8 +306,9 @@ object Pickler {
     *  @param  matcher A partial function from tokens to handled values. Unpickling
     *                  succeeds if the matcher function is defined on the current token.
     */
-  private def tokenPickler[T](kind: String)(
-      matcher: PartialFunction[Token, T]) = new Pickler[T] {
+  private def tokenPickler[T](
+      kind: String
+  )(matcher: PartialFunction[Token, T]) = new Pickler[T] {
     def pickle(wr: Writer, x: T) = wr.write(x.toString)
     def unpickle(rd: Lexer) =
       if (matcher isDefinedAt rd.token) nextSuccess(rd, matcher(rd.token))
@@ -346,28 +350,33 @@ object Pickler {
       wr.write(if (x == null) "null" else quoted(x))
     def unpickle(rd: Lexer) = rd.token match {
       case StringLit(s) => nextSuccess(rd, s)
-      case NullLit => nextSuccess(rd, null)
-      case _ => errorExpected(rd, "string literal")
+      case NullLit      => nextSuccess(rd, null)
+      case _            => errorExpected(rd, "string literal")
     }
   }
 
   /** A pickler for pairs, represented as `~`-pairs */
-  implicit def tuple2Pickler[T1 : Pickler, T2 : Pickler]: Pickler[(T1, T2)] =
-    (pkl[T1] ~ pkl[T2]).wrapped { case x1 ~ x2 => (x1, x2) } {
-      case (x1, x2) => x1 ~ x2
-    }.labelled("tuple2")
+  implicit def tuple2Pickler[T1: Pickler, T2: Pickler]: Pickler[(T1, T2)] =
+    (pkl[T1] ~ pkl[T2])
+      .wrapped { case x1 ~ x2 => (x1, x2) } {
+        case (x1, x2) => x1 ~ x2
+      }
+      .labelled("tuple2")
 
   /** A pickler for 3-tuples, represented as `~`-tuples */
   implicit def tuple3Pickler[T1, T2, T3](
       implicit p1: Pickler[T1],
       p2: Pickler[T2],
-      p3: Pickler[T3]): Pickler[(T1, T2, T3)] =
-    (p1 ~ p2 ~ p3).wrapped { case x1 ~ x2 ~ x3 => (x1, x2, x3) } {
-      case (x1, x2, x3) => x1 ~ x2 ~ x3
-    }.labelled("tuple3")
+      p3: Pickler[T3]
+  ): Pickler[(T1, T2, T3)] =
+    (p1 ~ p2 ~ p3)
+      .wrapped { case x1 ~ x2 ~ x3 => (x1, x2, x3) } {
+        case (x1, x2, x3) => x1 ~ x2 ~ x3
+      }
+      .labelled("tuple3")
 
   /** A pickler for list values */
-  implicit def listPickler[T : Pickler]: Pickler[List[T]] =
+  implicit def listPickler[T: Pickler]: Pickler[List[T]] =
     iterPickler[T].wrapped { _.toList } { _.iterator }.labelled("scala.List")
 }
 

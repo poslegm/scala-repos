@@ -10,7 +10,7 @@ class Random(seed_in: Long) extends AnyRef with java.io.Serializable {
   private var seedLo: Int = _ // 24 lsb of the seed
 
   // see nextGaussian()
-  private var nextNextGaussian: Double = _
+  private var nextNextGaussian: Double      = _
   private var haveNextNextGaussian: Boolean = false
 
   setSeed(seed_in)
@@ -52,7 +52,7 @@ class Random(seed_in: Long) extends AnyRef with java.io.Serializable {
     val oldSeedHi = seedHi
     val oldSeedLo = seedLo
 
-    val mul = 0x5DEECE66DL
+    val mul   = 0x5DEECE66DL
     val mulHi = (mul >>> 24).toInt
     val mulLo = mul.toInt & ((1 << 24) - 1)
 
@@ -75,7 +75,7 @@ class Random(seed_in: Long) extends AnyRef with java.io.Serializable {
   def nextDouble(): Double = {
     // ((next(26).toLong << 27) + next(27)) / (1L << 53).toDouble
     ((next(26).toDouble * (1L << 27).toDouble) + next(27).toDouble) /
-    (1L << 53).toDouble
+      (1L << 53).toDouble
   }
 
   def nextBoolean(): Boolean = next(1) != 0
@@ -102,7 +102,7 @@ class Random(seed_in: Long) extends AnyRef with java.io.Serializable {
     } else {
       @tailrec
       def loop(): Int = {
-        val bits = next(31)
+        val bits  = next(31)
         val value = bits % n
         if (bits - value + (n - 1) < 0) loop()
         else value
@@ -123,7 +123,7 @@ class Random(seed_in: Long) extends AnyRef with java.io.Serializable {
     var i = 0
     while (i < bytes.length) {
       var rnd = nextInt()
-      var n = Math.min(bytes.length - i, 4)
+      var n   = Math.min(bytes.length - i, 4)
       while (n > 0) {
         bytes(i) = rnd.toByte
         rnd >>= 8
@@ -174,7 +174,7 @@ object Random {
 
   /** Generate a random long from JS RNG to seed a new Random */
   private def randomSeed(): Long =
-    (randomInt().toLong << 32) | (randomInt().toLong & 0xffffffffL)
+    (randomInt().toLong << 32) | (randomInt().toLong & 0xFFFFFFFFL)
 
   private def randomInt(): Int =
     (Math.floor(js.Math.random() * 4294967296.0) - 2147483648.0).toInt

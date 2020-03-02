@@ -27,9 +27,11 @@ import scala.reflect._
   * Under the hood, it uses our OpenHashSet implementation.
   */
 private[spark] class PrimitiveKeyOpenHashMap[
-    @specialized(Long, Int) K : ClassTag, @specialized(Long, Int, Double) V : ClassTag](
-    initialCapacity: Int)
-    extends Iterable[(K, V)] with Serializable {
+    @specialized(Long, Int) K: ClassTag,
+    @specialized(Long, Int, Double) V: ClassTag
+](initialCapacity: Int)
+    extends Iterable[(K, V)]
+    with Serializable {
 
   def this() = this(64)
 
@@ -38,7 +40,7 @@ private[spark] class PrimitiveKeyOpenHashMap[
   // Init in constructor (instead of in declaration) to work around a Scala compiler specialization
   // bug that would generate two arrays (one for Object and one for specialized T).
   protected var _keySet: OpenHashSet[K] = _
-  private var _values: Array[V] = _
+  private var _values: Array[V]         = _
   _keySet = new OpenHashSet[K](initialCapacity)
   _values = new Array[V](_keySet.capacity)
 
@@ -91,7 +93,7 @@ private[spark] class PrimitiveKeyOpenHashMap[
   }
 
   override def iterator: Iterator[(K, V)] = new Iterator[(K, V)] {
-    var pos = 0
+    var pos              = 0
     var nextPair: (K, V) = computeNextPair()
 
     /** Get the next value we should return from next(), or null if we're finished iterating */
@@ -120,14 +122,12 @@ private[spark] class PrimitiveKeyOpenHashMap[
   // to the "private" variables).
   // They also should have been val's. We use var's because there is a Scala compiler bug that
   // would throw illegal access error at runtime if they are declared as val's.
-  protected var grow = (newCapacity: Int) =>
-    {
-      _oldValues = _values
-      _values = new Array[V](newCapacity)
+  protected var grow = (newCapacity: Int) => {
+    _oldValues = _values
+    _values = new Array[V](newCapacity)
   }
 
-  protected var move = (oldPos: Int, newPos: Int) =>
-    {
-      _values(newPos) = _oldValues(oldPos)
+  protected var move = (oldPos: Int, newPos: Int) => {
+    _values(newPos) = _oldValues(oldPos)
   }
 }

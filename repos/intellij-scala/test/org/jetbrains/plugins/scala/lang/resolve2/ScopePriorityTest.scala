@@ -8,13 +8,13 @@ class ScopePriorityTest extends ResolveTestBase {
     super.folderPath + "scope/priority/"
   }
 
-  def testBlock11() = doTest()
-  def testBlock12() = doTest()
-  def testBlock21() = doTest()
-  def testBlock22() = doTest()
+  def testBlock11()       = doTest()
+  def testBlock12()       = doTest()
+  def testBlock21()       = doTest()
+  def testBlock22()       = doTest()
   def testBlockAndCount() = doTest()
-  def testBlockAndType() = doTest()
-  def testBlockNested() = doTest()
+  def testBlockAndType()  = doTest()
+  def testBlockNested()   = doTest()
   //TODO packageobject
 //  def testPackageObject = doTest
 }

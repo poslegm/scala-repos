@@ -62,7 +62,7 @@ private[loadbalancer] class Heap[T](
   def isValid(heap: Array[T], i: Int, j: Int): Boolean =
     if (j < i * 2) true
     else {
-      val left = heap(i) < heap(i * 2)
+      val left  = heap(i) < heap(i * 2)
       val right = if (j == i * 2) true else heap(i) < heap(i * 2 + 1)
       left && right
     }

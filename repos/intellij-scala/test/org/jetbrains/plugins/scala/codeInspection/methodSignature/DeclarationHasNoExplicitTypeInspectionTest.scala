@@ -2,7 +2,10 @@ package org.jetbrains.plugins.scala
 package codeInspection.methodSignature
 
 import com.intellij.codeInspection.LocalInspectionTool
-import org.jetbrains.plugins.scala.codeInspection.{InspectionBundle, ScalaLightInspectionFixtureTestAdapter}
+import org.jetbrains.plugins.scala.codeInspection.{
+  InspectionBundle,
+  ScalaLightInspectionFixtureTestAdapter
+}
 
 /**
   * Nikolay.Tropin
@@ -19,7 +22,7 @@ class DeclarationHasNoExplicitTypeInspectionTest
   def test1(): Unit = {
     val selected = s"def ${START}foo$END()"
     check(selected)
-    val text = "def foo()"
+    val text   = "def foo()"
     val result = "def foo(): Unit"
     testFix(text, result, hint)
   }
@@ -29,7 +32,7 @@ class DeclarationHasNoExplicitTypeInspectionTest
                      |def ${START}hoho$END()
                      |def hihi()"""
     check(selected)
-    val text = s"""def haha()
+    val text   = s"""def haha()
                  |def ho${CARET_MARKER}ho()
                  |def hihi()"""
     val result = """def haha()
@@ -41,7 +44,7 @@ class DeclarationHasNoExplicitTypeInspectionTest
   def test3(): Unit = {
     val selected = s"def ${START}foo$END(x: Int)"
     check(selected)
-    val text = "def foo(x: Int)"
+    val text   = "def foo(x: Int)"
     val result = "def foo(x: Int): Unit"
     testFix(text, result, hint)
   }
@@ -49,7 +52,7 @@ class DeclarationHasNoExplicitTypeInspectionTest
   def test4(): Unit = {
     val selected = s"def ${START}foo$END"
     check(selected)
-    val text = "def foo"
+    val text   = "def foo"
     val result = "def foo: Unit"
     testFix(text, result, hint)
   }

@@ -6,12 +6,11 @@ import scala.reflect.io.Path
 import scala.reflect.io.File
 
 /** A test plugin.  */
-class Ploogin(val global: Global, val name: String = "ploogin")
-    extends Plugin {
+class Ploogin(val global: Global, val name: String = "ploogin") extends Plugin {
   import global._
 
   val description = "A sample plugin for testing."
-  val components = List[PluginComponent](TestComponent)
+  val components  = List[PluginComponent](TestComponent)
 
   private object TestComponent extends PluginComponent {
     val global: Ploogin.this.global.type = Ploogin.this.global

@@ -32,12 +32,16 @@ import headers._
   * party libraries.
   */
 class HttpModelIntegrationSpec
-    extends WordSpec with Matchers with BeforeAndAfterAll {
+    extends WordSpec
+    with Matchers
+    with BeforeAndAfterAll {
 
   val testConf: Config =
-    ConfigFactory.parseString("""
+    ConfigFactory.parseString(
+      """
     akka.event-handlers = ["akka.testkit.TestEventListener"]
-    akka.loglevel = WARNING""")
+    akka.loglevel = WARNING"""
+    )
   implicit val system = ActorSystem(getClass.getSimpleName, testConf)
 
   override def afterAll() = system.terminate()
@@ -53,13 +57,15 @@ class HttpModelIntegrationSpec
       // own HTTP model.
 
       val request = HttpRequest(
-          method = HttpMethods.POST,
-          uri = Uri("/greeting"),
-          headers = List(Host("localhost"), RawHeader("Origin", "null")),
-          entity = HttpEntity.Default(
-                contentType = ContentTypes.`application/json`,
-                contentLength = 5,
-                Source(List(ByteString("hello")))))
+        method = HttpMethods.POST,
+        uri = Uri("/greeting"),
+        headers = List(Host("localhost"), RawHeader("Origin", "null")),
+        entity = HttpEntity.Default(
+          contentType = ContentTypes.`application/json`,
+          contentLength = 5,
+          Source(List(ByteString("hello")))
+        )
+      )
 
       // Our library uses a simple model of headers: a Seq[(String, String)].
       // The body is represented as an Array[Byte]. To get the headers in
@@ -73,17 +79,21 @@ class HttpModelIntegrationSpec
         request.headers.map(h ⇒ (h.name, h.value))
       val entityTextHeaders: Seq[(String, String)] = request.entity match {
         case HttpEntity.Default(contentType, contentLength, _) ⇒
-          Seq(("Content-Type", contentType.toString),
-              ("Content-Length", contentLength.toString))
+          Seq(
+            ("Content-Type", contentType.toString),
+            ("Content-Length", contentLength.toString)
+          )
         case _ ⇒
           ???
       }
       val textHeaders: Seq[(String, String)] =
         entityTextHeaders ++ partialTextHeaders
-      textHeaders shouldEqual Seq("Content-Type" -> "application/json",
-                                  "Content-Length" -> "5",
-                                  "Host" -> "localhost",
-                                  "Origin" -> "null")
+      textHeaders shouldEqual Seq(
+        "Content-Type"   -> "application/json",
+        "Content-Length" -> "5",
+        "Host"           -> "localhost",
+        "Origin"         -> "null"
+      )
 
       // Finally convert the body into an Array[Byte].
 
@@ -100,9 +110,11 @@ class HttpModelIntegrationSpec
       // example simple model of an HTTP response.
 
       val textHeaders: Seq[(String, String)] =
-        Seq("Content-Type" -> "text/plain",
-            "Content-Length" -> "3",
-            "X-Greeting" -> "Hello")
+        Seq(
+          "Content-Type"   -> "text/plain",
+          "Content-Length" -> "3",
+          "X-Greeting"     -> "Hello"
+        )
       val byteArrayBody: Array[Byte] = "foo".getBytes
 
       // Now we need to convert this model to Akka HTTP's model. To do that
@@ -123,9 +135,9 @@ class HttpModelIntegrationSpec
       // Seq[Header] and dealt with separately.
 
       val normalHeaders = convertedHeaders.filter {
-        case _: `Content-Type` ⇒ false
+        case _: `Content-Type`   ⇒ false
         case _: `Content-Length` ⇒ false
-        case _ ⇒ true
+        case _                   ⇒ true
       }
       normalHeaders.head shouldEqual RawHeader("X-Greeting", "Hello")
       normalHeaders.tail shouldEqual Nil
@@ -144,12 +156,13 @@ class HttpModelIntegrationSpec
       // convert the body into a Publisher[ByteString].
 
       val byteStringBody = ByteString(byteArrayBody)
-      val publisherBody = Source(List(byteStringBody))
+      val publisherBody  = Source(List(byteStringBody))
 
       // Finally we can create our HttpResponse.
 
-      HttpResponse(entity = HttpEntity.Default(
-                contentType.get, contentLength.get, publisherBody))
+      HttpResponse(entity =
+        HttpEntity.Default(contentType.get, contentLength.get, publisherBody)
+      )
     }
 
     "be able to wrap HttpHeaders with custom typed headers" in {
@@ -167,18 +180,18 @@ class HttpModelIntegrationSpec
 
         private[ExampleLibrary] case class GenericHeader(internal: HttpHeader)
             extends TypedHeader {
-          def name: String = internal.name
+          def name: String  = internal.name
           def value: String = internal.value
         }
         private[ExampleLibrary] case class ContentTypeHeader(
-            contentType: ContentType)
-            extends TypedHeader {
-          def name: String = "Content-Type"
+            contentType: ContentType
+        ) extends TypedHeader {
+          def name: String  = "Content-Type"
           def value: String = contentType.toString
         }
         private[ExampleLibrary] case class ContentLengthHeader(length: Long)
             extends TypedHeader {
-          def name: String = "Content-Length"
+          def name: String  = "Content-Length"
           def value: String = length.toString
         }
 
@@ -186,12 +199,12 @@ class HttpModelIntegrationSpec
         def header(name: String, value: String): TypedHeader = {
           val parsedHeader = HttpHeader.parse(name, value) match {
             case HttpHeader.ParsingResult.Ok(h, Nil) ⇒ h
-            case x ⇒ sys.error(s"Failed to parse: ${x.errors}")
+            case x                                   ⇒ sys.error(s"Failed to parse: ${x.errors}")
           }
           parsedHeader match {
             case `Content-Type`(contentType) ⇒ ContentTypeHeader(contentType)
-            case `Content-Length`(length) ⇒ ContentLengthHeader(length)
-            case _ ⇒ GenericHeader(parsedHeader)
+            case `Content-Length`(length)    ⇒ ContentLengthHeader(length)
+            case _                           ⇒ GenericHeader(parsedHeader)
           }
         }
 

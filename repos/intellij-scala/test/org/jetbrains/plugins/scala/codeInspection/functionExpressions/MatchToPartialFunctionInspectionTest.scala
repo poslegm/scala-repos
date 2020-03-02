@@ -16,7 +16,7 @@ class MatchToPartialFunctionInspectionTest
     MatchToPartialFunctionInspection.inspectionName
 
   def testInVal() = {
-    val text = s"""val f: (Int) => Null = ${START}_ match $END{
+    val text   = s"""val f: (Int) => Null = ${START}_ match $END{
                  |  case 0 => null
                  |  case _ => null
                  |}"""
@@ -29,7 +29,7 @@ class MatchToPartialFunctionInspectionTest
   }
 
   def testInArgumentInParentheses() = {
-    val text = s"""list.map(${START}x => x match $END{
+    val text   = s"""list.map(${START}x => x match $END{
       |  case Some(value) =>
       |  case None =>
       |})"""
@@ -43,7 +43,7 @@ class MatchToPartialFunctionInspectionTest
   }
 
   def testInArgumentInBraces() {
-    val text = s"""list.map {
+    val text   = s"""list.map {
       |  ${START}x => x match $END{
       |    case Some(value) =>
       |    case None =>
@@ -58,7 +58,7 @@ class MatchToPartialFunctionInspectionTest
   }
 
   def testWithPossibleImplicitConversion() {
-    val text = s"""
+    val text   = s"""
          |val list = List(Some(1))
          |list.map {
          |  ${START}x => x match $END{
@@ -77,7 +77,7 @@ class MatchToPartialFunctionInspectionTest
   }
 
   def testInArgumentList() {
-    val text = s"""def foo(f: Int => Any, i: Int)
+    val text   = s"""def foo(f: Int => Any, i: Int)
       |foo(${START}x => x match $END{
       |  case 1 => null
       |  case _ =>
@@ -92,7 +92,7 @@ class MatchToPartialFunctionInspectionTest
   }
 
   def testUseOfArgument() {
-    val text = s"""val f: (Int) => Null = ${START}x => x match $END{
+    val text   = s"""val f: (Int) => Null = ${START}x => x match $END{
       |  case 0 =>
       |    x + 1
       |    null

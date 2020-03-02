@@ -6,7 +6,7 @@ package expressions
 
 import org.jetbrains.plugins.scala.lang.parser.parsing.builder.ScalaPsiBuilder
 
-/** 
+/**
   * @author Alexander Podkhalyuzin
   * Date: 03.03.2008
   */
@@ -19,7 +19,7 @@ object PrefixExpr {
     builder.getTokenText match {
       case "-" | "+" | "~" | "!" =>
         val prefixMarker = builder.mark
-        val refExpr = builder.mark
+        val refExpr      = builder.mark
         builder.advanceLexer()
         refExpr.done(ScalaElementTypes.REFERENCE_EXPRESSION)
         if (!SimpleExpr.parse(builder)) {

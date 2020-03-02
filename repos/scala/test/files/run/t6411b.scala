@@ -5,8 +5,8 @@ case class Bar(foo: Foo)
 
 object Test extends App {
   val mirror = runtimeMirror(getClass.getClassLoader)
-  val cm = mirror.reflectClass(typeOf[Bar].typeSymbol.asClass)
-  val ctor = typeOf[Bar].decl(termNames.CONSTRUCTOR).asMethod
-  val ctorm = cm.reflectConstructor(ctor)
+  val cm     = mirror.reflectClass(typeOf[Bar].typeSymbol.asClass)
+  val ctor   = typeOf[Bar].decl(termNames.CONSTRUCTOR).asMethod
+  val ctorm  = cm.reflectConstructor(ctor)
   println(ctorm(Foo(3)))
 }

@@ -27,15 +27,15 @@ import org.apache.spark.sql.test.SharedSQLContext
 case class FastOperator(output: Seq[Attribute]) extends SparkPlan {
 
   override protected def doExecute(): RDD[InternalRow] = {
-    val str = Literal("so fast").value
-    val row = new GenericInternalRow(Array[Any](str))
+    val str        = Literal("so fast").value
+    val row        = new GenericInternalRow(Array[Any](str))
     val unsafeProj = UnsafeProjection.create(schema)
-    val unsafeRow = unsafeProj(row).copy()
+    val unsafeRow  = unsafeProj(row).copy()
     sparkContext.parallelize(Seq(unsafeRow))
   }
 
   override def producedAttributes: AttributeSet = outputSet
-  override def children: Seq[SparkPlan] = Nil
+  override def children: Seq[SparkPlan]         = Nil
 }
 
 object TestStrategy extends Strategy {

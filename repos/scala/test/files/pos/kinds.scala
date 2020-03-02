@@ -1,7 +1,7 @@
 trait IllKind1 {
   def g(s: String): String = s
-  def f: String = ???
-  def f[C](c: C): String = g(f)
+  def f: String            = ???
+  def f[C](c: C): String   = g(f)
 }
 
 trait IllKind2 {

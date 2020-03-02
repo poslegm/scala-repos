@@ -9,15 +9,15 @@ import org.jboss.netty.handler.codec.http._
   */
 class ConnectionManager {
   private[this] var isKeepAlive = false
-  private[this] var isIdle = true
-  private[this] var chunks = 0
+  private[this] var isIdle      = true
+  private[this] var chunks      = 0
 
   def observeMessage(message: Any) = synchronized {
     message match {
-      case request: HttpRequest => observeRequest(request)
+      case request: HttpRequest   => observeRequest(request)
       case response: HttpResponse => observeResponse(response)
-      case chunk: HttpChunk => observeChunk(chunk)
-      case _ => isKeepAlive = false // conservative
+      case chunk: HttpChunk       => observeChunk(chunk)
+      case _                      => isKeepAlive = false // conservative
     }
   }
 

@@ -46,7 +46,7 @@ private[stat] object PearsonCorrelation extends Correlation with Logging {
     */
   override def computeCorrelationMatrix(X: RDD[Vector]): Matrix = {
     val rowMatrix = new RowMatrix(X)
-    val cov = rowMatrix.computeCovariance()
+    val cov       = rowMatrix.computeCovariance()
     computeCorrelationMatrixFromCovariance(cov)
   }
 
@@ -55,9 +55,10 @@ private[stat] object PearsonCorrelation extends Correlation with Logging {
     * 0 covariance results in a correlation value of Double.NaN.
     */
   def computeCorrelationMatrixFromCovariance(
-      covarianceMatrix: Matrix): Matrix = {
+      covarianceMatrix: Matrix
+  ): Matrix = {
     val cov = covarianceMatrix.toBreeze.asInstanceOf[BDM[Double]]
-    val n = cov.cols
+    val n   = cov.cols
 
     // Compute the standard deviation on the diagonals first
     var i = 0
@@ -68,8 +69,8 @@ private[stat] object PearsonCorrelation extends Correlation with Logging {
     }
 
     // Loop through columns since cov is column major
-    var j = 0
-    var sigma = 0.0
+    var j          = 0
+    var sigma      = 0.0
     var containNaN = false
     while (j < n) {
       sigma = cov(j, j)

@@ -8,7 +8,7 @@ class OverloadingGenerics extends ResolveTestBase {
     super.folderPath + "overloading/generics/"
   }
 
-  def testDefaultValue() = doTest()
+  def testDefaultValue()  = doTest()
   def testDefaultValue2() = doTest()
   //TODO
 //  def testDefaultValue3 = doTest
@@ -17,6 +17,6 @@ class OverloadingGenerics extends ResolveTestBase {
   //TODO
 //  def testGenerics3 = doTest
   def testNoLiteralNarrowing() = doTest()
-  def testSimpleGenercs() = doTest()
-  def testWeakConforms() = doTest()
+  def testSimpleGenercs()      = doTest()
+  def testWeakConforms()       = doTest()
 }

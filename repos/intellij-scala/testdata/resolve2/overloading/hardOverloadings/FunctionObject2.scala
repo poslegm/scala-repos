@@ -1,7 +1,7 @@
 object Test {
   class A {
     object foo {
-      def apply(x: Int) = 23
+      def apply(x: Int)     = 23
       def apply(x: Boolean) = 77
     }
 

@@ -40,9 +40,9 @@ private[mllib] object LocalKMeans extends Logging {
       k: Int,
       maxIterations: Int
   ): Array[VectorWithNorm] = {
-    val rand = new Random(seed)
+    val rand       = new Random(seed)
     val dimensions = points(0).vector.size
-    val centers = new Array[VectorWithNorm](k)
+    val centers    = new Array[VectorWithNorm](k)
 
     // Initialize centers by sampling using the k-means++ procedure.
     centers(0) = pickWeighted(rand, points, weights).toDense
@@ -56,17 +56,18 @@ private[mllib] object LocalKMeans extends Logging {
             w * KMeans.pointCost(curCenters, p)
         }
         .sum
-      val r = rand.nextDouble() * sum
+      val r               = rand.nextDouble() * sum
       var cumulativeScore = 0.0
-      var j = 0
+      var j               = 0
       while (j < points.length && cumulativeScore < r) {
         cumulativeScore += weights(j) * KMeans.pointCost(curCenters, points(j))
         j += 1
       }
       if (j == 0) {
         logWarning(
-            "kMeansPlusPlus initialization ran out of distinct points for centers." +
-            s" Using duplicate point for center k = $i.")
+          "kMeansPlusPlus initialization ran out of distinct points for centers." +
+            s" Using duplicate point for center k = $i."
+        )
         centers(i) = points(0).toDense
       } else {
         centers(i) = points(j - 1).toDense
@@ -75,15 +76,15 @@ private[mllib] object LocalKMeans extends Logging {
 
     // Run up to maxIterations iterations of Lloyd's algorithm
     val oldClosest = Array.fill(points.length)(-1)
-    var iteration = 0
-    var moved = true
+    var iteration  = 0
+    var moved      = true
     while (moved && iteration < maxIterations) {
       moved = false
       val counts = Array.fill(k)(0.0)
-      val sums = Array.fill(k)(Vectors.zeros(dimensions))
-      var i = 0
+      val sums   = Array.fill(k)(Vectors.zeros(dimensions))
+      var i      = 0
       while (i < points.length) {
-        val p = points(i)
+        val p     = points(i)
         val index = KMeans.findClosest(centers, p)._1
         axpy(weights(i), p.vector, sums(index))
         counts(index) += weights(i)
@@ -110,7 +111,8 @@ private[mllib] object LocalKMeans extends Logging {
 
     if (iteration == maxIterations) {
       logInfo(
-          s"Local KMeans++ reached the max number of iterations: $maxIterations.")
+        s"Local KMeans++ reached the max number of iterations: $maxIterations."
+      )
     } else {
       logInfo(s"Local KMeans++ converged in $iteration iterations.")
     }
@@ -119,9 +121,12 @@ private[mllib] object LocalKMeans extends Logging {
   }
 
   private def pickWeighted[T](
-      rand: Random, data: Array[T], weights: Array[Double]): T = {
-    val r = rand.nextDouble() * weights.sum
-    var i = 0
+      rand: Random,
+      data: Array[T],
+      weights: Array[Double]
+  ): T = {
+    val r         = rand.nextDouble() * weights.sum
+    var i         = 0
     var curWeight = 0.0
     while (i < data.length && curWeight < r) {
       curWeight += weights(i)

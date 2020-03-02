@@ -18,14 +18,14 @@ class NameReceptacle[T](val name: String) {
   def as[B] = new NameReceptacle[B](name)
   def as[B](unmarshaller: FSU[B]) =
     new NameUnmarshallerReceptacle(name, unmarshaller)
-  def ? = new NameOptionReceptacle[T](name)
-  def ?[B](default: B) = new NameDefaultReceptacle(name, default)
+  def ?                      = new NameOptionReceptacle[T](name)
+  def ?[B](default: B)       = new NameDefaultReceptacle(name, default)
   def ![B](requiredValue: B) = new RequiredValueReceptacle(name, requiredValue)
-  def * = new RepeatedValueReceptacle[T](name)
+  def *                      = new RepeatedValueReceptacle[T](name)
 }
 
 class NameUnmarshallerReceptacle[T](val name: String, val um: FSU[T]) {
-  def ? = new NameOptionUnmarshallerReceptacle[T](name, um)
+  def ?             = new NameOptionUnmarshallerReceptacle[T](name, um)
   def ?(default: T) = new NameDefaultUnmarshallerReceptacle(name, default, um)
   def !(requiredValue: T) =
     new RequiredValueUnmarshallerReceptacle(name, requiredValue, um)
@@ -43,9 +43,15 @@ class RepeatedValueReceptacle[T](val name: String)
 class NameOptionUnmarshallerReceptacle[T](val name: String, val um: FSU[T])
 
 class NameDefaultUnmarshallerReceptacle[T](
-    val name: String, val default: T, val um: FSU[T])
+    val name: String,
+    val default: T,
+    val um: FSU[T]
+)
 
 class RequiredValueUnmarshallerReceptacle[T](
-    val name: String, val requiredValue: T, val um: FSU[T])
+    val name: String,
+    val requiredValue: T,
+    val um: FSU[T]
+)
 
 class RepeatedValueUnmarshallerReceptacle[T](val name: String, val um: FSU[T])

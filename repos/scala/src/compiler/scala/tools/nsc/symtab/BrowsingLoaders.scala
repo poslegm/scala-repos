@@ -26,14 +26,18 @@ abstract class BrowsingLoaders extends GlobalSymbolLoaders {
     *  (and the other has not), and issue an error if both have sourcefiles.
     */
   override protected def enterIfNew(
-      owner: Symbol, member: Symbol, completer: SymbolLoader): Symbol = {
+      owner: Symbol,
+      member: Symbol,
+      completer: SymbolLoader
+  ): Symbol = {
     completer.sourcefile match {
       case Some(src) =>
         (if (member.isModule)
-           member.moduleClass else member).associatedFile = src
+           member.moduleClass
+         else member).associatedFile = src
       case _ =>
     }
-    val decls = owner.info.decls
+    val decls    = owner.info.decls
     val existing = decls.lookup(member.name)
     if (existing == NoSymbol) {
       decls enter member
@@ -45,8 +49,10 @@ abstract class BrowsingLoaders extends GlobalSymbolLoaders {
     } else {
       if (member.sourceFile != null) {
         if (existing.sourceFile != member.sourceFile)
-          error(member + "is defined twice," + "\n in " + existing.sourceFile +
-              "\n and also in " + member.sourceFile)
+          error(
+            member + "is defined twice," + "\n in " + existing.sourceFile +
+              "\n and also in " + member.sourceFile
+          )
       }
       existing
     }
@@ -59,7 +65,7 @@ abstract class BrowsingLoaders extends GlobalSymbolLoaders {
 
     class BrowserTraverser extends Traverser {
       var packagePrefix = ""
-      var entered = 0
+      var entered       = 0
       def addPackagePrefix(pkg: Tree): Unit = pkg match {
         case Select(pre, name) =>
           addPackagePrefix(pre)
@@ -72,7 +78,9 @@ abstract class BrowsingLoaders extends GlobalSymbolLoaders {
           }
         case _ =>
           throw new MalformedInput(
-              pkg.pos.point, "illegal tree node in package prefix: " + pkg)
+            pkg.pos.point,
+            "illegal tree node in package prefix: " + pkg
+          )
       }
 
       private def inPackagePrefix(pkg: Tree)(op: => Unit): Unit = {
@@ -94,8 +102,8 @@ abstract class BrowsingLoaders extends GlobalSymbolLoaders {
             println("prefixes differ: " + packagePrefix + "," + root.fullName)
         case ModuleDef(_, name, _) =>
           if (packagePrefix == root.fullName) {
-            val module = enterModule(
-                root, name.toString, new SourcefileLoader(src))
+            val module =
+              enterModule(root, name.toString, new SourcefileLoader(src))
             entered += 1
             if (name == nme.PACKAGEkw) {
               println("open package module: " + module)
@@ -109,19 +117,23 @@ abstract class BrowsingLoaders extends GlobalSymbolLoaders {
 
 //    System.out.println("Browsing "+src)
     val source = getSourceFile(src) // this uses the current encoding
-    val body = new OutlineParser(source).parse()
+    val body   = new OutlineParser(source).parse()
 //    System.out.println(body)
     val browser = new BrowserTraverser
     browser.traverse(body)
     if (browser.entered == 0)
       warning(
-          "No classes or objects found in " + source + " that go in " + root)
+        "No classes or objects found in " + source + " that go in " + root
+      )
   }
 
   /** Enter top-level symbols from a source file
     */
   override def enterToplevelsFromSource(
-      root: Symbol, name: String, src: AbstractFile) {
+      root: Symbol,
+      name: String,
+      src: AbstractFile
+  ) {
     try {
       if (root.isEffectiveRoot ||
           !src.name.endsWith(".scala")) // RootClass or EmptyPackageClass
@@ -130,8 +142,9 @@ abstract class BrowsingLoaders extends GlobalSymbolLoaders {
     } catch {
       case ex: syntaxAnalyzer.MalformedInput =>
         println(
-            "[%s] caught malformed input exception at offset %d: %s".format(
-                src, ex.offset, ex.msg))
+          "[%s] caught malformed input exception at offset %d: %s"
+            .format(src, ex.offset, ex.msg)
+        )
         super.enterToplevelsFromSource(root, name, src)
     }
   }

@@ -7,17 +7,20 @@ import org.scalajs.testinterface.TestUtils
 final class DummyTask(
     val taskDef: TaskDef,
     runner: BaseRunner
-)
-    extends Task {
+) extends Task {
 
   def tags: Array[String] = Array()
 
   def execute(
-      eventHandler: EventHandler, loggers: Array[Logger]): Array[Task] = {
+      eventHandler: EventHandler,
+      loggers: Array[Logger]
+  ): Array[Task] = {
     try {
       // Just create a new instance.
       val inst = TestUtils.newInstance(
-          taskDef.fullyQualifiedName, runner.testClassLoader)(Seq())
+        taskDef.fullyQualifiedName,
+        runner.testClassLoader
+      )(Seq())
 
       eventHandler.handle(new DummyEvent(taskDef, None))
       loggers.foreach(_.info(s"Success: ${taskDef.fullyQualifiedName}"))
@@ -34,17 +37,19 @@ final class DummyTask(
     Array()
   }
 
-  def execute(eventHandler: EventHandler,
-              loggers: Array[Logger],
-              continuation: Array[Task] => Unit): Unit = {
+  def execute(
+      eventHandler: EventHandler,
+      loggers: Array[Logger],
+      continuation: Array[Task] => Unit
+  ): Unit = {
     continuation(execute(eventHandler, loggers))
   }
 
   private class DummyEvent(taskDef: TaskDef, t: Option[Throwable])
       extends Event {
     val fullyQualifiedName: String = taskDef.fullyQualifiedName
-    val fingerprint: Fingerprint = taskDef.fingerprint
-    val selector: Selector = new SuiteSelector
+    val fingerprint: Fingerprint   = taskDef.fingerprint
+    val selector: Selector         = new SuiteSelector
 
     val status: Status = if (t.isDefined) Status.Error else Status.Success
 

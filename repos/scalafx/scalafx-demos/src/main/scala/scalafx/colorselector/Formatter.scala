@@ -29,8 +29,8 @@ package scalafx.colorselector
 import scalafx.scene.paint.Color
 
 object Formatter {
-  val formatters = List(
-      HexFormatter, RgbFormatter, PercentFormatter, HsbFormatter)
+  val formatters =
+    List(HexFormatter, RgbFormatter, PercentFormatter, HsbFormatter)
 }
 
 abstract sealed case class Formatter(description: String) {
@@ -58,7 +58,7 @@ object HexFormatter extends Formatter("Hexadecimal") {
 }
 
 object RgbFormatter extends Formatter("RGB") {
-  val RGB_FORMAT = "rgb(%3d, %3d, %3d)"
+  val RGB_FORMAT  = "rgb(%3d, %3d, %3d)"
   val RGBA_FORMAT = "rgba(%3d, %3d, %3d, %.2f)"
 
   def formatWithAlpha(c: Color): String = {
@@ -73,24 +73,29 @@ object RgbFormatter extends Formatter("RGB") {
 }
 
 object PercentFormatter extends Formatter("Percent") {
-  val RGB_FORMAT = "rgb(%3d%%, %3d%%, %3d%%)"
+  val RGB_FORMAT  = "rgb(%3d%%, %3d%%, %3d%%)"
   val RGBA_FORMAT = "rgba(%3d%%, %3d%%, %3d%%, %.2f)"
 
   private def doubleToInt(d: Double) = (100 * d).toInt
 
   def formatWithAlpha(c: Color): String =
-    RGBA_FORMAT.format(doubleToInt(c.red),
-                       doubleToInt(c.green),
-                       doubleToInt(c.blue),
-                       c.opacity)
+    RGBA_FORMAT.format(
+      doubleToInt(c.red),
+      doubleToInt(c.green),
+      doubleToInt(c.blue),
+      c.opacity
+    )
 
   def formatWithoutAlpha(c: Color): String =
     RGB_FORMAT.format(
-        doubleToInt(c.red), doubleToInt(c.green), doubleToInt(c.blue))
+      doubleToInt(c.red),
+      doubleToInt(c.green),
+      doubleToInt(c.blue)
+    )
 }
 
 object HsbFormatter extends Formatter("HSB") {
-  val HSB_FORMAT = "hsb(%3.0f, %3.0f%%, %3.0f%%)"
+  val HSB_FORMAT  = "hsb(%3.0f, %3.0f%%, %3.0f%%)"
   val HSBA_FORMAT = "hsba(%3.0f, %3.0f%%, %3.0f%%, %.2f)"
 
   private def colorToHsb(c: Color): (Double, Double, Double) =

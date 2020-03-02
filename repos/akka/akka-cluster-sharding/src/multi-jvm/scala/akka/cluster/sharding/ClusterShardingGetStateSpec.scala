@@ -21,7 +21,7 @@ object ClusterShardingGetStateSpec {
   class ShardedActor extends Actor with ActorLogging {
     log.info(self.path.toString)
     def receive = {
-      case Stop ⇒ context.stop(self)
+      case Stop    ⇒ context.stop(self)
       case _: Ping ⇒ sender() ! Pong
     }
   }
@@ -41,10 +41,12 @@ object ClusterShardingGetStateSpec {
 
 object ClusterShardingGetStateSpecConfig extends MultiNodeConfig {
   val controller = role("controller")
-  val first = role("first")
-  val second = role("second")
+  val first      = role("first")
+  val second     = role("second")
 
-  commonConfig(ConfigFactory.parseString("""
+  commonConfig(
+    ConfigFactory
+      .parseString("""
     akka.loglevel = INFO
     akka.actor.provider = "akka.cluster.ClusterActorRefProvider"
     akka.remote.log-remote-lifecycle-events = off
@@ -55,10 +57,12 @@ object ClusterShardingGetStateSpecConfig extends MultiNodeConfig {
       shard-failure-backoff = 3s
       state-store-mode = "ddata"
     }
-    """))
+    """)
+  )
 
   nodeConfig(first, second)(
-      ConfigFactory.parseString("""akka.cluster.roles=["shard"]"""))
+    ConfigFactory.parseString("""akka.cluster.roles=["shard"]""")
+  )
 }
 
 class ClusterShardingGetStateSpecMultiJvmNode1
@@ -79,18 +83,21 @@ abstract class ClusterShardingGetStateSpec
 
   def startShard(): ActorRef = {
     ClusterSharding(system).start(
-        typeName = shardTypeName,
-        entityProps = Props(new ShardedActor),
-        settings = ClusterShardingSettings(system).withRole("shard"),
-        extractEntityId = extractEntityId,
-        extractShardId = extractShardId)
+      typeName = shardTypeName,
+      entityProps = Props(new ShardedActor),
+      settings = ClusterShardingSettings(system).withRole("shard"),
+      extractEntityId = extractEntityId,
+      extractShardId = extractShardId
+    )
   }
 
   def startProxy(): ActorRef = {
-    ClusterSharding(system).startProxy(typeName = shardTypeName,
-                                       role = Some("shard"),
-                                       extractEntityId = extractEntityId,
-                                       extractShardId = extractShardId)
+    ClusterSharding(system).startProxy(
+      typeName = shardTypeName,
+      role = Some("shard"),
+      extractEntityId = extractEntityId,
+      extractShardId = extractShardId
+    )
   }
 
   def join(from: RoleName): Unit = {
@@ -126,7 +133,7 @@ abstract class ClusterShardingGetStateSpec
     "return empty state when no sharded actors has started" in {
 
       awaitAssert {
-        val probe = TestProbe()
+        val probe  = TestProbe()
         val region = ClusterSharding(system).shardRegion(shardTypeName)
         region.tell(ShardRegion.GetCurrentRegions, probe.ref)
         probe.expectMsgType[ShardRegion.CurrentRegions].regions.size === 0
@@ -157,7 +164,7 @@ abstract class ClusterShardingGetStateSpec
     "get shard state" in {
       within(10.seconds) {
         awaitAssert {
-          val probe = TestProbe()
+          val probe  = TestProbe()
           val region = ClusterSharding(system).shardRegion(shardTypeName)
           region.tell(ShardRegion.GetCurrentRegions, probe.ref)
           val regions = probe.expectMsgType[ShardRegion.CurrentRegions].regions
@@ -174,8 +181,8 @@ abstract class ClusterShardingGetStateSpec
             case msg: ShardRegion.CurrentShardRegionState ⇒ msg
           }
           val allEntityIds = for {
-            state ← states
-            shard ← state.shards
+            state    ← states
+            shard    ← state.shards
             entityId ← shard.entityIds
           } yield entityId
 

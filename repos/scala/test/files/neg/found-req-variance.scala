@@ -14,7 +14,7 @@ class InvC extends Inv[C]
 
 class Multi[+Cov, Inv, -Con]
 class MultiCov[+T <: A] extends Multi[T, B, C]
-class MultiInv[T] extends Multi[A, T, C]
+class MultiInv[T]       extends Multi[A, T, C]
 class MultiCon[-T >: C] extends Multi[A, B, T]
 
 object Test {
@@ -42,7 +42,7 @@ object Test {
 object Functions {
   object Set1 {
     def f[T, R](x: FF1[T, R]) = ()
-    def h[T, R]: FF1[T, R] = sys.error("")
+    def h[T, R]: FF1[T, R]    = sys.error("")
 
     def ff1 = f[B, B](h[A, A]) // fail
     def ff2 = f[B, B](h[B, A]) // fail
@@ -56,7 +56,7 @@ object Functions {
   }
   object Set2 {
     def f[T, R](x: FF2[T, R]) = ()
-    def h[T, R]: FF2[T, R] = sys.error("")
+    def h[T, R]: FF2[T, R]    = sys.error("")
 
     def ff1 = f[B, B](h[A, A]) // suggest
     def ff2 = f[B, B](h[B, A]) // suggest
@@ -80,7 +80,7 @@ object Functions {
 // }
 
 object Javas {
-  def f[T](x: java.util.List[T]) = ()
+  def f[T](x: java.util.List[T])       = ()
   def g[T](x: java.util.Comparator[T]) = ()
 
   def g1 = f[AnyRef](new java.util.ArrayList[String] {})

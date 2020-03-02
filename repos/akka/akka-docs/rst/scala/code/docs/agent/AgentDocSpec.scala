@@ -117,11 +117,11 @@ class AgentDocSpec extends AkkaSpec {
     }
 
     val from = Agent(100)
-    val to = Agent(20)
-    val ok = transfer(from, to, 50)
+    val to   = Agent(20)
+    val ok   = transfer(from, to, 50)
 
     val fromValue = from.future // -> 50
-    val toValue = to.future // -> 70
+    val toValue   = to.future   // -> 70
     //#transfer-example
 
     Await.result(fromValue, 5 seconds) should be(50)

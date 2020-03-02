@@ -56,12 +56,14 @@ private[parser] trait Base64Parsing {
     * stack using the given codec.
     */
   def base64StringOrBlock(
-      alphabet: CharPredicate, decoder: Decoder): Rule1[Array[Byte]] = {
+      alphabet: CharPredicate,
+      decoder: Decoder
+  ): Rule1[Array[Byte]] = {
     val start = cursor
     rule {
       oneOrMore(alphabet) ~ run {
         decoder(input.sliceCharArray(start, cursor)) match {
-          case null ⇒ MISMATCH
+          case null  ⇒ MISMATCH
           case bytes ⇒ push(bytes)
         }
       }
@@ -73,13 +75,13 @@ object Base64Parsing {
   type Decoder = Array[Char] ⇒ Array[Byte]
 
   val rfc2045Alphabet = CharPredicate(Base64.rfc2045().getAlphabet).asMaskBased
-  val customAlphabet = CharPredicate(Base64.custom().getAlphabet).asMaskBased
+  val customAlphabet  = CharPredicate(Base64.custom().getAlphabet).asMaskBased
 
   val rfc2045StringDecoder: Decoder = decodeString(Base64.rfc2045())
-  val customStringDecoder: Decoder = decodeString(Base64.custom())
+  val customStringDecoder: Decoder  = decodeString(Base64.custom())
 
   val rfc2045BlockDecoder: Decoder = decodeBlock(Base64.rfc2045())
-  val customBlockDecoder: Decoder = decodeBlock(Base64.custom())
+  val customBlockDecoder: Decoder  = decodeBlock(Base64.custom())
 
   def decodeString(codec: Base64)(chars: Array[Char]): Array[Byte] =
     codec.decodeFast(chars)

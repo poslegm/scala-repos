@@ -13,7 +13,7 @@ import org.junit.Assert._
 class ReferenceTest {
 
   @Test def should_have_all_the_normal_operations(): Unit = {
-    val s = "string"
+    val s   = "string"
     val ref = new java.lang.ref.WeakReference(s)
     assertEquals(s, ref.get)
     assertEquals(false, ref.enqueue)

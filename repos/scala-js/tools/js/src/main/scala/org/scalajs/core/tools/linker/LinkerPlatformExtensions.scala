@@ -22,18 +22,25 @@ trait LinkerPlatformExtensions {
       withSourceMap: Boolean = true,
       disableOptimizer: Boolean = false,
       frontendConfig: LinkerFrontend.Config = LinkerFrontend.Config(),
-      backendConfig: LinkerBackend.Config = LinkerBackend.Config()): Linker = {
+      backendConfig: LinkerBackend.Config = LinkerBackend.Config()
+  ): Linker = {
     val optOptimizerFactory =
       if (disableOptimizer) None
       else Some(IncOptimizer.factory)
 
-    val frontend = new LinkerFrontend(semantics,
-                                      outputMode.esLevel,
-                                      withSourceMap,
-                                      frontendConfig,
-                                      optOptimizerFactory)
+    val frontend = new LinkerFrontend(
+      semantics,
+      outputMode.esLevel,
+      withSourceMap,
+      frontendConfig,
+      optOptimizerFactory
+    )
     val backend = new BasicLinkerBackend(
-        semantics, outputMode, withSourceMap, backendConfig)
+      semantics,
+      outputMode,
+      withSourceMap,
+      backendConfig
+    )
     new Linker(frontend, backend)
   }
 }

@@ -18,7 +18,8 @@ class ScVariableNameIndex extends StringStubIndexExtension[ScVariable] {
   override def get(
       key: String,
       project: Project,
-      scope: GlobalSearchScope): java.util.Collection[ScVariable] =
+      scope: GlobalSearchScope
+  ): java.util.Collection[ScVariable] =
     super.get(key, project, new ScalaSourceFilterScope(scope, project))
 
   def getKey: StubIndexKey[String, ScVariable] = ScVariableNameIndex.KEY

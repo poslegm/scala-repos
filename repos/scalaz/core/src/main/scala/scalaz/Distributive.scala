@@ -10,7 +10,8 @@ trait Distributive[F[_]] extends Functor[F] { self =>
 
   /**The composition of Distributives `F` and `G`, `[x]F[G[x]]`, is a Distributive */
   def compose[G[_]](
-      implicit G0: Distributive[G]): Distributive[λ[α => F[G[α]]]] =
+      implicit G0: Distributive[G]
+  ): Distributive[λ[α => F[G[α]]]] =
     new CompositionDistributive[F, G] {
       implicit def F = self
       implicit def G = G0
@@ -18,7 +19,8 @@ trait Distributive[F[_]] extends Functor[F] { self =>
 
   /**The product of Distributives `F` and `G`, `[x](F[x], G[x]])`, is a Distributive */
   def product[G[_]](
-      implicit G0: Distributive[G]): Distributive[λ[α => (F[α], G[α])]] =
+      implicit G0: Distributive[G]
+  ): Distributive[λ[α => (F[α], G[α])]] =
     new ProductDistributive[F, G] {
       implicit def F = self
       implicit def G = G0

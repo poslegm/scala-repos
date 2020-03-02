@@ -11,7 +11,7 @@ object Test extends DirectTest {
     new global.Run()
     import global._, definitions._
     val function0TC = FunctionClass(0).typeConstructor
-    val tuple1TC = TupleClass(1).typeConstructor
+    val tuple1TC    = TupleClass(1).typeConstructor
     FunctionClass.seq.foreach { sym =>
       val tc = sym.typeConstructor
       assert(!isFunctionType(tc), s"$tc")

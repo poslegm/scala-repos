@@ -22,10 +22,10 @@ class TryTest extends FunSuite {
 
   test("Try.withFatals works like Try.apply, but can handle fatals") {
     val nonFatal = new Exception
-    val fatal = new AbstractMethodError
+    val fatal    = new AbstractMethodError
     val handler: PartialFunction[Throwable, Try[Int]] = {
       case e: AbstractMethodError => Throw(e)
-      case e: Exception => Return(1)
+      case e: Exception           => Return(1)
     }
 
     // Works like Try.apply for non fatal errors.
@@ -53,8 +53,8 @@ class TryTest extends FunSuite {
 
   test("Try.rescue") {
     val result1 = Return(1) rescue { case _ => Return(2) }
-    val result2 = Throw(e) rescue { case _ => Return(2) }
-    val result3 = Throw(e) rescue { case _ => Throw(e) }
+    val result2 = Throw(e) rescue { case _  => Return(2) }
+    val result3 = Throw(e) rescue { case _  => Throw(e) }
 
     assert(result1 == Return(1))
     assert(result2 == Return(2))
@@ -83,7 +83,7 @@ class TryTest extends FunSuite {
     val result1 = Return(1) map (_ => throw e)
     assert(result1 == Throw(e))
 
-    val e2 = new Exception
+    val e2      = new Exception
     val result2 = Throw[Int](e) map (_ => throw e2)
     assert(result2 == Throw(e))
   }
@@ -100,19 +100,21 @@ class TryTest extends FunSuite {
     val result1 = Return(1).flatMap[Int](_ => throw e)
     assert(result1 == Throw(e))
 
-    val e2 = new Exception
+    val e2      = new Exception
     val result2 = Throw[Int](e).flatMap[Int](_ => throw e2)
     assert(result2 == Throw(e))
   }
 
   test(
-      "Try.exists: should return true when predicate passes for a Return value") {
+    "Try.exists: should return true when predicate passes for a Return value"
+  ) {
     val t = Return(4)
     assert(t.exists(_ > 0) == true)
   }
 
   test(
-      "Try.exists: should return false when predicate doesn't pass for a Return value") {
+    "Try.exists: should return false when predicate doesn't pass for a Return value"
+  ) {
     val t = Return(4)
     assert(t.exists(_ < 0) == false)
   }

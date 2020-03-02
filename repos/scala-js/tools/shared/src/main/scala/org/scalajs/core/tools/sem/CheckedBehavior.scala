@@ -12,12 +12,12 @@ sealed abstract class CheckedBehavior {
   import CheckedBehavior._
   def optimized: CheckedBehavior = this match {
     case Fatal => Unchecked
-    case _ => this
+    case _     => this
   }
 }
 
 object CheckedBehavior {
   case object Compliant extends CheckedBehavior
-  case object Fatal extends CheckedBehavior
+  case object Fatal     extends CheckedBehavior
   case object Unchecked extends CheckedBehavior
 }

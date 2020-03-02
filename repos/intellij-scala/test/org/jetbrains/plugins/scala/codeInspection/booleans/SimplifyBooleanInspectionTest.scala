@@ -9,8 +9,8 @@ import org.jetbrains.plugins.scala.base.ScalaLightCodeInsightFixtureTestAdapter
   */
 class SimplifyBooleanInspectionTest
     extends ScalaLightCodeInsightFixtureTestAdapter {
-  val s = ScalaLightCodeInsightFixtureTestAdapter.SELECTION_START
-  val e = ScalaLightCodeInsightFixtureTestAdapter.SELECTION_END
+  val s          = ScalaLightCodeInsightFixtureTestAdapter.SELECTION_START
+  val e          = ScalaLightCodeInsightFixtureTestAdapter.SELECTION_END
   val annotation = "Simplify boolean expression"
 
   private def check(text: String) {
@@ -18,10 +18,12 @@ class SimplifyBooleanInspectionTest
   }
 
   private def testFix(text: String, result: String, hint: String) {
-    testQuickFix(text.replace("\r", ""),
-                 result.replace("\r", ""),
-                 hint,
-                 classOf[SimplifyBooleanInspection])
+    testQuickFix(
+      text.replace("\r", ""),
+      result.replace("\r", ""),
+      hint,
+      classOf[SimplifyBooleanInspection]
+    )
   }
 
   private def checkHasNoErrors(text: String) {
@@ -32,9 +34,9 @@ class SimplifyBooleanInspectionTest
     val selectedText = s"$s!true$e"
     check(selectedText)
 
-    val text = "!true"
+    val text   = "!true"
     val result = "false"
-    val hint = "Simplify !true"
+    val hint   = "Simplify !true"
     testFix(text, result, hint)
   }
 
@@ -43,11 +45,11 @@ class SimplifyBooleanInspectionTest
           |${s}true == a$e""".stripMargin
     check(selectedText)
 
-    val text = """val a = true
+    val text   = """val a = true
         |true == a""".stripMargin
     val result = """val a = true
                    |a""".stripMargin
-    val hint = "Simplify true == a"
+    val hint   = "Simplify true == a"
     testFix(text, result, hint)
   }
 
@@ -56,11 +58,11 @@ class SimplifyBooleanInspectionTest
           |${s}true && a$e""".stripMargin
     check(selectedText)
 
-    val text = """val a = true
+    val text   = """val a = true
           |true && a""".stripMargin
     val result = """val a = true
                     |a""".stripMargin
-    val hint = "Simplify true && a"
+    val hint   = "Simplify true && a"
     testFix(text, result, hint)
   }
 
@@ -69,11 +71,11 @@ class SimplifyBooleanInspectionTest
                           |${s}a | false$e""".stripMargin
     check(selectedText)
 
-    val text = """val a = true
+    val text   = """val a = true
                    |a | false""".stripMargin
     val result = """val a = true
                     |a""".stripMargin
-    val hint = "Simplify a | false"
+    val hint   = "Simplify a | false"
     testFix(text, result, hint)
   }
 
@@ -84,13 +86,13 @@ class SimplifyBooleanInspectionTest
       """.stripMargin
     check(selectedText)
 
-    val text = s"""
+    val text   = s"""
         |val a = true
         |true && (a || false)""".stripMargin
     val result = """
         |val a = true
         |a""".stripMargin
-    val hint = "Simplify true && (a || false)"
+    val hint   = "Simplify true && (a || false)"
     testFix(text, result, hint)
   }
 
@@ -101,7 +103,7 @@ class SimplifyBooleanInspectionTest
       """.stripMargin
     check(selectedText)
 
-    val text = s"""
+    val text   = s"""
         |val a = true
         |true && (<caret>a || false)
       """.stripMargin
@@ -109,7 +111,7 @@ class SimplifyBooleanInspectionTest
         |val a = true
         |true && a
       """.stripMargin
-    val hint = "Simplify a || false"
+    val hint   = "Simplify a || false"
     testFix(text, result, hint)
   }
 
@@ -118,11 +120,11 @@ class SimplifyBooleanInspectionTest
                             |val flag: Boolean = ${s}true != a$e""".stripMargin
     check(selectedText)
 
-    val text = s"""val a = true
+    val text   = s"""val a = true
                   |val flag: Boolean = true != a""".stripMargin
     val result = """val a = true
                     |val flag: Boolean = !a""".stripMargin
-    val hint = "Simplify true != a"
+    val hint   = "Simplify true != a"
     testFix(text, result, hint)
   }
 
@@ -131,11 +133,11 @@ class SimplifyBooleanInspectionTest
                             |!(${s}true != a$e)""".stripMargin
     check(selectedText)
 
-    val text = """val a = true
+    val text   = """val a = true
                   |!(true != a)""".stripMargin
     val result = """val a = true
                    |!(!a)""".stripMargin
-    val hint = "Simplify true != a"
+    val hint   = "Simplify true != a"
     testFix(text, result, hint)
   }
 
@@ -156,8 +158,10 @@ class SimplifyBooleanInspectionTest
   }
 
   def testParentheses(): Unit = {
-    testFix("true<caret> && (2 - 1) * 0 == 0",
-            "(2 - 1) * 0 == 0",
-            "Simplify true && (2 - 1) * 0 == 0")
+    testFix(
+      "true<caret> && (2 - 1) * 0 == 0",
+      "(2 - 1) * 0 == 0",
+      "Simplify true && (2 - 1) * 0 == 0"
+    )
   }
 }

@@ -35,7 +35,8 @@ import scalafx.delegate.SFXDelegate
 
 object EventDispatchChain {
   implicit def sfxEventDispatchChain2jfx(
-      v: EventDispatchChain): jfxe.EventDispatchChain =
+      v: EventDispatchChain
+  ): jfxe.EventDispatchChain =
     if (v != null) v.delegate else null
 }
 
@@ -57,8 +58,8 @@ object EventDispatchChain {
   * @define ORIGINALDOC Original Documentation]].
   */
 abstract class EventDispatchChain(
-    override val delegate: jfxe.EventDispatchChain)
-    extends SFXDelegate[jfxe.EventDispatchChain] {
+    override val delegate: jfxe.EventDispatchChain
+) extends SFXDelegate[jfxe.EventDispatchChain] {
 
   /**
     * Appends the specified `EventDispatcher` to this chain. Returns a

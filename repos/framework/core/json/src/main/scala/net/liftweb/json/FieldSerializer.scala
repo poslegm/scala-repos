@@ -30,24 +30,29 @@ package json
   * )
   * </pre>
   */
-case class FieldSerializer[A : Manifest](
+case class FieldSerializer[A: Manifest](
     serializer: PartialFunction[(String, Any), Option[(String, Any)]] = Map(),
     deserializer: PartialFunction[JField, JField] = Map()
 )
 
 object FieldSerializer {
   def renameFrom(
-      name: String, newName: String): PartialFunction[JField, JField] = {
+      name: String,
+      newName: String
+  ): PartialFunction[JField, JField] = {
     case JField(`name`, x) => JField(newName, x)
   }
 
   def ignore(
-      name: String): PartialFunction[(String, Any), Option[(String, Any)]] = {
+      name: String
+  ): PartialFunction[(String, Any), Option[(String, Any)]] = {
     case (`name`, _) => None
   }
 
-  def renameTo(name: String, newName: String)
-    : PartialFunction[(String, Any), Option[(String, Any)]] = {
+  def renameTo(
+      name: String,
+      newName: String
+  ): PartialFunction[(String, Any), Option[(String, Any)]] = {
     case (`name`, x) => Some(newName, x)
   }
 }

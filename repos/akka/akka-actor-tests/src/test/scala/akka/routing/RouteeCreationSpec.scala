@@ -24,15 +24,14 @@ class RouteeCreationSpec extends AkkaSpec {
       for (i ← 1 to N) {
         expectMsgType[ActorIdentity] match {
           case ActorIdentity(_, Some(_)) ⇒ // fine
-          case x ⇒ fail(s"routee $i was not found $x")
+          case x                         ⇒ fail(s"routee $i was not found $x")
         }
       }
     }
 
     "allow sending to context.parent" in {
       val N = 100
-      system.actorOf(
-          RoundRobinPool(N).props(Props(new Actor {
+      system.actorOf(RoundRobinPool(N).props(Props(new Actor {
         context.parent ! "one"
         def receive = {
           case "one" ⇒ testActor forward "two"

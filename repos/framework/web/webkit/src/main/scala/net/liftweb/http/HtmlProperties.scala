@@ -41,15 +41,15 @@ trait HtmlProperties {
   def setDocType(newDocType: () => Box[String]) = {
     val old = this
     new HtmlProperties {
-      def docType = newDocType()
-      def encoding = old.encoding
-      def contentType = old.contentType
-      def htmlOutputHeader = old.htmlOutputHeader
-      def htmlParser = old.htmlParser
-      def htmlWriter = old.htmlWriter
+      def docType           = newDocType()
+      def encoding          = old.encoding
+      def contentType       = old.contentType
+      def htmlOutputHeader  = old.htmlOutputHeader
+      def htmlParser        = old.htmlParser
+      def htmlWriter        = old.htmlWriter
       def html5FormsSupport = old.html5FormsSupport
-      def maxOpenRequests = old.maxOpenRequests
-      def userAgent = old.userAgent
+      def maxOpenRequests   = old.maxOpenRequests
+      def userAgent         = old.userAgent
     }
   }
 
@@ -65,15 +65,15 @@ trait HtmlProperties {
   def setEncoding(newEncoding: () => Box[String]) = {
     val old = this
     new HtmlProperties {
-      def docType = old.docType
-      def encoding = newEncoding()
-      def contentType = old.contentType
-      def htmlOutputHeader = old.htmlOutputHeader
-      def htmlParser = old.htmlParser
-      def htmlWriter = old.htmlWriter
+      def docType           = old.docType
+      def encoding          = newEncoding()
+      def contentType       = old.contentType
+      def htmlOutputHeader  = old.htmlOutputHeader
+      def htmlParser        = old.htmlParser
+      def htmlWriter        = old.htmlWriter
       def html5FormsSupport = old.html5FormsSupport
-      def maxOpenRequests = old.maxOpenRequests
-      def userAgent = old.userAgent
+      def maxOpenRequests   = old.maxOpenRequests
+      def userAgent         = old.userAgent
     }
   }
 
@@ -92,15 +92,15 @@ trait HtmlProperties {
   def setHtmlOutputHeader(newHeader: () => Box[String]) = {
     val old = this
     new HtmlProperties {
-      def docType = old.docType
-      def encoding = old.encoding
-      def htmlOutputHeader = newHeader()
-      def contentType = old.contentType
-      def htmlParser = old.htmlParser
-      def htmlWriter = old.htmlWriter
+      def docType           = old.docType
+      def encoding          = old.encoding
+      def htmlOutputHeader  = newHeader()
+      def contentType       = old.contentType
+      def htmlParser        = old.htmlParser
+      def htmlWriter        = old.htmlWriter
       def html5FormsSupport = old.html5FormsSupport
-      def maxOpenRequests = old.maxOpenRequests
-      def userAgent = old.userAgent
+      def maxOpenRequests   = old.maxOpenRequests
+      def userAgent         = old.userAgent
     }
   }
 
@@ -117,15 +117,15 @@ trait HtmlProperties {
   def setContentType(newContentType: () => Box[String]) = {
     val old = this
     new HtmlProperties {
-      def docType = old.docType
-      def encoding = old.encoding
-      def contentType = newContentType()
-      def htmlOutputHeader = old.htmlOutputHeader
-      def htmlParser = old.htmlParser
-      def htmlWriter = old.htmlWriter
+      def docType           = old.docType
+      def encoding          = old.encoding
+      def contentType       = newContentType()
+      def htmlOutputHeader  = old.htmlOutputHeader
+      def htmlParser        = old.htmlParser
+      def htmlWriter        = old.htmlWriter
       def html5FormsSupport = old.html5FormsSupport
-      def maxOpenRequests = old.maxOpenRequests
-      def userAgent = old.userAgent
+      def maxOpenRequests   = old.maxOpenRequests
+      def userAgent         = old.userAgent
     }
   }
 
@@ -143,15 +143,15 @@ trait HtmlProperties {
   def setHtmlParser(newParser: InputStream => Box[NodeSeq]) = {
     val old = this
     new HtmlProperties {
-      def docType = old.docType
-      def encoding = old.encoding
-      def contentType = old.contentType
-      def htmlOutputHeader = old.htmlOutputHeader
-      def htmlParser = newParser
-      def htmlWriter = old.htmlWriter
+      def docType           = old.docType
+      def encoding          = old.encoding
+      def contentType       = old.contentType
+      def htmlOutputHeader  = old.htmlOutputHeader
+      def htmlParser        = newParser
+      def htmlWriter        = old.htmlWriter
       def html5FormsSupport = old.html5FormsSupport
-      def maxOpenRequests = old.maxOpenRequests
-      def userAgent = old.userAgent
+      def maxOpenRequests   = old.maxOpenRequests
+      def userAgent         = old.userAgent
     }
   }
 
@@ -168,15 +168,15 @@ trait HtmlProperties {
   def setHtmlWriter(newWriter: (Node, Writer) => Unit) = {
     val old = this
     new HtmlProperties {
-      def docType = old.docType
-      def encoding = old.encoding
-      def contentType = old.contentType
-      def htmlOutputHeader = old.htmlOutputHeader
-      def htmlParser = old.htmlParser
-      def htmlWriter = newWriter
+      def docType           = old.docType
+      def encoding          = old.encoding
+      def contentType       = old.contentType
+      def htmlOutputHeader  = old.htmlOutputHeader
+      def htmlParser        = old.htmlParser
+      def htmlWriter        = newWriter
       def html5FormsSupport = old.html5FormsSupport
-      def maxOpenRequests = old.maxOpenRequests
-      def userAgent = old.userAgent
+      def maxOpenRequests   = old.maxOpenRequests
+      def userAgent         = old.userAgent
     }
   }
 
@@ -192,15 +192,15 @@ trait HtmlProperties {
   def setHtml5FormsSupport(newFormsSupport: Boolean) = {
     val old = this
     new HtmlProperties {
-      def docType = old.docType
-      def encoding = old.encoding
-      def contentType = old.contentType
-      def htmlOutputHeader = old.htmlOutputHeader
-      def htmlParser = old.htmlParser
-      def htmlWriter = old.htmlWriter
+      def docType           = old.docType
+      def encoding          = old.encoding
+      def contentType       = old.contentType
+      def htmlOutputHeader  = old.htmlOutputHeader
+      def htmlParser        = old.htmlParser
+      def htmlWriter        = old.htmlWriter
       def html5FormsSupport = newFormsSupport
-      def maxOpenRequests = old.maxOpenRequests
-      def userAgent = old.userAgent
+      def maxOpenRequests   = old.maxOpenRequests
+      def userAgent         = old.userAgent
     }
   }
 
@@ -217,15 +217,15 @@ trait HtmlProperties {
   def setMaxOpenRequests(maxOpen: Int) = {
     val old = this
     new HtmlProperties {
-      def docType = old.docType
-      def encoding = old.encoding
-      def contentType = old.contentType
-      def htmlOutputHeader = old.htmlOutputHeader
-      def htmlParser = old.htmlParser
-      def htmlWriter = old.htmlWriter
+      def docType           = old.docType
+      def encoding          = old.encoding
+      def contentType       = old.contentType
+      def htmlOutputHeader  = old.htmlOutputHeader
+      def htmlParser        = old.htmlParser
+      def htmlWriter        = old.htmlWriter
       def html5FormsSupport = old.html5FormsSupport
-      def maxOpenRequests = maxOpen
-      def userAgent = old.userAgent
+      def maxOpenRequests   = maxOpen
+      def userAgent         = old.userAgent
     }
   }
 
@@ -242,15 +242,15 @@ trait HtmlProperties {
   def setUserAgent(newUA: Box[String]) = {
     val old = this
     new HtmlProperties {
-      def docType = old.docType
-      def encoding = old.encoding
-      def contentType = old.contentType
-      def htmlOutputHeader = old.htmlOutputHeader
-      def htmlParser = old.htmlParser
-      def htmlWriter = old.htmlWriter
+      def docType           = old.docType
+      def encoding          = old.encoding
+      def contentType       = old.contentType
+      def htmlOutputHeader  = old.htmlOutputHeader
+      def htmlParser        = old.htmlParser
+      def htmlWriter        = old.htmlWriter
       def html5FormsSupport = old.html5FormsSupport
-      def maxOpenRequests = old.maxOpenRequests
-      def userAgent = newUA
+      def maxOpenRequests   = old.maxOpenRequests
+      def userAgent         = newUA
     }
   }
 }
@@ -278,9 +278,9 @@ final case class OldHtmlProperties(userAgent: Box[String])
     Full(LiftRules.calculateXmlHeader(null, <ignore/>, contentType))
 
   def contentType: Box[String] = {
-    val req = S.request
+    val req    = S.request
     val accept = req.flatMap(_.accepts)
-    val key = req -> accept
+    val key    = req -> accept
     if (LiftRules.determineContentType.isDefinedAt(key)) {
       Full(LiftRules.determineContentType(key))
     } else {
@@ -291,17 +291,18 @@ final case class OldHtmlProperties(userAgent: Box[String])
   def htmlParser: InputStream => Box[NodeSeq] = PCDataXmlParser.apply _
 
   def htmlWriter: (Node, Writer) => Unit =
-    (n: Node, w: Writer) =>
-      {
-        val sb = new StringBuilder(64000)
-        AltXML.toXML(n,
-                     scala.xml.TopScope,
-                     sb,
-                     false,
-                     !LiftRules.convertToEntity.vend,
-                     S.legacyIeCompatibilityMode)
-        w.append(sb)
-        w.flush()
+    (n: Node, w: Writer) => {
+      val sb = new StringBuilder(64000)
+      AltXML.toXML(
+        n,
+        scala.xml.TopScope,
+        sb,
+        false,
+        !LiftRules.convertToEntity.vend,
+        S.legacyIeCompatibilityMode
+      )
+      w.append(sb)
+      w.flush()
     }
 
   def htmlOutputHeader: Box[String] =
@@ -335,7 +336,7 @@ final case class OldHtmlProperties(userAgent: Box[String])
   */
 final case class Html5Properties(userAgent: Box[String])
     extends HtmlProperties {
-  def docType: Box[String] = Full("<!DOCTYPE html>")
+  def docType: Box[String]  = Full("<!DOCTYPE html>")
   def encoding: Box[String] = Empty
 
   def contentType: Box[String] = {
@@ -367,7 +368,7 @@ final case class Html5Properties(userAgent: Box[String])
   */
 final case class XHtmlInHtml5OutProperties(userAgent: Box[String])
     extends HtmlProperties {
-  def docType: Box[String] = Full("<!DOCTYPE html>")
+  def docType: Box[String]  = Full("<!DOCTYPE html>")
   def encoding: Box[String] = Empty
 
   def contentType: Box[String] = {

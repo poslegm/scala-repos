@@ -6,7 +6,7 @@ package com.example {
 
 package com.example.p1 {
   class Clazz {
-    def foo = packageObjectMethod
+    def foo                          = packageObjectMethod
     implicit def intToClass1(n: Int) = new Clazz
 
     @deprecated("This method is deprecated.")

@@ -53,7 +53,7 @@ class Ring(positions: Array[Int]) {
     // is out of bounds, which in any case would snap to the last index.
     var i = binarySearch(nodes, 0, N * 2, pos) match {
       case i if i < 0 => -1 - i
-      case i => i
+      case i          => i
     }
 
     // In the case where positions overlap, we always
@@ -113,7 +113,7 @@ class Ring(positions: Array[Int]) {
     // We pick element a from the full range [off, off+wid); element b
     // is picked from "piecewise" range we get by subtracting the range
     // of a, i.e.: [off, begin(a)), [end(a), off+wid).
-    val a = index(off.toLong + rng.nextLong(wid))
+    val a        = index(off.toLong + rng.nextLong(wid))
     val (ab, ae) = range(a)
     val discount = intersect(off, off.toLong + wid.toLong, ab, ae)
 
@@ -150,10 +150,8 @@ object Ring {
   def apply(numSlices: Int, width: Int): Ring = {
     require(numSlices > 0)
     require(width >= numSlices, "ring not wide enough")
-    val unit = width / numSlices.toDouble
-    val positions = Array.tabulate(numSlices) { i =>
-      ((i + 1) * unit).toInt
-    }
+    val unit      = width / numSlices.toDouble
+    val positions = Array.tabulate(numSlices) { i => ((i + 1) * unit).toInt }
     new Ring(positions)
   }
 }

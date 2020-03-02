@@ -132,11 +132,11 @@ sealed abstract class State[S] {
 /** Internal implementation of the [[State]] interface */
 private[streaming] class StateImpl[S] extends State[S] {
 
-  private var state: S = null.asInstanceOf[S]
-  private var defined: Boolean = false
+  private var state: S           = null.asInstanceOf[S]
+  private var defined: Boolean   = false
   private var timingOut: Boolean = false
-  private var updated: Boolean = false
-  private var removed: Boolean = false
+  private var updated: Boolean   = false
+  private var removed: Boolean   = false
 
   // ========= Public API =========
   override def exists(): Boolean = {

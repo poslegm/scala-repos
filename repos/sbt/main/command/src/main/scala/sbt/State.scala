@@ -6,7 +6,14 @@ package sbt
 import java.io.File
 import java.util.concurrent.Callable
 import sbt.util.Logger
-import sbt.internal.util.{AttributeKey, AttributeMap, ErrorHandling, ExitHook, ExitHooks, GlobalLogging}
+import sbt.internal.util.{
+  AttributeKey,
+  AttributeMap,
+  ErrorHandling,
+  ExitHook,
+  ExitHooks,
+  GlobalLogging
+}
 import sbt.internal.util.complete.HistoryCommands
 import sbt.internal.inc.classpath.ClassLoaderCache
 
@@ -22,23 +29,24 @@ import sbt.internal.inc.classpath.ClassLoaderCache
   * @param attributes custom command state.  It is important to clean up attributes when no longer needed to avoid memory leaks and class loader leaks.
   * @param next the next action for the command processor to take.  This may be to continue with the next command, adjust global logging, or exit.
   */
-final case class State(configuration: xsbti.AppConfiguration,
-                       definedCommands: Seq[Command],
-                       exitHooks: Set[ExitHook],
-                       onFailure: Option[String],
-                       remainingCommands: Seq[String],
-                       history: State.History,
-                       attributes: AttributeMap,
-                       globalLogging: GlobalLogging,
-                       next: State.Next)
-    extends Identity {
+final case class State(
+    configuration: xsbti.AppConfiguration,
+    definedCommands: Seq[Command],
+    exitHooks: Set[ExitHook],
+    onFailure: Option[String],
+    remainingCommands: Seq[String],
+    history: State.History,
+    attributes: AttributeMap,
+    globalLogging: GlobalLogging,
+    next: State.Next
+) extends Identity {
   lazy val combinedParser = Command.combine(definedCommands)(this)
 }
 
 trait Identity {
-  override final def hashCode = super.hashCode
+  override final def hashCode       = super.hashCode
   override final def equals(a: Any) = super.equals(a)
-  override final def toString = super.toString
+  override final def toString       = super.toString
 }
 
 /** Convenience methods for State transformations and operations. */
@@ -171,8 +179,10 @@ object State {
     * @param executed the list of the most recently executed commands, with the most recent command first.
     * @param maxSize the maximum number of commands to keep, or 0 to keep an unlimited number.
     */
-  final class History private[State](
-      val executed: Seq[String], val maxSize: Int) {
+  final class History private[State] (
+      val executed: Seq[String],
+      val maxSize: Int
+  ) {
 
     /** Adds `command` as the most recently executed command.*/
     def ::(command: String): History = {
@@ -185,7 +195,7 @@ object State {
     /** Changes the maximum number of commands kept, adjusting the current history if necessary.*/
     def setMaxSize(size: Int): History =
       new History(if (size <= 0) executed else executed.take(size), size)
-    def current: String = executed.head
+    def current: String          = executed.head
     def previous: Option[String] = executed.drop(1).headOption
   }
 
@@ -194,10 +204,12 @@ object State {
 
   def defaultReload(state: State): Reboot = {
     val app = state.configuration.provider
-    new Reboot(app.scalaProvider.version,
-               state.remainingCommands,
-               app.id,
-               state.configuration.baseDirectory)
+    new Reboot(
+      app.scalaProvider.version,
+      state.remainingCommands,
+      app.id,
+      state.configuration.baseDirectory
+    )
   }
 
   /** Provides operations and transformations on State. */
@@ -205,7 +217,7 @@ object State {
     def process(f: (String, State) => State): State =
       s.remainingCommands match {
         case Seq() => exit(true)
-        case Seq(x, xs @ _ *) =>
+        case Seq(x, xs @ _*) =>
           log.debug(s"> $x")
           f(x, s.copy(remainingCommands = xs, history = x :: s.history))
       }
@@ -215,8 +227,8 @@ object State {
     def ++(newCommands: Seq[Command]): State =
       s.copy(definedCommands = (s.definedCommands ++ newCommands).distinct)
     def +(newCommand: Command): State = this ++ (newCommand :: Nil)
-    def baseDir: File = s.configuration.baseDirectory
-    def setNext(n: Next) = s.copy(next = n)
+    def baseDir: File                 = s.configuration.baseDirectory
+    def setNext(n: Next)              = s.copy(next = n)
     def setResult(ro: Option[xsbti.MainResult]) = ro match {
       case None => continue; case Some(r) => setNext(new Return(r))
     }
@@ -225,9 +237,9 @@ object State {
       runExitHooks();
       throw new xsbti.FullReload(s.remainingCommands.toArray, full)
     }
-    def reload = runExitHooks().setNext(new Return(defaultReload(s)))
+    def reload         = runExitHooks().setNext(new Return(defaultReload(s)))
     def clearGlobalLog = setNext(ClearGlobalLog)
-    def keepLastLog = setNext(KeepLastLog)
+    def keepLastLog    = setNext(KeepLastLog)
     def exit(ok: Boolean) =
       runExitHooks().setNext(new Return(Exit(if (ok) 0 else 1)))
     def get[T](key: AttributeKey[T]) = s.attributes get key
@@ -238,17 +250,21 @@ object State {
     def has(key: AttributeKey[_]) = s.attributes contains key
     def remove(key: AttributeKey[_]) =
       s.copy(attributes = s.attributes remove key)
-    def log = s.globalLogging.full
+    def log                              = s.globalLogging.full
     def handleError(t: Throwable): State = handleException(t, s, log)
     def fail = {
       import BasicCommandStrings.Compat.{FailureWall => CompatFailureWall}
-      val remaining = s.remainingCommands.dropWhile(
-          c => c != FailureWall && c != CompatFailureWall)
+      val remaining = s.remainingCommands.dropWhile(c =>
+        c != FailureWall && c != CompatFailureWall
+      )
       if (remaining.isEmpty) applyOnFailure(s, Nil, exit(ok = false))
       else applyOnFailure(s, remaining, s.copy(remainingCommands = remaining))
     }
     private[this] def applyOnFailure(
-        s: State, remaining: Seq[String], noHandler: => State): State =
+        s: State,
+        remaining: Seq[String],
+        noHandler: => State
+    ): State =
       s.onFailure match {
         case Some(c) =>
           s.copy(remainingCommands = c +: remaining, onFailure = None)
@@ -265,7 +281,7 @@ object State {
       s.configuration.provider.scalaProvider.launcher.globalLock
         .apply(file, new Callable[T] { def call = t })
 
-    def interactive = getBoolean(s, BasicKeys.interactive, false)
+    def interactive                = getBoolean(s, BasicKeys.interactive, false)
     def setInteractive(i: Boolean) = s.put(BasicKeys.interactive, i)
 
     def classLoaderCache: ClassLoaderCache =
@@ -274,17 +290,21 @@ object State {
       s.put(BasicKeys.classLoaderCache, newClassLoaderCache)
     private[this] def newClassLoaderCache =
       new ClassLoaderCache(
-          s.configuration.provider.scalaProvider.launcher.topLoader)
+        s.configuration.provider.scalaProvider.launcher.topLoader
+      )
   }
 
   import ExceptionCategory._
 
   private[sbt] def handleException(
-      t: Throwable, s: State, log: Logger): State = {
+      t: Throwable,
+      s: State,
+      log: Logger
+  ): State = {
     ExceptionCategory(t) match {
       case AlreadyHandled => ()
       case m: MessageOnly => log.error(m.message)
-      case f: Full => logFullException(f.exception, log)
+      case f: Full        => logFullException(f.exception, log)
     }
     s.fail
   }
@@ -294,6 +314,9 @@ object State {
     log.error("Use 'last' for the full log.")
   }
   private[sbt] def getBoolean(
-      s: State, key: AttributeKey[Boolean], default: Boolean): Boolean =
+      s: State,
+      key: AttributeKey[Boolean],
+      default: Boolean
+  ): Boolean =
     s.get(key) getOrElse default
 }

@@ -25,7 +25,9 @@ trait BindingTemplate { self: Command with TypeConverterFactories =>
 }
 
 trait WithBinding
-    extends Command with TypeConverterFactories with BindingTemplate {
+    extends Command
+    with TypeConverterFactories
+    with BindingTemplate {
 
   val a = upperCaseName
 
@@ -38,7 +40,7 @@ class MixAndMatchCommand extends ParamsOnlyCommand {
 
   import org.scalatra.commands.ValueSource._
   val name: Field[String] = asString("name").notBlank
-  val age: Field[Int] = "age"
+  val age: Field[Int]     = "age"
   val token: Field[String] =
     (asString("API-TOKEN").notBlank sourcedFrom Header description "The API token for this request" notes "Invalid data kills kittens" allowableValues "123")
   val skip: Field[Int] = asInt("skip")
@@ -59,8 +61,8 @@ class CommandWithConfirmationValidation extends ParamsOnlyCommand {
 }
 
 class CommandWithRequiredValuesValidation extends ParamsOnlyCommand {
-  val name: Field[String] = asString("name").required
-  val age: Field[Int] = bind[Int]("age").required
+  val name: Field[String]        = asString("name").required
+  val age: Field[Int]            = bind[Int]("age").required
   val newsLetter: Field[Boolean] = bind[Boolean]("newsLetter").required
 }
 
@@ -83,7 +85,7 @@ class CommandSpec extends Specification {
     }
 
     "bindTo 'params' Map and bind matching values to specific keys" in {
-      val form = new WithBindingFromParams
+      val form   = new WithBindingFromParams
       val params = Map("name" -> "John", "surname" -> "Doe")
       form.bindTo(params)
       form.a.validation must_== params("name").toUpperCase.success
@@ -95,7 +97,7 @@ class CommandSpec extends Specification {
       val params =
         Map("name" -> "John", "age" -> "45", "limit" -> "30", "skip" -> "20")
       val multi = MultiMap(params map { case (k, v) => k -> Seq(v) })
-      val hdrs = Map("API-TOKEN" -> "123")
+      val hdrs  = Map("API-TOKEN" -> "123")
       form.bindTo(params, multi, hdrs)
       form.name.value must beSome("John")
       form.age.value must beSome(45)
@@ -106,9 +108,13 @@ class CommandSpec extends Specification {
 
     "bindTo 'params' with a confirmation" in {
       val form = new CommandWithConfirmationValidation
-      form.bindTo(Map("name" -> "blah",
-                      "password" -> "blah123",
-                      "passwordConfirmation" -> "blah123"))
+      form.bindTo(
+        Map(
+          "name"                 -> "blah",
+          "password"             -> "blah123",
+          "passwordConfirmation" -> "blah123"
+        )
+      )
       form.isValid must beTrue
     }
 
@@ -136,7 +142,7 @@ class CommandSpec extends Specification {
         }
       }
 
-      val form = new WithBindingFromParams with PreBindAction
+      val form   = new WithBindingFromParams with PreBindAction
       val params = Map("name" -> "John", "surname" -> "Doe")
 
       form.timestamp must_== 0L
@@ -160,12 +166,12 @@ class CommandSpec extends Specification {
 
         afterBinding {
           _fullname = a.validation.toOption.get + " " +
-          lower.validation.toOption.get
+            lower.validation.toOption.get
         }
       }
 
       val params = Map("name" -> "John", "surname" -> "Doe")
-      val form = new WithBindingFromParams with AfterBindAction
+      val form   = new WithBindingFromParams with AfterBindAction
 
       form.fullName must beNone
 
@@ -204,12 +210,10 @@ class CommandSupportSpec extends Specification with Mockito {
     "look into request for existent command objects with commandOption[T]" in {
 
       implicit val mockRequest = smartMock[HttpServletRequest]
-      val page = new ScalatraPage
-      val instance = new CommandSample
-      val key = page.commandRequestKey[CommandSample]
-      mockRequest.getAttribute(key) answers { k =>
-        instance
-      }
+      val page                 = new ScalatraPage
+      val instance             = new CommandSample
+      val key                  = page.commandRequestKey[CommandSample]
+      mockRequest.getAttribute(key) answers { k => instance }
       page.commandOption[CommandSample] must beSome[CommandSample]
       page.commandOption[CommandSample].get must_== instance
     }
@@ -219,16 +223,17 @@ class CommandSupportSpec extends Specification with Mockito {
       implicit val req = mock[HttpServletRequest].smart
       val page = new ScalatraPage {
         override def multiParams(
-            implicit request: HttpServletRequest): MultiParams = MultiMap()
+            implicit request: HttpServletRequest
+        ): MultiParams                = MultiMap()
         override implicit def request = req
       }
-      val key = page.commandRequestKey[CommandSample]
+      val key                = page.commandRequestKey[CommandSample]
       var cmd: CommandSample = null
       req.setAttribute(anyString, any[CommandSample]) answers { k =>
         cmd = k
           .asInstanceOf[Array[Any]](1)
           .asInstanceOf[CommandSample]
-          ()
+        ()
       }
       req.getAttribute(key) returns cmd
 

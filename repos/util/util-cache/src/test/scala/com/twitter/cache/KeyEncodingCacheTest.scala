@@ -13,10 +13,9 @@ class KeyEncodingCacheTest extends AbstractFutureCacheTest {
     val underlyingMap: ConcurrentHashMap[Int, Future[String]] =
       new ConcurrentHashMap()
     val underlyingCache: FutureCache[Int, String] = new ConcurrentMapCache(
-        underlyingMap)
-    val cache: FutureCache[String, String] = new KeyEncodingCache({
-      num: String =>
-        num.hashCode
-    }, underlyingCache)
+      underlyingMap
+    )
+    val cache: FutureCache[String, String] =
+      new KeyEncodingCache({ num: String => num.hashCode }, underlyingCache)
   }
 }

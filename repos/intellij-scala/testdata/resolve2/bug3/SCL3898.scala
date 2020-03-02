@@ -1,7 +1,7 @@
 object Main {
   class C[T] {}
   class D[T] {}
-  class E {}
+  class E    {}
 
   def foo[T, V <: T](c: C[T], d: D[V]) { print(1) }
   def foo[T](c: C[T], t: T) { print(2) }

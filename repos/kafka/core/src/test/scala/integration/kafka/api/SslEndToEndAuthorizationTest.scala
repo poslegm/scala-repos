@@ -23,5 +23,5 @@ class SslEndToEndAuthorizationTest extends EndToEndAuthorizationTest {
   override protected def securityProtocol = SecurityProtocol.SSL
   this.serverConfig.setProperty(SslConfigs.SSL_CLIENT_AUTH_CONFIG, "required")
   override val clientPrincipal = "O=A client,CN=localhost"
-  override val kafkaPrincipal = "O=A server,CN=localhost"
+  override val kafkaPrincipal  = "O=A server,CN=localhost"
 }

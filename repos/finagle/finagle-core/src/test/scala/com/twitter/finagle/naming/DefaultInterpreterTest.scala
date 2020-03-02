@@ -11,7 +11,8 @@ import org.scalatest.FunSuite
 class testnamer extends Namer {
   override def lookup(path: Path) =
     Activity.value(
-        NameTree.Leaf(Name.Path(Path.read("/rewritten/by/test/namer"))))
+      NameTree.Leaf(Name.Path(Path.read("/rewritten/by/test/namer")))
+    )
 }
 
 @RunWith(classOf[JUnitRunner])
@@ -27,9 +28,11 @@ class DefaultInterpreterTest extends FunSuite {
 
   def boundWithWeight(weight: Double, addrs: Address*): Name.Bound =
     Name.Bound(
-        Var.value(
-            Addr.Bound(addrs.toSet, Addr.Metadata(AddrWeightKey -> weight))),
-        addrs.toSet)
+      Var.value(
+        Addr.Bound(addrs.toSet, Addr.Metadata(AddrWeightKey -> weight))
+      ),
+      addrs.toSet
+    )
 
   test("basic dtab evaluation") {
     val dtab = Dtab.read("/foo=>/$/inet/0/8080")
@@ -51,7 +54,7 @@ class DefaultInterpreterTest extends FunSuite {
 
   test("recurse back to the dtab") {
     val dtab = Dtab.read(
-        "/foo=>/$/com.twitter.finagle.naming.testnamer;/rewritten/by/test/namer=>/$/inet/0/7070"
+      "/foo=>/$/com.twitter.finagle.naming.testnamer;/rewritten/by/test/namer=>/$/inet/0/7070"
     )
 
     assertEval(dtab, "/foo", Name.bound(Address(7070)))
@@ -59,18 +62,22 @@ class DefaultInterpreterTest extends FunSuite {
 
   test("full example") {
     val dtab =
-      Dtab.read("""
+      Dtab.read(
+        """
       /foo => /bar;
       /foo => 3 * /baz & 2 * /booz & /$/com.twitter.finagle.naming.testnamer;
       /rewritten/by/test/namer => /$/inet/0/7070;
       /baz => 3 * /$/inet/0/8080 & 2 * /$/inet/0/9090;
       /booz => ~
-    """)
+    """
+      )
 
-    assertEval(dtab,
-               "/foo",
-               boundWithWeight(3.0, Address(8080)),
-               boundWithWeight(2.0, Address(9090)),
-               boundWithWeight(1.0, Address(7070)))
+    assertEval(
+      dtab,
+      "/foo",
+      boundWithWeight(3.0, Address(8080)),
+      boundWithWeight(2.0, Address(9090)),
+      boundWithWeight(1.0, Address(7070))
+    )
   }
 }

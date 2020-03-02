@@ -2,9 +2,9 @@ package scalaz
 package syntax
 
 /** Wraps a value `self` and provides methods related to `Align` */
-final class AlignOps[F[_], A] private[syntax](val self: F[A])(
-    implicit val F: Align[F])
-    extends Ops[F[A]] {
+final class AlignOps[F[_], A] private[syntax] (val self: F[A])(
+    implicit val F: Align[F]
+) extends Ops[F[A]] {
   ////
   def align[B](b: F[B]): F[A \&/ B] = F.align(self, b)
   def alignWith[B, C](fb: F[B])(f: (A \&/ B) => C): F[C] =
@@ -13,12 +13,12 @@ final class AlignOps[F[_], A] private[syntax](val self: F[A])(
   def padWith[B, C](fb: F[B])(f: (Option[A], Option[B]) => C): F[C] =
     F.padWith(f)(self, fb)
   def merge(a2: F[A])(implicit S: Semigroup[A]): F[A] = F.merge(self, a2)
-  def alignSwap[B](b: F[B]): F[B \&/ A] = F.alignSwap(self, b)
-  def alignA[B](b: F[B]): F[Option[A]] = F.alignA(self, b)
-  def alignB[B](b: F[B]): F[Option[B]] = F.alignB(self, b)
-  def alignThis[B](b: F[B]): F[Option[A]] = F.alignThis(self, b)
-  def alignThat[B](b: F[B]): F[Option[B]] = F.alignThat(self, b)
-  def alignBoth[B](b: F[B]): F[Option[(A, B)]] = F.alignBoth(self, b)
+  def alignSwap[B](b: F[B]): F[B \&/ A]               = F.alignSwap(self, b)
+  def alignA[B](b: F[B]): F[Option[A]]                = F.alignA(self, b)
+  def alignB[B](b: F[B]): F[Option[B]]                = F.alignB(self, b)
+  def alignThis[B](b: F[B]): F[Option[A]]             = F.alignThis(self, b)
+  def alignThat[B](b: F[B]): F[Option[B]]             = F.alignThat(self, b)
+  def alignBoth[B](b: F[B]): F[Option[(A, B)]]        = F.alignBoth(self, b)
   ////
 }
 

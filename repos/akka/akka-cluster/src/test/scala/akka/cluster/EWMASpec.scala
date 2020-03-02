@@ -12,7 +12,8 @@ import java.util.concurrent.ThreadLocalRandom
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class EWMASpec
-    extends AkkaSpec(MetricsEnabledSpec.config) with MetricsCollectorFactory {
+    extends AkkaSpec(MetricsEnabledSpec.config)
+    with MetricsCollectorFactory {
 
   val collector = createMetricsCollector
 
@@ -54,12 +55,13 @@ class EWMASpec
       // according to http://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average
       val expectedAlpha = 0.1
       // alpha = 2.0 / (1 + N)
-      val n = 19
-      val halfLife = n.toDouble / 2.8854
-      val collectInterval = 1.second
+      val n                = 19
+      val halfLife         = n.toDouble / 2.8854
+      val collectInterval  = 1.second
       val halfLifeDuration = (halfLife * 1000).millis
       EWMA.alpha(halfLifeDuration, collectInterval) should ===(
-          expectedAlpha +- 0.001)
+        expectedAlpha +- 0.001
+      )
     }
 
     "calculate sane alpha from short half-life" in {
@@ -78,12 +80,13 @@ class EWMASpec
 
     "calculate the ewma for multiple, variable, data streams" taggedAs LongRunningTest in {
       var streamingDataSet = Map.empty[String, Metric]
-      var usedMemory = Array.empty[Byte]
+      var usedMemory       = Array.empty[Byte]
       (1 to 50) foreach { _ ⇒
         // wait a while between each message to give the metrics a chance to change
         Thread.sleep(100)
         usedMemory = usedMemory ++ Array.fill(1024)(
-            ThreadLocalRandom.current.nextInt(127).toByte)
+          ThreadLocalRandom.current.nextInt(127).toByte
+        )
         val changes = collector.sample.metrics.flatMap { latest ⇒
           streamingDataSet.get(latest.name) match {
             case None ⇒ Some(latest)

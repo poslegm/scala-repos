@@ -131,9 +131,9 @@ trait ClusterNodeMBean {
   */
 private[akka] class ClusterJmx(cluster: Cluster, log: LoggingAdapter) {
 
-  private val mBeanServer = ManagementFactory.getPlatformMBeanServer
+  private val mBeanServer      = ManagementFactory.getPlatformMBeanServer
   private val clusterMBeanName = new ObjectName("akka:type=Cluster")
-  private def clusterView = cluster.readView
+  private def clusterView      = cluster.readView
   import cluster.InfoLogger._
 
   /**
@@ -141,7 +141,7 @@ private[akka] class ClusterJmx(cluster: Cluster, log: LoggingAdapter) {
     */
   def createMBean() = {
     val mbean = new StandardMBean(classOf[ClusterNodeMBean])
-    with ClusterNodeMBean {
+      with ClusterNodeMBean {
 
       // JMX attributes (bean-style)
 

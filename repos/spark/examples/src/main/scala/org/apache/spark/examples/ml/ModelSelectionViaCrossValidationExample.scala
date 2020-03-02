@@ -35,27 +35,28 @@ object ModelSelectionViaCrossValidationExample {
   def main(args: Array[String]): Unit = {
     val conf =
       new SparkConf().setAppName("ModelSelectionViaCrossValidationExample")
-    val sc = new SparkContext(conf)
+    val sc         = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
 
     // $example on$
     // Prepare training data from a list of (id, text, label) tuples.
     val training = sqlContext
       .createDataFrame(
-          Seq(
-              (0L, "a b c d e spark", 1.0),
-              (1L, "b d", 0.0),
-              (2L, "spark f g h", 1.0),
-              (3L, "hadoop mapreduce", 0.0),
-              (4L, "b spark who", 1.0),
-              (5L, "g d a y", 0.0),
-              (6L, "spark fly", 1.0),
-              (7L, "was mapreduce", 0.0),
-              (8L, "e spark program", 1.0),
-              (9L, "a e c l", 0.0),
-              (10L, "spark compile", 1.0),
-              (11L, "hadoop software", 0.0)
-          ))
+        Seq(
+          (0L, "a b c d e spark", 1.0),
+          (1L, "b d", 0.0),
+          (2L, "spark f g h", 1.0),
+          (3L, "hadoop mapreduce", 0.0),
+          (4L, "b spark who", 1.0),
+          (5L, "g d a y", 0.0),
+          (6L, "spark fly", 1.0),
+          (7L, "was mapreduce", 0.0),
+          (8L, "e spark program", 1.0),
+          (9L, "a e c l", 0.0),
+          (10L, "spark compile", 1.0),
+          (11L, "hadoop software", 0.0)
+        )
+      )
       .toDF("id", "text", "label")
 
     // Configure an ML pipeline, which consists of three stages: tokenizer, hashingTF, and lr.
@@ -63,7 +64,7 @@ object ModelSelectionViaCrossValidationExample {
     val hashingTF = new HashingTF()
       .setInputCol(tokenizer.getOutputCol)
       .setOutputCol("features")
-    val lr = new LogisticRegression().setMaxIter(10)
+    val lr       = new LogisticRegression().setMaxIter(10)
     val pipeline = new Pipeline().setStages(Array(tokenizer, hashingTF, lr))
 
     // We use a ParamGridBuilder to construct a grid of parameters to search over.
@@ -91,12 +92,13 @@ object ModelSelectionViaCrossValidationExample {
     // Prepare test documents, which are unlabeled (id, text) tuples.
     val test = sqlContext
       .createDataFrame(
-          Seq(
-              (4L, "spark i j k"),
-              (5L, "l m n"),
-              (6L, "mapreduce spark"),
-              (7L, "apache hadoop")
-          ))
+        Seq(
+          (4L, "spark i j k"),
+          (5L, "l m n"),
+          (6L, "mapreduce spark"),
+          (7L, "apache hadoop")
+        )
+      )
       .toDF("id", "text")
 
     // Make predictions on test documents. cvModel uses the best model found (lrModel).

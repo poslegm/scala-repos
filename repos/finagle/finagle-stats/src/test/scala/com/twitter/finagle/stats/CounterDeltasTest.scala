@@ -10,7 +10,7 @@ class CounterDeltasTest extends FunSuite {
 
   test("deltas are computed based on last call to update") {
     val metrics = Metrics.createDetached()
-    val sr = new MetricsStatsReceiver(metrics)
+    val sr      = new MetricsStatsReceiver(metrics)
 
     val cd = new CounterDeltas()
 

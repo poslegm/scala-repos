@@ -36,11 +36,14 @@ import org.apache.spark.sql.catalyst.InternalRow
   */
 private[columnar] trait NullableColumnBuilder extends ColumnBuilder {
   protected var nulls: ByteBuffer = _
-  protected var nullCount: Int = _
-  private var pos: Int = _
+  protected var nullCount: Int    = _
+  private var pos: Int            = _
 
   abstract override def initialize(
-      initialSize: Int, columnName: String, useCompression: Boolean): Unit = {
+      initialSize: Int,
+      columnName: String,
+      useCompression: Boolean
+  ): Unit = {
 
     nulls = ByteBuffer.allocate(1024)
     nulls.order(ByteOrder.nativeOrder())
@@ -62,7 +65,7 @@ private[columnar] trait NullableColumnBuilder extends ColumnBuilder {
   }
 
   abstract override def build(): ByteBuffer = {
-    val nonNulls = super.build()
+    val nonNulls    = super.build()
     val nullDataLen = nulls.position()
 
     nulls.limit(nullDataLen)

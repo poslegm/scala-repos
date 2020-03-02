@@ -22,9 +22,8 @@ object TimeoutFactory {
     * Creates a [[com.twitter.finagle.Stackable]] [[com.twitter.finagle.factory.TimeoutFactory]].
     */
   private[finagle] def module[Req, Rep]: Stackable[ServiceFactory[Req, Rep]] =
-    new Stack.Module3[
-        Param, param.Timer, param.Label, ServiceFactory[Req, Rep]] {
-      val role = TimeoutFactory.role
+    new Stack.Module3[Param, param.Timer, param.Label, ServiceFactory[Req, Rep]] {
+      val role        = TimeoutFactory.role
       val description = "Time out service acquisition after a given period"
       def make(
           _timeout: Param,
@@ -32,7 +31,7 @@ object TimeoutFactory {
           _label: param.Label,
           next: ServiceFactory[Req, Rep]
       ) = {
-        val Param(timeout) = _timeout
+        val Param(timeout)     = _timeout
         val param.Label(label) = _label
         val param.Timer(timer) = _timer
 
@@ -50,11 +49,12 @@ object TimeoutFactory {
   * @see The [[https://twitter.github.io/finagle/guide/Servers.html#request-timeout user guide]]
   *      for more details.
   */
-class TimeoutFactory[Req, Rep](self: ServiceFactory[Req, Rep],
-                               timeout: Duration,
-                               exception: ServiceTimeoutException,
-                               timer: Timer)
-    extends ServiceFactoryProxy[Req, Rep](self) {
+class TimeoutFactory[Req, Rep](
+    self: ServiceFactory[Req, Rep],
+    timeout: Duration,
+    exception: ServiceTimeoutException,
+    timer: Timer
+) extends ServiceFactoryProxy[Req, Rep](self) {
   private[this] val failure =
     Future.exception(Failure.adapt(exception, Failure.Restartable))
 

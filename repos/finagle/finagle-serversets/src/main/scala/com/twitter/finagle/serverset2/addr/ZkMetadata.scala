@@ -17,7 +17,7 @@ case class ZkMetadata(shardId: Option[Int])
 object ZkMetadata {
   // visibility exposed for testing
   private[addr] val key = "zk_metadata"
-  private val default = ZkMetadata(None)
+  private val default   = ZkMetadata(None)
 
   /**
     * Convert [[ZkMetadata]] to an instance of
@@ -34,7 +34,7 @@ object ZkMetadata {
   def fromAddrMetadata(metadata: Addr.Metadata): ZkMetadata =
     metadata.get(key) match {
       case Some(metadata: ZkMetadata) => metadata
-      case _ => default
+      case _                          => default
     }
 
   /**

@@ -44,8 +44,7 @@ abstract class AbstractCompiler extends Compiler {
     }
   }
 
-  private class ClientProgress(client: Client)
-      extends ExtendedCompileProgress {
+  private class ClientProgress(client: Client) extends ExtendedCompileProgress {
     def generated(source: File, module: File, name: String) {
       client.progress("Generated " + module.getName)
       client.generated(source, module, name)
@@ -85,18 +84,18 @@ abstract class AbstractCompiler extends Compiler {
       entries ::= new Problem {
         val category = ""
         val position = pos
-        val message = msg
+        val message  = msg
         val severity = sev
       }
 
       val kind = sev match {
-        case Severity.Info => Kind.INFO
-        case Severity.Warn => Kind.WARNING
+        case Severity.Info  => Kind.INFO
+        case Severity.Warn  => Kind.WARNING
         case Severity.Error => Kind.ERROR
       }
 
       val source = toOption(pos.sourcePath).map(new File(_))
-      val line = toOption(pos.line).map(_.toLong)
+      val line   = toOption(pos.line).map(_.toLong)
       val column = toOption(pos.pointer).map(_.toLong + 1L)
 
       val messageWithLineAndPointer = {

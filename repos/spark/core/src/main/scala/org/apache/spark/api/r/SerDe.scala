@@ -28,7 +28,7 @@ import scala.collection.mutable.WrappedArray
   * Utility functions to serialize, deserialize objects to / from R
   */
 private[spark] object SerDe {
-  type ReadObject = (DataInputStream, Char) => Object
+  type ReadObject  = (DataInputStream, Char) => Object
   type WriteObject = (DataOutputStream, Object) => Boolean
 
   var sqlSerDe: (ReadObject, WriteObject) = _
@@ -90,8 +90,8 @@ private[spark] object SerDe {
   }
 
   def readBytes(in: DataInputStream): Array[Byte] = {
-    val len = readInt(in)
-    val out = new Array[Byte](len)
+    val len       = readInt(in)
+    val out       = new Array[Byte](len)
     val bytesRead = in.readFully(out)
     out
   }
@@ -128,8 +128,8 @@ private[spark] object SerDe {
 
   def readTime(in: DataInputStream): Timestamp = {
     val seconds = in.readDouble()
-    val sec = Math.floor(seconds).toLong
-    val t = new Timestamp(sec * 1000L)
+    val sec     = Math.floor(seconds).toLong
+    val t       = new Timestamp(sec * 1000L)
     t.setNanos(((seconds - sec) * 1e9).toInt)
     t
   }
@@ -183,8 +183,7 @@ private[spark] object SerDe {
           (0 until len).map { _ =>
             val obj = (sqlSerDe._1)(dis, arrType)
             if (obj == null) {
-              throw new IllegalArgumentException(
-                  s"Invalid array type $arrType")
+              throw new IllegalArgumentException(s"Invalid array type $arrType")
             } else {
               obj
             }
@@ -204,7 +203,7 @@ private[spark] object SerDe {
     val len = readInt(in)
     if (len > 0) {
       // Keys is an array of String
-      val keys = readArray(in).asInstanceOf[Array[Object]]
+      val keys   = readArray(in).asInstanceOf[Array[Object]]
       val values = readList(in)
 
       keys.zip(values).toMap.asJava
@@ -234,31 +233,35 @@ private[spark] object SerDe {
 
   def writeType(dos: DataOutputStream, typeStr: String): Unit = {
     typeStr match {
-      case "void" => dos.writeByte('n')
+      case "void"      => dos.writeByte('n')
       case "character" => dos.writeByte('c')
-      case "double" => dos.writeByte('d')
-      case "integer" => dos.writeByte('i')
-      case "logical" => dos.writeByte('b')
-      case "date" => dos.writeByte('D')
-      case "time" => dos.writeByte('t')
-      case "raw" => dos.writeByte('r')
+      case "double"    => dos.writeByte('d')
+      case "integer"   => dos.writeByte('i')
+      case "logical"   => dos.writeByte('b')
+      case "date"      => dos.writeByte('D')
+      case "time"      => dos.writeByte('t')
+      case "raw"       => dos.writeByte('r')
       // Array of primitive types
       case "array" => dos.writeByte('a')
       // Array of objects
       case "list" => dos.writeByte('l')
-      case "map" => dos.writeByte('e')
+      case "map"  => dos.writeByte('e')
       case "jobj" => dos.writeByte('j')
-      case _ => throw new IllegalArgumentException(s"Invalid type $typeStr")
+      case _      => throw new IllegalArgumentException(s"Invalid type $typeStr")
     }
   }
 
   private def writeKeyValue(
-      dos: DataOutputStream, key: Object, value: Object): Unit = {
+      dos: DataOutputStream,
+      key: Object,
+      value: Object
+  ): Unit = {
     if (key == null) {
       throw new IllegalArgumentException("Key in map can't be null.")
     } else if (!key.isInstanceOf[String]) {
       throw new IllegalArgumentException(
-          s"Invalid map key type: ${key.getClass.getName}")
+        s"Invalid map key type: ${key.getClass.getName}"
+      )
     }
 
     writeString(dos, key.asInstanceOf[String])
@@ -364,11 +367,14 @@ private[spark] object SerDe {
           val iter = v.entrySet.iterator
           while (iter.hasNext) {
             val entry = iter.next
-            val key = entry.getKey
+            val key   = entry.getKey
             val value = entry.getValue
 
             writeKeyValue(
-                dos, key.asInstanceOf[Object], value.asInstanceOf[Object])
+              dos,
+              key.asInstanceOf[Object],
+              value.asInstanceOf[Object]
+            )
           }
         case v: scala.collection.Map[_, _] =>
           writeType(dos, "map")
@@ -376,7 +382,10 @@ private[spark] object SerDe {
           v.foreach {
             case (key, value) =>
               writeKeyValue(
-                  dos, key.asInstanceOf[Object], value.asInstanceOf[Object])
+                dos,
+                key.asInstanceOf[Object],
+                value.asInstanceOf[Object]
+              )
           }
 
         case _ =>
@@ -412,12 +421,13 @@ private[spark] object SerDe {
 
   def writeTime(out: DataOutputStream, value: Timestamp): Unit = {
     out.writeDouble(
-        (value.getTime / 1000).toDouble + value.getNanos.toDouble / 1e9)
+      (value.getTime / 1000).toDouble + value.getNanos.toDouble / 1e9
+    )
   }
 
   def writeString(out: DataOutputStream, value: String): Unit = {
     val utf8 = value.getBytes(StandardCharsets.UTF_8)
-    val len = utf8.length
+    val len  = utf8.length
     out.writeInt(len)
     out.write(utf8, 0, len)
   }
@@ -458,7 +468,7 @@ private[spark] object SerDe {
 }
 
 private[r] object SerializationFormats {
-  val BYTE = "byte"
+  val BYTE   = "byte"
   val STRING = "string"
-  val ROW = "row"
+  val ROW    = "row"
 }

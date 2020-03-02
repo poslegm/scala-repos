@@ -10,16 +10,16 @@ class ImportSourceTest extends ResolveTestBase {
 
   //TODO caseclass
 //  def testCaseClass = doTest
-  def testClass() = doTest()
-  def testObject() = doTest()
+  def testClass()   = doTest()
+  def testObject()  = doTest()
   def testPackage() = doTest()
   //TODO packageobject
 //  def testPackageObject = doTest
   //TODO packageobject
 //  def testPackageWithObject = doTest
   def testPackageNested() = doTest()
-  def testTrait() = doTest()
-  def testFunction() = doTest()
-  def testValue() = doTest()
-  def testVariable() = doTest()
+  def testTrait()         = doTest()
+  def testFunction()      = doTest()
+  def testValue()         = doTest()
+  def testVariable()      = doTest()
 }

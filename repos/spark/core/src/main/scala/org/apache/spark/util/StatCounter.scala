@@ -26,7 +26,7 @@ package org.apache.spark.util
   * @constructor Initialize the StatCounter with the given values.
   */
 class StatCounter(values: TraversableOnce[Double]) extends Serializable {
-  private var n: Long = 0 // Running count of our values
+  private var n: Long    = 0 // Running count of our values
   private var mu: Double = 0 // Running mean of our values
   private var m2: Double =
     0 // Running variance numerator (sum of (x - mean)^2)
@@ -139,7 +139,12 @@ class StatCounter(values: TraversableOnce[Double]) extends Serializable {
 
   override def toString: String = {
     "(count: %d, mean: %f, stdev: %f, max: %f, min: %f)".format(
-        count, mean, stdev, max, min)
+      count,
+      mean,
+      stdev,
+      max,
+      min
+    )
   }
 }
 

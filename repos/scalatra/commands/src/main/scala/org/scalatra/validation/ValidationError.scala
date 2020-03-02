@@ -11,10 +11,12 @@ import org.json4s._
   * @param code Decouple business logic error types from http errors
   * @param args Optional args, these need to be serializable to json if you're using the [[org.scalatra.validation.ValidationErrorSerializer]]
   */
-case class ValidationError(message: String,
-                           field: Option[FieldName],
-                           code: Option[ErrorCode],
-                           args: Seq[Any])
+case class ValidationError(
+    message: String,
+    field: Option[FieldName],
+    code: Option[ErrorCode],
+    args: Seq[Any]
+)
 
 /**
   * Encapsulates a field name for use in a validation error
@@ -28,13 +30,13 @@ case class FieldName(name: String)
   * It's available for you so you can add more in your app
   */
 trait ErrorCode
-case object NotFound extends ErrorCode
-case object UnknownError extends ErrorCode
-case object NotImplemented extends ErrorCode
-case object BadGateway extends ErrorCode
-case object ValidationFail extends ErrorCode
+case object NotFound           extends ErrorCode
+case object UnknownError       extends ErrorCode
+case object NotImplemented     extends ErrorCode
+case object BadGateway         extends ErrorCode
+case object ValidationFail     extends ErrorCode
 case object ServiceUnavailable extends ErrorCode
-case object GatewayTimeout extends ErrorCode
+case object GatewayTimeout     extends ErrorCode
 
 /**
   * Allows for unordered building of [[org.scalatra.validation.ValidationError]]
@@ -53,12 +55,12 @@ object ValidationError {
   def apply(msg: String, arguments: Any*): ValidationError = {
     val field =
       arguments collectFirst {
-        case f: FieldName => f
+        case f: FieldName       => f
         case Some(f: FieldName) => f
       }
     val code =
       arguments collectFirst {
-        case f: ErrorCode => f
+        case f: ErrorCode       => f
         case Some(f: ErrorCode) => f
       }
     val args =
@@ -79,14 +81,14 @@ object ValidationError {
   */
 class ErrorCodeSerializer(knownCodes: ErrorCode*)
     extends Serializer[ErrorCode] {
-  val ecs = Map(
-      knownCodes map { c ⇒
+  val ecs = Map(knownCodes map { c ⇒
     c.getClass.getSimpleName.replaceAll("\\$$", "").toUpperCase -> c
   }: _*)
   val Class = classOf[ErrorCode]
 
-  def deserialize(implicit format: Formats)
-    : PartialFunction[(TypeInfo, JValue), ErrorCode] = {
+  def deserialize(
+      implicit format: Formats
+  ): PartialFunction[(TypeInfo, JValue), ErrorCode] = {
     case (TypeInfo(Class, _), JString(c)) if ecs contains c.toUpperCase =>
       ecs get c.toUpperCase getOrElse UnknownError
     case (TypeInfo(Class, _), json) =>
@@ -117,28 +119,35 @@ class ErrorCodeSerializer(knownCodes: ErrorCode*)
   * @param includeArgs Include the args field when args are provided
   */
 class ValidationErrorSerializer(
-    includeCode: Boolean = true, includeArgs: Boolean = true)
-    extends CustomSerializer[ValidationError](
-        (formats: Formats) ⇒
-          ({
-        case jo @ JObject(JField("message", _) :: _) ⇒
-          implicit val fmts = formats
-          new ValidationError((jo \ "message").extractOrElse(""),
-                              (jo \ "field").extractOpt[String] map FieldName,
-                              (jo \ "code").extractOpt[ErrorCode],
-                              (jo \ "args").children)
-      }, {
-        case ValidationError(message, fieldName, code, args) ⇒
-          implicit val fmts = formats
-          val jv: JValue = ("message" -> message)
-          val wf: JValue =
-            fieldName map (fn ⇒ ("field" -> fn.name): JValue) getOrElse JNothing
-          val ec: JValue =
-            if (includeCode && code.isDefined)
-              ("code" -> (code map (Extraction.decompose(_)(formats))))
-            else JNothing
-          val arg: JValue =
-            if (includeArgs && args.nonEmpty)
-              ("args" -> Extraction.decompose(args)(formats)) else JNothing
-          jv merge wf merge ec merge arg
-      }))
+    includeCode: Boolean = true,
+    includeArgs: Boolean = true
+) extends CustomSerializer[ValidationError]((formats: Formats) ⇒
+      (
+        {
+          case jo @ JObject(JField("message", _) :: _) ⇒
+            implicit val fmts = formats
+            new ValidationError(
+              (jo \ "message").extractOrElse(""),
+              (jo \ "field").extractOpt[String] map FieldName,
+              (jo \ "code").extractOpt[ErrorCode],
+              (jo \ "args").children
+            )
+        },
+        {
+          case ValidationError(message, fieldName, code, args) ⇒
+            implicit val fmts = formats
+            val jv: JValue    = ("message" -> message)
+            val wf: JValue =
+              fieldName map (fn ⇒ ("field" -> fn.name): JValue) getOrElse JNothing
+            val ec: JValue =
+              if (includeCode && code.isDefined)
+                ("code" -> (code map (Extraction.decompose(_)(formats))))
+              else JNothing
+            val arg: JValue =
+              if (includeArgs && args.nonEmpty)
+                ("args" -> Extraction.decompose(args)(formats))
+              else JNothing
+            jv merge wf merge ec merge arg
+        }
+      )
+    )

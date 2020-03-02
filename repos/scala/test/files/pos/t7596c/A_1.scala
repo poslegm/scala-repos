@@ -3,9 +3,9 @@ trait Driver {
 }
 
 object Config {
-  val driver: Driver = ???
+  val driver: Driver                = ???
   val driverUniqueName: driver.type = driver
-  def driver(a: Any) = ???
+  def driver(a: Any)                = ???
 }
 
 object Sites extends Config.driver.Table

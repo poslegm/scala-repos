@@ -21,9 +21,10 @@ trait Helpers { self: Analyzer =>
     *  For example, it can be used to strip macroImpl.paramss from the evidences (necessary when checking def <-> impl correspondence)
     *  or to streamline creation of the list of macro arguments.
     */
-  def transformTypeTagEvidenceParams(macroImplRef: Tree,
-                                     transform: (Symbol,
-                                     Symbol) => Symbol): List[List[Symbol]] = {
+  def transformTypeTagEvidenceParams(
+      macroImplRef: Tree,
+      transform: (Symbol, Symbol) => Symbol
+  ): List[List[Symbol]] = {
     val runDefinitions = currentRun.runDefinitions
     import runDefinitions._
 
@@ -34,7 +35,7 @@ trait Helpers { self: Analyzer =>
     val ContextParam = paramss match {
       case Nil | _ :+ Nil =>
         NoSymbol // no implicit parameters in the signature => nothing to do
-      case _ if isBundle => macroImpl.owner.tpe member nme.c
+      case _ if isBundle                                        => macroImpl.owner.tpe member nme.c
       case (cparam :: _) :: _ if isMacroContextType(cparam.tpe) => cparam
       case _ =>
         NoSymbol // no context parameter in the signature => nothing to do
@@ -43,7 +44,8 @@ trait Helpers { self: Analyzer =>
       case TypeRef(
           SingleType(SingleType(_, ContextParam), MacroContextUniverse),
           WeakTypeTagClass,
-          targ :: Nil) =>
+          targ :: Nil
+          ) =>
         transform(param, targ.typeSymbol)
       case _ => param
     }
@@ -51,7 +53,7 @@ trait Helpers { self: Analyzer =>
       case NoSymbol => paramss
       case _ =>
         paramss.last map transformTag filter (_.exists) match {
-          case Nil => paramss.init
+          case Nil         => paramss.init
           case transformed => paramss.init :+ transformed
         }
     }
@@ -75,7 +77,7 @@ trait Helpers { self: Analyzer =>
 
     transparentShallowTransform(RepeatedParamClass, tp) {
       case ExprClassOf(_) => typeRef(tp.prefix, TreesTreeType, Nil)
-      case tp => tp
+      case tp             => tp
     }
   }
 
@@ -94,7 +96,7 @@ trait Helpers { self: Analyzer =>
       // special-casing Nothing here is a useful convention
       // that enables no-hassle prototyping with `macro ???` and `macro { ...; ??? }`
       case nothing if nothing =:= NothingTpe => NothingTpe
-      case _ => NoType
+      case _                                 => NoType
     }
   }
 }

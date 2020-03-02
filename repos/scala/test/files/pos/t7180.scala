@@ -10,5 +10,7 @@ object Foo {
 
   type Bar[A] = Box[A]
   val bar =
-    implicitly[Higher[Bar]] // <-- this doesn't compile in 2.10.1-RC1, but does in 2.10.0 !!!
+    implicitly[Higher[
+      Bar
+    ]] // <-- this doesn't compile in 2.10.1-RC1, but does in 2.10.0 !!!
 }

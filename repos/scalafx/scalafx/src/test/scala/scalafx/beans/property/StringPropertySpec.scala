@@ -43,12 +43,12 @@ import scalafx.Includes._
   */
 @RunWith(classOf[JUnitRunner])
 class StringPropertySpec extends FlatSpec with BeforeAndAfterEach {
-  val bean = new Object()
+  val bean                                   = new Object()
   var booleanProperty: jfxbp.BooleanProperty = null
-  var stringProperty: jfxbp.StringProperty = null
-  var stringProperty2: jfxbp.StringProperty = null
-  var stringProperty3: jfxbp.StringProperty = null
-  var sfxStringProperty: StringProperty = null
+  var stringProperty: jfxbp.StringProperty   = null
+  var stringProperty2: jfxbp.StringProperty  = null
+  var stringProperty3: jfxbp.StringProperty  = null
+  var sfxStringProperty: StringProperty      = null
 
   override def beforeEach() {
     booleanProperty = new BooleanProperty(bean, "Test Boolean")
@@ -481,5 +481,5 @@ class StringPropertySpec extends FlatSpec with BeforeAndAfterEach {
   }
 
   it should "support concatenation starting with nulls/primitives/strings" is
-  (pending)
+    (pending)
 }

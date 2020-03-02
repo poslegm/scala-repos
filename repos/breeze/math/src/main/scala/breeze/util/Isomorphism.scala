@@ -11,7 +11,7 @@ trait Isomorphism[T, U] extends Serializable { outer =>
   def backward(u: U): T
 
   def reverse: Isomorphism[U, T] = new Isomorphism[U, T] {
-    def forward(u: U) = outer.backward(u)
+    def forward(u: U)  = outer.backward(u)
     def backward(t: T) = outer.forward(t)
   }
 }
@@ -19,7 +19,7 @@ trait Isomorphism[T, U] extends Serializable { outer =>
 object Isomorphism {
   def apply[T, U](tu: T => U, ut: U => T): Isomorphism[T, U] =
     new Isomorphism[T, U] {
-      def forward(t: T) = tu(t);
+      def forward(t: T)  = tu(t);
       def backward(t: U) = ut(t);
     }
 

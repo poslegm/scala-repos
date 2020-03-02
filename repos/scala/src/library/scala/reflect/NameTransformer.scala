@@ -17,13 +17,13 @@ object NameTransformer {
   // the compiler before recompiling the compiler.
   val MODULE_SUFFIX_STRING =
     sys.props.getOrElse("SCALA_MODULE_SUFFIX_STRING", "$")
-  val NAME_JOIN_STRING = sys.props.getOrElse("SCALA_NAME_JOIN_STRING", "$")
-  val MODULE_INSTANCE_NAME = "MODULE$"
-  val LOCAL_SUFFIX_STRING = " "
-  val SETTER_SUFFIX_STRING = "_$eq"
+  val NAME_JOIN_STRING              = sys.props.getOrElse("SCALA_NAME_JOIN_STRING", "$")
+  val MODULE_INSTANCE_NAME          = "MODULE$"
+  val LOCAL_SUFFIX_STRING           = " "
+  val SETTER_SUFFIX_STRING          = "_$eq"
   val TRAIT_SETTER_SEPARATOR_STRING = "$_setter_$"
 
-  private val nops = 128
+  private val nops   = 128
   private val ncodes = 26 * 26
 
   private class OpCodes(val op: Char, val code: String, val next: OpCodes)
@@ -63,8 +63,8 @@ object NameTransformer {
     */
   def encode(name: String): String = {
     var buf: StringBuilder = null
-    val len = name.length()
-    var i = 0
+    val len                = name.length()
+    var i                  = 0
     while (i < len) {
       val c = name charAt i
       if (c < nops && (op2code(c.toInt) ne null)) {
@@ -99,20 +99,20 @@ object NameTransformer {
       if (name0.endsWith("<init>")) name0.stripSuffix("<init>") + "this"
       else name0
     var buf: StringBuilder = null
-    val len = name.length()
-    var i = 0
+    val len                = name.length()
+    var i                  = 0
     while (i < len) {
       var ops: OpCodes = null
-      var unicode = false
-      val c = name charAt i
+      var unicode      = false
+      val c            = name charAt i
       if (c == '$' && i + 2 < len) {
         val ch1 = name.charAt(i + 1)
         if ('a' <= ch1 && ch1 <= 'z') {
           val ch2 = name.charAt(i + 2)
           if ('a' <= ch2 && ch2 <= 'z') {
             ops = code2op((ch1 - 'a') * 26 + ch2 - 'a')
-            while ( (ops ne null) &&
-            !name.startsWith(ops.code, i)) ops = ops.next
+            while ((ops ne null) &&
+                   !name.startsWith(ops.code, i)) ops = ops.next
             if (ops ne null) {
               if (buf eq null) {
                 buf = new StringBuilder()

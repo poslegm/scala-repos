@@ -10,7 +10,8 @@ import breeze.util._
   * @author dlwh
   */
 case class Geometric(p: Double)(implicit rand: RandBasis = Rand)
-    extends DiscreteDistr[Int] with Moments[Double, Double] {
+    extends DiscreteDistr[Int]
+    with Moments[Double, Double] {
   require(p >= 0)
   require(p <= 1)
 
@@ -32,7 +33,7 @@ case class Geometric(p: Double)(implicit rand: RandBasis = Rand)
 
   def variance = (1 - p) / (p * p)
 
-  def mode = 1
+  def mode    = 1
   def entropy = (-(1 - p) * math.log(1 - p) - p * math.log(p)) / p
 
   override def toString() = ScalaRunTime._toString(this)
@@ -44,7 +45,8 @@ object Geometric
   type Parameter = Double
   case class SufficientStatistic(sum: Double, n: Double)
       extends breeze.stats.distributions.SufficientStatistic[
-          SufficientStatistic] {
+        SufficientStatistic
+      ] {
     def +(t: SufficientStatistic) = SufficientStatistic(sum + t.sum, n + t.n)
 
     def *(weight: Double) = SufficientStatistic(sum * weight, n * weight)
@@ -59,7 +61,7 @@ object Geometric
   def likelihoodFunction(stats: SufficientStatistic) =
     new DiffFunction[Geometric.Parameter] {
       def calculate(p: Geometric.Parameter) = {
-        val obj = stats.n * math.log(p) + stats.sum * math.log(1 - p)
+        val obj  = stats.n * math.log(p) + stats.sum * math.log(1 - p)
         val grad = stats.n / p - stats.sum / (1 - p)
         (-obj, -grad)
       }
@@ -73,9 +75,9 @@ object Geometric
   def predictive(parameter: conjugateFamily.Parameter) = TODO
 
   def posterior(
-      prior: conjugateFamily.Parameter, evidence: TraversableOnce[Int]) = {
-    evidence.foldLeft(prior) { (acc, x) =>
-      (acc._1 + 1, acc._2 + x)
-    }
+      prior: conjugateFamily.Parameter,
+      evidence: TraversableOnce[Int]
+  ) = {
+    evidence.foldLeft(prior) { (acc, x) => (acc._1 + 1, acc._2 + x) }
   }
 }

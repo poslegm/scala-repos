@@ -6,24 +6,26 @@ import scala.annotation.switch
 
 import scala.scalajs.js
 
-final class Matcher private[regex](private var pattern0: Pattern,
-                                   private var input0: CharSequence,
-                                   private var regionStart0: Int,
-                                   private var regionEnd0: Int)
-    extends AnyRef with MatchResult {
+final class Matcher private[regex] (
+    private var pattern0: Pattern,
+    private var input0: CharSequence,
+    private var regionStart0: Int,
+    private var regionEnd0: Int
+) extends AnyRef
+    with MatchResult {
 
   import Matcher._
 
   def pattern(): Pattern = pattern0
 
   // Configuration (updated manually)
-  private var regexp = pattern0.newJSRegExp()
+  private var regexp   = pattern0.newJSRegExp()
   private var inputstr = input0.subSequence(regionStart0, regionEnd0).toString
 
   // Match result (updated by successful matches)
   private var lastMatch: js.RegExp.ExecResult = null
-  private var lastMatchIsValid = false
-  private var canStillFind = true
+  private var lastMatchIsValid                = false
+  private var canStillFind                    = true
 
   // Append state (updated by replacement methods)
   private var appendPos: Int = 0
@@ -74,7 +76,7 @@ final class Matcher private[regex](private var pattern0: Pattern,
     @inline def isDigit(c: Char) = c >= '0' && c <= '9'
 
     val len = replacement.length
-    var i = 0
+    var i   = 0
     while (i < len) {
       replacement.charAt(i) match {
         case '$' =>
@@ -168,8 +170,8 @@ final class Matcher private[regex](private var pattern0: Pattern,
 
   def groupCount(): Int = ensureLastMatch.length - 1
 
-  def start(): Int = ensureLastMatch.index
-  def end(): Int = start() + group().length
+  def start(): Int    = ensureLastMatch.index
+  def end(): Int      = start() + group().length
   def group(): String = ensureLastMatch(0).get
 
   def start(group: Int): Int = {
@@ -206,7 +208,7 @@ final class Matcher private[regex](private var pattern0: Pattern,
   // Stub methods for region management
 
   def regionStart(): Int = regionStart0
-  def regionEnd(): Int = regionEnd0
+  def regionEnd(): Int   = regionEnd0
   def region(start: Int, end: Int): Matcher =
     new Matcher(pattern0, input0, start, end)
 
@@ -220,27 +222,28 @@ final class Matcher private[regex](private var pattern0: Pattern,
 object Matcher {
   def quoteReplacement(s: String): String = {
     var result = ""
-    var i = 0
+    var i      = 0
     while (i < s.length) {
       val c = s.charAt(i)
       result +=
-      ((c: @switch) match {
-            case '\\' | '$' => "\\" + c
-            case _ => c
-          })
+        ((c: @switch) match {
+          case '\\' | '$' => "\\" + c
+          case _          => c
+        })
       i += 1
     }
     result
   }
 
   private final class SealedResult(
-      inputstr: String, lastMatch: js.RegExp.ExecResult)
-      extends MatchResult {
+      inputstr: String,
+      lastMatch: js.RegExp.ExecResult
+  ) extends MatchResult {
 
     def groupCount(): Int = ensureLastMatch.length - 1
 
-    def start(): Int = ensureLastMatch.index
-    def end(): Int = start() + group().length
+    def start(): Int    = ensureLastMatch.index
+    def end(): Int      = start() + group().length
     def group(): String = ensureLastMatch(0).get
 
     def start(group: Int): Int = {

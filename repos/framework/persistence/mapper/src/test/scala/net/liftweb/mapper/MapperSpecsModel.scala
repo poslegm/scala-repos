@@ -70,43 +70,48 @@ object MapperSpecsModel {
 
   def cleanup() {
     // Snake connection doesn't create FK constraints (put this here to be absolutely sure it gets set before Schemify)
-    MapperRules.createForeignKeys_? = c =>
-      {
-        c.jndiName != "snake"
+    MapperRules.createForeignKeys_? = c => {
+      c.jndiName != "snake"
     }
 
     Schemifier.destroyTables_!!(
-        DefaultConnectionIdentifier,
-        if (doLog) Schemifier.infoF _ else ignoreLogger _,
-        SampleTag,
-        SampleModel,
-        Dog,
-        Mixer,
-        Dog2,
-        User,
-        TstItem,
-        Thing)
+      DefaultConnectionIdentifier,
+      if (doLog) Schemifier.infoF _ else ignoreLogger _,
+      SampleTag,
+      SampleModel,
+      Dog,
+      Mixer,
+      Dog2,
+      User,
+      TstItem,
+      Thing
+    )
     Schemifier.destroyTables_!!(
-        DbProviders.SnakeConnectionIdentifier,
-        if (doLog) Schemifier.infoF _ else ignoreLogger _,
-        SampleTagSnake,
-        SampleModelSnake)
-    Schemifier.schemify(true,
-                        if (doLog) Schemifier.infoF _ else ignoreLogger _,
-                        DefaultConnectionIdentifier,
-                        SampleModel,
-                        SampleTag,
-                        User,
-                        Dog,
-                        Mixer,
-                        Dog2,
-                        TstItem,
-                        Thing)
-    Schemifier.schemify(true,
-                        if (doLog) Schemifier.infoF _ else ignoreLogger _,
-                        DbProviders.SnakeConnectionIdentifier,
-                        SampleModelSnake,
-                        SampleTagSnake)
+      DbProviders.SnakeConnectionIdentifier,
+      if (doLog) Schemifier.infoF _ else ignoreLogger _,
+      SampleTagSnake,
+      SampleModelSnake
+    )
+    Schemifier.schemify(
+      true,
+      if (doLog) Schemifier.infoF _ else ignoreLogger _,
+      DefaultConnectionIdentifier,
+      SampleModel,
+      SampleTag,
+      User,
+      Dog,
+      Mixer,
+      Dog2,
+      TstItem,
+      Thing
+    )
+    Schemifier.schemify(
+      true,
+      if (doLog) Schemifier.infoF _ else ignoreLogger _,
+      DbProviders.SnakeConnectionIdentifier,
+      SampleModelSnake,
+      SampleTagSnake
+    )
   }
 }
 
@@ -115,10 +120,9 @@ object SampleTag extends SampleTag with LongKeyedMetaMapper[SampleTag] {
 
   private def populate {
     val samp = SampleModel.findAll()
-    val tags = List(
-        "Hello", "Moose", "Frog", "WooHoo", "Sloth", "Meow", "Moof")
+    val tags = List("Hello", "Moose", "Frog", "WooHoo", "Sloth", "Meow", "Moof")
     for (t <- tags;
-    m <- samp) SampleTag.create.tag(t).model(m).save
+         m <- samp) SampleTag.create.tag(t).model(m).save
   }
 }
 
@@ -139,8 +143,7 @@ object SampleStatus extends Enumeration {
   val Active, Disabled, Hiatus = Value
 }
 
-object SampleModel
-    extends SampleModel with KeyedMetaMapper[Long, SampleModel] {
+object SampleModel extends SampleModel with KeyedMetaMapper[Long, SampleModel] {
   override def dbAddTable = Full(populate _)
 
   def encodeAsJson(in: SampleModel): JsonAST.JObject = encodeAsJSON_!(in)
@@ -178,15 +181,15 @@ class SampleModel extends KeyedMapper[Long, SampleModel] {
 }
 
 object SampleTagSnake
-    extends SampleTagSnake with LongKeyedMetaMapper[SampleTagSnake] {
+    extends SampleTagSnake
+    with LongKeyedMetaMapper[SampleTagSnake] {
   override def dbAddTable = Full(populate _)
 
   private def populate {
     val samp = SampleModelSnake.findAll()
-    val tags = List(
-        "Hello", "Moose", "Frog", "WooHoo", "Sloth", "Meow", "Moof")
+    val tags = List("Hello", "Moose", "Frog", "WooHoo", "Sloth", "Meow", "Moof")
     for (t <- tags;
-    m <- samp) SampleTagSnake.create.tag(t).model(m).save
+         m <- samp) SampleTagSnake.create.tag(t).model(m).save
   }
 
   override def dbDefaultConnectionIdentifier =
@@ -208,7 +211,8 @@ class SampleTagSnake extends LongKeyedMapper[SampleTagSnake] with IdPK {
 }
 
 object SampleModelSnake
-    extends SampleModelSnake with KeyedMetaMapper[Long, SampleModelSnake] {
+    extends SampleModelSnake
+    with KeyedMetaMapper[Long, SampleModelSnake] {
   override def dbAddTable = Full(populate _)
 
   def encodeAsJson(in: SampleModelSnake): JsonAST.JObject = encodeAsJSON_!(in)
@@ -263,7 +267,8 @@ object User extends User with MetaMegaProtoUser[User] {
   // define the DB table name
   override def screenWrap =
     Full(
-        <lift:surround with="default" at="content"><lift:bind/></lift:surround>)
+      <lift:surround with="default" at="content"><lift:bind/></lift:surround>
+    )
 
   // define the order fields will appear in forms and output
   override def fieldOrder =
@@ -331,7 +336,7 @@ class Mixer extends LongKeyedMapper[Mixer] with IdPK {
 }
 
 object Mixer extends Mixer with LongKeyedMetaMapper[Mixer] {
-  override def dbAddTable = Full(populate _)
+  override def dbAddTable  = Full(populate _)
   override def dbTableName = "MIXME_UP"
 
   private def populate {
@@ -346,10 +351,8 @@ object Thing extends Thing with KeyedMetaMapper[String, Thing] {
 
   import java.util.UUID
   override def beforeCreate =
-    List(
-        (thing: Thing) =>
-          {
-        thing.thing_id(UUID.randomUUID().toString())
+    List((thing: Thing) => {
+      thing.thing_id(UUID.randomUUID().toString())
     })
 }
 
@@ -361,7 +364,7 @@ class Thing extends KeyedMapper[String, Thing] {
   object thing_id extends MappedStringIndex(this, 36) {
     override def writePermission_? = true
     override def dbAutogenerated_? = false
-    override def dbNotNull_? = true
+    override def dbNotNull_?       = true
   }
 
   object name extends MappedString(this, 64)
@@ -372,7 +375,7 @@ class Thing extends KeyedMapper[String, Thing] {
   * Issue 552
   */
 class TstItem extends LongKeyedMapper[TstItem] {
-  def getSingleton = TstItem
+  def getSingleton    = TstItem
   def primaryKeyField = tmdbId
 
   object tmdbId extends MappedLongIndex(this) {
@@ -386,7 +389,7 @@ class TstItem extends LongKeyedMapper[TstItem] {
 object TstItem extends TstItem with LongKeyedMetaMapper[TstItem]
 
 class Dog2 extends LongKeyedMapper[Dog2] with CreatedUpdated {
-  def getSingleton = Dog2
+  def getSingleton             = Dog2
   override def primaryKeyField = dog2id
 
   object dog2id extends MappedLongIndex[Dog2](this.asInstanceOf[MapperType]) {
@@ -402,25 +405,25 @@ class Dog2 extends LongKeyedMapper[Dog2] with CreatedUpdated {
   object actualAge extends MappedInt(this) {
     override def dbColumnName = "ACTUAL_AGE"
     override def defaultValue = 1
-    override def dbIndexed_? = true
+    override def dbIndexed_?  = true
   }
 
   object isDog extends MappedBoolean(this) {
     override def dbColumnName = "is_a_dog"
     override def defaultValue = false
-    override def dbIndexed_? = true
+    override def dbIndexed_?  = true
   }
 
   object createdTime extends MappedDateTime(this) {
     override def dbColumnName = "CreatedTime"
     override def defaultValue = new _root_.java.util.Date()
-    override def dbIndexed_? = true
+    override def dbIndexed_?  = true
   }
 }
 
 object Dog2 extends Dog2 with LongKeyedMetaMapper[Dog2] {
   override def dbTableName = "DOG2"
-  override def dbAddTable = Full(populate _)
+  override def dbAddTable  = Full(populate _)
 
   private def populate {
     create.name("Elwood").actualAge(66).save

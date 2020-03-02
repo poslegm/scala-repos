@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit
 @Measurement(iterations = 100)
 class RouterPoolCreationBenchmark {
   implicit val system: ActorSystem = ActorSystem()
-  val probe = TestProbe()
+  val probe                        = TestProbe()
 
   Props[TestActors.EchoActor]
 

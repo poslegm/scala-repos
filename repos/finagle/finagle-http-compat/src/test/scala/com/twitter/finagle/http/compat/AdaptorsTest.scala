@@ -1,12 +1,23 @@
 package com.twitter.finagle.http.compat
 
 import com.twitter.finagle.http.netty.Bijections
-import com.twitter.finagle.http.{Fields, Request, Response, Method, Status, Version}
+import com.twitter.finagle.http.{
+  Fields,
+  Request,
+  Response,
+  Method,
+  Status,
+  Version
+}
 import com.twitter.finagle.netty3.BufChannelBuffer
 import com.twitter.io.{Buf, BufReader, Reader}
 import com.twitter.util.Await
 import java.net.{InetAddress, InetSocketAddress, URI}
-import org.jboss.netty.handler.codec.http.{HttpVersion, HttpRequest, HttpResponse}
+import org.jboss.netty.handler.codec.http.{
+  HttpVersion,
+  HttpRequest,
+  HttpResponse
+}
 import org.junit.runner.RunWith
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.FunSuite
@@ -18,23 +29,25 @@ class AdaptorsTest extends FunSuite with GeneratorDrivenPropertyChecks {
   import Arbitrary.arbitrary
   import Bijections._
 
-  val arbMethod = Gen.oneOf(Method.Get,
-                            Method.Post,
-                            Method.Trace,
-                            Method.Delete,
-                            Method.Put,
-                            Method.Connect,
-                            Method.Options)
+  val arbMethod = Gen.oneOf(
+    Method.Get,
+    Method.Post,
+    Method.Trace,
+    Method.Delete,
+    Method.Put,
+    Method.Connect,
+    Method.Options
+  )
 
   val arbKeys = Gen.oneOf("Foo", "Bar", "Foo-Bar", "Bar-Baz")
 
   val arbUri = for {
-    scheme <- Gen.oneOf("http", "https")
+    scheme  <- Gen.oneOf("http", "https")
     hostLen <- Gen.choose(1, 20)
     pathLen <- Gen.choose(1, 20)
-    tld <- Gen.oneOf(".net", ".com", "org", ".edu")
-    host = util.Random.alphanumeric.take(hostLen).mkString
-    path = util.Random.alphanumeric.take(pathLen).mkString
+    tld     <- Gen.oneOf(".net", ".com", "org", ".edu")
+    host    = util.Random.alphanumeric.take(hostLen).mkString
+    path    = util.Random.alphanumeric.take(pathLen).mkString
   } yield (new URI(scheme, host + tld, "/" + path, null)).toASCIIString
 
   val arbHeader = for {
@@ -43,11 +56,11 @@ class AdaptorsTest extends FunSuite with GeneratorDrivenPropertyChecks {
   } yield (key, util.Random.alphanumeric.take(len).mkString)
 
   val arbResponse = for {
-    code <- Gen.chooseNum(100, 510)
+    code    <- Gen.chooseNum(100, 510)
     version <- Gen.oneOf(Version.Http10, Version.Http11)
     chunked <- arbitrary[Boolean]
     headers <- Gen.containerOf[Seq, (String, String)](arbHeader)
-    body <- arbitrary[String]
+    body    <- arbitrary[String]
   } yield {
     if (chunked) {
       val res = Response(version, Status(code), Reader.fromBuf(Buf.Utf8(body)))
@@ -63,18 +76,20 @@ class AdaptorsTest extends FunSuite with GeneratorDrivenPropertyChecks {
   }
 
   val arbRequest = for {
-    method <- arbMethod
-    uri <- arbUri
+    method  <- arbMethod
+    uri     <- arbUri
     version <- Gen.oneOf(Version.Http10, Version.Http11)
     chunked <- arbitrary[Boolean]
     headers <- Gen.containerOf[Seq, (String, String)](arbHeader)
-    body <- arbitrary[String]
+    body    <- arbitrary[String]
   } yield {
     val reqIn = Request(version, method, uri)
     headers foreach { case (k, v) => reqIn.headers.add(k, v) }
-    val req = Request(reqIn.httpRequest,
-                      BufReader(Buf.Utf8(body)),
-                      new InetSocketAddress(InetAddress.getLoopbackAddress, 0))
+    val req = Request(
+      reqIn.httpRequest,
+      BufReader(Buf.Utf8(body)),
+      new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
+    )
     if (chunked) {
       req.headers.set(Fields.TransferEncoding, "chunked")
       req.setChunked(chunked)
@@ -83,14 +98,14 @@ class AdaptorsTest extends FunSuite with GeneratorDrivenPropertyChecks {
   }
 
   val arbNettyVersion = Gen.oneOf(
-      HttpVersion.HTTP_1_0,
-      HttpVersion.HTTP_1_1,
-      new HttpVersion("SECURE-HTTP/1.4", true)
+    HttpVersion.HTTP_1_0,
+    HttpVersion.HTTP_1_1,
+    new HttpVersion("SECURE-HTTP/1.4", true)
   )
 
   val arbNettyResponse = for {
     (resp, body) <- arbResponse
-    version <- arbNettyVersion
+    version      <- arbNettyVersion
   } yield {
     resp.httpResponse.setProtocolVersion(version)
     (resp.httpResponse, body)
@@ -98,7 +113,7 @@ class AdaptorsTest extends FunSuite with GeneratorDrivenPropertyChecks {
 
   val arbNettyRequest = for {
     (req, body) <- arbRequest
-    version <- arbNettyVersion
+    version     <- arbNettyVersion
   } yield {
     req.setProtocolVersion(version)
     (req.getHttpRequest, body)

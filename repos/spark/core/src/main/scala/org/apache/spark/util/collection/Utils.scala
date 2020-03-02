@@ -31,7 +31,8 @@ private[spark] object Utils {
     * and maintains the ordering.
     */
   def takeOrdered[T](input: Iterator[T], num: Int)(
-      implicit ord: Ordering[T]): Iterator[T] = {
+      implicit ord: Ordering[T]
+  ): Iterator[T] = {
     val ordering = new GuavaOrdering[T] {
       override def compare(l: T, r: T): Int = ord.compare(l, r)
     }

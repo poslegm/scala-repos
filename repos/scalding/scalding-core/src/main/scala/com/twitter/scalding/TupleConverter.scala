@@ -36,20 +36,22 @@ import scala.collection.breakOut
   * encode in scala.
   */
 trait TupleConverter[@specialized(Int, Long, Float, Double) T]
-    extends java.io.Serializable with TupleArity { self =>
+    extends java.io.Serializable
+    with TupleArity { self =>
   def apply(te: TupleEntry): T
   def andThen[U](fn: T => U): TupleConverter[U] = new TupleConverter[U] {
     def apply(te: TupleEntry) = fn(self(te))
-    def arity = self.arity
+    def arity                 = self.arity
   }
 }
 
 trait LowPriorityTupleConverters extends java.io.Serializable {
   implicit def singleConverter[@specialized(Int, Long, Float, Double) A](
-      implicit g: TupleGetter[A]) =
+      implicit g: TupleGetter[A]
+  ) =
     new TupleConverter[A] {
       def apply(tup: TupleEntry) = g.get(tup.getTuple, 0)
-      def arity = 1
+      def arity                  = 1
     }
 }
 
@@ -66,11 +68,11 @@ object TupleConverter extends GeneratedTupleConverters {
   def build[T](thisArity: Int)(fn: TupleEntry => T): TupleConverter[T] =
     new TupleConverter[T] {
       def apply(te: TupleEntry) = fn(te)
-      def arity = thisArity
+      def arity                 = thisArity
     }
   def fromTupleEntry[T](t: TupleEntry)(implicit tc: TupleConverter[T]): T =
     tc(t)
-  def arity[T](implicit tc: TupleConverter[T]): Int = tc.arity
+  def arity[T](implicit tc: TupleConverter[T]): Int            = tc.arity
   def of[T](implicit tc: TupleConverter[T]): TupleConverter[T] = tc
 
   /**
@@ -81,7 +83,7 @@ object TupleConverter extends GeneratedTupleConverters {
   implicit lazy val TupleEntryConverter: TupleConverter[TupleEntry] =
     new TupleConverter[TupleEntry] {
       override def apply(tup: TupleEntry) = new TupleEntry(tup)
-      override def arity = -1
+      override def arity                  = -1
     }
 
   /**
@@ -92,7 +94,7 @@ object TupleConverter extends GeneratedTupleConverters {
   implicit lazy val CTupleConverter: TupleConverter[CTuple] =
     new TupleConverter[CTuple] {
       override def apply(tup: TupleEntry) = tup.getTupleCopy
-      override def arity = -1
+      override def arity                  = -1
     }
 
   /**
@@ -103,19 +105,19 @@ object TupleConverter extends GeneratedTupleConverters {
       def wrap(tup: CTuple): Product = new Product {
         def canEqual(that: Any) = that match {
           case p: Product => true
-          case _ => false
+          case _          => false
         }
-        def productArity = tup.size
+        def productArity             = tup.size
         def productElement(idx: Int) = tup.getObject(idx)
       }
       override def apply(tup: TupleEntry) = wrap(tup.getTupleCopy)
-      override def arity = -1
+      override def arity                  = -1
     }
 
   implicit lazy val UnitConverter: TupleConverter[Unit] =
     new TupleConverter[Unit] {
       override def apply(arg: TupleEntry) = ()
-      override def arity = 0
+      override def arity                  = 0
     }
   // Doesn't seem safe to make these implicit by default:
   /**

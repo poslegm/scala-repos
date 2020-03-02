@@ -22,17 +22,17 @@ object FormatterUtil {
             calcIndent(node.getTreeParent)
           case parent =>
             calcAbsolutePosition(node) -
-            calcAbsolutePosition(parent.getNode) match {
+              calcAbsolutePosition(parent.getNode) match {
               case i if i >= 0 => i + calcIndent(parent.getNode)
-              case _ => calcIndent(parent.getNode)
+              case _           => calcIndent(parent.getNode)
             }
         }
       case _: ScalaFile => 0
-      case _ => calcIndent(node.getTreeParent)
+      case _            => calcIndent(node.getTreeParent)
     }
   }
   def calcAbsolutePosition(node: ASTNode): Int = {
-    val text = node.getPsi.getContainingFile.getText
+    val text   = node.getPsi.getContainingFile.getText
     var offset = node.getTextRange.getStartOffset - 1
     var result = 0
     while (offset >= 0 && text(offset) != '\n') { offset += -1; result += 1 }
@@ -40,10 +40,12 @@ object FormatterUtil {
   }
 
   def getNormalIndentString(project: Project) = {
-    String.format("%1$" + ScalaCodeStyleSettings
-                    .getInstance(project)
-                    .getContainer
-                    .getIndentSize(ScalaFileType.SCALA_FILE_TYPE) + "s",
-                  " ")
+    String.format(
+      "%1$" + ScalaCodeStyleSettings
+        .getInstance(project)
+        .getContainer
+        .getIndentSize(ScalaFileType.SCALA_FILE_TYPE) + "s",
+      " "
+    )
   }
 }

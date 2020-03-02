@@ -12,7 +12,11 @@ import org.jetbrains.plugins.scala.lang.psi.api.ScalaElementVisitor
 import org.jetbrains.plugins.scala.lang.psi.api.base.patterns._
 import org.jetbrains.plugins.scala.lang.psi.api.expr._
 import org.jetbrains.plugins.scala.lang.psi.types._
-import org.jetbrains.plugins.scala.lang.psi.types.result.{Failure, TypeResult, TypingContext}
+import org.jetbrains.plugins.scala.lang.psi.types.result.{
+  Failure,
+  TypeResult,
+  TypingContext
+}
 import org.jetbrains.plugins.scala.lang.resolve.StdKinds
 import org.jetbrains.plugins.scala.lang.resolve.processor.CompletionProcessor
 import org.jetbrains.plugins.scala.macroAnnotations.{Cached, ModCount}
@@ -25,11 +29,12 @@ import scala.collection.mutable
   * Date: 06.03.2008
   */
 class ScForStatementImpl(node: ASTNode)
-    extends ScalaPsiElementImpl(node) with ScForStatement {
+    extends ScalaPsiElementImpl(node)
+    with ScForStatement {
   override def accept(visitor: PsiElementVisitor) {
     visitor match {
       case visitor: ScalaElementVisitor => super.accept(visitor)
-      case _ => super.accept(visitor)
+      case _                            => super.accept(visitor)
     }
   }
 
@@ -42,16 +47,18 @@ class ScForStatementImpl(node: ASTNode)
 
   // Binding patterns in reverse order
   def patterns: Seq[ScPattern] = enumerators match {
-    case None => Seq.empty
+    case None    => Seq.empty
     case Some(x) => x.namings.reverse.map(_.pattern)
   }
 
-  override def processDeclarations(processor: PsiScopeProcessor,
-                                   state: ResolveState,
-                                   lastParent: PsiElement,
-                                   place: PsiElement): Boolean = {
+  override def processDeclarations(
+      processor: PsiScopeProcessor,
+      state: ResolveState,
+      lastParent: PsiElement,
+      place: PsiElement
+  ): Boolean = {
     val enumerators: ScEnumerators = this.enumerators match {
-      case None => return true
+      case None    => return true
       case Some(x) => x
     }
     if (lastParent == enumerators) return true
@@ -63,19 +70,19 @@ class ScForStatementImpl(node: ASTNode)
   @tailrec
   private def nextEnumerator(gen: PsiElement): PsiElement = {
     gen.getNextSibling match {
-      case guard: ScGuard => guard
+      case guard: ScGuard     => guard
       case enum: ScEnumerator => enum
-      case gen: ScGenerator => gen
-      case null => null
-      case elem => nextEnumerator(elem)
+      case gen: ScGenerator   => gen
+      case null               => null
+      case elem               => nextEnumerator(elem)
     }
   }
 
   def getDesugarizedExprText(forDisplay: Boolean): Option[String] = {
     val exprText: StringBuilder = new StringBuilder
-    val arrow = ScalaPsiUtil.functionArrow(getProject)
+    val arrow                   = ScalaPsiUtil.functionArrow(getProject)
     val (enums, gens, guards) = enumerators match {
-      case None => return None
+      case None    => return None
       case Some(x) => (x.enumerators, x.generators, x.guards)
     }
     if (guards.isEmpty && enums.isEmpty && gens.length == 1) {
@@ -92,7 +99,7 @@ class ScForStatementImpl(node: ASTNode)
       exprText.append(gen.pattern.getText).append(s" $arrow ")
       body match {
         case Some(x) => exprText.append(bodyToText(x))
-        case _ => exprText.append("{}")
+        case _       => exprText.append("{}")
       }
       exprText.append(" } ")
     } else if (gens.nonEmpty) {
@@ -104,16 +111,19 @@ class ScForStatementImpl(node: ASTNode)
         case guard: ScGuard =>
           exprText.append("for {")
           gen.pattern.desugarizedPatternIndex = exprText.length
-          var filterText = "withFilter"
+          var filterText  = "withFilter"
           var filterFound = false
-          val tp = gen.rvalue.getType(TypingContext.empty).getOrAny
+          val tp          = gen.rvalue.getType(TypingContext.empty).getOrAny
           val processor = new CompletionProcessor(
-              StdKinds.methodRef,
-              this,
-              collectImplicits = true,
-              forName = Some("withFilter")) {
+            StdKinds.methodRef,
+            this,
+            collectImplicits = true,
+            forName = Some("withFilter")
+          ) {
             override def execute(
-                _element: PsiElement, state: ResolveState): Boolean = {
+                _element: PsiElement,
+                state: ResolveState
+            ): Boolean = {
               super.execute(_element, state)
               if (!levelSet.isEmpty) {
                 filterFound = true
@@ -129,7 +139,8 @@ class ScForStatementImpl(node: ASTNode)
             .append(gen.rvalue.getText)
             .append(s").$filterText { case ")
             .append(
-                gen.pattern.bindings.map(b => b.name).mkString("(", ", ", ")"))
+              gen.pattern.bindings.map(b => b.name).mkString("(", ", ", ")")
+            )
             .append(s" $arrow ")
           if (forDisplay) {
             exprText.append(guard.expr.map(_.getText).getOrElse("true"))
@@ -155,7 +166,7 @@ class ScForStatementImpl(node: ASTNode)
           if (isYield) exprText.append("yield ")
           body match {
             case Some(x) => exprText append bodyToText(x)
-            case _ => exprText append "{}"
+            case _       => exprText append "{}"
           }
         case gen2: ScGenerator =>
           exprText
@@ -183,7 +194,7 @@ class ScForStatementImpl(node: ASTNode)
           if (isYield) exprText.append("yield ")
           body match {
             case Some(x) => exprText append bodyToText(x)
-            case _ => exprText append "{}"
+            case _       => exprText append "{}"
           }
           exprText.append("\n}")
         case enum: ScEnumerator =>
@@ -232,7 +243,7 @@ class ScForStatementImpl(node: ASTNode)
           if (isYield) exprText.append("yield ")
           body match {
             case Some(x) => exprText append bodyToText(x)
-            case _ => exprText append "{}"
+            case _       => exprText append "{}"
           }
         case _ =>
       }
@@ -248,8 +259,12 @@ class ScForStatementImpl(node: ASTNode)
         else {
           try {
             Option(
-                ScalaPsiElementFactory.createExpressionWithContextFromText(
-                    text, this.getContext, this))
+              ScalaPsiElementFactory.createExpressionWithContextFromText(
+                text,
+                this.getContext,
+                this
+              )
+            )
           } catch {
             case e: Throwable => None
           }
@@ -265,37 +280,38 @@ class ScForStatementImpl(node: ASTNode)
         enumerators
           .map(e => e.generators.map(g => g.pattern))
           .foreach(patts =>
-                patts.foreach(patt =>
-                      {
-                if (patt != null && patt.desugarizedPatternIndex != -1) {
-                  var element =
-                    expr.findElementAt(patt.desugarizedPatternIndex)
-                  while (element != null &&
-                  (element.getTextLength < patt.getTextLength ||
-                      (!element.isInstanceOf[ScPattern] &&
-                          element.getTextLength == patt.getTextLength))) element = element.getParent
-                  if (element != null && element.getText == patt.getText) {
-                    element match {
-                      case p: ScPattern =>
-                        analogMap.put(p, patt)
-                        patt.analog = p
-                      case _ =>
-                    }
+            patts.foreach(patt => {
+              if (patt != null && patt.desugarizedPatternIndex != -1) {
+                var element =
+                  expr.findElementAt(patt.desugarizedPatternIndex)
+                while (element != null &&
+                       (element.getTextLength < patt.getTextLength ||
+                       (!element.isInstanceOf[ScPattern] &&
+                       element.getTextLength == patt.getTextLength)))
+                  element = element.getParent
+                if (element != null && element.getText == patt.getText) {
+                  element match {
+                    case p: ScPattern =>
+                      analogMap.put(p, patt)
+                      patt.analog = p
+                    case _ =>
                   }
                 }
-            }))
+              }
+            })
+          )
       case _ =>
     }
 
     val (enums, gens, guards) = enumerators match {
-      case None => return None
+      case None    => return None
       case Some(x) => (x.enumerators, x.generators, x.guards)
     }
 
     def updateAnalog(f: ScForStatementImpl) {
       for {
         enums <- f.enumerators
-        gen <- enums.generators
+        gen   <- enums.generators
       } {
         analogMap.get(gen.pattern) match {
           case Some(oldElem) =>
@@ -309,7 +325,7 @@ class ScForStatementImpl(node: ASTNode)
     else {
       val expr = res.get
       nextEnumerator(gens.head) match {
-        case null => res
+        case null           => res
         case guard: ScGuard =>
           //In this case we just need to replace for statement one more time
           expr match {
@@ -327,11 +343,11 @@ class ScForStatementImpl(node: ASTNode)
           expr match {
             case f: ScForStatementImpl =>
               for {
-                enums <- f.enumerators
-                gen <- enums.generators.headOption
+                enums                                      <- f.enumerators
+                gen                                        <- enums.generators.headOption
                 ScParenthesisedExpr(f: ScForStatementImpl) = gen.rvalue
-                additionalReplacement = f.getDesugarizedExpr
-                repl <- additionalReplacement
+                additionalReplacement                      = f.getDesugarizedExpr
+                repl                                       <- additionalReplacement
               } {
                 updateAnalog(f)
                 f.replace(repl)
@@ -350,14 +366,14 @@ class ScForStatementImpl(node: ASTNode)
             case call: ScMethodCall =>
               for {
                 expr <- call.args.exprs.headOption
-                           if expr.isInstanceOf[ScBlockExpr]
-                bl = expr.asInstanceOf[ScBlockExpr]
-                clauses <- bl.caseClauses
-                clause <- clauses.caseClauses.headOption
-                expr <- clause.expr if expr.isInstanceOf[ScForStatementImpl]
-                f = expr.asInstanceOf[ScForStatementImpl]
+                if expr.isInstanceOf[ScBlockExpr]
+                bl                    = expr.asInstanceOf[ScBlockExpr]
+                clauses               <- bl.caseClauses
+                clause                <- clauses.caseClauses.headOption
+                expr                  <- clause.expr if expr.isInstanceOf[ScForStatementImpl]
+                f                     = expr.asInstanceOf[ScForStatementImpl]
                 additionalReplacement = f.getDesugarizedExpr
-                repl <- additionalReplacement
+                repl                  <- additionalReplacement
               } {
                 updateAnalog(f)
                 f.replace(repl)
@@ -372,7 +388,7 @@ class ScForStatementImpl(node: ASTNode)
   override protected def innerType(ctx: TypingContext): TypeResult[ScType] = {
     getDesugarizedExpr match {
       case Some(newExpr) => newExpr.getNonValueType(ctx)
-      case None => Failure("Cannot create expression", Some(this))
+      case None          => Failure("Cannot create expression", Some(this))
     }
   }
 

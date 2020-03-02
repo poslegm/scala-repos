@@ -22,26 +22,29 @@ class DefaultServerTest extends FunSpec with MockitoSugar {
     val name = "name"
 
     it("should successfully add sourcedexception") {
-      val qIn = new AsyncQueue[Try[Int]]()
-      val qOut = new AsyncQueue[Try[Int]]()
-      val listener = new FakeListener[Try[Int]](qIn, qOut)
+      val qIn             = new AsyncQueue[Try[Int]]()
+      val qOut            = new AsyncQueue[Try[Int]]()
+      val listener        = new FakeListener[Try[Int]](qIn, qOut)
       val clientTransport = new QueueTransport(qOut, qIn)
 
-      val serviceTransport: (Transport[Try[Int], Try[Int]],
-      Service[Try[Int], Try[Int]]) => Closable = {
+      val serviceTransport: (
+          Transport[Try[Int], Try[Int]],
+          Service[Try[Int], Try[Int]]
+      ) => Closable = {
         case (transport, service) =>
           val f =
             transport.read() flatMap { num =>
               service(num)
-            } respond { result =>
-              transport.write(result.flatten)
-            }
+            } respond { result => transport.write(result.flatten) }
           service
       }
 
       val server: Server[Try[Int], Try[Int]] =
         DefaultServer[Try[Int], Try[Int], Try[Int], Try[Int]](
-            name, listener, serviceTransport)
+          name,
+          listener,
+          serviceTransport
+        )
 
       val socket = new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
       val factory =
@@ -59,22 +62,27 @@ class DefaultServerTest extends FunSpec with MockitoSugar {
     }
 
     it("should close ServiceFactory and any dispatcher(s) on closure") {
-      val qIn = new AsyncQueue[Try[Int]]()
-      val qOut = new AsyncQueue[Try[Int]]()
-      val listener = new FakeListener[Try[Int]](qIn, qOut)
+      val qIn             = new AsyncQueue[Try[Int]]()
+      val qOut            = new AsyncQueue[Try[Int]]()
+      val listener        = new FakeListener[Try[Int]](qIn, qOut)
       val clientTransport = new QueueTransport(qOut, qIn)
 
       val mockConnHandle = mock[Closable]
       when(mockConnHandle.close(any[Time])) thenReturn Future.Done
 
-      val serviceTransport: (Transport[Try[Int], Try[Int]],
-      Service[Try[Int], Try[Int]]) => Closable = (_, _) => mockConnHandle
+      val serviceTransport: (
+          Transport[Try[Int], Try[Int]],
+          Service[Try[Int], Try[Int]]
+      ) => Closable = (_, _) => mockConnHandle
 
       val server: Server[Try[Int], Try[Int]] =
         DefaultServer[Try[Int], Try[Int], Try[Int], Try[Int]](
-            name, listener, serviceTransport)
+          name,
+          listener,
+          serviceTransport
+        )
 
-      val socket = new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
+      val socket  = new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
       val factory = mock[ServiceFactory[Try[Int], Try[Int]]]
       val service = Service.mk[Try[Int], Try[Int]] { Future.value }
       when(factory(any[ClientConnection])) thenReturn Future.value(service)
@@ -90,45 +98,52 @@ class DefaultServerTest extends FunSpec with MockitoSugar {
     }
 
     it("should drain outstanding request on closure") {
-      val qIn = new AsyncQueue[Try[Int]]()
-      val qOut = new AsyncQueue[Try[Int]]()
-      val listener = new FakeListener[Try[Int]](qIn, qOut)
+      val qIn             = new AsyncQueue[Try[Int]]()
+      val qOut            = new AsyncQueue[Try[Int]]()
+      val listener        = new FakeListener[Try[Int]](qIn, qOut)
       val clientTransport = new QueueTransport(qOut, qIn)
 
       val mockConnHandle = mock[Closable]
       when(mockConnHandle.close(any[Time])) thenReturn Future.Done
 
-      val serviceTransport: (Transport[Try[Int], Try[Int]],
-      Service[Try[Int], Try[Int]]) => Closable =
+      val serviceTransport: (
+          Transport[Try[Int], Try[Int]],
+          Service[Try[Int], Try[Int]]
+      ) => Closable =
         new SerialServerDispatcher(_, _)
 
       val server: Server[Try[Int], Try[Int]] =
         DefaultServer[Try[Int], Try[Int], Try[Int], Try[Int]](
-            name, listener, serviceTransport)
+          name,
+          listener,
+          serviceTransport
+        )
       val socket = new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
 
-      val p = Promise[Try[Int]]
-      val svc = Service.mk[Try[Int], Try[Int]] { _ =>
-        p
-      }
-      val factory = ServiceFactory.const(svc)
+      val p                                = Promise[Try[Int]]
+      val svc                              = Service.mk[Try[Int], Try[Int]] { _ => p }
+      val factory                          = ServiceFactory.const(svc)
       val listeningServer: ListeningServer = server.serve(socket, factory)
 
-      val transporter: (SocketAddress,
-      StatsReceiver) => Future[Transport[Try[Int], Try[Int]]] = (_,
-      _) => Future.value(clientTransport)
+      val transporter: (
+          SocketAddress,
+          StatsReceiver
+      ) => Future[Transport[Try[Int], Try[Int]]] =
+        (_, _) => Future.value(clientTransport)
 
-      val endpointer: (Address,
-      StatsReceiver) => ServiceFactory[Try[Int], Try[Int]] = Bridge(
+      val endpointer
+          : (Address, StatsReceiver) => ServiceFactory[Try[Int], Try[Int]] =
+        Bridge(
           transporter,
-          (t: Transport[Try[Int], Try[Int]]) => new SerialClientDispatcher(t))
+          (t: Transport[Try[Int], Try[Int]]) => new SerialClientDispatcher(t)
+        )
 
       val client: Client[Try[Int], Try[Int]] =
         DefaultClient("name", endpointer)
       val clientService: Service[Try[Int], Try[Int]] =
         client.newService(Name.fromGroup(listeningServer), "")
 
-      val f = clientService(Return(4))
+      val f      = clientService(Return(4))
       val closed = listeningServer.close(1.second.fromNow)
       assert(closed.isDefined == false)
       p.setValue(Return(3))
@@ -140,8 +155,9 @@ class DefaultServerTest extends FunSpec with MockitoSugar {
 
 class FakeListener[T](qIn: AsyncQueue[T], qOut: AsyncQueue[T])
     extends Listener[T, T] {
-  override def listen(addr: SocketAddress)(
-      serveTransport: Transport[T, T] => Unit): ListeningServer = {
+  override def listen(
+      addr: SocketAddress
+  )(serveTransport: Transport[T, T] => Unit): ListeningServer = {
     val transport = new QueueTransport(qIn, qOut)
     serveTransport(transport)
     NullServer

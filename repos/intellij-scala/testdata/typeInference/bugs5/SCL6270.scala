@@ -1,5 +1,5 @@
 object Funcs {
-  val foo: String => Int = _.length
+  val foo: String => Int     = _.length
   def foo(s: String): String = s
 }
 

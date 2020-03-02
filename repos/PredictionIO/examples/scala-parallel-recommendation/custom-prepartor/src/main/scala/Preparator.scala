@@ -6,14 +6,13 @@ import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
-import scala.io.Source // ADDED
+import scala.io.Source                 // ADDED
 import io.prediction.controller.Params // ADDED
 
 // ADDED CustomPreparatorParams case class
 case class CustomPreparatorParams(
     filepath: String
-)
-    extends Params
+) extends Params
 
 class Preparator(pp: CustomPreparatorParams) // ADDED CustomPreparatorParams
     extends PPreparator[TrainingData, PreparedData] {
@@ -28,5 +27,4 @@ class Preparator(pp: CustomPreparatorParams) // ADDED CustomPreparatorParams
 
 class PreparedData(
     val ratings: RDD[Rating]
-)
-    extends Serializable
+) extends Serializable

@@ -23,7 +23,10 @@ import scala.annotation.tailrec
 import org.apache.commons.io.FileUtils
 import org.apache.hadoop.yarn.api.records.ApplicationId
 import org.apache.hadoop.yarn.conf.YarnConfiguration
-import org.apache.hadoop.yarn.server.api.{ApplicationInitializationContext, ApplicationTerminationContext}
+import org.apache.hadoop.yarn.server.api.{
+  ApplicationInitializationContext,
+  ApplicationTerminationContext
+}
 import org.scalatest.{BeforeAndAfterEach, Matchers}
 
 import org.apache.spark.SparkFunSuite
@@ -31,15 +34,18 @@ import org.apache.spark.network.shuffle.ShuffleTestAccessor
 import org.apache.spark.network.shuffle.protocol.ExecutorShuffleInfo
 
 class YarnShuffleServiceSuite
-    extends SparkFunSuite with Matchers with BeforeAndAfterEach {
+    extends SparkFunSuite
+    with Matchers
+    with BeforeAndAfterEach {
   private[yarn] var yarnConfig: YarnConfiguration = new YarnConfiguration
 
   override def beforeEach(): Unit = {
     super.beforeEach()
     yarnConfig.set(YarnConfiguration.NM_AUX_SERVICES, "spark_shuffle")
     yarnConfig.set(
-        YarnConfiguration.NM_AUX_SERVICE_FMT.format("spark_shuffle"),
-        classOf[YarnShuffleService].getCanonicalName)
+      YarnConfiguration.NM_AUX_SERVICE_FMT.format("spark_shuffle"),
+      classOf[YarnShuffleService].getCanonicalName
+    )
     yarnConfig.setInt("spark.shuffle.service.port", 0)
 
     yarnConfig.get("yarn.nodemanager.local-dirs").split(",").foreach { dir =>
@@ -93,17 +99,20 @@ class YarnShuffleServiceSuite
       new ExecutorShuffleInfo(Array("/foo", "/bar"), 3, "sort")
     val shuffleInfo2 = new ExecutorShuffleInfo(Array("/bippy"), 5, "hash")
 
-    val blockHandler = s1.blockHandler
+    val blockHandler  = s1.blockHandler
     val blockResolver = ShuffleTestAccessor.getBlockResolver(blockHandler)
     ShuffleTestAccessor.registeredExecutorFile(blockResolver) should be(
-        execStateFile)
+      execStateFile
+    )
 
     blockResolver.registerExecutor(app1Id.toString, "exec-1", shuffleInfo1)
     blockResolver.registerExecutor(app2Id.toString, "exec-2", shuffleInfo2)
     ShuffleTestAccessor.getExecutorInfo(app1Id, "exec-1", blockResolver) should be(
-        Some(shuffleInfo1))
+      Some(shuffleInfo1)
+    )
     ShuffleTestAccessor.getExecutorInfo(app2Id, "exec-2", blockResolver) should be(
-        Some(shuffleInfo2))
+      Some(shuffleInfo2)
+    )
 
     if (!execStateFile.exists()) {
       @tailrec def findExistingParent(file: File): File = {
@@ -113,8 +122,9 @@ class YarnShuffleServiceSuite
       }
       val existingParent = findExistingParent(execStateFile)
       assert(
-          false,
-          s"$execStateFile does not exist -- closest existing parent is $existingParent")
+        false,
+        s"$execStateFile does not exist -- closest existing parent is $existingParent"
+      )
     }
     assert(execStateFile.exists(), s"$execStateFile did not exist")
 
@@ -124,7 +134,7 @@ class YarnShuffleServiceSuite
     s2.init(yarnConfig)
     s2.registeredExecutorFile should be(execStateFile)
 
-    val handler2 = s2.blockHandler
+    val handler2  = s2.blockHandler
     val resolver2 = ShuffleTestAccessor.getBlockResolver(handler2)
 
     // now we reinitialize only one of the apps, and expect yarn to tell us that app2 was stopped
@@ -132,9 +142,11 @@ class YarnShuffleServiceSuite
     s2.initializeApplication(app1Data)
     s2.stopApplication(new ApplicationTerminationContext(app2Id))
     ShuffleTestAccessor.getExecutorInfo(app1Id, "exec-1", resolver2) should be(
-        Some(shuffleInfo1))
+      Some(shuffleInfo1)
+    )
     ShuffleTestAccessor.getExecutorInfo(app2Id, "exec-2", resolver2) should be(
-        None)
+      None
+    )
 
     // Act like the NM restarts one more time
     s2.stop()
@@ -142,15 +154,17 @@ class YarnShuffleServiceSuite
     s3.init(yarnConfig)
     s3.registeredExecutorFile should be(execStateFile)
 
-    val handler3 = s3.blockHandler
+    val handler3  = s3.blockHandler
     val resolver3 = ShuffleTestAccessor.getBlockResolver(handler3)
 
     // app1 is still running
     s3.initializeApplication(app1Data)
     ShuffleTestAccessor.getExecutorInfo(app1Id, "exec-1", resolver3) should be(
-        Some(shuffleInfo1))
+      Some(shuffleInfo1)
+    )
     ShuffleTestAccessor.getExecutorInfo(app2Id, "exec-2", resolver3) should be(
-        None)
+      None
+    )
     s3.stop()
   }
 
@@ -172,10 +186,11 @@ class YarnShuffleServiceSuite
       new ExecutorShuffleInfo(Array("/foo", "/bar"), 3, "sort")
     val shuffleInfo2 = new ExecutorShuffleInfo(Array("/bippy"), 5, "hash")
 
-    val blockHandler = s1.blockHandler
+    val blockHandler  = s1.blockHandler
     val blockResolver = ShuffleTestAccessor.getBlockResolver(blockHandler)
     ShuffleTestAccessor.registeredExecutorFile(blockResolver) should be(
-        execStateFile)
+      execStateFile
+    )
 
     blockResolver.registerExecutor(app1Id.toString, "exec-1", shuffleInfo1)
     blockResolver.registerExecutor(app2Id.toString, "exec-2", shuffleInfo2)
@@ -201,10 +216,11 @@ class YarnShuffleServiceSuite
     val shuffleInfo1 =
       new ExecutorShuffleInfo(Array("/foo", "/bar"), 3, "sort")
 
-    val blockHandler = s1.blockHandler
+    val blockHandler  = s1.blockHandler
     val blockResolver = ShuffleTestAccessor.getBlockResolver(blockHandler)
     ShuffleTestAccessor.registeredExecutorFile(blockResolver) should be(
-        execStateFile)
+      execStateFile
+    )
 
     blockResolver.registerExecutor(app1Id.toString, "exec-1", shuffleInfo1)
 
@@ -223,7 +239,7 @@ class YarnShuffleServiceSuite
     s2.init(yarnConfig)
     s2.registeredExecutorFile should be(execStateFile)
 
-    val handler2 = s2.blockHandler
+    val handler2  = s2.blockHandler
     val resolver2 = ShuffleTestAccessor.getBlockResolver(handler2)
 
     // we re-initialize app1, but since the file was corrupt there is nothing we can do about it ...
@@ -236,19 +252,21 @@ class YarnShuffleServiceSuite
     val shuffleInfo2 = new ExecutorShuffleInfo(Array("/bippy"), 5, "hash")
     resolver2.registerExecutor(app2Id.toString, "exec-2", shuffleInfo2)
     ShuffleTestAccessor.getExecutorInfo(app2Id, "exec-2", resolver2) should be(
-        Some(shuffleInfo2))
+      Some(shuffleInfo2)
+    )
     s2.stop()
 
     // another stop & restart should be fine though (eg., we recover from previous corruption)
     s3 = new YarnShuffleService
     s3.init(yarnConfig)
     s3.registeredExecutorFile should be(execStateFile)
-    val handler3 = s3.blockHandler
+    val handler3  = s3.blockHandler
     val resolver3 = ShuffleTestAccessor.getBlockResolver(handler3)
 
     s3.initializeApplication(app2Data)
     ShuffleTestAccessor.getExecutorInfo(app2Id, "exec-2", resolver3) should be(
-        Some(shuffleInfo2))
+      Some(shuffleInfo2)
+    )
     s3.stop()
   }
 }

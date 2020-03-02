@@ -35,7 +35,8 @@ import scalafx.delegate.SFXDelegate
 
 object ReadOnlyBooleanWrapper {
   implicit def sfxReadOnlyBooleanWrapper2jfx(
-      w: ReadOnlyBooleanWrapper): jfxbp.ReadOnlyBooleanWrapper =
+      w: ReadOnlyBooleanWrapper
+  ): jfxbp.ReadOnlyBooleanWrapper =
     if (w != null) w.delegate else null
 
   /** Creates a new ReadOnlyBooleanWrapper instance.
@@ -47,9 +48,10 @@ object ReadOnlyBooleanWrapper {
 
 /** Wrapper for [[http://docs.oracle.com/javase/8/javafx/api/javafx/beans/property/ReadOnlyBooleanWrapper.html javafx.beans.property.ReadOnlyBooleanWrapper]] */
 class ReadOnlyBooleanWrapper(
-    override val delegate: jfxbp.ReadOnlyBooleanWrapper = new jfxbp.ReadOnlyBooleanWrapper(
-          ))
-    extends BooleanProperty(delegate)
+    override val delegate: jfxbp.ReadOnlyBooleanWrapper =
+      new jfxbp.ReadOnlyBooleanWrapper(
+        )
+) extends BooleanProperty(delegate)
     with SFXDelegate[jfxbp.ReadOnlyBooleanWrapper] {
 
   /** Creates a new ReadOnlyBooleanWrapper instance.

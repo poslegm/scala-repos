@@ -2,7 +2,11 @@ package com.twitter.finagle.netty3.channel
 
 import com.twitter.finagle.stats.InMemoryStatsReceiver
 import java.util.concurrent.atomic.AtomicInteger
-import org.jboss.netty.channel.{ChannelHandlerContext, ChannelStateEvent, MessageEvent}
+import org.jboss.netty.channel.{
+  ChannelHandlerContext,
+  ChannelStateEvent,
+  MessageEvent
+}
 import org.junit.runner.RunWith
 import org.mockito.Mockito._
 import org.scalatest.FunSuite
@@ -12,12 +16,12 @@ import org.scalatest.mock.MockitoSugar
 @RunWith(classOf[JUnitRunner])
 class ChannelRequestStatsHandlerTest extends FunSuite with MockitoSugar {
   test("records requests number") {
-    val sr = new InMemoryStatsReceiver
+    val sr      = new InMemoryStatsReceiver
     val handler = new ChannelRequestStatsHandler(sr)
 
     val ctx = mock[ChannelHandlerContext]
     val cnt = new AtomicInteger(0)
-    val e = mock[ChannelStateEvent]
+    val e   = mock[ChannelStateEvent]
     val msg = mock[MessageEvent]
 
     assert(sr.stats.get(Seq("connection_requests")) == None)

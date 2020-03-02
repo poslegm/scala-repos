@@ -1,4 +1,4 @@
-trait Inv[A] { def head: A }
+trait Inv[A]  { def head: A }
 trait Cov[+A] { def head: A }
 
 class Test {

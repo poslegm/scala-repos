@@ -11,7 +11,8 @@ object product extends UFunc {
 
   @expand
   implicit def reduce[T, @expand.args(Int, Double, Float, Long) S](
-      implicit iter: CanTraverseValues[T, S]): Impl[T, S] = new Impl[T, S] {
+      implicit iter: CanTraverseValues[T, S]
+  ): Impl[T, S] = new Impl[T, S] {
     def apply(v: T): S = {
       class ProductVisitor extends ValuesVisitor[S] {
         var product: S = 1
@@ -31,7 +32,8 @@ object product extends UFunc {
 
   implicit def reduceSemiring[T, S](
       implicit iter: CanTraverseValues[T, S],
-      semiring: Semiring[S]): Impl[T, S] = new Impl[T, S] {
+      semiring: Semiring[S]
+  ): Impl[T, S] = new Impl[T, S] {
     def apply(v: T): S = {
       class ProductVisitor extends ValuesVisitor[S] {
         var product: S = semiring.one

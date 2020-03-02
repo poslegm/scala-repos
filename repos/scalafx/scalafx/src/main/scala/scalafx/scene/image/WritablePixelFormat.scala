@@ -34,7 +34,8 @@ import scalafx.delegate.SFXDelegate
 
 object WritablePixelFormat {
   implicit def sfxWritablePixelFormat2jfx[B <: Buffer](
-      wpf: WritablePixelFormat[B]): jfxsi.WritablePixelFormat[B] =
+      wpf: WritablePixelFormat[B]
+  ): jfxsi.WritablePixelFormat[B] =
     if (null == wpf) null else wpf.delegate
 }
 
@@ -42,8 +43,8 @@ object WritablePixelFormat {
   * Wraps [[http://docs.oracle.com/javase/8/javafx/api/javafx/scene/image/WritablePixelFormat.html]]
   */
 abstract class WritablePixelFormat[B <: Buffer](
-    override val delegate: jfxsi.WritablePixelFormat[B])
-    extends PixelFormat(delegate)
+    override val delegate: jfxsi.WritablePixelFormat[B]
+) extends PixelFormat(delegate)
     with SFXDelegate[jfxsi.WritablePixelFormat[B]] {
 
   /**

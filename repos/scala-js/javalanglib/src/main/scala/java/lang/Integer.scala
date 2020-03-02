@@ -13,11 +13,11 @@ final class Integer private () extends Number with Comparable[Integer] {
   @inline def intValue(): scala.Int =
     this.asInstanceOf[scala.Int]
 
-  @inline override def byteValue(): scala.Byte = intValue.toByte
+  @inline override def byteValue(): scala.Byte   = intValue.toByte
   @inline override def shortValue(): scala.Short = intValue.toShort
-  @inline def longValue(): scala.Long = intValue.toLong
-  @inline def floatValue(): scala.Float = intValue.toFloat
-  @inline def doubleValue(): scala.Double = intValue.toDouble
+  @inline def longValue(): scala.Long            = intValue.toLong
+  @inline def floatValue(): scala.Float          = intValue.toFloat
+  @inline def doubleValue(): scala.Double        = intValue.toDouble
 
   @inline override def equals(that: Any): scala.Boolean =
     this eq that.asInstanceOf[AnyRef]
@@ -48,14 +48,14 @@ final class Integer private () extends Number with Comparable[Integer] {
 }
 
 object Integer {
-  final val TYPE = classOf[scala.Int]
+  final val TYPE      = classOf[scala.Int]
   final val MIN_VALUE = -2147483648
   final val MAX_VALUE = 2147483647
-  final val SIZE = 32
-  final val BYTES = 4
+  final val SIZE      = 32
+  final val BYTES     = 4
 
   @inline def valueOf(intValue: scala.Int): Integer = new Integer(intValue)
-  @inline def valueOf(s: String): Integer = valueOf(parseInt(s))
+  @inline def valueOf(s: String): Integer           = valueOf(parseInt(s))
 
   @inline def valueOf(s: String, radix: Int): Integer =
     valueOf(parseInt(s, radix))
@@ -72,7 +72,10 @@ object Integer {
 
   @inline
   private def parseIntImpl(
-      s: String, radix: scala.Int, signed: scala.Boolean): scala.Int = {
+      s: String,
+      radix: scala.Int,
+      signed: scala.Boolean
+  ): scala.Int = {
     def fail = throw new NumberFormatException(s"""For input string: "$s"""")
 
     if (s == null || s.size == 0 || radix < Character.MIN_RADIX ||
@@ -122,7 +125,7 @@ object Integer {
   }
 
   @inline def toUnsignedLong(x: Int): scala.Long =
-    x.toLong & 0xffffffffL
+    x.toLong & 0xFFFFFFFFL
 
   def bitCount(i: scala.Int): scala.Int = {
     /* See http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
@@ -200,8 +203,8 @@ object Integer {
     else 31 - numberOfLeadingZeros(i & -i)
 
   def toBinaryString(i: scala.Int): String = toStringBase(i, 2)
-  def toHexString(i: scala.Int): String = toStringBase(i, 16)
-  def toOctalString(i: scala.Int): String = toStringBase(i, 8)
+  def toHexString(i: scala.Int): String    = toStringBase(i, 16)
+  def toOctalString(i: scala.Int): String  = toStringBase(i, 8)
 
   @inline // because radix is almost certainly constant at call site
   def toString(i: Int, radix: Int): String = {
@@ -223,7 +226,9 @@ object Integer {
   @inline def min(a: Int, b: Int): Int = Math.min(a, b)
 
   @inline private[this] def toStringBase(
-      i: scala.Int, base: scala.Int): String = {
+      i: scala.Int,
+      base: scala.Int
+  ): String = {
     import js.JSNumberOps._
     i.toUint.toString(base)
   }

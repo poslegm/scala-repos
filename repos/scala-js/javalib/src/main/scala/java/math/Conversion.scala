@@ -37,43 +37,9 @@ private[math] object Conversion {
     *  Holds the maximal exponent for each radix, so that
     *  radix<sup>digitFitInInt[radix]</sup> fit in an {@code int} (32 bits).
     */
-  final val DigitFitInInt = Array[Int](-1,
-                                       -1,
-                                       31,
-                                       19,
-                                       15,
-                                       13,
-                                       11,
-                                       11,
-                                       10,
-                                       9,
-                                       9,
-                                       8,
-                                       8,
-                                       8,
-                                       8,
-                                       7,
-                                       7,
-                                       7,
-                                       7,
-                                       7,
-                                       7,
-                                       7,
-                                       6,
-                                       6,
-                                       6,
-                                       6,
-                                       6,
-                                       6,
-                                       6,
-                                       6,
-                                       6,
-                                       6,
-                                       6,
-                                       6,
-                                       6,
-                                       6,
-                                       5)
+  final val DigitFitInInt =
+    Array[Int](-1, -1, 31, 19, 15, 13, 11, 11, 10, 9, 9, 8, 8, 8, 8, 7, 7, 7, 7,
+      7, 7, 7, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 5)
 
   /** Precomputed maximal powers of radices.
     *
@@ -81,47 +47,19 @@ private[math] object Conversion {
     *  numbers from 2 to 36) that fit into unsigned int (32 bits). bigRadices[0] =
     *  2 ^ 31, bigRadices[8] = 10 ^ 9, etc.
     */
-  final val BigRadices = Array[Int](-2147483648,
-                                    1162261467,
-                                    1073741824,
-                                    1220703125,
-                                    362797056,
-                                    1977326743,
-                                    1073741824,
-                                    387420489,
-                                    1000000000,
-                                    214358881,
-                                    429981696,
-                                    815730721,
-                                    1475789056,
-                                    170859375,
-                                    268435456,
-                                    410338673,
-                                    612220032,
-                                    893871739,
-                                    1280000000,
-                                    1801088541,
-                                    113379904,
-                                    148035889,
-                                    191102976,
-                                    244140625,
-                                    308915776,
-                                    387420489,
-                                    481890304,
-                                    594823321,
-                                    729000000,
-                                    887503681,
-                                    1073741824,
-                                    1291467969,
-                                    1544804416,
-                                    1838265625,
-                                    60466176)
+  final val BigRadices = Array[Int](-2147483648, 1162261467, 1073741824,
+    1220703125, 362797056, 1977326743, 1073741824, 387420489, 1000000000,
+    214358881, 429981696, 815730721, 1475789056, 170859375, 268435456,
+    410338673, 612220032, 893871739, 1280000000, 1801088541, 113379904,
+    148035889, 191102976, 244140625, 308915776, 387420489, 481890304, 594823321,
+    729000000, 887503681, 1073741824, 1291467969, 1544804416, 1838265625,
+    60466176)
 
   /** @see BigInteger#toString(int) */
   def bigInteger2String(bi: BigInteger, radix: Int): String = {
-    val sign = bi.sign
+    val sign         = bi.sign
     val numberLength = bi.numberLength
-    val digits = bi.digits
+    val digits       = bi.digits
     val radixOutOfBounds =
       radix < Character.MIN_RADIX || radix > Character.MAX_RADIX
 
@@ -129,7 +67,7 @@ private[math] object Conversion {
       "0"
     } else if (numberLength == 1) {
       val highDigit = digits(numberLength - 1)
-      var v = highDigit & 0xFFFFFFFFL
+      var v         = highDigit & 0xFFFFFFFFL
       if (sign < 0) v = -v
       java.lang.Long.toString(v, radix)
     } else if (radix == 10 || radixOutOfBounds) {
@@ -137,19 +75,19 @@ private[math] object Conversion {
     } else {
       var bitsForRadixDigit: Double = 0.0
       bitsForRadixDigit = Math.log(radix) / Math.log(2)
-      val addForSign = if (sign < 0) 1 else 0
-      val biAbsLen = bi.abs().bitLength()
-      val resLenInChars = (biAbsLen / bitsForRadixDigit + addForSign).toInt + 1
+      val addForSign     = if (sign < 0) 1 else 0
+      val biAbsLen       = bi.abs().bitLength()
+      val resLenInChars  = (biAbsLen / bitsForRadixDigit + addForSign).toInt + 1
       var result: String = ""
-      var currentChar = resLenInChars
-      var resDigit: Int = 0
+      var currentChar    = resLenInChars
+      var resDigit: Int  = 0
 
       if (radix != 16) {
         val temp = new Array[Int](numberLength)
         System.arraycopy(digits, 0, temp, 0, numberLength)
-        var tempLen = numberLength
+        var tempLen     = numberLength
         val charsPerInt = DigitFitInInt(radix)
-        val bigRadix = BigRadices(radix - 2)
+        val bigRadix    = BigRadices(radix - 2)
 
         @inline
         @tailrec
@@ -167,7 +105,7 @@ private[math] object Conversion {
           }
           innerLoop()
 
-          val delta = charsPerInt - previous + currentChar
+          val delta  = charsPerInt - previous + currentChar
           var i: Int = 0
           while (i < delta && currentChar > 0) {
             currentChar -= 1
@@ -210,11 +148,11 @@ private[math] object Conversion {
     *  @see BigDecimal#toString()
     */
   def toDecimalScaledString(bi: BigInteger): String = {
-    val sign: Int = bi.sign
-    val numberLength: Int = bi.numberLength
-    val digits: Array[Int] = bi.digits
+    val sign: Int             = bi.sign
+    val numberLength: Int     = bi.numberLength
+    val digits: Array[Int]    = bi.digits
     var resLengthInChars: Int = 0
-    var currentChar: Int = 0
+    var currentChar: Int      = 0
 
     if (sign == 0) {
       "0"
@@ -248,7 +186,7 @@ private[math] object Conversion {
           } while (v != 0)
         }
       } else {
-        val temp = new Array[Int](numberLength)
+        val temp    = new Array[Int](numberLength)
         var tempLen = numberLength
         System.arraycopy(digits, 0, temp, 0, tempLen)
 
@@ -259,10 +197,10 @@ private[math] object Conversion {
           // remainders
           // to characters collecting them in the char array
           var result11: Long = 0
-          var i1: Int = tempLen - 1
+          var i1: Int        = tempLen - 1
           while (i1 >= 0) {
             val temp1: Long = (result11 << 32) + (temp(i1) & 0xFFFFFFFFL)
-            val res: Long = divideLongByBillion(temp1)
+            val res: Long   = divideLongByBillion(temp1)
             temp(i1) = res.toInt
             result11 = (res >> 32).toInt
             i1 -= 1
@@ -281,14 +219,14 @@ private[math] object Conversion {
           innerLoop()
 
           val delta = 9 - previous + currentChar
-          var i = 0
-          while ( (i < delta) && (currentChar > 0)) {
+          var i     = 0
+          while ((i < delta) && (currentChar > 0)) {
             currentChar -= 1
             result = '0' + result
             i += 1
           }
           var j = tempLen - 1
-          while ( (temp(j) == 0) && (j != 0)) {
+          while ((temp(j) == 0) && (j != 0)) {
             j -= 1
           }
           tempLen = j + 1
@@ -328,8 +266,8 @@ private[math] object Conversion {
       // +1 - one char for sign if needed.
       // +7 - For "special case 2" (see below) we have 7 free chars for inserting necessary scaled digits.
       val resLengthInChars = 18
-      val negNumber = value < 0
-      var result = ""
+      val negNumber        = value < 0
+      var result           = ""
       //  Allocated [resLengthInChars+1] characters.
       // a free latest character may be used for "special case 1" (see below)
       var currentChar = resLengthInChars
@@ -361,9 +299,10 @@ private[math] object Conversion {
         if (exponent > 0) result1 = '+' + result1
         result1 = 'E' + result1
 
-        result = if (resLengthInChars - currentChar > 1)
-          result(0) + "." + result.substring(1) + result1
-        else result + result1
+        result =
+          if (resLengthInChars - currentChar > 1)
+            result(0) + "." + result.substring(1) + result1
+          else result + result1
       }
 
       if (negNumber) '-' + result
@@ -395,11 +334,11 @@ private[math] object Conversion {
       if (bi.sign > 0) Double.PositiveInfinity
       else Double.NegativeInfinity
     } else {
-      val bitLen = bi.abs().bitLength()
+      val bitLen         = bi.abs().bitLength()
       var exponent: Long = bitLen - 1
-      val delta = bitLen - 54
-      val lVal = bi.abs().shiftRight(delta).longValue()
-      var mantissa = lVal & 0x1FFFFFFFFFFFFFL
+      val delta          = bitLen - 54
+      val lVal           = bi.abs().shiftRight(delta).longValue()
+      var mantissa       = lVal & 0x1FFFFFFFFFFFFFL
 
       if (exponent == 1023 && mantissa == 0X1FFFFFFFFFFFFFL) {
         if (bi.sign > 0) Double.PositiveInfinity

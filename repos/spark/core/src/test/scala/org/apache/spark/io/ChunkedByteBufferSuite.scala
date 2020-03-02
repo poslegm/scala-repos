@@ -62,12 +62,13 @@ class ChunkedByteBufferSuite extends SparkFunSuite {
     val chunkedByteBuffer =
       new ChunkedByteBuffer(Array(ByteBuffer.allocate(8)))
     chunkedByteBuffer.writeFully(
-        new ByteArrayWritableChannel(chunkedByteBuffer.size.toInt))
+      new ByteArrayWritableChannel(chunkedByteBuffer.size.toInt)
+    )
     assert(chunkedByteBuffer.getChunks().head.position() === 0)
   }
 
   test("toArray()") {
-    val bytes = ByteBuffer.wrap(Array.tabulate(8)(_.toByte))
+    val bytes             = ByteBuffer.wrap(Array.tabulate(8)(_.toByte))
     val chunkedByteBuffer = new ChunkedByteBuffer(Array(bytes, bytes))
     assert(chunkedByteBuffer.toArray === bytes.array() ++ bytes.array())
   }
@@ -84,12 +85,12 @@ class ChunkedByteBufferSuite extends SparkFunSuite {
   }
 
   test("toInputStream()") {
-    val bytes1 = ByteBuffer.wrap(Array.tabulate(256)(_.toByte))
-    val bytes2 = ByteBuffer.wrap(Array.tabulate(128)(_.toByte))
+    val bytes1            = ByteBuffer.wrap(Array.tabulate(256)(_.toByte))
+    val bytes2            = ByteBuffer.wrap(Array.tabulate(128)(_.toByte))
     val chunkedByteBuffer = new ChunkedByteBuffer(Array(bytes1, bytes2))
     assert(chunkedByteBuffer.size === bytes1.limit() + bytes2.limit())
 
-    val inputStream = chunkedByteBuffer.toInputStream(dispose = false)
+    val inputStream     = chunkedByteBuffer.toInputStream(dispose = false)
     val bytesFromStream = new Array[Byte](chunkedByteBuffer.size.toInt)
     ByteStreams.readFully(inputStream, bytesFromStream)
     assert(bytesFromStream === bytes1.array() ++ bytes2.array())

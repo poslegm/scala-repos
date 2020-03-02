@@ -20,7 +20,7 @@ class RestHelperSpec extends WebSpec(RestHelperSpecBoot.boot _) {
 
   "RestHelper" should {
     val testOptionsUrl = "http://foo.com/api/info"
-    val testFutureUrl = "http://foo.com/api/futured"
+    val testFutureUrl  = "http://foo.com/api/futured"
 
     val testOptionsReq = new MockHttpServletRequest(testOptionsUrl) {
       method = "OPTIONS"
@@ -52,9 +52,7 @@ class RestHelperSpec extends WebSpec(RestHelperSpecBoot.boot _) {
           case ContinuationException(_, _, resolverFunction) =>
             val result = new LAFuture[LiftResponse]
 
-            resolverFunction({ response =>
-              result.satisfy(response)
-            })
+            resolverFunction({ response => result.satisfy(response) })
 
             helper.future.satisfy(JObject(Nil))
 

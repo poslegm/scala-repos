@@ -46,35 +46,36 @@ private[jackson] object JsValueSerializer extends JsonSerializer[JsValue] {
   import com.fasterxml.jackson.databind.node.{BigIntegerNode, DecimalNode}
 
   override def serialize(
-      value: JsValue, json: JsonGenerator, provider: SerializerProvider) {
+      value: JsValue,
+      json: JsonGenerator,
+      provider: SerializerProvider
+  ) {
     value match {
       case JsNumber(v) => {
-          // Workaround #3784: Same behaviour as if JsonGenerator were
-          // configured with WRITE_BIGDECIMAL_AS_PLAIN, but forced as this
-          // configuration is ignored when called from ObjectMapper.valueToTree
-          val raw = v.bigDecimal.stripTrailingZeros.toPlainString
+        // Workaround #3784: Same behaviour as if JsonGenerator were
+        // configured with WRITE_BIGDECIMAL_AS_PLAIN, but forced as this
+        // configuration is ignored when called from ObjectMapper.valueToTree
+        val raw = v.bigDecimal.stripTrailingZeros.toPlainString
 
-          if (raw contains ".")
-            json.writeTree(new DecimalNode(new JBigDec(raw)))
-          else json.writeTree(new BigIntegerNode(new BigInteger(raw)))
-        }
-      case JsString(v) => json.writeString(v)
+        if (raw contains ".")
+          json.writeTree(new DecimalNode(new JBigDec(raw)))
+        else json.writeTree(new BigIntegerNode(new BigInteger(raw)))
+      }
+      case JsString(v)  => json.writeString(v)
       case JsBoolean(v) => json.writeBoolean(v)
       case JsArray(elements) => {
-          json.writeStartArray()
-          elements.foreach { t =>
-            serialize(t, json, provider)
-          }
-          json.writeEndArray()
-        }
+        json.writeStartArray()
+        elements.foreach { t => serialize(t, json, provider) }
+        json.writeEndArray()
+      }
       case JsObject(values) => {
-          json.writeStartObject()
-          values.foreach { t =>
-            json.writeFieldName(t._1)
-            serialize(t._2, json, provider)
-          }
-          json.writeEndObject()
+        json.writeStartObject()
+        values.foreach { t =>
+          json.writeFieldName(t._1)
+          serialize(t._2, json, provider)
         }
+        json.writeEndObject()
+      }
       case JsNull => json.writeNull()
     }
   }
@@ -93,8 +94,9 @@ private[jackson] case class ReadingList(content: ListBuffer[JsValue])
 
 // Context for reading an Object
 private[jackson] case class KeyRead(
-    content: ListBuffer[(String, JsValue)], fieldName: String)
-    extends DeserializerContext {
+    content: ListBuffer[(String, JsValue)],
+    fieldName: String
+) extends DeserializerContext {
   def addValue(value: JsValue): DeserializerContext =
     ReadingMap(content += (fieldName -> value))
 }
@@ -106,17 +108,21 @@ private[jackson] case class ReadingMap(content: ListBuffer[(String, JsValue)])
   def setField(fieldName: String) = KeyRead(content, fieldName)
   def addValue(value: JsValue): DeserializerContext =
     throw new Exception(
-        "Cannot add a value on an object without a key, malformed JSON object!")
+      "Cannot add a value on an object without a key, malformed JSON object!"
+    )
 }
 
 private[jackson] class JsValueDeserializer(
-    factory: TypeFactory, klass: Class[_])
-    extends JsonDeserializer[Object] {
+    factory: TypeFactory,
+    klass: Class[_]
+) extends JsonDeserializer[Object] {
 
   override def isCachable: Boolean = true
 
   override def deserialize(
-      jp: JsonParser, ctxt: DeserializationContext): JsValue = {
+      jp: JsonParser,
+      ctxt: DeserializationContext
+  ): JsValue = {
     val value = deserialize(jp, ctxt, List())
 
     if (!klass.isAssignableFrom(value.getClass)) {
@@ -126,9 +132,11 @@ private[jackson] class JsValueDeserializer(
   }
 
   @tailrec
-  final def deserialize(jp: JsonParser,
-                        ctxt: DeserializationContext,
-                        parserContext: List[DeserializerContext]): JsValue = {
+  final def deserialize(
+      jp: JsonParser,
+      ctxt: DeserializationContext,
+      parserContext: List[DeserializerContext]
+  ): JsValue = {
     if (jp.getCurrentToken == null) {
       jp.nextToken()
     }
@@ -154,7 +162,8 @@ private[jackson] class JsValueDeserializer(
           case ReadingList(content) :: stack => (Some(JsArray(content)), stack)
           case _ =>
             throw new RuntimeException(
-                "We should have been reading list, something got wrong")
+              "We should have been reading list, something got wrong"
+            )
         }
 
       case JsonTokenId.ID_START_OBJECT =>
@@ -166,7 +175,8 @@ private[jackson] class JsValueDeserializer(
             (None, c.setField(jp.getCurrentName) +: stack)
           case _ =>
             throw new RuntimeException(
-                "We should be reading map, something got wrong")
+              "We should be reading map, something got wrong"
+            )
         }
 
       case JsonTokenId.ID_END_OBJECT =>
@@ -174,16 +184,19 @@ private[jackson] class JsValueDeserializer(
           case ReadingMap(content) :: stack => (Some(JsObject(content)), stack)
           case _ =>
             throw new RuntimeException(
-                "We should have been reading an object, something got wrong")
+              "We should have been reading an object, something got wrong"
+            )
         }
 
       case JsonTokenId.ID_NOT_AVAILABLE =>
         throw new RuntimeException(
-            "We should have been reading an object, something got wrong")
+          "We should have been reading an object, something got wrong"
+        )
 
       case JsonTokenId.ID_EMBEDDED_OBJECT =>
         throw new RuntimeException(
-            "We should have been reading an object, something got wrong")
+          "We should have been reading an object, something got wrong"
+        )
     }
 
     // Read ahead
@@ -196,10 +209,12 @@ private[jackson] class JsValueDeserializer(
         v
 
       case maybeValue =>
-        val toPass = maybeValue.map { v =>
-          val previous :: stack = nextContext
-          (previous.addValue(v)) +: stack
-        }.getOrElse(nextContext)
+        val toPass = maybeValue
+          .map { v =>
+            val previous :: stack = nextContext
+            (previous.addValue(v)) +: stack
+          }
+          .getOrElse(nextContext)
 
         deserialize(jp, ctxt, toPass)
     }
@@ -210,9 +225,11 @@ private[jackson] class JsValueDeserializer(
 }
 
 private[jackson] class PlayDeserializers extends Deserializers.Base {
-  override def findBeanDeserializer(javaType: JavaType,
-                                    config: DeserializationConfig,
-                                    beanDesc: BeanDescription) = {
+  override def findBeanDeserializer(
+      javaType: JavaType,
+      config: DeserializationConfig,
+      beanDesc: BeanDescription
+  ) = {
     val klass = javaType.getRawClass
     if (classOf[JsValue].isAssignableFrom(klass) || klass == JsNull.getClass) {
       new JsValueDeserializer(config.getTypeFactory, klass)
@@ -221,9 +238,11 @@ private[jackson] class PlayDeserializers extends Deserializers.Base {
 }
 
 private[jackson] class PlaySerializers extends Serializers.Base {
-  override def findSerializer(config: SerializationConfig,
-                              javaType: JavaType,
-                              beanDesc: BeanDescription) = {
+  override def findSerializer(
+      config: SerializationConfig,
+      javaType: JavaType,
+      beanDesc: BeanDescription
+  ) = {
     val ser: Object =
       if (classOf[JsValue].isAssignableFrom(beanDesc.getBeanClass)) {
         JsValueSerializer
@@ -262,8 +281,10 @@ private[json] object JacksonJson {
     mapper.readValue(jsonParser(stream), classOf[JsValue])
 
   def generateFromJsValue(
-      jsValue: JsValue, escapeNonASCII: Boolean = false): String = {
-    val sw = new java.io.StringWriter
+      jsValue: JsValue,
+      escapeNonASCII: Boolean = false
+  ): String = {
+    val sw  = new java.io.StringWriter
     val gen = stringJsonGenerator(sw)
 
     if (escapeNonASCII) {
@@ -278,7 +299,7 @@ private[json] object JacksonJson {
   def prettyPrint(jsValue: JsValue): String = {
     val sw = new java.io.StringWriter
     val gen = stringJsonGenerator(sw).setPrettyPrinter(
-        new DefaultPrettyPrinter()
+      new DefaultPrettyPrinter()
     )
     val writer: ObjectWriter = mapper.writerWithDefaultPrettyPrinter()
     writer.writeValue(gen, jsValue)

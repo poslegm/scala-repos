@@ -37,10 +37,16 @@ object Test {
   }
 
   def assertVectorIndexed[V](
-      a: Vector[V], label: String, start: Int, end: Int) = {
+      a: Vector[V],
+      label: String,
+      start: Int,
+      end: Int
+  ) = {
     val res = a
-    assert(res.length == (end - start),
-           res.length + "!=" + (end - start) + " (" + res + ")")
+    assert(
+      res.length == (end - start),
+      res.length + "!=" + (end - start) + " (" + res + ")"
+    )
     for (i <- start until end) {
       assert(res(i) == (label + i), "" + res(i) + "!=" + (label + i))
     }
@@ -48,11 +54,17 @@ object Test {
   }
 
   def assertVectorIterated[V](
-      a: Vector[V], label: String, start: Int, end: Int) = {
+      a: Vector[V],
+      label: String,
+      start: Int,
+      end: Int
+  ) = {
     val res = a
-    assert(res.length == (end - start),
-           res.length + "!=" + (end - start) + " (" + res + ")")
-    var i = start
+    assert(
+      res.length == (end - start),
+      res.length + "!=" + (end - start) + " (" + res + ")"
+    )
+    var i  = start
     var it = res.iterator
     while (it.hasNext) {
       val x = it.next()
@@ -82,7 +94,7 @@ object Test {
 
     val rand = new java.util.Random
 
-    val N = 150000
+    val N   = 150000
     var min = N / 2 //rand.nextInt(N)
     var max = min
 
@@ -119,8 +131,10 @@ object Test {
     val N = 150000
     val a = vector("a", N)
 
-    val pos = scala.util.Random.shuffle(scala.collection.mutable.WrappedArray
-          .make[Int](Array.tabulate[Int](N)(i => i)))
+    val pos = scala.util.Random.shuffle(
+      scala.collection.mutable.WrappedArray
+        .make[Int](Array.tabulate[Int](N)(i => i))
+    )
 
     var b = a
 
@@ -144,7 +158,7 @@ object Test {
     val a = vectorForward("a", N)
 
     {
-      var i = 0
+      var i  = 0
       var it = a
       while (i < N) {
         assert(it.length == (N - i), it.length + " items at iteration " + i)
@@ -168,7 +182,7 @@ object Test {
     val a = vectorBackward("a", N)
 
     {
-      var i = 0
+      var i  = 0
       var it = a
       while (i < N) {
         assert(it.length == (N - i), it.length + " items at iteration " + i)

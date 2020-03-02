@@ -16,8 +16,8 @@ class ScalaTypeDefinitionFindUsagesOptions(project: Project)
   isSearchForTextOccurrences = false
 
   var isImplementingTypeDefinitions = false
-  var isMembersUsages = false
-  var isSearchCompanionModule = false
+  var isMembersUsages               = false
+  var isSearchCompanionModule       = false
 
   override def equals(o: Any): Boolean = {
     o match {
@@ -48,7 +48,8 @@ class ScalaTypeDefinitionFindUsagesOptions(project: Project)
 
     if (isImplementingTypeDefinitions) {
       strings.add(
-          ScalaBundle.message("find.usages.implementing.type.definition"))
+        ScalaBundle.message("find.usages.implementing.type.definition")
+      )
     }
 
     if (isSearchCompanionModule) {

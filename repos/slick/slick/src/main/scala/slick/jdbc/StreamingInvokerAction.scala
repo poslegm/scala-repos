@@ -26,9 +26,11 @@ trait StreamingInvokerAction[R, T, -E <: Effect]
     b.result()
   }
 
-  override final def emitStream(ctx: JdbcBackend#StreamingContext,
-                                limit: Long,
-                                state: StreamState): StreamState = {
+  override final def emitStream(
+      ctx: JdbcBackend#StreamingContext,
+      limit: Long,
+      state: StreamState
+  ): StreamState = {
     val bufferNext = ctx.bufferNext
     val it =
       if (state ne null) state
@@ -36,20 +38,23 @@ trait StreamingInvokerAction[R, T, -E <: Effect]
     var count = 0L
     try {
       while (if (bufferNext) it.hasNext && count < limit
-      else count < limit && it.hasNext) {
+             else count < limit && it.hasNext) {
         count += 1
         ctx.emit(it.next())
       }
     } catch {
       case NonFatal(ex) =>
-        try it.close() catch ignoreFollowOnError
+        try it.close()
+        catch ignoreFollowOnError
         throw ex
     }
     if (if (bufferNext) it.hasNext else count == limit) it else null
   }
 
   override final def cancelStream(
-      ctx: JdbcBackend#StreamingContext, state: StreamState): Unit =
+      ctx: JdbcBackend#StreamingContext,
+      state: StreamState
+  ): Unit =
     state.close()
 
   override def getDumpInfo =
@@ -79,7 +84,8 @@ trait StreamingInvokerAction[R, T, -E <: Effect]
   }
 
   final def overrideStatements(
-      _statements: Iterable[String]): FixedSqlAction[R, Streaming[T], E] =
+      _statements: Iterable[String]
+  ): FixedSqlAction[R, Streaming[T], E] =
     new StreamingInvokerAction[R, T, E] {
       def statements = _statements
       protected[this] def createInvoker(sql: Iterable[String]): Invoker[T] =
@@ -92,5 +98,5 @@ trait StreamingInvokerAction[R, T, -E <: Effect]
 case class SimpleJdbcAction[+R](f: JdbcBackend#Context => R)
     extends SynchronousDatabaseAction[R, NoStream, JdbcBackend, Effect.All] {
   def run(context: JdbcBackend#Context): R = f(context)
-  def getDumpInfo = DumpInfo(name = "SimpleJdbcAction")
+  def getDumpInfo                          = DumpInfo(name = "SimpleJdbcAction")
 }

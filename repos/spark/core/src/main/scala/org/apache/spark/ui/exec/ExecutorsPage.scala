@@ -27,25 +27,28 @@ import org.apache.spark.ui.{ToolTips, UIUtils, WebUIPage}
 import org.apache.spark.util.Utils
 
 // This isn't even used anymore -- but we need to keep it b/c of a MiMa false positive
-private[ui] case class ExecutorSummaryInfo(id: String,
-                                           hostPort: String,
-                                           rddBlocks: Int,
-                                           memoryUsed: Long,
-                                           diskUsed: Long,
-                                           activeTasks: Int,
-                                           failedTasks: Int,
-                                           completedTasks: Int,
-                                           totalTasks: Int,
-                                           totalDuration: Long,
-                                           totalInputBytes: Long,
-                                           totalShuffleRead: Long,
-                                           totalShuffleWrite: Long,
-                                           maxMemory: Long,
-                                           executorLogs: Map[String, String])
+private[ui] case class ExecutorSummaryInfo(
+    id: String,
+    hostPort: String,
+    rddBlocks: Int,
+    memoryUsed: Long,
+    diskUsed: Long,
+    activeTasks: Int,
+    failedTasks: Int,
+    completedTasks: Int,
+    totalTasks: Int,
+    totalDuration: Long,
+    totalInputBytes: Long,
+    totalShuffleRead: Long,
+    totalShuffleWrite: Long,
+    maxMemory: Long,
+    executorLogs: Map[String, String]
+)
 
 private[ui] class ExecutorsPage(
-    parent: ExecutorsTab, threadDumpEnabled: Boolean)
-    extends WebUIPage("") {
+    parent: ExecutorsTab,
+    threadDumpEnabled: Boolean
+) extends WebUIPage("") {
   private val listener = parent.listener
   // When GCTimePercent is edited change ToolTips.TASK_TIME to match
   private val GCTimePercent = 0.1
@@ -55,19 +58,19 @@ private[ui] class ExecutorsPage(
       // The follow codes should be protected by `listener` to make sure no executors will be
       // removed before we query their status. See SPARK-12784.
       val _activeExecutorInfo = {
-        for (statusId <- 0 until listener.activeStorageStatusList.size) yield
-          ExecutorsPage.getExecInfo(listener, statusId, isActive = true)
+        for (statusId <- 0 until listener.activeStorageStatusList.size)
+          yield ExecutorsPage.getExecInfo(listener, statusId, isActive = true)
       }
       val _deadExecutorInfo = {
-        for (statusId <- 0 until listener.deadStorageStatusList.size) yield
-          ExecutorsPage.getExecInfo(listener, statusId, isActive = false)
+        for (statusId <- 0 until listener.deadStorageStatusList.size)
+          yield ExecutorsPage.getExecInfo(listener, statusId, isActive = false)
       }
       (_activeExecutorInfo, _deadExecutorInfo)
     }
 
-    val execInfo = activeExecutorInfo ++ deadExecutorInfo
+    val execInfo       = activeExecutorInfo ++ deadExecutorInfo
     val execInfoSorted = execInfo.sortBy(_.id)
-    val logsExist = execInfo.filter(_.executorLogs.nonEmpty).nonEmpty
+    val logsExist      = execInfo.filter(_.executorLogs.nonEmpty).nonEmpty
 
     val execTable = {
       <table class={UIUtils.TABLE_CLASS_STRIPED_SORTABLE}>
@@ -90,12 +93,17 @@ private[ui] class ExecutorsPage(
             <!-- Place the shuffle write tooltip on the left (rather than the default position
               of on top) because the shuffle write column is the last column on the right side and
               the tooltip is wider than the column, so it doesn't fit on top. -->
-            <span data-toggle="tooltip" data-placement="left" title={ToolTips.SHUFFLE_WRITE}>
+            <span data-toggle="tooltip" data-placement="left" title={
+        ToolTips.SHUFFLE_WRITE
+      }>
               Shuffle Write
             </span>
           </th>
           {if (logsExist) <th class="sorttable_nosort">Logs</th> else Seq.empty}
-          {if (threadDumpEnabled) <th class="sorttable_nosort">Thread Dump</th> else Seq.empty}
+          {
+        if (threadDumpEnabled) <th class="sorttable_nosort">Thread Dump</th>
+        else Seq.empty
+      }
         </thead>
         <tbody>
           {execInfoSorted.map(execRow(_, logsExist))}
@@ -122,8 +130,8 @@ private[ui] class ExecutorsPage(
   /** Render an HTML row representing an executor */
   private def execRow(info: ExecutorSummary, logsExist: Boolean): Seq[Node] = {
     val maximumMemory = info.maxMemory
-    val memoryUsed = info.memoryUsed
-    val diskUsed = info.diskUsed
+    val memoryUsed    = info.memoryUsed
+    val diskUsed      = info.diskUsed
     val executorStatus =
       if (info.isActive) {
         "Active"
@@ -146,8 +154,17 @@ private[ui] class ExecutorsPage(
         {Utils.bytesToString(diskUsed)}
       </td>
       <td>{info.totalCores}</td>
-      {taskData(info.maxTasks, info.activeTasks, info.failedTasks, info.completedTasks,
-      info.totalTasks, info.totalDuration, info.totalGCTime)}
+      {
+      taskData(
+        info.maxTasks,
+        info.activeTasks,
+        info.failedTasks,
+        info.completedTasks,
+        info.totalTasks,
+        info.totalDuration,
+        info.totalGCTime
+      )
+    }
       <td sorttable_customkey={info.totalInputBytes.toString}>
         {Utils.bytesToString(info.totalInputBytes)}
       </td>
@@ -158,45 +175,48 @@ private[ui] class ExecutorsPage(
         {Utils.bytesToString(info.totalShuffleWrite)}
       </td>
       {
-        if (logsExist) {
-          <td>
+      if (logsExist) {
+        <td>
             {
-              info.executorLogs.map { case (logName, logUrl) =>
-                <div>
+          info.executorLogs.map {
+            case (logName, logUrl) =>
+              <div>
                   <a href={logUrl}>
                     {logName}
                   </a>
                 </div>
-              }
-            }
-          </td>
+          }
         }
+          </td>
       }
+    }
       {
-        if (threadDumpEnabled) {
-          if (info.isActive) {
-            val encodedId = URLEncoder.encode(info.id, "UTF-8")
-            <td>
+      if (threadDumpEnabled) {
+        if (info.isActive) {
+          val encodedId = URLEncoder.encode(info.id, "UTF-8")
+          <td>
               <a href={s"threadDump/?executorId=${encodedId}"}>Thread Dump</a>
             </td>
-          } else {
-            <td> </td>
-          }
         } else {
-          Seq.empty
+          <td> </td>
         }
+      } else {
+        Seq.empty
       }
+    }
     </tr>
   }
 
   private def execSummaryRow(
-      execInfo: Seq[ExecutorSummary], rowName: String): Seq[Node] = {
-    val maximumMemory = execInfo.map(_.maxMemory).sum
-    val memoryUsed = execInfo.map(_.memoryUsed).sum
-    val diskUsed = execInfo.map(_.diskUsed).sum
-    val totalCores = execInfo.map(_.totalCores).sum
-    val totalInputBytes = execInfo.map(_.totalInputBytes).sum
-    val totalShuffleRead = execInfo.map(_.totalShuffleRead).sum
+      execInfo: Seq[ExecutorSummary],
+      rowName: String
+  ): Seq[Node] = {
+    val maximumMemory     = execInfo.map(_.maxMemory).sum
+    val memoryUsed        = execInfo.map(_.memoryUsed).sum
+    val diskUsed          = execInfo.map(_.diskUsed).sum
+    val totalCores        = execInfo.map(_.totalCores).sum
+    val totalInputBytes   = execInfo.map(_.totalInputBytes).sum
+    val totalShuffleRead  = execInfo.map(_.totalShuffleRead).sum
     val totalShuffleWrite = execInfo.map(_.totalShuffleWrite).sum
 
     <tr>
@@ -210,13 +230,17 @@ private[ui] class ExecutorsPage(
         {Utils.bytesToString(diskUsed)}
       </td>
       <td>{totalCores}</td>
-      {taskData(execInfo.map(_.maxTasks).sum,
-      execInfo.map(_.activeTasks).sum,
-      execInfo.map(_.failedTasks).sum,
-      execInfo.map(_.completedTasks).sum,
-      execInfo.map(_.totalTasks).sum,
-      execInfo.map(_.totalDuration).sum,
-      execInfo.map(_.totalGCTime).sum)}
+      {
+      taskData(
+        execInfo.map(_.maxTasks).sum,
+        execInfo.map(_.activeTasks).sum,
+        execInfo.map(_.failedTasks).sum,
+        execInfo.map(_.completedTasks).sum,
+        execInfo.map(_.totalTasks).sum,
+        execInfo.map(_.totalDuration).sum,
+        execInfo.map(_.totalGCTime).sum
+      )
+    }
       <td sorttable_customkey={totalInputBytes.toString}>
         {Utils.bytesToString(totalInputBytes)}
       </td>
@@ -229,12 +253,14 @@ private[ui] class ExecutorsPage(
     </tr>
   }
 
-  private def execSummary(activeExecInfo: Seq[ExecutorSummary],
-                          deadExecInfo: Seq[ExecutorSummary]): Seq[Node] = {
+  private def execSummary(
+      activeExecInfo: Seq[ExecutorSummary],
+      deadExecInfo: Seq[ExecutorSummary]
+  ): Seq[Node] = {
     val totalExecInfo = activeExecInfo ++ deadExecInfo
-    val activeRow = execSummaryRow(activeExecInfo, "Active");
-    val deadRow = execSummaryRow(deadExecInfo, "Dead");
-    val totalRow = execSummaryRow(totalExecInfo, "Total");
+    val activeRow     = execSummaryRow(activeExecInfo, "Active");
+    val deadRow       = execSummaryRow(deadExecInfo, "Dead");
+    val totalRow      = execSummaryRow(totalExecInfo, "Total");
 
     <table class={UIUtils.TABLE_CLASS_STRIPED}>
       <thead>
@@ -251,7 +277,9 @@ private[ui] class ExecutorsPage(
         <th><span data-toggle="tooltip" title={ToolTips.INPUT}>Input</span></th>
         <th><span data-toggle="tooltip" title={ToolTips.SHUFFLE_READ}>Shuffle Read</span></th>
         <th>
-          <span data-toggle="tooltip" data-placement="left" title={ToolTips.SHUFFLE_WRITE}>
+          <span data-toggle="tooltip" data-placement="left" title={
+      ToolTips.SHUFFLE_WRITE
+    }>
             Shuffle Write
           </span>
         </th>
@@ -264,13 +292,15 @@ private[ui] class ExecutorsPage(
     </table>
   }
 
-  private def taskData(maxTasks: Int,
-                       activeTasks: Int,
-                       failedTasks: Int,
-                       completedTasks: Int,
-                       totalTasks: Int,
-                       totalDuration: Long,
-                       totalGCTime: Long): Seq[Node] = {
+  private def taskData(
+      maxTasks: Int,
+      activeTasks: Int,
+      failedTasks: Int,
+      completedTasks: Int,
+      totalTasks: Int,
+      totalDuration: Long,
+      totalGCTime: Long
+  ): Seq[Node] = {
     // Determine Color Opacity from 0.5-1
     // activeTasks range from 0 to maxTasks
     val activeTasksAlpha =
@@ -300,14 +330,14 @@ private[ui] class ExecutorsPage(
       } else {
         ""
       }
-      }>{activeTasks}</td>
+    }>{activeTasks}</td>
     <td style={
       if (failedTasks > 0) {
         "background:hsla(0, 100%, 50%, " + failedTasksAlpha + ");color:white"
       } else {
         ""
       }
-      }>{failedTasks}</td>
+    }>{failedTasks}</td>
     <td>{completedTasks}</td>
     <td>{totalTasks}</td>
     <td sorttable_customkey={totalDuration.toString} style={
@@ -329,55 +359,57 @@ private[ui] class ExecutorsPage(
 private[spark] object ExecutorsPage {
 
   /** Represent an executor's info as a map given a storage status index */
-  def getExecInfo(listener: ExecutorsListener,
-                  statusId: Int,
-                  isActive: Boolean): ExecutorSummary = {
+  def getExecInfo(
+      listener: ExecutorsListener,
+      statusId: Int,
+      isActive: Boolean
+  ): ExecutorSummary = {
     val status =
       if (isActive) {
         listener.activeStorageStatusList(statusId)
       } else {
         listener.deadStorageStatusList(statusId)
       }
-    val execId = status.blockManagerId.executorId
-    val hostPort = status.blockManagerId.hostPort
-    val rddBlocks = status.numBlocks
-    val memUsed = status.memUsed
-    val maxMem = status.maxMem
-    val diskUsed = status.diskUsed
-    val totalCores = listener.executorToTotalCores.getOrElse(execId, 0)
-    val maxTasks = listener.executorToTasksMax.getOrElse(execId, 0)
-    val activeTasks = listener.executorToTasksActive.getOrElse(execId, 0)
-    val failedTasks = listener.executorToTasksFailed.getOrElse(execId, 0)
-    val completedTasks = listener.executorToTasksComplete.getOrElse(execId, 0)
-    val totalTasks = activeTasks + failedTasks + completedTasks
-    val totalDuration = listener.executorToDuration.getOrElse(execId, 0L)
-    val totalGCTime = listener.executorToJvmGCTime.getOrElse(execId, 0L)
-    val totalInputBytes = listener.executorToInputBytes.getOrElse(execId, 0L)
+    val execId           = status.blockManagerId.executorId
+    val hostPort         = status.blockManagerId.hostPort
+    val rddBlocks        = status.numBlocks
+    val memUsed          = status.memUsed
+    val maxMem           = status.maxMem
+    val diskUsed         = status.diskUsed
+    val totalCores       = listener.executorToTotalCores.getOrElse(execId, 0)
+    val maxTasks         = listener.executorToTasksMax.getOrElse(execId, 0)
+    val activeTasks      = listener.executorToTasksActive.getOrElse(execId, 0)
+    val failedTasks      = listener.executorToTasksFailed.getOrElse(execId, 0)
+    val completedTasks   = listener.executorToTasksComplete.getOrElse(execId, 0)
+    val totalTasks       = activeTasks + failedTasks + completedTasks
+    val totalDuration    = listener.executorToDuration.getOrElse(execId, 0L)
+    val totalGCTime      = listener.executorToJvmGCTime.getOrElse(execId, 0L)
+    val totalInputBytes  = listener.executorToInputBytes.getOrElse(execId, 0L)
     val totalShuffleRead = listener.executorToShuffleRead.getOrElse(execId, 0L)
     val totalShuffleWrite =
       listener.executorToShuffleWrite.getOrElse(execId, 0L)
     val executorLogs = listener.executorToLogUrls.getOrElse(execId, Map.empty)
 
     new ExecutorSummary(
-        execId,
-        hostPort,
-        isActive,
-        rddBlocks,
-        memUsed,
-        diskUsed,
-        totalCores,
-        maxTasks,
-        activeTasks,
-        failedTasks,
-        completedTasks,
-        totalTasks,
-        totalDuration,
-        totalGCTime,
-        totalInputBytes,
-        totalShuffleRead,
-        totalShuffleWrite,
-        maxMem,
-        executorLogs
+      execId,
+      hostPort,
+      isActive,
+      rddBlocks,
+      memUsed,
+      diskUsed,
+      totalCores,
+      maxTasks,
+      activeTasks,
+      failedTasks,
+      completedTasks,
+      totalTasks,
+      totalDuration,
+      totalGCTime,
+      totalInputBytes,
+      totalShuffleRead,
+      totalShuffleWrite,
+      maxMem,
+      executorLogs
     )
   }
 }

@@ -22,7 +22,7 @@ object ImportDataScript extends App {
         throw new IllegalArgumentException("access key should be passed")
       } else args(0)
 
-    val engineUrl = if (args.length > 1) args(1) else "http://localhost:7070"
+    val engineUrl       = if (args.length > 1) args(1) else "http://localhost:7070"
     implicit val client = new EventClient(accessKey, engineUrl)
     println(s"imported ${importMovies.size} movies")
     println(s"imported ${importUsers.size} users")
@@ -37,17 +37,16 @@ object ImportDataScript extends App {
     readCSV("data/u.data", "\t").flatMap { event =>
       val eventObj = event.lift
       (for {
-        entityId ← eventObj(0)
+        entityId       ← eventObj(0)
         targetEntityId ← eventObj(1)
-        rating ← eventObj(2)
-      } yield
-        new Event()
-          .event("rate")
-          .entityId(entityId)
-          .entityType("user")
-          .properties(javaMap("rating" → new java.lang.Double(rating)))
-          .targetEntityId(targetEntityId)
-          .targetEntityType("movie")).map(client.createEvent)
+        rating         ← eventObj(2)
+      } yield new Event()
+        .event("rate")
+        .entityId(entityId)
+        .entityType("user")
+        .properties(javaMap("rating" → new java.lang.Double(rating)))
+        .targetEntityId(targetEntityId)
+        .targetEntityType("movie")).map(client.createEvent)
     }
 
   def importUsers(implicit ec: EventClient): Iterator[_] =
@@ -70,8 +69,8 @@ object ImportDataScript extends App {
         .flatMap(_.split("-").lift(2).map(_.toInt))
         .map(releaseYear ⇒ "creationYear" → new Integer(releaseYear))
       for {
-        id ← movieObj(0)
-        title ← movieObj(1).map(t ⇒ "title" → t)
+        id          ← movieObj(0)
+        title       ← movieObj(1).map(t ⇒ "title" → t)
         releaseYear ← releaseYearOpt
       } yield client.setItem(id, javaMap(title, releaseYear))
     }

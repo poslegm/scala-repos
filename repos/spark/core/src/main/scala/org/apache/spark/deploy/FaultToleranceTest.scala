@@ -60,11 +60,11 @@ import org.apache.spark.util.Utils
   */
 private object FaultToleranceTest extends App with Logging {
 
-  private val conf = new SparkConf()
+  private val conf   = new SparkConf()
   private val ZK_DIR = conf.get("spark.deploy.zookeeper.dir", "/spark")
 
-  private val masters = ListBuffer[TestMasterInfo]()
-  private val workers = ListBuffer[TestWorkerInfo]()
+  private val masters          = ListBuffer[TestMasterInfo]()
+  private val workers          = ListBuffer[TestWorkerInfo]()
   private var sc: SparkContext = _
 
   private val zk = SparkCuratorUtil.newClient(conf)
@@ -76,9 +76,12 @@ private object FaultToleranceTest extends App with Logging {
   assertTrue(sparkHome != null, "Run with a valid SPARK_HOME")
 
   private val containerSparkHome = "/opt/spark"
-  private val dockerMountDir = "%s:%s".format(sparkHome, containerSparkHome)
+  private val dockerMountDir     = "%s:%s".format(sparkHome, containerSparkHome)
 
-  System.setProperty("spark.driver.host", "172.17.42.1") // default docker host ip
+  System.setProperty(
+    "spark.driver.host",
+    "172.17.42.1"
+  ) // default docker host ip
 
   private def afterEach() {
     if (sc != null) {
@@ -223,7 +226,10 @@ private object FaultToleranceTest extends App with Logging {
     // property, we need to reset it.
     System.setProperty("spark.driver.port", "0")
     sc = new SparkContext(
-        getMasterUrls(masters), "fault-tolerance", containerSparkHome)
+      getMasterUrls(masters),
+      "fault-tolerance",
+      containerSparkHome
+    )
   }
 
   private def getMasterUrls(masters: Seq[TestMasterInfo]): String = {
@@ -280,9 +286,9 @@ private object FaultToleranceTest extends App with Logging {
   private def assertValidClusterState() = {
     logInfo(">>>>> ASSERT VALID CLUSTER STATE <<<<<")
     assertUsable()
-    var numAlive = 0
-    var numStandby = 0
-    var numLiveApps = 0
+    var numAlive                   = 0
+    var numStandby                 = 0
+    var numLiveApps                = 0
     var liveWorkerIPs: Seq[String] = List()
 
     def stateValid(): Boolean = {
@@ -329,10 +335,13 @@ private object FaultToleranceTest extends App with Logging {
         logError("Master states: " + masters.map(_.state))
         logError("Num apps: " + numLiveApps)
         logError(
-            "IPs expected: " + workers.map(_.ip) + " / found: " +
-            liveWorkerIPs)
+          "IPs expected: " + workers.map(_.ip) + " / found: " +
+            liveWorkerIPs
+        )
         throw new RuntimeException(
-            "Failed to get into acceptable cluster state after 2 min.", e)
+          "Failed to get into acceptable cluster state after 2 min.",
+          e
+        )
     }
   }
 
@@ -343,26 +352,30 @@ private object FaultToleranceTest extends App with Logging {
   }
 
   logInfo(
-      "Ran %s tests, %s passed and %s failed".format(
-          numPassed + numFailed, numPassed, numFailed))
+    "Ran %s tests, %s passed and %s failed"
+      .format(numPassed + numFailed, numPassed, numFailed)
+  )
 }
 
 private class TestMasterInfo(
-    val ip: String, val dockerId: DockerId, val logFile: File)
-    extends Logging {
+    val ip: String,
+    val dockerId: DockerId,
+    val logFile: File
+) extends Logging {
 
-  implicit val formats = org.json4s.DefaultFormats
-  var state: RecoveryState.Value = _
+  implicit val formats            = org.json4s.DefaultFormats
+  var state: RecoveryState.Value  = _
   var liveWorkerIPs: List[String] = _
-  var numLiveApps = 0
+  var numLiveApps                 = 0
 
   logDebug("Created master: " + this)
 
   def readState() {
     try {
       val masterStream = new InputStreamReader(
-          new URL("http://%s:8080/json".format(ip)).openStream,
-          StandardCharsets.UTF_8)
+        new URL("http://%s:8080/json".format(ip)).openStream,
+        StandardCharsets.UTF_8
+      )
       val json = JsonMethods.parse(masterStream)
 
       val workers = json \ "workers"
@@ -379,7 +392,7 @@ private class TestMasterInfo(
 
       numLiveApps = (json \ "activeapps").children.size
 
-      val status = json \\ "status"
+      val status      = json \\ "status"
       val stateString = status.extract[String]
       state = RecoveryState.values
         .filter(state => state.toString == stateString)
@@ -395,12 +408,18 @@ private class TestMasterInfo(
 
   override def toString: String =
     "[ip=%s, id=%s, logFile=%s, state=%s]".format(
-        ip, dockerId.id, logFile.getAbsolutePath, state)
+      ip,
+      dockerId.id,
+      logFile.getAbsolutePath,
+      state
+    )
 }
 
 private class TestWorkerInfo(
-    val ip: String, val dockerId: DockerId, val logFile: File)
-    extends Logging {
+    val ip: String,
+    val dockerId: DockerId,
+    val logFile: File
+) extends Logging {
 
   implicit val formats = org.json4s.DefaultFormats
 
@@ -414,14 +433,17 @@ private class TestWorkerInfo(
 
 private object SparkDocker {
   def startMaster(mountDir: String): TestMasterInfo = {
-    val cmd = Docker.makeRunCmd("spark-test-master", mountDir = mountDir)
+    val cmd               = Docker.makeRunCmd("spark-test-master", mountDir = mountDir)
     val (ip, id, outFile) = startNode(cmd)
     new TestMasterInfo(ip, id, outFile)
   }
 
   def startWorker(mountDir: String, masters: String): TestWorkerInfo = {
     val cmd = Docker.makeRunCmd(
-        "spark-test-worker", args = masters, mountDir = mountDir)
+      "spark-test-worker",
+      args = masters,
+      mountDir = mountDir
+    )
     val (ip, id, outFile) = startNode(cmd)
     new TestWorkerInfo(ip, id, outFile)
   }
@@ -442,7 +464,7 @@ private object SparkDocker {
     }
 
     dockerCmd.run(ProcessLogger(findIpAndLog _))
-    val ip = Await.result(ipPromise.future, 30 seconds)
+    val ip       = Await.result(ipPromise.future, 30 seconds)
     val dockerId = Docker.getLastProcessId
     (ip, dockerId, outFile)
   }
@@ -453,10 +475,13 @@ private class DockerId(val id: String) {
 }
 
 private object Docker extends Logging {
-  def makeRunCmd(imageTag: String,
-                 args: String = "",
-                 mountDir: String = ""): ProcessBuilder = {
-    val mountCmd = if (mountDir != "") { " -v " + mountDir } else ""
+  def makeRunCmd(
+      imageTag: String,
+      args: String = "",
+      mountDir: String = ""
+  ): ProcessBuilder = {
+    val mountCmd = if (mountDir != "") { " -v " + mountDir }
+    else ""
 
     val cmd =
       "docker run -privileged %s %s %s".format(mountCmd, imageTag, args)

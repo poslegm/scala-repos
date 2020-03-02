@@ -17,32 +17,45 @@ final class JUnitFramework extends Framework {
     Array(JUnitFingerprint)
   }
 
-  def runner(args: Array[String],
-             remoteArgs: Array[String],
-             testClassLoader: ClassLoader): JUnitMasterRunner = {
+  def runner(
+      args: Array[String],
+      remoteArgs: Array[String],
+      testClassLoader: ClassLoader
+  ): JUnitMasterRunner = {
     new JUnitMasterRunner(
-        args, remoteArgs, testClassLoader, parseRunSettings(args))
+      args,
+      remoteArgs,
+      testClassLoader,
+      parseRunSettings(args)
+    )
   }
 
-  def slaveRunner(args: Array[String],
-                  remoteArgs: Array[String],
-                  testClassLoader: ClassLoader,
-                  send: String => Unit): JUnitSlaveRunner = {
+  def slaveRunner(
+      args: Array[String],
+      remoteArgs: Array[String],
+      testClassLoader: ClassLoader,
+      send: String => Unit
+  ): JUnitSlaveRunner = {
     new JUnitSlaveRunner(
-        args, remoteArgs, testClassLoader, send, parseRunSettings(args))
+      args,
+      remoteArgs,
+      testClassLoader,
+      send,
+      parseRunSettings(args)
+    )
   }
 
   def arrayString(arr: Array[String]): String =
     arr.mkString("Array(", ", ", ")")
 
   def parseRunSettings(args: Array[String]): RunSettings = {
-    var quiet = false
-    var verbose = false
-    var noColor = false
-    var decodeScalaNames = false
-    var logAssert = false
-    var logExceptionClass = true
-    var ignoreRunners = "org.junit.runners.Suite"
+    var quiet               = false
+    var verbose             = false
+    var noColor             = false
+    var decodeScalaNames    = false
+    var logAssert           = false
+    var logExceptionClass   = true
+    var ignoreRunners       = "org.junit.runners.Suite"
     var runListener: String = null
     for (str <- args) {
       str match {
@@ -88,15 +101,17 @@ final class JUnitFramework extends Framework {
         case "+s" => decodeScalaNames = false
         case "+a" => logAssert = false
         case "+c" => logExceptionClass = false
-        case _ =>
+        case _    =>
       }
     }
-    new RunSettings(!noColor,
-                    decodeScalaNames,
-                    quiet,
-                    verbose,
-                    logAssert,
-                    ignoreRunners,
-                    logExceptionClass)
+    new RunSettings(
+      !noColor,
+      decodeScalaNames,
+      quiet,
+      verbose,
+      logAssert,
+      ignoreRunners,
+      logExceptionClass
+    )
   }
 }

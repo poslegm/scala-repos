@@ -11,19 +11,21 @@ private[chat] final class FrontActor(api: ChatApi) extends Actor {
 
     case UserTalk(chatId, userId, text, replyTo, public) =>
       api.userChat.write(chatId, userId, text, public) foreach publish(
-          chatId, replyTo)
+        chatId,
+        replyTo
+      )
 
     case PlayerTalk(chatId, color, text, replyTo) =>
       api.playerChat.write(chatId, Color(color), text) foreach publish(
-          chatId, replyTo)
+        chatId,
+        replyTo
+      )
 
     case SystemTalk(chatId, text, replyTo) =>
       api.userChat.system(chatId, text) foreach publish(chatId, replyTo)
   }
 
   def publish(chatId: String, replyTo: ActorRef)(lineOption: Option[Line]) {
-    lineOption foreach { line =>
-      replyTo ! ChatLine(chatId, line)
-    }
+    lineOption foreach { line => replyTo ! ChatLine(chatId, line) }
   }
 }

@@ -35,10 +35,10 @@ class RuntimeTypesTest {
 
   @Test
   def scala_Arrays_cast_to_Serializable_and_Cloneable_issue_2094(): Unit = {
-    (Array(3): Any).asInstanceOf[Serializable] // should not throw
-    (Array(3): Any).asInstanceOf[Cloneable] // should not throw
+    (Array(3): Any).asInstanceOf[Serializable]       // should not throw
+    (Array(3): Any).asInstanceOf[Cloneable]          // should not throw
     (Array("hello"): Any).asInstanceOf[Serializable] // should not throw
-    (Array("hello"): Any).asInstanceOf[Cloneable] // should not throw
+    (Array("hello"): Any).asInstanceOf[Cloneable]    // should not throw
   }
 
   @Test def scala_Nothing_casts_to_scala_Nothing_should_fail(): Unit = {
@@ -50,8 +50,10 @@ class RuntimeTypesTest {
       } catch {
         case th: Throwable =>
           assertTrue(th.isInstanceOf[ClassCastException])
-          assertEquals(x + " is not an instance of scala.runtime.Nothing$",
-                       th.getMessage)
+          assertEquals(
+            x + " is not an instance of scala.runtime.Nothing$",
+            th.getMessage
+          )
       }
     }
     test("a")
@@ -68,8 +70,10 @@ class RuntimeTypesTest {
       } catch {
         case th: Throwable =>
           assertTrue(th.isInstanceOf[ClassCastException])
-          assertEquals(x + " is not an instance of scala.runtime.Nothing$",
-                       th.getMessage)
+          assertEquals(
+            x + " is not an instance of scala.runtime.Nothing$",
+            th.getMessage
+          )
       }
     }
     test("a")
@@ -96,7 +100,7 @@ class RuntimeTypesTest {
     assumeTrue(hasCompliantAsInstanceOfs)
     val msg = Try("a".asInstanceOf[Null]) match {
       case Failure(thr: ClassCastException) => thr.getMessage
-      case _ => "not failed"
+      case _                                => "not failed"
     }
     assertEquals("a is not an instance of scala.runtime.Null$", msg)
   }
@@ -129,8 +133,8 @@ class RuntimeTypesTest {
 
   @Test def rawJSTypes_Arrays_of_raw_JS_types(): Unit = {
     val arrayOfParentJSType = new Array[ParentJSType](0)
-    val arrayOfJSInterface = new Array[SomeJSInterface](0)
-    val arrayOfJSClass = new Array[SomeJSClass](0)
+    val arrayOfJSInterface  = new Array[SomeJSInterface](0)
+    val arrayOfJSClass      = new Array[SomeJSClass](0)
 
     assertTrue(arrayOfParentJSType.isInstanceOf[Array[AnyRef]])
     assertTrue(arrayOfJSInterface.isInstanceOf[Array[AnyRef]])

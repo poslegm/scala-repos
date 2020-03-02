@@ -28,13 +28,13 @@ import org.apache.spark.rpc.{RpcAddress, TestRpcEndpoint}
 class InboxSuite extends SparkFunSuite {
 
   test("post") {
-    val endpoint = new TestRpcEndpoint
+    val endpoint    = new TestRpcEndpoint
     val endpointRef = mock(classOf[NettyRpcEndpointRef])
     when(endpointRef.name).thenReturn("hello")
 
     val dispatcher = mock(classOf[Dispatcher])
 
-    val inbox = new Inbox(endpointRef, endpoint)
+    val inbox   = new Inbox(endpointRef, endpoint)
     val message = OneWayMessage(null, "hi")
     inbox.post(message)
     inbox.process(dispatcher)
@@ -50,11 +50,11 @@ class InboxSuite extends SparkFunSuite {
   }
 
   test("post: with reply") {
-    val endpoint = new TestRpcEndpoint
+    val endpoint    = new TestRpcEndpoint
     val endpointRef = mock(classOf[NettyRpcEndpointRef])
-    val dispatcher = mock(classOf[Dispatcher])
+    val dispatcher  = mock(classOf[Dispatcher])
 
-    val inbox = new Inbox(endpointRef, endpoint)
+    val inbox   = new Inbox(endpointRef, endpoint)
     val message = RpcMessage(null, "hi", null)
     inbox.post(message)
     inbox.process(dispatcher)
@@ -64,7 +64,7 @@ class InboxSuite extends SparkFunSuite {
   }
 
   test("post: multiple threads") {
-    val endpoint = new TestRpcEndpoint
+    val endpoint    = new TestRpcEndpoint
     val endpointRef = mock(classOf[NettyRpcEndpointRef])
     when(endpointRef.name).thenReturn("hello")
 
@@ -106,9 +106,9 @@ class InboxSuite extends SparkFunSuite {
   }
 
   test("post: Associated") {
-    val endpoint = new TestRpcEndpoint
+    val endpoint    = new TestRpcEndpoint
     val endpointRef = mock(classOf[NettyRpcEndpointRef])
-    val dispatcher = mock(classOf[Dispatcher])
+    val dispatcher  = mock(classOf[Dispatcher])
 
     val remoteAddress = RpcAddress("localhost", 11111)
 
@@ -120,9 +120,9 @@ class InboxSuite extends SparkFunSuite {
   }
 
   test("post: Disassociated") {
-    val endpoint = new TestRpcEndpoint
+    val endpoint    = new TestRpcEndpoint
     val endpointRef = mock(classOf[NettyRpcEndpointRef])
-    val dispatcher = mock(classOf[Dispatcher])
+    val dispatcher  = mock(classOf[Dispatcher])
 
     val remoteAddress = RpcAddress("localhost", 11111)
 
@@ -134,12 +134,12 @@ class InboxSuite extends SparkFunSuite {
   }
 
   test("post: AssociationError") {
-    val endpoint = new TestRpcEndpoint
+    val endpoint    = new TestRpcEndpoint
     val endpointRef = mock(classOf[NettyRpcEndpointRef])
-    val dispatcher = mock(classOf[Dispatcher])
+    val dispatcher  = mock(classOf[Dispatcher])
 
     val remoteAddress = RpcAddress("localhost", 11111)
-    val cause = new RuntimeException("Oops")
+    val cause         = new RuntimeException("Oops")
 
     val inbox = new Inbox(endpointRef, endpoint)
     inbox.post(RemoteProcessConnectionError(cause, remoteAddress))

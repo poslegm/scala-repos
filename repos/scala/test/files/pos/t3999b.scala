@@ -1,5 +1,5 @@
 object `package` {
-  trait Score { def toString: String }
+  trait Score             { def toString: String    }
   trait Test[+T <: Score] { def apply(s: String): T }
 
   case class FT(f: Float) extends Score
@@ -19,6 +19,6 @@ class TT[+T <: Score](implicit val tb: Test[T]) {
 
 object Tester {
   val tt = new TT[FT]
-  val r = tt.read("1.0")
+  val r  = tt.read("1.0")
   r.toString
 }

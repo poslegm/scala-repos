@@ -26,9 +26,11 @@ object CacheUtils {
 
   private def mangleVersionString(str: String) = s"${str.length}:$str"
 
-  def cached(version: Option[String],
-             output: VirtualFile,
-             cache: Option[WritableVirtualTextFile])(action: => Unit): Unit = {
+  def cached(
+      version: Option[String],
+      output: VirtualFile,
+      cache: Option[WritableVirtualTextFile]
+  )(action: => Unit): Unit = {
 
     val upToDate =
       output.exists && (for {
@@ -43,7 +45,8 @@ object CacheUtils {
       // Write cache
       for (c <- cache; v <- version) {
         val w = c.contentWriter
-        try w.write(v) finally w.close()
+        try w.write(v)
+        finally w.close()
       }
     }
   }

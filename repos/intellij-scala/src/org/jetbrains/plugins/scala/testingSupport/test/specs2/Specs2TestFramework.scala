@@ -19,17 +19,25 @@ class Specs2TestFramework extends AbstractTestFramework {
   def getMnemonic: Char = 'p'
 
   override protected def getLibraryDependencies(
-      scalaVersion: Option[String]): Seq[String] = scalaVersion match {
+      scalaVersion: Option[String]
+  ): Seq[String] = scalaVersion match {
     case Some(v) if v.startsWith("2.11") =>
-      Seq("\"org.specs2\" % \"specs2-core_2.11\" % \"latest.integration\" % \"test\"")
+      Seq(
+        "\"org.specs2\" % \"specs2-core_2.11\" % \"latest.integration\" % \"test\""
+      )
     case Some(v) if v.startsWith("2.10") =>
-      Seq("\"org.specs2\" % \"specs2-core_2.10\" % \"latest.integration\" % \"test\"")
+      Seq(
+        "\"org.specs2\" % \"specs2-core_2.10\" % \"latest.integration\" % \"test\""
+      )
     case _ =>
-      Seq("\"org.specs2\" %% \"specs2-core\" % \"latest.integration\" % \"test\"")
+      Seq(
+        "\"org.specs2\" %% \"specs2-core\" % \"latest.integration\" % \"test\""
+      )
   }
 
   override protected def getLibraryResolvers(
-      scalaVersion: Option[String]): Seq[String] = scalaVersion match {
+      scalaVersion: Option[String]
+  ): Seq[String] = scalaVersion match {
     case Some(v) if v.startsWith("2.11") =>
       Seq("\"scalaz-bintray\" at \"http://dl.bintray.com/scalaz/releases\"")
     case Some(v) if v.startsWith("2.10") =>
@@ -38,6 +46,7 @@ class Specs2TestFramework extends AbstractTestFramework {
   }
 
   override protected def getAdditionalBuildCommands(
-      scalaVersion: Option[String]): Seq[String] =
+      scalaVersion: Option[String]
+  ): Seq[String] =
     Seq("\"-Yrangepos\"")
 }

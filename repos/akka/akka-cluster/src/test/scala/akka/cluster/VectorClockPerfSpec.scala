@@ -39,21 +39,23 @@ class VectorClockPerfSpec extends WordSpec with Matchers {
     .getOrElse("10000")
     .toInt
 
-  val (vcBefore, nodes) = createVectorClockOfSize(clockSize)
-  val firstNode = nodes.head
-  val lastNode = nodes.last
-  val middleNode = nodes.drop(clockSize / 2).head
-  val vcBaseLast = vcBefore :+ lastNode
-  val vcAfterLast = vcBaseLast :+ firstNode
-  val vcConcurrentLast = vcBaseLast :+ lastNode
-  val vcBaseMiddle = vcBefore :+ middleNode
-  val vcAfterMiddle = vcBaseMiddle :+ firstNode
+  val (vcBefore, nodes)  = createVectorClockOfSize(clockSize)
+  val firstNode          = nodes.head
+  val lastNode           = nodes.last
+  val middleNode         = nodes.drop(clockSize / 2).head
+  val vcBaseLast         = vcBefore :+ lastNode
+  val vcAfterLast        = vcBaseLast :+ firstNode
+  val vcConcurrentLast   = vcBaseLast :+ lastNode
+  val vcBaseMiddle       = vcBefore :+ middleNode
+  val vcAfterMiddle      = vcBaseMiddle :+ firstNode
   val vcConcurrentMiddle = vcBaseMiddle :+ middleNode
 
-  def checkThunkFor(vc1: VectorClock,
-                    vc2: VectorClock,
-                    thunk: (VectorClock, VectorClock) ⇒ Unit,
-                    times: Int): Unit = {
+  def checkThunkFor(
+      vc1: VectorClock,
+      vc2: VectorClock,
+      thunk: (VectorClock, VectorClock) ⇒ Unit,
+      times: Int
+  ): Unit = {
     val vcc1 = copyVectorClock(vc1)
     val vcc2 = copyVectorClock(vc2)
     for (i ← 1 to times) {
@@ -89,7 +91,11 @@ class VectorClockPerfSpec extends WordSpec with Matchers {
 
     s"compare Concurrent (last) $iterations times" in {
       checkThunkFor(
-          vcAfterLast, vcConcurrentLast, compareTo(Concurrent), iterations)
+        vcAfterLast,
+        vcConcurrentLast,
+        compareTo(Concurrent),
+        iterations
+      )
     }
 
     s"compare Before (middle) $iterations times" in {
@@ -102,7 +108,11 @@ class VectorClockPerfSpec extends WordSpec with Matchers {
 
     s"compare Concurrent (middle) $iterations times" in {
       checkThunkFor(
-          vcAfterMiddle, vcConcurrentMiddle, compareTo(Concurrent), iterations)
+        vcAfterMiddle,
+        vcConcurrentMiddle,
+        compareTo(Concurrent),
+        iterations
+      )
     }
 
     s"compare !== Before (middle) $iterations times" in {

@@ -27,9 +27,9 @@ import org.apache.spark.mllib.linalg._
   * @param scalingVec The values used to scale the reference vector's individual components.
   */
 @Since("1.4.0")
-class ElementwiseProduct @Since("1.4.0")(
-    @Since("1.4.0") val scalingVec: Vector)
-    extends VectorTransformer {
+class ElementwiseProduct @Since("1.4.0") (
+    @Since("1.4.0") val scalingVec: Vector
+) extends VectorTransformer {
 
   /**
     * Does the hadamard product transformation.
@@ -40,13 +40,14 @@ class ElementwiseProduct @Since("1.4.0")(
   @Since("1.4.0")
   override def transform(vector: Vector): Vector = {
     require(
-        vector.size == scalingVec.size,
-        s"vector sizes do not match: Expected ${scalingVec.size} but found ${vector.size}")
+      vector.size == scalingVec.size,
+      s"vector sizes do not match: Expected ${scalingVec.size} but found ${vector.size}"
+    )
     vector match {
       case dv: DenseVector =>
         val values: Array[Double] = dv.values.clone()
-        val dim = scalingVec.size
-        var i = 0
+        val dim                   = scalingVec.size
+        var i                     = 0
         while (i < dim) {
           values(i) *= scalingVec(i)
           i += 1
@@ -54,8 +55,8 @@ class ElementwiseProduct @Since("1.4.0")(
         Vectors.dense(values)
       case SparseVector(size, indices, vs) =>
         val values = vs.clone()
-        val dim = values.length
-        var i = 0
+        val dim    = values.length
+        var i      = 0
         while (i < dim) {
           values(i) *= scalingVec(indices(i))
           i += 1
@@ -63,7 +64,8 @@ class ElementwiseProduct @Since("1.4.0")(
         Vectors.sparse(size, indices, values)
       case v =>
         throw new IllegalArgumentException(
-            "Does not support vector type " + v.getClass)
+          "Does not support vector type " + v.getClass
+        )
     }
   }
 }

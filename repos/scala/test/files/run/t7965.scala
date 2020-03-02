@@ -47,7 +47,7 @@ object Test {
     import scala.reflect.runtime._
     import scala.tools.reflect.ToolBox
 
-    val m = currentMirror
+    val m  = currentMirror
     val tb = m.mkToolBox()
     import tb._
     eval(parse(code))

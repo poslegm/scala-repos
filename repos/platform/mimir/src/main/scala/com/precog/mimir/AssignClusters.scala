@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -41,19 +41,22 @@ import scalaz.syntax.traverse._
 
 import spire.implicits._
 
-trait AssignClusterModule[M[+ _]]
-    extends ColumnarTableLibModule[M] with ModelLibModule[M] {
+trait AssignClusterModule[M[+_]]
+    extends ColumnarTableLibModule[M]
+    with ModelLibModule[M] {
   import trans._
 
   trait AssignClusterSupport extends ColumnarTableLib with ModelSupport {
     trait AssignClusterBase extends ModelBase { self: Morphism2 =>
       case class ModelCluster(
-          name: ClusterId, featureValues: Map[CPath, Double])
+          name: ClusterId,
+          featureValues: Map[CPath, Double]
+      )
       case class Model(name: ModelId, clusters: Array[ModelCluster])
       object Model extends ModelCompanion
 
       private type ClusterId = String
-      private type ModelId = String
+      private type ModelId   = String
 
       protected val reducer: CReducer[Models] = new CReducer[Models] {
         private val kPath = CPath(TableModule.paths.Key)
@@ -64,24 +67,31 @@ trait AssignClusterModule[M[+ _]]
           val rowIdentities = Model.createRowIdentities(schema)
 
           val rowModels: Int => Set[Model] = {
-            val modelTuples: Map[
-                ModelId, Set[(ModelId, ClusterId, CPath, DoubleColumn)]] = {
+            val modelTuples: Map[ModelId, Set[
+              (ModelId, ClusterId, CPath, DoubleColumn)
+            ]] = {
               schema.columnRefs.flatMap {
-                case ref @ ColumnRef(CPath(TableModule.paths.Value,
-                                           CPathField(modelName),
-                                           CPathField(clusterName),
-                                           rest @ _ *),
-                                     ctype) =>
+                case ref @ ColumnRef(
+                      CPath(
+                        TableModule.paths.Value,
+                        CPathField(modelName),
+                        CPathField(clusterName),
+                        rest @ _*
+                      ),
+                      ctype
+                    ) =>
                   Schema.mkType(ref :: Nil) flatMap {
                     case jType =>
                       schema.columns(jType) collectFirst {
                         case (col: DoubleColumn) => col
                       }
                   } map { col =>
-                    (modelName,
-                     clusterName,
-                     CPath((TableModule.paths.Value +: rest): _*),
-                     col)
+                    (
+                      modelName,
+                      clusterName,
+                      CPath((TableModule.paths.Value +: rest): _*),
+                      col
+                    )
                   }
 
                 case _ => None
@@ -136,9 +146,11 @@ trait AssignClusterModule[M[+ _]]
             type A = Unit
             def init: A = ()
 
-            def scan(a: A,
-                     cols: Map[ColumnRef, Column],
-                     range: Range): (A, Map[ColumnRef, Column]) = {
+            def scan(
+                a: A,
+                cols: Map[ColumnRef, Column],
+                range: Range
+            ): (A, Map[ColumnRef, Column]) = {
               def included(model: Model): Map[ColumnRef, Column] = {
                 val featurePaths = (model.clusters).flatMap {
                   _.featureValues.keys
@@ -176,15 +188,18 @@ trait AssignClusterModule[M[+ _]]
                   modelSet.models map {
                     case model =>
                       val includedModel = included(model)
-                      val definedModel = defined(includedModel)
+                      val definedModel  = defined(includedModel)
 
                       val clusterIds: Array[String] =
                         model.clusters map { _.name }
                       val clusterCenters: Array[Array[Double]] =
                         (model.clusters).map {
-                          _.featureValues.toArray.sortBy {
-                            case (path, _) => path
-                          }.map { case (_, col) => col }.toArray
+                          _.featureValues.toArray
+                            .sortBy {
+                              case (path, _) => path
+                            }
+                            .map { case (_, col) => col }
+                            .toArray
                         }
 
                       val centerPaths: Array[CPath] =
@@ -205,29 +220,29 @@ trait AssignClusterModule[M[+ _]]
                       val numFeatures = featureColumns.size
 
                       val filtered = filteredRange(includedModel).toArray
-                      val len = filtered.length
+                      val len      = filtered.length
 
                       val resultArray = {
-                        var k = range.start
+                        var k   = range.start
                         val arr = new Array[String](range.end - range.start)
 
                         while (k < len) {
                           val row: Int = filtered(k)
 
                           val feature = new Array[Double](numFeatures)
-                          var i = 0
+                          var i       = 0
                           while (i < feature.length) {
                             feature(i) = featureColumns(i)(row)
                             i += 1
                           }
 
-                          var minDistSq = Double.PositiveInfinity
+                          var minDistSq  = Double.PositiveInfinity
                           var minCluster = -1
                           i = 0
                           while (i < clusterCenters.length) {
                             // TODO: Don't box for fancy operators...
 
-                            val diff = (feature - clusterCenters(i))
+                            val diff   = (feature - clusterCenters(i))
                             val distSq = diff dot diff
                             if (distSq < minDistSq) {
                               minDistSq = distSq
@@ -248,7 +263,7 @@ trait AssignClusterModule[M[+ _]]
                           Array.fill(centerPaths.length)(Array.empty[Double])
 
                         while (k < values.length) {
-                          var i = 0
+                          var i  = 0
                           val li = values(k)
 
                           while (i < li.length) {
@@ -281,18 +296,25 @@ trait AssignClusterModule[M[+ _]]
 
                       val centers: Map[ColumnRef, Column] = zipped.collect {
                         case (col, path) if path.hasPrefix(pref) =>
-                          val path0 = CPath(TableModule.paths.Value,
-                                            CPathField(model.name),
-                                            CPathField("clusterCenter"))
+                          val path0 = CPath(
+                            TableModule.paths.Value,
+                            CPathField(model.name),
+                            CPathField("clusterCenter")
+                          )
                           ColumnRef(path0 \ path.dropPrefix(pref).get, CDouble) -> col
                       }.toMap
 
-                      val idPath = CPath(TableModule.paths.Value,
-                                         CPathField(model.name),
-                                         CPathField("clusterId"))
+                      val idPath = CPath(
+                        TableModule.paths.Value,
+                        CPathField(model.name),
+                        CPathField("clusterId")
+                      )
                       val centerId = Map(
-                          ColumnRef(idPath, CString) -> ArrayStrColumn(
-                              definedModel, resultArray))
+                        ColumnRef(idPath, CString) -> ArrayStrColumn(
+                          definedModel,
+                          resultArray
+                        )
+                      )
 
                       centers ++ centerId
                   }
@@ -301,7 +323,7 @@ trait AssignClusterModule[M[+ _]]
               }
 
               implicit val semigroup = Column.unionRightSemigroup
-              val monoidCols = implicitly[Monoid[Map[ColumnRef, Column]]]
+              val monoidCols         = implicitly[Monoid[Map[ColumnRef, Column]]]
 
               val reduced: Map[ColumnRef, Column] =
                 result.toSet.suml(monoidCols)
@@ -323,8 +345,9 @@ trait AssignClusterModule[M[+ _]]
             val forcedTable = table.transform(spec).force
             val tables0 =
               (0 until scanners.size) map { i =>
-                forcedTable.map(_.transform(
-                        DerefArrayStatic(TransSpec1.Id, CPathIndex(i))))
+                forcedTable.map(
+                  _.transform(DerefArrayStatic(TransSpec1.Id, CPathIndex(i)))
+                )
               }
             val tables: M[Seq[Table]] = (tables0.toList).sequence
 

@@ -1,5 +1,5 @@
 trait Foo[T <: Foo[T, Enum], Enum <: Enumeration] {
-  type StV = Enum#Value
+  type StV  = Enum#Value
   type Meta = MegaFoo[T, Enum]
 
   type Slog <: Enumeration
@@ -29,5 +29,5 @@ class RFoo extends Foo[RFoo, E.type] {
 
 object MegaRFoo extends RFoo with MegaFoo[RFoo, E.type] {
   def stateEnumeration = E
-  def se2 = E
+  def se2              = E
 }

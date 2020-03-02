@@ -38,12 +38,13 @@ private[sql] class SparkSqlSerializer(conf: SparkConf)
     val kryo = super.newKryo()
     kryo.setRegistrationRequired(false)
     kryo.register(classOf[MutablePair[_, _]])
+    kryo.register(classOf[org.apache.spark.sql.catalyst.expressions.GenericRow])
     kryo.register(
-        classOf[org.apache.spark.sql.catalyst.expressions.GenericRow])
+      classOf[org.apache.spark.sql.catalyst.expressions.GenericInternalRow]
+    )
     kryo.register(
-        classOf[org.apache.spark.sql.catalyst.expressions.GenericInternalRow])
-    kryo.register(
-        classOf[org.apache.spark.sql.catalyst.expressions.GenericMutableRow])
+      classOf[org.apache.spark.sql.catalyst.expressions.GenericMutableRow]
+    )
     kryo.register(classOf[java.math.BigDecimal], new JavaBigDecimalSerializer)
     kryo.register(classOf[BigDecimal], new ScalaBigDecimalSerializer)
 
@@ -78,15 +79,11 @@ private[sql] object SparkSqlSerializer {
     }
   }
 
-  def serialize[T : ClassTag](o: T): Array[Byte] =
-    acquireRelease { k =>
-      JavaUtils.bufferToArray(k.serialize(o))
-    }
+  def serialize[T: ClassTag](o: T): Array[Byte] =
+    acquireRelease { k => JavaUtils.bufferToArray(k.serialize(o)) }
 
-  def deserialize[T : ClassTag](bytes: Array[Byte]): T =
-    acquireRelease { k =>
-      k.deserialize[T](ByteBuffer.wrap(bytes))
-    }
+  def deserialize[T: ClassTag](bytes: Array[Byte]): T =
+    acquireRelease { k => k.deserialize[T](ByteBuffer.wrap(bytes)) }
 }
 
 private[sql] class JavaBigDecimalSerializer
@@ -96,9 +93,11 @@ private[sql] class JavaBigDecimalSerializer
     output.writeString(bd.toString)
   }
 
-  def read(kryo: Kryo,
-           input: Input,
-           tpe: Class[java.math.BigDecimal]): java.math.BigDecimal = {
+  def read(
+      kryo: Kryo,
+      input: Input,
+      tpe: Class[java.math.BigDecimal]
+  ): java.math.BigDecimal = {
     new java.math.BigDecimal(input.readString())
   }
 }

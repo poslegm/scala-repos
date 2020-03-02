@@ -51,7 +51,9 @@ object ActorCreationPerfSpec {
       case WaitForChildren ⇒
         context.children.foreach(_ ! IsAlive)
         context.become(
-            waiting(context.children.size, sender()), discardOld = false)
+          waiting(context.children.size, sender()),
+          discardOld = false
+        )
     }
 
     def waiting(number: Int, replyTo: ActorRef): Receive = {
@@ -81,7 +83,9 @@ object ActorCreationPerfSpec {
       case WaitForChildren ⇒
         context.children.foreach(_ ! IsAlive)
         context.become(
-            waiting(context.children.size, sender()), discardOld = false)
+          waiting(context.children.size, sender()),
+          discardOld = false
+        )
     }
 
     def waiting(number: Int, replyTo: ActorRef): Receive = {
@@ -101,15 +105,17 @@ object ActorCreationPerfSpec {
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class ActorCreationPerfSpec
-    extends AkkaSpec("akka.actor.serialize-messages = off") with ImplicitSender
-    with MetricsKit with BeforeAndAfterAll {
+    extends AkkaSpec("akka.actor.serialize-messages = off")
+    with ImplicitSender
+    with MetricsKit
+    with BeforeAndAfterAll {
 
   import ActorCreationPerfSpec._
 
-  def metricsConfig = system.settings.config
+  def metricsConfig    = system.settings.config
   val ActorCreationKey = MetricKey.fromString("actor-creation")
-  val BlockingTimeKey = ActorCreationKey / "synchronous-part"
-  val TotalTimeKey = ActorCreationKey / "total"
+  val BlockingTimeKey  = ActorCreationKey / "synchronous-part"
+  val TotalTimeKey     = ActorCreationKey / "total"
 
   val warmUp: Int =
     Integer.getInteger("akka.test.actor.ActorPerfSpec.warmUp", 50000)
@@ -118,10 +124,12 @@ class ActorCreationPerfSpec
   val nrOfRepeats: Int =
     Integer.getInteger("akka.test.actor.ActorPerfSpec.numberOfRepeats", 3)
 
-  def runWithCounterInside(metricName: String,
-                           scenarioName: String,
-                           number: Int,
-                           propsCreator: () ⇒ Props) {
+  def runWithCounterInside(
+      metricName: String,
+      scenarioName: String,
+      number: Int,
+      propsCreator: () ⇒ Props
+  ) {
     val hist = histogram(BlockingTimeKey / metricName)
 
     val driver =
@@ -145,9 +153,11 @@ class ActorCreationPerfSpec
     gc()
   }
 
-  def runWithoutCounter(scenarioName: String,
-                        number: Int,
-                        propsCreator: () ⇒ Props): HeapMemoryUsage = {
+  def runWithoutCounter(
+      scenarioName: String,
+      number: Int,
+      propsCreator: () ⇒ Props
+  ): HeapMemoryUsage = {
     val mem = measureMemory(TotalTimeKey / scenarioName)
 
     val driver = system.actorOf(Props(classOf[Driver]), scenarioName)
@@ -192,10 +202,12 @@ class ActorCreationPerfSpec
       // note: measuring per-actor-memory-use in this scenario is skewed as the Actor contains references to counters etc!
       //       for measuring actor size use refer to the `runWithoutCounter` method
       for (i ← 1 to nrOfRepeats) {
-        runWithCounterInside(name,
-                             s"${scenarioName}_driver_inside_$i",
-                             nrOfActors,
-                             propsCreator)
+        runWithCounterInside(
+          name,
+          s"${scenarioName}_driver_inside_$i",
+          nrOfActors,
+          propsCreator
+        )
       }
 
       reportAndClearMetrics()
@@ -206,13 +218,19 @@ class ActorCreationPerfSpec
 
       for (i ← 1 to nrOfRepeats) {
         val heapUsed = timedWithKnownOps(
-            TotalTimeKey / s"creating-$nrOfActors-actors" / name,
-            ops = nrOfActors) {
+          TotalTimeKey / s"creating-$nrOfActors-actors" / name,
+          ops = nrOfActors
+        ) {
           runWithoutCounter(
-              s"${scenarioName}_driver_outside_$i", nrOfActors, propsCreator)
+            s"${scenarioName}_driver_outside_$i",
+            nrOfActors,
+            propsCreator
+          )
         }
 
-        avgMem.add(heapUsed.used / nrOfActors) // average actor size, over nrOfRepeats
+        avgMem.add(
+          heapUsed.used / nrOfActors
+        ) // average actor size, over nrOfRepeats
         // time is handled by the histogram already
       }
 
@@ -232,14 +250,18 @@ class ActorCreationPerfSpec
     val props2 = Props(new EmptyActor)
     registerTests("Props(new EmptyActor) same", () ⇒ { props2 })
 
-    registerTests("Props(classOf[EmptyArgsActor], ...) new",
-                  () ⇒ { Props(classOf[EmptyArgsActor], 4711, 1729) })
+    registerTests(
+      "Props(classOf[EmptyArgsActor], ...) new",
+      () ⇒ { Props(classOf[EmptyArgsActor], 4711, 1729) }
+    )
 
     val props3 = Props(classOf[EmptyArgsActor], 4711, 1729)
     registerTests("Props(classOf[EmptyArgsActor], ...) same", () ⇒ { props3 })
 
-    registerTests("Props(new EmptyArgsActor(...)) new",
-                  () ⇒ { Props(new EmptyArgsActor(4711, 1729)) })
+    registerTests(
+      "Props(new EmptyArgsActor(...)) new",
+      () ⇒ { Props(new EmptyArgsActor(4711, 1729)) }
+    )
 
     val props4 = Props(new EmptyArgsActor(4711, 1729))
     registerTests("Props(new EmptyArgsActor(...)) same", () ⇒ { props4 })

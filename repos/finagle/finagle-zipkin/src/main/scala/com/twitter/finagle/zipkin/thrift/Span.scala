@@ -19,20 +19,22 @@ import com.twitter.finagle.tracing.TraceId
   * @param bAnnotations Key-Value annotations, used to attach non timestamped data
   * @param endpoint     This is the local endpoint the span was created on.
   */
-case class Span(traceId: TraceId,
-                _serviceName: Option[String],
-                _name: Option[String],
-                annotations: Seq[ZipkinAnnotation],
-                bAnnotations: Seq[BinaryAnnotation],
-                endpoint: Endpoint) {
+case class Span(
+    traceId: TraceId,
+    _serviceName: Option[String],
+    _name: Option[String],
+    annotations: Seq[ZipkinAnnotation],
+    bAnnotations: Seq[BinaryAnnotation],
+    endpoint: Endpoint
+) {
   val serviceName = _serviceName getOrElse "Unknown"
-  val name = _name getOrElse "Unknown"
+  val name        = _name getOrElse "Unknown"
 
   /**
     * @return a pretty string for this span ID.
     */
   def idString = {
-    val spanString = traceId.spanId.toString
+    val spanString       = traceId.spanId.toString
     val parentSpanString = traceId._parentId map (_.toString)
 
     parentSpanString match {
@@ -48,7 +50,7 @@ case class Span(traceId: TraceId,
     span.setId(traceId.spanId.toLong)
     traceId._parentId match {
       case Some(id) => span.setParent_id(id.toLong)
-      case None => ()
+      case None     => ()
     }
     span.setTrace_id(traceId.traceId.toLong)
     span.setName(name)

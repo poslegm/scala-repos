@@ -14,7 +14,8 @@ trait PlayRunHook extends play.runsupport.RunHook
 object PlayRunHook {
 
   def makeRunHookFromOnStarted(
-      f: (java.net.InetSocketAddress) => Unit): PlayRunHook = {
+      f: (java.net.InetSocketAddress) => Unit
+  ): PlayRunHook = {
     // We create an object for a named class...
     object OnStartedPlayRunHook extends PlayRunHook {
       override def afterStarted(addr: InetSocketAddress): Unit = f(addr)

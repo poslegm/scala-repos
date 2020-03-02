@@ -1,10 +1,10 @@
 object SCL6601B {
-  val x: (_, Int) = ???
-  val y: _ => Int = ???
+  val x: (_, Int)        = ???
+  val y: _ => Int        = ???
   val z: (Int, _) => Int = ???
   val k: (_, Int) => Int = ???
-  val h: Int => _ = ???
-  val j: (_, Int) => _ = ???
+  val h: Int => _        = ???
+  val j: (_, Int) => _   = ???
 
   /*start*/
   (x, y, z, k, h, j) /*end*/

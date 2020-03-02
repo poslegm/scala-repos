@@ -18,7 +18,7 @@ package com.twitter.scalding.serialization
 // Taking a few functions from:
 // https://guava-libraries.googlecode.com/git/guava/src/com/google/common/hash/Murmur3_32HashFunction.java
 object MurmurHashUtils {
-  final val seed = 0xf7ca7fd2
+  final val seed            = 0xf7ca7fd2
   private final val C1: Int = 0xcc9e2d51
   private final val C2: Int = 0x1b873593
 
@@ -30,7 +30,7 @@ object MurmurHashUtils {
   }
 
   final def hashLong(input: Long): Int = {
-    val low = input.toInt
+    val low  = input.toInt
     val high = (input >>> 32).toInt
 
     var k1 = mixK1(low)
@@ -95,7 +95,7 @@ object MurmurHashUtils {
 
   def iteratorHash[T](a: Iterator[T])(hashFn: T => Int): Int = {
     var h1 = seed
-    var i = 0
+    var i  = 0
     while (a.hasNext) {
       var k1 = hashFn(a.next)
       h1 = mixH1(h1, k1)

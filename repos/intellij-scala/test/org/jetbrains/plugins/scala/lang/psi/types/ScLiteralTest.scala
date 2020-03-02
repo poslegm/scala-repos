@@ -44,7 +44,7 @@ class ScLiteralTest extends SimpleTestCase {
 
   private def assertTypeIs(code: String, expectation: ScType) {
     val exp = code.parse[ScExpression]
-    val t = exp.getType(TypingContext.empty).get
+    val t   = exp.getType(TypingContext.empty).get
     Assert.assertEquals(expectation, t)
   }
 }

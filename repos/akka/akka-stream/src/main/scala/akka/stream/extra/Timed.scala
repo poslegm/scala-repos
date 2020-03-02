@@ -24,7 +24,8 @@ private[akka] trait TimedOps {
   def timed[I, O, Mat, Mat2](
       source: Source[I, Mat],
       measuredOps: Source[I, Mat] ⇒ Source[O, Mat2],
-      onComplete: FiniteDuration ⇒ Unit): Source[O, Mat2] = {
+      onComplete: FiniteDuration ⇒ Unit
+  ): Source[O, Mat2] = {
     val ctx = new TimedFlowContext
 
     val startTimed =
@@ -43,7 +44,8 @@ private[akka] trait TimedOps {
   def timed[I, O, Out, Mat, Mat2](
       flow: Flow[I, O, Mat],
       measuredOps: Flow[I, O, Mat] ⇒ Flow[I, Out, Mat2],
-      onComplete: FiniteDuration ⇒ Unit): Flow[I, Out, Mat2] = {
+      onComplete: FiniteDuration ⇒ Unit
+  ): Flow[I, Out, Mat2] = {
     // todo is there any other way to provide this for Flow, without duplicating impl?
     // they do share a super-type (FlowOps), but all operations of FlowOps return path dependant type
     val ctx = new TimedFlowContext
@@ -73,7 +75,8 @@ private[akka] trait TimedIntervalBetweenOps {
   def timedIntervalBetween[O, Mat](
       source: Source[O, Mat],
       matching: O ⇒ Boolean,
-      onInterval: FiniteDuration ⇒ Unit): Source[O, Mat] = {
+      onInterval: FiniteDuration ⇒ Unit
+  ): Source[O, Mat] = {
     val timedInterval = Flow[O]
       .transform(() ⇒ new TimedInterval[O](matching, onInterval))
       .named("timedInterval")
@@ -86,7 +89,8 @@ private[akka] trait TimedIntervalBetweenOps {
   def timedIntervalBetween[I, O, Mat](
       flow: Flow[I, O, Mat],
       matching: O ⇒ Boolean,
-      onInterval: FiniteDuration ⇒ Unit): Flow[I, O, Mat] = {
+      onInterval: FiniteDuration ⇒ Unit
+  ): Flow[I, O, Mat] = {
     val timedInterval = Flow[O]
       .transform(() ⇒ new TimedInterval[O](matching, onInterval))
       .named("timedInterval")
@@ -102,7 +106,7 @@ object Timed extends TimedOps with TimedIntervalBetweenOps {
     import scala.concurrent.duration._
 
     private val _start = new AtomicLong
-    private val _stop = new AtomicLong
+    private val _stop  = new AtomicLong
 
     def start(): Unit = {
       _start.compareAndSet(0, System.nanoTime())
@@ -134,14 +138,17 @@ object Timed extends TimedOps with TimedIntervalBetweenOps {
   }
 
   final class StopTimed[T](
-      timedContext: TimedFlowContext, _onComplete: FiniteDuration ⇒ Unit)
-      extends PushStage[T, T] {
+      timedContext: TimedFlowContext,
+      _onComplete: FiniteDuration ⇒ Unit
+  ) extends PushStage[T, T] {
 
     override def onPush(elem: T, ctx: Context[T]): SyncDirective =
       ctx.push(elem)
 
     override def onUpstreamFailure(
-        cause: Throwable, ctx: Context[T]): TerminationDirective = {
+        cause: Throwable,
+        ctx: Context[T]
+    ): TerminationDirective = {
       stopTime()
       ctx.fail(cause)
     }
@@ -156,10 +163,11 @@ object Timed extends TimedOps with TimedIntervalBetweenOps {
   }
 
   final class TimedInterval[T](
-      matching: T ⇒ Boolean, onInterval: FiniteDuration ⇒ Unit)
-      extends PushStage[T, T] {
+      matching: T ⇒ Boolean,
+      onInterval: FiniteDuration ⇒ Unit
+  ) extends PushStage[T, T] {
     private var prevNanos = 0L
-    private var matched = 0L
+    private var matched   = 0L
 
     override def onPush(elem: T, ctx: Context[T]): SyncDirective = {
       if (matching(elem)) {
@@ -173,7 +181,7 @@ object Timed extends TimedOps with TimedIntervalBetweenOps {
     private def updateInterval(in: T): FiniteDuration = {
       matched += 1
       val nowNanos = System.nanoTime()
-      val d = nowNanos - prevNanos
+      val d        = nowNanos - prevNanos
       prevNanos = nowNanos
       d.nanoseconds
     }

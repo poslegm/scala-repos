@@ -19,8 +19,8 @@ import it.unimi.dsi.fastutil.longs.LongArrays
 import org.saddle.Buffer
 
 class BufferLong(sz: Int = Buffer.INIT_CAPACITY) extends Buffer[Long] {
-  var list = Array.ofDim[Long](sz)
-  var count = 0
+  var list   = Array.ofDim[Long](sz)
+  var count  = 0
   var remain = sz
 
   def apply(loc: Int) = list(loc)
@@ -41,5 +41,5 @@ class BufferLong(sz: Int = Buffer.INIT_CAPACITY) extends Buffer[Long] {
 
 object BufferLong {
   def apply(sz: Int) = new BufferLong(sz)
-  def apply() = new BufferLong()
+  def apply()        = new BufferLong()
 }

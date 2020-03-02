@@ -12,9 +12,9 @@ object M0 {
 
   //##########################################################################
 
-  def size = 2;
-  def pi = 3.14159;
-  def radius = 10;
+  def size          = 2;
+  def pi            = 3.14159;
+  def radius        = 10;
   def circumference = 2 * pi * radius;
 
   Console.println(5 * size);
@@ -38,8 +38,8 @@ object M0 {
 
   //##########################################################################
 
-  def loop: Int = loop;
-  def first(x: Int, y: Int) = x;
+  def loop: Int                   = loop;
+  def first(x: Int, y: Int)       = x;
   def constOne(x: Int, y: => Int) = 1;
 
   Console.println(constOne(1, loop));

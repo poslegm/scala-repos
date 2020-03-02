@@ -26,7 +26,7 @@ trait MetaProtoTag[ModelType <: ProtoTag[ModelType]]
   override def dbTableName: String //  = "tags"
   def cacheSize: Int
 
-  private val idCache = new LRU[Long, ModelType](cacheSize)
+  private val idCache  = new LRU[Long, ModelType](cacheSize)
   private val tagCache = new LRU[String, ModelType](cacheSize)
 
   def findOrCreate(ntag: String): ModelType = synchronized {
@@ -44,7 +44,9 @@ trait MetaProtoTag[ModelType <: ProtoTag[ModelType]]
   }
 
   override def findDbByKey(
-      dbId: ConnectionIdentifier, key: Long): Box[ModelType] = synchronized {
+      dbId: ConnectionIdentifier,
+      key: Long
+  ): Box[ModelType] = synchronized {
     if (idCache.contains(key)) Full(idCache(key))
     else {
       val ret = super.findDbByKey(dbId, key)
@@ -67,7 +69,8 @@ trait MetaProtoTag[ModelType <: ProtoTag[ModelType]]
 }
 
 abstract class ProtoTag[MyType <: ProtoTag[MyType]]
-    extends KeyedMapper[Long, MyType] with Ordered[MyType] { self: MyType =>
+    extends KeyedMapper[Long, MyType]
+    with Ordered[MyType] { self: MyType =>
 
   def getSingleton: MetaProtoTag[MyType]
 
@@ -77,7 +80,7 @@ abstract class ProtoTag[MyType <: ProtoTag[MyType]]
   def primaryKeyField: MappedLongIndex[MyType] = id
 
   object name extends MappedPoliteString(this, 256) {
-    override def setFilter = getSingleton.capify :: super.setFilter
+    override def setFilter   = getSingleton.capify :: super.setFilter
     override def dbIndexed_? = true
   }
 

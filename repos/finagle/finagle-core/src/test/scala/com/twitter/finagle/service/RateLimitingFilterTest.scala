@@ -15,9 +15,9 @@ import com.twitter.util.{Await, Time, Future}
 class RateLimitingFilterTest extends FunSuite with MockitoSugar {
   class RateLimitingFilterHelper {
     def categorize(i: Int) = (i % 5).toString
-    val strategy = new LocalRateLimitingStrategy[Int](categorize, 1.second, 5)
-    val filter = new RateLimitingFilter[Int, Int](strategy)
-    val service = mock[Service[Int, Int]]
+    val strategy           = new LocalRateLimitingStrategy[Int](categorize, 1.second, 5)
+    val filter             = new RateLimitingFilter[Int, Int](strategy)
+    val service            = mock[Service[Int, Int]]
     when(service.close(any)) thenReturn Future.Done
     when(service(Matchers.anyInt)) thenReturn Future.value(1)
 
@@ -55,7 +55,8 @@ class RateLimitingFilterTest extends FunSuite with MockitoSugar {
   }
 
   test(
-      "RateLimitingFilter should Execute different categories of requests and keep a window per category") {
+    "RateLimitingFilter should Execute different categories of requests and keep a window per category"
+  ) {
     val h = new RateLimitingFilterHelper
     import h._
 

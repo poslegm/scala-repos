@@ -31,7 +31,10 @@ import javafx.{event => jfxe}
 
 import scala.language.implicitConversions
 import scalafx.scene.input.KeyCombination.{Modifier, ModifierValue}
-import scalafx.scene.input.ScrollEvent.{HorizontalTextScrollUnits, VerticalTextScrollUnits}
+import scalafx.scene.input.ScrollEvent.{
+  HorizontalTextScrollUnits,
+  VerticalTextScrollUnits
+}
 import scalafx.scene.input.TouchPoint.State
 
 object InputIncludes extends InputIncludes
@@ -101,7 +104,8 @@ trait InputIncludes {
     * @return $SFX $CLCT
     */
   implicit def jfxClipboardContent2sfx(
-      c: jfxsi.ClipboardContent): ClipboardContent =
+      c: jfxsi.ClipboardContent
+  ): ClipboardContent =
     if (c != null) new ClipboardContent(c) else null
 
   /**
@@ -111,7 +115,8 @@ trait InputIncludes {
     * @return $SFX $CMEV
     */
   implicit def jfxContextMenuEvent2sfx(
-      c: jfxsi.ContextMenuEvent): ContextMenuEvent =
+      c: jfxsi.ContextMenuEvent
+  ): ContextMenuEvent =
     if (c != null) new ContextMenuEvent(c) else null
 
   /**
@@ -166,7 +171,8 @@ trait InputIncludes {
     * @return $SFX $IMEV
     */
   implicit def jfxInputMethodEvent2sfx(
-      ime: jfxsi.InputMethodEvent): InputMethodEvent =
+      ime: jfxsi.InputMethodEvent
+  ): InputMethodEvent =
     if (ime != null) new InputMethodEvent(ime) else null
 
   /**
@@ -176,7 +182,8 @@ trait InputIncludes {
     * @return $SFX $IMHL
     */
   implicit def jfxInputMethodHighlight2sfx(
-      e: jfxsi.InputMethodHighlight): InputMethodHighlight =
+      e: jfxsi.InputMethodHighlight
+  ): InputMethodHighlight =
     InputMethodHighlight.jfxEnum2sfx(e)
 
   /**
@@ -186,7 +193,8 @@ trait InputIncludes {
     * @return $SFX $IMTR
     */
   implicit def jfxInputMethodTextRun2sfx(
-      imtr: jfxsi.InputMethodTextRun): InputMethodTextRun =
+      imtr: jfxsi.InputMethodTextRun
+  ): InputMethodTextRun =
     if (imtr != null) new InputMethodTextRun(imtr) else null
 
   /**
@@ -195,9 +203,9 @@ trait InputIncludes {
     * @param kc $JFX $KYCB
     * @return $SFX $KYCB
     */
-  implicit def jfxKeyCombination2sfx(
-      kc: jfxsi.KeyCombination): KeyCombination =
-    if (kc != null) new KeyCombination(kc) {} else null
+  implicit def jfxKeyCombination2sfx(kc: jfxsi.KeyCombination): KeyCombination =
+    if (kc != null) new KeyCombination(kc) {}
+    else null
 
   /**
     * $START$KCMV.html $KCMV$END
@@ -206,7 +214,8 @@ trait InputIncludes {
     * @return $SFX $KCMV
     */
   implicit def jfxModifierValue2sfx(
-      mv: jfxsi.KeyCombination.ModifierValue): ModifierValue =
+      mv: jfxsi.KeyCombination.ModifierValue
+  ): ModifierValue =
     KeyCombination.ModifierValue.jfxEnum2sfx(mv)
 
   /**
@@ -216,7 +225,8 @@ trait InputIncludes {
     * @return $SFX $KCCB
     */
   implicit def jfxKeyCharacterCombination2sfx(
-      kcc: jfxsi.KeyCharacterCombination): KeyCharacterCombination =
+      kcc: jfxsi.KeyCharacterCombination
+  ): KeyCharacterCombination =
     if (kcc != null) new KeyCharacterCombination(kcc) else null
 
   /**
@@ -235,7 +245,8 @@ trait InputIncludes {
     * @return $SFX $KCCM
     */
   implicit def jfxKeyCodeCombination2sfx(
-      kcc: jfxsi.KeyCodeCombination): KeyCodeCombination =
+      kcc: jfxsi.KeyCodeCombination
+  ): KeyCodeCombination =
     if (kcc != null) new KeyCodeCombination(kcc) else null
 
   /**
@@ -245,8 +256,10 @@ trait InputIncludes {
     * @return $SFX $KCMD
     */
   implicit def jfxKeyCombinationModifier2sfx(
-      m: jfxsi.KeyCombination.Modifier): Modifier =
-    if (m != null) new KeyCombination.Modifier(m) {} else null
+      m: jfxsi.KeyCombination.Modifier
+  ): Modifier =
+    if (m != null) new KeyCombination.Modifier(m) {}
+    else null
 
   /**
     * $START$KEEV.html $KEEV$END
@@ -291,7 +304,8 @@ trait InputIncludes {
     * @return $SFX $MSDE
     */
   implicit def jfxMouseDragEvent2sfx(
-      mde: jfxsi.MouseDragEvent): MouseDragEvent =
+      mde: jfxsi.MouseDragEvent
+  ): MouseDragEvent =
     if (mde != null) new MouseDragEvent(mde) else null
 
   implicit def jfxPickResult2sfx(m: jfxsi.PickResult): PickResult =
@@ -322,8 +336,8 @@ trait InputIncludes {
     * @return $SFX $SEHS
     */
   implicit def jfxScrollEventHorizontalTextScrollUnits2sfx(
-      h: jfxsi.ScrollEvent.HorizontalTextScrollUnits)
-    : HorizontalTextScrollUnits =
+      h: jfxsi.ScrollEvent.HorizontalTextScrollUnits
+  ): HorizontalTextScrollUnits =
     ScrollEvent.HorizontalTextScrollUnits.jfxEnum2sfx(h)
 
   /**
@@ -333,7 +347,8 @@ trait InputIncludes {
     * @return $SFX $SEVS
     */
   implicit def jfxScrollEventVerticalTextScrollUnits2sfx(
-      v: jfxsi.ScrollEvent.VerticalTextScrollUnits): VerticalTextScrollUnits =
+      v: jfxsi.ScrollEvent.VerticalTextScrollUnits
+  ): VerticalTextScrollUnits =
     ScrollEvent.VerticalTextScrollUnits.jfxEnum2sfx(v)
 
   /**

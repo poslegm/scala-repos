@@ -4,7 +4,7 @@ class A {
 
 class B extends A {
   override def foo(x: Int, y: Int) = 2
-  def foo(x: Int, y: Int, Z: Int) = 4
+  def foo(x: Int, y: Int, Z: Int)  = 4
   /* line: 6 */
   foo(1)
 }

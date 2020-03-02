@@ -2,7 +2,10 @@ package org.jetbrains.plugins.scala
 package codeInspection.etaExpansion
 
 import com.intellij.codeInspection.LocalInspectionTool
-import org.jetbrains.plugins.scala.codeInspection.{InspectionBundle, ScalaLightInspectionFixtureTestAdapter}
+import org.jetbrains.plugins.scala.codeInspection.{
+  InspectionBundle,
+  ScalaLightInspectionFixtureTestAdapter
+}
 
 /**
   * Nikolay.Tropin
@@ -27,7 +30,7 @@ class ConvertibleToMethodValueInspectionTest
                      |}
                      |"""
     check(selected)
-    val text = """object A {
+    val text   = """object A {
                  |  def f(x: Int, y: Int) {
                  |  }
                  |  val f1 = A.f(_, _)
@@ -67,7 +70,7 @@ class ConvertibleToMethodValueInspectionTest
                        |  val f1: (Int, Int) => Unit = ${START}A.f(_, _)$END
                        |}"""
     check(selected)
-    val text = """object A {
+    val text   = """object A {
                  |  def f(x: Int, y: Int) {
                  |  }
                  |  val f1: (Int, Int) => Unit = A.f(_, _)
@@ -87,7 +90,7 @@ class ConvertibleToMethodValueInspectionTest
                        |  val f1: (Int, Int) => Unit = ${START}A.f _$END
                        |}"""
     check(selected)
-    val text = """object A {
+    val text   = """object A {
                  |  def f(x: Int, y: Int) {
                  |  }
                  |  val f1: (Int, Int) => Unit = A.f _
@@ -107,7 +110,7 @@ class ConvertibleToMethodValueInspectionTest
                        |  val f1 = ${START}A.f(_, _)$END
                        |}"""
     check(selected)
-    val text = """object A {
+    val text   = """object A {
                  |  def f(x: Int, y: Int = 0) {
                  |  }
                  |  val f1 = A.f(_, _)
@@ -202,7 +205,8 @@ class ConvertibleToMethodValueInspectionTest
   }
 
   def testImplicits(): Unit = {
-    checkTextHasNoErrors("""
+    checkTextHasNoErrors(
+      """
         |import scala.language.implicitConversions
         |
         |object TupleMethod extends App {
@@ -223,12 +227,13 @@ class ConvertibleToMethodValueInspectionTest
         |  s.foreach(r.lineTo(_))
         |
         |}
-      """.stripMargin)
+      """.stripMargin
+    )
   }
 
   def testNonStable(): Unit = {
     checkTextHasNoErrors(
-        """class A(s: String) {
+      """class A(s: String) {
         |  def foo(x: String) = x
         |}
         |
@@ -259,7 +264,7 @@ class ConvertibleToMethodValueInspectionTest
   }
 
   def testStableFunParam(): Unit = {
-    val text = s"""class A(s: String) {
+    val text   = s"""class A(s: String) {
                    |  def foo(x: String) = x
                    |}
                    |
@@ -286,7 +291,7 @@ class ConvertibleToMethodValueInspectionTest
   }
 
   def testStableVal(): Unit = {
-    val text = s"""class A(s: String) {
+    val text   = s"""class A(s: String) {
                    |  def foo(x: String) = x
                    |}
                    |
@@ -315,7 +320,7 @@ class ConvertibleToMethodValueInspectionTest
   }
 
   def testStableObject(): Unit = {
-    val text = s"""class A(s: String) {
+    val text   = s"""class A(s: String) {
                    |  def foo(x: String) = x
                    |}
                    |
@@ -340,7 +345,7 @@ class ConvertibleToMethodValueInspectionTest
   }
 
   def testStableSyntheticFun(): Unit = {
-    val text = s"""val list = "a" :: "b" :: Nil
+    val text   = s"""val list = "a" :: "b" :: Nil
                   |list.filter($START("a" + "b").contains _$END)
                """.stripMargin
     val result = """val list = "a" :: "b" :: Nil

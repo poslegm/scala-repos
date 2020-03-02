@@ -18,7 +18,8 @@ object TestUtils {
 
   // TODO duplicated code from akka-http-core-tests
   def temporaryServerAddress(
-      interface: String = "127.0.0.1"): InetSocketAddress = {
+      interface: String = "127.0.0.1"
+  ): InetSocketAddress = {
     val serverSocket = ServerSocketChannel.open()
     try {
       serverSocket.socket.bind(new InetSocketAddress(interface, 0))
@@ -29,7 +30,8 @@ object TestUtils {
 
   // TODO duplicated code from akka-http-core-tests
   def temporaryServerHostnameAndPort(
-      interface: String = "127.0.0.1"): (InetSocketAddress, String, Int) = {
+      interface: String = "127.0.0.1"
+  ): (InetSocketAddress, String, Int) = {
     val socketAddress = temporaryServerAddress(interface)
     (socketAddress, socketAddress.getHostName, socketAddress.getPort)
   }

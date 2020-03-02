@@ -21,14 +21,14 @@ object ISetTest extends SpecLite {
   checkAll(foldable.laws[ISet])
   checkAll(FoldableTests.anyAndAllLazy[ISet])
 
-  def structurallySound[A : Order : Show](s: ISet[A]) = {
+  def structurallySound[A: Order: Show](s: ISet[A]) = {
     val al = s.toAscList
     al must_=== (al.sorted)(Order[A].toScalaOrdering)
   }
 
   "findLeft/findRight" in {
     val a = ISet.fromList(List(1, 2, 3, 4, 5))
-    Foldable[ISet].findLeft(a)(_ % 2 == 0) must_=== Some(2)
+    Foldable[ISet].findLeft(a)(_  % 2 == 0) must_=== Some(2)
     Foldable[ISet].findRight(a)(_ % 2 == 0) must_=== Some(4)
   }
 
@@ -109,9 +109,7 @@ object ISetTest extends SpecLite {
 
   "lookupIndex" ! forAll { a: ISet[Int] =>
     val l = a.toList
-    (0 until a.size) foreach { i =>
-      a.lookupIndex(l(i)) must_=== Some(i)
-    }
+    (0 until a.size) foreach { i => a.lookupIndex(l(i)) must_=== Some(i) }
     (0 until 5) foreach { _ =>
       val r = Random.nextInt()
       if (a.member(r)) a.lookupIndex(r) must_=== Some(l.indexOf(r))
@@ -255,13 +253,13 @@ object ISetTest extends SpecLite {
   }
 
   "minView" ! forAll { (a: ISet[Int]) =>
-    val l = a.toList.sorted
+    val l      = a.toList.sorted
     val target = if (l.isEmpty) none else (l.head, fromList(l.tail)).some
     a.minView must_=== target
   }
 
   "maxView" ! forAll { (a: ISet[Int]) =>
-    val l = a.toList.sortWith(_ > _)
+    val l      = a.toList.sortWith(_ > _)
     val target = if (l.isEmpty) none else (l.head, fromList(l.tail)).some
     a.maxView must_=== target
   }

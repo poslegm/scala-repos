@@ -32,7 +32,7 @@ private final class Captcher extends Actor {
   private object Impl {
 
     def get(id: String): Fu[Captcha] = find(id) match {
-      case None => getFromDb(id) map (c => (c | Captcha.default) ~ add)
+      case None    => getFromDb(id) map (c => (c | Captcha.default) ~ add)
       case Some(c) => fuccess(c)
     }
 
@@ -46,7 +46,8 @@ private final class Captcher extends Actor {
 
     private val capacity = 512
     private var challenges: NonEmptyList[Captcha] = NonEmptyList(
-        Captcha.default)
+      Captcha.default
+    )
 
     private def add(c: Captcha) {
       find(c.gameId) ifNone {
@@ -72,21 +73,23 @@ private final class Captcher extends Actor {
       optionT(GameRepo getOptionPgn game.id) flatMap { makeCaptcha(game, _) }
 
     private def makeCaptcha(
-        game: Game, moves: List[String]): OptionT[Fu, Captcha] =
-      optionT(
-          Future {
+        game: Game,
+        moves: List[String]
+    ): OptionT[Fu, Captcha] =
+      optionT(Future {
         for {
-          rewinded ← rewind(game, moves)
+          rewinded  ← rewind(game, moves)
           solutions ← solve(rewinded)
           moves = rewinded.situation.destinations map {
             case (from, dests) => from.key -> dests.mkString
           }
-        } yield
-          Captcha(game.id,
-                  fen(rewinded),
-                  rewinded.player.white,
-                  solutions,
-                  moves = moves)
+        } yield Captcha(
+          game.id,
+          fen(rewinded),
+          rewinded.player.white,
+          solutions,
+          moves = moves
+        )
       })
 
     private def solve(game: ChessGame): Option[Captcha.Solutions] =
@@ -95,17 +98,15 @@ private final class Captcher extends Actor {
           moves filter { move =>
             (move.after situationOf !game.player).checkMate
           }
-      } map { move =>
-        s"${move.orig} ${move.dest}"
-      } toNel
+      } map { move => s"${move.orig} ${move.dest}" } toNel
 
     private def rewind(game: Game, moves: List[String]): Option[ChessGame] =
       pgn.Reader.movesWithSans(moves, safeInit, tags = Nil) map (_.state) toOption
 
     private def safeInit[A](list: List[A]): List[A] = list match {
       case x :: Nil => Nil
-      case x :: xs => x :: safeInit(xs)
-      case _ => Nil
+      case x :: xs  => x :: safeInit(xs)
+      case _        => Nil
     }
 
     private def fen(game: ChessGame): String =

@@ -30,7 +30,7 @@ trait LongThriftTransformer[V <: TBase[_, _]] extends Source {
   def fields: Fields
 
   // meant to override fields within WritableSequenceFileScheme.
-  val keyType = classOf[LongWritable]
+  val keyType   = classOf[LongWritable]
   val valueType = classOf[ThriftWritable[V]].asInstanceOf[Class[Writable]]
   override protected def transformForRead(pipe: Pipe): Pipe = {
     new RichPipe(pipe).mapTo(fields -> fields) {
@@ -41,7 +41,7 @@ trait LongThriftTransformer[V <: TBase[_, _]] extends Source {
   }
   override protected def transformForWrite(pipe: Pipe) = {
     new RichPipe(pipe).mapTo(fields -> fields) { v: (Long, V) =>
-      val key = new LongWritable(v._1)
+      val key   = new LongWritable(v._1)
       val value = new ThriftWritable(v._2, typeRef)
       (key, value)
     }

@@ -56,7 +56,7 @@ abstract class SubComponent {
   def newPhase(prev: Phase): Phase
 
   private var ownPhaseCache: WeakReference[Phase] = new WeakReference(null)
-  private var ownPhaseRunId = global.NoRunId
+  private var ownPhaseRunId                       = global.NoRunId
 
   @inline final def beforeOwnPhase[T](op: => T) =
     global.enteringPhase(ownPhase)(op)
@@ -81,8 +81,8 @@ abstract class SubComponent {
 
   /** A standard phase template */
   abstract class StdPhase(prev: Phase) extends global.GlobalPhase(prev) {
-    def name = phaseName
-    override def newFlags = phaseNewFlags
+    def name               = phaseName
+    override def newFlags  = phaseNewFlags
     override def nextFlags = phaseNextFlags
   }
 }

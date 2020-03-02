@@ -27,10 +27,12 @@ import math.{Pi, log1p}
   * @author dlwh
   */
 case class Gaussian(mu: Double, sigma: Double)(implicit rand: RandBasis = Rand)
-    extends ContinuousDistr[Double] with Moments[Double, Double] with HasCdf
+    extends ContinuousDistr[Double]
+    with Moments[Double, Double]
+    with HasCdf
     with HasInverseCdf {
   private val inner = rand.gaussian(mu, sigma)
-  def draw() = inner.get()
+  def draw()        = inner.get()
 
   override def toString() = "Gaussian(" + mu + ", " + sigma + ")"
 
@@ -61,12 +63,12 @@ case class Gaussian(mu: Double, sigma: Double)(implicit rand: RandBasis = Rand)
   }
 
   override lazy val normalizer = 1.0 / sqrt(2 * Pi) / sigma
-  lazy val logNormalizer = log(sqrt(2 * Pi)) + log(sigma)
+  lazy val logNormalizer       = log(sqrt(2 * Pi)) + log(sigma)
 
-  def mean = mu
+  def mean     = mu
   def variance = sigma * sigma
-  def mode = mean
-  def entropy = log(sigma) + .5 * log1p(log(math.Pi * 2))
+  def mode     = mean
+  def entropy  = log(sigma) + .5 * log1p(log(math.Pi * 2))
 }
 
 object Gaussian
@@ -89,9 +91,9 @@ object Gaussian
 
     // Due to Chan
     def +(t: SufficientStatistic) = {
-      val delta = t.mean - mean
+      val delta   = t.mean - mean
       val newMean = mean + delta * (t.n / (t.n + n))
-      val newM2 = M2 + t.M2 + delta * delta * (t.n * n) / (t.n + n)
+      val newM2   = M2 + t.M2 + delta * delta * (t.n * n) / (t.n + n)
       SufficientStatistic(t.n + n, newMean, newM2)
     }
 
@@ -109,23 +111,24 @@ object Gaussian
   def distribution(p: (Double, Double)) = new Gaussian(p._1, math.sqrt(p._2))
 
   def likelihoodFunction(
-      stats: SufficientStatistic): DiffFunction[(Double, Double)] =
+      stats: SufficientStatistic
+  ): DiffFunction[(Double, Double)] =
     new DiffFunction[Parameter] {
       val normPiece = math.log(2 * Pi)
       def calculate(x: (Double, Double)) = {
-        val (mu, sigma2) = x
+        val (mu, sigma2)                    = x
         val SufficientStatistic(n, mean, _) = stats
-        val variance = stats.variance
+        val variance                        = stats.variance
         if (sigma2 <= 0) (Double.PositiveInfinity, (Double.NaN, Double.NaN))
         else {
           val objective =
             n *
-            ((variance + mean * mean) / sigma2 / 2 - mean * mu / sigma2 +
+              ((variance + mean * mean) / sigma2 / 2 - mean * mu / sigma2 +
                 mu * mu / sigma2 / 2 + .5 * (math.log(sigma2) + normPiece))
           val gradientMu = n * (-mean / sigma2 + mu / sigma2)
           val gradientSig =
             n *
-            (-(variance + mean * mean) / sigma2 / sigma2 / 2 +
+              (-(variance + mean * mean) / sigma2 / sigma2 / 2 +
                 mean * mu / sigma2 / sigma2 - mu * mu / sigma2 / sigma2 / 2 +
                 .5 / (sigma2))
           (objective, (gradientMu, gradientSig))

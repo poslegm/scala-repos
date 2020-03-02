@@ -31,7 +31,7 @@ import cascading.tuple.Tuple
  * It only works for CascadingLocal mode.
  */
 class MemorySink[T] extends TypedSink[T] {
-  private[this] val buf = Buffer[Tuple]()
+  private[this] val buf          = Buffer[Tuple]()
   private[this] val name: String = UUID.randomUUID.toString
 
   // takes a copy as of NOW. Don't call this before the job has run

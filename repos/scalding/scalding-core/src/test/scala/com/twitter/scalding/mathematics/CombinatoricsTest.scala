@@ -29,7 +29,7 @@ class CombinatoricsJob(args: Args) extends Job(args) {
   val error =
     1.0 // max error $1, so its ok if we cannot invest the last dollar
   val (kr, abt, dltr, mnst) = (27.0, 64.0, 41.0, 52.0) // share prices
-  val stocks = IndexedSeq(kr, abt, dltr, mnst)
+  val stocks                = IndexedSeq(kr, abt, dltr, mnst)
 
   C.weightedSum(stocks, cash, error).write(Tsv("invest.txt"))
   C.positiveWeightedSum(stocks, cash, error).write(Tsv("investpos.txt"))

@@ -41,10 +41,11 @@ package enumnamefieldspecs {
   object JsonObj extends JsonObjectMeta[JsonObj]
 
   class EnumNameRec
-      extends MongoRecord[EnumNameRec] with ObjectIdPk[EnumNameRec] {
+      extends MongoRecord[EnumNameRec]
+      with ObjectIdPk[EnumNameRec] {
     def meta = EnumNameRec
 
-    object dow extends EnumNameField(this, WeekDay)
+    object dow         extends EnumNameField(this, WeekDay)
     object dowOptional extends OptionalEnumNameField(this, WeekDay)
     object jsonobj
         extends JsonObjectField[EnumNameRec, JsonObj](this, JsonObj) {
@@ -54,14 +55,14 @@ package enumnamefieldspecs {
     override def equals(other: Any): Boolean = other match {
       case that: EnumNameRec =>
         this.id.get == that.id.get && this.dow.value == that.dow.value &&
-        this.dowOptional.valueBox == that.dowOptional.valueBox &&
-        this.jsonobj.value == that.jsonobj.value
+          this.dowOptional.valueBox == that.dowOptional.valueBox &&
+          this.jsonobj.value == that.jsonobj.value
       case _ => false
     }
   }
   object EnumNameRec extends EnumNameRec with MongoMetaRecord[EnumNameRec] {
     override def collectionName = "enumnamerecs"
-    override def formats = super.formats + new EnumNameSerializer(WeekDay)
+    override def formats        = super.formats + new EnumNameSerializer(WeekDay)
   }
 }
 

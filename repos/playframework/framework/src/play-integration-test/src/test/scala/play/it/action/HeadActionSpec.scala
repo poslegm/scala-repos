@@ -23,16 +23,21 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import org.asynchttpclient.netty.NettyResponse
 
 object NettyHeadActionSpec
-    extends HeadActionSpec with NettyIntegrationSpecification
+    extends HeadActionSpec
+    with NettyIntegrationSpecification
 object AkkaHttpHeadActionSpec
-    extends HeadActionSpec with AkkaHttpIntegrationSpecification
+    extends HeadActionSpec
+    with AkkaHttpIntegrationSpecification
 
 trait HeadActionSpec
-    extends Specification with FutureAwaits with DefaultAwaitTimeout
+    extends Specification
+    with FutureAwaits
+    with DefaultAwaitTimeout
     with ServerIntegrationSpecification {
 
   private def route(verb: String, path: String)(
-      handler: EssentialAction): PartialFunction[(String, String), Handler] = {
+      handler: EssentialAction
+  ): PartialFunction[(String, String), Handler] = {
     case (v, p) if v == verb && p == path => handler
   }
   sequential
@@ -41,17 +46,15 @@ trait HeadActionSpec
 
     val chunkedResponse: Routes = {
       case GET(p"/chunked") =>
-        Action { request =>
-          Results.Ok.chunked(Source(List("a", "b", "c")))
-        }
+        Action { request => Results.Ok.chunked(Source(List("a", "b", "c"))) }
     }
 
     val routes = get // GET /get
-      .orElse(patch) // PATCH /patch
-      .orElse(post) // POST /post
-      .orElse(put) // PUT /put
-      .orElse(delete) // DELETE /delete
-      .orElse(stream) // GET /stream/0
+      .orElse(patch)           // PATCH /patch
+      .orElse(post)            // POST /post
+      .orElse(put)             // PUT /put
+      .orElse(delete)          // DELETE /delete
+      .orElse(stream)          // GET /stream/0
       .orElse(chunkedResponse) // GET /chunked
 
     def withServer[T](block: WSClient => T): T = {
@@ -62,7 +65,9 @@ trait HeadActionSpec
       }
     }
 
-    def serverWithAction[T](action: EssentialAction)(block: WSClient => T): T = {
+    def serverWithAction[T](
+        action: EssentialAction
+    )(block: WSClient => T): T = {
       Server.withRouter() {
         case _ => action
       } { implicit port =>
@@ -87,7 +92,7 @@ trait HeadActionSpec
     "match the headers of an equivalent GET" in withServer { client =>
       val collectedFutures = for {
         headResponse <- client.url("/get").head()
-        getResponse <- client.url("/get").get()
+        getResponse  <- client.url("/get").get()
       } yield List(headResponse, getResponse)
 
       val responses = await(collectedFutures)
@@ -98,7 +103,7 @@ trait HeadActionSpec
 
       // Exclude `Date` header because it can vary between requests
       import scala.collection.JavaConverters._
-      val firstHeaders = headHeaders.remove(DATE)
+      val firstHeaders  = headHeaders.remove(DATE)
       val secondHeaders = getHeaders.remove(DATE)
 
       // HTTPHeaders doesn't seem to be anything as simple as an equals method, so let's compare A !< B && B >! A
@@ -119,9 +124,9 @@ trait HeadActionSpec
     "return 404 in response to a URL without an associated GET handler" in withServer {
       client =>
         val collectedFutures = for {
-          putRoute <- client.url("/put").head()
-          patchRoute <- client.url("/patch").head()
-          postRoute <- client.url("/post").head()
+          putRoute    <- client.url("/put").head()
+          patchRoute  <- client.url("/patch").head()
+          postRoute   <- client.url("/post").head()
           deleteRoute <- client.url("/delete").head()
         } yield List(putRoute, patchRoute, postRoute, deleteRoute)
 
@@ -131,15 +136,17 @@ trait HeadActionSpec
     }
 
     "tag request with DefaultHttpRequestHandler" in serverWithAction(
-        new RequestTaggingHandler with EssentialAction {
-      def tagRequest(request: RequestHeader) =
-        request.copy(tags = Map(RouteComments -> "some comment"))
-      def apply(rh: RequestHeader) =
-        Action {
-          Results.Ok.withHeaders(
-              rh.tags.get(RouteComments).map(RouteComments -> _).toSeq: _*)
-        }(rh)
-    }) { client =>
+      new RequestTaggingHandler with EssentialAction {
+        def tagRequest(request: RequestHeader) =
+          request.copy(tags = Map(RouteComments -> "some comment"))
+        def apply(rh: RequestHeader) =
+          Action {
+            Results.Ok.withHeaders(
+              rh.tags.get(RouteComments).map(RouteComments -> _).toSeq: _*
+            )
+          }(rh)
+      }
+    ) { client =>
       val result = await(client.url("/get").head())
       result.status must_== OK
       result.header(RouteComments) must beSome("some comment")

@@ -27,7 +27,7 @@ final class UciMemo(ttl: Duration) {
       moves.size.min(max) == game.pgnMoves.size.min(max)
     } match {
       case Some(moves) => fuccess(moves)
-      case _ => compute(game, max) addEffect { set(game, _) }
+      case _           => compute(game, max) addEffect { set(game, _) }
     }
 
   def drop(game: Game, nb: Int) {
@@ -37,7 +37,7 @@ final class UciMemo(ttl: Duration) {
 
   private def compute(game: Game, max: Int = hardLimit): Fu[Vector[String]] =
     for {
-      fen ← GameRepo initialFen game
+      fen      ← GameRepo initialFen game
       uciMoves ← UciDump(game.pgnMoves.take(max), fen, game.variant).future
     } yield uciMoves.toVector
 }

@@ -3,7 +3,7 @@ import scala.language.implicitConversions
 object Test extends App {
   class ArrowAssocClass[A](val __leftOfArrow: A) extends AnyVal {
     @inline def ->[B](y: B): Tuple2[A, B] = Tuple2(__leftOfArrow, y)
-    def →[B](y: B): Tuple2[A, B] = ->(y)
+    def →[B](y: B): Tuple2[A, B]          = ->(y)
   }
 
   {

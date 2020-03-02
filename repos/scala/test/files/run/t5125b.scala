@@ -26,7 +26,7 @@ class C4 {
 object Test extends App {
   def check(c: Class[_]) {
     val methodName = "f"
-    val methods = c.getDeclaredMethods.filter(_.getName == methodName)
+    val methods    = c.getDeclaredMethods.filter(_.getName == methodName)
     println(methods.map(_.toString).sorted.mkString("\n"))
   }
 

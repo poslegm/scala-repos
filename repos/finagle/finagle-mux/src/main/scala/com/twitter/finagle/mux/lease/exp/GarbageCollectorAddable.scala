@@ -11,8 +11,8 @@ class GarbageCollectorAddable(self: GarbageCollectorMXBean) {
         self.getCollectionTime() + other.getCollectionTime()
       def getMemoryPoolNames() =
         Array.concat(self.getMemoryPoolNames(), other.getMemoryPoolNames())
-      def getName() = self.getName() + "+" + other.getName()
-      def isValid() = self.isValid || other.isValid
+      def getName()     = self.getName() + "+" + other.getName()
+      def isValid()     = self.isValid || other.isValid
       def getObjectName = throw new UnsupportedOperationException
     }
 }

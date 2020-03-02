@@ -8,6 +8,6 @@ object CC extends {
 }
 
 class Test {
-  val cc = new CC(23, "foo")
+  val cc       = new CC(23, "foo")
   val CC(i, s) = cc
 }

@@ -23,8 +23,9 @@ import scala.collection.mutable.HashSet
   */
 @deprecated("Get a Group[SocketAddress] from ZkResolver instead", "6.7.1")
 class ZookeeperServerSetCluster(
-    serverSet: ServerSet, endpointName: Option[String])
-    extends Cluster[SocketAddress] {
+    serverSet: ServerSet,
+    endpointName: Option[String]
+) extends Cluster[SocketAddress] {
 
   def this(serverSet: ServerSet) = this(serverSet, None)
   def this(serverSet: ServerSet, endpointName: String) =
@@ -41,7 +42,7 @@ class ZookeeperServerSetCluster(
     override def run {
       serverSet.watch(new DynamicHostSet.HostChangeMonitor[ServiceInstance] {
         def onChange(serverSet: ImmutableSet[ServiceInstance]) = {
-          val lastValue = queuedChange.getAndSet(serverSet)
+          val lastValue     = queuedChange.getAndSet(serverSet)
           val firstToChange = lastValue eq null
           if (firstToChange) {
             var mostRecentValue: ImmutableSet[ServiceInstance] = null
@@ -58,7 +59,7 @@ class ZookeeperServerSetCluster(
   thread.start()
 
   private[this] val underlyingSet = new HashSet[SocketAddress]
-  private[this] var changes = new Promise[Spool[Cluster.Change[SocketAddress]]]
+  private[this] var changes       = new Promise[Spool[Cluster.Change[SocketAddress]]]
 
   private[this] def performChange(serverSet: ImmutableSet[ServiceInstance]) =
     synchronized {
@@ -74,7 +75,7 @@ class ZookeeperServerSetCluster(
             new InetSocketAddress(endpoint.getHost, endpoint.getPort): SocketAddress
           }
         }
-      val added = newSet &~ underlyingSet
+      val added   = newSet &~ underlyingSet
       val removed = underlyingSet &~ newSet
       added foreach { address =>
         underlyingSet += address
@@ -94,8 +95,8 @@ class ZookeeperServerSetCluster(
 
   def joinServerSet(
       address: SocketAddress,
-      endpoints: Map[String, InetSocketAddress] = Map[
-            String, InetSocketAddress]()
+      endpoints: Map[String, InetSocketAddress] =
+        Map[String, InetSocketAddress]()
   ): EndpointStatus = {
     require(address.isInstanceOf[InetSocketAddress])
 
@@ -104,12 +105,12 @@ class ZookeeperServerSetCluster(
 
   def join(
       address: SocketAddress,
-      endpoints: Map[String, InetSocketAddress] = Map[
-            String, InetSocketAddress]()
+      endpoints: Map[String, InetSocketAddress] =
+        Map[String, InetSocketAddress]()
   ): Unit = joinServerSet(address, endpoints)
 
-  def snap: (Seq[SocketAddress],
-  Future[Spool[Cluster.Change[SocketAddress]]]) = synchronized {
-    (underlyingSet.toSeq, changes)
-  }
+  def snap: (Seq[SocketAddress], Future[Spool[Cluster.Change[SocketAddress]]]) =
+    synchronized {
+      (underlyingSet.toSeq, changes)
+    }
 }

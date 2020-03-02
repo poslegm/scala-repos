@@ -16,7 +16,8 @@ sealed abstract class BufferFactory {
   implicit def elemToAnyRef(elem: ElementType): AnyRef
 
   implicit def bufferAdapter(
-      buffer: BufferType): BufferAdapter[BufferType, ElementType]
+      buffer: BufferType
+  ): BufferAdapter[BufferType, ElementType]
 
   def boxed(array: Array[ElementType]): Array[AnyRef] =
     array.map(elemToAnyRef)
@@ -40,10 +41,12 @@ sealed abstract class BufferFactory {
   def withContent(capacity: Int, content: ElementType*): BufferType =
     withContent(0, capacity, capacity, content: _*)
 
-  def withContent(pos: Int,
-                  limit: Int,
-                  capacity: Int,
-                  content: ElementType*): BufferType = {
+  def withContent(
+      pos: Int,
+      limit: Int,
+      capacity: Int,
+      content: ElementType*
+  ): BufferType = {
     val buf = allocBuffer(pos, limit, capacity)
     buf.put(content.toArray)
     buf.position(pos)
@@ -53,7 +56,7 @@ sealed abstract class BufferFactory {
 
 object BufferFactory {
   abstract class ByteBufferFactory extends BufferFactory {
-    type BufferType = ByteBuffer
+    type BufferType  = ByteBuffer
     type ElementType = Byte
 
     implicit val elemClassTag: ClassTag[ElementType] = ClassTag.Byte
@@ -63,12 +66,13 @@ object BufferFactory {
     implicit def elemToAnyRef(elem: ElementType): AnyRef = elem: java.lang.Byte
 
     implicit def bufferAdapter(
-        buffer: BufferType): BufferAdapter[BufferType, ElementType] =
+        buffer: BufferType
+    ): BufferAdapter[BufferType, ElementType] =
       new BufferAdapter.ByteBufferAdapater(buffer)
   }
 
   abstract class CharBufferFactory extends BufferFactory {
-    type BufferType = CharBuffer
+    type BufferType  = CharBuffer
     type ElementType = Char
 
     implicit val elemClassTag: ClassTag[ElementType] = ClassTag.Char
@@ -79,12 +83,13 @@ object BufferFactory {
       elem: java.lang.Character
 
     implicit def bufferAdapter(
-        buffer: BufferType): BufferAdapter[BufferType, ElementType] =
+        buffer: BufferType
+    ): BufferAdapter[BufferType, ElementType] =
       new BufferAdapter.CharBufferAdapater(buffer)
   }
 
   abstract class ShortBufferFactory extends BufferFactory {
-    type BufferType = ShortBuffer
+    type BufferType  = ShortBuffer
     type ElementType = Short
 
     implicit val elemClassTag: ClassTag[ElementType] = ClassTag.Short
@@ -95,12 +100,13 @@ object BufferFactory {
       elem: java.lang.Short
 
     implicit def bufferAdapter(
-        buffer: BufferType): BufferAdapter[BufferType, ElementType] =
+        buffer: BufferType
+    ): BufferAdapter[BufferType, ElementType] =
       new BufferAdapter.ShortBufferAdapater(buffer)
   }
 
   abstract class IntBufferFactory extends BufferFactory {
-    type BufferType = IntBuffer
+    type BufferType  = IntBuffer
     type ElementType = Int
 
     implicit val elemClassTag: ClassTag[ElementType] = ClassTag.Int
@@ -111,12 +117,13 @@ object BufferFactory {
       elem: java.lang.Integer
 
     implicit def bufferAdapter(
-        buffer: BufferType): BufferAdapter[BufferType, ElementType] =
+        buffer: BufferType
+    ): BufferAdapter[BufferType, ElementType] =
       new BufferAdapter.IntBufferAdapater(buffer)
   }
 
   abstract class LongBufferFactory extends BufferFactory {
-    type BufferType = LongBuffer
+    type BufferType  = LongBuffer
     type ElementType = Long
 
     implicit val elemClassTag: ClassTag[ElementType] = ClassTag.Long
@@ -126,12 +133,13 @@ object BufferFactory {
     implicit def elemToAnyRef(elem: ElementType): AnyRef = elem: java.lang.Long
 
     implicit def bufferAdapter(
-        buffer: BufferType): BufferAdapter[BufferType, ElementType] =
+        buffer: BufferType
+    ): BufferAdapter[BufferType, ElementType] =
       new BufferAdapter.LongBufferAdapater(buffer)
   }
 
   abstract class FloatBufferFactory extends BufferFactory {
-    type BufferType = FloatBuffer
+    type BufferType  = FloatBuffer
     type ElementType = Float
 
     implicit val elemClassTag: ClassTag[ElementType] = ClassTag.Float
@@ -142,12 +150,13 @@ object BufferFactory {
       elem: java.lang.Float
 
     implicit def bufferAdapter(
-        buffer: BufferType): BufferAdapter[BufferType, ElementType] =
+        buffer: BufferType
+    ): BufferAdapter[BufferType, ElementType] =
       new BufferAdapter.FloatBufferAdapater(buffer)
   }
 
   abstract class DoubleBufferFactory extends BufferFactory {
-    type BufferType = DoubleBuffer
+    type BufferType  = DoubleBuffer
     type ElementType = Double
 
     implicit val elemClassTag: ClassTag[ElementType] = ClassTag.Double
@@ -158,7 +167,8 @@ object BufferFactory {
       elem: java.lang.Double
 
     implicit def bufferAdapter(
-        buffer: BufferType): BufferAdapter[BufferType, ElementType] =
+        buffer: BufferType
+    ): BufferAdapter[BufferType, ElementType] =
       new BufferAdapter.DoubleBufferAdapater(buffer)
   }
 
@@ -166,7 +176,10 @@ object BufferFactory {
     protected def baseWrap(array: Array[ElementType]): BufferType
 
     protected def baseWrap(
-        array: Array[ElementType], offset: Int, length: Int): BufferType
+        array: Array[ElementType],
+        offset: Int,
+        length: Int
+    ): BufferType
 
     def allocBuffer(capacity: Int): BufferType =
       baseWrap(new Array[ElementType](capacity))
@@ -174,20 +187,26 @@ object BufferFactory {
     override def allocBuffer(pos: Int, limit: Int, capacity: Int): BufferType =
       baseWrap(new Array[ElementType](capacity), pos, limit - pos)
 
-    override def withContent(pos: Int,
-                             limit: Int,
-                             capacity: Int,
-                             content: ElementType*): BufferType = {
+    override def withContent(
+        pos: Int,
+        limit: Int,
+        capacity: Int,
+        content: ElementType*
+    ): BufferType = {
       val after = capacity - (pos + content.size)
       val fullContent = (Seq.fill(pos)(elemFromInt(0)) ++ content ++ Seq.fill(
-              after)(elemFromInt(0))).toArray
+        after
+      )(elemFromInt(0))).toArray
       baseWrap(fullContent, pos, limit - pos)
     }
   }
 
   trait WrappedTypedArrayBufferFactory extends WrappedBufferFactory {
     protected def baseWrap(
-        array: Array[ElementType], offset: Int, length: Int): BufferType = {
+        array: Array[ElementType],
+        offset: Int,
+        length: Int
+    ): BufferType = {
       val buf = baseWrap(array)
       buf.limit(offset + length).position(offset)
       buf
@@ -203,10 +222,12 @@ object BufferFactory {
     override def allocBuffer(pos: Int, limit: Int, capacity: Int): BufferType =
       super.allocBuffer(pos, limit, capacity).asReadOnlyBuffer()
 
-    override def withContent(pos: Int,
-                             limit: Int,
-                             capacity: Int,
-                             content: ElementType*): BufferType =
+    override def withContent(
+        pos: Int,
+        limit: Int,
+        capacity: Int,
+        content: ElementType*
+    ): BufferType =
       super.withContent(pos, limit, capacity, content: _*).asReadOnlyBuffer()
   }
 
@@ -219,10 +240,12 @@ object BufferFactory {
       buf.slice()
     }
 
-    override def withContent(pos: Int,
-                             limit: Int,
-                             capacity: Int,
-                             content: ElementType*): BufferType = {
+    override def withContent(
+        pos: Int,
+        limit: Int,
+        capacity: Int,
+        content: ElementType*
+    ): BufferType = {
       if (!(0 <= pos && pos <= limit && limit <= capacity))
         throw new IllegalArgumentException
       val buf = super.allocBuffer(capacity + 25)
@@ -243,16 +266,22 @@ object BufferFactory {
     def allocBuffer(capacity: Int): BufferType =
       baseAllocBuffer(capacity)
 
-    override def allocBuffer(pos: Int, limit: Int, capacity: Int): BufferType = {
+    override def allocBuffer(
+        pos: Int,
+        limit: Int,
+        capacity: Int
+    ): BufferType = {
       val buf = baseAllocBuffer(capacity)
       buf.limit(limit).position(pos)
       buf
     }
 
-    override def withContent(pos: Int,
-                             limit: Int,
-                             capacity: Int,
-                             content: ElementType*): BufferType = {
+    override def withContent(
+        pos: Int,
+        limit: Int,
+        capacity: Int,
+        content: ElementType*
+    ): BufferType = {
       val buf = baseAllocBuffer(capacity)
       buf.limit(limit).position(pos)
       buf.put(content.toArray)

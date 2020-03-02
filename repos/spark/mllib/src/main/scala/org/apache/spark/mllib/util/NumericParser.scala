@@ -51,9 +51,9 @@ private[mllib] object NumericParser {
   }
 
   private def parseArray(tokenizer: StringTokenizer): Array[Double] = {
-    val values = ArrayBuilder.make[Double]
-    var parsing = true
-    var allowComma = false
+    val values        = ArrayBuilder.make[Double]
+    var parsing       = true
+    var allowComma    = false
     var token: String = null
     while (parsing && tokenizer.hasMoreTokens()) {
       token = tokenizer.nextToken()
@@ -78,9 +78,9 @@ private[mllib] object NumericParser {
   }
 
   private def parseTuple(tokenizer: StringTokenizer): Seq[_] = {
-    val items = ListBuffer.empty[Any]
-    var parsing = true
-    var allowComma = false
+    val items         = ListBuffer.empty[Any]
+    var parsing       = true
+    var allowComma    = false
     var token: String = null
     while (parsing && tokenizer.hasMoreTokens()) {
       token = tokenizer.nextToken()

@@ -50,7 +50,7 @@ package java.math
   */
 private[math] object Elementary {
 
-  private final val UINT_MAX = 0xffffffffL
+  private final val UINT_MAX = 0xFFFFFFFFL
 
   /** Adds two {@link BigInteger}.
     *
@@ -62,20 +62,20 @@ private[math] object Elementary {
   def add(op1: BigInteger, op2: BigInteger): BigInteger = {
     // scalastyle:off return
     var resDigits: Array[Int] = null
-    var resSign: Int = 0
-    val op1Sign = op1.sign
-    val op2Sign = op2.sign
-    val op1Len: Int = op1.numberLength
-    val op2Len: Int = op2.numberLength
+    var resSign: Int          = 0
+    val op1Sign               = op1.sign
+    val op2Sign               = op2.sign
+    val op1Len: Int           = op1.numberLength
+    val op2Len: Int           = op2.numberLength
 
     if (op1Sign == 0) {
       op2
     } else if (op2Sign == 0) {
       op1
     } else if (op1Len + op2Len == 2) {
-      val a: Long = op1.digits(0) & UINT_MAX
-      val b: Long = op2.digits(0) & UINT_MAX
-      var res: Long = 0L
+      val a: Long      = op1.digits(0) & UINT_MAX
+      val b: Long      = op2.digits(0) & UINT_MAX
+      var res: Long    = 0L
       var valueLo: Int = 0
       var valueHi: Int = 0
       if (op1Sign == op2Sign) {
@@ -120,7 +120,7 @@ private[math] object Elementary {
 
   def compareArrays(a: Array[Int], b: Array[Int], size: Int): Int = {
     var i: Int = size - 1
-    while ( (i >= 0) && (a(i) == b(i))) {
+    while ((i >= 0) && (a(i) == b(i))) {
       i -= 1
     }
     if (i < 0) BigInteger.EQUALS
@@ -143,26 +143,36 @@ private[math] object Elementary {
     } else if (op2.sign == 0) {
       return
     } else if (op1.sign == op2.sign) {
-      add(op1.digits,
+      add(
+        op1.digits,
+        op1.digits,
+        op1.numberLength,
+        op2.digits,
+        op2.numberLength
+      )
+    } else {
+      val sign = unsignedArraysCompare(
+        op1.digits,
+        op2.digits,
+        op1.numberLength,
+        op2.numberLength
+      )
+      if (sign > 0) {
+        subtract(
+          op1.digits,
           op1.digits,
           op1.numberLength,
           op2.digits,
-          op2.numberLength)
-    } else {
-      val sign = unsignedArraysCompare(
-          op1.digits, op2.digits, op1.numberLength, op2.numberLength)
-      if (sign > 0) {
-        subtract(op1.digits,
-                 op1.digits,
-                 op1.numberLength,
-                 op2.digits,
-                 op2.numberLength)
+          op2.numberLength
+        )
       } else {
-        inverseSubtract(op1.digits,
-                        op1.digits,
-                        op1.numberLength,
-                        op2.digits,
-                        op2.numberLength)
+        inverseSubtract(
+          op1.digits,
+          op1.digits,
+          op1.numberLength,
+          op2.digits,
+          op2.numberLength
+        )
         op1.sign = -op1.sign
       }
     }
@@ -186,27 +196,37 @@ private[math] object Elementary {
       System.arraycopy(op2.digits, 0, op1.digits, 0, op2.numberLength)
       op1.sign = -op2.sign
     } else if (op1.sign != op2.sign) {
-      add(op1.digits,
-          op1.digits,
-          op1.numberLength,
-          op2.digits,
-          op2.numberLength)
+      add(
+        op1.digits,
+        op1.digits,
+        op1.numberLength,
+        op2.digits,
+        op2.numberLength
+      )
       op1.sign = resultSign
     } else {
       val sign = unsignedArraysCompare(
-          op1.digits, op2.digits, op1.numberLength, op2.numberLength)
+        op1.digits,
+        op2.digits,
+        op1.numberLength,
+        op2.numberLength
+      )
       if (sign > 0) {
-        subtract(op1.digits,
-                 op1.digits,
-                 op1.numberLength,
-                 op2.digits,
-                 op2.numberLength)
+        subtract(
+          op1.digits,
+          op1.digits,
+          op1.numberLength,
+          op2.digits,
+          op2.numberLength
+        )
       } else {
-        inverseSubtract(op1.digits,
-                        op1.digits,
-                        op1.numberLength,
-                        op2.digits,
-                        op2.numberLength)
+        inverseSubtract(
+          op1.digits,
+          op1.digits,
+          op1.numberLength,
+          op2.digits,
+          op2.numberLength
+        )
         op1.sign = -op1.sign
       }
     }
@@ -227,7 +247,9 @@ private[math] object Elementary {
   def inplaceAdd(op1: BigInteger, op2: BigInteger): Unit = {
     add(op1.digits, op1.digits, op1.numberLength, op2.digits, op2.numberLength)
     op1.numberLength = Math.min(
-        Math.max(op1.numberLength, op2.numberLength) + 1, op1.digits.length)
+      Math.max(op1.numberLength, op2.numberLength) + 1,
+      op1.digits.length
+    )
     op1.cutOffLeadingZeroes()
     op1.unCache()
   }
@@ -251,7 +273,7 @@ private[math] object Elementary {
     */
   def inplaceAdd(a: Array[Int], aSize: Int, addend: Int): Int = {
     var carry: Long = addend & UINT_MAX
-    var i = 0
+    var i           = 0
     while (carry != 0 && i < aSize) {
       carry += (a(i) & UINT_MAX)
       a(i) = carry.toInt
@@ -272,7 +294,12 @@ private[math] object Elementary {
     */
   def inplaceSubtract(op1: BigInteger, op2: BigInteger): Unit = {
     subtract(
-        op1.digits, op1.digits, op1.numberLength, op2.digits, op2.numberLength)
+      op1.digits,
+      op1.digits,
+      op1.numberLength,
+      op2.digits,
+      op2.numberLength
+    )
     op1.cutOffLeadingZeroes()
     op1.unCache()
   }
@@ -286,12 +313,12 @@ private[math] object Elementary {
     */
   def subtract(op1: BigInteger, op2: BigInteger): BigInteger = {
     // scalastyle:off return
-    var resSign = 0
+    var resSign               = 0
     var resDigits: Array[Int] = null
-    val op1Sign = op1.sign
-    val op2Sign = op2.sign
-    val op1Len = op1.numberLength
-    val op2Len = op2.numberLength
+    val op1Sign               = op1.sign
+    val op2Sign               = op2.sign
+    val op1Len                = op1.numberLength
+    val op2Len                = op2.numberLength
 
     if (op2Sign == 0) {
       op1
@@ -346,19 +373,25 @@ private[math] object Elementary {
     *  @return {@code a + b}
     */
   private def add(
-      a: Array[Int], aSize: Int, b: Array[Int], bSize: Int): Array[Int] = {
+      a: Array[Int],
+      aSize: Int,
+      b: Array[Int],
+      bSize: Int
+  ): Array[Int] = {
     val res = new Array[Int](aSize + 1)
     add(res, a, aSize, b, bSize)
     res
   }
 
   /** Performs {@code res = a + b}. */
-  private def add(res: Array[Int],
-                  a: Array[Int],
-                  aSize: Int,
-                  b: Array[Int],
-                  bSize: Int): Unit = {
-    var i: Int = 1
+  private def add(
+      res: Array[Int],
+      a: Array[Int],
+      aSize: Int,
+      b: Array[Int],
+      bSize: Int
+  ): Unit = {
+    var i: Int      = 1
     var carry: Long = (a(0) & UINT_MAX) + (b(0) & UINT_MAX)
     res(0) = carry.toInt
     carry >>= 32
@@ -393,12 +426,14 @@ private[math] object Elementary {
   }
 
   /** Performs {@code res = b - a}. */
-  private def inverseSubtract(res: Array[Int],
-                              a: Array[Int],
-                              aSize: Int,
-                              b: Array[Int],
-                              bSize: Int): Unit = {
-    var i: Int = 0
+  private def inverseSubtract(
+      res: Array[Int],
+      a: Array[Int],
+      aSize: Int,
+      b: Array[Int],
+      bSize: Int
+  ): Unit = {
+    var i: Int       = 0
     var borrow: Long = 0
     if (aSize < bSize) {
       while (i < aSize) {
@@ -436,7 +471,11 @@ private[math] object Elementary {
     *  @return {@code a - b}
     */
   private def subtract(
-      a: Array[Int], aSize: Int, b: Array[Int], bSize: Int): Array[Int] = {
+      a: Array[Int],
+      aSize: Int,
+      b: Array[Int],
+      bSize: Int
+  ): Array[Int] = {
     val res = new Array[Int](aSize)
     subtract(res, a, aSize, b, bSize)
     res
@@ -446,12 +485,14 @@ private[math] object Elementary {
     *
     *  It is assumed the magnitude of a is not less than the magnitude of b.
     */
-  private def subtract(res: Array[Int],
-                       a: Array[Int],
-                       aSize: Int,
-                       b: Array[Int],
-                       bSize: Int): Unit = {
-    var i: Int = 0
+  private def subtract(
+      res: Array[Int],
+      a: Array[Int],
+      aSize: Int,
+      b: Array[Int],
+      bSize: Int
+  ): Unit = {
+    var i: Int       = 0
     var borrow: Long = 0
     while (i < bSize) {
       borrow += (a(i) & UINT_MAX) - (b(i) & UINT_MAX)
@@ -473,7 +514,11 @@ private[math] object Elementary {
     *  Returns +1,0,-1 if a is - respective - greater, equal or lesser then b
     */
   private def unsignedArraysCompare(
-      a: Array[Int], b: Array[Int], aSize: Int, bSize: Int): Int = {
+      a: Array[Int],
+      b: Array[Int],
+      aSize: Int,
+      bSize: Int
+  ): Int = {
     if (aSize > bSize) {
       1
     } else if (aSize < bSize) {

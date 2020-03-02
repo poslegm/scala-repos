@@ -24,10 +24,10 @@ import breeze.stats.distributions.Rand
   */
 object QpGenerator {
   def getGram(nGram: Int) = {
-    val hrand = DenseMatrix.rand[Double](nGram, nGram, Rand.gaussian(0, 1))
-    val hrandt = hrand.t
+    val hrand   = DenseMatrix.rand[Double](nGram, nGram, Rand.gaussian(0, 1))
+    val hrandt  = hrand.t
     val hposdef = hrandt * hrand
-    val H = hposdef.t + hposdef
+    val H       = hposdef.t + hposdef
     H
   }
 

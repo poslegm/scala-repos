@@ -15,17 +15,18 @@ import scala.collection.Set
   * This class mark processor that only implicit object important among all PsiClasses
   */
 abstract class ImplicitProcessor(kinds: Set[Value], withoutPrecedence: Boolean)
-    extends BaseProcessor(kinds) with PrecedenceHelper[String] {
+    extends BaseProcessor(kinds)
+    with PrecedenceHelper[String] {
   protected val precedence: util.HashMap[String, Int] =
     new util.HashMap[String, Int]()
-  protected val levelMap: util.HashMap[
-      String, util.HashSet[ScalaResolveResult]] =
+  protected val levelMap
+      : util.HashMap[String, util.HashSet[ScalaResolveResult]] =
     new util.HashMap[String, util.HashSet[ScalaResolveResult]]()
 
   protected def getQualifiedName(result: ScalaResolveResult): String = {
     result.isRenamed match {
       case Some(str) => str
-      case None => result.name
+      case None      => result.name
     }
   }
 
@@ -41,9 +42,10 @@ abstract class ImplicitProcessor(kinds: Set[Value], withoutPrecedence: Boolean)
   }
 
   override protected def getLevelSet(
-      result: ScalaResolveResult): util.HashSet[ScalaResolveResult] = {
+      result: ScalaResolveResult
+  ): util.HashSet[ScalaResolveResult] = {
     val qualifiedName = getQualifiedName(result)
-    var levelSet = levelMap.get(qualifiedName)
+    var levelSet      = levelMap.get(qualifiedName)
     if (levelSet == null) {
       levelSet = new util.HashSet[ScalaResolveResult]
       levelMap.put(qualifiedName, levelSet)
@@ -52,7 +54,8 @@ abstract class ImplicitProcessor(kinds: Set[Value], withoutPrecedence: Boolean)
   }
 
   override protected def addResults(
-      results: Seq[ScalaResolveResult]): Boolean = {
+      results: Seq[ScalaResolveResult]
+  ): Boolean = {
     if (withoutPrecedence) {
       candidatesSet ++= results
       true
@@ -75,7 +78,7 @@ abstract class ImplicitProcessor(kinds: Set[Value], withoutPrecedence: Boolean)
   }
 
   override def candidatesS: Set[ScalaResolveResult] = {
-    val res = candidatesSet
+    val res      = candidatesSet
     val iterator = levelMap.values().iterator()
     while (iterator.hasNext) {
       val setIterator = iterator.next().iterator()
@@ -87,7 +90,9 @@ abstract class ImplicitProcessor(kinds: Set[Value], withoutPrecedence: Boolean)
   }
 
   override protected def filterNot(
-      p: ScalaResolveResult, n: ScalaResolveResult): Boolean = {
+      p: ScalaResolveResult,
+      n: ScalaResolveResult
+  ): Boolean = {
     getQualifiedName(p) == getQualifiedName(n) && super.filterNot(p, n)
   }
 

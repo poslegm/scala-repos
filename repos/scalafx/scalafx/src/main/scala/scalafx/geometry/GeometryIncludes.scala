@@ -48,7 +48,8 @@ trait GeometryIncludes {
     * @return ScalaFX Bounds
     */
   implicit def jfxBounds2sfx(b: jfxg.Bounds): Bounds =
-    if (b != null) new Bounds(b) {} else null
+    if (b != null) new Bounds(b) {}
+    else null
 
   /**
     * Converts a
@@ -81,7 +82,8 @@ trait GeometryIncludes {
     * @return ScalaFX HorizontalDirection
     */
   implicit def jfxHorizontalDirection2sfx(
-      h: jfxg.HorizontalDirection): HorizontalDirection =
+      h: jfxg.HorizontalDirection
+  ): HorizontalDirection =
     HorizontalDirection.jfxEnum2sfx(h)
 
   /**
@@ -114,7 +116,8 @@ trait GeometryIncludes {
     * @return ScalaFX NodeOrientation
     */
   implicit def jfxNodeOrientation2sfx(
-      e: jfxg.NodeOrientation): NodeOrientation =
+      e: jfxg.NodeOrientation
+  ): NodeOrientation =
     NodeOrientation.jfxEnum2sfx(e)
 
   /**
@@ -190,7 +193,8 @@ trait GeometryIncludes {
     * @return ScalaFX VerticalDirection
     */
   implicit def jfxVerticalDirection2sfx(
-      h: jfxg.VerticalDirection): VerticalDirection =
+      h: jfxg.VerticalDirection
+  ): VerticalDirection =
     VerticalDirection.jfxEnum2sfx(h)
 
   /**

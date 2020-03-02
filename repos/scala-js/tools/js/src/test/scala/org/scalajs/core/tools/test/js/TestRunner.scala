@@ -16,20 +16,24 @@ object TestRunner {
   @JSExport
   def runTests(): Unit = {
     val framework = new JasmineFramework()
-    val runner = framework.runner(Array("-ttypedarray"),
-                                  Array(),
-                                  new ScalaJSClassLoader(js.Dynamic.global))
+    val runner = framework.runner(
+      Array("-ttypedarray"),
+      Array(),
+      new ScalaJSClassLoader(js.Dynamic.global)
+    )
 
     val tasks = runner.tasks(taskDefs(framework.fingerprints.head).toArray)
 
     val eventHandler = new SimpleEventHandler
-    val loggers = Array[Logger](new SimpleLogger)
+    val loggers      = Array[Logger](new SimpleLogger)
 
     def taskLoop(tasks: Iterable[Task]): Unit = {
       if (tasks.nonEmpty)
-        tasks.head.execute(eventHandler,
-                           loggers,
-                           newTasks => taskLoop(tasks.tail ++ newTasks))
+        tasks.head.execute(
+          eventHandler,
+          loggers,
+          newTasks => taskLoop(tasks.tail ++ newTasks)
+        )
       else if (eventHandler.hasFailed) sys.error("Some tests have failed")
     }
 
@@ -54,10 +58,10 @@ object TestRunner {
 
   private class SimpleLogger extends Logger {
     def ansiCodesSupported(): Boolean = false
-    def error(msg: String): Unit = println(msg)
-    def warn(msg: String): Unit = println(msg)
-    def info(msg: String): Unit = println(msg)
-    def debug(msg: String): Unit = println(msg)
-    def trace(t: Throwable): Unit = t.printStackTrace
+    def error(msg: String): Unit      = println(msg)
+    def warn(msg: String): Unit       = println(msg)
+    def info(msg: String): Unit       = println(msg)
+    def debug(msg: String): Unit      = println(msg)
+    def trace(t: Throwable): Unit     = t.printStackTrace
   }
 }

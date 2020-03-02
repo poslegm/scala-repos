@@ -27,12 +27,13 @@ class DataFrameJoinSuite extends QueryTest with SharedSQLContext {
   import testImplicits._
 
   test("join - join using") {
-    val df = Seq(1, 2, 3).map(i => (i, i.toString)).toDF("int", "str")
+    val df  = Seq(1, 2, 3).map(i => (i, i.toString)).toDF("int", "str")
     val df2 = Seq(1, 2, 3).map(i => (i, (i + 1).toString)).toDF("int", "str")
 
     checkAnswer(
-        df.join(df2, "int"),
-        Row(1, "1", "2") :: Row(2, "2", "3") :: Row(3, "3", "4") :: Nil)
+      df.join(df2, "int"),
+      Row(1, "1", "2") :: Row(2, "2", "3") :: Row(3, "3", "4") :: Nil
+    )
   }
 
   test("join - join using multiple columns") {
@@ -42,11 +43,10 @@ class DataFrameJoinSuite extends QueryTest with SharedSQLContext {
       .map(i => (i, i + 1, (i + 1).toString))
       .toDF("int", "int2", "str")
 
-    checkAnswer(df.join(df2, Seq("int", "int2")),
-                Row(1, 2, "1", "2") :: Row(2, 3, "2", "3") :: Row(3,
-                                                                  4,
-                                                                  "3",
-                                                                  "4") :: Nil)
+    checkAnswer(
+      df.join(df2, Seq("int", "int2")),
+      Row(1, 2, "1", "2") :: Row(2, 3, "2", "3") :: Row(3, 4, "3", "4") :: Nil
+    )
   }
 
   test("join - sorted columns not in join's outputSet") {
@@ -55,39 +55,50 @@ class DataFrameJoinSuite extends QueryTest with SharedSQLContext {
     val df2 = Seq((1, 3, "1"), (5, 6, "5")).toDF("int", "int2", "str").as('df2)
     val df3 = Seq((1, 3, "1"), (5, 6, "5")).toDF("int", "int2", "str").as('df3)
 
-    checkAnswer(df.join(df2, $"df1.int" === $"df2.int", "outer")
-                  .select($"df1.int", $"df2.int2")
-                  .orderBy('str_sort.asc, 'str.asc),
-                Row(null, 6) :: Row(1, 3) :: Row(3, null) :: Nil)
+    checkAnswer(
+      df.join(df2, $"df1.int" === $"df2.int", "outer")
+        .select($"df1.int", $"df2.int2")
+        .orderBy('str_sort.asc, 'str.asc),
+      Row(null, 6) :: Row(1, 3) :: Row(3, null) :: Nil
+    )
 
-    checkAnswer(df2
-                  .join(df3, $"df2.int" === $"df3.int", "inner")
-                  .select($"df2.int", $"df3.int")
-                  .orderBy($"df2.str".desc),
-                Row(5, 5) :: Row(1, 1) :: Nil)
+    checkAnswer(
+      df2
+        .join(df3, $"df2.int" === $"df3.int", "inner")
+        .select($"df2.int", $"df3.int")
+        .orderBy($"df2.str".desc),
+      Row(5, 5) :: Row(1, 1) :: Nil
+    )
   }
 
   test("join - join using multiple columns and specifying join type") {
-    val df = Seq((1, 2, "1"), (3, 4, "3")).toDF("int", "int2", "str")
+    val df  = Seq((1, 2, "1"), (3, 4, "3")).toDF("int", "int2", "str")
     val df2 = Seq((1, 3, "1"), (5, 6, "5")).toDF("int", "int2", "str")
 
     checkAnswer(
-        df.join(df2, Seq("int", "str"), "inner"), Row(1, "1", 2, 3) :: Nil)
-
-    checkAnswer(df.join(df2, Seq("int", "str"), "left"),
-                Row(1, "1", 2, 3) :: Row(3, "3", 4, null) :: Nil)
-
-    checkAnswer(df.join(df2, Seq("int", "str"), "right"),
-                Row(1, "1", 2, 3) :: Row(5, "5", null, 6) :: Nil)
-
-    checkAnswer(df.join(df2, Seq("int", "str"), "outer"),
-                Row(1, "1", 2, 3) :: Row(3, "3", 4, null) :: Row(5,
-                                                                 "5",
-                                                                 null,
-                                                                 6) :: Nil)
+      df.join(df2, Seq("int", "str"), "inner"),
+      Row(1, "1", 2, 3) :: Nil
+    )
 
     checkAnswer(
-        df.join(df2, Seq("int", "str"), "left_semi"), Row(1, "1", 2) :: Nil)
+      df.join(df2, Seq("int", "str"), "left"),
+      Row(1, "1", 2, 3) :: Row(3, "3", 4, null) :: Nil
+    )
+
+    checkAnswer(
+      df.join(df2, Seq("int", "str"), "right"),
+      Row(1, "1", 2, 3) :: Row(5, "5", null, 6) :: Nil
+    )
+
+    checkAnswer(
+      df.join(df2, Seq("int", "str"), "outer"),
+      Row(1, "1", 2, 3) :: Row(3, "3", 4, null) :: Row(5, "5", null, 6) :: Nil
+    )
+
+    checkAnswer(
+      df.join(df2, Seq("int", "str"), "left_semi"),
+      Row(1, "1", 2) :: Nil
+    )
   }
 
   test("join - join using self join") {
@@ -95,8 +106,9 @@ class DataFrameJoinSuite extends QueryTest with SharedSQLContext {
 
     // self join
     checkAnswer(
-        df.join(df, "int"),
-        Row(1, "1", "1") :: Row(2, "2", "2") :: Row(3, "3", "3") :: Nil)
+      df.join(df, "int"),
+      Row(1, "1", "1") :: Row(2, "2", "2") :: Row(3, "3", "3") :: Nil
+    )
   }
 
   test("join - self join") {
@@ -104,42 +116,56 @@ class DataFrameJoinSuite extends QueryTest with SharedSQLContext {
     val df2 = testData.select(testData("key")).as('df2)
 
     checkAnswer(
-        df1.join(df2, $"df1.key" === $"df2.key"),
-        sql("SELECT a.key, b.key FROM testData a JOIN testData b ON a.key = b.key")
-          .collect()
-          .toSeq)
+      df1.join(df2, $"df1.key" === $"df2.key"),
+      sql(
+        "SELECT a.key, b.key FROM testData a JOIN testData b ON a.key = b.key"
+      ).collect()
+        .toSeq
+    )
   }
 
   test("join - using aliases after self join") {
     val df = Seq(1, 2, 3).map(i => (i, i.toString)).toDF("int", "str")
-    checkAnswer(df.as('x)
-                  .join(df.as('y), $"x.str" === $"y.str")
-                  .groupBy("x.str")
-                  .count(),
-                Row("1", 1) :: Row("2", 1) :: Row("3", 1) :: Nil)
+    checkAnswer(
+      df.as('x)
+        .join(df.as('y), $"x.str" === $"y.str")
+        .groupBy("x.str")
+        .count(),
+      Row("1", 1) :: Row("2", 1) :: Row("3", 1) :: Nil
+    )
 
-    checkAnswer(df.as('x)
-                  .join(df.as('y), $"x.str" === $"y.str")
-                  .groupBy("y.str")
-                  .count(),
-                Row("1", 1) :: Row("2", 1) :: Row("3", 1) :: Nil)
+    checkAnswer(
+      df.as('x)
+        .join(df.as('y), $"x.str" === $"y.str")
+        .groupBy("y.str")
+        .count(),
+      Row("1", 1) :: Row("2", 1) :: Row("3", 1) :: Nil
+    )
   }
 
   test("[SPARK-6231] join - self join auto resolve ambiguity") {
     val df = Seq((1, "1"), (2, "2")).toDF("key", "value")
-    checkAnswer(df.join(df, df("key") === df("key")),
-                Row(1, "1", 1, "1") :: Row(2, "2", 2, "2") :: Nil)
+    checkAnswer(
+      df.join(df, df("key") === df("key")),
+      Row(1, "1", 1, "1") :: Row(2, "2", 2, "2") :: Nil
+    )
 
-    checkAnswer(df.join(df.filter($"value" === "2"), df("key") === df("key")),
-                Row(2, "2", 2, "2") :: Nil)
+    checkAnswer(
+      df.join(df.filter($"value" === "2"), df("key") === df("key")),
+      Row(2, "2", 2, "2") :: Nil
+    )
 
-    checkAnswer(df.join(df, df("key") === df("key") && df("value") === 1),
-                Row(1, "1", 1, "1") :: Nil)
+    checkAnswer(
+      df.join(df, df("key") === df("key") && df("value") === 1),
+      Row(1, "1", 1, "1") :: Nil
+    )
 
-    val left = df.groupBy("key").agg(count("*"))
+    val left  = df.groupBy("key").agg(count("*"))
     val right = df.groupBy("key").agg(sum("key"))
-    checkAnswer(left.join(right, left("key") === right("key")),
-                Row(1, 1, 1, 1) :: Row(2, 1, 2, 2) :: Nil)
+    checkAnswer(
+      left.join(right, left("key") === right("key")),
+      Row(1, 1, 1, 1) :: Row(2, 1, 2, 2) :: Nil
+    )
   }
 
   test("broadcast join hint") {
@@ -166,7 +192,7 @@ class DataFrameJoinSuite extends QueryTest with SharedSQLContext {
   }
 
   test("join - outer join conversion") {
-    val df = Seq((1, 2, "1"), (3, 4, "3")).toDF("int", "int2", "str").as("a")
+    val df  = Seq((1, 2, "1"), (3, 4, "3")).toDF("int", "int2", "str").as("a")
     val df2 = Seq((1, 3, "1"), (5, 6, "5")).toDF("int", "int2", "str").as("b")
 
     // outer -> left

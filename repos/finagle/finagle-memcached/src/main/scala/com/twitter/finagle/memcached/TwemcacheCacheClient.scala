@@ -47,11 +47,13 @@ trait TwemcacheClient extends Client {
   def upsert(key: String, value: Buf, version: Buf): Future[JBoolean] =
     upsert(key, 0, Time.epoch, value, version)
 
-  def upsert(key: String,
-             flags: Int,
-             expiry: Time,
-             value: Buf,
-             version: Buf): Future[JBoolean]
+  def upsert(
+      key: String,
+      flags: Int,
+      expiry: Time,
+      value: Buf,
+      version: Buf
+  ): Future[JBoolean]
 }
 
 /**
@@ -72,17 +74,19 @@ trait TwemcacheConnectedClient extends TwemcacheClient {
     }
   }
 
-  def upsert(key: String,
-             flags: Int,
-             expiry: Time,
-             value: Buf,
-             version: Buf): Future[JBoolean] = {
+  def upsert(
+      key: String,
+      flags: Int,
+      expiry: Time,
+      value: Buf,
+      version: Buf
+  ): Future[JBoolean] = {
     try {
       service(Upsert(Buf.Utf8(key), flags, expiry, value, version)).map {
         case Stored() => true
         case Exists() => false
         case Error(e) => throw e
-        case _ => throw new IllegalStateException
+        case _        => throw new IllegalStateException
       }
     } catch {
       case t: IllegalArgumentException =>
@@ -126,10 +130,11 @@ trait TwemcachePartitionedClient extends TwemcacheClient {
   def upsert(key: String, flags: Int, expiry: Time, value: Buf, version: Buf) =
     twemcacheClientOf(key).upsert(key, flags, expiry, value, version)
 
-  private[this] def withKeysGroupedByClient[A](keys: Iterable[String])(
-      f: (TwemcacheClient, Iterable[String]) => Future[A]): Future[Seq[A]] = {
+  private[this] def withKeysGroupedByClient[A](
+      keys: Iterable[String]
+  )(f: (TwemcacheClient, Iterable[String]) => Future[A]): Future[Seq[A]] = {
     Future.collect(
-        keys.groupBy(twemcacheClientOf).map(Function.tupled(f)).toSeq
+      keys.groupBy(twemcacheClientOf).map(Function.tupled(f)).toSeq
     )
   }
 }

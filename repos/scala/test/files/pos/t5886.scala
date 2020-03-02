@@ -1,6 +1,6 @@
 object A {
-  def f0[T](x: T): T = x
-  def f1[T](x: => T): T = x
+  def f0[T](x: T): T       = x
+  def f1[T](x: => T): T    = x
   def f2[T](x: () => T): T = x()
 
   f0(this.getClass) // ok

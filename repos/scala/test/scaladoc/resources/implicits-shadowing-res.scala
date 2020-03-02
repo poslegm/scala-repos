@@ -27,17 +27,17 @@ import language.implicitConversions // according to SIP18
 
 /** conv5, conv8, conv9, conv10, conv11 should be visible */
 class A[T] {
-  def conv1: AnyRef = ???
-  def conv2: T = ???
-  def conv3(l: Int): AnyRef = ???
-  def conv4(l: AnyRef): AnyRef = ???
-  def conv5(l: String): AnyRef = ???
-  def conv6(l: AnyRef): AnyRef = ???
-  def conv7(l: AnyRef): String = ???
+  def conv1: AnyRef                       = ???
+  def conv2: T                            = ???
+  def conv3(l: Int): AnyRef               = ???
+  def conv4(l: AnyRef): AnyRef            = ???
+  def conv5(l: String): AnyRef            = ???
+  def conv6(l: AnyRef): AnyRef            = ???
+  def conv7(l: AnyRef): String            = ???
   def conv8(l: String)(m: String): AnyRef = ???
   def conv9(l: AnyRef)(m: AnyRef): AnyRef = ???
-  def conv10(l: T): T = ???
-  def conv11(l: T): T = ???
+  def conv10(l: T): T                     = ???
+  def conv11(l: T): T                     = ???
 }
 
 /** conv5, conv8, conv9, conv11 should be visible */
@@ -50,17 +50,17 @@ class C extends A[Double]
 class D extends A[AnyRef]
 
 class Z[T] {
-  def conv1: AnyRef = ???
-  def conv2: T = ???
-  def conv3(p: Int): AnyRef = ???
-  def conv4(p: String): AnyRef = ???
-  def conv5(p: AnyRef): AnyRef = ???
-  def conv6(p: AnyRef): String = ???
-  def conv7(p: AnyRef): AnyRef = ???
+  def conv1: AnyRef                       = ???
+  def conv2: T                            = ???
+  def conv3(p: Int): AnyRef               = ???
+  def conv4(p: String): AnyRef            = ???
+  def conv5(p: AnyRef): AnyRef            = ???
+  def conv6(p: AnyRef): String            = ???
+  def conv7(p: AnyRef): AnyRef            = ???
   def conv8(p: String, q: String): AnyRef = ???
   def conv9(p: AnyRef, q: AnyRef): AnyRef = ???
-  def conv10(p: Int): T = ???
-  def conv11(p: String): T = ???
+  def conv10(p: Int): T                   = ???
+  def conv11(p: String): T                = ???
 }
 object A {
   implicit def AtoZ[T](a: A[T]) = new Z[T]

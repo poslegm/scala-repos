@@ -24,17 +24,18 @@ package org.apache.spark.scheduler
   * from multiple applications are seen, the behavior is unspecified.
   */
 private[spark] class ApplicationEventListener extends SparkListener {
-  var appName: Option[String] = None
-  var appId: Option[String] = None
+  var appName: Option[String]      = None
+  var appId: Option[String]        = None
   var appAttemptId: Option[String] = None
-  var sparkUser: Option[String] = None
-  var startTime: Option[Long] = None
-  var endTime: Option[Long] = None
-  var viewAcls: Option[String] = None
-  var adminAcls: Option[String] = None
+  var sparkUser: Option[String]    = None
+  var startTime: Option[Long]      = None
+  var endTime: Option[Long]        = None
+  var viewAcls: Option[String]     = None
+  var adminAcls: Option[String]    = None
 
   override def onApplicationStart(
-      applicationStart: SparkListenerApplicationStart) {
+      applicationStart: SparkListenerApplicationStart
+  ) {
     appName = Some(applicationStart.appName)
     appId = applicationStart.appId
     appAttemptId = applicationStart.appAttemptId
@@ -47,10 +48,11 @@ private[spark] class ApplicationEventListener extends SparkListener {
   }
 
   override def onEnvironmentUpdate(
-      environmentUpdate: SparkListenerEnvironmentUpdate) {
+      environmentUpdate: SparkListenerEnvironmentUpdate
+  ) {
     synchronized {
       val environmentDetails = environmentUpdate.environmentDetails
-      val allProperties = environmentDetails("Spark Properties").toMap
+      val allProperties      = environmentDetails("Spark Properties").toMap
       viewAcls = allProperties.get("spark.ui.view.acls")
       adminAcls = allProperties.get("spark.admin.acls")
     }

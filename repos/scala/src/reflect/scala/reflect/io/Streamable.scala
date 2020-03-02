@@ -37,7 +37,7 @@ object Streamable {
     def inputStream(): InputStream
     def length: Long = -1
 
-    def bufferedInput() = new BufferedInputStream(inputStream())
+    def bufferedInput()         = new BufferedInputStream(inputStream())
     def bytes(): Iterator[Byte] = bytesAsInts() map (_.toByte)
     def bytesAsInts(): Iterator[Int] = {
       val in = bufferedInput()
@@ -51,10 +51,10 @@ object Streamable {
       // if we don't know the length, fall back on relative inefficiency
       if (length == -1L) return (new ArrayBuffer[Byte]() ++= bytes()).toArray
 
-      val arr = new Array[Byte](length.toInt)
-      val len = arr.length
+      val arr     = new Array[Byte](length.toInt)
+      val len     = arr.length
       lazy val in = bufferedInput()
-      var offset = 0
+      var offset  = 0
 
       def loop() {
         if (offset < len) {
@@ -65,13 +65,14 @@ object Streamable {
           }
         }
       }
-      try loop() finally in.close()
+      try loop()
+      finally in.close()
 
       if (offset == arr.length) arr
       else
         fail(
-            "Could not read entire source (%d of %d bytes)".format(
-                offset, len))
+          "Could not read entire source (%d of %d bytes)".format(offset, len)
+        )
     }
   }
 
@@ -107,13 +108,14 @@ object Streamable {
     /** Wraps a BufferedReader around the result of reader().
       */
     def bufferedReader(): BufferedReader = bufferedReader(creationCodec)
-    def bufferedReader(codec: Codec) = new BufferedReader(reader(codec))
+    def bufferedReader(codec: Codec)     = new BufferedReader(reader(codec))
 
     /** Creates a BufferedReader and applies the closure, automatically closing it on completion.
       */
     def applyReader[T](f: BufferedReader => T): T = {
       val in = bufferedReader()
-      try f(in) finally in.close()
+      try f(in)
+      finally in.close()
     }
 
     /** Convenience function to import entire file into a String.
@@ -121,13 +123,15 @@ object Streamable {
     def slurp(): String = slurp(creationCodec)
     def slurp(codec: Codec) = {
       val src = chars(codec)
-      try src.mkString finally src.close() // Always Be Closing
+      try src.mkString
+      finally src.close() // Always Be Closing
     }
   }
 
   /** Call a function on something Closeable, finally closing it. */
   def closing[T <: JCloseable, U](stream: T)(f: T => U): U =
-    try f(stream) finally stream.close()
+    try f(stream)
+    finally stream.close()
 
   def bytes(is: => InputStream): Array[Byte] =
     (new Bytes {

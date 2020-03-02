@@ -30,7 +30,7 @@ class FlowMapAsyncSpec extends AkkaSpec {
   "A Flow with mapAsync" must {
 
     "produce future elements" in assertAllStagesStopped {
-      val c = TestSubscriber.manualProbe[Int]()
+      val c           = TestSubscriber.manualProbe[Int]()
       implicit val ec = system.dispatcher
       val p = Source(1 to 3)
         .mapAsync(4)(n ⇒ Future(n))
@@ -46,14 +46,15 @@ class FlowMapAsyncSpec extends AkkaSpec {
     }
 
     "produce future elements in order" in {
-      val c = TestSubscriber.manualProbe[Int]()
+      val c           = TestSubscriber.manualProbe[Int]()
       implicit val ec = system.dispatcher
       val p = Source(1 to 50)
         .mapAsync(4)(n ⇒
-              Future {
+          Future {
             Thread.sleep(ThreadLocalRandom.current().nextInt(1, 10))
             n
-        })
+          }
+        )
         .to(Sink.fromSubscriber(c))
         .run()
       val sub = c.expectSubscription()
@@ -63,15 +64,16 @@ class FlowMapAsyncSpec extends AkkaSpec {
     }
 
     "not run more futures than requested parallelism" in {
-      val probe = TestProbe()
-      val c = TestSubscriber.manualProbe[Int]()
+      val probe       = TestProbe()
+      val c           = TestSubscriber.manualProbe[Int]()
       implicit val ec = system.dispatcher
       val p = Source(1 to 20)
         .mapAsync(8)(n ⇒
-              Future {
+          Future {
             probe.ref ! n
             n
-        })
+          }
+        )
         .to(Sink.fromSubscriber(c))
         .run()
       val sub = c.expectSubscription()
@@ -91,18 +93,19 @@ class FlowMapAsyncSpec extends AkkaSpec {
     }
 
     "signal future failure" in assertAllStagesStopped {
-      val latch = TestLatch(1)
-      val c = TestSubscriber.manualProbe[Int]()
+      val latch       = TestLatch(1)
+      val c           = TestSubscriber.manualProbe[Int]()
       implicit val ec = system.dispatcher
       val p = Source(1 to 5)
         .mapAsync(4)(n ⇒
-              Future {
+          Future {
             if (n == 3) throw new RuntimeException("err1") with NoStackTrace
             else {
               Await.ready(latch, 10.seconds)
               n
             }
-        })
+          }
+        )
         .to(Sink.fromSubscriber(c))
         .run()
       val sub = c.expectSubscription()
@@ -112,18 +115,19 @@ class FlowMapAsyncSpec extends AkkaSpec {
     }
 
     "signal error from mapAsync" in assertAllStagesStopped {
-      val latch = TestLatch(1)
-      val c = TestSubscriber.manualProbe[Int]()
+      val latch       = TestLatch(1)
+      val c           = TestSubscriber.manualProbe[Int]()
       implicit val ec = system.dispatcher
       val p = Source(1 to 5)
         .mapAsync(4)(n ⇒
-              if (n == 3) throw new RuntimeException("err2") with NoStackTrace
-              else {
+          if (n == 3) throw new RuntimeException("err2") with NoStackTrace
+          else {
             Future {
               Await.ready(latch, 10.seconds)
               n
             }
-        })
+          }
+        )
         .to(Sink.fromSubscriber(c))
         .run()
       val sub = c.expectSubscription()
@@ -133,14 +137,15 @@ class FlowMapAsyncSpec extends AkkaSpec {
     }
 
     "resume after future failure" in assertAllStagesStopped {
-      val c = TestSubscriber.manualProbe[Int]()
+      val c           = TestSubscriber.manualProbe[Int]()
       implicit val ec = system.dispatcher
       val p = Source(1 to 5)
         .mapAsync(4)(n ⇒
-              Future {
+          Future {
             if (n == 3) throw new RuntimeException("err3") with NoStackTrace
             else n
-        })
+          }
+        )
         .withAttributes(supervisionStrategy(resumingDecider))
         .to(Sink.fromSubscriber(c))
         .run()
@@ -152,43 +157,50 @@ class FlowMapAsyncSpec extends AkkaSpec {
 
     "resume after multiple failures" in assertAllStagesStopped {
       val futures: List[Future[String]] =
-        List(Future.failed(Utils.TE("failure1")),
-             Future.failed(Utils.TE("failure2")),
-             Future.failed(Utils.TE("failure3")),
-             Future.failed(Utils.TE("failure4")),
-             Future.failed(Utils.TE("failure5")),
-             Future.successful("happy!"))
+        List(
+          Future.failed(Utils.TE("failure1")),
+          Future.failed(Utils.TE("failure2")),
+          Future.failed(Utils.TE("failure3")),
+          Future.failed(Utils.TE("failure4")),
+          Future.failed(Utils.TE("failure5")),
+          Future.successful("happy!")
+        )
 
-      Await.result(Source(futures)
-                     .mapAsync(2)(identity)
-                     .withAttributes(supervisionStrategy(resumingDecider))
-                     .runWith(Sink.head),
-                   3.seconds) should ===("happy!")
+      Await.result(
+        Source(futures)
+          .mapAsync(2)(identity)
+          .withAttributes(supervisionStrategy(resumingDecider))
+          .runWith(Sink.head),
+        3.seconds
+      ) should ===("happy!")
     }
 
     "finish after future failure" in assertAllStagesStopped {
       import system.dispatcher
       Await.result(
-          Source(1 to 3)
-            .mapAsync(1)(n ⇒
-                  Future {
-                if (n == 3)
-                  throw new RuntimeException("err3b") with NoStackTrace
-                else n
-            })
-            .withAttributes(supervisionStrategy(resumingDecider))
-            .grouped(10)
-            .runWith(Sink.head),
-          1.second) should be(Seq(1, 2))
+        Source(1 to 3)
+          .mapAsync(1)(n ⇒
+            Future {
+              if (n == 3)
+                throw new RuntimeException("err3b") with NoStackTrace
+              else n
+            }
+          )
+          .withAttributes(supervisionStrategy(resumingDecider))
+          .grouped(10)
+          .runWith(Sink.head),
+        1.second
+      ) should be(Seq(1, 2))
     }
 
     "resume when mapAsync throws" in {
-      val c = TestSubscriber.manualProbe[Int]()
+      val c           = TestSubscriber.manualProbe[Int]()
       implicit val ec = system.dispatcher
       val p = Source(1 to 5)
         .mapAsync(4)(n ⇒
-              if (n == 3) throw new RuntimeException("err4") with NoStackTrace
-              else Future(n))
+          if (n == 3) throw new RuntimeException("err4") with NoStackTrace
+          else Future(n)
+        )
         .withAttributes(supervisionStrategy(resumingDecider))
         .to(Sink.fromSubscriber(c))
         .run()
@@ -207,15 +219,18 @@ class FlowMapAsyncSpec extends AkkaSpec {
       val sub = c.expectSubscription()
       sub.request(10)
       c.expectError().getMessage should be(
-          ReactiveStreamsCompliance.ElementMustNotBeNullMsg)
+        ReactiveStreamsCompliance.ElementMustNotBeNullMsg
+      )
     }
 
     "resume when future is completed with null" in {
       val c = TestSubscriber.manualProbe[String]()
       val p = Source(List("a", "b", "c"))
         .mapAsync(4)(elem ⇒
-              if (elem == "b")
-                Future.successful(null) else Future.successful(elem))
+          if (elem == "b")
+            Future.successful(null)
+          else Future.successful(elem)
+        )
         .withAttributes(supervisionStrategy(resumingDecider))
         .to(Sink.fromSubscriber(c))
         .run()
@@ -246,23 +261,24 @@ class FlowMapAsyncSpec extends AkkaSpec {
       val parallelism = 8
 
       val counter = new AtomicInteger
-      val queue = new LinkedBlockingQueue[(Promise[Int], Long)]
+      val queue   = new LinkedBlockingQueue[(Promise[Int], Long)]
 
       val timer = new Thread {
         val delay = 50000 // nanoseconds
         var count = 0
         @tailrec final override def run(): Unit = {
-          val cont = try {
-            val (promise, enqueued) = queue.take()
-            val wakeup = enqueued + delay
-            while (System.nanoTime() < wakeup) {}
-            counter.decrementAndGet()
-            promise.success(count)
-            count += 1
-            true
-          } catch {
-            case _: InterruptedException ⇒ false
-          }
+          val cont =
+            try {
+              val (promise, enqueued) = queue.take()
+              val wakeup              = enqueued + delay
+              while (System.nanoTime() < wakeup) {}
+              counter.decrementAndGet()
+              promise.success(count)
+              count += 1
+              true
+            } catch {
+              case _: InterruptedException ⇒ false
+            }
           if (cont) run()
         }
       }

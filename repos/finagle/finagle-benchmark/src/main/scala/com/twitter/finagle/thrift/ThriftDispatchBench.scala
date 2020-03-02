@@ -61,13 +61,15 @@ class ThriftDispatchBench extends StdBenchAnnotations {
 
   // standard TBinaryProtocol
   val scroogeService0 = scroogeService(new TBinaryProtocol.Factory())
-  var scroogeClient0 = scroogeClient(new TBinaryProtocol.Factory())
+  var scroogeClient0  = scroogeClient(new TBinaryProtocol.Factory())
 
   // Protocols.binaryFactory()
   val scroogeService1 = scroogeService(
-      Protocols.binaryFactory(statsReceiver = NullStatsReceiver))
+    Protocols.binaryFactory(statsReceiver = NullStatsReceiver)
+  )
   val scroogeClient1 = scroogeClient(
-      Protocols.binaryFactory(statsReceiver = NullStatsReceiver))
+    Protocols.binaryFactory(statsReceiver = NullStatsReceiver)
+  )
 
   @Benchmark
   def scroogeDispatch_StdTBinaryProt(): Array[Byte] = {

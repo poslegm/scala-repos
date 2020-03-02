@@ -26,14 +26,18 @@ object CharBuffer {
     TypedArrayCharBuffer.wrap(array)
 }
 
-abstract class CharBuffer private[nio](_capacity: Int,
-                                       private[nio] val _array: Array[Char],
-                                       private[nio] val _arrayOffset: Int)
-    extends Buffer(_capacity) with Comparable[CharBuffer] with CharSequence
-    with Appendable with Readable {
+abstract class CharBuffer private[nio] (
+    _capacity: Int,
+    private[nio] val _array: Array[Char],
+    private[nio] val _arrayOffset: Int
+) extends Buffer(_capacity)
+    with Comparable[CharBuffer]
+    with CharSequence
+    with Appendable
+    with Readable {
 
-  private[nio] type ElementType = Char
-  private[nio] type BufferType = CharBuffer
+  private[nio] type ElementType    = Char
+  private[nio] type BufferType     = CharBuffer
   private[nio] type TypedArrayType = Uint16Array
 
   def this(_capacity: Int) = this(_capacity, null, -1)
@@ -111,7 +115,7 @@ abstract class CharBuffer private[nio](_capacity: Int,
 
   override def equals(that: Any): Boolean = that match {
     case that: CharBuffer => compareTo(that) == 0
-    case _ => false
+    case _                => false
   }
 
   @noinline
@@ -123,7 +127,7 @@ abstract class CharBuffer private[nio](_capacity: Int,
       // even if read-only
       new String(_array, position + _arrayOffset, remaining)
     } else {
-      val chars = new Array[Char](remaining)
+      val chars    = new Array[Char](remaining)
       val savedPos = position
       get(chars)
       position(savedPos)
@@ -156,11 +160,19 @@ abstract class CharBuffer private[nio](_capacity: Int,
 
   @inline
   private[nio] def load(
-      startIndex: Int, dst: Array[Char], offset: Int, length: Int): Unit =
+      startIndex: Int,
+      dst: Array[Char],
+      offset: Int,
+      length: Int
+  ): Unit =
     GenBuffer(this).generic_load(startIndex, dst, offset, length)
 
   @inline
   private[nio] def store(
-      startIndex: Int, src: Array[Char], offset: Int, length: Int): Unit =
+      startIndex: Int,
+      src: Array[Char],
+      offset: Int,
+      length: Int
+  ): Unit =
     GenBuffer(this).generic_store(startIndex, src, offset, length)
 }

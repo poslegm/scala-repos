@@ -30,7 +30,7 @@ trait JsonFormats {
 
   lazy val allFormats =
     DefaultFormats.lossless + new ObjectIdSerializer + new DateSerializer +
-    new DateTimeSerializer + new PatternSerializer + new UUIDSerializer
+      new DateTimeSerializer + new PatternSerializer + new UUIDSerializer
 }
 
 /*
@@ -81,16 +81,12 @@ trait MongoMeta[BaseDocument] extends JsonFormats {
   /*
    * Count all documents
    */
-  def count: Long = useColl { coll =>
-    coll.getCount
-  }
+  def count: Long = useColl { coll => coll.getCount }
 
   /*
    * Count documents by DBObject query
    */
-  def count(qry: DBObject): Long = useColl { coll =>
-    coll.getCount(qry)
-  }
+  def count(qry: DBObject): Long = useColl { coll => coll.getCount(qry) }
 
   /*
    * Count documents by JObject query
@@ -101,25 +97,25 @@ trait MongoMeta[BaseDocument] extends JsonFormats {
    * Count distinct records on a given field
    */
   def countDistinct(key: String, query: DBObject): Long =
-    useColl { coll =>
-      coll.distinct(key, query).size
-    }
+    useColl { coll => coll.distinct(key, query).size }
 
   /*
    * Delete documents by a DBObject query
    */
   def delete(qry: DBObject): Unit =
-    useColl { coll =>
-      coll.remove(qry)
-    }
+    useColl { coll => coll.remove(qry) }
 
   // delete a document
   def delete(k: String, v: Any) {
     delete(
-        new BasicDBObject(k, v match {
-      case s: String if (ObjectId.isValid(s)) => new ObjectId(s)
-      case _ => v
-    }))
+      new BasicDBObject(
+        k,
+        v match {
+          case s: String if (ObjectId.isValid(s)) => new ObjectId(s)
+          case _                                  => v
+        }
+      )
+    )
   }
 
   /*
@@ -128,18 +124,14 @@ trait MongoMeta[BaseDocument] extends JsonFormats {
   def delete(qry: JObject): Unit = delete(JObjectParser.parse(qry))
 
   /* drop this document collection */
-  def drop: Unit = useColl { coll =>
-    coll.drop
-  }
+  def drop: Unit = useColl { coll => coll.drop }
 
   /*
    * Ensure an index exists
    */
   @deprecated("use createIndex(JObject) instead.", "2.6")
   def ensureIndex(keys: JObject): Unit =
-    useColl { coll =>
-      coll.createIndex(JObjectParser.parse(keys))
-    }
+    useColl { coll => coll.createIndex(JObjectParser.parse(keys)) }
 
   /*
    * Ensure an index exists and make unique
@@ -148,17 +140,13 @@ trait MongoMeta[BaseDocument] extends JsonFormats {
   def ensureIndex(keys: JObject, unique: Boolean): Unit = {
     val options = new BasicDBObject
     if (unique) options.put("unique", true)
-    useColl { coll =>
-      coll.createIndex(JObjectParser.parse(keys), options)
-    }
+    useColl { coll => coll.createIndex(JObjectParser.parse(keys), options) }
   }
 
   def createIndex(keys: JObject, unique: Boolean = false): Unit = {
     val options = new BasicDBObject
     if (unique) options.put("unique", true)
-    useColl { coll =>
-      coll.createIndex(JObjectParser.parse(keys), options)
-    }
+    useColl { coll => coll.createIndex(JObjectParser.parse(keys), options) }
   }
 
   /*
@@ -182,10 +170,10 @@ trait MongoMeta[BaseDocument] extends JsonFormats {
     val dboOpts = opts.toList
     db.getCollection(collectionName)
       .update(
-          qry,
-          newobj,
-          dboOpts.find(_ == Upsert).map(x => true).getOrElse(false),
-          dboOpts.find(_ == Multi).map(x => true).getOrElse(false)
+        qry,
+        newobj,
+        dboOpts.find(_ == Upsert).map(x => true).getOrElse(false),
+        dboOpts.find(_ == Multi).map(x => true).getOrElse(false)
       )
   }
 
@@ -194,10 +182,10 @@ trait MongoMeta[BaseDocument] extends JsonFormats {
    */
   def update(qry: JObject, newobj: JObject, db: DB, opts: UpdateOption*) {
     update(
-        JObjectParser.parse(qry),
-        JObjectParser.parse(newobj),
-        db,
-        opts: _*
+      JObjectParser.parse(qry),
+      JObjectParser.parse(newobj),
+      db,
+      opts: _*
     )
   }
 
@@ -205,9 +193,7 @@ trait MongoMeta[BaseDocument] extends JsonFormats {
    * Update document with a JObject query.
    */
   def update(qry: JObject, newobj: JObject, opts: UpdateOption*) {
-    useDb { db =>
-      update(qry, newobj, db, opts: _*)
-    }
+    useDb { db => update(qry, newobj, db, opts: _*) }
   }
 }
 
@@ -218,11 +204,11 @@ abstract sealed class FindOption {
   def value: Int
 }
 case class Limit(value: Int) extends FindOption
-case class Skip(value: Int) extends FindOption
+case class Skip(value: Int)  extends FindOption
 
 /*
  * For passing in options to the update function
  */
 abstract sealed class UpdateOption
 case object Upsert extends UpdateOption
-case object Multi extends UpdateOption
+case object Multi  extends UpdateOption

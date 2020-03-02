@@ -26,8 +26,8 @@ import org.apache.spark.sql.SQLContext
 
 object SQLTransformerExample {
   def main(args: Array[String]) {
-    val conf = new SparkConf().setAppName("SQLTransformerExample")
-    val sc = new SparkContext(conf)
+    val conf       = new SparkConf().setAppName("SQLTransformerExample")
+    val sc         = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
 
     // $example on$

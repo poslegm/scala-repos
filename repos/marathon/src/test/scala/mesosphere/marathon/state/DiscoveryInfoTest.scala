@@ -15,33 +15,33 @@ class DiscoveryInfoTest extends MarathonSpec with Matchers {
     lazy val emptyDiscoveryInfo = DiscoveryInfo()
 
     lazy val discoveryInfoWithPort = DiscoveryInfo(
-        ports = Seq(Port(name = "http", number = 80, protocol = "tcp"))
+      ports = Seq(Port(name = "http", number = 80, protocol = "tcp"))
     )
     lazy val discoveryInfoWithTwoPorts = DiscoveryInfo(
-        ports = Seq(
-              Port(name = "dns", number = 53, protocol = "udp"),
-              Port(name = "http", number = 80, protocol = "tcp")
-          )
+      ports = Seq(
+        Port(name = "dns", number = 53, protocol = "udp"),
+        Port(name = "http", number = 80, protocol = "tcp")
+      )
     )
     lazy val discoveryInfoWithTwoPorts2 = DiscoveryInfo(
-        ports = Seq(
-              Port(name = "dnsudp", number = 53, protocol = "udp"),
-              Port(name = "dnstcp", number = 53, protocol = "tcp")
-          )
+      ports = Seq(
+        Port(name = "dnsudp", number = 53, protocol = "udp"),
+        Port(name = "dnstcp", number = 53, protocol = "tcp")
+      )
     )
   }
 
   def fixture(): Fixture = new Fixture
 
   test("ToProto default DiscoveryInfo") {
-    val f = fixture()
+    val f     = fixture()
     val proto = f.emptyDiscoveryInfo.toProto
 
     proto should be(Protos.DiscoveryInfo.getDefaultInstance)
   }
 
   test("ToProto with one port") {
-    val f = fixture()
+    val f     = fixture()
     val proto = f.discoveryInfoWithPort.toProto
 
     val portProto = MesosProtos.Port
@@ -58,7 +58,7 @@ class DiscoveryInfoTest extends MarathonSpec with Matchers {
     val f = fixture()
 
     val defaultProto = Protos.DiscoveryInfo.newBuilder.build
-    val result = DiscoveryInfo.fromProto(defaultProto)
+    val result       = DiscoveryInfo.fromProto(defaultProto)
     result should equal(f.emptyDiscoveryInfo)
   }
 
@@ -164,9 +164,12 @@ class DiscoveryInfoTest extends MarathonSpec with Matchers {
       """
 
     val readResult = Json.fromJson[DiscoveryInfo](Json.parse(json))
-    readResult should be(JsError(
-            JsPath() \ "ports",
-            "There may be only one port with a particular port number/protocol combination."))
+    readResult should be(
+      JsError(
+        JsPath() \ "ports",
+        "There may be only one port with a particular port number/protocol combination."
+      )
+    )
   }
 
   test("Read discovery info with two ports with duplicate name") {
@@ -181,7 +184,8 @@ class DiscoveryInfoTest extends MarathonSpec with Matchers {
 
     val readResult = Json.fromJson[DiscoveryInfo](Json.parse(json))
     readResult should be(
-        JsError(JsPath() \ "ports", "Port names are not unique."))
+      JsError(JsPath() \ "ports", "Port names are not unique.")
+    )
   }
 
   test("Read discovery info with a port with an invalid protocol") {
@@ -195,7 +199,10 @@ class DiscoveryInfoTest extends MarathonSpec with Matchers {
 
     val readResult = Json.fromJson[DiscoveryInfo](Json.parse(json))
     readResult should be(
-        JsError((JsPath() \ "ports")(0) \ "protocol",
-                "Invalid protocol. Only 'udp' or 'tcp' are allowed."))
+      JsError(
+        (JsPath() \ "ports")(0) \ "protocol",
+        "Invalid protocol. Only 'udp' or 'tcp' are allowed."
+      )
+    )
   }
 }

@@ -4,17 +4,16 @@ object SCL4276 {
   object App extends Application {
 
     val streamUser = new StreamUser
-    val is = ""
+    val is         = ""
     /*start*/
     streamUser.use(is) /*end*/
   }
 
   class StreamUser {
 
-    def use(
-        stream: AnyRef {
+    def use(stream: AnyRef {
       def indexOf(x: String): Int
-    }) = 1
+    })                           = 1
     def use(x: Boolean): Boolean = false
   }
 }

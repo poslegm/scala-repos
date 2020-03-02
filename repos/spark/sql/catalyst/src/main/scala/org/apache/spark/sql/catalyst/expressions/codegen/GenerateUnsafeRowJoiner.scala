@@ -40,28 +40,31 @@ object GenerateUnsafeRowJoiner
     extends CodeGenerator[(StructType, StructType), UnsafeRowJoiner] {
 
   override protected def create(
-      in: (StructType, StructType)): UnsafeRowJoiner = {
+      in: (StructType, StructType)
+  ): UnsafeRowJoiner = {
     create(in._1, in._2)
   }
 
   override protected def canonicalize(
-      in: (StructType, StructType)): (StructType, StructType) = in
+      in: (StructType, StructType)
+  ): (StructType, StructType) = in
 
   override protected def bind(
       in: (StructType, StructType),
-      inputSchema: Seq[Attribute]): (StructType, StructType) = {
+      inputSchema: Seq[Attribute]
+  ): (StructType, StructType) = {
     in
   }
 
   def create(schema1: StructType, schema2: StructType): UnsafeRowJoiner = {
-    val offset = Platform.BYTE_ARRAY_OFFSET
+    val offset  = Platform.BYTE_ARRAY_OFFSET
     val getLong = "Platform.getLong"
     val putLong = "Platform.putLong"
 
-    val bitset1Words = (schema1.size + 63) / 64
-    val bitset2Words = (schema2.size + 63) / 64
+    val bitset1Words      = (schema1.size + 63) / 64
+    val bitset2Words      = (schema2.size + 63) / 64
     val outputBitsetWords = (schema1.size + schema2.size + 63) / 64
-    val bitset1Remainder = schema1.size % 64
+    val bitset1Remainder  = schema1.size % 64
 
     // The number of bytes we can reduce when we concat two rows together.
     // The only reduction comes from merging the bitset portion of the two rows, saving 1 word.
@@ -80,7 +83,7 @@ object GenerateUnsafeRowJoiner
             } else if (i - bitset1Words < bitset2Words - 1) {
               // combine next two words of bitset2
               s"($getLong(obj2, offset2 + ${(i - bitset1Words) * 8}) >>> (64 - $bitset1Remainder))" +
-              s" | ($getLong(obj2, offset2 + ${(i - bitset1Words + 1) * 8}) << $bitset1Remainder)"
+                s" | ($getLong(obj2, offset2 + ${(i - bitset1Words + 1) * 8}) << $bitset1Remainder)"
             } else {
               // last word of bitset2
               s"$getLong(obj2, offset2 + ${(i - bitset1Words) * 8}) >>> (64 - $bitset1Remainder)"
@@ -98,7 +101,7 @@ object GenerateUnsafeRowJoiner
       .mkString("\n")
 
     // --------------------- copy fixed length portion from row 1 ----------------------- //
-    var cursor = offset + outputBitsetWords * 8
+    var cursor              = offset + outputBitsetWords * 8
     val copyFixedLengthRow1 = s"""
        |// Copy fixed length data for row1
        |Platform.copyMemory(
@@ -120,7 +123,7 @@ object GenerateUnsafeRowJoiner
 
     // --------------------- copy variable length portion from row 1 ----------------------- //
     val numBytesBitsetAndFixedRow1 = (bitset1Words + schema1.size) * 8
-    val copyVariableLengthRow1 = s"""
+    val copyVariableLengthRow1     = s"""
        |// Copy variable length data for row1
        |long numBytesVariableRow1 = row1.getSizeInBytes() - $numBytesBitsetAndFixedRow1;
        |Platform.copyMemory(
@@ -131,7 +134,7 @@ object GenerateUnsafeRowJoiner
 
     // --------------------- copy variable length portion from row 2 ----------------------- //
     val numBytesBitsetAndFixedRow2 = (bitset2Words + schema2.size) * 8
-    val copyVariableLengthRow2 = s"""
+    val copyVariableLengthRow2     = s"""
        |// Copy variable length data for row2
        |long numBytesVariableRow2 = row2.getSizeInBytes() - $numBytesBitsetAndFixedRow2;
        |Platform.copyMemory(
@@ -141,27 +144,29 @@ object GenerateUnsafeRowJoiner
      """.stripMargin
 
     // ------------- update fixed length data for variable length data type  --------------- //
-    val updateOffset = (schema1 ++ schema2).zipWithIndex.map {
-      case (field, i) =>
-        // Skip fixed length data types, and only generate code for variable length data
-        if (UnsafeRow.isFixedLength(field.dataType)) {
-          ""
-        } else {
-          // Number of bytes to increase for the offset. Note that since in UnsafeRow we store the
-          // offset in the upper 32 bit of the words, we can just shift the offset to the left by
-          // 32 and increment that amount in place.
-          val shift =
-            if (i < schema1.size) {
-              s"${(outputBitsetWords - bitset1Words + schema2.size) * 8}L"
-            } else {
-              s"(${(outputBitsetWords - bitset2Words + schema1.size) * 8}L + numBytesVariableRow1)"
-            }
-          val cursor = offset + outputBitsetWords * 8 + i * 8
-          s"""
+    val updateOffset = (schema1 ++ schema2).zipWithIndex
+      .map {
+        case (field, i) =>
+          // Skip fixed length data types, and only generate code for variable length data
+          if (UnsafeRow.isFixedLength(field.dataType)) {
+            ""
+          } else {
+            // Number of bytes to increase for the offset. Note that since in UnsafeRow we store the
+            // offset in the upper 32 bit of the words, we can just shift the offset to the left by
+            // 32 and increment that amount in place.
+            val shift =
+              if (i < schema1.size) {
+                s"${(outputBitsetWords - bitset1Words + schema2.size) * 8}L"
+              } else {
+                s"(${(outputBitsetWords - bitset2Words + schema1.size) * 8}L + numBytesVariableRow1)"
+              }
+            val cursor = offset + outputBitsetWords * 8 + i * 8
+            s"""
            |$putLong(buf, $cursor, $getLong(buf, $cursor) + ($shift << 32));
          """.stripMargin
-        }
-    }.mkString("\n")
+          }
+      }
+      .mkString("\n")
 
     // ------------------------ Finally, put everything together  --------------------------- //
     val code = s"""
@@ -172,13 +177,13 @@ object GenerateUnsafeRowJoiner
        |class SpecificUnsafeRowJoiner extends ${classOf[UnsafeRowJoiner].getName} {
        |  private byte[] buf = new byte[64];
        |  private UnsafeRow out = new UnsafeRow(${schema1.size +
-                  schema2.size});
+                    schema2.size});
        |
        |  public UnsafeRow join(UnsafeRow row1, UnsafeRow row2) {
        |    // row1: ${schema1.size} fields, $bitset1Words words in bitset
        |    // row2: ${schema2.size}, $bitset2Words words in bitset
        |    // output: ${schema1.size +
-                  schema2.size} fields, $outputBitsetWords words in bitset
+                    schema2.size} fields, $outputBitsetWords words in bitset
        |    final int sizeInBytes = row1.getSizeInBytes() + row2.getSizeInBytes() - $sizeReduction;
        |    if (sizeInBytes > buf.length) {
        |      buf = new byte[sizeInBytes];
@@ -204,7 +209,8 @@ object GenerateUnsafeRowJoiner
      """.stripMargin
 
     logDebug(
-        s"SpecificUnsafeRowJoiner($schema1, $schema2):\n${CodeFormatter.format(code)}")
+      s"SpecificUnsafeRowJoiner($schema1, $schema2):\n${CodeFormatter.format(code)}"
+    )
 
     val c = CodeGenerator.compile(code)
     c.generate(Array.empty).asInstanceOf[UnsafeRowJoiner]

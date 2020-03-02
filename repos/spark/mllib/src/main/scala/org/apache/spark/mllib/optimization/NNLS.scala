@@ -28,11 +28,11 @@ import com.github.fommil.netlib.BLAS.{getInstance => blas}
 private[spark] object NNLS {
   class Workspace(val n: Int) {
     val scratch = new Array[Double](n)
-    val grad = new Array[Double](n)
-    val x = new Array[Double](n)
-    val dir = new Array[Double](n)
+    val grad    = new Array[Double](n)
+    val x       = new Array[Double](n)
+    val dir     = new Array[Double](n)
     val lastDir = new Array[Double](n)
-    val res = new Array[Double](n)
+    val res     = new Array[Double](n)
 
     def wipe(): Unit = {
       ju.Arrays.fill(scratch, 0.0)
@@ -63,10 +63,13 @@ private[spark] object NNLS {
     * iteration did not cause a previously-inactive constraint to become active.
     */
   def solve(
-      ata: Array[Double], atb: Array[Double], ws: Workspace): Array[Double] = {
+      ata: Array[Double],
+      atb: Array[Double],
+      ws: Workspace
+  ): Array[Double] = {
     ws.wipe()
 
-    val n = atb.length
+    val n       = atb.length
     val scratch = ws.scratch
 
     // find the optimal unconstrained step
@@ -79,24 +82,24 @@ private[spark] object NNLS {
 
     // stopping condition
     def stop(step: Double, ndir: Double, nx: Double): Boolean = {
-      ((step.isNaN) // NaN
-          || (step < 1e-7) // too small or negative
-          || (step > 1e40) // too small; almost certainly numerical problems
-          || (ndir < 1e-12 * nx) // gradient relatively too small
-          || (ndir < 1e-32) // gradient absolutely too small; numerical issues may lurk
-          )
+      ((step.isNaN)          // NaN
+      || (step < 1e-7)       // too small or negative
+      || (step > 1e40)       // too small; almost certainly numerical problems
+      || (ndir < 1e-12 * nx) // gradient relatively too small
+      || (ndir < 1e-32)      // gradient absolutely too small; numerical issues may lurk
+      )
     }
 
-    val grad = ws.grad
-    val x = ws.x
-    val dir = ws.dir
-    val lastDir = ws.lastDir
-    val res = ws.res
-    val iterMax = math.max(400, 20 * n)
+    val grad     = ws.grad
+    val x        = ws.x
+    val dir      = ws.dir
+    val lastDir  = ws.lastDir
+    val res      = ws.res
+    val iterMax  = math.max(400, 20 * n)
     var lastNorm = 0.0
-    var iterno = 0
+    var iterno   = 0
     var lastWall = 0 // Last iteration when we hit a bound constraint.
-    var i = 0
+    var i        = 0
     while (iterno < iterMax) {
       // find the residual
       blas.dgemv("N", n, n, 1.0, ata, n, x, 1, 0.0, res, 1)
@@ -118,7 +121,7 @@ private[spark] object NNLS {
       // use a CG direction under certain conditions
       var step = steplen(grad, res)
       var ndir = 0.0
-      val nx = blas.ddot(n, x, 1, x, 1)
+      val nx   = blas.ddot(n, x, 1, x, 1)
       if (iterno > lastWall + 1) {
         val alpha = ngrad / lastNorm
         blas.daxpy(n, alpha, lastDir, 1, dir, 1)

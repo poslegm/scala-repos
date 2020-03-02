@@ -23,7 +23,7 @@ package OrphansTestDefns {
   trait Ca[T]
 
   object Ca extends Ca0 {
-    val caFoo = new Ca[Foo] { override def toString = "Ca.caFoo" }
+    val caFoo                    = new Ca[Foo] { override def toString = "Ca.caFoo" }
     implicit def caFoo0: Ca[Foo] = caFoo
   }
 
@@ -40,7 +40,7 @@ package OrphansTestDefns {
       override def toString = "CaDeriver.caDerived"
     }
 
-    implicit def derive[T : Generic]: Ca[T] = caDerived.asInstanceOf[Ca[T]]
+    implicit def derive[T: Generic]: Ca[T] = caDerived.asInstanceOf[Ca[T]]
   }
 
   object LowPriorityCaDeriver extends OrphanDeriver[Ca, CaDeriver.type]
@@ -48,7 +48,7 @@ package OrphansTestDefns {
   trait Cb[T]
 
   object Cb extends Cb0 {
-    val cbFoo = new Cb[Foo] { override def toString = "Cb.cbFoo" }
+    val cbFoo                    = new Cb[Foo] { override def toString = "Cb.cbFoo" }
     implicit def cbFoo0: Cb[Foo] = cbFoo
   }
 
@@ -65,7 +65,7 @@ package OrphansTestDefns {
       override def toString = "CbDeriver.cbDerived"
     }
 
-    implicit def derive[T : Generic]: Cb[T] = cbDerived.asInstanceOf[Cb[T]]
+    implicit def derive[T: Generic]: Cb[T] = cbDerived.asInstanceOf[Cb[T]]
   }
 
   object LowPriorityCbDeriver extends OrphanDeriver[Cb, CbDeriver.type]
@@ -74,14 +74,14 @@ package OrphansTestDefns {
   case class Bar(s: String)
   case class Baz(d: Double)
   object Baz {
-    val caBaz = new Ca[Baz] { override def toString = "Baz.caBaz" }
+    val caBaz                    = new Ca[Baz] { override def toString = "Baz.caBaz" }
     implicit def caBaz0: Ca[Baz] = caBaz
 
-    val cbBaz = new Cb[Baz] { override def toString = "Baz.cbBaz" }
+    val cbBaz                    = new Cb[Baz] { override def toString = "Baz.cbBaz" }
     implicit def cbBaz0: Cb[Baz] = cbBaz
 
     implicit val eqBaz: Eq[Baz] = new Eq[Baz] {
-      override def toString = "Baz.eqBaz"
+      override def toString   = "Baz.eqBaz"
       def eqv(x: Baz, y: Baz) = x == y
     }
   }
@@ -89,45 +89,43 @@ package OrphansTestDefns {
   class Quux(b: Boolean)
 
   object MultiOrphans {
-    implicit def caT[T](
-        implicit orphan: Orphan[Ca, CaDeriver.type, T]): Ca[T] =
+    implicit def caT[T](implicit orphan: Orphan[Ca, CaDeriver.type, T]): Ca[T] =
       orphan.instance
-    implicit def cbT[T](
-        implicit orphan: Orphan[Cb, CbDeriver.type, T]): Cb[T] =
+    implicit def cbT[T](implicit orphan: Orphan[Cb, CbDeriver.type, T]): Cb[T] =
       orphan.instance
   }
 
   trait Eq[T] {
     def eqv(x: T, y: T): Boolean
-    override def toString: String = toString(Set.empty)
+    override def toString: String          = toString(Set.empty)
     def toString(seen: Set[Eq[_]]): String = toString
   }
 
   trait Eq0 {
     implicit def fallback[T]: Eq[T] = new Eq[T] {
-      override def toString = "Eq.fallback"
+      override def toString        = "Eq.fallback"
       def eqv(x: T, y: T): Boolean = x == y
     }
   }
 
   object Eq extends Eq0 {
     implicit def eqInt: Eq[Int] = new Eq[Int] {
-      override def toString = "Eq.eqInt"
+      override def toString   = "Eq.eqInt"
       def eqv(x: Int, y: Int) = x == y
     }
 
     implicit def eqString: Eq[String] = new Eq[String] {
-      override def toString = "Eq.eqString"
+      override def toString         = "Eq.eqString"
       def eqv(x: String, y: String) = x == y
     }
 
     implicit def eqBoolean: Eq[Boolean] = new Eq[Boolean] {
-      override def toString = "Eq.eqBoolean"
+      override def toString           = "Eq.eqBoolean"
       def eqv(x: Boolean, y: Boolean) = x == y
     }
 
     implicit def eqFoo: Eq[Foo] = new Eq[Foo] {
-      override def toString = "Eq.eqFoo"
+      override def toString   = "Eq.eqFoo"
       def eqv(x: Foo, y: Foo) = x == y
     }
   }
@@ -135,7 +133,7 @@ package OrphansTestDefns {
   object EqDeriver extends TypeClassCompanion[Eq] {
     object typeClass extends TypeClass[Eq] {
       def emptyProduct = new Eq[HNil] {
-        override def toString = "emptyProduct"
+        override def toString     = "emptyProduct"
         def eqv(x: HNil, y: HNil) = true
       }
 
@@ -150,7 +148,7 @@ package OrphansTestDefns {
       }
 
       def emptyCoproduct = new Eq[CNil] {
-        override def toString = "emptyCoproduct"
+        override def toString     = "emptyCoproduct"
         def eqv(x: CNil, y: CNil) = true
       }
 
@@ -164,7 +162,7 @@ package OrphansTestDefns {
           def eqv(x: L :+: R, y: L :+: R): Boolean = (x, y) match {
             case (Inl(x), Inl(y)) => l.eqv(x, y)
             case (Inr(x), Inr(y)) => r.eqv(x, y)
-            case _ => false
+            case _                => false
           }
         }
 
@@ -180,18 +178,17 @@ package OrphansTestDefns {
   object LowPriorityEqDeriver extends OrphanDeriver[Eq, EqDeriver.type]
 
   object MultiEqOrphans {
-    implicit def eqT[T](
-        implicit orphan: Orphan[Eq, EqDeriver.type, T]): Eq[T] =
+    implicit def eqT[T](implicit orphan: Orphan[Eq, EqDeriver.type, T]): Eq[T] =
       orphan.instance
   }
 
   sealed trait Tree[A]
   case class Node[A](left: Tree[A], right: Tree[A]) extends Tree[A]
-  case class Leaf[A](item: A) extends Tree[A]
+  case class Leaf[A](item: A)                       extends Tree[A]
 
   sealed trait SimpleRec
   case class SimpleCons(rec: SimpleRec) extends SimpleRec
-  case object SimpleNil extends SimpleRec
+  case object SimpleNil                 extends SimpleRec
 }
 
 class OrphansTest {
@@ -260,19 +257,27 @@ class OrphansTest {
     import EqDeriver._
 
     assertEquals("Eq.eqInt", implicitly[Eq[Int]].toString)
-    assertEquals("project(product(Eq.eqInt, emptyProduct))",
-                 implicitly[Eq[Foo]].toString)
-    assertEquals("project(product(Eq.eqString, emptyProduct))",
-                 implicitly[Eq[Bar]].toString)
-    assertEquals("project(product(Eq.fallback, emptyProduct))",
-                 implicitly[Eq[Baz]].toString)
+    assertEquals(
+      "project(product(Eq.eqInt, emptyProduct))",
+      implicitly[Eq[Foo]].toString
+    )
+    assertEquals(
+      "project(product(Eq.eqString, emptyProduct))",
+      implicitly[Eq[Bar]].toString
+    )
+    assertEquals(
+      "project(product(Eq.fallback, emptyProduct))",
+      implicitly[Eq[Baz]].toString
+    )
     assertEquals("Eq.fallback", implicitly[Eq[Quux]].toString)
     assertEquals(
-        "project(coproduct(project(product(project(<loop>), emptyProduct)), coproduct(project(emptyProduct), emptyCoproduct)))",
-        implicitly[Eq[SimpleRec]].toString)
+      "project(coproduct(project(product(project(<loop>), emptyProduct)), coproduct(project(emptyProduct), emptyCoproduct)))",
+      implicitly[Eq[SimpleRec]].toString
+    )
     assertEquals(
-        "project(coproduct(project(product(Eq.eqInt, emptyProduct)), coproduct(project(product(project(<loop>), product(project(<loop>), emptyProduct))), emptyCoproduct)))",
-        implicitly[Eq[Tree[Int]]].toString)
+      "project(coproduct(project(product(Eq.eqInt, emptyProduct)), coproduct(project(product(project(<loop>), product(project(<loop>), emptyProduct))), emptyCoproduct)))",
+      implicitly[Eq[Tree[Int]]].toString
+    )
   }
 
   @Test
@@ -281,16 +286,20 @@ class OrphansTest {
 
     assertEquals("Eq.eqInt", implicitly[Eq[Int]].toString)
     assertEquals("Eq.eqFoo", implicitly[Eq[Foo]].toString)
-    assertEquals("project(product(Eq.eqString, emptyProduct))",
-                 implicitly[Eq[Bar]].toString)
+    assertEquals(
+      "project(product(Eq.eqString, emptyProduct))",
+      implicitly[Eq[Bar]].toString
+    )
     assertEquals("Baz.eqBaz", implicitly[Eq[Baz]].toString)
     assertEquals("Eq.fallback", implicitly[Eq[Quux]].toString)
     assertEquals(
-        "project(coproduct(project(product(project(<loop>), emptyProduct)), coproduct(project(emptyProduct), emptyCoproduct)))",
-        implicitly[Eq[SimpleRec]].toString)
+      "project(coproduct(project(product(project(<loop>), emptyProduct)), coproduct(project(emptyProduct), emptyCoproduct)))",
+      implicitly[Eq[SimpleRec]].toString
+    )
     assertEquals(
-        "project(coproduct(project(product(Eq.eqInt, emptyProduct)), coproduct(project(product(project(<loop>), product(project(<loop>), emptyProduct))), emptyCoproduct)))",
-        implicitly[Eq[Tree[Int]]].toString)
+      "project(coproduct(project(product(Eq.eqInt, emptyProduct)), coproduct(project(product(project(<loop>), product(project(<loop>), emptyProduct))), emptyCoproduct)))",
+      implicitly[Eq[Tree[Int]]].toString
+    )
   }
 
   @Test
@@ -299,15 +308,19 @@ class OrphansTest {
 
     assertEquals("Eq.eqInt", implicitly[Eq[Int]].toString)
     assertEquals("Eq.eqFoo", implicitly[Eq[Foo]].toString)
-    assertEquals("project(product(Eq.eqString, emptyProduct))",
-                 implicitly[Eq[Bar]].toString)
+    assertEquals(
+      "project(product(Eq.eqString, emptyProduct))",
+      implicitly[Eq[Bar]].toString
+    )
     assertEquals("Baz.eqBaz", implicitly[Eq[Baz]].toString)
     assertEquals("Eq.fallback", implicitly[Eq[Quux]].toString)
     assertEquals(
-        "project(coproduct(project(product(project(<loop>), emptyProduct)), coproduct(project(emptyProduct), emptyCoproduct)))",
-        implicitly[Eq[SimpleRec]].toString)
+      "project(coproduct(project(product(project(<loop>), emptyProduct)), coproduct(project(emptyProduct), emptyCoproduct)))",
+      implicitly[Eq[SimpleRec]].toString
+    )
     assertEquals(
-        "project(coproduct(project(product(Eq.eqInt, emptyProduct)), coproduct(project(product(project(<loop>), product(project(<loop>), emptyProduct))), emptyCoproduct)))",
-        implicitly[Eq[Tree[Int]]].toString)
+      "project(coproduct(project(product(Eq.eqInt, emptyProduct)), coproduct(project(product(project(<loop>), product(project(<loop>), emptyProduct))), emptyCoproduct)))",
+      implicitly[Eq[Tree[Int]]].toString
+    )
   }
 }

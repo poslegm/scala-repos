@@ -67,13 +67,15 @@ import org.apache.spark.util.Utils
   * [options] is the specific property of this source or sink.
   */
 private[spark] class MetricsSystem private (
-    val instance: String, conf: SparkConf, securityMgr: SecurityManager)
-    extends Logging {
+    val instance: String,
+    conf: SparkConf,
+    securityMgr: SecurityManager
+) extends Logging {
 
   private[this] val metricsConfig = new MetricsConfig(conf)
 
-  private val sinks = new mutable.ArrayBuffer[Sink]
-  private val sources = new mutable.ArrayBuffer[Source]
+  private val sinks    = new mutable.ArrayBuffer[Sink]
+  private val sources  = new mutable.ArrayBuffer[Source]
   private val registry = new MetricRegistry()
 
   private var running: Boolean = false
@@ -86,15 +88,19 @@ private[spark] class MetricsSystem private (
     */
   def getServletHandlers: Array[ServletContextHandler] = {
     require(
-        running, "Can only call getServletHandlers on a running MetricsSystem")
+      running,
+      "Can only call getServletHandlers on a running MetricsSystem"
+    )
     metricsServlet.map(_.getHandlers(conf)).getOrElse(Array())
   }
 
   metricsConfig.initialize()
 
   def start() {
-    require(!running,
-            "Attempting to start a MetricsSystem that is already running")
+    require(
+      !running,
+      "Attempting to start a MetricsSystem that is already running"
+    )
     running = true
     registerSources()
     registerSinks()
@@ -124,8 +130,8 @@ private[spark] class MetricsSystem private (
     *         application, executor/driver and metric source.
     */
   private[spark] def buildRegistryName(source: Source): String = {
-    val appId = conf.getOption("spark.app.id")
-    val executorId = conf.getOption("spark.executor.id")
+    val appId       = conf.getOption("spark.app.id")
+    val executorId  = conf.getOption("spark.executor.id")
     val defaultName = MetricRegistry.name(source.sourceName)
 
     if (instance == "driver" || instance == "executor") {
@@ -162,8 +168,7 @@ private[spark] class MetricsSystem private (
   def removeSource(source: Source) {
     sources -= source
     val regName = buildRegistryName(source)
-    registry.removeMatching(
-        new MetricFilter {
+    registry.removeMatching(new MetricFilter {
       def matches(name: String, metric: Metric): Boolean =
         name.startsWith(regName)
     })
@@ -198,9 +203,11 @@ private[spark] class MetricsSystem private (
         try {
           val sink = Utils
             .classForName(classPath)
-            .getConstructor(classOf[Properties],
-                            classOf[MetricRegistry],
-                            classOf[SecurityManager])
+            .getConstructor(
+              classOf[Properties],
+              classOf[MetricRegistry],
+              classOf[SecurityManager]
+            )
             .newInstance(kv._2, registry, securityMgr)
           if (kv._1 == "servlet") {
             metricsServlet = Some(sink.asInstanceOf[MetricsServlet])
@@ -209,9 +216,9 @@ private[spark] class MetricsSystem private (
           }
         } catch {
           case e: Exception => {
-              logError("Sink class " + classPath + " cannot be instantiated")
-              throw e
-            }
+            logError("Sink class " + classPath + " cannot be instantiated")
+            throw e
+          }
         }
       }
     }
@@ -219,24 +226,27 @@ private[spark] class MetricsSystem private (
 }
 
 private[spark] object MetricsSystem {
-  val SINK_REGEX = "^sink\\.(.+)\\.(.+)".r
+  val SINK_REGEX   = "^sink\\.(.+)\\.(.+)".r
   val SOURCE_REGEX = "^source\\.(.+)\\.(.+)".r
 
-  private[this] val MINIMAL_POLL_UNIT = TimeUnit.SECONDS
+  private[this] val MINIMAL_POLL_UNIT   = TimeUnit.SECONDS
   private[this] val MINIMAL_POLL_PERIOD = 1
 
   def checkMinimalPollingPeriod(pollUnit: TimeUnit, pollPeriod: Int) {
     val period = MINIMAL_POLL_UNIT.convert(pollPeriod, pollUnit)
     if (period < MINIMAL_POLL_PERIOD) {
       throw new IllegalArgumentException(
-          "Polling period " + pollPeriod + " " + pollUnit +
-          " below than minimal polling period ")
+        "Polling period " + pollPeriod + " " + pollUnit +
+          " below than minimal polling period "
+      )
     }
   }
 
-  def createMetricsSystem(instance: String,
-                          conf: SparkConf,
-                          securityMgr: SecurityManager): MetricsSystem = {
+  def createMetricsSystem(
+      instance: String,
+      conf: SparkConf,
+      securityMgr: SecurityManager
+  ): MetricsSystem = {
     new MetricsSystem(instance, conf, securityMgr)
   }
 }

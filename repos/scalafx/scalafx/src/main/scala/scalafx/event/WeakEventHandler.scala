@@ -45,7 +45,8 @@ object WeakEventHandler {
     * @return JavaFX WeakEventHandler
     */
   implicit def sfxWeakEventHandler2jfx[T <: jfxe.Event](
-      weh: WeakEventHandler[T]): jfxe.WeakEventHandler[T] =
+      weh: WeakEventHandler[T]
+  ): jfxe.WeakEventHandler[T] =
     if (weh != null) weh.delegate else null
 }
 
@@ -58,8 +59,8 @@ object WeakEventHandler {
   * @since 8.0
   */
 class WeakEventHandler[T <: jfxe.Event](
-    override val delegate: jfxe.WeakEventHandler[T])
-    extends SFXDelegate[jfxe.WeakEventHandler[T]] {
+    override val delegate: jfxe.WeakEventHandler[T]
+) extends SFXDelegate[jfxe.WeakEventHandler[T]] {
 
   /**
     * Creates a new instance of WeakEventHandler.
@@ -67,8 +68,7 @@ class WeakEventHandler[T <: jfxe.Event](
     * @param eventHandler The original event handler to which to forward event notifications
     */
   def this(eventHandler: (T) => Unit) =
-    this(
-        new jfxe.WeakEventHandler[T](new jfxe.EventHandler[T] {
+    this(new jfxe.WeakEventHandler[T](new jfxe.EventHandler[T] {
       def handle(event: T) = eventHandler(event)
     }))
 

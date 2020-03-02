@@ -9,10 +9,10 @@ object Test {
     val m = new mutable.HashMap[String, String]
 
     /* Use non hash-based structure for verification */
-    val keys = List("a", "b", "c", "d", "e")
+    val keys        = List("a", "b", "c", "d", "e")
     val valueSuffix = "value"
-    val values = keys.map(_ + valueSuffix)
-    val entries = keys.zip(values)
+    val values      = keys.map(_ + valueSuffix)
+    val entries     = keys.zip(values)
 
     for (k <- keys) m(k) = k + valueSuffix
 
@@ -28,14 +28,18 @@ object Test {
 
   /* Checks foreach of `actual` goes over all the elements in `expected` */
   private def assertForeach[E](
-      expected: Traversable[E], actual: Iterator[E]): Unit = {
+      expected: Traversable[E],
+      actual: Iterator[E]
+  ): Unit = {
     val notYetFound = new mutable.ArrayBuffer[E]() ++= expected
     actual.foreach { e =>
       assert(notYetFound.contains(e))
       notYetFound -= e
     }
-    assert(notYetFound.size == 0,
-           "mutable.HashMap.foreach should have iterated over: " + notYetFound)
+    assert(
+      notYetFound.size == 0,
+      "mutable.HashMap.foreach should have iterated over: " + notYetFound
+    )
   }
 
   /*
@@ -45,13 +49,17 @@ object Test {
    * we mean to test.
    */
   private def assertForeach[E](
-      expected: Traversable[E], actual: Traversable[E]): Unit = {
+      expected: Traversable[E],
+      actual: Traversable[E]
+  ): Unit = {
     val notYetFound = new mutable.ArrayBuffer[E]() ++= expected
     actual.foreach { e =>
       assert(notYetFound.contains(e))
       notYetFound -= e
     }
-    assert(notYetFound.size == 0,
-           "mutable.HashMap.foreach should have iterated over: " + notYetFound)
+    assert(
+      notYetFound.size == 0,
+      "mutable.HashMap.foreach should have iterated over: " + notYetFound
+    )
   }
 }

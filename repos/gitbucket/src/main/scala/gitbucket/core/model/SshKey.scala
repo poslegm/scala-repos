@@ -6,9 +6,9 @@ trait SshKeyComponent { self: Profile =>
   lazy val SshKeys = TableQuery[SshKeys]
 
   class SshKeys(tag: Tag) extends Table[SshKey](tag, "SSH_KEY") {
-    val userName = column[String]("USER_NAME")
-    val sshKeyId = column[Int]("SSH_KEY_ID", O AutoInc)
-    val title = column[String]("TITLE")
+    val userName  = column[String]("USER_NAME")
+    val sshKeyId  = column[Int]("SSH_KEY_ID", O AutoInc)
+    val title     = column[String]("TITLE")
     val publicKey = column[String]("PUBLIC_KEY")
     def * =
       (userName, sshKeyId, title, publicKey) <> (SshKey.tupled, SshKey.unapply)

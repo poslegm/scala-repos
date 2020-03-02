@@ -20,9 +20,11 @@ object Test extends ScaladocModelTest {
     import access._
 
     // check correct expansion of the use case signature
-    val x = rootPackage._class("SI_4676")._method("x")
+    val x          = rootPackage._class("SI_4676")._method("x")
     val resultType = x.valueParams(0)(0).resultType.name
-    assert(resultType == "SS",
-           s"parameter ss of method x has type $resultType, expected SS!")
+    assert(
+      resultType == "SS",
+      s"parameter ss of method x has type $resultType, expected SS!"
+    )
   }
 }

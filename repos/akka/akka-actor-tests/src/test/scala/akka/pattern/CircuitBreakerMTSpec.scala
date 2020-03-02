@@ -11,48 +11,51 @@ import scala.concurrent.{Future, Await}
 class CircuitBreakerMTSpec extends AkkaSpec {
   implicit val ec = system.dispatcher
   "A circuit breaker being called by many threads" must {
-    val callTimeout = 2.second.dilated
+    val callTimeout  = 2.second.dilated
     val resetTimeout = 3.seconds.dilated
-    val maxFailures = 5
+    val maxFailures  = 5
     val breaker = new CircuitBreaker(
-        system.scheduler, maxFailures, callTimeout, resetTimeout)
+      system.scheduler,
+      maxFailures,
+      callTimeout,
+      resetTimeout
+    )
     val numberOfTestCalls = 100
 
     def openBreaker(): Unit = {
       // returns true if the breaker is open
       def failingCall(): Boolean =
-        Await.result(breaker.withCircuitBreaker(
-                         Future(throw new RuntimeException("FAIL"))) recover {
-                       case _: CircuitBreakerOpenException ⇒ true
-                       case _ ⇒ false
-                     },
-                     remainingOrDefault)
+        Await.result(
+          breaker
+            .withCircuitBreaker(Future(throw new RuntimeException("FAIL"))) recover {
+            case _: CircuitBreakerOpenException ⇒ true
+            case _                              ⇒ false
+          },
+          remainingOrDefault
+        )
 
       // fire some failing calls
-      1 to (maxFailures + 1) foreach { _ ⇒
-        failingCall()
-      }
+      1 to (maxFailures + 1) foreach { _ ⇒ failingCall() }
       // and then continue with failing calls until the breaker is open
       awaitCond(failingCall())
     }
 
     def testCallsWithBreaker(): immutable.IndexedSeq[Future[String]] = {
       val aFewActive = new TestLatch(5)
-      for (_ ← 1 to numberOfTestCalls) yield
-        breaker.withCircuitBreaker(Future {
+      for (_ ← 1 to numberOfTestCalls) yield breaker.withCircuitBreaker(Future {
+        aFewActive.countDown()
+        Await.ready(aFewActive, 5.seconds.dilated)
+        "succeed"
+      }) recoverWith {
+        case _: CircuitBreakerOpenException ⇒
           aFewActive.countDown()
-          Await.ready(aFewActive, 5.seconds.dilated)
-          "succeed"
-        }) recoverWith {
-          case _: CircuitBreakerOpenException ⇒
-            aFewActive.countDown()
-            Future.successful("CBO")
-        }
+          Future.successful("CBO")
+      }
     }
 
     "allow many calls while in closed state with no errors" in {
       val futures = testCallsWithBreaker()
-      val result = Await.result(Future.sequence(futures), 5.second.dilated)
+      val result  = Await.result(Future.sequence(futures), 5.second.dilated)
       result.size should ===(numberOfTestCalls)
       result.toSet should ===(Set("succeed"))
     }
@@ -60,7 +63,7 @@ class CircuitBreakerMTSpec extends AkkaSpec {
     "transition to open state upon reaching failure limit and fail-fast" in {
       openBreaker()
       val futures = testCallsWithBreaker()
-      val result = Await.result(Future.sequence(futures), 5.second.dilated)
+      val result  = Await.result(Future.sequence(futures), 5.second.dilated)
       result.size should ===(numberOfTestCalls)
       result.toSet should ===(Set("CBO"))
     }
@@ -75,7 +78,7 @@ class CircuitBreakerMTSpec extends AkkaSpec {
       Await.ready(halfOpenLatch, resetTimeout + 1.seconds.dilated)
 
       val futures = testCallsWithBreaker()
-      val result = Await.result(Future.sequence(futures), 5.second.dilated)
+      val result  = Await.result(Future.sequence(futures), 5.second.dilated)
       result.size should ===(numberOfTestCalls)
       result.toSet should ===(Set("succeed", "CBO"))
     }
@@ -95,7 +98,7 @@ class CircuitBreakerMTSpec extends AkkaSpec {
       Await.ready(closedLatch, 5.seconds.dilated)
 
       val futures = testCallsWithBreaker()
-      val result = Await.result(Future.sequence(futures), 5.second.dilated)
+      val result  = Await.result(Future.sequence(futures), 5.second.dilated)
       result.size should ===(numberOfTestCalls)
       result.toSet should ===(Set("succeed"))
     }

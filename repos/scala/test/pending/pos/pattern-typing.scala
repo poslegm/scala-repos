@@ -6,7 +6,7 @@ package p1 {
   case class Sub[B <: Bound[B]](p: B)
   object Test {
     def g[A](x: Bound[A]) = ()
-    def f(x: Any) = x match { case Sub(p) => g(p) }
+    def f(x: Any)         = x match { case Sub(p) => g(p) }
   }
 }
 
@@ -16,7 +16,7 @@ package p2 {
 
   case class SubHK[B <: Bound[B], CC[X] <: Traversable[X]](xs: CC[B])
   class MyBound extends Bound[MyBound]
-  class MySeq extends Seq[MyBound]
+  class MySeq   extends Seq[MyBound]
 
   object Test {
     def g[B](x: Bound[B]) = ()

@@ -19,7 +19,10 @@ package org.apache.spark.sql.execution.columnar
 
 import org.apache.spark.SparkFunSuite
 import org.apache.spark.sql.catalyst.CatalystTypeConverters
-import org.apache.spark.sql.catalyst.expressions.{GenericMutableRow, UnsafeProjection}
+import org.apache.spark.sql.catalyst.expressions.{
+  GenericMutableRow,
+  UnsafeProjection
+}
 import org.apache.spark.sql.types._
 
 class TestNullableColumnBuilder[JvmType](columnType: ColumnType[JvmType])
@@ -29,7 +32,8 @@ class TestNullableColumnBuilder[JvmType](columnType: ColumnType[JvmType])
 object TestNullableColumnBuilder {
   def apply[JvmType](
       columnType: ColumnType[JvmType],
-      initialSize: Int = 0): TestNullableColumnBuilder[JvmType] = {
+      initialSize: Int = 0
+  ): TestNullableColumnBuilder[JvmType] = {
     val builder = new TestNullableColumnBuilder(columnType)
     builder.initialize(initialSize)
     builder
@@ -39,34 +43,37 @@ object TestNullableColumnBuilder {
 class NullableColumnBuilderSuite extends SparkFunSuite {
   import org.apache.spark.sql.execution.columnar.ColumnarTestUtils._
 
-  Seq(BOOLEAN,
-      BYTE,
-      SHORT,
-      INT,
-      LONG,
-      FLOAT,
-      DOUBLE,
-      STRING,
-      BINARY,
-      COMPACT_DECIMAL(15, 10),
-      LARGE_DECIMAL(20, 10),
-      STRUCT(StructType(StructField("a", StringType) :: Nil)),
-      ARRAY(ArrayType(IntegerType)),
-      MAP(MapType(IntegerType, StringType))).foreach {
+  Seq(
+    BOOLEAN,
+    BYTE,
+    SHORT,
+    INT,
+    LONG,
+    FLOAT,
+    DOUBLE,
+    STRING,
+    BINARY,
+    COMPACT_DECIMAL(15, 10),
+    LARGE_DECIMAL(20, 10),
+    STRUCT(StructType(StructField("a", StringType) :: Nil)),
+    ARRAY(ArrayType(IntegerType)),
+    MAP(MapType(IntegerType, StringType))
+  ).foreach {
     testNullableColumnBuilder(_)
   }
 
   def testNullableColumnBuilder[JvmType](
-      columnType: ColumnType[JvmType]): Unit = {
+      columnType: ColumnType[JvmType]
+  ): Unit = {
 
-    val typeName = columnType.getClass.getSimpleName.stripSuffix("$")
-    val dataType = columnType.dataType
-    val proj = UnsafeProjection.create(Array[DataType](dataType))
+    val typeName  = columnType.getClass.getSimpleName.stripSuffix("$")
+    val dataType  = columnType.dataType
+    val proj      = UnsafeProjection.create(Array[DataType](dataType))
     val converter = CatalystTypeConverters.createToScalaConverter(dataType)
 
     test(s"$typeName column builder: empty column") {
       val columnBuilder = TestNullableColumnBuilder(columnType)
-      val buffer = columnBuilder.build()
+      val buffer        = columnBuilder.build()
 
       assertResult(0, "Wrong null count")(buffer.getInt())
       assert(!buffer.hasRemaining)
@@ -74,11 +81,9 @@ class NullableColumnBuilderSuite extends SparkFunSuite {
 
     test(s"$typeName column builder: buffer size auto growth") {
       val columnBuilder = TestNullableColumnBuilder(columnType)
-      val randomRow = makeRandomRow(columnType)
+      val randomRow     = makeRandomRow(columnType)
 
-      (0 until 4).foreach { _ =>
-        columnBuilder.appendFrom(proj(randomRow), 0)
-      }
+      (0 until 4).foreach { _ => columnBuilder.appendFrom(proj(randomRow), 0) }
 
       val buffer = columnBuilder.build()
 
@@ -87,8 +92,8 @@ class NullableColumnBuilderSuite extends SparkFunSuite {
 
     test(s"$typeName column builder: null values") {
       val columnBuilder = TestNullableColumnBuilder(columnType)
-      val randomRow = makeRandomRow(columnType)
-      val nullRow = makeNullRow(1)
+      val randomRow     = makeRandomRow(columnType)
+      val nullRow       = makeNullRow(1)
 
       (0 until 4).foreach { _ =>
         columnBuilder.appendFrom(proj(randomRow), 0)
@@ -107,9 +112,12 @@ class NullableColumnBuilderSuite extends SparkFunSuite {
       val actual = new GenericMutableRow(new Array[Any](1))
       (0 until 4).foreach { _ =>
         columnType.extract(buffer, actual, 0)
-        assert(converter(actual.get(0, dataType)) === converter(
-                   randomRow.get(0, dataType)),
-               "Extracted value didn't equal to the original one")
+        assert(
+          converter(actual.get(0, dataType)) === converter(
+            randomRow.get(0, dataType)
+          ),
+          "Extracted value didn't equal to the original one"
+        )
       }
 
       assert(!buffer.hasRemaining)

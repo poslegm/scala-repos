@@ -2,7 +2,7 @@
 object Test {
 
   def main(args: Array[String]) {
-    var sum = 0
+    var sum    = 0
     val setseq = Set(1, 2, 3, 4).toSeq
     setseq.map(n => { sum += n; n * n }).head
     assert(sum == 10)

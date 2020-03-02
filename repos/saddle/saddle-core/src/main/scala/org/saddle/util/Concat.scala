@@ -54,21 +54,22 @@ object Concat extends LowPriorityConcatImplicits {
     * @tparam B The second type to promote
     * @tparam C The joint promotion type
     */
-  case class Promoter[@spec(Boolean, Byte, Int, Long, Double) -A,
-                      @spec(Boolean, Byte, Int, Long, Double) -B,
-                      @spec(Boolean, Byte, Int, Long, Double) +C](
-      promoteA: A => C, promoteB: B => C)
+  case class Promoter[
+      @spec(Boolean, Byte, Int, Long, Double) -A,
+      @spec(Boolean, Byte, Int, Long, Double) -B,
+      @spec(Boolean, Byte, Int, Long, Double) +C
+  ](promoteA: A => C, promoteB: B => C)
 
   implicit def id[T](a: T): T = a
 
   // boolean promoting
 
-  implicit val promoteBY: Boolean => Byte = if (_) 1 else 0
-  implicit val promoteBC: Boolean => Char = if (_) 1 else 0
-  implicit val promoteBS: Boolean => Short = if (_) 1 else 0
-  implicit val promoteBI: Boolean => Int = if (_) 1 else 0
-  implicit val promoteBL: Boolean => Long = if (_) 1L else 0L
-  implicit val promoteBF: Boolean => Float = if (_) 1f else 0f
+  implicit val promoteBY: Boolean => Byte   = if (_) 1 else 0
+  implicit val promoteBC: Boolean => Char   = if (_) 1 else 0
+  implicit val promoteBS: Boolean => Short  = if (_) 1 else 0
+  implicit val promoteBI: Boolean => Int    = if (_) 1 else 0
+  implicit val promoteBL: Boolean => Long   = if (_) 1L else 0L
+  implicit val promoteBF: Boolean => Float  = if (_) 1f else 0f
   implicit val promoteBD: Boolean => Double = if (_) 1d else 0d
   implicit val promoteBA: Boolean => AnyRef = Boolean.box _
 
@@ -281,13 +282,16 @@ object Concat extends LowPriorityConcatImplicits {
     * @tparam B Second array type
     * @tparam C Result array type
     */
-  def append[@spec(Boolean, Byte, Int, Long, Double) A,
-             @spec(Boolean, Byte, Int, Long, Double) B,
-             @spec(Boolean, Byte, Int, Long, Double) C](
-      a1: Array[A], a2: Array[B])(
-      implicit wd: Promoter[A, B, C], mc: ST[C]): Array[C] = {
+  def append[
+      @spec(Boolean, Byte, Int, Long, Double) A,
+      @spec(Boolean, Byte, Int, Long, Double) B,
+      @spec(Boolean, Byte, Int, Long, Double) C
+  ](
+      a1: Array[A],
+      a2: Array[B]
+  )(implicit wd: Promoter[A, B, C], mc: ST[C]): Array[C] = {
     val result = array.empty[C](a1.length + a2.length)
-    var i = 0
+    var i      = 0
     while (i < a1.length) {
       result(i) = wd.promoteA(a1(i))
       i += 1

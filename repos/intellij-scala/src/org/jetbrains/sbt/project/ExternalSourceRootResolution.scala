@@ -5,7 +5,12 @@ import java.io.File
 
 import com.intellij.openapi.externalSystem.model.ExternalSystemException
 import com.intellij.openapi.externalSystem.model.project.ExternalSystemSourceType
-import org.jetbrains.sbt.project.data.{ContentRootNode, LibraryNode, ModuleDependencyNode, ModuleNode}
+import org.jetbrains.sbt.project.data.{
+  ContentRootNode,
+  LibraryNode,
+  ModuleDependencyNode,
+  ModuleNode
+}
 import org.jetbrains.sbt.project.sources.SharedSourcesModuleType
 import org.jetbrains.sbt.{structure => sbtStructure}
 
@@ -16,7 +21,8 @@ trait ExternalSourceRootResolution { self: SbtProjectResolver =>
   def createSharedSourceModules(
       projectToModuleNode: Map[sbtStructure.ProjectData, ModuleNode],
       libraryNodes: Seq[LibraryNode],
-      moduleFilesDirectory: File): Seq[ModuleNode] = {
+      moduleFilesDirectory: File
+  ): Seq[ModuleNode] = {
 
     val projects = projectToModuleNode.keys.toSeq
 
@@ -42,7 +48,11 @@ trait ExternalSourceRootResolution { self: SbtProjectResolver =>
 
     groupSharedRoots(sharedRoots).map { group =>
       createSourceModuleNodesAndDependencies(
-          group, projectToModuleNode, libraryNodes, moduleFilesDirectory)
+        group,
+        projectToModuleNode,
+        libraryNodes,
+        moduleFilesDirectory
+      )
     }
   }
 
@@ -50,7 +60,8 @@ trait ExternalSourceRootResolution { self: SbtProjectResolver =>
       rootGroup: RootGroup,
       projectToModuleNode: Map[sbtStructure.ProjectData, ModuleNode],
       libraryNodes: Seq[LibraryNode],
-      moduleFilesDirectory: File): ModuleNode = {
+      moduleFilesDirectory: File
+  ): ModuleNode = {
     val projects = rootGroup.projects
 
     val sourceModuleNode = {
@@ -58,16 +69,23 @@ trait ExternalSourceRootResolution { self: SbtProjectResolver =>
 
       val uniqueModuleDependencies =
         projects.flatMap(_.dependencies.modules).distinct
-      moduleNode.addAll(createLibraryDependencies(uniqueModuleDependencies)(
-              moduleNode, libraryNodes.map(_.data)))
+      moduleNode.addAll(
+        createLibraryDependencies(uniqueModuleDependencies)(
+          moduleNode,
+          libraryNodes.map(_.data)
+        )
+      )
 
       val uniqueProjectDependencies =
         projects.flatMap(_.dependencies.projects).distinct
       uniqueProjectDependencies.foreach { dependencyId =>
         val dependency = projectToModuleNode.values
           .find(_.getId == dependencyId.project)
-          .getOrElse(throw new ExternalSystemException(
-                  "Cannot find project dependency: " + dependencyId.project))
+          .getOrElse(
+            throw new ExternalSystemException(
+              "Cannot find project dependency: " + dependencyId.project
+            )
+          )
 
         val dependencyNode = new ModuleDependencyNode(moduleNode, dependency)
         dependencyNode.setScope(scopeFor(dependencyId.configuration))
@@ -87,19 +105,25 @@ trait ExternalSourceRootResolution { self: SbtProjectResolver =>
   }
 
   private def createSourceModule(
-      group: RootGroup, moduleFilesDirectory: File): ModuleNode = {
-    val moduleNode = new ModuleNode(SharedSourcesModuleType.instance.getId,
-                                    group.name,
-                                    group.name,
-                                    moduleFilesDirectory.path,
-                                    group.base.canonicalPath)
+      group: RootGroup,
+      moduleFilesDirectory: File
+  ): ModuleNode = {
+    val moduleNode = new ModuleNode(
+      SharedSourcesModuleType.instance.getId,
+      group.name,
+      group.name,
+      moduleFilesDirectory.path,
+      group.base.canonicalPath
+    )
 
     val contentRootNode = {
       val node = new ContentRootNode(group.base.path)
 
       group.roots.foreach { root =>
-        node.storePath(scopeAndKindToSourceType(root.scope, root.kind),
-                       root.directory.path)
+        node.storePath(
+          scopeAndKindToSourceType(root.scope, root.kind),
+          root.directory.path
+        )
       }
 
       node
@@ -111,7 +135,9 @@ trait ExternalSourceRootResolution { self: SbtProjectResolver =>
   }
 
   private def scopeAndKindToSourceType(
-      scope: Root.Scope, kind: Root.Kind): ExternalSystemSourceType =
+      scope: Root.Scope,
+      kind: Root.Kind
+  ): ExternalSystemSourceType =
     (scope, kind) match {
       case (Root.Scope.Compile, Root.Kind.Sources) =>
         ExternalSystemSourceType.SOURCE
@@ -124,9 +150,11 @@ trait ExternalSourceRootResolution { self: SbtProjectResolver =>
     }
 
   private def sharedAndExternalRootsIn(
-      projects: Seq[sbtStructure.ProjectData]): Seq[SharedRoot] = {
-    val projectRoots = projects.flatMap(
-        project => sourceRootsIn(project).map(ProjectRoot(project, _)))
+      projects: Seq[sbtStructure.ProjectData]
+  ): Seq[SharedRoot] = {
+    val projectRoots = projects.flatMap(project =>
+      sourceRootsIn(project).map(ProjectRoot(project, _))
+    )
 
     // TODO return the message about omitted directories
     val internalSourceDirectories =
@@ -134,8 +162,9 @@ trait ExternalSourceRootResolution { self: SbtProjectResolver =>
 
     projectRoots
       .filter(it =>
-            it.isExternal &&
-            !internalSourceDirectories.contains(it.root.directory))
+        it.isExternal &&
+          !internalSourceDirectories.contains(it.root.directory)
+      )
       .groupBy(_.root)
       .mapValues(_.map(_.project).toSet)
       .map(p => SharedRoot(p._1, p._2.toSeq))
@@ -148,7 +177,7 @@ trait ExternalSourceRootResolution { self: SbtProjectResolver =>
     // TODO consider base/projects correspondence
     roots.groupBy(_.root.base).values.toSeq.map { roots =>
       val sharedRoot = roots.head
-      val name = nameProvider.nameFor(sharedRoot.root.base)
+      val name       = nameProvider.nameFor(sharedRoot.root.base)
       RootGroup(name, roots.map(_.root), sharedRoot.projects)
     }
   }
@@ -172,9 +201,11 @@ trait ExternalSourceRootResolution { self: SbtProjectResolver =>
     }
   }
 
-  private case class RootGroup(name: String,
-                               roots: Seq[Root],
-                               projects: Seq[sbtStructure.ProjectData]) {
+  private case class RootGroup(
+      name: String,
+      roots: Seq[Root],
+      projects: Seq[sbtStructure.ProjectData]
+  ) {
     def base: File = {
       val root = roots.head
       root.base.getOrElse(root.directory)
@@ -182,9 +213,14 @@ trait ExternalSourceRootResolution { self: SbtProjectResolver =>
   }
 
   private case class SharedRoot(
-      root: Root, projects: Seq[sbtStructure.ProjectData])
+      root: Root,
+      projects: Seq[sbtStructure.ProjectData]
+  )
 
-  private case class ProjectRoot(project: sbtStructure.ProjectData, root: Root) {
+  private case class ProjectRoot(
+      project: sbtStructure.ProjectData,
+      root: Root
+  ) {
     def isInternal: Boolean = !isExternal
 
     def isExternal: Boolean = root.directory.isOutsideOf(project.base)
@@ -203,19 +239,19 @@ trait ExternalSourceRootResolution { self: SbtProjectResolver =>
     sealed trait Scope
     object Scope {
       case object Compile extends Scope
-      case object Test extends Scope
+      case object Test    extends Scope
     }
 
     sealed trait Kind
     object Kind {
-      case object Sources extends Kind
+      case object Sources   extends Kind
       case object Resources extends Kind
     }
   }
 
   private class SharedSourceRootNameProvider {
     var usedNames = Set.empty[String]
-    var counter = 1
+    var counter   = 1
 
     def nameFor(base: Option[File]) = {
       val namedDirectory =

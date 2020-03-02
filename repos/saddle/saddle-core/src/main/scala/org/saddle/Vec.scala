@@ -69,7 +69,8 @@ import java.io.OutputStream
   * @tparam T Type of elements within the Vec
   */
 trait Vec[@spec(Boolean, Int, Long, Double) T]
-    extends NumericOps[Vec[T]] with Serializable {
+    extends NumericOps[Vec[T]]
+    with Serializable {
 
   /**
     * The number of elements in the container                                                  F
@@ -144,7 +145,7 @@ trait Vec[@spec(Boolean, Int, Long, Double) T]
     * @param rng evaluates to IRange
     */
   def apply(rng: Slice[Int]): Vec[T] = {
-    val idx = new IndexIntRange(length)
+    val idx  = new IndexIntRange(length)
     val pair = rng(idx)
     slice(pair._1, pair._2)
   }
@@ -239,8 +240,7 @@ trait Vec[@spec(Boolean, Int, Long, Double) T]
     * @tparam B type of other Vec elements
     * @tparam C type of resulting Vec elements
     */
-  def concat[B, C](v: Vec[B])(
-      implicit wd: Promoter[T, B, C], mc: ST[C]): Vec[C]
+  def concat[B, C](v: Vec[B])(implicit wd: Promoter[T, B, C], mc: ST[C]): Vec[C]
 
   /**
     * Additive inverse of Vec with numeric elements
@@ -254,36 +254,40 @@ trait Vec[@spec(Boolean, Int, Long, Double) T]
   /**
     * Map a function over the elements of the Vec, as in scala collections library
     */
-  def map[@spec(Boolean, Int, Long, Double) B : ST](f: T => B): Vec[B]
+  def map[@spec(Boolean, Int, Long, Double) B: ST](f: T => B): Vec[B]
 
   /**
     * Maps a function over elements of the Vec and flattens the result.
     */
-  def flatMap[@spec(Boolean, Int, Long, Double) B : ST](f: T => Vec[B]): Vec[B]
+  def flatMap[@spec(Boolean, Int, Long, Double) B: ST](f: T => Vec[B]): Vec[B]
 
   /**
     * Left fold over the elements of the Vec, as in scala collections library
     */
-  def foldLeft[@spec(Boolean, Int, Long, Double) B : ST](init: B)(
-      f: (B, T) => B): B
+  def foldLeft[@spec(Boolean, Int, Long, Double) B: ST](init: B)(
+      f: (B, T) => B
+  ): B
 
   /**
     * Left scan over the elements of the Vec, as in scala collections library
     */
-  def scanLeft[@spec(Boolean, Int, Long, Double) B : ST](init: B)(
-      f: (B, T) => B): Vec[B]
+  def scanLeft[@spec(Boolean, Int, Long, Double) B: ST](init: B)(
+      f: (B, T) => B
+  ): Vec[B]
 
   /**
     * Filtered left fold over the elements of the Vec, as in scala collections library
     */
-  def filterFoldLeft[@spec(Boolean, Int, Long, Double) B : ST](
-      pred: T => Boolean)(init: B)(f: (B, T) => B): B
+  def filterFoldLeft[@spec(Boolean, Int, Long, Double) B: ST](
+      pred: T => Boolean
+  )(init: B)(f: (B, T) => B): B
 
   /**
     * Filtered left scan over elements of the Vec, as in scala collections library
     */
-  def filterScanLeft[@spec(Boolean, Int, Long, Double) B : ST](
-      pred: T => Boolean)(init: B)(f: (B, T) => B): Vec[B]
+  def filterScanLeft[@spec(Boolean, Int, Long, Double) B: ST](
+      pred: T => Boolean
+  )(init: B)(f: (B, T) => B): Vec[B]
 
   /**
     * Left fold that folds only while the test condition holds true. As soon as the condition function yields
@@ -291,8 +295,9 @@ trait Vec[@spec(Boolean, Int, Long, Double) T]
     *
     * @param cond Function whose signature is the same as the fold function, except that it evaluates to Boolean
     */
-  def foldLeftWhile[@spec(Boolean, Int, Long, Double) B : ST](init: B)(
-      f: (B, T) => B)(cond: (B, T) => Boolean): B
+  def foldLeftWhile[@spec(Boolean, Int, Long, Double) B: ST](init: B)(
+      f: (B, T) => B
+  )(cond: (B, T) => Boolean): B
 
   /**
     * Zips Vec with another Vec and applies a function to the paired elements. If either of the pair is NA, the
@@ -302,9 +307,10 @@ trait Vec[@spec(Boolean, Int, Long, Double) T]
     * @tparam B Parameter of other Vec
     * @tparam C Result of function
     */
-  def zipMap[@spec(Int, Long, Double) B : ST,
-             @spec(Boolean, Int, Long, Double) C : ST](other: Vec[B])(
-      f: (T, B) => C): Vec[C]
+  def zipMap[
+      @spec(Int, Long, Double) B: ST,
+      @spec(Boolean, Int, Long, Double) C: ST
+  ](other: Vec[B])(f: (T, B) => C): Vec[C]
 
   /**
     * Drop the elements of the Vec which are NA
@@ -378,8 +384,10 @@ trait Vec[@spec(Boolean, Int, Long, Double) T]
     * @param f Function Vec[A] => B to operate on sliding window
     * @tparam B Result type of function
     */
-  def rolling[@spec(Boolean, Int, Long, Double) B : ST](
-      winSz: Int, f: Vec[T] => B): Vec[B]
+  def rolling[@spec(Boolean, Int, Long, Double) B: ST](
+      winSz: Int,
+      f: Vec[T] => B
+  ): Vec[B]
 
   /**
     * Yield a Vec whose elements have been sorted (in ascending order)
@@ -481,7 +489,7 @@ trait Vec[@spec(Boolean, Int, Long, Double) T]
   private[saddle] def toDoubleArray(implicit na: NUM[T]): Array[Double] = {
     val arr = toArray
     val buf = new Array[Double](arr.length)
-    var i = 0
+    var i   = 0
     while (i < arr.length) {
       buf(i) = scalarTag.toDouble(arr(i))
       i += 1
@@ -500,12 +508,12 @@ trait Vec[@spec(Boolean, Int, Long, Double) T]
   override def equals(o: Any): Boolean = o match {
     case rv: Vec[_] =>
       (this eq rv) || (this.length == rv.length) && {
-        var i = 0
+        var i  = 0
         var eq = true
         while (eq && i < this.length) {
           eq &&=
-          (apply(i) == rv(i) || this.scalarTag.isMissing(apply(i)) &&
-              rv.scalarTag.isMissing(rv(i)))
+            (apply(i) == rv(i) || this.scalarTag.isMissing(apply(i)) &&
+            rv.scalarTag.isMissing(rv(i)))
           i += 1
         }
         eq
@@ -575,14 +583,14 @@ object Vec extends BinOpVec with VecStatsImplicits with VecBoolEnricher {
     * @param values Sequence
     * @tparam T Type of elements in Vec
     */
-  def apply[T : ST](values: T*): Vec[T] = Vec(values.toArray)
+  def apply[T: ST](values: T*): Vec[T] = Vec(values.toArray)
 
   /**
     * Creates an empty Vec of type T.
     *
     * @tparam T Vec type parameter
     */
-  def empty[T : ST]: Vec[T] = Vec(Array.empty[T])
+  def empty[T: ST]: Vec[T] = Vec(Array.empty[T])
 
   // **** conversions
 
@@ -601,7 +609,7 @@ object Vec extends BinOpVec with VecStatsImplicits with VecBoolEnricher {
     * @param arr Array
     * @tparam T Type parameter of Array
     */
-  implicit def arrayToVec[T : ST](arr: Array[T]) = Vec(arr)
+  implicit def arrayToVec[T: ST](arr: Array[T]) = Vec(arr)
 
   /**
     * A Vec may be implicitly ''widened'' to a Vec.
@@ -609,10 +617,10 @@ object Vec extends BinOpVec with VecStatsImplicits with VecBoolEnricher {
     * @param s Vec to widen to Series
     * @tparam A Type of elements in Vec
     */
-  implicit def vecToSeries[A : ST](s: Vec[A]) = Series(s)
+  implicit def vecToSeries[A: ST](s: Vec[A]) = Series(s)
 
   /**
     * A Vec may be implicitly converted to a single column Mat
     */
-  implicit def vecToMat[A : ST](s: Vec[A]): Mat[A] = Mat(s)
+  implicit def vecToMat[A: ST](s: Vec[A]): Mat[A] = Mat(s)
 }

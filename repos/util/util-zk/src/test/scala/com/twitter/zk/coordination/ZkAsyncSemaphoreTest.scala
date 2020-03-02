@@ -20,18 +20,20 @@ import com.twitter.zk.{NativeConnector, RetryPolicy, ZkClient}
 
 @RunWith(classOf[JUnitRunner])
 class ZkAsyncSemaphoreTest
-    extends WordSpec with MockitoSugar with AsyncAssertions {
+    extends WordSpec
+    with MockitoSugar
+    with AsyncAssertions {
 
   "ZkAsyncSemaphore" should {
 
-    val path = "/testing/twitter/service/charm/semaphore/test"
+    val path    = "/testing/twitter/service/charm/semaphore/test"
     val permits = new ConcurrentLinkedQueue[Permit]
 
     Option { System.getProperty("com.twitter.zk.TEST_CONNECT") } foreach {
       connectString =>
         def withClient(f: (ZkClient) => Unit) = {
           implicit val timer = new JavaTimer(true)
-          val connector = NativeConnector(connectString, 5.seconds, 10.minutes)
+          val connector      = NativeConnector(connectString, 5.seconds, 10.minutes)
           val zk = ZkClient(connector)
             .withRetryPolicy(RetryPolicy.Basic(3))
             .withAcl(OPEN_ACL_UNSAFE.asScala)
@@ -40,9 +42,7 @@ class ZkAsyncSemaphoreTest
         }
 
         def acquire(sem: ZkAsyncSemaphore) = {
-          sem.acquire() onSuccess { permit =>
-            permits add permit
-          }
+          sem.acquire() onSuccess { permit => permits add permit }
         }
 
         "provide a shared 2-permit semaphore and" should {
@@ -58,15 +58,13 @@ class ZkAsyncSemaphoreTest
             }
 
             "execute immediately while permits are available" in {
-              Await.result(
-                  acquire(sem1) within (new JavaTimer(true), 2.second))
+              Await.result(acquire(sem1) within (new JavaTimer(true), 2.second))
               assert(sem1.numPermitsAvailable == 1)
               assert(sem1.numWaiters == 0)
               assert(sem2.numPermitsAvailable == 1)
               assert(sem2.numWaiters == 0)
 
-              Await.result(
-                  acquire(sem2) within (new JavaTimer(true), 2.second))
+              Await.result(acquire(sem2) within (new JavaTimer(true), 2.second))
               assert(sem1.numPermitsAvailable == 0)
               assert(sem1.numWaiters == 0)
               assert(sem2.numPermitsAvailable == 0)
@@ -78,8 +76,10 @@ class ZkAsyncSemaphoreTest
 
             "queue waiters when no permits are available" in {
               implicit val config =
-                PatienceConfig(timeout = scaled(Span(1, Seconds)),
-                               interval = scaled(Span(100, Millis)))
+                PatienceConfig(
+                  timeout = scaled(Span(1, Seconds)),
+                  interval = scaled(Span(100, Millis))
+                )
 
               awaiting1 = acquire(sem1)
               assert(awaiting1.poll == (None))
@@ -104,8 +104,10 @@ class ZkAsyncSemaphoreTest
 
             "have correct gauges as permit holders release" in {
               implicit val config =
-                PatienceConfig(timeout = scaled(Span(1, Seconds)),
-                               interval = scaled(Span(100, Millis)))
+                PatienceConfig(
+                  timeout = scaled(Span(1, Seconds)),
+                  interval = scaled(Span(100, Millis))
+                )
 
               assert(permits.size == (2))
 

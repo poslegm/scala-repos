@@ -14,7 +14,7 @@ import org.scalatest.mock.MockitoSugar
 class SingletonPoolTest extends FunSuite with MockitoSugar {
   class Ctx {
     val underlying = mock[ServiceFactory[Int, Int]]
-    val closeP = new Promise[Unit]
+    val closeP     = new Promise[Unit]
     when(underlying.close(any[Time])).thenReturn(closeP)
     when(underlying.status).thenReturn(Status.Open)
     val service = mock[Service[Int, Int]]
@@ -79,7 +79,8 @@ class SingletonPoolTest extends FunSuite with MockitoSugar {
   }
 
   test(
-      "reestablish connections when the service becomes unavailable, releasing dead service") {
+    "reestablish connections when the service becomes unavailable, releasing dead service"
+  ) {
     val ctx = new Ctx
     import ctx._
 
@@ -171,7 +172,7 @@ class SingletonPoolTest extends FunSuite with MockitoSugar {
     assert(!f.isDefined)
     exc match {
       case Some(_: ServiceClosedException) =>
-      case _ => fail()
+      case _                               => fail()
     }
 
     verify(service, never).close(any[Time])

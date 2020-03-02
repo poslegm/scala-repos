@@ -19,7 +19,12 @@ package org.apache.spark.scheduler
 
 import java.util.Properties
 
-import org.apache.spark.{LocalSparkContext, SparkConf, SparkContext, SparkFunSuite}
+import org.apache.spark.{
+  LocalSparkContext,
+  SparkConf,
+  SparkContext,
+  SparkFunSuite
+}
 
 /**
   * Tests that pools and the associated scheduling algorithms for FIFO and fair scheduling work
@@ -30,16 +35,21 @@ class PoolSuite extends SparkFunSuite with LocalSparkContext {
   def createTaskSetManager(
       stageId: Int,
       numTasks: Int,
-      taskScheduler: TaskSchedulerImpl): TaskSetManager = {
-    val tasks = Array.tabulate[Task[_]](numTasks) { i =>
-      new FakeTask(i, Nil)
-    }
+      taskScheduler: TaskSchedulerImpl
+  ): TaskSetManager = {
+    val tasks = Array.tabulate[Task[_]](numTasks) { i => new FakeTask(i, Nil) }
     new TaskSetManager(
-        taskScheduler, new TaskSet(tasks, stageId, 0, 0, null), 0)
+      taskScheduler,
+      new TaskSet(tasks, stageId, 0, 0, null),
+      0
+    )
   }
 
   def scheduleTaskAndVerifyId(
-      taskId: Int, rootPool: Pool, expectedStageId: Int) {
+      taskId: Int,
+      rootPool: Pool,
+      expectedStageId: Int
+  ) {
     val taskSetQueue = rootPool.getSortedTaskSetQueue
     val nextTaskSetToSchedule =
       taskSetQueue.find(t => (t.runningTasks + t.tasksSuccessful) < t.numTasks)
@@ -52,7 +62,7 @@ class PoolSuite extends SparkFunSuite with LocalSparkContext {
     sc = new SparkContext("local", "TaskSchedulerImplSuite")
     val taskScheduler = new TaskSchedulerImpl(sc)
 
-    val rootPool = new Pool("", SchedulingMode.FIFO, 0, 0)
+    val rootPool           = new Pool("", SchedulingMode.FIFO, 0, 0)
     val schedulableBuilder = new FIFOSchedulableBuilder(rootPool)
     schedulableBuilder.buildPools()
 
@@ -83,7 +93,7 @@ class PoolSuite extends SparkFunSuite with LocalSparkContext {
     sc = new SparkContext("local", "TaskSchedulerImplSuite", conf)
     val taskScheduler = new TaskSchedulerImpl(sc)
 
-    val rootPool = new Pool("", SchedulingMode.FAIR, 0, 0)
+    val rootPool           = new Pool("", SchedulingMode.FAIR, 0, 0)
     val schedulableBuilder = new FairSchedulableBuilder(rootPool, sc.conf)
     schedulableBuilder.buildPools()
 
@@ -143,8 +153,8 @@ class PoolSuite extends SparkFunSuite with LocalSparkContext {
     val taskScheduler = new TaskSchedulerImpl(sc)
 
     val rootPool = new Pool("", SchedulingMode.FAIR, 0, 0)
-    val pool0 = new Pool("0", SchedulingMode.FAIR, 3, 1)
-    val pool1 = new Pool("1", SchedulingMode.FAIR, 4, 1)
+    val pool0    = new Pool("0", SchedulingMode.FAIR, 3, 1)
+    val pool1    = new Pool("1", SchedulingMode.FAIR, 4, 1)
     rootPool.addSchedulable(pool0)
     rootPool.addSchedulable(pool1)
 

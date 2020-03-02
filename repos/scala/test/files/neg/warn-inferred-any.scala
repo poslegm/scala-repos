@@ -12,14 +12,14 @@ trait Xs[+A] {
 }
 
 trait Ys[+A] {
-  { 1 to 5 contains 5l }
-  { 1l to 5l contains 5 }
-  { 1l to 5l contains 5d }
-  { 1l to 5l contains 5l }
+  { 1 to 5 contains 5L }
+  { 1L to 5L contains 5 }
+  { 1L to 5L contains 5d }
+  { 1L to 5L contains 5L }
 }
 
 trait Zs {
-  def f[A](a: A*) = 42
+  def f[A](a: A*)        = 42
   def g[A >: Any](a: A*) = 42 // don't warn
 
   def za = f(1, "one")

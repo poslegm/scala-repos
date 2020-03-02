@@ -23,9 +23,9 @@ import org.saddle.index.IndexAny
 import org.saddle.locator.{Locator, LocatorAny}
 import org.saddle.array.Sorter
 
-class ScalarTagAny[T : CLM] extends ScalarTag[T] {
-  def missing: T = null.asInstanceOf[T]
-  def isMissing(v: T): Boolean = v == null
+class ScalarTagAny[T: CLM] extends ScalarTag[T] {
+  def missing: T                = null.asInstanceOf[T]
+  def isMissing(v: T): Boolean  = v == null
   def notMissing(v: T): Boolean = v != null
 
   def compare(x: T, y: T)(implicit ev: ORD[T]): Int =
@@ -36,9 +36,9 @@ class ScalarTagAny[T : CLM] extends ScalarTag[T] {
 
   def toDouble(t: T)(implicit ev: NUM[T]) = ev.toDouble(t)
 
-  def zero(implicit ev: NUM[T]) = ev.zero
-  def one(implicit ev: NUM[T]) = ev.one
-  def inf(implicit ev: NUM[T]) = sys.error("Infinities not supported")
+  def zero(implicit ev: NUM[T])   = ev.zero
+  def one(implicit ev: NUM[T])    = ev.one
+  def inf(implicit ev: NUM[T])    = sys.error("Infinities not supported")
   def negInf(implicit ev: NUM[T]) = sys.error("Infinities not supported")
 
   def show(v: T) = "%s" format (if (v == null) "NA" else v.toString)

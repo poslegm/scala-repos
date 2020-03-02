@@ -1,7 +1,7 @@
 package lila.analyse
 
 case class Score(centipawns: Int) extends AnyVal {
-  def pawns: Float = centipawns / 100f
+  def pawns: Float      = centipawns / 100f
   def showPawns: String = "%.2f" format pawns
 
   def ceiled =

@@ -3,7 +3,7 @@ import scala.tools.partest.ReplTest
 
 object Test extends ReplTest {
   override def extraSettings = "-deprecation"
-  def code = <code>
+  def code                   = <code>
 // basics
 3+4
 def gcd(x: Int, y: Int): Int = {{

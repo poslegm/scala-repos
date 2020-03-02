@@ -18,7 +18,11 @@
 package org.apache.spark
 
 import java.lang.ref.{ReferenceQueue, WeakReference}
-import java.util.concurrent.{ConcurrentLinkedQueue, ScheduledExecutorService, TimeUnit}
+import java.util.concurrent.{
+  ConcurrentLinkedQueue,
+  ScheduledExecutorService,
+  TimeUnit
+}
 
 import scala.collection.JavaConverters._
 
@@ -31,11 +35,11 @@ import org.apache.spark.util.{ThreadUtils, Utils}
   * Classes that represent cleaning tasks.
   */
 private sealed trait CleanupTask
-private case class CleanRDD(rddId: Int) extends CleanupTask
-private case class CleanShuffle(shuffleId: Int) extends CleanupTask
+private case class CleanRDD(rddId: Int)              extends CleanupTask
+private case class CleanShuffle(shuffleId: Int)      extends CleanupTask
 private case class CleanBroadcast(broadcastId: Long) extends CleanupTask
-private case class CleanAccum(accId: Long) extends CleanupTask
-private case class CleanCheckpoint(rddId: Int) extends CleanupTask
+private case class CleanAccum(accId: Long)           extends CleanupTask
+private case class CleanCheckpoint(rddId: Int)       extends CleanupTask
 
 /**
   * A WeakReference associated with a CleanupTask.
@@ -43,10 +47,11 @@ private case class CleanCheckpoint(rddId: Int) extends CleanupTask
   * When the referent object becomes only weakly reachable, the corresponding
   * CleanupTaskWeakReference is automatically added to the given reference queue.
   */
-private class CleanupTaskWeakReference(val task: CleanupTask,
-                                       referent: AnyRef,
-                                       referenceQueue: ReferenceQueue[AnyRef])
-    extends WeakReference(referent, referenceQueue)
+private class CleanupTaskWeakReference(
+    val task: CleanupTask,
+    referent: AnyRef,
+    referenceQueue: ReferenceQueue[AnyRef]
+) extends WeakReference(referent, referenceQueue)
 
 /**
   * An asynchronous cleaner for RDD, shuffle, and broadcast state.
@@ -70,7 +75,8 @@ private[spark] class ContextCleaner(sc: SparkContext) extends Logging {
 
   private val periodicGCService: ScheduledExecutorService =
     ThreadUtils.newDaemonSingleThreadScheduledExecutor(
-        "context-cleaner-periodic-gc")
+      "context-cleaner-periodic-gc"
+    )
 
   /**
     * How often to trigger a garbage collection in this JVM.
@@ -106,8 +112,8 @@ private[spark] class ContextCleaner(sc: SparkContext) extends Logging {
     * until the real RPC issue (referred to in the comment above `blockOnCleanupTasks`) is
     * resolved.
     */
-  private val blockOnShuffleCleanupTasks = sc.conf.getBoolean(
-      "spark.cleaner.referenceTracking.blocking.shuffle", false)
+  private val blockOnShuffleCleanupTasks = sc.conf
+    .getBoolean("spark.cleaner.referenceTracking.blocking.shuffle", false)
 
   @volatile private var stopped = false
 
@@ -121,9 +127,14 @@ private[spark] class ContextCleaner(sc: SparkContext) extends Logging {
     cleaningThread.setDaemon(true)
     cleaningThread.setName("Spark Context Cleaner")
     cleaningThread.start()
-    periodicGCService.scheduleAtFixedRate(new Runnable {
-      override def run(): Unit = System.gc()
-    }, periodicGCInterval, periodicGCInterval, TimeUnit.SECONDS)
+    periodicGCService.scheduleAtFixedRate(
+      new Runnable {
+        override def run(): Unit = System.gc()
+      },
+      periodicGCInterval,
+      periodicGCInterval,
+      TimeUnit.SECONDS
+    )
   }
 
   /**
@@ -153,9 +164,12 @@ private[spark] class ContextCleaner(sc: SparkContext) extends Logging {
 
   /** Register a ShuffleDependency for cleanup when it is garbage collected. */
   def registerShuffleForCleanup(
-      shuffleDependency: ShuffleDependency[_, _, _]): Unit = {
+      shuffleDependency: ShuffleDependency[_, _, _]
+  ): Unit = {
     registerForCleanup(
-        shuffleDependency, CleanShuffle(shuffleDependency.shuffleId))
+      shuffleDependency,
+      CleanShuffle(shuffleDependency.shuffleId)
+    )
   }
 
   /** Register a Broadcast for cleanup when it is garbage collected. */
@@ -165,15 +179,20 @@ private[spark] class ContextCleaner(sc: SparkContext) extends Logging {
 
   /** Register a RDDCheckpointData for cleanup when it is garbage collected. */
   def registerRDDCheckpointDataForCleanup[T](
-      rdd: RDD[_], parentId: Int): Unit = {
+      rdd: RDD[_],
+      parentId: Int
+  ): Unit = {
     registerForCleanup(rdd, CleanCheckpoint(parentId))
   }
 
   /** Register an object for cleanup. */
   private def registerForCleanup(
-      objectForCleanup: AnyRef, task: CleanupTask): Unit = {
+      objectForCleanup: AnyRef,
+      task: CleanupTask
+  ): Unit = {
     referenceBuffer.add(
-        new CleanupTaskWeakReference(task, objectForCleanup, referenceQueue))
+      new CleanupTaskWeakReference(task, objectForCleanup, referenceQueue)
+    )
   }
 
   /** Keep cleaning RDD, shuffle, and broadcast state. */
@@ -192,8 +211,10 @@ private[spark] class ContextCleaner(sc: SparkContext) extends Logging {
               case CleanRDD(rddId) =>
                 doCleanupRDD(rddId, blocking = blockOnCleanupTasks)
               case CleanShuffle(shuffleId) =>
-                doCleanupShuffle(shuffleId,
-                                 blocking = blockOnShuffleCleanupTasks)
+                doCleanupShuffle(
+                  shuffleId,
+                  blocking = blockOnShuffleCleanupTasks
+                )
               case CleanBroadcast(broadcastId) =>
                 doCleanupBroadcast(broadcastId, blocking = blockOnCleanupTasks)
               case CleanAccum(accId) =>
@@ -205,7 +226,7 @@ private[spark] class ContextCleaner(sc: SparkContext) extends Logging {
         }
       } catch {
         case ie: InterruptedException if stopped => // ignore
-        case e: Exception => logError("Error in cleaning thread", e)
+        case e: Exception                        => logError("Error in cleaning thread", e)
       }
     }
   }
@@ -277,7 +298,7 @@ private[spark] class ContextCleaner(sc: SparkContext) extends Logging {
   }
 
   private def blockManagerMaster = sc.env.blockManager.master
-  private def broadcastManager = sc.env.broadcastManager
+  private def broadcastManager   = sc.env.broadcastManager
   private def mapOutputTrackerMaster =
     sc.env.mapOutputTracker.asInstanceOf[MapOutputTrackerMaster]
 }

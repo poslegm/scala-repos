@@ -19,7 +19,12 @@ package com.twitter.summingbird.online
 import com.twitter.util.{Await, Duration, Future, Try}
 
 import java.util.{Queue => JQueue}
-import java.util.concurrent.{ArrayBlockingQueue, BlockingQueue, LinkedBlockingQueue, TimeUnit}
+import java.util.concurrent.{
+  ArrayBlockingQueue,
+  BlockingQueue,
+  LinkedBlockingQueue,
+  TimeUnit
+}
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -48,7 +53,7 @@ object Queue {
 
   def fromBlocking[T](bq: BlockingQueue[T]): Queue[T] = {
     new Queue[T] {
-      override def add(t: T) = bq.put(t)
+      override def add(t: T)       = bq.put(t)
       override def pollNonBlocking = Option(bq.poll())
     }
   }
@@ -56,7 +61,7 @@ object Queue {
   // Uses Queue.add to put. This will fail for full blocking queues
   def fromQueue[T](q: JQueue[T]): Queue[T] = {
     new Queue[T] {
-      override def add(t: T) = q.add(t)
+      override def add(t: T)       = q.add(t)
       override def pollNonBlocking = Option(q.poll())
     }
   }
@@ -129,7 +134,7 @@ abstract class Queue[T] {
   @annotation.tailrec
   final def foldLeft[V](init: V)(fn: (V, T) => V): V =
     poll match {
-      case None => init
+      case None     => init
       case Some(it) => foldLeft(fn(init, it))(fn)
     }
 

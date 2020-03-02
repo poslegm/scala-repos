@@ -15,13 +15,14 @@ import sun.net.www.protocol.file.FileURLConnection
 object Resources {
 
   def isDirectory(classLoader: ClassLoader, url: URL) = url.getProtocol match {
-    case "file" => new File(url.toURI).isDirectory
-    case "jar" => isZipResourceDirectory(url)
-    case "zip" => isZipResourceDirectory(url)
+    case "file"   => new File(url.toURI).isDirectory
+    case "jar"    => isZipResourceDirectory(url)
+    case "zip"    => isZipResourceDirectory(url)
     case "bundle" => isBundleResourceDirectory(classLoader, url)
     case _ =>
       throw new IllegalArgumentException(
-          s"Cannot check isDirectory for a URL with protocol='${url.getProtocol}'")
+        s"Cannot check isDirectory for a URL with protocol='${url.getProtocol}'"
+      )
   }
 
   /**
@@ -67,14 +68,16 @@ object Resources {
   }
 
   private def isBundleResourceDirectory(
-      classLoader: ClassLoader, url: URL): Boolean = {
+      classLoader: ClassLoader,
+      url: URL
+  ): Boolean = {
     /* ClassLoader within an OSGi container behave differently than the standard classloader.
      * One difference is how getResource returns when the resource's name end with a slash.
      * In a standard JVM, getResource doesn't care of ending slashes, and return the URL of
      * any existing resources. In an OSGi container (tested with Apache Felix), ending slashe
      * refers to a directory (return null otherwise). */
 
-    val path = url.getPath
+    val path      = url.getPath
     val pathSlash = if (path.last == '/') path else path + '/'
 
     classLoader.getResource(path) != null &&
@@ -82,12 +85,12 @@ object Resources {
   }
 
   private def isZipResourceDirectory(url: URL): Boolean = {
-    val path = url.getPath
+    val path      = url.getPath
     val bangIndex = url.getFile.indexOf("!")
 
-    val startIndex = if (path.startsWith("zip:")) 4 else 0
-    val fileUri = path.substring(startIndex, bangIndex)
-    val fileProtocol = if (fileUri.startsWith("/")) "file://" else ""
+    val startIndex      = if (path.startsWith("zip:")) 4 else 0
+    val fileUri         = path.substring(startIndex, bangIndex)
+    val fileProtocol    = if (fileUri.startsWith("/")) "file://" else ""
     val absoluteFileUri = fileProtocol + fileUri
 
     val zipFile: File = new File(URI.create(absoluteFileUri))
@@ -100,7 +103,7 @@ object Resources {
       if (entry.isDirectory) true
       else {
         val stream = zip.getInputStream(entry)
-        val isDir = stream == null
+        val isDir  = stream == null
         if (stream != null) stream.close()
         isDir
       }

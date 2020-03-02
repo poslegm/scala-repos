@@ -33,7 +33,8 @@ import org.apache.spark.util.Utils
   * to store Mesos cluster mode state.
   */
 private[spark] abstract class MesosClusterPersistenceEngineFactory(
-    conf: SparkConf) {
+    conf: SparkConf
+) {
   def createEngine(path: String): MesosClusterPersistenceEngine
 }
 
@@ -55,8 +56,9 @@ private[spark] trait MesosClusterPersistenceEngine {
   * all of them reuses the same connection pool.
   */
 private[spark] class ZookeeperMesosClusterPersistenceEngineFactory(
-    conf: SparkConf)
-    extends MesosClusterPersistenceEngineFactory(conf) with Logging {
+    conf: SparkConf
+) extends MesosClusterPersistenceEngineFactory(conf)
+    with Logging {
 
   lazy val zk = SparkCuratorUtil.newClient(conf)
 
@@ -82,9 +84,9 @@ private[spark] class BlackHoleMesosClusterPersistenceEngineFactory
 private[spark] class BlackHoleMesosClusterPersistenceEngine
     extends MesosClusterPersistenceEngine {
   override def persist(name: String, obj: Object): Unit = {}
-  override def fetch[T](name: String): Option[T] = None
-  override def expunge(name: String): Unit = {}
-  override def fetchAll[T](): Iterable[T] = Iterable.empty[T]
+  override def fetch[T](name: String): Option[T]        = None
+  override def expunge(name: String): Unit              = {}
+  override def fetchAll[T](): Iterable[T]               = Iterable.empty[T]
 }
 
 /**
@@ -93,11 +95,14 @@ private[spark] class BlackHoleMesosClusterPersistenceEngine
   * reuses a shared Zookeeper client.
   */
 private[spark] class ZookeeperMesosClusterPersistenceEngine(
-    baseDir: String, zk: CuratorFramework, conf: SparkConf)
-    extends MesosClusterPersistenceEngine with Logging {
+    baseDir: String,
+    zk: CuratorFramework,
+    conf: SparkConf
+) extends MesosClusterPersistenceEngine
+    with Logging {
   private val WORKING_DIR =
     conf.get("spark.deploy.zookeeper.dir", "/spark_mesos_dispatcher") + "/" +
-    baseDir
+      baseDir
 
   SparkCuratorUtil.mkdir(zk, WORKING_DIR)
 
@@ -111,7 +116,7 @@ private[spark] class ZookeeperMesosClusterPersistenceEngine(
 
   override def persist(name: String, obj: Object): Unit = {
     val serialized = Utils.serialize(obj)
-    val zkPath = path(name)
+    val zkPath     = path(name)
     zk.create().withMode(CreateMode.PERSISTENT).forPath(zkPath, serialized)
   }
 
@@ -124,10 +129,10 @@ private[spark] class ZookeeperMesosClusterPersistenceEngine(
     } catch {
       case e: NoNodeException => None
       case e: Exception => {
-          logWarning("Exception while reading persisted file, deleting", e)
-          zk.delete().forPath(zkPath)
-          None
-        }
+        logWarning("Exception while reading persisted file, deleting", e)
+        zk.delete().forPath(zkPath)
+        None
+      }
     }
   }
 

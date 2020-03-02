@@ -57,7 +57,7 @@ trait Benchmark {
     for (i <- List.range(1, noTimes + 1)) yield {
       setUp
       val startTime = System.nanoTime
-      var i = 0;
+      var i         = 0;
       while (i < multiplier) {
         run()
         i += 1
@@ -112,11 +112,13 @@ trait Benchmark {
     } else {
       println("Usage: scala benchmarks.program <runs> ")
       println("   or: scala benchmarks.program <runs> <multiplier>")
-      println("""
+      println(
+        """
     The benchmark is run <runs> times, forcing a garbage collection between runs. The optional
     <multiplier> causes the benchmark to be repeated <multiplier> times, each time for <runs>
     executions.
-      """)
+      """
+      )
     }
   }
 }

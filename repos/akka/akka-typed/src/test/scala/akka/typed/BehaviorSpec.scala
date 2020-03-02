@@ -44,12 +44,12 @@ class BehaviorSpec extends TypedSpec {
   case object Stop extends Command
 
   sealed trait Event
-  case class GotSignal(signal: Signal) extends Event
+  case class GotSignal(signal: Signal)     extends Event
   case class Self(self: ActorRef[Command]) extends Event
-  case object Missed extends Event
-  case object Ignored extends Event
-  case object Pong extends Event
-  case object Swapped extends Event
+  case object Missed                       extends Event
+  case object Ignored                      extends Event
+  case object Pong                         extends Event
+  case object Swapped                      extends Event
 
   trait State { def next: State }
   val StateA: State = new State {
@@ -63,14 +63,17 @@ class BehaviorSpec extends TypedSpec {
     def behavior(monitor: ActorRef[Event]): Behavior[Command]
 
     case class Setup(
-        ctx: EffectfulActorContext[Command], inbox: Inbox.SyncInbox[Event])
+        ctx: EffectfulActorContext[Command],
+        inbox: Inbox.SyncInbox[Event]
+    )
 
     protected def mkCtx(
         requirePreStart: Boolean = false,
-        factory: (ActorRef[Event]) ⇒ Behavior[Command] = behavior) = {
+        factory: (ActorRef[Event]) ⇒ Behavior[Command] = behavior
+    ) = {
       val inbox = Inbox.sync[Event]("evt")
-      val ctx = new EffectfulActorContext(
-          "ctx", Props(factory(inbox.ref)), system)
+      val ctx =
+        new EffectfulActorContext("ctx", Props(factory(inbox.ref)), system)
       val msgs = inbox.receiveAll()
       if (requirePreStart) msgs should ===(GotSignal(PreStart) :: Nil)
       Setup(ctx, inbox)
@@ -84,15 +87,14 @@ class BehaviorSpec extends TypedSpec {
       }
       def check(command: Command): Setup = {
         setup.ctx.run(command)
-        setup.inbox.receiveAll() should ===(
-            command.expectedResponse(setup.ctx))
+        setup.inbox.receiveAll() should ===(command.expectedResponse(setup.ctx))
         setup
       }
       def check[T](command: Command, aux: T*)(
-          implicit inbox: Inbox.SyncInbox[T]): Setup = {
+          implicit inbox: Inbox.SyncInbox[T]
+      ): Setup = {
         setup.ctx.run(command)
-        setup.inbox.receiveAll() should ===(
-            command.expectedResponse(setup.ctx))
+        setup.inbox.receiveAll() should ===(command.expectedResponse(setup.ctx))
         inbox.receiveAll() should ===(aux)
         setup
       }
@@ -103,7 +105,8 @@ class BehaviorSpec extends TypedSpec {
         setup
       }
       def check2[T](command: Command, aux: T*)(
-          implicit inbox: Inbox.SyncInbox[T]): Setup = {
+          implicit inbox: Inbox.SyncInbox[T]
+      ): Setup = {
         setup.ctx.run(command)
         val expected = command.expectedResponse(setup.ctx)
         setup.inbox.receiveAll() should ===(expected ++ expected)
@@ -146,21 +149,21 @@ class BehaviorSpec extends TypedSpec {
 
     def `must react to Failed`(): Unit = {
       val setup @ Setup(ctx, inbox) = mkCtx()
-      val f = Failed(ex, inbox.ref)
+      val f                         = Failed(ex, inbox.ref)
       setup.check(f)
       f.getDecision should ===(Failed.Restart)
     }
 
     def `must react to Failed after a message`(): Unit = {
       val setup @ Setup(ctx, inbox) = mkCtx().check(GetSelf)
-      val f = Failed(ex, inbox.ref)
+      val f                         = Failed(ex, inbox.ref)
       setup.check(f)
       f.getDecision should ===(Failed.Restart)
     }
 
     def `must react to a message after Failed`(): Unit = {
       val setup @ Setup(ctx, inbox) = mkCtx()
-      val f = Failed(ex, inbox.ref)
+      val f                         = Failed(ex, inbox.ref)
       setup.check(f)
       f.getDecision should ===(Failed.Restart)
       setup.check(GetSelf)
@@ -209,7 +212,8 @@ class BehaviorSpec extends TypedSpec {
     def `must return Unhandled`(): Unit = {
       val Setup(ctx, inbox) = mkCtx()
       ctx.currentBehavior.message(ctx, Miss) should ===(
-          ScalaDSL.Unhandled[Command])
+        ScalaDSL.Unhandled[Command]
+      )
       inbox.receiveAll() should ===(Missed :: Nil)
     }
   }
@@ -261,21 +265,21 @@ class BehaviorSpec extends TypedSpec {
 
     def `must react to Failed after swap`(): Unit = {
       val setup @ Setup(ctx, inbox) = mkCtx().check(Swap)
-      val f = Failed(ex, inbox.ref)
+      val f                         = Failed(ex, inbox.ref)
       setup.check(f)
       f.getDecision should ===(Failed.Restart)
     }
 
     def `must react to Failed after a message after swap`(): Unit = {
       val setup @ Setup(ctx, inbox) = mkCtx().check(Swap).check(GetSelf)
-      val f = Failed(ex, inbox.ref)
+      val f                         = Failed(ex, inbox.ref)
       setup.check(f)
       f.getDecision should ===(Failed.Restart)
     }
 
     def `must react to a message after Failed after swap`(): Unit = {
       val setup @ Setup(ctx, inbox) = mkCtx().check(Swap)
-      val f = Failed(ex, inbox.ref)
+      val f                         = Failed(ex, inbox.ref)
       setup.check(f)
       f.getDecision should ===(Failed.Restart)
       setup.check(GetSelf)
@@ -307,14 +311,16 @@ class BehaviorSpec extends TypedSpec {
   }
 
   private def mkFull(
-      monitor: ActorRef[Event], state: State = StateA): Behavior[Command] = {
+      monitor: ActorRef[Event],
+      state: State = StateA
+  ): Behavior[Command] = {
     import ScalaDSL.{Full, Msg, Sig, Same, Unhandled, Stopped}
     Full {
       case Sig(ctx, signal) ⇒
         monitor ! GotSignal(signal)
         signal match {
           case f: Failed ⇒ f.decide(Failed.Restart)
-          case _ ⇒
+          case _         ⇒
         }
         Same
       case Msg(ctx, GetSelf) ⇒
@@ -340,24 +346,30 @@ class BehaviorSpec extends TypedSpec {
   }
 
   object `A Full Behavior`
-      extends Messages with BecomeWithLifecycle with Stoppable {
+      extends Messages
+      with BecomeWithLifecycle
+      with Stoppable {
     override def behavior(monitor: ActorRef[Event]): Behavior[Command] =
       mkFull(monitor)
   }
 
   object `A FullTotal Behavior`
-      extends Messages with BecomeWithLifecycle with Stoppable {
+      extends Messages
+      with BecomeWithLifecycle
+      with Stoppable {
     override def behavior(monitor: ActorRef[Event]): Behavior[Command] =
       behv(monitor, StateA)
     private def behv(
-        monitor: ActorRef[Event], state: State): Behavior[Command] = {
+        monitor: ActorRef[Event],
+        state: State
+    ): Behavior[Command] = {
       import ScalaDSL.{FullTotal, Msg, Sig, Same, Unhandled, Stopped}
       FullTotal {
         case Sig(ctx, signal) ⇒
           monitor ! GotSignal(signal)
           signal match {
             case f: Failed ⇒ f.decide(Failed.Restart)
-            case _ ⇒
+            case _         ⇒
           }
           Same
         case Msg(ctx, GetSelf) ⇒
@@ -378,44 +390,56 @@ class BehaviorSpec extends TypedSpec {
         case Msg(_, GetState(replyTo)) ⇒
           replyTo ! state
           Same
-        case Msg(_, Stop) ⇒ Stopped
+        case Msg(_, Stop)       ⇒ Stopped
         case Msg(_, _: AuxPing) ⇒ Unhandled
       }
     }
   }
 
   object `A Widened Behavior`
-      extends Messages with BecomeWithLifecycle with Stoppable {
+      extends Messages
+      with BecomeWithLifecycle
+      with Stoppable {
     override def behavior(monitor: ActorRef[Event]): Behavior[Command] =
       ScalaDSL.Widened(mkFull(monitor), { case x ⇒ x })
   }
 
   object `A ContextAware Behavior`
-      extends Messages with BecomeWithLifecycle with Stoppable {
+      extends Messages
+      with BecomeWithLifecycle
+      with Stoppable {
     override def behavior(monitor: ActorRef[Event]): Behavior[Command] =
       ScalaDSL.ContextAware(ctx ⇒ mkFull(monitor))
   }
 
   object `A SelfAware Behavior`
-      extends Messages with BecomeWithLifecycle with Stoppable {
+      extends Messages
+      with BecomeWithLifecycle
+      with Stoppable {
     override def behavior(monitor: ActorRef[Event]): Behavior[Command] =
       ScalaDSL.SelfAware(self ⇒ mkFull(monitor))
   }
 
   object `A non-matching Tap Behavior`
-      extends Messages with BecomeWithLifecycle with Stoppable {
+      extends Messages
+      with BecomeWithLifecycle
+      with Stoppable {
     override def behavior(monitor: ActorRef[Event]): Behavior[Command] =
       ScalaDSL.Tap({ case null ⇒ }, mkFull(monitor))
   }
 
   object `A matching Tap Behavior`
-      extends Messages with BecomeWithLifecycle with Stoppable {
+      extends Messages
+      with BecomeWithLifecycle
+      with Stoppable {
     override def behavior(monitor: ActorRef[Event]): Behavior[Command] =
       ScalaDSL.Tap({ case _ ⇒ }, mkFull(monitor))
   }
 
   object `A SynchronousSelf Behavior`
-      extends Messages with BecomeWithLifecycle with Stoppable {
+      extends Messages
+      with BecomeWithLifecycle
+      with Stoppable {
     import ScalaDSL._
 
     implicit private val inbox = Inbox.sync[Command]("syncself")
@@ -425,9 +449,12 @@ class BehaviorSpec extends TypedSpec {
 
     private def behavior2(monitor: ActorRef[Event]): Behavior[Command] = {
       def first(self: ActorRef[Command]) =
-        Tap.monitor(inbox.ref, Partial[Command] {
-          case AuxPing(id) ⇒ { self ! AuxPing(0); second(self) }
-        })
+        Tap.monitor(
+          inbox.ref,
+          Partial[Command] {
+            case AuxPing(id) ⇒ { self ! AuxPing(0); second(self) }
+          }
+        )
       def second(self: ActorRef[Command]) = Partial[Command] {
         case AuxPing(0) ⇒ { self ! AuxPing(1); Same }
         case AuxPing(1) ⇒ { self ! AuxPing(2); third(self) }
@@ -467,13 +494,17 @@ class BehaviorSpec extends TypedSpec {
   }
 
   object `A Behavior combined with And (left)`
-      extends Messages with BecomeWithLifecycle with And {
+      extends Messages
+      with BecomeWithLifecycle
+      with And {
     override def behavior(monitor: ActorRef[Event]): Behavior[Command] =
       ScalaDSL.And(mkFull(monitor), ScalaDSL.Empty)
   }
 
   object `A Behavior combined with And (right)`
-      extends Messages with BecomeWithLifecycle with And {
+      extends Messages
+      with BecomeWithLifecycle
+      with And {
     override def behavior(monitor: ActorRef[Event]): Behavior[Command] =
       ScalaDSL.And(ScalaDSL.Empty, mkFull(monitor))
   }
@@ -508,13 +539,17 @@ class BehaviorSpec extends TypedSpec {
   }
 
   object `A Behavior combined with Or (left)`
-      extends Messages with BecomeWithLifecycle with Or {
+      extends Messages
+      with BecomeWithLifecycle
+      with Or {
     override def behavior(monitor: ActorRef[Event]): Behavior[Command] =
       ScalaDSL.Or(mkFull(monitor), ScalaDSL.Empty)
   }
 
   object `A Behavior combined with Or (right)`
-      extends Messages with BecomeWithLifecycle with Or {
+      extends Messages
+      with BecomeWithLifecycle
+      with Or {
     override def behavior(monitor: ActorRef[Event]): Behavior[Command] =
       ScalaDSL.Or(ScalaDSL.Empty, mkFull(monitor))
   }
@@ -564,7 +599,7 @@ class BehaviorSpec extends TypedSpec {
         case GetState(replyTo) ⇒
           replyTo ! state
           ScalaDSL.Same
-        case Stop ⇒ ScalaDSL.Stopped
+        case Stop       ⇒ ScalaDSL.Stopped
         case _: AuxPing ⇒ ScalaDSL.Unhandled
       }
   }
@@ -572,14 +607,14 @@ class BehaviorSpec extends TypedSpec {
   object `A Static Behavior` extends Messages {
     override def behavior(monitor: ActorRef[Event]): Behavior[Command] =
       ScalaDSL.Static {
-        case Ping ⇒ monitor ! Pong
-        case Miss ⇒ monitor ! Missed
-        case Ignore ⇒ monitor ! Ignored
-        case GetSelf ⇒
-        case Swap ⇒
+        case Ping        ⇒ monitor ! Pong
+        case Miss        ⇒ monitor ! Missed
+        case Ignore      ⇒ monitor ! Ignored
+        case GetSelf     ⇒
+        case Swap        ⇒
         case GetState(_) ⇒
-        case Stop ⇒
-        case _: AuxPing ⇒
+        case Stop        ⇒
+        case _: AuxPing  ⇒
       }
   }
 }

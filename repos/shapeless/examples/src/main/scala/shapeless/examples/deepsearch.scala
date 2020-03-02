@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Miles Sabin 
+ * Copyright (c) 2012 Miles Sabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,8 @@ object DeepSearchExamples extends App {
     }
 
     implicit def listSearchable[A, Q](
-        implicit s: Searchable[A, Q]): Searchable[List[A], Q] =
+        implicit s: Searchable[A, Q]
+    ): Searchable[List[A], Q] =
       new Searchable[List[A], Q] {
         def find(p: Q => Boolean)(a: List[A]) = a.flatMap(s.find(p)).headOption
       }

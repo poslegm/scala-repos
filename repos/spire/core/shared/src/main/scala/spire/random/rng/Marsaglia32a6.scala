@@ -46,7 +46,7 @@ class Marsaglia32a6(_x: Int, _y: Int, _z: Int, _w: Int, _v: Int, _d: Int)
 
   def getSeedBytes: Array[Byte] = {
     val bytes = new Array[Byte](24)
-    val bb = ByteBuffer.wrap(bytes)
+    val bb    = ByteBuffer.wrap(bytes)
     bb.putInt(x)
     bb.putInt(y)
     bb.putInt(z)
@@ -83,12 +83,12 @@ object Marsaglia32a6 extends GeneratorCompanion[Marsaglia32a6, Array[Int]] {
   def fromBytes(bytes: Array[Byte]): Marsaglia32a6 = {
     val bs = if (bytes.length < 24) Arrays.copyOf(bytes, 24) else bytes
     val bb = ByteBuffer.wrap(bytes)
-    val x = bb.getInt()
-    val y = bb.getInt()
-    val z = bb.getInt()
-    val w = bb.getInt()
-    val v = bb.getInt()
-    val d = bb.getInt()
+    val x  = bb.getInt()
+    val y  = bb.getInt()
+    val z  = bb.getInt()
+    val w  = bb.getInt()
+    val v  = bb.getInt()
+    val d  = bb.getInt()
     new Marsaglia32a6(x, y, z, w, v, d)
   }
 
@@ -99,12 +99,12 @@ object Marsaglia32a6 extends GeneratorCompanion[Marsaglia32a6, Array[Int]] {
 
   def fromTime(time: Long = System.nanoTime): Marsaglia32a6 = {
     val lcg = Lcg64.fromTime(time)
-    val x = lcg.nextInt()
-    val y = lcg.nextInt()
-    val z = lcg.nextInt()
-    val w = lcg.nextInt()
-    val v = lcg.nextInt()
-    val d = lcg.nextInt()
+    val x   = lcg.nextInt()
+    val y   = lcg.nextInt()
+    val z   = lcg.nextInt()
+    val w   = lcg.nextInt()
+    val v   = lcg.nextInt()
+    val d   = lcg.nextInt()
     new Marsaglia32a6(x, y, z, w, v, d)
   }
 

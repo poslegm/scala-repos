@@ -18,11 +18,11 @@ import scala.collection.{Iterator, AbstractIterator}
   *  @author  Burak Emir, Paul Phillips
   */
 class BufferedSource(inputStream: InputStream, bufferSize: Int)(
-    implicit val codec: Codec)
-    extends Source {
+    implicit val codec: Codec
+) extends Source {
   def this(inputStream: InputStream)(implicit codec: Codec) =
     this(inputStream, DefaultBufSize)(codec)
-  def reader() = new InputStreamReader(inputStream, codec.decoder)
+  def reader()         = new InputStreamReader(inputStream, codec.decoder)
   def bufferedReader() = new BufferedReader(reader(), bufferSize)
 
   // The same reader has to be shared between the iterators produced
@@ -38,7 +38,7 @@ class BufferedSource(inputStream: InputStream, bufferSize: Int)(
 
   override lazy val iter =
     (Iterator continually (codec wrap charReader.read()) takeWhile (_ != -1) map
-        (_.toChar))
+      (_.toChar))
 
   private def decachedReader: BufferedReader = {
     // Don't want to lose a buffered char sitting in iter either. Yes,
@@ -60,9 +60,10 @@ class BufferedSource(inputStream: InputStream, bufferSize: Int)(
   }
 
   class BufferedLineIterator
-      extends AbstractIterator[String] with Iterator[String] {
+      extends AbstractIterator[String]
+      with Iterator[String] {
     private val lineReader = decachedReader
-    var nextLine: String = null
+    var nextLine: String   = null
 
     override def hasNext = {
       if (nextLine == null) nextLine = lineReader.readLine
@@ -72,7 +73,9 @@ class BufferedSource(inputStream: InputStream, bufferSize: Int)(
     override def next(): String = {
       val result = {
         if (nextLine == null) lineReader.readLine
-        else try nextLine finally nextLine = null
+        else
+          try nextLine
+          finally nextLine = null
       }
       if (result == null) Iterator.empty.next()
       else result
@@ -85,9 +88,9 @@ class BufferedSource(inputStream: InputStream, bufferSize: Int)(
   override def mkString = {
     // Speed up slurping of whole data set in the simplest cases.
     val allReader = decachedReader
-    val sb = new StringBuilder
-    val buf = new Array[Char](bufferSize)
-    var n = 0
+    val sb        = new StringBuilder
+    val buf       = new Array[Char](bufferSize)
+    var n         = 0
     while (n != -1) {
       n = allReader.read(buf)
       if (n > 0) sb.appendAll(buf, 0, n)

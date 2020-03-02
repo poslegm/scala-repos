@@ -32,8 +32,10 @@ class PartitionedWriteSuite extends QueryTest with SharedSQLContext {
     val df = sqlContext.range(100).select($"id", lit(1).as("data"))
     df.write.partitionBy("id").save(path.getCanonicalPath)
 
-    checkAnswer(sqlContext.read.load(path.getCanonicalPath),
-                (0 to 99).map(Row(1, _)).toSeq)
+    checkAnswer(
+      sqlContext.read.load(path.getCanonicalPath),
+      (0 to 99).map(Row(1, _)).toSeq
+    )
 
     Utils.deleteRecursively(path)
   }
@@ -43,12 +45,13 @@ class PartitionedWriteSuite extends QueryTest with SharedSQLContext {
     path.delete()
 
     val base = sqlContext.range(100)
-    val df = base.unionAll(base).select($"id", lit(1).as("data"))
+    val df   = base.unionAll(base).select($"id", lit(1).as("data"))
     df.write.partitionBy("id").save(path.getCanonicalPath)
 
     checkAnswer(
-        sqlContext.read.load(path.getCanonicalPath),
-        (0 to 99).map(Row(1, _)).toSeq ++ (0 to 99).map(Row(1, _)).toSeq)
+      sqlContext.read.load(path.getCanonicalPath),
+      (0 to 99).map(Row(1, _)).toSeq ++ (0 to 99).map(Row(1, _)).toSeq
+    )
 
     Utils.deleteRecursively(path)
   }

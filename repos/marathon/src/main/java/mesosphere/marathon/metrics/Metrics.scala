@@ -16,7 +16,7 @@ import scala.util.control.NonFatal
 /**
   * Utils for timer metrics collection.
   */
-class Metrics @Inject()(val registry: MetricRegistry) {
+class Metrics @Inject() (val registry: MetricRegistry) {
   private[this] val classNameCache = TrieMap[Class[_], String]()
 
   def timed[T](name: String)(block: => T): T = {
@@ -47,7 +47,8 @@ class Metrics @Inject()(val registry: MetricRegistry) {
   }
 
   @throws[IllegalArgumentException](
-      "if this function is called multiple times for the same name.")
+    "if this function is called multiple times for the same name."
+  )
   def gauge[G <: Gauge[_]](name: String, gauge: G): G = {
     registry.register(name, gauge)
     gauge
@@ -81,11 +82,13 @@ object Metrics {
   class Timer(private[metrics] val timer: com.codahale.metrics.Timer) {
     def timeFuture[T](future: => Future[T]): Future[T] = {
       val startTime = System.nanoTime()
-      val f = try future catch {
-        case NonFatal(e) =>
-          timer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS)
-          throw e
-      }
+      val f =
+        try future
+        catch {
+          case NonFatal(e) =>
+            timer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS)
+            throw e
+        }
       import mesosphere.util.CallerThreadExecutionContext.callerThreadExecutionContext
       f.onComplete {
         case _ =>
@@ -119,9 +122,9 @@ object Metrics {
   }
 
   class Meter(meter: com.codahale.metrics.Meter) {
-    def mark(): Unit = meter.mark()
+    def mark(): Unit        = meter.mark()
     def mark(n: Long): Unit = meter.mark(n)
-    def mark(n: Int): Unit = meter.mark(n.toLong)
+    def mark(n: Int): Unit  = meter.mark(n.toLong)
   }
 
   class AtomicIntGauge extends Gauge[Int] {

@@ -44,7 +44,8 @@ class BufferTest extends FunSuite {
   test("read Signed Int") {
     val n = 0xfffff6ff
     val br = BufferReader(
-        Array[Byte](0xff.toByte, 0xf6.toByte, 0xff.toByte, 0xff.toByte))
+      Array[Byte](0xff.toByte, 0xf6.toByte, 0xff.toByte, 0xff.toByte)
+    )
     assert(n == br.readInt())
   }
 
@@ -55,21 +56,21 @@ class BufferTest extends FunSuite {
 
   test("read null terminated string") {
     val str = "Null Terminated String\u0000"
-    val br = BufferReader(str.getBytes)
+    val br  = BufferReader(str.getBytes)
     assert(str.take(str.size - 1) == br.readNullTerminatedString())
   }
 
   test("read tiny length coded string") {
-    val str = "test"
+    val str   = "test"
     val bytes = Array.concat(Array(str.size.toByte), str.getBytes)
-    val br = BufferReader(bytes)
+    val br    = BufferReader(bytes)
     assert(str == br.readLengthCodedString())
   }
 
   def writerCtx() = new {
     val bytes = new Array[Byte](9)
-    val bw = BufferWriter(bytes)
-    val br = BufferReader(bytes)
+    val bw    = BufferWriter(bytes)
+    val br    = BufferReader(bytes)
   }
 
   test("write byte") {
@@ -152,10 +153,10 @@ class BufferTest extends FunSuite {
   }
 
   test("short length coded string") {
-    val str = "test" * 100
-    val len = Buffer.sizeOfLen(str.size) + str.size
+    val str        = "test" * 100
+    val len        = Buffer.sizeOfLen(str.size) + str.size
     val strAsBytes = new Array[Byte](len)
-    val bw = BufferWriter(strAsBytes)
+    val bw         = BufferWriter(strAsBytes)
     bw.writeLengthCodedString(str)
 
     val br = BufferReader(strAsBytes)
@@ -163,9 +164,9 @@ class BufferTest extends FunSuite {
   }
 
   test("coded string with non-ascii characters") {
-    val str = "バイトルドットコム"
+    val str        = "バイトルドットコム"
     val strAsBytes = new Array[Byte](100)
-    val bw = BufferWriter(strAsBytes)
+    val bw         = BufferWriter(strAsBytes)
     bw.writeLengthCodedString(str)
 
     val br = BufferReader(strAsBytes)

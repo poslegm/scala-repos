@@ -43,7 +43,8 @@ object TransformationBuffer {
     * @return JavaFX TransformationList
     */
   implicit def sfxTransformationBuffer2jfx[E, F](
-      v: TransformationBuffer[E, F]): jfxct.TransformationList[E, F] =
+      v: TransformationBuffer[E, F]
+  ): jfxct.TransformationList[E, F] =
     if (v != null) v.delegate else null
 }
 
@@ -63,8 +64,8 @@ object TransformationBuffer {
   * @define ORIGINALDOC Original Documentation]].
   */
 abstract class TransformationBuffer[E, F](
-    override val delegate: jfxct.TransformationList[E, F])
-    extends ObservableBufferBase[E](delegate)
+    override val delegate: jfxct.TransformationList[E, F]
+) extends ObservableBufferBase[E](delegate)
     with SFXDelegate[jfxct.TransformationList[E, F]] {
 
   /**

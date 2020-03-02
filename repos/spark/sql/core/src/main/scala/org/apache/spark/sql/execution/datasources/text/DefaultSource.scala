@@ -30,7 +30,10 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{AnalysisException, Row, SQLContext}
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.expressions.UnsafeRow
-import org.apache.spark.sql.catalyst.expressions.codegen.{BufferHolder, UnsafeRowWriter}
+import org.apache.spark.sql.catalyst.expressions.codegen.{
+  BufferHolder,
+  UnsafeRowWriter
+}
 import org.apache.spark.sql.execution.datasources.CompressionCodecs
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.{StringType, StructType}
@@ -47,24 +50,30 @@ class DefaultSource extends FileFormat with DataSourceRegister {
   private def verifySchema(schema: StructType): Unit = {
     if (schema.size != 1) {
       throw new AnalysisException(
-          s"Text data source supports only a single column, and you have ${schema.size} columns.")
+        s"Text data source supports only a single column, and you have ${schema.size} columns."
+      )
     }
     val tpe = schema(0).dataType
     if (tpe != StringType) {
       throw new AnalysisException(
-          s"Text data source supports only a string column, but you have ${tpe.simpleString}.")
+        s"Text data source supports only a string column, but you have ${tpe.simpleString}."
+      )
     }
   }
 
-  override def inferSchema(sqlContext: SQLContext,
-                           options: Map[String, String],
-                           files: Seq[FileStatus]): Option[StructType] =
+  override def inferSchema(
+      sqlContext: SQLContext,
+      options: Map[String, String],
+      files: Seq[FileStatus]
+  ): Option[StructType] =
     Some(new StructType().add("value", StringType))
 
-  override def prepareWrite(sqlContext: SQLContext,
-                            job: Job,
-                            options: Map[String, String],
-                            dataSchema: StructType): OutputWriterFactory = {
+  override def prepareWrite(
+      sqlContext: SQLContext,
+      job: Job,
+      options: Map[String, String],
+      dataSchema: StructType
+  ): OutputWriterFactory = {
     verifySchema(dataSchema)
 
     val conf = job.getConfiguration
@@ -75,10 +84,12 @@ class DefaultSource extends FileFormat with DataSourceRegister {
     }
 
     new OutputWriterFactory {
-      override def newInstance(path: String,
-                               bucketId: Option[Int],
-                               dataSchema: StructType,
-                               context: TaskAttemptContext): OutputWriter = {
+      override def newInstance(
+          path: String,
+          bucketId: Option[Int],
+          dataSchema: StructType,
+          context: TaskAttemptContext
+      ): OutputWriter = {
         if (bucketId.isDefined) {
           throw new AnalysisException("Text doesn't support bucketing")
         }
@@ -95,10 +106,11 @@ class DefaultSource extends FileFormat with DataSourceRegister {
       bucketSet: Option[BitSet],
       inputFiles: Seq[FileStatus],
       broadcastedConf: Broadcast[SerializableConfiguration],
-      options: Map[String, String]): RDD[InternalRow] = {
+      options: Map[String, String]
+  ): RDD[InternalRow] = {
     verifySchema(dataSchema)
 
-    val job = Job.getInstance(sqlContext.sparkContext.hadoopConfiguration)
+    val job  = Job.getInstance(sqlContext.sparkContext.hadoopConfiguration)
     val conf = job.getConfiguration
     val paths = inputFiles
       .filterNot(_.getPath.getName startsWith "_")
@@ -110,13 +122,15 @@ class DefaultSource extends FileFormat with DataSourceRegister {
     }
 
     sqlContext.sparkContext
-      .hadoopRDD(conf.asInstanceOf[JobConf],
-                 classOf[TextInputFormat],
-                 classOf[LongWritable],
-                 classOf[Text])
+      .hadoopRDD(
+        conf.asInstanceOf[JobConf],
+        classOf[TextInputFormat],
+        classOf[LongWritable],
+        classOf[Text]
+      )
       .mapPartitions { iter =>
-        val unsafeRow = new UnsafeRow(1)
-        val bufferHolder = new BufferHolder(unsafeRow)
+        val unsafeRow       = new UnsafeRow(1)
+        val bufferHolder    = new BufferHolder(unsafeRow)
         val unsafeRowWriter = new UnsafeRowWriter(bufferHolder, 1)
 
         iter.map {
@@ -132,20 +146,24 @@ class DefaultSource extends FileFormat with DataSourceRegister {
 }
 
 class TextOutputWriter(
-    path: String, dataSchema: StructType, context: TaskAttemptContext)
-    extends OutputWriter {
+    path: String,
+    dataSchema: StructType,
+    context: TaskAttemptContext
+) extends OutputWriter {
 
   private[this] val buffer = new Text()
 
   private val recordWriter: RecordWriter[NullWritable, Text] = {
     new TextOutputFormat[NullWritable, Text]() {
       override def getDefaultWorkFile(
-          context: TaskAttemptContext, extension: String): Path = {
+          context: TaskAttemptContext,
+          extension: String
+      ): Path = {
         val configuration = context.getConfiguration
         val uniqueWriteJobId =
           configuration.get("spark.sql.sources.writeJobUUID")
         val taskAttemptId = context.getTaskAttemptID
-        val split = taskAttemptId.getTaskID.getId
+        val split         = taskAttemptId.getTaskID.getId
         new Path(path, f"part-r-$split%05d-$uniqueWriteJobId.txt$extension")
       }
     }.getRecordWriter(context)

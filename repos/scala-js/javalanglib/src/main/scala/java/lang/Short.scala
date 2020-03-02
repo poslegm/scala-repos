@@ -12,10 +12,10 @@ final class Short private () extends Number with Comparable[Short] {
     this.asInstanceOf[scala.Short]
 
   @inline override def byteValue(): scala.Byte = shortValue.toByte
-  @inline def intValue(): scala.Int = shortValue.toInt
-  @inline def longValue(): scala.Long = shortValue.toLong
-  @inline def floatValue(): scala.Float = shortValue.toFloat
-  @inline def doubleValue(): scala.Double = shortValue.toDouble
+  @inline def intValue(): scala.Int            = shortValue.toInt
+  @inline def longValue(): scala.Long          = shortValue.toLong
+  @inline def floatValue(): scala.Float        = shortValue.toFloat
+  @inline def doubleValue(): scala.Double      = shortValue.toDouble
 
   @inline override def equals(that: Any): scala.Boolean =
     this eq that.asInstanceOf[AnyRef]
@@ -46,7 +46,7 @@ object Short {
   def MAX_VALUE: scala.Short = 32767
 
   @inline def valueOf(shortValue: scala.Short): Short = new Short(shortValue)
-  @inline def valueOf(s: String): Short = valueOf(parseShort(s))
+  @inline def valueOf(s: String): Short               = valueOf(parseShort(s))
 
   @inline def valueOf(s: String, radix: Int): Short =
     valueOf(parseShort(s, radix))

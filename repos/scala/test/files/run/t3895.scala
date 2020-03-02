@@ -3,7 +3,7 @@ class C extends A {
   val a = 10
   //object bb
   lazy val bb = 17
-  val b = 12
+  val b       = 12
 }
 
 abstract class A {
@@ -17,7 +17,7 @@ class B extends A {
   val a = 10
   //object bb
   lazy val bb = 17
-  val b = 12
+  val b       = 12
 }
 
 trait T {

@@ -11,6 +11,6 @@ object JasmineEnv {
   @js.native
   trait Clock extends js.Object {
     def tick(time: Double): Unit = js.native
-    def useMock(): Unit = js.native
+    def useMock(): Unit          = js.native
   }
 }

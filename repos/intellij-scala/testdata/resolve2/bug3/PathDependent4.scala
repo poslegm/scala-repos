@@ -1,5 +1,4 @@
-trait C { self: Z =>
-}
+trait C { self: Z => }
 
 trait K { self: Z =>
   import global._
@@ -14,7 +13,7 @@ trait Definitions { self: Global =>
   object definitions extends DefinitionsClass
   class DefinitionsClass {
     def f(f: F): F = new F
-    def f(x: Int) = 123
+    def f(x: Int)  = 123
   }
 
   object treeInfo extends F {}

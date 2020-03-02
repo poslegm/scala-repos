@@ -40,5 +40,7 @@ import scalafx.testutil.{AlignmentDelegateSpec, SimpleSFXDelegateSpec}
 @RunWith(classOf[JUnitRunner])
 class StackPaneSpec
     extends SimpleSFXDelegateSpec[jfxsl.StackPane, StackPane](
-        classOf[jfxsl.StackPane], classOf[StackPane])
+      classOf[jfxsl.StackPane],
+      classOf[StackPane]
+    )
     with AlignmentDelegateSpec[jfxsl.StackPane, StackPane]

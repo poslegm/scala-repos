@@ -48,7 +48,8 @@ trait PropertyIncludes extends LowerPriorityIncludes {
     * @return ScalaFX BooleanProperty
     */
   implicit def jfxBooleanProperty2sfx(
-      p: jfxbp.BooleanProperty): BooleanProperty =
+      p: jfxbp.BooleanProperty
+  ): BooleanProperty =
     if (p != null) new BooleanProperty(p) else null
 
   /**
@@ -82,7 +83,8 @@ trait PropertyIncludes extends LowerPriorityIncludes {
     * @return ScalaFX BooleanProperty
     */
   implicit def jfxIntegerProperty2sfx(
-      p: jfxbp.IntegerProperty): IntegerProperty =
+      p: jfxbp.IntegerProperty
+  ): IntegerProperty =
     if (p != null) new IntegerProperty(p) else null
 
   /**
@@ -106,7 +108,8 @@ trait PropertyIncludes extends LowerPriorityIncludes {
     * @return ScalaFX ObjectProperty
     */
   implicit def jfxObjectProperty2sfx[T <: Any](
-      p: jfxbp.ObjectProperty[T]): ObjectProperty[T] = new ObjectProperty[T](p)
+      p: jfxbp.ObjectProperty[T]
+  ): ObjectProperty[T] = new ObjectProperty[T](p)
 
   /**
     * Converts a
@@ -128,7 +131,8 @@ trait PropertyIncludes extends LowerPriorityIncludes {
     * @return ScalaFX ReadOnlyBooleanProperty
     */
   implicit def jfxReadOnlyBooleanProperty2sfx(
-      p: jfxbp.ReadOnlyBooleanProperty): ReadOnlyBooleanProperty =
+      p: jfxbp.ReadOnlyBooleanProperty
+  ): ReadOnlyBooleanProperty =
     if (p != null) new ReadOnlyBooleanProperty(p) else null
 
   /**
@@ -140,7 +144,8 @@ trait PropertyIncludes extends LowerPriorityIncludes {
     * @return ScalaFX ReadOnlyDoubleProperty
     */
   implicit def jfxReadOnlyDoubleProperty2sfx(
-      p: jfxbp.ReadOnlyDoubleProperty): ReadOnlyDoubleProperty =
+      p: jfxbp.ReadOnlyDoubleProperty
+  ): ReadOnlyDoubleProperty =
     if (p != null) new ReadOnlyDoubleProperty(p) else null
 
   /**
@@ -152,7 +157,8 @@ trait PropertyIncludes extends LowerPriorityIncludes {
     * @return ScalaFX ReadOnlyFloatProperty
     */
   implicit def jfxReadOnlyFloatProperty2sfx(
-      p: jfxbp.ReadOnlyFloatProperty): ReadOnlyFloatProperty =
+      p: jfxbp.ReadOnlyFloatProperty
+  ): ReadOnlyFloatProperty =
     if (p != null) new ReadOnlyFloatProperty(p) else null
 
   /**
@@ -164,7 +170,8 @@ trait PropertyIncludes extends LowerPriorityIncludes {
     * @return ScalaFX ReadOnlyIntegerProperty
     */
   implicit def jfxReadOnlyIntegerProperty2sfx(
-      p: jfxbp.ReadOnlyIntegerProperty): ReadOnlyIntegerProperty =
+      p: jfxbp.ReadOnlyIntegerProperty
+  ): ReadOnlyIntegerProperty =
     if (p != null) new ReadOnlyIntegerProperty(p) else null
 
   /**
@@ -176,7 +183,8 @@ trait PropertyIncludes extends LowerPriorityIncludes {
     * @return ScalaFX ReadOnlyLongProperty
     */
   implicit def jfxReadOnlyLongProperty2sfx(
-      p: jfxbp.ReadOnlyLongProperty): ReadOnlyLongProperty =
+      p: jfxbp.ReadOnlyLongProperty
+  ): ReadOnlyLongProperty =
     if (p != null) new ReadOnlyLongProperty(p) else null
 
   /**
@@ -188,7 +196,8 @@ trait PropertyIncludes extends LowerPriorityIncludes {
     * @return ScalaFX ReadOnlyObjectProperty
     */
   implicit def jfxReadOnlyObjectProperty2sfx[T <: Any](
-      p: jfxbp.ReadOnlyObjectProperty[T]): ReadOnlyObjectProperty[T] =
+      p: jfxbp.ReadOnlyObjectProperty[T]
+  ): ReadOnlyObjectProperty[T] =
     new ReadOnlyObjectProperty[T](p)
 
   /**
@@ -200,7 +209,8 @@ trait PropertyIncludes extends LowerPriorityIncludes {
     * @return ScalaFX ReadOnlyStringProperty
     */
   implicit def jfxReadOnlyStringProperty2sfx(
-      p: jfxbp.ReadOnlyStringProperty): ReadOnlyStringProperty =
+      p: jfxbp.ReadOnlyStringProperty
+  ): ReadOnlyStringProperty =
     if (p != null) new ReadOnlyStringProperty(p) else null
 
   /**
@@ -212,7 +222,8 @@ trait PropertyIncludes extends LowerPriorityIncludes {
     * @return ScalaFX ReadOnlyStringWrapper
     */
   implicit def jfxReadOnlyBooleanWrapper2sfx(
-      p: jfxbp.ReadOnlyBooleanWrapper): ReadOnlyBooleanWrapper =
+      p: jfxbp.ReadOnlyBooleanWrapper
+  ): ReadOnlyBooleanWrapper =
     if (p != null) new ReadOnlyBooleanWrapper(p) else null
 
   /**
@@ -224,7 +235,8 @@ trait PropertyIncludes extends LowerPriorityIncludes {
     * @return ScalaFX ReadOnlyStringWrapper
     */
   implicit def jfxReadOnlyDoubleWrapper2sfx(
-      p: jfxbp.ReadOnlyDoubleWrapper): ReadOnlyDoubleWrapper =
+      p: jfxbp.ReadOnlyDoubleWrapper
+  ): ReadOnlyDoubleWrapper =
     if (p != null) new ReadOnlyDoubleWrapper(p) else null
 
   /**
@@ -236,7 +248,8 @@ trait PropertyIncludes extends LowerPriorityIncludes {
     * @return ScalaFX ReadOnlyStringWrapper
     */
   implicit def jfxReadOnlyFloatWrapper2sfx(
-      p: jfxbp.ReadOnlyFloatWrapper): ReadOnlyFloatWrapper =
+      p: jfxbp.ReadOnlyFloatWrapper
+  ): ReadOnlyFloatWrapper =
     if (p != null) new ReadOnlyFloatWrapper(p) else null
 
   /**
@@ -248,7 +261,8 @@ trait PropertyIncludes extends LowerPriorityIncludes {
     * @return ScalaFX ReadOnlyStringWrapper
     */
   implicit def jfxReadOnlyIntegerWrapper2sfx(
-      p: jfxbp.ReadOnlyIntegerWrapper): ReadOnlyIntegerWrapper =
+      p: jfxbp.ReadOnlyIntegerWrapper
+  ): ReadOnlyIntegerWrapper =
     if (p != null) new ReadOnlyIntegerWrapper(p) else null
 
   /**
@@ -260,7 +274,8 @@ trait PropertyIncludes extends LowerPriorityIncludes {
     * @return ScalaFX ReadOnlyStringWrapper
     */
   implicit def jfxReadOnlyLongWrapper2sfx(
-      p: jfxbp.ReadOnlyLongWrapper): ReadOnlyLongWrapper =
+      p: jfxbp.ReadOnlyLongWrapper
+  ): ReadOnlyLongWrapper =
     if (p != null) new ReadOnlyLongWrapper(p) else null
 
   /**
@@ -272,7 +287,8 @@ trait PropertyIncludes extends LowerPriorityIncludes {
     * @return ScalaFX ReadOnlyObjectWrapper
     */
   implicit def jfxReadOnlyObjectWrapper2sfx[T <: Any](
-      p: jfxbp.ReadOnlyObjectWrapper[T]): ReadOnlyObjectWrapper[T] =
+      p: jfxbp.ReadOnlyObjectWrapper[T]
+  ): ReadOnlyObjectWrapper[T] =
     new ReadOnlyObjectWrapper[T](p)
 
   /**
@@ -284,15 +300,17 @@ trait PropertyIncludes extends LowerPriorityIncludes {
     * @return ScalaFX ReadOnlyStringWrapper
     */
   implicit def jfxReadOnlyStringWrapper2sfx(
-      p: jfxbp.ReadOnlyStringWrapper): ReadOnlyStringWrapper =
+      p: jfxbp.ReadOnlyStringWrapper
+  ): ReadOnlyStringWrapper =
     if (p != null) new ReadOnlyStringWrapper(p) else null
 }
 
 trait LowerPriorityIncludes {
   implicit def jfxProperty2sfx[T <: AnyRef](
-      p: jfxbp.Property[T]): Property[T, T] = new Property[T, T] {
+      p: jfxbp.Property[T]
+  ): Property[T, T] = new Property[T, T] {
     override def delegate = p
-    override def value = delegate.getValue
+    override def value    = delegate.getValue
     override def value_=(v: T) {
       delegate.setValue(v)
     }

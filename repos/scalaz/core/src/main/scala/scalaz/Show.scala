@@ -8,7 +8,7 @@ package scalaz
 ////
 trait Show[F] { self =>
   ////
-  def show(f: F): Cord = Cord(shows(f))
+  def show(f: F): Cord    = Cord(shows(f))
   def shows(f: F): String = show(f).toString
 
   // derived functions

@@ -20,11 +20,14 @@ object Test extends InteractiveTest {
     def nextId() =
       compiler.NoSymbol
         .newTermSymbol(
-            compiler.TermName("dummy"), compiler.NoPosition, compiler.NoFlags)
+          compiler.TermName("dummy"),
+          compiler.NoPosition,
+          compiler.NoFlags
+        )
         .id
-    val id = nextId()
+    val id   = nextId()
     val tree = compiler.parseTree(sf)
-    val id2 = nextId()
+    val id2  = nextId()
     if (id2 == id + 1) {
       reporter.println("NoNewSymbolsEntered OK")
     } else {
@@ -100,8 +103,8 @@ object Test extends InteractiveTest {
   private def noSymbolsOrTypes(tree: compiler.Tree): Boolean = {
     tree.forAll { t =>
       (t.symbol == null || t.symbol == compiler.NoSymbol ||
-          t.symbol == compiler.definitions.ScalaPackage // ignore the symbol for the scala package for now
-          ) && (t.tpe == null || t.tpe == compiler.NoType)
+      t.symbol == compiler.definitions.ScalaPackage // ignore the symbol for the scala package for now
+      ) && (t.tpe == null || t.tpe == compiler.NoType)
     }
   }
 }

@@ -30,8 +30,8 @@ import org.apache.spark.sql.SQLContext
 
 object DecisionTreeRegressionExample {
   def main(args: Array[String]): Unit = {
-    val conf = new SparkConf().setAppName("DecisionTreeRegressionExample")
-    val sc = new SparkContext(conf)
+    val conf       = new SparkConf().setAppName("DecisionTreeRegressionExample")
+    val sc         = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
 
     // $example on$

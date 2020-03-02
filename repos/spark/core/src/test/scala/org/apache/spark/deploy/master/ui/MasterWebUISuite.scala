@@ -37,15 +37,15 @@ class MasterWebUISuite extends SparkFunSuite with BeforeAndAfter {
 
   val masterPage = mock(classOf[MasterPage])
   val master = {
-    val conf = new SparkConf
+    val conf        = new SparkConf
     val securityMgr = new SecurityManager(conf)
     val rpcEnv =
       RpcEnv.create(Master.SYSTEM_NAME, "localhost", 0, conf, securityMgr)
     val master = new Master(rpcEnv, rpcEnv.address, 0, securityMgr, conf)
     master
   }
-  val masterWebUI = new MasterWebUI(
-      master, 0, customMasterPage = Some(masterPage))
+  val masterWebUI =
+    new MasterWebUI(master, 0, customMasterPage = Some(masterPage))
 
   before {
     masterWebUI.bind()
@@ -56,36 +56,43 @@ class MasterWebUISuite extends SparkFunSuite with BeforeAndAfter {
   }
 
   test("list applications") {
-    val worker = createWorkerInfo()
+    val worker  = createWorkerInfo()
     val appDesc = createAppDesc()
     // use new start date so it isn't filtered by UI
     val activeApp = new ApplicationInfo(
-        new Date().getTime, "id", appDesc, new Date(), null, Int.MaxValue)
+      new Date().getTime,
+      "id",
+      appDesc,
+      new Date(),
+      null,
+      Int.MaxValue
+    )
     activeApp.addExecutor(worker, 2)
 
-    val workers = Array[WorkerInfo](worker)
-    val activeApps = Array(activeApp)
-    val completedApps = Array[ApplicationInfo]()
-    val activeDrivers = Array[DriverInfo]()
+    val workers          = Array[WorkerInfo](worker)
+    val activeApps       = Array(activeApp)
+    val completedApps    = Array[ApplicationInfo]()
+    val activeDrivers    = Array[DriverInfo]()
     val completedDrivers = Array[DriverInfo]()
-    val stateResponse = new MasterStateResponse("host",
-                                                8080,
-                                                None,
-                                                workers,
-                                                activeApps,
-                                                completedApps,
-                                                activeDrivers,
-                                                completedDrivers,
-                                                RecoveryState.ALIVE)
+    val stateResponse = new MasterStateResponse(
+      "host",
+      8080,
+      None,
+      workers,
+      activeApps,
+      completedApps,
+      activeDrivers,
+      completedDrivers,
+      RecoveryState.ALIVE
+    )
 
     when(masterPage.getMasterState).thenReturn(stateResponse)
 
     val resultJson = Source
-      .fromURL(
-          s"http://localhost:${masterWebUI.boundPort}/api/v1/applications")
+      .fromURL(s"http://localhost:${masterWebUI.boundPort}/api/v1/applications")
       .mkString
     val parsedJson = parse(resultJson)
-    val firstApp = parsedJson(0)
+    val firstApp   = parsedJson(0)
 
     assert(firstApp \ "id" === JString(activeApp.id))
     assert(firstApp \ "name" === JString(activeApp.desc.name))

@@ -14,15 +14,15 @@ final class Long private () extends Number with Comparable[Long] {
   @inline def longValue(): scala.Long =
     this.asInstanceOf[scala.Long]
 
-  @inline override def byteValue(): scala.Byte = longValue.toByte
+  @inline override def byteValue(): scala.Byte   = longValue.toByte
   @inline override def shortValue(): scala.Short = longValue.toShort
-  @inline def intValue(): scala.Int = longValue.toInt
-  @inline def floatValue(): scala.Float = longValue.toFloat
-  @inline def doubleValue(): scala.Double = longValue.toDouble
+  @inline def intValue(): scala.Int              = longValue.toInt
+  @inline def floatValue(): scala.Float          = longValue.toFloat
+  @inline def doubleValue(): scala.Double        = longValue.toDouble
 
   @inline override def equals(that: Any): scala.Boolean = that match {
     case that: Long => longValue == that.longValue
-    case _ => false
+    case _          => false
   }
 
   @inline override def hashCode(): Int =
@@ -38,18 +38,20 @@ final class Long private () extends Number with Comparable[Long] {
 object Long {
   import scala.scalajs.runtime.RuntimeLong
 
-  final val TYPE = classOf[scala.Long]
+  final val TYPE      = classOf[scala.Long]
   final val MIN_VALUE = -9223372036854775808L
   final val MAX_VALUE = 9223372036854775807L
-  final val SIZE = 64
-  final val BYTES = 8
+  final val SIZE      = 64
+  final val BYTES     = 8
 
   private final val SignBit = scala.Long.MinValue
 
-  private final class StringRadixInfo(val chunkLength: Int,
-                                      val radixPowLength: scala.Long,
-                                      val paddingZeros: String,
-                                      val overflowBarrier: scala.Long)
+  private final class StringRadixInfo(
+      val chunkLength: Int,
+      val radixPowLength: scala.Long,
+      val paddingZeros: String,
+      val overflowBarrier: scala.Long
+  )
 
   /** Precomputed table for toUnsignedStringInternalLarge and
     *  parseUnsignedLongInternal.
@@ -69,19 +71,23 @@ object Long {
        * - overflowBarrier is divideUnsigned(-1L, radixPowLength) so that we
        *   can test whether someValue * radixPowLength will overflow.
        */
-      val barrier = Int.MaxValue / radix
+      val barrier        = Int.MaxValue / radix
       var radixPowLength = radix
-      var chunkLength = 1
-      var paddingZeros = "0"
+      var chunkLength    = 1
+      var paddingZeros   = "0"
       while (radixPowLength <= barrier) {
         radixPowLength *= radix
         chunkLength += 1
         paddingZeros += "0"
       }
       val radixPowLengthLong = radixPowLength.toLong
-      val overflowBarrier = Long.divideUnsigned(-1L, radixPowLengthLong)
+      val overflowBarrier    = Long.divideUnsigned(-1L, radixPowLengthLong)
       r += new StringRadixInfo(
-          chunkLength, radixPowLengthLong, paddingZeros, overflowBarrier)
+        chunkLength,
+        radixPowLengthLong,
+        paddingZeros,
+        overflowBarrier
+      )
     }
 
     r
@@ -97,8 +103,8 @@ object Long {
   @inline // because radix is almost certainly constant at call site
   def toUnsignedString(i: scala.Long, radix: Int): String = {
     (radix: @switch) match {
-      case 2 => toBinaryString(i)
-      case 8 => toOctalString(i)
+      case 2  => toBinaryString(i)
+      case 8  => toOctalString(i)
       case 16 => toHexString(i)
       case _ =>
         val radix1 =
@@ -143,22 +149,24 @@ object Long {
 
   // Must be called only with valid radix
   private def toUnsignedStringInternalLarge(
-      i: scala.Long, radix: Int): String = {
+      i: scala.Long,
+      radix: Int
+  ): String = {
     import js.JSNumberOps._
     import js.JSStringOps._
 
-    val radixInfo = StringRadixInfos(radix)
-    val divisor = radixInfo.radixPowLength
+    val radixInfo    = StringRadixInfos(radix)
+    val divisor      = radixInfo.radixPowLength
     val paddingZeros = radixInfo.paddingZeros
 
     val divisorXorSignBit = divisor.toLong ^ SignBit
 
-    var res = ""
+    var res   = ""
     var value = i
-    while ( (value ^ SignBit) >= divisorXorSignBit) {
+    while ((value ^ SignBit) >= divisorXorSignBit) {
       // unsigned comparison
-      val div = divideUnsigned(value, divisor)
-      val rem = value - div * divisor // == remainderUnsigned(value, divisor)
+      val div    = divideUnsigned(value, divisor)
+      val rem    = value - div * divisor // == remainderUnsigned(value, divisor)
       val remStr = rem.toInt.toString(radix)
       res = paddingZeros.jsSubstring(remStr.length) + remStr + res
       value = div
@@ -171,7 +179,7 @@ object Long {
     if (s == "") parseLongError(s)
 
     var start = 0
-    var neg = false
+    var neg   = false
 
     s.charAt(0) match {
       case '+' =>
@@ -211,7 +219,10 @@ object Long {
     parseUnsignedLong(s, 10)
 
   def parseUnsignedLongInternal(
-      s: String, radix: Int, start: Int): scala.Long = {
+      s: String,
+      radix: Int,
+      start: Int
+  ): scala.Long = {
     import js.JSStringOps._
 
     val length = s.length
@@ -221,14 +232,14 @@ object Long {
       parseLongError(s)
     } else {
       val radixInfo = StringRadixInfos(radix)
-      val chunkLen = radixInfo.chunkLength
+      val chunkLen  = radixInfo.chunkLength
 
       /* Skip leading 0's - important because we have an assumption on the
        * number of chunks that are necessary to parse any string.
        */
       var firstChunkStart = start
       while (firstChunkStart < length &&
-      s.charAt(firstChunkStart) == '0') firstChunkStart += 1
+             s.charAt(firstChunkStart) == '0') firstChunkStart += 1
 
       /* After that, if more than 3 chunks are necessary, it means the value
        * is too large, and does not fit in an unsigned Long.
@@ -255,14 +266,14 @@ object Long {
        * is.
        */
       val firstChunkLength = ((length - firstChunkStart) - 1) % chunkLen + 1
-      val firstChunkEnd = firstChunkStart + firstChunkLength
-      val firstResult = parseChunk(firstChunkStart, firstChunkEnd)
+      val firstChunkEnd    = firstChunkStart + firstChunkLength
+      val firstResult      = parseChunk(firstChunkStart, firstChunkEnd)
 
       if (firstChunkEnd == length) {
         firstResult
       } else {
         // Second chunk. Still cannot overflow.
-        val multiplier = radixInfo.radixPowLength
+        val multiplier     = radixInfo.radixPowLength
         val secondChunkEnd = firstChunkEnd + chunkLen
         val secondResult =
           firstResult * multiplier + parseChunk(firstChunkEnd, secondChunkEnd)
@@ -274,10 +285,10 @@ object Long {
           assert(secondChunkEnd + chunkLen == length)
 
           val overflowBarrier = radixInfo.overflowBarrier
-          val thirdChunk = parseChunk(secondChunkEnd, length)
+          val thirdChunk      = parseChunk(secondChunkEnd, length)
 
           if (secondResult > overflowBarrier) // both positive so signed > is OK
-            parseLongError(s) // * will overflow
+            parseLongError(s)                 // * will overflow
           val thirdResult = secondResult * multiplier + thirdChunk
           if ((thirdResult ^ SignBit) < (thirdChunk ^ SignBit))
             parseLongError(s) // + overflowed
@@ -292,7 +303,7 @@ object Long {
     throw new NumberFormatException(s"""For input string: "$s"""")
 
   @inline def valueOf(longValue: scala.Long): Long = new Long(longValue)
-  @inline def valueOf(s: String): Long = valueOf(parseLong(s))
+  @inline def valueOf(s: String): Long             = valueOf(parseLong(s))
 
   @inline def valueOf(s: String, radix: Int): Long =
     valueOf(parseLong(s, radix))
@@ -316,22 +327,24 @@ object Long {
     divModUnsigned(dividend, divisor, isDivide = true)
 
   // Intrinsic
-  def remainderUnsigned(
-      dividend: scala.Long, divisor: scala.Long): scala.Long =
+  def remainderUnsigned(dividend: scala.Long, divisor: scala.Long): scala.Long =
     divModUnsigned(dividend, divisor, isDivide = false)
 
   private def divModUnsigned(
-      a: scala.Long, b: scala.Long, isDivide: scala.Boolean): scala.Long = {
+      a: scala.Long,
+      b: scala.Long,
+      isDivide: scala.Boolean
+  ): scala.Long = {
     /* This is a much simplified (and slow) version of
      * RuntimeLong.unsignedDivModHelper.
      */
 
     if (b == 0L) throw new ArithmeticException("/ by zero")
 
-    var shift = numberOfLeadingZeros(b) - numberOfLeadingZeros(a)
+    var shift  = numberOfLeadingZeros(b) - numberOfLeadingZeros(a)
     var bShift = b << shift
 
-    var rem = a
+    var rem  = a
     var quot = 0L
 
     /* Invariants:
@@ -356,12 +369,12 @@ object Long {
   def highestOneBit(i: scala.Long): scala.Long = {
     val hi = (i >>> 32).toInt
     if (hi != 0) Integer.highestOneBit(hi).toLong << 32
-    else Integer.highestOneBit(i.toInt).toLong & 0xffffffffL
+    else Integer.highestOneBit(i.toInt).toLong & 0xFFFFFFFFL
   }
 
   def lowestOneBit(i: scala.Long): scala.Long = {
     val lo = i.toInt
-    if (lo != 0) Integer.lowestOneBit(lo).toLong & 0xffffffffL
+    if (lo != 0) Integer.lowestOneBit(lo).toLong & 0xFFFFFFFFL
     else Integer.lowestOneBit((i >>> 32).toInt).toLong << 32
   }
 
@@ -374,7 +387,7 @@ object Long {
   def reverseBytes(i: scala.Long): scala.Long = {
     val hiReversed = Integer.reverseBytes((i >>> 32).toInt)
     val loReversed = Integer.reverseBytes(i.toInt)
-    (loReversed.toLong << 32) | (hiReversed.toLong & 0xffffffffL)
+    (loReversed.toLong << 32) | (hiReversed.toLong & 0xFFFFFFFFL)
   }
 
   def rotateLeft(i: scala.Long, distance: scala.Int): scala.Long =

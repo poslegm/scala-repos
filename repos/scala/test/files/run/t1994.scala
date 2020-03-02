@@ -1,11 +1,11 @@
 class A {
-  protected def x = 0
+  protected def x    = 0
   protected[A] def y = 0
 }
 
 class B extends A {
   override def x = 1
-  def superY = super [A].y
+  def superY     = super[A].y
   override def y = 1
 }
 

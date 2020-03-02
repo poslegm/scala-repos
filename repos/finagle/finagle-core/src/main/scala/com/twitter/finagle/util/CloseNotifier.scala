@@ -25,22 +25,18 @@ object CloseNotifier {
     def onClose(h: => Unit) = {
       if (closing.isDefined) h
       else
-        closeHandlers ::= { () =>
-          h
-        }
+        closeHandlers ::= { () => h }
     }
 
     // Invokes close handlers in reverse order from which they were added.
     closing ensure {
-      closeHandlers foreach { handler =>
-        handler()
-      }
+      closeHandlers foreach { handler => handler() }
     }
   }
 
   def makeLifoCloser(): CloseNotifier with Closable =
     new CloseNotifier with Closable {
-      private[this] val closing = new Promise[Unit]
+      private[this] val closing  = new Promise[Unit]
       private[this] val notifier = makeLifo(closing)
 
       def close(deadline: Time) = {

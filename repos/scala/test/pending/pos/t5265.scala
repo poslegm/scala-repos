@@ -16,6 +16,6 @@ object Impls {
 
   implicit val c1 = new TTFactory[Date, TDate] {
     def create(v: Date): TT[Date, TDate] = sys.error("")
-    def sample = new Date
+    def sample                           = new Date
   }
 }

@@ -2,32 +2,32 @@ package scalaz
 package std
 
 trait SetInstances {
-  implicit val setInstance: Foldable[Set] with IsEmpty[Set] = new Foldable[Set]
-  with IsEmpty[Set] with Foldable.FromFoldr[Set] {
-    override def length[A](fa: Set[A]) = fa.size
-    def empty[A] = Set()
-    def plus[A](a: Set[A], b: => Set[A]) = a ++ b
-    def isEmpty[A](fa: Set[A]) = fa.isEmpty
+  implicit val setInstance: Foldable[Set] with IsEmpty[Set] =
+    new Foldable[Set] with IsEmpty[Set] with Foldable.FromFoldr[Set] {
+      override def length[A](fa: Set[A])   = fa.size
+      def empty[A]                         = Set()
+      def plus[A](a: Set[A], b: => Set[A]) = a ++ b
+      def isEmpty[A](fa: Set[A])           = fa.isEmpty
 
-    override def toSet[A](fa: Set[A]) = fa
+      override def toSet[A](fa: Set[A]) = fa
 
-    def foldRight[A, B](fa: Set[A], z: => B)(f: (A, => B) => B) = {
-      import scala.collection.mutable.ArrayStack
-      val s = new ArrayStack[A]
-      fa.foreach(a => s += a)
-      var r = z
-      while (!s.isEmpty) {
-        // Fixes stack overflow issue (#866)
-        val w = r
-        r = f(s.pop, w)
+      def foldRight[A, B](fa: Set[A], z: => B)(f: (A, => B) => B) = {
+        import scala.collection.mutable.ArrayStack
+        val s = new ArrayStack[A]
+        fa.foreach(a => s += a)
+        var r = z
+        while (!s.isEmpty) {
+          // Fixes stack overflow issue (#866)
+          val w = r
+          r = f(s.pop, w)
+        }
+        r
       }
-      r
+      override def all[A](fa: Set[A])(f: A => Boolean) =
+        fa forall f
+      override def any[A](fa: Set[A])(f: A => Boolean) =
+        fa exists f
     }
-    override def all[A](fa: Set[A])(f: A => Boolean) =
-      fa forall f
-    override def any[A](fa: Set[A])(f: A => Boolean) =
-      fa exists f
-  }
 
   import Ordering._
 
@@ -37,15 +37,15 @@ trait SetInstances {
     *
     * If `Equal[A].equalIsNatural == true`, than `Any#==` is used.
     */
-  implicit def setOrder[A : Order]: Order[Set[A]] = new Order[Set[A]] {
+  implicit def setOrder[A: Order]: Order[Set[A]] = new Order[Set[A]] {
     def order(a1: Set[A], a2: Set[A]) = {
       import anyVal._
       import scala.math.Ordering.Implicits._
-      implicit val o = Order[A].toScalaOrdering
+      implicit val o  = Order[A].toScalaOrdering
       implicit val so = Order.fromScalaOrdering(seqDerivedOrdering[Seq, A])
       Order[Int].order(a1.size, a2.size) match {
         case EQ => Order.orderBy((s: Set[A]) => s.toSeq.sorted).order(a1, a2)
-        case x => x
+        case x  => x
       }
     }
 
@@ -64,10 +64,10 @@ trait SetInstances {
 
   implicit def setMonoid[A]: Monoid[Set[A]] = new Monoid[Set[A]] {
     def append(f1: Set[A], f2: => Set[A]) = f1 ++ f2
-    def zero: Set[A] = Set[A]()
+    def zero: Set[A]                      = Set[A]()
   }
 
-  implicit def setShow[A : Show]: Show[Set[A]] = new Show[Set[A]] {
+  implicit def setShow[A: Show]: Show[Set[A]] = new Show[Set[A]] {
     override def show(as: Set[A]) =
       Cord("Set(", Cord.mkCord(",", as.map(Show[A].show).toSeq: _*), ")")
   }

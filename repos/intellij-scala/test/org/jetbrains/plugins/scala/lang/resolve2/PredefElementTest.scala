@@ -12,9 +12,9 @@ class PredefElementTest extends ResolveTestBase {
   //TODO getClass
 //  def testCompanionObject = doTest
   def testFunction() = doTest()
-  def testObject() = doTest()
+  def testObject()   = doTest()
   //TODO packageobject
 //  def testPackage = doTest
-  def testTrait() = doTest()
+  def testTrait()     = doTest()
   def testTypeAlias() = doTest()
 }

@@ -16,15 +16,13 @@ import scala.tools.nsc.reporters.ConsoleReporter
 class ForeignCompiler {
 
   private var argsBuffer: Array[String] = null
-  def args: Array[String] = argsBuffer
+  def args: Array[String]               = argsBuffer
   def args_=(a: Array[String]) {
     argsBuffer = a
     nsc
   }
 
-  private val error: (String => Nothing) = { msg =>
-    throw new Exception(msg)
-  }
+  private val error: (String => Nothing) = { msg => throw new Exception(msg) }
 
   private def settings = new scala.tools.nsc.Settings(error)
 

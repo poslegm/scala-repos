@@ -14,12 +14,13 @@ import scala.util.Try
 object Validation {
   def validateOrThrow[T](t: T)(implicit validator: Validator[T]): T =
     validate(t) match {
-      case Success => t
+      case Success    => t
       case f: Failure => throw new ValidationFailedException(t, f)
     }
 
   implicit def optional[T](
-      implicit validator: Validator[T]): Validator[Option[T]] = {
+      implicit validator: Validator[T]
+  ): Validator[Option[T]] = {
     new Validator[Option[T]] {
       override def apply(option: Option[T]): Result =
         option.map(validator).getOrElse(Success)
@@ -27,7 +28,8 @@ object Validation {
   }
 
   implicit def every[T](
-      implicit validator: Validator[T]): Validator[Iterable[T]] = {
+      implicit validator: Validator[T]
+  ): Validator[Iterable[T]] = {
     new Validator[Iterable[T]] {
       override def apply(seq: Iterable[T]): Result = {
 
@@ -40,35 +42,47 @@ object Validation {
         if (violations.isEmpty) Success
         else
           Failure(
-              Set(GroupViolation(seq,
-                                 "Seq contains elements, which are not valid.",
-                                 None,
-                                 violations.toSet)))
+            Set(
+              GroupViolation(
+                seq,
+                "Seq contains elements, which are not valid.",
+                None,
+                violations.toSet
+              )
+            )
+          )
       }
     }
   }
 
   implicit lazy val failureWrites: Writes[Failure] = Writes { f =>
-    Json.obj("message" -> "Object is not valid", "details" -> {
-      f.violations
-        .flatMap(allRuleViolationsWithFullDescription(_))
-        .groupBy(_.description)
-        .map {
-          case (description, ruleViolation) =>
-            Json.obj(
-                "path" -> description,
+    Json.obj(
+      "message" -> "Object is not valid",
+      "details" -> {
+        f.violations
+          .flatMap(allRuleViolationsWithFullDescription(_))
+          .groupBy(_.description)
+          .map {
+            case (description, ruleViolation) =>
+              Json.obj(
+                "path"   -> description,
                 "errors" -> ruleViolation.map(r => JsString(r.constraint))
-            )
-        }
-    })
+              )
+          }
+      }
+    )
   }
 
   def allRuleViolationsWithFullDescription(
       violation: Violation,
       parentDesc: Option[String] = None,
-      prependSlash: Boolean = false): Set[RuleViolation] = {
+      prependSlash: Boolean = false
+  ): Set[RuleViolation] = {
     def concatPath(
-        parent: String, child: Option[String], slash: Boolean): String = {
+        parent: String,
+        child: Option[String],
+        slash: Boolean
+    ): String = {
       child.map(c => parent + { if (slash) "/" else "" } + c).getOrElse(parent)
     }
 
@@ -81,7 +95,8 @@ object Validation {
             // Error is on property level, having a parent description. Prepend '/' as root.
             case s: String =>
               r.withDescription(
-                  concatPath("/" + p, r.description, prependSlash))
+                concatPath("/" + p, r.description, prependSlash)
+              )
             // Error is on unknown level, having a parent description. Prepend '/' as root.
           } getOrElse r.withDescription("/" + p)
         } getOrElse {
@@ -96,7 +111,7 @@ object Validation {
         g.children.flatMap { c =>
           val dot = g.value match {
             case _: Iterable[_] => false
-            case _ => true
+            case _              => true
           }
 
           val desc =
@@ -119,15 +134,15 @@ object Validation {
               http.setRequestMethod("HEAD")
               if (http.getResponseCode == HttpURLConnection.HTTP_OK) Success
               else
-                Failure(Set(RuleViolation(
-                            url, "URL could not be resolved.", None)))
+                Failure(
+                  Set(RuleViolation(url, "URL could not be resolved.", None))
+                )
             case other: URLConnection =>
               other.getInputStream
               Success //if we come here, we could read the stream
           }
         }.getOrElse(
-            Failure(
-                Set(RuleViolation(url, "URL could not be resolved.", None)))
+          Failure(Set(RuleViolation(url, "URL could not be resolved.", None)))
         )
       }
     }
@@ -142,14 +157,16 @@ object Validation {
         } catch {
           case _: URISyntaxException =>
             Failure(
-                Set(RuleViolation(uri.uri, "URI has invalid syntax.", None)))
+              Set(RuleViolation(uri.uri, "URI has invalid syntax.", None))
+            )
         }
       }
     }
   }
 
   def elementsAreUnique[A](
-      errorMessage: String = "Elements must be unique."): Validator[Seq[A]] = {
+      errorMessage: String = "Elements must be unique."
+  ): Validator[Seq[A]] = {
     new Validator[Seq[A]] {
       def apply(seq: Seq[A]) = areUnique(seq, errorMessage)
     }
@@ -158,9 +175,8 @@ object Validation {
   def elementsAreUniqueBy[A, B](
       fn: A => B,
       errorMessage: String = "Elements must be unique.",
-      filter: B => Boolean = { _: B =>
-        true
-      }): Validator[Seq[A]] = {
+      filter: B => Boolean = { _: B => true }
+  ): Validator[Seq[A]] = {
     new Validator[Seq[A]] {
       def apply(seq: Seq[A]) =
         areUnique(seq.map(fn).filter(filter), errorMessage)
@@ -170,9 +186,8 @@ object Validation {
   def elementsAreUniqueByOptional[A, B](
       fn: A => GenTraversableOnce[B],
       errorMessage: String = "Elements must be unique.",
-      filter: B => Boolean = { _: B =>
-        true
-      }): Validator[Seq[A]] = {
+      filter: B => Boolean = { _: B => true }
+  ): Validator[Seq[A]] = {
     new Validator[Seq[A]] {
       def apply(seq: Seq[A]) =
         areUnique(seq.flatMap(fn).filter(filter), errorMessage)
@@ -181,7 +196,8 @@ object Validation {
 
   def elementsAreUniqueWithFilter[A](
       fn: A => Boolean,
-      errorMessage: String = "Elements must be unique."): Validator[Seq[A]] = {
+      errorMessage: String = "Elements must be unique."
+  ): Validator[Seq[A]] = {
     new Validator[Seq[A]] {
       def apply(seq: Seq[A]) = areUnique(seq.filter(fn), errorMessage)
     }
@@ -192,24 +208,29 @@ object Validation {
     else Failure(Set(RuleViolation(seq, errorMessage, None)))
   }
 
-  def theOnlyDefinedOptionIn[A <: Product : ClassTag, B](
-      product: A): Validator[Option[B]] =
+  def theOnlyDefinedOptionIn[A <: Product: ClassTag, B](
+      product: A
+  ): Validator[Option[B]] =
     new Validator[Option[B]] {
       def apply(option: Option[B]) = {
         option match {
           case Some(prop) =>
             val n = product.productIterator.count {
               case Some(_) => true
-              case _ => false
+              case _       => false
             }
 
             if (n == 1) Success
             else
               Failure(
-                  Set(RuleViolation(
-                          product,
-                          s"not allowed in conjunction with other properties.",
-                          None)))
+                Set(
+                  RuleViolation(
+                    product,
+                    s"not allowed in conjunction with other properties.",
+                    None
+                  )
+                )
+              )
           case None => Success
         }
       }
@@ -218,25 +239,23 @@ object Validation {
   def oneOf[T <: AnyRef](options: Set[T]): Validator[T] = {
     import ViolationBuilder._
     new NullSafeValidator[T](
-        test = options.contains,
-        failure = _ -> s"is not one of (${options.mkString(",")})"
+      test = options.contains,
+      failure = _ -> s"is not one of (${options.mkString(",")})"
     )
   }
 
   def oneOf[T <: AnyRef](options: T*): Validator[T] = {
     import ViolationBuilder._
     new NullSafeValidator[T](
-        test = options.contains,
-        failure = _ -> s"is not one of (${options.mkString(",")})"
+      test = options.contains,
+      failure = _ -> s"is not one of (${options.mkString(",")})"
     )
   }
 
   def configValueSet[T <: AnyRef](config: String*): Validator[T] =
     isTrue(
-        s"""You have to supply ${config.mkString(", ")} on the command line.""") {
-      _ =>
-        config.forall(AllConf.suppliedOptionNames)
-    }
+      s"""You have to supply ${config.mkString(", ")} on the command line."""
+    ) { _ => config.forall(AllConf.suppliedOptionNames) }
 
   def isTrue[T](constraint: String)(test: T => Boolean): Validator[T] =
     new Validator[T] {

@@ -31,8 +31,10 @@ import org.apache.spark.storage.StorageLevel
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
 
 class KafkaStreamSuite
-    extends SparkFunSuite with Eventually with BeforeAndAfterAll {
-  private var ssc: StreamingContext = _
+    extends SparkFunSuite
+    with Eventually
+    with BeforeAndAfterAll {
+  private var ssc: StreamingContext          = _
   private var kafkaTestUtils: KafkaTestUtils = _
 
   override def beforeAll(): Unit = {
@@ -58,18 +60,24 @@ class KafkaStreamSuite
       .setAppName(this.getClass.getSimpleName)
     ssc = new StreamingContext(sparkConf, Milliseconds(500))
     val topic = "topic1"
-    val sent = Map("a" -> 5, "b" -> 3, "c" -> 10)
+    val sent  = Map("a" -> 5, "b" -> 3, "c" -> 10)
     kafkaTestUtils.createTopic(topic)
     kafkaTestUtils.sendMessages(topic, sent)
 
     val kafkaParams =
-      Map("zookeeper.connect" -> kafkaTestUtils.zkAddress,
-          "group.id" -> s"test-consumer-${Random.nextInt(10000)}",
-          "auto.offset.reset" -> "smallest")
+      Map(
+        "zookeeper.connect" -> kafkaTestUtils.zkAddress,
+        "group.id"          -> s"test-consumer-${Random.nextInt(10000)}",
+        "auto.offset.reset" -> "smallest"
+      )
 
     val stream =
       KafkaUtils.createStream[String, String, StringDecoder, StringDecoder](
-          ssc, kafkaParams, Map(topic -> 1), StorageLevel.MEMORY_ONLY)
+        ssc,
+        kafkaParams,
+        Map(topic -> 1),
+        StorageLevel.MEMORY_ONLY
+      )
     val result = new mutable.HashMap[String, Long]()
     stream.map(_._2).countByValue().foreachRDD { r =>
       r.collect().foreach { kv =>

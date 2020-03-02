@@ -2,7 +2,7 @@ package foo
 
 package object bar {
   type IOException = Object
-  type Bippy[T] = List[T]
+  type Bippy[T]    = List[T]
 }
 
 package object baz {

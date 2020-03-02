@@ -7,7 +7,13 @@ import com.twitter.app.GlobalFlag
 import com.twitter.common.metrics.Metrics
 import com.twitter.conversions.time._
 import com.twitter.finagle.Service
-import com.twitter.finagle.http.{MediaType, RequestParamMap, Response, Request, Status}
+import com.twitter.finagle.http.{
+  MediaType,
+  RequestParamMap,
+  Response,
+  Request,
+  Status
+}
 import com.twitter.finagle.util.DefaultTimer
 import com.twitter.io.Buf
 import com.twitter.logging.Logger
@@ -28,8 +34,9 @@ import scala.util.matching.Regex
   */
 object statsFilter
     extends GlobalFlag[String](
-        "",
-        "Comma-separated regexes that indicate which metrics to filter out")
+      "",
+      "Comma-separated regexes that indicate which metrics to filter out"
+    )
 
 /**
   * Comma-separated blacklist of files. Each file may have multiple filters,
@@ -39,13 +46,14 @@ object statsFilter
   */
 object statsFilterFile
     extends GlobalFlag[Set[File]](
-        Set.empty[File],
-        "Comma separated files of newline separated regexes that indicate which metrics to filter out")
+      Set.empty[File],
+      "Comma separated files of newline separated regexes that indicate which metrics to filter out"
+    )
 
 object useCounterDeltas
     extends GlobalFlag[Boolean](
-        false,
-        "Return deltas for counters instead of absolute values. " +
+      false,
+      "Return deltas for counters instead of absolute values. " +
         "Provides compatibility with the behavior from 'Ostrich'"
     )
 
@@ -67,7 +75,7 @@ class JsonExporter(registry: Metrics, timer: Timer)
   private[this] val mapper = new ObjectMapper
   mapper.registerModule(DefaultScalaModule)
 
-  private[this] val writer = mapper.writer
+  private[this] val writer       = mapper.writer
   private[this] val prettyWriter = mapper.writer(new DefaultPrettyPrinter)
 
   lazy val statsFilterRegex: Option[Regex] = {
@@ -80,7 +88,7 @@ class JsonExporter(registry: Metrics, timer: Timer)
           throw e
       }
     }
-    val regexesFromFlag = statsFilter.get.toSeq.flatMap(_.split(","))
+    val regexesFromFlag      = statsFilter.get.toSeq.flatMap(_.split(","))
     val regexes: Seq[String] = regexesFromFlag ++ regexesFromFile
     mkRegex(regexes)
   }
@@ -93,15 +101,16 @@ class JsonExporter(registry: Metrics, timer: Timer)
   def apply(request: Request): Future[Response] = {
     if (registryLoaded.compareAndSet(false, true)) {
       GlobalRegistry.get.put(
-          Seq("stats", "commons_metrics", "counters_latched"),
-          useCounterDeltas().toString)
+        Seq("stats", "commons_metrics", "counters_latched"),
+        useCounterDeltas().toString
+      )
     }
 
     val response = Response()
     response.contentType = MediaType.Json
 
-    val params = new RequestParamMap(request)
-    val pretty = readBooleanParam(params, name = "pretty", default = false)
+    val params   = new RequestParamMap(request)
+    val pretty   = readBooleanParam(params, name = "pretty", default = false)
     val filtered = readBooleanParam(params, name = "filtered", default = false)
     val counterDeltasOn = {
       val vals = params.getAll("period")
@@ -111,8 +120,9 @@ class JsonExporter(registry: Metrics, timer: Timer)
         if (vals.exists(_ == "60")) true
         else {
           log.warning(
-              s"${getClass.getName} request ignored due to unsupported period: '${vals
-            .mkString(",")}'")
+            s"${getClass.getName} request ignored due to unsupported period: '${vals
+              .mkString(",")}'"
+          )
           false
         }
       }
@@ -131,15 +141,14 @@ class JsonExporter(registry: Metrics, timer: Timer)
   ): Boolean = {
     val vals = params.getAll(name)
     if (vals.nonEmpty)
-      vals.exists { v =>
-        v == "1" || v == "true"
-      } else default
+      vals.exists { v => v == "1" || v == "true" }
+    else default
   }
 
   private[this] def getOrRegisterLatchedStats(): CounterDeltas = synchronized {
     deltas match {
       case Some(ds) => ds
-      case None =>
+      case None     =>
         // Latching should happen every minute, at the top of the minute.
         deltas = Some(new CounterDeltas())
         timer.schedule(startOfNextMinute, 1.minute) {
@@ -155,14 +164,16 @@ class JsonExporter(registry: Metrics, timer: Timer)
       filtered: Boolean,
       counterDeltasOn: Boolean = false
   ): String = {
-    val gauges = try registry.sampleGauges().asScala catch {
-      case NonFatal(e) =>
-        // because gauges run arbitrary user code, we want to protect ourselves here.
-        // while the underlying registry should protect against individual misbehaving
-        // gauges, an extra level of belt-and-suspenders seemed worthwhile.
-        log.error(e, "exception while collecting gauges")
-        Map.empty[String, Number]
-    }
+    val gauges =
+      try registry.sampleGauges().asScala
+      catch {
+        case NonFatal(e) =>
+          // because gauges run arbitrary user code, we want to protect ourselves here.
+          // while the underlying registry should protect against individual misbehaving
+          // gauges, an extra level of belt-and-suspenders seemed worthwhile.
+          log.error(e, "exception while collecting gauges")
+          Map.empty[String, Number]
+      }
     val histos = registry.sampleHistograms().asScala
     val counters =
       if (counterDeltasOn && useCounterDeltas()) {
@@ -196,15 +207,16 @@ class JsonExporter(registry: Metrics, timer: Timer)
   def mkRegex(regexesString: String): Option[Regex] = {
     regexesString.split(",") match {
       case Array("") => None
-      case regexes => mkRegex(regexes)
+      case regexes   => mkRegex(regexes)
     }
   }
 
-  def filterSample(sample: collection.Map[String, Number])
-    : collection.Map[String, Number] = {
+  def filterSample(
+      sample: collection.Map[String, Number]
+  ): collection.Map[String, Number] = {
     statsFilterRegex match {
       case Some(regex) => sample.filterKeys(!regex.pattern.matcher(_).matches)
-      case None => sample
+      case None        => sample
     }
   }
 }

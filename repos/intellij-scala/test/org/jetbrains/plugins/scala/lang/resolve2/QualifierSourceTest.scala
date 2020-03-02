@@ -10,7 +10,7 @@ class QualifierSourceTest extends ResolveTestBase {
 
   def testChainLong() = doTest()
   def testChainDeep() = doTest()
-  def testPackage() = doTest()
+  def testPackage()   = doTest()
   //TODO getClass
 //  def testPackageAsValue = doTest
   //TODO packageobject

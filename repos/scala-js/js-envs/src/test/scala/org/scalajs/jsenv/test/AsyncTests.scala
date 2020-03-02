@@ -30,7 +30,7 @@ trait AsyncTests extends BasicJSEnvTests {
   @Test
   def futureTest: Unit = {
     val runner = asyncRunner("")
-    val fut = start(runner)
+    val fut    = start(runner)
 
     Await.result(fut, DefaultTimeout)
 
@@ -40,7 +40,7 @@ trait AsyncTests extends BasicJSEnvTests {
   @Test
   def stopAfterTerminatedTest: Unit = {
     val runner = asyncRunner("")
-    val fut = start(runner)
+    val fut    = start(runner)
 
     Await.result(fut, DefaultTimeout)
 

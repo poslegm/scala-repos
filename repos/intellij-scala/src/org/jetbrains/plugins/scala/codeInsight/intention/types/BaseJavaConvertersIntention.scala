@@ -35,7 +35,8 @@ abstract class BaseJavaConvertersIntention(methodName: String)
       def parentNonConvertedCollection = scExpr match {
         case Parent(parent: ScExpression) =>
           !isAlreadyConvertedCollection(
-              parent.getTypeAfterImplicitConversion().tr)
+            parent.getTypeAfterImplicitConversion().tr
+          )
         case _ => true
       }
       properTargetCollection && parentNonConvertedCollection
@@ -53,8 +54,9 @@ abstract class BaseJavaConvertersIntention(methodName: String)
   def isAlreadyConvertedCollection(typeResult: TypeResult[ScType]): Boolean =
     typeResult.exists { scType =>
       ScType.extractClass(scType) exists { psiClass =>
-        alreadyConvertedPrefixes.exists(
-            prefix => psiClass.getQualifiedName.startsWith(prefix))
+        alreadyConvertedPrefixes.exists(prefix =>
+          psiClass.getQualifiedName.startsWith(prefix)
+        )
       }
     }
 
@@ -69,10 +71,14 @@ abstract class BaseJavaConvertersIntention(methodName: String)
     def appendAsMethod() {
       val expression: ScExpression = getTargetExpression(element)
       val replacement = ScalaPsiElementFactory.createExpressionFromText(
-          s"${expression.getText}.$methodName", expression.getManager)
-      CodeEditUtil.replaceChild(expression.getParent.getNode,
-                                expression.getNode,
-                                replacement.getNode)
+        s"${expression.getText}.$methodName",
+        expression.getManager
+      )
+      CodeEditUtil.replaceChild(
+        expression.getParent.getNode,
+        expression.getNode,
+        replacement.getNode
+      )
     }
     inWriteAction {
       addImport()
@@ -85,13 +91,17 @@ abstract class BaseJavaConvertersIntention(methodName: String)
 
   protected def allSupers(psiClass: PsiClass): Set[String] = {
     @tailrec
-    def allSuperNames(pClasses: List[PsiClass],
-                      superNames: Set[String] = Set.empty): Set[String] = {
+    def allSuperNames(
+        pClasses: List[PsiClass],
+        superNames: Set[String] = Set.empty
+    ): Set[String] = {
       pClasses match {
         case Nil => superNames
         case head :: tail =>
-          allSuperNames(head.getSupers.toList ::: tail,
-                        superNames + head.getQualifiedName)
+          allSuperNames(
+            head.getSupers.toList ::: tail,
+            superNames + head.getQualifiedName
+          )
       }
     }
     allSuperNames(List(psiClass))

@@ -97,7 +97,8 @@ final case class SeveralRoutees(routees: immutable.IndexedSeq[Routee])
   */
 final case class Router(
     val logic: RoutingLogic,
-    val routees: immutable.IndexedSeq[Routee] = Vector.empty) {
+    val routees: immutable.IndexedSeq[Routee] = Vector.empty
+) {
 
   /**
     * Java API
@@ -135,7 +136,7 @@ final case class Router(
 
   private def unwrap(msg: Any): Any = msg match {
     case env: RouterEnvelope ⇒ env.message
-    case _ ⇒ msg
+    case _                   ⇒ msg
   }
 
   /**

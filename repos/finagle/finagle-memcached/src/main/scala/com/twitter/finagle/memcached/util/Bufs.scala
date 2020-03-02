@@ -6,8 +6,8 @@ import scala.language.implicitConversions
 
 private[finagle] object Bufs {
 
-  final val INVALID_KEY_CHARACTERS = Set(
-      '\n'.toByte, '\u0000'.toByte, '\r'.toByte, ' '.toByte)
+  final val INVALID_KEY_CHARACTERS =
+    Set('\n'.toByte, '\u0000'.toByte, '\r'.toByte, ' '.toByte)
 
   /**
     * @return the Buf representation of non-empty and non-null Strings, else null
@@ -22,7 +22,8 @@ private[finagle] object Bufs {
     * @note returns null if input is null
     */
   implicit def seqOfNonEmptyStringToBuf(
-      strings: Traversable[String]): Seq[Buf] = {
+      strings: Traversable[String]
+  ): Seq[Buf] = {
     if (strings == null) {
       null
     } else {

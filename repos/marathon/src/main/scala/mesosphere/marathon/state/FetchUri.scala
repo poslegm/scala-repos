@@ -6,10 +6,12 @@ import scala.collection.immutable.Seq
 /**
   * Defaults taken from mesos.proto
   */
-case class FetchUri(uri: String,
-                    extract: Boolean = true,
-                    executable: Boolean = false,
-                    cache: Boolean = false) {
+case class FetchUri(
+    uri: String,
+    extract: Boolean = true,
+    executable: Boolean = false,
+    cache: Boolean = false
+) {
 
   def toProto(): mesos.CommandInfo.URI =
     mesos.CommandInfo.URI
@@ -27,10 +29,10 @@ object FetchUri {
 
   def fromProto(uri: mesos.CommandInfo.URI): FetchUri =
     FetchUri(
-        uri = uri.getValue,
-        executable = uri.getExecutable,
-        extract = uri.getExtract,
-        cache = uri.getCache
+      uri = uri.getValue,
+      executable = uri.getExecutable,
+      extract = uri.getExtract,
+      cache = uri.getCache
     )
 
   def isExtract(uri: String): Boolean = {

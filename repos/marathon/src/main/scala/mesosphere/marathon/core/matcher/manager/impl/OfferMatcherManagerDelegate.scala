@@ -13,8 +13,7 @@ private[matcher] object OfferMatcherManagerDelegate {
   sealed trait ChangeMatchersRequest
   case class AddOrUpdateMatcher(consumer: OfferMatcher)
       extends ChangeMatchersRequest
-  case class RemoveMatcher(consumer: OfferMatcher)
-      extends ChangeMatchersRequest
+  case class RemoveMatcher(consumer: OfferMatcher) extends ChangeMatchersRequest
 
   sealed trait ChangeConsumersResponse
   case class MatcherAdded(consumer: OfferMatcher)
@@ -31,15 +30,17 @@ private[matcher] class OfferMatcherManagerDelegate(actorRef: ActorRef)
 
   private[this] implicit val timeout: Timeout = 2.seconds
 
-  override def addSubscription(offerMatcher: OfferMatcher)(
-      implicit ec: ExecutionContext): Future[Unit] = {
+  override def addSubscription(
+      offerMatcher: OfferMatcher
+  )(implicit ec: ExecutionContext): Future[Unit] = {
     val future =
       actorRef ? OfferMatcherManagerDelegate.AddOrUpdateMatcher(offerMatcher)
     future.map(_ => ())
   }
 
-  override def removeSubscription(offerMatcher: OfferMatcher)(
-      implicit ec: ExecutionContext): Future[Unit] = {
+  override def removeSubscription(
+      offerMatcher: OfferMatcher
+  )(implicit ec: ExecutionContext): Future[Unit] = {
     val future =
       actorRef ? OfferMatcherManagerDelegate.RemoveMatcher(offerMatcher)
     future.map(_ => ())

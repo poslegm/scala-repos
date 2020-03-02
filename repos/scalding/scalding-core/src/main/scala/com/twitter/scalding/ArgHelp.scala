@@ -7,10 +7,10 @@ sealed trait DescribedArg {
 
 case class RequiredArg(key: String, description: String) extends DescribedArg
 case class OptionalArg(key: String, description: String) extends DescribedArg
-case class ListArg(key: String, description: String) extends DescribedArg
-case class BooleanArg(key: String, description: String) extends DescribedArg
+case class ListArg(key: String, description: String)     extends DescribedArg
+case class BooleanArg(key: String, description: String)  extends DescribedArg
 
-class HelpException extends RuntimeException("User asked for help")
+class HelpException                               extends RuntimeException("User asked for help")
 class DescriptionValidationException(msg: String) extends RuntimeException(msg)
 
 trait ArgHelper {
@@ -23,7 +23,9 @@ trait ArgHelper {
     * @return Output Execution
     */
   def validatedDescribe[T](
-      describedArgs: Seq[DescribedArg], ex: Execution[T]): Execution[T] = {
+      describedArgs: Seq[DescribedArg],
+      ex: Execution[T]
+  ): Execution[T] = {
     Execution.getArgs.flatMap { args =>
       validatedDescribe(describedArgs, args)
       ex
@@ -39,12 +41,13 @@ trait ArgHelper {
     describe(describedArgs, args)
 
     val describedKeys = describedArgs.map(_.key).toSet
-    val missingKeys = args.m.keySet.filter(_.nonEmpty).diff(describedKeys)
+    val missingKeys   = args.m.keySet.filter(_.nonEmpty).diff(describedKeys)
 
     if (missingKeys.nonEmpty) {
       val msg = missingKeys.mkString(", ")
       throw new DescriptionValidationException(
-          s"Must describe missing keys : $msg")
+        s"Must describe missing keys : $msg"
+      )
     }
   }
 
@@ -57,7 +60,9 @@ trait ArgHelper {
     * @return Output Execution
     */
   def describe[T](
-      describedArgs: Seq[DescribedArg], ex: Execution[T]): Execution[T] = {
+      describedArgs: Seq[DescribedArg],
+      ex: Execution[T]
+  ): Execution[T] = {
     Execution.getArgs.flatMap { args =>
       describe(describedArgs, args)
       ex
@@ -98,8 +103,8 @@ trait ArgHelper {
         val msg = describedArg match {
           case RequiredArg(key, _) => s"--$key VALUE "
           case OptionalArg(key, _) => s"[--$key VALUE] "
-          case ListArg(key, _) => s"[--$key VALUE VALUE2] "
-          case BooleanArg(key, _) => s"[--$key] "
+          case ListArg(key, _)     => s"[--$key VALUE VALUE2] "
+          case BooleanArg(key, _)  => s"[--$key] "
         }
         str + msg
     } + "[--help]"

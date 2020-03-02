@@ -19,8 +19,8 @@ import it.unimi.dsi.fastutil.booleans.BooleanArrays
 import org.saddle.Buffer
 
 class BufferBool(sz: Int = 16) extends Buffer[Boolean] {
-  var list = Array.ofDim[Boolean](sz)
-  var count = 0
+  var list   = Array.ofDim[Boolean](sz)
+  var count  = 0
   var remain = sz
 
   def apply(loc: Int) = list(loc)
@@ -41,5 +41,5 @@ class BufferBool(sz: Int = 16) extends Buffer[Boolean] {
 
 object BufferBool {
   def apply(sz: Int) = new BufferBool(sz)
-  def apply() = new BufferBool()
+  def apply()        = new BufferBool()
 }

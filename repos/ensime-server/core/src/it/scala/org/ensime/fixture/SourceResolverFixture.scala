@@ -12,7 +12,8 @@ trait SourceResolverFixture {
 }
 
 trait IsolatedSourceResolverFixture
-    extends SourceResolverFixture with IsolatedEnsimeConfigFixture {
+    extends SourceResolverFixture
+    with IsolatedEnsimeConfigFixture {
   override def withSourceResolver(testCode: SourceResolver => Any): Any =
     withEnsimeConfig { config =>
       implicit val vfs = EnsimeVFS()
@@ -23,7 +24,8 @@ trait IsolatedSourceResolverFixture
       }
     }
   override def withSourceResolver(
-      testCode: (EnsimeConfig, SourceResolver) => Any): Any =
+      testCode: (EnsimeConfig, SourceResolver) => Any
+  ): Any =
     withEnsimeConfig { config =>
       implicit val vfs = EnsimeVFS()
       try {
@@ -35,7 +37,8 @@ trait IsolatedSourceResolverFixture
 }
 
 trait SharedSourceResolverFixture
-    extends SourceResolverFixture with SharedEnsimeConfigFixture {
+    extends SourceResolverFixture
+    with SharedEnsimeConfigFixture {
   this: SharedEnsimeVFSFixture =>
 
   private[fixture] var _resolver: SourceResolver = _
@@ -47,7 +50,8 @@ trait SharedSourceResolverFixture
   override def withSourceResolver(testCode: SourceResolver => Any): Any =
     testCode(_resolver)
   override def withSourceResolver(
-      testCode: (EnsimeConfig, SourceResolver) => Any): Any = {
+      testCode: (EnsimeConfig, SourceResolver) => Any
+  ): Any = {
     testCode(_config, _resolver)
   }
 }

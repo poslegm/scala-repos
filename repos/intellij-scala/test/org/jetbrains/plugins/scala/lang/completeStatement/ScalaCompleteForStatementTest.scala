@@ -8,7 +8,7 @@ package lang.completeStatement
 class ScalaCompleteForStatementTest extends ScalaCompleteStatementTestBase {
 
   def testForStatement1() {
-    val fileText = """
+    val fileText   = """
         |class B {
         |  def method() {
         |    for <caret>
@@ -28,7 +28,7 @@ class ScalaCompleteForStatementTest extends ScalaCompleteStatementTestBase {
   }
 
   def testForStatement2() {
-    val fileText = """
+    val fileText   = """
         |class B {
         |  def method() {
         |    for<caret>
@@ -48,7 +48,7 @@ class ScalaCompleteForStatementTest extends ScalaCompleteStatementTestBase {
   }
 
   def testForStatement3() {
-    val fileText = """
+    val fileText   = """
         |class B {
         |  def method() {
         |    for (<caret>
@@ -69,7 +69,7 @@ class ScalaCompleteForStatementTest extends ScalaCompleteStatementTestBase {
   }
 
   def testForStatement4() {
-    val fileText = """
+    val fileText   = """
         |class B {
         |  def method() {
         |    for (i <- 1 to 10<caret>) {
@@ -91,7 +91,7 @@ class ScalaCompleteForStatementTest extends ScalaCompleteStatementTestBase {
   }
 
   def testForStatement5() {
-    val fileText = """
+    val fileText   = """
         |class B {
         |  def method() {
         |    for (i <- 1 to 10) {<caret>
@@ -112,7 +112,7 @@ class ScalaCompleteForStatementTest extends ScalaCompleteStatementTestBase {
   }
 
   def testForStatement6() {
-    val fileText = """
+    val fileText   = """
         |class B {
         |  def method() {
         |    for (i <- 1 to 10<caret>) {
@@ -136,7 +136,7 @@ class ScalaCompleteForStatementTest extends ScalaCompleteStatementTestBase {
   }
 
   def testForStatement7() {
-    val fileText = """
+    val fileText   = """
         |class B {
         |  def method() {
         |    for ()<caret>

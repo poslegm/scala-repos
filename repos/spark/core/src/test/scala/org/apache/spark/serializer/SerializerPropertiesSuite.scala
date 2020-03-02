@@ -46,17 +46,20 @@ class SerializerPropertiesSuite extends SparkFunSuite {
   test("KryoSerializer supports relocation when auto-reset is enabled") {
     val ser = new KryoSerializer(new SparkConf)
     assert(
-        ser.newInstance().asInstanceOf[KryoSerializerInstance].getAutoReset())
+      ser.newInstance().asInstanceOf[KryoSerializerInstance].getAutoReset()
+    )
     testSupportsRelocationOfSerializedObjects(ser, generateRandomItem)
   }
 
-  test(
-      "KryoSerializer does not support relocation when auto-reset is disabled") {
+  test("KryoSerializer does not support relocation when auto-reset is disabled") {
     val conf = new SparkConf().set(
-        "spark.kryo.registrator", classOf[RegistratorWithoutAutoReset].getName)
+      "spark.kryo.registrator",
+      classOf[RegistratorWithoutAutoReset].getName
+    )
     val ser = new KryoSerializer(conf)
     assert(
-        !ser.newInstance().asInstanceOf[KryoSerializerInstance].getAutoReset())
+      !ser.newInstance().asInstanceOf[KryoSerializerInstance].getAutoReset()
+    )
     testSupportsRelocationOfSerializedObjects(ser, generateRandomItem)
   }
 }
@@ -65,36 +68,37 @@ object SerializerPropertiesSuite extends Assertions {
 
   def generateRandomItem(rand: Random): Any = {
     val randomFunctions: Seq[() => Any] = Seq(
-        () => rand.nextInt(),
-        () => rand.nextString(rand.nextInt(10)),
-        () => rand.nextDouble(),
-        () => rand.nextBoolean(),
-        () => (rand.nextInt(), rand.nextString(rand.nextInt(10))),
-        () => MyCaseClass(rand.nextInt(), rand.nextString(rand.nextInt(10))),
-        () =>
-          {
-            val x =
-              MyCaseClass(rand.nextInt(), rand.nextString(rand.nextInt(10)))
-            (x, x)
-        }
+      () => rand.nextInt(),
+      () => rand.nextString(rand.nextInt(10)),
+      () => rand.nextDouble(),
+      () => rand.nextBoolean(),
+      () => (rand.nextInt(), rand.nextString(rand.nextInt(10))),
+      () => MyCaseClass(rand.nextInt(), rand.nextString(rand.nextInt(10))),
+      () => {
+        val x =
+          MyCaseClass(rand.nextInt(), rand.nextString(rand.nextInt(10)))
+        (x, x)
+      }
     )
     randomFunctions(rand.nextInt(randomFunctions.size)).apply()
   }
 
   def testSupportsRelocationOfSerializedObjects(
-      serializer: Serializer, generateRandomItem: Random => Any): Unit = {
+      serializer: Serializer,
+      generateRandomItem: Random => Any
+  ): Unit = {
     if (!serializer.supportsRelocationOfSerializedObjects) {
       return
     }
     val NUM_TRIALS = 5
-    val rand = new Random(42)
+    val rand       = new Random(42)
     for (_ <- 1 to NUM_TRIALS) {
       val items = {
         // Make sure that we have duplicate occurrences of the same object in the stream:
         val randomItems = Seq.fill(10)(generateRandomItem(rand))
         randomItems ++ randomItems.take(5)
       }
-      val baos = new ByteArrayOutputStream()
+      val baos      = new ByteArrayOutputStream()
       val serStream = serializer.newInstance().serializeStream(baos)
       def serializeItem(item: Any): Array[Byte] = {
         val itemStartOffset = baos.toByteArray.length
@@ -104,9 +108,7 @@ object SerializerPropertiesSuite extends Assertions {
         baos.toByteArray.slice(itemStartOffset, itemEndOffset).clone()
       }
       val itemsAndSerializedItems: Seq[(Any, Array[Byte])] = {
-        val serItems = items.map { item =>
-          (item, serializeItem(item))
-        }
+        val serItems = items.map { item => (item, serializeItem(item)) }
         serStream.close()
         rand.shuffle(serItems)
       }
@@ -116,8 +118,9 @@ object SerializerPropertiesSuite extends Assertions {
         .newInstance()
         .deserializeStream(new ByteArrayInputStream(reorderedSerializedData))
       assert(
-          deserializedItemsStream.asIterator.toSeq === itemsAndSerializedItems
-            .map(_._1))
+        deserializedItemsStream.asIterator.toSeq === itemsAndSerializedItems
+          .map(_._1)
+      )
       deserializedItemsStream.close()
     }
   }

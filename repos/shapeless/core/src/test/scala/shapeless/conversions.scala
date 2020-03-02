@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-14 Miles Sabin 
+ * Copyright (c) 2011-14 Miles Sabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ class ConversionTests {
     typed[(Int, String, Boolean, Double)](t7)
     assertEquals((23, "foo", false, 3.0), t7)
 
-    val t8 = (Set(2), Set("foo"))
+    val t8  = (Set(2), Set("foo"))
     val t8b = (t8.productElements map choose).tupled
     typed[(Option[Int], Option[String])](t8b)
     assertEquals((Option(2), Option("foo")), t8b)
@@ -62,7 +62,7 @@ class ConversionTests {
 
   @Test
   def testFunctions {
-    val sum: (Int, Int) => Int = _ + _
+    val sum: (Int, Int) => Int      = _ + _
     val prd: (Int, Int, Int) => Int = _ * _ * _
 
     val hlsum = sum.toProduct
@@ -84,8 +84,9 @@ class ConversionTests {
     typed[(A :: HNil) => B](hlab)
 
     def foo[F, L <: HList, R](f: F, l: L)(
-        implicit fntp: FnToProduct.Aux[F, L => R]) = fntp(f)(l)
-    val s2 = foo(sum, 2 :: 3 :: HNil)
+        implicit fntp: FnToProduct.Aux[F, L => R]
+    )       = fntp(f)(l)
+    val s2  = foo(sum, 2 :: 3 :: HNil)
     val ab2 = foo(ab, a :: HNil)
 
     class HListSyntax[A <: HList, F <: AnyRef](a: A) {
@@ -93,8 +94,9 @@ class ConversionTests {
         cftp(f)(a)
     }
 
-    implicit def mkSyntax[A <: HList, F <: AnyRef](a: A)(
-        implicit ffp: FnFromProduct.Aux[A => Any, F]): HListSyntax[A, F] =
+    implicit def mkSyntax[A <: HList, F <: AnyRef](
+        a: A
+    )(implicit ffp: FnFromProduct.Aux[A => Any, F]): HListSyntax[A, F] =
       new HListSyntax[A, F](a)
 
     val res =

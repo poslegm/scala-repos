@@ -12,7 +12,7 @@ object Test {
   }
 
   val myFoo = new Foo {
-    type Arg = Int
+    type Arg  = Int
     type Prod = (Int, Int)
     def makeProd(i: Int) = (i, i)
   }

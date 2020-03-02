@@ -8,17 +8,19 @@ import com.twitter.finagle.netty3.BufChannelBuffer
 import com.twitter.io.Buf
 
 object Encoder {
-  private val SPACE = " ".getBytes
+  private val SPACE     = " ".getBytes
   private val DELIMITER = "\r\n".getBytes
-  private val END = "END".getBytes
+  private val END       = "END".getBytes
 }
 
 class Encoder extends OneToOneEncoder {
   import Encoder._
 
-  def encode(context: ChannelHandlerContext,
-             channel: Channel,
-             message: AnyRef): ChannelBuffer = {
+  def encode(
+      context: ChannelHandlerContext,
+      channel: Channel,
+      message: AnyRef
+  ): ChannelBuffer = {
     message match {
       case Tokens(tokens) =>
         val buffer = ChannelBuffers.dynamicBuffer(10 * tokens.size)

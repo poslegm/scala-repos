@@ -40,7 +40,7 @@ object GeneratePredicate
     BindReferences.bindReference(in, inputSchema)
 
   protected def create(predicate: Expression): ((InternalRow) => Boolean) = {
-    val ctx = newCodeGenContext()
+    val ctx  = newCodeGenContext()
     val eval = predicate.gen(ctx)
     val code = s"""
       public SpecificPredicate generate(Object[] references) {
@@ -64,13 +64,13 @@ object GeneratePredicate
       }"""
 
     logDebug(
-        s"Generated predicate '$predicate':\n${CodeFormatter.format(code)}")
+      s"Generated predicate '$predicate':\n${CodeFormatter.format(code)}"
+    )
 
     val p = CodeGenerator
       .compile(code)
       .generate(ctx.references.toArray)
       .asInstanceOf[Predicate]
-      (r: InternalRow) =>
-      p.eval(r)
+    (r: InternalRow) => p.eval(r)
   }
 }

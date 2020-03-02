@@ -14,11 +14,13 @@ import play.api.{Environment, PlayConfig}
   * @param password The password
   * @param jndiName The JNDI name
   */
-case class DatabaseConfig(driver: Option[String],
-                          url: Option[String],
-                          username: Option[String],
-                          password: Option[String],
-                          jndiName: Option[String])
+case class DatabaseConfig(
+    driver: Option[String],
+    url: Option[String],
+    username: Option[String],
+    password: Option[String],
+    jndiName: Option[String]
+)
 
 object DatabaseConfig {
 
@@ -26,7 +28,9 @@ object DatabaseConfig {
 
     val driver = config.get[Option[String]]("driver")
     val (url, userPass) = ConnectionPool.extractUrl(
-        config.get[Option[String]]("url"), environment.mode)
+      config.get[Option[String]]("url"),
+      environment.mode
+    )
     val username = config
       .getDeprecated[Option[String]]("username", "user")
       .orElse(userPass.map(_._1))

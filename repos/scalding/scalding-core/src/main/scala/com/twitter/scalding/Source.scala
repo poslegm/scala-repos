@@ -24,7 +24,13 @@ import cascading.scheme.{NullScheme, Scheme}
 import cascading.tap.hadoop.Hfs
 import cascading.tap.SinkMode
 import cascading.tap.{Tap, SourceTap, SinkTap}
-import cascading.tuple.{Fields, Tuple => CTuple, TupleEntry, TupleEntryCollector, TupleEntryIterator}
+import cascading.tuple.{
+  Fields,
+  Tuple => CTuple,
+  TupleEntry,
+  TupleEntryCollector,
+  TupleEntryIterator
+}
 
 import cascading.pipe.Pipe
 
@@ -60,10 +66,13 @@ class InvalidSourceTap(val hdfsPaths: Iterable[String])
 
   override def getModifiedTime(conf: JobConf): Long = 0L
 
-  override def openForRead(flow: FlowProcess[JobConf],
-                           input: RecordReader[_, _]): TupleEntryIterator =
+  override def openForRead(
+      flow: FlowProcess[JobConf],
+      input: RecordReader[_, _]
+  ): TupleEntryIterator =
     throw new InvalidSourceException(
-        s"InvalidSourceTap: No good paths in $hdfsPaths")
+      s"InvalidSourceTap: No good paths in $hdfsPaths"
+    )
 
   override def resourceExists(conf: JobConf): Boolean = false
 
@@ -79,7 +88,9 @@ class InvalidSourceTap(val hdfsPaths: Iterable[String])
   // In the worst case if the flow plan is misconfigured,
   // openForRead on mappers should fail when using this tap.
   override def sourceConfInit(
-      flow: FlowProcess[JobConf], conf: JobConf): Unit = {
+      flow: FlowProcess[JobConf],
+      conf: JobConf
+  ): Unit = {
     conf.setInputFormat(classOf[cascading.tap.hadoop.io.MultiInputFormat])
     super.sourceConfInit(flow, conf)
   }
@@ -89,7 +100,7 @@ class InvalidSourceTap(val hdfsPaths: Iterable[String])
  * Denotes the access mode for a Source
  */
 sealed abstract class AccessMode
-case object Read extends AccessMode
+case object Read  extends AccessMode
 case object Write extends AccessMode
 
 // Scala is pickier than Java about type parameters, and Cascading's Scheme
@@ -98,14 +109,14 @@ case object Write extends AccessMode
 
 object HadoopSchemeInstance {
   def apply(scheme: Scheme[_, _, _, _, _]) =
-    scheme.asInstanceOf[Scheme[
-            JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]]
+    scheme.asInstanceOf[
+      Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]
+    ]
 }
 
 object CastHfsTap {
   // The scala compiler has problems with the generics in Cascading
-  def apply(
-      tap: Hfs): Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]] =
+  def apply(tap: Hfs): Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]] =
     tap.asInstanceOf[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]]
 }
 
@@ -145,17 +156,17 @@ abstract class Source extends java.io.Serializable {
      * Starting in scalding 0.12, we assign a unique name for each head
      * pipe so that we can always merge two FlowDefs
      */
-    val uuid = java.util.UUID.randomUUID
+    val uuid    = java.util.UUID.randomUUID
     val srcName = sourceId + uuid.toString
-    assert(!sources.containsKey(srcName),
-           "Source %s had collision in uuid: %s".format(this, uuid))
+    assert(
+      !sources.containsKey(srcName),
+      "Source %s had collision in uuid: %s".format(this, uuid)
+    )
     sources.put(srcName, createTap(Read)(mode))
-    FlowStateMap.mutate(flowDef) { st =>
-      (st.addSource(srcName, this), ())
-    }
+    FlowStateMap.mutate(flowDef) { st => (st.addSource(srcName, this), ()) }
     (mode, transformInTest) match {
       case (test: TestMode, false) => new Pipe(srcName)
-      case _ => transformForRead(new Pipe(srcName))
+      case _                       => transformForRead(new Pipe(srcName))
     }
   }
 
@@ -167,14 +178,14 @@ abstract class Source extends java.io.Serializable {
     checkFlowDefNotNull
 
     //insane workaround for scala compiler bug
-    val sinks = flowDef.getSinks.asInstanceOf[JMap[String, Any]]
+    val sinks    = flowDef.getSinks.asInstanceOf[JMap[String, Any]]
     val sinkName = sourceId
     if (!sinks.containsKey(sinkName)) {
       sinks.put(sinkName, createTap(Write)(mode))
     }
     val newPipe = (mode, transformInTest) match {
       case (test: TestMode, false) => pipe
-      case _ => transformForWrite(pipe)
+      case _                       => transformForWrite(pipe)
     }
     val outPipe = new Pipe(sinkName, newPipe)
     flowDef.addTail(outPipe)
@@ -182,12 +193,14 @@ abstract class Source extends java.io.Serializable {
   }
 
   protected def checkFlowDefNotNull(implicit flowDef: FlowDef, mode: Mode) {
-    assert(flowDef != null,
-           "Trying to access null FlowDef while in mode: %s".format(mode))
+    assert(
+      flowDef != null,
+      "Trying to access null FlowDef while in mode: %s".format(mode)
+    )
   }
 
   protected def transformForWrite(pipe: Pipe) = pipe
-  protected def transformForRead(pipe: Pipe) = pipe
+  protected def transformForRead(pipe: Pipe)  = pipe
 
   /**
     * Subclasses of Source MUST override this method. They may call out to TestTapFactory for
@@ -201,7 +214,9 @@ abstract class Source extends java.io.Serializable {
 
   @deprecated("replace with Mappable.toIterator", "0.9.0")
   def readAtSubmitter[T](
-      implicit mode: Mode, conv: TupleConverter[T]): Stream[T] = {
+      implicit mode: Mode,
+      conv: TupleConverter[T]
+  ): Stream[T] = {
     validateTaps(mode)
     val tap = createTap(Read)(mode)
     mode
@@ -225,8 +240,9 @@ abstract class Source extends java.io.Serializable {
   */
 trait Mappable[+T] extends Source with TypedSource[T] {
 
-  final def mapTo[U](out: Fields)(mf: (T) => U)(
-      implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe = {
+  final def mapTo[U](out: Fields)(
+      mf: (T) => U
+  )(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe = {
     RichPipe(read(flowDef, mode))
       .mapTo[T, U](sourceFields -> out)(mf)(converter, setter)
   }
@@ -235,8 +251,9 @@ trait Mappable[+T] extends Source with TypedSource[T] {
     * If you want to filter, you should use this and output a 0 or 1 length Iterable.
     * Filter does not change column names, and we generally expect to change columns here
     */
-  final def flatMapTo[U](out: Fields)(mf: (T) => TraversableOnce[U])(
-      implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe = {
+  final def flatMapTo[U](out: Fields)(
+      mf: (T) => TraversableOnce[U]
+  )(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe = {
     RichPipe(read(flowDef, mode))
       .flatMapTo[T, U](sourceFields -> out)(mf)(converter, setter)
   }
@@ -247,7 +264,7 @@ trait Mappable[+T] extends Source with TypedSource[T] {
     */
   def toIterator(implicit config: Config, mode: Mode): Iterator[T] = {
     validateTaps(mode)
-    val tap = createTap(Read)(mode)
+    val tap  = createTap(Read)(mode)
     val conv = converter
     mode.openForRead(config, tap).asScala.map { te =>
       conv(te.selectEntry(sourceFields))
@@ -270,9 +287,12 @@ trait SingleMappable[T] extends Mappable[T] {
   */
 class NullTap[Config, Input, Output, SourceContext, SinkContext]
     extends SinkTap[Config, Output](
-        new NullScheme[Config, Input, Output, SourceContext, SinkContext](
-            Fields.NONE, Fields.ALL),
-        SinkMode.UPDATE) {
+      new NullScheme[Config, Input, Output, SourceContext, SinkContext](
+        Fields.NONE,
+        Fields.ALL
+      ),
+      SinkMode.UPDATE
+    ) {
 
   def getIdentifier = "nullTap"
   def openForWrite(flowProcess: FlowProcess[Config], output: Output) =
@@ -282,22 +302,28 @@ class NullTap[Config, Input, Output, SourceContext, SinkContext]
       protected def collect(te: TupleEntry) {}
     }
 
-  def createResource(conf: Config) = true
-  def deleteResource(conf: Config) = false
-  def resourceExists(conf: Config) = true
+  def createResource(conf: Config)  = true
+  def deleteResource(conf: Config)  = false
+  def resourceExists(conf: Config)  = true
   def getModifiedTime(conf: Config) = 0
 }
 
 trait BaseNullSource extends Source {
-  override def createTap(readOrWrite: AccessMode)(
-      implicit mode: Mode): Tap[_, _, _] = {
+  override def createTap(
+      readOrWrite: AccessMode
+  )(implicit mode: Mode): Tap[_, _, _] = {
     readOrWrite match {
       case Read => throw new Exception("not supported, reading from null")
       case Write =>
         mode match {
           case Hdfs(_, _) =>
             new NullTap[
-                JobConf, RecordReader[_, _], OutputCollector[_, _], Any, Any]
+              JobConf,
+              RecordReader[_, _],
+              OutputCollector[_, _],
+              Any,
+              Any
+            ]
           case Local(_) =>
             new NullTap[Properties, InputStream, OutputStream, Any, Any]
           case Test(_) =>

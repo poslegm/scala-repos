@@ -4,7 +4,7 @@ class Lazy(f: => Int) {
 
 class UsedLater(f: => Int) {
   lazy val get: Int = f
-  def other = f
+  def other         = f
 }
 
 class TransientLazy(f: => Int) {

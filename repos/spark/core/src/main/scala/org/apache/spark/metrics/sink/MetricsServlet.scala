@@ -29,12 +29,13 @@ import org.eclipse.jetty.servlet.ServletContextHandler
 import org.apache.spark.{SecurityManager, SparkConf}
 import org.apache.spark.ui.JettyUtils._
 
-private[spark] class MetricsServlet(val property: Properties,
-                                    val registry: MetricRegistry,
-                                    securityMgr: SecurityManager)
-    extends Sink {
+private[spark] class MetricsServlet(
+    val property: Properties,
+    val registry: MetricRegistry,
+    securityMgr: SecurityManager
+) extends Sink {
 
-  val SERVLET_KEY_PATH = "path"
+  val SERVLET_KEY_PATH   = "path"
   val SERVLET_KEY_SAMPLE = "sample"
 
   val SERVLET_DEFAULT_SAMPLE = false
@@ -45,17 +46,22 @@ private[spark] class MetricsServlet(val property: Properties,
     .map(_.toBoolean)
     .getOrElse(SERVLET_DEFAULT_SAMPLE)
 
-  val mapper = new ObjectMapper().registerModule(new MetricsModule(
-          TimeUnit.SECONDS, TimeUnit.MILLISECONDS, servletShowSample))
+  val mapper = new ObjectMapper().registerModule(
+    new MetricsModule(
+      TimeUnit.SECONDS,
+      TimeUnit.MILLISECONDS,
+      servletShowSample
+    )
+  )
 
   def getHandlers(conf: SparkConf): Array[ServletContextHandler] = {
     Array[ServletContextHandler](
-        createServletHandler(
-            servletPath,
-            new ServletParams(request => getMetricsSnapshot(request),
-                              "text/json"),
-            securityMgr,
-            conf)
+      createServletHandler(
+        servletPath,
+        new ServletParams(request => getMetricsSnapshot(request), "text/json"),
+        securityMgr,
+        conf
+      )
     )
   }
 

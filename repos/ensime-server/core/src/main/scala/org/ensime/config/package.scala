@@ -13,8 +13,8 @@ package object config {
     def scalaSourceFiles: Set[File] =
       for {
         module: EnsimeModule <- c.modules.values.toSet
-        root <- module.sourceRoots
-        file <- root.tree if file.isFile && file.getName.endsWith(".scala")
+        root                 <- module.sourceRoots
+        file                 <- root.tree if file.isFile && file.getName.endsWith(".scala")
       } yield file
   }
 }

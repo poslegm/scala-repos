@@ -30,8 +30,8 @@ object string {
     false
   }
 
-  val empty: String = ""
-  val emptyArray: Array[String] = Array[String](empty)
+  val empty: String                  = ""
+  val emptyArray: Array[String]      = Array[String](empty)
   var SPACE_SPLITTER: StringSplitter = new StringSplitter(" ")
 
   def tryToInt(input: String): Option[Int] = {

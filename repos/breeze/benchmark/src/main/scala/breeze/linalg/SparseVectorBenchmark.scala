@@ -32,17 +32,25 @@ class SparseVectorBenchmark extends BreezeBenchmark with BuildsRandomVectors {
   }
 
   def dotProductBench(
-      reps: Int, size: Int, sparsity1: Double, sparsity2: Double): Double = {
-    runWith(reps, {
-      (randomSparseVector(size, sparsity1),
-       randomSparseVector(size, sparsity2))
-    }) {
+      reps: Int,
+      size: Int,
+      sparsity1: Double,
+      sparsity2: Double
+  ): Double = {
+    runWith(
+      reps, {
+        (
+          randomSparseVector(size, sparsity1),
+          randomSparseVector(size, sparsity2)
+        )
+      }
+    ) {
       case (a, b) =>
         a dot b
     }
   }
 
-  def timeDotSmall1_%(reps: Int) = dotProductBench(reps, 1000, 0.01)
+  def timeDotSmall1_%(reps: Int)  = dotProductBench(reps, 1000, 0.01)
   def timeDotSmall10_%(reps: Int) = dotProductBench(reps, 1000, 0.10)
   def timeDotSmall30_%(reps: Int) = dotProductBench(reps, 1000, 0.30)
 
@@ -55,7 +63,7 @@ class SparseVectorBenchmark extends BreezeBenchmark with BuildsRandomVectors {
   def timeDotLargeUneven_1_30_%(reps: Int) =
     dotProductBench(reps, 1000000, 0.01, 0.3)
 
-  def timeDotLarge1_%(reps: Int) = dotProductBench(reps, 1000000, 0.01)
+  def timeDotLarge1_%(reps: Int)  = dotProductBench(reps, 1000000, 0.01)
   def timeDotLarge10_%(reps: Int) = dotProductBench(reps, 1000000, 0.10)
   def timeDotLarge30_%(reps: Int) = dotProductBench(reps, 1000000, 0.30)
 }

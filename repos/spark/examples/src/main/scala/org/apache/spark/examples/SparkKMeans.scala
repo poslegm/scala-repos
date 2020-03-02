@@ -36,7 +36,7 @@ object SparkKMeans {
 
   def closestPoint(p: Vector[Double], centers: Array[Vector[Double]]): Int = {
     var bestIndex = 0
-    var closest = Double.PositiveInfinity
+    var closest   = Double.PositiveInfinity
 
     for (i <- 0 until centers.length) {
       val tempDist = squaredDistance(p, centers(i))
@@ -50,10 +50,12 @@ object SparkKMeans {
   }
 
   def showWarning() {
-    System.err.println("""WARN: This is a naive implementation of KMeans Clustering and is given as an example!
+    System.err.println(
+      """WARN: This is a naive implementation of KMeans Clustering and is given as an example!
         |Please use the KMeans method found in org.apache.spark.mllib.clustering
         |for more conventional use.
-      """.stripMargin)
+      """.stripMargin
+    )
   }
 
   def main(args: Array[String]) {
@@ -65,14 +67,14 @@ object SparkKMeans {
 
     showWarning()
 
-    val sparkConf = new SparkConf().setAppName("SparkKMeans")
-    val sc = new SparkContext(sparkConf)
-    val lines = sc.textFile(args(0))
-    val data = lines.map(parseVector _).cache()
-    val K = args(1).toInt
+    val sparkConf    = new SparkConf().setAppName("SparkKMeans")
+    val sc           = new SparkContext(sparkConf)
+    val lines        = sc.textFile(args(0))
+    val data         = lines.map(parseVector _).cache()
+    val K            = args(1).toInt
     val convergeDist = args(2).toDouble
 
-    val kPoints = data.takeSample(withReplacement = false, K, 42).toArray
+    val kPoints  = data.takeSample(withReplacement = false, K, 42).toArray
     var tempDist = 1.0
 
     while (tempDist > convergeDist) {
@@ -82,9 +84,9 @@ object SparkKMeans {
         case ((p1, c1), (p2, c2)) => (p1 + p2, c1 + c2)
       }
 
-      val newPoints = pointStats.map { pair =>
-        (pair._1, pair._2._1 * (1.0 / pair._2._2))
-      }.collectAsMap()
+      val newPoints = pointStats
+        .map { pair => (pair._1, pair._2._1 * (1.0 / pair._2._2)) }
+        .collectAsMap()
 
       tempDist = 0.0
       for (i <- 0 until K) {

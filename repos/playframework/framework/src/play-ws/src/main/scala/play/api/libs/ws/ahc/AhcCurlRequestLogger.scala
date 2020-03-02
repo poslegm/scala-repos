@@ -17,7 +17,8 @@ import scala.concurrent.Future
   * @param logger an SLF4J logger
   */
 class AhcCurlRequestLogger(logger: org.slf4j.Logger)
-    extends WSRequestFilter with CurlFormat {
+    extends WSRequestFilter
+    with CurlFormat {
   def apply(executor: WSRequestExecutor): WSRequestExecutor = {
     new WSRequestExecutor {
       override def execute(request: WSRequest): Future[WSResponse] = {
@@ -66,7 +67,7 @@ trait CurlFormat {
 
     // body (note that this has only been checked for text, not binary)
     request.getBody.map { body =>
-      val charset = findCharset(request)
+      val charset    = findCharset(request)
       val bodyString = body.decodeString(charset)
       // XXX Need to escape any quotes within the body of the string.
       b.append(s"  --data '${quote(bodyString)}'")
@@ -76,7 +77,7 @@ trait CurlFormat {
     // pull out some underlying values from the request.  This creates a new Request
     // but should be harmless.
     val asyncHttpRequest = request.buildRequest()
-    val proxyServer = asyncHttpRequest.getProxyServer
+    val proxyServer      = asyncHttpRequest.getProxyServer
     if (proxyServer != null) {
       b.append(s"  --proxy ${proxyServer.getHost}:${proxyServer.getPort}")
       b.append(" \\\n")
@@ -90,11 +91,15 @@ trait CurlFormat {
   }
 
   protected def findCharset(request: AhcWSRequest): String = {
-    request.contentType.map { ct =>
-      Option(HttpUtils.parseCharset(ct)).getOrElse {
-        StandardCharsets.UTF_8
-      }.name()
-    }.getOrElse(HttpUtils.parseCharset("UTF-8").name())
+    request.contentType
+      .map { ct =>
+        Option(HttpUtils.parseCharset(ct))
+          .getOrElse {
+            StandardCharsets.UTF_8
+          }
+          .name()
+      }
+      .getOrElse(HttpUtils.parseCharset("UTF-8").name())
   }
 
   def quote(unsafe: String): String = unsafe.replace("'", "'\\''")

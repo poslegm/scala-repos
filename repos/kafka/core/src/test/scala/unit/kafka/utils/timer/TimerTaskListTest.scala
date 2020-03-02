@@ -35,11 +35,11 @@ class TimerTaskListTest {
   @Test
   def testAll() {
     val sharedCounter = new AtomicInteger(0)
-    val runCounter = new AtomicInteger(0)
-    val execCounter = new AtomicInteger(0)
-    val list1 = new TimerTaskList(sharedCounter)
-    val list2 = new TimerTaskList(sharedCounter)
-    val list3 = new TimerTaskList(sharedCounter)
+    val runCounter    = new AtomicInteger(0)
+    val execCounter   = new AtomicInteger(0)
+    val list1         = new TimerTaskList(sharedCounter)
+    val list2         = new TimerTaskList(sharedCounter)
+    val list3         = new TimerTaskList(sharedCounter)
 
     val tasks = (1 to 10).map { i =>
       val task = new TestTask(10L)

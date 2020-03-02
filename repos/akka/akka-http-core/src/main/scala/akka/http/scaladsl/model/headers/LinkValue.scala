@@ -12,14 +12,15 @@ import akka.http.impl.util.JavaMapping.Implicits._
 import UriRendering.UriRenderer
 
 final case class LinkValue(uri: Uri, params: immutable.Seq[LinkParam])
-    extends jm.headers.LinkValue with ValueRenderable {
+    extends jm.headers.LinkValue
+    with ValueRenderable {
   def render[R <: Rendering](r: R): r.type = {
     r ~~ '<' ~~ uri ~~ '>'
     if (params.nonEmpty) r ~~ "; " ~~ params
     r
   }
 
-  def getUri: jm.Uri = uri.asJava
+  def getUri: jm.Uri                                      = uri.asJava
   def getParams: java.lang.Iterable[jm.headers.LinkParam] = params.asJava
 }
 
@@ -29,7 +30,8 @@ object LinkValue {
 }
 
 sealed abstract class LinkParam
-    extends jm.headers.LinkParam with ToStringRenderable {
+    extends jm.headers.LinkParam
+    with ToStringRenderable {
   val key: String = getClass.getSimpleName
   def value: AnyRef
 }
@@ -42,10 +44,10 @@ object LinkParams {
   private val reserved = CharPredicate(" ,;")
 
   // A few convenience rels
-  val next = rel("next")
-  val prev = rel("prev")
-  val first = rel("first")
-  val last = rel("last")
+  val next      = rel("next")
+  val prev      = rel("prev")
+  val first     = rel("first")
+  val last      = rel("last")
   val blockedBy = rel("blocked-by")
 
   // http://tools.ietf.org/html/rfc5988#section-5.3
@@ -114,7 +116,8 @@ object LinkParams {
     def render[R <: Rendering](r: R): r.type = {
       r ~~ "type="
       if (reserved matchesAny mediaType.value)
-        r ~~ '"' ~~ mediaType.value ~~ '"' else r ~~ mediaType.value
+        r ~~ '"' ~~ mediaType.value ~~ '"'
+      else r ~~ mediaType.value
     }
   }
 }

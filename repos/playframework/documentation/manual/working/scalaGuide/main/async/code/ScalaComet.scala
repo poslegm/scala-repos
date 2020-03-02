@@ -23,7 +23,7 @@ object ScalaCometSpec extends PlaySpecification {
 
     //#comet-string
     def cometString = Action {
-      implicit val m = materializer
+      implicit val m                      = materializer
       def stringSource: Source[String, _] = Source(List("kiki", "foo", "bar"))
       Ok.chunked(stringSource via Comet.string("parent.cometMessage"))
         .as(ContentTypes.HTML)
@@ -32,7 +32,7 @@ object ScalaCometSpec extends PlaySpecification {
 
     //#comet-json
     def cometJson = Action {
-      implicit val m = materializer
+      implicit val m                     = materializer
       def jsonSource: Source[JsValue, _] = Source(List(JsString("jsonString")))
       Ok.chunked(jsonSource via Comet.json("parent.cometMessage"))
         .as(ContentTypes.HTML)
@@ -41,9 +41,9 @@ object ScalaCometSpec extends PlaySpecification {
 
     //#comet-enumerator
     def cometFromEnumerator = Action {
-      implicit val m = materializer
-      val enum = Enumerator("one", "two", "three")
-      val publisher = Streams.enumeratorToPublisher(enum)
+      implicit val m                      = materializer
+      val enum                            = Enumerator("one", "two", "three")
+      val publisher                       = Streams.enumeratorToPublisher(enum)
       def stringSource: Source[String, _] = Source.fromPublisher(publisher)
       Ok.chunked(stringSource via Comet.string("parent.cometMessage"))
         .as(ContentTypes.HTML)
@@ -58,9 +58,10 @@ object ScalaCometSpec extends PlaySpecification {
       try {
         implicit val m = app.materializer
         val controller = new MockController(m)
-        val result = controller.cometString.apply(FakeRequest())
+        val result     = controller.cometString.apply(FakeRequest())
         contentAsString(result) must contain(
-            "<html><body><script type=\"text/javascript\">parent.cometMessage('kiki');</script><script type=\"text/javascript\">parent.cometMessage('foo');</script><script type=\"text/javascript\">parent.cometMessage('bar');</script>")
+          "<html><body><script type=\"text/javascript\">parent.cometMessage('kiki');</script><script type=\"text/javascript\">parent.cometMessage('foo');</script><script type=\"text/javascript\">parent.cometMessage('bar');</script>"
+        )
       } finally {
         app.stop()
       }
@@ -71,9 +72,10 @@ object ScalaCometSpec extends PlaySpecification {
       try {
         implicit val m = app.materializer
         val controller = new MockController(m)
-        val result = controller.cometJson.apply(FakeRequest())
+        val result     = controller.cometJson.apply(FakeRequest())
         contentAsString(result) must contain(
-            "<html><body><script type=\"text/javascript\">parent.cometMessage(\"jsonString\");</script>")
+          "<html><body><script type=\"text/javascript\">parent.cometMessage(\"jsonString\");</script>"
+        )
       } finally {
         app.stop()
       }

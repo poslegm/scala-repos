@@ -6,7 +6,9 @@ import mesosphere.marathon.Protos._
 import com.wix.accord.dsl._
 
 case class UpgradeStrategy(
-    minimumHealthCapacity: Double, maximumOverCapacity: Double = 1.0) {
+    minimumHealthCapacity: Double,
+    maximumOverCapacity: Double = 1.0
+) {
   def toProto: UpgradeStrategyDefinition =
     UpgradeStrategyDefinition.newBuilder
       .setMinimumHealthCapacity(minimumHealthCapacity)
@@ -15,12 +17,12 @@ case class UpgradeStrategy(
 }
 
 object UpgradeStrategy {
-  val empty: UpgradeStrategy = UpgradeStrategy(1)
+  val empty: UpgradeStrategy            = UpgradeStrategy(1)
   def forResidentTasks: UpgradeStrategy = UpgradeStrategy(0.5, 0)
   def fromProto(upgradeStrategy: UpgradeStrategyDefinition): UpgradeStrategy =
     UpgradeStrategy(
-        upgradeStrategy.getMinimumHealthCapacity,
-        upgradeStrategy.getMaximumOverCapacity
+      upgradeStrategy.getMinimumHealthCapacity,
+      upgradeStrategy.getMaximumOverCapacity
     )
 
   implicit val updateStrategyValidator = validator[UpgradeStrategy] {

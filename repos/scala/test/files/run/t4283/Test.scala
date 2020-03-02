@@ -10,7 +10,7 @@ object Test {
     val v = (new test.ScalaBipp).make.get.t
     println(v)
     val sb: test.ScalaBipp = (new test.ScalaBipp).make.get
-    val z = sb.t
+    val z                  = sb.t
     println(z)
   }
 }

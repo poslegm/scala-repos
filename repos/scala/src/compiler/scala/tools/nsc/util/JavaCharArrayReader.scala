@@ -9,20 +9,22 @@ package util
 
 import scala.reflect.internal.Chars._
 
-class JavaCharArrayReader(buf: IndexedSeq[Char],
-                          start: Int, /* startline: int, startcol: int, */
-                          decodeUni: Boolean,
-                          error: String => Unit)
-    extends Iterator[Char] with Cloneable {
+class JavaCharArrayReader(
+    buf: IndexedSeq[Char],
+    start: Int, /* startline: int, startcol: int, */
+    decodeUni: Boolean,
+    error: String => Unit
+) extends Iterator[Char]
+    with Cloneable {
 
   def this(buf: IndexedSeq[Char], decodeUni: Boolean, error: String => Unit) =
     this(buf, 0, /* 1, 1, */ decodeUni, error)
 
   /** the line and column position of the current character
     */
-  var ch: Char = _
-  var bp = start
-  def cpos = bp
+  var ch: Char           = _
+  var bp                 = start
+  def cpos               = bp
   var isUnicode: Boolean = _
 
   def hasNext = bp < buf.length

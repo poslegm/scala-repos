@@ -5,7 +5,7 @@
   * The ASF licenses this file to You under the Apache License, Version 2.0
   * (the "License"); you may not use this file except in compliance with
   * the License.  You may obtain a copy of the License at
-  * 
+  *
   *    http://www.apache.org/licenses/LICENSE-2.0
   *
   * Unless required by applicable law or agreed to in writing, software
@@ -25,7 +25,7 @@ object TestTruncate {
   def main(args: Array[String]): Unit = {
     val name = File.createTempFile("kafka", ".test")
     name.deleteOnExit()
-    val file = new RandomAccessFile(name, "rw").getChannel()
+    val file   = new RandomAccessFile(name, "rw").getChannel()
     val buffer = ByteBuffer.allocate(12)
     buffer.putInt(4).putInt(4).putInt(4)
     buffer.rewind()

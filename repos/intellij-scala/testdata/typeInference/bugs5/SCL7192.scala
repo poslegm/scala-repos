@@ -12,7 +12,7 @@ object SCL7192 {
     import B.{User, _}
 
     val x: User = new User
-    val y: M = new M
+    val y: M    = new M
     /*start*/
     x /*end*/
   }

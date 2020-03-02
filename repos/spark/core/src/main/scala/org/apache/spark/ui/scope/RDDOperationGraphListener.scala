@@ -32,14 +32,14 @@ private[ui] class RDDOperationGraphListener(conf: SparkConf)
   // Note: the fate of jobs and stages are tied. This means when we clean up a job,
   // we always clean up all of its stages. Similarly, when we clean up a stage, we
   // always clean up its job (and, transitively, other stages in the same job).
-  private[ui] val jobIdToStageIds = new mutable.HashMap[Int, Seq[Int]]
+  private[ui] val jobIdToStageIds        = new mutable.HashMap[Int, Seq[Int]]
   private[ui] val jobIdToSkippedStageIds = new mutable.HashMap[Int, Seq[Int]]
-  private[ui] val stageIdToJobId = new mutable.HashMap[Int, Int]
-  private[ui] val stageIdToGraph = new mutable.HashMap[Int, RDDOperationGraph]
-  private[ui] val completedStageIds = new mutable.HashSet[Int]
+  private[ui] val stageIdToJobId         = new mutable.HashMap[Int, Int]
+  private[ui] val stageIdToGraph         = new mutable.HashMap[Int, RDDOperationGraph]
+  private[ui] val completedStageIds      = new mutable.HashSet[Int]
 
   // Keep track of the order in which these are inserted so we can remove old ones
-  private[ui] val jobIds = new mutable.ArrayBuffer[Int]
+  private[ui] val jobIds   = new mutable.ArrayBuffer[Int]
   private[ui] val stageIds = new mutable.ArrayBuffer[Int]
 
   // How many jobs or stages to retain graph metadata for
@@ -80,7 +80,7 @@ private[ui] class RDDOperationGraphListener(conf: SparkConf)
   /** On job start, construct a RDDOperationGraph for each stage in the job for display later. */
   override def onJobStart(jobStart: SparkListenerJobStart): Unit =
     synchronized {
-      val jobId = jobStart.jobId
+      val jobId      = jobStart.jobId
       val stageInfos = jobStart.stageInfos
 
       jobIds += jobId
@@ -90,8 +90,8 @@ private[ui] class RDDOperationGraphListener(conf: SparkConf)
         val stageId = stageInfo.stageId
         stageIds += stageId
         stageIdToJobId(stageId) = jobId
-        stageIdToGraph(stageId) = RDDOperationGraph.makeOperationGraph(
-            stageInfo)
+        stageIdToGraph(stageId) =
+          RDDOperationGraph.makeOperationGraph(stageInfo)
         trimStagesIfNecessary()
       }
 
@@ -100,7 +100,8 @@ private[ui] class RDDOperationGraphListener(conf: SparkConf)
 
   /** Keep track of stages that have completed. */
   override def onStageCompleted(
-      stageCompleted: SparkListenerStageCompleted): Unit = synchronized {
+      stageCompleted: SparkListenerStageCompleted
+  ): Unit = synchronized {
     val stageId = stageCompleted.stageInfo.stageId
     if (stageIdToJobId.contains(stageId)) {
       // Note: Only do this if the stage has not already been cleaned up
@@ -126,9 +127,7 @@ private[ui] class RDDOperationGraphListener(conf: SparkConf)
   private def trimStagesIfNecessary(): Unit = {
     if (stageIds.size >= retainedStages) {
       val toRemove = math.max(retainedStages / 10, 1)
-      stageIds.take(toRemove).foreach { id =>
-        cleanStage(id)
-      }
+      stageIds.take(toRemove).foreach { id => cleanStage(id) }
       stageIds.trimStart(toRemove)
     }
   }
@@ -137,9 +136,7 @@ private[ui] class RDDOperationGraphListener(conf: SparkConf)
   private def trimJobsIfNecessary(): Unit = {
     if (jobIds.size >= retainedJobs) {
       val toRemove = math.max(retainedJobs / 10, 1)
-      jobIds.take(toRemove).foreach { id =>
-        cleanJob(id)
-      }
+      jobIds.take(toRemove).foreach { id => cleanJob(id) }
       jobIds.trimStart(toRemove)
     }
   }
@@ -148,18 +145,14 @@ private[ui] class RDDOperationGraphListener(conf: SparkConf)
   private[ui] def cleanStage(stageId: Int): Unit = {
     completedStageIds.remove(stageId)
     stageIdToGraph.remove(stageId)
-    stageIdToJobId.remove(stageId).foreach { jobId =>
-      cleanJob(jobId)
-    }
+    stageIdToJobId.remove(stageId).foreach { jobId => cleanJob(jobId) }
   }
 
   /** Clean metadata for the given job and all stages that belong to it. */
   private[ui] def cleanJob(jobId: Int): Unit = {
     jobIdToSkippedStageIds.remove(jobId)
     jobIdToStageIds.remove(jobId).foreach { stageIds =>
-      stageIds.foreach { stageId =>
-        cleanStage(stageId)
-      }
+      stageIds.foreach { stageId => cleanStage(stageId) }
     }
   }
 }

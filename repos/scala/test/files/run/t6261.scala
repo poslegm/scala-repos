@@ -7,7 +7,8 @@ object Test extends App {
     val x = HashMap.empty + (1 -> 1) + (2 -> 2)
     if (x.getClass.getSimpleName != "HashTrieMap")
       println(
-          "A hash map containing two non-colliding values should be a HashTrieMap")
+        "A hash map containing two non-colliding values should be a HashTrieMap"
+      )
 
     val y = x - 1
     if (y.getClass.getSimpleName != "HashMap1")
@@ -41,8 +42,8 @@ object Test extends App {
       }
 
       // find two hashes which have a large separation
-      val x = 0
-      var y = 1
+      val x  = 0
+      var y  = 1
       val ix = improve(x)
       while (y != 0 && improve(y) != ix + (1 << 31)) y += 1
       printf("%s %s %x %x\n", x, y, improve(x), improve(y))
@@ -77,8 +78,9 @@ object Test extends App {
     StructureTests.validate(y)
     // StructureTests.printStructure(y)
     require(
-        y.size == 3 && y.contains(a._1) && y.contains(b._1) &&
-        y.contains(c._1))
+      y.size == 3 && y.contains(a._1) && y.contains(b._1) &&
+        y.contains(c._1)
+    )
 
     // go from a HashSet1 directly to a HashTrieSet with maximum depth
     val z = HashMap(a) + c
@@ -113,14 +115,15 @@ package scala.collection.immutable {
       x match {
         case m: HashMap.HashTrieMap[_, _] =>
           require(
-              m.elems.size > 1 ||
+            m.elems.size > 1 ||
               (m.elems.size == 1 &&
-                  m.elems(0).isInstanceOf[HashMap.HashTrieMap[_, _]]))
+                m.elems(0).isInstanceOf[HashMap.HashTrieMap[_, _]])
+          )
           m.elems.foreach(validate _)
         case m: HashMap.HashMapCollision1[_, _] =>
           require(m.kvs.size > 1)
         case m: HashMap.HashMap1[_, _] =>
-        case _ =>
+        case _                         =>
       }
     }
   }

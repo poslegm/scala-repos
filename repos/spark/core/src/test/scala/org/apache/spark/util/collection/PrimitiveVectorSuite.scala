@@ -80,7 +80,7 @@ class PrimitiveVectorSuite extends SparkFunSuite {
     }
     assert(vector.size === 8192)
     assert(vector.capacity === 8192)
-    val actualSize = SizeEstimator.estimate(vector)
+    val actualSize   = SizeEstimator.estimate(vector)
     val expectedSize = 8192 * 8
     // Make sure we are not allocating a significant amount of memory beyond our expected.
     // Due to specialization wonkiness, we need to ensure we don't have 2 copies of the array.

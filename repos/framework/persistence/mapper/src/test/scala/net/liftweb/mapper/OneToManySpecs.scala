@@ -37,7 +37,7 @@ package net.liftweb {
         "detect all MappedOneToMany fields" in {
           setupDB
           val contact = Contact.create
-          val fields = contact.oneToManyFields
+          val fields  = contact.oneToManyFields
           fields.length must_== 1
           fields(0).asInstanceOf[Any] must_== contact.phones
         }
@@ -58,18 +58,20 @@ package net.liftweb {
     }
 
     class Contact
-        extends LongKeyedMapper[Contact] with IdPK
+        extends LongKeyedMapper[Contact]
+        with IdPK
         with OneToMany[Long, Contact] {
       def getSingleton = Contact
       object phones
-          extends MappedOneToMany(Phone, Phone.contact) with Cascade[Phone]
+          extends MappedOneToMany(Phone, Phone.contact)
+          with Cascade[Phone]
     }
     object Contact extends Contact with LongKeyedMetaMapper[Contact]
 
     class Phone extends LongKeyedMapper[Phone] with IdPK {
       def getSingleton = Phone
       object contact extends MappedLongForeignKey(this, Contact)
-      object number extends MappedString(this, 10)
+      object number  extends MappedString(this, 10)
     }
     object Phone extends Phone with LongKeyedMetaMapper[Phone]
   }

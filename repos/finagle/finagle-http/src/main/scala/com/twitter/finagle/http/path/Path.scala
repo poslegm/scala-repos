@@ -4,7 +4,7 @@ import com.twitter.finagle.http.{ParamMap, Method}
 
 /** Base class for path extractors. */
 abstract class Path {
-  def /(child: String) = new /(this, child)
+  def /(child: String)     = new /(this, child)
   def :?(params: ParamMap) = new :?(this, params)
   def toList: List[String]
   def parent: Path
@@ -17,7 +17,7 @@ object Path {
     if (str == "" || str == "/") Root
     else if (!str.startsWith("/")) Path("/" + str)
     else {
-      val slash = str.lastIndexOf('/')
+      val slash  = str.lastIndexOf('/')
       val prefix = Path(str.substring(0, slash))
       if (slash == str.length - 1) prefix
       else prefix / str.substring(slash + 1)
@@ -84,10 +84,10 @@ object -> {
   *     case Root / "1" / "2" / "3" / "test.json" => ...
   */
 case class /(parent: Path, child: String) extends Path {
-  lazy val toList: List[String] = parent.toList ++ List(child)
+  lazy val toList: List[String]  = parent.toList ++ List(child)
   def lastOption: Option[String] = Some(child)
-  lazy val asString = parent.toString + "/" + child
-  override def toString = asString
+  lazy val asString              = parent.toString + "/" + child
+  override def toString          = asString
   def startsWith(other: Path) = {
     val components = other.toList
     (toList take components.length) == components
@@ -101,11 +101,11 @@ case class /(parent: Path, child: String) extends Path {
   *   }
   */
 case object Root extends Path {
-  def toList: List[String] = Nil
-  def parent = this
+  def toList: List[String]       = Nil
+  def parent                     = this
   def lastOption: Option[String] = None
-  override def toString = ""
-  def startsWith(other: Path) = other == Root
+  override def toString          = ""
+  def startsWith(other: Path)    = other == Root
 }
 
 /**
@@ -116,7 +116,7 @@ case object Root extends Path {
 object /: {
   def unapply(path: Path): Option[(String, Path)] = {
     path.toList match {
-      case Nil => None
+      case Nil          => None
       case head :: tail => Some((head, Path(tail)))
     }
   }
@@ -132,7 +132,8 @@ protected class Numeric[A <: AnyVal](cast: String => A) {
       } catch {
         case _: NumberFormatException =>
           None
-      } else None
+      }
+    else None
   }
 }
 

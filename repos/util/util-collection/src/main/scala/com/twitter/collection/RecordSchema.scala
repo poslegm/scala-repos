@@ -33,9 +33,10 @@ final class RecordSchema {
     * concurrently, and at least one of the threads modifies the record, it ''must'' be synchronized
     * externally.
     */
-  final class Record private[RecordSchema](
-      fields: IdentityHashMap[Field[_], Entry] = new IdentityHashMap[
-            Field[_], Entry]) {
+  final class Record private[RecordSchema] (
+      fields: IdentityHashMap[Field[_], Entry] =
+        new IdentityHashMap[Field[_], Entry]
+  ) {
 
     private[this] def getOrInitializeEntry(field: Field[_]): Entry = {
       var entry = fields.get(field)
@@ -105,7 +106,8 @@ final class RecordSchema {
         fields.put(field, new Entry(value))
       } else if (entry.locked) {
         throw new IllegalStateException(
-            s"attempt to assign $value to a locked field (with current value ${entry.value})")
+          s"attempt to assign $value to a locked field (with current value ${entry.value})"
+        )
       } else {
         entry.value = value
       }
@@ -132,10 +134,10 @@ final class RecordSchema {
 
     private[this] def copyFields(): IdentityHashMap[Field[_], Entry] = {
       val newFields = new IdentityHashMap[Field[_], Entry]
-      val iter = fields.entrySet().iterator()
+      val iter      = fields.entrySet().iterator()
       while (iter.hasNext()) {
-        val kv = iter.next()
-        val entry = kv.getValue()
+        val kv       = iter.next()
+        val entry    = kv.getValue()
         val newEntry = new Entry(entry.value)
         newEntry.locked = entry.locked
         newFields.put(kv.getKey(), newEntry)
@@ -169,7 +171,7 @@ final class RecordSchema {
       */
     def copy[A](field: Field[A], value: A): Record = {
       val newFields = copyFields()
-      val entry = newFields.get(field)
+      val entry     = newFields.get(field)
       if (entry eq null) {
         newFields.put(field, new Entry(value))
       } else {

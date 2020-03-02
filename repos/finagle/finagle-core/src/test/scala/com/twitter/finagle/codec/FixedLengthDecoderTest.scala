@@ -9,7 +9,8 @@ import org.scalatest.prop.GeneratorDrivenPropertyChecks
 
 @RunWith(classOf[JUnitRunner])
 class FixedLengthDecoderTest
-    extends FunSuite with GeneratorDrivenPropertyChecks {
+    extends FunSuite
+    with GeneratorDrivenPropertyChecks {
 
   def stringDecoder(frameSize: Int) =
     new FixedLengthDecoder(frameSize, Buf.Utf8.unapply(_).getOrElse("????"))
@@ -32,13 +33,13 @@ class FixedLengthDecoderTest
 
   test("framing") {
     forAll(
-        Gen.alphaStr,
-        Gen.posNum[Int]
+      Gen.alphaStr,
+      Gen.posNum[Int]
     ) { (s: String, frameSize: Int) =>
-      val decode = stringDecoder(frameSize)
-      val buf = Buf.Utf8(s)
+      val decode              = stringDecoder(frameSize)
+      val buf                 = Buf.Utf8(s)
       val frames: Seq[String] = decode(buf).toList
-      val groupedString = s.grouped(frameSize).toList
+      val groupedString       = s.grouped(frameSize).toList
 
       if (buf.length < frameSize) assert(frames == Nil)
       else if (buf.length % frameSize == 0) assert(groupedString == frames)

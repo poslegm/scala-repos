@@ -6,7 +6,12 @@ package akka.stream.scaladsl
 import akka.actor.ActorRef
 import akka.stream.{Attributes, ActorMaterializer}
 import akka.stream.impl.fusing.GraphStages.SimpleLinearGraphStage
-import akka.stream.stage.{TimerGraphStageLogic, OutHandler, AsyncCallback, InHandler}
+import akka.stream.stage.{
+  TimerGraphStageLogic,
+  OutHandler,
+  AsyncCallback,
+  InHandler
+}
 import akka.testkit.AkkaSpec
 import akka.testkit.TestDuration
 
@@ -25,11 +30,11 @@ object GraphStageTimersSpec {
   case class Tick(n: Int)
 
   class SideChannel {
-    @volatile var asyncCallback: AsyncCallback[Any] = _
+    @volatile var asyncCallback: AsyncCallback[Any]     = _
     @volatile var stopPromise: Promise[Option[Nothing]] = _
 
     def isReady: Boolean = asyncCallback ne null
-    def !(msg: Any) = asyncCallback.invoke(msg)
+    def !(msg: Any)      = asyncCallback.invoke(msg)
 
     def stopStage(): Unit = stopPromise.trySuccess(None)
   }
@@ -46,13 +51,19 @@ class GraphStageTimersSpec extends AkkaSpec {
       new TimerGraphStageLogic(shape) {
         val tickCount = Iterator from 1
 
-        setHandler(in, new InHandler {
-          override def onPush() = push(out, grab(in))
-        })
+        setHandler(
+          in,
+          new InHandler {
+            override def onPush() = push(out, grab(in))
+          }
+        )
 
-        setHandler(out, new OutHandler {
-          override def onPull(): Unit = pull(in)
-        })
+        setHandler(
+          out,
+          new OutHandler {
+            override def onPull(): Unit = pull(in)
+          }
+        )
 
         override def preStart() = {
           sideChannel.asyncCallback = getAsyncCallback(onTestEvent)
@@ -164,16 +175,22 @@ class GraphStageTimersSpec extends AkkaSpec {
           override def preStart(): Unit =
             schedulePeriodically("tick", 100.millis)
 
-          setHandler(out, new OutHandler {
-            override def onPull() = () // Do nothing
-            override def onDownstreamFinish() = completeStage()
-          })
+          setHandler(
+            out,
+            new OutHandler {
+              override def onPull()             = () // Do nothing
+              override def onDownstreamFinish() = completeStage()
+            }
+          )
 
-          setHandler(in, new InHandler {
-            override def onPush() = () // Do nothing
-            override def onUpstreamFinish() = completeStage()
-            override def onUpstreamFailure(ex: Throwable) = failStage(ex)
-          })
+          setHandler(
+            in,
+            new InHandler {
+              override def onPush()                         = () // Do nothing
+              override def onUpstreamFinish()               = completeStage()
+              override def onUpstreamFailure(ex: Throwable) = failStage(ex)
+            }
+          )
 
           override def onTimer(timerKey: Any) = {
             tickCount += 1
@@ -184,7 +201,7 @@ class GraphStageTimersSpec extends AkkaSpec {
     }
 
     "produce scheduled ticks as expected" in assertAllStagesStopped {
-      val upstream = TestPublisher.probe[Int]()
+      val upstream   = TestPublisher.probe[Int]()
       val downstream = TestSubscriber.probe[Int]()
 
       Source
@@ -204,8 +221,8 @@ class GraphStageTimersSpec extends AkkaSpec {
     }
 
     "propagate error if onTimer throws an exception" in assertAllStagesStopped {
-      val exception = TE("Expected exception to the rule")
-      val upstream = TestPublisher.probe[Int]()
+      val exception  = TE("Expected exception to the rule")
+      val upstream   = TestPublisher.probe[Int]()
       val downstream = TestSubscriber.probe[Int]()
 
       Source
@@ -215,13 +232,19 @@ class GraphStageTimersSpec extends AkkaSpec {
             new TimerGraphStageLogic(shape) {
               override def preStart(): Unit = scheduleOnce("tick", 100.millis)
 
-              setHandler(in, new InHandler {
-                override def onPush() = () // Ingore
-              })
+              setHandler(
+                in,
+                new InHandler {
+                  override def onPush() = () // Ingore
+                }
+              )
 
-              setHandler(out, new OutHandler {
-                override def onPull(): Unit = pull(in)
-              })
+              setHandler(
+                out,
+                new OutHandler {
+                  override def onPull(): Unit = pull(in)
+                }
+              )
 
               override def onTimer(timerKey: Any) = throw exception
             }

@@ -41,10 +41,10 @@ import org.apache.spark.sql.DataFrame
   *                partition boundaries.
   */
 @Since("1.0.0")
-class BinaryClassificationMetrics @Since("1.3.0")(
+class BinaryClassificationMetrics @Since("1.3.0") (
     @Since("1.3.0") val scoreAndLabels: RDD[(Double, Double)],
-    @Since("1.3.0") val numBins: Int)
-    extends Logging {
+    @Since("1.3.0") val numBins: Int
+) extends Logging {
 
   require(numBins >= 0, "numBins must be nonnegative")
 
@@ -84,9 +84,9 @@ class BinaryClassificationMetrics @Since("1.3.0")(
   @Since("1.0.0")
   def roc(): RDD[(Double, Double)] = {
     val rocCurve = createCurve(FalsePositiveRate, Recall)
-    val sc = confusions.context
-    val first = sc.makeRDD(Seq((0.0, 0.0)), 1)
-    val last = sc.makeRDD(Seq((1.0, 1.0)), 1)
+    val sc       = confusions.context
+    val first    = sc.makeRDD(Seq((0.0, 0.0)), 1)
+    val last     = sc.makeRDD(Seq((1.0, 1.0)), 1)
     new UnionRDD[(Double, Double)](sc, Seq(first, rocCurve, last))
   }
 
@@ -104,8 +104,8 @@ class BinaryClassificationMetrics @Since("1.3.0")(
   @Since("1.0.0")
   def pr(): RDD[(Double, Double)] = {
     val prCurve = createCurve(Recall, Precision)
-    val sc = confusions.context
-    val first = sc.makeRDD(Seq((0.0, 1.0)), 1)
+    val sc      = confusions.context
+    val first   = sc.makeRDD(Seq((0.0, 1.0)), 1)
     first.union(prCurve)
   }
 
@@ -143,17 +143,19 @@ class BinaryClassificationMetrics @Since("1.3.0")(
   @Since("1.0.0")
   def recallByThreshold(): RDD[(Double, Double)] = createCurve(Recall)
 
-  private lazy val (cumulativeCounts: RDD[(Double, BinaryLabelCounter)],
-                    confusions: RDD[(Double, BinaryConfusionMatrix)]) = {
+  private lazy val (
+    cumulativeCounts: RDD[(Double, BinaryLabelCounter)],
+    confusions: RDD[(Double, BinaryConfusionMatrix)]
+  ) = {
     // Create a bin for each distinct score value, count positives and negatives within each bin,
     // and then sort by score values in descending order.
     val counts = scoreAndLabels
       .combineByKey(
-          createCombiner = (label: Double) =>
-              new BinaryLabelCounter(0L, 0L) += label,
-          mergeValue = (c: BinaryLabelCounter, label: Double) => c += label,
-          mergeCombiners = (c1: BinaryLabelCounter,
-            c2: BinaryLabelCounter) => c1 += c2
+        createCombiner =
+          (label: Double) => new BinaryLabelCounter(0L, 0L) += label,
+        mergeValue = (c: BinaryLabelCounter, label: Double) => c += label,
+        mergeCombiners =
+          (c1: BinaryLabelCounter, c2: BinaryLabelCounter) => c1 += c2
       )
       .sortByKey(ascending = false)
 
@@ -170,16 +172,17 @@ class BinaryClassificationMetrics @Since("1.3.0")(
         if (grouping < 2) {
           // numBins was more than half of the size; no real point in down-sampling to bins
           logInfo(
-              s"Curve is too small ($countsSize) for $numBins bins to be useful")
+            s"Curve is too small ($countsSize) for $numBins bins to be useful"
+          )
           counts
         } else {
           if (grouping >= Int.MaxValue) {
             logWarning(
-                s"Curve too large ($countsSize) for $numBins bins; capping at ${Int.MaxValue}")
+              s"Curve too large ($countsSize) for $numBins bins; capping at ${Int.MaxValue}"
+            )
             grouping = Int.MaxValue
           }
-          counts.mapPartitions(
-              _.grouped(grouping.toInt).map { pairs =>
+          counts.mapPartitions(_.grouped(grouping.toInt).map { pairs =>
             // The score of the combined point will be just the first one's score
             val firstScore = pairs.head._1
             // The point will contain all counts in this chunk
@@ -190,39 +193,45 @@ class BinaryClassificationMetrics @Since("1.3.0")(
         }
       }
 
-    val agg = binnedCounts.values.mapPartitions { iter =>
-      val agg = new BinaryLabelCounter()
-      iter.foreach(agg += _)
-      Iterator(agg)
-    }.collect()
+    val agg = binnedCounts.values
+      .mapPartitions { iter =>
+        val agg = new BinaryLabelCounter()
+        iter.foreach(agg += _)
+        Iterator(agg)
+      }
+      .collect()
     val partitionwiseCumulativeCounts = agg.scanLeft(new BinaryLabelCounter())(
-        (agg: BinaryLabelCounter, c: BinaryLabelCounter) => agg.clone() += c)
+      (agg: BinaryLabelCounter, c: BinaryLabelCounter) => agg.clone() += c
+    )
     val totalCount = partitionwiseCumulativeCounts.last
     logInfo(s"Total counts: $totalCount")
     val cumulativeCounts = binnedCounts.mapPartitionsWithIndex(
-        (index: Int, iter: Iterator[(Double, BinaryLabelCounter)]) =>
-          {
-            val cumCount = partitionwiseCumulativeCounts(index)
-            iter.map {
-              case (score, c) =>
-                cumCount += c
-                (score, cumCount.clone())
-            }
-        },
-        preservesPartitioning = true)
+      (index: Int, iter: Iterator[(Double, BinaryLabelCounter)]) => {
+        val cumCount = partitionwiseCumulativeCounts(index)
+        iter.map {
+          case (score, c) =>
+            cumCount += c
+            (score, cumCount.clone())
+        }
+      },
+      preservesPartitioning = true
+    )
     cumulativeCounts.persist()
     val confusions = cumulativeCounts.map {
       case (score, cumCount) =>
-        (score,
-         BinaryConfusionMatrixImpl(cumCount, totalCount)
-           .asInstanceOf[BinaryConfusionMatrix])
+        (
+          score,
+          BinaryConfusionMatrixImpl(cumCount, totalCount)
+            .asInstanceOf[BinaryConfusionMatrix]
+        )
     }
     (cumulativeCounts, confusions)
   }
 
   /** Creates a curve of (threshold, metric). */
   private def createCurve(
-      y: BinaryClassificationMetricComputer): RDD[(Double, Double)] = {
+      y: BinaryClassificationMetricComputer
+  ): RDD[(Double, Double)] = {
     confusions.map {
       case (s, c) =>
         (s, y(c))
@@ -232,7 +241,8 @@ class BinaryClassificationMetrics @Since("1.3.0")(
   /** Creates a curve of (metricX, metricY). */
   private def createCurve(
       x: BinaryClassificationMetricComputer,
-      y: BinaryClassificationMetricComputer): RDD[(Double, Double)] = {
+      y: BinaryClassificationMetricComputer
+  ): RDD[(Double, Double)] = {
     confusions.map {
       case (_, c) =>
         (x(c), y(c))

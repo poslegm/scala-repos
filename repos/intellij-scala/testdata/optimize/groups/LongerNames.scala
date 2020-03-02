@@ -4,7 +4,7 @@ import immutable.HashSet
 
 class O {
   val buffer: ArrayBuffer[Int] = null
-  val s: HashSet[String] = null
+  val s: HashSet[String]       = null
 }
 /*
 import scala.collection.immutable

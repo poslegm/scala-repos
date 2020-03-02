@@ -5,12 +5,12 @@ import scalaz.scalacheck.ScalazProperties._
 import scalaz.scalacheck.ScalazArbitrary._
 
 object ProductTest extends SpecLite {
-  type OptionList[α] = (Option[α], List[α])
-  type OneAndOption[α] = OneAnd[Option, α]
+  type OptionList[α]       = (Option[α], List[α])
+  type OneAndOption[α]     = OneAnd[Option, α]
   type OneAndOptionPair[α] = (OneAndOption[α], OneAndOption[α])
 
   implicit val optionListMonadPlus = MonadPlus[Option].product[List]
-  implicit val optionListZip = Zip[Option].product[List]
+  implicit val optionListZip       = Zip[Option].product[List]
   implicit val oneAndOptionPairTraverse1 =
     Traverse1[OneAndOption].product[OneAndOption]
 

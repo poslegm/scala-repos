@@ -26,13 +26,13 @@ object ActorSubscriberSpec {
     override val requestStrategy = ZeroRequestStrategy
 
     def receive = {
-      case next @ OnNext(elem) ⇒ probe ! next
-      case OnComplete ⇒ probe ! OnComplete
+      case next @ OnNext(elem)  ⇒ probe ! next
+      case OnComplete           ⇒ probe ! OnComplete
       case err @ OnError(cause) ⇒ probe ! err
-      case "ready" ⇒ request(elements = 2)
-      case "boom" ⇒ throw new RuntimeException("boom") with NoStackTrace
-      case "requestAndCancel" ⇒ { request(1); cancel() }
-      case "cancel" ⇒ cancel()
+      case "ready"              ⇒ request(elements = 2)
+      case "boom"               ⇒ throw new RuntimeException("boom") with NoStackTrace
+      case "requestAndCancel"   ⇒ { request(1); cancel() }
+      case "cancel"             ⇒ cancel()
     }
   }
 
@@ -50,7 +50,9 @@ object ActorSubscriberSpec {
   }
 
   def requestStrategySubscriberProps(
-      probe: ActorRef, strat: RequestStrategy): Props =
+      probe: ActorRef,
+      strat: RequestStrategy
+  ): Props =
     Props(new RequestStrategySubscriber(probe, strat))
       .withDispatcher("akka.test.stream-dispatcher")
 
@@ -62,7 +64,7 @@ object ActorSubscriberSpec {
 
     def receive = {
       case next @ OnNext(elem) ⇒ probe ! next
-      case OnComplete ⇒ probe ! OnComplete
+      case OnComplete          ⇒ probe ! OnComplete
     }
   }
 
@@ -80,8 +82,10 @@ object ActorSubscriberSpec {
 
     val router = {
       val routees = Vector.fill(3) {
-        ActorRefRoutee(context.actorOf(
-                Props[Worker].withDispatcher(context.props.dispatcher)))
+        ActorRefRoutee(
+          context
+            .actorOf(Props[Worker].withDispatcher(context.props.dispatcher))
+        )
       }
       Router(RoundRobinRoutingLogic(), routees)
     }
@@ -152,9 +156,7 @@ class ActorSubscriberSpec extends AkkaSpec with ImplicitSender {
       ref ! "ready"
       ref ! "ready"
       ref ! "boom"
-      (3 to 6) foreach { n ⇒
-        expectMsg(OnNext(n))
-      }
+      (3 to 6) foreach { n ⇒ expectMsg(OnNext(n)) }
       expectNoMsg(200.millis)
       ref ! "ready"
       expectMsg(OnNext(7))
@@ -186,7 +188,7 @@ class ActorSubscriberSpec extends AkkaSpec with ImplicitSender {
       expectNoMsg(200.millis)
 
       sub.onSubscribe(new Subscription {
-        override def cancel(): Unit = testActor ! "cancel"
+        override def cancel(): Unit         = testActor ! "cancel"
         override def request(n: Long): Unit = ()
       })
       expectMsg("cancel")
@@ -195,16 +197,25 @@ class ActorSubscriberSpec extends AkkaSpec with ImplicitSender {
 
     "work with OneByOneRequestStrategy" in {
       Source(1 to 17)
-        .runWith(Sink.actorSubscriber(requestStrategySubscriberProps(
-                  testActor, OneByOneRequestStrategy)))
+        .runWith(
+          Sink.actorSubscriber(
+            requestStrategySubscriberProps(testActor, OneByOneRequestStrategy)
+          )
+        )
       for (n ← 1 to 17) expectMsg(OnNext(n))
       expectMsg(OnComplete)
     }
 
     "work with WatermarkRequestStrategy" in {
       Source(1 to 17)
-        .runWith(Sink.actorSubscriber(requestStrategySubscriberProps(
-                  testActor, WatermarkRequestStrategy(highWatermark = 10))))
+        .runWith(
+          Sink.actorSubscriber(
+            requestStrategySubscriberProps(
+              testActor,
+              WatermarkRequestStrategy(highWatermark = 10)
+            )
+          )
+        )
       for (n ← 1 to 17) expectMsg(OnNext(n))
       expectMsg(OnComplete)
     }
@@ -269,7 +280,7 @@ class ActorSubscriberSpec extends AkkaSpec with ImplicitSender {
     "implement MaxInFlight with batchSize=3 correctly" in {
       var queue = Set.empty[String]
       val strat = new MaxInFlightRequestStrategy(max = 10) {
-        override def batchSize: Int = 3
+        override def batchSize: Int          = 3
         override def inFlightInternally: Int = queue.size
       }
       strat.requestDemand(0) should be(10)
@@ -292,7 +303,7 @@ class ActorSubscriberSpec extends AkkaSpec with ImplicitSender {
     "implement MaxInFlight with batchSize=max correctly" in {
       var queue = Set.empty[String]
       val strat = new MaxInFlightRequestStrategy(max = 3) {
-        override def batchSize: Int = 5 // will be bounded to max
+        override def batchSize: Int          = 5 // will be bounded to max
         override def inFlightInternally: Int = queue.size
       }
       strat.requestDemand(0) should be(3)

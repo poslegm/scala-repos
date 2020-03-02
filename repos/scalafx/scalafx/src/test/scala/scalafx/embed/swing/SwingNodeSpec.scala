@@ -38,4 +38,6 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class SwingNodeSpec
     extends SimpleSFXDelegateSpec[jfxes.SwingNode, SwingNode](
-        classOf[jfxes.SwingNode], classOf[SwingNode])
+      classOf[jfxes.SwingNode],
+      classOf[SwingNode]
+    )

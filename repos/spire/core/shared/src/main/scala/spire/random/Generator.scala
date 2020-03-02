@@ -5,7 +5,7 @@ import spire.math.{UInt, ULong}
 
 abstract class Generator {
   protected var extra: Boolean = false
-  protected var value: Double = 0.0
+  protected var value: Double  = 0.0
 
   def copy: Generator = {
     val gen = copyInit
@@ -63,7 +63,8 @@ abstract class Generator {
 
     if (n < 1)
       throw new IllegalArgumentException(
-          "argument must be positive %d" format n)
+        "argument must be positive %d" format n
+      )
     else if ((n & -n) == n) ((n * ((nextInt() >>> 1).toLong)) >>> 31).toInt
     else loop(nextInt() >>> 1)
   }
@@ -109,7 +110,8 @@ abstract class Generator {
 
     if (n < 1)
       throw new IllegalArgumentException(
-          "argument must be positive %d" format n)
+        "argument must be positive %d" format n
+      )
     else if ((n & -n) == n) nextLong() & (n - 1)
     else loop(nextLong() >>> 1)
   }
@@ -195,7 +197,7 @@ abstract class Generator {
     * Fill an array with random Longs.
     */
   def fillLongs(arr: Array[Long]): Unit = {
-    var i = 0
+    var i   = 0
     val len = arr.length
     while (i < len) {
       arr(i) = nextLong()
@@ -216,7 +218,7 @@ abstract class Generator {
     * Fill an array with random Ints.
     */
   def fillInts(arr: Array[Int]): Unit = {
-    var i = 0
+    var i   = 0
     val len = arr.length
     while (i < len) {
       arr(i) = nextInt()
@@ -237,8 +239,8 @@ abstract class Generator {
     * Fill an array with random Shorts.
     */
   def fillShorts(arr: Array[Short]): Unit = {
-    var i = 0
-    val len = arr.length
+    var i    = 0
+    val len  = arr.length
     val llen = len & 0xfffffffe
     while (i < llen) {
       val n = nextInt()
@@ -263,8 +265,8 @@ abstract class Generator {
     * Fill an array with random Bytes.
     */
   def fillBytes(arr: Array[Byte]): Unit = {
-    var i = 0
-    val len = arr.length
+    var i    = 0
+    val len  = arr.length
     val llen = len & 0xfffffffc
     while (i < llen) {
       val n = nextInt()
@@ -288,7 +290,7 @@ abstract class Generator {
   /**
     * Generate an Array[A] using the given Dist[A] instance.
     */
-  def generateArray[@sp A : Dist : ClassTag](n: Int): Array[A] = {
+  def generateArray[@sp A: Dist: ClassTag](n: Int): Array[A] = {
     val arr = new Array[A](n)
     fillArray(arr)
     arr
@@ -297,8 +299,8 @@ abstract class Generator {
   /**
     * Fill an Array[A] using the given Dist[A] instance.
     */
-  def fillArray[@sp A : Dist](arr: Array[A]): Unit = {
-    var i = 0
+  def fillArray[@sp A: Dist](arr: Array[A]): Unit = {
+    var i   = 0
     val len = arr.length
     while (i < len) {
       arr(i) = next[A]
@@ -317,12 +319,12 @@ abstract class Generator {
   def chooseFromIterable[A](as: Iterable[A])(implicit gen: Generator): A =
     as.iterator.drop(gen.nextInt(as.size)).next()
 
-  def sampleFromArray[@sp A : ClassTag](as: Array[A], size: Int)(
-      implicit gen: Generator): Array[A] = {
+  def sampleFromArray[@sp A: ClassTag](as: Array[A], size: Int)(
+      implicit gen: Generator
+  ): Array[A] = {
     val chosen: Array[A] = new Array[A](size)
     if (size < 1) {
-      throw new IllegalArgumentException(
-          "illegal sample size (%d)" format size)
+      throw new IllegalArgumentException("illegal sample size (%d)" format size)
     } else if (size < as.length) {
       var i = 0
       while (i < as.length) {
@@ -339,15 +341,17 @@ abstract class Generator {
       shuffle(chosen)
     } else {
       throw new IllegalArgumentException(
-          "sample size (%d) exceeds input size (%d)" format (size, as.length))
+        "sample size (%d) exceeds input size (%d)" format (size, as.length)
+      )
     }
     chosen
   }
 
-  def sampleFromTraversable[@sp A : ClassTag](as: Traversable[A], size: Int)(
-      implicit gen: Generator): Array[A] = {
+  def sampleFromTraversable[@sp A: ClassTag](as: Traversable[A], size: Int)(
+      implicit gen: Generator
+  ): Array[A] = {
     val chosen: Array[A] = new Array[A](size)
-    var i: Int = 0
+    var i: Int           = 0
     as.foreach { a =>
       if (i < size) {
         chosen(i) = a
@@ -359,7 +363,8 @@ abstract class Generator {
     }
     if (i < size) {
       throw new IllegalArgumentException(
-          "sample size (%d) exceeds input size (%d)" format (size, i))
+        "sample size (%d) exceeds input size (%d)" format (size, i)
+      )
     }
     chosen
   }
@@ -401,7 +406,7 @@ abstract class Generator {
     fillGaussians(arr, 0.0, 1.0)
 
   def fillGaussians(arr: Array[Double], mean: Double, stddev: Double): Unit = {
-    var i = 0
+    var i   = 0
     val len = arr.length & 0xfffffffe
 
     @tailrec def loop(i: Int, x: Double, y: Double): Unit = {
@@ -438,7 +443,7 @@ abstract class Generator {
 
 abstract class IntBasedGenerator extends Generator { self =>
   def nextLong(): Long =
-    ((nextInt() & 0xffffffffL) << 32) | (nextInt() & 0xffffffffL)
+    ((nextInt() & 0xFFFFFFFFL) << 32) | (nextInt() & 0xFFFFFFFFL)
 }
 
 abstract class LongBasedGenerator extends Generator { self =>
@@ -446,8 +451,8 @@ abstract class LongBasedGenerator extends Generator { self =>
     (nextLong() >>> 32).toInt
 
   override def fillInts(arr: Array[Int]): Unit = {
-    var i = 0
-    val len = arr.length
+    var i    = 0
+    val len  = arr.length
     val llen = len & 0xfffffffe
     while (i < llen) {
       val n = nextLong()
@@ -460,8 +465,8 @@ abstract class LongBasedGenerator extends Generator { self =>
   }
 
   override def fillShorts(arr: Array[Short]): Unit = {
-    var i = 0
-    val len = arr.length
+    var i    = 0
+    val len  = arr.length
     val llen = len & 0xfffffffc
     while (i < llen) {
       val n = nextLong()
@@ -483,8 +488,8 @@ abstract class LongBasedGenerator extends Generator { self =>
   }
 
   override def fillBytes(arr: Array[Byte]): Unit = {
-    var i = 0
-    val len = arr.length
+    var i    = 0
+    val len  = arr.length
     val llen = len & 0xfffffff8
     while (i < llen) {
       val n = nextLong()
@@ -517,7 +522,7 @@ trait GeneratorCompanion[G, @sp(Int, Long) S] {
   def fromSeed(seed: S): G
   def fromTime(time: Long = System.nanoTime): G
 
-  final def apply(): G = fromTime()
+  final def apply(): G        = fromTime()
   final def apply(seed: S): G = fromSeed(seed)
 }
 

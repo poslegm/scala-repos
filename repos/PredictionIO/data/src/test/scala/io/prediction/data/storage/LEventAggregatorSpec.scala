@@ -31,8 +31,8 @@ class LEventAggregatorSpec extends Specification with TestEvents {
         LEventAggregator.aggregateProperties(events.toIterator)
 
       val expected = Map(
-          "u1" -> DataMap(u1),
-          "u2" -> DataMap(u2)
+        "u1" -> DataMap(u1),
+        "u2" -> DataMap(u2)
       )
 
       result must beEqualTo(expected)
@@ -44,8 +44,8 @@ class LEventAggregatorSpec extends Specification with TestEvents {
         LEventAggregator.aggregateProperties(events.toIterator)
 
       val expected = Map(
-          "u1" -> PropertyMap(u1, u1BaseTime, u1LastTime),
-          "u2" -> PropertyMap(u2, u2BaseTime, u2LastTime)
+        "u1" -> PropertyMap(u1, u1BaseTime, u1LastTime),
+        "u2" -> PropertyMap(u2, u2BaseTime, u2LastTime)
       )
 
       result must beEqualTo(expected)
@@ -56,7 +56,7 @@ class LEventAggregatorSpec extends Specification with TestEvents {
 
       val result = LEventAggregator.aggregateProperties(events.toIterator)
       val expected = Map(
-          "u2" -> PropertyMap(u2, u2BaseTime, u2LastTime)
+        "u2" -> PropertyMap(u2, u2BaseTime, u2LastTime)
       )
 
       result must beEqualTo(expected)
@@ -66,7 +66,7 @@ class LEventAggregatorSpec extends Specification with TestEvents {
   "LEventAggregator.aggregatePropertiesSingle()" should {
 
     "aggregate single entity properties as DataMap correctly" in {
-      val events = Vector(u1e5, u1e3, u1e1, u1e4, u1e2)
+      val events   = Vector(u1e5, u1e3, u1e1, u1e4, u1e2)
       val eventsIt = events.toIterator
 
       val result: Option[DataMap] =
@@ -77,7 +77,7 @@ class LEventAggregatorSpec extends Specification with TestEvents {
     }
 
     "aggregate single entity properties as PropertyMap correctly" in {
-      val events = Vector(u1e5, u1e3, u1e1, u1e4, u1e2)
+      val events   = Vector(u1e5, u1e3, u1e1, u1e4, u1e2)
       val eventsIt = events.toIterator
 
       val result: Option[PropertyMap] =
@@ -89,7 +89,7 @@ class LEventAggregatorSpec extends Specification with TestEvents {
 
     "aggregate deleted entity correctly" in {
       // put the delete event in the middle
-      val events = Vector(u1e4, u1e2, u1ed, u1e3, u1e1, u1e5)
+      val events   = Vector(u1e4, u1e2, u1ed, u1e3, u1e1, u1e5)
       val eventsIt = events.toIterator
 
       val result = LEventAggregator.aggregatePropertiesSingle(eventsIt)

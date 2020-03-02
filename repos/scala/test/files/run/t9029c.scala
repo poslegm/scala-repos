@@ -3,7 +3,7 @@ object Extractor {
 }
 class P2[A, B](val _1: A, val _2: B) extends Product2[A, B] {
   def canEqual(other: Any) = true
-  def isP2 = true
+  def isP2                 = true
 }
 
 object Test {
@@ -14,7 +14,7 @@ object Test {
     }
     "" match {
       case Extractor(x, y) =>
-        val xx: Int = x
+        val xx: Int    = x
         val yy: String = y
     }
   }

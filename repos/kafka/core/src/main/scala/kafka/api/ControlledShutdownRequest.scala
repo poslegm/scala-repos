@@ -26,27 +26,29 @@ import kafka.utils.Logging
 import org.apache.kafka.common.protocol.{ApiKeys, Errors}
 
 object ControlledShutdownRequest extends Logging {
-  val CurrentVersion = 1.shortValue
+  val CurrentVersion  = 1.shortValue
   val DefaultClientId = ""
 
   def readFrom(buffer: ByteBuffer): ControlledShutdownRequest = {
-    val versionId = buffer.getShort
+    val versionId     = buffer.getShort
     val correlationId = buffer.getInt
-    val clientId = if (versionId > 0) Some(readShortString(buffer)) else None
-    val brokerId = buffer.getInt
+    val clientId      = if (versionId > 0) Some(readShortString(buffer)) else None
+    val brokerId      = buffer.getInt
     new ControlledShutdownRequest(versionId, correlationId, clientId, brokerId)
   }
 }
 
-case class ControlledShutdownRequest(versionId: Short,
-                                     correlationId: Int,
-                                     clientId: Option[String],
-                                     brokerId: Int)
-    extends RequestOrResponse(Some(ApiKeys.CONTROLLED_SHUTDOWN_KEY.id)) {
+case class ControlledShutdownRequest(
+    versionId: Short,
+    correlationId: Int,
+    clientId: Option[String],
+    brokerId: Int
+) extends RequestOrResponse(Some(ApiKeys.CONTROLLED_SHUTDOWN_KEY.id)) {
 
   if (versionId > 0 && clientId.isEmpty)
     throw new IllegalArgumentException(
-        "`clientId` must be defined if `versionId` > 0")
+      "`clientId` must be defined if `versionId` > 0"
+    )
 
   def writeTo(buffer: ByteBuffer) {
     buffer.putShort(versionId)
@@ -65,17 +67,22 @@ case class ControlledShutdownRequest(versionId: Short,
     describe(true)
   }
 
-  override def handleError(e: Throwable,
-                           requestChannel: RequestChannel,
-                           request: RequestChannel.Request): Unit = {
+  override def handleError(
+      e: Throwable,
+      requestChannel: RequestChannel,
+      request: RequestChannel.Request
+  ): Unit = {
     val errorResponse = ControlledShutdownResponse(
-        correlationId,
-        Errors.forException(e).code,
-        Set.empty[TopicAndPartition])
+      correlationId,
+      Errors.forException(e).code,
+      Set.empty[TopicAndPartition]
+    )
     requestChannel.sendResponse(
-        new Response(
-            request,
-            new RequestOrResponseSend(request.connectionId, errorResponse)))
+      new Response(
+        request,
+        new RequestOrResponseSend(request.connectionId, errorResponse)
+      )
+    )
   }
 
   override def describe(details: Boolean = false): String = {

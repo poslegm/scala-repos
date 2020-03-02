@@ -25,7 +25,7 @@ class MemorySourceStressSuite extends StreamTest with SharedSQLContext {
   import testImplicits._
 
   test("memory stress test") {
-    val input = MemoryStream[Int]
+    val input  = MemoryStream[Int]
     val mapped = input.toDS().map(_ + 1)
 
     runStressTest(mapped, AddData(input, _: _*))

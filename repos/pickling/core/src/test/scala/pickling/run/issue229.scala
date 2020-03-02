@@ -14,7 +14,7 @@ class Issue229 extends FunSuite {
     val serMap: Map[(Double, Double), Int] =
       hist.map(p => (p._1.width, p._1.height) -> p._2)
 
-    val p = serMap.pickle
+    val p  = serMap.pickle
     val up = p.unpickle[Map[(Double, Double), Int]]
 
     assert(up == serMap)

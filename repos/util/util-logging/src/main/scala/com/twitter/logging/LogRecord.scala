@@ -29,8 +29,8 @@ import java.util.{logging => javalog}
   */
 class LogRecord(level: javalog.Level, msg: String)
     extends javalog.LogRecord(level, msg) {
-  private[this] var inferred = false
-  private[this] var sourceClassName: String = null
+  private[this] var inferred                 = false
+  private[this] var sourceClassName: String  = null
   private[this] var sourceMethodName: String = null
 
   // May be incorrect if called lazily
@@ -67,7 +67,7 @@ class LogRecord(level: javalog.Level, msg: String)
 
     val (cName, mName) = elt match {
       case Some(element) => (element.getClassName, element.getMethodName)
-      case None => (super.getSourceClassName, super.getSourceMethodName)
+      case None          => (super.getSourceClassName, super.getSourceMethodName)
     }
     setSourceMethodName(mName)
     setSourceClassName(cName)

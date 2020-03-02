@@ -26,7 +26,7 @@ import java.util.TimeZone
 object GlobifierProperties extends Properties("Globifier Properties") {
 
   implicit def dateParser: DateParser = DateParser.default
-  implicit def tz: TimeZone = TimeZone.getTimeZone("UTC")
+  implicit def tz: TimeZone           = TimeZone.getTimeZone("UTC")
 
   implicit val hourArb: Arbitrary[Hours] = Arbitrary {
     choose(0, 10000).map { Hours(_) }
@@ -53,8 +53,9 @@ object GlobifierProperties extends Properties("Globifier Properties") {
 
     val res =
       globifierOps.normalizeHrDr(dr) == globifierOps.normalizeHrDr(resultantDR) &&
-      globifierOps.normalizeHrDr(dr) == globifierOps.normalizeHrDr(
-          resultantWithNormalized)
+        globifierOps.normalizeHrDr(dr) == globifierOps.normalizeHrDr(
+          resultantWithNormalized
+        )
 
     if (!res) {
       println("Input dr: " + dr)
@@ -68,20 +69,20 @@ object GlobifierProperties extends Properties("Globifier Properties") {
   property("HR Globifier with hour deltas RT's") = forAll {
     (rndRD: RichDate, delta: Hours) =>
       val rd: RichDate = Hours(1).addTo(Hours(1).floorOf(rndRD))
-      val dr = DateRange(rndRD, rd + delta)
+      val dr           = DateRange(rndRD, rd + delta)
       testHrDr(dr)
   }
   property("HR Globifier with Day deltas RT's") = forAll {
     (rndRD: RichDate, delta: Days) =>
       val rd: RichDate = Days(1).addTo(Days(1).floorOf(rndRD))
-      val dr = DateRange(rndRD, rd + delta)
+      val dr           = DateRange(rndRD, rd + delta)
       testHrDr(dr)
   }
 
   property("HR Globifier with Year deltas RT's") = forAll {
     (rndRD: RichDate, delta: Years) =>
       val rd: RichDate = Years(1).addTo(Years(1).floorOf(rndRD))
-      val dr = DateRange(rndRD, rd + delta)
+      val dr           = DateRange(rndRD, rd + delta)
       testHrDr(dr)
   }
 
@@ -92,9 +93,11 @@ object GlobifierProperties extends Properties("Globifier Properties") {
 
     val res =
       globifierOps.normalizeDayDr(dr) == globifierOps.normalizeDayDr(
-          resultantDR) &&
-      globifierOps.normalizeDayDr(dr) == globifierOps.normalizeDayDr(
-          resultantWithNormalized)
+        resultantDR
+      ) &&
+        globifierOps.normalizeDayDr(dr) == globifierOps.normalizeDayDr(
+          resultantWithNormalized
+        )
 
     if (!res) {
       println("Input dr: " + dr)
@@ -107,20 +110,20 @@ object GlobifierProperties extends Properties("Globifier Properties") {
   property("Day Globifier with hour deltas RT's") = forAll {
     (rndRD: RichDate, delta: Hours) =>
       val rd: RichDate = Hours(1).addTo(Hours(1).floorOf(rndRD))
-      val dr = DateRange(rndRD, rd + delta)
+      val dr           = DateRange(rndRD, rd + delta)
       testDayDr(dr)
   }
   property("Day Globifier with Day deltas RT's") = forAll {
     (rndRD: RichDate, delta: Days) =>
       val rd: RichDate = Days(1).addTo(Days(1).floorOf(rndRD))
-      val dr = DateRange(rndRD, rd + delta)
+      val dr           = DateRange(rndRD, rd + delta)
       testDayDr(dr)
   }
 
   property("Day Globifier with Year deltas RT's") = forAll {
     (rndRD: RichDate, delta: Years) =>
       val rd: RichDate = Years(1).addTo(Years(1).floorOf(rndRD))
-      val dr = DateRange(rndRD, rd + delta)
+      val dr           = DateRange(rndRD, rd + delta)
       testDayDr(dr)
   }
 }

@@ -23,8 +23,18 @@ import java.nio.charset.StandardCharsets
 import org.apache.commons.lang3.RandomStringUtils
 import org.apache.commons.math3.distribution.LogNormalDistribution
 
-import org.apache.spark.sql.catalyst.expressions.{GenericInternalRow, GenericMutableRow}
-import org.apache.spark.sql.execution.columnar.{BOOLEAN, INT, LONG, NativeColumnType, SHORT, STRING}
+import org.apache.spark.sql.catalyst.expressions.{
+  GenericInternalRow,
+  GenericMutableRow
+}
+import org.apache.spark.sql.execution.columnar.{
+  BOOLEAN,
+  INT,
+  LONG,
+  NativeColumnType,
+  SHORT,
+  STRING
+}
 import org.apache.spark.sql.types.AtomicType
 import org.apache.spark.util.Benchmark
 import org.apache.spark.util.Utils._
@@ -40,26 +50,24 @@ object CompressionSchemeBenchmark extends AllCompressionSchemes {
 
   private[this] def genLowerSkewData() = {
     val rng = new LogNormalDistribution(0.0, 0.01)
-    () =>
-      rng.sample
+    () => rng.sample
   }
 
   private[this] def genHigherSkewData() = {
     val rng = new LogNormalDistribution(0.0, 1.0)
-    () =>
-      rng.sample
+    () => rng.sample
   }
 
   private[this] def prepareEncodeInternal[T <: AtomicType](
       count: Int,
       tpe: NativeColumnType[T],
       supportedScheme: CompressionScheme,
-      input: ByteBuffer)
-    : ((ByteBuffer, ByteBuffer) => ByteBuffer, Double, ByteBuffer) = {
+      input: ByteBuffer
+  ): ((ByteBuffer, ByteBuffer) => ByteBuffer, Double, ByteBuffer) = {
     assert(supportedScheme.supports(tpe))
 
     def toRow(d: Any) = new GenericInternalRow(Array[Any](d))
-    val encoder = supportedScheme.encoder(tpe)
+    val encoder       = supportedScheme.encoder(tpe)
     for (i <- 0 until count) {
       encoder.gatherCompressibilityStats(toRow(tpe.extract(input)), 0)
     }
@@ -72,9 +80,11 @@ object CompressionSchemeBenchmark extends AllCompressionSchemes {
         encoder.compressedSize
       }
 
-    (encoder.compress,
-     encoder.compressionRatio,
-     allocateLocal(4 + compressedSize))
+    (
+      encoder.compress,
+      encoder.compressionRatio,
+      allocateLocal(4 + compressedSize)
+    )
   }
 
   private[this] def runEncodeBenchmark[T <: AtomicType](
@@ -82,7 +92,8 @@ object CompressionSchemeBenchmark extends AllCompressionSchemes {
       iters: Int,
       count: Int,
       tpe: NativeColumnType[T],
-      input: ByteBuffer): Unit = {
+      input: ByteBuffer
+  ): Unit = {
     val benchmark = new Benchmark(name, iters * count)
 
     schemes.filter(_.supports(tpe)).map { scheme =>
@@ -108,14 +119,15 @@ object CompressionSchemeBenchmark extends AllCompressionSchemes {
       iters: Int,
       count: Int,
       tpe: NativeColumnType[T],
-      input: ByteBuffer): Unit = {
+      input: ByteBuffer
+  ): Unit = {
     val benchmark = new Benchmark(name, iters * count)
 
     schemes.filter(_.supports(tpe)).map { scheme =>
       val (compressFunc, _, buf) =
         prepareEncodeInternal(count, tpe, scheme, input)
       val compressedBuf = compressFunc(input, buf)
-      val label = s"${getFormattedClassName(scheme)}"
+      val label         = s"${getFormattedClassName(scheme)}"
 
       input.rewind()
 
@@ -136,13 +148,12 @@ object CompressionSchemeBenchmark extends AllCompressionSchemes {
   }
 
   def bitEncodingBenchmark(iters: Int): Unit = {
-    val count = 65536
+    val count    = 65536
     val testData = allocateLocal(count * BOOLEAN.defaultSize)
 
     val g = {
       val rng = genLowerSkewData()
-      () =>
-        (rng().toInt % 2).toByte
+      () => (rng().toInt % 2).toByte
     }
     for (i <- 0 until count) {
       testData.put(i * BOOLEAN.defaultSize, g())
@@ -166,7 +177,7 @@ object CompressionSchemeBenchmark extends AllCompressionSchemes {
   }
 
   def shortEncodingBenchmark(iters: Int): Unit = {
-    val count = 65536
+    val count    = 65536
     val testData = allocateLocal(count * SHORT.defaultSize)
 
     val g1 = genLowerSkewData()
@@ -180,7 +191,12 @@ object CompressionSchemeBenchmark extends AllCompressionSchemes {
     // PassThrough(1.000)                          6 /    7      10971.4           0.1       1.0X
     // RunLengthEncoding(1.510)                 1526 / 1542         44.0          22.7       0.0X
     runEncodeBenchmark(
-        "SHORT Encode (Lower Skew)", iters, count, SHORT, testData)
+      "SHORT Encode (Lower Skew)",
+      iters,
+      count,
+      SHORT,
+      testData
+    )
 
     // Intel(R) Core(TM) i7-4578U CPU @ 3.00GHz
     // SHORT Decode (Lower Skew):          Best/Avg Time(ms)    Rate(M/s)   Per Row(ns)   Relative
@@ -188,7 +204,12 @@ object CompressionSchemeBenchmark extends AllCompressionSchemes {
     // PassThrough                               811 /  837         82.8          12.1       1.0X
     // RunLengthEncoding                        1219 / 1266         55.1          18.2       0.7X
     runDecodeBenchmark(
-        "SHORT Decode (Lower Skew)", iters, count, SHORT, testData)
+      "SHORT Decode (Lower Skew)",
+      iters,
+      count,
+      SHORT,
+      testData
+    )
 
     val g2 = genHigherSkewData()
     for (i <- 0 until count) {
@@ -201,7 +222,12 @@ object CompressionSchemeBenchmark extends AllCompressionSchemes {
     // PassThrough(1.000)                          7 /    7      10112.4           0.1       1.0X
     // RunLengthEncoding(2.009)                 1623 / 1661         41.4          24.2       0.0X
     runEncodeBenchmark(
-        "SHORT Encode (Higher Skew)", iters, count, SHORT, testData)
+      "SHORT Encode (Higher Skew)",
+      iters,
+      count,
+      SHORT,
+      testData
+    )
 
     // Intel(R) Core(TM) i7-4578U CPU @ 3.00GHz
     // SHORT Decode (Higher Skew):         Best/Avg Time(ms)    Rate(M/s)   Per Row(ns)   Relative
@@ -209,11 +235,16 @@ object CompressionSchemeBenchmark extends AllCompressionSchemes {
     // PassThrough                               818 /  827         82.0          12.2       1.0X
     // RunLengthEncoding                        1202 / 1237         55.8          17.9       0.7X
     runDecodeBenchmark(
-        "SHORT Decode (Higher Skew)", iters, count, SHORT, testData)
+      "SHORT Decode (Higher Skew)",
+      iters,
+      count,
+      SHORT,
+      testData
+    )
   }
 
   def intEncodingBenchmark(iters: Int): Unit = {
-    val count = 65536
+    val count    = 65536
     val testData = allocateLocal(count * INT.defaultSize)
 
     val g1 = genLowerSkewData()
@@ -264,7 +295,7 @@ object CompressionSchemeBenchmark extends AllCompressionSchemes {
   }
 
   def longEncodingBenchmark(iters: Int): Unit = {
-    val count = 65536
+    val count    = 65536
     val testData = allocateLocal(count * LONG.defaultSize)
 
     val g1 = genLowerSkewData()
@@ -279,8 +310,7 @@ object CompressionSchemeBenchmark extends AllCompressionSchemes {
     // RunLengthEncoding(0.748)                 2065 / 2094         32.5          30.8       0.0X
     // DictionaryEncoding(0.250)                 950 /  962         70.6          14.2       0.0X
     // LongDelta(0.125)                          475 /  482        141.2           7.1       0.1X
-    runEncodeBenchmark(
-        "LONG Encode (Lower Skew)", iters, count, LONG, testData)
+    runEncodeBenchmark("LONG Encode (Lower Skew)", iters, count, LONG, testData)
 
     // Intel(R) Core(TM) i7-4578U CPU @ 3.00GHz
     // LONG Decode (Lower Skew):           Best/Avg Time(ms)    Rate(M/s)   Per Row(ns)   Relative
@@ -289,8 +319,7 @@ object CompressionSchemeBenchmark extends AllCompressionSchemes {
     // RunLengthEncoding                        1301 / 1311         51.6          19.4       0.7X
     // DictionaryEncoding                        887 /  904         75.7          13.2       1.0X
     // LongDelta                                 693 /  735         96.8          10.3       1.3X
-    runDecodeBenchmark(
-        "LONG Decode (Lower Skew)", iters, count, LONG, testData)
+    runDecodeBenchmark("LONG Decode (Lower Skew)", iters, count, LONG, testData)
 
     val g2 = genHigherSkewData()
     for (i <- 0 until count) {
@@ -305,7 +334,12 @@ object CompressionSchemeBenchmark extends AllCompressionSchemes {
     // DictionaryEncoding(0.251)                1270 / 1438         52.8          18.9       0.0X
     // LongDelta(0.125)                          496 /  509        135.3           7.4       0.1X
     runEncodeBenchmark(
-        "LONG Encode (Higher Skew)", iters, count, LONG, testData)
+      "LONG Encode (Higher Skew)",
+      iters,
+      count,
+      LONG,
+      testData
+    )
 
     // Intel(R) Core(TM) i7-4578U CPU @ 3.00GHz
     // LONG Decode (Higher Skew):          Best/Avg Time(ms)    Rate(M/s)   Per Row(ns)   Relative
@@ -315,21 +349,25 @@ object CompressionSchemeBenchmark extends AllCompressionSchemes {
     // DictionaryEncoding                        892 /  924         75.2          13.3       1.1X
     // LongDelta                                 817 /  847         82.2          12.2       1.2X
     runDecodeBenchmark(
-        "LONG Decode (Higher Skew)", iters, count, LONG, testData)
+      "LONG Decode (Higher Skew)",
+      iters,
+      count,
+      LONG,
+      testData
+    )
   }
 
   def stringEncodingBenchmark(iters: Int): Unit = {
-    val count = 65536
-    val strLen = 8
+    val count     = 65536
+    val strLen    = 8
     val tableSize = 16
-    val testData = allocateLocal(count * (4 + strLen))
+    val testData  = allocateLocal(count * (4 + strLen))
 
     val g = {
-      val dataTable = (0 until tableSize).map(
-          _ => RandomStringUtils.randomAlphabetic(strLen))
+      val dataTable =
+        (0 until tableSize).map(_ => RandomStringUtils.randomAlphabetic(strLen))
       val rng = genHigherSkewData()
-      () =>
-        dataTable(rng().toInt % tableSize)
+      () => dataTable(rng().toInt % tableSize)
     }
     for (i <- 0 until count) {
       testData.putInt(strLen)

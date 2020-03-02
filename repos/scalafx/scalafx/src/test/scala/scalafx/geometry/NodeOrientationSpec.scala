@@ -39,6 +39,7 @@ import scalafx.testutil.SFXEnumDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class NodeOrientationSpec
     extends SFXEnumDelegateSpec[jfxg.NodeOrientation, NodeOrientation](
-        javaClass = classOf[jfxg.NodeOrientation],
-        scalaClass = classOf[NodeOrientation],
-        companion = NodeOrientation)
+      javaClass = classOf[jfxg.NodeOrientation],
+      scalaClass = classOf[NodeOrientation],
+      companion = NodeOrientation
+    )

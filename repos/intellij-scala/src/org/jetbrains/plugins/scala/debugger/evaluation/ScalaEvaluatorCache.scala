@@ -2,7 +2,10 @@ package org.jetbrains.plugins.scala
 package debugger.evaluation
 
 import com.intellij.codeInsight.PsiEquivalenceUtil
-import com.intellij.debugger.engine.evaluation.expression.{Evaluator, ExpressionEvaluator}
+import com.intellij.debugger.engine.evaluation.expression.{
+  Evaluator,
+  ExpressionEvaluator
+}
 import com.intellij.debugger.impl.{DebuggerManagerAdapter, DebuggerSession}
 import com.intellij.debugger.{DebuggerManagerEx, SourcePosition}
 import com.intellij.openapi.components.AbstractProjectComponent
@@ -48,7 +51,7 @@ class ScalaEvaluatorCache(project: Project)
   def get(position: SourcePosition, element: PsiElement): Option[Evaluator] = {
     if (position == null) return None
 
-    val file = position.getFile
+    val file   = position.getFile
     val offset = position.getOffset
     if (!cachedStamp.get(file).contains(file.getModificationStamp)) {
       cachedStamp(file) = file.getModificationStamp
@@ -71,17 +74,19 @@ class ScalaEvaluatorCache(project: Project)
     }
   }
 
-  def add(position: SourcePosition,
-          element: PsiElement,
-          evaluator: Evaluator): Evaluator = {
+  def add(
+      position: SourcePosition,
+      element: PsiElement,
+      evaluator: Evaluator
+  ): Evaluator = {
     if (position != null) {
-      val file = position.getFile
+      val file   = position.getFile
       val offset = position.getOffset
       cachedEvaluators.get((file, offset)) match {
         case Some(map) => map += (element -> evaluator)
         case None =>
           cachedEvaluators +=
-          ((file, offset) -> mutable.HashMap(element -> evaluator))
+            ((file, offset) -> mutable.HashMap(element -> evaluator))
       }
     }
     evaluator

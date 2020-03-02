@@ -15,8 +15,10 @@ sealed trait AbstractJSDep {
 
   def %(configurations: Configuration): AbstractJSDep = %(configurations.name)
   def %(configurations: String): AbstractJSDep = {
-    require(this.configurations.isEmpty,
-            "Configurations already specified for jsModule " + this)
+    require(
+      this.configurations.isEmpty,
+      "Configurations already specified for jsModule " + this
+    )
     nonEmpty(configurations, "Configurations")
     withConfigs(Some(configurations))
   }
@@ -58,8 +60,9 @@ object JarJSModuleID {
 /** A JavaScript module that we depend on, but is provided externally or
   *  by the project itself */
 final case class ProvidedJSModuleID(
-    jsDep: JSDependency, configurations: Option[String])
-    extends JSModuleID {
+    jsDep: JSDependency,
+    configurations: Option[String]
+) extends JSModuleID {
 
   protected def withConfigs(configs: Option[String]): JSModuleID =
     copy(configurations = configs)

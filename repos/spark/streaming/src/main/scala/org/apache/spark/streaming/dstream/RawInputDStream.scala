@@ -36,13 +36,13 @@ import org.apache.spark.streaming.receiver.Receiver
   * data into Spark Streaming, though it requires the sender to batch data and serialize it
   * in the format that the system is configured with.
   */
-private[streaming] class RawInputDStream[T : ClassTag](
+private[streaming] class RawInputDStream[T: ClassTag](
     _ssc: StreamingContext,
     host: String,
     port: Int,
     storageLevel: StorageLevel
-)
-    extends ReceiverInputDStream[T](_ssc) with Logging {
+) extends ReceiverInputDStream[T](_ssc)
+    with Logging {
 
   def getReceiver(): Receiver[T] = {
     new RawNetworkReceiver(host, port, storageLevel).asInstanceOf[Receiver[T]]
@@ -50,8 +50,11 @@ private[streaming] class RawInputDStream[T : ClassTag](
 }
 
 private[streaming] class RawNetworkReceiver(
-    host: String, port: Int, storageLevel: StorageLevel)
-    extends Receiver[Any](storageLevel) with Logging {
+    host: String,
+    port: Int,
+    storageLevel: StorageLevel
+) extends Receiver[Any](storageLevel)
+    with Logging {
 
   var blockPushingThread: Thread = null
 
@@ -83,7 +86,7 @@ private[streaming] class RawNetworkReceiver(
       lengthBuffer.clear()
       readFully(channel, lengthBuffer)
       lengthBuffer.flip()
-      val length = lengthBuffer.getInt()
+      val length     = lengthBuffer.getInt()
       val dataBuffer = ByteBuffer.allocate(length)
       readFully(channel, dataBuffer)
       dataBuffer.flip()

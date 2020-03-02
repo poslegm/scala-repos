@@ -6,7 +6,7 @@ object WriterUsage extends App {
   import std.list._
   import syntax.writer._
   import syntax.semigroup._ // for |+|
-  import syntax.apply._ // for |@|
+  import syntax.apply._     // for |@|
 
   type Logger[A] = Writer[List[String], A]
 
@@ -14,13 +14,14 @@ object WriterUsage extends App {
   case class Address(street: String, city: String)
 
   val drWatson = for {
-    watson <- Person("Watson", 40).set(List("Create Watson"))
+    watson  <- Person("Watson", 40).set(List("Create Watson"))
     address <- Address("Baker Street", "London").set(List("Create address."))
     _ <- List(
-        "tell lets us log something in between. Writer[List[String], Unit]").tell
+          "tell lets us log something in between. Writer[List[String], Unit]"
+        ).tell
     moveWatson <- watson
-      .copy(address = Some(address))
-      .set(List("Move to new address."))
+                   .copy(address = Some(address))
+                   .set(List("Move to new address."))
   } yield moveWatson
 
   // print log
@@ -30,11 +31,11 @@ object WriterUsage extends App {
   drWatson.value.map(println)
 
   val sherlockHolmes = for {
-    holmes <- Person("Holmes", 40).set(List("Create Holmes"))
+    holmes  <- Person("Holmes", 40).set(List("Create Holmes"))
     address <- Address("Baker Street", "London").set(List("Create address."))
     moveHolmes <- holmes
-      .copy(address = Some(address))
-      .set(List("Move to new address."))
+                   .copy(address = Some(address))
+                   .set(List("Move to new address."))
   } yield (moveHolmes)
 
   // map lets you map over the value side

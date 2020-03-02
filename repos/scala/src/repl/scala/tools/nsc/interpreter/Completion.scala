@@ -16,7 +16,7 @@ trait Completion {
   def complete(buffer: String, cursor: Int): Candidates
 }
 object NoCompletion extends Completion {
-  def resetVerbosity() = ()
+  def resetVerbosity()                      = ()
   def complete(buffer: String, cursor: Int) = NoCandidates
 }
 
@@ -24,7 +24,8 @@ object Completion {
   case class Candidates(cursor: Int, candidates: List[String]) {}
   val NoCandidates = Candidates(-1, Nil)
 
-  def looksLikeInvocation(code: String) = ((code != null) &&
+  def looksLikeInvocation(code: String) =
+    ((code != null) &&
       (code startsWith ".") && !(code == ".") && !(code startsWith "./") &&
       !(code startsWith ".."))
 }

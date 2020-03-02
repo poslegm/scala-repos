@@ -11,7 +11,8 @@ import akka.stream.impl.VirtualProcessor
 class VirtualProcessorTest extends AkkaIdentityProcessorVerification[Int] {
 
   override def createIdentityProcessor(
-      maxBufferSize: Int): Processor[Int, Int] = {
+      maxBufferSize: Int
+  ): Processor[Int, Int] = {
     implicit val materializer = ActorMaterializer()(system)
 
     val identity =
@@ -29,7 +30,8 @@ class VirtualProcessorSingleTest
     extends AkkaIdentityProcessorVerification[Int] {
 
   override def createIdentityProcessor(
-      maxBufferSize: Int): Processor[Int, Int] =
+      maxBufferSize: Int
+  ): Processor[Int, Int] =
     new VirtualProcessor[Int]
 
   override def createElement(element: Int): Int = element

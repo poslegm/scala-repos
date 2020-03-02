@@ -33,7 +33,7 @@ class OneToOneDependency[T](rdd: RDD[T]) extends NarrowDependency[T](rdd) {
 class SparkConf(loadDefaults: Boolean)
 class SparkContext(config: SparkConf)
 
-class RDD[T : ClassTag](
+class RDD[T: ClassTag](
     @transient private var sc: SparkContext,
     @transient private var deps: Seq[Dependency[_]]
 ) /*extends Serializable with Logging*/ {
@@ -47,9 +47,10 @@ class RDD[T : ClassTag](
   var x = 5
 }
 
-class FlatMappedRDD[U : ClassTag, T : ClassTag](val prev: RDD[T],
-                                                f: T => TraversableOnce[U])
-    extends RDD[U](prev) {
+class FlatMappedRDD[U: ClassTag, T: ClassTag](
+    val prev: RDD[T],
+    f: T => TraversableOnce[U]
+) extends RDD[U](prev) {
 
   private var fun = f
 
@@ -66,8 +67,8 @@ class FlatMappedRDD[U : ClassTag, T : ClassTag](val prev: RDD[T],
   */
 class ReflectTest extends FunSuite {
   test("sparkIssue") {
-    val f = Reflect.getField(classOf[RDD[Int]], "x")
-    val sc = new SparkContext(new SparkConf(true))
+    val f   = Reflect.getField(classOf[RDD[Int]], "x")
+    val sc  = new SparkContext(new SparkConf(true))
     val rdd = new RDD[Int](sc, Seq(new Dependency(null)))
     f.setAccessible(true)
     assert(f.get(rdd) == 5)

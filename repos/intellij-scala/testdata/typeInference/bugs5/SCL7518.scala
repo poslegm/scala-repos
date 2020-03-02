@@ -8,7 +8,7 @@ object SCL7518 {
   class G
 
   implicit def g2aimpl(g: G): AImpl = new AImpl("text") {}
-  implicit def g2f(g: G): F = new F()
+  implicit def g2f(g: G): F         = new F()
 
   val g = new G
 

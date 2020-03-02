@@ -35,7 +35,8 @@ import scalafx.delegate.SFXDelegate
 
 object ReadOnlyDoubleWrapper {
   implicit def sfxReadOnlyDoubleWrapper2jfx(
-      w: ReadOnlyDoubleWrapper): jfxbp.ReadOnlyDoubleWrapper =
+      w: ReadOnlyDoubleWrapper
+  ): jfxbp.ReadOnlyDoubleWrapper =
     if (w != null) w.delegate else null
 
   /** Creates a new ReadOnlyDoubleWrapper instance.
@@ -47,9 +48,10 @@ object ReadOnlyDoubleWrapper {
 
 /** Wrapper for [[http://docs.oracle.com/javase/8/javafx/api/javafx/beans/property/ReadOnlyDoubleWrapper.html javafx.beans.property.ReadOnlyDoubleWrapper]] */
 class ReadOnlyDoubleWrapper(
-    override val delegate: jfxbp.ReadOnlyDoubleWrapper = new jfxbp.ReadOnlyDoubleWrapper(
-          ))
-    extends DoubleProperty(delegate)
+    override val delegate: jfxbp.ReadOnlyDoubleWrapper =
+      new jfxbp.ReadOnlyDoubleWrapper(
+        )
+) extends DoubleProperty(delegate)
     with SFXDelegate[jfxbp.ReadOnlyDoubleWrapper] {
 
   /** Creates a new ReadOnlyDoubleWrapper instance.

@@ -4,7 +4,12 @@
 package akka.http.impl.engine.server
 
 import akka.http.impl.engine.parsing.ParserOutput
-import akka.http.impl.engine.parsing.ParserOutput.{StrictEntityCreator, EntityStreamError, EntityChunk, StreamedEntityCreator}
+import akka.http.impl.engine.parsing.ParserOutput.{
+  StrictEntityCreator,
+  EntityStreamError,
+  EntityChunk,
+  StreamedEntityCreator
+}
 import akka.http.impl.engine.server.HttpServerBluePrint.PrepareRequests
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.settings.ServerSettings
@@ -18,20 +23,23 @@ import scala.concurrent.duration._
 class PrepareRequestsSpec extends AkkaSpec {
 
   val chunkedStart = ParserOutput.RequestStart(
-      HttpMethods.GET,
-      Uri("http://example.com/"),
-      HttpProtocols.`HTTP/1.1`,
-      List(),
-      StreamedEntityCreator[ParserOutput, RequestEntity] { entityChunks ⇒
-        val chunks = entityChunks.collect {
-          case EntityChunk(chunk) ⇒ chunk
-          case EntityStreamError(info) ⇒ throw EntityStreamException(info)
-        }
-        HttpEntity.Chunked(ContentTypes.`application/octet-stream`,
-                           HttpEntity.limitableChunkSource(chunks))
-      },
-      expect100Continue = true,
-      closeRequested = false)
+    HttpMethods.GET,
+    Uri("http://example.com/"),
+    HttpProtocols.`HTTP/1.1`,
+    List(),
+    StreamedEntityCreator[ParserOutput, RequestEntity] { entityChunks ⇒
+      val chunks = entityChunks.collect {
+        case EntityChunk(chunk)      ⇒ chunk
+        case EntityStreamError(info) ⇒ throw EntityStreamException(info)
+      }
+      HttpEntity.Chunked(
+        ContentTypes.`application/octet-stream`,
+        HttpEntity.limitableChunkSource(chunks)
+      )
+    },
+    expect100Continue = true,
+    closeRequested = false
+  )
 
   val chunkPart =
     ParserOutput.EntityChunk(HttpEntity.ChunkStreamPart(ByteString("abc")))
@@ -39,14 +47,17 @@ class PrepareRequestsSpec extends AkkaSpec {
   val chunkRequestComplete = ParserOutput.MessageEnd
 
   val strictRequest = ParserOutput.RequestStart(
-      HttpMethods.GET,
-      Uri("http://example.com/"),
-      HttpProtocols.`HTTP/1.1`,
-      List(),
-      StrictEntityCreator(HttpEntity.Strict(
-              ContentTypes.`application/octet-stream`, ByteString("body"))),
-      true,
-      false)
+    HttpMethods.GET,
+    Uri("http://example.com/"),
+    HttpProtocols.`HTTP/1.1`,
+    List(),
+    StrictEntityCreator(
+      HttpEntity
+        .Strict(ContentTypes.`application/octet-stream`, ByteString("body"))
+    ),
+    true,
+    false
+  )
 
   "The PrepareRequest stage" should {
 
@@ -54,7 +65,7 @@ class PrepareRequestsSpec extends AkkaSpec {
       implicit val materializer = ActorMaterializer()
       // covers bug #19623 where a reply before the streamed
       // body has been consumed causes pull/push twice
-      val inProbe = TestPublisher.manualProbe[ParserOutput.RequestOutput]()
+      val inProbe       = TestPublisher.manualProbe[ParserOutput.RequestOutput]()
       val upstreamProbe = TestSubscriber.manualProbe[HttpRequest]()
 
       val stage = Flow.fromGraph(new PrepareRequests(ServerSettings(system)))
@@ -67,7 +78,7 @@ class PrepareRequestsSpec extends AkkaSpec {
         .run()
 
       val upstreamSub = upstreamProbe.expectSubscription()
-      val inSub = inProbe.expectSubscription()
+      val inSub       = inProbe.expectSubscription()
 
       // let request with streamed entity through
       upstreamSub.request(1)
@@ -96,8 +107,9 @@ class PrepareRequestsSpec extends AkkaSpec {
       // bug would fail stream here with exception
       upstreamProbe.expectNoMsg(100.millis)
 
-      inSub.sendNext(ParserOutput.EntityChunk(
-              HttpEntity.ChunkStreamPart(ByteString("abc"))))
+      inSub.sendNext(
+        ParserOutput.EntityChunk(HttpEntity.ChunkStreamPart(ByteString("abc")))
+      )
       entityProbe.expectNext()
       entitySub.request(1)
       inSub.sendNext(ParserOutput.MessageEnd)
@@ -115,7 +127,7 @@ class PrepareRequestsSpec extends AkkaSpec {
     "not complete running entity stream when upstream cancels" in {
       implicit val materializer = ActorMaterializer()
 
-      val inProbe = TestPublisher.manualProbe[ParserOutput.RequestOutput]()
+      val inProbe       = TestPublisher.manualProbe[ParserOutput.RequestOutput]()
       val upstreamProbe = TestSubscriber.manualProbe[HttpRequest]()
 
       val stage = Flow.fromGraph(new PrepareRequests(ServerSettings(system)))
@@ -128,7 +140,7 @@ class PrepareRequestsSpec extends AkkaSpec {
         .run()
 
       val upstreamSub = upstreamProbe.expectSubscription()
-      val inSub = inProbe.expectSubscription()
+      val inSub       = inProbe.expectSubscription()
 
       // let request with streamed entity through
       upstreamSub.request(1)
@@ -167,7 +179,7 @@ class PrepareRequestsSpec extends AkkaSpec {
       // a bit unsure about this, but to document the assumption
       implicit val materializer = ActorMaterializer()
 
-      val inProbe = TestPublisher.manualProbe[ParserOutput.RequestOutput]()
+      val inProbe       = TestPublisher.manualProbe[ParserOutput.RequestOutput]()
       val upstreamProbe = TestSubscriber.manualProbe[HttpRequest]()
 
       val stage = Flow.fromGraph(new PrepareRequests(ServerSettings(system)))
@@ -180,7 +192,7 @@ class PrepareRequestsSpec extends AkkaSpec {
         .run()
 
       val upstreamSub = upstreamProbe.expectSubscription()
-      val inSub = inProbe.expectSubscription()
+      val inSub       = inProbe.expectSubscription()
 
       // let request with streamed entity through
       upstreamSub.request(1)
@@ -209,7 +221,7 @@ class PrepareRequestsSpec extends AkkaSpec {
     "cancel the stage when the entity stream is canceled" in {
       implicit val materializer = ActorMaterializer()
 
-      val inProbe = TestPublisher.manualProbe[ParserOutput.RequestOutput]()
+      val inProbe       = TestPublisher.manualProbe[ParserOutput.RequestOutput]()
       val upstreamProbe = TestSubscriber.manualProbe[HttpRequest]()
 
       val stage = Flow.fromGraph(new PrepareRequests(ServerSettings(system)))
@@ -222,7 +234,7 @@ class PrepareRequestsSpec extends AkkaSpec {
         .run()
 
       val upstreamSub = upstreamProbe.expectSubscription()
-      val inSub = inProbe.expectSubscription()
+      val inSub       = inProbe.expectSubscription()
 
       // let request with streamed entity through
       upstreamSub.request(1)

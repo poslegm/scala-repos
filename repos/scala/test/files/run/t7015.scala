@@ -29,8 +29,8 @@ object Test {
   def g(x: String) = x
 
   def q(x: java.lang.Object) = x
-  def r(x: AnyRef) = x
-  def s(x: Any) = x
+  def r(x: AnyRef)           = x
+  def s(x: Any)              = x
 }
 
 abstract class A {

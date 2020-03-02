@@ -20,8 +20,7 @@ object Form {
   }
 
   def optionsDouble(it: Iterable[Double], format: Double => String) = it map {
-    d =>
-      d -> format(d)
+    d => d -> format(d)
   }
 
   def numberIn(choices: Iterable[(Int, String)]) =
@@ -44,9 +43,10 @@ object Form {
 
   private val jsonGlobalErrorRenamer =
     __.json update ((__ \ "global").json copyFrom (__ \ "").json.pick) andThen
-    (__ \ "").json.prune
+      (__ \ "").json.prune
 
-  def errorsAsJson(form: play.api.data.Form[_])(
-      implicit lang: play.api.i18n.Messages) =
+  def errorsAsJson(
+      form: play.api.data.Form[_]
+  )(implicit lang: play.api.i18n.Messages) =
     form.errorsAsJson validate jsonGlobalErrorRenamer getOrElse form.errorsAsJson
 }

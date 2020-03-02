@@ -6,7 +6,7 @@ import actorApi.{SocketEnter, SocketLeave, PopulationTell, NbMembers}
 
 private[socket] final class Population extends Actor {
 
-  var nb = 0
+  var nb  = 0
   val bus = context.system.lilaBus
 
   bus.subscribe(self, 'socketDoor)

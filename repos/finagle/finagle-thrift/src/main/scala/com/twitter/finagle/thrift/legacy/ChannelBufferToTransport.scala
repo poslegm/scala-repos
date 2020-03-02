@@ -34,15 +34,16 @@ private[thrift] class ChannelBufferToTransport(underlying: ChannelBuffer)
   *
   */
 private[thrift] class DuplexChannelBufferTransport(
-    input: ChannelBuffer, output: ChannelBuffer)
-    extends TTransport {
+    input: ChannelBuffer,
+    output: ChannelBuffer
+) extends TTransport {
   override def isOpen = true
   override def open() {}
   override def close() {}
 
   override def read(buffer: Array[Byte], offset: Int, length: Int) = {
     val readableBytes = input.readableBytes()
-    val bytesToRead = math.min(length, readableBytes)
+    val bytesToRead   = math.min(length, readableBytes)
     input.readBytes(buffer, offset, bytesToRead)
     bytesToRead
   }

@@ -11,9 +11,10 @@ import scala.xml.Elem
 /**
   * @author Pavel Fatin
   */
-class ScalaCompilerConfiguration(defaultSettings: ScalaCompilerSettings,
-                                 profiles: Seq[ScalaCompilerSettingsProfile])
-    extends XmlConversion {
+class ScalaCompilerConfiguration(
+    defaultSettings: ScalaCompilerSettings,
+    profiles: Seq[ScalaCompilerSettingsProfile]
+) extends XmlConversion {
   def createIn(context: ConversionContext): Option[File] = {
     val optionsElement = createOptionsElement()
 
@@ -27,19 +28,26 @@ class ScalaCompilerConfiguration(defaultSettings: ScalaCompilerSettings,
   }
 
   private def addDirectoryBasedOptions(
-      options: Elem, context: ConversionContext): File = {
+      options: Elem,
+      context: ConversionContext
+  ): File = {
     val base = Option(context.getSettingsBaseDir)
-      .getOrElse(throw new CannotConvertException(
-            "Only directory-based IDEA projects are supported"))
+      .getOrElse(
+        throw new CannotConvertException(
+          "Only directory-based IDEA projects are supported"
+        )
+      )
 
-    val file = new File(base, "scala_compiler.xml")
+    val file             = new File(base, "scala_compiler.xml")
     val componentElement = <project version="4"> {options} </project>
     Files.write(formatXml(componentElement).getBytes, file)
     file
   }
 
   private def addProjectBasedOptions(
-      options: Elem, context: ConversionContext) {
+      options: Elem,
+      context: ConversionContext
+  ) {
     val rootElement = context.getProjectSettings.getRootElement
     rootElement.addContent(asJava(options))
   }

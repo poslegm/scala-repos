@@ -52,13 +52,16 @@ object Refresh {
         // interruptible allows the promise to be interrupted safely
         if (now < lastRetrieved + ttl) cachedValue.interruptible()
         else {
-          val p = Promise[T]()
+          val p         = Promise[T]()
           val nextTuple = (p, now)
           if (ref.compareAndSet(tuple, nextTuple)) {
             val nextResult =
               provider onFailure { _ =>
                 // evict failed result lazily, next request will kick off a new request
-                ref.compareAndSet(nextTuple, empty) // OK if we lose so no need to examine result
+                ref.compareAndSet(
+                  nextTuple,
+                  empty
+                ) // OK if we lose so no need to examine result
               }
             nextResult.proxyTo(p)
             p.interruptible() // interruptible allows the promise to be interrupted safely

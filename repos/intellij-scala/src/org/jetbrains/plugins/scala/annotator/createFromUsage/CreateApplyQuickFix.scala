@@ -18,15 +18,19 @@ class CreateApplyQuickFix(td: ScTypeDefinition, call: ScMethodCall) extends {
   val methodType = call.expectedType().map(_.canonicalText)
 
   val methodText = {
-    val argsText = CreateFromUsageUtil.paramsText(call.argumentExpressions)
+    val argsText      = CreateFromUsageUtil.paramsText(call.argumentExpressions)
     val dummyTypeText = methodType.fold("")(_ => ": Int")
     s"def apply$argsText$dummyTypeText = ???"
   }
 
   override protected def addElementsToTemplate(
-      method: ScFunction, builder: TemplateBuilder) = {
+      method: ScFunction,
+      builder: TemplateBuilder
+  ) = {
     for (aType <- methodType;
-    typeElement <- method.children.findByType(classOf[ScSimpleTypeElement])) {
+         typeElement <- method.children.findByType(
+                         classOf[ScSimpleTypeElement]
+                       )) {
       builder.replaceElement(typeElement, aType)
     }
 

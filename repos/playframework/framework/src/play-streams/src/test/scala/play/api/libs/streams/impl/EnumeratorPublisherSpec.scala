@@ -30,8 +30,8 @@ class EnumeratorPublisherSpec extends Specification {
         subscription.success(s)
       }
       override def onError(t: Throwable) = record(OnError(t))
-      override def onNext(element: T) = record(OnNext(element))
-      override def onComplete() = record(OnComplete)
+      override def onNext(element: T)    = record(OnNext(element))
+      override def onComplete()          = record(OnComplete)
     }
 
     def forSubscription(f: Subscription => Any): Future[Unit] = {
@@ -54,8 +54,8 @@ class EnumeratorPublisherSpec extends Specification {
   "EnumeratorPublisher" should {
     "enumerate one item" in {
       val testEnv = new TestEnv[Int]
-      val enum = Enumerator(1) >>> Enumerator.eof
-      val pubr = new EnumeratorPublisher(enum)
+      val enum    = Enumerator(1) >>> Enumerator.eof
+      val pubr    = new EnumeratorPublisher(enum)
       pubr.subscribe(testEnv.subscriber)
       testEnv.next must_== OnSubscribe
       testEnv.request(1)
@@ -68,8 +68,8 @@ class EnumeratorPublisherSpec extends Specification {
     }
     "enumerate three items, with batched requests" in {
       val testEnv = new TestEnv[Int]
-      val enum = Enumerator(1, 2, 3) >>> Enumerator.eof
-      val pubr = new EnumeratorPublisher(enum)
+      val enum    = Enumerator(1, 2, 3) >>> Enumerator.eof
+      val pubr    = new EnumeratorPublisher(enum)
       pubr.subscribe(testEnv.subscriber)
       testEnv.next must_== OnSubscribe
       testEnv.request(2)
@@ -83,7 +83,7 @@ class EnumeratorPublisherSpec extends Specification {
       testEnv.isEmptyAfterDelay() must beTrue
     }
     "be done enumerating after EOF" in {
-      val testEnv = new TestEnv[Int]
+      val testEnv  = new TestEnv[Int]
       var enumDone = Promise[Boolean]()
       val enum = (Enumerator(1, 2, 3) >>> Enumerator.eof).onDoneEnumerating {
         enumDone.success(true)
@@ -103,8 +103,8 @@ class EnumeratorPublisherSpec extends Specification {
 
     "complete the subscriber when done enumerating without eof" in {
       val testEnv = new TestEnv[Int]
-      val enum = Enumerator(1, 2, 3)
-      val pubr = new EnumeratorPublisher(enum)
+      val enum    = Enumerator(1, 2, 3)
+      val pubr    = new EnumeratorPublisher(enum)
       pubr.subscribe(testEnv.subscriber)
       testEnv.next must_== OnSubscribe
       testEnv.request(4)
@@ -117,8 +117,8 @@ class EnumeratorPublisherSpec extends Specification {
     }
 
     "be done enumerating after being cancelled" in {
-      val testEnv = new TestEnv[Int]
-      val enumDone = Promise[Boolean]()
+      val testEnv                  = new TestEnv[Int]
+      val enumDone                 = Promise[Boolean]()
       val (broadcastEnum, channel) = Concurrent.broadcast[Int]
       val enum = broadcastEnum.onDoneEnumerating {
         enumDone.success(true)
@@ -147,9 +147,9 @@ class EnumeratorPublisherSpec extends Specification {
       }
     }
     "enumerate eof only" in {
-      val testEnv = new TestEnv[Int]
+      val testEnv               = new TestEnv[Int]
       val enum: Enumerator[Int] = Enumerator.eof
-      val pubr = new EnumeratorPublisher(enum)
+      val pubr                  = new EnumeratorPublisher(enum)
       pubr.subscribe(testEnv.subscriber)
       testEnv.next must_== OnSubscribe
       testEnv.request(1)
@@ -185,11 +185,11 @@ class EnumeratorPublisherSpec extends Specification {
       testEnv.isEmptyAfterDelay() must beTrue
     }
     "handle errors when enumerating" in {
-      val testEnv = new TestEnv[Int]
+      val testEnv     = new TestEnv[Int]
       val lotsOfItems = 0 until 25
-      val exception = new Exception("x")
-      val enum = Enumerator.flatten(Future.failed(exception))
-      val pubr = new EnumeratorPublisher[Nothing](enum)
+      val exception   = new Exception("x")
+      val enum        = Enumerator.flatten(Future.failed(exception))
+      val pubr        = new EnumeratorPublisher[Nothing](enum)
       pubr.subscribe(testEnv.subscriber)
       testEnv.next must_== OnSubscribe
       testEnv.request(1)
@@ -200,10 +200,10 @@ class EnumeratorPublisherSpec extends Specification {
       testEnv.isEmptyAfterDelay() must beTrue
     }
     "enumerate 25 items" in {
-      val testEnv = new TestEnv[Int]
+      val testEnv     = new TestEnv[Int]
       val lotsOfItems = 0 until 25
-      val enum = Enumerator(lotsOfItems: _*) >>> Enumerator.eof
-      val pubr = new EnumeratorPublisher(enum)
+      val enum        = Enumerator(lotsOfItems: _*) >>> Enumerator.eof
+      val pubr        = new EnumeratorPublisher(enum)
       pubr.subscribe(testEnv.subscriber)
       testEnv.next must_== OnSubscribe
       for (i <- lotsOfItems) {

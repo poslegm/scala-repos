@@ -41,7 +41,7 @@ object WindowedMaxBenchmark {
   @State(Scope.Thread)
   class Stream {
     private val input: Array[Long] = Array.fill(1000)(Random.nextLong())
-    private var index: Int = 0
+    private var index: Int         = 0
     def next(): Long = {
       val n = input(index)
       index = (index + 1) % input.length

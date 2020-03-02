@@ -12,7 +12,7 @@ import scala.util.Random
   * An example of a streaming HTTP server using chunked transfer encoding.
   */
 object HttpStreamingServer {
-  val random = new Random
+  val random         = new Random
   implicit val timer = new JavaTimer
 
   // Int, sleep, repeat.
@@ -39,10 +39,11 @@ object HttpStreamingServer {
     }
 
     Await.result(
-        Http.server
-        // Translate buffered writes into HTTP chunks.
-          .withStreaming(enabled = true)
-          // Listen on port 8080.
-          .serve("0.0.0.0:8080", service))
+      Http.server
+      // Translate buffered writes into HTTP chunks.
+        .withStreaming(enabled = true)
+        // Listen on port 8080.
+        .serve("0.0.0.0:8080", service)
+    )
   }
 }

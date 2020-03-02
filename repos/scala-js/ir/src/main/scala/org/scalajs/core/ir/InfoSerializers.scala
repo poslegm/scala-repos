@@ -104,36 +104,38 @@ object InfoSerializers {
         Set("0.6.0", "0.6.3", "0.6.4", "0.6.5").contains(version)
 
       val encodedName = readUTF()
-      val isExported = readBoolean()
-      val kind = ClassKind.fromByte(readByte())
+      val isExported  = readBoolean()
+      val kind        = ClassKind.fromByte(readByte())
       val superClass0 = readUTF()
-      val superClass = if (superClass0 == "") None else Some(superClass0)
-      val interfaces = readList(readUTF())
+      val superClass  = if (superClass0 == "") None else Some(superClass0)
+      val interfaces  = readList(readUTF())
 
       def readMethod(): MethodInfo = {
-        val encodedName = readUTF()
-        val isStatic = readBoolean()
-        val isAbstract = readBoolean()
-        val isExported = readBoolean()
+        val encodedName   = readUTF()
+        val isStatic      = readBoolean()
+        val isAbstract    = readBoolean()
+        val isExported    = readBoolean()
         val methodsCalled = readList(readUTF() -> readStrings()).toMap
         val methodsCalledStatically =
           readList(readUTF() -> readStrings()).toMap
         val staticMethodsCalled = readList(readUTF() -> readStrings()).toMap
         val instantiatedClasses = readStrings()
-        val accessedModules = readStrings()
-        val usedInstanceTests = readStrings()
-        val accessedClassData = readStrings()
-        MethodInfo(encodedName,
-                   isStatic,
-                   isAbstract,
-                   isExported,
-                   methodsCalled,
-                   methodsCalledStatically,
-                   staticMethodsCalled,
-                   instantiatedClasses,
-                   accessedModules,
-                   usedInstanceTests,
-                   accessedClassData)
+        val accessedModules     = readStrings()
+        val usedInstanceTests   = readStrings()
+        val accessedClassData   = readStrings()
+        MethodInfo(
+          encodedName,
+          isStatic,
+          isAbstract,
+          isExported,
+          methodsCalled,
+          methodsCalledStatically,
+          staticMethodsCalled,
+          instantiatedClasses,
+          accessedModules,
+          usedInstanceTests,
+          accessedClassData
+        )
       }
 
       val methods0 = readList(readMethod())
@@ -145,7 +147,13 @@ object InfoSerializers {
         }
 
       val info = ClassInfo(
-          encodedName, isExported, kind, superClass, interfaces, methods)
+        encodedName,
+        isExported,
+        kind,
+        superClass,
+        interfaces,
+        methods
+      )
 
       (version, info)
     }
@@ -159,14 +167,15 @@ object InfoSerializers {
         throw new IOException("Not a Scala.js IR file")
 
       // Check that we support this version of the IR
-      val version = input.readUTF()
+      val version   = input.readUTF()
       val supported = ScalaJSVersions.binarySupported
       if (!supported.contains(version)) {
         throw new IRVersionNotSupportedException(
-            version,
-            supported,
-            s"This version ($version) of Scala.js IR is not supported. " +
-            s"Supported versions are: ${supported.mkString(", ")}")
+          version,
+          supported,
+          s"This version ($version) of Scala.js IR is not supported. " +
+            s"Supported versions are: ${supported.mkString(", ")}"
+        )
       }
 
       version

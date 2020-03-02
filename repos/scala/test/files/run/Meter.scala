@@ -9,10 +9,10 @@ package a {
       new Meter(this.underlying + other.underlying)
     def /(other: Meter)(implicit dummy: Meter.MeterArg = null): Double =
       this.underlying / other.underlying
-    def /(factor: Double): Meter = new Meter(this.underlying / factor)
-    def <(other: Meter): Boolean = this.underlying < other.underlying
-    def toFoot: Foot = new Foot(this.underlying * 0.3048)
-    override def print = { Console.print(">>>"); super.print; proprint }
+    def /(factor: Double): Meter  = new Meter(this.underlying / factor)
+    def <(other: Meter): Boolean  = this.underlying < other.underlying
+    def toFoot: Foot              = new Foot(this.underlying * 0.3048)
+    override def print            = { Console.print(">>>"); super.print; proprint }
     override def toString: String = underlying.toString + "m"
   }
 
@@ -23,7 +23,7 @@ package a {
     def apply(x: Double): Meter = new Meter(x)
 
     implicit val boxings = new BoxingConversions[Meter, Double] {
-      def box(x: Double) = new Meter(x)
+      def box(x: Double)  = new Meter(x)
       def unbox(m: Meter) = m.underlying
     }
   }
@@ -42,7 +42,7 @@ package a {
 }
 package b {
   trait Printable extends Any {
-    def print: Unit = Console.print(this)
+    def print: Unit        = Console.print(this)
     protected def proprint = Console.print("<<<")
   }
 }
@@ -51,9 +51,9 @@ import _root_.b._
 object Test extends App {
 
   {
-    val x: Meter = new Meter(1)
+    val x: Meter  = new Meter(1)
     val a: Object = x.asInstanceOf[Object]
-    val y: Meter = a.asInstanceOf[Meter]
+    val y: Meter  = a.asInstanceOf[Meter]
 
     val u: Double = 1
     val b: Object = u.asInstanceOf[Object]

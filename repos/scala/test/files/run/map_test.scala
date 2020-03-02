@@ -21,7 +21,7 @@ object Test extends App {
     val map3 = map2.updated(666, "A bigger random number")
     val map4 = map3.updated(4711, "A big random number")
     map1 == myMap + ((42, "The answer"))
-    var i = 0
+    var i   = 0
     var map = map4
     while (i < 43) {
       map = map.updated(i, i.toString())

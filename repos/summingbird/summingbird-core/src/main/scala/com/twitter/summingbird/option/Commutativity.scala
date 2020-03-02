@@ -22,7 +22,7 @@ import java.io.Serializable
 // https://github.com/twitter/algebird/issues/128
 sealed trait Commutativity extends Serializable
 case object NonCommutative extends Commutativity
-case object Commutative extends Commutativity
+case object Commutative    extends Commutativity
 
 /**
   * A readable way to specify commutivity in a way

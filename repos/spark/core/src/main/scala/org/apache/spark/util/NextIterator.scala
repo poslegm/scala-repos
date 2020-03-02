@@ -20,10 +20,10 @@ package org.apache.spark.util
 /** Provides a basic/boilerplate Iterator implementation. */
 private[spark] abstract class NextIterator[U] extends Iterator[U] {
 
-  private var gotNext = false
+  private var gotNext      = false
   private var nextValue: U = _
-  private var closed = false
-  protected var finished = false
+  private var closed       = false
+  protected var finished   = false
 
   /**
     * Method for subclasses to implement to provide the next element.

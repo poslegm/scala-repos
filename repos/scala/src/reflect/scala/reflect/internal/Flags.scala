@@ -84,12 +84,12 @@ class ModifierFlags {
   final val IMPLICIT = 1 << 9
   final val FINAL =
     1 << 5 // May not be overridden. Note that java final implies much more than scala final.
-  final val PRIVATE = 1 << 2
+  final val PRIVATE   = 1 << 2
   final val PROTECTED = 1 << 0
 
-  final val SEALED = 1 << 10
+  final val SEALED   = 1 << 10
   final val OVERRIDE = 1 << 1
-  final val CASE = 1 << 11
+  final val CASE     = 1 << 11
   final val ABSTRACT =
     1 << 3 // abstract class, or used in conjunction with abstract override.
   // Note difference to DEFERRED!
@@ -101,18 +101,18 @@ class ModifierFlags {
     1 << 13 // symbol is a (value or type) parameter to a method
   final val MACRO = 1 << 15 // symbol is a macro definition
 
-  final val COVARIANT = 1 << 16 // symbol is a covariant type variable
-  final val BYNAMEPARAM = 1 << 16 // parameter is by name
+  final val COVARIANT     = 1 << 16 // symbol is a covariant type variable
+  final val BYNAMEPARAM   = 1 << 16 // parameter is by name
   final val CONTRAVARIANT = 1 << 17 // symbol is a contravariant type variable
-  final val ABSOVERRIDE = 1 << 18 // combination of abstract & override
+  final val ABSOVERRIDE   = 1 << 18 // combination of abstract & override
   final val LOCAL =
     1 << 19 // symbol is local to current class (i.e. private[this] or protected[this]
   // pre: PRIVATE or PROTECTED are also set
-  final val JAVA = 1 << 20 // symbol was defined by a Java class
+  final val JAVA   = 1 << 20 // symbol was defined by a Java class
   final val STATIC = 1 << 23 // static field, method or class
   final val CASEACCESSOR =
     1 << 24 // symbol is a case parameter (or its accessor, or a GADT skolem)
-  final val TRAIT = 1 << 25 // symbol is a trait
+  final val TRAIT        = 1 << 25 // symbol is a trait
   final val DEFAULTPARAM = 1 << 25 // the parameter has a default value
   final val PARAMACCESSOR =
     1 << 29 // for field definitions generated for primary constructor
@@ -128,22 +128,22 @@ class ModifierFlags {
     1L << 46 // symbol should be ignored when typechecking; will be marked ACC_SYNTHETIC in bytecode
   // to see which symbols are marked as ARTIFACT, see scaladocs for FlagValues.ARTIFACT
   final val JAVA_DEFAULTMETHOD = 1L << 47 // symbol is a java default method
-  final val JAVA_ENUM = 1L << 48 // symbol is a java enum
-  final val JAVA_ANNOTATION = 1L << 49 // symbol is a java annotation
+  final val JAVA_ENUM          = 1L << 48 // symbol is a java enum
+  final val JAVA_ANNOTATION    = 1L << 49 // symbol is a java annotation
 
   // Overridden.
   def flagToString(flag: Long): String = ""
 
-  final val PrivateLocal = PRIVATE | LOCAL
+  final val PrivateLocal   = PRIVATE | LOCAL
   final val ProtectedLocal = PROTECTED | LOCAL
-  final val AccessFlags = PRIVATE | PROTECTED | LOCAL
+  final val AccessFlags    = PRIVATE | PROTECTED | LOCAL
 }
 object ModifierFlags extends ModifierFlags
 
 /** All flags and associated operations */
 class Flags extends ModifierFlags {
-  final val METHOD = 1 << 6 // a method
-  final val MODULE = 1 << 8 // symbol is module or class implementing a module
+  final val METHOD  = 1 << 6  // a method
+  final val MODULE  = 1 << 8  // symbol is module or class implementing a module
   final val PACKAGE = 1 << 14 // symbol is a java package
 
   final val CAPTURED =
@@ -164,9 +164,9 @@ class Flags extends ModifierFlags {
   final val MODULEVAR =
     1 << 30 // for variables: is the variable caching a module value
 
-  final val IS_ERROR = 1L << 32 // symbol is an error symbol
+  final val IS_ERROR   = 1L << 32 // symbol is an error symbol
   final val OVERLOADED = 1L << 33 // symbol is overloaded
-  final val LIFTED = 1L << 34 // class has been lifted out to package level
+  final val LIFTED     = 1L << 34 // class has been lifted out to package level
   // local value has been lifted out to class level
   // todo: make LIFTED = latePRIVATE?
   final val MIXEDIN = 1L << 35 // term member has been mixed in
@@ -176,11 +176,11 @@ class Flags extends ModifierFlags {
   final val TRANS_FLAG =
     1L << 38 // transient flag guaranteed to be reset after each phase.
 
-  final val LOCKED = 1L << 39 // temporary flag to catch cyclic dependencies
+  final val LOCKED      = 1L << 39 // temporary flag to catch cyclic dependencies
   final val SPECIALIZED = 1L << 40 // symbol is a generated specialized member
-  final val VBRIDGE = 1L << 42 // symbol is a varargs bridge
+  final val VBRIDGE     = 1L << 42 // symbol is a varargs bridge
 
-  final val VARARGS = 1L << 43 // symbol is a Java-style varargs method
+  final val VARARGS      = 1L << 43 // symbol is a Java-style varargs method
   final val TRIEDCOOKING = 1L << 44 // `Cooking` has been tried on this symbol
   // A Java method's type is `cooked` by transforming raw types to existentials
 
@@ -242,12 +242,12 @@ class Flags extends ModifierFlags {
   // notOVERRIDE set in Mixin#preTransform.
 
   final val lateDEFERRED = (DEFERRED: Long) << LateShift
-  final val lateFINAL = (FINAL: Long) << LateShift
-  final val lateMETHOD = (METHOD: Long) << LateShift
-  final val lateMODULE = (MODULE: Long) << LateShift
+  final val lateFINAL    = (FINAL: Long) << LateShift
+  final val lateMETHOD   = (METHOD: Long) << LateShift
+  final val lateMODULE   = (MODULE: Long) << LateShift
 
-  final val notOVERRIDE = (OVERRIDE: Long) << AntiShift
-  final val notPRIVATE = (PRIVATE: Long) << AntiShift
+  final val notOVERRIDE  = (OVERRIDE: Long) << AntiShift
+  final val notPRIVATE   = (PRIVATE: Long) << AntiShift
   final val notPROTECTED = (PROTECTED: Long) << AntiShift
 
   // ------- masks -----------------------------------------------------------------------
@@ -277,7 +277,7 @@ class Flags extends ModifierFlags {
     PRIVATE | PROTECTED | ABSTRACT | FINAL | SEALED | OVERRIDE | CASE | IMPLICIT | ABSOVERRIDE | LAZY | JAVA_DEFAULTMETHOD
 
   /** The two bridge flags */
-  final val BridgeFlags = BRIDGE | VBRIDGE
+  final val BridgeFlags           = BRIDGE | VBRIDGE
   final val BridgeAndPrivateFlags = BridgeFlags | PRIVATE
 
   /** These modifiers appear in TreePrinter output. */
@@ -314,7 +314,7 @@ class Flags extends ModifierFlags {
   final val ValueParameterFlags =
     BYNAMEPARAM | IMPLICIT | DEFAULTPARAM | STABLE | SYNTHETIC
   final val BeanPropertyFlags = DEFERRED | OVERRIDE | STATIC
-  final val VarianceFlags = COVARIANT | CONTRAVARIANT
+  final val VarianceFlags     = COVARIANT | CONTRAVARIANT
 
   /** These appear to be flags which should be transferred from owner symbol
     *  to a newly created constructor symbol.
@@ -331,14 +331,16 @@ class Flags extends ModifierFlags {
 
   // A precaution against future additions to FlagsNotPickled turning out
   // to be overloaded flags thus not-pickling more than intended.
-  assert((OverloadedFlagsMask & FlagsNotPickled) == 0,
-         flagsToString(OverloadedFlagsMask & FlagsNotPickled))
+  assert(
+    (OverloadedFlagsMask & FlagsNotPickled) == 0,
+    flagsToString(OverloadedFlagsMask & FlagsNotPickled)
+  )
 
   /** These flags are pickled */
   final val PickledFlags =
     ((InitialFlags & ~FlagsNotPickled) | notPRIVATE // for value class constructors (SI-6601), and private members referenced
-        // in @inline-marked methods publicized in SuperAccessors (see SI-6608, e6b4204604)
-        )
+  // in @inline-marked methods publicized in SuperAccessors (see SI-6608, e6b4204604)
+  )
 
   /** If we have a top-level class or module
     *  and someone asks us for a flag not in TopLevelPickledFlags,
@@ -352,8 +354,8 @@ class Flags extends ModifierFlags {
 
   def getterFlags(fieldFlags: Long): Long =
     ACCESSOR +
-    (if ((fieldFlags & MUTABLE) != 0) fieldFlags & ~MUTABLE & ~PRESUPER
-     else fieldFlags & ~PRESUPER | STABLE)
+      (if ((fieldFlags & MUTABLE) != 0) fieldFlags & ~MUTABLE & ~PRESUPER
+       else fieldFlags & ~PRESUPER | STABLE)
 
   def setterFlags(fieldFlags: Long): Long =
     getterFlags(fieldFlags) & ~STABLE & ~CASEACCESSOR
@@ -363,38 +365,38 @@ class Flags extends ModifierFlags {
   // The flags from 0x001 to 0x800 are different in the raw flags
   // and in the pickled format.
 
-  private final val IMPLICIT_PKL = (1 << 0)
-  private final val FINAL_PKL = (1 << 1)
-  private final val PRIVATE_PKL = (1 << 2)
+  private final val IMPLICIT_PKL  = (1 << 0)
+  private final val FINAL_PKL     = (1 << 1)
+  private final val PRIVATE_PKL   = (1 << 2)
   private final val PROTECTED_PKL = (1 << 3)
-  private final val SEALED_PKL = (1 << 4)
-  private final val OVERRIDE_PKL = (1 << 5)
-  private final val CASE_PKL = (1 << 6)
-  private final val ABSTRACT_PKL = (1 << 7)
-  private final val DEFERRED_PKL = (1 << 8)
-  private final val METHOD_PKL = (1 << 9)
-  private final val MODULE_PKL = (1 << 10)
+  private final val SEALED_PKL    = (1 << 4)
+  private final val OVERRIDE_PKL  = (1 << 5)
+  private final val CASE_PKL      = (1 << 6)
+  private final val ABSTRACT_PKL  = (1 << 7)
+  private final val DEFERRED_PKL  = (1 << 8)
+  private final val METHOD_PKL    = (1 << 9)
+  private final val MODULE_PKL    = (1 << 10)
   private final val INTERFACE_PKL = (1 << 11)
 
   private final val PKL_MASK = 0x00000FFF
 
   /** Pickler correspondence, ordered roughly by frequency of occurrence */
   private def rawPickledCorrespondence = Array[(Long, Long)](
-      (METHOD, METHOD_PKL),
-      (PRIVATE, PRIVATE_PKL),
-      (FINAL, FINAL_PKL),
-      (PROTECTED, PROTECTED_PKL),
-      (CASE, CASE_PKL),
-      (DEFERRED, DEFERRED_PKL),
-      (MODULE, MODULE_PKL),
-      (OVERRIDE, OVERRIDE_PKL),
-      (INTERFACE, INTERFACE_PKL),
-      (IMPLICIT, IMPLICIT_PKL),
-      (SEALED, SEALED_PKL),
-      (ABSTRACT, ABSTRACT_PKL)
+    (METHOD, METHOD_PKL),
+    (PRIVATE, PRIVATE_PKL),
+    (FINAL, FINAL_PKL),
+    (PROTECTED, PROTECTED_PKL),
+    (CASE, CASE_PKL),
+    (DEFERRED, DEFERRED_PKL),
+    (MODULE, MODULE_PKL),
+    (OVERRIDE, OVERRIDE_PKL),
+    (INTERFACE, INTERFACE_PKL),
+    (IMPLICIT, IMPLICIT_PKL),
+    (SEALED, SEALED_PKL),
+    (ABSTRACT, ABSTRACT_PKL)
   )
 
-  private val mappedRawFlags = rawPickledCorrespondence map (_._1)
+  private val mappedRawFlags     = rawPickledCorrespondence map (_._1)
   private val mappedPickledFlags = rawPickledCorrespondence map (_._2)
 
   private class MapFlags(from: Array[Long], to: Array[Long])
@@ -402,9 +404,9 @@ class Flags extends ModifierFlags {
     val fromSet = (0L /: from)(_ | _)
 
     def apply(flags: Long): Long = {
-      var result = flags & ~fromSet
+      var result     = flags & ~fromSet
       var tobeMapped = flags & fromSet
-      var i = 0
+      var i          = 0
       while (tobeMapped != 0) {
         if ((tobeMapped & from(i)) != 0) {
           result |= to(i)
@@ -416,81 +418,81 @@ class Flags extends ModifierFlags {
     }
   }
 
-  val rawToPickledFlags: Long => Long = new MapFlags(
-      mappedRawFlags, mappedPickledFlags)
-  val pickledToRawFlags: Long => Long = new MapFlags(
-      mappedPickledFlags, mappedRawFlags)
+  val rawToPickledFlags: Long => Long =
+    new MapFlags(mappedRawFlags, mappedPickledFlags)
+  val pickledToRawFlags: Long => Long =
+    new MapFlags(mappedPickledFlags, mappedRawFlags)
 
   // ------ displaying flags --------------------------------------------------------
 
   // Generated by mkFlagToStringMethod() at Thu Feb 02 20:31:52 PST 2012
   @annotation.switch
   override def flagToString(flag: Long): String = flag match {
-    case PROTECTED => "protected" // (1L << 0)
-    case OVERRIDE => "override" // (1L << 1)
-    case PRIVATE => "private" // (1L << 2)
-    case ABSTRACT => "abstract" // (1L << 3)
-    case DEFERRED => "<deferred>" // (1L << 4)
-    case FINAL => "final" // (1L << 5)
-    case METHOD => "<method>" // (1L << 6)
-    case INTERFACE => "<interface>" // (1L << 7)
-    case MODULE => "<module>" // (1L << 8)
-    case IMPLICIT => "implicit" // (1L << 9)
-    case SEALED => "sealed" // (1L << 10)
-    case CASE => "case" // (1L << 11)
-    case MUTABLE => "<mutable>" // (1L << 12)
-    case PARAM => "<param>" // (1L << 13)
-    case PACKAGE => "<package>" // (1L << 14)
-    case MACRO => "<macro>" // (1L << 15)
-    case BYNAMEPARAM => "<bynameparam/captured/covariant>" // (1L << 16)
-    case CONTRAVARIANT => "<contravariant/inconstructor/label>" // (1L << 17)
-    case ABSOVERRIDE => "absoverride" // (1L << 18)
-    case LOCAL => "<local>" // (1L << 19)
-    case JAVA => "<java>" // (1L << 20)
-    case SYNTHETIC => "<synthetic>" // (1L << 21)
-    case STABLE => "<stable>" // (1L << 22)
-    case STATIC => "<static>" // (1L << 23)
-    case CASEACCESSOR => "<caseaccessor>" // (1L << 24)
-    case DEFAULTPARAM => "<defaultparam/trait>" // (1L << 25)
-    case BRIDGE => "<bridge>" // (1L << 26)
-    case ACCESSOR => "<accessor>" // (1L << 27)
-    case SUPERACCESSOR => "<superaccessor>" // (1L << 28)
-    case PARAMACCESSOR => "<paramaccessor>" // (1L << 29)
-    case MODULEVAR => "<modulevar>" // (1L << 30)
-    case LAZY => "lazy" // (1L << 31)
-    case IS_ERROR => "<is_error>" // (1L << 32)
-    case OVERLOADED => "<overloaded>" // (1L << 33)
-    case LIFTED => "<lifted>" // (1L << 34)
-    case EXISTENTIAL => "<existential/mixedin>" // (1L << 35)
-    case EXPANDEDNAME => "<expandedname>" // (1L << 36)
-    case PRESUPER => "<presuper>" // (1L << 37)
-    case TRANS_FLAG => "<trans_flag>" // (1L << 38)
-    case LOCKED => "<locked>" // (1L << 39)
-    case SPECIALIZED => "<specialized>" // (1L << 40)
-    case DEFAULTINIT => "<defaultinit>" // (1L << 41)
-    case VBRIDGE => "<vbridge>" // (1L << 42)
-    case VARARGS => "<varargs>" // (1L << 43)
-    case TRIEDCOOKING => "<triedcooking>" // (1L << 44)
-    case SYNCHRONIZED => "<synchronized>" // (1L << 45)
-    case ARTIFACT => "<artifact>" // (1L << 46)
-    case JAVA_DEFAULTMETHOD => "<defaultmethod>" // (1L << 47)
-    case JAVA_ENUM => "<enum>" // (1L << 48)
-    case JAVA_ANNOTATION => "<annotation>" // (1L << 49)
-    case 0x4000000000000L => "" // (1L << 50)
-    case `lateDEFERRED` => "<latedeferred>" // (1L << 51)
-    case `lateFINAL` => "<latefinal>" // (1L << 52)
-    case `lateMETHOD` => "<latemethod>" // (1L << 53)
-    case 0x80000000000000L => "" // (1L << 54)
-    case `lateMODULE` => "<latemodule>" // (1L << 55)
-    case `notPROTECTED` => "<notprotected>" // (1L << 56)
-    case `notOVERRIDE` => "<notoverride>" // (1L << 57)
-    case `notPRIVATE` => "<notprivate>" // (1L << 58)
-    case 0x800000000000000L => "" // (1L << 59)
+    case PROTECTED           => "protected" // (1L << 0)
+    case OVERRIDE            => "override" // (1L << 1)
+    case PRIVATE             => "private" // (1L << 2)
+    case ABSTRACT            => "abstract" // (1L << 3)
+    case DEFERRED            => "<deferred>" // (1L << 4)
+    case FINAL               => "final" // (1L << 5)
+    case METHOD              => "<method>" // (1L << 6)
+    case INTERFACE           => "<interface>" // (1L << 7)
+    case MODULE              => "<module>" // (1L << 8)
+    case IMPLICIT            => "implicit" // (1L << 9)
+    case SEALED              => "sealed" // (1L << 10)
+    case CASE                => "case" // (1L << 11)
+    case MUTABLE             => "<mutable>" // (1L << 12)
+    case PARAM               => "<param>" // (1L << 13)
+    case PACKAGE             => "<package>" // (1L << 14)
+    case MACRO               => "<macro>" // (1L << 15)
+    case BYNAMEPARAM         => "<bynameparam/captured/covariant>" // (1L << 16)
+    case CONTRAVARIANT       => "<contravariant/inconstructor/label>" // (1L << 17)
+    case ABSOVERRIDE         => "absoverride" // (1L << 18)
+    case LOCAL               => "<local>" // (1L << 19)
+    case JAVA                => "<java>" // (1L << 20)
+    case SYNTHETIC           => "<synthetic>" // (1L << 21)
+    case STABLE              => "<stable>" // (1L << 22)
+    case STATIC              => "<static>" // (1L << 23)
+    case CASEACCESSOR        => "<caseaccessor>" // (1L << 24)
+    case DEFAULTPARAM        => "<defaultparam/trait>" // (1L << 25)
+    case BRIDGE              => "<bridge>" // (1L << 26)
+    case ACCESSOR            => "<accessor>" // (1L << 27)
+    case SUPERACCESSOR       => "<superaccessor>" // (1L << 28)
+    case PARAMACCESSOR       => "<paramaccessor>" // (1L << 29)
+    case MODULEVAR           => "<modulevar>" // (1L << 30)
+    case LAZY                => "lazy" // (1L << 31)
+    case IS_ERROR            => "<is_error>" // (1L << 32)
+    case OVERLOADED          => "<overloaded>" // (1L << 33)
+    case LIFTED              => "<lifted>" // (1L << 34)
+    case EXISTENTIAL         => "<existential/mixedin>" // (1L << 35)
+    case EXPANDEDNAME        => "<expandedname>" // (1L << 36)
+    case PRESUPER            => "<presuper>" // (1L << 37)
+    case TRANS_FLAG          => "<trans_flag>" // (1L << 38)
+    case LOCKED              => "<locked>" // (1L << 39)
+    case SPECIALIZED         => "<specialized>" // (1L << 40)
+    case DEFAULTINIT         => "<defaultinit>" // (1L << 41)
+    case VBRIDGE             => "<vbridge>" // (1L << 42)
+    case VARARGS             => "<varargs>" // (1L << 43)
+    case TRIEDCOOKING        => "<triedcooking>" // (1L << 44)
+    case SYNCHRONIZED        => "<synchronized>" // (1L << 45)
+    case ARTIFACT            => "<artifact>" // (1L << 46)
+    case JAVA_DEFAULTMETHOD  => "<defaultmethod>" // (1L << 47)
+    case JAVA_ENUM           => "<enum>" // (1L << 48)
+    case JAVA_ANNOTATION     => "<annotation>" // (1L << 49)
+    case 0x4000000000000L    => "" // (1L << 50)
+    case `lateDEFERRED`      => "<latedeferred>" // (1L << 51)
+    case `lateFINAL`         => "<latefinal>" // (1L << 52)
+    case `lateMETHOD`        => "<latemethod>" // (1L << 53)
+    case 0x80000000000000L   => "" // (1L << 54)
+    case `lateMODULE`        => "<latemodule>" // (1L << 55)
+    case `notPROTECTED`      => "<notprotected>" // (1L << 56)
+    case `notOVERRIDE`       => "<notoverride>" // (1L << 57)
+    case `notPRIVATE`        => "<notprivate>" // (1L << 58)
+    case 0x800000000000000L  => "" // (1L << 59)
     case 0x1000000000000000L => "" // (1L << 60)
     case 0x2000000000000000L => "" // (1L << 61)
     case 0x4000000000000000L => "" // (1L << 62)
     case 0x8000000000000000L => "" // (1L << 63)
-    case _ => ""
+    case _                   => ""
   }
 
   private def accessString(flags: Long, privateWithin: String) =
@@ -505,8 +507,10 @@ class Flags extends ModifierFlags {
 
   @deprecated("Use flagString on the flag-carrying member", "2.10.0")
   private[scala] def flagsToString(
-      flags: Long, privateWithin: String): String = {
-    val access = accessString(flags, privateWithin)
+      flags: Long,
+      privateWithin: String
+  ): String = {
+    val access    = accessString(flags, privateWithin)
     val nonAccess = flagsToString(flags & ~AccessFlags)
 
     List(nonAccess, access) filterNot (_ == "") mkString " "
@@ -518,7 +522,7 @@ class Flags extends ModifierFlags {
     if (flags == 0L) ""
     else {
       var sb: StringBuilder = null
-      var i = 0
+      var i                 = 0
       while (i <= MaxBitPosition) {
         val mask = rawFlagPickledOrder(i)
         if ((flags & mask) != 0L) {
@@ -539,7 +543,7 @@ class Flags extends ModifierFlags {
   final val MaxBitPosition = 62
 
   final val pickledListOrder: List[Long] = {
-    val all = 0 to MaxBitPosition map (1L << _)
+    val all   = 0 to MaxBitPosition map (1L << _)
     val front = mappedRawFlags map (_.toLong)
 
     front.toList ++ (all filterNot (front contains _))

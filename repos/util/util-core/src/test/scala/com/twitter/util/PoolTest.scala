@@ -14,7 +14,7 @@ class PoolTest extends WordSpec {
     "with a simple queue of items" should {
       "it reseves items in FIFO order" in {
         val queue = new mutable.Queue[Int] ++ List(1, 2, 3)
-        val pool = new SimplePool(queue)
+        val pool  = new SimplePool(queue)
         assert(Await.result(pool.reserve()) == 1)
         assert(Await.result(pool.reserve()) == 2)
         pool.release(2)
@@ -30,7 +30,7 @@ class PoolTest extends WordSpec {
       class PoolSpecHelper {
         var count = 0
         val pool = new FactoryPool[Int](4) {
-          def makeItem() = { count += 1; Future(count) }
+          def makeItem()        = { count += 1; Future(count) }
           def isHealthy(i: Int) = i % 2 == 0
         }
       }

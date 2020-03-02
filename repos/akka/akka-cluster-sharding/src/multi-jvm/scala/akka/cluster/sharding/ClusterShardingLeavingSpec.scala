@@ -57,9 +57,9 @@ object ClusterShardingLeavingSpec {
 
 abstract class ClusterShardingLeavingSpecConfig(val mode: String)
     extends MultiNodeConfig {
-  val first = role("first")
+  val first  = role("first")
   val second = role("second")
-  val third = role("third")
+  val third  = role("third")
   val fourth = role("fourth")
 
   commonConfig(ConfigFactory.parseString(s"""
@@ -88,7 +88,8 @@ object DDataClusterShardingLeavingSpecConfig
 
 class PersistentClusterShardingLeavingSpec
     extends ClusterShardingLeavingSpec(
-        PersistentClusterShardingLeavingSpecConfig)
+      PersistentClusterShardingLeavingSpecConfig
+    )
 class DDataClusterShardingLeavingSpec
     extends ClusterShardingLeavingSpec(DDataClusterShardingLeavingSpecConfig)
 
@@ -111,30 +112,35 @@ class DDataClusterShardingLeavingMultiJvmNode4
     extends DDataClusterShardingLeavingSpec
 
 abstract class ClusterShardingLeavingSpec(
-    config: ClusterShardingLeavingSpecConfig)
-    extends MultiNodeSpec(config) with STMultiNodeSpec with ImplicitSender {
+    config: ClusterShardingLeavingSpecConfig
+) extends MultiNodeSpec(config)
+    with STMultiNodeSpec
+    with ImplicitSender {
   import ClusterShardingLeavingSpec._
   import config._
 
   override def initialParticipants = roles.size
 
   val storageLocations =
-    List("akka.persistence.journal.leveldb.dir",
-         "akka.persistence.journal.leveldb-shared.store.dir",
-         "akka.persistence.snapshot-store.local.dir").map(
-        s ⇒ new File(system.settings.config.getString(s)))
+    List(
+      "akka.persistence.journal.leveldb.dir",
+      "akka.persistence.journal.leveldb-shared.store.dir",
+      "akka.persistence.snapshot-store.local.dir"
+    ).map(s ⇒ new File(system.settings.config.getString(s)))
 
   override protected def atStartup() {
     runOn(first) {
-      storageLocations.foreach(
-          dir ⇒ if (dir.exists) FileUtils.deleteDirectory(dir))
+      storageLocations.foreach(dir ⇒
+        if (dir.exists) FileUtils.deleteDirectory(dir)
+      )
     }
   }
 
   override protected def afterTermination() {
     runOn(first) {
-      storageLocations.foreach(
-          dir ⇒ if (dir.exists) FileUtils.deleteDirectory(dir))
+      storageLocations.foreach(dir ⇒
+        if (dir.exists) FileUtils.deleteDirectory(dir)
+      )
     }
   }
 
@@ -155,11 +161,13 @@ abstract class ClusterShardingLeavingSpec(
   }
 
   def startSharding(): Unit = {
-    ClusterSharding(system).start(typeName = "Entity",
-                                  entityProps = Props[Entity],
-                                  settings = ClusterShardingSettings(system),
-                                  extractEntityId = extractEntityId,
-                                  extractShardId = extractShardId)
+    ClusterSharding(system).start(
+      typeName = "Entity",
+      entityProps = Props[Entity],
+      settings = ClusterShardingSettings(system),
+      extractEntityId = extractEntityId,
+      extractShardId = extractShardId
+    )
   }
 
   lazy val region = ClusterSharding(system).shardRegion("Entity")
@@ -218,7 +226,7 @@ abstract class ClusterShardingLeavingSpec(
       runOn(second, third, fourth) {
         system.actorSelection(node(first) / "user" / "shardLocations") ! GetLocations
         val Locations(locations) = expectMsgType[Locations]
-        val firstAddress = node(first).address
+        val firstAddress         = node(first).address
         awaitAssert {
           val probe = TestProbe()
           locations.foreach {

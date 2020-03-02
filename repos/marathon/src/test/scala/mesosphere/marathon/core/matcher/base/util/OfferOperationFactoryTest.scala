@@ -1,20 +1,31 @@
 package mesosphere.marathon.core.matcher.base.util
 
 import mesosphere.marathon.core.task.Task
-import mesosphere.marathon.state.{PathId, PersistentVolume, PersistentVolumeInfo}
+import mesosphere.marathon.state.{
+  PathId,
+  PersistentVolume,
+  PersistentVolumeInfo
+}
 import mesosphere.marathon.test.Mockito
-import mesosphere.marathon.{MarathonSpec, MarathonTestHelper, WrongConfigurationException}
+import mesosphere.marathon.{
+  MarathonSpec,
+  MarathonTestHelper,
+  WrongConfigurationException
+}
 import org.apache.mesos.{Protos => Mesos}
 import org.scalatest.{GivenWhenThen, Matchers}
 
 class OfferOperationFactoryTest
-    extends MarathonSpec with GivenWhenThen with Mockito with Matchers {
+    extends MarathonSpec
+    with GivenWhenThen
+    with Mockito
+    with Matchers {
 
   test("Launch operation succeeds even if principal/role are not set") {
     val f = new Fixture
 
     Given("a factory without principal or role")
-    val factory = new OfferOperationFactory(None, None)
+    val factory  = new OfferOperationFactory(None, None)
     val taskInfo = MarathonTestHelper.makeOneCPUTask("123").build()
 
     When("We create a launch operation")
@@ -33,9 +44,11 @@ class OfferOperationFactoryTest
 
     When("We create a reserve operation")
     val error = intercept[WrongConfigurationException] {
-      factory.reserve(f.frameworkId,
-                      Task.Id.forApp(PathId("/test")),
-                      Seq(Mesos.Resource.getDefaultInstance))
+      factory.reserve(
+        f.frameworkId,
+        Task.Id.forApp(PathId("/test")),
+        Seq(Mesos.Resource.getDefaultInstance)
+      )
     }
 
     Then("A meaningful exception is thrown")
@@ -50,9 +63,11 @@ class OfferOperationFactoryTest
 
     When("We create a reserve operation")
     val error = intercept[WrongConfigurationException] {
-      factory.reserve(f.frameworkId,
-                      Task.Id.forApp(PathId("/test")),
-                      Seq(Mesos.Resource.getDefaultInstance))
+      factory.reserve(
+        f.frameworkId,
+        Task.Id.forApp(PathId("/test")),
+        Seq(Mesos.Resource.getDefaultInstance)
+      )
     }
 
     Then("A meaningful exception is thrown")
@@ -66,11 +81,14 @@ class OfferOperationFactoryTest
 
     Given("A simple task")
     val factory = new OfferOperationFactory(Some("principal"), Some("role"))
-    val task = MarathonTestHelper.makeOneCPUTask("123")
+    val task    = MarathonTestHelper.makeOneCPUTask("123")
 
     When("We create a reserve operation")
     val operation = factory.reserve(
-        f.frameworkId, Task.Id(task.getTaskId), task.getResourcesList.asScala)
+      f.frameworkId,
+      Task.Id(task.getTaskId),
+      task.getResourcesList.asScala
+    )
 
     Then("The operation is as expected")
     operation.getType shouldEqual Mesos.Offer.Operation.Type.RESERVE
@@ -92,7 +110,7 @@ class OfferOperationFactoryTest
 
     Given("a factory without principal")
     val factory = new OfferOperationFactory(Some("principal"), Some("role"))
-    val task = MarathonTestHelper.makeOneCPUTask("123")
+    val task    = MarathonTestHelper.makeOneCPUTask("123")
     val volumes = Seq(f.localVolume("mount"))
 
     When("We create a reserve operation")
@@ -105,7 +123,7 @@ class OfferOperationFactoryTest
     operation.getCreate.getVolumesCount shouldEqual volumes.size
 
     And("The volumes are correct")
-    val volume = operation.getCreate.getVolumes(0)
+    val volume         = operation.getCreate.getVolumes(0)
     val originalVolume = volumes.head
     volume.getName shouldEqual "disk"
     volume.getRole shouldEqual "role"
@@ -122,15 +140,17 @@ class OfferOperationFactoryTest
 
   class Fixture {
     val frameworkId = MarathonTestHelper.frameworkId
-    val principal = Some("principal")
-    val role = Some("role")
-    val factory = new OfferOperationFactory(principal, role)
+    val principal   = Some("principal")
+    val role        = Some("role")
+    val factory     = new OfferOperationFactory(principal, role)
 
     def localVolume(containerPath: String): Task.LocalVolume = {
       val appId = PathId("/my-app")
-      val pv = PersistentVolume(containerPath = containerPath,
-                                persistent = PersistentVolumeInfo(size = 10),
-                                mode = Mesos.Volume.Mode.RW)
+      val pv = PersistentVolume(
+        containerPath = containerPath,
+        persistent = PersistentVolumeInfo(size = 10),
+        mode = Mesos.Volume.Mode.RW
+      )
       Task.LocalVolume(Task.LocalVolumeId(appId, pv), pv)
     }
   }

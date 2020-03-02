@@ -27,14 +27,16 @@ import org.scalatest.mock.MockitoSugar
 import org.apache.spark.{SparkConf, SparkContext, SparkFunSuite}
 
 class MesosSchedulerUtilsSuite
-    extends SparkFunSuite with Matchers with MockitoSugar {
+    extends SparkFunSuite
+    with Matchers
+    with MockitoSugar {
 
   // scalastyle:off structural.type
   // this is the documented way of generating fixtures in scalatest
   def fixture: Object { val sc: SparkContext; val sparkConf: SparkConf } =
     new {
       val sparkConf = new SparkConf
-      val sc = mock[SparkContext]
+      val sc        = mock[SparkContext]
       when(sc.conf).thenReturn(sparkConf)
     }
   val utils = new MesosSchedulerUtils {}
@@ -61,11 +63,12 @@ class MesosSchedulerUtilsSuite
 
   test("parse a non-empty constraint string correctly") {
     val expectedMap = Map(
-        "tachyon" -> Set("true"),
-        "zone" -> Set("us-east-1a", "us-east-1b")
+      "tachyon" -> Set("true"),
+      "zone"    -> Set("us-east-1a", "us-east-1b")
     )
     utils.parseConstraintString("tachyon:true;zone:us-east-1a,us-east-1b") should be(
-        expectedMap)
+      expectedMap
+    )
   }
 
   test("parse an empty constraint string correctly") {
@@ -78,7 +81,7 @@ class MesosSchedulerUtilsSuite
   }
 
   test("empty values for attributes' constraints matches all values") {
-    val constraintsStr = "tachyon:"
+    val constraintsStr    = "tachyon:"
     val parsedConstraints = utils.parseConstraintString(constraintsStr)
 
     parsedConstraints shouldBe Map("tachyon" -> Set())
@@ -101,13 +104,15 @@ class MesosSchedulerUtilsSuite
 
   test("subset match is performed for set attributes") {
     val supersetConstraint =
-      Map("tachyon" -> Value.Text.newBuilder().setValue("true").build(),
-          "zone" -> Value.Set
-            .newBuilder()
-            .addItem("us-east-1a")
-            .addItem("us-east-1b")
-            .addItem("us-east-1c")
-            .build())
+      Map(
+        "tachyon" -> Value.Text.newBuilder().setValue("true").build(),
+        "zone" -> Value.Set
+          .newBuilder()
+          .addItem("us-east-1a")
+          .addItem("us-east-1b")
+          .addItem("us-east-1c")
+          .build()
+      )
 
     val zoneConstraintStr = "tachyon:;zone:us-east-1a,us-east-1c"
     val parsedConstraints = utils.parseConstraintString(zoneConstraintStr)
@@ -130,14 +135,15 @@ class MesosSchedulerUtilsSuite
 
   test("contains match is performed for range attributes") {
     val offerAttribs = Map(
-        "ports" -> Value.Range
-          .newBuilder()
-          .setBegin(7000)
-          .setEnd(8000)
-          .build())
-    val ltConstraint = utils.parseConstraintString("ports:6000")
-    val eqConstraint = utils.parseConstraintString("ports:7500")
-    val gtConstraint = utils.parseConstraintString("ports:8002")
+      "ports" -> Value.Range
+        .newBuilder()
+        .setBegin(7000)
+        .setEnd(8000)
+        .build()
+    )
+    val ltConstraint    = utils.parseConstraintString("ports:6000")
+    val eqConstraint    = utils.parseConstraintString("ports:7500")
+    val gtConstraint    = utils.parseConstraintString("ports:8002")
     val multiConstraint = utils.parseConstraintString("ports:5000,7500,8300")
 
     utils.matchesAttributeRequirements(ltConstraint, offerAttribs) shouldBe false
@@ -150,7 +156,7 @@ class MesosSchedulerUtilsSuite
     val offerAttribs =
       Map("tachyon" -> Value.Text.newBuilder().setValue("true").build())
 
-    val trueConstraint = utils.parseConstraintString("tachyon:true")
+    val trueConstraint  = utils.parseConstraintString("tachyon:true")
     val falseConstraint = utils.parseConstraintString("tachyon:false")
 
     utils.matchesAttributeRequirements(trueConstraint, offerAttribs) shouldBe true

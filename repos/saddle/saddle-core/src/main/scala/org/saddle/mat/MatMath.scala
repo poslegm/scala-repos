@@ -29,8 +29,10 @@ object MatMath {
     * @param m1 Left hand matrix operand
     * @param m2 Right hand matrix operand
     */
-  def mult[A, B](m1: Mat[A], m2: Mat[B])(
-      implicit evA: NUM[A], evB: NUM[B]): Mat[Double] = {
+  def mult[A, B](
+      m1: Mat[A],
+      m2: Mat[B]
+  )(implicit evA: NUM[A], evB: NUM[B]): Mat[Double] = {
     import org.ejml.data.DenseMatrix64F
     import org.ejml.ops.CommonOps
 
@@ -59,9 +61,10 @@ object MatMath {
 
     if (numRows < 2 || numCols < 2)
       throw new IllegalArgumentException(
-          "Matrix dimension must be at least [2 x 2]")
+        "Matrix dimension must be at least [2 x 2]"
+      )
 
-    val input = mat.transpose.toArray.clone()
+    val input  = mat.transpose.toArray.clone()
     val output = Array.ofDim[Double](numCols * numCols)
 
     // demean columns (in-place)
@@ -108,10 +111,10 @@ object MatMath {
     while (i < rows) {
       var j = 0
       // calculate the (na-friendly) mean
-      var mean = 0.0
+      var mean  = 0.0
       var count = 0
       while (j < cols) {
-        val idx = i * cols + j
+        val idx  = i * cols + j
         val mval = m(idx)
         if (!mval.isNaN) {
           mean += mval
@@ -137,18 +140,20 @@ object MatMath {
   // ixB    : starting index of vector b
   // n      : length of vector
   // corr   : do correlation computation
-  private def covariance(values: Array[Double],
-                         ixA: Int,
-                         ixB: Int,
-                         n: Int,
-                         corr: Boolean = false): Double = {
+  private def covariance(
+      values: Array[Double],
+      ixA: Int,
+      ixB: Int,
+      n: Int,
+      corr: Boolean = false
+  ): Double = {
     var va = 0.0
     var vb = 0.0
 
     var aa = 0.0 // sum of squares
     var bb = 0.0
     var ab = 0.0 // sum of products
-    var i = 0
+    var i  = 0
 
     var count = n
     while (i < n) {
@@ -174,20 +179,24 @@ object MatMath {
     * effects (destructive to out matrix)
     */
   private[saddle] def blockTranspose[@spec(Int, Long, Double) S](
-      inR: Int, inC: Int, in: Array[S], out: Array[S]) {
+      inR: Int,
+      inC: Int,
+      in: Array[S],
+      out: Array[S]
+  ) {
     val XOVER = 60
 
-    var r = 0
+    var r   = 0
     val rsz = inR
     val csz = inC
     while (r < rsz) {
       val blockHeight = if (XOVER < rsz - r) XOVER else rsz - r
-      var inRow = r * csz // first element of current row
-      var outCol = r // first element of current col
-      var c = 0
+      var inRow       = r * csz // first element of current row
+      var outCol      = r // first element of current col
+      var c           = 0
       while (c < csz) {
         val blockWidth = if (XOVER < csz - c) XOVER else csz - c
-        val rowEnd = inRow + blockWidth
+        val rowEnd     = inRow + blockWidth
         while (inRow < rowEnd) {
           var rowSrc = inRow
           var colDst = outCol
@@ -208,12 +217,14 @@ object MatMath {
 
   /** Efficient square matrix transpose (destructive)
     */
-  private[saddle] def squareTranspose[@spec(Int, Long, Double) S : ST](
-      sz: Int, out: Array[S]) {
+  private[saddle] def squareTranspose[@spec(Int, Long, Double) S: ST](
+      sz: Int,
+      out: Array[S]
+  ) {
     val csz = sz
     val rsz = sz
 
-    var i = 0
+    var i    = 0
     var idx1 = 1
     var cols = csz
     while (i < rsz) {

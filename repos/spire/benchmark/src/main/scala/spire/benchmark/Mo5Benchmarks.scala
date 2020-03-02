@@ -15,7 +15,7 @@ object Mo5Benchmarks extends MyRunner(classOf[Mo5Benchmarks])
 
 class Mo5Benchmarks extends MyBenchmark {
   val mo5_hb = new HighBranchingMedianOf5 {}
-  val mo5_m = new MutatingMedianOf5 {}
+  val mo5_m  = new MutatingMedianOf5      {}
 
   var as: Array[Int] = null
 

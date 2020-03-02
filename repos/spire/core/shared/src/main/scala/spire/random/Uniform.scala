@@ -53,12 +53,11 @@ object Uniform {
       val width = range.bitLength
       if (width < 64) {
         val range0 = range.toLong
-        new DistFromGen[BigInt]({ gen =>
-          min + BigInt(gen.nextLong(0, range0))
-        })
+        new DistFromGen[BigInt]({ gen => min + BigInt(gen.nextLong(0, range0)) }
+        )
       } else {
         val mask0 = (1 << (width % 8)) - 1
-        val mask = if (mask0 == 0) 255 else mask0
+        val mask  = if (mask0 == 0) 255 else mask0
         new DistFromGen[BigInt]({ gen =>
           val bytes = new Array[Byte]((width + 7) / 8)
 
@@ -82,10 +81,11 @@ object Uniform {
           spire.math.max(min.mc.getPrecision, max.mc.getPrecision)
         if (precision == 0) {
           throw new IllegalArgumentException(
-              "Both min and max provided to UniformBigDecimal have unlimited precision. Cannot produce uniform distributions with unlimited precision.")
+            "Both min and max provided to UniformBigDecimal have unlimited precision. Cannot produce uniform distributions with unlimited precision."
+          )
         }
         val range = max - min
-        val dist = UniformBigInt(0, BigInt(10) pow precision)
+        val dist  = UniformBigInt(0, BigInt(10) pow precision)
         new DistFromGen[BigDecimal]({ gen =>
           min + range * BigDecimal(dist(gen), precision)
         })

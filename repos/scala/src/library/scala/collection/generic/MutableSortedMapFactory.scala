@@ -20,6 +20,8 @@ import scala.language.higherKinds
   * @define sortedMapCanBuildFromInfo
   *         The standard `CanBuildFrom` instance for sorted maps
   */
-abstract class MutableSortedMapFactory[
-    CC[A, B] <: mutable.SortedMap[A, B] with SortedMapLike[A, B, CC[A, B]]]
-    extends SortedMapFactory[CC]
+abstract class MutableSortedMapFactory[CC[A, B] <: mutable.SortedMap[A, B] with SortedMapLike[
+  A,
+  B,
+  CC[A, B]
+]] extends SortedMapFactory[CC]

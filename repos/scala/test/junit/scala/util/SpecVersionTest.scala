@@ -14,7 +14,7 @@ class SpecVersionTest {
     override def javaSpecVersion = "1.7"
 
     override protected def pickJarBasedOn: Class[_] = ???
-    override protected def propCategory: String = "test"
+    override protected def propCategory: String     = "test"
 
     // override because of vals like releaseVersion
     override lazy val scalaProps = new java.util.Properties

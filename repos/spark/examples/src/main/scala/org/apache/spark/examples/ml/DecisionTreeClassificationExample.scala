@@ -30,8 +30,8 @@ import org.apache.spark.sql.SQLContext
 
 object DecisionTreeClassificationExample {
   def main(args: Array[String]): Unit = {
-    val conf = new SparkConf().setAppName("DecisionTreeClassificationExample")
-    val sc = new SparkContext(conf)
+    val conf       = new SparkConf().setAppName("DecisionTreeClassificationExample")
+    val sc         = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
     // $example on$
     // Load the data stored in LIBSVM format as a DataFrame.
@@ -49,7 +49,9 @@ object DecisionTreeClassificationExample {
     val featureIndexer = new VectorIndexer()
       .setInputCol("features")
       .setOutputCol("indexedFeatures")
-      .setMaxCategories(4) // features with > 4 distinct values are treated as continuous
+      .setMaxCategories(
+        4
+      ) // features with > 4 distinct values are treated as continuous
       .fit(data)
 
     // Split the data into training and test sets (30% held out for testing)

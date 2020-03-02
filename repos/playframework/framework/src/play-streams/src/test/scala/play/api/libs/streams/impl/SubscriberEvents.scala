@@ -17,9 +17,9 @@ trait SubscriberEvents { self: EventRecorder =>
   import SubscriberEvents._
 
   object subscriber extends Subscriber[Int] {
-    def onError(t: Throwable) = record(OnError(t))
+    def onError(t: Throwable)        = record(OnError(t))
     def onSubscribe(s: Subscription) = record(OnSubscribe(s))
-    def onComplete() = record(OnComplete)
-    def onNext(t: Int) = record(OnNext(t))
+    def onComplete()                 = record(OnComplete)
+    def onNext(t: Int)               = record(OnNext(t))
   }
 }

@@ -14,13 +14,14 @@ import scala.concurrent.Future
 /**
   * Provides a thin wrapper around an OfferMatcher implemented as an actors.
   */
-class ActorOfferMatcher(clock: Clock,
-                        actorRef: ActorRef,
-                        override val precedenceFor: Option[PathId])
-    extends OfferMatcher {
+class ActorOfferMatcher(
+    clock: Clock,
+    actorRef: ActorRef,
+    override val precedenceFor: Option[PathId]
+) extends OfferMatcher {
   def matchOffer(deadline: Timestamp, offer: Offer): Future[MatchedTaskOps] = {
     implicit val timeout: Timeout = clock.now().until(deadline)
-    val answerFuture = actorRef ? ActorOfferMatcher.MatchOffer(deadline, offer)
+    val answerFuture              = actorRef ? ActorOfferMatcher.MatchOffer(deadline, offer)
     answerFuture.mapTo[MatchedTaskOps]
   }
 

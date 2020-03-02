@@ -10,7 +10,11 @@ import com.twitter.util.{Duration, Time, Timer}
   * the rate estimated by `estimator`.
   */
 class GcPredictor(
-    pool: Pool, period: Duration, timer: Timer, estimator: Estimator[Double]) {
+    pool: Pool,
+    period: Duration,
+    timer: Timer,
+    estimator: Estimator[Double]
+) {
   private[this] def loop() {
     for (bps <- pool.estimateAllocRate(period, timer)) {
       synchronized { estimator.measure(bps.toDouble) }
@@ -24,7 +28,7 @@ class GcPredictor(
     if (e == 0) Time.Top
     else {
       val PoolState(_, capacity, used) = pool.state()
-      val r = (capacity - used).inBytes
+      val r                            = (capacity - used).inBytes
       Time.now + ((1000 * r) / e).milliseconds
     }
   }

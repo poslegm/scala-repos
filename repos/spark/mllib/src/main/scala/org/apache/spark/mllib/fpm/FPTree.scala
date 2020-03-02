@@ -40,12 +40,14 @@ private[fpm] class FPTree[T] extends Serializable {
     t.foreach { item =>
       val summary = summaries.getOrElseUpdate(item, new Summary)
       summary.count += count
-      val child = curr.children.getOrElseUpdate(item, {
-        val newNode = new Node(curr)
-        newNode.item = item
-        summary.nodes += newNode
-        newNode
-      })
+      val child = curr.children.getOrElseUpdate(
+        item, {
+          val newNode = new Node(curr)
+          newNode.item = item
+          summary.nodes += newNode
+          newNode
+        }
+      )
       child.count += count
       curr = child
     }
@@ -67,7 +69,7 @@ private[fpm] class FPTree[T] extends Serializable {
     if (summaries.contains(suffix)) {
       val summary = summaries(suffix)
       summary.nodes.foreach { node =>
-        var t = List.empty[T]
+        var t    = List.empty[T]
         var curr = node.parent
         while (!curr.isRoot) {
           t = curr.item :: t
@@ -102,9 +104,10 @@ private[fpm] class FPTree[T] extends Serializable {
   }
 
   /** Extracts all patterns with valid suffix and minimum count. */
-  def extract(minCount: Long,
-              validateSuffix: T => Boolean = _ =>
-                  true): Iterator[(List[T], Long)] = {
+  def extract(
+      minCount: Long,
+      validateSuffix: T => Boolean = _ => true
+  ): Iterator[(List[T], Long)] = {
     summaries.iterator.flatMap {
       case (item, summary) =>
         if (validateSuffix(item) && summary.count >= minCount) {
@@ -125,8 +128,8 @@ private[fpm] object FPTree {
 
   /** Representing a node in an FP-Tree. */
   class Node[T](val parent: Node[T]) extends Serializable {
-    var item: T = _
-    var count: Long = 0L
+    var item: T                           = _
+    var count: Long                       = 0L
     val children: mutable.Map[T, Node[T]] = mutable.Map.empty
 
     def isRoot: Boolean = parent == null
@@ -134,7 +137,7 @@ private[fpm] object FPTree {
 
   /** Summary of a item in an FP-Tree. */
   private class Summary[T] extends Serializable {
-    var count: Long = 0L
+    var count: Long                = 0L
     val nodes: ListBuffer[Node[T]] = ListBuffer.empty
   }
 }

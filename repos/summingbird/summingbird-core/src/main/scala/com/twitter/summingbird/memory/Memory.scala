@@ -23,8 +23,9 @@ import com.twitter.summingbird.planner.DagOptimizer
 import collection.mutable.{Map => MutableMap}
 
 object Memory {
-  implicit def toSource[T](traversable: TraversableOnce[T])(
-      implicit mf: Manifest[T]): Producer[Memory, T] =
+  implicit def toSource[T](
+      traversable: TraversableOnce[T]
+  )(implicit mf: Manifest[T]): Producer[Memory, T] =
     Producer.source[Memory, T](traversable)
 }
 
@@ -34,11 +35,11 @@ trait MemoryService[-K, +V] {
 
 class Memory(implicit jobID: JobId = JobId("default.memory.jobId"))
     extends Platform[Memory] {
-  type Source[T] = TraversableOnce[T]
-  type Store[K, V] = MutableMap[K, V]
-  type Sink[-T] = (T => Unit)
+  type Source[T]       = TraversableOnce[T]
+  type Store[K, V]     = MutableMap[K, V]
+  type Sink[-T]        = (T => Unit)
   type Service[-K, +V] = MemoryService[K, V]
-  type Plan[T] = Stream[T]
+  type Plan[T]         = Stream[T]
 
   private type Prod[T] = Producer[Memory, T]
   private type JamfMap = HMap[Prod, Stream]
@@ -49,14 +50,16 @@ class Memory(implicit jobID: JobId = JobId("default.memory.jobId"))
     }
 
   private def toStream[T](
-      outerProducer: Prod[T], jamfs: JamfMap): (Stream[T], JamfMap) =
+      outerProducer: Prod[T],
+      jamfs: JamfMap
+  ): (Stream[T], JamfMap) =
     jamfs.get(outerProducer) match {
       case Some(s) => (s, jamfs)
       case None =>
         val (s, m) = outerProducer match {
-          case NamedProducer(producer, _) => toStream(producer, jamfs)
+          case NamedProducer(producer, _)      => toStream(producer, jamfs)
           case IdentityKeyedProducer(producer) => toStream(producer, jamfs)
-          case Source(source) => (source.toStream, jamfs)
+          case Source(source)                  => (source.toStream, jamfs)
           case OptionMappedProducer(producer, fn) =>
             val (s, m) = toStream(producer, jamfs)
             (s.flatMap(fn(_)), m)
@@ -66,27 +69,33 @@ class Memory(implicit jobID: JobId = JobId("default.memory.jobId"))
             (s.flatMap(fn(_)), m)
 
           case MergedProducer(l, r) =>
-            val (leftS, leftM) = toStream(l, jamfs)
+            val (leftS, leftM)   = toStream(l, jamfs)
             val (rightS, rightM) = toStream(r, leftM)
             (leftS ++ rightS, rightM)
 
           case KeyFlatMappedProducer(producer, fn) =>
             val (s, m) = toStream(producer, jamfs)
-            (s.flatMap {
-              case (k, v) =>
-                fn(k).map((_, v))
-            }, m)
+            (
+              s.flatMap {
+                case (k, v) =>
+                  fn(k).map((_, v))
+              },
+              m
+            )
 
           case ValueFlatMappedProducer(producer, fn) =>
             val (s, m) = toStream(producer, jamfs)
-            (s.flatMap {
-              case (k, v) =>
-                fn(v).map((k, _))
-            }, m)
+            (
+              s.flatMap {
+                case (k, v) =>
+                  fn(v).map((k, _))
+              },
+              m
+            )
 
           case AlsoProducer(l, r) =>
             //Plan the first one, but ignore it
-            val (left, leftM) = toStream(l, jamfs)
+            val (left, leftM)   = toStream(l, jamfs)
             val (right, rightM) = toStream(r, leftM)
             // We need to force all of left to make sure any
             // side effects in write happen
@@ -95,9 +104,7 @@ class Memory(implicit jobID: JobId = JobId("default.memory.jobId"))
 
           case WrittenProducer(producer, fn) =>
             val (s, m) = toStream(producer, jamfs)
-            (s.map { i =>
-              fn(i); i
-            }, m)
+            (s.map { i => fn(i); i }, m)
 
           case LeftJoinedProducer(producer, service) =>
             val (s, m) = toStream(producer, jamfs)
@@ -111,7 +118,8 @@ class Memory(implicit jobID: JobId = JobId("default.memory.jobId"))
             val summed = s.map {
               case (k, deltaV) =>
                 val oldV = store.get(k)
-                val newV = oldV.map { semigroup.plus(_, deltaV) }
+                val newV = oldV
+                  .map { semigroup.plus(_, deltaV) }
                   .getOrElse(deltaV)
                 store.update(k, newV)
                 (k, (oldV, deltaV))

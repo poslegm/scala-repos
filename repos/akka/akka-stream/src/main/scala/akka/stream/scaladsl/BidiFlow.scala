@@ -11,8 +11,8 @@ import akka.stream.impl.Timers
 import scala.concurrent.duration.FiniteDuration
 
 final class BidiFlow[-I1, +O1, -I2, +O2, +Mat](
-    private[stream] override val module: Module)
-    extends Graph[BidiShape[I1, O1, I2, O2], Mat] {
+    private[stream] override val module: Module
+) extends Graph[BidiShape[I1, O1, I2, O2], Mat] {
   override def shape = module.shape.asInstanceOf[BidiShape[I1, O1, I2, O2]]
 
   def asJava: javadsl.BidiFlow[I1, O1, I2, O2, Mat] =
@@ -37,8 +37,9 @@ final class BidiFlow[-I1, +O1, -I2, +O2, +Mat](
     * value of the current flow (ignoring the other BidiFlow’s value), use
     * [[BidiFlow#atopMat atopMat]] if a different strategy is needed.
     */
-  def atop[OO1, II2, Mat2](bidi: Graph[BidiShape[O1, OO1, II2, I2], Mat2])
-    : BidiFlow[I1, OO1, II2, O2, Mat] = atopMat(bidi)(Keep.left)
+  def atop[OO1, II2, Mat2](
+      bidi: Graph[BidiShape[O1, OO1, II2, I2], Mat2]
+  ): BidiFlow[I1, OO1, II2, O2, Mat] = atopMat(bidi)(Keep.left)
 
   /**
     * Add the given BidiFlow as the next step in a bidirectional transformation
@@ -59,17 +60,18 @@ final class BidiFlow[-I1, +O1, -I2, +O2, +Mat](
     * flow into the materialized value of the resulting BidiFlow.
     */
   def atopMat[OO1, II2, Mat2, M](
-      bidi: Graph[BidiShape[O1, OO1, II2, I2], Mat2])(
-      combine: (Mat, Mat2) ⇒ M): BidiFlow[I1, OO1, II2, O2, M] = {
+      bidi: Graph[BidiShape[O1, OO1, II2, I2], Mat2]
+  )(combine: (Mat, Mat2) ⇒ M): BidiFlow[I1, OO1, II2, O2, M] = {
     val copy = bidi.module.carbonCopy
-    val ins = copy.shape.inlets
+    val ins  = copy.shape.inlets
     val outs = copy.shape.outlets
     new BidiFlow(
-        module
-          .compose(copy, combine)
-          .wire(shape.out1, ins(0))
-          .wire(outs(1), shape.in2)
-          .replaceShape(BidiShape(shape.in1, outs(0), ins(1), shape.out2)))
+      module
+        .compose(copy, combine)
+        .wire(shape.out1, ins(0))
+        .wire(outs(1), shape.in2)
+        .replaceShape(BidiShape(shape.in1, outs(0), ins(1), shape.out2))
+    )
   }
 
   /**
@@ -112,17 +114,19 @@ final class BidiFlow[-I1, +O1, -I2, +O2, +Mat](
     * The `combine` function is used to compose the materialized values of this flow and that
     * flow into the materialized value of the resulting [[Flow]].
     */
-  def joinMat[Mat2, M](flow: Graph[FlowShape[O1, I2], Mat2])(
-      combine: (Mat, Mat2) ⇒ M): Flow[I1, O2, M] = {
+  def joinMat[Mat2, M](
+      flow: Graph[FlowShape[O1, I2], Mat2]
+  )(combine: (Mat, Mat2) ⇒ M): Flow[I1, O2, M] = {
     val copy = flow.module.carbonCopy
-    val in = copy.shape.inlets.head
-    val out = copy.shape.outlets.head
+    val in   = copy.shape.inlets.head
+    val out  = copy.shape.outlets.head
     new Flow(
-        module
-          .compose(copy, combine)
-          .wire(shape.out1, in)
-          .wire(out, shape.in2)
-          .replaceShape(FlowShape(shape.in1, shape.out2)))
+      module
+        .compose(copy, combine)
+        .wire(shape.out1, in)
+        .wire(out, shape.in2)
+        .replaceShape(FlowShape(shape.in1, shape.out2))
+    )
   }
 
   /**
@@ -130,14 +134,16 @@ final class BidiFlow[-I1, +O1, -I2, +O2, +Mat](
     */
   def reversed: BidiFlow[I2, O2, I1, O1, Mat] =
     new BidiFlow(
-        module.replaceShape(
-            BidiShape(shape.in2, shape.out2, shape.in1, shape.out1)))
+      module
+        .replaceShape(BidiShape(shape.in2, shape.out2, shape.in1, shape.out1))
+    )
 
   /**
     * Transform only the materialized value of this BidiFlow, leaving all other properties as they were.
     */
   def mapMaterializedValue[Mat2](
-      f: Mat ⇒ Mat2): BidiFlow[I1, O1, I2, O2, Mat2] =
+      f: Mat ⇒ Mat2
+  ): BidiFlow[I1, O1, I2, O2, Mat2] =
     new BidiFlow(module.transformMaterializedValue(f.asInstanceOf[Any ⇒ Any]))
 
   /**
@@ -147,8 +153,7 @@ final class BidiFlow[-I1, +O1, -I2, +O2, +Mat](
     * operation has no effect on an empty Flow (because the attributes apply
     * only to the contained processing stages).
     */
-  override def withAttributes(
-      attr: Attributes): BidiFlow[I1, O1, I2, O2, Mat] =
+  override def withAttributes(attr: Attributes): BidiFlow[I1, O1, I2, O2, Mat] =
     new BidiFlow(module.withAttributes(attr))
 
   /**
@@ -182,12 +187,12 @@ object BidiFlow {
     * it so also in type.
     */
   def fromGraph[I1, O1, I2, O2, Mat](
-      graph: Graph[BidiShape[I1, O1, I2, O2], Mat])
-    : BidiFlow[I1, O1, I2, O2, Mat] =
+      graph: Graph[BidiShape[I1, O1, I2, O2], Mat]
+  ): BidiFlow[I1, O1, I2, O2, Mat] =
     graph match {
-      case bidi: BidiFlow[I1, O1, I2, O2, Mat] ⇒ bidi
+      case bidi: BidiFlow[I1, O1, I2, O2, Mat]         ⇒ bidi
       case bidi: javadsl.BidiFlow[I1, O1, I2, O2, Mat] ⇒ bidi.asScala
-      case other ⇒ new BidiFlow(other.module)
+      case other                                       ⇒ new BidiFlow(other.module)
     }
 
   /**
@@ -211,10 +216,9 @@ object BidiFlow {
     */
   def fromFlowsMat[I1, O1, I2, O2, M1, M2, M](
       flow1: Graph[FlowShape[I1, O1], M1],
-      flow2: Graph[FlowShape[I2, O2], M2])(
-      combine: (M1, M2) ⇒ M): BidiFlow[I1, O1, I2, O2, M] =
-    fromGraph(
-        GraphDSL.create(flow1, flow2)(combine) { implicit b ⇒ (f1, f2) ⇒
+      flow2: Graph[FlowShape[I2, O2], M2]
+  )(combine: (M1, M2) ⇒ M): BidiFlow[I1, O1, I2, O2, M] =
+    fromGraph(GraphDSL.create(flow1, flow2)(combine) { implicit b ⇒ (f1, f2) ⇒
       BidiShape(f1.in, f1.out, f2.in, f2.out)
     })
 
@@ -238,7 +242,8 @@ object BidiFlow {
     */
   def fromFlows[I1, O1, I2, O2, M1, M2](
       flow1: Graph[FlowShape[I1, O1], M1],
-      flow2: Graph[FlowShape[I2, O2], M2]): BidiFlow[I1, O1, I2, O2, NotUsed] =
+      flow2: Graph[FlowShape[I2, O2], M2]
+  ): BidiFlow[I1, O1, I2, O2, NotUsed] =
     fromFlowsMat(flow1, flow2)(Keep.none)
 
   /**
@@ -246,7 +251,9 @@ object BidiFlow {
     * stage each, expressed by the two functions.
     */
   def fromFunctions[I1, O1, I2, O2](
-      outbound: I1 ⇒ O1, inbound: I2 ⇒ O2): BidiFlow[I1, O1, I2, O2, NotUsed] =
+      outbound: I1 ⇒ O1,
+      inbound: I2 ⇒ O2
+  ): BidiFlow[I1, O1, I2, O2, NotUsed] =
     fromFlows(Flow[I1].map(outbound), Flow[I2].map(inbound))
 
   /**
@@ -259,6 +266,7 @@ object BidiFlow {
     * the *joint* frequencies of the elements in both directions.
     */
   def bidirectionalIdleTimeout[I, O](
-      timeout: FiniteDuration): BidiFlow[I, I, O, O, NotUsed] =
+      timeout: FiniteDuration
+  ): BidiFlow[I, I, O, O, NotUsed] =
     fromGraph(new Timers.IdleTimeoutBidi(timeout))
 }

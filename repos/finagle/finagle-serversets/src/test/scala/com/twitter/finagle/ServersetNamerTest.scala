@@ -15,7 +15,7 @@ class ServersetNamerTest extends FunSuite with AssertionsForJUnit {
   }
 
   def schemeOk(scheme: String): Unit = {
-    val addr = Addr.Bound(Address(7127))
+    val addr  = Addr.Bound(Address(7127))
     var named = 0
     val namer = mkNamer { spec =>
       assert(spec == s"$scheme!hosts!/twitter/service/role/env/job!endpoint")
@@ -31,14 +31,17 @@ class ServersetNamerTest extends FunSuite with AssertionsForJUnit {
         assert(bound.addr.sample() == addr)
         assert(bound.path == Path.empty)
         assert(
-            bound.id == Path.Utf8("$",
-                                  "com.twitter.serverset",
-                                  "hosts",
-                                  "twitter",
-                                  "service",
-                                  "role",
-                                  "env",
-                                  "job:endpoint"))
+          bound.id == Path.Utf8(
+            "$",
+            "com.twitter.serverset",
+            "hosts",
+            "twitter",
+            "service",
+            "role",
+            "env",
+            "job:endpoint"
+          )
+        )
 
       case _ => fail(s"invalid name: ${path.show}")
     }

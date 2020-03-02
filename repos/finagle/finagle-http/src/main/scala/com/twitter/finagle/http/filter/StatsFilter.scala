@@ -19,14 +19,16 @@ import com.twitter.util.{Duration, Future, Return, Stopwatch, Throw}
 class StatsFilter[REQUEST <: Request](stats: StatsReceiver)
     extends SimpleFilter[REQUEST, Response] {
 
-  private[this] val statusReceiver = stats.scope("status")
-  private[this] val timeReceiver = stats.scope("time")
+  private[this] val statusReceiver   = stats.scope("status")
+  private[this] val timeReceiver     = stats.scope("time")
   private[this] val responseSizeStat = stats.stat("response_size")
 
-  def apply(request: REQUEST,
-            service: Service[REQUEST, Response]): Future[Response] = {
+  def apply(
+      request: REQUEST,
+      service: Service[REQUEST, Response]
+  ): Future[Response] = {
     val elapsed = Stopwatch.start()
-    val future = service(request)
+    val future  = service(request)
     future respond {
       case Return(response) =>
         count(elapsed(), response)
@@ -39,7 +41,7 @@ class StatsFilter[REQUEST <: Request](stats: StatsReceiver)
   }
 
   protected def count(duration: Duration, response: Response) {
-    val statusCode = response.statusCode.toString
+    val statusCode  = response.statusCode.toString
     val statusClass = (response.statusCode / 100).toString + "XX"
 
     // TODO: Memoize on status code/class.

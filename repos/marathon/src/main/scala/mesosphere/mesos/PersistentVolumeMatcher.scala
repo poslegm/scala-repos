@@ -10,7 +10,8 @@ object PersistentVolumeMatcher {
   def matchVolumes(
       offer: Mesos.Offer,
       app: AppDefinition,
-      waitingTasks: Iterable[Task.Reserved]): Option[VolumeMatch] = {
+      waitingTasks: Iterable[Task.Reserved]
+  ): Option[VolumeMatch] = {
 
     // find all offered persistent volumes
     val availableVolumes: Map[String, Mesos.Resource] =
@@ -21,13 +22,15 @@ object PersistentVolumeMatcher {
       }.toMap
 
     def resourcesForTask(
-        task: Task.Reserved): Option[Iterable[Mesos.Resource]] = {
+        task: Task.Reserved
+    ): Option[Iterable[Mesos.Resource]] = {
       if (task.reservation.volumeIds
             .map(_.idString)
             .forall(availableVolumes.contains))
         Some(
-            task.reservation.volumeIds
-              .flatMap(id => availableVolumes.get(id.idString)))
+          task.reservation.volumeIds
+            .flatMap(id => availableVolumes.get(id.idString))
+        )
       else None
     }
 
@@ -37,5 +40,7 @@ object PersistentVolumeMatcher {
   }
 
   case class VolumeMatch(
-      task: Task, persistentVolumeResources: Iterable[Mesos.Resource])
+      task: Task,
+      persistentVolumeResources: Iterable[Mesos.Resource]
+  )
 }

@@ -78,7 +78,7 @@ object FailureAccrualPolicy {
     private[this] var nextMarkDeadFor = freshMarkDeadFor
 
     private[this] var totalRequests = 0L
-    private[this] val successRate = new Ema(window)
+    private[this] val successRate   = new Ema(window)
 
     def recordSuccess(): Unit = synchronized {
       totalRequests += 1

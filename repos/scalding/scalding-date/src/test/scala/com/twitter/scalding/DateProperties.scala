@@ -36,16 +36,14 @@ object DateProperties extends Properties("Date Properties") {
   }
   implicit val dateRangeArb: Arbitrary[DateRange] = Arbitrary {
     for (v1 <- choose(0L, 1L << 33);
-    v2 <- choose(v1, 1L << 33)) yield DateRange(RichDate(v1), RichDate(v2))
+         v2 <- choose(v1, 1L << 33)) yield DateRange(RichDate(v1), RichDate(v2))
   }
   implicit val absdur: Arbitrary[AbsoluteDuration] = Arbitrary {
     implicitly[Arbitrary[Long]].arbitrary
     // Ignore Longs that are too big to fit, and make sure we can add any random 3 together
     // Long.MaxValue / 1200 ms is the biggest that will fit, we divide by 3 to make sure
     // we can add three together in tests
-    .map { ms =>
-      fromMillisecs(ms / (1200 * 3))
-    }
+      .map { ms => fromMillisecs(ms / (1200 * 3)) }
   }
 
   property("Shifting DateRanges breaks containment") = forAll {
@@ -67,7 +65,7 @@ object DateProperties extends Properties("Date Properties") {
 
   property("Before/After works") = forAll { (dr: DateRange, rd: RichDate) =>
     (asInt(dr.contains(rd)) + asInt(dr.isBefore(rd)) +
-        asInt(dr.isAfter(rd)) == 1) &&
+      asInt(dr.isAfter(rd)) == 1) &&
     (dr.isBefore(dr.end + (dr.end - dr.start))) &&
     (dr.isAfter(dr.start - (dr.end - dr.start)))
   }
@@ -88,7 +86,7 @@ object DateProperties extends Properties("Date Properties") {
   property("RichDate subtraction Roundtrip") = forAll {
     (timestamp0: Long, delta: AbsoluteDuration) =>
       val start = RichDate(timestamp0)
-      val end = start + delta
+      val end   = start + delta
       end - delta == start && (end - start) == delta
   }
   property("Millisecs rt") = forAll { (ms: Int) =>
@@ -98,7 +96,8 @@ object DateProperties extends Properties("Date Properties") {
   property("AbsoluteDuration group properties") = forAll {
     (a: AbsoluteDuration, b: AbsoluteDuration, c: AbsoluteDuration) =>
       (a + b) - c == a + (b - c) && (a + b) + c == a + (b + c) && (a - a) == fromMillisecs(
-          0) && (b - b) == fromMillisecs(0) && (c - c) == fromMillisecs(0) && {
+        0
+      ) && (b - b) == fromMillisecs(0) && (c - c) == fromMillisecs(0) && {
         b.toMillisecs == 0 || {
           // Don't divide by zero:
           val (d, rem) = (a / b)
@@ -113,10 +112,10 @@ object DateProperties extends Properties("Date Properties") {
 
   property("DateRange.exclusiveUpper works") = forAll {
     (a: RichDate, b: RichDate) =>
-      val lower = Ordering[RichDate].min(a, b)
-      val upper = Ordering[RichDate].max(a, b)
-      val ex = DateRange.exclusiveUpper(lower, upper)
-      val in = DateRange(lower, upper)
+      val lower     = Ordering[RichDate].min(a, b)
+      val upper     = Ordering[RichDate].max(a, b)
+      val ex        = DateRange.exclusiveUpper(lower, upper)
+      val in        = DateRange(lower, upper)
       val upperPred = upper - Millisecs(1)
 
       (false == ex.contains(upper)) &&
@@ -124,20 +123,18 @@ object DateProperties extends Properties("Date Properties") {
   }
 
   def toRegex(glob: String) =
-    (glob.flatMap { c =>
-      if (c == '*') ".*" else c.toString
-    }).r
+    (glob.flatMap { c => if (c == '*') ".*" else c.toString }).r
 
   def matches(l: List[String], arg: String): Int =
-    l.map { toRegex _ }.map {
-      _.findFirstMatchIn(arg).map { _ =>
-        1
-      }.getOrElse(0)
-    }.sum
+    l.map { toRegex _ }
+      .map {
+        _.findFirstMatchIn(arg).map { _ => 1 }.getOrElse(0)
+      }
+      .sum
 
   // Make sure globifier always contains:
   val pattern = "%1$tY/%1$tm/%1$td/%1$tH"
-  val glob = Globifier(pattern)(DateOps.UTC)
+  val glob    = Globifier(pattern)(DateOps.UTC)
   property("Globifying produces matching patterns") = forAll {
     (dr: DateRange) =>
       val globbed = glob.globify(dr)

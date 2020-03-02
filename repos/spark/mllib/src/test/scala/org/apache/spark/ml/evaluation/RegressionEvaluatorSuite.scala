@@ -25,7 +25,8 @@ import org.apache.spark.mllib.util.{LinearDataGenerator, MLlibTestSparkContext}
 import org.apache.spark.mllib.util.TestingUtils._
 
 class RegressionEvaluatorSuite
-    extends SparkFunSuite with MLlibTestSparkContext
+    extends SparkFunSuite
+    with MLlibTestSparkContext
     with DefaultReadWriteTest {
 
   test("params") {
@@ -45,15 +46,19 @@ class RegressionEvaluatorSuite
       *   .saveAsTextFile("path")
       */
     val dataset = sqlContext.createDataFrame(
-        sc.parallelize(
-            LinearDataGenerator.generateLinearInput(6.3,
-                                                    Array(4.7, 7.2),
-                                                    Array(0.9, -1.3),
-                                                    Array(0.7, 1.2),
-                                                    100,
-                                                    42,
-                                                    0.1),
-            2))
+      sc.parallelize(
+        LinearDataGenerator.generateLinearInput(
+          6.3,
+          Array(4.7, 7.2),
+          Array(0.9, -1.3),
+          Array(0.7, 1.2),
+          100,
+          42,
+          0.1
+        ),
+        2
+      )
+    )
 
     /**
       * Using the following R code to load the data, train the model and evaluate metrics.
@@ -68,8 +73,8 @@ class RegressionEvaluatorSuite
       * > mae <- mmetric(label, predict(model, features), metric='MAE')
       * > r2 <- mmetric(label, predict(model, features), metric='R2')
       */
-    val trainer = new LinearRegression
-    val model = trainer.fit(dataset)
+    val trainer     = new LinearRegression
+    val model       = trainer.fit(dataset)
     val predictions = model.transform(dataset)
 
     // default = rmse

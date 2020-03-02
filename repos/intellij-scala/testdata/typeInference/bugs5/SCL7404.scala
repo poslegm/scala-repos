@@ -7,7 +7,7 @@ object SCL7404 {
 
   implicit def foo[T](t: (Int, T))(implicit z: Z[T]) = 123
 
-  def goo(x: Int) = 123
+  def goo(x: Int)    = 123
   def goo(s: String) = "text"
 
   /*start*/

@@ -8,10 +8,10 @@ class InheritanceSuperMultipleTest extends ResolveTestBase {
     super.folderPath + "inheritance/super/multiple/"
   }
 
-  def testClashClass() = doTest()
+  def testClashClass()  = doTest()
   def testClashObject() = doTest()
-  def testClashTrait() = doTest()
-  def testClass() = doTest()
-  def testObject() = doTest()
-  def testTrait() = doTest()
+  def testClashTrait()  = doTest()
+  def testClass()       = doTest()
+  def testObject()      = doTest()
+  def testTrait()       = doTest()
 }

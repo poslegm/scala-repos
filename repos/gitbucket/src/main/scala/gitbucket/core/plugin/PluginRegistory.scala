@@ -21,17 +21,17 @@ import scala.collection.mutable.ListBuffer
 
 class PluginRegistry {
 
-  private val plugins = new ListBuffer[PluginInfo]
+  private val plugins     = new ListBuffer[PluginInfo]
   private val javaScripts = new ListBuffer[(String, String)]
   private val controllers = new ListBuffer[(ControllerBase, String)]
-  private val images = mutable.Map[String, String]()
-  private val renderers = mutable.Map[String, Renderer]()
+  private val images      = mutable.Map[String, String]()
+  private val renderers   = mutable.Map[String, Renderer]()
   renderers ++= Seq(
-      "md" -> MarkdownRenderer,
-      "markdown" -> MarkdownRenderer
+    "md"       -> MarkdownRenderer,
+    "markdown" -> MarkdownRenderer
   )
   private val repositoryRoutings = new ListBuffer[GitRepositoryRouting]
-  private val receiveHooks = new ListBuffer[ReceiveHook]
+  private val receiveHooks       = new ListBuffer[ReceiveHook]
   receiveHooks += new ProtectedBranchReceiveHook()
 
   def addPlugin(pluginInfo: PluginInfo): Unit = {
@@ -62,8 +62,9 @@ class PluginRegistry {
   }
 
   @deprecated(
-      "Use addController(path: String, controller: ControllerBase) instead",
-      "3.4.0")
+    "Use addController(path: String, controller: ControllerBase) instead",
+    "3.4.0"
+  )
   def addController(controller: ControllerBase, path: String): Unit = {
     addController(path, controller)
   }
@@ -97,11 +98,12 @@ class PluginRegistry {
   }
 
   def getRepositoryRouting(
-      repositoryPath: String): Option[GitRepositoryRouting] = {
+      repositoryPath: String
+  ): Option[GitRepositoryRouting] = {
     PluginRegistry().getRepositoryRoutings().find {
       case GitRepositoryRouting(urlPath, _, _) => {
-          repositoryPath.matches("/" + urlPath + "(/.*)?")
-        }
+        repositoryPath.matches("/" + urlPath + "(/.*)?")
+      }
     }
   }
 
@@ -120,8 +122,12 @@ class PluginRegistry {
   private case class RepositoryAction(
       method: String,
       path: String,
-      function: (HttpServletRequest, HttpServletResponse, Context,
-      RepositoryInfo) => Any
+      function: (
+          HttpServletRequest,
+          HttpServletResponse,
+          Context,
+          RepositoryInfo
+      ) => Any
   )
 }
 
@@ -142,9 +148,11 @@ object PluginRegistry {
   /**
     * Initializes all installed plugins.
     */
-  def initialize(context: ServletContext,
-                 settings: SystemSettings,
-                 conn: java.sql.Connection): Unit = {
+  def initialize(
+      context: ServletContext,
+      settings: SystemSettings,
+      conn: java.sql.Connection
+  ): Unit = {
     val pluginDir = new File(PluginHome)
     if (pluginDir.exists && pluginDir.isDirectory) {
       pluginDir
@@ -154,8 +162,10 @@ object PluginRegistry {
         })
         .foreach { pluginJar =>
           val classLoader =
-            new URLClassLoader(Array(pluginJar.toURI.toURL),
-                               Thread.currentThread.getContextClassLoader)
+            new URLClassLoader(
+              Array(pluginJar.toURI.toURL),
+              Thread.currentThread.getContextClassLoader
+            )
           try {
             val plugin = classLoader
               .loadClass("Plugin")
@@ -165,49 +175,55 @@ object PluginRegistry {
             // Migration
             val headVersion = plugin.versions.head
             val currentVersion =
-              conn.find("SELECT * FROM PLUGIN WHERE PLUGIN_ID = ?",
-                        plugin.pluginId)(_.getString("VERSION")) match {
+              conn.find(
+                "SELECT * FROM PLUGIN WHERE PLUGIN_ID = ?",
+                plugin.pluginId
+              )(_.getString("VERSION")) match {
                 case Some(x) => {
-                    val dim = x.split("\\.")
-                    Version(dim(0).toInt, dim(1).toInt)
-                  }
+                  val dim = x.split("\\.")
+                  Version(dim(0).toInt, dim(1).toInt)
+                }
                 case None => Version(0, 0)
               }
 
-            Versions.update(conn,
-                            headVersion,
-                            currentVersion,
-                            plugin.versions,
-                            new URLClassLoader(Array(pluginJar.toURI.toURL))) {
-              conn =>
-                currentVersion.versionString match {
-                  case "0.0" =>
-                    conn.update(
-                        "INSERT INTO PLUGIN (PLUGIN_ID, VERSION) VALUES (?, ?)",
-                        plugin.pluginId,
-                        headVersion.versionString)
-                  case _ =>
-                    conn.update(
-                        "UPDATE PLUGIN SET VERSION = ? WHERE PLUGIN_ID = ?",
-                        headVersion.versionString,
-                        plugin.pluginId)
-                }
+            Versions.update(
+              conn,
+              headVersion,
+              currentVersion,
+              plugin.versions,
+              new URLClassLoader(Array(pluginJar.toURI.toURL))
+            ) { conn =>
+              currentVersion.versionString match {
+                case "0.0" =>
+                  conn.update(
+                    "INSERT INTO PLUGIN (PLUGIN_ID, VERSION) VALUES (?, ?)",
+                    plugin.pluginId,
+                    headVersion.versionString
+                  )
+                case _ =>
+                  conn.update(
+                    "UPDATE PLUGIN SET VERSION = ? WHERE PLUGIN_ID = ?",
+                    headVersion.versionString,
+                    plugin.pluginId
+                  )
+              }
             }
 
             // Initialize
             plugin.initialize(instance, context, settings)
             instance.addPlugin(
-                PluginInfo(
-                    pluginId = plugin.pluginId,
-                    pluginName = plugin.pluginName,
-                    version = plugin.versions.head.versionString,
-                    description = plugin.description,
-                    pluginClass = plugin
-                ))
+              PluginInfo(
+                pluginId = plugin.pluginId,
+                pluginName = plugin.pluginName,
+                version = plugin.versions.head.versionString,
+                description = plugin.description,
+                pluginClass = plugin
+              )
+            )
           } catch {
             case e: Throwable => {
-                logger.error(s"Error during plugin initialization", e)
-              }
+              logger.error(s"Error during plugin initialization", e)
+            }
           }
         }
     }
@@ -219,8 +235,8 @@ object PluginRegistry {
         pluginInfo.pluginClass.shutdown(instance, context, settings)
       } catch {
         case e: Exception => {
-            logger.error(s"Error during plugin shutdown", e)
-          }
+          logger.error(s"Error during plugin shutdown", e)
+        }
       }
     }
   }

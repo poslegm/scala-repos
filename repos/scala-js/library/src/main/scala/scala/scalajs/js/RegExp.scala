@@ -111,7 +111,7 @@ object RegExp extends Object {
 
   @native
   trait ExecResult extends Array[UndefOr[String]] {
-    var index: Int = native
+    var index: Int    = native
     var input: String = native
   }
 }

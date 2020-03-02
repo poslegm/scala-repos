@@ -3,11 +3,26 @@
  */
 package akka.stream.scaladsl
 
-import akka.actor.{Kill, PoisonPill, NoSerializationVerificationNeeded, ActorRef}
+import akka.actor.{
+  Kill,
+  PoisonPill,
+  NoSerializationVerificationNeeded,
+  ActorRef
+}
 import akka.event.Logging
 import akka.stream._
-import akka.stream.stage.{GraphStageWithMaterializedValue, GraphStageLogic, InHandler}
-import akka.testkit.{AkkaSpec, TestProbe, TestEvent, EventFilter, ImplicitSender}
+import akka.stream.stage.{
+  GraphStageWithMaterializedValue,
+  GraphStageLogic,
+  InHandler
+}
+import akka.testkit.{
+  AkkaSpec,
+  TestProbe,
+  TestEvent,
+  EventFilter,
+  ImplicitSender
+}
 import org.scalatest.concurrent.ScalaFutures
 
 import scala.concurrent.{Future, Promise}
@@ -144,7 +159,7 @@ class StageActorRefSpec extends AkkaSpec with ImplicitSender {
 
       val filter = EventFilter.custom {
         case e: Logging.Warning ⇒ true
-        case _ ⇒ false
+        case _                  ⇒ false
       }
       system.eventStream.publish(TestEvent.Mute(filter))
       system.eventStream.subscribe(testActor, classOf[Logging.Warning])
@@ -153,7 +168,7 @@ class StageActorRefSpec extends AkkaSpec with ImplicitSender {
       val actorName = """StageActorRef-[\d+]"""
       val expectedMsg =
         s"[PoisonPill|Kill] message sent to StageActorRef($actorName) will be ignored,since it is not a real Actor. " +
-        "Use a custom message type to communicate with it instead."
+          "Use a custom message type to communicate with it instead."
       expectMsgPF(1.second, expectedMsg) {
         case Logging.Warning(_, _, msg) ⇒
           expectedMsg.r.pattern.matcher(msg.toString).matches()
@@ -174,23 +189,24 @@ class StageActorRefSpec extends AkkaSpec with ImplicitSender {
 object StageActorRefSpec {
 
   object ControlProtocol {
-    case class Add(n: Int) extends NoSerializationVerificationNeeded
-    case class AddAndTell(n: Int) extends NoSerializationVerificationNeeded
+    case class Add(n: Int)            extends NoSerializationVerificationNeeded
+    case class AddAndTell(n: Int)     extends NoSerializationVerificationNeeded
     case object CallInitStageActorRef extends NoSerializationVerificationNeeded
-    case object BecomeStringEcho extends NoSerializationVerificationNeeded
-    case object PullNow extends NoSerializationVerificationNeeded
-    case object StopNow extends NoSerializationVerificationNeeded
+    case object BecomeStringEcho      extends NoSerializationVerificationNeeded
+    case object PullNow               extends NoSerializationVerificationNeeded
+    case object StopNow               extends NoSerializationVerificationNeeded
   }
 
   import ControlProtocol._
 
   case class SumTestStage(probe: ActorRef)
       extends GraphStageWithMaterializedValue[SinkShape[Int], Future[Int]] {
-    val in = Inlet[Int]("IntSum.in")
+    val in                             = Inlet[Int]("IntSum.in")
     override val shape: SinkShape[Int] = SinkShape.of(in)
 
     override def createLogicAndMaterializedValue(
-        inheritedAttributes: Attributes): (GraphStageLogic, Future[Int]) = {
+        inheritedAttributes: Attributes
+    ): (GraphStageLogic, Future[Int]) = {
       val p: Promise[Int] = Promise()
 
       val logic = new GraphStageLogic(shape) {
@@ -205,7 +221,7 @@ object StageActorRefSpec {
 
         def behaviour(m: (ActorRef, Any)): Unit = {
           m match {
-            case (sender, Add(n)) ⇒ sum += n
+            case (sender, Add(n))  ⇒ sum += n
             case (sender, PullNow) ⇒ pull(in)
             case (sender, CallInitStageActorRef) ⇒
               sender ! getStageActor(behaviour).ref
@@ -222,23 +238,26 @@ object StageActorRefSpec {
           }
         }
 
-        setHandler(in, new InHandler {
-          override def onPush(): Unit = {
-            sum += grab(in)
-            p.trySuccess(sum)
-            completeStage()
-          }
+        setHandler(
+          in,
+          new InHandler {
+            override def onPush(): Unit = {
+              sum += grab(in)
+              p.trySuccess(sum)
+              completeStage()
+            }
 
-          override def onUpstreamFinish(): Unit = {
-            p.trySuccess(sum)
-            completeStage()
-          }
+            override def onUpstreamFinish(): Unit = {
+              p.trySuccess(sum)
+              completeStage()
+            }
 
-          override def onUpstreamFailure(ex: Throwable): Unit = {
-            p.tryFailure(ex)
-            failStage(ex)
+            override def onUpstreamFailure(ex: Throwable): Unit = {
+              p.tryFailure(ex)
+              failStage(ex)
+            }
           }
-        })
+        )
       }
 
       logic -> p.future

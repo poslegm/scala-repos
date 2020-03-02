@@ -15,7 +15,7 @@ class HttpContextTest extends FunSuite {
   def newMsg(): Message = Request(Version.Http11, Method.Get, "/")
 
   test("written request context matches read request context") {
-    val m = newMsg()
+    val m               = newMsg()
     val writtenDeadline = Deadline.ofTimeout(5.seconds)
     Contexts.broadcast.let(Deadline, writtenDeadline) {
       HttpContext.write(m)

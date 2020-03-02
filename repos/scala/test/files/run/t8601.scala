@@ -1,11 +1,12 @@
 object Test {
-  def idiv(x: Int): Unit = x / 0
+  def idiv(x: Int): Unit  = x / 0
   def ldiv(x: Long): Unit = x / 0
-  def irem(x: Int): Unit = x % 0
+  def irem(x: Int): Unit  = x % 0
   def lrem(x: Long): Unit = x % 0
 
   def check(x: => Any) =
-    try { x; sys.error("failed to throw divide by zero!") } catch {
+    try { x; sys.error("failed to throw divide by zero!") }
+    catch {
       case _: ArithmeticException =>
     }
 

@@ -29,8 +29,9 @@ class SearchService(
 )(
     implicit actorSystem: ActorSystem,
     vfs: EnsimeVFS
-)
-    extends ClassfileIndexer with FileChangeListener with SLF4JLogging {
+) extends ClassfileIndexer
+    with FileChangeListener
+    with SLF4JLogging {
 
   private val QUERY_TIMEOUT = 30 seconds
 
@@ -50,14 +51,14 @@ class SearchService(
   private val version = "1.2"
 
   private val index = new IndexService(config.cacheDir / ("index-" + version))
-  private val db = new DatabaseService(config.cacheDir / ("sql-" + version))
+  private val db    = new DatabaseService(config.cacheDir / ("sql-" + version))
 
   implicit val workerEC =
     actorSystem.dispatchers.lookup("akka.search-service-dispatcher")
 
   private def scan(f: FileObject) = f.findFiles(ClassfileSelector) match {
     case null => Nil
-    case res => res.toList
+    case res  => res.toList
   }
 
   /**
@@ -75,7 +76,7 @@ class SearchService(
       log.info("findStaleFileChecks")
       for {
         check <- checks
-        name = check.file.getName.getURI if !check.file.exists || check.changed
+        name  = check.file.getName.getURI if !check.file.exists || check.changed
       } yield check
     }.toList
 
@@ -93,36 +94,40 @@ class SearchService(
         case (name, m) =>
           m.targetDirs.flatMap {
             case d if !d.exists() => Nil
-            case d if d.isJar => List(vfs.vfile(d))
-            case d => scan(vfs.vfile(d))
+            case d if d.isJar     => List(vfs.vfile(d))
+            case d                => scan(vfs.vfile(d))
           } ::: m.testTargetDirs.flatMap {
             case d if !d.exists() => Nil
-            case d if d.isJar => List(vfs.vfile(d))
-            case d => scan(vfs.vfile(d))
+            case d if d.isJar     => List(vfs.vfile(d))
+            case d                => scan(vfs.vfile(d))
           } ::: m.compileJars.map(vfs.vfile) ::: m.testJars.map(vfs.vfile)
       }
     }.toSet ++ config.javaLibs.map(vfs.vfile)
 
-    def indexBase(base: FileObject,
-                  fileCheck: Option[FileCheck]): Future[Option[Int]] = {
+    def indexBase(
+        base: FileObject,
+        fileCheck: Option[FileCheck]
+    ): Future[Option[Int]] = {
       val outOfDate = fileCheck.map(_.changed).getOrElse(true)
       if (!outOfDate) Future.successful(None)
       else {
         val check = FileCheck(base)
         extractSymbolsFromClassOrJar(base).flatMap(
-            persist(check, _, commitIndex = false))
+          persist(check, _, commitIndex = false)
+        )
       }
     }
 
     // index all the given bases and return number of rows written
     def indexBases(
-        bases: Set[FileObject], checks: Seq[FileCheck]): Future[Int] = {
+        bases: Set[FileObject],
+        checks: Seq[FileCheck]
+    ): Future[Int] = {
       log.info("Indexing bases...")
       val checksLookup: Map[String, FileCheck] =
         checks.map(check => (check.filename -> check)).toMap
       val basesWithChecks: Set[(FileObject, Option[FileCheck])] = bases.map {
-        base =>
-          (base, checksLookup.get(base.getName().getURI()))
+        base => (base, checksLookup.get(base.getName().getURI()))
       }
       Future
         .sequence(basesWithChecks.map {
@@ -141,27 +146,27 @@ class SearchService(
 
     // chain together all the future tasks
     for {
-      checks <- db.knownFiles()
-      stale = findStaleFileChecks(checks)
+      checks  <- db.knownFiles()
+      stale   = findStaleFileChecks(checks)
       deletes <- deleteReferences(stale)
-      bases = findBases()
-      added <- indexBases(bases, checks)
-      _ <- commitIndex()
+      bases   = findBases()
+      added   <- indexBases(bases, checks)
+      _       <- commitIndex()
     } yield (deletes, added)
   }
 
   def refreshResolver(): Unit = resolver.update()
 
-  def persist(check: FileCheck,
-              symbols: List[FqnSymbol],
-              commitIndex: Boolean): Future[Option[Int]] = {
+  def persist(
+      check: FileCheck,
+      symbols: List[FqnSymbol],
+      commitIndex: Boolean
+  ): Future[Option[Int]] = {
     val iwork = Future {
       blocking { index.persist(check, symbols, commitIndex) }
     }
     val dwork = db.persist(check, symbols)
-    iwork.flatMap { _ =>
-      dwork
-    }
+    iwork.flatMap { _ => dwork }
   }
 
   def extractSymbolsFromClassOrJar(file: FileObject): Future[List[FqnSymbol]] =
@@ -171,7 +176,8 @@ class SearchService(
         val check = FileCheck(classfile)
         Future {
           blocking {
-            try extractSymbols(classfile, classfile) finally classfile.close()
+            try extractSymbols(classfile, classfile)
+            finally classfile.close()
           }
         }
       case jar =>
@@ -180,72 +186,82 @@ class SearchService(
         Future {
           blocking {
             val vJar = vfs.vjar(jar)
-            try scan(vJar) flatMap (extractSymbols(jar, _)) finally vfs.nuke(
-                vJar)
+            try scan(vJar) flatMap (extractSymbols(jar, _))
+            finally vfs.nuke(vJar)
           }
         }
     }
 
   private val blacklist = Set("sun/", "sunw/", "com/sun/")
-  private val ignore = Set("$$", "$worker$")
+  private val ignore    = Set("$$", "$worker$")
   import org.ensime.util.RichFileObject._
   private def extractSymbols(
-      container: FileObject, f: FileObject): List[FqnSymbol] = {
+      container: FileObject,
+      f: FileObject
+  ): List[FqnSymbol] = {
     f.pathWithinArchive match {
       case Some(relative) if blacklist.exists(relative.startsWith) => Nil
       case _ =>
-        val name = container.getName.getURI
-        val path = f.getName.getURI
+        val name          = container.getName.getURI
+        val path          = f.getName.getURI
         val (clazz, refs) = indexClassfile(f)
 
         val depickler = new ClassfileDepickler(f)
 
-        val source = resolver.resolve(clazz.name.pack, clazz.source)
+        val source    = resolver.resolve(clazz.name.pack, clazz.source)
         val sourceUri = source.map(_.getName.getURI)
 
         // TODO: other types of visibility when we get more sophisticated
         if (clazz.access != Public) Nil
         else
-          FqnSymbol(None,
-                    name,
-                    path,
-                    clazz.name.fqnString,
-                    None,
-                    None,
-                    sourceUri,
-                    clazz.source.line) :: clazz.methods.toList
+          FqnSymbol(
+            None,
+            name,
+            path,
+            clazz.name.fqnString,
+            None,
+            None,
+            sourceUri,
+            clazz.source.line
+          ) :: clazz.methods.toList
             .filter(_.access == Public)
             .map { method =>
               val descriptor = method.descriptor.descriptorString
-              FqnSymbol(None,
-                        name,
-                        path,
-                        method.name.fqnString,
-                        Some(descriptor),
-                        None,
-                        sourceUri,
-                        method.line)
+              FqnSymbol(
+                None,
+                name,
+                path,
+                method.name.fqnString,
+                Some(descriptor),
+                None,
+                sourceUri,
+                method.line
+              )
             } ::: clazz.fields.toList.filter(_.access == Public).map { field =>
             val internal = field.clazz.internalString
-            FqnSymbol(None,
-                      name,
-                      path,
-                      field.name.fqnString,
-                      None,
-                      Some(internal),
-                      sourceUri,
-                      clazz.source.line)
+            FqnSymbol(
+              None,
+              name,
+              path,
+              field.name.fqnString,
+              None,
+              Some(internal),
+              sourceUri,
+              clazz.source.line
+            )
           } ::: depickler.getTypeAliases.toList
             .filter(_.access == Public)
             .map { rawType =>
-              FqnSymbol(None,
-                        name,
-                        path,
-                        rawType.fqnString,
-                        None,
-                        None,
-                        sourceUri,
-                        None)
+              FqnSymbol(
+                None,
+                name,
+                path,
+                rawType.fqnString,
+                None,
+                None,
+                sourceUri,
+                None
+              )
             }
     }
   }.filterNot(sym => ignore.exists(sym.fqn.contains))
@@ -276,8 +292,8 @@ class SearchService(
    * the list of symbols is non-empty.
    */
 
-  val backlogActor = actorSystem.actorOf(
-      Props(new IndexingQueueActor(this)), "ClassfileIndexer")
+  val backlogActor =
+    actorSystem.actorOf(Props(new IndexingQueueActor(this)), "ClassfileIndexer")
 
   // deletion in both Lucene and H2 is really slow, batching helps
   def deleteInBatches(
@@ -299,7 +315,7 @@ class SearchService(
 
   def fileChanged(f: FileObject): Unit = backlogActor ! IndexFile(f)
   def fileRemoved(f: FileObject): Unit = fileChanged(f)
-  def fileAdded(f: FileObject): Unit = fileChanged(f)
+  def fileAdded(f: FileObject): Unit   = fileChanged(f)
 
   def shutdown(): Future[Unit] = {
     db.shutdown()
@@ -309,7 +325,8 @@ class SearchService(
 case class IndexFile(f: FileObject)
 
 class IndexingQueueActor(searchService: SearchService)
-    extends Actor with ActorLogging {
+    extends Actor
+    with ActorLogging {
   import context.system
 
   import scala.concurrent.duration._
@@ -361,8 +378,9 @@ class IndexingQueueActor(searchService: SearchService)
               .onComplete {
                 case Failure(t) =>
                   log.error(
-                      s"failed to remove stale entries in ${batch.size} files",
-                      t)
+                    s"failed to remove stale entries in ${batch.size} files",
+                    t
+                  )
                 case Success(_) =>
                   indexed.collect {
                     case (file, syms) if syms.isEmpty =>

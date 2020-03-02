@@ -25,22 +25,25 @@ object KestrelClient {
     println("running for %s".format(duration))
 
     // Add "host:port" pairs as needed
-    val hosts = Seq("localhost:22133")
+    val hosts   = Seq("localhost:22133")
     val stopped = new AtomicBoolean(false)
 
     val clients: Seq[Client] =
       hosts map { host =>
         Client(
-            ClientBuilder()
-              .codec(Kestrel())
-              .hosts(host)
-              .hostConnectionLimit(1) // process at most 1 item per connection concurrently
-              .buildFactory())
+          ClientBuilder()
+            .codec(Kestrel())
+            .hosts(host)
+            .hostConnectionLimit(
+              1
+            ) // process at most 1 item per connection concurrently
+            .buildFactory()
+        )
       }
 
     val readHandles: Seq[ReadHandle] = {
-      val queueName = "queue"
-      val timer = new JavaTimer(isDaemon = true)
+      val queueName     = "queue"
+      val timer         = new JavaTimer(isDaemon = true)
       val retryBackoffs = Backoff.const(10.milliseconds)
       clients map { _.readReliably(queueName, timer, retryBackoffs) }
     }

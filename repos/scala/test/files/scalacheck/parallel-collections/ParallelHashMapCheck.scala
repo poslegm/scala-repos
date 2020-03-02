@@ -25,7 +25,7 @@ abstract class ParallelHashMapCheck[K, V](tp: String)
   def tasksupport: TaskSupport
 
   def ofSize(vals: Seq[Gen[(K, V)]], sz: Int) = {
-    val hm = new mutable.HashMap[K, V]
+    val hm  = new mutable.HashMap[K, V]
     val gen = vals(rnd.nextInt(vals.size))
     for (i <- 0 until sz) hm += sample(gen)
     hm
@@ -45,26 +45,30 @@ abstract class ParallelHashMapCheck[K, V](tp: String)
 
 class IntIntParallelHashMapCheck(val tasksupport: TaskSupport)
     extends ParallelHashMapCheck[Int, Int]("Int, Int")
-    with PairOperators[Int, Int] with PairValues[Int, Int] {
+    with PairOperators[Int, Int]
+    with PairValues[Int, Int] {
   def intvalues = new IntValues {}
-  def kvalues = intvalues.values
-  def vvalues = intvalues.values
+  def kvalues   = intvalues.values
+  def vvalues   = intvalues.values
 
   val intoperators = new IntOperators {}
-  def voperators = intoperators
-  def koperators = intoperators
+  def voperators   = intoperators
+  def koperators   = intoperators
 
   override def printDataStructureDebugInfo(ds: AnyRef) = ds match {
     case pm: ParHashMap[k, v] =>
       println(
-          "Mutable parallel hash map\n" +
-          pm.hashTableContents.debugInformation)
+        "Mutable parallel hash map\n" +
+          pm.hashTableContents.debugInformation
+      )
     case _ =>
       println("could not match data structure type: " + ds.getClass)
   }
 
   override def checkDataStructureInvariants(
-      orig: Traversable[(Int, Int)], ds: AnyRef) = ds match {
+      orig: Traversable[(Int, Int)],
+      ds: AnyRef
+  ) = ds match {
     // case pm: ParHashMap[k, v] if 1 == 0 => // disabled this to make tests faster
     //   val invs = pm.brokenInvariants
 

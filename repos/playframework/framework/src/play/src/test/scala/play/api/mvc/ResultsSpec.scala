@@ -20,12 +20,12 @@ object ResultsSpec extends Specification {
 
   import play.api.mvc.Results._
 
-  val fileCounter = new AtomicInteger(1)
+  val fileCounter           = new AtomicInteger(1)
   def freshFileName: String = s"test${fileCounter.getAndIncrement}.tmp"
 
   def withFile[T](block: (File, String) => T): T = {
     val fileName = freshFileName
-    val file = new File(fileName)
+    val file     = new File(fileName)
     try {
       file.createNewFile()
       block(file, fileName)
@@ -34,7 +34,7 @@ object ResultsSpec extends Specification {
 
   def withPath[T](block: (Path, String) => T): T = {
     val fileName = freshFileName
-    val file = Paths.get(fileName)
+    val file     = Paths.get(fileName)
     try {
       Files.createFile(file)
       block(file, fileName)
@@ -68,14 +68,17 @@ object ResultsSpec extends Specification {
     "support date headers manipulation" in {
       val Result(ResponseHeader(_, headers, _), _) = Ok("hello")
         .as("text/html")
-        .withDateHeaders(DATE -> new DateTime(2015, 4, 1, 0, 0)
-              .withZoneRetainFields(DateTimeZone.UTC))
+        .withDateHeaders(
+          DATE -> new DateTime(2015, 4, 1, 0, 0)
+            .withZoneRetainFields(DateTimeZone.UTC)
+        )
       headers must havePair(DATE -> "Wed, 01 Apr 2015 00:00:00 GMT")
     }
 
     "support cookies helper" in withApplication {
       val setCookieHeader = Cookies.encodeSetCookieHeader(
-          Seq(Cookie("session", "items"), Cookie("preferences", "blue")))
+        Seq(Cookie("session", "items"), Cookie("preferences", "blue"))
+      )
 
       val decodedCookies = Cookies
         .decodeSetCookieHeader(setCookieHeader)
@@ -86,9 +89,10 @@ object ResultsSpec extends Specification {
       decodedCookies("preferences").value must be_==("blue")
 
       val newCookieHeader =
-        Cookies.mergeSetCookieHeader(setCookieHeader,
-                                     Seq(Cookie("lang", "fr"),
-                                         Cookie("session", "items2")))
+        Cookies.mergeSetCookieHeader(
+          setCookieHeader,
+          Seq(Cookie("lang", "fr"), Cookie("session", "items2"))
+        )
 
       val newDecodedCookies = Cookies
         .decodeSetCookieHeader(newCookieHeader)
@@ -118,9 +122,11 @@ object ResultsSpec extends Specification {
     }
 
     "provide convenience method for setting cookie header" in withApplication {
-      def testWithCookies(cookies1: List[Cookie],
-                          cookies2: List[Cookie],
-                          expected: Option[Set[Cookie]]) = {
+      def testWithCookies(
+          cookies1: List[Cookie],
+          cookies2: List[Cookie],
+          expected: Option[Set[Cookie]]
+      ) = {
         val result =
           Ok("hello").withCookies(cookies1: _*).withCookies(cookies2: _*)
         result.header.headers
@@ -128,28 +134,38 @@ object ResultsSpec extends Specification {
           .map(Cookies.decodeSetCookieHeader(_).to[Set]) must_== expected
       }
       val preferencesCookie = Cookie("preferences", "blue")
-      val sessionCookie = Cookie("session", "items")
+      val sessionCookie     = Cookie("session", "items")
       testWithCookies(List(), List(), None)
-      testWithCookies(List(preferencesCookie),
-                      List(),
-                      Some(Set(preferencesCookie)))
+      testWithCookies(
+        List(preferencesCookie),
+        List(),
+        Some(Set(preferencesCookie))
+      )
       testWithCookies(List(), List(sessionCookie), Some(Set(sessionCookie)))
-      testWithCookies(List(),
-                      List(sessionCookie, preferencesCookie),
-                      Some(Set(sessionCookie, preferencesCookie)))
-      testWithCookies(List(sessionCookie, preferencesCookie),
-                      List(),
-                      Some(Set(sessionCookie, preferencesCookie)))
-      testWithCookies(List(preferencesCookie),
-                      List(sessionCookie),
-                      Some(Set(preferencesCookie, sessionCookie)))
+      testWithCookies(
+        List(),
+        List(sessionCookie, preferencesCookie),
+        Some(Set(sessionCookie, preferencesCookie))
+      )
+      testWithCookies(
+        List(sessionCookie, preferencesCookie),
+        List(),
+        Some(Set(sessionCookie, preferencesCookie))
+      )
+      testWithCookies(
+        List(preferencesCookie),
+        List(sessionCookie),
+        Some(Set(preferencesCookie, sessionCookie))
+      )
     }
 
     "support clearing a language cookie using clearingLang" in withApplication {
       implicit val messagesApi =
-        new DefaultMessagesApi(Environment.simple(),
-                               Configuration.reference,
-                               new DefaultLangs(Configuration.reference))
+        new DefaultMessagesApi(
+          Environment.simple(),
+          Configuration.reference,
+          new DefaultLangs(Configuration.reference)
+        )
       val cookie = Cookies
         .decodeSetCookieHeader(Ok.clearingLang.header.headers("Set-Cookie"))
         .head
@@ -159,21 +175,22 @@ object ResultsSpec extends Specification {
 
     "allow discarding a cookie by deprecated names method" in withApplication {
       Cookies
-        .decodeSetCookieHeader(Ok
-              .discardingCookies(DiscardingCookie("blah"))
-              .header
-              .headers("Set-Cookie"))
+        .decodeSetCookieHeader(
+          Ok.discardingCookies(DiscardingCookie("blah"))
+            .header
+            .headers("Set-Cookie")
+        )
         .head
         .name must_== "blah"
     }
 
     "allow discarding multiple cookies by deprecated names method" in withApplication {
       val cookies = Cookies
-        .decodeSetCookieHeader(Ok
-              .discardingCookies(DiscardingCookie("foo"),
-                                 DiscardingCookie("bar"))
-              .header
-              .headers("Set-Cookie"))
+        .decodeSetCookieHeader(
+          Ok.discardingCookies(DiscardingCookie("foo"), DiscardingCookie("bar"))
+            .header
+            .headers("Set-Cookie")
+        )
         .map(_.name)
       cookies must containTheSameElementsAs(Seq("foo", "bar"))
     }
@@ -183,9 +200,10 @@ object ResultsSpec extends Specification {
         .sendFile(file)
         .header
 
-        (rh.status aka "status" must_== OK) and
-      (rh.headers.get(CONTENT_DISPOSITION) aka "disposition" must beSome(
-              s"""attachment; filename="${fileName}""""))
+      (rh.status aka "status" must_== OK) and
+        (rh.headers.get(CONTENT_DISPOSITION) aka "disposition" must beSome(
+          s"""attachment; filename="${fileName}""""
+        ))
     }
 
     "support sending a file with Unauthorized status" in withFile {
@@ -194,9 +212,10 @@ object ResultsSpec extends Specification {
           .sendFile(file)
           .header
 
-          (rh.status aka "status" must_== UNAUTHORIZED) and
-        (rh.headers.get(CONTENT_DISPOSITION) aka "disposition" must beSome(
-                s"""attachment; filename="${fileName}""""))
+        (rh.status aka "status" must_== UNAUTHORIZED) and
+          (rh.headers.get(CONTENT_DISPOSITION) aka "disposition" must beSome(
+            s"""attachment; filename="${fileName}""""
+          ))
     }
 
     "support sending a file inline with Unauthorized status" in withFile {
@@ -205,9 +224,10 @@ object ResultsSpec extends Specification {
           .sendFile(file, inline = true)
           .header
 
-          (rh.status aka "status" must_== UNAUTHORIZED) and
-        (rh.headers.get(CONTENT_DISPOSITION) aka "disposition" must beSome(
-                s"""inline; filename="${fileName}""""))
+        (rh.status aka "status" must_== UNAUTHORIZED) and
+          (rh.headers.get(CONTENT_DISPOSITION) aka "disposition" must beSome(
+            s"""inline; filename="${fileName}""""
+          ))
     }
 
     "support sending a file with PaymentRequired status" in withFile {
@@ -216,9 +236,10 @@ object ResultsSpec extends Specification {
           .sendFile(file)
           .header
 
-          (rh.status aka "status" must_== PAYMENT_REQUIRED) and
-        (rh.headers.get(CONTENT_DISPOSITION) aka "disposition" must beSome(
-                s"""attachment; filename="${fileName}""""))
+        (rh.status aka "status" must_== PAYMENT_REQUIRED) and
+          (rh.headers.get(CONTENT_DISPOSITION) aka "disposition" must beSome(
+            s"""attachment; filename="${fileName}""""
+          ))
     }
 
     "support sending a file inline with PaymentRequired status" in withFile {
@@ -227,9 +248,10 @@ object ResultsSpec extends Specification {
           .sendFile(file, inline = true)
           .header
 
-          (rh.status aka "status" must_== PAYMENT_REQUIRED) and
-        (rh.headers.get(CONTENT_DISPOSITION) aka "disposition" must beSome(
-                s"""inline; filename="${fileName}""""))
+        (rh.status aka "status" must_== PAYMENT_REQUIRED) and
+          (rh.headers.get(CONTENT_DISPOSITION) aka "disposition" must beSome(
+            s"""inline; filename="${fileName}""""
+          ))
     }
 
     "support sending a path with Ok status" in withPath { (file, fileName) =>
@@ -237,9 +259,10 @@ object ResultsSpec extends Specification {
         .sendPath(file)
         .header
 
-        (rh.status aka "status" must_== OK) and
-      (rh.headers.get(CONTENT_DISPOSITION) aka "disposition" must beSome(
-              s"""attachment; filename="${fileName}""""))
+      (rh.status aka "status" must_== OK) and
+        (rh.headers.get(CONTENT_DISPOSITION) aka "disposition" must beSome(
+          s"""attachment; filename="${fileName}""""
+        ))
     }
 
     "support sending a path with Unauthorized status" in withPath {
@@ -248,9 +271,10 @@ object ResultsSpec extends Specification {
           .sendPath(file)
           .header
 
-          (rh.status aka "status" must_== UNAUTHORIZED) and
-        (rh.headers.get(CONTENT_DISPOSITION) aka "disposition" must beSome(
-                s"""attachment; filename="${fileName}""""))
+        (rh.status aka "status" must_== UNAUTHORIZED) and
+          (rh.headers.get(CONTENT_DISPOSITION) aka "disposition" must beSome(
+            s"""attachment; filename="${fileName}""""
+          ))
     }
 
     "support sending a path inline with Unauthorized status" in withPath {
@@ -259,9 +283,10 @@ object ResultsSpec extends Specification {
           .sendPath(file, inline = true)
           .header
 
-          (rh.status aka "status" must_== UNAUTHORIZED) and
-        (rh.headers.get(CONTENT_DISPOSITION) aka "disposition" must beSome(
-                s"""inline; filename="${fileName}""""))
+        (rh.status aka "status" must_== UNAUTHORIZED) and
+          (rh.headers.get(CONTENT_DISPOSITION) aka "disposition" must beSome(
+            s"""inline; filename="${fileName}""""
+          ))
     }
 
     "allow checking content length" in withPath { (file, fileName) =>

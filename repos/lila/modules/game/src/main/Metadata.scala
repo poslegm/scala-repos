@@ -6,12 +6,14 @@ import org.joda.time.DateTime
 
 import chess.Color
 
-private[game] case class Metadata(source: Option[Source],
-                                  pgnImport: Option[PgnImport],
-                                  tournamentId: Option[String],
-                                  simulId: Option[String],
-                                  tvAt: Option[DateTime],
-                                  analysed: Boolean) {
+private[game] case class Metadata(
+    source: Option[Source],
+    pgnImport: Option[PgnImport],
+    tournamentId: Option[String],
+    simulId: Option[String],
+    tvAt: Option[DateTime],
+    analysed: Boolean
+) {
 
   def pgnDate = pgnImport flatMap (_.date)
 
@@ -25,11 +27,13 @@ private[game] object Metadata {
   val empty = Metadata(None, None, None, None, None, false)
 }
 
-case class PgnImport(user: Option[String],
-                     date: Option[String],
-                     pgn: String,
-                     // hashed PGN for DB unicity
-                     h: Option[ByteArray])
+case class PgnImport(
+    user: Option[String],
+    date: Option[String],
+    pgn: String,
+    // hashed PGN for DB unicity
+    h: Option[ByteArray]
+)
 
 object PgnImport {
 

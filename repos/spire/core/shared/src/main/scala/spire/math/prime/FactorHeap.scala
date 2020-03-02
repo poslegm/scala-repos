@@ -25,7 +25,7 @@ import SieveUtil._
 class FactorHeap {
 
   private[this] var arr: Array[Factor] = new Array[Factor](8)
-  private[this] var len: Int = 0
+  private[this] var len: Int           = 0
 
   override def toString: String =
     arr.filter(_ != null).map(_.next).mkString("FactorHeap(", ", ", ")")
@@ -48,7 +48,7 @@ class FactorHeap {
     resizeIfNecessary()
     var i = len
     while (i > 1) {
-      val j = i >>> 1
+      val j  = i >>> 1
       val fj = arr(j)
       if (factor.next >= fj.next) { arr(i) = factor; return () }
       arr(i) = fj
@@ -60,7 +60,7 @@ class FactorHeap {
   def dequeue(): Factor = {
     if (len == 0) throw new NoSuchElementException("empty heap")
     val result = arr(1)
-    val last = arr(len)
+    val last   = arr(len)
     len -= 1 // points to last valid slot
 
     var i = 1

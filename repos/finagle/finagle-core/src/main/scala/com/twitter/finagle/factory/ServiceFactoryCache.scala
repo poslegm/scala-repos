@@ -2,8 +2,23 @@ package com.twitter.finagle.factory
 
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import java.util.concurrent.atomic.AtomicInteger
-import com.twitter.finagle.{Status, Service, ServiceFactory, ClientConnection, ServiceProxy, ServiceFactoryProxy}
-import com.twitter.util.{Closable, Future, Stopwatch, Throw, Return, Time, Duration}
+import com.twitter.finagle.{
+  Status,
+  Service,
+  ServiceFactory,
+  ClientConnection,
+  ServiceProxy,
+  ServiceFactoryProxy
+}
+import com.twitter.util.{
+  Closable,
+  Future,
+  Stopwatch,
+  Throw,
+  Return,
+  Time,
+  Duration
+}
 import com.twitter.finagle.stats.{StatsReceiver, NullStatsReceiver}
 import com.twitter.finagle.tracing.Trace
 import scala.collection.immutable
@@ -15,7 +30,7 @@ import scala.collection.immutable
 private class IdlingFactory[Req, Rep](self: ServiceFactory[Req, Rep])
     extends ServiceFactoryProxy[Req, Rep](self) {
   @volatile private[this] var watch = Stopwatch.start()
-  private[this] val n = new AtomicInteger(0)
+  private[this] val n               = new AtomicInteger(0)
 
   override def apply(conn: ClientConnection): Future[Service[Req, Rep]] = {
     n.getAndIncrement()
@@ -26,8 +41,7 @@ private class IdlingFactory[Req, Rep](self: ServiceFactory[Req, Rep])
         Future.exception(exc)
 
       case Return(service) =>
-        Future.value(
-            new ServiceProxy(service) {
+        Future.value(new ServiceProxy(service) {
           override def close(deadline: Time) = {
             decr()
             super.close(deadline)
@@ -61,8 +75,8 @@ private class IdlingFactory[Req, Rep](self: ServiceFactory[Req, Rep])
 private[finagle] class ServiceFactoryCache[Key, Req, Rep](
     newFactory: Key => ServiceFactory[Req, Rep],
     statsReceiver: StatsReceiver = NullStatsReceiver,
-    maxCacheSize: Int = 8)
-    extends Closable {
+    maxCacheSize: Int = 8
+) extends Closable {
   assert(maxCacheSize > 0)
 
   @volatile private[this] var cache =
@@ -73,8 +87,8 @@ private[finagle] class ServiceFactoryCache[Key, Req, Rep](
     (rw.readLock(), rw.writeLock())
   }
 
-  private[this] val nmiss = statsReceiver.counter("misses")
-  private[this] val nevict = statsReceiver.counter("evicts")
+  private[this] val nmiss    = statsReceiver.counter("misses")
+  private[this] val nevict   = statsReceiver.counter("evicts")
   private[this] val noneshot = statsReceiver.counter("oneshots")
   private[this] val nidle = statsReceiver.addGauge("idle") {
     cache count { case (_, f) => f.idleFor > Duration.Zero }
@@ -100,7 +114,9 @@ private[finagle] class ServiceFactoryCache[Key, Req, Rep](
   }
 
   private[this] def miss(
-      key: Key, conn: ClientConnection): Future[Service[Req, Rep]] = {
+      key: Key,
+      conn: ClientConnection
+  ): Future[Service[Req, Rep]] = {
     writeLock.lock()
 
     if (cache contains key) {
@@ -113,36 +129,38 @@ private[finagle] class ServiceFactoryCache[Key, Req, Rep](
       }
     }
 
-    val svc = try {
-      nmiss.incr()
+    val svc =
+      try {
+        nmiss.incr()
 
-      val factory = new IdlingFactory(newFactory(key))
+        val factory = new IdlingFactory(newFactory(key))
 
-      if (cache.size < maxCacheSize) {
-        cache += (key -> factory)
-        cache(key).apply(conn)
-      } else {
-        findEvictee() match {
-          case Some(evicted) =>
-            nevict.incr()
-            cache(evicted).close()
-            cache = cache - evicted + (key -> factory)
-            cache(key).apply(conn)
-          case None =>
-            noneshot.incr()
-            oneshot(factory, conn)
+        if (cache.size < maxCacheSize) {
+          cache += (key -> factory)
+          cache(key).apply(conn)
+        } else {
+          findEvictee() match {
+            case Some(evicted) =>
+              nevict.incr()
+              cache(evicted).close()
+              cache = cache - evicted + (key -> factory)
+              cache(key).apply(conn)
+            case None =>
+              noneshot.incr()
+              oneshot(factory, conn)
+          }
         }
+      } finally {
+        writeLock.unlock()
       }
-    } finally {
-      writeLock.unlock()
-    }
 
     svc
   }
 
   private[this] def oneshot(
       factory: ServiceFactory[Req, Rep],
-      conn: ClientConnection): Future[Service[Req, Rep]] =
+      conn: ClientConnection
+  ): Future[Service[Req, Rep]] =
     factory(conn) map { service =>
       new ServiceProxy(service) {
         override def close(deadline: Time) =
@@ -175,7 +193,7 @@ private[finagle] class ServiceFactoryCache[Key, Req, Rep](
     // This is somewhat dubious, as the status is outdated
     // pretty much right after we query it.
     val factory = newFactory(key)
-    val status = factory.status
+    val status  = factory.status
     factory.close()
     status
   }

@@ -6,14 +6,19 @@ import scala.pickling.Defaults._
 import scala.pickling.binary._
 
 // for Java Serialization:
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectOutputStream, ObjectInputStream}
+import java.io.{
+  ByteArrayInputStream,
+  ByteArrayOutputStream,
+  ObjectOutputStream,
+  ObjectInputStream
+}
 
 object TraversableIntBench extends scala.pickling.testing.PicklingBenchmark {
   val coll = (1 to size).toVector
 
   override def run() {
     val pickle = coll.pickle
-    val res = pickle.unpickle[Vector[Int]]
+    val res    = pickle.unpickle[Vector[Int]]
   }
 }
 
@@ -28,7 +33,7 @@ object TraversableJavaIntBench
     val ba = bos.toByteArray()
     // println("Bytes: " + ba.length)
     val bis = new ByteArrayInputStream(ba)
-    val in = new ObjectInputStream(bis)
+    val in  = new ObjectInputStream(bis)
     val res = in.readObject.asInstanceOf[Vector[Int]]
   }
 }
@@ -36,7 +41,7 @@ object TraversableJavaIntBench
 object TraversableKryoIntBench
     extends scala.pickling.testing.PicklingBenchmark {
   var ser: KryoSerializer = _
-  val coll = (1 to size).toVector
+  val coll                = (1 to size).toVector
 
   override def tearDown() {
     ser = null
@@ -44,10 +49,10 @@ object TraversableKryoIntBench
 
   override def run() {
     val rnd: Int = Random.nextInt(10)
-    val arr = Array.ofDim[Byte](32 * 2048 * 2048 + rnd)
+    val arr      = Array.ofDim[Byte](32 * 2048 * 2048 + rnd)
     ser = new KryoSerializer
 
-    val pickled = ser.toBytes(coll, arr)
+    val pickled   = ser.toBytes(coll, arr)
     val unpickled = ser.fromBytes[Vector[Int]](pickled)
   }
 }

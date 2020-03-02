@@ -25,33 +25,36 @@ class ScalaTypeDefinitionStructureViewElement(val element: ScTypeDefinition)
   }
 
   def getChildren: Array[TreeElement] = {
-    val children = new ArrayBuffer[TreeElement]
+    val children                = new ArrayBuffer[TreeElement]
     val clazz: ScTypeDefinition = element
-    val members = clazz.members
+    val members                 = clazz.members
     for (member <- members) {
       member match {
         case func: ScFunction => {
-            children += new ScalaFunctionStructureViewElement(func, false)
-          }
+          children += new ScalaFunctionStructureViewElement(func, false)
+        }
         case constr: ScPrimaryConstructor => {
-            children += new ScalaPrimaryConstructorStructureViewElement(constr)
-          }
+          children += new ScalaPrimaryConstructorStructureViewElement(constr)
+        }
         case member: ScVariable => {
-            for (f <- member.declaredElements) children +=
+          for (f <- member.declaredElements)
+            children +=
               new ScalaVariableStructureViewElement(f.nameId, false)
-          }
+        }
         case member: ScValue => {
-            for (f <- member.declaredElements) children +=
+          for (f <- member.declaredElements)
+            children +=
               new ScalaValueStructureViewElement(f.nameId, false)
-          }
+        }
         case member: ScTypeAlias => {
-            children += new ScalaTypeAliasStructureViewElement(member, false)
-          }
+          children += new ScalaTypeAliasStructureViewElement(member, false)
+        }
         case _ =>
       }
     }
-    for (typeDef <- clazz.typeDefinitions) children +=
-      new ScalaTypeDefinitionStructureViewElement(typeDef)
+    for (typeDef <- clazz.typeDefinitions)
+      children +=
+        new ScalaTypeDefinitionStructureViewElement(typeDef)
     children.toArray
   }
 }

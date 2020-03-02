@@ -88,11 +88,11 @@ trait TaskArgs extends CompilationPathProperty {
     destinationDir = Some(input)
   }
 
-  protected var id: Option[String] = None
-  protected var extraArgs: Seq[Argument] = Seq()
-  protected var compTarget: Option[String] = None
-  protected var sourcePath: Option[Path] = None
-  protected var compilerPath: Option[Path] = None
+  protected var id: Option[String]           = None
+  protected var extraArgs: Seq[Argument]     = Seq()
+  protected var compTarget: Option[String]   = None
+  protected var sourcePath: Option[Path]     = None
+  protected var compilerPath: Option[Path]   = None
   protected var destinationDir: Option[File] = None
 
   def extraArgsFlat: Seq[String] = extraArgs flatMap { a =>

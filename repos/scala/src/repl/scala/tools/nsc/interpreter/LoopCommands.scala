@@ -16,10 +16,10 @@ class ProcessResult(val line: String) {
   import scala.sys.process._
   private val buffer = new ListBuffer[String]
 
-  val builder = Process(line)
-  val logger = ProcessLogger(buffer += _)
+  val builder  = Process(line)
+  val logger   = ProcessLogger(buffer += _)
   val exitCode = builder ! logger
-  def lines = buffer.toList
+  def lines    = buffer.toList
 
   override def toString =
     "`%s` (%d lines, exit %d)".format(line, buffer.size, exitCode)
@@ -34,7 +34,7 @@ trait LoopCommands {
   // a single interpreter command
   abstract class LoopCommand(val name: String, val help: String)
       extends (String => Result) {
-    def usage: String = ""
+    def usage: String    = ""
     def usageMsg: String = ":" + name + (if (usage == "") "" else " " + usage)
     def apply(line: String): Result
 
@@ -48,10 +48,12 @@ trait LoopCommands {
     def nullary(name: String, help: String, f: () => Result): LoopCommand =
       new NullaryCmd(name, help, _ => f())
 
-    def cmd(name: String,
-            usage: String,
-            help: String,
-            f: String => Result): LoopCommand =
+    def cmd(
+        name: String,
+        usage: String,
+        help: String,
+        f: String => Result
+    ): LoopCommand =
       if (usage == "") new NullaryCmd(name, help, f)
       else new LineCmd(name, usage, help, f)
   }
@@ -62,18 +64,24 @@ trait LoopCommands {
   }
 
   class LineCmd(
-      name: String, argWord: String, help: String, f: String => Result)
-      extends LoopCommand(name, help) {
-    override def usage = argWord
+      name: String,
+      argWord: String,
+      help: String,
+      f: String => Result
+  ) extends LoopCommand(name, help) {
+    override def usage              = argWord
     def apply(line: String): Result = f(line)
   }
 
   class VarArgsCmd(
-      name: String, argWord: String, help: String, f: List[String] => Result)
-      extends LoopCommand(name, help) {
-    override def usage = argWord
+      name: String,
+      argWord: String,
+      help: String,
+      f: List[String] => Result
+  ) extends LoopCommand(name, help) {
+    override def usage              = argWord
     def apply(line: String): Result = apply(words(line))
-    def apply(args: List[String]) = f(args)
+    def apply(args: List[String])   = f(args)
   }
 
   // the result of a single command

@@ -2,7 +2,7 @@ package p {
 
   abstract class C[A] {
     def x: A
-    implicit def oops: A = x
+    implicit def oops: A          = x
     implicit def oopso: Option[A] = None
   }
 

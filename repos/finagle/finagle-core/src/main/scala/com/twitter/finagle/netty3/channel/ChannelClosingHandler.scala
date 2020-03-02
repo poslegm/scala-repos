@@ -4,15 +4,24 @@ package com.twitter.finagle.netty3.channel
   * A Netty channel handler that reliably closes its underlying
   * connection (when it exists).
   */
-import org.jboss.netty.channel.{SimpleChannelHandler, LifeCycleAwareChannelHandler, ChannelHandlerContext, ChannelStateEvent, Channel, ChannelFutureListener, ChannelFuture}
+import org.jboss.netty.channel.{
+  SimpleChannelHandler,
+  LifeCycleAwareChannelHandler,
+  ChannelHandlerContext,
+  ChannelStateEvent,
+  Channel,
+  ChannelFutureListener,
+  ChannelFuture
+}
 
 import com.twitter.finagle.netty3.LatentChannelFuture
 
 private[finagle] class ChannelClosingHandler
-    extends SimpleChannelHandler with LifeCycleAwareChannelHandler {
+    extends SimpleChannelHandler
+    with LifeCycleAwareChannelHandler {
   private[this] val channelCloseFuture = new LatentChannelFuture
-  private[this] var channel: Channel = null
-  private[this] var awaitingClose = false
+  private[this] var channel: Channel   = null
+  private[this] var awaitingClose      = false
 
   private[this] def setChannel(ch: Channel) = synchronized {
     channel = ch

@@ -54,8 +54,9 @@ trait TaskSupport extends Tasks
   *  @see [[scala.collection.parallel.TaskSupport]] for more information.
   */
 class ForkJoinTaskSupport(
-    val environment: ForkJoinPool = ForkJoinTasks.defaultForkJoinPool)
-    extends TaskSupport with AdaptiveWorkStealingForkJoinTasks
+    val environment: ForkJoinPool = ForkJoinTasks.defaultForkJoinPool
+) extends TaskSupport
+    with AdaptiveWorkStealingForkJoinTasks
 
 /** A task support that uses a thread pool executor to schedule tasks.
   *
@@ -63,8 +64,9 @@ class ForkJoinTaskSupport(
   */
 @deprecated("Use `ForkJoinTaskSupport` instead.", "2.11.0")
 class ThreadPoolTaskSupport(
-    val environment: ThreadPoolExecutor = ThreadPoolTasks.defaultThreadPool)
-    extends TaskSupport with AdaptiveWorkStealingThreadPoolTasks
+    val environment: ThreadPoolExecutor = ThreadPoolTasks.defaultThreadPool
+) extends TaskSupport
+    with AdaptiveWorkStealingThreadPoolTasks
 
 /** A task support that uses an execution context to schedule tasks.
   *
@@ -80,5 +82,6 @@ class ThreadPoolTaskSupport(
   *  @see [[scala.collection.parallel.TaskSupport]] for more information.
   */
 class ExecutionContextTaskSupport(
-    val environment: ExecutionContext = scala.concurrent.ExecutionContext.global)
-    extends TaskSupport with ExecutionContextTasks
+    val environment: ExecutionContext = scala.concurrent.ExecutionContext.global
+) extends TaskSupport
+    with ExecutionContextTasks

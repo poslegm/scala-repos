@@ -31,13 +31,13 @@ object HiveFromSpark {
 
   // Copy kv1.txt file from classpath to temporary directory
   val kv1Stream = HiveFromSpark.getClass.getResourceAsStream("/kv1.txt")
-  val kv1File = File.createTempFile("kv1", "txt")
+  val kv1File   = File.createTempFile("kv1", "txt")
   kv1File.deleteOnExit()
   ByteStreams.copy(kv1Stream, Files.newOutputStreamSupplier(kv1File))
 
   def main(args: Array[String]) {
     val sparkConf = new SparkConf().setAppName("HiveFromSpark")
-    val sc = new SparkContext(sparkConf)
+    val sc        = new SparkContext(sparkConf)
 
     // A hive context adds support for finding tables in the MetaStore and writing queries
     // using HiveQL. Users who do not have an existing Hive deployment can still create a
@@ -61,7 +61,8 @@ object HiveFromSpark {
     // The results of SQL queries are themselves RDDs and support all normal RDD functions.  The
     // items in the RDD are of type Row, which allows you to access each column by ordinal.
     val rddFromSql = sql(
-        "SELECT key, value FROM src WHERE key < 10 ORDER BY key")
+      "SELECT key, value FROM src WHERE key < 10 ORDER BY key"
+    )
 
     println("Result of RDD.map:")
     val rddAsStrings = rddFromSql.rdd.map {

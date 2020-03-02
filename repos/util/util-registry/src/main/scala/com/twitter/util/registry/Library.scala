@@ -7,7 +7,7 @@ import java.util.logging.Logger
   * the registry.
   */
 object Library {
-  private[this] val log = Logger.getLogger(getClass.getName)
+  private[this] val log            = Logger.getLogger(getClass.getName)
   private[registry] val Registered = "__registered"
 
   /**
@@ -21,8 +21,8 @@ object Library {
     */
   def register(name: String, params: Map[String, String]): Option[Roster] = {
     val registry = GlobalRegistry.get
-    val prefix = Seq("library", name)
-    val old = registry.put(prefix, Registered)
+    val prefix   = Seq("library", name)
+    val old      = registry.put(prefix, Registered)
     old match {
       case Some(oldValue) =>
         registry.put(prefix, oldValue)
@@ -42,8 +42,11 @@ object Library {
   * Can change the value of params that were already set in the registry, but cannot
   * add new ones.
   */
-class Roster private[registry](
-    scope: Seq[String], keys: Set[String], log: Logger) {
+class Roster private[registry] (
+    scope: Seq[String],
+    keys: Set[String],
+    log: Logger
+) {
   private[this] val registry = GlobalRegistry.get
 
   /**
@@ -64,7 +67,8 @@ class Roster private[registry](
       if (result.isEmpty) {
         val serialized = s""""(${newKey.mkString(",")})""""
         log.warning(
-            s"expected there to be a value at key $serialized in registry but it was empty.")
+          s"expected there to be a value at key $serialized in registry but it was empty."
+        )
       }
       result.isDefined
     }

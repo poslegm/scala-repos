@@ -3,7 +3,7 @@ package org.scalatra
 import org.scalatra.test.scalatest.ScalatraFunSuite
 
 class ErrorHandlerTest extends ScalatraFunSuite {
-  trait TestException extends RuntimeException
+  trait TestException     extends RuntimeException
   case class Exception1() extends TestException
   case class Exception2() extends TestException
   case class Exception3() extends TestException

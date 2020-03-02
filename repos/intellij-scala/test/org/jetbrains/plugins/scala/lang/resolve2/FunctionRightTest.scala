@@ -8,6 +8,6 @@ class FunctionRightTest extends ResolveTestBase {
     super.folderPath + "function/right/"
   }
 
-  def testRight() = doTest()
+  def testRight()        = doTest()
   def testRightIllegal() = doTest()
 }

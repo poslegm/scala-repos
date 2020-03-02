@@ -5,30 +5,30 @@
 //############################################################################
 
 object Ops {
-  def - = 0;
+  def -          = 0;
   def -(c: Char) = c;
-  def -(i: Int) = i;
+  def -(i: Int)  = i;
 
-  def -- = 0;
+  def --          = 0;
   def --(c: Char) = c;
-  def --(i: Int) = i;
+  def --(i: Int)  = i;
 }
 
 object Funcs {
   def foo = 0;
 //  def foo() = 1;
   def foo(c: Char) = 2;
-  def foo(i: Int) = 3;
+  def foo(i: Int)  = 3;
 }
 
 object M1 {
-  def f[A](x: A) = 11;
+  def f[A](x: A)                        = 11;
   def f[A <: Ordered[A]](x: Ordered[A]) = 12;
 }
 
 object M2 {
   def f[A <: Ordered[A]](x: Ordered[A]) = 21;
-  def f[A](x: A) = 22;
+  def f[A](x: A)                        = 22;
 }
 
 object overloads {
@@ -44,13 +44,13 @@ object overloads {
     Console.flush;
   }
 
-  def - = 0;
+  def -          = 0;
   def -(c: Char) = c;
-  def -(i: Int) = i;
+  def -(i: Int)  = i;
 
-  def -- = 0;
+  def --          = 0;
   def --(c: Char) = c;
-  def --(i: Int) = i;
+  def --(i: Int)  = i;
 
   def test: Unit = {
     check("-('a')", -('a'), -97);

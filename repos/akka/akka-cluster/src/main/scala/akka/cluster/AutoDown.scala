@@ -67,8 +67,8 @@ private[cluster] class AutoDown(autoDownUnreachableAfter: FiniteDuration)
   * able to unit test the logic without running cluster.
   */
 private[cluster] abstract class AutoDownBase(
-    autoDownUnreachableAfter: FiniteDuration)
-    extends Actor {
+    autoDownUnreachableAfter: FiniteDuration
+) extends Actor {
 
   import AutoDown._
 
@@ -83,8 +83,8 @@ private[cluster] abstract class AutoDownBase(
   val skipMemberStatus = Gossip.convergenceSkipUnreachableWithMemberStatus
 
   var scheduledUnreachable: Map[UniqueAddress, Cancellable] = Map.empty
-  var pendingUnreachable: Set[UniqueAddress] = Set.empty
-  var leader = false
+  var pendingUnreachable: Set[UniqueAddress]                = Set.empty
+  var leader                                                = false
 
   override def postStop(): Unit = {
     scheduledUnreachable.values foreach { _.cancel }
@@ -97,7 +97,7 @@ private[cluster] abstract class AutoDownBase(
 
     case UnreachableMember(m) ⇒ unreachableMember(m)
 
-    case ReachableMember(m) ⇒ remove(m.uniqueAddress)
+    case ReachableMember(m)  ⇒ remove(m.uniqueAddress)
     case MemberRemoved(m, _) ⇒ remove(m.uniqueAddress)
 
     case LeaderChanged(leaderOption) ⇒
@@ -126,7 +126,10 @@ private[cluster] abstract class AutoDownBase(
       downOrAddPending(node)
     } else {
       val task = scheduler.scheduleOnce(
-          autoDownUnreachableAfter, self, UnreachableTimeout(node))
+        autoDownUnreachableAfter,
+        self,
+        UnreachableTimeout(node)
+      )
       scheduledUnreachable += (node -> task)
     }
   }

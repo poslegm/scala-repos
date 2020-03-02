@@ -16,19 +16,21 @@ trait Associative[=>:[_, _]] { self =>
   def reassociateIso[A, B, C]: ((A =>: B) =>: C) <=> (A =>: (B =>: C)) =
     new (((A =>: B) =>: C) <=> (A =>: (B =>: C))) {
       def from = reassociateLeft
-      def to = reassociateRight
+      def to   = reassociateRight
     }
 
   trait AssociativeLaw {
 
     /** Reassociating left and then right is a no-op. */
-    def leftRight[A, B, C](fa: A =>: (B =>: C))(
-        implicit FR: Equal[A =>: (B =>: C)]): Boolean =
+    def leftRight[A, B, C](
+        fa: A =>: (B =>: C)
+    )(implicit FR: Equal[A =>: (B =>: C)]): Boolean =
       FR.equal(reassociateRight(reassociateLeft(fa)), fa)
 
     /** Reassociating right and then left is a no-op. */
-    def rightLeft[A, B, C](fa: (A =>: B) =>: C)(
-        implicit FL: Equal[(A =>: B) =>: C]): Boolean =
+    def rightLeft[A, B, C](
+        fa: (A =>: B) =>: C
+    )(implicit FL: Equal[(A =>: B) =>: C]): Boolean =
       FL.equal(reassociateLeft(reassociateRight(fa)), fa)
   }
 

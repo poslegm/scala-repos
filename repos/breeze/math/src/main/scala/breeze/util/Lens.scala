@@ -24,7 +24,7 @@ object Lens {
   }
 
   implicit def identity[T]: Lens[T, T] = new Lens[T, T] {
-    def get(t: T) = t
+    def get(t: T)       = t
     def set(t: T, u: T) = u
   }
 

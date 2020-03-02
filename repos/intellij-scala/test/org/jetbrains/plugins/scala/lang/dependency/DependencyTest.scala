@@ -15,8 +15,7 @@ class DependencyTest extends SimpleTestCase {
       class C
       classOf[C]
     }
-    """,
-                          ("C", "ScClass: C", "O.C"))
+    """, ("C", "ScClass: C", "O.C"))
   }
 
   def testSyntheticClass() {
@@ -33,8 +32,7 @@ class DependencyTest extends SimpleTestCase {
       object Foo
       Foo
     }
-    """,
-                          ("Foo", "ScObject: Foo", "O.Foo"))
+    """, ("Foo", "ScObject: Foo", "O.Foo"))
   }
 
   def testQualifier() {
@@ -43,8 +41,7 @@ class DependencyTest extends SimpleTestCase {
       object Foo
     }
     O.Foo
-    """,
-                          ("O", "ScObject: O", "O"))
+    """, ("O", "ScObject: O", "O"))
   }
 
   def testPrimaryConstructor() {
@@ -53,12 +50,12 @@ class DependencyTest extends SimpleTestCase {
       class C
       new C
     }
-    """,
-                          ("C", "PrimaryConstructor", "O.C"))
+    """, ("C", "PrimaryConstructor", "O.C"))
   }
 
   def testSecondaryConstructor() {
-    assertDependenciesAre("""
+    assertDependenciesAre(
+      """
     object O {
       class C(i: Int, s: String) {
         def this(i: Int) {
@@ -68,7 +65,8 @@ class DependencyTest extends SimpleTestCase {
       new C(1)
     }
     """,
-                          ("C", "ScFunctionDefinition: this", "O.C"))
+      ("C", "ScFunctionDefinition: this", "O.C")
+    )
   }
 
   def testCaseClassCopy() {
@@ -77,8 +75,7 @@ class DependencyTest extends SimpleTestCase {
       case class C(v: Any)
       C(null).copy(v = null)
     }
-    """,
-                          ("C", "ScFunctionDefinition: apply", "O.C"))
+    """, ("C", "ScFunctionDefinition: apply", "O.C"))
   }
 
   def testSyntheticApply() {
@@ -87,8 +84,7 @@ class DependencyTest extends SimpleTestCase {
       case class C()
       C()
     }
-    """,
-                          ("C", "ScFunctionDefinition: apply", "O.C"))
+    """, ("C", "ScFunctionDefinition: apply", "O.C"))
   }
 
   def testSyntheticUnapply() {
@@ -99,12 +95,12 @@ class DependencyTest extends SimpleTestCase {
         case C() =>
       }
     }
-    """,
-                          ("C", "ScFunctionDefinition: unapply", "O.C"))
+    """, ("C", "ScFunctionDefinition: unapply", "O.C"))
   }
 
   def testSyntheticInfixUnapply() {
-    assertDependenciesAre("""
+    assertDependenciesAre(
+      """
     object O {
       case class C(a: Any, b: Any)
       null match {
@@ -112,11 +108,13 @@ class DependencyTest extends SimpleTestCase {
       }
     }
     """,
-                          ("C", "ScFunctionDefinition: unapply", "O.C"))
+      ("C", "ScFunctionDefinition: unapply", "O.C")
+    )
   }
 
   def testSyntheticUnapplySeq() {
-    assertDependenciesAre("""
+    assertDependenciesAre(
+      """
     object O {
       case class C(seq: Any*)
       null match {
@@ -124,7 +122,8 @@ class DependencyTest extends SimpleTestCase {
       }
     }
     """,
-                          ("C", "ScFunctionDefinition: unapplySeq", "O.C"))
+      ("C", "ScFunctionDefinition: unapplySeq", "O.C")
+    )
   }
 
   def testExplicitApply() {
@@ -135,12 +134,12 @@ class DependencyTest extends SimpleTestCase {
       }
       Foo()
     }
-    """,
-                          ("Foo", "ScFunctionDefinition: apply", "O.Foo"))
+    """, ("Foo", "ScFunctionDefinition: apply", "O.Foo"))
   }
 
   def testExplicitUnapply() {
-    assertDependenciesAre("""
+    assertDependenciesAre(
+      """
     object O {
       object Foo {
         def unapply() = null
@@ -150,11 +149,13 @@ class DependencyTest extends SimpleTestCase {
       }
     }
     """,
-                          ("Foo", "ScFunctionDefinition: unapply", "O.Foo"))
+      ("Foo", "ScFunctionDefinition: unapply", "O.Foo")
+    )
   }
 
   def testExplicitInfixUnapply() {
-    assertDependenciesAre("""
+    assertDependenciesAre(
+      """
     object O {
       object Foo {
         def unapply(v: Any): Option[(Any, Any)] = null
@@ -164,11 +165,13 @@ class DependencyTest extends SimpleTestCase {
       }
     }
     """,
-                          ("Foo", "ScFunctionDefinition: unapply", "O.Foo"))
+      ("Foo", "ScFunctionDefinition: unapply", "O.Foo")
+    )
   }
 
   def testExplicitUnapplySeq() {
-    assertDependenciesAre("""
+    assertDependenciesAre(
+      """
     object O {
       object Foo {
         def unapplySeq(): Seq[Any] = null
@@ -178,7 +181,8 @@ class DependencyTest extends SimpleTestCase {
       }
     }
     """,
-                          ("Foo", "ScFunctionDefinition: unapplySeq", "O.Foo"))
+      ("Foo", "ScFunctionDefinition: unapplySeq", "O.Foo")
+    )
   }
 
   def testFunction() {
@@ -187,8 +191,7 @@ class DependencyTest extends SimpleTestCase {
       def foo() {}
       foo()
     }
-    """,
-                          ("foo", "ScFunctionDefinition: foo", "O.foo"))
+    """, ("foo", "ScFunctionDefinition: foo", "O.foo"))
   }
 
   def testValue() {
@@ -196,8 +199,7 @@ class DependencyTest extends SimpleTestCase {
     object O {
       val foo = 1
       foo
-    }""",
-                          ("foo", "ReferencePattern: foo", "O.foo"))
+    }""", ("foo", "ReferencePattern: foo", "O.foo"))
   }
 
   def testVariable() {
@@ -205,12 +207,12 @@ class DependencyTest extends SimpleTestCase {
     object O {
       var foo = 1
       foo
-    }""",
-                          ("foo", "ReferencePattern: foo", "O.foo"))
+    }""", ("foo", "ReferencePattern: foo", "O.foo"))
   }
 
   def testNonStaticMembers() {
-    assertDependenciesAre("""
+    assertDependenciesAre(
+      """
     object O {
       class A {
         def foo() {}
@@ -224,11 +226,13 @@ class DependencyTest extends SimpleTestCase {
       }
     }
     """,
-                          ("A", "PrimaryConstructor", "O.A"))
+      ("A", "PrimaryConstructor", "O.A")
+    )
   }
 
   def testInheritedMemberImport() {
-    assertDependenciesAre("""
+    assertDependenciesAre(
+      """
     object O {
       trait A {
         def foo() {}
@@ -237,9 +241,10 @@ class DependencyTest extends SimpleTestCase {
       import B._
       foo()
     }""",
-                          ("A", "ScTrait: A", "O.A"),
-                          ("B", "ScObject: B", "O.B"),
-                          ("foo", "ScFunctionDefinition: foo", "O.B.foo"))
+      ("A", "ScTrait: A", "O.A"),
+      ("B", "ScObject: B", "O.B"),
+      ("foo", "ScFunctionDefinition: foo", "O.B.foo")
+    )
   }
 
   // package
@@ -247,8 +252,10 @@ class DependencyTest extends SimpleTestCase {
   // import, T
   // injected
 
-  private def assertDependenciesAre(@Language("Scala") code: String,
-                                    expectations: (String, String, String)*) {
+  private def assertDependenciesAre(
+      @Language("Scala") code: String,
+      expectations: (String, String, String)*
+  ) {
     val file = parseText(code)
 
     val descriptors = Dependency

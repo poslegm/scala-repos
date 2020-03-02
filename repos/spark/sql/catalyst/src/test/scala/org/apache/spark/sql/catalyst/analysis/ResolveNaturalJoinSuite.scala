@@ -25,16 +25,16 @@ import org.apache.spark.sql.catalyst.plans._
 import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
 
 class ResolveNaturalJoinSuite extends AnalysisTest {
-  lazy val a = 'a.string
-  lazy val b = 'b.string
-  lazy val c = 'c.string
+  lazy val a        = 'a.string
+  lazy val b        = 'b.string
+  lazy val c        = 'c.string
   lazy val aNotNull = a.notNull
   lazy val bNotNull = b.notNull
   lazy val cNotNull = c.notNull
-  lazy val r1 = LocalRelation(b, a)
-  lazy val r2 = LocalRelation(c, a)
-  lazy val r3 = LocalRelation(aNotNull, bNotNull)
-  lazy val r4 = LocalRelation(cNotNull, bNotNull)
+  lazy val r1       = LocalRelation(b, a)
+  lazy val r2       = LocalRelation(c, a)
+  lazy val r3       = LocalRelation(aNotNull, bNotNull)
+  lazy val r4       = LocalRelation(cNotNull, bNotNull)
 
   test("natural/using inner join") {
     val naturalPlan = r1.join(r2, NaturalJoin(Inner), None)
@@ -124,7 +124,10 @@ class ResolveNaturalJoinSuite extends AnalysisTest {
     val error = intercept[AnalysisException] {
       SimpleAnalyzer.checkAnalysis(usingPlan)
     }
-    assert(error.message.contains(
-            "using columns ['d] can not be resolved given input columns: [b, a, c]"))
+    assert(
+      error.message.contains(
+        "using columns ['d] can not be resolved given input columns: [b, a, c]"
+      )
+    )
   }
 }

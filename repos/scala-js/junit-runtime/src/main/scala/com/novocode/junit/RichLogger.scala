@@ -11,7 +11,10 @@ final class RichLogger private (loggers: Array[Logger], settings: RunSettings) {
   private[this] val currentTestClassName = new mutable.Stack[String]()
 
   def this(
-      loggers: Array[Logger], settings: RunSettings, testClassName: String) = {
+      loggers: Array[Logger],
+      settings: RunSettings,
+      testClassName: String
+  ) = {
     this(loggers, settings)
     currentTestClassName.push(testClassName)
   }
@@ -68,19 +71,27 @@ final class RichLogger private (loggers: Array[Logger], settings: RunSettings) {
       } - 1
     val m = if (i > 0) i else trace.length - 1
     logStackTracePart(
-        trace, m, trace.length - m - 1, t, testClassName, testFileName)
+      trace,
+      m,
+      trace.length - m - 1,
+      t,
+      testClassName,
+      testFileName
+    )
   }
 
-  private def logStackTracePart(trace: Array[StackTraceElement],
-                                m: Int,
-                                framesInCommon: Int,
-                                t: Throwable,
-                                testClassName: String,
-                                testFileName: String): Unit = {
-    val m0 = m
-    var m2 = m
+  private def logStackTracePart(
+      trace: Array[StackTraceElement],
+      m: Int,
+      framesInCommon: Int,
+      t: Throwable,
+      testClassName: String,
+      testFileName: String
+  ): Unit = {
+    val m0  = m
+    var m2  = m
     var top = 0
-    var i = top
+    var i   = top
     while (i <= m2) {
       if (trace(i).toString.startsWith("org.junit.") ||
           trace(i).toString.startsWith("org.hamcrest.")) {
@@ -106,8 +117,12 @@ final class RichLogger private (loggers: Array[Logger], settings: RunSettings) {
 
     for (i <- top to m2) {
       error(
-          "    at " + stackTraceElementToString(
-              trace(i), testClassName, testFileName))
+        "    at " + stackTraceElementToString(
+          trace(i),
+          testClassName,
+          testFileName
+        )
+      )
     }
     if (m0 != m2) {
       // skip junit-related frames
@@ -119,34 +134,46 @@ final class RichLogger private (loggers: Array[Logger], settings: RunSettings) {
     logStackTraceAsCause(trace, t.getCause, testClassName, testFileName)
   }
 
-  private def logStackTraceAsCause(causedTrace: Array[StackTraceElement],
-                                   t: Throwable,
-                                   testClassName: String,
-                                   testFileName: String): Unit = {
+  private def logStackTraceAsCause(
+      causedTrace: Array[StackTraceElement],
+      t: Throwable,
+      testClassName: String,
+      testFileName: String
+  ): Unit = {
     if (t != null) {
       val trace = t.getStackTrace
-      var m = trace.length - 1
-      var n = causedTrace.length - 1
+      var m     = trace.length - 1
+      var n     = causedTrace.length - 1
       while (m >= 0 && n >= 0 && trace(m) == causedTrace(n)) {
         m -= 1
         n -= 1
       }
       error("Caused by: " + t)
       logStackTracePart(
-          trace, m, trace.length - 1 - m, t, testClassName, testFileName)
+        trace,
+        m,
+        trace.length - 1 - m,
+        t,
+        testClassName,
+        testFileName
+      )
     }
   }
 
   private def findTestFileName(
-      trace: Array[StackTraceElement], testClassName: String): String = {
+      trace: Array[StackTraceElement],
+      testClassName: String
+  ): String = {
     trace.collectFirst {
       case e if testClassName.equals(e.getClassName) => e.getFileName
     }.orNull
   }
 
-  private def stackTraceElementToString(e: StackTraceElement,
-                                        testClassName: String,
-                                        testFileName: String): String = {
+  private def stackTraceElementToString(
+      e: StackTraceElement,
+      testClassName: String,
+      testFileName: String
+  ): String = {
     val highlight =
       settings.color && {
         testClassName == e.getClassName ||
@@ -164,8 +191,10 @@ final class RichLogger private (loggers: Array[Logger], settings: RunSettings) {
       r += c(e.getFileName, if (highlight) TESTFILE1 else null)
       if (e.getLineNumber >= 0) {
         r += ':'
-        r += c(String.valueOf(e.getLineNumber),
-               if (highlight) TESTFILE2 else null)
+        r += c(
+          String.valueOf(e.getLineNumber),
+          if (highlight) TESTFILE2 else null
+        )
       }
     }
     r += ')'

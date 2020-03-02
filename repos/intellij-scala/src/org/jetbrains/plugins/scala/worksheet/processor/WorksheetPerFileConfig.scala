@@ -9,7 +9,7 @@ import com.intellij.psi.PsiFile
   * Date: 30.07.14.
   */
 trait WorksheetPerFileConfig {
-  protected val enabled = "enabled"
+  protected val enabled  = "enabled"
   protected val disabled = "disable"
 
   def isEnabled(file: PsiFile, attribute: FileAttribute) =
@@ -17,6 +17,9 @@ trait WorksheetPerFileConfig {
 
   def setEnabled(file: PsiFile, attribute: FileAttribute, e: Boolean) {
     FileAttributeUtilCache.writeAttribute(
-        attribute, file, if (e) enabled else disabled)
+      attribute,
+      file,
+      if (e) enabled else disabled
+    )
   }
 }

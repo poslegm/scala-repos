@@ -5,7 +5,14 @@ package play.api.libs.json
 
 import java.time.format.DateTimeFormatter
 import java.time.temporal.Temporal
-import java.time.{Instant, LocalDate, LocalDateTime, OffsetDateTime, ZoneOffset, ZonedDateTime}
+import java.time.{
+  Instant,
+  LocalDate,
+  LocalDateTime,
+  OffsetDateTime,
+  ZoneOffset,
+  ZonedDateTime
+}
 
 import com.fasterxml.jackson.databind.JsonNode
 import play.api.libs.functional.ContravariantFunctor
@@ -20,7 +27,7 @@ import scala.reflect.ClassTag
   * Json serializer: write an implicit to define a serializer for any type
   */
 @implicitNotFound(
-    "No Json serializer found for type ${A}. Try to implement an implicit Writes or Format for this type."
+  "No Json serializer found for type ${A}. Try to implement an implicit Writes or Format for this type."
 )
 trait Writes[-A] {
 
@@ -45,7 +52,7 @@ trait Writes[-A] {
 }
 
 @implicitNotFound(
-    "No Json serializer as JsObject found for type ${A}. Try to implement an implicit OWrites or OFormat for this type."
+  "No Json serializer as JsObject found for type ${A}. Try to implement an implicit OWrites or OFormat for this type."
 )
 trait OWrites[-A] extends Writes[A] {
   def writes(o: A): JsObject
@@ -54,17 +61,13 @@ trait OWrites[-A] extends Writes[A] {
     * Transforms the resulting [[JsValue]] using transformer function
     */
   def transform(transformer: JsObject => JsObject): OWrites[A] =
-    OWrites[A] { a =>
-      transformer(this.writes(a))
-    }
+    OWrites[A] { a => transformer(this.writes(a)) }
 
   /**
     * Transforms resulting [[JsValue]] using Writes[JsValue]
     */
   def transform(transformer: OWrites[JsObject]): OWrites[A] =
-    OWrites[A] { a =>
-      transformer.writes(this.writes(a))
-    }
+    OWrites[A] { a => transformer.writes(this.writes(a)) }
 }
 
 object OWrites extends PathWrites with ConstraintWrites {
@@ -95,7 +98,7 @@ object OWrites extends PathWrites with ConstraintWrites {
 object Writes extends PathWrites with ConstraintWrites with DefaultWrites {
 
   val constraints: ConstraintWrites = this
-  val path: PathWrites = this
+  val path: PathWrites              = this
 
   implicit val contravariantfunctorWrites: ContravariantFunctor[Writes] =
     new ContravariantFunctor[Writes] {
@@ -188,23 +191,19 @@ trait DefaultWrites {
   /**
     * Serializer for Array[T] types.
     */
-  implicit def arrayWrites[T : ClassTag : Writes]: Writes[Array[T]] =
-    Writes[Array[T]] { ts =>
-      JsArray(ts.map(toJson(_)).toSeq)
-    }
+  implicit def arrayWrites[T: ClassTag: Writes]: Writes[Array[T]] =
+    Writes[Array[T]] { ts => JsArray(ts.map(toJson(_)).toSeq) }
 
   /**
     * Serializer for Map[String,V] types.
     */
-  implicit def mapWrites[V : Writes]: OWrites[Map[String, V]] =
-    OWrites[Map[String, V]] { ts =>
-      JsObject(ts.mapValues(toJson(_)).toSeq)
-    }
+  implicit def mapWrites[V: Writes]: OWrites[Map[String, V]] =
+    OWrites[Map[String, V]] { ts => JsObject(ts.mapValues(toJson(_)).toSeq) }
 
   /**
     * Serializer for Traversables types.
     */
-  implicit def traversableWrites[A : Writes] = Writes[Traversable[A]] { as =>
+  implicit def traversableWrites[A: Writes] = Writes[Traversable[A]] { as =>
     JsArray(as.map(toJson(_)).toSeq)
   }
 
@@ -222,7 +221,7 @@ trait DefaultWrites {
     new Writes[Option[T]] {
       def writes(o: Option[T]) = o match {
         case Some(value) => fmt.writes(value)
-        case None => JsNull
+        case None        => JsNull
       }
     }
 
@@ -251,58 +250,69 @@ trait DefaultWrites {
   /** Formatting companion */
   object TemporalFormatter {
     implicit def DefaultLocalDateTimeFormatter(
-        formatter: DateTimeFormatter): TemporalFormatter[LocalDateTime] =
+        formatter: DateTimeFormatter
+    ): TemporalFormatter[LocalDateTime] =
       new TemporalFormatter[LocalDateTime] {
         def format(temporal: LocalDateTime): String =
           formatter.format(temporal)
       }
 
     implicit def PatternLocalDateTimeFormatter(
-        pattern: String): TemporalFormatter[LocalDateTime] =
+        pattern: String
+    ): TemporalFormatter[LocalDateTime] =
       DefaultLocalDateTimeFormatter(DateTimeFormatter.ofPattern(pattern))
 
     implicit def DefaultOffsetDateTimeFormatter(
-        formatter: DateTimeFormatter): TemporalFormatter[OffsetDateTime] =
+        formatter: DateTimeFormatter
+    ): TemporalFormatter[OffsetDateTime] =
       new TemporalFormatter[OffsetDateTime] {
         def format(temporal: OffsetDateTime): String =
           formatter.format(temporal)
       }
 
     implicit def PatternOffsetDateTimeFormatter(
-        pattern: String): TemporalFormatter[OffsetDateTime] =
+        pattern: String
+    ): TemporalFormatter[OffsetDateTime] =
       DefaultOffsetDateTimeFormatter(DateTimeFormatter.ofPattern(pattern))
 
     implicit def DefaultZonedDateTimeFormatter(
-        formatter: DateTimeFormatter): TemporalFormatter[ZonedDateTime] =
+        formatter: DateTimeFormatter
+    ): TemporalFormatter[ZonedDateTime] =
       new TemporalFormatter[ZonedDateTime] {
         def format(temporal: ZonedDateTime): String =
           formatter.format(temporal)
       }
 
     implicit def PatternZonedDateTimeFormatter(
-        pattern: String): TemporalFormatter[ZonedDateTime] =
+        pattern: String
+    ): TemporalFormatter[ZonedDateTime] =
       DefaultZonedDateTimeFormatter(DateTimeFormatter.ofPattern(pattern))
 
     implicit def DefaultDateFormatter(
-        formatter: DateTimeFormatter): TemporalFormatter[LocalDate] =
+        formatter: DateTimeFormatter
+    ): TemporalFormatter[LocalDate] =
       new TemporalFormatter[LocalDate] {
         def format(temporal: LocalDate): String = formatter.format(temporal)
       }
 
     implicit def PatternDateFormatter(
-        pattern: String): TemporalFormatter[LocalDate] =
+        pattern: String
+    ): TemporalFormatter[LocalDate] =
       DefaultDateFormatter(DateTimeFormatter.ofPattern(pattern))
 
     implicit def DefaultInstantFormatter(
-        formatter: DateTimeFormatter): TemporalFormatter[Instant] =
+        formatter: DateTimeFormatter
+    ): TemporalFormatter[Instant] =
       new TemporalFormatter[Instant] {
         def format(temporal: Instant): String = formatter.format(temporal)
       }
 
     implicit def PatternInstantFormatter(
-        pattern: String): TemporalFormatter[Instant] =
+        pattern: String
+    ): TemporalFormatter[Instant] =
       DefaultInstantFormatter(
-          DateTimeFormatter.ofPattern(pattern).withZone(ZoneOffset.UTC))
+        DateTimeFormatter.ofPattern(pattern).withZone(ZoneOffset.UTC)
+      )
   }
 
   /**
@@ -323,8 +333,9 @@ trait DefaultWrites {
     *     DateTimeFormatter.ISO_LOCAL_DATE_TIME)
     * }}}
     */
-  def temporalWrites[A <: Temporal, B](formatting: B)(
-      implicit f: B => TemporalFormatter[A]): Writes[A] = new Writes[A] {
+  def temporalWrites[A <: Temporal, B](
+      formatting: B
+  )(implicit f: B => TemporalFormatter[A]): Writes[A] = new Writes[A] {
     def writes(temporal: A): JsValue = JsString(f(formatting) format temporal)
   }
 
@@ -334,7 +345,8 @@ trait DefaultWrites {
     */
   implicit val DefaultLocalDateTimeWrites =
     temporalWrites[LocalDateTime, DateTimeFormatter](
-        DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+      DateTimeFormatter.ISO_LOCAL_DATE_TIME
+    )
 
   /**
     * The default typeclass to write a `java.time.OffsetDateTime`,
@@ -342,7 +354,8 @@ trait DefaultWrites {
     */
   implicit val DefaultOffsetDateTimeWrites =
     temporalWrites[OffsetDateTime, DateTimeFormatter](
-        DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+      DateTimeFormatter.ISO_OFFSET_DATE_TIME
+    )
 
   /**
     * The default typeclass to write a `java.time.ZonedDateTime`,
@@ -350,7 +363,8 @@ trait DefaultWrites {
     */
   implicit val DefaultZonedDateTimeWrites =
     temporalWrites[ZonedDateTime, DateTimeFormatter](
-        DateTimeFormatter.ISO_ZONED_DATE_TIME)
+      DateTimeFormatter.ISO_ZONED_DATE_TIME
+    )
 
   /**
     * The default typeclass to write a `java.time.LocalDate`,
@@ -358,7 +372,8 @@ trait DefaultWrites {
     */
   implicit val DefaultLocalDateWrites =
     temporalWrites[LocalDate, DateTimeFormatter](
-        DateTimeFormatter.ISO_LOCAL_DATE)
+      DateTimeFormatter.ISO_LOCAL_DATE
+    )
 
   /**
     * The default typeclass to write a `java.time.Instant`,
@@ -413,8 +428,9 @@ trait DefaultWrites {
   val LocalDateNumberWrites: Writes[LocalDate] = new Writes[LocalDate] {
     def writes(t: LocalDate): JsValue =
       JsNumber(
-          BigDecimal.valueOf(
-              t.atStartOfDay.toInstant(ZoneOffset.UTC).toEpochMilli))
+        BigDecimal
+          .valueOf(t.atStartOfDay.toInstant(ZoneOffset.UTC).toEpochMilli)
+      )
   }
 
   /**
@@ -438,15 +454,14 @@ trait DefaultWrites {
     */
   def jodaDateWrites(pattern: String): Writes[org.joda.time.DateTime] =
     new Writes[org.joda.time.DateTime] {
-      val df = org.joda.time.format.DateTimeFormat.forPattern(pattern)
+      val df                                         = org.joda.time.format.DateTimeFormat.forPattern(pattern)
       def writes(d: org.joda.time.DateTime): JsValue = JsString(d.toString(df))
     }
 
   /**
     * Default Serializer org.joda.time.DateTime -> JsNumber(d.getMillis (nb of ms))
     */
-  implicit object DefaultJodaDateWrites
-      extends Writes[org.joda.time.DateTime] {
+  implicit object DefaultJodaDateWrites extends Writes[org.joda.time.DateTime] {
     def writes(d: org.joda.time.DateTime): JsValue = JsNumber(d.getMillis)
   }
 
@@ -517,15 +532,15 @@ trait DefaultWrites {
     */
   private[json] object anyWrites extends Writes[Any] {
     def writes(a: Any): JsValue = a match {
-      case s: String => JsString(s)
-      case nb: Int => JsNumber(nb)
-      case nb: Short => JsNumber(nb)
-      case nb: Long => JsNumber(nb)
-      case nb: Double => JsNumber(nb)
-      case nb: Float => JsNumber(nb)
-      case b: Boolean => JsBoolean(b)
+      case s: String   => JsString(s)
+      case nb: Int     => JsNumber(nb)
+      case nb: Short   => JsNumber(nb)
+      case nb: Long    => JsNumber(nb)
+      case nb: Double  => JsNumber(nb)
+      case nb: Float   => JsNumber(nb)
+      case b: Boolean  => JsBoolean(b)
       case js: JsValue => js
-      case x => JsString(x.toString)
+      case x           => JsString(x.toString)
     }
   }
 }

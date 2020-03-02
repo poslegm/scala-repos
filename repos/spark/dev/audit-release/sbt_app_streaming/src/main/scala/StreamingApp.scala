@@ -33,14 +33,14 @@ object SparkStreamingExample {
         new SparkConf().setAppName("Simple Streaming App").setMaster(master)
       case None => new SparkConf().setAppName("Simple Streaming App")
     }
-    val ssc = new StreamingContext(conf, Seconds(1))
+    val ssc  = new StreamingContext(conf, Seconds(1))
     val seen = ListBuffer[RDD[Int]]()
 
     val rdd1 = ssc.sparkContext.makeRDD(1 to 100, 10)
     val rdd2 = ssc.sparkContext.makeRDD(1 to 1000, 10)
     val rdd3 = ssc.sparkContext.makeRDD(1 to 10000, 10)
 
-    val queue = Queue(rdd1, rdd2, rdd3)
+    val queue  = Queue(rdd1, rdd2, rdd3)
     val stream = ssc.queueStream(queue)
 
     stream.foreachRDD(rdd => seen += rdd)
@@ -56,8 +56,10 @@ object SparkStreamingExample {
 
     val rddCounts = seen.map(rdd => rdd.count()).filter(_ > 0)
     test(rddCounts.length == 3, "Did not collect three RDD's from stream")
-    test(rddCounts.toSet == Set(100, 1000, 10000),
-         "Did not find expected streams")
+    test(
+      rddCounts.toSet == Set(100, 1000, 10000),
+      "Did not find expected streams"
+    )
 
     println("Test succeeded")
 

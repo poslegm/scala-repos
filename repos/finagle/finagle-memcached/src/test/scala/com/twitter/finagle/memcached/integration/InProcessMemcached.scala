@@ -10,8 +10,8 @@ import com.twitter.util.{Await, SynchronizedLruMap}
 
 class InProcessMemcached(address: SocketAddress) {
   val concurrencyLevel = 16
-  val slots = 500000
-  val slotsPerLru = slots / concurrencyLevel
+  val slots            = 500000
+  val slotsPerLru      = slots / concurrencyLevel
   val maps =
     (0 until concurrencyLevel) map { i =>
       new SynchronizedLruMap[Buf, Entry](slotsPerLru)

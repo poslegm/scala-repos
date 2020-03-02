@@ -23,7 +23,7 @@ import org.apache.spark.sql.DataFrame
 
 class BisectingKMeansSuite extends SparkFunSuite with MLlibTestSparkContext {
 
-  final val k = 5
+  final val k                       = 5
   @transient var dataset: DataFrame = _
 
   override def beforeAll(): Unit = {
@@ -75,7 +75,7 @@ class BisectingKMeansSuite extends SparkFunSuite with MLlibTestSparkContext {
     val model = bkm.fit(dataset)
     assert(model.clusterCenters.length === k)
 
-    val transformed = model.transform(dataset)
+    val transformed     = model.transform(dataset)
     val expectedColumns = Array("features", predictionColName)
     expectedColumns.foreach { column =>
       assert(transformed.columns.contains(column))

@@ -5,7 +5,8 @@ import scala.language.implicitConversions
 
 object MacroSupport {
   implicit def macroSupportInterpolation(
-      s: StringContext): MacroSupportInterpolation =
+      s: StringContext
+  ): MacroSupportInterpolation =
     new MacroSupportInterpolation(s)
 }
 

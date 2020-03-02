@@ -16,13 +16,17 @@ import breeze.numerics.{pow, sqrt}
   */
 trait MatrixNorms[M, S] {
   implicit def canNorm_Int(
-      implicit iter: CanTraverseValues[M, Int]): norm.Impl2[M, Int, Double]
+      implicit iter: CanTraverseValues[M, Int]
+  ): norm.Impl2[M, Int, Double]
   implicit def canNorm_Float(
-      implicit iter: CanTraverseValues[M, Float]): norm.Impl2[M, Float, Double]
-  implicit def canNorm_Double(implicit iter: CanTraverseValues[M, Double])
-    : norm.Impl2[M, Double, Double]
+      implicit iter: CanTraverseValues[M, Float]
+  ): norm.Impl2[M, Float, Double]
+  implicit def canNorm_Double(
+      implicit iter: CanTraverseValues[M, Double]
+  ): norm.Impl2[M, Double, Double]
   implicit def canNorm_Field(
-      implicit field: Field[S]): norm.Impl2[M, Double, Double]
+      implicit field: Field[S]
+  ): norm.Impl2[M, Double, Double]
 }
 
 trait MatrixInnerProduct[M, S] extends MatrixNorms[M, S] {
@@ -57,12 +61,14 @@ object EntrywiseMatrixNorms {
   def make[M, S](
       implicit field: Field[S],
       hadamard: OpMulScalar.Impl2[M, M, M],
-      iter: CanTraverseValues[M, S]) = new MatrixInnerProduct[M, S] {
+      iter: CanTraverseValues[M, S]
+  ) = new MatrixInnerProduct[M, S] {
 
     override def innerProduct(m1: M, m2: M): S = sum(hadamard(m1, m2))
 
     override implicit def canNorm_Int(
-        implicit iter: CanTraverseValues[M, Int]): norm.Impl2[M, Int, Double] =
+        implicit iter: CanTraverseValues[M, Int]
+    ): norm.Impl2[M, Int, Double] =
       new norm.Impl2[M, Int, Double] {
         def apply(v: M, n: Int): Double = {
 
@@ -72,26 +78,29 @@ object EntrywiseMatrixNorms {
               if (n == 1)
                 ((v: Int) => agg += v.abs.toDouble, identity[Double] _)
               else if (n == 2)
-                ((v: Int) =>
-                   {
-                     val nn = v.abs.toDouble
-                     agg += nn * nn
-                 },
-                 (e: Double) => sqrt(e))
+                (
+                  (v: Int) => {
+                    val nn = v.abs.toDouble
+                    agg += nn * nn
+                  },
+                  (e: Double) => sqrt(e)
+                )
               else if (n == Int.MaxValue) {
-                ((v: Int) =>
-                   {
-                     val nn = v.abs.toDouble
-                     if (nn > agg) agg = nn
-                 },
-                 identity[Double] _)
+                (
+                  (v: Int) => {
+                    val nn = v.abs.toDouble
+                    if (nn > agg) agg = nn
+                  },
+                  identity[Double] _
+                )
               } else {
-                ((v: Int) =>
-                   {
-                     val nn = v.abs.toDouble
-                     agg += pow(v, n)
-                 },
-                 (e: Double) => pow(e, 1.0 / n))
+                (
+                  (v: Int) => {
+                    val nn = v.abs.toDouble
+                    agg += pow(v, n)
+                  },
+                  (e: Double) => pow(e, 1.0 / n)
+                )
               }
 
             def visit(a: Int): Unit = op(a)
@@ -108,8 +117,8 @@ object EntrywiseMatrixNorms {
       }
 
     override implicit def canNorm_Float(
-        implicit iter: CanTraverseValues[M, Float])
-      : norm.Impl2[M, Float, Double] = new norm.Impl2[M, Float, Double] {
+        implicit iter: CanTraverseValues[M, Float]
+    ): norm.Impl2[M, Float, Double] = new norm.Impl2[M, Float, Double] {
       def apply(v: M, n: Float): Double = {
 
         class NormVisitor extends ValuesVisitor[Float] {
@@ -118,26 +127,29 @@ object EntrywiseMatrixNorms {
             if (n == 1)
               ((v: Float) => agg += v.abs.toDouble, identity[Double] _)
             else if (n == 2)
-              ((v: Float) =>
-                 {
-                   val nn = v.abs.toDouble
-                   agg += nn * nn
-               },
-               (e: Double) => sqrt(e))
+              (
+                (v: Float) => {
+                  val nn = v.abs.toDouble
+                  agg += nn * nn
+                },
+                (e: Double) => sqrt(e)
+              )
             else if (n == Float.PositiveInfinity) {
-              ((v: Float) =>
-                 {
-                   val nn = v.abs.toDouble
-                   if (nn > agg) agg = nn
-               },
-               identity[Double] _)
+              (
+                (v: Float) => {
+                  val nn = v.abs.toDouble
+                  if (nn > agg) agg = nn
+                },
+                identity[Double] _
+              )
             } else {
-              ((v: Float) =>
-                 {
-                   val nn = v.abs.toDouble
-                   agg += pow(v, n)
-               },
-               (e: Double) => pow(e, 1.0 / n))
+              (
+                (v: Float) => {
+                  val nn = v.abs.toDouble
+                  agg += pow(v, n)
+                },
+                (e: Double) => pow(e, 1.0 / n)
+              )
             }
 
           def visit(a: Float): Unit = op(a)
@@ -154,8 +166,8 @@ object EntrywiseMatrixNorms {
     }
 
     override implicit def canNorm_Double(
-        implicit iter: CanTraverseValues[M, Double])
-      : norm.Impl2[M, Double, Double] = new norm.Impl2[M, Double, Double] {
+        implicit iter: CanTraverseValues[M, Double]
+    ): norm.Impl2[M, Double, Double] = new norm.Impl2[M, Double, Double] {
       def apply(v: M, n: Double): Double = {
 
         class NormVisitor extends ValuesVisitor[Double] {
@@ -163,26 +175,29 @@ object EntrywiseMatrixNorms {
           val (op, opEnd) =
             if (n == 1) ((v: Double) => agg += v.abs, identity[Double] _)
             else if (n == 2)
-              ((v: Double) =>
-                 {
-                   val nn = v.abs
-                   agg += nn * nn
-               },
-               (e: Double) => sqrt(e))
+              (
+                (v: Double) => {
+                  val nn = v.abs
+                  agg += nn * nn
+                },
+                (e: Double) => sqrt(e)
+              )
             else if (n == Double.PositiveInfinity) {
-              ((v: Double) =>
-                 {
-                   val nn = v.abs
-                   if (nn > agg) agg = nn
-               },
-               identity[Double] _)
+              (
+                (v: Double) => {
+                  val nn = v.abs
+                  if (nn > agg) agg = nn
+                },
+                identity[Double] _
+              )
             } else {
-              ((v: Double) =>
-                 {
-                   val nn = v.abs
-                   agg += pow(v, n)
-               },
-               (e: Double) => pow(e, 1.0 / n))
+              (
+                (v: Double) => {
+                  val nn = v.abs
+                  agg += pow(v, n)
+                },
+                (e: Double) => pow(e, 1.0 / n)
+              )
             }
 
           def visit(a: Double): Unit = op(a)
@@ -199,7 +214,8 @@ object EntrywiseMatrixNorms {
     }
 
     override implicit def canNorm_Field(
-        implicit field: Field[S]): norm.Impl2[M, Double, Double] =
+        implicit field: Field[S]
+    ): norm.Impl2[M, Double, Double] =
       new norm.Impl2[M, Double, Double] {
         def apply(v: M, n: Double): Double = {
 
@@ -208,26 +224,29 @@ object EntrywiseMatrixNorms {
             val (op, opEnd) =
               if (n == 1) ((v: S) => agg += field.sNorm(v), identity[Double] _)
               else if (n == 2)
-                ((v: S) =>
-                   {
-                     val nn = field.sNorm(v)
-                     agg += nn * nn
-                 },
-                 (e: Double) => sqrt(e))
+                (
+                  (v: S) => {
+                    val nn = field.sNorm(v)
+                    agg += nn * nn
+                  },
+                  (e: Double) => sqrt(e)
+                )
               else if (n == Double.PositiveInfinity) {
-                ((v: S) =>
-                   {
-                     val nn = field.sNorm(v)
-                     if (nn > agg) agg = nn
-                 },
-                 identity[Double] _)
+                (
+                  (v: S) => {
+                    val nn = field.sNorm(v)
+                    if (nn > agg) agg = nn
+                  },
+                  identity[Double] _
+                )
               } else {
-                ((v: S) =>
-                   {
-                     val nn = field.sNorm(v)
-                     agg += pow(nn, n)
-                 },
-                 (e: Double) => pow(e, 1.0 / n))
+                (
+                  (v: S) => {
+                    val nn = field.sNorm(v)
+                    agg += pow(nn, n)
+                  },
+                  (e: Double) => pow(e, 1.0 / n)
+                )
               }
 
             def visit(a: S): Unit = op(a)

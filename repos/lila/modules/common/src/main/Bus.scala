@@ -5,7 +5,7 @@ import akka.event._
 
 final class Bus(system: ActorSystem) extends Extension with EventBus {
 
-  type Event = Bus.Event
+  type Event      = Bus.Event
   type Classifier = Symbol
   type Subscriber = ActorRef
 
@@ -58,7 +58,7 @@ final class Bus(system: ActorSystem) extends Extension with EventBus {
 
   private val bus = new ActorEventBus with LookupClassification {
 
-    type Event = Bus.Event
+    type Event      = Bus.Event
     type Classifier = Symbol
 
     override protected val mapSize = 2048

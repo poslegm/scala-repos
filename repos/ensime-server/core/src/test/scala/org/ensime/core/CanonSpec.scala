@@ -11,7 +11,7 @@ import org.ensime.api._
 // shapeless more than our specific Poly1.
 class CanonSpec extends EnsimeSpec {
 
-  val file = new File(".")
+  val file  = new File(".")
   val canon = file.canon
   assert(file != canon)
 
@@ -26,14 +26,14 @@ class CanonSpec extends EnsimeSpec {
   class MyFile(name: String) extends File(name)
 
   it should "canon subtypes of File" in {
-    val mine = new MyFile(".")
+    val mine    = new MyFile(".")
     val myCanon = mine.canon
     assert(mine != myCanon)
     Canonised(mine) shouldBe myCanon
   }
 
   it should "canon an RpcRequest" in {
-    val request = TypeAtPointReq(Left(file), OffsetRange(100)): RpcRequest
+    val request  = TypeAtPointReq(Left(file), OffsetRange(100)): RpcRequest
     val expected = TypeAtPointReq(Left(canon), OffsetRange(100))
     Canonised(request) shouldBe expected
   }

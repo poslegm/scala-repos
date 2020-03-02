@@ -13,23 +13,26 @@ import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScBlockExpr, ScIfStmt}
   * @since 1/31/13
   */
 class ScalaMissingIfBranchesFixer extends ScalaFixer {
-  def apply(editor: Editor,
-            processor: ScalaSmartEnterProcessor,
-            psiElement: PsiElement): OperationPerformed = {
+  def apply(
+      editor: Editor,
+      processor: ScalaSmartEnterProcessor,
+      psiElement: PsiElement
+  ): OperationPerformed = {
     val ifStatement =
       PsiTreeUtil.getParentOfType(psiElement, classOf[ScIfStmt], false)
     if (ifStatement == null) return NoOperation
 
-    val doc = editor.getDocument
+    val doc                  = editor.getDocument
     var transformingOneLiner = false
-    val thenBranch = ifStatement.thenBranch
+    val thenBranch           = ifStatement.thenBranch
 
     ifStatement.thenBranch match {
       case Some(block: ScBlockExpr) =>
         ifStatement.condition.foreach {
           case cond =>
             if (cond.getTextRange.containsOffset(
-                    editor.getCaretModel.getOffset))
+                  editor.getCaretModel.getOffset
+                ))
               return placeInWholeBlock(block, editor)
         }
         return NoOperation

@@ -9,7 +9,11 @@ import scala.concurrent.{ExecutionContext, Future}
 
 private[tracker] object TaskOpProcessor {
   case class Operation(
-      deadline: Timestamp, sender: ActorRef, taskId: Task.Id, action: Action) {
+      deadline: Timestamp,
+      sender: ActorRef,
+      taskId: Task.Id,
+      action: Action
+  ) {
     def appId: PathId = taskId.appId
   }
 
@@ -47,5 +51,6 @@ private[tracker] object TaskOpProcessor {
   */
 private[tracker] trait TaskOpProcessor {
   def process(op: TaskOpProcessor.Operation)(
-      implicit ec: ExecutionContext): Future[Unit]
+      implicit ec: ExecutionContext
+  ): Future[Unit]
 }

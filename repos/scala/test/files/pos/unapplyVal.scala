@@ -21,7 +21,7 @@ object unapplyJoins extends App {
   // bug #1257
 
   class Sync {
-    def apply(): Int = 42
+    def apply(): Int                 = 42
     def unapply(scrut: Any): Boolean = false
   }
 

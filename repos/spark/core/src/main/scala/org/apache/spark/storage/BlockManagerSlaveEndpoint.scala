@@ -32,17 +32,20 @@ import org.apache.spark.util.{ThreadUtils, Utils}
 private[storage] class BlockManagerSlaveEndpoint(
     override val rpcEnv: RpcEnv,
     blockManager: BlockManager,
-    mapOutputTracker: MapOutputTracker)
-    extends ThreadSafeRpcEndpoint with Logging {
+    mapOutputTracker: MapOutputTracker
+) extends ThreadSafeRpcEndpoint
+    with Logging {
 
   private val asyncThreadPool = ThreadUtils.newDaemonCachedThreadPool(
-      "block-manager-slave-async-thread-pool")
+    "block-manager-slave-async-thread-pool"
+  )
   private implicit val asyncExecutionContext =
     ExecutionContext.fromExecutorService(asyncThreadPool)
 
   // Operations that involve removing blocks may be slow and should be done asynchronously
   override def receiveAndReply(
-      context: RpcCallContext): PartialFunction[Any, Unit] = {
+      context: RpcCallContext
+  ): PartialFunction[Any, Unit] = {
     case RemoveBlock(blockId) =>
       doAsync[Boolean]("removing block " + blockId, context) {
         blockManager.removeBlock(blockId)
@@ -78,7 +81,8 @@ private[storage] class BlockManagerSlaveEndpoint(
   }
 
   private def doAsync[T](actionMessage: String, context: RpcCallContext)(
-      body: => T) {
+      body: => T
+  ) {
     val future = Future {
       logDebug(actionMessage)
       body

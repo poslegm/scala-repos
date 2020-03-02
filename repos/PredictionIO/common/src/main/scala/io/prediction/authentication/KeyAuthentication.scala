@@ -30,24 +30,33 @@ trait KeyAuthentication {
 
   object ServerKey {
     private val config = ConfigFactory.load("server.conf")
-    val get = config.getString("io.prediction.server.accessKey")
-    val param = "accessKey"
+    val get            = config.getString("io.prediction.server.accessKey")
+    val param          = "accessKey"
   }
 
-  def withAccessKeyFromFile: RequestContext => Future[Authentication[
-          HttpRequest]] = { ctx: RequestContext =>
-    val accessKeyParamOpt = ctx.request.uri.query.get(ServerKey.param)
-    Future {
+  def withAccessKeyFromFile
+      : RequestContext => Future[Authentication[HttpRequest]] = {
+    ctx: RequestContext =>
+      val accessKeyParamOpt = ctx.request.uri.query.get(ServerKey.param)
+      Future {
 
-      val passedKey = accessKeyParamOpt.getOrElse {
-        Left(AuthenticationFailedRejection(
-                AuthenticationFailedRejection.CredentialsRejected, List()))
+        val passedKey = accessKeyParamOpt.getOrElse {
+          Left(
+            AuthenticationFailedRejection(
+              AuthenticationFailedRejection.CredentialsRejected,
+              List()
+            )
+          )
+        }
+
+        if (passedKey.equals(ServerKey.get)) Right(ctx.request)
+        else
+          Left(
+            AuthenticationFailedRejection(
+              AuthenticationFailedRejection.CredentialsRejected,
+              List()
+            )
+          )
       }
-
-      if (passedKey.equals(ServerKey.get)) Right(ctx.request)
-      else
-        Left(AuthenticationFailedRejection(
-                AuthenticationFailedRejection.CredentialsRejected, List()))
-    }
   }
 }

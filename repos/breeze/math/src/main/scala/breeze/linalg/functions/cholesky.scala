@@ -28,14 +28,14 @@ object cholesky extends UFunc {
       // Copy the lower triangular part of X. LAPACK will store the result in A
       val A: DenseMatrix[Double] = lowerTriangular(X)
 
-      val N = X.rows
+      val N    = X.rows
       val info = new intW(0)
       lapack.dpotrf(
-          "L" /* lower triangular */,
-          N /* number of rows */,
-          A.data,
-          scala.math.max(1, N) /* LDA */,
-          info
+        "L" /* lower triangular */,
+        N /* number of rows */,
+        A.data,
+        scala.math.max(1, N) /* LDA */,
+        info
       )
       // A value of info.`val` < 0 would tell us that the i-th argument
       // of the call to dpotrf was erroneous (where i == |info.`val`|).

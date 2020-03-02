@@ -6,7 +6,12 @@ package akka.stream.scaladsl
 import scala.concurrent.Await
 import scala.concurrent.Future
 import scala.concurrent.duration._
-import akka.stream.{BufferOverflowException, ActorMaterializer, ActorMaterializerSettings, OverflowStrategy}
+import akka.stream.{
+  BufferOverflowException,
+  ActorMaterializer,
+  ActorMaterializerSettings,
+  OverflowStrategy
+}
 import akka.stream.testkit._
 import akka.stream.testkit.scaladsl._
 import akka.stream.testkit.Utils._
@@ -14,8 +19,8 @@ import akka.testkit.AkkaSpec
 
 class FlowBufferSpec extends AkkaSpec {
 
-  val settings = ActorMaterializerSettings(system).withInputBuffer(
-      initialSize = 1, maxSize = 1)
+  val settings = ActorMaterializerSettings(system)
+    .withInputBuffer(initialSize = 1, maxSize = 1)
 
   implicit val materializer = ActorMaterializer(settings)
 
@@ -52,7 +57,7 @@ class FlowBufferSpec extends AkkaSpec {
     }
 
     "accept elements that fit in the buffer while downstream is silent" in {
-      val publisher = TestPublisher.probe[Int]()
+      val publisher  = TestPublisher.probe[Int]()
       val subscriber = TestSubscriber.manualProbe[Int]()
 
       Source
@@ -74,7 +79,7 @@ class FlowBufferSpec extends AkkaSpec {
     }
 
     "drop head elements if buffer is full and configured so" in {
-      val publisher = TestPublisher.probe[Int]()
+      val publisher  = TestPublisher.probe[Int]()
       val subscriber = TestSubscriber.manualProbe[Int]()
 
       Source
@@ -107,7 +112,7 @@ class FlowBufferSpec extends AkkaSpec {
     }
 
     "drop tail elements if buffer is full and configured so" in {
-      val publisher = TestPublisher.probe[Int]()
+      val publisher  = TestPublisher.probe[Int]()
       val subscriber = TestSubscriber.manualProbe[Int]()
 
       Source
@@ -143,7 +148,7 @@ class FlowBufferSpec extends AkkaSpec {
     }
 
     "drop all elements if buffer is full and configured so" in {
-      val publisher = TestPublisher.probe[Int]()
+      val publisher  = TestPublisher.probe[Int]()
       val subscriber = TestSubscriber.manualProbe[Int]()
 
       Source
@@ -205,7 +210,7 @@ class FlowBufferSpec extends AkkaSpec {
     }
 
     "fail upstream if buffer is full and configured so" in assertAllStagesStopped {
-      val publisher = TestPublisher.probe[Int]()
+      val publisher  = TestPublisher.probe[Int]()
       val subscriber = TestSubscriber.manualProbe[Int]()
 
       Source
@@ -233,13 +238,15 @@ class FlowBufferSpec extends AkkaSpec {
       subscriber.expectError(error)
     }
 
-    for (strategy ← List(OverflowStrategy.dropHead,
-                         OverflowStrategy.dropTail,
-                         OverflowStrategy.dropBuffer)) {
+    for (strategy ← List(
+                     OverflowStrategy.dropHead,
+                     OverflowStrategy.dropTail,
+                     OverflowStrategy.dropBuffer
+                   )) {
 
       s"work with $strategy if buffer size of one" in {
 
-        val publisher = TestPublisher.probe[Int]()
+        val publisher  = TestPublisher.probe[Int]()
         val subscriber = TestSubscriber.manualProbe[Int]()
 
         Source

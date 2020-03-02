@@ -12,11 +12,13 @@ import akka.stream.ActorMaterializer
 trait WithMaterializerSpec extends BeforeAndAfterAll {
   _: Suite ⇒
   lazy val testConf: Config =
-    ConfigFactory.parseString("""
+    ConfigFactory.parseString(
+      """
   akka.event-handlers = ["akka.testkit.TestEventListener"]
-  akka.loglevel = WARNING""")
+  akka.loglevel = WARNING"""
+    )
   implicit lazy val system = ActorSystem(getClass.getSimpleName, testConf)
 
   implicit lazy val materializer = ActorMaterializer()
-  override def afterAll() = system.terminate()
+  override def afterAll()        = system.terminate()
 }

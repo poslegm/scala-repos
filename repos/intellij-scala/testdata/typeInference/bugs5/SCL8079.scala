@@ -7,7 +7,7 @@ object SCL8079 {
   }
   class R[T]
   class Q[T, E, C[_]] extends R[C[E]]
-  class TQ[T <: F] extends Q[T, T#R, scala.Seq]
+  class TQ[T <: F]    extends Q[T, T#R, scala.Seq]
   def foo[U](rep: R[U]): String = ""
 
   def foo[U, C[_]](q: Q[_, U, C]): Int = 1

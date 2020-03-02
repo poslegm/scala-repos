@@ -11,7 +11,7 @@ object Test extends MemoryTest {
     cm.mkToolBox()
   }
 
-  override def maxDelta = 10
+  override def maxDelta     = 10
   override def calcsPerIter = 8
   override def calc() {
     var snippet = """
@@ -21,7 +21,7 @@ object Test extends MemoryTest {
       foo(List(new A {}, new B {}))
     """.trim
     snippet = snippet + "\n" +
-    (List.fill(50)(snippet.split("\n").last) mkString "\n")
+      (List.fill(50)(snippet.split("\n").last) mkString "\n")
     tb.typecheck(tb.parse(snippet))
   }
 }

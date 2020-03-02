@@ -17,11 +17,14 @@ abstract class SnapshotStore extends SSnapshotStore with SnapshotStorePlugin {
 
   override final def loadAsync(
       persistenceId: String,
-      criteria: SnapshotSelectionCriteria): Future[Option[SelectedSnapshot]] =
+      criteria: SnapshotSelectionCriteria
+  ): Future[Option[SelectedSnapshot]] =
     doLoadAsync(persistenceId, criteria).map(option)
 
   override final def saveAsync(
-      metadata: SnapshotMetadata, snapshot: Any): Future[Unit] =
+      metadata: SnapshotMetadata,
+      snapshot: Any
+  ): Future[Unit] =
     doSaveAsync(metadata, snapshot).map(Unit.unbox)
 
   override final def deleteAsync(metadata: SnapshotMetadata): Future[Unit] =
@@ -29,7 +32,8 @@ abstract class SnapshotStore extends SSnapshotStore with SnapshotStorePlugin {
 
   override final def deleteAsync(
       persistenceId: String,
-      criteria: SnapshotSelectionCriteria): Future[Unit] =
+      criteria: SnapshotSelectionCriteria
+  ): Future[Unit] =
     doDeleteAsync(persistenceId: String, criteria: SnapshotSelectionCriteria)
       .map(_ ⇒ ())
 }

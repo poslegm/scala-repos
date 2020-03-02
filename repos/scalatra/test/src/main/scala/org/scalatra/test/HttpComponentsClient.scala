@@ -8,7 +8,11 @@ import org.apache.http.client.config.RequestConfig
 import org.apache.http.client.methods._
 import org.apache.http.entity.ByteArrayEntity
 import org.apache.http.entity.mime.content.{ContentBody, StringBody}
-import org.apache.http.entity.mime.{FormBodyPart, HttpMultipartMode, MultipartEntity}
+import org.apache.http.entity.mime.{
+  FormBodyPart,
+  HttpMultipartMode,
+  MultipartEntity
+}
 import org.apache.http.impl.client.{BasicCookieStore, HttpClientBuilder}
 
 import scala.util.DynamicVariable
@@ -37,7 +41,7 @@ case class HttpComponentsClientResponse(res: HttpResponse)
   def headers = {
     res.getAllHeaders.foldLeft(Map[String, Seq[String]]()) { (hmap, header) =>
       val Array(name, value) = Array(header.getName, header.getValue)
-      val values = hmap.getOrElse(name, Seq())
+      val values             = hmap.getOrElse(name, Seq())
 
       hmap + (name -> (values :+ value))
     }
@@ -53,12 +57,14 @@ trait HttpComponentsClient extends Client {
     _cookieStore.withValue(new BasicCookieStore) { f }
   }
 
-  def submit[A](method: String,
-                path: String,
-                queryParams: Iterable[(String, String)] = Map.empty,
-                headers: Iterable[(String, String)] = Seq.empty,
-                body: Array[Byte] = null)(f: => A): A = {
-    val client = createClient
+  def submit[A](
+      method: String,
+      path: String,
+      queryParams: Iterable[(String, String)] = Map.empty,
+      headers: Iterable[(String, String)] = Seq.empty,
+      body: Array[Byte] = null
+  )(f: => A): A = {
+    val client      = createClient
     val queryString = toQueryString(queryParams)
     val url =
       if (queryString == "") "%s/%s".format(baseUrl, path)
@@ -71,15 +77,16 @@ trait HttpComponentsClient extends Client {
     withResponse(HttpComponentsClientResponse(client.execute(req))) { f }
   }
 
-  protected def submitMultipart[A](method: String,
-                                   path: String,
-                                   params: Iterable[(String, String)],
-                                   headers: Iterable[(String, String)],
-                                   files: Iterable[(String, Any)])(
-      f: => A): A = {
+  protected def submitMultipart[A](
+      method: String,
+      path: String,
+      params: Iterable[(String, String)],
+      headers: Iterable[(String, String)],
+      files: Iterable[(String, Any)]
+  )(f: => A): A = {
     val client = createClient
-    val url = "%s/%s".format(baseUrl, path)
-    val req = createMethod(method.toUpperCase, url)
+    val url    = "%s/%s".format(baseUrl, path)
+    val req    = createMethod(method.toUpperCase, url)
 
     attachMultipartBody(req, params, files)
     attachHeaders(req, headers)
@@ -97,24 +104,25 @@ trait HttpComponentsClient extends Client {
   }
 
   private def attachHeaders(
-      req: HttpRequestBase, headers: Iterable[(String, String)]) {
+      req: HttpRequestBase,
+      headers: Iterable[(String, String)]
+  ) {
     headers.foreach { case (name, value) => req.addHeader(name, value) }
   }
 
   private def createMethod(method: String, url: String) = {
     val req = method match {
-      case "GET" => new HttpGet(url)
-      case "HEAD" => new HttpHead(url)
+      case "GET"     => new HttpGet(url)
+      case "HEAD"    => new HttpHead(url)
       case "OPTIONS" => new HttpOptions(url)
-      case "DELETE" => new HttpDelete(url)
-      case "TRACE" => new HttpTrace(url)
-      case "POST" => new HttpPost(url)
-      case "PUT" => new HttpPut(url)
-      case "PATCH" => new HttpPatch(url)
+      case "DELETE"  => new HttpDelete(url)
+      case "TRACE"   => new HttpTrace(url)
+      case "POST"    => new HttpPost(url)
+      case "PUT"     => new HttpPut(url)
+      case "PATCH"   => new HttpPatch(url)
     }
 
-    req.setConfig(
-        RequestConfig.custom().setCookieSpec("compatibility").build())
+    req.setConfig(RequestConfig.custom().setCookieSpec("compatibility").build())
 
     req
   }
@@ -129,17 +137,20 @@ trait HttpComponentsClient extends Client {
       case _ =>
         if (body.length > 0) {
           throw new IllegalArgumentException(
-              """|HTTP %s does not support enclosing an entity.
+            """|HTTP %s does not support enclosing an entity.
                |Please remove the value from `body` parameter
-               |or use POST/PUT/PATCH instead.""".stripMargin.format(
-                  req.getMethod))
+               |or use POST/PUT/PATCH instead.""".stripMargin
+              .format(req.getMethod)
+          )
         }
     }
   }
 
-  private def attachMultipartBody(req: HttpRequestBase,
-                                  params: Iterable[(String, String)],
-                                  files: Iterable[(String, Any)]) {
+  private def attachMultipartBody(
+      req: HttpRequestBase,
+      params: Iterable[(String, String)],
+      files: Iterable[(String, Any)]
+  ) {
 
     if (params.isEmpty && files.isEmpty) {
       return
@@ -148,11 +159,13 @@ trait HttpComponentsClient extends Client {
     req match {
       case r: HttpEntityEnclosingRequestBase =>
         val multipartEntity = new MultipartEntity(
-            HttpMultipartMode.BROWSER_COMPATIBLE)
+          HttpMultipartMode.BROWSER_COMPATIBLE
+        )
         params.foreach {
           case (name, value) =>
             multipartEntity.addPart(
-                new FormBodyPart(name, new StringBody(value)))
+              new FormBodyPart(name, new StringBody(value))
+            )
         }
 
         files.foreach {
@@ -164,22 +177,24 @@ trait HttpComponentsClient extends Client {
 
       case _ =>
         throw new IllegalArgumentException(
-            """|HTTP %s does not support enclosing an entity.
+          """|HTTP %s does not support enclosing an entity.
              |Please remove the value from `body` parameter
-             |or use POST/PUT/PATCH instead.""".stripMargin.format(
-                req.getMethod))
+             |or use POST/PUT/PATCH instead.""".stripMargin
+            .format(req.getMethod)
+        )
     }
   }
 
   def createBody(name: String, content: Any) = content match {
-    case file: File => UploadableBody(FilePart(file))
+    case file: File             => UploadableBody(FilePart(file))
     case uploadable: Uploadable => UploadableBody(uploadable)
 
     case s: Any =>
       throw new IllegalArgumentException(
-          ("The body type for file parameter '%s' could not be inferred. The " +
-              "supported types are java.util.File and org.scalatra.test.Uploadable")
-            .format(name))
+        ("The body type for file parameter '%s' could not be inferred. The " +
+          "supported types are java.util.File and org.scalatra.test.Uploadable")
+          .format(name)
+      )
   }
 }
 

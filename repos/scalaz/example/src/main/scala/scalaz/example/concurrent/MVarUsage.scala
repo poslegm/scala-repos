@@ -20,8 +20,8 @@ object MVarUsage extends App {
 
     val io = for {
       mvar <- newEmptyMVar[Int]
-      _ <- forkIO(calc(mvar))
-      a <- mvar.take
+      _    <- forkIO(calc(mvar))
+      a    <- mvar.take
     } yield a
     assert(io.unsafePerformIO === 42)
   }
@@ -35,11 +35,11 @@ object MVarUsage extends App {
       } yield ()
 
     val io = for {
-      in <- newMVar(6)
+      in  <- newMVar(6)
       out <- newEmptyMVar[Int]
-      _ <- forkIO(calc(in, out))
-      _ <- in.put(7)
-      a <- out.take
+      _   <- forkIO(calc(in, out))
+      _   <- in.put(7)
+      a   <- out.take
     } yield a
     assert(io.unsafePerformIO === 42)
   }

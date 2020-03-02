@@ -7,7 +7,7 @@
 abstract class IntMap[A] {
   def lookup(key: Int): A = this match {
     case Empty() => sys.error("KO")
-    case _ => sys.error("ok")
+    case _       => sys.error("ok")
   }
 }
 
@@ -27,13 +27,14 @@ object exceptions {
   }
 
   def test: Unit = {
-    val key = 2000;
+    val key                 = 2000;
     val map: IntMap[String] = new Empty[String];
-    val value = try {
-      map.lookup(key)
-    } catch {
-      case e: Throwable => e.getMessage()
-    }
+    val value =
+      try {
+        map.lookup(key)
+      } catch {
+        case e: Throwable => e.getMessage()
+      }
     check("lookup(" + key + ")", value, "KO");
   }
 }

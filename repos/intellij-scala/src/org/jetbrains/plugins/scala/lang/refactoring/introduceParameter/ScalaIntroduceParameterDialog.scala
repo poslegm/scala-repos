@@ -24,17 +24,18 @@ import scala.collection.JavaConverters._
 /**
   * @author Nikolay.Tropin
   */
-class ScalaIntroduceParameterDialog(project: Project,
-                                    method: ScalaMethodDescriptor,
-                                    introduceData: ScalaIntroduceParameterData)
-    extends ScalaChangeSignatureDialog(project, method) {
+class ScalaIntroduceParameterDialog(
+    project: Project,
+    method: ScalaMethodDescriptor,
+    introduceData: ScalaIntroduceParameterData
+) extends ScalaChangeSignatureDialog(project, method) {
 
-  private var paramNameField: EditorTextField = _
-  private var typeCombobox: ComboBox = _
-  private var typeMap: util.LinkedHashMap[String, ScType] = _
-  private var replaceOccurrencesChb: JCheckBox = _
+  private var paramNameField: EditorTextField                  = _
+  private var typeCombobox: ComboBox                           = _
+  private var typeMap: util.LinkedHashMap[String, ScType]      = _
+  private var replaceOccurrencesChb: JCheckBox                 = _
   private var defaultValuesUsagePanel: DefaultValuesUsagePanel = _
-  private var defaultForIntroducedTextField: EditorTextField = _
+  private var defaultForIntroducedTextField: EditorTextField   = _
 
   override def init(): Unit = {
     super.init()
@@ -42,20 +43,21 @@ class ScalaIntroduceParameterDialog(project: Project,
   }
 
   override def createNorthPanel(): JComponent = {
-    val panel = super.createNorthPanel() //to initialize fields
+    val panel      = super.createNorthPanel() //to initialize fields
     val northPanel = new JPanel(new GridBagLayout())
     val gbc: GridBagConstraints = new GridBagConstraints(
-        0,
-        0,
-        1,
-        1,
-        1,
-        1,
-        GridBagConstraints.WEST,
-        GridBagConstraints.HORIZONTAL,
-        new Insets(0, 0, 0, 0),
-        0,
-        0)
+      0,
+      0,
+      1,
+      1,
+      1,
+      1,
+      GridBagConstraints.WEST,
+      GridBagConstraints.HORIZONTAL,
+      new Insets(0, 0, 0, 0),
+      0,
+      0
+    )
 
     val paramNamePanel = createParamNamePanel()
     val paramTypePanel = createParamTypePanel()
@@ -77,18 +79,21 @@ class ScalaIntroduceParameterDialog(project: Project,
 
   override def createRefactoringProcessor(): BaseRefactoringProcessor = {
     val parameters = splittedItems.map(_.map(_.parameter))
-    val changeInfo = new ScalaChangeInfo(getVisibility,
-                                         method.fun,
-                                         getMethodName,
-                                         returnType,
-                                         parameters,
-                                         isAddDefaultArgs)
+    val changeInfo = new ScalaChangeInfo(
+      getVisibility,
+      method.fun,
+      getMethodName,
+      returnType,
+      parameters,
+      isAddDefaultArgs
+    )
 
     val newData = introduceData.copy(
-        paramName = paramNameField.getText,
-        tp = typeMap.get(typeCombobox.getSelectedItem),
-        replaceAll = replaceOccurrencesChb.isSelected,
-        defaultArg = defaultForIntroducedTextField.getText)
+      paramName = paramNameField.getText,
+      tp = typeMap.get(typeCombobox.getSelectedItem),
+      replaceAll = replaceOccurrencesChb.isSelected,
+      defaultArg = defaultForIntroducedTextField.getText
+    )
 
     changeInfo.introducedParameterData = Some(newData)
     new ScalaChangeSignatureProcessor(project, changeInfo)
@@ -101,7 +106,8 @@ class ScalaIntroduceParameterDialog(project: Project,
   }
 
   override def customizeParametersTable(
-      table: TableView[ScalaParameterTableModelItem]): Unit = {
+      table: TableView[ScalaParameterTableModelItem]
+  ): Unit = {
     table.setSelection(util.Collections.emptyList())
   }
 
@@ -110,7 +116,8 @@ class ScalaIntroduceParameterDialog(project: Project,
       override def isRowEditable(row: Int): Boolean = false
 
       override protected def defaultText(
-          item: ScalaParameterTableModelItem): String = ""
+          item: ScalaParameterTableModelItem
+      ): String = ""
     }
   }
 
@@ -122,7 +129,8 @@ class ScalaIntroduceParameterDialog(project: Project,
     table.setCellSelectionEnabled(false)
     table.setRowSelectionAllowed(true)
     table.getSelectionModel.setSelectionMode(
-        ListSelectionModel.SINGLE_SELECTION)
+      ListSelectionModel.SINGLE_SELECTION
+    )
     table.setSurrendersFocusOnKeystroke(true)
     val buttonsPanel: JPanel = ToolbarDecorator
       .createDecorator(table)
@@ -163,8 +171,8 @@ class ScalaIntroduceParameterDialog(project: Project,
     typeCombobox = new ComboBox()
     val typeLabel = new JLabel("Type:")
     typeLabel.setLabelFor(typeCombobox)
-    typeMap = ScalaRefactoringUtil.getCompatibleTypeNames(
-        introduceData.possibleTypes)
+    typeMap =
+      ScalaRefactoringUtil.getCompatibleTypeNames(introduceData.possibleTypes)
     for (typeName <- typeMap.keySet.asScala) {
       JListCompatibility.addItem(typeCombobox, typeName)
     }
@@ -192,21 +200,23 @@ class ScalaIntroduceParameterDialog(project: Project,
   private def createDefaultArgumentPanel(): JComponent = {
     val panel = new JPanel(new BorderLayout())
     defaultForIntroducedTextField = new EditorTextField(
-        introduceData.defaultArg, project, ScalaFileType.SCALA_FILE_TYPE)
+      introduceData.defaultArg,
+      project,
+      ScalaFileType.SCALA_FILE_TYPE
+    )
     val label = new JLabel("Default value:")
     label.setLabelFor(defaultForIntroducedTextField)
     panel.add(label, BorderLayout.NORTH)
     defaultForIntroducedTextField.setOneLineMode(false)
     defaultForIntroducedTextField.setEnabled(true)
-    defaultForIntroducedTextField.addDocumentListener(
-        new DocumentAdapter {
+    defaultForIntroducedTextField.addDocumentListener(new DocumentAdapter {
       override def documentChanged(e: DocumentEvent): Unit = {
         introducedParamTableItem.foreach(
-            _.parameter.defaultValue = defaultForIntroducedTextField.getText.trim)
+          _.parameter.defaultValue = defaultForIntroducedTextField.getText.trim
+        )
       }
     })
-    IJSwingUtilities.adjustComponentsOnMac(
-        label, defaultForIntroducedTextField)
+    IJSwingUtilities.adjustComponentsOnMac(label, defaultForIntroducedTextField)
     panel.add(defaultForIntroducedTextField, BorderLayout.CENTER)
     val optionsPanel = new JPanel(new BorderLayout())
     replaceOccurrencesChb = new JCheckBox("Replace all occurrences")

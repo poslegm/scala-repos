@@ -5,7 +5,7 @@
   * The ASF licenses this file to You under the Apache License, Version 2.0
   * (the "License"); you may not use this file except in compliance with
   * the License.  You may obtain a copy of the License at
-  * 
+  *
   *    http://www.apache.org/licenses/LICENSE-2.0
   *
   * Unless required by applicable law or agreed to in writing, software
@@ -34,10 +34,10 @@ import scala.collection.mutable.Buffer
   */
 trait KafkaServerTestHarness extends ZooKeeperTestHarness {
   var instanceConfigs: Seq[KafkaConfig] = null
-  var servers: Buffer[KafkaServer] = null
-  var brokerList: String = null
-  var alive: Array[Boolean] = null
-  val kafkaPrincipalType = KafkaPrincipal.USER_TYPE
+  var servers: Buffer[KafkaServer]      = null
+  var brokerList: String                = null
+  var alive: Array[Boolean]             = null
+  val kafkaPrincipalType                = KafkaPrincipal.USER_TYPE
   val setClusterAcl: Option[() => Unit] = None
 
   /**
@@ -54,7 +54,7 @@ trait KafkaServerTestHarness extends ZooKeeperTestHarness {
   def serverForId(id: Int) = servers.find(s => s.config.brokerId == id)
 
   protected def securityProtocol: SecurityProtocol = SecurityProtocol.PLAINTEXT
-  protected def trustStoreFile: Option[File] = None
+  protected def trustStoreFile: Option[File]       = None
 
   @Before
   override def setUp() {
@@ -62,8 +62,8 @@ trait KafkaServerTestHarness extends ZooKeeperTestHarness {
     if (configs.size <= 0)
       throw new KafkaException("Must supply at least one server config.")
     servers = configs.map(TestUtils.createServer(_)).toBuffer
-    brokerList = TestUtils.getBrokerListStrFromServers(
-        servers, securityProtocol)
+    brokerList =
+      TestUtils.getBrokerListStrFromServers(servers, securityProtocol)
     alive = new Array[Boolean](servers.length)
     Arrays.fill(alive, true)
     // We need to set a cluster ACL in some cases here

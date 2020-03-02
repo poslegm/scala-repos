@@ -9,8 +9,8 @@ object String {
 
   def slugify(input: String) = {
     val nowhitespace = input.trim.replace(" ", "-")
-    val normalized = Normalizer.normalize(nowhitespace, Normalizer.Form.NFD)
-    val slug = slugR.replaceAllIn(normalized, "")
+    val normalized   = Normalizer.normalize(nowhitespace, Normalizer.Form.NFD)
+    val slug         = slugR.replaceAllIn(normalized, "")
     slug.toLowerCase
   }
 

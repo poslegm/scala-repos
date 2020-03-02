@@ -37,8 +37,8 @@ final class ReentrantGuard {
   */
 class ReadWriteGuard {
   private val rwl = new ReentrantReadWriteLock
-  val readLock = rwl.readLock
-  val writeLock = rwl.writeLock
+  val readLock    = rwl.readLock
+  val writeLock   = rwl.writeLock
 
   def withWriteGuard[T](body: => T): T = {
     writeLock.lock
@@ -135,10 +135,10 @@ class Switch(startAsOn: Boolean = false) {
     }
 
   def switchOff(action: => Unit): Boolean = transcend(from = true, action)
-  def switchOn(action: => Unit): Boolean = transcend(from = false, action)
+  def switchOn(action: => Unit): Boolean  = transcend(from = false, action)
 
   def switchOff: Boolean = synchronized { switch.compareAndSet(true, false) }
-  def switchOn: Boolean = synchronized { switch.compareAndSet(false, true) }
+  def switchOn: Boolean  = synchronized { switch.compareAndSet(false, true) }
 
   def ifOnYield[T](action: => T): Option[T] = {
     if (switch.get) Some(action)
@@ -192,6 +192,6 @@ class Switch(startAsOn: Boolean = false) {
     if (switch.get) on else off
   }
 
-  def isOn = switch.get
+  def isOn  = switch.get
   def isOff = !isOn
 }

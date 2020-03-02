@@ -25,7 +25,7 @@ abstract class ParallelConcurrentTrieMapCheck[K, V](tp: String)
   def tasksupport: TaskSupport
 
   def ofSize(vals: Seq[Gen[(K, V)]], sz: Int) = {
-    val ct = new concurrent.TrieMap[K, V]
+    val ct  = new concurrent.TrieMap[K, V]
     val gen = vals(rnd.nextInt(vals.size))
     for (i <- 0 until sz) ct += sample(gen)
     ct
@@ -45,14 +45,15 @@ abstract class ParallelConcurrentTrieMapCheck[K, V](tp: String)
 
 class IntIntParallelConcurrentTrieMapCheck(val tasksupport: TaskSupport)
     extends ParallelConcurrentTrieMapCheck[Int, Int]("Int, Int")
-    with PairOperators[Int, Int] with PairValues[Int, Int] {
+    with PairOperators[Int, Int]
+    with PairValues[Int, Int] {
   def intvalues = new IntValues {}
-  def kvalues = intvalues.values
-  def vvalues = intvalues.values
+  def kvalues   = intvalues.values
+  def vvalues   = intvalues.values
 
   val intoperators = new IntOperators {}
-  def voperators = intoperators
-  def koperators = intoperators
+  def voperators   = intoperators
+  def koperators   = intoperators
 
   override def printDataStructureDebugInfo(ds: AnyRef) = ds match {
     case pm: ParTrieMap[k, v] =>
@@ -62,7 +63,9 @@ class IntIntParallelConcurrentTrieMapCheck(val tasksupport: TaskSupport)
   }
 
   override def checkDataStructureInvariants(
-      orig: Traversable[(Int, Int)], ds: AnyRef) = ds match {
+      orig: Traversable[(Int, Int)],
+      ds: AnyRef
+  ) = ds match {
     // case pm: ParHashMap[k, v] if 1 == 0 => // disabled this to make tests faster
     //   val invs = pm.brokenInvariants
 

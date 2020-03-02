@@ -35,7 +35,7 @@ private[akka] object Buffer {
   def apply[T](size: Int, materializer: Materializer): Buffer[T] =
     materializer match {
       case m: ActorMaterializer ⇒ apply(size, m.settings.maxFixedBufferSize)
-      case _ ⇒ apply(size, 1000000000)
+      case _                    ⇒ apply(size, 1000000000)
     }
 
   def apply[T](size: Int, max: Int): Buffer[T] =
@@ -68,12 +68,12 @@ private[akka] object FixedSizeBuffer {
       s"Buffer($capacity, $readIdx, $writeIdx)(${(readIdx until writeIdx).map(get).mkString(", ")})"
     private val buffer = new Array[AnyRef](capacity)
 
-    protected var readIdx = 0L
+    protected var readIdx  = 0L
     protected var writeIdx = 0L
-    def used: Int = (writeIdx - readIdx).toInt
+    def used: Int          = (writeIdx - readIdx).toInt
 
-    def isFull: Boolean = used == capacity
-    def isEmpty: Boolean = used == 0
+    def isFull: Boolean   = used == capacity
+    def isEmpty: Boolean  = used == 0
     def nonEmpty: Boolean = used != 0
 
     def enqueue(elem: T): Unit = {
@@ -149,16 +149,16 @@ private[akka] object FixedSizeBuffer {
 private[akka] final class BoundedBuffer[T](val capacity: Int)
     extends Buffer[T] {
 
-  def used: Int = q.used
-  def isFull: Boolean = q.isFull
-  def isEmpty: Boolean = q.isEmpty
+  def used: Int         = q.used
+  def isFull: Boolean   = q.isFull
+  def isEmpty: Boolean  = q.isEmpty
   def nonEmpty: Boolean = q.nonEmpty
 
   def enqueue(elem: T): Unit = q.enqueue(elem)
-  def dequeue(): T = q.dequeue()
+  def dequeue(): T           = q.dequeue()
 
-  def peek(): T = q.peek()
-  def clear(): Unit = q.clear()
+  def peek(): T        = q.peek()
+  def clear(): Unit    = q.clear()
   def dropHead(): Unit = q.dropHead()
   def dropTail(): Unit = q.dropTail()
 
@@ -166,13 +166,13 @@ private[akka] final class BoundedBuffer[T](val capacity: Int)
     import Buffer._
 
     private val queue = new Array[AnyRef](FixedQueueSize)
-    private var head = 0
-    private var tail = 0
+    private var head  = 0
+    private var tail  = 0
 
     override def capacity = BoundedBuffer.this.capacity
-    override def used = tail - head
-    override def isFull = used == capacity
-    override def isEmpty = tail == head
+    override def used     = tail - head
+    override def isFull   = used == capacity
+    override def isEmpty  = tail == head
     override def nonEmpty = tail != head
 
     override def enqueue(elem: T): Unit =
@@ -210,14 +210,15 @@ private[akka] final class BoundedBuffer[T](val capacity: Int)
   }
 
   private final class DynamicQueue(startIdx: Int)
-      extends ju.LinkedList[T] with Buffer[T] {
+      extends ju.LinkedList[T]
+      with Buffer[T] {
     override def capacity = BoundedBuffer.this.capacity
-    override def used = size
-    override def isFull = size == capacity
+    override def used     = size
+    override def isFull   = size == capacity
     override def nonEmpty = !isEmpty()
 
     override def enqueue(elem: T): Unit = add(elem)
-    override def dequeue(): T = remove()
+    override def dequeue(): T           = remove()
 
     override def dropHead(): Unit = remove()
     override def dropTail(): Unit = removeLast()

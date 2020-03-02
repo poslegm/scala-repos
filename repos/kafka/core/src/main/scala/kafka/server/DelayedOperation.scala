@@ -111,15 +111,21 @@ abstract class DelayedOperation(delayMs: Long) extends TimerTask with Logging {
   * A helper purgatory class for bookkeeping delayed operations with a timeout, and expiring timed out operations.
   */
 class DelayedOperationPurgatory[T <: DelayedOperation](
-    purgatoryName: String, brokerId: Int = 0, purgeInterval: Int = 1000)
-    extends Logging with KafkaMetricsGroup {
+    purgatoryName: String,
+    brokerId: Int = 0,
+    purgeInterval: Int = 1000
+) extends Logging
+    with KafkaMetricsGroup {
 
   // timeout timer
   private[this] val executor =
-    Executors.newFixedThreadPool(1, new ThreadFactory() {
-      def newThread(runnable: Runnable): Thread =
-        Utils.newThread("executor-" + purgatoryName, runnable, false)
-    })
+    Executors.newFixedThreadPool(
+      1,
+      new ThreadFactory() {
+        def newThread(runnable: Runnable): Thread =
+          Utils.newThread("executor-" + purgatoryName, runnable, false)
+      }
+    )
   private[this] val timeoutTimer = new Timer(executor)
 
   /* a list of operation watching keys */
@@ -137,19 +143,19 @@ class DelayedOperationPurgatory[T <: DelayedOperation](
   private val metricsTags = Map("delayedOperation" -> purgatoryName)
 
   newGauge(
-      "PurgatorySize",
-      new Gauge[Int] {
-        def value = watched()
-      },
-      metricsTags
+    "PurgatorySize",
+    new Gauge[Int] {
+      def value = watched()
+    },
+    metricsTags
   )
 
   newGauge(
-      "NumDelayedOperations",
-      new Gauge[Int] {
-        def value = delayed()
-      },
-      metricsTags
+    "NumDelayedOperations",
+    new Gauge[Int] {
+      def value = delayed()
+    },
+    metricsTags
   )
 
   expirationReaper.start()

@@ -28,30 +28,37 @@ import scala.util.hashing.MurmurHash3
   * @author dlwh
   */
 @SerialVersionUID(1L)
-final class OpenAddressHashArray[
-    @specialized(Int, Float, Long, Double) V] private[mutable](
+final class OpenAddressHashArray[@specialized(Int, Float, Long, Double) V] private[mutable] (
     protected var _index: Array[Int],
     protected var _data: Array[V],
     protected var load: Int,
     val size: Int,
-    val default: ConfigurableDefault[V] = ConfigurableDefault.default[V])(
-    implicit protected val manElem: ClassTag[V],
-    val zero: Zero[V])
-    extends Storage[V] with ArrayLike[V] with Serializable {
+    val default: ConfigurableDefault[V] = ConfigurableDefault.default[V]
+)(implicit protected val manElem: ClassTag[V], val zero: Zero[V])
+    extends Storage[V]
+    with ArrayLike[V]
+    with Serializable {
   require(size > 0, "Size must be positive, but got " + size)
 
   def this(size: Int, default: ConfigurableDefault[V], initialSize: Int)(
-      implicit manElem: ClassTag[V], zero: Zero[V]) = {
-    this(OpenAddressHashArray.emptyIndexArray(
-             OpenAddressHashArray.calculateSize(initialSize)),
-         default.makeArray(OpenAddressHashArray.calculateSize(initialSize)),
-         0,
-         size,
-         default)
+      implicit manElem: ClassTag[V],
+      zero: Zero[V]
+  ) = {
+    this(
+      OpenAddressHashArray.emptyIndexArray(
+        OpenAddressHashArray.calculateSize(initialSize)
+      ),
+      default.makeArray(OpenAddressHashArray.calculateSize(initialSize)),
+      0,
+      size,
+      default
+    )
   }
 
-  def this(size: Int, default: ConfigurableDefault[V])(
-      implicit manElem: ClassTag[V], zero: Zero[V]) = {
+  def this(
+      size: Int,
+      default: ConfigurableDefault[V]
+  )(implicit manElem: ClassTag[V], zero: Zero[V]) = {
     this(size, default, 16)
   }
 
@@ -59,7 +66,7 @@ final class OpenAddressHashArray[
     this(size, ConfigurableDefault.default[V])
   }
 
-  def data = _data
+  def data  = _data
   def index = _index
 
   def defaultValue = default.value(zero)
@@ -91,7 +98,8 @@ final class OpenAddressHashArray[
   final def update(i: Int, v: V) {
     if (i < 0 || i >= size)
       throw new IndexOutOfBoundsException(
-          i + " is out of bounds for size " + size)
+        i + " is out of bounds for size " + size
+      )
     val pos = locate(i)
     _data(pos) = v
     if (_index(pos) != i) {
@@ -105,17 +113,17 @@ final class OpenAddressHashArray[
     }
   }
 
-  def activeKeysIterator = keysIterator
+  def activeKeysIterator   = keysIterator
   def activeValuesIterator = activeIterator.map(_._2)
-  def activeIterator = (index.iterator zip data.iterator).filter(_._1 >= 0)
+  def activeIterator       = (index.iterator zip data.iterator).filter(_._1 >= 0)
 
   private def locate(i: Int) = {
     if (i >= size)
       throw new IndexOutOfBoundsException(i + " greater than size of " + size)
     if (i < 0) throw new IndexOutOfBoundsException(i + " less than 0")
     val index = this.index
-    val len = index.length
-    var hash = hashCodeFor(i) & (len - 1)
+    val len   = index.length
+    var hash  = hashCodeFor(i) & (len - 1)
     while (index(hash) != i && index(hash) >= 0) {
       hash += 1
       if (hash >= len) {
@@ -137,9 +145,9 @@ final class OpenAddressHashArray[
   }
 
   final protected def rehash() {
-    val oldIndex = index
+    val oldIndex  = index
     val oldValues = data
-    val newSize = OpenAddressHashArray.calculateSize(oldIndex.size + 1)
+    val newSize   = OpenAddressHashArray.calculateSize(oldIndex.size + 1)
     _index = new Array[Int](newSize)
     util.Arrays.fill(_index, -1)
     _data = new Array[V](newSize)
@@ -165,11 +173,12 @@ final class OpenAddressHashArray[
 
   def copy: OpenAddressHashArray[V] = {
     new OpenAddressHashArray[V](
-        util.Arrays.copyOf(_index, _index.length),
-        breeze.util.ArrayUtil.copyOf(_data, _data.length),
-        load,
-        size,
-        default)
+      util.Arrays.copyOf(_index, _index.length),
+      breeze.util.ArrayUtil.copyOf(_data, _data.length),
+      load,
+      size,
+      default
+    )
   }
 
   // This hash code must be symmetric in the contents but ought not
@@ -200,9 +209,10 @@ final class OpenAddressHashArray[
 }
 
 object OpenAddressHashArray {
-  def apply[@specialized(Int, Float, Long, Double) T : ClassTag : Zero](
-      values: T*) = {
-    val rv = new OpenAddressHashArray[T](values.length)
+  def apply[@specialized(Int, Float, Long, Double) T: ClassTag: Zero](
+      values: T*
+  ) = {
+    val rv   = new OpenAddressHashArray[T](values.length)
     val zero = implicitly[Zero[T]].zero
     for ((v, i) <- values.zipWithIndex if v != zero) {
       rv(i) = v

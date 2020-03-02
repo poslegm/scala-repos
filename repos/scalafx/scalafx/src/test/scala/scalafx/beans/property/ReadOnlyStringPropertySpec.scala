@@ -43,17 +43,17 @@ import scalafx.Includes._
   */
 @RunWith(classOf[JUnitRunner])
 class ReadOnlyStringPropertySpec extends FlatSpec with BeforeAndAfterEach {
-  val bean = new Object()
-  var booleanProperty: jfxbp.BooleanProperty = null
+  val bean                                                 = new Object()
+  var booleanProperty: jfxbp.BooleanProperty               = null
   var readOnlyStringProperty: jfxbp.ReadOnlyStringProperty = null
-  var stringProperty: jfxbp.StringProperty = null
-  var stringProperty2: jfxbp.StringProperty = null
-  var sfxStringProperty: StringProperty = null
+  var stringProperty: jfxbp.StringProperty                 = null
+  var stringProperty2: jfxbp.StringProperty                = null
+  var sfxStringProperty: StringProperty                    = null
 
   override def beforeEach() {
     booleanProperty = new BooleanProperty(bean, "Test Boolean")
-    readOnlyStringProperty = new ReadOnlyStringProperty(
-        bean, "Test Read-only String", "read-only")
+    readOnlyStringProperty =
+      new ReadOnlyStringProperty(bean, "Test Read-only String", "read-only")
     stringProperty = new StringProperty(bean, "Test String")
     stringProperty2 = new StringProperty(bean, "Test String 2")
     sfxStringProperty = new StringProperty(bean, "Test SFX String")

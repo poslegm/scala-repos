@@ -18,7 +18,7 @@ object ListTTest extends SpecLite {
 
   "filter none" ! forAll { (ass: ListT[List, Int]) =>
     val filtered = ass.filter(_ => false)
-    val isEmpty = filtered.isEmpty
+    val isEmpty  = filtered.isEmpty
     isEmpty.toList.forall(identity)
   }
 
@@ -39,9 +39,10 @@ object ListTTest extends SpecLite {
   }
 
   "flatMap" ! forAll { (ass: List[List[Int]]) =>
-    (ListT.fromList(ass)
-          .flatMap(number => ListT.fromList(List(List(number.toFloat))))
-          .toList must_=== (ass.map(_.flatMap(number => List(number.toFloat)))))
+    (ListT
+      .fromList(ass)
+      .flatMap(number => ListT.fromList(List(List(number.toFloat))))
+      .toList must_=== (ass.map(_.flatMap(number => List(number.toFloat)))))
   }
 
   // Exists to ensure that fromList and map don't stack overflow.
@@ -51,9 +52,7 @@ object ListTTest extends SpecLite {
     ()
   }
 
-  "listT" ! forAll { (ass: Option[List[Int]]) =>
-    ListT.listT(ass).run == ass
-  }
+  "listT" ! forAll { (ass: Option[List[Int]]) => ListT.listT(ass).run == ass }
 
   checkAll(equal.laws[ListTOpt[Int]])
   checkAll(monoid.laws[ListTOpt[Int]])
@@ -63,9 +62,9 @@ object ListTTest extends SpecLite {
 
   object instances {
     def semigroup[F[_]: Monad, A] = Semigroup[ListT[F, A]]
-    def monoid[F[_]: Monad, A] = Monoid[ListT[F, A]]
-    def monad[F[_]: Monad] = Monad[ListT[F, ?]]
-    def functor[F[_]: Functor] = Functor[ListT[F, ?]]
+    def monoid[F[_]: Monad, A]    = Monoid[ListT[F, A]]
+    def monad[F[_]: Monad]        = Monad[ListT[F, ?]]
+    def functor[F[_]: Functor]    = Functor[ListT[F, ?]]
 
     // checking absence of ambiguity
     def functor[F[_]: Monad] = Functor[ListT[F, ?]]

@@ -3,7 +3,8 @@ package algebra
 package lattice
 
 trait Heyting[@sp(Boolean, Byte, Short, Int, Long) A]
-    extends Any with BoundedLattice[A] {
+    extends Any
+    with BoundedLattice[A] {
   def and(a: A, b: A): A
   def meet(a: A, b: A): A = and(a, b)
 
@@ -16,5 +17,6 @@ trait Heyting[@sp(Boolean, Byte, Short, Int, Long) A]
 
 object Heyting {
   @inline final def apply[@sp(Boolean, Byte, Short, Int, Long) A](
-      implicit ev: Heyting[A]): Heyting[A] = ev
+      implicit ev: Heyting[A]
+  ): Heyting[A] = ev
 }

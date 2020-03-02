@@ -27,7 +27,7 @@ import org.apache.spark.{Accumulator, SparkContext}
 private[spark] abstract class Stopwatch extends Serializable {
 
   @transient private var running: Boolean = false
-  private var startTime: Long = _
+  private var startTime: Long             = _
 
   /**
     * Name of the stopwatch.
@@ -100,8 +100,9 @@ private[spark] class LocalStopwatch(override val name: String)
   * @param sc SparkContext
   */
 private[spark] class DistributedStopwatch(
-    sc: SparkContext, override val name: String)
-    extends Stopwatch {
+    sc: SparkContext,
+    override val name: String
+) extends Stopwatch {
 
   private val elapsedTime: Accumulator[Long] =
     sc.accumulator(0L, s"DistributedStopwatch($name)")
@@ -127,8 +128,10 @@ private[spark] class MultiStopwatch(@transient private val sc: SparkContext)
     * @param name stopwatch name
     */
   def addLocal(name: String): this.type = {
-    require(!stopwatches.contains(name),
-            s"Stopwatch with name $name already exists.")
+    require(
+      !stopwatches.contains(name),
+      s"Stopwatch with name $name already exists."
+    )
     stopwatches(name) = new LocalStopwatch(name)
     this
   }
@@ -138,8 +141,10 @@ private[spark] class MultiStopwatch(@transient private val sc: SparkContext)
     * @param name stopwatch name
     */
   def addDistributed(name: String): this.type = {
-    require(!stopwatches.contains(name),
-            s"Stopwatch with name $name already exists.")
+    require(
+      !stopwatches.contains(name),
+      s"Stopwatch with name $name already exists."
+    )
     stopwatches(name) = new DistributedStopwatch(sc, name)
     this
   }

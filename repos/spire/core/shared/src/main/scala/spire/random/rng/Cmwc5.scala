@@ -35,7 +35,7 @@ final class Cmwc5(_x: Long, _y: Long, _z: Long, _w: Long, _v: Long)
 
   def getSeedBytes(): Array[Byte] = {
     val bytes = new Array[Byte](40)
-    val bb = ByteBuffer.wrap(bytes)
+    val bb    = ByteBuffer.wrap(bytes)
     bb.putLong(x)
     bb.putLong(y)
     bb.putLong(z)
@@ -71,11 +71,11 @@ object Cmwc5 extends GeneratorCompanion[Cmwc5, Array[Long]] {
   def fromBytes(bytes: Array[Byte]): Cmwc5 = {
     val bs = if (bytes.length < 40) Arrays.copyOf(bytes, 40) else bytes
     val bb = ByteBuffer.wrap(bytes)
-    val x = bb.getLong()
-    val y = bb.getLong()
-    val z = bb.getLong()
-    val w = bb.getLong()
-    val v = bb.getLong()
+    val x  = bb.getLong()
+    val y  = bb.getLong()
+    val z  = bb.getLong()
+    val w  = bb.getLong()
+    val v  = bb.getLong()
     new Cmwc5(x, y, z, w, v)
   }
 
@@ -86,10 +86,12 @@ object Cmwc5 extends GeneratorCompanion[Cmwc5, Array[Long]] {
 
   def fromTime(time: Long = System.nanoTime()): Cmwc5 = {
     val lcg = Lcg64.fromTime(time)
-    new Cmwc5(lcg.nextLong(),
-              lcg.nextLong(),
-              lcg.nextLong(),
-              lcg.nextLong(),
-              lcg.nextLong())
+    new Cmwc5(
+      lcg.nextLong(),
+      lcg.nextLong(),
+      lcg.nextLong(),
+      lcg.nextLong(),
+      lcg.nextLong()
+    )
   }
 }

@@ -23,23 +23,25 @@ import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class Netty4ListenerTest
-    extends FunSuite with Eventually with IntegrationPatience {
+    extends FunSuite
+    with Eventually
+    with IntegrationPatience {
 
   // a Transport whose reads and writes never complete
   private[netty4] class NullTransport[In, Out] extends Transport[In, Out] {
     val closeP = new Promise[Throwable]
-    val readP = Future.never
+    val readP  = Future.never
     val writeP = Future.never
 
     var _status: Status = Status.Open
 
-    def write(req: In): Future[Unit] = writeP
-    def remoteAddress: SocketAddress = throw new NotImplementedError()
+    def write(req: In): Future[Unit]         = writeP
+    def remoteAddress: SocketAddress         = throw new NotImplementedError()
     def peerCertificate: Option[Certificate] = None
-    def localAddress: SocketAddress = throw new NotImplementedError()
-    def status: Status = _status
-    def read(): Future[Out] = ???
-    val onClose: Future[Throwable] = closeP
+    def localAddress: SocketAddress          = throw new NotImplementedError()
+    def status: Status                       = _status
+    def read(): Future[Out]                  = ???
+    val onClose: Future[Throwable]           = closeP
     def close(deadline: Time): Future[Unit] = {
       _status = Status.Closed
       closeP.setValue(new Exception("closed channelExn"))
@@ -48,9 +50,7 @@ class Netty4ListenerTest
   }
 
   // the /dev/null of dispatchers
-  val nopDispatch = { _: Transport[ByteBuf, ByteBuf] =>
-    ()
-  }
+  val nopDispatch = { _: Transport[ByteBuf, ByteBuf] => () }
 
   private[this] trait StatsCtx {
     val sr: InMemoryStatsReceiver = new InMemoryStatsReceiver
@@ -65,23 +65,23 @@ class Netty4ListenerTest
   private[this] trait Ctx extends StatsCtx {
     val p = Params.empty + Label("test") + Stats(sr)
     val listener = Netty4Listener[ByteBuf, ByteBuf](
-        p,
-        transportFactory = { _: SocketChannel =>
-          new NullTransport
-        }
+      p,
+      transportFactory = { _: SocketChannel => new NullTransport }
     )
   }
 
   test(
-      "frames pipeline messages and bridges transports and service dispatchers (aka it works end-to-end)") {
+    "frames pipeline messages and bridges transports and service dispatchers (aka it works end-to-end)"
+  ) {
     val ctx = new StatsCtx {}
     import ctx._
 
     object StringServerInit extends (ChannelPipeline => Unit) {
       def apply(pipeline: ChannelPipeline): Unit = {
-        pipeline.addLast("line",
-                         new DelimiterBasedFrameDecoder(
-                             100, Delimiters.lineDelimiter(): _*))
+        pipeline.addLast(
+          "line",
+          new DelimiterBasedFrameDecoder(100, Delimiters.lineDelimiter(): _*)
+        )
         pipeline.addLast("stringDecoder", new StringDecoder(Charsets.Utf8))
         pipeline.addLast("stringEncoder", new StringEncoder(Charsets.Utf8))
       }
@@ -103,8 +103,9 @@ class Netty4ListenerTest
     val serveTransport =
       (t: Transport[String, String]) => new SerialServerDispatcher(t, service)
     val server =
-      listener.listen(new InetSocketAddress(InetAddress.getLoopbackAddress,
-                                            0))(serveTransport(_))
+      listener.listen(new InetSocketAddress(InetAddress.getLoopbackAddress, 0))(
+        serveTransport(_)
+      )
 
     val client = new Socket()
     eventually { client.connect(server.boundAddress) }
@@ -115,7 +116,7 @@ class Netty4ListenerTest
 
     val response = client.getInputStream
     val expected = "hi2u"
-    val actual = new String(Array.fill("hi2u".length)(response.read().toByte))
+    val actual   = new String(Array.fill("hi2u".length)(response.read().toByte))
     assert(actual == expected)
     server.close()
   }
@@ -126,15 +127,15 @@ class Netty4ListenerTest
 
     val p = Params.empty + Label("srv") + Stats(sr)
     val listener = Netty4Listener[ByteBuf, ByteBuf](
-        p,
-        transportFactory = { _: SocketChannel =>
-          new NullTransport
-        }
+      p,
+      transportFactory = { _: SocketChannel => new NullTransport }
     )
     val server1 = listener.listen(
-        new InetSocketAddress(InetAddress.getLoopbackAddress, 0))(nopDispatch)
+      new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
+    )(nopDispatch)
     val server2 = listener.listen(
-        new InetSocketAddress(InetAddress.getLoopbackAddress, 0))(nopDispatch)
+      new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
+    )(nopDispatch)
 
     val (client1, client2) = (new Socket(), new Socket())
 
@@ -158,7 +159,7 @@ class Netty4ListenerTest
     import c._
 
     val serverAddr = new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
-    val server = listener.listen(serverAddr)(nopDispatch)
+    val server     = listener.listen(serverAddr)(nopDispatch)
 
     val (client1, client2, client3) =
       (new Socket(), new Socket(), new Socket())

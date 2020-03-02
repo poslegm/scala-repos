@@ -8,9 +8,9 @@ class C extends T[Char] {
   def f(): Char = 'a'
 }
 class Arr {
-  def arr1(xs: Array[Int]): List[Int] = xs.toList
+  def arr1(xs: Array[Int]): List[Int]                   = xs.toList
   def arr2(xs: Array[jl.Character]): List[jl.Character] = xs.toList
-  def arr3(xss: Array[Array[Float]]): Array[Float] = xss map (_.sum)
+  def arr3(xss: Array[Array[Float]]): Array[Float]      = xss map (_.sum)
   // This gets a signature like
   // public <T> java.lang.Object Arr.arr4(java.lang.Object[],scala.reflect.Manifest<T>)
   //
@@ -19,7 +19,7 @@ class Arr {
   //
   // because java inflict's its reference-only generic-arrays on us.
   //
-  def arr4[T : Manifest](xss: Array[Array[T]]): Array[T] = xss map (_.head)
+  def arr4[T: Manifest](xss: Array[Array[T]]): Array[T] = xss map (_.head)
 }
 
 object Test {
@@ -29,10 +29,10 @@ object Test {
 
   val c1m =
     c1.getMethods.toList filter (_.getName == "f") map
-    (_.getGenericReturnType.toString)
+      (_.getGenericReturnType.toString)
   val c2m =
     c2.getMethods.toList filter (_.getName == "f") map
-    (_.getGenericReturnType.toString)
+      (_.getGenericReturnType.toString)
   val c3m = c3.getDeclaredMethods.toList map (_.toGenericString)
 
   def main(args: Array[String]): Unit = {

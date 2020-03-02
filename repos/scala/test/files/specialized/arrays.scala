@@ -27,7 +27,7 @@ object Test {
   }
 
   def testGeneric[T](a: Array[T]) = {
-    var i = 0
+    var i   = 0
     var sum = 0
     while (i < a.length) {
       sum += (if (a(i) != null) 1 else 0)
@@ -37,7 +37,7 @@ object Test {
   }
 
   def testSpec[@specialized(AnyRef) T](a: Array[T]) = {
-    var i = 0
+    var i   = 0
     var sum = 0
     while (i < a.length) {
       sum += (if (a(i) != null) 1 else 0)

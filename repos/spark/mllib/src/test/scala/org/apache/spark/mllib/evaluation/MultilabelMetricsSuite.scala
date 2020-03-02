@@ -45,42 +45,46 @@ class MultilabelMetricsSuite extends SparkFunSuite with MLlibTestSparkContext {
      *
      */
     val scoreAndLabels: RDD[(Array[Double], Array[Double])] =
-      sc.parallelize(Seq((Array(0.0, 1.0), Array(0.0, 2.0)),
-                         (Array(0.0, 2.0), Array(0.0, 1.0)),
-                         (Array(), Array(0.0)),
-                         (Array(2.0), Array(2.0)),
-                         (Array(2.0, 0.0), Array(2.0, 0.0)),
-                         (Array(0.0, 1.0, 2.0), Array(0.0, 1.0)),
-                         (Array(1.0), Array(1.0, 2.0))),
-                     2)
-    val metrics = new MultilabelMetrics(scoreAndLabels)
-    val delta = 0.00001
+      sc.parallelize(
+        Seq(
+          (Array(0.0, 1.0), Array(0.0, 2.0)),
+          (Array(0.0, 2.0), Array(0.0, 1.0)),
+          (Array(), Array(0.0)),
+          (Array(2.0), Array(2.0)),
+          (Array(2.0, 0.0), Array(2.0, 0.0)),
+          (Array(0.0, 1.0, 2.0), Array(0.0, 1.0)),
+          (Array(1.0), Array(1.0, 2.0))
+        ),
+        2
+      )
+    val metrics    = new MultilabelMetrics(scoreAndLabels)
+    val delta      = 0.00001
     val precision0 = 4.0 / (4 + 0)
     val precision1 = 2.0 / (2 + 1)
     val precision2 = 2.0 / (2 + 2)
-    val recall0 = 4.0 / (4 + 1)
-    val recall1 = 2.0 / (2 + 1)
-    val recall2 = 2.0 / (2 + 2)
+    val recall0    = 4.0 / (4 + 1)
+    val recall1    = 2.0 / (2 + 1)
+    val recall2    = 2.0 / (2 + 2)
     val f1measure0 = 2 * precision0 * recall0 / (precision0 + recall0)
     val f1measure1 = 2 * precision1 * recall1 / (precision1 + recall1)
     val f1measure2 = 2 * precision2 * recall2 / (precision2 + recall2)
-    val sumTp = 4 + 2 + 2
+    val sumTp      = 4 + 2 + 2
     assert(sumTp == (1 + 1 + 0 + 1 + 2 + 2 + 1))
     val microPrecisionClass = sumTp.toDouble / (4 + 0 + 2 + 1 + 2 + 2)
-    val microRecallClass = sumTp.toDouble / (4 + 1 + 2 + 1 + 2 + 2)
+    val microRecallClass    = sumTp.toDouble / (4 + 1 + 2 + 1 + 2 + 2)
     val microF1MeasureClass =
       2.0 * sumTp.toDouble / (2 * sumTp.toDouble + (1 + 1 + 2) + (0 + 1 + 2))
     val macroPrecisionDoc =
       1.0 / 7 *
-      (1.0 / 2 + 1.0 / 2 + 0 + 1.0 / 1 + 2.0 / 2 + 2.0 / 3 + 1.0 / 1.0)
+        (1.0 / 2 + 1.0 / 2 + 0 + 1.0 / 1 + 2.0 / 2 + 2.0 / 3 + 1.0 / 1.0)
     val macroRecallDoc =
       1.0 / 7 *
-      (1.0 / 2 + 1.0 / 2 + 0 / 1 + 1.0 / 1 + 2.0 / 2 + 2.0 / 2 + 1.0 / 2)
+        (1.0 / 2 + 1.0 / 2 + 0 / 1 + 1.0 / 1 + 2.0 / 2 + 2.0 / 2 + 1.0 / 2)
     val macroF1MeasureDoc =
       (1.0 / 7) * 2 *
-      (1.0 / (2 + 2) + 1.0 / (2 + 2) + 0 + 1.0 / (1 + 1) + 2.0 / (2 + 2) +
+        (1.0 / (2 + 2) + 1.0 / (2 + 2) + 0 + 1.0 / (1 + 1) + 2.0 / (2 + 2) +
           2.0 / (3 + 2) + 1.0 / (1 + 2))
-    val hammingLoss = (1.0 / (7 * 3)) * (2 + 2 + 1 + 0 + 0 + 1 + 1)
+    val hammingLoss    = (1.0 / (7 * 3)) * (2 + 2 + 1 + 0 + 0 + 1 + 1)
     val strictAccuracy = 2.0 / 7
     val accuracy =
       1.0 / 7 * (1.0 / 3 + 1.0 / 3 + 0 + 1.0 / 1 + 2.0 / 2 + 2.0 / 3 + 1.0 / 2)

@@ -26,23 +26,23 @@ import cascading.operation.Debug.Output
   * This is based on work by: https://github.com/granthenke
   * https://github.com/twitter/scalding/pull/559
   */
-case class PipeDebug(output: Output = Output.STDERR,
-                     prefix: String = null,
-                     printFieldsEvery: Option[Int] = None,
-                     printTuplesEvery: Int = 1) {
+case class PipeDebug(
+    output: Output = Output.STDERR,
+    prefix: String = null,
+    printFieldsEvery: Option[Int] = None,
+    printTuplesEvery: Int = 1
+) {
 
-  def toStdOut: PipeDebug = copy(output = Output.STDOUT)
-  def toStdErr: PipeDebug = copy(output = Output.STDERR)
+  def toStdOut: PipeDebug              = copy(output = Output.STDOUT)
+  def toStdErr: PipeDebug              = copy(output = Output.STDERR)
   def withPrefix(p: String): PipeDebug = copy(prefix = p)
   // None means never print
   def printFieldsEvery(i: Option[Int]): PipeDebug = copy(printFieldsEvery = i)
-  def printTuplesEvery(i: Int): PipeDebug = copy(printTuplesEvery = i)
+  def printTuplesEvery(i: Int): PipeDebug         = copy(printTuplesEvery = i)
 
   def toDebug: Debug = {
     val debug = new Debug(output, prefix, printFieldsEvery.isDefined)
-    printFieldsEvery.foreach { x =>
-      debug.setPrintFieldsEvery(x)
-    }
+    printFieldsEvery.foreach { x => debug.setPrintFieldsEvery(x) }
     debug.setPrintTupleEvery(printTuplesEvery)
     debug
   }

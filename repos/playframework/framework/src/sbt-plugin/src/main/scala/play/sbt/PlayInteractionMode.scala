@@ -31,7 +31,7 @@ trait PlayInteractionMode {
   * This is provided, rather than adding a new flag to PlayInteractionMode, to preserve binary compatibility.
   */
 trait PlayNonBlockingInteractionMode extends PlayInteractionMode {
-  def waitForCancel() = ()
+  def waitForCancel()           = ()
   def doWithoutEcho(f: => Unit) = f
 
   /**
@@ -55,7 +55,8 @@ object PlayConsoleInteractionMode extends PlayInteractionMode {
 
   private def withConsoleReader[T](f: ConsoleReader => T): T = {
     val consoleReader = new ConsoleReader
-    try f(consoleReader) finally consoleReader.shutdown()
+    try f(consoleReader)
+    finally consoleReader.shutdown()
   }
   private def waitForKey(): Unit = {
     withConsoleReader { consoleReader =>
@@ -78,7 +79,8 @@ object PlayConsoleInteractionMode extends PlayInteractionMode {
     withConsoleReader { consoleReader =>
       val terminal = consoleReader.getTerminal
       terminal.setEchoEnabled(false)
-      try f finally terminal.restore()
+      try f
+      finally terminal.restore()
     }
   }
   override def waitForCancel(): Unit = waitForKey()

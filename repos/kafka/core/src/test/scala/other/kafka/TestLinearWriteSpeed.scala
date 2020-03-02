@@ -5,7 +5,7 @@
   * The ASF licenses this file to You under the Apache License, Version 2.0
   * (the "License"); you may not use this file except in compliance with
   * the License.  You may obtain a copy of the License at
-  * 
+  *
   *    http://www.apache.org/licenses/LICENSE-2.0
   *
   * Unless required by applicable law or agreed to in writing, software
@@ -50,8 +50,10 @@ object TestLinearWriteSpeed {
       .describedAs("num_bytes")
       .ofType(classOf[java.lang.Integer])
     val messageSizeOpt = parser
-      .accepts("message-size",
-               "REQUIRED: The size of each message in the message set.")
+      .accepts(
+        "message-size",
+        "REQUIRED: The size of each message in the message set."
+      )
       .withRequiredArg
       .describedAs("num_bytes")
       .ofType(classOf[java.lang.Integer])
@@ -86,34 +88,41 @@ object TestLinearWriteSpeed {
       .describedAs("codec")
       .ofType(classOf[java.lang.String])
       .defaultsTo(NoCompressionCodec.name)
-    val mmapOpt = parser.accepts("mmap", "Do writes to memory-mapped files.")
+    val mmapOpt    = parser.accepts("mmap", "Do writes to memory-mapped files.")
     val channelOpt = parser.accepts("channel", "Do writes to file channesl.")
-    val logOpt = parser.accepts("log", "Do writes to kafka logs.")
+    val logOpt     = parser.accepts("log", "Do writes to kafka logs.")
 
     val options = parser.parse(args: _*)
 
     CommandLineUtils.checkRequiredArgs(
-        parser, options, bytesOpt, sizeOpt, filesOpt)
+      parser,
+      options,
+      bytesOpt,
+      sizeOpt,
+      filesOpt
+    )
 
-    var bytesToWrite = options.valueOf(bytesOpt).longValue
-    val bufferSize = options.valueOf(sizeOpt).intValue
-    val numFiles = options.valueOf(filesOpt).intValue
+    var bytesToWrite      = options.valueOf(bytesOpt).longValue
+    val bufferSize        = options.valueOf(sizeOpt).intValue
+    val numFiles          = options.valueOf(filesOpt).intValue
     val reportingInterval = options.valueOf(reportingIntervalOpt).longValue
-    val dir = options.valueOf(dirOpt)
+    val dir               = options.valueOf(dirOpt)
     val maxThroughputBytes =
       options.valueOf(maxThroughputOpt).intValue * 1024L * 1024L
-    val buffer = ByteBuffer.allocate(bufferSize)
-    val messageSize = options.valueOf(messageSizeOpt).intValue
+    val buffer        = ByteBuffer.allocate(bufferSize)
+    val messageSize   = options.valueOf(messageSizeOpt).intValue
     val flushInterval = options.valueOf(flushIntervalOpt).longValue
-    val compressionCodec = CompressionCodec.getCompressionCodec(
-        options.valueOf(compressionCodecOpt))
+    val compressionCodec =
+      CompressionCodec.getCompressionCodec(options.valueOf(compressionCodecOpt))
     val rand = new Random
     rand.nextBytes(buffer.array)
     val numMessages = bufferSize / (messageSize + MessageSet.LogOverhead)
     val messageSet = new ByteBufferMessageSet(
-        compressionCodec = compressionCodec,
-        messages = (0 until numMessages).map(
-              x => new Message(new Array[Byte](messageSize))): _*)
+      compressionCodec = compressionCodec,
+      messages = (0 until numMessages).map(x =>
+        new Message(new Array[Byte](messageSize))
+      ): _*
+    )
 
     val writables = new Array[Writable](numFiles)
     val scheduler = new KafkaScheduler(1)
@@ -121,28 +130,36 @@ object TestLinearWriteSpeed {
     for (i <- 0 until numFiles) {
       if (options.has(mmapOpt)) {
         writables(i) = new MmapWritable(
-            new File(dir, "kafka-test-" + i + ".dat"),
-            bytesToWrite / numFiles,
-            buffer)
+          new File(dir, "kafka-test-" + i + ".dat"),
+          bytesToWrite / numFiles,
+          buffer
+        )
       } else if (options.has(channelOpt)) {
-        writables(i) = new ChannelWritable(
-            new File(dir, "kafka-test-" + i + ".dat"), buffer)
+        writables(i) =
+          new ChannelWritable(new File(dir, "kafka-test-" + i + ".dat"), buffer)
       } else if (options.has(logOpt)) {
         val segmentSize =
           rand.nextInt(512) * 1024 * 1024 +
-          64 * 1024 * 1024 // vary size to avoid herd effect
+            64 * 1024 * 1024 // vary size to avoid herd effect
         val logProperties = new Properties()
         logProperties.put(
-            LogConfig.SegmentBytesProp, segmentSize: java.lang.Integer)
+          LogConfig.SegmentBytesProp,
+          segmentSize: java.lang.Integer
+        )
         logProperties.put(
-            LogConfig.FlushMessagesProp, flushInterval: java.lang.Long)
-        writables(i) = new LogWritable(new File(dir, "kafka-test-" + i),
-                                       new LogConfig(logProperties),
-                                       scheduler,
-                                       messageSet)
+          LogConfig.FlushMessagesProp,
+          flushInterval: java.lang.Long
+        )
+        writables(i) = new LogWritable(
+          new File(dir, "kafka-test-" + i),
+          new LogConfig(logProperties),
+          scheduler,
+          messageSet
+        )
       } else {
         System.err.println(
-            "Must specify what to write to with one of --log, --channel, or --mmap")
+          "Must specify what to write to with one of --log, --channel, or --mmap"
+        )
         System.exit(1)
       }
     }
@@ -150,17 +167,17 @@ object TestLinearWriteSpeed {
 
     println("%10s\t%10s\t%10s".format("mb_sec", "avg_latency", "max_latency"))
 
-    val beginTest = System.nanoTime
-    var maxLatency = 0L
+    val beginTest    = System.nanoTime
+    var maxLatency   = 0L
     var totalLatency = 0L
-    var count = 0L
-    var written = 0L
+    var count        = 0L
+    var written      = 0L
     var totalWritten = 0L
-    var lastReport = beginTest
+    var lastReport   = beginTest
     while (totalWritten + bufferSize < bytesToWrite) {
-      val start = System.nanoTime
+      val start     = System.nanoTime
       val writeSize = writables((count % numFiles).toInt.abs).write()
-      val ellapsed = System.nanoTime - start
+      val ellapsed  = System.nanoTime - start
       maxLatency = max(ellapsed, maxLatency)
       totalLatency += ellapsed
       written += writeSize
@@ -168,12 +185,15 @@ object TestLinearWriteSpeed {
       totalWritten += writeSize
       if ((start - lastReport) / (1000.0 * 1000.0) > reportingInterval.doubleValue) {
         val ellapsedSecs = (start - lastReport) / (1000.0 * 1000.0 * 1000.0)
-        val mb = written / (1024.0 * 1024.0)
+        val mb           = written / (1024.0 * 1024.0)
         println(
-            "%10.3f\t%10.3f\t%10.3f".format(mb / ellapsedSecs,
-                                            totalLatency / count.toDouble /
-                                            (1000.0 * 1000.0),
-                                            maxLatency / (1000.0 * 1000.0)))
+          "%10.3f\t%10.3f\t%10.3f".format(
+            mb / ellapsedSecs,
+            totalLatency / count.toDouble /
+              (1000.0 * 1000.0),
+            maxLatency / (1000.0 * 1000.0)
+          )
+        )
         lastReport = start
         written = 0
         maxLatency = 0L
@@ -181,8 +201,8 @@ object TestLinearWriteSpeed {
       } else if (written > maxThroughputBytes * (reportingInterval / 1000.0)) {
         // if we have written enough, just sit out this reporting interval
         val lastReportMs = lastReport / (1000 * 1000)
-        val now = System.nanoTime / (1000 * 1000)
-        val sleepMs = lastReportMs + reportingInterval - now
+        val now          = System.nanoTime / (1000 * 1000)
+        val sleepMs      = lastReportMs + reportingInterval - now
         if (sleepMs > 0) Thread.sleep(sleepMs)
       }
     }
@@ -217,7 +237,7 @@ object TestLinearWriteSpeed {
   class ChannelWritable(val file: File, val content: ByteBuffer)
       extends Writable {
     file.deleteOnExit()
-    val raf = new RandomAccessFile(file, "rw")
+    val raf     = new RandomAccessFile(file, "rw")
     val channel = raf.getChannel
     def write(): Int = {
       channel.write(content)
@@ -229,11 +249,12 @@ object TestLinearWriteSpeed {
     }
   }
 
-  class LogWritable(val dir: File,
-                    config: LogConfig,
-                    scheduler: Scheduler,
-                    val messages: ByteBufferMessageSet)
-      extends Writable {
+  class LogWritable(
+      val dir: File,
+      config: LogConfig,
+      scheduler: Scheduler,
+      val messages: ByteBufferMessageSet
+  ) extends Writable {
     CoreUtils.rm(dir)
     val log = new Log(dir, config, 0L, scheduler, SystemTime)
     def write(): Int = {

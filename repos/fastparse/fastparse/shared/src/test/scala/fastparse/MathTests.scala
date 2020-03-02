@@ -27,7 +27,7 @@ object MathTests extends TestSuite {
 
   val divMul: P[Int] = P(factor ~ (CharIn("*/").! ~/ factor).rep).map(eval)
   val addSub: P[Int] = P(divMul ~ (CharIn("+-").! ~/ divMul).rep).map(eval)
-  val expr: P[Int] = P(addSub ~ End)
+  val expr: P[Int]   = P(addSub ~ End)
 
   val tests = TestSuite {
     'pass {
@@ -46,22 +46,22 @@ object MathTests extends TestSuite {
     }
     'fail {
       def check(input: String, expectedTrace: String) = {
-        val failure = expr.parse(input).asInstanceOf[Parsed.Failure]
+        val failure     = expr.parse(input).asInstanceOf[Parsed.Failure]
         val actualTrace = failure.extra.traced.trace
         assert(expectedTrace.trim == actualTrace.trim)
       }
       check(
-          "(+)",
-          """expr:1:1 / addSub:1:1 / divMul:1:1 / factor:1:1 / parens:1:1 / addSub:1:2""" +
+        "(+)",
+        """expr:1:1 / addSub:1:1 / divMul:1:1 / factor:1:1 / parens:1:1 / addSub:1:2""" +
           """ / divMul:1:2 / factor:1:2 / (number | parens):1:2 ..."+)" """
       )
       check(
-          "1+-",
-          """ expr:1:1 / addSub:1:1 / divMul:1:3 / factor:1:3 / (number | parens):1:3 ..."-" """
+        "1+-",
+        """ expr:1:1 / addSub:1:1 / divMul:1:3 / factor:1:3 / (number | parens):1:3 ..."-" """
       )
       check(
-          "(1+(2+3x))+4",
-          """ expr:1:1 / addSub:1:1 / divMul:1:1 / factor:1:1 / parens:1:1 / addSub:1:2""" +
+        "(1+(2+3x))+4",
+        """ expr:1:1 / addSub:1:1 / divMul:1:1 / factor:1:1 / parens:1:1 / addSub:1:2""" +
           """ / divMul:1:4 / factor:1:4 / parens:1:4 / (")" | CharIn("+-")):1:8 ..."x))+4" """
       )
     }

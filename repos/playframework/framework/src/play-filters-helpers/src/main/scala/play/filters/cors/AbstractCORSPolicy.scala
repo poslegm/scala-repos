@@ -36,8 +36,10 @@ private[cors] trait AbstractCORSPolicy {
     immutable.HashSet(GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS)
   }
 
-  protected def filterRequest(next: RequestHeader => Future[Result],
-                              request: RequestHeader): Future[Result] = {
+  protected def filterRequest(
+      next: RequestHeader => Future[Result],
+      request: RequestHeader
+  ): Future[Result] = {
     (request.headers.get(HeaderNames.ORIGIN), request.method) match {
       case (None, _) =>
         /* http://www.w3.org/TR/cors/#resource-requests
@@ -77,13 +79,16 @@ private[cors] trait AbstractCORSPolicy {
    *
    * @see [[http://www.w3.org/TR/cors/#resource-requests Simple Cross-Origin Request, Actual Request, and Redirects]]
    */
-  private def handleCORSRequest(next: RequestHeader => Future[Result],
-                                request: RequestHeader): Future[Result] = {
+  private def handleCORSRequest(
+      next: RequestHeader => Future[Result],
+      request: RequestHeader
+  ): Future[Result] = {
     val origin = {
       val originOpt = request.headers.get(HeaderNames.ORIGIN)
       assume(
-          originOpt.isDefined,
-          "The presence of the ORIGIN header should guaranteed at this point.")
+        originOpt.isDefined,
+        "The presence of the ORIGIN header should guaranteed at this point."
+      )
       originOpt.get
     }
 
@@ -107,7 +112,7 @@ private[cors] trait AbstractCORSPolicy {
          * Access-Control-Allow-Credentials header with the case-sensitive string "true" as value.
          */
         headerBuilder += HeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS -> "true"
-        headerBuilder += HeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN -> origin
+        headerBuilder += HeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN      -> origin
         /* http://www.w3.org/TR/cors/#resource-implementation
          * § 6.4
          * Resources that wish to enable themselves to be shared with multiple Origins but do
@@ -141,7 +146,7 @@ private[cors] trait AbstractCORSPolicy {
       if (corsConfig.exposedHeaders.nonEmpty) {
         headerBuilder +=
           HeaderNames.ACCESS_CONTROL_EXPOSE_HEADERS -> corsConfig.exposedHeaders
-          .mkString(",")
+            .mkString(",")
       }
 
       import play.api.libs.iteratee.Execution.Implicits.trampoline
@@ -149,24 +154,27 @@ private[cors] trait AbstractCORSPolicy {
       val taggedRequest =
         request.copy(tags = request.tags + (CORSFilter.RequestTag -> origin))
       // We must recover any errors so that we can add the headers to them to allow clients to see the result
-      val result = try {
-        next(taggedRequest).recoverWith {
+      val result =
+        try {
+          next(taggedRequest).recoverWith {
+            case e: Throwable => errorHandler.onServerError(taggedRequest, e)
+          }
+        } catch {
           case e: Throwable => errorHandler.onServerError(taggedRequest, e)
         }
-      } catch {
-        case e: Throwable => errorHandler.onServerError(taggedRequest, e)
-      }
       result.map(_.withHeaders(headerBuilder.result(): _*))
     }
   }
 
   private def handlePreFlightCORSRequest(
-      request: RequestHeader): Future[Result] = {
+      request: RequestHeader
+  ): Future[Result] = {
     val origin = {
       val originOpt = request.headers.get(HeaderNames.ORIGIN)
       assume(
-          originOpt.isDefined,
-          "The presence of the ORIGIN header should guaranteed at this point.")
+        originOpt.isDefined,
+        "The presence of the ORIGIN header should guaranteed at this point."
+      )
       originOpt.get
     }
 
@@ -216,7 +224,8 @@ private[cors] trait AbstractCORSPolicy {
                   headerVal.trim
                     .split(',')
                     .map(_.trim.toLowerCase(java.util.Locale.ENGLISH))(
-                        collection.breakOut)
+                      collection.breakOut
+                    )
               }
             }
 
@@ -310,7 +319,7 @@ private[cors] trait AbstractCORSPolicy {
               if (!accessControlRequestHeaders.isEmpty) {
                 headerBuilder +=
                   HeaderNames.ACCESS_CONTROL_ALLOW_HEADERS -> accessControlRequestHeaders
-                  .mkString(",")
+                    .mkString(",")
               }
 
               Future.successful {
@@ -323,9 +332,11 @@ private[cors] trait AbstractCORSPolicy {
   }
 
   private def handleInvalidCORSRequest(
-      request: RequestHeader): Future[Result] = {
+      request: RequestHeader
+  ): Future[Result] = {
     logger.trace(s"""Invalid CORS request;Origin=${request.headers.get(
-        HeaderNames.ORIGIN)};Method=${request.method};${HeaderNames.ACCESS_CONTROL_REQUEST_HEADERS}=${request.headers
+      HeaderNames.ORIGIN
+    )};Method=${request.method};${HeaderNames.ACCESS_CONTROL_REQUEST_HEADERS}=${request.headers
       .get(HeaderNames.ACCESS_CONTROL_REQUEST_HEADERS)}""")
     Future.successful(Results.Forbidden)
   }
@@ -346,9 +357,11 @@ private[cors] trait AbstractCORSPolicy {
 
   private def isSameOrigin(origin: String, request: RequestHeader): Boolean = {
     val hostUri = new URI(origin.toLowerCase(Locale.ENGLISH))
-    val originUri = new URI((if (request.secure) "https://" else "http://") +
-        request.host.toLowerCase(Locale.ENGLISH))
+    val originUri = new URI(
+      (if (request.secure) "https://" else "http://") +
+        request.host.toLowerCase(Locale.ENGLISH)
+    )
     (hostUri.getScheme, hostUri.getHost, hostUri.getPort) ==
-    (originUri.getScheme, originUri.getHost, originUri.getPort)
+      (originUri.getScheme, originUri.getHost, originUri.getPort)
   }
 }

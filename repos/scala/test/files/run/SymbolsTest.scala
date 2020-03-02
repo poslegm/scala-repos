@@ -1,9 +1,9 @@
 import scala.language.reflectiveCalls
 
 class Slazz {
-  val s1 = 'myFirstSymbol
-  val s2 = 'mySecondSymbol
-  def s3 = 'myThirdSymbol
+  val s1         = 'myFirstSymbol
+  val s2         = 'mySecondSymbol
+  def s3         = 'myThirdSymbol
   var s4: Symbol = null
 
   s4 = 'myFourthSymbol
@@ -18,7 +18,7 @@ class Sub extends Base {
 }
 
 trait Signs {
-  val ind = 'indication
+  val ind   = 'indication
   val trace = 'trace
 }
 
@@ -48,7 +48,7 @@ object SingletonOfLazyness {
  */
 object Test {
   class Inner {
-    val simba = 'smba
+    val simba       = 'smba
     var mfs: Symbol = null
     mfs = Symbol("mfsa")
   }
@@ -58,7 +58,7 @@ object Test {
     val o2 = 'ddd
   }
 
-  def aSymbol = 'myFirstSymbol
+  def aSymbol       = 'myFirstSymbol
   val anotherSymbol = 'mySecondSymbol
 
   def main(args: Array[String]) {
@@ -159,7 +159,7 @@ object Test {
 
   def testNestedObject {
     object nested {
-      def sign = 'sign
+      def sign     = 'sign
       def insignia = 'insignia
     }
     assert(nested.sign == 'sign)
@@ -169,7 +169,7 @@ object Test {
 
   def testInheritance {
     val base = new Base
-    val sub = new Sub
+    val sub  = new Sub
     assert(base.basesymbol == 'symbase)
     assert(sub.subsymbol == 'symsub)
     assert(sub.basesymbol == 'symbase)

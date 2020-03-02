@@ -34,12 +34,12 @@ trait Ring[@specialized(Int, Short, Long, Float, Double) V]
 
 object Ring {
   import Field._
-  implicit val ringD: Ring[Double] = fieldDouble
-  implicit val ringFloat: Ring[Float] = fieldFloat
-  implicit val ringInt: Ring[Int] = fieldInt
-  implicit val ringLong: Ring[Long] = fieldLong
-  implicit val ringBigInt: Ring[BigInt] = fieldBigInt
-  implicit val ringShort: Ring[Short] = fieldShort
+  implicit val ringD: Ring[Double]        = fieldDouble
+  implicit val ringFloat: Ring[Float]     = fieldFloat
+  implicit val ringInt: Ring[Int]         = fieldInt
+  implicit val ringLong: Ring[Long]       = fieldLong
+  implicit val ringBigInt: Ring[BigInt]   = fieldBigInt
+  implicit val ringShort: Ring[Short]     = fieldShort
   implicit val ringComplex: Ring[Complex] = Complex.scalar
 
   implicit def ringFromField[T](implicit field: Field[T]): Ring[T] = field

@@ -35,15 +35,19 @@ class InjectTests extends CatsSuite {
 
   implicit def test1Arbitrary[A](
       implicit seqArb: Arbitrary[Int],
-      intAArb: Arbitrary[Int => A]): Arbitrary[Test1[A]] =
-    Arbitrary(for { s <- seqArb.arbitrary; f <- intAArb.arbitrary } yield
-          Test1(s, f))
+      intAArb: Arbitrary[Int => A]
+  ): Arbitrary[Test1[A]] =
+    Arbitrary(
+      for { s <- seqArb.arbitrary; f <- intAArb.arbitrary } yield Test1(s, f)
+    )
 
   implicit def test2Arbitrary[A](
       implicit seqArb: Arbitrary[Int],
-      intAArb: Arbitrary[Int => A]): Arbitrary[Test2[A]] =
-    Arbitrary(for { s <- seqArb.arbitrary; f <- intAArb.arbitrary } yield
-          Test2(s, f))
+      intAArb: Arbitrary[Int => A]
+  ): Arbitrary[Test2[A]] =
+    Arbitrary(
+      for { s <- seqArb.arbitrary; f <- intAArb.arbitrary } yield Test2(s, f)
+    )
 
   object Test1Interpreter extends (Test1Algebra ~> Id) {
     override def apply[A](fa: Test1Algebra[A]): Id[A] = fa match {
@@ -63,8 +67,10 @@ class InjectTests extends CatsSuite {
 
   test("inj") {
     forAll { (x: Int, y: Int) =>
-      def res[F[_]](implicit I0: Test1Algebra :<: F,
-                    I1: Test2Algebra :<: F): Free[F, Int] = {
+      def res[F[_]](
+          implicit I0: Test1Algebra :<: F,
+          I1: Test2Algebra :<: F
+      ): Free[F, Int] = {
         for {
           a <- Free.inject[Test1Algebra, F](Test1(x, identity))
           b <- Free.inject[Test2Algebra, F](Test2(y, identity))
@@ -78,7 +84,8 @@ class InjectTests extends CatsSuite {
     def distr[F[_], A](f: Free[F, A])(
         implicit F: Functor[F],
         I0: Test1Algebra :<: F,
-        I1: Test2Algebra :<: F): Option[Free[F, A]] =
+        I1: Test2Algebra :<: F
+    ): Option[Free[F, A]] =
       for {
         Test1(x, h) <- match_[F, Test1Algebra, A](f)
         Test2(y, k) <- match_[F, Test2Algebra, A](h(x))
@@ -102,8 +109,7 @@ class InjectTests extends CatsSuite {
 
   test("apply in right") {
     forAll { (y: Test2[Int]) =>
-      Inject[Test2Algebra, T].inj(y) == Coproduct(Xor.Right(y)) should ===(
-          true)
+      Inject[Test2Algebra, T].inj(y) == Coproduct(Xor.Right(y)) should ===(true)
     }
   }
 }

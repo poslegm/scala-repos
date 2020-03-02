@@ -3,7 +3,7 @@ class YouAreYourself[A <: AnyRef](val you: A) extends AnyVal {
 }
 
 object Test {
-  val s = ""
+  val s          = ""
   val s1: s.type = new YouAreYourself[s.type](s).yourself
 }
 

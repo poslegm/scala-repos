@@ -20,9 +20,9 @@ object TransformationSampleSpecConfig extends MultiNodeConfig {
   // register the named roles (nodes) of the test
   val frontend1 = role("frontend1")
   val frontend2 = role("frontend2")
-  val backend1 = role("backend1")
-  val backend2 = role("backend2")
-  val backend3 = role("backend3")
+  val backend1  = role("backend1")
+  val backend2  = role("backend2")
+  val backend3  = role("backend3")
 
   def nodeList = Seq(frontend1, frontend2, backend1, backend2, backend3)
 
@@ -42,16 +42,21 @@ object TransformationSampleSpecConfig extends MultiNodeConfig {
 
   // this configuration will be used for all nodes
   // note that no fixed host names and ports are used
-  commonConfig(ConfigFactory.parseString("""
+  commonConfig(
+    ConfigFactory
+      .parseString("""
     akka.actor.provider = "akka.cluster.ClusterActorRefProvider"
     akka.remote.log-remote-lifecycle-events = off
-    """))
+    """)
+  )
 
   nodeConfig(frontend1, frontend2)(
-      ConfigFactory.parseString("akka.cluster.roles =[frontend]"))
+    ConfigFactory.parseString("akka.cluster.roles =[frontend]")
+  )
 
   nodeConfig(backend1, backend2, backend3)(
-      ConfigFactory.parseString("akka.cluster.roles =[backend]"))
+    ConfigFactory.parseString("akka.cluster.roles =[backend]")
+  )
 }
 
 // need one concrete test class per node
@@ -62,8 +67,11 @@ class TransformationSampleSpecMultiJvmNode4 extends TransformationSampleSpec
 class TransformationSampleSpecMultiJvmNode5 extends TransformationSampleSpec
 
 abstract class TransformationSampleSpec
-    extends MultiNodeSpec(TransformationSampleSpecConfig) with WordSpecLike
-    with Matchers with BeforeAndAfterAll with ImplicitSender {
+    extends MultiNodeSpec(TransformationSampleSpecConfig)
+    with WordSpecLike
+    with Matchers
+    with BeforeAndAfterAll
+    with ImplicitSender {
 
   import TransformationSampleSpecConfig._
 

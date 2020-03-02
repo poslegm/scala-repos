@@ -29,7 +29,7 @@ class CompressionCodecSuite extends SparkFunSuite {
   def testCodec(codec: CompressionCodec) {
     // Write 1000 integers to the output stream, compressed.
     val outputStream = new ByteArrayOutputStream()
-    val out = codec.compressedOutputStream(outputStream)
+    val out          = codec.compressedOutputStream(outputStream)
     for (i <- 1 until 1000) {
       out.write(i % 256)
     }
@@ -37,7 +37,7 @@ class CompressionCodecSuite extends SparkFunSuite {
 
     // Read the 1000 integers back.
     val inputStream = new ByteArrayInputStream(outputStream.toByteArray)
-    val in = codec.compressedInputStream(inputStream)
+    val in          = codec.compressedInputStream(inputStream)
     for (i <- 1 until 1000) {
       assert(in.read() === i % 256)
     }
@@ -92,7 +92,9 @@ class CompressionCodecSuite extends SparkFunSuite {
 
   test("snappy compression codec") {
     val codec = CompressionCodec.createCodec(
-        conf, classOf[SnappyCompressionCodec].getName)
+      conf,
+      classOf[SnappyCompressionCodec].getName
+    )
     assert(codec.getClass === classOf[SnappyCompressionCodec])
     testCodec(codec)
   }
@@ -105,7 +107,9 @@ class CompressionCodecSuite extends SparkFunSuite {
 
   test("snappy supports concatenation of serialized streams") {
     val codec = CompressionCodec.createCodec(
-        conf, classOf[SnappyCompressionCodec].getName)
+      conf,
+      classOf[SnappyCompressionCodec].getName
+    )
     assert(codec.getClass === classOf[SnappyCompressionCodec])
     testConcatenationOfSerializedStreams(codec)
   }
@@ -117,17 +121,18 @@ class CompressionCodecSuite extends SparkFunSuite {
   }
 
   private def testConcatenationOfSerializedStreams(
-      codec: CompressionCodec): Unit = {
+      codec: CompressionCodec
+  ): Unit = {
     val bytes1: Array[Byte] = {
       val baos = new ByteArrayOutputStream()
-      val out = codec.compressedOutputStream(baos)
+      val out  = codec.compressedOutputStream(baos)
       (0 to 64).foreach(out.write)
       out.close()
       baos.toByteArray
     }
     val bytes2: Array[Byte] = {
       val baos = new ByteArrayOutputStream()
-      val out = codec.compressedOutputStream(baos)
+      val out  = codec.compressedOutputStream(baos)
       (65 to 127).foreach(out.write)
       out.close()
       baos.toByteArray

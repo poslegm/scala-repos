@@ -37,7 +37,7 @@ class KeyValueInjection[K, V] extends Injection[(K, V), JList[AnyRef]] {
 
   override def apply(item: (K, V)) = {
     val (key, v) = item
-    val list = new JAList[AnyRef](2)
+    val list     = new JAList[AnyRef](2)
     list.add(key.asInstanceOf[AnyRef])
     list.add(v.asInstanceOf[AnyRef])
     list
@@ -48,6 +48,6 @@ class KeyValueInjection[K, V] extends Injection[(K, V), JList[AnyRef]] {
     val value = v
       .get(1)
       .asInstanceOf[V]
-      (key, value)
+    (key, value)
   }
 }

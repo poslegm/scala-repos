@@ -15,10 +15,10 @@ abstract class RequestProxy extends Request {
 
   protected[finagle] def httpRequest: HttpRequest = request.httpRequest
 
-  override def reader: Reader = request.reader
+  override def reader: Reader               = request.reader
   override def writer: Writer with Closable = request.writer
 
-  override def params = request.params
+  override def params     = request.params
   def remoteSocketAddress = request.remoteSocketAddress
 
   override lazy val response = request.response

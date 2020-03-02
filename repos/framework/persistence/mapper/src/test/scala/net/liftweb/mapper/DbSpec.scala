@@ -30,7 +30,7 @@ object DbSpec extends Specification {
   "DB Specification".title
 
   val provider = DbProviders.H2MemoryProvider
-  val logF = Schemifier.infoF _
+  val logF     = Schemifier.infoF _
 
   def cleanup() {
     provider.setupDB

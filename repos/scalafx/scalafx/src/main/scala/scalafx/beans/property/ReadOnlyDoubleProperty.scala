@@ -34,20 +34,21 @@ import scalafx.delegate.SFXDelegate
 
 object ReadOnlyDoubleProperty {
   implicit def sfxReadOnlyDoubleProperty2jfx(
-      rodp: ReadOnlyDoubleProperty): jfxbp.ReadOnlyDoubleProperty =
+      rodp: ReadOnlyDoubleProperty
+  ): jfxbp.ReadOnlyDoubleProperty =
     if (rodp != null) rodp.delegate else null
 }
 
 class ReadOnlyDoubleProperty(
-    override val delegate: jfxbp.ReadOnlyDoubleProperty)
-    extends NumberExpression(delegate) with ReadOnlyProperty[Double, Number]
+    override val delegate: jfxbp.ReadOnlyDoubleProperty
+) extends NumberExpression(delegate)
+    with ReadOnlyProperty[Double, Number]
     with SFXDelegate[jfxbp.ReadOnlyDoubleProperty] {
   def this(bean: Object, name: String, value: Double) =
-    this(
-        new jfxbp.ReadOnlyDoublePropertyBase() {
+    this(new jfxbp.ReadOnlyDoublePropertyBase() {
       def getBean = bean
       def getName = name
-      def get = value
+      def get     = value
     })
 
   override def value = delegate.get

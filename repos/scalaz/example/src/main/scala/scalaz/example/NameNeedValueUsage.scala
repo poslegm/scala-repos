@@ -20,21 +20,21 @@ object NameNeedValueUsage extends App {
 
   {
     val inc = new Inc
-    val n = Name(inc.apply())
+    val n   = Name(inc.apply())
     assert(n.value == 1)
     assert(n.value == 2)
   }
 
   {
     val inc = new Inc
-    val n = Need(inc.apply())
+    val n   = Need(inc.apply())
     assert(n.value == 1)
     assert(n.value == 1)
   }
 
   {
     val inc = new Inc
-    val n = Value(inc.apply())
+    val n   = Value(inc.apply())
     assert(n.value == 1)
     assert(n.value == 1)
   }

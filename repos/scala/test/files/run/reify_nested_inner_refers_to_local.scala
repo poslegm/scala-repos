@@ -11,7 +11,7 @@ object Test extends App {
     reify { x }.eval
   };
 
-  val toolbox = cm.mkToolBox()
+  val toolbox   = cm.mkToolBox()
   val evaluated = toolbox.eval(code.tree)
   println("evaluated = " + evaluated)
 }

@@ -4,12 +4,24 @@ import akka.pattern.ask
 import chess.{Game => ChessGame, Board, Clock}
 
 import lila.db.api._
-import lila.game.{GameRepo, Game, Event, Progress, Pov, PlayerRef, Namer, Source}
+import lila.game.{
+  GameRepo,
+  Game,
+  Event,
+  Progress,
+  Pov,
+  PlayerRef,
+  Namer,
+  Source
+}
 import lila.pref.{Pref, PrefApi}
 import makeTimeout.short
 
 private[round] final class Drawer(
-    messenger: Messenger, finisher: Finisher, prefApi: PrefApi) {
+    messenger: Messenger,
+    finisher: Finisher,
+    prefApi: PrefApi
+) {
 
   def autoThreefold(game: Game): Fu[Option[Pov]] =
     Pov(game).map { pov =>
@@ -31,9 +43,7 @@ private[round] final class Drawer(
     case Pov(g, color) if (g playerCanOfferDraw color) =>
       GameRepo save {
         messenger.system(g, color.fold(_.whiteOffersDraw, _.blackOffersDraw))
-        Progress(g) map { g =>
-          g.updatePlayer(color, _ offerDraw g.turns)
-        }
+        Progress(g) map { g => g.updatePlayer(color, _ offerDraw g.turns) }
       } inject List(Event.ReloadOwner)
     case _ => fuccess(Nil)
   }
@@ -42,25 +52,23 @@ private[round] final class Drawer(
     case Pov(g, color) if pov.player.isOfferingDraw =>
       GameRepo save {
         messenger.system(g, _.drawOfferCanceled)
-        Progress(g) map { g =>
-          g.updatePlayer(color, _.removeDrawOffer)
-        }
+        Progress(g) map { g => g.updatePlayer(color, _.removeDrawOffer) }
       } inject List(Event.ReloadOwner)
     case Pov(g, color) if pov.opponent.isOfferingDraw =>
       GameRepo save {
-        messenger.system(g,
-                         color.fold(_.whiteDeclinesDraw, _.blackDeclinesDraw))
-        Progress(g) map { g =>
-          g.updatePlayer(!color, _.removeDrawOffer)
-        }
+        messenger
+          .system(g, color.fold(_.whiteDeclinesDraw, _.blackDeclinesDraw))
+        Progress(g) map { g => g.updatePlayer(!color, _.removeDrawOffer) }
       } inject List(Event.ReloadOwner)
     case _ => fuccess(Nil)
   }
 
   def claim(pov: Pov): Fu[Events] =
     (pov.game.playable &&
-        pov.game.toChessHistory.threefoldRepetition) ?? finisher.other(
-        pov.game, _.Draw)
+      pov.game.toChessHistory.threefoldRepetition) ?? finisher.other(
+      pov.game,
+      _.Draw
+    )
 
   def force(game: Game): Fu[Events] = finisher.other(game, _.Draw, None, None)
 }

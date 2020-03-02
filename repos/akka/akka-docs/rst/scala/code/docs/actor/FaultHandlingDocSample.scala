@@ -30,8 +30,8 @@ object FaultHandlingDocSample extends App {
     }
     """)
 
-  val system = ActorSystem("FaultToleranceSample", config)
-  val worker = system.actorOf(Props[Worker], name = "worker")
+  val system   = ActorSystem("FaultToleranceSample", config)
+  val worker   = system.actorOf(Props[Worker], name = "worker")
   val listener = system.actorOf(Props[Listener], name = "listener")
   // start the work and listen on progress
   // note that the listener is used as sender of the tell,
@@ -89,8 +89,8 @@ class Worker extends Actor with ActorLogging {
   // The sender of the initial Start message will continuously be notified
   // about progress
   var progressListener: Option[ActorRef] = None
-  val counterService = context.actorOf(Props[CounterService], name = "counter")
-  val totalCount = 51
+  val counterService                     = context.actorOf(Props[CounterService], name = "counter")
+  val totalCount                         = 51
   import context.dispatcher // Use this Actors' Dispatcher as ExecutionContext
 
   def receive = LoggingReceive {
@@ -139,11 +139,11 @@ class CounterService extends Actor {
       case _: Storage.StorageException => Restart
     }
 
-  val key = self.path.name
+  val key                       = self.path.name
   var storage: Option[ActorRef] = None
   var counter: Option[ActorRef] = None
-  var backlog = IndexedSeq.empty[(ActorRef, Any)]
-  val MaxBacklog = 10000
+  var backlog                   = IndexedSeq.empty[(ActorRef, Any)]
+  val MaxBacklog                = 10000
 
   import context.dispatcher // Use this Actors' Dispatcher as ExecutionContext
 
@@ -159,7 +159,8 @@ class CounterService extends Actor {
     */
   def initStorage() {
     storage = Some(
-        context.watch(context.actorOf(Props[Storage], name = "storage")))
+      context.watch(context.actorOf(Props[Storage], name = "storage"))
+    )
     // Tell the counter, if any, to use the new storage
     counter foreach { _ ! UseStorage(storage) }
     // We need the initial value to be able to operate
@@ -205,7 +206,8 @@ class CounterService extends Actor {
       case None =>
         if (backlog.size >= MaxBacklog)
           throw new ServiceUnavailable(
-              "CounterService not available, lack of initial value")
+            "CounterService not available, lack of initial value"
+          )
         backlog :+= (sender() -> msg)
     }
   }
@@ -227,7 +229,7 @@ class Counter(key: String, initialValue: Long) extends Actor {
   import CounterService._
   import Storage._
 
-  var count = initialValue
+  var count                     = initialValue
   var storage: Option[ActorRef] = None
 
   def receive = LoggingReceive {
@@ -271,7 +273,7 @@ class Storage extends Actor {
 
   def receive = LoggingReceive {
     case Store(Entry(key, count)) => db.save(key, count)
-    case Get(key) => sender() ! Entry(key, db.load(key).getOrElse(0L))
+    case Get(key)                 => sender() ! Entry(key, db.load(key).getOrElse(0L))
   }
 }
 

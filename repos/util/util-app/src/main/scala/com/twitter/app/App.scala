@@ -41,8 +41,8 @@ trait App extends Closable with CloseAwaitably {
   /** The [[com.twitter.app.Flags]] instance associated with this application */
   //failfastOnFlagsNotParsed is called in the ctor of App.scala here which is a bad idea
   //as things like this can happen http://stackoverflow.com/questions/18138397/calling-method-from-constructor
-  val flag: Flags = new Flags(
-      name, includeGlobal = true, failfastOnFlagsNotParsed)
+  val flag: Flags =
+    new Flags(name, includeGlobal = true, failfastOnFlagsNotParsed)
 
   private var _args = Array[String]()
 
@@ -68,7 +68,7 @@ trait App extends Closable with CloseAwaitably {
     System.exit(1)
   }
 
-  private val inits: mutable.Buffer[() => Unit] = mutable.Buffer.empty
+  private val inits: mutable.Buffer[() => Unit]    = mutable.Buffer.empty
   private val premains: mutable.Buffer[() => Unit] = mutable.Buffer.empty
   private val exits: ConcurrentLinkedQueue[Closable] =
     new ConcurrentLinkedQueue
@@ -174,13 +174,16 @@ trait App extends Closable with CloseAwaitably {
     for (f <- premains) f()
 
     // Get a main() if it's defined. It's possible to define traits that only use pre/post mains.
-    val mainMethod = try Some(getClass.getMethod("main")) catch {
-      case _: NoSuchMethodException => None
-    }
+    val mainMethod =
+      try Some(getClass.getMethod("main"))
+      catch {
+        case _: NoSuchMethodException => None
+      }
 
     // Invoke main() if it exists.
     mainMethod foreach { method =>
-      try method.invoke(this) catch {
+      try method.invoke(this)
+      catch {
         case e: InvocationTargetException => throw e.getCause
       }
     }
@@ -211,6 +214,7 @@ object App {
   private[app] def register(app: App): Unit =
     ref.getAndSet(Some(app)).foreach { existing =>
       log.warning(
-          s"Multiple com.twitter.app.App main methods called. ${existing.name}, then ${app.name}")
+        s"Multiple com.twitter.app.App main methods called. ${existing.name}, then ${app.name}"
+      )
     }
 }

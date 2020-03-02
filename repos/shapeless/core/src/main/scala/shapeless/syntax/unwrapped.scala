@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Miles Sabin 
+ * Copyright (c) 2016 Miles Sabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,6 @@ package syntax
 object unwrapped {
   implicit class UnwrappedSyntax[T](val t: T) extends AnyVal {
     def unwrap[U](implicit uw: Unwrapped.Aux[T, U]): U = uw.unwrap(t)
-    def wrap[W](implicit uw: Unwrapped.Aux[W, T]): W = uw.wrap(t)
+    def wrap[W](implicit uw: Unwrapped.Aux[W, T]): W   = uw.wrap(t)
   }
 }

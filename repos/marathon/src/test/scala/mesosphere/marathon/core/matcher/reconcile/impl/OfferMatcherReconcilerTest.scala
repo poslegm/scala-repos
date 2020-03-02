@@ -15,7 +15,10 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 
 class OfferMatcherReconcilerTest
-    extends FunSuite with GivenWhenThen with Mockito with Matchers
+    extends FunSuite
+    with GivenWhenThen
+    with Mockito
+    with Matchers
     with ScalaFutures {
   import scala.collection.JavaConverters._
 
@@ -33,12 +36,14 @@ class OfferMatcherReconcilerTest
   test("offer with volume for unknown tasks/apps leads to unreserve/destroy") {
     val f = new Fixture
     Given("an offer with volume")
-    val appId = PathId("/test")
+    val appId  = PathId("/test")
     val taskId = Task.Id.forApp(appId)
     val localVolumeIdLaunched =
       LocalVolumeId(appId, "persistent-volume-launched", "uuidLaunched")
     val offer = MarathonTestHelper.offerWithVolumes(
-        taskId.idString, localVolumeIdLaunched)
+      taskId.idString,
+      localVolumeIdLaunched
+    )
 
     And("no groups")
     f.groupRepository.rootGroupOrEmpty() returns Future.successful(Group.empty)
@@ -51,12 +56,12 @@ class OfferMatcherReconcilerTest
 
     Then("all resources are destroyed and unreserved")
     val expectedOps = Iterable(
-        TaskOp.UnreserveAndDestroyVolumes(
-            taskId,
-            oldTask = None,
-            maybeNewTask = None,
-            resources = offer.getResourcesList.asScala.to[Seq]
-        )
+      TaskOp.UnreserveAndDestroyVolumes(
+        taskId,
+        oldTask = None,
+        maybeNewTask = None,
+        resources = offer.getResourcesList.asScala.to[Seq]
+      )
     )
 
     // for the nicer error message with diff indication
@@ -67,17 +72,20 @@ class OfferMatcherReconcilerTest
   test("offer with volume for unknown tasks leads to unreserve/destroy") {
     val f = new Fixture
     Given("an offer with volume")
-    val appId = PathId("/test")
+    val appId  = PathId("/test")
     val taskId = Task.Id.forApp(appId)
     val localVolumeIdLaunched =
       LocalVolumeId(appId, "persistent-volume-launched", "uuidLaunched")
     val offer = MarathonTestHelper.offerWithVolumes(
-        taskId.idString, localVolumeIdLaunched)
+      taskId.idString,
+      localVolumeIdLaunched
+    )
 
     And("a bogus app")
     val app = AppDefinition(appId)
     f.groupRepository.rootGroupOrEmpty() returns Future.successful(
-        Group.empty.copy(apps = Set(app)))
+      Group.empty.copy(apps = Set(app))
+    )
     And("no tasks")
     f.taskTracker.tasksByApp()(any) returns Future.successful(TasksByApp.empty)
 
@@ -87,12 +95,12 @@ class OfferMatcherReconcilerTest
 
     Then("all resources are destroyed and unreserved")
     val expectedOps = Iterable(
-        TaskOp.UnreserveAndDestroyVolumes(
-            taskId,
-            oldTask = None,
-            maybeNewTask = None,
-            resources = offer.getResourcesList.asScala.to[Seq]
-        )
+      TaskOp.UnreserveAndDestroyVolumes(
+        taskId,
+        oldTask = None,
+        maybeNewTask = None,
+        resources = offer.getResourcesList.asScala.to[Seq]
+      )
     )
 
     // for the nicer error message with diff
@@ -103,19 +111,22 @@ class OfferMatcherReconcilerTest
   test("offer with volume for unknown apps leads to unreserve/destroy") {
     val f = new Fixture
     Given("an offer with volume")
-    val appId = PathId("/test")
+    val appId  = PathId("/test")
     val taskId = Task.Id.forApp(appId)
     val localVolumeIdLaunched =
       LocalVolumeId(appId, "persistent-volume-launched", "uuidLaunched")
     val offer = MarathonTestHelper.offerWithVolumes(
-        taskId.idString, localVolumeIdLaunched)
+      taskId.idString,
+      localVolumeIdLaunched
+    )
 
     And("no groups")
     f.groupRepository.rootGroupOrEmpty() returns Future.successful(Group.empty)
     And("a matching bogus task")
     val bogusTask = MarathonTestHelper.mininimalTask(taskId.idString)
     f.taskTracker.tasksByApp()(any) returns Future.successful(
-        TasksByApp.forTasks(bogusTask))
+      TasksByApp.forTasks(bogusTask)
+    )
 
     When("reconciling")
     val matchedTaskOps =
@@ -123,12 +134,12 @@ class OfferMatcherReconcilerTest
 
     Then("all resources are destroyed and unreserved")
     val expectedOps = Iterable(
-        TaskOp.UnreserveAndDestroyVolumes(
-            taskId,
-            oldTask = Some(bogusTask),
-            maybeNewTask = None,
-            resources = offer.getResourcesList.asScala.to[Seq]
-        )
+      TaskOp.UnreserveAndDestroyVolumes(
+        taskId,
+        oldTask = Some(bogusTask),
+        maybeNewTask = None,
+        resources = offer.getResourcesList.asScala.to[Seq]
+      )
     )
 
     // for the nicer error message with diff
@@ -137,23 +148,27 @@ class OfferMatcherReconcilerTest
   }
 
   test(
-      "offer with volume for known tasks/apps DOES NOT lead to unreserve/destroy") {
+    "offer with volume for known tasks/apps DOES NOT lead to unreserve/destroy"
+  ) {
     val f = new Fixture
     Given("an offer with volume")
-    val appId = PathId("/test")
+    val appId  = PathId("/test")
     val taskId = Task.Id.forApp(appId)
     val localVolumeIdLaunched =
       LocalVolumeId(appId, "persistent-volume-launched", "uuidLaunched")
     val offer = MarathonTestHelper.offerWithVolumes(
-        taskId.idString, localVolumeIdLaunched)
+      taskId.idString,
+      localVolumeIdLaunched
+    )
 
     And("a matching bogus app")
     val app = AppDefinition(appId)
     f.groupRepository.rootGroupOrEmpty() returns Future.successful(
-        Group.empty.copy(apps = Set(app)))
+      Group.empty.copy(apps = Set(app))
+    )
     And("a matching bogus task")
     f.taskTracker.tasksByApp()(any) returns Future.successful(
-        TasksByApp.forTasks(MarathonTestHelper.mininimalTask(taskId.idString))
+      TasksByApp.forTasks(MarathonTestHelper.mininimalTask(taskId.idString))
     )
 
     When("reconciling")
@@ -165,9 +180,9 @@ class OfferMatcherReconcilerTest
   }
 
   class Fixture {
-    lazy val taskTracker = mock[TaskTracker]
+    lazy val taskTracker     = mock[TaskTracker]
     lazy val groupRepository = mock[GroupRepository]
-    lazy val reconciler = new OfferMatcherReconciler(
-        taskTracker, groupRepository)
+    lazy val reconciler =
+      new OfferMatcherReconciler(taskTracker, groupRepository)
   }
 }

@@ -20,10 +20,10 @@ object JsonTests extends TestSuite {
       def apply(s: java.lang.String): Val =
         this.asInstanceOf[Obj].value.find(_._1 == s).get._2
     }
-    case class Str(value: java.lang.String) extends AnyVal with Val
+    case class Str(value: java.lang.String)         extends AnyVal with Val
     case class Obj(value: (java.lang.String, Val)*) extends AnyVal with Val
-    case class Arr(value: Val*) extends AnyVal with Val
-    case class Num(value: Double) extends AnyVal with Val
+    case class Arr(value: Val*)                     extends AnyVal with Val
+    case class Num(value: Double)                   extends AnyVal with Val
     case object False extends Val {
       def value = false
     }
@@ -36,34 +36,35 @@ object JsonTests extends TestSuite {
   }
 
   case class NamedFunction[T, V](f: T => V, name: String) extends (T => V) {
-    def apply(t: T) = f(t)
+    def apply(t: T)         = f(t)
     override def toString() = name
   }
   // Here is the parser
-  val Whitespace = NamedFunction(" \r\n".contains(_: Char), "Whitespace")
-  val Digits = NamedFunction('0' to '9' contains (_: Char), "Digits")
+  val Whitespace  = NamedFunction(" \r\n".contains(_: Char), "Whitespace")
+  val Digits      = NamedFunction('0' to '9' contains (_: Char), "Digits")
   val StringChars = NamedFunction(!"\"\\".contains(_: Char), "StringChars")
 
-  val space = P(CharsWhile(Whitespace).?)
-  val digits = P(CharsWhile(Digits))
-  val exponent = P(CharIn("eE") ~ CharIn("+-").? ~ digits)
+  val space      = P(CharsWhile(Whitespace).?)
+  val digits     = P(CharsWhile(Digits))
+  val exponent   = P(CharIn("eE") ~ CharIn("+-").? ~ digits)
   val fractional = P("." ~ digits)
-  val integral = P("0" | CharIn('1' to '9') ~ digits.?)
+  val integral   = P("0" | CharIn('1' to '9') ~ digits.?)
 
-  val number = P(CharIn("+-").? ~ integral ~ fractional.? ~ exponent.?).!.map(
-      x => Js.Num(x.toDouble)
-  )
+  val number =
+    P(CharIn("+-").? ~ integral ~ fractional.? ~ exponent.?).!.map(x =>
+      Js.Num(x.toDouble)
+    )
 
-  val `null` = P("null").map(_ => Js.Null)
+  val `null`  = P("null").map(_ => Js.Null)
   val `false` = P("false").map(_ => Js.False)
-  val `true` = P("true").map(_ => Js.True)
+  val `true`  = P("true").map(_ => Js.True)
 
-  val hexDigit = P(CharIn('0' to '9', 'a' to 'f', 'A' to 'F'))
+  val hexDigit      = P(CharIn('0' to '9', 'a' to 'f', 'A' to 'F'))
   val unicodeEscape = P("u" ~ hexDigit ~ hexDigit ~ hexDigit ~ hexDigit)
-  val escape = P("\\" ~ (CharIn("\"/\\bfnrt") | unicodeEscape))
+  val escape        = P("\\" ~ (CharIn("\"/\\bfnrt") | unicodeEscape))
 
   val strChars = P(CharsWhile(StringChars))
-  val string = P(space ~ "\"" ~/ (strChars | escape).rep.! ~ "\"").map(Js.Str)
+  val string   = P(space ~ "\"" ~/ (strChars | escape).rep.! ~ "\"").map(Js.Str)
 
   val array =
     P("[" ~/ jsonExpr.rep(sep = ",".~/) ~ space ~ "]").map(Js.Arr(_: _*))
@@ -73,7 +74,7 @@ object JsonTests extends TestSuite {
   val obj = P("{" ~/ pair.rep(sep = ",".~/) ~ space ~ "}").map(Js.Obj(_: _*))
 
   val jsonExpr: P[Js.Val] = P(
-      space ~ (obj | array | string | `true` | `false` | `null` | number) ~ space
+    space ~ (obj | array | string | `true` | `false` | `null` | number) ~ space
   )
 
   val tests = TestSuite {
@@ -94,13 +95,15 @@ object JsonTests extends TestSuite {
       }
       'jsonExpr - {
         val Parsed.Success(value, _) = jsonExpr.parse(
-            """{"omg": "123", "wtf": 12.4123}"""
+          """{"omg": "123", "wtf": 12.4123}"""
         )
         assert(
-            value == Js.Obj("omg" -> Js.Str("123"), "wtf" -> Js.Num(12.4123)))
+          value == Js.Obj("omg" -> Js.Str("123"), "wtf" -> Js.Num(12.4123))
+        )
       }
-      'bigJsonExpr - test(jsonExpr,
-                          """
+      'bigJsonExpr - test(
+        jsonExpr,
+        """
             {
                 "firstName": "John",
                 "lastName": "Smith",
@@ -122,7 +125,8 @@ object JsonTests extends TestSuite {
                     }
                 ]
             }
-      """)
+      """
+      )
     }
     'fail {
       def check(s: String, expectedError: String) = {
@@ -130,13 +134,13 @@ object JsonTests extends TestSuite {
           case s: Parsed.Success[_] =>
             throw new Exception("Parsing should have failed:")
           case f: Parsed.Failure =>
-            val error = f.extra.traced.trace
+            val error    = f.extra.traced.trace
             val expected = expectedError.trim
             assert(error == expected)
         }
       }
       * - check(
-          """
+        """
         }
             "firstName": "John",
             "lastName": "Smith",
@@ -159,12 +163,12 @@ object JsonTests extends TestSuite {
             ]
         }
         """,
-          """
+        """
           jsonExpr:1:0 / (obj | array | string | true | false | null | number):2:9 ..."}\n        "
         """
       )
       * - check(
-          """
+        """
         {
             firstName": "John",
             "lastName": "Smith",
@@ -187,12 +191,12 @@ object JsonTests extends TestSuite {
             ]
         }
         """,
-          """
+        """
           jsonExpr:1:0 / obj:2:9 / ("}" | "\""):3:13 ..."firstName\""
         """
       )
       * - check(
-          """
+        """
         {
             "firstName" "John",
             "lastName": "Smith",
@@ -215,12 +219,12 @@ object JsonTests extends TestSuite {
             ]
         }
         """,
-          """
+        """
           jsonExpr:1:0 / obj:2:9 / pair:2:9 / ":":3:24 ..." \"John\",\n "
         """
       )
       * - check(
-          """
+        """
         {
             "firstName": "John,
             "lastName": "Smith",
@@ -243,12 +247,12 @@ object JsonTests extends TestSuite {
             ]
         }
         """,
-          """
+        """
           jsonExpr:1:0 / obj:2:9 / ("}" | ","):4:14 ..."lastName\":"
         """
       )
       * - check(
-          """
+        """
         {
             "firstName": "John",
             "lastName": "Smith",
@@ -271,12 +275,12 @@ object JsonTests extends TestSuite {
             ]
         }
         """,
-          """
+        """
           jsonExpr:1:0 / obj:2:9 / ("}" | ","):7:32 ...": \"21 2nd "
         """
       )
       * - check(
-          """
+        """
         {
             "firstName": "John",
             "lastName": "Smith",
@@ -299,12 +303,12 @@ object JsonTests extends TestSuite {
             ]
         }
         """,
-          """
+        """
           jsonExpr:1:0 / obj:2:9 / pair:16:18 / string:16:18 / "\"":17:17 ..."{\n        "
         """
       )
       * - check(
-          """
+        """
         {
             "firstName": "John",
             "lastName": "Smith",
@@ -327,12 +331,12 @@ object JsonTests extends TestSuite {
             ]
         }
         """,
-          """
+        """
           jsonExpr:1:0 / obj:2:9 / pair:11:14 / jsonExpr:12:27 / obj:13:17 / pair:13:17 / ":":14:27 ..." \"home\",\n "
         """
       )
       * - check(
-          """
+        """
         {
             "firstName": "John",
             "lastName": "Smith",
@@ -355,12 +359,12 @@ object JsonTests extends TestSuite {
             ]
         }
         """,
-          """
+        """
           jsonExpr:1:0 / obj:2:9 / pair:11:14 / jsonExpr:12:28 / array:12:29 / jsonExpr:12:29 / obj:13:17 / ("}" | ","):15:35 ..."555-1234\n "
         """
       )
       * - check(
-          """
+        """
         {
             "firstName": "John",
             "lastName": "Smith",
@@ -383,12 +387,12 @@ object JsonTests extends TestSuite {
             ]
         }
         """,
-          """
+        """
           jsonExpr:1:0 / obj:2:9 / pair:11:14 / jsonExpr:12:28 / array:12:29 / jsonExpr:16:18 / obj:17:17 / ("}" | ","):19:35 ..."555-4567\n "
         """
       )
       * - check(
-          """
+        """
         {
             "firstName": "John",
             "lastName": "Smith",
@@ -411,7 +415,7 @@ object JsonTests extends TestSuite {
 
         }
         """,
-          """
+        """
           jsonExpr:1:0 / obj:2:9 / pair:11:14 / jsonExpr:12:28 / array:12:29 / ("]" | ","):22:9 ..."}\n        "
         """
       )

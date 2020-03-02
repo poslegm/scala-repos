@@ -5,7 +5,7 @@
 
 object harmonic {
   def main(args: Array[String]) = {
-    val n = Integer.parseInt(args(0));
+    val n          = Integer.parseInt(args(0));
     var partialSum = 0.0;
 
     for (i <- Iterator.range(1, n + 1)) partialSum = partialSum + 1.0 / i;

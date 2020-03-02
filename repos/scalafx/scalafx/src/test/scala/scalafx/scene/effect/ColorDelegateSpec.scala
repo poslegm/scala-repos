@@ -41,18 +41,16 @@ trait ColorDelegateSpec[D <: ColorDelegate[_]] extends FlatSpec {
   protected val colorDelegate: D
 
   it should "allow observe changes in Color" in {
-    var changed = false
+    var changed      = false
     val initialColor = Color.White
-    val finalColor = Color.Black
+    val finalColor   = Color.Black
 
     colorDelegate.color = initialColor
 
-    colorDelegate.color.onChange(
-        (ov, oldColor, newColor) =>
-          {
-        oldColor should be(initialColor.delegate)
-        newColor should be(finalColor.delegate)
-        changed = true
+    colorDelegate.color.onChange((ov, oldColor, newColor) => {
+      oldColor should be(initialColor.delegate)
+      newColor should be(finalColor.delegate)
+      changed = true
     })
 
     colorDelegate.color = finalColor

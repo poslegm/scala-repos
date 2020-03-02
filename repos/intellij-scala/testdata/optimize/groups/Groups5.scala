@@ -8,8 +8,8 @@ class Groups1 {
   import pack.G
 
   val b: ArrayBuffer[Int] = null
-  val c: ArrayList[Int] = null
-  val d: G = null
+  val c: ArrayList[Int]   = null
+  val d: G                = null
 }
 /*
 package pack {

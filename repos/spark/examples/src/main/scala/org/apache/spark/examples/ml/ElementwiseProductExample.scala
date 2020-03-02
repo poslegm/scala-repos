@@ -27,15 +27,19 @@ import org.apache.spark.sql.SQLContext
 
 object ElementwiseProductExample {
   def main(args: Array[String]): Unit = {
-    val conf = new SparkConf().setAppName("ElementwiseProductExample")
-    val sc = new SparkContext(conf)
+    val conf       = new SparkConf().setAppName("ElementwiseProductExample")
+    val sc         = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
 
     // $example on$
     // Create some vector data; also works for sparse vectors
     val dataFrame = sqlContext
-      .createDataFrame(Seq(("a", Vectors.dense(1.0, 2.0, 3.0)),
-                           ("b", Vectors.dense(4.0, 5.0, 6.0))))
+      .createDataFrame(
+        Seq(
+          ("a", Vectors.dense(1.0, 2.0, 3.0)),
+          ("b", Vectors.dense(4.0, 5.0, 6.0))
+        )
+      )
       .toDF("id", "vector")
 
     val transformingVector = Vectors.dense(0.0, 1.0, 2.0)

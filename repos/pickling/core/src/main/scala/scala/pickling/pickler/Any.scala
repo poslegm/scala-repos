@@ -5,19 +5,21 @@ package pickler
 object AnyPickler extends Pickler[Any] {
   override def pickle(picklee: Any, builder: PBuilder): Unit = {
     // Here we just look up the pickler.
-    val clazz = picklee.getClass
+    val clazz       = picklee.getClass
     val classLoader = this.getClass.getClassLoader
     internal.GRL.lock()
     val tag =
-      try FastTypeTag.mkRaw(clazz,
-                            scala.reflect.runtime.universe.runtimeMirror(
-                                classLoader)) finally internal.GRL.unlock()
+      try FastTypeTag.mkRaw(
+        clazz,
+        scala.reflect.runtime.universe.runtimeMirror(classLoader)
+      )
+      finally internal.GRL.unlock()
     val p =
       internal.currentRuntime.picklers.genPickler(classLoader, clazz, tag)
     p.asInstanceOf[Pickler[Any]].pickle(picklee, builder)
   }
   override def tag: FastTypeTag[Any] = FastTypeTag[Any]
-  override def toString = "AnyPickler"
+  override def toString              = "AnyPickler"
 }
 
 /** An unpickler for "Any" value (will look up unpickler at runtime, or generate it. */
@@ -28,7 +30,7 @@ object AnyUnpickler extends Unpickler[Any] {
     actualUnpickler.unpickle(tag, reader)
   }
   def tag: FastTypeTag[Any] = FastTypeTag[Any]
-  override def toString = "AnyUnPickler"
+  override def toString     = "AnyUnPickler"
 }
 
 /** Attempts to unpickle Any by looking up registered unpicklers using `currentMirror`.

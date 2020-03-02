@@ -19,8 +19,8 @@ import scala.concurrent.duration._
 object EndToEndEventAdapterSpec {
 
   trait AppModel { def payload: Any }
-  case class A(payload: Any) extends AppModel
-  case class B(payload: Any) extends AppModel
+  case class A(payload: Any)    extends AppModel
+  case class B(payload: Any)    extends AppModel
   case class NewA(payload: Any) extends AppModel
   case class NewB(payload: Any) extends AppModel
 
@@ -75,10 +75,12 @@ object EndToEndEventAdapterSpec {
       }
   }
 
-  class EndToEndAdapterActor(name: String,
-                             override val journalPluginId: String,
-                             probe: Option[ActorRef])
-      extends NamedPersistentActor(name) with PersistentActor {
+  class EndToEndAdapterActor(
+      name: String,
+      override val journalPluginId: String,
+      probe: Option[ActorRef]
+  ) extends NamedPersistentActor(name)
+      with PersistentActor {
 
     var state: List[Any] = Nil
 
@@ -94,19 +96,23 @@ object EndToEndEventAdapterSpec {
 
     override def receiveRecover = {
       case RecoveryCompleted ⇒ // ignore
-      case e ⇒ state ::= e
+      case e                 ⇒ state ::= e
     }
     override def receiveCommand = persistIncoming
   }
 }
 
 abstract class EndToEndEventAdapterSpec(
-    journalName: String, journalConfig: Config)
-    extends WordSpecLike with Matchers with BeforeAndAfterAll {
+    journalName: String,
+    journalConfig: Config
+) extends WordSpecLike
+    with Matchers
+    with BeforeAndAfterAll {
   import EndToEndEventAdapterSpec._
 
-  val storageLocations = List("akka.persistence.journal.leveldb.dir").map(
-      s ⇒ new File(journalConfig.getString(s)))
+  val storageLocations = List("akka.persistence.journal.leveldb.dir").map(s ⇒
+    new File(journalConfig.getString(s))
+  )
 
   override protected def beforeAll() {
     storageLocations.foreach(FileUtils.deleteDirectory)
@@ -158,29 +164,38 @@ abstract class EndToEndEventAdapterSpec(
     """.stripMargin)
 
   def persister(name: String, probe: Option[ActorRef] = None)(
-      implicit system: ActorSystem) =
-    system.actorOf(Props(classOf[EndToEndAdapterActor],
-                         name,
-                         "akka.persistence.journal." + journalName,
-                         probe),
-                   name)
+      implicit system: ActorSystem
+  ) =
+    system.actorOf(
+      Props(
+        classOf[EndToEndAdapterActor],
+        name,
+        "akka.persistence.journal." + journalName,
+        probe
+      ),
+      name
+    )
 
   def withActorSystem[T](name: String, config: Config)(
-      block: ActorSystem ⇒ T): T = {
+      block: ActorSystem ⇒ T
+  ): T = {
     val system = ActorSystem(name, journalConfig withFallback config)
-    try block(system) finally Await.ready(system.terminate(), 3.seconds)
+    try block(system)
+    finally Await.ready(system.terminate(), 3.seconds)
   }
 
   "EventAdapters in end-to-end scenarios" must {
 
     "use the same adapter when reading as was used when writing to the journal" in withActorSystem(
-        "SimpleSystem", adaptersConfig) { implicit system ⇒
-      val p = TestProbe()
+      "SimpleSystem",
+      adaptersConfig
+    ) { implicit system ⇒
+      val p            = TestProbe()
       implicit val ref = p.ref
 
       val p1 = persister("p1")
-      val a = A("a1")
-      val b = B("b1")
+      val a  = A("a1")
+      val b  = B("b1")
       p1 ! a
       p1 ! b
       p.expectMsg(a)
@@ -200,12 +215,12 @@ abstract class EndToEndEventAdapterSpec(
       val persistentName = "p2"
 
       withActorSystem("NoAdapterSystem", adaptersConfig) { implicit system ⇒
-        val p = TestProbe()
+        val p            = TestProbe()
         implicit val ref = p.ref
 
         val p2 = persister(persistentName)
-        val a = A("a1")
-        val b = B("b1")
+        val a  = A("a1")
+        val b  = B("b1")
         p2 ! a
         p2 ! b
         p.expectMsg(a)
@@ -223,7 +238,7 @@ abstract class EndToEndEventAdapterSpec(
 
       withActorSystem("NowAdaptersAddedSystem", newAdaptersConfig) {
         implicit system ⇒
-          val p = TestProbe()
+          val p            = TestProbe()
           implicit val ref = p.ref
 
           val p22 = persister(persistentName)
@@ -240,21 +255,25 @@ abstract class EndToEndEventAdapterSpec(
       val missingAdapterConfig = adaptersConfig
         .withoutPath(s"$journalPath.event-adapters.a")
         .withoutPath(s"""$journalPath.event-adapter-bindings."${classOf[
-            EndToEndEventAdapterSpec].getCanonicalName}$$A"""")
+          EndToEndEventAdapterSpec
+        ].getCanonicalName}$$A"""")
 
-      withActorSystem("MissingAdapterSystem",
-                      journalConfig.withFallback(missingAdapterConfig)) {
-        implicit system2 ⇒
-          EventFilter[ActorInitializationException](
-              occurrences = 1,
-              pattern = ".*undefined event-adapter.*") intercept {
-            intercept[IllegalArgumentException] {
-              Persistence(system2)
-                .adaptersFor(s"akka.persistence.journal.$journalName")
-                .get(classOf[String])
-            }.getMessage should include(
-                "was bound to undefined event-adapter: a (bindings: [a, b], known adapters: b)")
-          }
+      withActorSystem(
+        "MissingAdapterSystem",
+        journalConfig.withFallback(missingAdapterConfig)
+      ) { implicit system2 ⇒
+        EventFilter[ActorInitializationException](
+          occurrences = 1,
+          pattern = ".*undefined event-adapter.*"
+        ) intercept {
+          intercept[IllegalArgumentException] {
+            Persistence(system2)
+              .adaptersFor(s"akka.persistence.journal.$journalName")
+              .get(classOf[String])
+          }.getMessage should include(
+            "was bound to undefined event-adapter: a (bindings: [a, b], known adapters: b)"
+          )
+        }
       }
     }
   }
@@ -263,5 +282,6 @@ abstract class EndToEndEventAdapterSpec(
 // needs persistence between actor systems, thus not running with the inmem journal
 class LeveldbEndToEndEventAdapterSpec
     extends EndToEndEventAdapterSpec(
-        "leveldb",
-        PersistenceSpec.config("leveldb", "LeveldbEndToEndEventAdapterSpec"))
+      "leveldb",
+      PersistenceSpec.config("leveldb", "LeveldbEndToEndEventAdapterSpec")
+    )

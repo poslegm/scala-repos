@@ -12,11 +12,11 @@ object LinearGenerator {
       extends DiffFunction[DenseVector[Double]] {
     def calculate(x: DenseVector[Double]) = {
       val cumGradient = DenseVector.zeros[Double](x.length)
-      var cumLoss = 0.0
-      var i = 0
+      var cumLoss     = 0.0
+      var i           = 0
       while (i < data.rows) {
         val brzData = data(i, ::).t
-        val diff = x.dot(brzData) - labels(i)
+        val diff    = x.dot(brzData) - labels(i)
         cumGradient += brzData * (2.0 * diff)
         cumLoss += diff * diff
         i = i + 1
@@ -25,8 +25,11 @@ object LinearGenerator {
     }
   }
 
-  def apply(ndim: Int): (DiffFunction[DenseVector[Double]],
-  DenseMatrix[Double], DenseVector[Double]) = {
+  def apply(ndim: Int): (
+      DiffFunction[DenseVector[Double]],
+      DenseMatrix[Double],
+      DenseVector[Double]
+  ) = {
     val rand = Rand.gaussian(0, 1)
     val data = DenseMatrix.rand[Double](ndim, ndim, rand)
     val labels = DenseVector.rand[Double](ndim, rand).map { x =>

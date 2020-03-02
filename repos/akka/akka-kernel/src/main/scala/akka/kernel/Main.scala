@@ -41,8 +41,7 @@ import scala.collection.JavaConverters._
   * bin/akka org.app.BootApp
   * }}}
   */
-@deprecated(
-    "Microkernel is deprecated. Use ordinary main class instead", "2.4")
+@deprecated("Microkernel is deprecated. Use ordinary main class instead", "2.4")
 trait Bootable {
 
   /**
@@ -62,7 +61,9 @@ trait Bootable {
   * Main class for running the microkernel.
   */
 @deprecated(
-    "Microkernel is deprecated. Use ordinary main class instead.", "2.4")
+  "Microkernel is deprecated. Use ordinary main class instead.",
+  "2.4"
+)
 object Main {
   private val quiet = getBoolean("akka.kernel.quiet")
 
@@ -100,7 +101,7 @@ object Main {
 
   private def createClassLoader(): ClassLoader = {
     if (ActorSystem.GlobalHome.isDefined) {
-      val home = ActorSystem.GlobalHome.get
+      val home   = ActorSystem.GlobalHome.get
       val deploy = new File(home, "deploy")
       if (deploy.exists) {
         loadDeployJars(deploy)
@@ -129,9 +130,7 @@ object Main {
 
     val urls = (jars ++ nestedJars) map { _.toURI.toURL }
 
-    urls foreach { url ⇒
-      log("Deploying " + url)
-    }
+    urls foreach { url ⇒ log("Deploying " + url) }
 
     new URLClassLoader(urls, Thread.currentThread.getContextClassLoader)
   }

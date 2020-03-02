@@ -45,7 +45,9 @@ object AbsoluteError extends Loss {
   }
 
   override private[spark] def computeError(
-      prediction: Double, label: Double): Double = {
+      prediction: Double,
+      label: Double
+  ): Double = {
     val err = label - prediction
     math.abs(err)
   }

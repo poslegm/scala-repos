@@ -31,28 +31,28 @@ trait Semiring[@specialized(Int, Short, Long, Float, Double) V]
 
   def ==(a: V, b: V): Boolean
   def !=(a: V, b: V): Boolean
-  def close(a: V, b: V, tolerance: Double = 1E-4): Boolean = a == b
+  def close(a: V, b: V, tolerance: Double = 1e-4): Boolean = a == b
 }
 
 object Semiring {
   import breeze.math.Ring._
-  implicit val semiringD: Semiring[Double] = ringD
-  implicit val semiringFloat: Semiring[Float] = ringFloat
-  implicit val semiringInt: Semiring[Int] = ringInt
-  implicit val semiringLong: Semiring[Long] = ringLong
+  implicit val semiringD: Semiring[Double]      = ringD
+  implicit val semiringFloat: Semiring[Float]   = ringFloat
+  implicit val semiringInt: Semiring[Int]       = ringInt
+  implicit val semiringLong: Semiring[Long]     = ringLong
   implicit val semiringBigInt: Semiring[BigInt] = ringBigInt
-  implicit val semiringShort: Semiring[Short] = ringShort
+  implicit val semiringShort: Semiring[Short]   = ringShort
   implicit val semiringCmplx: Semiring[Complex] = ringComplex
 
   implicit def semiringFromRing[T](implicit ring: Ring[T]): Semiring[T] = ring
 
   @SerialVersionUID(1L)
   implicit object fieldB extends Semiring[Boolean] {
-    def zero = false
-    def one = true
+    def zero                       = false
+    def one                        = true
     def ==(a: Boolean, b: Boolean) = a == b
     def !=(a: Boolean, b: Boolean) = a != b
-    def +(a: Boolean, b: Boolean) = a || b
-    def *(a: Boolean, b: Boolean) = a && b
+    def +(a: Boolean, b: Boolean)  = a || b
+    def *(a: Boolean, b: Boolean)  = a && b
   }
 }

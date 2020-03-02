@@ -6,7 +6,10 @@ package akka.stream.tck
 import akka.Done
 import akka.stream.impl.SinkholeSubscriber
 import org.reactivestreams.tck.{TestEnvironment, SubscriberWhiteboxVerification}
-import org.reactivestreams.tck.SubscriberWhiteboxVerification.{SubscriberPuppet, WhiteboxSubscriberProbe}
+import org.reactivestreams.tck.SubscriberWhiteboxVerification.{
+  SubscriberPuppet,
+  WhiteboxSubscriberProbe
+}
 import org.scalatest.testng.{TestNGSuiteLike}
 import java.lang.{Integer ⇒ JInt}
 import scala.concurrent.Promise
@@ -16,7 +19,8 @@ class SinkholeSubscriberTest
     extends SubscriberWhiteboxVerification[JInt](new TestEnvironment())
     with TestNGSuiteLike {
   override def createSubscriber(
-      probe: WhiteboxSubscriberProbe[JInt]): Subscriber[JInt] = {
+      probe: WhiteboxSubscriberProbe[JInt]
+  ): Subscriber[JInt] = {
     new Subscriber[JInt] {
       val hole = new SinkholeSubscriber[JInt](Promise[Done]())
 
@@ -26,8 +30,7 @@ class SinkholeSubscriberTest
       }
 
       override def onSubscribe(s: Subscription): Unit = {
-        probe.registerOnSubscribe(
-            new SubscriberPuppet() {
+        probe.registerOnSubscribe(new SubscriberPuppet() {
           override def triggerRequest(elements: Long): Unit =
             s.request(elements)
           override def signalCancel(): Unit = s.cancel()

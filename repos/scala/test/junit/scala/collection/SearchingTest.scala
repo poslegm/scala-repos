@@ -16,16 +16,19 @@ class SearchingTest {
       var elementsAccessed = Set.empty[Int]
 
       protected[this] def newBuilder = ??? // not needed for this test
-      def seq = list
-      def iterator = list.iterator
-      def length = list.length
-      def apply(idx: Int) = { elementsAccessed += idx; list(idx) }
+      def seq                        = list
+      def iterator                   = list.iterator
+      def length                     = list.length
+      def apply(idx: Int)            = { elementsAccessed += idx; list(idx) }
     }
 
     val coll = new TestSeq((0 to 6).toList)
 
     assertEquals(Found(5), coll.search(5))
-    assertEquals(Set.empty, coll.elementsAccessed) // linear search should not access elements via apply()
+    assertEquals(
+      Set.empty,
+      coll.elementsAccessed
+    ) // linear search should not access elements via apply()
   }
 
   @Test
@@ -36,9 +39,9 @@ class SearchingTest {
       var elementsAccessed = Set.empty[Int]
 
       protected[this] def newBuilder = ??? // not needed for this test
-      def seq = vec
-      def length = vec.length
-      def apply(idx: Int) = { elementsAccessed += idx; vec(idx) }
+      def seq                        = vec
+      def length                     = vec.length
+      def apply(idx: Int)            = { elementsAccessed += idx; vec(idx) }
     }
 
     val coll = new TestIndexedSeq((0 to 6).toVector)

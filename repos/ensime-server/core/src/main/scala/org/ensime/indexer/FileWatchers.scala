@@ -17,7 +17,7 @@ trait FileChangeListener {
   def fileRemoved(f: FileObject): Unit
   def fileChanged(f: FileObject): Unit
   def baseReCreated(f: FileObject): Unit = {}
-  def baseRemoved(f: FileObject): Unit = {}
+  def baseRemoved(f: FileObject): Unit   = {}
 }
 
 trait Watcher {
@@ -38,8 +38,8 @@ class ClassfileWatcher(
     listeners: Seq[FileChangeListener]
 )(
     implicit vfs: EnsimeVFS
-)
-    extends Actor with SLF4JLogging {
+) extends Actor
+    with SLF4JLogging {
 
   private val impls =
     if (config.disableClassMonitoring) Nil
@@ -65,14 +65,14 @@ class SourceWatcher(
     listeners: Seq[FileChangeListener]
 )(
     implicit vfs: EnsimeVFS
-)
-    extends Watcher with SLF4JLogging {
+) extends Watcher
+    with SLF4JLogging {
   private val impls =
     if (config.disableSourceMonitoring) Nil
     else
       for {
         module <- config.modules.values
-        root <- module.sourceRoots
+        root   <- module.sourceRoots
       } yield {
         new ApachePollingFileWatcher(root, SourceSelector, true, listeners)
       }
@@ -90,8 +90,8 @@ private class ApachePollingFileWatcher(
     listeners: Seq[FileChangeListener]
 )(
     implicit vfs: EnsimeVFS
-)
-    extends Watcher with SLF4JLogging {
+) extends Watcher
+    with SLF4JLogging {
   private val base = vfs.vfile(watched).getName.getURI
 
   @volatile private var fm: DefaultFileMonitor = create()
@@ -133,7 +133,7 @@ private class ApachePollingFileWatcher(
     fm.addFile(base)
     for {
       file <- if (recursive) watched.tree else watched.children
-      fo = vfs.vfile(file)
+      fo   = vfs.vfile(file)
     } {
       // VFS doesn't send "file created" messages when it first starts
       // up, but since we're reacting to a directory deletion, we

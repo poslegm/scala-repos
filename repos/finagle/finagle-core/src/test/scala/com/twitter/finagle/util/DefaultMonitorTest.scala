@@ -10,7 +10,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class DefaultMonitorTest extends FunSuite with Matchers {
   private val handler = new StringHandler(BareFormatter, Some(Level.TRACE))
-  private val logger = Logger.get("DefaultMonitorTest")
+  private val logger  = Logger.get("DefaultMonitorTest")
   logger.addHandler(handler)
   logger.setLevel(Level.TRACE)
 
@@ -32,7 +32,9 @@ class DefaultMonitorTest extends FunSuite with Matchers {
     assert(monitor.handle(f)) // still handled, but by the RootMonitor
     assert(handler.get == "")
 
-    assert(monitor.handle(new RuntimeException())) // still handled, but by the RootMonitor
+    assert(
+      monitor.handle(new RuntimeException())
+    ) // still handled, but by the RootMonitor
     assert(handler.get == "")
   }
 

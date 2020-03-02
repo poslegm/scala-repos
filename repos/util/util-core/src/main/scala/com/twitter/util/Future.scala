@@ -1,10 +1,23 @@
 package com.twitter.util
 
 import com.twitter.concurrent.{Offer, Scheduler, Tx}
-import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger, AtomicReferenceArray}
-import java.util.concurrent.{CancellationException, TimeUnit, Future => JavaFuture}
+import java.util.concurrent.atomic.{
+  AtomicBoolean,
+  AtomicInteger,
+  AtomicReferenceArray
+}
+import java.util.concurrent.{
+  CancellationException,
+  TimeUnit,
+  Future => JavaFuture
+}
 import java.util.{List => JList, Map => JMap}
-import scala.collection.JavaConverters.{asScalaBufferConverter, mapAsJavaMapConverter, mapAsScalaMapConverter, seqAsJavaListConverter}
+import scala.collection.JavaConverters.{
+  asScalaBufferConverter,
+  mapAsJavaMapConverter,
+  mapAsScalaMapConverter,
+  seqAsJavaListConverter
+}
 import scala.collection.mutable
 import scala.runtime.NonLocalReturnControl
 
@@ -52,7 +65,7 @@ object Future {
   val ??? : Future[Nothing] =
     Future.exception(new NotImplementedError("an implementation is missing"))
 
-  private val SomeReturnUnit = Some(Return.Unit)
+  private val SomeReturnUnit              = Some(Return.Unit)
   private val NotApplied: Future[Nothing] = new NoFuture
   private val AlwaysNotApplied: Any => Future[Nothing] =
     scala.Function.const(NotApplied) _
@@ -63,7 +76,7 @@ object Future {
   }
 
   // Exception used to raise on Futures.
-  private[this] val RaiseException = new Exception with NoStacktrace
+  private[this] val RaiseException         = new Exception with NoStacktrace
   @inline private final def raiseException = RaiseException
 
   /**
@@ -112,7 +125,7 @@ object Future {
   def sleep(howlong: Duration)(implicit timer: Timer): Future[Unit] = {
     if (howlong <= Duration.Zero) return Future.Done
 
-    val p = new Promise[Unit]
+    val p    = new Promise[Unit]
     val task = timer.schedule(howlong.fromNow) { p.setDone() }
     p.setInterruptHandler {
       case e =>
@@ -155,7 +168,7 @@ object Future {
     * onSuccess g; f0 }` will cancel f0 so that f0 never hangs.
     */
   def monitored[A](mkFuture: => Future[A]): Future[A] = {
-    val p = new Promise[A]()
+    val p         = new Promise[A]()
     val monitored = new Monitored[A](p)
     monitored {
       val f = mkFuture
@@ -212,7 +225,7 @@ object Future {
     if (fs.isEmpty) Unit
     else {
       val count = new AtomicInteger(fs.size)
-      val p = Promise.interrupts[Unit](fs: _*)
+      val p     = Promise.interrupts[Unit](fs: _*)
       for (f <- fs) {
         f respond {
           case Return(_) =>
@@ -252,9 +265,7 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
     * do.
     */
   def join[A, B](a: Future[A], b: Future[B]): Future[(A, B)] =
-    join(Seq(a, b)) map { _ =>
-      (Await.result(a), Await.result(b))
-    }
+    join(Seq(a, b)) map { _ => (Await.result(a), Await.result(b)) }
 
   /**
     * Join 3 futures. The returned future is complete when all
@@ -262,7 +273,10 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
     * do.
     */
   def join[A, B, C](
-      a: Future[A], b: Future[B], c: Future[C]): Future[(A, B, C)] =
+      a: Future[A],
+      b: Future[B],
+      c: Future[C]
+  ): Future[(A, B, C)] =
     join(Seq(a, b, c)) map { _ =>
       (Await.result(a), Await.result(b), Await.result(c))
     }
@@ -276,7 +290,8 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       a: Future[A],
       b: Future[B],
       c: Future[C],
-      d: Future[D]): Future[(A, B, C, D)] = join(Seq(a, b, c, d)) map { _ =>
+      d: Future[D]
+  ): Future[(A, B, C, D)] = join(Seq(a, b, c, d)) map { _ =>
     (Await.result(a), Await.result(b), Await.result(c), Await.result(d))
   }
 
@@ -285,17 +300,21 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
     * underlying futures complete. It fails immediately if any of them
     * do.
     */
-  def join[A, B, C, D, E](a: Future[A],
-                          b: Future[B],
-                          c: Future[C],
-                          d: Future[D],
-                          e: Future[E]): Future[(A, B, C, D, E)] =
+  def join[A, B, C, D, E](
+      a: Future[A],
+      b: Future[B],
+      c: Future[C],
+      d: Future[D],
+      e: Future[E]
+  ): Future[(A, B, C, D, E)] =
     join(Seq(a, b, c, d, e)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e)
+      )
     }
 
   /**
@@ -303,19 +322,23 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
     * underlying futures complete. It fails immediately if any of them
     * do.
     */
-  def join[A, B, C, D, E, F](a: Future[A],
-                             b: Future[B],
-                             c: Future[C],
-                             d: Future[D],
-                             e: Future[E],
-                             f: Future[F]): Future[(A, B, C, D, E, F)] =
+  def join[A, B, C, D, E, F](
+      a: Future[A],
+      b: Future[B],
+      c: Future[C],
+      d: Future[D],
+      e: Future[E],
+      f: Future[F]
+  ): Future[(A, B, C, D, E, F)] =
     join(Seq(a, b, c, d, e, f)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f)
+      )
     }
 
   /**
@@ -323,21 +346,25 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
     * underlying futures complete. It fails immediately if any of them
     * do.
     */
-  def join[A, B, C, D, E, F, G](a: Future[A],
-                                b: Future[B],
-                                c: Future[C],
-                                d: Future[D],
-                                e: Future[E],
-                                f: Future[F],
-                                g: Future[G]): Future[(A, B, C, D, E, F, G)] =
+  def join[A, B, C, D, E, F, G](
+      a: Future[A],
+      b: Future[B],
+      c: Future[C],
+      d: Future[D],
+      e: Future[E],
+      f: Future[F],
+      g: Future[G]
+  ): Future[(A, B, C, D, E, F, G)] =
     join(Seq(a, b, c, d, e, f, g)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g)
+      )
     }
 
   /**
@@ -353,16 +380,19 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       e: Future[E],
       f: Future[F],
       g: Future[G],
-      h: Future[H]): Future[(A, B, C, D, E, F, G, H)] =
+      h: Future[H]
+  ): Future[(A, B, C, D, E, F, G, H)] =
     join(Seq(a, b, c, d, e, f, g, h)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g),
-       Await.result(h))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g),
+        Await.result(h)
+      )
     }
 
   /**
@@ -379,17 +409,20 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       f: Future[F],
       g: Future[G],
       h: Future[H],
-      i: Future[I]): Future[(A, B, C, D, E, F, G, H, I)] =
+      i: Future[I]
+  ): Future[(A, B, C, D, E, F, G, H, I)] =
     join(Seq(a, b, c, d, e, f, g, h, i)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g),
-       Await.result(h),
-       Await.result(i))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g),
+        Await.result(h),
+        Await.result(i)
+      )
     }
 
   /**
@@ -407,18 +440,21 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       g: Future[G],
       h: Future[H],
       i: Future[I],
-      j: Future[J]): Future[(A, B, C, D, E, F, G, H, I, J)] =
+      j: Future[J]
+  ): Future[(A, B, C, D, E, F, G, H, I, J)] =
     join(Seq(a, b, c, d, e, f, g, h, i, j)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g),
-       Await.result(h),
-       Await.result(i),
-       Await.result(j))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g),
+        Await.result(h),
+        Await.result(i),
+        Await.result(j)
+      )
     }
 
   /**
@@ -437,19 +473,22 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       h: Future[H],
       i: Future[I],
       j: Future[J],
-      k: Future[K]): Future[(A, B, C, D, E, F, G, H, I, J, K)] =
+      k: Future[K]
+  ): Future[(A, B, C, D, E, F, G, H, I, J, K)] =
     join(Seq(a, b, c, d, e, f, g, h, i, j, k)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g),
-       Await.result(h),
-       Await.result(i),
-       Await.result(j),
-       Await.result(k))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g),
+        Await.result(h),
+        Await.result(i),
+        Await.result(j),
+        Await.result(k)
+      )
     }
 
   /**
@@ -469,20 +508,23 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       i: Future[I],
       j: Future[J],
       k: Future[K],
-      l: Future[L]): Future[(A, B, C, D, E, F, G, H, I, J, K, L)] =
+      l: Future[L]
+  ): Future[(A, B, C, D, E, F, G, H, I, J, K, L)] =
     join(Seq(a, b, c, d, e, f, g, h, i, j, k, l)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g),
-       Await.result(h),
-       Await.result(i),
-       Await.result(j),
-       Await.result(k),
-       Await.result(l))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g),
+        Await.result(h),
+        Await.result(i),
+        Await.result(j),
+        Await.result(k),
+        Await.result(l)
+      )
     }
 
   /**
@@ -503,21 +545,24 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       j: Future[J],
       k: Future[K],
       l: Future[L],
-      m: Future[M]): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M)] =
+      m: Future[M]
+  ): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M)] =
     join(Seq(a, b, c, d, e, f, g, h, i, j, k, l, m)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g),
-       Await.result(h),
-       Await.result(i),
-       Await.result(j),
-       Await.result(k),
-       Await.result(l),
-       Await.result(m))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g),
+        Await.result(h),
+        Await.result(i),
+        Await.result(j),
+        Await.result(k),
+        Await.result(l),
+        Await.result(m)
+      )
     }
 
   /**
@@ -539,22 +584,25 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       k: Future[K],
       l: Future[L],
       m: Future[M],
-      n: Future[N]): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N)] =
+      n: Future[N]
+  ): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N)] =
     join(Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g),
-       Await.result(h),
-       Await.result(i),
-       Await.result(j),
-       Await.result(k),
-       Await.result(l),
-       Await.result(m),
-       Await.result(n))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g),
+        Await.result(h),
+        Await.result(i),
+        Await.result(j),
+        Await.result(k),
+        Await.result(l),
+        Await.result(m),
+        Await.result(n)
+      )
     }
 
   /**
@@ -577,23 +625,26 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       l: Future[L],
       m: Future[M],
       n: Future[N],
-      o: Future[O]): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O)] =
+      o: Future[O]
+  ): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O)] =
     join(Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g),
-       Await.result(h),
-       Await.result(i),
-       Await.result(j),
-       Await.result(k),
-       Await.result(l),
-       Await.result(m),
-       Await.result(n),
-       Await.result(o))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g),
+        Await.result(h),
+        Await.result(i),
+        Await.result(j),
+        Await.result(k),
+        Await.result(l),
+        Await.result(m),
+        Await.result(n),
+        Await.result(o)
+      )
     }
 
   /**
@@ -617,24 +668,27 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       m: Future[M],
       n: Future[N],
       o: Future[O],
-      p: Future[P]): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P)] =
+      p: Future[P]
+  ): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P)] =
     join(Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g),
-       Await.result(h),
-       Await.result(i),
-       Await.result(j),
-       Await.result(k),
-       Await.result(l),
-       Await.result(m),
-       Await.result(n),
-       Await.result(o),
-       Await.result(p))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g),
+        Await.result(h),
+        Await.result(i),
+        Await.result(j),
+        Await.result(k),
+        Await.result(l),
+        Await.result(m),
+        Await.result(n),
+        Await.result(o),
+        Await.result(p)
+      )
     }
 
   /**
@@ -642,42 +696,45 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
     * underlying futures complete. It fails immediately if any of them
     * do.
     */
-  def join[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q](a: Future[A],
-                                                              b: Future[B],
-                                                              c: Future[C],
-                                                              d: Future[D],
-                                                              e: Future[E],
-                                                              f: Future[F],
-                                                              g: Future[G],
-                                                              h: Future[H],
-                                                              i: Future[I],
-                                                              j: Future[J],
-                                                              k: Future[K],
-                                                              l: Future[L],
-                                                              m: Future[M],
-                                                              n: Future[N],
-                                                              o: Future[O],
-                                                              p: Future[P],
-                                                              q: Future[Q])
-    : Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q)] =
+  def join[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q](
+      a: Future[A],
+      b: Future[B],
+      c: Future[C],
+      d: Future[D],
+      e: Future[E],
+      f: Future[F],
+      g: Future[G],
+      h: Future[H],
+      i: Future[I],
+      j: Future[J],
+      k: Future[K],
+      l: Future[L],
+      m: Future[M],
+      n: Future[N],
+      o: Future[O],
+      p: Future[P],
+      q: Future[Q]
+  ): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q)] =
     join(Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g),
-       Await.result(h),
-       Await.result(i),
-       Await.result(j),
-       Await.result(k),
-       Await.result(l),
-       Await.result(m),
-       Await.result(n),
-       Await.result(o),
-       Await.result(p),
-       Await.result(q))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g),
+        Await.result(h),
+        Await.result(i),
+        Await.result(j),
+        Await.result(k),
+        Await.result(l),
+        Await.result(m),
+        Await.result(n),
+        Await.result(o),
+        Await.result(p),
+        Await.result(q)
+      )
     }
 
   /**
@@ -685,44 +742,47 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
     * underlying futures complete. It fails immediately if any of them
     * do.
     */
-  def join[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R](a: Future[A],
-                                                                 b: Future[B],
-                                                                 c: Future[C],
-                                                                 d: Future[D],
-                                                                 e: Future[E],
-                                                                 f: Future[F],
-                                                                 g: Future[G],
-                                                                 h: Future[H],
-                                                                 i: Future[I],
-                                                                 j: Future[J],
-                                                                 k: Future[K],
-                                                                 l: Future[L],
-                                                                 m: Future[M],
-                                                                 n: Future[N],
-                                                                 o: Future[O],
-                                                                 p: Future[P],
-                                                                 q: Future[Q],
-                                                                 r: Future[R])
-    : Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R)] =
+  def join[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R](
+      a: Future[A],
+      b: Future[B],
+      c: Future[C],
+      d: Future[D],
+      e: Future[E],
+      f: Future[F],
+      g: Future[G],
+      h: Future[H],
+      i: Future[I],
+      j: Future[J],
+      k: Future[K],
+      l: Future[L],
+      m: Future[M],
+      n: Future[N],
+      o: Future[O],
+      p: Future[P],
+      q: Future[Q],
+      r: Future[R]
+  ): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R)] =
     join(Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g),
-       Await.result(h),
-       Await.result(i),
-       Await.result(j),
-       Await.result(k),
-       Await.result(l),
-       Await.result(m),
-       Await.result(n),
-       Await.result(o),
-       Await.result(p),
-       Await.result(q),
-       Await.result(r))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g),
+        Await.result(h),
+        Await.result(i),
+        Await.result(j),
+        Await.result(k),
+        Await.result(l),
+        Await.result(m),
+        Await.result(n),
+        Await.result(o),
+        Await.result(p),
+        Await.result(q),
+        Await.result(r)
+      )
     }
 
   /**
@@ -749,29 +809,31 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       p: Future[P],
       q: Future[Q],
       r: Future[R],
-      s: Future[S])
-    : Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S)] =
+      s: Future[S]
+  ): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S)] =
     join(Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s)) map {
       _ =>
-        (Await.result(a),
-         Await.result(b),
-         Await.result(c),
-         Await.result(d),
-         Await.result(e),
-         Await.result(f),
-         Await.result(g),
-         Await.result(h),
-         Await.result(i),
-         Await.result(j),
-         Await.result(k),
-         Await.result(l),
-         Await.result(m),
-         Await.result(n),
-         Await.result(o),
-         Await.result(p),
-         Await.result(q),
-         Await.result(r),
-         Await.result(s))
+        (
+          Await.result(a),
+          Await.result(b),
+          Await.result(c),
+          Await.result(d),
+          Await.result(e),
+          Await.result(f),
+          Await.result(g),
+          Await.result(h),
+          Await.result(i),
+          Await.result(j),
+          Await.result(k),
+          Await.result(l),
+          Await.result(m),
+          Await.result(n),
+          Await.result(o),
+          Await.result(p),
+          Await.result(q),
+          Await.result(r),
+          Await.result(s)
+        )
     }
 
   /**
@@ -799,30 +861,32 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       q: Future[Q],
       r: Future[R],
       s: Future[S],
-      t: Future[T])
-    : Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T)] =
+      t: Future[T]
+  ): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T)] =
     join(Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t)) map {
       _ =>
-        (Await.result(a),
-         Await.result(b),
-         Await.result(c),
-         Await.result(d),
-         Await.result(e),
-         Await.result(f),
-         Await.result(g),
-         Await.result(h),
-         Await.result(i),
-         Await.result(j),
-         Await.result(k),
-         Await.result(l),
-         Await.result(m),
-         Await.result(n),
-         Await.result(o),
-         Await.result(p),
-         Await.result(q),
-         Await.result(r),
-         Await.result(s),
-         Await.result(t))
+        (
+          Await.result(a),
+          Await.result(b),
+          Await.result(c),
+          Await.result(d),
+          Await.result(e),
+          Await.result(f),
+          Await.result(g),
+          Await.result(h),
+          Await.result(i),
+          Await.result(j),
+          Await.result(k),
+          Await.result(l),
+          Await.result(m),
+          Await.result(n),
+          Await.result(o),
+          Await.result(p),
+          Await.result(q),
+          Await.result(r),
+          Await.result(s),
+          Await.result(t)
+        )
     }
 
   /**
@@ -851,31 +915,33 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       r: Future[R],
       s: Future[S],
       t: Future[T],
-      u: Future[U])
-    : Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U)] =
+      u: Future[U]
+  ): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U)] =
     join(Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u)) map {
       _ =>
-        (Await.result(a),
-         Await.result(b),
-         Await.result(c),
-         Await.result(d),
-         Await.result(e),
-         Await.result(f),
-         Await.result(g),
-         Await.result(h),
-         Await.result(i),
-         Await.result(j),
-         Await.result(k),
-         Await.result(l),
-         Await.result(m),
-         Await.result(n),
-         Await.result(o),
-         Await.result(p),
-         Await.result(q),
-         Await.result(r),
-         Await.result(s),
-         Await.result(t),
-         Await.result(u))
+        (
+          Await.result(a),
+          Await.result(b),
+          Await.result(c),
+          Await.result(d),
+          Await.result(e),
+          Await.result(f),
+          Await.result(g),
+          Await.result(h),
+          Await.result(i),
+          Await.result(j),
+          Await.result(k),
+          Await.result(l),
+          Await.result(m),
+          Await.result(n),
+          Await.result(o),
+          Await.result(p),
+          Await.result(q),
+          Await.result(r),
+          Await.result(s),
+          Await.result(t),
+          Await.result(u)
+        )
     }
 
   /**
@@ -905,32 +971,36 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       s: Future[S],
       t: Future[T],
       u: Future[U],
-      v: Future[V]): Future[
-      (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V)] =
+      v: Future[V]
+  ): Future[
+    (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V)
+  ] =
     join(Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v)) map {
       _ =>
-        (Await.result(a),
-         Await.result(b),
-         Await.result(c),
-         Await.result(d),
-         Await.result(e),
-         Await.result(f),
-         Await.result(g),
-         Await.result(h),
-         Await.result(i),
-         Await.result(j),
-         Await.result(k),
-         Await.result(l),
-         Await.result(m),
-         Await.result(n),
-         Await.result(o),
-         Await.result(p),
-         Await.result(q),
-         Await.result(r),
-         Await.result(s),
-         Await.result(t),
-         Await.result(u),
-         Await.result(v))
+        (
+          Await.result(a),
+          Await.result(b),
+          Await.result(c),
+          Await.result(d),
+          Await.result(e),
+          Await.result(f),
+          Await.result(g),
+          Await.result(h),
+          Await.result(i),
+          Await.result(j),
+          Await.result(k),
+          Await.result(l),
+          Await.result(m),
+          Await.result(n),
+          Await.result(o),
+          Await.result(p),
+          Await.result(q),
+          Await.result(r),
+          Await.result(s),
+          Await.result(t),
+          Await.result(u),
+          Await.result(v)
+        )
     }
 
   /**
@@ -968,11 +1038,12 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
     * @param `as` a sequence of `A` that will have `f` applied to each item sequentially
     * @return a `Future[Seq[B]]` containing the results of `f` being applied to every item in `as`
     */
-  def traverseSequentially[A, B](as: Seq[A])(
-      f: A => Future[B]): Future[Seq[B]] =
+  def traverseSequentially[A, B](
+      as: Seq[A]
+  )(f: A => Future[B]): Future[Seq[B]] =
     as.foldLeft(Future.value(Vector.empty[B])) { (resultsFuture, nextItem) =>
       for {
-        results <- resultsFuture
+        results    <- resultsFuture
         nextResult <- f(nextItem)
       } yield results :+ nextResult
     }
@@ -994,17 +1065,17 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
     if (fs.isEmpty) {
       Future(Seq[A]())
     } else {
-      val fsSize = fs.size
+      val fsSize  = fs.size
       val results = new AtomicReferenceArray[A](fsSize)
-      val count = new AtomicInteger(fsSize)
-      val p = Promise.interrupts[Seq[A]](fs: _*)
+      val count   = new AtomicInteger(fsSize)
+      val p       = Promise.interrupts[Seq[A]](fs: _*)
       for ((f, i) <- fs.iterator.zipWithIndex) {
         f respond {
           case Return(x) =>
             results.set(i, x)
             if (count.decrementAndGet() == 0) {
               val resultsArray = new mutable.ArraySeq[A](fsSize)
-              var j = 0
+              var j            = 0
               while (j < fsSize) {
                 resultsArray(j) = results.get(j)
                 j += 1
@@ -1083,7 +1154,7 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
     if (fs.isEmpty) {
       Future.exception(new IllegalArgumentException("empty future list"))
     } else {
-      val p = Promise.interrupts[(Try[A], Seq[Future[A]])](fs: _*)
+      val p  = Promise.interrupts[(Try[A], Seq[Future[A]])](fs: _*)
       val as = fs.map(f => (Promise.attached(f), f))
       for ((a, f) <- as) a respond { t =>
         if (!p.isDefined) {
@@ -1105,9 +1176,9 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
     if (fs.isEmpty) {
       Future.exception(new IllegalArgumentException("empty future list"))
     } else {
-      val p = Promise.interrupts[Int](fs: _*)
+      val p  = Promise.interrupts[Int](fs: _*)
       val as = fs.map(Promise.attached)
-      var i = 0
+      var i  = 0
       while (i < as.size) {
         val ii = i
         as(ii) ensure {
@@ -1160,9 +1231,8 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
   def whileDo[A](p: => Boolean)(f: => Future[A]): Future[Unit] = {
     def loop(): Future[Unit] = {
       if (p)
-        f flatMap { _ =>
-          loop()
-        } else Future.Unit
+        f flatMap { _ => loop() }
+      else Future.Unit
     }
 
     loop()
@@ -1178,9 +1248,7 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
     */
   def each[A](next: => Future[A])(body: A => Unit): Future[Nothing] = {
     def go(): Future[Nothing] =
-      try next flatMap { a =>
-        body(a); go()
-      } catch {
+      try next flatMap { a => body(a); go() } catch {
         case NonFatal(exc) =>
           Future.exception(NextThrewException(exc))
       }
@@ -1189,9 +1257,7 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
   }
 
   def parallel[A](n: Int)(f: => Future[A]): Seq[Future[A]] = {
-    (0 until n) map { i =>
-      f
-    }
+    (0 until n) map { i => f }
   }
 
   /**
@@ -1237,8 +1303,14 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
   )(
       implicit timer: Timer
   ): Batcher[In, Out] = {
-    new Batcher[In, Out](new BatchExecutor[In, Out](
-            sizeThreshold, timeThreshold, sizePercentile, f))
+    new Batcher[In, Out](
+      new BatchExecutor[In, Out](
+        sizeThreshold,
+        timeThreshold,
+        sizePercentile,
+        f
+      )
+    )
   }
 }
 
@@ -1379,9 +1451,7 @@ abstract class Future[+A] extends Awaitable[A] {
     * @see [[respond]] if you need the result of the computation for
     *     usage in the side-effect.
     */
-  def ensure(f: => Unit): Future[A] = respond { _ =>
-    f
-  }
+  def ensure(f: => Unit): Future[A] = respond { _ => f }
 
   /**
     * Block indefinitely, wait for the result of the Future to be available.
@@ -1473,7 +1543,8 @@ abstract class Future[+A] extends Awaitable[A] {
     * ''Note'': On timeout, the underlying future is interrupted.
     */
   def raiseWithin(timeout: Duration, exc: Throwable)(
-      implicit timer: Timer): Future[A] =
+      implicit timer: Timer
+  ): Future[A] =
     raiseWithin(timer, timeout, exc)
 
   /**
@@ -1481,7 +1552,11 @@ abstract class Future[+A] extends Awaitable[A] {
     *
     * ''Note'': On timeout, the underlying future is interrupted.
     */
-  def raiseWithin(timer: Timer, timeout: Duration, exc: Throwable): Future[A] = {
+  def raiseWithin(
+      timer: Timer,
+      timeout: Duration,
+      exc: Throwable
+  ): Future[A] = {
     if (timeout == Duration.Top || isDefined) return this
 
     within(timer, timeout, Future.raiseException) rescue {
@@ -1570,7 +1645,7 @@ abstract class Future[+A] extends Awaitable[A] {
     */
   def flatMap[B](f: A => Future[B]): Future[B] =
     transform {
-      case Return(v) => f(v)
+      case Return(v)   => f(v)
       case t: Throw[_] => Future.const[B](t.cast[B])
     }
 
@@ -1580,9 +1655,10 @@ abstract class Future[+A] extends Awaitable[A] {
     * `Unit`-valued  Futures — i.e. side-effects.
     */
   def before[B](
-      f: => Future[B])(implicit ev: this.type <:< Future[Unit]): Future[B] =
+      f: => Future[B]
+  )(implicit ev: this.type <:< Future[Unit]): Future[B] =
     transform {
-      case Return(_) => f
+      case Return(_)   => f
       case t: Throw[_] => Future.const[B](t.cast[B])
     }
 
@@ -1628,7 +1704,7 @@ abstract class Future[+A] extends Awaitable[A] {
     */
   def map[B](f: A => B): Future[B] =
     transform {
-      case Return(r) => Future { f(r) }
+      case Return(r)   => Future { f(r) }
       case t: Throw[_] => Future.const[B](t.cast[B])
     }
 
@@ -1651,7 +1727,7 @@ abstract class Future[+A] extends Awaitable[A] {
   def onSuccess(f: A => Unit): Future[A] =
     respond({
       case Return(value) => f(value)
-      case _ =>
+      case _             =>
     })
 
   /**
@@ -1673,7 +1749,7 @@ abstract class Future[+A] extends Awaitable[A] {
   def onFailure(fn: Throwable => Unit): Future[A] =
     respond {
       case Throw(t) => fn(t)
-      case _ =>
+      case _        =>
     }
 
   /**
@@ -1689,7 +1765,7 @@ abstract class Future[+A] extends Awaitable[A] {
     */
   def addEventListener(listener: FutureEventListener[_ >: A]): Future[A] =
     respond {
-      case Throw(cause) => listener.onFailure(cause)
+      case Throw(cause)  => listener.onFailure(cause)
       case Return(value) => listener.onSuccess(value)
     }
 
@@ -1710,7 +1786,7 @@ abstract class Future[+A] extends Awaitable[A] {
   def transformedBy[B](transformer: FutureTransformer[A, B]): Future[B] =
     transform {
       case Return(v) => transformer.flatMap(v)
-      case Throw(t) => transformer.rescue(t)
+      case Throw(t)  => transformer.rescue(t)
     }
 
   /**
@@ -1725,7 +1801,8 @@ abstract class Future[+A] extends Awaitable[A] {
     * @see [[rescue]]
     */
   def handle[B >: A](
-      rescueException: PartialFunction[Throwable, B]): Future[B] = rescue {
+      rescueException: PartialFunction[Throwable, B]
+  ): Future[B] = rescue {
     case e: Throwable if rescueException.isDefinedAt(e) =>
       Future(rescueException(e))
     case e: Throwable => this
@@ -1741,12 +1818,8 @@ abstract class Future[+A] extends Awaitable[A] {
     val p = Promise.interrupts[U](other, this)
     val a = Promise.attached(other)
     val b = Promise.attached(this)
-    a respond { t =>
-      if (p.updateIfEmpty(t)) b.detach()
-    }
-    b respond { t =>
-      if (p.updateIfEmpty(t)) a.detach()
-    }
+    a respond { t => if (p.updateIfEmpty(t)) b.detach() }
+    b respond { t => if (p.updateIfEmpty(t)) a.detach() }
     p
   }
 
@@ -1764,7 +1837,7 @@ abstract class Future[+A] extends Awaitable[A] {
       case Throw(t) => p.update(Throw(t))
       case Return(a) =>
         other.respond {
-          case Throw(t) => p.update(Throw(t))
+          case Throw(t)  => p.update(Throw(t))
           case Return(b) => p.update(Return((a, b)))
         }
     }
@@ -1800,8 +1873,9 @@ abstract class Future[+A] extends Awaitable[A] {
   def proxyTo[B >: A](other: Promise[B]) {
     if (other.isDefined) {
       throw new IllegalStateException(
-          s"Cannot call proxyTo on an already satisfied Promise: ${Await
-        .result(other.liftToTry)}")
+        s"Cannot call proxyTo on an already satisfied Promise: ${Await
+          .result(other.liftToTry)}"
+      )
     }
     respond { other() = _ }
   }
@@ -1815,7 +1889,7 @@ abstract class Future[+A] extends Awaitable[A] {
     def prepare() = transform { res: Try[A] =>
       val tx = new Tx[Try[A]] {
         def ack(): Future[Tx.Result[Try[A]]] = Future.value(Tx.Commit(res))
-        def nack(): Unit = ()
+        def nack(): Unit                     = ()
       }
 
       Future.value(tx)
@@ -1841,7 +1915,7 @@ abstract class Future[+A] extends Awaitable[A] {
       }
 
       override def isCancelled: Boolean = wasCancelled.get
-      override def isDone: Boolean = isCancelled || f.isDefined
+      override def isDone: Boolean      = isCancelled || f.isDefined
 
       override def get(): A = {
         if (isCancelled) throw new CancellationException
@@ -1859,9 +1933,7 @@ abstract class Future[+A] extends Awaitable[A] {
     * Converts a `Future[Future[B]]` into a `Future[B]`.
     */
   def flatten[B](implicit ev: A <:< Future[B]): Future[B] =
-    flatMap[B] { x =>
-      x
-    }
+    flatMap[B] { x => x }
 
   /**
     * Returns an identical future except that it ignores interrupts which match a predicate
@@ -1887,9 +1959,7 @@ abstract class Future[+A] extends Awaitable[A] {
     */
   def willEqual[B](that: Future[B]): Future[Boolean] = {
     this.transform { thisResult =>
-      that.transform { thatResult =>
-        Future.value(thisResult == thatResult)
-      }
+      that.transform { thatResult => Future.value(thisResult == thatResult) }
     }
   }
 
@@ -1904,7 +1974,7 @@ abstract class Future[+A] extends Awaitable[A] {
   def lowerFromTry[T](implicit ev: A <:< Try[T]): Future[T] =
     this.flatMap { a =>
       ev(a) match {
-        case Return(t) => Future.value(t)
+        case Return(t)  => Future.value(t)
         case Throw(exc) => Future.exception(exc)
       }
     }
@@ -1944,12 +2014,13 @@ abstract class Future[+A] extends Awaitable[A] {
 class ConstFuture[A](result: Try[A]) extends Future[A] {
   def respond(k: Try[A] => Unit): Future[A] = {
     val saved = Local.save()
-    Scheduler.submit(
-        new Runnable {
+    Scheduler.submit(new Runnable {
       def run() {
         val current = Local.save()
         Local.restore(saved)
-        try k(result) catch Monitor.catcher finally Local.restore(current)
+        try k(result)
+        catch Monitor.catcher
+        finally Local.restore(current)
       }
     })
     this
@@ -1958,20 +2029,22 @@ class ConstFuture[A](result: Try[A]) extends Future[A] {
   def raise(interrupt: Throwable): Unit = ()
 
   def transform[B](f: Try[A] => Future[B]): Future[B] = {
-    val p = new Promise[B]
+    val p     = new Promise[B]
     val saved = Local.save()
     Scheduler.submit(new Runnable {
       def run() {
         val current = Local.save()
         Local.restore(saved)
-        val computed = try f(result) catch {
-          case e: NonLocalReturnControl[_] =>
-            Future.exception(new FutureNonLocalReturnControl(e))
-          case NonFatal(e) => Future.exception(e)
-          case t: Throwable =>
-            Monitor.handle(t)
-            throw t
-        } finally Local.restore(current)
+        val computed =
+          try f(result)
+          catch {
+            case e: NonLocalReturnControl[_] =>
+              Future.exception(new FutureNonLocalReturnControl(e))
+            case NonFatal(e) => Future.exception(e)
+            case t: Throwable =>
+              Monitor.handle(t)
+              throw t
+          } finally Local.restore(current)
         p.become(computed)
       }
     })
@@ -1990,8 +2063,8 @@ class ConstFuture[A](result: Try[A]) extends Future[A] {
   // Awaitable
   @throws(classOf[TimeoutException])
   @throws(classOf[InterruptedException])
-  def ready(timeout: Duration)(
-      implicit permit: Awaitable.CanAwait): this.type = this
+  def ready(timeout: Duration)(implicit permit: Awaitable.CanAwait): this.type =
+    this
 
   @throws(classOf[Exception])
   def result(timeout: Duration)(implicit permit: Awaitable.CanAwait): A =
@@ -2031,9 +2104,7 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
     * do.
     */
   def join[A, B](a: Future[A], b: Future[B]): Future[(A, B)] =
-    Future.join(Seq(a, b)) map { _ =>
-      (Await.result(a), Await.result(b))
-    }
+    Future.join(Seq(a, b)) map { _ => (Await.result(a), Await.result(b)) }
 
   /**
     * Join 3 futures. The returned future is complete when all
@@ -2041,7 +2112,10 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
     * do.
     */
   def join[A, B, C](
-      a: Future[A], b: Future[B], c: Future[C]): Future[(A, B, C)] =
+      a: Future[A],
+      b: Future[B],
+      c: Future[C]
+  ): Future[(A, B, C)] =
     Future.join(Seq(a, b, c)) map { _ =>
       (Await.result(a), Await.result(b), Await.result(c))
     }
@@ -2051,10 +2125,12 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
     * underlying futures complete. It fails immediately if any of them
     * do.
     */
-  def join[A, B, C, D](a: Future[A],
-                       b: Future[B],
-                       c: Future[C],
-                       d: Future[D]): Future[(A, B, C, D)] =
+  def join[A, B, C, D](
+      a: Future[A],
+      b: Future[B],
+      c: Future[C],
+      d: Future[D]
+  ): Future[(A, B, C, D)] =
     Future.join(Seq(a, b, c, d)) map { _ =>
       (Await.result(a), Await.result(b), Await.result(c), Await.result(d))
     }
@@ -2064,17 +2140,21 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
     * underlying futures complete. It fails immediately if any of them
     * do.
     */
-  def join[A, B, C, D, E](a: Future[A],
-                          b: Future[B],
-                          c: Future[C],
-                          d: Future[D],
-                          e: Future[E]): Future[(A, B, C, D, E)] =
+  def join[A, B, C, D, E](
+      a: Future[A],
+      b: Future[B],
+      c: Future[C],
+      d: Future[D],
+      e: Future[E]
+  ): Future[(A, B, C, D, E)] =
     Future.join(Seq(a, b, c, d, e)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e)
+      )
     }
 
   /**
@@ -2082,19 +2162,23 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
     * underlying futures complete. It fails immediately if any of them
     * do.
     */
-  def join[A, B, C, D, E, F](a: Future[A],
-                             b: Future[B],
-                             c: Future[C],
-                             d: Future[D],
-                             e: Future[E],
-                             f: Future[F]): Future[(A, B, C, D, E, F)] =
+  def join[A, B, C, D, E, F](
+      a: Future[A],
+      b: Future[B],
+      c: Future[C],
+      d: Future[D],
+      e: Future[E],
+      f: Future[F]
+  ): Future[(A, B, C, D, E, F)] =
     Future.join(Seq(a, b, c, d, e, f)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f)
+      )
     }
 
   /**
@@ -2102,21 +2186,25 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
     * underlying futures complete. It fails immediately if any of them
     * do.
     */
-  def join[A, B, C, D, E, F, G](a: Future[A],
-                                b: Future[B],
-                                c: Future[C],
-                                d: Future[D],
-                                e: Future[E],
-                                f: Future[F],
-                                g: Future[G]): Future[(A, B, C, D, E, F, G)] =
+  def join[A, B, C, D, E, F, G](
+      a: Future[A],
+      b: Future[B],
+      c: Future[C],
+      d: Future[D],
+      e: Future[E],
+      f: Future[F],
+      g: Future[G]
+  ): Future[(A, B, C, D, E, F, G)] =
     Future.join(Seq(a, b, c, d, e, f, g)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g)
+      )
     }
 
   /**
@@ -2132,16 +2220,19 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       e: Future[E],
       f: Future[F],
       g: Future[G],
-      h: Future[H]): Future[(A, B, C, D, E, F, G, H)] =
+      h: Future[H]
+  ): Future[(A, B, C, D, E, F, G, H)] =
     Future.join(Seq(a, b, c, d, e, f, g, h)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g),
-       Await.result(h))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g),
+        Await.result(h)
+      )
     }
 
   /**
@@ -2158,17 +2249,20 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       f: Future[F],
       g: Future[G],
       h: Future[H],
-      i: Future[I]): Future[(A, B, C, D, E, F, G, H, I)] =
+      i: Future[I]
+  ): Future[(A, B, C, D, E, F, G, H, I)] =
     Future.join(Seq(a, b, c, d, e, f, g, h, i)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g),
-       Await.result(h),
-       Await.result(i))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g),
+        Await.result(h),
+        Await.result(i)
+      )
     }
 
   /**
@@ -2186,18 +2280,21 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       g: Future[G],
       h: Future[H],
       i: Future[I],
-      j: Future[J]): Future[(A, B, C, D, E, F, G, H, I, J)] =
+      j: Future[J]
+  ): Future[(A, B, C, D, E, F, G, H, I, J)] =
     Future.join(Seq(a, b, c, d, e, f, g, h, i, j)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g),
-       Await.result(h),
-       Await.result(i),
-       Await.result(j))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g),
+        Await.result(h),
+        Await.result(i),
+        Await.result(j)
+      )
     }
 
   /**
@@ -2216,19 +2313,22 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       h: Future[H],
       i: Future[I],
       j: Future[J],
-      k: Future[K]): Future[(A, B, C, D, E, F, G, H, I, J, K)] =
+      k: Future[K]
+  ): Future[(A, B, C, D, E, F, G, H, I, J, K)] =
     Future.join(Seq(a, b, c, d, e, f, g, h, i, j, k)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g),
-       Await.result(h),
-       Await.result(i),
-       Await.result(j),
-       Await.result(k))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g),
+        Await.result(h),
+        Await.result(i),
+        Await.result(j),
+        Await.result(k)
+      )
     }
 
   /**
@@ -2248,20 +2348,23 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       i: Future[I],
       j: Future[J],
       k: Future[K],
-      l: Future[L]): Future[(A, B, C, D, E, F, G, H, I, J, K, L)] =
+      l: Future[L]
+  ): Future[(A, B, C, D, E, F, G, H, I, J, K, L)] =
     Future.join(Seq(a, b, c, d, e, f, g, h, i, j, k, l)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g),
-       Await.result(h),
-       Await.result(i),
-       Await.result(j),
-       Await.result(k),
-       Await.result(l))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g),
+        Await.result(h),
+        Await.result(i),
+        Await.result(j),
+        Await.result(k),
+        Await.result(l)
+      )
     }
 
   /**
@@ -2282,21 +2385,24 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       j: Future[J],
       k: Future[K],
       l: Future[L],
-      m: Future[M]): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M)] =
+      m: Future[M]
+  ): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M)] =
     Future.join(Seq(a, b, c, d, e, f, g, h, i, j, k, l, m)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g),
-       Await.result(h),
-       Await.result(i),
-       Await.result(j),
-       Await.result(k),
-       Await.result(l),
-       Await.result(m))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g),
+        Await.result(h),
+        Await.result(i),
+        Await.result(j),
+        Await.result(k),
+        Await.result(l),
+        Await.result(m)
+      )
     }
 
   /**
@@ -2318,22 +2424,25 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       k: Future[K],
       l: Future[L],
       m: Future[M],
-      n: Future[N]): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N)] =
+      n: Future[N]
+  ): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N)] =
     Future.join(Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g),
-       Await.result(h),
-       Await.result(i),
-       Await.result(j),
-       Await.result(k),
-       Await.result(l),
-       Await.result(m),
-       Await.result(n))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g),
+        Await.result(h),
+        Await.result(i),
+        Await.result(j),
+        Await.result(k),
+        Await.result(l),
+        Await.result(m),
+        Await.result(n)
+      )
     }
 
   /**
@@ -2356,23 +2465,26 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       l: Future[L],
       m: Future[M],
       n: Future[N],
-      o: Future[O]): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O)] =
+      o: Future[O]
+  ): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O)] =
     Future.join(Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g),
-       Await.result(h),
-       Await.result(i),
-       Await.result(j),
-       Await.result(k),
-       Await.result(l),
-       Await.result(m),
-       Await.result(n),
-       Await.result(o))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g),
+        Await.result(h),
+        Await.result(i),
+        Await.result(j),
+        Await.result(k),
+        Await.result(l),
+        Await.result(m),
+        Await.result(n),
+        Await.result(o)
+      )
     }
 
   /**
@@ -2396,24 +2508,27 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       m: Future[M],
       n: Future[N],
       o: Future[O],
-      p: Future[P]): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P)] =
+      p: Future[P]
+  ): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P)] =
     Future.join(Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g),
-       Await.result(h),
-       Await.result(i),
-       Await.result(j),
-       Await.result(k),
-       Await.result(l),
-       Await.result(m),
-       Await.result(n),
-       Await.result(o),
-       Await.result(p))
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g),
+        Await.result(h),
+        Await.result(i),
+        Await.result(j),
+        Await.result(k),
+        Await.result(l),
+        Await.result(m),
+        Await.result(n),
+        Await.result(o),
+        Await.result(p)
+      )
     }
 
   /**
@@ -2421,43 +2536,46 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
     * underlying futures complete. It fails immediately if any of them
     * do.
     */
-  def join[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q](a: Future[A],
-                                                              b: Future[B],
-                                                              c: Future[C],
-                                                              d: Future[D],
-                                                              e: Future[E],
-                                                              f: Future[F],
-                                                              g: Future[G],
-                                                              h: Future[H],
-                                                              i: Future[I],
-                                                              j: Future[J],
-                                                              k: Future[K],
-                                                              l: Future[L],
-                                                              m: Future[M],
-                                                              n: Future[N],
-                                                              o: Future[O],
-                                                              p: Future[P],
-                                                              q: Future[Q])
-    : Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q)] =
+  def join[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q](
+      a: Future[A],
+      b: Future[B],
+      c: Future[C],
+      d: Future[D],
+      e: Future[E],
+      f: Future[F],
+      g: Future[G],
+      h: Future[H],
+      i: Future[I],
+      j: Future[J],
+      k: Future[K],
+      l: Future[L],
+      m: Future[M],
+      n: Future[N],
+      o: Future[O],
+      p: Future[P],
+      q: Future[Q]
+  ): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q)] =
     Future.join(Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q)) map {
       _ =>
-        (Await.result(a),
-         Await.result(b),
-         Await.result(c),
-         Await.result(d),
-         Await.result(e),
-         Await.result(f),
-         Await.result(g),
-         Await.result(h),
-         Await.result(i),
-         Await.result(j),
-         Await.result(k),
-         Await.result(l),
-         Await.result(m),
-         Await.result(n),
-         Await.result(o),
-         Await.result(p),
-         Await.result(q))
+        (
+          Await.result(a),
+          Await.result(b),
+          Await.result(c),
+          Await.result(d),
+          Await.result(e),
+          Await.result(f),
+          Await.result(g),
+          Await.result(h),
+          Await.result(i),
+          Await.result(j),
+          Await.result(k),
+          Await.result(l),
+          Await.result(m),
+          Await.result(n),
+          Await.result(o),
+          Await.result(p),
+          Await.result(q)
+        )
     }
 
   /**
@@ -2465,45 +2583,48 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
     * underlying futures complete. It fails immediately if any of them
     * do.
     */
-  def join[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R](a: Future[A],
-                                                                 b: Future[B],
-                                                                 c: Future[C],
-                                                                 d: Future[D],
-                                                                 e: Future[E],
-                                                                 f: Future[F],
-                                                                 g: Future[G],
-                                                                 h: Future[H],
-                                                                 i: Future[I],
-                                                                 j: Future[J],
-                                                                 k: Future[K],
-                                                                 l: Future[L],
-                                                                 m: Future[M],
-                                                                 n: Future[N],
-                                                                 o: Future[O],
-                                                                 p: Future[P],
-                                                                 q: Future[Q],
-                                                                 r: Future[R])
-    : Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R)] =
+  def join[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R](
+      a: Future[A],
+      b: Future[B],
+      c: Future[C],
+      d: Future[D],
+      e: Future[E],
+      f: Future[F],
+      g: Future[G],
+      h: Future[H],
+      i: Future[I],
+      j: Future[J],
+      k: Future[K],
+      l: Future[L],
+      m: Future[M],
+      n: Future[N],
+      o: Future[O],
+      p: Future[P],
+      q: Future[Q],
+      r: Future[R]
+  ): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R)] =
     Future.join(Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r)) map {
       _ =>
-        (Await.result(a),
-         Await.result(b),
-         Await.result(c),
-         Await.result(d),
-         Await.result(e),
-         Await.result(f),
-         Await.result(g),
-         Await.result(h),
-         Await.result(i),
-         Await.result(j),
-         Await.result(k),
-         Await.result(l),
-         Await.result(m),
-         Await.result(n),
-         Await.result(o),
-         Await.result(p),
-         Await.result(q),
-         Await.result(r))
+        (
+          Await.result(a),
+          Await.result(b),
+          Await.result(c),
+          Await.result(d),
+          Await.result(e),
+          Await.result(f),
+          Await.result(g),
+          Await.result(h),
+          Await.result(i),
+          Await.result(j),
+          Await.result(k),
+          Await.result(l),
+          Await.result(m),
+          Await.result(n),
+          Await.result(o),
+          Await.result(p),
+          Await.result(q),
+          Await.result(r)
+        )
     }
 
   /**
@@ -2530,29 +2651,31 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       p: Future[P],
       q: Future[Q],
       r: Future[R],
-      s: Future[S])
-    : Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S)] =
+      s: Future[S]
+  ): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S)] =
     Future.join(Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s)) map {
       _ =>
-        (Await.result(a),
-         Await.result(b),
-         Await.result(c),
-         Await.result(d),
-         Await.result(e),
-         Await.result(f),
-         Await.result(g),
-         Await.result(h),
-         Await.result(i),
-         Await.result(j),
-         Await.result(k),
-         Await.result(l),
-         Await.result(m),
-         Await.result(n),
-         Await.result(o),
-         Await.result(p),
-         Await.result(q),
-         Await.result(r),
-         Await.result(s))
+        (
+          Await.result(a),
+          Await.result(b),
+          Await.result(c),
+          Await.result(d),
+          Await.result(e),
+          Await.result(f),
+          Await.result(g),
+          Await.result(h),
+          Await.result(i),
+          Await.result(j),
+          Await.result(k),
+          Await.result(l),
+          Await.result(m),
+          Await.result(n),
+          Await.result(o),
+          Await.result(p),
+          Await.result(q),
+          Await.result(r),
+          Await.result(s)
+        )
     }
 
   /**
@@ -2580,31 +2703,32 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       q: Future[Q],
       r: Future[R],
       s: Future[S],
-      t: Future[T])
-    : Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T)] =
-    Future.join(
-        Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t)) map {
+      t: Future[T]
+  ): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T)] =
+    Future.join(Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t)) map {
       _ =>
-        (Await.result(a),
-         Await.result(b),
-         Await.result(c),
-         Await.result(d),
-         Await.result(e),
-         Await.result(f),
-         Await.result(g),
-         Await.result(h),
-         Await.result(i),
-         Await.result(j),
-         Await.result(k),
-         Await.result(l),
-         Await.result(m),
-         Await.result(n),
-         Await.result(o),
-         Await.result(p),
-         Await.result(q),
-         Await.result(r),
-         Await.result(s),
-         Await.result(t))
+        (
+          Await.result(a),
+          Await.result(b),
+          Await.result(c),
+          Await.result(d),
+          Await.result(e),
+          Await.result(f),
+          Await.result(g),
+          Await.result(h),
+          Await.result(i),
+          Await.result(j),
+          Await.result(k),
+          Await.result(l),
+          Await.result(m),
+          Await.result(n),
+          Await.result(o),
+          Await.result(p),
+          Await.result(q),
+          Await.result(r),
+          Await.result(s),
+          Await.result(t)
+        )
     }
 
   /**
@@ -2633,50 +2757,34 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       r: Future[R],
       s: Future[S],
       t: Future[T],
-      u: Future[U])
-    : Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U)] =
-    Future.join(Seq(a,
-                    b,
-                    c,
-                    d,
-                    e,
-                    f,
-                    g,
-                    h,
-                    i,
-                    j,
-                    k,
-                    l,
-                    m,
-                    n,
-                    o,
-                    p,
-                    q,
-                    r,
-                    s,
-                    t,
-                    u)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g),
-       Await.result(h),
-       Await.result(i),
-       Await.result(j),
-       Await.result(k),
-       Await.result(l),
-       Await.result(m),
-       Await.result(n),
-       Await.result(o),
-       Await.result(p),
-       Await.result(q),
-       Await.result(r),
-       Await.result(s),
-       Await.result(t),
-       Await.result(u))
+      u: Future[U]
+  ): Future[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U)] =
+    Future.join(
+      Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u)
+    ) map { _ =>
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g),
+        Await.result(h),
+        Await.result(i),
+        Await.result(j),
+        Await.result(k),
+        Await.result(l),
+        Await.result(m),
+        Await.result(n),
+        Await.result(o),
+        Await.result(p),
+        Await.result(q),
+        Await.result(r),
+        Await.result(s),
+        Await.result(t),
+        Await.result(u)
+      )
     }
 
   /**
@@ -2706,52 +2814,37 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
       s: Future[S],
       t: Future[T],
       u: Future[U],
-      v: Future[V]): Future[
-      (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V)] =
-    Future.join(Seq(a,
-                    b,
-                    c,
-                    d,
-                    e,
-                    f,
-                    g,
-                    h,
-                    i,
-                    j,
-                    k,
-                    l,
-                    m,
-                    n,
-                    o,
-                    p,
-                    q,
-                    r,
-                    s,
-                    t,
-                    u,
-                    v)) map { _ =>
-      (Await.result(a),
-       Await.result(b),
-       Await.result(c),
-       Await.result(d),
-       Await.result(e),
-       Await.result(f),
-       Await.result(g),
-       Await.result(h),
-       Await.result(i),
-       Await.result(j),
-       Await.result(k),
-       Await.result(l),
-       Await.result(m),
-       Await.result(n),
-       Await.result(o),
-       Await.result(p),
-       Await.result(q),
-       Await.result(r),
-       Await.result(s),
-       Await.result(t),
-       Await.result(u),
-       Await.result(v))
+      v: Future[V]
+  ): Future[
+    (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V)
+  ] =
+    Future.join(
+      Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v)
+    ) map { _ =>
+      (
+        Await.result(a),
+        Await.result(b),
+        Await.result(c),
+        Await.result(d),
+        Await.result(e),
+        Await.result(f),
+        Await.result(g),
+        Await.result(h),
+        Await.result(i),
+        Await.result(j),
+        Await.result(k),
+        Await.result(l),
+        Await.result(m),
+        Await.result(n),
+        Await.result(o),
+        Await.result(p),
+        Await.result(q),
+        Await.result(r),
+        Await.result(s),
+        Await.result(t),
+        Await.result(u),
+        Await.result(v)
+      )
     }
 
   /**
@@ -2771,8 +2864,9 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
     * @param fs a scala.collection.Seq
     */
   @deprecated(
-      "Use Futures.select(java.util.List) and JavaConversions instead.",
-      "2014-12-03")
+    "Use Futures.select(java.util.List) and JavaConversions instead.",
+    "2014-12-03"
+  )
   def select[A](fs: Seq[Future[A]]): Future[(Try[A], Seq[Future[A]])] =
     Future.select(fs)
 
@@ -2833,7 +2927,7 @@ def join[%s](%s): Future[(%s)] = join(Seq(%s)) map { _ => (%s) }""".format(
   * A future with no future (never completes).
   */
 class NoFuture extends Future[Nothing] {
-  def respond(k: Try[Nothing] => Unit): Future[Nothing] = this
+  def respond(k: Try[Nothing] => Unit): Future[Nothing]     = this
   def transform[B](f: Try[Nothing] => Future[B]): Future[B] = this
 
   def raise(interrupt: Throwable) {}
@@ -2846,13 +2940,16 @@ class NoFuture extends Future[Nothing] {
 
   @throws(classOf[TimeoutException])
   @throws(classOf[InterruptedException])
-  def ready(timeout: Duration)(
-      implicit permit: Awaitable.CanAwait): this.type = {
+  def ready(
+      timeout: Duration
+  )(implicit permit: Awaitable.CanAwait): this.type = {
     throw sleepThenTimeout(timeout)
   }
 
   @throws(classOf[Exception])
-  def result(timeout: Duration)(implicit permit: Awaitable.CanAwait): Nothing = {
+  def result(
+      timeout: Duration
+  )(implicit permit: Awaitable.CanAwait): Nothing = {
     throw sleepThenTimeout(timeout)
   }
 

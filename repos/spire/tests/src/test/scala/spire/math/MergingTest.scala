@@ -5,9 +5,9 @@ import spire.implicits._
 import org.scalatest.FunSuite
 import spire.algebra.Order
 
-class CountingOrder[T : Order] extends Order[T] {
+class CountingOrder[T: Order] extends Order[T] {
   val wrapped = implicitly[Order[T]]
-  var count = 0
+  var count   = 0
 
   override def compare(x: T, y: T): Int = {
     count += 1
@@ -27,9 +27,9 @@ class MergingTest extends FunSuite {
   }
 
   test("linear merge") {
-    val a = Array.range(0, 100).map(_ * 2)
-    val b = Array.range(1, 100).map(_ * 3)
-    val o = new CountingOrder[Int]
+    val a  = Array.range(0, 100).map(_ * 2)
+    val b  = Array.range(1, 100).map(_ * 3)
+    val o  = new CountingOrder[Int]
     val r1 = LinearMerge.merge(a, b)(o, ClassTag.Int)
     val r2 = LinearMerge.merge(b, a)(o, ClassTag.Int)
     assert(r1.sorted.corresponds(r1)(_ == _))

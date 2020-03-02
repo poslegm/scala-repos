@@ -13,10 +13,10 @@ class ImplementAbstractMethodTest extends ScalaIntentionTestBase {
   def familyName: String = new ImplementAbstractMethodAction().getFamilyName
 
   val START = ScalaLightCodeInsightFixtureTestAdapter.SELECTION_START
-  val END = ScalaLightCodeInsightFixtureTestAdapter.SELECTION_END
+  val END   = ScalaLightCodeInsightFixtureTestAdapter.SELECTION_END
 
   def testFromTrait() {
-    val text = """
+    val text   = """
         |trait A {
         |  def <caret>f: Int
         |}
@@ -35,7 +35,7 @@ class ImplementAbstractMethodTest extends ScalaIntentionTestBase {
   }
 
   def testFromAbstractClass() {
-    val text = """
+    val text   = """
         |abstract class A {
         |  def <caret>f: Int
         |}
@@ -54,7 +54,7 @@ class ImplementAbstractMethodTest extends ScalaIntentionTestBase {
   }
 
   def testParameterizedTrait() {
-    val text = """
+    val text   = """
         |trait A[T] {
         |  def <caret>f: T
         |}
@@ -84,7 +84,7 @@ class ImplementAbstractMethodTest extends ScalaIntentionTestBase {
   }
 
   def testUnitReturn() {
-    val text = """
+    val text   = """
         |trait A {
         |  def <caret>f
         |}

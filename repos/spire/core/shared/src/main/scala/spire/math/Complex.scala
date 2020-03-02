@@ -8,7 +8,11 @@ import spire.syntax.isReal._
 import spire.syntax.nroot._
 import spire.syntax.order._
 
-import scala.math.{ScalaNumber, ScalaNumericConversions, ScalaNumericAnyConversions}
+import scala.math.{
+  ScalaNumber,
+  ScalaNumericConversions,
+  ScalaNumericAnyConversions
+}
 import java.lang.Math
 
 object Complex extends ComplexInstances {
@@ -28,7 +32,7 @@ object Complex extends ComplexInstances {
     new Complex(n.toDouble, 0.0)
   implicit def longToComplex(n: Long): Complex[Double] =
     new Complex(n.toDouble, 0.0)
-  implicit def floatToComplex(n: Float): Complex[Float] = new Complex(n, 0.0F)
+  implicit def floatToComplex(n: Float): Complex[Float] = new Complex(n, 0.0f)
   implicit def doubleToComplex(n: Double): Complex[Double] =
     new Complex(n, 0.0)
 
@@ -40,15 +44,19 @@ object Complex extends ComplexInstances {
     new Complex(n, BigDecimal(0))
   }
 
-  def polar[@sp(Float, Double) T : Field : Trig](
-      magnitude: T, angle: T): Complex[T] =
+  def polar[@sp(Float, Double) T: Field: Trig](
+      magnitude: T,
+      angle: T
+  ): Complex[T] =
     new Complex(magnitude * Trig[T].cos(angle), magnitude * Trig[T].sin(angle))
 
-  def apply[@sp(Float, Double) T : Semiring](real: T): Complex[T] =
+  def apply[@sp(Float, Double) T: Semiring](real: T): Complex[T] =
     new Complex(real, Semiring[T].zero)
 
-  def rootOfUnity[@sp(Float, Double) T](n: Int, x: Int)(
-      implicit f: Field[T], t: Trig[T], r: IsReal[T]): Complex[T] = {
+  def rootOfUnity[@sp(Float, Double) T](
+      n: Int,
+      x: Int
+  )(implicit f: Field[T], t: Trig[T], r: IsReal[T]): Complex[T] = {
     if (x == 0) return one[T]
 
     if (n % 2 == 0) {
@@ -62,24 +70,25 @@ object Complex extends ComplexInstances {
     polar(f.one, (t.pi * 2 * x) / n)
   }
 
-  def rootsOfUnity[@sp(Float, Double) T](n: Int)(
-      implicit f: Field[T], t: Trig[T], r: IsReal[T]): Array[Complex[T]] = {
+  def rootsOfUnity[@sp(Float, Double) T](
+      n: Int
+  )(implicit f: Field[T], t: Trig[T], r: IsReal[T]): Array[Complex[T]] = {
     val roots = new Array[Complex[T]](n)
-    var sum = one[T]
+    var sum   = one[T]
     roots(0) = sum
 
-    val west = if (n % 2 == 0) n / 2 else -1
+    val west  = if (n % 2 == 0) n / 2 else -1
     val north = if (n % 4 == 0) n / 4 else -1
     val south = if (n % 4 == 0) 3 * n / 4 else -1
 
-    var x = 1
+    var x    = 1
     val last = n - 1
     while (x < last) {
       val c = x match {
         case `north` => i[T]
-        case `west` => -one[T]
+        case `west`  => -one[T]
         case `south` => -i[T]
-        case _ => polar(f.one, (t.pi * 2 * x) / n)
+        case _       => polar(f.one, (t.pi * 2 * x) / n)
       }
       roots(x) = c
       sum += c
@@ -93,7 +102,9 @@ object Complex extends ComplexInstances {
 
 @SerialVersionUID(0L)
 final case class Complex[@sp(Float, Double) T](real: T, imag: T)
-    extends ScalaNumber with ScalaNumericConversions with Serializable { lhs =>
+    extends ScalaNumber
+    with ScalaNumericConversions
+    with Serializable { lhs =>
 
   import spire.syntax.order._
 
@@ -112,7 +123,10 @@ final case class Complex[@sp(Float, Double) T](real: T, imag: T)
     * `sgn(z) = z / abs(z) = abs(z) / z`
     */
   def complexSignum(
-      implicit f: Field[T], o: IsReal[T], n: NRoot[T]): Complex[T] =
+      implicit f: Field[T],
+      o: IsReal[T],
+      n: NRoot[T]
+  ): Complex[T] =
     if (isZero) this else this / abs
 
   def abs(implicit f: Field[T], o: IsReal[T], n: NRoot[T]): T =
@@ -128,13 +142,17 @@ final case class Complex[@sp(Float, Double) T](real: T, imag: T)
 
   def asTuple: (T, T) = (real, imag)
   def asPolarTuple(
-      implicit f: Field[T], n: NRoot[T], t: Trig[T], o: IsReal[T]): (T, T) =
+      implicit f: Field[T],
+      n: NRoot[T],
+      t: Trig[T],
+      o: IsReal[T]
+  ): (T, T) =
     (abs, arg)
 
   def isZero(implicit o: IsReal[T]): Boolean =
     real.isSignZero && imag.isSignZero
   def isImaginary(implicit o: IsReal[T]): Boolean = real.isSignZero
-  def isReal(implicit o: IsReal[T]): Boolean = imag.isSignZero
+  def isReal(implicit o: IsReal[T]): Boolean      = imag.isSignZero
 
   def eqv(b: Complex[T])(implicit o: Eq[T]): Boolean =
     real === b.real && imag === b.imag
@@ -157,20 +175,20 @@ final case class Complex[@sp(Float, Double) T](real: T, imag: T)
     (this / rhs).floor
   def %(rhs: T)(implicit f: Field[T], o: IsReal[T]): Complex[T] =
     this - (this /~ rhs) * rhs
-  def /%(rhs: T)(
-      implicit f: Field[T], o: IsReal[T]): (Complex[T], Complex[T]) = {
+  def /%(
+      rhs: T
+  )(implicit f: Field[T], o: IsReal[T]): (Complex[T], Complex[T]) = {
     val q = this /~ rhs
     (q, this - q * rhs)
   }
 
-  def **(e: T)(implicit f: Field[T],
-               n: NRoot[T],
-               t: Trig[T],
-               o: IsReal[T]): Complex[T] = this pow e
-  def pow(e: T)(implicit f: Field[T],
-                n: NRoot[T],
-                t: Trig[T],
-                o: IsReal[T]): Complex[T] =
+  def **(
+      e: T
+  )(implicit f: Field[T], n: NRoot[T], t: Trig[T], o: IsReal[T]): Complex[T] =
+    this pow e
+  def pow(
+      e: T
+  )(implicit f: Field[T], n: NRoot[T], t: Trig[T], o: IsReal[T]): Complex[T] =
     if (e.isSignZero) {
       Complex.one[T]
     } else if (this.isZero) {
@@ -215,38 +233,36 @@ final case class Complex[@sp(Float, Double) T](real: T, imag: T)
   def %(b: Complex[T])(implicit f: Field[T], o: IsReal[T]): Complex[T] =
     this - (this /~ b) * b
 
-  def /%(b: Complex[T])(
-      implicit f: Field[T], o: IsReal[T]): (Complex[T], Complex[T]) = {
+  def /%(
+      b: Complex[T]
+  )(implicit f: Field[T], o: IsReal[T]): (Complex[T], Complex[T]) = {
     val q = this /~ b
     (q, this - q * b)
   }
 
-  def **(b: Int)(implicit f: Field[T],
-                 n: NRoot[T],
-                 t: Trig[T],
-                 o: IsReal[T]): Complex[T] = pow(b)
+  def **(
+      b: Int
+  )(implicit f: Field[T], n: NRoot[T], t: Trig[T], o: IsReal[T]): Complex[T] =
+    pow(b)
 
-  def nroot(k: Int)(implicit f: Field[T],
-                    n: NRoot[T],
-                    t: Trig[T],
-                    o: IsReal[T]): Complex[T] =
+  def nroot(
+      k: Int
+  )(implicit f: Field[T], n: NRoot[T], t: Trig[T], o: IsReal[T]): Complex[T] =
     if (isZero) Complex.zero else pow(Complex(f.fromInt(k).reciprocal, f.zero))
 
-  def pow(b: Int)(implicit f: Field[T],
-                  n: NRoot[T],
-                  t: Trig[T],
-                  o: IsReal[T]): Complex[T] =
+  def pow(
+      b: Int
+  )(implicit f: Field[T], n: NRoot[T], t: Trig[T], o: IsReal[T]): Complex[T] =
     if (isZero) Complex.zero else Complex.polar(abs.pow(b), arg * b)
 
-  def **(b: Complex[T])(implicit f: Field[T],
-                        n: NRoot[T],
-                        t: Trig[T],
-                        o: IsReal[T]): Complex[T] = pow(b)
+  def **(
+      b: Complex[T]
+  )(implicit f: Field[T], n: NRoot[T], t: Trig[T], o: IsReal[T]): Complex[T] =
+    pow(b)
 
-  def pow(b: Complex[T])(implicit f: Field[T],
-                         n: NRoot[T],
-                         t: Trig[T],
-                         o: IsReal[T]): Complex[T] =
+  def pow(
+      b: Complex[T]
+  )(implicit f: Field[T], n: NRoot[T], t: Trig[T], o: IsReal[T]): Complex[T] =
     if (b.isZero) {
       Complex.one[T]
     } else if (this.isZero) {
@@ -254,7 +270,7 @@ final case class Complex[@sp(Float, Double) T](real: T, imag: T)
         throw new Exception("raising 0 to negative/complex power")
       Complex.zero[T]
     } else if (b.imag =!= f.zero) {
-      val len = (abs fpow b.real) / t.exp(arg * b.imag)
+      val len   = (abs fpow b.real) / t.exp(arg * b.imag)
       val phase = arg * b.real + t.log(abs) * b.imag
       Complex.polar(len, phase)
     } else {
@@ -262,10 +278,12 @@ final case class Complex[@sp(Float, Double) T](real: T, imag: T)
     }
 
   // we are going with the "principal value" definition of Log.
-  def log(implicit f: Field[T],
-          n: NRoot[T],
-          t: Trig[T],
-          o: IsReal[T]): Complex[T] = {
+  def log(
+      implicit f: Field[T],
+      n: NRoot[T],
+      t: Trig[T],
+      o: IsReal[T]
+  ): Complex[T] = {
     if (isZero) throw new IllegalArgumentException("log(0) undefined")
     new Complex(t.log(abs), arg)
   }
@@ -275,7 +293,7 @@ final case class Complex[@sp(Float, Double) T](real: T, imag: T)
       Complex.zero[T]
     } else {
       val two = f.fromInt(2)
-      val a = ((abs + real.abs) / two).sqrt
+      val a   = ((abs + real.abs) / two).sqrt
       imag.signum match {
         case 0 =>
           if (real < f.zero) Complex(f.zero, a) else Complex(a, f.zero)
@@ -294,32 +312,38 @@ final case class Complex[@sp(Float, Double) T](real: T, imag: T)
     new Complex(real.round, imag.round)
 
   // acos(z) = -i*(log(z + i*(sqrt(1 - z*z))))
-  def acos(implicit f: Field[T],
-           n: NRoot[T],
-           t: Trig[T],
-           o: IsReal[T]): Complex[T] = {
+  def acos(
+      implicit f: Field[T],
+      n: NRoot[T],
+      t: Trig[T],
+      o: IsReal[T]
+  ): Complex[T] = {
     val z2 = this * this
-    val s = new Complex(f.one - z2.real, -z2.imag).sqrt
-    val l = new Complex(real + s.imag, imag + s.real).log
+    val s  = new Complex(f.one - z2.real, -z2.imag).sqrt
+    val l  = new Complex(real + s.imag, imag + s.real).log
     new Complex(l.imag, -l.real)
   }
 
   // asin(z) = -i*(log(sqrt(1 - z*z) + i*z))
-  def asin(implicit f: Field[T],
-           n: NRoot[T],
-           t: Trig[T],
-           o: IsReal[T]): Complex[T] = {
+  def asin(
+      implicit f: Field[T],
+      n: NRoot[T],
+      t: Trig[T],
+      o: IsReal[T]
+  ): Complex[T] = {
     val z2 = this * this
-    val s = new Complex(f.one - z2.real, -z2.imag).sqrt
-    val l = new Complex(s.real + -imag, s.imag + real).log
+    val s  = new Complex(f.one - z2.real, -z2.imag).sqrt
+    val l  = new Complex(s.real + -imag, s.imag + real).log
     new Complex(l.imag, -l.real)
   }
 
   // atan(z) = (i/2) log((i + z)/(i - z))
-  def atan(implicit f: Field[T],
-           r: NRoot[T],
-           t: Trig[T],
-           o: IsReal[T]): Complex[T] = {
+  def atan(
+      implicit f: Field[T],
+      r: NRoot[T],
+      t: Trig[T],
+      o: IsReal[T]
+  ): Complex[T] = {
     val n = new Complex(real, imag + f.one)
     val d = new Complex(-real, f.one - imag)
     val l = (n / d).log
@@ -350,7 +374,7 @@ final case class Complex[@sp(Float, Double) T](real: T, imag: T)
   def tan(implicit f: Field[T], t: Trig[T]): Complex[T] = {
     val r2 = real + real
     val i2 = imag + imag
-    val d = t.cos(r2) + t.cosh(i2)
+    val d  = t.cos(r2) + t.cosh(i2)
     new Complex(t.sin(r2) / d, t.sinh(i2) / d)
   }
 
@@ -358,17 +382,17 @@ final case class Complex[@sp(Float, Double) T](real: T, imag: T)
   def tanh(implicit f: Field[T], t: Trig[T]): Complex[T] = {
     val r2 = real + real
     val i2 = imag + imag
-    val d = t.cos(r2) + t.cosh(i2)
+    val d  = t.cos(r2) + t.cosh(i2)
     new Complex(t.sinh(r2) / d, t.sin(i2) / d)
   }
 
   // junky ScalaNumber stuff
-  def floatValue: Float = doubleValue.toFloat
-  def doubleValue: Double = anyToDouble(real)
-  override def byteValue: Byte = longValue.toByte
+  def floatValue: Float          = doubleValue.toFloat
+  def doubleValue: Double        = anyToDouble(real)
+  override def byteValue: Byte   = longValue.toByte
   override def shortValue: Short = longValue.toShort
-  def intValue: Int = longValue.toInt
-  override def longValue: Long = anyToLong(real)
+  def intValue: Int              = longValue.toInt
+  override def longValue: Long   = anyToLong(real)
 
   def underlying: Object = this
 
@@ -388,7 +412,7 @@ final case class Complex[@sp(Float, Double) T](real: T, imag: T)
     case that: Complex[_] => this === that
     case that: Quaternion[_] =>
       real == that.r && imag == that.i && anyIsZero(that.j) &&
-      anyIsZero(that.k)
+        anyIsZero(that.k)
     case that =>
       anyIsZero(imag) && real == that
   }
@@ -417,8 +441,8 @@ object FloatComplex {
   def polar(magnitude: Float, angle: Float): FloatComplex =
     new FloatComplex(FastComplex.polar(magnitude, angle))
 
-  final val i: FloatComplex = new FloatComplex(4575657221408423936L)
-  final val one: FloatComplex = new FloatComplex(1065353216L)
+  final val i: FloatComplex    = new FloatComplex(4575657221408423936L)
+  final val one: FloatComplex  = new FloatComplex(1065353216L)
   final val zero: FloatComplex = new FloatComplex(0L)
 }
 
@@ -431,15 +455,15 @@ object FloatComplex {
 class FloatComplex(val u: Long) extends AnyVal {
   override final def toString: String = "(%s+%si)" format (real, imag)
 
-  final def real: Float = FastComplex.real(u)
-  final def imag: Float = FastComplex.imag(u)
+  final def real: Float  = FastComplex.real(u)
+  final def imag: Float  = FastComplex.imag(u)
   final def repr: String = "FloatComplex(%s, %s)" format (real, imag)
-  final def abs: Float = FastComplex.abs(u)
+  final def abs: Float   = FastComplex.abs(u)
   final def angle: Float = FastComplex.angle(u)
   final def conjugate: FloatComplex =
     new FloatComplex(FastComplex.conjugate(u))
   final def isWhole: Boolean = FastComplex.isWhole(u)
-  final def signum: Int = FastComplex.signum(u)
+  final def signum: Int      = FastComplex.signum(u)
   final def complexSignum: FloatComplex =
     new FloatComplex(FastComplex.complexSignum(u))
   final def negate: FloatComplex = new FloatComplex(FastComplex.negate(u))
@@ -467,7 +491,7 @@ class FloatComplex(val u: Long) extends AnyVal {
   final def **(b: FloatComplex): FloatComplex = pow(b)
 
   final def pow(b: Int): FloatComplex =
-    new FloatComplex(FastComplex.pow(u, FastComplex(b.toFloat, 0.0F)))
+    new FloatComplex(FastComplex.pow(u, FastComplex(b.toFloat, 0.0f)))
   final def **(b: Int): FloatComplex = pow(b)
 }
 
@@ -521,13 +545,13 @@ object FastComplex {
   @inline final def imag(d: Long): Float = bits((d >>> 32).toInt)
 
   // define some handy constants
-  final val i: Long = encode(0.0F, 1.0F)
-  final val one: Long = encode(1.0F, 0.0F)
-  final val zero: Long = encode(0.0F, 0.0F)
+  final val i: Long    = encode(0.0f, 1.0f)
+  final val one: Long  = encode(1.0f, 0.0f)
+  final val zero: Long = encode(0.0f, 0.0f)
 
   // encode two floats representing a complex number
   @inline final def encode(real: Float, imag: Float): Long =
-    (bits(real) & 0xffffffffL) | ((bits(imag) & 0xffffffffL) << 32)
+    (bits(real) & 0xFFFFFFFFL) | ((bits(imag) & 0xFFFFFFFFL) << 32)
 
   // encode two floats representing a complex number in polar form
   @inline final def polar(magnitude: Float, angle: Float): Long =
@@ -555,15 +579,15 @@ object FastComplex {
 
   // see if the complex number is a whole value
   final def isWhole(d: Long): Boolean =
-    real(d) % 1.0F == 0.0F && imag(d) % 1.0F == 0.0F
+    real(d) % 1.0f == 0.0f && imag(d) % 1.0f == 0.0f
 
   // get the sign of the complex number
-  final def signum(d: Long): Int = real(d) compare 0.0F
+  final def signum(d: Long): Int = real(d) compare 0.0f
 
   // get the complex sign of the complex number
   final def complexSignum(d: Long): Long = {
     val m = abs(d)
-    if (m == 0.0F) zero else divide(d, encode(m, 0.0F))
+    if (m == 0.0f) zero else divide(d, encode(m, 0.0f))
   }
 
   // negation
@@ -597,12 +621,12 @@ object FastComplex {
     val abs_im_b = Math.abs(im_b)
 
     if (abs_re_b >= abs_im_b) {
-      if (abs_re_b == 0.0F) throw new ArithmeticException("/0")
+      if (abs_re_b == 0.0f) throw new ArithmeticException("/0")
       val ratio = im_b / re_b
       val denom = re_b + im_b * ratio
       encode((re_a + im_a * ratio) / denom, (im_a - re_a * ratio) / denom)
     } else {
-      if (abs_im_b == 0.0F) throw new ArithmeticException("/0")
+      if (abs_im_b == 0.0f) throw new ArithmeticException("/0")
       val ratio = re_b / im_b
       val denom = re_b * ratio + im_b
       encode((re_a * ratio + im_a) / denom, (im_a * ratio - re_a) / denom)
@@ -610,7 +634,7 @@ object FastComplex {
   }
 
   final def quot(a: Long, b: Long): Long =
-    encode(Math.floor(real(divide(a, b))).toFloat, 0.0F)
+    encode(Math.floor(real(divide(a, b))).toFloat, 0.0f)
 
   final def mod(a: Long, b: Long): Long = subtract(a, multiply(b, quot(a, b)))
 
@@ -622,40 +646,40 @@ object FastComplex {
   // exponentiation
   final def pow(a: Long, b: Long): Long =
     if (b == zero) {
-      encode(1.0F, 0.0F)
+      encode(1.0f, 0.0f)
     } else if (a == zero) {
-      if (imag(b) != 0.0F || real(b) < 0.0F)
+      if (imag(b) != 0.0f || real(b) < 0.0f)
         throw new Exception("raising 0 to negative/complex power")
       zero
-    } else if (imag(b) != 0.0F) {
-      val im_b = imag(b)
-      val re_b = real(b)
-      val len = (Math.pow(abs(a), re_b) / exp((angle(a) * im_b))).toFloat
+    } else if (imag(b) != 0.0f) {
+      val im_b  = imag(b)
+      val re_b  = real(b)
+      val len   = (Math.pow(abs(a), re_b) / exp((angle(a) * im_b))).toFloat
       val phase = (angle(a) * re_b + log(abs(a)) * im_b).toFloat
       polar(len, phase)
     } else {
-      val len = Math.pow(abs(a), real(b)).toFloat
+      val len   = Math.pow(abs(a), real(b)).toFloat
       val phase = (angle(a) * real(b)).toFloat
       polar(len, phase)
     }
 }
 
 trait ComplexInstances0 {
-  implicit def ComplexRing[A : Ring : IsReal]: Ring[Complex[A]] =
+  implicit def ComplexRing[A: Ring: IsReal]: Ring[Complex[A]] =
     new ComplexIsRingImpl[A]
 }
 
 trait ComplexInstances1 extends ComplexInstances0 {
-  implicit def ComplexField[A : Field : IsReal]: Field[Complex[A]] =
+  implicit def ComplexField[A: Field: IsReal]: Field[Complex[A]] =
     new ComplexIsFieldImpl[A]
 }
 
 trait ComplexInstances extends ComplexInstances1 {
-  implicit def ComplexAlgebra[
-      @sp(Float, Double) A : Fractional : Trig : IsReal]: ComplexAlgebra[A] =
+  implicit def ComplexAlgebra[@sp(Float, Double) A: Fractional: Trig: IsReal]
+      : ComplexAlgebra[A] =
     new ComplexAlgebra[A]
 
-  implicit def ComplexEq[A : Eq]: Eq[Complex[A]] = new ComplexEq[A]
+  implicit def ComplexEq[A: Eq]: Eq[Complex[A]] = new ComplexEq[A]
 }
 
 private[math] trait ComplexIsRing[@sp(Float, Double) A]
@@ -664,27 +688,28 @@ private[math] trait ComplexIsRing[@sp(Float, Double) A]
   implicit def order: IsReal[A]
 
   override def minus(a: Complex[A], b: Complex[A]): Complex[A] = a - b
-  def negate(a: Complex[A]): Complex[A] = -a
-  def one: Complex[A] = Complex.one
-  def plus(a: Complex[A], b: Complex[A]): Complex[A] = a + b
+  def negate(a: Complex[A]): Complex[A]                        = -a
+  def one: Complex[A]                                          = Complex.one
+  def plus(a: Complex[A], b: Complex[A]): Complex[A]           = a + b
   override def times(a: Complex[A], b: Complex[A]): Complex[A] = a * b
-  def zero: Complex[A] = Complex.zero
+  def zero: Complex[A]                                         = Complex.zero
 
   override def fromInt(n: Int): Complex[A] = Complex.fromInt[A](n)
 }
 
 private[math] trait ComplexIsField[@sp(Float, Double) A]
-    extends ComplexIsRing[A] with Field[Complex[A]] {
+    extends ComplexIsRing[A]
+    with Field[Complex[A]] {
 
   implicit def algebra: Field[A]
 
   override def fromDouble(n: Double): Complex[A] =
     Complex(algebra.fromDouble(n))
-  def div(a: Complex[A], b: Complex[A]): Complex[A] = a / b
+  def div(a: Complex[A], b: Complex[A]): Complex[A]  = a / b
   def quot(a: Complex[A], b: Complex[A]): Complex[A] = a /~ b
-  def mod(a: Complex[A], b: Complex[A]): Complex[A] = a % b
-  override def quotmod(
-      a: Complex[A], b: Complex[A]): (Complex[A], Complex[A]) = a /% b
+  def mod(a: Complex[A], b: Complex[A]): Complex[A]  = a % b
+  override def quotmod(a: Complex[A], b: Complex[A]): (Complex[A], Complex[A]) =
+    a /% b
   def gcd(a: Complex[A], b: Complex[A]): Complex[A] = {
     @tailrec def _gcd(a: Complex[A], b: Complex[A]): Complex[A] =
       if (b.isZero) a else _gcd(b, a - (a / b).round * b)
@@ -699,12 +724,12 @@ private[math] trait ComplexIsTrig[@sp(Float, Double) A]
   implicit def trig: Trig[A]
   implicit def order: IsReal[A]
 
-  def e: Complex[A] = new Complex[A](trig.e, algebra.zero)
+  def e: Complex[A]  = new Complex[A](trig.e, algebra.zero)
   def pi: Complex[A] = new Complex[A](trig.pi, algebra.zero)
 
-  def exp(a: Complex[A]): Complex[A] = a.exp
+  def exp(a: Complex[A]): Complex[A]   = a.exp
   def expm1(a: Complex[A]): Complex[A] = a.exp - algebra.one
-  def log(a: Complex[A]): Complex[A] = a.log
+  def log(a: Complex[A]): Complex[A]   = a.log
   def log1p(a: Complex[A]): Complex[A] = (a + algebra.one).log
 
   def sin(a: Complex[A]): Complex[A] = a.sin
@@ -731,8 +756,8 @@ private[math] trait ComplexIsNRoot[A] extends NRoot[Complex[A]] {
   implicit def trig: Trig[A]
   implicit def order: IsReal[A]
 
-  def nroot(a: Complex[A], k: Int): Complex[A] = a.nroot(k)
-  override def sqrt(a: Complex[A]): Complex[A] = a.sqrt
+  def nroot(a: Complex[A], k: Int): Complex[A]       = a.nroot(k)
+  override def sqrt(a: Complex[A]): Complex[A]       = a.sqrt
   def fpow(a: Complex[A], b: Complex[A]): Complex[A] = a.pow(b)
 }
 
@@ -741,37 +766,44 @@ private[math] trait ComplexIsSigned[A] extends Signed[Complex[A]] {
   implicit def nroot: NRoot[A]
   implicit def order: IsReal[A]
 
-  def signum(a: Complex[A]): Int = a.signum
+  def signum(a: Complex[A]): Int     = a.signum
   def abs(a: Complex[A]): Complex[A] = Complex[A](a.abs, algebra.zero)
 }
 
 @SerialVersionUID(1L)
-private[math] class ComplexEq[A : Eq]
-    extends Eq[Complex[A]] with Serializable {
-  def eqv(x: Complex[A], y: Complex[A]): Boolean = x eqv y
+private[math] class ComplexEq[A: Eq] extends Eq[Complex[A]] with Serializable {
+  def eqv(x: Complex[A], y: Complex[A]): Boolean           = x eqv y
   override def neqv(x: Complex[A], y: Complex[A]): Boolean = x neqv y
 }
 
 @SerialVersionUID(1L)
 private[math] final class ComplexIsRingImpl[@sp(Float, Double) A](
-    implicit val algebra: Ring[A], val order: IsReal[A])
-    extends ComplexIsRing[A] with Serializable
+    implicit val algebra: Ring[A],
+    val order: IsReal[A]
+) extends ComplexIsRing[A]
+    with Serializable
 
 @SerialVersionUID(1L)
 private[math] final class ComplexIsFieldImpl[@sp(Float, Double) A](
-    implicit val algebra: Field[A], val order: IsReal[A])
-    extends ComplexIsField[A] with Serializable
+    implicit val algebra: Field[A],
+    val order: IsReal[A]
+) extends ComplexIsField[A]
+    with Serializable
 
 @SerialVersionUID(1L)
 private[math] class ComplexAlgebra[@sp(Float, Double) A](
     implicit val algebra: Field[A],
     val nroot: NRoot[A],
     val trig: Trig[A],
-    val order: IsReal[A])
-    extends ComplexIsField[A] with ComplexIsTrig[A] with ComplexIsNRoot[A]
-    with ComplexIsSigned[A] with InnerProductSpace[Complex[A], A]
-    with FieldAlgebra[Complex[A], A] with Serializable {
-  def scalar: Field[A] = algebra
+    val order: IsReal[A]
+) extends ComplexIsField[A]
+    with ComplexIsTrig[A]
+    with ComplexIsNRoot[A]
+    with ComplexIsSigned[A]
+    with InnerProductSpace[Complex[A], A]
+    with FieldAlgebra[Complex[A], A]
+    with Serializable {
+  def scalar: Field[A]                        = algebra
   def timesl(a: A, v: Complex[A]): Complex[A] = Complex(a, scalar.zero) * v
   def dot(x: Complex[A], y: Complex[A]): A =
     scalar.plus(scalar.times(x.real, y.real), scalar.times(x.imag, y.imag))

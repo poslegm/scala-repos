@@ -22,7 +22,8 @@ class DictionaryTest {
   // scala.scalajs.js.Dictionary
 
   @Test
-  def should_provide_an_equivalent_of_the_JS_delete_keyword_issue_255(): Unit = {
+  def should_provide_an_equivalent_of_the_JS_delete_keyword_issue_255()
+      : Unit = {
     val obj = js.Dictionary.empty[js.Any]
     obj("foo") = 42
     obj("bar") = "foobar"
@@ -42,11 +43,13 @@ class DictionaryTest {
       ): Unit = {
     assumeFalse(executingInRhino)
     val obj = js.Dictionary.empty[js.Any]
-    js.Object.defineProperty(obj.asInstanceOf[js.Object],
-                             "nonconfig",
-                             js.Dynamic
-                               .literal(value = 4, writable = false)
-                               .asInstanceOf[js.PropertyDescriptor])
+    js.Object.defineProperty(
+      obj.asInstanceOf[js.Object],
+      "nonconfig",
+      js.Dynamic
+        .literal(value = 4, writable = false)
+        .asInstanceOf[js.PropertyDescriptor]
+    )
     assertEquals(4, obj("nonconfig"))
     assertThrows(classOf[Exception], obj.delete("nonconfig"))
     assertEquals(4, obj("nonconfig"))
@@ -76,7 +79,7 @@ class DictionaryTest {
   }
 
   @Test def should_provide_keys(): Unit = {
-    val obj = js.Dictionary("a" -> "A", "b" -> "B")
+    val obj  = js.Dictionary("a" -> "A", "b" -> "B")
     val keys = obj.keys.toList
     assertEquals(2, keys.size)
     assertTrue(keys.contains("a"))
@@ -93,7 +96,7 @@ class DictionaryTest {
   }
 
   @Test def should_provide_an_iterator(): Unit = {
-    val obj = js.Dictionary("foo" -> 5, "bar" -> 42, "babar" -> 0)
+    val obj                        = js.Dictionary("foo" -> 5, "bar" -> 42, "babar" -> 0)
     var elems: List[(String, Int)] = Nil
     for ((prop, value) <- obj) {
       elems ::= (prop, value)
@@ -105,8 +108,8 @@ class DictionaryTest {
   }
 
   @Test def should_desugar_arguments_to_delete_statements_issue_908(): Unit = {
-    val kh = js.Dynamic.literal(key = "a").asInstanceOf[KeyHolder]
-    val dict = js.Dictionary[String]("a" -> "A")
+    val kh                   = js.Dynamic.literal(key = "a").asInstanceOf[KeyHolder]
+    val dict                 = js.Dictionary[String]("a" -> "A")
     def a[T](foo: String): T = dict.asInstanceOf[T]
     a[js.Dictionary[String]]("foo").delete(kh.key)
   }

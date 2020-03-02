@@ -37,7 +37,7 @@ class SubscriptionEventHandler extends FlatSpec {
 
   "A subscription" should "be created from EventSources" in {
     val property: StringProperty = StringProperty("")
-    var called = false
+    var called                   = false
 
     val subscription =
       property onInvalidate {

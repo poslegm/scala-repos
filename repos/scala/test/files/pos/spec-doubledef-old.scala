@@ -9,13 +9,15 @@ trait A[@specialized(Int) T] {
 }
 
 class C extends A[Int] {
-  var value = 10
+  var value                                              = 10
   override def getWith[@specialized(Int) Z](f: Int => Z) = f(value)
 }
 
-abstract class B[T,
-                 @specialized(scala.Int) U : Manifest,
-                 @specialized(scala.Int) V <% Ordered[V]] {
+abstract class B[
+    T,
+    @specialized(scala.Int) U: Manifest,
+    @specialized(scala.Int) V <% Ordered[V]
+] {
   val u: U
   val v: V
 

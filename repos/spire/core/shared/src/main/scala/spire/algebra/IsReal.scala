@@ -58,11 +58,10 @@ object IsRational {
   def apply[@sp A](implicit A: IsRational[A]): IsRational[A] = A
 }
 
-trait IsIntegral[@sp(Byte, Short, Int, Long) A]
-    extends Any with IsRational[A] {
-  def ceil(a: A): A = a
-  def floor(a: A): A = a
-  def round(a: A): A = a
+trait IsIntegral[@sp(Byte, Short, Int, Long) A] extends Any with IsRational[A] {
+  def ceil(a: A): A          = a
+  def floor(a: A): A         = a
+  def round(a: A): A         = a
   def isWhole(a: A): Boolean = true
   def toBigInt(a: A): BigInt
   def toRational(a: A): Rational = Rational(toBigInt(a))

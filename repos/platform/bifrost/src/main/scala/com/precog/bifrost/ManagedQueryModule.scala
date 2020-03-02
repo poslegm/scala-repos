@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -94,7 +94,7 @@ trait ManagedQueryModule extends YggConfigComponent with Logging {
     * A mix-in for `QueryLogger`s that forcefully aborts a bifrost query on fatal
     * errors.
     */
-  trait ShardQueryLogger[M[+ _], P] extends QueryLogger[M, P] {
+  trait ShardQueryLogger[M[+_], P] extends QueryLogger[M, P] {
     def M: JobQueryTFMonad
 
     abstract override def die(): M[Unit] = {
@@ -118,38 +118,47 @@ trait ManagedQueryModule extends YggConfigComponent with Logging {
     * query completes.
     */
   def createQueryJob(
-      apiKey: APIKey, data: Option[JValue], timeout: Option[Duration])(
-      implicit asyncContext: ExecutionContext): Future[JobQueryTFMonad] = {
+      apiKey: APIKey,
+      data: Option[JValue],
+      timeout: Option[Duration]
+  )(implicit asyncContext: ExecutionContext): Future[JobQueryTFMonad] = {
     val start = System.currentTimeMillis
     val futureJob = jobManager
-      .createJob(apiKey,
-                 "Quirrel Query",
-                 "bifrost-query",
-                 data,
-                 Some(yggConfig.clock.now()))
+      .createJob(
+        apiKey,
+        "Quirrel Query",
+        "bifrost-query",
+        data,
+        Some(yggConfig.clock.now())
+      )
       .onComplete { _ =>
         logger.debug(
-            "Job created in %d ms".format(System.currentTimeMillis - start))
+          "Job created in %d ms".format(System.currentTimeMillis - start)
+        )
       }
     for {
       job <- futureJob map { job =>
-        Some(job)
-      } recover { case _ => None }
+              Some(job)
+            } recover { case _ => None }
       queryStateManager = job map { job =>
-        val mgr = JobQueryStateManager(job.id,
-                                       yggConfig.clock.now() plus timeout
-                                         .getOrElse(defaultTimeout)
-                                         .toMillis)
+        val mgr = JobQueryStateManager(
+          job.id,
+          yggConfig.clock.now() plus timeout
+            .getOrElse(defaultTimeout)
+            .toMillis
+        )
         mgr.start()
         mgr
-      } getOrElse FakeJobQueryStateManager(yggConfig.clock.now() plus timeout
-            .getOrElse(defaultTimeout)
-            .toMillis)
+      } getOrElse FakeJobQueryStateManager(
+        yggConfig.clock.now() plus timeout
+          .getOrElse(defaultTimeout)
+          .toMillis
+      )
     } yield {
       new JobQueryTFMonad {
-        val jobId = job map (_.id)
+        val jobId                 = job map (_.id)
         val Q: JobQueryStateMonad = queryStateManager
-        val M: Monad[Future] = new blueeyes.bkka.FutureMonad(asyncContext)
+        val M: Monad[Future]      = new blueeyes.bkka.FutureMonad(asyncContext)
       }
     }
   }
@@ -167,12 +176,13 @@ trait ManagedQueryModule extends YggConfigComponent with Logging {
       f.run recover {
         case ex =>
           M.jobId map { jobId =>
-            jobManager.addMessage(jobId,
-                                  JobManager.channels.ServerError,
-                                  JString("Internal server error."))
-            jobManager.abort(jobId,
-                             "Internal server error.",
-                             yggConfig.clock.now())
+            jobManager.addMessage(
+              jobId,
+              JobManager.channels.ServerError,
+              JString("Internal server error.")
+            )
+            jobManager
+              .abort(jobId, "Internal server error.", yggConfig.clock.now())
           }
           throw ex
       } map {
@@ -180,9 +190,10 @@ trait ManagedQueryModule extends YggConfigComponent with Logging {
           value
         case Cancelled =>
           M.jobId map
-          (jobManager.abort(_, "Query was cancelled.", yggConfig.clock.now()))
+            (jobManager.abort(_, "Query was cancelled.", yggConfig.clock.now()))
           throw QueryCancelledException(
-              "Query was cancelled before it was completed.")
+            "Query was cancelled before it was completed."
+          )
         case Expired =>
           M.jobId map (jobManager.expire(_, yggConfig.clock.now()))
           throw QueryExpiredException("Query expired before it was completed.")
@@ -198,13 +209,14 @@ trait ManagedQueryModule extends YggConfigComponent with Logging {
     * This also turns the result stream into a simple StreamT[Future, A], as
     * this method is essentially the sink for managed queries.
     */
-  def completeJob[N[+ _], A](result: StreamT[JobQueryTF, A])(
-      implicit M: JobQueryTFMonad, t: JobQueryTF ~> N): StreamT[N, A] = {
-    val finish: StreamT[JobQueryTF, A] = StreamT[JobQueryTF, A](
-        M.point(StreamT.Skip {
-      M.jobId map (jobManager.finish(_, yggConfig.clock.now()))
-      StreamT.empty[JobQueryTF, A]
-    }))
+  def completeJob[N[+_], A](
+      result: StreamT[JobQueryTF, A]
+  )(implicit M: JobQueryTFMonad, t: JobQueryTF ~> N): StreamT[N, A] = {
+    val finish: StreamT[JobQueryTF, A] =
+      StreamT[JobQueryTF, A](M.point(StreamT.Skip {
+        M.jobId map (jobManager.finish(_, yggConfig.clock.now()))
+        StreamT.empty[JobQueryTF, A]
+      }))
 
     implicitly[Hoist[StreamT]].hoist[JobQueryTF, N](t).apply(result ++ finish)
   }
@@ -213,18 +225,20 @@ trait ManagedQueryModule extends YggConfigComponent with Logging {
   private final case class FakeJobQueryStateManager(expiresAt: DateTime)
       extends JobQueryStateMonad {
     private val cancelled: AtomicBoolean = new AtomicBoolean()
-    def abort(): Boolean = { cancelled.set(true); true }
-    def isCancelled() = cancelled.get()
-    def hasExpired() = yggConfig.clock.now() isAfter expiresAt
+    def abort(): Boolean                 = { cancelled.set(true); true }
+    def isCancelled()                    = cancelled.get()
+    def hasExpired()                     = yggConfig.clock.now() isAfter expiresAt
   }
 
   private final case class JobQueryStateManager(
-      jobId: JobId, expiresAt: DateTime)
-      extends JobQueryStateMonad with Logging {
+      jobId: JobId,
+      expiresAt: DateTime
+  ) extends JobQueryStateMonad
+      with Logging {
     import JobQueryState._
 
     private[this] val cancelled: AtomicBoolean = new AtomicBoolean()
-    private[this] val lock = new AnyRef
+    private[this] val lock                     = new AnyRef
 
     private def poll() = lock.synchronized {
       import JobState._
@@ -239,10 +253,13 @@ trait ManagedQueryModule extends YggConfigComponent with Logging {
         } else {
           logger.trace("Non-Terminal state for " + jobId)
           // We only update cancelled if we have not yet cancelled.
-          cancelled.compareAndSet(false, job map {
-            case Job(_, _, _, _, _, Cancelled(_, _, _)) => true
-            case _ => false
-          } getOrElse false)
+          cancelled.compareAndSet(
+            false,
+            job map {
+              case Job(_, _, _, _, _, Cancelled(_, _, _)) => true
+              case _                                      => false
+            } getOrElse false
+          )
         }
       }
     }
@@ -264,10 +281,11 @@ trait ManagedQueryModule extends YggConfigComponent with Logging {
     def start(): Unit = lock.synchronized {
       if (poller.isEmpty) {
         poller = Some(
-            jobActorSystem.scheduler.schedule(yggConfig.jobPollFrequency,
-                                              yggConfig.jobPollFrequency) {
-          poll()
-        })
+          jobActorSystem.scheduler
+            .schedule(yggConfig.jobPollFrequency, yggConfig.jobPollFrequency) {
+              poll()
+            }
+        )
       }
     }
 

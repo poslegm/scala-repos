@@ -17,7 +17,16 @@ limitations under the License.
 package com.twitter.summingbird.batch
 
 import com.twitter.algebird.Monoid
-import com.twitter.algebird.{Empty, Interval, Intersection, InclusiveLower, ExclusiveUpper, InclusiveUpper, ExclusiveLower, Universe}
+import com.twitter.algebird.{
+  Empty,
+  Interval,
+  Intersection,
+  InclusiveLower,
+  ExclusiveUpper,
+  InclusiveUpper,
+  ExclusiveLower,
+  Universe
+}
 import com.twitter.bijection.{Bijection, Injection}
 import scala.collection.Iterator.iterate
 
@@ -55,29 +64,31 @@ object BatchID {
     * Returns true if the supplied interval of BatchID can
     */
   def toInterval(iter: TraversableOnce[BatchID]): Option[Interval[BatchID]] =
-    iter.map { b =>
-      (b, b, 1L)
-    }.reduceOption { (left, right) =>
-      val (lmin, lmax, lcnt) = left
-      val (rmin, rmax, rcnt) = right
-      (lmin min rmin, lmax max rmax, lcnt + rcnt)
-    }.flatMap {
-      case (min, max, cnt) =>
-        if ((min + cnt) == (max + 1L)) {
-          Some(Interval.leftClosedRightOpen(min, max.next).right.get)
-        } else {
-          // These batches are not contiguous, not an interval
-          None
-        }
-    }.orElse(Some(Empty[BatchID]())) // there was nothing it iter
+    iter
+      .map { b => (b, b, 1L) }
+      .reduceOption { (left, right) =>
+        val (lmin, lmax, lcnt) = left
+        val (rmin, rmax, rcnt) = right
+        (lmin min rmin, lmax max rmax, lcnt + rcnt)
+      }
+      .flatMap {
+        case (min, max, cnt) =>
+          if ((min + cnt) == (max + 1L)) {
+            Some(Interval.leftClosedRightOpen(min, max.next).right.get)
+          } else {
+            // These batches are not contiguous, not an interval
+            None
+          }
+      }
+      .orElse(Some(Empty[BatchID]())) // there was nothing it iter
 
   /**
     * Returns all the BatchIDs that are contained in the interval
     */
   def toIterable(interval: Interval[BatchID]): Iterable[BatchID] =
     interval match {
-      case Empty() => Iterable.empty
-      case Universe() => range(Min, Max)
+      case Empty()               => Iterable.empty
+      case Universe()            => range(Min, Max)
       case ExclusiveUpper(upper) => range(Min, upper.prev)
       case InclusiveUpper(upper) => range(Min, upper)
       case ExclusiveLower(lower) => range(lower.next, Max)
@@ -98,7 +109,7 @@ object BatchID {
   val Min = BatchID(Long.MinValue)
 
   implicit val monoid: Monoid[BatchID] = new Monoid[BatchID] {
-    override val zero = BatchID(Long.MinValue)
+    override val zero                         = BatchID(Long.MinValue)
     override def plus(l: BatchID, r: BatchID) = if (l >= r) l else r
   }
 
@@ -118,9 +129,9 @@ case class BatchID(id: Long) extends AnyVal {
   import OrderedFromOrderingExt._
   def next: BatchID = new BatchID(id + 1)
   def prev: BatchID = new BatchID(id - 1)
-  def +(cnt: Long) = new BatchID(id + cnt)
+  def +(cnt: Long)  = new BatchID(id + cnt)
 
-  def -(cnt: Long) = new BatchID(id - cnt)
+  def -(cnt: Long)    = new BatchID(id - cnt)
   def max(b: BatchID) = if (this >= b) this else b
   def min(b: BatchID) = if (this < b) this else b
 

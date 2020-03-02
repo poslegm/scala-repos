@@ -61,16 +61,19 @@ trait BaseForeignKey extends BaseMappedField {
 
 object MappedForeignKey {
   implicit def getObj[KeyType, MyOwner <: Mapper[MyOwner], Other <: KeyedMapper[
-          KeyType, Other]](
-      in: MappedForeignKey[KeyType, MyOwner, Other]): Box[Other] = in.obj
+    KeyType,
+    Other
+  ]](in: MappedForeignKey[KeyType, MyOwner, Other]): Box[Other] = in.obj
 }
 
 /**
   * The Trait that defines a field that is mapped to a foreign key
   */
-trait MappedForeignKey[
-    KeyType, MyOwner <: Mapper[MyOwner], Other <: KeyedMapper[KeyType, Other]]
-    extends MappedField[KeyType, MyOwner] with LifecycleCallbacks {
+trait MappedForeignKey[KeyType, MyOwner <: Mapper[MyOwner], Other <: KeyedMapper[
+  KeyType,
+  Other
+]] extends MappedField[KeyType, MyOwner]
+    with LifecycleCallbacks {
   type FieldType <: KeyType
   // type ForeignType <: KeyedMapper[KeyType, Other]
 
@@ -100,12 +103,15 @@ trait MappedForeignKey[
 
   override def _toForm: Box[Elem] =
     Full(
-        validSelectValues.flatMap {
-      case Nil => Empty
+      validSelectValues
+        .flatMap {
+          case Nil => Empty
 
-      case xs =>
-        Full(SHtml.selectObj(xs, Full(this.get), this.set))
-    }.openOr(<span>{immutableMsg}</span>))
+          case xs =>
+            Full(SHtml.selectObj(xs, Full(this.get), this.set))
+        }
+        .openOr(<span>{immutableMsg}</span>)
+    )
 
   /**
     * Is the key defined
@@ -122,9 +128,9 @@ trait MappedForeignKey[
     // invalidate if the primary key has changed Issue 370
     if (_obj.isEmpty ||
         (_calcedObj && _obj.isDefined && _obj
-              .openOrThrowException("_obj was just checked as full.")
-              .primaryKeyField
-              .get != this.i_is_!)) {
+          .openOrThrowException("_obj was just checked as full.")
+          .primaryKeyField
+          .get != this.i_is_!)) {
       _obj = Empty
       _calcedObj = false
     }
@@ -160,7 +166,7 @@ trait MappedForeignKey[
   }
 
   private var _obj: Box[Other] = Empty
-  private var _calcedObj = false
+  private var _calcedObj       = false
 
   /**
     * Set the value from a possible instance of the foreign mapper class.
@@ -205,8 +211,10 @@ trait MappedForeignKey[
 }
 
 abstract class MappedLongForeignKey[T <: Mapper[T], O <: KeyedMapper[Long, O]](
-    theOwner: T, _foreignMeta: => KeyedMetaMapper[Long, O])
-    extends MappedLong[T](theOwner) with MappedForeignKey[Long, T, O]
+    theOwner: T,
+    _foreignMeta: => KeyedMetaMapper[Long, O]
+) extends MappedLong[T](theOwner)
+    with MappedForeignKey[Long, T, O]
     with BaseForeignKey {
   def defined_? = i_is_! > 0L
 
@@ -214,9 +222,9 @@ abstract class MappedLongForeignKey[T <: Mapper[T], O <: KeyedMapper[Long, O]](
 
   def box: Box[Long] = if (defined_?) Full(get) else Empty
 
-  type KeyType = Long
+  type KeyType          = Long
   type KeyedForeignType = O
-  type OwnerType = T
+  type OwnerType        = T
 
   override def jdbcFriendly(field: String) =
     if (defined_?) new java.lang.Long(i_is_!) else null
@@ -241,9 +249,9 @@ abstract class MappedLongForeignKey[T <: Mapper[T], O <: KeyedMapper[Long, O]](
 
   override def setFromAny(in: Any): Long =
     in match {
-      case JsonAST.JNull => this.set(0L)
+      case JsonAST.JNull        => this.set(0L)
       case JsonAST.JInt(bigint) => this.set(bigint.longValue)
-      case o => super.setFromAny(o)
+      case o                    => super.setFromAny(o)
     }
 
   /**
@@ -265,29 +273,31 @@ abstract class MappedLongForeignKey[T <: Mapper[T], O <: KeyedMapper[Long, O]](
   /**
     * Given the driver type, return the string required to create the column in the database
     */
-  override def fieldCreatorString(
-      dbType: DriverType, colName: String): String =
+  override def fieldCreatorString(dbType: DriverType, colName: String): String =
     colName + " " + dbType.longForeignKeyColumnType + notNullAppender()
 }
 
-abstract class MappedStringForeignKey[
-    T <: Mapper[T], O <: KeyedMapper[String, O]](
+abstract class MappedStringForeignKey[T <: Mapper[T], O <: KeyedMapper[
+  String,
+  O
+]](
     override val fieldOwner: T,
     foreign: => KeyedMetaMapper[String, O],
-    override val maxLen: Int)
-    extends MappedString[T](fieldOwner, maxLen)
-    with MappedForeignKey[String, T, O] with BaseForeignKey {
+    override val maxLen: Int
+) extends MappedString[T](fieldOwner, maxLen)
+    with MappedForeignKey[String, T, O]
+    with BaseForeignKey {
   def defined_? = i_is_! ne null
 
-  type KeyType = String
+  type KeyType          = String
   type KeyedForeignType = O
-  type OwnerType = T
+  type OwnerType        = T
 
   override def jdbcFriendly(field: String) = i_is_!
-  override def jdbcFriendly = i_is_!
+  override def jdbcFriendly                = i_is_!
 
   def dbKeyToTable: KeyedMetaMapper[String, O] = foreign
-  def dbKeyToColumn = dbKeyToTable.primaryKeyField
+  def dbKeyToColumn                            = dbKeyToTable.primaryKeyField
 
   override def dbIndexed_? = true
 
@@ -307,7 +317,7 @@ abstract class MappedStringForeignKey[
   def set(v: Box[O]): T = {
     val toSet: String = v match {
       case Full(i) => i.primaryKeyField.get
-      case _ => null
+      case _       => null
     }
 
     this(toSet)

@@ -11,8 +11,8 @@ import akka.util.HashCode
 
 object ORSet {
   private val _empty: ORSet[Any] = new ORSet(Map.empty, VersionVector.empty)
-  def empty[A]: ORSet[A] = _empty.asInstanceOf[ORSet[A]]
-  def apply(): ORSet[Any] = _empty
+  def empty[A]: ORSet[A]         = _empty.asInstanceOf[ORSet[A]]
+  def apply(): ORSet[Any]        = _empty
 
   /**
     * Java API
@@ -29,7 +29,7 @@ object ORSet {
     */
   def unapply(a: ReplicatedData): Option[Set[Any]] = a match {
     case s: ORSet[Any] @unchecked ⇒ Some(s.elements)
-    case _ ⇒ None
+    case _                        ⇒ None
   }
 
   /**
@@ -51,7 +51,8 @@ object ORSet {
     @tailrec
     def dropDots(
         remaining: List[(UniqueAddress, Long)],
-        acc: List[(UniqueAddress, Long)]): List[(UniqueAddress, Long)] =
+        acc: List[(UniqueAddress, Long)]
+    ): List[(UniqueAddress, Long)] =
       remaining match {
         case Nil ⇒ acc
         case (d @ (node, v1)) :: rest ⇒
@@ -72,7 +73,7 @@ object ORSet {
 
         case ManyVersionVector(vs) ⇒
           val remaining = vs.toList
-          val newDots = dropDots(remaining, Nil)
+          val newDots   = dropDots(remaining, Nil)
           VersionVector(newDots)
       }
     }
@@ -83,12 +84,17 @@ object ORSet {
     * @see [[ORSet#merge]]
     */
   private[akka] def mergeCommonKeys[A](
-      commonKeys: Set[A], lhs: ORSet[A], rhs: ORSet[A]): Map[A, ORSet.Dot] =
+      commonKeys: Set[A],
+      lhs: ORSet[A],
+      rhs: ORSet[A]
+  ): Map[A, ORSet.Dot] =
     mergeCommonKeys(commonKeys.iterator, lhs, rhs)
 
-  private def mergeCommonKeys[A](commonKeys: Iterator[A],
-                                 lhs: ORSet[A],
-                                 rhs: ORSet[A]): Map[A, ORSet.Dot] = {
+  private def mergeCommonKeys[A](
+      commonKeys: Iterator[A],
+      lhs: ORSet[A],
+      rhs: ORSet[A]
+  ): Map[A, ORSet.Dot] = {
     commonKeys.foldLeft(Map.empty[A, ORSet.Dot]) {
       case (acc, k) ⇒
         val lhsDots = lhs.elementsMap(k)
@@ -102,7 +108,7 @@ object ORSet {
               // no common, lhsUniqueDots == lhsDots, rhsUniqueDots == rhsDots
               val lhsKeep = ORSet.subtractDots(lhsDots, rhs.vvector)
               val rhsKeep = ORSet.subtractDots(rhsDots, lhs.vvector)
-              val merged = lhsKeep.merge(rhsKeep)
+              val merged  = lhsKeep.merge(rhsKeep)
               // Perfectly possible that an item in both sets should be dropped
               if (merged.isEmpty) acc
               else acc.updated(k, merged)
@@ -112,8 +118,8 @@ object ORSet {
               case (thisDotNode, v) ⇒ rhsVs.get(thisDotNode).exists(_ == v)
             }
             val commonDotsKeys = commonDots.keys
-            val lhsUniqueDots = lhsVs -- commonDotsKeys
-            val rhsUniqueDots = rhsVs -- commonDotsKeys
+            val lhsUniqueDots  = lhsVs -- commonDotsKeys
+            val rhsUniqueDots  = rhsVs -- commonDotsKeys
             val lhsKeep =
               ORSet.subtractDots(VersionVector(lhsUniqueDots), rhs.vvector)
             val rhsKeep =
@@ -128,7 +134,7 @@ object ORSet {
               case (n1, v1) ⇒ v1 == v2 && n1 == n2
             }
             val commonDotsKeys = commonDots.keys
-            val lhsUniqueDots = lhsVs -- commonDotsKeys
+            val lhsUniqueDots  = lhsVs -- commonDotsKeys
             val rhsUnique =
               if (commonDotsKeys.isEmpty) rhsDots else VersionVector.empty
             val lhsKeep =
@@ -147,7 +153,7 @@ object ORSet {
             val lhsUnique =
               if (commonDotsKeys.isEmpty) lhsDots else VersionVector.empty
             val rhsUniqueDots = rhsVs -- commonDotsKeys
-            val lhsKeep = ORSet.subtractDots(lhsUnique, rhs.vvector)
+            val lhsKeep       = ORSet.subtractDots(lhsUnique, rhs.vvector)
             val rhsKeep =
               ORSet.subtractDots(VersionVector(rhsUniqueDots), lhs.vvector)
             val merged =
@@ -167,14 +173,16 @@ object ORSet {
       keys: Set[A],
       elementsMap: Map[A, ORSet.Dot],
       vvector: VersionVector,
-      accumulator: Map[A, ORSet.Dot]): Map[A, ORSet.Dot] =
+      accumulator: Map[A, ORSet.Dot]
+  ): Map[A, ORSet.Dot] =
     mergeDisjointKeys(keys.iterator, elementsMap, vvector, accumulator)
 
   private def mergeDisjointKeys[A](
       keys: Iterator[A],
       elementsMap: Map[A, ORSet.Dot],
       vvector: VersionVector,
-      accumulator: Map[A, ORSet.Dot]): Map[A, ORSet.Dot] = {
+      accumulator: Map[A, ORSet.Dot]
+  ): Map[A, ORSet.Dot] = {
     keys.foldLeft(accumulator) {
       case (acc, k) ⇒
         val dots = elementsMap(k)
@@ -218,11 +226,13 @@ object ORSet {
   * This class is immutable, i.e. "modifying" methods return a new instance.
   */
 @SerialVersionUID(1L)
-final class ORSet[A] private[akka](
+final class ORSet[A] private[akka] (
     private[akka] val elementsMap: Map[A, ORSet.Dot],
-    private[akka] val vvector: VersionVector)
-    extends ReplicatedData with ReplicatedDataSerialization
-    with RemovedNodePruning with FastMerge {
+    private[akka] val vvector: VersionVector
+) extends ReplicatedData
+    with ReplicatedDataSerialization
+    with RemovedNodePruning
+    with FastMerge {
 
   type T = ORSet[A]
 
@@ -261,10 +271,13 @@ final class ORSet[A] private[akka](
     */
   private[akka] def add(node: UniqueAddress, element: A): ORSet[A] = {
     val newVvector = vvector + node
-    val newDot = VersionVector(node, newVvector.versionAt(node))
+    val newDot     = VersionVector(node, newVvector.versionAt(node))
     assignAncestor(
-        new ORSet(elementsMap = elementsMap.updated(element, newDot),
-                  vvector = newVvector))
+      new ORSet(
+        elementsMap = elementsMap.updated(element, newDot),
+        vvector = newVvector
+      )
+    )
   }
 
   /**
@@ -322,11 +335,19 @@ final class ORSet[A] private[akka](
       val thisUniqueKeys =
         this.elementsMap.keysIterator.filterNot(that.elementsMap.contains)
       val entries0 = ORSet.mergeDisjointKeys(
-          thisUniqueKeys, this.elementsMap, that.vvector, entries00)
+        thisUniqueKeys,
+        this.elementsMap,
+        that.vvector,
+        entries00
+      )
       val thatUniqueKeys =
         that.elementsMap.keysIterator.filterNot(this.elementsMap.contains)
       val entries = ORSet.mergeDisjointKeys(
-          thatUniqueKeys, that.elementsMap, this.vvector, entries0)
+        thatUniqueKeys,
+        that.elementsMap,
+        this.vvector,
+        entries0
+      )
       val mergedVvector = this.vvector.merge(that.vvector)
 
       clearAncestor()
@@ -338,7 +359,9 @@ final class ORSet[A] private[akka](
     vvector.needPruningFrom(removedNode)
 
   override def prune(
-      removedNode: UniqueAddress, collapseInto: UniqueAddress): ORSet[A] = {
+      removedNode: UniqueAddress,
+      collapseInto: UniqueAddress
+  ): ORSet[A] = {
     val pruned = elementsMap.foldLeft(Map.empty[A, ORSet.Dot]) {
       case (acc, (elem, dot)) ⇒
         if (dot.needPruningFrom(removedNode))
@@ -350,8 +373,9 @@ final class ORSet[A] private[akka](
     else {
       // re-add elements that were pruned, to bump dots to right vvector
       val newSet = new ORSet(
-          elementsMap = elementsMap ++ pruned,
-          vvector = vvector.prune(removedNode, collapseInto))
+        elementsMap = elementsMap ++ pruned,
+        vvector = vvector.prune(removedNode, collapseInto)
+      )
       pruned.keys.foldLeft(newSet) {
         case (s, elem) ⇒ s.add(collapseInto, elem)
       }
@@ -368,8 +392,10 @@ final class ORSet[A] private[akka](
     new ORSet(updated, vvector.pruningCleanup(removedNode))
   }
 
-  private def copy(elementsMap: Map[A, ORSet.Dot] = this.elementsMap,
-                   vvector: VersionVector = this.vvector): ORSet[A] =
+  private def copy(
+      elementsMap: Map[A, ORSet.Dot] = this.elementsMap,
+      vvector: VersionVector = this.vvector
+  ): ORSet[A] =
     new ORSet(elementsMap, vvector)
 
   // this class cannot be a `case class` because we need different `unapply`
@@ -396,4 +422,5 @@ object ORSetKey {
 
 @SerialVersionUID(1L)
 final case class ORSetKey[A](_id: String)
-    extends Key[ORSet[A]](_id) with ReplicatedDataSerialization
+    extends Key[ORSet[A]](_id)
+    with ReplicatedDataSerialization

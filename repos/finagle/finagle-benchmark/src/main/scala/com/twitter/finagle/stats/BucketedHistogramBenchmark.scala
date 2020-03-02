@@ -28,7 +28,7 @@ class BucketedHistogramBenchmark extends StdBenchAnnotations {
 
 object BucketedHistogramBenchmark {
 
-  final val N = 10000
+  final val N           = 10000
   final val percentiles = Array[Double](0.5, 0.9, 0.95, 0.99, 0.999, 0.9999)
 
   @State(Scope.Benchmark)

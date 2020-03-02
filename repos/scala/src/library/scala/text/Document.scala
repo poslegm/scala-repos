@@ -32,10 +32,10 @@ case class DocCons(hd: Document, tl: Document) extends Document
   */
 @deprecated("This class will be removed.", "2.11.0")
 abstract class Document {
-  def ::(hd: Document): Document = DocCons(hd, this)
-  def ::(hd: String): Document = DocCons(DocText(hd), this)
+  def ::(hd: Document): Document  = DocCons(hd, this)
+  def ::(hd: String): Document    = DocCons(DocText(hd), this)
   def :/:(hd: Document): Document = hd :: DocBreak :: this
-  def :/:(hd: String): Document = hd :: DocBreak :: this
+  def :/:(hd: String): Document   = hd :: DocBreak :: this
 
   /**
     * Format this document on `writer` and try to set line

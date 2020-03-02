@@ -9,7 +9,8 @@ import breeze.linalg.support.CanCopy
   * A diff function that supports subsets of the data. By default it evaluates on all the data
   */
 trait BatchDiffFunction[T]
-    extends DiffFunction[T] with ((T, IndexedSeq[Int]) => Double) { outer =>
+    extends DiffFunction[T]
+    with ((T, IndexedSeq[Int]) => Double) { outer =>
 
   /**
     * Calculates the gradient of the function on a subset of the data
@@ -27,8 +28,8 @@ trait BatchDiffFunction[T]
   def calculate(x: T, batch: IndexedSeq[Int]): (Double, T)
 
   override def calculate(x: T): (Double, T) = calculate(x, fullRange)
-  override def valueAt(x: T): Double = valueAt(x, fullRange)
-  override def gradientAt(x: T): T = gradientAt(x, fullRange)
+  override def valueAt(x: T): Double        = valueAt(x, fullRange)
+  override def gradientAt(x: T): T          = gradientAt(x, fullRange)
 
   def apply(x: T, batch: IndexedSeq[Int]) = valueAt(x, batch)
 
@@ -47,7 +48,7 @@ trait BatchDiffFunction[T]
 
   def withRandomBatches(size: Int): StochasticDiffFunction[T] =
     new StochasticDiffFunction[T] {
-      val rand = Rand.subsetsOfSize(fullRange, size)
+      val rand            = Rand.subsetsOfSize(fullRange, size)
       def calculate(x: T) = outer.calculate(x, rand.get)
     }
 
@@ -67,9 +68,10 @@ trait BatchDiffFunction[T]
   def groupItems(groupSize: Int): BatchDiffFunction[T] =
     new BatchDiffFunction[T] {
       val numGroups = (outer.fullRange.size + groupSize - 1) / groupSize
-      val groups: Array[immutable.IndexedSeq[Int]] = Array.tabulate(numGroups)(
-          i =>
-            (i until outer.fullRange.length by numGroups).map(outer.fullRange))
+      val groups: Array[immutable.IndexedSeq[Int]] =
+        Array.tabulate(numGroups)(i =>
+          (i until outer.fullRange.length by numGroups).map(outer.fullRange)
+        )
 
       /**
         * Calculates the value and gradient of the function on a subset of the data
@@ -90,14 +92,15 @@ trait BatchDiffFunction[T]
     }
 
   override def throughLens[U](
-      implicit l: Isomorphism[T, U]): BatchDiffFunction[U] =
+      implicit l: Isomorphism[T, U]
+  ): BatchDiffFunction[U] =
     new BatchDiffFunction[U] {
 
       /**
         * Calculates the value and gradient of the function on a subset of the data
         */
       override def calculate(u: U, batch: IndexedSeq[Int]): (Double, U) = {
-        val t = l.backward(u)
+        val t         = l.backward(u)
         val (obj, gu) = outer.calculate(t, batch)
         (obj, l.forward(gu))
       }
@@ -108,7 +111,7 @@ trait BatchDiffFunction[T]
       override def fullRange: IndexedSeq[Int] = outer.fullRange
 
       override def calculate(u: U) = {
-        val t = l.backward(u)
+        val t         = l.backward(u)
         val (obj, gu) = outer.calculate(t)
         (obj, l.forward(gu))
       }

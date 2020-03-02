@@ -9,7 +9,7 @@ class FunctionCountPriorityTest extends ResolveTestBase {
   }
 
   def testEmptyToAll() = doTest()
-  def testNoneToAll() = doTest()
-  def testOneToAll() = doTest()
-  def testTwoToAll() = doTest()
+  def testNoneToAll()  = doTest()
+  def testOneToAll()   = doTest()
+  def testTwoToAll()   = doTest()
 }

@@ -41,7 +41,7 @@ class PatternSpec extends AkkaSpec("akka.actor.serialize-messages = off") {
 
     "complete Future with AskTimeoutException when actor not terminated within timeout" in {
       val target = system.actorOf(Props[TargetActor])
-      val latch = TestLatch()
+      val latch  = TestLatch()
       target ! ((latch, remainingOrDefault))
       intercept[AskTimeoutException] {
         Await.result(gracefulStop(target, 500 millis), remainingOrDefault)
@@ -54,7 +54,8 @@ class PatternSpec extends AkkaSpec("akka.actor.serialize-messages = off") {
     "be completed successfully eventually" in {
       // TODO after is unfortunately shadowed by ScalaTest, fix as part of #3759
       val f = akka.pattern.after(1 second, using = system.scheduler)(
-          Promise.successful(5).future)
+        Promise.successful(5).future
+      )
 
       val r = Future.firstCompletedOf(Seq(Promise[Int]().future, f))
       Await.result(r, remainingOrDefault) should ===(5)
@@ -63,11 +64,13 @@ class PatternSpec extends AkkaSpec("akka.actor.serialize-messages = off") {
     "be completed abnormally eventually" in {
       // TODO after is unfortunately shadowed by ScalaTest, fix as part of #3759
       val f = akka.pattern.after(1 second, using = system.scheduler)(
-          Promise.failed(new IllegalStateException("Mexico")).future)
+        Promise.failed(new IllegalStateException("Mexico")).future
+      )
 
       val r = Future.firstCompletedOf(Seq(Promise[Int]().future, f))
       intercept[IllegalStateException] { Await.result(r, remainingOrDefault) }.getMessage should ===(
-          "Mexico")
+        "Mexico"
+      )
     }
   }
 }

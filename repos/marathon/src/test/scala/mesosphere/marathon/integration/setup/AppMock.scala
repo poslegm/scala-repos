@@ -15,8 +15,8 @@ class AppMock(appId: String, version: String, url: String)
   import scala.concurrent.ExecutionContext.Implicits.global
 
   implicit val system = ActorSystem()
-  val pipeline = sendReceive
-  val waitTime = 30.seconds
+  val pipeline        = sendReceive
+  val waitTime        = 30.seconds
 
   val processId = ManagementFactory.getRuntimeMXBean.getName
 
@@ -26,15 +26,18 @@ class AppMock(appId: String, version: String, url: String)
     server.start()
     val taskId = System.getenv().getOrDefault("MESOS_TASK_ID", "<UNKNOWN>")
     println(
-        s"AppMock[$appId $version]: $taskId has taken the stage at port $port. Will query $url for health status.")
+      s"AppMock[$appId $version]: $taskId has taken the stage at port $port. Will query $url for health status."
+    )
     server.join()
     println(s"AppMock[$appId $version]: says goodbye")
   }
 
-  override def handle(target: String,
-                      baseRequest: Request,
-                      request: HttpServletRequest,
-                      response: HttpServletResponse): Unit = {
+  override def handle(
+      target: String,
+      baseRequest: Request,
+      request: HttpServletRequest,
+      response: HttpServletResponse
+  ): Unit = {
 
     if (request.getMethod == "GET" && request.getPathInfo == "/ping") {
       response.setStatus(200)
@@ -54,10 +57,10 @@ class AppMock(appId: String, version: String, url: String)
 
 object AppMock {
   def main(args: Array[String]) {
-    val port = sys.env("PORT0").toInt
-    val appId = args(0)
+    val port    = sys.env("PORT0").toInt
+    val appId   = args(0)
     val version = args(1)
-    val url = args(2) + "/" + port
+    val url     = args(2) + "/" + port
     new AppMock(appId, version, url).start(port)
   }
 }

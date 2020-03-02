@@ -14,8 +14,10 @@ import java.util.logging.Logger
   * Note that a Cluster can be elastic: members can join or leave at
   * any time.
   */
-@deprecated("Use `com.twitter.finagle.Name` to represent clusters instead",
-            "2014-11-21")
+@deprecated(
+  "Use `com.twitter.finagle.Name` to represent clusters instead",
+  "2014-11-21"
+)
 trait Cluster[T] { self =>
 
   /**
@@ -26,12 +28,12 @@ trait Cluster[T] { self =>
   def ready: Future[Unit] = {
     def flatten(spool: Spool[Cluster.Change[T]]): Future[Unit] = spool match {
       case Cluster.Add(_) *:: tail => Future.Done
-      case _ *:: tail => tail.flatMap(flatten)
+      case _ *:: tail              => tail.flatMap(flatten)
     }
 
     snap match {
       case (current, changes) if current.isEmpty => changes.flatMap(flatten)
-      case _ => Future.Done
+      case _                                     => Future.Done
     }
   }
 
@@ -82,7 +84,8 @@ trait Cluster[T] { self =>
                       Logger
                         .getLogger("")
                         .warning(
-                            "cluster does not have removed key, regenerating")
+                          "cluster does not have removed key, regenerating"
+                        )
                       Cluster.Rem(f(t))
                   }
               }
@@ -103,8 +106,10 @@ object Cluster {
 /**
   * A simple static cluster implementation.
   */
-@deprecated("Use `com.twitter.finagle.Name` to represent clusters instead",
-            "2014-11-21")
+@deprecated(
+  "Use `com.twitter.finagle.Name` to represent clusters instead",
+  "2014-11-21"
+)
 case class StaticCluster[T](underlying: Seq[T]) extends Cluster[T] {
   def snap: (Seq[T], Future[Spool[Cluster.Change[T]]]) =
     (underlying, Future.value(Spool.empty))

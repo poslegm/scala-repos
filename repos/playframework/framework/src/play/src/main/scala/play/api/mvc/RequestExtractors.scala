@@ -16,7 +16,8 @@ trait RequestExtractors extends AcceptExtractors {
     */
   object & {
     def unapply(
-        request: RequestHeader): Option[(RequestHeader, RequestHeader)] =
+        request: RequestHeader
+    ): Option[(RequestHeader, RequestHeader)] =
       Some((request, request))
   }
 }
@@ -38,9 +39,9 @@ trait AcceptExtractors {
     */
   object Accepts {
     import play.api.http.MimeTypes
-    val Json = Accepting(MimeTypes.JSON)
-    val Html = Accepting(MimeTypes.HTML)
-    val Xml = Accepting(MimeTypes.XML)
+    val Json       = Accepting(MimeTypes.JSON)
+    val Html       = Accepting(MimeTypes.HTML)
+    val Xml        = Accepting(MimeTypes.XML)
     val JavaScript = Accepting(MimeTypes.JAVASCRIPT)
   }
 }

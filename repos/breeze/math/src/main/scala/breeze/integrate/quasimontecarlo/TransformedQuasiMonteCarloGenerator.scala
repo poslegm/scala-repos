@@ -18,10 +18,11 @@ package breeze.integrate.quasimontecarlo
 
 trait ProvidesTransformedQuasiMonteCarlo {
 
-  def quasiMonteCarloIntegrate(f: Array[Double] => Double)(
-      variables: QuasiRandomVariableSpec*)(numSamples: Long) = {
-    val generator = new TransformedQuasiMonteCarloGenerator(variables: _*)
-    var i: Long = 0
+  def quasiMonteCarloIntegrate(
+      f: Array[Double] => Double
+  )(variables: QuasiRandomVariableSpec*)(numSamples: Long) = {
+    val generator    = new TransformedQuasiMonteCarloGenerator(variables: _*)
+    var i: Long      = 0
     var fSum: Double = 0
     while (i < numSamples) {
       fSum += f(generator.getNextUnsafe)
@@ -55,8 +56,8 @@ trait ProvidesTransformedQuasiMonteCarlo {
   }
 
   implicit class DistributionRandomVariableSpec(
-      icdfProvider: breeze.stats.distributions.HasInverseCdf)
-      extends TransformingQuasiRandomVariableSpec {
+      icdfProvider: breeze.stats.distributions.HasInverseCdf
+  ) extends TransformingQuasiRandomVariableSpec {
     val numInputs = 1
     def transform(x: Array[Double], position: Int): Double =
       icdfProvider.inverseCdf(x(position))
@@ -80,8 +81,7 @@ trait ProvidesTransformedQuasiMonteCarlo {
     }
   }
 
-  case class GammaQuasiRandomVariableSpecAlphaLeq1(
-      alpha: Double, theta: Double)
+  case class GammaQuasiRandomVariableSpecAlphaLeq1(alpha: Double, theta: Double)
       extends RejectionSampledGammaQuasiRandomVariable {
     /*
      * Uses Algorithm 1 from http://home.iitk.ac.in/~kundu/paper120.pdf.
@@ -90,8 +90,8 @@ trait ProvidesTransformedQuasiMonteCarlo {
     require(alpha < 1)
     val numInputs = 2
 
-    private val b = (alpha + math.E) / math.E
-    private val one_over_alpha = 1.0 / alpha
+    private val b                      = (alpha + math.E) / math.E
+    private val one_over_alpha         = 1.0 / alpha
     private val two_to_alpha_minus_one = math.pow(2, alpha - 1)
 
     private var x: Double = 0
@@ -102,7 +102,7 @@ trait ProvidesTransformedQuasiMonteCarlo {
       x = -2 * math.log(1 - math.pow(u, one_over_alpha))
       val exp_minus_x_over_two = math.exp(-0.5 * x)
       v <= (math.pow(x, alpha - 1) * exp_minus_x_over_two) /
-      (two_to_alpha_minus_one * math.pow(1 - exp_minus_x_over_two, alpha - 1))
+        (two_to_alpha_minus_one * math.pow(1 - exp_minus_x_over_two, alpha - 1))
     }
 
     def compute(rvs: Array[Double], position: Int): Double = (theta * x)
@@ -110,8 +110,7 @@ trait ProvidesTransformedQuasiMonteCarlo {
     def copy = GammaQuasiRandomVariableSpecAlphaLeq1(alpha, theta)
   }
 
-  case class GammaQuasiRandomVariableSpecAlphaGeq1(
-      alpha: Double, theta: Double)
+  case class GammaQuasiRandomVariableSpecAlphaGeq1(alpha: Double, theta: Double)
       extends RejectionSampledGammaQuasiRandomVariable {
     /*
      * Uses Algorithm 8 from http://arxiv.org/pdf/1403.5599.pdf
@@ -144,44 +143,44 @@ trait ProvidesTransformedQuasiMonteCarlo {
   }
 
   class TransformedQuasiMonteCarloGenerator(
-      val inVariables: List[QuasiRandomVariableSpec])
-      extends QuasiMonteCarloGenerator {
+      val inVariables: List[QuasiRandomVariableSpec]
+  ) extends QuasiMonteCarloGenerator {
     def this(inVariables: QuasiRandomVariableSpec*) = this(inVariables.toList)
     val variables = inVariables.map(x => x.copy).toArray
 
-    val dimension = variables.size
-    val inputDimension = variables.map(x => x.numInputs).sum
+    val dimension             = variables.size
+    val inputDimension        = variables.map(x => x.numInputs).sum
     private val baseGenerator = new BaseUniformHaltonGenerator(inputDimension)
 
     private val currentValue: Array[Double] = new Array[Double](dimension)
 
     private var generatedCount: Long = 0
-    def numGenerated: Long = generatedCount
+    def numGenerated: Long           = generatedCount
 
-    private var rejectedCount: Array[Long] = new Array[Long](dimension)
-    def numRejections: Long = rejectedCount.sum
+    private var rejectedCount: Array[Long]   = new Array[Long](dimension)
+    def numRejections: Long                  = rejectedCount.sum
     def numRejectionsByVariable: Array[Long] = rejectedCount.clone
 
     def getNextUnsafe = {
       var accepted = false
       while (!accepted) {
         accepted = true
-        val next = baseGenerator.getNextUnsafe
+        val next          = baseGenerator.getNextUnsafe
         var inputPosition = 0
-        var i = 0
-        while ( (i < dimension) && accepted) {
+        var i             = 0
+        while ((i < dimension) && accepted) {
           variables(i) match {
             case (v: TransformingQuasiRandomVariableSpec) => {
-                currentValue(i) = v.transform(next, inputPosition)
-              }
+              currentValue(i) = v.transform(next, inputPosition)
+            }
             case (v: RejectionQuasiRandomVariableSpec) => {
-                if (v.accept(next, inputPosition)) {
-                  currentValue(i) = v.compute(next, inputPosition)
-                } else {
-                  rejectedCount(i) = rejectedCount(i) + 1
-                  accepted = false
-                }
+              if (v.accept(next, inputPosition)) {
+                currentValue(i) = v.compute(next, inputPosition)
+              } else {
+                rejectedCount(i) = rejectedCount(i) + 1
+                accepted = false
               }
+            }
           }
           inputPosition = inputPosition + variables(i).numInputs
           i = i + 1

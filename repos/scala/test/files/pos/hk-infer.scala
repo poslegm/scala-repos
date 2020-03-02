@@ -1,7 +1,7 @@
 object Basis {
   final case class X[T](t: T)
-  val x = Seq(X(32))
-  val y = Seq(X(true))
+  val x  = Seq(X(32))
+  val y  = Seq(X(true))
   val x1 = Seq(X("asdf"))
   val x2 = Seq(X('d'))
 }
@@ -18,7 +18,7 @@ object DoesWork {
 object ShouldWorkHK {
   class Booper[M[_]](xs: Seq[M[_]])
       extends collection.generic.SeqForwarder[M[_]] {
-    def underlying = xs
+    def underlying          = xs
     def BOOP(ys: Seq[M[_]]) = new Booper(xs ++ ys)
   }
   implicit def mkBoop[M[_]](xs: Seq[M[_]]) = new Booper(xs)
@@ -29,7 +29,7 @@ object ShouldWorkHK {
 object DoesWorkHK {
   class Booper[M[_]](xs: Seq[M[_]])
       extends collection.generic.SeqForwarder[M[_]] {
-    def underlying = xs
+    def underlying          = xs
     def BOOP(ys: Seq[M[_]]) = new Booper[M](xs ++ ys)
   }
   implicit def mkBoop[M[_]](xs: Seq[M[_]]) = new Booper[M](xs)

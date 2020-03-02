@@ -36,7 +36,7 @@ class EnsembleVBox extends EnsembleExample {
 
   def getContent = {
     // Checkboxes arranged vertically using VBox
-    val label = Label("Select one or more vehicles:")
+    val label     = Label("Select one or more vehicles:")
     val checkBox1 = new CheckBox { text = "Ford" }
     val checkBox2 = new CheckBox { text = "Hyundai" }
     val checkBox3 = new CheckBox { text = "Toyota" }
@@ -46,11 +46,11 @@ class EnsembleVBox extends EnsembleExample {
       spacing = 10
       alignment = Pos.TopLeft
       children = Seq(
-          label,
-          new VBox {
-            spacing = 5
-            children = List(checkBox1, checkBox2, checkBox3)
-          }
+        label,
+        new VBox {
+          spacing = 5
+          children = List(checkBox1, checkBox2, checkBox3)
+        }
       )
     }
   }

@@ -33,17 +33,19 @@ class WeightedPageRankFromMatrixSpec extends WordSpec with Matchers {
     // 0.5 0.0 0.0 0.0 0.0
     // 0.0 1.0 0.5 0.0 0.0
     // 0.0 0.0 0.5 1.0 0.0
-    val edges = List((0, 4, 1.0),
-                     (1, 0, 0.5),
-                     (2, 0, 0.5),
-                     (3, 1, 1.0),
-                     (3, 2, 0.5),
-                     (4, 2, 0.5),
-                     (4, 3, 1.0))
+    val edges = List(
+      (0, 4, 1.0),
+      (1, 0, 0.5),
+      (2, 0, 0.5),
+      (3, 1, 1.0),
+      (3, 2, 0.5),
+      (4, 2, 0.5),
+      (4, 3, 1.0)
+    )
 
-    val d = 0.4d // damping factor
-    val n = 5 // number of nodes
-    val onesVector = filledColumnVector(1d, n)
+    val d                   = 0.4d // damping factor
+    val n                   = 5 // number of nodes
+    val onesVector          = filledColumnVector(1d, n)
     val iterationZeroVector = filledColumnVector(1d / n, n)
 
     val expectedSolution = Array(0.28, 0.173333, 0.173333, 0.173333, 0.2)
@@ -57,8 +59,7 @@ class WeightedPageRankFromMatrixSpec extends WordSpec with Matchers {
       .arg("rootDir", "root")
       .source(TypedTsv[(Int, Int, Double)]("root/edges"), edges)
       .source(TypedTsv[(Int, Double)]("root/onesVector"), onesVector)
-      .source(TypedTsv[(Int, Double)]("root/iterations/0"),
-              iterationZeroVector)
+      .source(TypedTsv[(Int, Double)]("root/iterations/0"), iterationZeroVector)
       .sink[(Int, Int, Double)](Tsv("root/constants/M_hat")) { outputBuffer =>
         outputBuffer should have size 7
         val outputMap = toSparseMap(outputBuffer)
@@ -73,15 +74,18 @@ class WeightedPageRankFromMatrixSpec extends WordSpec with Matchers {
       .sink[(Int, Double)](Tsv("root/constants/priorVector")) { outputBuffer =>
         outputBuffer should have size 5
         val expectedValue = ((1 - d) / 2) * d
-        assertVectorsEqual(new Array[Double](5).map { v =>
-          expectedValue
-        }, outputBuffer.map(_._2).toArray)
+        assertVectorsEqual(
+          new Array[Double](5).map { v => expectedValue },
+          outputBuffer.map(_._2).toArray
+        )
       }
       .sink[(Int, Double)](Tsv("root/iterations/1")) { outputBuffer =>
         outputBuffer should have size 5
-        assertVectorsEqual(expectedSolution,
-                           outputBuffer.map(_._2).toArray,
-                           0.00001)
+        assertVectorsEqual(
+          expectedSolution,
+          outputBuffer.map(_._2).toArray,
+          0.00001
+        )
       }
       .typedSink(TypedTsv[Double]("root/diff")) { outputBuffer =>
         outputBuffer should have size 1
@@ -97,15 +101,20 @@ class WeightedPageRankFromMatrixSpec extends WordSpec with Matchers {
   }
 
   private def assertVectorsEqual(
-      expected: Array[Double], actual: Array[Double], variance: Double) {
+      expected: Array[Double],
+      actual: Array[Double],
+      variance: Double
+  ) {
     actual.zipWithIndex.foreach {
       case (value, i) =>
-        value shouldBe(expected(i)) +- variance
+        value shouldBe (expected(i)) +- variance
     }
   }
 
   private def assertVectorsEqual(
-      expected: Array[Double], actual: Array[Double]) {
+      expected: Array[Double],
+      actual: Array[Double]
+  ) {
     actual.zipWithIndex.foreach {
       case (value, i) =>
         value shouldBe (expected(i))
@@ -116,16 +125,13 @@ class WeightedPageRankFromMatrixSpec extends WordSpec with Matchers {
 object WeightedPageRankFromMatrixSpec {
 
   def toSparseMap[Row, Col, V](
-      iterable: Iterable[(Row, Col, V)]): Map[(Row, Col), V] =
-    iterable.map { entry =>
-      ((entry._1, entry._2), entry._3)
-    }.toMap
+      iterable: Iterable[(Row, Col, V)]
+  ): Map[(Row, Col), V] =
+    iterable.map { entry => ((entry._1, entry._2), entry._3) }.toMap
 
   def filledColumnVector(value: Double, size: Int): List[(Int, Double)] = {
     val vector = mutable.ListBuffer[(Int, Double)]()
-    (0 until size).foreach { row =>
-      vector += new Tuple2(row, value)
-    }
+    (0 until size).foreach { row => vector += new Tuple2(row, value) }
 
     vector.toList
   }

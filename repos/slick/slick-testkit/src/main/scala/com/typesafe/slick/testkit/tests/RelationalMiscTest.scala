@@ -20,16 +20,16 @@ class RelationalMiscTest extends AsyncTest[RelationalTestDB] {
       _ <- ts ++= Seq(("1", "a"), ("2", "a"), ("3", "b"))
 
       q1 = for (t <- ts if t.a === "1" || t.a === "2") yield t
-      _ <- q1.result.map(r => r.toSet shouldBe Set(("1", "a"), ("2", "a")))
+      _  <- q1.result.map(r => r.toSet shouldBe Set(("1", "a"), ("2", "a")))
 
       q2 = for (t <- ts if (t.a =!= "1") || (t.b =!= "a")) yield t
-      _ <- q2.result.map(r => r.toSet shouldBe Set(("2", "a"), ("3", "b")))
+      _  <- q2.result.map(r => r.toSet shouldBe Set(("2", "a"), ("3", "b")))
 
       // No need to test that the unexpected result is actually unexpected
       // now that the compiler prints a warning about it
 
       q4 = for (t <- ts if t.a =!= "1" || t.b =!= "a") yield t
-      _ <- q4.result.map(r => r.toSet shouldBe Set(("2", "a"), ("3", "b")))
+      _  <- q4.result.map(r => r.toSet shouldBe Set(("2", "a"), ("3", "b")))
     } yield ()
   }
 
@@ -45,15 +45,15 @@ class RelationalMiscTest extends AsyncTest[RelationalTestDB] {
       _ <- t1s ++= Seq("foo", "bar", "foobar", "foo%")
 
       q1 = for { t1 <- t1s if t1.a like "foo" } yield t1.a
-      _ <- q1.result.map(_ shouldBe List("foo"))
+      _  <- q1.result.map(_ shouldBe List("foo"))
 
       q2 = for { t1 <- t1s if t1.a like "foo%" } yield t1.a
-      _ <- q2.to[Set].result.map(_ shouldBe Set("foo", "foobar", "foo%"))
+      _  <- q2.to[Set].result.map(_ shouldBe Set("foo", "foobar", "foo%"))
 
       _ <- ifCap(rcap.likeEscape) {
-        val q3 = for { t1 <- t1s if t1.a.like("foo^%", '^') } yield t1.a
-        q3.result.map(_ shouldBe List("foo%"))
-      }
+            val q3 = for { t1 <- t1s if t1.a.like("foo^%", '^') } yield t1.a
+            q3.result.map(_ shouldBe List("foo%"))
+          }
     } yield ()
   }
 
@@ -69,10 +69,12 @@ class RelationalMiscTest extends AsyncTest[RelationalTestDB] {
     val t1s = TableQuery[T1]
 
     implicit class TupledQueryExtensionMethods[E1, E2, U1, U2, C[_]](
-        q: Query[(E1, E2), (U1, U2), C]) {
+        q: Query[(E1, E2), (U1, U2), C]
+    ) {
       def sortedValues(
           implicit ordered: (E1 => Ordered),
-          shape: Shape[FlatShapeLevel, E2, U2, E2]): Query[E2, U2, C] =
+          shape: Shape[FlatShapeLevel, E2, U2, E2]
+      ): Query[E2, U2, C] =
         q.sortBy(_._1).map(_._2)
     }
 
@@ -101,35 +103,31 @@ class RelationalMiscTest extends AsyncTest[RelationalTestDB] {
       _ <- t1s.schema.create
       _ <- t1s ++= Seq((1, Some(11)), (2, None), (3, Some(33)), (4, None))
 
-      q1 = t1s.map { t1 =>
-        (t1.a, Case.If(t1.a < 3) Then 1 Else 0)
-      }
+      q1 = t1s.map { t1 => (t1.a, Case.If(t1.a < 3) Then 1 Else 0) }
       _ <- q1
-        .to[Set]
-        .result
-        .map(_ shouldBe Set((1, 1), (2, 1), (3, 0), (4, 0)))
+            .to[Set]
+            .result
+            .map(_ shouldBe Set((1, 1), (2, 1), (3, 0), (4, 0)))
 
-      q2 = t1s.map { t1 =>
-        (t1.a, Case.If(t1.a < 3) Then 1)
-      }
+      q2 = t1s.map { t1 => (t1.a, Case.If(t1.a < 3) Then 1) }
       _ <- q2
-        .to[Set]
-        .result
-        .map(_ shouldBe Set((1, Some(1)), (2, Some(1)), (3, None), (4, None)))
+            .to[Set]
+            .result
+            .map(
+              _ shouldBe Set((1, Some(1)), (2, Some(1)), (3, None), (4, None))
+            )
 
       q3 = t1s.map { t1 =>
         (t1.a, Case.If(t1.a < 3) Then 1 If (t1.a < 4) Then 2 Else 0)
       }
       _ <- q3
-        .to[Set]
-        .result
-        .map(_ shouldBe Set((1, 1), (2, 1), (3, 2), (4, 0)))
+            .to[Set]
+            .result
+            .map(_ shouldBe Set((1, 1), (2, 1), (3, 2), (4, 0)))
 
-      q4 = t1s.map { t1 =>
-        Case.If(t1.a < 3) Then t1.b Else t1.a.?
-      }.to[Set]
+      q4 = t1s.map { t1 => Case.If(t1.a < 3) Then t1.b Else t1.a.? }.to[Set]
       _ <- mark("q4", q4.result)
-        .map(_ shouldBe Set(Some(11), None, Some(3), Some(4)))
+            .map(_ shouldBe Set(Some(11), None, Some(3), Some(4)))
     } yield ()
   }
 
@@ -147,9 +145,9 @@ class RelationalMiscTest extends AsyncTest[RelationalTestDB] {
       _ <- t1s ++= Seq(("foo", 1, 2.0), ("bar", 2, 2.0))
 
       q1 = t1s.map(t1 => t1.a ++ t1.b.asColumnOf[String])
-      _ <- q1.to[Set].result.map(_ shouldBe Set("foo1", "bar2"))
+      _  <- q1.to[Set].result.map(_ shouldBe Set("foo1", "bar2"))
       q2 = t1s.map(t1 => t1.c * t1.b.asColumnOf[Double])
-      _ <- q2.to[Set].result.map(_ shouldBe Set(2.0, 4.0))
+      _  <- q2.to[Set].result.map(_ shouldBe Set(2.0, 4.0))
     } yield ()
   }
 
@@ -167,11 +165,11 @@ class RelationalMiscTest extends AsyncTest[RelationalTestDB] {
 
       // GetOrElse in ResultSetMapping on client side
       q1 = for { t <- t1s } yield (t.a, t.b.getOrElse(0))
-      _ <- q1.result.map(r => r.toSet shouldBe Set((1, 10), (2, 0)))
+      _  <- q1.result.map(r => r.toSet shouldBe Set((1, 10), (2, 0)))
 
       // GetOrElse in query on the DB side
       q2 = for { t <- t1s } yield (t.a, t.b.getOrElse(0) + 1)
-      _ <- q2.result.map(r => r.toSet shouldBe Set((1, 11), (2, 1)))
+      _  <- q2.result.map(r => r.toSet shouldBe Set((1, 11), (2, 1)))
     } yield ()
   }
 
@@ -181,7 +179,7 @@ class RelationalMiscTest extends AsyncTest[RelationalTestDB] {
     // Before making `shaped` and `toNode` in `TableQuery` lazy,
     // putting `Tables` before `A` caused a StackOverflowException
     object Tables {
-      val as = TableQuery[A]
+      val as                = TableQuery[A]
       implicit val idMapper = MappedColumnType.base[Id, Int](_.toInt, Id)
     }
     class A(tag: Tag) extends Table[Customer](tag, "INIT_A") {
@@ -195,7 +193,7 @@ class RelationalMiscTest extends AsyncTest[RelationalTestDB] {
     implicit val id2Mapper = null.asInstanceOf[BaseColumnType[Id2]]
     class B(tag: Tag) extends Table[Id2](tag, "INIT_A") {
       def id = column[Id2]("ID", O.PrimaryKey, O.AutoInc)
-      def * = id
+      def *  = id
     }
     val bs = TableQuery[B]
     try {
@@ -205,18 +203,20 @@ class RelationalMiscTest extends AsyncTest[RelationalTestDB] {
     } catch {
       case t: NullPointerException
           if (t.getMessage ne null) &&
-          (t.getMessage contains "initialization order") =>
+            (t.getMessage contains "initialization order") =>
       // This is the expected error message from RelationalTableComponent.Table.column
     }
 
     try {
       MappedColumnType.base[Id, Int](_.toInt, Id)(
-          implicitly, null.asInstanceOf[BaseColumnType[Int]])
+        implicitly,
+        null.asInstanceOf[BaseColumnType[Int]]
+      )
       ???
     } catch {
       case t: NullPointerException
           if (t.getMessage ne null) &&
-          (t.getMessage contains "initialization order") =>
+            (t.getMessage contains "initialization order") =>
       // This is the expected error message from RelationalTypesComponent.MappedColumnTypeFactory.assertNonNullType
     }
 

@@ -32,10 +32,10 @@ object SimpleApp {
       case None => new SparkConf().setAppName("Simple Spark App")
     }
     val logFile = "input.txt"
-    val sc = new SparkContext(conf)
+    val sc      = new SparkContext(conf)
     val logData = sc.textFile(logFile, 2).cache()
-    val numAs = logData.filter(line => line.contains("a")).count()
-    val numBs = logData.filter(line => line.contains("b")).count()
+    val numAs   = logData.filter(line => line.contains("a")).count()
+    val numBs   = logData.filter(line => line.contains("b")).count()
     if (numAs != 2 || numBs != 2) {
       println("Failed to parse log files with Spark")
       System.exit(-1)
@@ -43,9 +43,11 @@ object SimpleApp {
 
     // Regression test for SPARK-1167: Remove metrics-ganglia from default build due to LGPL issue
     val foundConsole = Try(
-        Class.forName("org.apache.spark.metrics.sink.ConsoleSink")).isSuccess
+      Class.forName("org.apache.spark.metrics.sink.ConsoleSink")
+    ).isSuccess
     val foundGanglia = Try(
-        Class.forName("org.apache.spark.metrics.sink.GangliaSink")).isSuccess
+      Class.forName("org.apache.spark.metrics.sink.GangliaSink")
+    ).isSuccess
     if (!foundConsole) {
       println("Console sink not loaded via spark-core")
       System.exit(-1)
@@ -56,8 +58,9 @@ object SimpleApp {
     }
 
     // Remove kinesis from default build due to ASL license issue
-    val foundKinesis = Try(Class.forName(
-            "org.apache.spark.streaming.kinesis.KinesisUtils")).isSuccess
+    val foundKinesis = Try(
+      Class.forName("org.apache.spark.streaming.kinesis.KinesisUtils")
+    ).isSuccess
     if (foundKinesis) {
       println("Kinesis was loaded via spark-core")
       System.exit(-1)

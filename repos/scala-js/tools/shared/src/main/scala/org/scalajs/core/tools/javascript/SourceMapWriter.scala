@@ -22,13 +22,13 @@ import ir.Utils
 private object SourceMapWriter {
   private val Base64Map =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "abcdefghijklmnopqrstuvwxyz" +
-    "0123456789+/"
+      "0123456789+/"
 
   // Some constants for writeBase64VLQ
   // Each base-64 digit covers 6 bits, but 1 is used for the continuation
-  private final val VLQBaseShift = 5
-  private final val VLQBase = 1 << VLQBaseShift
-  private final val VLQBaseMask = VLQBase - 1
+  private final val VLQBaseShift       = 5
+  private final val VLQBase            = 1 << VLQBaseShift
+  private final val VLQBaseMask        = VLQBase - 1
   private final val VLQContinuationBit = VLQBase
 
   private def printJSONString(s: String, out: Writer) = {
@@ -38,9 +38,9 @@ private object SourceMapWriter {
   }
 
   private final class NodePosStack {
-    private var topIndex: Int = -1
+    private var topIndex: Int             = -1
     private var posStack: Array[Position] = new Array(128)
-    private var nameStack: Array[String] = new Array(128)
+    private var nameStack: Array[String]  = new Array(128)
 
     def pop(): Unit =
       topIndex -= 1
@@ -67,33 +67,35 @@ private object SourceMapWriter {
   }
 }
 
-class SourceMapWriter(val out: Writer,
-                      val generatedFile: String,
-                      val relativizeBaseURI: Option[URI] = None) {
+class SourceMapWriter(
+    val out: Writer,
+    val generatedFile: String,
+    val relativizeBaseURI: Option[URI] = None
+) {
 
   import SourceMapWriter._
 
-  private val sources = new ListBuffer[String]
+  private val sources     = new ListBuffer[String]
   private val _srcToIndex = new HashMap[SourceFile, Int]
 
-  private val names = new ListBuffer[String]
+  private val names        = new ListBuffer[String]
   private val _nameToIndex = new HashMap[String, Int]
 
   // Strings are nullable in this stack
   private val nodePosStack = new SourceMapWriter.NodePosStack
   nodePosStack.push(NoPosition, null)
 
-  private var lineCountInGenerated = 0
-  private var lastColumnInGenerated = 0
-  private var firstSegmentOfLine = true
+  private var lineCountInGenerated   = 0
+  private var lastColumnInGenerated  = 0
+  private var firstSegmentOfLine     = true
   private var lastSource: SourceFile = null
-  private var lastSourceIndex = 0
-  private var lastLine: Int = 0
-  private var lastColumn: Int = 0
-  private var lastNameIndex: Int = 0
+  private var lastSourceIndex        = 0
+  private var lastLine: Int          = 0
+  private var lastColumn: Int        = 0
+  private var lastNameIndex: Int     = 0
 
   private var pendingColumnInGenerated: Int = -1
-  private var pendingPos: Position = NoPosition
+  private var pendingPos: Position          = NoPosition
   // pendingName string is nullable
   private var pendingName: String = null
 
@@ -112,7 +114,7 @@ class SourceMapWriter(val out: Writer,
 
   /** Relatively hacky way to get a Web-friendly URI to the source file */
   private def sourceToURI(source: SourceFile): String = {
-    val uri = source
+    val uri    = source
     val relURI = relativizeBaseURI.fold(uri)(Utils.relativize(_, uri))
 
     Utils.fixFileURI(relURI).toASCIIString
@@ -151,9 +153,11 @@ class SourceMapWriter(val out: Writer,
     startSegment(column, originalPos, null)
   }
 
-  def startNode(column: Int,
-                originalPos: Position,
-                optOriginalName: Option[String]): Unit = {
+  def startNode(
+      column: Int,
+      originalPos: Position,
+      optOriginalName: Option[String]
+  ): Unit = {
     val originalName =
       if (optOriginalName.isDefined) optOriginalName.get
       else null
@@ -167,7 +171,10 @@ class SourceMapWriter(val out: Writer,
   }
 
   private def startSegment(
-      startColumn: Int, originalPos: Position, originalName: String): Unit = {
+      startColumn: Int,
+      originalPos: Position,
+      originalName: String
+  ): Unit = {
     // There is no point in outputting a segment with the same information
     if ((originalPos == pendingPos) && (originalName == pendingName)) return
 
@@ -197,7 +204,7 @@ class SourceMapWriter(val out: Writer,
 
     // Extract relevant properties of pendingPos
     val source = pendingPos1.source
-    val line = pendingPos1.line
+    val line   = pendingPos1.line
     val column = pendingPos1.column
 
     // Source index field

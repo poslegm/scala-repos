@@ -23,10 +23,10 @@ class InheritanceTraitTest extends ResolveTestBase {
   //TODO abstractoverride
 //  def testClashAbstractOverrideSelf = doTest
 
-  def testClashTwo1() = doTest()
-  def testClashTwo2() = doTest()
-  def testMixOne() = doTest()
-  def testMixTwo() = doTest()
-  def testSelfTypeElements() = doTest()
+  def testClashTwo1()         = doTest()
+  def testClashTwo2()         = doTest()
+  def testMixOne()            = doTest()
+  def testMixTwo()            = doTest()
+  def testSelfTypeElements()  = doTest()
   def testSelfTypeModifiers() = doTest()
 }

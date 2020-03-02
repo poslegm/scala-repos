@@ -4,13 +4,13 @@ import scala.tools.nsc.{Global, Settings}
 
 object ScalacParser {
   var current = Thread.currentThread().getContextClassLoader
-  val files = collection.mutable.Buffer.empty[java.io.File]
+  val files   = collection.mutable.Buffer.empty[java.io.File]
   files.appendAll(
-      System
-        .getProperty("sun.boot.class.path")
-        .split(":")
-        .map(new java.io.File(_))
-    )
+    System
+      .getProperty("sun.boot.class.path")
+      .split(":")
+      .map(new java.io.File(_))
+  )
   while (current != null) {
     current match {
       case t: java.net.URLClassLoader =>
@@ -28,7 +28,7 @@ object ScalacParser {
   val global = new Global(settings)
 
   def checkParseFails(input: String) = this.synchronized {
-    val run = new global.Run()
+    val run  = new global.Run()
     var fail = false
     import global.syntaxAnalyzer.Offset
     val cu = new global.CompilationUnit(global.newSourceFile(input))

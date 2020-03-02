@@ -29,7 +29,7 @@ object GaussianMixtureExample {
   def main(args: Array[String]) {
 
     val conf = new SparkConf().setAppName("GaussianMixtureExample")
-    val sc = new SparkContext(conf)
+    val sc   = new SparkContext(conf)
 
     // $example on$
     // Load and parse the data
@@ -42,17 +42,20 @@ object GaussianMixtureExample {
 
     // Save and load model
     gmm.save(
-        sc,
-        "target/org/apache/spark/GaussianMixtureExample/GaussianMixtureModel")
+      sc,
+      "target/org/apache/spark/GaussianMixtureExample/GaussianMixtureModel"
+    )
     val sameModel = GaussianMixtureModel.load(
-        sc,
-        "target/org/apache/spark/GaussianMixtureExample/GaussianMixtureModel")
+      sc,
+      "target/org/apache/spark/GaussianMixtureExample/GaussianMixtureModel"
+    )
 
     // output parameters of max-likelihood model
     for (i <- 0 until gmm.k) {
       println(
-          "weight=%f\nmu=%s\nsigma=\n%s\n" format
-          (gmm.weights(i), gmm.gaussians(i).mu, gmm.gaussians(i).sigma))
+        "weight=%f\nmu=%s\nsigma=\n%s\n" format
+          (gmm.weights(i), gmm.gaussians(i).mu, gmm.gaussians(i).sigma)
+      )
     }
     // $example off$
 

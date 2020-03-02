@@ -8,9 +8,9 @@ import org.scalatest.junit.JUnitRunner
 
 object TestAddr {
   case class StringFactory(s: String) extends ServiceFactory[Any, String] {
-    val svc = Service.const(Future.value(s))
+    val svc                                    = Service.const(Future.value(s))
     override def apply(conn: ClientConnection) = Future.value(svc)
-    override def close(deadline: Time) = Future.Done
+    override def close(deadline: Time)         = Future.Done
   }
 
   def apply(arg: String): Address = {
@@ -27,7 +27,7 @@ class TestResolver extends Resolver {
 }
 
 case class ConstResolver(a: Addr) extends Resolver {
-  val scheme = "const"
+  val scheme            = "const"
   def bind(arg: String) = Var(a)
 }
 
@@ -52,7 +52,7 @@ class ResolverTest extends FunSuite {
 
   test("get a resolver instance") {
     val Some(resolver) = Resolver.get(classOf[TestResolver])
-    val binding = resolver.bind("xyz")
+    val binding        = resolver.bind("xyz")
     Var.sample(binding) match {
       case Addr.Bound(addrs, attrs) if addrs.size == 1 && attrs.isEmpty =>
         assert(addrs.head == TestAddr("xyz"))
@@ -64,24 +64,25 @@ class ResolverTest extends FunSuite {
     val exc = new Exception
     ConstResolver(Addr.Failed(exc)).resolve("blah") match {
       case Throw(`exc`) =>
-      case _ => fail()
+      case _            => fail()
     }
 
     val sockaddr = new InetSocketAddress(0)
     ConstResolver(Addr.Bound(Address(sockaddr))).resolve("blah") match {
       case Return(g) => assert(g() == Set(sockaddr))
-      case _ => fail()
+      case _         => fail()
     }
   }
 
   test("Resolver.evalLabeled: Resolve labels of labeled addresses") {
-    val label = "foo"
+    val label   = "foo"
     val binding = Resolver.evalLabeled(label + "=test!xyz")
     assert(binding._2 == label)
   }
 
   test(
-      "Resolver.evalLabeled: Resolve empty string as label for unlabeled addresses") {
+    "Resolver.evalLabeled: Resolve empty string as label for unlabeled addresses"
+  ) {
     val binding = Resolver.evalLabeled("test!xyz")
     assert(binding._2.isEmpty)
   }

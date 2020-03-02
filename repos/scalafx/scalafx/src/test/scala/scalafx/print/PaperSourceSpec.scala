@@ -38,7 +38,9 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class PaperSourceSpec
     extends SimpleSFXDelegateSpec[jfxp.PaperSource, PaperSource](
-        classOf[jfxp.PaperSource], classOf[PaperSource]) {
+      classOf[jfxp.PaperSource],
+      classOf[PaperSource]
+    ) {
 
   override protected def getScalaClassInstance = PaperSource.Automatic
 

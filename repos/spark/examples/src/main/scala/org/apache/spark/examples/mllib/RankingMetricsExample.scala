@@ -27,8 +27,8 @@ import org.apache.spark.sql.SQLContext
 
 object RankingMetricsExample {
   def main(args: Array[String]) {
-    val conf = new SparkConf().setAppName("RankingMetricsExample")
-    val sc = new SparkContext(conf)
+    val conf       = new SparkConf().setAppName("RankingMetricsExample")
+    val sc         = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
     import sqlContext.implicits._
     // $example on$
@@ -48,16 +48,17 @@ object RankingMetricsExample {
 
     // Summarize ratings
     val numRatings = ratings.count()
-    val numUsers = ratings.map(_.user).distinct().count()
-    val numMovies = ratings.map(_.product).distinct().count()
+    val numUsers   = ratings.map(_.user).distinct().count()
+    val numMovies  = ratings.map(_.product).distinct().count()
     println(
-        s"Got $numRatings ratings from $numUsers users on $numMovies movies.")
+      s"Got $numRatings ratings from $numUsers users on $numMovies movies."
+    )
 
     // Build the model
     val numIterations = 10
-    val rank = 10
-    val lambda = 0.01
-    val model = ALS.train(ratings, rank, numIterations, lambda)
+    val rank          = 10
+    val lambda        = 0.01
+    val model         = ALS.train(ratings, rank, numIterations, lambda)
 
     // Define a function to scale ratings from 0 to 1
     def scaledRating(r: Rating): Rating = {
@@ -76,8 +77,10 @@ object RankingMetricsExample {
     val userMovies = binarizedRatings.groupBy(_.user)
     val relevantDocuments = userMovies.join(userRecommended).map {
       case (user, (actual, predictions)) =>
-        (predictions.map(_.product),
-         actual.filter(_.rating > 0.0).map(_.product).toArray)
+        (
+          predictions.map(_.product),
+          actual.filter(_.rating > 0.0).map(_.product).toArray
+        )
     }
 
     // Instantiate metrics object

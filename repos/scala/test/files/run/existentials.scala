@@ -32,12 +32,12 @@ trait Counter[T] {
 case class C[T](x: T)
 
 object LUB {
-  def x = C(1)
-  def y = C("abc")
-  var coinflip: Boolean = _
-  def z = if (coinflip) x else y
+  def x                                                          = C(1)
+  def y                                                          = C("abc")
+  var coinflip: Boolean                                          = _
+  def z                                                          = if (coinflip) x else y
   def zz: C[_1] forSome { type _1 >: Int with java.lang.String } = z
-  def zzs: C[_ >: Int with java.lang.String] = z
+  def zzs: C[_ >: Int with java.lang.String]                     = z
 }
 
 object Bug1189 {
@@ -57,7 +57,7 @@ object Bug1189 {
 
 object Test extends App {
 
-  val x = { class I; class J; (new C(new I), new C(new J)) }
+  val x                                          = { class I; class J; (new C(new I), new C(new J)) }
   val y: (C[X], C[Y]) forSome { type X; type Y } = x
 
   def foo(x: Counter[T] { def name: String } forSome { type T }) = x match {
@@ -75,17 +75,17 @@ object Test extends App {
   }
 
   val ci = new Counter[Int] {
-    def newCounter = 0
+    def newCounter  = 0
     def get(i: Int) = i
     def inc(i: Int) = i + 1
-    def name = "Int"
+    def name        = "Int"
   }
 
   val cf = new Counter[Float] {
-    def newCounter = 0
+    def newCounter    = 0
     def get(i: Float) = i.intValue
     def inc(i: Float) = i + 1
-    def name = "Float"
+    def name          = "Float"
   }
 
   var ex: Counter[T] forSome { type T } = _
@@ -112,6 +112,6 @@ trait SubFooBar[B <: Option[_]] extends FooBar[B]
 object Test1 {
 
   var pc: List[Product with (Counter[T] forSome { type T })] = List()
-  def f() = pc
+  def f()                                                    = pc
   pc = f()
 }

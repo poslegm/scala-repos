@@ -46,27 +46,30 @@ class CopyWorksheetAction extends AnAction with TopComponentAction {
   }
 
   private def createMerged(editor: Editor, viewer: Editor): String = {
-    val result = new StringBuilder
+    val result    = new StringBuilder
     val fullShift = StringUtil.repeat(" ", CopyWorksheetAction.COPY_BORDER)
     val lineSeparator =
       Option(System.getProperty("line.separator")) getOrElse "\n"
 
-    val leftDocument = editor.getDocument
+    val leftDocument  = editor.getDocument
     val rightDocument = viewer.getDocument
 
     def append2Result(textLeft: String, textRight: String, sym: String) {
       result append
-      (if (textLeft.length < CopyWorksheetAction.COPY_BORDER) textLeft
-       else textLeft.substring(0, CopyWorksheetAction.COPY_BORDER))
-      for (_ <- 1 to (CopyWorksheetAction.COPY_BORDER - textLeft.length)) result append sym
+        (if (textLeft.length < CopyWorksheetAction.COPY_BORDER) textLeft
+         else textLeft.substring(0, CopyWorksheetAction.COPY_BORDER))
+      for (_ <- 1 to (CopyWorksheetAction.COPY_BORDER - textLeft.length))
+        result append sym
       result append "//"
       result append textRight
       result append lineSeparator
     }
 
     def getFromDoc(lineNumber: Int, document: Document) = document getText {
-      new TextRange(document getLineStartOffset lineNumber,
-                    document getLineEndOffset lineNumber)
+      new TextRange(
+        document getLineStartOffset lineNumber,
+        document getLineEndOffset lineNumber
+      )
     }
 
     def getFromLeft(lineNumber: Int) = getFromDoc(lineNumber, leftDocument)
@@ -74,36 +77,36 @@ class CopyWorksheetAction extends AnAction with TopComponentAction {
     def getFromRight(lineNumber: Int) = getFromDoc(lineNumber, rightDocument)
 
     val marker =
-      viewer.getFoldingModel.asInstanceOf[FoldingModelImpl].getAllFoldRegions find {
+      viewer.getFoldingModel
+        .asInstanceOf[FoldingModelImpl]
+        .getAllFoldRegions find {
         case r: WorksheetFoldRegionDelegate => true
-        case _ => false
+        case _                              => false
       }
 
-    var lastLeftEnd = 0
+    var lastLeftEnd  = 0
     var lastRightEnd = 0
 
     marker map {
       case m: WorksheetFoldRegionDelegate =>
         (0 /: m.getWorksheetGroup.getCorrespondInfo) {
-          case (lastEnd,
-                (rightStartOffset,
-                 rightEndOffset,
-                 leftOffset,
-                 spaces,
-                 leftLength)) =>
+          case (
+              lastEnd,
+              (rightStartOffset, rightEndOffset, leftOffset, spaces, leftLength)
+              ) =>
             val leftStart = {
               var j = lastEnd
 
               while (getFromLeft(j).trim.length == 0 &&
-              j < leftDocument.getLineCount) j += 1
+                     j < leftDocument.getLineCount) j += 1
               if (j == leftDocument.getLineCount) return result.toString()
               else j
             }
             val currentLeftStart = leftDocument getLineNumber leftOffset
-            val leftEnd = leftDocument getLineNumber leftOffset // + spaces
+            val leftEnd          = leftDocument getLineNumber leftOffset // + spaces
 
             val rightStart = rightDocument getLineNumber rightStartOffset
-            val rightEnd = rightDocument getLineNumber rightEndOffset
+            val rightEnd   = rightDocument getLineNumber rightEndOffset
 
             for (k <- lastEnd until leftStart) {
               append2Result(" ", " ", " ")
@@ -113,7 +116,10 @@ class CopyWorksheetAction extends AnAction with TopComponentAction {
               val txt = getFromLeft(i)
 
               append2Result(
-                  txt, getFromRight(rightStart + i - currentLeftStart), " ")
+                txt,
+                getFromRight(rightStart + i - currentLeftStart),
+                " "
+              )
             }
 
             if (spaces > 0)
@@ -123,8 +129,9 @@ class CopyWorksheetAction extends AnAction with TopComponentAction {
                 result append {
                   rightDocument getText {
                     new TextRange(
-                        rightDocument getLineStartOffset (rightEnd - j),
-                        rightDocument getLineEndOffset (rightEnd - j))
+                      rightDocument getLineStartOffset (rightEnd - j),
+                      rightDocument getLineEndOffset (rightEnd - j)
+                    )
                   }
                 }
                 result append lineSeparator
@@ -137,8 +144,12 @@ class CopyWorksheetAction extends AnAction with TopComponentAction {
         }
     }
 
-    for (i <- 0 until (leftDocument.getLineCount - lastLeftEnd)) append2Result(
-        getFromLeft(lastLeftEnd + i), getFromRight(lastRightEnd + i), " ")
+    for (i <- 0 until (leftDocument.getLineCount - lastLeftEnd))
+      append2Result(
+        getFromLeft(lastLeftEnd + i),
+        getFromRight(lastRightEnd + i),
+        " "
+      )
 
     result.toString()
   }

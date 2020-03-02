@@ -42,7 +42,9 @@ trait Arrow[=>:[_, _]] extends Split[=>:] with Strong[=>:] with Category[=>:] {
 
   /** Alias for `split`. */
   final def splitA[A, B, C, D](
-      fab: (A =>: B), fcd: (C =>: D)): ((A, C) =>: (B, D)) =
+      fab: (A =>: B),
+      fcd: (C =>: D)
+  ): ((A, C) =>: (B, D)) =
     split(fab, fcd)
 
   /** Run `fab` and `fcd` alongside each other.  Sometimes `***`. */

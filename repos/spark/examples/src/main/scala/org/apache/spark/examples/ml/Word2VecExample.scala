@@ -26,18 +26,20 @@ import org.apache.spark.sql.SQLContext
 
 object Word2VecExample {
   def main(args: Array[String]) {
-    val conf = new SparkConf().setAppName("Word2Vec example")
-    val sc = new SparkContext(conf)
+    val conf       = new SparkConf().setAppName("Word2Vec example")
+    val sc         = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
 
     // $example on$
     // Input data: Each row is a bag of words from a sentence or document.
     val documentDF = sqlContext
-      .createDataFrame(Seq(
-              "Hi I heard about Spark".split(" "),
-              "I wish Java could use case classes".split(" "),
-              "Logistic regression models are neat".split(" ")
-          ).map(Tuple1.apply))
+      .createDataFrame(
+        Seq(
+          "Hi I heard about Spark".split(" "),
+          "I wish Java could use case classes".split(" "),
+          "Logistic regression models are neat".split(" ")
+        ).map(Tuple1.apply)
+      )
       .toDF("text")
 
     // Learn a mapping from words to Vectors.
@@ -46,7 +48,7 @@ object Word2VecExample {
       .setOutputCol("result")
       .setVectorSize(3)
       .setMinCount(0)
-    val model = word2Vec.fit(documentDF)
+    val model  = word2Vec.fit(documentDF)
     val result = model.transform(documentDF)
     result.select("result").take(3).foreach(println)
     // $example off$

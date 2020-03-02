@@ -68,8 +68,7 @@ class TickSourceSpec extends AkkaSpec {
       val c = TestSubscriber.manualProbe[Int]()
 
       RunnableGraph
-        .fromGraph(
-            GraphDSL.create() { implicit b ⇒
+        .fromGraph(GraphDSL.create() { implicit b ⇒
           import GraphDSL.Implicits._
           val zip = b.add(Zip[Int, String]())
           Source(1 to 100) ~> zip.in0
@@ -90,10 +89,10 @@ class TickSourceSpec extends AkkaSpec {
     }
 
     "be possible to cancel" in assertAllStagesStopped {
-      val c = TestSubscriber.manualProbe[String]()
-      val tickSource = Source.tick(1.second, 500.millis, "tick")
+      val c           = TestSubscriber.manualProbe[String]()
+      val tickSource  = Source.tick(1.second, 500.millis, "tick")
       val cancellable = tickSource.to(Sink.fromSubscriber(c)).run()
-      val sub = c.expectSubscription()
+      val sub         = c.expectSubscription()
       sub.request(3)
       c.expectNoMsg(600.millis)
       c.expectNext("tick")

@@ -50,7 +50,7 @@ class BsonRecordListFieldSpec extends Specification {
 
     "fail validation if at least one of its elements fails validation" in {
       val scalaBook = Book.createRecord.title("Programming in Scala")
-      val liftBook = Book.createRecord
+      val liftBook  = Book.createRecord
       liftBook.title.setBox(Failure("Bad format"))
       val shelf = BookShelf.createRecord.books(scalaBook :: liftBook :: Nil)
 
@@ -59,8 +59,8 @@ class BsonRecordListFieldSpec extends Specification {
 
     "pass validation if all of its elements pass validation" in {
       val scalaBook = Book.createRecord.title("Programming in Scala")
-      val liftBook = Book.createRecord.title("Simply Lift")
-      val shelf = BookShelf.createRecord.books(scalaBook :: liftBook :: Nil)
+      val liftBook  = Book.createRecord.title("Simply Lift")
+      val shelf     = BookShelf.createRecord.books(scalaBook :: liftBook :: Nil)
 
       shelf.validate must be empty
     }

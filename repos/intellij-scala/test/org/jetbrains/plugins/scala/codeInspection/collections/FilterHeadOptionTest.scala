@@ -12,7 +12,7 @@ class FilterHeadOptionTest extends OperationsOnCollectionInspectionTest {
   def test_1() {
     val selected = s"List(0).${START}filter(x => true).headOption$END"
     check(selected)
-    val text = "List(0).filter(x => true).headOption"
+    val text   = "List(0).filter(x => true).headOption"
     val result = "List(0).find(x => true)"
     testFix(text, result, hint)
   }
@@ -20,7 +20,7 @@ class FilterHeadOptionTest extends OperationsOnCollectionInspectionTest {
   def test_2() {
     val selected = s"(List(0) ${START}filter (x => true)).headOption$END"
     check(selected)
-    val text = "(List(0) filter (x => true)).headOption"
+    val text   = "(List(0) filter (x => true)).headOption"
     val result = "List(0) find (x => true)"
     testFix(text, result, hint)
   }
@@ -29,7 +29,7 @@ class FilterHeadOptionTest extends OperationsOnCollectionInspectionTest {
     val selected =
       s"List(0).${START}filter(x => true).headOption$END.isDefined"
     check(selected)
-    val text = "List(0).filter(x => true).headOption.isDefined"
+    val text   = "List(0).filter(x => true).headOption.isDefined"
     val result = "List(0).find(x => true).isDefined"
     testFix(text, result, hint)
   }

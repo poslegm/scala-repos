@@ -21,8 +21,8 @@ object BigInt {
 
   private val minCached = -1024
   private val maxCached = 1024
-  private val cache = new Array[BigInt](maxCached - minCached + 1)
-  private val minusOne = BigInteger.valueOf(-1)
+  private val cache     = new Array[BigInt](maxCached - minCached + 1)
+  private val minusOne  = BigInteger.valueOf(-1)
 
   /** Constructs a `BigInt` whose value is equal to that of the
     *  specified integer value.
@@ -33,7 +33,7 @@ object BigInt {
   def apply(i: Int): BigInt =
     if (minCached <= i && i <= maxCached) {
       val offset = i - minCached
-      var n = cache(offset)
+      var n      = cache(offset)
       if (n eq null) {
         n = new BigInt(BigInteger.valueOf(i.toLong)); cache(offset) = n
       }
@@ -112,7 +112,9 @@ object BigInt {
   *  @version 1.0, 15/07/2003
   */
 final class BigInt(val bigInteger: BigInteger)
-    extends ScalaNumber with ScalaNumericConversions with Serializable
+    extends ScalaNumber
+    with ScalaNumericConversions
+    with Serializable
     with Ordered[BigInt] {
 
   /** Returns the hash code for this BigInt. */
@@ -123,29 +125,29 @@ final class BigInt(val bigInteger: BigInteger)
   /** Compares this BigInt with the specified value for equality.
     */
   override def equals(that: Any): Boolean = that match {
-    case that: BigInt => this equals that
+    case that: BigInt     => this equals that
     case that: BigDecimal => that equals this
-    case that: Double => isValidDouble && toDouble == that
-    case that: Float => isValidFloat && toFloat == that
-    case x => isValidLong && unifiedPrimitiveEquals(x)
+    case that: Double     => isValidDouble && toDouble == that
+    case that: Float      => isValidFloat && toFloat == that
+    case x                => isValidLong && unifiedPrimitiveEquals(x)
   }
-  override def isValidByte = this >= Byte.MinValue && this <= Byte.MaxValue
+  override def isValidByte  = this >= Byte.MinValue && this <= Byte.MaxValue
   override def isValidShort = this >= Short.MinValue && this <= Short.MaxValue
-  override def isValidChar = this >= Char.MinValue && this <= Char.MaxValue
-  override def isValidInt = this >= Int.MinValue && this <= Int.MaxValue
-  def isValidLong = this >= Long.MinValue && this <= Long.MaxValue
+  override def isValidChar  = this >= Char.MinValue && this <= Char.MaxValue
+  override def isValidInt   = this >= Int.MinValue && this <= Int.MaxValue
+  def isValidLong           = this >= Long.MinValue && this <= Long.MaxValue
 
   /** Returns `true` iff this can be represented exactly by [[scala.Float]]; otherwise returns `false`.
     */
   def isValidFloat = {
     val bitLen = bitLength
     (bitLen <= 24 || {
-          val lowest = lowestSetBit
-          bitLen <= java.lang.Float.MAX_EXPONENT + 1 &&
-          // exclude this < -2^128 && this >= 2^128
-          lowest >= bitLen - 24 &&
-          lowest < java.lang.Float.MAX_EXPONENT + 1 // exclude this == -2^128
-        }) && !bitLengthOverflow
+      val lowest = lowestSetBit
+      bitLen <= java.lang.Float.MAX_EXPONENT + 1 &&
+      // exclude this < -2^128 && this >= 2^128
+      lowest >= bitLen - 24 &&
+      lowest < java.lang.Float.MAX_EXPONENT + 1 // exclude this == -2^128
+    }) && !bitLengthOverflow
   }
 
   /** Returns `true` iff this can be represented exactly by [[scala.Double]]; otherwise returns `false`.
@@ -153,12 +155,12 @@ final class BigInt(val bigInteger: BigInteger)
   def isValidDouble = {
     val bitLen = bitLength
     (bitLen <= 53 || {
-          val lowest = lowestSetBit
-          bitLen <= java.lang.Double.MAX_EXPONENT + 1 &&
-          // exclude this < -2^1024 && this >= 2^1024
-          lowest >= bitLen - 53 &&
-          lowest < java.lang.Double.MAX_EXPONENT + 1 // exclude this == -2^1024
-        }) && !bitLengthOverflow
+      val lowest = lowestSetBit
+      bitLen <= java.lang.Double.MAX_EXPONENT + 1 &&
+      // exclude this < -2^1024 && this >= 2^1024
+      lowest >= bitLen - 53 &&
+      lowest < java.lang.Double.MAX_EXPONENT + 1 // exclude this == -2^1024
+    }) && !bitLengthOverflow
   }
 
   /** Some implementations of java.math.BigInteger allow huge values with bit length greater than Int.MaxValue .
@@ -171,7 +173,7 @@ final class BigInt(val bigInteger: BigInteger)
     (shifted.signum != 0) && !(shifted equals BigInt.minusOne)
   }
 
-  def isWhole() = true
+  def isWhole()  = true
   def underlying = bigInteger
 
   /** Compares this BigInt with the specified BigInt for equality.

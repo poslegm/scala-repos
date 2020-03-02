@@ -29,12 +29,12 @@ class WeightedPageRank(args: Args) extends Job(args) {
   val ROW_TYPE_1 = 1
   val ROW_TYPE_2 = 2
 
-  val PWD = args("pwd")
-  val ALPHA = args.getOrElse("jumpprob", "0.1").toDouble
-  val WEIGHTED = args.getOrElse("weighted", "false").toBoolean
-  val THRESHOLD = args.getOrElse("threshold", "0.001").toDouble
+  val PWD           = args("pwd")
+  val ALPHA         = args.getOrElse("jumpprob", "0.1").toDouble
+  val WEIGHTED      = args.getOrElse("weighted", "false").toBoolean
+  val THRESHOLD     = args.getOrElse("threshold", "0.001").toDouble
   val MAXITERATIONS = args.getOrElse("maxiterations", "20").toInt
-  val CURITERATION = args.getOrElse("curiteration", "0").toInt
+  val CURITERATION  = args.getOrElse("curiteration", "0").toInt
 
   // 'size
   val numNodes = getNumNodes(PWD + "/numnodes")
@@ -75,8 +75,7 @@ class WeightedPageRank(args: Args) extends Job(args) {
 
   def getInputPagerank(fileName: String) = {
     Tsv(fileName).read.mapTo((0, 1) -> ('src_id_input, 'mass_input)) {
-      input: (Int, Double) =>
-        input
+      input: (Int, Double) => input
     }
   }
 
@@ -86,34 +85,35 @@ class WeightedPageRank(args: Args) extends Job(args) {
   def getNodes(fileName: String) = {
     mode match {
       case Hdfs(_, conf) => {
-          SequenceFile(fileName).read.mapTo(
-              (0, 1, 2, 3) -> ('src_id, 'dst_ids, 'weights, 'mass_prior)) {
-            input: (Int, Array[Int], Array[Float], Double) =>
-              input
+        SequenceFile(fileName).read
+          .mapTo((0, 1, 2, 3) -> ('src_id, 'dst_ids, 'weights, 'mass_prior)) {
+            input: (Int, Array[Int], Array[Float], Double) => input
           }
-        }
+      }
       case _ => {
-          Tsv(fileName).read.mapTo(
-              (0, 1, 2, 3) -> ('src_id, 'dst_ids, 'weights, 'mass_prior)) {
+        Tsv(fileName).read
+          .mapTo((0, 1, 2, 3) -> ('src_id, 'dst_ids, 'weights, 'mass_prior)) {
             input: (Int, String, String, Double) =>
               {
-                (input._1,
-                 // convert string to int array
-                 if (input._2 != null && input._2.length > 0) {
-                   input._2.split(",").map { _.toInt }
-                 } else {
-                   Array[Int]()
-                 },
-                 // convert string to float array
-                 if (input._3 != null && input._3.length > 0) {
-                   input._3.split(",").map { _.toFloat }
-                 } else {
-                   Array[Float]()
-                 },
-                 input._4)
+                (
+                  input._1,
+                  // convert string to int array
+                  if (input._2 != null && input._2.length > 0) {
+                    input._2.split(",").map { _.toInt }
+                  } else {
+                    Array[Int]()
+                  },
+                  // convert string to float array
+                  if (input._3 != null && input._3.length > 0) {
+                    input._3.split(",").map { _.toFloat }
+                  } else {
+                    Array[Float]()
+                  },
+                  input._4
+                )
               }
           }
-        }
+      }
     }
   }
 
@@ -121,9 +121,7 @@ class WeightedPageRank(args: Args) extends Job(args) {
     * the total number of nodes, single line file
     */
   def getNumNodes(fileName: String) = {
-    Tsv(fileName).read.mapTo(0 -> 'size) { input: Int =>
-      input
-    }
+    Tsv(fileName).read.mapTo(0 -> 'size) { input: Int => input }
   }
 
   /**
@@ -171,9 +169,7 @@ class WeightedPageRank(args: Args) extends Job(args) {
               } else {
                 // equal distribution
                 val dist: Double = args._3 / args._1.length
-                args._1.map { id: Int =>
-                  (id, dist)
-                }
+                args._1.map { id: Int => (id, dist) }
               }
             } else {
               //Here is a node that points to no other nodes (dangling)
@@ -204,10 +200,11 @@ class WeightedPageRank(args: Args) extends Job(args) {
     // random jump probability plus dead page rank
     val randomPagerank = nodeJoined
       .crossWithTiny(deadPagerank)
-      .mapTo(('src_id, 'mass_prior, 'deadMass, 'mass_input) ->
-          ('src_id, 'mass_n, 'mass_input)) {
-        ranks: (Int, Double, Double, Double) =>
-          (ranks._1, ranks._2 * ALPHA + ranks._3 * (1 - ALPHA), ranks._4)
+      .mapTo(
+        ('src_id, 'mass_prior, 'deadMass, 'mass_input) ->
+          ('src_id, 'mass_n, 'mass_input)
+      ) { ranks: (Int, Double, Double, Double) =>
+        (ranks._1, ranks._2 * ALPHA + ranks._3 * (1 - ALPHA), ranks._4)
       }
 
     // 'src_id, 'mass_n
@@ -221,7 +218,7 @@ class WeightedPageRank(args: Args) extends Job(args) {
     // random probability + next probability
     (randomPagerank ++ pagerankNextScaled).groupBy('src_id) {
       _.sum[Double]('mass_input) // keep the input pagerank
-        .sum[Double]('mass_n) // take the sum
+        .sum[Double]('mass_n)    // take the sum
     }
   }
 }

@@ -6,12 +6,14 @@ import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 import java.util.logging.Logger
 
-private[tracing] object RecordTimeFormat
-    extends TimeFormat("MMdd HH:mm:ss.SSS")
+private[tracing] object RecordTimeFormat extends TimeFormat("MMdd HH:mm:ss.SSS")
 
 object Record {
   def apply(
-      traceId: TraceId, timestamp: Time, annotation: Annotation): Record = {
+      traceId: TraceId,
+      timestamp: Time,
+      annotation: Annotation
+  ): Record = {
     Record(traceId, timestamp, annotation, None)
   }
 }
@@ -24,37 +26,39 @@ object Record {
   * @param annotation What kind of information should we record?
   * @param duration Did this event have a duration? For example: how long did a certain code block take to run
   */
-case class Record(traceId: TraceId,
-                  timestamp: Time,
-                  annotation: Annotation,
-                  duration: Option[Duration]) {
+case class Record(
+    traceId: TraceId,
+    timestamp: Time,
+    annotation: Annotation,
+    duration: Option[Duration]
+) {
   override def toString: String =
     s"${RecordTimeFormat.format(timestamp)} $traceId] $annotation"
 }
 
 sealed trait Annotation
 object Annotation {
-  case object WireSend extends Annotation
-  case object WireRecv extends Annotation
-  case class WireRecvError(error: String) extends Annotation
-  case class ClientSend() extends Annotation
-  case class ClientRecv() extends Annotation
+  case object WireSend                      extends Annotation
+  case object WireRecv                      extends Annotation
+  case class WireRecvError(error: String)   extends Annotation
+  case class ClientSend()                   extends Annotation
+  case class ClientRecv()                   extends Annotation
   case class ClientRecvError(error: String) extends Annotation
-  case class ServerSend() extends Annotation
-  case class ServerRecv() extends Annotation
+  case class ServerSend()                   extends Annotation
+  case class ServerRecv()                   extends Annotation
   case class ServerSendError(error: String) extends Annotation
-  case class ClientSendFragment() extends Annotation
-  case class ClientRecvFragment() extends Annotation
-  case class ServerSendFragment() extends Annotation
-  case class ServerRecvFragment() extends Annotation
-  case class Message(content: String) extends Annotation
-  case class ServiceName(service: String) extends Annotation
-  case class Rpc(name: String) extends Annotation
+  case class ClientSendFragment()           extends Annotation
+  case class ClientRecvFragment()           extends Annotation
+  case class ServerSendFragment()           extends Annotation
+  case class ServerRecvFragment()           extends Annotation
+  case class Message(content: String)       extends Annotation
+  case class ServiceName(service: String)   extends Annotation
+  case class Rpc(name: String)              extends Annotation
   @deprecated("Use ServiceName and Rpc", "6.13.x")
   case class Rpcname(service: String, rpc: String) extends Annotation
-  case class ClientAddr(ia: InetSocketAddress) extends Annotation
-  case class ServerAddr(ia: InetSocketAddress) extends Annotation
-  case class LocalAddr(ia: InetSocketAddress) extends Annotation
+  case class ClientAddr(ia: InetSocketAddress)     extends Annotation
+  case class ServerAddr(ia: InetSocketAddress)     extends Annotation
+  case class LocalAddr(ia: InetSocketAddress)      extends Annotation
 
   case class BinaryAnnotation(key: String, value: Any) extends Annotation {
     /* Needed to not break backwards compatibility.  Can be removed later */
@@ -84,8 +88,8 @@ trait Tracer {
 }
 
 class NullTracer extends Tracer {
-  val factory: Tracer.Factory = () => this
-  def record(record: Record): Unit = { /*ignore*/ }
+  val factory: Tracer.Factory                        = () => this
+  def record(record: Record): Unit                   = { /*ignore*/ }
   def sampleTrace(traceId: TraceId): Option[Boolean] = None
 }
 
@@ -94,10 +98,10 @@ object NullTracer extends NullTracer
 object BroadcastTracer {
   def apply(tracers: Seq[Tracer]): Tracer =
     tracers.filterNot(_ == NullTracer) match {
-      case Seq() => NullTracer
-      case Seq(tracer) => tracer
+      case Seq()              => NullTracer
+      case Seq(tracer)        => tracer
       case Seq(first, second) => new Two(first, second)
-      case _ => new N(tracers)
+      case _                  => new N(tracers)
     }
 
   private class Two(first: Tracer, second: Tracer) extends Tracer {
@@ -107,7 +111,7 @@ object BroadcastTracer {
     }
 
     def sampleTrace(traceId: TraceId): Option[Boolean] = {
-      val sampledByFirst = first.sampleTrace(traceId)
+      val sampledByFirst  = first.sampleTrace(traceId)
       val sampledBySecond = second.sampleTrace(traceId)
       if (sampledByFirst == Some(true) || sampledBySecond == Some(true))
         Some(true)
@@ -133,7 +137,7 @@ object BroadcastTracer {
 
 object DefaultTracer extends Tracer with Proxy {
   private[this] val tracers = LoadService[Tracer]()
-  private[this] val log = Logger.getLogger(getClass.getName)
+  private[this] val log     = Logger.getLogger(getClass.getName)
   tracers.foreach { tracer =>
     log.info("Tracer: %s".format(tracer.getClass.getName))
   }

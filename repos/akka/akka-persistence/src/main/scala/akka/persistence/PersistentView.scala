@@ -26,8 +26,7 @@ import akka.actor.ActorLogging
   *                  to `Long.MaxValue` (i.e. no limit).
   */
 @SerialVersionUID(1L)
-final case class Update(
-    await: Boolean = false, replayMax: Long = Long.MaxValue)
+final case class Update(await: Boolean = false, replayMax: Long = Long.MaxValue)
 
 object Update {
 
@@ -83,14 +82,19 @@ private[akka] object PersistentView {
   */
 @deprecated("use Persistence Query instead", "2.4")
 trait PersistentView
-    extends Actor with Snapshotter with Stash with StashFactory
-    with PersistenceIdentity with PersistenceRecovery with ActorLogging {
+    extends Actor
+    with Snapshotter
+    with Stash
+    with StashFactory
+    with PersistenceIdentity
+    with PersistenceRecovery
+    with ActorLogging {
   import PersistentView._
   import JournalProtocol._
   import SnapshotProtocol.LoadSnapshotResult
   import context.dispatcher
 
-  private val extension = Persistence(context.system)
+  private val extension    = Persistence(context.system)
   private val viewSettings = extension.settings.view
 
   private[persistence] lazy val journal = extension.journalFor(journalPluginId)
@@ -100,8 +104,8 @@ trait PersistentView
   private var schedule: Option[Cancellable] = None
 
   private var _lastSequenceNr: Long = 0L
-  private val internalStash = createStash()
-  private var currentState: State = recoveryStarted(Long.MaxValue)
+  private val internalStash         = createStash()
+  private var currentState: State   = recoveryStarted(Long.MaxValue)
 
   /**
     * View id is used as identifier for snapshots performed by this [[PersistentView]].
@@ -160,7 +164,7 @@ trait PersistentView
     */
   def autoUpdateReplayMax: Long =
     viewSettings.autoUpdateReplayMax match {
-      case -1 ⇒ Long.MaxValue
+      case -1    ⇒ Long.MaxValue
       case value ⇒ value
     }
 
@@ -192,11 +196,13 @@ trait PersistentView
     startRecovery(recovery)
     if (autoUpdate)
       schedule = Some(
-          context.system.scheduler.schedule(
-              autoUpdateInterval,
-              autoUpdateInterval,
-              self,
-              ScheduledUpdate(autoUpdateReplayMax)))
+        context.system.scheduler.schedule(
+          autoUpdateInterval,
+          autoUpdateInterval,
+          self,
+          ScheduledUpdate(autoUpdateReplayMax)
+        )
+      )
   }
 
   private def startRecovery(recovery: Recovery): Unit = {
@@ -206,7 +212,9 @@ trait PersistentView
 
   /** INTERNAL API. */
   override protected[akka] def aroundReceive(
-      receive: Receive, message: Any): Unit =
+      receive: Receive,
+      message: Any
+  ): Unit =
     currentState.stateReceive(receive, message)
 
   /** INTERNAL API. */
@@ -217,7 +225,8 @@ trait PersistentView
   }
 
   override def preRestart(reason: Throwable, message: Option[Any]): Unit = {
-    try internalStash.unstashAll() finally super.preRestart(reason, message)
+    try internalStash.unstashAll()
+    finally super.preRestart(reason, message)
   }
 
   override def postStop(): Unit = {
@@ -233,11 +242,12 @@ trait PersistentView
     */
   protected def onReplayError(cause: Throwable): Unit = {
     log.error(
-        cause,
-        "Persistence view failure when replaying events for persistenceId [{}]. " +
+      cause,
+      "Persistence view failure when replaying events for persistenceId [{}]. " +
         "Last known sequence number [{}]",
-        persistenceId,
-        lastSequenceNr)
+      persistenceId,
+      lastSequenceNr
+    )
   }
 
   private def changeState(state: State): Unit = {
@@ -272,12 +282,17 @@ trait PersistentView
         sso.foreach {
           case SelectedSnapshot(metadata, snapshot) ⇒
             setLastSequenceNr(metadata.sequenceNr)
-            PersistentView. super.aroundReceive(
-                receive, SnapshotOffer(metadata, snapshot))
+            PersistentView.super
+              .aroundReceive(receive, SnapshotOffer(metadata, snapshot))
         }
         changeState(replayStarted(await = true))
         journal ! ReplayMessages(
-            lastSequenceNr + 1L, toSnr, replayMax, persistenceId, self)
+          lastSequenceNr + 1L,
+          toSnr,
+          replayMax,
+          persistenceId,
+          self
+        )
       case other ⇒ internalStash.stash()
     }
   }
@@ -298,14 +313,14 @@ trait PersistentView
     * All incoming messages are stashed when `await` is true.
     */
   private def replayStarted(await: Boolean) = new State {
-    override def toString: String = s"replay started"
+    override def toString: String         = s"replay started"
     override def recoveryRunning: Boolean = true
 
     override def stateReceive(receive: Receive, message: Any) = message match {
       case ReplayedMessage(p) ⇒
         try {
           updateLastSequenceNr(p)
-          PersistentView. super.aroundReceive(receive, p.payload)
+          PersistentView.super.aroundReceive(receive, p.payload)
         } catch {
           case NonFatal(t) ⇒
             changeState(ignoreRemainingReplay(t))
@@ -313,7 +328,8 @@ trait PersistentView
       case _: RecoverySuccess ⇒
         onReplayComplete()
       case ReplayMessagesFailure(cause) ⇒
-        try onReplayError(cause) finally onReplayComplete()
+        try onReplayError(cause)
+        finally onReplayComplete()
       case ScheduledUpdate(_) ⇒ // ignore
       case Update(a, _) ⇒
         if (a) internalStash.stash()
@@ -321,7 +337,7 @@ trait PersistentView
         if (await) internalStash.stash()
         else {
           try {
-            PersistentView. super.aroundReceive(receive, other)
+            PersistentView.super.aroundReceive(receive, other)
           } catch {
             case NonFatal(t) ⇒
               changeState(ignoreRemainingReplay(t))
@@ -343,7 +359,7 @@ trait PersistentView
     */
   private def ignoreRemainingReplay(cause: Throwable) = new State {
 
-    override def toString: String = "replay failed"
+    override def toString: String         = "replay failed"
     override def recoveryRunning: Boolean = true
 
     override def stateReceive(receive: Receive, message: Any) = message match {
@@ -355,7 +371,7 @@ trait PersistentView
         // Recover(lastSequenceNr) is sent by preRestart
         setLastSequenceNr(Long.MaxValue)
       case _: RecoverySuccess ⇒ replayCompleted(receive)
-      case _ ⇒ internalStash.stash()
+      case _                  ⇒ internalStash.stash()
     }
 
     def replayCompleted(receive: Receive): Unit = {
@@ -372,7 +388,7 @@ trait PersistentView
     * received message.
     */
   private val idle: State = new State {
-    override def toString: String = "idle"
+    override def toString: String         = "idle"
     override def recoveryRunning: Boolean = false
 
     override def stateReceive(receive: Receive, message: Any): Unit =
@@ -380,18 +396,23 @@ trait PersistentView
         case ReplayedMessage(p) ⇒
           // we can get ReplayedMessage here if it was stashed by user during replay
           // unwrap the payload
-          PersistentView. super.aroundReceive(receive, p.payload)
+          PersistentView.super.aroundReceive(receive, p.payload)
         case ScheduledUpdate(replayMax) ⇒
           changeStateToReplayStarted(await = false, replayMax)
         case Update(awaitUpdate, replayMax) ⇒
           changeStateToReplayStarted(awaitUpdate, replayMax)
-        case other ⇒ PersistentView. super.aroundReceive(receive, other)
+        case other ⇒ PersistentView.super.aroundReceive(receive, other)
       }
 
     def changeStateToReplayStarted(await: Boolean, replayMax: Long): Unit = {
       changeState(replayStarted(await))
       journal ! ReplayMessages(
-          lastSequenceNr + 1L, Long.MaxValue, replayMax, persistenceId, self)
+        lastSequenceNr + 1L,
+        Long.MaxValue,
+        replayMax,
+        persistenceId,
+        self
+      )
     }
   }
 }

@@ -24,8 +24,8 @@ case class RichDT(dt: DateTime) {
   def +[T <: ReadablePeriod](rp: T): RichDT = dt.plus(rp)
   def -[T <: ReadablePeriod](rp: T): RichDT = dt.minus(rp)
 
-  def <[T](ot: T)(implicit fn: T => ReadableInstant) = dt.isBefore(fn(ot))
-  def >[T](ot: T)(implicit fn: T => ReadableInstant) = dt.isAfter(fn(ot))
+  def <[T](ot: T)(implicit fn: T => ReadableInstant)  = dt.isBefore(fn(ot))
+  def >[T](ot: T)(implicit fn: T => ReadableInstant)  = dt.isAfter(fn(ot))
   def <=[T](ot: T)(implicit fn: T => ReadableInstant) = !dt.isAfter(fn(ot))
   def >=[T](ot: T)(implicit fn: T => ReadableInstant) = !dt.isBefore(fn(ot))
 

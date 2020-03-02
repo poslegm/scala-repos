@@ -53,7 +53,8 @@ object TextFieldListCell {
     * @return JavaFX $TFLC
     */
   implicit def sfxTextFieldListCell2jfx[T](
-      cell: TextFieldListCell[T]): jfxscc.TextFieldListCell[T] =
+      cell: TextFieldListCell[T]
+  ): jfxscc.TextFieldListCell[T] =
     if (cell != null) cell.delegate else null
 
   /**
@@ -72,15 +73,15 @@ object TextFieldListCell {
     * @return $FLVRET
     */
   def forListView[T](
-      converter: StringConverter[T]): (ListView[T] => ListCell[T]) =
+      converter: StringConverter[T]
+  ): (ListView[T] => ListCell[T]) =
     (view: ListView[T]) =>
       jfxscc.TextFieldListCell.forListView[T](converter).call(view)
 
   /**
     * Added to satisfy Spec Texts.
     */
-  @deprecated(
-      message = "Use forListView[T](StringConverter[T])", since = "1.0")
+  @deprecated(message = "Use forListView[T](StringConverter[T])", since = "1.0")
   def forListView[T](converter: jfxu.StringConverter[T]) =
     jfxscc.TextFieldListCell.forListView[T](converter)
 }
@@ -95,9 +96,9 @@ object TextFieldListCell {
   * @define TFLC `TextFieldListCell`
   */
 class TextFieldListCell[T](
-    override val delegate: jfxscc.TextFieldListCell[T] = new jfxscc.TextFieldListCell[
-          T])
-    extends ListCell[T](delegate)
+    override val delegate: jfxscc.TextFieldListCell[T] =
+      new jfxscc.TextFieldListCell[T]
+) extends ListCell[T](delegate)
     with ConvertableCell[jfxscc.TextFieldListCell[T], T, T]
     with UpdatableCell[jfxscc.TextFieldListCell[T], T]
     with SFXDelegate[jfxscc.TextFieldListCell[T]] {

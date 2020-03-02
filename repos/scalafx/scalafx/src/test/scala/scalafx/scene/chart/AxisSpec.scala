@@ -42,7 +42,10 @@ import scalafx.testutil.{RunOnApplicationThread, SimpleSFXDelegateSpec}
 @RunWith(classOf[JUnitRunner])
 class AxisSpec[T]
     extends SimpleSFXDelegateSpec[jfxsc.Axis[T], Axis[T]](
-        classOf[jfxsc.Axis[T]], classOf[Axis[T]]) with RunOnApplicationThread {
+      classOf[jfxsc.Axis[T]],
+      classOf[Axis[T]]
+    )
+    with RunOnApplicationThread {
 
   override def getScalaClassInstance = new Axis[T](getJavaClassInstance) {}
 
@@ -51,14 +54,14 @@ class AxisSpec[T]
     protected def calculateTickValues(length: Double, range: Any) =
       new java.util.ArrayList[T]
     protected def getDisplayPosition(value: T) = 0.0
-    protected def getRange = null
-    protected def getTickMarkLabel(value: T) = ""
+    protected def getRange                     = null
+    protected def getTickMarkLabel(value: T)   = ""
     protected def getValueForDisplay(displayPosition: Double) =
       null.asInstanceOf[T]
-    protected def getZeroPosition = 0.0
+    protected def getZeroPosition         = 0.0
     protected def isValueOnAxis(value: T) = false
     protected def setRange(range: Any, animate: Boolean) {}
-    protected def toNumericValue(value: T) = 0.0
+    protected def toNumericValue(value: T)   = 0.0
     protected def toRealValue(value: Double) = null.asInstanceOf[T]
   }
 }

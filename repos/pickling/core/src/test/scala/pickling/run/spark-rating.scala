@@ -16,9 +16,9 @@ case class Rating(val user: Int, val product: Int, val rating: Double)
 class SparkRatingTest extends FunSuite {
   test("json") {
     import json._
-    val r = Rating(12, 12, 12.0)
+    val r             = Rating(12, 12, 12.0)
     val p: JSONPickle = r.pickle
-    val up = p.unpickle[Rating]
+    val up            = p.unpickle[Rating]
     assert(up.user == 12)
     assert(up.product == 12)
     assert(up.product == 12.0)
@@ -26,9 +26,9 @@ class SparkRatingTest extends FunSuite {
 
   test("binary") {
     import binary._
-    val r = Rating(12, 12, 12.0)
+    val r               = Rating(12, 12, 12.0)
     val p: BinaryPickle = r.pickle
-    val up = p.unpickle[Rating]
+    val up              = p.unpickle[Rating]
     assert(up.user == 12)
     assert(up.product == 12)
     assert(up.product == 12.0)
@@ -38,9 +38,9 @@ class SparkRatingTest extends FunSuite {
 class SparkRuntimeRatingTest extends FunSuite {
   test("json") {
     import json._
-    val r: Any = Rating(12, 12, 12.0)
+    val r: Any        = Rating(12, 12, 12.0)
     val p: JSONPickle = r.pickle
-    val up = p.unpickle[Any].asInstanceOf[Rating]
+    val up            = p.unpickle[Any].asInstanceOf[Rating]
     assert(up.user == 12)
     assert(up.product == 12)
     assert(up.product == 12.0)
@@ -48,9 +48,9 @@ class SparkRuntimeRatingTest extends FunSuite {
 
   test("binary") {
     import binary._
-    val r: Any = Rating(12, 12, 12.0)
+    val r: Any          = Rating(12, 12, 12.0)
     val p: BinaryPickle = r.pickle
-    val up = p.unpickle[Any].asInstanceOf[Rating]
+    val up              = p.unpickle[Any].asInstanceOf[Rating]
     assert(up.user == 12)
     assert(up.product == 12)
     assert(up.product == 12.0)

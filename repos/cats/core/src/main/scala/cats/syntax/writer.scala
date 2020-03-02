@@ -9,6 +9,6 @@ trait WriterSyntax {
 }
 
 final class WriterIdSyntax[A](val a: A) extends AnyVal {
-  def tell: Writer[A, Unit] = Writer(a, ())
+  def tell: Writer[A, Unit]         = Writer(a, ())
   def writer[W](w: W): Writer[W, A] = Writer(w, a)
 }

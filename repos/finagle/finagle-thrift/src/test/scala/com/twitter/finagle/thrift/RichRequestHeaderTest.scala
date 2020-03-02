@@ -10,7 +10,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class RichRequestHeaderTest extends FunSuite {
   test("None if clientId is not set") {
-    val header = new thrift.RequestHeader
+    val header     = new thrift.RequestHeader
     val richHeader = new RichRequestHeader(header)
     assert(None == richHeader.clientId)
   }
@@ -31,7 +31,7 @@ class RichRequestHeaderTest extends FunSuite {
   }
 
   test("empth path if dest is null") {
-    val header = new thrift.RequestHeader
+    val header     = new thrift.RequestHeader
     val richHeader = new RichRequestHeader(header)
     assert(Path.empty == richHeader.dest)
   }
@@ -44,7 +44,7 @@ class RichRequestHeaderTest extends FunSuite {
   }
 
   test("null dtab") {
-    val header = new thrift.RequestHeader
+    val header     = new thrift.RequestHeader
     val richHeader = new RichRequestHeader(header)
     assert(Dtab.empty == richHeader.dtab)
   }
@@ -60,10 +60,11 @@ class RichRequestHeaderTest extends FunSuite {
   }
 
   test("default traceId") {
-    val header = new thrift.RequestHeader
+    val header     = new thrift.RequestHeader
     val richHeader = new RichRequestHeader(header)
     assert(
-        TraceId(Some(SpanId(0)), None, SpanId(0), None, Flags()) == richHeader.traceId)
+      TraceId(Some(SpanId(0)), None, SpanId(0), None, Flags()) == richHeader.traceId
+    )
   }
 
   test("non-default traceId") {
@@ -75,8 +76,8 @@ class RichRequestHeaderTest extends FunSuite {
       .setFlags(4)
 
     val richHeader = new RichRequestHeader(header)
-    val expected = TraceId(
-        Some(SpanId(0)), Some(SpanId(1)), SpanId(2), Some(true), Flags(4))
+    val expected =
+      TraceId(Some(SpanId(0)), Some(SpanId(1)), SpanId(2), Some(true), Flags(4))
     assert(expected == richHeader.traceId)
   }
 }

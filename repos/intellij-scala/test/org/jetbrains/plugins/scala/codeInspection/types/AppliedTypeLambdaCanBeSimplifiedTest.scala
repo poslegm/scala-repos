@@ -2,7 +2,10 @@ package org.jetbrains.plugins.scala.codeInspection.types
 
 import com.intellij.codeInspection.LocalInspectionTool
 import org.jetbrains.plugins.scala.codeInspection.typeLambdaSimplify.AppliedTypeLambdaCanBeSimplifiedInspection
-import org.jetbrains.plugins.scala.codeInspection.{InspectionBundle, ScalaLightInspectionFixtureTestAdapter}
+import org.jetbrains.plugins.scala.codeInspection.{
+  InspectionBundle,
+  ScalaLightInspectionFixtureTestAdapter
+}
 import org.jetbrains.plugins.scala.project.settings.ScalaCompilerConfiguration
 
 /**
@@ -33,7 +36,7 @@ class AppliedTypeLambdaCanBeSimplifiedTest
     val text = s"def a: $START({type l[a] = Either[String, a]})#l[Int]$END)"
     check(text)
     val code = "def a: ({type l[a] = Either[String, a]})#l[Int]"
-    val res = "def a: Either[String, Int]"
+    val res  = "def a: Either[String, Int]"
     testFix(code, res)
   }
 
@@ -41,7 +44,7 @@ class AppliedTypeLambdaCanBeSimplifiedTest
     val text = s"def a: ${START}Lambda[A => (A, A)][Int]$END"
     check(text)
     val code = "def a: Lambda[A => (A, A)][Int]"
-    val res = "def a: (Int, Int)"
+    val res  = "def a: (Int, Int)"
     testFix(code, res)
   }
 
@@ -49,7 +52,7 @@ class AppliedTypeLambdaCanBeSimplifiedTest
     val text = s"def a: ${START}Either[+?, -?][String, Int]$END"
     check(text)
     val code = "def a: Either[+?, -?][String, Int]"
-    val res = "def a: Either[String, Int]"
+    val res  = "def a: Either[String, Int]"
     testFix(code, res)
   }
 

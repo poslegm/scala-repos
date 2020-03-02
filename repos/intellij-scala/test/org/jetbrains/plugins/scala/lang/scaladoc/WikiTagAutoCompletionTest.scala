@@ -11,37 +11,37 @@ class WikiTagAutoCompletionTest
     extends ScalaLightCodeInsightFixtureTestAdapter {
 
   def testCodeLinkAC() {
-    val text = "/** [" + CARET_MARKER + " */"
+    val text        = "/** [" + CARET_MARKER + " */"
     val assumedStub = "/** [[]] */"
     checkGeneratedTextAfterTyping(text, assumedStub, '[')
   }
 
   def testInnerCodeAC() {
-    val text = "/** {{" + CARET_MARKER + " */"
+    val text        = "/** {{" + CARET_MARKER + " */"
     val assumedStub = "/** {{{}}} */"
     checkGeneratedTextAfterTyping(text, assumedStub, '{')
   }
 
   def testMonospaceAC() {
-    val text = "/** " + CARET_MARKER + " */"
+    val text        = "/** " + CARET_MARKER + " */"
     val assumedStub = "/** `` */"
     checkGeneratedTextAfterTyping(text, assumedStub, '`')
   }
 
   def testSuperscriptAC() {
-    val text = "/** " + CARET_MARKER + " */"
+    val text        = "/** " + CARET_MARKER + " */"
     val assumedStub = "/** ^^ */"
     checkGeneratedTextAfterTyping(text, assumedStub, '^')
   }
 
   def testSubscriptAC() {
-    val text = "/** ," + CARET_MARKER + " */"
+    val text        = "/** ," + CARET_MARKER + " */"
     val assumedStub = "/** ,,,, */"
     checkGeneratedTextAfterTyping(text, assumedStub, ',')
   }
 
   def testBoldSimpleAC() {
-    val text = "/** ''" + CARET_MARKER + "'' */"
+    val text        = "/** ''" + CARET_MARKER + "'' */"
     val assumedStub = "/** '''''' */"
     checkGeneratedTextAfterTyping(text, assumedStub, '\'')
   }

@@ -24,16 +24,17 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.util.Utils
 
 class MatrixFactorizationModelSuite
-    extends SparkFunSuite with MLlibTestSparkContext {
+    extends SparkFunSuite
+    with MLlibTestSparkContext {
 
-  val rank = 2
+  val rank                                    = 2
   var userFeatures: RDD[(Int, Array[Double])] = _
   var prodFeatures: RDD[(Int, Array[Double])] = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    userFeatures = sc.parallelize(
-        Seq((0, Array(1.0, 2.0)), (1, Array(3.0, 4.0))))
+    userFeatures =
+      sc.parallelize(Seq((0, Array(1.0, 2.0)), (1, Array(3.0, 4.0))))
     prodFeatures = sc.parallelize(Seq((2, Array(5.0, 6.0))))
   }
 
@@ -57,10 +58,12 @@ class MatrixFactorizationModelSuite
   }
 
   test("save/load") {
-    val model = new MatrixFactorizationModel(rank, userFeatures, prodFeatures)
+    val model   = new MatrixFactorizationModel(rank, userFeatures, prodFeatures)
     val tempDir = Utils.createTempDir()
-    val path = tempDir.toURI.toString
-    def collect(features: RDD[(Int, Array[Double])]): Set[(Int, Seq[Double])] = {
+    val path    = tempDir.toURI.toString
+    def collect(
+        features: RDD[(Int, Array[Double])]
+    ): Set[(Int, Seq[Double])] = {
       features.mapValues(_.toSeq).collect().toSet
     }
     try {
@@ -75,8 +78,8 @@ class MatrixFactorizationModelSuite
   }
 
   test("batch predict API recommendProductsForUsers") {
-    val model = new MatrixFactorizationModel(rank, userFeatures, prodFeatures)
-    val topK = 10
+    val model           = new MatrixFactorizationModel(rank, userFeatures, prodFeatures)
+    val topK            = 10
     val recommendations = model.recommendProductsForUsers(topK).collectAsMap()
 
     assert(recommendations(0)(0).rating ~== 17.0 relTol 1e-14)
@@ -84,8 +87,8 @@ class MatrixFactorizationModelSuite
   }
 
   test("batch predict API recommendUsersForProducts") {
-    val model = new MatrixFactorizationModel(rank, userFeatures, prodFeatures)
-    val topK = 10
+    val model           = new MatrixFactorizationModel(rank, userFeatures, prodFeatures)
+    val topK            = 10
     val recommendations = model.recommendUsersForProducts(topK).collectAsMap()
 
     assert(recommendations(2)(0).user == 1)

@@ -47,7 +47,7 @@ import scalafx.testutil.PropertyComparator
 class InterpolatorSpec extends FlatSpec with PropertyComparator {
   "Interpolators" should "support all the built-in interpolators" in {
     val doubleProperty = new DoubleProperty(null, "test")
-    val kv1 = doubleProperty -> 50 tween Interpolator.DISCRETE
+    val kv1            = doubleProperty -> 50 tween Interpolator.DISCRETE
     kv1.interpolator should equal(jfxa.Interpolator.DISCRETE)
     val kv2 = doubleProperty -> 50 tween Interpolator.EASE_BOTH
     kv2.interpolator should equal(jfxa.Interpolator.EASE_BOTH)
@@ -61,23 +61,25 @@ class InterpolatorSpec extends FlatSpec with PropertyComparator {
 
   it should "support spline interpolations" in {
     val doubleProperty = new DoubleProperty(null, "test")
-    val kv1 = doubleProperty -> 50 tween Interpolator.SPLINE(.2, .2, .8, .8)
+    val kv1            = doubleProperty -> 50 tween Interpolator.SPLINE(.2, .2, .8, .8)
     // equals method doesn't work, so the best we can do is test the class type
     kv1.interpolator.getClass should equal(
-        Interpolator.SPLINE(.2, .2, .8, .8).getClass)
+      Interpolator.SPLINE(.2, .2, .8, .8).getClass
+    )
   }
 
   it should "support tangent interpolations" in {
     val doubleProperty = new DoubleProperty(null, "test")
-    val kv1 = doubleProperty -> 50 tween Interpolator.TANGENT((100 ms), .3)
+    val kv1            = doubleProperty -> 50 tween Interpolator.TANGENT((100 ms), .3)
     // equals method doesn't work, so the best we can do is test the class type
     kv1.interpolator.getClass should equal(
-        Interpolator.TANGENT((100 ms), .3).getClass)
+      Interpolator.TANGENT((100 ms), .3).getClass
+    )
     val kv2 =
-      doubleProperty -> 50 tween Interpolator.TANGENT(
-          (50 ms), .5, (100 ms), .3)
+      doubleProperty -> 50 tween Interpolator.TANGENT((50 ms), .5, (100 ms), .3)
     // equals method doesn't work, so the best we can do is test the class type
     kv2.interpolator.getClass should equal(
-        Interpolator.TANGENT((50 ms), .5, (100 ms), .3).getClass)
+      Interpolator.TANGENT((50 ms), .5, (100 ms), .3).getClass
+    )
   }
 }

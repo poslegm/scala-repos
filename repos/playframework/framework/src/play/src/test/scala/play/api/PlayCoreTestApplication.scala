@@ -15,15 +15,15 @@ import java.io.File
 private[play] case class PlayCoreTestApplication(
     config: Map[String, Any] = Map(),
     path: File = new File("."),
-    mode: Mode.Mode = Mode.Test)
-    extends Application {
-  val classloader = Thread.currentThread.getContextClassLoader
+    mode: Mode.Mode = Mode.Test
+) extends Application {
+  val classloader        = Thread.currentThread.getContextClassLoader
   lazy val configuration = Configuration.from(config)
   private val lazyActorSystem =
     ActorSystemProvider.lazyStart(classloader, configuration)
-  def actorSystem = lazyActorSystem.get()
+  def actorSystem       = lazyActorSystem.get()
   lazy val materializer = ActorMaterializer()(actorSystem)
-  def stop() = lazyActorSystem.close()
-  val errorHandler = DefaultHttpErrorHandler
-  val requestHandler = NotImplementedHttpRequestHandler
+  def stop()            = lazyActorSystem.close()
+  val errorHandler      = DefaultHttpErrorHandler
+  val requestHandler    = NotImplementedHttpRequestHandler
 }

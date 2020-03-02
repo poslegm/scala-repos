@@ -20,18 +20,18 @@ final class PerfStatStorage(coll: Coll) {
   }
   implicit val UserIdBSONHandler = new BSONHandler[BSONString, UserId] {
     def read(b: BSONString) = UserId(b.value)
-    def write(u: UserId) = BSONString(u.value)
+    def write(u: UserId)    = BSONString(u.value)
   }
-  private implicit val RatingAtBSONHandler = Macros.handler[RatingAt]
-  private implicit val ResultBSONHandler = Macros.handler[Result]
-  private implicit val ResultsBSONHandler = Macros.handler[Results]
-  private implicit val StreakBSONHandler = Macros.handler[Streak]
-  private implicit val StreaksBSONHandler = Macros.handler[Streaks]
-  private implicit val PlayStreakBSONHandler = Macros.handler[PlayStreak]
+  private implicit val RatingAtBSONHandler     = Macros.handler[RatingAt]
+  private implicit val ResultBSONHandler       = Macros.handler[Result]
+  private implicit val ResultsBSONHandler      = Macros.handler[Results]
+  private implicit val StreakBSONHandler       = Macros.handler[Streak]
+  private implicit val StreaksBSONHandler      = Macros.handler[Streaks]
+  private implicit val PlayStreakBSONHandler   = Macros.handler[PlayStreak]
   private implicit val ResultStreakBSONHandler = Macros.handler[ResultStreak]
-  private implicit val AvgBSONHandler = Macros.handler[Avg]
-  private implicit val CountBSONHandler = Macros.handler[Count]
-  private implicit val PerfStatBSONHandler = Macros.handler[PerfStat]
+  private implicit val AvgBSONHandler          = Macros.handler[Avg]
+  private implicit val CountBSONHandler        = Macros.handler[Count]
+  private implicit val PerfStatBSONHandler     = Macros.handler[PerfStat]
 
   def find(userId: String, perfType: PerfType): Fu[Option[PerfStat]] =
     coll

@@ -6,21 +6,25 @@ package akka.stream.scaladsl
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.concurrent.forkjoin.ThreadLocalRandom
-import akka.stream.{OverflowStrategy, ActorMaterializer, ActorMaterializerSettings}
+import akka.stream.{
+  OverflowStrategy,
+  ActorMaterializer,
+  ActorMaterializerSettings
+}
 import akka.stream.testkit._
 import akka.testkit.AkkaSpec
 
 class FlowBatchSpec extends AkkaSpec {
 
-  val settings = ActorMaterializerSettings(system).withInputBuffer(
-      initialSize = 2, maxSize = 2)
+  val settings = ActorMaterializerSettings(system)
+    .withInputBuffer(initialSize = 2, maxSize = 2)
 
   implicit val materializer = ActorMaterializer(settings)
 
   "Batch" must {
 
     "pass-through elements unchanged when there is no rate difference" in {
-      val publisher = TestPublisher.probe[Int]()
+      val publisher  = TestPublisher.probe[Int]()
       val subscriber = TestSubscriber.manualProbe[Int]()
 
       Source
@@ -40,13 +44,14 @@ class FlowBatchSpec extends AkkaSpec {
     }
 
     "aggregate elements while downstream is silent" in {
-      val publisher = TestPublisher.probe[Int]()
+      val publisher  = TestPublisher.probe[Int]()
       val subscriber = TestSubscriber.manualProbe[List[Int]]()
 
       Source
         .fromPublisher(publisher)
-        .batch(max = Long.MaxValue, seed = i ⇒ List(i))(aggregate = (ints,
-              i) ⇒ i :: ints)
+        .batch(max = Long.MaxValue, seed = i ⇒ List(i))(aggregate =
+          (ints, i) ⇒ i :: ints
+        )
         .to(Sink.fromSubscriber(subscriber))
         .run()
       val sub = subscriber.expectSubscription()
@@ -71,7 +76,7 @@ class FlowBatchSpec extends AkkaSpec {
     }
 
     "backpressure subscriber when upstream is slower" in {
-      val publisher = TestPublisher.probe[Int]()
+      val publisher  = TestPublisher.probe[Int]()
       val subscriber = TestSubscriber.manualProbe[Int]()
 
       Source

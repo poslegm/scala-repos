@@ -34,10 +34,20 @@ import java.util
   * @see <a href="http://en.wikipedia.org/wiki/Well_Equidistributed_Long-period_Linear">WELL @ Wikipedia</a>
   * @author <a href="mailto:dusan.kysel@gmail.com">Dušan Kysel</a>
   */
-final class Well44497a protected[random](state: Array[Int], i0: Int)
+final class Well44497a protected[random] (state: Array[Int], i0: Int)
     extends IntBasedGenerator {
 
-  import Well44497a.{UpperMask, LowerMask, R, BYTES, mat0pos, mat0neg, mat1, mat3neg, mat5}
+  import Well44497a.{
+    UpperMask,
+    LowerMask,
+    R,
+    BYTES,
+    mat0pos,
+    mat0neg,
+    mat1,
+    mat3neg,
+    mat5
+  }
 
   private var i: Int = i0
 
@@ -45,11 +55,9 @@ final class Well44497a protected[random](state: Array[Int], i0: Int)
 
   def getSeedBytes(): Array[Byte] = {
     val bytes = new Array[Byte](BYTES)
-    val bb = ByteBuffer.wrap(bytes)
+    val bb    = ByteBuffer.wrap(bytes)
 
-    cfor(0)(_ < R, _ + 1) { i =>
-      bb.putInt(state(i))
-    }
+    cfor(0)(_ < R, _ + 1) { i => bb.putInt(state(i)) }
     bb.putInt(i)
     bytes
   }
@@ -59,9 +67,7 @@ final class Well44497a protected[random](state: Array[Int], i0: Int)
       if (bytes.length < BYTES) util.Arrays.copyOf(bytes, BYTES) else bytes
     val bb = ByteBuffer.wrap(bs)
 
-    cfor(0)(_ < R, _ + 1) { i =>
-      state(i) = bb.getInt
-    }
+    cfor(0)(_ < R, _ + 1) { i => state(i) = bb.getInt }
     i = bb.getInt
   }
 
@@ -75,7 +81,12 @@ final class Well44497a protected[random](state: Array[Int], i0: Int)
 
     state(i) = z1 ^ z2
     state(vrm1(i)) = mat1(z0) ^ mat0pos(20, z1) ^ mat5(
-        9, 0xb729fcec, 0xfbffffff, 0x00020000, z2) ^ mat1(state(i))
+      9,
+      0xb729fcec,
+      0xfbffffff,
+      0x00020000,
+      z2
+    ) ^ mat1(state(i))
     i = vrm1(i)
 
     state(i)
@@ -113,7 +124,7 @@ object Well44497a extends GeneratorCompanion[Well44497a, (Array[Int], Int)] {
 
   @inline private final def mat0pos(t: Int, v: Int) = v ^ (v >>> t)
   @inline private final def mat0neg(t: Int, v: Int) = v ^ (v << -t)
-  @inline private final def mat1(v: Int) = v
+  @inline private final def mat1(v: Int)            = v
   // @inline private final def mat2(a: Int, v: Int)            = if ((v & 1) != 0) (v >>> 1) ^ a else v >>> 1
   // @inline private final def mat3pos(t: Int, v: Int)         = v >>> t
   @inline private final def mat3neg(t: Int, v: Int) = v << -t

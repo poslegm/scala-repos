@@ -56,7 +56,7 @@ class UnionTypeTest {
   }
 
   @Test def upcast(): Unit = {
-    val x1: List[Int] | String = "hello"
+    val x1: List[Int] | String      = "hello"
     val x2: Seq[Int] | CharSequence = x1
     assertEquals("hello", x2)
   }
@@ -89,8 +89,8 @@ class UnionTypeTest {
   }
 
   @Test def permutations_of_2_base_types_to_3_base_types(): Unit = {
-    val x1: Int | String = 3
-    val x2: Int | Boolean = false
+    val x1: Int | String     = 3
+    val x2: Int | Boolean    = false
     val x3: Boolean | String = "hello"
 
     val y1: Int | String | Boolean = x1
@@ -118,19 +118,19 @@ class UnionTypeTest {
 
   @Test def merge(): Unit = {
     val x1: Int | Boolean = 4
-    val y1: AnyVal = x1.merge
+    val y1: AnyVal        = x1.merge
     assertEquals(4, y1.asInstanceOf[js.Any])
 
     val x2: String | java.nio.CharBuffer = "hello"
-    val y2: CharSequence = x2.merge
+    val y2: CharSequence                 = x2.merge
     assertEquals("hello", y2.asInstanceOf[js.Any])
 
     val x3: Int | String | Boolean | java.nio.CharBuffer = "hello"
-    val y3: CharSequence | AnyVal = x3.merge
+    val y3: CharSequence | AnyVal                        = x3.merge
     assertEquals("hello", y3.asInstanceOf[js.Any])
 
     val x4: List[Int] | Vector[Int] | mutable.Buffer[Int] = List(3, 5)
-    val y4: Seq[Int] = x4.merge
+    val y4: Seq[Int]                                      = x4.merge
     assertEquals(Seq(3, 5), y4)
   }
 
@@ -149,9 +149,13 @@ class UnionTypeTest {
     assertEquals(a, a: js.UndefOr[Int | js.UndefOr[String]])
     assertEquals(a, a: js.UndefOr[js.UndefOr[Int] | js.UndefOr[String]])
     assertEquals(
-        a, a: js.UndefOr[js.UndefOr[js.UndefOr[Int]] | js.UndefOr[String]])
+      a,
+      a: js.UndefOr[js.UndefOr[js.UndefOr[Int]] | js.UndefOr[String]]
+    )
     assertEquals(
-        a, a: js.UndefOr[js.UndefOr[Int] | js.UndefOr[js.UndefOr[String]]])
+      a,
+      a: js.UndefOr[js.UndefOr[Int] | js.UndefOr[js.UndefOr[String]]]
+    )
 
     assertEquals(a, a: js.UndefOr[String | Int])
     assertEquals(a, a: js.UndefOr[String | Int])
@@ -159,9 +163,13 @@ class UnionTypeTest {
     assertEquals(a, a: js.UndefOr[String | js.UndefOr[Int]])
     assertEquals(a, a: js.UndefOr[js.UndefOr[String] | js.UndefOr[Int]])
     assertEquals(
-        a, a: js.UndefOr[js.UndefOr[String] | js.UndefOr[js.UndefOr[Int]]])
+      a,
+      a: js.UndefOr[js.UndefOr[String] | js.UndefOr[js.UndefOr[Int]]]
+    )
     assertEquals(
-        a, a: js.UndefOr[js.UndefOr[js.UndefOr[String]] | js.UndefOr[Int]])
+      a,
+      a: js.UndefOr[js.UndefOr[js.UndefOr[String]] | js.UndefOr[Int]]
+    )
 
     // Confirm that we're working with triple unions too
 

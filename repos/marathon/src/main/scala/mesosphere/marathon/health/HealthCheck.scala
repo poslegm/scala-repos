@@ -20,8 +20,8 @@ case class HealthCheck(
     timeout: FiniteDuration = HealthCheck.DefaultTimeout,
     maxConsecutiveFailures: Int = HealthCheck.DefaultMaxConsecutiveFailures,
     ignoreHttp1xx: Boolean = HealthCheck.DefaultIgnoreHttp1xx,
-    port: Option[Int] = HealthCheck.DefaultPort)
-    extends MarathonState[Protos.HealthCheckDefinition, HealthCheck] {
+    port: Option[Int] = HealthCheck.DefaultPort
+) extends MarathonState[Protos.HealthCheckDefinition, HealthCheck] {
 
   def toProto: Protos.HealthCheckDefinition = {
     val builder = Protos.HealthCheckDefinition.newBuilder
@@ -32,39 +32,37 @@ case class HealthCheck(
       .setMaxConsecutiveFailures(this.maxConsecutiveFailures)
       .setIgnoreHttp1Xx(this.ignoreHttp1xx)
 
-    command foreach { c =>
-      builder.setCommand(c.toProto)
-    }
+    command foreach { c => builder.setCommand(c.toProto) }
 
     path foreach builder.setPath
 
-    portIndex foreach { p =>
-      builder.setPortIndex(p.toInt)
-    }
-    port foreach { p =>
-      builder.setPort(p.toInt)
-    }
+    portIndex foreach { p => builder.setPortIndex(p.toInt) }
+    port foreach { p => builder.setPort(p.toInt) }
 
     builder.build
   }
 
   def mergeFromProto(proto: Protos.HealthCheckDefinition): HealthCheck =
     HealthCheck(
-        path = if (proto.hasPath) Some(proto.getPath) else None,
-        protocol = proto.getProtocol,
-        portIndex = if (proto.hasPortIndex) Some(proto.getPortIndex)
-          else if (!proto.hasPort && proto.getProtocol != Protocol.COMMAND)
-            Some(0) // backward compatibility, this used to be the default value in marathon.proto
-          else None,
-        command = if (proto.hasCommand)
-            Some(Command("").mergeFromProto(proto.getCommand))
-          else None,
-        gracePeriod = proto.getGracePeriodSeconds.seconds,
-        timeout = proto.getTimeoutSeconds.seconds,
-        interval = proto.getIntervalSeconds.seconds,
-        maxConsecutiveFailures = proto.getMaxConsecutiveFailures,
-        ignoreHttp1xx = proto.getIgnoreHttp1Xx,
-        port = if (proto.hasPort) Some(proto.getPort) else None
+      path = if (proto.hasPath) Some(proto.getPath) else None,
+      protocol = proto.getProtocol,
+      portIndex =
+        if (proto.hasPortIndex) Some(proto.getPortIndex)
+        else if (!proto.hasPort && proto.getProtocol != Protocol.COMMAND)
+          Some(
+            0
+          ) // backward compatibility, this used to be the default value in marathon.proto
+        else None,
+      command =
+        if (proto.hasCommand)
+          Some(Command("").mergeFromProto(proto.getCommand))
+        else None,
+      gracePeriod = proto.getGracePeriodSeconds.seconds,
+      timeout = proto.getTimeoutSeconds.seconds,
+      interval = proto.getIntervalSeconds.seconds,
+      maxConsecutiveFailures = proto.getMaxConsecutiveFailures,
+      ignoreHttp1xx = proto.getIgnoreHttp1Xx,
+      port = if (proto.hasPort) Some(proto.getPort) else None
     )
 
   def mergeFromProto(bytes: Array[Byte]): HealthCheck =
@@ -75,18 +73,20 @@ case class HealthCheck(
     val builder = this.protocol match {
       case Protocol.COMMAND =>
         assert(
-            command.isDefined,
-            "A command is required when using the COMMAND health check protocol."
+          command.isDefined,
+          "A command is required when using the COMMAND health check protocol."
         )
         MesosProtos.HealthCheck.newBuilder.setCommand(this.command.get.toProto)
 
       case Protocol.HTTP =>
         throw new UnsupportedOperationException(
-            s"Mesos does not support health checks of type [$protocol]")
+          s"Mesos does not support health checks of type [$protocol]"
+        )
 
       case _ =>
         throw new UnsupportedOperationException(
-            s"Mesos does not support health checks of type [$protocol]")
+          s"Mesos does not support health checks of type [$protocol]"
+        )
     }
 
     builder
@@ -108,17 +108,17 @@ case class HealthCheck(
 }
 
 object HealthCheck {
-  val DefaultPath = None
-  val DefaultProtocol = Protocol.HTTP
+  val DefaultPath      = None
+  val DefaultProtocol  = Protocol.HTTP
   val DefaultPortIndex = None
-  val DefaultCommand = None
+  val DefaultCommand   = None
   // Dockers can take a long time to download, so default to a fairly long wait.
-  val DefaultGracePeriod = 5.minutes
-  val DefaultInterval = 1.minute
-  val DefaultTimeout = 20.seconds
+  val DefaultGracePeriod            = 5.minutes
+  val DefaultInterval               = 1.minute
+  val DefaultTimeout                = 20.seconds
   val DefaultMaxConsecutiveFailures = 3
-  val DefaultIgnoreHttp1xx = false
-  val DefaultPort = None
+  val DefaultIgnoreHttp1xx          = false
+  val DefaultPort                   = None
 
   implicit val healthCheck = validator[HealthCheck] { hc =>
     (hc.portIndex.nonEmpty is true) or (hc.port.nonEmpty is true)
@@ -132,7 +132,7 @@ object HealthCheck {
         def eitherPortIndexOrPort: Boolean =
           hc.portIndex.isDefined ^ hc.port.isDefined
         val hasCommand = hc.command.isDefined
-        val hasPath = hc.path.isDefined
+        val hasPath    = hc.path.isDefined
         if (hc.protocol match {
               case Protocol.COMMAND =>
                 hasCommand && !hasPath && hc.port.isEmpty
@@ -143,10 +143,14 @@ object HealthCheck {
             }) Success
         else
           Failure(
-              Set(RuleViolation(
-                      hc,
-                      s"HealthCheck is having parameters violation ${hc.protocol} protocol.",
-                      None)))
+            Set(
+              RuleViolation(
+                hc,
+                s"HealthCheck is having parameters violation ${hc.protocol} protocol.",
+                None
+              )
+            )
+          )
       }
     }
   }

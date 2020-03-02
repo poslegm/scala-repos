@@ -19,8 +19,9 @@ import com.twitter.util.{Future, Promise}
   * @param statsReceiver typically scoped to `clientName/dispatcher`
   */
 class PipeliningDispatcher[Req, Rep](
-    trans: Transport[Req, Rep], statsReceiver: StatsReceiver)
-    extends GenSerialClientDispatcher[Req, Rep, Req, Rep](trans, statsReceiver) {
+    trans: Transport[Req, Rep],
+    statsReceiver: StatsReceiver
+) extends GenSerialClientDispatcher[Req, Rep, Req, Rep](trans, statsReceiver) {
 
   def this(trans: Transport[Req, Rep]) =
     this(trans, NullStatsReceiver)
@@ -34,8 +35,9 @@ class PipeliningDispatcher[Req, Rep](
 
   private[this] val transRead: Promise[Rep] => Unit = p =>
     trans.read().respond { res =>
-      try p.update(res) finally loop()
-  }
+      try p.update(res)
+      finally loop()
+    }
 
   private[this] def loop(): Unit =
     q.poll().onSuccess(transRead)
@@ -43,9 +45,7 @@ class PipeliningDispatcher[Req, Rep](
   loop()
 
   protected def dispatch(req: Req, p: Promise[Rep]): Future[Unit] =
-    trans.write(req).onSuccess { _ =>
-      q.offer(p)
-    }
+    trans.write(req).onSuccess { _ => q.offer(p) }
 
   override def apply(req: Req): Future[Rep] = super.apply(req).masked
 }

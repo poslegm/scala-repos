@@ -92,9 +92,9 @@ object AutoAlgebraExample extends App {
   // already exist in Spire, so this is just to demonstrate Auto's utility.
 
   implicit val ushortOrder = Auto.scala.order[UShort]
-  implicit val ushortRig = Auto.scala.rig[UShort](UShort(0), UShort(1))
+  implicit val ushortRig   = Auto.scala.rig[UShort](UShort(0), UShort(1))
 
-  implicit val intOrder = Auto.scala.order[Int]
+  implicit val intOrder         = Auto.scala.order[Int]
   implicit val intEuclideanRing = Auto.scala.euclideanRing[Int](0, 1)
 
   implicit val bigIntOrder = Auto.scala.order[BigInt]

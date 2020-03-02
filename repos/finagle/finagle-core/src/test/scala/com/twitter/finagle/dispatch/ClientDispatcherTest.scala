@@ -16,8 +16,8 @@ import org.scalatest.mock.MockitoSugar
 class ClientDispatcherTest extends FunSuite with MockitoSugar {
   class DispatchHelper {
     val closeP = new Promise[Exception]
-    val stats = new InMemoryStatsReceiver()
-    val trans = mock[Transport[String, String]]
+    val stats  = new InMemoryStatsReceiver()
+    val trans  = mock[Transport[String, String]]
     when(trans.onClose).thenReturn(closeP)
 
     val disp = new SerialClientDispatcher[String, String](trans, stats)
@@ -68,7 +68,8 @@ class ClientDispatcherTest extends FunSuite with MockitoSugar {
   }
 
   test(
-      "ClientDispatcher should interrupt when close transport and cancel pending requests") {
+    "ClientDispatcher should interrupt when close transport and cancel pending requests"
+  ) {
     val h = new DispatchHelper
     import h._
 

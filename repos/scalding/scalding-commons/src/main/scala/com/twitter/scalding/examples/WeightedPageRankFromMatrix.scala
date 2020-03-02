@@ -41,19 +41,19 @@ import com.twitter.scalding.mathematics.Matrix._
 class WeightedPageRankFromMatrix(args: Args) extends Job(args) {
 
   val d = args("d").toDouble // aka damping factor
-  val n = args("n").toInt // number of nodes in the graph
+  val n = args("n").toInt    // number of nodes in the graph
 
-  val currentIteration = args("currentIteration").toInt
-  val maxIterations = args("maxIterations").toInt
+  val currentIteration     = args("currentIteration").toInt
+  val maxIterations        = args("maxIterations").toInt
   val convergenceThreshold = args("convergenceThreshold").toDouble
 
-  val rootDir = args("rootDir")
-  val edgesLoc = rootDir + "/edges"
+  val rootDir       = args("rootDir")
+  val edgesLoc      = rootDir + "/edges"
   val onesVectorLoc = rootDir + "/onesVector"
 
-  val iterationsDir = rootDir + "/iterations"
+  val iterationsDir     = rootDir + "/iterations"
   val previousVectorLoc = iterationsDir + "/" + currentIteration
-  val nextVectorLoc = iterationsDir + "/" + (currentIteration + 1)
+  val nextVectorLoc     = iterationsDir + "/" + (currentIteration + 1)
 
   val diffLoc = rootDir + "/diff"
 
@@ -89,9 +89,12 @@ class WeightedPageRankFromMatrix(args: Args) extends Job(args) {
     * calculation.
     */
   def measureConvergenceAndStore() {
-    (previousVector - nextVector).mapWithIndex {
-      case (value, index) => math.abs(value)
-    }.sum.write(TypedTsv[Double](diffLoc))
+    (previousVector - nextVector)
+      .mapWithIndex {
+        case (value, index) => math.abs(value)
+      }
+      .sum
+      .write(TypedTsv[Double](diffLoc))
   }
 
   /**
@@ -100,8 +103,8 @@ class WeightedPageRankFromMatrix(args: Args) extends Job(args) {
   def M_hat: Matrix[Int, Int, Double] = {
 
     if (currentIteration == 0) {
-      val A = matrixFromTsv(edgesLoc)
-      val M = A.rowL1Normalize.transpose
+      val A     = matrixFromTsv(edgesLoc)
+      val M     = A.rowL1Normalize.transpose
       val M_hat = d * M
 
       M_hat.write(Tsv(rootDir + "/constants/M_hat"))
@@ -116,7 +119,7 @@ class WeightedPageRankFromMatrix(args: Args) extends Job(args) {
   def priorVector: ColVector[Int, Double] = {
 
     if (currentIteration == 0) {
-      val onesVector = colVectorFromTsv(onesVectorLoc)
+      val onesVector  = colVectorFromTsv(onesVectorLoc)
       val priorVector = ((1 - d) / n) * onesVector.toMatrix(0)
 
       priorVector.getCol(0).write(Tsv(rootDir + "/constants/priorVector"))

@@ -49,9 +49,9 @@ object Test extends App {
     }
   }
 
-  val total = 50000
+  val total  = 50000
   val values = (0 until total) zip (0 until total)
-  val map = scala.collection.mutable.HashMap.empty[Int, Int]
+  val map    = scala.collection.mutable.HashMap.empty[Int, Int]
 
   map ++= values
 
@@ -65,16 +65,20 @@ object Test extends App {
     benchScalaPar(map)
   }
 
-  val javamap = benchJava(map.asJava)
-  val scalamap = benchScala(map)
+  val javamap     = benchJava(map.asJava)
+  val scalamap    = benchScala(map)
   val scalaparmap = benchScalaPar(map)
 
   // println(javamap)
   // println(scalamap)
   // println(scalaparmap)
 
-  assert(scalamap < (javamap * 10),
-         "scalamap: " + scalamap + " vs. javamap: " + javamap)
-  assert(scalaparmap < (javamap * 10),
-         "scalaparmap: " + scalaparmap + " vs. javamap: " + javamap)
+  assert(
+    scalamap < (javamap * 10),
+    "scalamap: " + scalamap + " vs. javamap: " + javamap
+  )
+  assert(
+    scalaparmap < (javamap * 10),
+    "scalaparmap: " + scalaparmap + " vs. javamap: " + javamap
+  )
 }

@@ -12,13 +12,13 @@ private[parser] trait AcceptEncodingHeader {
   // http://tools.ietf.org/html/rfc7231#section-5.3.4
   def `accept-encoding` = rule {
     zeroOrMore(`encoding-range-decl`).separatedBy(listSep) ~ EOI ~>
-    (`Accept-Encoding`(_))
+      (`Accept-Encoding`(_))
   }
 
   def `encoding-range-decl` = rule {
     codings ~ optional(weight) ~> { (range, optQ) ⇒
       optQ match {
-        case None ⇒ range
+        case None    ⇒ range
         case Some(q) ⇒ range withQValue q
       }
     }
@@ -30,6 +30,7 @@ private[parser] trait AcceptEncodingHeader {
 
   private val getEncoding: String ⇒ HttpEncodingRange = name ⇒
     HttpEncodingRange(
-        HttpEncodings.getForKeyCaseInsensitive(name) getOrElse HttpEncoding
-          .custom(name))
+      HttpEncodings.getForKeyCaseInsensitive(name) getOrElse HttpEncoding
+        .custom(name)
+    )
 }

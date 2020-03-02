@@ -10,9 +10,7 @@ trait Pool[A] {
 class SimplePool[A](items: mutable.Queue[Future[A]]) extends Pool[A] {
   def this(items: Seq[A]) = this {
     val queue = new mutable.Queue[Future[A]]
-    queue ++= items map { item =>
-      Future(item)
-    }
+    queue ++= items map { item => Future(item) }
     queue
   }
 
@@ -46,7 +44,7 @@ abstract class FactoryPool[A](numItems: Int) extends Pool[A] {
     new HealthyQueue[A](makeItem _, numItems, isHealthy(_))
   private val simplePool = new SimplePool[A](healthyQueue)
 
-  def reserve() = simplePool.reserve()
+  def reserve()     = simplePool.reserve()
   def release(a: A) = simplePool.release(a)
   def dispose(a: A) {
     healthyQueue += makeItem()
@@ -57,12 +55,12 @@ abstract class FactoryPool[A](numItems: Int) extends Pool[A] {
 }
 
 private class HealthyQueue[A](
-    makeItem: () => Future[A], numItems: Int, isHealthy: A => Boolean)
-    extends mutable.QueueProxy[Future[A]] {
+    makeItem: () => Future[A],
+    numItems: Int,
+    isHealthy: A => Boolean
+) extends mutable.QueueProxy[Future[A]] {
   val self = new mutable.Queue[Future[A]]
-  0.until(numItems) foreach { _ =>
-    self += makeItem()
-  }
+  0.until(numItems) foreach { _ => self += makeItem() }
 
   override def +=(item: Future[A]) = {
     synchronized { self += item }

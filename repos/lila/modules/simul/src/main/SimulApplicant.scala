@@ -4,7 +4,7 @@ import lila.game.{PovRef, IdGenerator}
 
 case class SimulApplicant(player: SimulPlayer, accepted: Boolean) {
 
-  def is(userId: String): Boolean = player is userId
+  def is(userId: String): Boolean     = player is userId
   def is(other: SimulPlayer): Boolean = player is other
 }
 

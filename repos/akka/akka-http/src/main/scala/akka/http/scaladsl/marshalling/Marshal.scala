@@ -14,8 +14,9 @@ object Marshal {
   def apply[T](value: T): Marshal[T] = new Marshal(value)
 
   final case class UnacceptableResponseContentTypeException(
-      supported: Set[ContentNegotiator.Alternative])
-      extends RuntimeException with NoStackTrace
+      supported: Set[ContentNegotiator.Alternative]
+  ) extends RuntimeException
+      with NoStackTrace
 }
 
 class Marshal[A](val value: A) {
@@ -37,9 +38,10 @@ class Marshal[A](val value: A) {
   /**
     * Marshals `value` to an `HttpResponse` for the given `HttpRequest` with full content-negotiation.
     */
-  def toResponseFor(
-      request: HttpRequest)(implicit m: ToResponseMarshaller[A],
-                            ec: ExecutionContext): Future[HttpResponse] = {
+  def toResponseFor(request: HttpRequest)(
+      implicit m: ToResponseMarshaller[A],
+      ec: ExecutionContext
+  ): Future[HttpResponse] = {
     import akka.http.scaladsl.marshalling.Marshal._
     val ctn = ContentNegotiator(request.headers)
 
@@ -65,8 +67,7 @@ class Marshal[A](val value: A) {
                 case Marshalling.WithFixedContentType(`best`, marshal) ⇒
                   marshal
                 case Marshalling.WithOpenCharset(`bestMT`, marshal) ⇒
-                  () ⇒
-                    marshal(bestCS)
+                  () ⇒ marshal(bestCS)
               }
           }
         } else None
@@ -76,7 +77,8 @@ class Marshal[A](val value: A) {
         }
       } getOrElse {
         throw UnacceptableResponseContentTypeException(
-            supportedAlternatives.toSet)
+          supportedAlternatives.toSet
+        )
       }
       bestMarshal()
     }

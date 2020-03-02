@@ -34,9 +34,9 @@ class MdnsTest extends FunSuite with Eventually with IntegrationPatience {
           socket.close()
         }
       }
-      val resolver = new MDNSResolver
+      val resolver  = new MDNSResolver
       val announcer = new MDNSAnnouncer
-      val dest = "my-service._finagle._tcp.local."
+      val dest      = "my-service._finagle._tcp.local."
 
       val announcement = Await.result(announcer.announce(ia, dest))
       try {
@@ -45,8 +45,7 @@ class MdnsTest extends FunSuite with Eventually with IntegrationPatience {
         eventually(timeout(5 seconds)) {
           Var.sample(addr) match {
             case Addr.Bound(addrs, _) =>
-              assert(
-                  addrs.exists {
+              assert(addrs.exists {
                 case Address.Inet(ia1: InetSocketAddress, _) =>
                   ia1.getPort == ia.getPort
                 case _ => false
@@ -74,7 +73,7 @@ class MdnsTest extends FunSuite with Eventually with IntegrationPatience {
   test("throws an exception on an improperly formatted name") {
     val res = new MDNSResolver
     val ann = new MDNSAnnouncer
-    val ia = new InetSocketAddress(loopback, 0)
+    val ia  = new InetSocketAddress(loopback, 0)
     intercept[MDNSAddressException] { ann.announce(ia, "invalidname") }
     intercept[MDNSAddressException] { res.bind("invalidname") }
   }

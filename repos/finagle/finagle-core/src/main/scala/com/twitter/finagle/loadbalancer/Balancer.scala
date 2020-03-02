@@ -82,24 +82,30 @@ private trait Balancer[Req, Rep] extends ServiceFactory[Req, Rep] { self =>
   // to store it as a member variable on this trait.
   protected[this] def maxEffortExhausted: Counter
 
-  private[this] val gauges = Seq(statsReceiver.addGauge("available") {
-    dist.vector.count(n => n.status == Status.Open)
-  }, statsReceiver.addGauge("busy") {
-    dist.vector.count(n => n.status == Status.Busy)
-  }, statsReceiver.addGauge("closed") {
-    dist.vector.count(n => n.status == Status.Closed)
-  }, statsReceiver.addGauge("load") {
-    dist.vector.map(_.pending).sum
-  }, statsReceiver.addGauge("size") { dist.vector.size })
+  private[this] val gauges = Seq(
+    statsReceiver.addGauge("available") {
+      dist.vector.count(n => n.status == Status.Open)
+    },
+    statsReceiver.addGauge("busy") {
+      dist.vector.count(n => n.status == Status.Busy)
+    },
+    statsReceiver.addGauge("closed") {
+      dist.vector.count(n => n.status == Status.Closed)
+    },
+    statsReceiver.addGauge("load") {
+      dist.vector.map(_.pending).sum
+    },
+    statsReceiver.addGauge("size") { dist.vector.size }
+  )
 
-  private[this] val adds = statsReceiver.counter("adds")
+  private[this] val adds    = statsReceiver.counter("adds")
   private[this] val removes = statsReceiver.counter("removes")
 
   protected sealed trait Update
   protected case class NewList(
-      svcFactories: Traversable[ServiceFactory[Req, Rep]])
-      extends Update
-  protected case class Rebuild(cur: Distributor) extends Update
+      svcFactories: Traversable[ServiceFactory[Req, Rep]]
+  ) extends Update
+  protected case class Rebuild(cur: Distributor)       extends Update
   protected case class Invoke(fn: Distributor => Unit) extends Update
 
   private[this] val updater = new Updater[Update] {
@@ -109,8 +115,8 @@ private trait Balancer[Req, Rep] extends ServiceFactory[Req, Rep] { self =>
       val types = updates.reverse.groupBy(_.getClass)
 
       val update: Seq[Update] = types.get(classOf[NewList]) match {
-        case Some(Seq(last, _ *)) => Seq(last)
-        case None => types.getOrElse(classOf[Rebuild], Nil).take(1)
+        case Some(Seq(last, _*)) => Seq(last)
+        case None                => types.getOrElse(classOf[Rebuild], Nil).take(1)
       }
 
       update ++ types.getOrElse(classOf[Invoke], Nil).reverse
@@ -128,7 +134,7 @@ private trait Balancer[Req, Rep] extends ServiceFactory[Req, Rep] { self =>
 
         // we could demand that 'n' proxies hashCode, equals (i.e. is a Proxy)
         val transferNodes = transfer.map(n => n.factory -> n).toMap
-        var numNew = 0
+        var numNew        = 0
         val newNodes = svcFactories.map {
           case f if transferNodes.contains(f) => transferNodes(f)
           case f =>

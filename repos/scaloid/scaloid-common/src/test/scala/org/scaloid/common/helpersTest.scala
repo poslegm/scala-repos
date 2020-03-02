@@ -41,7 +41,7 @@ class helpersTest extends JUnitSuite with ShouldMatchers {
     val uri = Uri.parse("http://scaloid.org/")
     AppHelpers.openUri(uri)
     val shadowActivity = Robolectric.shadowOf(activity)
-    val intent = shadowActivity.getNextStartedActivity
+    val intent         = shadowActivity.getNextStartedActivity
     intent.getAction shouldBe Intent.ACTION_VIEW
     intent.getData shouldBe uri
   }
@@ -69,7 +69,8 @@ class helpersTest extends JUnitSuite with ShouldMatchers {
     val controller = Robolectric.buildActivity(classOf[SActivityImpl]).create
     activity = controller.get()
     ContentHelpers.broadcastReceiver(new IntentFilter(Intent.ACTION_VIEW))(
-        (c: Context, i: Intent) => c.startActivity(SIntent[SActivityImpl]))
+      (c: Context, i: Intent) => c.startActivity(SIntent[SActivityImpl])
+    )
     activity = controller.start.resume.get
 
     val registered =
@@ -79,13 +80,13 @@ class helpersTest extends JUnitSuite with ShouldMatchers {
       r.getIntentFilter.getAction(0) shouldBe Intent.ACTION_VIEW
     }
 
-    val intent = new Intent(
-        Intent.ACTION_VIEW, Uri.parse("http://scaloid.org/"))
+    val intent =
+      new Intent(Intent.ACTION_VIEW, Uri.parse("http://scaloid.org/"))
     val received =
       Robolectric.getShadowApplication.getReceiversForIntent(intent).asScala
     received.size shouldBe 1
-    received(0).onReceive(
-        Robolectric.getShadowApplication.getApplicationContext, intent)
+    received(0)
+      .onReceive(Robolectric.getShadowApplication.getApplicationContext, intent)
     val nextIntent = Robolectric.getShadowApplication.peekNextStartedActivity
     nextIntent.getComponent.getClassName shouldBe classOf[SActivityImpl].getName
   }
@@ -95,7 +96,8 @@ class helpersTest extends JUnitSuite with ShouldMatchers {
     PreferenceHelpers.defaultSharedPreferences.edit
       .putString("foo", "bar")
       .commit
-    PreferenceHelpers.defaultSharedPreferences.getString("foo", "") shouldBe "bar"
+    PreferenceHelpers.defaultSharedPreferences
+      .getString("foo", "") shouldBe "bar"
   }
 
   @Test

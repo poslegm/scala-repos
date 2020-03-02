@@ -4,7 +4,10 @@
 package play.api.libs.streams.impl
 
 import org.specs2.mutable.Specification
-import scala.concurrent.duration.{FiniteDuration => ScalaFiniteDuration, SECONDS}
+import scala.concurrent.duration.{
+  FiniteDuration => ScalaFiniteDuration,
+  SECONDS
+}
 import scala.concurrent.Promise
 import scala.util.{Failure, Success, Try}
 
@@ -21,9 +24,7 @@ class PromiseSubscriberSpec extends Specification {
 
     val prom = Promise[T]()
     val subr = new PromiseSubscriber(prom)
-    prom.future.onComplete { result =>
-      record(OnComplete(result))
-    }
+    prom.future.onComplete { result => record(OnComplete(result)) }
   }
 
   "PromiseSubscriber" should {

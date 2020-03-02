@@ -33,9 +33,9 @@ package queryexamplesfixtures {
   class Person private () extends MongoRecord[Person] with ObjectIdPk[Person] {
     def meta = Person
 
-    object name extends StringField(this, 100)
+    object name      extends StringField(this, 100)
     object birthDate extends DateField(this)
-    object childId extends UUIDField(this)
+    object childId   extends UUIDField(this)
     object petId extends ObjectIdField(this) {
       override def optional_? = true
     }
@@ -69,8 +69,8 @@ object QueryExamplesSpec extends Specification with MongoTestKit {
     val bettysBirthDate = Calendar.getInstance
     bettysBirthDate.set(1973, 8, 30, 19, 0)
 
-    val dinoId = ObjectId.get
-    val pebblesId = UUID.randomUUID
+    val dinoId     = ObjectId.get
+    val pebblesId  = UUID.randomUUID
     val bammbammId = UUID.randomUUID
 
     val fred = Person.createRecord
@@ -97,7 +97,7 @@ object QueryExamplesSpec extends Specification with MongoTestKit {
       .save()
 
     val flinstonesIds = List(fred.id.get, wilma.id.get)
-    val rubblesIds = List(barney.id.get, betty.id.get)
+    val rubblesIds    = List(barney.id.get, betty.id.get)
 
     // query for Bamm-Bamm's parents (UUID)
     val pebblesParents = Person.findAll(("childId" -> bammbammId))
@@ -127,7 +127,8 @@ object QueryExamplesSpec extends Specification with MongoTestKit {
 
     // query for the Flinstones using a Pattern
     val flinstones = Person.findAll(
-        ("name" -> Pattern.compile("^flinst", Pattern.CASE_INSENSITIVE)))
+      ("name" -> Pattern.compile("^flinst", Pattern.CASE_INSENSITIVE))
+    )
 
     flinstones.length must_== 2
     flinstones.map(_.id.get).filterNot(flinstonesIds.contains(_)) must_== List()
@@ -141,7 +142,7 @@ object QueryExamplesSpec extends Specification with MongoTestKit {
 
     // query using Dates
     implicit val formats = Person.formats // this is needed for Dates
-    val qryDate = Calendar.getInstance
+    val qryDate          = Calendar.getInstance
     qryDate.set(1971, 1, 1, 19, 0)
     val people = Person.findAll(("birthDate" -> ("$gt" -> qryDate.getTime)))
 

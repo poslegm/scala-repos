@@ -21,17 +21,23 @@ import akka.remote.transport.Transport.InvalidAssociationException
 import akka.remote.transport.AssociationHandle
 
 object Ticket15109Spec extends MultiNodeConfig {
-  val first = role("first")
+  val first  = role("first")
   val second = role("second")
 
-  commonConfig(debugConfig(on = false).withFallback(ConfigFactory.parseString("""
+  commonConfig(
+    debugConfig(on = false).withFallback(
+      ConfigFactory.parseString(
+        """
       akka.loglevel = INFO
       akka.remote.log-remote-lifecycle-events = INFO
       ## Keep it tight, otherwise reestablishing a connection takes too much time
       akka.remote.transport-failure-detector.heartbeat-interval = 1 s
       akka.remote.transport-failure-detector.acceptable-heartbeat-pause = 3 s
       akka.remote.retry-gate-closed-for = 0.5 s
-                              """)))
+                              """
+      )
+    )
+  )
 
   testTransport(on = true)
 
@@ -46,7 +52,8 @@ class Ticket15109SpecMultiJvmNode1 extends Ticket15109Spec
 class Ticket15109SpecMultiJvmNode2 extends Ticket15109Spec
 
 abstract class Ticket15109Spec
-    extends MultiNodeSpec(Ticket15109Spec) with STMultiNodeSpec
+    extends MultiNodeSpec(Ticket15109Spec)
+    with STMultiNodeSpec
     with ImplicitSender {
 
   import Ticket15109Spec._
@@ -88,10 +95,16 @@ abstract class Ticket15109Spec
       runOn(second) {
         // Force a disassociation. Using the message Shutdown, which is suboptimal here, but this is the only
         // DisassociateInfo that triggers the code-path we want to test
-        Await.result(RARP(system).provider.transport
-                       .managementCommand(ForceDisassociateExplicitly(
-                             node(first).address, AssociationHandle.Shutdown)),
-                     3.seconds)
+        Await.result(
+          RARP(system).provider.transport
+            .managementCommand(
+              ForceDisassociateExplicitly(
+                node(first).address,
+                AssociationHandle.Shutdown
+              )
+            ),
+          3.seconds
+        )
       }
 
       enterBarrier("disassociated")

@@ -32,7 +32,7 @@ trait Order[F] extends Equal[F] { self =>
 
   override def contramap[B](f: B => F): Order[B] = new Order[B] {
     def order(b1: B, b2: B): Ordering = self.order(f(b1), f(b2))
-    override def equal(b1: B, b2: B) = self.equal(f(b1), f(b2))
+    override def equal(b1: B, b2: B)  = self.equal(f(b1), f(b2))
   }
 
   /** @note `Order.fromScalaOrdering(toScalaOrdering).order(x, y)`
@@ -43,9 +43,9 @@ trait Order[F] extends Equal[F] { self =>
 
   def reverseOrder: Order[F] = new Order[F] {
     def order(x: F, y: F): Ordering = self.order(y, x)
-    override def equal(x: F, y: F) = self.equal(x, y)
-    override def equalIsNatural = self.equalIsNatural
-    override def reverseOrder = self
+    override def equal(x: F, y: F)  = self.equal(x, y)
+    override def equalIsNatural     = self.equalIsNatural
+    override def reverseOrder       = self
   }
 
   trait OrderLaw extends EqualLaw {
@@ -88,7 +88,7 @@ object Order {
         val (a2, b2) = f(c2)
         fa.order(a1, a2) match {
           case Ordering.EQ => fb.order(b1, b2)
-          case o => o
+          case o           => o
         }
       }
   }
@@ -99,7 +99,7 @@ object Order {
   }
 
   /** Alias for `Order[B] contramap f`, with inferred `B`. */
-  def orderBy[A, B : Order](f: A => B): Order[A] = Order[B] contramap f
+  def orderBy[A, B: Order](f: A => B): Order[A] = Order[B] contramap f
 
   /** Derive from an `order` function. */
   def order[A](f: (A, A) => Ordering): Order[A] = new Order[A] {

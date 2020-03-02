@@ -34,9 +34,11 @@ trait ServerProcess {
   def addShutdownHook(hook: => Unit): Unit
 
   /** Exit the process with a message and optional cause and return code */
-  def exit(message: String,
-           cause: Option[Throwable] = None,
-           returnCode: Int = -1): Nothing
+  def exit(
+      message: String,
+      cause: Option[Throwable] = None,
+      returnCode: Int = -1
+  ): Nothing
 }
 
 /**
@@ -45,7 +47,7 @@ trait ServerProcess {
   */
 class RealServerProcess(val args: Seq[String]) extends ServerProcess {
   def classLoader: ClassLoader = Thread.currentThread.getContextClassLoader
-  def properties: Properties = System.getProperties
+  def properties: Properties   = System.getProperties
   def pid: Option[String] = {
     ManagementFactory.getRuntimeMXBean.getName.split('@').headOption
   }
@@ -54,9 +56,11 @@ class RealServerProcess(val args: Seq[String]) extends ServerProcess {
       override def run() = hook
     })
   }
-  def exit(message: String,
-           cause: Option[Throwable] = None,
-           returnCode: Int = -1): Nothing = {
+  def exit(
+      message: String,
+      cause: Option[Throwable] = None,
+      returnCode: Int = -1
+  ): Nothing = {
     System.err.println(message)
     cause.foreach(_.printStackTrace())
     System.exit(returnCode)

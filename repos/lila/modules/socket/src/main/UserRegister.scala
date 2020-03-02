@@ -12,7 +12,7 @@ private final class UserRegister extends Actor {
 
   context.system.lilaBus.subscribe(self, 'users, 'socketDoor)
 
-  type UID = String
+  type UID    = String
   type UserId = String
 
   val users = mutable.Map.empty[UserId, mutable.Map[UID, SocketMember]]
@@ -28,8 +28,8 @@ private final class UserRegister extends Actor {
     case SocketEnter(uid, member) =>
       member.userId foreach { userId =>
         users get userId match {
-          case None => users += (userId -> mutable.Map(uid -> member))
-          case Some(members) => members += (uid -> member)
+          case None          => users += (userId -> mutable.Map(uid -> member))
+          case Some(members) => members += (uid  -> member)
         }
       }
 
@@ -43,8 +43,6 @@ private final class UserRegister extends Actor {
   }
 
   private def sendTo(userId: String, msg: JsObject) {
-    users get userId foreach { members =>
-      members.values foreach (_ push msg)
-    }
+    users get userId foreach { members => members.values foreach (_ push msg) }
   }
 }

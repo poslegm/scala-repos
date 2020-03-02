@@ -11,7 +11,7 @@ package actions {
 
 class Temp {
   def foo(c: actions.Column.Type) = 1
-  def foo(c: Int) = false
+  def foo(c: Int)                 = false
   /*start*/
   foo(actions.Column.Type.Integer) /*end*/
 }

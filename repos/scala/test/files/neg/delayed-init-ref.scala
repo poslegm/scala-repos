@@ -3,9 +3,9 @@ trait T {
 }
 
 object O extends App with T {
-  val vall = ""
+  val vall       = ""
   lazy val lazyy = ""
-  def deff = ""
+  def deff       = ""
 
   println(vall) // no warn
   new {
@@ -18,8 +18,8 @@ object Client {
   import O.vall
   println(vall) // warn
 
-  println(O.lazyy) // no warn
-  println(O.deff) // no warn
+  println(O.lazyy)    // no warn
+  println(O.deff)     // no warn
   println(O.traitVal) // no warn
 }
 
@@ -32,11 +32,12 @@ trait Before extends DelayedInit {
 object Spec {
   trait UserContext extends Before {
     def before() = ()
-    val foo = "foo"
+    val foo      = "foo"
   }
   new UserContext {
-    println(foo) // no warn
+    println(foo)      // no warn
     println(this.foo) // no warn
-    println({ locally(()); this }.foo) // warn (spurious, but we can't discriminate)
+    println({ locally(()); this }.foo
+    ) // warn (spurious, but we can't discriminate)
   }
 }

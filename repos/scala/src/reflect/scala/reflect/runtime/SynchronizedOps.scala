@@ -4,7 +4,8 @@ package runtime
 
 // SI-6240: test thread-safety, make trees synchronized as well
 private[reflect] trait SynchronizedOps
-    extends internal.SymbolTable with SynchronizedSymbols
+    extends internal.SymbolTable
+    with SynchronizedSymbols
     with SynchronizedTypes {
   self: SymbolTable =>
 
@@ -15,7 +16,9 @@ private[reflect] trait SynchronizedOps
 // BaseTypeSeqs
 
   override protected def newBaseTypeSeq(
-      parents: List[Type], elems: Array[Type]) =
+      parents: List[Type],
+      elems: Array[Type]
+  ) =
     // only need to synchronize BaseTypeSeqs if they contain refined types
     if (elems.exists(_.isInstanceOf[RefinedType]))
       new BaseTypeSeq(parents, elems) with SynchronizedBaseTypeSeq
@@ -23,7 +26,7 @@ private[reflect] trait SynchronizedOps
 
   trait SynchronizedBaseTypeSeq extends BaseTypeSeq {
     override def apply(i: Int): Type = gilSynchronized { super.apply(i) }
-    override def rawElem(i: Int) = gilSynchronized { super.rawElem(i) }
+    override def rawElem(i: Int)     = gilSynchronized { super.rawElem(i) }
     override def typeSymbol(i: Int): Symbol = gilSynchronized {
       super.typeSymbol(i)
     }
@@ -38,7 +41,7 @@ private[reflect] trait SynchronizedOps
       super.exists(p)
     }
     override lazy val maxDepth = gilSynchronized { maxDepthOfElems }
-    override def toString = gilSynchronized { super.toString }
+    override def toString      = gilSynchronized { super.toString }
 
     override def lateMap(f: Type => Type): BaseTypeSeq =
       // only need to synchronize BaseTypeSeqs if they contain refined types
@@ -58,7 +61,7 @@ private[reflect] trait SynchronizedOps
     def syncLockSynchronized[T](body: => T): T =
       if (isCompilerUniverse) body else syncLock.synchronized { body }
     override def isEmpty: Boolean = syncLockSynchronized { super.isEmpty }
-    override def size: Int = syncLockSynchronized { super.size }
+    override def size: Int        = syncLockSynchronized { super.size }
     override def enter[T <: Symbol](sym: T): T = syncLockSynchronized {
       super.enter(sym)
     }

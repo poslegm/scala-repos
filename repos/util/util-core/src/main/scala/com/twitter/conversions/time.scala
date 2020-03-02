@@ -22,31 +22,31 @@ import scala.language.implicitConversions
 
 object time {
   class RichWholeNumber(wrapped: Long) {
-    def nanoseconds: Duration = Duration(wrapped, TimeUnit.NANOSECONDS)
-    def nanosecond: Duration = nanoseconds
+    def nanoseconds: Duration  = Duration(wrapped, TimeUnit.NANOSECONDS)
+    def nanosecond: Duration   = nanoseconds
     def microseconds: Duration = Duration(wrapped, TimeUnit.MICROSECONDS)
-    def microsecond: Duration = microseconds
+    def microsecond: Duration  = microseconds
     def milliseconds: Duration = Duration(wrapped, TimeUnit.MILLISECONDS)
-    def millisecond: Duration = milliseconds
-    def millis: Duration = milliseconds
-    def seconds: Duration = Duration(wrapped, TimeUnit.SECONDS)
-    def second: Duration = seconds
-    def minutes: Duration = Duration(wrapped, TimeUnit.MINUTES)
-    def minute: Duration = minutes
-    def hours: Duration = Duration(wrapped, TimeUnit.HOURS)
-    def hour: Duration = hours
-    def days: Duration = Duration(wrapped, TimeUnit.DAYS)
-    def day: Duration = days
+    def millisecond: Duration  = milliseconds
+    def millis: Duration       = milliseconds
+    def seconds: Duration      = Duration(wrapped, TimeUnit.SECONDS)
+    def second: Duration       = seconds
+    def minutes: Duration      = Duration(wrapped, TimeUnit.MINUTES)
+    def minute: Duration       = minutes
+    def hours: Duration        = Duration(wrapped, TimeUnit.HOURS)
+    def hour: Duration         = hours
+    def days: Duration         = Duration(wrapped, TimeUnit.DAYS)
+    def day: Duration          = days
   }
 
   private val ZeroRichWholeNumber = new RichWholeNumber(0) {
-    override def nanoseconds: Duration = Duration.Zero
+    override def nanoseconds: Duration  = Duration.Zero
     override def microseconds: Duration = Duration.Zero
     override def milliseconds: Duration = Duration.Zero
-    override def seconds: Duration = Duration.Zero
-    override def minutes: Duration = Duration.Zero
-    override def hours: Duration = Duration.Zero
-    override def days: Duration = Duration.Zero
+    override def seconds: Duration      = Duration.Zero
+    override def minutes: Duration      = Duration.Zero
+    override def hours: Duration        = Duration.Zero
+    override def days: Duration         = Duration.Zero
   }
 
   implicit def intToTimeableNumber(i: Int): RichWholeNumber =

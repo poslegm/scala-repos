@@ -23,15 +23,16 @@ object URLDecoder {
   }
 
   private def decodeImpl(s: String, charset: => Charset): String = {
-    val len = s.length
+    val len                 = s.length
     lazy val charsetDecoder = charset.newDecoder()
 
     lazy val byteBuffer = ByteBuffer.allocate(len / 3)
-    val charBuffer = CharBuffer.allocate(len)
+    val charBuffer      = CharBuffer.allocate(len)
 
     def throwIllegalHex() = {
       throw new IllegalArgumentException(
-          "URLDecoder: Illegal hex characters in escape (%) pattern")
+        "URLDecoder: Illegal hex characters in escape (%) pattern"
+      )
     }
 
     var i = 0
@@ -46,7 +47,7 @@ object URLDecoder {
 
         case '%' =>
           val decoder = charsetDecoder
-          val buffer = byteBuffer
+          val buffer  = byteBuffer
           buffer.clear()
           decoder.reset()
 
@@ -62,7 +63,7 @@ object URLDecoder {
 
           buffer.flip()
           val decodeResult = decoder.decode(buffer, charBuffer, true)
-          val flushResult = decoder.flush(charBuffer)
+          val flushResult  = decoder.flush(charBuffer)
 
           if (decodeResult.isError || flushResult.isError) throwIllegalHex()
 

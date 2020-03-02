@@ -15,15 +15,16 @@ class JavaWriter(classfile: Classfile, writer: Writer)
   val cf = classfile
 
   def flagsToStr(clazz: Boolean, flags: Int): String = {
-    val buffer = new StringBuffer()
+    val buffer          = new StringBuffer()
     var x: StringBuffer = buffer
     if (((flags & 0x0007) == 0) && ((flags & 0x0002) != 0))
       x = buffer.append("private ")
     if ((flags & 0x0004) != 0) x = buffer.append("protected ")
     if ((flags & 0x0010) != 0) x = buffer.append("final ")
     if ((flags & 0x0400) != 0)
-      x = if (clazz) buffer.append("abstract ")
-      else buffer.append("/*deferred*/ ")
+      x =
+        if (clazz) buffer.append("abstract ")
+        else buffer.append("/*deferred*/ ")
     buffer.toString()
   }
 
@@ -41,7 +42,7 @@ class JavaWriter(classfile: Classfile, writer: Writer)
     Names.decode(str.substring(str.lastIndexOf('/') + 1))
 
   def nameToPackage(str: String) = {
-    val inx = str.lastIndexOf('/')
+    val inx  = str.lastIndexOf('/')
     val name = if (inx == -1) str else str.substring(0, inx).replace('/', '.')
     Names.decode(name)
   }
@@ -90,10 +91,10 @@ class JavaWriter(classfile: Classfile, writer: Writer)
     import cf.pool._
 
     cf.pool(n) match {
-      case UTF8(str) => str
+      case UTF8(str)      => str
       case StringConst(m) => getName(m)
-      case ClassRef(m) => getName(m)
-      case _ => "<error>"
+      case ClassRef(m)    => getName(m)
+      case _              => "<error>"
     }
   }
 
@@ -111,8 +112,7 @@ class JavaWriter(classfile: Classfile, writer: Writer)
 
   def isConstr(name: String) = (name == "<init>")
 
-  def printField(
-      flags: Int, name: Int, tpe: Int, attribs: List[cf.Attribute]) {
+  def printField(flags: Int, name: Int, tpe: Int, attribs: List[cf.Attribute]) {
     print(flagsToStr(false, flags))
     if ((flags & 0x0010) != 0) print("val " + Names.decode(getName(name)))
     else print("final var " + Names.decode(getName(name)))
@@ -120,14 +120,19 @@ class JavaWriter(classfile: Classfile, writer: Writer)
   }
 
   def printMethod(
-      flags: Int, name: Int, tpe: Int, attribs: List[cf.Attribute]) {
+      flags: Int,
+      name: Int,
+      tpe: Int,
+      attribs: List[cf.Attribute]
+  ) {
     if (getName(name) == "<init>") print(flagsToStr(false, flags))
     attribs find {
       case cf.Attribute(name, _) => getName(name) == "JacoMeta"
     } match {
       case Some(cf.Attribute(_, data)) =>
         val mp = new MetaParser(
-            getName(((data(0) & 0xff) << 8) + (data(1) & 0xff)).trim())
+          getName(((data(0) & 0xff) << 8) + (data(1) & 0xff)).trim()
+        )
         mp.parse match {
           case None =>
             if (getName(name) == "<init>") {
@@ -156,9 +161,7 @@ class JavaWriter(classfile: Classfile, writer: Writer)
       case Some(cf.Attribute(_, data)) =>
         val n = ((data(0) & 0xff) << 8) + (data(1) & 0xff)
         indent.print("throws ")
-        for (i <- Iterator.range(0, n) map { x =>
-          2 * (x + 1)
-        }) {
+        for (i <- Iterator.range(0, n) map { x => 2 * (x + 1) }) {
           val inx = ((data(i) & 0xff) << 8) + (data(i + 1) & 0xff)
           if (i > 2) print(", ")
           print(getClassName(inx).trim())
@@ -176,9 +179,7 @@ class JavaWriter(classfile: Classfile, writer: Writer)
       if (cf.pool(cf.superclass) != null)
         print(" extends " + nameToClass0(getName(cf.superclass)))
     }
-    cf.interfaces foreach { n =>
-      print(" with " + getClassName(n))
-    }
+    cf.interfaces foreach { n => print(" with " + getClassName(n)) }
   }
 
   def printClass {
@@ -192,7 +193,8 @@ class JavaWriter(classfile: Classfile, writer: Writer)
         printClassHeader;
       case Some(cf.Attribute(_, data)) =>
         val mp = new MetaParser(
-            getName(((data(0) & 0xff) << 8) + (data(1) & 0xff)).trim());
+          getName(((data(0) & 0xff) << 8) + (data(1) & 0xff)).trim()
+        );
         mp.parse match {
           case None => printClassHeader;
           case Some(str) =>

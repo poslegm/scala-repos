@@ -13,15 +13,17 @@ import java.lang.management.{ManagementFactory, ThreadInfo}
 class ContentionSnapshot {
   ManagementFactory.getThreadMXBean.setThreadContentionMonitoringEnabled(true)
 
-  case class Snapshot(blockedThreads: Seq[String],
-                      lockOwners: Seq[String],
-                      deadlocks: Seq[String])
+  case class Snapshot(
+      blockedThreads: Seq[String],
+      lockOwners: Seq[String],
+      deadlocks: Seq[String]
+  )
 
   private[this] object Blocked {
     def unapply(t: ThreadInfo): Option[ThreadInfo] = {
       t.getThreadState match {
         case BLOCKED | WAITING | TIMED_WAITING => Some(t)
-        case _ => None
+        case _                                 => None
       }
     }
   }
@@ -45,13 +47,13 @@ class ContentionSnapshot {
       if (deadlockThreadIds == null) Array.empty[ThreadInfo]
       else
         deadlockThreadIds.flatMap { id =>
-          blocked.find { threadInfo =>
-            threadInfo.getThreadId() == id
-          }
+          blocked.find { threadInfo => threadInfo.getThreadId() == id }
         }
 
-    Snapshot(blockedThreads = blocked.map(_.toString).toSeq,
-             lockOwners = owners,
-             deadlocks = deadlocks.map(_.toString).toSeq)
+    Snapshot(
+      blockedThreads = blocked.map(_.toString).toSeq,
+      lockOwners = owners,
+      deadlocks = deadlocks.map(_.toString).toSeq
+    )
   }
 }

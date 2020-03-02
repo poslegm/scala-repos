@@ -17,7 +17,7 @@ class ThePlugin(val global: Global) extends Plugin {
   private object thePhase extends PluginComponent {
     val global = ThePlugin.this.global
 
-    val runsAfter = List[String]()
+    val runsAfter               = List[String]()
     override val runsRightAfter = Some("terminal")
 
     val phaseName = ThePlugin.this.name

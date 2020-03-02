@@ -41,7 +41,8 @@ import StringLike._
   *  @define willNotTerminateInf
   */
 trait StringLike[+Repr]
-    extends Any with scala.collection.IndexedSeqOptimized[Char, Repr]
+    extends Any
+    with scala.collection.IndexedSeqOptimized[Char, Repr]
     with Ordered[String] {
   self =>
 
@@ -59,7 +60,7 @@ trait StringLike[+Repr]
 
   override def slice(from: Int, until: Int): Repr = {
     val start = from max 0
-    val end = until min length
+    val end   = until min length
 
     if (start >= end) newBuilder.result()
     else (newBuilder ++= toString.substring(start, end)).result()
@@ -93,9 +94,12 @@ trait StringLike[+Repr]
     else {
       val last = apply(len - 1)
       if (isLineBreak(last))
-        toString.substring(0,
-                           if (last == LF && len >= 2 && apply(len - 2) == CR)
-                             len - 2 else len - 1)
+        toString.substring(
+          0,
+          if (last == LF && len >= 2 && apply(len - 2) == CR)
+            len - 2
+          else len - 1
+        )
       else toString
     }
   }
@@ -110,9 +114,9 @@ trait StringLike[+Repr]
     *  - `FF` - form feed   (`0x0C` hex)
     */
   def linesWithSeparators: Iterator[String] = new AbstractIterator[String] {
-    val str = self.toString
-    private val len = str.length
-    private var index = 0
+    val str              = self.toString
+    private val len      = str.length
+    private var index    = 0
     def hasNext: Boolean = index < len
     def next(): String = {
       if (index >= len)
@@ -190,12 +194,13 @@ trait StringLike[+Repr]
   def stripMargin(marginChar: Char): String = {
     val buf = new StringBuilder
     for (line <- linesWithSeparators) {
-      val len = line.length
+      val len   = line.length
       var index = 0
       while (index < len && line.charAt(index) <= ' ') index += 1
       buf append
-      (if (index < len && line.charAt(index) == marginChar)
-         line.substring(index + 1) else line)
+        (if (index < len && line.charAt(index) == marginChar)
+           line.substring(index + 1)
+         else line)
     }
     buf.toString
   }
@@ -325,18 +330,19 @@ trait StringLike[+Repr]
   private def parseBoolean(s: String): Boolean =
     if (s != null)
       s.toLowerCase match {
-        case "true" => true
+        case "true"  => true
         case "false" => false
         case _ =>
           throw new IllegalArgumentException("For input string: \"" + s + "\"")
-      } else throw new IllegalArgumentException("For input string: \"null\"")
+      }
+    else throw new IllegalArgumentException("For input string: \"null\"")
 
-  override def toArray[B >: Char : ClassTag]: Array[B] =
+  override def toArray[B >: Char: ClassTag]: Array[B] =
     toString.toCharArray.asInstanceOf[Array[B]]
 
   private def unwrapArg(arg: Any): AnyRef = arg match {
     case x: ScalaNumber => x.underlying
-    case x => x.asInstanceOf[AnyRef]
+    case x              => x.asInstanceOf[AnyRef]
   }
 
   /** Uses the underlying string as a pattern (in a fashion similar to

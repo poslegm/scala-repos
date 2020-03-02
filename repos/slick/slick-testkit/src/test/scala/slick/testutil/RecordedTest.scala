@@ -21,16 +21,17 @@ abstract class RecordedTest {
   @Test
   def test() {
     val logData = {
-      val log = new ByteArrayOutputStream()
+      val log  = new ByteArrayOutputStream()
       val logP = new PrintStream(log)
       _out = logP
       Console.withOut(logP)(run)
       val logA = log.toByteArray
       Console.out.write(logA)
       val r = new BufferedReader(
-          new InputStreamReader(new ByteArrayInputStream(logA)))
-      val masked = new StringWriter()
-      val w = new BufferedWriter(masked)
+        new InputStreamReader(new ByteArrayInputStream(logA))
+      )
+      val masked       = new StringWriter()
+      val w            = new BufferedWriter(masked)
       var line: String = null
       while ({ line = r.readLine(); line != null }) w.write(mask(line) + "\n")
       w.flush()
@@ -58,16 +59,17 @@ abstract class RecordedTest {
       val matched = logData == checkData
       if (!matched)
         Assert.fail(
-            "Output does not match: See " + basename + "(.check,-run.log)")
+          "Output does not match: See " + basename + "(.check,-run.log)"
+        )
     }
   }
 
   def read(f: File): String = {
     val buf = new StringBuilder
-    val a = new Array[Char](4096)
-    val in = new FileInputStream(f)
+    val a   = new Array[Char](4096)
+    val in  = new FileInputStream(f)
     try {
-      val r = new InputStreamReader(in, "UTF-8")
+      val r        = new InputStreamReader(in, "UTF-8")
       var num: Int = 0
       while ({ num = r.read(a); num > 0 }) buf.append(new String(a, 0, num))
       buf.toString()

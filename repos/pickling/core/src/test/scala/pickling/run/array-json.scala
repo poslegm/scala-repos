@@ -12,7 +12,7 @@ case class D(x: Int)
 
 class ArrayJsonTest extends FunSuite {
   test("main") {
-    val expectedPickle = """
+    val expectedPickle   = """
     |JSONPickle({
     |  "$type": "scala.pickling.array.json.C",
     |  "arr": [
@@ -30,8 +30,8 @@ class ArrayJsonTest extends FunSuite {
   }
 
   test("nested") {
-    val ai = Array(1, 2, 3)
-    val aai = Array(ai, ai)
+    val ai   = Array(1, 2, 3)
+    val aai  = Array(ai, ai)
     val aaai = Array(aai, aai)
 
     val p = aaai.pickle
@@ -44,8 +44,8 @@ class ArrayJsonTest extends FunSuite {
     def mkString(o: (Array[Array[Double]], D)): String =
       s"${o._2}, ${o._1(0).mkString(",")}, ${o._1(1).mkString(",")}"
 
-    val a = Array[Double](0.3d, 0.2d)
-    val o = (Array(a, a), D(10))
+    val a           = Array[Double](0.3d, 0.2d)
+    val o           = (Array(a, a), D(10))
     val anyObj: Any = o
 
     val p = anyObj.pickle

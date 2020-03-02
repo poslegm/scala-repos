@@ -9,9 +9,9 @@ import scala.reflect.io.File
 class Ploogin(val global: Global) extends Plugin {
   import global._
 
-  val name = "ploogin"
+  val name        = "ploogin"
   val description = "A sample plugin for testing."
-  val components = List[PluginComponent](TestComponent)
+  val components  = List[PluginComponent](TestComponent)
 
   private object TestComponent extends PluginComponent {
     val global: Ploogin.this.global.type = Ploogin.this.global

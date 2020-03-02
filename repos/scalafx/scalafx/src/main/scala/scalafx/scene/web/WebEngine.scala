@@ -82,10 +82,10 @@ class WebEngine(override val delegate: jfxsw.WebEngine = new jfxsw.WebEngine)
     */
   def createPopupHandler = delegate.createPopupHandlerProperty
   def createPopupHandler_=(f: jfxsw.PopupFeatures => WebEngine) {
-    createPopupHandler() = new jfxu.Callback[
-        jfxsw.PopupFeatures, jfxsw.WebEngine] {
-      def call(pf: jfxsw.PopupFeatures) = f(pf)
-    }
+    createPopupHandler() =
+      new jfxu.Callback[jfxsw.PopupFeatures, jfxsw.WebEngine] {
+        def call(pf: jfxsw.PopupFeatures) = f(pf)
+      }
   }
 
   /**
@@ -137,7 +137,8 @@ class WebEngine(override val delegate: jfxsw.WebEngine = new jfxsw.WebEngine)
     */
   def onVisibilityChanged = delegate.onVisibilityChangedProperty
   def onVisibilityChanged_=(
-      v: jfxe.EventHandler[jfxsw.WebEvent[java.lang.Boolean]]) {
+      v: jfxe.EventHandler[jfxsw.WebEvent[java.lang.Boolean]]
+  ) {
     onVisibilityChanged() = v
   }
 

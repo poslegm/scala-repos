@@ -19,7 +19,7 @@ object IOTest extends SpecLite {
 
   "Catchable[IO]" should {
 
-    val C = Catchable[IO]
+    val C   = Catchable[IO]
     val err = new Error("oh noes")
     val bad = C.fail[Int](err)
 

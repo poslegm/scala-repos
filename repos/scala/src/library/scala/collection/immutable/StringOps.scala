@@ -27,7 +27,8 @@ import mutable.StringBuilder
   *  @define coll string
   */
 final class StringOps(override val repr: String)
-    extends AnyVal with StringLike[String] {
+    extends AnyVal
+    with StringLike[String] {
 
   override protected[this] def thisCollection: WrappedString =
     new WrappedString(repr)
@@ -46,7 +47,7 @@ final class StringOps(override val repr: String)
     repr.substring(start, end)
   }
   override def toString = repr
-  override def length = repr.length
+  override def length   = repr.length
 
   def seq = new WrappedString(repr)
 }

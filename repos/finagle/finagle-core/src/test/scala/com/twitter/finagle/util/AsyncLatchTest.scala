@@ -7,7 +7,7 @@ import org.junit.runner.RunWith
 @RunWith(classOf[JUnitRunner])
 class AsyncLatchTest extends FunSuite {
   test("when count=0, AsyncLatch should execute waiters immediately") {
-    val latch = new AsyncLatch(0)
+    val latch   = new AsyncLatch(0)
     var didCall = false
     latch await {
       didCall = true
@@ -15,8 +15,9 @@ class AsyncLatchTest extends FunSuite {
   }
 
   test(
-      "when count>0, AsyncLatch should execute waiters when count has reached 0") {
-    val latch = new AsyncLatch(1)
+    "when count>0, AsyncLatch should execute waiters when count has reached 0"
+  ) {
+    val latch   = new AsyncLatch(1)
     var didCall = false
     latch await {
       didCall = true
@@ -27,8 +28,9 @@ class AsyncLatchTest extends FunSuite {
   }
 
   test(
-      "when count>0, AsyncLatch should not re-execute waiters when the count increases again") {
-    val latch = new AsyncLatch(1)
+    "when count>0, AsyncLatch should not re-execute waiters when the count increases again"
+  ) {
+    val latch  = new AsyncLatch(1)
     var count0 = 0
     var count1 = 0
     latch await {

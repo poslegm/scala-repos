@@ -17,7 +17,7 @@ package org.saddle.scalar
 
 import org.saddle._
 
-class ScalarTagProduct[T <: Product : CLM] extends ScalarTagAny[T] {
+class ScalarTagProduct[T <: Product: CLM] extends ScalarTagAny[T] {
   override def isTuple = true
 
   override def strList =
@@ -25,7 +25,7 @@ class ScalarTagProduct[T <: Product : CLM] extends ScalarTagAny[T] {
       v.productArity match {
         case 0 => List(v.toString)
         case _ => v.productIterator.toList.map(_.toString)
-    }
+      }
 
   override def toString = "ScalarTagProduct"
 }

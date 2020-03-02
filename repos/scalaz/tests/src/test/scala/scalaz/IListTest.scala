@@ -26,14 +26,15 @@ object IListTest extends SpecLite {
   implicit val intBooleanArb: Arbitrary[Int => Boolean] = {
     val intGen = implicitly[Arbitrary[Int]].arbitrary
     Arbitrary(
-        Gen.oneOf(
-            Gen.const((_: Int) => true),
-            Gen.const((_: Int) => false),
-            Gen.choose(2, 5).map(n => (a: Int) => a % n == 0),
-            Gen.choose(2, 5).map(n => (a: Int) => a % n != 0),
-            intGen.map(n => (_: Int) > n),
-            intGen.map(n => (_: Int) < n)
-        ))
+      Gen.oneOf(
+        Gen.const((_: Int) => true),
+        Gen.const((_: Int) => false),
+        Gen.choose(2, 5).map(n => (a: Int) => a % n == 0),
+        Gen.choose(2, 5).map(n => (a: Int) => a % n != 0),
+        intGen.map(n => (_: Int) > n),
+        intGen.map(n => (_: Int) < n)
+      )
+    )
   }
 
   "intercalate empty list is flatten" ! forAll { (a: IList[IList[Int]]) =>
@@ -44,7 +45,7 @@ object IListTest extends SpecLite {
     (a: IList[Int], b: Int) =>
       val isEven = (_: Int) % 2 == 0
       a.intersperse(b).zipWithIndex.filter(p => isEven(p._2)).map(_._1) must_===
-      (a)
+        (a)
   }
 
   "intercalate is same as a.intersperse(b).flatten" ! forAll {
@@ -54,9 +55,9 @@ object IListTest extends SpecLite {
 
   "intersperse vs benchmark" ! forAll { (a: IList[Int], b: Int) =>
     def intersperse[A](value: IList[A], a: A): IList[A] = value match {
-      case INil() => INil()
+      case INil()           => INil()
       case ICons(x, INil()) => x :: INil()
-      case ICons(h, t) => h :: a :: intersperse(t, a)
+      case ICons(h, t)      => h :: a :: intersperse(t, a)
     }
     a.intersperse(b) must_=== intersperse(a, b)
   }
@@ -88,13 +89,13 @@ object IListTest extends SpecLite {
   "mapAccumLeft" ! forAll { xs: IList[Int] =>
     val f = (_: Int) + 1
     xs.mapAccumLeft(IList[Int]())((c, a) => (c :+ a, f(a))) must_===
-    (xs, xs.map(f))
+      (xs, xs.map(f))
   }
 
   "mapAccumRight" ! forAll { xs: IList[Int] =>
     val f = (_: Int) + 1
     xs.mapAccumRight(IList[Int]())((c, a) => (c :+ a, f(a))) must_===
-    (xs.reverse, xs.map(f))
+      (xs.reverse, xs.map(f))
   }
 
   // And some other tests that List doesn't have
@@ -211,7 +212,10 @@ object IListTest extends SpecLite {
   }
 
   "groupBy1" ! forAll { (ns: IList[Int], f: Int => Int) =>
-    ns.groupBy1(f).map(oa => (oa.head :: oa.tail).toList.reverse).toList.toMap must_===
+    ns.groupBy1(f)
+      .map(oa => (oa.head :: oa.tail).toList.reverse)
+      .toList
+      .toMap must_===
       ns.toList.groupBy(f)
   }
 
@@ -238,7 +242,8 @@ object IListTest extends SpecLite {
 
   "initOption" ! forAll { ns: IList[Int] =>
     ns.initOption.map(_.toList) must_===
-    (try Some(ns.toList.init) catch { case e: Exception => None })
+      (try Some(ns.toList.init)
+      catch { case e: Exception => None })
   }
 
   "inits" ! forAll { ns: IList[Int] =>
@@ -286,9 +291,7 @@ object IListTest extends SpecLite {
     ns.lastOption must_=== ns.toList.lastOption
   }
 
-  "length" ! forAll { ns: IList[Int] =>
-    ns.length must_=== ns.toList.length
-  }
+  "length" ! forAll { ns: IList[Int] => ns.length must_=== ns.toList.length }
 
   // map is tested by functor laws
 
@@ -310,12 +313,14 @@ object IListTest extends SpecLite {
 
   "reduceLeftOption" ! forAll { (ns: IList[Int], f: (Int, Int) => Int) =>
     ns.reduceLeftOption(f) must_===
-    (try Some(ns.toList.reduceLeft(f)) catch { case e: Exception => None })
+      (try Some(ns.toList.reduceLeft(f))
+      catch { case e: Exception => None })
   }
 
   "reduceRightOption" ! forAll { (ns: IList[Int], f: (Int, Int) => Int) =>
     ns.reduceRightOption(f) must_===
-    (try Some(ns.toList.reduceRight(f)) catch { case e: Exception => None })
+      (try Some(ns.toList.reduceRight(f))
+      catch { case e: Exception => None })
   }
 
   "reverse" ! forAll { ns: IList[Int] =>
@@ -374,7 +379,8 @@ object IListTest extends SpecLite {
 
   "tailOption" ! forAll { ns: IList[Int] =>
     ns.tailOption.map(_.toList) must_===
-    (try Some(ns.toList.tail) catch { case e: Exception => None })
+      (try Some(ns.toList.tail)
+      catch { case e: Exception => None })
   }
 
   "take" ! forAll { (ns: IList[Int], n: Byte) =>
@@ -398,9 +404,7 @@ object IListTest extends SpecLite {
       EphemeralStream(ns: _*).toList
   }
 
-  "toList" ! forAll { ns: List[Int] =>
-    IList(ns: _*).toList must_=== ns
-  }
+  "toList" ! forAll { ns: List[Int] => IList(ns: _*).toList must_=== ns }
 
   "toMap" ! forAll { ps: List[(String, Int)] =>
     IList(ps: _*).toMap must_=== ==>>(ps: _*)
@@ -414,9 +418,7 @@ object IListTest extends SpecLite {
     IList(ns: _*).toStream must_=== ns.toStream
   }
 
-  "toVector" ! forAll { ns: Vector[Int] =>
-    IList(ns: _*).toVector must_=== ns
-  }
+  "toVector" ! forAll { ns: Vector[Int] => IList(ns: _*).toVector must_=== ns }
 
   "toZipper" ! forAll { ns: List[Int] =>
     IList(ns: _*).toZipper must_=== scalaz.std.stream.toZipper(ns.toStream)
@@ -446,15 +448,15 @@ object IListTest extends SpecLite {
   checkAll(FoldableTests.anyAndAllLazy[IList])
 
   object instances {
-    def equal[A : Equal] = Equal[IList[A]]
-    def order[A : Order] = Order[IList[A]]
-    def monoid[A] = Monoid[IList[A]]
-    def monadPlus = MonadPlus[IList]
-    def bindrec = BindRec[IList]
-    def traverse = Traverse[IList]
-    def zip = Zip[IList]
-    def align = Align[IList]
-    def isEmpty = IsEmpty[IList]
-    def cobind = Cobind[IList]
+    def equal[A: Equal] = Equal[IList[A]]
+    def order[A: Order] = Order[IList[A]]
+    def monoid[A]       = Monoid[IList[A]]
+    def monadPlus       = MonadPlus[IList]
+    def bindrec         = BindRec[IList]
+    def traverse        = Traverse[IList]
+    def zip             = Zip[IList]
+    def align           = Align[IList]
+    def isEmpty         = IsEmpty[IList]
+    def cobind          = Cobind[IList]
   }
 }

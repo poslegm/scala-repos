@@ -4,12 +4,14 @@ import gitbucket.core.model.Account
 
 import java.util.Date
 
-case class ApiUser(login: String,
-                   email: String,
-                   `type`: String,
-                   site_admin: Boolean,
-                   created_at: Date) {
-  val url = ApiPath(s"/api/v3/users/${login}")
+case class ApiUser(
+    login: String,
+    email: String,
+    `type`: String,
+    site_admin: Boolean,
+    created_at: Date
+) {
+  val url      = ApiPath(s"/api/v3/users/${login}")
   val html_url = ApiPath(s"/${login}")
   // val followers_url       = ApiPath(s"/api/v3/users/${login}/followers")
   // val following_url       = ApiPath(s"/api/v3/users/${login}/following{/other_user}")
@@ -24,10 +26,11 @@ case class ApiUser(login: String,
 
 object ApiUser {
   def apply(user: Account): ApiUser = ApiUser(
-      login = user.userName,
-      email = user.mailAddress,
-      `type` = if (user.isGroupAccount) { "Organization" } else { "User" },
-      site_admin = user.isAdmin,
-      created_at = user.registeredDate
+    login = user.userName,
+    email = user.mailAddress,
+    `type` = if (user.isGroupAccount) { "Organization" }
+    else { "User" },
+    site_admin = user.isAdmin,
+    created_at = user.registeredDate
   )
 }

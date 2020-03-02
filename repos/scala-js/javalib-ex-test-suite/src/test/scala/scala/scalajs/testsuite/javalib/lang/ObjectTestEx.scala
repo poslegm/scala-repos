@@ -36,7 +36,7 @@ object ObjectTestEx extends JasmineTest {
         @noinline def y(): Int = x + 3
       }
 
-      val o = new SomeCloneable(5)
+      val o  = new SomeCloneable(5)
       val o2 = o.clone()
       expect(o2.asInstanceOf[js.Any]).not.toBe(o.asInstanceOf[js.Any])
       expect(o2.getClass.asInstanceOf[js.Any])

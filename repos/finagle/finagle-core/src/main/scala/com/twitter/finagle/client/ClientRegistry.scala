@@ -10,8 +10,8 @@ import java.util.logging.Level
 
 private[twitter] object ClientRegistry extends StackRegistry {
 
-  private[this] val sr = FinagleStatsReceiver.scope("clientregistry")
-  private[this] val clientRegistrySize = sr.addGauge("size") { size }
+  private[this] val sr                    = FinagleStatsReceiver.scope("clientregistry")
+  private[this] val clientRegistrySize    = sr.addGauge("size") { size }
   private[this] val initialResolutionTime = sr.counter("initialresolution_ms")
 
   def registryName: String = "client"
@@ -28,9 +28,9 @@ private[twitter] object ClientRegistry extends StackRegistry {
   def expAllRegisteredClientsResolved(): Future[Set[String]] = synchronized {
     val fs: Iterable[Future[String]] = registrants.map {
       case StackRegistry.Entry(_, _, params) =>
-        val param.Label(name) = params[param.Label]
+        val param.Label(name)            = params[param.Label]
         val LoadBalancerFactory.Dest(va) = params[LoadBalancerFactory.Dest]
-        val param.Logger(log) = params[param.Logger]
+        val param.Logger(log)            = params[param.Logger]
 
         val resolved = va.changes.filter(_ != Addr.Pending).toFuture()
         resolved.map { resolution =>
@@ -43,7 +43,8 @@ private[twitter] object ClientRegistry extends StackRegistry {
             resolution match {
               case bound: Addr.Bound =>
                 log.info(
-                    s"${name} resolved to Addr.Bound, current size=${bound.addrs.size}")
+                  s"${name} resolved to Addr.Bound, current size=${bound.addrs.size}"
+                )
               case _ =>
                 log.info(s"${name} resolved to ${resolution}")
             }
@@ -68,37 +69,40 @@ private[finagle] object RegistryEntryLifecycle {
 
       val description: String = "Maintains the ClientRegistry for the stack"
       def parameters: Seq[Stack.Param[_]] = Seq(
-          implicitly[Stack.Param[BindingFactory.Dest]]
+        implicitly[Stack.Param[BindingFactory.Dest]]
       )
 
       def make(
           params: Stack.Params,
           next: Stack[ServiceFactory[Req, Rep]]
       ): Stack[ServiceFactory[Req, Rep]] = {
-        val BindingFactory.Dest(dest) = params[BindingFactory.Dest]
+        val BindingFactory.Dest(dest)         = params[BindingFactory.Dest]
         val BindingFactory.BaseDtab(baseDtab) = params[BindingFactory.BaseDtab]
 
         // for the benefit of ClientRegistry.expAllRegisteredClientsResolved
         // which waits for these to become non-Pending
         val va = dest match {
-          case Name.Bound(va) => va
+          case Name.Bound(va)  => va
           case Name.Path(path) => Namer.resolve(baseDtab(), path)
         }
 
-        val shown = Showable.show(dest)
+        val shown            = Showable.show(dest)
         val registeredParams = params + LoadBalancerFactory.Dest(va)
         ClientRegistry.register(shown, next, registeredParams)
 
         CanStackFrom
           .fromFun[ServiceFactory[Req, Rep]]
-          .toStackable(role, { factory: ServiceFactory[Req, Rep] =>
-            new ServiceFactoryProxy[Req, Rep](factory) {
-              override def close(deadline: Time): Future[Unit] = {
-                ClientRegistry.unregister(shown, next, params)
-                self.close(deadline)
+          .toStackable(
+            role,
+            { factory: ServiceFactory[Req, Rep] =>
+              new ServiceFactoryProxy[Req, Rep](factory) {
+                override def close(deadline: Time): Future[Unit] = {
+                  ClientRegistry.unregister(shown, next, params)
+                  self.close(deadline)
+                }
               }
             }
-          }) +: next
+          ) +: next
       }
     }
 }

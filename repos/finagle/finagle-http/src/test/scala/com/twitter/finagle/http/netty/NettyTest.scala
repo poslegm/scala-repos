@@ -20,7 +20,7 @@ class NettyTest extends FunSuite {
     assert(bufferAB.readableBytes == 2)
     assert(bufferAB.toString(Charset.forName("UTF-8")) == "AB")
 
-    val bufferC = ChannelBuffers.wrappedBuffer("C".getBytes)
+    val bufferC   = ChannelBuffers.wrappedBuffer("C".getBytes)
     val bufferABC = ChannelBuffers.wrappedBuffer(bufferAB, bufferC)
     assert(bufferABC.readableBytes == 3)
     assert(bufferABC.toString(Charset.forName("UTF-8")) == "ABC")
@@ -33,7 +33,7 @@ class NettyTest extends FunSuite {
         false
       } catch {
         case _: IndexOutOfBoundsException => true
-        case _: Throwable => false
+        case _: Throwable                 => false
       }
     }
   }

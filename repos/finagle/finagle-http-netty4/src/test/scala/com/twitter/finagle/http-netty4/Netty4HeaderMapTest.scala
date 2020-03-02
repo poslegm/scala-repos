@@ -11,7 +11,7 @@ import scala.collection.JavaConverters._
 class Netty4HeaderMapTest extends FunSuite {
 
   test("Netty4HeaderMap proxies updates and reads to netty headers") {
-    val netty = new NettyHeaders()
+    val netty                   = new NettyHeaders()
     val wrapper: FinagleHeaders = new Netty4HeaderMap(netty)
     netty.add("foo", "bar")
     netty.add("key", "val")
@@ -28,9 +28,7 @@ class Netty4HeaderMapTest extends FunSuite {
 
     assert(wrapper.remove("foo") == Some("bar"))
 
-    val all = netty.entries.asScala.map { e =>
-      e.getKey -> e.getValue
-    }.toSet
+    val all = netty.entries.asScala.map { e => e.getKey -> e.getValue }.toSet
 
     assert(all == Set("key" -> "val", "qux" -> "something"))
 

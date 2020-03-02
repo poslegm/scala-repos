@@ -94,7 +94,7 @@ sealed abstract class Either[+A, +B] extends Product with Serializable {
     * @return the results of applying the function
     */
   def fold[X](fa: A => X, fb: B => X) = this match {
-    case Left(a) => fa(a)
+    case Left(a)  => fa(a)
     case Right(b) => fb(b)
   }
 
@@ -107,7 +107,7 @@ sealed abstract class Either[+A, +B] extends Product with Serializable {
     * }}}
     */
   def swap = this match {
-    case Left(a) => Right(a)
+    case Left(a)  => Right(a)
     case Right(b) => Left(b)
   }
 
@@ -131,8 +131,9 @@ sealed abstract class Either[+A, +B] extends Product with Serializable {
     * This method, and `joinLeft`, are analogous to `Option#flatten`
     */
   def joinRight[A1 >: A, B1 >: B, C](
-      implicit ev: B1 <:< Either[A1, C]): Either[A1, C] = this match {
-    case Left(a) => Left(a)
+      implicit ev: B1 <:< Either[A1, C]
+  ): Either[A1, C] = this match {
+    case Left(a)  => Left(a)
     case Right(b) => b
   }
 
@@ -156,8 +157,9 @@ sealed abstract class Either[+A, +B] extends Product with Serializable {
     * This method, and `joinRight`, are analogous to `Option#flatten`
     */
   def joinLeft[A1 >: A, B1 >: B, C](
-      implicit ev: A1 <:< Either[C, B1]): Either[C, B1] = this match {
-    case Left(a) => a
+      implicit ev: A1 <:< Either[C, B1]
+  ): Either[C, B1] = this match {
+    case Left(a)  => a
     case Right(b) => Right(b)
   }
 
@@ -189,7 +191,7 @@ sealed abstract class Either[+A, +B] extends Product with Serializable {
   * @version 1.0, 11/10/2008
   */
 final case class Left[+A, +B](a: A) extends Either[A, B] {
-  def isLeft = true
+  def isLeft  = true
   def isRight = false
 }
 
@@ -200,7 +202,7 @@ final case class Left[+A, +B](a: A) extends Either[A, B] {
   * @version 1.0, 11/10/2008
   */
 final case class Right[+A, +B](b: B) extends Either[A, B] {
-  def isLeft = false
+  def isLeft  = false
   def isRight = true
 }
 
@@ -220,7 +222,7 @@ object Either {
   implicit class MergeableEither[A](private val x: Either[A, A])
       extends AnyVal {
     def merge: A = x match {
-      case Left(a) => a
+      case Left(a)  => a
       case Right(a) => a
     }
   }
@@ -303,7 +305,7 @@ object Either {
       * @param f The side-effecting function to execute.
       */
     def foreach[U](f: A => U) = e match {
-      case Left(a) => f(a)
+      case Left(a)  => f(a)
       case Right(_) => {}
     }
 
@@ -318,7 +320,7 @@ object Either {
       *
       */
     def getOrElse[AA >: A](or: => AA) = e match {
-      case Left(a) => a
+      case Left(a)  => a
       case Right(_) => or
     }
 
@@ -334,7 +336,7 @@ object Either {
       *
       */
     def forall(@deprecatedName('f) p: A => Boolean) = e match {
-      case Left(a) => p(a)
+      case Left(a)  => p(a)
       case Right(_) => true
     }
 
@@ -350,7 +352,7 @@ object Either {
       *
       */
     def exists(@deprecatedName('f) p: A => Boolean) = e match {
-      case Left(a) => p(a)
+      case Left(a)  => p(a)
       case Right(_) => false
     }
 
@@ -364,7 +366,7 @@ object Either {
       * @param f The function to bind across `Left`.
       */
     def flatMap[BB >: B, X](f: A => Either[X, BB]) = e match {
-      case Left(a) => f(a)
+      case Left(a)  => f(a)
       case Right(b) => Right(b)
     }
 
@@ -377,7 +379,7 @@ object Either {
       * }}}
       */
     def map[X](f: A => X) = e match {
-      case Left(a) => Left(f(a))
+      case Left(a)  => Left(f(a))
       case Right(b) => Right(b)
     }
 
@@ -392,7 +394,7 @@ object Either {
       * }}}
       */
     def filter[Y](p: A => Boolean): Option[Either[A, Y]] = e match {
-      case Left(a) => if (p(a)) Some(Left(a)) else None
+      case Left(a)  => if (p(a)) Some(Left(a)) else None
       case Right(b) => None
     }
 
@@ -406,7 +408,7 @@ object Either {
       * }}}
       */
     def toSeq = e match {
-      case Left(a) => Seq(a)
+      case Left(a)  => Seq(a)
       case Right(_) => Seq.empty
     }
 
@@ -420,7 +422,7 @@ object Either {
       * }}}
       */
     def toOption = e match {
-      case Left(a) => Some(a)
+      case Left(a)  => Some(a)
       case Right(_) => None
     }
   }
@@ -469,7 +471,7 @@ object Either {
       * @param f The side-effecting function to execute.
       */
     def foreach[U](f: B => U) = e match {
-      case Left(_) => {}
+      case Left(_)  => {}
       case Right(b) => f(b)
     }
 
@@ -483,7 +485,7 @@ object Either {
       * }}}
       */
     def getOrElse[BB >: B](or: => BB) = e match {
-      case Left(_) => or
+      case Left(_)  => or
       case Right(b) => b
     }
 
@@ -498,7 +500,7 @@ object Either {
       * }}}
       */
     def forall(f: B => Boolean) = e match {
-      case Left(_) => true
+      case Left(_)  => true
       case Right(b) => f(b)
     }
 
@@ -513,7 +515,7 @@ object Either {
       * }}}
       */
     def exists(@deprecatedName('f) p: B => Boolean) = e match {
-      case Left(_) => false
+      case Left(_)  => false
       case Right(b) => p(b)
     }
 
@@ -523,7 +525,7 @@ object Either {
       * @param f The function to bind across `Right`.
       */
     def flatMap[AA >: A, Y](f: B => Either[AA, Y]) = e match {
-      case Left(a) => Left(a)
+      case Left(a)  => Left(a)
       case Right(b) => f(b)
     }
 
@@ -536,7 +538,7 @@ object Either {
       * }}}
       */
     def map[Y](f: B => Y) = e match {
-      case Left(a) => Left(a)
+      case Left(a)  => Left(a)
       case Right(b) => Right(f(b))
     }
 
@@ -551,7 +553,7 @@ object Either {
       * }}}
       */
     def filter[X](p: B => Boolean): Option[Either[X, B]] = e match {
-      case Left(_) => None
+      case Left(_)  => None
       case Right(b) => if (p(b)) Some(Right(b)) else None
     }
 
@@ -564,7 +566,7 @@ object Either {
       * }}}
       */
     def toSeq = e match {
-      case Left(_) => Seq.empty
+      case Left(_)  => Seq.empty
       case Right(b) => Seq(b)
     }
 
@@ -577,7 +579,7 @@ object Either {
       * }}}
       */
     def toOption = e match {
-      case Left(_) => None
+      case Left(_)  => None
       case Right(b) => Some(b)
     }
   }

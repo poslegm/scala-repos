@@ -20,12 +20,13 @@ import org.antlr.runtime.{Token, TokenRewriteStream}
 
 import org.apache.spark.sql.catalyst.trees.{Origin, TreeNode}
 
-case class ASTNode(token: Token,
-                   startIndex: Int,
-                   stopIndex: Int,
-                   children: List[ASTNode],
-                   stream: TokenRewriteStream)
-    extends TreeNode[ASTNode] {
+case class ASTNode(
+    token: Token,
+    startIndex: Int,
+    stopIndex: Int,
+    children: List[ASTNode],
+    stream: TokenRewriteStream
+) extends TreeNode[ASTNode] {
 
   /** Cache the number of children. */
   val numChildren: Int = children.size

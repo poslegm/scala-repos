@@ -19,7 +19,7 @@ import play.api.Application
 @deprecated(since = "2.4.3", message = "Use [[play.api.db.Database]]")
 object DB {
 
-  private val dbCache = Application.instanceCache[DBApi]
+  private val dbCache                              = Application.instanceCache[DBApi]
   private def db(implicit app: Application): DBApi = dbCache(app)
 
   /**
@@ -31,7 +31,8 @@ object DB {
     */
   @deprecated("Inject DBApi into your component", "2.5.0")
   def getConnection(name: String = "default", autocommit: Boolean = true)(
-      implicit app: Application): Connection =
+      implicit app: Application
+  ): Connection =
     db.database(name).getConnection(autocommit)
 
   /**
@@ -41,8 +42,9 @@ object DB {
     * @return a JDBC connection
     */
   @deprecated("Inject DBApi into your component", "2.5.0")
-  def getDataSource(name: String = "default")(
-      implicit app: Application): DataSource =
+  def getDataSource(
+      name: String = "default"
+  )(implicit app: Application): DataSource =
     db.database(name).dataSource
 
   /**
@@ -55,7 +57,8 @@ object DB {
     */
   @deprecated("Inject DBApi into your component", "2.5.0")
   def withConnection[A](name: String = "default", autocommit: Boolean = true)(
-      block: Connection => A)(implicit app: Application): A =
+      block: Connection => A
+  )(implicit app: Application): A =
     db.database(name).withConnection(autocommit)(block)
 
   /**
@@ -77,8 +80,9 @@ object DB {
     * @param block Code block to execute.
     */
   @deprecated("Inject DBApi into your component", "2.5.0")
-  def withTransaction[A](name: String = "default")(block: Connection => A)(
-      implicit app: Application): A =
+  def withTransaction[A](
+      name: String = "default"
+  )(block: Connection => A)(implicit app: Application): A =
     db.database(name).withTransaction(block)
 
   /**
@@ -89,7 +93,6 @@ object DB {
     * @param block Code block to execute.
     */
   @deprecated("Inject DBApi into your component", "2.5.0")
-  def withTransaction[A](block: Connection => A)(
-      implicit app: Application): A =
+  def withTransaction[A](block: Connection => A)(implicit app: Application): A =
     db.database("default").withTransaction(block)
 }

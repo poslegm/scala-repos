@@ -19,7 +19,11 @@ import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
 import com.twitter.scalding._
-import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{CompileTimeLengthTypes, ProductLike, TreeOrderedBuf}
+import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
+  CompileTimeLengthTypes,
+  ProductLike,
+  TreeOrderedBuf
+}
 import CompileTimeLengthTypes._
 
 import java.nio.ByteBuffer
@@ -37,17 +41,19 @@ object ByteBufferOrderedBuf {
     def freshT(id: String) = newTermName(c.fresh(id))
 
     new TreeOrderedBuf[c.type] {
-      override val ctx: c.type = c
-      override val tpe = outerType
+      override val ctx: c.type                           = c
+      override val tpe                                   = outerType
       override def hash(element: ctx.TermName): ctx.Tree = q"$element.hashCode"
 
       override def compareBinary(
-          inputStreamA: ctx.TermName, inputStreamB: ctx.TermName) = {
-        val lenA = freshT("lenA")
-        val lenB = freshT("lenB")
+          inputStreamA: ctx.TermName,
+          inputStreamB: ctx.TermName
+      ) = {
+        val lenA        = freshT("lenA")
+        val lenB        = freshT("lenB")
         val queryLength = freshT("queryLength")
-        val incr = freshT("incr")
-        val state = freshT("state")
+        val incr        = freshT("incr")
+        val state       = freshT("state")
         q"""
       val $lenA: Int = $inputStreamA.readPosVarInt
       val $lenB: Int = $inputStreamB.readPosVarInt
@@ -74,7 +80,7 @@ object ByteBufferOrderedBuf {
       """
 
       override def get(inputStream: ctx.TermName): ctx.Tree = {
-        val lenA = freshT("lenA")
+        val lenA  = freshT("lenA")
         val bytes = freshT("bytes")
         q"""
       val $lenA = $inputStream.readPosVarInt
@@ -84,7 +90,9 @@ object ByteBufferOrderedBuf {
     """
       }
       override def compare(
-          elementA: ctx.TermName, elementB: ctx.TermName): ctx.Tree = q"""
+          elementA: ctx.TermName,
+          elementB: ctx.TermName
+      ): ctx.Tree = q"""
         $elementA.compareTo($elementB)
       """
       override def length(element: Tree): CompileTimeLengthTypes[c.type] = {

@@ -34,7 +34,7 @@ trait SparkLRBenchmark extends scala.pickling.testing.PicklingBenchmark {
 object SparkLRPicklingBench extends SparkLRBenchmark {
   override def run() {
     val pickle = data.pickle
-    val res = pickle.unpickle[ArrayBuffer[DataPoint]]
+    val res    = pickle.unpickle[ArrayBuffer[DataPoint]]
   }
 }
 
@@ -43,9 +43,9 @@ object SparkLRJavaBench extends SparkLRBenchmark {
     val bos = new ByteArrayOutputStream()
     val out = new ObjectOutputStream(bos)
     out.writeObject(data)
-    val ba = bos.toByteArray()
+    val ba  = bos.toByteArray()
     val bis = new ByteArrayInputStream(ba)
-    val in = new ObjectInputStream(bis)
+    val in  = new ObjectInputStream(bis)
     val res = in.readObject.asInstanceOf[ArrayBuffer[DataPoint]]
   }
 }
@@ -59,10 +59,10 @@ object SparkLRKryoBench extends SparkLRBenchmark {
 
   override def run() {
     val rnd: Int = Random.nextInt(10)
-    val arr = Array.ofDim[Byte](32 * 2048 * 2048 + rnd)
+    val arr      = Array.ofDim[Byte](32 * 2048 * 2048 + rnd)
     ser = new KryoSerializer
 
     val pickled = ser.toBytes(data, arr)
-    val res = ser.fromBytes[ArrayBuffer[DataPoint]](pickled)
+    val res     = ser.fromBytes[ArrayBuffer[DataPoint]](pickled)
   }
 }

@@ -26,11 +26,12 @@ import org.apache.spark.sql.catalyst.expressions.codegen.CodegenFallback
 import org.apache.spark.sql.types.{IntegerType, NullType, StringType}
 
 case class Dummy(optKey: Option[Expression])
-    extends Expression with CodegenFallback {
-  override def children: Seq[Expression] = optKey.toSeq
-  override def nullable: Boolean = true
-  override def dataType: NullType = NullType
-  override lazy val resolved = true
+    extends Expression
+    with CodegenFallback {
+  override def children: Seq[Expression]     = optKey.toSeq
+  override def nullable: Boolean             = true
+  override def dataType: NullType            = NullType
+  override lazy val resolved                 = true
   override def eval(input: InternalRow): Any = null.asInstanceOf[Any]
 }
 
@@ -40,11 +41,12 @@ case class ComplexPlan(exprs: Seq[Seq[Expression]])
 }
 
 case class ExpressionInMap(map: Map[String, Expression])
-    extends Expression with Unevaluable {
+    extends Expression
+    with Unevaluable {
   override def children: Seq[Expression] = map.values.toSeq
-  override def nullable: Boolean = true
-  override def dataType: NullType = NullType
-  override lazy val resolved = true
+  override def nullable: Boolean         = true
+  override def dataType: NullType        = NullType
+  override lazy val resolved             = true
 }
 
 class TreeNodeSuite extends SparkFunSuite {
@@ -55,14 +57,14 @@ class TreeNodeSuite extends SparkFunSuite {
 
   test("one child changed") {
     val before = Add(Literal(1), Literal(2))
-    val after = before transform { case Literal(2, _) => Literal(1) }
+    val after  = before transform { case Literal(2, _) => Literal(1) }
 
     assert(after === Add(Literal(1), Literal(1)))
   }
 
   test("no change") {
     val before = Add(Literal(1), Add(Literal(2), Add(Literal(3), Literal(4))))
-    val after = before transform { case Literal(5, _) => Literal(1) }
+    val after  = before transform { case Literal(5, _) => Literal(1) }
 
     assert(before === after)
     // Ensure that the objects after are the same objects before the transformation.
@@ -75,7 +77,7 @@ class TreeNodeSuite extends SparkFunSuite {
   }
 
   test("collect") {
-    val tree = Add(Literal(1), Add(Literal(2), Add(Literal(3), Literal(4))))
+    val tree     = Add(Literal(1), Add(Literal(2), Add(Literal(3), Literal(4))))
     val literals = tree collect { case l: Literal => l }
 
     assert(literals.size === 4)
@@ -83,26 +85,26 @@ class TreeNodeSuite extends SparkFunSuite {
   }
 
   test("pre-order transform") {
-    val actual = new ArrayBuffer[String]()
+    val actual   = new ArrayBuffer[String]()
     val expected = Seq("+", "1", "*", "2", "-", "3", "4")
     val expression =
       Add(Literal(1), Multiply(Literal(2), Subtract(Literal(3), Literal(4))))
     expression transformDown {
       case b: BinaryOperator => actual.append(b.symbol); b
-      case l: Literal => actual.append(l.toString); l
+      case l: Literal        => actual.append(l.toString); l
     }
 
     assert(expected === actual)
   }
 
   test("post-order transform") {
-    val actual = new ArrayBuffer[String]()
+    val actual   = new ArrayBuffer[String]()
     val expected = Seq("1", "2", "3", "4", "-", "*", "+")
     val expression =
       Add(Literal(1), Multiply(Literal(2), Subtract(Literal(3), Literal(4))))
     expression transformUp {
       case b: BinaryOperator => actual.append(b.symbol); b
-      case l: Literal => actual.append(l.toString); l
+      case l: Literal        => actual.append(l.toString); l
     }
 
     assert(expected === actual)
@@ -140,13 +142,13 @@ class TreeNodeSuite extends SparkFunSuite {
   }
 
   test("foreach up") {
-    val actual = new ArrayBuffer[String]()
+    val actual   = new ArrayBuffer[String]()
     val expected = Seq("1", "2", "3", "4", "-", "*", "+")
     val expression =
       Add(Literal(1), Multiply(Literal(2), Subtract(Literal(3), Literal(4))))
     expression foreachUp {
       case b: BinaryOperator => actual.append(b.symbol);
-      case l: Literal => actual.append(l.toString);
+      case l: Literal        => actual.append(l.toString);
     }
 
     assert(expected === actual)
@@ -158,17 +160,17 @@ class TreeNodeSuite extends SparkFunSuite {
     // Find the top node.
     var actual: Option[Expression] = expression.find {
       case add: Add => true
-      case other => false
+      case other    => false
     }
     var expected: Option[Expression] = Some(
-        Add(Literal(1),
-            Multiply(Literal(2), Subtract(Literal(3), Literal(4)))))
+      Add(Literal(1), Multiply(Literal(2), Subtract(Literal(3), Literal(4))))
+    )
     assert(expected === actual)
 
     // Find the first children.
     actual = expression.find {
       case Literal(1, IntegerType) => true
-      case other => false
+      case other                   => false
     }
     expected = Some(Literal(1))
     assert(expected === actual)
@@ -176,7 +178,7 @@ class TreeNodeSuite extends SparkFunSuite {
     // Find an internal node (Subtract).
     actual = expression.find {
       case sub: Subtract => true
-      case other => false
+      case other         => false
     }
     expected = Some(Subtract(Literal(3), Literal(4)))
     assert(expected === actual)
@@ -184,7 +186,7 @@ class TreeNodeSuite extends SparkFunSuite {
     // Find a leaf node.
     actual = expression.find {
       case Literal(3, IntegerType) => true
-      case other => false
+      case other                   => false
     }
     expected = Some(Literal(3))
     assert(expected === actual)
@@ -192,7 +194,7 @@ class TreeNodeSuite extends SparkFunSuite {
     // Find nothing.
     actual = expression.find {
       case Literal(100, IntegerType) => true
-      case other => false
+      case other                     => false
     }
     expected = None
     assert(expected === actual)
@@ -208,8 +210,8 @@ class TreeNodeSuite extends SparkFunSuite {
         case add: Add => add
       }
       val expected = Some(
-          Add(Literal(1),
-              Multiply(Literal(2), Subtract(Literal(3), Literal(4)))))
+        Add(Literal(1), Multiply(Literal(2), Subtract(Literal(3), Literal(4))))
+      )
       assert(expected === actual)
     }
 
@@ -271,7 +273,7 @@ class TreeNodeSuite extends SparkFunSuite {
     }
 
     {
-      val actual = expression.withNewChildren(Seq(Literal(2), Literal(3)))
+      val actual   = expression.withNewChildren(Seq(Literal(2), Literal(3)))
       val expected = ExpressionInMap(Map("1" -> Literal(2), "2" -> Literal(3)))
       assert(actual === expected)
     }

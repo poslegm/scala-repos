@@ -17,8 +17,8 @@ class C(x: String) {
 object Test {
 
   def main(args: Array[String]) {
-    val b1 = new Box1("")
-    val b2 = new Box2("")
+    val b1     = new Box1("")
+    val b2     = new Box2("")
     val f: Foo = b2
     println(f.box1(b1))
     println(f.box2(b2))

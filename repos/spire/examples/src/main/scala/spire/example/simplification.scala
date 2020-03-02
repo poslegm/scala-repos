@@ -26,7 +26,7 @@ object Simplification {
     } else {
       args(0) match {
         case "nrat" =>
-          val n = if (args.length == 1) 10 else args(1).toInt
+          val n           = if (args.length == 1) 10 else args(1).toInt
           val r: Rational = rationals.drop(n - 1).head
           println("rational %d is %s" format (n, r.toString))
         case "rats" =>
@@ -34,7 +34,7 @@ object Simplification {
           rationals.take(n).foreach(r => print(r.toString + ", "))
           println("...")
         case "nprime" =>
-          val n = if (args.length == 1) 10 else args(1).toInt
+          val n      = if (args.length == 1) 10 else args(1).toInt
           val p: Int = primes.drop(n - 1).head
           println("rational %d is %s" format (n, p.toString))
         case "primes" =>
@@ -108,9 +108,11 @@ object Simplification {
     * describes the maximum distance we can shift the value to find an
     * "exact" match.
     */
-  def snap(n: Double,
-           limit: Int = 10,
-           epsilon: Double = 0.00000000001): (Double, Int, Int) = {
+  def snap(
+      n: Double,
+      limit: Int = 10,
+      epsilon: Double = 0.00000000001
+  ): (Double, Int, Int) = {
     @tailrec
     def loop(i: Int, ex: Int, div: Int): (Double, Int, Int) = {
       if (i >= limit) {
@@ -167,7 +169,7 @@ object BigStream {
   implicit def canBuildFrom[A]: CanBuildFrom[Iterable[A], A, BigStream[A]] =
     new CanBuildFrom[Iterable[A], A, BigStream[A]] {
       def apply(from: Iterable[A]) = newBuilder[A]
-      def apply() = newBuilder[A]
+      def apply()                  = newBuilder[A]
     }
 }
 
@@ -215,17 +217,17 @@ trait BigStream[A] extends Iterable[A] with IterableLike[A, BigStream[A]] {
 class BigCons[A](override val head: A, t: => BigStream[A])
     extends BigStream[A] {
   override def tail: BigStream[A] = t
-  override def isEmpty = false
-  override def toString: String = "BigStream(%s, ...)" format head.toString
+  override def isEmpty            = false
+  override def toString: String   = "BigStream(%s, ...)" format head.toString
   override def equals(rhs: Any): Boolean = rhs match {
     case s: BigStream[_] => !s.isEmpty && tail == s.tail
-    case _ => false
+    case _               => false
   }
 }
 
 case class BigNil[A]() extends BigStream[A] {
-  override def head: A = sys.error("head on nil")
+  override def head: A            = sys.error("head on nil")
   override def tail: BigStream[A] = sys.error("tail on nil")
-  override def isEmpty = true
-  override def toString: String = "BigStream()"
+  override def isEmpty            = true
+  override def toString: String   = "BigStream()"
 }

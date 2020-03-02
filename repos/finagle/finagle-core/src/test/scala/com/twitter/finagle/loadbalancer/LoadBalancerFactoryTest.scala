@@ -4,7 +4,10 @@ import com.twitter.finagle._
 import com.twitter.finagle.client.{StackClient, StringClient}
 import com.twitter.finagle.param.Stats
 import com.twitter.finagle.server.StringServer
-import com.twitter.finagle.stats.{InMemoryHostStatsReceiver, InMemoryStatsReceiver}
+import com.twitter.finagle.stats.{
+  InMemoryHostStatsReceiver,
+  InMemoryStatsReceiver
+}
 import com.twitter.finagle.util.Rng
 import com.twitter.util.{Await, Future, Var}
 import java.net.{InetAddress, InetSocketAddress, SocketAddress}
@@ -15,20 +18,23 @@ import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class LoadBalancerFactoryTest
-    extends FunSuite with StringClient with StringServer with Eventually
+    extends FunSuite
+    with StringClient
+    with StringServer
+    with Eventually
     with IntegrationPatience {
   val echoService = Service.mk[String, String](Future.value(_))
 
   trait PerHostFlagCtx extends App {
-    val label = "myclient"
-    val client = stringClient.configured(param.Label(label))
-    val port = "localhost:8080"
+    val label          = "myclient"
+    val client         = stringClient.configured(param.Label(label))
+    val port           = "localhost:8080"
     val perHostStatKey = Seq(label, port, "available")
   }
 
   test("reports per-host stats when flag is true") {
     new PerHostFlagCtx {
-      val sr = new InMemoryHostStatsReceiver
+      val sr  = new InMemoryHostStatsReceiver
       val sr1 = new InMemoryStatsReceiver
 
       perHostStats.let(true) {
@@ -47,7 +53,7 @@ class LoadBalancerFactoryTest
 
   test("does not report per-host stats when flag is false") {
     new PerHostFlagCtx {
-      val sr = new InMemoryHostStatsReceiver
+      val sr  = new InMemoryHostStatsReceiver
       val sr1 = new InMemoryStatsReceiver
 
       perHostStats.let(false) {
@@ -61,20 +67,22 @@ class LoadBalancerFactoryTest
   }
 
   test("make service factory stack") {
-    val addr1 = new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
+    val addr1   = new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
     val server1 = stringServer.serve(addr1, echoService)
 
-    val addr2 = new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
+    val addr2   = new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
     val server2 = stringServer.serve(addr2, echoService)
 
     val sr = new InMemoryStatsReceiver
     val client = stringClient
       .configured(Stats(sr))
       .newService(
-          Name.bound(
-              Address(server1.boundAddress.asInstanceOf[InetSocketAddress]),
-              Address(server2.boundAddress.asInstanceOf[InetSocketAddress])),
-          "client")
+        Name.bound(
+          Address(server1.boundAddress.asInstanceOf[InetSocketAddress]),
+          Address(server2.boundAddress.asInstanceOf[InetSocketAddress])
+        ),
+        "client"
+      )
 
     assert(sr.counters(Seq("client", "loadbalancer", "adds")) == 2)
     assert(Await.result(client("hello\n")) == "hello")
@@ -82,9 +90,12 @@ class LoadBalancerFactoryTest
 
   test("throws NoBrokersAvailableException with negative addresses") {
     val next: Stack[ServiceFactory[String, String]] =
-      Stack.Leaf(Stack.Role("mock"),
-                 ServiceFactory.const[String, String](
-                     Service.mk[String, String](req => Future.value(s"$req"))))
+      Stack.Leaf(
+        Stack.Role("mock"),
+        ServiceFactory.const[String, String](
+          Service.mk[String, String](req => Future.value(s"$req"))
+        )
+      )
 
     val stack = new LoadBalancerFactory.StackModule[String, String] {
       val description = "mock"
@@ -92,7 +103,7 @@ class LoadBalancerFactoryTest
 
     val addrs = Seq(Addr.Neg)
     addrs.foreach { addr =>
-      val dest = LoadBalancerFactory.Dest(Var(addr))
+      val dest    = LoadBalancerFactory.Dest(Var(addr))
       val factory = stack.make(Stack.Params.empty + dest)
       intercept[NoBrokersAvailableException](Await.result(factory()))
     }
@@ -101,49 +112,56 @@ class LoadBalancerFactoryTest
 
 @RunWith(classOf[JUnitRunner])
 class ConcurrentLoadBalancerFactoryTest
-    extends FunSuite with StringClient with StringServer {
+    extends FunSuite
+    with StringClient
+    with StringServer {
   val echoService = Service.mk[String, String](Future.value(_))
 
   test("makes service factory stack") {
     val address = new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
-    val server = stringServer.serve(address, echoService)
+    val server  = stringServer.serve(address, echoService)
 
     val sr = new InMemoryStatsReceiver
     val clientStack = StackClient.newStack.replace(
-        LoadBalancerFactory.role,
-        ConcurrentLoadBalancerFactory.module[String, String])
+      LoadBalancerFactory.role,
+      ConcurrentLoadBalancerFactory.module[String, String]
+    )
     val client = stringClient
       .withStack(clientStack)
       .configured(Stats(sr))
       .newService(
-          Name.bound(
-              Address(server.boundAddress.asInstanceOf[InetSocketAddress])),
-          "client")
+        Name
+          .bound(Address(server.boundAddress.asInstanceOf[InetSocketAddress])),
+        "client"
+      )
 
     assert(sr.counters(Seq("client", "loadbalancer", "adds")) == 4)
     assert(Await.result(client("hello\n")) == "hello")
   }
 
   test("creates fixed number of service factories based on params") {
-    val addr1 = new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
+    val addr1   = new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
     val server1 = stringServer.serve(addr1, echoService)
 
-    val addr2 = new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
+    val addr2   = new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
     val server2 = stringServer.serve(addr2, echoService)
 
     val sr = new InMemoryStatsReceiver
     val clientStack = StackClient.newStack.replace(
-        LoadBalancerFactory.role,
-        ConcurrentLoadBalancerFactory.module[String, String])
+      LoadBalancerFactory.role,
+      ConcurrentLoadBalancerFactory.module[String, String]
+    )
     val client = stringClient
       .withStack(clientStack)
       .configured(Stats(sr))
       .configured(ConcurrentLoadBalancerFactory.Param(3))
       .newService(
-          Name.bound(
-              Address(server1.boundAddress.asInstanceOf[InetSocketAddress]),
-              Address(server2.boundAddress.asInstanceOf[InetSocketAddress])),
-          "client")
+        Name.bound(
+          Address(server1.boundAddress.asInstanceOf[InetSocketAddress]),
+          Address(server2.boundAddress.asInstanceOf[InetSocketAddress])
+        ),
+        "client"
+      )
 
     assert(sr.counters(Seq("client", "loadbalancer", "adds")) == 6)
   }

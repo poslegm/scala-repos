@@ -26,9 +26,9 @@ object AnaDests {
 
   def parse(o: JsObject) =
     for {
-      d ← o obj "d"
+      d       ← o obj "d"
       variant = chess.variant.Variant orDefault ~d.str("variant")
-      fen ← d str "fen"
-      path ← d str "path"
+      fen     ← d str "fen"
+      path    ← d str "path"
     } yield AnaDests(variant = variant, fen = fen, path = path)
 }

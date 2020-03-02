@@ -8,15 +8,15 @@ class InheritanceThisNestedTest extends ResolveTestBase {
     super.folderPath + "inheritance/this/nested/"
   }
 
-  def testClass() = doTest()
-  def testObject() = doTest()
-  def testTrait() = doTest()
-  def testClashClass() = doTest()
-  def testClashObject() = doTest()
-  def testClashTrait() = doTest()
-  def testQualifiedClass() = doTest()
+  def testClass()           = doTest()
+  def testObject()          = doTest()
+  def testTrait()           = doTest()
+  def testClashClass()      = doTest()
+  def testClashObject()     = doTest()
+  def testClashTrait()      = doTest()
+  def testQualifiedClass()  = doTest()
   def testQualifiedObject() = doTest()
-  def testQualifiedTrait() = doTest()
+  def testQualifiedTrait()  = doTest()
   //TODO answer?
 //  def testWrongQualifier = doTest
 }

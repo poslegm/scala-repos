@@ -12,7 +12,7 @@ object SudokuSolver extends App {
   // coordinate
   def invalid(i: Int, x: Int, y: Int, n: Char): Boolean =
     i < 9 &&
-    (m(y)(i) == n || m(i)(x) == n ||
+      (m(y)(i) == n || m(i)(x) == n ||
         m(y / 3 * 3 + i / 3)(x / 3 * 3 + i % 3) == n ||
         invalid(i + 1, x, y, n))
 
@@ -28,21 +28,23 @@ object SudokuSolver extends App {
   // is found
   def search(x: Int, y: Int, f: (Int) => Int, accu: Int): Int = (x, y) match {
     case (9, y) => search(0, y + 1, f, accu) // next row
-    case (0, 9) => f(accu) // found a solution
+    case (0, 9) => f(accu)                   // found a solution
     case (x, y) =>
       if (m(y)(x) != '0') search(x + 1, y, f, accu)
       else
-        fold((accu: Int, n: Int) =>
-               if (invalid(0, x, y, (n + 48).toChar)) accu
-               else {
-                 m(y)(x) = (n + 48).toChar;
-                 val newaccu = search(x + 1, y, f, accu);
-                 m(y)(x) = '0';
-                 newaccu
-             },
-             accu,
-             1,
-             10)
+        fold(
+          (accu: Int, n: Int) =>
+            if (invalid(0, x, y, (n + 48).toChar)) accu
+            else {
+              m(y)(x) = (n + 48).toChar;
+              val newaccu = search(x + 1, y, f, accu);
+              m(y)(x) = '0';
+              newaccu
+            },
+          accu,
+          1,
+          10
+        )
   }
 
   // The main part of the program uses the search function to accumulate

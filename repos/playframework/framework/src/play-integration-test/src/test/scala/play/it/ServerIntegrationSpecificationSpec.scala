@@ -11,13 +11,13 @@ import play.api.test._
 object NettyServerIntegrationSpecificationSpec
     extends ServerIntegrationSpecificationSpec
     with NettyIntegrationSpecification {
-  override def isAkkaHttpServer = false
+  override def isAkkaHttpServer  = false
   override def expectedServerTag = None
 }
 object AkkaHttpServerIntegrationSpecificationSpec
     extends ServerIntegrationSpecificationSpec
     with AkkaHttpIntegrationSpecification {
-  override def isAkkaHttpServer = true
+  override def isAkkaHttpServer  = true
   override def expectedServerTag = Some("akka-http")
 }
 
@@ -26,7 +26,8 @@ object AkkaHttpServerIntegrationSpecificationSpec
   * server backends, works properly.
   */
 trait ServerIntegrationSpecificationSpec
-    extends PlaySpecification with WsTestClient
+    extends PlaySpecification
+    with WsTestClient
     with ServerIntegrationSpecification {
 
   def isAkkaHttpServer: Boolean
@@ -44,19 +45,23 @@ trait ServerIntegrationSpecificationSpec
     }
 
     "run the right HTTP server when using TestServer constructor" in {
-      running(TestServer(
-              testServerPort,
-              GuiceApplicationBuilder().routes(httpServerTagRoutes).build())) {
-        val plainRequest = wsUrl("/httpServerTag")(testServerPort)
+      running(
+        TestServer(
+          testServerPort,
+          GuiceApplicationBuilder().routes(httpServerTagRoutes).build()
+        )
+      ) {
+        val plainRequest   = wsUrl("/httpServerTag")(testServerPort)
         val responseFuture = plainRequest.get()
-        val response = await(responseFuture)
+        val response       = await(responseFuture)
         response.status must_== 200
         response.body must_== expectedServerTag.toString
       }
     }
 
     "run the right server when using WithServer trait" in new WithServer(
-        app = GuiceApplicationBuilder().routes(httpServerTagRoutes).build()) {
+      app = GuiceApplicationBuilder().routes(httpServerTagRoutes).build()
+    ) {
       val response = await(wsUrl("/httpServerTag").get())
       response.status must equalTo(OK)
       response.body must_== expectedServerTag.toString

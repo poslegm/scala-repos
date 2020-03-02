@@ -14,14 +14,12 @@ import org.mockito.Matchers._
 class CacheTest extends FunSuite with MockitoSugar {
 
   class CacheHelper {
-    val timer = new MockTimer
+    val timer   = new MockTimer
     val evictor = mock[Object => Unit]
     val cache =
       Mockito.spy(new Cache[Object](5, 5.seconds, timer, Some(evictor)))
     val objects =
-      0 until 10 map { _ =>
-        mock[Object]
-      }
+      0 until 10 map { _ => mock[Object] }
   }
 
   test("Cache(5, 5.seconds) should keep at most 5 items") {
@@ -30,9 +28,7 @@ class CacheTest extends FunSuite with MockitoSugar {
 
     objects foreach { cache.put(_) }
     assert(cache.size == 5)
-    objects take 5 foreach { obj =>
-      verify(evictor)(obj)
-    }
+    objects take 5 foreach { obj => verify(evictor)(obj) }
   }
 
   test("Cache(5, 5.seconds) should return objects in LIFO order") {
@@ -40,9 +36,7 @@ class CacheTest extends FunSuite with MockitoSugar {
     import h._
 
     objects take 5 foreach { cache.put(_) }
-    (objects take 5).reverse foreach { x =>
-      assert(cache.get() == Some(x))
-    }
+    (objects take 5).reverse foreach { x => assert(cache.get() == Some(x)) }
   }
 
   test("Cache(5, 5.seconds) should return None when empty") {
@@ -74,7 +68,8 @@ class CacheTest extends FunSuite with MockitoSugar {
   }
 
   test(
-      "Cache(5, 5.seconds) should not expire any items if none of them have expired yet") {
+    "Cache(5, 5.seconds) should not expire any items if none of them have expired yet"
+  ) {
     val h = new CacheHelper
     import h._
 

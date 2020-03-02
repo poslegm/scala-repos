@@ -27,11 +27,11 @@ object typerep {
   }
 
   implicit def typeRep(x: Boolean): TypeRep[Boolean] = BooleanRep
-  implicit def typeRep(x: Char): TypeRep[Char] = CharRep
-  implicit def typeRep(x: Long): TypeRep[Long] = LongRep
-  implicit def typeRep(x: Float): TypeRep[Float] = FloatRep
-  implicit def typeRep(x: Double): TypeRep[Double] = DoubleRep
-  implicit def typeRep(x: Int): TypeRep[Int] = IntRep
+  implicit def typeRep(x: Char): TypeRep[Char]       = CharRep
+  implicit def typeRep(x: Long): TypeRep[Long]       = LongRep
+  implicit def typeRep(x: Float): TypeRep[Float]     = FloatRep
+  implicit def typeRep(x: Double): TypeRep[Double]   = DoubleRep
+  implicit def typeRep(x: Int): TypeRep[Int]         = IntRep
   /*
  implicit def typeRep[T](xs: List[T])(implicit rep: T => TypeRep[T]): TypeRep[List[T]] =
    new ListRep(rep(xs.head))

@@ -15,7 +15,7 @@ object FileCharset {
   private val CheckByteLength = 8192
 
   def apply(file: File): Charset = {
-    val buf = Array.ofDim[Byte](CheckByteLength)
+    val buf      = Array.ofDim[Byte](CheckByteLength)
     val detector = new UniversalDetector(null)
     try {
       using(new FileInputStream(file)) { fis =>
@@ -30,7 +30,9 @@ object FileCharset {
     } catch {
       case t: Throwable =>
         logger.warn(
-            "Failed to detect charset for file: " + file.getPath + ".", t)
+          "Failed to detect charset for file: " + file.getPath + ".",
+          t
+        )
         Codec.defaultCharsetCodec.charSet
     } finally {
       detector.reset()
@@ -38,7 +40,9 @@ object FileCharset {
   }
 
   private[this] def getCharset(
-      detector: UniversalDetector, default: Codec): Charset = {
+      detector: UniversalDetector,
+      default: Codec
+  ): Charset = {
     val cs = detector.getDetectedCharset
     if (cs == null || cs.trim().isEmpty) {
       default.charSet

@@ -19,7 +19,7 @@ object NonBlockingMutexSpec extends Specification {
   }
 
   class MutexTester extends Tester {
-    val mutex = new NonBlockingMutex()
+    val mutex              = new NonBlockingMutex()
     def run(body: => Unit) = mutex.exclusive(body)
   }
 
@@ -28,9 +28,10 @@ object NonBlockingMutexSpec extends Specification {
   }
 
   def countOrderingErrors(runs: Int, tester: Tester)(
-      implicit ec: ExecutionContext): Future[Int] = {
-    val result = Promise[Int]()
-    val runCount = new AtomicInteger(0)
+      implicit ec: ExecutionContext
+  ): Future[Int] = {
+    val result         = Promise[Int]()
+    val runCount       = new AtomicInteger(0)
     val orderingErrors = new AtomicInteger(0)
 
     for (i <- 0 until runs) {
@@ -53,15 +54,15 @@ object NonBlockingMutexSpec extends Specification {
   "NonBlockingMutex" should {
 
     "run a single operation" in {
-      val p = Promise[Int]()
+      val p     = Promise[Int]()
       val mutex = new NonBlockingMutex()
       mutex.exclusive { p.success(1) }
       Await.result(p.future, waitTime) must_== (1)
     }
 
     "run two operations" in {
-      val p1 = Promise[Unit]()
-      val p2 = Promise[Unit]()
+      val p1    = Promise[Unit]()
+      val p2    = Promise[Unit]()
       val mutex = new NonBlockingMutex()
       mutex.exclusive { p1.success(()) }
       mutex.exclusive { p2.success(()) }
@@ -72,8 +73,10 @@ object NonBlockingMutexSpec extends Specification {
     "run code in order" in {
       import ExecutionContext.Implicits.global
 
-      def percentageOfRunsWithOrderingErrors(runSize: Int,
-                                             tester: Tester): Int = {
+      def percentageOfRunsWithOrderingErrors(
+          runSize: Int,
+          tester: Tester
+      ): Int = {
         val results: Seq[Future[Int]] = for (i <- 0 until 9) yield {
           countOrderingErrors(runSize, tester)
         }
@@ -91,8 +94,8 @@ object NonBlockingMutexSpec extends Specification {
       var errorPercentage = 0
       while (errorPercentage < 90 && runSize < 1000000) {
         runSize = runSize << 1
-        errorPercentage = percentageOfRunsWithOrderingErrors(runSize,
-                                                             new NaiveTester())
+        errorPercentage =
+          percentageOfRunsWithOrderingErrors(runSize, new NaiveTester())
       }
       //println(s"Got $errorPercentage% ordering errors on run size of $runSize")
 

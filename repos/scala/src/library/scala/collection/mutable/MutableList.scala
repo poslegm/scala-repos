@@ -29,17 +29,19 @@ import immutable.List
 @SerialVersionUID(5938451523372603072L)
 class MutableList[A]
     extends AbstractSeq[A]
-    with LinearSeq[A] with LinearSeqOptimized[A, MutableList[A]]
+    with LinearSeq[A]
+    with LinearSeqOptimized[A, MutableList[A]]
     with GenericTraversableTemplate[A, MutableList]
-    with Builder[A, MutableList[A]] with Serializable {
+    with Builder[A, MutableList[A]]
+    with Serializable {
   override def companion: GenericCompanion[MutableList] = MutableList
 
   override protected[this] def newBuilder: Builder[A, MutableList[A]] =
     new MutableList[A]
 
   protected var first0: LinkedList[A] = new LinkedList[A]
-  protected var last0: LinkedList[A] = first0
-  protected var len: Int = 0
+  protected var last0: LinkedList[A]  = first0
+  protected var len: Int              = 0
 
   def toQueue = new Queue(first0, last0, len)
 
@@ -117,8 +119,8 @@ class MutableList[A]
     if (isEmpty) Iterator.empty
     else
       new AbstractIterator[A] {
-        var elems = first0
-        var count = len
+        var elems   = first0
+        var count   = len
         def hasNext = count > 0 && elems.nonEmpty
         def next() = {
           if (!hasNext) throw new NoSuchElementException

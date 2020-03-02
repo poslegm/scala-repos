@@ -13,36 +13,43 @@ object IntervalSeqSampleCheck extends Properties("IntervalSeq.Sample") {
 
   // a test that works by sampling the result at all relevant places and checks consistency with the boolean operation
   def unarySampleTest(
-      a: IntervalSeq[Int], r: IntervalSeq[Int], op: Boolean => Boolean) = {
+      a: IntervalSeq[Int],
+      r: IntervalSeq[Int],
+      op: Boolean => Boolean
+  ) = {
     val support = a.edges.toArray.sorted.distinct
     support.forall { value =>
       val sameBefore = r.below(value) === op(a.below(value))
-      val sameAt = r.at(value) === op(a.at(value))
-      val sameAfter = r.above(value) === op(a.above(value))
+      val sameAt     = r.at(value) === op(a.at(value))
+      val sameAfter  = r.above(value) === op(a.above(value))
       sameBefore & sameAt & sameAfter
     }
   }
 
   // a test that works by sampling the result at all relevant places and checks consistency with the boolean operation
-  def binarySampleTest(a: IntervalSeq[Int],
-                       b: IntervalSeq[Int],
-                       r: IntervalSeq[Int],
-                       op: (Boolean, Boolean) => Boolean) = {
+  def binarySampleTest(
+      a: IntervalSeq[Int],
+      b: IntervalSeq[Int],
+      r: IntervalSeq[Int],
+      op: (Boolean, Boolean) => Boolean
+  ) = {
     val support = (a.edges ++ b.edges).toArray.sorted.distinct
     support.forall { value =>
       val sameBefore = r.below(value) === op(a.below(value), b.below(value))
-      val sameAt = r.at(value) === op(a.at(value), b.at(value))
-      val sameAfter = r.above(value) === op(a.above(value), b.above(value))
+      val sameAt     = r.at(value) === op(a.at(value), b.at(value))
+      val sameAfter  = r.above(value) === op(a.above(value), b.above(value))
       sameBefore & sameAt & sameAfter
     }
   }
 
   // a test that works by sampling the result at all relevant places and checks consistency with the boolean operation
-  def trinarySampleTest(a: IntervalSeq[Int],
-                        b: IntervalSeq[Int],
-                        c: IntervalSeq[Int],
-                        r: IntervalTrie[Long],
-                        op: (Boolean, Boolean, Boolean) => Boolean) = {
+  def trinarySampleTest(
+      a: IntervalSeq[Int],
+      b: IntervalSeq[Int],
+      c: IntervalSeq[Int],
+      r: IntervalTrie[Long],
+      op: (Boolean, Boolean, Boolean) => Boolean
+  ) = {
     val support = (a.edges ++ b.edges ++ c.edges).toArray.sorted.distinct
     support.forall { value =>
       val sameBefore =
@@ -63,9 +70,8 @@ object IntervalSeqSampleCheck extends Properties("IntervalSeq.Sample") {
       binarySampleTest(a, b, a & b, _ & _)
   }
 
-  property("sample_or") = forAll {
-    (a: IntervalSeq[Int], b: IntervalSeq[Int]) =>
-      binarySampleTest(a, b, a | b, _ | _)
+  property("sample_or") = forAll { (a: IntervalSeq[Int], b: IntervalSeq[Int]) =>
+    binarySampleTest(a, b, a | b, _ | _)
   }
 
   property("sample_xor") = forAll {
@@ -80,7 +86,7 @@ object IntervalSeqSampleCheck extends Properties("IntervalSeq.Sample") {
       (IntervalSeq.empty[Rational] /: rationalIntervals)(_ | IntervalSeq(_))
     // then do the roundtrip test like with IntervalSet
     val aText = a.toString
-    val b = IntervalSeq(aText)
+    val b     = IntervalSeq(aText)
     a == b
   }
 
@@ -89,8 +95,8 @@ object IntervalSeqSampleCheck extends Properties("IntervalSeq.Sample") {
   }
 
   property("hull") = forAll { a: IntervalSeq[Int] =>
-    val hullSet = IntervalSeq(a.hull)
-    val outside = ~hullSet
+    val hullSet        = IntervalSeq(a.hull)
+    val outside        = ~hullSet
     val nothingOutside = (a & outside) == IntervalSeq.empty[Int]
     val allInside =
       a.intervals.forall(i => hullSet.isSupersetOf(IntervalSeq(i)))

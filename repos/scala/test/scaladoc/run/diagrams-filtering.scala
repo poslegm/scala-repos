@@ -60,10 +60,12 @@ object Test extends ScaladocModelTest {
 
     // trait A
     // Assert we have just 3 nodes and 2 edges
-    val A = base._trait("A")
+    val A     = base._trait("A")
     val ADiag = A.inheritanceDiagram.get
-    assert(ADiag.nodes.length == 3,
-           s"${ADiag.nodes} has length ${ADiag.nodes.length}, expected 3")
+    assert(
+      ADiag.nodes.length == 3,
+      s"${ADiag.nodes} has length ${ADiag.nodes.length}, expected 3"
+    )
     assert(ADiag.edges.map(_._2.length).sum == 2)
 
     // trait C
@@ -75,7 +77,7 @@ object Test extends ScaladocModelTest {
     assert(!G.inheritanceDiagram.isDefined)
 
     // trait E
-    val E = base._class("E")
+    val E     = base._class("E")
     val EDiag = E.inheritanceDiagram.get
 
     // there must be a single this node
@@ -83,12 +85,12 @@ object Test extends ScaladocModelTest {
 
     // 1. check class E diagram
     val (incoming, outgoing) = EDiag.edges.partition(!_._1.isThisNode)
-    assert(incoming.length == 2) // F and G
+    assert(incoming.length == 2)         // F and G
     assert(outgoing.head._2.length == 3) // B, C and T
 
     val (outgoingSuperclass, outgoingImplicit) =
       outgoing.head._2.partition(_.isNormalNode)
-    assert(outgoingSuperclass.length == 2) // B and C
+    assert(outgoingSuperclass.length == 2)                 // B and C
     assert(outgoingImplicit.length == 1, outgoingImplicit) // T
 
     val (incomingSubclass, incomingImplicit) =
@@ -96,6 +98,8 @@ object Test extends ScaladocModelTest {
     assert(incomingSubclass.length == 2) // F and G
     assert(incomingImplicit.length == 0)
 
-    assert(EDiag.nodes.length == 6) // E, B and C, F and G and the implicit conversion to T
+    assert(
+      EDiag.nodes.length == 6
+    ) // E, B and C, F and G and the implicit conversion to T
   }
 }

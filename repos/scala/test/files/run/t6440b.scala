@@ -7,7 +7,8 @@ object Test extends StoreReporterDirectTest {
   def compileCode(code: String) = {
     val classpath =
       List(sys.props("partest.lib"), testOutput.path) mkString sys.props(
-          "path.separator")
+        "path.separator"
+      )
     compileString(newCompiler("-cp", classpath, "-d", testOutput.path))(code)
   }
 
@@ -43,7 +44,7 @@ object Test extends StoreReporterDirectTest {
 
   def show(): Unit = {
     compileCode(library1)
-    val pack1 = new File(testOutput.path, "pack1")
+    val pack1  = new File(testOutput.path, "pack1")
     val tClass = new File(pack1, "T.class")
     assert(tClass.exists)
     assert(tClass.delete())

@@ -19,7 +19,7 @@ import akka.actor.ActorIdentity
 import akka.actor.Identify
 
 object ReliableProxySpec extends MultiNodeConfig {
-  val local = role("local")
+  val local  = role("local")
   val remote = role("remote")
 
   testTransport(on = true)
@@ -29,8 +29,10 @@ class ReliableProxyMultiJvmNode1 extends ReliableProxySpec
 class ReliableProxyMultiJvmNode2 extends ReliableProxySpec
 
 class ReliableProxySpec
-    extends MultiNodeSpec(ReliableProxySpec) with STMultiNodeSpec
-    with BeforeAndAfterEach with ImplicitSender {
+    extends MultiNodeSpec(ReliableProxySpec)
+    with STMultiNodeSpec
+    with BeforeAndAfterEach
+    with ImplicitSender {
   import ReliableProxySpec._
   import ReliableProxy._
 
@@ -44,7 +46,7 @@ class ReliableProxySpec
   }
 
   @volatile var target: ActorRef = system.deadLetters
-  @volatile var proxy: ActorRef = system.deadLetters
+  @volatile var proxy: ActorRef  = system.deadLetters
 
   def idTarget(): Unit = {
     system.actorSelection(node(remote) / "user" / "echo") ! Identify("echo")
@@ -52,11 +54,14 @@ class ReliableProxySpec
   }
 
   def startTarget(): Unit = {
-    target = system.actorOf(Props(new Actor {
-      def receive = {
-        case x ⇒ testActor ! x
-      }
-    }).withDeploy(Deploy.local), "echo")
+    target = system.actorOf(
+      Props(new Actor {
+        def receive = {
+          case x ⇒ testActor ! x
+        }
+      }).withDeploy(Deploy.local),
+      "echo"
+    )
   }
 
   def stopProxy(): Unit = {
@@ -98,7 +103,9 @@ class ReliableProxySpec
 
         idTarget()
         proxy = system.actorOf(
-            ReliableProxy.props(target.path, 100.millis, 5.seconds), "proxy1")
+          ReliableProxy.props(target.path, 100.millis, 5.seconds),
+          "proxy1"
+        )
         watch(proxy)
         proxy ! FSM.SubscribeTransitionCallBack(testActor)
         expectState(Connecting)
@@ -300,8 +307,8 @@ class ReliableProxySpec
         stopProxy() // Stop previous proxy
 
         // Start new proxy with no reconnections
-        proxy = system.actorOf(ReliableProxy.props(target.path, 100.millis),
-                               "proxy2")
+        proxy =
+          system.actorOf(ReliableProxy.props(target.path, 100.millis), "proxy2")
         proxy ! FSM.SubscribeTransitionCallBack(testActor)
         watch(proxy)
 
@@ -345,8 +352,9 @@ class ReliableProxySpec
         // Proxy is not running after previous test
         // Start new proxy with 3 reconnections every 2 sec
         proxy = system.actorOf(
-            ReliableProxy.props(target.path, 100.millis, 2.seconds, 3),
-            "proxy3")
+          ReliableProxy.props(target.path, 100.millis, 2.seconds, 3),
+          "proxy3"
+        )
         proxy ! FSM.SubscribeTransitionCallBack(testActor)
         watch(proxy)
         expectState(Connecting)

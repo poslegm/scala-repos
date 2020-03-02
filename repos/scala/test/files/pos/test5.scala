@@ -23,7 +23,7 @@ object test {
     val i: I[G[P]] = null;
 
     // Values with types P and i.X as seen from instances of M
-    def val_mp: P = val_mp;
+    def val_mp: P     = val_mp;
     def val_mix: G[P] = g[P](val_mp);
   }
 
@@ -32,7 +32,7 @@ object test {
 
     abstract class J[Y]() extends I[G[Y]]() {
       // Values with types Y and X as seen from instances of J
-      def val_jy: Y = val_jy;
+      def val_jy: Y    = val_jy;
       def val_jx: G[Y] = g[Y](val_jy);
 
       // Check type P
@@ -41,10 +41,10 @@ object test {
     }
 
     // Values with types Q, X.P, i.X, j.Y and j.X as seen from instances of N
-    def val_nq: Q = val_nq;
-    def val_np: F[Q] = f[Q](val_nq);
+    def val_nq: Q        = val_nq;
+    def val_np: F[Q]     = f[Q](val_nq);
     def val_nix: G[F[Q]] = g[F[Q]](val_np);
-    def val_njy: G[Q] = g[Q](val_nq);
+    def val_njy: G[Q]    = g[Q](val_nq);
     def val_njx: G[G[Q]] = g[G[Q]](val_njy);
 
     // Check type i.P

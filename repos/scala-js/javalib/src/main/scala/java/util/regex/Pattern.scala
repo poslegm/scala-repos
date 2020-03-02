@@ -4,14 +4,13 @@ import scala.annotation.switch
 
 import scala.scalajs.js
 
-final class Pattern private (
-    jsRegExp: js.RegExp, _pattern: String, _flags: Int)
+final class Pattern private (jsRegExp: js.RegExp, _pattern: String, _flags: Int)
     extends Serializable {
 
   import Pattern._
 
   def pattern(): String = _pattern
-  def flags(): Int = _flags
+  def flags(): Int      = _flags
 
   override def toString(): String = pattern
 
@@ -29,8 +28,8 @@ final class Pattern private (
        */
       val jsFlags = {
         (if (jsRegExp.global) "g" else "") +
-        (if (jsRegExp.ignoreCase) "i" else "") +
-        (if (jsRegExp.multiline) "m" else "")
+          (if (jsRegExp.ignoreCase) "i" else "") +
+          (if (jsRegExp.multiline) "m" else "")
       }
       new js.RegExp(jsRegExp.source, jsFlags)
     }
@@ -45,13 +44,13 @@ final class Pattern private (
   def split(input: CharSequence, limit: Int): Array[String] = {
     val lim = if (limit > 0) limit else Int.MaxValue
 
-    val result = js.Array[String]()
+    val result   = js.Array[String]()
     val inputStr = input.toString
-    val matcher = this.matcher(inputStr)
-    var prevEnd = 0
+    val matcher  = this.matcher(inputStr)
+    var prevEnd  = 0
 
     // Actually split original string
-    while ( (result.length < lim - 1) && matcher.find()) {
+    while ((result.length < lim - 1) && matcher.find()) {
       result.push(inputStr.substring(prevEnd, matcher.start))
       prevEnd = matcher.end
     }
@@ -75,14 +74,14 @@ final class Pattern private (
 }
 
 object Pattern {
-  final val UNIX_LINES = 0x01
-  final val CASE_INSENSITIVE = 0x02
-  final val COMMENTS = 0x04
-  final val MULTILINE = 0x08
-  final val LITERAL = 0x10
-  final val DOTALL = 0x20
-  final val UNICODE_CASE = 0x40
-  final val CANON_EQ = 0x80
+  final val UNIX_LINES              = 0x01
+  final val CASE_INSENSITIVE        = 0x02
+  final val COMMENTS                = 0x04
+  final val MULTILINE               = 0x08
+  final val LITERAL                 = 0x10
+  final val DOTALL                  = 0x20
+  final val UNICODE_CASE            = 0x40
+  final val CANON_EQ                = 0x80
   final val UNICODE_CHARACTER_CLASS = 0x100
 
   def compile(regex: String, flags: Int): Pattern = {
@@ -91,13 +90,13 @@ object Pattern {
         (quote(regex), flags)
       } else {
         trySplitHack(regex, flags) orElse tryFlagHack(regex, flags) getOrElse
-        (regex, flags)
+          (regex, flags)
       }
     }
 
     val jsFlags = {
       "g" + (if ((flags1 & CASE_INSENSITIVE) != 0) "i" else "") +
-      (if ((flags1 & MULTILINE) != 0) "m" else "")
+        (if ((flags1 & MULTILINE) != 0) "m" else "")
     }
 
     val jsRegExp = new js.RegExp(jsPattern, jsFlags)
@@ -113,16 +112,16 @@ object Pattern {
 
   def quote(s: String): String = {
     var result = ""
-    var i = 0
+    var i      = 0
     while (i < s.length) {
       val c = s.charAt(i)
       result +=
-      ((c: @switch) match {
-            case '\\' | '.' | '(' | ')' | '[' | ']' | '{' | '}' | '|' | '?' |
-                '*' | '+' | '^' | '$' =>
-              "\\" + c
-            case _ => c
-          })
+        ((c: @switch) match {
+          case '\\' | '.' | '(' | ')' | '[' | ']' | '{' | '}' | '|' | '?' |
+              '*' | '+' | '^' | '$' =>
+            "\\" + c
+          case _ => c
+        })
       i += 1
     }
     result
@@ -145,14 +144,10 @@ object Pattern {
       val newPat =
         pat.substring(m(0).get.length) // cut off the flag specifiers
       val flags1 = m(1).fold(flags0) { chars =>
-        chars.foldLeft(flags0) { (f, c) =>
-          f | charToFlag(c)
-        }
+        chars.foldLeft(flags0) { (f, c) => f | charToFlag(c) }
       }
       val flags2 = m(2).fold(flags1) { chars =>
-        chars.foldLeft(flags1) { (f, c) =>
-          f & ~charToFlag(c)
-        }
+        chars.foldLeft(flags1) { (f, c) => f & ~charToFlag(c) }
       }
       Some((newPat, flags2))
     } else None
@@ -166,7 +161,7 @@ object Pattern {
     case 'u' => UNICODE_CASE
     case 'x' => COMMENTS
     case 'U' => UNICODE_CHARACTER_CLASS
-    case _ => sys.error("bad in-pattern flag")
+    case _   => sys.error("bad in-pattern flag")
   }
 
   /** matches \Q<char>\E to support StringLike.split */

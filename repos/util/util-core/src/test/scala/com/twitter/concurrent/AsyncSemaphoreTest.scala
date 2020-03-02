@@ -10,12 +10,16 @@ import scala.collection.mutable
 
 @RunWith(classOf[JUnitRunner])
 class AsyncSemaphoreTest extends FunSpec {
-  class AsyncSemaphoreHelper(val sem: AsyncSemaphore,
-                             var count: Int,
-                             val permits: ConcurrentLinkedQueue[Permit]) {
-    def copy(sem: AsyncSemaphore = this.sem,
-             count: Int = this.count,
-             permits: ConcurrentLinkedQueue[Permit] = this.permits) =
+  class AsyncSemaphoreHelper(
+      val sem: AsyncSemaphore,
+      var count: Int,
+      val permits: ConcurrentLinkedQueue[Permit]
+  ) {
+    def copy(
+        sem: AsyncSemaphore = this.sem,
+        count: Int = this.count,
+        permits: ConcurrentLinkedQueue[Permit] = this.permits
+    ) =
       new AsyncSemaphoreHelper(sem, count, permits)
   }
 
@@ -23,8 +27,8 @@ class AsyncSemaphoreTest extends FunSpec {
 
   override def withFixture(test: OneArgTest) = {
     val sem = new AsyncSemaphore(2)
-    val helper = new AsyncSemaphoreHelper(
-        sem, 0, new ConcurrentLinkedQueue[Permit])
+    val helper =
+      new AsyncSemaphoreHelper(sem, 0, new ConcurrentLinkedQueue[Permit])
     withFixture(test.toNoArgTest(helper))
   }
 
@@ -132,7 +136,7 @@ class AsyncSemaphoreTest extends FunSpec {
     it("should execute queued up async functions as permits become available") {
       semHelper =>
         var counter = 0
-        val queue = new mutable.Queue[Promise[Unit]]()
+        val queue   = new mutable.Queue[Promise[Unit]]()
         val func = new (() => Future[Unit]) {
           def apply(): Future[Unit] = {
             counter = counter + 1
@@ -179,7 +183,7 @@ class AsyncSemaphoreTest extends FunSpec {
     it("should execute queued up sync functions as permits become available") {
       semHelper =>
         var counter = 0
-        val queue = new mutable.Queue[Promise[Unit]]()
+        val queue   = new mutable.Queue[Promise[Unit]]()
         val funcFuture = new (() => Future[Unit]) {
           def apply(): Future[Unit] = {
             counter = counter + 1
@@ -220,7 +224,7 @@ class AsyncSemaphoreTest extends FunSpec {
     it("should handle queued up sync functions which throw exception") {
       semHelper =>
         var counter = 0
-        val queue = new mutable.Queue[Promise[Unit]]()
+        val queue   = new mutable.Queue[Promise[Unit]]()
         val funcFuture = new (() => Future[Unit]) {
           def apply(): Future[Unit] = {
             counter = counter + 1
@@ -257,7 +261,7 @@ class AsyncSemaphoreTest extends FunSpec {
     }
 
     it("drains waiters when failed") { semHelper =>
-      val as = new AsyncSemaphore(1)
+      val as           = new AsyncSemaphore(1)
       val (r1, r2, r3) = (as.acquire(), as.acquire(), as.acquire())
 
       assert(r1.isDefined)
@@ -275,7 +279,7 @@ class AsyncSemaphoreTest extends FunSpec {
       assert(as.numWaiters == 0)
 
       val results = Seq(r2.poll, r3.poll, r4.poll, r5.poll)
-      val msgs = results.collect { case Some(Throw(e)) => e.getMessage }
+      val msgs    = results.collect { case Some(Throw(e)) => e.getMessage }
       assert(msgs.forall(_ == "woop"))
     }
   }

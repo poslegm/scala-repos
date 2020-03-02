@@ -6,12 +6,17 @@ import std.AllInstances._
 object OptionalTest extends SpecLite {
 
   def definedTests[F[_], A](
-      context: F[A], value: A, default: => A, alternative: => F[A])(
+      context: F[A],
+      value: A,
+      default: => A,
+      alternative: => F[A]
+  )(
       implicit O: Optional[F],
       EA: Equal[A],
       EFA: Equal[F[A]],
       SA: Show[A],
-      SFA: Show[F[A]]) = {
+      SFA: Show[F[A]]
+  ) = {
     O.getOrElse(context)(default) must_=== (value)
     O.isDefined(context) must_=== (true)
     O.orElse(context)(alternative) must_=== (context)
@@ -22,12 +27,13 @@ object OptionalTest extends SpecLite {
     O.toMaybe(context) must_=== (Maybe.just(value))
   }
 
-  def undefinedTests[F[_], A](
-      context: F[A], default: A, alternative: F[A])(implicit O: Optional[F],
-                                                    EA: Equal[A],
-                                                    EFA: Equal[F[A]],
-                                                    SA: Show[A],
-                                                    SFA: Show[F[A]]) = {
+  def undefinedTests[F[_], A](context: F[A], default: A, alternative: F[A])(
+      implicit O: Optional[F],
+      EA: Equal[A],
+      EFA: Equal[F[A]],
+      SA: Show[A],
+      SFA: Show[F[A]]
+  ) = {
     O.getOrElse(context)(default) must_=== (default)
     O.isDefined(context) must_=== (false)
     O.orElse(context)(alternative) must_=== (alternative)
@@ -42,7 +48,7 @@ object OptionalTest extends SpecLite {
     type EitherInt[A] = Int \/ A
 
     def right(a: Int): EitherInt[Int] = \/.right(a)
-    def left(a: Int): EitherInt[Int] = \/.left(a)
+    def left(a: Int): EitherInt[Int]  = \/.left(a)
 
     definedTests(right(1), 1, 0, right(0))
     undefinedTests(left(0), 0, right(0))
@@ -71,7 +77,7 @@ object OptionalTest extends SpecLite {
   """Validation instance tests""" in {
     type VString[A] = Validation[String, A]
 
-    def success(a: Int): VString[Int] = Validation.success(a)
+    def success(a: Int): VString[Int]    = Validation.success(a)
     def failure(s: String): VString[Int] = Validation.failure(s)
 
     definedTests[VString, Int](success(1), 1, 0, success(0))
@@ -81,7 +87,7 @@ object OptionalTest extends SpecLite {
   """ValidationNel instance tests""" in {
     type VStringNel[A] = ValidationNel[String, A]
 
-    def successNel(a: Int): VStringNel[Int] = Validation.success(a)
+    def successNel(a: Int): VStringNel[Int]    = Validation.success(a)
     def failureNel(s: String): VStringNel[Int] = Validation.failureNel(s)
 
     definedTests[VStringNel, Int](successNel(1), 1, 0, successNel(0))

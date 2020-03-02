@@ -18,11 +18,13 @@ import scala.concurrent.duration._
 import java.io.File
 
 class QuickStartDocSpec
-    extends WordSpec with BeforeAndAfterAll with ScalaFutures {
+    extends WordSpec
+    with BeforeAndAfterAll
+    with ScalaFutures {
   implicit val patience = PatienceConfig(5.seconds)
 
   //#create-materializer
-  implicit val system = ActorSystem("QuickStart")
+  implicit val system       = ActorSystem("QuickStart")
   implicit val materializer = ActorMaterializer()
   //#create-materializer
 

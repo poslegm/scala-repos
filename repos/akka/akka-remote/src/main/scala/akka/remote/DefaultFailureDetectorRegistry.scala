@@ -25,20 +25,20 @@ class DefaultFailureDetectorRegistry[A](detectorFactory: () ⇒ FailureDetector)
   final override def isAvailable(resource: A): Boolean =
     resourceToFailureDetector.get.get(resource) match {
       case Some(r) ⇒ r.isAvailable
-      case _ ⇒ true
+      case _       ⇒ true
     }
 
   final override def isMonitoring(resource: A): Boolean =
     resourceToFailureDetector.get.get(resource) match {
       case Some(r) ⇒ r.isMonitoring
-      case _ ⇒ false
+      case _       ⇒ false
     }
 
   final override def heartbeat(resource: A): Unit = {
 
     resourceToFailureDetector.get.get(resource) match {
       case Some(failureDetector) ⇒ failureDetector.heartbeat()
-      case None ⇒
+      case None                  ⇒
         // First one wins and creates the new FailureDetector
         failureDetectorCreationLock.lock()
         try {
@@ -52,7 +52,8 @@ class DefaultFailureDetectorRegistry[A](detectorFactory: () ⇒ FailureDetector)
               val newDetector: FailureDetector = detectorFactory()
               newDetector.heartbeat()
               resourceToFailureDetector.set(
-                  oldTable + (resource -> newDetector))
+                oldTable + (resource -> newDetector)
+              )
           }
         } finally failureDetectorCreationLock.unlock()
     }
@@ -76,7 +77,9 @@ class DefaultFailureDetectorRegistry[A](detectorFactory: () ⇒ FailureDetector)
     val oldTable = resourceToFailureDetector.get
     // if we won the race then update else try again
     if (!resourceToFailureDetector.compareAndSet(
-            oldTable, Map.empty[A, FailureDetector])) reset() // recur
+          oldTable,
+          Map.empty[A, FailureDetector]
+        )) reset() // recur
   }
 
   /**

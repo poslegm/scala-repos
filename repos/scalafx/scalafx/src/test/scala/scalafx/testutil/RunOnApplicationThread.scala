@@ -39,9 +39,8 @@ trait RunOnApplicationThread extends SuiteMixin {
     val superWith =
       super.withFixture _ // required to access to super withFixture method from within runnable for a trait
     var testException: Exception = null
-    var outcome: Outcome = null
-    Platform.runLater(
-        new Runnable() {
+    var outcome: Outcome         = null
+    Platform.runLater(new Runnable() {
       override def run() {
         try {
           outcome = superWith(test)

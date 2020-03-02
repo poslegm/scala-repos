@@ -62,13 +62,13 @@ object EnumWithDescriptionSpec extends Specification {
 }
 
 object Title1 extends EnumWithDescription {
-  val mr = Value("MR", "Mr")
+  val mr  = Value("MR", "Mr")
   val mrs = Value("MRS", "Mrs")
-  val dr = Value("DR", "Dr")
+  val dr  = Value("DR", "Dr")
   val sir = Value("SirS", "Sir")
 }
 
 object Title2 extends EnumWithDescription {
-  val mr = Value("MR", "Mr")
+  val mr  = Value("MR", "Mr")
   val mrs = Value("MRS", "Mrs")
 }

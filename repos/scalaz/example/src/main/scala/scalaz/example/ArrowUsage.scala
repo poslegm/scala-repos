@@ -6,9 +6,9 @@ object ArrowUsage extends App {
 
   import Scalaz._
 
-  val plus1 = (_: Int) + 1
+  val plus1  = (_: Int) + 1
   val times2 = (_: Int) * 2
-  val rev = (_: String) reverse
+  val rev    = (_: String) reverse
 
   // Function1 arrow
 

@@ -5,7 +5,7 @@ trait T[A, This >: Null <: That1[A] with T[A, This]] extends That2[A, This] {
   self: This =>
 
   private var next: This = _
-  def isEmpty = next eq null
+  def isEmpty            = next eq null
 
   def length: Int = {
     def loop(x: This, cnt: Int): Int =

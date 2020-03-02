@@ -19,7 +19,7 @@ private[akka] object ActorPublisher {
   class NormalShutdownException
       extends IllegalStateException(NormalShutdownReasonMessage)
       with NoStackTrace
-  val NormalShutdownReason: Throwable = new NormalShutdownException
+  val NormalShutdownReason: Throwable           = new NormalShutdownException
   val SomeNormalShutdownReason: Some[Throwable] = Some(NormalShutdownReason)
 
   def apply[T](impl: ActorRef): ActorPublisher[T] = {
@@ -36,8 +36,7 @@ private[akka] object ActorPublisher {
   * When you instantiate this class, or its subclasses, you MUST send an ExposedPublisher message to the wrapped
   * ActorRef! If you don't need to subclass, prefer the apply() method on the companion object which takes care of this.
   */
-private[akka] class ActorPublisher[T](val impl: ActorRef)
-    extends Publisher[T] {
+private[akka] class ActorPublisher[T](val impl: ActorRef) extends Publisher[T] {
   import ReactiveStreamsCompliance._
 
   // The subscriber of an subscription attempt is first placed in this list of pending subscribers.
@@ -73,7 +72,7 @@ private[akka] class ActorPublisher[T](val impl: ActorRef)
   def shutdown(reason: Option[Throwable]): Unit = {
     shutdownReason = reason
     pendingSubscribers.getAndSet(null) match {
-      case null ⇒ // already called earlier
+      case null    ⇒ // already called earlier
       case pending ⇒ pending foreach reportSubscribeFailure
     }
   }
@@ -98,8 +97,9 @@ private[akka] class ActorPublisher[T](val impl: ActorRef)
   * INTERNAL API
   */
 private[akka] class ActorSubscription[T](
-    final val impl: ActorRef, final val subscriber: Subscriber[_ >: T])
-    extends Subscription {
+    final val impl: ActorRef,
+    final val subscriber: Subscriber[_ >: T]
+) extends Subscription {
   override def request(elements: Long): Unit =
     impl ! RequestMore(this, elements)
   override def cancel(): Unit = impl ! Cancel(this)
@@ -109,8 +109,9 @@ private[akka] class ActorSubscription[T](
   * INTERNAL API
   */
 private[akka] class ActorSubscriptionWithCursor[T](
-    _impl: ActorRef, _subscriber: Subscriber[_ >: T])
-    extends ActorSubscription[T](_impl, _subscriber)
+    _impl: ActorRef,
+    _subscriber: Subscriber[_ >: T]
+) extends ActorSubscription[T](_impl, _subscriber)
     with SubscriptionWithCursor[T]
 
 /**
@@ -126,7 +127,7 @@ private[akka] trait SoftShutdown {
       context.children foreach context.watch
       context.become {
         case Terminated(_) ⇒ if (context.children.isEmpty) context.stop(self)
-        case _ ⇒ // ignore all the rest, we’re practically dead
+        case _             ⇒ // ignore all the rest, we’re practically dead
       }
     }
   }

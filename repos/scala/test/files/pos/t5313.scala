@@ -1,7 +1,7 @@
 object DepBug {
   class A {
     class B
-    def mkB = new B
+    def mkB     = new B
     def m(b: B) = b
   }
 

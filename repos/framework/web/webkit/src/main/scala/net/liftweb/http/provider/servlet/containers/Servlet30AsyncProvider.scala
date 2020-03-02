@@ -34,30 +34,26 @@ object Servlet30AsyncProvider extends AsyncProviderMeta {
   // cc below gets inferred as a Class[?0] existential.
   import scala.language.existentials
 
-  private lazy val (hasContinuations_?,
-                    cc,
-                    asyncClass,
-                    startAsync,
-                    getResponse,
-                    complete,
-                    isSupported) = {
+  private lazy val (
+    hasContinuations_?,
+    cc,
+    asyncClass,
+    startAsync,
+    getResponse,
+    complete,
+    isSupported
+  ) = {
     try {
-      val cc = Class.forName("javax.servlet.ServletRequest")
-      val asyncClass = Class.forName("javax.servlet.AsyncContext")
-      val startAsync = cc.getMethod("startAsync")
+      val cc          = Class.forName("javax.servlet.ServletRequest")
+      val asyncClass  = Class.forName("javax.servlet.AsyncContext")
+      val startAsync  = cc.getMethod("startAsync")
       val getResponse = asyncClass.getMethod("getResponse")
-      val complete = asyncClass.getMethod("complete")
+      val complete    = asyncClass.getMethod("complete")
       val isSupported = cc.getMethod("isAsyncSupported")
       (true, cc, asyncClass, startAsync, getResponse, complete, isSupported)
     } catch {
       case e: Exception =>
-        (false,
-         null,
-         null,
-         null,
-         null,
-         null,
-         null)
+        (false, null, null, null, null, null, null)
     }
   }
 
@@ -80,7 +76,8 @@ object Servlet30AsyncProvider extends AsyncProviderMeta {
   *
   */
 class Servlet30AsyncProvider(req: HTTPRequest)
-    extends ServletAsyncProvider with Loggable {
+    extends ServletAsyncProvider
+    with Loggable {
   import scala.language.reflectiveCalls
 
   private var asyncCtx: Object = null
@@ -100,7 +97,7 @@ class Servlet30AsyncProvider(req: HTTPRequest)
     asyncCtx = startAsync.invoke(servletReq)
     try {
       val st = asyncCtx.asInstanceOf[SetTimeout]
-      st.setTimeout(0l)
+      st.setTimeout(0L)
     } catch {
       case e: Exception =>
         logger.error("Servlet 3.0 Async: Failed to set timeout", e)
@@ -115,7 +112,7 @@ class Servlet30AsyncProvider(req: HTTPRequest)
       .invoke(asyncCtx)
       .asInstanceOf[javax.servlet.http.HttpServletResponse]
     val httpResponse = new HTTPResponseServlet(httpRes)
-    val liftServlet = req.provider.liftServlet
+    val liftServlet  = req.provider.liftServlet
     try {
       liftServlet.sendResponse(what._2, httpResponse, what._1)
       complete.invoke(asyncCtx)

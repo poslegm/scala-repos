@@ -15,7 +15,9 @@ object SCL4293 {
       // maybe I should do something
     }
 
-    doSomething( /*start*/ applyFunc(x => new bar) /*end*/ ) //applyFunc(x => new bar) is red though it compiles
+    doSomething(
+      /*start*/ applyFunc(x => new bar) /*end*/
+    ) //applyFunc(x => new bar) is red though it compiles
   }
 }
 //(SCL4293.foo) => SCL4293.bar

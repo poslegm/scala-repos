@@ -9,7 +9,7 @@ import com.twitter.util.{Time, Activity, Future, Promise}
   * by observing `activity`.
   */
 private trait Updating[Req, Rep] extends Balancer[Req, Rep] with OnReady {
-  private[this] val ready = new Promise[Unit]
+  private[this] val ready   = new Promise[Unit]
   def onReady: Future[Unit] = ready
 
   /**
@@ -40,9 +40,7 @@ private trait Updating[Req, Rep] extends Balancer[Req, Rep] with OnReady {
   override def close(deadline: Time): Future[Unit] = {
     observation
       .close(deadline)
-      .transform { _ =>
-        super.close(deadline)
-      }
+      .transform { _ => super.close(deadline) }
       .ensure {
         ready.setDone()
       }

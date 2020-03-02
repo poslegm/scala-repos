@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -44,10 +44,12 @@ trait KMediansCoreSetClustering {
   type CoreSet = (Array[Array[Double]], Array[Long])
 
   object CoreSet {
-    def fromWeightedPoints(points: Array[Array[Double]],
-                           weights: Array[Long],
-                           k: Int,
-                           epsilon: Double): CoreSet = {
+    def fromWeightedPoints(
+        points: Array[Array[Double]],
+        weights: Array[Long],
+        k: Int,
+        epsilon: Double
+    ): CoreSet = {
       val threshold = (k / epsilon) * math.log(points.length)
 
       if (points.length < threshold) {
@@ -79,8 +81,7 @@ trait KMediansCoreSetClustering {
       val coresets =
         tree map {
           case (_, coreset) =>
-            CoreSet.fromWeightedPoints(
-                coreset._1, coreset._2, k, epsilon / 6.0)
+            CoreSet.fromWeightedPoints(coreset._1, coreset._2, k, epsilon / 6.0)
         }
 
       coresets.foldLeft((new Array[Array[Double]](0), new Array[Long](0))) {
@@ -90,21 +91,27 @@ trait KMediansCoreSetClustering {
     }
 
     def mergeCoreSets(c1: CoreSet, c2: CoreSet, level: Int): CoreSet = {
-      val c = 1
+      val c                    = 1
       val (centers1, weights1) = c1
       val (centers2, weights2) = c2
-      val epsilon0 = epsilon / (c * ((level + 1) ** 2))
+      val epsilon0             = epsilon / (c * ((level + 1) ** 2))
 
       CoreSet.fromWeightedPoints(
-          centers1 ++ centers2, weights1 ++ weights2, k, epsilon0)
+        centers1 ++ centers2,
+        weights1 ++ weights2,
+        k,
+        epsilon0
+      )
     }
 
     private def insertCoreSet(coreset: CoreSet, level: Int): CoreSetTree = {
       val (prefix, suffix) = tree partition { case (idx, _) => idx < level }
 
-      def rec(tree0: List[(Int, CoreSet)],
-              coreset0: CoreSet,
-              level0: Int): List[(Int, CoreSet)] = {
+      def rec(
+          tree0: List[(Int, CoreSet)],
+          coreset0: CoreSet,
+          level0: Int
+      ): List[(Int, CoreSet)] = {
         tree0 match {
           case (`level0`, coreset1) :: tail =>
             rec(tail, mergeCoreSets(coreset0, coreset1, level0), level0 + 1)
@@ -145,7 +152,7 @@ trait KMediansCoreSetClustering {
     }
 
     implicit def CoreSetMonoid: Monoid[CoreSetTree] = new Monoid[CoreSetTree] {
-      def zero = CoreSetTree.empty
+      def zero                                        = CoreSetTree.empty
       def append(c1: CoreSetTree, c2: => CoreSetTree) = c1 ++ c2
     }
   }
@@ -162,15 +169,17 @@ trait KMediansCoreSetClustering {
     * This returns the cost of the k-medians clustering given by `centers`. The
     * points must also be associated with a set of weights.
     */
-  def kMediansCost(points: Array[Array[Double]],
-                   weights: Array[Long],
-                   centers: Array[Array[Double]],
-                   threshold: Double): Double = {
-    var i = 0
+  def kMediansCost(
+      points: Array[Array[Double]],
+      weights: Array[Long],
+      centers: Array[Array[Double]],
+      threshold: Double
+  ): Double = {
+    var i     = 0
     var total = 0.0
     while (i < points.length && total < threshold) {
       var minDistSq = Double.PositiveInfinity
-      var j = 0
+      var j         = 0
       while (j < centers.length) {
         val dsq = distSq(points(i), centers(j))
         if (dsq < minDistSq) minDistSq = dsq
@@ -191,22 +200,24 @@ trait KMediansCoreSetClustering {
     *
     * @link http://www.cs.ucla.edu/~awm/papers/lsearch.ps
     */
-  private def localSearch(points: Array[Array[Double]],
-                          weights: Array[Long],
-                          centers0: Array[Array[Double]],
-                          epsilon: Double): (Double, Array[Array[Double]]) = {
+  private def localSearch(
+      points: Array[Array[Double]],
+      weights: Array[Long],
+      centers0: Array[Array[Double]],
+      epsilon: Double
+  ): (Double, Array[Array[Double]]) = {
 
-    val minCost0 = kMediansCost(
-        points, weights, centers0, Double.PositiveInfinity)
+    val minCost0 =
+      kMediansCost(points, weights, centers0, Double.PositiveInfinity)
     val centers = java.util.Arrays.copyOf(centers0, centers0.length)
 
     var minCost = minCost0
-    var i = 0
-    val clen = centers.length
-    val plen = points.length
+    var i       = 0
+    val clen    = centers.length
+    val plen    = points.length
     while (i < plen) {
       val threshold = minCost * (1 - epsilon) / clen
-      var j = 0
+      var j         = 0
       while (j < clen) {
         val prevCenter = centers(j)
         centers(j) = points(i)
@@ -235,12 +246,14 @@ trait KMediansCoreSetClustering {
     * @note This is the algorithm described in Section 4 of the Coresets paper.
     * @link http://valis.cs.uiuc.edu/~sariel/papers/03/kcoreset/kcoreset.pdf
     */
-  private def createCenters(points: Array[Array[Double]],
-                            weights: Array[Long]): Array[Array[Double]] = {
+  private def createCenters(
+      points: Array[Array[Double]],
+      weights: Array[Long]
+  ): Array[Array[Double]] = {
     if (points.length < 100) {
       points
     } else {
-      val k = math.max(4, math.pow(points.length, 0.25).toInt + 1)
+      val k      = math.max(4, math.pow(points.length, 0.25).toInt + 1)
       val weight = weights.qsum
 
       val (cost, clustering, isCenter) = approxKMedian(points, weights, k)
@@ -263,19 +276,19 @@ trait KMediansCoreSetClustering {
           i += 1
         }
 
-        val centers = clustering ++ samples
+        val centers                  = clustering ++ samples
         val (distances, assignments) = assign(points, centers)
 
         val logRadius = math.log(radius)
         val logWeight = math.log(weight)
-        val log2 = math.log(2)
+        val log2      = math.log(2)
 
         val klassCounts = new Array[Long](2 * math.ceil(logWeight).toInt + 3)
 
         i = 0
         while (i < distances.length) {
           val relPos = (math.log(distances(i)) - logRadius + logWeight) / log2
-          val klass = math.max(math.floor(relPos).toInt + 1, 0)
+          val klass  = math.max(math.floor(relPos).toInt + 1, 0)
           assignments(i) = klass
           if (klass < klassCounts.length) {
             klassCounts(klass) += weights(i)
@@ -303,7 +316,7 @@ trait KMediansCoreSetClustering {
         }
 
         //System.err.println("badPoints.length=%s and centers.length=%s" format (keepLength, centers.length))
-        val badPoints = new Array[Array[Double]](keepLength)
+        val badPoints  = new Array[Array[Double]](keepLength)
         val badWeights = new Array[Long](keepLength)
         i = 0
         var j = 0
@@ -331,9 +344,11 @@ trait KMediansCoreSetClustering {
     * @note Clustering to Minimize the Maximum Intercluster Distance, Gonzalez 1984
     * @link http://www.cs.ucsb.edu/~TEO/papers/Ktmm.pdf
     */
-  def approxKMedian(points: Array[Array[Double]],
-                    weights: Array[Long],
-                    k: Int): (Double, Array[Array[Double]], Array[Boolean]) = {
+  def approxKMedian(
+      points: Array[Array[Double]],
+      weights: Array[Long],
+      k: Int
+  ): (Double, Array[Array[Double]], Array[Boolean]) = {
     // (cost, centers, isCenter)
 
     val reps = new Array[Array[Double]](k)
@@ -357,7 +372,7 @@ trait KMediansCoreSetClustering {
     i = 0
     while (i < k - 1) {
       var maxWeight = 0.0
-      var maxIdx = 0
+      var maxIdx    = 0
 
       var j = 0
       while (j < distances.length) {
@@ -391,16 +406,18 @@ trait KMediansCoreSetClustering {
     * This returns a 2-tuple of an array of distances of each point to their nearest center
     * and an array of cluster indexes each point belongs to.
     */
-  def assign(points: Array[Array[Double]],
-             clustering: Array[Array[Double]]): (Array[Double], Array[Int]) = {
-    val distances = new Array[Double](points.size)
+  def assign(
+      points: Array[Array[Double]],
+      clustering: Array[Array[Double]]
+  ): (Array[Double], Array[Int]) = {
+    val distances   = new Array[Double](points.size)
     val assignments = new Array[Int](points.size)
 
     var i = 0
 
     while (i < points.length) {
       var minDist = Double.PositiveInfinity
-      var j = 0
+      var j       = 0
       while (j < clustering.length) {
         val d = dist(points(i), clustering(j))
         if (d < minDist) {
@@ -424,24 +441,26 @@ trait KMediansCoreSetClustering {
     * @note This is the algorithm described in Section 3 of the coresets paper.
     * @link http://valis.cs.uiuc.edu/~sariel/papers/03/kcoreset/kcoreset.pdf
     */
-  private def makeCoreSet(points: Array[Array[Double]],
-                          weights: Array[Long],
-                          clustering: Array[Array[Double]]): CoreSet = {
+  private def makeCoreSet(
+      points: Array[Array[Double]],
+      weights: Array[Long],
+      clustering: Array[Array[Double]]
+  ): CoreSet = {
     val (distance, assignments) = assign(points, clustering)
 
     weightArray(distance, weights)
 
-    val cost = distance.qsum
+    val cost   = distance.qsum
     val weight = weights.qsum
     //val c = 4d
     val c = 0.125
     val n = points.length
 
-    val radiusGLB = cost / (c * weight)
+    val radiusGLB     = cost / (c * weight)
     val maxResolution = math.max(0, math.ceil(2 * math.log(c * weight))).toInt
     //System.err.println("maxResolution=%s" format maxResolution)
     val logRadiusGLB = math.log(radiusGLB)
-    val log2 = math.log(2d)
+    val log2         = math.log(2d)
 
     def grid(center: Array[Double]): Array[Double] => GridPoint = {
       val sideLengths: Array[Double] = (0 to maxResolution).map({ j =>
@@ -453,9 +472,11 @@ trait KMediansCoreSetClustering {
         val j =
           math.max(0, math.ceil((math.log(minx) - logRadiusGLB) / log2).toInt)
 
-        require(j < sideLengths.length,
-                "Point (%d) found outside of grid (%d). What to do..." format
-                (j, sideLengths.length))
+        require(
+          j < sideLengths.length,
+          "Point (%d) found outside of grid (%d). What to do..." format
+            (j, sideLengths.length)
+        )
 
         val sideLength = sideLengths(j)
         val scaledPoint = {
@@ -466,7 +487,7 @@ trait KMediansCoreSetClustering {
         var i = 0
         while (i < scaledPoint.length) {
           scaledPoint(i) = center(i) +
-          math.floor(scaledPoint(i)) * sideLength + (sideLength / 2)
+            math.floor(scaledPoint(i)) * sideLength + (sideLength / 2)
           i += 1
         }
         new GridPoint(scaledPoint)
@@ -476,12 +497,12 @@ trait KMediansCoreSetClustering {
     val grids = clustering map grid
 
     var weightMap: Map[GridPoint, Long] = Map.empty
-    var i = 0
+    var i                               = 0
     while (i < points.length) {
-      val point = points(i)
+      val point      = points(i)
       val assignment = assignments(i)
-      val weight = weights(i)
-      val gridPoint = grids(assignment)(point)
+      val weight     = weights(i)
+      val gridPoint  = grids(assignment)(point)
 
       weightMap += (gridPoint -> (weightMap.getOrElse(gridPoint, 0L) + weight))
       i += 1
@@ -501,7 +522,7 @@ trait KMediansCoreSetClustering {
   }
 
   def distSq(x: Array[Double], y: Array[Double]): Double = {
-    var i = 0
+    var i   = 0
     var acc = 0d
     val len = math.min(x.length, y.length)
     while (i < len) {
@@ -517,8 +538,8 @@ trait KMediansCoreSetClustering {
 
   def distMin(x: Array[Double], y: Array[Double]): Double = {
     var minx = Double.PositiveInfinity
-    var i = 0
-    val len = math.min(x.length, y.length)
+    var i    = 0
+    val len  = math.min(x.length, y.length)
     while (i < len) {
       val dx = math.abs(x(i) - y(i))
       if (dx < minx) minx = dx
@@ -535,7 +556,7 @@ trait KMediansCoreSetClustering {
 
     override def hashCode: Int = {
       var hash: Int = point.length * 17
-      var i = 0
+      var i         = 0
 
       while (i < point.length) {
         hash += point(i).toInt * 23 //todo is toInt correct
@@ -559,8 +580,9 @@ trait KMediansCoreSetClustering {
   }
 }
 
-trait ClusteringLibModule[M[+ _]]
-    extends ColumnarTableModule[M] with AssignClusterModule[M] {
+trait ClusteringLibModule[M[+_]]
+    extends ColumnarTableModule[M]
+    with AssignClusterModule[M] {
   trait ClusteringLib extends ColumnarTableLib with AssignClusterSupport {
     import trans._
     import TransSpecModule._
@@ -572,8 +594,7 @@ trait ClusteringLibModule[M[+ _]]
     object KMediansClustering
         extends Morphism2(Stats4Namespace, "kMedians")
         with KMediansCoreSetClustering {
-      val tpe = BinaryOperationType(
-          JType.JUniverseT, JNumberT, JObjectUnfixedT)
+      val tpe = BinaryOperationType(JType.JUniverseT, JNumberT, JObjectUnfixedT)
 
       lazy val alignment =
         MorphismAlignment.Custom(IdentityPolicy.Retain.Cross, alignCustom _)
@@ -582,7 +603,7 @@ trait ClusteringLibModule[M[+ _]]
       val epsilon = 0.1
 
       implicit def monoidKS = new Monoid[KS] {
-        def zero: KS = List.empty[Int]
+        def zero: KS                    = List.empty[Int]
         def append(ks1: KS, ks2: => KS) = ks1 ++ ks2
       }
 
@@ -590,41 +611,41 @@ trait ClusteringLibModule[M[+ _]]
         def reduce(schema: CSchema, range: Range): KS = {
           val columns = schema.columns(JObjectFixedT(Map("value" -> JNumberT)))
           val cols: List[Int] = (columns flatMap {
-                case lc: LongColumn =>
-                  range collect {
-                    case i if lc.isDefinedAt(i) && lc(i) > 0 => lc(i).toInt
-                  }
+            case lc: LongColumn =>
+              range collect {
+                case i if lc.isDefinedAt(i) && lc(i) > 0 => lc(i).toInt
+              }
 
-                case dc: DoubleColumn =>
-                  range flatMap { i =>
-                    if (dc.isDefinedAt(i)) {
-                      val n = dc(i)
-                      if (n.isValidInt && n > 0) {
-                        Some(n.toInt)
-                      } else {
-                        None
-                      }
-                    } else {
-                      None
-                    }
+            case dc: DoubleColumn =>
+              range flatMap { i =>
+                if (dc.isDefinedAt(i)) {
+                  val n = dc(i)
+                  if (n.isValidInt && n > 0) {
+                    Some(n.toInt)
+                  } else {
+                    None
                   }
+                } else {
+                  None
+                }
+              }
 
-                case nc: NumColumn =>
-                  range flatMap { i =>
-                    if (nc.isDefinedAt(i)) {
-                      val n = nc(i)
-                      if (n.isValidInt && n > 0) {
-                        Some(n.toInt)
-                      } else {
-                        None
-                      }
-                    } else {
-                      None
-                    }
+            case nc: NumColumn =>
+              range flatMap { i =>
+                if (nc.isDefinedAt(i)) {
+                  val n = nc(i)
+                  if (n.isValidInt && n > 0) {
+                    Some(n.toInt)
+                  } else {
+                    None
                   }
+                } else {
+                  None
+                }
+              }
 
-                case _ => List.empty[Int]
-              }).toList
+            case _ => List.empty[Int]
+          }).toList
           cols
         }
       }
@@ -654,10 +675,12 @@ trait ClusteringLibModule[M[+ _]]
           }
         }
 
-      def extract(coreSetTree: CoreSetTree,
-                  k: Int,
-                  jtype: JType,
-                  modelId: Int): Table = {
+      def extract(
+          coreSetTree: CoreSetTree,
+          k: Int,
+          jtype: JType,
+          modelId: Int
+      ): Table = {
         val (centers, weights) = coreSetTree.coreSet
 
         // TODO for a better approximation, instead use algorithm outlined here
@@ -676,21 +699,21 @@ trait ClusteringLibModule[M[+ _]]
           }
 
         val transformedTables =
-          tables map { table =>
-            table.transform(spec)
-          }
+          tables map { table => table.transform(spec) }
 
         val wrappedTables =
           transformedTables.zipWithIndex map {
             case (tbl, idx) =>
               tbl.transform(
-                  trans.WrapObject(TransSpec1.Id, "cluster" + (idx + 1)))
+                trans.WrapObject(TransSpec1.Id, "cluster" + (idx + 1))
+              )
           }
 
         val table =
           wrappedTables reduce { (t1, t2) =>
             t1.cross(t2)(
-                trans.InnerObjectConcat(Leaf(SourceLeft), Leaf(SourceRight)))
+              trans.InnerObjectConcat(Leaf(SourceLeft), Leaf(SourceRight))
+            )
           }
 
         val result =
@@ -699,17 +722,22 @@ trait ClusteringLibModule[M[+ _]]
         val valueTable =
           result.transform(trans.WrapObject(Leaf(Source), paths.Value.name))
         val keyTable = Table.constEmptyArray.transform(
-            trans.WrapObject(Leaf(Source), paths.Key.name))
+          trans.WrapObject(Leaf(Source), paths.Key.name)
+        )
 
         valueTable.cross(keyTable)(
-            InnerObjectConcat(Leaf(SourceLeft), Leaf(SourceRight)))
+          InnerObjectConcat(Leaf(SourceLeft), Leaf(SourceRight))
+        )
       }
 
       def morph1Apply(ks: List[Int]): Morph1Apply = new Morph1Apply {
         def apply(table0: Table, ctx: MorphContext): M[Table] = {
-          val table = table0.transform(DerefObjectStatic(
-                  trans.DeepMap1(TransSpec1.Id, cf.util.CoerceToDouble),
-                  paths.Value))
+          val table = table0.transform(
+            DerefObjectStatic(
+              trans.DeepMap1(TransSpec1.Id, cf.util.CoerceToDouble),
+              paths.Value
+            )
+          )
 
           val defaultNumber = new java.util.concurrent.atomic.AtomicInteger(1)
 
@@ -719,16 +747,14 @@ trait ClusteringLibModule[M[+ _]]
 
               val specs: M[Seq[(TransSpec1, JType)]] =
                 schemas map {
-                  _ map { jtype =>
-                    (trans.Typed(TransSpec1.Id, jtype), jtype)
-                  }
+                  _ map { jtype => (trans.Typed(TransSpec1.Id, jtype), jtype) }
                 }
 
               val tables: StreamT[M, (Table, JType)] = StreamT.wrapEffect {
                 specs map { ts =>
                   StreamT.fromStream(M.point((ts map {
-                        case (spec, jtype) => (table.transform(spec), jtype)
-                      }).toStream))
+                    case (spec, jtype) => (table.transform(spec), jtype)
+                  }).toStream))
                 }
               }
 
@@ -744,13 +770,11 @@ trait ClusteringLibModule[M[+ _]]
                       .normalize
                       .reduce(reducerFeatures(k))
 
-                    StreamT(
-                        coreSetTree map { tree =>
-                      StreamT.Yield(extract(tree,
-                                            k,
-                                            jtype,
-                                            defaultNumber.getAndIncrement),
-                                    StreamT.empty[M, Table])
+                    StreamT(coreSetTree map { tree =>
+                      StreamT.Yield(
+                        extract(tree, k, jtype, defaultNumber.getAndIncrement),
+                        StreamT.empty[M, Table]
+                      )
                     })
                 }
 
@@ -760,12 +784,16 @@ trait ClusteringLibModule[M[+ _]]
           val tables: StreamT[M, Table] =
             res.foldLeft(StreamT.empty[M, Table])(_ ++ _)
           val modelConcat = buildConstantWrapSpec(
-              OuterObjectConcat(
-                  DerefObjectStatic(Leaf(SourceLeft), paths.Value),
-                  DerefObjectStatic(Leaf(SourceRight), paths.Value)))
+            OuterObjectConcat(
+              DerefObjectStatic(Leaf(SourceLeft), paths.Value),
+              DerefObjectStatic(Leaf(SourceRight), paths.Value)
+            )
+          )
 
-          def merge(table: Option[Table],
-                    tables: StreamT[M, Table]): OptionT[M, Table] = {
+          def merge(
+              table: Option[Table],
+              tables: StreamT[M, Table]
+          ): OptionT[M, Table] = {
             OptionT(tables.uncons flatMap {
               case Some((head, tail)) =>
                 table map { tbl =>
@@ -783,16 +811,14 @@ trait ClusteringLibModule[M[+ _]]
       }
 
       def alignCustom(t1: Table, t2: Table): M[(Table, Morph1Apply)] =
-        t2.reduce(reducerKS) map { ks =>
-          (t1, morph1Apply(ks))
-        }
+        t2.reduce(reducerKS) map { ks => (t1, morph1Apply(ks)) }
     }
 
     object AssignClusters
         extends Morphism2(Vector("std", "stats"), "assignClusters")
         with AssignClusterBase {
-      val tpe = BinaryOperationType(
-          JType.JUniverseT, JObjectUnfixedT, JObjectUnfixedT)
+      val tpe =
+        BinaryOperationType(JType.JUniverseT, JObjectUnfixedT, JObjectUnfixedT)
 
       override val idPolicy = IdentityPolicy.Retain.Merge
 
@@ -801,7 +827,8 @@ trait ClusteringLibModule[M[+ _]]
 
       def alignCustom(t1: Table, t2: Table): M[(Table, Morph1Apply)] = {
         val spec = liftToValues(
-            trans.DeepMap1(TransSpec1.Id, cf.util.CoerceToDouble))
+          trans.DeepMap1(TransSpec1.Id, cf.util.CoerceToDouble)
+        )
         t2.transform(spec).reduce(reducer) map { models =>
           (t1.transform(spec), morph1Apply(models))
         }

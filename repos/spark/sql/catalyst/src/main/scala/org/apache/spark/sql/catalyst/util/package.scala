@@ -47,14 +47,14 @@ package object util {
   }
 
   def fileToString(file: File, encoding: String = "UTF-8"): String = {
-    val inStream = new FileInputStream(file)
+    val inStream  = new FileInputStream(file)
     val outStream = new ByteArrayOutputStream
     try {
       var reading = true
       while (reading) {
         inStream.read() match {
           case -1 => reading = false
-          case c => outStream.write(c)
+          case c  => outStream.write(c)
         }
       }
       outStream.flush()
@@ -66,15 +66,16 @@ package object util {
 
   def resourceToBytes(
       resource: String,
-      classLoader: ClassLoader = Utils.getSparkClassLoader): Array[Byte] = {
-    val inStream = classLoader.getResourceAsStream(resource)
+      classLoader: ClassLoader = Utils.getSparkClassLoader
+  ): Array[Byte] = {
+    val inStream  = classLoader.getResourceAsStream(resource)
     val outStream = new ByteArrayOutputStream
     try {
       var reading = true
       while (reading) {
         inStream.read() match {
           case -1 => reading = false
-          case c => outStream.write(c)
+          case c  => outStream.write(c)
         }
       }
       outStream.flush()
@@ -87,7 +88,8 @@ package object util {
   def resourceToString(
       resource: String,
       encoding: String = "UTF-8",
-      classLoader: ClassLoader = Utils.getSparkClassLoader): String = {
+      classLoader: ClassLoader = Utils.getSparkClassLoader
+  ): String = {
     new String(resourceToBytes(resource, classLoader), encoding)
   }
 
@@ -104,19 +106,19 @@ package object util {
 
   def sideBySide(left: Seq[String], right: Seq[String]): Seq[String] = {
     val maxLeftSize = left.map(_.length).max
-    val leftPadded = left ++ Seq.fill(math.max(right.size - left.size, 0))("")
+    val leftPadded  = left ++ Seq.fill(math.max(right.size - left.size, 0))("")
     val rightPadded =
       right ++ Seq.fill(math.max(left.size - right.size, 0))("")
 
     leftPadded.zip(rightPadded).map {
       case (l, r) =>
         (if (l == r) " " else "!") +
-        l + (" " * ((maxLeftSize - l.length) + 3)) + r
+          l + (" " * ((maxLeftSize - l.length) + 3)) + r
     }
   }
 
   def stackTraceToString(t: Throwable): String = {
-    val out = new java.io.ByteArrayOutputStream
+    val out    = new java.io.ByteArrayOutputStream
     val writer = new PrintWriter(out)
     t.printStackTrace(writer)
     writer.flush()
@@ -127,8 +129,8 @@ package object util {
 
   def benchmark[A](f: => A): A = {
     val startTime = System.nanoTime()
-    val ret = f
-    val endTime = System.nanoTime()
+    val ret       = f
+    val endTime   = System.nanoTime()
     // scalastyle:off println
     println(s"${(endTime - startTime).toDouble / 1000000}ms")
     // scalastyle:on println
@@ -145,11 +147,12 @@ package object util {
       PrettyAttribute(v.toString, t)
     case e: GetStructField =>
       val name = e.name.getOrElse(e.childSchema(e.ordinal).name)
-      PrettyAttribute(
-          usePrettyExpression(e.child).sql + "." + name, e.dataType)
+      PrettyAttribute(usePrettyExpression(e.child).sql + "." + name, e.dataType)
     case e: GetArrayStructFields =>
       PrettyAttribute(
-          usePrettyExpression(e.child) + "." + e.field.name, e.dataType)
+        usePrettyExpression(e.child) + "." + e.field.name,
+        e.dataType
+      )
   }
 
   def quoteIdentifier(name: String): String = {

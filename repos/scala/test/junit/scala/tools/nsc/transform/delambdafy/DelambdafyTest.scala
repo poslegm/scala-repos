@@ -51,12 +51,12 @@ object Delambdafy {
   def foo(b: List[Option[String]])(a: List[Option[String]] => Int): Int = a(b)
 }
 """
-    val srcFile = makeSourceFile(codeForMultiOutput, "delambdafyTest.scala")
-    val outDir = AbstractFile.getDirectory(TempDir.createTempDir())
-    val outDirPath = outDir.canonicalPath
-    val extraArgs = "-Ydelambdafy:method"
+    val srcFile        = makeSourceFile(codeForMultiOutput, "delambdafyTest.scala")
+    val outDir         = AbstractFile.getDirectory(TempDir.createTempDir())
+    val outDirPath     = outDir.canonicalPath
+    val extraArgs      = "-Ydelambdafy:method"
     val argsWithOutDir = extraArgs + s" -d $outDirPath -cp $outDirPath"
-    val compiler = newCompilerWithoutVirtualOutdir(extraArgs = argsWithOutDir)
+    val compiler       = newCompilerWithoutVirtualOutdir(extraArgs = argsWithOutDir)
     compiler.settings.outputDirs.add(srcFile.file, outDir)
 
     new compiler.Run().compileSources(List(srcFile))

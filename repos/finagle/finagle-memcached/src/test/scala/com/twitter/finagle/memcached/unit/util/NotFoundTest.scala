@@ -9,9 +9,9 @@ import scala.collection.immutable.SortedSet
 @RunWith(classOf[JUnitRunner])
 class NotFoundTest extends FunSuite {
 
-  val set = SortedSet(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-  val seq = set.toSeq
-  val map = set.map(x => x -> x).toMap
+  val set       = SortedSet(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+  val seq       = set.toSeq
+  val map       = set.map(x => x -> x).toMap
   val removeAll = NotFound
 
   test("remove none") {
@@ -23,7 +23,8 @@ class NotFoundTest extends FunSuite {
 
     assert(removeAll(map, Set.empty[Int]) == map)
     assert(
-        removeAll(Map.empty[Int, Int], Set.empty[Int]) == Map.empty[Int, Int])
+      removeAll(Map.empty[Int, Int], Set.empty[Int]) == Map.empty[Int, Int]
+    )
   }
 
   test("remove all") {
@@ -33,7 +34,7 @@ class NotFoundTest extends FunSuite {
   }
 
   test("remove more than threshold") {
-    val n = NotFound.cutoff * set.size + 1
+    val n     = NotFound.cutoff * set.size + 1
     val elems = set.take(n.toInt)
 
     assert(removeAll(set, elems) == Set(8, 9, 10))
@@ -42,12 +43,13 @@ class NotFoundTest extends FunSuite {
   }
 
   test("remove less than threshold") {
-    val n = NotFound.cutoff * set.size - 1
+    val n     = NotFound.cutoff * set.size - 1
     val elems = set.take(n.toInt)
 
     assert(removeAll(set, elems) == Set(6, 7, 8, 9, 10))
     assert(removeAll(seq, elems) == Set(6, 7, 8, 9, 10))
     assert(
-        removeAll(map, elems) == Map(6 -> 6, 7 -> 7, 8 -> 8, 9 -> 9, 10 -> 10))
+      removeAll(map, elems) == Map(6 -> 6, 7 -> 7, 8 -> 8, 9 -> 9, 10 -> 10)
+    )
   }
 }

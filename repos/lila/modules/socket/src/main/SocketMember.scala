@@ -28,7 +28,7 @@ object SocketMember {
   def apply(c: JsChannel, uid: Option[String], tr: Boolean): SocketMember =
     new SocketMember {
       val channel = c
-      val userId = uid
-      val troll = tr
+      val userId  = uid
+      val troll   = tr
     }
 }

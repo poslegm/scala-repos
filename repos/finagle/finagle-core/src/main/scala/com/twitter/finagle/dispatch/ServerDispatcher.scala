@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicReference
 object GenSerialServerDispatcher {
   private val Eof = Future.exception(new Exception("EOF") with NoStacktrace)
   // We don't use Future.never here, because object equality is important here
-  private val Idle = new NoFuture
+  private val Idle   = new NoFuture
   private val Closed = new NoFuture
 }
 
@@ -19,12 +19,12 @@ object GenSerialServerDispatcher {
   * allowing the implementor to furnish custom dispatchers & handlers.
   */
 abstract class GenSerialServerDispatcher[Req, Rep, In, Out](
-    trans: Transport[In, Out])
-    extends Closable {
+    trans: Transport[In, Out]
+) extends Closable {
 
   import GenSerialServerDispatcher._
 
-  private[this] val state = new AtomicReference[Future[_]](Idle)
+  private[this] val state     = new AtomicReference[Future[_]](Idle)
   private[this] val cancelled = new CancelledRequestException
 
   /**
@@ -46,23 +46,21 @@ abstract class GenSerialServerDispatcher[Req, Rep, In, Out](
     trans.read() flatMap { req =>
       val p = new Promise[Rep]
       if (state.compareAndSet(Idle, p)) {
-        val eos = new Promise[Unit]
+        val eos  = new Promise[Unit]
         val save = Local.save()
         try {
-          Contexts.local.let(RemoteInfo.Upstream.AddressCtx,
-                             trans.remoteAddress) {
-            trans.peerCertificate match {
-              case None => p.become(dispatch(req, eos))
-              case Some(cert) =>
-                Contexts.local.let(Transport.peerCertCtx, cert) {
-                  p.become(dispatch(req, eos))
-                }
+          Contexts.local
+            .let(RemoteInfo.Upstream.AddressCtx, trans.remoteAddress) {
+              trans.peerCertificate match {
+                case None => p.become(dispatch(req, eos))
+                case Some(cert) =>
+                  Contexts.local.let(Transport.peerCertCtx, cert) {
+                    p.become(dispatch(req, eos))
+                  }
+              }
             }
-          }
         } finally Local.restore(save)
-        p map { res =>
-          (res, eos)
-        }
+        p map { res => (res, eos) }
       } else Eof
     } flatMap {
       case (rep, eos) =>
@@ -104,8 +102,9 @@ abstract class GenSerialServerDispatcher[Req, Rep, In, Out](
   * released after any error.
   */
 class SerialServerDispatcher[Req, Rep](
-    trans: Transport[Rep, Req], service: Service[Req, Rep])
-    extends GenSerialServerDispatcher[Req, Rep, Rep, Req](trans) {
+    trans: Transport[Rep, Req],
+    service: Service[Req, Rep]
+) extends GenSerialServerDispatcher[Req, Rep, Rep, Req](trans) {
 
   trans.onClose ensure {
     service.close()

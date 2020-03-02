@@ -14,9 +14,11 @@ trait AppInfoService {
     *
     * @param embed specifies which fields in the resulting AppInfo s are filled.
     */
-  def selectApp(appId: PathId,
-                selector: AppSelector,
-                embed: Set[AppInfo.Embed]): Future[Option[AppInfo]]
+  def selectApp(
+      appId: PathId,
+      selector: AppSelector,
+      embed: Set[AppInfo.Embed]
+  ): Future[Option[AppInfo]]
 
   /**
     * Return the app infos for all apps that are directly or indirectly contained in the
@@ -24,9 +26,11 @@ trait AppInfoService {
     *
     * @param embed specifies which fields in the resulting AppInfo s are filled.
     */
-  def selectAppsInGroup(groupId: PathId,
-                        selector: AppSelector,
-                        embed: Set[AppInfo.Embed]): Future[Seq[AppInfo]]
+  def selectAppsInGroup(
+      groupId: PathId,
+      selector: AppSelector,
+      embed: Set[AppInfo.Embed]
+  ): Future[Seq[AppInfo]]
 
   /**
     * Return app infos for all apps.
@@ -34,5 +38,7 @@ trait AppInfoService {
     * @param embed specifies which fields in the resulting AppInfo s are filled.
     */
   def selectAppsBy(
-      selector: AppSelector, embed: Set[AppInfo.Embed]): Future[Seq[AppInfo]]
+      selector: AppSelector,
+      embed: Set[AppInfo.Embed]
+  ): Future[Seq[AppInfo]]
 }

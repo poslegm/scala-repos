@@ -24,18 +24,22 @@ abstract class Duplicators extends Analyzer {
     *  the old class with the new class, and map symbols through the given 'env'. The
     *  environment is a map from type skolems to concrete types (see SpecializedTypes).
     */
-  def retyped(context: Context,
-              tree: Tree,
-              oldThis: Symbol,
-              newThis: Symbol,
-              env: scala.collection.Map[Symbol, Type]): Tree = {
+  def retyped(
+      context: Context,
+      tree: Tree,
+      oldThis: Symbol,
+      newThis: Symbol,
+      env: scala.collection.Map[Symbol, Type]
+  ): Tree = {
     if (oldThis ne newThis) {
       oldClassOwner = oldThis
       newClassOwner = newThis
     } else resetClassOwners()
 
     envSubstitution = new SubstSkolemsTypeMap(
-        env.keysIterator.toList, env.valuesIterator.toList)
+      env.keysIterator.toList,
+      env.valuesIterator.toList
+    )
     debuglog("retyped with env: " + env)
 
     newBodyDuplicator(context).typed(tree)
@@ -53,8 +57,8 @@ abstract class Duplicators extends Analyzer {
     newClassOwner = null
   }
 
-  private var oldClassOwner: Symbol = _
-  private var newClassOwner: Symbol = _
+  private var oldClassOwner: Symbol         = _
+  private var newClassOwner: Symbol         = _
   private var envSubstitution: SubstTypeMap = _
 
   private class SubstSkolemsTypeMap(from: List[Symbol], to: List[Type])
@@ -84,13 +88,13 @@ abstract class Duplicators extends Analyzer {
         case TypeRef(NoPrefix, sym, args) if sym.isTypeParameterOrSkolem =>
           val sym1 =
             (context.scope lookup sym.name orElse {
-                  // try harder (look in outer scopes)
-                  // with virtpatmat, this can happen when the sym is referenced in the scope of a LabelDef but
-                  // is defined in the scope of an outer DefDef (e.g., in AbstractPartialFunction's andThen)
-                  BodyDuplicator. super
-                    .silent(_ typedType Ident(sym.name))
-                    .fold(NoSymbol: Symbol)(_.symbol)
-                } filter (_ ne sym))
+              // try harder (look in outer scopes)
+              // with virtpatmat, this can happen when the sym is referenced in the scope of a LabelDef but
+              // is defined in the scope of an outer DefDef (e.g., in AbstractPartialFunction's andThen)
+              BodyDuplicator.super
+                .silent(_ typedType Ident(sym.name))
+                .fold(NoSymbol: Symbol)(_.symbol)
+            } filter (_ ne sym))
           if (sym1.exists) {
             debuglog(s"fixing $sym -> $sym1")
             typeRef(NoPrefix, sym1, mapOverArgs(args, sym1.typeParams))
@@ -124,7 +128,7 @@ abstract class Duplicators extends Analyzer {
 
     /** Fix the given type by replacing invalid symbols with the new ones. */
     def fixType(tpe: Type): Type = {
-      val tpe1 = envSubstitution(tpe)
+      val tpe1       = envSubstitution(tpe)
       val tpe2: Type = (new FixInvalidSyms)(tpe1)
       val tpe3 =
         if (newClassOwner ne null) {
@@ -159,12 +163,13 @@ abstract class Duplicators extends Analyzer {
             debuglog("ValDef " + name + " sym.info: " + vdef.symbol.info)
             invalidSyms(vdef.symbol) = vdef
             val newowner = owner orElse context.owner
-            val newsym = vdef.symbol.cloneSymbol(newowner)
+            val newsym   = vdef.symbol.cloneSymbol(newowner)
             newsym.setInfo(fixType(vdef.symbol.info))
             vdef.symbol = newsym
             debuglog(
-                "newsym: " + newsym + " info: " + newsym.info + ", owner: " +
-                newsym.owner + ", " + newsym.owner.isClass)
+              "newsym: " + newsym + " info: " + newsym.info + ", owner: " +
+                newsym.owner + ", " + newsym.owner.isClass
+            )
             if (newsym.owner.isClass) newsym.owner.info.decls enter newsym
 
           case DefDef(_, name, tparams, vparamss, _, rhs) =>
@@ -272,9 +277,11 @@ abstract class Duplicators extends Analyzer {
           val rhs1 =
             (new TreeSubstituter(params map (_.symbol), params1) transform rhs) // TODO: duplicate?
 
-          super.typed(treeCopy.LabelDef(tree, name, params1, rhs1.clearType()),
-                      mode,
-                      pt)
+          super.typed(
+            treeCopy.LabelDef(tree, name, params1, rhs1.clearType()),
+            mode,
+            pt
+          )
 
         case Bind(name, _) =>
           // log("bind: " + tree)
@@ -287,8 +294,10 @@ abstract class Duplicators extends Analyzer {
           super.typed(tree.clearType(), mode, pt)
 
         case Ident(_) if (origtreesym ne null) && origtreesym.isLazy =>
-          debuglog("Ident to a lazy val " + tree + ", " + tree.symbol +
-              " updated to " + origtreesym)
+          debuglog(
+            "Ident to a lazy val " + tree + ", " + tree.symbol +
+              " updated to " + origtreesym
+          )
           tree.symbol = updateSym(origtreesym)
           super.typed(tree.clearType(), mode, pt)
 
@@ -298,7 +307,7 @@ abstract class Duplicators extends Analyzer {
           // may have been name mangled, rendering the tree name obsolete.
           // ...but you can't just do a Select on a name because if the symbol is
           // overloaded, you will crash in the backend.
-          val memberByName = newClassOwner.thisType.member(tree.symbol.name)
+          val memberByName  = newClassOwner.thisType.member(tree.symbol.name)
           def nameSelection = Select(This(newClassOwner), tree.symbol.name)
           val newTree =
             (if (memberByName.isOverloaded) {
@@ -307,24 +316,32 @@ abstract class Duplicators extends Analyzer {
                // fixing the old type so it is seen as if from the new class.)
                val typeInNewClass =
                  fixType(oldClassOwner.info memberType tree.symbol)
-               val alts = memberByName.alternatives
-               val memberTypes = alts map (newClassOwner.info memberType _)
+               val alts         = memberByName.alternatives
+               val memberTypes  = alts map (newClassOwner.info memberType _)
                val memberString = memberByName.defString
                alts zip memberTypes filter (_._2 =:= typeInNewClass) match {
                  case ((alt, tpe)) :: Nil =>
-                   log(s"Arrested overloaded type in Duplicators, narrowing to ${alt
-                     .defStringSeenAs(tpe)}\n  Overload was: $memberString")
+                   log(
+                     s"Arrested overloaded type in Duplicators, narrowing to ${alt
+                       .defStringSeenAs(tpe)}\n  Overload was: $memberString"
+                   )
                    Select(This(newClassOwner), alt)
                  case xs =>
                    alts filter
-                   (alt =>
-                         (alt.paramss corresponds tree.symbol.paramss)(
-                             _.size == _.size)) match {
+                     (alt =>
+                       (alt.paramss corresponds tree.symbol.paramss)(
+                         _.size == _.size
+                       )
+                     ) match {
                      case alt :: Nil =>
-                       log(s"Resorted to parameter list arity to disambiguate to $alt\n  Overload was: $memberString")
+                       log(
+                         s"Resorted to parameter list arity to disambiguate to $alt\n  Overload was: $memberString"
+                       )
                        Select(This(newClassOwner), alt)
                      case _ =>
-                       log(s"Could not disambiguate $memberTypes. Attempting name-based selection, but we may crash later.")
+                       log(
+                         s"Could not disambiguate $memberTypes. Attempting name-based selection, but we may crash later."
+                       )
                        nameSelection
                    }
                }
@@ -354,7 +371,7 @@ abstract class Duplicators extends Analyzer {
           super.typed(atPos(tree.pos)(tree1))
          */
         case Match(scrut, cases) =>
-          val scrut1 = typedByValueExpr(scrut)
+          val scrut1   = typedByValueExpr(scrut)
           val scrutTpe = scrut1.tpe.widen
           val cases1 = {
             if (scrutTpe.isFinalType)

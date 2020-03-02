@@ -29,11 +29,13 @@ import play.inject.SourceProvider
   *
   * @define javadoc http://docs.oracle.com/javase/8/docs/api
   */
-final case class Binding[T](key: BindingKey[T],
-                            target: Option[BindingTarget[T]],
-                            scope: Option[Class[_ <: Annotation]],
-                            eager: Boolean,
-                            source: Object) {
+final case class Binding[T](
+    key: BindingKey[T],
+    target: Option[BindingTarget[T]],
+    scope: Option[Class[_ <: Annotation]],
+    eager: Boolean,
+    source: Object
+) {
 
   /**
     * Configure the scope for this binding.
@@ -44,7 +46,7 @@ final case class Binding[T](key: BindingKey[T],
   /**
     * Configure the scope for this binding.
     */
-  def in[A <: Annotation : ClassTag]: Binding[T] =
+  def in[A <: Annotation: ClassTag]: Binding[T] =
     in(implicitly[ClassTag[A]].runtimeClass.asInstanceOf[Class[A]])
 
   /**
@@ -54,8 +56,7 @@ final case class Binding[T](key: BindingKey[T],
 
   override def toString = {
     val eagerDesc = if (eager) " eagerly" else ""
-    s"$source:\nBinding($key to ${target.getOrElse("self")}${scope.fold("")(
-        " in " + _)}$eagerDesc)"
+    s"$source:\nBinding($key to ${target.getOrElse("self")}${scope.fold("")(" in " + _)}$eagerDesc)"
   }
 }
 
@@ -78,7 +79,9 @@ object BindingKey {
   * @see The [[Module]] class for information on how to provide bindings.
   */
 final case class BindingKey[T](
-    clazz: Class[T], qualifier: Option[QualifierAnnotation]) {
+    clazz: Class[T],
+    qualifier: Option[QualifierAnnotation]
+) {
 
   def this(clazz: Class[T]) = this(clazz, None)
 
@@ -145,7 +148,7 @@ final case class BindingKey[T](
     *
     * In the above example, the controller will get the cached `Foo` service.
     */
-  def qualifiedWith[A <: Annotation : ClassTag]: BindingKey[T] =
+  def qualifiedWith[A <: Annotation: ClassTag]: BindingKey[T] =
     qualifiedWith(implicitly[ClassTag[A]].runtimeClass.asInstanceOf[Class[A]])
 
   /**
@@ -176,18 +179,20 @@ final case class BindingKey[T](
     * This class will be instantiated and injected by the injection framework.
     */
   def to(implementation: Class[_ <: T]): Binding[T] =
-    Binding(this,
-            Some(ConstructionTarget(implementation)),
-            None,
-            false,
-            SourceLocator.source)
+    Binding(
+      this,
+      Some(ConstructionTarget(implementation)),
+      None,
+      false,
+      SourceLocator.source
+    )
 
   /**
     * Bind this binding key to the given implementation class.
     *
     * This class will be instantiated and injected by the injection framework.
     */
-  def to[C <: T : ClassTag]: Binding[T] =
+  def to[C <: T: ClassTag]: Binding[T] =
     to(implicitly[ClassTag[C]].runtimeClass.asInstanceOf[Class[C]])
 
   /**
@@ -196,11 +201,13 @@ final case class BindingKey[T](
     * This provider instance will be invoked to obtain the implementation for the key.
     */
   def to(provider: Provider[_ <: T]): Binding[T] =
-    Binding(this,
-            Some(ProviderTarget(provider)),
-            None,
-            false,
-            SourceLocator.source)
+    Binding(
+      this,
+      Some(ProviderTarget(provider)),
+      None,
+      false,
+      SourceLocator.source
+    )
 
   /**
     * Bind this binding key to the given instance.
@@ -213,7 +220,12 @@ final case class BindingKey[T](
     */
   def to(key: BindingKey[_ <: T]): Binding[T] =
     Binding(
-        this, Some(BindingKeyTarget(key)), None, false, SourceLocator.source)
+      this,
+      Some(BindingKeyTarget(key)),
+      None,
+      false,
+      SourceLocator.source
+    )
 
   /**
     * Bind this binding key to the given provider class.
@@ -222,11 +234,13 @@ final case class BindingKey[T](
     * whenever an instance of the class is needed.
     */
   def toProvider[P <: Provider[_ <: T]](provider: Class[P]): Binding[T] =
-    Binding(this,
-            Some(ProviderConstructionTarget[T](provider)),
-            None,
-            false,
-            SourceLocator.source)
+    Binding(
+      this,
+      Some(ProviderConstructionTarget[T](provider)),
+      None,
+      false,
+      SourceLocator.source
+    )
 
   /**
     * Bind this binding key to the given provider class.
@@ -276,8 +290,8 @@ final case class ProviderTarget[T](provider: Provider[_ <: T])
   * @see The [[Module]] class for information on how to provide bindings.
   */
 final case class ProviderConstructionTarget[T](
-    provider: Class[_ <: Provider[_ <: T]])
-    extends BindingTarget[T]
+    provider: Class[_ <: Provider[_ <: T]]
+) extends BindingTarget[T]
 
 /**
   * A binding target that is provided by a class.
@@ -321,7 +335,10 @@ final case class QualifierClass[T <: Annotation](clazz: Class[T])
 
 private object SourceLocator {
   val provider = SourceProvider.DEFAULT_INSTANCE.plusSkippedClasses(
-      this.getClass, classOf[BindingKey[_]], classOf[Binding[_]])
+    this.getClass,
+    classOf[BindingKey[_]],
+    classOf[Binding[_]]
+  )
 
   def source = provider.get()
 }

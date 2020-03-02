@@ -28,7 +28,7 @@ class MillisecondBatcher(val durationMillis: Long) extends AbstractBatcher {
   require(durationMillis > 0, "a batch must have a non-zero size")
   def batchOf(t: Timestamp) = {
     val timeInMillis = t.milliSinceEpoch
-    val batch = BatchID(timeInMillis / durationMillis)
+    val batch        = BatchID(timeInMillis / durationMillis)
 
     // Because long division rounds to zero instead of rounding down
     // toward negative infinity, a negative timeInMillis will

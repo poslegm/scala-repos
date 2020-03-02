@@ -1,5 +1,5 @@
 object Obj {
-  private var cache: Any = ()
+  private var cache: Any       = ()
   def returning(f: () => Unit) = ()
   def foo {
     returning(() => cache = ())

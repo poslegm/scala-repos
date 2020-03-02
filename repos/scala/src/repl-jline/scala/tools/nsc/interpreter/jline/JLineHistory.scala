@@ -73,10 +73,12 @@ object JLineHistory {
     def entries(idx: Int): JListIterator[JEntry] =
       toEntries().asJava.listIterator(idx)
     def entries(): JListIterator[JEntry] = toEntries().asJava.listIterator()
-    def iterator: JIterator[JEntry] = toEntries().iterator.asJava
+    def iterator: JIterator[JEntry]      = toEntries().iterator.asJava
   }
 
-  def apply(): History = try new JLineFileHistory catch {
-    case x: Exception => new SimpleHistory()
-  }
+  def apply(): History =
+    try new JLineFileHistory
+    catch {
+      case x: Exception => new SimpleHistory()
+    }
 }

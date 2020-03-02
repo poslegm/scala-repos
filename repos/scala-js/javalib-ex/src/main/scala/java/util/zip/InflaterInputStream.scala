@@ -12,7 +12,7 @@ class InflaterInputStream(in: InputStream) extends FilterInputStream(in) {
   // protected var inf: Inflater
   // protected var len: Int
 
-  override def markSupported(): Boolean = false
+  override def markSupported(): Boolean   = false
   override def mark(readlimit: Int): Unit = {}
-  override def reset(): Unit = throw new IOException("Reset not supported")
+  override def reset(): Unit              = throw new IOException("Reset not supported")
 }

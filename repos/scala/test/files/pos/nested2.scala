@@ -3,6 +3,6 @@ class C[A] {
 }
 
 object Test {
-  val x = new C[String]
+  val x                   = new C[String]
   val y: C[String]#D[Int] = new x.D[Int]
 }

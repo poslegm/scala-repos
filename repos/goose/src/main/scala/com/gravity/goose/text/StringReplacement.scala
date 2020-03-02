@@ -46,6 +46,6 @@ class StringReplacement {
     return pattern.matcher(input).replaceAll(replaceWith)
   }
 
-  private var pattern: Pattern = null
+  private var pattern: Pattern    = null
   private var replaceWith: String = null
 }

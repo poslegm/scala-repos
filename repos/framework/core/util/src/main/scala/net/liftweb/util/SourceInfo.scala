@@ -27,10 +27,12 @@ trait SourceInfo {
 }
 
 case class SourceFieldMetadataRep[A](
-    name: String, manifest: TypeTag[A], converter: FieldConverter {
-  type T = A
-})
-    extends SourceFieldMetadata {
+    name: String,
+    manifest: TypeTag[A],
+    converter: FieldConverter {
+      type T = A
+    }
+) extends SourceFieldMetadata {
   type ST = A
 }
 
@@ -70,10 +72,12 @@ trait SourceFieldMetadata {
   * @param metaData the metadata
   * @tparam A the type
   */
-case class SourceFieldInfoRep[A](value: A, metaData: SourceFieldMetadata {
-  type ST = A
-})
-    extends SourceFieldInfo {
+case class SourceFieldInfoRep[A](
+    value: A,
+    metaData: SourceFieldMetadata {
+      type ST = A
+    }
+) extends SourceFieldInfo {
   type T = A
 }
 

@@ -34,7 +34,7 @@ import java.util
   * @see <a href="http://en.wikipedia.org/wiki/Well_Equidistributed_Long-period_Linear">WELL @ Wikipedia</a>
   * @author <a href="mailto:dusan.kysel@gmail.com">Dušan Kysel</a>
   */
-final class Well512a protected[random](state: Array[Int], i0: Int)
+final class Well512a protected[random] (state: Array[Int], i0: Int)
     extends IntBasedGenerator {
 
   import Well512a.{R, R_1, BYTES, M1, M2, mat0pos, mat0neg, mat3neg, mat4neg}
@@ -52,11 +52,9 @@ final class Well512a protected[random](state: Array[Int], i0: Int)
 
   def getSeedBytes(): Array[Byte] = {
     val bytes = new Array[Byte](BYTES)
-    val bb = ByteBuffer.wrap(bytes)
+    val bb    = ByteBuffer.wrap(bytes)
 
-    cfor(0)(_ < R, _ + 1) { i =>
-      bb.putInt(state(i))
-    }
+    cfor(0)(_ < R, _ + 1) { i => bb.putInt(state(i)) }
     bb.putInt(i)
     bytes
   }
@@ -66,9 +64,7 @@ final class Well512a protected[random](state: Array[Int], i0: Int)
       if (bytes.length < BYTES) util.Arrays.copyOf(bytes, BYTES) else bytes
     val bb = ByteBuffer.wrap(bs)
 
-    cfor(0)(_ < R, _ + 1) { i =>
-      state(i) = bb.getInt
-    }
+    cfor(0)(_ < R, _ + 1) { i => state(i) = bb.getInt }
     i = bb.getInt
   }
 
@@ -81,8 +77,12 @@ final class Well512a protected[random](state: Array[Int], i0: Int)
     val z2: Int = mat0pos(11, state(map(M2)))
 
     state(i) = z1 ^ z2
-    state(map(R_1)) = mat0neg(-2, z0) ^ mat0neg(-18, z1) ^ mat3neg(-28, z2) ^ mat4neg(
-        -5, 0xda442d24, state(i))
+    state(map(R_1)) =
+      mat0neg(-2, z0) ^ mat0neg(-18, z1) ^ mat3neg(-28, z2) ^ mat4neg(
+        -5,
+        0xda442d24,
+        state(i)
+      )
     i = map(R_1)
 
     // val z0: Int = vrm1(i)

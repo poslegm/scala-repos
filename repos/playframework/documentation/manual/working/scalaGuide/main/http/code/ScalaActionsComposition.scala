@@ -29,8 +29,10 @@ package scalaguide.http.scalaactionscomposition {
         import play.api.mvc._
 
         object LoggingAction extends ActionBuilder[Request] {
-          def invokeBlock[A](request: Request[A],
-                             block: (Request[A]) => Future[Result]) = {
+          def invokeBlock[A](
+              request: Request[A],
+              block: (Request[A]) => Future[Result]
+          ) = {
             Logger.info("Calling action")
             block(request)
           }
@@ -73,8 +75,10 @@ package scalaguide.http.scalaactionscomposition {
 
         //#actions-wrapping-builder
         object LoggingAction extends ActionBuilder[Request] {
-          def invokeBlock[A](request: Request[A],
-                             block: (Request[A]) => Future[Result]) = {
+          def invokeBlock[A](
+              request: Request[A],
+              block: (Request[A]) => Future[Result]
+          ) = {
             block(request)
           }
           override def composeAction[A](action: Action[A]) =
@@ -118,11 +122,14 @@ package scalaguide.http.scalaactionscomposition {
         //#actions-def-wrapping
 
         val request = FakeRequest().withTextBody("hello with the parse")
-        testAction(logging {
-          Action {
-            Ok("Hello World")
-          }
-        }, request)
+        testAction(
+          logging {
+            Action {
+              Ok("Hello World")
+            }
+          },
+          request
+        )
       }
 
       "allow modifying the request object" in {
@@ -158,8 +165,7 @@ package scalaguide.http.scalaactionscomposition {
         }
         //#block-request
 
-        testAction(action = onlyHttps(Action(Ok)),
-                   expectedResponse = FORBIDDEN)
+        testAction(action = onlyHttps(Action(Ok)), expectedResponse = FORBIDDEN)
       }
 
       "allow modifying the result" in {
@@ -204,7 +210,7 @@ package scalaguide.http.scalaactionscomposition {
         testAction(currentUser)
 
         case class Item(id: String) {
-          def addTag(tag: String) = ()
+          def addTag(tag: String)                    = ()
           def accessibleByUser(user: Option[String]) = user.isDefined
         }
         object ItemDao {
@@ -255,21 +261,22 @@ package scalaguide.http.scalaactionscomposition {
     }
 
     import play.api.mvc._
-    def testAction[A](action: EssentialAction,
-                      request: => Request[A] = FakeRequest(),
-                      expectedResponse: Int = OK) = {
-      assertAction(action, request, expectedResponse) { result =>
-        success
-      }
+    def testAction[A](
+        action: EssentialAction,
+        request: => Request[A] = FakeRequest(),
+        expectedResponse: Int = OK
+    ) = {
+      assertAction(action, request, expectedResponse) { result => success }
     }
 
-    def assertAction[A, T : AsResult](action: EssentialAction,
-                                      request: => Request[A] = FakeRequest(),
-                                      expectedResponse: Int = OK)(
-        assertions: Future[Result] => T) = {
+    def assertAction[A, T: AsResult](
+        action: EssentialAction,
+        request: => Request[A] = FakeRequest(),
+        expectedResponse: Int = OK
+    )(assertions: Future[Result] => T) = {
       running() { app =>
         implicit val mat = ActorMaterializer()(app.actorSystem)
-        val result = action(request).run()
+        val result       = action(request).run()
         status(result) must_== expectedResponse
         assertions(result)
       }

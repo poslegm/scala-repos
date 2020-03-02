@@ -32,18 +32,18 @@ object Spec {
       new Info(runner, help, mainClass)
   }
 
-  class Accumulator[T : FromString]() {
+  class Accumulator[T: FromString]() {
     private var _buf: List[T] = Nil
 
-    def convert(s: String) = implicitly[FromString[T]] apply s
+    def convert(s: String)  = implicitly[FromString[T]] apply s
     def apply(s: String): T = returning(convert(s))(_buf +:= _)
 
     lazy val get = _buf
   }
 
-  class Choices[T : FromString](val xs: List[T]) {
+  class Choices[T: FromString](val xs: List[T]) {
     def fs: FromString[T] = implicitly[FromString[T]]
-    def contains(x: T) = xs contains x
+    def contains(x: T)    = xs contains x
     override def toString = xs.mkString("{ ", ", ", " }")
   }
 

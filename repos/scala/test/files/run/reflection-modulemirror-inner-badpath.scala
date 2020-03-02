@@ -6,7 +6,7 @@ class Foo {
   object R { override def toString = "R" }
   def foo = {
     val classTag = implicitly[ClassTag[R.type]]
-    val sym = cm.moduleSymbol(classTag.runtimeClass)
+    val sym      = cm.moduleSymbol(classTag.runtimeClass)
     try {
       val cls = cm.reflectModule(sym)
       cls.instance

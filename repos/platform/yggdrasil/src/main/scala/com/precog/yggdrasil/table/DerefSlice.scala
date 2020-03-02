@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -30,7 +30,7 @@ class DerefSlice(source: Slice, derefBy: PartialFunction[Int, CPathNode])
 
   private val forwardIndex: Map[CPathNode, Map[ColumnRef, Column]] =
     source.columns.foldLeft(Map.empty[CPathNode, Map[ColumnRef, Column]]) {
-      case (acc, (ColumnRef(CPath(root, xs @ _ *), ctype), col)) =>
+      case (acc, (ColumnRef(CPath(root, xs @ _*), ctype), col)) =>
         val resultRef = ColumnRef(CPath(xs: _*), ctype)
         // we know the combination of xs and ctype to be unique within root
         acc + (root -> (acc.getOrElse(root, Map()) + (resultRef -> col)))
@@ -38,8 +38,10 @@ class DerefSlice(source: Slice, derefBy: PartialFunction[Int, CPathNode])
 
   private val indexableArrays: Map[ColumnRef, HomogeneousArrayColumn[_]] =
     source.columns.collect {
-      case (ColumnRef(CPath(CPathArray, xs @ _ *), ctype),
-            col: HomogeneousArrayColumn[_]) =>
+      case (
+          ColumnRef(CPath(CPathArray, xs @ _*), ctype),
+          col: HomogeneousArrayColumn[_]
+          ) =>
         (ColumnRef(CPath(xs: _*), ctype), col)
     }.toMap
 
@@ -47,21 +49,22 @@ class DerefSlice(source: Slice, derefBy: PartialFunction[Int, CPathNode])
     node match {
       case CPathIndex(i) if !indexableArrays.isEmpty =>
         Some(
-            (indexableArrays mapValues (_.select(i))) ++ forwardIndex
-              .getOrElse(node, Map.empty))
+          (indexableArrays mapValues (_.select(i))) ++ forwardIndex
+            .getOrElse(node, Map.empty)
+        )
       case _ => forwardIndex get node
     }
 
   val size = source.size
 
   val columns = source.columns.keySet.foldLeft(Map.empty[ColumnRef, Column]) {
-    case (acc, ColumnRef(CPath(_, xs @ _ *), ctype)) =>
+    case (acc, ColumnRef(CPath(_, xs @ _*), ctype)) =>
       val resultRef = ColumnRef(CPath(xs: _*), ctype)
 
       lazy val resultCol = ctype match {
         case CBoolean =>
           new BoolColumn {
-            private var row0: Int = -1
+            private var row0: Int           = -1
             private var refCol0: BoolColumn = _
             @inline private def refCol(row: Int): BoolColumn =
               derefColumns(derefBy(row))
@@ -81,7 +84,7 @@ class DerefSlice(source: Slice, derefBy: PartialFunction[Int, CPathNode])
 
         case CLong =>
           new LongColumn {
-            private var row0: Int = -1
+            private var row0: Int           = -1
             private var refCol0: LongColumn = _
             @inline private def refCol(row: Int): LongColumn =
               derefColumns(derefBy(row))
@@ -101,7 +104,7 @@ class DerefSlice(source: Slice, derefBy: PartialFunction[Int, CPathNode])
 
         case CDouble =>
           new DoubleColumn {
-            private var row0: Int = -1
+            private var row0: Int             = -1
             private var refCol0: DoubleColumn = _
             @inline private def refCol(row: Int): DoubleColumn =
               derefColumns(derefBy(row))
@@ -121,7 +124,7 @@ class DerefSlice(source: Slice, derefBy: PartialFunction[Int, CPathNode])
 
         case CNum =>
           new NumColumn {
-            private var row0: Int = -1
+            private var row0: Int          = -1
             private var refCol0: NumColumn = _
             @inline private def refCol(row: Int): NumColumn =
               derefColumns(derefBy(row))
@@ -141,7 +144,7 @@ class DerefSlice(source: Slice, derefBy: PartialFunction[Int, CPathNode])
 
         case CString =>
           new StrColumn {
-            private var row0: Int = -1
+            private var row0: Int          = -1
             private var refCol0: StrColumn = _
             @inline private def refCol(row: Int): StrColumn =
               derefColumns(derefBy(row))
@@ -161,7 +164,7 @@ class DerefSlice(source: Slice, derefBy: PartialFunction[Int, CPathNode])
 
         case CDate =>
           new DateColumn {
-            private var row0: Int = -1
+            private var row0: Int           = -1
             private var refCol0: DateColumn = _
             @inline private def refCol(row: Int): DateColumn =
               derefColumns(derefBy(row))
@@ -181,7 +184,7 @@ class DerefSlice(source: Slice, derefBy: PartialFunction[Int, CPathNode])
 
         case CPeriod =>
           new PeriodColumn {
-            private var row0: Int = -1
+            private var row0: Int             = -1
             private var refCol0: PeriodColumn = _
             @inline private def refCol(row: Int): PeriodColumn =
               derefColumns(derefBy(row))
@@ -201,8 +204,8 @@ class DerefSlice(source: Slice, derefBy: PartialFunction[Int, CPathNode])
 
         case cArrayType: CArrayType[a] =>
           new HomogeneousArrayColumn[a] {
-            val tpe = cArrayType
-            private var row0: Int = -1
+            val tpe                                        = cArrayType
+            private var row0: Int                          = -1
             private var refCol0: HomogeneousArrayColumn[a] = _
             @inline private def refCol(row: Int): HomogeneousArrayColumn[a] =
               derefColumns(derefBy(row))
@@ -251,9 +254,9 @@ class DerefSlice(source: Slice, derefBy: PartialFunction[Int, CPathNode])
 /* A strict version
 derefBy.columns.headOption collect {
   case c: StrColumn =>
-    val transforms: Map[String, Map[ColumnRef, (Column, Column with ArrayColumn[_])]] = 
+    val transforms: Map[String, Map[ColumnRef, (Column, Column with ArrayColumn[_])]] =
       slice.columns.foldLeft(Map.empty[String, Map[ColumnRef, (Column, Column with ArrayColumn[_])]]) {
-        case (acc, (ColumnRef(CPath(CPathField(root), xs @ _*), ctype), col)) => 
+        case (acc, (ColumnRef(CPath(CPathField(root), xs @ _*), ctype), col)) =>
           val resultRef = ColumnRef(CPath(xs: _*), ctype)
 
           // find the result column if it exists, or else create a new one.
@@ -309,7 +312,7 @@ derefBy.columns.headOption collect {
 
         case _ =>
       }
-    } 
+    }
 
     // we can safely throw out any duplicated keys, since the values for duplicated
     // keys are all shared

@@ -25,25 +25,28 @@ import collection.Set
 object ControlledShutdownResponse {
   def readFrom(buffer: ByteBuffer): ControlledShutdownResponse = {
     val correlationId = buffer.getInt
-    val errorCode = buffer.getShort
-    val numEntries = buffer.getInt
+    val errorCode     = buffer.getShort
+    val numEntries    = buffer.getInt
 
     var partitionsRemaining = Set[TopicAndPartition]()
     for (i <- 0 until numEntries) {
-      val topic = readShortString(buffer)
+      val topic     = readShortString(buffer)
       val partition = buffer.getInt
       partitionsRemaining += new TopicAndPartition(topic, partition)
     }
     new ControlledShutdownResponse(
-        correlationId, errorCode, partitionsRemaining)
+      correlationId,
+      errorCode,
+      partitionsRemaining
+    )
   }
 }
 
 case class ControlledShutdownResponse(
     correlationId: Int,
     errorCode: Short = Errors.NONE.code,
-    partitionsRemaining: Set[TopicAndPartition])
-    extends RequestOrResponse() {
+    partitionsRemaining: Set[TopicAndPartition]
+) extends RequestOrResponse() {
   def sizeInBytes(): Int = {
     var size =
       4 /* correlation id */ + 2 /* error code */ + 4 /* number of responses */

@@ -21,7 +21,9 @@ import _root_.scala.collection.JavaConverters._
   * Date: 2/11/14
   */
 class NonServerRunner(
-    project: Project, errorHandler: Option[ErrorHandler] = None) {
+    project: Project,
+    errorHandler: Option[ErrorHandler] = None
+) {
   private val SERVER_CLASS_NAME =
     "org.jetbrains.jps.incremental.scala.remote.Main"
 
@@ -33,7 +35,9 @@ class NonServerRunner(
   private val jvmParameters = CompileServerLauncher.jvmParameters
 
   def buildProcess(
-      args: Seq[String], listener: String => Unit): CompilationProcess = {
+      args: Seq[String],
+      listener: String => Unit
+  ): CompilationProcess = {
     val sdk =
       Option(ProjectRootManager.getInstance(project).getProjectSdk) getOrElse {
         val all =
@@ -58,12 +62,13 @@ class NonServerRunner(
       case Right(jdk) =>
         val commands =
           ((FileUtil toCanonicalPath jdk.executable.getPath) +: "-cp" +: classPath(
-                  jdk) +: jvmParameters :+ SERVER_CLASS_NAME).++(args)
+            jdk
+          ) +: jvmParameters :+ SERVER_CLASS_NAME).++(args)
 
         val builder = new ProcessBuilder(commands.asJava)
 
         new CompilationProcess {
-          var myProcess: Option[Process] = None
+          var myProcess: Option[Process]   = None
           var myCallbacks: Seq[() => Unit] = Seq.empty
 
           override def addTerminationCallback(callback: => Unit) {
@@ -75,16 +80,19 @@ class NonServerRunner(
             myProcess = Some(p)
 
             val reader = new BufferedReader(
-                new InputStreamReader(p.getInputStream))
+              new InputStreamReader(p.getInputStream)
+            )
             new MyBase64StreamReader(reader, listener)
 
-            val processWaitFor = new ProcessWaitFor(p, new TaskExecutor {
-              override def executeTask(task: Runnable): Future[_] =
-                BaseOSProcessHandler.ExecutorServiceHolder.submit(task)
-            })
+            val processWaitFor = new ProcessWaitFor(
+              p,
+              new TaskExecutor {
+                override def executeTask(task: Runnable): Future[_] =
+                  BaseOSProcessHandler.ExecutorServiceHolder.submit(task)
+              }
+            )
 
-            processWaitFor.setTerminationCallback(
-                new Consumer[Integer] {
+            processWaitFor.setTerminationCallback(new Consumer[Integer] {
               override def consume(t: Integer) {
                 myCallbacks.foreach(c => c())
               }
@@ -104,12 +112,13 @@ class NonServerRunner(
   }
 
   private class MyBase64StreamReader(
-      private val reader: Reader, listener: String => Unit)
-      extends BaseDataReader(null) {
+      private val reader: Reader,
+      listener: String => Unit
+  ) extends BaseDataReader(null) {
     start()
 
     private val charBuffer = new Array[Char](8192)
-    private val text = new StringBuilder
+    private val text       = new StringBuilder
 
     def executeOnPooledThread(runnable: Runnable): Future[_] =
       BaseOSProcessHandler.ExecutorServiceHolder.submit(runnable)

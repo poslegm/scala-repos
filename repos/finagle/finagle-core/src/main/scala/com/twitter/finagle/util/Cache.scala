@@ -19,15 +19,17 @@ import com.twitter.util.{Time, TimerTask, Duration}
   * @param timer the timer used to schedule TTL evictions
   * @param evictor a Function invoked for each eviction
   */
-private[finagle] class Cache[A](cacheSize: Int,
-                                ttl: Duration,
-                                timer: com.twitter.util.Timer,
-                                evictor: Option[A => Unit] = None) {
+private[finagle] class Cache[A](
+    cacheSize: Int,
+    ttl: Duration,
+    timer: com.twitter.util.Timer,
+    evictor: Option[A => Unit] = None
+) {
   require(cacheSize > 0)
 
   // We assume monotonically increasing time.  Thus the items at the
   // end of the deque are also the newest (i.e. LIFO behavior).
-  private[this] var deque = new ArrayDeque[(Time, A)]
+  private[this] var deque                        = new ArrayDeque[(Time, A)]
   private[this] var timerTask: Option[TimerTask] = None
 
   /**
@@ -82,7 +84,7 @@ private[finagle] class Cache[A](cacheSize: Int,
     evicted foreach { evict(_) }
   }
 
-  private[this] def evict(item: A) = evictor foreach { _ (item) }
+  private[this] def evict(item: A) = evictor foreach { _(item) }
 
   /**
     * Retrieve an item from the cache.  Items are retrieved in LIFO

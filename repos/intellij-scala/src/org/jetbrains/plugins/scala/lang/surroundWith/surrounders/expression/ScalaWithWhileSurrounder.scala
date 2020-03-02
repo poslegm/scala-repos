@@ -28,7 +28,7 @@ class ScalaWithWhileSurrounder extends ScalaExpressionSurrounder {
       case x: ScParenthesisedExpr =>
         x.expr match {
           case Some(y) => y
-          case _ => return x.getTextRange
+          case _       => return x.getTextRange
         }
       case x => x
     }
@@ -40,7 +40,7 @@ class ScalaWithWhileSurrounder extends ScalaExpressionSurrounder {
     }
 
     val startOffset = conditionNode.getTextRange.getStartOffset
-    val endOffset = conditionNode.getTextRange.getEndOffset
+    val endOffset   = conditionNode.getTextRange.getEndOffset
 
     new TextRange(startOffset, endOffset);
   }

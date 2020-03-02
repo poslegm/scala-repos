@@ -32,7 +32,7 @@ trait TupleSetter[T] extends java.io.Serializable with TupleArity { self =>
   def contraMap[U](fn: U => T): TupleSetter[U] =
     new TupleSetter[U] {
       def apply(arg: U) = self.apply(fn(arg))
-      def arity = self.arity
+      def arity         = self.arity
     }
 }
 
@@ -64,8 +64,8 @@ object TupleSetter extends GeneratedTupleSetters {
     ts.asInstanceOf[TupleSetter[U]]
 
   def toCTuple[T](t: T)(implicit ts: TupleSetter[T]): CTuple = ts(t)
-  def arity[T](implicit ts: TupleSetter[T]): Int = ts.arity
-  def of[T](implicit ts: TupleSetter[T]): TupleSetter[T] = ts
+  def arity[T](implicit ts: TupleSetter[T]): Int             = ts.arity
+  def of[T](implicit ts: TupleSetter[T]): TupleSetter[T]     = ts
 
   //This is here for handling functions that return cascading tuples:
   implicit lazy val CTupleSetter: TupleSetter[CTuple] =
@@ -78,7 +78,7 @@ object TupleSetter extends GeneratedTupleSetters {
   //Unit is like a Tuple0. It corresponds to Tuple.NULL
   implicit lazy val UnitSetter: TupleSetter[Unit] = new TupleSetter[Unit] {
     override def apply(arg: Unit) = CTuple.NULL
-    override def arity = 0
+    override def arity            = 0
   }
 
   // Doesn't seem safe to make this implicit by default:

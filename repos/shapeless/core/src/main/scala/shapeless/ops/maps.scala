@@ -42,13 +42,14 @@ object maps {
     implicit def hlistFromMap[K0, V0, T <: HList](
         implicit wk: Witness.Aux[K0],
         tv: Typeable[V0],
-        fmt: FromMap[T]): FromMap[FieldType[K0, V0] :: T] =
+        fmt: FromMap[T]
+    ): FromMap[FieldType[K0, V0] :: T] =
       new FromMap[FieldType[K0, V0] :: T] {
         def apply[K, V](m: Map[K, V]): Option[FieldType[K0, V0] :: T] = {
           for {
             value <- m.get(wk.value.asInstanceOf[K])
             typed <- tv.cast(value)
-            rest <- fmt(m)
+            rest  <- fmt(m)
           } yield field[K0](typed) :: rest
         }
       }

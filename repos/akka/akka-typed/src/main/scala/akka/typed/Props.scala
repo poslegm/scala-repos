@@ -12,7 +12,7 @@ import akka.routing.RouterConfig
 @SerialVersionUID(1L)
 final case class Props[T](creator: () ⇒ Behavior[T], deploy: Deploy) {
   def withDispatcher(d: String) = copy(deploy = deploy.copy(dispatcher = d))
-  def withMailbox(m: String) = copy(deploy = deploy.copy(mailbox = m))
+  def withMailbox(m: String)    = copy(deploy = deploy.copy(mailbox = m))
   def withRouter(r: RouterConfig) =
     copy(deploy = deploy.copy(routerConfig = r))
   def withDeploy(d: Deploy) = copy(deploy = d)
@@ -36,8 +36,9 @@ object Props {
     * Props for a Behavior that just ignores all messages.
     */
   def empty[T]: Props[T] = _empty.asInstanceOf[Props[T]]
-  private val _empty: Props[Any] = Props(
-      ScalaDSL.Static[Any] { case _ ⇒ ScalaDSL.Unhandled })
+  private val _empty: Props[Any] = Props(ScalaDSL.Static[Any] {
+    case _ ⇒ ScalaDSL.Unhandled
+  })
 
   /**
     * INTERNAL API.
@@ -49,8 +50,10 @@ object Props {
     * INTERNAL API.
     */
   private[typed] def apply[T](p: akka.actor.Props): Props[T] = {
-    assert(p.clazz == classOf[ActorAdapter[_]],
-           "typed.Actor must have typed.Props")
+    assert(
+      p.clazz == classOf[ActorAdapter[_]],
+      "typed.Actor must have typed.Props"
+    )
     p.args match {
       case (creator: Function0[_]) :: Nil ⇒
         Props(creator.asInstanceOf[Function0[Behavior[T]]], p.deploy)

@@ -17,9 +17,11 @@ import scala.util.{Failure, Success}
 /** INTERNAL API */
 private[akka] object InputStreamPublisher {
 
-  def props(is: InputStream,
-            completionPromise: Promise[IOResult],
-            chunkSize: Int): Props = {
+  def props(
+      is: InputStream,
+      completionPromise: Promise[IOResult],
+      chunkSize: Int
+  ): Props = {
     require(chunkSize > 0, s"chunkSize must be > 0 (was $chunkSize)")
 
     Props(classOf[InputStreamPublisher], is, completionPromise, chunkSize)
@@ -31,20 +33,23 @@ private[akka] object InputStreamPublisher {
 
 /** INTERNAL API */
 private[akka] class InputStreamPublisher(
-    is: InputStream, completionPromise: Promise[IOResult], chunkSize: Int)
-    extends akka.stream.actor.ActorPublisher[ByteString] with ActorLogging {
+    is: InputStream,
+    completionPromise: Promise[IOResult],
+    chunkSize: Int
+) extends akka.stream.actor.ActorPublisher[ByteString]
+    with ActorLogging {
 
   // TODO possibly de-duplicate with FilePublisher?
 
   import InputStreamPublisher._
 
-  val arr = Array.ofDim[Byte](chunkSize)
+  val arr            = Array.ofDim[Byte](chunkSize)
   var readBytesTotal = 0L
 
   def receive = {
     case ActorPublisherMessage.Request(elements) ⇒ readAndSignal()
-    case Continue ⇒ readAndSignal()
-    case ActorPublisherMessage.Cancel ⇒ context.stop(self)
+    case Continue                                ⇒ readAndSignal()
+    case ActorPublisherMessage.Cancel            ⇒ context.stop(self)
   }
 
   def readAndSignal(): Unit =

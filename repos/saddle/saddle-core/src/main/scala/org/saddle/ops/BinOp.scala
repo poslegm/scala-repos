@@ -44,11 +44,14 @@ import org.saddle._
   * whose implementation in turn relies on BinOp[Multiply, Int, Int, Int].
   */
 @implicitNotFound(
-    msg = "No BinOp ${O} instance available to operate on values of type ${X} and ${Y}")
-trait BinOp[O <: OpType,
-            @spec(Boolean, Int, Long, Double) -X,
-            @spec(Boolean, Int, Long, Double) -Y,
-            @spec(Boolean, Int, Long, Double) +Z] {
+  msg = "No BinOp ${O} instance available to operate on values of type ${X} and ${Y}"
+)
+trait BinOp[
+    O <: OpType,
+    @spec(Boolean, Int, Long, Double) -X,
+    @spec(Boolean, Int, Long, Double) -Y,
+    @spec(Boolean, Int, Long, Double) +Z
+] {
   def apply(a: X, b: Y): Z
 }
 
@@ -62,8 +65,9 @@ trait BinOp[O <: OpType,
   */
 object BinOp {
   private final class BinOpImpl[
-      O <: OpType, @spec(Int, Long, Double) Q : ST, @spec(Int, Long, Double) R : ST, @spec(Boolean, Int, Long, Double) S : ST](
-      f: (Q, R) => S)
+      O <: OpType, @spec(Int, Long, Double) Q: ST,
+      @spec(Int, Long, Double) R: ST, @spec(Boolean, Int, Long, Double) S: ST
+  ](f: (Q, R) => S)
       extends BinOp[O, Q, R, S] {
     val sq = implicitly[ST[Q]]
     val sr = implicitly[ST[R]]
@@ -72,17 +76,17 @@ object BinOp {
       if (sq.isMissing(a) || sr.isMissing(b)) ss.missing else f(a, b)
   }
 
-  private final class BinOpImplDL[O <: OpType, @spec(Int, Long) R : ST](
-      f: (Double, R) => Double)
-      extends BinOp[O, Double, R, Double] {
-    val sc = implicitly[ST[R]]
+  private final class BinOpImplDL[O <: OpType, @spec(Int, Long) R: ST](
+      f: (Double, R) => Double
+  ) extends BinOp[O, Double, R, Double] {
+    val sc                     = implicitly[ST[R]]
     def apply(a: Double, b: R) = if (sc.isMissing(b)) Double.NaN else f(a, b)
   }
 
-  private final class BinOpImplLD[O <: OpType, @spec(Int, Long) Q : ST](
-      f: (Q, Double) => Double)
-      extends BinOp[O, Q, Double, Double] {
-    val sc = implicitly[ST[Q]]
+  private final class BinOpImplLD[O <: OpType, @spec(Int, Long) Q: ST](
+      f: (Q, Double) => Double
+  ) extends BinOp[O, Q, Double, Double] {
+    val sc                     = implicitly[ST[Q]]
     def apply(a: Q, b: Double) = if (sc.isMissing(a)) Double.NaN else f(a, b)
   }
 
@@ -100,46 +104,46 @@ object BinOp {
   type BDDD[T <: OpType] = BinOp[T, Double, Double, Double]
   implicit val powDD: BDDD[Power] =
     new BinOpImplDD[Power]((x, y) => fpow(x, y))
-  implicit val modDD: BDDD[Mod] = new BinOpImplDD[Mod](_ % _)
-  implicit val addDD: BDDD[Add] = new BinOpImplDD[Add](_ + _)
+  implicit val modDD: BDDD[Mod]      = new BinOpImplDD[Mod](_ % _)
+  implicit val addDD: BDDD[Add]      = new BinOpImplDD[Add](_ + _)
   implicit val mulDD: BDDD[Multiply] = new BinOpImplDD[Multiply](_ * _)
-  implicit val divDD: BDDD[Divide] = new BinOpImplDD[Divide](_ / _)
+  implicit val divDD: BDDD[Divide]   = new BinOpImplDD[Divide](_ / _)
   implicit val subDD: BDDD[Subtract] = new BinOpImplDD[Subtract](_ - _)
 
   type BDLD[T <: OpType] = BinOp[T, Double, Long, Double]
   implicit val powDL: BDLD[Power] =
     new BinOpImplDL[Power, Long]((x, y) => fpow(x, y))
-  implicit val modDL: BDLD[Mod] = new BinOpImplDL[Mod, Long](_ % _)
-  implicit val addDL: BDLD[Add] = new BinOpImplDL[Add, Long](_ + _)
+  implicit val modDL: BDLD[Mod]      = new BinOpImplDL[Mod, Long](_ % _)
+  implicit val addDL: BDLD[Add]      = new BinOpImplDL[Add, Long](_ + _)
   implicit val mulDL: BDLD[Multiply] = new BinOpImplDL[Multiply, Long](_ * _)
-  implicit val divDL: BDLD[Divide] = new BinOpImplDL[Divide, Long](_ / _)
+  implicit val divDL: BDLD[Divide]   = new BinOpImplDL[Divide, Long](_ / _)
   implicit val subDL: BDLD[Subtract] = new BinOpImplDL[Subtract, Long](_ - _)
 
   type BLDD[T <: OpType] = BinOp[T, Long, Double, Double]
   implicit val powLD: BLDD[Power] =
     new BinOpImplLD[Power, Long]((x, y) => fpow(x, y))
-  implicit val modLD: BLDD[Mod] = new BinOpImplLD[Mod, Long](_ % _)
-  implicit val addLD: BLDD[Add] = new BinOpImplLD[Add, Long](_ + _)
+  implicit val modLD: BLDD[Mod]      = new BinOpImplLD[Mod, Long](_ % _)
+  implicit val addLD: BLDD[Add]      = new BinOpImplLD[Add, Long](_ + _)
   implicit val mulLD: BLDD[Multiply] = new BinOpImplLD[Multiply, Long](_ * _)
-  implicit val divLD: BLDD[Divide] = new BinOpImplLD[Divide, Long](_ / _)
+  implicit val divLD: BLDD[Divide]   = new BinOpImplLD[Divide, Long](_ / _)
   implicit val subLD: BLDD[Subtract] = new BinOpImplLD[Subtract, Long](_ - _)
 
   type BIDD[T <: OpType] = BinOp[T, Int, Double, Double]
   implicit val powDI: BIDD[Power] =
     new BinOpImplLD[Power, Int]((x, y) => fpow(x, y))
-  implicit val modDI: BIDD[Mod] = new BinOpImplLD[Mod, Int](_ % _)
-  implicit val addDI: BIDD[Add] = new BinOpImplLD[Add, Int](_ + _)
+  implicit val modDI: BIDD[Mod]      = new BinOpImplLD[Mod, Int](_ % _)
+  implicit val addDI: BIDD[Add]      = new BinOpImplLD[Add, Int](_ + _)
   implicit val mulDI: BIDD[Multiply] = new BinOpImplLD[Multiply, Int](_ * _)
-  implicit val divDI: BIDD[Divide] = new BinOpImplLD[Divide, Int](_ / _)
+  implicit val divDI: BIDD[Divide]   = new BinOpImplLD[Divide, Int](_ / _)
   implicit val subDI: BIDD[Subtract] = new BinOpImplLD[Subtract, Int](_ - _)
 
   type BDID[T <: OpType] = BinOp[T, Double, Int, Double]
   implicit val powID: BDID[Power] =
     new BinOpImplDL[Power, Int]((x, y) => fpow(x, y))
-  implicit val modID: BDID[Mod] = new BinOpImplDL[Mod, Int](_ % _)
-  implicit val addID: BDID[Add] = new BinOpImplDL[Add, Int](_ + _)
+  implicit val modID: BDID[Mod]      = new BinOpImplDL[Mod, Int](_ % _)
+  implicit val addID: BDID[Add]      = new BinOpImplDL[Add, Int](_ + _)
   implicit val mulID: BDID[Multiply] = new BinOpImplDL[Multiply, Int](_ * _)
-  implicit val divID: BDID[Divide] = new BinOpImplDL[Divide, Int](_ / _)
+  implicit val divID: BDID[Divide]   = new BinOpImplDL[Divide, Int](_ / _)
   implicit val subID: BDID[Subtract] = new BinOpImplDL[Subtract, Int](_ - _)
 
   // (x, y) => Long ops

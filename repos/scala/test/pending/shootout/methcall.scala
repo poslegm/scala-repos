@@ -1,11 +1,11 @@
-/* The Computer Language Shootout 
+/* The Computer Language Shootout
    http://shootout.alioth.debian.org/
    contributed by Isaac Gouy (Scala novice)
  */
 
 object methcall {
   def main(args: Array[String]) = {
-    var n = toPositiveInt(args);
+    var n          = toPositiveInt(args);
     var v: Boolean = false
 
     val toggle = new Toggle(true);
@@ -20,7 +20,9 @@ object methcall {
   }
 
   private def toPositiveInt(s: Array[String]) = {
-    val i = try { Integer.parseInt(s(0)); } catch { case _ => 1 }
+    val i =
+      try { Integer.parseInt(s(0)); }
+      catch { case _ => 1 }
     if (i > 0) i; else 1;
   }
 }
@@ -39,7 +41,7 @@ private class Toggle(b: Boolean) {
 private class NToggle(b: Boolean, trigger: Int) extends Toggle(b) {
 
   val toggleTrigger = trigger;
-  var count = 0;
+  var count         = 0;
 
   override def activate = {
     count = count + 1;

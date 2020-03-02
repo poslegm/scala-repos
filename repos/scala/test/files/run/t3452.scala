@@ -3,13 +3,12 @@ trait IStringPair[T] {
   def b: String
   def build(a: String, b: String): T
   def cat(that: IStringPair[T]) = build(this.a + that.a, this.b + that.b)
-  override def toString = a + b
+  override def toString         = a + b
 }
 
-class StringPair(val a: String, val b: String)
-    extends IStringPair[StringPair] {
+class StringPair(val a: String, val b: String) extends IStringPair[StringPair] {
   def build(a: String, b: String) = new StringPair(a, b)
-  def len = a.length + b.length
+  def len                         = a.length + b.length
 }
 
 object Test {

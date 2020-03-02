@@ -19,7 +19,12 @@ package org.apache.spark.sql.streaming.test
 
 import org.scalatest.BeforeAndAfter
 
-import org.apache.spark.sql.{AnalysisException, ContinuousQuery, SQLContext, StreamTest}
+import org.apache.spark.sql.{
+  AnalysisException,
+  ContinuousQuery,
+  SQLContext,
+  StreamTest
+}
 import org.apache.spark.sql.execution.streaming.{Batch, Offset, Sink, Source}
 import org.apache.spark.sql.sources.{StreamSinkProvider, StreamSourceProvider}
 import org.apache.spark.sql.test.SharedSQLContext
@@ -27,16 +32,18 @@ import org.apache.spark.sql.types.{IntegerType, StructField, StructType}
 
 object LastOptions {
   var parameters: Map[String, String] = null
-  var schema: Option[StructType] = null
-  var partitionColumns: Seq[String] = Nil
+  var schema: Option[StructType]      = null
+  var partitionColumns: Seq[String]   = Nil
 }
 
 /** Dummy provider: returns no-op source/sink and records options in [[LastOptions]]. */
 class DefaultSource extends StreamSourceProvider with StreamSinkProvider {
-  override def createSource(sqlContext: SQLContext,
-                            schema: Option[StructType],
-                            providerName: String,
-                            parameters: Map[String, String]): Source = {
+  override def createSource(
+      sqlContext: SQLContext,
+      schema: Option[StructType],
+      providerName: String,
+      parameters: Map[String, String]
+  ): Source = {
     LastOptions.parameters = parameters
     LastOptions.schema = schema
     new Source {
@@ -46,20 +53,24 @@ class DefaultSource extends StreamSourceProvider with StreamSinkProvider {
     }
   }
 
-  override def createSink(sqlContext: SQLContext,
-                          parameters: Map[String, String],
-                          partitionColumns: Seq[String]): Sink = {
+  override def createSink(
+      sqlContext: SQLContext,
+      parameters: Map[String, String],
+      partitionColumns: Seq[String]
+  ): Sink = {
     LastOptions.parameters = parameters
     LastOptions.partitionColumns = partitionColumns
     new Sink {
-      override def addBatch(batch: Batch): Unit = {}
+      override def addBatch(batch: Batch): Unit  = {}
       override def currentOffset: Option[Offset] = None
     }
   }
 }
 
 class DataFrameReaderWriterSuite
-    extends StreamTest with SharedSQLContext with BeforeAndAfter {
+    extends StreamTest
+    with SharedSQLContext
+    with BeforeAndAfter {
   import testImplicits._
 
   after {
@@ -217,9 +228,11 @@ class DataFrameReaderWriterSuite
     /** Get the names of active streams */
     def activeStreamNames: Set[String] = {
       val streams = sqlContext.streams.active
-      val names = streams.map(_.name).toSet
-      assert(streams.length === names.size,
-             s"names of active queries are not unique: $names")
+      val names   = streams.map(_.name).toSet
+      assert(
+        streams.length === names.size,
+        s"names of active queries are not unique: $names"
+      )
       names
     }
 

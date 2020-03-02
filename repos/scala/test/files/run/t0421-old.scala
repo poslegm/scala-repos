@@ -3,7 +3,7 @@
 @deprecated("Suppress warnings", since = "2.11")
 object Test extends App {
 
-  def transpose[A : ClassManifest](xss: Array[Array[A]]) = {
+  def transpose[A: ClassManifest](xss: Array[Array[A]]) = {
     for (i <- Array.range(0, xss(0).length)) yield for (xs <- xss) yield xs(i)
   }
 
@@ -14,7 +14,7 @@ object Test extends App {
   }
 
   def matmul(xss: Array[Array[Double]], yss: Array[Array[Double]]) = {
-    val ysst = transpose(yss)
+    val ysst                        = transpose(yss)
     val ysst1: Array[Array[Double]] = yss.transpose
     assert(ysst.deep == ysst1.deep)
     for (xs <- xss) yield for (yst <- ysst) yield scalprod(xs, yst)
@@ -24,9 +24,11 @@ object Test extends App {
   println(transpose(a1).deep.mkString("[", ",", "]"))
 
   println(
-      matmul(Array(Array(2, 3)), Array(Array(5), Array(7))).deep
-        .mkString("[", ",", "]"))
+    matmul(Array(Array(2, 3)), Array(Array(5), Array(7))).deep
+      .mkString("[", ",", "]")
+  )
 
   println(
-      matmul(Array(Array(4)), Array(Array(6, 8))).deep.mkString("[", ",", "]"))
+    matmul(Array(Array(4)), Array(Array(6, 8))).deep.mkString("[", ",", "]")
+  )
 }

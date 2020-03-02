@@ -25,7 +25,7 @@ class ProductTests {
     }
 
     {
-      val e = EmptyCC()
+      val e  = EmptyCC()
       val el = e.toTuple
       equalInferredTypes((), el)
     }
@@ -34,14 +34,14 @@ class ProductTests {
     val bar = Bar(true, foo)
 
     {
-      val fooT = foo.toTuple
+      val fooT         = foo.toTuple
       val expectedFooT = (1, "b")
       equalInferredTypes(expectedFooT, fooT)
       assertTypedEquals(expectedFooT, fooT)
     }
 
     {
-      val barT = bar.toTuple
+      val barT         = bar.toTuple
       val expectedBarT = (true, foo)
       equalInferredTypes(expectedBarT, barT)
       assertTypedEquals(expectedBarT, barT)
@@ -50,14 +50,14 @@ class ProductTests {
     // With explicit type arguments, >: or =:= to the inferred ones respectively
 
     {
-      val fooT = foo.toTuple[(AnyVal, String)]
+      val fooT         = foo.toTuple[(AnyVal, String)]
       val expectedFooT = (1: AnyVal, "b")
       equalInferredTypes(expectedFooT, fooT)
       assertTypedEquals(expectedFooT, fooT)
     }
 
     {
-      val barT = bar.toTuple[(Boolean, Foo)]
+      val barT         = bar.toTuple[(Boolean, Foo)]
       val expectedBarT = (true, foo)
       equalInferredTypes(expectedBarT, barT)
       assertTypedEquals(expectedBarT, barT)
@@ -68,11 +68,11 @@ class ProductTests {
   def testToHList = {
     {
       // FIXME: should work (needs changes in GenericMacros?)
-      // Empty.toHList 
+      // Empty.toHList
     }
 
     {
-      val e = EmptyCC()
+      val e  = EmptyCC()
       val el = e.toHList
       equalInferredTypes(HNil: HNil, el)
     }
@@ -81,14 +81,14 @@ class ProductTests {
     val bar = Bar(true, foo)
 
     {
-      val fooL = foo.toHList
+      val fooL         = foo.toHList
       val expectedFooL = 1 :: "b" :: HNil
       equalInferredTypes(expectedFooL, fooL)
       assertTypedEquals(expectedFooL, fooL)
     }
 
     {
-      val barL = bar.toHList
+      val barL         = bar.toHList
       val expectedBarL = true :: foo :: HNil
       equalInferredTypes(expectedBarL, barL)
       assertTypedEquals(expectedBarL, barL)
@@ -97,14 +97,14 @@ class ProductTests {
     // With explicit type arguments, >: or =:= to the inferred ones respectively
 
     {
-      val fooL = foo.toHList[AnyVal :: String :: HNil]
+      val fooL         = foo.toHList[AnyVal :: String :: HNil]
       val expectedFooL = (1: AnyVal) :: "b" :: HNil
       equalInferredTypes(expectedFooL, fooL)
       assertTypedEquals(expectedFooL, fooL)
     }
 
     {
-      val barL = bar.toHList[Boolean :: Foo :: HNil]
+      val barL         = bar.toHList[Boolean :: Foo :: HNil]
       val expectedBarL = true :: foo :: HNil
       equalInferredTypes(expectedBarL, barL)
       assertTypedEquals(expectedBarL, barL)
@@ -115,11 +115,11 @@ class ProductTests {
   def testToRecord = {
     {
       // FIXME: should work (needs changes in GenericMacros?)
-      // Empty.toRecord 
+      // Empty.toRecord
     }
 
     {
-      val e = EmptyCC()
+      val e  = EmptyCC()
       val el = e.toRecord
       equalInferredTypes(HNil: HNil, el)
     }
@@ -128,14 +128,14 @@ class ProductTests {
     val bar = Bar(true, foo)
 
     {
-      val fooL = foo.toRecord
+      val fooL         = foo.toRecord
       val expectedFooL = Record(i = 1, s = "b")
       equalInferredTypes(expectedFooL, fooL)
       assertTypedEquals(expectedFooL, fooL)
     }
 
     {
-      val barL = bar.toRecord
+      val barL         = bar.toRecord
       val expectedBarL = Record(b = true, f = foo)
       equalInferredTypes(expectedBarL, barL)
       assertTypedEquals(expectedBarL, barL)
@@ -144,14 +144,14 @@ class ProductTests {
     // With explicit type arguments, >: or =:= to the inferred ones respectively
 
     {
-      val fooL = foo.toRecord[Record.`'i -> AnyVal, 's -> String`.T]
+      val fooL         = foo.toRecord[Record.`'i -> AnyVal, 's -> String`.T]
       val expectedFooL = Record(i = 1: AnyVal, s = "b")
       equalInferredTypes(expectedFooL, fooL)
       assertTypedEquals(expectedFooL, fooL)
     }
 
     {
-      val barL = bar.toRecord[Record.`'b -> Boolean, 'f -> Foo`.T]
+      val barL         = bar.toRecord[Record.`'b -> Boolean, 'f -> Foo`.T]
       val expectedBarL = Record(b = true, f = foo)
       equalInferredTypes(expectedBarL, barL)
       assertTypedEquals(expectedBarL, barL)
@@ -162,7 +162,9 @@ class ProductTests {
   def testToTraversable {
     def assertArrayEquals0[T](a: Array[T], b: Array[T]) =
       assertArrayEquals(
-          a.asInstanceOf[Array[Object]], b.asInstanceOf[Array[Object]])
+        a.asInstanceOf[Array[Object]],
+        b.asInstanceOf[Array[Object]]
+      )
 
     {
       // FIXME: should work (needs changes in GenericMacros?)
@@ -173,14 +175,14 @@ class ProductTests {
     val e = EmptyCC()
 
     {
-      val l = e.to[List]
+      val l        = e.to[List]
       val expected = List.empty[Nothing]
       equalInferredTypes(expected, l)
       assertTypedEquals(expected, l)
     }
 
     {
-      val a = e.to[Array]
+      val a        = e.to[Array]
       val expected = Array.empty[Nothing]
       equalInferredTypes(expected, a)
       assertArrayEquals0(expected, a)
@@ -189,14 +191,14 @@ class ProductTests {
     val foo = Foo(1, "b")
 
     {
-      val l = foo.to[List]
+      val l        = foo.to[List]
       val expected = List(1, "b")
       equalInferredTypes(expected, l)
       assertTypedEquals(expected, l)
     }
 
     {
-      val a = foo.to[Array]
+      val a        = foo.to[Array]
       val expected = Array(1, "b")
       equalInferredTypes(expected, a)
       assertArrayEquals0(expected, a)
@@ -205,14 +207,14 @@ class ProductTests {
     val baz = Baz("a", foo)
 
     {
-      val l = baz.to[List]
+      val l        = baz.to[List]
       val expected = List("a", foo)
       equalInferredTypes(expected, l)
       assertTypedEquals(expected, l)
     }
 
     {
-      val a = baz.to[Array]
+      val a        = baz.to[Array]
       val expected = Array("a", foo)
       equalInferredTypes(expected, a)
       assertArrayEquals0(expected, a)
@@ -223,7 +225,9 @@ class ProductTests {
   def testToSized {
     def assertArrayEquals0[T](a: Array[T], b: Array[T]) =
       assertArrayEquals(
-          a.asInstanceOf[Array[Object]], b.asInstanceOf[Array[Object]])
+        a.asInstanceOf[Array[Object]],
+        b.asInstanceOf[Array[Object]]
+      )
 
     {
       // FIXME: should work (needs changes in GenericMacros?)
@@ -234,14 +238,14 @@ class ProductTests {
     val e = EmptyCC()
 
     {
-      val l = e.toSized[List]
+      val l        = e.toSized[List]
       val expected = Sized[List]()
       equalInferredTypes(expected, l)
       assertTypedEquals(expected.unsized, l.unsized)
     }
 
     {
-      val a = e.toSized[Array]
+      val a        = e.toSized[Array]
       val expected = Sized[Array]()
       equalInferredTypes(expected, a)
       assertArrayEquals0(expected.unsized, a.unsized)
@@ -250,14 +254,14 @@ class ProductTests {
     val foo = Foo(1, "b")
 
     {
-      val l = foo.toSized[List]
+      val l        = foo.toSized[List]
       val expected = Sized[List](1, "b")
       equalInferredTypes(expected, l)
       assertTypedEquals(expected.unsized, l.unsized)
     }
 
     {
-      val a = foo.toSized[Array]
+      val a        = foo.toSized[Array]
       val expected = Sized[Array](1, "b")
       equalInferredTypes(expected, a)
       assertArrayEquals0(expected.unsized, a.unsized)
@@ -266,14 +270,14 @@ class ProductTests {
     val baz = Baz("a", foo)
 
     {
-      val l = baz.toSized[List]
+      val l        = baz.toSized[List]
       val expected = Sized[List]("a", foo)
       equalInferredTypes(expected, l)
       assertTypedEquals(expected.unsized, l.unsized)
     }
 
     {
-      val a = baz.toSized[Array]
+      val a        = baz.toSized[Array]
       val expected = Sized[Array]("a", foo)
       equalInferredTypes(expected, a)
       assertArrayEquals0(expected.unsized, a.unsized)
@@ -293,21 +297,21 @@ class ProductTests {
     val e = EmptyCC()
 
     {
-      val m = e.toMap
+      val m        = e.toMap
       val expected = Map.empty[Any, Nothing]
       equalInferredTypes(expected, m)
       assertTypedEquals(expected, m)
     }
 
     {
-      val m = e.toMap[String, Nothing]
+      val m        = e.toMap[String, Nothing]
       val expected = Map.empty[String, Nothing]
       equalInferredTypes(expected, m)
       assertTypedEquals(expected, m)
     }
 
     {
-      val m = e.toMap[String, Int]
+      val m        = e.toMap[String, Int]
       val expected = Map.empty[String, Int]
       equalInferredTypes(expected, m)
       assertTypedEquals(expected, m)
@@ -316,14 +320,14 @@ class ProductTests {
     val foo = Foo(1, "b")
 
     {
-      val m = foo.toMap
+      val m        = foo.toMap
       val expected = Map('i.narrow -> 1, 's.narrow -> "b")
       equalInferredTypes(expected, m)
       assertTypedEquals(expected, m)
     }
 
     {
-      val m = foo.toMap[Symbol, Any]
+      val m        = foo.toMap[Symbol, Any]
       val expected = Map[Symbol, Any]('i -> 1, 's -> "b")
       equalInferredTypes(expected, m)
       assertTypedEquals(expected, m)

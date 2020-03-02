@@ -16,12 +16,12 @@ trait ScaladocGlobalTrait extends Global { outer =>
 
   override lazy val syntaxAnalyzer =
     new ScaladocSyntaxAnalyzer[outer.type](outer) {
-      val runsAfter = List[String]()
+      val runsAfter      = List[String]()
       val runsRightAfter = None
     }
 
   override lazy val loaders = new {
-    val global: outer.type = outer
+    val global: outer.type            = outer
     val platform: outer.platform.type = outer.platform
   } with GlobalSymbolLoaders {
     // SI-5593 Scaladoc's current strategy is to visit all packages in search of user code that can be documented
@@ -34,7 +34,8 @@ trait ScaladocGlobalTrait extends Global { outer =>
 }
 
 class ScaladocGlobal(settings: doc.Settings, reporter: Reporter)
-    extends Global(settings, reporter) with ScaladocGlobalTrait {
+    extends Global(settings, reporter)
+    with ScaladocGlobalTrait {
   override protected def computeInternalPhases() {
     phasesSet += syntaxAnalyzer
     phasesSet += analyzer.namerFactory

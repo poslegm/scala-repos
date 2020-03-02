@@ -16,7 +16,11 @@ limitations under the License.
 
 package com.twitter.summingbird.memory
 
-import java.util.concurrent.{BlockingQueue, ConcurrentHashMap, LinkedBlockingQueue}
+import java.util.concurrent.{
+  BlockingQueue,
+  ConcurrentHashMap,
+  LinkedBlockingQueue
+}
 
 import com.twitter.algebird.Monoid
 import com.twitter.summingbird._
@@ -38,33 +42,34 @@ class ConcurrentMemoryLaws extends WordSpec {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def sample[T : Arbitrary]: T = Arbitrary.arbitrary[T].sample.get
+  def sample[T: Arbitrary]: T = Arbitrary.arbitrary[T].sample.get
 
   def empty[T](b: BlockingQueue[T]): List[T] = {
     def go(items: List[T]): List[T] = b.poll() match {
       case null => items.reverse
-      case x => go(x :: items)
+      case x    => go(x :: items)
     }
     go(Nil)
   }
 
   def unorderedEq[T](left: List[T], right: List[T]): Boolean = {
-    val leftMap = left.groupBy(identity).mapValues(_.size)
+    val leftMap  = left.groupBy(identity).mapValues(_.size)
     val rightMap = right.groupBy(identity).mapValues(_.size)
-    val eqv = leftMap == rightMap
+    val eqv      = leftMap == rightMap
     if (!eqv) { println(s"from Queue: $leftMap\nfrom scala: $rightMap") }
     eqv
   }
 
-  def testGraph[T : Manifest : Arbitrary,
-                K : Arbitrary,
-                V : Monoid : Arbitrary : Equiv] =
+  def testGraph[
+      T: Manifest: Arbitrary,
+      K: Arbitrary,
+      V: Monoid: Arbitrary: Equiv
+  ] =
     new TestGraphs[ConcurrentMemory, T, K, V](new ConcurrentMemory)(() =>
-          new ConcurrentHashMap[K, V]())(() => new LinkedBlockingQueue[T]())(
-        Producer.source[ConcurrentMemory, T](_))(s =>
-          { k =>
-        Option(s.get(k))
-    })({ (f, items) =>
+      new ConcurrentHashMap[K, V]()
+    )(() => new LinkedBlockingQueue[T]())(
+      Producer.source[ConcurrentMemory, T](_)
+    )(s => { k => Option(s.get(k)) })({ (f, items) =>
       unorderedEq(empty(f), items)
     })({ (p: ConcurrentMemory, plan: ConcurrentMemoryPlan) =>
       Await.result(plan.run, Duration.Inf)
@@ -74,60 +79,72 @@ class ConcurrentMemoryLaws extends WordSpec {
     * Tests the in-memory planner against a job with a single flatMap
     * operation.
     */
-  def singleStepLaw[T : Arbitrary : Manifest,
-                    K : Arbitrary,
-                    V : Monoid : Arbitrary : Equiv] =
-    testGraph[T, K, V].singleStepChecker(
-        sample[List[T]], sample[T => List[(K, V)]])
+  def singleStepLaw[
+      T: Arbitrary: Manifest,
+      K: Arbitrary,
+      V: Monoid: Arbitrary: Equiv
+  ] =
+    testGraph[T, K, V]
+      .singleStepChecker(sample[List[T]], sample[T => List[(K, V)]])
 
   /**
     * Tests the in-memory planner against a job with a single flatMap
     * operation.
     */
-  def diamondLaw[T : Manifest : Arbitrary,
-                 K : Arbitrary,
-                 V : Monoid : Arbitrary : Equiv] =
+  def diamondLaw[
+      T: Manifest: Arbitrary,
+      K: Arbitrary,
+      V: Monoid: Arbitrary: Equiv
+  ] =
     testGraph[T, K, V].diamondChecker(
-        sample[List[T]], sample[T => List[(K, V)]], sample[T => List[(K, V)]])
+      sample[List[T]],
+      sample[T => List[(K, V)]],
+      sample[T => List[(K, V)]]
+    )
 
   /**
     * Tests the in-memory planner by generating arbitrary flatMap and
     * service functions.
     */
-  def leftJoinLaw[T : Manifest : Arbitrary,
-                  K : Arbitrary,
-                  U : Arbitrary,
-                  JoinedU : Arbitrary,
-                  V : Monoid : Arbitrary : Equiv] = {
+  def leftJoinLaw[
+      T: Manifest: Arbitrary,
+      K: Arbitrary,
+      U: Arbitrary,
+      JoinedU: Arbitrary,
+      V: Monoid: Arbitrary: Equiv
+  ] = {
     val serviceFn = Arbitrary.arbitrary[K => Option[JoinedU]].sample.get
     testGraph[T, K, V].leftJoinChecker[U, JoinedU](
-        serviceFn,
-        identity,
-        sample[List[T]],
-        sample[T => List[(K, U)]],
-        sample[((K, (U, Option[JoinedU]))) => List[(K, V)]])
+      serviceFn,
+      identity,
+      sample[List[T]],
+      sample[T => List[(K, U)]],
+      sample[((K, (U, Option[JoinedU]))) => List[(K, V)]]
+    )
   }
 
-  def mapKeysChecker[T : Manifest : Arbitrary,
-                     K1 : Arbitrary,
-                     K2 : Arbitrary,
-                     V : Monoid : Arbitrary : Equiv](): Boolean = {
-    val platform = new ConcurrentMemory
+  def mapKeysChecker[
+      T: Manifest: Arbitrary,
+      K1: Arbitrary,
+      K2: Arbitrary,
+      V: Monoid: Arbitrary: Equiv
+  ](): Boolean = {
+    val platform     = new ConcurrentMemory
     val currentStore = new ConcurrentHashMap[K2, V]()
-    val original = sample[List[T]]
-    val fnA = sample[T => List[(K1, V)]]
-    val fnB = sample[K1 => List[K2]]
+    val original     = sample[List[T]]
+    val fnA          = sample[T => List[(K1, V)]]
+    val fnB          = sample[K1 => List[K2]]
 
     // Use the supplied platform to execute the source into the
     // supplied store.
     val plan = platform.plan {
       TestGraphs.singleStepMapKeysJob[ConcurrentMemory, T, K1, K2, V](
-          original, currentStore)(fnA, fnB)
+        original,
+        currentStore
+      )(fnA, fnB)
     }
     Await.result(plan.run, Duration.Inf)
-    val lookupFn = { k: K2 =>
-      Option(currentStore.get(k))
-    };
+    val lookupFn = { k: K2 => Option(currentStore.get(k)) };
     TestGraphs.singleStepMapKeysInScala(original)(fnA, fnB).forall {
       case (k, v) =>
         val lv = lookupFn(k).getOrElse(Monoid.zero)
@@ -135,16 +152,16 @@ class ConcurrentMemoryLaws extends WordSpec {
     }
   }
 
-  def lookupCollectChecker[
-      T : Arbitrary : Equiv : Manifest, U : Arbitrary : Equiv]: Boolean = {
-    val mem = new ConcurrentMemory
-    val input = sample[List[T]]
-    val srv = sample[T => Option[U]]
+  def lookupCollectChecker[T: Arbitrary: Equiv: Manifest, U: Arbitrary: Equiv]
+      : Boolean = {
+    val mem    = new ConcurrentMemory
+    val input  = sample[List[T]]
+    val srv    = sample[T => Option[U]]
     val buffer = new LinkedBlockingQueue[(T, U)]()
-    val prod = TestGraphs.lookupJob[ConcurrentMemory, T, U](input, srv, buffer)
+    val prod   = TestGraphs.lookupJob[ConcurrentMemory, T, U](input, srv, buffer)
     Await.result(mem.plan(prod).run, Duration.Inf)
     // check it out:
-    val buffData = empty(buffer)
+    val buffData    = empty(buffer)
     val correctData = TestGraphs.lookupJobInScala(input, srv)
     unorderedEq(buffData, correctData)
   }
@@ -153,21 +170,25 @@ class ConcurrentMemoryLaws extends WordSpec {
     * Tests the in-memory planner against a job with a single flatMap
     * operation and some test counters
     */
-  def counterChecker[T : Manifest : Arbitrary,
-                     K : Arbitrary,
-                     V : Monoid : Arbitrary : Equiv]: Boolean = {
+  def counterChecker[
+      T: Manifest: Arbitrary,
+      K: Arbitrary,
+      V: Monoid: Arbitrary: Equiv
+  ]: Boolean = {
     implicit val jobID: JobId = new JobId("concurrent.memory.job.testJobId")
-    val mem = new ConcurrentMemory
-    val input = sample[List[T]]
+    val mem                   = new ConcurrentMemory
+    val input                 = sample[List[T]]
 
-    val fn = sample[(T) => List[(K, V)]]
-    val sourceMaker = ConcurrentMemory.toSource[T](_)
-    val original = sample[List[T]]
-    val source = sourceMaker(original)
+    val fn                                  = sample[(T) => List[(K, V)]]
+    val sourceMaker                         = ConcurrentMemory.toSource[T](_)
+    val original                            = sample[List[T]]
+    val source                              = sourceMaker(original)
     val store: ConcurrentMemory#Store[K, V] = new ConcurrentHashMap[K, V]()
 
-    val prod = TestGraphs.jobWithStats[ConcurrentMemory, T, K, V](
-        jobID, source, store)(t => fn(t))
+    val prod =
+      TestGraphs.jobWithStats[ConcurrentMemory, T, K, V](jobID, source, store)(
+        t => fn(t)
+      )
     Await.result(mem.plan(prod).run, Duration.Inf)
     //mem.run(mem.plan(prod))
 
@@ -178,7 +199,7 @@ class ConcurrentMemoryLaws extends WordSpec {
       .counter(Group("counter.test"), Name("fltr_counter"))
       .get
 
-      (origCounter == original.size) &&
+    (origCounter == original.size) &&
     (fmCounter == (original.flatMap(fn).size * 2)) &&
     (fltrCounter == (original.flatMap(fn).size))
   }
@@ -228,21 +249,19 @@ class ConcurrentMemoryLaws extends WordSpec {
 
     "self also shouldn't duplicate work" in {
       val platform = new ConcurrentMemory
-      val source = ConcurrentMemory.toSource(List(1, 2))
+      val source   = ConcurrentMemory.toSource(List(1, 2))
       val store: ConcurrentMemory#Store[Int, Int] =
         new ConcurrentHashMap[Int, Int]()
       val sink: ConcurrentMemory#Sink[Int] = new LinkedBlockingQueue[Int]()
 
-      val summed = source.map { v =>
-        (v, v)
-      }.sumByKey(store).map {
-        case (_, (None, currentEvent)) => currentEvent
+      val summed = source.map { v => (v, v) }.sumByKey(store).map {
+        case (_, (None, currentEvent))      => currentEvent
         case (_, (Some(old), currentEvent)) => old + currentEvent
       }
 
       val write1 = summed.write(sink)
       val write2 = summed.write(sink)
-      val job = write1.also(write2)
+      val job    = write1.also(write2)
 
       Await.result(platform.plan(job).run, Duration.Inf)
       assert(1 == store.get(1))

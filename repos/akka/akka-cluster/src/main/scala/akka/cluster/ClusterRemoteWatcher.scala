@@ -21,15 +21,19 @@ private[cluster] object ClusterRemoteWatcher {
   /**
     * Factory method for `ClusterRemoteWatcher` [[akka.actor.Props]].
     */
-  def props(failureDetector: FailureDetectorRegistry[Address],
-            heartbeatInterval: FiniteDuration,
-            unreachableReaperInterval: FiniteDuration,
-            heartbeatExpectedResponseAfter: FiniteDuration): Props =
-    Props(classOf[ClusterRemoteWatcher],
-          failureDetector,
-          heartbeatInterval,
-          unreachableReaperInterval,
-          heartbeatExpectedResponseAfter).withDeploy(Deploy.local)
+  def props(
+      failureDetector: FailureDetectorRegistry[Address],
+      heartbeatInterval: FiniteDuration,
+      unreachableReaperInterval: FiniteDuration,
+      heartbeatExpectedResponseAfter: FiniteDuration
+  ): Props =
+    Props(
+      classOf[ClusterRemoteWatcher],
+      failureDetector,
+      heartbeatInterval,
+      unreachableReaperInterval,
+      heartbeatExpectedResponseAfter
+    ).withDeploy(Deploy.local)
 }
 
 /**
@@ -47,11 +51,13 @@ private[cluster] class ClusterRemoteWatcher(
     failureDetector: FailureDetectorRegistry[Address],
     heartbeatInterval: FiniteDuration,
     unreachableReaperInterval: FiniteDuration,
-    heartbeatExpectedResponseAfter: FiniteDuration)
-    extends RemoteWatcher(failureDetector,
-                          heartbeatInterval,
-                          unreachableReaperInterval,
-                          heartbeatExpectedResponseAfter) {
+    heartbeatExpectedResponseAfter: FiniteDuration
+) extends RemoteWatcher(
+      failureDetector,
+      heartbeatInterval,
+      unreachableReaperInterval,
+      heartbeatExpectedResponseAfter
+    ) {
 
   val cluster = Cluster(context.system)
   import cluster.selfAddress
@@ -77,10 +83,10 @@ private[cluster] class ClusterRemoteWatcher(
       }
       clusterNodes foreach takeOverResponsibility
       unreachable = unreachable diff clusterNodes
-    case MemberUp(m) ⇒ memberUp(m)
-    case MemberWeaklyUp(m) ⇒ memberUp(m)
+    case MemberUp(m)                      ⇒ memberUp(m)
+    case MemberWeaklyUp(m)                ⇒ memberUp(m)
     case MemberRemoved(m, previousStatus) ⇒ memberRemoved(m, previousStatus)
-    case _: MemberEvent ⇒ // not interesting
+    case _: MemberEvent                   ⇒ // not interesting
   }
 
   def memberUp(m: Member): Unit =

@@ -25,7 +25,7 @@ class SQLConfEntrySuite extends SparkFunSuite {
   val conf = new SQLConf
 
   test("intConf") {
-    val key = "spark.sql.SQLConfEntrySuite.int"
+    val key       = "spark.sql.SQLConfEntrySuite.int"
     val confEntry = SQLConfEntry.intConf(key)
     assert(conf.getConf(confEntry, 5) === 5)
 
@@ -44,7 +44,7 @@ class SQLConfEntrySuite extends SparkFunSuite {
   }
 
   test("longConf") {
-    val key = "spark.sql.SQLConfEntrySuite.long"
+    val key       = "spark.sql.SQLConfEntrySuite.long"
     val confEntry = SQLConfEntry.longConf(key)
     assert(conf.getConf(confEntry, 5L) === 5L)
 
@@ -63,7 +63,7 @@ class SQLConfEntrySuite extends SparkFunSuite {
   }
 
   test("booleanConf") {
-    val key = "spark.sql.SQLConfEntrySuite.boolean"
+    val key       = "spark.sql.SQLConfEntrySuite.boolean"
     val confEntry = SQLConfEntry.booleanConf(key)
     assert(conf.getConf(confEntry, false) === false)
 
@@ -82,7 +82,7 @@ class SQLConfEntrySuite extends SparkFunSuite {
   }
 
   test("doubleConf") {
-    val key = "spark.sql.SQLConfEntrySuite.double"
+    val key       = "spark.sql.SQLConfEntrySuite.double"
     val confEntry = SQLConfEntry.doubleConf(key)
     assert(conf.getConf(confEntry, 5.0) === 5.0)
 
@@ -101,7 +101,7 @@ class SQLConfEntrySuite extends SparkFunSuite {
   }
 
   test("stringConf") {
-    val key = "spark.sql.SQLConfEntrySuite.string"
+    val key       = "spark.sql.SQLConfEntrySuite.string"
     val confEntry = SQLConfEntry.stringConf(key)
     assert(conf.getConf(confEntry, "abc") === "abc")
 
@@ -117,7 +117,11 @@ class SQLConfEntrySuite extends SparkFunSuite {
   test("enumConf") {
     val key = "spark.sql.SQLConfEntrySuite.enum"
     val confEntry = SQLConfEntry.enumConf(
-        key, v => v, Set("a", "b", "c"), defaultValue = Some("a"))
+      key,
+      v => v,
+      Set("a", "b", "c"),
+      defaultValue = Some("a")
+    )
     assert(conf.getConf(confEntry) === "a")
 
     conf.setConf(confEntry, "b")
@@ -132,23 +136,29 @@ class SQLConfEntrySuite extends SparkFunSuite {
       conf.setConfString(key, "d")
     }
     assert(
-        e.getMessage === s"The value of $key should be one of a, b, c, but was d")
+      e.getMessage === s"The value of $key should be one of a, b, c, but was d"
+    )
   }
 
   test("stringSeqConf") {
     val key = "spark.sql.SQLConfEntrySuite.stringSeq"
     val confEntry = SQLConfEntry.stringSeqConf(
-        "spark.sql.SQLConfEntrySuite.stringSeq", defaultValue = Some(Nil))
+      "spark.sql.SQLConfEntrySuite.stringSeq",
+      defaultValue = Some(Nil)
+    )
     assert(conf.getConf(confEntry, Seq("a", "b", "c")) === Seq("a", "b", "c"))
 
     conf.setConf(confEntry, Seq("a", "b", "c", "d"))
-    assert(conf.getConf(confEntry, Seq("a", "b", "c")) === Seq(
-            "a", "b", "c", "d"))
+    assert(
+      conf.getConf(confEntry, Seq("a", "b", "c")) === Seq("a", "b", "c", "d")
+    )
 
     conf.setConfString(key, "a,b,c,d,e")
     assert(conf.getConfString(key, "a,b,c") === "a,b,c,d,e")
     assert(conf.getConfString(key) === "a,b,c,d,e")
-    assert(conf.getConf(confEntry, Seq("a", "b", "c")) === Seq(
-            "a", "b", "c", "d", "e"))
+    assert(
+      conf
+        .getConf(confEntry, Seq("a", "b", "c")) === Seq("a", "b", "c", "d", "e")
+    )
   }
 }

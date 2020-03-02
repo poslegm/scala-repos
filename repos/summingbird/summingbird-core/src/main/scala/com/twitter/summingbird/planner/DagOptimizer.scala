@@ -29,14 +29,15 @@ trait DagOptimizer[P <: Platform[P]] {
     * in converting from an AlsoProducer to a Literal[T, Prod] below, it is
     * not actually dangerous because we always use it in a safe position.
     */
-  protected def mkAlso[T, U]: (Prod[T], Prod[U]) => Prod[U] = {
-    (left, right) =>
-      AlsoProducer(left.asInstanceOf[TailProducer[P, T]], right)
+  protected def mkAlso[T, U]: (Prod[T], Prod[U]) => Prod[U] = { (left, right) =>
+    AlsoProducer(left.asInstanceOf[TailProducer[P, T]], right)
   }
   protected def mkAlsoTail[T, U]: (Prod[T], Prod[U]) => Prod[U] = {
     (left, right) =>
-      new AlsoTailProducer(left.asInstanceOf[TailProducer[P, T]],
-                           right.asInstanceOf[TailProducer[P, U]])
+      new AlsoTailProducer(
+        left.asInstanceOf[TailProducer[P, T]],
+        right.asInstanceOf[TailProducer[P, U]]
+      )
   }
   protected def mkMerge[T]: (Prod[T], Prod[T]) => Prod[T] = { (left, right) =>
     MergedProducer(left, right)
@@ -51,35 +52,34 @@ trait DagOptimizer[P <: Platform[P]] {
     IdentityKeyedProducer(prod)
   }
   protected def mkOptMap[T, U](fn: T => Option[U]): (Prod[T] => Prod[U]) = {
-    prod =>
-      OptionMappedProducer(prod, fn)
+    prod => OptionMappedProducer(prod, fn)
   }
   protected def mkFlatMapped[T, U](
-      fn: T => TraversableOnce[U]): (Prod[T] => Prod[U]) = { prod =>
-    FlatMappedProducer(prod, fn)
-  }
+      fn: T => TraversableOnce[U]
+  ): (Prod[T] => Prod[U]) = { prod => FlatMappedProducer(prod, fn) }
   protected def mkKeyFM[T, U, V](
-      fn: T => TraversableOnce[U]): (Prod[(T, V)] => Prod[(U, V)]) = { prod =>
+      fn: T => TraversableOnce[U]
+  ): (Prod[(T, V)] => Prod[(U, V)]) = { prod =>
     KeyFlatMappedProducer(prod, fn)
   }
   protected def mkValueFM[K, U, V](
-      fn: U => TraversableOnce[V]): (Prod[(K, U)] => Prod[(K, V)]) = { prod =>
+      fn: U => TraversableOnce[V]
+  ): (Prod[(K, U)] => Prod[(K, V)]) = { prod =>
     ValueFlatMappedProducer(prod, fn)
   }
   protected def mkWritten[T, U >: T](sink: P#Sink[U]): (Prod[T] => Prod[T]) = {
-    prod =>
-      WrittenProducer[P, T, U](prod, sink)
+    prod => WrittenProducer[P, T, U](prod, sink)
   }
   protected def mkSrv[K, T, V](
-      serv: P#Service[K, V]): (Prod[(K, T)] => Prod[(K, (T, Option[V]))]) = {
-    prod =>
-      LeftJoinedProducer(prod, serv)
+      serv: P#Service[K, V]
+  ): (Prod[(K, T)] => Prod[(K, (T, Option[V]))]) = { prod =>
+    LeftJoinedProducer(prod, serv)
   }
   protected def mkSum[K, V](
       store: P#Store[K, V],
-      sg: Semigroup[V]): (Prod[(K, V)] => Prod[(K, (Option[V], V))]) = {
-    prod =>
-      Summer(prod, store, sg)
+      sg: Semigroup[V]
+  ): (Prod[(K, V)] => Prod[(K, (Option[V], V))]) = { prod =>
+    Summer(prod, store, sg)
   }
 
   type LitProd[T] = Literal[T, Prod]
@@ -93,10 +93,11 @@ trait DagOptimizer[P <: Platform[P]] {
 
   protected def toLiteral[T](
       hm: HMap[Prod, LitProd],
-      prod: Producer[P, T]): (HMap[Prod, LitProd], LitProd[T]) = {
+      prod: Producer[P, T]
+  ): (HMap[Prod, LitProd], LitProd[T]) = {
     // These get typed over and over below
     type N[t] = Prod[t]
-    type M = HMap[Prod, LitProd]
+    type M    = HMap[Prod, LitProd]
     type L[t] = Literal[t, N]
 
     /**
@@ -110,65 +111,68 @@ trait DagOptimizer[P <: Platform[P]] {
     def also[R](a: AlsoProducer[P, R, T]): (M, L[T]) = {
       val (h1, l1) = toLiteral(hm, a.ensure)
       val (h2, l2) = toLiteral(h1, a.result)
-      val lit = BinaryLit[R, T, T, N](l1, l2, mkAlso)
+      val lit      = BinaryLit[R, T, T, N](l1, l2, mkAlso)
       (h2 + (a -> lit), lit)
     }
     def alsoTail[R](a: AlsoTailProducer[P, R, T]): (M, L[T]) = {
       val (h1, l1) = toLiteral(hm, a.ensure)
       val (h2, l2) = toLiteral(h1, a.result)
-      val lit = BinaryLit[R, T, T, N](l1, l2, mkAlsoTail)
+      val lit      = BinaryLit[R, T, T, N](l1, l2, mkAlsoTail)
       (h2 + (a -> lit), lit)
     }
     def merge(m: MergedProducer[P, T]): (M, L[T]) = {
       val (h1, l1) = toLiteral(hm, m.left)
       val (h2, l2) = toLiteral(h1, m.right)
-      val lit = BinaryLit[T, T, T, N](l1, l2, mkMerge)
+      val lit      = BinaryLit[T, T, T, N](l1, l2, mkMerge)
       (h2 + (m -> lit), lit)
     }
     def named(n: NamedProducer[P, T]): (M, L[T]) = {
       val (h1, l1) = toLiteral(hm, n.producer)
-      val lit = UnaryLit[T, T, N](l1, mkNamed(n.id))
+      val lit      = UnaryLit[T, T, N](l1, mkNamed(n.id))
       (h1 + (n -> lit), lit)
     }
     def namedTP(n: TPNamedProducer[P, T]): (M, L[T]) = {
       val (h1, l1) = toLiteral(hm, n.producer)
-      val lit = UnaryLit[T, T, N](l1, mkTPNamed(n.id))
+      val lit      = UnaryLit[T, T, N](l1, mkTPNamed(n.id))
       (h1 + (n -> lit), lit)
     }
     def ikp[K, V](ik: IdentityKeyedProducer[P, K, V]): (M, L[(K, V)]) = {
       val (h1, l1) = toLiteral(hm, ik.producer)
-      val lit = UnaryLit[(K, V), (K, V), N](l1, mkIdentKey)
+      val lit      = UnaryLit[(K, V), (K, V), N](l1, mkIdentKey)
       (h1 + (ik -> lit), lit)
     }
     def optm[T1](optm: OptionMappedProducer[P, T1, T]): (M, L[T]) = {
       val (h1, l1) = toLiteral(hm, optm.producer)
-      val lit = UnaryLit[T1, T, N](l1, mkOptMap(optm.fn))
+      val lit      = UnaryLit[T1, T, N](l1, mkOptMap(optm.fn))
       (h1 + (optm -> lit), lit)
     }
     def flm[T1](fm: FlatMappedProducer[P, T1, T]): (M, L[T]) = {
       val (h1, l1) = toLiteral(hm, fm.producer)
-      val lit = UnaryLit[T1, T, N](l1, mkFlatMapped(fm.fn))
+      val lit      = UnaryLit[T1, T, N](l1, mkFlatMapped(fm.fn))
       (h1 + (fm -> lit), lit)
     }
     def kfm[K, V, K2](
-        kf: KeyFlatMappedProducer[P, K, V, K2]): (M, L[(K2, V)]) = {
+        kf: KeyFlatMappedProducer[P, K, V, K2]
+    ): (M, L[(K2, V)]) = {
       val (h1, l1) = toLiteral(hm, kf.producer)
-      val lit = UnaryLit[(K, V), (K2, V), N](l1, mkKeyFM(kf.fn))
+      val lit      = UnaryLit[(K, V), (K2, V), N](l1, mkKeyFM(kf.fn))
       (h1 + (kf -> lit), lit)
     }
     def vfm[K, V, V2](
-        kf: ValueFlatMappedProducer[P, K, V, V2]): (M, L[(K, V2)]) = {
+        kf: ValueFlatMappedProducer[P, K, V, V2]
+    ): (M, L[(K, V2)]) = {
       val (h1, l1) = toLiteral(hm, kf.producer)
-      val lit = UnaryLit[(K, V), (K, V2), N](l1, mkValueFM(kf.fn))
+      val lit      = UnaryLit[(K, V), (K, V2), N](l1, mkValueFM(kf.fn))
       (h1 + (kf -> lit), lit)
     }
     def writer[T1 <: T, U >: T1](w: WrittenProducer[P, T1, U]): (M, L[T]) = {
       val (h1, l1) = toLiteral(hm, w.producer)
-      val lit = UnaryLit[T1, T, N](l1, mkWritten[T1, U](w.sink))
+      val lit      = UnaryLit[T1, T, N](l1, mkWritten[T1, U](w.sink))
       (h1 + (w -> lit), lit)
     }
     def joined[K, V, U](
-        join: LeftJoinedProducer[P, K, V, U]): (M, L[(K, (V, Option[U]))]) = {
+        join: LeftJoinedProducer[P, K, V, U]
+    ): (M, L[(K, (V, Option[U]))]) = {
       val (h1, l1) = toLiteral(hm, join.left)
       val lit =
         UnaryLit[(K, V), (K, (V, Option[U])), N](l1, mkSrv(join.joined))
@@ -177,7 +181,9 @@ trait DagOptimizer[P <: Platform[P]] {
     def summer[K, V](s: Summer[P, K, V]): (M, L[(K, (Option[V], V))]) = {
       val (h1, l1) = toLiteral(hm, s.producer)
       val lit = UnaryLit[(K, V), (K, (Option[V], V)), N](
-          l1, mkSum(s.store, s.semigroup))
+        l1,
+        mkSum(s.store, s.semigroup)
+      )
       (h1 + (s -> lit), lit)
     }
 
@@ -194,21 +200,21 @@ trait DagOptimizer[P <: Platform[P]] {
           case s @ Source(_) => source(s)
           case a: AlsoTailProducer[_, _, _] =>
             alsoTail(a.asInstanceOf[AlsoTailProducer[P, _, T]])
-          case a @ AlsoProducer(_, _) => also(a)
+          case a @ AlsoProducer(_, _)   => also(a)
           case m @ MergedProducer(l, r) => merge(m)
           case n: TPNamedProducer[_, _] =>
             namedTP(n.asInstanceOf[TPNamedProducer[P, T]])
-          case n @ NamedProducer(producer, name) => named(n)
-          case w @ WrittenProducer(producer, sink) => writer(w)
-          case fm @ FlatMappedProducer(producer, fn) => flm(fm)
+          case n @ NamedProducer(producer, name)       => named(n)
+          case w @ WrittenProducer(producer, sink)     => writer(w)
+          case fm @ FlatMappedProducer(producer, fn)   => flm(fm)
           case om @ OptionMappedProducer(producer, fn) => optm(om)
           // These casts can't fail due to the pattern match,
           // but I can't convince scala of this without the cast.
-          case ik @ IdentityKeyedProducer(producer) => cast(ikp(ik))
-          case kf @ KeyFlatMappedProducer(producer, fn) => cast(kfm(kf))
+          case ik @ IdentityKeyedProducer(producer)       => cast(ikp(ik))
+          case kf @ KeyFlatMappedProducer(producer, fn)   => cast(kfm(kf))
           case vf @ ValueFlatMappedProducer(producer, fn) => cast(vfm(vf))
-          case j @ LeftJoinedProducer(producer, srv) => cast(joined(j))
-          case s @ Summer(producer, store, sg) => cast(summer(s))
+          case j @ LeftJoinedProducer(producer, srv)      => cast(joined(j))
+          case s @ Summer(producer, store, sg)            => cast(summer(s))
         }
     }
   }
@@ -221,9 +227,7 @@ trait DagOptimizer[P <: Platform[P]] {
     */
   def expressionDag[T](p: Producer[P, T]): (ExpressionDag[Prod], Id[T]) = {
     val prodToLit = new GenFunction[Prod, LitProd] {
-      def apply[T] = { p =>
-        toLiteral(p)
-      }
+      def apply[T] = { p => toLiteral(p) }
     }
     ExpressionDag[T, Prod](p, prodToLit)
   }
@@ -345,10 +349,12 @@ trait DagOptimizer[P <: Platform[P]] {
   object DiamondToFlatMap extends PartialRule[Prod] {
     def applyWhere[T](on: ExpressionDag[Prod]) = {
       //Can't fuse flatMaps when on fanout
-      case MergedProducer(left @ FlatMappedProducer(inleft, fnleft),
-                          right @ FlatMappedProducer(inright, fnright))
+      case MergedProducer(
+          left @ FlatMappedProducer(inleft, fnleft),
+          right @ FlatMappedProducer(inright, fnright)
+          )
           if (inleft == inright) && (on.fanOut(left) == 1) &&
-          (on.fanOut(right) == 1) =>
+            (on.fanOut(right) == 1) =>
         FlatMappedProducer(inleft, MergeResults(fnleft, fnright))
     }
   }

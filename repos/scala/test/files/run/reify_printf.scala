@@ -13,7 +13,7 @@ object Test extends App {
   //Console.setOut(new PrintStream(output))
   val toolbox = cm.mkToolBox()
 
-  val tree = tree_printf(reify("hello %s").tree, reify("world").tree)
+  val tree      = tree_printf(reify("hello %s").tree, reify("world").tree)
   val evaluated = toolbox.eval(tree)
   //assert(output.toString() == "hello world", output.toString() +" ==     hello world")
 
@@ -22,52 +22,53 @@ object Test extends App {
   macro def printf(format: String, params: Any*) : String = tree_printf(format: Tree, (params: Seq[Tree]): _*)
    */
 
-  var i = 0
+  var i                    = 0
   def gensym(name: String) = { i += 1; TermName(name + i) }
 
   def createTempValDef(value: Tree, tpe: Type): (Option[Tree], Tree) = {
     val local = gensym("temp")
     (
-        Some(
-            ValDef(
-                NoMods,
-                local,
-                TypeTree(tpe),
-                value
-            )
-        ),
-        Ident(local)
+      Some(
+        ValDef(
+          NoMods,
+          local,
+          TypeTree(tpe),
+          value
+        )
+      ),
+      Ident(local)
     )
   }
 
   def tree_printf(format: Tree, params: Tree*) = {
     val Literal(Constant(s_format: String)) = format
-    val paramsStack = scala.collection.mutable.Stack(params: _*)
+    val paramsStack                         = scala.collection.mutable.Stack(params: _*)
     val parsed =
       s_format.split("(?<=%[\\w%])|(?=%[\\w%])") map {
         case "%d" => createTempValDef(paramsStack.pop, typeOf[Int])
         case "%s" => createTempValDef(paramsStack.pop, typeOf[String])
         case "%%" => {
-            (None: Option[Tree], Literal(Constant("%")))
-          }
+          (None: Option[Tree], Literal(Constant("%")))
+        }
         case part => {
-            (None: Option[Tree], Literal(Constant(part)))
-          }
+          (None: Option[Tree], Literal(Constant(part)))
+        }
       }
 
-    val evals = for ((Some(eval), _) <- parsed if eval != None) yield
-      (eval: Tree)
-    val prints = for ((_, ref) <- parsed) yield
-      Apply(
+    val evals =
+      for ((Some(eval), _) <- parsed if eval != None) yield (eval: Tree)
+    val prints =
+      for ((_, ref) <- parsed)
+        yield Apply(
           Select(
-              Select(
-                  Ident(TermName("scala")),
-                  TermName("Predef")
-              ),
-              TermName("print")
+            Select(
+              Ident(TermName("scala")),
+              TermName("Predef")
+            ),
+            TermName("print")
           ),
           List(ref)
-      ): Tree
+        ): Tree
     Block((evals ++ prints).toList, Literal(Constant(())))
   }
 }

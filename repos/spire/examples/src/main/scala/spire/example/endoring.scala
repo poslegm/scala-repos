@@ -14,8 +14,8 @@ object EndoRingExample extends App {
   object AbGroup {
     implicit object IntAbGroup extends AbGroup[Int] {
       def op(a: Int, b: Int): Int = a + b
-      def inverse(a: Int): Int = -a
-      def id: Int = 0
+      def inverse(a: Int): Int    = -a
+      def id: Int                 = 0
     }
 
     /**
@@ -30,7 +30,7 @@ object EndoRingExample extends App {
         ((a1 -- b2) union (b1 -- a2), (a2 -- b1) union (b2 -- a1))
       }
       def inverse(a: (Set[A], Set[A])): (Set[A], Set[A]) = (a._2, a._1)
-      def id: (Set[A], Set[A]) = (Set.empty, Set.empty)
+      def id: (Set[A], Set[A])                           = (Set.empty, Set.empty)
     }
   }
 
@@ -45,9 +45,9 @@ object EndoRingExample extends App {
     * for an abelian group `ab`. This defines addition as group addition after
     * applying the endomorphism and multiplication as composition.
     */
-  class EndoRing[A : AbGroup] extends Ring[Endo[A]] {
-    def plus(f: Endo[A], g: Endo[A]): Endo[A] = a => f(a) |+| g(a)
-    def negate(f: Endo[A]): Endo[A] = a => f(a).inverse
+  class EndoRing[A: AbGroup] extends Ring[Endo[A]] {
+    def plus(f: Endo[A], g: Endo[A]): Endo[A]  = a => f(a) |+| g(a)
+    def negate(f: Endo[A]): Endo[A]            = a => f(a).inverse
     def times(f: Endo[A], g: Endo[A]): Endo[A] = a => f(g(a))
 
     // Identity endomorphism.
@@ -58,7 +58,7 @@ object EndoRingExample extends App {
   }
 
   object EndoRing {
-    def apply[A : AbGroup] = new EndoRing[A]
+    def apply[A: AbGroup] = new EndoRing[A]
   }
 
   implicit val intEndoRing = EndoRing[Int]
@@ -68,8 +68,8 @@ object EndoRingExample extends App {
   // "endomorphisms" should map to valid abelian groups. With the Ints, we
   // can multiply by a constant.
 
-  val x2: Int => Int = _ * 2
-  val x3: Int => Int = _ * 3
+  val x2: Int => Int  = _ * 2
+  val x3: Int => Int  = _ * 3
   val inv: Int => Int = -_
 
   val a = (x2 + inv) * x3
@@ -80,8 +80,8 @@ object EndoRingExample extends App {
   // What's more, we can recreate an Int ring by applying the Endo[Int]
   // with the id (1).
 
-  val one = Ring[Int => Int].one
-  val two = one + one
+  val one  = Ring[Int => Int].one
+  val two  = one + one
   val five = two * two + one
   (0 until 10).foreach { i =>
     assert(five(i) == 5 * i)
@@ -93,10 +93,10 @@ object EndoRingExample extends App {
   type PairedSet[A] = (Set[A], Set[A])
 
   // We can define some simple endomorphisms.
-  val id = pairedSetEndoRing.one
+  val id                           = pairedSetEndoRing.one
   val double: Endo[PairedSet[Int]] = _ map (_ * 2)
   val triple: Endo[PairedSet[Int]] = _ map (_ * 3)
-  val inc: Endo[PairedSet[Int]] = _ map (_ + 1)
+  val inc: Endo[PairedSet[Int]]    = _ map (_ + 1)
 
   // Let's generate the powers of 2 from 0 to n. The endomorphism
   // `double + id` means that we double the elements of a set, then union it
@@ -108,7 +108,7 @@ object EndoRingExample extends App {
   assert(range == Set(1, 2, 3, 4, 5, 11, 12, 13, 14, 15))
 
   // It's distributive.
-  val q = Set(1, 2, 3)
+  val q  = Set(1, 2, 3)
   val e1 = (double + triple) * triple
   val e2 = (double * triple) + (triple * triple)
   assert(e1(q) == e2(q))

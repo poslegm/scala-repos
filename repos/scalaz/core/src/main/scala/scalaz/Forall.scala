@@ -15,7 +15,7 @@ object Forall extends Foralls
 trait Foralls {
 
   /** Universal quantification by doubly negating an existential. */
-  type Not[A] = A => Nothing
+  type Not[A]    = A => Nothing
   type DNE[P[_]] = Not[P[A]] forSome { type A }
   type CPS[P[_]] = Not[DNE[P]]
 

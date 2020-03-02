@@ -28,8 +28,10 @@ object RationalUtil {
     }
   }
 
-  def check(cases: Map[String, (Rational, Rational)],
-            op: (Rational, Rational) ⇒ Rational): Unit = {
+  def check(
+      cases: Map[String, (Rational, Rational)],
+      op: (Rational, Rational) ⇒ Rational
+  ): Unit = {
     for ((kind, (a, b)) ← cases) {
       val c = classify(a, b, op(a, b))
       require(kind.startsWith(c), s"Unexpected class $c for case $kind")
@@ -43,16 +45,25 @@ object RationalUtil {
 class RationalMultiplyDivideBenchmark {
 
   val pairs = Map(
-      "li_li_li" → ((Rational(12345), Rational(67890))),
-      "bi_bi_bi" →
+    "li_li_li" → ((Rational(12345), Rational(67890))),
+    "bi_bi_bi" →
       ((Rational(12345) + Long.MaxValue, Rational(67890) + Long.MaxValue)),
-      "lf_lf_lf" → ((Rational(12345, 67891), Rational(67890, 12347))),
-      "lf_lf_bf" →
-      ((Rational(Long.MaxValue, Int.MaxValue - 1),
-        Rational(Long.MaxValue, Int.MaxValue - 3))),
-      "bf_bf_bf" →
-      ((Rational(Long.MaxValue) + Rational(1, 3),
-        Rational(Long.MaxValue) + Rational(1, 5))))
+    "lf_lf_lf" → ((Rational(12345, 67891), Rational(67890, 12347))),
+    "lf_lf_bf" →
+      (
+        (
+          Rational(Long.MaxValue, Int.MaxValue - 1),
+          Rational(Long.MaxValue, Int.MaxValue - 3)
+        )
+      ),
+    "bf_bf_bf" →
+      (
+        (
+          Rational(Long.MaxValue) + Rational(1, 3),
+          Rational(Long.MaxValue) + Rational(1, 5)
+        )
+      )
+  )
   check(pairs, _ * _)
   check(pairs, _ / _.inverse)
 
@@ -90,24 +101,33 @@ class RationalMultiplyDivideBenchmark {
 class RationalAddSubtractBenchmark {
 
   val pairs = Map(
-      "li_li_li" → ((Rational(12345), Rational(67890))),
-      "bi_bi_bi" →
+    "li_li_li" → ((Rational(12345), Rational(67890))),
+    "bi_bi_bi" →
       ((Rational(12345) + Long.MaxValue, Rational(67890) + Long.MaxValue)),
-      "lf_lf_lf" → ((Rational(12345, 67891), Rational(67890, 12347))),
-      "lf_lf_bf" →
-      ((Rational(Long.MaxValue, Int.MaxValue - 1),
-        Rational(Long.MaxValue, Int.MaxValue - 3))),
-      "bf_bf_bf" →
-      ((Rational(Long.MaxValue) + Rational(1, 3),
-        Rational(Long.MaxValue) + Rational(1, 5))))
+    "lf_lf_lf" → ((Rational(12345, 67891), Rational(67890, 12347))),
+    "lf_lf_bf" →
+      (
+        (
+          Rational(Long.MaxValue, Int.MaxValue - 1),
+          Rational(Long.MaxValue, Int.MaxValue - 3)
+        )
+      ),
+    "bf_bf_bf" →
+      (
+        (
+          Rational(Long.MaxValue) + Rational(1, 3),
+          Rational(Long.MaxValue) + Rational(1, 5)
+        )
+      )
+  )
   check(pairs, _ + _)
   check(pairs, _ - -_)
 
   @Param(Array("li_li_li", "bi_bi_bi", "lf_lf_lf", "lf_lf_bf", "bf_bf_bf"))
   var kind: String = ""
-  var a: Rational = Rational.zero
-  var b: Rational = Rational.zero
-  var c: Rational = Rational.zero
+  var a: Rational  = Rational.zero
+  var b: Rational  = Rational.zero
+  var c: Rational  = Rational.zero
 
   @Setup
   def setup(): Unit = {
@@ -132,14 +152,24 @@ class RationalAddSubtractBenchmark {
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @State(Scope.Thread)
 class RationalCompareBenchmark {
-  val pairs = Map("li_li" → ((Rational(12345), Rational(67890))),
-                  "lf_lf" → ((Rational(12345, 67891), Rational(67890, 12347))),
-                  "lf_lf_intermediateBig" →
-                  ((Rational(Long.MaxValue, Int.MaxValue - 1),
-                    Rational(Long.MaxValue, Int.MaxValue - 3))),
-                  "bf_bf" →
-                  ((Rational(Long.MaxValue) + Rational(1, 3),
-                    Rational(Long.MaxValue) + Rational(1, 5))))
+  val pairs = Map(
+    "li_li" → ((Rational(12345), Rational(67890))),
+    "lf_lf" → ((Rational(12345, 67891), Rational(67890, 12347))),
+    "lf_lf_intermediateBig" →
+      (
+        (
+          Rational(Long.MaxValue, Int.MaxValue - 1),
+          Rational(Long.MaxValue, Int.MaxValue - 3)
+        )
+      ),
+    "bf_bf" →
+      (
+        (
+          Rational(Long.MaxValue) + Rational(1, 3),
+          Rational(Long.MaxValue) + Rational(1, 5)
+        )
+      )
+  )
   check(pairs)
 
   @Param(Array("li_li", "lf_lf", "lf_lf_intermediateBig", "bf_bf"))

@@ -18,7 +18,7 @@ class BufferingPoolTest extends FunSuite with MockitoSugar {
     when(service.close(any[Time])) thenReturn Future.Done
     when(service.status) thenReturn Status.Open
     when(underlying(any[ClientConnection])) thenReturn Future.value(service)
-    val N = 10
+    val N    = 10
     val pool = new BufferingPool(underlying, N)
   }
 

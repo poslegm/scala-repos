@@ -11,7 +11,7 @@ import scala.tools.testing.AssertUtil
 class ArrayBufferTest {
   @Test
   def testInsertAll: Unit = {
-    val traver = ArrayBuffer(2, 4, 5, 7)
+    val traver  = ArrayBuffer(2, 4, 5, 7)
     val testSeq = List(1, 3, 6, 9)
 
     def insertAt(x: Int) = {
@@ -28,7 +28,9 @@ class ArrayBufferTest {
 
     // No strange last position weirdness
     Assert.assertEquals(
-        ArrayBuffer(2, 4, 5, 7, 1, 3, 6, 9), insertAt(traver.size))
+      ArrayBuffer(2, 4, 5, 7, 1, 3, 6, 9),
+      insertAt(traver.size)
+    )
 
     // Overflow is caught
     AssertUtil.assertThrows[IndexOutOfBoundsException] { insertAt(-1) }

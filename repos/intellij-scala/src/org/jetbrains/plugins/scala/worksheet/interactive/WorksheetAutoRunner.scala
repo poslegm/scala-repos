@@ -3,7 +3,11 @@ package worksheet.interactive
 
 import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.editor.Document
-import com.intellij.openapi.editor.event.{DocumentAdapter, DocumentEvent, DocumentListener}
+import com.intellij.openapi.editor.event.{
+  DocumentAdapter,
+  DocumentEvent,
+  DocumentListener
+}
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.newvfs.FileAttribute
 import com.intellij.problems.WolfTheProblemSolver
@@ -12,7 +16,10 @@ import com.intellij.util.Alarm
 import com.intellij.util.containers.ContainerUtil
 import org.jetbrains.plugins.scala.settings.ScalaProjectSettings
 import org.jetbrains.plugins.scala.worksheet.actions.RunWorksheetAction
-import org.jetbrains.plugins.scala.worksheet.processor.{FileAttributeUtilCache, WorksheetPerFileConfig}
+import org.jetbrains.plugins.scala.worksheet.processor.{
+  FileAttributeUtilCache,
+  WorksheetPerFileConfig
+}
 import org.jetbrains.plugins.scala.worksheet.server.WorksheetProcessManager
 
 /**
@@ -43,7 +50,7 @@ class WorksheetAutoRunner(project: Project, woof: WolfTheProblemSolver)
     extends ProjectComponent {
   private val listeners =
     ContainerUtil.createConcurrentWeakMap[Document, DocumentListener]()
-  private val myAlarm = new Alarm(Alarm.ThreadToUse.SWING_THREAD, project)
+  private val myAlarm       = new Alarm(Alarm.ThreadToUse.SWING_THREAD, project)
   private lazy val settings = ScalaProjectSettings.getInstance(project)
 
   override def disposeComponent() {}
@@ -93,13 +100,17 @@ class WorksheetAutoRunner(project: Project, woof: WolfTheProblemSolver)
       if (woof.hasSyntaxErrors(virtualFile) ||
           WorksheetProcessManager.running(virtualFile)) return
 
-      myAlarm.addRequest(new Runnable {
-        override def run() {
-          if (!woof.hasSyntaxErrors(virtualFile) &&
-              !WorksheetProcessManager.running(virtualFile))
-            RunWorksheetAction.runCompiler(project, auto = true)
-        }
-      }, getAutoRunDelay, true)
+      myAlarm.addRequest(
+        new Runnable {
+          override def run() {
+            if (!woof.hasSyntaxErrors(virtualFile) &&
+                !WorksheetProcessManager.running(virtualFile))
+              RunWorksheetAction.runCompiler(project, auto = true)
+          }
+        },
+        getAutoRunDelay,
+        true
+      )
     }
   }
 }

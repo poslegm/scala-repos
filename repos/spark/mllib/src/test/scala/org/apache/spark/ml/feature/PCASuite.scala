@@ -27,7 +27,8 @@ import org.apache.spark.mllib.util.TestingUtils._
 import org.apache.spark.sql.Row
 
 class PCASuite
-    extends SparkFunSuite with MLlibTestSparkContext
+    extends SparkFunSuite
+    with MLlibTestSparkContext
     with DefaultReadWriteTest {
 
   test("params") {
@@ -35,21 +36,21 @@ class PCASuite
     val mat =
       Matrices.dense(2, 2, Array(0.0, 1.0, 2.0, 3.0)).asInstanceOf[DenseMatrix]
     val explainedVariance = Vectors.dense(0.5, 0.5).asInstanceOf[DenseVector]
-    val model = new PCAModel("pca", mat, explainedVariance)
+    val model             = new PCAModel("pca", mat, explainedVariance)
     ParamsSuite.checkParams(model)
   }
 
   test("pca") {
     val data = Array(
-        Vectors.sparse(5, Seq((1, 1.0), (3, 7.0))),
-        Vectors.dense(2.0, 0.0, 3.0, 4.0, 5.0),
-        Vectors.dense(4.0, 0.0, 0.0, 6.0, 7.0)
+      Vectors.sparse(5, Seq((1, 1.0), (3, 7.0))),
+      Vectors.dense(2.0, 0.0, 3.0, 4.0, 5.0),
+      Vectors.dense(4.0, 0.0, 0.0, 6.0, 7.0)
     )
 
     val dataRDD = sc.parallelize(data, 2)
 
-    val mat = new RowMatrix(dataRDD)
-    val pc = mat.computePrincipalComponents(3)
+    val mat      = new RowMatrix(dataRDD)
+    val pc       = mat.computePrincipalComponents(3)
     val expected = mat.multiply(pc).rows
 
     val df = sqlContext
@@ -67,8 +68,10 @@ class PCASuite
 
     pca.transform(df).select("pca_features", "expected").collect().foreach {
       case Row(x: Vector, y: Vector) =>
-        assert(x ~== y absTol 1e-5,
-               "Transformed vector is different with expected vector.")
+        assert(
+          x ~== y absTol 1e-5,
+          "Transformed vector is different with expected vector."
+        )
     }
   }
 
@@ -80,11 +83,13 @@ class PCASuite
 
   test("PCAModel read/write") {
     val instance =
-      new PCAModel("myPCAModel",
-                   Matrices
-                     .dense(2, 2, Array(0.0, 1.0, 2.0, 3.0))
-                     .asInstanceOf[DenseMatrix],
-                   Vectors.dense(0.5, 0.5).asInstanceOf[DenseVector])
+      new PCAModel(
+        "myPCAModel",
+        Matrices
+          .dense(2, 2, Array(0.0, 1.0, 2.0, 3.0))
+          .asInstanceOf[DenseMatrix],
+        Vectors.dense(0.5, 0.5).asInstanceOf[DenseVector]
+      )
     val newInstance = testDefaultReadWrite(instance)
     assert(newInstance.pc === instance.pc)
   }

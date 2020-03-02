@@ -23,17 +23,18 @@ import org.apache.spark.sql.catalyst.expressions.MutableRow
 
 private[columnar] trait NullableColumnAccessor extends ColumnAccessor {
   private var nullsBuffer: ByteBuffer = _
-  private var nullCount: Int = _
-  private var seenNulls: Int = 0
+  private var nullCount: Int          = _
+  private var seenNulls: Int          = 0
 
   private var nextNullIndex: Int = _
-  private var pos: Int = 0
+  private var pos: Int           = 0
 
   abstract override protected def initialize(): Unit = {
     nullsBuffer = underlyingBuffer.duplicate().order(ByteOrder.nativeOrder())
     nullCount = ByteBufferHelper.getInt(nullsBuffer)
-    nextNullIndex = if (nullCount > 0) ByteBufferHelper.getInt(nullsBuffer)
-    else -1
+    nextNullIndex =
+      if (nullCount > 0) ByteBufferHelper.getInt(nullsBuffer)
+      else -1
     pos = 0
 
     underlyingBuffer.position(underlyingBuffer.position + 4 + nullCount * 4)

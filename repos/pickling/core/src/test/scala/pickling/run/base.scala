@@ -12,11 +12,11 @@ final class D extends Base { override def toString = "D" }
 class BaseTest extends FunSuite {
   test("main") {
     val c: Base = new C
-    val pc = c.pickle
+    val pc      = c.pickle
     assert(pc.unpickle[Base].isInstanceOf[C] === true)
 
     val d: Base = new D
-    val pd = d.pickle
+    val pd      = d.pickle
     assert(pd.unpickle[Base].isInstanceOf[D] === true)
   }
 }

@@ -13,14 +13,16 @@ object argmax extends UFunc {
   implicit def reduce[T, I, @expand.args(Int, Double, Float, Long) S](
       implicit iter: CanTraverseKeyValuePairs[T, I, S],
       @expand.sequence[S](
-          Int.MinValue,
-          Double.NegativeInfinity,
-          Float.NegativeInfinity,
-          Long.MinValue) init: S): Impl[T, I] = new Impl[T, I] {
+        Int.MinValue,
+        Double.NegativeInfinity,
+        Float.NegativeInfinity,
+        Long.MinValue
+      ) init: S
+  ): Impl[T, I] = new Impl[T, I] {
     def apply(v: T): I = {
       class SumVisitor extends KeyValuePairsVisitor[I, S] {
-        var max = init
-        var amax: I = _
+        var max        = init
+        var amax: I    = _
         var visitedOne = false
 
         def visit(k: I, a: S): Unit = {
@@ -41,12 +43,14 @@ object argmax extends UFunc {
           }
         }
 
-        override def visitArray(indices: Int => I,
-                                arr: Array[S],
-                                offset: Int,
-                                length: Int,
-                                stride: Int): Unit = {
-          var i = 0
+        override def visitArray(
+            indices: Int => I,
+            arr: Array[S],
+            offset: Int,
+            length: Int,
+            stride: Int
+        ): Unit = {
+          var i   = 0
           var off = offset
           while (i < length) {
             val a = arr(off)
@@ -77,14 +81,16 @@ object argmin extends UFunc {
   implicit def reduce[T, I, @expand.args(Int, Double, Float, Long) S](
       implicit iter: CanTraverseKeyValuePairs[T, I, S],
       @expand.sequence[S](
-          Int.MaxValue,
-          Double.PositiveInfinity,
-          Float.PositiveInfinity,
-          Long.MaxValue) init: S): Impl[T, I] = new Impl[T, I] {
+        Int.MaxValue,
+        Double.PositiveInfinity,
+        Float.PositiveInfinity,
+        Long.MaxValue
+      ) init: S
+  ): Impl[T, I] = new Impl[T, I] {
     def apply(v: T): I = {
       class SumVisitor extends KeyValuePairsVisitor[I, S] {
-        var min = init
-        var amin: I = _
+        var min        = init
+        var amin: I    = _
         var visitedOne = false
 
         def visit(k: I, a: S): Unit = {
@@ -105,12 +111,14 @@ object argmin extends UFunc {
           }
         }
 
-        override def visitArray(indices: Int => I,
-                                arr: Array[S],
-                                offset: Int,
-                                length: Int,
-                                stride: Int): Unit = {
-          var i = 0
+        override def visitArray(
+            indices: Int => I,
+            arr: Array[S],
+            offset: Int,
+            length: Int,
+            stride: Int
+        ): Unit = {
+          var i   = 0
           var off = offset
           while (i < length) {
             visitedOne = true

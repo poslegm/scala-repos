@@ -28,21 +28,22 @@ import scala.reflect.ClassTag
   *  @since   2.8
   */
 @deprecated(
-    "Forwarding is inherently unreliable since it is not automated and new methods can be forgotten.",
-    "2.11.0")
+  "Forwarding is inherently unreliable since it is not automated and new methods can be forgotten.",
+  "2.11.0"
+)
 trait TraversableForwarder[+A] extends Traversable[A] {
 
   /** The traversable object to which calls are forwarded. */
   protected def underlying: Traversable[A]
 
-  override def foreach[U](f: A => U): Unit = underlying foreach f
-  override def isEmpty: Boolean = underlying.isEmpty
-  override def nonEmpty: Boolean = underlying.nonEmpty
-  override def size: Int = underlying.size
-  override def hasDefiniteSize = underlying.hasDefiniteSize
+  override def foreach[U](f: A => U): Unit      = underlying foreach f
+  override def isEmpty: Boolean                 = underlying.isEmpty
+  override def nonEmpty: Boolean                = underlying.nonEmpty
+  override def size: Int                        = underlying.size
+  override def hasDefiniteSize                  = underlying.hasDefiniteSize
   override def forall(p: A => Boolean): Boolean = underlying forall p
   override def exists(p: A => Boolean): Boolean = underlying exists p
-  override def count(p: A => Boolean): Int = underlying count p
+  override def count(p: A => Boolean): Int      = underlying count p
   override def find(p: A => Boolean): Option[A] = underlying find p
   override def foldLeft[B](z: B)(op: (B, A) => B): B =
     underlying.foldLeft(z)(op)
@@ -63,35 +64,37 @@ trait TraversableForwarder[+A] extends Traversable[A] {
     underlying product num
   override def min[B >: A](implicit cmp: Ordering[B]): A = underlying min cmp
   override def max[B >: A](implicit cmp: Ordering[B]): A = underlying max cmp
-  override def head: A = underlying.head
-  override def headOption: Option[A] = underlying.headOption
-  override def last: A = underlying.last
-  override def lastOption: Option[A] = underlying.lastOption
+  override def head: A                                   = underlying.head
+  override def headOption: Option[A]                     = underlying.headOption
+  override def last: A                                   = underlying.last
+  override def lastOption: Option[A]                     = underlying.lastOption
   override def copyToBuffer[B >: A](dest: Buffer[B]) =
     underlying.copyToBuffer(dest)
   override def copyToArray[B >: A](xs: Array[B], start: Int, len: Int) =
     underlying.copyToArray(xs, start, len)
   override def copyToArray[B >: A](xs: Array[B], start: Int) =
     underlying.copyToArray(xs, start)
-  override def copyToArray[B >: A](xs: Array[B]) = underlying.copyToArray(xs)
-  override def toArray[B >: A : ClassTag]: Array[B] = underlying.toArray
-  override def toList: List[A] = underlying.toList
-  override def toIterable: Iterable[A] = underlying.toIterable
-  override def toSeq: Seq[A] = underlying.toSeq
-  override def toIndexedSeq = underlying.toIndexedSeq
-  override def toBuffer[B >: A] = underlying.toBuffer
-  override def toStream: Stream[A] = underlying.toStream
-  override def toSet[B >: A]: immutable.Set[B] = underlying.toSet
+  override def copyToArray[B >: A](xs: Array[B])   = underlying.copyToArray(xs)
+  override def toArray[B >: A: ClassTag]: Array[B] = underlying.toArray
+  override def toList: List[A]                     = underlying.toList
+  override def toIterable: Iterable[A]             = underlying.toIterable
+  override def toSeq: Seq[A]                       = underlying.toSeq
+  override def toIndexedSeq                        = underlying.toIndexedSeq
+  override def toBuffer[B >: A]                    = underlying.toBuffer
+  override def toStream: Stream[A]                 = underlying.toStream
+  override def toSet[B >: A]: immutable.Set[B]     = underlying.toSet
   override def toMap[T, U](implicit ev: A <:< (T, U)): immutable.Map[T, U] =
     underlying.toMap(ev)
   override def mkString(start: String, sep: String, end: String): String =
     underlying.mkString(start, sep, end)
   override def mkString(sep: String): String = underlying.mkString(sep)
-  override def mkString: String = underlying.mkString
-  override def addString(b: StringBuilder,
-                         start: String,
-                         sep: String,
-                         end: String): StringBuilder =
+  override def mkString: String              = underlying.mkString
+  override def addString(
+      b: StringBuilder,
+      start: String,
+      sep: String,
+      end: String
+  ): StringBuilder =
     underlying.addString(b, start, sep, end)
   override def addString(b: StringBuilder, sep: String): StringBuilder =
     underlying.addString(b, sep)

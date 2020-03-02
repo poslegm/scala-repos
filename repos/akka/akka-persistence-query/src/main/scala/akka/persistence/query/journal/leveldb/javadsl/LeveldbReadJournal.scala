@@ -26,10 +26,13 @@ import akka.stream.javadsl.Source
   *
   */
 class LeveldbReadJournal(
-    scaladslReadJournal: akka.persistence.query.journal.leveldb.scaladsl.LeveldbReadJournal)
-    extends ReadJournal with AllPersistenceIdsQuery
-    with CurrentPersistenceIdsQuery with EventsByPersistenceIdQuery
-    with CurrentEventsByPersistenceIdQuery with EventsByTagQuery
+    scaladslReadJournal: akka.persistence.query.journal.leveldb.scaladsl.LeveldbReadJournal
+) extends ReadJournal
+    with AllPersistenceIdsQuery
+    with CurrentPersistenceIdsQuery
+    with EventsByPersistenceIdQuery
+    with CurrentEventsByPersistenceIdQuery
+    with EventsByTagQuery
     with CurrentEventsByTagQuery {
 
   /**
@@ -90,7 +93,8 @@ class LeveldbReadJournal(
   override def eventsByPersistenceId(
       persistenceId: String,
       fromSequenceNr: Long,
-      toSequenceNr: Long): Source[EventEnvelope, NotUsed] =
+      toSequenceNr: Long
+  ): Source[EventEnvelope, NotUsed] =
     scaladslReadJournal
       .eventsByPersistenceId(persistenceId, fromSequenceNr, toSequenceNr)
       .asJava
@@ -103,10 +107,10 @@ class LeveldbReadJournal(
   override def currentEventsByPersistenceId(
       persistenceId: String,
       fromSequenceNr: Long,
-      toSequenceNr: Long): Source[EventEnvelope, NotUsed] =
+      toSequenceNr: Long
+  ): Source[EventEnvelope, NotUsed] =
     scaladslReadJournal
-      .currentEventsByPersistenceId(
-          persistenceId, fromSequenceNr, toSequenceNr)
+      .currentEventsByPersistenceId(persistenceId, fromSequenceNr, toSequenceNr)
       .asJava
 
   /**
@@ -145,7 +149,9 @@ class LeveldbReadJournal(
     * backend journal.
     */
   override def eventsByTag(
-      tag: String, offset: Long): Source[EventEnvelope, NotUsed] =
+      tag: String,
+      offset: Long
+  ): Source[EventEnvelope, NotUsed] =
     scaladslReadJournal.eventsByTag(tag, offset).asJava
 
   /**
@@ -154,7 +160,9 @@ class LeveldbReadJournal(
     * stored after the query is completed are not included in the event stream.
     */
   override def currentEventsByTag(
-      tag: String, offset: Long): Source[EventEnvelope, NotUsed] =
+      tag: String,
+      offset: Long
+  ): Source[EventEnvelope, NotUsed] =
     scaladslReadJournal.currentEventsByTag(tag, offset).asJava
 }
 

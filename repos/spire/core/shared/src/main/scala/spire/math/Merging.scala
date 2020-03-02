@@ -6,7 +6,7 @@ import spire.algebra.Order
   *  Interface for a merging strategy object.
   */
 trait Merge extends Any {
-  def merge[@sp A : Order : ClassTag](a: Array[A], b: Array[A]): Array[A]
+  def merge[@sp A: Order: ClassTag](a: Array[A], b: Array[A]): Array[A]
 }
 
 /**
@@ -21,7 +21,7 @@ abstract class BinaryMerge {
     def binarySearch0(low: Int, high: Int): Int =
       if (low <= high) {
         val mid = (low + high) >>> 1
-        val c = compare(ai, mid)
+        val c   = compare(ai, mid)
         if (c > 0) binarySearch0(mid + 1, high)
         else if (c < 0) binarySearch0(low, mid - 1)
         else mid
@@ -60,7 +60,7 @@ abstract class BinaryMerge {
     } else if (b0 == b1) {
       fromA(a0, a1, b0)
     } else {
-      val am = (a0 + a1) / 2
+      val am  = (a0 + a1) / 2
       val res = binarySearchB(am, b0, b1)
       if (res >= 0) {
         // same elements
@@ -93,7 +93,7 @@ abstract class BinaryMerge {
   */
 object BinaryMerge extends Merge {
 
-  def merge[@sp T : Order : ClassTag](a: Array[T], b: Array[T]): Array[T] = {
+  def merge[@sp T: Order: ClassTag](a: Array[T], b: Array[T]): Array[T] = {
     new ArrayBinaryMerge(a, b).result
   }
 
@@ -109,8 +109,9 @@ object BinaryMerge extends Merge {
   }*/
 
   private class ArrayBinaryMerge[@specialized T](a: Array[T], b: Array[T])(
-      implicit o: Order[T], c: ClassTag[T])
-      extends BinaryMerge {
+      implicit o: Order[T],
+      c: ClassTag[T]
+  ) extends BinaryMerge {
 
     def compare(ai: Int, bi: Int): Int = o.compare(a(ai), b(bi))
 
@@ -131,7 +132,7 @@ object BinaryMerge extends Merge {
       ri += 1
     }
 
-    val r = Array.ofDim[T](a.length + b.length)
+    val r  = Array.ofDim[T](a.length + b.length)
     var ri = 0
     merge0(0, a.length, 0, b.length)
 
@@ -144,9 +145,9 @@ object BinaryMerge extends Merge {
   */
 object LinearMerge extends Merge {
 
-  def merge[@sp T : Order : ClassTag](a: Array[T], b: Array[T]): Array[T] = {
-    val o = implicitly[Order[T]]
-    val r = Array.ofDim[T](a.length + b.length)
+  def merge[@sp T: Order: ClassTag](a: Array[T], b: Array[T]): Array[T] = {
+    val o  = implicitly[Order[T]]
+    val r  = Array.ofDim[T](a.length + b.length)
     var ri = 0
     var ai = 0
     var bi = 0

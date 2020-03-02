@@ -30,9 +30,7 @@ object CascadingTokenUpdater {
         .toIterator
         .map(_.split("="))
         .filter(_.size == 2)
-        .map { ary =>
-          (ary(0).toInt, ary(1))
-        }
+        .map { ary => (ary(0).toInt, ary(1)) }
         .toMap
 
   // does the inverse of the previous function, given a Map of index to class
@@ -49,7 +47,9 @@ object CascadingTokenUpdater {
   // assign each of the class names given to al the subsequent
   // positions
   private def assignTokens(
-      first: Int, names: Iterable[String]): Map[Int, String] =
+      first: Int,
+      names: Iterable[String]
+  ): Map[Int, String] =
     names
       .foldLeft((first, Map[Int, String]())) { (idMap, clz) =>
         val (id, m) = idMap
@@ -63,7 +63,8 @@ object CascadingTokenUpdater {
     val newClasses: Iterable[String] = clazzes.map { _.getName } -- toks.values
 
     config +
-    (Config.CascadingSerializationTokens -> toksToString(
-            toks ++ assignTokens(firstAvailableToken(toks), newClasses)))
+      (Config.CascadingSerializationTokens -> toksToString(
+        toks ++ assignTokens(firstAvailableToken(toks), newClasses)
+      ))
   }
 }

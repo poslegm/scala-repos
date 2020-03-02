@@ -18,9 +18,17 @@ import com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl
 import org.jetbrains.plugins.scala.extensions._
 import org.jetbrains.plugins.scala.lang.lexer.ScalaTokenTypes
 import org.jetbrains.plugins.scala.lang.psi.api.ScalaElementVisitor
-import org.jetbrains.plugins.scala.lang.psi.api.base.{ScInterpolatedStringLiteral, ScLiteral}
+import org.jetbrains.plugins.scala.lang.psi.api.base.{
+  ScInterpolatedStringLiteral,
+  ScLiteral
+}
 import org.jetbrains.plugins.scala.lang.psi.types._
-import org.jetbrains.plugins.scala.lang.psi.types.result.{Failure, Success, TypeResult, TypingContext}
+import org.jetbrains.plugins.scala.lang.psi.types.result.{
+  Failure,
+  Success,
+  TypeResult,
+  TypingContext
+}
 
 import scala.StringContext.InvalidEscapeException
 
@@ -29,7 +37,8 @@ import scala.StringContext.InvalidEscapeException
   * Date: 22.02.2008
   */
 class ScLiteralImpl(node: ASTNode)
-    extends ScalaPsiElementImpl(node) with ScLiteral
+    extends ScalaPsiElementImpl(node)
+    with ScLiteral
     with ContributedReferenceHost {
   def isValidHost: Boolean = getValue.isInstanceOf[String]
 
@@ -49,9 +58,11 @@ class ScLiteralImpl(node: ASTNode)
       case ScalaTokenTypes.tSYMBOL =>
         val sym = ScalaPsiManager
           .instance(getProject)
-          .getCachedClass("scala.Symbol",
-                          getResolveScope,
-                          ScalaPsiManager.ClassCategory.TYPE)
+          .getCachedClass(
+            "scala.Symbol",
+            getResolveScope,
+            ScalaPsiManager.ClassCategory.TYPE
+          )
         if (sym != null) ScType.designator(sym) else Nothing
       case ScalaTokenTypes.tSTRING | ScalaTokenTypes.tWRONG_STRING |
           ScalaTokenTypes.tMULTILINE_STRING =>
@@ -60,14 +71,14 @@ class ScLiteralImpl(node: ASTNode)
           .getCachedClass(getResolveScope, "java.lang.String")
         str.map(ScType.designator(_)).getOrElse(Nothing)
       case ScalaTokenTypes.kTRUE | ScalaTokenTypes.kFALSE => Boolean
-      case _ => return Failure("Wrong Psi to get Literal type", Some(this))
+      case _                                              => return Failure("Wrong Psi to get Literal type", Some(this))
     }
     Success(inner, Some(this))
   }
 
   def getValue: AnyRef = {
-    val child = getFirstChild.getNode
-    var text = getText
+    val child      = getFirstChild.getNode
+    var text       = getText
     val textLength = getTextLength
     child.getElementType match {
       case ScalaTokenTypes.tSTRING | ScalaTokenTypes.tWRONG_STRING =>
@@ -88,7 +99,7 @@ class ScLiteralImpl(node: ASTNode)
           text = text.substring(0, text.length - 3)
         }
         text
-      case ScalaTokenTypes.kTRUE => java.lang.Boolean.TRUE
+      case ScalaTokenTypes.kTRUE  => java.lang.Boolean.TRUE
       case ScalaTokenTypes.kFALSE => java.lang.Boolean.FALSE
       case ScalaTokenTypes.tCHAR =>
         if (StringUtil.endsWithChar(getText, '\'')) {
@@ -111,13 +122,13 @@ class ScLiteralImpl(node: ASTNode)
           case t if t.startsWith("0x") || t.startsWith("0X") =>
             (t.substring(2), 16)
           case t if t.startsWith("0") && t.length >= 2 => (t.substring(0), 8)
-          case t => (t, 10)
+          case t                                       => (t, 10)
         }
         val limit =
           if (endsWithL) java.lang.Long.MAX_VALUE
           else java.lang.Integer.MAX_VALUE
         val divider = if (base == 10) 1 else 2
-        var value = 0l
+        var value   = 0L
         for (d <- number.map(_.asDigit)) {
           if (value < 0 || limit / (base / divider) < value / divider ||
               limit - (d / divider) < value * (base / divider)) {
@@ -133,7 +144,8 @@ class ScLiteralImpl(node: ASTNode)
             java.lang.Float.valueOf(text.substring(0, text.length - 1))
           } catch {
             case e: Exception => null
-          } else
+          }
+        else
           try {
             java.lang.Double.valueOf(text)
           } catch {
@@ -151,8 +163,7 @@ class ScLiteralImpl(node: ASTNode)
       InjectedLanguageManager.getInstance(getProject).getInjectedPsiFiles(this)
     else null
 
-  def processInjectedPsi(
-      visitor: PsiLanguageInjectionHost.InjectedPsiVisitor) {
+  def processInjectedPsi(visitor: PsiLanguageInjectionHost.InjectedPsiVisitor) {
     InjectedLanguageUtil.enumerate(this, visitor)
   }
 
@@ -169,12 +180,12 @@ class ScLiteralImpl(node: ASTNode)
 
   def isString = getFirstChild.getNode.getElementType match {
     case ScalaTokenTypes.tMULTILINE_STRING | ScalaTokenTypes.tSTRING => true
-    case _ => false
+    case _                                                           => false
   }
 
   def isMultiLineString = getFirstChild.getNode.getElementType match {
     case ScalaTokenTypes.tMULTILINE_STRING => true
-    case _ => false
+    case _                                 => false
   }
 
   override def isSymbol: Boolean =
@@ -196,8 +207,10 @@ class ScLiteralImpl(node: ASTNode)
           intrp.reference.fold("")(_.refName)
         case _ => ""
       }
-      new TextRange(range.getStartOffset + prefix.length + quote.length,
-                    range.getEndOffset - quote.length)
+      new TextRange(
+        range.getStartOffset + prefix.length + quote.length,
+        range.getEndOffset - quote.length
+      )
     } else if (isChar) {
       new TextRange(range.getStartOffset + 1, range.getEndOffset - 1)
     } else if (isSymbol) {
@@ -212,7 +225,7 @@ class ScLiteralImpl(node: ASTNode)
   override def accept(visitor: PsiElementVisitor) {
     visitor match {
       case visitor: ScalaElementVisitor => visitor.visitLiteral(this)
-      case _ => super.accept(visitor)
+      case _                            => super.accept(visitor)
     }
   }
 
@@ -225,15 +238,18 @@ class ScLiteralImpl(node: ASTNode)
     */
   def setTypeWithoutImplicits(tp: Option[ScType]) {
     if (getFirstChild.getNode.getElementType != ScalaTokenTypes.kNULL)
-      assert(assertion = false,
-             message = "Only null literals accepted, type: " +
-               getFirstChild.getNode.getElementType)
+      assert(
+        assertion = false,
+        message = "Only null literals accepted, type: " +
+          getFirstChild.getNode.getElementType
+      )
     typeWithoutImplicits = tp
   }
 
   override def getTypeWithoutImplicits(
       ignoreBaseTypes: Boolean,
-      fromUnderscore: Boolean): TypeResult[ScType] = {
+      fromUnderscore: Boolean
+  ): TypeResult[ScType] = {
     val tp = typeWithoutImplicits
     if (tp != None) return Success(tp.get, None)
     super.getTypeWithoutImplicits(ignoreBaseTypes, fromUnderscore)
@@ -241,8 +257,8 @@ class ScLiteralImpl(node: ASTNode)
 
   /*
    * This part caches literal related annotation owners
-   * todo: think about extracting this feature to a trait  
-   * 
+   * todo: think about extracting this feature to a trait
+   *
    * trait AnnotationBasedInjectionHost {
    *   private[this] var myAnnotationOwner: Option[PsiAnnotationOwner] = None
    *   ...
@@ -253,23 +269,26 @@ class ScLiteralImpl(node: ASTNode)
    * }
    */
 
-  private[this] var myAnnotationOwner: Option[
-      PsiAnnotationOwner with PsiElement] = None
-  private[this] var expirationTime = 0L
+  private[this] var myAnnotationOwner
+      : Option[PsiAnnotationOwner with PsiElement] = None
+  private[this] var expirationTime                 = 0L
 
   private val expTimeLengthGenerator: Random = new Random(
-      System.currentTimeMillis())
+    System.currentTimeMillis()
+  )
 
   def getAnnotationOwner(
       annotationOwnerLookUp: ScLiteral => Option[
-          PsiAnnotationOwner with PsiElement]): Option[PsiAnnotationOwner] = {
+        PsiAnnotationOwner with PsiElement
+      ]
+  ): Option[PsiAnnotationOwner] = {
     if (!isString) return None
 
     if (System.currentTimeMillis() > expirationTime ||
         myAnnotationOwner.exists(!_.isValid)) {
       myAnnotationOwner = annotationOwnerLookUp(this)
       expirationTime = System.currentTimeMillis() +
-      (2 + expTimeLengthGenerator.nextInt(8)) * 1000
+        (2 + expTimeLengthGenerator.nextInt(8)) * 1000
     }
 
     myAnnotationOwner

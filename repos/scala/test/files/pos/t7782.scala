@@ -10,7 +10,7 @@ object O {
   // order matters (!!!)
 
   // this order breaks under 2.10.x
-  def empty[E]: C[E] = ???
+  def empty[E]: C[E]              = ???
   def empty(implicit a: Any): Any = ???
 }
 

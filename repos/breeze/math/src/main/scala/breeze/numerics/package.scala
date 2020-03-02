@@ -82,7 +82,7 @@ package object numerics {
 
   // Logarithms, etc
 
-  private val log2D = m.log(2d)
+  private val log2D  = m.log(2d)
   private val log10D = m.log(10d)
 
   object log extends UFunc with MappingUFunc {
@@ -202,8 +202,7 @@ package object numerics {
       def apply(base: Int, v: Int) =
         m.pow(base.toDouble, nextExponent(v.toDouble))
     }
-    implicit object nextPowerDoubleImpl2
-        extends Impl2[Double, Double, Double] {
+    implicit object nextPowerDoubleImpl2 extends Impl2[Double, Double, Double] {
       def apply(base: Double, v: Double) = m.pow(base, nextExponent(v))
     }
     implicit object nextPowerFloatImpl2 extends Impl2[Float, Float, Float] {
@@ -572,8 +571,8 @@ package object numerics {
   object isOdd extends UFunc with MappingUFunc {
     @expand
     @expand.valify
-    implicit def isOddImpl[@expand.args(Int, Double, Float, Long) T]: Impl[
-        T, Boolean] = {
+    implicit def isOddImpl[@expand.args(Int, Double, Float, Long) T]
+        : Impl[T, Boolean] = {
       new Impl[T, Boolean] {
         def apply(v: T) = { v % 2 == 1 }
       }
@@ -586,8 +585,8 @@ package object numerics {
   object isEven extends UFunc with MappingUFunc {
     @expand
     @expand.valify
-    implicit def isEvenImpl[@expand.args(Int, Double, Float, Long) T]: Impl[
-        T, Boolean] = {
+    implicit def isEvenImpl[@expand.args(Int, Double, Float, Long) T]
+        : Impl[T, Boolean] = {
       new Impl[T, Boolean] {
         def apply(v: T) = { v % 2 == 0 }
       }
@@ -600,8 +599,8 @@ package object numerics {
   object isNonfinite extends UFunc with MappingUFunc {
     @expand
     @expand.valify
-    implicit def isNonfiniteImpl[@expand.args(Double, Float) T]: Impl[
-        T, Boolean] = {
+    implicit def isNonfiniteImpl[@expand.args(Double, Float) T]
+        : Impl[T, Boolean] = {
       new Impl[T, Boolean] {
         override def apply(v: T): Boolean = {
           // TODO: only in Java 8
@@ -615,8 +614,8 @@ package object numerics {
   object isFinite extends UFunc with MappingUFunc {
     @expand
     @expand.valify
-    implicit def isFiniteImpl[
-        @expand.args(Double, Float) T]: Impl[T, Boolean] = {
+    implicit def isFiniteImpl[@expand.args(Double, Float) T]
+        : Impl[T, Boolean] = {
       new Impl[T, Boolean] {
         override def apply(v: T): Boolean = {
           m.abs(v) <= Double.MaxValue
@@ -657,15 +656,15 @@ package object numerics {
         if (x < 0.0 || a <= 0.0) throw new IllegalArgumentException()
         else if (x == 0) 0.0
         else if (x < a + 1.0) {
-          var ap = a
+          var ap       = a
           var del, sum = 1.0 / a
-          var n = 0
-          var result = Double.NaN
+          var n        = 0
+          var result   = Double.NaN
           while (n < 100) {
             ap += 1
             del *= x / ap
             sum += del
-            if (scala.math.abs(del) < scala.math.abs(sum) * 1E-7) {
+            if (scala.math.abs(del) < scala.math.abs(sum) * 1e-7) {
               result = -x + a * m.log(x) + m.log(sum)
               n = 100
             }
@@ -675,23 +674,23 @@ package object numerics {
           else result
         } else {
           val gln = lgamma(a)
-          var b = x + 1.0 - a
-          var c = 1.0 / 1.0e-30
-          var d = 1.0 / b
-          var h = d
-          var n = 0
+          var b   = x + 1.0 - a
+          var c   = 1.0 / 1.0e-30
+          var d   = 1.0 / b
+          var h   = d
+          var n   = 0
           while (n < 100) {
             n += 1
             val an = -n * (n - a)
             b += 2.0
             d = an * d + b
-            if (scala.math.abs(d) < 1E-30) d = 1E-30
+            if (scala.math.abs(d) < 1e-30) d = 1e-30
             c = b + an / c
-            if (scala.math.abs(c) < 1E-30) c = 1E-30
+            if (scala.math.abs(c) < 1e-30) c = 1e-30
             d = 1.0 / d
             val del = d * c
             h *= del
-            if (scala.math.abs(del - 1.0) < 1E-7) n = 101
+            if (scala.math.abs(del - 1.0) < 1e-7) n = 101
           }
 
           if (n == 100) throw new ArithmeticException("Convergence failed")
@@ -737,11 +736,12 @@ package object numerics {
     }
 
     implicit def reduceDouble[T](
-        implicit iter: CanTraverseValues[T, Double]): Impl[T, Double] =
+        implicit iter: CanTraverseValues[T, Double]
+    ): Impl[T, Double] =
       new Impl[T, Double] {
         def apply(v: T): Double = {
           val visit = new ValuesVisitor[Double] {
-            var sum = 0.0
+            var sum   = 0.0
             var lgSum = 0.0
             def visit(a: Double): Unit = {
               sum += a
@@ -802,17 +802,17 @@ package object numerics {
         if (x < 0) -apply(-x)
         else {
           // taylor expansion
-          var y = x
+          var y  = x
           val x2 = x * x
           var xx = x
-          var f = 1.0
-          var n = 0
+          var f  = 1.0
+          var n  = 0
           while (n < 100) {
             n += 1
             f /= n
             xx *= x2
             val del = f * xx / (2 * n + 1)
-            if (del < 1E-8) n = 101
+            if (del < 1e-8) n = 101
             y += del
           }
           y = y * 2 / m.sqrt(Pi)
@@ -911,10 +911,10 @@ package object numerics {
   /**
     * closeTo for Doubles.
     */
-  def closeTo(a: Double, b: Double, relDiff: Double = 1E-4) = {
+  def closeTo(a: Double, b: Double, relDiff: Double = 1e-4) = {
     a == b ||
-    (scala.math.abs(a - b) < scala.math.max(
-            scala.math.max(scala.math.abs(a), scala.math.abs(b)), 1) * relDiff)
+    (scala.math.abs(a - b) < scala.math
+      .max(scala.math.max(scala.math.abs(a), scala.math.abs(b)), 1) * relDiff)
   }
 
   /**
@@ -926,7 +926,7 @@ package object numerics {
       def apply(b: Boolean) = if (b) 1.0 else 0.0
     }
 
-    implicit def vImpl[V : Semiring]: Impl[V, Double] = new Impl[V, Double] {
+    implicit def vImpl[V: Semiring]: Impl[V, Double] = new Impl[V, Double] {
       def apply(b: V) = if (b != implicitly[Semiring[V]].zero) 1.0 else 0.0
     }
   }

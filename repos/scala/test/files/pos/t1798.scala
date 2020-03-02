@@ -1,4 +1,4 @@
-object Foo { private def bar(): Int = 55 }
+object Foo        { private def bar(): Int = 55 }
 class Foo(x: Int) { def this() = this(Foo.bar()) }
 
 /*

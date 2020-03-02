@@ -58,7 +58,7 @@ trait TypedSink[-T] extends java.io.Serializable {
     val self =
       this // compiler generated self can cause problems with serialization
     new TypedSink[U] {
-      override def sinkFields = self.sinkFields
+      override def sinkFields            = self.sinkFields
       def setter[V <: U]: TupleSetter[V] = self.setter.contraMap(fn)
       def writeFrom(pipe: Pipe)(implicit fd: FlowDef, mode: Mode): Pipe =
         self.writeFrom(pipe)

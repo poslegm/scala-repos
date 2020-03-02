@@ -141,23 +141,26 @@ object CharUtils {
     * CAUTION: This algorithm cannot deal with `Long.MinValue`, you'll need to special case this value!
     */
   def getSignedDecimalChars(
-      long: Long, endIndex: Int, buf: Array[Char]): Unit = {
+      long: Long,
+      endIndex: Int,
+      buf: Array[Char]
+  ): Unit = {
     def div10(i: Int) = {
       var q = (i << 3) + (i << 2)
       q += (q << 12) + (q << 8) + (q << 4) + i
       q >>>= 19
       q // 52429 * l / 524288 = l * 0.10000038146972656
     }
-    def mul10(i: Int) = (i << 3) + (i << 1)
+    def mul10(i: Int)   = (i << 3) + (i << 1)
     def mul100(l: Long) = (l << 6) + (l << 5) + (l << 2)
 
     phase1(math.abs(long), endIndex)
 
-    // for large numbers we bite the bullet of performing one division every two digits 
+    // for large numbers we bite the bullet of performing one division every two digits
     @tailrec def phase1(l: Long, ix: Int): Unit =
       if (l > 65535L) {
-        val q = l / 100
-        val r = (l - mul100(q)).toInt
+        val q  = l / 100
+        val r  = (l - mul100(q)).toInt
         val rq = div10(r)
         buf(ix - 2) = ('0' + rq).toChar
         buf(ix - 1) = ('0' + r - mul10(rq)).toChar
@@ -189,12 +192,12 @@ object CharUtils {
     if (CharPredicate.LowerAlpha(c)) (c + 0x20).toChar else c
 
   def escape(c: Char): String = c match {
-    case '\t' ⇒ "\\t"
-    case '\r' ⇒ "\\r"
-    case '\n' ⇒ "\\n"
-    case EOI ⇒ "EOI"
+    case '\t'                           ⇒ "\\t"
+    case '\r'                           ⇒ "\\r"
+    case '\n'                           ⇒ "\\n"
+    case EOI                            ⇒ "EOI"
     case x if Character.isISOControl(x) ⇒ "\\u%04x" format c.toInt
-    case x ⇒ x.toString
+    case x                              ⇒ x.toString
   }
 
   val escapedChars = CharPredicate("\t\r\n", EOI, Character.isISOControl _)

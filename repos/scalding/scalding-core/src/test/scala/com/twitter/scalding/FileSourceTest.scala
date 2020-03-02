@@ -53,9 +53,10 @@ class FileSourceTest extends WordSpec with Matchers {
 
   "A MultipleTsvFile Source" should {
     JobTest(new MultiTsvInputJob(_))
-      .source(MultipleTsvFiles(List("input0", "input1"),
-                               ('query, 'queryStats)),
-              List(("foobar", 1), ("helloworld", 2)))
+      .source(
+        MultipleTsvFiles(List("input0", "input1"), ('query, 'queryStats)),
+        List(("foobar", 1), ("helloworld", 2))
+      )
       .sink[(String, Int)](Tsv("output0")) { outBuf =>
         "take multiple Tsv files as input sources" in {
           outBuf should have length 2
@@ -69,21 +70,23 @@ class FileSourceTest extends WordSpec with Matchers {
   "A WritableSequenceFile Source" should {
     JobTest(new SequenceFileInputJob(_))
       .source(SequenceFile("input0"), List(("foobar0", 1), ("helloworld0", 2)))
-      .source(WritableSequenceFile("input1", ('query, 'queryStats)),
-              List(("foobar1", 1), ("helloworld1", 2)))
+      .source(
+        WritableSequenceFile("input1", ('query, 'queryStats)),
+        List(("foobar1", 1), ("helloworld1", 2))
+      )
       .sink[(String, Int)](SequenceFile("output0")) { outBuf =>
         "sequence file input" in {
           outBuf should have length 2
           outBuf.toList shouldBe List(("foobar0", 1), ("helloworld0", 2))
         }
       }
-      .sink[(String, Int)](WritableSequenceFile("output1",
-                                                ('query, 'queryStats))) {
-        outBuf =>
-          "writable sequence file input" in {
-            outBuf should have length 2
-            outBuf.toList shouldBe List(("foobar1", 1), ("helloworld1", 2))
-          }
+      .sink[(String, Int)](
+        WritableSequenceFile("output1", ('query, 'queryStats))
+      ) { outBuf =>
+        "writable sequence file input" in {
+          outBuf should have length 2
+          outBuf.toList shouldBe List(("foobar1", 1), ("helloworld1", 2))
+        }
       }
       .run
       .finish
@@ -92,8 +95,10 @@ class FileSourceTest extends WordSpec with Matchers {
   "A MultipleTextLineFiles Source" should {
     JobTest(new MultipleTextLineFilesJob(_))
       .arg("input", List("input0", "input1"))
-      .source(MultipleTextLineFiles("input0", "input1"),
-              List("foobar", "helloworld"))
+      .source(
+        MultipleTextLineFiles("input0", "input1"),
+        List("foobar", "helloworld")
+      )
       .sink[String](Tsv("output0")) { outBuf =>
         "take multiple text files as input sources" in {
           outBuf should have length 2
@@ -240,12 +245,12 @@ class FileSourceTest extends WordSpec with Matchers {
     }
 
     "accept a multi-dir glob if all dirs with non-hidden files have _SUCCESS while dirs with " +
-    "hidden ones don't" in {
+      "hidden ones don't" in {
       pathIsGood("test_data/2013/{04,05}/*") shouldBe true
     }
 
     "accept a multi-dir glob if all dirs with non-hidden files have _SUCCESS while other dirs " +
-    "are empty or don't exist" in {
+      "are empty or don't exist" in {
       pathIsGood("test_data/2013/{02,04,05}/*") shouldBe true
     }
   }
@@ -282,8 +287,8 @@ class FileSourceTest extends WordSpec with Matchers {
     }
     "Throw in toIterator because no data is present" in {
       an[InvalidSourceException] should be thrownBy
-      (TestInvalidFileSource.toIterator(Config.default,
-                                        Hdfs(true, new JobConf())))
+        (TestInvalidFileSource
+          .toIterator(Config.default, Hdfs(true, new JobConf())))
     }
   }
 }
@@ -292,7 +297,7 @@ object TestPath {
   def getCurrentDirectory = new java.io.File(".").getCanonicalPath
   def prefix = getCurrentDirectory.split("/").last match {
     case "scalding-core" => getCurrentDirectory
-    case _ => getCurrentDirectory + "/scalding-core"
+    case _               => getCurrentDirectory + "/scalding-core"
   }
   val testfsPathRoot =
     prefix + "/src/test/resources/com/twitter/scalding/test_filesystem/"
@@ -301,7 +306,7 @@ object TestPath {
 object TestFileSource extends FileSource {
   import TestPath.testfsPathRoot
 
-  override def hdfsPaths: Iterable[String] = Iterable.empty
+  override def hdfsPaths: Iterable[String]  = Iterable.empty
   override def localPaths: Iterable[String] = Iterable.empty
 
   val conf = new Configuration()
@@ -313,7 +318,7 @@ object TestFileSource extends FileSource {
 
 object TestSuccessFileSource extends FileSource with SuccessFileSource {
   import TestPath.testfsPathRoot
-  override def hdfsPaths: Iterable[String] = Iterable.empty
+  override def hdfsPaths: Iterable[String]  = Iterable.empty
   override def localPaths: Iterable[String] = Iterable.empty
 
   val conf = new Configuration()
@@ -323,18 +328,19 @@ object TestSuccessFileSource extends FileSource with SuccessFileSource {
 
 object TestInvalidFileSource extends FileSource with Mappable[String] {
 
-  override def hdfsPaths: Iterable[String] = Iterable("invalid_hdfs_path")
+  override def hdfsPaths: Iterable[String]  = Iterable("invalid_hdfs_path")
   override def localPaths: Iterable[String] = Iterable("invalid_local_path")
-  override def hdfsScheme = new NullScheme(Fields.ALL, Fields.NONE)
+  override def hdfsScheme                   = new NullScheme(Fields.ALL, Fields.NONE)
   override def converter[U >: String] =
     TupleConverter.asSuperConverter[String, U](
-        implicitly[TupleConverter[String]])
+      implicitly[TupleConverter[String]]
+    )
 
   val conf = new Configuration()
 
   def pathIsGood(p: String) = false
-  val hdfsMode: Hdfs = Hdfs(false, conf)
-  def createHdfsReadTap = super.createHdfsReadTap(hdfsMode)
+  val hdfsMode: Hdfs        = Hdfs(false, conf)
+  def createHdfsReadTap     = super.createHdfsReadTap(hdfsMode)
 }
 
 case class TestFixedPathSource(path: String*) extends FixedPathSource(path: _*)

@@ -5,15 +5,15 @@ import spire.algebra.{MetricSpace, Monoid, Order}
 
 @SerialVersionUID(0L)
 class StringMonoid extends Monoid[String] with Serializable {
-  def id: String = ""
+  def id: String                       = ""
   def op(x: String, y: String): String = x + y
 }
 
 @SerialVersionUID(0L)
 class StringOrder extends Order[String] with Serializable {
-  override def eqv(x: String, y: String): Boolean = x == y
+  override def eqv(x: String, y: String): Boolean  = x == y
   override def neqv(x: String, y: String): Boolean = x != y
-  def compare(x: String, y: String): Int = x.compareTo(y)
+  def compare(x: String, y: String): Int           = x.compareTo(y)
 }
 
 @SerialVersionUID(0L)
@@ -55,5 +55,5 @@ trait StringInstances0 {
 
 trait StringInstances extends StringInstances0 {
   implicit final val StringAlgebra = new StringMonoid
-  implicit final val StringOrder = new StringOrder
+  implicit final val StringOrder   = new StringOrder
 }

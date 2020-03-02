@@ -9,7 +9,7 @@ import com.twitter.io.StreamIO
 
 trait StringEncoder {
   def encode(bytes: Array[Byte]): String = new String(bytes)
-  def decode(str: String): Array[Byte] = str.getBytes
+  def decode(str: String): Array[Byte]   = str.getBytes
 }
 
 /**
@@ -19,9 +19,9 @@ trait StringEncoder {
   * The encoding for strings is UTF-8.
   */
 trait Base64StringEncoder extends StringEncoder {
-  private[this] def codec = new Base64()
+  private[this] def codec                         = new Base64()
   override def encode(bytes: Array[Byte]): String = codec.encodeToString(bytes)
-  override def decode(str: String): Array[Byte] = codec.decode(str)
+  override def decode(str: String): Array[Byte]   = codec.decode(str)
 }
 
 /**
@@ -35,11 +35,11 @@ trait Base64UrlSafeStringEncoder extends StringEncoder {
   private[this] def codec = new Base64(0, null, true)
 
   override def encode(bytes: Array[Byte]): String = codec.encodeToString(bytes)
-  override def decode(str: String): Array[Byte] = codec.decode(str)
+  override def decode(str: String): Array[Byte]   = codec.decode(str)
 }
 
-object StringEncoder extends StringEncoder
-object Base64StringEncoder extends Base64StringEncoder
+object StringEncoder              extends StringEncoder
+object Base64StringEncoder        extends Base64StringEncoder
 object Base64UrlSafeStringEncoder extends Base64UrlSafeStringEncoder
 
 /**
@@ -57,7 +57,7 @@ object Base64UrlSafeStringEncoder extends Base64UrlSafeStringEncoder
 trait GZIPStringEncoder extends StringEncoder {
   override def encode(bytes: Array[Byte]): String = {
     val baos = new ByteArrayOutputStream
-    val gos = new GZIPOutputStream(baos)
+    val gos  = new GZIPOutputStream(baos)
     try {
       gos.write(bytes)
     } finally {
@@ -71,7 +71,8 @@ trait GZIPStringEncoder extends StringEncoder {
   override def decode(str: String): Array[Byte] = {
     val baos = new ByteArrayOutputStream
     val gis = new GZIPInputStream(
-        new ByteArrayInputStream(Base64StringEncoder.decode(str)))
+      new ByteArrayInputStream(Base64StringEncoder.decode(str))
+    )
     try {
       StreamIO.copy(gis, baos)
     } finally {

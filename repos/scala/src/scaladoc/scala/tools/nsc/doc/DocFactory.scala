@@ -46,7 +46,8 @@ class DocFactory(val reporter: Reporter, val settings: doc.Settings) {
         new compiler.Run() compile files
       case Right(sourceCode) =>
         new compiler.Run() compileSources List(
-            new BatchSourceFile("newSource", sourceCode))
+          new BatchSourceFile("newSource", sourceCode)
+        )
     }
 
     if (reporter.hasErrors) return None
@@ -56,7 +57,7 @@ class DocFactory(val reporter: Reporter, val settings: doc.Settings) {
       else {
         val uncompilable = new {
           val global: compiler.type = compiler
-          val settings = processor.settings
+          val settings              = processor.settings
         } with Uncompilable {}
 
         compiler.docComments ++= uncompilable.comments
@@ -68,20 +69,24 @@ class DocFactory(val reporter: Reporter, val settings: doc.Settings) {
 
     val modelFactory = (new { override val global: compiler.type = compiler }
     with model.ModelFactory(compiler, settings)
-    with model.ModelFactoryImplicitSupport with model.ModelFactoryTypeSupport
+      with model.ModelFactoryImplicitSupport with model.ModelFactoryTypeSupport
     with model.diagram.DiagramFactory with model.CommentFactory
     with model.TreeFactory with model.MemberLookup {
       override def templateShouldDocument(
-          sym: compiler.Symbol, inTpl: DocTemplateImpl) =
+          sym: compiler.Symbol,
+          inTpl: DocTemplateImpl
+      ) =
         extraTemplatesToDocument(sym) ||
-        super.templateShouldDocument(sym, inTpl)
+          super.templateShouldDocument(sym, inTpl)
     })
 
     modelFactory.makeModel match {
       case Some(madeModel) =>
         if (!settings.scaladocQuietRun)
-          println("model contains " + modelFactory.templatesCount +
-              " documentable templates")
+          println(
+            "model contains " + modelFactory.templatesCount +
+              " documentable templates"
+          )
         Some(madeModel)
       case None =>
         if (!settings.scaladocQuietRun)
@@ -95,15 +100,17 @@ class DocFactory(val reporter: Reporter, val settings: doc.Settings) {
   val documentError: PartialFunction[Throwable, Unit] = {
     case NoCompilerRunException =>
       reporter.info(
-          null,
-          "No documentation generated with unsuccessful compiler run",
-          force = false)
+        null,
+        "No documentation generated with unsuccessful compiler run",
+        force = false
+      )
     case e @ (_: ClassNotFoundException | _: IllegalAccessException |
         _: InstantiationException | _: SecurityException |
         _: ClassCastException) =>
       reporter.error(
-          null,
-          s"Cannot load the doclet class ${settings.docgenerator.value} (specified with ${settings.docgenerator.name}): $e. Leaving the default settings will generate the html version of scaladoc.")
+        null,
+        s"Cannot load the doclet class ${settings.docgenerator.value} (specified with ${settings.docgenerator.name}): $e. Leaving the default settings will generate the html version of scaladoc."
+      )
   }
 
   /** Generate document(s) for all `files` containing scaladoc documentation.
@@ -127,7 +134,8 @@ class DocFactory(val reporter: Reporter, val settings: doc.Settings) {
       docletInstance.generate()
     }
 
-    try generate() catch documentError
+    try generate()
+    catch documentError
   }
 
   private[doc] def docdbg(msg: String) {

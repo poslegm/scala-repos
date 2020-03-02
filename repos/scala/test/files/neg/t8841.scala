@@ -9,7 +9,7 @@ class Test {
     // cyclic reference will not be thrown, but transformed into a NormalTypeError by
     // `silent`. This requires different handling in NamesDefaults.
 
-    val c = new Cell(ambiguousName = Some("bla"))
+    val c             = new Cell(ambiguousName = Some("bla"))
     val ambiguousName = c.ambiguousName
   }
 }
