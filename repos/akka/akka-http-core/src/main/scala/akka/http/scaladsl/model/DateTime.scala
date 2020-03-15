@@ -262,7 +262,7 @@ object DateTime {
     // compute month/monthday from year/yearday
     if (!isLeap && (d >= 59)) d += 1 // skip non-existent Feb 29
     if (d >= 60) d += 1              // skip non-existent Feb 30
-    val d214    = d % 214
+    val d214    = d    % 214
     val d214_61 = d214 % 61
     var mon     = ((d214 / 61) << 1) + d214_61 / 31
     if (d > 213) mon += 7

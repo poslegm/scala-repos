@@ -37,8 +37,8 @@ class GenericPickler extends FunSuite {
   }
 
   test("issue-4") {
-    implicit def genCustomPersonXPickler[T <: PersonX](
-        implicit format: PickleFormat
+    implicit def genCustomPersonXPickler[T <: PersonX](implicit
+        format: PickleFormat
     )                                   = new CustomPersonXPickler
     def fn[T <: PersonX: Pickler](x: T) = x.pickle
 

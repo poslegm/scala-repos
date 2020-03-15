@@ -12,14 +12,14 @@ trait MonadError[F[_], S] extends Monad[F] { self =>
   def handleError[A](fa: F[A])(f: S => F[A]): F[A]
 
   trait MonadErrorLaw {
-    def raisedErrorsHandled[A](e: S, f: S => F[A])(
-        implicit FEA: Equal[F[A]]
+    def raisedErrorsHandled[A](e: S, f: S => F[A])(implicit
+        FEA: Equal[F[A]]
     ): Boolean =
       FEA.equal(handleError(raiseError(e))(f), f(e))
     def errorsRaised[A](a: A, e: S)(implicit FEA: Equal[F[A]]): Boolean =
       FEA.equal(bind(point(a))(_ => raiseError(e)), raiseError(e))
-    def errorsStopComputation[A](e: S, a: A)(
-        implicit FEA: Equal[F[A]]
+    def errorsStopComputation[A](e: S, a: A)(implicit
+        FEA: Equal[F[A]]
     ): Boolean =
       FEA.equal(bind(raiseError(e))(_ => point(a)), raiseError(e))
   }

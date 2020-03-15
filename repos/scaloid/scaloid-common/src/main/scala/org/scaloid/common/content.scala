@@ -279,8 +279,8 @@ trait TraitContext[This <: android.content.Context] {
     basis.sendBroadcast(SIntent[T])
 
   @inline
-  def sendBroadcast[T: ClassTag](p: java.lang.String)(
-      implicit context: Context
+  def sendBroadcast[T: ClassTag](p: java.lang.String)(implicit
+      context: Context
   ): Unit = basis.sendBroadcast(SIntent[T], p)
 
   @inline
@@ -318,13 +318,13 @@ trait TraitContext[This <: android.content.Context] {
     basis.startActivity(SIntent[T])
 
   @inline
-  def startActivity[T: ClassTag](p: android.os.Bundle)(
-      implicit context: Context
+  def startActivity[T: ClassTag](p: android.os.Bundle)(implicit
+      context: Context
   ): Unit = basis.startActivity(SIntent[T], p)
 
   @inline
-  def startService[T: ClassTag](
-      implicit context: Context
+  def startService[T: ClassTag](implicit
+      context: Context
   ): android.content.ComponentName =
     basis.startService(SIntent[T])
 

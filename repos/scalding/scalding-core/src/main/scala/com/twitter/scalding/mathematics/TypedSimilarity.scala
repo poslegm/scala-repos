@@ -258,8 +258,8 @@ object TypedSimilarity extends Serializable {
   * This algothm is just matrix multiplication done by hand to make it
   * clearer when we do the sampling implementation
   */
-class ExactInCosine[N](reducers: Int = -1)(
-    implicit override val nodeOrdering: Ordering[N]
+class ExactInCosine[N](reducers: Int = -1)(implicit
+    override val nodeOrdering: Ordering[N]
 ) extends TypedSimilarity[N, InDegree, Double] {
 
   def apply(

@@ -377,8 +377,8 @@ trait TraversableLike[+A, +Repr]
     result
   }
 
-  def scan[B >: A, That](z: B)(op: (B, B) => B)(
-      implicit cbf: CanBuildFrom[Repr, B, That]
+  def scan[B >: A, That](z: B)(op: (B, B) => B)(implicit
+      cbf: CanBuildFrom[Repr, B, That]
   ): That = scanLeft(z)(op)
 
   def scanLeft[B, That](
@@ -615,8 +615,8 @@ trait TraversableLike[+A, +Repr]
   def toIterator: Iterator[A] = toStream.iterator
   def toStream: Stream[A]     = toBuffer.toStream
   // Override to provide size hint.
-  override def to[Col[_]](
-      implicit cbf: CanBuildFrom[Nothing, A, Col[A @uV]]
+  override def to[Col[_]](implicit
+      cbf: CanBuildFrom[Nothing, A, Col[A @uV]]
   ): Col[A @uV] = {
     val b = cbf()
     b.sizeHint(this)

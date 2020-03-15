@@ -25,8 +25,8 @@ class FreeApplicativeTests extends CatsSuite {
       )
     )
 
-  implicit def freeApplicativeEq[S[_]: Applicative, A](
-      implicit SA: Eq[S[A]]
+  implicit def freeApplicativeEq[S[_]: Applicative, A](implicit
+      SA: Eq[S[A]]
   ): Eq[FreeApplicative[S, A]] =
     new Eq[FreeApplicative[S, A]] {
       def eqv(a: FreeApplicative[S, A], b: FreeApplicative[S, A]): Boolean = {

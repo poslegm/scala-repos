@@ -482,8 +482,8 @@ trait Wizard extends StatefulSnippet with Factory with ScreenWizardRendered {
     }) openOr AjaxOnDone.is
   }
 
-  protected def vendForm[T](
-      implicit man: Manifest[T]
+  protected def vendForm[T](implicit
+      man: Manifest[T]
   ): Box[(T, T => Any) => NodeSeq] = Empty
 
   /**

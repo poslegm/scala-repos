@@ -137,8 +137,8 @@ class VecDouble(values: Array[Double]) extends Vec[Double] { self =>
     }
   }
 
-  private[saddle] override def toDoubleArray(
-      implicit na: NUM[Double]
+  private[saddle] override def toDoubleArray(implicit
+      na: NUM[Double]
   ): Array[Double] = toArray
 
   private[saddle] override def toArray: Array[Double] = {

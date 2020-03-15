@@ -142,8 +142,8 @@ class ExpressionEncoderSuite extends PlanTest with AnalysisTest {
     "array of array of string"
   )
 
-  encodeDecodeTest(Map(1 -> "a", 2 -> "b"), "map")
-  encodeDecodeTest(Map(1 -> "a", 2 -> null), "map with null")
+  encodeDecodeTest(Map(1 -> "a", 2  -> "b"), "map")
+  encodeDecodeTest(Map(1 -> "a", 2  -> null), "map with null")
   encodeDecodeTest(Map(1 -> Map("a" -> 1), 2 -> Map("b" -> 2)), "map of map")
 
   encodeDecodeTest(Tuple1[Seq[Int]](null), "null seq in tuple")

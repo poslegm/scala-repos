@@ -125,8 +125,8 @@ trait DateFormat {
 }
 
 trait Serializer[A] {
-  def deserialize(
-      implicit format: Formats
+  def deserialize(implicit
+      format: Formats
   ): PartialFunction[(TypeInfo, JValue), A]
   def serialize(implicit format: Formats): PartialFunction[Any, JValue]
 }

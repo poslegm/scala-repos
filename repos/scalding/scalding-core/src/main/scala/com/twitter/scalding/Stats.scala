@@ -105,8 +105,8 @@ object Stats {
     cascadingStats.getCounterValue(key.group, key.counter)
 
   // Returns a map of all custom counter names and their counts.
-  def getAllCustomCounters()(
-      implicit cascadingStats: CascadingStats
+  def getAllCustomCounters()(implicit
+      cascadingStats: CascadingStats
   ): Map[String, Long] = {
     val counts = for {
       counter <- cascadingStats.getCountersFor(ScaldingGroup).asScala

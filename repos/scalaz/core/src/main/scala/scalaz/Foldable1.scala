@@ -10,8 +10,8 @@ trait Foldable1[F[_]] extends Foldable[F] { self =>
   ////
 
   /**The product of Foldable1 `F` and `G`, `[x](F[x], G[x]])`, is a Foldable1 */
-  def product[G[_]](
-      implicit G0: Foldable1[G]
+  def product[G[_]](implicit
+      G0: Foldable1[G]
   ): Foldable1[λ[α => (F[α], G[α])]] =
     new ProductFoldable1[F, G] {
       implicit def F = self
@@ -27,8 +27,8 @@ trait Foldable1[F[_]] extends Foldable[F] { self =>
 
   /** Map each element of the structure to a [[scalaz.Semigroup]], and combine the results. */
   def foldMap1[A, B](fa: F[A])(f: A => B)(implicit F: Semigroup[B]): B
-  override def foldMap1Opt[A, B](fa: F[A])(f: A => B)(
-      implicit F: Semigroup[B]
+  override def foldMap1Opt[A, B](fa: F[A])(f: A => B)(implicit
+      F: Semigroup[B]
   ): Option[B] = Some(foldMap1(fa)(f))
 
   /**Right-associative fold of a structure. */
@@ -168,8 +168,8 @@ trait Foldable1[F[_]] extends Foldable[F] { self =>
   final override def empty[A](fa: F[A]): Boolean = false
 
   /**The product of Foldable1 `F` and Foldable `G`, `[x](F[x], G[x]])`, is a Foldable1 */
-  def product0[G[_]](
-      implicit G0: Foldable[G]
+  def product0[G[_]](implicit
+      G0: Foldable[G]
   ): Foldable1[λ[α => (F[α], G[α])]] =
     new ProductFoldable1L[F, G] {
       def F = self

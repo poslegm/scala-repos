@@ -842,8 +842,8 @@ object Project extends ProjectExtra {
       scoped: ScopedKey[_]
   )(implicit display: Show[ScopedKey[_]]): SettingGraph =
     SettingGraph(structure, basedir, scoped, 0)
-  def graphSettings(structure: BuildStructure, basedir: File)(
-      implicit display: Show[ScopedKey[_]]
+  def graphSettings(structure: BuildStructure, basedir: File)(implicit
+      display: Show[ScopedKey[_]]
   ): Unit = {
     def graph(actual: Boolean, name: String) =
       graphSettings(structure, actual, name, new File(basedir, name + ".dot"))
@@ -860,8 +860,8 @@ object Project extends ProjectExtra {
     val keyToString = display.apply _
     DotGraph.generateGraph(file, graphName, rel, keyToString, keyToString)
   }
-  def relation(structure: BuildStructure, actual: Boolean)(
-      implicit display: Show[ScopedKey[_]]
+  def relation(structure: BuildStructure, actual: Boolean)(implicit
+      display: Show[ScopedKey[_]]
   ): Relation[ScopedKey[_], ScopedKey[_]] =
     relation(structure.settings, actual)(
       structure.delegates,
@@ -883,8 +883,8 @@ object Project extends ProjectExtra {
     }
   }
 
-  def showDefinitions(key: AttributeKey[_], defs: Seq[Scope])(
-      implicit display: Show[ScopedKey[_]]
+  def showDefinitions(key: AttributeKey[_], defs: Seq[Scope])(implicit
+      display: Show[ScopedKey[_]]
   ): String =
     showKeys(defs.map(scope => ScopedKey(scope, key)))
   def showUses(

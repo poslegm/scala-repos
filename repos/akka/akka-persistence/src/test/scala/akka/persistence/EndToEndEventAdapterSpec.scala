@@ -163,8 +163,8 @@ abstract class EndToEndEventAdapterSpec(
     |}
     """.stripMargin)
 
-  def persister(name: String, probe: Option[ActorRef] = None)(
-      implicit system: ActorSystem
+  def persister(name: String, probe: Option[ActorRef] = None)(implicit
+      system: ActorSystem
   ) =
     system.actorOf(
       Props(

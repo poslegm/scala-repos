@@ -319,7 +319,7 @@ class DefaultMatrixJoiner(sizeRatioThreshold: Long) extends MatrixJoiner2 {
       right: Matrix2[C, C2, V2]
   ): TypedPipe[(C, ((R, V), (C2, V2)))] = {
     implicit val cOrd: Ordering[C] = left.colOrd
-    val one                        = left.toTypedPipe.map { case (r, c, v) => (c, (r, v)) }.group
+    val one                        = left.toTypedPipe.map { case (r, c, v)    => (c, (r, v)) }.group
     val two                        = right.toTypedPipe.map { case (c, c2, v2) => (c, (c2, v2)) }.group
     val sizeOne                    = left.sizeHint.total.getOrElse(BigInt(1L))
     val sizeTwo                    = right.sizeHint.total.getOrElse(BigInt(1L))

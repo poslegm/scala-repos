@@ -117,8 +117,8 @@ object TypedPipeDiff {
 
     implicit class Diff[T](val left: TypedPipe[T]) extends AnyVal {
 
-      def diff(right: TypedPipe[T], reducers: Option[Int] = None)(
-          implicit ev: Ordering[T]
+      def diff(right: TypedPipe[T], reducers: Option[Int] = None)(implicit
+          ev: Ordering[T]
       ): UnsortedGrouped[T, (Long, Long)] =
         TypedPipeDiff.diff(left, right, reducers)
 

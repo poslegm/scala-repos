@@ -70,8 +70,8 @@ trait AuthResource extends RestResource {
     else throw AccessDeniedException()
   }
 
-  def isAuthorized[T](action: AuthorizedAction[T], resource: T)(
-      implicit identity: Identity
+  def isAuthorized[T](action: AuthorizedAction[T], resource: T)(implicit
+      identity: Identity
   ): Boolean = {
     authorizer.isAuthorized(identity, action, resource)
   }

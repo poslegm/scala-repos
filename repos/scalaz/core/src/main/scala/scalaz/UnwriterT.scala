@@ -97,8 +97,8 @@ final case class UnwriterT[F[_], U, A](run: F[(U, A)]) { self =>
 object UnwriterT extends UnwriterTInstances with UnwriterTFunctions
 
 sealed abstract class UnwriterTInstances2 {
-  implicit def unwriterTFunctor[F[_], W](
-      implicit F0: Functor[F]
+  implicit def unwriterTFunctor[F[_], W](implicit
+      F0: Functor[F]
   ): Functor[UnwriterT[F, W, ?]] =
     new UnwriterTFunctor[F, W] {
       implicit def F = F0
@@ -106,8 +106,8 @@ sealed abstract class UnwriterTInstances2 {
 }
 
 sealed abstract class UnwriterTInstances1 extends UnwriterTInstances2 {
-  implicit def unwriterTApply[F[_], W](
-      implicit F0: Apply[F]
+  implicit def unwriterTApply[F[_], W](implicit
+      F0: Apply[F]
   ): Apply[UnwriterT[F, W, ?]] =
     new UnwriterTApply[F, W] {
       implicit def F = F0
@@ -115,33 +115,33 @@ sealed abstract class UnwriterTInstances1 extends UnwriterTInstances2 {
 }
 
 sealed abstract class UnwriterTInstances0 extends UnwriterTInstances1 {
-  implicit def unwriterTBifunctor[F[_]](
-      implicit F0: Functor[F]
+  implicit def unwriterTBifunctor[F[_]](implicit
+      F0: Functor[F]
   ): Bifunctor[UnwriterT[F, ?, ?]] =
     new UnwriterTBifunctor[F] {
       implicit def F = F0
     }
-  implicit def unwriterTBind[F[_], W](
-      implicit F0: Bind[F]
+  implicit def unwriterTBind[F[_], W](implicit
+      F0: Bind[F]
   ): Bind[UnwriterT[F, W, ?]] =
     new UnwriterTBind[F, W] {
       implicit def F = F0
     }
-  implicit def unwriterTFoldable[F[_], W](
-      implicit F0: Foldable[F]
+  implicit def unwriterTFoldable[F[_], W](implicit
+      F0: Foldable[F]
   ): Foldable[UnwriterT[F, W, ?]] =
     new UnwriterTFoldable[F, W] {
       implicit def F = F0
     }
-  implicit def unwriterTEqual[F[_], W, A](
-      implicit E: Equal[F[(W, A)]]
+  implicit def unwriterTEqual[F[_], W, A](implicit
+      E: Equal[F[(W, A)]]
   ): Equal[UnwriterT[F, W, A]] =
     E.contramap((_: UnwriterT[F, W, A]).run)
 }
 
 sealed abstract class UnwriterTInstances extends UnwriterTInstances0 {
-  implicit def unwriterTBitraverse[F[_]](
-      implicit F0: Traverse[F]
+  implicit def unwriterTBitraverse[F[_]](implicit
+      F0: Traverse[F]
   ): Bitraverse[UnwriterT[F, ?, ?]] =
     new UnwriterTBitraverse[F] {
       implicit def F = F0
@@ -150,8 +150,8 @@ sealed abstract class UnwriterTInstances extends UnwriterTInstances0 {
     new UnwriterComonad[W] {
       implicit def F = implicitly
     }
-  implicit def unwriterTTraverse[F[_], W](
-      implicit F0: Traverse[F]
+  implicit def unwriterTTraverse[F[_], W](implicit
+      F0: Traverse[F]
   ): Traverse[UnwriterT[F, W, ?]] =
     new UnwriterTTraverse[F, W] {
       implicit def F = F0

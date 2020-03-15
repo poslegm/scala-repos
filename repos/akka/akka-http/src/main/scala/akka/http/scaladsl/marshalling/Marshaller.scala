@@ -11,8 +11,8 @@ import akka.http.scaladsl.util.FastFuture._
 
 sealed abstract class Marshaller[-A, +B] {
 
-  def apply(value: A)(
-      implicit ec: ExecutionContext
+  def apply(value: A)(implicit
+      ec: ExecutionContext
   ): Future[List[Marshalling[B]]]
 
   def map[C](f: B ⇒ C): Marshaller[A, C] =

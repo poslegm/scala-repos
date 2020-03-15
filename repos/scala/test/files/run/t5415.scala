@@ -1,6 +1,6 @@
 object Test extends App {
   case class Queryable2[T]() { def filter(predicate: T => Boolean) = ??? }
-  trait CoffeesTable         { def sales: Int }
+  trait CoffeesTable         { def sales: Int                      }
   val q = Queryable2[CoffeesTable]()
   import scala.reflect.runtime.universe._
   import scala.reflect.runtime.{universe => ru}

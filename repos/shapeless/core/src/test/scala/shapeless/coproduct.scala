@@ -404,8 +404,8 @@ class CoproductTests {
       Coproduct[ISB]("xyz")
     )
 
-    def assertPOEquals(expected: Option[Int], l: ISB, r: ISB)(
-        implicit po: PartialOrdering[ISB]
+    def assertPOEquals(expected: Option[Int], l: ISB, r: ISB)(implicit
+        po: PartialOrdering[ISB]
     ) = {
       val actual =
         po.tryCompare(l, r) map { i =>

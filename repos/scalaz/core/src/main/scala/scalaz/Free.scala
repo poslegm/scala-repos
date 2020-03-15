@@ -109,8 +109,8 @@ sealed abstract class Free[S[_], A] {
   final def flatMap[B](f: A => Free[S, B]): Free[S, B] = gosub(this)(f)
 
   /** Catamorphism. Run the first given function if Return, otherwise, the second given function. */
-  final def fold[B](r: A => B, s: S[Free[S, A]] => B)(
-      implicit S: Functor[S]
+  final def fold[B](r: A => B, s: S[Free[S, A]] => B)(implicit
+      S: Functor[S]
   ): B =
     resume.fold(s, r)
 

@@ -69,8 +69,8 @@ final class PNCounterMap private[akka] (
     * Increment the counter with the delta specified.
     * If the delta is negative then it will decrement instead of increment.
     */
-  def increment(key: String, delta: Long = 1)(
-      implicit node: Cluster
+  def increment(key: String, delta: Long = 1)(implicit
+      node: Cluster
   ): PNCounterMap =
     increment(node, key, delta)
 
@@ -97,8 +97,8 @@ final class PNCounterMap private[akka] (
     * Decrement the counter with the delta specified.
     * If the delta is negative then it will increment instead of decrement.
     */
-  def decrement(key: String, delta: Long = 1)(
-      implicit node: Cluster
+  def decrement(key: String, delta: Long = 1)(implicit
+      node: Cluster
   ): PNCounterMap =
     decrement(node, key, delta)
 

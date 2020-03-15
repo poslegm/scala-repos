@@ -262,8 +262,8 @@ trait ParSeqLike[+T, +Repr <: ParSeq[T], +Sequential <: Seq[T] with SeqLike[
       }
     } otherwise seq.endsWith(that)
 
-  def patch[U >: T, That](from: Int, patch: GenSeq[U], replaced: Int)(
-      implicit bf: CanBuildFrom[Repr, U, That]
+  def patch[U >: T, That](from: Int, patch: GenSeq[U], replaced: Int)(implicit
+      bf: CanBuildFrom[Repr, U, That]
   ): That = {
     val realreplaced = replaced min (length - from)
     if (patch.isParSeq && bf(repr).isCombiner &&
@@ -306,8 +306,8 @@ trait ParSeqLike[+T, +Repr <: ParSeq[T], +Sequential <: Seq[T] with SeqLike[
     setTaskSupport(b.result(), tasksupport)
   }
 
-  def updated[U >: T, That](index: Int, elem: U)(
-      implicit bf: CanBuildFrom[Repr, U, That]
+  def updated[U >: T, That](index: Int, elem: U)(implicit
+      bf: CanBuildFrom[Repr, U, That]
   ): That =
     if (bf(repr).isCombiner) {
       tasksupport.executeAndWaitResult(
@@ -337,8 +337,8 @@ trait ParSeqLike[+T, +Repr <: ParSeq[T], +Sequential <: Seq[T] with SeqLike[
     patch(length, mutable.ParArray(elem), 0)
   }
 
-  def padTo[U >: T, That](len: Int, elem: U)(
-      implicit bf: CanBuildFrom[Repr, U, That]
+  def padTo[U >: T, That](len: Int, elem: U)(implicit
+      bf: CanBuildFrom[Repr, U, That]
   ): That =
     if (length < len) {
       patch(length, new immutable.Repetition(elem, len - length), 0)

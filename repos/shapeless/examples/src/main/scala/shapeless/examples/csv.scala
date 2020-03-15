@@ -83,8 +83,8 @@ object CSVConverter {
         } yield Cons(x, xs)
     }
 
-  implicit def listCsvConverter[A](
-      implicit ec: CSVConverter[A]
+  implicit def listCsvConverter[A](implicit
+      ec: CSVConverter[A]
   ): CSVConverter[List[A]] =
     new CSVConverter[List[A]] {
       def from(s: String): Try[List[A]] =

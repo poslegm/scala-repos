@@ -735,8 +735,8 @@ package object numerics {
       }
     }
 
-    implicit def reduceDouble[T](
-        implicit iter: CanTraverseValues[T, Double]
+    implicit def reduceDouble[T](implicit
+        iter: CanTraverseValues[T, Double]
     ): Impl[T, Double] =
       new Impl[T, Double] {
         def apply(v: T): Double = {

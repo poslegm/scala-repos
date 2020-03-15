@@ -24,8 +24,8 @@ import play.api.libs.ws.ssl._
   * @param config a client configuration object
   */
 @deprecated("Use AhcWSClient instead", "2.5")
-case class NingWSClient(config: AsyncHttpClientConfig)(
-    implicit materializer: Materializer
+case class NingWSClient(config: AsyncHttpClientConfig)(implicit
+    materializer: Materializer
 ) extends WSClient {
 
   private val ahcWsClient = AhcWSClient(config)

@@ -2411,8 +2411,8 @@ trait Divide[F[_]] extends Contravariant[F] { self =>
 
   trait DivideLaw extends ContravariantLaw {
     protected[this] def delta[A]: A => (A, A) = a => (a, a)
-    def composition[A](a1: F[A], a2: F[A], a3: F[A])(
-        implicit E: Equal[F[A]]
+    def composition[A](a1: F[A], a2: F[A], a3: F[A])(implicit
+        E: Equal[F[A]]
     ): Boolean = {
       val x = divide(divide(a1, a2)(delta[A]), a3)(delta[A])
       val y = divide(a1, divide(a2, a3)(delta[A]))(delta[A])

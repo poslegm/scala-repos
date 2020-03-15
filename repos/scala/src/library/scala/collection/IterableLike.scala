@@ -289,8 +289,8 @@ trait IterableLike[+A, +Repr]
     b.result()
   }
 
-  def zipWithIndex[A1 >: A, That](
-      implicit bf: CanBuildFrom[Repr, (A1, Int), That]
+  def zipWithIndex[A1 >: A, That](implicit
+      bf: CanBuildFrom[Repr, (A1, Int), That]
   ): That = {
     val b = bf(repr)
     var i = 0

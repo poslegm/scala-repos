@@ -521,8 +521,8 @@ private final class IRChecker(unit: LinkingUnit, logger: Logger) {
     }
   }
 
-  private def typecheckExpect(tree: Tree, env: Env, expectedType: Type)(
-      implicit ctx: ErrorContext
+  private def typecheckExpect(tree: Tree, env: Env, expectedType: Type)(implicit
+      ctx: ErrorContext
   ): Unit = {
     val tpe = typecheckExpr(tree, env)
     if (!isSubtype(tpe, expectedType))
@@ -919,8 +919,8 @@ private final class IRChecker(unit: LinkingUnit, logger: Logger) {
     tree.tpe
   }
 
-  private def inferMethodType(encodedName: String, isStatic: Boolean)(
-      implicit ctx: ErrorContext
+  private def inferMethodType(encodedName: String, isStatic: Boolean)(implicit
+      ctx: ErrorContext
   ): (List[Type], Type) = {
 
     val (_, paramRefTypes, resultRefType) = decodeMethodName(encodedName)
@@ -1025,8 +1025,8 @@ private final class IRChecker(unit: LinkingUnit, logger: Logger) {
     lookupClass(classType.className)
   }
 
-  private def isSubclass(lhs: String, rhs: String)(
-      implicit ctx: ErrorContext
+  private def isSubclass(lhs: String, rhs: String)(implicit
+      ctx: ErrorContext
   ): Boolean = {
     tryLookupClass(lhs).fold(
       { info =>
@@ -1037,8 +1037,8 @@ private final class IRChecker(unit: LinkingUnit, logger: Logger) {
     )
   }
 
-  private def isSubtype(lhs: Type, rhs: Type)(
-      implicit ctx: ErrorContext
+  private def isSubtype(lhs: Type, rhs: Type)(implicit
+      ctx: ErrorContext
   ): Boolean = {
     Types.isSubtype(lhs, rhs)(isSubclass)
   }

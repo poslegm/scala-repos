@@ -138,8 +138,8 @@ trait AccountManager[M[+_]] extends AccountFinder[M] {
 
   def findAccountByEmail(email: String): M[Option[Account]]
 
-  def hasAncestor(child: Account, ancestor: Account)(
-      implicit M: Monad[M]
+  def hasAncestor(child: Account, ancestor: Account)(implicit
+      M: Monad[M]
   ): M[Boolean] = {
     if (child == ancestor) {
       true.point[M]
@@ -156,8 +156,8 @@ trait AccountManager[M[+_]] extends AccountFinder[M] {
     }
   }
 
-  def authAccount(email: String, password: String)(
-      implicit M: Monad[M]
+  def authAccount(email: String, password: String)(implicit
+      M: Monad[M]
   ): M[Validation[String, Account]] = {
     findAccountByEmail(email) map {
       case Some(account)

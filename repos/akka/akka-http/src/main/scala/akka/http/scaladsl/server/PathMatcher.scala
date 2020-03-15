@@ -65,8 +65,8 @@ abstract class PathMatcher[L](implicit val ev: Tuple[L])
   /**
     * Same as `repeat(min = count, max = count, separator = separator)`.
     */
-  def repeat(count: Int, separator: PathMatcher0)(
-      implicit lift: PathMatcher.Lift[L, List]
+  def repeat(count: Int, separator: PathMatcher0)(implicit
+      lift: PathMatcher.Lift[L, List]
   ): PathMatcher[lift.Out] =
     repeat(min = count, max = count, separator = separator)
 
@@ -227,8 +227,8 @@ object PathMatcher extends ImplicitPathMatcherConstruction {
         def apply(value: Unit)            = value
         def apply(value: Unit, more: Out) = value
       }
-    implicit def liftSingleElement[A, M[+_]](
-        implicit mops: MOps[M]
+    implicit def liftSingleElement[A, M[+_]](implicit
+        mops: MOps[M]
     ): Lift[Tuple1[A], M] { type Out = Tuple1[M[A]] } =
       new Lift[Tuple1[A], M] {
         type Out = Tuple1[M[A]]
@@ -242,8 +242,8 @@ object PathMatcher extends ImplicitPathMatcherConstruction {
 
   trait LowLevelLiftImplicits {
     import Lift._
-    implicit def default[T, M[+_]](
-        implicit mops: MOps[M]
+    implicit def default[T, M[+_]](implicit
+        mops: MOps[M]
     ): Lift[T, M] { type Out = Tuple1[M[T]] } =
       new Lift[T, M] {
         type Out = Tuple1[M[T]]

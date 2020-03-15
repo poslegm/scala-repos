@@ -19,8 +19,8 @@ trait SprayJsonSupport {
       reader: RootJsonReader[T]
   ): FromEntityUnmarshaller[T] =
     sprayJsonUnmarshaller(reader)
-  implicit def sprayJsonUnmarshaller[T](
-      implicit reader: RootJsonReader[T]
+  implicit def sprayJsonUnmarshaller[T](implicit
+      reader: RootJsonReader[T]
   ): FromEntityUnmarshaller[T] =
     sprayJsValueUnmarshaller.map(jsonReader[T].read)
   implicit def sprayJsValueUnmarshaller: FromEntityUnmarshaller[JsValue] =
@@ -45,8 +45,8 @@ trait SprayJsonSupport {
       printer: JsonPrinter = PrettyPrinter
   ): ToEntityMarshaller[T] =
     sprayJsValueMarshaller compose writer.write
-  implicit def sprayJsValueMarshaller(
-      implicit printer: JsonPrinter = PrettyPrinter
+  implicit def sprayJsValueMarshaller(implicit
+      printer: JsonPrinter = PrettyPrinter
   ): ToEntityMarshaller[JsValue] =
     Marshaller.StringMarshaller.wrap(MediaTypes.`application/json`)(printer)
 }

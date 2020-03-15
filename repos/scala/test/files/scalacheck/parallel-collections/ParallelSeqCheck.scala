@@ -66,7 +66,7 @@ abstract class ParallelSeqCheck[T](collName: String)
 
   def collectionTripletsWith2Indices
       : Gen[(Seq[T], CollType, Seq[T], Int, Int)] =
-    for (inst    <- instances(values); f <- choose(0, inst.size);
+    for (inst    <- instances(values); f          <- choose(0, inst.size);
          s       <- choose(0, inst.size - f);
          third   <- instances(values); sliceStart <- choose(0, inst.size);
          howMany <- choose(0, inst.size)) yield {

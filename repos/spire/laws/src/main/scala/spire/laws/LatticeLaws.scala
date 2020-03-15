@@ -72,16 +72,16 @@ trait LatticeLaws[A] extends Laws {
       )
     )
 
-  def boundedBelowLattice(
-      implicit A: Lattice[A] with BoundedJoinSemilattice[A]
+  def boundedBelowLattice(implicit
+      A: Lattice[A] with BoundedJoinSemilattice[A]
   ) =
     new LatticeProperties(
       name = "boundedBelowLattice",
       parents = Seq(boundedJoinSemilattice, lattice)
     )
 
-  def boundedAboveLattice(
-      implicit A: Lattice[A] with BoundedMeetSemilattice[A]
+  def boundedAboveLattice(implicit
+      A: Lattice[A] with BoundedMeetSemilattice[A]
   ) =
     new LatticeProperties(
       name = "boundedAboveLattice",

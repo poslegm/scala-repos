@@ -198,7 +198,7 @@ trait Logic extends Debugging {
       // push negation inside formula
       def negationNormalFormNot(p: Prop): Prop =
         p match {
-          case And(ops) => Or(ops.map(negationNormalFormNot)) // De'Morgan
+          case And(ops) => Or(ops.map(negationNormalFormNot))  // De'Morgan
           case Or(ops)  => And(ops.map(negationNormalFormNot)) // De'Morgan
           case Not(p)   => negationNormalForm(p)
           case True     => False

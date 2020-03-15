@@ -224,8 +224,8 @@ object Counter extends CounterOps {
     }
   }
 
-  implicit def space[K, V](
-      implicit field: Field[V]
+  implicit def space[K, V](implicit
+      field: Field[V]
   ): MutableEnumeratedCoordinateField[Counter[K, V], K, V] = {
     implicit def zipMap = Counter.zipMap[K, V, V]
     MutableEnumeratedCoordinateField.make[Counter[K, V], K, V]

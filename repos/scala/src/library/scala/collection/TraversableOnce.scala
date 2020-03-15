@@ -302,8 +302,8 @@ trait TraversableOnce[+A] extends Any with GenTraversableOnce[A] { self =>
 
   def toVector: Vector[A] = to[Vector]
 
-  def to[Col[_]](
-      implicit cbf: CanBuildFrom[Nothing, A, Col[A @uV]]
+  def to[Col[_]](implicit
+      cbf: CanBuildFrom[Nothing, A, Col[A @uV]]
   ): Col[A @uV] = {
     val b = cbf()
     b ++= seq

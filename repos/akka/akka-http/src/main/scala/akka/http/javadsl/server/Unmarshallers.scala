@@ -39,8 +39,8 @@ object Unmarshallers {
       )
     )(ClassTag(clazz))
 
-  private def implicitInstance[T: ClassTag](
-      implicit um: FromMessageUnmarshaller[T]
+  private def implicitInstance[T: ClassTag](implicit
+      um: FromMessageUnmarshaller[T]
   ): Unmarshaller[T] =
     new UnmarshallerImpl[T](um)
 }

@@ -81,8 +81,8 @@ final class TupleOps[T](t: T) extends Serializable {
   /**
     * Prepend the reverse of the argument tuple to this tuple.
     */
-  def reverse_:::[U](u: U)(
-      implicit prepend: ReversePrepend[U, T]
+  def reverse_:::[U](u: U)(implicit
+      prepend: ReversePrepend[U, T]
   ): prepend.Out = prepend(u, t)
 
   /**
@@ -181,8 +181,8 @@ final class TupleOps[T](t: T) extends Serializable {
     * The `Elem` suffix is here for consistency with the corresponding method name for `HList` and should be
     * removed when the latter is removed.
     */
-  def updatedElem[U, R](u: U)(
-      implicit replacer: Replacer.Aux[T, U, U, (U, R)]
+  def updatedElem[U, R](u: U)(implicit
+      replacer: Replacer.Aux[T, U, U, (U, R)]
   ): R = replacer(t, u)._2
 
   class UpdatedTypeAux[U] {
@@ -237,8 +237,8 @@ final class TupleOps[T](t: T) extends Serializable {
     * Replaces the ''nth' element of this tuple with the supplied value of type `U`. Available only if there is
     * evidence that this tuple has at least ''n'' elements.
     */
-  def updatedAt[U, V, R](n: Nat, u: U)(
-      implicit replacer: ReplaceAt.Aux[T, n.N, U, (V, R)]
+  def updatedAt[U, V, R](n: Nat, u: U)(implicit
+      replacer: ReplaceAt.Aux[T, n.N, U, (V, R)]
   ): R =
     replacer(t, u)._2
 
@@ -305,8 +305,8 @@ final class TupleOps[T](t: T) extends Serializable {
     * as a pair. An explicit type argument must be provided. Available only if there is evidence that this tuple has
     * an element of type `U`.
     */
-  def reverse_splitLeft[U](
-      implicit splitLeft: ReverseSplitLeft[T, U]
+  def reverse_splitLeft[U](implicit
+      splitLeft: ReverseSplitLeft[T, U]
   ): splitLeft.Out = splitLeft(t)
 
   /**
@@ -322,8 +322,8 @@ final class TupleOps[T](t: T) extends Serializable {
     * as a pair. An explicit type argument must be provided. Available only if there is evidence that this tuple has
     * an element of type `U`.
     */
-  def reverse_splitRight[U](
-      implicit splitRight: ReverseSplitRight[T, U]
+  def reverse_splitRight[U](implicit
+      splitRight: ReverseSplitRight[T, U]
   ): splitRight.Out =
     splitRight(t)
 
@@ -360,24 +360,24 @@ final class TupleOps[T](t: T) extends Serializable {
     * `op`. Available only if there is evidence that the result type of `f` at each element conforms to the argument
     * type of ''op''.
     */
-  def foldMap[R](z: R)(f: Poly)(op: (R, R) => R)(
-      implicit folder: MapFolder[T, R, f.type]
+  def foldMap[R](z: R)(f: Poly)(op: (R, R) => R)(implicit
+      folder: MapFolder[T, R, f.type]
   ): R = folder(t, z, op)
 
   /**
     * Computes a left fold over this tuple using the polymorphic binary combining operator `op`. Available only if
     * there is evidence `op` can consume/produce all the partial results of the appropriate types.
     */
-  def foldLeft[R](z: R)(op: Poly)(
-      implicit folder: LeftFolder[T, R, op.type]
+  def foldLeft[R](z: R)(op: Poly)(implicit
+      folder: LeftFolder[T, R, op.type]
   ): folder.Out = folder(t, z)
 
   /**
     * Computes a right fold over this tuple using the polymorphic binary combining operator `op`. Available only if
     * there is evidence `op` can consume/produce all the partial results of the appropriate types.
     */
-  def foldRight[R](z: R)(op: Poly)(
-      implicit folder: RightFolder[T, R, op.type]
+  def foldRight[R](z: R)(op: Poly)(implicit
+      folder: RightFolder[T, R, op.type]
   ): folder.Out = folder(t, z)
 
   /**
@@ -385,8 +385,8 @@ final class TupleOps[T](t: T) extends Serializable {
     * there is evidence that this tuple has at least one element and that `op` can consume/produce all the partial
     * results of the appropriate types.
     */
-  def reduceLeft(op: Poly)(
-      implicit reducer: LeftReducer[T, op.type]
+  def reduceLeft(op: Poly)(implicit
+      reducer: LeftReducer[T, op.type]
   ): reducer.Out = reducer(t)
 
   /**
@@ -394,8 +394,8 @@ final class TupleOps[T](t: T) extends Serializable {
     * there is evidence that this tuple has at least one element and that `op` can consume/produce all the partial
     * results of the appropriate types.
     */
-  def reduceRight(op: Poly)(
-      implicit reducer: RightReducer[T, op.type]
+  def reduceRight(op: Poly)(implicit
+      reducer: RightReducer[T, op.type]
   ): reducer.Out = reducer(t)
 
   /**
@@ -457,8 +457,8 @@ final class TupleOps[T](t: T) extends Serializable {
   /**
     * Returns a tuple with all elements that are subtypes of `B` typed as `B`.
     */
-  def unifySubtypes[B](
-      implicit subtypeUnifier: SubtypeUnifier[T, B]
+  def unifySubtypes[B](implicit
+      subtypeUnifier: SubtypeUnifier[T, B]
   ): subtypeUnifier.Out =
     subtypeUnifier(t)
 
@@ -478,8 +478,8 @@ final class TupleOps[T](t: T) extends Serializable {
     * Converts this tuple to a `List` of elements typed as the least upper bound of the types of the elements
     * of this tuple.
     */
-  def toList[Lub](
-      implicit toTraversable: ToTraversable.Aux[T, List, Lub]
+  def toList[Lub](implicit
+      toTraversable: ToTraversable.Aux[T, List, Lub]
   ): toTraversable.Out = toTraversable(t)
 
   /**
@@ -490,8 +490,8 @@ final class TupleOps[T](t: T) extends Serializable {
     * particular, the inferred type will be too precise (ie. `Product with Serializable with CC` for a typical case class
     * `CC`) which interacts badly with the invariance of `Array`s.
     */
-  def toArray[Lub](
-      implicit toTraversable: ToTraversable.Aux[T, Array, Lub]
+  def toArray[Lub](implicit
+      toTraversable: ToTraversable.Aux[T, Array, Lub]
   ): toTraversable.Out = toTraversable(t)
 
   /**
@@ -509,16 +509,16 @@ final class TupleOps[T](t: T) extends Serializable {
   /**
     * Displays all elements of this tuple in a string using start, end, and separator strings.
     */
-  def mkString(start: String, sep: String, end: String)(
-      implicit toTraversable: ToTraversable.Aux[T, List, Any]
+  def mkString(start: String, sep: String, end: String)(implicit
+      toTraversable: ToTraversable.Aux[T, List, Any]
   ): String =
     this.toList.mkString(start, sep, end)
 
   /**
     * Rotate this tuple left by N
     */
-  def rotateLeft(n: Nat)(
-      implicit rotateLeft: RotateLeft[T, n.N]
+  def rotateLeft(n: Nat)(implicit
+      rotateLeft: RotateLeft[T, n.N]
   ): rotateLeft.Out = rotateLeft(t)
 
   /**
@@ -533,16 +533,16 @@ final class TupleOps[T](t: T) extends Serializable {
     * Computes a left scan over this tuple using the polymorphic binary combining operator `op`. Available only if
     * there is evidence `op` can consume/produce all the results of the appropriate types.
     */
-  def scanLeft[Z, P <: Poly](z: Z)(op: Poly)(
-      implicit scanL: LeftScanner[T, Z, op.type]
+  def scanLeft[Z, P <: Poly](z: Z)(op: Poly)(implicit
+      scanL: LeftScanner[T, Z, op.type]
   ): scanL.Out = scanL(t, z)
 
   /**
     * Computes a left scan over this tuple using the polymorphic binary combining operator `op`. Available only if
     * there is evidence `op` can consume/produce all the results of the appropriate types.
     */
-  def scanRight[Z, P <: Poly](z: Z)(op: Poly)(
-      implicit scanR: RightScanner[T, Z, op.type]
+  def scanRight[Z, P <: Poly](z: Z)(op: Poly)(implicit
+      scanR: RightScanner[T, Z, op.type]
   ): scanR.Out = scanR(t, z)
 
   /**
@@ -550,8 +550,8 @@ final class TupleOps[T](t: T) extends Serializable {
     * Produces a new tuple where a slice of this tuple is replaced by another. Available only if there are at least
     * ``n`` plus ``m`` elements.
     */
-  def patch[In](n: Nat, in: In, m: Nat)(
-      implicit patcher: Patcher[n.N, m.N, T, In]
+  def patch[In](n: Nat, in: In, m: Nat)(implicit
+      patcher: Patcher[n.N, m.N, T, In]
   ): patcher.Out = patcher(t, in)
 
   /**
@@ -570,8 +570,8 @@ final class TupleOps[T](t: T) extends Serializable {
     *
     * @author Andreas Koestler
     */
-  def group(n: Nat, step: Nat)(
-      implicit grouper: Grouper[T, n.N, step.N]
+  def group(n: Nat, step: Nat)(implicit
+      grouper: Grouper[T, n.N, step.N]
   ): grouper.Out = grouper(t)
 
   /**
@@ -579,8 +579,8 @@ final class TupleOps[T](t: T) extends Serializable {
     * Use elements in `pad` as necessary to complete last group up to `n` items.
     * @author Andreas Koestler
     */
-  def group[Pad](n: Nat, step: Nat, pad: Pad)(
-      implicit grouper: PaddedGrouper[T, n.N, step.N, Pad]
+  def group[Pad](n: Nat, step: Nat, pad: Pad)(implicit
+      grouper: PaddedGrouper[T, n.N, step.N, Pad]
   ): grouper.Out =
     grouper(t, pad)
 }

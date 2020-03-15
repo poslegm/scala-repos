@@ -237,7 +237,7 @@ private[ml] object DefaultParamsWriter {
         p.name -> parse(p.jsonEncode(v))
     }.toList))
     val basicMetadata =
-      ("class"          -> cls) ~ ("timestamp" -> System.currentTimeMillis()) ~
+      ("class"          -> cls) ~ ("timestamp"  -> System.currentTimeMillis()) ~
         ("sparkVersion" -> sc.version) ~ ("uid" -> uid) ~
         ("paramMap"     -> jsonParams)
     val metadata = extraMetadata match {

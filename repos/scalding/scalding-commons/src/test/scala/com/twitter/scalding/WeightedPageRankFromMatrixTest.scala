@@ -44,7 +44,7 @@ class WeightedPageRankFromMatrixSpec extends WordSpec with Matchers {
     )
 
     val d                   = 0.4d // damping factor
-    val n                   = 5 // number of nodes
+    val n                   = 5    // number of nodes
     val onesVector          = filledColumnVector(1d, n)
     val iterationZeroVector = filledColumnVector(1d / n, n)
 

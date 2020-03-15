@@ -154,13 +154,13 @@ private[data] sealed trait OptionTInstances extends OptionTInstances1 {
         fa.map(f)
     }
 
-  implicit def optionTEq[F[_], A](
-      implicit FA: Eq[F[Option[A]]]
+  implicit def optionTEq[F[_], A](implicit
+      FA: Eq[F[Option[A]]]
   ): Eq[OptionT[F, A]] =
     FA.on(_.value)
 
-  implicit def optionTShow[F[_], A](
-      implicit F: Show[F[Option[A]]]
+  implicit def optionTShow[F[_], A](implicit
+      F: Show[F[Option[A]]]
   ): Show[OptionT[F, A]] =
     functor.Contravariant[Show].contramap(F)(_.value)
 }

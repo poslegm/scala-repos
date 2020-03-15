@@ -16,8 +16,8 @@ object TreeMap extends MutableSortedMapFactory[TreeMap] {
   def empty[A, B](implicit ord: Ordering[A]) = new TreeMap[A, B]()(ord)
 
   /** $sortedMapCanBuildFromInfo */
-  implicit def canBuildFrom[A, B](
-      implicit ord: Ordering[A]
+  implicit def canBuildFrom[A, B](implicit
+      ord: Ordering[A]
   ): CanBuildFrom[Coll, (A, B), TreeMap[A, B]] =
     new SortedMapCanBuildFrom[A, B]
 }
@@ -37,8 +37,8 @@ object TreeMap extends MutableSortedMapFactory[TreeMap] {
   * @define coll mutable tree map
   */
 @SerialVersionUID(-2558985573956740112L)
-sealed class TreeMap[A, B] private (tree: RB.Tree[A, B])(
-    implicit val ordering: Ordering[A]
+sealed class TreeMap[A, B] private (tree: RB.Tree[A, B])(implicit
+    val ordering: Ordering[A]
 ) extends AbstractSortedMap[A, B]
     with SortedMap[A, B]
     with MapLike[A, B, TreeMap[A, B]]

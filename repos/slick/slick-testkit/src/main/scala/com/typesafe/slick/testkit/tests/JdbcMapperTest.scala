@@ -375,7 +375,9 @@ class JdbcMapperTest extends AsyncTest[JdbcTestDB] {
 
     // A Shape that maps Pair to a ProductNode
     final class PairShape[
-        Level <: ShapeLevel, M <: Pair[_, _], U <: Pair[_, _]: ClassTag,
+        Level <: ShapeLevel,
+        M <: Pair[_, _],
+        U <: Pair[_, _]: ClassTag,
         P <: Pair[_, _]
     ](val shapes: Seq[Shape[_, _, _, _]])
         extends MappedScalaProductShape[Level, Pair[_, _], M, U, P] {

@@ -39,8 +39,8 @@ trait PredefinedFromStringUnmarshallers {
       }
     }
 
-  implicit def CsvSeq[T](
-      implicit unmarshaller: Unmarshaller[String, T]
+  implicit def CsvSeq[T](implicit
+      unmarshaller: Unmarshaller[String, T]
   ): Unmarshaller[String, immutable.Seq[T]] =
     Unmarshaller.strict[String, immutable.Seq[String]] { string ⇒
       string.split(",").toList

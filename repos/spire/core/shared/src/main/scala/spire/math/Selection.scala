@@ -77,8 +77,8 @@ trait SelectLike extends Any with Select {
     }
   }
 
-  final def equalSpan[@sp A](data: Array[A], offset: Int, stride: Int)(
-      implicit o: Order[A]
+  final def equalSpan[@sp A](data: Array[A], offset: Int, stride: Int)(implicit
+      o: Order[A]
   ): Int = {
     val m   = data(offset)
     var i   = offset + stride
@@ -128,8 +128,8 @@ trait SelectLike extends Any with Select {
 }
 
 trait MutatingMedianOf5 {
-  final def mo5[@sp A](data: Array[A], offset: Int, stride: Int)(
-      implicit o: Order[A]
+  final def mo5[@sp A](data: Array[A], offset: Int, stride: Int)(implicit
+      o: Order[A]
   ): Unit = {
     var i0 = offset
     var i1 = offset + 1 * stride
@@ -174,8 +174,8 @@ trait HighBranchingMedianOf5 {
   // Benchmarks show that this is slightly faster than the version above.
 
   // scalastyle:off method.length
-  final def mo5[@sp A](data: Array[A], offset: Int, stride: Int)(
-      implicit o: Order[A]
+  final def mo5[@sp A](data: Array[A], offset: Int, stride: Int)(implicit
+      o: Order[A]
   ): Unit = {
     val ai1 = data(offset)
     val ai2 = data(offset + stride)

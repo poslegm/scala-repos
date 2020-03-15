@@ -67,8 +67,8 @@ object Merge {
     * m: JObject(List((name,JString(joe)), (age,JInt(10)), (iq,JInt(105))))
     * </pre>
     */
-  def merge[A <: JValue, B <: JValue, R <: JValue](val1: A, val2: B)(
-      implicit instance: MergeDep[A, B, R]
+  def merge[A <: JValue, B <: JValue, R <: JValue](val1: A, val2: B)(implicit
+      instance: MergeDep[A, B, R]
   ): R = instance(val1, val2)
 
   private[json] def mergeFields(

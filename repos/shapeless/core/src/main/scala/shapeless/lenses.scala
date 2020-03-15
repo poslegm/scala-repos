@@ -200,8 +200,8 @@ object OpticDefns {
   }
 
   class RootLens[C] extends Lens[C, C] {
-    def apply[P <: HList](path: Path[P])(
-        implicit mkPath: MkPathOptic[C, P]
+    def apply[P <: HList](path: Path[P])(implicit
+        mkPath: MkPathOptic[C, P]
     ): mkPath.Out = mkPath()
 
     def get(c: C): C       = c
@@ -235,16 +235,16 @@ object OpticDefns {
   def hlistSelectLens[L <: HList, U](implicit mkLens: MkHListSelectLens[L, U]) =
     mkLens()
 
-  def coproductSelectPrism[C <: Coproduct, T](
-      implicit mkPrism: MkCoproductSelectPrism[C, T]
+  def coproductSelectPrism[C <: Coproduct, T](implicit
+      mkPrism: MkCoproductSelectPrism[C, T]
   ) = mkPrism()
 
-  def hlistNthLens[L <: HList, N <: Nat](
-      implicit mkLens: MkHListNthLens[L, N]
+  def hlistNthLens[L <: HList, N <: Nat](implicit
+      mkLens: MkHListNthLens[L, N]
   ) = mkLens()
 
-  def recordLens[R <: HList](k: Witness)(
-      implicit mkLens: MkRecordSelectLens[R, k.T]
+  def recordLens[R <: HList](k: Witness)(implicit
+      mkLens: MkRecordSelectLens[R, k.T]
   ) = mkLens()
 }
 
@@ -346,8 +346,8 @@ object InferProduct {
       type Prod = P
     }
 
-  implicit def inferProduct2[H, T <: Coproduct, K, P](
-      implicit it: Aux[T, K, P]
+  implicit def inferProduct2[H, T <: Coproduct, K, P](implicit
+      it: Aux[T, K, P]
   ): Aux[H :+: T, K, P] =
     new InferProduct[H :+: T, K] {
       type Prod = P
@@ -434,8 +434,8 @@ trait MkLabelledGenericLens[T] extends Serializable {
 object MkLabelledGenericLens {
   type Aux[T, Repr0] = MkLabelledGenericLens[T] { type Repr = Repr0 }
 
-  implicit def mkLabelledGenericLens[T](
-      implicit gen: LabelledGeneric[T]
+  implicit def mkLabelledGenericLens[T](implicit
+      gen: LabelledGeneric[T]
   ): Aux[T, gen.Repr] =
     new MkLabelledGenericLens[T] {
       type Repr = gen.Repr

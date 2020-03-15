@@ -163,8 +163,8 @@ trait Future[+T] extends Awaitable[T] {
     * @tparam U    only used to accept any return type of the given callback function
     * @param f     the function to be executed when this `Future` completes
     */
-  def onComplete[U](@deprecatedName('func) f: Try[T] => U)(
-      implicit executor: ExecutionContext
+  def onComplete[U](@deprecatedName('func) f: Try[T] => U)(implicit
+      executor: ExecutionContext
   ): Unit
 
   /* Miscellaneous */
@@ -236,8 +236,8 @@ trait Future[+T] extends Awaitable[T] {
     *  @param  f  function that transforms a failure of the receiver into a failure of the returned future
     *  @return    a `Future` that will be completed with the transformed value
     */
-  def transform[S](s: T => S, f: Throwable => Throwable)(
-      implicit executor: ExecutionContext
+  def transform[S](s: T => S, f: Throwable => Throwable)(implicit
+      executor: ExecutionContext
   ): Future[S] =
     transform {
       case Success(r) => Try(s(r))
@@ -252,8 +252,8 @@ trait Future[+T] extends Awaitable[T] {
     *  @param  f  function that transforms the result of this future
     *  @return    a `Future` that will be completed with the transformed value
     */
-  def transform[S](f: Try[T] => Try[S])(
-      implicit executor: ExecutionContext
+  def transform[S](f: Try[T] => Try[S])(implicit
+      executor: ExecutionContext
   ): Future[S]
 
   /** Creates a new Future by applying the specified function, which produces a Future, to the result
@@ -264,8 +264,8 @@ trait Future[+T] extends Awaitable[T] {
     *  @param  f  function that transforms the result of this future
     *  @return    a `Future` that will be completed with the transformed value
     */
-  def transformWith[S](f: Try[T] => Future[S])(
-      implicit executor: ExecutionContext
+  def transformWith[S](f: Try[T] => Future[S])(implicit
+      executor: ExecutionContext
   ): Future[S]
 
   /** Creates a new future by applying a function to the successful result of
@@ -350,8 +350,8 @@ trait Future[+T] extends Awaitable[T] {
 
   /** Used by for-comprehensions.
     */
-  final def withFilter(p: T => Boolean)(
-      implicit executor: ExecutionContext
+  final def withFilter(p: T => Boolean)(implicit
+      executor: ExecutionContext
   ): Future[T] = filter(p)(executor)
 
   /** Creates a new future by mapping the value of the current future, if the given partial function is defined at that value.
@@ -605,43 +605,43 @@ object Future {
       throw new TimeoutException(s"Future timed out after [$atMost]")
     }
 
-    override def onSuccess[U](pf: PartialFunction[Nothing, U])(
-        implicit executor: ExecutionContext
+    override def onSuccess[U](pf: PartialFunction[Nothing, U])(implicit
+        executor: ExecutionContext
     ): Unit = ()
-    override def onFailure[U](pf: PartialFunction[Throwable, U])(
-        implicit executor: ExecutionContext
+    override def onFailure[U](pf: PartialFunction[Throwable, U])(implicit
+        executor: ExecutionContext
     ): Unit = ()
-    override def onComplete[U](f: Try[Nothing] => U)(
-        implicit executor: ExecutionContext
+    override def onComplete[U](f: Try[Nothing] => U)(implicit
+        executor: ExecutionContext
     ): Unit                                  = ()
     override def isCompleted: Boolean        = false
     override def value: Option[Try[Nothing]] = None
     override def failed: Future[Throwable]   = this
-    override def foreach[U](f: Nothing => U)(
-        implicit executor: ExecutionContext
+    override def foreach[U](f: Nothing => U)(implicit
+        executor: ExecutionContext
     ): Unit = ()
     override def transform[S](s: Nothing => S, f: Throwable => Throwable)(
         implicit executor: ExecutionContext
     ): Future[S] = this
-    override def transform[S](f: Try[Nothing] => Try[S])(
-        implicit executor: ExecutionContext
+    override def transform[S](f: Try[Nothing] => Try[S])(implicit
+        executor: ExecutionContext
     ): Future[S] = this
-    override def transformWith[S](f: Try[Nothing] => Future[S])(
-        implicit executor: ExecutionContext
+    override def transformWith[S](f: Try[Nothing] => Future[S])(implicit
+        executor: ExecutionContext
     ): Future[S] = this
-    override def map[S](f: Nothing => S)(
-        implicit executor: ExecutionContext
+    override def map[S](f: Nothing => S)(implicit
+        executor: ExecutionContext
     ): Future[S] = this
-    override def flatMap[S](f: Nothing => Future[S])(
-        implicit executor: ExecutionContext
+    override def flatMap[S](f: Nothing => Future[S])(implicit
+        executor: ExecutionContext
     ): Future[S] = this
     override def flatten[S](implicit ev: Nothing <:< Future[S]): Future[S] =
       this
-    override def filter(p: Nothing => Boolean)(
-        implicit executor: ExecutionContext
+    override def filter(p: Nothing => Boolean)(implicit
+        executor: ExecutionContext
     ): Future[Nothing] = this
-    override def collect[S](pf: PartialFunction[Nothing, S])(
-        implicit executor: ExecutionContext
+    override def collect[S](pf: PartialFunction[Nothing, S])(implicit
+        executor: ExecutionContext
     ): Future[S] = this
     override def recover[U >: Nothing](pf: PartialFunction[Throwable, U])(
         implicit executor: ExecutionContext
@@ -650,13 +650,13 @@ object Future {
         pf: PartialFunction[Throwable, Future[U]]
     )(implicit executor: ExecutionContext): Future[U]          = this
     override def zip[U](that: Future[U]): Future[(Nothing, U)] = this
-    override def zipWith[U, R](that: Future[U])(f: (Nothing, U) => R)(
-        implicit executor: ExecutionContext
+    override def zipWith[U, R](that: Future[U])(f: (Nothing, U) => R)(implicit
+        executor: ExecutionContext
     ): Future[R]                                                      = this
     override def fallbackTo[U >: Nothing](that: Future[U]): Future[U] = this
     override def mapTo[S](implicit tag: ClassTag[S]): Future[S]       = this
-    override def andThen[U](pf: PartialFunction[Try[Nothing], U])(
-        implicit executor: ExecutionContext
+    override def andThen[U](pf: PartialFunction[Try[Nothing], U])(implicit
+        executor: ExecutionContext
     ): Future[Nothing] = this
 
     override def toString: String = "Future(<never>)"

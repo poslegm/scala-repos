@@ -109,8 +109,8 @@ object ArraySupport {
     y
   }
 
-  def dot[@sp(Int, Long, Float, Double) A](x: Array[A], y: Array[A])(
-      implicit sc: Rig[A]
+  def dot[@sp(Int, Long, Float, Double) A](x: Array[A], y: Array[A])(implicit
+      sc: Rig[A]
   ): A = {
     var z = sc.zero
     var i = 0

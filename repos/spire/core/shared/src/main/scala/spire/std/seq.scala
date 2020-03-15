@@ -89,8 +89,8 @@ class SeqVectorSpace[A, SA <: SeqLike[A, SA]](implicit
     with Serializable
 
 @SerialVersionUID(0L)
-class SeqInnerProductSpace[A: Field, SA <: SeqLike[A, SA]](
-    implicit cbf: CanBuildFrom[SA, A, SA]
+class SeqInnerProductSpace[A: Field, SA <: SeqLike[A, SA]](implicit
+    cbf: CanBuildFrom[SA, A, SA]
 ) extends SeqVectorSpace[A, SA]
     with InnerProductSpace[SA, A]
     with Serializable {
@@ -246,8 +246,8 @@ class SeqOrder[A: Order, SA <: SeqLike[A, SA]]
 }
 
 @SerialVersionUID(0L)
-class SeqVectorEq[A: Eq, SA <: SeqLike[A, SA]](
-    implicit scalar: AdditiveMonoid[A]
+class SeqVectorEq[A: Eq, SA <: SeqLike[A, SA]](implicit
+    scalar: AdditiveMonoid[A]
 ) extends Eq[SA]
     with Serializable {
   def eqv(x: SA, y: SA): Boolean =
@@ -255,8 +255,8 @@ class SeqVectorEq[A: Eq, SA <: SeqLike[A, SA]](
 }
 
 @SerialVersionUID(0L)
-class SeqVectorOrder[A: Order, SA <: SeqLike[A, SA]](
-    implicit scalar: AdditiveMonoid[A]
+class SeqVectorOrder[A: Order, SA <: SeqLike[A, SA]](implicit
+    scalar: AdditiveMonoid[A]
 ) extends SeqVectorEq[A, SA]
     with Order[SA]
     with Serializable {
@@ -298,8 +298,8 @@ trait SeqInstances1 extends SeqInstances0 {
   ): SeqVectorSpace[A, CC[A]] =
     new SeqVectorSpace[A, CC[A]]
 
-  implicit def SeqEq[A, CC[A] <: SeqLike[A, CC[A]]](
-      implicit A0: Eq[A]
+  implicit def SeqEq[A, CC[A] <: SeqLike[A, CC[A]]](implicit
+      A0: Eq[A]
   ): SeqEq[A, CC[A]] =
     new SeqEq[A, CC[A]]
 }
@@ -311,8 +311,8 @@ trait SeqInstances2 extends SeqInstances1 {
   ): SeqInnerProductSpace[A, CC[A]] =
     new SeqInnerProductSpace[A, CC[A]]
 
-  implicit def SeqOrder[A, CC[A] <: SeqLike[A, CC[A]]](
-      implicit A0: Order[A]
+  implicit def SeqOrder[A, CC[A] <: SeqLike[A, CC[A]]](implicit
+      A0: Order[A]
   ): SeqOrder[A, CC[A]] =
     new SeqOrder[A, CC[A]]
 }

@@ -2,14 +2,14 @@ package scalaz
 package std
 
 sealed trait FunctionInstances1 {
-  implicit def function1Semigroup[A, R](
-      implicit R0: Semigroup[R]
+  implicit def function1Semigroup[A, R](implicit
+      R0: Semigroup[R]
   ): Semigroup[A => R] =
     new Function1Semigroup[A, R] {
       implicit def R = R0
     }
-  implicit def function1Cobind[A, R](
-      implicit A0: Semigroup[A]
+  implicit def function1Cobind[A, R](implicit
+      A0: Semigroup[A]
   ): Cobind[A => ?] =
     new Function1Cobind[A, R] {
       implicit def M = A0

@@ -103,8 +103,8 @@ trait DenseVectorOps extends DenseVector_GenericOps {
   implicit def dv_v_ZeroIdempotent_InPlaceOp[
       @expand.args(Int, Double, Float, Long) T,
       @expand.args(OpAdd, OpSub) Op <: OpType
-  ](
-      implicit @expand.sequence[Op]({ _ + _ }, { _ - _ }) op: Op.Impl2[T, T, T]
+  ](implicit
+      @expand.sequence[Op]({ _ + _ }, { _ - _ }) op: Op.Impl2[T, T, T]
   ): BinaryUpdateRegistry[DenseVector[T], Vector[T], Op.type] =
     new BinaryUpdateRegistry[DenseVector[T], Vector[T], Op.type] {
 
@@ -405,8 +405,8 @@ trait DenseVectorOps extends DenseVector_GenericOps {
 
   @expand
   @expand.valify
-  implicit def canDot_DV_DV[@expand.args(Int, Long) T](
-      implicit @expand.sequence[T](0, 0L) zero: T
+  implicit def canDot_DV_DV[@expand.args(Int, Long) T](implicit
+      @expand.sequence[T](0, 0L) zero: T
   ): breeze.linalg.operators.OpMulInner.Impl2[DenseVector[T], DenseVector[
     T
   ], T] = {
@@ -438,8 +438,8 @@ trait DenseVectorOps extends DenseVector_GenericOps {
 
   @expand
   @expand.valify
-  implicit def canDot_DV_V[@expand.args(Int, Double, Float, Long) T](
-      implicit @expand.sequence[T](0, 0.0, 0.0f, 0L) zero: T
+  implicit def canDot_DV_V[@expand.args(Int, Double, Float, Long) T](implicit
+      @expand.sequence[T](0, 0.0, 0.0f, 0L) zero: T
   ): breeze.linalg.operators.OpMulInner.Impl2[DenseVector[T], Vector[T], T] = {
     new breeze.linalg.operators.OpMulInner.Impl2[DenseVector[T], Vector[T], T] {
       def apply(a: DenseVector[T], b: Vector[T]) = {
@@ -709,8 +709,8 @@ trait DenseVectorOps extends DenseVector_GenericOps {
     }
   }
 
-  implicit def dotField[T](
-      implicit field: Semiring[T]
+  implicit def dotField[T](implicit
+      field: Semiring[T]
   ): OpMulInner.Impl2[DenseVector[T], DenseVector[T], T] = {
     new OpMulInner.Impl2[DenseVector[T], DenseVector[T], T] {
       override def apply(v: DenseVector[T], v2: DenseVector[T]): T = {
@@ -987,8 +987,8 @@ trait DenseVector_GenericOps {
       @expand.args(Int, Double, Float, Long) T,
       Other,
       Op <: OpType
-  ](op: UFunc.InPlaceImpl2[Op, DenseVector[T], Other])(
-      implicit copy: CanCopy[DenseVector[T]]
+  ](op: UFunc.InPlaceImpl2[Op, DenseVector[T], Other])(implicit
+      copy: CanCopy[DenseVector[T]]
   ): UFunc.UImpl2[Op, DenseVector[T], Other, DenseVector[T]] =
     new UFunc.UImpl2[Op, DenseVector[T], Other, DenseVector[T]] {
       override def apply(a: DenseVector[T], b: Other): DenseVector[T] = {
@@ -1000,8 +1000,8 @@ trait DenseVector_GenericOps {
 
   implicit def pureFromUpdate[T, Other, Op <: OpType](
       op: UFunc.InPlaceImpl2[Op, DenseVector[T], Other]
-  )(
-      implicit copy: CanCopy[DenseVector[T]]
+  )(implicit
+      copy: CanCopy[DenseVector[T]]
   ): UFunc.UImpl2[Op, DenseVector[T], Other, DenseVector[T]] =
     new UFunc.UImpl2[Op, DenseVector[T], Other, DenseVector[T]] {
       override def apply(a: DenseVector[T], b: Other): DenseVector[T] = {
@@ -1076,8 +1076,8 @@ trait DenseVector_GenericOps {
       }
     }
 
-  implicit def implOpSet_DV_Vector_InPlace[T, Vec](
-      implicit ev: Vec <:< Vector[T]
+  implicit def implOpSet_DV_Vector_InPlace[T, Vec](implicit
+      ev: Vec <:< Vector[T]
   ): OpSet.InPlaceImpl2[DenseVector[T], Vec] =
     new OpSet.InPlaceImpl2[DenseVector[T], Vec] {
       def apply(a: DenseVector[T], b: Vec): Unit = {
@@ -1094,8 +1094,8 @@ trait DenseVector_GenericOps {
       //    implicitly[BinaryUpdateRegistry[Vector[T], Vector[T], OpSet.type]].register(this)
     }
 
-  implicit def liftDMOpToDVTransposeOp[Tag, V, LHS, R](
-      implicit op: UFunc.UImpl2[Tag, LHS, DenseMatrix[V], R]
+  implicit def liftDMOpToDVTransposeOp[Tag, V, LHS, R](implicit
+      op: UFunc.UImpl2[Tag, LHS, DenseMatrix[V], R]
   ): UFunc.UImpl2[Tag, LHS, Transpose[DenseVector[V]], R] =
     new UFunc.UImpl2[Tag, LHS, Transpose[DenseVector[V]], R] {
       def apply(v: LHS, v2: Transpose[DenseVector[V]]): R = {

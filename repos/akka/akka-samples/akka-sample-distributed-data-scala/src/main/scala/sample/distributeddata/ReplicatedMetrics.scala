@@ -98,7 +98,7 @@ class ReplicatedMetrics(
       )
       replicator ! Update(MaxHeapKey, LWWMap.empty[Long], WriteLocal) { data ⇒
         data.get(node) match {
-          case Some(`max`) ⇒ data // unchanged
+          case Some(`max`) ⇒ data           // unchanged
           case _           ⇒ data + (node -> max)
         }
       }

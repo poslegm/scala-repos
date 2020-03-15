@@ -43,8 +43,8 @@ trait ProtectedBranchService {
       ProtectedBranchInfo.disabled(owner, repository)
     )
 
-  def getProtectedBranchList(owner: String, repository: String)(
-      implicit session: Session
+  def getProtectedBranchList(owner: String, repository: String)(implicit
+      session: Session
   ): List[String] =
     ProtectedBranches
       .filter(_.byRepository(owner, repository))

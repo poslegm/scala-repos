@@ -348,8 +348,8 @@ trait OptionTypedType[T] extends TypedType[Option[T]] with OptionType {
 trait NumericTypedType
 
 object TypedType {
-  @inline implicit def typedTypeToOptionTypedType[T](
-      implicit t: TypedType[T]
+  @inline implicit def typedTypeToOptionTypedType[T](implicit
+      t: TypedType[T]
   ): OptionTypedType[T] = t.optionType
 }
 

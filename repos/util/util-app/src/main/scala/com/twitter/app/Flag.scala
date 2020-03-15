@@ -333,7 +333,7 @@ class Flag[T: Flaggable] private[app] (
     val updatedMap: Map[Flag[_], Any] = (localFlagValues(), value) match {
       case (Some(map), Some(v)) => map + (this -> v)
       case (Some(map), None)    => map - this
-      case (None, Some(v))      => Map(this -> v)
+      case (None, Some(v))      => Map(this    -> v)
       case (None, None)         => Map.empty[Flag[_], Any]
     }
     if (updatedMap.isEmpty) localFlagValues.clear()

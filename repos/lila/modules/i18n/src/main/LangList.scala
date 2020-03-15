@@ -63,7 +63,7 @@ object LangList {
     "ff" -> "Fulfulde, Pulaar, Pular",
     "gl" -> "Galego",
     "ka" -> "ქართული",
-    "kb" -> "Taqvaylit", // should be kab http://en.wikipedia.org/wiki/Kabyle_language
+    "kb" -> "Taqvaylit",          // should be kab http://en.wikipedia.org/wiki/Kabyle_language
     "de" -> "Deutsch",
     "el" -> "Ελληνικά",
     "gn" -> "avañe'ẽ",
@@ -102,7 +102,7 @@ object LangList {
     "lb" -> "Lëtzebuergesch",
     "lg" -> "Oluganda",
     "la" -> "lingua Latina",
-    "le" -> "1337", // not in the ISO 639 standards (duh!)
+    "le" -> "1337",               // not in the ISO 639 standards (duh!)
     "li" -> "Lèmbörgs",
     "ln" -> "Lingála",
     "lo" -> "ພາສາລາວ",
@@ -126,7 +126,7 @@ object LangList {
     "nn" -> "Norsk nynorsk",
     "nr" -> "isiNdebele",
     "oc" -> "Occitan",
-    "oj" -> "Ojibwe", // difficult to find a native name for this language group. Also, the spelling is nonstandard but this seems to be the most prominent in recent source
+    "oj" -> "Ojibwe",             // difficult to find a native name for this language group. Also, the spelling is nonstandard but this seems to be the most prominent in recent source
     "cu" -> "словѣ́ньскъ ѩзꙑ́къ",
     "om" -> "Afaan Oromo",
     "or" -> "ଓଡ଼ି",
@@ -166,8 +166,8 @@ object LangList {
     "tk" -> "Türkmençe",
     "tl" -> "Tagalog",
     "tn" -> "Setswana",
-    "to" -> "lea fakatonga", // a variety of different spellings for this
-    "tp" -> "toki pona", // note that this constructed language has no ISO code
+    "to" -> "lea fakatonga",      // a variety of different spellings for this
+    "tp" -> "toki pona",          // note that this constructed language has no ISO code
     "tr" -> "Türkçe",
     "ts" -> "Xitsonga",
     "tw" -> "Twi",

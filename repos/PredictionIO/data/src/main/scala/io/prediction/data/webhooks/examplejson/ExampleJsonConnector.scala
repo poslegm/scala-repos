@@ -118,7 +118,7 @@ private[prediction] object ExampleJsonConnector extends JsonConnector {
 
     // map to EventAPI JSON
     val json =
-      ("event"            -> userActionItem.event) ~ ("entityType" -> "user") ~
+      ("event"            -> userActionItem.event) ~ ("entityType"        -> "user") ~
         ("entityId"       -> userActionItem.userId) ~ ("targetEntityType" -> "item") ~
         ("targetEntityId" -> userActionItem.itemId) ~
         ("eventTime"      -> userActionItem.timestamp) ~

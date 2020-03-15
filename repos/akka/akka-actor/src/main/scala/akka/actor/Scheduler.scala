@@ -143,8 +143,8 @@ trait Scheduler {
     *
     * Java & Scala API
     */
-  def scheduleOnce(delay: FiniteDuration, runnable: Runnable)(
-      implicit executor: ExecutionContext
+  def scheduleOnce(delay: FiniteDuration, runnable: Runnable)(implicit
+      executor: ExecutionContext
   ): Cancellable
 
   /**

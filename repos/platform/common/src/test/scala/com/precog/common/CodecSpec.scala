@@ -76,8 +76,8 @@ class CodecSpec extends Specification with ScalaCheck {
     })
   }
 
-  implicit def arbIndexedSeq[A](
-      implicit a: Arbitrary[A]
+  implicit def arbIndexedSeq[A](implicit
+      a: Arbitrary[A]
   ): Arbitrary[IndexedSeq[A]] =
     Arbitrary(Gen.listOf(a.arbitrary) map (Vector(_: _*)))
 

@@ -271,8 +271,8 @@ sealed abstract class Future[+A] {
     * and attempts to cancel the running computation.
     * This implementation will not block the future's execution thread
     */
-  def unsafePerformTimed(timeoutInMillis: Long)(
-      implicit scheduler: ScheduledExecutorService
+  def unsafePerformTimed(timeoutInMillis: Long)(implicit
+      scheduler: ScheduledExecutorService
   ): Future[Throwable \/ A] =
     //instead of run this though chooseAny, it is run through simple primitive,
     //as we are never interested in results of timeout callback, and this is more resource savvy
@@ -483,8 +483,8 @@ object Future {
     * the given `ExecutorService`. Note that this forking is only described
     * by the returned `Future`--nothing occurs until the `Future` is run.
     */
-  def fork[A](a: => Future[A])(
-      implicit pool: ExecutorService = Strategy.DefaultExecutorService
+  def fork[A](a: => Future[A])(implicit
+      pool: ExecutorService = Strategy.DefaultExecutorService
   ): Future[A] =
     Future(a).join
 
@@ -506,14 +506,14 @@ object Future {
     Async((cb: A => Trampoline[Unit]) => listen { a => cb(a).run })
 
   /** Create a `Future` that will evaluate `a` using the given `ExecutorService`. */
-  def apply[A](a: => A)(
-      implicit pool: ExecutorService = Strategy.DefaultExecutorService
+  def apply[A](a: => A)(implicit
+      pool: ExecutorService = Strategy.DefaultExecutorService
   ): Future[A] =
     Async { cb => pool.submit { new Callable[Unit] { def call = cb(a).run } } }
 
   /** Create a `Future` that will evaluate `a` after at least the given delay. */
-  def schedule[A](a: => A, delay: Duration)(
-      implicit pool: ScheduledExecutorService = Strategy.DefaultTimeoutScheduler
+  def schedule[A](a: => A, delay: Duration)(implicit
+      pool: ScheduledExecutorService = Strategy.DefaultTimeoutScheduler
   ): Future[A] =
     Async { cb =>
       pool.schedule(

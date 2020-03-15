@@ -92,8 +92,8 @@ final class StateT[F[_], S, A](val runF: F[S => F[(S, A)]])
     * res1: Option[(GlobalEnv, Double)] = Some(((6,hello),5.0))
     * }}}
     */
-  def transformS[R](f: R => S, g: (R, S) => R)(
-      implicit F: Monad[F]
+  def transformS[R](f: R => S, g: (R, S) => R)(implicit
+      F: Monad[F]
   ): StateT[F, R, A] =
     StateT { r =>
       F.flatMap(runF) { ff =>
@@ -136,8 +136,8 @@ object StateT extends StateTInstances {
 }
 
 private[data] sealed abstract class StateTInstances {
-  implicit def stateTMonadState[F[_], S](
-      implicit F: Monad[F]
+  implicit def stateTMonadState[F[_], S](implicit
+      F: Monad[F]
   ): MonadState[StateT[F, S, ?], S] =
     new MonadState[StateT[F, S, ?], S] {
       def pure[A](a: A): StateT[F, S, A] =
@@ -156,8 +156,8 @@ private[data] sealed abstract class StateTInstances {
         fa.map(f)
     }
 
-  implicit def stateTLift[M[_], S](
-      implicit M: Applicative[M]
+  implicit def stateTLift[M[_], S](implicit
+      M: Applicative[M]
   ): TransLift[({ type λ[α[_], β] = StateT[α, S, β] })#λ, M] =
     new TransLift[({ type λ[α[_], β] = StateT[α, S, β] })#λ, M] {
       def liftT[A](ma: M[A]): StateT[M, S, A] = StateT(s => M.map(ma)(s -> _))

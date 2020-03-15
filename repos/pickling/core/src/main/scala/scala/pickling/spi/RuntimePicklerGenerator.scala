@@ -16,7 +16,7 @@ trait RuntimePicklerGenerator {
   )(implicit share: refs.Share): Pickler[_]
 
   /** Create a new unpickler using the given tagKey. */
-  def genUnpickler(mirror: Mirror, key: String)(
-      implicit share: refs.Share
+  def genUnpickler(mirror: Mirror, key: String)(implicit
+      share: refs.Share
   ): Unpickler[_]
 }

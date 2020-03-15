@@ -33,8 +33,8 @@ object adjoin {
   trait LowPriorityAdjoin {
     type Aux[A, Out0] = Adjoin[A] { type Out = Out0 }
 
-    implicit def hlistAdjoin0[H, T <: HList](
-        implicit adjoinT: Adjoin[T] { type Out <: HList }
+    implicit def hlistAdjoin0[H, T <: HList](implicit
+        adjoinT: Adjoin[T] { type Out <: HList }
     ): Aux[H :: T, H :: adjoinT.Out] =
       new Adjoin[H :: T] {
         type Out = H :: adjoinT.Out

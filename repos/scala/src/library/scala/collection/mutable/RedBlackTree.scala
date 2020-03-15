@@ -91,8 +91,8 @@ private[collection] object RedBlackTree {
       case node => Some(node.value)
     }
 
-  @tailrec private[this] def getNode[A, B](node: Node[A, B], key: A)(
-      implicit ord: Ordering[A]
+  @tailrec private[this] def getNode[A, B](node: Node[A, B], key: A)(implicit
+      ord: Ordering[A]
   ): Node[A, B] =
     if (node eq null) null
     else {
@@ -145,24 +145,24 @@ private[collection] object RedBlackTree {
     * Returns the first (lowest) map entry with a key equal or greater than `key`. Returns `None` if there is no such
     * node.
     */
-  def minAfter[A, B](tree: Tree[A, B], key: A)(
-      implicit ord: Ordering[A]
+  def minAfter[A, B](tree: Tree[A, B], key: A)(implicit
+      ord: Ordering[A]
   ): Option[(A, B)] =
     minNodeAfter(tree.root, key) match {
       case null => None
       case node => Some((node.key, node.value))
     }
 
-  def minKeyAfter[A](tree: Tree[A, _], key: A)(
-      implicit ord: Ordering[A]
+  def minKeyAfter[A](tree: Tree[A, _], key: A)(implicit
+      ord: Ordering[A]
   ): Option[A] =
     minNodeAfter(tree.root, key) match {
       case null => None
       case node => Some(node.key)
     }
 
-  private[this] def minNodeAfter[A, B](node: Node[A, B], key: A)(
-      implicit ord: Ordering[A]
+  private[this] def minNodeAfter[A, B](node: Node[A, B], key: A)(implicit
+      ord: Ordering[A]
   ): Node[A, B] = {
     if (node eq null) null
     else {
@@ -181,24 +181,24 @@ private[collection] object RedBlackTree {
   /**
     * Returns the last (highest) map entry with a key smaller than `key`. Returns `None` if there is no such node.
     */
-  def maxBefore[A, B](tree: Tree[A, B], key: A)(
-      implicit ord: Ordering[A]
+  def maxBefore[A, B](tree: Tree[A, B], key: A)(implicit
+      ord: Ordering[A]
   ): Option[(A, B)] =
     maxNodeBefore(tree.root, key) match {
       case null => None
       case node => Some((node.key, node.value))
     }
 
-  def maxKeyBefore[A](tree: Tree[A, _], key: A)(
-      implicit ord: Ordering[A]
+  def maxKeyBefore[A](tree: Tree[A, _], key: A)(implicit
+      ord: Ordering[A]
   ): Option[A] =
     maxNodeBefore(tree.root, key) match {
       case null => None
       case node => Some(node.key)
     }
 
-  private[this] def maxNodeBefore[A, B](node: Node[A, B], key: A)(
-      implicit ord: Ordering[A]
+  private[this] def maxNodeBefore[A, B](node: Node[A, B], key: A)(implicit
+      ord: Ordering[A]
   ): Node[A, B] = {
     if (node eq null) null
     else {
@@ -216,8 +216,8 @@ private[collection] object RedBlackTree {
 
   // ---- insertion ----
 
-  def insert[A, B](tree: Tree[A, B], key: A, value: B)(
-      implicit ord: Ordering[A]
+  def insert[A, B](tree: Tree[A, B], key: A, value: B)(implicit
+      ord: Ordering[A]
   ): Unit = {
     var y: Node[A, B] = null
     var x             = tree.root
@@ -287,8 +287,8 @@ private[collection] object RedBlackTree {
 
   // ---- deletion ----
 
-  def delete[A, B](tree: Tree[A, B], key: A)(
-      implicit ord: Ordering[A]
+  def delete[A, B](tree: Tree[A, B], key: A)(implicit
+      ord: Ordering[A]
   ): Unit = {
     val z = getNode(tree.root, key)
     if (z ne null) {

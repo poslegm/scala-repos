@@ -291,8 +291,8 @@ private[optimizer] abstract class OptimizerCore(
   }
 
   /** Transforms a tree. */
-  private def transform(tree: Tree, isStat: Boolean)(
-      implicit scope: Scope
+  private def transform(tree: Tree, isStat: Boolean)(implicit
+      scope: Scope
   ): Tree = {
 
     @inline implicit def pos = tree.pos
@@ -717,8 +717,8 @@ private[optimizer] abstract class OptimizerCore(
     Closure(newCaptureParams, newParams, newBody, newCaptureValues)
   }
 
-  private def transformBlock(tree: Block, isStat: Boolean)(
-      implicit scope: Scope
+  private def transformBlock(tree: Block, isStat: Boolean)(implicit
+      scope: Scope
   ): Tree = {
     def transformList(stats: List[Tree])(implicit scope: Scope): Tree =
       stats match {
@@ -2674,8 +2674,8 @@ private[optimizer] abstract class OptimizerCore(
         finishTransformExpr(targ)
     }
 
-  private def foldUnaryOp(op: UnaryOp.Code, arg: Tree)(
-      implicit pos: Position
+  private def foldUnaryOp(op: UnaryOp.Code, arg: Tree)(implicit
+      pos: Position
   ): Tree = {
     import UnaryOp._
     @inline def default = UnaryOp(op, arg)
@@ -2874,8 +2874,8 @@ private[optimizer] abstract class OptimizerCore(
     }
   }
 
-  private def foldBinaryOp(op: BinaryOp.Code, lhs: Tree, rhs: Tree)(
-      implicit pos: Position
+  private def foldBinaryOp(op: BinaryOp.Code, lhs: Tree, rhs: Tree)(implicit
+      pos: Position
   ): Tree = {
     import BinaryOp._
     @inline def default = BinaryOp(op, lhs, rhs)
@@ -3596,8 +3596,8 @@ private[optimizer] abstract class OptimizerCore(
     }
   }
 
-  private def foldJSBracketSelect(qualifier: Tree, item: Tree)(
-      implicit pos: Position
+  private def foldJSBracketSelect(qualifier: Tree, item: Tree)(implicit
+      pos: Position
   ): Tree = {
     // !!! Must be in sync with scala.scalajs.runtime.LinkingInfo
 
@@ -4433,8 +4433,8 @@ private[optimizer] object OptimizerCore {
 
   private sealed abstract class PreTransNoBlock extends PreTransform
 
-  private final case class PreTransLocalDef(localDef: LocalDef)(
-      implicit val pos: Position
+  private final case class PreTransLocalDef(localDef: LocalDef)(implicit
+      val pos: Position
   ) extends PreTransNoBlock {
     val tpe: RefinedType = localDef.tpe
   }

@@ -201,8 +201,8 @@ class TcpListenerSpec extends AkkaSpec("""
       }
       override def supervisorStrategy = SupervisorStrategy.stoppingStrategy
 
-      def register(channel: SelectableChannel, initialOps: Int)(
-          implicit channelActor: ActorRef
+      def register(channel: SelectableChannel, initialOps: Int)(implicit
+          channelActor: ActorRef
       ): Unit =
         registerCallReceiver.ref.tell(initialOps, channelActor)
     }

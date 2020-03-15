@@ -13,7 +13,7 @@ object Test {
 
   def xss1 = List[Seq[Int]](xs1, xs2, xs3, ss1, ss2, ss3, as1, as2, as3)
   def xss2 = List[Seq[Int]](xs1, xs2, xs3, ss3, as1, as2, as3) // no infinities
-  def xss3 = List[Seq[Int]](xs2, xs3, ss3, as1) // representative sampling
+  def xss3 = List[Seq[Int]](xs2, xs3, ss3, as1)                // representative sampling
 
   def main(args: Array[String]): Unit = {
     for (cc1 <- xss1; cc2 <- xss2) {

@@ -305,8 +305,8 @@ final class SeqOps[@sp A, CC[A] <: Iterable[A]](as: CC[A]) {
     b.result
   }
 
-  protected[this] def fromSizeAndArray(size: Int, arr: Array[A])(
-      implicit cbf: CanBuildFrom[CC[A], A, CC[A]]
+  protected[this] def fromSizeAndArray(size: Int, arr: Array[A])(implicit
+      cbf: CanBuildFrom[CC[A], A, CC[A]]
   ): CC[A] = {
     val b = cbf(as)
     b.sizeHint(size)

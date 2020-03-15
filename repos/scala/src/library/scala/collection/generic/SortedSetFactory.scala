@@ -30,8 +30,8 @@ abstract class SortedSetFactory[CC[A] <: SortedSet[A] with SortedSetLike[A, CC[
   def newBuilder[A](implicit ord: Ordering[A]): Builder[A, CC[A]] =
     new SetBuilder[A, CC[A]](empty)
 
-  implicit def newCanBuildFrom[A](
-      implicit ord: Ordering[A]
+  implicit def newCanBuildFrom[A](implicit
+      ord: Ordering[A]
   ): CanBuildFrom[Coll, A, CC[A]] =
     new SortedSetCanBuildFrom()(ord)
 

@@ -31,7 +31,8 @@ import org.apache.spark.annotation.DeveloperApi
   */
 @DeveloperApi
 private[spark] class OpenHashMap[
-    K: ClassTag, @specialized(Long, Int, Double) V: ClassTag
+    K: ClassTag,
+    @specialized(Long, Int, Double) V: ClassTag
 ](initialCapacity: Int)
     extends Iterable[(K, V)]
     with Serializable {

@@ -341,7 +341,7 @@ trait VecStats[@spec(Int, Long, Double) A] {
 
     var i   = 0
     var s   = 0.0 // summation
-    var d   = 0 // duplicate counter
+    var d   = 0   // duplicate counter
     val res = array.empty[Double](len)
     while (i < len) {
       val v = dat(i)

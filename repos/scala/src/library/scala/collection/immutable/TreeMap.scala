@@ -22,8 +22,8 @@ object TreeMap extends ImmutableSortedMapFactory[TreeMap] {
   def empty[A, B](implicit ord: Ordering[A]) = new TreeMap[A, B]()(ord)
 
   /** $sortedMapCanBuildFromInfo */
-  implicit def canBuildFrom[A, B](
-      implicit ord: Ordering[A]
+  implicit def canBuildFrom[A, B](implicit
+      ord: Ordering[A]
   ): CanBuildFrom[Coll, (A, B), TreeMap[A, B]] =
     new SortedMapCanBuildFrom[A, B]
 }
@@ -52,8 +52,8 @@ object TreeMap extends ImmutableSortedMapFactory[TreeMap] {
   "The implementation details of immutable tree maps make inheriting from them unwise.",
   "2.11.0"
 )
-class TreeMap[A, +B] private (tree: RB.Tree[A, B])(
-    implicit val ordering: Ordering[A]
+class TreeMap[A, +B] private (tree: RB.Tree[A, B])(implicit
+    val ordering: Ordering[A]
 ) extends SortedMap[A, B]
     with SortedMapLike[A, B, TreeMap[A, B]]
     with MapLike[A, B, TreeMap[A, B]]

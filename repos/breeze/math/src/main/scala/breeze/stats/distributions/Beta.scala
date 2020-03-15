@@ -157,7 +157,7 @@ object Beta
   def mle(stats: SufficientStatistic): (Double, Double) = {
     import breeze.linalg.DenseVector.TupleIsomorphisms._
     val lensed       = likelihoodFunction(stats).throughLens[DenseVector[Double]]
-    val startingA    = stats.meanLog.abs // MoM would include variance, meh.
+    val startingA    = stats.meanLog.abs   // MoM would include variance, meh.
     val startingB    = stats.meanLog1M.abs // MoM would include variance, meh
     val result       = minimize(lensed, DenseVector(startingA, startingB))
     val res @ (a, b) = (result(0), result(1))

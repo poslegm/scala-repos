@@ -4,8 +4,8 @@ final case class Cokleisli[F[_], A, B](run: F[A] => B) { self =>
   def apply(fa: F[A]): B =
     run(fa)
 
-  def dimap[C, D](f: C => A, g: B => D)(
-      implicit b: Functor[F]
+  def dimap[C, D](f: C => A, g: B => D)(implicit
+      b: Functor[F]
   ): Cokleisli[F, C, D] =
     Cokleisli(c => g(run(b.map(c)(f)))) // b.map(run(f(c)))(g))
 
@@ -39,8 +39,8 @@ final case class Cokleisli[F[_], A, B](run: F[A] => B) { self =>
 object Cokleisli extends CokleisliInstances {}
 
 sealed abstract class CokleisliInstances0 {
-  implicit def cokleisliCompose[F[_]](
-      implicit F0: Cobind[F]
+  implicit def cokleisliCompose[F[_]](implicit
+      F0: Cobind[F]
   ): Compose[Cokleisli[F, ?, ?]] =
     new CokleisliCompose[F] {
       override implicit def F = F0
@@ -57,8 +57,8 @@ sealed abstract class CokleisliInstances extends CokleisliInstances0 {
       : Monad[Cokleisli[F, R, ?]] with BindRec[Cokleisli[F, R, ?]] =
     new CokleisliMonad[F, R] {}
 
-  implicit def cokleisliArrow[F[_]](
-      implicit F0: Comonad[F]
+  implicit def cokleisliArrow[F[_]](implicit
+      F0: Comonad[F]
   ): Arrow[Cokleisli[F, ?, ?]] with ProChoice[Cokleisli[F, ?, ?]] =
     new CokleisliArrow[F] {
       override implicit def F = F0

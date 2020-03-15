@@ -25,8 +25,8 @@ object SpecialPolynomials {
   }
 
   // Legendre recurrence function
-  private[this] def legendreFn[C: Eq: ClassTag](
-      implicit f: Field[C]
+  private[this] def legendreFn[C: Eq: ClassTag](implicit
+      f: Field[C]
   ): (Polynomial[C], Polynomial[C], Int) => Polynomial[C] =
     (pn: Polynomial[C], pnm1: Polynomial[C], n: Int) => {
       val a = Polynomial(Map((0, f.fromInt(1) / f.fromInt(n + 1))))
@@ -36,8 +36,8 @@ object SpecialPolynomials {
     }
 
   // Laguerre recurrence function
-  private[this] def laguerreFn[C: Eq: ClassTag](
-      implicit f: Field[C]
+  private[this] def laguerreFn[C: Eq: ClassTag](implicit
+      f: Field[C]
   ): (Polynomial[C], Polynomial[C], Int) => Polynomial[C] =
     (pn: Polynomial[C], pnm1: Polynomial[C], n: Int) => {
       Polynomial(Map((0, f.one / f.fromInt(n + 1)))) *

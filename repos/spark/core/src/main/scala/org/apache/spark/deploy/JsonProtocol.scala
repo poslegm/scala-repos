@@ -29,17 +29,17 @@ import org.apache.spark.deploy.worker.ExecutorRunner
 
 private[deploy] object JsonProtocol {
   def writeWorkerInfo(obj: WorkerInfo): JObject = {
-    ("id"              -> obj.id) ~ ("host" -> obj.host) ~ ("port" -> obj.port) ~
-      ("webuiaddress"  -> obj.webUiAddress) ~ ("cores" -> obj.cores) ~
+    ("id"              -> obj.id) ~ ("host"             -> obj.host) ~ ("port" -> obj.port) ~
+      ("webuiaddress"  -> obj.webUiAddress) ~ ("cores"  -> obj.cores) ~
       ("coresused"     -> obj.coresUsed) ~ ("coresfree" -> obj.coresFree) ~
-      ("memory"        -> obj.memory) ~ ("memoryused" -> obj.memoryUsed) ~
-      ("memoryfree"    -> obj.memoryFree) ~ ("state" -> obj.state.toString) ~
+      ("memory"        -> obj.memory) ~ ("memoryused"   -> obj.memoryUsed) ~
+      ("memoryfree"    -> obj.memoryFree) ~ ("state"    -> obj.state.toString) ~
       ("lastheartbeat" -> obj.lastHeartbeat)
   }
 
   def writeApplicationInfo(obj: ApplicationInfo): JObject = {
-    ("starttime"        -> obj.startTime) ~ ("id" -> obj.id) ~
-      ("name"           -> obj.desc.name) ~ ("cores" -> obj.desc.maxCores) ~
+    ("starttime"        -> obj.startTime) ~ ("id"              -> obj.id) ~
+      ("name"           -> obj.desc.name) ~ ("cores"           -> obj.desc.maxCores) ~
       ("user"           -> obj.desc.user) ~
       ("memoryperslave" -> obj.desc.memoryPerExecutorMB) ~
       ("submitdate"     -> obj.submitDate.toString) ~ ("state" -> obj.state.toString) ~
@@ -47,7 +47,7 @@ private[deploy] object JsonProtocol {
   }
 
   def writeApplicationDescription(obj: ApplicationDescription): JObject = {
-    ("name"             -> obj.name) ~ ("cores" -> obj.maxCores) ~
+    ("name"             -> obj.name) ~ ("cores"               -> obj.maxCores) ~
       ("memoryperslave" -> obj.memoryPerExecutorMB) ~ ("user" -> obj.user) ~
       ("command"        -> obj.command.toString)
   }
@@ -58,7 +58,7 @@ private[deploy] object JsonProtocol {
   }
 
   def writeDriverInfo(obj: DriverInfo): JObject = {
-    ("id"       -> obj.id) ~ ("starttime" -> obj.startTime.toString) ~
+    ("id"       -> obj.id) ~ ("starttime"         -> obj.startTime.toString) ~
       ("state"  -> obj.state.toString) ~ ("cores" -> obj.desc.cores) ~
       ("memory" -> obj.desc.mem)
   }
@@ -78,9 +78,9 @@ private[deploy] object JsonProtocol {
   }
 
   def writeWorkerState(obj: WorkerStateResponse): JObject = {
-    ("id"               -> obj.workerId) ~ ("masterurl" -> obj.masterUrl) ~
+    ("id"               -> obj.workerId) ~ ("masterurl"   -> obj.masterUrl) ~
       ("masterwebuiurl" -> obj.masterWebUiUrl) ~ ("cores" -> obj.cores) ~
-      ("coresused"      -> obj.coresUsed) ~ ("memory" -> obj.memory) ~
+      ("coresused"      -> obj.coresUsed) ~ ("memory"     -> obj.memory) ~
       ("memoryused"     -> obj.memoryUsed) ~
       ("executors"      -> obj.executors.toList.map(writeExecutorRunner)) ~
       ("finishedexecutors" -> obj.finishedExecutors.toList

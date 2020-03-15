@@ -221,8 +221,8 @@ object Enumeratee {
       * @param f Used to transform each input element.
       * $paramEcSingle
       */
-    def apply[To](f: Input[From] => Input[To])(
-        implicit ec: ExecutionContext
+    def apply[To](f: Input[From] => Input[To])(implicit
+        ec: ExecutionContext
     ): Enumeratee[From, To]
   }
 
@@ -264,8 +264,8 @@ object Enumeratee {
       * @param f Used to transform each input element into a sequence of inputs.
       * $paramEcSingle
       */
-    def apply[To](f: From => Seq[Input[To]])(
-        implicit ec: ExecutionContext
+    def apply[To](f: From => Seq[Input[To]])(implicit
+        ec: ExecutionContext
     ): Enumeratee[From, To]
   }
 
@@ -289,8 +289,8 @@ object Enumeratee {
       * @param f Used to transform each input element into a sequence of input elements.
       * $paramEcSingle
       */
-    def apply[To](f: From => Seq[To])(
-        implicit ec: ExecutionContext
+    def apply[To](f: From => Seq[To])(implicit
+        ec: ExecutionContext
     ): Enumeratee[From, To]
   }
 
@@ -314,8 +314,8 @@ object Enumeratee {
       * @param f Used to transform each input element into an Enumerator.
       * $paramEcSingle
       */
-    def apply[To](f: From => Enumerator[To])(
-        implicit ec: ExecutionContext
+    def apply[To](f: From => Enumerator[To])(implicit
+        ec: ExecutionContext
     ): Enumeratee[From, To]
   }
 
@@ -359,8 +359,8 @@ object Enumeratee {
       * @param f Used to transform each input into an Enumerator.
       * $paramEcSingle
       */
-    def apply[To](f: Input[From] => Enumerator[To])(
-        implicit ec: ExecutionContext
+    def apply[To](f: Input[From] => Enumerator[To])(implicit
+        ec: ExecutionContext
     ): Enumeratee[From, To]
   }
 
@@ -399,8 +399,8 @@ object Enumeratee {
       * @param f Used to transform each input.
       * $paramEcSingle
       */
-    def apply[To](f: Input[From] => Future[Input[To]])(
-        implicit ec: ExecutionContext
+    def apply[To](f: Input[From] => Future[Input[To]])(implicit
+        ec: ExecutionContext
     ): Enumeratee[From, To]
   }
 
@@ -439,8 +439,8 @@ object Enumeratee {
       * @param f Used to transform each input element.
       * $paramEcSingle
       */
-    def apply[NE](f: E => Future[NE])(
-        implicit ec: ExecutionContext
+    def apply[NE](f: E => Future[NE])(implicit
+        ec: ExecutionContext
     ): Enumeratee[E, NE]
   }
 
@@ -669,8 +669,8 @@ object Enumeratee {
       * @param transformer A function to transform and filter the input elements with.
       * $paramEcSingle
       */
-    def apply[To](transformer: PartialFunction[From, To])(
-        implicit ec: ExecutionContext
+    def apply[To](transformer: PartialFunction[From, To])(implicit
+        ec: ExecutionContext
     ): Enumeratee[From, To]
   }
 

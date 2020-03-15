@@ -26,8 +26,8 @@ package object util {
 
   private[http] val EmptyByteArray = Array.empty[Byte]
 
-  private[http] def actorSystem(
-      implicit refFactory: ActorRefFactory
+  private[http] def actorSystem(implicit
+      refFactory: ActorRefFactory
   ): ExtendedActorSystem =
     refFactory match {
       case x: ActorContext        ⇒ actorSystem(x.system)

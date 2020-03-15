@@ -118,8 +118,8 @@ trait CounterOps {
       }
     }
 
-  implicit def canMulVV[K1, V](
-      implicit semiring: Semiring[V]
+  implicit def canMulVV[K1, V](implicit
+      semiring: Semiring[V]
   ): OpMulScalar.Impl2[Counter[K1, V], Counter[K1, V], Counter[K1, V]] = {
     new OpMulScalar.Impl2[Counter[K1, V], Counter[K1, V], Counter[K1, V]] {
       override def apply(a: Counter[K1, V], b: Counter[K1, V]) = {
@@ -155,8 +155,8 @@ trait CounterOps {
       }
     }
 
-  implicit def canMulVS[K2, K1 <: K2, V](
-      implicit semiring: Semiring[V]
+  implicit def canMulVS[K2, K1 <: K2, V](implicit
+      semiring: Semiring[V]
   ): OpMulScalar.Impl2[Counter[K1, V], V, Counter[K1, V]] = {
     new OpMulScalar.Impl2[Counter[K1, V], V, Counter[K1, V]] {
       override def apply(a: Counter[K1, V], b: V) = {
@@ -170,8 +170,8 @@ trait CounterOps {
     }
   }
 
-  implicit def canMulVS_M[K2, K1 <: K2, V](
-      implicit semiring: Semiring[V]
+  implicit def canMulVS_M[K2, K1 <: K2, V](implicit
+      semiring: Semiring[V]
   ): OpMulMatrix.Impl2[Counter[K1, V], V, Counter[K1, V]] = {
     new OpMulMatrix.Impl2[Counter[K1, V], V, Counter[K1, V]] {
       override def apply(a: Counter[K1, V], b: V) = {
@@ -261,8 +261,8 @@ trait CounterOps {
     }
   }
 
-  implicit def canNegate[K1, V](
-      implicit ring: Ring[V]
+  implicit def canNegate[K1, V](implicit
+      ring: Ring[V]
   ): OpNeg.Impl[Counter[K1, V], Counter[K1, V]] = {
     new OpNeg.Impl[Counter[K1, V], Counter[K1, V]] {
       override def apply(a: Counter[K1, V]) = {
@@ -294,8 +294,8 @@ trait CounterOps {
   }
 
   /** Returns the k-norm of this Vector. */
-  implicit def canNorm[K, V](
-      implicit normImpl: norm.Impl[V, Double]
+  implicit def canNorm[K, V](implicit
+      normImpl: norm.Impl[V, Double]
   ): norm.Impl2[Counter[K, V], Double, Double] =
     new norm.Impl2[Counter[K, V], Double, Double] {
       def apply(c: Counter[K, V], n: Double): Double = {

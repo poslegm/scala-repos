@@ -279,8 +279,8 @@ object LineNumbers {
     skip(d, length)
   }
 
-  private def readMethods(d: DataInputStream, filter: Option[String])(
-      implicit c: Constants
+  private def readMethods(d: DataInputStream, filter: Option[String])(implicit
+      c: Constants
   ): Option[(Int, Int)] = {
     val count = d.readUnsignedShort()
     if (debug) println(s"LNB: reading $count methods")

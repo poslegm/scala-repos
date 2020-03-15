@@ -364,43 +364,43 @@ object ScalazArbitrary extends ScalazArbitraryPlatform {
       arb[Stream[A]]
     )(zipper[A](_, _, _))
 
-  implicit def KleisliArbitrary[M[_], A, B](
-      implicit a: Arbitrary[A => M[B]]
+  implicit def KleisliArbitrary[M[_], A, B](implicit
+      a: Arbitrary[A => M[B]]
   ): Arbitrary[Kleisli[M, A, B]] =
     Functor[Arbitrary].map(a)(Kleisli[M, A, B](_))
 
-  implicit def CoproductArbitrary[F[_], G[_], A](
-      implicit a: Arbitrary[F[A] \/ G[A]]
+  implicit def CoproductArbitrary[F[_], G[_], A](implicit
+      a: Arbitrary[F[A] \/ G[A]]
   ): Arbitrary[Coproduct[F, G, A]] =
     Functor[Arbitrary].map(a)(Coproduct(_))
 
-  implicit def writerTArb[F[_], W, A](
-      implicit A: Arbitrary[F[(W, A)]]
+  implicit def writerTArb[F[_], W, A](implicit
+      A: Arbitrary[F[(W, A)]]
   ): Arbitrary[WriterT[F, W, A]] =
     Functor[Arbitrary].map(A)(WriterT[F, W, A](_))
 
-  implicit def unwriterTArb[F[_], U, A](
-      implicit A: Arbitrary[F[(U, A)]]
+  implicit def unwriterTArb[F[_], U, A](implicit
+      A: Arbitrary[F[(U, A)]]
   ): Arbitrary[UnwriterT[F, U, A]] =
     Functor[Arbitrary].map(A)(UnwriterT[F, U, A](_))
 
-  implicit def optionTArb[F[_], A](
-      implicit A: Arbitrary[F[Option[A]]]
+  implicit def optionTArb[F[_], A](implicit
+      A: Arbitrary[F[Option[A]]]
   ): Arbitrary[OptionT[F, A]] =
     Functor[Arbitrary].map(A)(OptionT[F, A](_))
 
-  implicit def maybeTArb[F[_], A](
-      implicit A: Arbitrary[F[Maybe[A]]]
+  implicit def maybeTArb[F[_], A](implicit
+      A: Arbitrary[F[Maybe[A]]]
   ): Arbitrary[MaybeT[F, A]] =
     Functor[Arbitrary].map(A)(MaybeT[F, A](_))
 
-  implicit def lazyOptionArb[F[_], A](
-      implicit A: Arbitrary[Option[A]]
+  implicit def lazyOptionArb[F[_], A](implicit
+      A: Arbitrary[Option[A]]
   ): Arbitrary[LazyOption[A]] =
     Functor[Arbitrary].map(A)(LazyOption.fromOption[A](_))
 
-  implicit def lazyOptionTArb[F[_], A](
-      implicit A: Arbitrary[F[LazyOption[A]]]
+  implicit def lazyOptionTArb[F[_], A](implicit
+      A: Arbitrary[F[LazyOption[A]]]
   ): Arbitrary[LazyOptionT[F, A]] =
     Functor[Arbitrary].map(A)(LazyOptionT[F, A](_))
 
@@ -411,8 +411,8 @@ object ScalazArbitrary extends ScalazArbitraryPlatform {
       case Right(b) => LazyEither.lazyRight(b)
     }
 
-  implicit def lazyEitherTArb[F[_], A, B](
-      implicit A: Arbitrary[F[LazyEither[A, B]]]
+  implicit def lazyEitherTArb[F[_], A, B](implicit
+      A: Arbitrary[F[LazyEither[A, B]]]
   ): Arbitrary[LazyEitherT[F, A, B]] =
     Functor[Arbitrary].map(A)(LazyEitherT[F, A, B](_))
 
@@ -429,8 +429,8 @@ object ScalazArbitrary extends ScalazArbitraryPlatform {
   ): Arbitrary[IndexedStateT[F, S1, S2, A]] =
     Functor[Arbitrary].map(A)(IndexedStateT[F, S1, S2, A](_))
 
-  implicit def eitherTArb[F[_], A, B](
-      implicit A: Arbitrary[F[A \/ B]]
+  implicit def eitherTArb[F[_], A, B](implicit
+      A: Arbitrary[F[A \/ B]]
   ): Arbitrary[EitherT[F, A, B]] =
     Functor[Arbitrary].map(A)(EitherT[F, A, B](_))
 
@@ -469,13 +469,13 @@ object ScalazArbitrary extends ScalazArbitraryPlatform {
   }
 
   // backwards compatibility
-  def storeTArb[F[+_], A, B](
-      implicit A: Arbitrary[(F[A => B], A)]
+  def storeTArb[F[+_], A, B](implicit
+      A: Arbitrary[(F[A => B], A)]
   ): Arbitrary[StoreT[F, A, B]] =
     indexedStoreTArb[F, A, A, B](A)
 
-  implicit def indexedStoreTArb[F[_], I, A, B](
-      implicit A: Arbitrary[(F[A => B], I)]
+  implicit def indexedStoreTArb[F[_], I, A, B](implicit
+      A: Arbitrary[(F[A => B], I)]
   ): Arbitrary[IndexedStoreT[F, I, A, B]] =
     Functor[Arbitrary].map(A)(IndexedStoreT[F, I, A, B](_))
 

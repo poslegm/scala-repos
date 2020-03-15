@@ -229,8 +229,8 @@ object SwaggerSerializers {
         )
       )
 
-  def writeDataType(dataType: DataType, key: String = "type")(
-      implicit formats: Formats
+  def writeDataType(dataType: DataType, key: String = "type")(implicit
+      formats: Formats
   ): JValue =
     dataType match {
       case DataType.ValueDataType(name, Some(format), _) =>
@@ -381,7 +381,7 @@ object SwaggerSerializers {
               val required =
                 for ((key, value) <- x.properties
                      if value.required) yield key
-              ("id"              -> x.id) ~ ("name" -> x.name) ~
+              ("id"              -> x.id) ~ ("name"              -> x.name) ~
                 ("qualifiedType" -> x.qualifiedName) ~
                 ("description"   -> x.description) ~ ("required" -> required) ~
                 ("extends" -> x.baseModel.filter(s =>
@@ -449,7 +449,7 @@ object SwaggerSerializers {
           {
             case x: Parameter =>
               val output =
-                ("name"           -> x.name) ~ ("description" -> x.description) ~
+                ("name"           -> x.name) ~ ("description"      -> x.description) ~
                   ("defaultValue" -> x.defaultValue) ~ ("required" -> x.required) ~
                   ("paramType"    -> x.paramType.toString) ~
                   ("paramAccess"  -> x.paramAccess)

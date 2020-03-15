@@ -38,8 +38,8 @@ object FreeList extends FreeListInstances {
         FreeList(BindRec[Free[List, ?]].tailrecM((x: A) => f(x).f)(a))
     }
 
-  implicit def freeListArb[A](
-      implicit A: Arbitrary[A]
+  implicit def freeListArb[A](implicit
+      A: Arbitrary[A]
   ): Arbitrary[FreeList[A]] =
     Arbitrary(
       FreeTest
@@ -87,8 +87,8 @@ object FreeOption {
         FreeOption(Bind[Free[Option, ?]].bind(fa.f) { a => f(a).f })
     }
 
-  implicit def freeOptionArb[A](
-      implicit A: Arbitrary[A]
+  implicit def freeOptionArb[A](implicit
+      A: Arbitrary[A]
   ): Arbitrary[FreeOption[A]] =
     Arbitrary(
       FreeTest

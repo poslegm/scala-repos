@@ -48,8 +48,8 @@ trait FutureAction[T] extends Future[T] {
     *               for unbounded waiting, or a finite positive duration
     * @return this FutureAction
     */
-  override def ready(atMost: Duration)(
-      implicit permit: CanAwait
+  override def ready(atMost: Duration)(implicit
+      permit: CanAwait
   ): FutureAction.this.type
 
   /**

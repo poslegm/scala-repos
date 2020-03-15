@@ -181,16 +181,16 @@ object helpers
     * Returns &lt;img&gt; which displays the avatar icon for the given mail address.
     * This method looks up Gravatar if avatar icon has not been configured in user settings.
     */
-  def avatar(commit: JGitUtil.CommitInfo, size: Int)(
-      implicit context: Context
+  def avatar(commit: JGitUtil.CommitInfo, size: Int)(implicit
+      context: Context
   ): Html =
     getAvatarImageHtml(commit.authorName, size, commit.authorEmailAddress)
 
   /**
     * Converts commit id, issue id and username to the link.
     */
-  def link(value: String, repository: RepositoryService.RepositoryInfo)(
-      implicit context: Context
+  def link(value: String, repository: RepositoryService.RepositoryInfo)(implicit
+      context: Context
   ): Html =
     Html(convertRefsLinks(value, repository))
 
@@ -316,8 +316,8 @@ object helpers
     * Generates the avatar link to the account page.
     * If user does not exist or disabled, this method returns avatar image without link.
     */
-  def avatarLink(commit: JGitUtil.CommitInfo, size: Int)(
-      implicit context: Context
+  def avatarLink(commit: JGitUtil.CommitInfo, size: Int)(implicit
+      context: Context
   ): Html =
     userWithContent(commit.authorName, commit.authorEmailAddress)(
       avatar(commit, size)

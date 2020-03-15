@@ -133,8 +133,8 @@ trait MemoryProfile extends RelationalProfile with MemoryQueryingProfile {
         }
     }
 
-  def runSynchronousQuery[R](tree: Node, param: Any)(
-      implicit session: Backend#Session
+  def runSynchronousQuery[R](tree: Node, param: Any)(implicit
+      session: Backend#Session
   ): R =
     createInterpreter(session.database, param).run(tree).asInstanceOf[R]
 

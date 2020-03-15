@@ -34,8 +34,8 @@ final class TraverseOps[F[_], A](fa: F[A])(implicit F: Traverse[F]) {
     F.sequenceU[A](fa)(U)
 }
 
-final class NestedTraverseOps[F[_], G[_], A](fga: F[G[A]])(
-    implicit F: Traverse[F]
+final class NestedTraverseOps[F[_], G[_], A](fga: F[G[A]])(implicit
+    F: Traverse[F]
 ) {
   def sequence(implicit G: Applicative[G]): G[F[A]] = F.sequence(fga)
 }

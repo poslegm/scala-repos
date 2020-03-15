@@ -32,8 +32,8 @@ object `package` {
   implicit def toMonoidOps[A](a: A)(implicit m: Monoid[A]): MonoidOps[A] =
     new MonoidOps(a)
 
-  implicit def toFunctorOps[M[_], A](ma: M[A])(
-      implicit fu: Functor[M]
+  implicit def toFunctorOps[M[_], A](ma: M[A])(implicit
+      fu: Functor[M]
   ): FunctorOps[M, A] = new FunctorOps(ma)
   implicit def toContraFunctorOps[M[_], A](
       ma: M[A]

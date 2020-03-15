@@ -513,7 +513,7 @@ object LocalLDAModel extends Loader[LocalLDAModel] {
       val metadata = compact(
         render(
           ("class"                -> thisClassName) ~ ("version" -> thisFormatVersion) ~
-            ("k"                  -> k) ~ ("vocabSize" -> topicsMatrix.numRows) ~
+            ("k"                  -> k) ~ ("vocabSize"           -> topicsMatrix.numRows) ~
             ("docConcentration"   -> docConcentration.toArray.toSeq) ~
             ("topicConcentration" -> topicConcentration) ~
             ("gammaShape"         -> gammaShape)
@@ -1006,7 +1006,7 @@ object DistributedLDAModel extends Loader[DistributedLDAModel] {
       val metadata = compact(
         render(
           ("class"                -> thisClassName) ~ ("version" -> thisFormatVersion) ~
-            ("k"                  -> k) ~ ("vocabSize" -> vocabSize) ~
+            ("k"                  -> k) ~ ("vocabSize"           -> vocabSize) ~
             ("docConcentration"   -> docConcentration.toArray.toSeq) ~
             ("topicConcentration" -> topicConcentration) ~
             ("iterationTimes"     -> iterationTimes.toSeq) ~

@@ -85,8 +85,8 @@ case class NativeConnector(
 }
 
 object NativeConnector {
-  def apply(connectString: String, sessionTimeout: Duration)(
-      implicit timer: Timer
+  def apply(connectString: String, sessionTimeout: Duration)(implicit
+      timer: Timer
   ): NativeConnector = {
     NativeConnector(connectString, None, sessionTimeout, timer)
   }

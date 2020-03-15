@@ -367,9 +367,9 @@ class TinyJoinJob(args: Args) extends Job(args) {
 
 class TinyJoinTest extends WordSpec with Matchers {
   "A TinyJoinJob" should {
-    val input1        = List("a" -> 1, "b" -> 2, "c" -> 3)
-    val input2        = List("b" -> -1, "c" -> 5, "d" -> 4)
-    val correctOutput = Map("b" -> (2, -1), "c" -> (3, 5))
+    val input1        = List("a" -> 1, "b"       -> 2, "c" -> 3)
+    val input2        = List("b" -> -1, "c"      -> 5, "d" -> 4)
+    val correctOutput = Map("b"  -> (2, -1), "c" -> (3, 5))
     var idx           = 0
     JobTest(new TinyJoinJob(_))
       .arg("input1", "fakeInput1")

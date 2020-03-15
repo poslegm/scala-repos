@@ -83,8 +83,8 @@ class ConversionTests {
     val hlab = ab.toProduct
     typed[(A :: HNil) => B](hlab)
 
-    def foo[F, L <: HList, R](f: F, l: L)(
-        implicit fntp: FnToProduct.Aux[F, L => R]
+    def foo[F, L <: HList, R](f: F, l: L)(implicit
+        fntp: FnToProduct.Aux[F, L => R]
     )       = fntp(f)(l)
     val s2  = foo(sum, 2 :: 3 :: HNil)
     val ab2 = foo(ab, a :: HNil)

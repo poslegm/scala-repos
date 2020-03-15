@@ -45,8 +45,8 @@ object Broadcaster {
     }
   }
 
-  implicit def canBroadcastColumns[From, Slice1, Col](
-      implicit handhold: CanCollapseAxis.HandHold[From, Axis._0.type, Col]
+  implicit def canBroadcastColumns[From, Slice1, Col](implicit
+      handhold: CanCollapseAxis.HandHold[From, Axis._0.type, Col]
   ): CanSlice2[From, ::.type, *.type, BroadcastedColumns[From, Col]] = {
     new CanSlice2[From, ::.type, *.type, BroadcastedColumns[From, Col]] {
       def apply(
@@ -74,8 +74,8 @@ object Broadcaster {
     }
   }
 
-  implicit def canBroadcastRows[From, Slice1, Row](
-      implicit handhold: CanCollapseAxis.HandHold[From, Axis._1.type, Row]
+  implicit def canBroadcastRows[From, Slice1, Row](implicit
+      handhold: CanCollapseAxis.HandHold[From, Axis._1.type, Row]
   ): CanSlice2[From, *.type, ::.type, BroadcastedRows[From, Row]] = {
     new CanSlice2[From, *.type, ::.type, BroadcastedRows[From, Row]] {
       def apply(

@@ -77,8 +77,8 @@ private[http] object FrameHandler {
           publish(start)
         } else protocolError()
       }
-      override def handleFrameData(data: FrameData)(
-          implicit ctx: Ctx
+      override def handleFrameData(data: FrameData)(implicit
+          ctx: Ctx
       ): SyncDirective = publish(data)
 
       private def publish(part: FrameEvent)(implicit ctx: Ctx): SyncDirective =
@@ -105,8 +105,8 @@ private[http] object FrameHandler {
       }
     }
 
-    private def becomeAndHandleWith(newState: State, part: FrameEvent)(
-        implicit ctx: Ctx
+    private def becomeAndHandleWith(newState: State, part: FrameEvent)(implicit
+        ctx: Ctx
     ): SyncDirective = {
       become(newState)
       current.onPush(part, ctx)
@@ -207,8 +207,8 @@ private[http] object FrameHandler {
 
     private abstract class StateWithControlFrameHandling
         extends BetweenFrameState {
-      def handleRegularFrameStart(start: FrameStart)(
-          implicit ctx: Ctx
+      def handleRegularFrameStart(start: FrameStart)(implicit
+          ctx: Ctx
       ): SyncDirective
 
       def handleFrameStart(

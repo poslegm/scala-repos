@@ -55,8 +55,8 @@ object KafkaEventStore {
   def apply(
       config: Configuration,
       permissionsFinder: PermissionsFinder[Future]
-  )(
-      implicit executor: ExecutionContext
+  )(implicit
+      executor: ExecutionContext
   ): Validation[NEL[String], (EventStore[Future], Stoppable)] = {
     val localConfig   = config.detach("local")
     val centralConfig = config.detach("central")
@@ -162,8 +162,8 @@ class LocalKafkaEventStore(
 }
 
 object LocalKafkaEventStore {
-  def apply(config: Configuration)(
-      implicit executor: ExecutionContext
+  def apply(config: Configuration)(implicit
+      executor: ExecutionContext
   ): Option[(EventStore[Future], Stoppable)] = {
     val localTopic     = config[String]("topic")
     val maxMessageSize = config[Int]("broker.max_message_size", 1000000)

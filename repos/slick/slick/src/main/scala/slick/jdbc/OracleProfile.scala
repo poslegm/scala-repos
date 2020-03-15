@@ -107,8 +107,8 @@ trait OracleProfile extends JdbcProfile {
   )(implicit ec: ExecutionContext): JdbcModelBuilder =
     new ModelBuilder(tables, ignoreInvalidDefaults)
 
-  override def defaultTables(
-      implicit ec: ExecutionContext
+  override def defaultTables(implicit
+      ec: ExecutionContext
   ): DBIO[Seq[MTable]] = {
     for {
       user <- SimpleJdbcAction(_.session.metaData.getUserName)

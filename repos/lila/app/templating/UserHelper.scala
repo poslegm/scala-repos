@@ -86,8 +86,8 @@ trait UserHelper { self: I18nHelper with StringHelper with NumberHelper =>
       s"""<span $attr="$title" class="$klass"><span data-icon="$icon">$number</span></span>"""
     }
 
-  def showPerfRating(perfType: PerfType, perf: Perf, klass: String)(
-      implicit ctx: Context
+  def showPerfRating(perfType: PerfType, perf: Perf, klass: String)(implicit
+      ctx: Context
   ): Html =
     showPerfRating(
       perf.intRating,
@@ -105,8 +105,8 @@ trait UserHelper { self: I18nHelper with StringHelper with NumberHelper =>
   )(implicit ctx: Context): Html =
     showPerfRating(perfType, u perfs perfType, klass)
 
-  def showPerfRating(u: User, perfKey: String)(
-      implicit ctx: Context
+  def showPerfRating(u: User, perfKey: String)(implicit
+      ctx: Context
   ): Option[Html] =
     PerfType(perfKey) map { showPerfRating(u, _) }
 
@@ -347,13 +347,13 @@ trait UserHelper { self: I18nHelper with StringHelper with NumberHelper =>
     ).flatten
   }.mkString("class=\"", " ", "\"")
 
-  def userGameFilterTitle(info: UserInfo, filter: GameFilter)(
-      implicit ctx: UserContext
+  def userGameFilterTitle(info: UserInfo, filter: GameFilter)(implicit
+      ctx: UserContext
   ) =
     splitNumber(userGameFilterTitleNoTag(info, filter))
 
-  def userGameFilterTitleNoTag(info: UserInfo, filter: GameFilter)(
-      implicit ctx: UserContext
+  def userGameFilterTitleNoTag(info: UserInfo, filter: GameFilter)(implicit
+      ctx: UserContext
   ) =
     Html((filter match {
       case GameFilter.All => info.user.count.game + " " + trans.gamesPlayed()

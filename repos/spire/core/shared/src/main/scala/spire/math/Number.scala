@@ -255,7 +255,7 @@ private[math] case class IntNumber(n: SafeLong) extends Number { lhs =>
   private[math] def r_%(lhs: Number): Number =
     lhs match {
       case IntNumber(m) => IntNumber(m % n)
-      case t            => t % lhs
+      case t            => t           % lhs
     }
   private[math] def r_/%(lhs: Number): (Number, Number) =
     lhs match {
@@ -468,19 +468,19 @@ private[math] case class FloatNumber(n: Double) extends Number { lhs =>
           case SafeLongBigInteger(x) => Number(BigDecimal(x) % n)
         }
       case FloatNumber(m) => Number(m % n)
-      case t              => t % lhs
+      case t              => t        % lhs
     }
 
   def /%(rhs: Number): (Number, Number) =
     rhs match {
       case IntNumber(m)   => (Number(n / m.toDouble), Number(n % m.toDouble))
-      case FloatNumber(m) => (Number(n / m), Number(n % m))
+      case FloatNumber(m) => (Number(n / m), Number(n          % m))
       case t              => t r_/% lhs
     }
   private[math] def r_/%(lhs: Number): (Number, Number) =
     lhs match {
       case IntNumber(m)   => (Number(m.toDouble / n), Number(m.toDouble % n))
-      case FloatNumber(m) => (Number(m / n), Number(m % n))
+      case FloatNumber(m) => (Number(m / n), Number(m                   % n))
       case t              => t /% lhs
     }
 

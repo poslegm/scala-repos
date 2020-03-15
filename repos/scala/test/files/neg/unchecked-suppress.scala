@@ -6,7 +6,7 @@ class A {
       case xs: Map[String @unchecked, String] =>
         xs.head // one unchecked, one okay
       case f: ((Int @unchecked) => (Int @unchecked)) => f(5) // okay
-      case f: ((Int, Int) => Int)                    => // unchecked
+      case f: ((Int, Int) => Int)                    =>      // unchecked
       case _                                         => ""
     }
 }

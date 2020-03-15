@@ -39,19 +39,19 @@ trait TraversableProxyLike[+A, +Repr <: TraversableLike[
   override def nonEmpty: Boolean           = self.nonEmpty
   override def size: Int                   = self.size
   override def hasDefiniteSize             = self.hasDefiniteSize
-  override def ++[B >: A, That](xs: GenTraversableOnce[B])(
-      implicit bf: CanBuildFrom[Repr, B, That]
+  override def ++[B >: A, That](xs: GenTraversableOnce[B])(implicit
+      bf: CanBuildFrom[Repr, B, That]
   ): That = self.++(xs)(bf)
-  override def map[B, That](f: A => B)(
-      implicit bf: CanBuildFrom[Repr, B, That]
+  override def map[B, That](f: A => B)(implicit
+      bf: CanBuildFrom[Repr, B, That]
   ): That = self.map(f)(bf)
-  override def flatMap[B, That](f: A => GenTraversableOnce[B])(
-      implicit bf: CanBuildFrom[Repr, B, That]
+  override def flatMap[B, That](f: A => GenTraversableOnce[B])(implicit
+      bf: CanBuildFrom[Repr, B, That]
   ): That                                       = self.flatMap(f)(bf)
   override def filter(p: A => Boolean): Repr    = self.filter(p)
   override def filterNot(p: A => Boolean): Repr = self.filterNot(p)
-  override def collect[B, That](pf: PartialFunction[A, B])(
-      implicit bf: CanBuildFrom[Repr, B, That]
+  override def collect[B, That](pf: PartialFunction[A, B])(implicit
+      bf: CanBuildFrom[Repr, B, That]
   ): That                                                    = self.collect(pf)(bf)
   override def partition(p: A => Boolean): (Repr, Repr)      = self.partition(p)
   override def groupBy[K](f: A => K): immutable.Map[K, Repr] = self.groupBy(f)

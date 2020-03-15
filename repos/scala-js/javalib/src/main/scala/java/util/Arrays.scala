@@ -123,8 +123,8 @@ object Arrays {
     * what might be required to box individual elements during comparison.
     */
   @noinline
-  private def quickSort[@specialized K](a: Array[K], i0: Int, iN: Int)(
-      implicit ord: Ordering[K]
+  private def quickSort[@specialized K](a: Array[K], i0: Int, iN: Int)(implicit
+      ord: Ordering[K]
   ): Unit = {
     if (iN - i0 < qSortThreshold) {
       insertionSort(a, i0, iN)
@@ -258,8 +258,8 @@ object Arrays {
   }
 
   @noinline
-  private def quickSortAnyRef(a: Array[AnyRef], i0: Int, iN: Int)(
-      implicit ord: Ordering[AnyRef]
+  private def quickSortAnyRef(a: Array[AnyRef], i0: Int, iN: Int)(implicit
+      ord: Ordering[AnyRef]
   ): Unit = {
     if (iN - i0 < qSortThreshold) {
       insertionSortAnyRef(a, i0, iN)

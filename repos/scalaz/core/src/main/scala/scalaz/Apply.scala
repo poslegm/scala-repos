@@ -401,8 +401,8 @@ trait Apply[F[_]] extends Functor[F] { self =>
   trait ApplyLaw extends FunctorLaw {
 
     /** Lifted functions can be fused. */
-    def composition[A, B, C](fbc: F[B => C], fab: F[A => B], fa: F[A])(
-        implicit FC: Equal[F[C]]
+    def composition[A, B, C](fbc: F[B => C], fab: F[A => B], fa: F[A])(implicit
+        FC: Equal[F[C]]
     ) =
       FC.equal(
         ap(ap(fa)(fab))(fbc),

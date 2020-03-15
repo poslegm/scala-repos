@@ -45,7 +45,7 @@ final case class AtomicWrite(payload: immutable.Seq[PersistentRepr])
   if (payload match {
         case l: List[PersistentRepr]   ⇒ l.tail.nonEmpty // avoids calling .size
         case v: Vector[PersistentRepr] ⇒ v.size > 1
-        case _                         ⇒ true // some other collection type, let's just check
+        case _                         ⇒ true            // some other collection type, let's just check
       })
     require(
       payload.forall(_.persistenceId == payload.head.persistenceId),

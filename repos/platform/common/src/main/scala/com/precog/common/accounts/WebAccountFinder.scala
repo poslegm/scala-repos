@@ -58,8 +58,8 @@ import scalaz.syntax.validation._
 import scalaz.syntax.std.option._
 
 object WebAccountFinder extends Logging {
-  def apply(config: Configuration)(
-      implicit executor: ExecutionContext
+  def apply(config: Configuration)(implicit
+      executor: ExecutionContext
   ): Validation[NonEmptyList[String], AccountFinder[Response]] = {
     val serviceConfig = config.detach("service")
     serviceConfig.get[String]("hardcoded_account") map { accountId =>

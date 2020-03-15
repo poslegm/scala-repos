@@ -83,7 +83,8 @@ private[http] object ParserOutput {
     }
   }
   final case class StreamedEntityCreator[
-      -A <: ParserOutput, +B >: HttpEntity.Strict <: HttpEntity
+      -A <: ParserOutput,
+      +B >: HttpEntity.Strict <: HttpEntity
   ](creator: Source[A, NotUsed] ⇒ B)
       extends EntityCreator[A, B] {
     def apply(parts: Source[A, NotUsed]) = creator(parts)

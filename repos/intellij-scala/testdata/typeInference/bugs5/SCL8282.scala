@@ -16,16 +16,16 @@ trait FirstElement {
     def firstElement(c: C): E
   }
 
-  final class FirstElementWrapper[E, CTC[_]](collection: CTC[E])(
-      implicit collector: FirstElementCollector[E, CTC[E]]
+  final class FirstElementWrapper[E, CTC[_]](collection: CTC[E])(implicit
+      collector: FirstElementCollector[E, CTC[E]]
   ) {
     def firstElement = collector.firstElement(collection)
   }
 
   implicit def convertToCollectionFirstElementWrapper[E, CTC[_]](
       collection: CTC[E]
-  )(
-      implicit collecting: FirstElementCollector[E, CTC[E]]
+  )(implicit
+      collecting: FirstElementCollector[E, CTC[E]]
   ): FirstElementWrapper[E, CTC] = new FirstElementWrapper[E, CTC](collection)
 }
 //Int

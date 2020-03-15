@@ -122,8 +122,8 @@ case class SQLActionBuilder(
     queryParts: Seq[Any],
     unitPConv: SetParameter[Unit]
 ) {
-  def as[R](
-      implicit rconv: GetResult[R]
+  def as[R](implicit
+      rconv: GetResult[R]
   ): SqlStreamingAction[Vector[R], R, Effect] = {
     val query =
       if (queryParts.length == 1 && queryParts(0).isInstanceOf[String])

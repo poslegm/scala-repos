@@ -69,7 +69,7 @@ object Test extends Properties("concurrent.TrieMap") {
     val idx   = threadIdx
     val p     = totalThreads
     val start = (sz / p) * idx + math.min(idx, sz % p)
-    val elems = (sz / p) + (if (idx < sz % p) 1 else 0)
+    val elems = (sz / p) + (if (idx < sz          % p) 1 else 0)
     val end   = start + elems
     (start until end)
   }
@@ -96,7 +96,7 @@ object Test extends Properties("concurrent.TrieMap") {
 
   property("concurrent growing snapshots") = forAll(threadCounts, sizes) {
     (numThreads, numElems) =>
-      val p  = 3 //numThreads
+      val p  = 3   //numThreads
       val sz = 102 //numElems
       val ct = new TrieMap[Wrap, Int]
 

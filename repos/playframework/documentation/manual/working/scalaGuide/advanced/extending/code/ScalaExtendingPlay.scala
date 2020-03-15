@@ -24,12 +24,12 @@ object ScalaExtendingPlay extends Specification {
     override def setLang(result: Result, lang: Lang): Result     = ???
     override def apply(key: String, args: Any*)(implicit lang: Lang): String =
       ???
-    override def apply(keys: Seq[String], args: Any*)(
-        implicit lang: Lang
+    override def apply(keys: Seq[String], args: Any*)(implicit
+        lang: Lang
     ): String                                                           = ???
     override def isDefinedAt(key: String)(implicit lang: Lang): Boolean = ???
-    override def translate(key: String, args: Seq[Any])(
-        implicit lang: Lang
+    override def translate(key: String, args: Seq[Any])(implicit
+        lang: Lang
     ): Option[String] = ???
   }
 

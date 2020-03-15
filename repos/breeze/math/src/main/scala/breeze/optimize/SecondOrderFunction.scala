@@ -31,8 +31,8 @@ trait SecondOrderFunction[T, H] extends DiffFunction[T] {
 }
 
 object SecondOrderFunction {
-  def empirical[T, I](f: DiffFunction[T], eps: Double = 1e-5)(
-      implicit vs: VectorSpace[T, Double]
+  def empirical[T, I](f: DiffFunction[T], eps: Double = 1e-5)(implicit
+      vs: VectorSpace[T, Double]
   ): SecondOrderFunction[T, EmpiricalHessian[T]] = {
     new SecondOrderFunction[T, EmpiricalHessian[T]] {
 
@@ -49,8 +49,8 @@ object SecondOrderFunction {
       f: BatchDiffFunction[T],
       eps: Double = 1e-5,
       batchSize: Int = 30000
-  )(
-      implicit vs: InnerProductVectorSpace[T, Double]
+  )(implicit
+      vs: InnerProductVectorSpace[T, Double]
   ): SecondOrderFunction[T, EmpiricalHessian[T]] = {
     new SecondOrderFunction[T, EmpiricalHessian[T]] {
 
@@ -186,8 +186,8 @@ class FisherDiffFunction[T](
   * @param vs
   * @tparam T
   */
-class FisherMatrix[T](grads: IndexedSeq[T])(
-    implicit vs: MutableInnerProductVectorSpace[T, Double]
+class FisherMatrix[T](grads: IndexedSeq[T])(implicit
+    vs: MutableInnerProductVectorSpace[T, Double]
 ) {
 
   import vs._

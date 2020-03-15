@@ -112,12 +112,12 @@ object PlatformBuild extends Build {
       "com.reportgrid"          %% "akka_testing"   % blueeyesVersion,
       "org.scalacheck"          %% "scalacheck"     % "1.10.0" % "test",
       "org.specs2"              %% "specs2"         % "1.12.3" % "test",
-      "org.mockito"              % "mockito-core"   % "1.9.0" % "test",
+      "org.mockito"              % "mockito-core"   % "1.9.0"  % "test",
       "javolution"               % "javolution"     % "5.5.1",
       "com.chuusai"             %% "shapeless"      % "1.2.3",
       "org.spire-math"           % "spire_2.9.1"    % "0.3.0-RC2",
       "com.rubiconproject.oss"   % "jchronic"       % "0.2.6",
-      "javax.servlet"            % "servlet-api"    % "2.4" % "provided"
+      "javax.servlet"            % "servlet-api"    % "2.4"    % "provided"
     )
   )
 

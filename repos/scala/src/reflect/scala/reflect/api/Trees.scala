@@ -410,8 +410,8 @@ trait Trees { self: Universe =>
 
     /** @see [[InternalApi.classDef]] */
     @deprecated("Use `internal.classDef` instead", "2.11.0")
-    def apply(sym: Symbol, impl: Template)(
-        implicit token: CompatToken
+    def apply(sym: Symbol, impl: Template)(implicit
+        token: CompatToken
     ): ClassDef = internal.classDef(sym, impl)
   }
 
@@ -463,8 +463,8 @@ trait Trees { self: Universe =>
 
     /** @see [[InternalApi.moduleDef]] */
     @deprecated("Use `internal.moduleDef` instead", "2.11.0")
-    def apply(sym: Symbol, impl: Template)(
-        implicit token: CompatToken
+    def apply(sym: Symbol, impl: Template)(implicit
+        token: CompatToken
     ): ModuleDef = internal.moduleDef(sym, impl)
   }
 
@@ -623,15 +623,15 @@ trait Trees { self: Universe =>
 
     /** @see [[InternalApi.defDef]] */
     @deprecated("Use `internal.defDef` instead", "2.11.0")
-    def apply(sym: Symbol, vparamss: List[List[ValDef]], rhs: Tree)(
-        implicit token: CompatToken
+    def apply(sym: Symbol, vparamss: List[List[ValDef]], rhs: Tree)(implicit
+        token: CompatToken
     ): DefDef =
       internal.defDef(sym, vparamss, rhs)
 
     /** @see [[InternalApi.defDef]] */
     @deprecated("Use `internal.defDef` instead", "2.11.0")
-    def apply(sym: Symbol, mods: Modifiers, rhs: Tree)(
-        implicit token: CompatToken
+    def apply(sym: Symbol, mods: Modifiers, rhs: Tree)(implicit
+        token: CompatToken
     ): DefDef = internal.defDef(sym, mods, rhs)
 
     /** @see [[InternalApi.defDef]] */
@@ -641,8 +641,8 @@ trait Trees { self: Universe =>
 
     /** @see [[InternalApi.defDef]] */
     @deprecated("Use `internal.defDef` instead", "2.11.0")
-    def apply(sym: Symbol, rhs: List[List[Symbol]] => Tree)(
-        implicit token: CompatToken
+    def apply(sym: Symbol, rhs: List[List[Symbol]] => Tree)(implicit
+        token: CompatToken
     ): DefDef = internal.defDef(sym, rhs)
   }
 
@@ -780,8 +780,8 @@ trait Trees { self: Universe =>
 
     /** @see [[InternalApi.labelDef]] */
     @deprecated("Use `internal.labelDef` instead", "2.11.0")
-    def apply(sym: Symbol, params: List[Symbol], rhs: Tree)(
-        implicit token: CompatToken
+    def apply(sym: Symbol, params: List[Symbol], rhs: Tree)(implicit
+        token: CompatToken
     ): LabelDef =
       internal.labelDef(sym, params, rhs)
   }

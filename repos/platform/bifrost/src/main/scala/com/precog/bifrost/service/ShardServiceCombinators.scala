@@ -259,8 +259,8 @@ trait ShardServiceCombinators
             QueryOptions
         ) => Future[HttpResponse[B]]
       ]
-  )(
-      implicit executor: ExecutionContext
+  )(implicit
+      executor: ExecutionContext
   ): HttpService[ByteChunk, ((APIKey, AccountDetails), Path) => Future[
     HttpResponse[B]
   ]] = {
@@ -341,8 +341,8 @@ trait ShardServiceCombinators
             QueryOptions
         ) => Future[HttpResponse[B]]
       ]
-  )(
-      implicit executor: ExecutionContext
+  )(implicit
+      executor: ExecutionContext
   ): HttpService[ByteChunk, ((APIKey, AccountDetails)) => Future[
     HttpResponse[B]
   ]] = {

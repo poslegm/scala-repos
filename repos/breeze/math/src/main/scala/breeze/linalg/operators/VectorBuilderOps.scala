@@ -15,8 +15,8 @@ trait VectorBuilderOps {
   implicit def canOpInto_V_S[
       @expand.args(OpMulScalar, OpDiv) Op,
       @expand.args(Double, Long, Float, Int) T
-  ](
-      implicit @expand.sequence[Op]((_ * _), (_ / _)) op: Q
+  ](implicit
+      @expand.sequence[Op]((_ * _), (_ / _)) op: Q
   ): Op.InPlaceImpl2[VectorBuilder[T], T] = {
     new Op.InPlaceImpl2[VectorBuilder[T], T] {
       def apply(a: VectorBuilder[T], b: T) {
@@ -62,8 +62,8 @@ trait VectorBuilderOps {
   implicit def canOpInto_V_V[
       @expand.args(OpAdd, OpSub) Op,
       @expand.args(Double, Long, Float, Int) T
-  ](
-      implicit @expand.sequence[Op]((x => x), (-_)) op: Q
+  ](implicit
+      @expand.sequence[Op]((x => x), (-_)) op: Q
   ): Op.InPlaceImpl2[VectorBuilder[T], VectorBuilder[T]] = {
     new Op.InPlaceImpl2[VectorBuilder[T], VectorBuilder[T]] {
       def apply(a: VectorBuilder[T], b: VectorBuilder[T]) {
@@ -269,8 +269,8 @@ trait VectorBuilderOps {
     }
   }
 
-  implicit def canAddInto_VV_V[V, Vec](
-      implicit ev: Vec <:< Vector[V]
+  implicit def canAddInto_VV_V[V, Vec](implicit
+      ev: Vec <:< Vector[V]
   ): OpAdd.InPlaceImpl2[VectorBuilder[V], Vec] = {
     new OpAdd.InPlaceImpl2[VectorBuilder[V], Vec] {
       def apply(a: VectorBuilder[V], b: Vec) {
@@ -392,8 +392,8 @@ trait VectorBuilderOps {
     }
   }
 
-  implicit def canMulDMVB_Semi[T: ClassTag](
-      implicit semi: Semiring[T]
+  implicit def canMulDMVB_Semi[T: ClassTag](implicit
+      semi: Semiring[T]
   ): OpMulMatrix.Impl2[DenseMatrix[T], VectorBuilder[T], DenseVector[T]] = {
     new OpMulMatrix.Impl2[DenseMatrix[T], VectorBuilder[T], DenseVector[T]] {
       def apply(a: DenseMatrix[T], b: VectorBuilder[T]): DenseVector[T] = {

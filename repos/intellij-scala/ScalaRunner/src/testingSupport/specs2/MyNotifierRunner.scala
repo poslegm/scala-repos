@@ -15,8 +15,8 @@ class MyNotifierRunner(notifier: Notifier) { outer =>
     new ClassRunner {
       override lazy val reporter: Reporter = new NotifierReporter {
         val notifier = outer.notifier
-        override def export(
-            implicit arguments: Arguments
+        override def export(implicit
+            arguments: Arguments
         ): ExecutingSpecification => ExecutedSpecification =
           (spec: ExecutingSpecification) => {
             super.export(arguments)(spec)

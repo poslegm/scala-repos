@@ -21,7 +21,7 @@ package object test2 {
 package test2 {
   package classes {
     class A
-    class B     { def b = "" }
+    class B     { def b     = "" }
     object test { (new A).b }
   }
 }

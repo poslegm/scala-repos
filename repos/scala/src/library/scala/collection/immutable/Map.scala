@@ -42,8 +42,8 @@ trait Map[A, +B]
     "Immutable maps should do nothing on toMap except return themselves cast as a map.",
     "2.11.0"
   )
-  override def toMap[T, U](
-      implicit ev: (A, B) <:< (T, U)
+  override def toMap[T, U](implicit
+      ev: (A, B) <:< (T, U)
   ): immutable.Map[T, U] =
     self.asInstanceOf[immutable.Map[T, U]]
 

@@ -33,8 +33,8 @@ import org.joda.time.DateTime
 class ObjectIdSerializer extends Serializer[ObjectId] {
   private val ObjectIdClass = classOf[ObjectId]
 
-  def deserialize(
-      implicit format: Formats
+  def deserialize(implicit
+      format: Formats
   ): PartialFunction[(TypeInfo, JValue), ObjectId] = {
     case (TypeInfo(ObjectIdClass, _), json) =>
       json match {
@@ -59,8 +59,8 @@ class ObjectIdSerializer extends Serializer[ObjectId] {
 class PatternSerializer extends Serializer[Pattern] {
   private val PatternClass = classOf[Pattern]
 
-  def deserialize(
-      implicit format: Formats
+  def deserialize(implicit
+      format: Formats
   ): PartialFunction[(TypeInfo, JValue), Pattern] = {
     case (TypeInfo(PatternClass, _), json) =>
       json match {
@@ -84,8 +84,8 @@ class PatternSerializer extends Serializer[Pattern] {
 class DateSerializer extends Serializer[Date] {
   private val DateClass = classOf[Date]
 
-  def deserialize(
-      implicit format: Formats
+  def deserialize(implicit
+      format: Formats
   ): PartialFunction[(TypeInfo, JValue), Date] = {
     case (TypeInfo(DateClass, _), json) =>
       json match {
@@ -108,8 +108,8 @@ class DateSerializer extends Serializer[Date] {
 class DateTimeSerializer extends Serializer[DateTime] {
   private val DateTimeClass = classOf[DateTime]
 
-  def deserialize(
-      implicit format: Formats
+  def deserialize(implicit
+      format: Formats
   ): PartialFunction[(TypeInfo, JValue), DateTime] = {
     case (TypeInfo(DateTimeClass, _), json) =>
       json match {
@@ -132,8 +132,8 @@ class DateTimeSerializer extends Serializer[DateTime] {
 class UUIDSerializer extends Serializer[UUID] {
   private val UUIDClass = classOf[UUID]
 
-  def deserialize(
-      implicit format: Formats
+  def deserialize(implicit
+      format: Formats
   ): PartialFunction[(TypeInfo, JValue), UUID] = {
     case (TypeInfo(UUIDClass, _), json) =>
       json match {

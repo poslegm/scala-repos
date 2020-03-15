@@ -35,7 +35,7 @@ class LogNormalTest
 
   def arbParameter =
     Arbitrary {
-      for (mean <- arbitrary[Double].map { _ % 10.0 };
+      for (mean <- arbitrary[Double].map { _                % 10.0 };
            std  <- arbitrary[Double].map { x => math.abs(x) % 8.0 + .1 })
         yield (mean, std)
     }

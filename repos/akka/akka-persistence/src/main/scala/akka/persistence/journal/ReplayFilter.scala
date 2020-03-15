@@ -151,7 +151,7 @@ private[akka] class ReplayFilter(
               mode match {
                 case RepairByDiscardOld ⇒ iter.remove() // discard
                 case Fail               ⇒ throw new IllegalStateException(errMsg)
-                case Warn               ⇒ // keep
+                case Warn               ⇒               // keep
                 case Disabled ⇒
                   throw new IllegalArgumentException(
                     "mode must not be Disabled"

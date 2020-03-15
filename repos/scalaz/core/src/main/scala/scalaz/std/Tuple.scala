@@ -46,8 +46,8 @@ sealed trait TupleInstances1 extends TupleInstances0 {
         (f._1._1, (f._1._2, f._2))
     }
 
-  implicit def tuple1Semigroup[A1](
-      implicit A1: Semigroup[A1]
+  implicit def tuple1Semigroup[A1](implicit
+      A1: Semigroup[A1]
   ): Semigroup[Tuple1[A1]] =
     new Tuple1Semigroup[A1] {
       implicit def _1: Semigroup[A1] = A1

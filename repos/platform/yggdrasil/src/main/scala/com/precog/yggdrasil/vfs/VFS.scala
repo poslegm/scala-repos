@@ -111,8 +111,8 @@ trait VFSModule[M[+_], Block] extends Logging {
   sealed trait Resource {
     def mimeType: MimeType
     def authorities: Authorities
-    def byteStream(requestedMimeTypes: Seq[MimeType])(
-        implicit M: Monad[M]
+    def byteStream(requestedMimeTypes: Seq[MimeType])(implicit
+        M: Monad[M]
     ): OptionT[M, (MimeType, StreamT[M, Array[Byte]])]
 
     def fold[A](
@@ -120,14 +120,14 @@ trait VFSModule[M[+_], Block] extends Logging {
         projectionResource: ProjectionResource => A
     ): A
 
-    protected def asByteStream(mimeType: MimeType)(
-        implicit M: Monad[M]
+    protected def asByteStream(mimeType: MimeType)(implicit
+        M: Monad[M]
     ): OptionT[M, StreamT[M, Array[Byte]]]
   }
 
   object Resource {
-    def asQuery(path: Path, version: Version)(
-        implicit M: Monad[M]
+    def asQuery(path: Path, version: Version)(implicit
+        M: Monad[M]
     ): Resource => EitherT[M, ResourceError, String] = { resource =>
       def notAQuery =
         notFound(
@@ -142,8 +142,8 @@ trait VFSModule[M[+_], Block] extends Logging {
       }
     }
 
-    def asProjection(path: Path, version: Version)(
-        implicit M: Monad[M]
+    def asProjection(path: Path, version: Version)(implicit
+        M: Monad[M]
     ): Resource => EitherT[M, ResourceError, Projection] = { resource =>
       def notAProjection =
         notFound(
@@ -227,8 +227,8 @@ trait VFSModule[M[+_], Block] extends Logging {
     def toJsonElements(block: Block): Vector[JValue]
     def derefValue(block: Block): Block
     def blockSize(block: Block): Int
-    def pathStructure(selector: CPath)(
-        implicit M: Monad[M]
+    def pathStructure(selector: CPath)(implicit
+        M: Monad[M]
     ): Projection => EitherT[M, ResourceError, PathStructure]
   }
 

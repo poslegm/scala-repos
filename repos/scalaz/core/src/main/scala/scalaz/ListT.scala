@@ -86,15 +86,15 @@ final case class ListT[M[_], A](run: M[List[A]]) {
 //
 
 sealed abstract class ListTInstances2 {
-  implicit def listTFunctor[F[_]](
-      implicit F0: Functor[F]
+  implicit def listTFunctor[F[_]](implicit
+      F0: Functor[F]
   ): Functor[ListT[F, ?]] =
     new ListTFunctor[F] {
       implicit def F: Functor[F] = F0
     }
 
-  implicit def listTSemigroup[F[_], A](
-      implicit F0: Bind[F]
+  implicit def listTSemigroup[F[_], A](implicit
+      F0: Bind[F]
   ): Semigroup[ListT[F, A]] =
     new ListTSemigroup[F, A] {
       implicit def F: Bind[F] = F0
@@ -102,8 +102,8 @@ sealed abstract class ListTInstances2 {
 }
 
 sealed abstract class ListTInstances1 extends ListTInstances2 {
-  implicit def listTMonoid[F[_], A](
-      implicit F0: Monad[F]
+  implicit def listTMonoid[F[_], A](implicit
+      F0: Monad[F]
   ): Monoid[ListT[F, A]] =
     new ListTMonoid[F, A] {
       implicit def F: Monad[F] = F0
@@ -111,20 +111,20 @@ sealed abstract class ListTInstances1 extends ListTInstances2 {
 }
 
 sealed abstract class ListTInstances extends ListTInstances1 {
-  implicit def listTMonadPlus[F[_]](
-      implicit F0: Monad[F]
+  implicit def listTMonadPlus[F[_]](implicit
+      F0: Monad[F]
   ): MonadPlus[ListT[F, ?]] =
     new ListTMonadPlus[F] {
       implicit def F: Monad[F] = F0
     }
 
-  implicit def listTEqual[F[_], A](
-      implicit E: Equal[F[List[A]]]
+  implicit def listTEqual[F[_], A](implicit
+      E: Equal[F[List[A]]]
   ): Equal[ListT[F, A]] =
     E.contramap((_: ListT[F, A]).toList)
 
-  implicit def listTShow[F[_], A](
-      implicit E: Show[F[List[A]]]
+  implicit def listTShow[F[_], A](implicit
+      E: Show[F[List[A]]]
   ): Show[ListT[F, A]] =
     Contravariant[Show].contramap(E)((_: ListT[F, A]).toList)
 

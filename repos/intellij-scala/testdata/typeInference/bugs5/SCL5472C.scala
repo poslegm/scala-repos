@@ -1,7 +1,7 @@
 object SCL5472C {
   class ParamDefAux[T]
-  implicit def forTuple[T](
-      implicit x: ParamDefAux[(T, T, T)]
+  implicit def forTuple[T](implicit
+      x: ParamDefAux[(T, T, T)]
   ): ParamDefAux[(T, T)] =
     new ParamDefAux
   implicit def forTuple: ParamDefAux[(String, String)] = new ParamDefAux

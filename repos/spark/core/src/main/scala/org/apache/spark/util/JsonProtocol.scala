@@ -291,8 +291,8 @@ private[spark] object JsonProtocol {
     ("Stage ID"           -> stageInfo.stageId) ~
       ("Stage Attempt ID" -> stageInfo.attemptId) ~
       ("Stage Name"       -> stageInfo.name) ~
-      ("Number of Tasks"  -> stageInfo.numTasks) ~ ("RDD Info" -> rddInfo) ~
-      ("Parent IDs"       -> parentIds) ~ ("Details" -> stageInfo.details) ~
+      ("Number of Tasks"  -> stageInfo.numTasks) ~ ("RDD Info"   -> rddInfo) ~
+      ("Parent IDs"       -> parentIds) ~ ("Details"             -> stageInfo.details) ~
       ("Submission Time"  -> submissionTime) ~
       ("Completion Time"  -> completionTime) ~ ("Failure Reason" -> failureReason) ~
       ("Accumulables" -> JArray(
@@ -301,10 +301,10 @@ private[spark] object JsonProtocol {
   }
 
   def taskInfoToJson(taskInfo: TaskInfo): JValue = {
-    ("Task ID"               -> taskInfo.taskId) ~ ("Index" -> taskInfo.index) ~
+    ("Task ID"               -> taskInfo.taskId) ~ ("Index"      -> taskInfo.index) ~
       ("Attempt"             -> taskInfo.attemptNumber) ~
       ("Launch Time"         -> taskInfo.launchTime) ~
-      ("Executor ID"         -> taskInfo.executorId) ~ ("Host" -> taskInfo.host) ~
+      ("Executor ID"         -> taskInfo.executorId) ~ ("Host"   -> taskInfo.host) ~
       ("Locality"            -> taskInfo.taskLocality.toString) ~
       ("Speculative"         -> taskInfo.speculative) ~
       ("Getting Result Time" -> taskInfo.gettingResultTime) ~

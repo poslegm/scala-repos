@@ -2,8 +2,8 @@ package scalaz
 package syntax
 
 /** Wraps a value `self` and provides methods related to `MonadPlus` */
-final class MonadPlusOps[F[_], A] private[syntax] (val self: F[A])(
-    implicit val F: MonadPlus[F]
+final class MonadPlusOps[F[_], A] private[syntax] (val self: F[A])(implicit
+    val F: MonadPlus[F]
 ) extends Ops[F[A]] {
   ////
   import Leibniz.===

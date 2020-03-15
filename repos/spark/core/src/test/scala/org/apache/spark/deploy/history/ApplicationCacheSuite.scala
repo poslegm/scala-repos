@@ -389,8 +389,8 @@ class ApplicationCacheSuite
     * @param expected expected value.
     * @param cache cache
     */
-  def assertMetric(name: String, counter: Counter, expected: Long)(
-      implicit cache: ApplicationCache
+  def assertMetric(name: String, counter: Counter, expected: Long)(implicit
+      cache: ApplicationCache
   ): Unit = {
     val actual = counter.getCount
     if (actual != expected) {
@@ -434,8 +434,8 @@ class ApplicationCacheSuite
     * @param attemptId attempt ID
     * @param cache app cache
     */
-  def assertNotFound(appId: String, attemptId: Option[String])(
-      implicit cache: ApplicationCache
+  def assertNotFound(appId: String, attemptId: Option[String])(implicit
+      cache: ApplicationCache
   ): Unit = {
     val ex = intercept[UncheckedExecutionException] {
       cache.get(appId, attemptId)

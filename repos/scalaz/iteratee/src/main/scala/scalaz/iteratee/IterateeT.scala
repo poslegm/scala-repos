@@ -218,8 +218,8 @@ object IterateeT extends IterateeTInstances with IterateeTFunctions {
 }
 
 sealed abstract class IterateeTInstances0 {
-  implicit def IterateeTMonad[E, F[_]](
-      implicit F0: Monad[F]
+  implicit def IterateeTMonad[E, F[_]](implicit
+      F0: Monad[F]
   ): Monad[IterateeT[E, F, ?]] =
     new IterateeTMonad[E, F] {
       implicit def F = F0
@@ -227,8 +227,8 @@ sealed abstract class IterateeTInstances0 {
 
   implicit def IterateeMonad[E]: Monad[Iteratee[E, ?]] = IterateeTMonad[E, Id]
 
-  implicit def IterateeTMonadTransT[E, H[_[_], _]](
-      implicit T0: MonadTrans[H]
+  implicit def IterateeTMonadTransT[E, H[_[_], _]](implicit
+      T0: MonadTrans[H]
   ): MonadTrans[λ[(α[_], β) => IterateeT[E, H[α, ?], β]]] =
     new IterateeTMonadTransT[E, H] {
       implicit def T = T0
@@ -240,15 +240,15 @@ sealed abstract class IterateeTInstances extends IterateeTInstances0 {
       : Hoist[λ[(α[_], β) => IterateeT[E, α, β]]] =
     new IterateeTHoist[E] {}
 
-  implicit def IterateeTHoistT[E, H[_[_], _]](
-      implicit T0: Hoist[H]
+  implicit def IterateeTHoistT[E, H[_[_], _]](implicit
+      T0: Hoist[H]
   ): Hoist[λ[(α[_], β) => IterateeT[E, H[α, ?], β]]] =
     new IterateeTHoistT[E, H] {
       implicit def T = T0
     }
 
-  implicit def IterateeTMonadIO[E, F[_]](
-      implicit M0: MonadIO[F]
+  implicit def IterateeTMonadIO[E, F[_]](implicit
+      M0: MonadIO[F]
   ): MonadIO[IterateeT[E, F, ?]] =
     new IterateeTMonadIO[E, F] {
       implicit def F = M0

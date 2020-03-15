@@ -33,8 +33,8 @@ abstract class StatementInvoker[+R] extends Invoker[R] { self =>
       defaultConcurrency: ResultSetConcurrency = ResultSetConcurrency.ReadOnly,
       defaultHoldability: ResultSetHoldability = ResultSetHoldability.Default,
       autoClose: Boolean = true
-  )(
-      implicit session: JdbcBackend#Session
+  )(implicit
+      session: JdbcBackend#Session
   ): Either[Int, PositionedResultIterator[R]] = {
     //TODO Support multiple results
     val statement = getStatement

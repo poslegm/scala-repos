@@ -44,8 +44,8 @@ sealed abstract class Query[+E, U, C[_]] extends QueryBase[C[U]] { self =>
     flatMap(v => Query[F, T, G](f(v)))
 
   /** Select all elements of this query which satisfy a predicate. */
-  private def filterHelper[T](f: E => T, wrapExpr: Node => Node)(
-      implicit wt: CanBeQueryCondition[T]
+  private def filterHelper[T](f: E => T, wrapExpr: Node => Node)(implicit
+      wt: CanBeQueryCondition[T]
   ): Query[E, U, C] = {
     val generator = new AnonSymbol
     val aliased   = shaped.encodeRef(Ref(generator))
@@ -286,8 +286,8 @@ sealed abstract class Query[+E, U, C[_]] extends QueryBase[C[U]] { self =>
   /** Test whether this query is non-empty. */
   def exists = Library.Exists.column[Boolean](toNode)
 
-  def pack[R](
-      implicit packing: Shape[_ <: FlatShapeLevel, E, _, R]
+  def pack[R](implicit
+      packing: Shape[_ <: FlatShapeLevel, E, _, R]
   ): Query[R, U, C] =
     new Query[R, U, C] {
       val shaped: ShapedValue[_ <: R, U] = self.shaped.packedValue(packing)
@@ -336,8 +336,8 @@ sealed abstract class Query[+E, U, C[_]] extends QueryBase[C[U]] { self =>
   }
 
   /** Change the collection type to build when executing the query. */
-  def to[D[_]](
-      implicit ctc: TypedCollectionTypeConstructor[D]
+  def to[D[_]](implicit
+      ctc: TypedCollectionTypeConstructor[D]
   ): Query[E, U, D] =
     new Query[E, U, D] {
       val shaped = self.shaped

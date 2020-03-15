@@ -96,8 +96,8 @@ object Reads extends ConstraintReads with PathReads with DefaultReads {
 
   import play.api.libs.functional._
 
-  implicit def applicative(
-      implicit applicativeJsResult: Applicative[JsResult]
+  implicit def applicative(implicit
+      applicativeJsResult: Applicative[JsResult]
   ): Applicative[Reads] =
     new Applicative[Reads] {
 
@@ -1139,8 +1139,8 @@ trait DefaultReads extends LowPriorityDefaultReads {
   /**
     * Deserializer for Map[String,V] types.
     */
-  implicit def mapReads[V](
-      implicit fmtv: Reads[V]
+  implicit def mapReads[V](implicit
+      fmtv: Reads[V]
   ): Reads[collection.immutable.Map[String, V]] =
     new Reads[collection.immutable.Map[String, V]] {
       def reads(json: JsValue) =

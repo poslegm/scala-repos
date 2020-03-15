@@ -9,8 +9,8 @@ object Fooable {
 }
 
 object Test {
-  implicit def traversable[T, Coll[_] <: Traversable[_]](
-      implicit elem: Fooable[T]
+  implicit def traversable[T, Coll[_] <: Traversable[_]](implicit
+      elem: Fooable[T]
   ): Fooable[Coll[T]] = {
     println("traversable")
     new Fooable[Coll[T]] {}

@@ -110,8 +110,8 @@ object ZkClient {
   }
 
   /** Build a ZkClient with a NativeConnector */
-  def apply(connectString: String, sessionTimeout: Duration)(
-      implicit timer: Timer
+  def apply(connectString: String, sessionTimeout: Duration)(implicit
+      timer: Timer
   ): ZkClient = {
     apply(connectString, None, sessionTimeout)(timer)
   }

@@ -224,8 +224,8 @@ trait GenSeqLike[+A, +Repr]
     *    @return       a new $coll resulting from applying the given function
     *                  `f` to each element of this $coll and collecting the results in reversed order.
     */
-  def reverseMap[B, That](f: A => B)(
-      implicit bf: CanBuildFrom[Repr, B, That]
+  def reverseMap[B, That](f: A => B)(implicit
+      bf: CanBuildFrom[Repr, B, That]
   ): That
 
   /** Tests whether this $coll starts with the given sequence.
@@ -273,8 +273,8 @@ trait GenSeqLike[+A, +Repr]
     *                     except that `replaced` elements starting from `from` are replaced
     *                     by `patch`.
     */
-  def patch[B >: A, That](from: Int, patch: GenSeq[B], replaced: Int)(
-      implicit bf: CanBuildFrom[Repr, B, That]
+  def patch[B >: A, That](from: Int, patch: GenSeq[B], replaced: Int)(implicit
+      bf: CanBuildFrom[Repr, B, That]
   ): That
 
   /** A copy of this $coll with one single replaced element.
@@ -291,8 +291,8 @@ trait GenSeqLike[+A, +Repr]
     *
     *    @return a copy of this $coll with the element at position `index` replaced by `elem`.
     */
-  def updated[B >: A, That](index: Int, elem: B)(
-      implicit bf: CanBuildFrom[Repr, B, That]
+  def updated[B >: A, That](index: Int, elem: B)(implicit
+      bf: CanBuildFrom[Repr, B, That]
   ): That
 
   /** A copy of the $coll with an element prepended.
@@ -379,8 +379,8 @@ trait GenSeqLike[+A, +Repr]
     *            all elements of this $coll followed by the minimal number of occurrences of `elem` so
     *            that the resulting $coll has a length of at least `len`.
     */
-  def padTo[B >: A, That](len: Int, elem: B)(
-      implicit bf: CanBuildFrom[Repr, B, That]
+  def padTo[B >: A, That](len: Int, elem: B)(implicit
+      bf: CanBuildFrom[Repr, B, That]
   ): That
 
   /** Tests whether every element of this $coll relates to the
@@ -419,8 +419,8 @@ trait GenSeqLike[+A, +Repr]
     *    @return       a new $coll which contains all elements of this $coll
     *                  followed by all elements of `that`.
     */
-  def union[B >: A, That](that: GenSeq[B])(
-      implicit bf: CanBuildFrom[Repr, B, That]
+  def union[B >: A, That](that: GenSeq[B])(implicit
+      bf: CanBuildFrom[Repr, B, That]
   ): That = this ++ that
 
   /** Computes the multiset difference between this $coll and another sequence.

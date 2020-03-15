@@ -111,8 +111,8 @@ object SampleData extends CValueGenerators {
     builder.result
   }
 
-  def randomSubset[T, C[X] <: Seq[X], S](c: C[T], freq: Double)(
-      implicit cbf: CanBuildFrom[C[T], T, C[T]]
+  def randomSubset[T, C[X] <: Seq[X], S](c: C[T], freq: Double)(implicit
+      cbf: CanBuildFrom[C[T], T, C[T]]
   ): C[T] = {
     val builder = cbf()
 

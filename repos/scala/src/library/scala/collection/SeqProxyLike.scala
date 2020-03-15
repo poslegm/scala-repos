@@ -50,8 +50,8 @@ trait SeqProxyLike[+A, +Repr <: SeqLike[A, Repr] with Seq[A]]
   override def lastIndexWhere(p: A => Boolean, end: Int): Int =
     self.lastIndexWhere(p)
   override def reverse: Repr = self.reverse
-  override def reverseMap[B, That](f: A => B)(
-      implicit bf: CanBuildFrom[Repr, B, That]
+  override def reverseMap[B, That](f: A => B)(implicit
+      bf: CanBuildFrom[Repr, B, That]
   ): That                                   = self.reverseMap(f)(bf)
   override def reverseIterator: Iterator[A] = self.reverseIterator
   override def startsWith[B](that: GenSeq[B], offset: Int): Boolean =
@@ -69,8 +69,8 @@ trait SeqProxyLike[+A, +Repr <: SeqLike[A, Repr] with Seq[A]]
   override def containsSlice[B](that: GenSeq[B]): Boolean =
     self.indexOfSlice(that) != -1
   override def contains[A1 >: A](elem: A1): Boolean = self.contains(elem)
-  override def union[B >: A, That](that: GenSeq[B])(
-      implicit bf: CanBuildFrom[Repr, B, That]
+  override def union[B >: A, That](that: GenSeq[B])(implicit
+      bf: CanBuildFrom[Repr, B, That]
   ): That                                               = self.union(that)(bf)
   override def diff[B >: A](that: GenSeq[B]): Repr      = self.diff(that)
   override def intersect[B >: A](that: GenSeq[B]): Repr = self.intersect(that)
@@ -79,18 +79,18 @@ trait SeqProxyLike[+A, +Repr <: SeqLike[A, Repr] with Seq[A]]
       implicit bf: CanBuildFrom[Repr, B, That]
   ): That =
     self.patch(from, patch, replaced)(bf)
-  override def updated[B >: A, That](index: Int, elem: B)(
-      implicit bf: CanBuildFrom[Repr, B, That]
+  override def updated[B >: A, That](index: Int, elem: B)(implicit
+      bf: CanBuildFrom[Repr, B, That]
   ): That =
     self.updated(index, elem)(bf)
-  override def +:[B >: A, That](elem: B)(
-      implicit bf: CanBuildFrom[Repr, B, That]
+  override def +:[B >: A, That](elem: B)(implicit
+      bf: CanBuildFrom[Repr, B, That]
   ): That = self.+:(elem)(bf)
-  override def :+[B >: A, That](elem: B)(
-      implicit bf: CanBuildFrom[Repr, B, That]
+  override def :+[B >: A, That](elem: B)(implicit
+      bf: CanBuildFrom[Repr, B, That]
   ): That = self.:+(elem)(bf)
-  override def padTo[B >: A, That](len: Int, elem: B)(
-      implicit bf: CanBuildFrom[Repr, B, That]
+  override def padTo[B >: A, That](len: Int, elem: B)(implicit
+      bf: CanBuildFrom[Repr, B, That]
   ): That =
     self.padTo(len, elem)(bf)
   override def corresponds[B](that: GenSeq[B])(p: (A, B) => Boolean): Boolean =

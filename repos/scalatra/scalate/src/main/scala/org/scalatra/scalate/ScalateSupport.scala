@@ -346,8 +346,8 @@ trait ScalateSupport extends org.scalatra.servlet.ServletBase {
     * will be set to any render context created with the `createRenderContext`
     * method.
     */
-  protected def templateAttributes(
-      implicit request: HttpServletRequest
+  protected def templateAttributes(implicit
+      request: HttpServletRequest
   ): mutable.Map[String, Any] =
     request
       .getOrElseUpdate(ScalateSupport.TemplateAttributesKey, mutable.Map.empty)

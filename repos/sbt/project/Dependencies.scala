@@ -13,17 +13,17 @@ object Dependencies {
   val ioVersion                  = "1.0.0-M3"
   val incrementalcompilerVersion = "0.1.0-M3"
   val librarymanagementVersion   = "0.1.0-M7"
-  lazy val sbtIO                 = "org.scala-sbt" %% "io" % ioVersion
-  lazy val utilCollection        = "org.scala-sbt" %% "util-collection" % utilVersion
-  lazy val utilLogging           = "org.scala-sbt" %% "util-logging" % utilVersion
-  lazy val utilTesting           = "org.scala-sbt" %% "util-testing" % utilVersion
-  lazy val utilControl           = "org.scala-sbt" %% "util-control" % utilVersion
-  lazy val utilCompletion        = "org.scala-sbt" %% "util-completion" % utilVersion
+  lazy val sbtIO                 = "org.scala-sbt" %% "io"               % ioVersion
+  lazy val utilCollection        = "org.scala-sbt" %% "util-collection"  % utilVersion
+  lazy val utilLogging           = "org.scala-sbt" %% "util-logging"     % utilVersion
+  lazy val utilTesting           = "org.scala-sbt" %% "util-testing"     % utilVersion
+  lazy val utilControl           = "org.scala-sbt" %% "util-control"     % utilVersion
+  lazy val utilCompletion        = "org.scala-sbt" %% "util-completion"  % utilVersion
   lazy val utilApplyMacro        = "org.scala-sbt" %% "util-apply-macro" % utilVersion
-  lazy val utilRelation          = "org.scala-sbt" %% "util-relation" % utilVersion
-  lazy val utilLogic             = "org.scala-sbt" %% "util-logic" % utilVersion
-  lazy val utilTracking          = "org.scala-sbt" %% "util-tracking" % utilVersion
-  lazy val utilScripted          = "org.scala-sbt" %% "util-scripted" % utilVersion
+  lazy val utilRelation          = "org.scala-sbt" %% "util-relation"    % utilVersion
+  lazy val utilLogic             = "org.scala-sbt" %% "util-logic"       % utilVersion
+  lazy val utilTracking          = "org.scala-sbt" %% "util-tracking"    % utilVersion
+  lazy val utilScripted          = "org.scala-sbt" %% "util-scripted"    % utilVersion
   lazy val libraryManagement =
     "org.scala-sbt" %% "librarymanagement" % librarymanagementVersion
   lazy val launcherInterface =

@@ -415,8 +415,8 @@ object DenseVector
   implicit def canMapValues[
       @specialized(Int, Float, Double) V,
       @specialized(Int, Float, Double) V2
-  ](
-      implicit man: ClassTag[V2]
+  ](implicit
+      man: ClassTag[V2]
   ): CanMapValues[DenseVector[V], V, V2, DenseVector[V2]] = {
     new CanMapValues[DenseVector[V], V, V2, DenseVector[V2]] {
 
@@ -562,8 +562,8 @@ object DenseVector
       }
     }
 
-  implicit def canMapPairs[V, V2](
-      implicit man: ClassTag[V2]
+  implicit def canMapPairs[V, V2](implicit
+      man: ClassTag[V2]
   ): CanMapKeyValuePairs[DenseVector[V], Int, V, V2, DenseVector[V2]] =
     new CanMapKeyValuePairs[DenseVector[V], Int, V, V2, DenseVector[V2]] {
 

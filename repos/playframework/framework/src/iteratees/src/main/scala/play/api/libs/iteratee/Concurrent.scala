@@ -327,8 +327,8 @@ object Concurrent {
     * @param length A function that computes the length of an input item
     * $paramEcSingle
     */
-  def buffer[E](maxBuffer: Int, length: Input[E] => Int)(
-      implicit ec: ExecutionContext
+  def buffer[E](maxBuffer: Int, length: Input[E] => Int)(implicit
+      ec: ExecutionContext
   ): Enumeratee[E, E] =
     new Enumeratee[E, E] {
       val pec = ec.prepare()

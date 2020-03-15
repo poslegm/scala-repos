@@ -166,12 +166,12 @@ private[stats] object StatsFormatter {
           "jvm_memory_non_heap_mb_max" -> inMegabytes(n)
         case ("jvm_nonheap_used", n) =>
           "jvm_memory_non_heap_mb_used" -> inMegabytes(n)
-        case ("jvm_thread_count", n)        => "jvm_threads_active" -> n
-        case ("jvm_thread_daemon_count", n) => "jvm_threads_daemon" -> n
-        case ("jvm_thread_peak_count", n)   => "jvm_threads_peak" -> n
-        case ("jvm_start_time", n)          => "jvm_time_ms" -> n
-        case ("jvm_uptime", n)              => "jvm_uptime_secs" -> inSeconds(n)
-        case (gcCycles(gc), n)              => s"jvm_gc_${gc}_collection_count" -> n
+        case ("jvm_thread_count", n)        => "jvm_threads_active"               -> n
+        case ("jvm_thread_daemon_count", n) => "jvm_threads_daemon"               -> n
+        case ("jvm_thread_peak_count", n)   => "jvm_threads_peak"                 -> n
+        case ("jvm_start_time", n)          => "jvm_time_ms"                      -> n
+        case ("jvm_uptime", n)              => "jvm_uptime_secs"                  -> inSeconds(n)
+        case (gcCycles(gc), n)              => s"jvm_gc_${gc}_collection_count"   -> n
         case (gcMsec(gc), n)                => s"jvm_gc_${gc}_collection_time_ms" -> n
         case kv                             => kv
       }

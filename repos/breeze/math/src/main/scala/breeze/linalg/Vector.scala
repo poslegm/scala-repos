@@ -38,8 +38,8 @@ import scala.reflect.ClassTag
 trait VectorLike[@spec V, +Self <: Vector[V]]
     extends Tensor[Int, V]
     with TensorLike[Int, V, Self] {
-  def map[V2, That](fn: V => V2)(
-      implicit canMapValues: CanMapValues[Self @uncheckedVariance, V, V2, That]
+  def map[V2, That](fn: V => V2)(implicit
+      canMapValues: CanMapValues[Self @uncheckedVariance, V, V2, That]
   ): That =
     values map fn
 
@@ -207,8 +207,8 @@ object Vector extends VectorConstructors[Vector] with VectorOps {
     }
   }
 
-  implicit def canMapValues[V, V2](
-      implicit man: ClassTag[V2]
+  implicit def canMapValues[V, V2](implicit
+      man: ClassTag[V2]
   ): CanMapValues[Vector[V], V, V2, Vector[V2]] = {
     new CanMapValues[Vector[V], V, V2, Vector[V2]] {
 
@@ -219,8 +219,8 @@ object Vector extends VectorConstructors[Vector] with VectorOps {
     }
   }
 
-  implicit def canMapActiveValues[V, V2](
-      implicit man: ClassTag[V2]
+  implicit def canMapActiveValues[V, V2](implicit
+      man: ClassTag[V2]
   ): CanMapActiveValues[Vector[V], V, V2, Vector[V2]] = {
     new CanMapActiveValues[Vector[V], V, V2, Vector[V2]] {
 
@@ -284,8 +284,8 @@ object Vector extends VectorConstructors[Vector] with VectorOps {
     new CanZipMapKeyValuesVector[V, R]
 
   /**Returns the k-norm of this Vector. */
-  implicit def canNorm[T](
-      implicit canNormS: norm.Impl[T, Double]
+  implicit def canNorm[T](implicit
+      canNormS: norm.Impl[T, Double]
   ): norm.Impl2[Vector[T], Double, Double] = {
 
     new norm.Impl2[Vector[T], Double, Double] {
@@ -358,8 +358,8 @@ trait VectorOps {
   implicit def v_v_Idempotent_Op[
       @expand.args(Int, Double, Float, Long) T,
       @expand.args(OpAdd, OpSub) Op <: OpType
-  ](
-      implicit @expand.sequence[Op]({ _ + _ }, { _ - _ }) op: Op.Impl2[T, T, T]
+  ](implicit
+      @expand.sequence[Op]({ _ + _ }, { _ - _ }) op: Op.Impl2[T, T, T]
   ): BinaryRegistry[Vector[T], Vector[T], Op.type, Vector[T]] =
     new BinaryRegistry[Vector[T], Vector[T], Op.type, Vector[T]] {
       override def bindingMissing(a: Vector[T], b: Vector[T]): Vector[T] = {
@@ -603,8 +603,8 @@ trait VectorOps {
   implicit def v_v_Idempotent_UpdateOp[
       @expand.args(Int, Double, Float, Long) T,
       @expand.args(OpAdd, OpSub) Op <: OpType
-  ](
-      implicit @expand.sequence[Op]({ _ + _ }, { _ - _ }) op: Op.Impl2[T, T, T]
+  ](implicit
+      @expand.sequence[Op]({ _ + _ }, { _ - _ }) op: Op.Impl2[T, T, T]
   ): BinaryUpdateRegistry[Vector[T], Vector[T], Op.type] =
     new BinaryUpdateRegistry[Vector[T], Vector[T], Op.type] {
       override def bindingMissing(a: Vector[T], b: Vector[T]): Unit = {
@@ -727,8 +727,8 @@ trait VectorOps {
 
   @expand
   @expand.valify
-  implicit def canDot_V_V[@expand.args(Int, Long, Float, Double) T](
-      implicit @expand.sequence[T](0, 0L, 0.0f, 0.0) zero: T
+  implicit def canDot_V_V[@expand.args(Int, Long, Float, Double) T](implicit
+      @expand.sequence[T](0, 0L, 0.0f, 0.0) zero: T
   ): BinaryRegistry[Vector[T], Vector[
     T
   ], breeze.linalg.operators.OpMulInner.type, T] = {
@@ -1008,8 +1008,8 @@ trait VectorOps {
     }
   }
 
-  implicit def dotField[T](
-      implicit field: Semiring[T]
+  implicit def dotField[T](implicit
+      field: Semiring[T]
   ): OpMulInner.Impl2[Vector[T], Vector[T], T] = {
     new OpMulInner.Impl2[Vector[T], Vector[T], T] {
       override def apply(v: Vector[T], v2: Vector[T]): T = {

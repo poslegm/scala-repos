@@ -481,8 +481,8 @@ abstract class RDD[T: ClassTag](
     * coalesce(1000, shuffle = true) will result in 1000 partitions with the
     * data distributed using a hash partitioner.
     */
-  def coalesce(numPartitions: Int, shuffle: Boolean = false)(
-      implicit ord: Ordering[T] = null
+  def coalesce(numPartitions: Int, shuffle: Boolean = false)(implicit
+      ord: Ordering[T] = null
   ): RDD[T] =
     withScope {
       if (shuffle) {
@@ -712,8 +712,8 @@ abstract class RDD[T: ClassTag](
     *
     * @param partitioner Partitioner to use for the resulting RDD
     */
-  def intersection(other: RDD[T], partitioner: Partitioner)(
-      implicit ord: Ordering[T] = null
+  def intersection(other: RDD[T], partitioner: Partitioner)(implicit
+      ord: Ordering[T] = null
   ): RDD[T] =
     withScope {
       this
@@ -782,8 +782,8 @@ abstract class RDD[T: ClassTag](
     * aggregation (such as a sum or average) over each key, using [[PairRDDFunctions.aggregateByKey]]
     * or [[PairRDDFunctions.reduceByKey]] will provide much better performance.
     */
-  def groupBy[K](f: T => K, numPartitions: Int)(
-      implicit kt: ClassTag[K]
+  def groupBy[K](f: T => K, numPartitions: Int)(implicit
+      kt: ClassTag[K]
   ): RDD[(K, Iterable[T])] =
     withScope {
       groupBy(f, new HashPartitioner(numPartitions))
@@ -1112,8 +1112,8 @@ abstract class RDD[T: ClassTag](
   /**
     * Return an RDD with the elements from `this` that are not in `other`.
     */
-  def subtract(other: RDD[T], p: Partitioner)(
-      implicit ord: Ordering[T] = null
+  def subtract(other: RDD[T], p: Partitioner)(implicit
+      ord: Ordering[T] = null
   ): RDD[T] =
     withScope {
       if (partitioner == Some(p)) {
@@ -1352,8 +1352,8 @@ abstract class RDD[T: ClassTag](
   /**
     * Approximate version of countByValue().
     */
-  def countByValueApprox(timeout: Long, confidence: Double = 0.95)(
-      implicit ord: Ordering[T] = null
+  def countByValueApprox(timeout: Long, confidence: Double = 0.95)(implicit
+      ord: Ordering[T] = null
   ): PartialResult[Map[T, BoundedDouble]] =
     withScope {
       if (elementClassTag.runtimeClass.isArray) {

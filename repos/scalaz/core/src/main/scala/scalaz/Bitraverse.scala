@@ -18,8 +18,8 @@ trait Bitraverse[F[_, _]] extends Bifunctor[F] with Bifoldable[F] { self =>
   // derived functions
 
   /**The composition of Bitraverses `F` and `G`, `[x,y]F[G[x,y],G[x,y]]`, is a Bitraverse */
-  def compose[G[_, _]](
-      implicit G0: Bitraverse[G]
+  def compose[G[_, _]](implicit
+      G0: Bitraverse[G]
   ): Bitraverse[λ[(α, β) => F[G[α, β], G[α, β]]]] =
     new CompositionBitraverse[F, G] {
       implicit def F = self
@@ -27,8 +27,8 @@ trait Bitraverse[F[_, _]] extends Bifunctor[F] with Bifoldable[F] { self =>
     }
 
   /**The product of Bitraverses `F` and `G`, `[x,y](F[x,y], G[x,y])`, is a Bitraverse */
-  def product[G[_, _]](
-      implicit G0: Bitraverse[G]
+  def product[G[_, _]](implicit
+      G0: Bitraverse[G]
   ): Bitraverse[λ[(α, β) => (F[α, β], G[α, β])]] =
     new ProductBitraverse[F, G] {
       implicit def F = self
@@ -159,14 +159,14 @@ trait Bitraverse[F[_, _]] extends Bifunctor[F] with Bifoldable[F] { self =>
     }
 
   /** Embed a Traverse on the left side of this Bitraverse . */
-  def embedLeft[G[_]](
-      implicit G0: Traverse[G]
+  def embedLeft[G[_]](implicit
+      G0: Traverse[G]
   ): Bitraverse[λ[(α, β) => F[G[α], β]]] =
     embed[G, Id.Id]
 
   /** Embed a Traverse on the right side of this Bitraverse . */
-  def embedRight[H[_]](
-      implicit H0: Traverse[H]
+  def embedRight[H[_]](implicit
+      H0: Traverse[H]
   ): Bitraverse[λ[(α, β) => F[α, H[β]]]] =
     embed[Id.Id, H]
 

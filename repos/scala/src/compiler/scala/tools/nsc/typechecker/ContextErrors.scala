@@ -97,14 +97,14 @@ trait ContextErrors { self: Analyzer =>
       extends AbsTypeError
 
   object ErrorUtils {
-    def issueNormalTypeError(tree: Tree, msg: String)(
-        implicit context: Context
+    def issueNormalTypeError(tree: Tree, msg: String)(implicit
+        context: Context
     ) {
       issueTypeError(NormalTypeError(tree, msg))
     }
 
-    def issueSymbolTypeError(sym: Symbol, msg: String)(
-        implicit context: Context
+    def issueSymbolTypeError(sym: Symbol, msg: String)(implicit
+        context: Context
     ) {
       issueTypeError(SymbolTypeError(sym, msg))
     }
@@ -166,8 +166,8 @@ trait ContextErrors { self: Analyzer =>
       internalMessage
     )
 
-  def NoImplicitFoundError(tree: Tree, param: Symbol)(
-      implicit context: Context
+  def NoImplicitFoundError(tree: Tree, param: Symbol)(implicit
+      context: Context
   ): Unit = {
     def errMsg = {
       val paramName = param.name
@@ -1825,8 +1825,8 @@ trait ContextErrors { self: Analyzer =>
       issueSymbolTypeError(sym, errMsg)
     }
 
-    def AmbiguousReferenceInNamesDefaultError(arg: Tree, name: Name)(
-        implicit context: Context
+    def AmbiguousReferenceInNamesDefaultError(arg: Tree, name: Name)(implicit
+        context: Context
     ) = {
       if (!arg.isErroneous) {
         // check if name clash wasn't reported already
@@ -1840,8 +1840,8 @@ trait ContextErrors { self: Analyzer =>
       } else arg
     }
 
-    def WarnAfterNonSilentRecursiveInference(param: Symbol, arg: Tree)(
-        implicit context: Context
+    def WarnAfterNonSilentRecursiveInference(param: Symbol, arg: Tree)(implicit
+        context: Context
     ) = {
       val note =
         "failed to determine if '" + param.name +
@@ -1850,8 +1850,8 @@ trait ContextErrors { self: Analyzer =>
       context.warning(arg.pos, note)
     }
 
-    def UnknownParameterNameNamesDefaultError(arg: Tree, name: Name)(
-        implicit context: Context
+    def UnknownParameterNameNamesDefaultError(arg: Tree, name: Name)(implicit
+        context: Context
     ) = {
       issueNormalTypeError(arg, "unknown parameter name: " + name)
       setError(arg)

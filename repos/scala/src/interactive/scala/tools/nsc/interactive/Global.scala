@@ -617,7 +617,7 @@ with ContextTrees with RichCompilationUnits with Picklers {
         for (r <- waitLoadedTypeResponses(unit.source)) r set unit.body
         serviceParsedEntered()
       } catch {
-        case ex: FreshRunReq      => throw ex // propagate a new run request
+        case ex: FreshRunReq      => throw ex          // propagate a new run request
         case ShutdownReq          => throw ShutdownReq // propagate a shutdown request
         case ex: ControlThrowable => throw ex
         case ex: Throwable =>

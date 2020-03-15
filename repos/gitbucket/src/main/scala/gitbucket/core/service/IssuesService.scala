@@ -15,8 +15,8 @@ import Q.interpolation
 trait IssuesService { self: AccountService =>
   import IssuesService._
 
-  def getIssue(owner: String, repository: String, issueId: String)(
-      implicit s: Session
+  def getIssue(owner: String, repository: String, issueId: String)(implicit
+      s: Session
   ) =
     if (issueId forall (_.isDigit))
       Issues filter (_.byPrimaryKey(
@@ -26,8 +26,8 @@ trait IssuesService { self: AccountService =>
       )) firstOption
     else None
 
-  def getComments(owner: String, repository: String, issueId: Int)(
-      implicit s: Session
+  def getComments(owner: String, repository: String, issueId: Int)(implicit
+      s: Session
   ) =
     IssueComments filter (_.byIssue(owner, repository, issueId)) list
 
@@ -50,8 +50,8 @@ trait IssuesService { self: AccountService =>
       .map { case ((t1, t2), t3) => (t1, t2, t3) }
       .list
 
-  def getComment(owner: String, repository: String, commentId: String)(
-      implicit s: Session
+  def getComment(owner: String, repository: String, commentId: String)(implicit
+      s: Session
   ) =
     if (commentId forall (_.isDigit))
       IssueComments filter { t =>
@@ -59,8 +59,8 @@ trait IssuesService { self: AccountService =>
       } firstOption
     else None
 
-  def getIssueLabels(owner: String, repository: String, issueId: Int)(
-      implicit s: Session
+  def getIssueLabels(owner: String, repository: String, issueId: Int)(implicit
+      s: Session
   ) =
     IssueLabels
       .innerJoin(Labels)
@@ -290,8 +290,8 @@ trait IssuesService { self: AccountService =>
       offset: Int,
       limit: Int,
       repos: (String, String)*
-  )(
-      implicit s: Session
+  )(implicit
+      s: Session
   ): List[(Issue, Account, Int, PullRequest, Repository, Account)] = {
     // get issues and comment count and labels
     searchIssueQueryBase(condition, true, offset, limit, repos)

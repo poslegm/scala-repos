@@ -267,8 +267,8 @@ private[data] sealed abstract class ValidatedInstances
       ): Validated[C, B] = fab.leftMap(f)
     }
 
-  implicit def validatedInstances[E](
-      implicit E: Semigroup[E]
+  implicit def validatedInstances[E](implicit
+      E: Semigroup[E]
   ): Traverse[Validated[E, ?]] with ApplicativeError[Validated[E, ?], E] =
     new Traverse[Validated[E, ?]] with ApplicativeError[Validated[E, ?], E] {
       def traverse[F[_]: Applicative, A, B](

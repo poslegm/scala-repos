@@ -497,8 +497,8 @@ trait Iteratee[E, +A] { self =>
     * @param ec the ExecutionContext to run folder within
     * @return the result returned when folder is called
     */
-  def fold[B](folder: Step[E, A] => Future[B])(
-      implicit ec: ExecutionContext
+  def fold[B](folder: Step[E, A] => Future[B])(implicit
+      ec: ExecutionContext
   ): Future[B]
 
   /**
@@ -647,8 +647,8 @@ trait Iteratee[E, +A] { self =>
   )(implicit ec: ExecutionContext): Iteratee[E, B] =
     self.flatMap(a => Iteratee.flatten(f(a)))(ec)
 
-  def flatMapInput[B](f: Step[E, A] => Iteratee[E, B])(
-      implicit ec: ExecutionContext
+  def flatMapInput[B](f: Step[E, A] => Iteratee[E, B])(implicit
+      ec: ExecutionContext
   ): Iteratee[E, B] = self.pureFlatFold(f)(ec)
 
   /**

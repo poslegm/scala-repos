@@ -73,8 +73,8 @@ final class UnionOps[C <: Coproduct](val c: C)
   /**
     * Maps a higher rank function across the values of this union.
     */
-  def mapValues(f: Poly)(
-      implicit mapValues: MapValues[f.type, C]
+  def mapValues(f: Poly)(implicit
+      mapValues: MapValues[f.type, C]
   ): mapValues.Out = mapValues(c)
 
   /**

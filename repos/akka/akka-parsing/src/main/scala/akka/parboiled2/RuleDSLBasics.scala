@@ -45,8 +45,8 @@ trait RuleDSLBasics {
     * a successful match.
     */
   @compileTimeOnly("Calls to `valueMap` must be inside `rule` macro")
-  implicit def valueMap[T](m: Map[String, T])(
-      implicit h: HListable[T]
+  implicit def valueMap[T](m: Map[String, T])(implicit
+      h: HListable[T]
   ): RuleN[h.Out] = `n/a`
 
   /**

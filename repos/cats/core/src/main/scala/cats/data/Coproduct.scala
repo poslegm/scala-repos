@@ -105,8 +105,8 @@ object Coproduct extends CoproductInstances {
 
 private[data] sealed abstract class CoproductInstances3 {
 
-  implicit def coproductEq[F[_], G[_], A](
-      implicit E: Eq[F[A] Xor G[A]]
+  implicit def coproductEq[F[_], G[_], A](implicit
+      E: Eq[F[A] Xor G[A]]
   ): Eq[Coproduct[F, G, A]] =
     Eq.by(_.run)
 

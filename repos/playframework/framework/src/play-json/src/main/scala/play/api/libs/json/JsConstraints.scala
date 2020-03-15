@@ -129,8 +129,8 @@ trait ConstraintReads {
     Reads.traversableReads[Set, A]
   def seq[A](implicit reads: Reads[A]): Reads[Seq[A]] =
     Reads.traversableReads[Seq, A]
-  def map[A](
-      implicit reads: Reads[A]
+  def map[A](implicit
+      reads: Reads[A]
   ): Reads[collection.immutable.Map[String, A]] =
     Reads.mapReads[A]
 
@@ -249,8 +249,8 @@ trait PathWrites {
       )
     }
 
-  def pure[A](path: JsPath, fixed: => A)(
-      implicit wrs: Writes[A]
+  def pure[A](path: JsPath, fixed: => A)(implicit
+      wrs: Writes[A]
   ): OWrites[JsValue] =
     OWrites[JsValue] { js => JsPath.createObj(path -> wrs.writes(fixed)) }
 }
@@ -278,8 +278,8 @@ trait ConstraintWrites {
     Writes.traversableWrites[A]
   def seq[A](implicit writes: Writes[A]): Writes[Seq[A]] =
     Writes.traversableWrites[A]
-  def map[A](
-      implicit writes: Writes[A]
+  def map[A](implicit
+      writes: Writes[A]
   ): OWrites[collection.immutable.Map[String, A]] = Writes.mapWrites[A]
 
   /**

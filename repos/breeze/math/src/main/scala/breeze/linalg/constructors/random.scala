@@ -18,8 +18,8 @@ import breeze.storage.Zero
 object randomDouble extends RandomGeneratorUFunc[Double] {
   protected def gen(implicit basis: RandBasis = Rand): Rand[Double] =
     basis.uniform
-  protected def genRange(low: Double, high: Double)(
-      implicit basis: RandBasis = Rand
+  protected def genRange(low: Double, high: Double)(implicit
+      basis: RandBasis = Rand
   ): Rand[Double] = {
     require(
       high >= low,
@@ -47,8 +47,8 @@ object randomInt extends RandomGeneratorUFunc[Int] {
 
   protected def gen(implicit basis: RandBasis = Rand): Rand[Int] =
     genRange(0, 1)
-  protected def genRange(low: Int, high: Int)(
-      implicit basis: RandBasis = Rand
+  protected def genRange(low: Int, high: Int)(implicit
+      basis: RandBasis = Rand
   ): Rand[Int] = {
     require(
       high >= low,
@@ -73,8 +73,8 @@ object randn extends RandomGeneratorUFunc[Double] {
 
   protected def gen(implicit basis: RandBasis = Rand): Rand[Double] =
     basis.gaussian
-  protected def genRange(low: Double, high: Double)(
-      implicit basis: RandBasis = Rand
+  protected def genRange(low: Double, high: Double)(implicit
+      basis: RandBasis = Rand
   ): Rand[Double] =
     basis.gaussian(low, high)
 
@@ -84,24 +84,24 @@ object randn extends RandomGeneratorUFunc[Double] {
 
 trait RandomGeneratorUFunc[T] extends UFunc {
   protected def gen(implicit basis: RandBasis = Rand): Rand[T]
-  protected def genRange(low: T, high: T)(
-      implicit basis: RandBasis = Rand
+  protected def genRange(low: T, high: T)(implicit
+      basis: RandBasis = Rand
   ): Rand[T]
   protected implicit val _classTag: ClassTag[T]
   protected implicit val _zero: Zero[T]
 
   def apply()(implicit basis: RandBasis = Rand) = gen(basis).draw()
 
-  implicit def implRandomT_1D(
-      implicit basis: RandBasis = Rand
+  implicit def implRandomT_1D(implicit
+      basis: RandBasis = Rand
   ): Impl[Int, DenseVector[T]] =
     new Impl[Int, DenseVector[T]] {
       def apply(dimensions1: Int): DenseVector[T] =
         DenseVector.rand(dimensions1, gen)
     }
 
-  implicit def implRandomT_1DRange(
-      implicit basis: RandBasis = Rand
+  implicit def implRandomT_1DRange(implicit
+      basis: RandBasis = Rand
   ): Impl2[Int, (T, T), DenseVector[T]] =
     new Impl2[Int, (T, T), DenseVector[T]] {
       def apply(dimensions1: Int, range: (T, T)): DenseVector[T] = {
@@ -109,8 +109,8 @@ trait RandomGeneratorUFunc[T] extends UFunc {
       }
     }
 
-  implicit def implRandomT_2D(
-      implicit basis: RandBasis = Rand
+  implicit def implRandomT_2D(implicit
+      basis: RandBasis = Rand
   ): Impl[(Int, Int), DenseMatrix[T]] =
     new Impl[(Int, Int), DenseMatrix[T]] {
       def apply(dimensions2: (Int, Int)): DenseMatrix[T] = {
@@ -118,8 +118,8 @@ trait RandomGeneratorUFunc[T] extends UFunc {
       }
     }
 
-  implicit def implRandomT_2DRange(
-      implicit basis: RandBasis = Rand
+  implicit def implRandomT_2DRange(implicit
+      basis: RandBasis = Rand
   ): Impl2[(Int, Int), (T, T), DenseMatrix[T]] =
     new Impl2[(Int, Int), (T, T), DenseMatrix[T]] {
       def apply(dimensions2: (Int, Int), range: (T, T)): DenseMatrix[T] = {

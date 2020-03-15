@@ -54,8 +54,8 @@ object Join {
       R,
       In0 <: HList,
       Out0 <: HList
-  ](
-      implicit x: Aux[I, L1, L2, R, HNil, In0, Out0]
+  ](implicit
+      x: Aux[I, L1, L2, R, HNil, In0, Out0]
   ): Join[I, L1, L2, R] { type In = In0; type Out = Out0 } = `n/a`
 
   sealed trait Aux[
@@ -75,8 +75,8 @@ object Join {
         L2 <: HList,
         Acc <: HList,
         Out <: HList
-    ](
-        implicit x: Aux[I, L1, L2, HNil, Acc, I, Out]
+    ](implicit
+        x: Aux[I, L1, L2, HNil, Acc, I, Out]
     ): Aux[I, L1, L2, Unit, Acc, I, Out] = `n/a`
 
     // if R <: HList and L1 non-empty move head of L1 to Acc
@@ -88,8 +88,8 @@ object Join {
         R <: HList,
         Acc <: HList,
         Out <: HList
-    ](
-        implicit x: Aux[I, T, L2, R, H :: Acc, I, Out]
+    ](implicit
+        x: Aux[I, T, L2, R, H :: Acc, I, Out]
     ): Aux[I, H :: T, L2, R, Acc, I, Out] = `n/a`
 
     // if R <: HList and L1 empty and L2 non-empty move head of L2 to Acc
@@ -100,8 +100,8 @@ object Join {
         R <: HList,
         Acc <: HList,
         Out <: HList
-    ](
-        implicit x: Aux[I, HNil, T, R, H :: Acc, I, Out]
+    ](implicit
+        x: Aux[I, HNil, T, R, H :: Acc, I, Out]
     ): Aux[I, HNil, H :: T, R, Acc, I, Out] = `n/a`
 
     // if R <: HList and L1 and L2 empty set Out = reversePrepend Acc before R
@@ -120,8 +120,8 @@ object Join {
         Out0 <: HList,
         H,
         T <: HList
-    ](
-        implicit x: Aux[I, T, L2, Rule[I2, O2], H :: Acc, In0, Out0]
+    ](implicit
+        x: Aux[I, T, L2, Rule[I2, O2], H :: Acc, In0, Out0]
     ): Aux[I, H :: T, L2, Rule[I2, O2], HNil, In0, Out0] = `n/a`
 
     // if R <: Rule and L1 empty and Acc non-empty move head of Acc to L2
@@ -134,8 +134,8 @@ object Join {
         Out0 <: HList,
         H,
         T <: HList
-    ](
-        implicit x: Aux[I, HNil, H :: L2, Rule[I2, O2], T, In0, Out0]
+    ](implicit
+        x: Aux[I, HNil, H :: L2, Rule[I2, O2], T, In0, Out0]
     ): Aux[I, HNil, L2, Rule[I2, O2], H :: T, In0, Out0] = `n/a`
 
     // if R <: Rule and L1 and Acc empty set In and Out to tailswitches result
@@ -160,8 +160,8 @@ object Join {
         R,
         Acc <: HList,
         Out <: HList
-    ](
-        implicit x: Aux[I, L1, L2, R :: HNil, Acc, I, Out]
+    ](implicit
+        x: Aux[I, L1, L2, R :: HNil, Acc, I, Out]
     ): Aux[I, L1, L2, R, Acc, I, Out] = `n/a`
   }
 }

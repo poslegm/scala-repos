@@ -227,12 +227,12 @@ sealed abstract class MaybeInstances {
         Tag(Tag.unwrap(fa1).orElse(Tag.unwrap(fa2)))
     }
 
-  implicit def maybeFirstShow[A](
-      implicit A: Show[Maybe[A]]
+  implicit def maybeFirstShow[A](implicit
+      A: Show[Maybe[A]]
   ): Show[FirstMaybe[A]] = Tag.subst(A)
 
-  implicit def maybeFirstOrder[A](
-      implicit A: Order[Maybe[A]]
+  implicit def maybeFirstOrder[A](implicit
+      A: Order[Maybe[A]]
   ): Order[FirstMaybe[A]] = Tag.subst(A)
 
   implicit def maybeFirstMonad: Monad[FirstMaybe] =
@@ -246,12 +246,12 @@ sealed abstract class MaybeInstances {
         Tag(Tag.unwrap(fa2).orElse(Tag.unwrap(fa1)))
     }
 
-  implicit def maybeLastShow[A](
-      implicit A: Show[Maybe[A]]
+  implicit def maybeLastShow[A](implicit
+      A: Show[Maybe[A]]
   ): Show[LastMaybe[A]] = Tag.subst(A)
 
-  implicit def maybeLastOrder[A](
-      implicit A: Order[Maybe[A]]
+  implicit def maybeLastOrder[A](implicit
+      A: Order[Maybe[A]]
   ): Order[LastMaybe[A]] = Tag.subst(A)
 
   implicit def maybeLastMonad: Monad[LastMaybe] =

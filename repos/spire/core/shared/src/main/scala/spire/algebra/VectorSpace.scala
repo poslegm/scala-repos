@@ -18,7 +18,7 @@ trait VectorSpace[V, @sp(Int, Long, Float, Double) F]
 }
 
 object VectorSpace {
-  @inline final def apply[V, @sp(Int, Long, Float, Double) R](
-      implicit V: VectorSpace[V, R]
+  @inline final def apply[V, @sp(Int, Long, Float, Double) R](implicit
+      V: VectorSpace[V, R]
   ): VectorSpace[V, R] = V
 }

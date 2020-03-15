@@ -36,8 +36,8 @@ trait Zip[F[_]] { self =>
   def apzip[A, B](f: => F[A] => F[B], a: => F[A]): F[(A, B)] =
     zip(a, f(a))
 
-  def apzipPL[A, B](f: => F[A] @?> F[B], a: => F[A])(
-      implicit M: Monoid[F[B]]
+  def apzipPL[A, B](f: => F[A] @?> F[B], a: => F[A])(implicit
+      M: Monoid[F[B]]
   ): F[(A, B)] =
     apzip(f.getOrZ(_), a)
 

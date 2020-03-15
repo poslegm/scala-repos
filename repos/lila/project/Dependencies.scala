@@ -52,13 +52,13 @@ object Dependencies {
 
   object play {
     val version = "2.4.6"
-    val api     = "com.typesafe.play" %% "play" % version
+    val api     = "com.typesafe.play" %% "play"      % version
     val test    = "com.typesafe.play" %% "play-test" % version
   }
   object spray {
     val version = "1.3.3"
     val caching = "io.spray" %% "spray-caching" % version
-    val util    = "io.spray" %% "spray-util" % version
+    val util    = "io.spray" %% "spray-util"    % version
   }
   object akka {
     val version = "2.4.2"
@@ -67,7 +67,7 @@ object Dependencies {
   }
   object kamon {
     val version = "0.5.2"
-    val core    = "io.kamon" %% "kamon-core" % version
+    val core    = "io.kamon" %% "kamon-core"   % version
     val statsd  = "io.kamon" %% "kamon-statsd" % version
   }
 }

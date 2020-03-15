@@ -293,8 +293,8 @@ trait RepositoryService { self: AccountService =>
     }
   }
 
-  def deleteRepository(userName: String, repositoryName: String)(
-      implicit s: Session
+  def deleteRepository(userName: String, repositoryName: String)(implicit
+      s: Session
   ): Unit = {
     Activities.filter(_.byRepository(userName, repositoryName)).delete
     Collaborators.filter(_.byRepository(userName, repositoryName)).delete
@@ -361,8 +361,8 @@ trait RepositoryService { self: AccountService =>
     * @param repositoryName the repository name
     * @return the repository information
     */
-  def getRepository(userName: String, repositoryName: String)(
-      implicit s: Session
+  def getRepository(userName: String, repositoryName: String)(implicit
+      s: Session
   ): Option[RepositoryInfo] = {
     (Repositories filter { t =>
       t.byRepository(userName, repositoryName)
@@ -521,8 +521,8 @@ trait RepositoryService { self: AccountService =>
   /**
     * Updates the last activity date of the repository.
     */
-  def updateLastActivityDate(userName: String, repositoryName: String)(
-      implicit s: Session
+  def updateLastActivityDate(userName: String, repositoryName: String)(implicit
+      s: Session
   ): Unit =
     Repositories
       .filter(_.byRepository(userName, repositoryName))
@@ -593,8 +593,8 @@ trait RepositoryService { self: AccountService =>
     * @param userName the user name of the repository owner
     * @param repositoryName the repository name
     */
-  def removeCollaborators(userName: String, repositoryName: String)(
-      implicit s: Session
+  def removeCollaborators(userName: String, repositoryName: String)(implicit
+      s: Session
   ): Unit =
     Collaborators.filter(_.byRepository(userName, repositoryName)).delete
 
@@ -605,8 +605,8 @@ trait RepositoryService { self: AccountService =>
     * @param repositoryName the repository name
     * @return the list of collaborators name
     */
-  def getCollaborators(userName: String, repositoryName: String)(
-      implicit s: Session
+  def getCollaborators(userName: String, repositoryName: String)(implicit
+      s: Session
   ): List[String] =
     Collaborators
       .filter(_.byRepository(userName, repositoryName))
@@ -629,16 +629,16 @@ trait RepositoryService { self: AccountService =>
     }
   }
 
-  private def getForkedCount(userName: String, repositoryName: String)(
-      implicit s: Session
+  private def getForkedCount(userName: String, repositoryName: String)(implicit
+      s: Session
   ): Int =
     Query(Repositories.filter { t =>
       (t.originUserName === userName.bind) &&
       (t.originRepositoryName === repositoryName.bind)
     }.length).first
 
-  def getForkedRepositories(userName: String, repositoryName: String)(
-      implicit s: Session
+  def getForkedRepositories(userName: String, repositoryName: String)(implicit
+      s: Session
   ): List[(String, String)] =
     Repositories
       .filter { t =>
@@ -719,8 +719,8 @@ object RepositoryService {
 
   def httpUrl(owner: String, name: String)(implicit context: Context): String =
     s"${context.baseUrl}/git/${owner}/${name}.git"
-  def sshUrl(owner: String, name: String)(
-      implicit context: Context
+  def sshUrl(owner: String, name: String)(implicit
+      context: Context
   ): Option[String] =
     if (context.settings.ssh) {
       context.loginAccount.flatMap { loginAccount =>

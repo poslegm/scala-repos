@@ -21,13 +21,13 @@ trait Lattice[@sp(Boolean, Byte, Short, Int, Long, Float, Double) A]
     with MeetSemilattice[A]
 
 object Lattice {
-  def min[@sp(Boolean, Byte, Short, Int, Long, Float, Double) A](
-      implicit ev: Order[A]
+  def min[@sp(Boolean, Byte, Short, Int, Long, Float, Double) A](implicit
+      ev: Order[A]
   ): Lattice[A] =
     new MinMaxLattice[A]
 
-  def gcd[@sp(Byte, Short, Int, Long) A](
-      implicit ev: EuclideanRing[A]
+  def gcd[@sp(Byte, Short, Int, Long) A](implicit
+      ev: EuclideanRing[A]
   ): Lattice[A] =
     new GcdLcmLattice[A]
 }

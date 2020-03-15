@@ -33,8 +33,8 @@ class MacroDepHygiene extends WordSpec {
     a.isInstanceOf[com.twitter.bijection.macros.MacroGenerated]
 
   "TupleSetter macro" should {
-    def isTupleSetterAvailable[T](
-        implicit proof: com.twitter.scalding.TupleSetter[T]
+    def isTupleSetterAvailable[T](implicit
+        proof: com.twitter.scalding.TupleSetter[T]
     ) = isMg(proof)
 
     "work fine without any imports" in {
@@ -54,8 +54,8 @@ class MacroDepHygiene extends WordSpec {
   }
 
   "TupleConverter macro" should {
-    def isTupleConverterAvailable[T](
-        implicit proof: com.twitter.scalding.TupleConverter[T]
+    def isTupleConverterAvailable[T](implicit
+        proof: com.twitter.scalding.TupleConverter[T]
     ) = isMg(proof)
 
     "work fine without any imports" in {

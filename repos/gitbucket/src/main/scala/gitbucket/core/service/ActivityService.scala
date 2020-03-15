@@ -13,8 +13,8 @@ trait ActivityService {
     } getOrElse 0
   }
 
-  def getActivitiesByUser(activityUserName: String, isPublic: Boolean)(
-      implicit s: Session
+  def getActivitiesByUser(activityUserName: String, isPublic: Boolean)(implicit
+      s: Session
   ): List[Activity] =
     Activities
       .innerJoin(Repositories)

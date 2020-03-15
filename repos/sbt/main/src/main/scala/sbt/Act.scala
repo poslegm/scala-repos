@@ -115,8 +115,8 @@ object Act {
       key
     )
 
-  def select(allKeys: Seq[Parser[ParsedKey]], data: Settings[Scope])(
-      implicit show: Show[ScopedKey[_]]
+  def select(allKeys: Seq[Parser[ParsedKey]], data: Settings[Scope])(implicit
+      show: Show[ScopedKey[_]]
   ): Parser[ParsedKey] =
     seq(allKeys) flatMap { ss =>
       val default = ss.headOption match {
@@ -125,8 +125,8 @@ object Act {
       }
       selectFromValid(ss filter isValid(data), default)
     }
-  def selectFromValid(ss: Seq[ParsedKey], default: Parser[ParsedKey])(
-      implicit show: Show[ScopedKey[_]]
+  def selectFromValid(ss: Seq[ParsedKey], default: Parser[ParsedKey])(implicit
+      show: Show[ScopedKey[_]]
   ): Parser[ParsedKey] =
     selectByTask(selectByConfig(ss)) match {
       case Seq()       => default

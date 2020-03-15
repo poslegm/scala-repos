@@ -369,8 +369,8 @@ abstract class Stream[+A]
     * @return A new collection containing the result of concatenating `this` with
     * `that`.
     */
-  override def ++[B >: A, That](that: GenTraversableOnce[B])(
-      implicit bf: CanBuildFrom[Stream[A], B, That]
+  override def ++[B >: A, That](that: GenTraversableOnce[B])(implicit
+      bf: CanBuildFrom[Stream[A], B, That]
   ): That =
     // we assume there is no other builder factory on streams and therefore know that That = Stream[A]
     if (isStreamBuilder(bf))
@@ -494,8 +494,8 @@ abstract class Stream[+A]
     * @return  `f(a,,0,,) ::: ... ::: f(a,,n,,)` if
     *           this stream is `[a,,0,,, ..., a,,n,,]`.
     */
-  override final def flatMap[B, That](f: A => GenTraversableOnce[B])(
-      implicit bf: CanBuildFrom[Stream[A], B, That]
+  override final def flatMap[B, That](f: A => GenTraversableOnce[B])(implicit
+      bf: CanBuildFrom[Stream[A], B, That]
   ): That =
     // we assume there is no other builder factory on streams and therefore know that That = Stream[B]
     // optimisations are not for speed, but for functionality
@@ -683,8 +683,8 @@ abstract class Stream[+A]
     * // (5,4)
     * }}}
     */
-  override def zipWithIndex[A1 >: A, That](
-      implicit bf: CanBuildFrom[Stream[A], (A1, Int), That]
+  override def zipWithIndex[A1 >: A, That](implicit
+      bf: CanBuildFrom[Stream[A], (A1, Int), That]
   ): That =
     this.zip[A1, Int, That](Stream.from(0))
 
@@ -995,8 +995,8 @@ abstract class Stream[+A]
     * // 0
     * }}}
     */
-  override def padTo[B >: A, That](len: Int, elem: B)(
-      implicit bf: CanBuildFrom[Stream[A], B, That]
+  override def padTo[B >: A, That](len: Int, elem: B)(implicit
+      bf: CanBuildFrom[Stream[A], B, That]
   ): That = {
     def loop(len: Int, these: Stream[A]): Stream[B] =
       if (these.isEmpty) Stream.fill(len)(elem)
@@ -1050,8 +1050,8 @@ abstract class Stream[+A]
     * // produces: "0, 0, 0, 0, 0, 0, 0, 0, 0, 0"
     * }}}
     */
-  override def flatten[B](
-      implicit asTraversable: A => /*<:<!!!*/ GenTraversableOnce[B]
+  override def flatten[B](implicit
+      asTraversable: A => /*<:<!!!*/ GenTraversableOnce[B]
   ): Stream[B] = {
     var st: Stream[A] = this
     while (st.nonEmpty) {

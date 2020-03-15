@@ -984,7 +984,7 @@ class BigDecimal() extends Number with Comparable[BigDecimal] {
         val mult = this.getUnscaledValue.multiply(powerOf10(exp))
         val qr   = mult.divideAndRemainderImpl(divisor.getUnscaledValue)
         val ns   = diffScale + exp // To fix the scale
-        val exp2 = -ns // The remaining power of ten
+        val exp2 = -ns             // The remaining power of ten
         // If after division there is a remainder...
         if ((qr.rem.signum() != 0) && (exp2 > 0)) {
           val bi          = new BigDecimal(qr.rem)

@@ -513,8 +513,8 @@ trait BooleanFunctions {
   /**
     * Returns the given argument if `cond` is `false`, otherwise, unit lifted into M.
     */
-  final def unlessM[M[_], A](cond: Boolean)(f: => M[A])(
-      implicit M: Applicative[M]
+  final def unlessM[M[_], A](cond: Boolean)(f: => M[A])(implicit
+      M: Applicative[M]
   ): M[Unit] = M.unlessM(cond)(f)
 
   /** A version of `unlessM` that infers the type constructor `M`. */
@@ -526,13 +526,13 @@ trait BooleanFunctions {
   /**
     * Returns the given argument if `cond` is `true`, otherwise, unit lifted into M.
     */
-  final def whenM[M[_], A](cond: Boolean)(f: => M[A])(
-      implicit M: Applicative[M]
+  final def whenM[M[_], A](cond: Boolean)(f: => M[A])(implicit
+      M: Applicative[M]
   ): M[Unit] = M.whenM(cond)(f)
 
   /** A version of `whenM` that infers the type constructor `M`. */
-  final def whenMU[MA](cond: Boolean)(f: => MA)(
-      implicit M: Unapply[Applicative, MA]
+  final def whenMU[MA](cond: Boolean)(f: => MA)(implicit
+      M: Unapply[Applicative, MA]
   ): M.M[Unit] = M.TC.whenM(cond)(M(f))
 
   /**
@@ -553,16 +553,16 @@ trait BooleanFunctions {
     * Returns the given argument if `cond` is `true`, otherwise, the zero element for the type of the given
     * argument.
     */
-  final def valueOrZero[A](cond: Boolean)(value: => A)(
-      implicit z: Monoid[A]
+  final def valueOrZero[A](cond: Boolean)(value: => A)(implicit
+      z: Monoid[A]
   ): A = if (cond) value else z.zero
 
   /**
     * Returns the given argument if `cond` is `false`, otherwise, the zero element for the type of the given
     * argument.
     */
-  final def zeroOrValue[A](cond: Boolean)(value: => A)(
-      implicit z: Monoid[A]
+  final def zeroOrValue[A](cond: Boolean)(value: => A)(implicit
+      z: Monoid[A]
   ): A = if (!cond) value else z.zero
 
   /**

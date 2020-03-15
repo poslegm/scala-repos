@@ -32,19 +32,19 @@ object CartesianTests {
     new CartesianTests[F] { val laws: CartesianLaws[F] = CartesianLaws[F] }
 
   trait Isomorphisms[F[_]] {
-    def associativity[A, B, C](fs: (F[(A, (B, C))], F[((A, B), C)]))(
-        implicit EqFABC: Eq[F[(A, B, C)]]
+    def associativity[A, B, C](fs: (F[(A, (B, C))], F[((A, B), C)]))(implicit
+        EqFABC: Eq[F[(A, B, C)]]
     ): Prop
     def leftIdentity[A](fs: (F[(Unit, A)], F[A]))(implicit EqFA: Eq[F[A]]): Prop
-    def rightIdentity[A](fs: (F[(A, Unit)], F[A]))(
-        implicit EqFA: Eq[F[A]]
+    def rightIdentity[A](fs: (F[(A, Unit)], F[A]))(implicit
+        EqFA: Eq[F[A]]
     ): Prop
   }
 
   object Isomorphisms {
     import algebra.laws._
-    implicit def invariant[F[_]](
-        implicit F: functor.Invariant[F]
+    implicit def invariant[F[_]](implicit
+        F: functor.Invariant[F]
     ): Isomorphisms[F] =
       new Isomorphisms[F] {
         def associativity[A, B, C](

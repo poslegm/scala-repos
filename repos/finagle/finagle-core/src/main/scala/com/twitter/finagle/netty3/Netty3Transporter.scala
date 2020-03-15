@@ -176,7 +176,7 @@ object Netty3Transporter {
       ((connectTimeout + compensation).inMilliseconds: java.lang.Long)
     opts += "tcpNoDelay"   -> (noDelay: java.lang.Boolean)
     opts += "reuseAddress" -> (reuseAddr: java.lang.Boolean)
-    for (v <- keepAlive) opts += "keepAlive" -> (v: java.lang.Boolean)
+    for (v <- keepAlive) opts += "keepAlive"        -> (v: java.lang.Boolean)
     for (s <- sendBufSize) opts += "sendBufferSize" -> (s: java.lang.Integer)
     for (s <- recvBufSize)
       opts += "receiveBufferSize" ->

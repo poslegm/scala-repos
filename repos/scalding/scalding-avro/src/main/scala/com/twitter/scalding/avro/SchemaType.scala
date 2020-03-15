@@ -64,31 +64,31 @@ object AvroSchemaType {
     }
 
   // collections
-  implicit def CollectionSchema[CC[x] <: Iterable[x], T](
-      implicit sch: AvroSchemaType[T]
+  implicit def CollectionSchema[CC[x] <: Iterable[x], T](implicit
+      sch: AvroSchemaType[T]
   ) =
     new AvroSchemaType[CC[T]] {
       def schema = Schema.createArray(sch.schema)
     }
 
-  implicit def ArraySchema[CC[x] <: Array[x], T](
-      implicit sch: AvroSchemaType[T]
+  implicit def ArraySchema[CC[x] <: Array[x], T](implicit
+      sch: AvroSchemaType[T]
   ) =
     new AvroSchemaType[CC[T]] {
       val schema = Schema.createArray(sch.schema)
     }
 
   //maps
-  implicit def MapSchema[CC[String, x] <: Map[String, x], T](
-      implicit sch: AvroSchemaType[T]
+  implicit def MapSchema[CC[String, x] <: Map[String, x], T](implicit
+      sch: AvroSchemaType[T]
   ) =
     new AvroSchemaType[CC[String, T]] {
       def schema = Schema.createMap(sch.schema)
     }
 
   // Avro SpecificRecord
-  implicit def SpecificRecordSchema[T <: SpecificRecord](
-      implicit mf: Manifest[T]
+  implicit def SpecificRecordSchema[T <: SpecificRecord](implicit
+      mf: Manifest[T]
   ) =
     new AvroSchemaType[T] {
       def schema =

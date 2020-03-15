@@ -125,8 +125,8 @@ object product {
   }
 
   object ToTraversable {
-    def apply[P, M[_]](
-        implicit toTraversable: ToTraversable[P, M]
+    def apply[P, M[_]](implicit
+        toTraversable: ToTraversable[P, M]
     ): Aux[P, M, toTraversable.Lub] = toTraversable
 
     type Aux[P, M[_], Lub0] = ToTraversable[P, M] { type Lub = Lub0 }
@@ -153,8 +153,8 @@ object product {
   }
 
   object ToSized {
-    def apply[P, M[_]](
-        implicit toSized: ToSized[P, M]
+    def apply[P, M[_]](implicit
+        toSized: ToSized[P, M]
     ): Aux[P, M, toSized.Lub, toSized.N] =
       toSized
 

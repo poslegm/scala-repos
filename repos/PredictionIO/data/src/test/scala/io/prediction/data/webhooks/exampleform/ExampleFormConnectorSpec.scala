@@ -30,10 +30,10 @@ class ExampleFormConnectorSpec extends Specification with ConnectorTestUtil {
         "userId"           -> "as34smg4",
         "event"            -> "do_something",
         "context[ip]"      -> "24.5.68.47", // optional
-        "context[prop1]"   -> "2.345", // optional
-        "context[prop2]"   -> "value1", // optional
+        "context[prop1]"   -> "2.345",      // optional
+        "context[prop2]"   -> "value1",     // optional
         "anotherProperty1" -> "100",
-        "anotherProperty2" -> "optional1", // optional
+        "anotherProperty2" -> "optional1",  // optional
         "timestamp"        -> "2015-01-02T00:30:12.984Z"
       )
 

@@ -69,8 +69,8 @@ private[nio] final class GenDataViewBuffer[B <: Buffer](val self: B)
   type NewThisDataViewBuffer = GenDataViewBuffer.NewDataViewBuffer[BufferType]
 
   @inline
-  def generic_slice()(
-      implicit newDataViewBuffer: NewThisDataViewBuffer
+  def generic_slice()(implicit
+      newDataViewBuffer: NewThisDataViewBuffer
   ): BufferType = {
     val bytesPerElem = newDataViewBuffer.bytesPerElem
     val dataView     = _dataView
@@ -85,8 +85,8 @@ private[nio] final class GenDataViewBuffer[B <: Buffer](val self: B)
   }
 
   @inline
-  def generic_duplicate()(
-      implicit newDataViewBuffer: NewThisDataViewBuffer
+  def generic_duplicate()(implicit
+      newDataViewBuffer: NewThisDataViewBuffer
   ): BufferType = {
     val result =
       newDataViewBuffer(_dataView, position, limit, isReadOnly, isBigEndian)
@@ -95,8 +95,8 @@ private[nio] final class GenDataViewBuffer[B <: Buffer](val self: B)
   }
 
   @inline
-  def generic_asReadOnlyBuffer()(
-      implicit newDataViewBuffer: NewThisDataViewBuffer
+  def generic_asReadOnlyBuffer()(implicit
+      newDataViewBuffer: NewThisDataViewBuffer
   ): BufferType = {
     val result =
       newDataViewBuffer(_dataView, position, limit, true, isBigEndian)
@@ -105,8 +105,8 @@ private[nio] final class GenDataViewBuffer[B <: Buffer](val self: B)
   }
 
   @inline
-  def generic_compact()(
-      implicit newDataViewBuffer: NewThisDataViewBuffer
+  def generic_compact()(implicit
+      newDataViewBuffer: NewThisDataViewBuffer
   ): BufferType = {
     if (isReadOnly) throw new ReadOnlyBufferException
 

@@ -51,8 +51,8 @@ object ScalaOAuthSpec extends PlaySpecification {
     true
   )
 
-  def sessionTokenPair(
-      implicit request: RequestHeader
+  def sessionTokenPair(implicit
+      request: RequestHeader
   ): Option[RequestToken] = {
     for {
       token  <- request.session.get("token")

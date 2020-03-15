@@ -112,8 +112,8 @@ trait JSEncoding extends SubComponent { self: GenJSCode =>
     js.Ident(mangleJSName(encodedName), Some(sym.unexpandedName.decoded))
   }
 
-  def encodeMethodSym(sym: Symbol, reflProxy: Boolean = false)(
-      implicit pos: Position
+  def encodeMethodSym(sym: Symbol, reflProxy: Boolean = false)(implicit
+      pos: Position
   ): js.Ident = {
     val (encodedName, paramsString) = encodeMethodNameInternal(sym, reflProxy)
     js.Ident(

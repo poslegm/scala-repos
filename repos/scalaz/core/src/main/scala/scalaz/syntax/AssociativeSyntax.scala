@@ -8,13 +8,13 @@ final class AssociativeOps[F[_, _], A, B] private[syntax] (val self: F[A, B])(
   ////
   import Leibniz.===
 
-  final def reassociateLeft[TT, C](
-      implicit ev: B === F[TT, C]
+  final def reassociateLeft[TT, C](implicit
+      ev: B === F[TT, C]
   ): F[F[A, TT], C] =
     F.reassociateLeft(ev.subst[F[A, ?]](self))
 
-  final def reassociateRight[TT, C](
-      implicit ev: A === F[TT, C]
+  final def reassociateRight[TT, C](implicit
+      ev: A === F[TT, C]
   ): F[TT, F[C, B]] =
     F.reassociateRight(ev.subst[F[?, B]](self))
 

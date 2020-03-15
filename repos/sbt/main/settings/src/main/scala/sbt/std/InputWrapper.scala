@@ -101,8 +101,8 @@ object InputWrapper {
       c: Context,
       s: S,
       wrapName: String
-  )(ts: c.Expr[Any], pos: c.Position)(
-      implicit it: c.TypeTag[s.type]
+  )(ts: c.Expr[Any], pos: c.Position)(implicit
+      it: c.TypeTag[s.type]
   ): c.Expr[T] = {
     import c.universe.{Apply => ApplyTree, _}
     import compat._

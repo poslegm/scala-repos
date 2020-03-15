@@ -66,19 +66,19 @@ trait ScentrySupport[UserType <: AnyRef] extends Initializable {
     */
   protected def registerAuthStrategies() = {}
 
-  protected def scentry(
-      implicit request: HttpServletRequest
+  protected def scentry(implicit
+      request: HttpServletRequest
   ): Scentry[UserType] = {
     if (!request.contains(Scentry.ScentryRequestKey)) createScentry()
     request(Scentry.ScentryRequestKey).asInstanceOf[Scentry[UserType]]
   }
-  protected def scentryOption(
-      implicit request: HttpServletRequest
+  protected def scentryOption(implicit
+      request: HttpServletRequest
   ): Option[Scentry[UserType]] =
     Option(request(Scentry.ScentryRequestKey))
       .map(_.asInstanceOf[Scentry[UserType]])
-  protected def userOption(
-      implicit request: HttpServletRequest
+  protected def userOption(implicit
+      request: HttpServletRequest
   ): Option[UserType] =
     scentry.userOption
   implicit protected def user(implicit request: HttpServletRequest): UserType =

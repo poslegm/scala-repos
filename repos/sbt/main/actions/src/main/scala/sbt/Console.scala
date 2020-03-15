@@ -42,8 +42,8 @@ final class Console(compiler: AnalyzingCompiler) {
       options: Seq[String],
       initialCommands: String,
       cleanupCommands: String
-  )(loader: Option[ClassLoader], bindings: Seq[(String, Any)])(
-      implicit log: Logger
+  )(loader: Option[ClassLoader], bindings: Seq[(String, Any)])(implicit
+      log: Logger
   ): Option[String] = {
     def console0() =
       compiler.console(

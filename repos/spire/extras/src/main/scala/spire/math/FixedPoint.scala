@@ -299,8 +299,8 @@ object FixedPoint extends FixedPointInstances {
 
 trait FixedPointInstances {
 
-  implicit def algebra(
-      implicit scale: FixedScale
+  implicit def algebra(implicit
+      scale: FixedScale
   ): Fractional[FixedPoint] with Order[FixedPoint] with Signed[FixedPoint] =
     new Fractional[FixedPoint] with Order[FixedPoint] with Signed[FixedPoint] {
       def abs(x: FixedPoint): FixedPoint = x.abs

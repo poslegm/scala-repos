@@ -26,8 +26,8 @@ class EnumSerializer[E <: Enumeration: ClassTag](enum: E)
 
   val EnumerationClass = classOf[E#Value]
 
-  def deserialize(
-      implicit format: Formats
+  def deserialize(implicit
+      format: Formats
   ): PartialFunction[(TypeInfo, JValue), E#Value] = {
     case (TypeInfo(EnumerationClass, _), json) =>
       json match {
@@ -50,8 +50,8 @@ class EnumNameSerializer[E <: Enumeration: ClassTag](enum: E)
 
   val EnumerationClass = classOf[E#Value]
 
-  def deserialize(
-      implicit format: Formats
+  def deserialize(implicit
+      format: Formats
   ): PartialFunction[(TypeInfo, JValue), E#Value] = {
     case (TypeInfo(EnumerationClass, _), json) =>
       json match {

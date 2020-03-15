@@ -13,13 +13,13 @@ trait JsonBindingImplicits
     extends BindingImplicits
     with JsonImplicitConversions {
 
-  implicit def jsonToDateTime(
-      implicit df: DateParser = JodaDateFormats.Web
+  implicit def jsonToDateTime(implicit
+      df: DateParser = JodaDateFormats.Web
   ): TypeConverter[JValue, DateTime] =
     safeOption(_.extractOpt[String].flatMap(df.parse))
 
-  implicit def jsonToDate(
-      implicit df: DateParser = JodaDateFormats.Web
+  implicit def jsonToDate(implicit
+      df: DateParser = JodaDateFormats.Web
   ): TypeConverter[JValue, Date] =
     safeOption(_.extractOpt[String].flatMap(df.parse).map(_.toDate))
 }
@@ -45,8 +45,8 @@ trait JsonTypeConverterFactories extends JsonBindingImplicits {
     }
 }
 
-class JsonTypeConverterFactoriesImports(
-    implicit protected val jsonFormats: Formats
+class JsonTypeConverterFactoriesImports(implicit
+    protected val jsonFormats: Formats
 ) extends JsonTypeConverterFactories
 
 trait JsonCommand extends Command with JsonTypeConverterFactories {

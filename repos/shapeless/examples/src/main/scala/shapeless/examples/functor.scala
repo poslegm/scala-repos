@@ -88,8 +88,8 @@ object Functor extends Functor0 {
   }
 
   // Induction step for products
-  implicit def hcons[F[_]](
-      implicit ihc: IsHCons1[F, Functor, Functor]
+  implicit def hcons[F[_]](implicit
+      ihc: IsHCons1[F, Functor, Functor]
   ): Functor[F] =
     new Functor[F] {
       def map[A, B](fa: F[A])(f: A => B): F[B] = {
@@ -99,8 +99,8 @@ object Functor extends Functor0 {
     }
 
   // Induction step for coproducts
-  implicit def ccons[F[_]](
-      implicit icc: IsCCons1[F, Functor, Functor]
+  implicit def ccons[F[_]](implicit
+      icc: IsCCons1[F, Functor, Functor]
   ): Functor[F] =
     new Functor[F] {
       def map[A, B](fa: F[A])(f: A => B): F[B] =

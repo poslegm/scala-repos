@@ -83,8 +83,8 @@ trait IndexedContsTFunctions {
   )(implicit W: Comonad[W], M: Bind[M]): ContsT[W, M, R, A] =
     ContsT { k => M.bind(a)(W.copoint(k)) }
 
-  def xhoist[W[_], M[_], N[_], R, O](f: M ~> N, g: N ~> M)(
-      implicit W: Functor[W]
+  def xhoist[W[_], M[_], N[_], R, O](f: M ~> N, g: N ~> M)(implicit
+      W: Functor[W]
   ): IndexedContsT[W, M, R, O, ?] ~> IndexedContsT[W, N, R, O, ?] =
     new (IndexedContsT[W, M, R, O, ?] ~> IndexedContsT[W, N, R, O, ?]) {
       def apply[A](
@@ -132,8 +132,8 @@ trait IndexedContsTFunctions {
 }
 
 sealed abstract class IndexedContsTInstances1 {
-  implicit def IndexedContsTFunctorRight[W[_], M[_], R, O](
-      implicit W0: Functor[W]
+  implicit def IndexedContsTFunctorRight[W[_], M[_], R, O](implicit
+      W0: Functor[W]
   ): Functor[IndexedContsT[W, M, R, O, ?]] =
     new IndexedContsTFunctorRight[W, M, R, O] {
       implicit val W: Functor[W] = W0
@@ -141,8 +141,8 @@ sealed abstract class IndexedContsTInstances1 {
 }
 
 sealed abstract class IndexedContsTInstances0 extends IndexedContsTInstances1 {
-  implicit def ContsTBind[W[_], M[_], R](
-      implicit W0: Cobind[W]
+  implicit def ContsTBind[W[_], M[_], R](implicit
+      W0: Cobind[W]
   ): Bind[ContsT[W, M, R, ?]] =
     new ContsTBind[W, M, R] {
       val W = W0
@@ -150,8 +150,8 @@ sealed abstract class IndexedContsTInstances0 extends IndexedContsTInstances1 {
 }
 
 abstract class IndexedContsTInstances extends IndexedContsTInstances0 {
-  implicit def IndexedContsTFunctorLeft[W[_], M[_], O, A](
-      implicit M0: Functor[M]
+  implicit def IndexedContsTFunctorLeft[W[_], M[_], O, A](implicit
+      M0: Functor[M]
   ): Functor[IndexedContsT[W, M, ?, O, A]] =
     new IndexedContsTFunctorLeft[W, M, O, A] {
       implicit val M: Functor[M] = M0
@@ -175,8 +175,8 @@ abstract class IndexedContsTInstances extends IndexedContsTInstances0 {
       implicit val M: Functor[M] = M0
     }
 
-  implicit def ContsTMonad[W[_], M[_], R](
-      implicit W0: Comonad[W]
+  implicit def ContsTMonad[W[_], M[_], R](implicit
+      W0: Comonad[W]
   ): Monad[ContsT[W, M, R, ?]] =
     new ContsTMonad[W, M, R] {
       implicit val W: Comonad[W] = W0

@@ -136,8 +136,8 @@ trait TensorLike[
     * @tparam Result
     * @return
     */
-  def apply[Result](a: K, slice: K*)(
-      implicit canSlice: CanSlice[This, Seq[K], Result]
+  def apply[Result](a: K, slice: K*)(implicit
+      canSlice: CanSlice[This, Seq[K], Result]
   ) = {
     canSlice(repr, a +: slice)
   }
@@ -146,8 +146,8 @@ trait TensorLike[
     * Method for slicing that is tuned for Matrices.
     * @return
     */
-  def apply[Slice1, Slice2, Result](slice1: Slice1, slice2: Slice2)(
-      implicit canSlice: CanSlice2[This, Slice1, Slice2, Result]
+  def apply[Slice1, Slice2, Result](slice1: Slice1, slice2: Slice2)(implicit
+      canSlice: CanSlice2[This, Slice1, Slice2, Result]
   ) = {
     canSlice(repr, slice1, slice2)
   }
@@ -250,8 +250,8 @@ object Tensor {
     }
   }
 
-  implicit def transposeTensor[K, V, T](
-      implicit ev: T <:< Tensor[K, V]
+  implicit def transposeTensor[K, V, T](implicit
+      ev: T <:< Tensor[K, V]
   ): CanTranspose[T, Transpose[T]] = {
     new CanTranspose[T, Transpose[T]] {
       def apply(from: T): Transpose[T] = new Transpose(from)

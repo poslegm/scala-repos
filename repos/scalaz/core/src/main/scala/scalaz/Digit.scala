@@ -85,8 +85,8 @@ object Digit extends DigitInstances {
   def digits[F[_]](cs: F[Char])(implicit F: Functor[F]): OptionT[F, Digit] =
     OptionT(F.map(cs)(digitFromChar))
 
-  def digitsOr[F[_]](chars: F[Char], d: => Digit)(
-      implicit F: Functor[F]
+  def digitsOr[F[_]](chars: F[Char], d: => Digit)(implicit
+      F: Functor[F]
   ): F[Digit] =
     F.map(chars)(a => digitFromChar(a) getOrElse d)
 
@@ -105,8 +105,8 @@ object Digit extends DigitInstances {
     F.sequence(digits(chars).run)
   }
 
-  def traverseDigitsOr[F[_]](chars: F[Char], d: => F[Digit])(
-      implicit F: Traverse[F]
+  def traverseDigitsOr[F[_]](chars: F[Char], d: => F[Digit])(implicit
+      F: Traverse[F]
   ): F[Digit] =
     traverseDigits(chars) getOrElse d
 }

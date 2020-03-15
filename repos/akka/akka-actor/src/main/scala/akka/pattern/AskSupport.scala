@@ -74,12 +74,12 @@ trait AskSupport {
     * }}}
     *
     */
-  def ask(actorRef: ActorRef, message: Any)(
-      implicit timeout: Timeout
+  def ask(actorRef: ActorRef, message: Any)(implicit
+      timeout: Timeout
   ): Future[Any] =
     actorRef.internalAsk(message, timeout, ActorRef.noSender)
-  def ask(actorRef: ActorRef, message: Any, sender: ActorRef)(
-      implicit timeout: Timeout
+  def ask(actorRef: ActorRef, message: Any, sender: ActorRef)(implicit
+      timeout: Timeout
   ): Future[Any] =
     actorRef.internalAsk(message, timeout, sender)
 
@@ -128,8 +128,8 @@ trait AskSupport {
     * }}}
     *
     */
-  def ask(actorSelection: ActorSelection, message: Any)(
-      implicit timeout: Timeout
+  def ask(actorSelection: ActorSelection, message: Any)(implicit
+      timeout: Timeout
   ): Future[Any] =
     actorSelection.internalAsk(message, timeout, ActorRef.noSender)
   def ask(actorSelection: ActorSelection, message: Any, sender: ActorRef)(
@@ -194,8 +194,8 @@ trait ExplicitAskSupport {
     * } pipeTo nextActor
     * }}}
     */
-  def ask(actorRef: ActorRef, messageFactory: ActorRef ⇒ Any)(
-      implicit timeout: Timeout
+  def ask(actorRef: ActorRef, messageFactory: ActorRef ⇒ Any)(implicit
+      timeout: Timeout
   ): Future[Any] =
     actorRef.internalAsk(messageFactory, timeout, ActorRef.noSender)
   def ask(actorRef: ActorRef, messageFactory: ActorRef ⇒ Any, sender: ActorRef)(

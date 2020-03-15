@@ -36,8 +36,8 @@ final object Aggregation {
       s => state.log.info(s),
       success = true
     )
-  def printSettings(xs: Seq[KeyValue[_]], print: String => Unit)(
-      implicit display: Show[ScopedKey[_]]
+  def printSettings(xs: Seq[KeyValue[_]], print: String => Unit)(implicit
+      display: Show[ScopedKey[_]]
   ) =
     xs match {
       case KeyValue(_, x) :: Nil => print(x.toString)
@@ -77,8 +77,8 @@ final object Aggregation {
     showRun(complete, show)
     (complete.state, complete.results)
   }
-  def showRun[T](complete: Complete[T], show: ShowConfig)(
-      implicit display: Show[ScopedKey[_]]
+  def showRun[T](complete: Complete[T], show: ShowConfig)(implicit
+      display: Show[ScopedKey[_]]
   ): Unit = {
     import complete._
     val log       = state.log

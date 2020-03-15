@@ -185,8 +185,8 @@ class MacroExpandAction extends AnAction {
     }
   }
 
-  def expandAnnotation(place: ScAnnotation, expansion: MacroExpansion)(
-      implicit e: AnActionEvent
+  def expandAnnotation(place: ScAnnotation, expansion: MacroExpansion)(implicit
+      e: AnActionEvent
   ) = {
     // we can only macro-annotate scala code
     place.getParent.getParent match {
@@ -229,8 +229,8 @@ class MacroExpandAction extends AnAction {
     }
   }
 
-  def expandMacroCall(call: ScMethodCall, expansion: MacroExpansion)(
-      implicit e: AnActionEvent
+  def expandMacroCall(call: ScMethodCall, expansion: MacroExpansion)(implicit
+      e: AnActionEvent
   ) = {
     val blockImpl =
       ScalaPsiElementFactory.createBlockExpressionWithoutBracesFromText(
@@ -338,8 +338,8 @@ class MacroExpandAction extends AnAction {
     applyRules(rules)
   }
 
-  def deserializeExpansions(
-      implicit event: AnActionEvent
+  def deserializeExpansions(implicit
+      event: AnActionEvent
   ): Seq[MacroExpansion] = {
     val file = new File(
       PathManager.getSystemPath + s"/expansion-${event.getProject.getName}"

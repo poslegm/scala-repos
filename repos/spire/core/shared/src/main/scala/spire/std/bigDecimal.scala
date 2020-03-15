@@ -201,8 +201,8 @@ trait BigDecimalInstances {
   import BigDecimal.defaultMathContext
 
   implicit final val BigDecimalAlgebra = new BigDecimalAlgebra
-  implicit def BigDecimalIsTrig(
-      implicit mc: MathContext = defaultMathContext
+  implicit def BigDecimalIsTrig(implicit
+      mc: MathContext = defaultMathContext
   ): BigDecimalIsTrig =
     new BigDecimalIsTrig(mc)
 

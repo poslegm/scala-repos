@@ -160,8 +160,8 @@ object TestPublisher {
   /**
     * Single subscription and demand tracking for [[TestPublisher.ManualProbe]].
     */
-  class Probe[T] private[TestPublisher] (initialPendingRequests: Long)(
-      implicit system: ActorSystem
+  class Probe[T] private[TestPublisher] (initialPendingRequests: Long)(implicit
+      system: ActorSystem
   ) extends ManualProbe[T] {
 
     type Self = Probe[T]

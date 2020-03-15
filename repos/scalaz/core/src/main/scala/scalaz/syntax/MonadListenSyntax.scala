@@ -1,8 +1,8 @@
 package scalaz
 package syntax
 
-final class MonadListenOps[F[_], W, A] private[syntax] (self: F[A])(
-    implicit ML: MonadListen[F, W]
+final class MonadListenOps[F[_], W, A] private[syntax] (self: F[A])(implicit
+    ML: MonadListen[F, W]
 ) {
 
   final def written: F[W] =

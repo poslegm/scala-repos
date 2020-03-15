@@ -8,8 +8,8 @@ trait Alternative[F[_]] extends Applicative[F] with MonoidK[F] { self =>
   /**
     * Compose this `Alternative` instance with an [[Applicative]] instance.
     */
-  override def compose[G[_]](
-      implicit GG: Applicative[G]
+  override def compose[G[_]](implicit
+      GG: Applicative[G]
   ): Alternative[λ[α => F[G[α]]]] =
     new CompositeAlternative[F, G] {
       implicit def F: Alternative[F] = self

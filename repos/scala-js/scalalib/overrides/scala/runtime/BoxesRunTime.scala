@@ -42,14 +42,14 @@ object BoxesRunTime {
           case yn: Double      => xn == yn
           case yn: Long        => xn == yn
           case yn: ScalaNumber => yn.equals(xn) // xn is not a ScalaNumber
-          case _               => false // xn.equals(yn) must be false here
+          case _               => false         // xn.equals(yn) must be false here
         }
       case xn: Long =>
         (yn: Any) match {
           case yn: Long        => xn == yn
           case yn: Double      => xn == yn
           case yn: ScalaNumber => yn.equals(xn) // xn is not a ScalaNumber
-          case _               => false // xn.equals(yn) must be false here
+          case _               => false         // xn.equals(yn) must be false here
         }
       case null => yn eq null
       case _    => xn.equals(yn)

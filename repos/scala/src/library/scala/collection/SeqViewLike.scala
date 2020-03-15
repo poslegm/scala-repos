@@ -277,8 +277,8 @@ trait SeqViewLike[+A, +Coll, +This <: SeqView[A, Coll] with SeqViewLike[
 //    else super.patch[B, That](from, patch, replaced)(bf)
   }
 
-  override def padTo[B >: A, That](len: Int, elem: B)(
-      implicit bf: CanBuildFrom[This, B, That]
+  override def padTo[B >: A, That](len: Int, elem: B)(implicit
+      bf: CanBuildFrom[This, B, That]
   ): That =
     patch(length, fill(len - length)(elem), 0)
 
@@ -287,8 +287,8 @@ trait SeqViewLike[+A, +Coll, +This <: SeqView[A, Coll] with SeqViewLike[
   )(implicit bf: CanBuildFrom[This, B, That]): That =
     reverse map f
 
-  override def updated[B >: A, That](index: Int, elem: B)(
-      implicit bf: CanBuildFrom[This, B, That]
+  override def updated[B >: A, That](index: Int, elem: B)(implicit
+      bf: CanBuildFrom[This, B, That]
   ): That = {
     require(0 <= index && index < length) // !!! can't call length like this.
     patch(index, List(elem), 1)(bf)

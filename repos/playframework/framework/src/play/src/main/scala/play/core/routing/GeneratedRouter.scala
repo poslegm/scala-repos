@@ -60,8 +60,8 @@ case class RouteParams(
     queryString: Map[String, Seq[String]]
 ) {
 
-  def fromPath[T](key: String, default: Option[T] = None)(
-      implicit binder: PathBindable[T]
+  def fromPath[T](key: String, default: Option[T] = None)(implicit
+      binder: PathBindable[T]
   ): Param[T] = {
     Param(
       key,
@@ -76,8 +76,8 @@ case class RouteParams(
     )
   }
 
-  def fromQuery[T](key: String, default: Option[T] = None)(
-      implicit binder: QueryStringBindable[T]
+  def fromQuery[T](key: String, default: Option[T] = None)(implicit
+      binder: QueryStringBindable[T]
   ): Param[T] = {
     Param(
       key,
@@ -367,9 +367,9 @@ abstract class GeneratedRouter extends Router {
         Handler
       ]
   ): Handler = {
-    (for (a1  <- pa1.value.right; a2 <- pa2.value.right; a3 <- pa3.value.right;
-          a4  <- pa4.value.right; a5 <- pa5.value.right; a6 <- pa6.value.right;
-          a7  <- pa7.value.right; a8 <- pa8.value.right; a9 <- pa9.value.right;
+    (for (a1  <- pa1.value.right; a2   <- pa2.value.right; a3 <- pa3.value.right;
+          a4  <- pa4.value.right; a5   <- pa5.value.right; a6 <- pa6.value.right;
+          a7  <- pa7.value.right; a8   <- pa8.value.right; a9 <- pa9.value.right;
           a10 <- pa10.value.right; a11 <- pa11.value.right;
           a12 <- pa12.value.right)
       yield (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12)).fold(
@@ -413,9 +413,9 @@ abstract class GeneratedRouter extends Router {
         Handler
       ]
   ): Handler = {
-    (for (a1  <- pa1.value.right; a2 <- pa2.value.right; a3 <- pa3.value.right;
-          a4  <- pa4.value.right; a5 <- pa5.value.right; a6 <- pa6.value.right;
-          a7  <- pa7.value.right; a8 <- pa8.value.right; a9 <- pa9.value.right;
+    (for (a1  <- pa1.value.right; a2   <- pa2.value.right; a3 <- pa3.value.right;
+          a4  <- pa4.value.right; a5   <- pa5.value.right; a6 <- pa6.value.right;
+          a7  <- pa7.value.right; a8   <- pa8.value.right; a9 <- pa9.value.right;
           a10 <- pa10.value.right; a11 <- pa11.value.right;
           a12 <- pa12.value.right;
           a13 <- pa13.value.right)
@@ -463,9 +463,9 @@ abstract class GeneratedRouter extends Router {
         Handler
       ]
   ): Handler = {
-    (for (a1  <- pa1.value.right; a2 <- pa2.value.right; a3 <- pa3.value.right;
-          a4  <- pa4.value.right; a5 <- pa5.value.right; a6 <- pa6.value.right;
-          a7  <- pa7.value.right; a8 <- pa8.value.right; a9 <- pa9.value.right;
+    (for (a1  <- pa1.value.right; a2   <- pa2.value.right; a3 <- pa3.value.right;
+          a4  <- pa4.value.right; a5   <- pa5.value.right; a6 <- pa6.value.right;
+          a7  <- pa7.value.right; a8   <- pa8.value.right; a9 <- pa9.value.right;
           a10 <- pa10.value.right; a11 <- pa11.value.right;
           a12 <- pa12.value.right;
           a13 <- pa13.value.right; a14 <- pa14.value.right)
@@ -530,9 +530,9 @@ abstract class GeneratedRouter extends Router {
         Handler
       ]
   ): Handler = {
-    (for (a1  <- pa1.value.right; a2 <- pa2.value.right; a3 <- pa3.value.right;
-          a4  <- pa4.value.right; a5 <- pa5.value.right; a6 <- pa6.value.right;
-          a7  <- pa7.value.right; a8 <- pa8.value.right; a9 <- pa9.value.right;
+    (for (a1  <- pa1.value.right; a2   <- pa2.value.right; a3 <- pa3.value.right;
+          a4  <- pa4.value.right; a5   <- pa5.value.right; a6 <- pa6.value.right;
+          a7  <- pa7.value.right; a8   <- pa8.value.right; a9 <- pa9.value.right;
           a10 <- pa10.value.right; a11 <- pa11.value.right;
           a12 <- pa12.value.right;
           a13 <- pa13.value.right; a14 <- pa14.value.right;
@@ -634,9 +634,9 @@ abstract class GeneratedRouter extends Router {
         Handler
       ]
   ): Handler = {
-    (for (a1  <- pa1.value.right; a2 <- pa2.value.right; a3 <- pa3.value.right;
-          a4  <- pa4.value.right; a5 <- pa5.value.right; a6 <- pa6.value.right;
-          a7  <- pa7.value.right; a8 <- pa8.value.right; a9 <- pa9.value.right;
+    (for (a1  <- pa1.value.right; a2   <- pa2.value.right; a3 <- pa3.value.right;
+          a4  <- pa4.value.right; a5   <- pa5.value.right; a6 <- pa6.value.right;
+          a7  <- pa7.value.right; a8   <- pa8.value.right; a9 <- pa9.value.right;
           a10 <- pa10.value.right; a11 <- pa11.value.right;
           a12 <- pa12.value.right;
           a13 <- pa13.value.right; a14 <- pa14.value.right;
@@ -761,9 +761,9 @@ abstract class GeneratedRouter extends Router {
         Handler
       ]
   ): Handler = {
-    (for (a1  <- pa1.value.right; a2 <- pa2.value.right; a3 <- pa3.value.right;
-          a4  <- pa4.value.right; a5 <- pa5.value.right; a6 <- pa6.value.right;
-          a7  <- pa7.value.right; a8 <- pa8.value.right; a9 <- pa9.value.right;
+    (for (a1  <- pa1.value.right; a2   <- pa2.value.right; a3 <- pa3.value.right;
+          a4  <- pa4.value.right; a5   <- pa5.value.right; a6 <- pa6.value.right;
+          a7  <- pa7.value.right; a8   <- pa8.value.right; a9 <- pa9.value.right;
           a10 <- pa10.value.right; a11 <- pa11.value.right;
           a12 <- pa12.value.right;
           a13 <- pa13.value.right; a14 <- pa14.value.right;
@@ -893,9 +893,9 @@ abstract class GeneratedRouter extends Router {
         Handler
       ]
   ): Handler = {
-    (for (a1  <- pa1.value.right; a2 <- pa2.value.right; a3 <- pa3.value.right;
-          a4  <- pa4.value.right; a5 <- pa5.value.right; a6 <- pa6.value.right;
-          a7  <- pa7.value.right; a8 <- pa8.value.right; a9 <- pa9.value.right;
+    (for (a1  <- pa1.value.right; a2   <- pa2.value.right; a3 <- pa3.value.right;
+          a4  <- pa4.value.right; a5   <- pa5.value.right; a6 <- pa6.value.right;
+          a7  <- pa7.value.right; a8   <- pa8.value.right; a9 <- pa9.value.right;
           a10 <- pa10.value.right; a11 <- pa11.value.right;
           a12 <- pa12.value.right;
           a13 <- pa13.value.right; a14 <- pa14.value.right;
@@ -1032,9 +1032,9 @@ abstract class GeneratedRouter extends Router {
         Handler
       ]
   ): Handler = {
-    (for (a1  <- pa1.value.right; a2 <- pa2.value.right; a3 <- pa3.value.right;
-          a4  <- pa4.value.right; a5 <- pa5.value.right; a6 <- pa6.value.right;
-          a7  <- pa7.value.right; a8 <- pa8.value.right; a9 <- pa9.value.right;
+    (for (a1  <- pa1.value.right; a2   <- pa2.value.right; a3 <- pa3.value.right;
+          a4  <- pa4.value.right; a5   <- pa5.value.right; a6 <- pa6.value.right;
+          a7  <- pa7.value.right; a8   <- pa8.value.right; a9 <- pa9.value.right;
           a10 <- pa10.value.right; a11 <- pa11.value.right;
           a12 <- pa12.value.right;
           a13 <- pa13.value.right; a14 <- pa14.value.right;
@@ -1178,9 +1178,9 @@ abstract class GeneratedRouter extends Router {
         Handler
       ]
   ): Handler = {
-    (for (a1  <- pa1.value.right; a2 <- pa2.value.right; a3 <- pa3.value.right;
-          a4  <- pa4.value.right; a5 <- pa5.value.right; a6 <- pa6.value.right;
-          a7  <- pa7.value.right; a8 <- pa8.value.right; a9 <- pa9.value.right;
+    (for (a1  <- pa1.value.right; a2   <- pa2.value.right; a3 <- pa3.value.right;
+          a4  <- pa4.value.right; a5   <- pa5.value.right; a6 <- pa6.value.right;
+          a7  <- pa7.value.right; a8   <- pa8.value.right; a9 <- pa9.value.right;
           a10 <- pa10.value.right; a11 <- pa11.value.right;
           a12 <- pa12.value.right;
           a13 <- pa13.value.right; a14 <- pa14.value.right;
@@ -1330,9 +1330,9 @@ abstract class GeneratedRouter extends Router {
         Handler
       ]
   ): Handler = {
-    (for (a1  <- pa1.value.right; a2 <- pa2.value.right; a3 <- pa3.value.right;
-          a4  <- pa4.value.right; a5 <- pa5.value.right; a6 <- pa6.value.right;
-          a7  <- pa7.value.right; a8 <- pa8.value.right; a9 <- pa9.value.right;
+    (for (a1  <- pa1.value.right; a2   <- pa2.value.right; a3 <- pa3.value.right;
+          a4  <- pa4.value.right; a5   <- pa5.value.right; a6 <- pa6.value.right;
+          a7  <- pa7.value.right; a8   <- pa8.value.right; a9 <- pa9.value.right;
           a10 <- pa10.value.right; a11 <- pa11.value.right;
           a12 <- pa12.value.right;
           a13 <- pa13.value.right; a14 <- pa14.value.right;
@@ -1430,8 +1430,8 @@ abstract class GeneratedRouter extends Router {
     * controller method. This method is called by the code-generated routes
     * files.
     */
-  def createInvoker[T](fakeCall: => T, handlerDef: HandlerDef)(
-      implicit hif: HandlerInvokerFactory[T]
+  def createInvoker[T](fakeCall: => T, handlerDef: HandlerDef)(implicit
+      hif: HandlerInvokerFactory[T]
   ): HandlerInvoker[T] = {
     val underlyingInvoker = hif.createInvoker(fakeCall, handlerDef)
     new TaggingInvoker(underlyingInvoker, handlerDef)

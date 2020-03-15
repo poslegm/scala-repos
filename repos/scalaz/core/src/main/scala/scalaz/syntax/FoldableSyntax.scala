@@ -2,8 +2,8 @@ package scalaz
 package syntax
 
 /** Wraps a value `self` and provides methods related to `Foldable` */
-final class FoldableOps[F[_], A] private[syntax] (val self: F[A])(
-    implicit val F: Foldable[F]
+final class FoldableOps[F[_], A] private[syntax] (val self: F[A])(implicit
+    val F: Foldable[F]
 ) extends Ops[F[A]] {
   ////
   import collection.generic.CanBuildFrom
@@ -24,11 +24,11 @@ final class FoldableOps[F[_], A] private[syntax] (val self: F[A])(
   final def foldMapLeft1Opt[B](z: A => B)(f: (B, A) => B): Option[B] =
     F.foldMapLeft1Opt(self)(z)(f)
   final def foldLeft1Opt(f: (A, A) => A): Option[A] = F.foldLeft1Opt(self)(f)
-  final def foldRightM[G[_], B](z: => B)(f: (A, => B) => G[B])(
-      implicit M: Monad[G]
+  final def foldRightM[G[_], B](z: => B)(f: (A, => B) => G[B])(implicit
+      M: Monad[G]
   ): G[B] = F.foldRightM(self, z)(f)
-  final def foldLeftM[G[_], B](z: B)(f: (B, A) => G[B])(
-      implicit M: Monad[G]
+  final def foldLeftM[G[_], B](z: B)(f: (B, A) => G[B])(implicit
+      M: Monad[G]
   ): G[B] = F.foldLeftM(self, z)(f)
   final def foldMapM[G[_]: Monad, B: Monoid](f: A => G[B]): G[B] =
     F.foldMapM(self)(f)
@@ -41,11 +41,11 @@ final class FoldableOps[F[_], A] private[syntax] (val self: F[A])(
   final def foldr1Opt(f: A => (=> A) => A): Option[A] = F.foldr1Opt(self)(f)
   final def foldl[B](z: B)(f: B => A => B): B         = F.foldl(self, z)(f)
   final def foldl1Opt(f: A => A => A): Option[A]      = F.foldl1Opt(self)(f)
-  final def foldrM[G[_], B](z: => B)(f: A => (=> B) => G[B])(
-      implicit M: Monad[G]
+  final def foldrM[G[_], B](z: => B)(f: A => (=> B) => G[B])(implicit
+      M: Monad[G]
   ): G[B] = F.foldrM(self, z)(f)
-  final def foldlM[G[_], B](z: B)(f: B => A => G[B])(
-      implicit M: Monad[G]
+  final def foldlM[G[_], B](z: B)(f: B => A => G[B])(implicit
+      M: Monad[G]
   ): G[B]                                                 = F.foldlM(self, z)(f)
   final def length: Int                                   = F.length(self)
   final def index(n: Int): Option[A]                      = F.index(self, n)

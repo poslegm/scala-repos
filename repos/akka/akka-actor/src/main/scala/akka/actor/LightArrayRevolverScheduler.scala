@@ -158,8 +158,8 @@ class LightArrayRevolverScheduler(
     }
   }
 
-  override def scheduleOnce(delay: FiniteDuration, runnable: Runnable)(
-      implicit executor: ExecutionContext
+  override def scheduleOnce(delay: FiniteDuration, runnable: Runnable)(implicit
+      executor: ExecutionContext
   ): Cancellable =
     try schedule(executor.prepare(), runnable, roundUp(delay))
     catch {

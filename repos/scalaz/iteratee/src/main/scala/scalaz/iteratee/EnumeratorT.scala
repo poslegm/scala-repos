@@ -8,8 +8,8 @@ import Id._
 trait EnumeratorT[E, F[_]] { self =>
   def apply[A]: StepT[E, F, A] => IterateeT[E, F, A]
 
-  def mapE[I](et: EnumerateeT[E, I, F])(
-      implicit M: Monad[F]
+  def mapE[I](et: EnumerateeT[E, I, F])(implicit
+      M: Monad[F]
   ): EnumeratorT[I, F] = et run self
 
   def map[B](f: E => B)(implicit ev: Monad[F]): EnumeratorT[B, F] =
@@ -92,8 +92,8 @@ trait EnumeratorT[E, F[_]] { self =>
 }
 
 trait EnumeratorTInstances0 {
-  implicit def enumeratorTSemigroup[E, F[_]](
-      implicit F0: Bind[F]
+  implicit def enumeratorTSemigroup[E, F[_]](implicit
+      F0: Bind[F]
   ): Semigroup[EnumeratorT[E, F]] =
     new EnumeratorTSemigroup[E, F] {
       implicit def F = F0
@@ -101,15 +101,15 @@ trait EnumeratorTInstances0 {
 }
 
 trait EnumeratorTInstances extends EnumeratorTInstances0 {
-  implicit def enumeratorTMonoid[E, F[_]](
-      implicit F0: Monad[F]
+  implicit def enumeratorTMonoid[E, F[_]](implicit
+      F0: Monad[F]
   ): Monoid[EnumeratorT[E, F]] =
     new EnumeratorTMonoid[E, F] {
       implicit def F = F0
     }
 
-  implicit def enumeratorTMonad[F[_]](
-      implicit M0: Monad[F]
+  implicit def enumeratorTMonad[F[_]](implicit
+      M0: Monad[F]
   ): Monad[EnumeratorT[?, F]] =
     new EnumeratorTMonad[F] {
       implicit def M = M0
@@ -218,8 +218,8 @@ trait EnumeratorTFunctions {
           })
     }
 
-  def enumReader[F[_]](r: => java.io.Reader)(
-      implicit MO: MonadPartialOrder[F, IO]
+  def enumReader[F[_]](r: => java.io.Reader)(implicit
+      MO: MonadPartialOrder[F, IO]
   ): EnumeratorT[IoExceptionOr[Char], F] = {
     lazy val src = r
     enumIoSource(
@@ -229,8 +229,8 @@ trait EnumeratorTFunctions {
     )
   }
 
-  def enumInputStream[F[_]](is: => java.io.InputStream)(
-      implicit MO: MonadPartialOrder[F, IO]
+  def enumInputStream[F[_]](is: => java.io.InputStream)(implicit
+      MO: MonadPartialOrder[F, IO]
   ): EnumeratorT[IoExceptionOr[Byte], F] = {
     lazy val src = is
     enumIoSource(

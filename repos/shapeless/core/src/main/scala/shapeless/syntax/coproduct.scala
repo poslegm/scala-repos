@@ -78,17 +78,17 @@ final class CoproductOps[C <: Coproduct](val c: C)
   /**
     * Returns all elements of type different than `U` of this `Coproduct`. An explicit type argument must be provided.
     */
-  def filterNot[U](
-      implicit partition: Partition[C, U]
+  def filterNot[U](implicit
+      partition: Partition[C, U]
   ): Option[partition.Suffix] =
     partition.filterNot(c)
 
-  def partition[U](
-      implicit partition: Partition[C, U]
+  def partition[U](implicit
+      partition: Partition[C, U]
   ): Either[partition.Prefix, partition.Suffix] = partition(c)
 
-  def partitionC[U](
-      implicit partition: Partition[C, U]
+  def partitionC[U](implicit
+      partition: Partition[C, U]
   ): partition.Prefix :+: partition.Suffix :+: CNil = partition.coproduct(c)
 
   /**
@@ -112,8 +112,8 @@ final class CoproductOps[C <: Coproduct](val c: C)
     * argument must be provided. Available only if there is evidence that this `Coproduct` has at least ''n'' elements.
     */
   def split[N <: Nat](implicit split: Split[C, N]): split.Out = split(c)
-  def splitC[N <: Nat](
-      implicit split: Split[C, N]
+  def splitC[N <: Nat](implicit
+      split: Split[C, N]
   ): split.Left :+: split.Right :+: CNil =
     split.coproduct(c)
 
@@ -188,8 +188,8 @@ final class CoproductOps[C <: Coproduct](val c: C)
   /**
     * Computes a left fold over this `Coproduct` using the polymorphic binary combining operator `op`.
     */
-  def foldLeft[In](z: In)(op: Poly)(
-      implicit folder: LeftFolder[C, In, op.type]
+  def foldLeft[In](z: In)(op: Poly)(implicit
+      folder: LeftFolder[C, In, op.type]
   ): folder.Out = folder(c, z)
 
   /**
@@ -213,8 +213,8 @@ final class CoproductOps[C <: Coproduct](val c: C)
   /**
     * Converts this `Coproduct` of values into a union with given keys. A type argument must be provided.
     */
-  def zipWithKeys[K <: HList](
-      implicit zipWithKeys: ZipWithKeys[K, C]
+  def zipWithKeys[K <: HList](implicit
+      zipWithKeys: ZipWithKeys[K, C]
   ): zipWithKeys.Out =
     zipWithKeys(c)
 
@@ -227,22 +227,22 @@ final class CoproductOps[C <: Coproduct](val c: C)
   /**
     * Rotate this 'Coproduct' left by N. An explicit type argument must be provided.
     */
-  def rotateLeft[N <: Nat](
-      implicit rotateLeft: RotateLeft[C, N]
+  def rotateLeft[N <: Nat](implicit
+      rotateLeft: RotateLeft[C, N]
   ): rotateLeft.Out = rotateLeft(c)
 
   /**
     * Rotate this 'Coproduct' left by `n`
     */
-  def rotateLeft(n: Nat)(
-      implicit rotateLeft: RotateLeft[C, n.N]
+  def rotateLeft(n: Nat)(implicit
+      rotateLeft: RotateLeft[C, n.N]
   ): rotateLeft.Out = rotateLeft(c)
 
   /**
     * Rotate this 'Coproduct' right by N. An explicit type argument must be provided.
     */
-  def rotateRight[N <: Nat](
-      implicit rotateRight: RotateRight[C, N]
+  def rotateRight[N <: Nat](implicit
+      rotateRight: RotateRight[C, N]
   ): rotateRight.Out =
     rotateRight(c)
 
@@ -268,16 +268,16 @@ final class CoproductOps[C <: Coproduct](val c: C)
   /**
     * Extend this `Coproduct` on the left.
     */
-  def extendLeftBy[K <: Coproduct](
-      implicit extendLeftBy: ExtendLeftBy[K, C]
+  def extendLeftBy[K <: Coproduct](implicit
+      extendLeftBy: ExtendLeftBy[K, C]
   ): extendLeftBy.Out =
     extendLeftBy(c)
 
   /**
     * Extend this `Coproduct` on the right.
     */
-  def extendRightBy[K <: Coproduct](
-      implicit extendRightBy: ExtendRightBy[C, K]
+  def extendRightBy[K <: Coproduct](implicit
+      extendRightBy: ExtendRightBy[C, K]
   ): extendRightBy.Out =
     extendRightBy(c)
 

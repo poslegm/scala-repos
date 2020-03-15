@@ -25,12 +25,12 @@ trait LeftPartialAction[P, G] extends Any {
 }
 
 object LeftPartialAction {
-  @inline final def apply[P, G](
-      implicit G: LeftPartialAction[P, G]
+  @inline final def apply[P, G](implicit
+      G: LeftPartialAction[P, G]
   ): LeftPartialAction[P, G] = G
 
-  implicit def fromLeftAction[P, G](
-      implicit G: LeftAction[P, G]
+  implicit def fromLeftAction[P, G](implicit
+      G: LeftAction[P, G]
   ): LeftPartialAction[P, G] =
     new LeftPartialAction[P, G] {
       override def actlIsDefined(g: G, p: P): Boolean = true
@@ -59,12 +59,12 @@ trait RightPartialAction[P, G] extends Any {
 }
 
 object RightPartialAction {
-  @inline final def apply[P, G](
-      implicit G: RightPartialAction[P, G]
+  @inline final def apply[P, G](implicit
+      G: RightPartialAction[P, G]
   ): RightPartialAction[P, G] = G
 
-  implicit def fromRightAction[P, G](
-      implicit G: RightAction[P, G]
+  implicit def fromRightAction[P, G](implicit
+      G: RightAction[P, G]
   ): RightPartialAction[P, G] =
     new RightPartialAction[P, G] {
       override def actrIsDefined(p: P, g: G): Boolean = true
@@ -110,8 +110,8 @@ trait PartialAction[P, G]
     with RightPartialAction[P, G]
 
 object PartialAction {
-  @inline final def apply[P, G](
-      implicit G: PartialAction[P, G]
+  @inline final def apply[P, G](implicit
+      G: PartialAction[P, G]
   ): PartialAction[P, G] = G
 
   implicit def fromAction[P, G](implicit G: Action[P, G]): PartialAction[P, G] =

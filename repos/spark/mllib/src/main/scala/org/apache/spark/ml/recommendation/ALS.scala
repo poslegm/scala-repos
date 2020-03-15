@@ -689,8 +689,8 @@ object ALS extends DefaultParamsReadable[ALS] with Logging {
       finalRDDStorageLevel: StorageLevel = StorageLevel.MEMORY_AND_DISK,
       checkpointInterval: Int = 10,
       seed: Long = 0L
-  )(
-      implicit ord: Ordering[ID]
+  )(implicit
+      ord: Ordering[ID]
   ): (RDD[(ID, Array[Float])], RDD[(ID, Array[Float])]) = {
     require(
       intermediateRDDStorageLevel != StorageLevel.NONE,
@@ -1180,8 +1180,8 @@ object ALS extends DefaultParamsReadable[ALS] with Logging {
     *
     * @see [[UncompressedInBlockSort]]
     */
-  private class KeyWrapper[@specialized(Int, Long) ID: ClassTag](
-      implicit ord: Ordering[ID]
+  private class KeyWrapper[@specialized(Int, Long) ID: ClassTag](implicit
+      ord: Ordering[ID]
   ) extends Ordered[KeyWrapper[ID]] {
 
     var key: ID = _
@@ -1296,8 +1296,8 @@ object ALS extends DefaultParamsReadable[ALS] with Logging {
       srcPart: Partitioner,
       dstPart: Partitioner,
       storageLevel: StorageLevel
-  )(
-      implicit srcOrd: Ordering[ID]
+  )(implicit
+      srcOrd: Ordering[ID]
   ): (RDD[(Int, InBlock[ID])], RDD[(Int, OutBlock)]) = {
     val inBlocks = ratingBlocks
       .map {

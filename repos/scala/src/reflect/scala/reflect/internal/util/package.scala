@@ -24,7 +24,7 @@ package object util {
   def shortClassOfInstance(x: AnyRef): String = shortClass(x.getClass)
   def shortClass(clazz: Class[_]): String = {
     val name: String = (clazz.getName split '.').last
-    def isModule     = name endsWith "$" // object
+    def isModule     = name endsWith "$"                        // object
     def isAnon       = (name split '$').last forall (_.isDigit) // anonymous class
 
     if (isModule) (name split '$' filterNot (_ == "")).last + "$"

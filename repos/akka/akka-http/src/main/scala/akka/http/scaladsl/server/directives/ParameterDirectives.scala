@@ -129,16 +129,16 @@ object ParameterDirectives extends ParameterDirectives {
           fsou(ctx.request.uri.query().get(paramName))
         )
       }
-    implicit def forString(
-        implicit fsu: FSU[String]
+    implicit def forString(implicit
+        fsu: FSU[String]
     ): ParamDefAux[String, Directive1[String]] =
       extractParameter[String, String] { string ⇒ filter(string, fsu) }
-    implicit def forSymbol(
-        implicit fsu: FSU[String]
+    implicit def forSymbol(implicit
+        fsu: FSU[String]
     ): ParamDefAux[Symbol, Directive1[String]] =
       extractParameter[Symbol, String] { symbol ⇒ filter(symbol.name, fsu) }
-    implicit def forNR[T](
-        implicit fsu: FSU[T]
+    implicit def forNR[T](implicit
+        fsu: FSU[T]
     ): ParamDefAux[NameReceptacle[T], Directive1[T]] =
       extractParameter[NameReceptacle[T], T] { nr ⇒ filter(nr.name, fsu) }
     implicit def forNUR[T]
@@ -146,14 +146,14 @@ object ParameterDirectives extends ParameterDirectives {
       extractParameter[NameUnmarshallerReceptacle[T], T] { nr ⇒
         filter(nr.name, nr.um)
       }
-    implicit def forNOR[T](
-        implicit fsou: FSOU[T]
+    implicit def forNOR[T](implicit
+        fsou: FSOU[T]
     ): ParamDefAux[NameOptionReceptacle[T], Directive1[Option[T]]] =
       extractParameter[NameOptionReceptacle[T], Option[T]] { nr ⇒
         filter[Option[T]](nr.name, fsou)
       }
-    implicit def forNDR[T](
-        implicit fsou: FSOU[T]
+    implicit def forNDR[T](implicit
+        fsou: FSOU[T]
     ): ParamDefAux[NameDefaultReceptacle[T], Directive1[T]] =
       extractParameter[NameDefaultReceptacle[T], T] { nr ⇒
         filter[T](nr.name, fsou withDefaultValue nr.default)
@@ -185,8 +185,8 @@ object ParameterDirectives extends ParameterDirectives {
           case _                                        ⇒ reject
         }
       }
-    implicit def forRVR[T](
-        implicit fsu: FSU[T]
+    implicit def forRVR[T](implicit
+        fsu: FSU[T]
     ): ParamDefAux[RequiredValueReceptacle[T], Directive0] =
       paramDef[RequiredValueReceptacle[T], Directive0] { rvr ⇒
         requiredFilter(rvr.name, fsu, rvr.requiredValue)
@@ -213,8 +213,8 @@ object ParameterDirectives extends ParameterDirectives {
           )
         )
       }
-    implicit def forRepVR[T](
-        implicit fsu: FSU[T]
+    implicit def forRepVR[T](implicit
+        fsu: FSU[T]
     ): ParamDefAux[RepeatedValueReceptacle[T], Directive1[Iterable[T]]] =
       extractParameter[RepeatedValueReceptacle[T], Iterable[T]] { rvr ⇒
         repeatedFilter(rvr.name, fsu)

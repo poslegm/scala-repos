@@ -57,8 +57,8 @@ object SortedMap extends MutableSortedMapFactory[SortedMap] {
     TreeMap.empty[A, B]
 
   /** $sortedMapCanBuildFromInfo */
-  implicit def canBuildFrom[A, B](
-      implicit ord: Ordering[A]
+  implicit def canBuildFrom[A, B](implicit
+      ord: Ordering[A]
   ): CanBuildFrom[Coll, (A, B), SortedMap[A, B]] =
     new SortedMapCanBuildFrom[A, B]
 }

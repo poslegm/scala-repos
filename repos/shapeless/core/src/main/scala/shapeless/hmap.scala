@@ -65,7 +65,7 @@ object ~?> extends NatTRel0 {
 }
 
 trait NatTRel0 {
-  implicit def witness[K[_], V[_], T](
-      implicit rel: K ~?> V
+  implicit def witness[K[_], V[_], T](implicit
+      rel: K ~?> V
   ): rel.λ[K[T], V[T]] = new rel.λ[K[T], V[T]]
 }

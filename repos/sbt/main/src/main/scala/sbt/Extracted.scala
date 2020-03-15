@@ -127,8 +127,8 @@ final case class Extracted(
       value: Option[T]
   )(implicit display: Show[ScopedKey[_]]): T =
     value getOrElse sys.error(display(ScopedKey(scope, key)) + " is undefined.")
-  private def getOrError[T](scope: Scope, key: AttributeKey[T])(
-      implicit display: Show[ScopedKey[_]]
+  private def getOrError[T](scope: Scope, key: AttributeKey[T])(implicit
+      display: Show[ScopedKey[_]]
   ): T =
     structure.data.get(scope, key) getOrElse sys.error(
       display(ScopedKey(scope, key)) + " is undefined."

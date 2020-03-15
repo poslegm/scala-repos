@@ -92,8 +92,8 @@ class HttpExt(private val config: Config)(implicit val system: ActorSystem)
       connectionContext: ConnectionContext = defaultServerHttpContext,
       settings: ServerSettings = ServerSettings(system),
       log: LoggingAdapter = system.log
-  )(
-      implicit fm: Materializer
+  )(implicit
+      fm: Materializer
   ): Source[IncomingConnection, Future[ServerBinding]] = {
     val effectivePort = if (port >= 0) port else connectionContext.defaultPort
     val tlsStage      = sslTlsStage(connectionContext, Server)
@@ -398,8 +398,8 @@ class HttpExt(private val config: Config)(implicit val system: ActorSystem)
       port: Int = 80,
       settings: ConnectionPoolSettings = defaultConnectionPoolSettings,
       log: LoggingAdapter = system.log
-  )(
-      implicit fm: Materializer
+  )(implicit
+      fm: Materializer
   ): Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool] = {
     val cps =
       ConnectionPoolSetup(settings, ConnectionContext.noEncryption(), log)
@@ -421,8 +421,8 @@ class HttpExt(private val config: Config)(implicit val system: ActorSystem)
       connectionContext: HttpsConnectionContext = defaultClientHttpsContext,
       settings: ConnectionPoolSettings = defaultConnectionPoolSettings,
       log: LoggingAdapter = system.log
-  )(
-      implicit fm: Materializer
+  )(implicit
+      fm: Materializer
   ): Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool] = {
     val cps = ConnectionPoolSetup(settings, connectionContext, log)
     newHostConnectionPool(HostConnectionPoolSetup(host, port, cps))
@@ -477,8 +477,8 @@ class HttpExt(private val config: Config)(implicit val system: ActorSystem)
       port: Int = 80,
       settings: ConnectionPoolSettings = defaultConnectionPoolSettings,
       log: LoggingAdapter = system.log
-  )(
-      implicit fm: Materializer
+  )(implicit
+      fm: Materializer
   ): Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool] = {
     val cps =
       ConnectionPoolSetup(settings, ConnectionContext.noEncryption(), log)
@@ -501,8 +501,8 @@ class HttpExt(private val config: Config)(implicit val system: ActorSystem)
       connectionContext: HttpsConnectionContext = defaultClientHttpsContext,
       settings: ConnectionPoolSettings = defaultConnectionPoolSettings,
       log: LoggingAdapter = system.log
-  )(
-      implicit fm: Materializer
+  )(implicit
+      fm: Materializer
   ): Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool] = {
     val cps   = ConnectionPoolSetup(settings, connectionContext, log)
     val setup = HostConnectionPoolSetup(host, port, cps)
@@ -552,8 +552,8 @@ class HttpExt(private val config: Config)(implicit val system: ActorSystem)
       connectionContext: HttpsConnectionContext = defaultClientHttpsContext,
       settings: ConnectionPoolSettings = defaultConnectionPoolSettings,
       log: LoggingAdapter = system.log
-  )(
-      implicit fm: Materializer
+  )(implicit
+      fm: Materializer
   ): Flow[(HttpRequest, T), (Try[HttpResponse], T), NotUsed] =
     clientFlow[T](settings) { request ⇒
       request -> cachedGateway(request, settings, connectionContext, log)
@@ -771,8 +771,8 @@ class HttpExt(private val config: Config)(implicit val system: ActorSystem)
   private def gatewayClientFlow[T](
       hcps: HostConnectionPoolSetup,
       gatewayFuture: Future[PoolGateway]
-  )(
-      implicit fm: Materializer
+  )(implicit
+      fm: Materializer
   ): Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool] =
     clientFlow[T](hcps.setup.settings)(_ -> gatewayFuture)
       .mapMaterializedValue(_ ⇒ HostConnectionPool(hcps)(gatewayFuture))

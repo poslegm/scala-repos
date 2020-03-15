@@ -29,13 +29,13 @@ trait ScalatraParamsImplicits { self: DefaultImplicitConversions =>
           "Key %s could not be found.".format(nameAndFormat._1)
         ))
 
-    def getAsOrElse[T <: Any](name: String, default: => T)(
-        implicit tc: TypeConverter[String, T]
+    def getAsOrElse[T <: Any](name: String, default: => T)(implicit
+        tc: TypeConverter[String, T]
     ): T =
       getAs[T](name).getOrElse(default)
 
-    def getAsOrElse(nameAndFormat: (String, String), default: => Date)(
-        implicit tc: TypeConverter[String, Date]
+    def getAsOrElse(nameAndFormat: (String, String), default: => Date)(implicit
+        tc: TypeConverter[String, Date]
     ): Date =
       getAs[Date](nameAndFormat).getOrElse(default)
   }
@@ -64,8 +64,8 @@ trait ScalatraParamsImplicits { self: DefaultImplicitConversions =>
           "Key %s could not be found.".format(nameAndFormat._1)
         ))
 
-    def getAsOrElse[T <: Any](name: String, default: => Seq[T])(
-        implicit tc: TypeConverter[String, T]
+    def getAsOrElse[T <: Any](name: String, default: => Seq[T])(implicit
+        tc: TypeConverter[String, T]
     ): Seq[T] =
       getAs[T](name).getOrElse(default)
 

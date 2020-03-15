@@ -72,8 +72,8 @@ trait ColumnExtensionMethods[B1, P1] extends Any with ExtensionMethods[B1, P1] {
         )
       )
 
-  def between[P2, P3, R](start: Rep[P2], end: Rep[P3])(
-      implicit om: o#arg[B1, P2]#arg[B1, P3]#to[Boolean, R]
+  def between[P2, P3, R](start: Rep[P2], end: Rep[P3])(implicit
+      om: o#arg[B1, P2]#arg[B1, P3]#to[Boolean, R]
   ) =
     om.column(Library.Between, n, start.toNode, end.toNode)
   def ifNull[B2, P2, R](
@@ -170,8 +170,8 @@ final class StringColumnExtensionMethods[P1](val c: Rep[P1])
 
   def length[R](implicit om: o#to[Int, R]) =
     om.column(Library.Length, n)
-  def like[P2, R](e: Rep[P2], esc: Char = '\u0000')(
-      implicit om: o#arg[String, P2]#to[Boolean, R]
+  def like[P2, R](e: Rep[P2], esc: Char = '\u0000')(implicit
+      om: o#arg[String, P2]#to[Boolean, R]
   ) =
     if (esc == '\u0000') om.column(Library.Like, n, e.toNode)
     else om.column(Library.Like, n, e.toNode, LiteralNode(esc))
@@ -187,8 +187,8 @@ final class StringColumnExtensionMethods[P1](val c: Rep[P1])
   def rtrim         = Library.RTrim.column[P1](n)
   def trim          = Library.Trim.column[P1](n)
   def reverseString = Library.Reverse.column[P1](n)
-  def substring[P2, P3, R](start: Rep[P2], end: Rep[P3])(
-      implicit om: o#arg[Int, P2]#arg[Int, P3]#to[String, R]
+  def substring[P2, P3, R](start: Rep[P2], end: Rep[P3])(implicit
+      om: o#arg[Int, P2]#arg[Int, P3]#to[String, R]
   ) =
     om.column(Library.Substring, n, start.toNode, end.toNode)
   def substring[P2, R](
@@ -201,8 +201,8 @@ final class StringColumnExtensionMethods[P1](val c: Rep[P1])
     substring[Int, P2, R](LiteralColumn(0), num)
   def drop[P2, R](num: Rep[P2])(implicit om: o#arg[Int, P2]#to[String, R]) =
     substring[P2, R](num)
-  def replace[P2, P3, R](target: Rep[P2], replacement: Rep[P3])(
-      implicit om: o#arg[String, P2]#arg[String, P3]#to[String, R]
+  def replace[P2, P3, R](target: Rep[P2], replacement: Rep[P3])(implicit
+      om: o#arg[String, P2]#arg[String, P3]#to[String, R]
   ) =
     om.column(Library.Replace, n, target.toNode, replacement.toNode)
   def indexOf[P2, R](str: Rep[P2])(implicit om: o#arg[String, P2]#to[Int, R]) =
@@ -323,8 +323,8 @@ trait ExtensionMethodConversions {
       c: Rep[Option[B1]]
   ): OptionColumnExtensionMethods[B1] =
     new OptionColumnExtensionMethods[B1](c)
-  implicit def numericColumnExtensionMethods[B1](c: Rep[B1])(
-      implicit tm: BaseTypedType[B1] with NumericTypedType
+  implicit def numericColumnExtensionMethods[B1](c: Rep[B1])(implicit
+      tm: BaseTypedType[B1] with NumericTypedType
   ): BaseNumericColumnExtensionMethods[B1] =
     new BaseNumericColumnExtensionMethods[B1](c)
   implicit def numericOptionColumnExtensionMethods[B1](c: Rep[Option[B1]])(
@@ -372,8 +372,8 @@ trait ExtensionMethodConversions {
   ): SingleColumnQueryExtensionMethods[B1, Option[B1], C] =
     new SingleColumnQueryExtensionMethods[B1, Option[B1], C](q)
 
-  implicit def anyOptionExtensionMethods[T, P](v: Rep[Option[T]])(
-      implicit ol: OptionLift[P, Rep[Option[T]]]
+  implicit def anyOptionExtensionMethods[T, P](v: Rep[Option[T]])(implicit
+      ol: OptionLift[P, Rep[Option[T]]]
   ): AnyOptionExtensionMethods[Rep[Option[T]], P] =
     new AnyOptionExtensionMethods[Rep[Option[T]], P](v)
 }

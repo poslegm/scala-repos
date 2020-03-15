@@ -125,8 +125,8 @@ trait ManagedExecution
     }
   }
 
-  protected def executor(
-      implicit shardQueryMonad: JobQueryTFMonad
+  protected def executor(implicit
+      shardQueryMonad: JobQueryTFMonad
   ): QueryExecutor[JobQueryTF, StreamT[JobQueryTF, Slice]]
 
   def executorFor(

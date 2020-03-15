@@ -24,8 +24,8 @@ class ThreadLocalRandomTest {
     assertThrows(classOf[UnsupportedOperationException], tlr.setSeed(1))
   }
 
-  def checkIntBounds(b1: Int, b2: Int)(
-      implicit tlr: ThreadLocalRandom
+  def checkIntBounds(b1: Int, b2: Int)(implicit
+      tlr: ThreadLocalRandom
   ): Unit = {
     val least = min(b1, b2)
     val bound = max(b1, b2)
@@ -267,8 +267,8 @@ class ThreadLocalRandomTest {
     assertThrows(classOf[IllegalArgumentException], tlr.nextLong(Long.MinValue))
   }
 
-  def checkLongBounds(b1: Long, b2: Long)(
-      implicit tlr: ThreadLocalRandom
+  def checkLongBounds(b1: Long, b2: Long)(implicit
+      tlr: ThreadLocalRandom
   ): Unit = {
     val least = min(b1, b2)
     val bound = max(b1, b2)
@@ -515,8 +515,8 @@ class ThreadLocalRandomTest {
     )
   }
 
-  def checkDoubleBounds(b1: Double, b2: Double)(
-      implicit tlr: ThreadLocalRandom
+  def checkDoubleBounds(b1: Double, b2: Double)(implicit
+      tlr: ThreadLocalRandom
   ): Unit = {
     val least = min(b1, b2)
     val bound = max(b1, b2)

@@ -278,7 +278,8 @@ trait TypedPipe[+T] extends Serializable {
     * The latter creates 1 map/reduce phase rather than 2
     */
   @annotation.implicitNotFound(
-    msg = "For distinct method to work, the type in TypedPipe must have an Ordering."
+    msg =
+      "For distinct method to work, the type in TypedPipe must have an Ordering."
   )
   def distinct(implicit ord: Ordering[_ >: T]): TypedPipe[T] =
     asKeys(ord.asInstanceOf[Ordering[T]]).sum.keys
@@ -287,10 +288,11 @@ trait TypedPipe[+T] extends Serializable {
     * Returns the set of distinct elements identified by a given lambda extractor in the TypedPipe
     */
   @annotation.implicitNotFound(
-    msg = "For distinctBy method to work, the type to distinct on in the TypedPipe must have an Ordering."
+    msg =
+      "For distinctBy method to work, the type to distinct on in the TypedPipe must have an Ordering."
   )
-  def distinctBy[U](fn: T => U, numReducers: Option[Int] = None)(
-      implicit ord: Ordering[_ >: U]
+  def distinctBy[U](fn: T => U, numReducers: Option[Int] = None)(implicit
+      ord: Ordering[_ >: U]
   ): TypedPipe[T] = {
     // cast because Ordering is not contravariant, but should be (and this cast is safe)
     implicit val ordT: Ordering[U] = ord.asInstanceOf[Ordering[U]]
@@ -397,8 +399,8 @@ trait TypedPipe[+T] extends Serializable {
     * flatten just the values
     * This is more useful on KeyedListLike, but added here to reduce assymmetry in the APIs
     */
-  def flattenValues[K, U](
-      implicit ev: T <:< (K, TraversableOnce[U])
+  def flattenValues[K, U](implicit
+      ev: T <:< (K, TraversableOnce[U])
   ): TypedPipe[(K, U)] =
     raiseTo[(K, TraversableOnce[U])].flatMap { case (k, us) => us.map((k, _)) }
 
@@ -447,8 +449,8 @@ trait TypedPipe[+T] extends Serializable {
     map { t => (g(t), t) }.group
 
   /** Group using an explicit Ordering on the key. */
-  def groupWith[K, V](ord: Ordering[K])(
-      implicit ev: <:<[T, (K, V)]
+  def groupWith[K, V](ord: Ordering[K])(implicit
+      ev: <:<[T, (K, V)]
   ): Grouped[K, V] = group(ev, ord)
 
   /**
@@ -779,8 +781,8 @@ trait TypedPipe[+T] extends Serializable {
     hashCogroup[K, V, W, (V, W)](smaller)(Joiner.hashInner2)
 
   /** Do an leftjoin without shuffling this TypedPipe, but replicating argument to all tasks */
-  def hashLeftJoin[K, V, W](smaller: HashJoinable[K, W])(
-      implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)]
+  def hashLeftJoin[K, V, W](smaller: HashJoinable[K, W])(implicit
+      ev: TypedPipe[T] <:< TypedPipe[(K, V)]
   ): TypedPipe[(K, (V, Option[W]))] =
     hashCogroup[K, V, W, (V, Option[W])](smaller)(Joiner.hashLeft2)
 
@@ -1341,26 +1343,26 @@ case class WithDescriptionTypedPipe[T](
 class MappablePipeJoinEnrichment[T](pipe: TypedPipe[T]) {
   def joinBy[K, U](
       smaller: TypedPipe[U]
-  )(g: (T => K), h: (U => K), reducers: Int = -1)(
-      implicit ord: Ordering[K]
+  )(g: (T => K), h: (U => K), reducers: Int = -1)(implicit
+      ord: Ordering[K]
   ): CoGrouped[K, (T, U)] =
     pipe.groupBy(g).withReducers(reducers).join(smaller.groupBy(h))
   def leftJoinBy[K, U](
       smaller: TypedPipe[U]
-  )(g: (T => K), h: (U => K), reducers: Int = -1)(
-      implicit ord: Ordering[K]
+  )(g: (T => K), h: (U => K), reducers: Int = -1)(implicit
+      ord: Ordering[K]
   ): CoGrouped[K, (T, Option[U])] =
     pipe.groupBy(g).withReducers(reducers).leftJoin(smaller.groupBy(h))
   def rightJoinBy[K, U](
       smaller: TypedPipe[U]
-  )(g: (T => K), h: (U => K), reducers: Int = -1)(
-      implicit ord: Ordering[K]
+  )(g: (T => K), h: (U => K), reducers: Int = -1)(implicit
+      ord: Ordering[K]
   ): CoGrouped[K, (Option[T], U)] =
     pipe.groupBy(g).withReducers(reducers).rightJoin(smaller.groupBy(h))
   def outerJoinBy[K, U](
       smaller: TypedPipe[U]
-  )(g: (T => K), h: (U => K), reducers: Int = -1)(
-      implicit ord: Ordering[K]
+  )(g: (T => K), h: (U => K), reducers: Int = -1)(implicit
+      ord: Ordering[K]
   ): CoGrouped[K, (Option[T], Option[U])] =
     pipe.groupBy(g).withReducers(reducers).outerJoin(smaller.groupBy(h))
 }

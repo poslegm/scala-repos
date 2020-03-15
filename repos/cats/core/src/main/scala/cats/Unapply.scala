@@ -40,8 +40,8 @@ object Unapply extends Unapply2Instances {
     type A    = AA
   }
 
-  implicit def unapply1[TC[_[_]], F[_], AA](
-      implicit tc: TC[F]
+  implicit def unapply1[TC[_[_]], F[_], AA](implicit
+      tc: TC[F]
   ): Aux1[TC, F[AA], F, AA] =
     new Unapply[TC, F[AA]] {
       type M[X] = F[X]
@@ -82,8 +82,8 @@ private[cats] sealed abstract class Unapply2Instances
     type A    = B
   }
 
-  implicit def unapply2left[TC[_[_]], F[_, _], AA, B](
-      implicit tc: TC[F[?, B]]
+  implicit def unapply2left[TC[_[_]], F[_, _], AA, B](implicit
+      tc: TC[F[?, B]]
   ): Aux2Left[TC, F[AA, B], F, AA, B] =
     new Unapply[TC, F[AA, B]] {
       type M[X] = F[X, B]
@@ -92,8 +92,8 @@ private[cats] sealed abstract class Unapply2Instances
       def subst: F[AA, B] => M[A] = identity
     }
 
-  implicit def unapply2right[TC[_[_]], F[_, _], AA, B](
-      implicit tc: TC[F[AA, ?]]
+  implicit def unapply2right[TC[_[_]], F[_, _], AA, B](implicit
+      tc: TC[F[AA, ?]]
   ): Aux2Right[TC, F[AA, B], F, AA, B] =
     new Unapply[TC, F[AA, B]] {
       type M[X] = F[AA, X]
@@ -102,8 +102,8 @@ private[cats] sealed abstract class Unapply2Instances
       def subst: F[AA, B] => M[A] = identity
     }
 
-  implicit def unapply2leftK[TC[_[_]], F[_, _[_]], AA, B[_]](
-      implicit tc: TC[F[?, B]]
+  implicit def unapply2leftK[TC[_[_]], F[_, _[_]], AA, B[_]](implicit
+      tc: TC[F[?, B]]
   ): Aux2LeftK[TC, F[AA, B], F, AA, B] =
     new Unapply[TC, F[AA, B]] {
       type M[X] = F[X, B]
@@ -112,8 +112,8 @@ private[cats] sealed abstract class Unapply2Instances
       def subst: F[AA, B] => M[A] = identity
     }
 
-  implicit def unapply2rightK[TC[_[_]], F[_[_], _], AA[_], B](
-      implicit tc: TC[F[AA, ?]]
+  implicit def unapply2rightK[TC[_[_]], F[_[_], _], AA[_], B](implicit
+      tc: TC[F[AA, ?]]
   ): Aux2RightK[TC, F[AA, B], F, AA, B] =
     new Unapply[TC, F[AA, B]] {
       type M[X] = F[AA, X]
@@ -125,8 +125,8 @@ private[cats] sealed abstract class Unapply2Instances
   // STEW: I'm not sure why these Nothing cases are needed and aren't
   // just caught by the generic cases, I'd love for someone to figure
   // that out and report back.
-  implicit def unapply2leftN[TC[_[_]], F[_, +_], AA](
-      implicit tc: TC[F[?, Nothing]]
+  implicit def unapply2leftN[TC[_[_]], F[_, +_], AA](implicit
+      tc: TC[F[?, Nothing]]
   ): Aux2Left[TC, F[AA, Nothing], F, AA, Nothing] =
     new Unapply[TC, F[AA, Nothing]] {
       type M[X] = F[X, Nothing]
@@ -135,8 +135,8 @@ private[cats] sealed abstract class Unapply2Instances
       def subst: F[AA, Nothing] => M[A] = identity
     }
 
-  implicit def unapply2rightN[TC[_[_]], F[+_, _], B](
-      implicit tc: TC[F[Nothing, ?]]
+  implicit def unapply2rightN[TC[_[_]], F[+_, _], B](implicit
+      tc: TC[F[Nothing, ?]]
   ): Aux2Right[TC, F[Nothing, B], F, Nothing, B] =
     new Unapply[TC, F[Nothing, B]] {
       type M[X] = F[Nothing, X]
@@ -171,8 +171,8 @@ private[cats] sealed abstract class Unapply3Instances {
     type A    = C
   }
 
-  implicit def unapply3MTLeft[TC[_[_]], F[_[_], _, _], AA[_], B, C](
-      implicit tc: TC[F[AA, ?, C]]
+  implicit def unapply3MTLeft[TC[_[_]], F[_[_], _, _], AA[_], B, C](implicit
+      tc: TC[F[AA, ?, C]]
   ): Aux3MTLeft[TC, F[AA, B, C], F, AA, B, C] =
     new Unapply[TC, F[AA, B, C]] {
       type M[X] = F[AA, X, C]
@@ -181,8 +181,8 @@ private[cats] sealed abstract class Unapply3Instances {
       def subst: F[AA, B, C] => M[A] = identity
     }
 
-  implicit def unapply3MTright[TC[_[_]], F[_[_], _, _], AA[_], B, C](
-      implicit tc: TC[F[AA, B, ?]]
+  implicit def unapply3MTright[TC[_[_]], F[_[_], _, _], AA[_], B, C](implicit
+      tc: TC[F[AA, B, ?]]
   ): Aux3MTRight[TC, F[AA, B, C], F, AA, B, C] =
     new Unapply[TC, F[AA, B, C]] {
       type M[X] = F[AA, B, X]

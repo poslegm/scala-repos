@@ -29,9 +29,9 @@ import org.apache.commons.math3.linear._
 object LocalALS {
 
   // Parameters set through command line arguments
-  var M          = 0 // Number of movies
-  var U          = 0 // Number of users
-  var F          = 0 // Number of features
+  var M          = 0    // Number of movies
+  var U          = 0    // Number of users
+  var F          = 0    // Number of features
   var ITERATIONS = 0
   val LAMBDA     = 0.01 // Regularization coefficient
 

@@ -362,8 +362,8 @@ private[controllers] trait LilaController
       .contains(LilaCookie.sessionId)
       .fold(res, res withCookies LilaCookie.makeSessionId(req))
 
-  protected def negotiate(html: => Fu[Result], api: Int => Fu[Result])(
-      implicit ctx: Context
+  protected def negotiate(html: => Fu[Result], api: Int => Fu[Result])(implicit
+      ctx: Context
   ): Fu[Result] =
     (lila.api.Mobile.Api.requestVersion(ctx.req) match {
       case Some(1) => api(1) map (_ as JSON)

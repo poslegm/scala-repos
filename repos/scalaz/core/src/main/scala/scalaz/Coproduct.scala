@@ -139,8 +139,8 @@ object Coproduct extends CoproductInstances {
 sealed abstract class CoproductInstances3 {
   type TupleCoglorified[F[_], G[_], A] = Coproduct[F, G, A]
 
-  implicit def coproductEqual[F[_], G[_], A](
-      implicit E: Equal[F[A] \/ G[A]]
+  implicit def coproductEqual[F[_], G[_], A](implicit
+      E: Equal[F[A] \/ G[A]]
   ): Equal[Coproduct[F, G, A]] =
     Equal.equalBy(_.run)
 

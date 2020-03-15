@@ -17,8 +17,8 @@ trait ColumnDefiner {
       implicit coldef: DriverColumnDefiner[BIGINT.type]
   ) =
     coldef(name, nullable)
-  protected def int(name: String, nullable: IsNullable = NotNullable)(
-      implicit coldef: DriverColumnDefiner[INT.type]
+  protected def int(name: String, nullable: IsNullable = NotNullable)(implicit
+      coldef: DriverColumnDefiner[INT.type]
   ) = coldef(name, nullable)
   protected def smallint(name: String, nullable: IsNullable = NotNullable)(
       implicit coldef: DriverColumnDefiner[SMALLINT.type]
@@ -32,15 +32,15 @@ trait ColumnDefiner {
       implicit coldef: DriverColumnDefiner[VARCHAR.type]
   ) =
     coldef(name, nullable)
-  protected def date(name: String, nullable: IsNullable = NotNullable)(
-      implicit coldef: DriverColumnDefiner[DATE.type]
+  protected def date(name: String, nullable: IsNullable = NotNullable)(implicit
+      coldef: DriverColumnDefiner[DATE.type]
   ) = coldef(name, nullable)
   protected def datetime(name: String, nullable: IsNullable = NotNullable)(
       implicit coldef: DriverColumnDefiner[DATETIME.type]
   ) =
     coldef(name, nullable)
-  protected def text(name: String, nullable: IsNullable = NotNullable)(
-      implicit coldef: DriverColumnDefiner[TEXT.type]
+  protected def text(name: String, nullable: IsNullable = NotNullable)(implicit
+      coldef: DriverColumnDefiner[TEXT.type]
   ) = coldef(name, nullable)
   protected def double(name: String, nullable: IsNullable = NotNullable)(
       implicit coldef: DriverColumnDefiner[DOUBLE.type]

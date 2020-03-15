@@ -399,10 +399,9 @@ trait MarkupParsers { self: Parsers =>
 
           val ts    = new ArrayBuffer[Tree]
           val start = curOffset
-          tmppos =
-            o2p(
-              curOffset
-            ) // Iuli: added this line, as it seems content_LT uses tmppos when creating trees
+          tmppos = o2p(
+            curOffset
+          ) // Iuli: added this line, as it seems content_LT uses tmppos when creating trees
           content_LT(ts)
 
           // parse more XML?

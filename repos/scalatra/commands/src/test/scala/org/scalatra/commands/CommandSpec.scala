@@ -99,7 +99,7 @@ class CommandSpec extends Specification {
       val params =
         Map("name" -> "John", "age" -> "45", "limit" -> "30", "skip" -> "20")
       val multi = MultiMap(params map { case (k, v) => k -> Seq(v) })
-      val hdrs  = Map("API-TOKEN" -> "123")
+      val hdrs  = Map("API-TOKEN"                   -> "123")
       form.bindTo(params, multi, hdrs)
       form.name.value must beSome("John")
       form.age.value must beSome(45)

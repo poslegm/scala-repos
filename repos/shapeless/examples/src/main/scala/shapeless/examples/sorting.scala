@@ -81,8 +81,8 @@ object Sorting {
       }
   }
 
-  def selectLeast[L <: HList, M <: Nat, Rem <: HList](l: L)(
-      implicit sl: SelectLeast[L, M, Rem]
+  def selectLeast[L <: HList, M <: Nat, Rem <: HList](l: L)(implicit
+      sl: SelectLeast[L, M, Rem]
   ) = sl(l)
 
   val (l1, r1) = selectLeast(_1 :: _2 :: _3 :: HNil)
@@ -122,8 +122,8 @@ object Sorting {
       }
   }
 
-  def selectionSort[L <: HList, S <: HList](l: L)(
-      implicit sort: SelectionSort[L, S]
+  def selectionSort[L <: HList, S <: HList](l: L)(implicit
+      sort: SelectionSort[L, S]
   ) = sort(l)
 
   /**

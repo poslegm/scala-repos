@@ -123,8 +123,8 @@ object Reader {
     }
 
   // Scala seems to have issues with this being implicit
-  def collection[T: Reader, C](
-      implicit cbf: CanBuildFrom[Nothing, T, C]
+  def collection[T: Reader, C](implicit
+      cbf: CanBuildFrom[Nothing, T, C]
   ): Reader[C] =
     new Reader[C] {
       val readerT = implicitly[Reader[T]]

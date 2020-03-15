@@ -28,8 +28,8 @@ object coproduct {
     def apply[C <: Coproduct, I](implicit inject: Inject[C, I]): Inject[C, I] =
       inject
 
-    implicit def tlInject[H, T <: Coproduct, I](
-        implicit tlInj: Inject[T, I]
+    implicit def tlInject[H, T <: Coproduct, I](implicit
+        tlInj: Inject[T, I]
     ): Inject[H :+: T, I] =
       new Inject[H :+: T, I] {
         def apply(i: I): H :+: T = Inr(tlInj(i))
@@ -46,8 +46,8 @@ object coproduct {
   }
 
   object Selector {
-    def apply[C <: Coproduct, T](
-        implicit select: Selector[C, T]
+    def apply[C <: Coproduct, T](implicit
+        select: Selector[C, T]
     ): Selector[C, T] = select
 
     implicit def hdSelector[H, T <: Coproduct]: Selector[H :+: T, H] =
@@ -58,8 +58,8 @@ object coproduct {
             case Inr(t) => None
           }
       }
-    implicit def tlSelector[H, T <: Coproduct, S](
-        implicit st: Selector[T, S]
+    implicit def tlSelector[H, T <: Coproduct, S](implicit
+        st: Selector[T, S]
     ): Selector[H :+: T, S] =
       new Selector[H :+: T, S] {
         def apply(c: H :+: T): Option[S] =
@@ -76,8 +76,8 @@ object coproduct {
   }
 
   object At {
-    def apply[C <: Coproduct, N <: Nat](
-        implicit at: At[C, N]
+    def apply[C <: Coproduct, N <: Nat](implicit
+        at: At[C, N]
     ): Aux[C, N, at.A] = at
 
     type Aux[C <: Coproduct, N <: Nat, A0] = At[C, N] { type A = A0 }
@@ -119,8 +119,8 @@ object coproduct {
   }
 
   object Partition {
-    def apply[C <: Coproduct, U](
-        implicit partition: Partition[C, U]
+    def apply[C <: Coproduct, U](implicit
+        partition: Partition[C, U]
     ): Aux[C, U, partition.Prefix, partition.Suffix] = partition
 
     type Aux[C <: Coproduct, U, Prefix0 <: Coproduct, Suffix0 <: Coproduct] =
@@ -193,8 +193,8 @@ object coproduct {
   }
 
   object Filter {
-    def apply[C <: Coproduct, U](
-        implicit filter: Filter[C, U]
+    def apply[C <: Coproduct, U](implicit
+        filter: Filter[C, U]
     ): Aux[C, U, filter.A] = filter
 
     type Aux[C <: Coproduct, U, A0 <: Coproduct] = Filter[C, U] { type A = A0 }
@@ -220,8 +220,8 @@ object coproduct {
   }
 
   object FilterNot {
-    def apply[C <: Coproduct, U](
-        implicit filterNot: FilterNot[C, U]
+    def apply[C <: Coproduct, U](implicit
+        filterNot: FilterNot[C, U]
     ): Aux[C, U, filterNot.A] =
       filterNot
 
@@ -264,8 +264,8 @@ object coproduct {
     // Must be given a lower priority than removeHead, so that:
     // - the two don't collide for coproducts with repeated types
     // - the first element of type I in C is removed
-    implicit def removeTail[H, T <: Coproduct, U](
-        implicit tailRemove: Remove[T, U]
+    implicit def removeTail[H, T <: Coproduct, U](implicit
+        tailRemove: Remove[T, U]
     ): Aux[H :+: T, U, H :+: tailRemove.Rest] =
       new Remove[H :+: T, U] {
         type Rest = H :+: tailRemove.Rest
@@ -290,8 +290,8 @@ object coproduct {
   }
 
   object Remove extends LowPriorityRemove {
-    def apply[C <: Coproduct, U](
-        implicit remove: Remove[C, U]
+    def apply[C <: Coproduct, U](implicit
+        remove: Remove[C, U]
     ): Aux[C, U, remove.Rest] = remove
 
     implicit def removeHead[H, T <: Coproduct]: Aux[H :+: T, H, T] =
@@ -349,13 +349,13 @@ object coproduct {
   }
 
   object RemoveLast extends LowPriorityRemoveLast {
-    def apply[C <: Coproduct, I](
-        implicit removeLast: RemoveLast[C, I]
+    def apply[C <: Coproduct, I](implicit
+        removeLast: RemoveLast[C, I]
     ): Aux[C, I, removeLast.Rest] =
       removeLast
 
-    implicit def removeLastTail[H, T <: Coproduct, I](
-        implicit tailRemoveLast: RemoveLast[T, I]
+    implicit def removeLastTail[H, T <: Coproduct, I](implicit
+        tailRemoveLast: RemoveLast[T, I]
     ): Aux[H :+: T, I, H :+: tailRemoveLast.Rest] =
       fromRemove(Remove.removeTail(toRemove(tailRemoveLast)))
   }
@@ -365,8 +365,8 @@ object coproduct {
   }
 
   object FlatMap {
-    def apply[C <: Coproduct, F <: Poly](
-        implicit folder: FlatMap[C, F]
+    def apply[C <: Coproduct, F <: Poly](implicit
+        folder: FlatMap[C, F]
     ): Aux[C, F, folder.Out] = folder
 
     type Aux[C <: Coproduct, F <: Poly, Out0 <: Coproduct] = FlatMap[C, F] {
@@ -407,8 +407,8 @@ object coproduct {
   }
 
   object Mapper {
-    def apply[F <: Poly, C <: Coproduct](
-        implicit mapper: Mapper[F, C]
+    def apply[F <: Poly, C <: Coproduct](implicit
+        mapper: Mapper[F, C]
     ): Aux[F, C, mapper.Out] = mapper
     def apply[C <: Coproduct](
         f: Poly
@@ -442,8 +442,8 @@ object coproduct {
   trait Unifier[C <: Coproduct] extends DepFn1[C] with Serializable
 
   object Unifier {
-    def apply[C <: Coproduct](
-        implicit unifier: Unifier[C]
+    def apply[C <: Coproduct](implicit
+        unifier: Unifier[C]
     ): Aux[C, unifier.Out] = unifier
 
     type Aux[C <: Coproduct, Out0] = Unifier[C] { type Out = Out0 }
@@ -474,8 +474,8 @@ object coproduct {
   trait Folder[F <: Poly, C <: Coproduct] extends DepFn1[C] with Serializable
 
   object Folder {
-    def apply[F <: Poly, C <: Coproduct](
-        implicit folder: Folder[F, C]
+    def apply[F <: Poly, C <: Coproduct](implicit
+        folder: Folder[F, C]
     ): Aux[F, C, folder.Out] = folder
     def apply[C <: Coproduct](
         f: Poly
@@ -502,8 +502,8 @@ object coproduct {
       with Serializable
 
   object LeftFolder {
-    def apply[C <: Coproduct, In, F](
-        implicit folder: LeftFolder[C, In, F]
+    def apply[C <: Coproduct, In, F](implicit
+        folder: LeftFolder[C, In, F]
     ): Aux[C, In, F, folder.Out] =
       folder
 
@@ -511,8 +511,8 @@ object coproduct {
       type Out = Out0
     }
 
-    implicit def hdLeftFolder[H, In, F](
-        implicit f: Case2.Aux[F, In, H, In]
+    implicit def hdLeftFolder[H, In, F](implicit
+        f: Case2.Aux[F, In, H, In]
     ): Aux[H :+: CNil, In, F, In] =
       new LeftFolder[H :+: CNil, In, F] {
         type Out = In
@@ -542,8 +542,8 @@ object coproduct {
   object ZipWithKeys {
     import shapeless.labelled._
 
-    def apply[K <: HList, V <: Coproduct](
-        implicit zipWithKeys: ZipWithKeys[K, V]
+    def apply[K <: HList, V <: Coproduct](implicit
+        zipWithKeys: ZipWithKeys[K, V]
     ): Aux[K, V, zipWithKeys.Out] =
       zipWithKeys
 
@@ -585,8 +585,8 @@ object coproduct {
   }
 
   object ZipOne {
-    def apply[C1 <: Coproduct, C2 <: Coproduct](
-        implicit zip: ZipOne[C1, C2]
+    def apply[C1 <: Coproduct, C2 <: Coproduct](implicit
+        zip: ZipOne[C1, C2]
     ): Aux[C1, C2, zip.Out] = zip
 
     type Aux[C1 <: Coproduct, C2 <: Coproduct, Out0 <: Coproduct] =
@@ -633,16 +633,16 @@ object coproduct {
 
     import shapeless.Nat._
 
-    def apply[C <: Coproduct](
-        implicit zipper: ZipWithIndex[C]
+    def apply[C <: Coproduct](implicit
+        zipper: ZipWithIndex[C]
     ): Aux[C, zipper.Out] = zipper
 
     type Aux[C <: Coproduct, Out0 <: Coproduct] = ZipWithIndex[C] {
       type Out = Out0
     }
 
-    implicit def cpZipWithIndex[C <: Coproduct](
-        implicit impl: Impl[C, _0]
+    implicit def cpZipWithIndex[C <: Coproduct](implicit
+        impl: Impl[C, _0]
     ): Aux[C, impl.Out] =
       new ZipWithIndex[C] {
         type Out = impl.Out
@@ -655,16 +655,16 @@ object coproduct {
     }
 
     object Impl {
-      def apply[C <: Coproduct, N <: Nat](
-          implicit impl: Impl[C, N]
+      def apply[C <: Coproduct, N <: Nat](implicit
+          impl: Impl[C, N]
       ): Aux[C, N, impl.Out] = impl
 
       type Aux[C <: Coproduct, N <: Nat, Out0 <: Coproduct] = Impl[C, N] {
         type Out = Out0
       }
 
-      implicit def singleZipWithIndexImpl[CH, N <: Nat](
-          implicit w: Witness.Aux[N]
+      implicit def singleZipWithIndexImpl[CH, N <: Nat](implicit
+          w: Witness.Aux[N]
       ): Aux[CH :+: CNil, N, (CH, N) :+: CNil] =
         new Impl[CH :+: CNil, N] {
           type Out = (CH, N) :+: CNil
@@ -737,8 +737,8 @@ object coproduct {
   }
 
   object ExtendRight {
-    def apply[C <: Coproduct, T](
-        implicit extendRight: ExtendRight[C, T]
+    def apply[C <: Coproduct, T](implicit
+        extendRight: ExtendRight[C, T]
     ): Aux[C, T, extendRight.Out] =
       extendRight
 
@@ -780,8 +780,8 @@ object coproduct {
   }
 
   object ExtendBy {
-    def apply[L <: Coproduct, R <: Coproduct](
-        implicit extendBy: ExtendBy[L, R]
+    def apply[L <: Coproduct, R <: Coproduct](implicit
+        extendBy: ExtendBy[L, R]
     ): Aux[L, R, extendBy.Out] = extendBy
 
     type Aux[L <: Coproduct, R <: Coproduct, Out0 <: Coproduct] =
@@ -807,8 +807,8 @@ object coproduct {
   }
 
   object ExtendLeftBy {
-    def apply[L <: Coproduct, R <: Coproduct](
-        implicit extendLeftBy: ExtendLeftBy[L, R]
+    def apply[L <: Coproduct, R <: Coproduct](implicit
+        extendLeftBy: ExtendLeftBy[L, R]
     ): Aux[L, R, extendLeftBy.Out] = extendLeftBy
 
     type Aux[L <: Coproduct, R <: Coproduct, Out0 <: Coproduct] =
@@ -863,8 +863,8 @@ object coproduct {
   }
 
   object ExtendRightBy {
-    def apply[L <: Coproduct, R <: Coproduct](
-        implicit extendRightBy: ExtendRightBy[L, R]
+    def apply[L <: Coproduct, R <: Coproduct](implicit
+        extendRightBy: ExtendRightBy[L, R]
     ): Aux[L, R, extendRightBy.Out] = extendRightBy
 
     type Aux[L <: Coproduct, R <: Coproduct, Out0 <: Coproduct] =
@@ -910,8 +910,8 @@ object coproduct {
       type Out = Out0
     }
 
-    def apply[C <: Coproduct, N <: Nat](
-        implicit rotateLeft: RotateLeft[C, N]
+    def apply[C <: Coproduct, N <: Nat](implicit
+        rotateLeft: RotateLeft[C, N]
     ): Aux[C, N, rotateLeft.Out] =
       rotateLeft
 
@@ -1024,8 +1024,8 @@ object coproduct {
   }
 
   object RotateRight extends LowPriorityRotateRight {
-    def apply[C <: Coproduct, N <: Nat](
-        implicit rotateRight: RotateRight[C, N]
+    def apply[C <: Coproduct, N <: Nat](implicit
+        rotateRight: RotateRight[C, N]
     ): Aux[C, N, rotateRight.Out] =
       rotateRight
 
@@ -1099,8 +1099,8 @@ object coproduct {
   }
 
   object IsCCons {
-    def apply[C <: Coproduct](
-        implicit isCCons: IsCCons[C]
+    def apply[C <: Coproduct](implicit
+        isCCons: IsCCons[C]
     ): Aux[C, isCCons.H, isCCons.T] = isCCons
 
     type Aux[C <: Coproduct, H0, T0 <: Coproduct] = IsCCons[C] {
@@ -1146,8 +1146,8 @@ object coproduct {
   }
 
   object Split {
-    def apply[C <: Coproduct, N <: Nat](
-        implicit split: Split[C, N]
+    def apply[C <: Coproduct, N <: Nat](implicit
+        split: Split[C, N]
     ): Aux[C, N, split.Left, split.Right] =
       split
 
@@ -1161,8 +1161,8 @@ object coproduct {
         def apply(c: C) = Right(c)
       }
 
-    implicit def splitSucc[H, T <: Coproduct, N <: Nat](
-        implicit tail: Split[T, N]
+    implicit def splitSucc[H, T <: Coproduct, N <: Nat](implicit
+        tail: Split[T, N]
     ): Aux[H :+: T, Succ[N], H :+: tail.Left, tail.Right] =
       new Split[H :+: T, Succ[N]] {
         type Left  = H :+: tail.Left
@@ -1190,8 +1190,8 @@ object coproduct {
   }
 
   object Take {
-    def apply[C <: Coproduct, N <: Nat](
-        implicit take: Take[C, N]
+    def apply[C <: Coproduct, N <: Nat](implicit
+        take: Take[C, N]
     ): Aux[C, N, take.Taken] = take
 
     type Aux[C <: Coproduct, N <: Nat, L <: Coproduct] = Take[C, N] {
@@ -1204,8 +1204,8 @@ object coproduct {
         def apply(c: C) = None
       }
 
-    implicit def takeSucc[H, T <: Coproduct, N <: Nat](
-        implicit tail: Take[T, N]
+    implicit def takeSucc[H, T <: Coproduct, N <: Nat](implicit
+        tail: Take[T, N]
     ): Aux[H :+: T, Succ[N], H :+: tail.Taken] =
       new Take[H :+: T, Succ[N]] {
         type Taken = H :+: tail.Taken
@@ -1228,8 +1228,8 @@ object coproduct {
   }
 
   object Drop {
-    def apply[C <: Coproduct, N <: Nat](
-        implicit drop: Drop[C, N]
+    def apply[C <: Coproduct, N <: Nat](implicit
+        drop: Drop[C, N]
     ): Aux[C, N, drop.Remaining] = drop
 
     type Aux[C <: Coproduct, N <: Nat, L <: Coproduct] = Drop[C, N] {
@@ -1242,8 +1242,8 @@ object coproduct {
         def apply(c: C) = Some(c)
       }
 
-    implicit def dropSucc[H, T <: Coproduct, N <: Nat](
-        implicit tail: Drop[T, N]
+    implicit def dropSucc[H, T <: Coproduct, N <: Nat](implicit
+        tail: Drop[T, N]
     ): Aux[H :+: T, Succ[N], tail.Remaining] =
       new Drop[H :+: T, Succ[N]] {
         type Remaining = tail.Remaining
@@ -1266,16 +1266,16 @@ object coproduct {
   }
 
   object Reverse {
-    def apply[C <: Coproduct](
-        implicit reverse: Reverse[C]
+    def apply[C <: Coproduct](implicit
+        reverse: Reverse[C]
     ): Aux[C, reverse.Out] = reverse
 
     type Aux[C <: Coproduct, Out0 <: Coproduct] = Reverse[C] {
       type Out = Out0
     }
 
-    implicit def reverse[C <: Coproduct, Out0 <: Coproduct](
-        implicit reverse: Reverse0[CNil, C, Out0]
+    implicit def reverse[C <: Coproduct, Out0 <: Coproduct](implicit
+        reverse: Reverse0[CNil, C, Out0]
     ): Aux[C, Out0] =
       new Reverse[C] {
         type Out = Out0
@@ -1298,8 +1298,8 @@ object coproduct {
           InH,
           InT <: Coproduct,
           Out <: Coproduct
-      ](
-          implicit rt: Reverse0[InH :+: Acc, InT, Out]
+      ](implicit
+          rt: Reverse0[InH :+: Acc, InT, Out]
       ): Reverse0[Acc, InH :+: InT, Out] =
         new Reverse0[Acc, InH :+: InT, Out] {
           def apply(e: Either[Acc, InH :+: InT]) =
@@ -1348,8 +1348,8 @@ object coproduct {
   }
 
   object Align {
-    def apply[A <: Coproduct, B <: Coproduct](
-        implicit a: Align[A, B]
+    def apply[A <: Coproduct, B <: Coproduct](implicit
+        a: Align[A, B]
     ): Align[A, B] = a
 
     implicit val cnilAlign: Align[CNil, CNil] = new Align[CNil, CNil] {
@@ -1391,8 +1391,8 @@ object coproduct {
         type Out = Out0
       }
 
-    implicit def cconsPrepend[PH, PT <: Coproduct, S <: Coproduct](
-        implicit pt: Prepend[PT, S]
+    implicit def cconsPrepend[PH, PT <: Coproduct, S <: Coproduct](implicit
+        pt: Prepend[PT, S]
     ): Aux[PH :+: PT, S, PH :+: pt.Out] =
       new Prepend[PH :+: PT, S] {
         type Out = PH :+: pt.Out
@@ -1414,8 +1414,8 @@ object coproduct {
   }
 
   object Prepend extends LowPriorityPrepend {
-    def apply[P <: Coproduct, S <: Coproduct](
-        implicit prepend: Prepend[P, S]
+    def apply[P <: Coproduct, S <: Coproduct](implicit
+        prepend: Prepend[P, S]
     ): Aux[P, S, prepend.Out] = prepend
 
     implicit def cnilPrepend1[S <: Coproduct]: Aux[CNil, S, S] =
@@ -1439,8 +1439,8 @@ object coproduct {
   }
 
   object InitLast {
-    def apply[C <: Coproduct](
-        implicit initLast: InitLast[C]
+    def apply[C <: Coproduct](implicit
+        initLast: InitLast[C]
     ): Aux[C, initLast.I, initLast.L] =
       initLast
 
@@ -1507,8 +1507,8 @@ object coproduct {
       type Out = HNil
     }
 
-    implicit def cconsToHList[H, T <: Coproduct](
-        implicit ut: ToHList[T]
+    implicit def cconsToHList[H, T <: Coproduct](implicit
+        ut: ToHList[T]
     ): Aux[H :+: T, H :: ut.Out] =
       new ToHList[H :+: T] {
         type Out = H :: ut.Out
@@ -1532,8 +1532,8 @@ object coproduct {
     type Aux[Super <: Coproduct, Sub <: Coproduct, Rest0 <: Coproduct] =
       Basis[Super, Sub] { type Rest = Rest0 }
 
-    def apply[Super <: Coproduct, Sub <: Coproduct](
-        implicit basis: Basis[Super, Sub]
+    def apply[Super <: Coproduct, Sub <: Coproduct](implicit
+        basis: Basis[Super, Sub]
     ): Aux[Super, Sub, basis.Rest] =
       basis
 

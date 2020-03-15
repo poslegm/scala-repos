@@ -53,8 +53,8 @@ final class NIHDBProjection(
   def structure(implicit M: Monad[Future]) =
     M.point(readers.flatMap(_.structure)(collection.breakOut): Set[ColumnRef])
 
-  def getBlockAfter(id0: Option[Long], columns: Option[Set[ColumnRef]])(
-      implicit MP: Monad[Future]
+  def getBlockAfter(id0: Option[Long], columns: Option[Set[ColumnRef]])(implicit
+      MP: Monad[Future]
   ): Future[Option[BlockProjectionData[Long, Slice]]] =
     MP.point {
       val id    = id0.map(_ + 1)

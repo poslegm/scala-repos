@@ -272,8 +272,8 @@ trait TraversableViewLike[+A, +Coll, +This <: TraversableView[
 //     if (b.isInstanceOf[NoBuilder[_]]) newFlatMapped(f).asInstanceOf[That]
 //    else super.flatMap[B, That](f)(bf)
   }
-  override def flatten[B](
-      implicit asTraversable: A => /*<:<!!!*/ GenTraversableOnce[B]
+  override def flatten[B](implicit
+      asTraversable: A => /*<:<!!!*/ GenTraversableOnce[B]
   ) =
     newFlatMapped(asTraversable)
   private[this] implicit def asThis(xs: Transformed[A]): This =

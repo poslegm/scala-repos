@@ -23,8 +23,8 @@ private[nio] object GenHeapBuffer {
       initialPosition: Int,
       initialLength: Int,
       isReadOnly: Boolean
-  )(
-      implicit newHeapBuffer: NewHeapBuffer[BufferType, ElementType]
+  )(implicit
+      newHeapBuffer: NewHeapBuffer[BufferType, ElementType]
   ): BufferType = {
     if (arrayOffset < 0 || capacity < 0 ||
         arrayOffset + capacity > array.length)
@@ -63,8 +63,8 @@ private[nio] final class GenHeapBuffer[B <: Buffer](val self: B)
   }
 
   @inline
-  def generic_duplicate()(
-      implicit newHeapBuffer: NewThisHeapBuffer
+  def generic_duplicate()(implicit
+      newHeapBuffer: NewThisHeapBuffer
   ): BufferType = {
     val result =
       newHeapBuffer(capacity, _array, _arrayOffset, position, limit, isReadOnly)
@@ -73,8 +73,8 @@ private[nio] final class GenHeapBuffer[B <: Buffer](val self: B)
   }
 
   @inline
-  def generic_asReadOnlyBuffer()(
-      implicit newHeapBuffer: NewThisHeapBuffer
+  def generic_asReadOnlyBuffer()(implicit
+      newHeapBuffer: NewThisHeapBuffer
   ): BufferType = {
     val result =
       newHeapBuffer(capacity, _array, _arrayOffset, position, limit, true)

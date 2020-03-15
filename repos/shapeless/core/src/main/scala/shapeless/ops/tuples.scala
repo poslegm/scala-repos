@@ -85,8 +85,8 @@ object tuple {
   trait ReversePrepend[T, U] extends DepFn2[T, U] with Serializable
 
   object ReversePrepend {
-    def apply[T, U](
-        implicit prepend: ReversePrepend[T, U]
+    def apply[T, U](implicit
+        prepend: ReversePrepend[T, U]
     ): Aux[T, U, prepend.Out] =
       prepend
 
@@ -311,8 +311,8 @@ object tuple {
   trait Replacer[T, U, V] extends DepFn2[T, U] with Serializable
 
   object Replacer {
-    def apply[T, U, V](
-        implicit replacer: Replacer[T, U, V]
+    def apply[T, U, V](implicit
+        replacer: Replacer[T, U, V]
     ): Aux[T, U, V, replacer.Out] =
       replacer
 
@@ -340,8 +340,8 @@ object tuple {
   trait ReplaceAt[T, N <: Nat, U] extends DepFn2[T, U] with Serializable
 
   object ReplaceAt {
-    def apply[T, N <: Nat, V](
-        implicit replacer: ReplaceAt[T, N, V]
+    def apply[T, N <: Nat, V](implicit
+        replacer: ReplaceAt[T, N, V]
     ): Aux[T, N, V, replacer.Out] =
       replacer
 
@@ -371,8 +371,8 @@ object tuple {
   trait Modifier[T, U, V] extends DepFn2[T, U => V] with Serializable
 
   object Modifier {
-    def apply[T, U, V](
-        implicit modifier: Modifier[T, U, V]
+    def apply[T, U, V](implicit
+        modifier: Modifier[T, U, V]
     ): Aux[T, U, V, modifier.Out] =
       modifier
 
@@ -401,8 +401,8 @@ object tuple {
   trait ModifierAt[T, N <: Nat, U, V] extends DepFn2[T, U => V]
 
   object ModifierAt {
-    def apply[T, N <: Nat, U, V](
-        implicit modifier: ModifierAt[T, N, U, V]
+    def apply[T, N <: Nat, U, V](implicit
+        modifier: ModifierAt[T, N, U, V]
     ): Aux[T, N, U, V, modifier.Out] = modifier
 
     type Aux[T, N <: Nat, U, V, Out0] = ModifierAt[T, N, U, V] {
@@ -514,8 +514,8 @@ object tuple {
   trait ReverseSplit[T, N <: Nat] extends DepFn1[T] with Serializable
 
   object ReverseSplit {
-    def apply[T, N <: Nat](
-        implicit split: ReverseSplit[T, N]
+    def apply[T, N <: Nat](implicit
+        split: ReverseSplit[T, N]
     ): Aux[T, N, split.Out] = split
 
     type Aux[T, N <: Nat, Out0] = ReverseSplit[T, N] { type Out = Out0 }
@@ -578,8 +578,8 @@ object tuple {
   trait ReverseSplitLeft[T, U] extends DepFn1[T] with Serializable
 
   object ReverseSplitLeft {
-    def apply[T, U](
-        implicit split: ReverseSplitLeft[T, U]
+    def apply[T, U](implicit
+        split: ReverseSplitLeft[T, U]
     ): Aux[T, U, split.Out] = split
 
     type Aux[T, U, Out0] = ReverseSplitLeft[T, U] { type Out = Out0 }
@@ -642,8 +642,8 @@ object tuple {
   trait ReverseSplitRight[T, U] extends DepFn1[T] with Serializable
 
   object ReverseSplitRight {
-    def apply[T, U](
-        implicit split: ReverseSplitRight[T, U]
+    def apply[T, U](implicit
+        split: ReverseSplitRight[T, U]
     ): Aux[T, U, split.Out] = split
 
     type Aux[T, U, Out0] = ReverseSplitRight[T, U] { type Out = Out0 }
@@ -796,8 +796,8 @@ object tuple {
   trait LeftFolder[T, U, P] extends DepFn2[T, U] with Serializable
 
   object LeftFolder {
-    def apply[T, U, P](
-        implicit folder: LeftFolder[T, U, P]
+    def apply[T, U, P](implicit
+        folder: LeftFolder[T, U, P]
     ): Aux[T, U, P, folder.Out] =
       folder
 
@@ -821,8 +821,8 @@ object tuple {
   trait RightFolder[T, U, P] extends DepFn2[T, U] with Serializable
 
   object RightFolder {
-    def apply[T, U, P](
-        implicit folder: RightFolder[T, U, P]
+    def apply[T, U, P](implicit
+        folder: RightFolder[T, U, P]
     ): Aux[T, U, P, folder.Out] =
       folder
 
@@ -846,8 +846,8 @@ object tuple {
   trait LeftReducer[T, P] extends DepFn1[T] with Serializable
 
   object LeftReducer {
-    def apply[T, P](
-        implicit reducer: LeftReducer[T, P]
+    def apply[T, P](implicit
+        reducer: LeftReducer[T, P]
     ): Aux[T, P, reducer.Out] = reducer
 
     type Aux[T, P, Out0] = LeftReducer[T, P] { type Out = Out0 }
@@ -870,8 +870,8 @@ object tuple {
   trait RightReducer[T, P] extends DepFn1[T] with Serializable
 
   object RightReducer {
-    def apply[T, P](
-        implicit reducer: RightReducer[T, P]
+    def apply[T, P](implicit
+        reducer: RightReducer[T, P]
     ): Aux[T, P, reducer.Out] = reducer
 
     type Aux[T, P, Out0] = RightReducer[T, P] { type Out = Out0 }
@@ -1065,8 +1065,8 @@ object tuple {
   trait SubtypeUnifier[T, B] extends DepFn1[T] with Serializable
 
   object SubtypeUnifier {
-    def apply[T, B](
-        implicit unifier: SubtypeUnifier[T, B]
+    def apply[T, B](implicit
+        unifier: SubtypeUnifier[T, B]
     ): Aux[T, B, unifier.Out] =
       unifier
 
@@ -1117,14 +1117,14 @@ object tuple {
   }
 
   object ToTraversable {
-    def apply[T, M[_]](
-        implicit toTraversable: ToTraversable[T, M]
+    def apply[T, M[_]](implicit
+        toTraversable: ToTraversable[T, M]
     ): Aux[T, M, toTraversable.Lub] = toTraversable
 
     type Aux[T, M[_], Lub0] = ToTraversable[T, M] { type Lub = Lub0 }
 
-    implicit def toTraversableNothing[M[_]](
-        implicit tt: hl.ToTraversable.Aux[HNil, M, Nothing]
+    implicit def toTraversableNothing[M[_]](implicit
+        tt: hl.ToTraversable.Aux[HNil, M, Nothing]
     ): Aux[Unit, M, Nothing] =
       new ToTraversable[Unit, M] {
         type Lub = Nothing
@@ -1154,20 +1154,20 @@ object tuple {
   object ToList {
     type Aux[T, Lub, Out0] = ToList[T, Lub] { type Out = Out0 }
 
-    def apply[T, Lub](
-        implicit toList: ToList[T, Lub]
+    def apply[T, Lub](implicit
+        toList: ToList[T, Lub]
     ): Aux[T, Lub, toList.Out] = toList
 
-    implicit def toList[T, Lub](
-        implicit toTraversable: ToTraversable.Aux[T, List, Lub]
+    implicit def toList[T, Lub](implicit
+        toTraversable: ToTraversable.Aux[T, List, Lub]
     ): Aux[T, Lub, List[Lub]] =
       new ToList[T, Lub] {
         type Out = List[Lub]
         def apply(t: T) = toTraversable(t)
       }
 
-    implicit def toListNothing[T](
-        implicit toTraversable: ToTraversable.Aux[T, List, Nothing]
+    implicit def toListNothing[T](implicit
+        toTraversable: ToTraversable.Aux[T, List, Nothing]
     ): Aux[T, Nothing, List[Nothing]] =
       toList[T, Nothing]
   }
@@ -1185,20 +1185,20 @@ object tuple {
   object ToArray {
     type Aux[T, Lub, Out0] = ToArray[T, Lub] { type Out = Out0 }
 
-    def apply[T, Lub](
-        implicit toArray: ToArray[T, Lub]
+    def apply[T, Lub](implicit
+        toArray: ToArray[T, Lub]
     ): Aux[T, Lub, toArray.Out] = toArray
 
-    implicit def toArray[T, Lub](
-        implicit toTraversable: ToTraversable.Aux[T, Array, Lub]
+    implicit def toArray[T, Lub](implicit
+        toTraversable: ToTraversable.Aux[T, Array, Lub]
     ): Aux[T, Lub, Array[Lub]] =
       new ToArray[T, Lub] {
         type Out = Array[Lub]
         def apply(t: T) = toTraversable(t)
       }
 
-    implicit def toArrayNothing[T](
-        implicit toTraversable: ToTraversable.Aux[T, Array, Nothing]
+    implicit def toArrayNothing[T](implicit
+        toTraversable: ToTraversable.Aux[T, Array, Nothing]
     ): Aux[T, Nothing, Array[Nothing]] =
       toArray[T, Nothing]
   }
@@ -1212,8 +1212,8 @@ object tuple {
   trait ToSized[T, M[_]] extends DepFn1[T] with Serializable
 
   object ToSized {
-    def apply[T, M[_]](
-        implicit toSized: ToSized[T, M]
+    def apply[T, M[_]](implicit
+        toSized: ToSized[T, M]
     ): Aux[T, M, toSized.Out] = toSized
 
     type Aux[T, M[_], Out0] = ToSized[T, M] { type Out = Out0 }
@@ -1286,8 +1286,8 @@ object tuple {
   trait Collect[T, P <: Poly] extends DepFn1[T] with Serializable
 
   object Collect {
-    def apply[T, P <: Poly](
-        implicit collect: Collect[T, P]
+    def apply[T, P <: Poly](implicit
+        collect: Collect[T, P]
     ): Aux[T, P, collect.Out] = collect
 
     type Aux[T, P <: Poly, Out0] = Collect[T, P] { type Out = Out0 }
@@ -1312,8 +1312,8 @@ object tuple {
   trait Permutations[T] extends DepFn1[T] with Serializable
 
   object Permutations {
-    def apply[T](
-        implicit permutations: Permutations[T]
+    def apply[T](implicit
+        permutations: Permutations[T]
     ): Aux[T, permutations.Out] =
       permutations
 
@@ -1340,8 +1340,8 @@ object tuple {
   trait RotateLeft[T, N <: Nat] extends DepFn1[T] with Serializable
 
   object RotateLeft {
-    def apply[T, N <: Nat](
-        implicit rotateLeft: RotateLeft[T, N]
+    def apply[T, N <: Nat](implicit
+        rotateLeft: RotateLeft[T, N]
     ): Aux[T, N, rotateLeft.Out] =
       rotateLeft
 
@@ -1367,8 +1367,8 @@ object tuple {
   trait RotateRight[T, N <: Nat] extends DepFn1[T] with Serializable
 
   object RotateRight {
-    def apply[T, N <: Nat](
-        implicit rotateRight: RotateRight[T, N]
+    def apply[T, N <: Nat](implicit
+        rotateRight: RotateRight[T, N]
     ): Aux[T, N, rotateRight.Out] =
       rotateRight
 
@@ -1394,8 +1394,8 @@ object tuple {
   trait LeftScanner[T, In, P <: Poly] extends DepFn2[T, In] with Serializable
 
   object LeftScanner {
-    def apply[T, In, P <: Poly](
-        implicit scanL: LeftScanner[T, In, P]
+    def apply[T, In, P <: Poly](implicit
+        scanL: LeftScanner[T, In, P]
     ): Aux[T, In, P, scanL.Out] =
       scanL
 
@@ -1423,8 +1423,8 @@ object tuple {
   trait RightScanner[T, In, P <: Poly] extends DepFn2[T, In] with Serializable
 
   object RightScanner {
-    def apply[T, In, P <: Poly](
-        implicit scanR: RightScanner[T, In, P]
+    def apply[T, In, P <: Poly](implicit
+        scanR: RightScanner[T, In, P]
     ): Aux[T, In, P, scanR.Out] =
       scanR
 
@@ -1485,8 +1485,8 @@ object tuple {
       with Serializable
 
   object Patcher {
-    def apply[N <: Nat, M <: Nat, T, InT](
-        implicit patch: Patcher[N, M, T, InT]
+    def apply[N <: Nat, M <: Nat, T, InT](implicit
+        patch: Patcher[N, M, T, InT]
     ) = patch
 
     implicit def tuplePatch[
@@ -1519,8 +1519,8 @@ object tuple {
   trait Grouper[T, N <: Nat, Step <: Nat] extends DepFn1[T] with Serializable
 
   object Grouper {
-    def apply[T, N <: Nat, Step <: Nat](
-        implicit grouper: Grouper[T, N, Step]
+    def apply[T, N <: Nat, Step <: Nat](implicit
+        grouper: Grouper[T, N, Step]
     ): Aux[T, N, Step, grouper.Out] =
       grouper
 
@@ -1561,8 +1561,8 @@ object tuple {
       with Serializable
 
   object PaddedGrouper {
-    def apply[T, N <: Nat, Step <: Nat, Pad](
-        implicit grouper: PaddedGrouper[T, N, Step, Pad]
+    def apply[T, N <: Nat, Step <: Nat, Pad](implicit
+        grouper: PaddedGrouper[T, N, Step, Pad]
     ): Aux[T, N, Step, Pad, grouper.Out] = grouper
 
     type Aux[T, N <: Nat, Step <: Nat, Pad, Out0] =

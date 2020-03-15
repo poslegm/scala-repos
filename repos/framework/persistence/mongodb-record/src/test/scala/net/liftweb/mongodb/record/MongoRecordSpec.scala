@@ -228,7 +228,7 @@ class MongoRecordSpec extends Specification with MongoTestKit {
         ("legacyOptionalDateField" -> (None: Option[JObject])) ~
         ("mandatoryJsonObjectField" ->
           (("intField"                   -> 1) ~ ("stringField" -> "jsonobj1") ~
-            ("mapField"                  -> ("x" -> "1")))) ~
+            ("mapField"                  -> ("x"                -> "1")))) ~
         ("legacyOptionalJsonObjectField" -> (None: Option[JObject])) ~
         ("mandatoryObjectIdField",
         ("$oid"                        -> mfttr.mandatoryObjectIdField.value.toString)) ~
@@ -286,7 +286,7 @@ class MongoRecordSpec extends Specification with MongoTestKit {
       ("_id" -> mtr.id.toString) ~
         ("mandatoryStringMapField" ->
           (("a"                    -> "abc") ~ ("b" -> "def") ~ ("c" -> "ghi"))) ~
-        ("mandatoryIntMapField"    -> (("a" -> 4) ~ ("b" -> 5) ~ ("c" -> 6)))
+        ("mandatoryIntMapField"    -> (("a"         -> 4) ~ ("b"     -> 5) ~ ("c" -> 6)))
 
     // SubRecord
     val ssr1 = SubSubRecord.createRecord.name("SubSubRecord1")
@@ -315,7 +315,7 @@ class MongoRecordSpec extends Specification with MongoTestKit {
         ("when" -> ("$dt" -> srtr.meta.formats.dateFormat
           .format(sr1.when.value))) ~
         ("slist" -> List("s1", "s2")) ~
-        ("smap"  -> (("a" -> "s1") ~ ("b" -> "s2"))) ~
+        ("smap"  -> (("a"   -> "s1") ~ ("b" -> "s2"))) ~
         ("oid"   -> ("$oid" -> sr1.oid.value.toString)) ~
         ("pattern" ->
           (("$regex"  -> sr1.pattern.value.pattern) ~

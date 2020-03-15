@@ -60,8 +60,8 @@ final case class EitherT[F[_], A, B](run: F[A \/ B]) {
     swapped(k)
 
   /** Binary functor map on this disjunction. */
-  def bimap[C, D](f: A => C, g: B => D)(
-      implicit F: Functor[F]
+  def bimap[C, D](f: A => C, g: B => D)(implicit
+      F: Functor[F]
   ): EitherT[F, C, D] =
     EitherT(F.map(run)(_.bimap(f, g)))
 
@@ -258,15 +258,15 @@ object EitherT extends EitherTInstances {
   ): EitherT[u1.M, A0, B0] =
     eitherT(l.subst[u1.M](u1(fab)))
 
-  def monadTell[F[_], W, A](
-      implicit MT0: MonadTell[F, W]
+  def monadTell[F[_], W, A](implicit
+      MT0: MonadTell[F, W]
   ): EitherTMonadTell[F, W, A] =
     new EitherTMonadTell[F, W, A] {
       def MT = MT0
     }
 
-  def monadListen[F[_], W, A](
-      implicit ML0: MonadListen[F, W]
+  def monadListen[F[_], W, A](implicit
+      ML0: MonadListen[F, W]
   ): EitherTMonadListen[F, W, A] =
     new EitherTMonadListen[F, W, A] {
       def MT = ML0
@@ -348,8 +348,8 @@ sealed abstract class EitherTInstances4 {
 }
 
 sealed abstract class EitherTInstances3 extends EitherTInstances4 {
-  implicit def eitherTMonadError[F[_], E](
-      implicit F0: Monad[F]
+  implicit def eitherTMonadError[F[_], E](implicit
+      F0: Monad[F]
   ): MonadError[EitherT[F, E, ?], E] =
     new EitherTMonadError[F, E] {
       implicit def F = F0
@@ -357,8 +357,8 @@ sealed abstract class EitherTInstances3 extends EitherTInstances4 {
 }
 
 sealed abstract class EitherTInstances2 extends EitherTInstances3 {
-  implicit def eitherTFunctor[F[_], L](
-      implicit F0: Functor[F]
+  implicit def eitherTFunctor[F[_], L](implicit
+      F0: Functor[F]
   ): Functor[EitherT[F, L, ?]] =
     new EitherTFunctor[F, L] {
       implicit def F = F0
@@ -366,8 +366,8 @@ sealed abstract class EitherTInstances2 extends EitherTInstances3 {
 }
 
 sealed abstract class EitherTInstances1 extends EitherTInstances2 {
-  implicit def eitherTMonad[F[_], L](
-      implicit F0: Monad[F]
+  implicit def eitherTMonad[F[_], L](implicit
+      F0: Monad[F]
   ): Monad[EitherT[F, L, ?]] =
     new EitherTMonad[F, L] {
       implicit def F = F0
@@ -383,14 +383,14 @@ sealed abstract class EitherTInstances1 extends EitherTInstances2 {
 }
 
 sealed abstract class EitherTInstances0 extends EitherTInstances1 {
-  implicit def eitherTBifunctor[F[_]](
-      implicit F0: Functor[F]
+  implicit def eitherTBifunctor[F[_]](implicit
+      F0: Functor[F]
   ): Bifunctor[EitherT[F, ?, ?]] =
     new EitherTBifunctor[F] {
       implicit def F = F0
     }
-  implicit def eitherTBifoldable[F[_]](
-      implicit F0: Foldable[F]
+  implicit def eitherTBifoldable[F[_]](implicit
+      F0: Foldable[F]
   ): Bifoldable[EitherT[F, ?, ?]] =
     new EitherTBifoldable[F] {
       implicit def F = F0
@@ -403,8 +403,8 @@ sealed abstract class EitherTInstances0 extends EitherTInstances1 {
       implicit def F = F0
       implicit def G = L0
     }
-  implicit def eitherTFoldable[F[_], L](
-      implicit F0: Foldable[F]
+  implicit def eitherTFoldable[F[_], L](implicit
+      F0: Foldable[F]
   ): Foldable[EitherT[F, L, ?]] =
     new EitherTFoldable[F, L] {
       implicit def F = F0
@@ -412,15 +412,15 @@ sealed abstract class EitherTInstances0 extends EitherTInstances1 {
 }
 
 sealed abstract class EitherTInstances extends EitherTInstances0 {
-  implicit def eitherTBitraverse[F[_]](
-      implicit F0: Traverse[F]
+  implicit def eitherTBitraverse[F[_]](implicit
+      F0: Traverse[F]
   ): Bitraverse[EitherT[F, ?, ?]] =
     new EitherTBitraverse[F] {
       implicit def F = F0
     }
 
-  implicit def eitherTTraverse[F[_], L](
-      implicit F0: Traverse[F]
+  implicit def eitherTTraverse[F[_], L](implicit
+      F0: Traverse[F]
   ): Traverse[EitherT[F, L, ?]] =
     new EitherTTraverse[F, L] {
       implicit def F = F0
@@ -429,13 +429,13 @@ sealed abstract class EitherTInstances extends EitherTInstances0 {
   implicit def eitherTHoist[A]: Hoist[λ[(α[_], β) => EitherT[α, A, β]]] =
     new EitherTHoist[A] {}
 
-  implicit def eitherTEqual[F[_], A, B](
-      implicit F0: Equal[F[A \/ B]]
+  implicit def eitherTEqual[F[_], A, B](implicit
+      F0: Equal[F[A \/ B]]
   ): Equal[EitherT[F, A, B]] =
     F0.contramap((_: EitherT[F, A, B]).run)
 
-  implicit def eitherTShow[F[_], A, B](
-      implicit F0: Show[F[A \/ B]]
+  implicit def eitherTShow[F[_], A, B](implicit
+      F0: Show[F[A \/ B]]
   ): Show[EitherT[F, A, B]] =
     Contravariant[Show].contramap(F0)(_.run)
 }

@@ -44,8 +44,8 @@ abstract class Foo___ { type I >: Null <: AnyRef; def f: I; f; }
 abstract class Foo__f {
   type I >: Null <: AnyRef; def f: I = { foo; null }; f;
 }
-abstract class Foo_I_    { class I; def f: I; f; }
-abstract class Foo_If    { class I; def f: I = { foo; null }; f; }
+abstract class Foo_I_    { class I; def f: I; f;                  }
+abstract class Foo_If    { class I; def f: I                      = { foo; null }; f; }
 abstract class FooX__[X] { type I >: Null <: AnyRef; def f: I; f; }
 abstract class FooX_f[X] {
   type I >: Null <: AnyRef; def f: I = { foo; null }; f;

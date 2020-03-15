@@ -175,8 +175,8 @@ object FormFieldDirectives extends FormFieldDirectives {
       import ctx.{executionContext, materializer}
       sfu(ctx.request.entity).fast.flatMap(form ⇒ fu(form field fieldName))
     }
-    private def filter[T](fieldName: String, fu: FSFFOU[T])(
-        implicit sfu: SFU
+    private def filter[T](fieldName: String, fu: FSFFOU[T])(implicit
+        sfu: SFU
     ): Directive1[T] =
       extract(fieldOfForm(fieldName, fu))
         .flatMap(r ⇒ handleFieldResult(fieldName, r))
@@ -195,8 +195,8 @@ object FormFieldDirectives extends FormFieldDirectives {
         fu: FSFFU[T]
     ): FieldDefAux[NameReceptacle[T], Directive1[T]] =
       extractField[NameReceptacle[T], T] { nr ⇒ filter(nr.name, fu) }
-    implicit def forNUR[T](
-        implicit sfu: SFU
+    implicit def forNUR[T](implicit
+        sfu: SFU
     ): FieldDefAux[NameUnmarshallerReceptacle[T], Directive1[T]] =
       extractField[NameUnmarshallerReceptacle[T], T] { nr ⇒
         filter(nr.name, StrictForm.Field.unmarshallerFromFSU(nr.um))
@@ -215,8 +215,8 @@ object FormFieldDirectives extends FormFieldDirectives {
       extractField[NameDefaultReceptacle[T], T] { nr ⇒
         filter(nr.name, fu withDefaultValue nr.default)
       }
-    implicit def forNOUR[T](
-        implicit sfu: SFU
+    implicit def forNOUR[T](implicit
+        sfu: SFU
     ): FieldDefAux[NameOptionUnmarshallerReceptacle[T], Directive1[Option[T]]] =
       extractField[NameOptionUnmarshallerReceptacle[T], Option[T]] { nr ⇒
         filter[Option[T]](
@@ -224,8 +224,8 @@ object FormFieldDirectives extends FormFieldDirectives {
           StrictForm.Field.unmarshallerFromFSU(nr.um): FSFFOU[T]
         )
       }
-    implicit def forNDUR[T](
-        implicit sfu: SFU
+    implicit def forNDUR[T](implicit
+        sfu: SFU
     ): FieldDefAux[NameDefaultUnmarshallerReceptacle[T], Directive1[T]] =
       extractField[NameDefaultUnmarshallerReceptacle[T], T] { nr ⇒
         filter(
@@ -255,8 +255,8 @@ object FormFieldDirectives extends FormFieldDirectives {
       fieldDef[RequiredValueReceptacle[T], Directive0] { rvr ⇒
         requiredFilter(rvr.name, fu, rvr.requiredValue)
       }
-    implicit def forRVDR[T](
-        implicit sfu: SFU
+    implicit def forRVDR[T](implicit
+        sfu: SFU
     ): FieldDefAux[RequiredValueUnmarshallerReceptacle[T], Directive0] =
       fieldDef[RequiredValueUnmarshallerReceptacle[T], Directive0] { rvr ⇒
         requiredFilter(
@@ -268,8 +268,8 @@ object FormFieldDirectives extends FormFieldDirectives {
 
     //////////////////// repeated formField support ////////////////////
 
-    private def repeatedFilter[T](fieldName: String, fu: FSFFU[T])(
-        implicit sfu: SFU
+    private def repeatedFilter[T](fieldName: String, fu: FSFFU[T])(implicit
+        sfu: SFU
     ): Directive1[Iterable[T]] =
       extract { ctx ⇒
         import ctx.{executionContext, materializer}
@@ -286,8 +286,8 @@ object FormFieldDirectives extends FormFieldDirectives {
       extractField[RepeatedValueReceptacle[T], Iterable[T]] { rvr ⇒
         repeatedFilter(rvr.name, fu)
       }
-    implicit def forRepVDR[T](
-        implicit sfu: SFU
+    implicit def forRepVDR[T](implicit
+        sfu: SFU
     ): FieldDefAux[RepeatedValueUnmarshallerReceptacle[T], Directive1[
       Iterable[T]
     ]] =

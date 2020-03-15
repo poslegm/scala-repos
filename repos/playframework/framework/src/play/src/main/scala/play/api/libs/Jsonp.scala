@@ -46,8 +46,8 @@ case class Jsonp(padding: String, json: JsValue)
 
 object Jsonp {
 
-  implicit def contentTypeOf_Jsonp(
-      implicit codec: Codec
+  implicit def contentTypeOf_Jsonp(implicit
+      codec: Codec
   ): ContentTypeOf[Jsonp] = {
     ContentTypeOf[Jsonp](Some(ContentTypes.JAVASCRIPT))
   }

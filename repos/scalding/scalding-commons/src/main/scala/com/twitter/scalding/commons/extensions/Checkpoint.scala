@@ -187,8 +187,8 @@ object Checkpoint {
   }
 
   // Returns a source for the checkpoint in the given format.
-  private def getSource(format: String, filename: String)(
-      implicit mode: Mode
+  private def getSource(format: String, filename: String)(implicit
+      mode: Mode
   ): Source = {
     format match {
       case "sequencefile" => SequenceFile(filename)

@@ -17,15 +17,15 @@ object Traversable {
     * A partially-applied function returned by the `head` method.
     */
   trait Head[E] {
-    def apply[A](
-        implicit p: E => scala.collection.TraversableLike[A, E]
+    def apply[A](implicit
+        p: E => scala.collection.TraversableLike[A, E]
     ): Iteratee[E, Option[A]]
   }
 
   def head[E] =
     new Head[E] {
-      def apply[A](
-          implicit p: E => scala.collection.TraversableLike[A, E]
+      def apply[A](implicit
+          p: E => scala.collection.TraversableLike[A, E]
       ): Iteratee[E, Option[A]] = {
 
         def step: K[E, Option[A]] = {

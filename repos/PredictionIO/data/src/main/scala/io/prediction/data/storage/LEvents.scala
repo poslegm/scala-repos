@@ -73,8 +73,8 @@ trait LEvents {
     * @param appId App ID for the [[Event]] to be inserted to
     */
   @DeveloperApi
-  def futureInsert(event: Event, appId: Int)(
-      implicit ec: ExecutionContext
+  def futureInsert(event: Event, appId: Int)(implicit
+      ec: ExecutionContext
   ): Future[String] =
     futureInsert(event, appId, None)
 
@@ -86,8 +86,8 @@ trait LEvents {
     * @param channelId Optional channel ID for the [[Event]] to be inserted to
     */
   @DeveloperApi
-  def futureInsert(event: Event, appId: Int, channelId: Option[Int])(
-      implicit ec: ExecutionContext
+  def futureInsert(event: Event, appId: Int, channelId: Option[Int])(implicit
+      ec: ExecutionContext
   ): Future[String]
 
   /** :: DeveloperApi ::
@@ -97,8 +97,8 @@ trait LEvents {
     * @param appId ID of the app that contains the [[Event]]
     */
   @DeveloperApi
-  def futureGet(eventId: String, appId: Int)(
-      implicit ec: ExecutionContext
+  def futureGet(eventId: String, appId: Int)(implicit
+      ec: ExecutionContext
   ): Future[Option[Event]] =
     futureGet(eventId, appId, None)
 
@@ -123,8 +123,8 @@ trait LEvents {
     * @param appId ID of the app that contains the [[Event]]
     */
   @DeveloperApi
-  def futureDelete(eventId: String, appId: Int)(
-      implicit ec: ExecutionContext
+  def futureDelete(eventId: String, appId: Int)(implicit
+      ec: ExecutionContext
   ): Future[Boolean] =
     futureDelete(eventId, appId, None)
 

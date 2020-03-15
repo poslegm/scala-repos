@@ -67,8 +67,8 @@ private[scalaz] trait ApplicativeBuilder[M[_], A, B] {
         sealed abstract class ApplicativeBuilder6[F] {
           val ff: M[F]
 
-          def apply[G](f: (A, B, C, D, E, F) => G)(
-              implicit ap: Apply[M]
+          def apply[G](f: (A, B, C, D, E, F) => G)(implicit
+              ap: Apply[M]
           ): M[G] = ap.apply6(a, b, c, d, e, ff)(f)
 
           def tupled(implicit ap: Apply[M]): M[(A, B, C, D, E, F)] =
@@ -125,8 +125,8 @@ private[scalaz] trait ApplicativeBuilder[M[_], A, B] {
                 )(implicit ap: Apply[M]): M[J] =
                   ap.apply9(a, b, c, d, e, ff, g, h, i)(f)
 
-                def tupled(
-                    implicit ap: Apply[M]
+                def tupled(implicit
+                    ap: Apply[M]
                 ): M[(A, B, C, D, E, F, G, H, I)] =
                   apply(Tuple9.apply)
 
@@ -145,8 +145,8 @@ private[scalaz] trait ApplicativeBuilder[M[_], A, B] {
                   )(implicit ap: Apply[M]): M[K] =
                     ap.apply10(a, b, c, d, e, ff, g, h, i, j)(f)
 
-                  def tupled(
-                      implicit ap: Apply[M]
+                  def tupled(implicit
+                      ap: Apply[M]
                   ): M[(A, B, C, D, E, F, G, H, I, J)] = apply(Tuple10.apply)
 
                   def ⊛[K](kk: M[K]) =
@@ -164,8 +164,8 @@ private[scalaz] trait ApplicativeBuilder[M[_], A, B] {
                     )(implicit ap: Apply[M]): M[L] =
                       ap.apply11(a, b, c, d, e, ff, g, h, i, j, k)(f)
 
-                    def tupled(
-                        implicit ap: Apply[M]
+                    def tupled(implicit
+                        ap: Apply[M]
                     ): M[(A, B, C, D, E, F, G, H, I, J, K)] =
                       apply(Tuple11.apply)
 
@@ -184,8 +184,8 @@ private[scalaz] trait ApplicativeBuilder[M[_], A, B] {
                       )(implicit ap: Apply[M]): M[MM] =
                         ap.apply12(a, b, c, d, e, ff, g, h, i, j, k, l)(f)
 
-                      def tupled(
-                          implicit ap: Apply[M]
+                      def tupled(implicit
+                          ap: Apply[M]
                       ): M[(A, B, C, D, E, F, G, H, I, J, K, L)] =
                         apply(Tuple12.apply)
                     }

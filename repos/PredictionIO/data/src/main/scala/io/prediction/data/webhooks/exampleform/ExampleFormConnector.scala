@@ -102,9 +102,9 @@ private[prediction] object ExampleFormConnector extends FormConnector {
     import org.json4s.JsonDSL._
 
     val json =
-      ("event"            -> data("event")) ~ ("entityType" -> "user") ~
+      ("event"            -> data("event")) ~ ("entityType"        -> "user") ~
         ("entityId"       -> data("userId")) ~ ("targetEntityType" -> "item") ~
-        ("targetEntityId" -> data("itemId")) ~ ("eventTime" -> data(
+        ("targetEntityId" -> data("itemId")) ~ ("eventTime"        -> data(
         "timestamp"
       )) ~
         ("properties" ->

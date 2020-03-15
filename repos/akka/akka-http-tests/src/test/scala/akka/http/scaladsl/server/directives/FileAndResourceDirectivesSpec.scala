@@ -475,8 +475,8 @@ class FileAndResourceDirectivesSpec
 
   def prep(s: String) = s.stripMarginWithNewline("\n")
 
-  def evaluateTo[T](t: T, atMost: Duration = 100.millis)(
-      implicit ec: ExecutionContext
+  def evaluateTo[T](t: T, atMost: Duration = 100.millis)(implicit
+      ec: ExecutionContext
   ): Matcher[Future[T]] =
     be(t).compose[Future[T]] { fut ⇒ fut.awaitResult(atMost) }
 }

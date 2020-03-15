@@ -89,7 +89,7 @@ class HListTests {
   type CICSCICICD =
     Ctv[Int] :: Ctv[String] :: Ctv[Int] :: Ctv[Int] :: Ctv[Double] :: HNil
 
-  val ci: Ctv[Int]           = new Ctv[Int] {}
+  val ci: Ctv[Int]           = new Ctv[Int]    {}
   val cs: Ctv[String]        = new Ctv[String] {}
   val cd: Ctv[Double]        = new Ctv[Double] {}
   val cicscicicdList         = ci :: cs :: ci :: ci :: cd :: Nil
@@ -99,7 +99,7 @@ class HListTests {
   trait M[T]
   type MIMSMIMIMD = M[Int] :: M[String] :: M[Int] :: M[Int] :: M[Double] :: HNil
 
-  val mi: M[Int]             = new M[Int] {}
+  val mi: M[Int]             = new M[Int]    {}
   val ms: M[String]          = new M[String] {}
   val md: M[Double]          = new M[Double] {}
   val mimsmimimdList         = mi :: ms :: mi :: mi :: md :: Nil
@@ -119,7 +119,7 @@ class HListTests {
     Unit
   ] :: M2[Int, Unit] :: M2[Double, Unit] :: HNil
 
-  val m2i: M2[Int, Unit]    = new M2[Int, Unit] {}
+  val m2i: M2[Int, Unit]    = new M2[Int, Unit]    {}
   val m2s: M2[String, Unit] = new M2[String, Unit] {}
   val m2d: M2[Double, Unit] = new M2[Double, Unit] {}
   val m2im2sm2im2im2dList   = m2i :: m2s :: m2i :: m2i :: m2d :: Nil
@@ -681,8 +681,8 @@ class HListTests {
     assertFalse(ununified2.isDefined)
     typed[Option[APBP]](ununified2)
 
-    def getUnifier[L <: HList, Out <: HList](l: L)(
-        implicit u: Unifier.Aux[L, Out]
+    def getUnifier[L <: HList, Out <: HList](l: L)(implicit
+        u: Unifier.Aux[L, Out]
     ) = u
 
     val u2 = getUnifier(a :: HNil)
@@ -2836,8 +2836,8 @@ class HListTests {
   @Test
   def testInterleave {
     type C = Char; type S = String; type I = Int; type D = Double
-    def interleave[I, L <: HList](i: I, l: L)(
-        implicit interleave: Interleave[I, L]
+    def interleave[I, L <: HList](i: I, l: L)(implicit
+        interleave: Interleave[I, L]
     ): interleave.Out =
       interleave(i, l)
 
@@ -2875,8 +2875,8 @@ class HListTests {
   def testFlatMapInterleave {
     type C = Char; type I = Int
 
-    def flatMapInterleave[I, L <: HList](i: I, l: L)(
-        implicit flatMapInterleave: FlatMapInterleave[I, L]
+    def flatMapInterleave[I, L <: HList](i: I, l: L)(implicit
+        flatMapInterleave: FlatMapInterleave[I, L]
     ) =
       flatMapInterleave(i, l)
 
@@ -3563,8 +3563,8 @@ class HListTests {
 
   trait NonSingletonHNilTC[T]
   object NonSingletonHNilTC {
-    def apply[T](t: T)(
-        implicit i: NonSingletonHNilTC[T]
+    def apply[T](t: T)(implicit
+        i: NonSingletonHNilTC[T]
     ): NonSingletonHNilTC[T] = i
 
     implicit val nsHNilTC: NonSingletonHNilTC[HNil] =
@@ -3623,8 +3623,8 @@ class HListTests {
       type _type = T
     }
 
-    def getFieldsByTypesOfSuper[Sub <: HList, Super <: HList](l: Sub)(
-        implicit sa: SelectAll[Sub, Super]
+    def getFieldsByTypesOfSuper[Sub <: HList, Super <: HList](l: Sub)(implicit
+        sa: SelectAll[Sub, Super]
     ) = sa(l)
 
     val hsuper = new TypeCaptured("2" :: true :: HNil)

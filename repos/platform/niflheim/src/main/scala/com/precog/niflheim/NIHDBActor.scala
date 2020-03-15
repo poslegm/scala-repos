@@ -280,8 +280,8 @@ private[niflheim] object NIHDBActor extends Logging {
       cookThreshold: Int,
       timeout: Timeout,
       txLogScheduler: ScheduledExecutorService
-  )(
-      implicit actorSystem: ActorSystem
+  )(implicit
+      actorSystem: ActorSystem
   ): IO[Option[Validation[Error, (Authorities, ActorRef)]]] = {
     val currentState: IO[Option[Validation[Error, ProjectionState]]] =
       readDescriptor(baseDir)

@@ -59,8 +59,8 @@ object zipper {
 
     type Aux[Z, Out0] = First[Z] { type Out = Out0 }
 
-    implicit def first[C, L <: HList, R <: HList, RP <: HList, P](
-        implicit rp: ReversePrepend.Aux[L, R, RP]
+    implicit def first[C, L <: HList, R <: HList, RP <: HList, P](implicit
+        rp: ReversePrepend.Aux[L, R, RP]
     ): Aux[Zipper[C, L, R, P], Zipper[C, HNil, RP, P]] =
       new First[Zipper[C, L, R, P]] {
         type Out = Zipper[C, HNil, RP, P]
@@ -76,8 +76,8 @@ object zipper {
 
     type Aux[Z, Out0] = Last[Z] { type Out = Out0 }
 
-    implicit def last[C, L <: HList, R <: HList, RP <: HList, P](
-        implicit rp: ReversePrepend.Aux[R, L, RP]
+    implicit def last[C, L <: HList, R <: HList, RP <: HList, P](implicit
+        rp: ReversePrepend.Aux[R, L, RP]
     ): Aux[Zipper[C, L, R, P], Zipper[C, RP, HNil, P]] =
       new Last[Zipper[C, L, R, P]] {
         type Out = Zipper[C, RP, HNil, P]
@@ -89,8 +89,8 @@ object zipper {
   trait RightBy[Z, N <: Nat] extends DepFn1[Z] with Serializable
 
   object RightBy {
-    def apply[Z, N <: Nat](
-        implicit rightBy: RightBy[Z, N]
+    def apply[Z, N <: Nat](implicit
+        rightBy: RightBy[Z, N]
     ): Aux[Z, N, rightBy.Out] = rightBy
 
     type Aux[Z, N <: Nat, Out0] = RightBy[Z, N] { type Out = Out0 }
@@ -119,8 +119,8 @@ object zipper {
   trait LeftBy[Z, N <: Nat] extends DepFn1[Z] with Serializable
 
   object LeftBy {
-    def apply[Z, N <: Nat](
-        implicit leftBy: LeftBy[Z, N]
+    def apply[Z, N <: Nat](implicit
+        leftBy: LeftBy[Z, N]
     ): Aux[Z, N, leftBy.Out] = leftBy
 
     type Aux[Z, N <: Nat, Out0] = LeftBy[Z, N] { type Out = Out0 }
@@ -316,8 +316,8 @@ object zipper {
         P,
         E,
         CL <: HList
-    ](
-        implicit rp: ReversePrepend.Aux[L, E :: RT, CL]
+    ](implicit
+        rp: ReversePrepend.Aux[L, E :: RT, CL]
     ): Aux[Zipper[C, L, RH :: RT, P], E, Zipper[CL, L, E :: RT, P]] =
       new Put[Zipper[C, L, RH :: RT, P], E] {
         type Out = Zipper[CL, L, E :: RT, P]
@@ -329,8 +329,8 @@ object zipper {
   trait Modify[Z, E1, E2] extends DepFn2[Z, E1 => E2] with Serializable
 
   object Modify {
-    def apply[Z, E1, E2](
-        implicit modify: Modify[Z, E1, E2]
+    def apply[Z, E1, E2](implicit
+        modify: Modify[Z, E1, E2]
     ): Aux[Z, E1, E2, modify.Out] =
       modify
 
@@ -367,8 +367,8 @@ object zipper {
         P,
         E,
         CL <: HList
-    ](
-        implicit rp: ReversePrepend.Aux[E :: L, R, CL]
+    ](implicit
+        rp: ReversePrepend.Aux[E :: L, R, CL]
     ): Aux[Zipper[C, L, R, P], E, Zipper[CL, E :: L, R, P]] =
       new Insert[Zipper[C, L, R, P], E] {
         type Out = Zipper[CL, E :: L, R, P]
@@ -391,8 +391,8 @@ object zipper {
         RT <: HList,
         P,
         CL <: HList
-    ](
-        implicit rp: ReversePrepend.Aux[L, RT, CL]
+    ](implicit
+        rp: ReversePrepend.Aux[L, RT, CL]
     ): Aux[Zipper[C, L, RH :: RT, P], Zipper[CL, L, RT, P]] =
       new Delete[Zipper[C, L, RH :: RT, P]] {
         type Out = Zipper[CL, L, RT, P]
@@ -408,8 +408,8 @@ object zipper {
 
     type Aux[Z, Out0] = Reify[Z] { type Out = Out0 }
 
-    implicit def hlistReify[LR <: HList, L <: HList, R <: HList, P](
-        implicit rp: ReversePrepend.Aux[L, R, LR]
+    implicit def hlistReify[LR <: HList, L <: HList, R <: HList, P](implicit
+        rp: ReversePrepend.Aux[L, R, LR]
     ): Aux[Zipper[LR, L, R, P], LR] =
       new Reify[Zipper[LR, L, R, P]] {
         type Out = LR

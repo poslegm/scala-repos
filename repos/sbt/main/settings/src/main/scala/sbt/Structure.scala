@@ -72,21 +72,21 @@ sealed abstract class SettingKey[T]
     macro std.TaskMacro
       .settingTransformPosition[T]
 
-  final def append1[V](v: Initialize[V], source: SourcePosition)(
-      implicit a: Append.Value[T, V]
+  final def append1[V](v: Initialize[V], source: SourcePosition)(implicit
+      a: Append.Value[T, V]
   ): Setting[T] =
     make(v, source)(a.appendValue)
-  final def appendN[V](vs: Initialize[V], source: SourcePosition)(
-      implicit a: Append.Values[T, V]
+  final def appendN[V](vs: Initialize[V], source: SourcePosition)(implicit
+      a: Append.Values[T, V]
   ): Setting[T] =
     make(vs, source)(a.appendValues)
 
-  final def remove1[V](v: Initialize[V], source: SourcePosition)(
-      implicit r: Remove.Value[T, V]
+  final def remove1[V](v: Initialize[V], source: SourcePosition)(implicit
+      r: Remove.Value[T, V]
   ): Setting[T] =
     make(v, source)(r.removeValue)
-  final def removeN[V](vs: Initialize[V], source: SourcePosition)(
-      implicit r: Remove.Values[T, V]
+  final def removeN[V](vs: Initialize[V], source: SourcePosition)(implicit
+      r: Remove.Values[T, V]
   ): Setting[T] =
     make(vs, source)(r.removeValues)
 
@@ -138,21 +138,21 @@ sealed abstract class TaskKey[T]
     macro std.TaskMacro
       .taskRemoveNImpl[T, U]
 
-  def append1[V](v: Initialize[Task[V]], source: SourcePosition)(
-      implicit a: Append.Value[T, V]
+  def append1[V](v: Initialize[Task[V]], source: SourcePosition)(implicit
+      a: Append.Value[T, V]
   ): Setting[Task[T]] =
     make(v, source)(a.appendValue)
-  def appendN[V](vs: Initialize[Task[V]], source: SourcePosition)(
-      implicit a: Append.Values[T, V]
+  def appendN[V](vs: Initialize[Task[V]], source: SourcePosition)(implicit
+      a: Append.Values[T, V]
   ): Setting[Task[T]] =
     make(vs, source)(a.appendValues)
 
-  final def remove1[V](v: Initialize[Task[V]], source: SourcePosition)(
-      implicit r: Remove.Value[T, V]
+  final def remove1[V](v: Initialize[Task[V]], source: SourcePosition)(implicit
+      r: Remove.Value[T, V]
   ): Setting[Task[T]] =
     make(v, source)(r.removeValue)
-  final def removeN[V](vs: Initialize[Task[V]], source: SourcePosition)(
-      implicit r: Remove.Values[T, V]
+  final def removeN[V](vs: Initialize[Task[V]], source: SourcePosition)(implicit
+      r: Remove.Values[T, V]
   ): Setting[Task[T]] =
     make(vs, source)(r.removeValues)
 

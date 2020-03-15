@@ -235,8 +235,8 @@ object MarkovChain {
       * @param init guess
       * @return a slice sampler
       */
-    def slice(logMeasure: Double => Double, valid: Double => Boolean)(
-        implicit rand: RandBasis = Rand
+    def slice(logMeasure: Double => Double, valid: Double => Boolean)(implicit
+        rand: RandBasis = Rand
     ) = {
       val WINDOW = 2;
       val M      = 10;

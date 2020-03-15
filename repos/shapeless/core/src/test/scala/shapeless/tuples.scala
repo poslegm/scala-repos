@@ -79,7 +79,7 @@ class TupleTests {
 
   trait Ctv[-T]
 
-  val ci: Ctv[Int]    = new Ctv[Int] {}
+  val ci: Ctv[Int]    = new Ctv[Int]    {}
   val cs: Ctv[String] = new Ctv[String] {}
   val cd: Ctv[Double] = new Ctv[Double] {}
   val cicscicicdList  = List(ci, cs, ci, ci, cd)
@@ -88,7 +88,7 @@ class TupleTests {
 
   trait M[T]
 
-  val mi: M[Int]      = new M[Int] {}
+  val mi: M[Int]      = new M[Int]    {}
   val ms: M[String]   = new M[String] {}
   val md: M[Double]   = new M[Double] {}
   val mimsmimimdList  = List(mi, ms, mi, mi, md)
@@ -103,7 +103,7 @@ class TupleTests {
 
   trait M2[A, B]
 
-  val m2i: M2[Int, Unit]    = new M2[Int, Unit] {}
+  val m2i: M2[Int, Unit]    = new M2[Int, Unit]    {}
   val m2s: M2[String, Unit] = new M2[String, Unit] {}
   val m2d: M2[Double, Unit] = new M2[Double, Unit] {}
   val m2im2sm2im2im2dList   = List(m2i, m2s, m2i, m2i, m2d)

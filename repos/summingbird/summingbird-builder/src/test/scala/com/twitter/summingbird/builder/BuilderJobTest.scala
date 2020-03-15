@@ -37,8 +37,8 @@ object TestJob {
 
   implicit val batcher: Batcher = Batcher.ofHours(1)
 
-  implicit def keyPairInjection[T](
-      implicit toS: Injection[T, String]
+  implicit def keyPairInjection[T](implicit
+      toS: Injection[T, String]
   ): Injection[(T, BatchID), Array[Byte]] =
     Injection.build[(T, BatchID), Array[Byte]] {
       case (t, batchID) =>
@@ -51,8 +51,8 @@ object TestJob {
         batchID                      <- batchIDString.as[Try[BatchID]]
       } yield (t, batchID)
     }
-  implicit def valPairInjection[T](
-      implicit toS: Injection[T, String]
+  implicit def valPairInjection[T](implicit
+      toS: Injection[T, String]
   ): Injection[(BatchID, T), Array[Byte]] =
     Injection.connect[(BatchID, T), (T, BatchID), Array[Byte]]
 

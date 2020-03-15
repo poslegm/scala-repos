@@ -57,15 +57,15 @@ trait MilestonesService {
     Milestones.filter(_.byPrimaryKey(owner, repository, milestoneId)).delete
   }
 
-  def getMilestone(owner: String, repository: String, milestoneId: Int)(
-      implicit s: Session
+  def getMilestone(owner: String, repository: String, milestoneId: Int)(implicit
+      s: Session
   ): Option[Milestone] =
     Milestones
       .filter(_.byPrimaryKey(owner, repository, milestoneId))
       .firstOption
 
-  def getMilestonesWithIssueCount(owner: String, repository: String)(
-      implicit s: Session
+  def getMilestonesWithIssueCount(owner: String, repository: String)(implicit
+      s: Session
   ): List[(Milestone, Int, Int)] = {
     val counts = Issues
       .filter { t =>
@@ -84,8 +84,8 @@ trait MilestonesService {
     }
   }
 
-  def getMilestones(owner: String, repository: String)(
-      implicit s: Session
+  def getMilestones(owner: String, repository: String)(implicit
+      s: Session
   ): List[Milestone] =
     Milestones
       .filter(_.byRepository(owner, repository))

@@ -29,7 +29,8 @@ import scala.reflect.ClassTag
   * - Linearized: (Int, Int, String, Int, Option[Double])
   */
 @implicitNotFound(
-  msg = "No matching Shape found.\nSlick does not know how to map the given types.\nPossible causes: T in Table[T] does not match your * projection. Or you use an unsupported type in a Query (e.g. scala List).\n  Required level: ${Level}\n     Source type: ${Mixed_}\n   Unpacked type: ${Unpacked_}\n     Packed type: ${Packed_}\n"
+  msg =
+    "No matching Shape found.\nSlick does not know how to map the given types.\nPossible causes: T in Table[T] does not match your * projection. Or you use an unsupported type in a Query (e.g. scala List).\n  Required level: ${Level}\n     Source type: ${Mixed_}\n   Unpacked type: ${Unpacked_}\n     Packed type: ${Packed_}\n"
 )
 abstract class Shape[Level <: ShapeLevel, -Mixed_, Unpacked_, Packed_] {
   type Mixed    = Mixed_ @uncheckedVariance
@@ -61,8 +62,8 @@ object Shape
     extends ConstColumnShapeImplicits
     with AbstractTableShapeImplicits
     with TupleShapeImplicits {
-  implicit final def primitiveShape[T, Level <: ShapeLevel](
-      implicit tm: TypedType[T]
+  implicit final def primitiveShape[T, Level <: ShapeLevel](implicit
+      tm: TypedType[T]
   ): Shape[Level, T, T, ConstColumn[T]] =
     new Shape[Level, T, T, ConstColumn[T]] {
       def pack(value: Mixed) = LiteralColumn(value)
@@ -115,8 +116,8 @@ trait RepShapeImplicits extends OptionShapeImplicits {
     RepShape[Level, Rep[T], T]
 
   /** A Shape for Option-valued Reps. */
-  @inline implicit def optionShape[M, U, P, Level <: ShapeLevel](
-      implicit sh: Shape[_ <: Level, Rep[M], U, Rep[P]]
+  @inline implicit def optionShape[M, U, P, Level <: ShapeLevel](implicit
+      sh: Shape[_ <: Level, Rep[M], U, Rep[P]]
   ): Shape[Level, Rep[Option[M]], Option[U], Rep[Option[P]]] =
     RepShape
       .asInstanceOf[Shape[Level, Rep[Option[M]], Option[U], Rep[Option[P]]]]
@@ -125,8 +126,8 @@ trait RepShapeImplicits extends OptionShapeImplicits {
 trait OptionShapeImplicits {
 
   /** A Shape for Option-valued non-Reps. */
-  @inline implicit def anyOptionShape[M, U, P, Level <: ShapeLevel](
-      implicit sh: Shape[_ <: Level, M, U, P]
+  @inline implicit def anyOptionShape[M, U, P, Level <: ShapeLevel](implicit
+      sh: Shape[_ <: Level, M, U, P]
   ): Shape[Level, Rep[Option[M]], Option[U], Rep[Option[P]]] =
     RepShape
       .asInstanceOf[Shape[Level, Rep[Option[M]], Option[U], Rep[Option[P]]]]
@@ -241,7 +242,11 @@ abstract class MappedProductShape[
 
 /** Base class for ProductNodeShapes with a type mapping to a type that extends scala.Product */
 abstract class MappedScalaProductShape[
-    Level <: ShapeLevel, C <: Product, M <: C, U <: C, P <: C
+    Level <: ShapeLevel,
+    C <: Product,
+    M <: C,
+    U <: C,
+    P <: C
 ](implicit val classTag: ClassTag[U])
     extends MappedProductShape[Level, C, M, U, P] {
   override def getIterator(value: C) = value.productIterator
@@ -250,7 +255,10 @@ abstract class MappedScalaProductShape[
 
 /** Shape for Scala tuples of all arities */
 final class TupleShape[
-    Level <: ShapeLevel, M <: Product, U <: Product, P <: Product
+    Level <: ShapeLevel,
+    M <: Product,
+    U <: Product,
+    P <: Product
 ](val shapes: Shape[_, _, _, _]*)
     extends ProductNodeShape[Level, Product, M, U, P] {
   override def getIterator(value: Product) = value.productIterator
@@ -375,8 +383,8 @@ case class ShapedValue[T, U](
     else new ShapedValue(fv, shape)
   }
   def toNode = shape.toNode(value)
-  def packedValue[R](
-      implicit ev: Shape[_ <: FlatShapeLevel, T, _, R]
+  def packedValue[R](implicit
+      ev: Shape[_ <: FlatShapeLevel, T, _, R]
   ): ShapedValue[R, U] =
     ShapedValue(
       shape.pack(value).asInstanceOf[R],
@@ -399,8 +407,8 @@ case class ShapedValue[T, U](
     )
   @inline def shaped: ShapedValue[T, U] = this
 
-  def mapTo[R <: Product with Serializable](
-      implicit rCT: ClassTag[R]
+  def mapTo[R <: Product with Serializable](implicit
+      rCT: ClassTag[R]
   ): MappedProjection[R, U] =
     macro ShapedValue
       .mapToImpl[R, U]
@@ -510,8 +518,8 @@ object ShapedValue {
 trait ProvenShape[U] {
   def value: Any
   val shape: Shape[_ <: FlatShapeLevel, _, U, _]
-  def packedValue[R](
-      implicit ev: Shape[_ <: FlatShapeLevel, _, U, R]
+  def packedValue[R](implicit
+      ev: Shape[_ <: FlatShapeLevel, _, U, R]
   ): ShapedValue[R, U]
   def toNode = packedValue(shape).toNode
 }
@@ -526,8 +534,8 @@ object ProvenShape {
       def value = v
       val shape: Shape[_ <: FlatShapeLevel, _, U, _] =
         sh.asInstanceOf[Shape[FlatShapeLevel, _, U, _]]
-      def packedValue[R](
-          implicit ev: Shape[_ <: FlatShapeLevel, _, U, R]
+      def packedValue[R](implicit
+          ev: Shape[_ <: FlatShapeLevel, _, U, R]
       ): ShapedValue[R, U] =
         ShapedValue(
           sh.pack(value).asInstanceOf[R],
@@ -536,8 +544,8 @@ object ProvenShape {
     }
 
   /** The Shape for a ProvenShape */
-  implicit def provenShapeShape[T, P](
-      implicit shape: Shape[_ <: FlatShapeLevel, T, T, P]
+  implicit def provenShapeShape[T, P](implicit
+      shape: Shape[_ <: FlatShapeLevel, T, T, P]
   ): Shape[FlatShapeLevel, ProvenShape[T], T, P] =
     new Shape[FlatShapeLevel, ProvenShape[T], T, P] {
       def pack(value: Mixed): Packed =

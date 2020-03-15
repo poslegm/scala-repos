@@ -159,8 +159,8 @@ sealed abstract class IndexedStateTInstances2 {
 }
 
 sealed abstract class IndexedStateTInstances1 extends IndexedStateTInstances2 {
-  implicit def indexedStateTFunctorLeft[S1, A0, F[_]](
-      implicit F0: Functor[F]
+  implicit def indexedStateTFunctorLeft[S1, A0, F[_]](implicit
+      F0: Functor[F]
   ): Functor[IndexedStateT[F, S1, ?, A0]] =
     new IndexedStateTFunctorLeft[S1, A0, F] {
       implicit def F: Functor[F] = F0
@@ -168,8 +168,8 @@ sealed abstract class IndexedStateTInstances1 extends IndexedStateTInstances2 {
 }
 
 sealed abstract class IndexedStateTInstances0 extends IndexedStateTInstances1 {
-  implicit def indexedStateTBifunctor[S1, F[_]](
-      implicit F0: Functor[F]
+  implicit def indexedStateTBifunctor[S1, F[_]](implicit
+      F0: Functor[F]
   ): Bifunctor[IndexedStateT[F, S1, ?, ?]] =
     new IndexedStateTBifunctor[S1, F] {
       implicit def F: Functor[F] = F0
@@ -177,8 +177,8 @@ sealed abstract class IndexedStateTInstances0 extends IndexedStateTInstances1 {
 }
 
 sealed abstract class IndexedStateTInstances extends IndexedStateTInstances0 {
-  implicit def indexedStateTFunctorRight[S1, S2, F[_]](
-      implicit F0: Functor[F]
+  implicit def indexedStateTFunctorRight[S1, S2, F[_]](implicit
+      F0: Functor[F]
   ): Functor[IndexedStateT[F, S1, S2, ?]] =
     new IndexedStateTFunctorRight[S1, S2, F] {
       implicit def F: Functor[F] = F0
@@ -204,8 +204,8 @@ sealed abstract class StateTInstances3 extends IndexedStateTInstances {
 }
 
 sealed abstract class StateTInstances2 extends StateTInstances3 {
-  implicit def stateTMonadState[S, F[_]](
-      implicit F0: Monad[F]
+  implicit def stateTMonadState[S, F[_]](implicit
+      F0: Monad[F]
   ): MonadState[StateT[F, S, ?], S] =
     new StateTMonadState[S, F] {
       implicit def F: Monad[F] = F0
@@ -213,8 +213,8 @@ sealed abstract class StateTInstances2 extends StateTInstances3 {
 }
 
 sealed abstract class StateTInstances1 extends StateTInstances2 {
-  implicit def stateTMonadPlus[S, F[_]](
-      implicit F0: MonadPlus[F]
+  implicit def stateTMonadPlus[S, F[_]](implicit
+      F0: MonadPlus[F]
   ): MonadPlus[StateT[F, S, ?]] =
     new StateTMonadStateMonadPlus[S, F] {
       implicit def F: MonadPlus[F] = F0

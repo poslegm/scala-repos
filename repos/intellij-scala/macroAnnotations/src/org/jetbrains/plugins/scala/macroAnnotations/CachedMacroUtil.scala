@@ -44,8 +44,8 @@ object CachedMacroUtil {
     q"$cachesUtilFQN.getRecursionGuard"
   }
 
-  def psiModificationTrackerFQN(
-      implicit c: whitebox.Context
+  def psiModificationTrackerFQN(implicit
+      c: whitebox.Context
   ): c.universe.Tree = {
     import c.universe.Quasiquote
     q"_root_.com.intellij.psi.util.PsiModificationTracker"

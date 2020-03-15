@@ -163,8 +163,8 @@ sealed class StreamT[M[_], A](val step: M[StreamT.Step[A, StreamT[M, A]]]) {
     * of this stream will be evaluated, and depending on the structure of
     * this stream, up to two elements might be evaluated.
     */
-  def asStream(
-      implicit ev: M[Step[A, StreamT[M, A]]] =:= Id[Step[A, StreamT[Id, A]]]
+  def asStream(implicit
+      ev: M[Step[A, StreamT[M, A]]] =:= Id[Step[A, StreamT[Id, A]]]
   ): Stream[A] = {
     def go(s: StreamT[Id, A]): Stream[A] =
       s.uncons match {
@@ -227,15 +227,15 @@ sealed class StreamT[M[_], A](val step: M[StreamT.Step[A, StreamT[M, A]]]) {
 //
 
 sealed abstract class StreamTInstances0 {
-  implicit def StreamTInstance1[F[_]](
-      implicit F0: Functor[F]
+  implicit def StreamTInstance1[F[_]](implicit
+      F0: Functor[F]
   ): Bind[StreamT[F, ?]] with Plus[StreamT[F, ?]] =
     new StreamTInstance1[F] {
       implicit def F: Functor[F] = F0
     }
 
-  implicit def StreamTSemigroup[F[_], A](
-      implicit F0: Functor[F]
+  implicit def StreamTSemigroup[F[_], A](implicit
+      F0: Functor[F]
   ): Semigroup[StreamT[F, A]] =
     new StreamTSemigroup[F, A] {
       implicit def F: Functor[F] = F0
@@ -243,14 +243,14 @@ sealed abstract class StreamTInstances0 {
 }
 
 sealed abstract class StreamTInstances extends StreamTInstances0 {
-  implicit def StreamTMonoid[F[_], A](
-      implicit F0: Applicative[F]
+  implicit def StreamTMonoid[F[_], A](implicit
+      F0: Applicative[F]
   ): Monoid[StreamT[F, A]] =
     new StreamTMonoid[F, A] {
       implicit def F: Applicative[F] = F0
     }
-  implicit def StreamTMonadPlus[F[_]](
-      implicit F0: Applicative[F]
+  implicit def StreamTMonadPlus[F[_]](implicit
+      F0: Applicative[F]
   ): MonadPlus[StreamT[F, ?]] =
     new StreamTMonadPlus[F] {
       implicit def F: Applicative[F] = F0

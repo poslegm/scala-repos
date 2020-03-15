@@ -143,8 +143,8 @@ final class Vector[+A] private[immutable] (
 
   // SeqLike api
 
-  override def updated[B >: A, That](index: Int, elem: B)(
-      implicit bf: CanBuildFrom[Vector[A], B, That]
+  override def updated[B >: A, That](index: Int, elem: B)(implicit
+      bf: CanBuildFrom[Vector[A], B, That]
   ): That =
     if (isDefaultCBF[A, B, That](bf))
       updateAt(index, elem)

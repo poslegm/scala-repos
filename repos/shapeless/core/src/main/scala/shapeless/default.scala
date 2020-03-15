@@ -88,8 +88,8 @@ object Default {
     }
 
     object Helper {
-      def apply[L <: HList, Labels <: HList](
-          implicit helper: Helper[L, Labels]
+      def apply[L <: HList, Labels <: HList](implicit
+          helper: Helper[L, Labels]
       ): Aux[L, Labels, helper.Out] =
         helper
 
@@ -109,8 +109,8 @@ object Default {
           T <: HList,
           LabT <: HList,
           OutT <: HList
-      ](
-          implicit tailHelper: Aux[T, LabT, OutT]
+      ](implicit
+          tailHelper: Aux[T, LabT, OutT]
       ): Aux[Some[H] :: T, K :: LabT, FieldType[K, H] :: OutT] =
         new Helper[Some[H] :: T, K :: LabT] {
           type Out = FieldType[K, H] :: OutT
@@ -122,8 +122,8 @@ object Default {
           T <: HList,
           LabT <: HList,
           OutT <: HList
-      ](
-          implicit tailHelper: Aux[T, LabT, OutT]
+      ](implicit
+          tailHelper: Aux[T, LabT, OutT]
       ): Aux[None.type :: T, K :: LabT, OutT] =
         new Helper[None.type :: T, K :: LabT] {
           type Out = OutT
@@ -184,8 +184,8 @@ object Default {
     }
 
     object Helper {
-      def apply[L <: HList, Repr <: HList](
-          implicit helper: Helper[L, Repr]
+      def apply[L <: HList, Repr <: HList](implicit
+          helper: Helper[L, Repr]
       ): Aux[L, Repr, helper.Out] = helper
 
       type Aux[L <: HList, Repr <: HList, Out0 <: HList] = Helper[L, Repr] {
@@ -203,8 +203,8 @@ object Default {
           T <: HList,
           ReprT <: HList,
           OutT <: HList
-      ](
-          implicit tailHelper: Aux[T, ReprT, OutT]
+      ](implicit
+          tailHelper: Aux[T, ReprT, OutT]
       ): Aux[Some[H] :: T, H :: ReprT, Option[H] :: OutT] =
         new Helper[Some[H] :: T, H :: ReprT] {
           type Out = Option[H] :: OutT
@@ -216,8 +216,8 @@ object Default {
           T <: HList,
           ReprT <: HList,
           OutT <: HList
-      ](
-          implicit tailHelper: Aux[T, ReprT, OutT]
+      ](implicit
+          tailHelper: Aux[T, ReprT, OutT]
       ): Aux[None.type :: T, H :: ReprT, Option[H] :: OutT] =
         new Helper[None.type :: T, H :: ReprT] {
           type Out = Option[H] :: OutT

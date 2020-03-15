@@ -40,8 +40,8 @@ private[akkahttp] class ModelConversion(
       remoteAddress: InetSocketAddress,
       secureProtocol: Boolean,
       request: HttpRequest
-  )(
-      implicit fm: Materializer
+  )(implicit
+      fm: Materializer
   ): (RequestHeader, Option[Source[ByteString, Any]]) = {
     (
       convertRequestHeader(requestId, remoteAddress, secureProtocol, request),

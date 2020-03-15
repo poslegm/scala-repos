@@ -28,22 +28,22 @@ sealed trait Accumulator[-E, +A] {
   /**
     * Map the result of this accumulator to a future of something else.
     */
-  def mapFuture[B](f: A => Future[B])(
-      implicit executor: ExecutionContext
+  def mapFuture[B](f: A => Future[B])(implicit
+      executor: ExecutionContext
   ): Accumulator[E, B]
 
   /**
     * Recover from errors encountered by this accumulator.
     */
-  def recover[B >: A](pf: PartialFunction[Throwable, B])(
-      implicit executor: ExecutionContext
+  def recover[B >: A](pf: PartialFunction[Throwable, B])(implicit
+      executor: ExecutionContext
   ): Accumulator[E, B]
 
   /**
     * Recover from errors encountered by this accumulator.
     */
-  def recoverWith[B >: A](pf: PartialFunction[Throwable, Future[B]])(
-      implicit executor: ExecutionContext
+  def recoverWith[B >: A](pf: PartialFunction[Throwable, Future[B]])(implicit
+      executor: ExecutionContext
   ): Accumulator[E, B]
 
   /**
@@ -85,8 +85,8 @@ sealed trait Accumulator[-E, +A] {
     *   val intFuture = source ~>: intAccumulator
     * }}}
     */
-  def ~>:(source: Source[E, _])(
-      implicit materializer: Materializer
+  def ~>:(source: Source[E, _])(implicit
+      materializer: Materializer
   ): Future[A] = run(source)
 
   /**

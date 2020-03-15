@@ -199,8 +199,8 @@ private[emitter] class JSDesugaring(internalOptions: InternalOptions) {
 
     // Record names
 
-    def makeRecordFieldIdent(recIdent: Ident, fieldIdent: Ident)(
-        implicit pos: Position
+    def makeRecordFieldIdent(recIdent: Ident, fieldIdent: Ident)(implicit
+        pos: Position
     ): Ident =
       makeRecordFieldIdent(
         recIdent.name,
@@ -973,8 +973,8 @@ private[emitter] class JSDesugaring(internalOptions: InternalOptions) {
     def isPureExpression(tree: Tree)(implicit env: Env): Boolean =
       isExpressionInternal(tree, allowUnpure = false, allowSideEffects = false)
 
-    def doVarDef(ident: Ident, tpe: Type, mutable: Boolean, rhs: Tree)(
-        implicit env: Env
+    def doVarDef(ident: Ident, tpe: Type, mutable: Boolean, rhs: Tree)(implicit
+        env: Env
     ): js.Tree = {
       implicit val pos = rhs.pos
       tpe match {
@@ -2170,8 +2170,8 @@ private[emitter] class JSDesugaring(internalOptions: InternalOptions) {
       genCallHelper("fround", arg)
     }
 
-    private def genNewLong(ctor: String, args: js.Tree*)(
-        implicit pos: Position
+    private def genNewLong(ctor: String, args: js.Tree*)(implicit
+        pos: Position
     ): js.Tree = {
       import TreeDSL._
       js.Apply(
@@ -2189,8 +2189,8 @@ private[emitter] class JSDesugaring(internalOptions: InternalOptions) {
       js.Apply(receiver DOT methodName, args.toList)
     }
 
-    private def genLongModuleApply(methodName: String, args: js.Tree*)(
-        implicit pos: Position
+    private def genLongModuleApply(methodName: String, args: js.Tree*)(implicit
+        pos: Position
     ): js.Tree = {
       import TreeDSL._
       js.Apply(
@@ -2436,8 +2436,8 @@ private[emitter] class JSDesugaring(internalOptions: InternalOptions) {
     }
   }
 
-  private[emitter] def genBracketSelect(qual: js.Tree, item: js.Tree)(
-      implicit pos: Position
+  private[emitter] def genBracketSelect(qual: js.Tree, item: js.Tree)(implicit
+      pos: Position
   ): js.Tree = {
     item match {
       case js.StringLiteral(name)

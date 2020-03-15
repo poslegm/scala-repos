@@ -61,8 +61,8 @@ import scalaz.syntax.traverse._
 import scalaz.syntax.std.option._
 
 object WebAPIKeyFinder {
-  def apply(config: Configuration)(
-      implicit executor: ExecutionContext
+  def apply(config: Configuration)(implicit
+      executor: ExecutionContext
   ): ValidationNel[String, APIKeyFinder[Response]] = {
     val serviceConfig = config.detach("service")
     serviceConfig.get[String]("hardcoded_rootKey") map { apiKey =>

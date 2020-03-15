@@ -55,8 +55,8 @@ class NetworkClientBlockingOps(val client: NetworkClient) extends AnyVal {
     * This method is useful for implementing blocking behaviour on top of the non-blocking `NetworkClient`, use it with
     * care.
     */
-  def blockingReady(node: Node, timeout: Long)(
-      implicit time: JTime
+  def blockingReady(node: Node, timeout: Long)(implicit
+      time: JTime
   ): Boolean = {
     client.ready(node, time.milliseconds()) || pollUntil(timeout) { (_, now) =>
       if (client.isReady(node, now)) true
@@ -76,8 +76,8 @@ class NetworkClientBlockingOps(val client: NetworkClient) extends AnyVal {
     * This method is useful for implementing blocking behaviour on top of the non-blocking `NetworkClient`, use it with
     * care.
     */
-  def blockingSendAndReceive(request: ClientRequest, timeout: Long)(
-      implicit time: JTime
+  def blockingSendAndReceive(request: ClientRequest, timeout: Long)(implicit
+      time: JTime
   ): Option[ClientResponse] = {
     client.send(request, time.milliseconds())
 

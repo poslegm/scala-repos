@@ -155,8 +155,8 @@ trait BaseGetPoster {
       httpClient: HttpClient,
       headers: List[(String, String)],
       faux_params: (String, Any)*
-  )(
-      implicit capture: (String, HttpClient, HttpMethodBase) => ResponseType
+  )(implicit
+      capture: (String, HttpClient, HttpMethodBase) => ResponseType
   ): ResponseType = {
     val params = faux_params.toList.map(x => (x._1, x._2.toString))
     val fullUrl =
@@ -185,8 +185,8 @@ trait BaseGetPoster {
       httpClient: HttpClient,
       headers: List[(String, String)],
       faux_params: (String, Any)*
-  )(
-      implicit capture: (String, HttpClient, HttpMethodBase) => ResponseType
+  )(implicit
+      capture: (String, HttpClient, HttpMethodBase) => ResponseType
   ): ResponseType = {
     val params = faux_params.toList.map(x => (x._1, x._2.toString))
     val fullUrl =
@@ -215,8 +215,8 @@ trait BaseGetPoster {
       httpClient: HttpClient,
       headers: List[(String, String)],
       faux_params: (String, Any)*
-  )(
-      implicit capture: (String, HttpClient, HttpMethodBase) => ResponseType
+  )(implicit
+      capture: (String, HttpClient, HttpMethodBase) => ResponseType
   ): ResponseType = {
     val params = faux_params.toList.map(x => (x._1, x._2.toString))
     val poster = new PostMethod(baseUrl + url)
@@ -295,8 +295,8 @@ trait BaseGetPoster {
       headers: List[(String, String)],
       body: Array[Byte],
       contentType: String
-  )(
-      implicit capture: (String, HttpClient, HttpMethodBase) => ResponseType
+  )(implicit
+      capture: (String, HttpClient, HttpMethodBase) => ResponseType
   ): ResponseType = {
     val poster = new PostMethod(baseUrl + url)
     poster.getParams().setCookiePolicy(CookiePolicy.RFC_2965)
@@ -371,8 +371,8 @@ trait BaseGetPoster {
       headers: List[(String, String)],
       body: Array[Byte],
       contentType: String
-  )(
-      implicit capture: (String, HttpClient, HttpMethodBase) => ResponseType
+  )(implicit
+      capture: (String, HttpClient, HttpMethodBase) => ResponseType
   ): ResponseType = {
     val poster = new PutMethod(baseUrl + url)
     poster.getParams().setCookiePolicy(CookiePolicy.RFC_2965)
@@ -415,8 +415,8 @@ trait GetPosterHelper { self: BaseGetPoster =>
     * @param url the URL to make the request on
     * @param params the parameters to pass
     */
-  def get(url: String, params: (String, Any)*)(
-      implicit capture: (String, HttpClient, HttpMethodBase) => ResponseType
+  def get(url: String, params: (String, Any)*)(implicit
+      capture: (String, HttpClient, HttpMethodBase) => ResponseType
   ): ResponseType =
     get(url, theHttpClient, Nil, params: _*)(capture)
 
@@ -426,8 +426,8 @@ trait GetPosterHelper { self: BaseGetPoster =>
     * @param url the URL to make the request on
     * @param params the parameters to pass
     */
-  def delete(url: String, params: (String, Any)*)(
-      implicit capture: (String, HttpClient, HttpMethodBase) => ResponseType
+  def delete(url: String, params: (String, Any)*)(implicit
+      capture: (String, HttpClient, HttpMethodBase) => ResponseType
   ): ResponseType =
     delete(url, theHttpClient, Nil, params: _*)(capture)
 
@@ -437,8 +437,8 @@ trait GetPosterHelper { self: BaseGetPoster =>
     * @param url the URL to make the request on
     * @param params the parameters to pass
     */
-  def post(url: String, params: (String, Any)*)(
-      implicit capture: (String, HttpClient, HttpMethodBase) => ResponseType
+  def post(url: String, params: (String, Any)*)(implicit
+      capture: (String, HttpClient, HttpMethodBase) => ResponseType
   ): ResponseType =
     post(url, theHttpClient, Nil, params: _*)(capture)
 
@@ -461,8 +461,8 @@ trait GetPosterHelper { self: BaseGetPoster =>
     * @param body the bytes to POST to the server
     * @param contentType the content type of the message
     */
-  def post(url: String, body: Array[Byte], contentType: String)(
-      implicit capture: (String, HttpClient, HttpMethodBase) => ResponseType
+  def post(url: String, body: Array[Byte], contentType: String)(implicit
+      capture: (String, HttpClient, HttpMethodBase) => ResponseType
   ): ResponseType =
     post(url, theHttpClient, Nil, body, contentType)(capture)
 
@@ -485,8 +485,8 @@ trait GetPosterHelper { self: BaseGetPoster =>
     * @param body the bytes to POST to the server
     * @param contentType the content type of the message
     */
-  def put(url: String, body: Array[Byte], contentType: String)(
-      implicit capture: (String, HttpClient, HttpMethodBase) => ResponseType
+  def put(url: String, body: Array[Byte], contentType: String)(implicit
+      capture: (String, HttpClient, HttpMethodBase) => ResponseType
   ): ResponseType =
     put(url, theHttpClient, Nil, body, contentType)(capture)
 }
@@ -752,8 +752,8 @@ trait Response {
     * @param msg the String to report as an error
     * @param errorFunc the error reporting thing.
     */
-  def \\(node: Node, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def \\(node: Node, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType
 
   /**
@@ -765,8 +765,8 @@ trait Response {
     * @param msg the String to report as an error
     * @param errorFunc the error reporting thing.
     */
-  def \\(label: String, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def \\(label: String, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType
 
   /**
@@ -779,8 +779,8 @@ trait Response {
     * @param msg the String to report as an error
     * @param errorFunc the error reporting thing.
     */
-  def !\\(node: Node, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def !\\(node: Node, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType
 
   /**
@@ -792,8 +792,8 @@ trait Response {
     * @param msg the String to report as an error
     * @param errorFunc the error reporting thing.
     */
-  def !\\(label: String, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def !\\(label: String, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType
 
   /**
@@ -817,8 +817,8 @@ trait Response {
     * @param msg the String to report as an error
     * @param errorFunc the error reporting thing.
     */
-  def \(label: String, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def \(label: String, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType
 
   /**
@@ -831,8 +831,8 @@ trait Response {
     * @param msg the String to report as an error
     * @param errorFunc the error reporting thing.
     */
-  def !\(node: Node, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def !\(node: Node, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType
 
   /**
@@ -844,8 +844,8 @@ trait Response {
     * @param msg the String to report as an error
     * @param errorFunc the error reporting thing.
     */
-  def !\(label: String, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def !\(label: String, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType
 
   /**
@@ -972,8 +972,8 @@ abstract class BaseResponse(
   def !(msg: => String)(implicit errorFunc: ReportFailure): SelfType =
     this.asInstanceOf[SelfType]
 
-  def !(code: Int, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def !(code: Int, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType =
     if (this.code != code) errorFunc.fail(msg) else this.asInstanceOf[SelfType]
 
@@ -988,43 +988,43 @@ abstract class BaseResponse(
     if (success) this.asInstanceOf[SelfType]
     else errorFunc.fail(msg)
 
-  def \\(node: Node, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def \\(node: Node, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType =
     getOrFail(xmlMatch(_ \\ node.label, _ == trim(node)), msg, errorFunc)
 
-  def \\(label: String, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def \\(label: String, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType =
     getOrFail(xmlMatch(_ \\ label, _ => true), msg, errorFunc)
 
-  def !\\(node: Node, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def !\\(node: Node, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType =
     getOrFail(!xmlMatch(_ \\ node.label, _ == trim(node)), msg, errorFunc)
 
-  def !\\(label: String, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def !\\(label: String, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType =
     getOrFail(!xmlMatch(_ \\ label, _ => true), msg, errorFunc)
 
-  def \(node: Node, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def \(node: Node, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType =
     getOrFail(xmlMatch(_ \ node.label, _ == trim(node)), msg, errorFunc)
 
-  def \(label: String, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def \(label: String, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType =
     getOrFail(xmlMatch(_ \ label, _ => true), msg, errorFunc)
 
-  def !\(node: Node, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def !\(node: Node, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType =
     getOrFail(!xmlMatch(_ \ node.label, _ == trim(node)), msg, errorFunc)
 
-  def !\(label: String, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def !\(label: String, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType =
     getOrFail(!xmlMatch(_ \ label, _ => true), msg, errorFunc)
 
@@ -1056,40 +1056,40 @@ class CompleteFailure(val serverName: String, val exception: Box[Throwable])
   def !(msg: => String)(implicit errorFunc: ReportFailure): SelfType =
     errorFunc.fail(msg)
 
-  def !(code: Int, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def !(code: Int, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType = errorFunc.fail(msg)
 
-  def \\(node: Node, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def \\(node: Node, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType = errorFunc.fail(msg)
 
-  def \\(label: String, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def \\(label: String, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType = errorFunc.fail(msg)
 
-  def !\\(node: Node, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def !\\(node: Node, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType = errorFunc.fail(msg)
 
-  def !\\(label: String, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def !\\(label: String, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType = errorFunc.fail(msg)
 
-  def \(node: Node, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def \(node: Node, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType = errorFunc.fail(msg)
 
-  def \(label: String, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def \(label: String, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType = errorFunc.fail(msg)
 
-  def !\(node: Node, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def !\(node: Node, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType = errorFunc.fail(msg)
 
-  def !\(label: String, msg: => String)(
-      implicit errorFunc: ReportFailure
+  def !\(label: String, msg: => String)(implicit
+      errorFunc: ReportFailure
   ): SelfType = errorFunc.fail(msg)
 
   def foreach(f: HttpResponse => Unit): Unit =

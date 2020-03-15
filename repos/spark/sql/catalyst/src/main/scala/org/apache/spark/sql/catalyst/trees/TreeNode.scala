@@ -650,7 +650,7 @@ abstract class TreeNode[BaseType <: TreeNode[BaseType]] extends Product {
       case dt: DataType => dt.jsonValue
       case m: Metadata  => m.jsonValue
       case s: StorageLevel =>
-        ("useDisk"       -> s.useDisk) ~ ("useMemory" -> s.useMemory) ~
+        ("useDisk"       -> s.useDisk) ~ ("useMemory"       -> s.useMemory) ~
           ("useOffHeap"  -> s.useOffHeap) ~ ("deserialized" -> s.deserialized) ~
           ("replication" -> s.replication)
       case n: TreeNode[_] => n.jsonValue

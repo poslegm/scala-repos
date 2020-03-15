@@ -263,8 +263,8 @@ trait NIHDBQueryExecutorComponent {
         }
       }
 
-      override def executor(
-          implicit shardQueryMonad: JobQueryTFMonad
+      override def executor(implicit
+          shardQueryMonad: JobQueryTFMonad
       ): QueryExecutor[JobQueryTF, StreamT[JobQueryTF, Slice]] = {
         implicit val mn = new (Future ~> JobQueryTF) {
           def apply[A](fut: Future[A]) = fut.liftM[JobQueryT]

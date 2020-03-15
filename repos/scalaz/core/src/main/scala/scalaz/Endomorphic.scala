@@ -28,8 +28,8 @@ object Endomorphic extends EndomorphicInstances {
 
 sealed abstract class EndomorphicInstances extends EndomorphicInstances0 {
 
-  implicit def endomorphicMonoid[=>:[_, _], A](
-      implicit G: Category[=>:]
+  implicit def endomorphicMonoid[=>:[_, _], A](implicit
+      G: Category[=>:]
   ): Monoid[Endomorphic[=>:, A]] =
     new Monoid[Endomorphic[=>:, A]] with EndomorphicSemigroup[=>:, A] {
       val F                         = G
@@ -47,8 +47,8 @@ sealed abstract class EndomorphicInstances extends EndomorphicInstances0 {
 
 sealed abstract class EndomorphicInstances0 {
 
-  implicit def endomorphicSemigroup[=>:[_, _], A](
-      implicit G: Compose[=>:]
+  implicit def endomorphicSemigroup[=>:[_, _], A](implicit
+      G: Compose[=>:]
   ): Semigroup[Endomorphic[=>:, A]] =
     new EndomorphicSemigroup[=>:, A] {
       val F = G

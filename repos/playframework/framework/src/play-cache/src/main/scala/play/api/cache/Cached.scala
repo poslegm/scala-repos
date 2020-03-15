@@ -386,8 +386,8 @@ class UnboundCachedBuilder(
   /**
     * Compose the cache with an action
     */
-  def apply(action: EssentialAction)(
-      implicit app: Application
+  def apply(action: EssentialAction)(implicit
+      app: Application
   ): EssentialAction = build(action)
 
   /**

@@ -176,7 +176,7 @@ final class Board {
 
     for (i <- Iterator.range(0, a.length)) {
       val row     = i / Board.cols
-      val isFirst = i % Board.cols == 0
+      val isFirst = i       % Board.cols == 0
       val isLast  = (i + 1) % Board.cols == 0
       val c       = a(i)
 

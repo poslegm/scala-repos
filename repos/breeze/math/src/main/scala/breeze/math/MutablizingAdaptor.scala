@@ -177,8 +177,8 @@ object MutablizingAdaptor {
             def apply(from: Wrapper): Wrapper = from
           }
 
-        def liftUpdate[Op <: OpType](
-            implicit op: UFunc.UImpl2[Op, V, S, V]
+        def liftUpdate[Op <: OpType](implicit
+            op: UFunc.UImpl2[Op, V, S, V]
         ): UFunc.InPlaceImpl2[Op, Wrapper, S] =
           new UFunc.InPlaceImpl2[Op, Wrapper, S] {
             def apply(a: Wrapper, b: S) {
@@ -186,8 +186,8 @@ object MutablizingAdaptor {
             }
           }
 
-        def liftUpdateV[Op <: OpType](
-            implicit op: UFunc.UImpl2[Op, V, V, V]
+        def liftUpdateV[Op <: OpType](implicit
+            op: UFunc.UImpl2[Op, V, V, V]
         ): UFunc.InPlaceImpl2[Op, Wrapper, Wrapper] =
           new UFunc.InPlaceImpl2[Op, Wrapper, Wrapper] {
             def apply(a: Wrapper, b: Wrapper) {
@@ -195,8 +195,8 @@ object MutablizingAdaptor {
             }
           }
 
-        def liftOp[Op <: OpType](
-            implicit op: UFunc.UImpl2[Op, V, S, V]
+        def liftOp[Op <: OpType](implicit
+            op: UFunc.UImpl2[Op, V, S, V]
         ): UFunc.UImpl2[Op, Wrapper, S, Wrapper] =
           new UImpl2[Op, Wrapper, S, Wrapper] {
             def apply(a: Wrapper, b: S) = {
@@ -204,8 +204,8 @@ object MutablizingAdaptor {
             }
           }
 
-        def liftOpV[Op <: OpType](
-            implicit op: UFunc.UImpl2[Op, V, V, V]
+        def liftOpV[Op <: OpType](implicit
+            op: UFunc.UImpl2[Op, V, V, V]
         ): UFunc.UImpl2[Op, Wrapper, Wrapper, Wrapper] =
           new UFunc.UImpl2[Op, Wrapper, Wrapper, Wrapper] {
             def apply(a: Wrapper, b: Wrapper) = {
@@ -332,8 +332,8 @@ object MutablizingAdaptor {
 //        }
 //      }
 
-        def liftUpdate[Op <: OpType](
-            implicit op: UImpl2[Op, V, S, V]
+        def liftUpdate[Op <: OpType](implicit
+            op: UImpl2[Op, V, S, V]
         ): UFunc.InPlaceImpl2[Op, Wrapper, S] =
           new UFunc.InPlaceImpl2[Op, Wrapper, S] {
             def apply(a: Wrapper, b: S) {
@@ -341,8 +341,8 @@ object MutablizingAdaptor {
             }
           }
 
-        def liftUpdateV[Op <: OpType](
-            implicit op: UImpl2[Op, V, V, V]
+        def liftUpdateV[Op <: OpType](implicit
+            op: UImpl2[Op, V, V, V]
         ): UFunc.InPlaceImpl2[Op, Wrapper, Wrapper] =
           new UFunc.InPlaceImpl2[Op, Wrapper, Wrapper] {
             def apply(a: Wrapper, b: Wrapper) {
@@ -350,8 +350,8 @@ object MutablizingAdaptor {
             }
           }
 
-        def liftOp[Op <: OpType](
-            implicit op: UImpl2[Op, V, S, V]
+        def liftOp[Op <: OpType](implicit
+            op: UImpl2[Op, V, S, V]
         ): UImpl2[Op, Wrapper, S, Wrapper] =
           new UImpl2[Op, Wrapper, S, Wrapper] {
             def apply(a: Wrapper, b: S) = {
@@ -359,8 +359,8 @@ object MutablizingAdaptor {
             }
           }
 
-        def liftOpV[Op <: OpType](
-            implicit op: UImpl2[Op, V, V, V]
+        def liftOpV[Op <: OpType](implicit
+            op: UImpl2[Op, V, V, V]
         ): UImpl2[Op, Wrapper, Wrapper, Wrapper] =
           new UImpl2[Op, Wrapper, Wrapper, Wrapper] {
             def apply(a: Wrapper, b: Wrapper) = {
@@ -495,8 +495,8 @@ object MutablizingAdaptor {
             }
           }
 
-        def liftUpdate[Op <: OpType](
-            implicit op: UImpl2[Op, V, S, V]
+        def liftUpdate[Op <: OpType](implicit
+            op: UImpl2[Op, V, S, V]
         ): UFunc.InPlaceImpl2[Op, Wrapper, S] =
           new UFunc.InPlaceImpl2[Op, Wrapper, S] {
             def apply(a: Wrapper, b: S) {
@@ -504,8 +504,8 @@ object MutablizingAdaptor {
             }
           }
 
-        def liftUpdateV[Op <: OpType](
-            implicit op: UImpl2[Op, V, V, V]
+        def liftUpdateV[Op <: OpType](implicit
+            op: UImpl2[Op, V, V, V]
         ): UFunc.InPlaceImpl2[Op, Wrapper, Wrapper] =
           new UFunc.InPlaceImpl2[Op, Wrapper, Wrapper] {
             def apply(a: Wrapper, b: Wrapper) {
@@ -513,8 +513,8 @@ object MutablizingAdaptor {
             }
           }
 
-        def liftOp[Op <: OpType](
-            implicit op: UImpl2[Op, V, S, V]
+        def liftOp[Op <: OpType](implicit
+            op: UImpl2[Op, V, S, V]
         ): UImpl2[Op, Wrapper, S, Wrapper] =
           new UImpl2[Op, Wrapper, S, Wrapper] {
             def apply(a: Wrapper, b: S) = {
@@ -522,8 +522,8 @@ object MutablizingAdaptor {
             }
           }
 
-        def liftOpV[Op <: OpType](
-            implicit op: UImpl2[Op, V, V, V]
+        def liftOpV[Op <: OpType](implicit
+            op: UImpl2[Op, V, V, V]
         ): UImpl2[Op, Wrapper, Wrapper, Wrapper] =
           new UImpl2[Op, Wrapper, Wrapper, Wrapper] {
             def apply(a: Wrapper, b: Wrapper) = {
@@ -680,8 +680,8 @@ object MutablizingAdaptor {
             }
           }
 
-        def liftUpdate[Op <: OpType](
-            implicit op: UImpl2[Op, V, S, V]
+        def liftUpdate[Op <: OpType](implicit
+            op: UImpl2[Op, V, S, V]
         ): UFunc.InPlaceImpl2[Op, Wrapper, S] =
           new UFunc.InPlaceImpl2[Op, Wrapper, S] {
             def apply(a: Wrapper, b: S) {
@@ -689,8 +689,8 @@ object MutablizingAdaptor {
             }
           }
 
-        def liftUpdateV[Op <: OpType](
-            implicit op: UImpl2[Op, V, V, V]
+        def liftUpdateV[Op <: OpType](implicit
+            op: UImpl2[Op, V, V, V]
         ): UFunc.InPlaceImpl2[Op, Wrapper, Wrapper] =
           new UFunc.InPlaceImpl2[Op, Wrapper, Wrapper] {
             def apply(a: Wrapper, b: Wrapper) {
@@ -698,8 +698,8 @@ object MutablizingAdaptor {
             }
           }
 
-        def liftOp[Op <: OpType](
-            implicit op: UImpl2[Op, V, S, V]
+        def liftOp[Op <: OpType](implicit
+            op: UImpl2[Op, V, S, V]
         ): UImpl2[Op, Wrapper, S, Wrapper] =
           new UImpl2[Op, Wrapper, S, Wrapper] {
             def apply(a: Wrapper, b: S) = {
@@ -707,8 +707,8 @@ object MutablizingAdaptor {
             }
           }
 
-        def liftOpV[Op <: OpType](
-            implicit op: UImpl2[Op, V, V, V]
+        def liftOpV[Op <: OpType](implicit
+            op: UImpl2[Op, V, V, V]
         ): UImpl2[Op, Wrapper, Wrapper, Wrapper] =
           new UImpl2[Op, Wrapper, Wrapper, Wrapper] {
             def apply(a: Wrapper, b: Wrapper) = {
@@ -860,8 +860,8 @@ object MutablizingAdaptor {
             }
           }
 
-        def liftUpdate[Op <: OpType](
-            implicit op: UImpl2[Op, V, S, V]
+        def liftUpdate[Op <: OpType](implicit
+            op: UImpl2[Op, V, S, V]
         ): UFunc.InPlaceImpl2[Op, Wrapper, S] =
           new UFunc.InPlaceImpl2[Op, Wrapper, S] {
             def apply(a: Wrapper, b: S) {
@@ -869,8 +869,8 @@ object MutablizingAdaptor {
             }
           }
 
-        def liftUpdateV[Op <: OpType](
-            implicit op: UImpl2[Op, V, V, V]
+        def liftUpdateV[Op <: OpType](implicit
+            op: UImpl2[Op, V, V, V]
         ): UFunc.InPlaceImpl2[Op, Wrapper, Wrapper] =
           new UFunc.InPlaceImpl2[Op, Wrapper, Wrapper] {
             def apply(a: Wrapper, b: Wrapper) {
@@ -878,8 +878,8 @@ object MutablizingAdaptor {
             }
           }
 
-        def liftOp[Op <: OpType, RHS](
-            implicit op: UImpl2[Op, V, RHS, V]
+        def liftOp[Op <: OpType, RHS](implicit
+            op: UImpl2[Op, V, RHS, V]
         ): UImpl2[Op, Wrapper, RHS, Wrapper] =
           new UImpl2[Op, Wrapper, RHS, Wrapper] {
             def apply(a: Wrapper, b: RHS) = {
@@ -887,8 +887,8 @@ object MutablizingAdaptor {
             }
           }
 
-        def liftOpV[Op <: OpType](
-            implicit op: UImpl2[Op, V, V, V]
+        def liftOpV[Op <: OpType](implicit
+            op: UImpl2[Op, V, V, V]
         ): UImpl2[Op, Wrapper, Wrapper, Wrapper] =
           new UImpl2[Op, Wrapper, Wrapper, Wrapper] {
             def apply(a: Wrapper, b: Wrapper) = {

@@ -344,8 +344,8 @@ trait BaseSyntaxTest {
     ((v :* 2) == V.timesr(v, A.fromInt(2)))
   }
 
-  def testVectorSpaceSyntax[V, A](v: V, w: V, a: A)(
-      implicit V: VectorSpace[V, A]
+  def testVectorSpaceSyntax[V, A](v: V, w: V, a: A)(implicit
+      V: VectorSpace[V, A]
   ) = {
     import spire.syntax.vectorSpace._
     implicit def A: Field[A] = V.scalar
@@ -359,8 +359,8 @@ trait BaseSyntaxTest {
     //((v :/ 2) == V.divr(v, A.fromInt(2)))
   }
 
-  def testNormedVectorSpaceSyntax[V, A](v: V, w: V, a: A)(
-      implicit V: NormedVectorSpace[V, A]
+  def testNormedVectorSpaceSyntax[V, A](v: V, w: V, a: A)(implicit
+      V: NormedVectorSpace[V, A]
   ) = {
     import spire.syntax.normedVectorSpace._
     implicit def A: Field[A] = V.scalar
@@ -376,8 +376,8 @@ trait BaseSyntaxTest {
     ((V.norm(v) == A.zero) || (v.normalize == V.normalize(v)))
   }
 
-  def testInnerProductSpaceSyntax[V, A](v: V, w: V, a: A)(
-      implicit V: InnerProductSpace[V, A]
+  def testInnerProductSpaceSyntax[V, A](v: V, w: V, a: A)(implicit
+      V: InnerProductSpace[V, A]
   ) = {
     import spire.syntax.innerProductSpace._
     implicit def A: Field[A] = V.scalar
@@ -392,8 +392,8 @@ trait BaseSyntaxTest {
     ((v dot w) == V.dot(v, w)) && ((v ⋅ w) == V.dot(v, w))
   }
 
-  def testCoordinateSpaceSyntax[V, A](v: V, w: V, a: A)(
-      implicit V: CoordinateSpace[V, A]
+  def testCoordinateSpaceSyntax[V, A](v: V, w: V, a: A)(implicit
+      V: CoordinateSpace[V, A]
   ) = {
     import spire.syntax.coordinateSpace._
     implicit def A: Field[A] = V.scalar

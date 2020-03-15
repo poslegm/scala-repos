@@ -137,8 +137,8 @@ trait SwaggerCommandSupport {
   ](underlying: B) =
     new CommandOperationBuilder(registerModel(_), underlying)
 
-  private[this] def parametersFromCommand[T <: CommandType](
-      implicit mf: Manifest[T]
+  private[this] def parametersFromCommand[T <: CommandType](implicit
+      mf: Manifest[T]
   ): List[Parameter] = {
     parametersFromCommand(mf.erasure.newInstance().asInstanceOf[T])
   }

@@ -28,23 +28,23 @@ trait ImmutableNumericOps[+This] extends Any {
 
   // Immutable
   /** Element-wise sum of this and b. */
-  final def :+[TT >: This, B, That](b: B)(
-      implicit op: OpAdd.Impl2[TT, B, That]
+  final def :+[TT >: This, B, That](b: B)(implicit
+      op: OpAdd.Impl2[TT, B, That]
   ) = op(repr, b)
 
   /** Element-wise product of this and b. */
-  final def :*[TT >: This, B, That](b: B)(
-      implicit op: OpMulScalar.Impl2[TT, B, That]
+  final def :*[TT >: This, B, That](b: B)(implicit
+      op: OpMulScalar.Impl2[TT, B, That]
   ) = op(repr, b)
 
   /** Element-wise equality comparator of this and b. */
-  final def :==[TT >: This, B, That](b: B)(
-      implicit op: OpEq.Impl2[TT, B, That]
+  final def :==[TT >: This, B, That](b: B)(implicit
+      op: OpEq.Impl2[TT, B, That]
   ) = op(repr, b)
 
   /** Element-wise inequality comparator of this and b. */
-  final def :!=[TT >: This, B, That](b: B)(
-      implicit op: OpNe.Impl2[TT, B, That]
+  final def :!=[TT >: This, B, That](b: B)(implicit
+      op: OpNe.Impl2[TT, B, That]
   ) = op(repr, b)
 
   /*
@@ -55,8 +55,8 @@ trait ImmutableNumericOps[+This] extends Any {
     op(repr)
 
   /** Element-wise difference of this and b. */
-  final def :-[TT >: This, B, That](b: B)(
-      implicit op: OpSub.Impl2[TT, B, That]
+  final def :-[TT >: This, B, That](b: B)(implicit
+      op: OpSub.Impl2[TT, B, That]
   ) = op(repr, b)
 
   /** Alias for :-(b) for all b. */
@@ -67,8 +67,8 @@ trait ImmutableNumericOps[+This] extends Any {
   }
 
   /** Element-wise modulo of this and b. */
-  final def :%[TT >: This, B, That](b: B)(
-      implicit op: OpMod.Impl2[TT, B, That]
+  final def :%[TT >: This, B, That](b: B)(implicit
+      op: OpMod.Impl2[TT, B, That]
   ) = op(repr, b)
 
   /** Alias for :%(b) when b is a scalar. */
@@ -84,8 +84,8 @@ trait ImmutableNumericOps[+This] extends Any {
 
   // Immutable
   /** Element-wise quotient of this and b. */
-  final def :/[TT >: This, B, That](b: B)(
-      implicit op: OpDiv.Impl2[TT, B, That]
+  final def :/[TT >: This, B, That](b: B)(implicit
+      op: OpDiv.Impl2[TT, B, That]
   ) = op(repr, b)
 
   /** Alias for :/(b) when b is a scalar. */
@@ -96,14 +96,14 @@ trait ImmutableNumericOps[+This] extends Any {
   }
 
   /** Element-wise exponentiation of this and b. */
-  final def :^[TT >: This, B, That](b: B)(
-      implicit op: OpPow.Impl2[TT, B, That]
+  final def :^[TT >: This, B, That](b: B)(implicit
+      op: OpPow.Impl2[TT, B, That]
   ) = op(repr, b)
 
   /** Represents the "natural" norm of this vector, for types that don't support arbitrary norms */
   @deprecated("Use norm(XXX) instead of XXX.norm", "0.9")
-  final def norm[TT >: This, R]()(
-      implicit op: breeze.linalg.norm.Impl[TT, R]
+  final def norm[TT >: This, R]()(implicit
+      op: breeze.linalg.norm.Impl[TT, R]
   ): R = {
     op(repr)
   }
@@ -117,8 +117,8 @@ trait ImmutableNumericOps[+This] extends Any {
   }
 
   /** Inner product of this and b. */
-  final def dot[TT >: This, B, BB >: B, That](b: B)(
-      implicit op: OpMulInner.Impl2[TT, BB, That]
+  final def dot[TT >: This, B, BB >: B, That](b: B)(implicit
+      op: OpMulInner.Impl2[TT, BB, That]
   ) = op(repr, b)
 
   /*
@@ -129,18 +129,18 @@ trait ImmutableNumericOps[+This] extends Any {
     op(repr)
 
   /** Element-wise logical "and" operator -- returns true if corresponding elements are non-zero. */
-  final def :&[TT >: This, B, That](b: B)(
-      implicit op: OpAnd.Impl2[TT, B, That]
+  final def :&[TT >: This, B, That](b: B)(implicit
+      op: OpAnd.Impl2[TT, B, That]
   ) = op(repr, b)
 
   /** Element-wise logical "or" operator -- returns true if either element is non-zero. */
-  final def :|[TT >: This, B, That](b: B)(
-      implicit op: OpOr.Impl2[TT, B, That]
+  final def :|[TT >: This, B, That](b: B)(implicit
+      op: OpOr.Impl2[TT, B, That]
   ) = op(repr, b)
 
   /** Element-wise logical "xor" operator -- returns true if only one of the corresponding elements is non-zero. */
-  final def :^^[TT >: This, B, That](b: B)(
-      implicit op: OpXor.Impl2[TT, B, That]
+  final def :^^[TT >: This, B, That](b: B)(implicit
+      op: OpXor.Impl2[TT, B, That]
   ) = op(repr, b)
 
   /** Alias for :&&(b) for all b. */
@@ -306,23 +306,23 @@ trait NumericOps[+This] extends ImmutableNumericOps[This] {
    */
 
   /** Element-wise less=than comparator of this and b. */
-  final def :<[TT >: This, B, That](b: B)(
-      implicit op: OpLT.Impl2[TT, B, That]
+  final def :<[TT >: This, B, That](b: B)(implicit
+      op: OpLT.Impl2[TT, B, That]
   ) = op(repr, b)
 
   /** Element-wise less-than-or-equal-to comparator of this and b. */
-  final def :<=[TT >: This, B, That](b: B)(
-      implicit op: OpLTE.Impl2[TT, B, That]
+  final def :<=[TT >: This, B, That](b: B)(implicit
+      op: OpLTE.Impl2[TT, B, That]
   ) = op(repr, b)
 
   /** Element-wise greater-than comparator of this and b. */
-  final def :>[TT >: This, B, That](b: B)(
-      implicit op: OpGT.Impl2[TT, B, That]
+  final def :>[TT >: This, B, That](b: B)(implicit
+      op: OpGT.Impl2[TT, B, That]
   ) = op(repr, b)
 
   /** Element-wise greater-than-or-equal-to comparator of this and b. */
-  final def :>=[TT >: This, B, That](b: B)(
-      implicit op: OpGTE.Impl2[TT, B, That]
+  final def :>=[TT >: This, B, That](b: B)(implicit
+      op: OpGTE.Impl2[TT, B, That]
   ) = op(repr, b)
 
   /** Mutates this by element-wise and of this and b. */
@@ -393,8 +393,8 @@ object NumericOps {
     }
 
     // TODO these two really shouldn't be necessary, but there's interference(?) from any2StringAdd, or something.
-    implicit def binaryOpFromDVOp2Add[V](
-        implicit op: OpAdd.Impl2[DenseVector[V], DenseVector[V], DenseVector[V]]
+    implicit def binaryOpFromDVOp2Add[V](implicit
+        op: OpAdd.Impl2[DenseVector[V], DenseVector[V], DenseVector[V]]
     ): OpAdd.Impl2[Array[V], Array[V], Array[V]] = {
       new OpAdd.Impl2[Array[V], Array[V], Array[V]] {
         def apply(a: Array[V], b: Array[V]): Array[V] = {
@@ -408,8 +408,8 @@ object NumericOps {
       }
     }
 
-    implicit def binaryOpAddFromDVUOpAdd2[V](
-        implicit op: OpAdd.Impl2[DenseVector[V], V, DenseVector[V]]
+    implicit def binaryOpAddFromDVUOpAdd2[V](implicit
+        op: OpAdd.Impl2[DenseVector[V], V, DenseVector[V]]
     ) = {
       new OpAdd.Impl2[Array[V], V, Array[V]] {
         def apply(a: Array[V], b: V): Array[V] = {
@@ -438,8 +438,8 @@ object NumericOps {
       }
     }
 
-    implicit def binaryUpdateOpFromDVDVOp[V, Op <: OpType](
-        implicit op: UFunc.InPlaceImpl2[Op, DenseVector[V], DenseVector[V]]
+    implicit def binaryUpdateOpFromDVDVOp[V, Op <: OpType](implicit
+        op: UFunc.InPlaceImpl2[Op, DenseVector[V], DenseVector[V]]
     ) = {
       new UFunc.InPlaceImpl2[Op, Array[V], Array[V]] {
         def apply(a: Array[V], b: Array[V]) {
@@ -448,8 +448,8 @@ object NumericOps {
       }
     }
 
-    implicit def binaryOpFromDVUOp2[V, Op <: OpType](
-        implicit op: UFunc.UImpl2[Op, DenseVector[V], V, DenseVector[V]]
+    implicit def binaryOpFromDVUOp2[V, Op <: OpType](implicit
+        op: UFunc.UImpl2[Op, DenseVector[V], V, DenseVector[V]]
     ) = {
       new UFunc.UImpl2[Op, Array[V], V, Array[V]] {
         def apply(a: Array[V], b: V): Array[V] = {

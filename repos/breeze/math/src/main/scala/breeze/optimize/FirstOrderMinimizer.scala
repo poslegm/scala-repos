@@ -345,8 +345,8 @@ object FirstOrderMinimizer {
     override def initialInfo: Info = IndexedSeq(Double.PositiveInfinity)
   }
 
-  def gradientConverged[T](tolerance: Double, relative: Boolean = true)(
-      implicit space: NormedModule[T, Double]
+  def gradientConverged[T](tolerance: Double, relative: Boolean = true)(implicit
+      space: NormedModule[T, Double]
   ): ConvergenceCheck[T] = {
     import space.normImpl
     ConvergenceCheck.fromPartialFunction[T] {
@@ -483,8 +483,8 @@ object FirstOrderMinimizer {
       "Use breeze.optimize.minimize(f, init, params) instead.",
       "0.10"
     )
-    def minimize[T](f: BatchDiffFunction[T], init: T)(
-        implicit space: MutableFiniteCoordinateField[T, _, Double]
+    def minimize[T](f: BatchDiffFunction[T], init: T)(implicit
+        space: MutableFiniteCoordinateField[T, _, Double]
     ): T = {
       this.iterations(f, init).last.x
     }
@@ -493,8 +493,8 @@ object FirstOrderMinimizer {
       "Use breeze.optimize.minimize(f, init, params) instead.",
       "0.10"
     )
-    def minimize[T](f: DiffFunction[T], init: T)(
-        implicit space: MutableEnumeratedCoordinateField[T, _, Double]
+    def minimize[T](f: DiffFunction[T], init: T)(implicit
+        space: MutableEnumeratedCoordinateField[T, _, Double]
     ): T = {
       this.iterations(f, init).last.x
     }
@@ -503,8 +503,8 @@ object FirstOrderMinimizer {
       "Use breeze.optimize.iterations(f, init, params) instead.",
       "0.10"
     )
-    def iterations[T](f: BatchDiffFunction[T], init: T)(
-        implicit space: MutableFiniteCoordinateField[T, _, Double]
+    def iterations[T](f: BatchDiffFunction[T], init: T)(implicit
+        space: MutableFiniteCoordinateField[T, _, Double]
     ): Iterator[FirstOrderMinimizer[T, BatchDiffFunction[T]]#State] = {
       val it =
         if (useStochastic) {
@@ -522,8 +522,8 @@ object FirstOrderMinimizer {
       "Use breeze.optimize.iterations(f, init, params) instead.",
       "0.10"
     )
-    def iterations[T](f: StochasticDiffFunction[T], init: T)(
-        implicit space: MutableFiniteCoordinateField[T, _, Double]
+    def iterations[T](f: StochasticDiffFunction[T], init: T)(implicit
+        space: MutableFiniteCoordinateField[T, _, Double]
     ): Iterator[FirstOrderMinimizer[T, StochasticDiffFunction[T]]#State] = {
       val r =
         if (useL1) {
@@ -547,8 +547,8 @@ object FirstOrderMinimizer {
       "Use breeze.optimize.iterations(f, init, params) instead.",
       "0.10"
     )
-    def iterations[T, K](f: DiffFunction[T], init: T)(
-        implicit space: MutableEnumeratedCoordinateField[T, K, Double]
+    def iterations[T, K](f: DiffFunction[T], init: T)(implicit
+        space: MutableEnumeratedCoordinateField[T, K, Double]
     ): Iterator[LBFGS[T]#State] = {
       if (useL1)
         new OWLQN[K, T](maxIterations, 5, regularization, tolerance)(space)

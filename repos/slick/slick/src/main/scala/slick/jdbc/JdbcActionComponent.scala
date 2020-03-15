@@ -573,8 +573,8 @@ trait JdbcActionComponent extends SqlActionComponent { self: JdbcProfile =>
     type QueryInsertResult
 
     /** Get the SQL statement for inserting a single row from a scalar expression */
-    def forceInsertStatementFor[TT](c: TT)(
-        implicit shape: Shape[_ <: FlatShapeLevel, TT, U, _]
+    def forceInsertStatementFor[TT](c: TT)(implicit
+        shape: Shape[_ <: FlatShapeLevel, TT, U, _]
     ): String
 
     /** Get the SQL statement for inserting data produced by another query */
@@ -586,8 +586,8 @@ trait JdbcActionComponent extends SqlActionComponent { self: JdbcProfile =>
     ): String
 
     /** Insert a single row from a scalar expression */
-    def forceInsertExpr[TT](c: TT)(
-        implicit shape: Shape[_ <: FlatShapeLevel, TT, U, _]
+    def forceInsertExpr[TT](c: TT)(implicit
+        shape: Shape[_ <: FlatShapeLevel, TT, U, _]
     ): ProfileAction[QueryInsertResult, NoStream, Effect.Write]
 
     /** Insert data produced by another query */
@@ -693,8 +693,8 @@ trait JdbcActionComponent extends SqlActionComponent { self: JdbcProfile =>
     ) =
       buildQueryBasedInsert(compiledQuery).sql
 
-    def forceInsertExpr[TT](c: TT)(
-        implicit shape: Shape[_ <: FlatShapeLevel, TT, U, _]
+    def forceInsertExpr[TT](c: TT)(implicit
+        shape: Shape[_ <: FlatShapeLevel, TT, U, _]
     ): ProfileAction[QueryInsertResult, NoStream, Effect.Write] =
       new InsertQueryAction(buildQueryBasedInsert((Query(c)(shape))), null)
 
@@ -832,8 +832,8 @@ trait JdbcActionComponent extends SqlActionComponent { self: JdbcProfile =>
         } else f
       }
 
-      protected def nativeUpsert(value: U, sql: String)(
-          implicit session: Backend#Session
+      protected def nativeUpsert(value: U, sql: String)(implicit
+          session: Backend#Session
       ): SingleInsertOrUpdateResult =
         preparedInsert(sql, session) { st =>
           st.clearParameters()

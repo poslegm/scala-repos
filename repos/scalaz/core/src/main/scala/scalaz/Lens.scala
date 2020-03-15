@@ -224,12 +224,12 @@ sealed abstract class LensFamily[A1, A2, B1, B2] {
       val c = run(a)
       A.equal(c.put(c.pos: B), a)
     }
-    def retention[A >: A2 <: A1, B >: B1 <: B2](a: A, b: B)(
-        implicit B: Equal[B]
+    def retention[A >: A2 <: A1, B >: B1 <: B2](a: A, b: B)(implicit
+        B: Equal[B]
     ): Boolean =
       B.equal(run(run(a).put(b): A).pos, b)
-    def doubleSet[A >: A2 <: A1, B >: B1 <: B2](a: A, b1: B, b2: B)(
-        implicit A: Equal[A]
+    def doubleSet[A >: A2 <: A1, B >: B1 <: B2](a: A, b1: B, b2: B)(implicit
+        A: Equal[A]
     ): Boolean = {
       val r = run(a)
       A.equal(run(r.put(b1): A) put b2, r put b2)
@@ -647,8 +647,8 @@ abstract class LensInstances extends LensInstances0 {
     def sortBy[B: math.Ordering](f: A => B): IndexedState[S1, S2, Unit] =
       lens %== (_ sortBy f)
 
-    def sort[B >: A](
-        implicit ord: math.Ordering[B]
+    def sort[B >: A](implicit
+        ord: math.Ordering[B]
     ): IndexedState[S1, S2, Unit] =
       lens %== (_.sorted[B])
   }

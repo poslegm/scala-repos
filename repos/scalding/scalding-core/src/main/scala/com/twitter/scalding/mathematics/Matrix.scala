@@ -518,8 +518,8 @@ class Matrix[RowT, ColT, ValT](
     (matD.mapValues { x => 1.0 }.sumColVectors.diag.inverse) * matD
   }
 
-  def rowL0Normalize(
-      implicit ev: =:=[ValT, Double]
+  def rowL0Normalize(implicit
+      ev: =:=[ValT, Double]
   ): Matrix[RowT, ColT, Double] = rowL0Norm
 
   protected lazy val rowL1Norm = {
@@ -529,8 +529,8 @@ class Matrix[RowT, ColT, ValT](
 
   // Row L1 normalization, only makes sense for Doubles
   // At the end of L1 normalization, sum of row values is one
-  def rowL1Normalize(
-      implicit ev: =:=[ValT, Double]
+  def rowL1Normalize(implicit
+      ev: =:=[ValT, Double]
   ): Matrix[RowT, ColT, Double] = rowL1Norm
 
   protected lazy val rowL2Norm = {
@@ -545,8 +545,8 @@ class Matrix[RowT, ColT, ValT](
   }
   // Row L2 normalization (can only be called for Double)
   // After this operation, the sum(|x|^2) along each row will be 1.
-  def rowL2Normalize(
-      implicit ev: =:=[ValT, Double]
+  def rowL2Normalize(implicit
+      ev: =:=[ValT, Double]
   ): Matrix[RowT, ColT, Double] = rowL2Norm
 
   // Remove the mean of each row from each value in a row.
@@ -830,8 +830,8 @@ class Matrix[RowT, ColT, ValT](
   }
 
   // Zip the given row with all the rows of the matrix
-  def zip[ValU](that: ColVector[RowT, ValU])(
-      implicit pairMonoid: Monoid[(ValT, ValU)]
+  def zip[ValU](that: ColVector[RowT, ValU])(implicit
+      pairMonoid: Monoid[(ValT, ValU)]
   ): Matrix[RowT, ColT, (ValT, ValU)] = {
     val (newRFields, newRPipe) =
       ensureUniqueFields(rowColValSymbols, (that.rowS, that.valS), that.pipe)
@@ -859,8 +859,8 @@ class Matrix[RowT, ColT, ValT](
     )
   }
   // Zip the given row with all the rows of the matrix
-  def zip[ValU](that: RowVector[ColT, ValU])(
-      implicit pairMonoid: Monoid[(ValT, ValU)]
+  def zip[ValU](that: RowVector[ColT, ValU])(implicit
+      pairMonoid: Monoid[(ValT, ValU)]
   ): Matrix[RowT, ColT, (ValT, ValU)] = {
     val (newRFields, newRPipe) =
       ensureUniqueFields(rowColValSymbols, (that.colS, that.valS), that.pipe)
@@ -889,8 +889,8 @@ class Matrix[RowT, ColT, ValT](
   }
 
   // This creates the matrix with pairs for the entries
-  def zip[ValU](that: Matrix[RowT, ColT, ValU])(
-      implicit pairMonoid: Monoid[(ValT, ValU)]
+  def zip[ValU](that: Matrix[RowT, ColT, ValU])(implicit
+      pairMonoid: Monoid[(ValT, ValU)]
   ): Matrix[RowT, ColT, (ValT, ValU)] = {
     val (newRFields, newRPipe) =
       ensureUniqueFields(rowColValSymbols, that.rowColValSymbols, that.pipe)
@@ -1116,8 +1116,8 @@ class DiagonalMatrix[IdxT, ValT](
 ) extends WrappedPipe
     with java.io.Serializable {
 
-  def *[That, Res](that: That)(
-      implicit prod: MatrixProduct[DiagonalMatrix[IdxT, ValT], That, Res]
+  def *[That, Res](that: That)(implicit
+      prod: MatrixProduct[DiagonalMatrix[IdxT, ValT], That, Res]
   ): Res = { prod(this, that) }
 
   def pipe   = inPipe

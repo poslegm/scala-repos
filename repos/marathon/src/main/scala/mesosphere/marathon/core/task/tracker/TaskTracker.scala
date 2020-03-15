@@ -23,20 +23,20 @@ trait TaskTracker {
 
   def appTasksLaunchedSync(appId: PathId): Iterable[Task]
   def appTasksSync(appId: PathId): Iterable[Task]
-  def appTasks(appId: PathId)(
-      implicit ec: ExecutionContext
+  def appTasks(appId: PathId)(implicit
+      ec: ExecutionContext
   ): Future[Iterable[Task]]
 
   def marathonTaskSync(taskId: Task.Id): Option[MarathonTask]
-  def marathonTask(taskId: Task.Id)(
-      implicit ec: ExecutionContext
+  def marathonTask(taskId: Task.Id)(implicit
+      ec: ExecutionContext
   ): Future[Option[MarathonTask]]
 
   def task(taskId: Task.Id)(implicit ec: ExecutionContext): Future[Option[Task]]
 
   def tasksByAppSync: TaskTracker.TasksByApp
-  def tasksByApp()(
-      implicit ec: ExecutionContext
+  def tasksByApp()(implicit
+      ec: ExecutionContext
   ): Future[TaskTracker.TasksByApp]
 
   def countLaunchedAppTasksSync(appId: PathId): Int

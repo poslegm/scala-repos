@@ -120,8 +120,8 @@ trait AtmosphereClient extends AtmosphereClientFilters {
     * (i.e. normal chat server behaviour). Optionally filter the clients to
     * deliver the message to by applying a filter.
     */
-  final def broadcast(msg: OutboundMessage, to: ClientFilter = Others)(
-      implicit executionContext: ExecutionContext
+  final def broadcast(msg: OutboundMessage, to: ClientFilter = Others)(implicit
+      executionContext: ExecutionContext
   ) = {
     if (resource == null)
       internalLogger.warn("The resource is null, can't publish")
@@ -137,8 +137,8 @@ trait AtmosphereClient extends AtmosphereClientFilters {
     * (i.e. normal chat server behaviour). Optionally filter the clients to
     * deliver the message to by applying a filter.
     */
-  final def ><(msg: OutboundMessage, to: ClientFilter = Others)(
-      implicit executionContext: ExecutionContext
+  final def ><(msg: OutboundMessage, to: ClientFilter = Others)(implicit
+      executionContext: ExecutionContext
   ) =
     broadcast(msg, to)(executionContext)
 }

@@ -63,11 +63,11 @@ object Helpers {
     * @return the formatted timestamp
     */
   def currentTimeMillisToUTCString(timestamp: Long): String = {
-    val timeOfDay = timestamp % 86400000L
+    val timeOfDay = timestamp          % 86400000L
     val hours     = timeOfDay / 3600000L
     val minutes   = timeOfDay / 60000L % 60
-    val seconds   = timeOfDay / 1000L % 60
-    val ms        = timeOfDay % 1000
+    val seconds   = timeOfDay / 1000L  % 60
+    val ms        = timeOfDay          % 1000
     f"$hours%02d:$minutes%02d:$seconds%02d.$ms%03dUTC"
   }
 

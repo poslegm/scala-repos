@@ -65,14 +65,14 @@ abstract class StochasticGradientDescent[T](
 }
 
 object StochasticGradientDescent {
-  def apply[T](initialStepSize: Double = 4, maxIter: Int = 100)(
-      implicit vs: NormedModule[T, Double]
+  def apply[T](initialStepSize: Double = 4, maxIter: Int = 100)(implicit
+      vs: NormedModule[T, Double]
   ): StochasticGradientDescent[T] = {
     new SimpleSGD(initialStepSize, maxIter)
   }
 
-  class SimpleSGD[T](eta: Double = 4, maxIter: Int = 100)(
-      implicit vs: NormedModule[T, Double]
+  class SimpleSGD[T](eta: Double = 4, maxIter: Int = 100)(implicit
+      vs: NormedModule[T, Double]
   ) extends StochasticGradientDescent[T](eta, maxIter) {
     type History = Unit
     def initialHistory(f: StochasticDiffFunction[T], init: T) = ()

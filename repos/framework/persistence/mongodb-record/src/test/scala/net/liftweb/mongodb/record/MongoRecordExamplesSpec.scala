@@ -379,7 +379,7 @@ class MongoRecordExamplesSpec extends Specification with MongoTestKit {
     mdq1.size must_== 1
 
     // find all documents with $in query, sorted
-    val qry  = ("name" -> ("$in" -> List("md1", "md2")))
+    val qry  = ("name"                      -> ("$in" -> List("md1", "md2")))
     val mdq2 = MainDoc.findAll(qry, ("name" -> -1))
     mdq2.size must_== 2
     mdq2.head.id.get must_== md2.id.get

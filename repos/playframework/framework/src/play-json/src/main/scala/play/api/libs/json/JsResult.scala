@@ -207,8 +207,8 @@ object JsResult {
 
   import play.api.libs.functional._
 
-  implicit def alternativeJsResult(
-      implicit a: Applicative[JsResult]
+  implicit def alternativeJsResult(implicit
+      a: Applicative[JsResult]
   ): Alternative[JsResult] =
     new Alternative[JsResult] {
       val app = a

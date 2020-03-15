@@ -14,7 +14,10 @@ object Fail {
   abstract class Shape[Level <: ShapeLevel, -Mixed_, Unpacked_, Packed_]
 
   final class TupleShape[
-      Level <: ShapeLevel, M <: Product, U <: Product, P <: Product
+      Level <: ShapeLevel,
+      M <: Product,
+      U <: Product,
+      P <: Product
   ](val shapes: Shape[_, _, _, _]*)
       extends ProductNodeShape[Level, Product, M, U, P] {
     def copy(shapes: Seq[Shape[_, _, _, _]]): Shape[Level, _, _, _] = ???
@@ -37,7 +40,10 @@ object Ok {
   }
 
   final class TupleShape[
-      Level <: ShapeLevel, M <: Product, U <: Product, P <: Product
+      Level <: ShapeLevel,
+      M <: Product,
+      U <: Product,
+      P <: Product
   ](val shapes: Shape[_, _, _, _]*)
       extends ProductNodeShape[Level, Product, M, U, P] {
     def copy(shapes: Seq[Shape[_, _, _, _]]): Shape[Level, _, _, _] = ???

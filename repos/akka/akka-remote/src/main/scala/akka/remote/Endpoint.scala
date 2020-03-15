@@ -660,8 +660,8 @@ private[remote] object EndpointWriter {
 
   // These settings are not configurable because wrong configuration will break the auto-tuning
   private val SendBufferBatchSize     = 5
-  private val MinAdaptiveBackoffNanos = 300000L // 0.3 ms
-  private val MaxAdaptiveBackoffNanos = 2000000L // 2 ms
+  private val MinAdaptiveBackoffNanos = 300000L     // 0.3 ms
+  private val MaxAdaptiveBackoffNanos = 2000000L    // 2 ms
   private val LogBufferSizeInterval   = 5000000000L // 5 s, in nanoseconds
   private val MaxWriteCount           = 50
 }

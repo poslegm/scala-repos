@@ -40,8 +40,8 @@ trait Traverse[F[_]] extends Functor[F] with Foldable[F] { self =>
     }
 
   /**The product of Traverse `F` and Traverse1 `G`, `[x](F[x], G[x]])`, is a Traverse1 */
-  def product0[G[_]](
-      implicit G0: Traverse1[G]
+  def product0[G[_]](implicit
+      G0: Traverse1[G]
   ): Traverse1[λ[α => (F[α], G[α])]] =
     new ProductTraverse1R[F, G] {
       def F = self
@@ -190,8 +190,8 @@ trait Traverse[F[_]] extends Functor[F] with Foldable[F] { self =>
   trait TraverseLaw extends FunctorLaw {
 
     /** Traversal through the [[scalaz.Id]] effect is equivalent to `Functor#map` */
-    def identityTraverse[A, B](fa: F[A], f: A => B)(
-        implicit FB: Equal[F[B]]
+    def identityTraverse[A, B](fa: F[A], f: A => B)(implicit
+        FB: Equal[F[B]]
     ) = {
       FB.equal(traverse[Id, A, B](fa)(f), map(fa)(f))
     }

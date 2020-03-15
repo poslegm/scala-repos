@@ -88,8 +88,8 @@ package Generic1TestsAux {
     }
 
     // Induction step for products
-    implicit def hcons[F[_]](
-        implicit ihc: IsHCons1[F, Functor, Functor]
+    implicit def hcons[F[_]](implicit
+        ihc: IsHCons1[F, Functor, Functor]
     ): Functor[F] =
       new Functor[F] {
         def map[A, B](fa: F[A])(f: A => B): F[B] = {
@@ -99,8 +99,8 @@ package Generic1TestsAux {
       }
 
     // Induction step for coproducts
-    implicit def ccons[F[_]](
-        implicit icc: IsCCons1[F, Functor, Functor]
+    implicit def ccons[F[_]](implicit
+        icc: IsCCons1[F, Functor, Functor]
     ): Functor[F] =
       new Functor[F] {
         def map[A, B](fa: F[A])(f: A => B): F[B] =
@@ -149,8 +149,8 @@ package Generic1TestsAux {
     }
 
     // Pointed can be built for Singleton types
-    implicit def constSingletonPointed[T](
-        implicit w: Witness.Aux[T]
+    implicit def constSingletonPointed[T](implicit
+        w: Witness.Aux[T]
     ): Pointed[Const[T]#λ] =
       new Pointed[Const[T]#λ] {
         def point[A](a: A): T = w.value
@@ -175,8 +175,8 @@ package Generic1TestsAux {
 
   trait Pointed0 extends Pointed1 {
 
-    implicit def hcons[F[_]](
-        implicit ihc: IsHCons1[F, Pointed, Pointed]
+    implicit def hcons[F[_]](implicit
+        ihc: IsHCons1[F, Pointed, Pointed]
     ): Pointed[F] =
       new Pointed[F] {
         def point[A](a: A): F[A] = {
@@ -184,8 +184,8 @@ package Generic1TestsAux {
         }
       }
 
-    implicit def ccons[F[_]](
-        implicit ihc: IsCCons1[F, Pointed, Pointed]
+    implicit def ccons[F[_]](implicit
+        ihc: IsCCons1[F, Pointed, Pointed]
     ): Pointed[F] =
       new Pointed[F] {
         def point[A](a: A): F[A] = {
@@ -569,11 +569,11 @@ class Generic1Tests {
   }
 
   def testPartiallyApplied3 {
-    def materialize1[F[_]](
-        implicit gen: Generic1[F, ({ type λ[r[_]] = TC3[r, Option] })#λ]
+    def materialize1[F[_]](implicit
+        gen: Generic1[F, ({ type λ[r[_]] = TC3[r, Option] })#λ]
     ): Unit = ()
-    def materialize2[F[_]](
-        implicit gen: Generic1[F, ({ type λ[r[_]] = TC3[Option, r] })#λ]
+    def materialize2[F[_]](implicit
+        gen: Generic1[F, ({ type λ[r[_]] = TC3[Option, r] })#λ]
     ): Unit = ()
 
     materialize1[List]
@@ -619,17 +619,17 @@ class Generic1Tests {
     materialize9[C]
     materialize10[C]
 
-    def materialize11[F[_]](
-        implicit ihc: Split1[F, Trivial1, ({ type λ[r[_]] = TC3[r, Option] })#λ]
+    def materialize11[F[_]](implicit
+        ihc: Split1[F, Trivial1, ({ type λ[r[_]] = TC3[r, Option] })#λ]
     ): Unit = ()
-    def materialize12[F[_]](
-        implicit ihc: Split1[F, Trivial1, ({ type λ[r[_]] = TC3[Option, r] })#λ]
+    def materialize12[F[_]](implicit
+        ihc: Split1[F, Trivial1, ({ type λ[r[_]] = TC3[Option, r] })#λ]
     ): Unit = ()
-    def materialize13[F[_]](
-        implicit ihc: Split1[F, ({ type λ[r[_]] = TC3[r, Option] })#λ, Trivial1]
+    def materialize13[F[_]](implicit
+        ihc: Split1[F, ({ type λ[r[_]] = TC3[r, Option] })#λ, Trivial1]
     ): Unit = ()
-    def materialize14[F[_]](
-        implicit ihc: Split1[F, ({ type λ[r[_]] = TC3[Option, r] })#λ, Trivial1]
+    def materialize14[F[_]](implicit
+        ihc: Split1[F, ({ type λ[r[_]] = TC3[Option, r] })#λ, Trivial1]
     ): Unit = ()
 
     type S[t] = List[Option[t]]

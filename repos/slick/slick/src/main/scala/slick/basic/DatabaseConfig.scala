@@ -160,8 +160,8 @@ object DatabaseConfig {
 
   /** Load a profile and database configuration from the URI specified in a [[StaticDatabaseConfig]]
     * annotation in the static scope of the caller. */
-  def forAnnotation[P <: BasicProfile](
-      implicit ct: ClassTag[P]
+  def forAnnotation[P <: BasicProfile](implicit
+      ct: ClassTag[P]
   ): DatabaseConfig[P] =
     macro StaticDatabaseConfigMacros
       .getImpl[P]

@@ -150,8 +150,8 @@ class HttpEventActorTest
       ) {
     var _requests = List.empty[HttpRequest]
     def requests  = synchronized(_requests)
-    override def pipeline(
-        implicit ec: ExecutionContext
+    override def pipeline(implicit
+        ec: ExecutionContext
     ): (HttpRequest) => Future[HttpResponse] =
       synchronized { request =>
         _requests ::= request

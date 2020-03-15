@@ -42,10 +42,13 @@ object Multipart {
   /**
     * Provides a Formatting Flow which could be used to format a MultipartFormData.Part source to a multipart/form data body
     */
-  def format(boundary: String, nioCharset: Charset, chunkSize: Int)
-      : Flow[MultipartFormData.Part[
-        Source[ByteString, _]
-      ], ByteString, NotUsed] = {
+  def format(
+      boundary: String,
+      nioCharset: Charset,
+      chunkSize: Int
+  ): Flow[MultipartFormData.Part[
+    Source[ByteString, _]
+  ], ByteString, NotUsed] = {
     Flow[MultipartFormData.Part[Source[ByteString, _]]]
       .transform(() => streamed(boundary, nioCharset, chunkSize))
       .flatMapConcat(identity)

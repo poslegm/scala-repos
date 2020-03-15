@@ -120,8 +120,8 @@ trait DescriptiveStats {
     */
   object meanAndVariance extends UFunc {
     @expand
-    implicit def reduce[@expand.args(Float, Double) S, T](
-        implicit iter: CanTraverseValues[T, S]
+    implicit def reduce[@expand.args(Float, Double) S, T](implicit
+        iter: CanTraverseValues[T, S]
     ): Impl[T, MeanAndVariance] =
       new Impl[T, MeanAndVariance] {
         def apply(v: T): MeanAndVariance = {
@@ -157,8 +157,8 @@ trait DescriptiveStats {
     * The method just calls meanAndVariance and returns the second result.
     */
   object variance extends UFunc {
-    implicit def reduceDouble[T](
-        implicit mv: meanAndVariance.Impl[T, MeanAndVariance]
+    implicit def reduceDouble[T](implicit
+        mv: meanAndVariance.Impl[T, MeanAndVariance]
     ): Impl[T, Double] =
       new Impl[T, Double] {
         def apply(v: T): Double = mv(v).variance
@@ -169,8 +169,8 @@ trait DescriptiveStats {
     * Computes the standard deviation by calling variance and then sqrt'ing
     */
   object stddev extends UFunc {
-    implicit def reduceDouble[T](
-        implicit vari: variance.Impl[T, Double]
+    implicit def reduceDouble[T](implicit
+        vari: variance.Impl[T, Double]
     ): Impl[T, Double] =
       new Impl[T, Double] {
         def apply(v: T): Double = scala.math.sqrt(vari(v))
@@ -271,8 +271,8 @@ trait DescriptiveStats {
   }
 
   object corrcoeff extends UFunc {
-    implicit def matrixCorrelation[T](
-        implicit covarianceCalculator: covmat.Impl[T, DenseMatrix[Double]]
+    implicit def matrixCorrelation[T](implicit
+        covarianceCalculator: covmat.Impl[T, DenseMatrix[Double]]
     ): Impl[T, DenseMatrix[Double]] =
       new Impl[T, DenseMatrix[Double]] {
         def apply(data: T) = {
@@ -428,8 +428,8 @@ trait DescriptiveStats {
         }
       }
 
-    implicit def reduce[T](
-        implicit iter: CanTraverseValues[T, Int]
+    implicit def reduce[T](implicit
+        iter: CanTraverseValues[T, Int]
     ): Impl[T, DenseVector[Int]] =
       new Impl[T, DenseVector[Int]] {
         def apply(x: T): DenseVector[Int] = {
@@ -478,8 +478,8 @@ trait DescriptiveStats {
           }
         }
 
-      implicit def reduce[T](
-          implicit iter: CanTraverseValues[T, Int]
+      implicit def reduce[T](implicit
+          iter: CanTraverseValues[T, Int]
       ): Impl[T, SparseVector[Int]] =
         new Impl[T, SparseVector[Int]] {
           def apply(x: T): SparseVector[Int] = {
@@ -533,8 +533,8 @@ object DescriptiveStats {
     * by truncating the longer vector.
     * </p>
     */
-  def meanAndCov[T](it1: TraversableOnce[T], it2: TraversableOnce[T])(
-      implicit frac: Fractional[T]
+  def meanAndCov[T](it1: TraversableOnce[T], it2: TraversableOnce[T])(implicit
+      frac: Fractional[T]
   ) = {
     implicit def t(it: TraversableOnce[T]) =
       it.toIterable //convert to an iterable for zip operation

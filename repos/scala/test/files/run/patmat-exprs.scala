@@ -399,8 +399,8 @@ trait Pattern {
     override lazy val hashCode            = ScalaRunTime._hashCode(this);
   }
 
-  case class Add3[T](a1: Expr[T], a2: Expr[T], a3: Expr[T])(
-      implicit num: NumericOps[T]
+  case class Add3[T](a1: Expr[T], a2: Expr[T], a3: Expr[T])(implicit
+      num: NumericOps[T]
   ) extends ManyArg[T] {
     val args                = List(a1, a2, a3)
     def eval(f: Any => Any) = num.add(a1.eval(f), a2.eval(f), a3.eval(f))

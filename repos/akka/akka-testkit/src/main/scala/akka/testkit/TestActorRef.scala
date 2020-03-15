@@ -159,8 +159,8 @@ object TestActorRef {
   )(implicit system: ActorSystem): TestActorRef[T] =
     apply[T](Props(factory), randomName)
 
-  def apply[T <: Actor: ClassTag](factory: ⇒ T, name: String)(
-      implicit system: ActorSystem
+  def apply[T <: Actor: ClassTag](factory: ⇒ T, name: String)(implicit
+      system: ActorSystem
   ): TestActorRef[T] =
     apply[T](Props(factory), name)
 
@@ -169,13 +169,13 @@ object TestActorRef {
   )(implicit system: ActorSystem): TestActorRef[T] =
     apply[T](props, randomName)
 
-  def apply[T <: Actor](props: Props, name: String)(
-      implicit system: ActorSystem
+  def apply[T <: Actor](props: Props, name: String)(implicit
+      system: ActorSystem
   ): TestActorRef[T] =
     apply[T](props, system.asInstanceOf[ActorSystemImpl].guardian, name)
 
-  def apply[T <: Actor](props: Props, supervisor: ActorRef)(
-      implicit system: ActorSystem
+  def apply[T <: Actor](props: Props, supervisor: ActorRef)(implicit
+      system: ActorSystem
   ): TestActorRef[T] = {
     val sysImpl = system.asInstanceOf[ActorSystemImpl]
     new TestActorRef(

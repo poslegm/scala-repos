@@ -34,10 +34,10 @@ import Variance._
   */
 final class Variance private (val flags: Int) extends AnyVal {
   def isBivariant     = flags == 2
-  def isCovariant     = flags == 1 // excludes bivariant
+  def isCovariant     = flags == 1  // excludes bivariant
   def isInvariant     = flags == 0
   def isContravariant = flags == -1 // excludes bivariant
-  def isPositive      = flags > 0 // covariant or bivariant
+  def isPositive      = flags > 0   // covariant or bivariant
 
   def &(other: Variance): Variance =
     (if (this == other) this

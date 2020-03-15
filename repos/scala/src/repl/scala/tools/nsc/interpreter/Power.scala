@@ -328,8 +328,8 @@ class Power[ReplValsImpl <: ReplVals: ru.TypeTag: ClassTag](
 
     implicit def replInputStream(in: InputStream)(implicit codec: Codec) =
       new RichInputStream(in)
-    implicit def replEnhancedURLs(url: URL)(
-        implicit codec: Codec
+    implicit def replEnhancedURLs(url: URL)(implicit
+        codec: Codec
     ): RichReplURL = new RichReplURL(url)(codec)
   }
 

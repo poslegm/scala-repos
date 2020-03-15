@@ -6,13 +6,13 @@ final class BitraverseOps[F[_, _], A, B] private[syntax] (val self: F[A, B])(
     implicit val F: Bitraverse[F]
 ) extends Ops[F[A, B]] {
   ////
-  final def bitraverse[G[_], C, D](f: A => G[C], g: B => G[D])(
-      implicit ap: Applicative[G]
+  final def bitraverse[G[_], C, D](f: A => G[C], g: B => G[D])(implicit
+      ap: Applicative[G]
   ): G[F[C, D]] =
     F.bitraverseImpl(self)(f, g)
 
-  final def bitraverseU[GC, GD](f: A => GC, g: B => GD)(
-      implicit G1: UnapplyProduct[Applicative, GC, GD]
+  final def bitraverseU[GC, GD](f: A => GC, g: B => GD)(implicit
+      G1: UnapplyProduct[Applicative, GC, GD]
   ): G1.M[F[G1.A, G1.B]] =
     F.bitraverseImpl(self)(a => G1._1(f(a)), b => G1._2(g(b)))(G1.TC)
 

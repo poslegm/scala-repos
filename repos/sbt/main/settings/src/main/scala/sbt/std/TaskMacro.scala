@@ -26,8 +26,8 @@ object TaskInstance extends MonadInstance {
   import TaskExtra._
 
   final type M[x] = Task[x]
-  def app[K[L[x]], Z](in: K[Task], f: K[Id] => Z)(
-      implicit a: AList[K]
+  def app[K[L[x]], Z](in: K[Task], f: K[Id] => Z)(implicit
+      a: AList[K]
   ): Task[Z] =
     Task(Info(), new Mapped[Z, K](in, f compose allM, a))
   def map[S, T](in: Task[S], f: S => T): Task[T] = in map f

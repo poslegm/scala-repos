@@ -80,8 +80,8 @@ object Searching {
       *         sequence, or the `InsertionPoint` where the element would be inserted if
       *         the element is not in the sequence.
       */
-    final def search[B >: A](elem: B, from: Int, to: Int)(
-        implicit ord: Ordering[B]
+    final def search[B >: A](elem: B, from: Int, to: Int)(implicit
+        ord: Ordering[B]
     ): SearchResult =
       coll match {
         case _: IndexedSeqLike[A, Repr] => binarySearch(elem, from, to)(ord)
@@ -89,8 +89,8 @@ object Searching {
       }
 
     @tailrec
-    private def binarySearch[B >: A](elem: B, from: Int, to: Int)(
-        implicit ord: Ordering[B]
+    private def binarySearch[B >: A](elem: B, from: Int, to: Int)(implicit
+        ord: Ordering[B]
     ): SearchResult = {
       if (to == from) InsertionPoint(from)
       else {

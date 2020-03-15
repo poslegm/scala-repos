@@ -995,8 +995,8 @@ trait ParIterableLike[+T, +Repr <: ParIterable[T], +Sequential <: Iterable[
       )
     } else setTaskSupport(seq.zip(that)(bf2seq(bf)), tasksupport)
 
-  def zipWithIndex[U >: T, That](
-      implicit bf: CanBuildFrom[Repr, (U, Int), That]
+  def zipWithIndex[U >: T, That](implicit
+      bf: CanBuildFrom[Repr, (U, Int), That]
   ): That =
     this zip immutable.ParRange(0, size, 1, inclusive = false)
 
@@ -1086,8 +1086,8 @@ trait ParIterableLike[+T, +Repr <: ParIterable[T], +Sequential <: Iterable[
 
   override def toVector: Vector[T] = to[Vector]
 
-  override def to[Col[_]](
-      implicit cbf: CanBuildFrom[Nothing, T, Col[T @uncheckedVariance]]
+  override def to[Col[_]](implicit
+      cbf: CanBuildFrom[Nothing, T, Col[T @uncheckedVariance]]
   ): Col[T @uncheckedVariance] =
     if (cbf().isCombiner) {
       toParCollection[T, Col[T]](() => cbf().asCombiner)
@@ -1647,12 +1647,11 @@ trait ParIterableLike[+T, +Repr <: ParIterable[T], +Sequential <: Iterable[
         // val lst = pit.toList
         // val pa = mutable.ParArray(lst: _*)
         // val str = "At leaf we will iterate: " + pa.splitter.toList
-        result =
-          pit.span2combiners(
-            pred,
-            cbfBefore(),
-            cbfAfter()
-          ) // do NOT reuse old combiners here, lest ye be surprised
+        result = pit.span2combiners(
+          pred,
+          cbfBefore(),
+          cbfAfter()
+        ) // do NOT reuse old combiners here, lest ye be surprised
         // println("\nAt leaf result is: " + result)
         if (result._2.size > 0) pit.setIndexFlagIfLesser(pos)
       } else {

@@ -37,7 +37,7 @@ object ConsistencySpec {
 
   class ConsistencyCheckingActor extends Actor {
     var left     = new CacheMisaligned(42, 0, 0, 0) //var
-    var right    = new CacheMisaligned(0, 0, 0, 0) //var
+    var right    = new CacheMisaligned(0, 0, 0, 0)  //var
     var lastStep = -1L
     def receive = {
       case step: Long ⇒

@@ -40,8 +40,8 @@ import scala.compat.java8.FunctionConverters._
   * responses.
   */
 @Singleton
-class GzipFilter @Inject() (config: GzipFilterConfig)(
-    implicit mat: Materializer
+class GzipFilter @Inject() (config: GzipFilterConfig)(implicit
+    mat: Materializer
 ) extends EssentialFilter {
 
   import play.api.http.HeaderNames._

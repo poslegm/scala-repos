@@ -18,8 +18,8 @@ object Validation {
       case f: Failure => throw new ValidationFailedException(t, f)
     }
 
-  implicit def optional[T](
-      implicit validator: Validator[T]
+  implicit def optional[T](implicit
+      validator: Validator[T]
   ): Validator[Option[T]] = {
     new Validator[Option[T]] {
       override def apply(option: Option[T]): Result =
@@ -27,8 +27,8 @@ object Validation {
     }
   }
 
-  implicit def every[T](
-      implicit validator: Validator[T]
+  implicit def every[T](implicit
+      validator: Validator[T]
   ): Validator[Iterable[T]] = {
     new Validator[Iterable[T]] {
       override def apply(seq: Iterable[T]): Result = {

@@ -15,8 +15,8 @@ import profile.simple._
 trait PullRequestService { self: IssuesService =>
   import PullRequestService._
 
-  def getPullRequest(owner: String, repository: String, issueId: Int)(
-      implicit s: Session
+  def getPullRequest(owner: String, repository: String, issueId: Int)(implicit
+      s: Session
   ): Option[(Issue, PullRequest)] =
     getIssue(owner, repository, issueId.toString).flatMap { issue =>
       PullRequests

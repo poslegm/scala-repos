@@ -40,7 +40,7 @@ object RandomForestRegressionExample {
     // Empty categoricalFeaturesInfo indicates all features are continuous.
     val numClasses              = 2
     val categoricalFeaturesInfo = Map[Int, Int]()
-    val numTrees                = 3 // Use more in practice.
+    val numTrees                = 3      // Use more in practice.
     val featureSubsetStrategy   = "auto" // Let the algorithm choose.
     val impurity                = "variance"
     val maxDepth                = 4

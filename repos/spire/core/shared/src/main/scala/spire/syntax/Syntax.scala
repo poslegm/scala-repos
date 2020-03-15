@@ -275,8 +275,8 @@ trait UnboundSyntax {
       g: G
   )(implicit ev: AdditiveAction[_, G]): AdditiveActionUnboundOps[G] =
     new AdditiveActionUnboundOps(g)
-  implicit def multiplicativeActionUnboundOps[G](g: G)(
-      implicit ev: MultiplicativeAction[_, G]
+  implicit def multiplicativeActionUnboundOps[G](g: G)(implicit
+      ev: MultiplicativeAction[_, G]
   ): MultiplicativeActionUnboundOps[G] =
     new MultiplicativeActionUnboundOps(g)
 }

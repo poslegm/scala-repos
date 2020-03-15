@@ -37,8 +37,8 @@ object Cookie {
   def formatExpires(date: Date): String =
     DateUtil.formatDate(date, "EEE, dd MMM yyyy HH:mm:ss zzz")
 }
-case class Cookie(name: String, value: String)(
-    implicit cookieOptions: CookieOptions = CookieOptions()
+case class Cookie(name: String, value: String)(implicit
+    cookieOptions: CookieOptions = CookieOptions()
 ) {
   import org.scalatra.Cookie._
 
@@ -115,15 +115,15 @@ class SweetCookies(
       (throw new Exception("No cookie could be found for the specified key"))
   }
 
-  def update(name: String, value: String)(
-      implicit cookieOptions: CookieOptions = CookieOptions()
+  def update(name: String, value: String)(implicit
+      cookieOptions: CookieOptions = CookieOptions()
   ): Cookie = {
     cookies += name -> value
     addCookie(name, value, cookieOptions)
   }
 
-  def set(name: String, value: String)(
-      implicit cookieOptions: CookieOptions = CookieOptions()
+  def set(name: String, value: String)(implicit
+      cookieOptions: CookieOptions = CookieOptions()
   ): Cookie = {
     this.update(name, value)(cookieOptions)
   }

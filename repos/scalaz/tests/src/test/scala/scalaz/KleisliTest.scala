@@ -13,8 +13,8 @@ object KleisliTest extends SpecLite {
   type IntOr[A]         = Int \/ A
   type KleisliEither[A] = Kleisli[IntOr, Int, A]
 
-  implicit def Function1IntOptInt[A](
-      implicit A: Arbitrary[Option[Int]]
+  implicit def Function1IntOptInt[A](implicit
+      A: Arbitrary[Option[Int]]
   ): Arbitrary[Int => Option[Int]] =
     Arbitrary(
       Gen.frequency[Int => Option[Int]](
@@ -24,8 +24,8 @@ object KleisliTest extends SpecLite {
       )
     )
 
-  implicit def KleisliEqual[M[_]](
-      implicit M: Equal[M[Int]]
+  implicit def KleisliEqual[M[_]](implicit
+      M: Equal[M[Int]]
   ): Equal[Kleisli[M, Int, Int]] =
     new Equal[Kleisli[M, Int, Int]] {
       def equal(a1: Kleisli[M, Int, Int], a2: Kleisli[M, Int, Int]): Boolean = {

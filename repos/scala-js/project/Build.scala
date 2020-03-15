@@ -627,8 +627,8 @@ object Build extends sbt.Build {
       (commonSettings ++ publishSettings ++ fatalWarningsSettings) ++ Seq(
         name := "Scala.js JS Envs",
         libraryDependencies ++= Seq(
-          "io.apigee"                                          % "rhino" % "1.7R5pre4",
-          "org.webjars"                                        % "envjs" % "1.2",
+          "io.apigee"                                          % "rhino"           % "1.7R5pre4",
+          "org.webjars"                                        % "envjs"           % "1.2",
           "com.novocode"                                       % "junit-interface" % "0.9" % "test"
         ) ++ ScalaJSPluginInternal.phantomJSJettyModules.map(_ % "provided"),
         previousArtifactSetting,

@@ -184,8 +184,8 @@ trait ConjunctionMagnet[L] {
 }
 
 object ConjunctionMagnet {
-  implicit def fromDirective[L, R](other: Directive[R])(
-      implicit join: TupleOps.Join[L, R]
+  implicit def fromDirective[L, R](other: Directive[R])(implicit
+      join: TupleOps.Join[L, R]
   ): ConjunctionMagnet[L] { type Out = Directive[join.Out] } =
     new ConjunctionMagnet[L] {
       type Out = Directive[join.Out]

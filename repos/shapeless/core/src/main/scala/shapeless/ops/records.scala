@@ -43,8 +43,8 @@ package record {
   object Selector {
     type Aux[L <: HList, K, Out0] = Selector[L, K] { type Out = Out0 }
 
-    def apply[L <: HList, K](
-        implicit selector: Selector[L, K]
+    def apply[L <: HList, K](implicit
+        selector: Selector[L, K]
     ): Aux[L, K, selector.Out] = selector
 
     implicit def mkSelector[L <: HList, K, O]: Aux[L, K, O] =
@@ -97,8 +97,8 @@ package record {
   }
 
   object SelectAll {
-    def apply[L <: HList, K <: HList](
-        implicit sa: SelectAll[L, K]
+    def apply[L <: HList, K <: HList](implicit
+        sa: SelectAll[L, K]
     ): Aux[L, K, sa.Out] = sa
 
     type Aux[L <: HList, K <: HList, Out0 <: HList] = SelectAll[L, K] {
@@ -133,8 +133,8 @@ package record {
   object Updater {
     type Aux[L <: HList, F, Out0 <: HList] = Updater[L, F] { type Out = Out0 }
 
-    def apply[L <: HList, F](
-        implicit updater: Updater[L, F]
+    def apply[L <: HList, F](implicit
+        updater: Updater[L, F]
     ): Aux[L, F, updater.Out] = updater
 
     implicit def mkUpdater[L <: HList, F, O]: Aux[L, F, O] =
@@ -187,8 +187,8 @@ package record {
       type Out = Out0
     }
 
-    implicit def hlistMerger1[H, T <: HList, M <: HList](
-        implicit mt: Merger[T, M]
+    implicit def hlistMerger1[H, T <: HList, M <: HList](implicit
+        mt: Merger[T, M]
     ): Aux[H :: T, M, H :: mt.Out] =
       new Merger[H :: T, M] {
         type Out = H :: mt.Out
@@ -197,8 +197,8 @@ package record {
   }
 
   object Merger extends LowPriorityMerger {
-    def apply[L <: HList, M <: HList](
-        implicit merger: Merger[L, M]
+    def apply[L <: HList, M <: HList](implicit
+        merger: Merger[L, M]
     ): Aux[L, M, merger.Out] = merger
 
     implicit def hnilMerger[M <: HList]: Aux[HNil, M, M] =
@@ -237,8 +237,8 @@ package record {
   }
 
   object Modifier {
-    def apply[L <: HList, F, A, B](
-        implicit modifier: Modifier[L, F, A, B]
+    def apply[L <: HList, F, A, B](implicit
+        modifier: Modifier[L, F, A, B]
     ): Aux[L, F, A, B, modifier.Out] = modifier
 
     type Aux[L <: HList, F, A, B, Out0 <: HList] = Modifier[L, F, A, B] {
@@ -253,8 +253,8 @@ package record {
           field[F](f(l.head)) :: l.tail
       }
 
-    implicit def hlistModify[H, T <: HList, F, A, B](
-        implicit mt: Modifier[T, F, A, B]
+    implicit def hlistModify[H, T <: HList, F, A, B](implicit
+        mt: Modifier[T, F, A, B]
     ): Aux[H :: T, F, A, B, H :: mt.Out] =
       new Modifier[H :: T, F, A, B] {
         type Out = H :: mt.Out
@@ -273,8 +273,8 @@ package record {
   trait LowPriorityRemover {
     type Aux[L <: HList, K, Out0] = Remover[L, K] { type Out = Out0 }
 
-    implicit def hlistRemove[H, T <: HList, K, V, OutT <: HList](
-        implicit rt: Aux[T, K, (V, OutT)]
+    implicit def hlistRemove[H, T <: HList, K, V, OutT <: HList](implicit
+        rt: Aux[T, K, (V, OutT)]
     ): Aux[H :: T, K, (V, H :: OutT)] =
       new Remover[H :: T, K] {
         type Out = (V, H :: OutT)
@@ -286,8 +286,8 @@ package record {
   }
 
   object Remover extends LowPriorityRemover {
-    def apply[L <: HList, K](
-        implicit remover: Remover[L, K]
+    def apply[L <: HList, K](implicit
+        remover: Remover[L, K]
     ): Aux[L, K, remover.Out] = remover
 
     implicit def hlistRemove1[K, V, T <: HList]
@@ -313,8 +313,8 @@ package record {
   trait LowPriorityRemove {
     type Aux[L <: HList, E, Out0] = Remove[L, E] { type Out = Out0 }
 
-    implicit def hconsRemove[H, T <: HList, E, OutT <: HList](
-        implicit rt: Aux[T, E, (E, OutT)]
+    implicit def hconsRemove[H, T <: HList, E, OutT <: HList](implicit
+        rt: Aux[T, E, (E, OutT)]
     ): Aux[H :: T, E, (E, H :: OutT)] =
       new Remove[H :: T, E] {
         type Out = (E, H :: OutT)
@@ -330,8 +330,8 @@ package record {
   }
 
   object Remove extends LowPriorityRemove {
-    def apply[L <: HList, E](
-        implicit remove: Remove[L, E]
+    def apply[L <: HList, E](implicit
+        remove: Remove[L, E]
     ): Aux[L, E, remove.Out] = remove
 
     implicit def removeHead[K, V, T <: HList]
@@ -371,8 +371,8 @@ package record {
       type Out = Out0
     }
 
-    def apply[L <: HList, A <: HList](
-        implicit removeAll: RemoveAll[L, A]
+    def apply[L <: HList, A <: HList](implicit
+        removeAll: RemoveAll[L, A]
     ): Aux[L, A, removeAll.Out] =
       removeAll
 
@@ -422,8 +422,8 @@ package record {
   }
 
   object Renamer {
-    def apply[L <: HList, K1, K2](
-        implicit renamer: Renamer[L, K1, K2]
+    def apply[L <: HList, K1, K2](implicit
+        renamer: Renamer[L, K1, K2]
     ): Aux[L, K1, K2, renamer.Out] =
       renamer
 
@@ -439,8 +439,8 @@ package record {
           field[K2](l.head: V) :: l.tail
       }
 
-    implicit def hlistRenamer[H, T <: HList, K1, K2, V](
-        implicit rn: Renamer[T, K1, K2]
+    implicit def hlistRenamer[H, T <: HList, K1, K2, V](implicit
+        rn: Renamer[T, K1, K2]
     ): Aux[H :: T, K1, K2, H :: rn.Out] =
       new Renamer[H :: T, K1, K2] {
         type Out = H :: rn.Out
@@ -497,8 +497,8 @@ package record {
         def apply(l: L): Out = HNil
       }
 
-    implicit def hlistValues[K, V, T <: HList](
-        implicit vt: Values[T]
+    implicit def hlistValues[K, V, T <: HList](implicit
+        vt: Values[T]
     ): Aux[FieldType[K, V] :: T, V :: vt.Out] =
       new Values[FieldType[K, V] :: T] {
         type Out = V :: vt.Out
@@ -581,8 +581,8 @@ package record {
   }
 
   object ToMap {
-    def apply[L <: HList](
-        implicit toMap: ToMap[L]
+    def apply[L <: HList](implicit
+        toMap: ToMap[L]
     ): Aux[L, toMap.Key, toMap.Value] = toMap
 
     type Aux[L <: HList, Key0, Value0] = ToMap[L] {
@@ -599,8 +599,8 @@ package record {
     implicit def hnilToMapAnyNothing[L <: HNil]: Aux[L, Any, Nothing] =
       hnilToMap[Any, Nothing, L]
 
-    implicit def hsingleToMap[K, V](
-        implicit wk: Witness.Aux[K]
+    implicit def hsingleToMap[K, V](implicit
+        wk: Witness.Aux[K]
     ): Aux[FieldType[K, V] :: HNil, K, V] =
       new ToMap[FieldType[K, V] :: HNil] {
         type Key   = K
@@ -634,8 +634,8 @@ package record {
   }
 
   object MapValues {
-    def apply[HF, L <: HList](
-        implicit mapValues: MapValues[HF, L]
+    def apply[HF, L <: HList](implicit
+        mapValues: MapValues[HF, L]
     ): Aux[HF, L, mapValues.Out] =
       mapValues
 

@@ -88,8 +88,8 @@ object Implicits {
   */
 final class CircuitBreakerAwareFuture(val future: Future[Any]) extends AnyVal {
   @throws[OpenCircuitException]
-  def failForOpenCircuit(
-      implicit executionContext: ExecutionContext
+  def failForOpenCircuit(implicit
+      executionContext: ExecutionContext
   ): Future[Any] =
     failForOpenCircuitWith(OpenCircuitException)
 

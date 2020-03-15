@@ -38,14 +38,14 @@ trait SortedSet[A]
 object SortedSet extends ImmutableSortedSetFactory[SortedSet] {
 
   /** $sortedSetCanBuildFromInfo */
-  def canBuildFrom[A](
-      implicit ord: Ordering[A]
+  def canBuildFrom[A](implicit
+      ord: Ordering[A]
   ): CanBuildFrom[Coll, A, SortedSet[A]] =
     newCanBuildFrom[A]
   def empty[A](implicit ord: Ordering[A]): SortedSet[A] = TreeSet.empty[A]
   // Force a declaration here so that BitSet's (which does not inherit from SortedSetFactory) can be more specific
-  override implicit def newCanBuildFrom[A](
-      implicit ord: Ordering[A]
+  override implicit def newCanBuildFrom[A](implicit
+      ord: Ordering[A]
   ): CanBuildFrom[Coll, A, SortedSet[A]] =
     super.newCanBuildFrom
 }

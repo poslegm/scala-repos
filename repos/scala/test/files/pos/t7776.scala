@@ -13,8 +13,8 @@ object MacroErasure {
     import c.universe._
     c.Expr(q"$f($x)")
   }
-  def appMacroA[A](c: Context)(f: c.Expr[A => Any], x: c.Expr[Any])(
-      implicit tt: c.WeakTypeTag[A]
+  def appMacroA[A](c: Context)(f: c.Expr[A => Any], x: c.Expr[Any])(implicit
+      tt: c.WeakTypeTag[A]
   ): c.Expr[Any] = {
     import c.universe._
     c.Expr(q"$f[${tt.tpe}]($x)")

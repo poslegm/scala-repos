@@ -41,10 +41,9 @@ abstract class SpecLite extends Properties("") with SpecLitePlatform {
     def ![A](a: => A)(implicit ev: (A) => Prop): Unit = in(a)
 
     def in[A](a: => A)(implicit ev: (A) => Prop): Unit =
-      property(context + ":" + s) =
-        Prop(
-          ev(a)(_)
-        ) // TODO sort out the laziness / implicit conversions properly
+      property(context + ":" + s) = Prop(
+        ev(a)(_)
+      ) // TODO sort out the laziness / implicit conversions properly
   }
 
   implicit def enrichString(s: String) = new StringOps(s)
@@ -122,8 +121,8 @@ abstract class SpecLite extends Properties("") with SpecLitePlatform {
     * Most of our scalacheck tests use (Int => Int). This generator includes non-constant
     * functions (id, inc), to have a better chance at catching bugs.
     */
-  implicit def Function1IntInt[A](
-      implicit A: Arbitrary[Int]
+  implicit def Function1IntInt[A](implicit
+      A: Arbitrary[Int]
   ): Arbitrary[Int => Int] =
     Arbitrary(
       Gen.frequency[Int => Int](

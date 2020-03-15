@@ -829,8 +829,8 @@ object MapTest extends SpecLite {
         : Equal[(A ==>> B) @@ Tags.Conjunction] =
       Tag.subst(implicitly)
 
-    implicit def arbMapConj[A, B](
-        implicit a: Arbitrary[A ==>> B]
+    implicit def arbMapConj[A, B](implicit
+        a: Arbitrary[A ==>> B]
     ): Arbitrary[(A ==>> B) @@ Tags.Conjunction] =
       Tag.subst(a)
 

@@ -331,7 +331,7 @@ object TestLogCleaning {
     for (i <- 0L until (messages * topics.length)) {
       val topic  = topics((i % topics.length).toInt)
       val key    = rand.nextInt(keyCount)
-      val delete = i % 100 < percentDeletes
+      val delete = i         % 100 < percentDeletes
       val msg =
         if (delete)
           new ProducerRecord[Array[Byte], Array[Byte]](

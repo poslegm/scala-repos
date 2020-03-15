@@ -34,8 +34,8 @@ private[tracker] class TaskTrackerDelegate(
     Await.result(tasksByApp(), taskTrackerQueryTimeout.duration)
   }
 
-  override def tasksByApp()(
-      implicit ec: ExecutionContext
+  override def tasksByApp()(implicit
+      ec: ExecutionContext
   ): Future[TaskTracker.TasksByApp] = {
     import akka.pattern.ask
     def futureCall(): Future[TaskTracker.TasksByApp] =

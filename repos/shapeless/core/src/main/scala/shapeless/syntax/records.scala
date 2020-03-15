@@ -59,8 +59,8 @@ final class RecordOps[L <: HList](val l: L) extends AnyVal with Serializable {
   /**
     * Updates or adds to this record a field with key type F and value type F#valueType.
     */
-  def updated[V](k: Witness, v: V)(
-      implicit updater: Updater[L, FieldType[k.T, V]]
+  def updated[V](k: Witness, v: V)(implicit
+      updater: Updater[L, FieldType[k.T, V]]
   ): updater.Out =
     updater(l, field[k.T](v))
 
@@ -89,8 +89,8 @@ final class RecordOps[L <: HList](val l: L) extends AnyVal with Serializable {
     * Remove the field associated with the singleton typed key k, returning the updated record. Only available if this
     * record has a field with keyType equal to the singleton type k.T.
     */
-  def -[V, Out <: HList](k: Witness)(
-      implicit remover: Remover.Aux[L, k.T, (V, Out)]
+  def -[V, Out <: HList](k: Witness)(implicit
+      remover: Remover.Aux[L, k.T, (V, Out)]
   ): Out = remover(l)._2
 
   /**
@@ -103,8 +103,8 @@ final class RecordOps[L <: HList](val l: L) extends AnyVal with Serializable {
     * Rename the field associated with the singleton typed key oldKey. Only available if this
     * record has a field with keyType equal to the singleton type oldKey.T.
     */
-  def renameField(oldKey: Witness, newKey: Witness)(
-      implicit renamer: Renamer[L, oldKey.T, newKey.T]
+  def renameField(oldKey: Witness, newKey: Witness)(implicit
+      renamer: Renamer[L, oldKey.T, newKey.T]
   ): renamer.Out =
     renamer(l)
 
@@ -132,8 +132,8 @@ final class RecordOps[L <: HList](val l: L) extends AnyVal with Serializable {
   /**
     * Maps a higher rank function across the values of this record.
     */
-  def mapValues(f: Poly)(
-      implicit mapValues: MapValues[f.type, L]
+  def mapValues(f: Poly)(implicit
+      mapValues: MapValues[f.type, L]
   ): mapValues.Out = mapValues(l)
 
   /**

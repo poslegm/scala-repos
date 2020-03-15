@@ -42,7 +42,7 @@ class XORShiftRandomSuite extends SparkFunSuite with Matchers {
     val f = fixture
 
     val numBins = 10 // create 10 bins
-    val numRows = 5 // create 5 rows
+    val numRows = 5  // create 5 rows
     val bins    = Array.ofDim[Long](numRows, numBins)
 
     // populate bins based on modulus of the random number for each row

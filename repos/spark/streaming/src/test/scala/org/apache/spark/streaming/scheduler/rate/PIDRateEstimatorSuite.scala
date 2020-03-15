@@ -112,9 +112,9 @@ class PIDRateEstimatorSuite extends SparkFunSuite with Matchers {
     // prepare a series of batch updates, one every 20ms with an increasing number of processed
     // elements in each batch, but constant processing time, and no accumulated error. Even though
     // the integral part is non-zero, the estimated rate should follow only the proportional term
-    val times    = List.tabulate(50)(x => x * 20) // every 20ms
+    val times    = List.tabulate(50)(x => x * 20)       // every 20ms
     val elements = List.tabulate(50)(x => (x + 1) * 20) // increasing
-    val proc     = List.fill(50)(20) // 20ms of processing
+    val proc     = List.fill(50)(20)                    // 20ms of processing
     val sched    = List.fill(50)(0)
     val res =
       for (i <- List.range(0, 50))
@@ -131,9 +131,9 @@ class PIDRateEstimatorSuite extends SparkFunSuite with Matchers {
     // elements in each batch, but constant processing time, and no accumulated error. Even though
     // the integral part is non-zero, the estimated rate should follow only the proportional term,
     // asking for less and less elements
-    val times    = List.tabulate(50)(x => x * 20) // every 20ms
+    val times    = List.tabulate(50)(x => x * 20)        // every 20ms
     val elements = List.tabulate(50)(x => (50 - x) * 20) // decreasing
-    val proc     = List.fill(50)(20) // 20ms of processing
+    val proc     = List.fill(50)(20)                     // 20ms of processing
     val sched    = List.fill(50)(0)
     val res =
       for (i <- List.range(0, 50))
@@ -147,11 +147,11 @@ class PIDRateEstimatorSuite extends SparkFunSuite with Matchers {
   ) {
     val minRate     = 10d
     val p           = new PIDRateEstimator(20, 1d, .01d, 0d, minRate)
-    val times       = List.tabulate(50)(x => x * 20) // every 20ms
+    val times       = List.tabulate(50)(x => x * 20)              // every 20ms
     val rng         = new Random()
     val elements    = List.tabulate(50)(x => rng.nextInt(1000) + 1000)
     val procDelayMs = 20
-    val proc        = List.fill(50)(procDelayMs) // 20ms of processing
+    val proc        = List.fill(50)(procDelayMs)                  // 20ms of processing
     val sched       = List.tabulate(50)(x => rng.nextInt(19) + 1) // random wait
     val speeds      = elements map ((x) => x.toDouble / procDelayMs * 1000)
 

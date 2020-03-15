@@ -458,11 +458,11 @@ object CType {
 }
 
 object CValueType {
-  def apply[@spec(Boolean, Long, Double) A](
-      implicit A: CValueType[A]
+  def apply[@spec(Boolean, Long, Double) A](implicit
+      A: CValueType[A]
   ): CValueType[A] = A
-  def apply[@spec(Boolean, Long, Double) A](a: A)(
-      implicit A: CValueType[A]
+  def apply[@spec(Boolean, Long, Double) A](a: A)(implicit
+      A: CValueType[A]
   ): CWrappedValue[A] = A(a)
 
   // These let us do, def const[A: CValueType](a: A): CValue = CValueType[A](a)
@@ -474,8 +474,8 @@ object CValueType {
   implicit def bigDecimal: CValueType[BigDecimal] = CNum
   implicit def dateTime: CValueType[DateTime]     = CDate
   implicit def period: CValueType[Period]         = CPeriod
-  implicit def array[@spec(Boolean, Long, Double) A](
-      implicit elemType: CValueType[A]
+  implicit def array[@spec(Boolean, Long, Double) A](implicit
+      elemType: CValueType[A]
   ) = CArrayType(elemType)
 }
 

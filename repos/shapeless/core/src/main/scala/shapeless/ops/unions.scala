@@ -38,8 +38,8 @@ object union {
   trait LowPrioritySelector {
     type Aux[C <: Coproduct, K, V0] = Selector[C, K] { type V = V0 }
 
-    implicit def tlSelector[H, T <: Coproduct, K](
-        implicit st: Selector[T, K]
+    implicit def tlSelector[H, T <: Coproduct, K](implicit
+        st: Selector[T, K]
     ): Aux[H :+: T, K, st.V] =
       new Selector[H :+: T, K] {
         type V = st.V
@@ -52,8 +52,8 @@ object union {
   }
 
   object Selector extends LowPrioritySelector {
-    def apply[C <: Coproduct, K](
-        implicit selector: Selector[C, K]
+    def apply[C <: Coproduct, K](implicit
+        selector: Selector[C, K]
     ): Aux[C, K, selector.V] = selector
 
     implicit def hdSelector[K, V0, T <: Coproduct]
@@ -119,8 +119,8 @@ object union {
         def apply(u: U): Out = u
       }
 
-    implicit def coproductValues[K, V, T <: Coproduct](
-        implicit vt: Values[T]
+    implicit def coproductValues[K, V, T <: Coproduct](implicit
+        vt: Values[T]
     ): Aux[FieldType[K, V] :+: T, V :+: vt.Out] =
       new Values[FieldType[K, V] :+: T] {
         type Out = V :+: vt.Out
@@ -179,8 +179,8 @@ object union {
   }
 
   object ToMap {
-    def apply[U <: Coproduct](
-        implicit toMap: ToMap[U]
+    def apply[U <: Coproduct](implicit
+        toMap: ToMap[U]
     ): Aux[U, toMap.Key, toMap.Value] = toMap
 
     type Aux[U <: Coproduct, Key0, Value0] = ToMap[U] {
@@ -197,8 +197,8 @@ object union {
     implicit val cnilToMapAnyNothing: Aux[CNil, Any, Nothing] =
       cnilToMap[Any, Nothing]
 
-    implicit def csingleToMap[K, V](
-        implicit wk: Witness.Aux[K]
+    implicit def csingleToMap[K, V](implicit
+        wk: Witness.Aux[K]
     ): Aux[FieldType[K, V] :+: CNil, K, V] =
       new ToMap[FieldType[K, V] :+: CNil] {
         type Key   = K
@@ -240,8 +240,8 @@ object union {
   }
 
   object MapValues {
-    def apply[HF, U <: Coproduct](
-        implicit mapValues: MapValues[HF, U]
+    def apply[HF, U <: Coproduct](implicit
+        mapValues: MapValues[HF, U]
     ): Aux[HF, U, mapValues.Out] =
       mapValues
 

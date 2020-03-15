@@ -206,8 +206,8 @@ object RecordSpec extends Specification {
           ("mandatoryDecimalField"    -> "3.14") ~
           ("mandatoryDoubleField"     -> 1999.0) ~
           ("mandatoryEmailField"      -> "test@liftweb.net") ~
-          ("mandatoryEnumField"       -> 0) ~ ("mandatoryIntField" -> 99) ~
-          ("mandatoryLocaleField"     -> "en_US") ~ ("mandatoryLongField" -> 100) ~
+          ("mandatoryEnumField"       -> 0) ~ ("mandatoryIntField"         -> 99) ~
+          ("mandatoryLocaleField"     -> "en_US") ~ ("mandatoryLongField"  -> 100) ~
           ("mandatoryPostalCodeField" -> "55401") ~
           ("mandatoryStringField"     -> "foobar") ~
           ("mandatoryTextareaField"   -> "foobar") ~

@@ -526,8 +526,8 @@ trait SeqLike[+A, +Repr]
     b.result()
   }
 
-  def patch[B >: A, That](from: Int, patch: GenSeq[B], replaced: Int)(
-      implicit bf: CanBuildFrom[Repr, B, That]
+  def patch[B >: A, That](from: Int, patch: GenSeq[B], replaced: Int)(implicit
+      bf: CanBuildFrom[Repr, B, That]
   ): That = {
     val b  = bf(repr)
     var i  = 0
@@ -546,8 +546,8 @@ trait SeqLike[+A, +Repr]
     b.result()
   }
 
-  def updated[B >: A, That](index: Int, elem: B)(
-      implicit bf: CanBuildFrom[Repr, B, That]
+  def updated[B >: A, That](index: Int, elem: B)(implicit
+      bf: CanBuildFrom[Repr, B, That]
   ): That = {
     if (index < 0) throw new IndexOutOfBoundsException(index.toString)
     val b  = bf(repr)
@@ -582,8 +582,8 @@ trait SeqLike[+A, +Repr]
     b.result()
   }
 
-  def padTo[B >: A, That](len: Int, elem: B)(
-      implicit bf: CanBuildFrom[Repr, B, That]
+  def padTo[B >: A, That](len: Int, elem: B)(implicit
+      bf: CanBuildFrom[Repr, B, That]
   ): That = {
     val b = bf(repr)
     val L = length

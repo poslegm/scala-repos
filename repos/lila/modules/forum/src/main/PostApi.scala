@@ -25,8 +25,8 @@ final class PostApi(
     detectLanguage: lila.common.DetectLanguage
 ) {
 
-  def makePost(categ: Categ, topic: Topic, data: DataForm.PostData)(
-      implicit ctx: UserContext
+  def makePost(categ: Categ, topic: Topic, data: DataForm.PostData)(implicit
+      ctx: UserContext
   ): Fu[Post] =
     lastNumberOf(topic) zip detectLanguage(data.text) zip userIds(
       topic

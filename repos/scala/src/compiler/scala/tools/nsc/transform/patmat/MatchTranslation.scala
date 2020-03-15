@@ -91,7 +91,7 @@ trait MatchTranslation { self: PatternMatching =>
       object SymbolAndTypeBound {
         def unapply(tree: Tree): Option[(Symbol, Type)] =
           tree match {
-            case SymbolBound(sym, TypeBound(tpe)) => Some(sym -> tpe)
+            case SymbolBound(sym, TypeBound(tpe)) => Some(sym    -> tpe)
             case TypeBound(tpe)                   => Some(binder -> tpe)
             case _                                => None
           }

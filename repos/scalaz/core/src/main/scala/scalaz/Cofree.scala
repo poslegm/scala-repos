@@ -8,8 +8,8 @@ sealed abstract class Cofree[S[_], A] {
   def t: Free[Function0, S[Cofree[S, A]]]
 
   /** Applies `f` to the head and `g` through the tail. */
-  def applyCofree[B](f: A => B, g: Cofree[S, A] => Cofree[S, B])(
-      implicit S: Functor[S]
+  def applyCofree[B](f: A => B, g: Cofree[S, A] => Cofree[S, B])(implicit
+      S: Functor[S]
   ): Cofree[S, B]
 
   /* Derived methods */
@@ -68,8 +68,8 @@ sealed abstract class Cofree[S[_], A] {
     applyTail(b, _ inject b)
 
   /** Replaces the head with `b` and applies `g` through the tail. */
-  final def applyTail[B](b: B, g: Cofree[S, A] => Cofree[S, B])(
-      implicit S: Functor[S]
+  final def applyTail[B](b: B, g: Cofree[S, A] => Cofree[S, B])(implicit
+      S: Functor[S]
   ): Cofree[S, B] =
     applyCofree(x => b, g)
 
@@ -98,8 +98,8 @@ object Cofree extends CofreeInstances {
     Some((c.head, c.tail))
 
   //creates an instance of Cofree that trampolines all of the calls to the tail so we get stack safety
-  def applyT[S[_], A](a: A, tf: Free[Function0, S[Cofree[S, A]]])(
-      implicit T: Functor[λ[a => Free[Function0, a]]]
+  def applyT[S[_], A](a: A, tf: Free[Function0, S[Cofree[S, A]]])(implicit
+      T: Functor[λ[a => Free[Function0, a]]]
   ): Cofree[S, A] =
     new Cofree[S, A] {
 
@@ -107,8 +107,8 @@ object Cofree extends CofreeInstances {
 
       def t = tf
 
-      def applyCofree[B](f: A => B, g: Cofree[S, A] => Cofree[S, B])(
-          implicit S: Functor[S]
+      def applyCofree[B](f: A => B, g: Cofree[S, A] => Cofree[S, B])(implicit
+          S: Functor[S]
       ): Cofree[S, B] =
         applyT(f(head), T.map(t)(S.lift(g)))
     }

@@ -19,12 +19,12 @@ import mutable.{Builder, SetBuilder}
   *  @define coll immutable tree set
   */
 object TreeSet extends ImmutableSortedSetFactory[TreeSet] {
-  implicit def implicitBuilder[A](
-      implicit ordering: Ordering[A]
+  implicit def implicitBuilder[A](implicit
+      ordering: Ordering[A]
   ): Builder[A, TreeSet[A]] =
     newBuilder[A](ordering)
-  override def newBuilder[A](
-      implicit ordering: Ordering[A]
+  override def newBuilder[A](implicit
+      ordering: Ordering[A]
   ): Builder[A, TreeSet[A]] =
     new SetBuilder(empty[A](ordering))
 
@@ -56,8 +56,8 @@ object TreeSet extends ImmutableSortedSetFactory[TreeSet] {
   "The implementation details of immutable tree sets make inheriting from them unwise.",
   "2.11.0"
 )
-class TreeSet[A] private (tree: RB.Tree[A, Unit])(
-    implicit val ordering: Ordering[A]
+class TreeSet[A] private (tree: RB.Tree[A, Unit])(implicit
+    val ordering: Ordering[A]
 ) extends SortedSet[A]
     with SortedSetLike[A, TreeSet[A]]
     with Serializable {

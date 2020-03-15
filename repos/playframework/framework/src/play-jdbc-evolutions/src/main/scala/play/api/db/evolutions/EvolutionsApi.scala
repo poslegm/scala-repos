@@ -156,9 +156,11 @@ class DatabaseEvolutions(database: Database, schema: String = "") {
 
       Collections
         .unfoldLeft(
-          executeQuery("""
+          executeQuery(
+            """
             select id, hash, apply_script, revert_script from ${schema}play_evolutions order by id
-        """)
+        """
+          )
         ) { rs =>
           rs.next match {
             case false => None
@@ -223,8 +225,8 @@ class DatabaseEvolutions(database: Database, schema: String = "") {
       }
     }
 
-    def updateLastProblem(message: String, revision: Int)(
-        implicit conn: Connection
+    def updateLastProblem(message: String, revision: Int)(implicit
+        conn: Connection
     ): Boolean = {
       val ps = prepare(
         "update ${schema}play_evolutions set last_problem = ? where id = ?"

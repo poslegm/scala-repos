@@ -12,12 +12,12 @@ class FooCov[+x]
 class FooString[+x <: String]
 
 object fcollok  extends coll[FooCov]
-object fcollinv extends coll[FooInvar] // error
+object fcollinv extends coll[FooInvar]  // error
 object fcollcon extends coll[FooContra] // error
 object fcollwb  extends coll[FooString] // error
 
-object fcoll2ok  extends coll2[FooCov] // error
-object fcoll2inv extends coll2[FooInvar] // error
+object fcoll2ok  extends coll2[FooCov]    // error
+object fcoll2inv extends coll2[FooInvar]  // error
 object fcoll2con extends coll2[FooContra]
 object fcoll2wb  extends coll2[FooString] // error
 

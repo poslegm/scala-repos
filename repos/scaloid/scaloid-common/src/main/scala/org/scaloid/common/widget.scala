@@ -447,8 +447,8 @@ object SArrayAdapter {
   )(implicit context: Context): SArrayAdapter[TextView, T] =
     new SArrayAdapter[TextView, T](java.util.Arrays.asList[T](items: _*))
 
-  def apply[T <: AnyRef: Manifest](textViewResourceId: Int, items: T*)(
-      implicit context: Context
+  def apply[T <: AnyRef: Manifest](textViewResourceId: Int, items: T*)(implicit
+      context: Context
   ): SArrayAdapter[TextView, T] =
     new SArrayAdapter[TextView, T](
       java.util.Arrays.asList(items: _*),
@@ -465,8 +465,8 @@ object SArrayAdapter {
   )(implicit context: Context): SArrayAdapter[TextView, T] =
     new SArrayAdapter[TextView, T](items)
 
-  def apply[T <: AnyRef](textViewResourceId: Int, items: Array[T])(
-      implicit context: Context
+  def apply[T <: AnyRef](textViewResourceId: Int, items: Array[T])(implicit
+      context: Context
   ): SArrayAdapter[TextView, T] =
     new SArrayAdapter[TextView, T](
       java.util.Arrays.asList(items: _*),
@@ -873,8 +873,8 @@ class SEditText()(implicit
     if (interval >= 0) onPressAndHold(interval, onClickListener.func(this))
   }
 
-  def this(text: CharSequence, onClickListener: ViewOnClickListener)(
-      implicit context: Context
+  def this(text: CharSequence, onClickListener: ViewOnClickListener)(implicit
+      context: Context
   ) = this(text, onClickListener, -1)
 }
 
@@ -1321,8 +1321,8 @@ class SMultiAutoCompleteTextView()(implicit
     if (interval >= 0) onPressAndHold(interval, onClickListener.func(this))
   }
 
-  def this(text: CharSequence, onClickListener: ViewOnClickListener)(
-      implicit context: Context
+  def this(text: CharSequence, onClickListener: ViewOnClickListener)(implicit
+      context: Context
   ) = this(text, onClickListener, -1)
 }
 
@@ -3261,8 +3261,8 @@ class SChronometer()(implicit
     if (interval >= 0) onPressAndHold(interval, onClickListener.func(this))
   }
 
-  def this(text: CharSequence, onClickListener: ViewOnClickListener)(
-      implicit context: Context
+  def this(text: CharSequence, onClickListener: ViewOnClickListener)(implicit
+      context: Context
   ) = this(text, onClickListener, -1)
 }
 
@@ -3392,8 +3392,8 @@ class SCheckedTextView()(implicit
     if (interval >= 0) onPressAndHold(interval, onClickListener.func(this))
   }
 
-  def this(text: CharSequence, onClickListener: ViewOnClickListener)(
-      implicit context: Context
+  def this(text: CharSequence, onClickListener: ViewOnClickListener)(implicit
+      context: Context
   ) = this(text, onClickListener, -1)
 }
 
@@ -3540,8 +3540,8 @@ trait TraitShareActionProvider[This <: android.widget.ShareActionProvider]
     extends TraitActionProvider[This] {
 
   @inline
-  def onShareTargetSelectedListener(
-      implicit no: NoGetterForThisProperty
+  def onShareTargetSelectedListener(implicit
+      no: NoGetterForThisProperty
   ): Nothing =
     throw new Error(
       "Android does not support the getter for 'onShareTargetSelectedListener'"
@@ -3641,8 +3641,8 @@ class SShareActionProvider()(implicit context: android.content.Context)
 }
 
 object SShareActionProvider {
-  def apply()(
-      implicit context: android.content.Context
+  def apply()(implicit
+      context: android.content.Context
   ): SShareActionProvider = {
     val v = new SShareActionProvider
 
@@ -6989,8 +6989,8 @@ class SRadioButton()(implicit
     if (interval >= 0) onPressAndHold(interval, onClickListener.func(this))
   }
 
-  def this(text: CharSequence, onClickListener: ViewOnClickListener)(
-      implicit context: Context
+  def this(text: CharSequence, onClickListener: ViewOnClickListener)(implicit
+      context: Context
   ) = this(text, onClickListener, -1)
 }
 
@@ -7231,8 +7231,8 @@ trait TraitSearchView[This <: android.widget.SearchView]
   }
 
   @inline
-  def onQueryTextFocusChangeListener(
-      implicit no: NoGetterForThisProperty
+  def onQueryTextFocusChangeListener(implicit
+      no: NoGetterForThisProperty
   ): Nothing =
     throw new Error(
       "Android does not support the getter for 'onQueryTextFocusChangeListener'"
@@ -7536,8 +7536,8 @@ class SDigitalClock()(implicit
     if (interval >= 0) onPressAndHold(interval, onClickListener.func(this))
   }
 
-  def this(text: CharSequence, onClickListener: ViewOnClickListener)(
-      implicit context: Context
+  def this(text: CharSequence, onClickListener: ViewOnClickListener)(implicit
+      context: Context
   ) = this(text, onClickListener, -1)
 }
 
@@ -7636,8 +7636,8 @@ class SToggleButton()(implicit
     if (interval >= 0) onPressAndHold(interval, onClickListener.func(this))
   }
 
-  def this(text: CharSequence, onClickListener: ViewOnClickListener)(
-      implicit context: Context
+  def this(text: CharSequence, onClickListener: ViewOnClickListener)(implicit
+      context: Context
   ) = this(text, onClickListener, -1)
 }
 
@@ -7700,8 +7700,8 @@ class SButton()(implicit
     if (interval >= 0) onPressAndHold(interval, onClickListener.func(this))
   }
 
-  def this(text: CharSequence, onClickListener: ViewOnClickListener)(
-      implicit context: Context
+  def this(text: CharSequence, onClickListener: ViewOnClickListener)(implicit
+      context: Context
   ) = this(text, onClickListener, -1)
 }
 
@@ -7765,8 +7765,8 @@ class SCheckBox()(implicit
     if (interval >= 0) onPressAndHold(interval, onClickListener.func(this))
   }
 
-  def this(text: CharSequence, onClickListener: ViewOnClickListener)(
-      implicit context: Context
+  def this(text: CharSequence, onClickListener: ViewOnClickListener)(implicit
+      context: Context
   ) = this(text, onClickListener, -1)
 }
 
@@ -11220,8 +11220,8 @@ class STextView()(implicit
     if (interval >= 0) onPressAndHold(interval, onClickListener.func(this))
   }
 
-  def this(text: CharSequence, onClickListener: ViewOnClickListener)(
-      implicit context: Context
+  def this(text: CharSequence, onClickListener: ViewOnClickListener)(implicit
+      context: Context
   ) = this(text, onClickListener, -1)
 }
 
@@ -11620,8 +11620,8 @@ trait TraitAutoCompleteTextView[This <: android.widget.AutoCompleteTextView]
   @inline def dropDownBackground = basis.getDropDownBackground
 
   @inline
-  def dropDownBackgroundDrawable(
-      implicit no: NoGetterForThisProperty
+  def dropDownBackgroundDrawable(implicit
+      no: NoGetterForThisProperty
   ): Nothing =
     throw new Error(
       "Android does not support the getter for 'dropDownBackgroundDrawable'"
@@ -11643,8 +11643,8 @@ trait TraitAutoCompleteTextView[This <: android.widget.AutoCompleteTextView]
   }
 
   @inline
-  def dropDownBackgroundResource(
-      implicit no: NoGetterForThisProperty
+  def dropDownBackgroundResource(implicit
+      no: NoGetterForThisProperty
   ): Nothing =
     throw new Error(
       "Android does not support the getter for 'dropDownBackgroundResource'"
@@ -11960,8 +11960,8 @@ class SAutoCompleteTextView()(implicit
     if (interval >= 0) onPressAndHold(interval, onClickListener.func(this))
   }
 
-  def this(text: CharSequence, onClickListener: ViewOnClickListener)(
-      implicit context: Context
+  def this(text: CharSequence, onClickListener: ViewOnClickListener)(implicit
+      context: Context
   ) = this(text, onClickListener, -1)
 }
 
@@ -12210,8 +12210,8 @@ class SSwitch()(implicit
     if (interval >= 0) onPressAndHold(interval, onClickListener.func(this))
   }
 
-  def this(text: CharSequence, onClickListener: ViewOnClickListener)(
-      implicit context: Context
+  def this(text: CharSequence, onClickListener: ViewOnClickListener)(implicit
+      context: Context
   ) = this(text, onClickListener, -1)
 }
 
@@ -12406,8 +12406,8 @@ class SExtractEditText()(implicit
     if (interval >= 0) onPressAndHold(interval, onClickListener.func(this))
   }
 
-  def this(text: CharSequence, onClickListener: ViewOnClickListener)(
-      implicit context: Context
+  def this(text: CharSequence, onClickListener: ViewOnClickListener)(implicit
+      context: Context
   ) = this(text, onClickListener, -1)
 }
 
@@ -13688,8 +13688,8 @@ trait TraitWebView[This <: android.webkit.WebView]
   @inline def hitTestResult = basis.getHitTestResult
 
   @inline
-  def horizontalScrollbarOverlay(
-      implicit no: NoGetterForThisProperty
+  def horizontalScrollbarOverlay(implicit
+      no: NoGetterForThisProperty
   ): Nothing =
     throw new Error(
       "Android does not support the getter for 'horizontalScrollbarOverlay'"

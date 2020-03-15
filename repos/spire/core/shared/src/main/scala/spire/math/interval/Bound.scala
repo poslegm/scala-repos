@@ -137,8 +137,8 @@ sealed trait ValueBound[A] extends Bound[A] { lhs =>
   override def unary_-()(implicit ev: AdditiveGroup[A]): ValueBound[A] =
     if (isClosed) Closed(-a) else Open(-a)
 
-  override def reciprocal()(
-      implicit ev: MultiplicativeGroup[A]
+  override def reciprocal()(implicit
+      ev: MultiplicativeGroup[A]
   ): ValueBound[A] =
     if (isClosed) Closed(a.reciprocal) else Open(a.reciprocal)
 

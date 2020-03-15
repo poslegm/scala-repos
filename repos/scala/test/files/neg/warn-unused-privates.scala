@@ -1,15 +1,15 @@
 class Bippy(a: Int, b: Int) {
   private def this(c: Int) = this(c, c) // warn
-  private def bippy(x: Int): Int      = bippy(x) // TODO: could warn
+  private def bippy(x: Int): Int      = bippy(x)  // TODO: could warn
   private def boop(x: Int)            = x + a + b // warn
-  final private val MILLIS1           = 2000 // no warn, might have been inlined
-  final private val MILLIS2: Int      = 1000 // warn
-  final private val HI_COMPANION: Int = 500 // no warn, accessed from companion
+  final private val MILLIS1           = 2000      // no warn, might have been inlined
+  final private val MILLIS2: Int      = 1000      // warn
+  final private val HI_COMPANION: Int = 500       // no warn, accessed from companion
   def hi()                            = Bippy.HI_INSTANCE
 }
 object Bippy {
   def hi(x: Bippy)               = x.HI_COMPANION
-  private val HI_INSTANCE: Int   = 500 // no warn, accessed from instance
+  private val HI_INSTANCE: Int   = 500  // no warn, accessed from instance
   private val HEY_INSTANCE: Int  = 1000 // warn
   private lazy val BOOL: Boolean = true // warn
 }

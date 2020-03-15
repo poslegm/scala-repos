@@ -9,8 +9,8 @@ trait Bifoldable[F[_, _]] { self =>
   ////
 
   /** Accumulate `A`s and `B`s */
-  def bifoldMap[A, B, M](fa: F[A, B])(f: A => M)(g: B => M)(
-      implicit F: Monoid[M]
+  def bifoldMap[A, B, M](fa: F[A, B])(f: A => M)(g: B => M)(implicit
+      F: Monoid[M]
   ): M
 
   /** Accumulate to `C` starting at the "right".  `f` and `g` may be
@@ -35,8 +35,8 @@ trait Bifoldable[F[_, _]] { self =>
   }
 
   /**The composition of Bifoldables `F` and `G`, `[x,y]F[G[x,y],G[x,y]]`, is a Bifoldable */
-  def compose[G[_, _]](
-      implicit G0: Bifoldable[G]
+  def compose[G[_, _]](implicit
+      G0: Bifoldable[G]
   ): Bifoldable[λ[(α, β) => F[G[α, β], G[α, β]]]] =
     new CompositionBifoldable[F, G] {
       implicit def F = self
@@ -44,8 +44,8 @@ trait Bifoldable[F[_, _]] { self =>
     }
 
   /**The product of Bifoldables `F` and `G`, `[x,y](F[x,y], G[x,y])`, is a Bifoldable */
-  def product[G[_, _]](
-      implicit G0: Bifoldable[G]
+  def product[G[_, _]](implicit
+      G0: Bifoldable[G]
   ): Bifoldable[λ[(α, β) => (F[α, β], G[α, β])]] =
     new ProductBifoldable[F, G] {
       implicit def F = self
@@ -96,14 +96,14 @@ trait Bifoldable[F[_, _]] { self =>
     }
 
   /** Embed one Foldable to the left of this Bifoldable .*/
-  def embedLeft[G[_]](
-      implicit G0: Foldable[G]
+  def embedLeft[G[_]](implicit
+      G0: Foldable[G]
   ): Bifoldable[λ[(α, β) => F[G[α], β]]] =
     embed[G, Id.Id]
 
   /** Embed one Foldable to the right of this Bifoldable .*/
-  def embedRight[H[_]](
-      implicit H0: Foldable[H]
+  def embedRight[H[_]](implicit
+      H0: Foldable[H]
   ): Bifoldable[λ[(α, β) => F[α, H[β]]]] =
     embed[Id.Id, H]
 

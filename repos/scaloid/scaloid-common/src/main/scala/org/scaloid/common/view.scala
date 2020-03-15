@@ -124,8 +124,8 @@ trait TraitView[This <: android.view.View]
     * }}}
     */
   @inline
-  def here[LP <: ViewGroupLayoutParams[_, _]](
-      implicit defaultLayoutParam: This => LP
+  def here[LP <: ViewGroupLayoutParams[_, _]](implicit
+      defaultLayoutParam: This => LP
   ) = {
     val parent = parentViewGroupIfExists
     if (parent != null) parent += basis
@@ -145,8 +145,8 @@ trait TraitView[This <: android.view.View]
     * }}}
     */
   @inline
-  def hereWithoutStyle[LP <: ViewGroupLayoutParams[_, _]](
-      implicit defaultLayoutParam: This => LP
+  def hereWithoutStyle[LP <: ViewGroupLayoutParams[_, _]](implicit
+      defaultLayoutParam: This => LP
   ) = {
     val parent = parentViewGroupIfExists
     if (parent != null)(parent.basis
@@ -161,39 +161,39 @@ trait TraitView[This <: android.view.View]
   val WRAP_CONTENT = ViewGroup.LayoutParams.WRAP_CONTENT
 
   @inline
-  def fill[LP <: ViewGroupLayoutParams[_, _]](
-      implicit defaultLayoutParam: This => LP
+  def fill[LP <: ViewGroupLayoutParams[_, _]](implicit
+      defaultLayoutParam: This => LP
   ) = {
     <<.fill
     basis
   }
 
   @inline
-  def wrap[LP <: ViewGroupLayoutParams[_, _]](
-      implicit defaultLayoutParam: This => LP
+  def wrap[LP <: ViewGroupLayoutParams[_, _]](implicit
+      defaultLayoutParam: This => LP
   ) = {
     <<.wrap
     basis
   }
 
   @inline
-  def wf[LP <: ViewGroupLayoutParams[_, _]](
-      implicit defaultLayoutParam: This => LP
+  def wf[LP <: ViewGroupLayoutParams[_, _]](implicit
+      defaultLayoutParam: This => LP
   ) = {
     <<.wf
     basis
   }
 
   @inline
-  def fw[LP <: ViewGroupLayoutParams[_, _]](
-      implicit defaultLayoutParam: This => LP
+  def fw[LP <: ViewGroupLayoutParams[_, _]](implicit
+      defaultLayoutParam: This => LP
   ) = {
     <<.fw
     basis
   }
 
-  def <<[LP <: ViewGroupLayoutParams[_, _]](
-      implicit defaultLayoutParam: This => LP
+  def <<[LP <: ViewGroupLayoutParams[_, _]](implicit
+      defaultLayoutParam: This => LP
   ): LP =
     defaultLayoutParam(basis)
 
@@ -205,8 +205,8 @@ trait TraitView[This <: android.view.View]
     if (lp == null) null else lp.parent
   }
 
-  def <<[LP <: ViewGroupLayoutParams[_, _]](width: Int, height: Int)(
-      implicit defaultLayoutParam: This => LP
+  def <<[LP <: ViewGroupLayoutParams[_, _]](width: Int, height: Int)(implicit
+      defaultLayoutParam: This => LP
   ): LP = {
     val lp = defaultLayoutParam(basis)
     lp.height = height
@@ -1041,8 +1041,8 @@ trait TraitView[This <: android.view.View]
   }
 
   @inline
-  def onCreateContextMenuListener(
-      implicit no: NoGetterForThisProperty
+  def onCreateContextMenuListener(implicit
+      no: NoGetterForThisProperty
   ): Nothing =
     throw new Error(
       "Android does not support the getter for 'onCreateContextMenuListener'"
@@ -1180,8 +1180,8 @@ trait TraitView[This <: android.view.View]
   }
 
   @inline
-  def onSystemUiVisibilityChangeListener(
-      implicit no: NoGetterForThisProperty
+  def onSystemUiVisibilityChangeListener(implicit
+      no: NoGetterForThisProperty
   ): Nothing =
     throw new Error(
       "Android does not support the getter for 'onSystemUiVisibilityChangeListener'"

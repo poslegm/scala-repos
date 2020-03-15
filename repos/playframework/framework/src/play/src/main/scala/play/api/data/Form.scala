@@ -252,8 +252,8 @@ case class Form[T](
   /**
     * Returns the form errors serialized as Json.
     */
-  def errorsAsJson(
-      implicit messages: play.api.i18n.Messages
+  def errorsAsJson(implicit
+      messages: play.api.i18n.Messages
   ): play.api.libs.json.JsValue = {
 
     import play.api.libs.json._

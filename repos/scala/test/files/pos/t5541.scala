@@ -32,12 +32,12 @@ object HASkipList {
 }
 sealed trait HASkipList[S <: Sys[S], @specialized(Int) A]
 
-class HASkipListView[S <: Sys[S], A](private val l: HASkipList[S, A])(
-    implicit system: S
+class HASkipListView[S <: Sys[S], A](private val l: HASkipList[S, A])(implicit
+    system: S
 ) {
   import HASkipList.Node
-  private def buildBoxMap(n: Node[S, A], isRight: Boolean)(
-      implicit tx: S#Tx
+  private def buildBoxMap(n: Node[S, A], isRight: Boolean)(implicit
+      tx: S#Tx
   ): (Box, NodeBox) = {
     val sz  = n.size
     val szm = sz - 1

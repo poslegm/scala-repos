@@ -662,8 +662,8 @@ private final class Analyzer(
       }
     }
 
-    def callMethod(methodName: String, statically: Boolean = false)(
-        implicit from: From
+    def callMethod(methodName: String, statically: Boolean = false)(implicit
+        from: From
     ): Unit = {
       if (isConstructorName(methodName)) {
         // constructors must always be called statically

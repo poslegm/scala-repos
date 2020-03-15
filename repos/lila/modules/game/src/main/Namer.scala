@@ -7,8 +7,8 @@ import play.twirl.api.Html
 
 object Namer {
 
-  def players(game: Game, withRatings: Boolean = true)(
-      implicit lightUser: String => Option[LightUser]
+  def players(game: Game, withRatings: Boolean = true)(implicit
+      lightUser: String => Option[LightUser]
   ): (Html, Html) =
     player(game.firstPlayer, withRatings) -> player(
       game.secondPlayer,

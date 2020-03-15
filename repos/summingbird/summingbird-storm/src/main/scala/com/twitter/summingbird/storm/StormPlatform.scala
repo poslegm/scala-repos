@@ -139,8 +139,8 @@ object Storm {
   )(implicit timeOf: TimeExtractor[T]): StormSource[T] =
     toStormSource(spout, None)(timeOf)
 
-  def source[T](spout: Spout[T], defaultSourcePar: Option[Int] = None)(
-      implicit timeOf: TimeExtractor[T]
+  def source[T](spout: Spout[T], defaultSourcePar: Option[Int] = None)(implicit
+      timeOf: TimeExtractor[T]
   ): Producer[Storm, T] =
     Producer.source[Storm, T](toStormSource(spout, defaultSourcePar))
 

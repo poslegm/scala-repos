@@ -138,11 +138,11 @@ object Sensible {
   // TODO: automate testLibs as part of the testSettings
   def testLibs(config: String = "test") =
     Seq(
-      "org.scalatest"     %% "scalatest" % scalatestVersion % config,
-      "org.scalamock"     %% "scalamock-scalatest-support" % "3.2.2" % config,
-      "org.scalacheck"    %% "scalacheck" % "1.12.5" % config,
-      "com.typesafe.akka" %% "akka-testkit" % akkaVersion % config,
-      "com.typesafe.akka" %% "akka-slf4j" % akkaVersion % config
+      "org.scalatest"     %% "scalatest"                   % scalatestVersion % config,
+      "org.scalamock"     %% "scalamock-scalatest-support" % "3.2.2"          % config,
+      "org.scalacheck"    %% "scalacheck"                  % "1.12.5"         % config,
+      "com.typesafe.akka" %% "akka-testkit"                % akkaVersion      % config,
+      "com.typesafe.akka" %% "akka-slf4j"                  % akkaVersion      % config
     ) ++ logback.map(_     % config)
 
   // e.g. YOURKIT_AGENT=/opt/yourkit/bin/linux-x86-64/libyjpagent.so

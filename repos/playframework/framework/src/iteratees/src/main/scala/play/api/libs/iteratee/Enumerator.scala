@@ -632,8 +632,8 @@ object Enumerator {
     * @param chunkSize The size of chunks to read from the stream.
     * @param ec The ExecutionContext to execute blocking code.
     */
-  def fromStream(input: java.io.InputStream, chunkSize: Int = 1024 * 8)(
-      implicit ec: ExecutionContext
+  def fromStream(input: java.io.InputStream, chunkSize: Int = 1024 * 8)(implicit
+      ec: ExecutionContext
   ): Enumerator[Array[Byte]] = {
     implicit val pec = ec.prepare()
     generateM({
@@ -659,8 +659,8 @@ object Enumerator {
     * @param file The file to create the enumerator from.
     * @param chunkSize The size of chunks to read from the file.
     */
-  def fromFile(file: java.io.File, chunkSize: Int = 1024 * 8)(
-      implicit ec: ExecutionContext
+  def fromFile(file: java.io.File, chunkSize: Int = 1024 * 8)(implicit
+      ec: ExecutionContext
   ): Enumerator[Array[Byte]] = {
     fromStream(new java.io.FileInputStream(file), chunkSize)(ec)
   }
@@ -673,8 +673,8 @@ object Enumerator {
     * @param path The file path to create the enumerator from.
     * @param chunkSize The size of chunks to read from the file.
     */
-  def fromPath(path: java.nio.file.Path, chunkSize: Int = 1024 * 8)(
-      implicit ec: ExecutionContext
+  def fromPath(path: java.nio.file.Path, chunkSize: Int = 1024 * 8)(implicit
+      ec: ExecutionContext
   ): Enumerator[Array[Byte]] = {
     fromStream(Files.newInputStream(path), chunkSize)(ec)
   }

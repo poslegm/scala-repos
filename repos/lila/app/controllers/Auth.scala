@@ -50,8 +50,8 @@ object Auth extends LilaController {
     )
   }
 
-  private def authRecovery(
-      implicit ctx: Context
+  private def authRecovery(implicit
+      ctx: Context
   ): PartialFunction[Throwable, Fu[Result]] = {
     case lila.security.Api.AuthFromTorExitNode => noTorResponse
     case lila.security.Api.MustConfirmEmail(userId) =>

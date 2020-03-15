@@ -48,8 +48,8 @@ object ScalatraBase {
   )(implicit request: HttpServletRequest): Unit =
     addCallback(_.failed.foreach(fn))
 
-  def onCompleted(fn: Try[Any] => Unit)(
-      implicit request: HttpServletRequest
+  def onCompleted(fn: Try[Any] => Unit)(implicit
+      request: HttpServletRequest
   ): Unit = addCallback(fn)
 
   def onRenderedSuccess(
@@ -62,12 +62,12 @@ object ScalatraBase {
   )(implicit request: HttpServletRequest): Unit =
     addRenderCallback(_.failed.foreach(fn))
 
-  def onRenderedCompleted(fn: Try[Any] => Unit)(
-      implicit request: HttpServletRequest
+  def onRenderedCompleted(fn: Try[Any] => Unit)(implicit
+      request: HttpServletRequest
   ): Unit = addRenderCallback(fn)
 
-  def callbacks(
-      implicit request: HttpServletRequest
+  def callbacks(implicit
+      request: HttpServletRequest
   ): List[(Try[Any]) => Unit] =
     request
       .getOrElse(Callbacks, List.empty[Try[Any] => Unit])
@@ -85,8 +85,8 @@ object ScalatraBase {
     callbacks.reverse foreach (_(data))
   }
 
-  def renderCallbacks(
-      implicit request: HttpServletRequest
+  def renderCallbacks(implicit
+      request: HttpServletRequest
   ): List[(Try[Any]) => Unit] = {
     request
       .getOrElse(RenderCallbacks, List.empty[Try[Any] => Unit])
@@ -312,8 +312,8 @@ trait ScalatraBase
     matchedRoute
   }
 
-  private[scalatra] def matchedRoute(
-      implicit request: HttpServletRequest
+  private[scalatra] def matchedRoute(implicit
+      request: HttpServletRequest
   ): Option[MatchedRoute] = {
     request.get("org.scalatra.MatchedRoute").map(_.asInstanceOf[MatchedRoute])
   }
@@ -864,8 +864,8 @@ trait ScalatraBase
     }
   }
 
-  private[this] def buildBaseUrl(
-      implicit request: HttpServletRequest
+  private[this] def buildBaseUrl(implicit
+      request: HttpServletRequest
   ): String = {
     "%s://%s".format(
       if (needsHttps || isHttps) "https" else "http",
@@ -873,8 +873,8 @@ trait ScalatraBase
     )
   }
 
-  private[this] def serverAuthority(
-      implicit request: HttpServletRequest
+  private[this] def serverAuthority(implicit
+      request: HttpServletRequest
   ): String = {
     val p = serverPort
     val h = serverHost
@@ -927,8 +927,8 @@ trait ScalatraBase
     */
   def requestPath(implicit request: HttpServletRequest): String
 
-  protected def addSessionId(uri: String)(
-      implicit response: HttpServletResponse
+  protected def addSessionId(uri: String)(implicit
+      response: HttpServletResponse
   ): String = response.encodeURL(uri)
 
   def multiParams(

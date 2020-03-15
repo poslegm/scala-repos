@@ -30,8 +30,8 @@ sealed abstract class ImmutableArray[+A] {
 
 sealed abstract class ImmutableArrayInstances {
 
-  implicit def immutableArrayEqual[A](
-      implicit A: Equal[A]
+  implicit def immutableArrayEqual[A](implicit
+      A: Equal[A]
   ): Equal[ImmutableArray[A]] =
     Equal.equal { (a, b) =>
       (a.length == b.length) && (0 until a.length)
@@ -133,16 +133,16 @@ object ImmutableArray extends ImmutableArrayInstances {
   /** Wrap the characters in `str` in an `ImmutableArray` */
   def fromString(str: String): ImmutableArray[Char] = new StringArray(str)
 
-  def newBuilder[A](
-      implicit elemTag: ClassTag[A]
+  def newBuilder[A](implicit
+      elemTag: ClassTag[A]
   ): Builder[A, ImmutableArray[A]] =
     ArrayBuilder.make[A]()(elemTag).mapResult(make(_))
 
   def newStringArrayBuilder: Builder[Char, ImmutableArray[Char]] =
     (new StringBuilder).mapResult(fromString(_))
 
-  implicit def canBuildFrom[T](
-      implicit m: ClassTag[T]
+  implicit def canBuildFrom[T](implicit
+      m: ClassTag[T]
   ): CanBuildFrom[ImmutableArray[_], T, ImmutableArray[T]] =
     new CanBuildFrom[ImmutableArray[_], T, ImmutableArray[T]] {
       def apply(from: ImmutableArray[_]): Builder[T, ImmutableArray[T]] =
@@ -151,8 +151,8 @@ object ImmutableArray extends ImmutableArrayInstances {
       def apply: Builder[T, ImmutableArray[T]] = newBuilder(m)
     }
 
-  implicit def canBuildFromChar(
-      implicit m: ClassTag[Char]
+  implicit def canBuildFromChar(implicit
+      m: ClassTag[Char]
   ): CanBuildFrom[ImmutableArray[_], Char, ImmutableArray[Char]] =
     new CanBuildFrom[ImmutableArray[_], Char, ImmutableArray[Char]] {
       def apply(from: ImmutableArray[_]): Builder[Char, ImmutableArray[Char]] =

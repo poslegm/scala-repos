@@ -480,8 +480,8 @@ trait DistInstances2 extends DistInstances1 {
 }
 
 trait DistInstances3 extends DistInstances2 {
-  implicit def euclideanRing[A](
-      implicit ev: EuclideanRing[A]
+  implicit def euclideanRing[A](implicit
+      ev: EuclideanRing[A]
   ): EuclideanRing[Dist[A]] =
     new DistEuclideanRing[A] { def alg = ev }
 }
@@ -492,29 +492,29 @@ trait DistInstances4 extends DistInstances3 {
 }
 
 trait DistInstances5 extends DistInstances4 {
-  implicit def module[V, K](
-      implicit ev: Module[V, K]
+  implicit def module[V, K](implicit
+      ev: Module[V, K]
   ): Module[Dist[V], Dist[K]] =
     new DistModule[V, K] { def alg = ev }
 }
 
 trait DistInstances6 extends DistInstances5 {
-  implicit def vectorSpace[V, K](
-      implicit ev: VectorSpace[V, K]
+  implicit def vectorSpace[V, K](implicit
+      ev: VectorSpace[V, K]
   ): VectorSpace[Dist[V], Dist[K]] =
     new DistVectorSpace[V, K] { def alg = ev }
 }
 
 trait DistInstances7 extends DistInstances6 {
-  implicit def NormedVectorSpace[V, K](
-      implicit ev: NormedVectorSpace[V, K]
+  implicit def NormedVectorSpace[V, K](implicit
+      ev: NormedVectorSpace[V, K]
   ): NormedVectorSpace[Dist[V], Dist[K]] =
     new DistNormedVectorSpace[V, K] { def alg = ev }
 }
 
 trait DistInstances8 extends DistInstances7 {
-  implicit def InnerProductSpace[V, K](
-      implicit ev: InnerProductSpace[V, K]
+  implicit def InnerProductSpace[V, K](implicit
+      ev: InnerProductSpace[V, K]
   ): InnerProductSpace[Dist[V], Dist[K]] =
     new DistInnerProductSpace[V, K] { def alg = ev }
 }

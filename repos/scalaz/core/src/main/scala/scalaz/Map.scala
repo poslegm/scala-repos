@@ -60,8 +60,8 @@ sealed abstract class ==>>[A, B] {
     *   (key, insertedValue, existingValue) => resolvedValue
     * @param kx key
     * @param x value to insert if the key is not already present */
-  def insertWithKey(f: (A, B, B) => B, kx: A, x: B)(
-      implicit o: Order[A]
+  def insertWithKey(f: (A, B, B) => B, kx: A, x: B)(implicit
+      o: Order[A]
   ): A ==>> B =
     this match {
       case Tip() =>
@@ -112,8 +112,8 @@ sealed abstract class ==>>[A, B] {
     updateWithKey(k, (_, x) => f(x))
 
   /** like [[update]] but with the key available in the update function - O(log n) */
-  def updateWithKey(k: A, f: (A, B) => Option[B])(
-      implicit o: Order[A]
+  def updateWithKey(k: A, f: (A, B) => Option[B])(implicit
+      o: Order[A]
   ): A ==>> B =
     this match {
       case Tip() =>
@@ -138,8 +138,8 @@ sealed abstract class ==>>[A, B] {
     *
     * Similar to [[updateWithKey]] but also returns the value. If the value was updated, returns the
     * new value. If the value was deleted, returns the old value. */
-  def updateLookupWithKey(k: A, f: (A, B) => Option[B])(
-      implicit o: Order[A]
+  def updateLookupWithKey(k: A, f: (A, B) => Option[B])(implicit
+      o: Order[A]
   ): (Option[B], A ==>> B) =
     this match {
       case Tip() =>
@@ -502,8 +502,8 @@ sealed abstract class ==>>[A, B] {
   def mapKeys[C](f: A => C)(implicit o: Order[C]): C ==>> B =
     foldlWithKey(empty[C, B])((xs, k, x) => xs.insert(f(k), x))
 
-  def mapKeysWith[C](f: A => C, f2: (B, B) => B)(
-      implicit o: Order[C]
+  def mapKeysWith[C](f: A => C, f2: (B, B) => B)(implicit
+      o: Order[C]
   ): C ==>> B =
     fromListWith[C, B](toList.map(x => (f(x._1), x._2)))(f2)
 
@@ -623,13 +623,13 @@ sealed abstract class ==>>[A, B] {
     }
   }
 
-  def differenceWith[C](other: A ==>> C, f: (B, C) => Option[B])(
-      implicit o: Order[A]
+  def differenceWith[C](other: A ==>> C, f: (B, C) => Option[B])(implicit
+      o: Order[A]
   ): A ==>> B =
     differenceWithKey(other, (_: A, b: B, c: C) => f(b, c))
 
-  def differenceWithKey[C](other: A ==>> C, f: (A, B, C) => Option[B])(
-      implicit o: Order[A]
+  def differenceWithKey[C](other: A ==>> C, f: (A, B, C) => Option[B])(implicit
+      o: Order[A]
   ): A ==>> B = {
     def hedgeDiffWithKey(
         cmplo: A => Ordering,
@@ -717,13 +717,13 @@ sealed abstract class ==>>[A, B] {
   def isSubmapOf(a: A ==>> B)(implicit o: Order[A], e: Equal[B]): Boolean =
     isSubmapOfBy(a, e.equal)
 
-  def isSubmapOfBy(a: A ==>> B, f: (B, B) => Boolean)(
-      implicit o: Order[A]
+  def isSubmapOfBy(a: A ==>> B, f: (B, B) => Boolean)(implicit
+      o: Order[A]
   ): Boolean =
     size <= a.size && submap(a, f)
 
-  private[scalaz] def submap(a: A ==>> B, f: (B, B) => Boolean)(
-      implicit o: Order[A]
+  private[scalaz] def submap(a: A ==>> B, f: (B, B) => Boolean)(implicit
+      o: Order[A]
   ): Boolean =
     (this, a) match {
       case (Tip(), _) =>
@@ -884,8 +884,8 @@ sealed abstract class ==>>[A, B] {
     }
 
   @tailrec
-  final def trimLookupLo(lo: A, cmphi: A => Ordering)(
-      implicit o: Order[A]
+  final def trimLookupLo(lo: A, cmphi: A => Ordering)(implicit
+      o: Order[A]
   ): (Option[(A, B)], A ==>> B) =
     this match {
       case Tip() =>
@@ -948,8 +948,8 @@ sealed abstract class ==>>[A, B] {
         }
     }
 
-  protected def join(kx: A, x: B, other: A ==>> B)(
-      implicit o: Order[A]
+  protected def join(kx: A, x: B, other: A ==>> B)(implicit
+      o: Order[A]
   ): A ==>> B =
     (this, other) match {
       case (Tip(), r) =>

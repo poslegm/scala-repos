@@ -94,8 +94,8 @@ sealed abstract class MonadCatchIOFunctions {
   )(f: A => M[B])(implicit M: MonadCatchIO[M], resource: Resource[A]) =
     bracket(ma)(resource.close(_).liftIO[M])(f)
 
-  implicit def KleisliMonadCatchIO[F[_], R](
-      implicit F: MonadCatchIO[F]
+  implicit def KleisliMonadCatchIO[F[_], R](implicit
+      F: MonadCatchIO[F]
   ): MonadCatchIO[Kleisli[F, R, ?]] =
     new MonadCatchIO[Kleisli[F, R, ?]]
       with MonadIO.FromLiftIO[Kleisli[F, R, ?]] {

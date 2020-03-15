@@ -50,7 +50,7 @@ private[tracker] object TaskOpProcessor {
   * Processes durable operations on tasks.
   */
 private[tracker] trait TaskOpProcessor {
-  def process(op: TaskOpProcessor.Operation)(
-      implicit ec: ExecutionContext
+  def process(op: TaskOpProcessor.Operation)(implicit
+      ec: ExecutionContext
   ): Future[Unit]
 }

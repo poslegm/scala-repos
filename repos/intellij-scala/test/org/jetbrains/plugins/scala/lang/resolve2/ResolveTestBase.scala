@@ -17,9 +17,9 @@ abstract class ResolveTestBase extends ScalaResolveTestCase {
   val pattern = """/\*\s*(.*?)\s*\*/\s*""".r
   type Parameters = Map[String, String]
 
-  val Resolved   = "resolved" // default: true
-  val Name       = "name" // default: reference name
-  val File       = "file" // default: this (if line or offset provided)
+  val Resolved   = "resolved"   // default: true
+  val Name       = "name"       // default: reference name
+  val File       = "file"       // default: this (if line or offset provided)
   val Line       = "line"
   val Offset     = "offset"
   val Length     = "length"

@@ -93,8 +93,8 @@ object OptimizationPackage {
   ) =
     new SecondOrderOptimizationPackage[Vector, Hessian]()
 
-  class FirstOrderStochasticOptimizationPackage[Vector]()(
-      implicit space: MutableFiniteCoordinateField[Vector, _, Double]
+  class FirstOrderStochasticOptimizationPackage[Vector]()(implicit
+      space: MutableFiniteCoordinateField[Vector, _, Double]
   ) extends IterableOptimizationPackage[StochasticDiffFunction[
         Vector
       ], Vector, FirstOrderMinimizer[
@@ -120,13 +120,13 @@ object OptimizationPackage {
     }
   }
 
-  implicit def firstOrderStochasticPackage[Vector](
-      implicit space: MutableFiniteCoordinateField[Vector, _, Double]
+  implicit def firstOrderStochasticPackage[Vector](implicit
+      space: MutableFiniteCoordinateField[Vector, _, Double]
   ) =
     new FirstOrderStochasticOptimizationPackage[Vector]()
 
-  class FirstOrderBatchOptimizationPackage[Vector]()(
-      implicit space: MutableFiniteCoordinateField[Vector, _, Double]
+  class FirstOrderBatchOptimizationPackage[Vector]()(implicit
+      space: MutableFiniteCoordinateField[Vector, _, Double]
   ) extends IterableOptimizationPackage[BatchDiffFunction[
         Vector
       ], Vector, FirstOrderMinimizer[Vector, BatchDiffFunction[Vector]]#State] {
@@ -151,8 +151,8 @@ object OptimizationPackage {
     }
   }
 
-  implicit def firstOrderBatchPackage[Vector](
-      implicit space: MutableFiniteCoordinateField[Vector, _, Double]
+  implicit def firstOrderBatchPackage[Vector](implicit
+      space: MutableFiniteCoordinateField[Vector, _, Double]
   ) =
     new FirstOrderBatchOptimizationPackage[Vector]()
 }

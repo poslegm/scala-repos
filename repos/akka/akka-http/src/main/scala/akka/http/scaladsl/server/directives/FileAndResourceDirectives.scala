@@ -324,8 +324,8 @@ object FileAndResourceDirectives extends FileAndResourceDirectives {
       }
   }
   object DirectoryRenderer extends LowLevelDirectoryRenderer {
-    implicit def liftMarshaller(
-        implicit _marshaller: ToEntityMarshaller[DirectoryListing]
+    implicit def liftMarshaller(implicit
+        _marshaller: ToEntityMarshaller[DirectoryListing]
     ): DirectoryRenderer =
       new DirectoryRenderer {
         def marshaller(

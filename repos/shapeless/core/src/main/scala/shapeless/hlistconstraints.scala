@@ -33,15 +33,15 @@ trait LowPriorityUnaryTCConstraint extends LowPriorityUnaryTCConstraint0 {
 
   implicit def hnilConstUnaryTC[H] = new UnaryTCConstraint[HNil, Const[H]#λ] {}
 
-  implicit def hlistConstUnaryTC[H, T <: HList](
-      implicit utct: UnaryTCConstraint[T, Const[H]#λ]
+  implicit def hlistConstUnaryTC[H, T <: HList](implicit
+      utct: UnaryTCConstraint[T, Const[H]#λ]
   ) =
     new UnaryTCConstraint[H :: T, Const[H]#λ] {}
 }
 
 object UnaryTCConstraint extends LowPriorityUnaryTCConstraint {
-  def apply[L <: HList, TC[_]](
-      implicit utcc: UnaryTCConstraint[L, TC]
+  def apply[L <: HList, TC[_]](implicit
+      utcc: UnaryTCConstraint[L, TC]
   ): UnaryTCConstraint[L, TC] = utcc
 
   type *->*[TC[_]] = {
@@ -49,8 +49,8 @@ object UnaryTCConstraint extends LowPriorityUnaryTCConstraint {
   }
 
   implicit def hnilUnaryTC[TC[_]] = new UnaryTCConstraint[HNil, TC] {}
-  implicit def hlistUnaryTC[H, T <: HList, TC[_]](
-      implicit utct: UnaryTCConstraint[T, TC]
+  implicit def hlistUnaryTC[H, T <: HList, TC[_]](implicit
+      utct: UnaryTCConstraint[T, TC]
   ) =
     new UnaryTCConstraint[TC[H] :: T, TC] {}
 }
@@ -61,8 +61,8 @@ object UnaryTCConstraint extends LowPriorityUnaryTCConstraint {
 trait BasisConstraint[L <: HList, M <: HList] extends Serializable
 
 object BasisConstraint {
-  def apply[L <: HList, M <: HList](
-      implicit bc: BasisConstraint[L, M]
+  def apply[L <: HList, M <: HList](implicit
+      bc: BasisConstraint[L, M]
   ): BasisConstraint[L, M] = bc
 
   type Basis[M <: HList] = {
@@ -83,8 +83,8 @@ object BasisConstraint {
 trait LUBConstraint[L <: HList, B] extends Serializable
 
 object LUBConstraint {
-  def apply[L <: HList, B](
-      implicit lc: LUBConstraint[L, B]
+  def apply[L <: HList, B](implicit
+      lc: LUBConstraint[L, B]
   ): LUBConstraint[L, B] = lc
 
   type <<:[B] = {
@@ -107,8 +107,8 @@ trait KeyConstraint[L <: HList, M <: HList] extends Serializable
 object KeyConstraint {
   import labelled._
 
-  def apply[L <: HList, M <: HList](
-      implicit kc: KeyConstraint[L, M]
+  def apply[L <: HList, M <: HList](implicit
+      kc: KeyConstraint[L, M]
   ): KeyConstraint[L, M] = kc
 
   type Keys[M <: HList] = {
@@ -131,8 +131,8 @@ trait ValueConstraint[L <: HList, M <: HList] extends Serializable
 object ValueConstraint {
   import labelled._
 
-  def apply[L <: HList, M <: HList](
-      implicit vc: ValueConstraint[L, M]
+  def apply[L <: HList, M <: HList](implicit
+      vc: ValueConstraint[L, M]
   ): ValueConstraint[L, M] = vc
 
   type Values[M <: HList] = {
@@ -157,8 +157,8 @@ trait NotContainsConstraint[L <: HList, U] extends Serializable
 
 object NotContainsConstraint {
 
-  def apply[L <: HList, U](
-      implicit ncc: NotContainsConstraint[L, U]
+  def apply[L <: HList, U](implicit
+      ncc: NotContainsConstraint[L, U]
   ): NotContainsConstraint[L, U] =
     ncc
 
@@ -184,8 +184,8 @@ trait IsDistinctConstraint[L <: HList] extends Serializable
 
 object IsDistinctConstraint {
 
-  def apply[L <: HList](
-      implicit idc: IsDistinctConstraint[L]
+  def apply[L <: HList](implicit
+      idc: IsDistinctConstraint[L]
   ): IsDistinctConstraint[L] = idc
 
   implicit def hnilIsDistinct = new IsDistinctConstraint[HNil] {}

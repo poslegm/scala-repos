@@ -1244,7 +1244,7 @@ class JsonSuite extends QueryTest with SharedSQLContext with TestJsonData {
     checkAnswer(
       sql("select `map` from jsonWithSimpleMap"),
       Row(Map("a"      -> 1)) :: Row(Map("b" -> 2)) :: Row(Map("c" -> 3)) :: Row(
-        Map("c"        -> 1, "d" -> 4)
+        Map("c"        -> 1, "d"             -> 4)
       ) :: Row(Map("e" -> null)) :: Nil
     )
 
@@ -1274,7 +1274,7 @@ class JsonSuite extends QueryTest with SharedSQLContext with TestJsonData {
       Row(Map("a"      -> Row(Seq(1, 2, 3, null), null))) :: Row(
         Map("b"        -> Row(null, 2))
       ) :: Row(Map("c" -> Row(Seq(), 4))) :: Row(
-        Map("c"        -> Row(null, 3), "d" -> Row(Seq(null), null))
+        Map("c"        -> Row(null, 3), "d"     -> Row(Seq(null), null))
       ) :: Row(Map("e" -> null)) :: Row(Map("f" -> Row(null, null))) :: Nil
     )
 
@@ -1551,10 +1551,14 @@ class JsonSuite extends QueryTest with SharedSQLContext with TestJsonData {
     val result = df2.toJSON.collect()
     // scalastyle:off
     assert(
-      result(0) === "{\"f1\":1,\"f2\":\"A1\",\"f3\":true,\"f4\":[\"1\",\" A1\",\" true\",\" null\"]}"
+      result(
+        0
+      ) === "{\"f1\":1,\"f2\":\"A1\",\"f3\":true,\"f4\":[\"1\",\" A1\",\" true\",\" null\"]}"
     )
     assert(
-      result(3) === "{\"f1\":4,\"f2\":\"D4\",\"f3\":true,\"f4\":[\"4\",\" D4\",\" true\",\" 2147483644\"],\"f5\":2147483644}"
+      result(
+        3
+      ) === "{\"f1\":4,\"f2\":\"D4\",\"f3\":true,\"f4\":[\"4\",\" D4\",\" true\",\" 2147483644\"],\"f5\":2147483644}"
     )
     // scalastyle:on
 

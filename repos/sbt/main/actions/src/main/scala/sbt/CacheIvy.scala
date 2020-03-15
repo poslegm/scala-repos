@@ -265,8 +265,8 @@ object CacheIvy {
           new Caller(c, cc, ea, fd, cd, td, df)
       }
     )
-  implicit def exclusionRuleFormat(
-      implicit sf: Format[String]
+  implicit def exclusionRuleFormat(implicit
+      sf: Format[String]
   ): Format[InclExclRule] =
     wrap[InclExclRule, (String, String, String, Seq[String])](
       e => (e.organization, e.name, e.artifact, e.configurations),
@@ -353,8 +353,8 @@ object CacheIvy {
     wrapIn
   }
 
-  implicit def configurationFormat(
-      implicit sf: Format[String]
+  implicit def configurationFormat(implicit
+      sf: Format[String]
   ): Format[Configuration] =
     wrap[Configuration, String](_.name, s => new Configuration(s))
 

@@ -42,7 +42,7 @@ private[netty] trait NettyHelpers {
       if (ev.getCause ne null) ev.getCause
       else new AkkaException("Unknown cause")
     cause match {
-      case _: ClosedChannelException ⇒ // Ignore
+      case _: ClosedChannelException ⇒         // Ignore
       case null | NonFatal(_)        ⇒ onException(ctx, ev)
       case e: Throwable              ⇒ throw e // Rethrow fatals
     }

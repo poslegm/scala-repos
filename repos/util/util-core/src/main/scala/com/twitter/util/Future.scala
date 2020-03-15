@@ -1546,8 +1546,8 @@ abstract class Future[+A] extends Awaitable[A] {
     *
     * ''Note'': On timeout, the underlying future is interrupted.
     */
-  def raiseWithin(timeout: Duration, exc: Throwable)(
-      implicit timer: Timer
+  def raiseWithin(timeout: Duration, exc: Throwable)(implicit
+      timer: Timer
   ): Future[A] =
     raiseWithin(timer, timeout, exc)
 

@@ -60,19 +60,19 @@ trait MultiplicativeTorsor[V, @sp(Int, Long, Float, Double) R]
 }
 
 object Torsor {
-  @inline final def apply[V, @sp(Int, Long, Float, Double) R](
-      implicit V: Torsor[V, R]
+  @inline final def apply[V, @sp(Int, Long, Float, Double) R](implicit
+      V: Torsor[V, R]
   ): Torsor[V, R] = V
 }
 
 object AdditiveTorsor {
-  @inline final def apply[V, @sp(Int, Long, Float, Double) R](
-      implicit V: AdditiveTorsor[V, R]
+  @inline final def apply[V, @sp(Int, Long, Float, Double) R](implicit
+      V: AdditiveTorsor[V, R]
   ): AdditiveTorsor[V, R] = V
 }
 
 object MultiplicativeTorsor {
-  @inline final def apply[V, @sp(Int, Long, Float, Double) R](
-      implicit V: MultiplicativeTorsor[V, R]
+  @inline final def apply[V, @sp(Int, Long, Float, Double) R](implicit
+      V: MultiplicativeTorsor[V, R]
   ): MultiplicativeTorsor[V, R] = V
 }

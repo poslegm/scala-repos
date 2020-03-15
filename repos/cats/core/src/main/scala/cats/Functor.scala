@@ -31,8 +31,8 @@ trait Functor[F[_]] extends functor.Invariant[F] { self =>
     * Compose this functor F with a Contravariant Functor G to produce a new Contravariant Functor
     * on F[G[_]].
     */
-  override def composeWithContravariant[G[_]](
-      implicit GG: Contravariant[G]
+  override def composeWithContravariant[G[_]](implicit
+      GG: Contravariant[G]
   ): Contravariant[Lambda[X => F[G[X]]]] =
     new Functor.ContravariantComposite[F, G] {
       def F: Functor[F]       = self

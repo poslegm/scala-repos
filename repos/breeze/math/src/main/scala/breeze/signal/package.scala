@@ -347,8 +347,8 @@ package object signal {
       optDesignMethod: OptDesignMethod = OptDesignMethod.Firwin,
       optWindow: OptWindowFunction = OptWindowFunction.Hamming(),
       optFilterOrder: OptFilterTaps = OptFilterTaps.Automatic
-  )(
-      implicit canDesignFilterDecimation: CanDesignFilterDecimation[Output]
+  )(implicit
+      canDesignFilterDecimation: CanDesignFilterDecimation[Output]
   ): Output =
     canDesignFilterDecimation(
       factor,
@@ -375,8 +375,8 @@ package object signal {
       overhang: OptOverhang = OptOverhang.PreserveLength
   )(implicit canFilterMedian: CanFilterMedian[Input]): DenseVector[Input] =
     canFilterMedian(data, windowLength, overhang)
-  def filterMedian[Input](data: DenseVector[Input], windowLength: Int)(
-      implicit canFilterMedian: CanFilterMedian[Input]
+  def filterMedian[Input](data: DenseVector[Input], windowLength: Int)(implicit
+      canFilterMedian: CanFilterMedian[Input]
   ): DenseVector[Input] =
     canFilterMedian(data, windowLength, OptOverhang.PreserveLength)
 

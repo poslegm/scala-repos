@@ -297,7 +297,7 @@ class ORSetSpec extends WordSpec with Matchers {
           "K5" -> VersionVector(nodeA, 2L)
         )
       val vvector                      = VersionVector(TreeMap(nodeA -> 3L, nodeD -> 7L))
-      val acc: Map[Any, VersionVector] = Map("K1" -> VersionVector(nodeA, 3L))
+      val acc: Map[Any, VersionVector] = Map("K1"                    -> VersionVector(nodeA, 3L))
       val expectedDots =
         acc ++ Map(
           "K3" -> VersionVector(nodeA, 4L),

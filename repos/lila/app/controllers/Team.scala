@@ -60,8 +60,8 @@ object Team extends LilaController {
       }
     }
 
-  private def renderTeam(team: TeamModel, page: Int = 1)(
-      implicit ctx: Context
+  private def renderTeam(team: TeamModel, page: Int = 1)(implicit
+      ctx: Context
   ) =
     teamInfo(team, ctx.me) zip paginator.teamMembers(team, page) map {
       case (info, pag) => html.team.show(team, pag, info)

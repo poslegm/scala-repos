@@ -79,8 +79,8 @@ trait IterateeSpecification { self: org.specs2.mutable.SpecificationLike =>
   }
 
   val timer = new java.util.Timer(true)
-  def timeout[A](a: => A, d: Duration)(
-      implicit e: ExecutionContext
+  def timeout[A](a: => A, d: Duration)(implicit
+      e: ExecutionContext
   ): Future[A] = {
     val p = Promise[A]()
     timer.schedule(

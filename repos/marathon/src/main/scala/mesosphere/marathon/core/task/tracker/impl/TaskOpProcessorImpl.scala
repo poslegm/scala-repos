@@ -37,8 +37,8 @@ private[tracker] object TaskOpProcessorImpl {
       * * an Action.Expunge if the TaskStatus update indicates a terminated task OR ELSE
       * * an Action.Update if the tasks existed and the TaskStatus contains new information OR ELSE
       */
-    def resolve(taskId: Task.Id, status: TaskStatus)(
-        implicit ec: ExecutionContext
+    def resolve(taskId: Task.Id, status: TaskStatus)(implicit
+        ec: ExecutionContext
     ): Future[Action] = {
       directTaskTracker.task(taskId).map {
         case Some(existingTask) =>

@@ -110,11 +110,11 @@ class Tables(val profile: JdbcProfile) {
       ](tag, "X") {
     def pk   = column[Int]("pk")
     def pk2  = column[Int]("pk2")
-    def pkpk = primaryKey("", (pk, pk2)) // pk column collision
+    def pkpk = primaryKey("", (pk, pk2))      // pk column collision
     def i1   = column[Option[Int]]("index_1") // scala keyword collision
-    def c    = column[Int]("column") // slick Table method with args collision
+    def c    = column[Int]("column")          // slick Table method with args collision
     def p    = column[Option[Int]]("posts")
-    def a    = column[Option[Int]]("val") // scala keyword collision
+    def a    = column[Option[Int]]("val")     // scala keyword collision
     def s =
       column[Double]("schema_name") // slick Table no-arg method collision
     def sx =
@@ -134,7 +134,7 @@ class Tables(val profile: JdbcProfile) {
         "_underscore"
       ) // column name collision after disambiguation
     def *    = (pk, pk2, a, c, s, sx, i1, p, t_ag, tt, _underscore)
-    def idx1 = index("", i1) // idx column collision
+    def idx1 = index("", i1)   // idx column collision
     def idx2 = index("i2", i1) // idx column collision
     def idx3 = index("foo", c, unique = true)
     def idx4 = index("bar", p, unique = true)

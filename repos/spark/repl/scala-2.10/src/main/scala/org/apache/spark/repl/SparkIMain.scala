@@ -125,7 +125,7 @@ class SparkIMain(
     new PlainFile(outputDir) // "directory" for classfiles
   /** Jetty server that will serve our classes to worker nodes */
   private var currentSettings: Settings = initialSettings
-  private var printResults              = true // whether to print result lines
+  private var printResults              = true  // whether to print result lines
   private var totalSilence              = false // whether to print anything
   private var _initializeComplete       = false // compiler is initialized
   private var _isInitialized: Future[Boolean] =

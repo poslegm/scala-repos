@@ -34,8 +34,8 @@ class FunctorOps[M[_], A](ma: M[A])(implicit fu: Functor[M]) {
   def fmap[B](f: A => B): M[B] = fu.fmap(ma, f)
 }
 
-class ContravariantFunctorOps[M[_], A](ma: M[A])(
-    implicit fu: ContravariantFunctor[M]
+class ContravariantFunctorOps[M[_], A](ma: M[A])(implicit
+    fu: ContravariantFunctor[M]
 ) {
 
   def contramap[B](f: B => A): M[B] = fu.contramap(ma, f)

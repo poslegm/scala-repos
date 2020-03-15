@@ -433,8 +433,8 @@ object Task {
   def async[A](register: ((Throwable \/ A) => Unit) => Unit): Task[A] =
     new Task(Future.async(register))
 
-  def schedule[A](a: => A, delay: Duration)(
-      implicit pool: ScheduledExecutorService = Strategy.DefaultTimeoutScheduler
+  def schedule[A](a: => A, delay: Duration)(implicit
+      pool: ScheduledExecutorService = Strategy.DefaultTimeoutScheduler
   ): Task[A] = new Task(Future.schedule(Try(a), delay))
 
   /**

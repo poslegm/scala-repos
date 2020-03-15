@@ -121,15 +121,15 @@ private[data] sealed trait OneAndInstances extends OneAndLowPriority2 {
   implicit def oneAndSemigroup[F[_]: MonadCombine, A]: Semigroup[OneAnd[F, A]] =
     oneAndSemigroupK[F].algebra
 
-  implicit def oneAndReducible[F[_]](
-      implicit F: Foldable[F]
+  implicit def oneAndReducible[F[_]](implicit
+      F: Foldable[F]
   ): Reducible[OneAnd[F, ?]] =
     new NonEmptyReducible[OneAnd[F, ?], F] {
       override def split[A](fa: OneAnd[F, A]): (A, F[A]) = (fa.head, fa.tail)
     }
 
-  implicit def oneAndMonad[F[_]](
-      implicit monad: MonadCombine[F]
+  implicit def oneAndMonad[F[_]](implicit
+      monad: MonadCombine[F]
   ): Monad[OneAnd[F, ?]] =
     new Monad[OneAnd[F, ?]] {
       override def map[A, B](fa: OneAnd[F, A])(f: A => B): OneAnd[F, B] =
@@ -174,8 +174,8 @@ trait OneAndLowPriority0 {
 }
 
 trait OneAndLowPriority1 extends OneAndLowPriority0 {
-  implicit def oneAndFunctor[F[_]](
-      implicit F: Functor[F]
+  implicit def oneAndFunctor[F[_]](implicit
+      F: Functor[F]
   ): Functor[OneAnd[F, ?]] =
     new Functor[OneAnd[F, ?]] {
       def map[A, B](fa: OneAnd[F, A])(f: A => B): OneAnd[F, B] =
@@ -184,8 +184,8 @@ trait OneAndLowPriority1 extends OneAndLowPriority0 {
 }
 
 trait OneAndLowPriority2 extends OneAndLowPriority1 {
-  implicit def oneAndTraverse[F[_]](
-      implicit F: Traverse[F]
+  implicit def oneAndTraverse[F[_]](implicit
+      F: Traverse[F]
   ): Traverse[OneAnd[F, ?]] =
     new Traverse[OneAnd[F, ?]] {
       def traverse[G[_], A, B](

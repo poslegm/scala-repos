@@ -42,8 +42,8 @@ object SCL7805 {
         R <: HList,
         RI <: HList,
         Out <: HList
-    ](
-        implicit next: Aux[L, HNil, T, TT, R, RI, Out]
+    ](implicit
+        next: Aux[L, HNil, T, TT, R, RI, Out]
     ): Aux[L, HNil, T, TH :: TT, R, RI, Out] = ???
   }
 

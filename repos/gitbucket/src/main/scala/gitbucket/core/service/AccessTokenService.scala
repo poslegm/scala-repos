@@ -21,8 +21,8 @@ trait AccessTokenService {
   /**
     * @retuen (TokenId, Token)
     */
-  def generateAccessToken(userName: String, note: String)(
-      implicit s: Session
+  def generateAccessToken(userName: String, note: String)(implicit
+      s: Session
   ): (Int, String) = {
     var token: String = null
     var hash: String  = null
@@ -59,8 +59,8 @@ trait AccessTokenService {
       .sortBy(_.accessTokenId.desc)
       .list
 
-  def deleteAccessToken(userName: String, accessTokenId: Int)(
-      implicit s: Session
+  def deleteAccessToken(userName: String, accessTokenId: Int)(implicit
+      s: Session
   ): Unit =
     AccessTokens filter
       (t =>

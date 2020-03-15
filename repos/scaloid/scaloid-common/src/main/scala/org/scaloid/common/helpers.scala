@@ -78,16 +78,16 @@ trait AppHelpers {
     context.startActivity(new Intent(Intent.ACTION_VIEW, uri))
   }
 
-  @inline def pendingService(intent: Intent, flags: Int = 0)(
-      implicit context: Context
+  @inline def pendingService(intent: Intent, flags: Int = 0)(implicit
+      context: Context
   ) =
     PendingIntent.getService(context, 0, intent, flags)
 
   @inline def pendingService[T](implicit context: Context, ct: ClassTag[T]) =
     PendingIntent.getService(context, 0, SIntent[T], 0)
 
-  @inline def pendingActivity(intent: Intent, flags: Int = 0)(
-      implicit context: Context
+  @inline def pendingActivity(intent: Intent, flags: Int = 0)(implicit
+      context: Context
   ) =
     PendingIntent.getActivity(context, 0, intent, flags)
 
@@ -211,8 +211,8 @@ trait PreferenceHelpers {
   /**
     * Returns DefaultSharedPreferences object for given implicit context.
     */
-  @inline implicit def defaultSharedPreferences(
-      implicit context: Context
+  @inline implicit def defaultSharedPreferences(implicit
+      context: Context
   ): SharedPreferences =
     PreferenceManager.getDefaultSharedPreferences(context)
 
@@ -242,8 +242,8 @@ trait PreferenceHelpers {
         }.asInstanceOf[PreferenceVar[T]]
       case v: Int =>
         new PreferenceVar[Int](key, v) {
-          override def apply(value: Int)(
-              implicit pref: SharedPreferences
+          override def apply(value: Int)(implicit
+              pref: SharedPreferences
           ): Int = pref.getInt(key, value)
 
           def put(value: Int, editor: SharedPreferences.Editor): Unit =
@@ -358,8 +358,8 @@ trait WidgetHelpers {
     * This method can be called from any threads.
     */
   @inline
-  def spinnerDialog(title: CharSequence, message: CharSequence)(
-      implicit context: Context
+  def spinnerDialog(title: CharSequence, message: CharSequence)(implicit
+      context: Context
   ): Future[ProgressDialog] =
     evalOnUiThread(ProgressDialog.show(context, title, message, true))
 }

@@ -120,8 +120,8 @@ trait JdbcProfile
 
   val api: API = new API {}
 
-  def runSynchronousQuery[R](tree: Node, param: Any)(
-      implicit session: Backend#Session
+  def runSynchronousQuery[R](tree: Node, param: Any)(implicit
+      session: Backend#Session
   ): R =
     tree match {
       case rsm @ ResultSetMapping(

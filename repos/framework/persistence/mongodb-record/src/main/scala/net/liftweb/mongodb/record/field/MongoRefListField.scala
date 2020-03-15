@@ -37,8 +37,8 @@ import org.bson.types.ObjectId
  */
 abstract class MongoRefListField[OwnerType <: BsonRecord[
   OwnerType
-], RefType <: MongoRecord[RefType], MyType](rec: OwnerType)(
-    implicit mf: Manifest[MyType]
+], RefType <: MongoRecord[RefType], MyType](rec: OwnerType)(implicit
+    mf: Manifest[MyType]
 ) extends MongoListField[OwnerType, MyType](rec) {
 
   /** The MongoMetaRecord of the referenced object **/

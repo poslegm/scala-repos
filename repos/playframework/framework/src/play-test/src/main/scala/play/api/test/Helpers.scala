@@ -150,31 +150,31 @@ object PlayRunners {
 }
 
 trait Writeables {
-  implicit def writeableOf_AnyContentAsJson(
-      implicit codec: Codec
+  implicit def writeableOf_AnyContentAsJson(implicit
+      codec: Codec
   ): Writeable[AnyContentAsJson] =
     Writeable.writeableOf_JsValue.map(c => c.json)
 
-  implicit def writeableOf_AnyContentAsXml(
-      implicit codec: Codec
+  implicit def writeableOf_AnyContentAsXml(implicit
+      codec: Codec
   ): Writeable[AnyContentAsXml] =
     Writeable.writeableOf_NodeSeq.map(c => c.xml)
 
-  implicit def writeableOf_AnyContentAsFormUrlEncoded(
-      implicit code: Codec
+  implicit def writeableOf_AnyContentAsFormUrlEncoded(implicit
+      code: Codec
   ): Writeable[AnyContentAsFormUrlEncoded] =
     Writeable.writeableOf_urlEncodedForm.map(c => c.data)
 
   implicit def writeableOf_AnyContentAsRaw: Writeable[AnyContentAsRaw] =
     Writeable.wBytes.map(c => c.raw.initialData)
 
-  implicit def writeableOf_AnyContentAsText(
-      implicit code: Codec
+  implicit def writeableOf_AnyContentAsText(implicit
+      code: Codec
   ): Writeable[AnyContentAsText] =
     Writeable.wString.map(c => c.txt)
 
-  implicit def writeableOf_AnyContentAsEmpty(
-      implicit code: Codec
+  implicit def writeableOf_AnyContentAsEmpty(implicit
+      code: Codec
   ): Writeable[AnyContentAsEmpty.type] =
     Writeable(_ => ByteString.empty, None)
 }
@@ -272,8 +272,8 @@ trait RouteInvokers extends EssentialActionCaller { self: Writeables =>
     *
     * The body is serialised using the implicit writable, so that the action body parser can deserialise it.
     */
-  def route[T](app: Application, rh: RequestHeader, body: T)(
-      implicit w: Writeable[T]
+  def route[T](app: Application, rh: RequestHeader, body: T)(implicit
+      w: Writeable[T]
   ): Option[Future[Result]] = {
     val (taggedRh, handler) = app.requestHandler.handlerForRequest(rh)
     import app.materializer
@@ -292,8 +292,8 @@ trait RouteInvokers extends EssentialActionCaller { self: Writeables =>
     * @deprecated Use the version that takes an application, since 2.5.0
     */
   @deprecated("Use the version that takes an application", "2.5.0")
-  def route[T](rh: RequestHeader, body: T)(
-      implicit w: Writeable[T]
+  def route[T](rh: RequestHeader, body: T)(implicit
+      w: Writeable[T]
   ): Option[Future[Result]] =
     route(Play.current, rh, body)
 
@@ -302,8 +302,8 @@ trait RouteInvokers extends EssentialActionCaller { self: Writeables =>
     *
     * The body is serialised using the implicit writable, so that the action body parser can deserialise it.
     */
-  def route[T](app: Application, req: Request[T])(
-      implicit w: Writeable[T]
+  def route[T](app: Application, req: Request[T])(implicit
+      w: Writeable[T]
   ): Option[Future[Result]] =
     route(app, req, req.body)
 
@@ -441,8 +441,8 @@ trait ResultExtractors { self: HeaderNames with Status =>
   /**
     * Extracts an Header value of this Result value.
     */
-  def header(header: String, of: Future[Result])(
-      implicit timeout: Timeout
+  def header(header: String, of: Future[Result])(implicit
+      timeout: Timeout
   ): Option[String] = headers(of).get(header)
 
   /**

@@ -119,13 +119,13 @@ object Dependencies {
       "commons-codec"           % "commons-codec" % "1.10",
       jodatime,
       jodaConvert,
-      "org.apache.commons"           % "commons-lang3" % "3.4",
-      "xerces"                       % "xercesImpl" % "2.11.0",
-      "javax.transaction"            % "jta" % "1.1",
-      "com.google.inject"            % "guice" % "4.0",
+      "org.apache.commons"           % "commons-lang3"        % "3.4",
+      "xerces"                       % "xercesImpl"           % "2.11.0",
+      "javax.transaction"            % "jta"                  % "1.1",
+      "com.google.inject"            % "guice"                % "4.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "4.0",
       guava                          % Test,
-      "org.scala-lang"               % "scala-reflect" % scalaVersion,
+      "org.scala-lang"               % "scala-reflect"        % scalaVersion,
       scalaJava8Compat
     ) ++ scalaParserCombinators(scalaVersion) ++ specsBuild.map(
       _ % Test

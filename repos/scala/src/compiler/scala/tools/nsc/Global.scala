@@ -781,8 +781,8 @@ class Global(var currentSettings: Settings, var reporter: Reporter)
       elliptically: Boolean,
       describe: SubComponent => String
   ) = {
-    val Limit   = 16 // phase names should not be absurdly long
-    val MaxCol  = 80 // because some of us edit on green screens
+    val Limit   = 16                   // phase names should not be absurdly long
+    val MaxCol  = 80                   // because some of us edit on green screens
     val maxName = phaseNames map (_.length) max
     val width   = maxName min Limit
     val maxDesc = MaxCol - (width + 6) // descriptions not novels

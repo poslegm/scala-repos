@@ -898,8 +898,8 @@ final class ByteStringBuilder extends Builder[Byte, ByteString] { builder ⇒
   /**
     * Add a number of Shorts from an array to this builder.
     */
-  def putShorts(array: Array[Short], start: Int, len: Int)(
-      implicit byteOrder: ByteOrder
+  def putShorts(array: Array[Short], start: Int, len: Int)(implicit
+      byteOrder: ByteOrder
   ): this.type =
     fillByteBuffer(len * 2, byteOrder) {
       _.asShortBuffer.put(array, start, len)
@@ -914,8 +914,8 @@ final class ByteStringBuilder extends Builder[Byte, ByteString] { builder ⇒
   /**
     * Add a number of Ints from an array to this builder.
     */
-  def putInts(array: Array[Int], start: Int, len: Int)(
-      implicit byteOrder: ByteOrder
+  def putInts(array: Array[Int], start: Int, len: Int)(implicit
+      byteOrder: ByteOrder
   ): this.type =
     fillByteBuffer(len * 4, byteOrder) { _.asIntBuffer.put(array, start, len) }
 
@@ -928,8 +928,8 @@ final class ByteStringBuilder extends Builder[Byte, ByteString] { builder ⇒
   /**
     * Add a number of Longs from an array to this builder.
     */
-  def putLongs(array: Array[Long], start: Int, len: Int)(
-      implicit byteOrder: ByteOrder
+  def putLongs(array: Array[Long], start: Int, len: Int)(implicit
+      byteOrder: ByteOrder
   ): this.type =
     fillByteBuffer(len * 8, byteOrder) {
       _.asLongBuffer.put(array, start, len)
@@ -944,8 +944,8 @@ final class ByteStringBuilder extends Builder[Byte, ByteString] { builder ⇒
   /**
     * Add a number of Floats from an array to this builder.
     */
-  def putFloats(array: Array[Float], start: Int, len: Int)(
-      implicit byteOrder: ByteOrder
+  def putFloats(array: Array[Float], start: Int, len: Int)(implicit
+      byteOrder: ByteOrder
   ): this.type =
     fillByteBuffer(len * 4, byteOrder) {
       _.asFloatBuffer.put(array, start, len)
@@ -962,8 +962,8 @@ final class ByteStringBuilder extends Builder[Byte, ByteString] { builder ⇒
   /**
     * Add a number of Doubles from an array to this builder.
     */
-  def putDoubles(array: Array[Double], start: Int, len: Int)(
-      implicit byteOrder: ByteOrder
+  def putDoubles(array: Array[Double], start: Int, len: Int)(implicit
+      byteOrder: ByteOrder
   ): this.type =
     fillByteBuffer(len * 8, byteOrder) {
       _.asDoubleBuffer.put(array, start, len)

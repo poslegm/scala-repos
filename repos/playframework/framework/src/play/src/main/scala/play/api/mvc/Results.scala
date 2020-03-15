@@ -361,8 +361,8 @@ trait LegacyI18nSupport {
     *
     * This class exists only for backward compatibility.
     */
-  implicit class ResultWithLang(result: Result)(
-      implicit messagesApi: MessagesApi
+  implicit class ResultWithLang(result: Result)(implicit
+      messagesApi: MessagesApi
   ) {
 
     /**

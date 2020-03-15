@@ -80,8 +80,8 @@ trait DefaultWriteables extends LowPriorityWriteables {
   /**
     * `Writeable` for `NodeSeq` values - literal Scala XML.
     */
-  implicit def writeableOf_NodeSeq[C <: scala.xml.NodeSeq](
-      implicit codec: Codec
+  implicit def writeableOf_NodeSeq[C <: scala.xml.NodeSeq](implicit
+      codec: Codec
   ): Writeable[C] = {
     Writeable(xml => codec.encode(xml.toString))
   }
@@ -89,8 +89,8 @@ trait DefaultWriteables extends LowPriorityWriteables {
   /**
     * `Writeable` for `NodeBuffer` values - literal Scala XML.
     */
-  implicit def writeableOf_NodeBuffer(
-      implicit codec: Codec
+  implicit def writeableOf_NodeBuffer(implicit
+      codec: Codec
   ): Writeable[scala.xml.NodeBuffer] = {
     Writeable(xml => codec.encode(xml.toString))
   }
@@ -98,8 +98,8 @@ trait DefaultWriteables extends LowPriorityWriteables {
   /**
     * `Writeable` for `urlEncodedForm` values
     */
-  implicit def writeableOf_urlEncodedForm(
-      implicit codec: Codec
+  implicit def writeableOf_urlEncodedForm(implicit
+      codec: Codec
   ): Writeable[Map[String, Seq[String]]] = {
     import java.net.URLEncoder
     Writeable(formData =>
@@ -117,8 +117,8 @@ trait DefaultWriteables extends LowPriorityWriteables {
   /**
     * `Writeable` for `JsValue` values - Json
     */
-  implicit def writeableOf_JsValue(
-      implicit codec: Codec
+  implicit def writeableOf_JsValue(implicit
+      codec: Codec
   ): Writeable[JsValue] = {
     Writeable(a => codec.encode(Json.stringify(a)))
   }

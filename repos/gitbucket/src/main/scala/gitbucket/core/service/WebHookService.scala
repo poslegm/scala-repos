@@ -37,8 +37,8 @@ trait WebHookService {
   private val logger = LoggerFactory.getLogger(classOf[WebHookService])
 
   /** get All WebHook informations of repository */
-  def getWebHooks(owner: String, repository: String)(
-      implicit s: Session
+  def getWebHooks(owner: String, repository: String)(implicit
+      s: Session
   ): List[(WebHook, Set[WebHook.Event])] =
     WebHooks
       .filter(_.byRepository(owner, repository))
@@ -67,8 +67,8 @@ trait WebHookService {
       .distinct
 
   /** get All WebHook information from repository to url */
-  def getWebHook(owner: String, repository: String, url: String)(
-      implicit s: Session
+  def getWebHook(owner: String, repository: String, url: String)(implicit
+      s: Session
   ): Option[(WebHook, Set[WebHook.Event])] =
     WebHooks
       .filter(_.byPrimaryKey(owner, repository, url))
@@ -110,8 +110,8 @@ trait WebHookService {
     }
   }
 
-  def deleteWebHook(owner: String, repository: String, url: String)(
-      implicit s: Session
+  def deleteWebHook(owner: String, repository: String, url: String)(implicit
+      s: Session
   ): Unit =
     WebHooks.filter(_.byPrimaryKey(owner, repository, url)).delete
 
@@ -128,8 +128,8 @@ trait WebHookService {
       event: WebHook.Event,
       webHooks: List[WebHook],
       payload: WebHookPayload
-  )(
-      implicit c: JsonFormat.Context
+  )(implicit
+      c: JsonFormat.Context
   ): List[(WebHook, String, Future[HttpRequest], Future[HttpResponse])] = {
     import org.apache.http.impl.client.HttpClientBuilder
     import ExecutionContext.Implicits.global
@@ -300,8 +300,8 @@ trait WebHookPullRequestService extends WebHookService {
       userName: String,
       repositoryName: String,
       branch: String
-  )(
-      implicit s: Session
+  )(implicit
+      s: Session
   ): Map[(Issue, Account, PullRequest, Account, Account), List[WebHook]] =
     (for {
       is <- Issues if is.closed === false.bind

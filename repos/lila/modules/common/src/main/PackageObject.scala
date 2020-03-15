@@ -128,8 +128,8 @@ trait WithPlay { self: PackageObject =>
       t: M[Fu[A]]
   ) {
 
-    def sequenceFu(
-        implicit cbf: scala.collection.generic.CanBuildFrom[M[Fu[A]], A, M[A]]
+    def sequenceFu(implicit
+        cbf: scala.collection.generic.CanBuildFrom[M[Fu[A]], A, M[A]]
     ) =
       Future sequence t
   }
@@ -223,8 +223,8 @@ trait WithPlay { self: PackageObject =>
       scala.concurrent.Await.result(fua, seconds.seconds)
     }
 
-    def withTimeout(duration: FiniteDuration, error: => Throwable)(
-        implicit system: akka.actor.ActorSystem
+    def withTimeout(duration: FiniteDuration, error: => Throwable)(implicit
+        system: akka.actor.ActorSystem
     ): Fu[A] = {
       Future firstCompletedOf Seq(
         fua,

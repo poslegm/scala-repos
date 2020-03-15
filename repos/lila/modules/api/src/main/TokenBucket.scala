@@ -117,8 +117,8 @@ object TokenBucket {
     * @param timeout akka timeout
     * @return (remainingTokens - 1), if negative no tokens are consumed.
     */
-  def consume(actor: ActorRef, key: Any)(
-      implicit timeout: Timeout = defaultTimeout
+  def consume(actor: ActorRef, key: Any)(implicit
+      timeout: Timeout = defaultTimeout
   ): Future[Int] =
     (actor ? TokenRequest(key)).mapTo[Int]
 }

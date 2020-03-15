@@ -64,7 +64,7 @@ class ImmutableLRU[K, V] private (
     val newMap       = map + (key -> ((newIdx, value)))
     // Now update the ordered cache:
     val baseOrd       = map.get(key).map { case (id, _) => ord - id }.getOrElse(ord)
-    val ordWithNewKey = baseOrd + (newIdx -> key)
+    val ordWithNewKey = baseOrd + (newIdx               -> key)
     // Do we need to remove an old key:
     val (evicts, finalMap, finalOrd) =
       if (ordWithNewKey.size > maxSize) {

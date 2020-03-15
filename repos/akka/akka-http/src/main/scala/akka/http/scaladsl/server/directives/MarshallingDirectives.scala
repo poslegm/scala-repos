@@ -70,8 +70,8 @@ trait MarshallingDirectives {
   /**
     * Returns the in-scope Marshaller for the given type.
     */
-  def instanceOf[T](
-      implicit m: ToResponseMarshaller[T]
+  def instanceOf[T](implicit
+      m: ToResponseMarshaller[T]
   ): ToResponseMarshaller[T] = m
 
   /**

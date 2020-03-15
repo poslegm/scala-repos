@@ -30,17 +30,17 @@ object SlickBuild extends Build {
       val v = if (scalaVersion == "2.12.0-M2") "2.2.5-M2" else "2.2.4"
       "org.scalatest" %% "scalatest" % v
     }
-    val slf4j                  = "org.slf4j" % "slf4j-api" % "1.7.18"
+    val slf4j                  = "org.slf4j"      % "slf4j-api"       % "1.7.18"
     val logback                = "ch.qos.logback" % "logback-classic" % "1.1.6"
-    val typesafeConfig         = "com.typesafe" % "config" % "1.2.1"
+    val typesafeConfig         = "com.typesafe"   % "config"          % "1.2.1"
     val reactiveStreamsVersion = "1.0.0"
     val reactiveStreams =
       "org.reactivestreams" % "reactive-streams" % reactiveStreamsVersion
     val reactiveStreamsTCK =
       "org.reactivestreams" % "reactive-streams-tck" % reactiveStreamsVersion
-    val hikariCP         = "com.zaxxer" % "HikariCP-java6" % "2.3.13"
+    val hikariCP         = "com.zaxxer"     % "HikariCP-java6" % "2.3.13"
     val mainDependencies = Seq(slf4j, typesafeConfig, reactiveStreams)
-    val h2               = "com.h2database" % "h2" % "1.4.191"
+    val h2               = "com.h2database" % "h2"             % "1.4.191"
     val testDBs = Seq(
       h2,
       "org.xerial"           % "sqlite-jdbc"          % "3.8.7",

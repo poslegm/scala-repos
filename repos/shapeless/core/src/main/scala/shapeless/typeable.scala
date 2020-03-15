@@ -171,8 +171,8 @@ object Typeable extends TupleTypeableInstances with LowPriorityTypeable {
     }
 
   /** Typeable instance for `Option`. */
-  implicit def optionTypeable[T](
-      implicit castT: Typeable[T]
+  implicit def optionTypeable[T](implicit
+      castT: Typeable[T]
   ): Typeable[Option[T]] =
     new Typeable[Option[T]] {
       def cast(t: Any): Option[Option[T]] = {
@@ -199,8 +199,8 @@ object Typeable extends TupleTypeableInstances with LowPriorityTypeable {
     }
 
   /** Typeable instance for `Left`. */
-  implicit def leftTypeable[A, B](
-      implicit castA: Typeable[A]
+  implicit def leftTypeable[A, B](implicit
+      castA: Typeable[A]
   ): Typeable[Left[A, B]] =
     new Typeable[Left[A, B]] {
       def cast(t: Any): Option[Left[A, B]] = {
@@ -214,8 +214,8 @@ object Typeable extends TupleTypeableInstances with LowPriorityTypeable {
     }
 
   /** Typeable instance for `Right`. */
-  implicit def rightTypeable[A, B](
-      implicit castB: Typeable[B]
+  implicit def rightTypeable[A, B](implicit
+      castB: Typeable[B]
   ): Typeable[Right[A, B]] =
     new Typeable[Right[A, B]] {
       def cast(t: Any): Option[Right[A, B]] = {
@@ -343,8 +343,8 @@ object Typeable extends TupleTypeableInstances with LowPriorityTypeable {
     }
 
   /** Typeable instance for `Inl`. */
-  implicit def inlTypeable[H, T <: Coproduct](
-      implicit castH: Typeable[H]
+  implicit def inlTypeable[H, T <: Coproduct](implicit
+      castH: Typeable[H]
   ): Typeable[Inl[H, T]] =
     new Typeable[Inl[H, T]] {
       def cast(t: Any): Option[Inl[H, T]] = {
@@ -358,8 +358,8 @@ object Typeable extends TupleTypeableInstances with LowPriorityTypeable {
     }
 
   /** Typeable instance for `Inr`. */
-  implicit def inrTypeable[H, T <: Coproduct](
-      implicit castT: Typeable[T]
+  implicit def inrTypeable[H, T <: Coproduct](implicit
+      castT: Typeable[T]
   ): Typeable[Inr[H, T]] =
     new Typeable[Inr[H, T]] {
       def cast(t: Any): Option[Inr[H, T]] = {

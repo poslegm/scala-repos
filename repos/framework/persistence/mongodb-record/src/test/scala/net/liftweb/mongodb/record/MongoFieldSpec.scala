@@ -594,7 +594,7 @@ object MongoFieldSpec extends Specification with MongoTestKit with AroundEach {
     "function correctly" in {
       val rec  = MapTestRecord.createRecord
       val map  = Map("a" -> "abc", "b" -> "def", "c" -> "ghi")
-      val map2 = Map("a" -> "ab", "b" -> "de", "c" -> "gh")
+      val map2 = Map("a" -> "ab", "b"  -> "de", "c"  -> "gh")
       passBasicTests(map, map2, rec.mandatoryStringMapField, Empty)
       passConversionTests(
         map,
@@ -647,7 +647,7 @@ object MongoFieldSpec extends Specification with MongoTestKit with AroundEach {
           ("when"  ->
             ("$dt" -> rec.meta.formats.dateFormat.format(subRec.when.value))) ~
           ("slist" -> JArray(Nil)) ~ ("smap" -> JObject(Nil)) ~
-          ("oid"   -> ("$oid" -> subRec.oid.value.toString)) ~
+          ("oid"   -> ("$oid"                -> subRec.oid.value.toString)) ~
           ("pattern"  -> ("$regex" -> subRec.pattern.value.pattern) ~
             ("$flags" -> subRec.pattern.value.flags)) ~
           ("uuid"     -> ("$uuid" -> subRec.uuid.value.toString))
@@ -691,7 +691,7 @@ object MongoFieldSpec extends Specification with MongoTestKit with AroundEach {
           ("when"  ->
             ("$dt" -> rec.meta.formats.dateFormat.format(lst(0).when.value))) ~
           ("slist" -> JArray(Nil)) ~ ("smap" -> JObject(Nil)) ~
-          ("oid"   -> ("$oid" -> lst(0).oid.value.toString)) ~
+          ("oid"   -> ("$oid"                -> lst(0).oid.value.toString)) ~
           ("pattern"  -> ("$regex" -> lst(0).pattern.value.pattern) ~
             ("$flags" -> lst(0).pattern.value.flags)) ~
           ("uuid"     -> ("$uuid" -> lst(0).uuid.value.toString))
@@ -702,7 +702,7 @@ object MongoFieldSpec extends Specification with MongoTestKit with AroundEach {
           ("when"  ->
             ("$dt" -> rec.meta.formats.dateFormat.format(lst(1).when.value))) ~
           ("slist" -> JArray(Nil)) ~ ("smap" -> JObject(Nil)) ~
-          ("oid"   -> ("$oid" -> lst(1).oid.value.toString)) ~
+          ("oid"   -> ("$oid"                -> lst(1).oid.value.toString)) ~
           ("pattern"  -> ("$regex" -> lst(1).pattern.value.pattern) ~
             ("$flags" -> lst(1).pattern.value.flags)) ~
           ("uuid"     -> ("$uuid" -> lst(1).uuid.value.toString))

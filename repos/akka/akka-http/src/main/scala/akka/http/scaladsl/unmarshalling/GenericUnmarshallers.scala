@@ -11,16 +11,16 @@ trait GenericUnmarshallers extends LowerPriorityGenericUnmarshallers {
       um: Unmarshaller[A, B]
   ): Unmarshaller[A, Option[B]] =
     targetOptionUnmarshaller(um)
-  implicit def targetOptionUnmarshaller[A, B](
-      implicit um: Unmarshaller[A, B]
+  implicit def targetOptionUnmarshaller[A, B](implicit
+      um: Unmarshaller[A, B]
   ): Unmarshaller[A, Option[B]] =
     um map (Some(_)) withDefaultValue None
 }
 
 sealed trait LowerPriorityGenericUnmarshallers {
 
-  implicit def messageUnmarshallerFromEntityUnmarshaller[T](
-      implicit um: FromEntityUnmarshaller[T]
+  implicit def messageUnmarshallerFromEntityUnmarshaller[T](implicit
+      um: FromEntityUnmarshaller[T]
   ): FromMessageUnmarshaller[T] =
     Unmarshaller.withMaterializer { implicit ec ⇒ implicit mat ⇒ request ⇒
       um(request.entity)
@@ -30,8 +30,8 @@ sealed trait LowerPriorityGenericUnmarshallers {
       um: Unmarshaller[A, B]
   ): Unmarshaller[Option[A], B] =
     sourceOptionUnmarshaller(um)
-  implicit def sourceOptionUnmarshaller[A, B](
-      implicit um: Unmarshaller[A, B]
+  implicit def sourceOptionUnmarshaller[A, B](implicit
+      um: Unmarshaller[A, B]
   ): Unmarshaller[Option[A], B] =
     Unmarshaller.withMaterializer(implicit ec ⇒
       implicit mat ⇒ {

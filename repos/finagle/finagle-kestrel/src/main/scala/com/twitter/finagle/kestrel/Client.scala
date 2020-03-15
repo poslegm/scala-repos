@@ -346,7 +346,9 @@ abstract protected[kestrel] class CommandExecutorFactory[U] extends Closable {
   *                items
   */
 abstract protected[kestrel] class ClientBase[
-    CommandExecutor <: Closable, Reply, ItemId
+    CommandExecutor <: Closable,
+    Reply,
+    ItemId
 ](underlying: CommandExecutorFactory[CommandExecutor])
     extends Client {
 
@@ -370,7 +372,7 @@ abstract protected[kestrel] class ClientBase[
       abortCommand: ItemId => (CommandExecutor => Future[Reply])
   ): ReadHandle = {
 
-    val error    = new Broker[Throwable] // this is sort of like a latch...
+    val error    = new Broker[Throwable]   // this is sort of like a latch...
     val messages = new Broker[ReadMessage] // todo: buffer?
     val close    = new Broker[Unit]
     val abort    = new Broker[ItemId]

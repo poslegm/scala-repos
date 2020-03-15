@@ -2,8 +2,8 @@ package scalaz
 package syntax
 
 /** Wraps a value `self` and provides methods related to `Traverse` */
-final class TraverseOps[F[_], A] private[syntax] (val self: F[A])(
-    implicit val F: Traverse[F]
+final class TraverseOps[F[_], A] private[syntax] (val self: F[A])(implicit
+    val F: Traverse[F]
 ) extends Ops[F[A]] {
   ////
 
@@ -39,8 +39,8 @@ final class TraverseOps[F[_], A] private[syntax] (val self: F[A])(
   }
 
   /** A version of `sequence` that infers the nested type constructor */
-  final def sequenceU(
-      implicit G: Unapply[Applicative, A]
+  final def sequenceU(implicit
+      G: Unapply[Applicative, A]
   ): G.M[F[G.A]] /*G[F[A]] */ = {
     G.TC.traverse(self)(x => G.apply(x))
   }

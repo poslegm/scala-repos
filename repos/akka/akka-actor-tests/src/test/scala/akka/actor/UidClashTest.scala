@@ -28,8 +28,8 @@ object UidClashTest {
     //Ignore everything
     override def isTerminated: Boolean                           = true
     override def sendSystemMessage(message: SystemMessage): Unit = ()
-    override def !(message: Any)(
-        implicit sender: ActorRef = Actor.noSender
+    override def !(message: Any)(implicit
+        sender: ActorRef = Actor.noSender
     ): Unit = ()
   }
 

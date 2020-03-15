@@ -185,8 +185,8 @@ object WS {
     * @param url the URL to request
     * @param client the client to use to make the request.
     */
-  def clientUrl(url: String)(
-      implicit client: WSClient
+  def clientUrl(url: String)(implicit
+      client: WSClient
   ): play.api.libs.ws.WSRequest = client.url(url)
 }
 

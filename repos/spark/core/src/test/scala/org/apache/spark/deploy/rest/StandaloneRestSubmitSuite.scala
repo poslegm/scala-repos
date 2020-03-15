@@ -54,7 +54,7 @@ class StandaloneRestSubmitSuite extends SparkFunSuite with BeforeAndAfterEach {
   test("construct submit request") {
     val appArgs              = Array("one", "two", "three")
     val sparkProperties      = Map("spark.app.name" -> "pi")
-    val environmentVariables = Map("SPARK_ONE" -> "UN", "SPARK_TWO" -> "DEUX")
+    val environmentVariables = Map("SPARK_ONE"      -> "UN", "SPARK_TWO" -> "DEUX")
     val request =
       new RestSubmissionClient("spark://host:port").constructSubmitRequest(
         "my-app-resource",
@@ -282,7 +282,7 @@ class StandaloneRestSubmitSuite extends SparkFunSuite with BeforeAndAfterEach {
     val statusRequestPath = s"$httpUrl/$v/submissions/status"
     val goodJson          = constructSubmitRequest(masterUrl).toJson
     val badJson1          = goodJson.replaceAll("action", "fraction") // invalid JSON
-    val badJson2          = goodJson.substring(goodJson.size / 2) // malformed JSON
+    val badJson2          = goodJson.substring(goodJson.size / 2)     // malformed JSON
     val notJson           = "\"hello, world\""
     val (response1, code1) =
       sendHttpRequestWithResponse(submitRequestPath, "POST") // missing JSON

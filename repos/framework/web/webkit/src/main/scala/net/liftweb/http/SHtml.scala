@@ -1963,8 +1963,8 @@ trait SHtml extends Loggable {
     import Helpers._
     import common.Full
 
-    makeFormElement("number", func, attrs: _*) % ("value" -> value.toString) %
-      ("min"                                  -> min.toString) % ("min" -> min.toString) %
+    makeFormElement("number", func, attrs: _*) % ("value"     -> value.toString) %
+      ("min"                                  -> min.toString) % ("min"         -> min.toString) %
       ("step"                                 -> step.toString)
   }
 
@@ -2248,7 +2248,7 @@ trait SHtml extends Loggable {
               case _ => true
             }
 
-            e.copy(attributes = newMeta) % ("id" -> id) %
+            e.copy(attributes = newMeta) % ("id"           -> id) %
               ("action"                 -> "javascript://") %
               ("onsubmit" ->
                 (SHtml

@@ -36,8 +36,8 @@ trait MonadPlus[F[_]] extends Monad[F] with ApplicativePlus[F] { self =>
     unite(T.leibniz.subst(value))(T.TC)
 
   /**The product of MonadPlus `F` and `G`, `[x](F[x], G[x]])`, is a MonadPlus */
-  def product[G[_]](
-      implicit G0: MonadPlus[G]
+  def product[G[_]](implicit
+      G0: MonadPlus[G]
   ): MonadPlus[λ[α => (F[α], G[α])]] =
     new ProductMonadPlus[F, G] {
       def F = self

@@ -39,15 +39,15 @@ object TypedParquet {
   /**
     * Create readable typed parquet source with filter predicate.
     */
-  def apply[T](paths: Seq[String], fp: FilterPredicate)(
-      implicit readSupport: ParquetReadSupport[T]
+  def apply[T](paths: Seq[String], fp: FilterPredicate)(implicit
+      readSupport: ParquetReadSupport[T]
   ): TypedParquet[T] =
     new TypedFixedPathParquetTuple[T](paths, readSupport, null) {
       override def withFilter = Some(fp)
     }
 
-  def apply[T](path: String, fp: FilterPredicate)(
-      implicit readSupport: ParquetReadSupport[T]
+  def apply[T](path: String, fp: FilterPredicate)(implicit
+      readSupport: ParquetReadSupport[T]
   ): TypedParquet[T] =
     apply[T](Seq(path), fp)
 }

@@ -123,8 +123,8 @@ trait Counter2Ops {
       }
     }
 
-  implicit def canMulVV[K1, K2, V](
-      implicit semiring: Semiring[V]
+  implicit def canMulVV[K1, K2, V](implicit
+      semiring: Semiring[V]
   ): OpMulScalar.Impl2[Counter2[K1, K2, V], Counter2[K1, K2, V], Counter2[
     K1,
     K2,
@@ -168,8 +168,8 @@ trait Counter2Ops {
       }
     }
 
-  implicit def canMulVS[K1, K2, V](
-      implicit semiring: Semiring[V]
+  implicit def canMulVS[K1, K2, V](implicit
+      semiring: Semiring[V]
   ): OpMulScalar.Impl2[Counter2[K1, K2, V], V, Counter2[K1, K2, V]] = {
     new OpMulScalar.Impl2[Counter2[K1, K2, V], V, Counter2[K1, K2, V]] {
       override def apply(a: Counter2[K1, K2, V], b: V): Counter2[K1, K2, V] = {
@@ -183,8 +183,8 @@ trait Counter2Ops {
     }
   }
 
-  implicit def canMulVS_M[K1, K2, V](
-      implicit semiring: Semiring[V]
+  implicit def canMulVS_M[K1, K2, V](implicit
+      semiring: Semiring[V]
   ): OpMulMatrix.Impl2[Counter2[K1, K2, V], V, Counter2[K1, K2, V]] = {
     new OpMulMatrix.Impl2[Counter2[K1, K2, V], V, Counter2[K1, K2, V]] {
       override def apply(a: Counter2[K1, K2, V], b: V): Counter2[K1, K2, V] = {
@@ -282,8 +282,8 @@ trait Counter2Ops {
       }
     }
 
-  implicit def canNegate[K1, K2, V](
-      implicit ring: Ring[V]
+  implicit def canNegate[K1, K2, V](implicit
+      ring: Ring[V]
   ): OpNeg.Impl[Counter2[K1, K2, V], Counter2[K1, K2, V]] = {
     new OpNeg.Impl[Counter2[K1, K2, V], Counter2[K1, K2, V]] {
       override def apply(a: Counter2[K1, K2, V]) = {
@@ -322,8 +322,8 @@ trait Counter2Ops {
       }
     }
   }*/
-  implicit def canMultiplyC2C1[K1, K2, V](
-      implicit semiring: Semiring[V]
+  implicit def canMultiplyC2C1[K1, K2, V](implicit
+      semiring: Semiring[V]
   ): OpMulMatrix.Impl2[Counter2[K1, K2, V], Counter[K2, V], Counter[K1, V]] = {
     new OpMulMatrix.Impl2[Counter2[K1, K2, V], Counter[K2, V], Counter[K1, V]] {
       override def apply(a: Counter2[K1, K2, V], b: Counter[K2, V]) = {
@@ -336,8 +336,8 @@ trait Counter2Ops {
     }
   }
 
-  implicit def canMultiplyC2C2[K1, K2, K3, V](
-      implicit semiring: Semiring[V]
+  implicit def canMultiplyC2C2[K1, K2, K3, V](implicit
+      semiring: Semiring[V]
   ): OpMulMatrix.Impl2[Counter2[K1, K2, V], Counter2[K2, K3, V], Counter2[
     K1,
     K3,

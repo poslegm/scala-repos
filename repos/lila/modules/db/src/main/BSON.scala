@@ -35,8 +35,8 @@ object BSON {
 
   object MapDocument {
 
-    implicit def MapReader[V](
-        implicit vr: BSONDocumentReader[V]
+    implicit def MapReader[V](implicit
+        vr: BSONDocumentReader[V]
     ): BSONDocumentReader[Map[String, V]] =
       new BSONDocumentReader[Map[String, V]] {
         def read(bson: BSONDocument): Map[String, V] = {
@@ -49,8 +49,8 @@ object BSON {
         }
       }
 
-    implicit def MapWriter[V](
-        implicit vw: BSONDocumentWriter[V]
+    implicit def MapWriter[V](implicit
+        vw: BSONDocumentWriter[V]
     ): BSONDocumentWriter[Map[String, V]] =
       new BSONDocumentWriter[Map[String, V]] {
         def write(map: Map[String, V]): BSONDocument =
@@ -73,8 +73,8 @@ object BSON {
 
   object MapValue {
 
-    implicit def MapReader[V](
-        implicit vr: BSONReader[_ <: BSONValue, V]
+    implicit def MapReader[V](implicit
+        vr: BSONReader[_ <: BSONValue, V]
     ): BSONDocumentReader[Map[String, V]] =
       new BSONDocumentReader[Map[String, V]] {
         def read(bson: BSONDocument): Map[String, V] = {
@@ -88,8 +88,8 @@ object BSON {
         }
       }
 
-    implicit def MapWriter[V](
-        implicit vw: BSONWriter[V, _ <: BSONValue]
+    implicit def MapWriter[V](implicit
+        vw: BSONWriter[V, _ <: BSONValue]
     ): BSONDocumentWriter[Map[String, V]] =
       new BSONDocumentWriter[Map[String, V]] {
         def write(map: Map[String, V]): BSONDocument =
@@ -159,8 +159,8 @@ object BSON {
         k: String
     )(implicit reader: BSONReader[_ <: BSONValue, A]): Option[A] =
       map get k flatMap reader.asInstanceOf[BSONReader[BSONValue, A]].readOpt
-    def getD[A](k: String, default: A)(
-        implicit reader: BSONReader[_ <: BSONValue, A]
+    def getD[A](k: String, default: A)(implicit
+        reader: BSONReader[_ <: BSONValue, A]
     ): A =
       getO[A](k) getOrElse default
 

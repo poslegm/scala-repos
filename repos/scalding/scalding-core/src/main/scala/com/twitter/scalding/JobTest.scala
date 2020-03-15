@@ -114,8 +114,8 @@ class JobTest(cons: (Args) => Job) {
   def source(s: Source, iTuple: Iterable[Product]): JobTest =
     source[Product](s, iTuple)(TupleSetter.ProductSetter)
 
-  def source[T](s: Source, iTuple: Iterable[T])(
-      implicit setter: TupleSetter[T]
+  def source[T](s: Source, iTuple: Iterable[T])(implicit
+      setter: TupleSetter[T]
   ): JobTest =
     sourceBuffer(s, iTuple)
 

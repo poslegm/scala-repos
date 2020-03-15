@@ -684,8 +684,8 @@ trait TestPlatform extends ManagedPlatform { self =>
     }))
   }
 
-  protected def executor(
-      implicit shardQueryMonad: JobQueryTFMonad
+  protected def executor(implicit
+      shardQueryMonad: JobQueryTFMonad
   ): QueryExecutor[JobQueryTF, StreamT[JobQueryTF, Slice]] = {
     new QueryExecutor[JobQueryTF, StreamT[JobQueryTF, Slice]] {
       def execute(query: String, ctx: EvaluationContext, opts: QueryOptions) = {

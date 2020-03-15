@@ -220,8 +220,8 @@ final class BooleanOps(self: Boolean) {
     b.unlessM(self)(f)
 
   /** A version of `unlessM` that infers the type constructor `M`. */
-  final def unlessMU[MA](f: => MA)(
-      implicit M: Unapply[Applicative, MA]
+  final def unlessMU[MA](f: => MA)(implicit
+      M: Unapply[Applicative, MA]
   ): M.M[Unit] = b.unlessMU(self)(f)
 
   /**
@@ -230,8 +230,8 @@ final class BooleanOps(self: Boolean) {
   final def whenM[M[_]: Applicative, A](f: => M[A]): M[Unit] = b.whenM(self)(f)
 
   /** A version of `whenM` that infers the type constructor `M`. */
-  final def whenMU[MA](f: => MA)(
-      implicit M: Unapply[Applicative, MA]
+  final def whenMU[MA](f: => MA)(implicit
+      M: Unapply[Applicative, MA]
   ): M.M[Unit] = b.whenMU(self)(f)
 
   /**

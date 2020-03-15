@@ -38,8 +38,8 @@ final case class WriterT[F[_], L, V](run: F[(L, V)]) {
   )(implicit functorF: Functor[F]): WriterT[F, M, U] =
     WriterT { functorF.map(run)(f.tupled) }
 
-  def bimap[M, U](f: L => M, g: V => U)(
-      implicit functorF: Functor[F]
+  def bimap[M, U](f: L => M, g: V => U)(implicit
+      functorF: Functor[F]
   ): WriterT[F, M, U] =
     mapBoth((l, v) => (f(l), g(v)))
 
@@ -68,8 +68,8 @@ private[data] sealed abstract class WriterTInstances extends WriterTInstances0 {
 
   // The Eq[(L, V)] can be derived from an Eq[L] and Eq[V], but we are waiting
   // on an algebra release that includes https://github.com/non/algebra/pull/82
-  implicit def writerTIdEq[L, V](
-      implicit E: Eq[(L, V)]
+  implicit def writerTIdEq[L, V](implicit
+      E: Eq[(L, V)]
   ): Eq[WriterT[Id, L, V]] =
     writerTEq[Id, L, V]
 
@@ -90,8 +90,8 @@ private[data] sealed abstract class WriterTInstances extends WriterTInstances0 {
         WriterT(M.map(ma)((W.empty, _)))
     }
 
-  implicit def writerTShow[F[_], L, V](
-      implicit F: Show[F[(L, V)]]
+  implicit def writerTShow[F[_], L, V](implicit
+      F: Show[F[(L, V)]]
   ): Show[WriterT[F, L, V]] =
     new Show[WriterT[F, L, V]] {
       override def show(f: WriterT[F, L, V]): String = f.show
@@ -115,8 +115,8 @@ private[data] sealed abstract class WriterTInstances0
   implicit def writerTIdFlatMap[L: Semigroup]: FlatMap[WriterT[Id, L, ?]] =
     writerTFlatMap[Id, L]
 
-  implicit def writerTEq[F[_], L, V](
-      implicit F: Eq[F[(L, V)]]
+  implicit def writerTEq[F[_], L, V](implicit
+      F: Eq[F[(L, V)]]
   ): Eq[WriterT[F, L, V]] =
     F.on(_.run)
 }
@@ -167,8 +167,8 @@ private[data] sealed abstract class WriterTInstances4
       implicit val L0: Monoid[L]      = L
     }
 
-  implicit def writerTMonoidK[F[_], L](
-      implicit F: MonoidK[F]
+  implicit def writerTMonoidK[F[_], L](implicit
+      F: MonoidK[F]
   ): MonoidK[WriterT[F, L, ?]] =
     new WriterTMonoidK[F, L] {
       implicit val F0: MonoidK[F] = F
@@ -186,8 +186,8 @@ private[data] sealed abstract class WriterTInstances5
       implicit val L0: Semigroup[L] = L
     }
 
-  implicit def writerTSemigroupK[F[_], L](
-      implicit F: SemigroupK[F]
+  implicit def writerTSemigroupK[F[_], L](implicit
+      F: SemigroupK[F]
   ): SemigroupK[WriterT[F, L, ?]] =
     new WriterTSemigroupK[F, L] {
       implicit val F0: SemigroupK[F] = F
@@ -207,8 +207,8 @@ private[data] sealed abstract class WriterTInstances6
 }
 
 private[data] sealed abstract class WriterTInstances7 {
-  implicit def writerTFunctor[F[_], L](
-      implicit F: Functor[F]
+  implicit def writerTFunctor[F[_], L](implicit
+      F: Functor[F]
   ): Functor[WriterT[F, L, ?]] =
     new WriterTFunctor[F, L] {
       implicit val F0: Functor[F] = F

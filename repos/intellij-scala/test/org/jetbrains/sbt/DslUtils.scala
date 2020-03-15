@@ -25,8 +25,8 @@ object DslUtils {
         throw new Error(s"Value for '${attribute.key}' is not found")
       )
 
-    def put[T](attribute: Attribute[T], value: T)(
-        implicit m: Manifest[T]
+    def put[T](attribute: Attribute[T], value: T)(implicit
+        m: Manifest[T]
     ): Unit =
       attributes = attributes + ((attribute, m.toString) -> value)
   }

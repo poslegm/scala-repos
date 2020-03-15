@@ -58,8 +58,8 @@ abstract class DailySuffixMostRecentSource(
     )
 
 object DailySuffixTsv {
-  def apply(prefix: String, fs: Fields = Fields.ALL)(
-      implicit dateRange: DateRange
+  def apply(prefix: String, fs: Fields = Fields.ALL)(implicit
+      dateRange: DateRange
   ) = new DailySuffixTsv(prefix, fs)
 }
 
@@ -89,8 +89,8 @@ class DailySuffixTypedTsv[T](prefix: String)(implicit
     with TypedDelimited[T]
 
 object DailySuffixCsv {
-  def apply(prefix: String, fs: Fields = Fields.ALL)(
-      implicit dateRange: DateRange
+  def apply(prefix: String, fs: Fields = Fields.ALL)(implicit
+      dateRange: DateRange
   ) = new DailySuffixCsv(prefix, fs)
 }
 
@@ -103,8 +103,8 @@ class DailySuffixCsv(prefix: String, fs: Fields = Fields.ALL)(
 }
 
 object DailySuffixMostRecentCsv {
-  def apply(prefix: String, fs: Fields = Fields.ALL)(
-      implicit dateRange: DateRange
+  def apply(prefix: String, fs: Fields = Fields.ALL)(implicit
+      dateRange: DateRange
   ) = new DailySuffixMostRecentCsv(prefix, fs)
 }
 

@@ -2,8 +2,8 @@ package scalaz
 package syntax
 
 /** Wraps a value `self` and provides methods related to `Apply` */
-final class ApplyOps[F[_], A] private[syntax] (val self: F[A])(
-    implicit val F: Apply[F]
+final class ApplyOps[F[_], A] private[syntax] (val self: F[A])(implicit
+    val F: Apply[F]
 ) extends Ops[F[A]] {
   ////
 

@@ -24,8 +24,8 @@ trait CommandExecutors {
 
   implicit def asyncExecutor[T <: Command, S](
       handler: T => Future[ModelValidation[S]]
-  )(
-      implicit executionContext: ExecutionContext
+  )(implicit
+      executionContext: ExecutionContext
   ): CommandExecutor[T, Future[ModelValidation[S]]] =
     new AsyncCommandExecutor(handler)
 

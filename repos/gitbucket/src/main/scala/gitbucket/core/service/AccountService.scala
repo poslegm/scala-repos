@@ -28,8 +28,8 @@ trait AccountService {
   /**
     * Authenticate by internal database.
     */
-  private def defaultAuthentication(userName: String, password: String)(
-      implicit s: Session
+  private def defaultAuthentication(userName: String, password: String)(implicit
+      s: Session
   ) = {
     getAccountByUserName(userName).collect {
       case account
@@ -202,8 +202,8 @@ trait AccountService {
         account.isRemoved
       )
 
-  def updateAvatarImage(userName: String, image: Option[String])(
-      implicit s: Session
+  def updateAvatarImage(userName: String, image: Option[String])(implicit
+      s: Session
   ): Unit =
     Accounts.filter(_.userName === userName.bind).map(_.image.?).update(image)
 
@@ -213,8 +213,8 @@ trait AccountService {
       .map(_.lastLoginDate)
       .update(currentDate)
 
-  def createGroup(groupName: String, url: Option[String])(
-      implicit s: Session
+  def createGroup(groupName: String, url: Option[String])(implicit
+      s: Session
   ): Unit =
     Accounts insert Account(
       userName = groupName,

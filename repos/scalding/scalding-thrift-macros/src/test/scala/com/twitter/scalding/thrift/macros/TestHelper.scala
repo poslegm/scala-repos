@@ -35,14 +35,14 @@ object TestHelper extends Matchers {
     r.head
   }
 
-  def oBufCompare[T](a: T, b: T)(
-      implicit obuf: OrderedSerialization[T]
+  def oBufCompare[T](a: T, b: T)(implicit
+      obuf: OrderedSerialization[T]
   ): Int = {
     obuf.compare(a, b)
   }
 
-  def deserializeSeq[T](items: Int, buf: InputStream)(
-      implicit orderedBuffer: OrderedSerialization[T]
+  def deserializeSeq[T](items: Int, buf: InputStream)(implicit
+      orderedBuffer: OrderedSerialization[T]
   ): Seq[T] = {
     (0 until items).map { _ => orderedBuffer.read(buf).get }.toList
   }
@@ -74,8 +74,8 @@ object TestHelper extends Matchers {
     }
   }
 
-  def compareSerialized[T](a: T, b: T)(
-      implicit orderedBuffer: OrderedSerialization[T]
+  def compareSerialized[T](a: T, b: T)(implicit
+      orderedBuffer: OrderedSerialization[T]
   ): OrderedSerialization.Result = {
     val bufA = serializeSeq[T]((0 until 20).map(_ => a))
     val bufB = serializeSeq[T]((0 until 20).map(_ => b))

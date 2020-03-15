@@ -486,8 +486,8 @@ private[akka] trait MinimalActorRef extends InternalActorRef with LocalRef {
   @deprecated("Use context.watch(actor) and receive Terminated(actor)", "2.2")
   override private[akka] def isTerminated = false
 
-  override def !(message: Any)(
-      implicit sender: ActorRef = Actor.noSender
+  override def !(message: Any)(implicit
+      sender: ActorRef = Actor.noSender
   ): Unit = ()
 
   override def sendSystemMessage(message: SystemMessage): Unit = ()

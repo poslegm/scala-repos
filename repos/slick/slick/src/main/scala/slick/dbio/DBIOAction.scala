@@ -57,8 +57,8 @@ sealed trait DBIOAction[+R, +S <: NoStream, -E <: Effect] extends Dumpable {
   /** Creates a new DBIOAction with one level of nesting flattened, this method is equivalent
     * to `flatMap(identity)`.
     */
-  def flatten[R2, S2 <: NoStream, E2 <: Effect](
-      implicit ev: R <:< DBIOAction[R2, S2, E2]
+  def flatten[R2, S2 <: NoStream, E2 <: Effect](implicit
+      ev: R <:< DBIOAction[R2, S2, E2]
   ) =
     flatMap(ev)(DBIO.sameThreadExecutionContext)
 
@@ -222,8 +222,8 @@ object DBIOAction {
   /** Transform a `TraversableOnce[ DBIO[R] ]` into a `DBIO[ TraversableOnce[R] ]`. */
   def sequence[R, M[+_] <: TraversableOnce[_], E <: Effect](
       in: M[DBIOAction[R, NoStream, E]]
-  )(
-      implicit cbf: CanBuildFrom[M[DBIOAction[R, NoStream, E]], R, M[R]]
+  )(implicit
+      cbf: CanBuildFrom[M[DBIOAction[R, NoStream, E]], R, M[R]]
   ): DBIOAction[M[R], NoStream, E] = {
     implicit val ec = DBIO.sameThreadExecutionContext
     def sequenceGroupAsM(

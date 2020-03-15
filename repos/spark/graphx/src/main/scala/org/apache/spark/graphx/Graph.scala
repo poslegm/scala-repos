@@ -169,8 +169,8 @@ abstract class Graph[VD: ClassTag, ED: ClassTag] protected ()
     * }}}
     *
     */
-  def mapVertices[VD2: ClassTag](map: (VertexId, VD) => VD2)(
-      implicit eq: VD =:= VD2 = null
+  def mapVertices[VD2: ClassTag](map: (VertexId, VD) => VD2)(implicit
+      eq: VD =:= VD2 = null
   ): Graph[VD2, ED]
 
   /**
